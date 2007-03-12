@@ -1,6 +1,7 @@
 /* RTL simplification functions for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3933,12 +3934,21 @@ simplify_const_relational_operation (enum rtx_code code,
 	  /* Optimize abs(x) < 0.0.  */
 	  if (trueop1 == CONST0_RTX (mode)
 	      && !HONOR_SNANS (mode)
-	      && !(flag_wrapv && INTEGRAL_MODE_P (mode)))
+	      && (!INTEGRAL_MODE_P (mode)
+		  || (!flag_wrapv && !flag_trapv && flag_strict_overflow)))
 	    {
 	      tem = GET_CODE (trueop0) == FLOAT_EXTEND ? XEXP (trueop0, 0)
 						       : trueop0;
 	      if (GET_CODE (tem) == ABS)
-		return const0_rtx;
+		{
+		  if (INTEGRAL_MODE_P (mode)
+		      && (issue_strict_overflow_warning
+			  (WARN_STRICT_OVERFLOW_CONDITIONAL)))
+		    warning (OPT_Wstrict_overflow,
+			     ("assuming signed overflow does not occur when "
+			      "assuming abs (x) < 0 is false"));
+		  return const0_rtx;
+		}
 	    }
 	  break;
 
@@ -3946,12 +3956,21 @@ simplify_const_relational_operation (enum rtx_code code,
 	  /* Optimize abs(x) >= 0.0.  */
 	  if (trueop1 == CONST0_RTX (mode)
 	      && !HONOR_NANS (mode)
-	      && !(flag_wrapv && INTEGRAL_MODE_P (mode)))
+	      && (!INTEGRAL_MODE_P (mode)
+		  || (!flag_wrapv && !flag_trapv && flag_strict_overflow)))
 	    {
 	      tem = GET_CODE (trueop0) == FLOAT_EXTEND ? XEXP (trueop0, 0)
 						       : trueop0;
 	      if (GET_CODE (tem) == ABS)
-		return const_true_rtx;
+		{
+		  if (INTEGRAL_MODE_P (mode)
+		      && (issue_strict_overflow_warning
+			  (WARN_STRICT_OVERFLOW_CONDITIONAL)))
+		    warning (OPT_Wstrict_overflow,
+			     ("assuming signed overflow does not occur when "
+			      "assuming abs (x) >= 0 is true"));
+		  return const_true_rtx;
+		}
 	    }
 	  break;
 

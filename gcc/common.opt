@@ -133,6 +133,14 @@ Wstrict-aliasing=
 Common Joined UInteger
 Warn about code which might break strict aliasing rules
 
+Wstrict-overflow
+Common
+Warn about optimizations that assume that signed overflow is undefined
+
+Wstrict-overflow=
+Common Joined UInteger
+Warn about optimizations that assume that signed overflow is undefined
+
 Wswitch
 Common Var(warn_switch)
 Warn about enumerated switches, with no default, missing a case
@@ -865,6 +873,10 @@ Does nothing.  Preserved for backward compatibility.
 fstrict-aliasing
 Common Report Var(flag_strict_aliasing)
 Assume strict aliasing rules apply
+
+fstrict-overflow
+Common Report Var(flag_strict_overflow)
+Treat signed overflow as undefined
 
 fsyntax-only
 Common Report Var(flag_syntax_only)

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fdump-tree-gimple" } */
+/* { dg-options "-fstrict-overflow -fdump-tree-gimple" } */
 int g(int x)
 {
    return (x - 10) < 0;

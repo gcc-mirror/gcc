@@ -1078,9 +1078,15 @@ add_method (tree type, tree method, tree using_decl)
 
   if (insert_p)
     {
+      bool reallocated;
+
       /* We only expect to add few methods in the COMPLETE_P case, so
 	 just make room for one more method in that case.  */
-      if (VEC_reserve (tree, gc, method_vec, complete_p ? -1 : 1))
+      if (complete_p)
+	reallocated = VEC_reserve_exact (tree, gc, method_vec, 1);
+      else
+	reallocated = VEC_reserve (tree, gc, method_vec, 1);
+      if (reallocated)
 	CLASSTYPE_METHOD_VEC (type) = method_vec;
       if (slot == VEC_length (tree, method_vec))
 	VEC_quick_push (tree, method_vec, overload);

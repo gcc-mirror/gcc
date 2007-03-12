@@ -548,7 +548,7 @@ restore_vars_to_original_value (void)
 /* A trivial wrapper so that we can present the generic jump
    threading code with a simple API for simplifying statements.  */
 static tree
-simplify_stmt_for_jump_threading (tree stmt)
+simplify_stmt_for_jump_threading (tree stmt, tree within_stmt ATTRIBUTE_UNUSED)
 {
   return lookup_avail_expr (stmt, false);
 }

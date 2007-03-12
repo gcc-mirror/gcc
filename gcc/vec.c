@@ -41,15 +41,16 @@ struct vec_prefix
   void *vec[1];
 };
 
-/* Calculate the new ALLOC value, making sure that abs(RESERVE) slots
-   are free.  If RESERVE < 0 grow exactly, otherwise grow
-   exponentially.  */
+/* Calculate the new ALLOC value, making sure that RESERVE slots are
+   free.  If EXACT grow exactly, otherwise grow exponentially.  */
 
 static inline unsigned
-calculate_allocation (const struct vec_prefix *pfx, int reserve)
+calculate_allocation (const struct vec_prefix *pfx, int reserve, bool exact)
 {
   unsigned alloc = 0;
   unsigned num = 0;
+
+  gcc_assert (reserve >= 0);
 
   if (pfx)
     {
@@ -62,11 +63,11 @@ calculate_allocation (const struct vec_prefix *pfx, int reserve)
     return 0;
   
   /* We must have run out of room.  */
-  gcc_assert (alloc - num < (unsigned)(reserve < 0 ? -reserve : reserve));
+  gcc_assert (alloc - num < (unsigned) reserve);
   
-  if (reserve < 0)
+  if (exact)
     /* Exact size.  */
-    alloc = num + -reserve;
+    alloc = num + reserve;
   else
     {
       /* Exponential growth. */
@@ -86,28 +87,18 @@ calculate_allocation (const struct vec_prefix *pfx, int reserve)
   return alloc;
 }
 
-/* Ensure there are at least abs(RESERVE) free slots in VEC.  If
-   RESERVE < 0 grow exactly, else grow exponentially.  As a special
-   case, if VEC is NULL, and RESERVE is 0, no vector will be created. */
+/* Ensure there are at least RESERVE free slots in VEC.  If EXACT grow
+   exactly, else grow exponentially.  As a special case, if VEC is
+   NULL and RESERVE is 0, no vector will be created.  The vector's
+   trailing array is at VEC_OFFSET offset and consists of ELT_SIZE
+   sized elements.  */
 
-void *
-vec_gc_p_reserve (void *vec, int reserve MEM_STAT_DECL)
-{
-  return vec_gc_o_reserve (vec, reserve,
-			   offsetof (struct vec_prefix, vec), sizeof (void *)
-			   PASS_MEM_STAT);
-}
-
-/* As vec_gc_p_reserve, but for object vectors.  The vector's trailing
-   array is at VEC_OFFSET offset and consists of ELT_SIZE sized
-   elements.  */
-
-void *
-vec_gc_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
-		   MEM_STAT_DECL)
+static void *
+vec_gc_o_reserve_1 (void *vec, int reserve, size_t vec_offset, size_t elt_size,
+		    bool exact MEM_STAT_DECL)
 {
   struct vec_prefix *pfx = vec;
-  unsigned alloc = alloc = calculate_allocation (pfx, reserve);
+  unsigned alloc = alloc = calculate_allocation (pfx, reserve, exact);
   
   if (!alloc)
     return NULL;
@@ -120,24 +111,66 @@ vec_gc_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
   return vec;
 }
 
-/* As for vec_gc_p_reserve, but for heap allocated vectors.  */
+/* Ensure there are at least RESERVE free slots in VEC, growing
+   exponentially.  If RESERVE < 0 grow exactly, else grow
+   exponentially.  As a special case, if VEC is NULL, and RESERVE is
+   0, no vector will be created. */
 
 void *
-vec_heap_p_reserve (void *vec, int reserve MEM_STAT_DECL)
+vec_gc_p_reserve (void *vec, int reserve MEM_STAT_DECL)
 {
-  return vec_heap_o_reserve (vec, reserve,
-			     offsetof (struct vec_prefix, vec), sizeof (void *)
+  return vec_gc_o_reserve_1 (vec, reserve,
+			     offsetof (struct vec_prefix, vec),
+			     sizeof (void *), false
 			     PASS_MEM_STAT);
 }
 
-/* As for vec_gc_o_reserve, but for heap allocated vectors.  */
+/* Ensure there are at least RESERVE free slots in VEC, growing
+   exactly.  If RESERVE < 0 grow exactly, else grow exponentially.  As
+   a special case, if VEC is NULL, and RESERVE is 0, no vector will be
+   created. */
 
 void *
-vec_heap_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
-		    MEM_STAT_DECL)
+vec_gc_p_reserve_exact (void *vec, int reserve MEM_STAT_DECL)
+{
+  return vec_gc_o_reserve_1 (vec, reserve,
+			     offsetof (struct vec_prefix, vec),
+			     sizeof (void *), true
+			     PASS_MEM_STAT);
+}
+
+/* As for vec_gc_p_reserve, but for object vectors.  The vector's
+   trailing array is at VEC_OFFSET offset and consists of ELT_SIZE
+   sized elements.  */
+
+void *
+vec_gc_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
+		  MEM_STAT_DECL)
+{
+  return vec_gc_o_reserve_1 (vec, reserve, vec_offset, elt_size, false
+			     PASS_MEM_STAT);
+}
+
+/* As for vec_gc_p_reserve_exact, but for object vectors.  The
+   vector's trailing array is at VEC_OFFSET offset and consists of
+   ELT_SIZE sized elements.  */
+
+void *
+vec_gc_o_reserve_exact (void *vec, int reserve, size_t vec_offset,
+			size_t elt_size MEM_STAT_DECL)
+{
+  return vec_gc_o_reserve_1 (vec, reserve, vec_offset, elt_size, true
+			     PASS_MEM_STAT);
+}
+
+/* As for vec_gc_o_reserve_1, but for heap allocated vectors.  */
+
+static void *
+vec_heap_o_reserve_1 (void *vec, int reserve, size_t vec_offset,
+		      size_t elt_size, bool exact MEM_STAT_DECL)
 {
   struct vec_prefix *pfx = vec;
-  unsigned alloc = calculate_allocation (pfx, reserve);
+  unsigned alloc = calculate_allocation (pfx, reserve, exact);
 
   if (!alloc)
     return NULL;
@@ -148,6 +181,48 @@ vec_heap_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
     ((struct vec_prefix *)vec)->num = 0;
   
   return vec;
+}
+
+/* As for vec_gc_p_reserve, but for heap allocated vectors.  */
+
+void *
+vec_heap_p_reserve (void *vec, int reserve MEM_STAT_DECL)
+{
+  return vec_heap_o_reserve_1 (vec, reserve,
+			       offsetof (struct vec_prefix, vec),
+			       sizeof (void *), false
+			       PASS_MEM_STAT);
+}
+
+/* As for vec_gc_p_reserve_exact, but for heap allocated vectors.  */
+
+void *
+vec_heap_p_reserve_exact (void *vec, int reserve MEM_STAT_DECL)
+{
+  return vec_heap_o_reserve_1 (vec, reserve,
+			       offsetof (struct vec_prefix, vec),
+			       sizeof (void *), true
+			       PASS_MEM_STAT);
+}
+
+/* As for vec_gc_o_reserve, but for heap allocated vectors.  */
+
+void *
+vec_heap_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
+		    MEM_STAT_DECL)
+{
+  return vec_heap_o_reserve_1 (vec, reserve, vec_offset, elt_size, false
+			       PASS_MEM_STAT);
+}
+
+/* As for vec_gc_o_reserve_exact, but for heap allocated vectors.  */
+
+void *
+vec_heap_o_reserve_exact (void *vec, int reserve, size_t vec_offset,
+			  size_t elt_size MEM_STAT_DECL)
+{
+  return vec_heap_o_reserve_1 (vec, reserve, vec_offset, elt_size, true
+			       PASS_MEM_STAT);
 }
 
 #if ENABLE_CHECKING

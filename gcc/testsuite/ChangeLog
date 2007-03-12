@@ -1,3 +1,50 @@
+2007-03-11  Ian Lance Taylor  <iant@google.com>
+
+	Backported -fstrict-overflow/-Wstrict-overflow from mainline:
+	2007-03-08  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/no-strict-overflow-5.c: New test.
+	* gcc.dg/no-strict-overflow-6.c: New test.
+
+	2007-02-13  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wstrict-overflow-1.c: New test.
+	* gcc.dg/Wstrict-overflow-2.c: New test.
+	* gcc.dg/Wstrict-overflow-3.c: New test.
+	* gcc.dg/Wstrict-overflow-4.c: New test.
+	* gcc.dg/Wstrict-overflow-6.c: New test.
+	* gcc.dg/Wstrict-overflow-7.c: New test.
+	* gcc.dg/Wstrict-overflow-8.c: New test.
+	* gcc.dg/Wstrict-overflow-9.c: New test.
+	* gcc.dg/Wstrict-overflow-10.c: New test.
+
+	2007-01-27  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/strict-overflow-1.c: New test.
+	* gcc.dg/no-strict-overflow-1.c: New test.
+	* gcc.dg/strict-overflow-2.c: New test.
+	* gcc.dg/no-strict-overflow-2.c: New test.
+	* gcc.dg/no-strict-overflow-3.c: New test.
+	* gcc.dg/strict-overflow-4.c: New test.
+	* gcc.dg/no-strict-overflow-4.c: New test.
+	* gcc.dg/fold-mod-1.c: Add -fstrict-overflow option.
+	* gcc.dg/pr15784-1.c: Likewise.
+	* gcc.dg/pr20922-1.c: Likewise.
+	* gcc.dg/pr20922-3.c: Likewise.
+	* gcc.dg/pr20922-4.c: Likewise.
+	* gcc.dg/pr20922-6.c: Likewise.
+	* gcc.dg/compare-4.c: Likewise.
+	* gcc.dg/torture/pr26898-1.c: Likewise.
+	* gcc.dg/tree-ssa/divide-1.c: Likewise.
+	* gcc.dg/tree-ssa/divide-2.c: Likewise.
+	* gcc.dg/tree-ssa/divide-3.c: Likewise.
+	* gcc.dg/tree-ssa/divide-4.c: Likewise.
+	* gcc.dg/tree-ssa/pr14490-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr14490-3.c: Likewise.
+	* gcc.dg/tree-ssa/pr21082.c: Likewise.
+	* gcc.dg/tree-ssa/pr26899.c: Likewise.
+	* g++.dg/tree-ssa/pr21082.C: Likewise.
+
 2007-03-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/31038
@@ -55,7 +102,6 @@
 	* g++.dg/opt/complex6.C: New test.
 
 2007-03-09  Mark Shinwell  <shinwell@codesourcery.com>
-
 	    Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/pr16194.c: Skip test entirely if we don't know the name of

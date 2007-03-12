@@ -1,5 +1,5 @@
 /* SSA Jump Threading
-   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Jeff Law  <law@redhat.com>
 
 This file is part of GCC.
@@ -211,7 +211,8 @@ record_temporary_equivalences_from_phis (edge e, VEC(tree, heap) **stack)
 static tree
 record_temporary_equivalences_from_stmts_at_dest (edge e,
 						  VEC(tree, heap) **stack,
-						  tree (*simplify) (tree))
+						  tree (*simplify) (tree,
+								    tree))
 {
   block_stmt_iterator bsi;
   tree stmt = NULL;
@@ -315,7 +316,7 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	      cached_lhs = fold (pre_fold_expr);
 	      if (TREE_CODE (cached_lhs) != SSA_NAME
 		  && !is_gimple_min_invariant (cached_lhs))
-	        cached_lhs = (*simplify) (stmt);
+	        cached_lhs = (*simplify) (stmt, stmt);
 	    }
 
 	  /* Restore the statement's original uses/defs.  */
@@ -353,7 +354,7 @@ static tree
 simplify_control_stmt_condition (edge e,
 				 tree stmt,
 				 tree dummy_cond,
-				 tree (*simplify) (tree),
+				 tree (*simplify) (tree, tree),
 				 bool handle_dominating_asserts)
 {
   tree cond, cached_lhs;
@@ -425,16 +426,21 @@ simplify_control_stmt_condition (edge e,
 
       /* We absolutely do not care about any type conversions
          we only care about a zero/nonzero value.  */
+      fold_defer_overflow_warnings ();
+
       cached_lhs = fold (COND_EXPR_COND (dummy_cond));
       while (TREE_CODE (cached_lhs) == NOP_EXPR
 	     || TREE_CODE (cached_lhs) == CONVERT_EXPR
 	     || TREE_CODE (cached_lhs) == NON_LVALUE_EXPR)
 	cached_lhs = TREE_OPERAND (cached_lhs, 0);
-	    
+
+      fold_undefer_overflow_warnings (is_gimple_min_invariant (cached_lhs),
+				      stmt, WARN_STRICT_OVERFLOW_CONDITIONAL);
+
       /* If we have not simplified the condition down to an invariant,
 	 then use the pass specific callback to simplify the condition.  */
       if (! is_gimple_min_invariant (cached_lhs))
-	cached_lhs = (*simplify) (dummy_cond);
+	cached_lhs = (*simplify) (dummy_cond, stmt);
     }
 
   /* We can have conditionals which just test the state of a variable
@@ -461,7 +467,7 @@ simplify_control_stmt_condition (edge e,
       /* If we haven't simplified to an invariant yet, then use the
 	 pass specific callback to try and simplify it further.  */
       if (cached_lhs && ! is_gimple_min_invariant (cached_lhs))
-        cached_lhs = (*simplify) (stmt);
+        cached_lhs = (*simplify) (stmt, stmt);
     }
   else
     cached_lhs = NULL;
@@ -489,7 +495,7 @@ thread_across_edge (tree dummy_cond,
 		    edge e,
 		    bool handle_dominating_asserts,
 		    VEC(tree, heap) **stack,
-		    tree (*simplify) (tree))
+		    tree (*simplify) (tree, tree))
 {
   tree stmt;
 

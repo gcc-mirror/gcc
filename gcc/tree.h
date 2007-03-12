@@ -1160,9 +1160,6 @@ extern void omp_clause_range_check_failed (const tree, const char *, int,
 /* In integral and pointer types, means an unsigned type.  */
 #define TYPE_UNSIGNED(NODE) (TYPE_CHECK (NODE)->common.unsigned_flag)
 
-#define TYPE_TRAP_SIGNED(NODE) \
-  (flag_trapv && ! TYPE_UNSIGNED (NODE))
-
 /* Nonzero in a VAR_DECL means assembler code has been written.
    Nonzero in a FUNCTION_DECL means that the function has been compiled.
    This is interesting in an inline function, since it might not need
@@ -3628,6 +3625,7 @@ extern int tree_int_cst_msb (tree);
 extern int tree_int_cst_sgn (tree);
 extern int tree_int_cst_sign_bit (tree);
 extern int tree_expr_nonnegative_p (tree);
+extern int tree_expr_nonnegative_warnv_p (tree, bool *);
 extern bool may_negate_without_overflow_p (tree);
 extern tree get_inner_array_type (tree);
 
@@ -4227,6 +4225,10 @@ extern tree fold_single_bit_test (enum tree_code, tree, tree, tree);
 extern tree fold_ignored_result (tree);
 extern tree fold_abs_const (tree, tree);
 extern tree fold_indirect_ref_1 (tree, tree);
+extern void fold_defer_overflow_warnings (void);
+extern void fold_undefer_overflow_warnings (bool, tree, int);
+extern void fold_undefer_and_ignore_overflow_warnings (void);
+extern bool fold_deferring_overflow_warnings_p (void);
 
 extern tree force_fit_type (tree, int, bool, bool);
 
@@ -4296,6 +4298,7 @@ extern bool ptr_difference_const (tree, tree, HOST_WIDE_INT *);
 extern enum tree_code invert_tree_comparison (enum tree_code, bool);
 
 extern bool tree_expr_nonzero_p (tree);
+extern bool tree_expr_nonzero_warnv_p (tree, bool *);
 
 /* In builtins.c */
 extern tree fold_builtin (tree, tree, bool);

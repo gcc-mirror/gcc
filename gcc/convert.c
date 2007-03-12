@@ -665,11 +665,10 @@ convert_to_integer (tree type, tree expr)
 			   PLUS_EXPR or MINUS_EXPR in an unsigned
 			   type.  Otherwise, we would introduce
 			   signed-overflow undefinedness.  */
-			|| (!flag_wrapv
+			|| ((!TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0))
+			     || !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1)))
 			    && (ex_form == PLUS_EXPR
-				|| ex_form == MINUS_EXPR)
-			    && (!TYPE_UNSIGNED (TREE_TYPE (arg0))
-				|| !TYPE_UNSIGNED (TREE_TYPE (arg1)))))
+				|| ex_form == MINUS_EXPR)))
 		      typex = lang_hooks.types.unsigned_type (typex);
 		    else
 		      typex = lang_hooks.types.signed_type (typex);

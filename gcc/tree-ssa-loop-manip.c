@@ -1,5 +1,5 @@
 /* High-level loop manipulation functions.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    
 This file is part of GCC.
    
@@ -85,7 +85,9 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
 	}
       else
 	{
-	  if (!tree_expr_nonnegative_p (step)
+	  bool ovf;
+
+	  if (!tree_expr_nonnegative_warnv_p (step, &ovf)
 	      && may_negate_without_overflow_p (step))
 	    {
 	      incr_op = MINUS_EXPR;

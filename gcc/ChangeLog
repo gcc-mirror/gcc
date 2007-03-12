@@ -1,3 +1,238 @@
+2007-03-11  Ian Lance Taylor  <iant@google.com>
+
+	Backport -fstrict-overflow/-Wstrict-overflow from mainline:
+	2007-03-11  Ian Lance Taylor  <iant@google.com>
+
+	* tree-vrp.c (vrp_int_const_binop): Handle PLUS_EXPR and
+	the *_DIV_EXPR codes correctly with overflow infinities.
+
+	2007-03-09  Ian Lance Taylor  <iant@google.com>
+
+	* opts.c (common_handle_option): Treat -Wstrict-overflow (with no
+	argument) like -Wstrict-overflow=2.
+	* doc/invoke.texi (Warning Options): Update documentation.
+
+	2007-03-08  Ian Lance Taylor  <iant@google.com>
+
+	* tree-vrp.c: Include "toplev.h" and "intl.h".
+	(usable_range_p): New static function.
+	(compare_values_warnv): Don't test TYPE_OVERFLOW_UNDEFINED for
+	overflowed values, juts set *strict_overflow_p.
+	(compare_values): Only return -2 if one of the operands is not a
+	constant.
+	(compare_ranges): Call usable_range_p.
+	(compare_range_with_value): Likewise.
+	(vrp_evaluate_conditional_warnv): Rename from
+	vrp_evaluate_conditional.  Make static.  Change all callers.
+	(vrp_evaluate_conditional): New function.
+	(simplify_div_or_mod_using_ranges): Issue warning about reliance
+	on signed overflow.
+	(simplify_abs_using_ranges): Likewise.
+	(simplify_stmt_for_jump_threading): Add within_stmt parameter.
+	* tree-ssa-dom.c (simplify_stmt_for_jump_threading): Add
+	within_stmt parameter.
+	* tree-ssa-propagate.c (fold_predicate_in): Update call to
+	vrp_evaluate_conditional.
+	* tree-ssa-threadedge.c
+	(record_temporary_equivalences_from_stmts_at_dest): Change
+	simplify parameter to take a second tree parameter.
+	(simplify_control_stmt_condition): Likewise.
+	(thread_across_edge): Likewise.
+	* tree-flow.h (vrp_evaluate_conditional): Update declaration.
+	(thread_across_edge): Likewise.
+	* gcc/Makefile.in (tree-vrp.o): Depend upon toplev.h and intl.h.
+
+	2007-03-05  Ian Lance Taylor  <iant@google.com>
+
+	* tree-vrp.c (extract_range_from_assert): Don't try to handle a
+	half-range if the other side is an overflow infinity.
+
+	2007-03-02  Ian Lance Taylor  <iant@google.com>
+
+	Used signed infinities in VRP.
+	* tree-vrp.c (uses_overflow_infinity): New static function.
+	(supports_overflow_infinity): New static function.
+	(make_overflow_infinity): New static function.
+	(negative_overflow_infinity): New static function.
+	(positive_overflow_infinity): New static function.
+	(is_negative_overflow_infinity): New static function.
+	(is_positive_overflow_infinity): New static function.
+	(is_overflow_infinity): New static function.
+	(overflow_infinity_range_p): New static function.
+	(compare_values_warnv): New function split out of compare_values.
+	(compare_value): Call it.
+	(set_value_range_to_nonnegative): Add overflow_infinity
+	parameter.  Change caller.
+	(vrp_expr_computes_nonnegative): Add strict_overflow_p parameter.
+	Change callers.
+	(vrp_expr_computes_nonzero): Likewise.
+	(compare_ranges, compare_range_with_value): Likewise.
+	(compare_name_with_value, compare_names): Likewise.
+	(vrp_evaluate_conditional): Likewise.
+	(set_value_range): Handle infinity
+	(vrp_operand_equal_p, operand_less_p): Likewise.
+	(extract_range_from_assert): Likewise.
+	(vrp_int_const_binop): Likewise.
+	(extract_range_from_binary_expr): Likewise.
+	(extract_range_from_unary_expr): Likewise.
+	(extract_range_from_comparison): Likewise.
+	(extract_range_from_expr): Likewise.
+	(dump_value_range): Likewise.
+	(vrp_visit_cond_stmt, vrp_visit_phi_node): Likewise.
+	(test_for_singularity): Likewise.
+	(vrp_int_const_binop): Remove inline qualifier.
+	(adjust_range_with_scev): Add comment.
+	* tree-flow.h (vrp_evaluate_conditional): Update declaration.
+
+	2007-02-13  Ian Lance Taylor  <iant@google.com>
+
+	* common.opt: Add Wstrict-overflow and Wstrict-overflow=.
+	* flags.h (warn_strict_overflow): Declare.
+	(enum warn_strict_overflow_code): Define.
+	(issue_strict_overflow_warning): New static inline function.
+	* opts.c (warn_strict_overflow): New variable.
+	(common_handle_option): Handle OPT_Wstrict_overflow and
+	OPT_Wstrict_overflow_.
+	* c-opts.c (c_common_handle_option): Set warn_strict_overflow for
+	OPT_Wall.
+	* fold-const.c: Include intl.h.
+	(fold_deferring_overflow_warnings): New static variable.
+	(fold_deferred_overflow_warning): New static variable.
+	(fold_deferred_overflow_code): New static variable.
+	(fold_defer_overflow_warnings): New function.
+	(fold_undefer_overflow_warnings): New function.
+	(fold_undefer_and_ignore_overflow_warnings): New function.
+	(fold_deferring_overflow_warnings_p): New function.
+	(fold_overflow_warning): New static function.
+	(make_range): Add strict_overflow_p parameter.  Change all
+	callers.
+	(extract_muldiv, extract_muldiv_1): Likewise.
+	(fold_unary) [ABS_EXPR]: Check ABS_EXPR before calling
+	tree_expr_nonnegative_p.
+	(fold_negate_expr): Call fold_overflow_warning.
+	(fold_range_test): Likewise.
+	(fold_comparison): Likewise.
+	(fold_binary): Likewise.  Call tree_expr_nonnegative_warnv_p
+	instead of tree_expr_nonnegative_p.
+	(tree_expr_nonnegative_warnv_p): Rename from
+	tree_expr_nonnegative_p, add strict_overflow_p parameter.
+	(tree_expr_nonnegative_p): New function.
+	(tree_expr_nonzero_warnv_p): Rename from tree_expr_nonzero_p, add
+	strict_overflow_p parameter.
+	(tree_expr_nonzero_p): New function.
+	* passes.c (verify_interpass_invariants): New static function.
+	(execute_one_pass): Call it.
+	* tree-ssa-loop-niter.c (expand_simple_operations): Ignore fold
+	warnings.
+	(number_of_iterations_exit, loop_niter_by_eval): Likewise.
+	(estimate_numbers_of_iterations): Likewise.
+	(scev_probably_wraps_p): Likewise.
+	* tree-ssa-ccp.c: Include "toplev.h".
+	(evaluate_stmt): Defer fold overflow warnings until we know we are
+	going to optimize.
+	(struct fold_stmt_r_data): Add stmt field.
+	(fold_stmt_r): Defer fold overflow warnings until we know we
+	optimized.
+	(fold_stmt): Initialize stmt field of fold_stmt_r_data.
+	(fold_stmt_inplace): Likewise.
+	* tree-cfgcleanup.c: Include "toplev.h" rather than "errors.h".
+	(cleanup_control_expr_graph): Defer fold overflow warnings until
+	we know we are going to optimize.
+	* tree-cfg.c (fold_cond_expr_cond): Likewise.
+	* tree-ssa-threadedge.c (simplify_control_stmt_condition):
+	Likewise.
+	* tree-vrp.c (vrp_expr_computes_nonnegative): Call
+	tree_expr_nonnegative_warnv_p instead of tree_expr_nonnegative_p.
+	* tree-ssa-loop-manip.c (create_iv): Likewise.
+	* c-typeck.c (build_conditional_expr): Likewise.
+	(build_binary_op): Likewise.
+	* tree-vrp.c (vrp_expr_computes_nonzero): Call
+	tree_expr_nonzero_warnv_p instead of tree_expr_nonzero_p.
+	(extract_range_from_unary_expr): Likewise.
+	* simplify-rtx.c (simplify_const_relational_operation): Warn when
+	assuming that signed overflow does not occur.
+	* c-common.c (pointer_int_sum): Ignore fold overflow warnings.
+	* tree.h (tree_expr_nonnegative_warnv_p): Declare.
+	(fold_defer_overflow_warnings): Declare.
+	(fold_undefer_overflow_warnings): Declare.
+	(fold_undefer_and_ignore_overflow_warnings): Declare.
+	(fold_deferring_overflow_warnings_p): Declare.
+	(tree_expr_nonzero_warnv_p): Declare.
+	* doc/invoke.texi (Option Summary): Add -Wstrict-overflow to list
+	of warning options.
+	(Warning Options): Document -Wstrict-overflow.
+	* Makefile.in (tree-ssa-threadedge.o): Depend on toplev.h.
+	(tree-ssa-ccp.o): Likewise.
+	(tree-cfgcleanup.o): Change errors.h dependency to toplev.h.
+	(fold-const.o): Depend on intl.h.
+
+	2007-01-27  Ian Lance Taylor  <iant@google.com>
+
+	* common.opt: Add fstrict-overflow.
+	* opts.c (decode_options): Set flag_strict_overflow if -O2.
+	* flags.h (TYPE_OVERFLOW_WRAPS): Define.
+	(TYPE_OVERFLOW_UNDEFINED): Define.
+	(TYPE_OVERFLOW_TRAPS): Define.  This replaces TYPE_TRAP_SIGNED.
+	Replace all uses.
+	* tree.h (TYPE_TRAP_SIGNED): Don't define.
+	* fold-const.c (negate_expr_p): Use TYPE_OVERFLOW_UNDEFINED.
+	(fold_negate_expr): Likewise.
+	(make_range): Likewise.
+	(extract_muldiv_1): Likewise.
+	(fold_comparison): Likewise.
+	(fold_binary): Likewise.
+	(tree_expr_nonnegative_p): Likewise.
+	(tree_expr_nonzero_p): Likewise.
+	* tree-vrp.c (compare_values): Likewise.
+	(extract_range_from_binary_expr): Likewise.
+	(extract_range_from_unary_expr): Likewise.
+	* tree-ssa-loop-niter.c (infer_loop_bounds_from_undefined):
+	Likewise.
+	(nowrap_type_p): Likewise.
+	* tree-scalar-evolution.c (simple_iv): Likewise.
+	* fold-const.c (negate_expr_p): Use TYPE_OVERFLOW_WRAPS.
+	(build_range_check): Likewise.
+	(extract_muldiv_1): Likewise.
+	(fold_comparison): Likewise.
+	* tree-vrp.c (vrp_int_const_binop): Likewise.
+	(extract_range_from_unary_expr): Likewise.
+	* convert.c (convert_to_integer): Likewise.
+	* fold-const.c (fold_negate_expr): Use TYPE_OVERFLOW_TRAPS.
+	(fold_comparison): Likewise.
+	(fold_binary): Likewise.
+	* optabs.c (optab_for_tree_code): Likewise.
+	* tree-vectorizer.c (vect_is_simple_reduction): Likewise.
+	* simplify-rtx.c (simplify_const_relational_operation): Check
+	flag_strict_overflow and flag_trapv.
+	(simplify_const_relational_operation): Likewise.
+	* doc/invoke.texi (Option Summary): Mention -fstrict-overflow.
+	(Optimize Options): Add -fstrict-overflow to -O2 list.  Document
+	-fstrict-overflow.
+
+	2007-01-17  Ian Lance Taylor  <iant@google.com>
+
+	* vec.h (VEC_reserve_exact): Define.
+	(vec_gc_p_reserve_exact): Declare.
+	(vec_gc_o_reserve_exact): Declare.
+	(vec_heap_p_reserve_exact): Declare.
+	(vec_heap_o_reserve_exact): Declare.
+	(VEC_OP (T,A,reserve_exact)): New static inline function, three
+	versions.
+	(VEC_OP (T,A,reserve)) [all versions]: Remove handling of
+	negative parameter.
+	(VEC_OP (T,A,alloc)) [all versions]: Call ...reserve_exact.
+	(VEC_OP (T,A,copy)) [all versions]: Likewise.
+	(VEC_OP (T,a,safe_grow)) [all versions]: Likewise.
+	* vec.c (calculate_allocation): Add exact parameter.  Change all
+	callers.
+	(vec_gc_o_reserve_1): New static function, from vec_gc_o_reserve.
+	(vec_gc_p_reserve, vec_gc_o_reserve): Call vec_gc_o_reserve_1.
+	(vec_gc_p_reserve_exact, vec_gc_o_reserve_exact): New functions.
+	(vec_heap_o_reserve_1): New static function, from vec_heap_o_reserve.
+	(vec_heap_p_reserve, vec_heap_o_reserve): Call vec_heap_o_reserve_1.
+	(vec_heap_p_reserve_exact): New function.
+	(vec_heap_o_reserve_exact): New function.
+
 2007-03-11  Roger Sayle  <roger@eyesopen.com>
 	    Andrew Pinski  <andrew_pinski@playstation.sony.com>
 

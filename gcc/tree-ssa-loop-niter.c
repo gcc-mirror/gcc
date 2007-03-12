@@ -1,5 +1,5 @@
 /* Functions to determine/estimate number of iterations of a loop.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    
 This file is part of GCC.
    
@@ -737,7 +737,13 @@ expand_simple_operations (tree expr)
 	  TREE_OPERAND (ret, i) = ee;
 	}
 
-      return (ret ? fold (ret) : expr);
+      if (!ret)
+	return expr;
+
+      fold_defer_overflow_warnings ();
+      ret = fold (ret);
+      fold_undefer_and_ignore_overflow_warnings ();
+      return ret;
     }
 
   if (TREE_CODE (expr) != SSA_NAME)
@@ -1085,11 +1091,18 @@ number_of_iterations_exit (struct loop *loop, edge exit,
   if (!simple_iv (loop, stmt, op1, &iv1, false))
     return false;
 
+  /* We don't want to see undefined signed overflow warnings while
+     computing the nmber of iterations.  */
+  fold_defer_overflow_warnings ();
+
   iv0.base = expand_simple_operations (iv0.base);
   iv1.base = expand_simple_operations (iv1.base);
   if (!number_of_iterations_cond (type, &iv0, code, &iv1, niter,
 				  loop_only_exit_p (loop, exit)))
-    return false;
+    {
+      fold_undefer_and_ignore_overflow_warnings ();
+      return false;
+    }
 
   if (optimize >= 3)
     {
@@ -1109,6 +1122,8 @@ number_of_iterations_exit (struct loop *loop, edge exit,
 	  = simplify_using_initial_conditions (loop,
 					       niter->may_be_zero,
 					       &niter->additional_info);
+
+  fold_undefer_and_ignore_overflow_warnings ();
 
   if (integer_onep (niter->assumptions))
     return true;
@@ -1410,6 +1425,9 @@ loop_niter_by_eval (struct loop *loop, edge exit)
 	}
     }
 
+  /* Don't issue signed overflow warnings.  */
+  fold_defer_overflow_warnings ();
+
   for (i = 0; i < MAX_ITERATIONS_TO_TRACK; i++)
     {
       for (j = 0; j < 2; j++)
@@ -1418,6 +1436,7 @@ loop_niter_by_eval (struct loop *loop, edge exit)
       acnd = fold_binary (cmp, boolean_type_node, aval[0], aval[1]);
       if (acnd && zero_p (acnd))
 	{
+	  fold_undefer_and_ignore_overflow_warnings ();
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
 		     "Proved that loop %d iterates %d times using brute force.\n",
@@ -1429,9 +1448,14 @@ loop_niter_by_eval (struct loop *loop, edge exit)
 	{
 	  val[j] = get_val_for (next[j], val[j]);
 	  if (!is_gimple_min_invariant (val[j]))
-	    return chrec_dont_know;
+	    {
+	      fold_undefer_and_ignore_overflow_warnings ();
+	      return chrec_dont_know;
+	    }
 	}
     }
+
+  fold_undefer_and_ignore_overflow_warnings ();
 
   return chrec_dont_know;
 }
@@ -1755,7 +1779,7 @@ infer_loop_bounds_from_undefined (struct loop *loop)
 		    tree type = chrec_type (scev);
 
 		    if (chrec_contains_undetermined (scev)
-			|| TYPE_UNSIGNED (type))
+			|| TYPE_OVERFLOW_WRAPS (type))
 		      break;
 
 		    init = initial_condition_in_loop_num (scev, loop->num);
@@ -1865,12 +1889,18 @@ estimate_numbers_of_iterations (struct loops *loops)
   unsigned i;
   struct loop *loop;
 
+  /* We don't want to issue signed overflow warnings while getting
+     loop iteration estimates.  */
+  fold_defer_overflow_warnings ();
+
   for (i = 1; i < loops->num; i++)
     {
       loop = loops->parray[i];
       if (loop)
 	estimate_numbers_of_iterations_loop (loop);
     }
+
+  fold_undefer_and_ignore_overflow_warnings ();
 }
 
 /* Returns true if statement S1 dominates statement S2.  */
@@ -1940,9 +1970,8 @@ n_of_executions_at_most (tree stmt,
 bool
 nowrap_type_p (tree type)
 {
-  if (!flag_wrapv
-      && INTEGRAL_TYPE_P (type)
-      && !TYPE_UNSIGNED (type))
+  if (INTEGRAL_TYPE_P (type)
+      && TYPE_OVERFLOW_UNDEFINED (type))
     return true;
 
   if (POINTER_TYPE_P (type))
@@ -2000,6 +2029,9 @@ scev_probably_wraps_p (tree base, tree step,
   if (use_overflow_semantics && nowrap_type_p (type))
     return false;
 
+  /* Don't issue signed overflow warnings.  */
+  fold_defer_overflow_warnings ();
+
   /* Otherwise, compute the number of iterations before we reach the
      bound of the type, and verify that the loop is exited before this
      occurs.  */
@@ -2026,8 +2058,15 @@ scev_probably_wraps_p (tree base, tree step,
 
   estimate_numbers_of_iterations_loop (loop);
   for (bound = loop->bounds; bound; bound = bound->next)
-    if (n_of_executions_at_most (at_stmt, bound, valid_niter))
-      return false;
+    {
+      if (n_of_executions_at_most (at_stmt, bound, valid_niter))
+	{
+	  fold_undefer_and_ignore_overflow_warnings ();
+	  return false;
+	}
+    }
+
+  fold_undefer_and_ignore_overflow_warnings ();
 
   /* At this point we still don't have a proof that the iv does not
      overflow: give up.  */

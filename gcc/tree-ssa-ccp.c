@@ -1,5 +1,5 @@
 /* Conditional constant propagation pass for the GNU compiler.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Adapted from original RTL SSA-CCP by Daniel Berlin <dberlin@dberlin.org>
    Adapted to GIMPLE trees by Diego Novillo <dnovillo@redhat.com>
@@ -209,6 +209,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"
 #include "target.h"
+#include "toplev.h"
 
 
 /* Possible lattice values.  */
@@ -1121,8 +1122,11 @@ evaluate_stmt (tree stmt)
   prop_value_t val;
   tree simplified = NULL_TREE;
   ccp_lattice_t likelyvalue = likely_value (stmt);
+  bool is_constant;
 
   val.mem_ref = NULL_TREE;
+
+  fold_defer_overflow_warnings ();
 
   /* If the statement is likely to have a CONSTANT result, then try
      to fold the statement to determine the constant value.  */
@@ -1140,7 +1144,11 @@ evaluate_stmt (tree stmt)
   else if (!simplified)
     simplified = fold_const_aggregate_ref (get_rhs (stmt));
 
-  if (simplified && is_gimple_min_invariant (simplified))
+  is_constant = simplified && is_gimple_min_invariant (simplified);
+
+  fold_undefer_overflow_warnings (is_constant, stmt, 0);
+
+  if (is_constant)
     {
       /* The statement produced a constant value.  */
       val.lattice_val = CONSTANT;
@@ -1950,8 +1958,9 @@ maybe_fold_stmt_addition (tree expr)
 
 struct fold_stmt_r_data
 {
-    bool *changed_p;
-    bool *inside_addr_expr_p;
+  tree stmt;
+  bool *changed_p;
+  bool *inside_addr_expr_p;
 };
 
 /* Subroutine of fold_stmt called via walk_tree.  We perform several
@@ -2047,9 +2056,16 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
       if (COMPARISON_CLASS_P (TREE_OPERAND (expr, 0)))
         {
 	  tree op0 = TREE_OPERAND (expr, 0);
-          tree tem = fold_binary (TREE_CODE (op0), TREE_TYPE (op0),
-				  TREE_OPERAND (op0, 0), TREE_OPERAND (op0, 1));
-	  if (tem && is_gimple_condexpr (tem))
+	  tree tem;
+	  bool set;
+
+	  fold_defer_overflow_warnings ();
+	  tem = fold_binary (TREE_CODE (op0), TREE_TYPE (op0),
+			     TREE_OPERAND (op0, 0),
+			     TREE_OPERAND (op0, 1));
+	  set = tem && is_gimple_condexpr (tem);
+	  fold_undefer_overflow_warnings (set, fold_stmt_r_data->stmt, 0);
+	  if (set)
 	    TREE_OPERAND (expr, 0) = tem;
 	  t = expr;
           break;
@@ -2350,10 +2366,11 @@ fold_stmt (tree *stmt_p)
   bool changed = false;
   bool inside_addr_expr = false;
 
+  stmt = *stmt_p;
+
+  fold_stmt_r_data.stmt = stmt;
   fold_stmt_r_data.changed_p = &changed;
   fold_stmt_r_data.inside_addr_expr_p = &inside_addr_expr;
-
-  stmt = *stmt_p;
 
   /* If we replaced constants and the statement makes pointer dereferences,
      then we may need to fold instances of *&VAR into VAR, etc.  */
@@ -2442,6 +2459,7 @@ fold_stmt_inplace (tree stmt)
   bool changed = false;
   bool inside_addr_expr = false;
 
+  fold_stmt_r_data.stmt = stmt;
   fold_stmt_r_data.changed_p = &changed;
   fold_stmt_r_data.inside_addr_expr_p = &inside_addr_expr;
 

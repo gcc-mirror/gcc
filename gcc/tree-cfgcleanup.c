@@ -1,5 +1,6 @@
 /* CFG cleanup for trees.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,7 +29,7 @@ Boston, MA 02110-1301, USA.  */
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "output.h"
-#include "errors.h"
+#include "toplev.h"
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
@@ -78,6 +79,9 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
     {
       edge e;
       edge_iterator ei;
+      bool warned;
+
+      fold_defer_overflow_warnings ();
 
       switch (TREE_CODE (expr))
 	{
@@ -88,7 +92,10 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
 	case SWITCH_EXPR:
 	  val = fold (SWITCH_COND (expr));
 	  if (TREE_CODE (val) != INTEGER_CST)
-	    return false;
+	    {
+	      fold_undefer_and_ignore_overflow_warnings ();
+	      return false;
+	    }
 	  break;
 
 	default:
@@ -97,13 +104,24 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
 
       taken_edge = find_taken_edge (bb, val);
       if (!taken_edge)
-	return false;
+	{
+	  fold_undefer_and_ignore_overflow_warnings ();
+	  return false;
+	}
 
       /* Remove all the edges except the one that is always executed.  */
+      warned = false;
       for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
 	{
 	  if (e != taken_edge)
 	    {
+	      if (!warned)
+		{
+		  fold_undefer_overflow_warnings
+		    (true, expr, WARN_STRICT_OVERFLOW_CONDITIONAL);
+		  warned = true;
+		}
+
 	      taken_edge->probability += e->probability;
 	      taken_edge->count += e->count;
 	      remove_edge (e);
@@ -112,6 +130,8 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
 	  else
 	    ei_next (&ei);
 	}
+      if (!warned)
+	fold_undefer_and_ignore_overflow_warnings ();
       if (taken_edge->probability > REG_BR_PROB_BASE)
 	taken_edge->probability = REG_BR_PROB_BASE;
     }

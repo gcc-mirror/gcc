@@ -1,3 +1,11 @@
+2007-03-11  Ian Lance Taylor  <iant@google.com>
+
+	Backported -fstrict-overflow/-Wstrict-overflow from mainline:
+	2007-01-17  Ian Lance Taylor  <iant@google.com>
+
+	* class.c (add_method): Call VEC_reserve_exact rather than passing
+	a negative size to VEC_reserve.
+
 2007-03-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/31038

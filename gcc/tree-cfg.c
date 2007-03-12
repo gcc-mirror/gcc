@@ -432,10 +432,18 @@ fold_cond_expr_cond (void)
       if (stmt
 	  && TREE_CODE (stmt) == COND_EXPR)
 	{
-	  tree cond = fold (COND_EXPR_COND (stmt));
-	  if (integer_zerop (cond))
+	  tree cond;
+	  bool zerop, onep;
+
+	  fold_defer_overflow_warnings ();
+	  cond = fold (COND_EXPR_COND (stmt));
+	  zerop = integer_zerop (cond);
+	  onep = integer_onep (cond);
+	  fold_undefer_overflow_warnings (zerop || onep, stmt,
+					  WARN_STRICT_OVERFLOW_CONDITIONAL);
+	  if (zerop)
 	    COND_EXPR_COND (stmt) = boolean_false_node;
-	  else if (integer_onep (cond))
+	  else if (onep)
 	    COND_EXPR_COND (stmt) = boolean_true_node;
 	}
     }
