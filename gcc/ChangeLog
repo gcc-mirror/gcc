@@ -1,3 +1,9 @@
+2007-03-12  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/30835
+	* lambda-code.c (can_convert_to_perfect_nest): Check whether
+	bb_for_stmt is not NULL before accessing it.
+
 2007-03-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.c (main): Handle target_sysroot_hdrs_suffix being NULL for
@@ -33,9 +39,9 @@
 
 2007-03-12  Richard Henderson  <rth@redhat.com>
 
-        * config/darwin.c (machopic_reloc_rw_mask): New.
-        * config/darwin-protos.h (machopic_reloc_rw_mask): Declare.
-        * config/darwin.h (TARGET_ASM_RELOC_RW_MASK): New.
+	* config/darwin.c (machopic_reloc_rw_mask): New.
+	* config/darwin-protos.h (machopic_reloc_rw_mask): Declare.
+	* config/darwin.h (TARGET_ASM_RELOC_RW_MASK): New.
 
 2007-03-12  Mark Mitchell  <mark@codesourcery.com>
 

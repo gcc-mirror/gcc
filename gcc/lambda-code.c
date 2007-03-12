@@ -2363,8 +2363,9 @@ can_convert_to_perfect_nest (struct loop *loop)
 			      {
 				tree arg_stmt = SSA_NAME_DEF_STMT (arg);
 
-				if (bb_for_stmt (arg_stmt)->loop_father
-				    == loop->inner)
+				if (bb_for_stmt (arg_stmt)
+				    && (bb_for_stmt (arg_stmt)->loop_father
+					== loop->inner))
 				  goto fail;
 			      }
 			  }
