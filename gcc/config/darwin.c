@@ -1172,6 +1172,12 @@ darwin_mergeable_constant_section (tree exp,
   return readonly_data_section;
 }
 
+int
+machopic_reloc_rw_mask (void)
+{
+  return MACHOPIC_INDIRECT ? 3 : 0;
+}
+
 section *
 machopic_select_section (tree decl,
 			 int reloc,
