@@ -1,3 +1,12 @@
+2007-03-12  Richard Henderson  <rth@redhat.com>
+
+        PR target/26090
+	* config/alpha/alpha.c (alpha_elf_select_section): New.
+	(alpha_elf_unique_section, alpha_elf_section_type_flags): New.
+	(alpha_elf_select_rtx_section): Force flag_pic true.
+	(TARGET_ASM_SELECT_SECTION, TARGET_ASM_UNIQUE_SECTION): New.
+	(TARGET_SECTION_TYPE_FLAGS): New.
+
 2007-03-12  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/29925
