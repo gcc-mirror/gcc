@@ -735,9 +735,10 @@ gcc-extra-parts:
 all: $(extra-parts)
 
 # Documentation targets (empty).
-.PHONY: info html dvi pdf install-html install-pdf
+.PHONY: info html dvi pdf install-info install-html install-pdf
 
 info:
+install-info:
 html:
 install-html:
 dvi:
