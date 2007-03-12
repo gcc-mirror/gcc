@@ -52,8 +52,16 @@ extern const struct default_include cpp_include_defaults[];
 extern const char cpp_GCC_INCLUDE_DIR[];
 extern const size_t cpp_GCC_INCLUDE_DIR_len;
 
+/* The configure-time prefix, i.e., the value supplied as the argument
+   to --prefix=.  */
 extern const char cpp_PREFIX[];
+/* The length of the configure-time prefix.  */
 extern const size_t cpp_PREFIX_len;
+/* The configure-time execution prefix.  This is typically the lib/gcc
+   subdirectory of cpp_PREFIX.  */
+extern const char cpp_EXEC_PREFIX[];
+/* The run-time execution prefix.  This is typically the lib/gcc
+   subdirectory of the actual installation.  */
 extern const char *gcc_exec_prefix;
 
 /* Return true if the toolchain is relocated.  */

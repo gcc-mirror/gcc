@@ -1,3 +1,13 @@
+2007-03-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* cppdefault.c (cpp_EXEC_PREFIX): New variable.
+	* cppdefault.h (cpp_PREFIX): Document.
+	(cpp_PREFIX_len): Likewise.
+	(cpp_EXEC_PREFIX): New variable.
+	* Makefile.in (PREPROCESSOR_DEFINES): Add STANDARD_EXEC_PREFIX.
+	* c-incpath.c (add_standard_paths): Correct logic for relocating
+	paths within prefix.
+
 2007-03-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (fixuns_trunc<mode>hi2): Implement from

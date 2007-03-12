@@ -112,6 +112,7 @@ const size_t cpp_GCC_INCLUDE_DIR_len = 0;
 /* The configured prefix.  */
 const char cpp_PREFIX[] = PREFIX;
 const size_t cpp_PREFIX_len = sizeof PREFIX - 1;
+const char cpp_EXEC_PREFIX[] = STANDARD_EXEC_PREFIX;
 
 /* This value is set by cpp_relocated at runtime */
 const char *gcc_exec_prefix;
