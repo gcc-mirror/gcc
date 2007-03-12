@@ -17,6 +17,8 @@
 /* FreeBSD before version 5 doesn't have the entire C99 runtime. */
 #elif defined(__netware__)
 /* NetWare doesn't have the entire C99 runtime.  */
+#elif defined(__vxworks)
+/* VxWorks doesn't have a full C99 time.  (cabs is missing, for example.)  */
 #elif (defined(__APPLE__) && defined(__ppc__) \
        && ! defined (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__))
 /* MacOS versions before 10.3 don't have many C99 functions.  
