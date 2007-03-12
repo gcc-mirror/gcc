@@ -1,3 +1,15 @@
+2007-03-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (fixuns_trunc<mode>hi2): Implement from
+	fixuns_truncsfhi2 and fixuns_truncdfhi2 using SSEMODEF
+	mode macro.
+	(fix_trunc<mode>di_sse): Implement from fix_truncsfdi_sse and
+	fix_truncdfdi_sse using SSEMODEF mode macro.
+	(fix_trunc<mode>si_sse): Implement from fix_truncsfsi_sse and
+	fix_truncdfsi_sse using SSEMODEF mode macro.
+	(fix_trunc?f?i_sse peephole2): Implement using SSEMODEF mode macro.
+	(fix_trunc?f?i_sse K8 peephole2): Fix register constraint.
+
 2007-03-12  Richard Sandiford  <richard@codesourcery.com>
 
 	* config.gcc (i[4567]86-wrs-vxworks, i[4567]86-wrs-vxworksae): Add
