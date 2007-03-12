@@ -1,3 +1,8 @@
+2007-03-12  Kyle Galloway  <kgallowa@redhat.com>
+
+	* jvmti.cc (_Jv_JVMTI_GetArgumentsSize): Make wide type arrays count
+	as a sigle slot.
+
 2007-03-12  Marco Trudel  <mtrudel@gmx.ch>
 
 	* java/lang/natString.cc (getBytes (jstring enc)):
