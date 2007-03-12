@@ -347,6 +347,60 @@ struct tree_opt_pass pass_insn_locators_initialize =
   0                                     /* letter */
 };
 
+static unsigned int
+into_cfg_layout_mode (void)
+{
+  cfg_layout_initialize (0);
+  return 0;
+}
+
+static unsigned int
+outof_cfg_layout_mode (void)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    if (bb->next_bb != EXIT_BLOCK_PTR)
+      bb->aux = bb->next_bb;
+
+  cfg_layout_finalize ();
+
+  return 0;
+}
+
+struct tree_opt_pass pass_into_cfg_layout_mode =
+{
+  "into_cfglayout",                     /* name */
+  NULL,                                 /* gate */
+  into_cfg_layout_mode,                 /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  0                                     /* letter */
+};
+
+struct tree_opt_pass pass_outof_cfg_layout_mode =
+{
+  "outof_cfglayout",                    /* name */
+  NULL,                                 /* gate */
+  outof_cfg_layout_mode,                /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  0                                     /* letter */
+};
 
 /* For each lexical block, set BLOCK_NUMBER to the depth at which it is
    found in the block tree.  */

@@ -344,6 +344,9 @@ extern struct tree_opt_pass pass_profiling;
 extern struct tree_opt_pass pass_rtl_ifcvt;
 extern struct tree_opt_pass pass_tracer;
 
+extern struct tree_opt_pass pass_into_cfg_layout_mode;
+extern struct tree_opt_pass pass_outof_cfg_layout_mode;
+
 extern struct tree_opt_pass pass_loop2;
 extern struct tree_opt_pass pass_rtl_loop_init;
 extern struct tree_opt_pass pass_rtl_move_loop_invariants;

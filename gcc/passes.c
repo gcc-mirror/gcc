@@ -658,6 +658,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_initial_value_sets);
       NEXT_PASS (pass_unshare_all_rtl);
       NEXT_PASS (pass_instantiate_virtual_regs);
+      NEXT_PASS (pass_into_cfg_layout_mode);
       NEXT_PASS (pass_jump2);
       NEXT_PASS (pass_lower_subreg);
       NEXT_PASS (pass_cse);
@@ -665,6 +666,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_gcse);
       NEXT_PASS (pass_jump_bypass);
       NEXT_PASS (pass_rtl_ifcvt);
+      NEXT_PASS (pass_outof_cfg_layout_mode);
       NEXT_PASS (pass_tracer);
       /* Perform loop optimizations.  It might be better to do them a bit
 	 sooner, but we want the profile feedback to work more
