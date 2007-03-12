@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -fpic -ftls-model=global-dynamic" } */
 
 extern __thread long e1;

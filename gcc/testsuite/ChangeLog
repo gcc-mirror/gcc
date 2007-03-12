@@ -1,3 +1,27 @@
+2007-03-12  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.c-torture/compile/981006-1.c: Use the non-PIC options if
+	PIC is not supported.
+	* gcc.dg/20020103-1.c: Add dg-require-effective-target fpic.
+	* gcc.dg/20020426-2.c: Likewise.
+	* gcc.dg/pr28243.c: Likewise.
+	* gcc.dg/visibility-11.c: Likewise.
+	* gcc.dg/tls/opt-9.c: Likewise.
+	* gcc.dg/tls/opt-10.c: Likewise.
+	* gcc.dg/tls/pic-1.c: Likewise.
+	* gcc.dg/tls/struct-1.c: Likewise.
+	* gcc.target/i386/20000807-1.c: Likewise.
+	* gcc.target/i386/20000904-1.c: Likewise.
+	* gcc.target/i386/20011119-1.c: Likewise.
+	* gcc.target/i386/990213-2.c: Likewise.
+	* gcc.target/i386/990214-1.c: Likewise.
+	* gcc.target/i386/compress-float-387-pic.c: Likewise.
+	* gcc.target/i386/compress-float-sse-pic.c: Likewise.
+	* gcc.target/i386/pic-1.c: Likewise.
+	* gcc.target/i386/pr21518.c: Likewise.
+	* gcc.target/i386/pr23098.c: Likewise.
+	* gcc.target/i386/pr23943.c: Likewise.
+
 2007-03-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/31038

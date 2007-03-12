@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fPIC -fno-tree-pre" } */
 /* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target fpic } */
 
 extern void __attribute__ ((regparm (3)))
 drawPointsLines (char type, int first, int *dd);
