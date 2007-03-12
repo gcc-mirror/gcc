@@ -167,11 +167,26 @@ add_standard_paths (const char *sysroot, const char *iprefix,
 	  else if (!p->add_sysroot && relocated
 		   && strncmp (p->fname, cpp_PREFIX, cpp_PREFIX_len) == 0)
 	    {
-	      /* If the compiler is relocated, and this is a configured 
-		 prefix relative path, then we use gcc_exec_prefix instead 
-		 of the configured prefix.  */
-	      str = concat (gcc_exec_prefix, p->fname
-			      + cpp_PREFIX_len, NULL);
+ 	      static const char *relocated_prefix;
+	      /* If this path starts with the configure-time prefix, 
+		 but the compiler has been relocated, replace it 
+		 with the run-time prefix.  The run-time exec prefix
+		 is GCC_EXEC_PREFIX.  Compute the path from there back
+		 to the toplevel prefix.  */
+	      if (!relocated_prefix)
+		{
+		  char *dummy;
+		  /* Make relative prefix expects the first argument
+		     to be a program, not a directory.  */
+		  dummy = concat (gcc_exec_prefix, "dummy", NULL);
+		  relocated_prefix 
+		    = make_relative_prefix (dummy,
+					    cpp_EXEC_PREFIX,
+					    cpp_PREFIX);
+		}
+	      str = concat (relocated_prefix,
+			    p->fname + cpp_PREFIX_len, 
+			    NULL);
 	      str = update_path (str, p->component);
 	    }
 	  else

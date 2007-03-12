@@ -3210,6 +3210,7 @@ PREPROCESSOR_DEFINES = \
   -DCROSS_INCLUDE_DIR=\"$(CROSS_SYSTEM_HEADER_DIR)\" \
   -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
   -DPREFIX=\"$(prefix)\" \
+  -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc\" \
   @TARGET_SYSTEM_ROOT_DEFINE@
 
 cppdefault.o: cppdefault.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
