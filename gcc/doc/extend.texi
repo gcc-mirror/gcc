@@ -1654,10 +1654,11 @@ preprocessor macros @code{__GNUC_GNU_INLINE__} or
 @code{__GNUC_STDC_INLINE__} are defined.  @xref{Inline,,An Inline
 Function is As Fast As a Macro}.
 
-Note that since the first version of GCC to support C99 inline
-semantics is 4.3, earlier versions of GCC which accept this attribute
-effectively ignore it.  Its only effect is to disable warnings about
-using inline functions in C99 mode.
+Note that since the first version of GCC to support C99 inline semantics
+is 4.3, earlier versions of GCC which accept this attribute effectively
+assume that it is always present, whether or not it is given explicitly.
+In versions prior to 4.3, the only effect of explicitly including it is
+to disable warnings about using inline functions in C99 mode.
 
 @cindex @code{flatten} function attribute
 @item flatten

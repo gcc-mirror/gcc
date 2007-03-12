@@ -1,5 +1,10 @@
 2007-03-12  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* doc/extend.texi: Edit "gnu_inline" documentation.
+	* doc/invoke.texi: Edit "-fgnu89-inline" documentation.
+
+2007-03-12  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* doc/extend.texi: Fix cpp.info cross-reference.
 	* doc/invoke.texi: Fix cpp.info cross-reference.
 	* doc/passes.texi: Fix gcc.info cross-reference.
