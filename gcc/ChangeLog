@@ -1,3 +1,8 @@
+2007-03-12  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* doc/invoke.texi: Fix cpp.info cross-reference.
+	* doc/passes.texi: Fix gcc.info cross-reference.
+
 2007-03-12  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/30835
