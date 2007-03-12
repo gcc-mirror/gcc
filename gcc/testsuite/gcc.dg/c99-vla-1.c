@@ -5,7 +5,7 @@
 void
 tdef (int n)
 {
-  typedef int A[n];	/* { dg-bogus "forbids variable-size array" } */
+  typedef int A[n];	/* { dg-bogus "forbids variable length array" } */
   A a;
   A *p;
   p = &a;
