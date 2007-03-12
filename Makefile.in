@@ -11864,8 +11864,24 @@ maybe-info-fixincludes:
 @if fixincludes
 maybe-info-fixincludes: info-fixincludes
 
-# fixincludes doesn't support info.
-info-fixincludes:
+info-fixincludes: \
+    configure-fixincludes 
+	@: $(MAKE); $(unstage)
+	@[ -f ./fixincludes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in fixincludes" ; \
+	(cd $(HOST_SUBDIR)/fixincludes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          info) \
+	  || exit 1
 
 @endif fixincludes
 
@@ -11874,8 +11890,24 @@ maybe-dvi-fixincludes:
 @if fixincludes
 maybe-dvi-fixincludes: dvi-fixincludes
 
-# fixincludes doesn't support dvi.
-dvi-fixincludes:
+dvi-fixincludes: \
+    configure-fixincludes 
+	@: $(MAKE); $(unstage)
+	@[ -f ./fixincludes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in fixincludes" ; \
+	(cd $(HOST_SUBDIR)/fixincludes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          dvi) \
+	  || exit 1
 
 @endif fixincludes
 
@@ -11884,8 +11916,24 @@ maybe-pdf-fixincludes:
 @if fixincludes
 maybe-pdf-fixincludes: pdf-fixincludes
 
-# fixincludes doesn't support pdf.
-pdf-fixincludes:
+pdf-fixincludes: \
+    configure-fixincludes 
+	@: $(MAKE); $(unstage)
+	@[ -f ./fixincludes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in fixincludes" ; \
+	(cd $(HOST_SUBDIR)/fixincludes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          pdf) \
+	  || exit 1
 
 @endif fixincludes
 
@@ -11930,8 +11978,25 @@ maybe-install-info-fixincludes:
 @if fixincludes
 maybe-install-info-fixincludes: install-info-fixincludes
 
-# fixincludes doesn't support install-info.
-install-info-fixincludes:
+install-info-fixincludes: \
+    configure-fixincludes \
+    info-fixincludes 
+	@: $(MAKE); $(unstage)
+	@[ -f ./fixincludes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in fixincludes" ; \
+	(cd $(HOST_SUBDIR)/fixincludes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-info) \
+	  || exit 1
 
 @endif fixincludes
 
@@ -11940,8 +12005,25 @@ maybe-install-pdf-fixincludes:
 @if fixincludes
 maybe-install-pdf-fixincludes: install-pdf-fixincludes
 
-# fixincludes doesn't support install-pdf.
-install-pdf-fixincludes:
+install-pdf-fixincludes: \
+    configure-fixincludes \
+    pdf-fixincludes 
+	@: $(MAKE); $(unstage)
+	@[ -f ./fixincludes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in fixincludes" ; \
+	(cd $(HOST_SUBDIR)/fixincludes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
 
 @endif fixincludes
 
@@ -11977,8 +12059,24 @@ maybe-installcheck-fixincludes:
 @if fixincludes
 maybe-installcheck-fixincludes: installcheck-fixincludes
 
-# fixincludes doesn't support installcheck.
-installcheck-fixincludes:
+installcheck-fixincludes: \
+    configure-fixincludes 
+	@: $(MAKE); $(unstage)
+	@[ -f ./fixincludes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in fixincludes" ; \
+	(cd $(HOST_SUBDIR)/fixincludes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          installcheck) \
+	  || exit 1
 
 @endif fixincludes
 
