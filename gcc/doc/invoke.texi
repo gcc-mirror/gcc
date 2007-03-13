@@ -543,7 +543,7 @@ Objective-C and Objective-C++ Dialects}.
 -masm=@var{dialect}  -mno-fancy-math-387 @gol
 -mno-fp-ret-in-387  -msoft-float  -msvr3-shlib @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
--mpreferred-stack-boundary=@var{num} @gol
+-mpreferred-stack-boundary=@var{num} -mcx16 -msahf @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4a -m3dnow -mpopcnt -mabm @gol
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
@@ -10080,6 +10080,22 @@ perform runtime CPU detection must compile separate files for each
 supported architecture, using the appropriate flags.  In particular,
 the file containing the CPU detection code should be compiled without
 these options.
+
+@item -mcx16
+@opindex -mcx16
+This option will enable GCC to use CMPXCHG16B instruction in generated code.
+CMPXCHG16B allows for atomic operations on 128-bit double quadword (or oword)
+data types.  This is useful for high resolution counters that could be updated
+by multiple processors (or cores).  This instruction is generated as part of
+atomic built-in functions: see @ref{Atomic Builtins} for details.
+
+@item -msahf
+@opindex -msahf
+This option will enable GCC to use SAHF instruction in generated code.  Early
+Intel CPUs with Intel 64 lacked LAHF and SAHF instructions supported by AMD64
+until introduction of Pentium 4 G1 step in December 2005.  LAHF and SAHF are
+load and store instructions, respectively, for certain status flags.  These
+instructions are used for virtualization and floating-point condition handling.
 
 @item -mpush-args
 @itemx -mno-push-args

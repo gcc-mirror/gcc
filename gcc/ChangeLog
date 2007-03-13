@@ -1,3 +1,16 @@
+2007-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.opt (mcx16, msahf): New options.
+	* config/i386/i386.c (x86_cmpxchg16b, x86_sahf): Remove.
+	(ix86_tune_features) [X86_TUNE_USE_SAHF]: Enable for m_GENERIC.
+
+	* config/i386/driver-i386.c (bit_LAHF_LM): New define.
+	(host_detect_local_cpu): Detect cx16 and lahf_lm cpuid bits.
+	Output -mcx16 and -msahf options when corresponding bit is set.
+
+	* doc/invoke.texi (i386 and x86-64 Options): Document -mcx16
+	and -msahf options.
+
 2007-03-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.ac: Test for assembler tolerance to # 0 "".

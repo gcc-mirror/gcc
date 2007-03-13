@@ -221,6 +221,14 @@ which include popcnt and lzcnt instructions, for popcount and clz built-ins
 namely __builtin_popcount, __builtin_popcountl, __builtin_popcountll and
 __builtin_clz, __builtin_clzl, __builtin_clzll
 
+mcx16
+Target Report RejectNegative Var(x86_cmpxchg16b)
+Support code generation of cmpxchg16b instruction.
+
+msahf
+Target Report RejectNegative Var(x86_sahf)
+Support code generation of sahf instruction in 64bit x86-64 code
+
 msseregparm
 Target RejectNegative Mask(SSEREGPARM)
 Use SSE register passing conventions for SF and DF mode

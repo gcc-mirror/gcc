@@ -322,16 +322,13 @@ extern unsigned int ix86_arch_features[X86_ARCH_LAST];
 #define TARGET_XADD		ix86_arch_features[X86_ARCH_XADD]
 #define TARGET_BSWAP		ix86_arch_features[X86_ARCH_BSWAP]
 
+#define TARGET_CMPXCHG16B	x86_cmpxchg16b
+#define TARGET_SAHF		x86_sahf
+
 #define TARGET_FISTTP		(TARGET_SSE3 && TARGET_80387)
 
 extern int x86_prefetch_sse;
 #define TARGET_PREFETCH_SSE	x86_prefetch_sse
-
-extern int x86_cmpxchg16b;
-#define TARGET_CMPXCHG16B	x86_cmpxchg16b
-
-extern int x86_sahf;
-#define TARGET_SAHF		x86_sahf
 
 #define ASSEMBLER_DIALECT	(ix86_asm_dialect)
 

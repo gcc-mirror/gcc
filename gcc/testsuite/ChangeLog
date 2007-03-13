@@ -1,3 +1,7 @@
+2007-03-13  Uros Bizjak  <ubizjak@gmail.com>
+	
+	* testsuite/gcc.target/i386/cmpxchg16b-1.c: New test.
+
 2007-03-12  Seongbae Park <seongbae.park@gmail.com>
 
 	* gcc.dg/c90-vla-1.c: Reflect the change of the error message.
