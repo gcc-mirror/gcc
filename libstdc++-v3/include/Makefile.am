@@ -566,7 +566,6 @@ tr1_headers = \
 	${tr1_srcdir}/memory \
 	${tr1_srcdir}/random \
 	${tr1_srcdir}/random.tcc \
-	${tr1_srcdir}/ref_fwd.h \
 	${tr1_srcdir}/regex \
 	${tr1_srcdir}/stdarg.h \
 	${tr1_srcdir}/stdbool.h \
