@@ -1,3 +1,9 @@
+2007-03-13  David Taylor  <taylor@candd.org>
+
+	PR driver/12448:
+	* gcc.c (cpp_unique_options): If -MT or -MQ is seen, don't pass
+	default -MQ.
+
 2007-03-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/31123
