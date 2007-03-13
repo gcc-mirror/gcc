@@ -1,3 +1,8 @@
+2007-03-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (doc/g++.1): Use $< to specify the location from
+	which to copy.
+
 2007-03-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/31038

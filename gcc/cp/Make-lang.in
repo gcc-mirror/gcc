@@ -175,7 +175,7 @@ c++.install-common: installdirs
 # We can't use links because not everyone supports them, and we can't use
 # .so because Irix 6.5 doesn't support them.  So just copy the manpage.
 doc/g++.1: doc/gcc.1
-	cp doc/gcc.1 doc/g++.1
+	cp $< doc/g++.1
 
 c++.install-man: $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext)
 
