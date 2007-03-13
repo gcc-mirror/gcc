@@ -43,6 +43,7 @@ const char *host_detect_local_cpu (int argc, const char **argv);
 #define bit_SSE4a (1 << 6)
 #define bit_CMPXCHG16B (1 << 13)
 
+#define bit_LAHF_LM (1 << 0)
 #define bit_3DNOW (1 << 31)
 #define bit_3DNOWP (1 << 30)
 #define bit_LM (1 << 29)
@@ -188,6 +189,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 {
   const char *cpu = NULL;
   const char *cache = "";
+  const char *options = "";
   enum processor_type processor = PROCESSOR_I386;
   unsigned int eax, ebx, ecx, edx;
   unsigned int max_level;
@@ -195,6 +197,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int ext_level;
   unsigned char has_mmx = 0, has_3dnow = 0, has_3dnowp = 0, has_sse = 0;
   unsigned char has_sse2 = 0, has_sse3 = 0, has_ssse3 = 0, has_cmov = 0;
+  unsigned char has_cmpxchg16b = 0, has_lahf_lm = 0;
   unsigned char has_longmode = 0, has_cmpxchg8b = 0, has_sse4a = 0;
   unsigned char is_amd = 0;
   unsigned int family = 0;
@@ -236,6 +239,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   has_sse2 = !!(edx & bit_SSE2);
   has_sse3 = !!(ecx & bit_SSE3);
   has_ssse3 = !!(ecx & bit_SSSE3);
+  has_cmpxchg16b = !!(ecx & bit_CMPXCHG16B);
   /* We don't care for extended family.  */
   family = (eax >> 8) & ~(1 << 4);
 
@@ -244,6 +248,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   if (ext_level >= 0x80000000)
     {
       cpuid (0x80000001, eax, ebx, ecx, edx);
+      has_lahf_lm = !!(ecx & bit_LAHF_LM);
       has_3dnow = !!(edx & bit_3DNOW);
       has_3dnowp = !!(edx & bit_3DNOWP);
       has_longmode = !!(edx & bit_LM);
@@ -416,8 +421,16 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       break;
     }
 
+  if (arch)
+    {
+      if (has_cmpxchg16b)
+	options = concat (options, "-mcx16 ", NULL);
+      if (has_lahf_lm)
+	options = concat (options, "-msahf ", NULL);
+    }
+
 done:
-  return concat (cache, "-m", argv[0], "=", cpu, NULL);
+  return concat (cache, "-m", argv[0], "=", cpu, " ", options, NULL);
 }
 #else
 /* If we aren't compiling with GCC we just provide a minimal

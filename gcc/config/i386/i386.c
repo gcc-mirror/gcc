@@ -1040,7 +1040,7 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
   
   /* X86_TUNE_USE_SAHF */
   m_PPRO | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_PENT4
-  | m_NOCONA | m_CORE2 | m_GENERIC32,
+  | m_NOCONA | m_CORE2 | m_GENERIC,
 
   /* X86_TUNE_MOVX: Enable to zero extend integer registers to avoid
      partial dependencies.  */
@@ -1437,14 +1437,6 @@ enum processor_type ix86_arch;
 
 /* true if sse prefetch instruction is not NOOP.  */
 int x86_prefetch_sse;
-
-/* true if cmpxchg16b is supported.  */
-int x86_cmpxchg16b;
-
-/* true if sahf is supported. Early Intel CPUs with Intel 64
-   lacked LAHF and SAHF instructions supported by AMD64 until
-   introduction of Pentium 4 G1 step in December 2005.  */
-int x86_sahf;
 
 /* ix86_regparm_string as a number */
 static int ix86_regparm;
