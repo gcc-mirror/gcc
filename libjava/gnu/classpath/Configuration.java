@@ -50,6 +50,7 @@ public final class Configuration
   private static native String classpath_home();
   private static native boolean debug();
   private static native String toolkit();
+  private static native String ecj();
 
   /**
    * The value of CLASSPATH_HOME is the location that the classpath
@@ -102,4 +103,10 @@ public final class Configuration
    * 
    */
   public static final boolean JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION = false;
+
+  /**
+   * The Eclipse Java Compiler jar file for use by the
+   * com.sun.tools.javac implementation in tools.zip.
+   */
+  public static final String ECJ_JAR = ecj();
 }

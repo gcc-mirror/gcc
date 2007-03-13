@@ -139,6 +139,7 @@ AM_CXXFLAGS = \
 	-DGCJ_ENDORSED_DIRS="\"$(jardir)/gcj-endorsed\"" \
 	-DGCJ_VERSIONED_LIBDIR="\"$(dbexecdir)\"" \
 	-DPATH_SEPARATOR="\"$(CLASSPATH_SEPARATOR)\"" \
+	-DECJ_JAR_FILE="\"$(ECJ_JAR)\"" \
 	-DLIBGCJ_DEFAULT_DATABASE="\"$(dbexecdir)/$(db_name)\"" \
 	-DLIBGCJ_DEFAULT_DATABASE_PATH_TAIL="\"$(db_pathtail)\""
 

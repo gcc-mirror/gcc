@@ -1,3 +1,120 @@
+2007-03-13  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* Makefile.am (AM_CXXFLAGS): Define ECJ_JAR_FILE.
+	* classpath/configure.ac: Add --with-ecj-jar configure option.
+	* classpath/gnu/classpath/Configuration.java.in (ECJ_JAR): New
+	field.
+	* classpath/INSTALL: Document --with-ecj-jar configure option and
+	ecj jar requirement for com.sun.tools.javac support.
+	* classpath/tools/Makefile.am: Build decendents of com and sun
+	directories.
+	* configure.ac: Substitute ECJ_JAR in stub Configuration.java.
+	* gnu/classpath/Configuration.java,
+	gnu/classpath/natConfiguration.cc (ecj): New method.
+	(ECJ_JAR): New field.
+	* scripts/makemake.tcl (scan_packages): Add com directory.
+	* sources.am (property_files): Add
+	classpath/resource/sun/rmi/rmic/messages.properties and
+	classpath/resource/com/sun/tools/javac/messages.properties.
+	* classpath/resource/com, classpath/resource/com/sun,
+	classpath/resource/com/sun/tools,
+	classpath/resource/com/sun/tools/javac, classpath/resource/sun,
+	classpath/resource/sun/rmi, classpath/resource/sun/rmi/rmic,
+	classpath/tools/classes/com, classpath/tools/classes/com/sun,
+	classpath/tools/classes/com/sun/javadoc,
+	classpath/tools/classes/com/sun/tools,
+	classpath/tools/classes/com/sun/tools/doclets,
+	classpath/tools/classes/sun, classpath/tools/classes/sun/rmi,
+	classpath/tools/classes/sun/rmi/rmic, classpath/tools/com,
+	classpath/tools/com/sun, classpath/tools/com/sun/javadoc,
+	classpath/tools/com/sun/tools,
+	classpath/tools/com/sun/tools/doclets,
+	classpath/tools/com/sun/tools/javac, classpath/tools/sun,
+	classpath/tools/sun/rmi, classpath/tools/sun/rmi/rmic: New
+	directories.
+	* classpath/resource/com/sun/tools/javac/messages.properties,
+	classpath/resource/sun/rmi/rmic/messages.properties,
+	classpath/tools/classes/com/sun/javadoc/ClassDoc.class,
+	classpath/tools/classes/com/sun/javadoc/ConstructorDoc.class,
+	classpath/tools/classes/com/sun/javadoc/Doc.class,
+	classpath/tools/classes/com/sun/javadoc/DocErrorReporter.class,
+	classpath/tools/classes/com/sun/javadoc/Doclet.class,
+	classpath/tools/classes/com/sun/javadoc/ExecutableMemberDoc.class,
+	classpath/tools/classes/com/sun/javadoc/FieldDoc.class,
+	classpath/tools/classes/com/sun/javadoc/MemberDoc.class,
+	classpath/tools/classes/com/sun/javadoc/MethodDoc.class,
+	classpath/tools/classes/com/sun/javadoc/PackageDoc.class,
+	classpath/tools/classes/com/sun/javadoc/ParamTag.class,
+	classpath/tools/classes/com/sun/javadoc/Parameter.class,
+	classpath/tools/classes/com/sun/javadoc/ProgramElementDoc.class,
+	classpath/tools/classes/com/sun/javadoc/RootDoc.class,
+	classpath/tools/classes/com/sun/javadoc/SeeTag.class,
+	classpath/tools/classes/com/sun/javadoc/SerialFieldTag.class,
+	classpath/tools/classes/com/sun/javadoc/SourcePosition.class,
+	classpath/tools/classes/com/sun/javadoc/Tag.class,
+	classpath/tools/classes/com/sun/javadoc/ThrowsTag.class,
+	classpath/tools/classes/com/sun/javadoc/Type.class,
+	classpath/tools/classes/com/sun/javadoc/TypeVariable.class,
+	classpath/tools/classes/com/sun/tools/doclets/Taglet.class,
+	classpath/tools/classes/sun/rmi/rmic/Main.class,
+	classpath/tools/classes/sun/rmi/rmic/Messages.class,
+	classpath/tools/com/sun/javadoc/ClassDoc.java,
+	classpath/tools/com/sun/javadoc/ConstructorDoc.java,
+	classpath/tools/com/sun/javadoc/Doc.java,
+	classpath/tools/com/sun/javadoc/DocErrorReporter.java,
+	classpath/tools/com/sun/javadoc/Doclet.java,
+	classpath/tools/com/sun/javadoc/ExecutableMemberDoc.java,
+	classpath/tools/com/sun/javadoc/FieldDoc.java,
+	classpath/tools/com/sun/javadoc/MemberDoc.java,
+	classpath/tools/com/sun/javadoc/MethodDoc.java,
+	classpath/tools/com/sun/javadoc/PackageDoc.java,
+	classpath/tools/com/sun/javadoc/ParamTag.java,
+	classpath/tools/com/sun/javadoc/Parameter.java,
+	classpath/tools/com/sun/javadoc/ProgramElementDoc.java,
+	classpath/tools/com/sun/javadoc/RootDoc.java,
+	classpath/tools/com/sun/javadoc/SeeTag.java,
+	classpath/tools/com/sun/javadoc/SerialFieldTag.java,
+	classpath/tools/com/sun/javadoc/SourcePosition.java,
+	classpath/tools/com/sun/javadoc/Tag.java,
+	classpath/tools/com/sun/javadoc/ThrowsTag.java,
+	classpath/tools/com/sun/javadoc/Type.java,
+	classpath/tools/com/sun/javadoc/TypeVariable.java,
+	classpath/tools/com/sun/tools/doclets/Taglet.java,
+	classpath/tools/com/sun/tools/javac/Main.java,
+	classpath/tools/com/sun/tools/javac/Messages.java,
+	classpath/tools/sun/rmi/rmic/Main.java,
+	classpath/tools/sun/rmi/rmic/Messages.java: New files.
+	* Makefile.in, classpath/Makefile.in, classpath/configure,
+	classpath/doc/Makefile.in, classpath/doc/api/Makefile.in,
+	classpath/examples/Makefile.in, classpath/external/Makefile.in,
+	classpath/external/jsr166/Makefile.in,
+	classpath/external/relaxngDatatype/Makefile.in,
+	classpath/external/sax/Makefile.in,
+	classpath/external/w3c_dom/Makefile.in,
+	classpath/include/Makefile.in, classpath/include/config.h.in,
+	classpath/lib/Makefile.in,
+	classpath/lib/gnu/classpath/Configuration.class,
+	classpath/native/Makefile.in, classpath/native/fdlibm/Makefile.in,
+	classpath/native/jawt/Makefile.in,
+	classpath/native/jni/Makefile.in,
+	classpath/native/jni/classpath/Makefile.in,
+	classpath/native/jni/gconf-peer/Makefile.in,
+	classpath/native/jni/gtk-peer/Makefile.in,
+	classpath/native/jni/java-io/Makefile.in,
+	classpath/native/jni/java-lang/Makefile.in,
+	classpath/native/jni/java-net/Makefile.in,
+	classpath/native/jni/java-nio/Makefile.in,
+	classpath/native/jni/java-util/Makefile.in,
+	classpath/native/jni/midi-alsa/Makefile.in,
+	classpath/native/jni/midi-dssi/Makefile.in,
+	classpath/native/jni/native-lib/Makefile.in,
+	classpath/native/jni/qt-peer/Makefile.in,
+	classpath/native/jni/xmlj/Makefile.in,
+	classpath/native/plugin/Makefile.in,
+	classpath/resource/Makefile.in, classpath/scripts/Makefile.in,
+	classpath/tools/Makefile.in, configure,
+	gnu/classpath/Configuration.h: Regenerate.
+
 2007-03-12  Kyle Galloway  <kgallowa@redhat.com>
 
 	* jvmti.cc (_Jv_JVMTI_GetArgumentsSize): Make wide type arrays count
