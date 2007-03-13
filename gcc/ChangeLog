@@ -1,3 +1,9 @@
+2007-03-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/darwin-fallback.c: Compile file only on powerpc.
+	(handle_syscall): Handle direct system calls.
+	* config/rs6000/darwin.h (HAS_MD_FALLBACK_FRAME_STATE_FOR): Delete.
+
 2007-03-12  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* doc/invoke.texi: Fix cpp.info cross-reference.

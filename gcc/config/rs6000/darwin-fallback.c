@@ -1,5 +1,5 @@
 /* Fallback frame-state unwinder for Darwin.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -26,6 +26,8 @@
    along with GCC; see the file COPYING.  If not, write to the Free
    Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301, USA.  */
+
+#ifdef __ppc__
 
 #include "tconfig.h"
 #include "tsystem.h"
@@ -327,9 +329,9 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
   static _Unwind_Ptr return_addr;
   
   /* Yay!  We're in a Libc that we understand, and it's made a
-     system call.  It'll be one of two kinds: either a Jaguar-style
-     SYS_sigreturn, or a Panther-style 'syscall' call with 184, which 
-     is also SYS_sigreturn.  */
+     system call.  In Jaguar, this is a direct system call with value 103;
+     in Panther and Tiger it is a SYS_syscall call for system call number 184,
+     and in Leopard it is a direct syscall with number 184.  */
   
   if (gprs[0] == 0x67 /* SYS_SIGRETURN */)
     {
@@ -339,10 +341,19 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
       is_64 = (uctx->mcsize == UC_FLAVOR64_VEC_SIZE
 	       || uctx->mcsize == UC_FLAVOR64_SIZE);
     }
-  else if (gprs[0] == 0 && gprs[3] == 184)
+  else if (gprs[0] == 0 /* SYS_syscall */ && gprs[3] == 184)
     {
       int ctxstyle = gprs[5];
       uctx = (struct gcc_ucontext *) gprs[4];
+      is_vector = (ctxstyle == UC_FLAVOR_VEC || ctxstyle == UC_FLAVOR64_VEC
+		   || ctxstyle == UC_TRAD_VEC || ctxstyle == UC_TRAD64_VEC);
+      is_64 = (ctxstyle == UC_FLAVOR64_VEC || ctxstyle == UC_TRAD64_VEC
+	       || ctxstyle == UC_FLAVOR64 || ctxstyle == UC_TRAD64);
+    }
+  else if (gprs[0] == 184 /* SYS_sigreturn */)
+    {
+      int ctxstyle = gprs[4];
+      uctx = (struct gcc_ucontext *) gprs[3];
       is_vector = (ctxstyle == UC_FLAVOR_VEC || ctxstyle == UC_FLAVOR64_VEC
 		   || ctxstyle == UC_TRAD_VEC || ctxstyle == UC_TRAD64_VEC);
       is_64 = (ctxstyle == UC_FLAVOR64_VEC || ctxstyle == UC_TRAD64_VEC
@@ -469,3 +480,4 @@ _Unwind_fallback_frame_state_for (struct _Unwind_Context *context,
     return false;
   return handle_syscall (fs, gprs, _Unwind_GetCFA (context));
 }
+#endif
