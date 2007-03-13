@@ -37,3 +37,9 @@ gnu::classpath::Configuration::toolkit()
 {
   return JvNewStringLatin1(AWT_TOOLKIT);
 }
+
+jstring
+gnu::classpath::Configuration::ecj()
+{
+  return JvNewStringLatin1(ECJ_JAR_FILE);
+}

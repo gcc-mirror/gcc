@@ -111,6 +111,9 @@ Suggested Software
 	  - fluidsynth: a real-time SoundFont 2 based soft-synth
 	    http://www.fluidsynth.org/
 
+	For enabling the com.sun.tools.javac support in tools.zip you
+	will a need jar file containing the Eclipse Java Compiler.
+	Otherwise com.sun.tools.javac will not be included in tools.zip.
 
 This package was designed to use the GNU standard for configuration
 and makefiles.  To build and install do the following:
@@ -147,6 +150,8 @@ gives a complete list.
                           path to the jay executable
   --with-glibj-zip=ABS.PATH
                           use prebuilt glibj.zip class library
+  --with-ecj-jar=ABS.PATH specify jar file containing the Eclipse Java
+                          Compiler
 
 For more flags run configure --help.
 

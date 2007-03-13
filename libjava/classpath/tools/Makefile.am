@@ -16,6 +16,16 @@ error dunno how to setup the JCOMPILER and compile
 endif
 endif
 
+if FOUND_ECJ_JAR
+COM_SUN_TOOLS_JAVAC = com/sun/tools/javac
+ABS_COM_SUN_TOOLS_JAVAC = $(srcdir)/$(COM_SUN_TOOLS_JAVAC)
+ABS_COM_SUN_TOOLS_JAVAC_SRCS = $(ABS_COM_SUN_TOOLS_JAVAC)/*.java
+else
+COM_SUN_TOOLS_JAVAC =
+ABS_COM_SUN_TOOLS_JAVAC =
+ABS_COM_SUN_TOOLS_JAVAC_SRCS =
+endif
+
 if CREATE_WRAPPERS
 bin_SCRIPTS =
 bin_PROGRAMS = gappletviewer gjarsigner gkeytool \
@@ -101,6 +111,10 @@ EXTRA_DIST = toolwrapper.c gappletviewer.in gjarsigner.in gkeytool.in \
 
 # All our example java source files
 TOOLS_JAVA_FILES = $(srcdir)/gnu/classpath/tools/*/*.java \
+	$(srcdir)/com/sun/javadoc/*.java \
+	$(srcdir)/com/sun/tools/doclets/*.java \
+	$(ABS_COM_SUN_TOOLS_JAVAC_SRCS) \
+	$(srcdir)/sun/rmi/rmic/*.java \
 	$(srcdir)/external/asm/org/objectweb/asm/*.java \
 	$(srcdir)/external/asm/org/objectweb/asm/attrs/*.java \
 	$(srcdir)/external/asm/org/objectweb/asm/commons/*.java \
@@ -154,7 +168,12 @@ $(TOOLS_ZIP): $(TOOLS_JAVA_FILES)
 ##	@rm -rf classes asm
 ##	mkdir classes asm
 	find $(srcdir)/external/asm -name '*.java' -print > asm.lst
-	find $(srcdir)/gnu/classpath/tools -name '*.java' -print > classes.lst
+	find $(srcdir)/gnu/classpath/tools \
+	     $(srcdir)/com/sun/javadoc \
+	     $(srcdir)/com/sun/tools/doclets \
+	     $(ABS_COM_SUN_TOOLS_JAVAC) \
+	     $(srcdir)/sun/rmi/rmic \
+	     -name '*.java' -print > classes.lst
 	if [ -f $(top_builddir)/../vm-tools-packages ]; then \
 	    : > vm-tools.lst; \
 	    for pkg in `cat $(top_builddir)/../vm-tools-packages`; do \
@@ -170,7 +189,9 @@ if JAVA_MAINTAINER_MODE
 	  $$AC -g -w -d $(srcdir)/asm @asm.lst
 	$(JCOMPILER) -g -w -d $(srcdir)/classes @classes.lst @vm-tools.lst
 ## Copy over tools resource files.
-	@list=`cd $(top_srcdir)/resource && find gnu/classpath/tools -name \*.properties -print`; \
+	@list=`cd $(top_srcdir)/resource && find gnu/classpath/tools \
+	       com/sun/javadoc com/sun/tools/doclets $(COM_SUN_TOOLS_JAVAC) \
+	       sun/rmi/rmic -name \*.properties -print`; \
 	for p in $$list; do \
 	  dirname=classes/`dirname $$p`; \
 	  if ! test -d "$$dirname"; then mkdir -p "$$dirname"; fi; \

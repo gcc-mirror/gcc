@@ -25,6 +25,7 @@ class gnu::classpath::Configuration : public ::java::lang::Object
   static ::java::lang::String * classpath_home();
   static jboolean debug();
   static ::java::lang::String * toolkit();
+  static ::java::lang::String * ecj();
 public:
   static ::java::lang::String * CLASSPATH_HOME;
   static ::java::lang::String * CLASSPATH_VERSION;
@@ -32,6 +33,7 @@ public:
   static const jboolean INIT_LOAD_LIBRARY = 0;
   static ::java::lang::String * default_awt_peer_toolkit;
   static const jboolean JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION = 0;
+  static ::java::lang::String * ECJ_JAR;
   static ::java::lang::Class class$;
 };
 

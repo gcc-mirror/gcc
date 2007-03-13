@@ -14449,6 +14449,7 @@ if test ! -f gnu/classpath/Configuration.java; then
       -e "s,@default_toolkit@,$TOOLKIT," \
       -e "s,@JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION@,false," \
       -e "s,@GTK_CAIRO_ENABLED@,false," \
+      -e "s,@ECJ_JAR@,," \
 	< $srcdir/classpath/gnu/classpath/Configuration.java.in \
 	> gnu/classpath/Configuration.java
   # We do not want to redirect the output of the grep below to /dev/null,

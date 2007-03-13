@@ -252,7 +252,7 @@ proc scan_directory {basedir subdir} {
 # Scan known packages beneath the base directory for .java source
 # files.
 proc scan_packages {basedir} {
-  foreach subdir {gnu java javax org sun META-INF} {
+  foreach subdir {gnu java javax org sun com META-INF} {
     if {[file exists $basedir/$subdir]} {
       scan_directory $basedir $subdir
     }

@@ -95,4 +95,10 @@ public interface Configuration
    */
   boolean JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION = 
 	  @JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION@;
+
+  /**
+   * The Eclipse Java Compiler jar file for use by the
+   * com.sun.tools.javac implementation in tools.zip.
+   */
+  String ECJ_JAR = "@ECJ_JAR@";
 }
