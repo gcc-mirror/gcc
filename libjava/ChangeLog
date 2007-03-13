@@ -1,3 +1,13 @@
+2007-03-13  Keith Seitz  <keiths@redhat.com>
+
+	* include/java-interp.h (_Jv_InterpClass): Declare
+	friend function _Jv_GetInterpClassSourceFile.
+	* java/lang/Class.h (Class): Likewise.
+	* java/lang/natClass.cc (_Jv_GetInterpClassSourceFile):
+	New function.
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc
+	(getSourceFile): Implement.
+
 2007-03-13  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* Makefile.am (AM_CXXFLAGS): Define ECJ_JAR_FILE.

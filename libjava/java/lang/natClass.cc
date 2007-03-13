@@ -2064,3 +2064,15 @@ _Jv_GetClassState (jclass klass)
   return klass->state;
 }
 
+jstring
+_Jv_GetInterpClassSourceFile (jclass klass)
+{
+  if (_Jv_IsInterpretedClass (klass))
+    {
+      _Jv_InterpClass *iclass =
+	reinterpret_cast<_Jv_InterpClass *> (klass->aux_info);
+      return iclass->source_file_name;
+    }
+
+  return NULL;
+}
