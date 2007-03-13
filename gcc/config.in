@@ -240,6 +240,12 @@
 #endif
 
 
+/* Define if the assembler won't complain about a line such as # 0 "" 2. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_LINE_ZERO
+#endif
+
+
 /* Define if your assembler supports ltoffx and ldxmov relocations. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_LTOFFX_LDXMOV_RELOCS

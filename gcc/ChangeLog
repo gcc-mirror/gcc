@@ -1,3 +1,9 @@
+2007-03-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.ac: Test for assembler tolerance to # 0 "".
+	* configure, config.in: Rebuilt.
+	* final.c (final_scan_insn): Emit it if HAVE_AS_LINE_ZERO.
+
 2007-03-13  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/invoke.texi (Spec Files): Update for '%{,' spec.
