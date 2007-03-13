@@ -6549,7 +6549,7 @@
 				     (match_operand:SI 2 "register_operand" "q")))
 		(match_operand:SI 3 "register_operand" "0")))]
   ; accept ...0001...1, can this be generalized?
-  "exact_log2 (INTVAL (operands[1]) + 1) >= 0"
+  "exact_log2 (INTVAL (operands[1]) + 1) > 0"
   "*
 {
   int x = INTVAL (operands[1]);
@@ -6648,7 +6648,7 @@
 				     (match_operand:DI 2 "register_operand" "q")))
 		(match_operand:DI 3 "register_operand" "0")))]
   ; accept ...0001...1, can this be generalized?
-  "TARGET_64BIT && exact_log2 (INTVAL (operands[1]) + 1) >= 0"
+  "TARGET_64BIT && exact_log2 (INTVAL (operands[1]) + 1) > 0"
   "*
 {
   int x = INTVAL (operands[1]);
@@ -6844,7 +6844,7 @@
 	(and:SI (ashift:SI (match_operand:SI 1 "register_operand" "r")
 			   (match_operand:SI 2 "const_int_operand" ""))
 		(match_operand:SI 3 "const_int_operand" "")))]
-  "exact_log2 (1 + (INTVAL (operands[3]) >> (INTVAL (operands[2]) & 31))) >= 0"
+  "exact_log2 (1 + (INTVAL (operands[3]) >> (INTVAL (operands[2]) & 31))) > 0"
   "*
 {
   int cnt = INTVAL (operands[2]) & 31;
