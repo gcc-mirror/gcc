@@ -644,9 +644,9 @@ executeMethod (MAYBE_UNUSED jobject obj, MAYBE_UNUSED Thread *thread,
 
 jstring
 gnu::classpath::jdwp::VMVirtualMachine::
-getSourceFile (MAYBE_UNUSED jclass clazz)
+getSourceFile (jclass clazz)
 {
-  return NULL;
+  return _Jv_GetInterpClassSourceFile (clazz);
 }
 
 // A simple caching function used while single-stepping

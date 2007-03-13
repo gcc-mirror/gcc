@@ -267,6 +267,7 @@ _Jv_Utf8Const *_Jv_GetClassNameUtf8 (jclass);
 // Finds a desired interpreter method in the given class or NULL if not found
 class _Jv_MethodBase;
 _Jv_MethodBase *_Jv_FindInterpreterMethod (jclass, jmethodID);
+jstring _Jv_GetInterpClassSourceFile (jclass);
 #endif
 
 jbyte _Jv_GetClassState (jclass);
@@ -568,6 +569,7 @@ private:
 #ifdef INTERPRETER
   friend _Jv_MethodBase *(::_Jv_FindInterpreterMethod) (jclass klass,
 							jmethodID desired_method);
+  friend jstring ::_Jv_GetInterpClassSourceFile (jclass);
 #endif
   friend jbyte (::_Jv_GetClassState) (jclass klass);
 

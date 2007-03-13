@@ -306,6 +306,7 @@ class _Jv_InterpClass
 #endif
 
   friend _Jv_MethodBase ** _Jv_GetFirstMethod (_Jv_InterpClass *klass);
+  friend jstring _Jv_GetInterpClassSourceFile (jclass);
 };
 
 extern inline _Jv_MethodBase **
