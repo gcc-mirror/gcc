@@ -1,5 +1,6 @@
 2007-03-13  Mark Mitchell  <mark@codesourcery.com>
 
+	PR bootstrap/30899
 	* Make-lang.in (doc/g++.1): Use $< to specify the location from
 	which to copy.
 
