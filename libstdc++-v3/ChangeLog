@@ -1,3 +1,16 @@
+2007-03-13  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/tuple: Only include <utility> for std::pair, and
+	forward declare reference_wrapper; formatting fixes.
+	* include/tr1/ref_fwd.h: Remove.
+	* include/tr1/tuple_defs.h: Remove, unused.
+	* include/Makefile.am: Update.
+	* include/Makefile.in: Regenerate.
+	* testsuite/tr1/6_containers/tuple/creation_functions/make_tuple.cc:
+	Include <tr1/functional> too.
+
+	* include/tr1/tuple: Define tuple_size<tuple<_Elements...> >::value.
+
 2007-03-12  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 
 	* include/tr1/regex: Add "boilerplate" implementations.
