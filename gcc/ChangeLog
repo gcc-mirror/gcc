@@ -1,5 +1,6 @@
 2007-03-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR target/31123
 	* pa.md (vdepi_ior): Don't allow zero length deposit.  Likewise for
 	two unamed patterns.
 	
