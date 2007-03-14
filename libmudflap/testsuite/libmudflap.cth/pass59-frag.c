@@ -13,8 +13,8 @@ void* test_thread(void* arg)
 int main()
 {
   pthread_t thread;
-  int arg = 0;
-  pthread_create(&thread, NULL, test_thread, (void*)arg);
+  void *arg = NULL;
+  pthread_create(&thread, NULL, test_thread, arg);
   pthread_join(thread, NULL);
   pthread_exit(NULL);
   return 0;
