@@ -1,6 +1,6 @@
 /* Code to maintain a C++ template repository.
-   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001, 2002, 2003, 2004, 2005
-   Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001, 2002, 2003, 2004, 2005,
+   2006, 2007  Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com)
 
 This file is part of GCC.
@@ -203,6 +203,10 @@ init_repo (void)
       obstack_free (&temporary_obstack, buf);
     }
   fclose (repo_file);
+
+  if (old_args && !get_random_seed (true)
+      && (buf = strstr (old_args, "'-frandom-seed=")))
+    set_random_seed (extract_string (&buf) + strlen ("-frandom-seed="));
 }
 
 static FILE *
@@ -250,7 +254,7 @@ finish_repo (void)
 	 anonymous namespaces will get the same mangling when this
 	 file is recompiled.  */
       if (!strstr (args, "'-frandom-seed="))
-	fprintf (repo_file, " '-frandom-seed=%s'", flag_random_seed);
+	fprintf (repo_file, " '-frandom-seed=%s'", get_random_seed (false));
       fprintf (repo_file, "\n");
     }
 

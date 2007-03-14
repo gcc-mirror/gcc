@@ -1268,11 +1268,11 @@ common_handle_option (size_t scode, const char *arg, int value,
       /* The real switch is -fno-random-seed.  */
       if (value)
 	return 0;
-      flag_random_seed = NULL;
+      set_random_seed (NULL);
       break;
 
     case OPT_frandom_seed_:
-      flag_random_seed = arg;
+      set_random_seed (arg);
       break;
 
     case OPT_fsched_verbose_:

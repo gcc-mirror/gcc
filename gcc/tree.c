@@ -6497,7 +6497,7 @@ get_file_function_name (const char *type)
       clean_symbol_name (q);
 
       sprintf (q + len, "_%08X_%08X", crc32_string (0, name),
-	       crc32_string (0, flag_random_seed));
+	       crc32_string (0, get_random_seed (false)));
 
       p = q;
     }

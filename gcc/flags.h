@@ -251,11 +251,6 @@ extern int flag_var_tracking;
    warning message in case flag was set by -fprofile-{generate,use}.  */
 extern bool flag_speculative_prefetching_set;
 
-/* A string that's used when a random name is required.  NULL means
-   to make it really random.  */
-
-extern const char *flag_random_seed;
-
 /* Returns TRUE if generated code should match ABI version N or
    greater is in use.  */
 
