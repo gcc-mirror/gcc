@@ -134,6 +134,7 @@ void dump_double_int (FILE *, double_int, bool);
 double_int double_int_ext (double_int, unsigned, bool);
 double_int double_int_sext (double_int, unsigned);
 double_int double_int_zext (double_int, unsigned);
+double_int double_int_mask (unsigned);
 
 #define ALL_ONES (~((unsigned HOST_WIDE_INT) 0))
 
