@@ -33,22 +33,22 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
-`#if defined (HAVE_'rtype_name`)'
+`#if defined (HAVE_'rtype_name`)
 
-extern void transpose_`'rtype_code (rtype * const restrict ret, 
-	rtype * const restrict source);
-export_proto(transpose_`'rtype_code);
+extern void transpose_'rtype_code` ('rtype` * const restrict ret, 
+	'rtype` * const restrict source);
+export_proto(transpose_'rtype_code`);
 
 void
-transpose_`'rtype_code (rtype * const restrict ret, 
-	rtype * const restrict source)
+transpose_'rtype_code` ('rtype` * const restrict ret, 
+	'rtype` * const restrict source)
 {
   /* r.* indicates the return array.  */
   index_type rxstride, rystride;
-  rtype_name *rptr;
+  'rtype_name` *rptr;
   /* s.* indicates the source array.  */
   index_type sxstride, systride;
-  const rtype_name *sptr;
+  const 'rtype_name` *sptr;
 
   index_type xcount, ycount;
   index_type x, y;
@@ -68,7 +68,7 @@ transpose_`'rtype_code (rtype * const restrict ret,
       ret->dim[1].ubound = source->dim[0].ubound - source->dim[0].lbound;
       ret->dim[1].stride = ret->dim[0].ubound+1;
 
-      ret->data = internal_malloc_size (sizeof (rtype_name) * size0 ((array_t *) ret));
+      ret->data = internal_malloc_size (sizeof ('rtype_name`) * size0 ((array_t *) ret));
       ret->offset = 0;
     }
 
@@ -97,4 +97,4 @@ transpose_`'rtype_code (rtype * const restrict ret,
     }
 }
 
-#endif
+#endif'

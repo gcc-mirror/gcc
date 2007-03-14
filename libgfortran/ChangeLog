@@ -1,3 +1,28 @@
+2007-03-14  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/30690
+	* all.m4: Quote everything, except for m4 macros.
+	* any.m4: Likewise.
+	* count.m4: Likewise.
+	* cshift1.m4: Likewise.
+	* eoshift1.m4: Likewise.
+	* eoshift3.m4: Likewise.
+	* exponent.m4: Likewise.
+	* fraction.m4: Likewise.
+	* in_pack.m4: Likewise.
+	* in_unpack.m4: Likewise.
+	* matmul.m4: Likewise.
+	* matmull.m4: Likewise.
+	* nearest.m4: Likewise.
+	* pow.m4: Likewise.
+	* product.m4: Likewise.
+	* reshape.m4: Likewise.
+	* rrspacing.m4: Likewise.
+	* set_exponent.m4: Likewise.
+	* shape.m4: Likewise.
+	* spacing.m4: Likewise.
+	* transpose.m4: Likewise.
+
 2007-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* io/unix.c (regular_file): For ACTION_UNSPECIFIED retry with

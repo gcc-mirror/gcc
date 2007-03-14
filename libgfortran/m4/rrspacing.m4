@@ -34,26 +34,26 @@ Boston, MA 02110-1301, USA.  */
 
 include(`mtype.m4')dnl
 
-`#if defined (HAVE_'real_type`) && defined (HAVE_FABS'Q`) && defined (HAVE_FREXP'Q`)'
+`#if defined (HAVE_'real_type`) && defined (HAVE_FABS'Q`) && defined (HAVE_FREXP'Q`)
 
-extern real_type rrspacing_r`'kind (real_type s, int p);
-export_proto(rrspacing_r`'kind);
+extern 'real_type` rrspacing_r'kind` ('real_type` s, int p);
+export_proto(rrspacing_r'kind`);
 
-real_type
-rrspacing_r`'kind (real_type s, int p)
+'real_type`
+rrspacing_r'kind` ('real_type` s, int p)
 {
   int e;
-  real_type x;
-  x = fabs`'q (s);
+  'real_type` x;
+  x = fabs'q` (s);
   if (x == 0.)
     return 0.;
-  frexp`'q (s, &e);
-`#if defined (HAVE_LDEXP'Q`)'
-  return ldexp`'q (x, p - e);
+  frexp'q` (s, &e);
+#if defined (HAVE_LDEXP'Q`)
+  return ldexp'q` (x, p - e);
 #else
-  return scalbn`'q (x, p - e);
+  return scalbn'q` (x, p - e);
 #endif
 
 }
 
-#endif
+#endif'

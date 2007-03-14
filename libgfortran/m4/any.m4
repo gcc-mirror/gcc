@@ -45,6 +45,6 @@ ARRAY_FUNCTION(0,
     {
       result = 1;
       break;
-    }')
+    }')`
 
-#endif
+#endif'

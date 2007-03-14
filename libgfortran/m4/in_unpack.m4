@@ -39,8 +39,8 @@ include(iparm.m4)dnl
 
 dnl Only the kind (ie size) is used to name the function for integers,
 dnl reals and logicals.  For complex, it's c4 and c8.
-void
-`internal_unpack_'rtype_ccode (rtype * d, const rtype_name * src)
+`void
+internal_unpack_'rtype_ccode` ('rtype` * d, const 'rtype_name` * src)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -48,7 +48,7 @@ void
   index_type stride0;
   index_type dim;
   index_type dsize;
-  rtype_name *dest;
+  'rtype_name` *dest;
   int n;
 
   dest = d->data;
@@ -73,7 +73,7 @@ void
 
   if (dsize != 0)
     {
-      memcpy (dest, src, dsize * sizeof (rtype_name));
+      memcpy (dest, src, dsize * sizeof ('rtype_name`));
       return;
     }
 
@@ -112,3 +112,4 @@ void
 }
 
 #endif
+'
