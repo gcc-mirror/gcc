@@ -18,6 +18,8 @@
 
 // 21.3.7.9 inserters and extractors
 
+// { dg-require-fileio "" }
+
 #include <istream>
 #include <string>
 #include <fstream>

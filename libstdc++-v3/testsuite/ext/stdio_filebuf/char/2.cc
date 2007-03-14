@@ -20,6 +20,8 @@
 
 // stdio_filebuf.h
 
+// { dg-require-fileio "" }
+
 #include <ext/stdio_filebuf.h>
 #include <cstdio>
 #include <fstream>

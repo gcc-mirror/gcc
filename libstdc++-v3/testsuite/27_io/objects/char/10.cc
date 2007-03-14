@@ -18,6 +18,8 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
  
+// { dg-require-fileio "" }
+
 #include <iostream>
 #include <cstdio>
 #include <testsuite_hooks.h>

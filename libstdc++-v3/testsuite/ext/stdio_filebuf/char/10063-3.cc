@@ -20,6 +20,8 @@
 // causes "sbumpc" to return an incorrect value.
 // { dg-do run { xfail arm*-*-elf arm*-*-eabi } }
 
+// { dg-require-fileio "" }
+
 #include <cstdio>
 #include <fstream>
 #include <ext/stdio_sync_filebuf.h>

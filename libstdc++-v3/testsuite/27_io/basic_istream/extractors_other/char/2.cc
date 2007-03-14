@@ -22,6 +22,8 @@
 // @require@ %-*.tst %-*.txt
 // @diff@ %-*.tst %-*.txt
 
+// { dg-require-fileio "" }
+
 #include <istream>
 #include <fstream>
 #include <testsuite_hooks.h>

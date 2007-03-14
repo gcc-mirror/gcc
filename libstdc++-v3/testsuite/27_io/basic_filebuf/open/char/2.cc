@@ -23,6 +23,8 @@
 // various tests for filebuf::open() and filebuf::close() including
 // the non-portable functionality in the libstdc++-v3 IO library
 
+// { dg-require-fileio "" }
+
 #include <fstream>
 #include <unistd.h>
 #include <signal.h>

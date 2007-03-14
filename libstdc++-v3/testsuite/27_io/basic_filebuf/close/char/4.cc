@@ -18,6 +18,8 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
+// { dg-require-fileio "" }
+
 // 27.8.1.3 filebuf member functions
 // @require@ %-*.tst %-*.txt
 // @diff@ %-*.tst %-*.txt
