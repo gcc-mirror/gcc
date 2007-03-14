@@ -2808,6 +2808,12 @@ foo:	nop
       [AC_DEFINE(HAVE_AS_IX86_FFREEP, 1,
         [Define if your assembler supports the ffreep mnemonic.])])
 
+    gcc_GAS_CHECK_FEATURE([sahf mnemonic],
+      gcc_cv_as_ix86_sahf,,,
+      [sahf],,
+      [AC_DEFINE(HAVE_AS_IX86_SAHF, 1,
+        [Define if your assembler supports the sahf mnemonic.])])
+
     gcc_GAS_CHECK_FEATURE([different section symbol subtraction],
       gcc_cv_as_ix86_diff_sect_delta,,,
       [.section .rodata
