@@ -1,3 +1,41 @@
+2007-03-13  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/30730
+	PR tree-optimization/26900
+	* tree-ssa-loop-niter.c: Include gmp.h.
+	(bounds): New type.
+	(mpz_set_double_int, get_type_bounds, mpz_to_double_int,
+	split_to_var_and_offset, determine_value_range,
+	bound_difference_of_offsetted_base, refine_bounds_using_guard,
+	bound_difference, bounds_add, bounds_negate,
+	number_of_iterations_ne_max, dump_affine_iv): New functions.
+	(number_of_iterations_ne, number_of_iterations_lt_to_ne,
+	assert_loop_rolls_lt, assert_loop_rolls_le): Use bounds on the
+	difference of initial and final value of control iv to validate
+	results.
+	(number_of_iterations_cond): Add loop parameter.  Determine bounds
+	on the difference of the extremes of the control iv.  Add dumps.
+	(expand_simple_operations): Handle phi nodes.
+	(simplify_using_initial_conditions): Do not record used conditions.
+	(number_of_iterations_exit): Pass loop to number_of_iterations_cond.
+	Do not set additional_info.
+	(implies_nonnegative_p, implies_ge_p): Removed.
+	(derive_constant_upper_bound): Do not use parameter `additional'.
+	(record_estimate): Parameter `additional' removed.  Parameter
+	`i_bound' added.  Do not call derive_constant_upper_bound.
+	(record_nonwrapping_iv): Use derive_constant_upper_bound to
+	bound the number of iterations estimate.
+	(estimate_numbers_of_iterations_loop): Pass the estimate from
+	the number of iterations analysis to record_estimate.
+	* tree.h (multiple_of_p): Declare.
+	* tree-scalar-evolution.c (expression_expensive_p): Removed.
+	(scev_const_prop): Do not check expression_expensive_p.
+	* fold-const.c (multiple_of_p): Exported.
+	* double-int.c (double_int_mask): Exported.
+	* double-int.h (double_int_mask): Declare.
+	* tree-flow.h (struct tree_niter_desc): Removed additional_info
+	field.  Added max field.
+
 2007-03-13  David Taylor  <taylor@candd.org>
 
 	PR driver/12448:

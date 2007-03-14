@@ -26,7 +26,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 /* Returns mask for PREC bits.  */
 
-static inline double_int
+double_int
 double_int_mask (unsigned prec)
 {
   unsigned HOST_WIDE_INT m;

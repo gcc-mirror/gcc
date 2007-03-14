@@ -1,3 +1,7 @@
+2007-03-13  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-26.c: New test.
+
 2007-03-13  Uros Bizjak  <ubizjak@gmail.com>
 	
 	* testsuite/gcc.target/i386/cmpxchg16b-1.c: New test.
@@ -10,13 +14,13 @@
 
 2007-03-12  Seongbae Park <seongbae.park@gmail.com>
 
- 	* gcc.dg/wvla-1.c: New test
- 	* gcc.dg/wvla-2.c: New test
- 	* gcc.dg/wvla-3.c: New test
- 	* gcc.dg/wvla-4.c: New test
- 	* gcc.dg/wvla-5.c: New test
- 	* gcc.dg/wvla-6.c: New test
- 	* gcc.dg/wvla-7.c: New test
+	* gcc.dg/wvla-1.c: New test
+	* gcc.dg/wvla-2.c: New test
+	* gcc.dg/wvla-3.c: New test
+	* gcc.dg/wvla-4.c: New test
+	* gcc.dg/wvla-5.c: New test
+	* gcc.dg/wvla-6.c: New test
+	* gcc.dg/wvla-7.c: New test
 	* g++.dg/warn/Wvla-1.C: New test
 	* g++.dg/warn/Wvla-2.C: New test
 	* g++.dg/warn/Wvla-3.C: New test

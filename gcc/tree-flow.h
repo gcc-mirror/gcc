@@ -822,18 +822,8 @@ struct tree_niter_desc
 			   a loop (provided that assumptions == true and
 			   may_be_zero == false), more precisely the number
 			   of executions of the latch of the loop.  */
-  tree additional_info;	/* The boolean expression.  Sometimes we use additional
-			   knowledge to simplify the other expressions
-			   contained in this structure (for example the
-			   knowledge about value ranges of operands on entry to
-			   the loop).  If this is a case, conjunction of such
-			   condition is stored in this field, so that we do not
-			   lose the information: for example if may_be_zero
-			   is (n <= 0) and niter is (unsigned) n, we know
-			   that the number of iterations is at most
-			   MAX_SIGNED_INT.  However if the (n <= 0) assumption
-			   is eliminated (by looking at the guard on entry of
-			   the loop), then the information would be lost.  */
+  double_int max;	/* The upper bound on the number of iterations of
+			   the loop.  */
 
   /* The simplified shape of the exit condition.  The loop exits if
      CONTROL CMP BOUND is false, where CMP is one of NE_EXPR,
