@@ -1,3 +1,7 @@
+2007-03-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/libmudflap.cth/pass59-frag.c (main): Fix casting of arg.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.am: Add dummy install-pdf target.
