@@ -1,3 +1,8 @@
+2007-03-14  Eric Christopher  <echristo@apple.com>
+
+	* gcc.dg/ssp-1.c: New.
+	* gcc.dg/ssp-2.c: Ditto.
+
 2007-03-14  Dirk Mueller  <dmueller@suse.de>
 
 	* g++.dg/warn/do-empty.C: New.
@@ -20,7 +25,7 @@
 	* gcc.dg/tree-ssa/loop-26.c: New test.
 
 2007-03-13  Uros Bizjak  <ubizjak@gmail.com>
-	
+
 	* testsuite/gcc.target/i386/cmpxchg16b-1.c: New test.
 
 2007-03-12  Seongbae Park <seongbae.park@gmail.com>
@@ -197,7 +202,7 @@
         * g++.dg/cpp0x/variadic65.C : New.
         * g++.dg/cpp0x/variadic66.C : New.
         * g++.dg/cpp0x/variadic67.C : New.
-        * g++.dg/cpp0x/variadic68.C : New.	
+        * g++.dg/cpp0x/variadic68.C : New.
         * g++.dg/cpp0x/variadic69.C : New.
 	* g++.dg/cpp0x/variadic70.C : New.
 	* g++.dg/cpp0x/variadic71.C : New.
@@ -224,7 +229,7 @@
 
 	PR libgfortran/31099
 	* gfortran.dg/unformatted_recl.f90: New test.
-	
+
 2007-03-09  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/fold-eqcmplx-1.c: New test case.
@@ -379,7 +384,7 @@
 	PR other/30465
 	* gcc.dg/multiple-overflow-warn-3.c: New.
 	* g++.dg/warn/multiple-overflow-warn-3.C: New.
-	
+
 2007-03-04  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/30895
@@ -424,7 +429,7 @@
 	PR c++/15787
 	* g++.dg/parse/else.C: New.
 	* g++.dg/parse/else-2.C: New.
-	
+
 2007-03-03  Paul Thomas  <pault@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
@@ -464,7 +469,7 @@
 	PR c++/23689
 	* warn/ignored_typedef.C: New.
 	* init/ctor8.C: Added dg-warning to consume ignored typedef
-	warning. 
+	warning.
 	* template/typedef2.C: Ditto.  Moved dg-error onto its own line
 	and added an explicit line number.
 
@@ -505,7 +510,7 @@
 2007-02-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/30970
-	* gcc.target/i386/gfortran.dg/pr30970.c: New test. 
+	* gcc.target/i386/gfortran.dg/pr30970.c: New test.
 
 2007-02-27  Mark Mitchell  <mark@codesourcery.com>
 
@@ -581,7 +586,7 @@
 	* gcc.test-framework/dg-outexistsnot-exp-P.c: Replace -W with
 	-Wunused-value.
 	* gcc.test-framework/dg-outexists-exp-F.c: Likewise.
-	
+
 2007-02-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_unwrapped): New.
@@ -605,14 +610,14 @@
 	* gcc.dg/torture/builtin-nonneg-1.c: Test significand.
 	* gcc.dg/torture/builtin-frexp-1.c: Use -fno-finite-math-only on
 	sh* targets.
-	
+
 2007-02-23  Richard Guenther  <rguenther@suse.de>
 
 	* g++.dg/warn/changes-meaning.C: New testcase.
 
 2007-02-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/30910	
+	PR libgfortran/30910
 	* gfortran.dg/fmt_zero_precision.f90: Update test.
 
 2007-02-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -633,7 +638,7 @@
 	* gcc.dg/vect/vect-106.c: New test.
 
 2007-02-22  Dorit Nuzman  <dorit@il.ibm.com>
-            Ira Rosen  <irar@il.ibm.com> 
+            Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/30843
 	* gcc.dg/vect/pr30843.c: New test.
@@ -728,7 +733,7 @@
 	-Wstring-literal-comparison with -Waddress.
 	* gcc.dg/Wstring-literal-comparison-4.c: Replace
 	-Wno-string-literal-comparison with -Wno-address.
-	
+
 2007-02-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/self_aggregate_with_call.adb: New test.
@@ -777,7 +782,7 @@
 	* gcc.target/i386/builtin-bswap-1.c: Remove -march=nocona.
 	* gcc.target/i386/builtin-bswap-3.c: Ditto.
 	* gcc.target/i386/xchg-1.c: New test.
-	* gcc.target/i386/xchg-2.c: New test. 
+	* gcc.target/i386/xchg-2.c: New test.
 
 2007-02-16  Richard Guenther  <rguenther@suse.de>
 	    Christian Bruel  <christian.bruel@st.com>
@@ -904,7 +909,7 @@
 	PR c/29521
 	* gcc.dg/c90-return-1.c: Update output.
 	* gcc.dg/c99-return-1.c: Likewise.
-	
+
 2007-02-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30554
@@ -1109,7 +1114,7 @@
 
 2007-02-07  Hans-Peter Nilsson  <hp@axis.com>
 
-	* lib/target-supports.exp (check_effective_target_simulator): New. 
+	* lib/target-supports.exp (check_effective_target_simulator): New.
 
 2007-02-06  Zdenek Dvorak <dvorakz@suse.cz>
 
@@ -1154,7 +1159,7 @@
 	* gcc.dg/vect/vect-reduc-dot-u16b.c: Likewise.
 	* gcc.dg/vect/vect-widen-mult-u16.c: Likewise.
 
-2007-02-06  Ira Rosen  <irar@il.ibm.com> 
+2007-02-06  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/fast-math-vect-pow-2.c: New test.
 
@@ -1279,7 +1284,7 @@
 
 	gcc.dg/Wparentheses-2.c: Update and add new tests.
 
-2007-01-31  Ira Rosen  <irar@il.ibm.com> 
+2007-01-31  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/vect-37.c: Restore the original behaivior - xfail to
 	vectorize.
@@ -1448,7 +1453,7 @@
 	* gcc.dg/Wno-all.c: New.
 	* gfortran.dg/Wall.f90: New.
 	* gfortran.dg/Wno-all.f90: New.
-	
+
 2007-01-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.target/powerpc/darwin-ehreturn-1.c: New.
@@ -1520,7 +1525,7 @@
 
 	PR fortran/30532
 	* gfortran.dg/ctrl-z.f90:  New test.
-	
+
 2007-01-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/30481
@@ -1555,9 +1560,9 @@
 	PR libfortran/30525
 	* gfortran.dg/char_comparison_1.f:  New test.
 
-2007-01-21  Ira Rosen  <irar@il.ibm.com> 
+2007-01-21  Ira Rosen  <irar@il.ibm.com>
 
-	* gcc.dg/vect/vect-strided-same-dr.c: New test. 
+	* gcc.dg/vect/vect-strided-same-dr.c: New test.
 
 2007-01-20  Andrew Pinski  <pinskia@gmail.com>
 
@@ -1609,7 +1614,7 @@
 	* g++.dg/warn/deprecated.C: Update warning output.
 	* g++.dg/warn/deprecated-2.C: Likewise.
 	* g++.dg/warn/deprecated-3.C: New.
-	
+
 2007-01-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.c-torture/execute/nestfunc-7.c: New.
@@ -1870,7 +1875,7 @@
 	* g++.dg/warn/Woverflow-2.C: New.
 	* g++.dg/warn/Woverflow-3.C: New.
 	* g++.dg/warn/multiple-overflow-warn-2.C: New.
-	
+
 2007-01-07  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	PR fortran/27698
@@ -1887,7 +1892,7 @@
 	PR c++/19439
 	* g++.dg/template/duplicate1.C: New test
 	* g++.dg/template/memfriend6.C: Adjust error markers.
-	
+
 2007-01-05  Andrew Pinski  <Andrew_Pinski@playstation.sony.com>
 
 	PR tree-opt/30385
@@ -1900,7 +1905,7 @@
 	* gcc.dg/multiple-overflow-warn-2.c: New.
 	* gcc.dg/overflow-warn-6.c: New.
 	* g++.dg/warn/multiple-overflow-warn-1.C: New.
-	
+
 2007-01-05  Roger Sayle  <roger@eyesopen.com>
 
 	* gfortran.dg/array_memcpy_1.f90: New test case.
@@ -2135,7 +2140,7 @@
 	* gcc.dg/Wmissing-parameter-type.c: New.
 	* gcc.dg/Wmissing-parameter-type-Wextra.c: New.
 	* gcc.dg/Wmissing-parameter-type-no.c: New.
-	
+
 2006-12-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25818
