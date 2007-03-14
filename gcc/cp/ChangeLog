@@ -1,3 +1,8 @@
+2007-03-14  Dirk Mueller  <dmueller@suse.de>
+
+	* cp/semantics.c (c_finish_if_stmt): Call empty_if_body_warning.
+	(finish_do_body): Warn about empty body in do/while statement.
+
 2007-03-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* class.c (warn_hidden): Add OPT_Woverloaded_virtual to warning.

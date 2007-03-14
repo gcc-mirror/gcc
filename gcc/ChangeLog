@@ -1,3 +1,14 @@
+2007-03-14  Dirk Mueller  <dmueller@suse.de>
+
+	* c-common.h (empty_body_warning): Rename to empty_if_body_warning.
+	* c-common.c (empty_if_body_warning): Rephrase diagnostic message.
+	* c-parser.c (c_parser_if_body): Always add an empty statement in case
+	of empty body.
+	* c-parser.c (c_parser_do_statement): Warn about empty body in
+	do/while statement.
+	* c-typeck (c_finish_if_stmt): Call empty_if_body_warning.
+	* doc/invoke.texi (-Wempty-body): Update documentation.
+
 2007-03-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/21438

@@ -3844,7 +3844,7 @@ c_parser_if_body (c_parser *parser, bool *if_p)
 	     && c_parser_peek_2nd_token (parser)->type == CPP_COLON))
     c_parser_label (parser);
   *if_p = c_parser_next_token_is_keyword (parser, RID_IF);
-  if (warn_empty_body && c_parser_next_token_is (parser, CPP_SEMICOLON))
+  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
     add_stmt (build_empty_stmt ());
   c_parser_statement_after_labels (parser);
   return c_end_compound_stmt (block, flag_isoc99);
@@ -3953,6 +3953,9 @@ c_parser_do_statement (c_parser *parser)
   location_t loc;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_DO));
   c_parser_consume_token (parser);
+  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
+    warning (OPT_Wempty_body,
+             "suggest braces around empty body in %<do%> statement");
   block = c_begin_compound_stmt (flag_isoc99);
   loc = c_parser_peek_token (parser)->location;
   save_break = c_break_label;

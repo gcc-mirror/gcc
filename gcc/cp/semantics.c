@@ -701,7 +701,7 @@ finish_if_stmt (tree if_stmt)
   TREE_CHAIN (if_stmt) = NULL;
   add_stmt (do_poplevel (scope));
   finish_stmt ();
-  empty_body_warning (THEN_CLAUSE (if_stmt), ELSE_CLAUSE (if_stmt));
+  empty_if_body_warning (THEN_CLAUSE (if_stmt), ELSE_CLAUSE (if_stmt));
 }
 
 /* Begin a while-statement.  Returns a newly created WHILE_STMT if
@@ -754,7 +754,14 @@ begin_do_stmt (void)
 void
 finish_do_body (tree do_stmt)
 {
-  DO_BODY (do_stmt) = pop_stmt_list (DO_BODY (do_stmt));
+  tree body = DO_BODY (do_stmt) = pop_stmt_list (DO_BODY (do_stmt));
+
+  if (TREE_CODE (body) == STATEMENT_LIST && STATEMENT_LIST_TAIL (body))
+    body = STATEMENT_LIST_TAIL (body)->stmt;
+
+  if (IS_EMPTY_STMT (body))
+    warning (OPT_Wempty_body,
+            "suggest explicit braces around empty body in %<do%> statement");
 }
 
 /* Finish a do-statement, which may be given by DO_STMT, and whose

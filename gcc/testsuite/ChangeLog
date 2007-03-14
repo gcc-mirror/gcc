@@ -1,3 +1,11 @@
+2007-03-14  Dirk Mueller  <dmueller@suse.de>
+
+	* g++.dg/warn/do-empty.C: New.
+	* gcc.dg/do-empty.c: New.
+	* gcc.dg/if-empty-1.c: Update.
+	* gcc.dg/20001116-1.c: Update.
+	* gcc.dg/pr23165.c: Update.
+
 2007-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/module_implicit_conversion.f90: New test.

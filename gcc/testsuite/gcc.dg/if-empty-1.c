@@ -7,7 +7,7 @@ void
 f (int x)
 {
   if (x)
-    ; /* { dg-warning "warning: empty body in an if-statement" } */
+    ; /* { dg-warning "warning: empty body in an" } */
   if (x)
     ; /* By design we don't warn in this case.  */
   else
@@ -15,7 +15,7 @@ f (int x)
   if (x)
     (void)0;
   else
-    ; /* { dg-warning "warning: empty body in an else-statement" } */
+    ; /* { dg-warning "warning: empty body in an" } */
   if (x)
     (void)0;
   else
