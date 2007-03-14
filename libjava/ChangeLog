@@ -1,3 +1,8 @@
+2007-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (AM_MAKEFLAGS): Pass through mandir.
+	* Makefile.in: Rebuilt.
+
 2007-03-13  Keith Seitz  <keiths@redhat.com>
 
 	* include/java-interp.h (_Jv_InterpClass): Declare
