@@ -771,6 +771,10 @@ See RS/6000 and PowerPC Options.
 @emph{VAX Options}
 @gccoptlist{-mg  -mgnu  -munix}
 
+@emph{VxWorks Options}
+@gccoptlist{-mrtp  -non-static  -Bstatic  -Bdynamic @gol
+-Xbind-lazy  -Xbind-now}
+
 @emph{x86-64 Options}
 See i386 and x86-64 Options.
 
@@ -7761,6 +7765,7 @@ platform.
 * TMS320C3x/C4x Options::
 * V850 Options::
 * VAX Options::
+* VxWorks Options::
 * x86-64 Options::
 * Xstormy16 Options::
 * Xtensa Options::
@@ -13824,6 +13829,46 @@ will assemble with the GNU assembler.
 @item -mg
 @opindex mg
 Output code for g-format floating point numbers instead of d-format.
+@end table
+
+@node VxWorks Options
+@subsection VxWorks Options
+@cindex VxWorks Options
+
+The options in this section are defined for all VxWorks targets.
+Options specific to the target hardware are listed with the other
+options for that target.
+
+@table @gcctabopt
+@item -mrtp
+@opindex mrtp
+GCC can generate code for both VxWorks kernels and real time processes
+(RTPs).  This option switches from the former to the latter.  It also
+defines the preprocessor macro @code{__RTP__}.
+
+@item -non-static
+@opindex non-static
+Link an RTP executable against shared libraries rather than static
+libraries.  The options @option{-static} and @option{-shared} can
+also be used for RTPs (@pxref{Link Options}); @option{-static}
+is the default.
+
+@item -Bstatic
+@itemx -Bdynamic
+@opindex Bstatic
+@opindex Bdynamic
+These options are passed down to the linker.  They are defined for
+compatibility with Diab.
+
+@item -Xbind-lazy
+@opindex Xbind-lazy
+Enable lazy binding of function calls.  This option is equivalent to
+@option{-Wl,-z,now} and is defined for compatibility with Diab.
+
+@item -Xbind-now
+@opindex Xbind-now
+Disable lazy binding of function calls.  This option is the default and
+is defined for compatibility with Diab.
 @end table
 
 @node x86-64 Options
