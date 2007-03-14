@@ -1,3 +1,13 @@
+2007-03-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* configure.ac (HAVE_AS_IX86_SAHF): On x86 targets check whether
+	the configured assembler supports the sahf mnemonic.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+	* config/i386/i386.md (x86_sahf_1): Depending on HAVE_AS_IX86_SAHF,
+	emit "sahf" or ".byte\t0x9e" as asm template.
+
 2007-03-14  Michael Meissner  <michael.meissner@amd.com>
 
 	PR 31018

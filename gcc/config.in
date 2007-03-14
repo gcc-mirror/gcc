@@ -228,6 +228,12 @@
 #endif
 
 
+/* Define if your assembler supports the sahf mnemonic. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_IX86_SAHF
+#endif
+
+
 /* Define if your assembler supports the lituse_jsrdirect relocation. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_JSRDIRECT_RELOCS
