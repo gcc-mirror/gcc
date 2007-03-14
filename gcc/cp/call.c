@@ -4245,6 +4245,41 @@ build_temp (tree expr, tree type, int flags,
   return expr;
 }
 
+/* Perform warnings about conversion of EXPR to type TOTYPE.
+   FN and ARGNUM are used for diagnostics.  */
+
+static void
+convert_conversion_warnings (tree totype, tree expr, tree fn, int argnum)
+{
+  tree t = non_reference (totype);
+
+  /* Issue warnings about peculiar, but valid, uses of NULL.  */
+  if (expr == null_node && TREE_CODE (t) != BOOLEAN_TYPE && ARITHMETIC_TYPE_P (t))
+    {
+      if (fn)
+	warning (OPT_Wconversion, "passing NULL to non-pointer argument %P of %qD",
+		 argnum, fn);
+      else
+	warning (OPT_Wconversion, "converting to non-pointer type %qT from NULL", t);
+    }
+
+  /* Warn about assigning a floating-point type to an integer type.  */
+  if (TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
+      && TREE_CODE (t) == INTEGER_TYPE)
+    {
+      if (fn)
+	warning (OPT_Wconversion, "passing %qT for argument %P to %qD",
+		 TREE_TYPE (expr), argnum, fn);
+      else
+	warning (OPT_Wconversion, "converting to %qT from %qT", t, TREE_TYPE (expr));
+    }
+
+  /* Issue warnings if "false" is converted to a NULL pointer */
+  if (expr == boolean_false_node && fn && POINTER_TYPE_P (t))
+    warning (OPT_Wconversion,
+	     "converting %<false%> to pointer type for argument %P of %qD",
+	     argnum, fn);
+}
 
 /* Perform the conversions in CONVS on the expression EXPR.  FN and
    ARGNUM are used for diagnostics.  ARGNUM is zero based, -1
@@ -4293,30 +4328,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     }
 
   if (issue_conversion_warnings)
-    {
-      tree t = non_reference (totype);
-
-      /* Issue warnings about peculiar, but valid, uses of NULL.  */
-      if (expr == null_node && TREE_CODE (t) != BOOLEAN_TYPE && ARITHMETIC_TYPE_P (t))
-	{
-	  if (fn)
-	    warning (OPT_Wconversion, "passing NULL to non-pointer argument %P of %qD",
-		     argnum, fn);
-	  else
-	    warning (OPT_Wconversion, "converting to non-pointer type %qT from NULL", t);
-	}
-
-      /* Warn about assigning a floating-point type to an integer type.  */
-      if (TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
-	  && TREE_CODE (t) == INTEGER_TYPE)
-	{
-	  if (fn)
-	    warning (OPT_Wconversion, "passing %qT for argument %P to %qD",
-		     TREE_TYPE (expr), argnum, fn);
-	  else
-	    warning (OPT_Wconversion, "converting to %qT from %qT", t, TREE_TYPE (expr));
-	}
-    }
+    convert_conversion_warnings (totype, expr, fn, argnum);
 
   switch (convs->kind)
     {
