@@ -871,6 +871,7 @@ extern void warn_array_subscript_with_type_char (tree);
 extern void warn_about_parentheses (enum tree_code, enum tree_code,
 				    enum tree_code);
 extern void warn_for_unused_label (tree label);
+extern void warn_for_div_by_zero (tree divisor);
 
 
 /* In c-gimplify.c  */

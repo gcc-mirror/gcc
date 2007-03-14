@@ -7848,10 +7848,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
     case FLOOR_DIV_EXPR:
     case ROUND_DIV_EXPR:
     case EXACT_DIV_EXPR:
-      /* Floating point division by zero is a legitimate way to obtain
-	 infinities and NaNs.  */
-      if (skip_evaluation == 0 && integer_zerop (op1))
-	warning (OPT_Wdiv_by_zero, "division by zero");
+      warn_for_div_by_zero (op1);
 
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
 	   || code0 == COMPLEX_TYPE || code0 == VECTOR_TYPE)
@@ -7891,8 +7888,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 
     case TRUNC_MOD_EXPR:
     case FLOOR_MOD_EXPR:
-      if (skip_evaluation == 0 && integer_zerop (op1))
-	warning (OPT_Wdiv_by_zero, "division by zero");
+      warn_for_div_by_zero (op1);
 
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{

@@ -1,3 +1,11 @@
+2007-03-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c/21438
+	* c-common.h (warn_for_div_by_zero): Declare.
+	* c-common.c (warn_for_div_by_zero): Define.
+	* c-typeck.c (build_binary_op): Call warn_for_div_zero instead of
+	warning.
+
 2007-03-14  Richard Sandiford  <richard@codesourcery.com>
 
 	* Makefile.in (PREPROCESSOR_DEFINES): Add directory terminators
