@@ -1,4 +1,11 @@
 2007-03-14  Richard Sandiford  <richard@codesourcery.com>
+	    Phil Edwards  <phil@codesourcery.com>
+
+	* gthr-vxworks.h: Add an extern "C" wrapper for C++.
+	(__gthread_once_t): Remove busy field for RTPs.
+	(__GTHREAD_ONCE_INIT): Update accordingly.
+
+2007-03-14  Richard Sandiford  <richard@codesourcery.com>
 
 	* doc/invoke.texi: Document VxWorks options.
 
