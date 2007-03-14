@@ -1,3 +1,7 @@
+2007-03-14  Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/invoke.texi: Document VxWorks options.
+
 2007-03-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/invoke.texi (i386 and x86-64 Options): Clarify -msahf option.
