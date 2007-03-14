@@ -3136,8 +3136,9 @@ functions.  This warning can be independently controlled by
 @option{-Wmissing-parameter-type}.
 
 @item
-An empty body occurs in an @samp{if} or @samp{else} statement. This
-warning can be independently controlled by @option{-Wempty-body}.
+An empty body occurs in an @samp{if}, @samp{else} or
+@samp{do while} statement. This warning can be independently
+controlled by @option{-Wempty-body}.
 
 @item
 A pointer is compared against integer zero with @samp{<}, @samp{<=},
@@ -3397,8 +3398,8 @@ changed by the conversion like in @code{abs (2.0)}.
 
 @item -Wempty-body
 @opindex Wempty-body
-An empty body occurs in an @samp{if} or @samp{else} statement. 
-This warning is also enabled by @option{-Wextra}.
+An empty body occurs in an @samp{if}, @samp{else} or @samp{do while}
+statement.  This warning is also enabled by @option{-Wextra}.
 
 @item -Wsign-compare
 @opindex Wsign-compare

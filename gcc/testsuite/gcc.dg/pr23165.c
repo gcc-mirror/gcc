@@ -3,7 +3,7 @@
 void foo (void)
 {
 	if (0)
-	  a: ; /* { dg-warning "empty body in an if-statement" } */
+	  a: ; /* { dg-warning "empty body in an" } */
 
 
 }
