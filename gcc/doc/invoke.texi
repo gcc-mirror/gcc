@@ -10091,11 +10091,12 @@ atomic built-in functions: see @ref{Atomic Builtins} for details.
 
 @item -msahf
 @opindex -msahf
-This option will enable GCC to use SAHF instruction in generated code.  Early
-Intel CPUs with Intel 64 lacked LAHF and SAHF instructions supported by AMD64
-until introduction of Pentium 4 G1 step in December 2005.  LAHF and SAHF are
-load and store instructions, respectively, for certain status flags.  These
-instructions are used for virtualization and floating-point condition handling.
+This option will enable GCC to use SAHF instruction in generated 64-bit code.
+Early Intel CPUs with Intel 64 lacked LAHF and SAHF instructions supported
+by AMD64 until introduction of Pentium 4 G1 step in December 2005.  LAHF and
+SAHF are load and store instructions, respectively, for certain status flags.
+In 64-bit mode, SAHF instruction is used to optimize @code{fmod}, @code{drem}
+or @code{remainder} built-in functions: see @ref{Other Builtins} for details.
 
 @item -mpush-args
 @itemx -mno-push-args
