@@ -1,3 +1,11 @@
+2007-03-13  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/31127
+	* cse.c (cse_find_path): Do not bail out if a basic block that
+	we already visited now becomes part of a path that starts at a
+	different basic block.  Just disallow this, to make sure we
+	visit each basic block at most once.
+
 2007-03-13  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (cgraph_maybe_hot_edge_p): Look for hot/cold attributes,

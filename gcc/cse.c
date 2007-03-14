@@ -5876,13 +5876,20 @@ cse_find_path (basic_block first_bb, struct cse_basic_block_data *data,
 	    {
 	      bb = FALLTHRU_EDGE (previous_bb_in_path)->dest;
 	      if (bb != EXIT_BLOCK_PTR
-		  && single_pred_p (bb))
+		  && single_pred_p (bb)
+		  /* We used to assert here that we would only see blocks
+		     that we have not visited yet.  But we may end up
+		     visiting basic blocks twice if the CFG has changed
+		     in this run of cse_main, because when the CFG changes
+		     the topological sort of the CFG also changes.  A basic
+		     blocks that previously had more than two predecessors
+		     may now have a single predecessor, and become part of
+		     a path that starts at another basic block.
+
+		     We still want to visit each basic block only once, so
+		     halt the path here if we have already visited BB.  */
+		  && !TEST_BIT (cse_visited_basic_blocks, bb->index))
 		{
-#if ENABLE_CHECKING
-		  /* We should only see blocks here that we have not
-		     visited yet.  */
-		  gcc_assert (!TEST_BIT (cse_visited_basic_blocks, bb->index));
-#endif
 		  SET_BIT (cse_visited_basic_blocks, bb->index);
 		  data->path[path_size++].bb = bb;
 		  break;
@@ -5921,14 +5928,12 @@ cse_find_path (basic_block first_bb, struct cse_basic_block_data *data,
 	    e = NULL;
 
 	  if (e && e->dest != EXIT_BLOCK_PTR
-	      && single_pred_p (e->dest))
+	      && single_pred_p (e->dest)
+	      /* Avoid visiting basic blocks twice.  The large comment
+		 above explains why this can happen.  */
+	      && !TEST_BIT (cse_visited_basic_blocks, e->dest->index))
 	    {
 	      basic_block bb2 = e->dest;
-
-	      /* We should only see blocks here that we have not
-		 visited yet.  */
-	      gcc_assert (!TEST_BIT (cse_visited_basic_blocks, bb2->index));
-
 	      SET_BIT (cse_visited_basic_blocks, bb2->index);
 	      data->path[path_size++].bb = bb2;
 	      bb = bb2;
