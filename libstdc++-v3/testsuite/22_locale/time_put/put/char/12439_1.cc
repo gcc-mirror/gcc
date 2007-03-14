@@ -18,6 +18,8 @@
 
 // 22.2.5.3.1 time_put members
 
+// { dg-require-time "" }
+
 #include <locale>
 #include <sstream>
 #include <ctime>

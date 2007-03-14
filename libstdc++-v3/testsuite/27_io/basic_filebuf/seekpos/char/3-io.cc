@@ -20,6 +20,8 @@
 
 // 27.7.1.3 Overridden virtual functions
 
+// { dg-require-fileio "" }
+
 #include <fstream>
 #include <testsuite_hooks.h>
 

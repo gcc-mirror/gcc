@@ -20,6 +20,8 @@
 
 // 27.6.2.4 basic_ostream seek members
 
+// { dg-require-fileio "" }
+
 #include <ostream>
 #include <sstream>
 #include <fstream>

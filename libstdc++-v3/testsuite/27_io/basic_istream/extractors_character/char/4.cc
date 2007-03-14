@@ -20,6 +20,8 @@
 
 // 27.6.1.2.3 basic_istream::operator>>
 
+// { dg-require-fileio "" }
+
 #include <istream>
 #include <string>
 #include <fstream>

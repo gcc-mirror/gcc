@@ -26,6 +26,24 @@ proc dg-require-namedlocale { args } {
     return
 }
 
+proc dg-require-fileio { args } {
+    if { ![ check_v3_target_fileio ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
+proc dg-require-time { args } {
+    if { ![ check_v3_target_time ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
 proc dg-require-sharedlib { args } {
     if { ![ check_v3_target_sharedlib ] } {
 	upvar dg-do-what dg-do-what

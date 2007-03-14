@@ -18,6 +18,8 @@
 
 // 27.6.1.3 unformatted input functions
 
+// { dg-require-fileio "" }
+
 #include <istream>
 #include <string>
 #include <fstream>

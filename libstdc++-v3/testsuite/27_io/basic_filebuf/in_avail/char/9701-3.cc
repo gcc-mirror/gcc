@@ -18,6 +18,8 @@
 
 // 27.5.2.2.3 Get area
 
+// { dg-require-fileio "" }
+
 #include <fstream>
 #include <testsuite_hooks.h>
 
