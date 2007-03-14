@@ -1192,7 +1192,34 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
   m_ATHLON_K8_AMDFAM10 | m_CORE2 | m_GENERIC,
 
   /* X86_TUNE_EXT_80387_CONSTANTS */
-  m_K6_GEODE | m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2 | m_GENERIC
+  m_K6_GEODE | m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2 | m_GENERIC,
+
+  /* X86_TUNE_SHORTEN_X87_SSE */
+  ~m_K8,
+
+  /* X86_TUNE_AVOID_VECTOR_DECODE */
+  m_K8 | m_GENERIC64,
+
+  /* X86_TUNE_SLOW_IMUL_IMM32_MEM (imul of 32-bit constant and memory is vector
+     path on AMD machines) */
+  m_K8 | m_GENERIC64 | m_AMDFAM10,
+
+  /* X86_TUNE_SLOW_IMUL_IMM8 (imul of 8-bit constant is vector path on AMD
+     machines)  */
+  m_K8 | m_GENERIC64 | m_AMDFAM10,
+
+  /* X86_TUNE_MOVE_M1_VIA_OR (on pentiums, it is faster to load -1 via OR than
+     a MOV) */
+  m_PENT,
+
+  /* X86_TUNE_NOT_UNPAIRABLE (NOT is not pairable on Pentium, while XOR is, but
+     one byte longer).  */
+  m_PENT,
+
+  /* X86_TUNE_NOT_VECTORMODE (On AMD K6, NOT is vector decoded with memory
+     operand that cannot be represented using a modRM byte.  The XOR
+     replacement is long decoded, so this split helps here as well).  */
+  m_K6,
 };
 
 /* Feature tests against the various architecture variations.  */
