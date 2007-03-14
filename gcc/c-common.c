@@ -7032,4 +7032,17 @@ c_build_cdtor_fns (void)
 struct gcc_targetcm targetcm = TARGETCM_INITIALIZER;
 #endif
 
+/* Warn for division by zero according to the value of DIVISOR.  */
+
+void
+warn_for_div_by_zero (tree divisor)
+{
+  /* If DIVISOR is zero, and has integral type, issue a warning about
+     division by zero.  Do not issue a warning if DIVISOR has a
+     floating-point type, since we consider 0.0/0.0 a valid way of
+     generating a NaN.  */
+  if (skip_evaluation == 0 && integer_zerop (divisor))
+    warning (OPT_Wdiv_by_zero, "division by zero");
+}
+
 #include "gt-c-common.h"
