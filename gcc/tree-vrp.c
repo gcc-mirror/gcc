@@ -843,11 +843,19 @@ value_inside_range (tree val, value_range_t *vr)
 {
   tree cmp1, cmp2;
 
+  fold_defer_overflow_warnings ();
+
   cmp1 = fold_binary_to_constant (GE_EXPR, boolean_type_node, val, vr->min);
   if (!cmp1)
+  {
+    fold_undefer_and_ignore_overflow_warnings ();
     return -2;
+  }
 
   cmp2 = fold_binary_to_constant (LE_EXPR, boolean_type_node, val, vr->max);
+
+  fold_undefer_and_ignore_overflow_warnings ();
+
   if (!cmp2)
     return -2;
 
