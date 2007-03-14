@@ -1738,7 +1738,14 @@ mio_typespec (gfc_typespec * ts)
   else
     mio_symbol_ref (&ts->derived);
 
-  mio_charlen (&ts->cl);
+  if (ts->type != BT_CHARACTER)
+    {
+      /* ts->cl is only valid for BT_CHARACTER.  */
+      mio_lparen ();
+      mio_rparen ();
+    }
+  else
+    mio_charlen (&ts->cl);
 
   mio_rparen ();
 }

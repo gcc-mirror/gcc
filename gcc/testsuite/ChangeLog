@@ -1,3 +1,7 @@
+2007-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/module_implicit_conversion.f90: New test.
+
 2007-03-13  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/vmx/vmx.exp: Add -fgnu89-inline to DEFAULT_VMXCFLAGS.
