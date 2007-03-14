@@ -1,5 +1,5 @@
 /* toplev.h - Various declarations for functions found in toplev.c
-   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -190,5 +190,10 @@ exact_log2 (unsigned HOST_WIDE_INT x)
 
 extern const char *get_src_pwd	       (void);
 extern bool set_src_pwd		       (const char *);
+
+/* Functions used to manipulate the random seed.  */
+
+extern const char *get_random_seed (bool);
+extern const char *set_random_seed (const char *);
 
 #endif /* ! GCC_TOPLEV_H */

@@ -1,3 +1,8 @@
+2007-03-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* cp/repo.c (init_repo): Initialize random_seed saved options.
+	(finish_repo): Adjust.
+
 2007-03-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR bootstrap/30899
