@@ -1,5 +1,16 @@
 2007-03-13  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	PR fortran/30922
+	PR fortran/30948
+	PR fortran/30953
+	* intrinsics.texi (CHDIR): Fix argument names, note
+	that STATUS must be a default integer.
+	(CTIME): Fix argument names, note that RESULT must
+	be a default integer.
+	(EXIT): Note that STATUS must be a default integer.
+
+2007-03-13  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	PR fortran/28068
 	* intrinsic.texi: General whitespace cleanup, remove
 	comment about missing intrinsics.

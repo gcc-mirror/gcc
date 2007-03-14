@@ -1907,23 +1907,30 @@ and formatted string representations.
 
 @table @asis
 @item @emph{Description}:
-Change current working directory to a specified @var{PATH}.
+Change current working directory to a specified path.
+
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
 
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Non-elemental subroutine
+Subroutine, non-elemental function
 
 @item @emph{Syntax}:
-@code{CALL CHDIR(PATH [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL CHDIR(NAME [, STATUS])}
+@item @code{STATUS = CHDIR(NAME)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{PATH}   @tab The type shall be @code{CHARACTER(*)} and shall
+@item @var{NAME}   @tab The type shall be @code{CHARACTER(*)} and shall
                         specify a valid path within the file system.
-@item @var{STATUS} @tab (Optional) status flag. Returns 0 on success, 
-                        a system specific and non-zero error code otherwise.
+@item @var{STATUS} @tab (Optional) @code{INTEGER} status flag of the default
+                        kind.  Returns 0 on success, and a system specific
+                        and non-zero error code otherwise.
 @end multitable
 
 @item @emph{Example}:
@@ -2421,15 +2428,11 @@ end program test_cshift
 
 @table @asis
 @item @emph{Description}:
-@code{CTIME(T,S)} converts @var{T}, a system time value, such as returned
-by @code{TIME8()}, to a string of the form @samp{Sat Aug 19 18:13:14
-1995}, and returns that string into @var{S}.
+@code{CTIME} converts a system time value, such as returned by
+@code{TIME8()}, to a string of the form @samp{Sat Aug 19 18:13:14 1995}.
 
-If @code{CTIME} is invoked as a function, it can not be invoked as a
-subroutine, and vice versa.
-
-@var{T} is an @code{INTENT(IN)} @code{INTEGER(KIND=8)} variable.
-@var{S} is an @code{INTENT(OUT)} @code{CHARACTER} variable.
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
 
 @item @emph{Standard}:
 GNU extension
@@ -2439,14 +2442,14 @@ Subroutine
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
-@item @code{CALL CTIME(T,S)}.
-@item @code{S = CTIME(T)}, (not recommended).
+@item @code{CALL CTIME(TIME, RESULT)}.
+@item @code{RESULT = CTIME(TIME)}, (not recommended).
 @end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{S}@tab The type shall be of type @code{CHARACTER}.
-@item @var{T}@tab The type shall be of type @code{INTEGER(KIND=8)}.
+@item @var{TIME}    @tab The type shall be of type @code{INTEGER(KIND=8)}.
+@item @var{RESULT}  @tab The type shall be of type @code{CHARACTER}.
 @end multitable
 
 @item @emph{Return value}:
@@ -3273,7 +3276,7 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{STATUS} @tab The type of the argument shall be @code{INTEGER(*)}.
+@item @var{STATUS} @tab Shall be an @code{INTEGER} of the default kind.
 @end multitable
 
 @item @emph{Return value}:
