@@ -134,24 +134,30 @@ gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations,
   for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
     {
       unsigned int it;
+      tree ref = DR_REF (dr);
       tree stmt = DR_STMT (dr);
       struct loop *stmt_loop = loop_containing_stmt (stmt);
       struct loop *inner_loop = first_loop->inner;
-      
+
       if (inner_loop != stmt_loop 
 	  && !flow_loop_nested_p (inner_loop, stmt_loop))
 	continue;
-      for (it = 0; it < DR_NUM_DIMENSIONS (dr); it++)
+
+      for (it = 0; it < DR_NUM_DIMENSIONS (dr); 
+	   it++, ref = TREE_OPERAND (ref, 0))
 	{
 	  tree chrec = DR_ACCESS_FN (dr, it);
-	  tree tstride = evolution_part_in_loop_num 
-	    (chrec, loop->num);
-	  
+	  tree tstride = evolution_part_in_loop_num (chrec, loop->num);
+	  tree array_size = TYPE_SIZE (TREE_TYPE (ref));
+
 	  if (tstride == NULL_TREE
-	      || TREE_CODE (tstride) != INTEGER_CST)
+	      || array_size == NULL_TREE 
+	      || TREE_CODE (tstride) != INTEGER_CST
+	      || TREE_CODE (array_size) != INTEGER_CST)
 	    continue;
-	  
-	  (*access_strides) += int_cst_value (tstride);
+
+	  (*access_strides) += 
+	    int_cst_value (array_size) * int_cst_value (tstride);
 	}
     }
 }

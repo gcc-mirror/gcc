@@ -1,3 +1,9 @@
+2007-03-14  Sebastian Pop  <sebastian.pop@inria.fr>
+
+	* tree-loop-linear.c (gather_interchange_stats): For multidimensional
+	arrays, multiply the access strides by the size of the sub-array.
+	* testsuite/gcc.dg/tree-ssa/ltrans-5.c: New.
+
 2007-03-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* configure.ac (HAVE_AS_IX86_SAHF): On x86 targets check whether
