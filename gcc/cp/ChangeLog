@@ -1,5 +1,9 @@
 2007-03-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	* class.c (warn_hidden): Add OPT_Woverloaded_virtual to warning.
+	
+2007-03-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR c/21438
 	* typeck.c (build_binary_op): Call warn_for_div_zero instead of
 	warning.

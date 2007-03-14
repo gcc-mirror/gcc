@@ -2421,8 +2421,8 @@ warn_hidden (tree t)
       while (base_fndecls)
 	{
 	  /* Here we know it is a hider, and no overrider exists.  */
-	  warning (0, "%q+D was hidden", TREE_VALUE (base_fndecls));
-	  warning (0, "  by %q+D", fns);
+	  warning (OPT_Woverloaded_virtual, "%q+D was hidden", TREE_VALUE (base_fndecls));
+	  warning (OPT_Woverloaded_virtual, "  by %q+D", fns);
 	  base_fndecls = TREE_CHAIN (base_fndecls);
 	}
     }
