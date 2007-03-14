@@ -163,6 +163,14 @@ tree_nrv (void)
 						     result_type))
 		return 0;
 	    }
+	  else if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+	    {
+	      tree addr = get_base_address (GIMPLE_STMT_OPERAND (stmt, 0));
+	       /* If there's any MODIFY of component of RESULT, 
+		  then bail out.  */
+	      if (addr && addr == result)
+		return 0;
+	    }
 	}
     }
 
