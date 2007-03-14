@@ -1,3 +1,11 @@
+2007-03-15  Dirk Mueller  <dmueller@suse.de>
+
+	PR c++/30860
+	* call.c (convert_conversion_warnings): New..
+	(convert_like_real): .. factored out from here.
+	(convert_conversion_warnings): Add warning about
+	false being converted to NULL in argument passing.
+
 2007-03-14  Dirk Mueller  <dmueller@suse.de>
 
 	* cp/semantics.c (c_finish_if_stmt): Call empty_if_body_warning.

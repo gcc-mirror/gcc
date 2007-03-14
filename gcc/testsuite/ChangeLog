@@ -1,3 +1,7 @@
+2007-03-15  Dirk Mueller  <dmueller@suse.de>
+
+	* g++.dg/warn/Wconversion2.C: New.
+
 2007-03-14  Eric Christopher  <echristo@apple.com>
 
 	* gcc.dg/ssp-1.c: New.
