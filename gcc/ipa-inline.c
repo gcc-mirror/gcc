@@ -472,6 +472,15 @@ cgraph_maybe_hot_edge_p (struct cgraph_edge *edge)
       && (edge->count
 	  <= profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION)))
     return false;
+  if (lookup_attribute ("cold", DECL_ATTRIBUTES (edge->callee->decl))
+      || lookup_attribute ("cold", DECL_ATTRIBUTES (edge->caller->decl)))
+    return false;
+  if (lookup_attribute ("hot", DECL_ATTRIBUTES (edge->caller->decl)))
+    return true;
+  if (flag_guess_branch_prob
+      && edge->frequency < (CGRAPH_FREQ_MAX
+      			    / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION)))
+    return false;
   return true;
 }
 
