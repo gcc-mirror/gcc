@@ -1,3 +1,9 @@
+2007-03-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (cgraph_maybe_hot_edge_p): Look for hot/cold attributes,
+	when profile esitmate is present, calls with very low frequency are
+	cold.
+
 2007-03-13  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/30730
