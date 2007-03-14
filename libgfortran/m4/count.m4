@@ -41,6 +41,6 @@ include(ifunction.m4)dnl
 ARRAY_FUNCTION(0,
 `  result = 0;',
 `  if (*src)
-    result++;')
+    result++;')`
 
-#endif
+#endif'

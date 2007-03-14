@@ -35,14 +35,14 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
-`#if defined (HAVE_'atype_name`)'
+`#if defined (HAVE_'atype_name`)
 
 static void
 eoshift1 (gfc_array_char * const restrict ret, 
 	const gfc_array_char * const restrict array, 
-	const atype * const restrict h,
+	const 'atype` * const restrict h,
 	const char * const restrict pbound, 
-	const atype_name * const restrict pwhich, 
+	const 'atype_name` * const restrict pwhich, 
 	index_type size, char filler)
 {
   /* r.* indicates the return array.  */
@@ -57,10 +57,10 @@ eoshift1 (gfc_array_char * const restrict ret,
   index_type soffset;
   const char *sptr;
   const char *src;
-`  /* h.* indicates the shift array.  */'
+  /* h.* indicates the shift array.  */
   index_type hstride[GFC_MAX_DIMENSIONS];
   index_type hstride0;
-  const atype_name *hptr;
+  const 'atype_name` *hptr;
 
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -68,8 +68,8 @@ eoshift1 (gfc_array_char * const restrict ret,
   index_type len;
   index_type n;
   int which;
-  atype_name sh;
-  atype_name delta;
+  'atype_name` sh;
+  'atype_name` delta;
 
   /* The compiler cannot figure out that these are set, initialize
      them to avoid warnings.  */
@@ -145,7 +145,7 @@ eoshift1 (gfc_array_char * const restrict ret,
 
   while (rptr)
     {
-`      /* Do the shift for this dimension.  */'
+      /* Do the shift for this dimension.  */
       sh = *hptr;
       if (( sh >= 0 ? sh : -sh ) > len)
 	{
@@ -222,42 +222,42 @@ eoshift1 (gfc_array_char * const restrict ret,
     }
 }
 
-void eoshift1_`'atype_kind (gfc_array_char * const restrict, 
+void eoshift1_'atype_kind` (gfc_array_char * const restrict, 
 	const gfc_array_char * const restrict,
-	const atype * const restrict, const char * const restrict, 
-	const atype_name * const restrict);
-export_proto(eoshift1_`'atype_kind);
+	const 'atype` * const restrict, const char * const restrict, 
+	const 'atype_name` * const restrict);
+export_proto(eoshift1_'atype_kind`);
 
 void
-eoshift1_`'atype_kind (gfc_array_char * const restrict ret, 
+eoshift1_'atype_kind` (gfc_array_char * const restrict ret, 
 	const gfc_array_char * const restrict array,
-	const atype * const restrict h, 
+	const 'atype` * const restrict h, 
 	const char * const restrict pbound,
-	const atype_name * const restrict pwhich)
+	const 'atype_name` * const restrict pwhich)
 {
   eoshift1 (ret, array, h, pbound, pwhich, GFC_DESCRIPTOR_SIZE (array), 0);
 }
 
-void eoshift1_`'atype_kind`'_char (gfc_array_char * const restrict, 
+void eoshift1_'atype_kind`_char (gfc_array_char * const restrict, 
 	GFC_INTEGER_4,
 	const gfc_array_char * const restrict, 
-	const atype * const restrict,
+	const 'atype` * const restrict,
 	const char * const restrict, 
-	const atype_name * const restrict,
+	const 'atype_name` * const restrict,
 	GFC_INTEGER_4, GFC_INTEGER_4);
-export_proto(eoshift1_`'atype_kind`'_char);
+export_proto(eoshift1_'atype_kind`_char);
 
 void
-eoshift1_`'atype_kind`'_char (gfc_array_char * const restrict ret,
+eoshift1_'atype_kind`_char (gfc_array_char * const restrict ret,
 	GFC_INTEGER_4 ret_length __attribute__((unused)),
 	const gfc_array_char * const restrict array, 
-	const atype * const restrict h,
+	const 'atype` * const restrict h,
 	const char *  const restrict pbound, 
-	const atype_name * const restrict pwhich,
+	const 'atype_name` * const restrict pwhich,
 	GFC_INTEGER_4 array_length,
 	GFC_INTEGER_4 bound_length __attribute__((unused)))
 {
-  eoshift1 (ret, array, h, pbound, pwhich, array_length, ' ');
+  eoshift1 (ret, array, h, pbound, pwhich, array_length, ''` ''`);
 }
 
-#endif
+#endif'

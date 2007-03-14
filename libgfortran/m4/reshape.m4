@@ -34,27 +34,27 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
-`#if defined (HAVE_'rtype_name`)'
+`#if defined (HAVE_'rtype_name`)
 
-typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
+typedef GFC_ARRAY_DESCRIPTOR(1, 'index_type`) 'shape_type`;'
 
 dnl For integer routines, only the kind (ie size) is used to name the
 dnl function.  The same function will be used for integer and logical
 dnl arrays of the same kind.
 
-extern void reshape_`'rtype_ccode (rtype * const restrict, 
-	rtype * const restrict, 
-	shape_type * const restrict,
-	rtype * const restrict, 
-	shape_type * const restrict);
-export_proto(reshape_`'rtype_ccode);
+`extern void reshape_'rtype_ccode` ('rtype` * const restrict, 
+	'rtype` * const restrict, 
+	'shape_type` * const restrict,
+	'rtype` * const restrict, 
+	'shape_type` * const restrict);
+export_proto(reshape_'rtype_ccode`);
 
 void
-reshape_`'rtype_ccode (rtype * const restrict ret, 
-	rtype * const restrict source, 
-	shape_type * const restrict shape,
-	rtype * const restrict pad, 
-	shape_type * const restrict order)
+reshape_'rtype_ccode` ('rtype` * const restrict ret, 
+	'rtype` * const restrict source, 
+	'shape_type` * const restrict shape,
+	'rtype` * const restrict pad, 
+	'shape_type` * const restrict order)
 {
   /* r.* indicates the return array.  */
   index_type rcount[GFC_MAX_DIMENSIONS];
@@ -65,7 +65,7 @@ reshape_`'rtype_ccode (rtype * const restrict ret,
   index_type rsize;
   index_type rs;
   index_type rex;
-  rtype_name *rptr;
+  'rtype_name` *rptr;
   /* s.* indicates the source array.  */
   index_type scount[GFC_MAX_DIMENSIONS];
   index_type sextent[GFC_MAX_DIMENSIONS];
@@ -73,16 +73,16 @@ reshape_`'rtype_ccode (rtype * const restrict ret,
   index_type sstride0;
   index_type sdim;
   index_type ssize;
-  const rtype_name *sptr;
+  const 'rtype_name` *sptr;
   /* p.* indicates the pad array.  */
   index_type pcount[GFC_MAX_DIMENSIONS];
   index_type pextent[GFC_MAX_DIMENSIONS];
   index_type pstride[GFC_MAX_DIMENSIONS];
   index_type pdim;
   index_type psize;
-  const rtype_name *pptr;
+  const 'rtype_name` *pptr;
 
-  const rtype_name *src;
+  const 'rtype_name` *src;
   int n;
   int dim;
   int sempty, pempty;
@@ -100,7 +100,7 @@ reshape_`'rtype_ccode (rtype * const restrict ret,
 	  rs *= rex;
 	}
       ret->offset = 0;
-      ret->data = internal_malloc_size ( rs * sizeof (rtype_name));
+      ret->data = internal_malloc_size ( rs * sizeof ('rtype_name`));
       ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
     }
   else
@@ -184,9 +184,9 @@ reshape_`'rtype_ccode (rtype * const restrict ret,
 
   if (rsize != 0 && ssize != 0 && psize != 0)
     {
-      rsize *= sizeof (rtype_name);
-      ssize *= sizeof (rtype_name);
-      psize *= sizeof (rtype_name);
+      rsize *= sizeof ('rtype_name`);
+      ssize *= sizeof ('rtype_name`);
+      psize *= sizeof ('rtype_name`);
       reshape_packed ((char *)ret->data, rsize, (char *)source->data,
 		      ssize, pad ? (char *)pad->data : NULL, psize);
       return;
@@ -210,7 +210,7 @@ reshape_`'rtype_ccode (rtype * const restrict ret,
 	  scount[dim] = pcount[dim];
 	  sextent[dim] = pextent[dim];
 	  sstride[dim] = pstride[dim];
-	  sstride0 = sstride[0] * sizeof (rtype_name);
+	  sstride0 = sstride[0] * sizeof ('rtype_name`);
 	}
     }
 
@@ -286,4 +286,4 @@ reshape_`'rtype_ccode (rtype * const restrict ret,
     }
 }
 
-#endif
+#endif'

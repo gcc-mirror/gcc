@@ -34,17 +34,17 @@ Boston, MA 02110-1301, USA.  */
 
 include(`mtype.m4')dnl
 
-`#if defined (HAVE_'real_type`) && defined (HAVE_FREXP'Q`)'
+`#if defined (HAVE_'real_type`) && defined (HAVE_FREXP'Q`)
 
-extern GFC_INTEGER_4 exponent_r`'kind (real_type s);
-export_proto(exponent_r`'kind);
+extern GFC_INTEGER_4 exponent_r'kind` ('real_type` s);
+export_proto(exponent_r'kind`);
 
 GFC_INTEGER_4
-exponent_r`'kind (real_type s)
+exponent_r'kind` ('real_type` s)
 {
   int ret;
-  frexp`'q (s, &ret);
+  frexp'q` (s, &ret);
   return ret;
 }
 
-#endif
+#endif'

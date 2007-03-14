@@ -39,15 +39,15 @@ include(iparm.m4)dnl
 
 `#if defined (HAVE_'rtype_name`) && defined (HAVE_'atype_name`)'
 
-rtype_name `pow_'rtype_code`_'atype_code (rtype_name a, atype_name b);
-export_proto(pow_`'rtype_code`_'atype_code);
+rtype_name `pow_'rtype_code`_'atype_code` ('rtype_name` a, 'atype_name` b);
+export_proto(pow_'rtype_code`_'atype_code`);
 
-rtype_name
-`pow_'rtype_code`_'atype_code (rtype_name a, atype_name b)
+'rtype_name`
+pow_'rtype_code`_'atype_code` ('rtype_name` a, 'atype_name` b)
 {
-  rtype_name pow, x;
-  atype_name n;
-  `GFC_UINTEGER_'atype_kind` u;'
+  'rtype_name` pow, x;
+  'atype_name` n;
+  GFC_UINTEGER_'atype_kind` u;
   
   n = b;
   x = a;
@@ -56,7 +56,7 @@ rtype_name
     {
       if (n < 0)
 	{
-ifelse(rtype_letter,i,`dnl
+'ifelse(rtype_letter,i,`dnl
 	  if (x == 1)
 	    return 1;
 	  if (x == -1)
@@ -66,7 +66,7 @@ ifelse(rtype_letter,i,`dnl
 	  u = -n;
 	  x = pow / x;
 ')dnl
-	}
+`	}
       else
 	{
 	   u = n;
@@ -85,4 +85,4 @@ ifelse(rtype_letter,i,`dnl
   return pow;
 }
 
-#endif
+#endif'
