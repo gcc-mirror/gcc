@@ -1,3 +1,12 @@
+2007-03-14  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* trans-array.c (gfc_trans_auto_array_allocation): Replace
+	fold(convert()) by fold_convert().
+	(gfc_duplicate_allocatable): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_dot_product): Use
+	build_int_cst instead of converting an integer_zero_node
+	to the final type.
+
 2007-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* module.c (mio_typespec): Don't look at ts->cl if not BT_CHARACTER.

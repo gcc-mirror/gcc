@@ -1840,7 +1840,7 @@ gfc_conv_intrinsic_dot_product (gfc_se * se, gfc_expr * expr)
   /* Initialize the result.  */
   resvar = gfc_create_var (type, "val");
   if (expr->ts.type == BT_LOGICAL)
-    tmp = convert (type, integer_zero_node);
+    tmp = build_int_cst (type, 0);
   else
     tmp = gfc_build_const (type, integer_zero_node);
 
