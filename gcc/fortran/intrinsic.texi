@@ -38,10 +38,6 @@ Some basic guidelines for editing this document:
 @chapter Intrinsic Procedures
 @cindex intrinsic procedures
 
-@comment Missing intrinsics (double check with #19292)
-@comment  - MClock
-@comment  - Short
-
 @menu
 * Introduction:         Introduction to Intrinsics
 * @code{ABORT}:         ABORT,     Abort the program     
@@ -145,6 +141,8 @@ Some basic guidelines for editing this document:
 * @code{IERRNO}:        IERRNO,    Function to get the last system error number
 * @code{INDEX}:         INDEX,     Position of a substring within a string
 * @code{INT}:           INT,       Convert to integer type
+* @code{INT2}:          INT2,      Convert to 16-bit integer type
+* @code{INT8}:          INT8,      Convert to 64-bit integer type
 * @code{IOR}:           IOR,       Bitwise logical or
 * @code{IRAND}:         IRAND,     Integer pseudo-random number
 * @code{ISATTY}:        ISATTY,    Whether a unit is a terminal device
@@ -166,6 +164,7 @@ Some basic guidelines for editing this document:
 * @code{LOG}:           LOG,       Logarithm function
 * @code{LOG10}:         LOG10,     Base 10 logarithm function 
 * @code{LOGICAL}:       LOGICAL,   Convert to logical type
+* @code{LONG}:          LONG,      Convert to integer type
 * @code{LSHIFT}:        LSHIFT,    Left shift bits
 * @code{LSTAT}:         LSTAT,     Get file status
 * @code{LTIME}:         LTIME,     Convert time to local time info
@@ -175,6 +174,8 @@ Some basic guidelines for editing this document:
 * @code{MAXEXPONENT}:   MAXEXPONENT, Maximum exponent of a real kind
 * @code{MAXLOC}:        MAXLOC,    Location of the maximum value within an array
 * @code{MAXVAL}:        MAXVAL,    Maximum value of an array
+* @code{MCLOCK}:        MCLOCK,    Time function
+* @code{MCLOCK8}:       MCLOCK8,   Time function (64-bit)
 * @code{MERGE}:         MERGE,     Merge arrays
 * @code{MIN}:           MIN,       Minimum value of an argument list
 * @code{MINEXPONENT}:   MINEXPONENT, Minimum exponent of a real kind
@@ -210,8 +211,7 @@ Some basic guidelines for editing this document:
 * @code{SCALE}:         SCALE,     Scale a real value
 * @code{SCAN}:          SCAN,      Scan a string for the presence of a set of characters
 * @code{SECNDS}:        SECNDS,    Time function
-@comment * @code{SECOND}:        SECOND,    (?)
-@comment * @code{SECONDS}:       SECONDS,   (?)
+* @code{SECOND}:        SECOND,    CPU time function
 * @code{SELECTED_INT_KIND}: SELECTED_INT_KIND,  Choose integer kind
 * @code{SELECTED_REAL_KIND}: SELECTED_REAL_KIND,  Choose real kind
 * @code{SET_EXPONENT}:  SET_EXPONENT, Set the exponent of the model
@@ -327,6 +327,7 @@ end program test_abort
 @end table
 
 
+
 @node ABS
 @section @code{ABS} --- Absolute value  
 @cindex @code{ABS} intrinsic
@@ -385,6 +386,7 @@ end program test_abs
 @end table
 
 
+
 @node ACCESS
 @section @code{ACCESS} --- Checks file access modes
 @cindex @code{ACCESS} 
@@ -440,6 +442,7 @@ end program access_test
 @item @emph{See also}:
 
 @end table
+
 
 
 @node ACHAR
@@ -539,15 +542,18 @@ Inverse function: @ref{COS}
 @end table
 
 
+
 @node ACOSH
 @section @code{ACOSH} --- Hyperbolic arccosine function
 @cindex @code{ACOSH} intrinsic
+@cindex @code{DACOSH} intrinsic
 @cindex hyperbolic arccosine
 @cindex hyperbolic cosine (inverse)
 
 @table @asis
 @item @emph{Description}:
-@code{ACOSH(X)} computes the area hyperbolic cosine of @var{X} (inverse of @code{COSH(X)}).
+@code{ACOSH(X)} computes the hyperbolic arccosine of @var{X} (inverse of
+@code{COSH(X)}).
 
 @item @emph{Standard}:
 GNU extension
@@ -575,6 +581,12 @@ PROGRAM test_acosh
   WRITE (*,*) ACOSH(x)
 END PROGRAM
 @end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name             @tab Argument          @tab Return type       @tab Standard
+@item @code{DACOSH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
+@end multitable
 
 @item @emph{See also}:
 Inverse function: @ref{COSH}
@@ -931,6 +943,7 @@ end program test_allocated
 @end table
 
 
+
 @node AND
 @section @code{AND} --- Bitwise logical AND
 @cindex @code{AND} intrinsic
@@ -1152,15 +1165,17 @@ Inverse function: @ref{SIN}
 @end table
 
 
+
 @node ASINH
 @section @code{ASINH} --- Hyperbolic arcsine function
 @cindex @code{ASINH} intrinsic
+@cindex @code{DASINH} intrinsic
 @cindex hyperbolic arcsine
 @cindex hyperbolic sine (inverse)
 
 @table @asis
 @item @emph{Description}:
-@code{ASINH(X)} computes the area hyperbolic sine of @var{X} (inverse of @code{SINH(X)}).
+@code{ASINH(X)} computes the hyperbolic arcsine of @var{X} (inverse of @code{SINH(X)}).
 
 @item @emph{Standard}:
 GNU extension
@@ -1187,6 +1202,12 @@ PROGRAM test_asinh
   WRITE (*,*) ASINH(x)
 END PROGRAM
 @end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name             @tab Argument          @tab Return type       @tab Standard
+@item @code{DASINH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension.
+@end multitable
 
 @item @emph{See also}:
 Inverse function: @ref{SINH}
@@ -1326,7 +1347,8 @@ Inverse function: @ref{TAN}
 
 @table @asis
 @item @emph{Description}:
-@code{ATAN2(Y,X)} computes the arctangent of the complex number @math{X + i Y}.
+@code{ATAN2(Y,X)} computes the arctangent of the complex number
+@math{X + i Y}.
 
 @item @emph{Standard}:
 F77 and later
@@ -1373,12 +1395,14 @@ end program test_atan2
 @node ATANH
 @section @code{ATANH} --- Hyperbolic arctangent function
 @cindex @code{ASINH} intrinsic
+@cindex @code{DASINH} intrinsic
 @cindex hyperbolic arctangent
 @cindex hyperbolic tangent (inverse)
 
 @table @asis
 @item @emph{Description}:
-@code{ATANH(X)} computes the area hyperbolic sine of @var{X} (inverse of @code{TANH(X)}).
+@code{ATANH(X)} computes the hyperbolic arctangent of @var{X} (inverse
+of @code{TANH(X)}).
 
 @item @emph{Standard}:
 GNU extension
@@ -1407,10 +1431,15 @@ PROGRAM test_atanh
 END PROGRAM
 @end smallexample
 
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name             @tab Argument          @tab Return type       @tab Standard
+@item @code{DATANH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
+@end multitable
+
 @item @emph{See also}:
 Inverse function: @ref{TANH}
 @end table
-
 
 
 
@@ -1870,6 +1899,7 @@ and formatted string representations.
 @end table
 
 
+
 @node CHDIR
 @section @code{CHDIR} --- Change working directory
 @cindex @code{CHDIR} intrinsic
@@ -1981,6 +2011,7 @@ end program chmod_test
 @end table
 
 
+
 @node CMPLX
 @section @code{CMPLX} --- Complex conversion function
 @cindex @code{CMPLX} intrinsic
@@ -2071,6 +2102,8 @@ end program test_command_argument_count
 @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT}
 @end table
 
+
+
 @node CONJG
 @section @code{CONJG} --- Complex conjugate function 
 @cindex @code{CONJG} intrinsic
@@ -2123,6 +2156,7 @@ end program test_conjg
 @section @code{COS} --- Cosine function 
 @cindex @code{COS} intrinsic
 @cindex @code{DCOS} intrinsic
+@cindex @code{CCOS} intrinsic
 @cindex @code{ZCOS} intrinsic
 @cindex @code{CDCOS} intrinsic
 @cindex trigonometric functions
@@ -2291,8 +2325,9 @@ end program test_count
 
 @table @asis
 @item @emph{Description}:
-Returns a @code{REAL} value representing the elapsed CPU time in seconds.  This
-is useful for testing segments of code to determine execution time.
+Returns a @code{REAL(*)} value representing the elapsed CPU time in
+seconds.  This is useful for testing segments of code to determine
+execution time.
 
 @item @emph{Standard}:
 F95 and later
@@ -2305,7 +2340,7 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{TIME} @tab The type shall be @code{REAL} with @code{INTENT(OUT)}.
+@item @var{TIME} @tab The type shall be @code{REAL(*)} with @code{INTENT(OUT)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -2376,6 +2411,7 @@ program test_cshift
 end program test_cshift
 @end smallexample
 @end table
+
 
 
 @node CTIME
@@ -3262,6 +3298,7 @@ end program test_exit
 @section @code{EXP} --- Exponential function 
 @cindex @code{EXP} intrinsic
 @cindex @code{DEXP} intrinsic
+@cindex @code{CEXP} intrinsic
 @cindex @code{ZEXP} intrinsic
 @cindex @code{CDEXP} intrinsic
 @cindex exponential
@@ -3348,6 +3385,7 @@ end program test_exponent
 @end table
 
 
+
 @node FDATE
 @section @code{FDATE} --- Get the current time as a string
 @cindex @code{FDATE} intrinsic
@@ -3402,6 +3440,8 @@ program test_fdate
 end program test_fdate
 @end smallexample
 @end table
+
+
 
 @node FLOAT
 
@@ -3498,6 +3538,7 @@ END PROGRAM
 @item @emph{See also}:
 @ref{FGETC}, @ref{FPUT}, @ref{FPUTC}
 @end table
+
 
 
 @node FGETC
@@ -4624,6 +4665,7 @@ and formatted string representations.
 @end table
 
 
+
 @node IAND
 @section @code{IAND} --- Bitwise logical and
 @cindex @code{IAND} intrinsic
@@ -5062,11 +5104,11 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@item @code{RESULT = INT(X [, KIND))}
+@code{RESULT = INT(A [, KIND))}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X}    @tab Shall be of type @code{INTEGER(*)},
+@item @var{A}    @tab Shall be of type @code{INTEGER(*)},
                       @code{REAL(*)}, or @code{COMPLEX(*)}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
                       expression indicating the kind parameter of
@@ -5079,13 +5121,13 @@ the following rules:
 
 @table @asis
 @item (A)
-If @var{X} is of type @code{INTEGER(*)}, @code{INT(X) = X} 
+If @var{A} is of type @code{INTEGER(*)}, @code{INT(A) = A} 
 @item (B)
-If @var{X} is of type @code{REAL(*)} and @math{|X| < 1}, @code{INT(X)} equals @var{0}. 
-If @math{|X| \geq 1}, then @code{INT(X)} equals the largest integer that does not exceed 
-the range of @var{X} and whose sign is the same as the sign of @var{X}.
+If @var{A} is of type @code{REAL(*)} and @math{|A| < 1}, @code{INT(A)} equals @code{0}. 
+If @math{|A| \geq 1}, then @code{INT(A)} equals the largest integer that does not exceed 
+the range of @var{A} and whose sign is the same as the sign of @var{A}.
 @item (C)
-If @var{X} is of type @code{COMPLEX(*)}, rule B is applied to the real part of X.
+If @var{A} is of type @code{COMPLEX(*)}, rule B is applied to the real part of @var{A}.
 @end table
 
 @item @emph{Example}:
@@ -5101,11 +5143,84 @@ end program
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Argument            @tab Return type       @tab Standard
-@item @code{IFIX(X)}   @tab @code{REAL(4) X}    @tab @code{INTEGER}    @tab F77 and later
-@item @code{IDINT(X)}  @tab @code{REAL(8) X}    @tab @code{INTEGER}    @tab F77 and later
+@item @code{IFIX(A)}   @tab @code{REAL(4) A}    @tab @code{INTEGER}    @tab F77 and later
+@item @code{IDINT(A)}  @tab @code{REAL(8) A}    @tab @code{INTEGER}    @tab F77 and later
 @end multitable
 
 @comment @item @emph{See also}:
+@end table
+
+
+
+@node INT2
+@section @code{INT2} --- Convert to 16-bit integer type
+@cindex @code{INT2} intrinsic
+@cindex @code{SHORT} intrinsic
+@cindex conversion function (integer)
+
+@table @asis
+@item @emph{Description}:
+Convert to a @code{KIND=2} integer type. This is equivalent to the
+standard @code{INT} intrinsic with an optional argument of
+@code{KIND=2}, and is only included for backwards compatibility.
+
+The @code{SHORT} intrinsic is equivalent to @code{INT2}.
+
+@item @emph{Standard}:
+GNU extension.
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = INT2(A)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{A}    @tab Shall be of type @code{INTEGER(*)},
+                      @code{REAL(*)}, or @code{COMPLEX(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is a @code{INTEGER(2)} variable.
+
+@comment @item @emph{See also}:
+@ref{INT}, @ref{INT8}, @ref{LONG}
+@end table
+
+
+
+@node INT8
+@section @code{INT8} --- Convert to 64-bit integer type
+@cindex @code{INT8} intrinsic
+@cindex conversion function (integer)
+
+@table @asis
+@item @emph{Description}:
+Convert to a @code{KIND=8} integer type. This is equivalent to the
+standard @code{INT} intrinsic with an optional argument of
+@code{KIND=8}, and is only included for backwards compatibility.
+
+@item @emph{Standard}:
+GNU extension.
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = INT8(A)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{A}    @tab Shall be of type @code{INTEGER(*)},
+                      @code{REAL(*)}, or @code{COMPLEX(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is a @code{INTEGER(8)} variable.
+
+@comment @item @emph{See also}:
+@ref{INT}, @ref{INT2}, @ref{LONG}
 @end table
 
 
@@ -5145,7 +5260,6 @@ the larger argument.)
 @item @emph{See also}:
 @ref{IEOR}, @ref{IAND}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR}, @ref{NOT}
 @end table
-
 
 
 
@@ -5236,7 +5350,6 @@ END PROGRAM
 
 
 
-
 @node ISHFT
 @section @code{ISHFT} --- Shift bits
 @cindex @code{ISHFT} intrinsic
@@ -5274,7 +5387,6 @@ The return value is of type @code{INTEGER(*)} and of the same kind as
 @item @emph{See also}:
 @ref{ISHFTC}
 @end table
-
 
 
 
@@ -5987,6 +6099,41 @@ kind corresponding to @var{KIND}, or of the default logical kind if
 
 
 
+@node LONG
+@section @code{LONG} --- Convert to integer type
+@cindex @code{LONG} intrinsic
+@cindex conversion function (integer)
+
+@table @asis
+@item @emph{Description}:
+Convert to a @code{KIND=4} integer type, which is the same size as a C
+@code{long} integer.  This is equivalent to the standard @code{INT}
+intrinsic with an optional argument of @code{KIND=4}, and is only
+included for backwards compatibility.
+
+@item @emph{Standard}:
+GNU extension.
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = LONG(A)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{A}    @tab Shall be of type @code{INTEGER(*)},
+                      @code{REAL(*)}, or @code{COMPLEX(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is a @code{INTEGER(4)} variable.
+
+@comment @item @emph{See also}:
+@ref{INT}, @ref{INT2}, @ref{INT8}
+@end table
+
+
 
 @node LSHIFT
 @section @code{LSHIFT} --- Left shift bits
@@ -6027,6 +6174,7 @@ The return value is of type @code{INTEGER(*)} and of the same kind as
 @ref{ISHFT}, @ref{ISHFTC}, @ref{RSHIFT}
 
 @end table
+
 
 
 @node LSTAT
@@ -6233,6 +6381,11 @@ for the @code{*} or @code{.AND.} operators.
 @node MAX
 @section @code{MAX} --- Maximum value of an argument list
 @cindex @code{MAX} intrinsic
+@cindex @code{MAX0} intrinsic
+@cindex @code{AMAX0} intrinsic
+@cindex @code{MAX1} intrinsic
+@cindex @code{AMAX1} intrinsic
+@cindex @code{DMAX1} intrinsic
 
 @table @asis
 @item @emph{Description}:
@@ -6431,6 +6584,84 @@ cases, the result is of the same type and kind as @var{ARRAY}.
 
 
 
+@node MCLOCK
+@section @code{MCLOCK} --- Time function
+@cindex @code{MCLOCK} intrinsic
+@cindex time, clock ticks
+@cindex clock ticks
+
+@table @asis
+@item @emph{Description}:
+Returns the number of clock ticks since the start of the process, based
+on the UNIX function @code{clock(3)}.
+
+This intrinsic is not fully portable, such as to systems with 32-bit
+@code{INTEGER} types but supporting times wider than 32 bits. Therefore,
+the values returned by this intrinsic might be, or become, negative, or
+numerically less than previous values, during a single run of the
+compiled program.
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Non-elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = MCLOCK()}
+
+@item @emph{Return value}:
+The return value is a scalar of type @code{INTEGER(4)}, equal to the
+number of clock ticks since the start of the process, or @code{-1} if
+the system does not support @code{clock(3)}.
+
+@item @emph{See also}:
+@ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK}, @ref{TIME}
+
+@end table
+
+
+
+@node MCLOCK8
+@section @code{MCLOCK8} --- Time function (64-bit)
+@cindex @code{MCLOCK8} intrinsic
+@cindex time, current
+@cindex current time
+
+@table @asis
+@item @emph{Description}:
+Returns the number of clock ticks since the start of the process, based
+on the UNIX function @code{clock(3)}.
+
+@emph{Warning:} this intrinsic does not increase the range of the timing
+values over that returned by @code{clock(3)}. On a system with a 32-bit
+@code{clock(3)}, @code{MCLOCK8()} will return a 32-bit value, even though
+it is converted to a 64-bit @code{INTEGER(8)} value. That means
+overflows of the 32-bit value can still occur. Therefore, the values
+returned by this intrinsic might be or become negative or numerically
+less than previous values during a single run of the compiled program.
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Non-elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = MCLOCK8()}
+
+@item @emph{Return value}:
+The return value is a scalar of type @code{INTEGER(8)}, equal to the
+number of clock ticks since the start of the process, or @code{-1} if
+the system does not support @code{clock(3)}.
+
+@item @emph{See also}:
+@ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK}, @ref{TIME8}
+
+@end table
+
+
+
 @node MERGE
 @section @code{MERGE} --- Merge variables
 @cindex @code{MERGE} intrinsic
@@ -6468,6 +6699,11 @@ The result is of the same type and type parameters as @var{TSOURCE}.
 @node MIN
 @section @code{MIN} --- Minimum value of an argument list
 @cindex @code{MIN} intrinsic
+@cindex @code{MIN0} intrinsic
+@cindex @code{AMIN0} intrinsic
+@cindex @code{MIN1} intrinsic
+@cindex @code{AMIN1} intrinsic
+@cindex @code{DMIN1} intrinsic
 
 @table @asis
 @item @emph{Description}:
@@ -6509,6 +6745,8 @@ and has the same type and kind as the first argument.
 @item @emph{See also}:
 @ref{MAX}, @ref{MINLOC}, @ref{MINVAL}
 @end table
+
+
 
 @node MINEXPONENT
 @section @code{MINEXPONENT} --- Minimum exponent of a real kind
@@ -7000,6 +7238,7 @@ end program test_nint
 @end table
 
 
+
 @node NOT
 @section @code{NOT} --- Logical negation
 @cindex @code{NOT} intrinsic
@@ -7034,7 +7273,6 @@ argument.
 
 
 
-
 @node NULL
 @section @code{NULL} --- Function that returns an disassociated pointer
 @cindex @code{NULL} intrinsic
@@ -7057,7 +7295,6 @@ Transformational function
 @item @emph{See also}:
 @ref{ASSOCIATED}
 @end table
-
 
 
 
@@ -7108,7 +7345,6 @@ END PROGRAM
 @item @emph{See also}:
 F95 elemental function: @ref{IOR}
 @end table
-
 
 
 
@@ -7586,7 +7822,6 @@ Transformational function
 
 
 
-
 @node RESHAPE
 @section @code{RESHAPE} --- Function to reshape an array
 @cindex @code{RESHAPE} intrinsic
@@ -7725,6 +7960,7 @@ end program test_scale
 @end table
 
 
+
 @node SCAN
 @section @code{SCAN} --- Scan a string for the presence of a set of characters
 @cindex @code{SCAN} intrinsic
@@ -7749,7 +7985,6 @@ Elemental function
 
 
 
-
 @node SECNDS
 @section @code{SECNDS} --- Time function
 @cindex @code{SECNDS} intrinsic
@@ -7767,16 +8002,15 @@ use is discouraged.
 GNU extension
 
 @item @emph{Class}:
-function
+Non-elemental function
 
 @item @emph{Syntax}:
 @code{RESULT = SECNDS (X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item Name        @tab Type
-@item @var{T}     @tab REAL(4)
-@item @var{X}     @tab REAL(4)
+@item @var{T}     @tab Shall be of type @code{REAL(4)}.
+@item @var{X}     @tab Shall be of type @code{REAL(4)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -7794,6 +8028,50 @@ program test_secnds
     print *, "Something took ", t2, " seconds."
 end program test_secnds
 @end smallexample
+@end table
+
+
+
+@node SECOND
+@section @code{SECOND} --- CPU time function
+@cindex @code{SECOND} intrinsic
+@cindex time, elapsed
+@cindex elapsed time
+
+@table @asis
+@item @emph{Description}:
+Returns a @code{REAL(4)} value representing the elapsed CPU time in
+seconds.  This provides the same functionality as the standard
+@code{CPU_TIME} intrinsic, and is only included for backwards
+compatibility.
+
+This intrinsic is provided in both subroutine and function forms;
+however, only one form can be used in any given program unit.
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine, non-elemental function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{CALL SECOND(TIME)}
+@item @code{TIME = SECOND()}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{TIME}  @tab Shall be of type @code{REAL(4)}.
+@end multitable
+
+@item @emph{Return value}:
+In either syntax, @var{TIME} is set to the process's current runtime in
+seconds.
+
+@item @emph{See also}:
+@ref{CPU_TIME}
+
 @end table
 
 
@@ -8089,6 +8367,7 @@ end program test_signal
 @section @code{SIN} --- Sine function 
 @cindex @code{SIN} intrinsic
 @cindex @code{DSIN} intrinsic
+@cindex @code{CSIN} intrinsic
 @cindex @code{ZSIN} intrinsic
 @cindex @code{CDSIN} intrinsic
 @cindex trigonometric functions
@@ -8299,7 +8578,6 @@ Elemental function
 
 
 
-
 @node SPREAD
 @section @code{SPREAD} --- Add a dimension to an array
 @cindex @code{SPREAD} intrinsic
@@ -8321,7 +8599,6 @@ Transformational function
 @item @emph{Example}:
 @item @emph{See also}:
 @end table
-
 
 
 
@@ -8770,7 +9047,7 @@ Non-elemental function
 The return value is a scalar of type @code{INTEGER(4)}.
 
 @item @emph{See also}:
-@ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{TIME8}
+@ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK}, @ref{TIME8}
 
 @end table
 
@@ -8809,7 +9086,7 @@ Non-elemental function
 The return value is a scalar of type @code{INTEGER(8)}.
 
 @item @emph{See also}:
-@ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{TIME}
+@ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK8}, @ref{TIME}
 
 @end table
 

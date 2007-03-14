@@ -1,3 +1,31 @@
+2007-03-13  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	Backport from trunk:
+	PR fortran/28068
+	* intrinsic.texi: General whitespace cleanup, remove
+	comment about missing intrinsics.
+	(menu): Add lines for new entries listed below.
+	(ACOSH): Mention specific function DACOSH, correct
+	description phrasing.
+	(ASINH): Mention specific function DASINH, correct
+	description phrasing.
+	(ATANH): Mention specific function DATANH, correct
+	description phrasing.
+	(COS): Add index entry for CCOS.
+	(CPU_TIME): Correct "REAL" to "REAL(*)".
+	(EXP): Add index entry for CEXP.
+	(INT): Correct argument name to "A".
+	(INT2): New entry.
+	(INT8): New entry.
+	(LONG): New entry.
+	(MAX): Add index entries for specific variants.
+	(MCLOCK): New entry.
+	(MCLOCK8): New entry.
+	(SECNDS): Adjust to a more standard form.
+	(SECOND): New entry.
+	(TIME): Add cross-reference to MCLOCK.
+	(TIME8): Add cross-reference to MCLOCK8.
+
 2007-03-08  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	Backport from trunk:
