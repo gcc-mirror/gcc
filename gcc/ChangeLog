@@ -1,3 +1,34 @@
+2007-03-14  Michael Meissner  <michael.meissner@amd.com>
+
+	PR 31018
+	* config/i386/i386.h (X86_TUNE_SHORTEN_X87_SSE): New tuning
+	option to replace hard coded TARGET_xxx in md file.
+	(X86_TUNE_AVOID_VECTOR_DECODE): Ditto.
+	(X86_TUNE_SLOW_IMUL_IMM32_MEM): Ditto.
+	(X86_TUNE_SLOW_IMUL_IMM8): Ditto.
+	(X86_TUNE_MOVE_M1_VIA_OR): Ditto.
+	(X86_TUNE_NOT_UNPAIRABLE): Ditto.
+	(X86_TUNE_NOT_VECTORMODE): Ditto.
+	(TUNE_SHORTEN_X87_SSE): Use new tuning option.
+	(TUNE_AVOID_VECTOR_DECODE): Ditto.
+	(TUNE_SLOW_IMUL_IMM32_MEM): Ditto.
+	(TUNE_SLOW_IMUL_IMM8): Ditto.
+	(TUNE_MOVE_M1_VIA_OR): Ditto.
+	(TUNE_NOT_UNPAIRABLE): Ditto.
+	(TUNE_NOT_VECTORMODE): Ditto.
+	
+	* config/i386/i386.c (ix86_tune_features): Fill in new tuning
+	options.
+
+	* config/i386/i386.md (fix_trunc?f?1_sse peephole2): Use new
+	tuning options instead of hard coded TARGET_xxx.
+	(fix ssemode peephole2's): Ditto.
+	(imul peephole2's): Ditto.
+	(movsi_or): Ditto.
+	(movdi_or_rex64): Ditto.
+	(move peephole2): Ditto.
+	(not peephole2's): Ditto.
+
 2007-03-14  Dirk Mueller  <dmueller@suse.de>
 
 	* c-common.h (empty_body_warning): Rename to empty_if_body_warning.
