@@ -1,3 +1,9 @@
+2007-03-13  Seongbae Park <seongbae.park@gmail.com>
+
+	PR tree-optimization/30590
+	* tree-nrv.c (tree_nrv): Check for the partial update of the
+	return value.
+
 2007-03-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* flags.h (flag_random_seed): Remove declaration, in favor of...
