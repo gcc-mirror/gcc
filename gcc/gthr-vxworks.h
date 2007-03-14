@@ -37,6 +37,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #else
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define __GTHREADS 1
 #define __gthread_active_p() 1
 
@@ -103,12 +107,18 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
 
 typedef struct
 {
+#ifndef __RTP__
   volatile unsigned char busy;
+#endif
   volatile unsigned char done;
 }
 __gthread_once_t;
 
-#define __GTHREAD_ONCE_INIT { 0, 0 }
+#ifndef __RTP__
+# define __GTHREAD_ONCE_INIT { 0, 0 }
+#else
+# define __GTHREAD_ONCE_INIT { 0 }
+#endif
 
 extern int __gthread_once (__gthread_once_t *once, void (*func)(void));
 
@@ -124,6 +134,10 @@ extern int __gthread_key_delete (__gthread_key_t key);
 
 extern void *__gthread_getspecific (__gthread_key_t key);
 extern int __gthread_setspecific (__gthread_key_t key, void *ptr);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* not _LIBOBJC */
 
