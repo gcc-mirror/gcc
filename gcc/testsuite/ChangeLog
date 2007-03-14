@@ -1,3 +1,7 @@
+2007-03-13  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/vmx/vmx.exp: Add -fgnu89-inline to DEFAULT_VMXCFLAGS.
+
 2007-03-12  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/inline-7.c: Add -fgnu89-inline.
