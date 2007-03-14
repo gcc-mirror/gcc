@@ -1,3 +1,7 @@
+2007-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* module.c (mio_typespec): Don't look at ts->cl if not BT_CHARACTER.
+
 2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	PR 31050
