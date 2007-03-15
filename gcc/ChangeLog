@@ -1,3 +1,9 @@
+2007-03-15  Seongbae Park <seongbae.park@gmail.com>
+
+	PR tree-optimization/30590
+	* tree-nrv.c (tree_nrv): Check for the partial update
+	of the return value.
+
 2007-03-14  Ian Lance Taylor  <iant@google.com>
 
 	* tree-vrp.c (value_inside_range): Ignore fold warnings.
