@@ -1,3 +1,13 @@
+2007-03-15  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/31159
+	* cfglayout.c (fixup_reorder_chain): Postpone deleting dead
+	jump tables, move the call to delete_dead_jumptables from here...
+	(cfg_layout_finalize): ...to here.  But rebuild jump labels first.
+	* cfgrtl.c (cfg_layout_can_merge_blocks_p): When not optimizing,
+	don't allow merging of blocks that try_redirect_by_replacing_jump
+	also does not handle when not optimizing.
+
 2007-03-15  Uros Bizjak  <ubizjak@gmail.com>
 	    Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
