@@ -1,3 +1,29 @@
+2007-03-15  Tobias Burnus  <burnus@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30922
+	* decl.c (gfc_match_import): If the parent of the current name-
+	space is null, try looking for an imported symbol in the parent
+	of the proc_name interface.
+	* resolve.c (resolve_fl_variable): Do not check for blocking of
+	host association by a same symbol, if the symbol is in an
+	interface body.
+
+2007-03-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30879
+	* decl.c (match_data_constant): Before going on to try to match
+	a name, try to match a structure component.
+
+
+	PR fortran/30870
+	* resolve.c (resolve_actual_arglist): Do not reject a generic
+	actual argument if it has a same name specific interface.
+
+	PR fortran/31163
+	* trans-array.c (parse_interface): Do not nullify allocatable
+	components if the symbol has the saved attribute.
+
 2007-03-14  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* trans-array.c (gfc_trans_auto_array_allocation): Replace

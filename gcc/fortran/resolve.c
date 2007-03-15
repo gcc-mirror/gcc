@@ -922,11 +922,24 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype)
 			 &e->where);
 	    }
 
+	  /* Check if a generic interface has a specific procedure
+	    with the same name before emitting an error.  */
 	  if (sym->attr.generic)
 	    {
-	      gfc_error ("GENERIC non-INTRINSIC procedure '%s' is not "
-			 "allowed as an actual argument at %L", sym->name,
-			 &e->where);
+	      gfc_interface *p;
+	      for (p = sym->generic; p; p = p->next)
+		if (strcmp (sym->name, p->sym->name) == 0)
+		  {
+		    e->symtree = gfc_find_symtree
+					   (p->sym->ns->sym_root, sym->name);
+		    sym = p->sym;
+		    break;
+		  }
+
+	      if (p == NULL || e->symtree == NULL)
+		gfc_error ("GENERIC non-INTRINSIC procedure '%s' is not "
+				"allowed as an actual argument at %L", sym->name,
+				&e->where);
 	    }
 
 	  /* If the symbol is the function that names the current (or
@@ -5663,7 +5676,8 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
   /* Check to see if a derived type is blocked from being host associated
      by the presence of another class I symbol in the same namespace.
      14.6.1.3 of the standard and the discussion on comp.lang.fortran.  */
-  if (sym->ts.type == BT_DERIVED && sym->ns != sym->ts.derived->ns)
+  if (sym->ts.type == BT_DERIVED && sym->ns != sym->ts.derived->ns
+	&& sym->ns->proc_name->attr.if_source != IFSRC_IFBODY)
     {
       gfc_symbol *s;
       gfc_find_symbol (sym->ts.derived->name, sym->ns, 0, &s);
