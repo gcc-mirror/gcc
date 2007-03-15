@@ -1,5 +1,12 @@
 2007-03-15  Richard Sandiford  <richard@codesourcery.com>
 
+	* lib/target-supports.exp (check_missing_uclibc_feature)
+	(check_effective_target_wchar): New procedures.
+	* gcc.dg/wchar_t-1.c: Require target wchar.
+	* gcc.dg/wint_t-1.c: Likewise.
+
+2007-03-15  Richard Sandiford  <richard@codesourcery.com>
+
 	* lib/target-supports.exp (check_gc_sections_available): Return
 	false for VxWorks targets.
 

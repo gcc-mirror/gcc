@@ -2073,6 +2073,21 @@ proc check_effective_target_uclibc {} {
     }]
 }
 
+# Return true if this is a uclibc target and if the uclibc feature
+# described by __$feature__ is not present.
+
+proc check_missing_uclibc_feature {feature} {
+    if {[check_no_compiler_messages $feature object "
+	     #include <features.h>
+	     #if defined (__UCLIBC__) && !defined (__${feature}__)
+	     #error FOO
+	     #endif
+	 "]} {
+	return 0
+    }
+    return 1
+}
+
 # Return true if this is a Newlib target.
 
 proc check_effective_target_newlib {} {
@@ -2203,5 +2218,16 @@ proc check_effective_target_vxworks_kernel { } {
 	#if !defined __vxworks || defined __RTP__
 	#error NO
 	#endif
+    }]
+}
+
+# Return 1 if the target is expected to provide wide character support.
+
+proc check_effective_target_wchar { } {
+    if {[check_missing_uclibc_feature UCLIBC_HAS_WCHAR]} {
+	return 0
+    }
+    return [check_no_compiler_messages wchar assembly {
+	#include <wchar.h>
     }]
 }

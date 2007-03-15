@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target wchar } } */
 /* { dg-options "-Wall" } */
 
 /* Compile with -Wall to get a warning if built-in and system wint_t don't
