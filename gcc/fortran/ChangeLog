@@ -1,3 +1,13 @@
+2007-03-15  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.h (gfc_option_t): Add flag_backtrace field.
+	* lang.opt: Add -fbacktrace option.
+	* invoke.texi: Document the new option.
+	* trans-decl.c (gfc_build_builtin_function_decls): Add new
+	option to the call to set_std.
+	* options.c (gfc_init_options, gfc_handle_option): Handle the
+	new option.
+
 2007-03-15  Tobias Burnus  <burnus@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 

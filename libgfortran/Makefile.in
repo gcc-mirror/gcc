@@ -71,8 +71,8 @@ myexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(myexeclib_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libgfortran_la_LIBADD =
-am__objects_1 = compile_options.lo environ.lo error.lo fpu.lo main.lo \
-	memory.lo pause.lo stop.lo string.lo select.lo
+am__objects_1 = backtrace.lo compile_options.lo environ.lo error.lo \
+	fpu.lo main.lo memory.lo pause.lo stop.lo string.lo select.lo
 am__objects_2 = all_l4.lo all_l8.lo all_l16.lo
 am__objects_3 = any_l4.lo any_l8.lo any_l16.lo
 am__objects_4 = count_4_l4.lo count_8_l4.lo count_16_l4.lo \
@@ -476,6 +476,7 @@ runtime/in_pack_generic.c \
 runtime/in_unpack_generic.c
 
 gfor_src = \
+runtime/backtrace.c \
 runtime/compile_options.c \
 runtime/environ.c \
 runtime/error.c \
@@ -1141,6 +1142,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/any_l8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/args.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/associated.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backtrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/c99_functions.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chdir.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chmod.Plo@am__quote@
@@ -1941,6 +1943,13 @@ f2c_specifics.lo: intrinsics/f2c_specifics.F90
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+backtrace.lo: runtime/backtrace.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT backtrace.lo -MD -MP -MF "$(DEPDIR)/backtrace.Tpo" -c -o backtrace.lo `test -f 'runtime/backtrace.c' || echo '$(srcdir)/'`runtime/backtrace.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/backtrace.Tpo" "$(DEPDIR)/backtrace.Plo"; else rm -f "$(DEPDIR)/backtrace.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/backtrace.c' object='backtrace.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o backtrace.lo `test -f 'runtime/backtrace.c' || echo '$(srcdir)/'`runtime/backtrace.c
 
 compile_options.lo: runtime/compile_options.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT compile_options.lo -MD -MP -MF "$(DEPDIR)/compile_options.Tpo" -c -o compile_options.lo `test -f 'runtime/compile_options.c' || echo '$(srcdir)/'`runtime/compile_options.c; \

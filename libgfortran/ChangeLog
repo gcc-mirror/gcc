@@ -1,3 +1,22 @@
+2007-03-15  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* runtime/backtrace.c: New file.
+	* runtime/environ.c (variable_table): New GFORTRAN_ERROR_BACKTRACE
+	environment variable.
+	* runtime/compile_options.c (set_std): Add new argument.
+	* runtime/main.c (store_exe_path, full_exe_path): New functions.
+	* runtime/error.c (sys_exit): Add call to show_backtrace.
+	* libgfortran.h (options_t): New backtrace field.
+	(store_exe_path, full_exe_path, show_backtrace): New prototypes.
+	* configure.ac: Add checks for execinfo.h, execvp, pipe, dup2,
+	close, fdopen, strcasestr, getrlimit, backtrace, backtrace_symbols
+	and getppid.
+	* Makefile.am: Add runtime/backtrace.c.
+	* fmain.c (main): Add call to store_exe_path.
+	* Makefile.in: Renegerate.
+	* config.h.in: Renegerate.
+	* configure: Regenerate.
+
 2007-03-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/31051

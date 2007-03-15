@@ -93,6 +93,10 @@ fbackslash
 Fortran
 Specify that backslash in string introduces an escape character
 
+fbacktrace
+Fortran
+Produce a backtrace when a runtime error is encountered
+
 fblas-matmul-limit=
 Fortran RejectNegative Joined UInteger
 -fblas-matmul-limit=<n>        Size of the smallest matrix for which matmul will use BLAS

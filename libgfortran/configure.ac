@@ -164,7 +164,7 @@ AC_HEADER_TIME
 AC_HAVE_HEADERS(stdlib.h stdio.h string.h stddef.h math.h unistd.h signal.h)
 AC_CHECK_HEADERS(time.h sys/params.h sys/time.h sys/times.h sys/resource.h)
 AC_CHECK_HEADERS(sys/types.h sys/stat.h sys/wait.h floatingpoint.h ieeefp.h)
-AC_CHECK_HEADERS(fenv.h fptrap.h float.h)
+AC_CHECK_HEADERS(fenv.h fptrap.h float.h execinfo.h)
 AC_CHECK_HEADER([complex.h],[AC_DEFINE([HAVE_COMPLEX_H], [1], [complex.h exists])])
 GCC_HEADER_STDINT(gstdint.h)
 
@@ -176,7 +176,10 @@ AC_CHECK_MEMBERS([struct stat.st_rdev])
 AC_CHECK_FUNCS(getrusage times mkstemp strtof strtold snprintf ftruncate chsize)
 AC_CHECK_FUNCS(chdir strerror getlogin gethostname kill link symlink perror)
 AC_CHECK_FUNCS(sleep time ttyname signal alarm ctime clock access fork execl)
-AC_CHECK_FUNCS(wait setmode getrlimit gettimeofday)
+AC_CHECK_FUNCS(wait setmode execvp pipe dup2 close fdopen strcasestr getrlimit)
+
+# Check for glibc backtrace functions
+AC_CHECK_FUNCS(backtrace backtrace_symbols)
 
 # Check for types
 AC_CHECK_TYPES([intptr_t])
@@ -184,6 +187,7 @@ AC_CHECK_TYPES([intptr_t])
 # Check libc for getgid, getpid, getuid
 AC_CHECK_LIB([c],[getgid],[AC_DEFINE([HAVE_GETGID],[1],[libc includes getgid])])
 AC_CHECK_LIB([c],[getpid],[AC_DEFINE([HAVE_GETPID],[1],[libc includes getpid])])
+AC_CHECK_LIB([c],[getppid],[AC_DEFINE([HAVE_GETPPID],[1],[libc includes getppid])])
 AC_CHECK_LIB([c],[getuid],[AC_DEFINE([HAVE_GETUID],[1],[libc includes getuid])])
 
 # Check for C99 (and other IEEE) math functions
