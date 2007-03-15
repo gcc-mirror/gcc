@@ -2461,6 +2461,7 @@ uses_parameter_packs (tree t)
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = pointer_set_create ();
   walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
+  pointer_set_destroy (ppd.visited);
   return parameter_packs != NULL_TREE;
 }
 
@@ -2515,6 +2516,7 @@ make_pack_expansion (tree arg)
       if (parameter_packs == NULL_TREE)
         {
           error ("base initializer expansion %<%T%> contains no parameter packs", arg);
+          pointer_set_destroy (ppd.visited);
           return error_mark_node;
         }
 
@@ -2530,6 +2532,8 @@ make_pack_expansion (tree arg)
                          &ppd, ppd.visited);
             }
         }
+
+      pointer_set_destroy (ppd.visited);
 
       /* Create the pack expansion type for the base type.  */
       purpose = make_node (TYPE_PACK_EXPANSION);
@@ -2564,6 +2568,7 @@ make_pack_expansion (tree arg)
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = pointer_set_create ();
   walk_tree (&arg, &find_parameter_packs_r, &ppd, ppd.visited);
+  pointer_set_destroy (ppd.visited);
 
   /* Make sure we found some parameter packs.  */
   if (parameter_packs == NULL_TREE)
@@ -2605,6 +2610,7 @@ check_for_bare_parameter_packs (tree t)
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = pointer_set_create ();
   walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
+  pointer_set_destroy (ppd.visited);
 
   if (parameter_packs) {
     error ("parameter packs not expanded with `...':");

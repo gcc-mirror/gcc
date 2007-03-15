@@ -68,8 +68,7 @@ cxx_print_type (FILE *file, tree node, int indent)
     case TEMPLATE_TEMPLATE_PARM:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
       indent_to (file, indent + 3);
-      fprintf (file, "index " HOST_WIDE_INT_PRINT_DEC " level "
-	       HOST_WIDE_INT_PRINT_DEC " orig_level " HOST_WIDE_INT_PRINT_DEC,
+      fprintf (file, "index %d level %d orig_level %d",
 	       TEMPLATE_TYPE_IDX (node), TEMPLATE_TYPE_LEVEL (node),
 	       TEMPLATE_TYPE_ORIG_LEVEL (node));
       return;
@@ -181,8 +180,7 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       break;
     case TEMPLATE_PARM_INDEX:
       indent_to (file, indent + 3);
-      fprintf (file, "index " HOST_WIDE_INT_PRINT_DEC " level "
-	       HOST_WIDE_INT_PRINT_DEC " orig_level " HOST_WIDE_INT_PRINT_DEC,
+      fprintf (file, "index %d level %d orig_level %d",
 	       TEMPLATE_PARM_IDX (node), TEMPLATE_PARM_LEVEL (node),
 	       TEMPLATE_PARM_ORIG_LEVEL (node));
       break;

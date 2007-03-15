@@ -56,6 +56,7 @@ struct diagnostic_context;
       OMP_FOR_GIMPLIFYING_P (in OMP_FOR)
       BASELINK_QUALIFIED_P (in BASELINK)
       TARGET_EXPR_IMPLICIT_P (in TARGET_EXPR)
+      TEMPLATE_PARM_PARAMETER_PACK (in TEMPLATE_PARM_INDEX)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -219,14 +220,10 @@ struct lang_identifier GTY(())
 struct template_parm_index_s GTY(())
 {
   struct tree_common common;
-  HOST_WIDE_INT index;
-  HOST_WIDE_INT level;
-  HOST_WIDE_INT orig_level;
+  int index;
+  int level;
+  int orig_level;
   tree decl;
-
-  /* When true, indicates that this parameter is actually a parameter
-     pack, for variadic templates.  */
-  BOOL_BITFIELD parameter_pack;
 };
 typedef struct template_parm_index_s template_parm_index;
 
@@ -703,11 +700,11 @@ struct saved_scope GTY(())
   struct cp_binding_level *x_previous_class_level;
   tree x_saved_tree;
 
-  HOST_WIDE_INT x_processing_template_decl;
+  int x_processing_template_decl;
   int x_processing_specialization;
-  bool x_processing_explicit_instantiation;
-  int need_pop_function_context;
-  bool skip_evaluation;
+  BOOL_BITFIELD x_processing_explicit_instantiation : 1;
+  BOOL_BITFIELD need_pop_function_context : 1;
+  BOOL_BITFIELD skip_evaluation : 1;
 
   struct stmt_tree_s x_stmt_tree;
 
@@ -786,11 +783,11 @@ struct language_function GTY(())
   tree x_vtt_parm;
   tree x_return_value;
 
-  int returns_value;
-  int returns_null;
-  int returns_abnormally;
-  int in_function_try_handler;
-  int in_base_initializer;
+  BOOL_BITFIELD returns_value : 1;
+  BOOL_BITFIELD returns_null : 1;
+  BOOL_BITFIELD returns_abnormally : 1;
+  BOOL_BITFIELD in_function_try_handler : 1;
+  BOOL_BITFIELD in_base_initializer : 1;
 
   /* True if this function can throw an exception.  */
   BOOL_BITFIELD can_throw : 1;
@@ -3705,7 +3702,8 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define TEMPLATE_PARM_DESCENDANTS(NODE) (TREE_CHAIN (NODE))
 #define TEMPLATE_PARM_ORIG_LEVEL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->orig_level)
 #define TEMPLATE_PARM_DECL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->decl)
-#define TEMPLATE_PARM_PARAMETER_PACK(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->parameter_pack)
+#define TEMPLATE_PARM_PARAMETER_PACK(NODE) \
+  (TREE_LANG_FLAG_0 (TEMPLATE_PARM_INDEX_CHECK (NODE)))
 
 /* These macros are for accessing the fields of TEMPLATE_TYPE_PARM,
    TEMPLATE_TEMPLATE_PARM and BOUND_TEMPLATE_TEMPLATE_PARM nodes.  */
@@ -3901,16 +3899,16 @@ struct cp_parameter_declarator {
 /* A declarator.  */
 struct cp_declarator {
   /* The kind of declarator.  */
-  cp_declarator_kind kind;
+  ENUM_BITFIELD (cp_declarator_kind) kind : 4;
+  /* Whether we parsed an ellipsis (`...') just before the declarator,
+     to indicate this is a parameter pack.  */
+  BOOL_BITFIELD parameter_pack_p : 1;
   /* Attributes that apply to this declarator.  */
   tree attributes;
   /* For all but cdk_id and cdk_error, the contained declarator.  For
      cdk_id and cdk_error, guaranteed to be NULL.  */
   cp_declarator *declarator;
   location_t id_loc; /* Currently only set for cdk_id. */
-  /* Whether we parsed an ellipsis (`...') just before the declarator,
-     to indicate this is a parameter pack.  */
-  bool parameter_pack_p;
   union {
     /* For identifiers.  */
     struct {

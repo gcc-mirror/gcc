@@ -1,3 +1,27 @@
+2007-03-15  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* ptree.c (cxx_print_type): Use formatting markup for integers
+	when printing template parameter index/level/orig level.
+	(cxx_print_xnode): Ditto.
+	* cp-tree.h (TEMPLATE_PARM_PARAMETER_PACK): Use TREE_LANG_FLAG_0.
+	(struct template_parm_index_s): Remove the PARAMETER_PACK member.
+	Make INDEX, LEVEL, and ORIG_LEVEL integers instead of
+	HOST_WIDE_INTs.
+	(struct saved_scope): Make X_PROCESSING_TEMPLATE_DECL an int,
+	rather than a HOST_WIDE_INT.
+	Turn X_PROCESSING_EXPLICIT_INSTANTIATION, SKIP_EVALUATION, and
+	NEED_POP_FUNCTION_CONTEXT into bool bitfields; reorder fields for
+	better bit-packing.
+	(struct language_function): Make RETURNS_VALUE, RETURNS_NULL,
+	RETURNS_ABNORMALLY, IN_FUNCTION_TRY_HANDLER, and
+	IN_BASE_INITIALIZER bool bitfields.
+	(struct cp_declarator): Make KIND a 4-bit field. Make
+	PARAMETER_PACK_P a bool bitfield just after KIND.
+	* pt.c (uses_parameter_packs): Destroy the pointer set.
+	(make_pack_expansion): Ditto.
+	(check_for_bare_parameter_packs): Ditto.
+	* name-lookup.c (push_to_top_level): Make need_pop a bool value.
+	
 2007-03-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR c++/31165
