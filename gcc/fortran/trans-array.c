@@ -5216,9 +5216,12 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
     
   if (sym_has_alloc_comp && !(sym->attr.pointer || sym->attr.allocatable))
     {
-      rank = sym->as ? sym->as->rank : 0;
-      tmp = gfc_nullify_alloc_comp (sym->ts.derived, descriptor, rank);
-      gfc_add_expr_to_block (&fnblock, tmp);
+      if (!sym->attr.save)
+	{
+	  rank = sym->as ? sym->as->rank : 0;
+	  tmp = gfc_nullify_alloc_comp (sym->ts.derived, descriptor, rank);
+	  gfc_add_expr_to_block (&fnblock, tmp);
+	}
     }
   else if (!GFC_DESCRIPTOR_TYPE_P (type))
     {
@@ -5239,7 +5242,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
   /* Allocatable arrays need to be freed when they go out of scope.
      The allocatable components of pointers must not be touched.  */
   if (sym_has_alloc_comp && !(sym->attr.function || sym->attr.result)
-      && !sym->attr.pointer)
+      && !sym->attr.pointer && !sym->attr.save)
     {
       int rank;
       rank = sym->as ? sym->as->rank : 0;
