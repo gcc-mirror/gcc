@@ -5030,7 +5030,7 @@ push_to_top_level (void)
   struct cp_binding_level *b;
   cxx_saved_binding *sb;
   size_t i;
-  int need_pop;
+  bool need_pop;
 
   timevar_push (TV_NAME_LOOKUP);
   s = GGC_CNEW (struct saved_scope);
@@ -5040,11 +5040,11 @@ push_to_top_level (void)
   /* If we're in the middle of some function, save our state.  */
   if (cfun)
     {
-      need_pop = 1;
+      need_pop = true;
       push_function_context_to (NULL_TREE);
     }
   else
-    need_pop = 0;
+    need_pop = false;
 
   if (scope_chain && previous_class_level)
     store_class_bindings (previous_class_level->class_shadowed,
