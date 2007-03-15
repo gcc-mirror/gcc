@@ -4618,7 +4618,7 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
 	 VAR_DECL.  We can avoid the copy for constants, since they
 	 are never modified in place.  */
       if (!CONSTANT_CLASS_P (arg))
-	arg = copy_node (arg);
+	arg = unshare_expr (arg);
       arg = convert_for_initialization (0, type, arg, LOOKUP_NORMAL,
 					"default argument", fn, parmnum);
       arg = convert_for_arg_passing (type, arg);
