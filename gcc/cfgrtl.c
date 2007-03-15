@@ -2519,10 +2519,11 @@ cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
 	  /* Must be simple edge.  */
 	  && !(single_succ_edge (a)->flags & EDGE_COMPLEX)
 	  && a != ENTRY_BLOCK_PTR && b != EXIT_BLOCK_PTR
-	  /* If the jump insn has side effects,
-	     we can't kill the edge.  */
+	  /* If the jump insn has side effects, we can't kill the edge.
+	     When not optimizing, try_redirect_by_replacing_jump will
+	     not allow us to redirect an edge by replacing a table jump.  */
 	  && (!JUMP_P (BB_END (a))
-	      || (reload_completed
+	      || ((!optimize || reload_completed)
 		  ? simplejump_p (BB_END (a)) : onlyjump_p (BB_END (a)))));
 }
 

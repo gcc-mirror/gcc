@@ -697,7 +697,6 @@ fixup_reorder_chain (void)
 #ifdef ENABLE_CHECKING
   verify_insn_chain ();
 #endif
-  delete_dead_jumptables ();
 
   /* Now add jumps and labels as needed to match the blocks new
      outgoing edges.  */
@@ -1192,6 +1191,9 @@ cfg_layout_finalize (void)
       )
     fixup_fallthru_exit_predecessor ();
   fixup_reorder_chain ();
+
+  rebuild_jump_labels (get_insns ());
+  delete_dead_jumptables ();
 
 #ifdef ENABLE_CHECKING
   verify_insn_chain ();
