@@ -1,3 +1,9 @@
+2007-03-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/24924
+	* decl.c (cxx_init_decl_processing): Move command-line options
+	processing to c-opts.c.
+	
 2007-03-15  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* ptree.c (cxx_print_type): Use formatting markup for integers

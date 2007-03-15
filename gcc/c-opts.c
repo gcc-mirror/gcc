@@ -1077,6 +1077,23 @@ c_common_post_options (const char **pfilename)
   if (warn_overlength_strings == -1 || c_dialect_cxx ())
     warn_overlength_strings = 0;
 
+  /* Adjust various flags for C++ based on command-line settings.  */
+  if (c_dialect_cxx ())
+    {
+      if (!flag_permissive)
+	{
+	  flag_pedantic_errors = 1;
+	  cpp_opts->pedantic_errors = 1;
+	}
+      if (!flag_no_inline)
+	{
+	  flag_inline_trees = 1;
+	  flag_no_inline = 1;
+	}
+      if (flag_inline_functions)
+	flag_inline_trees = 2;
+    }
+
   /* Special format checking options don't work without -Wformat; warn if
      they are used.  */
   if (!warn_format)

@@ -1,3 +1,10 @@
+2007-03-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/24924
+	* c-opts.c (c_common_post_options): Handle C++ post-processing here.
+	Set also -pedantic-errors by default for the  preprocessor unless
+	-fpermissive is given.
+	
 2007-03-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/29719
