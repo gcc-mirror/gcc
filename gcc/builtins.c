@@ -2376,9 +2376,6 @@ expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
       tree call, fn = NULL_TREE, narg;
       tree ctype = build_complex_type (type);
 
-      /* We can expand via the C99 cexp function.  */
-      gcc_assert (TARGET_C99_FUNCTIONS);
-
       if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CEXPIF)
 	fn = built_in_decls[BUILT_IN_CEXPF];
       else if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CEXPI)
@@ -2387,6 +2384,26 @@ expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
 	fn = built_in_decls[BUILT_IN_CEXPL];
       else
 	gcc_unreachable ();
+
+      /* If we don't have a decl for cexp create one.  This is the
+	 friendliest fallback if the user calls __builtin_cexpi
+	 without full target C99 function support.  */
+      if (fn == NULL_TREE)
+	{
+	  tree fntype;
+	  const char *name = NULL;
+
+	  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CEXPIF)
+	    name = "cexpf";
+	  else if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CEXPI)
+	    name = "cexp";
+	  else if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CEXPIL)
+	    name = "cexpl";
+
+	  fntype = build_function_type_list (ctype, ctype, NULL_TREE);
+	  fn = build_fn_decl (name, fntype);
+	}
+
       narg = fold_build2 (COMPLEX_EXPR, ctype,
 			  build_real (type, dconst0), arg);
 
@@ -2480,9 +2497,51 @@ expand_builtin_int_roundingfn (tree exp, rtx target, rtx subtarget)
 
   /* Fall back to floating point rounding optab.  */
   fallback_fndecl = mathfn_built_in (TREE_TYPE (arg), fallback_fn);
-  /* We shouldn't get here on targets without TARGET_C99_FUNCTIONS.
-     ??? Perhaps convert (int)floorf(x) into (int)floor((double)x).  */
-  gcc_assert (fallback_fndecl != NULL_TREE);
+
+  /* For non-C99 targets we may end up without a fallback fndecl here
+     if the user called __builtin_lfloor directly.  In this case emit
+     a call to the floor/ceil variants nevertheless.  This should result
+     in the best user experience for not full C99 targets.  */
+  if (fallback_fndecl == NULL_TREE)
+    {
+      tree fntype;
+      const char *name = NULL;
+
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_LCEIL:
+	case BUILT_IN_LLCEIL:
+	  name = "ceil";
+	  break;
+	case BUILT_IN_LCEILF:
+	case BUILT_IN_LLCEILF:
+	  name = "ceilf";
+	  break;
+	case BUILT_IN_LCEILL:
+	case BUILT_IN_LLCEILL:
+	  name = "ceill";
+	  break;
+	case BUILT_IN_LFLOOR:
+	case BUILT_IN_LLFLOOR:
+	  name = "floor";
+	  break;
+	case BUILT_IN_LFLOORF:
+	case BUILT_IN_LLFLOORF:
+	  name = "floorf";
+	  break;
+	case BUILT_IN_LFLOORL:
+	case BUILT_IN_LLFLOORL:
+	  name = "floorl";
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      fntype = build_function_type_list (TREE_TYPE (arg),
+					 TREE_TYPE (arg), NULL_TREE);
+      fallback_fndecl = build_fn_decl (name, fntype);
+    }
+
   exp = build_call_expr (fallback_fndecl, 1, arg);
 
   tmp = expand_normal (exp);

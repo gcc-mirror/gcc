@@ -1,3 +1,14 @@
+2007-03-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/29719
+	PR middle-end/31161
+	* builtins.c (expand_builtin_cexpi): As a fallback if we
+	don't have builtins for sincos or cexp create a function
+	declaration for cexp and expand to a call to that.
+	(expand_builtin_int_roundingfn): Always fall
+	back to floor/ceil and its variants even if they may be
+	not available.
+
 2007-03-15  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/31159
