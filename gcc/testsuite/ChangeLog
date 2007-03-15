@@ -1,5 +1,10 @@
 2007-03-15  Richard Sandiford  <richard@codesourcery.com>
 
+	* g++.dg/opt/mmx1.C: Only use the PIC options for fpic targets.
+	* g++.old-deja/g++.other/store-expr1.C: Require fpic.
+
+2007-03-15  Richard Sandiford  <richard@codesourcery.com>
+
 	* lib/target-supports.exp (check_missing_uclibc_feature)
 	(check_effective_target_wchar): New procedures.
 	* gcc.dg/wchar_t-1.c: Require target wchar.
