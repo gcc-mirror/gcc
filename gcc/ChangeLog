@@ -1,3 +1,12 @@
+2007-03-15  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2007-02-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/30364
+	* fold-const.c (fold_binary): Do not associate expressions
+	with more than one variable for integer types that do not wrap.
+
 2007-03-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/31123
