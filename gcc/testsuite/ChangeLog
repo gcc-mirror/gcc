@@ -1,3 +1,8 @@
+2007-03-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/31167
+	* gcc.target/i386/pr31167.c: New test.
+
 2007-03-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30922
