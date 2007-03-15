@@ -1,3 +1,13 @@
+2007-03-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/31167
+	* config/i386/i386.md (*addti3_1, *addti3_1 splitter): Use
+	x86_64_general_operand as operand[2] predicate.  Remove "iF"
+	from operand constraints and use "e" constraint instead.
+	(*subti3_1, *subti3_1 splitter): Ditto.
+	(*negti2_1, *negti2_1 splitter): Use nonimmediate_operand as
+	operand[1] predicate.
+
 2007-03-14  Sebastian Pop  <sebastian.pop@inria.fr>
 
 	* tree-loop-linear.c (gather_interchange_stats): For multidimensional
