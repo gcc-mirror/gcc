@@ -1,5 +1,10 @@
 2007-03-15  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.target/i386/cmpxchg16b-1.c: Compile for lp64 targets only.
+	* gcc.target/i386/pr31167.c: Ditto.
+
+2007-03-15  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/31167
 	* gcc.target/i386/pr31167.c: New test.
 
@@ -61,7 +66,7 @@
 
 2007-03-13  Uros Bizjak  <ubizjak@gmail.com>
 
-	* testsuite/gcc.target/i386/cmpxchg16b-1.c: New test.
+	* gcc.target/i386/cmpxchg16b-1.c: New test.
 
 2007-03-12  Seongbae Park <seongbae.park@gmail.com>
 
