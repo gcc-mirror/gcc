@@ -1,3 +1,9 @@
+2007-03-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/lib/libstdc++.exp (v3-build_support) <ar>: If it
+	exists, use env(AR_FOR_TARGET).  Log the command.
+	<ranlib>: Similar.
+
 2007-03-14  Nathan Sidwell  <nathan@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>::
 

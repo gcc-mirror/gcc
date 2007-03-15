@@ -401,6 +401,7 @@ proc v3_target_compile_as_c { source dest type options } {
 # Build the support objects linked in with the libstdc++ tests.  In
 # addition, set v3-wchar_t, v3-threads, and v3-symver appropriately.
 proc v3-build_support { } {
+    global env
     global srcdir
     global v3-wchar_t
     global v3-threads
@@ -466,13 +467,23 @@ proc v3-build_support { } {
     }
 
     # Collect into libtestc++.a
-    set ar [transform "ar"]
+    if  [info exists env(AR_FOR_TARGET)] {
+	set ar $env(AR_FOR_TARGET)
+    } else {
+	set ar [transform "ar"]
+    }
     set arcommand "$ar -rc ./libtestc++.a ${libtest_objs}"
+    verbose -log "$arcommand"
     set result [lindex [local_exec "$arcommand" "" "" 300] 0]
     verbose "link result is $result"
     if { $result == 0 } {
-	set ranlib [transform "ranlib"]
+	if  [info exists env(RANLIB_FOR_TARGET)] {
+	    set ranlib $env(RANLIB_FOR_TARGET)
+	} else {
+	    set ranlib [transform "ranlib"]
+	}
 	set ranlibcommand "$ranlib ./libtestc++.a"
+	verbose -log "$ranlibcommand"
 	set result [lindex [local_exec "$ranlibcommand" "" "" 300] 0]
 	if { $result != 0 } {
 	    error "could not link libtestc++.a"
