@@ -6373,6 +6373,11 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	  statement = cp_parser_try_block (parser);
 	  break;
 
+	case RID_NAMESPACE:
+	  /* This must be a namespace alias definition.  */
+	  cp_parser_declaration_statement (parser);
+	  return;
+	  
 	default:
 	  /* It might be a keyword like `int' that can start a
 	     declaration-statement.  */
@@ -11040,6 +11045,16 @@ cp_parser_namespace_alias_definition (cp_parser* parser)
   if (identifier == error_mark_node)
     return;
   /* Look for the `=' token.  */
+  if (!cp_parser_uncommitted_to_tentative_parse_p (parser)
+      && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE)) 
+    {
+      error ("%<namespace%> definition is not allowed here");
+      /* Skip the definition.  */
+      cp_lexer_consume_token (parser->lexer);
+      cp_parser_skip_to_closing_brace (parser);
+      cp_lexer_consume_token (parser->lexer);
+      return;
+    }
   cp_parser_require (parser, CPP_EQ, "`='");
   /* Look for the qualified-namespace-specifier.  */
   namespace_specifier

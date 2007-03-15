@@ -1,5 +1,10 @@
 2007-03-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR c++/30891
+	* g++.dg/parse/namespace-definition.C: New.
+	
+2007-03-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR c++/24924
 	* g++.dg/cpp/pedantic-errors.C: New.
 	* g++.dg/cpp/permissive.C: New.

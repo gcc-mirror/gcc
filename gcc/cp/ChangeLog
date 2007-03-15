@@ -1,5 +1,14 @@
 2007-03-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR c++/30891
+	* parser.c (cp_parser_statement): If 'namespace' is found, this
+	only can be a namespace alias definition, so parse it now.
+	(cp_parser_namespace_alias_definition): if we find an open brace
+	instead of '=', then this is actually a misplaced namespace
+	definition.
+	
+2007-03-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR c++/24924
 	* decl.c (cxx_init_decl_processing): Move command-line options
 	processing to c-opts.c.
