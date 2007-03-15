@@ -1,3 +1,9 @@
+2007-03-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR c++/31165
+	* call.c  (convert_default_arg): Instead of copying the node,
+	unshare it.
+
 2007-03-15  Dirk Mueller  <dmueller@suse.de>
 
 	PR c++/30860
