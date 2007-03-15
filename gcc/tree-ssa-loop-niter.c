@@ -283,7 +283,7 @@ refine_bounds_using_guard (tree type, tree varx, mpz_t offx,
 			   tree c0, enum tree_code cmp, tree c1,
 			   bounds *bnds)
 {
-  tree varc0, varc1, tmp;
+  tree varc0, varc1, tmp, ctype;
   mpz_t offc0, offc1, loffx, loffy, bnd;
   bool lbound = false;
   bool no_wrap = nowrap_type_p (type);
@@ -295,17 +295,48 @@ refine_bounds_using_guard (tree type, tree varx, mpz_t offx,
     case LE_EXPR:
     case GT_EXPR:
     case GE_EXPR:
+      STRIP_SIGN_NOPS (c0);
+      STRIP_SIGN_NOPS (c1);
+      ctype = TREE_TYPE (c0);
+      if (!tree_ssa_useless_type_conversion_1 (ctype, type))
+	return;
+
       break;
 
     case EQ_EXPR:
       /* We could derive quite precise information from EQ_EXPR, however, such
-	 a guard is unlikely to appear, so we do not bother with handling it. 
-	 TODO.  */
+	 a guard is unlikely to appear, so we do not bother with handling
+	 it.  */
       return;
 
     case NE_EXPR:
-      /* NE_EXPR comparisons do not contain much of useful information (except for
-	 special cases like comparing with the bounds of the type, TODO).  */
+      /* NE_EXPR comparisons do not contain much of useful information, except for
+	 special case of comparing with the bounds of the type.  */
+      if (TREE_CODE (c1) != INTEGER_CST
+	  || !INTEGRAL_TYPE_P (type))
+	return;
+
+      /* Ensure that the condition speaks about an expression in the same type
+	 as X and Y.  */
+      ctype = TREE_TYPE (c0);
+      if (TYPE_PRECISION (ctype) != TYPE_PRECISION (type))
+	return;
+      c0 = fold_convert (type, c0);
+      c1 = fold_convert (type, c1);
+
+      if (TYPE_MIN_VALUE (type)
+	  && operand_equal_p (c1, TYPE_MIN_VALUE (type), 0))
+	{
+	  cmp = GT_EXPR;
+	  break;
+	}
+      if (TYPE_MAX_VALUE (type)
+	  && operand_equal_p (c1, TYPE_MAX_VALUE (type), 0))
+	{
+	  cmp = LT_EXPR;
+	  break;
+	}
+
       return;
     default:
       return;
@@ -422,8 +453,13 @@ bound_difference (struct loop *loop, tree x, tree y, bounds *bnds)
   int cnt = 0;
   edge e;
   basic_block bb;
-  tree cond, c0, c1, ctype;
+  tree cond, c0, c1;
   enum tree_code cmp;
+
+  /* Get rid of unnecessary casts, but preserve the value of
+     the expressions.  */
+  STRIP_SIGN_NOPS (x);
+  STRIP_SIGN_NOPS (y);
 
   mpz_init (bnds->below);
   mpz_init (bnds->up);
@@ -482,10 +518,6 @@ bound_difference (struct loop *loop, tree x, tree y, bounds *bnds)
       c0 = TREE_OPERAND (cond, 0);
       cmp = TREE_CODE (cond);
       c1 = TREE_OPERAND (cond, 1);
-      ctype = TREE_TYPE (c0);
-
-      if (!tree_ssa_useless_type_conversion_1 (ctype, type))
-	continue;
 
       if (e->flags & EDGE_FALSE_VALUE)
 	cmp = invert_tree_comparison (cmp, false);
