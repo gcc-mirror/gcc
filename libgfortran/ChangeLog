@@ -1,3 +1,9 @@
+2007-03-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/31051
+	* io/transfer.c (formatted_transfer_scalar): Adjust position for pending
+	spaces when in writing mode.  Clean up some formatting.
+
 2007-03-14  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/30690
