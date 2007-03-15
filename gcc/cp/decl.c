@@ -3143,17 +3143,6 @@ cxx_init_decl_processing (void)
 
   current_lang_name = NULL_TREE;
 
-  /* Adjust various flags based on command-line settings.  */
-  if (!flag_permissive)
-    flag_pedantic_errors = 1;
-  if (!flag_no_inline)
-    {
-      flag_inline_trees = 1;
-      flag_no_inline = 1;
-    }
-  if (flag_inline_functions)
-    flag_inline_trees = 2;
-
   /* Force minimum function alignment if using the least significant
      bit of function pointers to store the virtual bit.  */
   if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn

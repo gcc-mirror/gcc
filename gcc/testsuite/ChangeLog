@@ -1,3 +1,9 @@
+2007-03-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/24924
+	* g++.dg/cpp/pedantic-errors.C: New.
+	* g++.dg/cpp/permissive.C: New.
+	
 2007-03-15  Richard Sandiford  <richard@codesourcery.com>
 
 	* g++.dg/opt/mmx1.C: Only use the PIC options for fpic targets.
