@@ -134,8 +134,8 @@ and Warnings}.
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
-@gccoptlist{-fdump-parse-tree  -ffpe-trap=@var{list}
--fdump-core}
+@gccoptlist{-fdump-parse-tree  -ffpe-trap=@var{list} @gol
+-fdump-core -fbacktrace}
 
 @item Directory Options
 @xref{Directory Options,,Options for Directory Search}.
@@ -561,6 +561,15 @@ zero), @samp{overflow} (overflow in a floating point operation),
 @samp{underflow} (underflow in a floating point operation),
 @samp{precision} (loss of precision during operation) and @samp{denormal}
 (operation produced a denormal value).
+
+@cindex -fbacktrace option
+@cindex options, -fbacktrace
+@item -fbacktrace
+@cindex backtrace
+@cindex trace
+Specify that, when a runtime error is encountered, the Fortran runtime
+library should output a backtrace of the error.  This option
+only has influence for compilation of the Fortran main program.
 
 @cindex -fdump-core option
 @cindex options, -fdump-core

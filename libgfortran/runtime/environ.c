@@ -542,6 +542,10 @@ static variable variable_table[] = {
     init_boolean, show_boolean,
     "Dump a core file (if possible) on runtime error", -1},
 
+  {"GFORTRAN_ERROR_BACKTRACE", -1, &options.backtrace,
+    init_boolean, show_boolean,
+    "Print out a backtrace (if possible) on runtime error", -1},
+
   {NULL, 0, NULL, NULL, NULL, NULL, 0}
 };
 

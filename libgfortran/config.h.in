@@ -81,6 +81,12 @@
 /* Define to 1 if the target supports __attribute__((visibility(...))). */
 #undef HAVE_ATTRIBUTE_VISIBILITY
 
+/* Define to 1 if you have the `backtrace' function. */
+#undef HAVE_BACKTRACE
+
+/* Define to 1 if you have the `backtrace_symbols' function. */
+#undef HAVE_BACKTRACE_SYMBOLS
+
 /* Define if fpclassify is broken. */
 #undef HAVE_BROKEN_FPCLASSIFY
 
@@ -170,6 +176,9 @@
 
 /* libm includes clogl */
 #undef HAVE_CLOGL
+
+/* Define to 1 if you have the `close' function. */
+#undef HAVE_CLOSE
 
 /* complex.h exists */
 #undef HAVE_COMPLEX_H
@@ -261,6 +270,9 @@
 /* Define to 1 if you have the `ctime' function. */
 #undef HAVE_CTIME
 
+/* Define to 1 if you have the `dup2' function. */
+#undef HAVE_DUP2
+
 /* libm includes erf */
 #undef HAVE_ERF
 
@@ -279,8 +291,14 @@
 /* libm includes erfl */
 #undef HAVE_ERFL
 
+/* Define to 1 if you have the <execinfo.h> header file. */
+#undef HAVE_EXECINFO_H
+
 /* Define to 1 if you have the `execl' function. */
 #undef HAVE_EXECL
+
+/* Define to 1 if you have the `execvp' function. */
+#undef HAVE_EXECVP
 
 /* libm includes exp */
 #undef HAVE_EXP
@@ -299,6 +317,9 @@
 
 /* libm includes fabsl */
 #undef HAVE_FABSL
+
+/* Define to 1 if you have the `fdopen' function. */
+#undef HAVE_FDOPEN
 
 /* libm includes feenableexcept */
 #undef HAVE_FEENABLEEXCEPT
@@ -372,14 +393,14 @@
 /* libc includes getpid */
 #undef HAVE_GETPID
 
+/* libc includes getppid */
+#undef HAVE_GETPPID
+
 /* Define to 1 if you have the `getrlimit' function. */
 #undef HAVE_GETRLIMIT
 
 /* Define to 1 if you have the `getrusage' function. */
 #undef HAVE_GETRUSAGE
-
-/* Define to 1 if you have the `gettimeofday' function. */
-#undef HAVE_GETTIMEOFDAY
 
 /* libc includes getuid */
 #undef HAVE_GETUID
@@ -486,6 +507,9 @@
 /* Define to 1 if you have the `perror' function. */
 #undef HAVE_PERROR
 
+/* Define to 1 if you have the `pipe' function. */
+#undef HAVE_PIPE
+
 /* libm includes pow */
 #undef HAVE_POW
 
@@ -566,6 +590,9 @@
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the `strcasestr' function. */
+#undef HAVE_STRCASESTR
 
 /* Define to 1 if you have the `strerror' function. */
 #undef HAVE_STRERROR

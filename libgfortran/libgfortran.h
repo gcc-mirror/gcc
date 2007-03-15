@@ -361,7 +361,7 @@ typedef struct
   int fpu_round, fpu_precision, fpe;
 
   int sighup, sigint;
-  int dump_core;
+  int dump_core, backtrace;
 }
 options_t;
 
@@ -378,6 +378,7 @@ typedef struct
   int pedantic;
   int convert;
   int dump_core;
+  int backtrace;
   size_t record_marker;
   int max_subrecord_length;
 }
@@ -549,6 +550,17 @@ export_proto(set_args);
 
 extern void get_args (int *, char ***);
 internal_proto(get_args);
+
+extern void store_exe_path (const char *);
+export_proto(store_exe_path);
+
+extern char * full_exe_path (void);
+internal_proto(full_exe_path);
+
+/* backtrace.c */
+
+extern void show_backtrace (void);
+internal_proto(show_backtrace);
 
 /* error.c */
 

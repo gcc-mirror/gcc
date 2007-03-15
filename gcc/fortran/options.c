@@ -94,6 +94,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.flag_preprocessed = 0;
   gfc_option.flag_automatic = 1;
   gfc_option.flag_backslash = 1;
+  gfc_option.flag_backtrace = 0;
   gfc_option.flag_allow_leading_underscore = 0;
   gfc_option.flag_dump_core = 0;
   gfc_option.flag_external_blas = 0;
@@ -472,6 +473,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       
     case OPT_fbackslash:
       gfc_option.flag_backslash = value;
+      break;
+      
+    case OPT_fbacktrace:
+      gfc_option.flag_backtrace = value;
       break;
       
     case OPT_fdump_core:
