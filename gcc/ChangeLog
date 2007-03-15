@@ -1,4 +1,10 @@
 2007-03-15  Uros Bizjak  <ubizjak@gmail.com>
+	    Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* config/i386/i386.md (x86_sahf_1): Correctly handle
+	HAVE_AS_IX86_SAHF.
+
+2007-03-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/31167
 	* config/i386/i386.md (*addti3_1, *addti3_1 splitter): Use
