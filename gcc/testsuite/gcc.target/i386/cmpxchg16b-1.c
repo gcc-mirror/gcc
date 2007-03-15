@@ -1,4 +1,4 @@
-/* { dg-do compile { target x86_64-*-* } } */
+/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
 /* { dg-options "-O2 -mcx16" } */
 
 typedef int TItype __attribute__ ((mode (TI)));
