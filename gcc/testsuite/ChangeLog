@@ -1,3 +1,8 @@
+2007-03-15  Richard Sandiford  <richard@codesourcery.com>
+
+	* lib/target-supports.exp (check_gc_sections_available): Return
+	false for VxWorks targets.
+
 2007-03-15  Dirk Mueller  <dmueller@suse.de>
 
 	* g++.dg/warn/Wconversion2.C: Fix typo.

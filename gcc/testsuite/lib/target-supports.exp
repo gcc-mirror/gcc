@@ -286,6 +286,14 @@ proc check_gc_sections_available { } {
 	    return 0
 	}
 
+	# VxWorks kernel modules are relocatable objects linked with -r,
+	# while RTP executables are linked with -q (--emit-relocs).
+	# Both of these options are incompatible with --gc-sections.
+	if { [istarget *-*-vxworks*] } {
+	    set gc_sections_available_saved 0
+	    return 0
+	}
+
 	# Check if the ld used by gcc supports --gc-sections.
 	set gcc_spec [${tool}_target_compile "-dumpspecs" "" "none" ""]
 	regsub ".*\n\*linker:\[ \t\]*\n(\[^ \t\n\]*).*" "$gcc_spec" {\1} linker
