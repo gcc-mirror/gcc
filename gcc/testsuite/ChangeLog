@@ -1,3 +1,7 @@
+2007-03-15  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.dg/cpp/assert4.c: Treat VxWorks as a unix target.
+
 2007-03-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/cmpxchg16b-1.c: Compile for lp64 targets only.

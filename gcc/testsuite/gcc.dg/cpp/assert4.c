@@ -78,7 +78,8 @@
 # error
 #endif
 
-#if ( defined __unix__ && !defined __CYGWIN__ ) || defined _AIX
+#if ( defined __unix__ && !defined __CYGWIN__ ) || defined _AIX \
+    || defined __vxworks
 # if !#system(unix)
 #  error
 # endif
