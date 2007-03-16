@@ -1,3 +1,8 @@
+2007-03-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.ac: Remove excess quoting from asm line 0 test.
+	* configure: Rebuilt.
+
 2007-03-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (-Wconversion): Document warnings specific to C++.
