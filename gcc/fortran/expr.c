@@ -1063,7 +1063,13 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
       if (ref->u.ar.dimen_type[d] == DIMEN_VECTOR)  /* Vector subscript.  */
 	{
 	  gcc_assert (begin);
-	  gcc_assert (begin->expr_type == EXPR_ARRAY); 
+
+	  if (begin->expr_type != EXPR_ARRAY)
+	    {
+	      t = FAILURE;
+	      goto cleanup;
+	    }
+
 	  gcc_assert (begin->rank == 1);
 	  gcc_assert (begin->shape);
 
