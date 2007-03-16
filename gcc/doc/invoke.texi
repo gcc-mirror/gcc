@@ -3396,6 +3396,12 @@ like @code{unsigned ui = -1}; and conversions to smaller types, like
 ((int) x)} and @code{ui = (unsigned) -1}, or if the value is not
 changed by the conversion like in @code{abs (2.0)}.
 
+For C++, also warn for conversions between @code{NULL} and non-pointer
+types; confusing overload resolution for user-defined conversions; and
+conversions that will never use a type conversion operator:
+conversions to @code{void}, the same type, a base class or a reference
+to them.
+
 @item -Wempty-body
 @opindex Wempty-body
 An empty body occurs in an @samp{if}, @samp{else} or @samp{do while}

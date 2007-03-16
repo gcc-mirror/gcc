@@ -1,3 +1,10 @@
+2007-03-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* doc/invoke.texi (-Wconversion): Document warnings specific to C++.
+	* c-common.c (convert_and_check): Move warning logic to...
+	(warnings_for_convert_and_check): ...here. Define.
+	* c-common.h (warnings_for_convert_and_check): Declare.
+	
 2007-03-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (attr_length_call): Partially revert change of 2007-03-09.

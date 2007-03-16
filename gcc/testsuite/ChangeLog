@@ -1,3 +1,10 @@
+2007-03-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* g++.dg/warn/Wconversion-integer.C: New
+	* g++.dg/warn/Wconversion-real.C: New.
+	* g++.dg/warn/Wconversion-real-integer.C: New.
+	* g++.dg/warn/conv2.C: Updated.
+	
 2007-03-16  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.dg/intmax_t-1.c: Restrict XFAIL to VxWorks kernels;

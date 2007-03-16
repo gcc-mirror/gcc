@@ -1,3 +1,15 @@
+2007-03-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* cvt.c (cp_convert_and_check) : Define.
+	* cp-tree.h (cp_convert_and_check): Declare.
+	* call.c (convert_conversion_warnings): Rename to
+	conversion_null_warnings.  The warning for floating-point to
+	integer is handled by convert_and_check in convert_like_real.
+	(convert_like_real): convert_conversion_warnings was renamed as
+	conversion_null_warnings.
+	* typeck.c (build_binary_op): Use cp_convert_and_check to warn for
+	overflow and changes of value during conversion.
+
 2007-03-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/30891
