@@ -1,5 +1,5 @@
 /* Print.java - abstract base class for printing classes
- Copyright (C) 2006 Free Software Foundation, Inc.
+ Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -95,7 +95,8 @@ public abstract class Printer
     this.force = force;
   }
 
-  public abstract void printClass(ClassWrapper klass) throws IOException;
+  public abstract void printClass(File filename, ClassWrapper klass)
+    throws IOException;
 
   protected abstract void writePreambleImpl(PrintStream ps);
 

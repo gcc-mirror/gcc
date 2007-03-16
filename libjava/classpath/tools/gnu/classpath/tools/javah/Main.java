@@ -58,6 +58,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.objectweb.asm.ClassReader;
 
@@ -254,7 +255,7 @@ public class Main
         cni = true;
       }
     });
-    result.add(new Option('v', "verbose", "Set verbose mode")
+    result.add(new Option("verbose", 'v', "Set verbose mode")
     {
       public void parsed(String arg0) throws OptionException
       {
@@ -309,16 +310,18 @@ public class Main
     return result;
   }
 
-  private void writeHeaders(ArrayList klasses, Printer printer)
+  private void writeHeaders(HashMap klasses, Printer printer)
       throws IOException
   {
-    Iterator i = klasses.iterator();
+    Iterator i = klasses.entrySet().iterator();
     while (i.hasNext())
       {
-        ClassWrapper klass = (ClassWrapper) i.next();
+	Map.Entry e = (Map.Entry) i.next();
+	File filename = (File) e.getKey();
+        ClassWrapper klass = (ClassWrapper) e.getValue();
         if (verbose)
-          System.err.println("[writing " + klass + "]");
-        printer.printClass(klass);
+          System.err.println("[writing " + klass + " as " + filename + "]");
+        printer.printClass(filename, klass);
       }
   }
 
@@ -376,19 +379,21 @@ public class Main
       }
 
     Iterator i = klasses.iterator();
-    ArrayList results = new ArrayList();
+    HashMap results = new HashMap();
     while (i.hasNext())
       {
         // Let user specify either kind of class name or a
         // file name.
         Object item = i.next();
         ClassWrapper klass;
+	File filename;
         if (item instanceof File)
           {
             // Load class from file.
             if (verbose)
               System.err.println("[reading file " + item + "]");
-            klass = getClass((File) item);
+	    filename = (File) item;
+            klass = getClass(filename);
           }
         else
           {
@@ -396,9 +401,12 @@ public class Main
             String className = ((String) item).replace('.', '/');
             if (verbose)
               System.err.println("[reading class " + className + "]");
+	    // Use the name the user specified, even if it is
+	    // different from the ultimate class name.
+	    filename = new File(className);
             klass = getClass(className);
           }
-        results.add(klass);
+        results.put(filename, klass);
       }
 
     writeHeaders(results, printer);
@@ -436,7 +444,8 @@ public class Main
         String resource = name.replace('.', '/') + ".class";
         URL url = loader.findResource(resource);
         if (url == null)
-          throw new IOException("can't find class file " + resource);
+          throw new IOException("can't find class file " + resource
+				+ " in " + loader);
         InputStream is = url.openStream();
         ClassWrapper result = readClass(is);
         classMap.put(name, result);

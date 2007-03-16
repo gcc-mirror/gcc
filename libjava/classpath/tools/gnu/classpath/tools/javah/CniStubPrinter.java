@@ -1,5 +1,5 @@
 /* CniStubPrinter.java - Generate a CNI stub file
- Copyright (C) 2006 Free Software Foundation, Inc.
+ Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -90,12 +90,12 @@ public class CniStubPrinter
     return new CniPrintStream(fos);
   }
 
-  public void printClass(ClassWrapper klass) throws IOException
+  public void printClass(File filename, ClassWrapper klass) throws IOException
   {
     if (! klass.hasNativeMethod())
       return;
     String className = klass.name.replaceAll("/", "::");
-    CniPrintStream out = (CniPrintStream) getPrintStream(klass.name + ".cc",
+    CniPrintStream out = (CniPrintStream) getPrintStream(filename + ".cc",
                                                          klass);
     if (out == null)
       return;
