@@ -1,3 +1,270 @@
+2007-03-16  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* testsuite/lib/dg-options.exp (dg-require-c-std): New.
+	* testsuite/lib/libstdc++.exp (check_v3_target_c_std): New. Check to
+	see if _GLIBCXX_USE_C99_MATH is active. 
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	08_cyl_bessel_i/check_nan.cc: Use dg-require-c-std.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	17_hyperg/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	13_ellint_2/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	20_riemann_zeta/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	01_assoc_laguerre/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	02_assoc_legendre/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	22_sph_legendre/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	09_cyl_bessel_j/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	21_sph_bessel/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	07_conf_hyperg/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	16_hermite/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	12_ellint_1/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	05_comp_ellint_2/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	18_laguerre/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	14_ellint_3/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	04_comp_ellint_1/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	06_comp_ellint_3/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	19_legendre/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	03_beta/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	11_cyl_neumann/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	15_expint/check_nan.cc: Same.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	23_sph_neumann/check_nan.cc: Same.
+
+	* include/tr1/poly_laguerre.tcc (__poly_laguerre): Don't check if
+	unsigned int can be a NaN.
+
+2007-03-16  Edward M. Smith-Rowland  <3dw4rd@verizon.net>
+
+	* docs/html/ext/tr1.html : Marked tr1 math special functions done.
+	* docs/html/faq/index.html : Ditto.
+	* include/Makefile.in : Added new special function header files.
+	* include/Makefile.am : Ditto.	
+	* include/tr1/common.h : Added type promotion routines for three
+	and four args.
+
+	* include/tr1/special_function_util.h: New.
+	* include/tr1/bessel_function.tcc: New.
+	* include/tr1/beta_function.tcc: New.
+	* include/tr1/ell_integral.tcc: New.
+	* include/tr1/exp_integral.tcc: New.
+	* include/tr1/gamma.tcc: New.
+	* include/tr1/hypergeometric.tcc: New.
+	* include/tr1/legendre_function.tcc: New.
+	* include/tr1/modified_bessel_func.tcc: New.
+	* include/tr1/poly_hermite.tcc: New.
+	* include/tr1/poly_laguerre.tcc: New.
+	* include/tr1/riemann_zeta.tcc: New.
+	* include/tr1/cmath : Included tr1 math special functions.
+	* include/tr1/math.h : Ditto.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	testcase.h: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	01_assoc_laguerre/compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	01_assoc_laguerre/check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	01_assoc_laguerre/check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	01_assoc_laguerre/compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	02_assoc_legendre/compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	02_assoc_legendre/check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	02_assoc_legendre/check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	02_assoc_legendre/compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/03_beta/
+	compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/03_beta/
+	check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/03_beta/
+	check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/03_beta/
+	compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	04_comp_ellint_1/compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	04_comp_ellint_1/check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	04_comp_ellint_1/check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	04_comp_ellint_1/compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	05_comp_ellint_2/compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	05_comp_ellint_2/check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	05_comp_ellint_2/check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	05_comp_ellint_2/compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	06_comp_ellint_3/compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	06_comp_ellint_3/check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	06_comp_ellint_3/check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	06_comp_ellint_3/compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	07_conf_hyperg/compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	07_conf_hyperg/check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	07_conf_hyperg/check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	07_conf_hyperg/compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	08_cyl_bessel_i/compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	08_cyl_bessel_i/check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	08_cyl_bessel_i/check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	08_cyl_bessel_i/compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	09_cyl_bessel_j/compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	09_cyl_bessel_j/check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	09_cyl_bessel_j/check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	09_cyl_bessel_j/compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	11_cyl_neumann/compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	11_cyl_neumann/check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	11_cyl_neumann/check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	11_cyl_neumann/compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/12_ellint_1/
+	compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/12_ellint_1/
+	check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/12_ellint_1/
+	check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/12_ellint_1/
+	compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/13_ellint_2/
+	compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/13_ellint_2/
+	check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/13_ellint_2/
+	check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/13_ellint_2/
+	compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/14_ellint_3/
+	compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/14_ellint_3/
+	check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/14_ellint_3/
+	check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/14_ellint_3/
+	compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/15_expint/
+	check_value_neg.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/15_expint/
+	compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/15_expint/
+	check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/15_expint/
+	compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/15_expint/
+	check_value_pos.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/16_hermite/
+	compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/16_hermite/
+	check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/16_hermite/
+	compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/17_hyperg/
+	compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/17_hyperg/
+	check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/17_hyperg/
+	check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/17_hyperg/
+	compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/18_laguerre/
+	compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/18_laguerre/
+	check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/18_laguerre/
+	check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/18_laguerre/
+	compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/19_legendre/
+	compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/19_legendre/
+	check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/19_legendre/
+	check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/19_legendre/
+	compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	20_riemann_zeta/check_value_neg.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	20_riemann_zeta/compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	20_riemann_zeta/check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	20_riemann_zeta/compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	20_riemann_zeta/check_value_pos.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	21_sph_bessel/compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	21_sph_bessel/check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	21_sph_bessel/check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	21_sph_bessel/compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	22_sph_legendre/compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	22_sph_legendre/check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	22_sph_legendre/check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	22_sph_legendre/compile_2.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	23_sph_neumann/compile.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	23_sph_neumann/check_nan.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	23_sph_neumann/check_value.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	23_sph_neumann/ compile_2.cc: New.
+	
 2007-03-15  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/lib/libstdc++.exp (v3-build_support) <ar>: If it
@@ -145,9 +412,12 @@
 	* testsuite/27_io/basic_filebuf/sputn/char/9339.cc: Use it.
 	* testsuite/27_io/basic_filebuf/pbackfail/char/9761.cc: Use it.
 	* testsuite/27_io/basic_filebuf/sync/char/9182-1.cc: Use it.
-	* testsuite/21_strings/basic_string/inserters_extractors/char/10.cc: Use it.
-	* testsuite/21_strings/basic_string/inserters_extractors/char/11.cc: Use it.
-	* testsuite/21_strings/basic_string/inserters_extractors/char/5.cc: Use it.
+	* testsuite/21_strings/basic_string/inserters_extractors/
+	char/10.cc: Use it.
+	* testsuite/21_strings/basic_string/inserters_extractors/
+	char/11.cc: Use it.
+	* testsuite/21_strings/basic_string/inserters_extractors/
+	char/5.cc: Use it.
 
 2007-03-13  Paolo Carlini  <pcarlini@suse.de>
 

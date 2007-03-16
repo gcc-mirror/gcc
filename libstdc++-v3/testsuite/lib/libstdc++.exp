@@ -579,6 +579,67 @@ proc check_v3_target_fileio { } {
     return $et_fileio_saved
 }
 
+proc check_v3_target_c_std { } {
+    global et_c_std_saved
+    global et_c_std_target_name
+    global tool	
+
+    if { ![info exists et_c_std_target_name] } {
+	set et_c_std_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_c_std_target_name } {
+	verbose "check_v3_target_c_std: `$et_c_std_target_name'" 2
+	set et_c_std_target_name $current_target
+	if [info exists et_c_std_saved] {
+	    verbose "check_v3_target_c_std: removing cached result" 2
+	    unset et_c_std_saved
+	}
+    }
+
+    if [info exists et_c_std_saved] {
+	verbose "check_v3_target_c_std: using cached result" 2
+    } else {
+	set et_c_std_saved 0
+
+	# Set up, compile, and execute a C++ test program that tries to use
+	# C99 functionality.
+	set src fileio[pid].cc
+	set exe fileio[pid].x
+
+	set f [open $src "w"]
+	puts $f "#include <tr1/cmath>"
+	puts $f "int main ()"
+	puts $f "{"
+	puts $f "  float f = 45.55;"
+	puts $f "  int i = std::tr1::isnan(f);"
+	puts $f "  return 0;"
+	puts $f "}" 
+	close $f
+
+	set lines [v3_target_compile $src $exe executable ""]
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, compilation succeeded.
+	    set result [${tool}_load "./$exe" "" ""]
+	    set status [lindex $result 0]
+	    remote_file build delete $exe
+
+	    verbose "check_v3_target_c_std: status is <$status>" 2
+
+	    if { $status == "pass" } {
+		set et_c_std_saved 1
+	    }
+	} else {
+	    verbose "check_v3_target_c_std: compilation failed" 2
+	}
+    }
+    return $et_c_std_saved
+}
+
 proc check_v3_target_sharedlib { } {
     global v3-sharedlib
     return ${v3-sharedlib}

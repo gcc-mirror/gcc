@@ -1,6 +1,6 @@
 # Handlers for additional dg-xxx keywords in tests.
 
-# Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,11 +14,20 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
 
+proc dg-require-c-std { args } {
+    if { ![ check_v3_target_c_std ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
 
-proc dg-require-namedlocale { args } {
-    if { ![ check_v3_target_namedlocale ] } {
+proc dg-require-debug-mode { args } {
+    if { ![ check_v3_target_debug_mode ] } {
 	upvar dg-do-what dg-do-what
 	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
 	return
@@ -35,8 +44,8 @@ proc dg-require-fileio { args } {
     return
 }
 
-proc dg-require-time { args } {
-    if { ![ check_v3_target_time ] } {
+proc dg-require-namedlocale { args } {
+    if { ![ check_v3_target_namedlocale ] } {
 	upvar dg-do-what dg-do-what
 	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
 	return
@@ -53,8 +62,8 @@ proc dg-require-sharedlib { args } {
     return
 }
 
-proc dg-require-debug-mode { args } {
-    if { ![ check_v3_target_debug_mode ] } {
+proc dg-require-time { args } {
+    if { ![ check_v3_target_time ] } {
 	upvar dg-do-what dg-do-what
 	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
 	return
