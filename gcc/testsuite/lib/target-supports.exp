@@ -2077,15 +2077,12 @@ proc check_effective_target_uclibc {} {
 # described by __$feature__ is not present.
 
 proc check_missing_uclibc_feature {feature} {
-    if {[check_no_compiler_messages $feature object "
-	     #include <features.h>
-	     #if defined (__UCLIBC__) && !defined (__${feature}__)
-	     #error FOO
-	     #endif
-	 "]} {
-	return 0
-    }
-    return 1
+    return [check_no_compiler_messages $feature object "
+	#include <features.h>
+	#if !defined (__UCLIBC) || !defined (__${feature}__)
+	#error FOO
+	#endif
+    "]
 }
 
 # Return true if this is a Newlib target.

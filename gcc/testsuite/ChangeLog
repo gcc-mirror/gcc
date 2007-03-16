@@ -1,5 +1,10 @@
 2007-03-16  Richard Sandiford  <richard@codesourcery.com>
 
+	* lib/target-supports.exp (check_missing_uclibc_feature): Don't
+	assume that the target has <features.h>.
+
+2007-03-16  Richard Sandiford  <richard@codesourcery.com>
+
 	* gcc.dg/20020426-2.c: Add the fpic requirement to the PIC
 	dg-options rather than to the whole test.
 
