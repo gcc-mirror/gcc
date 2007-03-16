@@ -12984,7 +12984,8 @@ force_decl_die (tree decl)
   return decl_die;
 }
 
-/* Returns the DIE for TYPE.  A DIE is always returned.  */
+/* Returns the DIE for TYPE, that must not be a base type.  A DIE is
+   always returned.  */
 
 static dw_die_ref
 force_type_die (tree type)
@@ -13312,7 +13313,12 @@ dwarf2out_imported_module_or_decl (tree decl, tree context)
 
   /* For TYPE_DECL or CONST_DECL, lookup TREE_TYPE.  */
   if (TREE_CODE (decl) == TYPE_DECL || TREE_CODE (decl) == CONST_DECL)
-    at_import_die = force_type_die (TREE_TYPE (decl));
+    {
+      if (is_base_type (TREE_TYPE (decl)))
+	at_import_die = base_type_die (TREE_TYPE (decl));
+      else
+	at_import_die = force_type_die (TREE_TYPE (decl));
+    }
   else
     {
       at_import_die = lookup_decl_die (decl);

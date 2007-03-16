@@ -1,3 +1,9 @@
+2007-03-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/29906
+	* dwarf2out.c (force_type_die): Adjust comment.
+	(dwarf2out_imported_module_or_decl): Handle base AT_import types.
+
 2007-03-15  Seongbae Park <seongbae.park@gmail.com>
 
 	PR tree-optimization/30590
