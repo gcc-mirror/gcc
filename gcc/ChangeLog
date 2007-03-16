@@ -1,3 +1,8 @@
+2007-03-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (override_options): Add PTA_NO_SAHF to k8,
+	opteron, athlon-64 and athlon-fx processor_alias_table entries.
+
 2007-03-16  Sebastian Pop  <sebastian.pop@inria.fr>
 
 	PR tree-optimization/31183
