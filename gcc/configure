@@ -16045,7 +16045,7 @@ if test "${gcc_cv_as_line_zero+set}" = set; then
 else
   gcc_cv_as_line_zero=no
   if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( elf,2,16,91 \* 1000 \) + gcc_cv_as_line_zero=yes \) \* 1000 + `
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2,16,91 \* 1000 \) + gcc_cv_as_line_zero=yes \) \* 1000 + `
   then :
 fi
   elif test "x$gcc_cv_as" != x; then

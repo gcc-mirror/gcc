@@ -1,5 +1,10 @@
 2007-03-16  Alexandre Oliva  <aoliva@redhat.com>
 
+	* configure.ac: Don't require ELF binutils to tolerate # 0 "".
+	* configure: Rebuilt.
+
+2007-03-16  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/29906
 	* dwarf2out.c (force_type_die): Adjust comment.
 	(dwarf2out_imported_module_or_decl): Handle base AT_import types.
