@@ -1,3 +1,8 @@
+2007-03-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/29906
+	* g++.dg/debug/pr29906.C: New
+
 2007-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/31099
