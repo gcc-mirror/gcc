@@ -27,6 +27,7 @@ along with libgfortran; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,7 +35,6 @@ Boston, MA 02110-1301, USA.  */
 #include <stddef.h>
 #include <limits.h>
 
-#include "config.h"
 #include "libgfortran.h"
 
 #ifdef HAVE_UNISTD_H
