@@ -1,3 +1,7 @@
+2007-03-16  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/vx-common.h (WINT_TYPE, WINT_TYPE_SIZE): Define.
+
 2007-03-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (override_options): Add PTA_NO_SAHF to k8,
