@@ -1,3 +1,11 @@
+2007-03-15  Geoffrey Keating  <geoffk@apple.com>
+
+	* cp-demangle.c (d_encoding): Exit early on error.
+	(d_pointer_to_member_type): Exit early if cplus_demangle_type
+	returns NULL.
+	(cplus_demangle_type): Likewise.
+	* testsuite/demangle-expected: New testcase.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.in: Add install-pdf target as copied from

@@ -1067,7 +1067,7 @@ d_encoding (struct d_info *di, int top_level)
 	}
 
       peek = d_peek_char (di);
-      if (peek == '\0' || peek == 'E')
+      if (dc == NULL || peek == '\0' || peek == 'E')
 	return dc;
       return d_make_comp (di, DEMANGLE_COMPONENT_TYPED_NAME, dc,
 			  d_bare_function_type (di, has_return_type (dc)));
@@ -1780,7 +1780,7 @@ cplus_demangle_type (struct d_info *di)
       if (pret == NULL)
 	return NULL;
       *pret = cplus_demangle_type (di);
-      if (! d_add_substitution (di, ret))
+      if (! *pret || ! d_add_substitution (di, ret))
 	return NULL;
       return ret;
     }
@@ -2135,6 +2135,8 @@ d_pointer_to_member_type (struct d_info *di)
   if (pmem == NULL)
     return NULL;
   *pmem = cplus_demangle_type (di);
+  if (*pmem == NULL)
+    return NULL;
 
   if (pmem != &mem && (*pmem)->type != DEMANGLE_COMPONENT_FUNCTION_TYPE)
     {
