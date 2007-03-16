@@ -1,3 +1,8 @@
+2007-03-16  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.dg/intmax_t-1.c: Restrict XFAIL to VxWorks kernels;
+	exclude RTPs.
+
 2007-03-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/31146
