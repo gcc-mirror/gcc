@@ -1,3 +1,10 @@
+2007-03-16  Sebastian Pop  <sebastian.pop@inria.fr>
+
+	PR tree-optimization/31183
+	* tree-loop-linear.c (gather_interchange_stats, try_interchange_loops): 
+	Use double_int instead of unsigned int for representing access_strides.
+	* testsuite/gcc.dg/tree-ssa/pr31183.c: New.
+
 2007-03-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/31146
