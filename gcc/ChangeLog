@@ -1,3 +1,8 @@
+2007-03-16  Richard Guenther  <rguenther@suse.de>
+
+	* builtins.c (expand_builtin_cexpi): Use the right argument
+	for the expansion via cexp.
+
 2007-03-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.ac: Don't require ELF binutils to tolerate # 0 "".

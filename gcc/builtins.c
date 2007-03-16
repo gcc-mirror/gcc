@@ -2409,7 +2409,7 @@ expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
 
       /* Make sure not to fold the cexp call again.  */
       call = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
-      return expand_expr (build_call_nary (ctype, call, 1, arg), 
+      return expand_expr (build_call_nary (ctype, call, 1, narg), 
 			  target, VOIDmode, 0);
     }
 
