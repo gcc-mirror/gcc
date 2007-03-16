@@ -2079,7 +2079,7 @@ proc check_effective_target_uclibc {} {
 proc check_missing_uclibc_feature {feature} {
     return [check_no_compiler_messages $feature object "
 	#include <features.h>
-	#if !defined (__UCLIBC) || !defined (__${feature}__)
+	#if !defined (__UCLIBC) || defined (__${feature}__)
 	#error FOO
 	#endif
     "]
