@@ -1,4 +1,43 @@
 2007-03-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/27_io/headers/cinttypes/types_std_c++0x.cc: Use
+	-std=gnu++0x instead of -std=c++0x for testing.
+	* testsuite/18_support/headers/cstdint/types_std_c++0x.cc: Same.
+	* testsuite/26_numerics/headers/random/types_std_c++0x.cc: Same.
+	* testsuite/26_numerics/headers/cfenv/types_std_c++0x.cc: Same.
+	* testsuite/26_numerics/headers/cstdlib/types_std_c++0x.cc: Same.
+	* testsuite/26_numerics/headers/cmath/types_std_c++0x.cc: Same.
+	* testsuite/17_intro/headers/c++200x/all_multiple_inclusion.cc: Same.
+	* testsuite/17_intro/headers/c++200x/all.cc: Same.
+	* testsuite/17_intro/using_namespace_std_tr1_neg.cc: Same.
+	* testsuite/23_containers/hash/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/23_containers/tuple/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/23_containers/headers/tuple/types_std_c++0x.cc: Same.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/23_containers/array/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/20_util/enable_shared_from_this/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/20_util/headers/functional/types_std_c++0x.cc: Same.
+	* testsuite/20_util/headers/functional/
+	using_namespace_std_placeholders.cc: Same.
+	* testsuite/20_util/headers/type_traits/types_std_c++0x.cc: Same.
+	* testsuite/20_util/headers/memory/types_std_c++0x.cc: Same.
+	* testsuite/20_util/shared_ptr/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/20_util/weak_ptr/requirements/
+	explicit_instantiation.cc: Same.
+	
+2007-03-16  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* testsuite/lib/dg-options.exp (dg-require-c-std): New.
 	* testsuite/lib/libstdc++.exp (check_v3_target_c_std): New. Check to
