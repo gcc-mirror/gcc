@@ -2386,46 +2386,110 @@ derive_constant_upper_bound (tree val)
     }
 }
 
+/* Records that every statement in LOOP is executed I_BOUND times.
+   REALISTIC is true if I_BOUND is expected to be close the the real number
+   of iterations.  UPPER is true if we are sure the loop iterates at most
+   I_BOUND times.  */
+
+static void
+record_niter_bound (struct loop *loop, double_int i_bound, bool realistic,
+		    bool upper)
+{
+  /* Update the bounds only when there is no previous estimation, or when the current
+     estimation is smaller.  */
+  if (upper
+      && (!loop->any_upper_bound
+	  || double_int_ucmp (i_bound, loop->nb_iterations_upper_bound) < 0))
+    {
+      loop->any_upper_bound = true;
+      loop->nb_iterations_upper_bound = i_bound;
+    }
+  if (realistic
+      && (!loop->any_estimate
+	  || double_int_ucmp (i_bound, loop->nb_iterations_estimate) < 0))
+    {
+      loop->any_estimate = true;
+      loop->nb_iterations_estimate = i_bound;
+    }
+}
+
 /* Records that AT_STMT is executed at most BOUND + 1 times in LOOP.  IS_EXIT
    is true if the loop is exited immediately after STMT, and this exit
    is taken at last when the STMT is executed BOUND + 1 times.
-   REALISTIC is true if the estimate comes from a reliable source
-   (number of iterations analysis, or size of data accessed in the loop).
-   I_BOUND is an unsigned double_int upper estimate on BOUND.  */
+   REALISTIC is true if BOUND is expected to be close the the real number
+   of iterations.  UPPER is true if we are sure the loop iterates at most
+   BOUND times.  I_BOUND is an unsigned double_int upper estimate on BOUND.  */
 
 static void
 record_estimate (struct loop *loop, tree bound, double_int i_bound,
-		 tree at_stmt, bool is_exit, bool realistic)
+		 tree at_stmt, bool is_exit, bool realistic, bool upper)
 {
-  struct nb_iter_bound *elt = xmalloc (sizeof (struct nb_iter_bound));
+  double_int delta;
+  edge exit;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Statement %s", is_exit ? "(exit)" : "");
       print_generic_expr (dump_file, at_stmt, TDF_SLIM);
-      fprintf (dump_file, " is executed at most ");
+      fprintf (dump_file, " is %sexecuted at most ",
+	       upper ? "" : "probably ");
       print_generic_expr (dump_file, bound, TDF_SLIM);
       fprintf (dump_file, " (bounded by ");
       dump_double_int (dump_file, i_bound, true);
       fprintf (dump_file, ") + 1 times in loop %d.\n", loop->num);
     }
 
-  elt->bound = i_bound;
-  elt->stmt = at_stmt;
-  elt->is_exit = is_exit;
-  elt->realistic = realistic && TREE_CODE (bound) == INTEGER_CST;
-  elt->next = loop->bounds;
-  loop->bounds = elt;
+  /* If the I_BOUND is just an estimate of BOUND, it rarely is close to the
+     real number of iterations.  */
+  if (TREE_CODE (bound) != INTEGER_CST)
+    realistic = false;
+  if (!upper && !realistic)
+    return;
+
+  /* If we have a guaranteed upper bound, record it in the appropriate
+     list.  */
+  if (upper)
+    {
+      struct nb_iter_bound *elt = XNEW (struct nb_iter_bound);
+
+      elt->bound = i_bound;
+      elt->stmt = at_stmt;
+      elt->is_exit = is_exit;
+      elt->next = loop->bounds;
+      loop->bounds = elt;
+    }
+
+  /* Update the number of iteration estimates according to the bound.
+     If at_stmt is an exit, then every statement in the loop is
+     executed at most BOUND + 1 times.  If it is not an exit, then
+     some of the statements before it could be executed BOUND + 2
+     times, if an exit of LOOP is before stmt.  */
+  exit = single_exit (loop);
+  if (is_exit
+      || (exit != NULL
+	  && dominated_by_p (CDI_DOMINATORS,
+			     exit->src, bb_for_stmt (at_stmt))))
+    delta = double_int_one;
+  else
+    delta = double_int_two;
+  i_bound = double_int_add (i_bound, delta);
+
+  /* If an overflow occured, ignore the result.  */
+  if (double_int_ucmp (i_bound, delta) < 0)
+    return;
+
+  record_niter_bound (loop, i_bound, realistic, upper);
 }
 
 /* Record the estimate on number of iterations of LOOP based on the fact that
    the induction variable BASE + STEP * i evaluated in STMT does not wrap and
-   its values belong to the range <LOW, HIGH>.  DATA_SIZE_BOUNDS_P is true if
-   LOW and HIGH are derived from the size of data.  */
+   its values belong to the range <LOW, HIGH>.  REALISTIC is true if the
+   estimated number of iterations is expected to be close to the real one.
+   UPPER is true if we are sure the induction variable does not wrap.  */
 
 static void
 record_nonwrapping_iv (struct loop *loop, tree base, tree step, tree stmt,
-		       tree low, tree high, bool data_size_bounds_p)
+		       tree low, tree high, bool realistic, bool upper)
 {
   tree niter_bound, extreme, delta;
   tree type = TREE_TYPE (base), unsigned_type;
@@ -2471,55 +2535,7 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, tree stmt,
      would get out of the range.  */
   niter_bound = fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step);
   max = derive_constant_upper_bound (niter_bound);
-  record_estimate (loop, niter_bound, max, stmt, false, data_size_bounds_p);
-}
-
-/* Initialize LOOP->ESTIMATED_NB_ITERATIONS with the lowest safe
-   approximation of the number of iterations for LOOP.  */
-
-static void
-compute_estimated_nb_iterations (struct loop *loop)
-{
-  struct nb_iter_bound *bound;
-  double_int bnd_val, delta;
-  edge exit;
- 
-  gcc_assert (loop->estimate_state == EST_NOT_AVAILABLE);
-
-  for (bound = loop->bounds; bound; bound = bound->next)
-    {
-      if (!bound->realistic)
-	continue;
-
-      bnd_val = bound->bound;
-      /* If bound->stmt is an exit, then every statement in the loop is
-	 executed at most BND_VAL + 1 times.  If it is not an exit, then
-	 some of the statements before it could be executed BND_VAL + 2
-	 times, if an exit of LOOP is before stmt.  */
-      exit = single_exit (loop);
-
-      if (bound->is_exit
-	  || (exit != NULL
-	      && dominated_by_p (CDI_DOMINATORS,
-				 exit->src, bb_for_stmt (bound->stmt))))
-	delta = double_int_one;
-      else
-	delta = double_int_two;
-      bnd_val = double_int_add (bnd_val, delta);
-
-      /* If an overflow occured, ignore the result.  */
-      if (double_int_ucmp (bnd_val, delta) < 0)
-	continue;
-
-      /* Update only when there is no previous estimation, or when the current
-	 estimation is smaller.  */
-      if (loop->estimate_state == EST_NOT_AVAILABLE
-	  || double_int_ucmp (bnd_val, loop->estimated_nb_iterations) < 0)
-	{
-	  loop->estimate_state = EST_AVAILABLE;
-	  loop->estimated_nb_iterations = bnd_val;
-	}
-    }
+  record_estimate (loop, niter_bound, max, stmt, false, realistic, upper);
 }
 
 /* Returns true if REF is a reference to an array at the end of a dynamically
@@ -2579,12 +2595,17 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
   struct ilb_data *data = dta;
   tree ev, init, step;
   tree low, high, type, next;
-  bool sign;
+  bool sign, upper = true;
   struct loop *loop = data->loop;
 
-  if (TREE_CODE (base) != ARRAY_REF
-      || array_at_struct_end_p (base))
+  if (TREE_CODE (base) != ARRAY_REF)
     return true;
+
+  /* For arrays at the end of the structure, we are not guaranteed that they
+     do not really extend over their declared size.  However, for arrays of
+     size greater than one, this is unlikely to be intended.  */
+  if (array_at_struct_end_p (base))
+    upper = false;
 
   ev = instantiate_parameters (loop, analyze_scalar_evolution (loop, *idx));
   init = initial_condition (ev);
@@ -2609,7 +2630,13 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
     return true;
   sign = tree_int_cst_sign_bit (step);
   type = TREE_TYPE (step);
-  
+
+  /* The array of length 1 at the end of a structure most likely extends
+     beyond its bounds.  */
+  if (!upper
+      && operand_equal_p (low, high, 0))
+    return true;
+
   /* In case the relevant bound of the array does not fit in type, or
      it does, but bound + step (in type) still belongs into the range of the
      array, the index may wrap and still stay within the range of the array
@@ -2633,7 +2660,7 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
       && tree_int_cst_compare (next, high) <= 0)
     return true;
 
-  record_nonwrapping_iv (loop, init, step, data->stmt, low, high, true);
+  record_nonwrapping_iv (loop, init, step, data->stmt, low, high, true, upper);
   return true;
 }
 
@@ -2722,7 +2749,7 @@ infer_loop_bounds_from_signedness (struct loop *loop, tree stmt)
   low = lower_bound_in_type (type, type);
   high = upper_bound_in_type (type, type);
 
-  record_nonwrapping_iv (loop, base, step, stmt, low, high, false);
+  record_nonwrapping_iv (loop, base, step, stmt, low, high, false, true);
 }
 
 /* The following analyzers are extracting informations on the bounds
@@ -2776,11 +2803,14 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   unsigned i;
   struct tree_niter_desc niter_desc;
   edge ex;
+  double_int bound;
 
   /* Give up if we already have tried to compute an estimation.  */
   if (loop->estimate_state != EST_NOT_COMPUTED)
     return;
-  loop->estimate_state = EST_NOT_AVAILABLE;
+  loop->estimate_state = EST_AVAILABLE;
+  loop->any_upper_bound = false;
+  loop->any_estimate = false;
 
   exits = get_loop_exit_edges (loop);
   for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
@@ -2796,12 +2826,27 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
 			niter);
       record_estimate (loop, niter, niter_desc.max,
 		       last_stmt (ex->src),
-		       true, true);
+		       true, true, true);
     }
   VEC_free (edge, heap, exits);
   
   infer_loop_bounds_from_undefined (loop);
-  compute_estimated_nb_iterations (loop);
+
+  /* If we have a measured profile, use it to estimate the number of
+     iterations.  */
+  if (loop->header->count != 0)
+    {
+      bound = uhwi_to_double_int (expected_loop_iterations (loop) + 1);
+      record_niter_bound (loop, bound, true, false);
+    }
+
+  /* If an upper bound is smaller than the realistic estimate of the
+     number of iterations, use the upper bound instead.  */
+  if (loop->any_upper_bound
+      && loop->any_estimate
+      && double_int_ucmp (loop->nb_iterations_upper_bound,
+			  loop->nb_iterations_estimate) < 0)
+    loop->nb_iterations_estimate = loop->nb_iterations_upper_bound;
 }
 
 /* Records estimates on numbers of iterations of loops.  */

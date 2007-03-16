@@ -1,5 +1,31 @@
 2007-03-15  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	* tree-ssa-loop-niter.c (record_estimate): Add "upper" argument.
+	Update constant estimates of number of iterations.
+	(record_nonwrapping_iv): Add "upper" argument.  "data_size_bounds_p"
+	argument renamed to "realistic".
+	(compute_estimated_nb_iterations): Removed.
+	(record_niter_bound): New function.
+	(idx_infer_loop_bounds): For possible but unlikely tail arrays,
+	call record_nonwrapping_iv with upper = false.
+	(infer_loop_bounds_from_signedness): Pass upper argument to
+	record_nonwrapping_iv.
+	(estimate_numbers_of_iterations_loop): Do not call
+	compute_estimated_nb_iterations.  Record estimate based on profile
+	information.  Initialize the constant estimates of number of
+	iterations.
+	* tree-data-ref.c (estimated_loop_iterations): Return the recorded
+	estimates.
+	* tree-ssa-loop-prefetch.c (loop_prefetch_arrays): Add dump when
+	number of iterations is too small.
+	* cfgloop.h (struct nb_iter_bound): Remove "realistic" field.
+	(EST_NOT_AVAILABLE): Removed.
+	(struct loop): Replace estimated_nb_iterations by any_upper_bound,
+	nb_iterations_upper_bound, any_estimate and nb_iterations_estimate
+	fields.
+
+2007-03-15  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	* tree-ssa-loop-niter.c (refine_bounds_using_guard, bound_difference):
 	Handle NE_EXPR guards.
 
