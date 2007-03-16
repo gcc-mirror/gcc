@@ -1,3 +1,8 @@
+2007-03-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/31146
+	* g++.dg/tree-ssa/pr31146.C: New testcase.
+
 2007-03-16  Richard Sandiford  <richard@codesourcery.com>
 
 	* lib/target-supports.exp (check_missing_uclibc_feature): Don't
