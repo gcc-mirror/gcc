@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
 // Copyright (C) 2007 Free Software Foundation
