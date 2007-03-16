@@ -3079,7 +3079,7 @@ AC_CACHE_CHECK([assembler for tolerance to line number 0],
  [gcc_cv_as_line_zero],
  [gcc_cv_as_line_zero=no
   if test $in_tree_gas = yes; then
-    gcc_GAS_VERSION_GTE_IFELSE([elf,2,16,91], [gcc_cv_as_line_zero=yes])
+    gcc_GAS_VERSION_GTE_IFELSE([2,16,91], [gcc_cv_as_line_zero=yes])
   elif test "x$gcc_cv_as" != x; then
     { echo '# 1 "test.s" 1'; echo '# 0 "" 2'; } > conftest.s
     if AC_TRY_COMMAND([$gcc_cv_as -o conftest.o conftest.s >&AS_MESSAGE_LOG_FD 2>conftest.out]) &&
