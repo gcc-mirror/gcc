@@ -7271,7 +7271,7 @@ attr_length_call (rtx insn, int sibcall)
     length += 12;
 
   /* long pc-relative branch sequence.  */
-  else if ((TARGET_SOM && (TARGET_LONG_PIC_SDIFF_CALL || local_call))
+  else if ((TARGET_SOM && TARGET_LONG_PIC_SDIFF_CALL)
 	   || (TARGET_64BIT && !TARGET_GAS)
 	   || (TARGET_GAS && !TARGET_SOM
 	       && (TARGET_LONG_PIC_PCREL_CALL || local_call)))
@@ -7384,7 +7384,7 @@ output_call (rtx insn, rtx call_dest, int sibcall)
 	     of increasing length and complexity.  In most cases,
              they don't allow an instruction in the delay slot.  */
 	  if (!((TARGET_LONG_ABS_CALL || local_call) && !flag_pic)
-	      && !(TARGET_SOM && (TARGET_LONG_PIC_SDIFF_CALL || local_call))
+	      && !(TARGET_SOM && TARGET_LONG_PIC_SDIFF_CALL)
 	      && !(TARGET_GAS && !TARGET_SOM
 		   && (TARGET_LONG_PIC_PCREL_CALL || local_call))
 	      && !TARGET_64BIT)
@@ -7432,7 +7432,7 @@ output_call (rtx insn, rtx call_dest, int sibcall)
 	    }
 	  else
 	    {
-	      if ((TARGET_SOM && (TARGET_LONG_PIC_SDIFF_CALL || local_call))
+	      if ((TARGET_SOM && TARGET_LONG_PIC_SDIFF_CALL)
 		  || (TARGET_64BIT && !TARGET_GAS))
 		{
 		  /* The HP assembler and linker can handle relocations

@@ -1,3 +1,8 @@
+2007-03-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (attr_length_call): Partially revert change of 2007-03-09.
+	(output_call): Likewise.
+
 2007-03-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/29906
