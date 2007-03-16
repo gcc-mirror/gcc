@@ -96,4 +96,96 @@ using std::_GLIBCXX_TR1::trunc;
 
 #endif
 
+using std::_GLIBCXX_TR1::assoc_laguerref;
+using std::_GLIBCXX_TR1::assoc_laguerre;
+using std::_GLIBCXX_TR1::assoc_laguerrel;
+
+using std::_GLIBCXX_TR1::assoc_legendref;
+using std::_GLIBCXX_TR1::assoc_legendre;
+using std::_GLIBCXX_TR1::assoc_legendrel;
+
+using std::_GLIBCXX_TR1::betaf;
+using std::_GLIBCXX_TR1::beta;
+using std::_GLIBCXX_TR1::betal;
+
+using std::_GLIBCXX_TR1::comp_ellint_1f;
+using std::_GLIBCXX_TR1::comp_ellint_1;
+using std::_GLIBCXX_TR1::comp_ellint_1l;
+
+using std::_GLIBCXX_TR1::comp_ellint_2f;
+using std::_GLIBCXX_TR1::comp_ellint_2;
+using std::_GLIBCXX_TR1::comp_ellint_2l;
+
+using std::_GLIBCXX_TR1::comp_ellint_3f;
+using std::_GLIBCXX_TR1::comp_ellint_3;
+using std::_GLIBCXX_TR1::comp_ellint_3l;
+
+using std::_GLIBCXX_TR1::conf_hypergf;
+using std::_GLIBCXX_TR1::conf_hyperg;
+using std::_GLIBCXX_TR1::conf_hypergl;
+
+using std::_GLIBCXX_TR1::cyl_bessel_if;
+using std::_GLIBCXX_TR1::cyl_bessel_i;
+using std::_GLIBCXX_TR1::cyl_bessel_il;
+
+using std::_GLIBCXX_TR1::cyl_bessel_jf;
+using std::_GLIBCXX_TR1::cyl_bessel_j;
+using std::_GLIBCXX_TR1::cyl_bessel_jl;
+
+using std::_GLIBCXX_TR1::cyl_bessel_kf;
+using std::_GLIBCXX_TR1::cyl_bessel_k;
+using std::_GLIBCXX_TR1::cyl_bessel_kl;
+
+using std::_GLIBCXX_TR1::cyl_neumannf;
+using std::_GLIBCXX_TR1::cyl_neumann;
+using std::_GLIBCXX_TR1::cyl_neumannl;
+
+using std::_GLIBCXX_TR1::ellint_1f;
+using std::_GLIBCXX_TR1::ellint_1;
+using std::_GLIBCXX_TR1::ellint_1l;
+
+using std::_GLIBCXX_TR1::ellint_2f;
+using std::_GLIBCXX_TR1::ellint_2;
+using std::_GLIBCXX_TR1::ellint_2l;
+
+using std::_GLIBCXX_TR1::ellint_3f;
+using std::_GLIBCXX_TR1::ellint_3;
+using std::_GLIBCXX_TR1::ellint_3l;
+
+using std::_GLIBCXX_TR1::expintf;
+using std::_GLIBCXX_TR1::expint;
+using std::_GLIBCXX_TR1::expintl;
+
+using std::_GLIBCXX_TR1::hermitef;
+using std::_GLIBCXX_TR1::hermite;
+using std::_GLIBCXX_TR1::hermitel;
+
+using std::_GLIBCXX_TR1::hypergf;
+using std::_GLIBCXX_TR1::hyperg;
+using std::_GLIBCXX_TR1::hypergl;
+
+using std::_GLIBCXX_TR1::laguerref;
+using std::_GLIBCXX_TR1::laguerre;
+using std::_GLIBCXX_TR1::laguerrel;
+
+using std::_GLIBCXX_TR1::legendref;
+using std::_GLIBCXX_TR1::legendre;
+using std::_GLIBCXX_TR1::legendrel;
+
+using std::_GLIBCXX_TR1::riemann_zetaf;
+using std::_GLIBCXX_TR1::riemann_zeta;
+using std::_GLIBCXX_TR1::riemann_zetal;
+
+using std::_GLIBCXX_TR1::sph_besself;
+using std::_GLIBCXX_TR1::sph_bessel;
+using std::_GLIBCXX_TR1::sph_bessell;
+
+using std::_GLIBCXX_TR1::sph_legendref;
+using std::_GLIBCXX_TR1::sph_legendre;
+using std::_GLIBCXX_TR1::sph_legendrel;
+
+using std::_GLIBCXX_TR1::sph_neumannf;
+using std::_GLIBCXX_TR1::sph_neumann;
+using std::_GLIBCXX_TR1::sph_neumannl;
+
 #endif
