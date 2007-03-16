@@ -10,8 +10,13 @@ program test
   write(10) a,b
   write(10) b, a
   rewind(10)
+  write(10) a,b
+  write(10) a,b
+  write(10) a,b
+  write(10) b, a
   b=0
   a=0
+  rewind(10)
   read(10) a, b
   read(10) a, b
   read(10) a, b
