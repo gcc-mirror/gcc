@@ -968,7 +968,13 @@ loop_prefetch_arrays (struct loop *loop)
      the loop rolls at least AHEAD times, prefetching the references does not
      make sense.  */
   if (est_niter >= 0 && est_niter <= (HOST_WIDE_INT) ahead)
-    goto fail;
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Not prefetching -- loop estimated to roll only %d times\n",
+		 (int) est_niter);
+      goto fail;
+    }
 
   ninsns = tree_num_loop_insns (loop, &eni_size_weights);
   unroll_factor = determine_unroll_factor (loop, refs, ninsns, &desc,

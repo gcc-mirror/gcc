@@ -65,12 +65,6 @@ struct nb_iter_bound
      are executed at most BOUND times.  */
   bool is_exit;
 
-  /* True if the bound is "realistic" -- i.e., most likely the loop really has
-     number of iterations close to the bound.  Exact bounds (if the number of
-     iterations of a loop is a constant) and bounds derived from the size of
-     data accessed in the loop are considered realistic.  */
-  bool realistic;
-
   /* The next bound in the list.  */
   struct nb_iter_bound *next;
 };
@@ -148,12 +142,18 @@ struct loop
     {
       /* Estimate was not computed yet.  */
       EST_NOT_COMPUTED,
-      /* Estimate was computed, but we could derive no useful bound.  */
-      EST_NOT_AVAILABLE,
       /* Estimate is ready.  */
       EST_AVAILABLE
     } estimate_state;
-  double_int estimated_nb_iterations;
+
+  /* An integer guaranteed to bound the number of iterations of the loop
+     from above.  */
+  bool any_upper_bound;
+  double_int nb_iterations_upper_bound;
+
+  /* An integer giving the expected number of iterations of the loop.  */
+  bool any_estimate;
+  double_int nb_iterations_estimate;
 
   /* Upper bound on number of iterations of a loop.  */
   struct nb_iter_bound *bounds;

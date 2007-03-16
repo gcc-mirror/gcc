@@ -1,3 +1,7 @@
+2007-03-15  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/prefetch-5.c: New test.
+
 2007-03-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/30891

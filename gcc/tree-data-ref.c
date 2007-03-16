@@ -2556,33 +2556,23 @@ static bool
 estimated_loop_iterations (struct loop *loop, bool conservative,
 			   double_int *nit)
 {
-  tree numiter = number_of_exit_cond_executions (loop);
-
-  /* If we have an exact value, use it.  */
-  if (TREE_CODE (numiter) == INTEGER_CST)
-    {
-      *nit = tree_to_double_int (numiter);
-      return true;
-    }
-
-  /* If we have a measured profile and we do not ask for a conservative bound,
-     use it.  */
-  if (!conservative && loop->header->count != 0)
-    {
-      *nit = uhwi_to_double_int (expected_loop_iterations (loop) + 1);
-      return true;
-    }
-
-  /* Finally, try using a reliable estimate on number of iterations according
-     to the size of the accessed data, if available.  */
   estimate_numbers_of_iterations_loop (loop);
-  if (loop->estimate_state == EST_AVAILABLE)
+  if (conservative)
     {
-      *nit = loop->estimated_nb_iterations;
-      return true;
+      if (!loop->any_upper_bound)
+	return false;
+
+      *nit = loop->nb_iterations_upper_bound;
+    }
+  else
+    {
+      if (!loop->any_estimate)
+	return false;
+
+      *nit = loop->nb_iterations_estimate;
     }
 
-  return false;
+  return true;
 }
 
 /* Similar to estimated_loop_iterations, but returns the estimate only
