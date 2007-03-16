@@ -1271,12 +1271,6 @@
       break;
     }
 
-  if (! integer_register_operand (XEXP (op, 0), mode))
-    return FALSE;
-
-  if (! gpr_or_int10_operand (XEXP (op, 1), mode))
-    return FALSE;
-
   return TRUE;
 })
 
