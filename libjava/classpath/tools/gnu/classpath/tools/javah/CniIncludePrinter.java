@@ -1,5 +1,5 @@
 /* CniIncludePrinter.java - generate CNI header files
- Copyright (C) 2006 Free Software Foundation, Inc.
+ Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -63,14 +63,14 @@ public class CniIncludePrinter
     return new PrintStream(fos);
   }
 
-  public void printClass(ClassWrapper klass) throws IOException
+  public void printClass(File filename, ClassWrapper klass) throws IOException
   {
     // Never write Object or Class. This is a hack, maybe
     // the user would like to see what they look like...
     if (klass.name.equals("java/lang/Object")
         || klass.name.equals("java/lang/Class"))
       return;
-    PrintStream ps = getPrintStream(klass.name + ".h", klass);
+    PrintStream ps = getPrintStream(filename + ".h", klass);
     if (ps == null)
       return;
     ps.println();

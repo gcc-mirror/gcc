@@ -107,8 +107,9 @@ public class JniIncludePrinter
     return new JniPrintStream(classpath, fos, klass);
   }
 
-  public void printClass(ClassWrapper klass) throws IOException
+  public void printClass(File filename, ClassWrapper klass) throws IOException
   {
+    // Note that we ignore the filename here.
     String xname = JniHelper.mangle(klass.name);
     JniPrintStream out 
       = (JniPrintStream) getPrintStream(klass.name.replace('/', '_') + ".h", 

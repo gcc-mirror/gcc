@@ -1,3 +1,20 @@
+2007-03-16  Tom Tromey  <tromey@redhat.com>
+
+	* tools/gnu/classpath/tools/javah/JniStubPrinter.java
+	(printClass): Added filename argument.
+	* tools/gnu/classpath/tools/javah/JniIncludePrinter.java
+	(printClass): Added filename argument.
+	* tools/gnu/classpath/tools/javah/CniIncludePrinter.java
+	(printClass): Use user's file name.
+	* tools/gnu/classpath/tools/javah/CniStubPrinter.java
+	(printClass): Use user's file name.
+	* tools/gnu/classpath/tools/javah/Printer.java (printClass): Added
+	filename argument.
+	* tools/gnu/classpath/tools/javah/Main.java (getParser): Fix '-v'
+	argument order.
+	(writeHeaders): Use a HashMap.
+	(run): Put class name into HashMap for writeHeaders.
+
 2007-03-02  Mario Torre  <neugens@limasoftware.net>
 
 	PR classpath/31017:
