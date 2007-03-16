@@ -87,6 +87,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define VXWORKS_OVERRIDE_OPTIONS vxworks_override_options ()
 extern void vxworks_override_options (void);
 
+/* Only RTPs support prioritized constructors and destructors:
+   the implementation relies on numbered .ctors* sections.  */
+#define SUPPORTS_INIT_PRIORITY TARGET_VXWORKS_RTP
+
 /* VxWorks requires special handling of constructors and destructors.
    All VxWorks configurations must use these functions.  */
 #define TARGET_ASM_CONSTRUCTOR vxworks_asm_out_constructor
