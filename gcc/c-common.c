@@ -1168,7 +1168,7 @@ vector_types_convertible_p (tree t1, tree t2, bool emit_lax_note)
 }
 
 /* Warns if the conversion of EXPR to TYPE may alter a value.
-   This function is called from convert_and_check.  */
+   This is a helper function for warnings_for_convert_and_check.  */
 
 static void
 conversion_warning (tree type, tree expr)
@@ -1276,23 +1276,13 @@ conversion_warning (tree type, tree expr)
     }
 }
 
-/* Convert EXPR to TYPE, warning about conversion problems with constants.
-   Invoke this function on every expression that is converted implicitly,
-   i.e. because of language rules and not because of an explicit cast.  */
+/* Produce warnings after a conversion. RESULT is the result of
+   converting EXPR to TYPE.  This is a helper function for
+   convert_and_check and cp_convert_and_check.  */
 
-tree
-convert_and_check (tree type, tree expr)
+void
+warnings_for_convert_and_check (tree type, tree expr, tree result)
 {
-  tree result;
-
-  if (TREE_TYPE (expr) == type)
-    return expr;
-  
-  result = convert (type, expr);
-
-  if (skip_evaluation || TREE_OVERFLOW_P (expr))
-    return result;
-
   if (TREE_CODE (expr) == INTEGER_CST
       && (TREE_CODE (type) == INTEGER_TYPE
           || TREE_CODE (type) == ENUMERAL_TYPE)
@@ -1332,7 +1322,26 @@ convert_and_check (tree type, tree expr)
              "overflow in implicit constant conversion");
   else if (warn_conversion)
     conversion_warning (type, expr);
+}
+
+
+/* Convert EXPR to TYPE, warning about conversion problems with constants.
+   Invoke this function on every expression that is converted implicitly,
+   i.e. because of language rules and not because of an explicit cast.  */
+
+tree
+convert_and_check (tree type, tree expr)
+{
+  tree result;
+
+  if (TREE_TYPE (expr) == type)
+    return expr;
   
+  result = convert (type, expr);
+
+  if (!skip_evaluation && !TREE_OVERFLOW_P (expr))
+    warnings_for_convert_and_check (type, expr, result);
+
   return result;
 }
 

@@ -3837,9 +3837,9 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
   if (! converted)
     {
       if (TREE_TYPE (op0) != result_type)
-	op0 = cp_convert (result_type, op0);
+	op0 = cp_convert_and_check (result_type, op0);
       if (TREE_TYPE (op1) != result_type)
-	op1 = cp_convert (result_type, op1);
+	op1 = cp_convert_and_check (result_type, op1);
 
       if (op0 == error_mark_node || op1 == error_mark_node)
 	return error_mark_node;
