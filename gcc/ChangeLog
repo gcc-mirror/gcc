@@ -1,5 +1,19 @@
 2007-03-16  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/31146
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Restructure
+	to allow recursion of forward_propagate_addr_expr.
+	(forward_propagate_addr_into_variable_array_index): Likewise.
+	(forward_propagate_addr_expr): Likewise.
+	(tree_ssa_forward_propagate_single_use_vars): Likewise.
+	(forward_propagate_addr_expr_1): Recurse on simple copies
+	instead of propagating into them.  Do so for useless conversions
+	as well.
+	(forward_propagate_addr_expr): Clean up unused statements after
+	recursion.
+
+2007-03-16  Richard Guenther  <rguenther@suse.de>
+
 	* builtins.c (expand_builtin_cexpi): Use the right argument
 	for the expansion via cexp.
 
