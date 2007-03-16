@@ -3838,3 +3838,7 @@ _ZNSA
 --format=gnu-v3
 _ZNT
 _ZNT
+# Dereferencing NULL in d_pointer_to_member_type
+--format=gnu-v3
+_Z1aMark
+_Z1aMark
