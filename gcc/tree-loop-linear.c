@@ -95,7 +95,7 @@ gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations,
 			  struct loop *first_loop,
 			  unsigned int *dependence_steps, 
 			  unsigned int *nb_deps_not_carried_by_loop, 
-			  unsigned int *access_strides)
+			  double_int *access_strides)
 {
   unsigned int i, j;
   struct data_dependence_relation *ddr;
@@ -103,7 +103,7 @@ gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations,
 
   *dependence_steps = 0;
   *nb_deps_not_carried_by_loop = 0;
-  *access_strides = 0;
+  *access_strides = double_int_zero;
 
   for (i = 0; VEC_iterate (ddr_p, dependence_relations, i, ddr); i++)
     {
@@ -149,6 +149,7 @@ gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations,
 	  tree chrec = DR_ACCESS_FN (dr, it);
 	  tree tstride = evolution_part_in_loop_num (chrec, loop->num);
 	  tree array_size = TYPE_SIZE (TREE_TYPE (ref));
+	  double_int dstride;
 
 	  if (tstride == NULL_TREE
 	      || array_size == NULL_TREE 
@@ -156,8 +157,9 @@ gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations,
 	      || TREE_CODE (array_size) != INTEGER_CST)
 	    continue;
 
-	  (*access_strides) += 
-	    int_cst_value (array_size) * int_cst_value (tstride);
+	  dstride = double_int_mul (tree_to_double_int (array_size), 
+				    tree_to_double_int (tstride));
+	  (*access_strides) = double_int_add (*access_strides, dstride);
 	}
     }
 }
@@ -180,7 +182,7 @@ try_interchange_loops (lambda_trans_matrix trans,
   struct loop *loop_i;
   struct loop *loop_j;
   unsigned int dependence_steps_i, dependence_steps_j;
-  unsigned int access_strides_i, access_strides_j;
+  double_int access_strides_i, access_strides_j;
   unsigned int nb_deps_not_carried_by_i, nb_deps_not_carried_by_j;
   struct data_dependence_relation *ddr;
 
@@ -225,7 +227,7 @@ try_interchange_loops (lambda_trans_matrix trans,
 	*/
 	if (dependence_steps_i < dependence_steps_j 
 	    || nb_deps_not_carried_by_i > nb_deps_not_carried_by_j
-	    || access_strides_i < access_strides_j)
+	    || double_int_ucmp (access_strides_i, access_strides_j) < 0)
 	  {
 	    lambda_matrix_row_exchange (LTM_MATRIX (trans),
 					loop_i->depth - first_loop->depth,
