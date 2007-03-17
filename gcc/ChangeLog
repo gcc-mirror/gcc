@@ -6,6 +6,8 @@
 	* doc/cpp.texi, doc/extend.texi, doc/invoke.texi: Fix typos.
 	Follow spelling conventions.
 
+	* tree-data-ref.h: Remove the prototype for analyze_array.
+
 2007-03-17  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/31041
