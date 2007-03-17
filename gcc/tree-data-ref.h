@@ -357,7 +357,6 @@ extern void dump_data_dependence_direction (FILE *,
 extern void free_dependence_relation (struct data_dependence_relation *);
 extern void free_dependence_relations (VEC (ddr_p, heap) *);
 extern void free_data_refs (VEC (data_reference_p, heap) *);
-extern struct data_reference *analyze_array (tree, tree, bool);
 
 
 /* Return the index of the variable VAR in the LOOP_NEST array.  */
