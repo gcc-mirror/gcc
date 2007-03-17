@@ -7677,7 +7677,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
             /* If there is a local specialization that isn't a
                parameter pack, it means that we're doing a "simple"
                substitution from inside tsubst_pack_expansion. Just
-               return the local specialiation (which will be a single
+               return the local specialization (which will be a single
                parm).  */
             tree spec = NULL_TREE;
             if (local_specializations)
