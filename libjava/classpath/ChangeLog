@@ -1,3 +1,32 @@
+2007-03-17  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* resource/com/sun/tools/javac/messages.properties
+	(Main.FailedToRead, Main.MalformedURL, Main.FailedToLoad): Clarify
+	messages for when --with-ecj-jar is not specified.
+	* configure.ac (FOUND_ECJ_JAR): Remove conditional.
+	* tools/Makefile.am: Build com.sun.tools.javac package
+	unconditionally.
+	* configure, doc/api/Makefile.in, doc/Makefile.in,
+	examples/Makefile.in, external/jsr166/Makefile.in,
+	external/Makefile.in, external/relaxngDatatype/Makefile.in,
+	external/sax/Makefile.in, external/w3c_dom/Makefile.in,
+	include/Makefile.in, lib/Makefile.in, Makefile.in,
+	native/fdlibm/Makefile.in, native/jawt/Makefile.in,
+	native/jni/classpath/Makefile.in,
+	native/jni/gconf-peer/Makefile.in,
+	native/jni/gtk-peer/Makefile.in, native/jni/java-io/Makefile.in,
+	native/jni/java-lang/Makefile.in, native/jni/java-net/Makefile.in,
+	native/jni/java-nio/Makefile.in, native/jni/java-util/Makefile.in,
+	native/jni/Makefile.in, native/jni/midi-alsa/Makefile.in,
+	native/jni/midi-dssi/Makefile.in,
+	native/jni/native-lib/Makefile.in, native/jni/qt-peer/Makefile.in,
+	native/jni/xmlj/Makefile.in, native/Makefile.in,
+	native/plugin/Makefile.in, resource/Makefile.in,
+	scripts/Makefile.in, tools/Makefile.in: Regenerate.
+	* tools/classes/com/sun/tools/javac: New directory.
+	* tools/classes/com/sun/tools/javac/Main.class,
+	tools/classes/com/sun/tools/javac/Messages.class: New files.
+
 2007-03-16  Tom Tromey  <tromey@redhat.com>
 
 	* tools/gnu/classpath/tools/javah/Main.java (run): Use class'

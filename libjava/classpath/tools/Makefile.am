@@ -16,16 +16,6 @@ error dunno how to setup the JCOMPILER and compile
 endif
 endif
 
-if FOUND_ECJ_JAR
-COM_SUN_TOOLS_JAVAC = com/sun/tools/javac
-ABS_COM_SUN_TOOLS_JAVAC = $(srcdir)/$(COM_SUN_TOOLS_JAVAC)
-ABS_COM_SUN_TOOLS_JAVAC_SRCS = $(ABS_COM_SUN_TOOLS_JAVAC)/*.java
-else
-COM_SUN_TOOLS_JAVAC =
-ABS_COM_SUN_TOOLS_JAVAC =
-ABS_COM_SUN_TOOLS_JAVAC_SRCS =
-endif
-
 if CREATE_WRAPPERS
 bin_SCRIPTS =
 bin_PROGRAMS = gappletviewer gjarsigner gkeytool \
@@ -113,7 +103,7 @@ EXTRA_DIST = toolwrapper.c gappletviewer.in gjarsigner.in gkeytool.in \
 TOOLS_JAVA_FILES = $(srcdir)/gnu/classpath/tools/*/*.java \
 	$(srcdir)/com/sun/javadoc/*.java \
 	$(srcdir)/com/sun/tools/doclets/*.java \
-	$(ABS_COM_SUN_TOOLS_JAVAC_SRCS) \
+	$(srcdir)/com/sun/tools/javac/*.java \
 	$(srcdir)/sun/rmi/rmic/*.java \
 	$(srcdir)/external/asm/org/objectweb/asm/*.java \
 	$(srcdir)/external/asm/org/objectweb/asm/attrs/*.java \
@@ -171,7 +161,7 @@ $(TOOLS_ZIP): $(TOOLS_JAVA_FILES)
 	find $(srcdir)/gnu/classpath/tools \
 	     $(srcdir)/com/sun/javadoc \
 	     $(srcdir)/com/sun/tools/doclets \
-	     $(ABS_COM_SUN_TOOLS_JAVAC) \
+	     $(srcdir)/com/sun/tools/javac \
 	     $(srcdir)/sun/rmi/rmic \
 	     -name '*.java' -print > classes.lst
 	if [ -f $(top_builddir)/../vm-tools-packages ]; then \
@@ -190,7 +180,7 @@ if JAVA_MAINTAINER_MODE
 	$(JCOMPILER) -g -w -d $(srcdir)/classes @classes.lst @vm-tools.lst
 ## Copy over tools resource files.
 	@list=`cd $(top_srcdir)/resource && find gnu/classpath/tools \
-	       com/sun/javadoc com/sun/tools/doclets $(COM_SUN_TOOLS_JAVAC) \
+	       com/sun/javadoc com/sun/tools/doclets com/sun/tools/javac \
 	       sun/rmi/rmic -name \*.properties -print`; \
 	for p in $$list; do \
 	  dirname=classes/`dirname $$p`; \
