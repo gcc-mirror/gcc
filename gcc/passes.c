@@ -460,7 +460,7 @@ init_optimization_passes (void)
 
   /* Interprocedural optimization passes. 
      All these passes are ignored in -fno-unit-at-a-time
-     except for subpases of early_local_pases.  */
+     except for subpasses of early_local_passes.  */
   p = &all_ipa_passes;
   NEXT_PASS (pass_ipa_function_and_variable_visibility);
   NEXT_PASS (pass_ipa_early_inline);

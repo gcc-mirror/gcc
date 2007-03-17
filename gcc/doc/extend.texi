@@ -2262,7 +2262,7 @@ unlikely executed.  The function is optimized for size rather than speed and on
 many targets it is placed into special subsection of the text section so all
 cold functions appears close together improving code locality of non-cold parts
 of program.  The paths leading to call of cold functions within code are marked
-as unlikely by the branch prediction mechanizm. It is thus useful to mark
+as unlikely by the branch prediction mechanism. It is thus useful to mark
 functions used to handle unlikely conditions, such as @code{perror}, as cold to
 improve optimization of hot functions that do call marked functions in rare
 occasions.

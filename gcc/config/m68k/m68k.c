@@ -3732,7 +3732,7 @@ print_operand_address (FILE *file, rtx addr)
       int labelno;
 
       /* If ADDR is a (d8,pc,Xn) address, this is the number of the
-	 label being acceesed, otherwise it is -1.  */
+	 label being accessed, otherwise it is -1.  */
       labelno = (address.offset
 		 && !address.base
 		 && GET_CODE (address.offset) == LABEL_REF

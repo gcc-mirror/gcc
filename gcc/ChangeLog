@@ -1,3 +1,11 @@
+2007-03-17  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/arm/arm.c, config/arm/thumb2.md, config/m68k/m68k.c,
+	config/spu/spu.c, omega.h, passes.c, predict.c: Fix comment
+	typos.
+	* doc/cpp.texi, doc/extend.texi, doc/invoke.texi: Fix typos.
+	Follow spelling conventions.
+
 2007-03-17  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/31041

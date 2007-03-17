@@ -1311,10 +1311,10 @@ tree_estimate_probability (void)
 	     care for error returns and other cases are often used for
 	     fast paths through function. 
 
-	     Since we've already removed the return statments, we are
+	     Since we've already removed the return statements, we are
 	     looking for CFG like:
 
-	       if (conditoinal)
+	       if (conditional)
 	         {
 		   ..
 		   goto return_block
