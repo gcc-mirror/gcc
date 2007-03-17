@@ -1,5 +1,12 @@
 2007-03-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR fortran/31120
+	* trans-expr.c (gfc_conv_powi): Make n argument unsigned hwi.
+	(gfc_conv_cst_int_power): Handle integer exponent with care,
+	since it might be too large for us.
+
+2007-03-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR fortran/31184
 	* invoke.texi: Fix typo.
 
