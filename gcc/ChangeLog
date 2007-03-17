@@ -1,3 +1,19 @@
+2007-03-16  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/29922
+	* tree-ssa-pre.c (bb_bitmap_sets): Remove RVUSE_* members.
+	(get_representative): Removed.
+	(value_dies_in_block_x): Update for rvuse removal.
+	(valid_in_sets): Update for renaming of vuses_dies_in_block_x.
+	(compute_antic_aux): Handle when PHI nodes appear in
+	non-single-successors. 
+	(dump_bitmap_of_names): Removed.
+	(compute_antic_safe): Renamed and removed rvuse calculation.
+	Calculate only antic safe.
+	(insert_into_preds_of_block): Remove assert.
+	(execute_pre): Update for renamed functions.
+	(defer_or_phi_translate_block): New function.
+	
 2007-03-17  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/arm/arm.c, config/arm/thumb2.md, config/m68k/m68k.c,

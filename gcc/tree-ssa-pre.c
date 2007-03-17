@@ -55,11 +55,6 @@ Boston, MA 02110-1301, USA.  */
       we can repair later on.
    3. We can do back-substitution or smarter value numbering to catch
       commutative expressions split up over multiple statements.
-   4. ANTIC_SAFE_LOADS could be a lot smarter than it is now.
-      Right now, it is simply calculating loads that occur before
-      any store in a block, instead of loads that occur before
-      stores that affect them.  This is relatively more expensive, and
-      it's not clear how much more it will buy us.
 */
 
 /* For ease of terminology, "expression node" in the below refers to
@@ -306,16 +301,8 @@ typedef struct bb_bitmap_sets
      the current iteration.  */
   bitmap_set_t new_sets;
 
-  /* The RVUSE sets, which are used during ANTIC computation to ensure
-     that we don't mark loads ANTIC once they have died.  */
-  bitmap rvuse_in;
-  bitmap rvuse_out;
-  bitmap rvuse_gen;
-  bitmap rvuse_kill;
-
-  /* For actually occurring loads, as long as they occur before all the
-     other stores in the block, we know they are antic at the top of
-     the block, regardless of RVUSE_KILL.  */
+  /* These are the loads that will be ANTIC_IN at the top of the
+     block, and are actually generated in the block.  */
   bitmap_set_t antic_safe_loads;
 
   /* True if we have visited this block during ANTIC calculation.  */
@@ -332,10 +319,6 @@ typedef struct bb_bitmap_sets
 #define AVAIL_OUT(BB)	((bb_value_sets_t) ((BB)->aux))->avail_out
 #define ANTIC_IN(BB)	((bb_value_sets_t) ((BB)->aux))->antic_in
 #define PA_IN(BB)	((bb_value_sets_t) ((BB)->aux))->pa_in
-#define RVUSE_IN(BB)    ((bb_value_sets_t) ((BB)->aux))->rvuse_in
-#define RVUSE_GEN(BB)   ((bb_value_sets_t) ((BB)->aux))->rvuse_gen
-#define RVUSE_KILL(BB)   ((bb_value_sets_t) ((BB)->aux))->rvuse_kill
-#define RVUSE_OUT(BB)    ((bb_value_sets_t) ((BB)->aux))->rvuse_out
 #define NEW_SETS(BB)	((bb_value_sets_t) ((BB)->aux))->new_sets
 #define ANTIC_SAFE_LOADS(BB) ((bb_value_sets_t) ((BB)->aux))->antic_safe_loads
 #define BB_VISITED(BB) ((bb_value_sets_t) ((BB)->aux))->visited
@@ -1399,37 +1382,32 @@ bitmap_find_leader (bitmap_set_t set, tree val)
   return NULL;
 }
 
-/* Given the vuse representative map, MAP, and an SSA version number,
-   ID, return the bitmap of names ID represents, or NULL, if none
-   exists.  */
-
-static bitmap
-get_representative (bitmap *map, int id)
-{
-  if (map[id] != NULL)
-    return map[id];
-  return NULL;
-}
-
-/* A vuse is anticipable at the top of block x, from the bottom of the
-   block, if it reaches the top of the block, and is not killed in the
-   block.  In effect, we are trying to see if the vuse is transparent
-   backwards in the block.  */
+/* Determine if VALUE, a memory operation, is ANTIC_IN at the top of
+   BLOCK by seeing if it is not killed in the block.  Note that we are
+   only determining whether there is a store that kills it.  Because
+   of the order in which clean iterates over values, we are guaranteed
+   that altered operands will have caused us to be eliminated from the
+   ANTIC_IN set already.  */
 
 static bool
-vuses_dies_in_block_x (VEC (tree, gc) *vuses, basic_block block)
+value_dies_in_block_x (tree vh, basic_block block)
 {
   int i;
   tree vuse;
-
+  VEC (tree, gc) *vuses = VALUE_HANDLE_VUSES (vh);
+  
+  /* Conservatively, a value dies if it's vuses are defined in this
+     block, unless they come from phi nodes (which are merge operations,
+     rather than stores.  */
   for (i = 0; VEC_iterate (tree, vuses, i, vuse); i++)
     {
-      /* Any places where this is too conservative, are places
-	 where we created a new version and shouldn't have.  */
-
-      if (!bitmap_bit_p (RVUSE_IN (block), SSA_NAME_VERSION (vuse))
-	  || bitmap_bit_p (RVUSE_KILL (block), SSA_NAME_VERSION (vuse)))
-	return true;
+      tree def = SSA_NAME_DEF_STMT (vuse);
+      
+      if (bb_for_stmt (def) != block)
+	continue;
+      if (TREE_CODE (def) == PHI_NODE)
+	continue;
+      return true;
     }
   return false;
 }
@@ -1438,6 +1416,7 @@ vuses_dies_in_block_x (VEC (tree, gc) *vuses, basic_block block)
    ONLY SET2 CAN BE NULL.
    This means that we have a leader for each part of the expression
    (if it consists of values), or the expression is an SSA_NAME.
+   For loads/calls, we also see if the vuses are killed in this block.
 
    NB: We never should run into a case where we have SSA_NAME +
    SSA_NAME or SSA_NAME + value.  The sets valid_in_sets is called on,
@@ -1494,7 +1473,7 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, tree expr,
 		if (!union_contains_value (set1, set2, arg))
 		  return false;
 	      }
-	    return !vuses_dies_in_block_x (VALUE_HANDLE_VUSES (vh), block);
+	    return !value_dies_in_block_x (vh, block);
 	  }
 	return false;
       }
@@ -1532,8 +1511,7 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, tree expr,
 	    }
 	  return bitmap_set_contains_value (ANTIC_SAFE_LOADS (block),
 					    vh)
-	    || !vuses_dies_in_block_x (VALUE_HANDLE_VUSES (vh),
-				       block);
+	    || !value_dies_in_block_x (vh, block);
 	  }
       }
       return false;
@@ -1545,7 +1523,7 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, tree expr,
       }
 
     case tcc_declaration:
-      return !vuses_dies_in_block_x (VALUE_HANDLE_VUSES (vh), block);
+      return !value_dies_in_block_x (vh, block);
 
     default:
       /* No other cases should be encountered.  */
@@ -1594,12 +1572,32 @@ clean (bitmap_set_t set, basic_block block)
 }
 
 static sbitmap has_abnormal_preds;
-
-
+			      
 /* List of blocks that may have changed during ANTIC computation and
    thus need to be iterated over.  */
 
 static sbitmap changed_blocks;
+
+/* Decide whether to defer a block for a later iteration, or PHI
+   translate SOURCE to DEST using phis in PHIBLOCK.  Return false if we
+   should defer the block, and true if we processed it.  */
+
+static bool
+defer_or_phi_translate_block (bitmap_set_t dest, bitmap_set_t source,
+			      basic_block block, basic_block phiblock)
+{
+  if (!BB_VISITED (phiblock))
+    {
+      SET_BIT (changed_blocks, block->index);
+      BB_VISITED (block) = 0;
+      BB_DEFERRED (block) = 1;
+      return false;
+    }
+  else
+    phi_translate_set (dest, source, block, phiblock);
+  return true;
+}
+
 /* Compute the ANTIC set for BLOCK.
 
    If succs(BLOCK) > 1 then
@@ -1657,22 +1655,16 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	 with maximal set fix/with deferring: 11 seconds
      */
 
-      if (!BB_VISITED (succ_bb))
+      if (!defer_or_phi_translate_block (ANTIC_OUT, ANTIC_IN (succ_bb),
+					block, succ_bb))
 	{
 	  changed = true;
-	  SET_BIT (changed_blocks, block->index);
-	  BB_VISITED (block) = 0;
-	  BB_DEFERRED (block) = 1;
 	  goto maybe_dump_sets;
 	}
-      else
-	phi_translate_set (ANTIC_OUT, ANTIC_IN (succ_bb),
-			   block, succ_bb);
     }
-
-
   /* If we have multiple successors, we take the intersection of all of
-     them.  */
+     them.  Note that in the case of loop exit phi nodes, we may have
+     phis to translate through.  */
   else
     {
       VEC(basic_block, heap) * worklist;
@@ -1684,17 +1676,42 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	VEC_quick_push (basic_block, worklist, e->dest);
       first = VEC_index (basic_block, worklist, 0);
 
-      if (!BB_VISITED (first))
-	bitmap_set_copy (ANTIC_OUT, maximal_set);
+      if (phi_nodes (first))
+	{
+	  bitmap_set_t from = ANTIC_IN (first);
+	      
+	  if (!BB_VISITED (first))
+	    from = maximal_set;
+	  phi_translate_set (ANTIC_OUT, from, block, first);
+	}
       else
-	bitmap_set_copy (ANTIC_OUT, ANTIC_IN (first));
+	{
+	  if (!BB_VISITED (first))
+	    bitmap_set_copy (ANTIC_OUT, maximal_set);
+	  else
+	    bitmap_set_copy (ANTIC_OUT, ANTIC_IN (first));
+	}
 
       for (i = 1; VEC_iterate (basic_block, worklist, i, bprime); i++)
 	{
-	  if (!BB_VISITED (bprime))
-	    bitmap_set_and (ANTIC_OUT, maximal_set);
-	  else
-	    bitmap_set_and (ANTIC_OUT, ANTIC_IN (bprime));
+	  if (phi_nodes (bprime)) 
+	    {
+	      bitmap_set_t tmp = bitmap_set_new ();
+	      bitmap_set_t from = ANTIC_IN (bprime);
+	      
+	      if (!BB_VISITED (bprime))
+		from = maximal_set;
+	      phi_translate_set (tmp, from, block, bprime);
+	      bitmap_set_and (ANTIC_OUT, tmp);
+	      bitmap_set_free (tmp);
+	    }
+	  else 
+	    {
+	      if (!BB_VISITED (bprime))
+		bitmap_set_and (ANTIC_OUT, maximal_set);
+	      else 
+		bitmap_set_and (ANTIC_OUT, ANTIC_IN (bprime));
+	    }
 	}
       VEC_free (basic_block, heap, worklist);
     }
@@ -1830,10 +1847,19 @@ compute_partial_antic_aux (basic_block block,
 	      FOR_EACH_EXPR_ID_IN_SET (ANTIC_IN (bprime), i, bi)
 		bitmap_value_insert_into_set (PA_OUT,
 					      expression_for_id (i));
-
-	      FOR_EACH_EXPR_ID_IN_SET (PA_IN (bprime), i, bi)
-		bitmap_value_insert_into_set (PA_OUT,
-					      expression_for_id (i));
+	      if (phi_nodes (bprime))
+		{
+		  bitmap_set_t pa_in = bitmap_set_new ();
+		  phi_translate_set (pa_in, PA_IN (bprime), block, bprime);
+		  FOR_EACH_EXPR_ID_IN_SET (pa_in, i, bi)
+		    bitmap_value_insert_into_set (PA_OUT,
+						  expression_for_id (i));
+		  bitmap_set_free (pa_in);
+		}
+	      else
+		FOR_EACH_EXPR_ID_IN_SET (PA_IN (bprime), i, bi)
+		  bitmap_value_insert_into_set (PA_OUT,
+						expression_for_id (i));
 	    }
 	}
       VEC_free (basic_block, heap, worklist);
@@ -1980,282 +2006,26 @@ compute_antic (void)
   sbitmap_free (changed_blocks);
 }
 
-/* Print the names represented by the bitmap NAMES, to the file OUT.  */
+/*
+   ANTIC_SAFE_LOADS are those loads generated in a block that actually
+   occur before any kill to their vuses in the block, and thus, are
+   safe at the top of the block.  This function computes the set by
+   walking the EXP_GEN set for the block, and checking the VUSES.  
+
+   This set could be computed as ANTIC calculation is proceeding, but
+   but because it does not actually change during that computation, it is
+   quicker to pre-calculate the results and use them than to do it on
+   the fly (particularly in the presence of multiple iteration).  */
 
 static void
-dump_bitmap_of_names (FILE *out, bitmap names)
+compute_antic_safe (void)
 {
+  basic_block bb;
   bitmap_iterator bi;
   unsigned int i;
-
-  fprintf (out, " { ");
-  EXECUTE_IF_SET_IN_BITMAP (names, 0, i, bi)
-    {
-      print_generic_expr (out, ssa_name (i), 0);
-      fprintf (out, " ");
-    }
-  fprintf (out, "}\n");
-}
-
-  /* Compute a set of representative vuse versions for each phi.  This
-     is so we can compute conservative kill sets in terms of all vuses
-     that are killed, instead of continually walking chains.
-
-     We also have to be able kill all names associated with a phi when
-     the phi dies in order to ensure we don't generate overlapping
-     live ranges, which are not allowed in virtual SSA.  */
-
-static bitmap *vuse_names;
-static void
-compute_vuse_representatives (void)
-{
-  tree phi;
-  basic_block bb;
-  VEC (tree, heap) *phis = NULL;
-  bool changed = true;
-  size_t i;
-
+  
   FOR_EACH_BB (bb)
     {
-      for (phi = phi_nodes (bb);
-	   phi;
-	   phi = PHI_CHAIN (phi))
-	if (!is_gimple_reg (PHI_RESULT (phi)))
-	  VEC_safe_push (tree, heap, phis, phi);
-    }
-
-  while (changed)
-    {
-      changed = false;
-
-      for (i = 0; VEC_iterate (tree, phis, i, phi); i++)
-	{
-	  size_t ver = SSA_NAME_VERSION (PHI_RESULT (phi));
-	  use_operand_p usep;
-	  ssa_op_iter iter;
-
-	  if (vuse_names[ver] == NULL)
-	    {
-	      vuse_names[ver] = BITMAP_ALLOC (&grand_bitmap_obstack);
-	      bitmap_set_bit (vuse_names[ver], ver);
-	    }
-	  FOR_EACH_PHI_ARG (usep, phi, iter, SSA_OP_ALL_USES)
-	    {
-	      tree use = USE_FROM_PTR (usep);
-	      bitmap usebitmap = get_representative (vuse_names,
-						     SSA_NAME_VERSION (use));
-	      if (usebitmap != NULL)
-		{
-		  changed |= bitmap_ior_into (vuse_names[ver],
-					      usebitmap);
-		}
-	      else
-		{
-		  changed |= !bitmap_bit_p (vuse_names[ver],
-					    SSA_NAME_VERSION (use));
-		  if (changed)
-		    bitmap_set_bit (vuse_names[ver],
-				    SSA_NAME_VERSION (use));
-		}
-	    }
-	}
-    }
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    for (i = 0; VEC_iterate (tree, phis, i, phi); i++)
-      {
-	bitmap reps = get_representative (vuse_names,
-					  SSA_NAME_VERSION (PHI_RESULT (phi)));
-	if (reps)
-	  {
-	    print_generic_expr (dump_file, PHI_RESULT (phi), 0);
-	    fprintf (dump_file, " represents ");
-	    dump_bitmap_of_names (dump_file, reps);
-	  }
-      }
-  VEC_free (tree, heap, phis);
-}
-
-/* Compute reaching vuses and antic safe loads.  RVUSE computation is
-   is a small bit of iterative dataflow to determine what virtual uses
-   reach what blocks.  Because we can't generate overlapping virtual
-   uses, and virtual uses *do* actually die, this ends up being faster
-   in most cases than continually walking the virtual use/def chains
-   to determine whether we are inside a block where a given virtual is
-   still available to be used.
-
-   ANTIC_SAFE_LOADS are those loads that actually occur before any kill to
-   their vuses in the block,and thus, are safe at the top of the
-   block.
-
-   An example:
-
-   <block begin>
-   b = *a
-   *a = 9
-   <block end>
-
-   b = *a is an antic safe load because it still safe to consider it
-   ANTIC at the top of the block.
-
-   We currently compute a conservative approximation to
-   ANTIC_SAFE_LOADS.  We compute those loads that occur before *any*
-   stores in the block.  This is not because it is difficult to
-   compute the precise answer, but because it is expensive.  More
-   testing is necessary to determine whether it is worth computing the
-   precise answer.  */
-
-static void
-compute_rvuse_and_antic_safe (void)
-{
-
-  unsigned int i;
-  tree phi;
-  basic_block bb;
-  bool changed = true;
-  unsigned int *first_store_uid;
-
-  first_store_uid = xcalloc (n_basic_blocks, sizeof (unsigned int));
-
-  compute_vuse_representatives ();
-
-  FOR_ALL_BB (bb)
-    {
-      RVUSE_IN (bb) = BITMAP_ALLOC (&grand_bitmap_obstack);
-      RVUSE_GEN (bb) = BITMAP_ALLOC (&grand_bitmap_obstack);
-      RVUSE_KILL (bb) = BITMAP_ALLOC (&grand_bitmap_obstack);
-      RVUSE_OUT (bb) = BITMAP_ALLOC (&grand_bitmap_obstack);
-      ANTIC_SAFE_LOADS (bb) = NULL;
-    }
-
-  /* Mark live on entry */
-  for (i = 0; i < num_ssa_names; i++)
-    {
-      tree name = ssa_name (i);
-      if (name && !is_gimple_reg (name)
-	  && IS_EMPTY_STMT (SSA_NAME_DEF_STMT (name)))
-	bitmap_set_bit (RVUSE_OUT (ENTRY_BLOCK_PTR),
-			SSA_NAME_VERSION (name));
-    }
-
-  /* Compute local sets for reaching vuses.
-     GEN(block) = generated in block and not locally killed.
-     KILL(block) = set of vuses killed in block.
-  */
-
-  FOR_EACH_BB (bb)
-    {
-      block_stmt_iterator bsi;
-      ssa_op_iter iter;
-      def_operand_p defp;
-      use_operand_p usep;
-
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	{
-	  tree stmt = bsi_stmt (bsi);
-
-	  if (first_store_uid[bb->index] == 0 
-	      && !ZERO_SSA_OPERANDS (stmt, SSA_OP_VMAYUSE | SSA_OP_VDEF))
-	    {
-	      first_store_uid[bb->index] = stmt_ann (stmt)->uid;
-	    }
-
-	  FOR_EACH_SSA_USE_OPERAND (usep, stmt, iter, SSA_OP_VMAYUSE)
-	    {
-	      tree use = USE_FROM_PTR (usep);
-	      bitmap repbit = get_representative (vuse_names,
-						  SSA_NAME_VERSION (use));
-	      if (repbit != NULL)
-		{
-		  bitmap_and_compl_into (RVUSE_GEN (bb), repbit);
-		  bitmap_ior_into (RVUSE_KILL (bb), repbit);
-		}
-	      else
-		{
-		  bitmap_set_bit (RVUSE_KILL (bb), SSA_NAME_VERSION (use));
-		  bitmap_clear_bit (RVUSE_GEN (bb), SSA_NAME_VERSION (use));
-		}
-	    }
-	  FOR_EACH_SSA_DEF_OPERAND (defp, stmt, iter, SSA_OP_VIRTUAL_DEFS)
-	    {
-	      tree def = DEF_FROM_PTR (defp);
-	      bitmap_set_bit (RVUSE_GEN (bb), SSA_NAME_VERSION (def));
-	    }
-	}
-    }
-
-  FOR_EACH_BB (bb)
-    {
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	{
-	  if (!is_gimple_reg (PHI_RESULT (phi)))
-	    {
-	      edge e;
-	      edge_iterator ei;
-
-	      tree def = PHI_RESULT (phi);
-	      /* In reality, the PHI result is generated at the end of
-		 each predecessor block.  This will make the value
-		 LVUSE_IN for the bb containing the PHI, which is
-		 correct.  */
-	      FOR_EACH_EDGE (e, ei, bb->preds)
-		bitmap_set_bit (RVUSE_GEN (e->src), SSA_NAME_VERSION (def));
-	    }
-	}
-    }
-
-  /* Solve reaching vuses.
-
-     RVUSE_IN[BB] = Union of RVUSE_OUT of predecessors.
-     RVUSE_OUT[BB] = RVUSE_GEN[BB] U (RVUSE_IN[BB] - RVUSE_KILL[BB])
-  */
-
-  changed = true;
-  while (changed)
-    {
-      int j;
-      changed = false;
-      for (j = n_basic_blocks - NUM_FIXED_BLOCKS - 1; j >= 0; j--)
-	{
-	  edge e;
-	  edge_iterator ei;
-	  bb = BASIC_BLOCK (postorder[j]);
-
-	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    bitmap_ior_into (RVUSE_IN (bb), RVUSE_OUT (e->src));
-
-	  changed |= bitmap_ior_and_compl (RVUSE_OUT (bb),
-					   RVUSE_GEN (bb),
-					   RVUSE_IN (bb),
-					   RVUSE_KILL (bb));
-	}
-    }
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      FOR_ALL_BB (bb)
-	{
-	  fprintf (dump_file, "RVUSE_IN (%d) =", bb->index);
-	  dump_bitmap_of_names (dump_file, RVUSE_IN (bb));
-
-	  fprintf (dump_file, "RVUSE_KILL (%d) =", bb->index);
-	  dump_bitmap_of_names (dump_file, RVUSE_KILL (bb));
-
-	  fprintf (dump_file, "RVUSE_GEN (%d) =", bb->index);
-	  dump_bitmap_of_names (dump_file, RVUSE_GEN (bb));
-
-	  fprintf (dump_file, "RVUSE_OUT (%d) =", bb->index);
-	  dump_bitmap_of_names (dump_file, RVUSE_OUT (bb));
-	}
-    }
-
-  FOR_EACH_BB (bb)
-    {
-      bitmap_iterator bi;
-
-      if (bitmap_empty_p (RVUSE_KILL (bb)))
-	continue;
-
       FOR_EACH_EXPR_ID_IN_SET (EXP_GEN (bb), i, bi)
 	{
 	  tree expr = expression_for_id (i);
@@ -2263,27 +2033,43 @@ compute_rvuse_and_antic_safe (void)
 	    {
 	      tree vh = get_value_handle (expr);
 	      tree maybe = bitmap_find_leader (AVAIL_OUT (bb), vh);
-
-	      if (maybe)
-		{
-		  tree def = SSA_NAME_DEF_STMT (maybe);
-
+	      ssa_op_iter i;
+	      tree vuse;
+	      tree stmt;
+	      bool okay = true;
+	      
+	      if (!maybe)
+		continue;
+	      stmt = SSA_NAME_DEF_STMT (maybe);
+	      
+	      FOR_EACH_SSA_TREE_OPERAND (vuse, stmt, i,
+					 SSA_OP_VIRTUAL_USES)
+		{		      
+		  tree def = SSA_NAME_DEF_STMT (vuse);
+		  
 		  if (bb_for_stmt (def) != bb)
 		    continue;
-
-		  if (TREE_CODE (def) == PHI_NODE
-		      || stmt_ann (def)->uid < first_store_uid[bb->index])
+		  
+		  /* See if the vuse is defined by a statement that
+		     comes before us in the block.  Phi nodes are not
+		     stores, so they do not count.  */
+		  if (TREE_CODE (def) != PHI_NODE
+		      && stmt_ann (def)->uid < stmt_ann (stmt)->uid)
 		    {
-		      if (ANTIC_SAFE_LOADS (bb) == NULL)
-			ANTIC_SAFE_LOADS (bb) = bitmap_set_new ();
-		      bitmap_value_insert_into_set (ANTIC_SAFE_LOADS (bb),
-					     expr);
+		      okay = false;      
+		      break;
 		    }
+		}
+	      if (okay)
+		{
+		  if (ANTIC_SAFE_LOADS (bb) == NULL)
+		    ANTIC_SAFE_LOADS (bb) = bitmap_set_new ();
+		  bitmap_value_insert_into_set (ANTIC_SAFE_LOADS (bb),
+						expr);
 		}
 	    }
 	}
     }
-  free (first_store_uid);
 }
 
 /* Return true if we can value number the call in STMT.  This is true
@@ -2701,29 +2487,6 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 
       if (can_PRE_operation (eprime))
 	{
-#ifdef ENABLE_CHECKING
-	  tree vh;
-
-	  /* eprime may be an invariant.  */
-	  vh = TREE_CODE (eprime) == VALUE_HANDLE
-	    ? eprime
-	    : get_value_handle (eprime);
-
-	  /* ensure that the virtual uses we need reach our block.  */
-	  if (TREE_CODE (vh) == VALUE_HANDLE)
-	    {
-	      int i;
-	      tree vuse;
-	      for (i = 0;
-		   VEC_iterate (tree, VALUE_HANDLE_VUSES (vh), i, vuse);
-		   i++)
-		{
-		  size_t id = SSA_NAME_VERSION (vuse);
-		  gcc_assert (bitmap_bit_p (RVUSE_OUT (bprime), id)
-			      || IS_EMPTY_STMT (SSA_NAME_DEF_STMT (vuse)));
-		}
-	    }
-#endif
 	  builtexpr = create_expression_by_pieces (bprime,
 						   eprime,
 						   stmts);
@@ -4127,11 +3890,9 @@ execute_pre (bool do_fre)
      computing ANTIC, either, even though it's plenty fast.  */
   if (!do_fre && n_basic_blocks < 4000)
     {
-      vuse_names = XCNEWVEC (bitmap, num_ssa_names);
-      compute_rvuse_and_antic_safe ();
+      compute_antic_safe ();
       compute_antic ();
       insert ();
-      free (vuse_names);
     }
 
   /* Remove all the redundant expressions.  */
