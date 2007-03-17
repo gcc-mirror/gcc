@@ -392,8 +392,8 @@ public class Main
             // Load class from file.
             if (verbose)
               System.err.println("[reading file " + item + "]");
-	    filename = (File) item;
-            klass = getClass(filename);
+            klass = getClass((File) item);
+	    filename = new File(klass.name);
           }
         else
           {

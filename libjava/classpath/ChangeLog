@@ -1,5 +1,10 @@
 2007-03-16  Tom Tromey  <tromey@redhat.com>
 
+	* tools/gnu/classpath/tools/javah/Main.java (run): Use class'
+	name in File case.
+
+2007-03-16  Tom Tromey  <tromey@redhat.com>
+
 	* tools/gnu/classpath/tools/javah/JniStubPrinter.java
 	(printClass): Added filename argument.
 	* tools/gnu/classpath/tools/javah/JniIncludePrinter.java
