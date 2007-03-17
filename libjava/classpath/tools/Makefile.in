@@ -232,8 +232,6 @@ FIND = @FIND@
 FOUND_CACAO_FALSE = @FOUND_CACAO_FALSE@
 FOUND_CACAO_TRUE = @FOUND_CACAO_TRUE@
 FOUND_ECJ_FALSE = @FOUND_ECJ_FALSE@
-FOUND_ECJ_JAR_FALSE = @FOUND_ECJ_JAR_FALSE@
-FOUND_ECJ_JAR_TRUE = @FOUND_ECJ_JAR_TRUE@
 FOUND_ECJ_TRUE = @FOUND_ECJ_TRUE@
 FOUND_GCJX_FALSE = @FOUND_GCJX_FALSE@
 FOUND_GCJX_TRUE = @FOUND_GCJX_TRUE@
@@ -398,12 +396,6 @@ GLIBJ_CLASSPATH = $(srcdir)/asm
 
 # Setup the compiler to use the GNU Classpath library we just build
 @FOUND_GCJ_TRUE@JCOMPILER = $(GCJ) -C -encoding UTF-8 -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath $(GLIBJ_CLASSPATH):.
-@FOUND_ECJ_JAR_FALSE@COM_SUN_TOOLS_JAVAC = 
-@FOUND_ECJ_JAR_TRUE@COM_SUN_TOOLS_JAVAC = com/sun/tools/javac
-@FOUND_ECJ_JAR_FALSE@ABS_COM_SUN_TOOLS_JAVAC = 
-@FOUND_ECJ_JAR_TRUE@ABS_COM_SUN_TOOLS_JAVAC = $(srcdir)/$(COM_SUN_TOOLS_JAVAC)
-@FOUND_ECJ_JAR_FALSE@ABS_COM_SUN_TOOLS_JAVAC_SRCS = 
-@FOUND_ECJ_JAR_TRUE@ABS_COM_SUN_TOOLS_JAVAC_SRCS = $(ABS_COM_SUN_TOOLS_JAVAC)/*.java
 @CREATE_WRAPPERS_TRUE@bin_SCRIPTS = 
 @CREATE_WRAPPERS_TRUE@AM_CPPFLAGS = -Wall \
 @CREATE_WRAPPERS_TRUE@	-I$(top_srcdir)/include \
@@ -483,7 +475,7 @@ EXTRA_DIST = toolwrapper.c gappletviewer.in gjarsigner.in gkeytool.in \
 TOOLS_JAVA_FILES = $(srcdir)/gnu/classpath/tools/*/*.java \
 	$(srcdir)/com/sun/javadoc/*.java \
 	$(srcdir)/com/sun/tools/doclets/*.java \
-	$(ABS_COM_SUN_TOOLS_JAVAC_SRCS) \
+	$(srcdir)/com/sun/tools/javac/*.java \
 	$(srcdir)/sun/rmi/rmic/*.java \
 	$(srcdir)/external/asm/org/objectweb/asm/*.java \
 	$(srcdir)/external/asm/org/objectweb/asm/attrs/*.java \
@@ -1094,7 +1086,7 @@ $(TOOLS_ZIP): $(TOOLS_JAVA_FILES)
 	find $(srcdir)/gnu/classpath/tools \
 	     $(srcdir)/com/sun/javadoc \
 	     $(srcdir)/com/sun/tools/doclets \
-	     $(ABS_COM_SUN_TOOLS_JAVAC) \
+	     $(srcdir)/com/sun/tools/javac \
 	     $(srcdir)/sun/rmi/rmic \
 	     -name '*.java' -print > classes.lst
 	if [ -f $(top_builddir)/../vm-tools-packages ]; then \
@@ -1110,7 +1102,7 @@ $(TOOLS_ZIP): $(TOOLS_JAVA_FILES)
 @JAVA_MAINTAINER_MODE_TRUE@	  $$AC -g -w -d $(srcdir)/asm @asm.lst
 @JAVA_MAINTAINER_MODE_TRUE@	$(JCOMPILER) -g -w -d $(srcdir)/classes @classes.lst @vm-tools.lst
 @JAVA_MAINTAINER_MODE_TRUE@	@list=`cd $(top_srcdir)/resource && find gnu/classpath/tools \
-@JAVA_MAINTAINER_MODE_TRUE@	       com/sun/javadoc com/sun/tools/doclets $(COM_SUN_TOOLS_JAVAC) \
+@JAVA_MAINTAINER_MODE_TRUE@	       com/sun/javadoc com/sun/tools/doclets com/sun/tools/javac \
 @JAVA_MAINTAINER_MODE_TRUE@	       sun/rmi/rmic -name \*.properties -print`; \
 @JAVA_MAINTAINER_MODE_TRUE@	for p in $$list; do \
 @JAVA_MAINTAINER_MODE_TRUE@	  dirname=classes/`dirname $$p`; \

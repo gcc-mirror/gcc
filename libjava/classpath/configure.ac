@@ -729,7 +729,6 @@ AC_ARG_WITH([ecj-jar],
 	       ECJ_JAR='$(jardir)/ecj.jar'
 	     fi])
 AC_SUBST(ECJ_JAR)
-AM_CONDITIONAL(FOUND_ECJ_JAR, test "$ECJ_JAR" != "")
 
 dnl -----------------------------------------------------------
 dnl Should the VM explicitly run class initialization subfunctions for
