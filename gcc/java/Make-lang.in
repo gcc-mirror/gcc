@@ -77,10 +77,14 @@ $(GCJ)-cross$(exeext): $(GCJ)$(exeext)
 	-rm -f $(GCJ)-cross$(exeext)
 	cp $(GCJ)$(exeext) $(GCJ)-cross$(exeext)
 
-java.srcextra: java/parse.c java/parse-scan.c
-	-cp -p $^ $(srcdir)/java
+java.srcextra:
 
-java/parse.c: java/parse.y
+java_parse_c := java/parse.c
+ifeq ($(GENINSRC),)
+java_parse_c := $(srcdir)/$(java_parse_c)
+endif
+
+$(java_parse_c): java/parse.y
 	-$(BISON) -t --name-prefix=java_ $(BISONFLAGS) -o $@ $<
 
 java/parse-scan.c: java/parse-scan.y
@@ -354,7 +358,7 @@ java/java-gimplify.o: java/java-gimplify.c $(CONFIG_H) $(SYSTEM_H) \
 
 java/parse-scan.o: java/parse-scan.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h $(JAVA_LEX_C) java/parse.h java/lex.h input.h
-java/parse.o: java/parse.c java/jcf-reader.c $(CONFIG_H) $(SYSTEM_H) \
+java/parse.o: $(java_parse_c) java/jcf-reader.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) $(FUNCTION_H) $(JAVA_TREE_H) $(JAVA_LEX_C) java/parse.h \
   java/lex.h input.h $(GGC_H) debug.h gt-java-parse.h gtype-java.h $(TARGET_H) \
   $(TREE_DUMP_H)

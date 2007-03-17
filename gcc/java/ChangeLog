@@ -1,3 +1,11 @@
+2007-03-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (java.srcextra): Remove dependency.
+	(java_parse_c): New variable.
+	(java/parse.c): Replace with ...
+	($(java_parse_c)): ... this.
+	(java/parse.o): Depend on $(java_parse_c).
+	
 2007-02-27  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gcj.texi: Standardize title page.
