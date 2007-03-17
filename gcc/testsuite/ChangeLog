@@ -1,3 +1,8 @@
+2007-03-17  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/29906
+	* g++.dg/debug/pr29906.C: New
+
 2007-03-15  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
