@@ -634,7 +634,7 @@ static const unsigned char powi_table[POWI_TABLE_SIZE] =
 /* Recursive function to expand the power operator. The temporary 
    values are put in tmpvar. The function returns tmpvar[1] ** n.  */
 static tree
-gfc_conv_powi (gfc_se * se, int n, tree * tmpvar)
+gfc_conv_powi (gfc_se * se, unsigned HOST_WIDE_INT n, tree * tmpvar)
 {
   tree op0;
   tree op1;
@@ -681,15 +681,25 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
   tree tmp;
   tree type;
   tree vartmp[POWI_TABLE_SIZE];
-  int n;
+  HOST_WIDE_INT m;
+  unsigned HOST_WIDE_INT n;
   int sgn;
 
+  /* If exponent is too large, we won't expand it anyway, so don't bother
+     with large integer values.  */
+  if (!double_int_fits_in_shwi_p (TREE_INT_CST (rhs)))
+    return 0;
+
+  m = double_int_to_shwi (TREE_INT_CST (rhs));
+  /* There's no ABS for HOST_WIDE_INT, so here we go. It also takes care
+     of the asymmetric range of the integer type.  */
+  n = (unsigned HOST_WIDE_INT) (m < 0 ? -m : m);
+  
   type = TREE_TYPE (lhs);
-  n = abs (TREE_INT_CST_LOW (rhs));
   sgn = tree_int_cst_sgn (rhs);
 
-  if (((FLOAT_TYPE_P (type) && !flag_unsafe_math_optimizations) || optimize_size)
-      && (n > 2 || n < -1))
+  if (((FLOAT_TYPE_P (type) && !flag_unsafe_math_optimizations)
+       || optimize_size) && (m > 2 || m < -1))
     return 0;
 
   /* rhs == 0  */
@@ -698,6 +708,7 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
       se->expr = gfc_build_const (type, integer_one_node);
       return 1;
     }
+
   /* If rhs < 0 and lhs is an integer, the result is -1, 0 or 1.  */
   if ((sgn == -1) && (TREE_CODE (type) == INTEGER_TYPE))
     {
