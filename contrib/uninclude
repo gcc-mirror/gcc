@@ -1,0 +1,52 @@
+#! /bin/sh
+
+# (C) 1998, 2007 Free Software Foundation
+# Originally by Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+
+# This gawk/shell script is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# Given a preprocessed C/C++ code snippet, this script will replace any
+# standard header files with an actual #include <...> directive.
+
+# Example:
+#     # 1 "test.c"
+#     # 1 "/usr/include/stdio.h" 1 3
+#     <snip>
+#     # 1 "test.c" 2
+#     
+#     main() { printf("Hello world!\n"); }
+
+# is replaced with
+#     # 1 "test.c"
+#     #include <stdio.h>
+#     main() { printf("Hello world!\n"); }
+
+
+# Header files whose pathnames contain any of the following patterns
+# are considered as standard headers: usr/include, g++-include,
+# include/g++, include/c++/<version>, gcc-lib/<anything>/include.
+
+gawk ${EXCLUDEPATT+-vexclude="$EXCLUDEPATT"} \
+     ${INCLUDEPATT+-vinclude="$INCLUDEPATT"} '
+BEGIN { 
+  skipping = 0; 
+  cppline = "^# [0-9]+ \"[^\"]*/(usr/include|g\\+\\+-include|include/g\\+\\+|include/c\\+\\+/[^/]+|gcc-lib/[^\"]+/include|gcc/include)/([^\"]+)\"( [1-4])*$"
+}
+!skipping && $0 ~ cppline && 
+(exclude == "" || $3 !~ exclude) && (include == "" || $3 ~ include) {
+  skipping = 1;
+  printf "%s\n", "#include <" gensub(cppline, "\\2", "", $0) ">"
+  next;
+}
+skipping && /^# [0-9]+ / && $3 == lastincluded {
+  skipping = 0;
+  next;
+}
+!skipping && /^# [0-9]+ / { 
+  lastincluded = $3;
+}
+!skipping { print }
+' ${1+"$@"}
