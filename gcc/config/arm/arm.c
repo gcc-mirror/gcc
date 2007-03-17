@@ -12247,7 +12247,7 @@ get_arm_condition_code (rtx comparison)
     }
 }
 
-/* Tell arm_asm_ouput_opcode to output IT blocks for conditionally executed
+/* Tell arm_asm_output_opcode to output IT blocks for conditionally executed
    instructions.  */
 void
 thumb2_final_prescan_insn (rtx insn)

@@ -198,7 +198,7 @@ omega_copy_eqn (eqn e1, eqn e2, int s)
   memcpy (e1->coef, e2->coef, (s + 1) * sizeof (int));
 }
 
-/* Intialize E = 0.  Equation E contains S variables.  */
+/* Initialize E = 0.  Equation E contains S variables.  */
 
 static inline void
 omega_init_eqn_zero (eqn e, int s)

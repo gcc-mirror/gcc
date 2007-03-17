@@ -1376,7 +1376,7 @@ C99 semantics for @code{inline} when in C99 or gnu99 mode (i.e., it
 specifies the default behavior).  This option was first supported in
 GCC 4.3.  This option is not supported in C89 or gnu89 mode.
 
-The preprocesor macros @code{__GNUC_GNU_INLINE__} and
+The preprocessor macros @code{__GNUC_GNU_INLINE__} and
 @code{__GNUC_STDC_INLINE__} may be used to check which semantics are
 in effect for @code{inline} functions.  @xref{Common Predefined
 Macros,,,cpp,The C Preprocessor}.

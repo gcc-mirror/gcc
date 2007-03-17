@@ -2030,7 +2030,7 @@ neither @code{extern} nor @code{static} will never be compiled as a
 standalone function.
 
 If this macro is defined, GCC supports the @code{gnu_inline} function
-attribute as a way to always get the gnu89 behaviour.  Support for
+attribute as a way to always get the gnu89 behavior.  Support for
 this and @code{__GNUC_GNU_INLINE__} was added in GCC 4.1.3.  If
 neither macro is defined, an older version of GCC is being used:
 @code{inline} functions will be compiled in gnu89 mode, and the

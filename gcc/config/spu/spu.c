@@ -1377,7 +1377,7 @@ print_operand (FILE * file, rtx x, int code)
 	output_addr_const (file, x);
       return;
 
-      /* unsed letters
+      /* unused letters
 	              o qr  uvw yz
 	AB            OPQR  UVWXYZ */
     default:

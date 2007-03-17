@@ -277,7 +277,7 @@
 )
 
 ;; Thumb-2 always has load/store halfword instructions, so we can avoid a lot
-;; of the messyness associated with the ARM patterns.
+;; of the messiness associated with the ARM patterns.
 (define_insn "*thumb2_movhi_insn"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,m,r")    
 	(match_operand:HI 1 "general_operand"      "rI,n,r,m"))]
