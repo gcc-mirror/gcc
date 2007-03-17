@@ -1,3 +1,8 @@
+2007-03-17  Olga Golovanevsky  <olga@il.ibm.com>
+  
+  	* ipa-type-escape.c (look_for_casts) : Revert code to use
+	handled_component_p due to ada test a-numaux.adb.
+
 2007-03-17  Kazu Hirata  <kazu@codesourcery.com>
 
 	* final.c (final_scan_insn): Alter the condition of a
