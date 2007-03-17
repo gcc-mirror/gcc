@@ -2291,6 +2291,76 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	      INSN_CODE (insn) = -1;
 	  }
 
+	/* If this is a conditional trap, maybe modify it if the cc's
+	   are in a nonstandard state so that it accomplishes the same
+	   thing that it would do straightforwardly if the cc's were
+	   set up normally.  */
+	if (cc_status.flags != 0
+	    && NONJUMP_INSN_P (insn)
+	    && GET_CODE (body) == TRAP_IF
+	    && COMPARISON_P (TRAP_CONDITION (body))
+	    && XEXP (TRAP_CONDITION (body), 0) == cc0_rtx)
+	  {
+	    /* This function may alter the contents of its argument
+	       and clear some of the cc_status.flags bits.
+	       It may also return 1 meaning condition now always true
+	       or -1 meaning condition now always false
+	       or 2 meaning condition nontrivial but altered.  */
+	    int result = alter_cond (TRAP_CONDITION (body));
+
+	    /* If TRAP_CONDITION has become always false, delete the
+	       instruction.  */
+	    if (result == -1)
+	      {
+		delete_insn (insn);
+		break;
+	      }
+
+	    /* If TRAP_CONDITION has become always true, replace
+	       TRAP_CONDITION with const_true_rtx.  */
+	    if (result == 1)
+	      TRAP_CONDITION (body) = const_true_rtx;
+
+	    /* Rerecognize the instruction if it has changed.  */
+	    if (result != 0)
+	      INSN_CODE (insn) = -1;
+	  }
+
+	/* If this is a conditional trap, maybe modify it if the cc's
+	   are in a nonstandard state so that it accomplishes the same
+	   thing that it would do straightforwardly if the cc's were
+	   set up normally.  */
+	if (cc_status.flags != 0
+	    && NONJUMP_INSN_P (insn)
+	    && GET_CODE (body) == TRAP_IF
+	    && COMPARISON_P (TRAP_CONDITION (body))
+	    && XEXP (TRAP_CONDITION (body), 0) == cc0_rtx)
+	  {
+	    /* This function may alter the contents of its argument
+	       and clear some of the cc_status.flags bits.
+	       It may also return 1 meaning condition now always true
+	       or -1 meaning condition now always false
+	       or 2 meaning condition nontrivial but altered.  */
+	    int result = alter_cond (TRAP_CONDITION (body));
+
+	    /* If TRAP_CONDITION has become always false, delete the
+	       instruction.  */
+	    if (result == -1)
+	      {
+		delete_insn (insn);
+		break;
+	      }
+
+	    /* If TRAP_CONDITION has become always true, replace
+	       TRAP_CONDITION with const_true_rtx.  */
+	    if (result == 1)
+	      TRAP_CONDITION (body) = const_true_rtx;
+
+	    /* Rerecognize the instruction if it has changed.  */
+	    if (result != 0)
+	      INSN_CODE (insn) = -1;
+	  }
+
 	/* Make same adjustments to instructions that examine the
 	   condition codes without jumping and instructions that
 	   handle conditional moves (if this machine has either one).  */

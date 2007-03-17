@@ -1,3 +1,8 @@
+2007-03-17  Kazu Hirata  <kazu@codesourcery.com>
+
+	* final.c (final_scan_insn): Alter the condition of a
+	conditional trap if we have nonstandard CC.
+
 2007-03-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.ac: Remove excess quoting from asm line 0 test.
