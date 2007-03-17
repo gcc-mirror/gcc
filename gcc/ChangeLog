@@ -1,3 +1,9 @@
+2007-03-17  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/31041
+	* tree-vect-transform.c (get_initial_def_for_induction): Call
+	force_gimple_operand.
+	
 2007-03-17  Olga Golovanevsky  <olga@il.ibm.com>
   
   	* ipa-type-escape.c (look_for_casts) : Revert code to use
