@@ -548,6 +548,7 @@ get_initial_def_for_induction (tree stmt, tree iv_phi)
   int ncopies = vf / nunits;
   tree expr;
   stmt_vec_info phi_info = vinfo_for_stmt (iv_phi);
+  tree stmts;
 
   gcc_assert (phi_info);
 
@@ -575,16 +576,23 @@ get_initial_def_for_induction (tree stmt, tree iv_phi)
   gcc_assert (ok);
 
   /* Create the vector that holds the initial_value of the induction.  */
-  new_name = init_expr;
+  new_var = vect_get_new_vect_var (scalar_type, vect_scalar_var, "var_");
+  add_referenced_var (new_var);
+
+  new_name = force_gimple_operand (init_expr, &stmts, false, new_var);
+  if (stmts)
+    {
+      new_bb = bsi_insert_on_edge_immediate (pe, stmts);
+      gcc_assert (!new_bb);
+    }
+
   t = NULL_TREE;
-  t = tree_cons (NULL_TREE, init_expr, t);
+  t = tree_cons (NULL_TREE, new_name, t);
   for (i = 1; i < nunits; i++)
     {
       tree tmp;
 
       /* Create: new_name = new_name + step_expr  */
-      new_var = vect_get_new_vect_var (scalar_type, vect_scalar_var, "var_");
-      add_referenced_var (new_var);
       tmp = fold_build2 (PLUS_EXPR, scalar_type, new_name, step_expr);
       init_stmt = build_gimple_modify_stmt (new_var, tmp);
       new_name = make_ssa_name (new_var, init_stmt);

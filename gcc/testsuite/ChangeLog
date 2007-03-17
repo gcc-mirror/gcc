@@ -1,3 +1,8 @@
+2007-03-17  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/31041
+	* gcc.dg/vect/pr31041.c: New test.
+
 2007-03-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* g++.dg/warn/Wconversion-integer.C: New
