@@ -1,3 +1,7 @@
+2007-03-17  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cp-tree.def, parser.c, pt.c: Fix comment typos.
+
 2007-03-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* cvt.c (cp_convert_and_check) : Define.

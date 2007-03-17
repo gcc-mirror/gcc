@@ -367,7 +367,7 @@ DEFTREECODE (STATIC_ASSERT, "static_assert", tcc_exceptional, 0)
 
    Values is a (template) parameter pack. When tuple<int, float,
    double> is instantiated, the Values parameter pack is instantiated
-   with the argment pack <int, float, double>. ARGUMENT_PACK_ARGS will
+   with the argument pack <int, float, double>. ARGUMENT_PACK_ARGS will
    be a TREE_VEC containing int, float, and double.  */
 DEFTREECODE (TYPE_ARGUMENT_PACK, "type_argument_pack", tcc_type, 0)
 
