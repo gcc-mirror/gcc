@@ -196,7 +196,7 @@ older Fortran programs.
 @cindex option, -fd-lines-as-comments
 @cindex -fd-lines-as-comments, option
 @item -fd-lines-as-code
-@item -fd-lines-as-comment
+@item -fd-lines-as-comments
 Enables special treating for lines with @samp{d} or @samp{D} in fixed
 form sources.  If the @option{-fd-lines-as-code} option is given
 they are treated as if the first column contained a blank.  If the

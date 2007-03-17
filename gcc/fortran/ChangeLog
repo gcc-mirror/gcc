@@ -1,3 +1,8 @@
+2007-03-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/31184
+	* invoke.texi: Fix typo.
+
 2007-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* module.c (mio_typespec): Don't look at ts->cl if not BT_CHARACTER.
