@@ -200,7 +200,7 @@ this option can be quite useful with @option{-std=f95}.  Additionally,
 @command{gfortran} will ignore @option{-Wnonstd-intrinsics}.
 
 @item -fd-lines-as-code
-@item -fd-lines-as-comment
+@item -fd-lines-as-comments
 @cindex @code{-fd-lines-as-code}, option
 @cindex option, @code{-fd-lines-as-code}
 @cindex @code{-fd-lines-as-comments}, option
