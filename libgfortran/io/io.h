@@ -622,6 +622,9 @@ internal_proto(file_position);
 extern int is_seekable (stream *);
 internal_proto(is_seekable);
 
+extern int is_special (stream *);
+internal_proto(is_special);
+
 extern int is_preconnected (stream *);
 internal_proto(is_preconnected);
 
@@ -690,9 +693,6 @@ extern void unlock_unit (gfc_unit *);
 internal_proto(unlock_unit);
 
 /* open.c */
-
-extern void test_endfile (gfc_unit *);
-internal_proto(test_endfile);
 
 extern gfc_unit *new_unit (st_parameter_open *, gfc_unit *, unit_flags *);
 internal_proto(new_unit);

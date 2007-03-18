@@ -1872,7 +1872,7 @@ file_length (stream * s)
 /* file_position()-- Return the current position of the file */
 
 gfc_offset
-file_position (stream * s)
+file_position (stream *s)
 {
   return ((unix_stream *) s)->logical_offset;
 }
@@ -1882,12 +1882,21 @@ file_position (stream * s)
  * it is not */
 
 int
-is_seekable (stream * s)
+is_seekable (stream *s)
 {
   /* By convention, if file_length == -1, the file is not
      seekable.  */
   return ((unix_stream *) s)->file_length!=-1;
 }
+
+
+/* is_special()-- Return nonzero if the stream is not a regular file.  */
+
+is_special (stream *s)
+{
+  return ((unix_stream *) s)->special_file;
+}
+
 
 try
 flush (stream *s)
