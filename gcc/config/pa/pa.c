@@ -58,7 +58,8 @@ hppa_fpstore_bypass_p (rtx out_insn, rtx in_insn)
   rtx set;
 
   if (recog_memoized (in_insn) < 0
-      || get_attr_type (in_insn) != TYPE_FPSTORE
+      || (get_attr_type (in_insn) != TYPE_FPSTORE
+	  && get_attr_type (in_insn) != TYPE_FPSTORE_LOAD)
       || recog_memoized (out_insn) < 0)
     return 0;
 

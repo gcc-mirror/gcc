@@ -68,7 +68,7 @@
 ;; type "binary" insns have two input operands (1,2) and one output (0)
 
 (define_attr "type"
-  "move,unary,binary,shift,nullshift,compare,load,store,uncond_branch,btable_branch,branch,cbranch,fbranch,call,dyncall,fpload,fpstore,fpalu,fpcc,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,milli,parallel_branch"
+  "move,unary,binary,shift,nullshift,compare,load,store,uncond_branch,btable_branch,branch,cbranch,fbranch,call,dyncall,fpload,fpstore,fpalu,fpcc,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,milli,parallel_branch,fpstore_load,store_fpload"
   (const_string "binary"))
 
 (define_attr "pa_combine_type"
@@ -258,21 +258,31 @@
        (eq_attr "cpu" "700"))
   "mem_700*3")
 
-(define_insn_reservation "W11" 1
-  (and (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,load,fpload,store,fpstore")
+(define_insn_reservation "W11" 5
+  (and (eq_attr "type" "fpstore_load")
+       (eq_attr "cpu" "700"))
+  "mem_700*5")
+
+(define_insn_reservation "W12" 6
+  (and (eq_attr "type" "store_fpload")
+       (eq_attr "cpu" "700"))
+  "mem_700*6")
+
+(define_insn_reservation "W13" 1
+  (and (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,load,fpload,store,fpstore,fpstore_load,store_fpload")
        (eq_attr "cpu" "700"))
   "dummy_700")
 
 ;; We have a bypass for all computations in the FP unit which feed an
 ;; FP store as long as the sizes are the same.
-(define_bypass 2 "W1,W2" "W10" "hppa_fpstore_bypass_p")
-(define_bypass 9 "W3" "W10" "hppa_fpstore_bypass_p")
-(define_bypass 11 "W4" "W10" "hppa_fpstore_bypass_p")
-(define_bypass 13 "W5" "W10" "hppa_fpstore_bypass_p")
-(define_bypass 17 "W6" "W10" "hppa_fpstore_bypass_p")
+(define_bypass 2 "W1,W2" "W10,W11" "hppa_fpstore_bypass_p")
+(define_bypass 9 "W3" "W10,W11" "hppa_fpstore_bypass_p")
+(define_bypass 11 "W4" "W10,W11" "hppa_fpstore_bypass_p")
+(define_bypass 13 "W5" "W10,W11" "hppa_fpstore_bypass_p")
+(define_bypass 17 "W6" "W10,W11" "hppa_fpstore_bypass_p")
 
 ;; We have an "anti-bypass" for FP loads which feed an FP store.
-(define_bypass 4 "W8" "W10" "hppa_fpstore_bypass_p")
+(define_bypass 4 "W8,W12" "W10,W11" "hppa_fpstore_bypass_p")
 
 ;; Function units for the 7100 and 7150.  The 7100/7150 can dual-issue
 ;; floating point computations with non-floating point computations (fp loads
@@ -344,19 +354,29 @@
        (eq_attr "cpu" "7100"))
   "i_7100+mem_7100,mem_7100")
 
-(define_insn_reservation "X7" 1
-  (and (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl,load,fpload,store,fpstore")
+(define_insn_reservation "X7" 4
+  (and (eq_attr "type" "fpstore_load")
+       (eq_attr "cpu" "7100"))
+  "i_7100+mem_7100,mem_7100*3")
+
+(define_insn_reservation "X8" 4
+  (and (eq_attr "type" "store_fpload")
+       (eq_attr "cpu" "7100"))
+  "i_7100+mem_7100,mem_7100*3")
+
+(define_insn_reservation "X9" 1
+  (and (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl,load,fpload,store,fpstore,fpstore_load,store_fpload")
        (eq_attr "cpu" "7100"))
   "i_7100")
 
 ;; We have a bypass for all computations in the FP unit which feed an
 ;; FP store as long as the sizes are the same.
-(define_bypass 1 "X0" "X6" "hppa_fpstore_bypass_p")
-(define_bypass 7 "X1" "X6" "hppa_fpstore_bypass_p")
-(define_bypass 14 "X2" "X6" "hppa_fpstore_bypass_p")
+(define_bypass 1 "X0" "X6,X7" "hppa_fpstore_bypass_p")
+(define_bypass 7 "X1" "X6,X7" "hppa_fpstore_bypass_p")
+(define_bypass 14 "X2" "X6,X7" "hppa_fpstore_bypass_p")
 
 ;; We have an "anti-bypass" for FP loads which feed an FP store.
-(define_bypass 3 "X4" "X6" "hppa_fpstore_bypass_p")
+(define_bypass 3 "X4,X8" "X6,X7" "hppa_fpstore_bypass_p")
 
 ;; The 7100LC has three floating-point units: ALU, MUL, and DIV.
 ;; There's no value in modeling the ALU and MUL separately though
@@ -449,40 +469,70 @@
        (eq_attr "cpu" "7100LC"))
   "i1_7100lc+mem_7100lc,mem_7100lc")
 
-(define_insn_reservation "Y6" 1
+(define_insn_reservation "Y6" 4
+  (and (eq_attr "type" "fpstore_load")
+       (eq_attr "cpu" "7100LC"))
+  "i1_7100lc+mem_7100lc,mem_7100lc*3")
+
+(define_insn_reservation "Y7" 4
+  (and (eq_attr "type" "store_fpload")
+       (eq_attr "cpu" "7100LC"))
+  "i1_7100lc+mem_7100lc,mem_7100lc*3")
+
+(define_insn_reservation "Y8" 1
   (and (eq_attr "type" "shift,nullshift")
        (eq_attr "cpu" "7100LC,7200,7300"))
   "i1_7100lc")
 
-(define_insn_reservation "Y7" 1
+(define_insn_reservation "Y9" 1
   (and (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl,load,fpload,store,fpstore,shift,nullshift")
        (eq_attr "cpu" "7100LC,7200,7300"))
   "(i0_7100lc|i1_7100lc)")
 
 ;; The 7200 has a store-load penalty
-(define_insn_reservation "Y8" 2
-  (and (eq_attr "type" "store")
-       (eq_attr "cpu" "7200"))
-  "i1_7100lc,mem_7100lc")
-
-(define_insn_reservation "Y9" 2
-  (and (eq_attr "type" "fpstore")
-       (eq_attr "cpu" "7200"))
-  "i1_7100lc,mem_7100lc")
-
-;; The 7300 has no penalty for store-store or store-load
 (define_insn_reservation "Y10" 2
   (and (eq_attr "type" "store")
-       (eq_attr "cpu" "7300"))
-  "i1_7100lc")
+       (eq_attr "cpu" "7200"))
+  "i1_7100lc,mem_7100lc")
 
 (define_insn_reservation "Y11" 2
   (and (eq_attr "type" "fpstore")
+       (eq_attr "cpu" "7200"))
+  "i1_7100lc,mem_7100lc")
+
+(define_insn_reservation "Y12" 4
+  (and (eq_attr "type" "fpstore_load")
+       (eq_attr "cpu" "7200"))
+  "i1_7100lc,mem_7100lc,i1_7100lc+mem_7100lc")
+
+(define_insn_reservation "Y13" 4
+  (and (eq_attr "type" "store_fpload")
+       (eq_attr "cpu" "7200"))
+  "i1_7100lc,mem_7100lc,i1_7100lc+mem_7100lc")
+
+;; The 7300 has no penalty for store-store or store-load
+(define_insn_reservation "Y14" 2
+  (and (eq_attr "type" "store")
        (eq_attr "cpu" "7300"))
   "i1_7100lc")
 
+(define_insn_reservation "Y15" 2
+  (and (eq_attr "type" "fpstore")
+       (eq_attr "cpu" "7300"))
+  "i1_7100lc")
+
+(define_insn_reservation "Y16" 4
+  (and (eq_attr "type" "fpstore_load")
+       (eq_attr "cpu" "7300"))
+  "i1_7100lc,i1_7100lc+mem_7100lc")
+
+(define_insn_reservation "Y17" 4
+  (and (eq_attr "type" "store_fpload")
+       (eq_attr "cpu" "7300"))
+  "i1_7100lc,i1_7100lc+mem_7100lc")
+
 ;; We have an "anti-bypass" for FP loads which feed an FP store.
-(define_bypass 3 "Y3" "Y5,Y9,Y11" "hppa_fpstore_bypass_p")
+(define_bypass 3 "Y3,Y7,Y13,Y17" "Y5,Y6,Y11,Y12,Y15,Y16" "hppa_fpstore_bypass_p")
 
 ;; Scheduling for the PA8000 is somewhat different than scheduling for a
 ;; traditional architecture.
@@ -536,18 +586,23 @@
     (eq_attr "cpu" "8000"))
   "im_8000,rm_8000+store_8000")
 
+(define_insn_reservation "Z2" 0
+  (and (eq_attr "type" "fpstore_load,store_fpload")
+       (eq_attr "cpu" "8000"))
+  "im_8000,rm_8000+store_8000,im_8000,rm_8000")
+
 ;; We can issue and retire two non-memory operations per cycle with
 ;; a few exceptions (branches).  This group catches those we want
 ;; to assume have zero latency.
-(define_insn_reservation "Z2" 0
+(define_insn_reservation "Z3" 0
   (and
-    (eq_attr "type" "!load,fpload,store,fpstore,uncond_branch,btable_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch,fpcc,fpalu,fpmulsgl,fpmuldbl,fpsqrtsgl,fpsqrtdbl,fpdivsgl,fpdivdbl")
+    (eq_attr "type" "!load,fpload,store,fpstore,uncond_branch,btable_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch,fpcc,fpalu,fpmulsgl,fpmuldbl,fpsqrtsgl,fpsqrtdbl,fpdivsgl,fpdivdbl,fpstore_load,store_fpload")
     (eq_attr "cpu" "8000"))
   "inm_8000,rnm_8000")
 
 ;; Branches use both slots in the non-memory issue and
 ;; retirement unit.
-(define_insn_reservation "Z3" 0
+(define_insn_reservation "Z4" 0
   (and
     (eq_attr "type" "uncond_branch,btable_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch")
     (eq_attr "cpu" "8000"))
@@ -557,7 +612,7 @@
 ;; They can issue/retire two at a time in the non-memory
 ;; units.  We fix their latency at 2 cycles and they
 ;; are fully pipelined.
-(define_insn_reservation "Z4" 1
+(define_insn_reservation "Z5" 1
  (and
    (eq_attr "type" "fpcc,fpalu,fpmulsgl,fpmuldbl")
    (eq_attr "cpu" "8000"))
@@ -566,13 +621,13 @@
 ;; The fdivsqrt units are not pipelined and have a very long latency.  
 ;; To keep the DFA from exploding, we do not show all the
 ;; reservations for the divsqrt unit.
-(define_insn_reservation "Z5" 17
+(define_insn_reservation "Z6" 17
  (and
    (eq_attr "type" "fpdivsgl,fpsqrtsgl")
    (eq_attr "cpu" "8000"))
  "inm_8000,fdivsqrt_8000*6,rnm_8000")
 
-(define_insn_reservation "Z6" 31
+(define_insn_reservation "Z7" 31
  (and
    (eq_attr "type" "fpdivdbl,fpsqrtdbl")
    (eq_attr "cpu" "8000"))
@@ -2503,7 +2558,7 @@
    fstw%F0 %1,%0
    {fstws|fstw} %1,-16(%%sp)\n\t{ldws|ldw} -16(%%sp),%0
    {stws|stw} %1,-16(%%sp)\n\t{fldws|fldw} -16(%%sp),%0"
-  [(set_attr "type" "load,move,move,move,shift,load,store,move,move,fpalu,fpload,fpstore,move,move")
+  [(set_attr "type" "load,move,move,move,shift,load,store,move,move,fpalu,fpload,fpstore,fpstore_load,store_fpload")
    (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4,4,4,4,4,4,4,4,4,4,8,8")])
 
@@ -3142,7 +3197,7 @@
    fcpy,sgl %f1,%0
    {fstws|fstw} %1,-16(%%sp)\n\t{ldws|ldw} -16(%%sp),%0
    {stws|stw} %1,-16(%%sp)\n\t{fldws|fldw} -16(%%sp),%0"
-  [(set_attr "type" "move,move,move,shift,load,store,move,move,move,move,move")
+  [(set_attr "type" "move,move,move,shift,load,store,move,move,move,fpstore_load,store_fpload")
    (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4,4,4,4,4,4,4,8,8")])
 
@@ -3315,7 +3370,7 @@
    fcpy,sgl %f1,%0
    {fstws|fstw} %1,-16(%%sp)\n\t{ldws|ldw} -16(%%sp),%0
    {stws|stw} %1,-16(%%sp)\n\t{fldws|fldw} -16(%%sp),%0"
-  [(set_attr "type" "move,move,move,shift,load,store,move,move,move,move,move")
+  [(set_attr "type" "move,move,move,shift,load,store,move,move,move,fpstore_load,store_fpload")
    (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4,4,4,4,4,4,4,8,8")])
 
@@ -4171,7 +4226,7 @@
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
-  [(set_attr "type" "fpalu,move,fpstore,store,store,fpload,load,load,move,move")
+  [(set_attr "type" "fpalu,move,fpstore,store,store,fpload,load,load,fpstore_load,store_fpload")
    (set_attr "length" "4,8,4,8,16,4,8,16,12,12")])
 
 (define_insn ""
@@ -4505,7 +4560,7 @@
   return output_move_double (operands);
 }"
   [(set_attr "type"
-    "move,store,store,load,load,multi,fpalu,fpload,fpstore,move,move")
+    "move,store,store,load,load,multi,fpalu,fpload,fpstore,fpstore_load,store_fpload")
    (set_attr "length" "8,8,16,8,16,16,4,4,4,12,12")])
 
 (define_insn ""
@@ -4744,7 +4799,7 @@
    stw%M0 %r1,%0
    {fstws|fstw} %1,-16(%%sp)\n\t{ldws|ldw} -16(%%sp),%0
    {stws|stw} %1,-16(%%sp)\n\t{fldws|fldw} -16(%%sp),%0"
-  [(set_attr "type" "fpalu,move,fpload,load,fpstore,store,move,move")
+  [(set_attr "type" "fpalu,move,fpload,load,fpstore,store,fpstore_load,store_fpload")
    (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4,4,4,4,4,8,8")])
 

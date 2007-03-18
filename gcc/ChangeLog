@@ -1,3 +1,11 @@
+2007-03-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.md: Add fpstore_load and store_fpload instruction types.  Provide
+	reservation, bypass and anti-bypass descriptions for these instructions.
+	Update move patterns.
+	* pa.c (hppa_fpstore_bypass_p): Check for both TYPE_FPSTORE_LOAD and
+	TYPE_FPSTORE.
+	
 2007-03-18  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vect-transform.c (get_initial_def_for_induction): Replace
