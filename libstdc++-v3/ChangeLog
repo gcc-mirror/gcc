@@ -1,3 +1,25 @@
+2007-03-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* libsupc++/array_type_info.cc: Likewise.
+	* libsupc++/bad_cast.cc: Likewise.
+	* libsupc++/bad_typeid.cc: Likewise.
+	* libsupc++/class_type_info.cc: Likewise.
+	* libsupc++/dyncast.cc: Likewise.
+	* libsupc++/enum_type_info.cc: Likewise.
+	* libsupc++/function_type_info.cc: Likewise.
+	* libsupc++/fundamental_type_info.cc: Likewise.
+	* libsupc++/pbase_type_info.cc: Likewise.
+	* libsupc++/pmem_type_info.cc: Likewise.
+	* libsupc++/pointer_type_info.cc: Likewise.
+	* libsupc++/si_class_type_info.cc: Likewise.
+	* libsupc++/vmi_class_type_info.cc: Likewise.
+	* libsupc++/tinfo.h: Move inline type_info functions here.
+	* libsupc++/tinfo.cc: Separate type_info classes into their own
+	files.
+	* libsupc++/tinfo2.cc: Likewise.
+	* Makefile.am (sources): Mention new files.
+	* Makefile.in: Regenerated.
+
 2007-03-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/27_io/headers/cinttypes/types_std_c++0x.cc: Use

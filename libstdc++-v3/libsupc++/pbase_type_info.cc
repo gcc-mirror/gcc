@@ -1,6 +1,4 @@
-// Methods for type_info for -*- C++ -*- Run Time Type Identification.
-
-// Copyright (C) 1994, 1996, 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1994, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2007
 // Free Software Foundation
 //
 // This file is part of GCC.
@@ -22,28 +20,48 @@
 
 // As a special exception, you may use this file as part of a free software
 // library without restriction.  Specifically, if other files instantiate
-// templates or use macros or inline functions from this file, or you compile
+// templates or use macros or inline enums from this file, or you compile
 // this file and link it with other files to produce an executable, this
 // file does not by itself cause the resulting executable to be covered by
 // the GNU General Public License.  This exception does not however
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <cstddef>
 #include "tinfo.h"
 
-using std::type_info;
+namespace __cxxabiv1 {
 
-#if !__GXX_TYPEINFO_EQUALITY_INLINE
+__pbase_type_info::
+~__pbase_type_info ()
+{}
 
-bool
-type_info::before (const type_info &arg) const
+bool __pbase_type_info::
+__do_catch (const type_info *thr_type,
+            void **thr_obj,
+            unsigned outer) const
 {
-#if __GXX_MERGED_TYPEINFO_NAMES
-  return name () < arg.name ();
-#else
-  return __builtin_strcmp (name (), arg.name ()) < 0;
-#endif
+  if (*this == *thr_type)
+    return true;      // same type
+  if (typeid (*this) != typeid (*thr_type))
+    return false;     // not both same kind of pointers
+  
+  if (!(outer & 1))
+    // We're not the same and our outer pointers are not all const qualified
+    // Therefore there must at least be a qualification conversion involved
+    // But for that to be valid, our outer pointers must be const qualified.
+    return false;
+  
+  const __pbase_type_info *thrown_type =
+    static_cast <const __pbase_type_info *> (thr_type);
+  
+  if (thrown_type->__flags & ~__flags)
+    // We're less qualified.
+    return false;
+  
+  if (!(__flags & __const_mask))
+    outer &= ~1;
+  
+  return __pointer_catch (thrown_type, thr_obj, outer);
 }
 
-#endif
+}
