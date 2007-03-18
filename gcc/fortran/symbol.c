@@ -91,6 +91,8 @@ gfc_gsymbol *gfc_gsym_root = NULL;
 
 static gfc_symbol *changed_syms = NULL;
 
+gfc_dt_list *gfc_derived_types;
+
 
 /*********** IMPLICIT NONE and IMPLICIT statement handlers ***********/
 
@@ -2528,18 +2530,20 @@ free_sym_tree (gfc_symtree * sym_tree)
 }
 
 
-/* Free a derived type list.  */
+/* Free the derived type list.  */
 
 static void
-gfc_free_dt_list (gfc_dt_list * dt)
+gfc_free_dt_list (void)
 {
-  gfc_dt_list *n;
+  gfc_dt_list *dt, *n;
 
-  for (; dt; dt = n)
+  for (dt = gfc_derived_types; dt; dt = n)
     {
       n = dt->next;
       gfc_free (dt);
     }
+
+  gfc_derived_types = NULL;
 }
 
 
@@ -2605,8 +2609,6 @@ gfc_free_namespace (gfc_namespace * ns)
   gfc_free_equiv (ns->equiv);
   gfc_free_equiv_lists (ns->equiv_lists);
 
-  gfc_free_dt_list (ns->derived_types);
-
   for (i = GFC_INTRINSIC_BEGIN; i != GFC_INTRINSIC_END; i++)
     gfc_free_interface (ns->operator[i]);
 
@@ -2639,6 +2641,7 @@ gfc_symbol_done_2 (void)
 
   gfc_free_namespace (gfc_current_ns);
   gfc_current_ns = NULL;
+  gfc_free_dt_list ();
 }
 
 

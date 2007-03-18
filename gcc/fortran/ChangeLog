@@ -1,4 +1,22 @@
-2007-03-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+2007-03-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30531
+	PR fortran/31086
+	* symbo.c : Add gfc_derived_types.
+	(gfc_free_dt_list): Free derived type list gfc_derived_types.
+	(gfc_free_namespace): Remove call to gfc_free_dt_list.
+	(gfc_symbol_done_2): Call  gfc_free_dt_list.
+	* gfortran.h : Declare gfc_derived_types to be external. Remove
+	derived types field from gfc_namespace.
+	* resolve.c (resolve_fl_derived): Refer to gfc_derived types
+	rather than namespace derived_types.
+	(resolve_fntype): Remove special treatment for module
+	derived type functions.
+	* trans-types.c (gfc_get_derived_type): Remove search for like
+	derived types.  Finish by copying back end declaration to like
+	derived types in the derived type list gfc_derived_types.
+
+	2007-03-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/31120
 	* trans-expr.c (gfc_conv_powi): Make n argument unsigned hwi.

@@ -1463,7 +1463,6 @@ gfc_get_derived_type (gfc_symbol * derived)
   tree typenode, field, field_type, fieldlist;
   gfc_component *c;
   gfc_dt_list *dt;
-  gfc_namespace * ns;
 
   gcc_assert (derived && derived->attr.flavor == FL_DERIVED);
 
@@ -1479,39 +1478,6 @@ gfc_get_derived_type (gfc_symbol * derived)
     }
   else
     {
-      /* If an equal derived type is already available in the parent namespace,
-	 use its backend declaration and those of its components, rather than
-	 building anew so that potential dummy and actual arguments use the
-	 same TREE_TYPE.  If an equal type is found without a backend_decl,
-	 build the parent version and use it in the current namespace.  */
-      if (derived->ns->parent)
-	ns = derived->ns->parent;
-      else if (derived->ns->proc_name
-		 && derived->ns->proc_name->ns != derived->ns)
-	/* Derived types in an interface body obtain their parent reference
-	   through the proc_name symbol.  */
-	ns = derived->ns->proc_name->ns;
-      else
-	/* Sometimes there isn't a parent reference!  */
-	ns = NULL;
-
-      for (; ns; ns = ns->parent)
-	{
-	  for (dt = ns->derived_types; dt; dt = dt->next)
-	    {
-	      if (dt->derived == derived)
-		continue;
-
-	      if (dt->derived->backend_decl == NULL
-		    && gfc_compare_derived_types (dt->derived, derived))
-		gfc_get_derived_type (dt->derived);
-
-	      if (copy_dt_decls_ifequal (dt->derived, derived))
-		break;
-	    }
-	  if (derived->backend_decl)
-	    goto other_equal_dts;
-	}
 
       /* We see this derived type first time, so build the type node.  */
       typenode = make_node (RECORD_TYPE);
@@ -1591,12 +1557,8 @@ gfc_get_derived_type (gfc_symbol * derived)
 
   derived->backend_decl = typenode;
 
-other_equal_dts:
-  /* Add this backend_decl to all the other, equal derived types and
-     their components in this and sibling namespaces.  */
-  ns = derived->ns->parent ? derived->ns->parent->contained : derived->ns;
-  for (; ns; ns = ns->sibling)
-    for (dt = ns->derived_types; dt; dt = dt->next)
+    /* Add this backend_decl to all the other, equal derived types.  */
+    for (dt = gfc_derived_types; dt; dt = dt->next)
       copy_dt_decls_ifequal (derived, dt->derived);
 
   return derived->backend_decl;
