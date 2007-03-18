@@ -162,6 +162,12 @@ lappend DEFAULT_VECTCFLAGS "-fno-tree-scev-cprop"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-tree-scev-cprop-*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 
+# -fno-tree-dominator-opts
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-fno-tree-dominator-opts"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-tree-dom-*.\[cS\]]]  \
+	"" $DEFAULT_VECTCFLAGS
+
 # With -Os
 lappend DEFAULT_VECTCFLAGS "-Os"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/Os-vect-*.\[cS\]]]  \

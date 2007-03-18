@@ -531,7 +531,7 @@ get_initial_def_for_induction (tree stmt, tree iv_phi)
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree scalar_type = TREE_TYPE (iv_phi);
   tree vectype = get_vectype_for_scalar_type (scalar_type);
-  int nunits = GET_MODE_NUNITS (TYPE_MODE (vectype));
+  int nunits =  TYPE_VECTOR_SUBPARTS (vectype);
   edge pe = loop_preheader_edge (loop);
   basic_block new_bb;
   block_stmt_iterator bsi;
@@ -1001,7 +1001,7 @@ get_initial_def_for_reduction (tree stmt, tree init_val, tree *scalar_def)
 {
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
-  int nunits = GET_MODE_NUNITS (TYPE_MODE (vectype));
+  int nunits =  TYPE_VECTOR_SUBPARTS (vectype);
   int nelements;
   enum tree_code code = TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1));
   tree type = TREE_TYPE (init_val);
