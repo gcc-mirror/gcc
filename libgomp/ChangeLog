@@ -1,3 +1,9 @@
+2007-03-18  Andreas Schwab  <schwab@suse.de>
+
+	* acinclude.m4: Adjust regular expression for ld version
+	extraction.
+	* configure: Regenerate.
+
 2007-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/30703
