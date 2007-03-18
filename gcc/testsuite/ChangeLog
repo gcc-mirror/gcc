@@ -1,3 +1,8 @@
+2007-03-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/30395
+	* gcc.dg/pr16194.c: Provide define for REG on __hppa__.
+
 2007-03-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/31052
