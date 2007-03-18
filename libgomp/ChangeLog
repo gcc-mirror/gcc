@@ -1,3 +1,9 @@
+2007-03-18  Andreas Schwab  <schwab@suse.de>
+
+	* acinclude.m4: Adjust regular expression for ld version
+	extraction.
+	* configure: Regenerate.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.am: Add install-pdf target as copied from
