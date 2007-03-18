@@ -1414,6 +1414,9 @@ enum cris_pic_symbol_type
 
 #define NO_IMPLICIT_EXTERN_C
 
+/* No specific purpose other than warningless compatibility.  */
+#define HANDLE_PRAGMA_PACK_PUSH_POP 1
+
 /*
  * Local variables:
  * eval: (c-set-style "gnu")

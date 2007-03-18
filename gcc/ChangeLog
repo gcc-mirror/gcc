@@ -1,3 +1,7 @@
+2007-03-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define to 1.
+
 2007-03-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md: Add fpstore_load and store_fpload instruction types.  Provide
