@@ -1,6 +1,4 @@
-// Methods for type_info for -*- C++ -*- Run Time Type Identification.
-
-// Copyright (C) 1994, 1996, 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1994, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2007
 // Free Software Foundation
 //
 // This file is part of GCC.
@@ -22,28 +20,23 @@
 
 // As a special exception, you may use this file as part of a free software
 // library without restriction.  Specifically, if other files instantiate
-// templates or use macros or inline functions from this file, or you compile
+// templates or use macros or inline enums from this file, or you compile
 // this file and link it with other files to produce an executable, this
 // file does not by itself cause the resulting executable to be covered by
 // the GNU General Public License.  This exception does not however
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <cstddef>
-#include "tinfo.h"
+#include <typeinfo>
 
-using std::type_info;
+namespace std {
 
-#if !__GXX_TYPEINFO_EQUALITY_INLINE
+bad_cast::~bad_cast() throw() { }
 
-bool
-type_info::before (const type_info &arg) const
+const char* 
+bad_cast::what() const throw()
 {
-#if __GXX_MERGED_TYPEINFO_NAMES
-  return name () < arg.name ();
-#else
-  return __builtin_strcmp (name (), arg.name ()) < 0;
-#endif
+  return "std::bad_cast";
 }
 
-#endif
+} // namespace std

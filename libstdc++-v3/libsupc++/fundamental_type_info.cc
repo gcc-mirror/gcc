@@ -1,6 +1,4 @@
-// Methods for type_info for -*- C++ -*- Run Time Type Identification.
-
-// Copyright (C) 1994, 1996, 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1994, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2007
 // Free Software Foundation
 //
 // This file is part of GCC.
@@ -29,21 +27,15 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <cstddef>
 #include "tinfo.h"
 
-using std::type_info;
+namespace __cxxabiv1 {
 
-#if !__GXX_TYPEINFO_EQUALITY_INLINE
+// This has special meaning to the compiler, and will cause it
+// to emit the type_info structures for the fundamental types which are
+// mandated to exist in the runtime.
+__fundamental_type_info::
+~__fundamental_type_info ()
+{}
 
-bool
-type_info::before (const type_info &arg) const
-{
-#if __GXX_MERGED_TYPEINFO_NAMES
-  return name () < arg.name ();
-#else
-  return __builtin_strcmp (name (), arg.name ()) < 0;
-#endif
 }
-
-#endif
