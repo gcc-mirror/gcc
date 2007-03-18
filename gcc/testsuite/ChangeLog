@@ -1,3 +1,8 @@
+2007-03-18  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/no-tree-dom-vect-bug.c: New test.
+	* gcc.dg/vect/vect.exp: Compile tests with -fno-tree-dominator-opts.
+ 
 2007-03-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/31120

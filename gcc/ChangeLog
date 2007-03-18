@@ -1,3 +1,9 @@
+2007-03-18  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vect-transform.c (get_initial_def_for_induction): Replace
+	GET_MODE_NUNITS with TYPE_VECTOR_SUBPARTS.
+	(get_initial_def_for_reduction): Likewise.
+
 2007-03-16  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/29922
