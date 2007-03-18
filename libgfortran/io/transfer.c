@@ -2222,9 +2222,6 @@ next_record_r (st_parameter_dt *dtp)
 
       break;
     }
-
-  if (dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL)
-    test_endfile (dtp->u.p.current_unit);
 }
 
 
@@ -2684,10 +2681,7 @@ st_read (st_parameter_dt *dtp)
 
   data_transfer_init (dtp, 1);
 
-  /* Handle complications dealing with the endfile record.  It is
-     significant that this is the only place where ERROR_END is
-     generated.  Reading an end of file elsewhere is either end of
-     record or an I/O error. */
+  /* Handle complications dealing with the endfile record. */
 
   if (dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL)
     switch (dtp->u.p.current_unit->endfile)

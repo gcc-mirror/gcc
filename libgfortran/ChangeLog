@@ -1,3 +1,15 @@
+2007-03-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/31052
+	* io/file_position (st_rewind): Fix comments. Remove use of
+	test_endfile. Don't seek if already at 0 position.  Use new is_special
+	function to set endfile state.
+	* io/open.c (test_endfile): Delete this function.
+	* io/io.h: Delete prototype for test_endfile.  Add prototype
+	for is_special.
+	* io/unix.c (is_special): New function. Fix whitespace.
+	* io/transfer.c (next_record_r): Remove use of test_endfile.
+
 2007-03-16  David Edelsohn  <edelsohn@gnu.org>
 
 	* runtime/main.c: Include "config.h" first.

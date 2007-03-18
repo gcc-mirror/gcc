@@ -306,14 +306,27 @@ st_rewind (st_parameter_filepos *fpp)
 
 	  u->mode = READING;
 	  u->last_record = 0;
-	  if (sseek (u->s, 0) == FAILURE)
+
+	  if (file_position (u->s) != 0 && sseek (u->s, 0) == FAILURE)
 	    generate_error (&fpp->common, ERROR_OS, NULL);
 
-	  u->endfile = NO_ENDFILE;
+	  /* Handle special files like /dev/null differently.  */
+	  if (!is_special (u->s))
+	    {
+	      /* We are rewinding so we are not at the end.  */
+	      u->endfile = NO_ENDFILE;
+	    }
+	  else
+	    {
+	      /* Set this for compatibilty with g77 for /dev/null.  */
+	      if (file_length (u->s) == 0  && file_position (u->s) == 0)
+		u->endfile = AT_ENDFILE;
+	      /* Future refinements on special files can go here.  */
+	    }
+
 	  u->current_record = 0;
 	  u->strm_pos = 1;
 	  u->read_bad = 0;
-	  test_endfile (u);
 	}
       /* Update position for INQUIRE.  */
       u->flags.position = POSITION_REWIND;
