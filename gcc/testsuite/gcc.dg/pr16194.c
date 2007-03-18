@@ -10,6 +10,8 @@
 # define REG "$1"
 #elif defined (__CRIS__) || defined (__sh__)
 # define REG "r10"
+#elif defined (__hppa__)
+# define REG "%r10"
 #elif defined (__i386__)
 # define REG "%eax"
 #elif defined (__MMIX__)
