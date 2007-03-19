@@ -1,3 +1,8 @@
+2007-03-19  Jeff Law  <law@redhat.com>
+
+	* tree-cfg.c (find_taken_edge): Tighten conditions for
+	optimizing computed gotos.
+
 2007-03-19  Michael Matz  <matz@suse.de>
 
 	* builtins.c (expand_builtin_sync_operation,
