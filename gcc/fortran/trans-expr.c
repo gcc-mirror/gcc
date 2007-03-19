@@ -227,6 +227,8 @@ gfc_trans_init_string_length (gfc_charlen * cl, stmtblock_t * pblock)
 
   gfc_init_se (&se, NULL);
   gfc_conv_expr_type (&se, cl->length, gfc_charlen_type_node);
+  se.expr = fold_build2 (MAX_EXPR, gfc_charlen_type_node, se.expr,
+			 build_int_cst (gfc_charlen_type_node, 0));
   gfc_add_block_to_block (pblock, &se.pre);
 
   tmp = cl->backend_decl;
@@ -2256,6 +2258,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
         }
         else
         {
+	  tree tmp;
+
 	  /* Calculate the length of the returned string.  */
 	  gfc_init_se (&parmse, NULL);
 	  if (need_interface_mapping)
@@ -2264,7 +2268,11 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	    gfc_conv_expr (&parmse, sym->ts.cl->length);
 	  gfc_add_block_to_block (&se->pre, &parmse.pre);
 	  gfc_add_block_to_block (&se->post, &parmse.post);
-	  cl.backend_decl = fold_convert (gfc_charlen_type_node, parmse.expr);
+	  
+	  tmp = fold_convert (gfc_charlen_type_node, parmse.expr);
+	  tmp = fold_build2 (MAX_EXPR, gfc_charlen_type_node, tmp,
+			     build_int_cst (gfc_charlen_type_node, 0));
+	  cl.backend_decl = tmp;
 	}
 
       /* Set up a charlen structure for it.  */
