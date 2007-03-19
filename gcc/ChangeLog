@@ -1,3 +1,8 @@
+2007-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* doc/tm.texi: Add brackets around the return type of
+	TARGET_SECONDARY_RELOAD.
+
 2007-03-19  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 	Richard Guenther  <rguenther@suse.de>
 
