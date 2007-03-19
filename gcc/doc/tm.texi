@@ -2509,7 +2509,7 @@ Don't define this macro unless the target machine has limitations which
 require the macro to do something nontrivial.
 @end defmac
 
-@deftypefn {Target Hook} enum reg_class TARGET_SECONDARY_RELOAD (bool @var{in_p}, rtx @var{x}, enum reg_class @var{reload_class}, enum machine_mode @var{reload_mode}, secondary_reload_info *@var{sri})
+@deftypefn {Target Hook} {enum reg_class} TARGET_SECONDARY_RELOAD (bool @var{in_p}, rtx @var{x}, enum reg_class @var{reload_class}, enum machine_mode @var{reload_mode}, secondary_reload_info *@var{sri})
 Many machines have some registers that cannot be copied directly to or
 from memory or even from other types of registers.  An example is the
 @samp{MQ} register, which on most machines, can only be copied to or
