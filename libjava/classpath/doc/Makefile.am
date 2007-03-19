@@ -4,6 +4,9 @@ EXTRA_DIST = README.jaxp $(man_MANS)
 
 ## GCJ LOCAL: we don't want to install all of Classpath's info files.
 ## info_TEXINFOS = cp-hacking.texinfo cp-vmintegration.texinfo cp-tools.texinfo
+TEXINFO_TEX = ../../gcc/doc/include/texinfo.tex
+info_TEXINFOS = cp-tools.texinfo
+cp_tools_TEXINFOS = gcc-vers.texi
 
 %.dvi : %.texinfo
 	texi2dvi $<
@@ -12,6 +15,7 @@ EXTRA_DIST = README.jaxp $(man_MANS)
 	dvips -o $@ $<
 
 docs: cp-hacking.ps cp-vmintegration.ps cp-tools.ps
+install-data-local: install-info
 
 man_MANS = $(TOOLS_MANFILES)
 TOOLS_MANFILES = \
@@ -89,3 +93,46 @@ gserialver.pod: $(srcdir)/cp-tools.texinfo
 
 gtnameserv.pod: $(srcdir)/cp-tools.texinfo
 	-$(TEXI2POD) -D gtnameserv < $< > $@
+
+# GCJ LOCAL CHANGE
+# The following commands allow us to release tarballs with the man pages
+# and info documentation prebuilt.  This feature is enabled via 
+# --enable-generated-files-in-srcdir in the configure script.
+
+if GENINSRC
+STAMP_GENINSRC = stamp-geninsrc
+else
+STAMP_GENINSRC =
+endif
+
+all-local: $(STAMP_GENINSRC) 
+
+stamp-geninsrc: $(TOOLS_MANFILES) cp-tools.info
+	-cp -p gappletviewer.1 $(srcdir)/gappletviewer.1
+	-cp -p gjar.1 $(srcdir)/gjar.1
+	-cp -p gjarsigner.1 $(srcdir)/gjarsigner.1
+	-cp -p gjavah.1 $(srcdir)/gjavah.1
+	-cp -p gkeytool.1 $(srcdir)/gkeytool.1
+	-cp -p gnative2ascii.1 $(srcdir)/gnative2ascii.1
+	-cp -p gorbd.1 $(srcdir)/gorbd.1
+	-cp -p grmid.1 $(srcdir)/grmid.1
+	-cp -p grmiregistry.1 $(srcdir)/grmiregistry.1
+	-cp -p gserialver.1 $(srcdir)/gserialver.1
+	-cp -p gtnameserv.1 $(srcdir)/gtnameserv.1
+	-cp -p cp-tools.info $(srcdir)/cp-tools.info
+	touch $@
+
+CLEANFILES = stamp-geninsrc cp-tools.info
+MAINTAINERCLEANFILES = \
+		$(srcdir)/gappletviewer.1 \
+		$(srcdir)/gjar.1 \
+		$(srcdir)/gjarsigner.1 \
+		$(srcdir)/gjavah.1 \
+		$(srcdir)/gkeytool.1 \
+		$(srcdir)/gnative2ascii.1 \
+		$(srcdir)/gorbd.1 \
+		$(srcdir)/grmid.1 \
+		$(srcdir)/grmiregistry.1 \
+		$(srcdir)/gserialver.1 \
+		$(srcdir)/gtnameserv.1 \
+		$(srcdir)/cp-tools.info

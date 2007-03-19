@@ -18,6 +18,27 @@ AC_ARG_ENABLE(java-maintainer-mode,
 AM_CONDITIONAL(JAVA_MAINTAINER_MODE, test "$enable_java_maintainer_mode" = yes)
 dnl END GCJ LOCAL
 
+dnl GCJ LOCAL
+# We would like to our source tree to be readonly.  However when releases or
+# pre-releases are generated, the man pages need to be included as they are
+# converted from the texi files via perl which we don't require end users to
+# have installed.
+# Therefore we have --enable-generated-files-in-srcdir to do just that.
+
+AC_MSG_CHECKING([whether to place generated files in the source directory])
+  dnl generated-files-in-srcdir is disabled by default
+  AC_ARG_ENABLE(generated-files-in-srcdir, 
+[  --enable-generated-files-in-srcdir
+                          put copies of generated files in source dir
+                          intended for creating source tarballs for users
+                          without texinfo, perl, bison or flex.],
+      generated_files_in_srcdir=$enableval,
+      generated_files_in_srcdir=no)
+
+AC_MSG_RESULT($generated_files_in_srcdir)
+AM_CONDITIONAL(GENINSRC, test x$generated_files_in_srcdir = xyes)
+dnl END GCJ LOCAL
+
 # Find the rest of the source tree framework.
 AM_ENABLE_MULTILIB(, ../..)
 
