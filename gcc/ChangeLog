@@ -1,5 +1,10 @@
 2007-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/s390.md: Only non-functional changes.  Renamed
+	FPR mode macro to BFP all over the file.
+
+2007-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* config/s390/s390.md (UNSPEC_COPYSIGN): New constant.
 	(op_type attribute): RRF instruction type added.
 	(fT0): New mode attribute.
