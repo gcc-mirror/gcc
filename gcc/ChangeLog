@@ -1,5 +1,16 @@
 2007-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/s390.md (UNSPEC_COPYSIGN): New constant.
+	(op_type attribute): RRF instruction type added.
+	(fT0): New mode attribute.
+	("*movdi_64dfp", "*movdf_64dfp", "*neg<mode>2_nocc", "*abs<mode>2_nocc",
+	"*negabs<mode>2_nocc", "copysign<mode>3"): Insn definitions added.
+	* config/s390/s390.h (SECONDARY_MEMORY_NEEDED): Due to a new instruction
+	no secondary memory is needed when moving DFmode values between GPRs
+	and FPRs.
+
+2007-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* config/s390/s390.opt ("mhard-float", "msoft-float"): Bit value
 	inverted and documentation adjusted.
 	("mhard-dfp", "msoft-dfp"): New options.
