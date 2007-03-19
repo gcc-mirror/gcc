@@ -1,5 +1,29 @@
 2007-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/s390.md (op_type attribute): RRR instruction type added.
+	(FP, DFP, SD_SF, DD_DF, TD_TF): New mode macros.
+	(xde, xdee): Mode attributes adjusted to support DFP modes.
+	(RRer, f0, op1, Rf, bt, bfp, HALF_TMODE): New mode attributes added.
+	("cmp<mode>", "*cmp<mode>_css_0", "*cmp<mode>_ccs", TF move splitters,
+	DF move splitters, "floatdi<mode>2", "add<mode>3", "*add<mode>3", 
+	"*add<mode>3_cc", "*add<mode>3_cconly", "sub<mode>3", "*sub<mode>3",
+	"*sub<mode>3_cc", "*sub<mode>3_cconly", "mul<mode>3", "*mul<mode>3",
+	"div<mode>3", "*div<mode>3", "*neg<mode>2_nocc", "*abs<mode>2_nocc",
+	"*negabs<mode>2_nocc", "copysign<mode>3"): Adjusted to support DFP 
+	numbers.
+	("*movtf_64", "*movtf_31", "*movdf_64dfp", "*movdf_64", "*movdf_31",
+	"movsf"): Insn definitions removed.
+	("*mov<mode>_64", "*mov<mode>_31", "mov<mode>", "*mov<mode>_64dfp",
+	"*mov<mode>_64", "*mov<mode>_31", "fix_trunc<DFP:mode>di2",
+	"trunctddd2", "truncddsd2", "extendddtd2", "extendsddd2"): Insn
+	definitions added.
+	("fixuns_truncdddi2", "fixuns_trunctddi2", "mov<mode>",
+	"reload_in<mode>", "reload_out<mode>"): Expander added.
+	("movtf", "movdf", "reload_outtf", "reload_outdf", "reload_intf"):
+	Expander removed.
+
+2007-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* config/s390/s390.md: Only non-functional changes.  Renamed
 	FPR mode macro to BFP all over the file.
 
