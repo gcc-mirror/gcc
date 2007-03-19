@@ -3,6 +3,11 @@
 	PR libgfortran/31099
 	* io/file_pos.c (st_rewind): Don't set bytes_left to zero.
 
+2007-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* io/unix.c (regular_file): For ACTION_UNSPECIFIED retry with
+	O_RDONLY even if errno is EROFS.
+
 2007-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/31099
