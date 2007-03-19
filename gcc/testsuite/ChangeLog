@@ -1,3 +1,8 @@
+2007-03-19  Jeff Law  <law@redhat.com>
+
+	* PR tree-optimization/30984
+	* gcc.c-torture/pr30984.c: New test.
+
 2007-03-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/29906
