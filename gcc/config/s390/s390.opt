@@ -47,9 +47,13 @@ mfused-madd
 Target Report Mask(FUSED_MADD)
 Enable fused multiply/add instructions
 
+mhard-dfp
+Target Report RejectNegative InverseMask(SOFT_DFP, HARD_DFP)
+Enable hardware decimal floating point
+
 mhard-float
-Target Report RejectNegative Mask(HARD_FLOAT)
-Use hardware fp
+Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
+Enable hardware floating point
 
 mlong-double-128
 Target Report RejectNegative Mask(LONG_DOUBLE_128)
@@ -67,9 +71,13 @@ msmall-exec
 Target Report Mask(SMALL_EXEC)
 Use bras for executable < 64k
 
+msoft-dfp
+Target Report RejectNegative Mask(SOFT_DFP)
+Disable hardware decimal floating point
+
 msoft-float
-Target Report RejectNegative InverseMask(HARD_FLOAT, SOFT_FLOAT)
-Don't use hardware fp
+Target Report RejectNegative Mask(SOFT_FLOAT)
+Disable hardware floating point
 
 mstack-guard=
 Target RejectNegative Joined

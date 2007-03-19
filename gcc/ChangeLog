@@ -1,5 +1,19 @@
 2007-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/s390.opt ("mhard-float", "msoft-float"): Bit value
+	inverted and documentation adjusted.
+	("mhard-dfp", "msoft-dfp"): New options.
+	* config/s390/s390.c (s390_handle_arch_option): New architecture
+	switch: z9-ec.
+	(override_options): Sanity checks for the new options added.
+	* config.gcc: New architecture switch: z9-ec.
+	* config/s390/s390.h (processor_flags): PF_DFP added.
+	(TARGET_CPU_DFP, TARGET_DFP): Macro definitions added.
+	(TARGET_DEFAULT): Due to the s390.opt changes hard float is enabled
+	when the bit is NOT set so remove it from the defaults.
+
+2007-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* genemit.c (main): Print include statement for dfp.h.
 	* dfp.h (decimal_real_arithmetic): Hide prototype if tree_code enum
 	is not available.
