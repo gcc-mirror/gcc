@@ -1340,6 +1340,8 @@ s390_handle_arch_option (const char *arg,
 				    | PF_LONG_DISPLACEMENT},
       {"z9-109", PROCESSOR_2094_Z9_109, PF_IEEE_FLOAT | PF_ZARCH
                                        | PF_LONG_DISPLACEMENT | PF_EXTIMM},
+      {"z9-ec", PROCESSOR_2094_Z9_109, PF_IEEE_FLOAT | PF_ZARCH
+                             | PF_LONG_DISPLACEMENT | PF_EXTIMM | PF_DFP },
     };
   size_t i;
 
@@ -1418,10 +1420,33 @@ override_options (void)
     }
 
   /* Sanity checks.  */
-  if (TARGET_ZARCH && !(s390_arch_flags & PF_ZARCH))
+  if (TARGET_ZARCH && !TARGET_CPU_ZARCH)
     error ("z/Architecture mode not supported on %s", s390_arch_string);
   if (TARGET_64BIT && !TARGET_ZARCH)
     error ("64-bit ABI not supported in ESA/390 mode");
+
+  if (TARGET_HARD_DFP && (!TARGET_CPU_DFP || !TARGET_ZARCH))
+    {
+      if (target_flags_explicit & MASK_SOFT_DFP)
+	{
+	  if (!TARGET_CPU_DFP)
+	    error ("Hardware decimal floating point instructions"
+		   " not available on %s", s390_arch_string);
+	  if (!TARGET_ZARCH)
+	    error ("Hardware decimal floating point instructions"
+		   " not available in ESA/390 mode");
+	}
+      else
+	target_flags |= MASK_SOFT_DFP;
+    }
+
+  if ((target_flags_explicit & MASK_SOFT_FLOAT) && TARGET_SOFT_FLOAT)
+    {
+      if ((target_flags_explicit & MASK_SOFT_DFP) && TARGET_HARD_DFP)
+	error ("-mhard-dfp can't be used in conjunction with -msoft-float");
+
+      target_flags |= MASK_SOFT_DFP;
+    }
 
   /* Set processor cost function.  */
   if (s390_tune == PROCESSOR_2094_Z9_109)
