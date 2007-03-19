@@ -1,5 +1,9 @@
 2007-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/30762
+	* c-typeck.c (convert_for_assignment): Call comptypes for
+	RECORD_TYPE or UNION_TYPE.
+
 	PR inline-asm/30505
 	* reload1.c (reload): Do invalid ASM checking after
 	cleanup_subreg_operands.

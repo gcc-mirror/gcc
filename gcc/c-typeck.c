@@ -3940,10 +3940,16 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 	       || coder == BOOLEAN_TYPE))
     return convert_and_check (type, rhs);
 
+  /* Aggregates in different TUs might need conversion.  */
+  if ((codel == RECORD_TYPE || codel == UNION_TYPE)
+      && codel == coder
+      && comptypes (type, rhstype))
+    return convert_and_check (type, rhs);
+
   /* Conversion to a transparent union from its member types.
      This applies only to function arguments.  */
-  else if (codel == UNION_TYPE && TYPE_TRANSPARENT_UNION (type)
-	   && (errtype == ic_argpass || errtype == ic_argpass_nonproto))
+  if (codel == UNION_TYPE && TYPE_TRANSPARENT_UNION (type)
+      && (errtype == ic_argpass || errtype == ic_argpass_nonproto))
     {
       tree memb, marginal_memb = NULL_TREE;
 
