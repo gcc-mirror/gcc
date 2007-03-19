@@ -98,6 +98,15 @@
   ""
   "lock{\;| }cmpxchg<doublemodesuffix>b{\t| }%1")
 
+;; Theoretically we'd like to use constraint "r" (any reg) for operand
+;; 3, but that includes ecx.  If operand 3 and 4 are the same (like when
+;; the input is -1LL) GCC might chose to allocate operand 3 to ecx, like
+;; operand 4.  This breaks, as the xchg will move the PIC register contents
+;; to %ecx then --> boom.  Operands 3 and 4 really need to be different
+;; registers, which in this case means operand 3 must not be ecx.
+;; Instead of playing tricks with fake early clobbers or the like we
+;; just enumerate all regs possible here, which (as this is !TARGET_64BIT)
+;; are just esi and edi.
 (define_insn "*sync_double_compare_and_swapdi_pic"
   [(set (match_operand:DI 0 "register_operand" "=A")
 	(match_operand:DI 1 "memory_operand" "+m"))
@@ -105,7 +114,7 @@
 	(unspec_volatile:DI
 	  [(match_dup 1)
 	   (match_operand:DI 2 "register_operand" "A")
-	   (match_operand:SI 3 "register_operand" "r")
+	   (match_operand:SI 3 "register_operand" "SD")
 	   (match_operand:SI 4 "register_operand" "c")]
 	  UNSPECV_CMPXCHG_1))
    (clobber (reg:CC FLAGS_REG))]
@@ -189,6 +198,8 @@
   ""
   "lock{\;| }cmpxchg<doublemodesuffix>b{\t| }%1")
 
+;; See above for the explanation of using the constraint "SD" for
+;; operand 3.
 (define_insn "*sync_double_compare_and_swap_ccdi_pic"
   [(set (match_operand:DI 0 "register_operand" "=A")
 	(match_operand:DI 1 "memory_operand" "+m"))
@@ -196,7 +207,7 @@
 	(unspec_volatile:DI
 	  [(match_dup 1)
 	   (match_operand:DI 2 "register_operand" "A")
-	   (match_operand:SI 3 "register_operand" "r")
+	   (match_operand:SI 3 "register_operand" "SD")
 	   (match_operand:SI 4 "register_operand" "c")]
 	  UNSPECV_CMPXCHG_1))
    (set (reg:CCZ FLAGS_REG)
