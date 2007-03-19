@@ -680,7 +680,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs, tree use_stmt)
   /* Strip away any outer COMPONENT_REF/ARRAY_REF nodes from the LHS. 
      ADDR_EXPR will not appear on the LHS.  */
   lhs = GIMPLE_STMT_OPERAND (use_stmt, 0);
-  while (TREE_CODE (lhs) == COMPONENT_REF || TREE_CODE (lhs) == ARRAY_REF)
+  while (handled_component_p (lhs))
     lhs = TREE_OPERAND (lhs, 0);
 
   rhs = GIMPLE_STMT_OPERAND (use_stmt, 1);
@@ -695,9 +695,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs, tree use_stmt)
       fold_stmt_inplace (use_stmt);
       tidy_after_forward_propagate_addr (use_stmt);
 
-      /* The only case we did not replace all uses this way is if the
-	 use statement is of the form *name = name.  */
-      return rhs != name;
+      /* Continue propagating into the RHS.  */
     }
 
   /* Trivial case.  The use statement could be a trivial copy or a
@@ -714,8 +712,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs, tree use_stmt)
 
   /* Strip away any outer COMPONENT_REF, ARRAY_REF or ADDR_EXPR
      nodes from the RHS.  */
-  while (TREE_CODE (rhs) == COMPONENT_REF
-	 || TREE_CODE (rhs) == ARRAY_REF
+  while (handled_component_p (rhs)
 	 || TREE_CODE (rhs) == ADDR_EXPR)
     rhs = TREE_OPERAND (rhs, 0);
 
