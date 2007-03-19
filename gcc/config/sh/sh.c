@@ -8966,7 +8966,7 @@ sh_adjust_cost (rtx insn, rtx link ATTRIBUTE_UNUSED, rtx dep_insn, int cost)
 	     by 1 cycle.  */
 	  if (get_attr_type (insn) == TYPE_DYN_SHIFT
 	      && get_attr_any_int_load (dep_insn) == ANY_INT_LOAD_YES
-	      && reg_overlap_mentioned_p (SET_DEST (PATTERN (dep_insn)),
+	      && reg_overlap_mentioned_p (SET_DEST (dep_set),
 					  XEXP (SET_SRC (single_set (insn)),
 						1)))
 	    cost++;

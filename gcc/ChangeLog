@@ -1,3 +1,9 @@
+2007-03-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/31022
+	* config/sh/sh.c (sh_adjust_cost): Use the result of single_set
+	instead of PATTERN.
+
 2007-03-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (output_deferred_plabels, output_bb, output_millicode_call,
