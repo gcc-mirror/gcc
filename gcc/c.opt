@@ -532,6 +532,10 @@ fgnu-runtime
 ObjC ObjC++
 Generate code for GNU runtime environment
 
+fgnu89-inline
+C Var(flag_gnu89_inline) Init(-1)
+Use traditional GNU semantics for inline functions
+
 fguiding-decls
 C++ ObjC++
 

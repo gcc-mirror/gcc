@@ -1,3 +1,23 @@
+2007-03-19  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* doc/extend.texi: Edit "gnu_inline" documentation.
+	* doc/invoke.texi: Edit "-fgnu89-inline" documentation.
+
+2007-03-19  Ian Lance Taylor  <iant@google.com>
+
+	* c.opt (fgnu89-inline): New option.
+	* c-opts.c (c_common_post_options): Warn about -fno-gnu89-inline.
+	* c-common.c (c_common_attributes): Add gnu_inline attribyte.
+	(handle_gnu_inline_attribute): New static function.
+	* c-cppbuiltin.c (c_cpp_builtins): Define __GNUC_GNU_INLINE__.
+	* doc/invoke.texi (Option Summary): Mention -fgnu89-inline.
+	(C Dialect Options): Document -fgnu89-inline.
+	* doc/extend.texi (Function Attributes): Document gnu_inline.
+	(Inline): Mention that C99 inline will be implemented in 4.3.
+	Refer to ways to get the old handling.
+	* doc/cpp.texi (Common Predefined Macros): Document
+	__GNUC_GNU_INLINE__ and __GNUC_STDC_INLINE__.
+
 2007-03-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/29906

@@ -393,6 +393,8 @@ c_cpp_builtins (cpp_reader *pfile)
   /* Misc.  */
   builtin_define_with_value ("__VERSION__", version_string, 1);
 
+  cpp_define (pfile, "__GNUC_GNU_INLINE__");
+
   /* Definitions for LP64 model.  */
   if (TYPE_PRECISION (long_integer_type_node) == 64
       && POINTER_SIZE == 64

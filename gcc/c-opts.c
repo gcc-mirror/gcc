@@ -990,6 +990,12 @@ c_common_post_options (const char **pfilename)
   if (flag_inline_functions)
     flag_inline_trees = 2;
 
+  /* We recognize -fgnu89-inline in preparation for 4.3 where the
+     option will be meaningful.  Here we just reject
+     -fno-gnu89-inline, since we don't support it.  */
+  if (!flag_gnu89_inline)
+    error ("-fno-gnu89-inline is not supported");
+
   /* If we are given more than one input file, we must use
      unit-at-a-time mode.  */
   if (num_in_fnames > 1)

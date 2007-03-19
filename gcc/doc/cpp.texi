@@ -2019,6 +2019,28 @@ functions.  You should not use these macros in any way unless you make
 sure that programs will execute with the same effect whether or not they
 are defined.  If they are defined, their value is 1.
 
+@item __GNUC_GNU_INLINE__
+GCC defines this macro if functions declared @code{inline} will be
+handled in GCC's traditional gnu89 mode.  In this mode an @code{extern
+inline} function will never be compiled as a standalone function, and
+an @code{inline} function which is neither @code{extern} nor
+@code{static} will always be compiled as a standalone function.
+
+@item __GNUC_STDC_INLINE__
+GCC defines this macro if functions declared @code{inline} will be
+handled according to the ISO C99 standard.  In this mode an
+@code{extern inline} function will always be compiled as a standalone
+externally visible function, and an @code{inline} function which is
+neither @code{extern} nor @code{static} will never be compiled as a
+standalone function.
+
+If this macro is defined, GCC supports the @code{gnu_inline} function
+attribute as a way to always get the gnu89 behaviour.  Support for
+this and @code{__GNUC_GNU_INLINE__} was added in GCC 4.1.3.  If
+neither macro is defined, an older version of GCC is being used:
+@code{inline} functions will be compiled in gnu89 mode, and the
+@code{gnu_inline} function attribute will not be recognized.
+
 @item __CHAR_UNSIGNED__
 GCC defines this macro if and only if the data type @code{char} is
 unsigned on the target machine.  It exists to cause the standard header

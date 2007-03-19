@@ -1,3 +1,11 @@
+2007-03-19  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/inline-7.c: Add -fgnu89-inline.
+	* gcc.dg/inline-17.c: New test.
+	* gcc.dg/inline-18.c: New test.
+	* gcc.dg/inline-19.c: New test.
+	* gcc.dg/inline-21.c: New test.
+
 2007-03-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/29906
