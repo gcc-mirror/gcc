@@ -1169,7 +1169,7 @@ regular_file (st_parameter_open *opp, unit_flags *flags)
       break;
 
     case STATUS_REPLACE:
-        crflag = O_CREAT | O_TRUNC;
+      crflag = O_CREAT | O_TRUNC;
       break;
 
     default:
@@ -1185,14 +1185,14 @@ regular_file (st_parameter_open *opp, unit_flags *flags)
   mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
   fd = open (path, rwflag | crflag, mode);
   if (flags->action != ACTION_UNSPECIFIED)
-      return fd;
+    return fd;
 
   if (fd >= 0)
     {
       flags->action = ACTION_READWRITE;
       return fd;
     }
-  if (errno != EACCES)
+  if (errno != EACCES && errno != EROFS)
      return fd;
 
   /* retry for read-only access */
