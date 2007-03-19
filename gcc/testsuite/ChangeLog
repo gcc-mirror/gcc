@@ -1,5 +1,9 @@
 2007-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/30762
+	* gcc.dg/pr30762-1.c: New test.
+	* gcc.dg/pr30762-2.c: New test.
+
 	PR inline-asm/30505
 	* gcc.target/i386/pr30505.c: New test.
 
