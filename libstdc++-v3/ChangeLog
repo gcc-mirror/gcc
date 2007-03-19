@@ -1,3 +1,9 @@
+2007-03-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/tuple (get(_Tuple_impl<>&, get(const _Tuple_impl<>&):
+	Rename as __get_helper.
+	(get(tuple<>&, get(const tuple<>&)): Forward to the latter.
+
 2007-03-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/doxygen/user.cfg.in: Update for new includes, macros.

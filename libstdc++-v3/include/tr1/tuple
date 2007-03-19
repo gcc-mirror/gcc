@@ -269,20 +269,38 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
   template<typename... _Elements>
     const int tuple_size<tuple<_Elements...> >::value;
 
-  // Returns a const reference to the ith element of a tuple.
-  // Any const or non-const ref elements are returned with their original type.
   template<int __i, typename _Head, typename... _Tail>
     inline typename __add_ref<_Head>::type
-    get(_Tuple_impl<__i, _Head, _Tail...>& __t)
+    __get_helper(_Tuple_impl<__i, _Head, _Tail...>& __t)
     {
       return __t._M_head;
     }
 
   template<int __i, typename _Head, typename... _Tail>
     inline typename __add_c_ref<_Head>::type
-    get(const _Tuple_impl<__i, _Head, _Tail...>& __t)
+    __get_helper(const _Tuple_impl<__i, _Head, _Tail...>& __t)
     {
       return __t._M_head;
+    }
+
+  // Return a reference (const reference) to the ith element of a tuple.
+  // Any const or non-const ref elements are returned with their original type.
+  template<int __i, typename... _Elements>
+    inline typename __add_ref<
+                      typename tuple_element<__i, tuple<_Elements...> >::type
+                    >::type
+    get(tuple<_Elements...>& __t)
+    { 
+      return __get_helper<__i>(__t); 
+    }
+
+  template<int __i, typename... _Elements>
+    inline typename __add_c_ref<
+                      typename tuple_element<__i, tuple<_Elements...> >::type
+                    >::type
+    get(const tuple<_Elements...>& __t)
+    {
+      return __get_helper<__i>(__t);
     }
 
   // This class helps construct the various comparison operations on tuples
