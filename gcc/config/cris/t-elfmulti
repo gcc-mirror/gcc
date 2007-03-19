@@ -1,5 +1,4 @@
 LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/cris/mulsi3.asm
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
 MULTILIB_OPTIONS = march=v10
 MULTILIB_DIRNAMES = v10
 MULTILIB_MATCHES = \
