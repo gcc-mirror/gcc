@@ -1,3 +1,10 @@
+2007-03-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/31203
+	* trans-expr.c (gfc_trans_init_string_length): Length should
+	never be negative.
+	(gfc_conv_function_call): Likewise.
+
 2007-03-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30531

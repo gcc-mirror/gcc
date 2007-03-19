@@ -1,3 +1,8 @@
+2007-03-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/31203
+	* gfortran.dg/string_length_1.f90: New test.
+
 2007-03-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/30395
