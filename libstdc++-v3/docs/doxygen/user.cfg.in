@@ -481,11 +481,15 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/ext \
                          include/tr1 \
                          include/algorithm \
+                         include/array \
                          include/bitset \
                          include/cassert \
+                         include/ccomplex \
                          include/cctype \
                          include/cerrno \
+                         include/cfenv \
                          include/cfloat \
+                         include/cinttypes \
                          include/ciso646 \
                          include/climits \
                          include/clocale \
@@ -493,10 +497,13 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/csetjmp \
                          include/csignal \
                          include/cstdarg \
+                         include/cstdbool \
                          include/cstddef \
+                         include/cstdint \
                          include/cstdio \
                          include/cstdlib \
                          include/cstring \
+                         include/ctgmath \
                          include/ctime \
                          include/cwchar \
                          include/cwctype \
@@ -517,12 +524,18 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/numeric \
                          include/ostream \
                          include/queue \
+                         include/random \
+                         include/regex \
                          include/set \
                          include/sstream \
                          include/stack \
                          include/stdexcept \
                          include/streambuf \
                          include/string \
+                         include/tuple \
+                         include/type_traits \
+                         include/unordered_map \
+                         include/unordered_set \
                          include/utility \
                          include/valarray \
                          include/vector \
@@ -548,6 +561,7 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/ext/pb_ds \
                          include/ext/pb_ds/detail \
                          include/tr1/array \
+                         include/tr1/ccomplex \
                          include/tr1/cctype \
                          include/tr1/cfenv \
                          include/tr1/cfloat \
@@ -568,6 +582,7 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/tr1/hashtable \
                          include/tr1/memory \
                          include/tr1/random \
+                         include/tr1/regex \
                          include/tr1/tuple \
                          include/tr1/type_traits \
                          include/tr1/unordered_map \
@@ -1139,6 +1154,7 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = __GTHREADS \
                          _GLIBCXX_STD=std \
+                         _GLIBCXX_TR1=tr1 \
                          "_GLIBCXX_BEGIN_NAMESPACE(name)=namespace name {" \
              "_GLIBCXX_BEGIN_NESTED_NAMESPACE(name, unused)=namespace name {" \
                          _GLIBCXX_END_NAMESPACE=} \
