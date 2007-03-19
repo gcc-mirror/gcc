@@ -1,3 +1,8 @@
+2007-03-19  Jeff Law  <law@redhat.com>
+
+	* tree-cfg.c (find_taken_edge): Tighten conditions for
+	optimizing computed gotos.
+
 2007-03-19  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* doc/extend.texi: Edit "gnu_inline" documentation.

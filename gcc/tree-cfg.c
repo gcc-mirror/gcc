@@ -2115,7 +2115,18 @@ find_taken_edge (basic_block bb, tree val)
     return find_taken_edge_switch_expr (bb, val);
 
   if (computed_goto_p (stmt))
-    return find_taken_edge_computed_goto (bb, TREE_OPERAND( val, 0));
+    {
+      /* Only optimize if the argument is a label, if the argument is
+	 not a label then we can not construct a proper CFG.
+
+         It may be the case that we only need to allow the LABEL_REF to
+         appear inside an ADDR_EXPR, but we also allow the LABEL_REF to
+         appear inside a LABEL_EXPR just to be safe.  */
+      if ((TREE_CODE (val) == ADDR_EXPR || TREE_CODE (val) == LABEL_EXPR)
+	  && TREE_CODE (TREE_OPERAND (val, 0)) == LABEL_DECL)
+	return find_taken_edge_computed_goto (bb, TREE_OPERAND (val, 0));
+      return NULL;
+    }
 
   gcc_unreachable ();
 }
