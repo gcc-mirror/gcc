@@ -1,3 +1,10 @@
+2007-03-18  Krister Walfridsson  <cato@df.lth.se>
+
+	PR target/30058
+	* inclhack.def (netbsd_c99_inline_1): New.
+	* fixincl.x: Regenerate.
+	* tests/base/signal.h: New.
+
 2007-03-12  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.in: Add dummy "install-info" target.

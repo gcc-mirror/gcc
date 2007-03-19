@@ -2552,6 +2552,22 @@ fix = {
 
 
 /*
+ *  Some versions of NetBSD don't expect the C99 inline semantics.
+ */
+fix = {
+    hackname  = netbsd_c99_inline_1;
+    mach      = *-*-netbsd*;
+    files     = signal.h;
+    select    = "extern __inline int";
+
+    c_fix     = format;
+    c_fix_arg = "extern\n#ifdef __GNUC_STDC_INLINE__\n__attribute__((__gnu_inline__))\n#endif\n__inline int";
+
+    test_text = "extern __inline int\nsigaddset(sigset_t *set, int signo)\n{}";
+};
+
+
+/*
  * NetBSD has a semicolon after the ending '}' for some extern "C".
  */
 fix = {
