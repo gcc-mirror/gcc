@@ -1,3 +1,12 @@
+2007-03-19  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/31254
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1):
+	Use handled_component_p () where appropriate.  Continue
+	propagating into the rhs if we propagated into an INDIRECT_REF
+	on the lhs.
+
 2007-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md (op_type attribute): RRR instruction type added.
