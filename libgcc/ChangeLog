@@ -1,3 +1,7 @@
+2007-03-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config.host (cris-*-elf | cris-*-none): Set extra_parts.
+
 2007-03-12  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.in (install-info): New dummy target.

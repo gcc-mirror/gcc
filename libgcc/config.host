@@ -262,6 +262,7 @@ c4x-* | tic4x-*)
 cris-*-aout)
 	;;
 cris-*-elf | cris-*-none)
+	extra_parts="crtbegin.o crtend.o"
 	;;
 cris-*-linux*)
 	;;
