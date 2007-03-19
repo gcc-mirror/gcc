@@ -1167,20 +1167,6 @@ reload (rtx first, int global)
       {
 	rtx *pnote;
 
-	/* Clean up invalid ASMs so that they don't confuse later passes.
-	   See PR 21299.  */
-	if (asm_noperands (PATTERN (insn)) >= 0)
-	  {
-	    extract_insn (insn);
-	    if (!constrain_operands (1))
-	      {
-		error_for_asm (insn,
-			       "%<asm%> operand has impossible constraints");
-		delete_insn (insn);
-		continue;
-	      }
-	  }
-
 	if (CALL_P (insn))
 	  replace_pseudos_in (& CALL_INSN_FUNCTION_USAGE (insn),
 			      VOIDmode, CALL_INSN_FUNCTION_USAGE (insn));
@@ -1239,8 +1225,22 @@ reload (rtx first, int global)
 	add_auto_inc_notes (insn, PATTERN (insn));
 #endif
 
-	/* And simplify (subreg (reg)) if it appears as an operand.  */
+	/* Simplify (subreg (reg)) if it appears as an operand.  */
 	cleanup_subreg_operands (insn);
+
+	/* Clean up invalid ASMs so that they don't confuse later passes.
+	   See PR 21299.  */
+	if (asm_noperands (PATTERN (insn)) >= 0)
+	  {
+	    extract_insn (insn);
+	    if (!constrain_operands (1))
+	      {
+		error_for_asm (insn,
+			       "%<asm%> operand has impossible constraints");
+		delete_insn (insn);
+		continue;
+	      }
+	  }
       }
 
   /* If we are doing stack checking, give a warning if this function's
