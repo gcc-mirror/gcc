@@ -1,3 +1,26 @@
+2007-03-19  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/30907
+	* fwprop.c (forward_propagate_into): Never propagate inside a loop.
+	(fwprop_init): Always call loop_optimizer_initialize.
+	(fwprop_done): Always call loop_optimizer_finalize.
+	(fwprop): We always have loop info now.
+	(gate_fwprop_addr): Remove.
+	(pass_fwprop_addr): Use gate_fwprop as gate.
+
+	PR rtl-optimization/30841
+	* df-problems.c (df_ru_local_compute, df_rd_local_compute,
+	df_chain_alloc): Call df_reorganize_refs unconditionally.
+	* df-scan.c (df_rescan_blocks, df_reorganize_refs): Change
+	refs_organized to refs_organized_size.
+	(df_ref_create_structure): Use refs_organized_size instead of
+	bitmap_size if refs had been organized, and keep refs_organized_size
+	up-to-date.
+	* df.h (struct df_ref_info): Change refs_organized to
+	refs_organized_size.
+	(DF_DEFS_SIZE, DF_USES_SIZE): Use refs_organized_size instead of
+	bitmap_size.
+
 2007-03-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.c (output_function_exception_table): Do not reference the

@@ -435,8 +435,8 @@ df_rescan_blocks (struct df *df, bitmap blocks)
   struct dataflow *dflow = df->problems_by_index[DF_SCAN];
   basic_block bb;
 
-  df->def_info.refs_organized = false;
-  df->use_info.refs_organized = false;
+  df->def_info.refs_organized_size = 0;
+  df->use_info.refs_organized_size = 0;
 
   if (blocks)
     {
@@ -882,7 +882,7 @@ df_reorganize_refs (struct df_ref_info *ref_info)
   unsigned int offset = 0;
   unsigned int size = 0;
 
-  if (ref_info->refs_organized)
+  if (ref_info->refs_organized_size)
     return;
 
   if (ref_info->refs_size < ref_info->bitmap_size)
@@ -915,7 +915,7 @@ df_reorganize_refs (struct df_ref_info *ref_info)
      reset it now that we have squished out all of the empty
      slots.  */
   ref_info->bitmap_size = size;
-  ref_info->refs_organized = true;
+  ref_info->refs_organized_size = size;
   ref_info->add_refs_inline = true;
 }
 
@@ -957,22 +957,25 @@ df_ref_create_structure (struct dataflow *dflow, rtx reg, rtx *loc,
     case DF_REF_REG_DEF:
       {
 	struct df_reg_info *reg_info = DF_REG_DEF_GET (df, regno);
-	reg_info->n_refs++;
+	unsigned int size = df->def_info.refs_organized_size
+			    ? df->def_info.refs_organized_size
+			    : df->def_info.bitmap_size;
 	
 	/* Add the ref to the reg_def chain.  */
+	reg_info->n_refs++;
 	df_reg_chain_create (reg_info, this_ref);
-	DF_REF_ID (this_ref) = df->def_info.bitmap_size;
+	DF_REF_ID (this_ref) = size;
 	if (df->def_info.add_refs_inline)
 	  {
-	    if (DF_DEFS_SIZE (df) >= df->def_info.refs_size)
+	    if (size >= df->def_info.refs_size)
 	      {
-		int new_size = df->def_info.bitmap_size 
-		  + df->def_info.bitmap_size / 4;
+		int new_size = size + size / 4;
 		df_grow_ref_info (&df->def_info, new_size);
 	      }
 	    /* Add the ref to the big array of defs.  */
-	    DF_DEFS_SET (df, df->def_info.bitmap_size, this_ref);
-	    df->def_info.refs_organized = false;
+	    DF_DEFS_SET (df, size, this_ref);
+	    if (df->def_info.refs_organized_size)
+	      df->def_info.refs_organized_size++;
 	  }
 	
 	df->def_info.bitmap_size++;
@@ -997,22 +1000,25 @@ df_ref_create_structure (struct dataflow *dflow, rtx reg, rtx *loc,
     case DF_REF_REG_USE:
       {
 	struct df_reg_info *reg_info = DF_REG_USE_GET (df, regno);
-	reg_info->n_refs++;
+	unsigned int size = df->use_info.refs_organized_size
+			    ? df->use_info.refs_organized_size
+			    : df->use_info.bitmap_size;
 	
 	/* Add the ref to the reg_use chain.  */
+	reg_info->n_refs++;
 	df_reg_chain_create (reg_info, this_ref);
-	DF_REF_ID (this_ref) = df->use_info.bitmap_size;
+	DF_REF_ID (this_ref) = size;
 	if (df->use_info.add_refs_inline)
 	  {
-	    if (DF_USES_SIZE (df) >= df->use_info.refs_size)
+	    if (size >= df->use_info.refs_size)
 	      {
-		int new_size = df->use_info.bitmap_size 
-		  + df->use_info.bitmap_size / 4;
+		int new_size = size + size / 4;
 		df_grow_ref_info (&df->use_info, new_size);
 	      }
 	    /* Add the ref to the big array of defs.  */
-	    DF_USES_SET (df, df->use_info.bitmap_size, this_ref);
-	    df->use_info.refs_organized = false;
+	    DF_USES_SET (df, size, this_ref);
+	    if (df->def_info.refs_organized_size)
+	      df->def_info.refs_organized_size++;
 	  }
 	
 	df->use_info.bitmap_size++;

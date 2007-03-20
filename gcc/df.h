@@ -323,9 +323,9 @@ struct df_ref_info
   unsigned int refs_size;       /* Size of currently allocated refs table.  */
   unsigned int bitmap_size;	/* Number of refs seen.  */
 
-  /* True if refs table is organized so that every reference for a
+  /* >0 if refs table is organized so that every reference for a
      pseudo is contiguous.  */
-  bool refs_organized;
+  unsigned int refs_organized_size;
   /* True if the next refs should be added immediately or false to
      defer to later to reorganize the table.  */
   bool add_refs_inline; 
@@ -433,10 +433,10 @@ struct df
                                || DF_REF_REG_MEM_LOAD_P (REF))
 
 /* Macros to get the refs out of def_info or use_info refs table.  */
-#define DF_DEFS_SIZE(DF) ((DF)->def_info.bitmap_size)
+#define DF_DEFS_SIZE(DF) ((DF)->def_info.refs_organized_size)
 #define DF_DEFS_GET(DF,ID) ((DF)->def_info.refs[(ID)])
 #define DF_DEFS_SET(DF,ID,VAL) ((DF)->def_info.refs[(ID)]=(VAL))
-#define DF_USES_SIZE(DF) ((DF)->use_info.bitmap_size)
+#define DF_USES_SIZE(DF) ((DF)->use_info.refs_organized_size)
 #define DF_USES_GET(DF,ID) ((DF)->use_info.refs[(ID)])
 #define DF_USES_SET(DF,ID,VAL) ((DF)->use_info.refs[(ID)]=(VAL))
 

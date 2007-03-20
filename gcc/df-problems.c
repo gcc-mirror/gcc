@@ -586,9 +586,7 @@ df_ru_local_compute (struct dataflow *dflow,
   bitmap dense_invalidated = problem_data->dense_invalidated_by_call;
 
   df_set_seen ();
-
-  if (!df->use_info.refs_organized)
-    df_reorganize_refs (&df->use_info);
+  df_reorganize_refs (&df->use_info);
 
   EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi)
     {
@@ -1109,9 +1107,7 @@ df_rd_local_compute (struct dataflow *dflow,
   bitmap dense_invalidated = problem_data->dense_invalidated_by_call;
 
   df_set_seen ();
-
-  if (!df->def_info.refs_organized)
-    df_reorganize_refs (&df->def_info);
+  df_reorganize_refs (&df->def_info);
 
   EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi)
     {
@@ -2771,8 +2767,7 @@ df_chain_alloc (struct dataflow *dflow,
 
   if (dflow->flags & DF_DU_CHAIN)
     {
-      if (!df->def_info.refs_organized)
-	df_reorganize_refs (&df->def_info);
+      df_reorganize_refs (&df->def_info);
       
       /* Clear out the pointers from the refs.  */
       for (i = 0; i < DF_DEFS_SIZE (df); i++)
@@ -2784,8 +2779,7 @@ df_chain_alloc (struct dataflow *dflow,
   
   if (dflow->flags & DF_UD_CHAIN)
     {
-      if (!df->use_info.refs_organized)
-	df_reorganize_refs (&df->use_info);
+      df_reorganize_refs (&df->use_info);
       for (i = 0; i < DF_USES_SIZE (df); i++)
 	{
 	  struct df_ref *ref = df->use_info.refs[i];
