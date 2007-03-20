@@ -3633,12 +3633,12 @@ output_function_exception_table (const char * ARG_UNUSED (fnname))
   int have_tt_data;
   int tt_format_size = 0;
 
-  if (eh_personality_libfunc)
-    assemble_external_libcall (eh_personality_libfunc);
-
   /* Not all functions need anything.  */
   if (! cfun->uses_eh_lsda)
     return;
+
+  if (eh_personality_libfunc)
+    assemble_external_libcall (eh_personality_libfunc);
 
 #ifdef TARGET_UNWIND_INFO
   /* TODO: Move this into target file.  */
