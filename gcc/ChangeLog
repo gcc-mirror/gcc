@@ -1,3 +1,9 @@
+2007-03-19  Andrew Haley  <aph@redhat.com>
+
+	PR tree-optimization/31264
+	* tree-vrp.c (register_edge_assert_for_1): Don't look though
+	VIEW_CONVERT_EXPRs.
+
 2007-03-19  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/30907

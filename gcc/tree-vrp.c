@@ -3485,7 +3485,6 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
     }
   else if (TREE_CODE (rhs) == NOP_EXPR
 	   || TREE_CODE (rhs) == CONVERT_EXPR
-	   || TREE_CODE (rhs) == VIEW_CONVERT_EXPR
 	   || TREE_CODE (rhs) == NON_LVALUE_EXPR)
     { 
       /* Recurse through the type conversion.  */
