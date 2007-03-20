@@ -1,3 +1,7 @@
+2007-03-20  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* jump.c (mark_jump_label): Treat SEQUENCE specially.
+
 2007-03-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/vxlib.c (tls_delete_hook): Use TCB for kernel tasks.
