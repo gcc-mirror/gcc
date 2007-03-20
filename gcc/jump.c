@@ -992,6 +992,12 @@ mark_jump_label (rtx x, rtx insn, int in_mem)
       in_mem = 1;
       break;
 
+    case SEQUENCE:
+      for (i = 0; i < XVECLEN (x, 0); i++)
+	mark_jump_label (PATTERN (XVECEXP (x, 0, i)),
+			 XVECEXP (x, 0, i), 0);
+      return;
+
     case SYMBOL_REF:
       if (!in_mem)
 	return;
