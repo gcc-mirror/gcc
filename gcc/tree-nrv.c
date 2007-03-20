@@ -163,6 +163,14 @@ tree_nrv (void)
 						     result_type))
 		return;
 	    }
+	  else if (TREE_CODE (stmt) == MODIFY_EXPR)
+	    {
+	      tree addr = get_base_address (TREE_OPERAND (stmt, 0));
+	       /* If there's any MODIFY of component of RESULT, 
+		  then bail out.  */
+	      if (addr && addr == result)
+		return;
+	    }
 	}
     }
 

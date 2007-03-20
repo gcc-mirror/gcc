@@ -1,3 +1,9 @@
+2007-03-19  Seongbae Park <seongbae.park@gmail.com>
+
+	PR tree-optimization/30590
+	* tree-nrv.c (tree_nrv): Check for the partial update
+	of the return value.
+
 2007-03-19  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (find_taken_edge): Tighten conditions for
