@@ -155,9 +155,18 @@ static __gthread_once_t tls_init_guard = __GTHREAD_ONCE_INIT;
 static void
 tls_delete_hook (void *tcb ATTRIBUTE_UNUSED)
 {
-  struct tls_data *data = __gthread_get_tls_data ();
+  struct tls_data *data;
   __gthread_key_t key;
 
+#ifdef __RTP__
+  data = __gthread_get_tls_data ();
+#else
+  /* In kernel mode, we can be called in the context of the thread
+     doing the killing, so must use the TCB to determine the data of
+     the thread being killed.  */
+  data = __gthread_get_tsd_data (tcb);
+#endif
+  
   if (data && data->owner == &self_owner)
     {
       __gthread_enter_tls_dtor_context ();
@@ -182,8 +191,11 @@ tls_delete_hook (void *tcb ATTRIBUTE_UNUSED)
 	    taskDeleteHookDelete ((FUNCPTR)tls_delete_hook);
 	  __gthread_mutex_unlock (&tls_lock);
 	}
-
+#ifdef __RTP__
       __gthread_set_tls_data (0);
+#else
+      __gthread_set_tsd_data (tcb, 0);
+#endif
       __gthread_leave_tls_dtor_context ();
     }
 } 
