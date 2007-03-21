@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -40,8 +40,9 @@
 /* Get _mm_malloc () and _mm_free ().  */
 #include <mm_malloc.h>
 
-/* The data type intended for user use.  */
-typedef float __m128 __attribute__ ((__vector_size__ (16)));
+/* The Intel API is flexible enough that we must allow aliasing with other
+   vector types, and their scalar components.  */
+typedef float __m128 __attribute__ ((__vector_size__ (16), __may_alias__));
 
 /* Internal data types for implementing the intrinsics.  */
 typedef float __v4sf __attribute__ ((__vector_size__ (16)));
