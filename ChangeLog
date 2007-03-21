@@ -1,3 +1,9 @@
+2007-03-21  Richard Sandiford  <richard@codesourcery.com>
+
+	* configure.ac (TOPLEVEL_CONFIGURE_ARGUMENTS): Fix m4 quoting
+	of glob.  Quote arguments with single quotes too.
+	* configure: Regenerate.
+
 2007-03-12  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.def (fixincludes): Remove unneeded "missing" lines.
