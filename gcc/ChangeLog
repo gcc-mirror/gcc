@@ -1,3 +1,10 @@
+2007-03-21  Richard Henderson  <rth@redhat.com>
+
+	PR target/31245
+	* config/i386/emmintrin.h (__m128i, __m128d): Mark may_alias.
+	* config/i386/mmintrin.h (__m64): Likewise.
+	* config/i386/xmmintrin.h (__m128): Likewise.
+
 2007-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/30762
