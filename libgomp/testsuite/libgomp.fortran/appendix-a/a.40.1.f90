@@ -50,3 +50,5 @@
           CALL INCR_B(P, WORK3())
 !$OMP END PARALLEL SECTIONS
       END SUBROUTINE A40
+
+! { dg-final { cleanup-modules "data" } }

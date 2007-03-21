@@ -1,3 +1,15 @@
+2007-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.fortran/appendix-a/a.22.8.f90: Add
+	dg-final cleanup-modules line.
+	* testsuite/libgomp.fortran/appendix-a/a.40.1.f90: Likewise.
+	* testsuite/libgomp.fortran/appendix-a/a.31.5.f90: Likewise.
+	* testsuite/libgomp.fortran/appendix-a/a.31.4.f90: Likewise.
+	* testsuite/libgomp.fortran/threadprivate2.f90: Likewise.
+	* testsuite/libgomp.fortran/reduction5.f90: Likewise.
+	* testsuite/libgomp.fortran/threadprivate3.f90: Likewise.
+	* testsuite/libgomp.fortran/threadprivate1.f90: Likewise.
+
 2007-03-18  Andreas Schwab  <schwab@suse.de>
 
 	* acinclude.m4: Adjust regular expression for ld version

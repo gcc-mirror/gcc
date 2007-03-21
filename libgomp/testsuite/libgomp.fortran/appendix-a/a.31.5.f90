@@ -12,3 +12,5 @@
             END DO
             PRINT *, R
             END PROGRAM A31_5
+
+! { dg-final { cleanup-modules "mod" } }

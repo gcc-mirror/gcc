@@ -23,3 +23,4 @@
         CALL SUB1(N)
         END PROGRAM A22_8_GOOD
 
+! { dg-final { cleanup-modules "a22_module8" } }

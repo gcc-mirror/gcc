@@ -92,3 +92,5 @@ end module threadprivate2
   deallocate (foo)
   if (allocated (foo)) call abort
 end
+
+! { dg-final { cleanup-modules "threadprivate2" } }
