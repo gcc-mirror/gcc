@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -34,8 +34,9 @@
 #ifndef __MMX__
 # error "MMX instruction set not enabled"
 #else
-/* The data type intended for user use.  */
-typedef int __m64 __attribute__ ((__vector_size__ (8)));
+/* The Intel API is flexible enough that we must allow aliasing with other
+   vector types, and their scalar components.  */
+typedef int __m64 __attribute__ ((__vector_size__ (8), __may_alias__));
 
 /* Internal data types for implementing the intrinsics.  */
 typedef int __v2si __attribute__ ((__vector_size__ (8)));
