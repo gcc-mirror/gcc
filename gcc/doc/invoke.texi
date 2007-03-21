@@ -14210,6 +14210,10 @@ generated position independent code can be only linked into executables.
 Usually these options are used when @option{-pie} GCC option will be
 used during linking.
 
+@option{-fpie} and @option{-fPIE} both define the macros
+@code{__pie__} and @code{__PIE__}.  The macros have the value 1
+for @option{-fpie} and 2 for @option{-fPIE}.
+
 @item -fno-jump-tables
 @opindex fno-jump-tables
 Do not use jump tables for switch statements even where it would be
