@@ -1,3 +1,10 @@
+2007-03-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/arm/elf.h (TARGET_ASM_DESTRUCTOR): Define.
+	* config/arm/arm.c (arm_elf_asm_cdtor): New function.
+	(arm_elf_asm_constructor): Use it.
+	(arm_elf_asm_destructor): New function.
+
 2007-03-20  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* jump.c (mark_jump_label): Treat SEQUENCE specially.

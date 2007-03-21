@@ -127,6 +127,9 @@
 #undef TARGET_ASM_CONSTRUCTOR
 #define TARGET_ASM_CONSTRUCTOR arm_elf_asm_constructor
 
+#undef TARGET_ASM_DESTRUCTOR
+#define TARGET_ASM_DESTRUCTOR arm_elf_asm_destructor
+
 /* For PIC code we need to explicitly specify (PLT) and (GOT) relocs.  */
 #define NEED_PLT_RELOC	flag_pic
 #define NEED_GOT_RELOC	flag_pic
