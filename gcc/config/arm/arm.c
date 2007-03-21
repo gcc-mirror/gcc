@@ -150,6 +150,7 @@ static int arm_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 
 #ifdef OBJECT_FORMAT_ELF
 static void arm_elf_asm_constructor (rtx, int);
+static void arm_elf_asm_destructor (rtx, int);
 #endif
 #ifndef ARM_PE
 static void arm_encode_section_info (tree, rtx, int);
@@ -12048,17 +12049,16 @@ arm_assemble_integer (rtx x, unsigned int size, int aligned_p)
   return default_assemble_integer (x, size, aligned_p);
 }
 
-
-/* Add a function to the list of static constructors.  */
-
 static void
-arm_elf_asm_constructor (rtx symbol, int priority)
+arm_elf_asm_cdtor (rtx symbol, int priority, bool is_ctor)
 {
   section *s;
 
   if (!TARGET_AAPCS_BASED)
     {
-      default_named_section_asm_out_constructor (symbol, priority);
+      (is_ctor ? 
+       default_named_section_asm_out_constructor 
+       : default_named_section_asm_out_destructor) (symbol, priority);
       return;
     }
 
@@ -12066,17 +12066,37 @@ arm_elf_asm_constructor (rtx symbol, int priority)
   if (priority != DEFAULT_INIT_PRIORITY)
     {
       char buf[18];
-      sprintf (buf, ".init_array.%.5u", priority);
+      sprintf (buf, "%s.%.5u", 
+	       is_ctor ? ".init_array" : ".fini_array",
+	       priority);
       s = get_section (buf, SECTION_WRITE, NULL_TREE);
     }
-  else
+  else if (is_ctor)
     s = ctors_section;
+  else
+    s = dtors_section;
 
   switch_to_section (s);
   assemble_align (POINTER_SIZE);
   fputs ("\t.word\t", asm_out_file);
   output_addr_const (asm_out_file, symbol);
   fputs ("(target1)\n", asm_out_file);
+}
+
+/* Add a function to the list of static constructors.  */
+
+static void
+arm_elf_asm_constructor (rtx symbol, int priority)
+{
+  arm_elf_asm_cdtor (symbol, priority, /*is_ctor=*/true);
+}
+
+/* Add a function to the list of static destructors.  */
+
+static void
+arm_elf_asm_destructor (rtx symbol, int priority)
+{
+  arm_elf_asm_cdtor (symbol, priority, /*is_ctor=*/false);
 }
 #endif
 
