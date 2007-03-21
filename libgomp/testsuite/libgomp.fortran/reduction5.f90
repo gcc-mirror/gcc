@@ -39,3 +39,5 @@ contains
     if (m .ne. 3 .or. n .ne. 15) call abort
   end subroutine test2
 end
+
+! { dg-final { cleanup-modules "reduction5" } }

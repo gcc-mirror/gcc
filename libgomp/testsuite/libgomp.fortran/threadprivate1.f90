@@ -17,3 +17,5 @@ end module threadprivate1
 !$omp end parallel
   if (l) call abort ()
 end
+
+! { dg-final { cleanup-modules "threadprivate1" } }
