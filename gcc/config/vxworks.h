@@ -35,12 +35,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 /* Since we provide a default -isystem, expand -isystem on the command
    line early.  */
 #undef VXWORKS_ADDITIONAL_CPP_SPEC
-#define VXWORKS_ADDITIONAL_CPP_SPEC " 					\
- %{!nostdinc:%{isystem*}}						\
- %{mrtp: -D__RTP__=1							\
-	 %{!nostdinc:-idirafter %:getenv(WIND_USR /h)}}			\
- %{!mrtp:-D_WRS_KERNEL=1						\
- 	 %{!nostdinc:-idirafter %:getenv(WIND_BASE /target/h)}}"
+#define VXWORKS_ADDITIONAL_CPP_SPEC		\
+ "%{!nostdinc:					\
+    %{isystem*} -idirafter			\
+    %{mrtp: %:getenv(WIND_USR /h)		\
+      ;:    %:getenv(WIND_BASE /target/h)}}"
 
 /* The references to __init and __fini will be satisfied by
    libc_internal.a.  */
@@ -104,5 +103,19 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 #define VXWORKS_GOTT_BASE "__GOTT_BASE__"
 #undef VXWORKS_GOTT_INDEX
 #define VXWORKS_GOTT_INDEX "__GOTT_INDEX__"
+
+/* A VxWorks implementation of TARGET_OS_CPP_BUILTINS.  */
+#define VXWORKS_OS_CPP_BUILTINS()					\
+  do									\
+    {									\
+      builtin_define ("__vxworks");					\
+      builtin_define ("__VXWORKS__");					\
+      builtin_assert ("system=unix");					\
+      if (TARGET_VXWORKS_RTP)						\
+	builtin_define ("__RTP__");					\
+      else								\
+	builtin_define ("_WRS_KERNEL");					\
+    }									\
+  while (0)
 
 #define VXWORKS_KIND VXWORKS_KIND_NORMAL

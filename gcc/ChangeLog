@@ -1,5 +1,12 @@
 2007-03-21  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/vxworks.h (VXWORKS_ADDITIONAL_CPP_SPEC): Remove -D options.
+	(VXWORKS_OS_CPP_BUILTINS): Define.
+	* config/i386/vxworks.h (VXWORKS_CPU_DEFINE): Fold into...
+	(TARGET_OS_CPP_BUILTINS): ...here.  Use VXWORKS_OS_CPP_BUILTINS.
+
+2007-03-21  Richard Sandiford  <richard@codesourcery.com>
+
 	* rtl.h (constant_pool_reference_p): Delete.
 	(find_constant_src): Declare.
 	* rtlanal.c (find_constant_src): New function.
