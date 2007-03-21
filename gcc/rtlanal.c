@@ -1750,6 +1750,30 @@ find_reg_equal_equiv_note (rtx insn)
   return NULL;
 }
 
+/* Check whether INSN is a single_set whose source is known to be
+   equivalent to a constant.  Return that constant if so, otherwise
+   return null.  */
+
+rtx
+find_constant_src (rtx insn)
+{
+  rtx note, set, x;
+
+  set = single_set (insn);
+  if (set)
+    {
+      x = avoid_constant_pool_reference (SET_SRC (set));
+      if (CONSTANT_P (x))
+	return x;
+    }
+
+  note = find_reg_equal_equiv_note (insn);
+  if (note && CONSTANT_P (XEXP (note, 0)))
+    return XEXP (note, 0);
+
+  return NULL_RTX;
+}
+
 /* Return true if DATUM, or any overlap of DATUM, of kind CODE is found
    in the CALL_INSN_FUNCTION_USAGE information of INSN.  */
 

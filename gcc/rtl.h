@@ -1641,7 +1641,6 @@ extern rtx simplify_gen_subreg (enum machine_mode, rtx, enum machine_mode,
 extern rtx simplify_replace_rtx (rtx, rtx, rtx);
 extern rtx simplify_rtx (rtx);
 extern rtx avoid_constant_pool_reference (rtx);
-extern bool constant_pool_reference_p (rtx x);
 extern bool mode_signbit_p (enum machine_mode, rtx);
 
 /* In regclass.c  */
@@ -1703,6 +1702,7 @@ extern int dead_or_set_regno_p (rtx, unsigned int);
 extern rtx find_reg_note (rtx, enum reg_note, rtx);
 extern rtx find_regno_note (rtx, enum reg_note, unsigned int);
 extern rtx find_reg_equal_equiv_note (rtx);
+extern rtx find_constant_src (rtx);
 extern int find_reg_fusage (rtx, enum rtx_code, rtx);
 extern int find_regno_fusage (rtx, enum rtx_code, unsigned int);
 extern int pure_call_p (rtx);
