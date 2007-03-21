@@ -1,5 +1,19 @@
 2007-03-21  Richard Sandiford  <richard@codesourcery.com>
 
+	* lib/target-supports.exp (check_effective_target_nonpic): New
+	procedure.
+	* gcc.target/i386/20020616-1.c: Use an alternative to %ebx
+	when compiling PIC.
+	* gcc.target/i386/asm-4.c: Require nonpic.
+	* gcc.target/i386/cmov1.c: Likewise.
+	* gcc.target/i386/mul.c: Likewise.
+	* gcc.target/i386/pr21291.c: Require nonpic or ! ilp32.
+	* gcc.target/i386/ssetype-1.c: Require nonpic.
+	* gcc.target/i386/ssetype-3.c: Likewise.
+	* gcc.target/i386/ssetype-5.c: Likewise.
+
+2007-03-21  Richard Sandiford  <richard@codesourcery.com>
+
 	* gcc.c-torture/execute/builtins/chk.h (LOCAL): Define.
 	* gcc.c-torture/execute/builtins/sprintf-chk.c (s1): Make LOCAL.
 	* gcc.c-torture/execute/builtins/stpcpy-chk.c (s1): Likewise.

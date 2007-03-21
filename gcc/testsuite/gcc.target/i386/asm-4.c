@@ -2,6 +2,8 @@
    taken in C code, don't use alternate calling convention for local
    functions on IA-32.  */
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* The asm in this test uses an absolute address.  */
+/* { dg-require-effective-target nonpic } */
 /* { dg-options "-O2" } */
 
 extern void abort (void);

@@ -2,7 +2,13 @@
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2" } */
 
+#if !__PIC__
 register int k asm("%ebx");
+#elif __amd64
+register int k asm("%r12");
+#else
+register int k asm("%esi");
+#endif
 
 void __attribute__((noinline))
 foo()
