@@ -527,6 +527,16 @@ proc check_effective_target_mpaired_single { } {
     } "-mpaired-single"]
 }
 
+# Return 1 if the current multilib does not generate PIC by default.
+
+proc check_effective_target_nonpic { } {
+    return [check_no_compiler_messages nonpic assembly {
+	#if __PIC__
+	#error FOO
+	#endif
+    }]
+}
+
 # Return 1 if the target does not use a status wrapper.
 
 proc check_effective_target_unwrapped { } {
