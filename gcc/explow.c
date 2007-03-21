@@ -382,12 +382,15 @@ convert_memory_address (enum machine_mode to_mode ATTRIBUTE_UNUSED,
     case MULT:
       /* For addition we can safely permute the conversion and addition
 	 operation if one operand is a constant and converting the constant
-	 does not change it.  We can always safely permute them if we are
-	 making the address narrower.  */
+	 does not change it or if one operand is a constant and we are
+	 using a ptr_extend instruction  (POINTERS_EXTEND_UNSIGNED < 0).
+	 We can always safely permute them if we are making the address
+	 narrower.  */
       if (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (from_mode)
 	  || (GET_CODE (x) == PLUS
 	      && GET_CODE (XEXP (x, 1)) == CONST_INT
-	      && XEXP (x, 1) == convert_memory_address (to_mode, XEXP (x, 1))))
+	      && (XEXP (x, 1) == convert_memory_address (to_mode, XEXP (x, 1))
+                 || POINTERS_EXTEND_UNSIGNED < 0)))
 	return gen_rtx_fmt_ee (GET_CODE (x), to_mode,
 			       convert_memory_address (to_mode, XEXP (x, 0)),
 			       XEXP (x, 1));
