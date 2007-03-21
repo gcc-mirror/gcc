@@ -1,3 +1,7 @@
+2007-03-21  Mike Stump  <mrs@apple.com>
+
+	* c.opt: Fixup for Objective-C/C++.
+
 2007-03-21  Richard Henderson  <rth@redhat.com>
 
 	PR target/31245
