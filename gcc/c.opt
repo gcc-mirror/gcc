@@ -133,7 +133,7 @@ C ObjC Var(warn_bad_function_cast) Warning
 Warn about casting functions to incompatible types
 
 Wc++-compat
-C Var(warn_cxx_compat) Warning
+C ObjC Var(warn_cxx_compat) Warning
 Warn about C constructs that are not in the common subset of C and C++
 
 Wc++0x-compat
@@ -177,7 +177,7 @@ C++ ObjC++ Var(warn_deprecated) Init(1) Warning
 Warn about deprecated compiler features
 
 Wdiv-by-zero
-C ObjC C++ Var(warn_div_by_zero) Init(1) Warning
+C ObjC C++ ObjC++ Var(warn_div_by_zero) Init(1) Warning
 Warn about compile-time integer division by zero
 
 Weffc++
@@ -559,7 +559,7 @@ ObjC ObjC++
 Generate code for GNU runtime environment
 
 fgnu89-inline
-C Var(flag_gnu89_inline) Init(-1)
+C ObjC Var(flag_gnu89_inline) Init(-1)
 Use traditional GNU semantics for inline functions
 
 fguiding-decls
@@ -592,7 +592,7 @@ C++ ObjC++
 Emit implicit instantiations of templates
 
 ffriend-injection
-C++ Var(flag_friend_injection)
+C++ ObjC++ Var(flag_friend_injection)
 Inject friend functions into enclosing namespace
 
 flabels-ok
