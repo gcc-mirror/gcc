@@ -1,3 +1,8 @@
+2007-03-21  Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/invoke.texi (-fpie, -fPIE): Document __pie__ and __PIE__.
+	* c-cppbuiltin.c (c_cpp_builtins): Define them.
+
 2007-03-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/arm/elf.h (TARGET_ASM_DESTRUCTOR): Define.
