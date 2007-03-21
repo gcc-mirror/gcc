@@ -1,3 +1,10 @@
+2007-03-21  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.c-torture/execute/builtins/chk.h (LOCAL): Define.
+	* gcc.c-torture/execute/builtins/sprintf-chk.c (s1): Make LOCAL.
+	* gcc.c-torture/execute/builtins/stpcpy-chk.c (s1): Likewise.
+	* gcc.c-torture/execute/builtins/strcpy-chk.c (s1): Likewise.
+
 2007-03-19  Seongbae Park <seongbae.park@gmail.com>
 
 	PR tree-optimization/30590
