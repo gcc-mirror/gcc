@@ -65,6 +65,8 @@ of system headers are not defeated
 (@pxref{System Headers})
 @end ifset
 .
+If @var{dir} begins with @code{=}, then the @code{=} will be replaced
+by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
 
 @item -o @var{file}
 @opindex o
@@ -464,6 +466,8 @@ specified by @option{-include}.
 Search @var{dir} for header files, but do it @emph{after} all
 directories specified with @option{-I} and the standard system directories
 have been exhausted.  @var{dir} is treated as a system include directory.
+If @var{dir} begins with @code{=}, then the @code{=} will be replaced
+by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
 
 @item -iprefix @var{prefix}
 @opindex iprefix
@@ -499,6 +503,8 @@ is applied to the standard system directories.
 @ifset cppmanual
 @xref{System Headers}.
 @end ifset
+If @var{dir} begins with @code{=}, then the @code{=} will be replaced
+by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
 
 @item -iquote @var{dir}
 @opindex iquote
@@ -509,6 +515,8 @@ Search @var{dir} only for header files requested with
 @ifset cppmanual
 @xref{Search Path}.
 @end ifset
+If @var{dir} begins with @code{=}, then the @code{=} will be replaced
+by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
 
 @item -fdollars-in-identifiers
 @opindex fdollars-in-identifiers
