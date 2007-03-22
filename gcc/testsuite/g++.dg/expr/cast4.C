@@ -10,8 +10,8 @@ struct foo {
 
 class Foobar : public foo {
 public:
-  Foobar() { a = 1; b = 2; };
-  virtual ~Foobar() {};
+  Foobar() { a = 1; b = 2; }
+  virtual ~Foobar() {}
 };
 
 Foobar obj;

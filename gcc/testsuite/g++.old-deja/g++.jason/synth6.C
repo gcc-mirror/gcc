@@ -11,5 +11,5 @@ private:
 
 class DbmItem: public RefCount{
 public:
-  DbmItem(): RefCount() {};
+  DbmItem(): RefCount() {}
 };

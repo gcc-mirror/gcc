@@ -11,12 +11,12 @@ void f()
 {
         {
                 struct A {
-                        A() {};
+                        A() {}
                 } a;
         };
         {
                 struct A {
-                        A() {};
+                        A() {}
                 } a ;
         };
 }

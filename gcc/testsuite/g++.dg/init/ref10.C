@@ -2,10 +2,10 @@
 
 struct A {};
 struct B : protected A {
-    B() {};
-    B(const A& ) {};
+    B() {}
+    B(const A& ) {}
 private:
-    B(const B& ) {};
+    B(const B& ) {}
 };
 
 void foo(const A* ap)

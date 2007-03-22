@@ -3,7 +3,7 @@ class JunkBase
 public:
     virtual void DoSomething( void ) = 0;
 protected:
-    virtual ~JunkBase( void ) {};
+    virtual ~JunkBase( void ) {}
     JunkBase( void ) {}
 };
 

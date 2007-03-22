@@ -1,5 +1,5 @@
 // { dg-do run  }
-struct T { ~T() {}; };
+struct T { ~T() {} };
 
 int g ()
 {

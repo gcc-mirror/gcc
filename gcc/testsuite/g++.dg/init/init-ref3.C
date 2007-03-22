@@ -9,8 +9,8 @@ protected:
 
 public:
   
-  Ptr(void) : ptr(0) { };
-  Ptr(T * p) : ptr(p) { };
+  Ptr(void) : ptr(0) { }
+  Ptr(T * p) : ptr(p) { }
   
   ~Ptr(void) { delete ptr; }
   

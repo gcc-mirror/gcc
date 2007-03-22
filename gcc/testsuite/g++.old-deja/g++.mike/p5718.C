@@ -4,7 +4,7 @@
 class Base {
   int i;
 public:
-  Base() { i = 42; };
+  Base() { i = 42; }
 };
 
 
@@ -17,8 +17,8 @@ public:
 
 class Derived : public Base, public Mixin {
 public:
-  Derived() { };
-  Derived & operator=(Mixin & m) { return *this; };
+  Derived() { }
+  Derived & operator=(Mixin & m) { return *this; }
 };
 
 

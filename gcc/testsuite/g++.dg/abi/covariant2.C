@@ -10,7 +10,7 @@ struct c1 {};
 
 struct c3 : virtual c1
 {
-    virtual c1* f6() {};
+    virtual c1* f6() {}
     int i;
 };
 
@@ -18,7 +18,7 @@ struct c6 : virtual c3 { };
 
 struct c7 : c3
 {
-    virtual c3* f6() {};
+    virtual c3* f6() {}
 };
 
 struct c24 : virtual c7

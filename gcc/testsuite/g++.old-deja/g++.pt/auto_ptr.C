@@ -40,7 +40,7 @@ template<typename X> struct auto_ptr {
 };
 
 struct Base { Base() {} virtual ~Base() {} };
-struct Derived : Base { Derived() {}; };
+struct Derived : Base { Derived() {} };
 
 auto_ptr<Derived> f() { auto_ptr<Derived> null(0); return null; }
 void g(auto_ptr<Derived>) { }

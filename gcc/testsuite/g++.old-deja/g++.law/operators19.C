@@ -15,5 +15,5 @@ class B: public A {
   public:
     B () {
         !(A::j);
-    };
+    }
 };

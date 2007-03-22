@@ -4,10 +4,10 @@ int i;
 struct S {
   S () {
     ++i;
-  };
+  }
 
   S (int) {
-  };
+  }
 };
 
 int main()

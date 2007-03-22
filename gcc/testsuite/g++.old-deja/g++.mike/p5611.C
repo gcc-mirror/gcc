@@ -5,7 +5,7 @@ int main(void)
 {
   struct B
     {
-      virtual void b1() { };
+      virtual void b1() { }
     };
 
   return 0;

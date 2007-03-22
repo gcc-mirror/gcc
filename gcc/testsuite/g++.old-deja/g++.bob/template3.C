@@ -38,7 +38,7 @@ public:
 class ObjectExchange
 {
 public:
-    ObjectExchange() {};
+    ObjectExchange() {}
 
     ExchangeableList	i_theWatchList; // Instruments being monitored
 };

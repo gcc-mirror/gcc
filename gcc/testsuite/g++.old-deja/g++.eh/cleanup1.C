@@ -13,7 +13,7 @@ struct myExcRaiser {
 };
 
 struct stackObj {
-  ~stackObj() { ++d; printf ("stackObj::~stackObj()\n"); };
+  ~stackObj() { ++d; printf ("stackObj::~stackObj()\n"); }
 };
 
 int test()

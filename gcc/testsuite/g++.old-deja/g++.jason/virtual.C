@@ -24,15 +24,15 @@ public:
 class C: public A, public B
 {
 public:
-  virtual void a2() {};
-  virtual void b2() {};
+  virtual void a2() {}
+  virtual void b2() {}
 };
 
 class D : public C
 {
 public:
-  virtual void a1() {};
-  virtual void b1() {};
+  virtual void a1() {}
+  virtual void b1() {}
 };
 
 int main()

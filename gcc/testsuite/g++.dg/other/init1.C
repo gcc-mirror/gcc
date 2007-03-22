@@ -11,7 +11,7 @@ struct B : A
 {
   typedef A Parent;
   
-  B () : Parent () {};
+  B () : Parent () {}
 };
 
 class T

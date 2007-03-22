@@ -11,7 +11,7 @@ struct X
 
 struct Z : public X
 {
-  void a(void) {};
+  void a(void) {}
 };
 
 

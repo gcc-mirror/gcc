@@ -12,7 +12,7 @@ struct A
       p = new T[size];
       int foo;
       foo = 5 * size;
-    };
+    }
 };
 
 struct B

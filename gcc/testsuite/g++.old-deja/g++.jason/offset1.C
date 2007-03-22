@@ -2,7 +2,7 @@
 // PRMS Id: 5070 (testcase 1)
 
 struct foo {
-  foo(int x = 0) {};
+  foo(int x = 0) {}
   int IsAlive(void) { return 1; }
 };
 

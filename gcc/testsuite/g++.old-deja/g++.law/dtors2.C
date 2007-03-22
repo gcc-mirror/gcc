@@ -8,19 +8,19 @@ class bla {
 
 public:
 
-        inline bla(const char * jim) { ; };
+        inline bla(const char * jim) { ; }
 
-        inline ~bla() { destruct++; if (destruct == 2) printf ("PASS\n");};
+        inline ~bla() { destruct++; if (destruct == 2) printf ("PASS\n");}
 };
 
 class ulk {
 
 public:
 
-        inline ulk() {};
-        inline ~ulk() {};
+        inline ulk() {}
+        inline ~ulk() {}
 
-        void funk(const bla & bob) { ;};
+        void funk(const bla & bob) { ;}
              //       ^ interestingly, the code compiles right if
              //         this & is deleted (and therefore the parameter
              //         passed as value)

@@ -5,7 +5,7 @@ int bad;
 
 class A {
 public:
-  virtual void dummy (){};
+  virtual void dummy (){}
 };
 
 class B {
@@ -15,12 +15,12 @@ public:
 
 class C : public A, public B {
 public:
-  void f(void) { bad=1; };
+  void f(void) { bad=1; }
 };
 
 class D : public C {
 public:
-  void f(void) { };
+  void f(void) { }
 };
 
 class E : public D { };

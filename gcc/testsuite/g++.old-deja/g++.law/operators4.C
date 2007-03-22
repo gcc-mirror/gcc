@@ -14,7 +14,7 @@ class Vector {
   int           size;
   Complex       *v;
  public:
-  Vector(int s=1) { size = s; v = new Complex[size];};
+  Vector(int s=1) { size = s; v = new Complex[size];}
   ~Vector() { delete [size] v;}// { dg-error "" }  warning
 };
 

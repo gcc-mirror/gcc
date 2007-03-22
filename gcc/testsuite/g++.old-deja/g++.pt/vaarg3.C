@@ -5,7 +5,7 @@
 #include <stdarg.h>
 
 struct A {
-  virtual ~A () {};
+  virtual ~A () {}
 };
 
 template <class Type>

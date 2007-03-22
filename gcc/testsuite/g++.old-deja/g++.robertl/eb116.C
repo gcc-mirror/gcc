@@ -11,7 +11,7 @@ private:
     } val;
     val.i = x;
     return val.c;
-  };
+  }
 
 public:
   b()  {

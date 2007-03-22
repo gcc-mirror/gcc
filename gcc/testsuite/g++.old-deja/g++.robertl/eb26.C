@@ -14,7 +14,7 @@ public:
 //  friend int f();
     static int x;
   public:
-    static int f() {return foo::f();};
+    static int f() {return foo::f();}
    };
 };
 

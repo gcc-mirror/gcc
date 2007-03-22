@@ -27,7 +27,7 @@ namespace N1 {
     B x;
     ~C() {
       A y;
-    };
+    }
   };
 }
 
@@ -59,7 +59,7 @@ namespace N2 {
     B<T> x;
     ~C() {
       A<T> y;
-    };
+    }
   };
 }
 

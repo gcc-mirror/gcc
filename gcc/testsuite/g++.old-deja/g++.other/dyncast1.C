@@ -96,7 +96,7 @@ test03 ()
 
 // 2. crosscast
 
-struct J {virtual ~J(){};};
+struct J {virtual ~J(){}};
 struct K : CC, private J {}; 
 class KK : J, CC{};
 		

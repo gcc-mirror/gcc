@@ -11,7 +11,7 @@ struct B : A
     {
         foo(__PRETTY_FUNCTION__);
         return B();
-    };
+    }
 };
 
 B b=B().bar();

@@ -94,19 +94,19 @@ void check_placement_cookie (int i)
 struct X {};
 
 template <typename T>
-struct Y { int i; virtual void f () {}; };
+struct Y { int i; virtual void f () {} };
 
 // A class with a non-trivial destructor -- it needs a cookie.
-struct Z { ~Z () {}; };
+struct Z { ~Z () {} };
 // Likewise, but this class needs a bigger cookie so that the array
 // elements are correctly aligned.
-struct Z2 { ~Z2 () {}; long double d; };
+struct Z2 { ~Z2 () {} long double d; };
   
-struct W1 { void operator delete[] (void *, size_t) {}; };
-struct W2 { void operator delete[] (void *) {}; 
-            void operator delete[] (void *, size_t) {}; };
-struct W3 { void operator delete[] (void *, size_t) {}; 
-            void operator delete[] (void *) {}; };
+struct W1 { void operator delete[] (void *, size_t) {} };
+struct W2 { void operator delete[] (void *) {}
+            void operator delete[] (void *, size_t) {} };
+struct W3 { void operator delete[] (void *, size_t) {}
+            void operator delete[] (void *) {} };
 struct W4 : public W1 {};
 
 struct V { void *operator new[] (size_t s, void *p) 

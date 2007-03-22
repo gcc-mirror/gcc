@@ -70,7 +70,7 @@ class Vector
 	Vector( int, double *, int beg = 0 );
 	Vector( const Vector & );
 	Vector &operator=( const Vector & );
-	~Vector() { if(r) r->unrefer(); };
+	~Vector() { if(r) r->unrefer(); }
 
 	int row() const { return 19; }
 	int dim() const { return 10; }

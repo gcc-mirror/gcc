@@ -5,7 +5,7 @@ template <class T>
 struct A
 {
  public:
-  ~A() { };
+  ~A() { }
 
   class B;
 };

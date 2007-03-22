@@ -12,7 +12,7 @@ class doubleclass
 {
 	public:
 		double	d;
-		doubleclass(double x = 0)	{ d = x; };
+		doubleclass(double x = 0)	{ d = x; }
 };
 
 class test

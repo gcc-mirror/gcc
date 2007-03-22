@@ -6,7 +6,7 @@ struct S {
     ++i;
     if (i == 3)
       throw 3;
-  };
+  }
 
   S () {}
 

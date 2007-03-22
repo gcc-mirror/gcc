@@ -6,7 +6,7 @@
 
 struct A1
 {
-   virtual void Foo () {};
+   virtual void Foo () {}
 };
 
 struct A : A1

@@ -8,17 +8,17 @@ class base {
 //==========
 
     void base_priv(const char * n) 		
-	{ std::cout << "base_priv called from: " << n << "\n";  };
+	{ std::cout << "base_priv called from: " << n << "\n";  }
 
 protected:
 
     void base_prot(const char * n) 
-	{ std::cout << "base_prot called from: " << n << "\n"; };
+	{ std::cout << "base_prot called from: " << n << "\n"; }
 
 public:
 
     void base_publ(const char * n) 
-	{ std::cout << "base_publ called from: " << n << "\n"; };
+	{ std::cout << "base_publ called from: " << n << "\n"; }
 
     void test(const char * n) { base_publ(n); base_prot(n); base_priv(n); }
 

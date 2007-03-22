@@ -3,7 +3,7 @@
 
 class Parent {
 public:
-  void DoSomething() { return; };
+  void DoSomething() { return; }
   int i;
 };
 

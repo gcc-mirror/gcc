@@ -15,5 +15,5 @@ struct Derived : Base
   {
     Base::Baz ();  // { dg-error "is not a member" "" }
       
-  };
+  }
 };

@@ -17,7 +17,7 @@ public:
         C &operator = (const C &x)
                 {
                 return *this;
-                };
+                }
         };
 
 C &(C::*DD)(const C &x) = &C::operator=;

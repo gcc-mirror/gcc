@@ -13,7 +13,7 @@ typedef int F();
 
 template<class T, typename A<T>::F f>
 struct B {
-static int g() { return f(); };
+static int g() { return f(); }
 };
 
 int f() { return 0; }

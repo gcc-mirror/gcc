@@ -14,7 +14,7 @@ template <class T> struct A : T {
 
 struct B {
   void f(B);
-  void g(B) {};
+  void g(B) {}
 };
 
 void f(B) {}

@@ -11,8 +11,8 @@ class BadStream : public ostringstream
 {    
 public: 
   enum InternalEnum { VALUE = 0 };   
-  BadStream( InternalEnum e ) {};
-  BadStream( InternalEnum e, int i ) {};
+  BadStream( InternalEnum e ) {}
+  BadStream( InternalEnum e, int i ) {}
 };
 
 int main() 

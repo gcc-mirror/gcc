@@ -10,7 +10,7 @@ struct a
 
 struct b
 {
-    virtual void g() { };
+    virtual void g() { }
 };
 
 struct c: public a, public b
