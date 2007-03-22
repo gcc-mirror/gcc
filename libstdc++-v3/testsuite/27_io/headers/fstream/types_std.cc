@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-require-c-std "" }
 
 // Copyright (C) 2007 Free Software Foundation, Inc.
 //
