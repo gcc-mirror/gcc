@@ -2790,30 +2790,6 @@ gfc_conv_intrinsic_adjust (gfc_se * se, gfc_expr * expr, tree fndecl)
 }
 
 
-/* A helper function for gfc_conv_intrinsic_array_transfer to compute
-   the size of tree expressions in bytes.  */
-static tree
-gfc_size_in_bytes (gfc_se *se, gfc_expr *e)
-{
-  tree tmp;
-
-  if (e->ts.type == BT_CHARACTER)
-    tmp = se->string_length;
-  else
-    {
-      if (e->rank)
-	{
-	  tmp = gfc_get_element_type (TREE_TYPE (se->expr));
-	  tmp = size_in_bytes (tmp);
-	}
-      else
-	tmp = size_in_bytes (TREE_TYPE (TREE_TYPE (se->expr)));
-    }
-
-  return fold_convert (gfc_array_index_type, tmp);
-}
-
-
 /* Array transfer statement.
      DEST(1:N) = TRANSFER (SOURCE, MOLD[, SIZE])
    where:
@@ -2828,7 +2804,9 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
   tree tmp;
   tree extent;
   tree source;
+  tree source_type;
   tree source_bytes;
+  tree mold_type;
   tree dest_word_len;
   tree size_words;
   tree size_bytes;
@@ -2861,8 +2839,14 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
       gfc_conv_expr_reference (&argse, arg->expr);
       source = argse.expr;
 
+      source_type = TREE_TYPE (build_fold_indirect_ref (argse.expr));
+
       /* Obtain the source word length.  */
-      tmp = gfc_size_in_bytes (&argse, arg->expr);
+      if (arg->expr->ts.type == BT_CHARACTER)
+	tmp = fold_convert (gfc_array_index_type, argse.string_length);
+      else
+	tmp = fold_convert (gfc_array_index_type,
+			    size_in_bytes (source_type)); 
     }
   else
     {
@@ -2870,6 +2854,7 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
       argse.want_pointer = 0;
       gfc_conv_expr_descriptor (&argse, arg->expr, ss);
       source = gfc_conv_descriptor_data_get (argse.expr);
+      source_type = gfc_get_element_type (TREE_TYPE (argse.expr));
 
       /* Repack the source if not a full variable array.  */
       if (!(arg->expr->expr_type == EXPR_VARIABLE
@@ -2898,7 +2883,11 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
 	}
 
       /* Obtain the source word length.  */
-      tmp = gfc_size_in_bytes (&argse, arg->expr);
+      if (arg->expr->ts.type == BT_CHARACTER)
+	tmp = fold_convert (gfc_array_index_type, argse.string_length);
+      else
+	tmp = fold_convert (gfc_array_index_type,
+			    size_in_bytes (source_type)); 
 
       /* Obtain the size of the array in bytes.  */
       extent = gfc_create_var (gfc_array_index_type, NULL);
@@ -2924,7 +2913,8 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
 
-  /* Now convert MOLD.  The sole output is:
+  /* Now convert MOLD.  The outputs are:
+	mold_type = the TREE type of MOLD
 	dest_word_len = destination word length in bytes.  */
   arg = arg->next;
 
@@ -2934,20 +2924,25 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
   if (ss == gfc_ss_terminator)
     {
       gfc_conv_expr_reference (&argse, arg->expr);
-
-      /* Obtain the source word length.  */
-      tmp = gfc_size_in_bytes (&argse, arg->expr);
+      mold_type = TREE_TYPE (build_fold_indirect_ref (argse.expr));
     }
   else
     {
       gfc_init_se (&argse, NULL);
       argse.want_pointer = 0;
       gfc_conv_expr_descriptor (&argse, arg->expr, ss);
-
-      /* Obtain the source word length.  */
-      tmp = gfc_size_in_bytes (&argse, arg->expr);
+      mold_type = gfc_get_element_type (TREE_TYPE (argse.expr));
     }
 
+  if (arg->expr->ts.type == BT_CHARACTER)
+    {
+      tmp = fold_convert (gfc_array_index_type, argse.string_length);
+      mold_type = gfc_get_character_type_len (arg->expr->ts.kind, tmp);
+    }
+  else
+    tmp = fold_convert (gfc_array_index_type,
+			size_in_bytes (mold_type)); 
+ 
   dest_word_len = gfc_create_var (gfc_array_index_type, NULL);
   gfc_add_modify_expr (&se->pre, dest_word_len, tmp);
 
@@ -3016,15 +3011,18 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
   /* Build a destination descriptor, using the pointer, source, as the
      data field.  This is already allocated so set callee_alloc.
      FIXME callee_alloc is not set!  */
- 
-  tmp = gfc_typenode_for_spec (&expr->ts);
+
   gfc_trans_create_temp_array (&se->pre, &se->post, se->loop,
-			       info, tmp, false, true, false);
+			       info, mold_type, false, true, false);
+
+  /* Cast the pointer to the result.  */
+  tmp = gfc_conv_descriptor_data_get (info->descriptor);
+  tmp = fold_convert (pvoid_type_node, tmp);
 
   /* Use memcpy to do the transfer.  */
   tmp = build_call_expr (built_in_decls[BUILT_IN_MEMCPY],
 			 3,
-			 gfc_conv_descriptor_data_get (info->descriptor),
+			 tmp,
 			 fold_convert (pvoid_type_node, source),
 			 size_bytes);
   gfc_add_expr_to_block (&se->pre, tmp);

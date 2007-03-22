@@ -1,3 +1,15 @@
+2006-03-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31193
+	* trans-intrinsic.c (gfc_size_in_bytes): Remove function.
+	(gfc_conv_intrinsic_array_transfer): Remove calls to previous.
+	Explicitly extract TREE_TYPEs for source and mold.  Use these
+	to calculate length of source and mold, except for characters,
+	where the se string_length is used.  For mold, the TREE_TYPE is
+	recalculated using gfc_get_character_type_len so that the
+	result is correctly cast for character literals and substrings.
+	Do not use gfc_typenode_for_spec for the final cast.
+
 2007-03-22  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/20897
