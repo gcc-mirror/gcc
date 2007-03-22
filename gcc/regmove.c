@@ -1429,8 +1429,13 @@ regmove_optimize (rtx f, int nregs)
 		      break;
 		    }
 
+		  /* We can't make this change if SRC is read or
+		     partially written in P, since we are going to
+		     eliminate SRC. We can't make this change 
+		     if DST is mentioned at all in P,
+		     since we are going to change its value.  */
 		  if (reg_overlap_mentioned_p (src, PATTERN (p))
-		      || reg_overlap_mentioned_p (dst, PATTERN (p)))
+		      || reg_mentioned_p (dst, PATTERN (p)))
 		    break;
 
 		  /* If we have passed a call instruction, and the

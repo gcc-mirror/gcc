@@ -1,3 +1,8 @@
+2007-03-21  Seongbae Park <seongbae.park@gmail.com>
+
+	* regmove.c (regmove_optimize): Use reg_mentioned_p
+	instead of reg_overlap_mentioned_p for DST.
+
 2007-03-21  Mike Stump  <mrs@apple.com>
 
 	* c.opt: Fixup for Objective-C/C++.
