@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-require-c-std "" }
 
 // 2007-02-04  Benjamin Kosnik  <bkoz@redhat.com>
 //

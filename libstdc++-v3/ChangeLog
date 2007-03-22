@@ -1,3 +1,28 @@
+2007-03-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/21_strings/headers/cstdlib/functions_std.cc: Without
+	C99 support, _GLIBCXX_USE_WCHAR_T not defined, so
+	dg-require-c-std.
+	* testsuite/tr1/6_containers/headers/functional/synopsis.cc: Same.
+	* testsuite/27_io/headers/iostream/synopsis.cc: Same.
+	* testsuite/27_io/headers/streambuf/types_std.cc: Same.
+	* testsuite/27_io/headers/sstream/types_std.cc: Same.
+	* testsuite/27_io/headers/ostream/types_std.cc: Same.
+	* testsuite/27_io/headers/istream/types_std.cc: Same.
+	* testsuite/27_io/headers/iostream/types_std.cc: Same.
+	* testsuite/27_io/headers/fstream/types_std.cc: Same.
+	* testsuite/21_strings/headers/string/types_std.cc: Same.
+	* testsuite/21_strings/headers/cwctype/functions_std.cc: Same.
+	* testsuite/21_strings/headers/cwctype/types_std.cc: Same.
+	* testsuite/21_strings/headers/cwchar/functions_std.cc: Same.
+	* testsuite/21_strings/headers/cwchar/types_std.cc: Same.
+	
+	* include/Makefile.am (c_compatibility_headers): Add fenv.h.
+	* include/Makefile.in: Regenerate.
+	* configure.host: Update comment.
+
+	* include/tr1/cfenv: Use include_next.
+
 2007-03-19  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/tuple (get(_Tuple_impl<>&, get(const _Tuple_impl<>&):

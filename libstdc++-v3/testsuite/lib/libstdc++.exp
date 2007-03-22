@@ -579,6 +579,7 @@ proc check_v3_target_fileio { } {
     return $et_fileio_saved
 }
 
+# Eventually we want C90/C99 determining and switching from this.
 proc check_v3_target_c_std { } {
     global et_c_std_saved
     global et_c_std_target_name
@@ -606,15 +607,19 @@ proc check_v3_target_c_std { } {
 
 	# Set up, compile, and execute a C++ test program that tries to use
 	# C99 functionality.
+        # For math bits, could use check_effective_target_c99_math.
 	set src fileio[pid].cc
 	set exe fileio[pid].x
 
 	set f [open $src "w"]
 	puts $f "#include <tr1/cmath>"
+	puts $f "#include <cstdlib>"
 	puts $f "int main ()"
 	puts $f "{"
 	puts $f "  float f = 45.55;"
 	puts $f "  int i = std::tr1::isnan(f);"
+	puts $f "  "
+	puts $f "  using std::wctomb;"
 	puts $f "  return 0;"
 	puts $f "}" 
 	close $f

@@ -22,7 +22,7 @@
 #
 #   os_include_dir         OS-specific directory, defaults to os/generic.
 #
-#   c_model                the "C" header model, defaults to c_std.
+#   c_model                the "C" header model, defaults to c_global.
 #
 #   c_compatibility        if "C" compatibility headers are necessary,
 #                          defaults to no.

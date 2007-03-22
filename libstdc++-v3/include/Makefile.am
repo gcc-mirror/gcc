@@ -635,6 +635,7 @@ endif
 if GLIBCXX_C_HEADERS_C_GLOBAL
 c_compatibility_headers = \
 	${c_compatibility_srcdir}/complex.h \
+	${c_compatibility_srcdir}/fenv.h \
 	${c_compatibility_srcdir}/tgmath.h 
 endif
 
