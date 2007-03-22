@@ -1791,9 +1791,10 @@ real_to_hexadecimal (char *str, const REAL_VALUE_TYPE *r, size_t buf_size,
 }
 
 /* Initialize R from a decimal or hexadecimal string.  The string is
-   assumed to have been syntax checked already.  */
+   assumed to have been syntax checked already.  Return -1 if the
+   value underflows, +1 if overflows, and 0 otherwise. */
 
-void
+int
 real_from_string (REAL_VALUE_TYPE *r, const char *str)
 {
   int exp = 0;
@@ -1865,7 +1866,7 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 
       /* If the mantissa is zero, ignore the exponent.  */
       if (!cmp_significand_0 (r))
-	goto underflow;
+	goto is_a_zero;
 
       if (*str == 'p' || *str == 'P')
 	{
@@ -1941,7 +1942,7 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 
       /* If the mantissa is zero, ignore the exponent.  */
       if (r->cl == rvc_zero)
-	goto underflow;
+	goto is_a_zero;
 
       if (*str == 'e' || *str == 'E')
 	{
@@ -1981,15 +1982,19 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
     }
 
   r->sign = sign;
-  return;
+  return 0;
+
+ is_a_zero:
+  get_zero (r, sign);
+  return 0;
 
  underflow:
   get_zero (r, sign);
-  return;
+  return -1;
 
  overflow:
   get_inf (r, sign);
-  return;
+  return 1;
 }
 
 /* Legacy.  Similar, but return the result directly.  */

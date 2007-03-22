@@ -1,3 +1,13 @@
+2007-03-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR other/23572
+	* c-lex.c (interpret_float): On overflow, emit pedantic warning if
+	infinities not supported, otherwise emit warning if -Woverflow. On
+	underflow, emit warning if -Woverflow.
+	* real.c (real_from_string): Return -1 if underflow, +1 if overflow
+	and 0 otherwise.
+	* real.h (real_from_string): Update declaration
+	
 2007-03-22  Kai Tietz  <kai.tietz@onevision.com>
 	    Richard Henderson  <rth@redhat.com>
 
