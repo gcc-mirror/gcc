@@ -54,7 +54,7 @@
 	* g++.old-deja/g++.jason/opeq3.C: Likewise.
 	* g++.old-deja/g++.jason/template27.C: Likewise.
 	* g++.old-deja/g++.jason/synth6.C: Likewise.
-	* g++.old-deja/g++.jason/ref8.C: Likewise.                                     
+	* g++.old-deja/g++.jason/ref8.C: Likewise.
 	* g++.old-deja/g++.jason/offset1.C: Likewise.
 	* g++.old-deja/g++.other/static20.C: Likewise.
 	* g++.old-deja/g++.other/array1.C: Likewise.
@@ -105,7 +105,7 @@
 	* g++.old-deja/g++.mike/p4511.C: Likewise.
 	* g++.old-deja/g++.mike/virt3.C: Likewise.
 	* g++.old-deja/g++.mike/p16146.C: Likewise.
-	* g++.old-deja/g++.mike/p1989.C: Likewise.  
+	* g++.old-deja/g++.mike/p1989.C: Likewise.
 	* g++.old-deja/g++.mike/p5571.C: Likewise.
 	* g++.old-deja/g++.gb/scope10.C: Likewise.
 	* g++.old-deja/g++.abi/primary5.C: Likewise.
@@ -117,7 +117,7 @@
 	* g++.old-deja/g++.bob/template3.C: Likewise.
 	* g++.old-deja/g++.bob/inherit1.C: Likewise.
 	
-2006-03-22  Paul Thomas  <pault@gcc.gnu.org>
+2007-03-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31193
 	* gfortran.dg/transfer_array_intrinsic_3.f90: New test.
