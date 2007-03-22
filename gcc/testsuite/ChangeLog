@@ -1,3 +1,8 @@
+2007-03-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/31262
+	* gfortran.dg/no_range_check_1.f90: New test.
+
 2007-03-22  Dirk Mueller  <dmueller@suse.de>
 
 	* g++.old-deja/g++.brendan/warnings2.C: Don't use -pedantic.
