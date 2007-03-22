@@ -165,23 +165,33 @@ gfc_conv_mpz_to_tree (mpz_t i, int kind)
     }
   else
     {
-      unsigned HOST_WIDE_INT words[2];
-      size_t count;
+      unsigned HOST_WIDE_INT *words;
+      size_t count, numb;
+
+      /* Determine the number of unsigned HOST_WIDE_INT that are required
+         for represent the value.  The code to calculate count is
+	 extracted from the GMP manual, section "Integer Import and Export":
+         http://gmplib.org/manual/Integer-Import-and-Export.html  */
+      numb = 8*sizeof(HOST_WIDE_INT);
+      count = (mpz_sizeinbase (i, 2) + numb-1) / numb;
+      if (count < 2)
+	count = 2;
+      words = (unsigned HOST_WIDE_INT *) alloca (count * sizeof(HOST_WIDE_INT));
 
       /* Since we know that the value is not zero (mpz_fits_slong_p),
 	 we know that at least one word will be written, but we don't know
 	 about the second.  It's quicker to zero the second word before
 	 than conditionally clear it later.  */
       words[1] = 0;
-
+      
       /* Extract the absolute value into words.  */
-      mpz_export (words, &count, -1, sizeof (HOST_WIDE_INT), 0, 0, i);
+      mpz_export (words, &count, -1, sizeof(HOST_WIDE_INT), 0, 0, i);
 
-      /* We assume that all numbers are in range for its type, and that
-	 we never create a type larger than 2*HWI, which is the largest
-	 that the middle-end can handle.  */
-      gcc_assert (count == 1 || count == 2);
-
+      /* We don't assume that all numbers are in range for its type.
+         However, we never create a type larger than 2*HWI, which is the
+	 largest that the middle-end can handle. So, we only take the
+	 first two elements of words, which is equivalent to wrapping the
+	 value if it's larger than the type range.  */
       low = words[0];
       high = words[1];
 
