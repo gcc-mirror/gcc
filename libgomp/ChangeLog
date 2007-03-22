@@ -1,3 +1,31 @@
+2007-03-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/config/default.exp: New file.
+	* testsuite/lib/libgomp.exp: New file.
+	* testsuite/lib/libgomp.dg (load_gcc_lib, libgomp_init,
+	libgomp_target_compile, libgomp_option_help, libgomp_option_proc,
+	load_lib *, load_gcc_lib *): Move to libgomp.exp.
+	(libgomp_load): Remove.
+	* testsuite/lib/libgomp.exp (libgomp_init): Compute
+	always_ld_library_path, not ld_library_path.  Set additional_flags
+	to -march=i486 for ilp32 x86_64-*-* and i386-*-* targets.
+	(target_compile): Do not call libgomp_init.  Append lang_library_path
+	and lang_link_flags to options.
+	* testsuite/libgomp.c/c.exp: Set DEFAULT_FLAGS to -O2.  Set
+	ld_library_path from always_ld_library_path.  Set LD_LIBRARY_PATH
+	here.
+	* testsuite/libgomp.c++/c++.exp: Set ld_library_path from
+	always_ld_library_path.  Set LD_LIBRARY_PATH here.
+	* testsuite/libgomp.fortran/fortran.exp: Ditto.
+	* testsuite/libgomp.c/atomic-1.c: Set dg-options to
+	"-O2 -march=pentium" for ilp32 x86 targets. Simplify check for
+	CX8 flag.
+	* testsuite/libgomp.c/atomic-2.c: Set dg-options to "-O2 -mcx16" for
+	lp64 x86 targets. Do not check for SSE3 bit. Do not define bit_SSE3.
+	* testsuite/libgomp.c/pr29947-1.c: Remove default dg-options.
+	* testsuite/libgomp.c/pr29947-1.c: Ditto.
+	* testsuite/libgomp.c/atomic-10.c: Ditto.
+
 2007-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.fortran/appendix-a/a.22.8.f90: Add

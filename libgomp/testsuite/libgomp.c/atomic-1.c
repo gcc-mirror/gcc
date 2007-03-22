@@ -1,7 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fopenmp" } */
-/* { dg-options "-O2 -fopenmp -march=pentium" { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 -fopenmp" { target lp64 } } */
+/* { dg-options "-O2 -march=pentium" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 #ifdef __i386__
 #include "../../../gcc/testsuite/gcc.dg/i386-cpuid.h"
@@ -47,7 +45,7 @@ main (void)
 
   cpu_facilities = i386_cpuid ();
 
-  if ((cpu_facilities & bit_CX8) == 0)
+  if (!(cpu_facilities & bit_CX8))
     return 0;
 #endif
 
