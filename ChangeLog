@@ -1,3 +1,7 @@
+2007-03-22  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2007-03-21  Richard Sandiford  <richard@codesourcery.com>
 
 	* configure.ac (TOPLEVEL_CONFIGURE_ARGUMENTS): Fix m4 quoting
