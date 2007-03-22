@@ -906,4 +906,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define HARD_REGNO_NREGS_WITH_PADDING(REGNO, MODE) -1
 #endif
 
+#ifndef OUTGOING_REG_PARM_STACK_SPACE
+#define OUTGOING_REG_PARM_STACK_SPACE 0
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

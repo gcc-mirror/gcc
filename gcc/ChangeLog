@@ -1,3 +1,18 @@
+2007-03-22  Kai Tietz  <kai.tietz@onevision.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* defaults.h (OUTGOING_REG_PARM_STACK_SPACE): Provide default.
+	* calls.c (compute_argument_block_size, expand_call,
+	emit_library_call_value_1): Don't ifdef OUTGOING_REG_PARM_STACK_SPACE.
+	* expr.c (block_move_libcall_safe_for_call_parm): Likewise.
+	* function.c (STACK_DYNAMIC_OFFSET): Likewise.
+	* doc/tm.texi (OUTGOING_REG_PARM_STACK_SPACE): Update.
+	* config/alpha/unicosmk.h, config/bfin/bfin.h, config/iq2000/iq2000.h,
+	config/mips/mips.h, config/mn10300/mn10300.h, config/mt/mt.h,
+	config/pa/pa.h, config/rs6000/rs6000.h, config/score/score.h,
+	config/spu/spu.h, config/v850/v850.h (OUTGOING_REG_PARM_STACK_SPACE):
+	Set to 1.
+
 2007-03-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-incpath.c (add_sysroot_to_chain): New.

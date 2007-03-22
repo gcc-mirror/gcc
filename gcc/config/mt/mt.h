@@ -533,7 +533,7 @@ extern struct mt_frame_info current_frame_info;
 
 /* Define this if it is the responsibility of the caller to
    allocate the area reserved for arguments passed in registers.  */
-#define OUTGOING_REG_PARM_STACK_SPACE
+#define OUTGOING_REG_PARM_STACK_SPACE 1
 
 /* The number of register assigned to holding function arguments.  */
 #define MT_NUM_ARG_REGS        4

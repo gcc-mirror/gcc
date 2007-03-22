@@ -1807,7 +1807,7 @@ extern const enum reg_class mips_regno_to_class[];
    If `ACCUMULATE_OUTGOING_ARGS' is also defined, the only effect
    of this macro is to determine whether the space is included in
    `current_function_outgoing_args_size'.  */
-#define OUTGOING_REG_PARM_STACK_SPACE
+#define OUTGOING_REG_PARM_STACK_SPACE 1
 
 #define STACK_BOUNDARY (TARGET_NEWABI ? 128 : 64)
 

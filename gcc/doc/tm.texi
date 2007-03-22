@@ -3730,8 +3730,8 @@ which.
 @c something, not sure if it looks good.  --mew 10feb93
 
 @defmac OUTGOING_REG_PARM_STACK_SPACE
-Define this if it is the responsibility of the caller to allocate the area
-reserved for arguments passed in registers.
+Define this to a non-zero value if it is the responsibility of the caller
+to allocate the area reserved for arguments passed in registers.
 
 If @code{ACCUMULATE_OUTGOING_ARGS} is defined, this macro controls
 whether the space for these arguments counts in the value of

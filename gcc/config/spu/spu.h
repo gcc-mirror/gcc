@@ -337,7 +337,7 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 #define REG_PARM_STACK_SPACE(FNDECL) 0
 
-#define OUTGOING_REG_PARM_STACK_SPACE 
+#define OUTGOING_REG_PARM_STACK_SPACE 1
 
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) (0)
 
