@@ -1,3 +1,11 @@
+2007-03-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR other/23572
+	* gcc.dg/float-range-4.c: New.
+	* gcc.dg/float-range-1.c: Update. Test for a warning.
+	* gcc.dg/float-range-3.c: New.
+	* gcc.dg/float-range-5.c: New.
+	
 2007-03-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/31262
