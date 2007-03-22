@@ -602,7 +602,7 @@ extern struct rtx_def *hppa_pic_save_rtx (void);
 
 /* Define this if the above stack space is to be considered part of the
    space allocated by the caller.  */
-#define OUTGOING_REG_PARM_STACK_SPACE
+#define OUTGOING_REG_PARM_STACK_SPACE 1
 
 /* Keep the stack pointer constant throughout the function.
    This is both an optimization and a necessity: longjmp

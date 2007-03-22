@@ -116,7 +116,7 @@ Boston, MA 02110-1301, USA.  */
    in registers) are allocated.  */
 
 #define REG_PARM_STACK_SPACE(DECL) 48
-#define OUTGOING_REG_PARM_STACK_SPACE
+#define OUTGOING_REG_PARM_STACK_SPACE 1
 
 /* If an argument can't be passed in registers even though not all argument
    registers have been used yet, it is passed on the stack in the space 

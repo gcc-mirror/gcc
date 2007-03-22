@@ -1237,13 +1237,14 @@ block_move_libcall_safe_for_call_parm (void)
 
   /* If registers go on the stack anyway, any argument is sure to clobber
      an outgoing argument.  */
-#if defined (REG_PARM_STACK_SPACE) && defined (OUTGOING_REG_PARM_STACK_SPACE)
-  {
-    tree fn = emit_block_move_libcall_fn (false);
-    (void) fn;
-    if (REG_PARM_STACK_SPACE (fn) != 0)
-      return false;
-  }
+#if defined (REG_PARM_STACK_SPACE)
+  if (OUTGOING_REG_PARM_STACK_SPACE)
+    {
+      tree fn;
+      fn = emit_block_move_libcall_fn (false);
+      if (REG_PARM_STACK_SPACE (fn) != 0)
+	return false;
+    }
 #endif
 
   /* If any argument goes in memory, then it might clobber an outgoing

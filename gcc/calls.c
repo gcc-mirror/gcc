@@ -1222,13 +1222,12 @@ compute_argument_block_size (int reg_parm_stack_space,
 	    = size_binop (MAX_EXPR, args_size->var,
 			  ssize_int (reg_parm_stack_space));
 
-#ifndef OUTGOING_REG_PARM_STACK_SPACE
 	  /* The area corresponding to register parameters is not to count in
 	     the size of the block we need.  So make the adjustment.  */
-	  args_size->var
-	    = size_binop (MINUS_EXPR, args_size->var,
-			  ssize_int (reg_parm_stack_space));
-#endif
+	  if (!OUTGOING_REG_PARM_STACK_SPACE)
+	    args_size->var
+	      = size_binop (MINUS_EXPR, args_size->var,
+			    ssize_int (reg_parm_stack_space));
 	}
     }
   else
@@ -1246,9 +1245,8 @@ compute_argument_block_size (int reg_parm_stack_space,
       args_size->constant = MAX (args_size->constant,
 				 reg_parm_stack_space);
 
-#ifndef OUTGOING_REG_PARM_STACK_SPACE
-      args_size->constant -= reg_parm_stack_space;
-#endif
+      if (!OUTGOING_REG_PARM_STACK_SPACE)
+	args_size->constant -= reg_parm_stack_space;
     }
   return unadjusted_args_size;
 }
@@ -2026,10 +2024,8 @@ expand_call (tree exp, rtx target, int ignore)
   reg_parm_stack_space = REG_PARM_STACK_SPACE (fndecl);
 #endif
 
-#ifndef OUTGOING_REG_PARM_STACK_SPACE
-  if (reg_parm_stack_space > 0 && PUSH_ARGS)
+  if (!OUTGOING_REG_PARM_STACK_SPACE && reg_parm_stack_space > 0 && PUSH_ARGS)
     must_preallocate = 1;
-#endif
 
   /* Set up a place to return a structure.  */
 
@@ -2430,12 +2426,11 @@ expand_call (tree exp, rtx target, int ignore)
 		     Another approach might be to try to reorder the argument
 		     evaluations to avoid this conflicting stack usage.  */
 
-#ifndef OUTGOING_REG_PARM_STACK_SPACE
 		  /* Since we will be writing into the entire argument area,
 		     the map must be allocated for its entire size, not just
 		     the part that is the responsibility of the caller.  */
-		  needed += reg_parm_stack_space;
-#endif
+		  if (!OUTGOING_REG_PARM_STACK_SPACE)
+		    needed += reg_parm_stack_space;
 
 #ifdef ARGS_GROW_DOWNWARD
 		  highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
@@ -2531,12 +2526,10 @@ expand_call (tree exp, rtx target, int ignore)
 	     an argument.  */
 	  if (stack_arg_under_construction)
 	    {
-#ifndef OUTGOING_REG_PARM_STACK_SPACE
-	      rtx push_size = GEN_INT (reg_parm_stack_space
-				       + adjusted_args_size.constant);
-#else
-	      rtx push_size = GEN_INT (adjusted_args_size.constant);
-#endif
+	      rtx push_size
+		= GEN_INT (adjusted_args_size.constant
+			   + (OUTGOING_REG_PARM_STACK_SPACE ? 0
+			      : reg_parm_stack_space));
 	      if (old_stack_level == 0)
 		{
 		  emit_stack_save (SAVE_BLOCK, &old_stack_level,
@@ -2706,11 +2699,9 @@ expand_call (tree exp, rtx target, int ignore)
       /* If register arguments require space on the stack and stack space
 	 was not preallocated, allocate stack space here for arguments
 	 passed in registers.  */
-#ifdef OUTGOING_REG_PARM_STACK_SPACE
-      if (!ACCUMULATE_OUTGOING_ARGS
+      if (OUTGOING_REG_PARM_STACK_SPACE && !ACCUMULATE_OUTGOING_ARGS
 	  && must_preallocate == 0 && reg_parm_stack_space > 0)
 	anti_adjust_stack (GEN_INT (reg_parm_stack_space));
-#endif
 
       /* Pass the function the address in which to return a
 	 structure value.  */
@@ -3532,9 +3523,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   args_size.constant = MAX (args_size.constant,
 			    reg_parm_stack_space);
 
-#ifndef OUTGOING_REG_PARM_STACK_SPACE
-  args_size.constant -= reg_parm_stack_space;
-#endif
+  if (!OUTGOING_REG_PARM_STACK_SPACE)
+    args_size.constant -= reg_parm_stack_space;
 
   if (args_size.constant > current_function_outgoing_args_size)
     current_function_outgoing_args_size = args_size.constant;
@@ -3555,12 +3545,11 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
       needed = args_size.constant;
 
-#ifndef OUTGOING_REG_PARM_STACK_SPACE
       /* Since we will be writing into the entire argument area, the
 	 map must be allocated for its entire size, not just the part that
 	 is the responsibility of the caller.  */
-      needed += reg_parm_stack_space;
-#endif
+      if (!OUTGOING_REG_PARM_STACK_SPACE)
+	needed += reg_parm_stack_space;
 
 #ifdef ARGS_GROW_DOWNWARD
       highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
