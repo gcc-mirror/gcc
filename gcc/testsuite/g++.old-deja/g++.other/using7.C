@@ -2,7 +2,7 @@
 
 class A {
 protected:
-  static void f() {};
+  static void f() {}
 };
 
 class B : A {

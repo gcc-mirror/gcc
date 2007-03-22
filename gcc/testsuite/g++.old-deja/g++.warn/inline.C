@@ -29,14 +29,14 @@ void bar1 ()
 struct B
 {
   void mwibble ()
-  {};
+  {}
   void mwobble ()
-  {};                       // { dg-bogus "" } cannot inline
+  {}                        // { dg-bogus "" } cannot inline
   
   static void swibble ()
-  {};
+  {}
   static void swobble ()
-  {};                       // { dg-bogus "" } cannot inline
+  {}                        // { dg-bogus "" } cannot inline
 };
 
 void bar (void (B::*)());
@@ -60,7 +60,7 @@ void bar3 (B *b)
 struct C
 {
   virtual void vwobble ()
-  {};                               // { dg-bogus "" } cannot inline
+  {}                                // { dg-bogus "" } cannot inline
 };
 
 void bar4 ()

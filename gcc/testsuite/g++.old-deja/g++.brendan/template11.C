@@ -34,7 +34,7 @@ int aCallback<Called>::callback()
 
 struct myStruct
 {
-  int action() {return 24;};
+  int action() {return 24;}
 };
 
 int main()

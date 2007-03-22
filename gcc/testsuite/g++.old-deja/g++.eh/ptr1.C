@@ -5,7 +5,7 @@ extern "C" int printf (const char *, ...);
 
 struct E {
   int x;
-  E(int i) { x = i; };
+  E(int i) { x = i; }
 };
 
 int main()

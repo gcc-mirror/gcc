@@ -7,8 +7,8 @@ struct A
     struct B
     {
 	int f;
-	B() : f(0) {};
-	void g() { f = 0; };
+	B() : f(0) {}
+	void g() { f = 0; }
     };
     void f();
     void f(int);

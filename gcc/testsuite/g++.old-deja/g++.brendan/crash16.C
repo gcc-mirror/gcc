@@ -3,7 +3,7 @@
 class Graph {
 public:
       unsigned         char N;
-      Graph(void) {}; // { dg-error "previously defined here" }
+      Graph(void) {} // { dg-error "previously defined here" }
 }
 
 Graph::Graph(void)    // { dg-error "return type|redefinition|semicolon" }

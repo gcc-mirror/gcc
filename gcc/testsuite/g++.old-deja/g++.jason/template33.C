@@ -7,7 +7,7 @@ class A
 public:
   enum muni {X, Y};
   
-  muni e() { return X; };
+  muni e() { return X; }
   muni f();
 };
 

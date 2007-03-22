@@ -13,8 +13,8 @@ static int ok = 0;
 
 struct A
 {
-  A (){};
-  virtual ~A () {};
+  A (){}
+  virtual ~A () {}
 };
 
 struct B : virtual A

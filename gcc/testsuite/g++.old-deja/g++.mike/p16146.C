@@ -5,8 +5,8 @@ extern "C" int printf (const char *, ...);
 
 class myFoundation {
 protected:
-  myFoundation () { count = 0; };
-  virtual ~myFoundation () {};
+  myFoundation () { count = 0; }
+  virtual ~myFoundation () {}
 
 public:
   void addRef () { ++count; }
@@ -19,8 +19,8 @@ private:
 
 class firstIntermediate :virtual public myFoundation {
 public:
-  firstIntermediate () {};
-  ~firstIntermediate () {};
+  firstIntermediate () {}
+  ~firstIntermediate () {}
 
   void bar () { printf ("Bar\n"); }
 };
@@ -28,58 +28,58 @@ public:
 
 class firstBase	:  public firstIntermediate {
 public:
-  firstBase () {};
-  ~firstBase () {};
+  firstBase () {}
+  ~firstBase () {}
 
-  virtual void g () {};
+  virtual void g () {}
 };
 
 
 class secondIntermediate : virtual public myFoundation {
 public:
-  secondIntermediate () {};
-  ~secondIntermediate () {};
+  secondIntermediate () {}
+  ~secondIntermediate () {}
 
-  virtual void h () {};
+  virtual void h () {}
 };
 
 
 class secondBase : public secondIntermediate {
 public:
-  secondBase () {};
-  ~secondBase () {};
+  secondBase () {}
+  ~secondBase () {}
 
-  virtual void h () {};
+  virtual void h () {}
 };
 
 
 class typeInterface : virtual public firstBase {
 public:
-  typeInterface () {};
-  ~typeInterface () {};
+  typeInterface () {}
+  ~typeInterface () {}
 
-  virtual void i () {};
+  virtual void i () {}
 };
 
 class classServices : virtual public firstBase,
 		      public secondBase {
 public:
-  classServices () {};
-  ~classServices () {};
+  classServices () {}
+  ~classServices () {}
 
-  virtual void j () {};
+  virtual void j () {}
 };
 
 class classImplementation : public typeInterface,
 			    public classServices {
 public:
-  classImplementation () {};
-  ~classImplementation () {};
+  classImplementation () {}
+  ~classImplementation () {}
 
-  void g () {};
-  void h () {};
-  void i () {};
-  void j () {};
+  void g () {}
+  void h () {}
+  void i () {}
+  void j () {}
 };
 
 int main () {

@@ -11,5 +11,5 @@ struct B2: public A {};
 
 struct C: public B1, public B2
 {
-  void g() { B1::f(); };
+  void g() { B1::f(); }
 };

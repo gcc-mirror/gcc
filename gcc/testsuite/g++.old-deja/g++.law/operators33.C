@@ -18,7 +18,7 @@ struct fcell {
 class FStack {
 public:
         struct fcell *top;
-        FStack() { top = NULL ; } ;
+        FStack() { top = NULL ; }
         inline void push(FILE * fd1, int line_num, char *fname = NULL) {
                 struct fcell *tmp = new struct fcell;
                 tmp->fd = fd1;

@@ -24,7 +24,7 @@ struct baz : filler1, bar, filler2
 struct foo : filler3, virtual baz, filler4
 {
     static void a();
-    void b() {};
+    void b() {}
     int m;
 };
 

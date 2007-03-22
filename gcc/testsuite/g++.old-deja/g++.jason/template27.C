@@ -29,13 +29,13 @@ void Test<T>::doThat()
 class A 
 { 
  public: 
-  void thiss() {}; 
+  void thiss() {}
 };
 
 class B
 { 
  public: 
-  void that() {}; 
+  void that() {}
 };
 
 int main() 

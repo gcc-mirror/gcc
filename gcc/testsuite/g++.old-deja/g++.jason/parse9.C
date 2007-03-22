@@ -6,7 +6,7 @@ class Fu
 {
   int val;
 public:
-  Fu(int i) : val(i) { };
+  Fu(int i) : val(i) { }
   void print() { }
 };
 

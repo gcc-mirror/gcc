@@ -15,5 +15,5 @@ class T {
 class T2 {
       friend void f (int& i)  { // BOGUS - 
       i = 1;
-   };
+   }
 };

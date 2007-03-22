@@ -21,5 +21,5 @@ extern "C" int printf( const char *, ...);
 class E : public C {
         void f() {
                 printf( "%d\n", b);// { dg-error "" } .*
-        };
+        }
 };

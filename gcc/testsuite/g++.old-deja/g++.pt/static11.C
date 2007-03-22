@@ -13,7 +13,7 @@ int r = 1;
 
 struct A
 {
-  void f(){};
+  void f(){}
   A(){ ++r; }
   ~A(){ r -= 2; _exit (r); }
 };

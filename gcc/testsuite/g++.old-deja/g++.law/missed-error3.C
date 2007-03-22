@@ -15,7 +15,7 @@ class Traversable {
 public:
     virtual const T item() const = 0;
     virtual const bool off() const = 0;
-    virtual ~Traversable() { };
+    virtual ~Traversable() { }
 };
 
 class Chain : public Traversable {
@@ -47,7 +47,7 @@ protected:
     virtual void go_offright() const = 0;
     virtual void copy(const List& other) = 0;
 public:
-    List() : item_count(0), cursor_position(0) { };
+    List() : item_count(0), cursor_position(0) { }
     virtual const int count() const;
     virtual const bool empty() const;
     virtual const bool isfirst() const;
@@ -105,7 +105,7 @@ protected:
     virtual void copy(const List& other);
 public:
     Fixed_List(const List& other);
-    Fixed_List(const int size): Array(1, size) { };
+    Fixed_List(const int size): Array(1, size) { }
     virtual const bool empty() const;
     virtual const int count() const;
     virtual const T item() const;
@@ -113,7 +113,7 @@ public:
     virtual void move(const int index) const;
     virtual void put(const T value);
     virtual void put_i_th(const T value, const int index);
-    virtual void wipe_out() { };
+    virtual void wipe_out() { }
     Fixed_List& operator=(const List& other);
 };
 

@@ -3,7 +3,7 @@
 struct T
 {
   static void (*handler)();
-  static void func() {};
+  static void func() {}
 };
 
 bool fail;

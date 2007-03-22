@@ -3,10 +3,10 @@
 
 class foo {
 public:
-  foo() {};
+  foo() {}
   void throwMe () {
     throw *this;                // { dg-error "" } cannot be used in throw-expression
-  };
+  }
   virtual void test () = 0;
 };
 

@@ -10,7 +10,7 @@
 class test{
 public:
 	int	flags;
-	test()	{};
+	test()	{}
 	};
 
 int main()

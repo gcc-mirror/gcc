@@ -17,35 +17,35 @@ struct B8 : A {};
 
 struct C1 : B1
 {
-  virtual void Foo () {};
+  virtual void Foo () {}
 };
 struct C2 : B1, B2
 {
-  virtual void Foo () {};
+  virtual void Foo () {}
 };
 struct C3 : B1, B2, B3
 {
-  virtual void Foo () {};
+  virtual void Foo () {}
 };
 struct C4 : B1, B2, B3, B4
 {
-  virtual void Foo () {};
+  virtual void Foo () {}
 };
 struct C5 : B1, B2, B3, B4, B5
 {
-  virtual void Foo () {};
+  virtual void Foo () {}
 };
 struct C6 : B1, B2, B3, B4, B5, B6
 {
-  virtual void Foo () {};
+  virtual void Foo () {}
 };
 struct C7 : B1, B2, B3, B4, B5, B6, B7
 {
-  virtual void Foo () {};
+  virtual void Foo () {}
 };
 struct C8 : B1, B2, B3, B4, B5, B6, B7, B8
 {
-  virtual void Foo () {};
+  virtual void Foo () {}
 };
 
 struct D1 : virtual C1 {};

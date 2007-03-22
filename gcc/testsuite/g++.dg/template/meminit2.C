@@ -9,13 +9,13 @@ template <typename K1> struct O {
 template <typename T> 
 struct A : typename O<T>::template I<int> {   // { dg-error "keyword 'typename' not allowed" }
   A() :    typename O<T>::template I<int>()   // { dg-error "keyword 'typename' not allowed" }
-  {};
+  {}
 };
 
 template <typename T> 
 struct B : O<T>::template I<int> {
   B() :    O<T>::I<int>()   // { dg-error "used as template|it is a template" "" }
-  {};
+  {}
 };
 
 // { dg-bogus "end of input" "bogus token skipping in the parser" { xfail *-*-* } 17 }

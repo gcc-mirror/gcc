@@ -5,8 +5,8 @@
 
 class base {
 public:
-  void f1 () { std::cout << "f1" << std::endl; };
-  void f2 () { std::cout << "f2" << std::endl; };
+  void f1 () { std::cout << "f1" << std::endl; }
+  void f2 () { std::cout << "f2" << std::endl; }
 };
 
 class deriv : public base {

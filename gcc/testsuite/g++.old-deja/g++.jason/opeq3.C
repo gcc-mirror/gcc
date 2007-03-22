@@ -4,7 +4,7 @@
 class X { // { dg-error "assignment" }
   int& a;
 public:
-  X(int& i): a(i) { };
+  X(int& i): a(i) { }
 };
 
 void foo ()

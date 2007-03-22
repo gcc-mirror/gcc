@@ -12,9 +12,9 @@ struct link {
     link *prev;
 
     link(const T& t): item(t), prev(0), next(0)
-	{ };
+	{ }
     link(const T& t, link<T> *p, link<T> *n): item(t), prev(p), next(n)
-	{ };
+	{ }
 };
 
 template<class T>
@@ -182,9 +182,9 @@ template<class T>
 class List_DLS: public List_DL<T> {
 public:
     List_DLS(): List_DL<T>()
-	{ };
+	{ }
     List_DLS(const List_DLS& other): List_DL<T>(other)
-	{ };
+	{ }
 
     bool contains(const T& item) const
 	{ return search(item) != 0 ? TRUE: FALSE; }
@@ -206,9 +206,9 @@ template<class T>
 class List_DLSp: public List_DL<T> {
 public:
     List_DLSp(): List_DL<T>()
-	{ };
+	{ }
     List_DLSp(const List_DLSp& other): List_DL<T>(other)
-	{ };
+	{ }
 
     bool contains(const T& item) const
 #ifndef INTERNAL_ERROR
@@ -335,9 +335,9 @@ struct vertex {
     List_DL<vertex<T> *> fanout;
 
     vertex(): item(), fanout()	// { dg-bogus "" } 
-      { };
+      { }
     vertex(const T& i): item(), fanout() // { dg-bogus "" } 
-      { };
+      { }
 };
 
 template<class T>

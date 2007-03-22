@@ -2,7 +2,7 @@
 class A {
 char str[10];
 public:
-    char* m1 () { return str;};
+    char* m1 () { return str;}
 };
 
 class C : public A {

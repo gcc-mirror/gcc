@@ -14,5 +14,5 @@ template <typename P> class Y {
 };
 
 template <typename T> struct X<1,T> {
-    X () { Y<T>::i; };     // access private field
+    X () { Y<T>::i; }     // access private field
 };

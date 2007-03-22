@@ -19,7 +19,7 @@ public:
 class l
 {
 public:
-  void s() {};
+  void s() {}
 };
 
 extern t<l> g;
@@ -28,5 +28,5 @@ class p
 {
 public:
   void *h;
-  s *a() {return (s *) h;};
+  s *a() {return (s *) h;}
 };

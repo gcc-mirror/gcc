@@ -8,7 +8,7 @@ class Char
 protected:
   char          rep;
 public:
-  Char (const char ) {};
+  Char (const char ) {}
   operator char() const;
   void  operator -= (const Char   );
 };

@@ -16,7 +16,7 @@ struct S {
 
 struct T {
   void g (S) {
-  };
+  }
 };
 
 struct U {

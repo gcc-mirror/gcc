@@ -16,7 +16,7 @@ class VObject {
     boolean perform(method );
     boolean perform(method , long);
     void    affectMethod(method );
-    void    dummy(){};
+    void    dummy(){}
 };
 
 

@@ -9,7 +9,7 @@ void f()
     void g() {
       C e;
       e.c = 3;
-    };
+    }
   };
 
   S s;

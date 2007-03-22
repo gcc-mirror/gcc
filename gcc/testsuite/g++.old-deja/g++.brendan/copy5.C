@@ -35,10 +35,10 @@ class BaseClass {
 
 public:
 
-  BaseClass( const BaseClass& ir ) : i(ir.i) {};
-  BaseClass() : i(5) {};
+  BaseClass( const BaseClass& ir ) : i(ir.i) {}
+  BaseClass() : i(5) {}
 
-  virtual int virtMember() { return( 999 ); };
+  virtual int virtMember() { return( 999 ); }
 
   void Increm( int r );
 };
@@ -54,7 +54,7 @@ void BaseClass::Increm( int r )
 
 class DerivedClass : public BaseClass {
 public:
-  int virtMember() { return( 30 ); };
+  int virtMember() { return( 30 ); }
 };
 
 int operator != (const BaseClass irv, int x) { return irv.i != x; }

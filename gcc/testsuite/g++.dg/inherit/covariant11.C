@@ -7,19 +7,19 @@
 struct c2 { int i; };
 
 struct c1 {
-  virtual c2& f8() {};
+  virtual c2& f8() {}
 };
 
 struct c3 : c1, c2 {
-  virtual c2& f8() {};
+  virtual c2& f8() {}
 };
 
 struct c11 : public c1 {
-  virtual c3& f8() {};
+  virtual c3& f8() {}
 };
 
 struct c15 : virtual c3 {
-  virtual c2& f8() {};
+  virtual c2& f8() {}
 };
 
 struct c18 : virtual c11 {

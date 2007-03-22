@@ -13,5 +13,5 @@ struct foo {
 };
 struct bar {
   int z;
-  bar () { foo::x[z]; };
+  bar () { foo::x[z]; }
 };

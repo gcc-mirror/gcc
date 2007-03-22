@@ -4,17 +4,17 @@
 extern "C" int printf(const char *, ...);
 
 struct A {
-   void print() {printf("A");};
+   void print() {printf("A");}
 };
 
 struct B :  A {
    typedef A superB;
-   void print() {superB::print(); printf("B");};
+   void print() {superB::print(); printf("B");}
 };
 
 struct C :  B {
    typedef B superC;
-   void print() {superC::print(); printf("C");};
+   void print() {superC::print(); printf("C");}
 };
 
 int main ()

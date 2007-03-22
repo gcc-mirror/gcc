@@ -20,6 +20,6 @@ class Camera2
 {
 public:
   Camera2(const Hvec &basepos);
-  inline Camera2() { Camera2(Hvec(0.0,0.0,0.0)); };
+  inline Camera2() { Camera2(Hvec(0.0,0.0,0.0)); }
   ~Camera2();
 };

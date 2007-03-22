@@ -4,7 +4,7 @@
 
 struct A {};
 struct B {
-  virtual void foo () {};
+  virtual void foo () {}
 };
 struct C : public B, public A {};
 
