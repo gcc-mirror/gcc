@@ -4341,12 +4341,16 @@ loop:
     return m;
 
   /* Make sure the name isn't the name of an intrinsic type.  The
-     'double precision' type doesn't get past the name matcher.  */
+     'double {precision,complex}' types don't get past the name
+     matcher, unless they're written as a single word or in fixed
+     form.  */
   if (strcmp (name, "integer") == 0
       || strcmp (name, "real") == 0
       || strcmp (name, "character") == 0
       || strcmp (name, "logical") == 0
-      || strcmp (name, "complex") == 0)
+      || strcmp (name, "complex") == 0
+      || strcmp (name, "doubleprecision") == 0
+      || strcmp (name, "doublecomplex") == 0)
     {
       gfc_error ("Type name '%s' at %C cannot be the same as an intrinsic "
 		 "type", name);

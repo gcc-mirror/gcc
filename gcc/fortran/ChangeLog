@@ -1,3 +1,9 @@
+2007-03-22  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/20897
+	* decl.c (gfc_match_derived_decl): Reliably reject
+	'doubleprecision' and 'doublecomplex' as type names.
+
 2007-03-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/31203
