@@ -2054,26 +2054,26 @@ cp_parser_name_lookup_error (cp_parser* parser,
   if (decl == error_mark_node)
     {
       if (parser->scope && parser->scope != global_namespace)
-	error ("%<%D::%D%> has not been declared",
+	error ("%<%E::%E%> has not been declared",
 	       parser->scope, name);
       else if (parser->scope == global_namespace)
-	error ("%<::%D%> has not been declared", name);
+	error ("%<::%E%> has not been declared", name);
       else if (parser->object_scope
 	       && !CLASS_TYPE_P (parser->object_scope))
-	error ("request for member %qD in non-class type %qT",
+	error ("request for member %qE in non-class type %qT",
 	       name, parser->object_scope);
       else if (parser->object_scope)
-	error ("%<%T::%D%> has not been declared",
+	error ("%<%T::%E%> has not been declared",
 	       parser->object_scope, name);
       else
-	error ("%qD has not been declared", name);
+	error ("%qE has not been declared", name);
     }
   else if (parser->scope && parser->scope != global_namespace)
-    error ("%<%D::%D%> %s", parser->scope, name, desired);
+    error ("%<%E::%E%> %s", parser->scope, name, desired);
   else if (parser->scope == global_namespace)
-    error ("%<::%D%> %s", name, desired);
+    error ("%<::%E%> %s", name, desired);
   else
-    error ("%qD %s", name, desired);
+    error ("%qE %s", name, desired);
 }
 
 /* If we are parsing tentatively, remember that an error has occurred
@@ -12176,7 +12176,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 					    /*only_current_p=*/false);
 	      /* If that failed, the declarator is invalid.  */
 	      if (type == error_mark_node)
-		error ("%<%T::%D%> is not a type",
+		error ("%<%T::%E%> is not a type",
 		       TYPE_CONTEXT (qualifying_scope),
 		       TYPE_IDENTIFIER (qualifying_scope));
 	      qualifying_scope = type;

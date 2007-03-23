@@ -129,7 +129,9 @@ pp_cxx_template_id (cxx_pretty_printer *pp, tree t)
   pp_cxx_end_template_argument_list (pp);
 }
 
-/* unqualified-id:
+/* Prints the unqualified part of the id-expression T.
+
+   unqualified-id:
      identifier
      operator-function-id
      conversion-function-id
@@ -202,6 +204,10 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
 
     case TEMPLATE_PARM_INDEX:
       pp_cxx_unqualified_id (pp, TEMPLATE_PARM_DECL (t));
+      break;
+
+    case TYPENAME_TYPE:
+      pp_cxx_unqualified_id (pp, TYPE_NAME (t));
       break;
 
     default:
