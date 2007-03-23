@@ -2281,12 +2281,13 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
      the scope is dependent, we cannot do much.  */
   if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME)
       || (parser->scope && TYPE_P (parser->scope)
-	  && dependent_type_p (parser->scope)))
+	  && dependent_type_p (parser->scope))
+      || TREE_CODE (id) == TYPE_DECL)
     {
       cp_parser_abort_tentative_parse (parser);
       return false;
     }
-  if (!cp_parser_parse_definitely (parser) || TREE_CODE (id) == TYPE_DECL)
+  if (!cp_parser_parse_definitely (parser))
     return false;
 
   /* Emit a diagnostic for the invalid type.  */
