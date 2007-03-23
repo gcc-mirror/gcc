@@ -1,5 +1,8 @@
 2007-03-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (current_tempalte_parms): Improve documentation.
+	* pt.c (current_template_args): Likewise.
+
 	PR c++/30863
 	* parser.c (cp_parser_parse_and_diagnose_invalid_type_name): Do
 	not consume tokens when failing.

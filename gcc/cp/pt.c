@@ -2991,8 +2991,10 @@ end_template_decl (void)
   current_template_parms = TREE_CHAIN (current_template_parms);
 }
 
-/* Given a template argument vector containing the template PARMS.
-   The innermost PARMS are given first.  */
+/* Within the declaration of a template, return all levels of template
+   parameters that apply.  The template parameters are represented as
+   a TREE_VEC, in the form documented in cp-tree.h for template
+   arguments.  */
 
 static tree
 current_template_args (void)
