@@ -1,5 +1,9 @@
 2007-03-23  Ian Lance Taylor  <iant@google.com>
 
+	* tree-dump.c (dump_files): Correct comment.
+
+2007-03-23  Ian Lance Taylor  <iant@google.com>
+
 	* tree-vrp.c (operand_less_p): Ignore fold overflow warnings.
 
 2007-03-23  Steven Bosscher  <steven@gcc.gnu.org>

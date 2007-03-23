@@ -756,7 +756,7 @@ dump_node (tree t, int flags, FILE *stream)
 
 
 /* Table of tree dump switches. This must be consistent with the
-   TREE_DUMP_INDEX enumeration in tree.h.  */
+   tree_dump_index enumeration in tree-pass.h.  */
 static struct dump_file_info dump_files[TDI_end] =
 {
   {NULL, NULL, NULL, 0, 0, 0, 0},
