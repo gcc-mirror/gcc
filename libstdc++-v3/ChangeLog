@@ -1,3 +1,10 @@
+2007-03-23  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/4402.cc:
+	Likewise use std::numeric_limits<>::max().
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/4402.cc:
+	Minor tweaks.
+
 2007-03-23  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/4402.cc
