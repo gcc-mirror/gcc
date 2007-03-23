@@ -585,7 +585,7 @@ AC_DEFUN([ACX_BUGURL],[
 	   ;;
      esac],
      REPORT_BUGS_TO="<$1>"
-     REPORT_BUGS_TEXI="@uref{$1}"
+     REPORT_BUGS_TEXI="@uref{`echo $1 | sed 's/@/@@/g'`}"
   )
   AC_SUBST(REPORT_BUGS_TO)
   AC_SUBST(REPORT_BUGS_TEXI)
