@@ -1562,7 +1562,6 @@ static int ix86_function_regparm (tree, tree);
 const struct attribute_spec ix86_attribute_table[];
 static bool ix86_function_ok_for_sibcall (tree, tree);
 static tree ix86_handle_cconv_attribute (tree *, tree, tree, int, bool *);
-static int ix86_value_regno (enum machine_mode, tree, tree);
 static bool contains_128bit_aligned_vector_p (tree);
 static rtx ix86_struct_value_rtx (tree, int);
 static bool ix86_ms_bitfield_layout_p (tree);
@@ -1584,6 +1583,7 @@ static rtx ix86_internal_arg_pointer (void);
 static void ix86_dwarf_handle_frame_unspec (const char *, rtx, int);
 static bool ix86_expand_vector_init_one_nonzero (bool, enum machine_mode,
 						 rtx, rtx, int);
+static rtx ix86_function_value (tree, tree, bool);
 
 /* This function is only used on Solaris.  */
 static void i386_solaris_elf_named_section (const char *, unsigned int, tree)
@@ -2997,69 +2997,64 @@ ix86_function_regparm (tree type, tree decl)
 {
   tree attr;
   int regparm = ix86_regparm;
-  bool user_convention = false;
 
-  if (!TARGET_64BIT)
+  if (TARGET_64BIT)
+    return regparm;
+
+  attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type));
+  if (attr)
+    return TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
+
+  if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type)))
+    return 2;
+
+  /* Use register calling convention for local functions when possible.  */
+  if (decl && flag_unit_at_a_time && !profile_flag)
     {
-      attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type));
-      if (attr)
+      struct cgraph_local_info *i = cgraph_local_info (decl);
+      if (i && i->local)
 	{
-	  regparm = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
-	  user_convention = true;
-	}
+	  int local_regparm, globals = 0, regno;
+	  struct function *f;
 
-      if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type)))
-	{
-	  regparm = 2;
-	  user_convention = true;
-	}
+	  /* Make sure no regparm register is taken by a
+	     global register variable.  */
+	  for (local_regparm = 0; local_regparm < 3; local_regparm++)
+	    if (global_regs[local_regparm])
+	      break;
 
-      /* Use register calling convention for local functions when possible.  */
-      if (!TARGET_64BIT && !user_convention && decl
-	  && flag_unit_at_a_time && !profile_flag)
-	{
-	  struct cgraph_local_info *i = cgraph_local_info (decl);
-	  if (i && i->local)
-	    {
-	      int local_regparm, globals = 0, regno;
+	  /* We can't use regparm(3) for nested functions as these use
+	     static chain pointer in third argument.  */
+	  if (local_regparm == 3
+	      && decl_function_context (decl)
+	      && !DECL_NO_STATIC_CHAIN (decl))
+	    local_regparm = 2;
 
-	      /* Make sure no regparm register is taken by a global register
-		 variable.  */
-	      for (local_regparm = 0; local_regparm < 3; local_regparm++)
-		if (global_regs[local_regparm])
-		  break;
-	      /* We can't use regparm(3) for nested functions as these use
-		 static chain pointer in third argument.  */
-	      if (local_regparm == 3
-		  && decl_function_context (decl)
-		  && !DECL_NO_STATIC_CHAIN (decl))
-		local_regparm = 2;
-	      /* If the function realigns its stackpointer, the
-		 prologue will clobber %ecx.  If we've already
-		 generated code for the callee, the callee
-		 DECL_STRUCT_FUNCTION is gone, so we fall back to
-		 scanning the attributes for the self-realigning
-		 property.  */
-	      if ((DECL_STRUCT_FUNCTION (decl)
-		   && DECL_STRUCT_FUNCTION (decl)->machine->force_align_arg_pointer)
-		  || (!DECL_STRUCT_FUNCTION (decl)
-		      && lookup_attribute (ix86_force_align_arg_pointer_string,
-					   TYPE_ATTRIBUTES (TREE_TYPE (decl)))))
-		local_regparm = 2;
-	      /* Each global register variable increases register preassure,
-		 so the more global reg vars there are, the smaller regparm
-		 optimization use, unless requested by the user explicitly.  */
-	      for (regno = 0; regno < 6; regno++)
-		if (global_regs[regno])
-		  globals++;
-	      local_regparm
-		= globals < local_regparm ? local_regparm - globals : 0;
+	  /* If the function realigns its stackpointer, the prologue will
+	     clobber %ecx.  If we've already generated code for the callee,
+	     the callee DECL_STRUCT_FUNCTION is gone, so we fall back to
+	     scanning the attributes for the self-realigning property.  */
+	  f = DECL_STRUCT_FUNCTION (decl);
+	  if (local_regparm == 3
+	      && (f ? !!f->machine->force_align_arg_pointer
+		  : !!lookup_attribute (ix86_force_align_arg_pointer_string,
+					TYPE_ATTRIBUTES (TREE_TYPE (decl)))))
+	    local_regparm = 2;
 
-	      if (local_regparm > regparm)
-		regparm = local_regparm;
-	    }
+	  /* Each global register variable increases register preassure,
+	     so the more global reg vars there are, the smaller regparm
+	     optimization use, unless requested by the user explicitly.  */
+	  for (regno = 0; regno < 6; regno++)
+	    if (global_regs[regno])
+	      globals++;
+	  local_regparm
+	    = globals < local_regparm ? local_regparm - globals : 0;
+
+	  if (local_regparm > regparm)
+	    regparm = local_regparm;
 	}
     }
+
   return regparm;
 }
 
@@ -3071,11 +3066,12 @@ ix86_function_regparm (tree type, tree decl)
 static int
 ix86_function_sseregparm (tree type, tree decl)
 {
+  gcc_assert (!TARGET_64BIT);
+
   /* Use SSE registers to pass SFmode and DFmode arguments if requested
      by the sseregparm attribute.  */
   if (TARGET_SSEREGPARM
-      || (type
-	  && lookup_attribute ("sseregparm", TYPE_ATTRIBUTES (type))))
+      || (type && lookup_attribute ("sseregparm", TYPE_ATTRIBUTES (type))))
     {
       if (!TARGET_SSE)
 	{
@@ -3092,10 +3088,8 @@ ix86_function_sseregparm (tree type, tree decl)
     }
 
   /* For local functions, pass up to SSE_REGPARM_MAX SFmode
-     (and DFmode for SSE2) arguments in SSE registers,
-     even for 32-bit targets.  */
-  if (!TARGET_64BIT && decl
-      && TARGET_SSE_MATH && flag_unit_at_a_time && !profile_flag)
+     (and DFmode for SSE2) arguments in SSE registers.  */
+  if (decl && TARGET_SSE_MATH && flag_unit_at_a_time && !profile_flag)
     {
       struct cgraph_local_info *i = cgraph_local_info (decl);
       if (i && i->local)
@@ -3121,6 +3115,19 @@ ix86_eax_live_at_start_p (void)
   return REGNO_REG_SET_P (ENTRY_BLOCK_PTR->il.rtl->global_live_at_end, 0);
 }
 
+/* Return true if TYPE has a variable argument list.  */
+
+static bool
+type_has_variadic_args_p (tree type)
+{
+  tree t;
+
+  for (t = TYPE_ARG_TYPES (type); t; t = TREE_CHAIN (t))
+    if (t == void_list_node)
+      return false;
+  return true;
+}
+
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.
    FUNDECL is the declaration node of the function (as a tree),
@@ -3141,32 +3148,33 @@ ix86_eax_live_at_start_p (void)
 int
 ix86_return_pops_args (tree fundecl, tree funtype, int size)
 {
-  int rtd = TARGET_RTD && (!fundecl || TREE_CODE (fundecl) != IDENTIFIER_NODE);
+  int rtd;
+
+  /* None of the 64-bit ABIs pop arguments.  */
+  if (TARGET_64BIT)
+    return 0;
+
+  rtd = TARGET_RTD && (!fundecl || TREE_CODE (fundecl) != IDENTIFIER_NODE);
 
   /* Cdecl functions override -mrtd, and never pop the stack.  */
-  if (! lookup_attribute ("cdecl", TYPE_ATTRIBUTES (funtype))) {
+  if (! lookup_attribute ("cdecl", TYPE_ATTRIBUTES (funtype)))
+    {
+      /* Stdcall and fastcall functions will pop the stack if not
+         variable args.  */
+      if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (funtype))
+          || lookup_attribute ("fastcall", TYPE_ATTRIBUTES (funtype)))
+	rtd = 1;
 
-    /* Stdcall and fastcall functions will pop the stack if not
-       variable args.  */
-    if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (funtype))
-        || lookup_attribute ("fastcall", TYPE_ATTRIBUTES (funtype)))
-      rtd = 1;
-
-    if (rtd
-        && (TYPE_ARG_TYPES (funtype) == NULL_TREE
-	    || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (funtype)))
-		== void_type_node)))
-      return size;
-  }
+      if (rtd && ! type_has_variadic_args_p (funtype))
+	return size;
+    }
 
   /* Lose any fake structure return argument if it is passed on the stack.  */
   if (aggregate_value_p (TREE_TYPE (funtype), fundecl)
-      && !TARGET_64BIT
       && !KEEP_AGGREGATE_RETURN_POINTER)
     {
       int nregs = ix86_function_regparm (funtype, fundecl);
-
-      if (!nregs)
+      if (nregs == 0)
 	return GET_MODE_SIZE (Pmode);
     }
 
@@ -3180,6 +3188,7 @@ bool
 ix86_function_arg_regno_p (int regno)
 {
   int i;
+
   if (!TARGET_64BIT)
     {
       if (TARGET_MACHO)
@@ -3204,9 +3213,11 @@ ix86_function_arg_regno_p (int regno)
           && (regno < FIRST_SSE_REG + SSE_REGPARM_MAX))
         return true;
     }
+
   /* RAX is used as hidden argument to va_arg functions.  */
-  if (!regno)
+  if (regno == 0)
     return true;
+
   for (i = 0; i < REGPARM_MAX; i++)
     if (regno == x86_64_int_parameter_registers[i])
       return true;
@@ -3238,24 +3249,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 		      rtx libname,	/* SYMBOL_REF of library name or 0 */
 		      tree fndecl)
 {
-  static CUMULATIVE_ARGS zero_cum;
-  tree param, next_param;
-
-  if (TARGET_DEBUG_ARG)
-    {
-      fprintf (stderr, "\ninit_cumulative_args (");
-      if (fntype)
-	fprintf (stderr, "fntype code = %s, ret code = %s",
-		 tree_code_name[(int) TREE_CODE (fntype)],
-		 tree_code_name[(int) TREE_CODE (TREE_TYPE (fntype))]);
-      else
-	fprintf (stderr, "no fntype");
-
-      if (libname)
-	fprintf (stderr, ", libname = %s", XSTR (libname, 0));
-    }
-
-  *cum = zero_cum;
+  memset (cum, 0, sizeof (*cum));
 
   /* Set up the number of registers to use for passing arguments.  */
   cum->nregs = ix86_regparm;
@@ -3265,60 +3259,39 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
     cum->mmx_nregs = MMX_REGPARM_MAX;
   cum->warn_sse = true;
   cum->warn_mmx = true;
-  cum->maybe_vaarg = false;
+  cum->maybe_vaarg = (fntype ? type_has_variadic_args_p (fntype) : !libname);
 
-  /* Use ecx and edx registers if function has fastcall attribute,
-     else look for regparm information.  */
-  if (fntype && !TARGET_64BIT)
+  if (!TARGET_64BIT)
     {
-      if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (fntype)))
+      /* If there are variable arguments, then we won't pass anything
+         in registers in 32-bit mode. */
+      if (cum->maybe_vaarg)
 	{
-	  cum->nregs = 2;
-	  cum->fastcall = 1;
+	  cum->nregs = 0;
+	  cum->sse_nregs = 0;
+	  cum->mmx_nregs = 0;
+	  cum->warn_sse = 0;
+	  cum->warn_mmx = 0;
+	  return;
 	}
-      else
-	cum->nregs = ix86_function_regparm (fntype, fndecl);
-    }
 
-  /* Set up the number of SSE registers used for passing SFmode
-     and DFmode arguments.  Warn for mismatching ABI.  */
-  cum->float_in_sse = ix86_function_sseregparm (fntype, fndecl);
-
-  /* Determine if this function has variable arguments.  This is
-     indicated by the last argument being 'void_type_mode' if there
-     are no variable arguments.  If there are variable arguments, then
-     we won't pass anything in registers in 32-bit mode. */
-
-  if (cum->nregs || cum->mmx_nregs || cum->sse_nregs)
-    {
-      for (param = (fntype) ? TYPE_ARG_TYPES (fntype) : 0;
-	   param != 0; param = next_param)
+      /* Use ecx and edx registers if function has fastcall attribute,
+	 else look for regparm information.  */
+      if (fntype)
 	{
-	  next_param = TREE_CHAIN (param);
-	  if (next_param == 0 && TREE_VALUE (param) != void_type_node)
+	  if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (fntype)))
 	    {
-	      if (!TARGET_64BIT)
-		{
-		  cum->nregs = 0;
-		  cum->sse_nregs = 0;
-		  cum->mmx_nregs = 0;
-		  cum->warn_sse = 0;
-		  cum->warn_mmx = 0;
-		  cum->fastcall = 0;
-		  cum->float_in_sse = 0;
-		}
-	      cum->maybe_vaarg = true;
+	      cum->nregs = 2;
+	      cum->fastcall = 1;
 	    }
+	  else
+	    cum->nregs = ix86_function_regparm (fntype, fndecl);
 	}
+
+      /* Set up the number of SSE registers used for passing SFmode
+	 and DFmode arguments.  Warn for mismatching ABI.  */
+      cum->float_in_sse = ix86_function_sseregparm (fntype, fndecl);
     }
-  if ((!fntype && !libname)
-      || (fntype && !TYPE_ARG_TYPES (fntype)))
-    cum->maybe_vaarg = true;
-
-  if (TARGET_DEBUG_ARG)
-    fprintf (stderr, ", nregs=%d )\n", cum->nregs);
-
-  return;
 }
 
 /* Return the "natural" mode for TYPE.  In most cases, this is just TYPE_MODE.
@@ -3781,20 +3754,6 @@ construct_container (enum machine_mode mode, enum machine_mode orig_mode,
   rtx ret;
 
   n = classify_argument (mode, type, class, 0);
-  if (TARGET_DEBUG_ARG)
-    {
-      if (!n)
-	fprintf (stderr, "Memory class\n");
-      else
-	{
-	  fprintf (stderr, "Classes:");
-	  for (i = 0; i < n; i++)
-	    {
-	      fprintf (stderr, " %s", x86_64_reg_class_name[class[i]]);
-	    }
-	   fprintf (stderr, "\n");
-	}
-    }
   if (!n)
     return NULL;
   if (!examine_argument (mode, type, in_return, &needed_intregs,
@@ -3863,6 +3822,7 @@ construct_container (enum machine_mode mode, enum machine_mode orig_mode,
   if (n == 2 && class[0] == X86_64_SSE_CLASS && class[1] == X86_64_SSEUP_CLASS
       && mode != BLKmode)
     return gen_rtx_REG (mode, SSE_REGNO (sse_regno));
+
   if (n == 2
       && class[0] == X86_64_X87_CLASS && class[1] == X86_64_X87UP_CLASS)
     return gen_rtx_REG (XFmode, FIRST_STACK_REG);
@@ -3938,115 +3898,124 @@ construct_container (enum machine_mode mode, enum machine_mode orig_mode,
   return ret;
 }
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
+/* Update the data in CUM to advance over an argument of mode MODE
+   and data type TYPE.  (TYPE is null for libcalls where that information
+   may not be available.)  */
+
+static void
+function_arg_advance_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			 tree type, HOST_WIDE_INT bytes, HOST_WIDE_INT words)
+{
+  switch (mode)
+    {
+    default:
+      break;
+
+    case BLKmode:
+      if (bytes < 0)
+	break;
+      /* FALLTHRU */
+
+    case DImode:
+    case SImode:
+    case HImode:
+    case QImode:
+      cum->words += words;
+      cum->nregs -= words;
+      cum->regno += words;
+
+      if (cum->nregs <= 0)
+	{
+	  cum->nregs = 0;
+	  cum->regno = 0;
+	}
+      break;
+
+    case DFmode:
+      if (cum->float_in_sse < 2)
+	break;
+    case SFmode:
+      if (cum->float_in_sse < 1)
+	break;
+      /* FALLTHRU */
+
+    case TImode:
+    case V16QImode:
+    case V8HImode:
+    case V4SImode:
+    case V2DImode:
+    case V4SFmode:
+    case V2DFmode:
+      if (!type || !AGGREGATE_TYPE_P (type))
+	{
+	  cum->sse_words += words;
+	  cum->sse_nregs -= 1;
+	  cum->sse_regno += 1;
+	  if (cum->sse_nregs <= 0)
+	    {
+	      cum->sse_nregs = 0;
+	      cum->sse_regno = 0;
+	    }
+	}
+      break;
+
+    case V8QImode:
+    case V4HImode:
+    case V2SImode:
+    case V2SFmode:
+      if (!type || !AGGREGATE_TYPE_P (type))
+	{
+	  cum->mmx_words += words;
+	  cum->mmx_nregs -= 1;
+	  cum->mmx_regno += 1;
+	  if (cum->mmx_nregs <= 0)
+	    {
+	      cum->mmx_nregs = 0;
+	      cum->mmx_regno = 0;
+	    }
+	}
+      break;
+    }
+}
+
+static void
+function_arg_advance_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			 tree type, HOST_WIDE_INT words)
+{
+  int int_nregs, sse_nregs;
+
+  if (!examine_argument (mode, type, 0, &int_nregs, &sse_nregs))
+    cum->words += words;
+  else if (sse_nregs <= cum->sse_nregs && int_nregs <= cum->nregs)
+    {
+      cum->nregs -= int_nregs;
+      cum->sse_nregs -= sse_nregs;
+      cum->regno += int_nregs;
+      cum->sse_regno += sse_nregs;
+    }
+  else
+    cum->words += words;
+}
 
 void
 function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-		      tree type, int named)
+		      tree type, int named ATTRIBUTE_UNUSED)
 {
-  int bytes =
-    (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
-  int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  HOST_WIDE_INT bytes, words;
+
+  if (mode == BLKmode)
+    bytes = int_size_in_bytes (type);
+  else
+    bytes = GET_MODE_SIZE (mode);
+  words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   if (type)
     mode = type_natural_mode (type);
 
-  if (TARGET_DEBUG_ARG)
-    fprintf (stderr, "function_adv (sz=%d, wds=%2d, nregs=%d, ssenregs=%d, "
-	     "mode=%s, named=%d)\n\n",
-	     words, cum->words, cum->nregs, cum->sse_nregs,
-	     GET_MODE_NAME (mode), named);
-
   if (TARGET_64BIT)
-    {
-      int int_nregs, sse_nregs;
-      if (!examine_argument (mode, type, 0, &int_nregs, &sse_nregs))
-	cum->words += words;
-      else if (sse_nregs <= cum->sse_nregs && int_nregs <= cum->nregs)
-	{
-	  cum->nregs -= int_nregs;
-	  cum->sse_nregs -= sse_nregs;
-	  cum->regno += int_nregs;
-	  cum->sse_regno += sse_nregs;
-	}
-      else
-	cum->words += words;
-    }
+    function_arg_advance_64 (cum, mode, type, words);
   else
-    {
-      switch (mode)
-	{
-	default:
-	  break;
-
-	case BLKmode:
-	  if (bytes < 0)
-	    break;
-	  /* FALLTHRU */
-
-	case DImode:
-	case SImode:
-	case HImode:
-	case QImode:
-	  cum->words += words;
-	  cum->nregs -= words;
-	  cum->regno += words;
-
-	  if (cum->nregs <= 0)
-	    {
-	      cum->nregs = 0;
-	      cum->regno = 0;
-	    }
-	  break;
-
-	case DFmode:
-	  if (cum->float_in_sse < 2)
-	    break;
-	case SFmode:
-	  if (cum->float_in_sse < 1)
-	    break;
-	  /* FALLTHRU */
-
-	case TImode:
-	case V16QImode:
-	case V8HImode:
-	case V4SImode:
-	case V2DImode:
-	case V4SFmode:
-	case V2DFmode:
-	  if (!type || !AGGREGATE_TYPE_P (type))
-	    {
-	      cum->sse_words += words;
-	      cum->sse_nregs -= 1;
-	      cum->sse_regno += 1;
-	      if (cum->sse_nregs <= 0)
-		{
-		  cum->sse_nregs = 0;
-		  cum->sse_regno = 0;
-		}
-	    }
-	  break;
-
-	case V8QImode:
-	case V4HImode:
-	case V2SImode:
-	case V2SFmode:
-	  if (!type || !AGGREGATE_TYPE_P (type))
-	    {
-	      cum->mmx_words += words;
-	      cum->mmx_nregs -= 1;
-	      cum->mmx_regno += 1;
-	      if (cum->mmx_nregs <= 0)
-		{
-		  cum->mmx_nregs = 0;
-		  cum->mmx_regno = 0;
-		}
-	    }
-	  break;
-	}
-    }
+    function_arg_advance_32 (cum, mode, type, bytes, words);
 }
 
 /* Define where to put the arguments to a function.
@@ -4062,135 +4031,140 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    NAMED is nonzero if this argument is a named parameter
     (otherwise it is an extra parameter matching an ellipsis).  */
 
-rtx
-function_arg (CUMULATIVE_ARGS *cum, enum machine_mode orig_mode,
-	      tree type, int named)
+static rtx
+function_arg_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		 enum machine_mode orig_mode, tree type,
+		 HOST_WIDE_INT bytes, HOST_WIDE_INT words)
 {
-  enum machine_mode mode = orig_mode;
-  rtx ret = NULL_RTX;
-  int bytes =
-    (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
-  int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   static bool warnedsse, warnedmmx;
+
+  /* Avoid the AL settings for the Unix64 ABI.  */
+  if (mode == VOIDmode)
+    return constm1_rtx;
+
+  switch (mode)
+    {
+    default:
+      break;
+
+    case BLKmode:
+      if (bytes < 0)
+	break;
+      /* FALLTHRU */
+    case DImode:
+    case SImode:
+    case HImode:
+    case QImode:
+      if (words <= cum->nregs)
+	{
+	  int regno = cum->regno;
+
+	  /* Fastcall allocates the first two DWORD (SImode) or
+	     smaller arguments to ECX and EDX.  */
+	  if (cum->fastcall)
+	    {
+	      if (mode == BLKmode || mode == DImode)
+	        break;
+
+	      /* ECX not EAX is the first allocated register.  */
+	      if (regno == 0)
+		regno = 2;
+	    }
+	  return gen_rtx_REG (mode, regno);
+	}
+      break;
+
+    case DFmode:
+      if (cum->float_in_sse < 2)
+	break;
+    case SFmode:
+      if (cum->float_in_sse < 1)
+	break;
+      /* FALLTHRU */
+    case TImode:
+    case V16QImode:
+    case V8HImode:
+    case V4SImode:
+    case V2DImode:
+    case V4SFmode:
+    case V2DFmode:
+      if (!type || !AGGREGATE_TYPE_P (type))
+	{
+	  if (!TARGET_SSE && !warnedsse && cum->warn_sse)
+	    {
+	      warnedsse = true;
+	      warning (0, "SSE vector argument without SSE enabled "
+		       "changes the ABI");
+	    }
+	  if (cum->sse_nregs)
+	    return gen_reg_or_parallel (mode, orig_mode,
+				        cum->sse_regno + FIRST_SSE_REG);
+	}
+      break;
+
+    case V8QImode:
+    case V4HImode:
+    case V2SImode:
+    case V2SFmode:
+      if (!type || !AGGREGATE_TYPE_P (type))
+	{
+	  if (!TARGET_MMX && !warnedmmx && cum->warn_mmx)
+	    {
+	      warnedmmx = true;
+	      warning (0, "MMX vector argument without MMX enabled "
+		       "changes the ABI");
+	    }
+	  if (cum->mmx_nregs)
+	    return gen_reg_or_parallel (mode, orig_mode,
+				        cum->mmx_regno + FIRST_MMX_REG);
+	}
+      break;
+    }
+
+  return NULL_RTX;
+}
+
+static rtx
+function_arg_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		 enum machine_mode orig_mode, tree type)
+{
+  /* Handle a hidden AL argument containing number of registers
+     for varargs x86-64 functions.  */
+  if (mode == VOIDmode)
+    return GEN_INT (cum->maybe_vaarg
+		    ? (cum->sse_nregs < 0
+		       ? SSE_REGPARM_MAX
+		       : cum->sse_regno)
+		    : -1);
+
+  return construct_container (mode, orig_mode, type, 0, cum->nregs,
+			      cum->sse_nregs,
+			      &x86_64_int_parameter_registers [cum->regno],
+			      cum->sse_regno);
+}
+
+rtx
+function_arg (CUMULATIVE_ARGS *cum, enum machine_mode omode,
+	      tree type, int named ATTRIBUTE_UNUSED)
+{
+  enum machine_mode mode = omode;
+  HOST_WIDE_INT bytes, words;
+
+  if (mode == BLKmode)
+    bytes = int_size_in_bytes (type);
+  else
+    bytes = GET_MODE_SIZE (mode);
+  words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   /* To simplify the code below, represent vector types with a vector mode
      even if MMX/SSE are not active.  */
   if (type && TREE_CODE (type) == VECTOR_TYPE)
     mode = type_natural_mode (type);
 
-  /* Handle a hidden AL argument containing number of registers for varargs
-     x86-64 functions.  For i386 ABI just return constm1_rtx to avoid
-     any AL settings.  */
-  if (mode == VOIDmode)
-    {
-      if (TARGET_64BIT)
-	return GEN_INT (cum->maybe_vaarg
-			? (cum->sse_nregs < 0
-			   ? SSE_REGPARM_MAX
-			   : cum->sse_regno)
-			: -1);
-      else
-	return constm1_rtx;
-    }
   if (TARGET_64BIT)
-    ret = construct_container (mode, orig_mode, type, 0, cum->nregs,
-			       cum->sse_nregs,
-			       &x86_64_int_parameter_registers [cum->regno],
-			       cum->sse_regno);
+    return function_arg_64 (cum, mode, omode, type);
   else
-    switch (mode)
-      {
-	/* For now, pass fp/complex values on the stack.  */
-      default:
-	break;
-
-      case BLKmode:
-	if (bytes < 0)
-	  break;
-	/* FALLTHRU */
-      case DImode:
-      case SImode:
-      case HImode:
-      case QImode:
-	if (words <= cum->nregs)
-	  {
-	    int regno = cum->regno;
-
-	    /* Fastcall allocates the first two DWORD (SImode) or
-	       smaller arguments to ECX and EDX.  */
-	    if (cum->fastcall)
-	      {
-	        if (mode == BLKmode || mode == DImode)
-	          break;
-
-	        /* ECX not EAX is the first allocated register.  */
-	        if (regno == 0)
-		  regno = 2;
-	      }
-	    ret = gen_rtx_REG (mode, regno);
-	  }
-	break;
-      case DFmode:
-	if (cum->float_in_sse < 2)
-	  break;
-      case SFmode:
-	if (cum->float_in_sse < 1)
-	  break;
-	/* FALLTHRU */
-      case TImode:
-      case V16QImode:
-      case V8HImode:
-      case V4SImode:
-      case V2DImode:
-      case V4SFmode:
-      case V2DFmode:
-	if (!type || !AGGREGATE_TYPE_P (type))
-	  {
-	    if (!TARGET_SSE && !warnedsse && cum->warn_sse)
-	      {
-		warnedsse = true;
-		warning (0, "SSE vector argument without SSE enabled "
-			 "changes the ABI");
-	      }
-	    if (cum->sse_nregs)
-	      ret = gen_reg_or_parallel (mode, orig_mode,
-					 cum->sse_regno + FIRST_SSE_REG);
-	  }
-	break;
-      case V8QImode:
-      case V4HImode:
-      case V2SImode:
-      case V2SFmode:
-	if (!type || !AGGREGATE_TYPE_P (type))
-	  {
-	    if (!TARGET_MMX && !warnedmmx && cum->warn_mmx)
-	      {
-		warnedmmx = true;
-		warning (0, "MMX vector argument without MMX enabled "
-			 "changes the ABI");
-	      }
-	    if (cum->mmx_nregs)
-	      ret = gen_reg_or_parallel (mode, orig_mode,
-					 cum->mmx_regno + FIRST_MMX_REG);
-	  }
-	break;
-      }
-
-  if (TARGET_DEBUG_ARG)
-    {
-      fprintf (stderr,
-	       "function_arg (size=%d, wds=%2d, nregs=%d, mode=%4s, named=%d, ",
-	       words, cum->words, cum->nregs, GET_MODE_NAME (mode), named);
-
-      if (ret)
-	print_simple_rtl (stderr, ret);
-      else
-	fprintf (stderr, ", stack");
-
-      fprintf (stderr, " )\n");
-    }
-
-  return ret;
+    return function_arg_32 (cum, mode, omode, type, bytes, words);
 }
 
 /* A C expression that indicates when an argument must be passed by
@@ -4204,15 +4178,8 @@ ix86_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 			enum machine_mode mode ATTRIBUTE_UNUSED,
 			tree type, bool named ATTRIBUTE_UNUSED)
 {
-  if (!TARGET_64BIT)
-    return 0;
-
-  if (type && int_size_in_bytes (type) == -1)
-    {
-      if (TARGET_DEBUG_ARG)
-	fprintf (stderr, "function_arg_pass_by_reference\n");
-      return 1;
-    }
+  if (TARGET_64BIT && type && int_size_in_bytes (type) == -1)
+    return 1;
 
   return 0;
 }
@@ -4304,78 +4271,162 @@ ix86_function_arg_boundary (enum machine_mode mode, tree type)
 }
 
 /* Return true if N is a possible register number of function value.  */
+
 bool
 ix86_function_value_regno_p (int regno)
 {
-  if (TARGET_MACHO)
+  switch (regno)
     {
-      if (!TARGET_64BIT)
-        {
-          return ((regno) == 0
-                  || ((regno) == FIRST_FLOAT_REG && TARGET_FLOAT_RETURNS_IN_80387)
-                  || ((regno) == FIRST_SSE_REG && TARGET_SSE));
-        }
-      return ((regno) == 0 || (regno) == FIRST_FLOAT_REG
-              || ((regno) == FIRST_SSE_REG && TARGET_SSE)
-              || ((regno) == FIRST_FLOAT_REG && TARGET_FLOAT_RETURNS_IN_80387));
-      }
-  else
-    {
-      if (regno == 0
-          || (regno == FIRST_FLOAT_REG && TARGET_FLOAT_RETURNS_IN_80387)
-          || (regno == FIRST_SSE_REG && TARGET_SSE))
-        return true;
+    case 0:
+      return true;
 
-      if (!TARGET_64BIT
-          && (regno == FIRST_MMX_REG && TARGET_MMX))
-	    return true;
+    case FIRST_FLOAT_REG:
+      return TARGET_FLOAT_RETURNS_IN_80387;
 
-      return false;
+    case FIRST_SSE_REG:
+      return TARGET_SSE;
+
+    case FIRST_MMX_REG:
+      if (TARGET_MACHO || TARGET_64BIT)
+	return false;
+      return TARGET_MMX;
     }
+
+  return false;
 }
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.  */
-rtx
+
+static rtx
+function_value_32 (enum machine_mode orig_mode, enum machine_mode mode,
+		   tree fntype, tree fn)
+{
+  unsigned int regno;
+
+  /* 8-byte vector modes in %mm0. See ix86_return_in_memory for where
+     we normally prevent this case when mmx is not available.  However
+     some ABIs may require the result to be returned like DImode.  */
+  if (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 8)
+    regno = TARGET_MMX ? FIRST_MMX_REG : 0;
+
+  /* 16-byte vector modes in %xmm0.  See ix86_return_in_memory for where
+     we prevent this case when sse is not available.  However some ABIs
+     may require the result to be returned like integer TImode.  */
+  else if (mode == TImode
+	   || (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 16))
+    regno = TARGET_SSE ? FIRST_SSE_REG : 0;
+
+  /* Decimal floating point values can go in %eax, unlike other float modes.  */
+  else if (DECIMAL_FLOAT_MODE_P (mode))
+    regno = 0;
+
+  /* Most things go in %eax, except (unless -mno-fp-ret-in-387) fp values.  */
+  else if (!SCALAR_FLOAT_MODE_P (mode) || !TARGET_FLOAT_RETURNS_IN_80387)
+    regno = 0;
+
+  /* Floating point return values in %st(0), except for local functions when
+     SSE math is enabled or for functions with sseregparm attribute.  */
+  else
+    {
+      regno = FIRST_FLOAT_REG;
+
+      if ((fn || fntype) && (mode == SFmode || mode == DFmode))
+	{
+	  int sse_level = ix86_function_sseregparm (fntype, fn);
+	  if ((sse_level >= 1 && mode == SFmode)
+	      || (sse_level == 2 && mode == DFmode))
+	    regno = FIRST_SSE_REG;
+	}
+    }
+
+  return gen_rtx_REG (orig_mode, regno);
+}
+
+static rtx
+function_value_64 (enum machine_mode orig_mode, enum machine_mode mode,
+		   tree valtype)
+{
+  rtx ret;
+
+  /* Handle libcalls, which don't provide a type node.  */
+  if (valtype == NULL)
+    {
+      switch (mode)
+	{
+	case SFmode:
+	case SCmode:
+	case DFmode:
+	case DCmode:
+	case TFmode:
+	case SDmode:
+	case DDmode:
+	case TDmode:
+	  return gen_rtx_REG (mode, FIRST_SSE_REG);
+	case XFmode:
+	case XCmode:
+	  return gen_rtx_REG (mode, FIRST_FLOAT_REG);
+	case TCmode:
+	  return NULL;
+	default:
+	  return gen_rtx_REG (mode, 0);
+	}
+    }
+
+  ret = construct_container (mode, orig_mode, valtype, 1,
+			     REGPARM_MAX, SSE_REGPARM_MAX,
+			     x86_64_int_return_registers, 0);
+
+  /* For zero sized structures, construct_container returns NULL, but we
+     need to keep rest of compiler happy by returning meaningful value.  */
+  if (!ret)
+    ret = gen_rtx_REG (orig_mode, 0);
+
+  return ret;
+}
+
+static rtx
+ix86_function_value_1 (tree valtype, tree fntype_or_decl,
+		       enum machine_mode orig_mode, enum machine_mode mode)
+{
+  tree fn, fntype;
+
+  fn = NULL_TREE;
+  if (fntype_or_decl && DECL_P (fntype_or_decl))
+    fn = fntype_or_decl;
+  fntype = fn ? TREE_TYPE (fn) : fntype_or_decl;
+
+  if (TARGET_64BIT)
+    return function_value_64 (orig_mode, mode, valtype);
+  else
+    return function_value_32 (orig_mode, mode, fntype, fn);
+}
+
+static rtx
 ix86_function_value (tree valtype, tree fntype_or_decl,
 		     bool outgoing ATTRIBUTE_UNUSED)
 {
-  enum machine_mode natmode = type_natural_mode (valtype);
+  enum machine_mode mode, orig_mode;
 
-  if (TARGET_64BIT)
-    {
-      rtx ret = construct_container (natmode, TYPE_MODE (valtype), valtype,
-				     1, REGPARM_MAX, SSE_REGPARM_MAX,
-				     x86_64_int_return_registers, 0);
-      /* For zero sized structures, construct_container return NULL, but we
-	 need to keep rest of compiler happy by returning meaningful value.  */
-      if (!ret)
-	ret = gen_rtx_REG (TYPE_MODE (valtype), 0);
-      return ret;
-    }
-  else
-    {
-      tree fn = NULL_TREE, fntype;
-      if (fntype_or_decl
-	  && DECL_P (fntype_or_decl))
-        fn = fntype_or_decl;
-      fntype = fn ? TREE_TYPE (fn) : fntype_or_decl;
-      return gen_rtx_REG (TYPE_MODE (valtype),
-			  ix86_value_regno (natmode, fn, fntype));
-    }
+  orig_mode = TYPE_MODE (valtype);
+  mode = type_natural_mode (valtype);
+  return ix86_function_value_1 (valtype, fntype_or_decl, orig_mode, mode);
+}
+
+rtx
+ix86_libcall_value (enum machine_mode mode)
+{
+  return ix86_function_value_1 (NULL, NULL, mode, mode);
 }
 
 /* Return true iff type is returned in memory.  */
-int
-ix86_return_in_memory (tree type)
-{
-  int needed_intregs, needed_sseregs, size;
-  enum machine_mode mode = type_natural_mode (type);
 
-  if (TARGET_64BIT)
-    return !examine_argument (mode, type, 1, &needed_intregs, &needed_sseregs);
+static int
+return_in_memory_32 (tree type, enum machine_mode mode)
+{
+  HOST_WIDE_INT size;
 
   if (mode == BLKmode)
     return 1;
@@ -4412,6 +4463,24 @@ ix86_return_in_memory (tree type)
   return 0;
 }
 
+static int
+return_in_memory_64 (tree type, enum machine_mode mode)
+{
+  int needed_intregs, needed_sseregs;
+  return !examine_argument (mode, type, 1, &needed_intregs, &needed_sseregs);
+}
+
+int
+ix86_return_in_memory (tree type)
+{
+  enum machine_mode mode = type_natural_mode (type);
+
+  if (TARGET_64BIT)
+    return return_in_memory_64 (type, mode);
+  else
+    return return_in_memory_32 (type, mode);
+}
+
 /* When returning SSE vector types, we have a choice of either
      (1) being abi incompatible with a -march switch, or
      (2) generating an error.
@@ -4428,7 +4497,7 @@ ix86_struct_value_rtx (tree type, int incoming ATTRIBUTE_UNUSED)
 {
   static bool warnedsse, warnedmmx;
 
-  if (type)
+  if (!TARGET_64BIT && type)
     {
       /* Look at the return type of the function, not the function type.  */
       enum machine_mode mode = TYPE_MODE (TREE_TYPE (type));
@@ -4458,77 +4527,6 @@ ix86_struct_value_rtx (tree type, int incoming ATTRIBUTE_UNUSED)
   return NULL;
 }
 
-/* Define how to find the value returned by a library function
-   assuming the value has mode MODE.  */
-rtx
-ix86_libcall_value (enum machine_mode mode)
-{
-  if (TARGET_64BIT)
-    {
-      switch (mode)
-	{
-	case SFmode:
-	case SCmode:
-	case DFmode:
-	case DCmode:
-	case TFmode:
-	case SDmode:
-	case DDmode:
-	case TDmode:
-	  return gen_rtx_REG (mode, FIRST_SSE_REG);
-	case XFmode:
-	case XCmode:
-	  return gen_rtx_REG (mode, FIRST_FLOAT_REG);
-	case TCmode:
-	  return NULL;
-	default:
-	  return gen_rtx_REG (mode, 0);
-	}
-    }
-  else
-    return gen_rtx_REG (mode, ix86_value_regno (mode, NULL, NULL));
-}
-
-/* Given a mode, return the register to use for a return value.  */
-
-static int
-ix86_value_regno (enum machine_mode mode, tree func, tree fntype)
-{
-  gcc_assert (!TARGET_64BIT);
-
-  /* 8-byte vector modes in %mm0. See ix86_return_in_memory for where
-     we normally prevent this case when mmx is not available.  However
-     some ABIs may require the result to be returned like DImode.  */
-  if (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 8)
-    return TARGET_MMX ? FIRST_MMX_REG : 0;
-
-  /* 16-byte vector modes in %xmm0.  See ix86_return_in_memory for where
-     we prevent this case when sse is not available.  However some ABIs
-     may require the result to be returned like integer TImode.  */
-  if (mode == TImode || (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 16))
-    return TARGET_SSE ? FIRST_SSE_REG : 0;
-
-  /* Decimal floating point values can go in %eax, unlike other float modes.  */
-  if (DECIMAL_FLOAT_MODE_P (mode))
-    return 0;
-
-  /* Most things go in %eax, except (unless -mno-fp-ret-in-387) fp values.  */
-  if (!SCALAR_FLOAT_MODE_P (mode) || !TARGET_FLOAT_RETURNS_IN_80387)
-    return 0;
-
-  /* Floating point return values in %st(0), except for local functions when
-     SSE math is enabled or for functions with sseregparm attribute.  */
-  if ((func || fntype)
-      && (mode == SFmode || mode == DFmode))
-    {
-      int sse_level = ix86_function_sseregparm (fntype, func);
-      if ((sse_level >= 1 && mode == SFmode)
-	  || (sse_level == 2 && mode == DFmode))
-        return FIRST_SSE_REG;
-    }
-
-  return FIRST_FLOAT_REG;
-}
 
 /* Create the va_list data type.  */
 
@@ -4577,51 +4575,29 @@ ix86_build_builtin_va_list (void)
 /* Worker function for TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
-ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			     tree type, int *pretend_size ATTRIBUTE_UNUSED,
-			     int no_rtl)
+setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
 {
-  CUMULATIVE_ARGS next_cum;
-  rtx save_area = NULL_RTX, mem;
+  rtx save_area, mem;
   rtx label;
   rtx label_ref;
   rtx tmp_reg;
   rtx nsse_reg;
   int set;
-  tree fntype;
-  int stdarg_p;
   int i;
-
-  if (!TARGET_64BIT)
-    return;
 
   if (! cfun->va_list_gpr_size && ! cfun->va_list_fpr_size)
     return;
 
   /* Indicate to allocate space on the stack for varargs save area.  */
   ix86_save_varrargs_registers = 1;
-
   cfun->stack_alignment_needed = 128;
 
-  fntype = TREE_TYPE (current_function_decl);
-  stdarg_p = (TYPE_ARG_TYPES (fntype) != 0
-	      && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-		  != void_type_node));
-
-  /* For varargs, we do not want to skip the dummy va_dcl argument.
-     For stdargs, we do want to skip the last named argument.  */
-  next_cum = *cum;
-  if (stdarg_p)
-    function_arg_advance (&next_cum, mode, type, 1);
-
-  if (!no_rtl)
-    save_area = frame_pointer_rtx;
-
+  save_area = frame_pointer_rtx;
   set = get_varargs_alias_set ();
 
-  for (i = next_cum.regno;
+  for (i = cum->regno;
        i < ix86_regparm
-       && i < next_cum.regno + cfun->va_list_gpr_size / UNITS_PER_WORD;
+       && i < cum->regno + cfun->va_list_gpr_size / UNITS_PER_WORD;
        i++)
     {
       mem = gen_rtx_MEM (Pmode,
@@ -4632,7 +4608,7 @@ ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 					x86_64_int_parameter_registers[i]));
     }
 
-  if (next_cum.sse_nregs && cfun->va_list_fpr_size)
+  if (cum->sse_nregs && cfun->va_list_fpr_size)
     {
       /* Now emit code to save SSE registers.  The AX parameter contains number
 	 of SSE parameter registers used to call this function.  We use
@@ -4650,13 +4626,13 @@ ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       emit_insn (gen_rtx_SET (VOIDmode, tmp_reg,
 			      gen_rtx_MULT (Pmode, nsse_reg,
 					    GEN_INT (4))));
-      if (next_cum.sse_regno)
+      if (cum->sse_regno)
 	emit_move_insn
 	  (nsse_reg,
 	   gen_rtx_CONST (DImode,
 			  gen_rtx_PLUS (DImode,
 					label_ref,
-					GEN_INT (next_cum.sse_regno * 4))));
+					GEN_INT (cum->sse_regno * 4))));
       else
 	emit_move_insn (nsse_reg, label_ref);
       emit_insn (gen_subdi3 (nsse_reg, nsse_reg, tmp_reg));
@@ -4675,9 +4651,38 @@ ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
       /* And finally do the dirty job!  */
       emit_insn (gen_sse_prologue_save (mem, nsse_reg,
-					GEN_INT (next_cum.sse_regno), label));
+					GEN_INT (cum->sse_regno), label));
     }
+}
 
+static void
+ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			     tree type, int *pretend_size ATTRIBUTE_UNUSED,
+			     int no_rtl)
+{
+  CUMULATIVE_ARGS next_cum;
+  tree fntype;
+  int stdarg_p;
+
+  /* This argument doesn't appear to be used anymore.  Which is good,
+     because the old code here didn't suppress rtl generation.  */
+  gcc_assert (!no_rtl);
+
+  if (!TARGET_64BIT)
+    return;
+
+  fntype = TREE_TYPE (current_function_decl);
+  stdarg_p = (TYPE_ARG_TYPES (fntype) != 0
+	      && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
+		  != void_type_node));
+
+  /* For varargs, we do not want to skip the dummy va_dcl argument.
+     For stdargs, we do want to skip the last named argument.  */
+  next_cum = *cum;
+  if (stdarg_p)
+    function_arg_advance (&next_cum, mode, type, 1);
+
+  setup_incoming_varargs_64 (&next_cum);
 }
 
 /* Implement va_start.  */
@@ -4712,10 +4717,6 @@ ix86_va_start (tree valist, rtx nextarg)
   words = current_function_args_info.words;
   n_gpr = current_function_args_info.regno;
   n_fpr = current_function_args_info.sse_regno;
-
-  if (TARGET_DEBUG_ARG)
-    fprintf (stderr, "va_start: words = %d, n_gpr = %d, n_fpr = %d\n",
-	     (int) words, (int) n_gpr, (int) n_fpr);
 
   if (cfun->va_list_gpr_size)
     {
@@ -6851,21 +6852,14 @@ legitimate_pic_address_disp_p (rtx disp)
    be recognized.  */
 
 int
-legitimate_address_p (enum machine_mode mode, rtx addr, int strict)
+legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+		      rtx addr, int strict)
 {
   struct ix86_address parts;
   rtx base, index, disp;
   HOST_WIDE_INT scale;
   const char *reason = NULL;
   rtx reason_rtx = NULL_RTX;
-
-  if (TARGET_DEBUG_ADDR)
-    {
-      fprintf (stderr,
-	       "\n======\nGO_IF_LEGITIMATE_ADDRESS, mode = %s, strict = %d\n",
-	       GET_MODE_NAME (mode), strict);
-      debug_rtx (addr);
-    }
 
   if (ix86_decompose_address (addr, &parts) <= 0)
     {
@@ -7077,16 +7071,9 @@ legitimate_address_p (enum machine_mode mode, rtx addr, int strict)
     }
 
   /* Everything looks valid.  */
-  if (TARGET_DEBUG_ADDR)
-    fprintf (stderr, "Success.\n");
   return TRUE;
 
  report_error:
-  if (TARGET_DEBUG_ADDR)
-    {
-      fprintf (stderr, "Error: %s\n", reason);
-      debug_rtx (reason_rtx);
-    }
   return FALSE;
 }
 
@@ -7523,13 +7510,6 @@ legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED, enum machine_mode mode)
 {
   int changed = 0;
   unsigned log;
-
-  if (TARGET_DEBUG_ADDR)
-    {
-      fprintf (stderr, "\n==========\nLEGITIMIZE_ADDRESS, mode = %s\n",
-	       GET_MODE_NAME (mode));
-      debug_rtx (x);
-    }
 
   log = GET_CODE (x) == SYMBOL_REF ? SYMBOL_REF_TLS_MODEL (x) : 0;
   if (log)

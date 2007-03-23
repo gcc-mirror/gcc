@@ -1,3 +1,39 @@
+2007-03-22  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_function_regparm): Early exit for 64-bit;
+	don't increase local_regparm with force_align_arg_pointer check.
+	(ix86_function_sseregparm): Assert 32-bit.
+	(type_has_variadic_args_p): New.
+	(ix86_return_pops_args): Early exit for 64-bit.  Reindent; use
+	type_has_variadic_args_p.
+	(ix86_function_arg_regno_p): Use == 0 instead of ! test for eax.
+	(init_cumulative_args): Remove TARGET_DEBUG_ARG.  Remove zero_cum;
+	use memset instead.  Do maybe_vaarg check first; skip attribute
+	tests if true; skip attribute tests for 64-bit.
+	(construct_container): Remove TARGET_DEBUG_ARG.
+	(function_arg_advance_32, function_arg_advance_64): Split out ...
+	(function_arg_advance): ... from here.
+	(function_arg_32, function_arg_64): Split out ...
+	(function_arg): ... from here.
+	(ix86_pass_by_reference): Tidy.
+	(ix86_function_value_regno_p): Rearrange w/ switch on regno.
+	(function_value_32): New, from parts of ix86_function_value
+	and ix86_value_regno.
+	(function_value_64): New, from parts of ix86_function_value
+	and ix86_libcall_value.
+	(ix86_function_value_1): New.
+	(ix86_function_value, ix86_libcall_value): Use it.
+	(return_in_memory_32, return_in_memory_64): Split out ...
+	(ix86_return_in_memory): ... from here.
+	(ix86_struct_value_rtx): Skip for 64-bit.
+	(ix86_libcall_value, ix86_value_regno): Remove.
+	(setup_incoming_varargs_64): Split out ...
+	(ix86_setup_incoming_varargs): ... from here.
+	(ix86_va_start): Remove TARGET_DEBUG_ARG.
+	(legitimate_address_p, legitimize_address): Remove TARGET_DEBUG_ADDR.
+	* config/i386/i386-protos.h (ix86_function_value): Remove.
+	* config/i386/i386.opt (TARGET_DEBUG_ADDR, TARGET_DEBUG_ARG): Remove.
+
 2007-03-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR other/23572
