@@ -552,3 +552,41 @@ AC_DEFUN([ACX_CHECK_PROG_VER],[
     $1="${CONFIG_SHELL-/bin/sh} $ac_aux_dir/missing $2"
   fi
 ])
+
+dnl Support the --with-pkgversion configure option.
+dnl ACX_PKGVERSION(default-pkgversion)
+AC_DEFUN([ACX_PKGVERSION],[
+  AC_ARG_WITH(pkgversion,
+    AS_HELP_STRING([--with-pkgversion=PKG],
+                   [Use PKG in the version string in place of "$1"]),
+    [case "$withval" in
+      yes) AC_MSG_ERROR([package version not specified]) ;;
+      no)  PKGVERSION= ;;
+      *)   PKGVERSION="($withval) " ;;
+     esac],
+    PKGVERSION="($1) "
+  )
+  AC_SUBST(PKGVERSION)
+])
+
+dnl Support the --with-bugurl configure option.
+dnl ACX_BUGURL(default-bugurl)
+AC_DEFUN([ACX_BUGURL],[
+  AC_ARG_WITH(bugurl,
+    AS_HELP_STRING([--with-bugurl=URL],
+                   [Direct users to URL to report a bug]),
+    [case "$withval" in
+      yes) AC_MSG_ERROR([bug URL not specified]) ;;
+      no)  REPORT_BUGS_TO="";
+	   REPORT_BUGS_TEXI=""
+	   ;;
+      *)   REPORT_BUGS_TO="<$withval>"
+	   REPORT_BUGS_TEXI="@uref{`echo $withval | sed 's/@/@@/g'`}"
+	   ;;
+     esac],
+     REPORT_BUGS_TO="<$1>"
+     REPORT_BUGS_TEXI="@uref{$1}"
+  )
+  AC_SUBST(REPORT_BUGS_TO)
+  AC_SUBST(REPORT_BUGS_TEXI)
+])
