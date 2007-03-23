@@ -1,3 +1,25 @@
+2007-03-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/mips.md (type, hazard, *movdi_32bit,
+	*movdi_gp32_fp64, *movdi_64bit, *movsi_internal, movcc,
+	*movhi_internal, *movqi_internal, *movsf_hardfloat,
+	*movdf_hardfloat_64bit, *movdf_hardfloat_32bit, *movdf_softfloat,
+	movv2sf_hardfloat_64bit, load_df_low, load_df_high, store_df_high,
+	mthc1, mfhc1): Change xfer instruction type to mfc and mtc, as
+	applicable.
+	(movcc): Change first xfer to multi.
+	* config/mips/24k.md, config/mips/4100.md, config/mips/4300.md,
+	config/mips/5000.md, config/mips/5400.md, config/mips/5500.md,
+	config/mips/5k.md, config/mips/7000.md, config/mips/9000.md,
+	config/mips/generic.md: Change reservations using "xfer" to use
+	"mfc,mtc".
+	* config/mips/sb1.md (ir_sb1_mtxfer): Use "mtc" instead of
+	using match_operand.
+	(ir_sb1_mfxfer): Use "mfc" instead of using match_operand.
+	* config/mips/sr71k.md (ir_sr70_xfer_from): Use "mfc" instead of
+	examining mode.
+	(ir_sr70_xfer_to): Use "mtc" instead of examining mode.
+
 2007-03-22  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c: Remove unnecessary function declarations.

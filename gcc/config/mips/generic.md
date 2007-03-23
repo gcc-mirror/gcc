@@ -36,7 +36,7 @@
   "alu")
 
 (define_insn_reservation "generic_xfer" 2
-  (eq_attr "type" "xfer")
+  (eq_attr "type" "mfc,mtc")
   "alu")
 
 (define_insn_reservation "generic_branch" 1

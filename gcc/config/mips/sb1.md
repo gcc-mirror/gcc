@@ -415,16 +415,14 @@
 
 (define_insn_reservation "ir_sb1_mtxfer" 5
   (and (eq_attr "cpu" "sb1,sb1a")
-       (and (eq_attr "type" "xfer")
-	    (match_operand 0 "fpr_operand")))
+       (eq_attr "type" "mtc"))
   "sb1_fp0")
 
 ;; mfc1 latency 1 cycle.  
 
 (define_insn_reservation "ir_sb1_mfxfer" 1
   (and (eq_attr "cpu" "sb1,sb1a")
-       (and (eq_attr "type" "xfer")
-	    (not (match_operand 0 "fpr_operand"))))
+       (eq_attr "type" "mfc"))
   "sb1_fp0")
 
 ;; ??? Can deliver at most 1 result per every 6 cycles because of issue
