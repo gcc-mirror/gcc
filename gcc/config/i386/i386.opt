@@ -95,12 +95,6 @@ mcmodel=
 Target RejectNegative Joined Var(ix86_cmodel_string)
 Use given x86-64 code model
 
-mdebug-addr
-Target RejectNegative Var(TARGET_DEBUG_ADDR) Undocumented
-
-mdebug-arg
-Target RejectNegative Var(TARGET_DEBUG_ARG) Undocumented
-
 mfancy-math-387
 Target RejectNegative Report InverseMask(NO_FANCY_MATH_387, USE_FANCY_MATH_387)
 Generate sin, cos, sqrt for FPU
