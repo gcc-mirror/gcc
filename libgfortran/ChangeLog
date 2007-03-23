@@ -1,3 +1,15 @@
+2007-03-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/31052
+	* file_pos.c: Update Copyright year.
+	* io/open.c (test_endfile): Restore test_endfile to fix SPEC regression.
+	Update Copyright year.
+	* io/io.h: Same.
+	* io/unix.c (is_special): Add missing type for this function.
+	Update Copyright year.
+	* io/transfer.c (next_record_r): Restore test_endfile.
+	(st_read): Fix whitespace.  Update Copyright year
+
 2007-03-20  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* configure.ac: Add missing check for gettimeofday.
