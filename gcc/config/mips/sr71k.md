@@ -173,14 +173,12 @@
 ;; resources simultaneously
 (define_insn_reservation "ir_sr70_xfer_from" 6
   (and (eq_attr "cpu" "sr71000")
-       (and (eq_attr "type" "xfer")
-	    (eq_attr "mode" "!SF,DF,FPSW")))
+       (eq_attr "type" "mfc"))
   "(cpu_iss+cp1_iss),(fpu_mov+ri_mem)")
 
 (define_insn_reservation "ir_sr70_xfer_to" 9
   (and (eq_attr "cpu" "sr71000")
-       (and (eq_attr "type" "xfer")
-	    (eq_attr "mode" "SF,DF")))
+       (eq_attr "type" "mtc"))
   "(cpu_iss+cp1_iss),(ri_mem+rf_ldmem)")
 
 (define_insn_reservation "ir_sr70_hilo" 1
