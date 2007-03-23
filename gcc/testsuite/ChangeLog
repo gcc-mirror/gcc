@@ -1,5 +1,11 @@
 2007-03-22  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/30863
+	* g++.dg/template/error24.C: New test.
+	* g++.dg/parse/tmpl-outside1.C: Tweak error markers.
+
+2007-03-22  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/31273
 	* g++.dg/expr/bitfield7.C: New test.
 
