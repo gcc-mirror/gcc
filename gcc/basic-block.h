@@ -929,7 +929,7 @@ extern bool control_flow_insn_p (rtx);
 extern rtx get_last_bb_insn (basic_block);
 
 /* In bb-reorder.c */
-extern void reorder_basic_blocks (unsigned int);
+extern void reorder_basic_blocks (void);
 
 /* In dominance.c */
 
@@ -976,6 +976,7 @@ unsigned bb_dom_dfs_out (enum cdi_direction, basic_block);
 
 extern edge try_redirect_by_replacing_jump (edge, basic_block, bool);
 extern void break_superblocks (void);
+extern void relink_block_chain (bool);
 extern void check_bb_profile (basic_block, FILE *);
 extern void update_bb_profile_for_threading (basic_block, int, gcov_type, edge);
 extern void init_rtl_bb_info (basic_block);

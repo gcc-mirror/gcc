@@ -171,11 +171,10 @@ struct tree_opt_pass pass_loop2 =
 static unsigned int
 rtl_loop_init (void)
 {
+  gcc_assert (current_ir_type () == IR_RTL_CFGLAYOUT);
+  
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
-
-  /* Initialize structures for layout changes.  */
-  cfg_layout_initialize (0);
 
   loop_optimizer_init (LOOPS_NORMAL);
   return 0;
@@ -204,16 +203,8 @@ struct tree_opt_pass pass_rtl_loop_init =
 static unsigned int
 rtl_loop_done (void)
 {
-  basic_block bb;
-
   loop_optimizer_finalize ();
   free_dominance_info (CDI_DOMINATORS);
-
-  /* Finalize layout changes.  */
-  FOR_EACH_BB (bb)
-    if (bb->next_bb != EXIT_BLOCK_PTR)
-      bb->aux = bb->next_bb;
-  cfg_layout_finalize ();
 
   cleanup_cfg (CLEANUP_EXPENSIVE);
   delete_trivially_dead_insns (get_insns (), max_reg_num ());

@@ -2711,13 +2711,18 @@ cond_move_process_if_block (struct ce_if_block *ce_info)
 static int
 process_if_block (struct ce_if_block * ce_info)
 {
-  if (! reload_completed
-      && noce_process_if_block (ce_info))
-    return TRUE;
+  /* Only perform the noce transformations before register allocation.
+     They could be made to run later, but this would require a lot of
+     work, and it doesn't seem to be worth it.  */
+  if (! reload_completed)
+    {
+      if (noce_process_if_block (ce_info))
+	return TRUE;
 
-  if (HAVE_conditional_move
-      && cond_move_process_if_block (ce_info))
-    return TRUE;
+      if (HAVE_conditional_move
+	  && cond_move_process_if_block (ce_info))
+	return TRUE;
+    }
 
   if (HAVE_conditional_execution && reload_completed)
     {
