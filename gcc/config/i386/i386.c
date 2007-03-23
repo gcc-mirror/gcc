@@ -1486,108 +1486,6 @@ int ix86_section_threshold = 65536;
 /* Prefix built by ASM_GENERATE_INTERNAL_LABEL.  */
 char internal_label_prefix[16];
 int internal_label_prefix_len;
-
-static bool ix86_handle_option (size_t, const char *, int);
-static void output_pic_addr_const (FILE *, rtx, int);
-static void put_condition_code (enum rtx_code, enum machine_mode,
-				int, int, FILE *);
-static const char *get_some_local_dynamic_name (void);
-static int get_some_local_dynamic_name_1 (rtx *, void *);
-static rtx ix86_expand_int_compare (enum rtx_code, rtx, rtx);
-static enum rtx_code ix86_prepare_fp_compare_args (enum rtx_code, rtx *,
-						   rtx *);
-static bool ix86_fixed_condition_code_regs (unsigned int *, unsigned int *);
-static enum machine_mode ix86_cc_modes_compatible (enum machine_mode,
-						   enum machine_mode);
-static rtx get_thread_pointer (int);
-static rtx legitimize_tls_address (rtx, enum tls_model, int);
-static void get_pc_thunk_name (char [32], unsigned int);
-static rtx gen_push (rtx);
-static int ix86_flags_dependent (rtx, rtx, enum attr_type);
-static int ix86_agi_dependent (rtx, rtx, enum attr_type);
-static struct machine_function * ix86_init_machine_status (void);
-static int ix86_split_to_parts (rtx, rtx *, enum machine_mode);
-static int ix86_nsaved_regs (void);
-static void ix86_emit_save_regs (void);
-static void ix86_emit_save_regs_using_mov (rtx, HOST_WIDE_INT);
-static void ix86_emit_restore_regs_using_mov (rtx, HOST_WIDE_INT, int);
-static void ix86_output_function_epilogue (FILE *, HOST_WIDE_INT);
-static HOST_WIDE_INT ix86_GOT_alias_set (void);
-static void ix86_adjust_counter (rtx, HOST_WIDE_INT);
-static void ix86_expand_strlensi_unroll_1 (rtx, rtx, rtx);
-static int ix86_issue_rate (void);
-static int ix86_adjust_cost (rtx, rtx, rtx, int);
-static int ia32_multipass_dfa_lookahead (void);
-static void ix86_init_mmx_sse_builtins (void);
-static rtx x86_this_parameter (tree);
-static void x86_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
-				 HOST_WIDE_INT, tree);
-static bool x86_can_output_mi_thunk (tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
-static void x86_file_start (void);
-static void ix86_reorg (void);
-static bool ix86_expand_carry_flag_compare (enum rtx_code, rtx, rtx, rtx*);
-static tree ix86_build_builtin_va_list (void);
-static void ix86_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
-					 tree, int *, int);
-static tree ix86_gimplify_va_arg (tree, tree, tree *, tree *);
-static bool ix86_scalar_mode_supported_p (enum machine_mode);
-static bool ix86_vector_mode_supported_p (enum machine_mode);
-
-static int ix86_address_cost (rtx);
-static bool ix86_cannot_force_const_mem (rtx);
-static rtx ix86_delegitimize_address (rtx);
-
-static void i386_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
-
-struct builtin_description;
-static rtx ix86_expand_sse_comi (const struct builtin_description *,
-				 tree, rtx);
-static rtx ix86_expand_sse_compare (const struct builtin_description *,
-				    tree, rtx);
-static rtx ix86_expand_unop1_builtin (enum insn_code, tree, rtx);
-static rtx ix86_expand_unop_builtin (enum insn_code, tree, rtx, int);
-static rtx ix86_expand_binop_builtin (enum insn_code, tree, rtx);
-static rtx ix86_expand_store_builtin (enum insn_code, tree);
-static rtx safe_vector_operand (rtx, enum machine_mode);
-static rtx ix86_expand_fp_compare (enum rtx_code, rtx, rtx, rtx, rtx *, rtx *);
-static int ix86_fp_comparison_arithmetics_cost (enum rtx_code code);
-static int ix86_fp_comparison_fcomi_cost (enum rtx_code code);
-static int ix86_fp_comparison_sahf_cost (enum rtx_code code);
-static int ix86_fp_comparison_cost (enum rtx_code code);
-static unsigned int ix86_select_alt_pic_regnum (void);
-static int ix86_save_reg (unsigned int, int);
-static void ix86_compute_frame_layout (struct ix86_frame *);
-static int ix86_comp_type_attributes (tree, tree);
-static int ix86_function_regparm (tree, tree);
-const struct attribute_spec ix86_attribute_table[];
-static bool ix86_function_ok_for_sibcall (tree, tree);
-static tree ix86_handle_cconv_attribute (tree *, tree, tree, int, bool *);
-static bool contains_128bit_aligned_vector_p (tree);
-static rtx ix86_struct_value_rtx (tree, int);
-static bool ix86_ms_bitfield_layout_p (tree);
-static tree ix86_handle_struct_attribute (tree *, tree, tree, int, bool *);
-static int extended_reg_mentioned_1 (rtx *, void *);
-static bool ix86_rtx_costs (rtx, int, int, int *);
-static int min_insn_size (rtx);
-static tree ix86_md_asm_clobbers (tree outputs, tree inputs, tree clobbers);
-static bool ix86_must_pass_in_stack (enum machine_mode mode, tree type);
-static bool ix86_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
-				    tree, bool);
-static void ix86_init_builtins (void);
-static rtx ix86_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
-static tree ix86_builtin_vectorized_function (enum built_in_function, tree, tree);
-static tree ix86_builtin_conversion (enum tree_code, tree);
-static const char *ix86_mangle_fundamental_type (tree);
-static tree ix86_stack_protect_fail (void);
-static rtx ix86_internal_arg_pointer (void);
-static void ix86_dwarf_handle_frame_unspec (const char *, rtx, int);
-static bool ix86_expand_vector_init_one_nonzero (bool, enum machine_mode,
-						 rtx, rtx, int);
-static rtx ix86_function_value (tree, tree, bool);
-
-/* This function is only used on Solaris.  */
-static void i386_solaris_elf_named_section (const char *, unsigned int, tree)
-  ATTRIBUTE_UNUSED;
 
 /* Register class used for passing given 64bit part of the argument.
    These represent classes as documented by the PS ABI, with the exception
@@ -1595,8 +1493,7 @@ static void i386_solaris_elf_named_section (const char *, unsigned int, tree)
    use SF or DFmode move instead of DImode to avoid reformatting penalties.
 
    Similarly we play games with INTEGERSI_CLASS to use cheaper SImode moves
-   whenever possible (upper half does contain padding).
- */
+   whenever possible (upper half does contain padding).  */
 enum x86_64_reg_class
   {
     X86_64_NO_CLASS,
@@ -1611,7 +1508,8 @@ enum x86_64_reg_class
     X86_64_COMPLEX_X87_CLASS,
     X86_64_MEMORY_CLASS
   };
-static const char * const x86_64_reg_class_name[] = {
+static const char * const x86_64_reg_class_name[] =
+{
   "no", "integer", "integerSI", "sse", "sseSF", "sseDF",
   "sseup", "x87", "x87up", "cplx87", "no"
 };
@@ -1621,178 +1519,14 @@ static const char * const x86_64_reg_class_name[] = {
 /* Table of constants used by fldpi, fldln2, etc....  */
 static REAL_VALUE_TYPE ext_80387_constants_table [5];
 static bool ext_80387_constants_init = 0;
-static void init_ext_80387_constants (void);
-static bool ix86_in_large_data_p (tree) ATTRIBUTE_UNUSED;
-static void ix86_encode_section_info (tree, rtx, int) ATTRIBUTE_UNUSED;
-static void x86_64_elf_unique_section (tree decl, int reloc) ATTRIBUTE_UNUSED;
-static section *x86_64_elf_select_section (tree decl, int reloc,
-					   unsigned HOST_WIDE_INT align)
-					     ATTRIBUTE_UNUSED;
+
 
-/* Initialize the GCC target structure.  */
-#undef TARGET_ATTRIBUTE_TABLE
-#define TARGET_ATTRIBUTE_TABLE ix86_attribute_table
-#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
-#  undef TARGET_MERGE_DECL_ATTRIBUTES
-#  define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
-#endif
-
-#undef TARGET_COMP_TYPE_ATTRIBUTES
-#define TARGET_COMP_TYPE_ATTRIBUTES ix86_comp_type_attributes
-
-#undef TARGET_INIT_BUILTINS
-#define TARGET_INIT_BUILTINS ix86_init_builtins
-#undef TARGET_EXPAND_BUILTIN
-#define TARGET_EXPAND_BUILTIN ix86_expand_builtin
-
-#undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
-#define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION ix86_builtin_vectorized_function
-#undef TARGET_VECTORIZE_BUILTIN_CONVERSION
-#define TARGET_VECTORIZE_BUILTIN_CONVERSION ix86_builtin_conversion
-
-#undef TARGET_ASM_FUNCTION_EPILOGUE
-#define TARGET_ASM_FUNCTION_EPILOGUE ix86_output_function_epilogue
-
-#undef TARGET_ENCODE_SECTION_INFO
-#ifndef SUBTARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO ix86_encode_section_info
-#else
-#define TARGET_ENCODE_SECTION_INFO SUBTARGET_ENCODE_SECTION_INFO
-#endif
-
-#undef TARGET_ASM_OPEN_PAREN
-#define TARGET_ASM_OPEN_PAREN ""
-#undef TARGET_ASM_CLOSE_PAREN
-#define TARGET_ASM_CLOSE_PAREN ""
-
-#undef TARGET_ASM_ALIGNED_HI_OP
-#define TARGET_ASM_ALIGNED_HI_OP ASM_SHORT
-#undef TARGET_ASM_ALIGNED_SI_OP
-#define TARGET_ASM_ALIGNED_SI_OP ASM_LONG
-#ifdef ASM_QUAD
-#undef TARGET_ASM_ALIGNED_DI_OP
-#define TARGET_ASM_ALIGNED_DI_OP ASM_QUAD
-#endif
-
-#undef TARGET_ASM_UNALIGNED_HI_OP
-#define TARGET_ASM_UNALIGNED_HI_OP TARGET_ASM_ALIGNED_HI_OP
-#undef TARGET_ASM_UNALIGNED_SI_OP
-#define TARGET_ASM_UNALIGNED_SI_OP TARGET_ASM_ALIGNED_SI_OP
-#undef TARGET_ASM_UNALIGNED_DI_OP
-#define TARGET_ASM_UNALIGNED_DI_OP TARGET_ASM_ALIGNED_DI_OP
-
-#undef TARGET_SCHED_ADJUST_COST
-#define TARGET_SCHED_ADJUST_COST ix86_adjust_cost
-#undef TARGET_SCHED_ISSUE_RATE
-#define TARGET_SCHED_ISSUE_RATE ix86_issue_rate
-#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
-#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
-  ia32_multipass_dfa_lookahead
-
-#undef TARGET_FUNCTION_OK_FOR_SIBCALL
-#define TARGET_FUNCTION_OK_FOR_SIBCALL ix86_function_ok_for_sibcall
-
-#ifdef HAVE_AS_TLS
-#undef TARGET_HAVE_TLS
-#define TARGET_HAVE_TLS true
-#endif
-#undef TARGET_CANNOT_FORCE_CONST_MEM
-#define TARGET_CANNOT_FORCE_CONST_MEM ix86_cannot_force_const_mem
-#undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
-#define TARGET_USE_BLOCKS_FOR_CONSTANT_P hook_bool_mode_rtx_true
-
-#undef TARGET_DELEGITIMIZE_ADDRESS
-#define TARGET_DELEGITIMIZE_ADDRESS ix86_delegitimize_address
-
-#undef TARGET_MS_BITFIELD_LAYOUT_P
-#define TARGET_MS_BITFIELD_LAYOUT_P ix86_ms_bitfield_layout_p
-
-#if TARGET_MACHO
-#undef TARGET_BINDS_LOCAL_P
-#define TARGET_BINDS_LOCAL_P darwin_binds_local_p
-#endif
-
-#undef TARGET_ASM_OUTPUT_MI_THUNK
-#define TARGET_ASM_OUTPUT_MI_THUNK x86_output_mi_thunk
-#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK x86_can_output_mi_thunk
-
-#undef TARGET_ASM_FILE_START
-#define TARGET_ASM_FILE_START x86_file_start
-
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS	\
-  (TARGET_DEFAULT			\
-   | TARGET_64BIT_DEFAULT		\
-   | TARGET_SUBTARGET_DEFAULT		\
-   | TARGET_TLS_DIRECT_SEG_REFS_DEFAULT)
-
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION ix86_handle_option
-
-#undef TARGET_RTX_COSTS
-#define TARGET_RTX_COSTS ix86_rtx_costs
-#undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST ix86_address_cost
-
-#undef TARGET_FIXED_CONDITION_CODE_REGS
-#define TARGET_FIXED_CONDITION_CODE_REGS ix86_fixed_condition_code_regs
-#undef TARGET_CC_MODES_COMPATIBLE
-#define TARGET_CC_MODES_COMPATIBLE ix86_cc_modes_compatible
-
-#undef TARGET_MACHINE_DEPENDENT_REORG
-#define TARGET_MACHINE_DEPENDENT_REORG ix86_reorg
-
-#undef TARGET_BUILD_BUILTIN_VA_LIST
-#define TARGET_BUILD_BUILTIN_VA_LIST ix86_build_builtin_va_list
-
-#undef TARGET_MD_ASM_CLOBBERS
-#define TARGET_MD_ASM_CLOBBERS ix86_md_asm_clobbers
-
-#undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
-#undef TARGET_STRUCT_VALUE_RTX
-#define TARGET_STRUCT_VALUE_RTX ix86_struct_value_rtx
-#undef TARGET_SETUP_INCOMING_VARARGS
-#define TARGET_SETUP_INCOMING_VARARGS ix86_setup_incoming_varargs
-#undef TARGET_MUST_PASS_IN_STACK
-#define TARGET_MUST_PASS_IN_STACK ix86_must_pass_in_stack
-#undef TARGET_PASS_BY_REFERENCE
-#define TARGET_PASS_BY_REFERENCE ix86_pass_by_reference
-#undef TARGET_INTERNAL_ARG_POINTER
-#define TARGET_INTERNAL_ARG_POINTER ix86_internal_arg_pointer
-#undef TARGET_DWARF_HANDLE_FRAME_UNSPEC
-#define TARGET_DWARF_HANDLE_FRAME_UNSPEC ix86_dwarf_handle_frame_unspec
-
-#undef TARGET_GIMPLIFY_VA_ARG_EXPR
-#define TARGET_GIMPLIFY_VA_ARG_EXPR ix86_gimplify_va_arg
-
-#undef TARGET_SCALAR_MODE_SUPPORTED_P
-#define TARGET_SCALAR_MODE_SUPPORTED_P ix86_scalar_mode_supported_p
-
-#undef TARGET_VECTOR_MODE_SUPPORTED_P
-#define TARGET_VECTOR_MODE_SUPPORTED_P ix86_vector_mode_supported_p
-
-#ifdef HAVE_AS_TLS
-#undef TARGET_ASM_OUTPUT_DWARF_DTPREL
-#define TARGET_ASM_OUTPUT_DWARF_DTPREL i386_output_dwarf_dtprel
-#endif
-
-#ifdef SUBTARGET_INSERT_ATTRIBUTES
-#undef TARGET_INSERT_ATTRIBUTES
-#define TARGET_INSERT_ATTRIBUTES SUBTARGET_INSERT_ATTRIBUTES
-#endif
-
-#undef TARGET_MANGLE_FUNDAMENTAL_TYPE
-#define TARGET_MANGLE_FUNDAMENTAL_TYPE ix86_mangle_fundamental_type
-
-#undef TARGET_STACK_PROTECT_FAIL
-#define TARGET_STACK_PROTECT_FAIL ix86_stack_protect_fail
-
-#undef TARGET_FUNCTION_VALUE
-#define TARGET_FUNCTION_VALUE ix86_function_value
-
-struct gcc_target targetm = TARGET_INITIALIZER;
+static struct machine_function * ix86_init_machine_status (void);
+static rtx ix86_function_value (tree, tree, bool);
+static int ix86_function_regparm (tree, tree);
+static void ix86_compute_frame_layout (struct ix86_frame *);
+static bool ix86_expand_vector_init_one_nonzero (bool, enum machine_mode,
+						 rtx, rtx, int);
 
 
 /* The svr4 ABI for the i386 says that records and unions are returned
@@ -2518,10 +2252,46 @@ override_options (void)
     set_param_value ("l1-cache-line-size", ix86_cost->prefetch_block);
 }
 
-/* switch to the appropriate section for output of DECL.
+/* Return true if this goes in large data/bss.  */
+
+static bool
+ix86_in_large_data_p (tree exp)
+{
+  if (ix86_cmodel != CM_MEDIUM && ix86_cmodel != CM_MEDIUM_PIC)
+    return false;
+
+  /* Functions are never large data.  */
+  if (TREE_CODE (exp) == FUNCTION_DECL)
+    return false;
+
+  if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
+    {
+      const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (exp));
+      if (strcmp (section, ".ldata") == 0
+	  || strcmp (section, ".lbss") == 0)
+	return true;
+      return false;
+    }
+  else
+    {
+      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
+
+      /* If this is an incomplete type with size 0, then we can't put it
+	 in data because it might be too big when completed.  */
+      if (!size || size > ix86_section_threshold)
+	return true;
+    }
+
+  return false;
+}
+
+/* Switch to the appropriate section for output of DECL.
    DECL is either a `VAR_DECL' node or a constant of some sort.
    RELOC indicates whether forming the initial value of DECL requires
    link-time relocations.  */
+
+static section * x86_64_elf_select_section (tree, int, unsigned HOST_WIDE_INT)
+	ATTRIBUTE_UNUSED;
 
 static section *
 x86_64_elf_select_section (tree decl, int reloc,
@@ -2589,7 +2359,7 @@ x86_64_elf_select_section (tree decl, int reloc,
    RELOC indicates whether the initial value of EXP requires
    link-time relocations.  */
 
-static void
+static void ATTRIBUTE_UNUSED
 x86_64_elf_unique_section (tree decl, int reloc)
 {
   if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC)
@@ -2671,6 +2441,7 @@ x86_elf_aligned_common (FILE *file,
 	   size, align / BITS_PER_UNIT);
 }
 #endif
+
 /* Utility function for targets to use in implementing
    ASM_OUTPUT_ALIGNED_BSS.  */
 
@@ -2723,40 +2494,6 @@ optimization_options (int level, int size ATTRIBUTE_UNUSED)
 #endif
 }
 
-/* Table of valid machine attributes.  */
-const struct attribute_spec ix86_attribute_table[] =
-{
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  /* Stdcall attribute says callee is responsible for popping arguments
-     if they are not variable.  */
-  { "stdcall",   0, 0, false, true,  true,  ix86_handle_cconv_attribute },
-  /* Fastcall attribute says callee is responsible for popping arguments
-     if they are not variable.  */
-  { "fastcall",  0, 0, false, true,  true,  ix86_handle_cconv_attribute },
-  /* Cdecl attribute says the callee is a normal C declaration */
-  { "cdecl",     0, 0, false, true,  true,  ix86_handle_cconv_attribute },
-  /* Regparm attribute specifies how many integer arguments are to be
-     passed in registers.  */
-  { "regparm",   1, 1, false, true,  true,  ix86_handle_cconv_attribute },
-  /* Sseregparm attribute says we are using x86_64 calling conventions
-     for FP arguments.  */
-  { "sseregparm", 0, 0, false, true, true, ix86_handle_cconv_attribute },
-  /* force_align_arg_pointer says this function realigns the stack at entry.  */
-  { (const char *)&ix86_force_align_arg_pointer_string, 0, 0,
-    false, true,  true, ix86_handle_cconv_attribute },
-#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
-  { "dllimport", 0, 0, false, false, false, handle_dll_attribute },
-  { "dllexport", 0, 0, false, false, false, handle_dll_attribute },
-  { "shared",    0, 0, true,  false, false, ix86_handle_shared_attribute },
-#endif
-  { "ms_struct", 0, 0, false, false,  false, ix86_handle_struct_attribute },
-  { "gcc_struct", 0, 0, false, false,  false, ix86_handle_struct_attribute },
-#ifdef SUBTARGET_ATTRIBUTE_TABLE
-  SUBTARGET_ATTRIBUTE_TABLE,
-#endif
-  { NULL,        0, 0, false, false, false, NULL }
-};
-
 /* Decide whether we can make a sibling call to a function.  DECL is the
    declaration of the function being targeted by the call and EXP is the
    CALL_EXPR representing the call.  */
@@ -4760,7 +4497,7 @@ ix86_va_start (tree valist, rtx nextarg)
 
 /* Implement va_arg.  */
 
-tree
+static tree
 ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 {
   static const int intreg[6] = { 0, 1, 2, 3, 4, 5 };
@@ -6512,46 +6249,6 @@ ix86_address_cost (rtx x)
   return cost;
 }
 
-/* If X is a machine specific address (i.e. a symbol or label being
-   referenced as a displacement from the GOT implemented using an
-   UNSPEC), then return the base term.  Otherwise return X.  */
-
-rtx
-ix86_find_base_term (rtx x)
-{
-  rtx term;
-
-  if (TARGET_64BIT)
-    {
-      if (GET_CODE (x) != CONST)
-	return x;
-      term = XEXP (x, 0);
-      if (GET_CODE (term) == PLUS
-	  && (CONST_INT_P (XEXP (term, 1))
-	      || GET_CODE (XEXP (term, 1)) == CONST_DOUBLE))
-	term = XEXP (term, 0);
-      if (GET_CODE (term) != UNSPEC
-	  || XINT (term, 1) != UNSPEC_GOTPCREL)
-	return x;
-
-      term = XVECEXP (term, 0, 0);
-
-      if (GET_CODE (term) != SYMBOL_REF
-	  && GET_CODE (term) != LABEL_REF)
-	return x;
-
-      return term;
-    }
-
-  term = ix86_delegitimize_address (x);
-
-  if (GET_CODE (term) != SYMBOL_REF
-      && GET_CODE (term) != LABEL_REF)
-    return x;
-
-  return term;
-}
-
 /* Allow {LABEL | SYMBOL}_REF - SYMBOL_REF-FOR-PICBASE for Mach-O as
    this is used for to form addresses to local data when -fPIC is in
    use.  */
@@ -6573,7 +6270,7 @@ darwin_local_data_pic (rtx disp)
 
   return false;
 }
-
+
 /* Determine if a given RTX is a valid constant.  We already know this
    satisfies CONSTANT_P.  */
 
@@ -7831,7 +7528,7 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 /* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 
-static void
+static void ATTRIBUTE_UNUSED
 i386_output_dwarf_dtprel (FILE *file, int size, rtx x)
 {
   fputs (ASM_LONG, file);
@@ -7936,6 +7633,46 @@ ix86_delegitimize_address (rtx orig_x)
   if (reg_addend)
     result = gen_rtx_PLUS (Pmode, reg_addend, result);
   return result;
+}
+
+/* If X is a machine specific address (i.e. a symbol or label being
+   referenced as a displacement from the GOT implemented using an
+   UNSPEC), then return the base term.  Otherwise return X.  */
+
+rtx
+ix86_find_base_term (rtx x)
+{
+  rtx term;
+
+  if (TARGET_64BIT)
+    {
+      if (GET_CODE (x) != CONST)
+	return x;
+      term = XEXP (x, 0);
+      if (GET_CODE (term) == PLUS
+	  && (CONST_INT_P (XEXP (term, 1))
+	      || GET_CODE (XEXP (term, 1)) == CONST_DOUBLE))
+	term = XEXP (term, 0);
+      if (GET_CODE (term) != UNSPEC
+	  || XINT (term, 1) != UNSPEC_GOTPCREL)
+	return x;
+
+      term = XVECEXP (term, 0, 0);
+
+      if (GET_CODE (term) != SYMBOL_REF
+	  && GET_CODE (term) != LABEL_REF)
+	return x;
+
+      return term;
+    }
+
+  term = ix86_delegitimize_address (x);
+
+  if (GET_CODE (term) != SYMBOL_REF
+      && GET_CODE (term) != LABEL_REF)
+    return x;
+
+  return term;
 }
 
 static void
@@ -8138,6 +7875,21 @@ print_reg (rtx x, int code, FILE *file)
    so that we can print its name in some tls_local_dynamic_base
    pattern.  */
 
+static int
+get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
+{
+  rtx x = *px;
+
+  if (GET_CODE (x) == SYMBOL_REF
+      && SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_DYNAMIC)
+    {
+      cfun->machine->some_ld_name = XSTR (x, 0);
+      return 1;
+    }
+
+  return 0;
+}
+
 static const char *
 get_some_local_dynamic_name (void)
 {
@@ -8152,21 +7904,6 @@ get_some_local_dynamic_name (void)
       return cfun->machine->some_ld_name;
 
   gcc_unreachable ();
-}
-
-static int
-get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
-{
-  rtx x = *px;
-
-  if (GET_CODE (x) == SYMBOL_REF
-      && SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_DYNAMIC)
-    {
-      cfun->machine->some_ld_name = XSTR (x, 0);
-      return 1;
-    }
-
-  return 0;
 }
 
 /* Meaning of CODE:
@@ -10732,131 +10469,6 @@ ix86_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
     }
 }
 
-/* Return true if we should use an FCOMI instruction for this fp comparison.  */
-
-int
-ix86_use_fcomi_compare (enum rtx_code code ATTRIBUTE_UNUSED)
-{
-  enum rtx_code swapped_code = swap_condition (code);
-  return ((ix86_fp_comparison_cost (code) == ix86_fp_comparison_fcomi_cost (code))
-	  || (ix86_fp_comparison_cost (swapped_code)
-	      == ix86_fp_comparison_fcomi_cost (swapped_code)));
-}
-
-/* Swap, force into registers, or otherwise massage the two operands
-   to a fp comparison.  The operands are updated in place; the new
-   comparison code is returned.  */
-
-static enum rtx_code
-ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
-{
-  enum machine_mode fpcmp_mode = ix86_fp_compare_mode (code);
-  rtx op0 = *pop0, op1 = *pop1;
-  enum machine_mode op_mode = GET_MODE (op0);
-  int is_sse = TARGET_SSE_MATH && SSE_FLOAT_MODE_P (op_mode);
-
-  /* All of the unordered compare instructions only work on registers.
-     The same is true of the fcomi compare instructions.  The XFmode
-     compare instructions require registers except when comparing
-     against zero or when converting operand 1 from fixed point to
-     floating point.  */
-
-  if (!is_sse
-      && (fpcmp_mode == CCFPUmode
-	  || (op_mode == XFmode
-	      && ! (standard_80387_constant_p (op0) == 1
-		    || standard_80387_constant_p (op1) == 1)
-	      && GET_CODE (op1) != FLOAT)
-	  || ix86_use_fcomi_compare (code)))
-    {
-      op0 = force_reg (op_mode, op0);
-      op1 = force_reg (op_mode, op1);
-    }
-  else
-    {
-      /* %%% We only allow op1 in memory; op0 must be st(0).  So swap
-	 things around if they appear profitable, otherwise force op0
-	 into a register.  */
-
-      if (standard_80387_constant_p (op0) == 0
-	  || (MEM_P (op0)
-	      && ! (standard_80387_constant_p (op1) == 0
-		    || MEM_P (op1))))
-	{
-	  rtx tmp;
-	  tmp = op0, op0 = op1, op1 = tmp;
-	  code = swap_condition (code);
-	}
-
-      if (!REG_P (op0))
-	op0 = force_reg (op_mode, op0);
-
-      if (CONSTANT_P (op1))
-	{
-	  int tmp = standard_80387_constant_p (op1);
-	  if (tmp == 0)
-	    op1 = validize_mem (force_const_mem (op_mode, op1));
-	  else if (tmp == 1)
-	    {
-	      if (TARGET_CMOVE)
-		op1 = force_reg (op_mode, op1);
-	    }
-	  else
-	    op1 = force_reg (op_mode, op1);
-	}
-    }
-
-  /* Try to rearrange the comparison to make it cheaper.  */
-  if (ix86_fp_comparison_cost (code)
-      > ix86_fp_comparison_cost (swap_condition (code))
-      && (REG_P (op1) || !no_new_pseudos))
-    {
-      rtx tmp;
-      tmp = op0, op0 = op1, op1 = tmp;
-      code = swap_condition (code);
-      if (!REG_P (op0))
-	op0 = force_reg (op_mode, op0);
-    }
-
-  *pop0 = op0;
-  *pop1 = op1;
-  return code;
-}
-
-/* Convert comparison codes we use to represent FP comparison to integer
-   code that will result in proper branch.  Return UNKNOWN if no such code
-   is available.  */
-
-enum rtx_code
-ix86_fp_compare_code_to_integer (enum rtx_code code)
-{
-  switch (code)
-    {
-    case GT:
-      return GTU;
-    case GE:
-      return GEU;
-    case ORDERED:
-    case UNORDERED:
-      return code;
-      break;
-    case UNEQ:
-      return EQ;
-      break;
-    case UNLT:
-      return LTU;
-      break;
-    case UNLE:
-      return LEU;
-      break;
-    case LTGT:
-      return NE;
-      break;
-    default:
-      return UNKNOWN;
-    }
-}
-
 /* Split comparison code CODE into comparisons we can do using branch
    instructions.  BYPASS_CODE is comparison code for branch that will
    branch around FIRST_CODE and SECOND_CODE.  If some of branches
@@ -11007,6 +10619,134 @@ ix86_fp_comparison_cost (enum rtx_code code)
   if (min > fcomi_cost)
     min = fcomi_cost;
   return min;
+}
+
+/* Return true if we should use an FCOMI instruction for this
+   fp comparison.  */
+
+int
+ix86_use_fcomi_compare (enum rtx_code code ATTRIBUTE_UNUSED)
+{
+  enum rtx_code swapped_code = swap_condition (code);
+
+  return ((ix86_fp_comparison_cost (code)
+	   == ix86_fp_comparison_fcomi_cost (code))
+	  || (ix86_fp_comparison_cost (swapped_code)
+	      == ix86_fp_comparison_fcomi_cost (swapped_code)));
+}
+
+/* Swap, force into registers, or otherwise massage the two operands
+   to a fp comparison.  The operands are updated in place; the new
+   comparison code is returned.  */
+
+static enum rtx_code
+ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
+{
+  enum machine_mode fpcmp_mode = ix86_fp_compare_mode (code);
+  rtx op0 = *pop0, op1 = *pop1;
+  enum machine_mode op_mode = GET_MODE (op0);
+  int is_sse = TARGET_SSE_MATH && SSE_FLOAT_MODE_P (op_mode);
+
+  /* All of the unordered compare instructions only work on registers.
+     The same is true of the fcomi compare instructions.  The XFmode
+     compare instructions require registers except when comparing
+     against zero or when converting operand 1 from fixed point to
+     floating point.  */
+
+  if (!is_sse
+      && (fpcmp_mode == CCFPUmode
+	  || (op_mode == XFmode
+	      && ! (standard_80387_constant_p (op0) == 1
+		    || standard_80387_constant_p (op1) == 1)
+	      && GET_CODE (op1) != FLOAT)
+	  || ix86_use_fcomi_compare (code)))
+    {
+      op0 = force_reg (op_mode, op0);
+      op1 = force_reg (op_mode, op1);
+    }
+  else
+    {
+      /* %%% We only allow op1 in memory; op0 must be st(0).  So swap
+	 things around if they appear profitable, otherwise force op0
+	 into a register.  */
+
+      if (standard_80387_constant_p (op0) == 0
+	  || (MEM_P (op0)
+	      && ! (standard_80387_constant_p (op1) == 0
+		    || MEM_P (op1))))
+	{
+	  rtx tmp;
+	  tmp = op0, op0 = op1, op1 = tmp;
+	  code = swap_condition (code);
+	}
+
+      if (!REG_P (op0))
+	op0 = force_reg (op_mode, op0);
+
+      if (CONSTANT_P (op1))
+	{
+	  int tmp = standard_80387_constant_p (op1);
+	  if (tmp == 0)
+	    op1 = validize_mem (force_const_mem (op_mode, op1));
+	  else if (tmp == 1)
+	    {
+	      if (TARGET_CMOVE)
+		op1 = force_reg (op_mode, op1);
+	    }
+	  else
+	    op1 = force_reg (op_mode, op1);
+	}
+    }
+
+  /* Try to rearrange the comparison to make it cheaper.  */
+  if (ix86_fp_comparison_cost (code)
+      > ix86_fp_comparison_cost (swap_condition (code))
+      && (REG_P (op1) || !no_new_pseudos))
+    {
+      rtx tmp;
+      tmp = op0, op0 = op1, op1 = tmp;
+      code = swap_condition (code);
+      if (!REG_P (op0))
+	op0 = force_reg (op_mode, op0);
+    }
+
+  *pop0 = op0;
+  *pop1 = op1;
+  return code;
+}
+
+/* Convert comparison codes we use to represent FP comparison to integer
+   code that will result in proper branch.  Return UNKNOWN if no such code
+   is available.  */
+
+enum rtx_code
+ix86_fp_compare_code_to_integer (enum rtx_code code)
+{
+  switch (code)
+    {
+    case GT:
+      return GTU;
+    case GE:
+      return GEU;
+    case ORDERED:
+    case UNORDERED:
+      return code;
+      break;
+    case UNEQ:
+      return EQ;
+      break;
+    case UNLT:
+      return LTU;
+      break;
+    case UNLE:
+      return LEU;
+      break;
+    case LTGT:
+      return NE;
+      break;
+    default:
+      return UNKNOWN;
+    }
 }
 
 /* Generate insn patterns to do a floating point compare of OPERANDS.  */
@@ -14770,77 +14510,6 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
   return 1;
 }
 
-/* Expand strlen.  */
-int
-ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
-{
-  rtx addr, scratch1, scratch2, scratch3, scratch4;
-
-  /* The generic case of strlen expander is long.  Avoid it's
-     expanding unless TARGET_INLINE_ALL_STRINGOPS.  */
-
-  if (TARGET_UNROLL_STRLEN && eoschar == const0_rtx && optimize > 1
-      && !TARGET_INLINE_ALL_STRINGOPS
-      && !optimize_size
-      && (!CONST_INT_P (align) || INTVAL (align) < 4))
-    return 0;
-
-  addr = force_reg (Pmode, XEXP (src, 0));
-  scratch1 = gen_reg_rtx (Pmode);
-
-  if (TARGET_UNROLL_STRLEN && eoschar == const0_rtx && optimize > 1
-      && !optimize_size)
-    {
-      /* Well it seems that some optimizer does not combine a call like
-         foo(strlen(bar), strlen(bar));
-         when the move and the subtraction is done here.  It does calculate
-         the length just once when these instructions are done inside of
-         output_strlen_unroll().  But I think since &bar[strlen(bar)] is
-         often used and I use one fewer register for the lifetime of
-         output_strlen_unroll() this is better.  */
-
-      emit_move_insn (out, addr);
-
-      ix86_expand_strlensi_unroll_1 (out, src, align);
-
-      /* strlensi_unroll_1 returns the address of the zero at the end of
-         the string, like memchr(), so compute the length by subtracting
-         the start address.  */
-      if (TARGET_64BIT)
-	emit_insn (gen_subdi3 (out, out, addr));
-      else
-	emit_insn (gen_subsi3 (out, out, addr));
-    }
-  else
-    {
-      rtx unspec;
-      scratch2 = gen_reg_rtx (Pmode);
-      scratch3 = gen_reg_rtx (Pmode);
-      scratch4 = force_reg (Pmode, constm1_rtx);
-
-      emit_move_insn (scratch3, addr);
-      eoschar = force_reg (QImode, eoschar);
-
-      src = replace_equiv_address_nv (src, scratch3);
-
-      /* If .md starts supporting :P, this can be done in .md.  */
-      unspec = gen_rtx_UNSPEC (Pmode, gen_rtvec (4, src, eoschar, align,
-						 scratch4), UNSPEC_SCAS);
-      emit_insn (gen_strlenqi_1 (scratch1, scratch3, unspec));
-      if (TARGET_64BIT)
-	{
-	  emit_insn (gen_one_cmpldi2 (scratch2, scratch1));
-	  emit_insn (gen_adddi3 (out, scratch2, constm1_rtx));
-	}
-      else
-	{
-	  emit_insn (gen_one_cmplsi2 (scratch2, scratch1));
-	  emit_insn (gen_addsi3 (out, scratch2, constm1_rtx));
-	}
-    }
-  return 1;
-}
-
 /* Expand the appropriate insns for doing strlen if not just doing
    repnz; scasb
 
@@ -15030,6 +14699,78 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
     emit_insn (gen_subsi3_carry (out, out, GEN_INT (3), cmp));
 
   emit_label (end_0_label);
+}
+
+/* Expand strlen.  */
+
+int
+ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
+{
+  rtx addr, scratch1, scratch2, scratch3, scratch4;
+
+  /* The generic case of strlen expander is long.  Avoid it's
+     expanding unless TARGET_INLINE_ALL_STRINGOPS.  */
+
+  if (TARGET_UNROLL_STRLEN && eoschar == const0_rtx && optimize > 1
+      && !TARGET_INLINE_ALL_STRINGOPS
+      && !optimize_size
+      && (!CONST_INT_P (align) || INTVAL (align) < 4))
+    return 0;
+
+  addr = force_reg (Pmode, XEXP (src, 0));
+  scratch1 = gen_reg_rtx (Pmode);
+
+  if (TARGET_UNROLL_STRLEN && eoschar == const0_rtx && optimize > 1
+      && !optimize_size)
+    {
+      /* Well it seems that some optimizer does not combine a call like
+         foo(strlen(bar), strlen(bar));
+         when the move and the subtraction is done here.  It does calculate
+         the length just once when these instructions are done inside of
+         output_strlen_unroll().  But I think since &bar[strlen(bar)] is
+         often used and I use one fewer register for the lifetime of
+         output_strlen_unroll() this is better.  */
+
+      emit_move_insn (out, addr);
+
+      ix86_expand_strlensi_unroll_1 (out, src, align);
+
+      /* strlensi_unroll_1 returns the address of the zero at the end of
+         the string, like memchr(), so compute the length by subtracting
+         the start address.  */
+      if (TARGET_64BIT)
+	emit_insn (gen_subdi3 (out, out, addr));
+      else
+	emit_insn (gen_subsi3 (out, out, addr));
+    }
+  else
+    {
+      rtx unspec;
+      scratch2 = gen_reg_rtx (Pmode);
+      scratch3 = gen_reg_rtx (Pmode);
+      scratch4 = force_reg (Pmode, constm1_rtx);
+
+      emit_move_insn (scratch3, addr);
+      eoschar = force_reg (QImode, eoschar);
+
+      src = replace_equiv_address_nv (src, scratch3);
+
+      /* If .md starts supporting :P, this can be done in .md.  */
+      unspec = gen_rtx_UNSPEC (Pmode, gen_rtvec (4, src, eoschar, align,
+						 scratch4), UNSPEC_SCAS);
+      emit_insn (gen_strlenqi_1 (scratch1, scratch3, unspec));
+      if (TARGET_64BIT)
+	{
+	  emit_insn (gen_one_cmpldi2 (scratch2, scratch1));
+	  emit_insn (gen_adddi3 (out, scratch2, constm1_rtx));
+	}
+      else
+	{
+	  emit_insn (gen_one_cmplsi2 (scratch2, scratch1));
+	  emit_insn (gen_addsi3 (out, scratch2, constm1_rtx));
+	}
+    }
+  return 1;
 }
 
 /* For given symbol (function) construct code to compute address of it's PLT
@@ -16727,13 +16468,6 @@ static const struct builtin_description bdesc_1arg[] =
   { MASK_SSSE3, CODE_FOR_absv2si2, "__builtin_ia32_pabsd", IX86_BUILTIN_PABSD, 0, 0 },
 };
 
-static void
-ix86_init_builtins (void)
-{
-  if (TARGET_MMX)
-    ix86_init_mmx_sse_builtins ();
-}
-
 /* Set up all the MMX/SSE builtins.  This is not called if TARGET_MMX
    is zero.  Otherwise, if TARGET_SSE is not set, only expand the MMX
    builtins.  */
@@ -17459,6 +17193,13 @@ ix86_init_mmx_sse_builtins (void)
 				    integer_type_node, NULL_TREE);
   def_builtin (MASK_SSE | MASK_3DNOW_A, "__builtin_ia32_vec_set_v4hi",
 	       ftype, IX86_BUILTIN_VEC_SET_V4HI);
+}
+
+static void
+ix86_init_builtins (void)
+{
+  if (TARGET_MMX)
+    ix86_init_mmx_sse_builtins ();
 }
 
 /* Errors in the source file can cause expand_expr to return const0_rtx
@@ -20934,39 +20675,10 @@ ix86_md_asm_clobbers (tree outputs ATTRIBUTE_UNUSED,
   return clobbers;
 }
 
-/* Return true if this goes in small data/bss.  */
+/* Implementes target vector targetm.asm.encode_section_info.  This
+   is not used by netware.  */
 
-static bool
-ix86_in_large_data_p (tree exp)
-{
-  if (ix86_cmodel != CM_MEDIUM && ix86_cmodel != CM_MEDIUM_PIC)
-    return false;
-
-  /* Functions are never large data.  */
-  if (TREE_CODE (exp) == FUNCTION_DECL)
-    return false;
-
-  if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
-    {
-      const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (exp));
-      if (strcmp (section, ".ldata") == 0
-	  || strcmp (section, ".lbss") == 0)
-	return true;
-      return false;
-    }
-  else
-    {
-      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
-
-      /* If this is an incomplete type with size 0, then we can't put it
-	 in data because it might be too big when completed.  */
-      if (!size || size > ix86_section_threshold)
-	return true;
-    }
-
-  return false;
-}
-static void
+static void ATTRIBUTE_UNUSED
 ix86_encode_section_info (tree decl, rtx rtl, int first)
 {
   default_encode_section_info (decl, rtl, first);
@@ -21072,7 +20784,7 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
 
 /* Solaris implementation of TARGET_ASM_NAMED_SECTION.  */
 
-static void
+static void ATTRIBUTE_UNUSED
 i386_solaris_elf_named_section (const char *name, unsigned int flags,
 				tree decl)
 {
@@ -21722,4 +21434,204 @@ ix86_expand_round (rtx operand0, rtx operand1)
   emit_move_insn (operand0, res);
 }
 
+
+/* Table of valid machine attributes.  */
+static const struct attribute_spec ix86_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  /* Stdcall attribute says callee is responsible for popping arguments
+     if they are not variable.  */
+  { "stdcall",   0, 0, false, true,  true,  ix86_handle_cconv_attribute },
+  /* Fastcall attribute says callee is responsible for popping arguments
+     if they are not variable.  */
+  { "fastcall",  0, 0, false, true,  true,  ix86_handle_cconv_attribute },
+  /* Cdecl attribute says the callee is a normal C declaration */
+  { "cdecl",     0, 0, false, true,  true,  ix86_handle_cconv_attribute },
+  /* Regparm attribute specifies how many integer arguments are to be
+     passed in registers.  */
+  { "regparm",   1, 1, false, true,  true,  ix86_handle_cconv_attribute },
+  /* Sseregparm attribute says we are using x86_64 calling conventions
+     for FP arguments.  */
+  { "sseregparm", 0, 0, false, true, true, ix86_handle_cconv_attribute },
+  /* force_align_arg_pointer says this function realigns the stack at entry.  */
+  { (const char *)&ix86_force_align_arg_pointer_string, 0, 0,
+    false, true,  true, ix86_handle_cconv_attribute },
+#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
+  { "dllimport", 0, 0, false, false, false, handle_dll_attribute },
+  { "dllexport", 0, 0, false, false, false, handle_dll_attribute },
+  { "shared",    0, 0, true,  false, false, ix86_handle_shared_attribute },
+#endif
+  { "ms_struct", 0, 0, false, false,  false, ix86_handle_struct_attribute },
+  { "gcc_struct", 0, 0, false, false,  false, ix86_handle_struct_attribute },
+#ifdef SUBTARGET_ATTRIBUTE_TABLE
+  SUBTARGET_ATTRIBUTE_TABLE,
+#endif
+  { NULL,        0, 0, false, false, false, NULL }
+};
+
+/* Initialize the GCC target structure.  */
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE ix86_attribute_table
+#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
+#  undef TARGET_MERGE_DECL_ATTRIBUTES
+#  define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
+#endif
+
+#undef TARGET_COMP_TYPE_ATTRIBUTES
+#define TARGET_COMP_TYPE_ATTRIBUTES ix86_comp_type_attributes
+
+#undef TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS ix86_init_builtins
+#undef TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN ix86_expand_builtin
+
+#undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION ix86_builtin_vectorized_function
+#undef TARGET_VECTORIZE_BUILTIN_CONVERSION
+#define TARGET_VECTORIZE_BUILTIN_CONVERSION ix86_builtin_conversion
+
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE ix86_output_function_epilogue
+
+#undef TARGET_ENCODE_SECTION_INFO
+#ifndef SUBTARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO ix86_encode_section_info
+#else
+#define TARGET_ENCODE_SECTION_INFO SUBTARGET_ENCODE_SECTION_INFO
+#endif
+
+#undef TARGET_ASM_OPEN_PAREN
+#define TARGET_ASM_OPEN_PAREN ""
+#undef TARGET_ASM_CLOSE_PAREN
+#define TARGET_ASM_CLOSE_PAREN ""
+
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP ASM_SHORT
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP ASM_LONG
+#ifdef ASM_QUAD
+#undef TARGET_ASM_ALIGNED_DI_OP
+#define TARGET_ASM_ALIGNED_DI_OP ASM_QUAD
+#endif
+
+#undef TARGET_ASM_UNALIGNED_HI_OP
+#define TARGET_ASM_UNALIGNED_HI_OP TARGET_ASM_ALIGNED_HI_OP
+#undef TARGET_ASM_UNALIGNED_SI_OP
+#define TARGET_ASM_UNALIGNED_SI_OP TARGET_ASM_ALIGNED_SI_OP
+#undef TARGET_ASM_UNALIGNED_DI_OP
+#define TARGET_ASM_UNALIGNED_DI_OP TARGET_ASM_ALIGNED_DI_OP
+
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST ix86_adjust_cost
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE ix86_issue_rate
+#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
+#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
+  ia32_multipass_dfa_lookahead
+
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL ix86_function_ok_for_sibcall
+
+#ifdef HAVE_AS_TLS
+#undef TARGET_HAVE_TLS
+#define TARGET_HAVE_TLS true
+#endif
+#undef TARGET_CANNOT_FORCE_CONST_MEM
+#define TARGET_CANNOT_FORCE_CONST_MEM ix86_cannot_force_const_mem
+#undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
+#define TARGET_USE_BLOCKS_FOR_CONSTANT_P hook_bool_mode_rtx_true
+
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS ix86_delegitimize_address
+
+#undef TARGET_MS_BITFIELD_LAYOUT_P
+#define TARGET_MS_BITFIELD_LAYOUT_P ix86_ms_bitfield_layout_p
+
+#if TARGET_MACHO
+#undef TARGET_BINDS_LOCAL_P
+#define TARGET_BINDS_LOCAL_P darwin_binds_local_p
+#endif
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK x86_output_mi_thunk
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK x86_can_output_mi_thunk
+
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START x86_file_start
+
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS	\
+  (TARGET_DEFAULT			\
+   | TARGET_64BIT_DEFAULT		\
+   | TARGET_SUBTARGET_DEFAULT		\
+   | TARGET_TLS_DIRECT_SEG_REFS_DEFAULT)
+
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION ix86_handle_option
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS ix86_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST ix86_address_cost
+
+#undef TARGET_FIXED_CONDITION_CODE_REGS
+#define TARGET_FIXED_CONDITION_CODE_REGS ix86_fixed_condition_code_regs
+#undef TARGET_CC_MODES_COMPATIBLE
+#define TARGET_CC_MODES_COMPATIBLE ix86_cc_modes_compatible
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG ix86_reorg
+
+#undef TARGET_BUILD_BUILTIN_VA_LIST
+#define TARGET_BUILD_BUILTIN_VA_LIST ix86_build_builtin_va_list
+
+#undef TARGET_MD_ASM_CLOBBERS
+#define TARGET_MD_ASM_CLOBBERS ix86_md_asm_clobbers
+
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX ix86_struct_value_rtx
+#undef TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS ix86_setup_incoming_varargs
+#undef TARGET_MUST_PASS_IN_STACK
+#define TARGET_MUST_PASS_IN_STACK ix86_must_pass_in_stack
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE ix86_pass_by_reference
+#undef TARGET_INTERNAL_ARG_POINTER
+#define TARGET_INTERNAL_ARG_POINTER ix86_internal_arg_pointer
+#undef TARGET_DWARF_HANDLE_FRAME_UNSPEC
+#define TARGET_DWARF_HANDLE_FRAME_UNSPEC ix86_dwarf_handle_frame_unspec
+
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR ix86_gimplify_va_arg
+
+#undef TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P ix86_scalar_mode_supported_p
+
+#undef TARGET_VECTOR_MODE_SUPPORTED_P
+#define TARGET_VECTOR_MODE_SUPPORTED_P ix86_vector_mode_supported_p
+
+#ifdef HAVE_AS_TLS
+#undef TARGET_ASM_OUTPUT_DWARF_DTPREL
+#define TARGET_ASM_OUTPUT_DWARF_DTPREL i386_output_dwarf_dtprel
+#endif
+
+#ifdef SUBTARGET_INSERT_ATTRIBUTES
+#undef TARGET_INSERT_ATTRIBUTES
+#define TARGET_INSERT_ATTRIBUTES SUBTARGET_INSERT_ATTRIBUTES
+#endif
+
+#undef TARGET_MANGLE_FUNDAMENTAL_TYPE
+#define TARGET_MANGLE_FUNDAMENTAL_TYPE ix86_mangle_fundamental_type
+
+#undef TARGET_STACK_PROTECT_FAIL
+#define TARGET_STACK_PROTECT_FAIL ix86_stack_protect_fail
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE ix86_function_value
+
+struct gcc_target targetm = TARGET_INITIALIZER;
+
 #include "gt-i386.h"
