@@ -1,3 +1,9 @@
+2007-03-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/4402.cc
+	(test02): Use std::numeric_limits<>::max() to get suitable large
+	values.
+
 2007-03-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/21_strings/headers/cstdlib/functions_std.cc: Without
