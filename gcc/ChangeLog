@@ -1,5 +1,13 @@
 2007-03-22  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c: Remove unnecessary function declarations.
+	Move targetm definition, and all related macros, to the end of
+	the file.  Resort some functions to put definitions before uses.
+	(ix86_attribute_table): Make static.  Move to end of file.
+	(ix86_gimplify_va_arg): Make static.
+
+2007-03-22  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.c (ix86_function_regparm): Early exit for 64-bit;
 	don't increase local_regparm with force_align_arg_pointer check.
 	(ix86_function_sseregparm): Assert 32-bit.
