@@ -1,3 +1,7 @@
+2007-03-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* acx.m4 (ACX_PKGVERSION, ACX_BUGURL): Define.
+
 2007-03-07  Andreas Schwab  <schwab@suse.de>
 
 	* acx.m4 (GCC_TARGET_TOOL): Expand backquotes outside
