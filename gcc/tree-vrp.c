@@ -647,7 +647,12 @@ operand_less_p (tree val, tree val2)
     {
       tree tcmp;
 
+      fold_defer_overflow_warnings ();
+
       tcmp = fold_binary_to_constant (LT_EXPR, boolean_type_node, val, val2);
+
+      fold_undefer_and_ignore_overflow_warnings ();
+
       if (!tcmp)
 	return -2;
 
