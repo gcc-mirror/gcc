@@ -1,3 +1,10 @@
+2007-03-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/30834
+	* arith.c (complex_pow): Rewrite to handle large power.
+	(gfc_arith_power): Handle large power in the real and integer
+	cases.
+
 2007-03-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/31262
