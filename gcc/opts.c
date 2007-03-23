@@ -1010,7 +1010,7 @@ common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_fforce_mem:
-      warning (0, "-f[no-]force-mem is nop and option will be removed in 4.2");
+      warning (0, "-f[no-]force-mem is nop and option will be removed in 4.3");
       break;
 
     case OPT_floop_optimize:

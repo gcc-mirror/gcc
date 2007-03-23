@@ -1,3 +1,9 @@
+2007-03-23  Martin Michlmayr  <tbm@cyrius.com>
+
+	* doc/invoke.texi (-fforce-mem): Update documentation to reflect
+	that this option will be removed in 4.3 rather than 4.2.
+	* opts.c (common_handle_option): Likewise.
+
 2007-03-21  Mike Stump  <mrs@apple.com>
 
 	* c.opt: Fixup for Objective-C/C++.

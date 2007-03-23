@@ -4673,7 +4673,7 @@ Force memory operands to be copied into registers before doing
 arithmetic on them.  This produces better code by making all memory
 references potential common subexpressions.  When they are not common
 subexpressions, instruction combination should eliminate the separate
-register-load. This option is now a nop and will be removed in 4.2.
+register-load. This option is now a nop and will be removed in 4.3.
 
 @item -fforce-addr
 @opindex fforce-addr
