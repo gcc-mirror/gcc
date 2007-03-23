@@ -613,15 +613,9 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
   tcode = TREE_CODE (to);
 
   conv = build_identity_conv (from, expr);
-  if (fcode == FUNCTION_TYPE)
+  if (fcode == FUNCTION_TYPE || fcode == ARRAY_TYPE)
     {
-      from = build_pointer_type (from);
-      fcode = TREE_CODE (from);
-      conv = build_conv (ck_lvalue, from, conv);
-    }
-  else if (fcode == ARRAY_TYPE)
-    {
-      from = build_pointer_type (TREE_TYPE (from));
+      from = type_decays_to (from);
       fcode = TREE_CODE (from);
       conv = build_conv (ck_lvalue, from, conv);
     }
@@ -632,7 +626,10 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	  tree bitfield_type;
 	  bitfield_type = is_bitfield_expr_with_lowered_type (expr);
 	  if (bitfield_type)
-	    from = strip_top_quals (bitfield_type);
+	    {
+	      from = strip_top_quals (bitfield_type);
+	      fcode = TREE_CODE (from);
+	    }
 	}
       conv = build_conv (ck_rvalue, from, conv);
     }
