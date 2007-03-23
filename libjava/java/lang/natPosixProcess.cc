@@ -17,6 +17,9 @@ details.  */
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
 #include <signal.h>
 #include <string.h>
 #include <stdlib.h>
@@ -352,7 +355,31 @@ java::lang::PosixProcess::nativeSpawn ()
 		  _exit (127);
 		}
 	    }
-
+          // Make sure all file descriptors are closed.  In
+          // multi-threaded programs, there is a race between when a
+          // descriptor is obtained, when we can set FD_CLOEXEC, and
+          // fork().  If the fork occurs before FD_CLOEXEC is set, the
+          // descriptor would leak to the execed process if we did not
+          // manually close it.  So that is what we do.  Since we
+          // close all the descriptors, it is redundant to set
+          // FD_CLOEXEC on them elsewhere.
+          int max_fd;
+#ifdef HAVE_GETRLIMIT
+          rlimit rl;
+          int rv = getrlimit(RLIMIT_NOFILE, &rl);
+          if (rv == 0)
+            max_fd = rl.rlim_max - 1;
+          else
+            max_fd = 1024 - 1;
+#else
+          max_fd = 1024 - 1;
+#endif
+          while(max_fd > 2)
+            {
+              if (max_fd != msgp[1])
+                close (max_fd);
+              max_fd--;
+            }
 	  // Make sure that SIGCHLD is unblocked for the new process.
 	  sigset_t mask;
 	  sigemptyset (&mask);
@@ -438,12 +465,4 @@ java::lang::PosixProcess::nativeSpawn ()
 
   myclose (msgp[0]);
   cleanup (args, env, path);
-
-  if (exception == NULL)
-    {
-      fcntl (outp[1], F_SETFD, FD_CLOEXEC);
-      fcntl (inp[0], F_SETFD, FD_CLOEXEC);
-      if (! redirect)
-	fcntl (errp[0], F_SETFD, FD_CLOEXEC);
-    }
 }

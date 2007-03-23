@@ -1,3 +1,19 @@
+2007-03-22  David Daney  <ddaney@avtrex.com>
+
+	PR libgcj/31228
+	* configure.ac: Add checks for getrlimit and sys/resource.h.
+	* include/posix.h (_Jv_platform_close_on_exec): Remove.
+	* include/config.h.in: Regenerate.
+	* configure: Regenerate.
+	* gnu/java/nio/channels/natFileChannelPosix.cc (open): Remove call to
+	_Jv_platform_close_on_exec;
+	* gnu/java/net/natPlainSocketImplPosix.cc (create): Likewise.
+	(accept): Likewise.
+	* gnu/java/net/natPlainDatagramSocketImplPosix.cc (create):Likewise.
+	* java/lang/natPosixProcess.cc: Include sys/resource.h.
+	(nativeSpawn): Close all file descriptors.  Don't set FD_CLOEXEC on
+	pipes.
+
 2007-03-20  Andrew Haley  <aph@redhat.com>
 
 	* testsuite/libjava.lang/PR31264.java: New test.
