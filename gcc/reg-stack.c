@@ -167,6 +167,7 @@
 #include "recog.h"
 #include "output.h"
 #include "basic-block.h"
+#include "cfglayout.h"
 #include "varray.h"
 #include "reload.h"
 #include "ggc.h"
@@ -3197,8 +3198,17 @@ rest_of_handle_stack_regs (void)
                        | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0))
           && (flag_reorder_blocks || flag_reorder_blocks_and_partition))
         {
-          reorder_basic_blocks (0);
-          cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK);
+	  basic_block bb;
+
+	  cfg_layout_initialize (0);
+
+	  reorder_basic_blocks ();
+	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK);
+
+	  FOR_EACH_BB (bb)
+	    if (bb->next_bb != EXIT_BLOCK_PTR)
+	      bb->aux = bb->next_bb;
+	  cfg_layout_finalize ();
         }
     }
   else 

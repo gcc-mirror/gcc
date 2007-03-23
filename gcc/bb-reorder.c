@@ -1889,19 +1889,16 @@ verify_hot_cold_block_grouping (void)
    the set of flags to pass to cfg_layout_initialize().  */
 
 void
-reorder_basic_blocks (unsigned int flags)
+reorder_basic_blocks (void)
 {
   int n_traces;
   int i;
   struct trace *traces;
 
+  gcc_assert (current_ir_type () == IR_RTL_CFGLAYOUT);
+
   if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
     return;
-
-  if (targetm.cannot_modify_jumps_p ())
-    return;
-
-  cfg_layout_initialize (flags);
 
   set_edge_can_fallthru_flag ();
   mark_dfs_back_edges ();
@@ -1930,10 +1927,11 @@ reorder_basic_blocks (unsigned int flags)
   FREE (traces);
   FREE (bbd);
 
+  relink_block_chain (/*stay_in_cfglayout_mode=*/true);
+
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
 
-  cfg_layout_finalize ();
   if (flag_reorder_blocks_and_partition)
     verify_hot_cold_block_grouping ();
 }
@@ -1976,6 +1974,8 @@ insert_section_boundary_note (void)
 static bool
 gate_duplicate_computed_gotos (void)
 {
+  if (targetm.cannot_modify_jumps_p ())
+    return false;
   return (optimize > 0 && flag_expensive_optimizations && !optimize_size);
 }
 
@@ -1988,9 +1988,6 @@ duplicate_computed_gotos (void)
   int max_size;
 
   if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
-    return 0;
-
-  if (targetm.cannot_modify_jumps_p ())
     return 0;
 
   cfg_layout_initialize (0);
@@ -2198,6 +2195,8 @@ partition_hot_cold_basic_blocks (void)
 static bool
 gate_handle_reorder_blocks (void)
 {
+  if (targetm.cannot_modify_jumps_p ())
+    return false;
   return (optimize > 0);
 }
 
@@ -2206,33 +2205,38 @@ gate_handle_reorder_blocks (void)
 static unsigned int
 rest_of_handle_reorder_blocks (void)
 {
-  bool changed;
   unsigned int liveness_flags;
+  basic_block bb;
 
   /* Last attempt to optimize CFG, as scheduling, peepholing and insn
      splitting possibly introduced more crossjumping opportunities.  */
   liveness_flags = (!HAVE_conditional_execution ? CLEANUP_UPDATE_LIFE : 0);
-  changed = cleanup_cfg (CLEANUP_EXPENSIVE | liveness_flags);
+  cfg_layout_initialize (CLEANUP_EXPENSIVE | liveness_flags);
 
   if (flag_sched2_use_traces && flag_schedule_insns_after_reload)
     {
       timevar_push (TV_TRACER);
-      tracer (liveness_flags);
+      tracer ();
       timevar_pop (TV_TRACER);
     }
 
   if (flag_reorder_blocks || flag_reorder_blocks_and_partition)
-    reorder_basic_blocks (liveness_flags);
+    reorder_basic_blocks ();
   if (flag_reorder_blocks || flag_reorder_blocks_and_partition
       || (flag_sched2_use_traces && flag_schedule_insns_after_reload))
-    changed |= cleanup_cfg (CLEANUP_EXPENSIVE | liveness_flags);
+    cleanup_cfg (CLEANUP_EXPENSIVE | liveness_flags);
 
   /* On conditional execution targets we can not update the life cheaply, so
      we deffer the updating to after both cleanups.  This may lose some cases
      but should not be terribly bad.  */
-  if (changed && HAVE_conditional_execution)
+  if (HAVE_conditional_execution)
     update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
 		      PROP_DEATH_NOTES);
+
+  FOR_EACH_BB (bb)
+    if (bb->next_bb != EXIT_BLOCK_PTR)
+      bb->aux = bb->next_bb;
+  cfg_layout_finalize ();
 
   /* Add NOTE_INSN_SWITCH_TEXT_SECTIONS notes.  */
   insert_section_boundary_note ();

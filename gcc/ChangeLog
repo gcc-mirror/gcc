@@ -1,3 +1,505 @@
+2007-03-23  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tracer.c (tracer): Don't take FLAGS argument.  Assert we are
+	in cfglayout mode.  Don't go into and out of cfglayout mode.
+	Link the blocks in the order of the constructed traces.
+	(rest_of_handle_tracer): Adjust call to tracer.
+	* loop-init.c (rtl_loop_init): Assert we are in cfglayout mode.
+	Don't go into cfglayout mode.
+	(rtl_loop_done): Don't go out of cfglayout mode.
+	* cfglayout.c (relink_block_chain): New function, split out from...
+	(fixup_reorder_chain): ...here.  Remove redundant checking.
+	(cfg_layout_finalize): Don't clear the header, footer, and aux
+	fields here, move the code to do so to relink_block_chain.  Likewise
+	for free_original_copy_tables.
+	* rtl.h (tracer): Update prototype.
+	* bb-reorder.c (reorder_basic_blocks): Don't take FLAGS argument.
+	Assert we are in cfglayout mode.  Don't go into and out of cfglayout
+	mode.  Use relink_block_chain to serialize the CFG according to the
+	new basic block order.  Move targetm.cannot_modify_jumps_p check from
+	here...
+	(gate_handle_reorder_blocks): ...to here.
+	(duplicate_computed_gotos): Move targetm.cannot_modify_jumps_p check
+	from here...
+	(gate_duplicate_computed_gotos): ...to here.
+	(rest_of_handle_reorder_blocks): Don't see if anything has changed,
+	something always changes when going into and out of cfglayout mode.
+	Perform an expensive cfg cleanup while going into cfglayout mode.
+	Always update liveness information on HAVE_conditional_execution
+	targets.  Reserialize the basic blocks and go out of cfglayout mode.
+	* reg-stack.c: Include cfglayout.h.
+	(rest_of_handle_stack_regs): Go into and out of cfglayout mode around
+	the call to reorder_basic_blocks.
+	* basic-block.h (reorder_basic_blocks): Update prototype.
+	(relink_block_chain): New prototype.
+	* passes.c (pass_outof_cfg_layout_mode): Move after cse2.
+
+Index: tracer.c
+===================================================================
+--- tracer.c	(revision 122857)
++++ tracer.c	(working copy)
+@@ -357,24 +357,25 @@ layout_superblocks (void)
+     }
+ }
+ 
+-/* Main entry point to this file.  FLAGS is the set of flags to pass
+-   to cfg_layout_initialize().  */
++/* Main entry point to this file.  */
+ 
+ void
+-tracer (unsigned int flags)
++tracer (void)
+ {
++  gcc_assert (current_ir_type () == IR_RTL_CFGLAYOUT);
++
+   if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
+     return;
+ 
+-  cfg_layout_initialize (flags);
+   mark_dfs_back_edges ();
+   if (dump_file)
+     dump_flow_info (dump_file, dump_flags);
+   tail_duplicate ();
+   layout_superblocks ();
++  relink_block_chain (/*stay_in_cfglayout_mode=*/true);
++  
+   if (dump_file)
+     dump_flow_info (dump_file, dump_flags);
+-  cfg_layout_finalize ();
+ 
+   /* Merge basic blocks in duplicated traces.  */
+   cleanup_cfg (CLEANUP_EXPENSIVE);
+@@ -392,7 +393,7 @@ rest_of_handle_tracer (void)
+ {
+   if (dump_file)
+     dump_flow_info (dump_file, dump_flags);
+-  tracer (0);
++  tracer ();
+   reg_scan (get_insns (), max_reg_num ());
+   return 0;
+ }
+Index: loop-init.c
+===================================================================
+--- loop-init.c	(revision 122857)
++++ loop-init.c	(working copy)
+@@ -171,12 +171,11 @@ struct tree_opt_pass pass_loop2 =
+ static unsigned int
+ rtl_loop_init (void)
+ {
++  gcc_assert (current_ir_type () == IR_RTL_CFGLAYOUT);
++  
+   if (dump_file)
+     dump_flow_info (dump_file, dump_flags);
+ 
+-  /* Initialize structures for layout changes.  */
+-  cfg_layout_initialize (0);
+-
+   loop_optimizer_init (LOOPS_NORMAL);
+   return 0;
+ }
+@@ -204,17 +203,9 @@ struct tree_opt_pass pass_rtl_loop_init 
+ static unsigned int
+ rtl_loop_done (void)
+ {
+-  basic_block bb;
+-
+   loop_optimizer_finalize ();
+   free_dominance_info (CDI_DOMINATORS);
+ 
+-  /* Finalize layout changes.  */
+-  FOR_EACH_BB (bb)
+-    if (bb->next_bb != EXIT_BLOCK_PTR)
+-      bb->aux = bb->next_bb;
+-  cfg_layout_finalize ();
+-
+   cleanup_cfg (CLEANUP_EXPENSIVE);
+   delete_trivially_dead_insns (get_insns (), max_reg_num ());
+   reg_scan (get_insns (), max_reg_num ());
+Index: cfglayout.c
+===================================================================
+--- cfglayout.c	(revision 122858)
++++ cfglayout.c	(working copy)
+@@ -634,13 +634,83 @@ reemit_insn_block_notes (void)
+   reorder_blocks ();
+ }
+ 
++
++/* Link the basic blocks in the correct order, compacting the basic
++   block queue while at it.  This also clears the visited flag on
++   all basic blocks.  If STAY_IN_CFGLAYOUT_MODE is false, this function
++   also clears the basic block header and footer fields.
++
++   This function is usually called after a pass (e.g. tracer) finishes
++   some transformations while in cfglayout mode.  The required sequence
++   of the basic blocks is in a linked list along the bb->aux field.
++   This functions re-links the basic block prev_bb and next_bb pointers
++   accordingly, and it compacts and renumbers the blocks.  */
++
++void
++relink_block_chain (bool stay_in_cfglayout_mode)
++{
++  basic_block bb, prev_bb;
++  int index;
++
++  /* Maybe dump the re-ordered sequence.  */
++  if (dump_file)
++    {
++      fprintf (dump_file, "Reordered sequence:\n");
++      for (bb = ENTRY_BLOCK_PTR->next_bb, index = NUM_FIXED_BLOCKS;
++	   bb;
++	   bb = bb->aux, index++)
++	{
++	  fprintf (dump_file, " %i ", index);
++	  if (get_bb_original (bb))
++	    fprintf (dump_file, "duplicate of %i ",
++		     get_bb_original (bb)->index);
++	  else if (forwarder_block_p (bb)
++		   && !LABEL_P (BB_HEAD (bb)))
++	    fprintf (dump_file, "compensation ");
++	  else
++	    fprintf (dump_file, "bb %i ", bb->index);
++	  fprintf (dump_file, " [%i]\n", bb->frequency);
++	}
++    }
++
++  /* Now reorder the blocks.  */
++  prev_bb = ENTRY_BLOCK_PTR;
++  bb = ENTRY_BLOCK_PTR->next_bb;
++  for (; bb; prev_bb = bb, bb = bb->aux)
++    {
++      bb->prev_bb = prev_bb;
++      prev_bb->next_bb = bb;
++    }
++  prev_bb->next_bb = EXIT_BLOCK_PTR;
++  EXIT_BLOCK_PTR->prev_bb = prev_bb;
++
++  /* Then, clean up the aux and visited fields.  */
++  FOR_ALL_BB (bb)
++    {
++      bb->aux = NULL;
++      bb->il.rtl->visited = 0;
++      if (!stay_in_cfglayout_mode)
++	bb->il.rtl->header = bb->il.rtl->footer = NULL;
++    }
++
++  /* Maybe reset the original copy tables, they are not valid anymore
++     when we renumber the basic blocks in compact_blocks.  If we are
++     are going out of cfglayout mode, don't re-allocate the tables.  */
++  free_original_copy_tables ();
++  if (stay_in_cfglayout_mode)
++    initialize_original_copy_tables ();
++  
++  /* Finally, put basic_block_info in the new order.  */
++  compact_blocks ();
++}
++
++
+ /* Given a reorder chain, rearrange the code to match.  */
+ 
+ static void
+ fixup_reorder_chain (void)
+ {
+-  basic_block bb, prev_bb;
+-  int index;
++  basic_block bb;
+   rtx insn = NULL;
+ 
+   if (cfg_layout_function_header)
+@@ -654,9 +724,7 @@ fixup_reorder_chain (void)
+   /* First do the bulk reordering -- rechain the blocks without regard to
+      the needed changes to jumps and labels.  */
+ 
+-  for (bb = ENTRY_BLOCK_PTR->next_bb, index = NUM_FIXED_BLOCKS;
+-       bb != 0;
+-       bb = bb->aux, index++)
++  for (bb = ENTRY_BLOCK_PTR->next_bb; bb; bb = bb->aux)
+     {
+       if (bb->il.rtl->header)
+ 	{
+@@ -684,8 +752,6 @@ fixup_reorder_chain (void)
+ 	}
+     }
+ 
+-  gcc_assert (index == n_basic_blocks);
+-
+   NEXT_INSN (insn) = cfg_layout_function_footer;
+   if (cfg_layout_function_footer)
+     PREV_INSN (cfg_layout_function_footer) = insn;
+@@ -838,42 +904,7 @@ fixup_reorder_chain (void)
+ 	}
+     }
+ 
+-  /* Put basic_block_info in the new order.  */
+-
+-  if (dump_file)
+-    {
+-      fprintf (dump_file, "Reordered sequence:\n");
+-      for (bb = ENTRY_BLOCK_PTR->next_bb, index = NUM_FIXED_BLOCKS;
+-	   bb;
+-	   bb = bb->aux, index++)
+-	{
+-	  fprintf (dump_file, " %i ", index);
+-	  if (get_bb_original (bb))
+-	    fprintf (dump_file, "duplicate of %i ",
+-		     get_bb_original (bb)->index);
+-	  else if (forwarder_block_p (bb)
+-		   && !LABEL_P (BB_HEAD (bb)))
+-	    fprintf (dump_file, "compensation ");
+-	  else
+-	    fprintf (dump_file, "bb %i ", bb->index);
+-	  fprintf (dump_file, " [%i]\n", bb->frequency);
+-	}
+-    }
+-
+-  prev_bb = ENTRY_BLOCK_PTR;
+-  bb = ENTRY_BLOCK_PTR->next_bb;
+-  index = NUM_FIXED_BLOCKS;
+-
+-  for (; bb; prev_bb = bb, bb = bb->aux, index ++)
+-    {
+-      bb->index = index;
+-      SET_BASIC_BLOCK (index, bb);
+-
+-      bb->prev_bb = prev_bb;
+-      prev_bb->next_bb = bb;
+-    }
+-  prev_bb->next_bb = EXIT_BLOCK_PTR;
+-  EXIT_BLOCK_PTR->prev_bb = prev_bb;
++  relink_block_chain (/*stay_in_cfglayout_mode=*/false);
+ 
+   /* Annoying special case - jump around dead jumptables left in the code.  */
+   FOR_EACH_BB (bb)
+@@ -1179,8 +1210,6 @@ break_superblocks (void)
+ void
+ cfg_layout_finalize (void)
+ {
+-  basic_block bb;
+-
+ #ifdef ENABLE_CHECKING
+   verify_flow_info ();
+ #endif
+@@ -1195,19 +1224,8 @@ cfg_layout_finalize (void)
+ 
+ #ifdef ENABLE_CHECKING
+   verify_insn_chain ();
+-#endif
+-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+-  {
+-    bb->il.rtl->header = bb->il.rtl->footer = NULL;
+-    bb->aux = NULL;
+-    bb->il.rtl->visited = 0;
+-  }
+-
+-#ifdef ENABLE_CHECKING
+   verify_flow_info ();
+ #endif
+-
+-  free_original_copy_tables ();
+ }
+ 
+ /* Checks whether all N blocks in BBS array can be copied.  */
+Index: rtl.h
+===================================================================
+--- rtl.h	(revision 122857)
++++ rtl.h	(working copy)
+@@ -2259,7 +2259,7 @@ extern bool expensive_function_p (int);
+ /* In cfgexpand.c */
+ extern void add_reg_br_prob_note (rtx last, int probability);
+ /* In tracer.c */
+-extern void tracer (unsigned int);
++extern void tracer (void);
+ 
+ /* In var-tracking.c */
+ extern unsigned int variable_tracking_main (void);
+Index: bb-reorder.c
+===================================================================
+--- bb-reorder.c	(revision 122857)
++++ bb-reorder.c	(working copy)
+@@ -1889,20 +1889,17 @@ verify_hot_cold_block_grouping (void)
+    the set of flags to pass to cfg_layout_initialize().  */
+ 
+ void
+-reorder_basic_blocks (unsigned int flags)
++reorder_basic_blocks (void)
+ {
+   int n_traces;
+   int i;
+   struct trace *traces;
+ 
+-  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
+-    return;
++  gcc_assert (current_ir_type () == IR_RTL_CFGLAYOUT);
+ 
+-  if (targetm.cannot_modify_jumps_p ())
++  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
+     return;
+ 
+-  cfg_layout_initialize (flags);
+-
+   set_edge_can_fallthru_flag ();
+   mark_dfs_back_edges ();
+ 
+@@ -1930,10 +1927,11 @@ reorder_basic_blocks (unsigned int flags
+   FREE (traces);
+   FREE (bbd);
+ 
++  relink_block_chain (/*stay_in_cfglayout_mode=*/true);
++
+   if (dump_file)
+     dump_flow_info (dump_file, dump_flags);
+ 
+-  cfg_layout_finalize ();
+   if (flag_reorder_blocks_and_partition)
+     verify_hot_cold_block_grouping ();
+ }
+@@ -1976,6 +1974,8 @@ insert_section_boundary_note (void)
+ static bool
+ gate_duplicate_computed_gotos (void)
+ {
++  if (targetm.cannot_modify_jumps_p ())
++    return false;
+   return (optimize > 0 && flag_expensive_optimizations && !optimize_size);
+ }
+ 
+@@ -1990,9 +1990,6 @@ duplicate_computed_gotos (void)
+   if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
+     return 0;
+ 
+-  if (targetm.cannot_modify_jumps_p ())
+-    return 0;
+-
+   cfg_layout_initialize (0);
+ 
+   /* We are estimating the length of uncond jump insn only once
+@@ -2198,6 +2195,8 @@ partition_hot_cold_basic_blocks (void)
+ static bool
+ gate_handle_reorder_blocks (void)
+ {
++  if (targetm.cannot_modify_jumps_p ())
++    return false;
+   return (optimize > 0);
+ }
+ 
+@@ -2206,34 +2205,39 @@ gate_handle_reorder_blocks (void)
+ static unsigned int
+ rest_of_handle_reorder_blocks (void)
+ {
+-  bool changed;
+   unsigned int liveness_flags;
++  basic_block bb;
+ 
+   /* Last attempt to optimize CFG, as scheduling, peepholing and insn
+      splitting possibly introduced more crossjumping opportunities.  */
+   liveness_flags = (!HAVE_conditional_execution ? CLEANUP_UPDATE_LIFE : 0);
+-  changed = cleanup_cfg (CLEANUP_EXPENSIVE | liveness_flags);
++  cfg_layout_initialize (CLEANUP_EXPENSIVE | liveness_flags);
+ 
+   if (flag_sched2_use_traces && flag_schedule_insns_after_reload)
+     {
+       timevar_push (TV_TRACER);
+-      tracer (liveness_flags);
++      tracer ();
+       timevar_pop (TV_TRACER);
+     }
+ 
+   if (flag_reorder_blocks || flag_reorder_blocks_and_partition)
+-    reorder_basic_blocks (liveness_flags);
++    reorder_basic_blocks ();
+   if (flag_reorder_blocks || flag_reorder_blocks_and_partition
+       || (flag_sched2_use_traces && flag_schedule_insns_after_reload))
+-    changed |= cleanup_cfg (CLEANUP_EXPENSIVE | liveness_flags);
++    cleanup_cfg (CLEANUP_EXPENSIVE | liveness_flags);
+ 
+   /* On conditional execution targets we can not update the life cheaply, so
+      we deffer the updating to after both cleanups.  This may lose some cases
+      but should not be terribly bad.  */
+-  if (changed && HAVE_conditional_execution)
++  if (HAVE_conditional_execution)
+     update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
+ 		      PROP_DEATH_NOTES);
+ 
++  FOR_EACH_BB (bb)
++    if (bb->next_bb != EXIT_BLOCK_PTR)
++      bb->aux = bb->next_bb;
++  cfg_layout_finalize ();
++
+   /* Add NOTE_INSN_SWITCH_TEXT_SECTIONS notes.  */
+   insert_section_boundary_note ();
+   return 0;
+Index: reg-stack.c
+===================================================================
+--- reg-stack.c	(revision 122857)
++++ reg-stack.c	(working copy)
+@@ -167,6 +167,7 @@
+ #include "recog.h"
+ #include "output.h"
+ #include "basic-block.h"
++#include "cfglayout.h"
+ #include "varray.h"
+ #include "reload.h"
+ #include "ggc.h"
+@@ -3197,8 +3198,17 @@ rest_of_handle_stack_regs (void)
+                        | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0))
+           && (flag_reorder_blocks || flag_reorder_blocks_and_partition))
+         {
+-          reorder_basic_blocks (0);
+-          cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK);
++	  basic_block bb;
++
++	  cfg_layout_initialize (0);
++
++	  reorder_basic_blocks ();
++	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK);
++
++	  FOR_EACH_BB (bb)
++	    if (bb->next_bb != EXIT_BLOCK_PTR)
++	      bb->aux = bb->next_bb;
++	  cfg_layout_finalize ();
+         }
+     }
+   else 
+Index: basic-block.h
+===================================================================
+--- basic-block.h	(revision 122857)
++++ basic-block.h	(working copy)
+@@ -929,7 +929,7 @@ extern bool control_flow_insn_p (rtx);
+ extern rtx get_last_bb_insn (basic_block);
+ 
+ /* In bb-reorder.c */
+-extern void reorder_basic_blocks (unsigned int);
++extern void reorder_basic_blocks (void);
+ 
+ /* In dominance.c */
+ 
+@@ -976,6 +976,7 @@ unsigned bb_dom_dfs_out (enum cdi_direct
+ 
+ extern edge try_redirect_by_replacing_jump (edge, basic_block, bool);
+ extern void break_superblocks (void);
++extern void relink_block_chain (bool);
+ extern void check_bb_profile (basic_block, FILE *);
+ extern void update_bb_profile_for_threading (basic_block, int, gcov_type, edge);
+ extern void init_rtl_bb_info (basic_block);
+Index: passes.c
+===================================================================
+--- passes.c	(revision 122858)
++++ passes.c	(working copy)
+@@ -666,7 +666,6 @@ init_optimization_passes (void)
+       NEXT_PASS (pass_gcse);
+       NEXT_PASS (pass_jump_bypass);
+       NEXT_PASS (pass_rtl_ifcvt);
+-      NEXT_PASS (pass_outof_cfg_layout_mode);
+       NEXT_PASS (pass_tracer);
+       /* Perform loop optimizations.  It might be better to do them a bit
+ 	 sooner, but we want the profile feedback to work more
+@@ -685,6 +684,7 @@ init_optimization_passes (void)
+       NEXT_PASS (pass_web);
+       NEXT_PASS (pass_cse2);
+       NEXT_PASS (pass_rtl_fwprop_addr);
++      NEXT_PASS (pass_outof_cfg_layout_mode);
+       NEXT_PASS (pass_life);
+       NEXT_PASS (pass_combine);
+       NEXT_PASS (pass_if_after_combine);
+
 2007-03-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/mips.md (type, hazard, *movdi_32bit,

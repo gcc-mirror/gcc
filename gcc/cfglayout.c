@@ -634,13 +634,83 @@ reemit_insn_block_notes (void)
   reorder_blocks ();
 }
 
+
+/* Link the basic blocks in the correct order, compacting the basic
+   block queue while at it.  This also clears the visited flag on
+   all basic blocks.  If STAY_IN_CFGLAYOUT_MODE is false, this function
+   also clears the basic block header and footer fields.
+
+   This function is usually called after a pass (e.g. tracer) finishes
+   some transformations while in cfglayout mode.  The required sequence
+   of the basic blocks is in a linked list along the bb->aux field.
+   This functions re-links the basic block prev_bb and next_bb pointers
+   accordingly, and it compacts and renumbers the blocks.  */
+
+void
+relink_block_chain (bool stay_in_cfglayout_mode)
+{
+  basic_block bb, prev_bb;
+  int index;
+
+  /* Maybe dump the re-ordered sequence.  */
+  if (dump_file)
+    {
+      fprintf (dump_file, "Reordered sequence:\n");
+      for (bb = ENTRY_BLOCK_PTR->next_bb, index = NUM_FIXED_BLOCKS;
+	   bb;
+	   bb = bb->aux, index++)
+	{
+	  fprintf (dump_file, " %i ", index);
+	  if (get_bb_original (bb))
+	    fprintf (dump_file, "duplicate of %i ",
+		     get_bb_original (bb)->index);
+	  else if (forwarder_block_p (bb)
+		   && !LABEL_P (BB_HEAD (bb)))
+	    fprintf (dump_file, "compensation ");
+	  else
+	    fprintf (dump_file, "bb %i ", bb->index);
+	  fprintf (dump_file, " [%i]\n", bb->frequency);
+	}
+    }
+
+  /* Now reorder the blocks.  */
+  prev_bb = ENTRY_BLOCK_PTR;
+  bb = ENTRY_BLOCK_PTR->next_bb;
+  for (; bb; prev_bb = bb, bb = bb->aux)
+    {
+      bb->prev_bb = prev_bb;
+      prev_bb->next_bb = bb;
+    }
+  prev_bb->next_bb = EXIT_BLOCK_PTR;
+  EXIT_BLOCK_PTR->prev_bb = prev_bb;
+
+  /* Then, clean up the aux and visited fields.  */
+  FOR_ALL_BB (bb)
+    {
+      bb->aux = NULL;
+      bb->il.rtl->visited = 0;
+      if (!stay_in_cfglayout_mode)
+	bb->il.rtl->header = bb->il.rtl->footer = NULL;
+    }
+
+  /* Maybe reset the original copy tables, they are not valid anymore
+     when we renumber the basic blocks in compact_blocks.  If we are
+     are going out of cfglayout mode, don't re-allocate the tables.  */
+  free_original_copy_tables ();
+  if (stay_in_cfglayout_mode)
+    initialize_original_copy_tables ();
+  
+  /* Finally, put basic_block_info in the new order.  */
+  compact_blocks ();
+}
+
+
 /* Given a reorder chain, rearrange the code to match.  */
 
 static void
 fixup_reorder_chain (void)
 {
-  basic_block bb, prev_bb;
-  int index;
+  basic_block bb;
   rtx insn = NULL;
 
   if (cfg_layout_function_header)
@@ -654,9 +724,7 @@ fixup_reorder_chain (void)
   /* First do the bulk reordering -- rechain the blocks without regard to
      the needed changes to jumps and labels.  */
 
-  for (bb = ENTRY_BLOCK_PTR->next_bb, index = NUM_FIXED_BLOCKS;
-       bb != 0;
-       bb = bb->aux, index++)
+  for (bb = ENTRY_BLOCK_PTR->next_bb; bb; bb = bb->aux)
     {
       if (bb->il.rtl->header)
 	{
@@ -683,8 +751,6 @@ fixup_reorder_chain (void)
 	    insn = NEXT_INSN (insn);
 	}
     }
-
-  gcc_assert (index == n_basic_blocks);
 
   NEXT_INSN (insn) = cfg_layout_function_footer;
   if (cfg_layout_function_footer)
@@ -837,42 +903,7 @@ fixup_reorder_chain (void)
 	}
     }
 
-  /* Put basic_block_info in the new order.  */
-
-  if (dump_file)
-    {
-      fprintf (dump_file, "Reordered sequence:\n");
-      for (bb = ENTRY_BLOCK_PTR->next_bb, index = NUM_FIXED_BLOCKS;
-	   bb;
-	   bb = bb->aux, index++)
-	{
-	  fprintf (dump_file, " %i ", index);
-	  if (get_bb_original (bb))
-	    fprintf (dump_file, "duplicate of %i ",
-		     get_bb_original (bb)->index);
-	  else if (forwarder_block_p (bb)
-		   && !LABEL_P (BB_HEAD (bb)))
-	    fprintf (dump_file, "compensation ");
-	  else
-	    fprintf (dump_file, "bb %i ", bb->index);
-	  fprintf (dump_file, " [%i]\n", bb->frequency);
-	}
-    }
-
-  prev_bb = ENTRY_BLOCK_PTR;
-  bb = ENTRY_BLOCK_PTR->next_bb;
-  index = NUM_FIXED_BLOCKS;
-
-  for (; bb; prev_bb = bb, bb = bb->aux, index ++)
-    {
-      bb->index = index;
-      SET_BASIC_BLOCK (index, bb);
-
-      bb->prev_bb = prev_bb;
-      prev_bb->next_bb = bb;
-    }
-  prev_bb->next_bb = EXIT_BLOCK_PTR;
-  EXIT_BLOCK_PTR->prev_bb = prev_bb;
+  relink_block_chain (/*stay_in_cfglayout_mode=*/false);
 
   /* Annoying special case - jump around dead jumptables left in the code.  */
   FOR_EACH_BB (bb)
@@ -1178,8 +1209,6 @@ break_superblocks (void)
 void
 cfg_layout_finalize (void)
 {
-  basic_block bb;
-
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
 #endif
@@ -1197,19 +1226,8 @@ cfg_layout_finalize (void)
 
 #ifdef ENABLE_CHECKING
   verify_insn_chain ();
-#endif
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
-  {
-    bb->il.rtl->header = bb->il.rtl->footer = NULL;
-    bb->aux = NULL;
-    bb->il.rtl->visited = 0;
-  }
-
-#ifdef ENABLE_CHECKING
   verify_flow_info ();
 #endif
-
-  free_original_copy_tables ();
 }
 
 /* Checks whether all N blocks in BBS array can be copied.  */
