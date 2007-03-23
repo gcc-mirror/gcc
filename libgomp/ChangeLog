@@ -1,3 +1,10 @@
+2007-03-23  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* testsuite/lib/libgomp.exp (libgomp_init): Add -shared-libgcc for
+	*-*-darwin*.
+	* testsuite/libgomp.c++/c++.exp: Look for shared libstdc++ library
+	and use it if found.
+
 2007-03-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/config/default.exp: New file.
