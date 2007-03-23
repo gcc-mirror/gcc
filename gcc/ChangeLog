@@ -1,5 +1,9 @@
 2007-03-23  Ian Lance Taylor  <iant@google.com>
 
+	* fold-const.c (fold_binary): Correct warning for X - c >= X.
+
+2007-03-23  Ian Lance Taylor  <iant@google.com>
+
 	* tree-dump.c (dump_files): Correct comment.
 
 2007-03-23  Ian Lance Taylor  <iant@google.com>

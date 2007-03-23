@@ -11802,7 +11802,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		  if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg1)))
 		    fold_overflow_warning (("assuming signed overflow does "
 					    "not occur when assuming that "
-					    "(X - c) >= X is always true"),
+					    "(X - c) >= X is always false"),
 					   WARN_STRICT_OVERFLOW_ALL);
 		  return constant_boolean_node (0, type);
 		}
