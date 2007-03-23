@@ -1987,6 +1987,24 @@ dump_expr (tree t, int flags)
       pp_cxx_identifier (cxx_pp, "...");
       break;
 
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case ENUMERAL_TYPE:
+    case REAL_TYPE:
+    case VOID_TYPE:
+    case BOOLEAN_TYPE:
+    case INTEGER_TYPE:
+    case COMPLEX_TYPE:
+    case VECTOR_TYPE:
+      pp_type_specifier_seq (cxx_pp, t);
+      break;
+
+    case TYPENAME_TYPE:
+      /* We get here when we want to print a dependent type as an
+         id-expression, without any disambiguator decoration.  */
+      pp_id_expression (cxx_pp, t);
+      break;
+
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call
 	  `report_error_function'.  That could cause an infinite loop.  */
