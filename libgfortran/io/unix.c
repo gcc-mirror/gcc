@@ -1892,6 +1892,7 @@ is_seekable (stream *s)
 
 /* is_special()-- Return nonzero if the stream is not a regular file.  */
 
+int
 is_special (stream *s)
 {
   return ((unix_stream *) s)->special_file;
