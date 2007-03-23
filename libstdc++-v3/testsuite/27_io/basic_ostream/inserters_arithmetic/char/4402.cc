@@ -1,7 +1,8 @@
 // 1999-11-15 Kevin Ediger  <kediger@licor.com>
 // test the floating point inserters (facet num_put)
 
-// Copyright (C) 1999, 2002, 2003, 2005, 2007 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +34,7 @@ test02()
   bool test __attribute__((unused)) = true;
 
   // make sure we can output a very long float
-  long double val = std::numeric_limits<long double>::max();
+  long double val = numeric_limits<long double>::max();
   int prec = numeric_limits<long double>::digits10;
 
   ostringstream os;
@@ -51,7 +52,7 @@ test02()
 
   // Make sure we can output a long float in fixed format
   // without seg-faulting (libstdc++/4402)
-  double val2 = std::numeric_limits<double>::max();
+  double val2 = numeric_limits<double>::max();
 
   ostringstream os2;
   os2.precision(3);
