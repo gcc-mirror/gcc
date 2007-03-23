@@ -1,3 +1,10 @@
+2007-03-22  Jim Wilson  <wilson@specifix.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/31273
+	* call.c (standard_conversion): Use type_decays_to.  Keep FCODE
+	consistent with FROM.
+
 2007-03-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* error.c (dump_expr): Handle dependent names that designate types.
