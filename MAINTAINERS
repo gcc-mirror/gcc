@@ -129,8 +129,9 @@ fortran 95              Erik Edelmann           erik.edelmann@iki.fi
 fortran 95		Paul Thomas		pault@gcc.gnu.org
 fortran 95		Tobias Schlüter		tobias.schlueter@physik.uni-muenchen.de
 fortran 95		Janne Blomqvist		jb@gcc.gnu.org
+fortran 95		Brooks Moses		brooks.moses@codesourcery.com
 c++			Jason Merrill		jason@redhat.com
-c++                     Mark Mitchell		mark@codesourcery.com
+c++			Mark Mitchell		mark@codesourcery.com
 c++			Nathan Sidwell		nathan@codesourcery.com
 java			Per Bothner		per@bothner.com
 java			Andrew Haley		aph@redhat.com
@@ -337,7 +338,6 @@ Robert Millan					rmh@gcc.gnu.org
 Lee Millward					lee.millward@gmail.com
 Alan Modra					amodra@bigpond.net.au
 Catherine Moore					clm@redhat.com
-Brooks Moses					brooks.moses@codesourcery.com
 Dirk Mueller					dmueller@suse.de
 Adam Nemet					anemet@caviumnetworks.com
 Dan Nicolaescu					dann@ics.uci.edu

@@ -1,3 +1,8 @@
+2007-03-23  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* MAINTAINERS (fortran 95 front end): Add myself.
+	(c++ front end): whitespace fix.
+
 2007-03-22  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
