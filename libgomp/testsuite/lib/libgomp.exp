@@ -124,6 +124,11 @@ proc libgomp_init { args } {
 	 && [check_effective_target_ilp32] } {
 	lappend ALWAYS_CFLAGS "additional_flags=-march=i486"
     }
+
+    if [istarget *-*-darwin*] {
+	lappend ALWAYS_CFLAGS "additional_flags=-shared-libgcc"
+    }
+
     if [istarget sparc*-*-*] {
 	lappend ALWAYS_CFLAGS "additional_flags=-mcpu=v9"
     }
