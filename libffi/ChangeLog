@@ -1,3 +1,10 @@
+2007-03-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/libffi.call/return_fl2.c (return_fl): Mark as static.
+	Use 'volatile float sum' to create sum of floats to avoid false
+	negative due to excess precision on ix86 targets.
+	(main): Ditto. 
+
 2007-03-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* src/powerpc/ffi.c (flush_icache): Fix left-over from previous
