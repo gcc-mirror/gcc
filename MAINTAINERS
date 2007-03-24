@@ -163,6 +163,7 @@ scheduler (+ haifa)	Jim Wilson		wilson@specifixinc.com
 scheduler (+ haifa)	Michael Meissner	gnu@the-meissners.org
 scheduler (+ haifa)	Jeff Law		law@redhat.com
 scheduler (+ haifa)	Vladimir Makarov	vmakarov@redhat.com
+modulo-scheduler	Ayal Zaks		zaks@il.ibm.com
 reorg			Jeff Law		law@redhat.com
 caller-save.c		Jeff Law		law@redhat.com
 callgraph		Jan Hubicka		jh@suse.cz
