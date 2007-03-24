@@ -1,3 +1,68 @@
+2007-03-23  Michael Meissner  <michael.meissner@amd.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/dfp-bit.h (DPD_BID_NAME): New macro to give either the
+	DPD or BID name.
+	(name macros): Use DPD_BID_NAME to convert names properly.
+
+	* optabs.c (DECIMAL_PREFIX): Prefix string to use for the current
+	decimal floating point format.
+	(init_floating_libfuncs): Change decimal functions so that they
+	have a "bid_" prefix if the decimal system uses the BID format,
+	and "dpd_" prefix if the decimal system uses the DPD format.
+	(init_interclass_conv_libfuncs): Ditto.
+	(init_intraclass_conv_libfuncs): Ditto.
+
+	* config.in (ENABLE_DECIMAL_BID_FORMAT): New macro to say we are
+	using the BID format.
+
+	* configure.ac (ENABLE_DECIMAL_BID_FORMAT): Set to 1/0 to say
+	whether we are using the BID decimal format.
+	* configure: Regenerate.
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __STDC_WANT_DEC_FP__ if
+	the compiler has decimal floating point enabled.  Define
+	__DECIMAL_BID_FORMAT__ if BID decimal floating point is used
+	instead of DPD.
+
+	* config.in (ENABLE_DECIMAL_BID_FORMAT): New macro to say we are
+	using the BID format.
+
+	* configure.ac (ENABLE_DECIMAL_BID_FORMAT): Set to 1/0 to say
+	whether we are using the BID decimal format.
+	* configure: Regenerate.
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __STDC_WANT_DEC_FP__ if
+	the compiler has decimal floating point enabled.  Define
+	__DECIMAL_BID_FORMAT__ if BID decimal floating point is used
+	instead of DPD.
+
+	* doc/install.texi (--enable-decimal-float): Document BID and DPD
+	options, and that it is enabled for i386/x86_64 systems.
+
+	* Makefile.in (enable_decimal_float): New.
+	(DECNUMFMT): New.
+	(DECNUMINC): Add  -I$(DECNUMFMT).
+	(DECNUM_H): Mov decimal32.h, decimal64.h and decimal128.h
+	to $(DECNUMFMT) from $(DECNUM).
+
+	* configure.ac: Support * --enable-decimal-float={no,yes,bid,dpd}.
+	Substitute enable_decimal_float.
+	* configure: Regenerated.
+
+	PR other/30529
+	* config/dfp-bit.c (__dec_byte_swap): Use uint32_t instead of
+	unsigned long.
+
+	* configure.ac: Enable decimal float for x86_64-*-linux*.
+	* configure: Regenerated.
+
+	PR other/30530
+	* dfp.c (decimal_real_arithmetic): Use decimal128FlipSign and
+	decimal128ClearSign to flip and clear the sign bit in decimal128.
+	(decimal_real_maxval): Set decimal128SetSign to set the sign
+	bit in decimal128.
+
 2007-03-23  Ian Lance Taylor  <iant@google.com>
 
 	* fold-const.c (fold_binary): Correct warning for X - c >= X.

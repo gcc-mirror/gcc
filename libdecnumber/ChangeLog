@@ -1,3 +1,60 @@
+2007-03-23  Michael Meissner  <michael.meissner@amd.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+	    Marius Cornea  <marius.cornea@intel.com>
+
+	* Makefile.in (enable_decimal_float): New.
+	(libdecnumber_a_OBJS): Add bid2dpd_dpd2bid.o, host-ieee32.o,
+	host-ieee64.o and host-ieee128.o for BID.
+	(libdecnumber_a_SOURCES): Support DPD and BID.
+	(decimal32.o): Support dependency for both DPD and BID.
+	(decimal64.o): Likewise.
+	(decimal128.o): Likewise.
+	(bid2dpd_dpd2bid.o): New target.
+	(host-ieee32.o): Likewise.
+	(host-ieee64.o): Likewise.
+	(host-ieee128.o): Likewise.
+
+	* bid/bid-dpd.h: New file.
+	* bid/decimal128.c: Likewise.
+	* bid/decimal128.h: Likewise.
+	* bid/decimal32.c: Likewise.
+	* bid/decimal32.h: Likewise.
+	* bid/decimal64.c: Likewise.
+	* bid/decimal64.h: Likewise.
+	* bid/host-ieee128.c: Likewise.
+	* bid/host-ieee32.c: Likewise.
+	* bid/host-ieee64.c: Likewise.
+	* bid/bid2dpd_dpd2bid.c: Likewise.
+	* bid/bid2dpd_dpd2bid.h: Likewise.
+
+	* decimal128.c: Moved to ...
+	* dpd/decimal128.c: This.
+	* decimal128.h:  Moved to ...
+	* dpd/decimal128.h: This.
+	* decimal32.c: Moved to ...
+	* dpd/decimal32.c: This.
+	* decimal32.h: Moved to ...
+	* dpd/decimal32.h: This.
+	* decimal64.c: Moved to ...
+	* dpd/decimal64.c: This.
+	* decimal64.h: Moved to ...
+	* dpd/decimal64.h: This.
+
+	* configure.ac: Support * --enable-decimal-float={no,yes,bid,dpd}.
+	Add AC_C_BIGENDIAN.  Substitute enable_decimal_float.
+	* config.in: Add decimal support variables.
+	* configure: Regenerate.
+
+	PR other/30530
+	* decimal128.h (decimal128ClearSign): New.
+	(decimal128FlipSign): Likewise.
+
+	* decimal32.h: (decimal32ClearSign): New.
+	(decimal32FlipSign): Likewise.
+
+	* decimal64.h (decimal64ClearSign): New.
+	(decimal64FlipSign): Likewise.
+
 2007-03-08  Ben Elliston  <bje@au.ibm.com>
 
 	* decContext.c, decContext.h, decDPD.h, decimal128.c,

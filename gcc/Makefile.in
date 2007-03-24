@@ -289,8 +289,10 @@ CPPLIB = ../libcpp/libcpp.a
 CPPINC = -I$(srcdir)/../libcpp/include
 
 # Where to find decNumber
+enable_decimal_float = @enable_decimal_float@
 DECNUM = $(srcdir)/../libdecnumber
-DECNUMINC = -I$(DECNUM) -I../libdecnumber
+DECNUMFMT = $(srcdir)/../libdecnumber/$(enable_decimal_float)
+DECNUMINC = -I$(DECNUM) -I$(DECNUMFMT) -I../libdecnumber
 LIBDECNUMBER = ../libdecnumber/libdecnumber.a
 
 # Substitution type for target's getgroups 2nd arg.
@@ -770,7 +772,7 @@ PREDICT_H = predict.h predict.def
 CPPLIB_H = $(srcdir)/../libcpp/include/line-map.h \
 	$(srcdir)/../libcpp/include/cpplib.h
 DECNUM_H = $(DECNUM)/decContext.h $(DECNUM)/decDPD.h $(DECNUM)/decNumber.h \
-	$(DECNUM)/decimal32.h $(DECNUM)/decimal64.h $(DECNUM)/decimal128.h
+	$(DECNUMFMT)/decimal32.h $(DECNUMFMT)/decimal64.h $(DECNUMFMT)/decimal128.h
 MKDEPS_H = $(srcdir)/../libcpp/include/mkdeps.h
 SYMTAB_H = $(srcdir)/../libcpp/include/symtab.h
 CPP_ID_DATA_H = $(CPPLIB_H) $(srcdir)/../libcpp/include/cpp-id-data.h

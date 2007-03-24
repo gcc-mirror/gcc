@@ -52,6 +52,12 @@
 #endif
 
 
+/* Define to 1 to say we are using the BID decimal format */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_DECIMAL_BID_FORMAT
+#endif
+
+
 /* Define if you want fold checked that it never destructs its argument. This
    is quite expensive. */
 #ifndef USED_FOR_TARGET

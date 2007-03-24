@@ -1,5 +1,5 @@
 /* Header file for dfp-bit.c.
-   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -288,63 +288,69 @@ extern float strtof (const char *, char **);
 
 /* Names of arithmetic functions.  */
 
+#if ENABLE_DECIMAL_BID_FORMAT
+#define DPD_BID_NAME(DPD,BID) BID
+#else
+#define DPD_BID_NAME(DPD,BID) DPD
+#endif
+
 #if WIDTH == 32
-#define DFP_ADD		__addsd3
-#define DFP_SUB		__subsd3
-#define DFP_MULTIPLY	__mulsd3
-#define DFP_DIVIDE	__divsd3
-#define DFP_EQ		__eqsd2
-#define DFP_NE		__nesd2
-#define DFP_LT		__ltsd2
-#define DFP_GT		__gtsd2
-#define DFP_LE		__lesd2
-#define DFP_GE		__gesd2
-#define DFP_UNORD	__unordsd2
+#define DFP_ADD		DPD_BID_NAME(__dpd_addsd3,__bid_addsd3)
+#define DFP_SUB		DPD_BID_NAME(__dpd_subsd3,__bid_subsd3)
+#define DFP_MULTIPLY	DPD_BID_NAME(__dpd_mulsd3,__bid_mulsd3)
+#define DFP_DIVIDE	DPD_BID_NAME(__dpd_divsd3,__bid_divsd3)
+#define DFP_EQ		DPD_BID_NAME(__dpd_eqsd2,__bid_eqsd2)
+#define DFP_NE		DPD_BID_NAME(__dpd_nesd2,__bid_nesd2)
+#define DFP_LT		DPD_BID_NAME(__dpd_ltsd2,__bid_ltsd2)
+#define DFP_GT		DPD_BID_NAME(__dpd_gtsd2,__bid_gtsd2)
+#define DFP_LE		DPD_BID_NAME(__dpd_lesd2,__bid_lesd2)
+#define DFP_GE		DPD_BID_NAME(__dpd_gesd2,__bid_gesd2)
+#define DFP_UNORD	DPD_BID_NAME(__dpd_unordsd2,__bid_unordsd2)
 #elif WIDTH == 64
-#define DFP_ADD		__adddd3
-#define DFP_SUB		__subdd3
-#define DFP_MULTIPLY	__muldd3
-#define DFP_DIVIDE	__divdd3
-#define DFP_EQ		__eqdd2
-#define DFP_NE		__nedd2
-#define DFP_LT		__ltdd2
-#define DFP_GT		__gtdd2
-#define DFP_LE		__ledd2
-#define DFP_GE		__gedd2
-#define DFP_UNORD	__unorddd2
+#define DFP_ADD		DPD_BID_NAME(__dpd_adddd3,__bid_adddd3)
+#define DFP_SUB		DPD_BID_NAME(__dpd_subdd3,__bid_subdd3)
+#define DFP_MULTIPLY	DPD_BID_NAME(__dpd_muldd3,__bid_muldd3)
+#define DFP_DIVIDE	DPD_BID_NAME(__dpd_divdd3,__bid_divdd3)
+#define DFP_EQ		DPD_BID_NAME(__dpd_eqdd2,__bid_eqdd2)
+#define DFP_NE		DPD_BID_NAME(__dpd_nedd2,__bid_nedd2)
+#define DFP_LT		DPD_BID_NAME(__dpd_ltdd2,__bid_ltdd2)
+#define DFP_GT		DPD_BID_NAME(__dpd_gtdd2,__bid_gtdd2)
+#define DFP_LE		DPD_BID_NAME(__dpd_ledd2,__bid_ledd2)
+#define DFP_GE		DPD_BID_NAME(__dpd_gedd2,__bid_gedd2)
+#define DFP_UNORD	DPD_BID_NAME(__dpd_unorddd2,__bid_unorddd2)
 #elif WIDTH == 128
-#define DFP_ADD		__addtd3
-#define DFP_SUB		__subtd3
-#define DFP_MULTIPLY	__multd3
-#define DFP_DIVIDE	__divtd3
-#define DFP_EQ		__eqtd2
-#define DFP_NE		__netd2
-#define DFP_LT		__lttd2
-#define DFP_GT		__gttd2
-#define DFP_LE		__letd2
-#define DFP_GE		__getd2
-#define DFP_UNORD	__unordtd2
+#define DFP_ADD		DPD_BID_NAME(__dpd_addtd3,__bid_addtd3)
+#define DFP_SUB		DPD_BID_NAME(__dpd_subtd3,__bid_subtd3)
+#define DFP_MULTIPLY	DPD_BID_NAME(__dpd_multd3,__bid_multd3)
+#define DFP_DIVIDE	DPD_BID_NAME(__dpd_divtd3,__bid_divtd3)
+#define DFP_EQ		DPD_BID_NAME(__dpd_eqtd2,__bid_eqtd2)
+#define DFP_NE		DPD_BID_NAME(__dpd_netd2,__bid_netd2)
+#define DFP_LT		DPD_BID_NAME(__dpd_lttd2,__bid_lttd2)
+#define DFP_GT		DPD_BID_NAME(__dpd_gttd2,__bid_gttd2)
+#define DFP_LE		DPD_BID_NAME(__dpd_letd2,__bid_letd2)
+#define DFP_GE		DPD_BID_NAME(__dpd_getd2,__bid_getd2)
+#define DFP_UNORD	DPD_BID_NAME(__dpd_unordtd2,__bid_unordtd2)
 #endif
 
 /* Names of functions to convert between different decimal float types.  */
 
 #if WIDTH == 32
 #if WIDTH_TO == 64
-#define DFP_TO_DFP	__extendsddd2
+#define DFP_TO_DFP	DPD_BID_NAME(__dpd_extendsddd2,__bid_extendsddd2)
 #elif WIDTH_TO == 128
-#define DFP_TO_DFP	__extendsdtd2
+#define DFP_TO_DFP	DPD_BID_NAME(__dpd_extendsdtd2,__bid_extendsdtd2)
 #endif
 #elif WIDTH == 64	
 #if WIDTH_TO == 32
-#define DFP_TO_DFP	__truncddsd2
+#define DFP_TO_DFP	DPD_BID_NAME(__dpd_truncddsd2,__bid_truncddsd2)
 #elif WIDTH_TO == 128
-#define DFP_TO_DFP	__extendddtd2
+#define DFP_TO_DFP	DPD_BID_NAME(__dpd_extendddtd2,__bid_extendddtd2)
 #endif
 #elif WIDTH == 128
 #if WIDTH_TO == 32
-#define DFP_TO_DFP	__trunctdsd2
+#define DFP_TO_DFP	DPD_BID_NAME(__dpd_trunctdsd2,__bid_trunctdsd2)
 #elif WIDTH_TO == 64
-#define DFP_TO_DFP	__trunctddd2
+#define DFP_TO_DFP	DPD_BID_NAME(__dpd_trunctddd2,__bid_trunctddd2)
 #endif
 #endif
 
@@ -352,45 +358,45 @@ extern float strtof (const char *, char **);
 
 #if WIDTH == 32
 #if INT_KIND == 1
-#define INT_TO_DFP	__floatsisd
-#define DFP_TO_INT	__fixsdsi
+#define INT_TO_DFP	DPD_BID_NAME(__dpd_floatsisd,__bid_floatsisd)
+#define DFP_TO_INT	DPD_BID_NAME(__dpd_fixsdsi,__bid_fixsdsi)
 #elif INT_KIND == 2
-#define INT_TO_DFP	__floatdisd
-#define DFP_TO_INT	__fixsddi
+#define INT_TO_DFP	DPD_BID_NAME(__dpd_floatdisd,__bid_floatdisd)
+#define DFP_TO_INT	DPD_BID_NAME(__dpd_fixsddi,__bid_fixsddi)
 #elif INT_KIND == 3
-#define INT_TO_DFP	__floatunssisd
-#define DFP_TO_INT	__fixunssdsi
+#define INT_TO_DFP	DPD_BID_NAME(__dpd_floatunssisd,__bid_floatunssisd)
+#define DFP_TO_INT	DPD_BID_NAME(__dpd_fixunssdsi,__bid_fixunssdsi)
 #elif INT_KIND == 4
-#define INT_TO_DFP	__floatunsdisd
-#define DFP_TO_INT	__fixunssddi
+#define INT_TO_DFP	DPD_BID_NAME(__dpd_floatunsdisd,__bid_floatunsdisd)
+#define DFP_TO_INT	DPD_BID_NAME(__dpd_fixunssddi,__bid_fixunssddi)
 #endif
 #elif WIDTH == 64
 #if INT_KIND == 1
-#define INT_TO_DFP	__floatsidd
-#define DFP_TO_INT	__fixddsi
+#define INT_TO_DFP	DPD_BID_NAME(__dpd_floatsidd,__bid_floatsidd)
+#define DFP_TO_INT	DPD_BID_NAME(__dpd_fixddsi,__bid_fixddsi)
 #elif INT_KIND == 2
-#define INT_TO_DFP	__floatdidd
-#define DFP_TO_INT	__fixdddi
+#define INT_TO_DFP	DPD_BID_NAME(__dpd_floatdidd,__bid_floatdidd)
+#define DFP_TO_INT	DPD_BID_NAME(__dpd_fixdddi,__bid_fixdddi)
 #elif INT_KIND == 3
-#define INT_TO_DFP	__floatunssidd
-#define DFP_TO_INT	__fixunsddsi
+#define INT_TO_DFP	DPD_BID_NAME(__dpd_floatunssidd,__bid_floatunssidd)
+#define DFP_TO_INT	DPD_BID_NAME(__dpd_fixunsddsi,__bid_fixunsddsi)
 #elif INT_KIND == 4
-#define INT_TO_DFP	__floatunsdidd
-#define DFP_TO_INT	__fixunsdddi
+#define INT_TO_DFP	DPD_BID_NAME(__dpd_floatunsdidd,__bid_floatunsdidd)
+#define DFP_TO_INT	DPD_BID_NAME(__dpd_fixunsdddi,__bid_fixunsdddi)
 #endif
 #elif WIDTH == 128
 #if INT_KIND == 1
-#define INT_TO_DFP	__floatsitd
-#define DFP_TO_INT	__fixtdsi
+#define INT_TO_DFP	DPD_BID_NAME(__dpd_floatsitd,__bid_floatsitd)
+#define DFP_TO_INT	DPD_BID_NAME(__dpd_fixtdsi,__bid_fixtdsi)
 #elif INT_KIND == 2
-#define INT_TO_DFP	__floatditd
-#define DFP_TO_INT	__fixtddi
+#define INT_TO_DFP	DPD_BID_NAME(__dpd_floatditd,__bid_floatditd)
+#define DFP_TO_INT	DPD_BID_NAME(__dpd_fixtddi,__bid_fixtddi)
 #elif INT_KIND == 3
-#define INT_TO_DFP	__floatunssitd
-#define DFP_TO_INT	__fixunstdsi
+#define INT_TO_DFP	DPD_BID_NAME(__dpd_floatunssitd,__bid_floatunssitd)
+#define DFP_TO_INT	DPD_BID_NAME(__dpd_fixunstdsi,__bid_fixunstdsi)
 #elif INT_KIND == 4
-#define INT_TO_DFP	__floatunsditd
-#define DFP_TO_INT	__fixunstddi
+#define INT_TO_DFP	DPD_BID_NAME(__dpd_floatunsditd,__bid_floatunsditd)
+#define DFP_TO_INT	DPD_BID_NAME(__dpd_fixunstddi,__bid_fixunstddi)
 #endif
 #endif
 
@@ -398,38 +404,38 @@ extern float strtof (const char *, char **);
 
 #if WIDTH == 32
 #if BFP_KIND == 1
-#define BFP_TO_DFP	__extendsfsd
-#define DFP_TO_BFP	__truncsdsf
+#define BFP_TO_DFP	DPD_BID_NAME(__dpd_extendsfsd,__bid_extendsfsd)
+#define DFP_TO_BFP	DPD_BID_NAME(__dpd_truncsdsf,__bid_truncsdsf)
 #elif BFP_KIND == 2
-#define BFP_TO_DFP	__truncdfsd
-#define DFP_TO_BFP	__extendsddf
+#define BFP_TO_DFP	DPD_BID_NAME(__dpd_truncdfsd,__bid_truncdfsd)
+#define DFP_TO_BFP	DPD_BID_NAME(__dpd_extendsddf,__bid_extendsddf)
 #elif BFP_KIND == 3
-#define BFP_TO_DFP	__truncxfsd
-#define DFP_TO_BFP	__extendsdxf
+#define BFP_TO_DFP	DPD_BID_NAME(__dpd_truncxfsd,__bid_truncxfsd)
+#define DFP_TO_BFP	DPD_BID_NAME(__dpd_extendsdxf,__bid_extendsdxf)
 #endif /* BFP_KIND */
 
 #elif WIDTH == 64
 #if BFP_KIND == 1
-#define BFP_TO_DFP	__extendsfdd
-#define DFP_TO_BFP	__truncddsf
+#define BFP_TO_DFP	DPD_BID_NAME(__dpd_extendsfdd,__bid_extendsfdd)
+#define DFP_TO_BFP	DPD_BID_NAME(__dpd_truncddsf,__bid_truncddsf)
 #elif BFP_KIND == 2
-#define BFP_TO_DFP	__extenddfdd
-#define DFP_TO_BFP	__truncdddf
+#define BFP_TO_DFP	DPD_BID_NAME(__dpd_extenddfdd,__bid_extenddfdd)
+#define DFP_TO_BFP	DPD_BID_NAME(__dpd_truncdddf,__bid_truncdddf)
 #elif BFP_KIND == 3
-#define BFP_TO_DFP	__truncxfdd
-#define DFP_TO_BFP	__extendddxf
+#define BFP_TO_DFP	DPD_BID_NAME(__dpd_truncxfdd,__bid_truncxfdd)
+#define DFP_TO_BFP	DPD_BID_NAME(__dpd_extendddxf,__bid_extendddxf)
 #endif /* BFP_KIND */
 
 #elif WIDTH == 128
 #if BFP_KIND == 1
-#define BFP_TO_DFP	__extendsftd
-#define DFP_TO_BFP	__trunctdsf
+#define BFP_TO_DFP	DPD_BID_NAME(__dpd_extendsftd,__bid_extendsftd)
+#define DFP_TO_BFP	DPD_BID_NAME(__dpd_trunctdsf,__bid_trunctdsf)
 #elif BFP_KIND == 2
-#define BFP_TO_DFP	__extenddftd
-#define DFP_TO_BFP	__trunctddf
+#define BFP_TO_DFP	DPD_BID_NAME(__dpd_extenddftd,__bid_extenddftd)
+#define DFP_TO_BFP	DPD_BID_NAME(__dpd_trunctddf,__bid_trunctddf)
 #elif BFP_KIND == 3
-#define BFP_TO_DFP	__extendxftd
-#define DFP_TO_BFP	__trunctdxf
+#define BFP_TO_DFP	DPD_BID_NAME(__dpd_extendxftd,__bid_extendxftd)
+#define DFP_TO_BFP	DPD_BID_NAME(__dpd_trunctdxf,__bid_trunctdxf)
 #endif /* BFP_KIND */
 
 #endif /* WIDTH */

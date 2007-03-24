@@ -37,6 +37,7 @@ SHELL = @SHELL@
 
 enable_shared = @enable_shared@
 decimal_float = @decimal_float@
+enable_decimal_float = @enable_decimal_float@
 
 host_noncanonical = @host_noncanonical@
 
@@ -183,7 +184,13 @@ export slibdir
 
 version := $(shell $(CC) -dumpversion)
 
-DECNUMINC = -I$(srcdir)/../libdecnumber -I$(MULTIBUILDTOP)../../libdecnumber
+ifeq ($(decimal_float),yes)
+DECNUMINC = -I$(srcdir)/../libdecnumber/$(enable_decimal_float) \
+	    -I$(srcdir)/../libdecnumber \
+	    -I$(MULTIBUILDTOP)../../libdecnumber
+else
+DECNUMINC =
+endif
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
@@ -467,22 +474,32 @@ ifneq ($(D32PBIT)$(D64PBIT)$(D128PBIT),)
 dec-filenames += decContext decNumber decExcept decRound decLibrary decUtility
 endif
 
-ifneq ($(D32PBIT),)
-dec-filenames += decimal32
-endif
-
-ifneq ($(D64PBIT),)
-dec-filenames += decimal64
-endif
-
-ifneq ($(D128PBIT),)
-dec-filenames += decimal128
-endif
-
 dec-objects = $(patsubst %,%$(objext),$(dec-filenames))
 $(dec-objects): %$(objext): $(srcdir)/../libdecnumber/%.c
 	$(gcc_compile) -c $<
 libgcc-objects += $(dec-objects)
+
+decbits-filenames =
+ifneq ($(D32PBIT),)
+decbits-filenames += decimal32
+endif
+
+ifneq ($(D64PBIT),)
+decbits-filenames += decimal64
+endif
+
+ifneq ($(D128PBIT),)
+decbits-filenames += decimal128
+endif
+
+ifeq ($(enable_decimal_float),bid)
+decbits-filenames += bid2dpd_dpd2bid
+endif
+
+decbits-objects = $(patsubst %,%$(objext),$(decbits-filenames))
+$(decbits-objects): %$(objext): $(srcdir)/../libdecnumber/$(enable_decimal_float)/%.c
+	$(gcc_compile) -c $<
+libgcc-objects += $(decbits-objects)
 
 # Next build individual support functions.
 ifneq ($(D32PBIT),)

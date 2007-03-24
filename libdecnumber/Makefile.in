@@ -1,7 +1,7 @@
 # @configure_input@
 # Makefile for libdecnumber.  Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 2005 Free Software Foundation, Inc.
+# Copyright (C) 2005, 2007 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -50,6 +50,8 @@ libdir = @libdir@
 localedir = $(datadir)/locale
 prefix = @prefix@
 
+enable_decimal_float= @enable_decimal_float@
+
 INCLUDES = -I$(srcdir) -I.
 
 ALL_CFLAGS = $(CFLAGS) $(WARN_CFLAGS) $(INCLUDES) $(CPPFLAGS)
@@ -57,11 +59,20 @@ ALL_CFLAGS = $(CFLAGS) $(WARN_CFLAGS) $(INCLUDES) $(CPPFLAGS)
 libdecnumber_a_OBJS = decNumber.o decContext.o decUtility.o \
 	decimal32.o decimal64.o decimal128.o
 
+ifeq ($(enable_decimal_float),bid)
+libdecnumber_a_OBJS+=bid2dpd_dpd2bid.o host-ieee32.o host-ieee64.o \
+	host-ieee128.o
+endif
+
 libdecnumber_a_SOURCES = decContext.c decContext.h decDPD.h \
 	decNumber.c decNumber.h decNumberLocal.h \
 	decUtility.c decUtility.h \
-	decimal128.c decimal128.h decimal32.c decimal32.h \
-	decimal64.c decimal64.h
+	dpd/decimal128.c dpd/decimal128.h \
+	dpd/decimal32.c dpd/decimal32.h \
+	dpd/decimal64.c dpd/decimal64.h \
+	bid/decimal128.c bid/decimal128.h \
+	bid/decimal32.c bid/decimal32.h \
+	bid/decimal64.c bid/decimal64.h
 
 all: libdecnumber.a
 
@@ -104,13 +115,26 @@ $(srcdir)/config.in: @MAINT@ $(srcdir)/configure
 
 decContext.o: decContext.c decContext.h decNumberLocal.h
 decNumber.o:  decNumber.c decNumber.h decContext.h decNumberLocal.h
-decimal32.o:  decimal32.c decNumber.h decContext.h decNumberLocal.h \
-   decimal32.h decUtility.h
-decimal64.o:  decimal64.c decNumber.h decContext.h decNumberLocal.h \
-   decimal64.h decUtility.h
-decimal128.o: decimal128.c decNumber.h decNumberLocal.h decimal128.h \
-   decUtility.h
-
+decimal32.o:  $(enable_decimal_float)/decimal32.c \
+   $(enable_decimal_float)/decimal32.h \
+   decNumber.h decContext.h decNumberLocal.h decUtility.h
+	$(COMPILE) $<
+decimal64.o:  $(enable_decimal_float)/decimal64.c \
+   $(enable_decimal_float)/decimal64.h \
+   decNumber.h decContext.h decNumberLocal.h decUtility.h
+	$(COMPILE) $<
+decimal128.o:  $(enable_decimal_float)/decimal128.c \
+   $(enable_decimal_float)/decimal128.h \
+   decNumber.h decContext.h decNumberLocal.h decUtility.h
+	$(COMPILE) $<
+bid2dpd_dpd2bid.o : bid/bid2dpd_dpd2bid.c bid/bid2dpd_dpd2bid.h
+	$(COMPILE) $<
+host-ieee32.o : bid/host-ieee32.c bid/decimal32.h
+	$(COMPILE) $<
+host-ieee64.o : bid/host-ieee64.c bid/decimal64.h
+	$(COMPILE) $<
+host-ieee128.o : bid/host-ieee128.c bid/decimal128.h
+	$(COMPILE) $<
 # Other miscellaneous targets.
 
 mostlyclean:
