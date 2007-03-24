@@ -2507,48 +2507,53 @@ check_dimension (int i, gfc_array_ref *ar, gfc_array_spec *as)
       break;
 
     case AR_SECTION:
-      if (compare_bound_int (ar->stride[i], 0) == CMP_EQ)
-	{
-	  gfc_error ("Illegal stride of zero at %L", &ar->c_where[i]);
-	  return FAILURE;
-	}
-
+      {
 #define AR_START (ar->start[i] ? ar->start[i] : as->lower[i])
 #define AR_END (ar->end[i] ? ar->end[i] : as->upper[i])
 
-      if (compare_bound (AR_START, AR_END) == CMP_EQ
-	  && (compare_bound (AR_START, as->lower[i]) == CMP_LT
-	      || compare_bound (AR_START, as->upper[i]) == CMP_GT))
-	goto bound;
+	comparison comp_start_end = compare_bound (AR_START, AR_END);
 
-      if (((compare_bound_int (ar->stride[i], 0) == CMP_GT
-	    || ar->stride[i] == NULL)
-	   && compare_bound (AR_START, AR_END) != CMP_GT)
-	  || (compare_bound_int (ar->stride[i], 0) == CMP_LT
-	      && compare_bound (AR_START, AR_END) != CMP_LT))
-	{
-	  if (compare_bound (AR_START, as->lower[i]) == CMP_LT)
-	    goto bound;
-	  if (compare_bound (AR_START, as->upper[i]) == CMP_GT)
-	    goto bound;
-	}
+	/* Check for zero stride, which is not allowed.  */
+	if (compare_bound_int (ar->stride[i], 0) == CMP_EQ)
+	  {
+	    gfc_error ("Illegal stride of zero at %L", &ar->c_where[i]);
+	    return FAILURE;
+	  }
 
-      mpz_init (last_value);
-      if (compute_last_value_for_triplet (AR_START, AR_END, ar->stride[i],
-					  last_value))
-	{
-	  if (compare_bound_mpz_t (as->lower[i], last_value) == CMP_GT
-	      || compare_bound_mpz_t (as->upper[i], last_value) == CMP_LT)
-	    {
-	      mpz_clear (last_value);
+	/* if start == len || (stride > 0 && start < len)
+			   || (stride < 0 && start > len),
+	   then the array section contains at least one element.  In this
+	   case, there is an out-of-bounds access if
+	   (start < lower || start > upper).  */
+	if (compare_bound (AR_START, AR_END) == CMP_EQ
+	    || ((compare_bound_int (ar->stride[i], 0) == CMP_GT
+		 || ar->stride[i] == NULL) && comp_start_end == CMP_LT)
+	    || (compare_bound_int (ar->stride[i], 0) == CMP_LT
+	        && comp_start_end == CMP_GT))
+	  {
+	    if (compare_bound (AR_START, as->lower[i]) == CMP_LT
+		|| compare_bound (AR_START, as->upper[i]) == CMP_GT)
 	      goto bound;
-	    }
-	}
-      mpz_clear (last_value);
+	  }
+
+	/* If we can compute the highest index of the array section,
+	   then it also has to be between lower and upper.  */
+	mpz_init (last_value);
+	if (compute_last_value_for_triplet (AR_START, AR_END, ar->stride[i],
+					    last_value))
+	  {
+	    if (compare_bound_mpz_t (as->lower[i], last_value) == CMP_GT
+	        || compare_bound_mpz_t (as->upper[i], last_value) == CMP_LT)
+	      {
+	        mpz_clear (last_value);
+	        goto bound;
+	      }
+	  }
+	mpz_clear (last_value);
 
 #undef AR_START
 #undef AR_END
-
+      }
       break;
 
     default:
