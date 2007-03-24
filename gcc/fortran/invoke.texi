@@ -128,9 +128,9 @@ by type.  Explanations are in the following sections.
 and Warnings}.
 @gccoptlist{-fmax-errors=@var{n} @gol
 -fsyntax-only  -pedantic  -pedantic-errors @gol
--w  -Wall  -Waliasing  -Wampersand  -Wconversion  -Wimplicit-interface @gol
--Wtabs -Wnonstd-intrinsics -Wsurprising -Wunderflow @gol
--Wline-truncation -W}
+-w  -Wall  -Waliasing  -Wampersand  -Wcharacter-truncation  -Wconversion @gol
+-Wimplicit-interface  -Wline-truncation  -Wnonstd-intrinsics  -Wsurprising @gol
+-Wno-tabs  -Wunderflow  -W}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
@@ -138,11 +138,12 @@ and Warnings}.
 
 @item Directory Options
 @xref{Directory Options,,Options for Directory Search}.
-@gccoptlist{-I@var{dir}  -M@var{dir}}
+@gccoptlist{-I@var{dir}  -J@var{dir}  -M@var{dir}}
 
 @item Runtime Options
 @xref{Runtime Options,,Options for influencing runtime behavior}.
-@gccoptlist{-fconvert=@var{conversion} -frecord-marker=@var{length}}
+@gccoptlist{-fconvert=@var{conversion}  -frecord-marker=@var{length} @gol
+-fmax-subrecord-length=@var{length}}
 
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
@@ -325,12 +326,19 @@ on most systems, but with @option{-fno-range-check} the value will
 @item -std=@var{std}
 @cindex @code{-std=}@var{std} option
 @cindex option, @code{-std=}@var{std}
-Conform to the specified standard.  The default value for @var{std} is
-@samp{gnu}; a superset of the Fortran 95 standard which includes all
-of the GNU extensions recommended for use in new code.  The @samp{legacy}
-value also includes obsolete extensions that may be required for old 
-non-standard programs.  Strict conformance to the Fortran 95 and Fortran 2003
-standards is specified by @samp{f95} and @samp{f2003}, respectively.
+Specify the standard to which the program is expected to conform, which
+may be one of @samp{f95}, @samp{f2003}, @samp{gnu}, or @samp{legacy}.
+The default value for @var{std} is @samp{gnu}, which specifies a
+superset of the Fortran 95 standard that includes all of the extensions
+supported by GNU Fortran, although warnings will be given for obsolete
+extensions not recommended for use in new code.  The @samp{legacy} value
+is equivalent but without the warnings for obsolete extensions, and may
+be useful for old non-standard programs.  The @samp{f95} and
+@samp{f2003} values specify strict conformance to the Fortran 95 and
+Fortran 2003 standards, respectively; errors are given for all
+extensions beyond the relevant language standard, and warnings are given
+for the Fortran 77 features that are permitted but obsolescent in later
+standards.
 
 @end table
 
@@ -420,7 +428,7 @@ Inhibit all warning messages.
 Enables commonly used warning options pertaining to usage that
 we recommend avoiding and that we believe are easy to avoid.
 This currently includes @option{-Waliasing},
-@option{-Wampersand}, @option{-Wsurprising}, @option{-Wnonstd-intrinsic},
+@option{-Wampersand}, @option{-Wsurprising}, @option{-Wnonstd-intrinsics},
 @option{-Wno-tabs}, and @option{-Wline-truncation}.
 
 @item -Waliasing
@@ -455,6 +463,11 @@ given with @option{-Wampersand}, @option{-pedantic}, @option{-std=f95}, and
 constant, GNU Fortran assumes continuation at the first non-comment,
 non-whitespace character after the ampersand that initiated the continuation.
 
+@item -Wcharacter-truncation
+@cindex @code{-Wcharacter-truncation} option
+@cindex option, @code{-Wcharacter-truncation}
+Warn when a character assignment will truncate the assigned string.
+
 @item -Wconversion
 @cindex @code{-Wconversion} option
 @cindex option, @code{-Wconversion}
@@ -468,11 +481,11 @@ Warn if a procedure is called without an explicit interface.
 Note this only checks that an explicit interface is present.  It does not
 check that the declared interfaces are consistent across program units.
 
-@item -Wnonstd-intrinsic
-@cindex @code{-Wnonstd-intrinsic} option
-@cindex option, @code{-Wnonstd-intrinsic}
+@item -Wnonstd-intrinsics
+@cindex @code{-Wnonstd-intrinsics} option
+@cindex option, @code{-Wnonstd-intrinsics}
 Warn if the user tries to use an intrinsic that does not belong to the 
-standard the user has chosen via the -std option.
+standard the user has chosen via the @option{-std} option.
 
 @item -Wsurprising
 @cindex @code{-Wsurprising} option
@@ -608,9 +621,11 @@ gcc,Using the GNU Compiler Collection (GCC)}, for information on the
 @item -M@var{dir}
 @item -J@var{dir}
 @cindex @code{-M}@var{dir} option
-@cindex option, -@code{-M}@var{dir}
+@cindex option, @code{-M}@var{dir}
 @cindex @code{-J}@var{dir} option
-@cindex option, -@code{-J}@var{dir}
+@cindex option, @code{-J}@var{dir}
+@cindex paths, search
+@cindex module search path
 This option specifies where to put @file{.mod} files for compiled modules.
 It is also added to the list of directories to searched by an @code{USE}
 statement.
