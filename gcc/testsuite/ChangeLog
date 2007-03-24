@@ -1,3 +1,10 @@
+2007-03-23  Michael Meissner  <michael.meissner@amd.com>
+
+	* gcc.dg/dfp/convert-dfp.c: Wrap __STDC_WANT_DEC_FP__ with
+	#ifndef/#endif.
+	* gcc.dg/dfp/convert-int-saturate.c: Ditto.
+	* gcc.dg/dfp/decfloat-constants.c: Ditto.
+
 2007-03-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31209

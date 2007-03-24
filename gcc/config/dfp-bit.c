@@ -1,5 +1,5 @@
 /* This is a software decimal floating point library.
-   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -66,7 +66,7 @@ typedef decNumber* (*dfp_unary_func)
 typedef decNumber* (*dfp_binary_func)
      (decNumber *, const decNumber *, const decNumber *, decContext *);
 
-extern unsigned long __dec_byte_swap (unsigned long);
+extern uint32_t __dec_byte_swap (uint32_t);
 
 /* Unary operations.  */
 

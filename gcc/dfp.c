@@ -1,5 +1,5 @@
 /* Decimal floating point support.
-   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -656,11 +656,9 @@ decimal_real_arithmetic (REAL_VALUE_TYPE *r, enum tree_code code,
 
     case NEGATE_EXPR:
       {
-	decimal128 *d128;
 	*r = *op0;
-	d128 = (decimal128 *) r->sig;
-	/* Flip high bit.  */
-	d128->bytes[0] ^= 1 << 7;
+	/* Flip sign bit.  */
+	decimal128FlipSign ((decimal128 *) r->sig);
 	/* Keep sign field in sync.  */
 	r->sign ^= 1;
       }
@@ -668,11 +666,9 @@ decimal_real_arithmetic (REAL_VALUE_TYPE *r, enum tree_code code,
 
     case ABS_EXPR:
       {
-        decimal128 *d128;
         *r = *op0;
-        d128 = (decimal128 *) r->sig;
-	/* Clear high bit.  */
-        d128->bytes[0] &= 0x7f;
+	/* Clear sign bit.  */
+	decimal128ClearSign ((decimal128 *) r->sig);
 	/* Keep sign field in sync.  */
 	r->sign = 0;
       }
@@ -712,5 +708,5 @@ decimal_real_maxval (REAL_VALUE_TYPE *r, int sign, enum machine_mode mode)
 
   decimal_real_from_string (r, max);
   if (sign)
-    r->sig[0] |= 0x80000000;
+    decimal128SetSign ((decimal128 *) r->sig, 1);
 }

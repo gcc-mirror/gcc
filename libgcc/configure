@@ -272,7 +272,7 @@ PACKAGE_STRING='GNU C Runtime Library 1.0'
 PACKAGE_BUGREPORT=''
 
 ac_unique_file="static-object.mk"
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libgcc_topdir enable_shared slibdir INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA AWK build build_cpu build_vendor build_os host host_cpu host_vendor host_os host_noncanonical build_libsubdir build_subdir host_subdir target_subdir AR ac_ct_AR LIPO ac_ct_LIPO NM ac_ct_NM RANLIB ac_ct_RANLIB STRIP ac_ct_STRIP LN_S CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP decimal_float vis_hide tmake_file extra_parts asm_hidden_op LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libgcc_topdir enable_shared slibdir INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA AWK build build_cpu build_vendor build_os host host_cpu host_vendor host_os host_noncanonical build_libsubdir build_subdir host_subdir target_subdir AR ac_ct_AR LIPO ac_ct_LIPO NM ac_ct_NM RANLIB ac_ct_RANLIB STRIP ac_ct_STRIP LN_S CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP decimal_float enable_decimal_float vis_hide tmake_file extra_parts asm_hidden_op LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -811,6 +811,10 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-shared        don't provide a shared libgcc
   --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory
+  --enable-decimal-float={no,yes,bid,dpd}
+			enable decimal float extension to C.  Selecting 'bid'
+			or 'dpd' choses which decimal floating point format
+			to use
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -3286,6 +3290,45 @@ echo "${ECHO_T}$libgcc_cv_dfp" >&6
 decimal_float=$libgcc_cv_dfp
 
 
+# Check whether --enable-decimal-float or --disable-decimal-float was given.
+if test "${enable_decimal_float+set}" = set; then
+  enableval="$enable_decimal_float"
+
+  case $enable_decimal_float in
+    yes | no | bid | dpd) ;;
+    *) { { echo "$as_me:$LINENO: error: '$enable_decimal_float' is an invalid value for --enable-decimal-float.
+Valid choices are 'yes', 'bid', 'dpd', and 'no'." >&5
+echo "$as_me: error: '$enable_decimal_float' is an invalid value for --enable-decimal-float.
+Valid choices are 'yes', 'bid', 'dpd', and 'no'." >&2;}
+   { (exit 1); exit 1; }; } ;;
+  esac
+
+else
+
+  case $target in
+    powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux*)
+      enable_decimal_float=yes
+      ;;
+    *)
+      enable_decimal_float=no
+      ;;
+  esac
+
+fi;
+
+# x86's use BID format instead of DPD
+if test x$enable_decimal_float = xyes; then
+  case $target in
+    i?86*-*-linux* | x86_64*-*-linux*)
+      enable_decimal_float=bid
+      ;;
+    *)
+      enable_decimal_float=dpd
+      ;;
+  esac
+fi
+
+
 # Collect host-machine-specific information.
 . ${srcdir}/config.host
 
@@ -4039,6 +4082,7 @@ s,@EXEEXT@,$EXEEXT,;t t
 s,@OBJEXT@,$OBJEXT,;t t
 s,@CPP@,$CPP,;t t
 s,@decimal_float@,$decimal_float,;t t
+s,@enable_decimal_float@,$enable_decimal_float,;t t
 s,@vis_hide@,$vis_hide,;t t
 s,@tmake_file@,$tmake_file,;t t
 s,@extra_parts@,$extra_parts,;t t

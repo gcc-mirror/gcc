@@ -90,6 +90,12 @@ typedef struct
 #define decimal128SetSign(d, b) {                                   \
     (d)->bytes[0]|=((unsigned)(b)<<7);}
 
+  /* Clear sign */
+#define decimal128ClearSign(d) {(d)->bytes[0]&=~0x80;}
+
+  /* Flip sign */
+#define decimal128FlipSign(d) {(d)->bytes[0]^=0x80;}
+
   /* Set exponent continuation [does not apply bias] */
   /* This assumes range has been checked and exponent previously 0; */
   /* type of exponent must be unsigned */
@@ -103,11 +109,13 @@ typedef struct
   /* ------------------------------------------------------------------ */
 
 #ifdef IN_LIBGCC2
+#ifndef decimal128FromString
 #define decimal128FromString __decimal128FromString
 #define decimal128ToString __decimal128ToString
 #define decimal128ToEngString __decimal128ToEngString
 #define decimal128FromNumber __decimal128FromNumber
 #define decimal128ToNumber __decimal128ToNumber
+#endif
 #endif
 
   /* String conversions */

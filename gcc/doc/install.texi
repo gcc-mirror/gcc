@@ -1304,11 +1304,20 @@ is removed entirely in the next major release, unless someone steps
 forward to maintain the port.
 
 @item --enable-decimal-float
+@itemx --enable-decimal-float=yes
+@itemx --enable-decimal-float=no
+@itemx --enable-decimal-float=bid
+@itemx --enable-decimal-float=dpd
 @itemx --disable-decimal-float
-Enable (or disable) support for the C decimal floating point
-extension.  This is enabled by default only on PowerPC GNU/Linux
-systems.  Other systems may also support it, but require the user to
-specifically enable it.
+Enable (or disable) support for the C decimal floating point extension
+that is in the IEEE 754R extension to the IEEE754 floating point
+standard.  This is enabled by default only on PowerPC, i386, and
+x86_64 GNU/Linux systems.  Other systems may also support it, but
+require the user to specifically enable it.  You can optionally
+control which decimal floating point format is used (either @samp{bid}
+or @samp{dpd}).  The @samp{bid} (binary integer decimal) format is
+default on i386 and x86_64 systems, and the @samp{dpd} (densely packed
+decimal) format is default on PowerPC systems.
 
 @item --with-long-double-128
 Specify if @code{long double} type should be 128-bit by default on selected

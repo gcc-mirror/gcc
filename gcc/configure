@@ -879,7 +879,10 @@ Optional Features:
   --enable-gather-detailed-mem-stats         enable detailed memory allocation stats gathering
   --enable-multilib       enable library support for multiple ABIs
   --enable-__cxa_atexit   enable __cxa_atexit for C++
-  --enable-decimal-float  enable decimal float extension to C
+  --enable-decimal-float={no,yes,bid,dpd}
+			enable decimal float extension to C.  Selecting 'bid'
+			or 'dpd' choses which decimal floating point format
+			to use
   --enable-threads        enable thread usage for target GCC
   --enable-threads=LIB    use LIB thread package for target GCC
   --enable-tls            enable or disable generation of tls code
@@ -7012,9 +7015,19 @@ fi;
 if test "${enable_decimal_float+set}" = set; then
   enableval="$enable_decimal_float"
 
-  if test x$enablevar = xyes ; then
-    case $target in
-    powerpc*-*-linux* | i?86*-*-linux*)
+  case $enable_decimal_float in
+    yes | no | bid | dpd) ;;
+    *) { { echo "$as_me:$LINENO: error: '$enable_decimal_float' is an invalid value for --enable-decimal-float.
+Valid choices are 'yes', 'bid', 'dpd', and 'no'." >&5
+echo "$as_me: error: '$enable_decimal_float' is an invalid value for --enable-decimal-float.
+Valid choices are 'yes', 'bid', 'dpd', and 'no'." >&2;}
+   { (exit 1); exit 1; }; } ;;
+  esac
+
+else
+
+  case $target in
+    powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux*)
       enable_decimal_float=yes
       ;;
     *)
@@ -7022,19 +7035,41 @@ if test "${enable_decimal_float+set}" = set; then
 echo "$as_me: WARNING: decimal float is not supported for this target" >&2;}
       enable_decimal_float=no
       ;;
-    esac
-  fi
+  esac
 
-else
-  enable_decimal_float=no
 fi;
 
-
-
-dfp=`if test $enable_decimal_float = yes; then echo 1; else echo 0; fi`
+dfp=`if test $enable_decimal_float != no; then echo 1; else echo 0; fi`
 
 cat >>confdefs.h <<_ACEOF
 #define ENABLE_DECIMAL_FLOAT $dfp
+_ACEOF
+
+
+# x86's use BID format instead of DPD
+case x$enable_decimal_float in
+  xyes)
+    case $target in
+      i?86*-*-linux* | x86_64*-*-linux*)
+	enable_decimal_float=bid
+	;;
+      *)
+	enable_decimal_float=dpd
+	;;
+    esac
+    ;;
+  xno)
+    # ENABLE_DECIMAL_FLOAT is set to 0. But we have to have proper
+    # dependency on libdecnumber.
+    enable_decimal_float=dpd
+    ;;
+esac
+
+
+bid=`if test $enable_decimal_float = bid; then echo 1; else echo 0; fi`
+
+cat >>confdefs.h <<_ACEOF
+#define ENABLE_DECIMAL_BID_FORMAT $bid
 _ACEOF
 
 
@@ -7630,7 +7665,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:7633: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:7668: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[4-9]*)

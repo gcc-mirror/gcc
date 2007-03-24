@@ -107,6 +107,42 @@ AC_CACHE_CHECK([whether decimal floating point is supported], [libgcc_cv_dfp],
 decimal_float=$libgcc_cv_dfp
 AC_SUBST(decimal_float)
 
+AC_ARG_ENABLE(decimal-float,
+[  --enable-decimal-float={no,yes,bid,dpd}
+			enable decimal float extension to C.  Selecting 'bid'
+			or 'dpd' choses which decimal floating point format
+			to use],
+[
+  case $enable_decimal_float in
+    yes | no | bid | dpd) ;;
+    *) AC_MSG_ERROR(['$enable_decimal_float' is an invalid value for --enable-decimal-float.
+Valid choices are 'yes', 'bid', 'dpd', and 'no'.]) ;;
+  esac
+],
+[
+  case $target in
+    powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux*)
+      enable_decimal_float=yes
+      ;;
+    *)
+      enable_decimal_float=no
+      ;;
+  esac
+])
+
+# x86's use BID format instead of DPD
+if test x$enable_decimal_float = xyes; then
+  case $target in
+    i?86*-*-linux* | x86_64*-*-linux*)
+      enable_decimal_float=bid
+      ;;
+    *)
+      enable_decimal_float=dpd
+      ;;
+  esac
+fi
+AC_SUBST(enable_decimal_float)
+
 # Collect host-machine-specific information.
 . ${srcdir}/config.host
 

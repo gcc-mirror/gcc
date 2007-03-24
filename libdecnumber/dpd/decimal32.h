@@ -81,6 +81,12 @@ typedef struct
 #define decimal32SetSign(d, b) {                                    \
     (d)->bytes[0]|=((unsigned)(b)<<7);}
 
+  /* Clear sign */
+#define decimal32ClearSign(d) {(d)->bytes[0]&=~0x80;}
+
+  /* Flip sign */
+#define decimal32FlipSign(d) {(d)->bytes[0]^=0x80;}
+
   /* Set exponent continuation [does not apply bias] */
   /* This assumes range has been checked and exponent previously 0; */
   /* type of exponent must be unsigned */
@@ -93,11 +99,13 @@ typedef struct
   /* ------------------------------------------------------------------ */
 
 #ifdef IN_LIBGCC2
+#ifndef decimal32FromString
 #define decimal32FromString __decimal32FromString
 #define decimal32ToString __decimal32ToString
 #define decimal32ToEngString __decimal32ToEngString
 #define decimal32FromNumber __decimal32FromNumber
 #define decimal32ToNumber __decimal32ToNumber
+#endif
 #endif
 
 /* String conversions.  */
