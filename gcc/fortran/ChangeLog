@@ -1,3 +1,20 @@
+2007-03-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31215
+	* trans-expr.c (gfc_apply_interface_mapping_to_expr): Return
+	int result that is non-zero if the expression is the function
+	result.  Only the characteristics of the result expression
+	can be used in a procedure interface, so simplify LEN in situ
+	using its character length.
+
+	PR fortran/31219
+	PR fortran/31200
+	* trans-expr.c (gfc_conv_function_call): Do not use
+	gfc_conv_expr_reference for actual pointer function with formal
+	target because a temporary is created that does not transfer
+	the reference correctly.  Do not indirect formal pointer
+	functions since it is the function reference that is needed.
+
 2007-03-24  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gfortran.h: Edit comments on GFC_STD_*.

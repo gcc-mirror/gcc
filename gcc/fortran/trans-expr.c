@@ -43,7 +43,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "dependency.h"
 
 static tree gfc_trans_structure_assign (tree dest, gfc_expr * expr);
-static void gfc_apply_interface_mapping_to_expr (gfc_interface_mapping *,
+static int gfc_apply_interface_mapping_to_expr (gfc_interface_mapping *,
 						 gfc_expr *);
 
 /* Copy the scalarization loop variables.  */
@@ -1601,15 +1601,16 @@ gfc_apply_interface_mapping_to_ref (gfc_interface_mapping * mapping,
    dummy arguments that MAPPING maps to actual arguments.  Replace each such
    reference with a reference to the associated actual argument.  */
 
-static void
+static int
 gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
 				     gfc_expr * expr)
 {
   gfc_interface_sym_mapping *sym;
   gfc_actual_arglist *actual;
+  int seen_result = 0;
 
   if (!expr)
-    return;
+    return 0;
 
   /* Copying an expression does not copy its length, so do that here.  */
   if (expr->ts.type == BT_CHARACTER && expr->ts.cl)
@@ -1631,6 +1632,8 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
   switch (expr->expr_type)
     {
     case EXPR_VARIABLE:
+      if (expr->symtree->n.sym->attr.result)
+	seen_result = 1;
     case EXPR_CONSTANT:
     case EXPR_NULL:
     case EXPR_SUBSTRING:
@@ -1642,6 +1645,21 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
       break;
 
     case EXPR_FUNCTION:
+      if (expr->value.function.actual->expr->expr_type == EXPR_VARIABLE
+	    && gfc_apply_interface_mapping_to_expr (mapping,
+			expr->value.function.actual->expr)
+	    && expr->value.function.esym == NULL
+	    && expr->value.function.isym != NULL
+	    && expr->value.function.isym->generic_id == GFC_ISYM_LEN)
+	{
+	  gfc_expr *new_expr;
+	  new_expr = gfc_copy_expr (expr->value.function.actual->expr->ts.cl->length);
+	  *expr = *new_expr;
+	  gfc_free (new_expr);
+	  gfc_apply_interface_mapping_to_expr (mapping, expr);
+	  break;
+	}
+
       for (sym = mapping->syms; sym; sym = sym->next)
 	if (sym->old == expr->value.function.esym)
 	  expr->value.function.esym = sym->new->n.sym;
@@ -1655,6 +1673,7 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
       gfc_apply_interface_mapping_to_cons (mapping, expr->value.constructor);
       break;
     }
+  return seen_result;
 }
 
 
@@ -2087,11 +2106,19 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 		/* Argument list functions %VAL, %LOC and %REF are signalled
 		   through arg->name.  */
 		conv_arglist_function (&parmse, arg->expr, arg->name);
+	      else if ((e->expr_type == EXPR_FUNCTION)
+			  && e->symtree->n.sym->attr.pointer
+			  && fsym && fsym->attr.target)
+		{
+		  gfc_conv_expr (&parmse, e);
+		  parmse.expr = build_fold_addr_expr (parmse.expr);
+		}
 	      else
 		{
 		  gfc_conv_expr_reference (&parmse, e);
 		  if (fsym && fsym->attr.pointer
-			&& e->expr_type != EXPR_NULL)
+		      && fsym->attr.flavor != FL_PROCEDURE
+		      && e->expr_type != EXPR_NULL)
 		    {
 		      /* Scalar pointer dummy args require an extra level of
 			 indirection. The null pointer already contains
