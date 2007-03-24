@@ -1,3 +1,11 @@
+2007-03-23  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* invoke.texi: Misc. small typo fixes.
+	(-Wcharacter-truncation): Add.
+	(-Wnonstd-intrinsics): Correct spelling.
+	(-std=): Edit.
+	(-fintrinsic-modules-path): Add.
+
 2007-03-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/30834
