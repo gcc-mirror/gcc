@@ -7,7 +7,7 @@
 	can be used in a procedure interface, so simplify LEN in situ
 	using its character length.
 
-	PR fortran/31219
+	PR fortran/31209
 	PR fortran/31200
 	* trans-expr.c (gfc_conv_function_call): Do not use
 	gfc_conv_expr_reference for actual pointer function with formal

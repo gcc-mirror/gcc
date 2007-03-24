@@ -1,5 +1,5 @@
 ! { dg-do run }
-! Tests the fix for PR31219, in which an ICE would result because
+! Tests the fix for PR31209, in which an ICE would result because
 ! the reference to the pointer function f would be indirected, as
 ! if it were the result that is being passed.
 !
