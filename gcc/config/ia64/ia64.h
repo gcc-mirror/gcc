@@ -825,22 +825,6 @@ enum reg_class
    (as well as added to a displacement).  This is needed for POST_MODIFY.  */
 #define INDEX_REG_CLASS GENERAL_REGS
 
-/* A C expression which defines the machine-dependent operand constraint
-   letters for register classes.  If CHAR is such a letter, the value should be
-   the register class corresponding to it.  Otherwise, the value should be
-   `NO_REGS'.  The register letter `r', corresponding to class `GENERAL_REGS',
-   will not be passed to this macro; you do not need to handle it.  */
-
-#define REG_CLASS_FROM_LETTER(CHAR) \
-((CHAR) == 'f' ? FR_REGS		\
- : (CHAR) == 'a' ? ADDL_REGS		\
- : (CHAR) == 'b' ? BR_REGS		\
- : (CHAR) == 'c' ? PR_REGS		\
- : (CHAR) == 'd' ? AR_M_REGS		\
- : (CHAR) == 'e' ? AR_I_REGS		\
- : (CHAR) == 'x' ? FP_REGS		\
- : NO_REGS)
-
 /* A C expression which is nonzero if register number NUM is suitable for use
    as a base register in operand addresses.  It may be either a suitable hard
    register or a pseudo register that has been allocated such a hard reg.  */
@@ -905,57 +889,6 @@ enum reg_class
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) 		\
   (SCALAR_FLOAT_MODE_P (FROM) != SCALAR_FLOAT_MODE_P (TO)	\
    ? reg_classes_intersect_p (CLASS, FR_REGS) : 0)
-
-/* A C expression that defines the machine-dependent operand constraint
-   letters (`I', `J', `K', .. 'P') that specify particular ranges of
-   integer values.  */
-
-/* 14-bit signed immediate for arithmetic instructions.  */
-#define CONST_OK_FOR_I(VALUE) \
-  ((unsigned HOST_WIDE_INT)(VALUE) + 0x2000 < 0x4000)
-/* 22-bit signed immediate for arith instructions with r0/r1/r2/r3 source.  */
-#define CONST_OK_FOR_J(VALUE) \
-  ((unsigned HOST_WIDE_INT)(VALUE) + 0x200000 < 0x400000)
-/* 8-bit signed immediate for logical instructions.  */
-#define CONST_OK_FOR_K(VALUE) ((unsigned HOST_WIDE_INT)(VALUE) + 0x80 < 0x100)
-/* 8-bit adjusted signed immediate for compare pseudo-ops.  */
-#define CONST_OK_FOR_L(VALUE) ((unsigned HOST_WIDE_INT)(VALUE) + 0x7F < 0x100)
-/* 6-bit unsigned immediate for shift counts.  */
-#define CONST_OK_FOR_M(VALUE) ((unsigned HOST_WIDE_INT)(VALUE) < 0x40)
-/* 9-bit signed immediate for load/store post-increments.  */
-#define CONST_OK_FOR_N(VALUE) ((unsigned HOST_WIDE_INT)(VALUE) + 0x100 < 0x200)
-/* 0 for r0.  Used by Linux kernel, do not change.  */
-#define CONST_OK_FOR_O(VALUE) ((VALUE) == 0)
-/* 0 or -1 for dep instruction.  */
-#define CONST_OK_FOR_P(VALUE) ((VALUE) == 0 || (VALUE) == -1)
-
-#define CONST_OK_FOR_LETTER_P(VALUE, C) \
-  ia64_const_ok_for_letter_p (VALUE, C)
-
-/* A C expression that defines the machine-dependent operand constraint letters
-   (`G', `H') that specify particular ranges of `const_double' values.  */
-
-/* 0.0 and 1.0 for fr0 and fr1.  */
-#define CONST_DOUBLE_OK_FOR_G(VALUE) \
-  ((VALUE) == CONST0_RTX (GET_MODE (VALUE))	\
-   || (VALUE) == CONST1_RTX (GET_MODE (VALUE)))
-
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C) \
-  ia64_const_double_ok_for_letter_p (VALUE, C)
-
-/* A C expression that defines the optional machine-dependent constraint
-   letters (`Q', `R', `S', `T', `U') that can be used to segregate specific
-   types of operands, usually memory references, for the target machine.  */
-
-#define EXTRA_CONSTRAINT(VALUE, C) \
-  ia64_extra_constraint (VALUE, C)
-
-/* Document the constraints that can accept reloaded memory operands.  This is
-   needed by the extended asm support, and by reload.  'Q' accepts mem, but
-   only non-volatile mem.  Since we can't reload a volatile mem into a
-   non-volatile mem, it can not be listed here.  */
-
-#define EXTRA_MEMORY_CONSTRAINT(C, STR)  ((C) == 'S')
 
 /* Basic Stack Layout */
 

@@ -1,3 +1,24 @@
+2007-03-24  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/constraints.md: New file.
+	* config/ia64/predicates.md: Replace CONST_OK_FOR_? with
+	satisfies_constraint_?.
+	* config/ia64/ia64.c (ia64_move_ok, ia64_legitimate_constant_p,
+	ia64_reload_gp, spill_restore_mem, ia64_expand_prologue,
+	ia64_expand_epilogue, ia64_split_return_addr_rtx, ia64_rtx_costs,
+	ia64_output_mi_thunk): Likewise.
+	(ia64_const_ok_for_letter_p): Remove.
+	(ia64_const_double_ok_for_letter_p): Remove.
+	(ia64_extra_constraint): Remove.
+	* config/ia64/ia64.h (REG_CLASS_FROM_LETTER): Remove.
+	(CONST_OK_FOR_I, CONST_OK_FOR_J, CONST_OK_FOR_K, CONST_OK_FOR_L,
+	CONST_OK_FOR_M, CONST_OK_FOR_N, CONST_OK_FOR_O, CONST_OK_FOR_P,
+	CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_G,
+	CONST_DOUBLE_OK_FOR_LETTER_P, EXTRA_CONSTRAINT,
+	EXTRA_MEMORY_CONSTRAINT): Remove.
+	* config/ia64/ia64.md: Include constriants.md.  Replace
+	CONST_OK_FOR_? with satisfies_constraint_?.
+
 2007-03-23  Michael Meissner  <michael.meissner@amd.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 

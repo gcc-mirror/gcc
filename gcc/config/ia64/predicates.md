@@ -434,25 +434,25 @@
 (define_predicate "gr_reg_or_6bit_operand"
   (ior (match_operand 0 "gr_register_operand")
        (and (match_code "const_int")
-	    (match_test "CONST_OK_FOR_M (INTVAL (op))"))))
+	    (match_test "satisfies_constraint_M (op)"))))
 
 ;; True if OP is a GR register operand, or an 8-bit immediate operand.
 (define_predicate "gr_reg_or_8bit_operand"
   (ior (match_operand 0 "gr_register_operand")
        (and (match_code "const_int")
-	    (match_test "CONST_OK_FOR_K (INTVAL (op))"))))
+	    (match_test "satisfies_constraint_K (op)"))))
 
 ;; True if OP is a GR/FR register operand, or an 8-bit immediate operand.
 (define_predicate "grfr_reg_or_8bit_operand"
   (ior (match_operand 0 "grfr_register_operand")
        (and (match_code "const_int")
-	    (match_test "CONST_OK_FOR_K (INTVAL (op))"))))
+	    (match_test "satisfies_constraint_K (op)"))))
 
 ;; True if OP is a register operand, or an 8-bit adjusted immediate operand.
 (define_predicate "gr_reg_or_8bit_adjusted_operand"
   (ior (match_operand 0 "gr_register_operand")
        (and (match_code "const_int")
-	    (match_test "CONST_OK_FOR_L (INTVAL (op))"))))
+	    (match_test "satisfies_constraint_L (op)"))))
 
 ;; True if OP is a register operand, or is valid for both an 8-bit
 ;; immediate and an 8-bit adjusted immediate operand.  This is necessary
@@ -461,20 +461,20 @@
 (define_predicate "gr_reg_or_8bit_and_adjusted_operand"
   (ior (match_operand 0 "gr_register_operand")
        (and (match_code "const_int")
-	    (match_test "CONST_OK_FOR_K (INTVAL (op))
-                         && CONST_OK_FOR_L (INTVAL (op))"))))
+	    (match_test "satisfies_constraint_K (op)
+                         && satisfies_constraint_L (op)"))))
 
 ;; True if OP is a register operand, or a 14-bit immediate operand.
 (define_predicate "gr_reg_or_14bit_operand"
   (ior (match_operand 0 "gr_register_operand")
        (and (match_code "const_int")
-	    (match_test "CONST_OK_FOR_I (INTVAL (op))"))))
+	    (match_test "satisfies_constraint_I (op)"))))
 
 ;;  True if OP is a register operand, or a 22-bit immediate operand.
 (define_predicate "gr_reg_or_22bit_operand"
   (ior (match_operand 0 "gr_register_operand")
        (and (match_code "const_int")
-	    (match_test "CONST_OK_FOR_J (INTVAL (op))"))))
+	    (match_test "satisfies_constraint_J (op)"))))
 
 ;; True if OP is a 7-bit immediate operand.
 (define_predicate "dshift_count_operand"
@@ -484,12 +484,12 @@
 ;; True if OP is a 6-bit immediate operand.
 (define_predicate "shift_count_operand"
   (and (match_code "const_int")
-       (match_test "CONST_OK_FOR_M (INTVAL (op))")))
+       (match_test "satisfies_constraint_M (op)")))
 
 ;; True if OP-1 is a 6-bit immediate operand, used in extr instruction.
 (define_predicate "extr_len_operand"
   (and (match_code "const_int")
-       (match_test "CONST_OK_FOR_M (INTVAL (op) - 1)")))
+       (match_test "satisfies_constraint_M (GEN_INT (INTVAL (op) - 1))")))
 
 ;; True if OP is a 5-bit immediate operand.
 (define_predicate "shift_32bit_count_operand"
@@ -524,7 +524,7 @@
 (define_predicate "fr_reg_or_fp01_operand"
   (ior (match_operand 0 "fr_register_operand")
        (and (match_code "const_double")
-	    (match_test "CONST_DOUBLE_OK_FOR_G (op)"))))
+	    (match_test "satisfies_constraint_G (op)"))))
 
 ;; Like fr_reg_or_fp01_operand, but don't allow any SUBREGs.
 (define_predicate "xfreg_or_fp01_operand"

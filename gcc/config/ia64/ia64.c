@@ -55,6 +55,7 @@ Boston, MA 02110-1301, USA.  */
 #include "intl.h"
 #include "debug.h"
 #include "params.h"
+#include "tm-constrs.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */
@@ -602,102 +603,6 @@ ia64_encode_section_info (tree decl, rtx rtl, int first)
     ia64_encode_addr_area (decl, XEXP (rtl, 0));
 }
 
-/* Implement CONST_OK_FOR_LETTER_P.  */
-
-bool
-ia64_const_ok_for_letter_p (HOST_WIDE_INT value, char c)
-{
-  switch (c)
-    {
-    case 'I':
-      return CONST_OK_FOR_I (value);
-    case 'J':
-      return CONST_OK_FOR_J (value);
-    case 'K':
-      return CONST_OK_FOR_K (value);
-    case 'L':
-      return CONST_OK_FOR_L (value);
-    case 'M':
-      return CONST_OK_FOR_M (value);
-    case 'N':
-      return CONST_OK_FOR_N (value);
-    case 'O':
-      return CONST_OK_FOR_O (value);
-    case 'P':
-      return CONST_OK_FOR_P (value);
-    default:
-      return false;
-    }
-}
-
-/* Implement CONST_DOUBLE_OK_FOR_LETTER_P.  */
-
-bool
-ia64_const_double_ok_for_letter_p (rtx value, char c)
-{
-  switch (c)
-    {
-    case 'G':
-      return CONST_DOUBLE_OK_FOR_G (value);
-    default:
-      return false;
-    }
-}
-
-/* Implement EXTRA_CONSTRAINT.  */
-
-bool
-ia64_extra_constraint (rtx value, char c)
-{
-  switch (c)
-    {
-    case 'Q':
-      /* Non-volatile memory for FP_REG loads/stores.  */
-      return memory_operand(value, VOIDmode) && !MEM_VOLATILE_P (value);
-
-    case 'R':
-      /* 1..4 for shladd arguments.  */
-      return (GET_CODE (value) == CONST_INT
-	      && INTVAL (value) >= 1 && INTVAL (value) <= 4);
-
-    case 'S':
-      /* Non-post-inc memory for asms and other unsavory creatures.  */
-      return (GET_CODE (value) == MEM
-	      && GET_RTX_CLASS (GET_CODE (XEXP (value, 0))) != RTX_AUTOINC
-	      && (reload_in_progress || memory_operand (value, VOIDmode)));
-
-    case 'T':
-      /* Symbol ref to small-address-area.  */
-      return small_addr_symbolic_operand (value, VOIDmode);
-
-    case 'U':
-      /* Vector zero.  */
-      return value == CONST0_RTX (GET_MODE (value));
-
-    case 'W':
-      /* An integer vector, such that conversion to an integer yields a
-	 value appropriate for an integer 'J' constraint.  */
-      if (GET_CODE (value) == CONST_VECTOR
-	  && GET_MODE_CLASS (GET_MODE (value)) == MODE_VECTOR_INT)
-	{
-	  value = simplify_subreg (DImode, value, GET_MODE (value), 0);
-	  return ia64_const_ok_for_letter_p (INTVAL (value), 'J');
-	}
-      return false;
-
-    case 'Y':
-      /* A V2SF vector containing elements that satisfy 'G'.  */
-      return
-	(GET_CODE (value) == CONST_VECTOR
-	 && GET_MODE (value) == V2SFmode
-	 && ia64_const_double_ok_for_letter_p (XVECEXP (value, 0, 0), 'G')
-	 && ia64_const_double_ok_for_letter_p (XVECEXP (value, 0, 1), 'G'));
-
-    default:
-      return false;
-    }
-}
-
 /* Return 1 if the operands of a move are ok.  */
 
 int
@@ -718,7 +623,7 @@ ia64_move_ok (rtx dst, rtx src)
   if (INTEGRAL_MODE_P (GET_MODE (dst)))
     return src == const0_rtx;
   else
-    return GET_CODE (src) == CONST_DOUBLE && CONST_DOUBLE_OK_FOR_G (src);
+    return satisfies_constraint_G (src);
 }
 
 /* Return 1 if the operands are ok for a floating point load pair.  */
@@ -809,7 +714,7 @@ ia64_legitimate_constant_p (rtx x)
     case CONST_DOUBLE:
       if (GET_MODE (x) == VOIDmode)
 	return true;
-      return CONST_DOUBLE_OK_FOR_G (x);
+      return satisfies_constraint_G (x);
 
     case CONST:
     case SYMBOL_REF:
@@ -843,7 +748,7 @@ ia64_legitimate_constant_p (rtx x)
 	enum machine_mode mode = GET_MODE (x);
 
 	if (mode == V2SFmode)
-	  return ia64_extra_constraint (x, 'Y');
+	  return satisfies_constraint_Y (x);
 
 	return (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
 		&& GET_MODE_SIZE (mode) <= 8);
@@ -1977,6 +1882,7 @@ ia64_reload_gp (void)
   else
     {
       HOST_WIDE_INT offset;
+      rtx offset_r;
 
       offset = (current_frame_info.spill_cfa_off
 	        + current_frame_info.spill_size);
@@ -1991,12 +1897,12 @@ ia64_reload_gp (void)
           offset = current_frame_info.total_size - offset;
         }
 
-      if (CONST_OK_FOR_I (offset))
-        emit_insn (gen_adddi3 (pic_offset_table_rtx,
-			       tmp, GEN_INT (offset)));
+      offset_r = GEN_INT (offset);
+      if (satisfies_constraint_I (offset_r))
+        emit_insn (gen_adddi3 (pic_offset_table_rtx, tmp, offset_r));
       else
         {
-          emit_move_insn (pic_offset_table_rtx, GEN_INT (offset));
+          emit_move_insn (pic_offset_table_rtx, offset_r);
           emit_insn (gen_adddi3 (pic_offset_table_rtx,
 			         pic_offset_table_rtx, tmp));
         }
@@ -2733,7 +2639,7 @@ spill_restore_mem (rtx reg, HOST_WIDE_INT cfa_off)
 
   if (spill_fill_data.prev_addr[iter])
     {
-      if (CONST_OK_FOR_N (disp))
+      if (satisfies_constraint_N (disp_rtx))
 	{
 	  *spill_fill_data.prev_addr[iter]
 	    = gen_rtx_POST_MODIFY (DImode, spill_fill_data.iter_reg[iter],
@@ -2747,7 +2653,7 @@ spill_restore_mem (rtx reg, HOST_WIDE_INT cfa_off)
       else
 	{
 	  /* ??? Could use register post_modify for loads.  */
-	  if (! CONST_OK_FOR_I (disp))
+	  if (!satisfies_constraint_I (disp_rtx))
 	    {
 	      rtx tmp = gen_rtx_REG (DImode, next_scratch_gr_reg ());
 	      emit_move_insn (tmp, disp_rtx);
@@ -2780,7 +2686,7 @@ spill_restore_mem (rtx reg, HOST_WIDE_INT cfa_off)
 	{
 	  start_sequence ();
 
-	  if (! CONST_OK_FOR_I (disp))
+	  if (!satisfies_constraint_I (disp_rtx))
 	    {
 	      rtx tmp = gen_rtx_REG (DImode, next_scratch_gr_reg ());
 	      emit_move_insn (tmp, disp_rtx);
@@ -3040,7 +2946,7 @@ ia64_expand_prologue (void)
       rtx frame_size_rtx = GEN_INT (- current_frame_info.total_size);
       rtx offset;
 
-      if (CONST_OK_FOR_I (- current_frame_info.total_size))
+      if (satisfies_constraint_I (frame_size_rtx))
 	offset = frame_size_rtx;
       else
 	{
@@ -3464,7 +3370,7 @@ ia64_expand_epilogue (int sibcall_p)
       rtx offset, frame_size_rtx;
 
       frame_size_rtx = GEN_INT (current_frame_info.total_size);
-      if (CONST_OK_FOR_I (current_frame_info.total_size))
+      if (satisfies_constraint_I (frame_size_rtx))
 	offset = frame_size_rtx;
       else
 	{
@@ -3572,6 +3478,7 @@ ia64_split_return_addr_rtx (rtx dest)
 	{
 	  HOST_WIDE_INT off;
 	  unsigned int regno;
+	  rtx off_r;
 
 	  /* Compute offset from CFA for BR0.  */
 	  /* ??? Must be kept in sync with ia64_expand_prologue.  */
@@ -3591,11 +3498,12 @@ ia64_split_return_addr_rtx (rtx dest)
 	    }
 
 	  /* Load address into scratch register.  */
-	  if (CONST_OK_FOR_I (off))
-	    emit_insn (gen_adddi3 (dest, src, GEN_INT (off)));
+	  off_r = GEN_INT (off);
+	  if (satisfies_constraint_I (off_r))
+	    emit_insn (gen_adddi3 (dest, src, off_r));
 	  else
 	    {
-	      emit_move_insn (dest, GEN_INT (off));
+	      emit_move_insn (dest, off_r);
 	      emit_insn (gen_adddi3 (dest, src, dest));
 	    }
 
@@ -4786,18 +4694,18 @@ ia64_rtx_costs (rtx x, int code, int outer_code, int *total)
       switch (outer_code)
         {
         case SET:
-	  *total = CONST_OK_FOR_J (INTVAL (x)) ? 0 : COSTS_N_INSNS (1);
+	  *total = satisfies_constraint_J (x) ? 0 : COSTS_N_INSNS (1);
 	  return true;
         case PLUS:
-	  if (CONST_OK_FOR_I (INTVAL (x)))
+	  if (satisfies_constraint_I (x))
 	    *total = 0;
-	  else if (CONST_OK_FOR_J (INTVAL (x)))
+	  else if (satisfies_constraint_J (x))
 	    *total = 1;
 	  else
 	    *total = COSTS_N_INSNS (1);
 	  return true;
         default:
-	  if (CONST_OK_FOR_K (INTVAL (x)) || CONST_OK_FOR_L (INTVAL (x)))
+	  if (satisfies_constraint_K (x) || satisfies_constraint_L (x))
 	    *total = 0;
 	  else
 	    *total = COSTS_N_INSNS (1);
@@ -9457,6 +9365,7 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   rtx this, insn, funexp;
   unsigned int this_parmno;
   unsigned int this_regno;
+  rtx delta_rtx;
 
   reload_completed = 1;
   epilogue_completed = 1;
@@ -9485,25 +9394,24 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     reg_names[this_regno] = ia64_reg_numbers[this_parmno];
 
   this = gen_rtx_REG (Pmode, this_regno);
+
+  /* Apply the constant offset, if required.  */
+  delta_rtx = GEN_INT (delta);
   if (TARGET_ILP32)
     {
       rtx tmp = gen_rtx_REG (ptr_mode, this_regno);
       REG_POINTER (tmp) = 1;
-      if (delta && CONST_OK_FOR_I (delta))
+      if (delta && satisfies_constraint_I (delta_rtx))
 	{
-	  emit_insn (gen_ptr_extend_plus_imm (this, tmp, GEN_INT (delta)));
+	  emit_insn (gen_ptr_extend_plus_imm (this, tmp, delta_rtx));
 	  delta = 0;
 	}
       else
 	emit_insn (gen_ptr_extend (this, tmp));
     }
-
-  /* Apply the constant offset, if required.  */
   if (delta)
     {
-      rtx delta_rtx = GEN_INT (delta);
-
-      if (!CONST_OK_FOR_I (delta))
+      if (!satisfies_constraint_I (delta_rtx))
 	{
 	  rtx tmp = gen_rtx_REG (Pmode, 2);
 	  emit_move_insn (tmp, delta_rtx);
@@ -9523,10 +9431,9 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	  rtx t = gen_rtx_REG (ptr_mode, 2);
 	  REG_POINTER (t) = 1;
 	  emit_move_insn (t, gen_rtx_MEM (ptr_mode, this));
-	  if (CONST_OK_FOR_I (vcall_offset))
+	  if (satisfies_constraint_I (vcall_offset_rtx))
 	    {
-	      emit_insn (gen_ptr_extend_plus_imm (tmp, t, 
-						  vcall_offset_rtx));
+	      emit_insn (gen_ptr_extend_plus_imm (tmp, t, vcall_offset_rtx));
 	      vcall_offset = 0;
 	    }
 	  else
@@ -9537,7 +9444,7 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 
       if (vcall_offset)
 	{
-	  if (!CONST_OK_FOR_J (vcall_offset))
+	  if (!satisfies_constraint_J (vcall_offset_rtx))
 	    {
 	      rtx tmp2 = gen_rtx_REG (Pmode, next_scratch_gr_reg ());
 	      emit_move_insn (tmp2, vcall_offset_rtx);
@@ -9547,8 +9454,7 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	}
 
       if (TARGET_ILP32)
-	emit_move_insn (gen_rtx_REG (ptr_mode, 2), 
-			gen_rtx_MEM (ptr_mode, tmp));
+	emit_insn (gen_zero_extendsidi2 (tmp, gen_rtx_MEM (ptr_mode, tmp)));
       else
 	emit_move_insn (tmp, gen_rtx_MEM (Pmode, tmp));
 
