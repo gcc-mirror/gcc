@@ -1,3 +1,15 @@
+2007-03-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/31297
+	* gfortran.dg/backspace_5.f:  Initialize variable(s).
+	* gfortran.dg/backspace_6.f:  Likewise.
+	* gfortran.dg/char_bounds_check_fail_1: Likewise.
+	* gfortran.dg/direct_io_2.f90:  Likewise.
+	* gfortran.dg/write_back.f:  Likewise.
+	* gfortran.dg/write_rewind_2.f:  Likewise.
+	* gfortran.dg/write_rewind_1.f:  Likewise.
+	* gfortran.dg/write_rewind_2.f:  Likewise.
+
 2007-03-25  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/30784

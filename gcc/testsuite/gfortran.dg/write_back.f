@@ -5,6 +5,7 @@
       program test
       integer at,eof
       dimension idata(5)
+      idata = -42
       open(unit=11,form='unformatted')
       write(11)idata
       write(11)idata

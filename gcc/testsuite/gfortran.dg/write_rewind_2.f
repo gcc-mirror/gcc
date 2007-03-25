@@ -4,6 +4,7 @@
 ! Ranta.  Submitted by Jerry DeLisle <jvdelisle@gcc.gnu.org>.
       program test
       dimension idata(1011)
+      idata = -42
       open(unit=11,form='unformatted')
         idata(1)   = -705
         idata(  1011)   = -706
