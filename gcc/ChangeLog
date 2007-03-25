@@ -1,3 +1,8 @@
+2007-03-24  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/lib1funcs.asm (div0): Use ARM_FUNC_START and do_push.
+	* config/arm/linux-eabi.h: Remove legacy syscall hack.
+
 2007-03-24  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/constraints.md: New file.
