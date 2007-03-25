@@ -1,3 +1,8 @@
+2007-03-25  Revital Eres  <eres@il.ibm.com>
+
+        * tree-if-conv.c (if_convertible_gimple_modify_stmt_p):
+          Fold movement_possibility function into it.
+
 2007-03-25  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/darwin.md (load_macho_picbase): Ignore operand 0.
