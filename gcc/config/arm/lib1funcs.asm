@@ -1062,10 +1062,9 @@ LSYM(Lover12):
 /* Constant taken from <asm/signal.h>.  */
 #define SIGFPE	8
 
-	.code	32
-	FUNC_START div0
+	ARM_FUNC_START div0
 
-	stmfd	sp!, {r1, lr}
+	do_push	{r1, lr}
 	mov	r0, #SIGFPE
 	bl	SYM(raise) __PLT__
 	RETLDM	r1
