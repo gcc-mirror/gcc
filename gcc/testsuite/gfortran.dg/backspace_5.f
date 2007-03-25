@@ -5,6 +5,7 @@
       program test
       integer,parameter :: datasize = 1000
       dimension idata(datasize)
+      idata = -42
       open (11, status="scratch", form="unformatted")
         idata(1)   =  -1
         idata(  datasize)   =  -2
@@ -31,4 +32,4 @@
        call abort()
  1010  stop
        end
-       
+

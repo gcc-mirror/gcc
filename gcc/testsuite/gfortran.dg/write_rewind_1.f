@@ -4,6 +4,7 @@
 ! Submitted by Jerry DeLisle <jvdelisle@verizon.net>.
       program test
       dimension idata(100)
+      idata = -42
       open(unit=11,form='unformatted')
       write(11)idata
       write(11)idata
