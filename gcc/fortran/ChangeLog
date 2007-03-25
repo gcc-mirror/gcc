@@ -1,3 +1,11 @@
+2007-03-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/30877
+	* fortran/interface.c (check_operator_interface): Implement
+	the standard checks on user operators extending intrinsic operators.
+	* fortran/resolve.c (resolve_operator): If the ranks of operators
+	don't match, don't error out but try the user-defined ones first.
+
 2007-03-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/30655

@@ -493,7 +493,7 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op operator)
   sym_intent i1, i2;
   gfc_symbol *sym;
   bt t1, t2;
-  int args;
+  int args, r1, r2, k1, k2;
 
   if (intr == NULL)
     return;
@@ -501,6 +501,8 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op operator)
   args = 0;
   t1 = t2 = BT_UNKNOWN;
   i1 = i2 = INTENT_UNKNOWN;
+  r1 = r2 = -1;
+  k1 = k2 = -1;
 
   for (formal = intr->sym->formal; formal; formal = formal->next)
     {
@@ -515,20 +517,35 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op operator)
 	{
 	  t1 = sym->ts.type;
 	  i1 = sym->attr.intent;
+	  r1 = (sym->as != NULL) ? sym->as->rank : 0;
+	  k1 = sym->ts.kind;
 	}
       if (args == 1)
 	{
 	  t2 = sym->ts.type;
 	  i2 = sym->attr.intent;
+	  r2 = (sym->as != NULL) ? sym->as->rank : 0;
+	  k2 = sym->ts.kind;
 	}
       args++;
     }
 
-  if (args == 0 || args > 2)
-    goto num_args;
-
   sym = intr->sym;
 
+  /* Only +, - and .not. can be unary operators.
+     .not. cannot be a binary operator.  */
+  if (args == 0 || args > 2 || (args == 1 && operator != INTRINSIC_PLUS
+				&& operator != INTRINSIC_MINUS
+				&& operator != INTRINSIC_NOT)
+      || (args == 2 && operator == INTRINSIC_NOT))
+    {
+      gfc_error ("Operator interface at %L has the wrong number of arguments",
+		 &intr->where);
+      return;
+    }
+
+  /* Check that intrinsics are mapped to functions, except
+     INTRINSIC_ASSIGN which should map to a subroutine.  */
   if (operator == INTRINSIC_ASSIGN)
     {
       if (!sym->attr.subroutine)
@@ -564,81 +581,6 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op operator)
 	}
     }
 
-  switch (operator)
-    {
-    case INTRINSIC_PLUS:	/* Numeric unary or binary */
-    case INTRINSIC_MINUS:
-      if ((args == 1)
-	  && (t1 == BT_INTEGER || t1 == BT_REAL || t1 == BT_COMPLEX))
-	goto bad_repl;
-
-      if ((args == 2)
-	  && (t1 == BT_INTEGER || t1 == BT_REAL || t1 == BT_COMPLEX)
-	  && (t2 == BT_INTEGER || t2 == BT_REAL || t2 == BT_COMPLEX))
-	goto bad_repl;
-
-      break;
-
-    case INTRINSIC_POWER:	/* Binary numeric */
-    case INTRINSIC_TIMES:
-    case INTRINSIC_DIVIDE:
-
-    case INTRINSIC_EQ:
-    case INTRINSIC_NE:
-      if (args == 1)
-	goto num_args;
-
-      if ((t1 == BT_INTEGER || t1 == BT_REAL || t1 == BT_COMPLEX)
-	  && (t2 == BT_INTEGER || t2 == BT_REAL || t2 == BT_COMPLEX))
-	goto bad_repl;
-
-      break;
-
-    case INTRINSIC_GE:		/* Binary numeric operators that do not support */
-    case INTRINSIC_LE:		/* complex numbers */
-    case INTRINSIC_LT:
-    case INTRINSIC_GT:
-      if (args == 1)
-	goto num_args;
-
-      if ((t1 == BT_INTEGER || t1 == BT_REAL)
-	  && (t2 == BT_INTEGER || t2 == BT_REAL))
-	goto bad_repl;
-
-      break;
-
-    case INTRINSIC_OR:		/* Binary logical */
-    case INTRINSIC_AND:
-    case INTRINSIC_EQV:
-    case INTRINSIC_NEQV:
-      if (args == 1)
-	goto num_args;
-      if (t1 == BT_LOGICAL && t2 == BT_LOGICAL)
-	goto bad_repl;
-      break;
-
-    case INTRINSIC_NOT:	/* Unary logical */
-      if (args != 1)
-	goto num_args;
-      if (t1 == BT_LOGICAL)
-	goto bad_repl;
-      break;
-
-    case INTRINSIC_CONCAT:	/* Binary string */
-      if (args != 2)
-	goto num_args;
-      if (t1 == BT_CHARACTER && t2 == BT_CHARACTER)
-	goto bad_repl;
-      break;
-
-    case INTRINSIC_ASSIGN:	/* Class by itself */
-      if (args != 2)
-	goto num_args;
-      break;
-    default:
-      gfc_internal_error ("check_operator_interface(): Bad operator");
-    }
-
   /* Check intents on operator interfaces.  */
   if (operator == INTRINSIC_ASSIGN)
     {
@@ -661,15 +603,100 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op operator)
 		   "INTENT(IN)", &intr->where);
     }
 
+  /* From now on, all we have to do is check that the operator definition
+     doesn't conflict with an intrinsic operator. The rules for this
+     game are defined in 7.1.2 and 7.1.3 of both F95 and F2003 standards,
+     as well as 12.3.2.1.1 of Fortran 2003:
+
+     "If the operator is an intrinsic-operator (R310), the number of
+     function arguments shall be consistent with the intrinsic uses of
+     that operator, and the types, kind type parameters, or ranks of the
+     dummy arguments shall differ from those required for the intrinsic
+     operation (7.1.2)."  */
+
+#define IS_NUMERIC_TYPE(t) \
+  ((t) == BT_INTEGER || (t) == BT_REAL || (t) == BT_COMPLEX)
+
+  /* Unary ops are easy, do them first.  */
+  if (operator == INTRINSIC_NOT)
+    {
+      if (t1 == BT_LOGICAL)
+	goto bad_repl;
+      else
+	return;
+    }
+
+  if (args == 1 && (operator == INTRINSIC_PLUS || operator == INTRINSIC_MINUS))
+    {
+      if (IS_NUMERIC_TYPE (t1))
+	goto bad_repl;
+      else
+	return;
+    }
+
+  /* Character intrinsic operators have same character kind, thus
+     operator definitions with operands of different character kinds
+     are always safe.  */
+  if (t1 == BT_CHARACTER && t2 == BT_CHARACTER && k1 != k2)
+    return;
+
+  /* Intrinsic operators always perform on arguments of same rank,
+     so different ranks is also always safe.  (rank == 0) is an exception
+     to that, because all intrinsic operators are elemental.  */
+  if (r1 != r2 && r1 != 0 && r2 != 0)
+    return;
+
+  switch (operator)
+  {
+    case INTRINSIC_EQ:
+    case INTRINSIC_NE:
+      if (t1 == BT_CHARACTER && t2 == BT_CHARACTER)
+	goto bad_repl;
+      /* Fall through.  */
+
+    case INTRINSIC_PLUS:
+    case INTRINSIC_MINUS:
+    case INTRINSIC_TIMES:
+    case INTRINSIC_DIVIDE:
+    case INTRINSIC_POWER:
+      if (IS_NUMERIC_TYPE (t1) && IS_NUMERIC_TYPE (t2))
+	goto bad_repl;
+      break;
+
+    case INTRINSIC_GT:
+    case INTRINSIC_GE:
+    case INTRINSIC_LT:
+    case INTRINSIC_LE:
+      if (t1 == BT_CHARACTER && t2 == BT_CHARACTER)
+	goto bad_repl;
+      if ((t1 == BT_INTEGER || t1 == BT_REAL)
+	  && (t2 == BT_INTEGER || t2 == BT_REAL))
+	goto bad_repl;
+      break;
+
+    case INTRINSIC_CONCAT:
+      if (t1 == BT_CHARACTER && t2 == BT_CHARACTER)
+	goto bad_repl;
+      break;
+
+    case INTRINSIC_AND:
+    case INTRINSIC_OR:
+    case INTRINSIC_EQV:
+    case INTRINSIC_NEQV:
+      if (t1 == BT_LOGICAL && t2 == BT_LOGICAL)
+	goto bad_repl;
+      break;
+
+    default:
+      break;
+  }
+
   return;
+
+#undef IS_NUMERIC_TYPE
 
 bad_repl:
   gfc_error ("Operator interface at %L conflicts with intrinsic interface",
-	     &intr->where);
-  return;
-
-num_args:
-  gfc_error ("Operator interface at %L has the wrong number of arguments",
 	     &intr->where);
   return;
 }

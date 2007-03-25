@@ -2082,6 +2082,7 @@ resolve_operator (gfc_expr *e)
 {
   gfc_expr *op1, *op2;
   char msg[200];
+  bool dual_locus_error;
   try t;
 
   /* Resolve all subnodes-- give them types.  */
@@ -2107,6 +2108,7 @@ resolve_operator (gfc_expr *e)
 
   op1 = e->value.op.op1;
   op2 = e->value.op.op2;
+  dual_locus_error = false;
 
   switch (e->value.op.operator)
     {
@@ -2306,12 +2308,14 @@ resolve_operator (gfc_expr *e)
 	    }
 	  else
 	    {
-	      gfc_error ("Inconsistent ranks for operator at %L and %L",
-			 &op1->where, &op2->where);
-	      t = FAILURE;
-
 	      /* Allow higher level expressions to work.  */
 	      e->rank = 0;
+
+	      /* Try user-defined operators, and otherwise throw an error.  */
+	      dual_locus_error = true;
+	      sprintf (msg,
+		       _("Inconsistent ranks for operator at %%L and %%L"));
+	      goto bad_op;
 	    }
 	}
 
@@ -2350,7 +2354,10 @@ bad_op:
   if (gfc_extend_expr (e) == SUCCESS)
     return SUCCESS;
 
-  gfc_error (msg, &e->where);
+  if (dual_locus_error)
+    gfc_error (msg, &op1->where, &op2->where);
+  else
+    gfc_error (msg, &e->where);
 
   return FAILURE;
 }
