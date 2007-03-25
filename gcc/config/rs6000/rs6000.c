@@ -14727,7 +14727,7 @@ rs6000_emit_prologue (void)
       p = rtvec_alloc (sz);
       j = 0;
       RTVEC_ELT (p, j++) = gen_rtx_CLOBBER (VOIDmode,
-					    gen_rtx_REG (Pmode,
+					    gen_rtx_REG (SImode,
 							 LINK_REGISTER_REGNUM));
       RTVEC_ELT (p, j++) = gen_rtx_USE (VOIDmode,
 					gen_rtx_SYMBOL_REF (Pmode,

@@ -302,10 +302,10 @@
 
 (define_insn "*save_world"
  [(match_parallel 0 "save_world_operation"
-                  [(clobber (match_operand:SI 1 "register_operand" "=l"))
-                   (use (match_operand:SI 2 "call_operand" "s"))])]
+                  [(clobber (reg:SI 65))
+                   (use (match_operand:SI 1 "call_operand" "s"))])]
  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && TARGET_32BIT"         
- "bl %z2"
+ "bl %z1"
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
 
@@ -313,10 +313,10 @@
  [(match_parallel 0 "restore_world_operation"
                   [(return)
 		   (use (reg:SI 65))
-                   (use (match_operand:SI 2 "call_operand" "s"))
-                   (clobber (match_operand:SI 3 "gpc_reg_operand" "=r"))])]
+                   (use (match_operand:SI 1 "call_operand" "s"))
+                   (clobber (match_operand:SI 2 "gpc_reg_operand" "=r"))])]
  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && TARGET_32BIT"
- "b %z2")
+ "b %z1")
 
 ;; Simple binary operations.
 
