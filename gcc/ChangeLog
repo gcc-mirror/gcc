@@ -1,3 +1,51 @@
+2007-03-25  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/darwin.md (load_macho_picbase): Ignore operand 0.
+	(load_macho_picbase_{si,di}): Convert to LR hard reg.
+	(call_indirect_nonlocal_darwin64): Same.
+	(call_nonlocal_darwin64): Same.
+	(call_value_indirect_nonlocal_darwin64): Same.
+	(call_value_nonlocal_darwin64): Same.
+	(sibcall_nonlocal_darwin64): Same.
+	(sibcall_value_nonlocal_darwin64): Same.
+	(sibcall_symbolic_64): Same.
+	(sibcall_value_symbolic_64): Same.
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Remove
+	LR pseudo.
+	(rs6000_emit_load_toc_table): Same.
+	* config/rs6000/altivec.md (restore_world): Convert to LR hard reg.
+	* config/rs6000/rs6000.md (mulh_call): Convert to LR hard reg.
+	(mull_call): Same.
+	(divss_call): Same.
+	(divus_call): Same.
+	(quoss_call): Same.
+	(quous_call): Same.
+	(load_toc_v4_pic_si): Same
+	(load_toc_v4_PIC_1): Same.
+	(load_toc_v4_PIC_1b): Same.
+	(call_indirect_aix{32,64}): Same.
+	(call_value_indirect_aix{32,64}): Same.
+	(call): Same.
+	(call_value): Same.
+	(call_local{32,64}): Same.
+	(call_value_local{32,64}): Same.
+	(call_indirect_nonlocal_aix{32,64}): Same.
+	(call_nonlocal_aix{32,64}): Same.
+	(call_value_indirect_nonlocal_aix{32,64}): Same.
+	(call_value_nonlocal_aix{32,64}): Same.
+	(call_indirect_nonlocal_sysv<mode>): Same.
+	(call_nonlocal_sysv<mode>): Same.
+	(call_value_indirect_nonlocal_sysv<mode>): Same.
+	(call_value_nonlocal_sysv<mode>): Same.
+	(sibcall): Same.
+	(sibcall_local{32,64}): Same.
+	(sibcall_value_local{32,64}): Same.
+	(sibcall_nonlocal_aix{32,64}): Same.
+	(sibcall_value_nonlocal_aix{32,64}): Same.
+	(sibcall_nonlocal_sysv<mode>): Same.
+	(sibcall_value): Same.
+	(sibcall_value_nonlocal_sysv<mode>): Same.
+
 2007-03-24  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/lib1funcs.asm (div0): Use ARM_FUNC_START and do_push.

@@ -312,7 +312,7 @@
 (define_insn "*restore_world"
  [(match_parallel 0 "restore_world_operation"
                   [(return)
-                   (use (match_operand:SI 1 "register_operand" "l"))
+		   (use (reg:SI 65))
                    (use (match_operand:SI 2 "call_operand" "s"))
                    (clobber (match_operand:SI 3 "gpc_reg_operand" "=r"))])]
  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && TARGET_32BIT"
