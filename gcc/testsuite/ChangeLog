@@ -1,3 +1,8 @@
+2007-03-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/31196
+	* gfortran.dg/reshape_transpose_1.f90:  New test.
+
 2007-03-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/30655
