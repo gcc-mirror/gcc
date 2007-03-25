@@ -1,3 +1,10 @@
+2007-03-25  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Always clobber LR
+	in SImode for save_world.
+	* config/rs6000/altivec.md (save_world, restore_world): Convert to
+	LR hard reg.
+
 2007-03-25  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/30784
