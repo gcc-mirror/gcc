@@ -1,3 +1,9 @@
+2007-03-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/31196
+	* intrinsics/reshape_generic.c (reshape_internal):  Increment
+	correct variable.
+
 2007-03-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/31052
