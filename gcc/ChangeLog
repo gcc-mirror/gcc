@@ -1,3 +1,9 @@
+2007-03-25  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/30784
+	* fold-const.c (fold_ternary): Handle CONSTRUCTOR in case
+	BIT_FIELD_REF.
+
 2007-03-25  Revital Eres  <eres@il.ibm.com>
 
         * tree-if-conv.c (if_convertible_gimple_modify_stmt_p):

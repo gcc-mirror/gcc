@@ -1,3 +1,8 @@
+2007-03-25  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/30784
+        * gcc.dg/vect/pr30784.c: New test.
+
 2007-03-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/30877
