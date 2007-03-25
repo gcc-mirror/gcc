@@ -1,3 +1,7 @@
+2007-03-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/functional: Formatting fixes.
+
 2007-03-23  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/4402.cc:
