@@ -3138,11 +3138,11 @@ build/genflags.o : genflags.c $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H)	\
   $(SYSTEM_H) coretypes.h $(GTM_H) errors.h gensupport.h
 build/gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
 build/gengtype-lex.o : gengtype-lex.c gengtype.h gengtype-yacc.h	\
-  $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) vec.h
+  $(BCONFIG_H) $(SYSTEM_H)
 build/gengtype-yacc.o : gengtype-yacc.c gengtype.h $(BCONFIG_H)		\
-  $(SYSTEM_H) coretypes.h $(GTM_H)
-build/gengtype.o : gengtype.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
-  $(GTM_H) gengtype.h gtyp-gen.h rtl.def insn-notes.def errors.h
+  $(SYSTEM_H)
+build/gengtype.o : gengtype.c $(BCONFIG_H) $(SYSTEM_H) gengtype.h 	\
+  gtyp-gen.h rtl.def insn-notes.def errors.h
 build/genmddeps.o: genmddeps.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
   $(GTM_H) $(RTL_BASE_H) errors.h gensupport.h
 build/genmodes.o : genmodes.c $(BCONFIG_H) $(SYSTEM_H) errors.h		\

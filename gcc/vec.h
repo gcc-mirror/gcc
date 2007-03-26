@@ -417,7 +417,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define VEC_lower_bound(T,V,O,LT)    \
        (VEC_OP(T,base,lower_bound)(VEC_BASE(V),O,LT VEC_CHECK_INFO))
 
-#if !IN_GENGTYPE
 /* Reallocate an array of elements with prefix.  */
 extern void *vec_gc_p_reserve (void *, int MEM_STAT_DECL);
 extern void *vec_gc_p_reserve_exact (void *, int MEM_STAT_DECL);
@@ -451,14 +450,12 @@ extern void vec_assert_fail (const char *, const char * VEC_CHECK_DECL)
 #define VEC_ASSERT(EXPR,OP,T,A) (void)(EXPR)
 #endif
 
+/* Note: gengtype has hardwired knowledge of the expansions of the
+   VEC, DEF_VEC_*, and DEF_VEC_ALLOC_* macros.  If you change the
+   expansions of these macros you may need to change gengtype too.  */
+
 #define VEC(T,A) VEC_##T##_##A
 #define VEC_OP(T,A,OP) VEC_##T##_##A##_##OP
-#else  /* IN_GENGTYPE */
-#define VEC(T,A) VEC_ T _ A
-#define VEC_STRINGIFY(X) VEC_STRINGIFY_(X)
-#define VEC_STRINGIFY_(X) #X
-#undef GTY
-#endif /* IN_GENGTYPE */
 
 /* Base of vector type, not user visible.  */     
 #define VEC_T(T,B)							  \
@@ -488,10 +485,6 @@ typedef struct VEC(T,A) GTY						  \
 #define VEC_BASE(P)  ((P) ? &(P)->base : 0)
 
 /* Vector of integer-like object.  */
-#if IN_GENGTYPE
-{"DEF_VEC_I", VEC_STRINGIFY (VEC_T(#0,#1)) ";", "none"},
-{"DEF_VEC_ALLOC_I", VEC_STRINGIFY (VEC_TA (#0,#1,#2,#3)) ";", NULL},
-#else
 #define DEF_VEC_I(T)							  \
 static inline void VEC_OP (T,must_be,integral_type) (void) 		  \
 {									  \
@@ -506,13 +499,8 @@ struct vec_swallow_trailing_semi
 VEC_TA_GTY(T,base,A,);							  \
 DEF_VEC_ALLOC_FUNC_I(T,A)						  \
 struct vec_swallow_trailing_semi
-#endif
 
 /* Vector of pointer to object.  */
-#if IN_GENGTYPE
-{"DEF_VEC_P", VEC_STRINGIFY (VEC_T_GTY(#0,#1)) ";", "none"},
-{"DEF_VEC_ALLOC_P", VEC_STRINGIFY (VEC_TA_GTY (#0,#1,#2,#3)) ";", NULL},
-#else
 #define DEF_VEC_P(T) 							  \
 static inline void VEC_OP (T,must_be,pointer_type) (void) 		  \
 {									  \
@@ -527,7 +515,6 @@ struct vec_swallow_trailing_semi
 VEC_TA_GTY(T,base,A,);							  \
 DEF_VEC_ALLOC_FUNC_P(T,A)						  \
 struct vec_swallow_trailing_semi
-#endif
 
 #define DEF_VEC_FUNC_P(T)						  \
 static inline unsigned VEC_OP (T,base,length) (const VEC(T,base) *vec_)   \
@@ -809,10 +796,6 @@ static inline T *VEC_OP (T,A,safe_insert)		     	  	  \
 }
 
 /* Vector of object.  */
-#if IN_GENGTYPE
-{"DEF_VEC_O", VEC_STRINGIFY (VEC_T_GTY(#0,#1)) ";", "none"},
-{"DEF_VEC_ALLOC_O", VEC_STRINGIFY (VEC_TA_GTY(#0,#1,#2,#3)) ";", NULL},
-#else
 #define DEF_VEC_O(T)							  \
 VEC_T_GTY(T,base);							  \
 VEC_TA_GTY(T,base,none,);						  \
@@ -822,7 +805,6 @@ struct vec_swallow_trailing_semi
 VEC_TA_GTY(T,base,A,);							  \
 DEF_VEC_ALLOC_FUNC_O(T,A)						  \
 struct vec_swallow_trailing_semi
-#endif
 
 #define DEF_VEC_FUNC_O(T)						  \
 static inline unsigned VEC_OP (T,base,length) (const VEC(T,base) *vec_)	  \

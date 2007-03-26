@@ -144,6 +144,10 @@ extern options_p create_option (options_p, const char *name, const void *info);
 extern type_p adjust_field_type (type_p, options_p);
 extern void note_variable (const char *s, type_p t, options_p o,
 			   struct fileloc *pos);
+extern void note_def_vec (const char *typename, bool is_scalar,
+			  struct fileloc *pos);
+extern void note_def_vec_alloc (const char *type, const char *astrat,
+				struct fileloc *pos);
 
 /* Lexer and parser routines, most automatically generated.  */
 extern int yylex (void);

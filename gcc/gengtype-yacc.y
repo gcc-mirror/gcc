@@ -39,6 +39,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 %token <t>ENT_STRUCT
 %token ENT_EXTERNSTATIC
 %token GTY_TOKEN
+%token VEC_TOKEN
 %token UNION
 %token STRUCT
 %token ENUM
@@ -160,6 +161,9 @@ type: SCALAR
          { $$ = $1; }
       | ID
          { $$ = resolve_typedef ($1, &lexer_line); }
+      | VEC_TOKEN '(' ID ',' ID ')'
+         { $$ = resolve_typedef (concat ("VEC_", $3, "_", $5, (char *)0),
+	      			 &lexer_line); }
       | type '*'
          { $$ = create_pointer ($1); }
       | STRUCT ID '{' struct_fields '}'
