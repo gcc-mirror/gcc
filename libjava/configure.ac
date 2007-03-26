@@ -714,10 +714,8 @@ case "$host" in
 esac
 AM_CONDITIONAL(USING_DARWIN_CRT, $DARWIN_CRT)
 
-# These may not be defined in a non-ANS conformant embedded system.
+# This may not be defined in a non-ANS conformant embedded system.
 # FIXME: Should these case a runtime exception in that case?
-AC_EGREP_HEADER(mktime, time.h, AC_DEFINE(HAVE_MKTIME, 1,
-                                  [Define is you have 'mktime' in <time.h>]))
 AC_EGREP_HEADER(localtime, time.h, AC_DEFINE(HAVE_LOCALTIME, 1,
                                   [Define is you have 'localtime' in <time.h>]))
 
@@ -994,22 +992,20 @@ if test "x${with_newlib}" = "xyes"; then
    AC_DEFINE(HAVE_USLEEP_DECL, 1, [Define if usleep is declared in <unistd.h>.])
    # This is only for POSIX threads.
    AC_DEFINE(HAVE_PTHREAD_MUTEXATTR_INIT, 1, [Define if using POSIX threads that have the mutexattr functions.])
-   # We also assume we are using gcc, which provides alloca.
-   AC_DEFINE(HAVE_ALLOCA)
 
    # Assume we do not have getuid and friends.
    AC_DEFINE(NO_GETUID, 1, [Define if getuid() and friends are missing.])
    PLATFORMNET=NoNet
 else
-   AC_CHECK_FUNCS([strerror ioctl select fstat open fsync sleep opendir \
-                   gmtime_r localtime_r readdir_r getpwuid_r getcwd \
+   AC_CHECK_FUNCS([strerror select fstat open fsync sleep opendir \
+                   localtime_r readdir_r getpwuid_r getcwd \
 		   access stat lstat mkdir rename rmdir unlink utime chmod readlink \
 		   nl_langinfo setlocale \
 		   inet_pton uname inet_ntoa \
-		   fork execvp getrlimit pipe sigaction ftruncate mmap \
+		   getrlimit sigaction ftruncate mmap \
 		   getifaddrs])
    AC_CHECK_FUNCS(inet_aton inet_addr, break)
-   AC_CHECK_HEADERS(execinfo.h unistd.h dlfcn.h sys/resource.h)
+   AC_CHECK_HEADERS(unistd.h dlfcn.h sys/resource.h)
    # Do an additional check on dld, HP-UX for example has dladdr in libdld.sl
    AC_CHECK_LIB(dl, dladdr, [
        AC_DEFINE(HAVE_DLADDR, 1, [Define if you have dladdr()])], [
@@ -1117,9 +1113,6 @@ else
    if test "$THREADS" = posix; then
       save_LIBS="$LIBS"
       LIBS="$LIBS $THREADLIBS"
-      # Some POSIX thread systems don't have pthread_mutexattr_settype.
-      # E.g., Solaris.
-      AC_CHECK_FUNCS(pthread_mutexattr_settype pthread_mutexattr_setkind_np)
 
       # Look for sched_yield.  Up to Solaris 2.6, it is in libposix4, since
       # Solaris 7 the name librt is preferred.
@@ -1404,7 +1397,6 @@ AC_CHECK_HEADERS(inttypes.h, [
     AC_DEFINE(HAVE_INTTYPES_H, 1, [Define if <inttypes.h> is available])
     AC_DEFINE(JV_HAVE_INTTYPES_H, 1, [Define if <inttypes.h> is available])
 ])
-AC_HEADER_SYS_WAIT
 
 AC_CHECK_TYPE([ssize_t], [int])
 AC_CHECK_TYPE([magic_t], [
@@ -1477,8 +1469,6 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <time.h>]], [[struct tm tim; tim.t
             [Define if your platform has the global _timezone variable.])
           AC_MSG_RESULT(yes)],
           [AC_MSG_RESULT(no)])])])
-
-AC_FUNC_ALLOCA
 
 AC_CHECK_PROGS(PERL, perl, false)
 
