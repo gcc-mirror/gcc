@@ -46,4 +46,4 @@ use z
  if ((.addfive. i) /= 2+5) call abort ()
 end
 
-! { dg-final { cleanup-tree-dump "x y z" } }
+! { dg-final { cleanup-modules "x y z" } }
