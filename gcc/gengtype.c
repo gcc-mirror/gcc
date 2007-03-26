@@ -22,9 +22,153 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "bconfig.h"
 #include "system.h"
 #include "gengtype.h"
-#include "gtyp-gen.h"
 #include "errors.h"	/* for fatal */
 
+/* Data types, macros, etc. used only in this file.  */
+
+/* Kinds of types we can understand.  */
+enum typekind {
+  TYPE_SCALAR,
+  TYPE_STRING,
+  TYPE_STRUCT,
+  TYPE_UNION,
+  TYPE_POINTER,
+  TYPE_ARRAY,
+  TYPE_LANG_STRUCT,
+  TYPE_PARAM_STRUCT
+};
+
+typedef unsigned lang_bitmap;
+
+/* A way to pass data through to the output end.  */
+struct options
+{
+  struct options *next;
+  const char *name;
+  const char *info;
+};
+
+/* Option data for the 'nested_ptr' option.  */
+struct nested_ptr_data
+{
+  type_p type;
+  const char *convert_to;
+  const char *convert_from;
+};
+
+/* A name and a type.  */
+struct pair
+{
+  pair_p next;
+  const char *name;
+  type_p type;
+  struct fileloc line;
+  options_p opt;
+};
+
+#define NUM_PARAM 10
+
+/* A description of a type.  */
+enum gc_used_enum
+  {
+    GC_UNUSED = 0,
+    GC_USED,
+    GC_MAYBE_POINTED_TO,
+    GC_POINTED_TO
+  };
+
+struct type
+{
+  enum typekind kind;
+  type_p next;
+  type_p pointer_to;
+  enum gc_used_enum gc_used;
+  union {
+    type_p p;
+    struct {
+      const char *tag;
+      struct fileloc line;
+      pair_p fields;
+      options_p opt;
+      lang_bitmap bitmap;
+      type_p lang_struct;
+    } s;
+    bool scalar_is_char;
+    struct {
+      type_p p;
+      const char *len;
+    } a;
+    struct {
+      type_p stru;
+      type_p param[NUM_PARAM];
+      struct fileloc line;
+    } param_struct;
+  } u;
+};
+
+#define UNION_P(x)					\
+ ((x)->kind == TYPE_UNION || 				\
+  ((x)->kind == TYPE_LANG_STRUCT 			\
+   && (x)->u.s.lang_struct->kind == TYPE_UNION))
+#define UNION_OR_STRUCT_P(x)			\
+ ((x)->kind == TYPE_UNION 			\
+  || (x)->kind == TYPE_STRUCT 			\
+  || (x)->kind == TYPE_LANG_STRUCT)
+
+/* Structure representing an output file.  */
+struct outf
+{
+  struct outf *next;
+  const char *name;
+  size_t buflength;
+  size_t bufused;
+  char *buf;
+};
+typedef struct outf * outf_p;
+
+/* An output file, suitable for definitions, that can see declarations
+   made in INPUT_FILE and is linked into every language that uses
+   INPUT_FILE.  */
+extern outf_p get_output_file_with_visibility
+   (const char *input_file);
+const char *get_output_file_name (const char *);
+
+#include "gtyp-gen.h"
+
+/* A bitmap that specifies which of BASE_FILES should be used to
+   output a definition that is different for each language and must be
+   defined once in each language that uses INPUT_FILE.  */
+static lang_bitmap get_base_file_bitmap (const char *input_file);
+
+/* Print, like fprintf, to O.  */
+static void oprintf (outf_p o, const char *S, ...)
+     ATTRIBUTE_PRINTF_2;
+
+/* The list of output files.  */
+static outf_p output_files;
+
+/* The output header file that is included into pretty much every
+   source file.  */
+static outf_p header_file;
+
+/* Number of files specified in gtfiles.  */
+#define NUM_GT_FILES (ARRAY_SIZE (all_files) - 1)
+
+/* Number of files in the language files array.  */
+#define NUM_LANG_FILES (ARRAY_SIZE (lang_files) - 1)
+
+/* Length of srcdir name.  */
+static int srcdir_len = 0;
+
+/* A list of output files suitable for definitions.  There is one
+   BASE_FILES entry for each language.  */
+#define NUM_BASE_FILES (ARRAY_SIZE (lang_dir_names) - 1)
+static outf_p base_files[NUM_BASE_FILES];
+
+static outf_p create_file (const char *, const char *);
+static const char * get_file_basename (const char *);
+
+
 /* Nonzero iff an error has occurred.  */
 static int hit_error = 0;
 
@@ -50,29 +194,20 @@ error_at_line (struct fileloc *pos, const char *msg, ...)
   va_end (ap);
 }
 
-/* vasprintf, but produces fatal message on out-of-memory.  */
-int
-xvasprintf (char **result, const char *format, va_list args)
-{
-  int ret = vasprintf (result, format, args);
-  if (*result == NULL || ret < 0)
-    {
-      fputs ("gengtype: out of memory", stderr);
-      xexit (1);
-    }
-  return ret;
-}
-
-/* Wrapper for xvasprintf.  */
-char *
+/* asprintf, but produces fatal message on out-of-memory.  */
+static char * ATTRIBUTE_PRINTF_1
 xasprintf (const char *format, ...)
 {
+  int n;
   char *result;
   va_list ap;
 
   va_start (ap, format);
-  xvasprintf (&result, format, ap);
+  n = vasprintf (&result, format, ap);
+  if (result == NULL || n < 0)
+    fatal ("out of memory");
   va_end (ap);
+
   return result;
 }
 
@@ -332,14 +467,15 @@ create_option (options_p next, const char *name, const void *info)
 
 /* Return an options structure for a "nested_ptr" option.  */
 options_p
-create_nested_ptr_option (type_p t, const char *to, const char *from)
+create_nested_ptr_option (options_p next, type_p t,
+			  const char *to, const char *from)
 {
   struct nested_ptr_data *d = XNEW (struct nested_ptr_data);
 
   d->type = adjust_field_type (t, 0);
   d->convert_to = to;
   d->convert_from = from;
-  return create_option (NULL, "nested_ptr", d);
+  return create_option (next, "nested_ptr", d);
 }
 
 /* Add a variable named S of type T with options O defined at POS,
@@ -358,11 +494,10 @@ note_variable (const char *s, type_p t, options_p o, struct fileloc *pos)
   variables = n;
 }
 
-/* Create a fake field with the given type and name.  NEXT is the next
-   field in the chain.  */
-
+/* Most-general structure field creator.  */
 static pair_p
-create_field (pair_p next, type_p type, const char *name)
+create_field_all (pair_p next, type_p type, const char *name, options_p opt,
+		  const char *file, int line)
 {
   pair_p field;
 
@@ -370,21 +505,37 @@ create_field (pair_p next, type_p type, const char *name)
   field->next = next;
   field->type = type;
   field->name = name;
-  field->opt = NULL;
-  field->line.file = __FILE__;
-  field->line.line = __LINE__;
+  field->opt = opt;
+  field->line.file = file;
+  field->line.line = line;
   return field;
 }
+
+/* Create a field that came from the source code we are scanning,
+   i.e. we have a 'struct fileloc', and possibly options; also,
+   adjust_field_type should be called.  */
+pair_p
+create_field_at (pair_p next, type_p type, const char *name, options_p opt,
+		 struct fileloc *pos)
+{
+  return create_field_all (next, adjust_field_type (type, opt),
+			   name, opt, pos->file, pos->line);
+}
+
+/* Create a fake field with the given type and name.  NEXT is the next
+   field in the chain.  */
+#define create_field(next,type,name) \
+    create_field_all(next,type,name, 0, __FILE__, __LINE__)
 
 /* Like create_field, but the field is only valid when condition COND
    is true.  */
 
 static pair_p
-create_optional_field (pair_p next, type_p type, const char *name,
-		       const char *cond)
+create_optional_field_ (pair_p next, type_p type, const char *name,
+			const char *cond, int line)
 {
   static int id = 1;
-  pair_p union_fields, field;
+  pair_p union_fields;
   type_p union_type;
 
   /* Create a fake union type with a single nameless field of type TYPE.
@@ -398,10 +549,12 @@ create_optional_field (pair_p next, type_p type, const char *name,
 
   /* Create the field and give it the new fake union type.  Add a "desc"
      tag that specifies the condition under which the field is valid.  */
-  field = create_field (next, union_type, name);
-  field->opt = create_option (field->opt, "desc", cond);
-  return field;
+  return create_field_all (next, union_type, name,
+			   create_option (0, "desc", cond),
+			   __FILE__, line);
 }
+#define create_optional_field(next,type,name,cond)	\
+       create_optional_field_(next,type,name,cond,__LINE__)
 
 /* We don't care how long a CONST_DOUBLE is.  */
 #define CONST_DOUBLE_FORMAT "ww"
@@ -953,27 +1106,7 @@ set_gc_used (pair_p variables)
    (but some output files have many input files), and there is one .h file
    for the whole build.  */
 
-/* The list of output files.  */
-static outf_p output_files;
-
-/* The output header file that is included into pretty much every
-   source file.  */
-static outf_p header_file;
-
-/* Number of files specified in gtfiles.  */
-#define NUM_GT_FILES (ARRAY_SIZE (all_files) - 1)
-
-/* Number of files in the language files array.  */
-#define NUM_LANG_FILES (ARRAY_SIZE (lang_files) - 1)
-
-/* Length of srcdir name.  */
-static int srcdir_len = 0;
-
-#define NUM_BASE_FILES (ARRAY_SIZE (lang_dir_names) - 1)
-outf_p base_files[NUM_BASE_FILES];
-
-static outf_p create_file (const char *, const char *);
-static const char * get_file_basename (const char *);
+/* Output file handling.  */
 
 /* Create and return an outf_p for a new file for NAME, to be called
    ONAME.  */
@@ -1021,15 +1154,20 @@ create_file (const char *name, const char *oname)
 void
 oprintf (outf_p o, const char *format, ...)
 {
-  char *s;
   size_t slength;
-  va_list ap;
 
-  va_start (ap, format);
-  slength = xvasprintf (&s, format, ap);
+  /* Try first with the assumption that there is enough space.  */
+  {
+    va_list ap;
+    va_start (ap, format);
+    slength = vsnprintf (o->buf + o->bufused, o->buflength - o->bufused,
+			 format, ap);
+    va_end (ap);
+  }
 
-  if (o->bufused + slength > o->buflength)
+  if (o->bufused + slength >= o->buflength)
     {
+      /* There wasn't enough space.  */
       size_t new_len = o->buflength;
       if (new_len == 0)
 	new_len = 1024;
@@ -1038,11 +1176,21 @@ oprintf (outf_p o, const char *format, ...)
       } while (o->bufused + slength >= new_len);
       o->buf = XRESIZEVEC (char, o->buf, new_len);
       o->buflength = new_len;
+
+      /* We now know that there is enough space. */
+      {
+	size_t slen2;
+	va_list ap;
+	va_start (ap, format);
+	slen2 = vsnprintf (o->buf + o->bufused, o->buflength - o->bufused,
+			   format, ap);
+	va_end (ap);
+
+	gcc_assert (slen2 == slength);
+	gcc_assert (o->bufused + slen2 < o->buflength);
+      }
     }
-  memcpy (o->buf + o->bufused, s, slength);
   o->bufused += slength;
-  free (s);
-  va_end (ap);
 }
 
 /* Open the global header file and the language-specific header files.  */
@@ -1298,20 +1446,11 @@ close_output_files (void)
 
       newfile = fopen (of->name, "w");
       if (newfile == NULL)
-	{
-	  perror ("opening output file");
-	  exit (1);
-	}
+	fatal ("opening output file %s: %s", of->name, strerror (errno));
       if (fwrite (of->buf, 1, of->bufused, newfile) != of->bufused)
-	{
-	  perror ("writing output file");
-	  exit (1);
-	}
+	fatal ("writing output file %s: %s", of->name, strerror (errno));
       if (fclose (newfile) != 0)
-	{
-	  perror ("closing output file");
-	  exit (1);
-	}
+	fatal ("closing output file %s: %s", of->name, strerror (errno));
     }
 }
 
@@ -3029,9 +3168,10 @@ write_roots (pair_p variables)
 void
 note_def_vec (const char *typename, bool is_scalar, struct fileloc *pos)
 {
-  pair_p f, fields;
+  pair_p fields;
   type_p t;
   options_p o;
+  type_p len_ty = create_scalar_type ("unsigned");
   const char *name = concat ("VEC_", typename, "_base", (char *)0);
 
   if (is_scalar)
@@ -3046,29 +3186,9 @@ note_def_vec (const char *typename, bool is_scalar, struct fileloc *pos)
     }
 
   /* We assemble the field list in reverse order.  */
-  f = XNEW (struct pair);
-  f->type = adjust_field_type (create_array (t, "1"), o);
-  f->name = "vec";
-  f->opt = o;
-  f->line = *pos;
-  f->next = 0;
-  fields = f;
-
-  f = XNEW (struct pair);
-  f->type = adjust_field_type (create_scalar_type ("unsigned"), 0);
-  f->name = "alloc";
-  f->opt = 0;
-  f->line = *pos;
-  f->next = fields;
-  fields = f;
-
-  f = XNEW (struct pair);
-  f->type = adjust_field_type (create_scalar_type ("unsigned"), 0);
-  f->name = "num";
-  f->opt = 0;
-  f->line = *pos;
-  f->next = fields;
-  fields = f;
+  fields = create_field_at (0, create_array (t, "1"), "vec", o, pos);
+  fields = create_field_at (fields, len_ty, "alloc", 0, pos);
+  fields = create_field_at (fields, len_ty, "num", 0, pos);
 
   do_typedef (name, new_structure (name, 0, pos, fields, 0), pos);
 }
@@ -3086,11 +3206,8 @@ note_def_vec_alloc (const char *type, const char *astrat, struct fileloc *pos)
   const char *astratname = concat ("VEC_", type, "_", astrat, (char *)0);
   const char *basename = concat ("VEC_", type, "_base", (char *)0);
 
-  pair_p field = XNEW (struct pair);
-  field->name = "base";
-  field->type = adjust_field_type (resolve_typedef (basename, pos), 0);
-  field->line = *pos;
-  field->next = 0;
+  pair_p field = create_field_at (0, resolve_typedef (basename, pos),
+				  "base", 0, pos);
 
   do_typedef (astratname, new_structure (astratname, 0, pos, field, 0), pos);
 }
@@ -3108,6 +3225,9 @@ main (int ARG_UNUSED (argc), char ** ARG_UNUSED (argv))
 
   scalar_char.u.scalar_is_char = true;
   scalar_nonchar.u.scalar_is_char = false;
+
+  /* fatal uses this */
+  progname = "gengtype";
 
   gen_rtx_next ();
 
@@ -3150,7 +3270,7 @@ main (int ARG_UNUSED (argc), char ** ARG_UNUSED (argv))
     }
 
   if (hit_error != 0)
-    exit (1);
+    return 1;
 
   set_gc_used (variables);
 
