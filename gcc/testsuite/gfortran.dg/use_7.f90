@@ -46,4 +46,4 @@ use y, operator(.my.) => sub ! { dg-error "Syntax error in USE statement" }
 use y, operator(+) => operator(.addfive.) ! { dg-error "Syntax error in USE statement" }
 end
 
-! { dg-final { cleanup-tree-dump "x y z" } }
+! { dg-final { cleanup-modules "x y z" } }
