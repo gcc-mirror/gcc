@@ -41,6 +41,9 @@ extern struct fileloc lexer_line;
 extern void error_at_line 
   (struct fileloc *pos, const char *msg, ...) ATTRIBUTE_PRINTF_2;
 
+/* Like asprintf, but calls fatal() on out of memory.  */
+extern char *xasprintf(const char *, ...) ATTRIBUTE_PRINTF_1;
+
 /* Constructor routines for types.  */
 extern void do_typedef (const char *s, type_p t, struct fileloc *pos);
 extern void do_scalar_typedef (const char *s, struct fileloc *pos);
@@ -57,6 +60,7 @@ extern options_p create_nested_ptr_option (options_p, type_p t,
 					   const char *from, const char *to);
 extern pair_p create_field_at (pair_p next, type_p type, const char *name,
 			       options_p opt, struct fileloc *pos);
+extern pair_p nreverse_pairs (pair_p list);
 extern type_p adjust_field_type (type_p, options_p);
 extern void note_variable (const char *s, type_p t, options_p o,
 			   struct fileloc *pos);
@@ -65,10 +69,45 @@ extern void note_def_vec (const char *typename, bool is_scalar,
 extern void note_def_vec_alloc (const char *type, const char *astrat,
 				struct fileloc *pos);
 
-/* Lexer and parser routines, most automatically generated.  */
-extern int yylex (void);
-extern void yyerror (const char *);
-extern int yyparse (void);
+/* Lexer and parser routines.  */
+extern int yylex (const char **yylval);
+extern void yybegin (const char *fname);
+extern void yyend (void);
 extern void parse_file (const char *name);
+extern bool hit_error;
 
+/* Token codes.  */
+enum {
+  EOF_TOKEN = 0,
+
+  /* Per standard convention, codes in the range (0, UCHAR_MAX]
+     represent single characters with those character codes.  */
+
+  CHAR_TOKEN_OFFSET = UCHAR_MAX + 1,
+  GTY_TOKEN = CHAR_TOKEN_OFFSET,
+  TYPEDEF,
+  EXTERN,
+  STATIC,
+  UNION,
+  STRUCT,
+  ENUM,
+  VEC_TOKEN,
+  DEFVEC_OP,
+  DEFVEC_I,
+  DEFVEC_ALLOC,
+  ELLIPSIS,
+  PTR_ALIAS,
+  NESTED_PTR,
+  PARAM_IS,
+  NUM,
+  SCALAR,
+  ID,
+  STRING,
+  CHAR,
+  ARRAY,
+
+  /* print_token assumes that any token >= FIRST_TOKEN_WITH_VALUE may have
+     a meaningful value to be printed.  */
+  FIRST_TOKEN_WITH_VALUE = PARAM_IS
+};
 #endif

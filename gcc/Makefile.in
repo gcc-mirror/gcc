@@ -188,8 +188,6 @@ GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 
 # These files are to have specific diagnostics suppressed, or are not to
 # be subject to -Werror:
-# Bison-1.75 output often yields (harmless) -Wtraditional warnings
-build/gengtype-yacc.o-warn = -Wno-error
 # flex output may yield harmless "no previous prototype" warnings
 build/gengtype-lex.o-warn = -Wno-error
 # SYSCALLS.c misses prototypes
@@ -1699,7 +1697,7 @@ c-parser.o : c-parser.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 
 srcextra: gcc.srcextra lang.srcextra
 
-gcc.srcextra: gengtype-lex.c gengtype-yacc.c gengtype-yacc.h
+gcc.srcextra: gengtype-lex.c
 	-cp -p $^ $(srcdir)
 
 c-incpath.o: c-incpath.c c-incpath.h $(CONFIG_H) $(SYSTEM_H) $(CPPLIB_H) \
@@ -3105,9 +3103,8 @@ build/genextract.o : genextract.c $(RTL_BASE_H) $(BCONFIG_H)		\
 build/genflags.o : genflags.c $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H)	\
   $(SYSTEM_H) coretypes.h $(GTM_H) errors.h gensupport.h
 build/gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
-build/gengtype-lex.o : gengtype-lex.c gengtype.h gengtype-yacc.h	\
-  $(BCONFIG_H) $(SYSTEM_H)
-build/gengtype-yacc.o : gengtype-yacc.c gengtype.h $(BCONFIG_H)		\
+build/gengtype-lex.o : gengtype-lex.c gengtype.h $(BCONFIG_H) $(SYSTEM_H)
+build/gengtype-parse.o : gengtype-parse.c gengtype.h $(BCONFIG_H)	\
   $(SYSTEM_H)
 build/gengtype.o : gengtype.c $(BCONFIG_H) $(SYSTEM_H) gengtype.h 	\
   rtl.def insn-notes.def errors.h
@@ -3147,18 +3144,12 @@ build/genautomata$(build_exeext) : BUILD_LIBS += -lm
 # These programs are not linked with the MD reader.
 build/gengenrtl$(build_exeext) : $(BUILD_ERRORS)
 build/genmodes$(build_exeext) : $(BUILD_ERRORS)
-build/gengtype$(build_exeext) : build/gengtype-lex.o \
-  build/gengtype-yacc.o $(BUILD_ERRORS)
+build/gengtype$(build_exeext) : build/gengtype-lex.o build/gengtype-parse.o \
+				$(BUILD_ERRORS)
 
 # Generated source files for gengtype.
 gengtype-lex.c : gengtype-lex.l
 	-$(FLEX) $(FLEXFLAGS) -o$@ $<
-# This is a pattern rule solely so that Make knows it need not run the
-# command twice.  The modifier to $@ ensures that Bison is asked to
-# produce a .c file, whether or not Make decides it needs the .h file
-# first.
-gengtype-y%.c gengtype-y%.h: gengtype-y%.y
-	-$(BISON) $(BISONFLAGS) -d -o $(@:.h=.c) $<
 
 #
 # Remake internationalization support.

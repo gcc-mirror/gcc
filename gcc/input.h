@@ -28,6 +28,9 @@ extern struct line_maps line_table;
 /* The location for declarations in "<built-in>" */
 #define BUILTINS_LOCATION ((source_location) 2)
 
+/* Note: if any of the types defined inside this #ifdef are changed,
+   gengtype.c:define_location_structures must be updated to match.  */
+
 #ifdef USE_MAPPED_LOCATION
 
 typedef struct
