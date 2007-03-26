@@ -1,3 +1,8 @@
+2007-03-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* tree-pretty-print.c (dump_generic_node): Report precision of
+	unnamed integer types.
+
 2007-03-26  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* ifcvt.c (noce_try_store_flag_constants): Don't check
