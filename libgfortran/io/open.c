@@ -423,6 +423,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
   u->mode = READING;
   u->maxrec = 0;
   u->bytes_left = 0;
+  u->saved_pos = 0;
 
   if (flags->position == POSITION_APPEND)
     {
