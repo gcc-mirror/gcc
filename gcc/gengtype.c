@@ -330,6 +330,18 @@ create_option (options_p next, const char *name, const void *info)
   return o;
 }
 
+/* Return an options structure for a "nested_ptr" option.  */
+options_p
+create_nested_ptr_option (type_p t, const char *to, const char *from)
+{
+  struct nested_ptr_data *d = XNEW (struct nested_ptr_data);
+
+  d->type = adjust_field_type (t, 0);
+  d->convert_to = to;
+  d->convert_from = from;
+  return create_option (NULL, "nested_ptr", d);
+}
+
 /* Add a variable named S of type T with options O defined at POS,
    to `variables'.  */
 

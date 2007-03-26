@@ -35,8 +35,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
   const char *s;
 }
 
-%token <t>ENT_TYPEDEF_STRUCT
-%token <t>ENT_STRUCT
+%token <s>ENT_TYPEDEF_STRUCT
+%token <s>ENT_STRUCT
+%token <s>ENT_TYPEDEF_UNION
+%token <s>ENT_UNION
 %token ENT_EXTERNSTATIC
 %token GTY_TOKEN
 %token VEC_TOKEN
@@ -68,21 +70,30 @@ start: /* empty */
 
 typedef_struct: ENT_TYPEDEF_STRUCT options '{' struct_fields '}' ID
 		   {
-		     new_structure ($1->u.s.tag, UNION_P ($1), &lexer_line,
-				    $4, $2);
-		     do_typedef ($6, $1, &lexer_line);
+		     type_p t = new_structure ($1, false, &lexer_line, $4, $2);
+		     do_typedef ($6, t, &lexer_line);
 		     lexer_toplevel_done = 1;
 		   }
-		 ';'
-		   {}
+		  ';'
+		| ENT_TYPEDEF_UNION options '{' struct_fields '}' ID
+		   {
+		     type_p t = new_structure ($1, true, &lexer_line, $4, $2);
+		     do_typedef ($6, t, &lexer_line);
+		     lexer_toplevel_done = 1;
+		   }
+		  ';'
 		| ENT_STRUCT options '{' struct_fields '}'
 		   {
-		     new_structure ($1->u.s.tag, UNION_P ($1), &lexer_line,
-				    $4, $2);
+		     new_structure ($1, false, &lexer_line, $4, $2);
 		     lexer_toplevel_done = 1;
 		   }
-		 ';'
-		   {}
+		  ';'
+		| ENT_UNION options '{' struct_fields '}'
+		   {
+		     new_structure ($1, true, &lexer_line, $4, $2);
+		     lexer_toplevel_done = 1;
+		   }
+		  ';'
 		;
 
 externstatic: ENT_EXTERNSTATIC options lasttype ID semiequal
@@ -210,15 +221,7 @@ option:   ID
 	| type_option '(' type ')'
 	    { $$ = create_option (NULL, $1, adjust_field_type ($3, NULL)); }
 	| NESTED_PTR '(' type ',' stringseq ',' stringseq ')'
-	    {
-	      struct nested_ptr_data d;
-
-	      d.type = adjust_field_type ($3, NULL);
-	      d.convert_to = $5;
-	      d.convert_from = $7;
-	      $$ = create_option (NULL, "nested_ptr",
-				  xmemdup (&d, sizeof (d), sizeof (d)));
-	    }
+	    { $$ = create_nested_ptr_option ($3, $5, $7); }
 	;
 
 optionseq: option

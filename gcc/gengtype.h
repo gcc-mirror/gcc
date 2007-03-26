@@ -139,6 +139,8 @@ extern type_p create_scalar_type (const char *name);
 extern type_p create_pointer (type_p t);
 extern type_p create_array (type_p t, const char *len);
 extern options_p create_option (options_p, const char *name, const void *info);
+extern options_p create_nested_ptr_option (type_p t, const char *from,
+					   const char *to);
 extern type_p adjust_field_type (type_p, options_p);
 extern void note_variable (const char *s, type_p t, options_p o,
 			   struct fileloc *pos);

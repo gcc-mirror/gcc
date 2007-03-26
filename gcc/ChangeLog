@@ -1,5 +1,14 @@
 2007-03-26  Zack Weinberg  <zackw@panix.com>
 
+	* gengtype-lex.l: Distinguish unions from structures in the
+	token type.  Don't call find_structure; return the tag as a string.
+	* gengtype-yacc.y: Add new token types ENT_TYPEDEF_UNION and ENT_UNION.
+	Type of these, ENT_TYPEDEF_STRUCT, and ENT_STRUCT is string.
+	Reorganize typedef_struct production accordingly.
+	Use create_nested_ptr_option.
+	* gengtype.c (create_nested_ptr_option): New function.
+	* gengtype.h: Declare it.
+
 	* gengtype.h (struct type): Replace 'sc' with boolean, scalar_is_char.
 	(string_type): Don't declare.
 	(do_scalar_typedef): Declare.
