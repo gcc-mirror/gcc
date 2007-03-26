@@ -795,6 +795,7 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
   # This is necessary even though libstdc++ uses the builtin versions
   # of these functions, because if the builtin cannot be used, a reference
   # to the library function is emitted.
+  AC_CHECK_HEADERS(tgmath.h, ac_has_tgmath_h=yes, ac_has_tgmath_h=no)
   AC_CHECK_HEADERS(complex.h, ac_has_complex_h=yes, ac_has_complex_h=no)
   ac_c99_complex=no;
   if test x"$ac_has_complex_h" = x"yes"; then

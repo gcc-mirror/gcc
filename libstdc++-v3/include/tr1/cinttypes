@@ -1,6 +1,6 @@
 // TR1 cinttypes -*- C++ -*-
 
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +41,7 @@
 
 // For 8.11.1/1 (see C99, Note 184) 
 #define __STDC_FORMAT_MACROS
-#include <inttypes.h>
+#include_next <inttypes.h>
 
 // namespace std::tr1
 namespace std

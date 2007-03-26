@@ -1,3 +1,21 @@
+2007-03-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/c_compatibility/complex.h: Without
+	__GXX_EXPERIMENTAL_CXX0X__ include_next complex.h.	
+	* include/c_compatibility/fenv.h: Same.
+	* include/c_compatibility/inttypes.h: Same.
+	* include/c_compatibility/stdbool.h: Same.
+	* include/c_compatibility/stdint.h: Same.
+	* include/c_compatibility/tgmath.h: Same.
+
+	* include/tr1/cinttypes: Use include_next.
+	* include/tr1/cstdint: Same.
+	* include/tr1/cstdbool: Same.
+
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Add check for tgmath.h
+	* configure: Regenerate.
+	* config.h.in: Same.
+	
 2007-03-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/functional: Formatting fixes.

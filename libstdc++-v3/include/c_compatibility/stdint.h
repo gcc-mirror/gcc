@@ -31,7 +31,15 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <cstdint>
+#include <bits/c++config.h>
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+# include <cstdint>
+#else
+# if _GLIBCXX_HAVE_STDINT_H
+#  include_next <stdint.h>
+# endif
+#endif
 
 #ifndef _GLIBCXX_STDINT_H
 #define _GLIBCXX_STDINT_H 1
