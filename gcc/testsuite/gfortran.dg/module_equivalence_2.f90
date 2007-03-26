@@ -22,3 +22,4 @@ end module b
   reM = 0.57d1
   if (M .ne. 0.57d1) call abort ()
 end
+! { dg-final { cleanup-modules "a b" } }

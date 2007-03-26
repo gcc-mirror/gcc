@@ -141,3 +141,4 @@ contains
 end program alloc
 ! { dg-final { scan-tree-dump-times "deallocate" 33 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
+! { dg-final { cleanup-modules "alloc_m" } }

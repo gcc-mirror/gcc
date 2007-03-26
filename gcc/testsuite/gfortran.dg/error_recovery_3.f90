@@ -7,3 +7,5 @@ MODULE M1
 END MODULE M1
 
 USE M1,                    ONLY: I,&! { dg-error "Missing" }
+! { dg-final { cleanup-modules "M1" } }
+

@@ -66,4 +66,4 @@ subroutine his_fun (a)
   print *, my_fun (a)  ! { dg-error "ambiguous reference" }
 end subroutine his_fun
 
-! { dg-final { cleanup-modules "test_mod" } }
+! { dg-final { cleanup-modules "test_mod test_mod2" } }
