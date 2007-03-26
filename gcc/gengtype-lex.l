@@ -171,12 +171,12 @@ ITYPE	{IWORD}({WS}{IWORD})*
   for (taglen = 1; ISIDNUM (tagstart[taglen]); taglen++)
     ;
 
-  yylval.t = find_structure ((const char *) xmemdup (tagstart, taglen,
-						     taglen + 1),
-			     union_p);
+  yylval.s = (const char *) xmemdup (tagstart, taglen, taglen + 1);
+
   BEGIN(in_struct);
   update_lineno (yytext, yyleng);
-  return typedef_p ? ENT_TYPEDEF_STRUCT : ENT_STRUCT;
+  return union_p ? (typedef_p ? ENT_TYPEDEF_UNION : ENT_UNION)
+                 : (typedef_p ? ENT_TYPEDEF_STRUCT : ENT_STRUCT);
 }
 
 [^[:alnum:]_](extern|static){WS}/"GTY" {
