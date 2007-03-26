@@ -10,7 +10,7 @@
 
 
 #if defined( GLIBC_C99_INLINE_3_CHECK )
-# if defined(__cplusplus) || __STDC_VERSION__ >= 19901L
+# if defined(__cplusplus) || defined(__GNUC_STDC_INLINE__)
 #  define __STRING_INLINE inline
 # else
 #  define __STRING_INLINE extern __inline

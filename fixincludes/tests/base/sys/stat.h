@@ -15,11 +15,11 @@
 
 
 #if defined( GLIBC_C99_INLINE_2_CHECK )
-#if __STDC_VERSION__ < 199901L
+#ifdef __GNUC_GNU_INLINE__
 extern
 #endif
 __inline__ int fstat64 (int __fd, struct stat64 *__buf) __THROW __nonnull ((2));
-#if __STDC_VERSION__ < 199901L
+#ifdef __GNUC_GNU_INLINE__
 extern
 #endif
 __inline__ int

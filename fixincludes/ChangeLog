@@ -1,3 +1,20 @@
+2007-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* inclhack.def (glibc_c99_inline_1): Define __USE_EXTERN_INLINES
+	if __extern_inline or __GNUC_GNU_INLINE__ is defined rather than
+	__STDC_VERSION__ < 199901L.
+	(glibc_c99_inline_2): Replace #if __STDC_VERSION__ < 199901L
+	with #ifdef __GNUC_GNU_INLINE__.
+	(glibc_c99_inline_3): Add select.  Replace __STDC_VERSION__ >= 199901L
+	with defined(__GNUC_STDC_INLINE__).
+	(glibc_c99_inline_4): Change select, add second c_fix_arg.
+	Replace #if __STDC_VERSION__ < 199901L with
+	#ifdef __GNUC_GNU_INLINE__.
+	* fixincl.x: Regenerated.
+	* tests/base/bits/string2.h: Update.
+	* tests/base/sys/sysmacros.h: Update.
+	* tests/base/sys/stat.h: Update.
+
 2007-03-18  Krister Walfridsson  <cato@df.lth.se>
 
 	PR target/30058
