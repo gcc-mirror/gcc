@@ -21,11 +21,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "bconfig.h"
 #include "system.h"
-#include "coretypes.h"
-#include "tm.h"
 #include "gengtype.h"
 #include "gtyp-gen.h"
-#include "errors.h"
+#include "errors.h"	/* for fatal */
 
 /* Nonzero iff an error has occurred.  */
 static int hit_error = 0;
@@ -2994,6 +2992,86 @@ write_roots (pair_p variables)
 
   finish_root_table (flp, "pch_rs", "LAST_GGC_ROOT_TAB", "ggc_root_tab",
 		     "gt_pch_scalar_rtab");
+}
+
+/* Record the definition of a generic VEC structure, as if we had expanded
+   the macros in vec.h:
+
+   typedef struct VEC_<type>_base GTY(()) {
+   unsigned num;
+   unsigned alloc;
+   <type> GTY((length ("%h.num"))) vec[1];
+   } VEC_<type>_base
+
+   where the GTY(()) tags are only present if is_scalar is _false_.  */
+
+void
+note_def_vec (const char *typename, bool is_scalar, struct fileloc *pos)
+{
+  pair_p f, fields;
+  type_p t;
+  options_p o;
+  const char *name = concat ("VEC_", typename, "_base", (char *)0);
+
+  if (is_scalar)
+    {
+      t = create_scalar_type (typename, strlen (typename));
+      o = 0;
+    }
+  else
+    {
+      t = resolve_typedef (typename, pos);
+      o = create_option (0, "length", "%h.num");
+    }
+
+  /* We assemble the field list in reverse order.  */
+  f = XNEW (struct pair);
+  f->type = adjust_field_type (create_array (t, "1"), o);
+  f->name = "vec";
+  f->opt = o;
+  f->line = *pos;
+  f->next = 0;
+  fields = f;
+
+  f = XNEW (struct pair);
+  f->type = adjust_field_type (create_scalar_type ("unsigned", 8), 0);
+  f->name = "alloc";
+  f->opt = 0;
+  f->line = *pos;
+  f->next = fields;
+  fields = f;
+
+  f = XNEW (struct pair);
+  f->type = adjust_field_type (create_scalar_type ("unsigned", 8), 0);
+  f->name = "num";
+  f->opt = 0;
+  f->line = *pos;
+  f->next = fields;
+  fields = f;
+
+  do_typedef (name, new_structure (name, 0, pos, fields, 0), pos);
+}
+
+/* Record the definition of an allocation-specific VEC structure, as if
+   we had expanded the macros in vec.h:
+
+   typedef struct VEC_<type>_<astrat> {
+     VEC_<type>_base base;
+   } VEC_<type>_<astrat>;
+*/
+void
+note_def_vec_alloc (const char *type, const char *astrat, struct fileloc *pos)
+{
+  const char *astratname = concat ("VEC_", type, "_", astrat, (char *)0);
+  const char *basename = concat ("VEC_", type, "_base", (char *)0);
+
+  pair_p field = XNEW (struct pair);
+  field->name = "base";
+  field->type = adjust_field_type (resolve_typedef (basename, pos), 0);
+  field->line = *pos;
+  field->next = 0;
+
+  do_typedef (astratname, new_structure (astratname, 0, pos, field, 0), pos);
 }
 
 

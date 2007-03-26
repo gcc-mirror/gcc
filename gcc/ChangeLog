@@ -1,5 +1,21 @@
 2007-03-26  Zack Weinberg  <zackw@panix.com>
 
+	* vec.h: Remove all #if IN_GENGTYPE blocks.
+	Add comment saying that changes may require adjustments to gengtype.
+	* gengtype.c: Don't include coretypes.h or tm.h.
+	Add comment to inclusion of errors.h.
+	(note_def_vec, note_def_vec_alloc): New functions.
+	* gengtype.h: Declare new functions.
+	* gengtype-lex.l: Don't include coretypes.h.
+	(YY_INPUT, macro_input, push_macro_expansion, mangle_macro_name):
+	Delete.
+	(update_lineno): Remove unnecessary prototype.
+	(DEF_VEC_* rules): Simplify using note_def_vec / note_def_vec_alloc.
+	(VEC rule): Just return VEC_TOKEN.
+	* gengtype-yacc.y (VEC_TOKEN): New token type.
+	(type): Add a production for VEC(a,b).
+	* Makefile.in: Update dependencies.
+
 	* gengtype-lex.l: Remove rules for parsing pointer-to-function
 	typedefs that use the old PARAMS macro.
 
