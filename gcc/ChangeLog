@@ -1,3 +1,11 @@
+2007-03-26  Zack Weinberg  <zackw@panix.com>
+
+	* gengtype-lex.l: Remove all rules and states relating to yacc
+	input files.
+	* gengtype-yacc.y: Similarly.
+	* gengtype.c (note_yacc_type): Delete function.
+	* gengtype.h: Update prototypes.
+
 2007-03-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* tree-pretty-print.c (dump_generic_node): Report precision of
@@ -84,8 +92,8 @@
 
 2007-03-25  Revital Eres  <eres@il.ibm.com>
 
-        * tree-if-conv.c (if_convertible_gimple_modify_stmt_p):
-          Fold movement_possibility function into it.
+	* tree-if-conv.c (if_convertible_gimple_modify_stmt_p):
+	  Fold movement_possibility function into it.
 
 2007-03-25  David Edelsohn  <edelsohn@gnu.org>
 
@@ -349,7 +357,7 @@
 	* real.c (real_from_string): Return -1 if underflow, +1 if overflow
 	and 0 otherwise.
 	* real.h (real_from_string): Update declaration
-	
+
 2007-03-22  Kai Tietz  <kai.tietz@onevision.com>
 	    Richard Henderson  <rth@redhat.com>
 
@@ -380,7 +388,7 @@
 	Macroize expander using SSEMODEF mode macro.  Use SSE_FLOAT_MODE_P.
 	(*cmpfp_<mode>): Rename from *cmpfp_sf and *cmpfp_df. Macroize
 	insn pattern using X87MODEF12 mode macro.
-	
+
 2007-03-21  Seongbae Park <seongbae.park@gmail.com>
 
 	* regmove.c (regmove_optimize): Use reg_mentioned_p
@@ -520,11 +528,11 @@
 	(xde, xdee): Mode attributes adjusted to support DFP modes.
 	(RRer, f0, op1, Rf, bt, bfp, HALF_TMODE): New mode attributes added.
 	("cmp<mode>", "*cmp<mode>_css_0", "*cmp<mode>_ccs", TF move splitters,
-	DF move splitters, "floatdi<mode>2", "add<mode>3", "*add<mode>3", 
+	DF move splitters, "floatdi<mode>2", "add<mode>3", "*add<mode>3",
 	"*add<mode>3_cc", "*add<mode>3_cconly", "sub<mode>3", "*sub<mode>3",
 	"*sub<mode>3_cc", "*sub<mode>3_cconly", "mul<mode>3", "*mul<mode>3",
 	"div<mode>3", "*div<mode>3", "*neg<mode>2_nocc", "*abs<mode>2_nocc",
-	"*negabs<mode>2_nocc", "copysign<mode>3"): Adjusted to support DFP 
+	"*negabs<mode>2_nocc", "copysign<mode>3"): Adjusted to support DFP
 	numbers.
 	("*movtf_64", "*movtf_31", "*movdf_64dfp", "*movdf_64", "*movdf_31",
 	"movsf"): Insn definitions removed.
@@ -600,7 +608,7 @@
 	Update move patterns.
 	* pa.c (hppa_fpstore_bypass_p): Check for both TYPE_FPSTORE_LOAD and
 	TYPE_FPSTORE.
-	
+
 2007-03-18  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vect-transform.c (get_initial_def_for_induction): Replace
@@ -615,14 +623,14 @@
 	(value_dies_in_block_x): Update for rvuse removal.
 	(valid_in_sets): Update for renaming of vuses_dies_in_block_x.
 	(compute_antic_aux): Handle when PHI nodes appear in
-	non-single-successors. 
+	non-single-successors.
 	(dump_bitmap_of_names): Removed.
 	(compute_antic_safe): Renamed and removed rvuse calculation.
 	Calculate only antic safe.
 	(insert_into_preds_of_block): Remove assert.
 	(execute_pre): Update for renamed functions.
 	(defer_or_phi_translate_block): New function.
-	
+
 2007-03-17  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/arm/arm.c, config/arm/thumb2.md, config/m68k/m68k.c,
@@ -638,9 +646,9 @@
 	PR tree-optimization/31041
 	* tree-vect-transform.c (get_initial_def_for_induction): Call
 	force_gimple_operand.
-	
+
 2007-03-17  Olga Golovanevsky  <olga@il.ibm.com>
-  
+
   	* ipa-type-escape.c (look_for_casts) : Revert code to use
 	handled_component_p due to ada test a-numaux.adb.
 
@@ -660,7 +668,7 @@
 	* c-common.c (convert_and_check): Move warning logic to...
 	(warnings_for_convert_and_check): ...here. Define.
 	* c-common.h (warnings_for_convert_and_check): Declare.
-	
+
 2007-03-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (attr_length_call): Partially revert change of 2007-03-09.
@@ -682,7 +690,7 @@
 2007-03-16  Sebastian Pop  <sebastian.pop@inria.fr>
 
 	PR tree-optimization/31183
-	* tree-loop-linear.c (gather_interchange_stats, try_interchange_loops): 
+	* tree-loop-linear.c (gather_interchange_stats, try_interchange_loops):
 	Use double_int instead of unsigned int for representing access_strides.
 	* testsuite/gcc.dg/tree-ssa/pr31183.c: New.
 
@@ -758,7 +766,7 @@
 	* c-opts.c (c_common_post_options): Handle C++ post-processing here.
 	Set also -pedantic-errors by default for the  preprocessor unless
 	-fpermissive is given.
-	
+
 2007-03-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/29719
@@ -830,7 +838,7 @@
 	(TUNE_MOVE_M1_VIA_OR): Ditto.
 	(TUNE_NOT_UNPAIRABLE): Ditto.
 	(TUNE_NOT_VECTORMODE): Ditto.
-	
+
 	* config/i386/i386.c (ix86_tune_features): Fill in new tuning
 	options.
 
@@ -959,7 +967,7 @@
 	PR target/31123
 	* pa.md (vdepi_ior): Don't allow zero length deposit.  Likewise for
 	two unamed patterns.
-	
+
 2007-03-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.opt (mcx16, msahf): New options.
@@ -1065,22 +1073,22 @@
 	elfos.h to tm_file.
 
 2007-03-12  Olga Golovanevsky  <olga@il.ibm.com>
-  
+
   	* tree.h : Add multiple_of_p declaration.
-  	* fold-const.c (multiple_of_p): Make multiple_of_p public. 
+  	* fold-const.c (multiple_of_p): Make multiple_of_p public.
   	* ipa-type-escape.c (results_of_malloc): Redundant.
   	(visited_stmts): New. Visited stmt for walk_use_def_chains.
   	(cast_type): Extended with new members.
   	(check_cast): Returns cast_type.
   	(cast): New structure for data of walk_use_def_chains.
   	(is_malloc_result, is_cast_from_non_pointer_1,
-  	is_cast_from_non_pointer, 
+  	is_cast_from_non_pointer,
   	is_array_access_through_pointer_and_index): New functions.
   	(look_for_casts): Returns cast types.
  	(check_call): Returns void.
   	(okay_pointer_operation): Use support of pointer plus index,
   	pointer plus constant and allow all multiplications.
-	
+
 2007-03-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/31115
@@ -1097,7 +1105,7 @@
 
 2007-03-11  Ira Rosen  <irar@il.ibm.com>
 
-	* tree-data-ref.c (analyze_offset): Add a return value (bool) to 
+	* tree-data-ref.c (analyze_offset): Add a return value (bool) to
 	indicate success/failure of the analysis. Add negation to subtrahend
 	in case of subtraction. Fail if both operands contain constants.
 	(create_data_ref): Fail if analyze_offset fails.
@@ -1336,30 +1344,30 @@
 
 	* doc/loop.texi: Document the Omega linear constraints solver.
 	* doc/invoke.texi: Document -fcheck-data-deps, omega-max-vars,
-	omega-max-geqs, omega-max-eqs, omega-max-wild-cards, 
-	omega-hash-table-size, omega-max-keys, and 
+	omega-max-geqs, omega-max-eqs, omega-max-wild-cards,
+	omega-hash-table-size, omega-max-keys, and
 	omega-eliminate-redundant-constraints.
 	* tree-pass.h (pass_check_data_deps): Declared.
 	* omega.c: New.
 	* omega.h: New.
 	* timevar.def (TV_CHECK_DATA_DEPS): Declared.
-	* tree-ssa-loop.c (check_data_deps, gate_check_data_deps, 
+	* tree-ssa-loop.c (check_data_deps, gate_check_data_deps,
 	pass_check_data_deps): New.
 	* tree-data-ref.c (init_data_ref): Remove declaration.
 	(dump_data_dependence_relation): Dump DDR_INNER_LOOP.
 	(analyze_array): Renamed init_array_ref, move up initializations.
 	(init_data_ref): Renamed init_pointer_ref.  Moved before its call.
 	Removed arguments that are set to NULL.
-	(analyze_indirect_ref): Correct indentation, correct call to 
+	(analyze_indirect_ref): Correct indentation, correct call to
 	init_pointer_ref.
 	(object_analysis): Call init_array_ref instead of analyze_array.
 	(initialize_data_dependence_relation): Initialize DDR_INNER_LOOP.
 	(access_functions_are_affine_or_constant_p): Use DR_ACCESS_FNS instead
 	of DR_ACCESS_FNS_ADDR.
-	(init_omega_eq_with_af, omega_extract_distance_vectors, 
+	(init_omega_eq_with_af, omega_extract_distance_vectors,
 	omega_setup_subscript, init_omega_for_ddr_1, init_omega_for_ddr,
 	ddr_consistent_p): New.
-	(compute_affine_dependence): Check consistency of ddrs when 
+	(compute_affine_dependence): Check consistency of ddrs when
 	flag_check_data_deps is passed.
 	(analyze_all_data_dependences): Uncomment.
 	(tree_check_data_deps): New.
@@ -1373,7 +1381,7 @@
 	(OBJS-common): Depend on omega.o.
 	(omega.o): Define.
 	* passes.c (pass_check_data_deps): Scheduled.
-	* params.def (PARAM_OMEGA_MAX_VARS, PARAM_OMEGA_MAX_GEQS, 
+	* params.def (PARAM_OMEGA_MAX_VARS, PARAM_OMEGA_MAX_GEQS,
 	PARAM_OMEGA_MAX_EQS, PARAM_OMEGA_MAX_WILD_CARDS,
 	PARAM_OMEGA_HASH_TABLE_SIZE, PARAM_OMEGA_MAX_KEYS,
 	PARAM_VECT_MAX_VERSION_CHECKS,
@@ -1448,7 +1456,7 @@
 	* builtins.def (lceil, lceilf, lceill, lfloor, lfloorf, lfloorl,
 	llceil, llceilf, llceill, llfloor, llfloorf, llfloorl): Mark with
 	ATTR_CONST_NOTHROW_LIST.
-	
+
 	* fold-const.c (tree_expr_nonnegative_warnv_p): Handle
 	FIX_TRUNC_EXPR.
 
@@ -1549,7 +1557,7 @@
 	expanding sahf based alternative. Emit sahf based sequence when
 	optimizing for code size.
 	* config/i386/i386.md (x86_sahf_1): Do not disable for
-	TARGET_64BIT, enable for TARGET_SAHF. 
+	TARGET_64BIT, enable for TARGET_SAHF.
 
 2007-03-08  Martin Michlmayr  <tbm@cyrius.com>
 
@@ -1648,7 +1656,7 @@
 2007-03-06  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (avr_mcu_types): Add support for ATmega325P,
-	ATmega3250P, ATmega329P, ATmega3290P, AT90USB82 and AT90USB162 
+	ATmega3250P, ATmega329P, ATmega3290P, AT90USB82 and AT90USB162
 	devices.
 	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): (Ditto.).
 	* config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
@@ -1721,13 +1729,13 @@
 	x86_branch_hints, x86_use_sahf, x86_partial_reg_stall,
 	x86_partial_flag_reg_stall, x86_use_himode_fiop, x86_use_simode_fiop,
 	x86_use_mov0, x86_use_cltd, x86_read_modify_write, x86_read_modify,
-	x86_split_long_moves, x86_promote_QImode, x86_fast_prefix, 
+	x86_split_long_moves, x86_promote_QImode, x86_fast_prefix,
 	x86_single_stringop, x86_qimode_math, x86_promote_qi_regs,
 	x86_himode_math, x86_promote_hi_regs, x86_sub_esp_4, x86_sub_esp_8,
-	x86_add_esp_4, x86_add_esp_8, x86_integer_DFmode_moves, 
-	x86_partial_reg_dependency, x86_memory_mismatch_stall, 
+	x86_add_esp_4, x86_add_esp_8, x86_integer_DFmode_moves,
+	x86_partial_reg_dependency, x86_memory_mismatch_stall,
 	x86_prologue_using_move, x86_epilogue_using_move, x86_shift1,
-	x86_sse_partial_reg_dependency, x86_sse_split_regs, 
+	x86_sse_partial_reg_dependency, x86_sse_split_regs,
 	x86_sse_unaligned_move_optimal, x86_sse_typeless_stores,
 	x86_sse_load0_by_pxor, x86_use_ffreep, x86_use_incdec,
 	x86_inter_unit_moves, x86_ext_80387_constants, x86_four_jump_limit,
@@ -1761,7 +1769,7 @@
 	x86_epilogue_using_move, x86_decompose_lea,
 	x86_arch_always_fancy_math_387, x86_shift1,
 	x86_sse_partial_reg_dependency, x86_sse_split_regs,
-	x86_sse_unaligned_move_optimal, x86_sse_typeless_stores,	
+	x86_sse_unaligned_move_optimal, x86_sse_typeless_stores,
 	x86_sse_load0_by_pxor, x86_use_ffreep, x86_inter_unit_moves,
 	x86_schedule, x86_use_bt, x86_cmpxchg, x86_cmpxchg8b, x86_xadd,
 	x86_use_incdec, x86_pad_returns, x86_bswap,
@@ -1985,7 +1993,7 @@
 	in soft-float DFmode pattern.
 	(movdf): Fail if operand1 is a CONST_DOUBLE and operand0 is a hard
 	floating register.
-	(movsf): Likewise. 
+	(movsf): Likewise.
 
 2007-03-05  Mike Stump  <mrs@apple.com>
 
@@ -2078,7 +2086,7 @@
 	PR other/30465
 	* c-common.c (convert_and_check): Don't give warnings for
 	conversion if 'expr' already overflowed.
-	
+
 2007-03-04  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/30744
