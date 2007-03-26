@@ -1,3 +1,8 @@
+2007-03-26  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/30500
+	* pt.c (instantiate_decl): Set in_system_header.
+
 2007-03-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (current_tempalte_parms): Improve documentation.
