@@ -695,8 +695,7 @@ stack_result (tree decl)
 static void
 replace_reg (rtx *reg, int regno)
 {
-  gcc_assert (regno >= FIRST_STACK_REG);
-  gcc_assert (regno <= LAST_STACK_REG);
+  gcc_assert (IN_RANGE (regno, FIRST_STACK_REG, LAST_STACK_REG));
   gcc_assert (STACK_REG_P (*reg));
 
   gcc_assert (SCALAR_FLOAT_MODE_P (GET_MODE (*reg))

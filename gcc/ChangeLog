@@ -1,3 +1,24 @@
+2007-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* reg-stack.c (replace_reg): Use IN_RANGE macro in gcc_assert().
+	* config/i386/constraints.md
+	(define_constraint "I"): Use IN_RANGE macro.
+	(define_constraint "J"): Ditto.
+	(define_constraint "K"): Ditto.
+	(define_constraint "M"): Ditto.
+	(define_constraint "N"): Ditto.
+	(define_constraint "O"): Ditto.
+	* config/i386/predicates.md
+	(define_predicate "register_no_elim_operand"): Use IN_RANGE macro.
+	(define_predicate "const_0_to_3_operand"): Ditto.
+	(define_predicate "const_0_to_7_operand"): Ditto.
+	(define_predicate "const_0_to_15_operand"): Ditto.
+	(define_predicate "const_0_to_63_operand"): Ditto.
+	(define_predicate "const_0_to_255_operand"): Ditto.
+	(define_predicate "const_1_to_31_operand"): Ditto.
+	(define_predicate "const_2_to_3_operand"): Ditto.
+	(define_predicate "const_4_to_7_operand"): Ditto.
+
 2007-03-25  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_emit_prologue): Always clobber LR

@@ -497,8 +497,8 @@
     op = SUBREG_REG (op);
   return !(op == arg_pointer_rtx
 	   || op == frame_pointer_rtx
-	   || (REGNO (op) >= FIRST_PSEUDO_REGISTER
-	       && REGNO (op) <= LAST_VIRTUAL_REGISTER));
+	   || IN_RANGE (REGNO (op),
+			FIRST_PSEUDO_REGISTER, LAST_VIRTUAL_REGISTER));
 })
 
 ;; Similarly, but include the stack pointer.  This is used to prevent esp
@@ -572,27 +572,27 @@
 ;; Match 0 to 3.
 (define_predicate "const_0_to_3_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 3")))
+       (match_test "IN_RANGE (INTVAL (op), 0, 3)")))
 
 ;; Match 0 to 7.
 (define_predicate "const_0_to_7_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 7")))
+       (match_test "IN_RANGE (INTVAL (op), 0, 7)")))
 
 ;; Match 0 to 15.
 (define_predicate "const_0_to_15_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 15")))
+       (match_test "IN_RANGE (INTVAL (op), 0, 15)")))
 
 ;; Match 0 to 63.
 (define_predicate "const_0_to_63_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 63")))
+       (match_test "IN_RANGE (INTVAL (op), 0, 63)")))
 
 ;; Match 0 to 255.
 (define_predicate "const_0_to_255_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 255")))
+       (match_test "IN_RANGE (INTVAL (op), 0, 255)")))
 
 ;; Match (0 to 255) * 8
 (define_predicate "const_0_to_255_mul_8_operand"
@@ -606,17 +606,17 @@
 ;; for shift & compare patterns, as shifting by 0 does not change flags).
 (define_predicate "const_1_to_31_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 1 && INTVAL (op) <= 31")))
+       (match_test "IN_RANGE (INTVAL (op), 1, 31)")))
 
 ;; Match 2 or 3.
 (define_predicate "const_2_to_3_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) == 2 || INTVAL (op) == 3")))
+       (match_test "IN_RANGE (INTVAL (op), 2, 3)")))
 
 ;; Match 4 to 7.
 (define_predicate "const_4_to_7_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 4 && INTVAL (op) <= 7")))
+       (match_test "IN_RANGE (INTVAL (op), 4, 7)")))
 
 ;; Match exactly one bit in 4-bit mask.
 (define_predicate "const_pow2_1_to_8_operand"
