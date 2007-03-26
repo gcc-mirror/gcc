@@ -144,8 +144,6 @@ extern options_p create_option (options_p, const char *name, const void *info);
 extern type_p adjust_field_type (type_p, options_p);
 extern void note_variable (const char *s, type_p t, options_p o,
 			   struct fileloc *pos);
-extern void note_yacc_type (options_p o, pair_p fields,
-			    pair_p typeinfo, struct fileloc *pos);
 
 /* Lexer and parser routines, most automatically generated.  */
 extern int yylex (void);
