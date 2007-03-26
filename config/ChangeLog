@@ -1,3 +1,8 @@
+2007-03-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* acx.m4 (ACX_BUGURL): Set BUGURL first. Quote $BUGURL first
+	when setting REPORT_BUGS_TEXI.
+
 2007-03-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* acx.m4 (ACX_BUGURL): Replace "@" with "@@" for
