@@ -1,3 +1,17 @@
+2007-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (IX86_BUILTIN_CMPNEPD, IX86_BUILTIN_CMPNESD):
+	Remove.
+	(IX86_BUILTIN_PSLLW128, IX86_BUILTIN_PSLLD128, IX86_BUILTIN_PSLLQ128,
+	IX86_BUILTIN_PSRAW128, IX86_BUILTIN_PSRAD128, IX86_BUILTIN_PSRLW128,
+	IX86_BUILTIN_PSRLD128, IX86_BUILTIN_PSRLQ128): Remove.
+	(ix86_init_mmx_sse_builtins): Remove v8hi_ftype_v8hi_v2di and
+	v4si_ftype_v4si_v2di.   Remove __builtin_ia32_psllw128,
+	__builtin_ia32_pslld128, __builtin_ia32_psllq128,
+	__builtin_ia32_psrlw128, __builtin_ia32_psrld128,
+	__builtin_ia32_psrlq128, __builtin_ia32_psraw128 and
+	__builtin_ia32_psrad128 builtins.
+
 2007-03-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* reg-stack.c (replace_reg): Use IN_RANGE macro in gcc_assert().

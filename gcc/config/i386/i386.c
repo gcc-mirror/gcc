@@ -15792,7 +15792,6 @@ enum ix86_builtins
   IX86_BUILTIN_CMPNGEPD,
   IX86_BUILTIN_CMPORDPD,
   IX86_BUILTIN_CMPUNORDPD,
-  IX86_BUILTIN_CMPNEPD,
   IX86_BUILTIN_CMPEQSD,
   IX86_BUILTIN_CMPLTSD,
   IX86_BUILTIN_CMPLESD,
@@ -15801,7 +15800,6 @@ enum ix86_builtins
   IX86_BUILTIN_CMPNLESD,
   IX86_BUILTIN_CMPORDSD,
   IX86_BUILTIN_CMPUNORDSD,
-  IX86_BUILTIN_CMPNESD,
 
   IX86_BUILTIN_COMIEQSD,
   IX86_BUILTIN_COMILTSD,
@@ -15928,14 +15926,6 @@ enum ix86_builtins
   IX86_BUILTIN_PSHUFLW,
   IX86_BUILTIN_PSHUFD,
 
-  IX86_BUILTIN_PSLLW128,
-  IX86_BUILTIN_PSLLD128,
-  IX86_BUILTIN_PSLLQ128,
-  IX86_BUILTIN_PSRAW128,
-  IX86_BUILTIN_PSRAD128,
-  IX86_BUILTIN_PSRLW128,
-  IX86_BUILTIN_PSRLD128,
-  IX86_BUILTIN_PSRLQ128,
   IX86_BUILTIN_PSLLDQI128,
   IX86_BUILTIN_PSLLWI128,
   IX86_BUILTIN_PSLLDI128,
@@ -16738,12 +16728,6 @@ ix86_init_mmx_sse_builtins (void)
   tree v8hi_ftype_v8hi_int
     = build_function_type_list (V8HI_type_node,
 				V8HI_type_node, integer_type_node, NULL_TREE);
-  tree v8hi_ftype_v8hi_v2di
-    = build_function_type_list (V8HI_type_node,
-				V8HI_type_node, V2DI_type_node, NULL_TREE);
-  tree v4si_ftype_v4si_v2di
-    = build_function_type_list (V4SI_type_node,
-				V4SI_type_node, V2DI_type_node, NULL_TREE);
   tree v4si_ftype_v8hi_v8hi
     = build_function_type_list (V4SI_type_node,
 				V8HI_type_node, V8HI_type_node, NULL_TREE);
@@ -17066,17 +17050,6 @@ ix86_init_mmx_sse_builtins (void)
 
   def_builtin (MASK_SSE2, "__builtin_ia32_pmuludq", di_ftype_v2si_v2si, IX86_BUILTIN_PMULUDQ);
   def_builtin (MASK_SSE2, "__builtin_ia32_pmuludq128", v2di_ftype_v4si_v4si, IX86_BUILTIN_PMULUDQ128);
-
-  def_builtin (MASK_SSE2, "__builtin_ia32_psllw128", v8hi_ftype_v8hi_v2di, IX86_BUILTIN_PSLLW128);
-  def_builtin (MASK_SSE2, "__builtin_ia32_pslld128", v4si_ftype_v4si_v2di, IX86_BUILTIN_PSLLD128);
-  def_builtin (MASK_SSE2, "__builtin_ia32_psllq128", v2di_ftype_v2di_v2di, IX86_BUILTIN_PSLLQ128);
-
-  def_builtin (MASK_SSE2, "__builtin_ia32_psrlw128", v8hi_ftype_v8hi_v2di, IX86_BUILTIN_PSRLW128);
-  def_builtin (MASK_SSE2, "__builtin_ia32_psrld128", v4si_ftype_v4si_v2di, IX86_BUILTIN_PSRLD128);
-  def_builtin (MASK_SSE2, "__builtin_ia32_psrlq128", v2di_ftype_v2di_v2di, IX86_BUILTIN_PSRLQ128);
-
-  def_builtin (MASK_SSE2, "__builtin_ia32_psraw128", v8hi_ftype_v8hi_v2di, IX86_BUILTIN_PSRAW128);
-  def_builtin (MASK_SSE2, "__builtin_ia32_psrad128", v4si_ftype_v4si_v2di, IX86_BUILTIN_PSRAD128);
 
   def_builtin (MASK_SSE2, "__builtin_ia32_pslldqi128", v2di_ftype_v2di_int, IX86_BUILTIN_PSLLDQI128);
   def_builtin (MASK_SSE2, "__builtin_ia32_psllwi128", v8hi_ftype_v8hi_int, IX86_BUILTIN_PSLLWI128);
