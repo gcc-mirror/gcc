@@ -47,7 +47,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 %token NESTED_PTR
 %token <s>PARAM_IS
 %token NUM
-%token <t>SCALAR
+%token <s>SCALAR
 %token <s>ID
 %token <s>STRING
 %token <s>ARRAY
@@ -158,7 +158,7 @@ bitfieldlen: NUM | ID
 	     ;
 
 type: SCALAR
-         { $$ = $1; }
+         { $$ = create_scalar_type ($1); }
       | ID
          { $$ = resolve_typedef ($1, &lexer_line); }
       | VEC_TOKEN '(' ID ',' ID ')'
@@ -175,9 +175,9 @@ type: SCALAR
       | UNION ID
          { $$ = find_structure ($2, 1); }
       | ENUM ID
-         { $$ = create_scalar_type ($2, strlen ($2)); }
+         { $$ = create_scalar_type ($2); }
       | ENUM ID '{' enum_items '}'
-         { $$ = create_scalar_type ($2, strlen ($2)); }
+         { $$ = create_scalar_type ($2); }
       ;
 
 enum_items: /* empty */
