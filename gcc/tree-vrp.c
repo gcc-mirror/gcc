@@ -1982,10 +1982,18 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
       return;
     }
 
+  /* We punt if:
+     1) [-INF, +INF]
+     2) [-INF, +-INF(OVF)]
+     3) [+-INF(OVF), +INF]
+     4) [+-INF(OVF), +-INF(OVF)]
+     We learn nothing when we have INF and INF(OVF) on both sides.
+     Note that we do accept [-INF, -INF] and [+INF, +INF] without
+     overflow.  */
   if ((min == TYPE_MIN_VALUE (TREE_TYPE (min))
-       || is_negative_overflow_infinity (min))
+       || is_overflow_infinity (min))
       && (max == TYPE_MAX_VALUE (TREE_TYPE (max))
-	  || is_positive_overflow_infinity (max)))
+	  || is_overflow_infinity (max)))
     {
       set_value_range_to_varying (vr);
       return;

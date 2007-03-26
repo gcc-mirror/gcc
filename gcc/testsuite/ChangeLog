@@ -1,3 +1,8 @@
+2007-03-26  Ian Lance Taylor  <iant@google.com>
+
+	PR tree-optimization/31345
+	* gcc.c-torture/compile/pr31345-1.c: New test.
+
 2007-03-26  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gfortran.dg/func_derived_4.f90: Fix module cleanup.
