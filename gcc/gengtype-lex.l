@@ -129,23 +129,6 @@ ITYPE	{IWORD}({WS}{IWORD})*
   update_lineno (yytext, yyleng);
 }
 
-[^[:alnum:]_]typedef{WS}{ID}{WS}{ID}{WS}PARAMS {
-  char *namestart;
-  size_t namelen;
-  struct type *t;
-
-  for (namestart = yytext + yyleng - 7; ISSPACE (*namestart); namestart--)
-    ;
-  for (namelen = 1; !ISSPACE (namestart[-namelen]); namelen++)
-    ;
-  namestart -= namelen - 1;
-
-  t = create_scalar_type ("function type", sizeof ("function type")-1);
-  do_typedef ((const char *) xmemdup (namestart, namelen, namelen+1), t,
-	      &lexer_line);
-  update_lineno (yytext, yyleng);
-}
-
 [^[:alnum:]_]typedef{WS}{ID}{WS}{ID}{WS}"(" {
   char *namestart;
   size_t namelen;
@@ -154,23 +137,6 @@ ITYPE	{IWORD}({WS}{IWORD})*
   for (namestart = yytext + yyleng - 2; ISSPACE (*namestart); namestart--)
     ;
   for (namelen = 1; !ISSPACE (namestart[-namelen]); namelen++)
-    ;
-  namestart -= namelen - 1;
-
-  t = create_scalar_type ("function type", sizeof ("function type")-1);
-  do_typedef ((const char *) xmemdup (namestart, namelen, namelen+1), t,
-	      &lexer_line);
-  update_lineno (yytext, yyleng);
-}
-
-[^[:alnum:]_]typedef{WS}{ID}{WS}?"*"?{WS}?"("{WS}?"*"{WS}?{ID}{WS}?")"{WS}?PARAMS {
-  char *namestart;
-  size_t namelen;
-  struct type *t;
-
-  for (namestart = yytext + yyleng - 7; !ISIDNUM (*namestart); namestart--)
-    ;
-  for (namelen = 1; ISIDNUM (namestart[-namelen]); namelen++)
     ;
   namestart -= namelen - 1;
 

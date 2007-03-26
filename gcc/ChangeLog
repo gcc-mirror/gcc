@@ -1,5 +1,8 @@
 2007-03-26  Zack Weinberg  <zackw@panix.com>
 
+	* gengtype-lex.l: Remove rules for parsing pointer-to-function
+	typedefs that use the old PARAMS macro.
+
 	* gengtype-lex.l: Remove all rules and states relating to yacc
 	input files.
 	* gengtype-yacc.y: Similarly.
