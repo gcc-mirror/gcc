@@ -146,4 +146,4 @@ end program main
 ! TODO: dg-final { scan-tree-dump-not  "main_test2_3" "optimized" } 
 ! { dg-final { scan-tree-dump      "main_test2_4" "optimized" } }
 ! { dg-final { cleanup-tree-dump  "optimized" } }
-! { dg-final { cleanup-modules "one two" } }
+! { dg-final { cleanup-modules "impl one two" } }

@@ -1,3 +1,25 @@
+2007-03-26  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* gfortran.dg/func_derived_4.f90: Fix module cleanup.
+	* gfortran.dg/gomp/appendix-a/a.22.4.f90: Clean up modules.
+	* gfortran.dg/gomp/appendix-a/a.26.2.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.32.1.f90: Likewise.
+	* gfortran.dg/overload_1.f90: Likewise.
+	* gfortran.dg/impure_assignment_1.f90: Likewise.
+	* gfortran.dg/error_recovery_3.f90: Likewise.
+	* gfortran.dg/alloc_comp_basics_1.f90: Likewise.
+	* gfortran.dg/sequence_types_1.f90: Likewise.
+	* gfortran.dg/internal_references_1.f90: Likewise.
+	* gfortran.dg/present_1.f90: Likewise.
+	* gfortran.dg/volatile10.f90: Likewise.
+	* gfortran.dg/module_equivalence_2.f90: Likewise.
+	* gfortran.dg/use_4.f90: Likewise.
+	* gfortran.dg/elemental_result_1.f90: Likewise.
+	* gfortran.dg/generic_actual_arg.f90: Likewise.
+	* gfortran.dg/private_type_5.f90: Likewise.
+	* gfortran.dg/protected_4.f90: Likewise.
+	* gfortran.dg/interface_3.f90: Likewise.
+
 2007-03-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/gcc-dg.exp (gcc-dg-debug-runtest): Remove build file trivial.S.

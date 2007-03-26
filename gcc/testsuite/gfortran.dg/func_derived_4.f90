@@ -102,4 +102,4 @@ program test_pnt
   mshp => msh_(quality)
 end program test_pnt
 
-! { dg-final { cleanup-modules "class_mesh class_scalar_field class_mesh" } }
+! { dg-final { cleanup-modules "class_mesh class_field class_scalar_field" } }

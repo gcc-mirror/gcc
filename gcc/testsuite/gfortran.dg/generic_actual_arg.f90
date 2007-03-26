@@ -23,3 +23,4 @@ END
 
 SUBROUTINE F()
 END SUBROUTINE
+! { dg-final { cleanup-modules "TEST" } }

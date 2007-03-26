@@ -24,3 +24,5 @@ PURE SUBROUTINE S2(I,J)
      I=J                      ! { dg-error "must be PURE" }
 END SUBROUTINE S2
 END
+! { dg-final { cleanup-modules "M1" } }
+
