@@ -219,7 +219,7 @@ Enable OpenMP
 
 fpack-derived
 Fortran
-Try to layout derived types as compact as possible
+Try to lay out derived types as compactly as possible
 
 fpreprocessed
 Fortran
@@ -263,7 +263,7 @@ Conform to the ISO Fortran 95 standard
 
 std=gnu
 Fortran
-Conform nothing in particular
+Conform to nothing in particular
 
 std=legacy
 Fortran
