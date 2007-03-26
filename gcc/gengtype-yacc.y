@@ -57,7 +57,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 %type <p> struct_fields
 %type <t> type lasttype
-%type <o> optionsopt options option optionseq optionseqopt
+%type <o> optionsopt options optionseq
 %type <s> type_option stringseq
 
 %%
@@ -128,33 +128,17 @@ semiequal: ';'
 struct_fields: { $$ = NULL; }
 	       | type optionsopt ID bitfieldopt ';' struct_fields
 	          {
-	            pair_p p = XNEW (struct pair);
-		    p->type = adjust_field_type ($1, $2);
-		    p->opt = $2;
-		    p->name = $3;
-		    p->next = $6;
-		    p->line = lexer_line;
-		    $$ = p;
+		    $$ = create_field_at ($6, $1, $3, $2, &lexer_line);
 		  }
 	       | type optionsopt ID ARRAY ';' struct_fields
 	          {
-	            pair_p p = XNEW (struct pair);
-		    p->type = adjust_field_type (create_array ($1, $4), $2);
-		    p->opt = $2;
-		    p->name = $3;
-		    p->next = $6;
-		    p->line = lexer_line;
-		    $$ = p;
+		    $$ = create_field_at ($6, create_array ($1, $4),
+		    			  $3, $2, &lexer_line);
 		  }
 	       | type optionsopt ID ARRAY ARRAY ';' struct_fields
 	          {
-	            pair_p p = XNEW (struct pair);
-		    p->type = create_array (create_array ($1, $5), $4);
-		    p->opt = $2;
-		    p->name = $3;
-		    p->next = $7;
-		    p->line = lexer_line;
-		    $$ = p;
+		    type_p arr = create_array (create_array ($1, $5), $4);
+		    $$ = create_field_at ($7, arr, $3, $2, &lexer_line);
 		  }
 	       | type ':' bitfieldlen ';' struct_fields
 		  { $$ = $5; }
@@ -204,7 +188,7 @@ optionsopt: { $$ = NULL; }
 	    | options { $$ = $1; }
 	    ;
 
-options: GTY_TOKEN '(' '(' optionseqopt ')' ')'
+options: GTY_TOKEN '(' '(' optionseq ')' ')'
 	   { $$ = $4; }
 	 ;
 
@@ -214,31 +198,19 @@ type_option : ALIAS
 	        { $$ = $1; }
 	      ;
 
-option:   ID
-	    { $$ = create_option (NULL, $1, (void *)""); }
-        | ID '(' stringseq ')'
-            { $$ = create_option (NULL, $1, (void *)$3); }
-	| type_option '(' type ')'
-	    { $$ = create_option (NULL, $1, adjust_field_type ($3, NULL)); }
-	| NESTED_PTR '(' type ',' stringseq ',' stringseq ')'
-	    { $$ = create_nested_ptr_option ($3, $5, $7); }
-	;
+optionseq: { $$ = NULL; }
+	| optionseq commaopt ID
+	   { $$ = create_option ($1, $3, (void *)""); }
+	| optionseq commaopt ID '(' stringseq ')'
+	   { $$ = create_option ($1, $3, (void *)$5); }
+	| optionseq commaopt type_option '(' type ')'
+	   { $$ = create_option ($1, $3, adjust_field_type ($5, 0)); }
+	| optionseq commaopt NESTED_PTR '(' type ',' stringseq ',' stringseq ')'
+	   { $$ = create_nested_ptr_option ($1, $5, $7, $9); }
 
-optionseq: option
-	      {
-	        $1->next = NULL;
-		$$ = $1;
-	      }
-	    | optionseq ',' option
-	      {
-	        $3->next = $1;
-		$$ = $3;
-	      }
-	    ;
-
-optionseqopt: { $$ = NULL; }
-	      | optionseq { $$ = $1; }
-	      ;
+commaopt: /* nothing */
+	  | ','
+	  ;
 
 stringseq: STRING
 	     { $$ = $1; }

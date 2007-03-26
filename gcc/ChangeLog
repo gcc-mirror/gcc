@@ -1,5 +1,27 @@
 2007-03-26  Zack Weinberg  <zackw@panix.com>
 
+	* gengtype.h: Remove all type definitions to gengtype.c; leave
+	only definitions of options_p, type_p, and pair_p as opaque
+	pointers.  Update prototypes.
+	* gengtype.c: Many type definitions moved here from gengtype.h.
+	Consolidate type definitions at the top of the file.
+	(xvasprintf): Delete.
+	(xasprintf): Make static.
+	(create_nested_pointer_option): Add 'next' parameter.
+	(create_field_all, create_field_at): New functions.
+	(create_field): Now a thin wrapper around create_field_all.
+	(create_optional_field): Rename create_optional_field_ and add
+	line argument.  Original name is now a macro which supplies
+	__LINE__.
+	(oprintf): Use vsnprintf directly.
+	(close_output_files): Use fatal rather than perror/exit.
+	(note_def_vec, note_def_vec_alloc): Use create_field_at.
+	(main): Set progname.  Don't use exit.
+	* gengtype-yacc.y (struct_fields): Use create_field_at.
+	(option, optionseqopt): Delete.
+	(optionseq): Consolidate productions from option here so we
+	can use the first argument to create_option.
+
 	* gengtype-lex.l: Distinguish unions from structures in the
 	token type.  Don't call find_structure; return the tag as a string.
 	* gengtype-yacc.y: Add new token types ENT_TYPEDEF_UNION and ENT_UNION.
