@@ -571,6 +571,14 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		dump_generic_node (buffer, TREE_TYPE (node), 
 				   spc, flags, false);
 	      }
+	    else if (TREE_CODE (node) == INTEGER_TYPE)
+	      {
+		pp_string (buffer, (TYPE_UNSIGNED (node)
+				    ? "<unnamed-unsigned:"
+				    : "<unnamed-signed:"));
+		pp_decimal_int (buffer, TYPE_PRECISION (node));
+		pp_string (buffer, ">");
+	      }
 	    else
               pp_string (buffer, "<unnamed type>");
 	  }
