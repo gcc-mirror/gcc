@@ -1,5 +1,37 @@
 2007-03-26  Zack Weinberg  <zackw@panix.com>
 
+	* gengtype-parse.c: New file.
+	* gengtype-yacc.y: Delete.
+	* gengtype-lex.l: Don't include gengtype-yacc.h.
+	Define YY_DECL and yyterminate appropriately for recursive
+	descent parser.  yylval is now a string out-parameter to yylex.
+	(HWS, EOID): New shorthand.
+	(IWORD): Add a couple more types.
+	(yylex): Add a setup stanza.  Remove the complex rules for
+	detecting GTY'ed types and typedefs; replace with simple
+	keyword detectors.  Adjust everything for the changed
+	definition of yylval.  Ignore all pp-directives, not just #define.
+	(yyerror): Delete.
+	(parse_file): Rename yybegin; do not call yyparse.
+	(yyend): New.
+	* gengtype.c (xasprintf): Export again.
+	(this_file): New.  Use everywhere __FILE__ was being used.
+	(get_lang_bitmap): Special case types defined in gengtype.c.
+	(do_typedef, new_structure): Suppress definition of certain types.
+	(new_structure): Improve diagnostics of duplicate definitions.
+	Make sure location_s is associated with input.h.
+	(nreverse_pairs, define_location_structures): New functions.
+	(main): Improve tagging of kludge types.  Remove old kludges
+	for input.h types; use define_location_structures.
+	* gengtype.h: Update prototypes.  Define token codes here.
+	* Makefile.in: Remove all references to gengtype-yacc.
+	Add rules for gengtype-parse.o.  Adjust rules for gengtype-lex.o
+	and gengtype.
+	* bitmap.h (struct bitmap_head_def): Coalesce definitions,
+	add GTY((skip)) to the field that's only conditionally there.
+	* doc/install.texi: Document that Bison is no longer required
+	unless building treelang.
+
 	* gengtype.c: Don't include gtyp-gen.h.
 	(srcdir): Declare here.
 	(base_files, lang_dir_names): Allocate dynamically.

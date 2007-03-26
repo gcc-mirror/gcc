@@ -155,7 +155,7 @@ static const char * get_file_basename (const char *);
 
 
 /* Nonzero iff an error has occurred.  */
-static int hit_error = 0;
+bool hit_error = false;
 
 static void gen_rtx_next (void);
 static void write_rtx_next (void);
@@ -174,13 +174,13 @@ error_at_line (struct fileloc *pos, const char *msg, ...)
   fprintf (stderr, "%s:%d: ", pos->file, pos->line);
   vfprintf (stderr, msg, ap);
   fputc ('\n', stderr);
-  hit_error = 1;
+  hit_error = true;
 
   va_end (ap);
 }
 
 /* asprintf, but produces fatal message on out-of-memory.  */
-static char * ATTRIBUTE_PRINTF_1
+char *
 xasprintf (const char *format, ...)
 {
   int n;
@@ -201,6 +201,11 @@ xasprintf (const char *format, ...)
 /* Table of all input files.  */
 static const char **gt_files;
 static size_t num_gt_files;
+
+/* A number of places use the name of this file for a location for
+   things that we can't rely on the source to define.  Make sure we
+   can still use pointer comparison on filenames.  */
+static const char this_file[] = __FILE__;
 
 /* Vector of per-language directories.  */
 static const char **lang_dir_names;
@@ -225,11 +230,18 @@ static outf_p *base_files;
 static lang_bitmap
 get_lang_bitmap (const char *gtfile)
 {
-  lang_bitmap n = 0;
-  int i;
-  for (i = -(int) sizeof (lang_bitmap); i < 0; i++)
-    n = (n << CHAR_BIT) + (unsigned char)gtfile[i];
-  return n;
+
+  if (gtfile == this_file)
+    /* Things defined in this file are universal.  */
+    return (((lang_bitmap)1) << num_lang_dirs) - 1;
+  else
+    {
+      lang_bitmap n = 0;
+      int i;
+      for (i = -(int) sizeof (lang_bitmap); i < 0; i++)
+	n = (n << CHAR_BIT) + (unsigned char)gtfile[i];
+      return n;
+    }
 }
 
 /* Set the bitmap returned by get_lang_bitmap.  The only legitimate
@@ -509,6 +521,18 @@ do_typedef (const char *s, type_p t, struct fileloc *pos)
 {
   pair_p p;
 
+  /* temporary kludge - gengtype doesn't handle conditionals or macros.
+     Ignore any attempt to typedef CUMULATIVE_ARGS, location_t,
+     expanded_location, or source_locus, unless it is coming from
+     this file (main() sets them up with safe dummy definitions).  */
+  if ((!strcmp (s, "CUMULATIVE_ARGS")
+       || !strcmp (s, "location_t")
+       || !strcmp (s, "source_locus")
+       || !strcmp (s, "source_location")
+       || !strcmp (s, "expanded_location"))
+      && pos->file != this_file)
+    return;
+
   for (p = typedefs; p != NULL; p = p->next)
     if (strcmp (p->name, s) == 0)
       {
@@ -562,6 +586,13 @@ new_structure (const char *name, int isunion, struct fileloc *pos,
   type_p s = NULL;
   lang_bitmap bitmap = get_lang_bitmap (pos->file);
 
+  /* temporary kludge - gengtype doesn't handle conditionals or
+     macros.  Ignore any attempt to define struct location_s, unless
+     it is coming from this file (main() sets it up safely). */
+  if (!strcmp (name, "location_s") && !isunion
+      && pos->file != this_file)
+    return find_structure (name, 0);
+
   for (si = structures; si != NULL; si = si->next)
     if (strcmp (name, si->u.s.tag) == 0
 	&& UNION_P (si) == isunion)
@@ -610,7 +641,8 @@ new_structure (const char *name, int isunion, struct fileloc *pos,
   if (s->u.s.line.file != NULL
       || (s->u.s.lang_struct && (s->u.s.lang_struct->u.s.bitmap & bitmap)))
     {
-      error_at_line (pos, "duplicate structure definition");
+      error_at_line (pos, "duplicate definition of '%s %s'",
+		     isunion ? "union" : "struct", s->u.s.tag);
       error_at_line (&s->u.s.line, "previous definition here");
     }
 
@@ -623,7 +655,22 @@ new_structure (const char *name, int isunion, struct fileloc *pos,
   if (s->u.s.lang_struct)
     s->u.s.lang_struct->u.s.bitmap |= bitmap;
 
-  return s;
+  /* Reset location_s's location to input.h so that we know where to
+     write out its mark routine.  */
+  if (!strcmp (name, "location_s") && !isunion
+      && pos->file == this_file)
+    {
+      size_t n;
+      for (n = 0; n < num_gt_files; n++)
+	if (!strcmp (gt_files[n] + strlen (gt_files[n]) - strlen ("input.h"),
+		     "input.h"))
+	  {
+	    s->u.s.line.file = gt_files[n];
+	    break;
+	  }
+    }
+
+    return s;
 }
 
 /* Return the previously-defined structure with tag NAME (or a union
@@ -788,7 +835,7 @@ create_field_at (pair_p next, type_p type, const char *name, options_p opt,
 /* Create a fake field with the given type and name.  NEXT is the next
    field in the chain.  */
 #define create_field(next,type,name) \
-    create_field_all(next,type,name, 0, __FILE__, __LINE__)
+    create_field_all(next,type,name, 0, this_file, __LINE__)
 
 /* Like create_field, but the field is only valid when condition COND
    is true.  */
@@ -814,11 +861,26 @@ create_optional_field_ (pair_p next, type_p type, const char *name,
      tag that specifies the condition under which the field is valid.  */
   return create_field_all (next, union_type, name,
 			   create_option (0, "desc", cond),
-			   __FILE__, line);
+			   this_file, line);
 }
 #define create_optional_field(next,type,name,cond)	\
        create_optional_field_(next,type,name,cond,__LINE__)
 
+/* Reverse a linked list of 'struct pair's in place.  */
+pair_p
+nreverse_pairs (pair_p list)
+{
+  pair_p prev = 0, p, next;
+  for (p = list; p; p = next)
+    {
+      next = p->next;
+      p->next = prev;
+      prev = p;
+    }
+  return prev;
+}
+
+
 /* We don't care how long a CONST_DOUBLE is.  */
 #define CONST_DOUBLE_FORMAT "ww"
 /* We don't want to see codes that are only for generator files.  */
@@ -3420,12 +3482,42 @@ note_def_vec_alloc (const char *type, const char *astrat, struct fileloc *pos)
   do_typedef (astratname, new_structure (astratname, 0, pos, field, 0), pos);
 }
 
+/* Yet more temporary kludge since gengtype doesn't understand conditionals.
+   This must be kept in sync with input.h.  */
+static void
+define_location_structures (void)
+{
+  pair_p fields;
+  type_p locs;
+  static struct fileloc pos = { this_file, __LINE__ };
+  do_scalar_typedef ("source_location", &pos);
+
+#ifdef USE_MAPPED_LOCATION
+    fields = create_field (0, &scalar_nonchar, "column");
+    fields = create_field (fields, &scalar_nonchar, "line");
+    fields = create_field (fields, &string_type, "file");
+    locs = new_structure ("anon:expanded_location", 0, &pos, fields, 0);
+
+    do_typedef ("expanded_location", locs, &pos);
+    do_scalar_typedef ("location_t", &pos);
+    do_scalar_typedef ("source_locus", &pos);
+#else
+    fields = create_field (0, &scalar_nonchar, "line");
+    fields = create_field (fields, &string_type, "file");
+    locs = new_structure ("location_s", 0, &pos, fields, 0);
+
+    do_typedef ("expanded_location", locs, &pos);
+    do_typedef ("location_t", locs, &pos);
+    do_typedef ("source_locus", create_pointer (locs), &pos);
+#endif
+}
+
 
 int
 main (int argc, char **argv)
 {
   size_t i;
-  static struct fileloc pos = { __FILE__, __LINE__ };
+  static struct fileloc pos = { this_file, 0 };
 
   /* fatal uses this */
   progname = "gengtype";
@@ -3444,34 +3536,23 @@ main (int argc, char **argv)
   scalar_nonchar.u.scalar_is_char = false;
   gen_rtx_next ();
 
-  do_scalar_typedef ("CUMULATIVE_ARGS", &pos);
-  do_scalar_typedef ("REAL_VALUE_TYPE", &pos);
-  do_scalar_typedef ("double_int", &pos);
-  do_scalar_typedef ("uint8", &pos);
-  do_scalar_typedef ("jword", &pos);
-  do_scalar_typedef ("JCF_u2", &pos);
-#ifdef USE_MAPPED_LOCATION
-  do_scalar_typedef ("location_t", &pos);
-  do_scalar_typedef ("source_locus", &pos);
-#endif
-  do_scalar_typedef ("void", &pos);
-
+  /* These types are set up with #define or else outside of where
+     we can see them.  */
+  pos.line = __LINE__ + 1;
+  do_scalar_typedef ("CUMULATIVE_ARGS", &pos); pos.line++;
+  do_scalar_typedef ("REAL_VALUE_TYPE", &pos); pos.line++;
+  do_scalar_typedef ("double_int", &pos); pos.line++;
+  do_scalar_typedef ("uint8", &pos); pos.line++;
+  do_scalar_typedef ("jword", &pos); pos.line++;
+  do_scalar_typedef ("JCF_u2", &pos); pos.line++;
+  do_scalar_typedef ("void", &pos); pos.line++;
   do_typedef ("PTR", create_pointer (resolve_typedef ("void", &pos)), &pos);
-
-  do_typedef ("HARD_REG_SET", create_array (&scalar_nonchar, "2"), &pos);
+  define_location_structures ();
 
   for (i = 0; i < num_gt_files; i++)
-    {
-      parse_file (gt_files[i]);
-#ifndef USE_MAPPED_LOCATION
-      /* temporary kludge - gengtype doesn't handle conditionals.
-	 Manually add source_locus *after* we've processed input.h.  */
-      if (i == 0)
-	do_typedef ("source_locus", create_pointer (resolve_typedef ("location_t", &pos)), &pos);
-#endif
-    }
+    parse_file (gt_files[i]);
 
-  if (hit_error != 0)
+  if (hit_error)
     return 1;
 
   set_gc_used (variables);
@@ -3485,5 +3566,7 @@ main (int argc, char **argv)
   write_rtx_next ();
   close_output_files ();
 
-  return (hit_error != 0);
+  if (hit_error)
+    return 1;
+  return 0;
 }
