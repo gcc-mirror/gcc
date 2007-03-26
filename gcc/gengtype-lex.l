@@ -95,7 +95,6 @@ ITYPE	{IWORD}({WS}{IWORD})*
 
   char *namestart;
   size_t namelen;
-  struct type *t;
   char *typestart;
   size_t typelen;
 
@@ -112,9 +111,10 @@ ITYPE	{IWORD}({WS}{IWORD})*
        ISSPACE (typestart[typelen-1]);
        typelen--)
     ;
+  typestart[typelen] = '\0';
 
-  t = create_scalar_type (typestart, typelen);
-  do_typedef ((const char *) xmemdup (namestart, namelen, namelen+1), t,
+  do_typedef ((const char *) xmemdup (namestart, namelen, namelen+1),
+  	      create_scalar_type (typestart),
 	      &lexer_line);
   update_lineno (yytext, yyleng);
 }
@@ -122,7 +122,6 @@ ITYPE	{IWORD}({WS}{IWORD})*
 [^[:alnum:]_]typedef{WS}{ID}{WS}{ID}{WS}"(" {
   char *namestart;
   size_t namelen;
-  struct type *t;
 
   for (namestart = yytext + yyleng - 2; ISSPACE (*namestart); namestart--)
     ;
@@ -130,16 +129,14 @@ ITYPE	{IWORD}({WS}{IWORD})*
     ;
   namestart -= namelen - 1;
 
-  t = create_scalar_type ("function type", sizeof ("function type")-1);
-  do_typedef ((const char *) xmemdup (namestart, namelen, namelen+1), t,
-	      &lexer_line);
+  do_scalar_typedef ((const char *) xmemdup (namestart, namelen, namelen+1),
+  		     &lexer_line);
   update_lineno (yytext, yyleng);
 }
 
 [^[:alnum:]_]typedef{WS}{ID}{WS}?"*"?{WS}?"("{WS}?"*"{WS}?{ID}{WS}?")"{WS}?"(" {
   char *namestart;
   size_t namelen;
-  struct type *t;
 
   for (namestart = yytext + yyleng - 2; !ISIDNUM (*namestart); namestart--)
     ;
@@ -147,9 +144,8 @@ ITYPE	{IWORD}({WS}{IWORD})*
     ;
   namestart -= namelen - 1;
 
-  t = create_scalar_type ("function type", sizeof ("function type")-1);
-  do_typedef ((const char *) xmemdup (namestart, namelen, namelen+1), t,
-	      &lexer_line);
+  do_scalar_typedef ((const char *) xmemdup (namestart, namelen, namelen+1),
+  		     &lexer_line);
   update_lineno (yytext, yyleng);
 }
 
@@ -270,7 +266,7 @@ ITYPE	{IWORD}({WS}{IWORD})*
   for (len = yyleng; ISSPACE (yytext[len-1]); len--)
     ;
 
-  yylval.t = create_scalar_type (yytext, len);
+  yylval.s = (const char *) xmemdup (yytext, len, len+1);
   update_lineno (yytext, yyleng);
   return SCALAR;
 }

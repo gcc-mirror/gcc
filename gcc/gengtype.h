@@ -90,7 +90,7 @@ struct type {
       lang_bitmap bitmap;
       type_p lang_struct;
     } s;
-    char *sc;
+    bool scalar_is_char;
     struct {
       type_p p;
       const char *len;
@@ -112,9 +112,6 @@ struct type {
   || (x)->kind == TYPE_STRUCT 			\
   || (x)->kind == TYPE_LANG_STRUCT)
 
-/* The one and only TYPE_STRING.  */
-extern struct type string_type;
-
 /* Variables used to communicate between the lexer and the parser.  */
 extern int lexer_toplevel_done;
 extern struct fileloc lexer_line;
@@ -132,12 +129,13 @@ extern char * xasprintf (const char *, ...)
 
 /* Constructor routines for types.  */
 extern void do_typedef (const char *s, type_p t, struct fileloc *pos);
+extern void do_scalar_typedef (const char *s, struct fileloc *pos);
 extern type_p resolve_typedef (const char *s, struct fileloc *pos);
 extern type_p new_structure (const char *name, int isunion,
 			     struct fileloc *pos, pair_p fields,
 			     options_p o);
 extern type_p find_structure (const char *s, int isunion);
-extern type_p create_scalar_type (const char *name, size_t name_len);
+extern type_p create_scalar_type (const char *name);
 extern type_p create_pointer (type_p t);
 extern type_p create_array (type_p t, const char *len);
 extern options_p create_option (options_p, const char *name, const void *info);

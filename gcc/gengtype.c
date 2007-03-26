@@ -78,8 +78,18 @@ xasprintf (const char *format, ...)
 
 /* The one and only TYPE_STRING.  */
 
-struct type string_type = {
-  TYPE_STRING, NULL, NULL, GC_USED, {0}
+static struct type string_type = {
+  TYPE_STRING, 0, 0, GC_USED, {0}
+};
+
+/* The two and only TYPE_SCALARs.  Their u.scalar_is_char flags are
+   set to appropriate values at the beginning of main.  */
+
+static struct type scalar_nonchar = {
+  TYPE_SCALAR, 0, 0, GC_USED, {0}
+};
+static struct type scalar_char = {
+  TYPE_SCALAR, 0, 0, GC_USED, {0}
 };
 
 /* Lists of various things.  */
@@ -89,7 +99,6 @@ static type_p structures;
 static type_p param_structs;
 static pair_p variables;
 
-static void do_scalar_typedef (const char *, struct fileloc *);
 static type_p find_param_structure
   (type_p t, type_p param[NUM_PARAM]);
 static type_p adjust_field_tree_exp (type_p t, options_p opt);
@@ -121,12 +130,14 @@ do_typedef (const char *s, type_p t, struct fileloc *pos)
   typedefs = p;
 }
 
-/* Define S as a typename of a scalar.  */
+/* Define S as a typename of a scalar.  Cannot be used to define
+   typedefs of 'char'.  Note: is also used for pointer-to-function
+   typedefs (which are therefore not treated as pointers).  */
 
-static void
+void
 do_scalar_typedef (const char *s, struct fileloc *pos)
 {
-  do_typedef (s, create_scalar_type (s, strlen (s)), pos);
+  do_typedef (s, &scalar_nonchar, pos);
 }
 
 /* Return the type previously defined for S.  Use POS to report errors.  */
@@ -139,7 +150,7 @@ resolve_typedef (const char *s, struct fileloc *pos)
     if (strcmp (p->name, s) == 0)
       return p->type;
   error_at_line (pos, "unidentified type `%s'", s);
-  return create_scalar_type ("char", 4);
+  return &scalar_nonchar;  /* treat as "int" */
 }
 
 /* Create and return a new structure with tag NAME (or a union iff
@@ -269,12 +280,12 @@ find_param_structure (type_p t, type_p param[NUM_PARAM])
 /* Return a scalar type with name NAME.  */
 
 type_p
-create_scalar_type (const char *name, size_t name_len)
+create_scalar_type (const char *name)
 {
-  type_p r = XCNEW (struct type);
-  r->kind = TYPE_SCALAR;
-  r->u.sc = (char *) xmemdup (name, name_len, name_len + 1);
-  return r;
+  if (!strcmp (name, "char") || !strcmp (name, "unsigned char"))
+    return &scalar_char;
+  else
+    return &scalar_nonchar;
 }
 
 /* Return a pointer to T.  */
@@ -499,7 +510,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
   bitmap_tp = create_pointer (find_structure ("bitmap_element_def", 0));
   basic_block_tp = create_pointer (find_structure ("basic_block_def", 0));
   constant_tp = create_pointer (find_structure ("constant_descriptor_rtx", 0));
-  scalar_tp = create_scalar_type ("rtunion scalar", 14);
+  scalar_tp = &scalar_nonchar;  /* rtunion int */
 
   {
     pair_p note_flds = NULL;
@@ -796,13 +807,11 @@ adjust_field_type (type_p t, options_p opt)
   if (! length_p
       && pointer_p
       && t->u.p->kind == TYPE_SCALAR
-      && (strcmp (t->u.p->u.sc, "char") == 0
-	  || strcmp (t->u.p->u.sc, "unsigned char") == 0))
+      && t->u.p->u.scalar_is_char)
     return &string_type;
   if (t->kind == TYPE_ARRAY && t->u.a.p->kind == TYPE_POINTER
       && t->u.a.p->u.p->kind == TYPE_SCALAR
-      && (strcmp (t->u.a.p->u.p->u.sc, "char") == 0
-	  || strcmp (t->u.a.p->u.p->u.sc, "unsigned char") == 0))
+      && t->u.a.p->u.p->u.scalar_is_char)
     return create_array (&string_type, t->u.a.len);
 
   return t;
@@ -3015,7 +3024,7 @@ note_def_vec (const char *typename, bool is_scalar, struct fileloc *pos)
 
   if (is_scalar)
     {
-      t = create_scalar_type (typename, strlen (typename));
+      t = create_scalar_type (typename);
       o = 0;
     }
   else
@@ -3034,7 +3043,7 @@ note_def_vec (const char *typename, bool is_scalar, struct fileloc *pos)
   fields = f;
 
   f = XNEW (struct pair);
-  f->type = adjust_field_type (create_scalar_type ("unsigned", 8), 0);
+  f->type = adjust_field_type (create_scalar_type ("unsigned"), 0);
   f->name = "alloc";
   f->opt = 0;
   f->line = *pos;
@@ -3042,7 +3051,7 @@ note_def_vec (const char *typename, bool is_scalar, struct fileloc *pos)
   fields = f;
 
   f = XNEW (struct pair);
-  f->type = adjust_field_type (create_scalar_type ("unsigned", 8), 0);
+  f->type = adjust_field_type (create_scalar_type ("unsigned"), 0);
   f->name = "num";
   f->opt = 0;
   f->line = *pos;
@@ -3083,9 +3092,12 @@ main (int ARG_UNUSED (argc), char ** ARG_UNUSED (argv))
   static struct fileloc pos = { __FILE__, __LINE__ };
   unsigned j;
 
-  gen_rtx_next ();
-
   srcdir_len = strlen (srcdir);
+
+  scalar_char.u.scalar_is_char = true;
+  scalar_nonchar.u.scalar_is_char = false;
+
+  gen_rtx_next ();
 
   do_scalar_typedef ("CUMULATIVE_ARGS", &pos);
   do_scalar_typedef ("REAL_VALUE_TYPE", &pos);
@@ -3101,9 +3113,7 @@ main (int ARG_UNUSED (argc), char ** ARG_UNUSED (argv))
 
   do_typedef ("PTR", create_pointer (resolve_typedef ("void", &pos)), &pos);
 
-  do_typedef ("HARD_REG_SET", create_array (
-	      create_scalar_type ("unsigned long", strlen ("unsigned long")),
-	      "2"), &pos);
+  do_typedef ("HARD_REG_SET", create_array (&scalar_nonchar, "2"), &pos);
 
   for (i = 0; i < NUM_GT_FILES; i++)
     {

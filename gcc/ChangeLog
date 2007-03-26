@@ -1,5 +1,28 @@
 2007-03-26  Zack Weinberg  <zackw@panix.com>
 
+	* gengtype.h (struct type): Replace 'sc' with boolean, scalar_is_char.
+	(string_type): Don't declare.
+	(do_scalar_typedef): Declare.
+	(create_scalar_type): Update prototype.
+	* gengtype.c (string_type): Make static.
+	(scalar_nonchar, scalar_char): New.
+	(do_scalar_typedef): Export.  Always use scalar_nonchar for the type.
+	(resolve_typedef): Use scalar_nonchar for error recovery.
+	(create_scalar_type): Remove name_len field.  Return scalar_char
+	or scalar_nonchar as appropriate.
+	(adjust_field_type): Look at scalar_is_char boolean to decide whether
+	to use string_type.
+	(throughout): Use scalar_nonchar instead of calling create_scalar_type,
+	whenever possible.
+	(main): Initialize scalar_char and scalar_nonchar before calling
+	gen_rtx_next.
+	* gengtype-lex.l: Adjust for removal of second argument to
+	create_scalar_type.  Use yylval.s instead of yylval.t when
+	returning SCALAR.
+	* gengtype-yacc.y: Type of SCALAR is string.  Call
+	create_scalar_type from type:SCALAR rule.  Adjust for removal of
+	second argument to create_scalar_type.
+
 	* vec.h: Remove all #if IN_GENGTYPE blocks.
 	Add comment saying that changes may require adjustments to gengtype.
 	* gengtype.c: Don't include coretypes.h or tm.h.
