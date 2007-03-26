@@ -1,5 +1,10 @@
 2007-03-26  Uros Bizjak  <ubizjak@gmail.com>
 
+	* lib/gcc-dg.exp (gcc-dg-debug-runtest): Remove build file trivial.S.
+	* gcc.dg/debug/dwarf2/dwarf2.exp: Ditto.
+
+2007-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gfortran.dg/use_[567].f90: Use correct cleanup-modules dg directive.
 
 2007-03-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>

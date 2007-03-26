@@ -34,6 +34,7 @@ set comp_output [gcc_target_compile \
     "additional_flags=-gdwarf-2"]
 if { ! [string match "*: target system does not support the * debug format*" \
     $comp_output] } {
+    remove-build-file "trivial.S"
     dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
 	    "" $DEFAULT_CFLAGS
 }
