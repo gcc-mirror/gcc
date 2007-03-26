@@ -1,3 +1,34 @@
+2007-03-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* ifcvt.c (noce_try_store_flag_constants): Don't check
+	no_new_pseudos here.
+	(noce_try_store_flag_constants): Don't check no_new_pseudos.
+	(noce_try_addcc, noce_try_store_flag_mask, noce_try_cmove_arith,
+	noce_try_cmove_arith, noce_try_minmax, noce_try_abs,
+	noce_try_sign_mask): Likewise.
+	(if_convert): Check no_new_pseudos here.
+
+	(cond_exec_process_if_block, noce_process_if_block, find_if_block):
+	Remove prototypes.
+	(struct noce_if_info): Add then_bb, else_bb, join_bb members.
+	(noce_get_condition): Handle new then_else_reversed argument.
+	(noce_init_if_info): Remove, fold into noce_find_if_block.
+	(noce_process_if_block): Take a struct noce_if_info as the
+	argument.  Don't set up one based on ce_if_info.  Update pointer
+	references accordingly.
+	(cond_move_process_if_block): Likewise.
+	(process_if_block): Removed.
+	(find_if_block): Removed.  Move functionality two new functions,
+	noce_find_if_block and cond_exec_find_if_block.
+	(noce_find_if_block): New function.  Be aware of IF-THEN-JOIN
+	blocks and the symmetric IF-ELSE-JOIN case.
+	(cond_exec_find_if_block): Also new function mostly based on old
+	find_if_block and process_if_block.
+	(find_if_header): Replace find_if_block call with separately
+	guarded calls to noce_find_if_block and cond_exec_find_if_block.
+	(find_cond_trap): Update noce_get_condition call.
+	(dead_or_predicable): Likewise.
+
 2007-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (IX86_BUILTIN_CMPNEPD, IX86_BUILTIN_CMPNESD):
