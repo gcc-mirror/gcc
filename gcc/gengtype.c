@@ -133,13 +133,6 @@ extern outf_p get_output_file_with_visibility
    (const char *input_file);
 const char *get_output_file_name (const char *);
 
-#include "gtyp-gen.h"
-
-/* A bitmap that specifies which of BASE_FILES should be used to
-   output a definition that is different for each language and must be
-   defined once in each language that uses INPUT_FILE.  */
-static lang_bitmap get_base_file_bitmap (const char *input_file);
-
 /* Print, like fprintf, to O.  */
 static void oprintf (outf_p o, const char *S, ...)
      ATTRIBUTE_PRINTF_2;
@@ -151,19 +144,11 @@ static outf_p output_files;
    source file.  */
 static outf_p header_file;
 
-/* Number of files specified in gtfiles.  */
-#define NUM_GT_FILES (ARRAY_SIZE (all_files) - 1)
-
-/* Number of files in the language files array.  */
-#define NUM_LANG_FILES (ARRAY_SIZE (lang_files) - 1)
+/* Source directory.  */
+static const char *srcdir;
 
 /* Length of srcdir name.  */
 static int srcdir_len = 0;
-
-/* A list of output files suitable for definitions.  There is one
-   BASE_FILES entry for each language.  */
-#define NUM_BASE_FILES (ARRAY_SIZE (lang_dir_names) - 1)
-static outf_p base_files[NUM_BASE_FILES];
 
 static outf_p create_file (const char *, const char *);
 static const char * get_file_basename (const char *);
@@ -210,7 +195,285 @@ xasprintf (const char *format, ...)
 
   return result;
 }
+
+/* Input file handling. */
 
+/* Table of all input files.  */
+static const char **gt_files;
+static size_t num_gt_files;
+
+/* Vector of per-language directories.  */
+static const char **lang_dir_names;
+static size_t num_lang_dirs;
+
+/* An array of output files suitable for definitions.  There is one
+   BASE_FILES entry for each language.  */
+static outf_p *base_files;
+
+/* Return a bitmap which has bit `1 << BASE_FILE_<lang>' set iff
+   INPUT_FILE is used by <lang>.
+
+   This function should be written to assume that a file _is_ used
+   if the situation is unclear.  If it wrongly assumes a file _is_ used,
+   a linker error will result.  If it wrongly assumes a file _is not_ used,
+   some GC roots may be missed, which is a much harder-to-debug problem.
+
+   The relevant bitmap is stored immediately before the file's name in the
+   buffer set up by read_input_list.  It may be unaligned, so we have to
+   read it byte-by-byte.  */
+
+static lang_bitmap
+get_lang_bitmap (const char *gtfile)
+{
+  lang_bitmap n = 0;
+  int i;
+  for (i = -(int) sizeof (lang_bitmap); i < 0; i++)
+    n = (n << CHAR_BIT) + (unsigned char)gtfile[i];
+  return n;
+}
+
+/* Set the bitmap returned by get_lang_bitmap.  The only legitimate
+   caller of this function is read_input_list.  */
+static void
+set_lang_bitmap (char *gtfile, lang_bitmap n)
+{
+  int i;
+  for (i = -1; i >= -(int) sizeof (lang_bitmap); i--)
+    {
+      gtfile[i] = n & ((1U << CHAR_BIT)-1);
+      n >>= CHAR_BIT;
+    }
+}
+
+/* Scan the input file, LIST, and determine how much space we need to
+   store strings in.  Also, count the number of language directories
+   and files.  The numbers returned are overestimates as they does not
+   consider repeated files.  */
+static size_t
+measure_input_list (FILE *list)
+{
+  size_t n = 0;
+  int c;
+  bool atbol = true;
+  num_lang_dirs = 0;
+  num_gt_files = 0;
+  while ((c = getc (list)) != EOF)
+    {
+      n++;
+      if (atbol)
+	{
+	  if (c == '[')
+	    num_lang_dirs++;
+	  else
+	    {
+	      /* Add space for a lang_bitmap before the input file name.  */
+	      n += sizeof (lang_bitmap);
+	      num_gt_files++;
+	    }
+	  atbol = false;
+	}
+
+      if (c == '\n')
+	atbol = true;
+    }
+
+  rewind (list);
+  return n;
+}
+
+/* Read one input line from LIST to HEREP (which is updated).  A
+   pointer to the string is returned via LINEP.  If it was a language
+   subdirectory in square brackets, strip off the square brackets and
+   return true.  Otherwise, leave space before the string for a
+   lang_bitmap, and return false.  At EOF, returns false, does not
+   touch *HEREP, and sets *LINEP to NULL.  POS is used for
+   diagnostics.  */
+static bool
+read_input_line (FILE *list, char **herep, char **linep,
+		 struct fileloc *pos)
+{
+  char *here = *herep;
+  char *line;
+  int c = getc (list);
+
+  if (c == EOF)
+    {
+      *linep = 0;
+      return false;
+    }
+  else if (c == '[')
+    {
+      /* No space for a lang_bitmap is necessary.  Discard the '['. */
+      c = getc (list);
+      line = here;
+      while (c != ']' && c != '\n' && c != EOF)
+	{
+	  *here++ = c;
+	  c = getc (list);
+	}
+      *here++ = '\0';
+
+      if (c == ']')
+	{
+	  c = getc (list);  /* eat what should be a newline */
+	  if (c != '\n' && c != EOF)
+	    error_at_line (pos, "junk on line after language tag [%s]", line);
+	}
+      else
+	error_at_line (pos, "missing close bracket for language tag [%s", line);
+
+      *herep = here;
+      *linep = line;
+      return true;
+    }
+  else
+    {
+      /* Leave space for a lang_bitmap.  */
+      memset (here, 0, sizeof (lang_bitmap));
+      here += sizeof (lang_bitmap);
+      line = here;
+      do
+	{
+	  *here++ = c;
+	  c = getc (list);
+	}
+      while (c != EOF && c != '\n');
+      *here++ = '\0';
+      *herep = here;
+      *linep = line;
+      return false;
+    }
+}
+
+/* Read the list of input files from LIST and compute all of the
+   relevant tables.  There is one file per line of the list.  At
+   first, all the files on the list are language-generic, but
+   eventually a line will appear which is the name of a language
+   subdirectory in square brackets, like this: [cp].  All subsequent
+   files are specific to that language, until another language
+   subdirectory tag appears.  Files can appear more than once, if
+   they apply to more than one language.  */
+static void
+read_input_list (const char *listname)
+{
+  FILE *list = fopen (listname, "r");
+  if (!list)
+    fatal ("cannot open %s: %s", listname, strerror (errno));
+  else
+    {
+      struct fileloc epos;
+      size_t bufsz = measure_input_list (list);
+      char *buf = XNEWVEC (char, bufsz);
+      char *here = buf;
+      char *committed = buf;
+      char *limit = buf + bufsz;
+      char *line;
+      bool is_language;
+      size_t langno = 0;
+      size_t nfiles = 0;
+      lang_bitmap curlangs = (1 << num_lang_dirs) - 1;
+
+      epos.file = listname;
+      epos.line = 0;
+
+      lang_dir_names = XNEWVEC (const char *, num_lang_dirs);
+      gt_files = XNEWVEC (const char *, num_gt_files);
+
+      for (;;)
+	{
+	next_line:
+	  epos.line++;
+	  committed = here;
+	  is_language = read_input_line (list, &here, &line, &epos);
+	  gcc_assert (here <= limit);
+	  if (line == 0)
+	    break;
+	  else if (is_language)
+	    {
+	      size_t i;
+	      gcc_assert (langno <= num_lang_dirs);
+	      for (i = 0; i < langno; i++)
+		if (strcmp (lang_dir_names[i], line) == 0)
+		  {
+		    error_at_line (&epos, "duplicate language tag [%s]", line);
+		    curlangs = 1 << i;
+		    here = committed;
+		    goto next_line;
+		  }
+
+	      curlangs = 1 << langno;
+	      lang_dir_names[langno++] = line;
+	    }
+	  else
+	    {
+	      size_t i;
+	      gcc_assert (nfiles <= num_gt_files);
+	      for (i = 0; i < nfiles; i++)
+		if (strcmp (gt_files[i], line) == 0)
+		  {
+		    /* Throw away the string we just read, and add the
+		       current language to the existing string's bitmap.  */
+		    lang_bitmap bmap = get_lang_bitmap (gt_files[i]);
+		    if (bmap & curlangs)
+		      error_at_line (&epos, "file %s specified more than once "
+				     "for language %s", line, langno == 0
+				     ? "(all)"
+				     : lang_dir_names[langno - 1]);
+
+		    bmap |= curlangs;
+		    set_lang_bitmap ((char *)gt_files[i], bmap);
+		    here = committed;
+		    goto next_line;
+		  }
+
+	      set_lang_bitmap (line, curlangs);
+	      gt_files[nfiles++] = line;
+	    }
+	}
+      /* Update the global counts now that we know accurately how many
+	 things there are.  (We do not bother resizing the arrays down.)  */
+      num_lang_dirs = langno;
+      num_gt_files = nfiles;
+    }
+
+  /* Sanity check: any file that resides in a language subdirectory
+     (e.g. 'cp') ought to belong to the corresponding language.
+     ??? Still true if for instance ObjC++ is enabled and C++ isn't?
+     (Can you even do that?  Should you be allowed to?)  */
+  {
+    size_t f;
+    for (f = 0; f < num_gt_files; f++)
+      {
+	lang_bitmap bitmap = get_lang_bitmap (gt_files[f]);
+	const char *basename = get_file_basename (gt_files[f]);
+	const char *slashpos = strchr (basename, '/');
+
+	if (slashpos)
+	  {
+	    size_t l;
+	    for (l = 0; l < num_lang_dirs; l++)
+	      if ((size_t)(slashpos - basename) == strlen (lang_dir_names [l])
+		  && memcmp (basename, lang_dir_names[l],
+			     strlen (lang_dir_names[l])) == 0)
+		{
+		  if (!(bitmap & (1 << l)))
+		    error ("%s is in language directory '%s' but is not "
+			   "tagged for that language",
+			   basename, lang_dir_names[l]);
+		  break;
+		}
+          }
+      }
+  }
+
+  if (ferror (list))
+    fatal ("error reading %s: %s", listname, strerror (errno));
+
+  fclose (list);
+}
+
+
+
 /* The one and only TYPE_STRING.  */
 
 static struct type string_type = {
@@ -297,7 +560,7 @@ new_structure (const char *name, int isunion, struct fileloc *pos,
 {
   type_p si;
   type_p s = NULL;
-  lang_bitmap bitmap = get_base_file_bitmap (pos->file);
+  lang_bitmap bitmap = get_lang_bitmap (pos->file);
 
   for (si = structures; si != NULL; si = si->next)
     if (strcmp (name, si->u.s.tag) == 0
@@ -1202,7 +1465,9 @@ open_base_files (void)
 
   header_file = create_file ("GCC", "gtype-desc.h");
 
-  for (i = 0; i < NUM_BASE_FILES; i++)
+  base_files = XNEWVEC (outf_p, num_lang_dirs);
+
+  for (i = 0; i < num_lang_dirs; i++)
     base_files[i] = create_file (lang_dir_names[i],
 				 xasprintf ("gtype-%s.h", lang_dir_names[i]));
 
@@ -1242,7 +1507,7 @@ get_file_basename (const char *f)
 
   basename++;
 
-  for (i = 1; i < NUM_BASE_FILES; i++)
+  for (i = 0; i < num_lang_dirs; i++)
     {
       const char * s1;
       const char * s2;
@@ -1262,63 +1527,6 @@ get_file_basename (const char *f)
     }
 
   return basename;
-}
-
-/* Return a bitmap which has bit `1 << BASE_FILE_<lang>' set iff
-   INPUT_FILE is used by <lang>.
-
-   This function should be written to assume that a file _is_ used
-   if the situation is unclear.  If it wrongly assumes a file _is_ used,
-   a linker error will result.  If it wrongly assumes a file _is not_ used,
-   some GC roots may be missed, which is a much harder-to-debug problem.  */
-
-unsigned
-get_base_file_bitmap (const char *input_file)
-{
-  const char *basename = get_file_basename (input_file);
-  const char *slashpos = strchr (basename, '/');
-  unsigned j;
-  unsigned k;
-  unsigned bitmap;
-
-  /* If the file resides in a language subdirectory (e.g., 'cp'), assume that
-     it belongs to the corresponding language.  The file may belong to other
-     languages as well (which is checked for below).  */
-
-  if (slashpos)
-    {
-      size_t i;
-      for (i = 1; i < NUM_BASE_FILES; i++)
-	if ((size_t)(slashpos - basename) == strlen (lang_dir_names [i])
-	    && memcmp (basename, lang_dir_names[i], strlen (lang_dir_names[i])) == 0)
-          {
-            /* It's in a language directory, set that language.  */
-            bitmap = 1 << i;
-          }
-    }
-
-  /* If it's in any config-lang.in, then set for the languages
-     specified.  */
-
-  bitmap = 0;
-
-  for (j = 0; j < NUM_LANG_FILES; j++)
-    {
-      if (!strcmp(input_file, lang_files[j]))
-        {
-          for (k = 0; k < NUM_BASE_FILES; k++)
-            {
-              if (!strcmp(lang_dir_names[k], langs_for_lang_files[j]))
-                bitmap |= (1 << k);
-            }
-        }
-    }
-
-  /* Otherwise, set all languages.  */
-  if (!bitmap)
-    bitmap = (1 << NUM_BASE_FILES) - 1;
-
-  return bitmap;
 }
 
 /* An output file, suitable for definitions, that can see declarations
@@ -1382,7 +1590,7 @@ get_output_file_with_visibility (const char *input_file)
     {
       size_t i;
 
-      for (i = 0; i < NUM_BASE_FILES; i++)
+      for (i = 0; i < num_lang_dirs; i++)
 	if (memcmp (basename, lang_dir_names[i], strlen (lang_dir_names[i])) == 0
 	    && basename[strlen(lang_dir_names[i])] == '/')
 	  return base_files[i];
@@ -2644,7 +2852,7 @@ finish_root_table (struct flist *flp, const char *pfx, const char *lastname,
   for (fli2 = flp; fli2; fli2 = fli2->next)
     if (fli2->started_p)
       {
-	lang_bitmap bitmap = get_base_file_bitmap (fli2->name);
+	lang_bitmap bitmap = get_lang_bitmap (fli2->name);
 	int fnum;
 
 	for (fnum = 0; bitmap != 0; fnum++, bitmap >>= 1)
@@ -2660,7 +2868,7 @@ finish_root_table (struct flist *flp, const char *pfx, const char *lastname,
 
   {
     size_t fnum;
-    for (fnum = 0; fnum < NUM_BASE_FILES; fnum++)
+    for (fnum = 0; fnum < num_lang_dirs; fnum++)
       oprintf (base_files [fnum],
 	       "const struct %s * const %s[] = {\n",
 	       tname, name);
@@ -2670,7 +2878,7 @@ finish_root_table (struct flist *flp, const char *pfx, const char *lastname,
   for (fli2 = flp; fli2; fli2 = fli2->next)
     if (fli2->started_p)
       {
-	lang_bitmap bitmap = get_base_file_bitmap (fli2->name);
+	lang_bitmap bitmap = get_lang_bitmap (fli2->name);
 	int fnum;
 
 	fli2->started_p = 0;
@@ -2686,7 +2894,7 @@ finish_root_table (struct flist *flp, const char *pfx, const char *lastname,
 
   {
     size_t fnum;
-    for (fnum = 0; fnum < NUM_BASE_FILES; fnum++)
+    for (fnum = 0; fnum < num_lang_dirs; fnum++)
       {
 	oprintf (base_files[fnum], "  NULL\n");
 	oprintf (base_files[fnum], "};\n");
@@ -2870,7 +3078,7 @@ write_array (outf_p f, pair_p v, const struct write_types_data *wtd)
   d.indent = 2;
   d.line = &v->line;
   d.opt = v->opt;
-  d.bitmap = get_base_file_bitmap (v->line.file);
+  d.bitmap = get_lang_bitmap (v->line.file);
   d.param = NULL;
 
   d.prev_val[3] = prevval3 = xasprintf ("&%s", v->name);
@@ -3213,22 +3421,27 @@ note_def_vec_alloc (const char *type, const char *astrat, struct fileloc *pos)
 }
 
 
-extern int main (int argc, char **argv);
 int
-main (int ARG_UNUSED (argc), char ** ARG_UNUSED (argv))
+main (int argc, char **argv)
 {
-  unsigned i;
+  size_t i;
   static struct fileloc pos = { __FILE__, __LINE__ };
-  unsigned j;
-
-  srcdir_len = strlen (srcdir);
-
-  scalar_char.u.scalar_is_char = true;
-  scalar_nonchar.u.scalar_is_char = false;
 
   /* fatal uses this */
   progname = "gengtype";
 
+  if (argc != 3)
+    fatal ("usage: gengtype srcdir input-list");
+
+  srcdir = argv[1];
+  srcdir_len = strlen (srcdir);
+
+  read_input_list (argv[2]);
+  if (hit_error)
+    return 1;
+
+  scalar_char.u.scalar_is_char = true;
+  scalar_nonchar.u.scalar_is_char = false;
   gen_rtx_next ();
 
   do_scalar_typedef ("CUMULATIVE_ARGS", &pos);
@@ -3247,20 +3460,9 @@ main (int ARG_UNUSED (argc), char ** ARG_UNUSED (argv))
 
   do_typedef ("HARD_REG_SET", create_array (&scalar_nonchar, "2"), &pos);
 
-  for (i = 0; i < NUM_GT_FILES; i++)
+  for (i = 0; i < num_gt_files; i++)
     {
-      int dupflag = 0;
-      /* Omit if already seen.  */
-      for (j = 0; j < i; j++)
-        {
-          if (!strcmp (all_files[i], all_files[j]))
-            {
-              dupflag = 1;
-              break;
-            }
-        }
-      if (!dupflag)
-        parse_file (all_files[i]);
+      parse_file (gt_files[i]);
 #ifndef USE_MAPPED_LOCATION
       /* temporary kludge - gengtype doesn't handle conditionals.
 	 Manually add source_locus *after* we've processed input.h.  */

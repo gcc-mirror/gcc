@@ -1,5 +1,28 @@
 2007-03-26  Zack Weinberg  <zackw@panix.com>
 
+	* gengtype.c: Don't include gtyp-gen.h.
+	(srcdir): Declare here.
+	(base_files, lang_dir_names): Allocate dynamically.
+	(gt_files, num_gt_files, num_lang_dirs): New globals.
+	(measure_input_list, read_input_line, read_input_list)
+	(set_lang_bitmap): New functions.
+	(get_base_file_bitmap): Rename get_lang_bitmap and drastically
+	simplify, relying on read_input_list to set up the bitmaps.
+	(main): Arguments are no longer unused.  Check for correct number
+	of command line arguments, set srcdir and srcdir_len, then call
+	read_input_list, before doing anything else.  No need to worry
+	about duplicates in main loop.
+	* configure.ac: Simplify the calculation of all_gtfiles.
+	Put language tags in there.  Don't set or substitute
+	all_gtfiles_files_langs or all_gtfiles_files_frags.
+	* Makefile.in: Revamp the way gengtype is invoked, now that it
+	takes a file on its command line with a much simpler format.
+	Remove or replace with gtyp-input.list all references to gtyp-gen.h.
+	(GTFILES): Remove duplicates and C source files.
+	* c-config-lang.in, cp/config-lang.in, objc/config-lang.in
+	* objcp/config-lang.in: Add c-pragma.h to gtfiles.
+	* configure: Regenerate.
+
 	* gengtype.h: Remove all type definitions to gengtype.c; leave
 	only definitions of options_p, type_p, and pair_p as opaque
 	pointers.  Update prototypes.
