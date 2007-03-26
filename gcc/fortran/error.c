@@ -233,12 +233,6 @@ show_locus (locus *loc, int c1, int c2)
   if (cmax > terminal_width - 5)
     offset = cmax - terminal_width + 5;
 
-  /* TODO: Is there a good reason for the following apparently-redundant
-     check, and the similar ones in the single-locus cases below?  */
-
-  if (offset < 0)
-    offset = 0;
-
   /* Show the line itself, taking care not to print more than what can
      show up on the terminal.  Tabs are converted to spaces, and 
      nonprintable characters are converted to a "\xNN" sequence.  */
