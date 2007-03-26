@@ -31,7 +31,15 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <cstdbool>
+#include <bits/c++config.h>
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+# include <cstdbool>
+#else
+# if _GLIBCXX_HAVE_STDBOOL_H
+#  include_next <stdbool.h>
+# endif
+#endif
 
 #ifndef _GLIBCXX_STDBOOL_H
 #define _GLIBCXX_STDBOOL_H 1

@@ -31,7 +31,15 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <cinttypes>
+#include <bits/c++config.h>
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+# include <cinttypes>
+#else
+# if _GLIBCXX_HAVE_INTTYPES_H
+#  include_next <inttypes.h>
+# endif
+#endif
 
 #ifndef _GLIBCXX_INTTYPES_H
 #define _GLIBCXX_INTTYPES_H 1

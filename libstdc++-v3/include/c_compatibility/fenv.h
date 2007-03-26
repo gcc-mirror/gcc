@@ -31,7 +31,15 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <cfenv>
+#include <bits/c++config.h>
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+# include <cfenv>
+#else
+# if _GLIBCXX_HAVE_FENV_H
+#  include_next <fenv.h>
+# endif
+#endif
 
 #ifndef _GLIBCXX_FENV_H
 #define _GLIBCXX_FENV_H 1

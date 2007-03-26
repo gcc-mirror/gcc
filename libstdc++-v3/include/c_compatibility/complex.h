@@ -31,7 +31,15 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <ccomplex>
+#include <bits/c++config.h>
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+# include <ccomplex>
+#else
+# if _GLIBCXX_HAVE_COMPLEX_H
+#  include_next <complex.h>
+# endif
+#endif
 
 #ifndef _GLIBCXX_COMPLEX_H
 #define _GLIBCXX_COMPLEX_H 1
