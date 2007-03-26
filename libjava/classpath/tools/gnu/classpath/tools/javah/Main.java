@@ -89,6 +89,9 @@ public class Main
   // True if we're emitting CNI code.
   boolean cni;
 
+  // True if we've seen -cni or -jni.
+  boolean cniOrJniSeen;
+
   // True if output files should always be written.
   boolean force;
 
@@ -243,8 +246,9 @@ public class Main
     {
       public void parsed(String arg0) throws OptionException
       {
-        if (cni)
+        if (cniOrJniSeen && cni)
           throw new OptionException("only one of -jni or -cni may be used");
+	cniOrJniSeen = true;
         cni = false;
       }
     });
@@ -252,6 +256,9 @@ public class Main
     {
       public void parsed(String arg0) throws OptionException
       {
+        if (cniOrJniSeen && ! cni)
+          throw new OptionException("only one of -jni or -cni may be used");
+	cniOrJniSeen = true;
         cni = true;
       }
     });
