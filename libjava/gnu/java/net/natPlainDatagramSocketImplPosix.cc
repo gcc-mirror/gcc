@@ -83,8 +83,6 @@ gnu::java::net::PlainDatagramSocketImpl::create ()
       throw new ::java::net::SocketException (JvNewStringUTF (strerr));
     }
 
-  _Jv_platform_close_on_exec (sock);
-
   // We use native_fd in place of fd here.  From leaving fd null we avoid
   // the double close problem in FileDescriptor.finalize.
   native_fd = sock;

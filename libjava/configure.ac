@@ -906,10 +906,10 @@ else
 		   access stat lstat mkdir rename rmdir unlink utime chmod readlink \
 		   nl_langinfo setlocale \
 		   inet_pton uname inet_ntoa \
-		   fork execvp pipe sigaction ftruncate mmap \
+		   fork execvp getrlimit pipe sigaction ftruncate mmap \
 		   getifaddrs])
    AC_CHECK_FUNCS(inet_aton inet_addr, break)
-   AC_CHECK_HEADERS(execinfo.h unistd.h dlfcn.h)
+   AC_CHECK_HEADERS(execinfo.h unistd.h dlfcn.h sys/resource.h)
    # Do an additional check on dld, HP-UX for example has dladdr in libdld.sl
    AC_CHECK_LIB(dl, dladdr, [
        AC_DEFINE(HAVE_DLADDR, 1, [Define if you have dladdr()])], [

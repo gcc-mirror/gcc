@@ -178,8 +178,6 @@ FileChannelImpl::open (jstring path, jint jflags)
       throw new ::java::io::FileNotFoundException (msg->toString ());
     }
 
-  _Jv_platform_close_on_exec (fd);
-
   return fd;
 }
 

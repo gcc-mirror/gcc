@@ -72,8 +72,6 @@ gnu::java::net::PlainSocketImpl::create (jboolean stream)
       throw new ::java::io::IOException (JvNewStringUTF (strerr));
     }
 
-  _Jv_platform_close_on_exec (sock);
-
   // We use native_fd in place of fd here.  From leaving fd null we avoid
   // the double close problem in FileDescriptor.finalize.
   native_fd = sock;
@@ -284,8 +282,6 @@ gnu::java::net::PlainSocketImpl::accept (gnu::java::net::PlainSocketImpl *s)
 
   if (new_socket < 0)
     goto error;
-
-  _Jv_platform_close_on_exec (new_socket);
 
   jbyteArray raddr;
   jint rport;
