@@ -1,3 +1,11 @@
+2007-03-26  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/30500
+	* g++.dg/warn/pragma-system_header1.C: New test.
+	* g++.dg/warn/pragma-system_header2.C: New test.
+	* g++.dg/warn/pragma-system_header1.h. New.
+	* g++.dg/warn/pragma-system_header2.h. New.	
+
 2007-03-26  Ian Lance Taylor  <iant@google.com>
 
 	PR tree-optimization/31345
