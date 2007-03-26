@@ -577,16 +577,23 @@ AC_DEFUN([ACX_BUGURL],[
                    [Direct users to URL to report a bug]),
     [case "$withval" in
       yes) AC_MSG_ERROR([bug URL not specified]) ;;
-      no)  REPORT_BUGS_TO="";
-	   REPORT_BUGS_TEXI=""
+      no)  BUGURL=
 	   ;;
-      *)   REPORT_BUGS_TO="<$withval>"
-	   REPORT_BUGS_TEXI="@uref{`echo $withval | sed 's/@/@@/g'`}"
+      *)   BUGURL="$withval"
 	   ;;
      esac],
-     REPORT_BUGS_TO="<$1>"
-     REPORT_BUGS_TEXI="@uref{`echo $1 | sed 's/@/@@/g'`}"
+     BUGURL="$1"
   )
+  case ${BUGURL} in
+  "")
+    REPORT_BUGS_TO=
+    REPORT_BUGS_TEXI=
+    ;;
+  *)
+    REPORT_BUGS_TO="<$BUGURL>"
+    REPORT_BUGS_TEXI=@uref{`echo "$BUGURL" | sed 's/@/@@/g'`}
+    ;;
+  esac;
   AC_SUBST(REPORT_BUGS_TO)
   AC_SUBST(REPORT_BUGS_TEXI)
 ])
