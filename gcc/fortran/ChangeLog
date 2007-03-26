@@ -1,4 +1,8 @@
 2007-03-26  Brooks Moses  <brooks.moses@codesourcery.com>
+ 
+	* error.c (show_locus): Remove always-false test.
+
+2007-03-26  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* lang.opt: Minor edits to descriptions.
 
