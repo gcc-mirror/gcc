@@ -15937,6 +15937,16 @@ enum ix86_builtins
   IX86_BUILTIN_PSRLDI128,
   IX86_BUILTIN_PSRLQI128,
 
+  IX86_BUILTIN_PSLLDQ128,
+  IX86_BUILTIN_PSLLW128,
+  IX86_BUILTIN_PSLLD128,
+  IX86_BUILTIN_PSLLQ128,
+  IX86_BUILTIN_PSRAW128,
+  IX86_BUILTIN_PSRAD128,
+  IX86_BUILTIN_PSRLW128,
+  IX86_BUILTIN_PSRLD128,
+  IX86_BUILTIN_PSRLQ128,
+
   IX86_BUILTIN_PUNPCKHBW128,
   IX86_BUILTIN_PUNPCKHWD128,
   IX86_BUILTIN_PUNPCKHDQ128,
@@ -17055,14 +17065,22 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (MASK_SSE2, "__builtin_ia32_psllwi128", v8hi_ftype_v8hi_int, IX86_BUILTIN_PSLLWI128);
   def_builtin (MASK_SSE2, "__builtin_ia32_pslldi128", v4si_ftype_v4si_int, IX86_BUILTIN_PSLLDI128);
   def_builtin (MASK_SSE2, "__builtin_ia32_psllqi128", v2di_ftype_v2di_int, IX86_BUILTIN_PSLLQI128);
+  def_builtin (MASK_SSE2, "__builtin_ia32_psllw128", v8hi_ftype_v8hi_v8hi, IX86_BUILTIN_PSLLW128);
+  def_builtin (MASK_SSE2, "__builtin_ia32_pslld128", v4si_ftype_v4si_v4si, IX86_BUILTIN_PSLLD128);
+  def_builtin (MASK_SSE2, "__builtin_ia32_psllq128", v2di_ftype_v2di_v2di, IX86_BUILTIN_PSLLQ128);
 
   def_builtin (MASK_SSE2, "__builtin_ia32_psrldqi128", v2di_ftype_v2di_int, IX86_BUILTIN_PSRLDQI128);
   def_builtin (MASK_SSE2, "__builtin_ia32_psrlwi128", v8hi_ftype_v8hi_int, IX86_BUILTIN_PSRLWI128);
   def_builtin (MASK_SSE2, "__builtin_ia32_psrldi128", v4si_ftype_v4si_int, IX86_BUILTIN_PSRLDI128);
   def_builtin (MASK_SSE2, "__builtin_ia32_psrlqi128", v2di_ftype_v2di_int, IX86_BUILTIN_PSRLQI128);
+  def_builtin (MASK_SSE2, "__builtin_ia32_psrlw128", v8hi_ftype_v8hi_v8hi, IX86_BUILTIN_PSRLW128);
+  def_builtin (MASK_SSE2, "__builtin_ia32_psrld128", v4si_ftype_v4si_v4si, IX86_BUILTIN_PSRLD128);
+  def_builtin (MASK_SSE2, "__builtin_ia32_psrlq128", v2di_ftype_v2di_v2di, IX86_BUILTIN_PSRLQ128);
 
   def_builtin (MASK_SSE2, "__builtin_ia32_psrawi128", v8hi_ftype_v8hi_int, IX86_BUILTIN_PSRAWI128);
   def_builtin (MASK_SSE2, "__builtin_ia32_psradi128", v4si_ftype_v4si_int, IX86_BUILTIN_PSRADI128);
+  def_builtin (MASK_SSE2, "__builtin_ia32_psraw128", v8hi_ftype_v8hi_v8hi, IX86_BUILTIN_PSRAW128);
+  def_builtin (MASK_SSE2, "__builtin_ia32_psrad128", v4si_ftype_v4si_v4si, IX86_BUILTIN_PSRAD128);
 
   def_builtin (MASK_SSE2, "__builtin_ia32_pmaddwd128", v4si_ftype_v8hi_v8hi, IX86_BUILTIN_PMADDWD128);
 
@@ -17784,9 +17802,106 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       emit_insn (pat);
       return target;
 
+    case IX86_BUILTIN_PSLLWI128:
+      icode = CODE_FOR_ashlv8hi3;
+      goto do_pshifti;
+    case IX86_BUILTIN_PSLLDI128:
+      icode = CODE_FOR_ashlv4si3;
+      goto do_pshifti;
+    case IX86_BUILTIN_PSLLQI128:
+      icode = CODE_FOR_ashlv2di3;
+      goto do_pshifti;
+    case IX86_BUILTIN_PSRAWI128:
+      icode = CODE_FOR_ashrv8hi3;
+      goto do_pshifti;
+    case IX86_BUILTIN_PSRADI128:
+      icode = CODE_FOR_ashrv4si3;
+      goto do_pshifti;
+    case IX86_BUILTIN_PSRLWI128:
+      icode = CODE_FOR_lshrv8hi3;
+      goto do_pshifti;
+    case IX86_BUILTIN_PSRLDI128:
+      icode = CODE_FOR_lshrv4si3;
+      goto do_pshifti;
+    case IX86_BUILTIN_PSRLQI128:
+      icode = CODE_FOR_lshrv2di3;
+      goto do_pshifti;
+    do_pshifti:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+
+      if (!CONST_INT_P (op1))
+	{
+	  error ("shift must be an immediate");
+	  return const0_rtx;
+	}
+      if (INTVAL (op1) < 0 || INTVAL (op1) > 255)
+	op1 = GEN_INT (255);
+
+      tmode = insn_data[icode].operand[0].mode;
+      mode1 = insn_data[icode].operand[1].mode;
+      if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
+	op0 = copy_to_reg (op0);
+
+      target = gen_reg_rtx (tmode);
+      pat = GEN_FCN (icode) (target, op0, op1);
+      if (!pat)
+	return 0;
+      emit_insn (pat);
+      return target;
+
+    case IX86_BUILTIN_PSLLW128:
+      icode = CODE_FOR_ashlv8hi3;
+      goto do_pshift;
+    case IX86_BUILTIN_PSLLD128:
+      icode = CODE_FOR_ashlv4si3;
+      goto do_pshift;
+    case IX86_BUILTIN_PSLLQ128:
+      icode = CODE_FOR_ashlv2di3;
+      goto do_pshift;
+    case IX86_BUILTIN_PSRAW128:
+      icode = CODE_FOR_ashrv8hi3;
+      goto do_pshift;
+    case IX86_BUILTIN_PSRAD128:
+      icode = CODE_FOR_ashrv4si3;
+      goto do_pshift;
+    case IX86_BUILTIN_PSRLW128:
+      icode = CODE_FOR_lshrv8hi3;
+      goto do_pshift;
+    case IX86_BUILTIN_PSRLD128:
+      icode = CODE_FOR_lshrv4si3;
+      goto do_pshift;
+    case IX86_BUILTIN_PSRLQ128:
+      icode = CODE_FOR_lshrv2di3;
+      goto do_pshift;
+    do_pshift:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+
+      tmode = insn_data[icode].operand[0].mode;
+      mode1 = insn_data[icode].operand[1].mode;
+
+      if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
+	op0 = copy_to_reg (op0);
+
+      op1 = simplify_gen_subreg (TImode, op1, GET_MODE (op1), 0);
+      if (! (*insn_data[icode].operand[2].predicate) (op1, TImode))
+	op1 = copy_to_reg (op1);
+
+      target = gen_reg_rtx (tmode);
+      pat = GEN_FCN (icode) (target, op0, op1);
+      if (!pat)
+	return 0;
+      emit_insn (pat);
+      return target;
+
     case IX86_BUILTIN_PSLLDQI128:
     case IX86_BUILTIN_PSRLDQI128:
-      icode = (  fcode == IX86_BUILTIN_PSLLDQI128 ? CODE_FOR_sse2_ashlti3
+      icode = (fcode == IX86_BUILTIN_PSLLDQI128 ? CODE_FOR_sse2_ashlti3
 	       : CODE_FOR_sse2_lshrti3);
       arg0 = CALL_EXPR_ARG (exp, 0);
       arg1 = CALL_EXPR_ARG (exp, 1);
@@ -17807,7 +17922,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	  return const0_rtx;
 	}
       target = gen_reg_rtx (V2DImode);
-      pat = GEN_FCN (icode) (simplify_gen_subreg (tmode, target, V2DImode, 0), op0, op1);
+      pat = GEN_FCN (icode) (simplify_gen_subreg (tmode, target, V2DImode, 0),
+			     op0, op1);
       if (! pat)
 	return 0;
       emit_insn (pat);
