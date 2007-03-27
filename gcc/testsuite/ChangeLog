@@ -1,3 +1,10 @@
+2007-03-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp (check_effective_target_fortran_large_real):
+	Delete created executable test file.
+	(check_effective_target_fortran_large_int): Ditto.
+	(check_effective_target_static_libgfortran): Ditto.
+
 2007-03-26  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/30500
@@ -62,7 +69,7 @@
 2007-03-25  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/30784
-        * gcc.dg/vect/pr30784.c: New test.
+	* gcc.dg/vect/pr30784.c: New test.
 
 2007-03-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
@@ -666,16 +673,16 @@
 	* g++.dg/cpp0x/variadic57.C: New.
 	* g++.dg/cpp0x/variadic58.C: New.
 	* g++.dg/cpp0x/variadic59.C: New.
-        * g++.dg/cpp0x/variadic60.C : New.
-        * g++.dg/cpp0x/variadic61.C : New.
-        * g++.dg/cpp0x/variadic62.C : New.
-        * g++.dg/cpp0x/variadic63.C : New.
-        * g++.dg/cpp0x/variadic64.C : New.
-        * g++.dg/cpp0x/variadic65.C : New.
-        * g++.dg/cpp0x/variadic66.C : New.
-        * g++.dg/cpp0x/variadic67.C : New.
-        * g++.dg/cpp0x/variadic68.C : New.
-        * g++.dg/cpp0x/variadic69.C : New.
+	* g++.dg/cpp0x/variadic60.C : New.
+	* g++.dg/cpp0x/variadic61.C : New.
+	* g++.dg/cpp0x/variadic62.C : New.
+	* g++.dg/cpp0x/variadic63.C : New.
+	* g++.dg/cpp0x/variadic64.C : New.
+	* g++.dg/cpp0x/variadic65.C : New.
+	* g++.dg/cpp0x/variadic66.C : New.
+	* g++.dg/cpp0x/variadic67.C : New.
+	* g++.dg/cpp0x/variadic68.C : New.
+	* g++.dg/cpp0x/variadic69.C : New.
 	* g++.dg/cpp0x/variadic70.C : New.
 	* g++.dg/cpp0x/variadic71.C : New.
 	* g++.dg/cpp0x/variadic72.C : New.
@@ -1049,7 +1056,7 @@
 
 2007-02-23  Paolo Bonzini  <bonzini@gnu.org>
 
-        PR tree-optimization/30904
+	PR tree-optimization/30904
 	* gcc.dg/pr30904.c: New test.
 
 2007-02-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
@@ -1110,14 +1117,14 @@
 	* gcc.dg/vect/vect-106.c: New test.
 
 2007-02-22  Dorit Nuzman  <dorit@il.ibm.com>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/30843
 	* gcc.dg/vect/pr30843.c: New test.
 
 2007-02-22  Dorit Nuzman  <dorit@il.ibm.com>
 
-        PR tree-optimization/30858
+	PR tree-optimization/30858
 	* gcc.dg/vect/pr30858.c: New test.
 
 2007-02-21  Mark Mitchell  <mark@codesourcery.com>
@@ -1161,7 +1168,7 @@
 	* gcc.dg/builtins-34.c: Add scalb/scalbn/scalbln cases.
 
 2007-02-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
-            DJ Delorie <dj@redhat.com>
+	    DJ Delorie <dj@redhat.com>
 
 	PR other/30824
 	* gcc.dg/Wfatal.c: New.
@@ -6696,7 +6703,7 @@
 	PR c++/27820
 	* g++.dg/other/label1.C: New test.
 
-2006-07-07   Richard Guenther  <rguenther@suse.de>
+2006-07-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/28268
 	* gcc.dg/torture/pr28268.c: New testcase.
@@ -6885,7 +6892,7 @@
 	PR c++/11468
 	* g++.dg/other/java2.C: New test.
 
-2006-06-23  Danny Smith   <dannysmith@users.sourceforge.net>
+2006-06-23  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/27789
 	* g++.dg/ext/dllimport4.C. Add more tests for invalid
@@ -26976,7 +26983,7 @@
 	* gfortran.dg/g77/f77-edit-h-out.f: Likewise.
 	* gfortran.dg/g77/strlen0.f: Likewise.
 
-2004-07-09   David Billinghurst <David.Billinghurst@riotinto.com>
+2004-07-09  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* lib/gfortran-dg.exp: New file (adapted from lib/g77-dg.exp)
 	* gfortran.dg/dg.exp: New file (adapted from g77.dg/dg.exp)
@@ -32750,7 +32757,7 @@
 	* g++.dg/init/enum2.C: New test.
 	* g++.dg/template/overload1.C: Add "-w" option.
 
-2003-07-28    <hp@bitrange.com>
+2003-07-28  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/Wdeclaration-after-statement-1.c,
 	gcc.dg/Wdeclaration-after-statement-2.c: New tests.
@@ -45255,7 +45262,7 @@ Mon 18-Sep-2000 19:23:11 BST  Neil Booth  <NeilB@earthling.net>
 	* gcc.dg/c99-impl-int-1.c, gcc.dg/c99-longlong-1.c,
 	* gcc.dg/c99-restrict-1.c, gcc.dg/c99-return-1.c: New tests.
 
-2000-07-17   Greg McGary <greg@mcgary.org>
+2000-07-17  Greg McGary <greg@mcgary.org>
 
 	* gcc.c-torture/execute/20000717-1.c: New test.
 	* gcc.c-torture/execute/20000717-1.x: Expected to fail.

@@ -649,6 +649,7 @@ proc check_effective_target_fortran_large_real { } {
 
 	if [string match "" $lines] then {
 	    # No error message, compilation succeeded.
+	    remote_file build delete $exe
   	    set et_fortran_large_real_saved 1
 	}
     }
@@ -705,6 +706,7 @@ proc check_effective_target_fortran_large_int { } {
 
 	if [string match "" $lines] then {
 	    # No error message, compilation succeeded.
+	    remote_file build delete $exe
 	    set et_fortran_large_int_saved 1
 	}
     }
@@ -759,6 +761,7 @@ proc check_effective_target_static_libgfortran { } {
 
        if [string match "" $lines] then {
            # No error message, compilation succeeded.
+	   remote_file build delete $exe
            set et_static_libgfortran_saved 1
        }
     }
