@@ -1,3 +1,8 @@
+2007-03-27  Richard Guenther  <rguenther@suse.de>
+
+	* tree-dfa.c (get_ref_base_and_extent): Replace bit_offset and
+	computations with it with a HOST_WIDE_INT variable.  
+
 2007-03-26  Mike Stump  <mrs@apple.com>
 
 	* config/rs6000/darwin.h (DARWIN_MINVERSION_SPEC): Add
