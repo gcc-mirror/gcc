@@ -1,5 +1,8 @@
 2007-03-27  Janis Johnson  <janis187@us.ibm.com>
 
+	* configure.ac: Fix assembler test for powerpc*-linux decimal float.
+	* configure: Regenerate.
+
 	* configure: Regenerate using the correct version of autoconf.
 
 2007-03-27  Anatoly Sokolov  <aesok@post.ru>
