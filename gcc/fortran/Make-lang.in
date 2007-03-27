@@ -121,13 +121,13 @@ fortran.tags: force
 	cd $(srcdir)/fortran; etags -o TAGS.sub *.c *.h; \
 	etags --include TAGS.sub --include ../TAGS.sub
 
-fortran.info: doc/gfortran.info
-fortran.dvi: doc/gfortran.dvi
+fortran.info: doc/gfortran.info doc/gfc-internals.info
+fortran.dvi: doc/gfortran.dvi doc/gfc-internals.dvi
 fortran.html: $(build_htmldir)/gfortran/index.html
 
 F95_PDFFILES = doc/gfortran.pdf
 
-fortran.pdf: $(F95_PDFFILES)
+fortran.pdf: $(F95_PDFFILES) doc/gfc-internals.pdf
 
 fortran.install-pdf: $(F95_PDFFILES)
 	@$(NORMAL_INSTALL)
@@ -185,6 +185,26 @@ $(build_htmldir)/gfortran/index.html: $(GFORTRAN_TEXI)
 
 gfortran.pod: $(GFORTRAN_TEXI)
 	-$(TEXI2POD) < $(srcdir)/fortran/invoke.texi > $@
+
+# GFORTRAN internals documentation.
+GFC_INTERNALS_TEXI = \
+  $(srcdir)/fortran/gfc-internals.texi \
+  $(srcdir)/doc/include/fdl.texi \
+  $(srcdir)/doc/include/gcc-common.texi \
+  gcc-vers.texi
+
+doc/gfc-internals.info: $(GFC_INTERNALS_TEXI)
+	if [ x$(BUILD_INFO) = xinfo ]; then \
+	  rm -f doc/gfc-internals.info-*; \
+	  $(MAKEINFO) -I $(srcdir)/doc/include -I $(srcdir)/fortran \
+	    -o $@ $<; \
+	else true; fi
+
+doc/gfc-internals.dvi: $(GFC_INTERNALS_TEXI)
+	$(TEXI2DVI) -I $(srcdir)/fortran -I $(abs_docdir)/include -o $@ $<
+
+doc/gfc-internals.pdf: $(GFC_INTERNALS_TEXI)
+	$(TEXI2PDF) -I $(srcdir)/fortran -I $(abs_docdir)/include -o $@ $<
 
 # Create or recreate the gfortran private include file directory.
 install-finclude-dir: installdirs
