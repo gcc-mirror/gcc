@@ -39,12 +39,14 @@ init ()
 int
 main ()
 {
+  init ();
+
   /* Operands and the result are all the same decimal float type.  */
   d32a = yes ? d32b : d32c;
   if (d32a != d32b)
     FAILURE
   d64a = no ? d64b : d64c;
-  if (d64a != d64b)
+  if (d64a != d64c)
     FAILURE
   d128a = yes ? d128b : d128c;
   if (d128a != d128b)
