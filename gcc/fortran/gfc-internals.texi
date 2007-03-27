@@ -1,0 +1,367 @@
+\input texinfo  @c -*-texinfo-*-
+@c %**start of header
+@setfilename gfortran.info
+@set copyrights-gfortran 2007
+
+@include gcc-common.texi
+
+@settitle GNU Fortran Compiler Internals
+
+@c %**end of header
+
+@c Use with @@smallbook.
+
+@c %** start of document
+
+@c Cause even numbered pages to be printed on the left hand side of
+@c the page and odd numbered pages to be printed on the right hand
+@c side of the page.  Using this, you can print on both sides of a
+@c sheet of paper and have the text on the same part of the sheet.
+
+@c The text on right hand pages is pushed towards the right hand
+@c margin and the text on left hand pages is pushed toward the left
+@c hand margin.
+@c (To provide the reverse effect, set bindingoffset to -0.75in.)
+
+@c @tex
+@c \global\bindingoffset=0.75in
+@c \global\normaloffset =0.75in
+@c @end tex
+
+@copying
+Copyright @copyright{} @value{copyrights-gfortran} Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``GNU General Public License'' and ``Funding
+Free Software'', the Front-Cover
+texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+
+(a) The FSF's Front-Cover Text is:
+
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
+@end copying
+
+@ifinfo
+@dircategory Software development
+@direntry
+* gfortran: (gfortran).                  The GNU Fortran Compiler.
+@end direntry
+This file documents the internals of the GNU Fortran
+compiler, (@command{gfortran}).
+
+Published by the Free Software Foundation
+51 Franklin Street, Fifth Floor
+Boston, MA 02110-1301 USA
+
+@insertcopying
+@end ifinfo
+
+
+@setchapternewpage odd
+@titlepage
+@title GNU Fortran Internals
+@versionsubtitle
+@author The @t{gfortran} team
+@page
+@vskip 0pt plus 1filll
+Published by the Free Software Foundation@*
+51 Franklin Street, Fifth Floor@*
+Boston, MA 02110-1301, USA@*
+@c Last printed ??ber, 19??.@*
+@c Printed copies are available for $? each.@*
+@c ISBN ???
+@sp 1
+@insertcopying
+@end titlepage
+
+@summarycontents
+@contents
+
+@page
+
+@c ---------------------------------------------------------------------
+@c TexInfo table of contents.
+@c ---------------------------------------------------------------------
+
+@ifnottex
+@node Top
+@top Introduction
+@cindex Introduction
+
+This manual documents the internals of @command{gfortran}, 
+the GNU Fortran compiler.
+
+@ifset DEVELOPMENT
+@emph{Warning:} This document, and the compiler it describes, are still
+under development.  While efforts are made to keep it up-to-date, it might
+not accurately reflect the status of the most recent GNU Fortran compiler.
+@end ifset
+
+@comment
+@comment  When you add a new menu item, please keep the right hand
+@comment  aligned to the same column.  Do not use tabs.  This provides
+@comment  better formatting.
+@comment
+@menu
+* Introduction::           About this manual.
+* User Interface::         Code that Interacts with the User.
+* LibGFortran::            The LibGFortran Runtime Library.
+* GNU Free Documentation License::
+		           How you can copy and share this manual.
+* Index::                  Index of this documentation.
+@end menu
+@end ifnottex
+
+@c ---------------------------------------------------------------------
+@c Introduction
+@c ---------------------------------------------------------------------
+
+@node Introduction
+@chapter Introduction
+
+@c The following duplicates the text on the TexInfo table of contents.
+@iftex
+This manual documents the internals of @command{gfortran}, the GNU Fortran
+compiler.
+
+@ifset DEVELOPMENT
+@emph{Warning:} This document, and the compiler it describes, are still
+under development.  While efforts are made to keep it up-to-date, it
+might not accurately reflect the status of the most recent GNU Fortran
+compiler.
+@end ifset
+@end iftex
+
+At present, this manual is very much a work in progress, containing 
+miscellaneous notes about the internals of the compiler.  It is hoped
+that at some point in the future it will become a reasonably complete
+guide; in the interim, GNU Fortran developers are strongly encouraged to
+contribute to it as a way of keeping notes while working on the 
+compiler.
+
+
+@c ---------------------------------------------------------------------
+@c Code that Interacts with the User
+@c ---------------------------------------------------------------------
+
+@node User Interface
+@chapter Code that Interacts with the User
+
+@menu
+* Command-Line Options::    Command-Line Options.
+* Error Handling::          Error Handling.
+@end menu
+
+
+@c ---------------------------------------------------------------------
+@c Command-Line Options
+@c ---------------------------------------------------------------------
+
+@node Command-Line Options
+@section Command-Line Options
+
+Command-line options for @command{gfortran} involve four interrelated
+pieces within the Fortran compiler code.
+
+The relevant command-line flag is defined in @file{lang.opt}, according
+to the documentation in @ref{Options,, Options, gccint, GNU Compiler
+Collection Internals}.  This is then processed by the overall GCC
+machinery to create the code that enables @command{gfortran} and
+@command{gcc} to recognize the option in the command-line arguments and
+call the relevant handler function.
+
+This generated code calls the @code{gfc_handle_option} code in
+@file{options.c} with an enumerator variable indicating which option is
+to be processed, and the relevant integer or string values associated
+with that option flag.  Typically, @code{gfc_handle_option} uses these
+arguments to set global flags which record the option states.
+
+The global flags that record the option states are stored in the
+@code{gfc_option_t} struct, which is defined in @file{gfortran.h}.
+Before the options are processed, initial values for these flags are set
+in @code{gfc_init_option} in @file{options.c}; these become the default
+values for the options.
+
+
+
+@c ---------------------------------------------------------------------
+@c Error Handling
+@c ---------------------------------------------------------------------
+
+@node Error Handling
+@section Error Handling
+
+The GNU Fortran compiler's parser operates by testing each piece of
+source code against a variety of matchers.  In some cases, if these
+matchers do not match the source code, they will store an error message
+in a buffer.  If the parser later finds a matcher that does correctly
+match the source code, then the buffered error is discarded.  However,
+if the parser cannot find a match, then the buffered error message is
+reported to the user.  This enables the compiler to provide more
+meaningful error messages even in the many cases where (erroneous)
+Fortran syntax is ambiguous due to things like the absence of reserved
+keywords.
+
+As an example of how this works, consider the following line:
+@smallexample
+IF = 3
+@end smallexample
+Hypothetically, this may get passed to the matcher for an @code{IF}
+statement.  Since this could plausibly be an erroneous @code{IF}
+statement, the matcher will buffer an error message reporting the
+absence of an expected @samp{(} following an @code{IF}.  Since no
+matchers reported an error-free match, however, the parser will also try
+matching this against a variable assignment.  When @code{IF} is a valid
+variable, this will be parsed as an assignment statement, and the error
+discarded.  However, when @code{IF} is not a valid variable, this
+buffered error message will be reported to the user.
+
+The error handling code is implemented in @file{error.c}.  Errors are
+normally entered into the buffer with the @code{gfc_error} function.
+Warnings go through a similar buffering process, and are entered into
+the buffer with @code{gfc_warning}.  There is also a special-purpose
+function, @code{gfc_notify_std}, for things which have an error/warning
+status that depends on the currently-selected language standard.
+
+The @code{gfc_error_check} function checks the buffer for errors,
+reports the error message to the user if one exists, clears the buffer,
+and returns a flag to the user indicating whether or not an error
+existed.  To check the state of the buffer without changing its state or
+reporting the errors, the @code{gfc_error_flag_test} function can be
+used.  The @code{gfc_clear_error} function will clear out any errors in
+the buffer, without reporting them.  The @code{gfc_warning_check} and
+@code{gfc_clear_warning} functions provide equivalent functionality for
+the warning buffer.
+
+Only one error and one warning can be in the buffers at a time, and
+buffering another will overwrite the existing one.  In cases where one
+may wish to work on a smaller piece of source code without disturbing an
+existing error state, the @code{gfc_push_error}, @code{gfc_pop_error},
+and @code{gfc_free_error} mechanism exists to implement a stack for the
+error buffer.
+
+For cases where an error or warning should be reported immediately
+rather than buffered, the @code{gfc_error_now} and
+@code{gfc_warning_now} functions can be used.  Normally, the compiler
+will continue attempting to parse the program after an error has
+occurred, but if this is not appropriate, the @code{gfc_fatal_error}
+function should be used instead.  For errors that are always the result
+of a bug somewhere in the compiler, the @code{gfc_internal_error}
+function should be used.
+
+The syntax for the strings used to produce the error/warning message in
+the various error and warning functions is similar to the @code{printf}
+syntax, with @samp{%}-escapes to insert variable values.  The details,
+and the allowable codes, are documented in the @code{error_print}
+function in @file{error.c}.
+
+
+
+@c ---------------------------------------------------------------------
+@c LibGFortran
+@c ---------------------------------------------------------------------
+
+@node LibGFortran
+@chapter The LibGFortran Runtime Library
+
+@menu
+* Symbol Versioning::    Symbol Versioning.
+@end menu
+
+
+@c ---------------------------------------------------------------------
+@c Symbol Versioning
+@c ---------------------------------------------------------------------
+
+@node Symbol Versioning
+@section Symbol Versioning
+@comment Based on http://gcc.gnu.org/wiki/SymbolVersioning,
+@comment as of 2006-11-05, written by Janne Blomqvist.
+
+In general, this capability exists only on a few platforms, thus there
+is a need for configure magic so that it is used only on those targets
+where it is supported. 
+
+The central concept in symbol versioning is the so-called map file,
+which specifies the version node(s) exported symbols are labeled with.
+Also, the map file is used to hide local symbols. 
+
+Some relevant references:
+@itemize @bullet
+@item
+@uref{http://www.gnu.org/software/binutils/manual/ld-2.9.1/html_node/ld_25.html,
+GNU @command{ld} manual}
+
+@item
+@uref{http://people.redhat.com/drepper/symbol-versioning, ELF Symbol
+Versioning - Ulrich Depper}
+
+@item
+@uref{http://people.redhat.com/drepper/dsohowto.pdf, How to Write Shared
+Libraries - Ulrich Depper (see Chapter 3)}
+
+@end itemize
+
+If one adds a new symbol to a library that should be exported, the new
+symbol should be mentioned in the map file and a new version node
+defined, e.g. if one adds a new symbols @code{foo} and @code{bar} to
+libgfortran for the next GCC release, the following should be added to
+the map file: 
+@smallexample
+GFORTRAN_1.1 @{
+    global:
+        foo;
+        bar;
+@} GFORTRAN_1.0;
+@end smallexample
+@noindent
+where @code{GFORTRAN_1.0} is the version node of the current release,
+and @code{GFORTRAN_1.1} is the version node of the next release where
+foo and bar are made available. 
+
+If one wants to change an existing interface, it is possible by using
+some asm trickery (from the @command{ld} manual referenced above): 
+
+@smallexample
+__asm__(".symver original_foo,foo@@");
+__asm__(".symver old_foo,foo@@VERS_1.1");
+__asm__(".symver old_foo1,foo@@VERS_1.2");
+__asm__(".symver new_foo,foo@@VERS_2.0");
+@end smallexample
+
+In this example, @code{foo@@} represents the symbol @code{foo} bound to
+the unspecified base version of the symbol. The source file that
+contains this example would define 4 C functions: @code{original_foo},
+@code{old_foo}, @code{old_foo1}, and @code{new_foo}. 
+
+In this case the map file must contain @code{foo} in @code{VERS_1.1}
+and @code{VERS_1.2} as well as in @code{VERS_2.0}.
+
+
+@c ---------------------------------------------------------------------
+@c GNU Free Documentation License
+@c ---------------------------------------------------------------------
+
+@include fdl.texi
+
+
+@c ---------------------------------------------------------------------
+@c Index
+@c ---------------------------------------------------------------------
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@bye

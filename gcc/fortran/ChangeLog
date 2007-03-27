@@ -1,4 +1,9 @@
 2007-03-26  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* gfc-internals.texi: New file,
+	* Make-lang.in: Add rules to convert it to dvi, pdf, and info.
+
+2007-03-26  Brooks Moses  <brooks.moses@codesourcery.com>
  
 	* error.c (show_locus): Remove always-false test.
 
