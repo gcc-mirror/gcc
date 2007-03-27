@@ -5610,6 +5610,10 @@ jump_over_one_insn_p (rtx insn, rtx dest)
 int
 avr_hard_regno_mode_ok (int regno, enum machine_mode mode)
 {
+  /* Disallow QImode in stack pointer regs.  */
+  if ((regno == REG_SP || regno == (REG_SP + 1)) && mode == QImode)
+    return 0;
+
   /* The only thing that can go into registers r28:r29 is a Pmode.  */
   if (regno == REG_Y && mode == Pmode)
     return 1;
