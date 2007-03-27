@@ -259,10 +259,13 @@ proc compat-execute { src1 sid use_alt } {
     }
 
     # Set up the names of the other source files.
-    regsub "_main.*" $src1 "" base
-    regsub ".*/" $base "" base
-    regsub "_main" $src1 "_x" src2
-    regsub "_main" $src1 "_y" src3
+    set dir [file dirname $src1]
+    set ext [file extension $src1]
+    set base [file rootname $src1]
+    set base [string range $base [string length $dir] end]
+    regsub "_main" $base "" base
+    set src2 "${dir}/${base}_x${ext}"
+    set src3 "${dir}/${base}_y${ext}"
 
     # Use the dg-options mechanism to specify extra flags for this test. 
     # The extra flags in each file are used to compile that file, and the
