@@ -14492,7 +14492,11 @@ cp_parser_member_declaration (cp_parser* parser)
 		  token = cp_lexer_peek_token (parser->lexer);
 		  /* If the next token is a semicolon, consume it.  */
 		  if (token->type == CPP_SEMICOLON)
-		    cp_lexer_consume_token (parser->lexer);
+		    {
+		      if (pedantic && !in_system_header)
+			pedwarn ("extra %<;%>");
+		      cp_lexer_consume_token (parser->lexer);
+		    }
 		  return;
 		}
 	      else
