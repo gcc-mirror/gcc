@@ -1,4 +1,4 @@
-2006-03-27  Anatoly Sokolov <aesok@post.ru>
+2007-03-27  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (avr_hard_regno_mode_ok): Disallow QImode in stack
 	pointer regs.
