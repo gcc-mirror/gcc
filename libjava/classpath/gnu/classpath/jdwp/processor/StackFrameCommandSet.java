@@ -45,8 +45,10 @@ import gnu.classpath.jdwp.VMVirtualMachine;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;
-import gnu.classpath.jdwp.id.ObjectId;
-import gnu.classpath.jdwp.util.Value;
+import gnu.classpath.jdwp.id.ThreadId;
+import gnu.classpath.jdwp.value.ObjectValue;
+import gnu.classpath.jdwp.value.Value;
+import gnu.classpath.jdwp.value.ValueFactory;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -98,8 +100,8 @@ public class StackFrameCommandSet
   private void executeGetValues(ByteBuffer bb, DataOutputStream os)
       throws JdwpException, IOException
   {
-    ObjectId tId = idMan.readObjectId(bb);
-    Thread thread = (Thread) tId.getObject();
+    ThreadId tId = (ThreadId) idMan.readObjectId(bb);
+    Thread thread = tId.getThread();
 
     // Although Frames look like other ids they are not. First they are not
     // ObjectIds since they don't exist in the users code. Storing them as an
@@ -115,16 +117,16 @@ public class StackFrameCommandSet
       {
         int slot = bb.getInt();
         byte sig = bb.get();
-        Object val = frame.getValue(slot);
-        Value.writeTaggedValue(os, val);
+        Value val = frame.getValue(slot, sig);
+        val.writeTagged(os);
       }
   }
 
   private void executeSetValues(ByteBuffer bb, DataOutputStream os)
       throws JdwpException, IOException
   {
-    ObjectId tId = idMan.readObjectId(bb);
-    Thread thread = (Thread) tId.getObject();
+    ThreadId tId = (ThreadId) idMan.readObjectId(bb);
+    Thread thread = tId.getThread();
 
     long frameID = bb.getLong();
     VMFrame frame = VMVirtualMachine.getFrame(thread, frameID);
@@ -133,7 +135,7 @@ public class StackFrameCommandSet
     for (int i = 0; i < slots; i++)
       {
         int slot = bb.getInt();
-        Object value = Value.getObj(bb);
+        Value value = ValueFactory.createFromTagged(bb);
         frame.setValue(slot, value);
       }
   }
@@ -141,21 +143,28 @@ public class StackFrameCommandSet
   private void executeThisObject(ByteBuffer bb, DataOutputStream os)
       throws JdwpException, IOException
   {
-    ObjectId tId = idMan.readObjectId(bb);
-    Thread thread = (Thread) tId.getObject();
+    ThreadId tId = (ThreadId) idMan.readObjectId(bb);
+    Thread thread = tId.getThread();
 
     long frameID = bb.getLong();
     VMFrame frame = VMVirtualMachine.getFrame(thread, frameID);
 
-    Object thisObject = frame.getObject();
-    Value.writeTaggedValue(os, thisObject);
+    ObjectValue objVal = new ObjectValue(frame.getObject());
+    objVal.writeTagged(os);
   }
 
   private void executePopFrames(ByteBuffer bb, DataOutputStream os)
-      throws JdwpException
+    throws JdwpException, IOException
   {
-    // This command is optional, determined by VirtualMachines CapabilitiesNew
-    // so we'll leave it till later to implement
-    throw new NotImplementedException("Command PopFrames not implemented.");
+    if (!VMVirtualMachine.canPopFrames)
+      {
+	String msg = "popping frames is unsupported";
+	throw new NotImplementedException(msg);
+      }
+
+    ThreadId tid = (ThreadId) idMan.readObjectId(bb);
+    Thread thread = tid.getThread();
+    long fid = bb.getLong();
+    VMVirtualMachine.popFrames(thread, fid);
   }
 }

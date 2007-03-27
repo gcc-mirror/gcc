@@ -1,6 +1,6 @@
 /* ObjectReferenceCommandSet.java -- class to implement the ObjectReference
    Command Set
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -47,8 +47,10 @@ import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;
 import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
-import gnu.classpath.jdwp.util.Value;
 import gnu.classpath.jdwp.util.MethodResult;
+import gnu.classpath.jdwp.util.MonitorInfo;
+import gnu.classpath.jdwp.value.Value;
+import gnu.classpath.jdwp.value.ValueFactory;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -137,7 +139,9 @@ public class ObjectReferenceCommandSet
           {
             field.setAccessible(true); // Might be a private field
             Object value = field.get(obj);
-            Value.writeTaggedValue(os, value);
+            Value val = ValueFactory.createFromObject(value, 
+                                                      field.getType());
+            val.writeTagged(os);
           }
         catch (IllegalArgumentException ex)
           {
@@ -163,7 +167,7 @@ public class ObjectReferenceCommandSet
     for (int i = 0; i < numFields; i++)
       {
         Field field = (Field) idMan.readObjectId(bb).getObject();
-        Object value = Value.getUntaggedObj(bb, field.getType());
+        Object value = Value.getUntaggedObject(bb, field.getType());
         try
           {
             field.setAccessible(true); // Might be a private field
@@ -183,13 +187,18 @@ public class ObjectReferenceCommandSet
   }
 
   private void executeMonitorInfo(ByteBuffer bb, DataOutputStream os)
-    throws JdwpException
+    throws JdwpException, IOException
   {
-    // This command is optional, determined by VirtualMachines CapabilitiesNew
-    // so we'll leave it till later to implement
-    throw new NotImplementedException(
-      "Command ExecuteMonitorInfo not implemented.");
+    if (!VMVirtualMachine.canGetMonitorInfo)
+      {
+	String msg = "getting monitor info not supported";
+	throw new NotImplementedException(msg);
+      }
 
+    ObjectId oid = idMan.readObjectId(bb);
+    Object obj = oid.getObject();
+    MonitorInfo info = VMVirtualMachine.getMonitorInfo(obj);
+    info.write(os);
   }
 
   private void executeInvokeMethod(ByteBuffer bb, DataOutputStream os)
@@ -212,7 +221,7 @@ public class ObjectReferenceCommandSet
 
     for (int i = 0; i < args; i++)
       {
-        values[i] = Value.getObj(bb);
+        values[i] = Value.getTaggedObject(bb);
       }
 
     int invokeOptions = bb.getInt();
@@ -232,11 +241,14 @@ public class ObjectReferenceCommandSet
     MethodResult mr = VMVirtualMachine.executeMethod(obj, thread,
 						     clazz, method,
 						     values, nonVirtual);
+    mr.setResultType (method.getReturnType());
+    
     Object value = mr.getReturnedValue();
     Exception exception = mr.getThrownException();
 
     ObjectId eId = idMan.getObjectId(exception);
-    Value.writeTaggedValue(os, value);
+    Value val = ValueFactory.createFromObject(value, mr.getResultType());
+    val.writeTagged(os);
     eId.writeTagged(os);
   }
 

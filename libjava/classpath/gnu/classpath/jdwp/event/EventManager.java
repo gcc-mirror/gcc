@@ -1,5 +1,5 @@
 /* EventManager.java -- event management and notification infrastructure
-   Copyright (C) 2005, 2006 Free Software Foundation
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,7 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.event;
 
+import gnu.classpath.jdwp.Jdwp;
 import gnu.classpath.jdwp.VMVirtualMachine;
 import gnu.classpath.jdwp.exception.InvalidEventTypeException;
 import gnu.classpath.jdwp.exception.JdwpException;
@@ -130,9 +131,10 @@ public class EventManager
     // only two: VM_INIT, VM_DEATH
     try
       {
+	byte sp = (Jdwp.suspendOnStartup()
+		   ? EventRequest.SUSPEND_THREAD : EventRequest.SUSPEND_NONE);
 	requestEvent (new EventRequest (0,
-					EventRequest.EVENT_VM_INIT,
-					EventRequest.SUSPEND_NONE));
+					EventRequest.EVENT_VM_INIT, sp));
 	requestEvent (new EventRequest (0,
 					EventRequest.EVENT_VM_DEATH,
 					EventRequest.SUSPEND_NONE));
