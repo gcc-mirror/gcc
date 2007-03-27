@@ -1,5 +1,10 @@
 2007-03-27  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/dfp/func-vararg-alternate.h: New file.
+	* gcc.dg/dfp/func-vararg-alternate-d32.c: New test.
+	* gcc.dg/dfp/func-vararg-alternate-d64.c: New test.
+	* gcc.dg/dfp/func-vararg-alternate-d128.c: New test.
+
 	* gcc.dg/dfp/func-vararg-mixed.c: Add optional debugging output.
 	* gcc.dg/dfp/func-vararg-dfp.c: Ditto.
 
