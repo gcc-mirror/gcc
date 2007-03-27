@@ -137,6 +137,11 @@ final public class XMLReaderFactory
 	if (className == null) {
 // BEGIN DISTRIBUTION-SPECIFIC
 
+	    // CLASSPATH LOCAL: have to code in the backup.
+	    // Among other things, see PR 31303, and this thread:
+	    // http://gcc.gnu.org/ml/java-patches/2007-q1/msg00661.html
+	    className = "gnu.xml.stream.SAXParser";
+
 	    // EXAMPLE:
 	    // className = "com.example.sax.XmlReader";
 	    // or a $JAVA_HOME/jre/lib/*properties setting...
