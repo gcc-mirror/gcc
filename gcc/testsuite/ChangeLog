@@ -1,3 +1,7 @@
+2007-03-27  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* gcc.target/powerpc/ppc-stackalign-1.c: Run for powerpc-eabi.
+
 2007-03-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/target-supports.exp (check_effective_target_fortran_large_real):
