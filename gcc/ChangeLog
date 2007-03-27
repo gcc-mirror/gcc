@@ -1,3 +1,10 @@
+2006-03-27  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.c (avr_hard_regno_mode_ok): Disallow QImode in stack
+	pointer regs.
+	* config/avr/avr.h (REGISTER_NAMES): Rename "__SPL__" and "__SPH__"
+	regs to "__SP_L__" and "__SP_H__".
+
 2007-03-27  Richard Guenther  <rguenther@suse.de>
 
 	* tree-dfa.c (get_ref_base_and_extent): Replace bit_offset and
