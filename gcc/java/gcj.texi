@@ -19,9 +19,6 @@
 @c When this manual is copyrighted.
 @set copyrights-gcj 2001, 2002, 2003, 2004, 2005, 2006, 2007
 
-@c Versions
-@set which-gcj GCC-@value{version-GCC}
-
 @copying
 @c man begin COPYRIGHT
 Copyright @copyright{} @value{copyrights-gcj} Free Software Foundation, Inc.
@@ -64,10 +61,6 @@ man page gfdl(7).
 
 @dircategory Individual utilities
 @direntry
-* gcjh: (gcj)Invoking gcjh.
-                            Generate header files from Java class files
-* gjnih: (gcj)Invoking gjnih.
-                            Generate JNI header files from Java class files
 * jcf-dump: (gcj)Invoking jcf-dump.
                             Print information about Java class files
 * gij: (gcj)Invoking gij.   GNU interpreter for Java bytecode
@@ -77,8 +70,6 @@ man page gfdl(7).
                             Convert file from one encoding to another
 * grmic: (gcj)Invoking grmic.
                             Generate stubs for Remote Method Invocation.
-* grmiregistry: (gcj)Invoking grmiregistry.
-                            The remote object registry.
 * gc-analyze: (gcj)Invoking gc-analyze.
                             Analyze Garbage Collector (GC) memory dumps.
 @end direntry
@@ -118,14 +109,11 @@ files and object files, and it can read both Java source code and
 			How you can share and copy this manual
 * Invoking gcj::	Compiler options supported by @command{gcj}
 * Compatibility::	Compatibility between gcj and other tools for Java
-* Invoking gcjh::       Generate header files from class files
-* Invoking gjnih::      Generate JNI header files from class files
 * Invoking jcf-dump::   Print information about class files
 * Invoking gij::	Interpreting Java bytecodes
 * Invoking gcj-dbtool:: Tool for manipulating class file databases.
 * Invoking jv-convert:: Converting from one encoding to another
 * Invoking grmic::      Generate stubs for Remote Method Invocation.
-* Invoking grmiregistry:: The remote object registry.
 * Invoking gc-analyze:: Analyze Garbage Collector (GC) memory dumps.
 * About CNI::           Description of the Compiled Native Interface
 * System properties::   Modifying runtime behavior of the libgcj library
@@ -730,236 +718,6 @@ setting.
 @end itemize
 
 
-@node Invoking gcjh
-@chapter Invoking gcjh
-
-@c man title gcjh generate header files from Java class files
-
-@c man begin DESCRIPTION gcjh
-
-The @code{gcjh} program is used to generate header files from class
-files.  It can generate both CNI and JNI header files, as well as stub
-implementation files which can be used as a basis for implementing the
-required native methods.
-
-@c man end
-
-@ignore
-@c man begin SYNOPSIS gcjh
-gcjh [@option{-stubs}] [@option{-jni}]
-    [@option{-force}] [@option{-old}] [@option{-trace}] [@option{-J} @var{option}]
-    [@option{-add} @var{text}] [@option{-append} @var{text}] [@option{-friend} @var{text}]
-    [@option{-prepend} @var{text}]
-    [@option{--classpath}=@var{path}] [@option{--CLASSPATH}=@var{path}]
-    [@option{--bootclasspath}=@var{path}]
-    [@option{-I}@var{dir}@dots{}] [@option{-d} @var{dir}@dots{}]
-    [@option{-o} @var{file}] [@option{-td} @var{dir}]
-    [@option{-M}] [@option{-MM}] [@option{-MD}] [@option{-MMD}]
-    [@option{--version}] [@option{--help}] [@option{-v}] [@option{--verbose}]
-    @var{classname}@dots{}
-@c man end
-@c man begin SEEALSO gcjh
-gcc(1), gcj(1), gij(1), jcf-dump(1), gfdl(7),
-and the Info entries for @file{gcj} and @file{gcc}.
-@c man end
-@end ignore
-
-@c man begin OPTIONS gcjh
-
-@table @gcctabopt
-@item -stubs
-This causes @code{gcjh} to generate stub files instead of header files.
-By default the stub file will be named after the class, with a suffix of
-@samp{.cc}.  In JNI mode, the default output file will have the suffix
-@samp{.c}.
-
-@item -jni
-This tells @code{gcjh} to generate a JNI header or stub.  By default,
-CNI headers are generated.
-
-@item -force
-This option forces @code{gcjh} to write the output file.
-
-@item -old
-This option is accepted but ignored for compatibility.
-
-@item -trace
-This option is accepted but ignored for compatibility.
-
-@item -J @var{option}
-This option is accepted but ignored for compatibility.
-
-@item -add @var{text}
-Inserts @var{text} into the class body.  This is ignored in JNI mode.
-
-@item -append @var{text}
-Inserts @var{text} into the header file after the class declaration.
-This is ignored in JNI mode.
-
-@item -friend @var{text}
-Inserts @var{text} into the class as a @code{friend} declaration.
-This is ignored in JNI mode.
-
-@item -prepend @var{text}
-Inserts @var{text} into the header file before the class declaration.
-This is ignored in JNI mode.
-
-@item --classpath=@var{path}
-@itemx --CLASSPATH=@var{path}
-@itemx --bootclasspath=@var{path}
-@itemx -I@var{directory}
-@itemx -d @var{directory}
-@itemx -o @var{file}
-These options are all identical to the corresponding @command{gcj} options.
-
-@item -o @var{file}
-Sets the output file name.  This cannot be used if there is more than
-one class on the command line.
-
-@item -td @var{directory}
-Sets the name of the directory to use for temporary files.
-
-@item -M
-Print all dependencies to stdout; suppress ordinary output.
-
-@item -MM
-Print non-system dependencies to stdout; suppress ordinary output.
-
-@item -MD
-Print all dependencies to stdout.
-
-@item -MMD
-Print non-system dependencies to stdout.
-
-@item --help
-Print help about @code{gcjh} and exit.  No further processing is done.
-
-@item --version
-Print version information for @code{gcjh} and exit.  No further
-processing is done.
-
-@item -v, --verbose
-Print extra information while running.
-@end table
-
-All remaining options are considered to be names of classes.
-
-@c man end
-
-@node Invoking gjnih
-@chapter Invoking gjnih
-
-@c man title gjnih generate JNI header files from Java class files
-
-@c man begin DESCRIPTION gjnih
-
-The @code{gjnih} program is used to generate JNI header files from class
-files.  Running it is equivalent to running @code{gcjh -jni}.
-
-@c man end
-
-@ignore
-@c man begin SYNOPSIS gjnih
-gjnih [@option{-stubs}] [@option{-jni}]
-    [@option{-force}] [@option{-old}] [@option{-trace}] [@option{-J} @var{option}]
-    [@option{-add} @var{text}] [@option{-append} @var{text}] [@option{-friend} @var{text}]
-    [@option{-prepend} @var{text}]
-    [@option{--classpath}=@var{path}] [@option{--CLASSPATH}=@var{path}]
-    [@option{--bootclasspath}=@var{path}]
-    [@option{-I}@var{dir}@dots{}] [@option{-d} @var{dir}@dots{}]
-    [@option{-o} @var{file}] [@option{-td} @var{dir}]
-    [@option{-M}] [@option{-MM}] [@option{-MD}] [@option{-MMD}]
-    [@option{--version}] [@option{--help}] [@option{-v}] [@option{--verbose}]
-    @var{classname}@dots{}
-@c man end
-@c man begin SEEALSO gjnih
-gcc(1), gcj(1), gcjh(1), gij(1), jcf-dump(1), gfdl(7),
-and the Info entries for @file{gcj} and @file{gcc}.
-@c man end
-@end ignore
-
-@c man begin OPTIONS gjnih
-
-@table @gcctabopt
-@item -stubs
-This causes @code{gjnih} to generate stub files instead of header files.
-By default the stub file will be named after the class, with a suffix of
-@samp{.c}.
-
-@item -jni
-This option specifies the default behavior which is to generate a JNI
-header or stub.
-
-@item -force
-This option forces @code{gjnih} to write the output file.
-
-@item -old
-This option is accepted but ignored for compatibility.
-
-@item -trace
-This option is accepted but ignored for compatibility.
-
-@item -J @var{option}
-This option is accepted but ignored for compatibility.
-
-@item -add @var{text}
-Inserts @var{text} into the class body.  This is ignored in by
-@code{gjnih}.
-
-@item -append @var{text}
-Inserts @var{text} into the header file after the class declaration.
-This is ignored in by @code{gjnih}.
-
-@item -friend @var{text}
-Inserts @var{text} into the class as a @code{friend} declaration.
-This is ignored by @code{gjnih}.
-
-@item -prepend @var{text}
-Inserts @var{text} into the header file before the class declaration.
-This is ignored in by @code{gjnih}.
-
-@item --classpath=@var{path}
-@itemx --CLASSPATH=@var{path}
-@itemx --bootclasspath=@var{path}
-@itemx -I@var{directory}
-@itemx -d @var{directory}
-@itemx -o @var{file}
-These options are all identical to the corresponding @command{gcj} options.
-
-@item -o @var{file}
-Sets the output file name.  This cannot be used if there is more than
-one class on the command line.
-
-@item -td @var{directory}
-Sets the name of the directory to use for temporary files.
-
-@item -M
-Print all dependencies to stdout; suppress ordinary output.
-
-@item -MM
-Print non-system dependencies to stdout; suppress ordinary output.
-
-@item -MD
-Print all dependencies to stdout.
-
-@item -MMD
-Print non-system dependencies to stdout.
-
-@item --help
-Print help about @code{gjnih} and exit.  No further processing is done.
-
-@item --version
-Print version information for @code{gjnih} and exit.  No further
-processing is done.
-
-@item -v, --verbose
-Print extra information while running.
-@end table
-
-All remaining options are considered to be names of classes.
-
-@c man end
-
 @node Invoking jcf-dump
 @chapter Invoking jcf-dump
 
@@ -1372,42 +1130,6 @@ the current working directory.
 Print a help message, then exit.
 
 @item -version
-Print version information, then exit.
-@end table
-
-@c man end
-
-
-@node Invoking grmiregistry
-@chapter Invoking grmiregistry
-
-@c man title grmiregistry Remote object registry
-
-@c man begin SYNOPSIS grmiregistry
-@command{grmic} [@option{OPTION}] @dots{} [@var{port}]
-@ignore
-  [@option{--help}]
-  [@option{--version}]
-@end ignore
-@c man end
-
-@c man begin DESCRIPTION grmiregistry
-
-@command{grmiregistry} starts a remote object registry on the current
-host.  If no port number is specified, then port 1099 is used.
-
-@c FIXME: Add real information here.
-@c This really isn't much more than the --help output.
-
-@c man end
-
-@c man begin OPTIONS grmiregistry
-
-@table @gcctabopt
-@item --help
-Print a help message, then exit.
-
-@item --version
 Print version information, then exit.
 @end table
 

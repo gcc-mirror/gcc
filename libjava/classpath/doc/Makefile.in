@@ -58,7 +58,7 @@ CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES =
 SOURCES =
 DIST_SOURCES =
-INFO_DEPS = $(srcdir)/tools.info
+INFO_DEPS = cp-tools.info
 am__TEXINFO_TEX_DIR = $(srcdir)/../../gcc/doc/include
 DVIS = cp-tools.dvi
 PDFS = cp-tools.pdf
@@ -326,6 +326,7 @@ TOOLS_MANFILES = \
 	gjar.1 \
 	gjarsigner.1 \
 	gjavah.1 \
+	gcjh.1 \
 	gkeytool.1 \
 	gnative2ascii.1 \
 	gorbd.1 \
@@ -364,7 +365,7 @@ MAINTAINERCLEANFILES = \
 all: all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .dvi .html .info .pdf .ps .texinfo
+.SUFFIXES: .dvi .ps
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -404,42 +405,38 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 
-.texinfo.info:
+cp-tools.info: cp-tools.texinfo $(cp_tools_TEXINFOS)
 	restore=: && backupdir="$(am__leading_dot)am$$$$" && \
-	am__cwd=`pwd` && cd $(srcdir) && \
 	rm -rf $$backupdir && mkdir $$backupdir && \
 	if ($(MAKEINFO) --version) >/dev/null 2>&1; then \
 	  for f in $@ $@-[0-9] $@-[0-9][0-9] $(@:.info=).i[0-9] $(@:.info=).i[0-9][0-9]; do \
 	    if test -f $$f; then mv $$f $$backupdir; restore=mv; else :; fi; \
 	  done; \
 	else :; fi && \
-	cd "$$am__cwd"; \
 	if $(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) \
-	 -o $@ $<; \
+	 -o $@ `test -f 'cp-tools.texinfo' || echo '$(srcdir)/'`cp-tools.texinfo; \
 	then \
 	  rc=0; \
-	  cd $(srcdir); \
 	else \
 	  rc=$$?; \
-	  cd $(srcdir) && \
 	  $$restore $$backupdir/* `echo "./$@" | sed 's|[^/]*$$||'`; \
 	fi; \
 	rm -rf $$backupdir; exit $$rc
 
-.texinfo.dvi:
+cp-tools.dvi: cp-tools.texinfo $(cp_tools_TEXINFOS) 
 	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
 	MAKEINFO='$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)' \
-	$(TEXI2DVI) $<
+	$(TEXI2DVI) -o $@ `test -f 'cp-tools.texinfo' || echo '$(srcdir)/'`cp-tools.texinfo
 
-.texinfo.pdf:
+cp-tools.pdf: cp-tools.texinfo $(cp_tools_TEXINFOS) 
 	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
 	MAKEINFO='$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)' \
-	$(TEXI2PDF) $<
+	$(TEXI2PDF) -o $@ `test -f 'cp-tools.texinfo' || echo '$(srcdir)/'`cp-tools.texinfo
 
-.texinfo.html:
+cp-tools.html: cp-tools.texinfo $(cp_tools_TEXINFOS) 
 	rm -rf $(@:.html=.htp)
 	if $(MAKEINFOHTML) $(AM_MAKEINFOHTMLFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) \
-	 -o $(@:.html=.htp) $<; \
+	 -o $(@:.html=.htp) `test -f 'cp-tools.texinfo' || echo '$(srcdir)/'`cp-tools.texinfo; \
 	then \
 	  rm -rf $@; \
 	  if test ! -d $(@:.html=.htp) && test -d $(@:.html=); then \
@@ -449,10 +446,6 @@ distclean-libtool:
 	    rm -rf $(@:.html=); else rm -Rf $(@:.html=.htp) $@; fi; \
 	  exit 1; \
 	fi
-$(srcdir)/tools.info: cp-tools.texinfo $(cp_tools_TEXINFOS)
-tools.dvi: cp-tools.texinfo $(cp_tools_TEXINFOS)
-tools.pdf: cp-tools.texinfo $(cp_tools_TEXINFOS)
-tools.html: cp-tools.texinfo $(cp_tools_TEXINFOS)
 .dvi.ps:
 	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
 	$(DVIPS) -o $@ $<
@@ -498,8 +491,8 @@ mostlyclean-aminfo:
 	-rm -rf cp-tools.aux cp-tools.cp cp-tools.cps cp-tools.fn cp-tools.fns \
 	  cp-tools.ky cp-tools.kys cp-tools.log cp-tools.pg \
 	  cp-tools.pgs cp-tools.tmp cp-tools.toc cp-tools.tp \
-	  cp-tools.tps cp-tools.vr cp-tools.vrs tools.dvi tools.pdf \
-	  tools.ps tools.html
+	  cp-tools.tps cp-tools.vr cp-tools.vrs cp-tools.dvi \
+	  cp-tools.pdf cp-tools.ps cp-tools.html
 
 maintainer-clean-aminfo:
 	@list='$(INFO_DEPS)'; for i in $$list; do \
@@ -891,7 +884,7 @@ gcc-vers.texi: $(BASEVER) $(DEVPHASE)
 
 .INTERMEDIATE: gappletviewer.pod gjarsigner.pod gjar.pod gjavah.pod \
 	gkeytool.pod gnative2ascii.pod gorbd.pod grmid.pod grmiregistry.pod \
-	gserialver.pod gtnameserv.pod
+	gserialver.pod gtnameserv.pod gcjh.pod
 
 gappletviewer.pod: $(srcdir)/cp-tools.texinfo
 	-$(TEXI2POD) -D gappletviewer < $< > $@
@@ -901,6 +894,9 @@ gjarsigner.pod: $(srcdir)/cp-tools.texinfo
 
 gjar.pod: $(srcdir)/cp-tools.texinfo
 	-$(TEXI2POD) -D gjar < $< > $@
+
+gcjh.pod: $(srcdir)/cp-tools.texinfo
+	-$(TEXI2POD) -D gcjh < $< > $@
 
 gjavah.pod: $(srcdir)/cp-tools.texinfo
 	-$(TEXI2POD) -D gjavah < $< > $@

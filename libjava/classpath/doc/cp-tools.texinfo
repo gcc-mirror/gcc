@@ -1,7 +1,7 @@
 \input texinfo @c -*-texinfo-*-
 
 @c %**start of header
-@setfilename tools.info
+@setfilename cp-tools.info
 @settitle GNU Classpath Tools Guide
 @c %**end of header
 
@@ -22,7 +22,7 @@
 This file documents the Tools included in a standard distribution of the GNU
 Classpath project deliverables.
 
-Copyright (C) 2006 Free Software Foundation, Inc.
+Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 @ifnotplaintext
 @dircategory GNU Libraries
@@ -127,6 +127,7 @@ Other Tools
 
 * jar Tool::                   Archive tool for Java archives
 * javah Tool::                 A java header compiler
+* gcjh Tool::                  A java header compiler (old version)
 * native2ascii Tool::          An encoding converter
 * orbd Tool::                  An object request broker daemon
 * serialver Tool::             A serial version command
@@ -1215,12 +1216,13 @@ For more details @pxref{verbose}.
 @chapter Other Tools
 
 This is a list of currently undocumented classpath tools: @b{jar},
-@b{javah}, @b{native2ascii}, @b{orbd}, @b{serialver}, @b{rmid}, @b{rmiregistry}
+@b{javah}, @b{gcjh}, @b{native2ascii}, @b{orbd}, @b{serialver}, @b{rmid}, @b{rmiregistry}
 and @b{tnameserv}.
 
 @menu
 * jar Tool::                   Archive tool for Java archives
 * javah Tool::                 A java header compiler
+* gcjh Tool::                  A java header compiler (old version)
 * native2ascii Tool::          An encoding converter
 * orbd Tool::                  An object request broker daemon
 * serialver Tool::             A serial version command
@@ -1324,7 +1326,7 @@ java(1), @dots{}
 
 @comment ----------------------------------------------------------------------
 
-@node javah Tool, native2ascii Tool, jar Tool, Other Tools
+@node javah Tool, gcjh Tool, jar Tool, Other Tools
 @comment node-name, next, previous, up
 @section The @command{javah} Tool
 @c man title gjavah - generate header files from Java class files
@@ -1407,7 +1409,73 @@ javac(1), @dots{}
 
 @comment ----------------------------------------------------------------------
 
-@node native2ascii Tool, orbd Tool, javah Tool, Other Tools
+@node gcjh Tool, native2ascii Tool, javah Tool, Other Tools
+@comment node-name, next, previous, up
+@section The @command{gcjh} Tool
+@c man title gcjh - generate header files from Java class files
+
+@c man begin DESCRIPTION gcjh
+
+The @code{gcjh} program is used to generate header files from class
+files.  It can generate both CNI and JNI header files, as well as stub
+implementation files which can be used as a basis for implementing the
+required native methods.  It is similar to @code{javah} but has
+slightly different command line options, and defaults to CNI.
+
+@c man end
+
+@ignore
+@c man begin SYNOPSIS gcjh
+gcjh [@var{OPTIONS}]@dots{} @var{CLASS}@dots{}
+@c man end
+@end ignore
+
+@c man begin OPTIONS gcjh
+
+See @code{javah} for a full description; this page only lists the
+additional options provided by @code{gcjh}.
+
+CNI text options
+@table @gcctabopt
+@item -add @var{text}
+Insert @var{text} into class body.
+@item -append @var{text}
+Append @var{text} after class declaration.
+@item -friend @var{text}
+Insert @var{text} as a @code{friend} declaration.
+@item -prepend @var{text}
+Insert @var{text} before start of class.
+@end table
+
+Compatibility options (unused)
+@table @gcctabopt
+@item -td @var{DIR}
+@itemx -M
+@itemx -MM
+@itemx -MD
+@itemx -MMD
+Unused compatibility option.
+@end table
+
+
+Standard options:
+@table @gcctabopt
+@item -help
+Print help text, then exit.
+@item -version
+Print version number, then exit.
+@item -J@var{OPTION}
+Pass argument to the Java runtime.
+@end table
+@c man end
+
+@c man begin SEEALSO gcjh
+javac(1), javah(1), @dots{}
+@c man end
+
+@comment ----------------------------------------------------------------------
+
+@node native2ascii Tool, orbd Tool, gcjh Tool, Other Tools
 @comment node-name, next, previous, up
 @section The @command{native2ascii} Tool
 @c man title gnative2ascii - An encoding converter
@@ -1553,7 +1621,8 @@ javac(1), @dots{}
 
 @c man begin DESCRIPTION grmid
 
-To be written @dots{}
+@command{rmiregistry} starts a remote object registry on the current
+host.  If no port number is specified, then port 1099 is used.
 
 @c man end
 
