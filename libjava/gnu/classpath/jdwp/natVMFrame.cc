@@ -12,17 +12,19 @@ details. */
 #include <jvm.h>
 
 #include <gnu/classpath/jdwp/VMFrame.h>
+#include <gnu/classpath/jdwp/value/Value.h>
 
 using namespace java::lang;
 
-Object*
-gnu::classpath::jdwp::VMFrame::getValue (MAYBE_UNUSED jint slot)
+gnu::classpath::jdwp::value::Value *
+gnu::classpath::jdwp::VMFrame::getValue (MAYBE_UNUSED jint slot,
+					 MAYBE_UNUSED jbyte tag)
 {
   return 0;
 }
 
 void
 gnu::classpath::jdwp::VMFrame::setValue (MAYBE_UNUSED jint slot,
-					 MAYBE_UNUSED Object* value)
+					 MAYBE_UNUSED gnu::classpath::jdwp::value::Value *value)
 {
 }
