@@ -1,3 +1,17 @@
+2007-03-26  Tom Tromey  <tromey@redhat.com>
+
+	* doc/cp-tools.texinfo (gcjh Tool): Added more text.
+	(rmid Tool): Likewise.
+
+2007-03-25  Dalibor Topic  <robilad@kaffe.org>
+
+	* doc/cp-tools.texinfo: Fix node ordering.
+
+2007-03-19  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/Makefile.am: Build a gcjh(1) man page.
+	* doc/cp-tools.texinfo: Add documentation for gcjh.
+
 2007-03-26  Stepan Kasal  <skasal@redhat.com>
 
 	* tools/gnu/classpath/tools/javah/Main.java (cniOrJniSeen): New

@@ -1,3 +1,17 @@
+2007-03-26  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in (JAVA_MANFILES): Removed grmiregistry.1.
+	(java.maintainer-clean): Likewise.
+	(java.install-man): Likewise.
+	(.INTERMEDIATE): Removed grmiregistry.pod.
+	(grmiregistry.pod): Removed.
+	* gcj.texi (Invoking gcjh): Removed.
+	(Invoking gjnih): Likewise.
+	(Invoking grmiregistry): Likewise.
+	(direntry): Updated.
+	(Top): Likewise.
+	(which-gcj): Removed.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Make-lang.in: Add install-pdf target as copied from

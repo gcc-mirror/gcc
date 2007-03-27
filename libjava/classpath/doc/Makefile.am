@@ -23,6 +23,7 @@ TOOLS_MANFILES = \
 	gjar.1 \
 	gjarsigner.1 \
 	gjavah.1 \
+	gcjh.1 \
 	gkeytool.1 \
 	gnative2ascii.1 \
 	gorbd.1 \
@@ -55,7 +56,7 @@ gcc-vers.texi: $(BASEVER) $(DEVPHASE)
 
 .INTERMEDIATE: gappletviewer.pod gjarsigner.pod gjar.pod gjavah.pod \
 	gkeytool.pod gnative2ascii.pod gorbd.pod grmid.pod grmiregistry.pod \
-	gserialver.pod gtnameserv.pod
+	gserialver.pod gtnameserv.pod gcjh.pod
 
 gappletviewer.pod: $(srcdir)/cp-tools.texinfo
 	-$(TEXI2POD) -D gappletviewer < $< > $@
@@ -65,6 +66,9 @@ gjarsigner.pod: $(srcdir)/cp-tools.texinfo
 
 gjar.pod: $(srcdir)/cp-tools.texinfo
 	-$(TEXI2POD) -D gjar < $< > $@
+
+gcjh.pod: $(srcdir)/cp-tools.texinfo
+	-$(TEXI2POD) -D gcjh < $< > $@
 
 gjavah.pod: $(srcdir)/cp-tools.texinfo
 	-$(TEXI2POD) -D gjavah < $< > $@
