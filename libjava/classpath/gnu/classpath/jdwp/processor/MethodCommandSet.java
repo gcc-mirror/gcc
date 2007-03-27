@@ -1,5 +1,5 @@
 /* MethodCommandSet.java -- class to implement the Method Command Set
-   Copyright (C) 2005, 2006 Free Software Foundation
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -40,10 +40,11 @@ package gnu.classpath.jdwp.processor;
 
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.VMMethod;
+import gnu.classpath.jdwp.VMVirtualMachine;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;
-import gnu.classpath.jdwp.id.ClassReferenceTypeId;
+import gnu.classpath.jdwp.id.ReferenceTypeId;
 import gnu.classpath.jdwp.util.LineTable;
 import gnu.classpath.jdwp.util.VariableTable;
 
@@ -99,8 +100,7 @@ public class MethodCommandSet
   private void executeLineTable(ByteBuffer bb, DataOutputStream os)
       throws JdwpException, IOException
   {
-    ClassReferenceTypeId refId
-      = (ClassReferenceTypeId) idMan.readReferenceTypeId(bb);
+    ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
     Class clazz = refId.getType();
 
     VMMethod method = VMMethod.readId(clazz, bb);
@@ -111,8 +111,7 @@ public class MethodCommandSet
   private void executeVariableTable(ByteBuffer bb, DataOutputStream os)
       throws JdwpException, IOException
   {
-   ClassReferenceTypeId refId
-     = (ClassReferenceTypeId) idMan.readReferenceTypeId(bb);
+    ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
     Class clazz = refId.getType();
 
     VMMethod method = VMMethod.readId(clazz, bb);
@@ -121,11 +120,20 @@ public class MethodCommandSet
   }
 
   private void executeByteCodes(ByteBuffer bb, DataOutputStream os)
-      throws JdwpException
+    throws JdwpException, IOException
   {
-    // This command is optional, determined by VirtualMachines CapabilitiesNew
-    // so we'll leave it till later to implement
-    throw new NotImplementedException("Command ByteCodes not implemented.");
+    if (!VMVirtualMachine.canGetBytecodes)
+      {
+	String msg = "getting bytecodes is unsupported";
+	throw new NotImplementedException(msg);
+      }
+
+    ReferenceTypeId id = idMan.readReferenceTypeId(bb);
+    Class klass = id.getType();
+    VMMethod method = VMMethod.readId(klass, bb);
+    byte[] bytecode = VMVirtualMachine.getBytecodes(method);
+    os.writeInt(bytecode.length);
+    os.write(bytecode);
   }
 
   private void executeIsObsolete(ByteBuffer bb, DataOutputStream os)
@@ -143,7 +151,7 @@ public class MethodCommandSet
   {
     // We don't have generics yet
     throw new NotImplementedException(
-      "Command SourceDebugExtension not implemented.");
+      "Command VariableTableWithGeneric not implemented.");
   }
 
 }

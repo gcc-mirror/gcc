@@ -1,6 +1,6 @@
 /* ReferenceTypeCommandSet.java -- class to implement the ReferenceType
    Command Set
-   Copyright (C) 2005, 2006 Free Software Foundation
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -51,7 +51,8 @@ import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
 import gnu.classpath.jdwp.util.JdwpString;
 import gnu.classpath.jdwp.util.Signature;
-import gnu.classpath.jdwp.util.Value;
+import gnu.classpath.jdwp.value.Value;
+import gnu.classpath.jdwp.value.ValueFactory;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -220,7 +221,9 @@ public class ReferenceTypeCommandSet
               {
                 field.setAccessible(true); // Might be a private field
                 Object value = field.get(null);
-                Value.writeTaggedValue(os, value);
+                Value val = ValueFactory.createFromObject(value, 
+                                                          field.getType());
+                val.writeTagged(os);
               }
             catch (IllegalArgumentException ex)
               {
@@ -303,10 +306,15 @@ public class ReferenceTypeCommandSet
   private void executeSourceDebugExtension(ByteBuffer bb, DataOutputStream os)
     throws JdwpException, IOException
   {
-    // This command is optional, determined by VirtualMachines CapabilitiesNew
-    // so we'll leave it till later to implement
-    throw new NotImplementedException(
-      "Command SourceDebugExtension not implemented.");
+    if (!VMVirtualMachine.canGetSourceDebugExtension)
+      {
+	String msg = "source debug extension is not supported";
+	throw new NotImplementedException(msg);
+      }
+
+    ReferenceTypeId id = idMan.readReferenceTypeId(bb);
+    String ext = VMVirtualMachine.getSourceDebugExtension (id.getType());
+    JdwpString.writeString(os, ext);
   }
 
   private void executeSignatureWithGeneric(ByteBuffer bb, DataOutputStream os)
@@ -314,7 +322,7 @@ public class ReferenceTypeCommandSet
   {
     // We don't have generics yet
     throw new NotImplementedException(
-      "Command SourceDebugExtension not implemented.");
+      "Command SignatureWithGeneric not implemented.");
   }
 
   private void executeFieldWithGeneric(ByteBuffer bb, DataOutputStream os)
@@ -322,7 +330,7 @@ public class ReferenceTypeCommandSet
   {
     // We don't have generics yet
     throw new NotImplementedException(
-      "Command SourceDebugExtension not implemented.");
+      "Command executeFieldWithGeneric not implemented.");
   }
 
   private void executeMethodsWithGeneric(ByteBuffer bb, DataOutputStream os)
@@ -330,6 +338,6 @@ public class ReferenceTypeCommandSet
   {
     // We don't have generics yet
     throw new NotImplementedException(
-      "Command SourceDebugExtension not implemented.");
+      "Command executeMethodsWithGeneric not implemented.");
   }
 }

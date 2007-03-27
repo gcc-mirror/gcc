@@ -1,6 +1,6 @@
 /* ArrayReferenceCommandSet.java -- class to implement the Array
    Reference Command Set
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,8 @@ import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;
 import gnu.classpath.jdwp.id.ObjectId;
-import gnu.classpath.jdwp.util.Value;
+import gnu.classpath.jdwp.value.Value;
+import gnu.classpath.jdwp.value.ValueFactory;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -150,11 +151,11 @@ public class ArrayReferenceCommandSet
     // tagged
     for (int i = first; i < first + length; i++)
       {
-        Object value = Array.get(array, i);
+        Value val = ValueFactory.createFromObject(Array.get(array, i), clazz);
         if (clazz.isPrimitive())
-          Value.writeUntaggedValue(os, value);
+          val.writeUntagged(os);
         else
-          Value.writeTaggedValue(os, value);
+          val.writeTagged(os);
       }
   }
 
@@ -168,7 +169,7 @@ public class ArrayReferenceCommandSet
     Class type = array.getClass().getComponentType();
     for (int i = first; i < first + length; i++)
       {
-        Object value = Value.getUntaggedObj(bb, type);
+        Object value = Value.getUntaggedObject(bb, type);
         Array.set(array, i, value);
       }
   }

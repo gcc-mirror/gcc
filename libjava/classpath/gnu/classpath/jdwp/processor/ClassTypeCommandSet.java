@@ -1,6 +1,6 @@
 /* ClassTypeCommandSet.java -- class to implement the ClassType
    Command Set
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -49,7 +49,8 @@ import gnu.classpath.jdwp.exception.NotImplementedException;
 import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
 import gnu.classpath.jdwp.util.MethodResult;
-import gnu.classpath.jdwp.util.Value;
+import gnu.classpath.jdwp.value.Value;
+import gnu.classpath.jdwp.value.ValueFactory;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -128,7 +129,7 @@ public class ClassTypeCommandSet
       {
         ObjectId fieldId = idMan.readObjectId(bb);
         Field field = (Field) (fieldId.getObject());
-        Object value = Value.getUntaggedObj(bb, field.getType());
+        Object value = Value.getUntaggedObject(bb, field.getType());
         try
           {
             field.setAccessible(true); // Might be a private field
@@ -154,7 +155,8 @@ public class ClassTypeCommandSet
     Exception exception = mr.getThrownException();
     ObjectId eId = idMan.getObjectId(exception);
 
-    Value.writeTaggedValue(os, value);
+    Value val = ValueFactory.createFromObject(value, mr.getResultType());
+    val.writeTagged(os);
     eId.writeTagged(os);
   }
 
@@ -192,7 +194,7 @@ public class ClassTypeCommandSet
 
     for (int i = 0; i < args; i++)
       {
-        values[i] = Value.getObj(bb);
+        values[i] = Value.getTaggedObject(bb);
       }
 
     int invokeOpts = bb.getInt();
@@ -207,6 +209,8 @@ public class ClassTypeCommandSet
         MethodResult mr = VMVirtualMachine.executeMethod(null, thread,
 							 clazz, method,
 							 values, false);
+        mr.setResultType(method.getReturnType());
+        
         if (suspend)
 	  VMVirtualMachine.resumeAllThreads ();
 

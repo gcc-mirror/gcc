@@ -1,3 +1,144 @@
+2007-03-27  Keith Seitz  <keiths@redhat.com>
+
+	Merged from upstream:
+	2007-03-09  Kyle Galloway  <kgallowa@redhat.com>
+	* gnu/classpath/jdwp/exception/InvalidTagException.java: New file.
+	* gnu/classpath/jdwp/processor/ArrayReferenceCommandSet.java
+	(executeGetValues): Use Value type.
+	(exectureSetValues): Ditto.  
+	* gnu/classpath/jdwp/processor/ClassTypeCommandSet.java
+	(executeGetValues): Use Value type.
+	(executeSetValues): Ditto.
+	(invokeMethod): Record method return type.
+	* gnu/classpath/jdwp/processor/ObjectReferenceCommandSet.java
+	(executeGetValues): Use Value type.
+	(executeSetValues): Ditto.
+	* gnu/classpath/jdwp/processor/ReferenceTypeCommandSet.java
+	(executeGetValues): Use Value type.
+	* gnu/classpath/jdwp/processor/StackFrameCommandSet.java
+	(executeGetValues): Use Value type.
+	(executeSetValues): Ditto.
+	* gnu/classpath/jdwp/util/MethodResult.java: Add resType to store
+	return type.
+	(getResultType): New Method.
+	(setResultType): Ditto.
+	* gnu/classpath/jdwp/util/Value.java: Remove.
+	* gnu/classpath/jdwp/value: New Package.
+	* gnu/classpath/jdwp/value/Value.java: New file.
+	* gnu/classpath/jdwp/value/BooleanValue.java: New file.
+	* gnu/classpath/jdwp/value/ByteValue.java: New file.
+	* gnu/classpath/jdwp/value/CharValue.java: New file.
+	* gnu/classpath/jdwp/value/DoubleValue.java: New file.
+	* gnu/classpath/jdwp/value/FloatValue.java: New file.
+	* gnu/classpath/jdwp/value/IntValue.java: New file.
+	* gnu/classpath/jdwp/value/LongValue.java: New file.
+	* gnu/classpath/jdwp/value/ObjectValue.java: New file.
+	* gnu/classpath/jdwp/value/ShortValue.java: New file.
+	* gnu/classpath/jdwp/value/StringValue.java: New file.
+	* gnu/classpath/jdwp/value/ValueFactory.java: New file.
+	* gnu/classpath/jdwp/value/VoidValue.java: New file.
+
+	2007-02-28  Keith Seitz  <keiths@redhat.com>
+	* gnu/classpath/jdwp/processor/EventRequestCommandSet.java
+	(executeSet): Check if VM has capability for field access
+	or modification events.
+	* gnu/classpath/jdwp/processor/MethodCommandSet.java
+	(executeByteCodes): Check if VM has capability and
+	implement.
+	* gnu/classpath/jdwp/processor/ObjectReferenceCommandSet.java
+	(executeMonitorInfo): Likewise.
+	* gnu/classpath/jdwp/processor/ReferenceTypeCommandSet.java
+	(executeSourceDebugExtension): Likewise.
+	* gnu/classpath/jdwp/processor/StackFrameCommandSet.java
+	(executePopFrames): Likewise.
+	* gnu/classpath/jdwp/processor/ThreadReferenceCommandSet.java
+	(executeOwnedMonitors): Likewise.
+	(executeCurrentContendedMonitor): Likewise.
+	* gnu/classpath/jdwp/processor/VirtualMachineCommandSet.java
+	(executeCapabilities): Rewrite using new VMVirtualMachine
+	capabilities.
+	(executeRedefineClasses): Check if VM has capability and
+	implement.
+	(executeSetDefaultStratum): Likewise.
+	* gnu/classpath/jdwp/util/MonitorInfo.java; New file.
+	* vm/reference/gnu/classpath/jdwp/VMVirtualMachine.java
+	(canWatchFieldModification): New class constant.
+	(canWatchFieldAccess): Likewise.
+	(canGetBytecodes): Likewise.
+	(canGetSyntheticAttribute): Likewise.
+	(canGetOwnedMonitorInfo): Likewise.
+	(canGetCurrentContendedMonitor): Likewise.
+	(canGetMonitorInfo): Likewise.
+	(canRedefineClasses): Likewise.
+	(canAddMethod): Likewise.
+	(canUnrestrictedlyRedefineClasses): Likewise.
+	(canPopFrames): Likewise.
+	(canUseInstanceFilters): Likewise.
+	(canGetSourceDebugExtension): Likewise.
+	(canRequestVMDeathEvent): Likewise.
+	(canSetDefaultStratum): Likewise.
+	(redefineClasses): New method.
+	(setDefaultStratum): Likewise.
+	(getSourceDebugExtension): Likewise.
+	(getBytecodes): Likewise.
+	(getMonitorInfo): Likewise.
+	(getOwnedMonitors): Likewise.
+	(getCurrentContendedMonitor): Likewise.
+	(popFrames): Likewise.
+
+	2007-02-28  Keith Seitz  <keiths@redhat.com>
+	* gnu/classpath/jdwp/processor/MethodCommandSet.java
+	(executeLineTable): Use ReferenceTypeId instead of
+	ClassReferenceTypeId.
+	(executeVariableTable): Likewise.
+	(executeVariableTableWithGeneric): Fix error message.
+	* gnu/classpath/jdwp/processor/ReferenceTypeCommandSet.java
+	(executeSignatureWithGeneric): Fix error message.
+	(executeFieldWithGeneric): Likewise.
+	(executeMethodsWithGeneric): Likewise.
+	* gnu/classpath/jdwp/processor/StackFrameCommandSet.java
+	(executeGetValues): Use ThreadId instead of ObjectId.
+	(executeSetValues): Likewise.
+	(executeThisObject): Likewise.
+
+	2007-02-28  Kyle Galloway  <kgallowa@redhat.com>
+	* gnu/classpath/jdwp/id/NullObjectId.java: New class.
+	* gnu/classpath/jdwp/util/NullObject.java: New class.
+	* vm/reference/gnu/classpath/jdwp/VMIdManager.java
+	(getObjectId): Handle null object.
+	(get): Handle objectId of 0. 
+
+	2007-02-22  Keith Seitz  <keiths@redhat.ecom>
+	* vm/reference/gnu/classpath/jdwp/VMVirtualMachine.java
+	(getAllLoadedClassesCount): Remove.
+	(getAllLoadedClasses): Return a Collection.
+	* gnu/classpath/jdwp/processor/VirtualMachineCommandSet.java
+	(executeClassesBySignature): VMVirtualMachine.getAllLoadedClasses
+	now returns Collection.
+	(executeAllClasses): Likewise.
+	Get size of return from Colleciton instead of calling
+	getAllLoadedClassesCount.
+
+	2007-02-22  Kyle Galloway  <kgallowa@redhat.com>
+	* gnu/classpath/jdwp/processor/StackFrameCommandSet.java 
+	(executeGetValues): Pass a signature byte to VMFrame.getValue.
+	* vm/reference/gnu/classpath/jdwp/VMFrame.java (getValue): Add
+	signature parameter.
+
+	2007-02-02  Kyle Galloway  <kgallowa@redhat.com>
+	* gnu/classpath/jdwp/processor/StackFrameCommandSet.java
+	(executeGetValues): Changed getFrame to use a jlong to pass frameID.
+	(executeSetValues): Ditto.
+	(executeThisObject): Ditto.
+	* vm/reference/gnu/classpath/jdwp/VMFrame.java: Added thread field
+	and a constructor used to create VMFrames.
+	(getThread): New method.
+	* vm/reference/gnu/classpath/jdwp/VMVirtualMachine.java(getFrame):
+	Changed to take a long instead of a ByteBuffer to pass the frameID.
+
+	2007-01-15  Kyle Galloway  <kgallowa@redhat.com>
+	* gnu/classpath/jdwp/exception/InvalidSlotException.java: New file.
+
 2007-03-26  Tom Tromey  <tromey@redhat.com>
 
 	* doc/cp-tools.texinfo (gcjh Tool): Added more text.

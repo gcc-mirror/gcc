@@ -52,6 +52,9 @@ public class MethodResult
   
   // Any Exception that was thrown by the executing method
   private Exception thrownException;
+  
+  // The type of this result
+  private Class resType;
 
   public Object getReturnedValue()
   {
@@ -71,6 +74,16 @@ public class MethodResult
   public void setThrownException(Exception thrownException)
   {
     this.thrownException = thrownException;
+  }
+  
+  public Class getResultType()
+  {
+    return resType;
+  }
+  
+  public void setResultType(Class type)
+  {
+    resType = type;
   }
   
 }

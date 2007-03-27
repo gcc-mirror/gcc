@@ -1,5 +1,5 @@
 /* ThreadReferenceCommandSet.java -- class to implement the ThreadReference
-   Command Set Copyright (C) 2005 Free Software Foundation
+   Command Set Copyright (C) 2005, 2007 Free Software Foundation
  
 This file is part of GNU Classpath.
 
@@ -198,22 +198,42 @@ public class ThreadReferenceCommandSet
   }
 
   private void executeOwnedMonitors(ByteBuffer bb, DataOutputStream os)
-      throws JdwpException
+    throws JdwpException, IOException
   {
-    // This command is optional, determined by VirtualMachines CapabilitiesNew
-    // so we'll leave it till later to implement
-    throw new NotImplementedException(
-      "Command OwnedMonitors not implemented.");
+    if (!VMVirtualMachine.canGetOwnedMonitorInfo)
+      {
+	String msg = "getting owned monitors is not supported";
+	throw new NotImplementedException(msg);
+      }
+
+    ThreadId tid = (ThreadId) idMan.readObjectId(bb);
+    Thread thread = tid.getThread();
+    Object[] monitors = VMVirtualMachine.getOwnedMonitors(thread);
+
+    os.write(monitors.length);
+    for (int i = 0; i < monitors.length; ++i)
+      {
+	ObjectId id = idMan.getObjectId(monitors[i]);
+	id.writeTagged(os);
+      }
   }
 
   private void executeCurrentContendedMonitor(ByteBuffer bb,
                                               DataOutputStream os)
-      throws JdwpException
+    throws JdwpException, IOException
   {
-    // This command is optional, determined by VirtualMachines CapabilitiesNew
-    // so we'll leave it till later to implement
-    throw new NotImplementedException(
-      "Command CurrentContentedMonitors not implemented.");
+    if (!VMVirtualMachine.canGetCurrentContendedMonitor)
+      {
+	String msg = "getting current contended monitor is not supported";
+	throw new NotImplementedException(msg);
+      }
+
+    ThreadId tid = (ThreadId) idMan.readObjectId(bb);
+    Thread thread = tid.getThread();
+
+    Object monitor = VMVirtualMachine.getCurrentContendedMonitor(thread);
+    ObjectId id = idMan.getObjectId(monitor);
+    id.writeTagged(os);
   }
 
   private void executeStop(ByteBuffer bb, DataOutputStream os)
