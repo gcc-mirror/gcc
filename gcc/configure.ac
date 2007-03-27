@@ -2992,10 +2992,10 @@ LCF0:
     case $target in
       *-*-aix*) conftest_s='	.machine "pwr6"
 	.csect .text[[PR]]
-	dadd 1,3';;
+	dadd 1,2,3';;
       *) conftest_s='	.machine power6
 	.text
-	dadd 1,3';;
+	dadd 1,2,3';;
     esac
 
     gcc_GAS_CHECK_FEATURE([decimal float support],
