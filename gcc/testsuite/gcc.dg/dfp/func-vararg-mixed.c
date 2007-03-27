@@ -7,6 +7,16 @@
 #include <stdarg.h>
 
 extern void abort (void);
+static int failcnt = 0;
+                                                                                
+/* Support compiling the test to report individual failures; default is
+   to abort as soon as a check fails.  */
+#ifdef DBG
+#include <stdio.h>
+#define FAILURE { printf ("failed at line %d\n", __LINE__); failcnt++; }
+#else
+#define FAILURE abort ();
+#endif
 
 /* Supposing the list of varying number of arguments is:
    unsigned int, _Decimal128, double, _Decimal32, _Decimal64.  */
@@ -95,11 +105,13 @@ vararg_double (unsigned arg, ...)
 int
 main ()
 {
-  if (vararg_d32 (3, 0, 1.0dl, 2.0, 3.0df, 4.0dd) != 3.0df) abort ();
-  if (vararg_d64 (4, 0, 1.0dl, 2.0, 3.0df, 4.0dd) != 4.0dd) abort ();
-  if (vararg_d128 (1, 0, 1.0dl, 2.0, 3.0df, 4.0dd) != 1.0dl) abort ();
-  if (vararg_int (0, 0, 1.0dl, 2.0, 3.0df, 4.0dd) != 0) abort ();
-  if (vararg_double (2, 0, 1.0dl, 2.0, 3.0df, 4.0dd) != 2.0) abort ();
+  if (vararg_d32 (3, 0, 1.0dl, 2.0, 3.0df, 4.0dd) != 3.0df) FAILURE
+  if (vararg_d64 (4, 0, 1.0dl, 2.0, 3.0df, 4.0dd) != 4.0dd) FAILURE
+  if (vararg_d128 (1, 0, 1.0dl, 2.0, 3.0df, 4.0dd) != 1.0dl) FAILURE
+  if (vararg_int (0, 0, 1.0dl, 2.0, 3.0df, 4.0dd) != 0) FAILURE
+  if (vararg_double (2, 0, 1.0dl, 2.0, 3.0df, 4.0dd) != 2.0) FAILURE
 
+  if (failcnt != 0)
+    abort ();
   return 0;
 }
