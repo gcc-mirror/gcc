@@ -1,3 +1,38 @@
+2007-03-27  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/VMFrame.java: Update from upstream
+	classpath.
+	* gnu/classpath/jdwp/natVMFrame.cc: Likewise.
+	* gnu/classpath/jdwp/VMVirtualMachine.java: Likewise.
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc: Likewise.
+	(initialize): Fix compiler type-punning warning.
+	(getAllLoadedClasses): Return empty list instead of NULL.
+	(getLoadRequests): Likewise.
+	* gnu/classpath/jdwp/exception/InvalidTagException.h: New file.
+	* gnu/classpath/jdwp/exception/InvalidSlotException.h: New file.
+	* gnu/classpath/jdwp/exception/TypeMismatchException.h: New file.
+	* gnu/classpath/jdwp/VMVirtualMachine.h: Rebuilt.
+	* gnu/classpath/jdwp/value/CharValue.h: New file.
+	* gnu/classpath/jdwp/value/LongValue.h: New file.
+	* gnu/classpath/jdwp/value/ShortValue.h: New file.
+	* gnu/classpath/jdwp/value/Value.h: New file.
+	* gnu/classpath/jdwp/value/BooleanValue.h: New file.
+	* gnu/classpath/jdwp/value/VoidValue.h: New file.
+	* gnu/classpath/jdwp/value/ByteValue.h: New file.
+	* gnu/classpath/jdwp/value/FloatValue.h: New file.
+	* gnu/classpath/jdwp/value/ObjectValue.h: New file.
+	* gnu/classpath/jdwp/value/StringValue.h: New file.
+	* gnu/classpath/jdwp/value/ValueFactory.h: New file.
+	* gnu/classpath/jdwp/value/IntValue.h: New file.
+	* gnu/classpath/jdwp/value/DoubleValue.h: New file.
+	* gnu/classpath/jdwp/VMFrame.h: Rebuilt.
+	* gnu/classpath/jdwp/id/NullObjectId.h: New file.
+	* gnu/classpath/jdwp/util/MethodResult.h: Rebuilt.
+	* gnu/classpath/jdwp/util/NullObject.h: New file.
+	* gnu/classpath/jdwp/util/MonitorInfo.h: New file.
+	* Makefile.in: Rebuilt.
+	* sources.am: Rebuilt.
+
 2006-03-26  David Daney  <ddaney@avtrex.com>
 
 	* configure.ac: Remove checks for mktime, alloca, ioctl, gmtime_r,

@@ -33,9 +33,12 @@ public:
   virtual void setReturnedValue(::java::lang::Object *);
   virtual ::java::lang::Exception * getThrownException();
   virtual void setThrownException(::java::lang::Exception *);
+  virtual ::java::lang::Class * getResultType();
+  virtual void setResultType(::java::lang::Class *);
 private:
   ::java::lang::Object * __attribute__((aligned(__alignof__( ::java::lang::Object)))) returnedValue;
   ::java::lang::Exception * thrownException;
+  ::java::lang::Class * resType;
 public:
   static ::java::lang::Class class$;
 };

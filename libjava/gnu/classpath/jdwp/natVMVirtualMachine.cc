@@ -111,7 +111,13 @@ gnu::classpath::jdwp::VMVirtualMachine::initialize ()
   _stepping_threads = new ::java::util::Hashtable ();
 
   JavaVM *vm = _Jv_GetJavaVM ();
-  vm->GetEnv (reinterpret_cast<void **> (&_jdwp_jvmtiEnv), JVMTI_VERSION_1_0);
+  union
+  {
+    void *ptr;
+    jvmtiEnv *env;
+  } foo;
+  vm->GetEnv (&(foo.ptr), JVMTI_VERSION_1_0);
+  _jdwp_jvmtiEnv = foo.env;
 
   // Wait for VM_INIT to do more initialization
   jvmtiEventCallbacks callbacks;
@@ -439,16 +445,11 @@ gnu::classpath::jdwp::VMVirtualMachine::clearEvents (MAYBE_UNUSED jbyte kind)
 {
 }
 
-jint
-gnu::classpath::jdwp::VMVirtualMachine::getAllLoadedClassesCount (void)
-{
-  return 0;
-}
-
-java::util::Iterator *
+java::util::Collection *
 gnu::classpath::jdwp::VMVirtualMachine::getAllLoadedClasses (void)
 {
-  return NULL;
+  using namespace ::java::util;
+  return (Collection *) new ArrayList ();
 }
 
 jint
@@ -629,7 +630,7 @@ java::util::ArrayList *
 gnu::classpath::jdwp::VMVirtualMachine::
 getLoadRequests (MAYBE_UNUSED ClassLoader *cl)
 {
-  return NULL;
+  return new ::java::util::ArrayList ();
 }
 
 MethodResult *
@@ -647,6 +648,61 @@ gnu::classpath::jdwp::VMVirtualMachine::
 getSourceFile (jclass clazz)
 {
   return _Jv_GetInterpClassSourceFile (clazz);
+}
+
+void
+gnu::classpath::jdwp::VMVirtualMachine::
+redefineClasses (MAYBE_UNUSED JArray<jclass> *types,
+		 MAYBE_UNUSED JArray<jbyteArray> *bytecodes)
+{
+}
+
+void
+gnu::classpath::jdwp::VMVirtualMachine::
+setDefaultStratum (MAYBE_UNUSED jstring stratum)
+{
+}
+
+jstring
+gnu::classpath::jdwp::VMVirtualMachine::
+getSourceDebugExtension (MAYBE_UNUSED jclass klass)
+{
+  return NULL;
+}
+
+jbyteArray
+gnu::classpath::jdwp::VMVirtualMachine::
+getBytecodes (MAYBE_UNUSED gnu::classpath::jdwp::VMMethod *method)
+{
+  return NULL;
+}
+
+gnu::classpath::jdwp::util::MonitorInfo *
+gnu::classpath::jdwp::VMVirtualMachine::
+getMonitorInfo (MAYBE_UNUSED jobject obj)
+{
+  return NULL;
+}
+
+jobjectArray
+gnu::classpath::jdwp::VMVirtualMachine::
+getOwnedMonitors (MAYBE_UNUSED ::java::lang::Thread *thread)
+{
+  return NULL;
+}
+
+jobject
+gnu::classpath::jdwp::VMVirtualMachine::
+getCurrentContendedMonitor (MAYBE_UNUSED ::java::lang::Thread *thread)
+{
+  return NULL;
+}
+
+void
+gnu::classpath::jdwp::VMVirtualMachine::
+popFrames (MAYBE_UNUSED ::java::lang::Thread *thread,
+	   MAYBE_UNUSED jlong frameId)
+{
 }
 
 // A simple caching function used while single-stepping

@@ -159,9 +159,10 @@ am__DEPENDENCIES_1 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	gnu/classpath/jdwp/exception.lo gnu/classpath/jdwp/id.lo \
 	gnu/classpath/jdwp/processor.lo \
 	gnu/classpath/jdwp/transport.lo gnu/classpath/jdwp/util.lo \
-	gnu/gcj.lo gnu/gcj/convert.lo gnu/gcj/io.lo gnu/gcj/jvmti.lo \
-	gnu/gcj/runtime.lo gnu/gcj/util.lo gnu/java/awt.lo \
-	gnu/java/awt/color.lo gnu/java/awt/dnd.lo gnu/java/awt/font.lo \
+	gnu/classpath/jdwp/value.lo gnu/gcj.lo gnu/gcj/convert.lo \
+	gnu/gcj/io.lo gnu/gcj/jvmti.lo gnu/gcj/runtime.lo \
+	gnu/gcj/util.lo gnu/java/awt.lo gnu/java/awt/color.lo \
+	gnu/java/awt/dnd.lo gnu/java/awt/font.lo \
 	gnu/java/awt/font/autofit.lo gnu/java/awt/font/opentype.lo \
 	gnu/java/awt/font/opentype/truetype.lo gnu/java/awt/image.lo \
 	gnu/java/awt/java2d.lo gnu/java/awt/peer.lo \
@@ -1218,7 +1219,9 @@ classpath/gnu/classpath/jdwp/exception/InvalidFrameException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidLocationException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidMethodException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidObjectException.java \
+classpath/gnu/classpath/jdwp/exception/InvalidSlotException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidStringException.java \
+classpath/gnu/classpath/jdwp/exception/InvalidTagException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidThreadException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidThreadGroupException.java \
 classpath/gnu/classpath/jdwp/exception/JdwpException.java \
@@ -1226,6 +1229,7 @@ classpath/gnu/classpath/jdwp/exception/JdwpIllegalArgumentException.java \
 classpath/gnu/classpath/jdwp/exception/JdwpInternalErrorException.java \
 classpath/gnu/classpath/jdwp/exception/NativeMethodException.java \
 classpath/gnu/classpath/jdwp/exception/NotImplementedException.java \
+classpath/gnu/classpath/jdwp/exception/TypeMismatchException.java \
 classpath/gnu/classpath/jdwp/exception/VmDeadException.java
 
 gnu_classpath_jdwp_exception_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_jdwp_exception_source_files)))
@@ -1237,6 +1241,7 @@ classpath/gnu/classpath/jdwp/id/ClassObjectId.java \
 classpath/gnu/classpath/jdwp/id/ClassReferenceTypeId.java \
 classpath/gnu/classpath/jdwp/id/InterfaceReferenceTypeId.java \
 classpath/gnu/classpath/jdwp/id/JdwpId.java \
+classpath/gnu/classpath/jdwp/id/NullObjectId.java \
 classpath/gnu/classpath/jdwp/id/ObjectId.java \
 classpath/gnu/classpath/jdwp/id/ReferenceTypeId.java \
 classpath/gnu/classpath/jdwp/id/StringId.java \
@@ -1281,11 +1286,29 @@ classpath/gnu/classpath/jdwp/util/JdwpString.java \
 classpath/gnu/classpath/jdwp/util/LineTable.java \
 classpath/gnu/classpath/jdwp/util/Location.java \
 classpath/gnu/classpath/jdwp/util/MethodResult.java \
+classpath/gnu/classpath/jdwp/util/MonitorInfo.java \
+classpath/gnu/classpath/jdwp/util/NullObject.java \
 classpath/gnu/classpath/jdwp/util/Signature.java \
 classpath/gnu/classpath/jdwp/util/Value.java \
 classpath/gnu/classpath/jdwp/util/VariableTable.java
 
 gnu_classpath_jdwp_util_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_jdwp_util_source_files)))
+gnu_classpath_jdwp_value_source_files = \
+classpath/gnu/classpath/jdwp/value/BooleanValue.java \
+classpath/gnu/classpath/jdwp/value/ByteValue.java \
+classpath/gnu/classpath/jdwp/value/CharValue.java \
+classpath/gnu/classpath/jdwp/value/DoubleValue.java \
+classpath/gnu/classpath/jdwp/value/FloatValue.java \
+classpath/gnu/classpath/jdwp/value/IntValue.java \
+classpath/gnu/classpath/jdwp/value/LongValue.java \
+classpath/gnu/classpath/jdwp/value/ObjectValue.java \
+classpath/gnu/classpath/jdwp/value/ShortValue.java \
+classpath/gnu/classpath/jdwp/value/StringValue.java \
+classpath/gnu/classpath/jdwp/value/Value.java \
+classpath/gnu/classpath/jdwp/value/ValueFactory.java \
+classpath/gnu/classpath/jdwp/value/VoidValue.java
+
+gnu_classpath_jdwp_value_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_jdwp_value_source_files)))
 gnu_gcj_source_files = \
 gnu/gcj/Core.java \
 gnu/gcj/RawData.java \
@@ -7225,6 +7248,7 @@ all_packages_source_files = \
   gnu/classpath/jdwp/processor.list \
   gnu/classpath/jdwp/transport.list \
   gnu/classpath/jdwp/util.list \
+  gnu/classpath/jdwp/value.list \
   gnu/gcj.list \
   gnu/gcj/convert.list \
   gnu/gcj/io.list \
@@ -7474,6 +7498,7 @@ ordinary_header_files = \
   $(gnu_classpath_jdwp_processor_header_files) \
   $(gnu_classpath_jdwp_transport_header_files) \
   $(gnu_classpath_jdwp_util_header_files) \
+  $(gnu_classpath_jdwp_value_header_files) \
   $(gnu_gcj_header_files) \
   $(gnu_gcj_convert_header_files) \
   $(gnu_gcj_io_header_files) \
@@ -10082,6 +10107,12 @@ gnu/classpath/jdwp/util.list: $(gnu_classpath_jdwp_util_source_files)
 	echo $(srcdir)/classpath/lib/gnu/classpath/jdwp/util/*.class > gnu/classpath/jdwp/util.list
 
 -include gnu/classpath/jdwp/util.deps
+
+gnu/classpath/jdwp/value.list: $(gnu_classpath_jdwp_value_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	echo $(srcdir)/classpath/lib/gnu/classpath/jdwp/value/*.class > gnu/classpath/jdwp/value.list
+
+-include gnu/classpath/jdwp/value.deps
 
 gnu/gcj.list: $(gnu_gcj_source_files)
 	@$(mkinstalldirs) $(dir $@)
