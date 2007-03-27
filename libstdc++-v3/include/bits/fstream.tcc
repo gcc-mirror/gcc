@@ -279,16 +279,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		      _M_ext_end += __elen;
 		    }
 
-		  char_type* __iend;
-		  __r = _M_codecvt->in(_M_state_cur, _M_ext_next,
-				       _M_ext_end, _M_ext_next, this->eback(),
-				       this->eback() + __buflen, __iend);
+		  char_type* __iend = this->eback();
+		  if (_M_ext_next < _M_ext_end)
+		    __r = _M_codecvt->in(_M_state_cur, _M_ext_next,
+					 _M_ext_end, _M_ext_next,
+					 this->eback(),
+					 this->eback() + __buflen, __iend);
 		  if (__r == codecvt_base::noconv)
 		    {
 		      size_t __avail = _M_ext_end - _M_ext_buf;
 		      __ilen = std::min(__avail, __buflen);
 		      traits_type::copy(this->eback(),
-					reinterpret_cast<char_type*>(_M_ext_buf), __ilen);
+					reinterpret_cast<char_type*>
+					(_M_ext_buf), __ilen);
 		      _M_ext_next = _M_ext_buf + __ilen;
 		    }
 		  else
