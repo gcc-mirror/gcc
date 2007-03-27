@@ -1,5 +1,7 @@
 2007-03-27  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/dfp/operandor-conf.c: Call init, fix typo.	
+
 	* lib/compat.exp (compat-execute): Fix processing of file names.
 
 2007-03-27  Daniel Jacobowitz  <dan@codesourcery.com>
