@@ -1,3 +1,9 @@
+2007-03-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/fstream.tcc (basic_filebuf<>::underflow):
+	Don't call codecvt::in at all if _M_ext_next >= _M_ext_end.
+	* testsuite/27_io/basic_filebuf/underflow/char/3.cc: New.
+
 2007-03-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c_compatibility/complex.h: Without
