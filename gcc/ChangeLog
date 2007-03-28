@@ -1,3 +1,8 @@
+2007-03-28  Grigory Zagorodnev <grigory_zagorodnev@linux.intel.com>
+
+	PR target/31380
+	* config/i386/sse.md (uminv16qi3): Use UMIN instead of UMAX.
+
 2007-03-28  Lars Poeschel <larsi@wh2.tu-dresden.de>
 
 	* config/fr30/fr30.md (movsi_internal): Change destination
