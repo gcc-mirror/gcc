@@ -1,9 +1,11 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
-@setfilename gfortran.info
+@setfilename gfc-internals.info
 @set copyrights-gfortran 2007
 
 @include gcc-common.texi
+
+@synindex tp cp
 
 @settitle GNU Fortran Compiler Internals
 
@@ -115,6 +117,8 @@ not accurately reflect the status of the most recent GNU Fortran compiler.
 @menu
 * Introduction::           About this manual.
 * User Interface::         Code that Interacts with the User.
+* Frontend Data Structures::
+                           Data structures used by the frontend
 * LibGFortran::            The LibGFortran Runtime Library.
 * GNU Free Documentation License::
 		           How you can copy and share this manual.
@@ -265,6 +269,53 @@ syntax, with @samp{%}-escapes to insert variable values.  The details,
 and the allowable codes, are documented in the @code{error_print}
 function in @file{error.c}.
 
+@c ---------------------------------------------------------------------
+@c Frontend Data Structures
+@c ---------------------------------------------------------------------
+
+@node Frontend Data Structures
+@chapter Frontend Data Structures
+@cindex data structures
+
+This chapter should describe the details necessary to understand how
+the various @code{gfc_*} data are used and interact.  In general it is
+advisable to read the code in @file{dump-parse-tree.c} as its routines
+should exhaust all possible valid combinations of content for these
+structures.
+
+@menu
+* gfc_code:: Representation of Executable Statements
+@end menu
+
+@node gfc_code
+@section @code{gfc_code}
+@cindex statement chaining
+@tindex @code{gfc_code}
+@tindex @code{struct gfc_code}
+
+The executable statements in a program unit are represented by a
+nested chain of @code{gfc_code} structures.  The type of statement is
+identified by the @code{op} member of the structure, the different
+possible values are enumerated in @code{gfc_exec_op}.  A special
+member of this @code{enum} is @code{EXEC_NOP} which is used to
+reperesent the various @code{END} statements if they carry a label.
+Depending on the type of statement some of the other fields will be
+filled in.  Fields that are generally applicable are the @code{next}
+and @code{here} fields.  The former points to the next statement in
+the current block or is @code{NULL} if the current statement is the
+last in a block, @code{here} points to the statement label of the
+current statement.
+
+If the current statement is one of @code{IF}, @code{DO}, @code{SELECT}
+it starts a block, i.e. a nested level in the program.  In order to
+represent this, the @code{block} member is set to point to a
+@code{gfc_code} structure whose @code{block} member points to the
+block in question.  The @code{SELECT} and @code{IF} statements may
+contain various blocks (the chain of @code{ELSE IF} and @code{ELSE}
+blocks or the various @code{CASE}s, respectively).
+
+@c What would be nice here would be an example program togehter with
+@c an image that says more than the mythical thousand words.
 
 
 @c ---------------------------------------------------------------------
