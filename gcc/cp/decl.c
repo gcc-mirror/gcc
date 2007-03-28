@@ -8029,7 +8029,12 @@ grokdeclarator (const cp_declarator *declarator,
 	 member function of S.  We record the cv-qualification in the
 	 function type.  */
       if (memfn_quals && TREE_CODE (type) == FUNCTION_TYPE)
-	type = cp_build_qualified_type (type, memfn_quals);
+        {
+          type = cp_build_qualified_type (type, memfn_quals);
+          
+          /* We have now dealt with these qualifiers.  */
+          memfn_quals = TYPE_UNQUALIFIED;
+        }
 
       if (decl_context == FIELD)
 	decl = build_lang_decl (TYPE_DECL, unqualified_id, type);
@@ -8090,11 +8095,6 @@ grokdeclarator (const cp_declarator *declarator,
 	  /* FIXME remangle member functions; member functions of a
 	     type with external linkage have external linkage.  */
 	}
-
-	/* Any qualifiers on a function type typedef have already been
-	   dealt with. */
-      if (memfn_quals && !ctype && TREE_CODE (type) == FUNCTION_TYPE)
-	memfn_quals = TYPE_UNQUALIFIED;
 
       if (signed_p
 	  || (typedef_decl && C_TYPEDEF_EXPLICITLY_SIGNED (typedef_decl)))

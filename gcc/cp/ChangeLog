@@ -1,3 +1,9 @@
+2007-03-28 Douglas Gregor <doug.gregor@gmail.com>
+
+	PR c++/29993
+	* decl.c (grokdeclarator): Deal with cv-qualified function type
+	typedefs in the same way for member and non-member functions.
+
 2007-03-26  Dirk Mueller  <dmueller@suse.de>
 
 	* parser.c (cp_parser_member_declaration): Pedwarn
