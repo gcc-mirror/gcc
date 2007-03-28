@@ -1,3 +1,9 @@
+2007-03-28  Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
+
+	* config.gcc: Accept barcelona as a variant of amdfam10.
+	* config/i386/i386.c (override_options): Likewise.
+	* doc/invoke.texi: Likewise.
+	
 2007-03-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-dfa.c (get_ref_base_and_extent): Do not expect positive
