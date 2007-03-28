@@ -1,3 +1,13 @@
+2007-03-28  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md ("fix_trunc<mode>di2"): New expander.
+	("fix_trunc<DFP:mode>di2_dfp"): New insn definition renamed from
+	fix_trunc<mode>di2.
+	("fixuns_truncdddi2", "fixuns_trunctddi2"): Use 
+	fix_trunc<DFP:mode>di2_dfp instead of fix_trunc<mode>di2.
+	("fix_truncdfsi2", "fix_truncsfsi2", "fixuns_truncdddi2",
+	"fixuns_trunctddi2"): Whitespace fix.
+
 2007-03-28  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.h (CALL_COOKIE_RET_TRAMP_SHIFT): Move after
