@@ -1,3 +1,8 @@
+2007-03-28  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/29077
+	* g++.dg/parse/constructor3.C: New test.
+
 2007-03-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/thin_pointer.ad[sb]: New test.
