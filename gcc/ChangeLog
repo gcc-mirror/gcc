@@ -1,3 +1,8 @@
+2007-03-28  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* ifcvt.c (cond_exec_find_if_block): Return FALSE if no
+	transformations are applied successfully.
+
 2007-03-27  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* tree.c (tree_contains_struct): Permit 512 tree codes.
