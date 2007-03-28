@@ -1342,8 +1342,6 @@ gnu/gcj/convert/UnicodeToBytes.java
 
 gnu_gcj_convert_header_files = $(patsubst %.java,%.h,$(gnu_gcj_convert_source_files))
 gnu_gcj_io_source_files = \
-gnu/gcj/io/DefaultMimeTypes.java \
-gnu/gcj/io/MimeTypes.java \
 gnu/gcj/io/SimpleSHSStream.java
 
 gnu_gcj_io_header_files = $(patsubst %.java,%.h,$(gnu_gcj_io_source_files))
