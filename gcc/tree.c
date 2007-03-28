@@ -7602,17 +7602,6 @@ range_in_array_bounds_p (tree ref)
   return true;
 }
 
-/* Return true if T (assumed to be a DECL) is a global variable.  */
-
-bool
-is_global_var (tree t)
-{
-  if (MTAG_P (t))
-    return (TREE_STATIC (t) || MTAG_GLOBAL (t));
-  else
-    return (TREE_STATIC (t) || DECL_EXTERNAL (t));
-}
-
 /* Return true if T (assumed to be a DECL) must be assigned a memory
    location.  */
 

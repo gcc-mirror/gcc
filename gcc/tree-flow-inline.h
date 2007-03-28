@@ -718,6 +718,17 @@ is_label_stmt (tree t)
   return false;
 }
 
+/* Return true if T (assumed to be a DECL) is a global variable.  */
+
+static inline bool
+is_global_var (tree t)
+{
+  if (MTAG_P (t))
+    return (TREE_STATIC (t) || MTAG_GLOBAL (t));
+  else
+    return (TREE_STATIC (t) || DECL_EXTERNAL (t));
+}
+
 /* PHI nodes should contain only ssa_names and invariants.  A test
    for ssa_name is definitely simpler; don't let invalid contents
    slip in in the meantime.  */
