@@ -2228,7 +2228,8 @@ next_record_r (st_parameter_dt *dtp)
       break;
     }
 
-  if (dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL)
+  if (dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL
+      && !dtp->u.p.namelist_mode)
     test_endfile (dtp->u.p.current_unit);
 }
 
