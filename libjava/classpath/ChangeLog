@@ -1,3 +1,9 @@
+2007-03-28  Casey Marshall  <csm@gnu.org>
+
+	* gnu/javax/net/ssl/provider/ClientHandshake.java (RSAGen.implRun):
+	check keyEncipherment bit of the certificate, and just pass the public
+	key to the cipher.
+
 2007-03-27  Casey Marshall  <csm@gnu.org>
 
 	PR classpath/31302:
