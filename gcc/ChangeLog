@@ -1,3 +1,8 @@
+2007-02-11  Lars Poeschel <larsi@wh2.tu-dresden.de>
+
+	* config/fr30/fr30.md (movsi_internal): Change destination
+	constraint from m to V and add m to the end. 
+
 2007-03-28  Christian Bruel  <christian.bruel@st.com>
 
 	* config/sh/sh.md (movsi_i): Fix type attribute.
