@@ -1,3 +1,8 @@
+2007-03-28  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* gfc-internals.texi: Fix output filename.  Merge type index into
+	concept index.  Start documentation of gfc_code structure.
+
 2007-03-26  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gfc-internals.texi: New file,
