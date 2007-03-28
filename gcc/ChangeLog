@@ -1,3 +1,8 @@
+2007-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-dfa.c (get_ref_base_and_extent): Do not expect positive
+	offsets for BIT_FIELD_REF and COMPONENT_REF.
+
 2007-03-28  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (is_global_var): Move ...
