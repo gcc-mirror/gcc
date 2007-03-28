@@ -1,3 +1,10 @@
+2007-03-28  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.h (CALL_COOKIE_RET_TRAMP_SHIFT): Move after
+	the definition of struct sh_args.
+	(CALL_COOKIE_RET_TRAMP, CALL_COOKIE_STACKSEQ_SHIFT,
+	CALL_COOKIE_INT_REG_GET): Likewise.
+
 2007-03-28  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* ifcvt.c (cond_exec_find_if_block): Return FALSE if no
