@@ -1,3 +1,11 @@
+2007-03-27  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* tree.c (tree_contains_struct): Permit 512 tree codes.
+	* tree.h (tree_contains_struct): Ditto.
+	(MAX_TREE_CODES): Ditto.
+	(struct tree_base): Make CODE 16 bits, instead of 8 bits. Add
+	SPARE member to store remaining padding bits.
+
 2007-03-27  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (avr_mcu_types): Move at90usb82 device to 'avr4' 
