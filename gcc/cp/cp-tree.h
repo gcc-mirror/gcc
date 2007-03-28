@@ -4300,6 +4300,7 @@ extern tree check_explicit_specialization	(tree, tree, int, int);
 extern tree process_template_parm		(tree, tree, bool, bool);
 extern tree end_template_parm_list		(tree);
 extern void end_template_decl			(void);
+extern bool check_default_tmpl_args             (tree, tree, int, int, int);
 extern tree push_template_decl			(tree);
 extern tree push_template_decl_real		(tree, bool);
 extern bool redeclare_class_template		(tree, tree);

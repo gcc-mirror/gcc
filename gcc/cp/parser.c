@@ -11721,6 +11721,13 @@ cp_parser_init_declarator (cp_parser* parser,
 		      ((is_parenthesized_init || !is_initialized)
 		     ? 0 : LOOKUP_ONLYCONVERTING));
     }
+  else if (flag_cpp0x && friend_p && decl && TREE_CODE (decl) == FUNCTION_DECL)
+    /* Core issue #226 (C++0x only): A default template-argument
+       shall not be specified in a friend class template
+       declaration. */
+    check_default_tmpl_args (decl, current_template_parms, /*is_primary=*/1, 
+                             /*is_partial=*/0, /*is_friend_decl=*/1);
+
   if (!friend_p && pushed_scope)
     pop_scope (pushed_scope);
 

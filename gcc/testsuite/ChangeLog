@@ -1,5 +1,11 @@
 2007-03-28  Douglas Gregor  <doug.gregor@gmail.com>
 
+	* g++.dg/cpp0x/temp_default1.C: New.
+	* g++.dg/cpp0x/temp_default3.C: New.
+	* g++.dg/cpp0x/temp_default2.C: New.
+	* g++.dg/cpp0x/temp_default4.C: New.
+
+2007-03-28  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/29993
 	* g++.dg/other/cv_func2.C: New.

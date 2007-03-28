@@ -152,7 +152,6 @@ static tree tsubst_function_type (tree, tree, tsubst_flags_t, tree);
 static bool check_specialization_scope (void);
 static tree process_partial_specialization (tree);
 static void set_current_access_from_decl (tree);
-static void check_default_tmpl_args (tree, tree, int, int);
 static tree get_template_base (tree, tree, tree, tree);
 static tree try_class_unification (tree, tree, tree, tree);
 static int coerce_template_template_parms (tree, tree, tsubst_flags_t,
@@ -3377,14 +3376,24 @@ process_partial_specialization (tree decl)
 /* Check that a template declaration's use of default arguments is not
    invalid.  Here, PARMS are the template parameters.  IS_PRIMARY is
    nonzero if DECL is the thing declared by a primary template.
-   IS_PARTIAL is nonzero if DECL is a partial specialization.  */
+   IS_PARTIAL is nonzero if DECL is a partial specialization.
+   
 
-static void
-check_default_tmpl_args (tree decl, tree parms, int is_primary, int is_partial)
+   IS_FRIEND_DECL is nonzero if DECL is a friend function template
+   declaration (but not a definition); 1 indicates a declaration, 2
+   indicates a redeclaration. When IS_FRIEND_DECL=2, no errors are
+   emitted for extraneous default arguments.
+
+   Returns TRUE if there were no errors found, FALSE otherwise. */
+
+bool
+check_default_tmpl_args (tree decl, tree parms, int is_primary, 
+                         int is_partial, int is_friend_decl)
 {
   const char *msg;
   int last_level_to_check;
   tree parm_level;
+  bool no_errors = true;
 
   /* [temp.param]
 
@@ -3397,7 +3406,7 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary, int is_partial)
     /* You can't have a function template declaration in a local
        scope, nor you can you define a member of a class template in a
        local scope.  */
-    return;
+    return true;
 
   if (current_class_type
       && !TYPE_BEING_DEFINED (current_class_type)
@@ -3417,40 +3426,49 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary, int is_partial)
        declared, so there's no need to do it again now.  This function
        was defined in class scope, but we're processing it's body now
        that the class is complete.  */
-    return;
+    return true;
 
-  /* [temp.param]
-
-     If a template-parameter has a default template-argument, all
-     subsequent template-parameters shall have a default
-     template-argument supplied.  */
-  for (parm_level = parms; parm_level; parm_level = TREE_CHAIN (parm_level))
+  /* Core issue 226 (C++0x only): the following only applies to class
+     templates.  */
+  if (!flag_cpp0x || TREE_CODE (decl) != FUNCTION_DECL)
     {
-      tree inner_parms = TREE_VALUE (parm_level);
-      int ntparms = TREE_VEC_LENGTH (inner_parms);
-      int seen_def_arg_p = 0;
-      int i;
+      /* [temp.param]
 
-      for (i = 0; i < ntparms; ++i)
-	{
-	  tree parm = TREE_VEC_ELT (inner_parms, i);
+         If a template-parameter has a default template-argument, all
+         subsequent template-parameters shall have a default
+         template-argument supplied.  */
+      for (parm_level = parms; parm_level; parm_level = TREE_CHAIN (parm_level))
+        {
+          tree inner_parms = TREE_VALUE (parm_level);
+          int ntparms = TREE_VEC_LENGTH (inner_parms);
+          int seen_def_arg_p = 0;
+          int i;
 
-          if (parm == error_mark_node)
-            continue;
+          for (i = 0; i < ntparms; ++i)
+            {
+              tree parm = TREE_VEC_ELT (inner_parms, i);
 
-	  if (TREE_PURPOSE (parm))
-	    seen_def_arg_p = 1;
-	  else if (seen_def_arg_p)
-	    {
-	      error ("no default argument for %qD", TREE_VALUE (parm));
-	      /* For better subsequent error-recovery, we indicate that
-		 there should have been a default argument.  */
-	      TREE_PURPOSE (parm) = error_mark_node;
-	    }
-	}
+              if (parm == error_mark_node)
+                continue;
+
+              if (TREE_PURPOSE (parm))
+                seen_def_arg_p = 1;
+              else if (seen_def_arg_p)
+                {
+                  error ("no default argument for %qD", TREE_VALUE (parm));
+                  /* For better subsequent error-recovery, we indicate that
+                     there should have been a default argument.  */
+                  TREE_PURPOSE (parm) = error_mark_node;
+                  no_errors = false;
+                }
+            }
+        }
     }
 
-  if (TREE_CODE (decl) != TYPE_DECL || is_partial || !is_primary)
+  if ((!flag_cpp0x && TREE_CODE (decl) != TYPE_DECL)
+      || is_partial 
+      || !is_primary
+      || is_friend_decl)
     /* For an ordinary class template, default template arguments are
        allowed at the innermost level, e.g.:
 	 template <class T = int>
@@ -3461,8 +3479,8 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary, int is_partial)
 	 The template parameter list of a specialization shall not
 	 contain default template argument values.
 
-       So, for a partial specialization, or for a function template,
-       we look at all of them.  */
+       So, for a partial specialization, or for a function template
+       (in C++98/C++03), we look at all of them.  */
     ;
   else
     /* But, for a primary class template that is not a partial
@@ -3471,7 +3489,11 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary, int is_partial)
     parms = TREE_CHAIN (parms);
 
   /* Figure out what error message to issue.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL)
+  if (is_friend_decl == 2)
+    msg = "default template arguments may not be used in function template friend re-declaration";
+  else if (is_friend_decl)
+    msg = "default template arguments may not be used in function template friend declarations";
+  else if (TREE_CODE (decl) == FUNCTION_DECL && !flag_cpp0x)
     msg = "default template arguments may not be used in function templates";
   else if (is_partial)
     msg = "default template arguments may not be used in partial specializations";
@@ -3510,6 +3532,10 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary, int is_partial)
 	    {
 	      if (msg)
 	        {
+                  no_errors = false;
+                  if (is_friend_decl == 2)
+                    return no_errors;
+
 		  error (msg, decl);
 		  msg = 0;
 	        }
@@ -3525,6 +3551,8 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary, int is_partial)
       if (msg)
 	msg = "default argument for template parameter for class enclosing %qD";
     }
+
+  return no_errors;
 }
 
 /* Worker for push_template_decl_real, called via
@@ -3652,7 +3680,7 @@ push_template_decl_real (tree decl, bool is_friend)
   /* Check to see that the rules regarding the use of default
      arguments are not being violated.  */
   check_default_tmpl_args (decl, current_template_parms,
-			   primary, is_partial);
+			   primary, is_partial, /*is_friend_decl=*/0);
 
   /* Ensure that there are no parameter packs in the type of this
      declaration that have not been expanded.  */
@@ -11345,6 +11373,27 @@ type_unification_real (tree tparms,
 	      && uses_template_parms (TREE_TYPE (tparm))
 	      && !saw_undeduced++)
 	    goto again;
+
+          /* Core issue #226 (C++0x) [temp.deduct]:
+
+               If a template argument has not been deduced, its
+               default template argument, if any, is used. 
+
+             When we are not in C++0x mode (i.e., !flag_cpp0x),
+             TREE_PURPOSE will either be NULL_TREE or ERROR_MARK_NODE,
+             so we do not need to explicitly check flag_cpp0x here.  */
+          if (TREE_PURPOSE (TREE_VEC_ELT (tparms, i)))
+            {
+              tree arg = tsubst (TREE_PURPOSE (TREE_VEC_ELT (tparms, i)), 
+                                 targs, tf_none, NULL_TREE);
+              if (arg == error_mark_node)
+                return 1;
+              else
+                {
+                  TREE_VEC_ELT (targs, i) = arg;
+                  continue;
+                }
+            }
 
 	  return 2;
 	}
