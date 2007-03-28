@@ -168,7 +168,7 @@ static unsigned int attribute_hash_list (tree, hashval_t);
 tree global_trees[TI_MAX];
 tree integer_types[itk_none];
 
-unsigned char tree_contains_struct[256][64];
+unsigned char tree_contains_struct[MAX_TREE_CODES][64];
 
 /* Number of operands for each OpenMP clause.  */
 unsigned const char omp_clause_num_ops[] =

@@ -41,7 +41,8 @@ enum tree_code {
 
 #undef DEFTREECODE
 
-extern unsigned char tree_contains_struct[256][64];
+#define MAX_TREE_CODES 512
+extern unsigned char tree_contains_struct[MAX_TREE_CODES][64];
 #define CODE_CONTAINS_STRUCT(CODE, STRUCT) (tree_contains_struct[(CODE)][(STRUCT)])
 
 /* Number of language-independent tree codes.  */
@@ -80,7 +81,6 @@ extern const char *const tree_code_class_strings[];
 #define TREE_CODE_CLASS_STRING(CLASS)\
         tree_code_class_strings[(int) (CLASS)]
 
-#define MAX_TREE_CODES 256
 extern const enum tree_code_class tree_code_type[];
 #define TREE_CODE_CLASS(CODE)	tree_code_type[(int) (CODE)]
 
@@ -363,7 +363,7 @@ union tree_ann_d;
 
 struct tree_base GTY(())
 {
-  ENUM_BITFIELD(tree_code) code : 8;
+  ENUM_BITFIELD(tree_code) code : 16;
 
   unsigned side_effects_flag : 1;
   unsigned constant_flag : 1;
@@ -391,6 +391,8 @@ struct tree_base GTY(())
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
   unsigned visited : 1;
+
+  unsigned spare : 24;
 
   /* FIXME tuples: Eventually, we need to move this somewhere external to
      the trees.  */
