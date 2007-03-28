@@ -1,3 +1,8 @@
+2007-03-28  Christian Bruel  <christian.bruel@st.com>
+
+	* config.gcc: Add sh4-300 to multilib.
+	* config/sh/t-mlib-sh4-300: New file.
+
 2007-03-28  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("fix_trunc<mode>di2"): New expander.

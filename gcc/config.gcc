@@ -2157,7 +2157,7 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	  sh5-32media-nofpu | sh5-32media | sh5-compact-nofpu | sh5-compact | \
 	  sh2a-single-only | sh2a-single | sh2a-nofpu | sh2a | \
 	  sh4a-single-only | sh4a-single | sh4a-nofpu | sh4a | sh4al | \
-	  sh4-single-only | sh4-single | sh4-nofpu | sh4 | \
+	  sh4-single-only | sh4-single | sh4-nofpu | sh4 | sh4-300 | \
 	  sh3e | sh3 | sh2e | sh2 | sh1) ;;
 	"")	sh_cpu_default=${sh_cpu_target} ;;
 	*)	echo "with_cpu=$with_cpu not supported"; exit 1 ;;
@@ -2183,7 +2183,7 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	for sh_multilib in ${sh_multilibs}; do
 		case ${sh_multilib} in
 		sh1 | sh2 | sh2e | sh3 | sh3e | \
-		sh4 | sh4-single | sh4-single-only | sh4-nofpu | \
+		sh4 | sh4-single | sh4-single-only | sh4-nofpu | sh4-300 |\
 		sh4a | sh4a-single | sh4a-single-only | sh4a-nofpu | sh4al | \
 		sh2a | sh2a-single | sh2a-single-only | sh2a-nofpu | \
 		sh5-64media | sh5-64media-nofpu | \
