@@ -1082,7 +1082,13 @@ outer_loop:
       Cipher rsa = Cipher.getInstance("RSA");
       java.security.cert.Certificate cert
         = engine.session().getPeerCertificates()[0];
-      rsa.init(Cipher.ENCRYPT_MODE, cert);
+      if (cert instanceof X509Certificate)
+        {
+          boolean[] keyUsage = ((X509Certificate) cert).getKeyUsage();
+          if (keyUsage != null && !keyUsage[2])
+            throw new InvalidKeyException("certificate's keyUsage does not permit keyEncipherment");
+        }
+      rsa.init(Cipher.ENCRYPT_MODE, cert.getPublicKey());
       encryptedPreMasterSecret = rsa.doFinal(preMasterSecret);
       
       // Generate our session keys, because we can.
