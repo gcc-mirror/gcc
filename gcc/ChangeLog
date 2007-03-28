@@ -1,3 +1,13 @@
+2007-03-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (X86_TUNE_PROMOTE_HIMODE_IMUL): New tuning
+	option.
+	(TARGET_TUNE_PROMOTE_HIMODE_IMUL): New define. Use new tuning option.
+	* config/i386/i386.c (ix86_tune_features): Initialize new
+	tuning option.
+	* config/i386/predicates.md (promotable_binary_operator): Use
+	TARGET_TUNE_PROMOTE_HIMODE_IMUL.
+
 2007-03-28  Grigory Zagorodnev <grigory_zagorodnev@linux.intel.com>
 
 	PR target/31380
@@ -85,22 +95,22 @@
 
 2007-03-26  Richard Henderson  <rth@redhat.com>
 
-        PR target/31361
-        * config/i386/i386.c (IX86_BUILTIN_PSLLDQ128, IX86_BUILTIN_PSLLW128,
-        IX86_BUILTIN_PSLLD128, IX86_BUILTIN_PSLLQ128, IX86_BUILTIN_PSRAW128,
-        IX86_BUILTIN_PSRAD128, IX86_BUILTIN_PSRLW128, IX86_BUILTIN_PSRLD128,
-        IX86_BUILTIN_PSRLQ128): New.
-        (ix86_init_mmx_sse_builtins): Add them.
-        (ix86_expand_builtin): Expand them.
-        * config/i386/sse.md (ashr<mode>3, lshr<mode>3, ashl<mode>3): Make
-        operand 2 be TImode.
-        * config/i386/emmintrin.h (_mm_slli_epi64, _mm_srai_epi16,
-        _mm_srai_epi32, _mm_srli_epi16, _mm_srli_epi32,
-        _mm_srli_epi64): Mark __B const.
-        (_mm_srli_si128, _mm_srli_si128): Fix disabled inline versions.
-        (_mm_sll_epi16, _mm_sll_epi32, _mm_sll_epi64, _mm_sra_epi16,
-        _mm_sra_epi32, _mm_srl_epi16, _mm_srl_epi32, _mm_srl_epi64): Use 
-        new two-vector shift builtins.
+	PR target/31361
+	* config/i386/i386.c (IX86_BUILTIN_PSLLDQ128, IX86_BUILTIN_PSLLW128,
+	IX86_BUILTIN_PSLLD128, IX86_BUILTIN_PSLLQ128, IX86_BUILTIN_PSRAW128,
+	IX86_BUILTIN_PSRAD128, IX86_BUILTIN_PSRLW128, IX86_BUILTIN_PSRLD128,
+	IX86_BUILTIN_PSRLQ128): New.
+	(ix86_init_mmx_sse_builtins): Add them.
+	(ix86_expand_builtin): Expand them.
+	* config/i386/sse.md (ashr<mode>3, lshr<mode>3, ashl<mode>3): Make
+	operand 2 be TImode.
+	* config/i386/emmintrin.h (_mm_slli_epi64, _mm_srai_epi16,
+	_mm_srai_epi32, _mm_srli_epi16, _mm_srli_epi32,
+	_mm_srli_epi64): Mark __B const.
+	(_mm_srli_si128, _mm_srli_si128): Fix disabled inline versions.
+	(_mm_sll_epi16, _mm_sll_epi32, _mm_sll_epi64, _mm_sra_epi16,
+	_mm_sra_epi32, _mm_srl_epi16, _mm_srl_epi32, _mm_srl_epi64): Use 
+	new two-vector shift builtins.
 
 2007-03-26  Ian Lance Taylor  <iant@google.com>
 
@@ -288,7 +298,7 @@
 	IX86_BUILTIN_PSRAW128, IX86_BUILTIN_PSRAD128, IX86_BUILTIN_PSRLW128,
 	IX86_BUILTIN_PSRLD128, IX86_BUILTIN_PSRLQ128): Remove.
 	(ix86_init_mmx_sse_builtins): Remove v8hi_ftype_v8hi_v2di and
-	v4si_ftype_v4si_v2di.   Remove __builtin_ia32_psllw128,
+	v4si_ftype_v4si_v2di.  Remove __builtin_ia32_psllw128,
 	__builtin_ia32_pslld128, __builtin_ia32_psllq128,
 	__builtin_ia32_psrlw128, __builtin_ia32_psrld128,
 	__builtin_ia32_psrlq128, __builtin_ia32_psraw128 and

@@ -963,12 +963,10 @@
 	       mod,udiv,umod,ashift,rotate,ashiftrt,lshiftrt,rotatert"))
 
 ;; Return 1 if OP is a binary operator that can be promoted to wider mode.
-;; Modern CPUs have same latency for HImode and SImode multiply,
-;; but 386 and 486 do HImode multiply faster.  */
 (define_predicate "promotable_binary_operator"
   (ior (match_code "plus,and,ior,xor,ashift")
        (and (match_code "mult")
-	    (match_test "ix86_tune > PROCESSOR_I486"))))
+	    (match_test "TARGET_TUNE_PROMOTE_HIMODE_IMUL"))))
 
 ;; To avoid problems when jump re-emits comparisons like testqi_ext_ccno_0,
 ;; re-recognize the operand to avoid a copy_to_mode_reg that will fail.

@@ -1200,25 +1200,29 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_AVOID_VECTOR_DECODE */
   m_K8 | m_GENERIC64,
 
-  /* X86_TUNE_SLOW_IMUL_IMM32_MEM (imul of 32-bit constant and memory is vector
-     path on AMD machines) */
+  /* X86_TUNE_PROMOTE_HIMODE_IMUL: Modern CPUs have same latency for HImode
+     and SImode multiply, but 386 and 486 do HImode multiply faster.  */
+  ~(m_386 | m_486),
+
+  /* X86_TUNE_SLOW_IMUL_IMM32_MEM: Imul of 32-bit constant and memory is
+     vector path on AMD machines.  */
   m_K8 | m_GENERIC64 | m_AMDFAM10,
 
-  /* X86_TUNE_SLOW_IMUL_IMM8 (imul of 8-bit constant is vector path on AMD
-     machines)  */
+  /* X86_TUNE_SLOW_IMUL_IMM8: Imul of 8-bit constant is vector path on AMD
+     machines.  */
   m_K8 | m_GENERIC64 | m_AMDFAM10,
 
-  /* X86_TUNE_MOVE_M1_VIA_OR (on pentiums, it is faster to load -1 via OR than
-     a MOV) */
+  /* X86_TUNE_MOVE_M1_VIA_OR: On pentiums, it is faster to load -1 via OR
+     than a MOV.  */
   m_PENT,
 
-  /* X86_TUNE_NOT_UNPAIRABLE (NOT is not pairable on Pentium, while XOR is, but
-     one byte longer).  */
+  /* X86_TUNE_NOT_UNPAIRABLE: NOT is not pairable on Pentium, while XOR is,
+     but one byte longer.  */
   m_PENT,
 
-  /* X86_TUNE_NOT_VECTORMODE (On AMD K6, NOT is vector decoded with memory
+  /* X86_TUNE_NOT_VECTORMODE: On AMD K6, NOT is vector decoded with memory
      operand that cannot be represented using a modRM byte.  The XOR
-     replacement is long decoded, so this split helps here as well).  */
+     replacement is long decoded, so this split helps here as well.  */
   m_K6,
 };
 
