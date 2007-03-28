@@ -1400,7 +1400,9 @@ typedef struct cp_parser GTY(())
 
   /* TRUE if the `>' token should be interpreted as the greater-than
      operator.  FALSE if it is the end of a template-id or
-     template-parameter-list.  */
+     template-parameter-list. In C++0x mode, this flag also applies to
+     `>>' tokens, which are viewed as two consecutive `>' tokens when
+     this flag is FALSE.  */
   bool greater_than_is_operator_p;
 
   /* TRUE if default arguments are allowed within a parameter list
@@ -3027,6 +3029,11 @@ cp_parser_primary_expression (cp_parser *parser,
 		  && next_token->type != CPP_CLOSE_SQUARE
 		  /* The closing ">" in a template-argument-list.  */
 		  && (next_token->type != CPP_GREATER
+		      || parser->greater_than_is_operator_p)
+		  /* C++0x only: A ">>" treated like two ">" tokens,
+                     in a template-argument-list.  */
+		  && (next_token->type != CPP_RSHIFT
+                      || !flag_cpp0x
 		      || parser->greater_than_is_operator_p))
 		cast_p = false;
 	    }
@@ -5792,10 +5799,12 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p)
    The binops_by_token map is used to get the tree codes for each <token> type.
    binary-expressions are associated according to a precedence table.  */
 
-#define TOKEN_PRECEDENCE(token) \
-  ((token->type == CPP_GREATER && !parser->greater_than_is_operator_p) \
-   ? PREC_NOT_OPERATOR \
-   : binops_by_token[token->type].prec)
+#define TOKEN_PRECEDENCE(token)				\
+(((token->type == CPP_GREATER				\
+   || (flag_cpp0x && token->type == CPP_RSHIFT))	\
+  && !parser->greater_than_is_operator_p)		\
+ ? PREC_NOT_OPERATOR					\
+ : binops_by_token[token->type].prec)
 
 static tree
 cp_parser_binary_expression (cp_parser* parser, bool cast_p)
@@ -5816,6 +5825,17 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p)
     {
       /* Get an operator token.  */
       token = cp_lexer_peek_token (parser->lexer);
+
+      if (warn_cxx0x_compat
+          && token->type == CPP_RSHIFT
+          && !parser->greater_than_is_operator_p)
+        {
+          warning (OPT_Wc__0x_compat, 
+                   "%H%<>>%> operator will be treated as two right angle brackets in C++0x", 
+                   &token->location);
+          warning (OPT_Wc__0x_compat, 
+                   "suggest parentheses around %<>>%> expression");
+        }
 
       new_prec = TOKEN_PRECEDENCE (token);
 
@@ -13015,6 +13035,13 @@ cp_parser_parameter_declaration (cp_parser *parser,
 		  ++depth;
 		  break;
 
+                case CPP_RSHIFT:
+                  if (!flag_cpp0x)
+                    break;
+                  /* Fall through for C++0x, which treats the `>>'
+                     operator like two `>' tokens in certain
+                     cases.  */
+
 		case CPP_GREATER:
 		  /* If we see a non-nested `>', and `>' is not an
 		     operator, then it marks the end of the default
@@ -16536,7 +16563,8 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
   saved_skip_evaluation = skip_evaluation;
   skip_evaluation = false;
   /* Parse the template-argument-list itself.  */
-  if (cp_lexer_next_token_is (parser->lexer, CPP_GREATER))
+  if (cp_lexer_next_token_is (parser->lexer, CPP_GREATER)
+      || cp_lexer_next_token_is (parser->lexer, CPP_RSHIFT))
     arguments = NULL_TREE;
   else
     arguments = cp_parser_template_argument_list (parser);
@@ -16544,7 +16572,28 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
      a '>>' instead, it's probably just a typo.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_RSHIFT))
     {
-      if (!saved_greater_than_is_operator_p)
+      if (flag_cpp0x)
+        {
+          /* In C++0x, a `>>' in a template argument list or cast
+             expression is considered to be two separate `>'
+             tokens. So, change the current token to a `>', but don't
+             consume it: it will be consumed later when the outer
+             template argument list (or cast expression) is parsed.
+             Note that this replacement of `>' for `>>' is necessary
+             even if we are parsing tentatively: in the tentative
+             case, after calling
+             cp_parser_enclosed_template_argument_list we will always
+             throw away all of the template arguments and the first
+             closing `>', either because the template argument list
+             was erroneous or because we are replacing those tokens
+             with a CPP_TEMPLATE_ID token.  The second `>' (which will
+             not have been thrown away) is needed either to close an
+             outer template argument list or to complete a new-style
+             cast.  */
+	  cp_token *token = cp_lexer_peek_token (parser->lexer);
+          token->type = CPP_GREATER;
+        }
+      else if (!saved_greater_than_is_operator_p)
 	{
 	  /* If we're in a nested template argument list, the '>>' has
 	    to be a typo for '> >'. We emit the error message, but we
@@ -16557,8 +16606,6 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
 		 "within a nested template argument list",
 		 &token->location);
 
-	  /* ??? Proper recovery should terminate two levels of
-	     template argument list here.  */
 	  token->type = CPP_GREATER;
 	}
       else
@@ -17054,6 +17101,23 @@ cp_parser_skip_to_end_of_template_parameter_list (cp_parser* parser)
 	    ++level;
 	  break;
 
+        case CPP_RSHIFT:
+          if (!flag_cpp0x)
+            /* C++0x views the `>>' operator as two `>' tokens, but
+               C++98 does not. */
+            break;
+          else if (!nesting_depth && level-- == 0)
+	    {
+              /* We've hit a `>>' where the first `>' closes the
+                 template argument list, and the second `>' is
+                 spurious.  Just consume the `>>' and stop; we've
+                 already produced at least one error.  */
+	      cp_lexer_consume_token (parser->lexer);
+	      return;
+	    }
+          /* Fall through for C++0x, so we handle the second `>' in
+             the `>>'.  */
+
 	case CPP_GREATER:
 	  if (!nesting_depth && level-- == 0)
 	    {
@@ -17148,8 +17212,8 @@ cp_parser_next_token_starts_class_definition_p (cp_parser *parser)
   return (token->type == CPP_OPEN_BRACE || token->type == CPP_COLON);
 }
 
-/* Returns TRUE iff the next token is the "," or ">" ending a
-   template-argument.  */
+/* Returns TRUE iff the next token is the "," or ">" (or `>>', in
+   C++0x) ending a template-argument.  */
 
 static bool
 cp_parser_next_token_ends_template_argument_p (cp_parser *parser)
@@ -17159,7 +17223,8 @@ cp_parser_next_token_ends_template_argument_p (cp_parser *parser)
   token = cp_lexer_peek_token (parser->lexer);
   return (token->type == CPP_COMMA 
           || token->type == CPP_GREATER
-          || token->type == CPP_ELLIPSIS);
+          || token->type == CPP_ELLIPSIS
+	  || (flag_cpp0x && token->type == CPP_RSHIFT));
 }
 
 /* Returns TRUE iff the n-th token is a "<", or the n-th is a "[" and the
