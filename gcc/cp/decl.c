@@ -5981,6 +5981,20 @@ grokfndecl (tree ctype,
   if (TYPE_VOLATILE (type))
     TREE_THIS_VOLATILE (decl) = 1;
 
+  /* Setup decl according to sfk.  */
+  switch (sfk)
+    {
+    case sfk_constructor:
+    case sfk_copy_constructor:
+      DECL_CONSTRUCTOR_P (decl) = 1;
+      break;
+    case sfk_destructor:
+      DECL_DESTRUCTOR_P (decl) = 1;
+      break;
+    default:
+      break;
+    }
+
   if (friendp
       && TREE_CODE (orig_declarator) == TEMPLATE_ID_EXPR)
     {
@@ -6168,12 +6182,7 @@ grokfndecl (tree ctype,
     return decl;
 
   if (ctype != NULL_TREE)
-    {
-      if (sfk == sfk_constructor)
-	DECL_CONSTRUCTOR_P (decl) = 1;
-
-      grokclassfn (ctype, decl, flags);
-    }
+    grokclassfn (ctype, decl, flags);
 
   decl = check_explicit_specialization (orig_declarator, decl,
 					template_count,
