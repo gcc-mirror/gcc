@@ -1,3 +1,19 @@
+2007-03-28  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* decl.c (redeclaration_error_message): Complain when redeclaring
+	a friend function with default template arguments (C++0x mode only).
+	* cp-tree.h (check_default_tmpl_args): Declare.
+	* pt.c (check_default_tmpl_args): In C++0x mode, permit default
+	template arguments in function templates. Add support for checking
+	the default template arguments of friend templates.
+	(push_template_decl_real): Fix call to check_default_tmpl_args.
+	(type_unification_real): If a template parameter has not been
+	deduced but provides a default template argument, substitute into
+	that default template argument.
+	* parser.c (cp_parser_init_declarator): When declaring (but not
+	defining!) a function template in C++0x mode, check for default
+	template arguments.
+
 2007-03-28 Douglas Gregor <doug.gregor@gmail.com>
 
 	PR c++/29993

@@ -2148,6 +2148,19 @@ redeclaration_error_message (tree newdecl, tree olddecl)
       if (DECL_INITIAL (nt) && DECL_INITIAL (ot))
 	return "redefinition of %q#D";
 
+      /* Core issue #226 (C++0x): 
+           
+           If a friend function template declaration specifies a
+           default template-argument, that declaration shall be a
+           definition and shall be the only declaration of the
+           function template in the translation unit.  */
+      if (flag_cpp0x 
+          && TREE_CODE (ot) == FUNCTION_DECL && DECL_FRIEND_P (ot)
+          && !check_default_tmpl_args (nt, DECL_TEMPLATE_PARMS (newdecl), 
+                                       /*is_primary=*/1, /*is_partial=*/0,
+                                       /*is_friend_decl=*/2))
+        return "redeclaration of friend %q#D may not have default template arguments";
+
       return NULL;
     }
   else if (TREE_CODE (newdecl) == VAR_DECL
