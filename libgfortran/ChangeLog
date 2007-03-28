@@ -1,9 +1,15 @@
+2007-03-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/31052
+	* io/transfer.c (next_record_r): Do not call test_endfile if in namelist
+	mode.
+
 2007-03-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/31199
-	*io/io.h: Add saved_pos to gfc_unit structure.
-	*io/open.c (new_unit): Initialize saved_pos.
-	*io/transfer.c (data_transfer_init): Set max_pos to value in saved_pos.
+	* io/io.h: Add saved_pos to gfc_unit structure.
+	* io/open.c (new_unit): Initialize saved_pos.
+	* io/transfer.c (data_transfer_init): Set max_pos to value in saved_pos.
 	(next_record_w): Fix whitespace.
 	(finalze_transfer): Calculate max_pos for ADVANCE="no" and save it for
 	later use.  If not ADVANCE="no" set saved_pos to zero.
