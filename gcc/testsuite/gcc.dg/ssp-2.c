@@ -1,5 +1,7 @@
 /* { dg-do run { target native } } */
 /* { dg-options "-fstack-protector" } */
+/* { dg-require-effective-target fstack_protector } */
+
 #include <stdlib.h>
 
 void
