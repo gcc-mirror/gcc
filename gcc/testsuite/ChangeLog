@@ -1,3 +1,9 @@
+2007-03-28  Eric Christopher  <echristo@apple.com>
+
+	* lib/target-supports.exp (check_effective_target_fstack_protector): New.
+	* gcc.dg/ssp-1.c: Use.
+	* gcc.dg/ssp-2.c: Ditto.
+
 2007-03-28  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/29077
@@ -25,7 +31,7 @@
 
 	PR c++/29993
 	* g++.dg/other/cv_func2.C: New.
-	
+
 2007-03-27  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/dfp/func-vararg-alternate.h: New file.
@@ -36,7 +42,7 @@
 	* gcc.dg/dfp/func-vararg-mixed.c: Add optional debugging output.
 	* gcc.dg/dfp/func-vararg-dfp.c: Ditto.
 
-	* gcc.dg/dfp/operator-cond.c: Call init, fix typo.	
+	* gcc.dg/dfp/operator-cond.c: Call init, fix typo.
 
 	* lib/compat.exp (compat-execute): Fix processing of file names.
 
@@ -57,7 +63,7 @@
 	* g++.dg/warn/pragma-system_header1.C: New test.
 	* g++.dg/warn/pragma-system_header2.C: New test.
 	* g++.dg/warn/pragma-system_header1.h. New.
-	* g++.dg/warn/pragma-system_header2.h. New.	
+	* g++.dg/warn/pragma-system_header2.h. New.
 
 2007-03-26  Ian Lance Taylor  <iant@google.com>
 
@@ -176,7 +182,7 @@
 	* gcc.dg/float-range-1.c: Update. Test for a warning.
 	* gcc.dg/float-range-3.c: New.
 	* gcc.dg/float-range-5.c: New.
-	
+
 2007-03-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/31262
@@ -300,7 +306,7 @@
 	* g++.old-deja/g++.eh/cleanup1.C: Likewise.
 	* g++.old-deja/g++.bob/template3.C: Likewise.
 	* g++.old-deja/g++.bob/inherit1.C: Likewise.
-	
+
 2007-03-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31193
@@ -394,7 +400,7 @@
 
 	* gcc.dg/vect/no-tree-dom-vect-bug.c: New test.
 	* gcc.dg/vect/vect.exp: Compile tests with -fno-tree-dominator-opts.
- 
+
 2007-03-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/31120
@@ -411,7 +417,7 @@
 	* g++.dg/warn/Wconversion-real.C: New.
 	* g++.dg/warn/Wconversion-real-integer.C: New.
 	* g++.dg/warn/conv2.C: Updated.
-	
+
 2007-03-16  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.dg/intmax_t-1.c: Restrict XFAIL to VxWorks kernels;
@@ -450,13 +456,13 @@
 
 	PR c++/30891
 	* g++.dg/parse/namespace-definition.C: New.
-	
+
 2007-03-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/24924
 	* g++.dg/cpp/pedantic-errors.C: New.
 	* g++.dg/cpp/permissive.C: New.
-	
+
 2007-03-15  Richard Sandiford  <richard@codesourcery.com>
 
 	* g++.dg/opt/mmx1.C: Only use the PIC options for fpic targets.

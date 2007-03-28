@@ -491,6 +491,14 @@ proc check_effective_target_fopenmp {} {
     } "-fopenmp"]
 }
 
+# Return 1 if the target supports -fstack-protector
+
+proc check_effective_target_fstack_protector {} {
+    return [check_no_compiler_messages fstack_protector assembly {
+        void foo (void) { }
+    } "-fstack-protector"]
+}
+
 # Return 1 if compilation with -freorder-blocks-and-partition is error-free
 # for trivial code, 0 otherwise.
 
