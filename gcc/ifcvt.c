@@ -3236,6 +3236,8 @@ cond_exec_find_if_block (struct ce_if_block * ce_info)
       if (cond_exec_process_if_block (ce_info, FALSE))
 	return TRUE;
     }
+
+  return FALSE;
 }
 
 /* Convert a branch over a trap, or a branch
