@@ -1,3 +1,13 @@
+2007-03-27  Tom Tromey  <tromey@redhat.com>
+
+	* sources.am, Makefile.in: Rebuilt.
+	* scripts/mime.types: Removed.
+	* scripts/MakeDefaultMimeTypes.java: Removed.
+	* gnu/gcj/io/MimeTypes.java: Removed.
+	* gnu/gcj/io/MimeTypes.h: Removed.
+	* gnu/gcj/io/DefaultMimeTypes.java: Removed.
+	* gnu/gcj/io/DefaultMimeTypes.h: Removed.
+
 2007-03-27  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/VMFrame.java: Update from upstream
