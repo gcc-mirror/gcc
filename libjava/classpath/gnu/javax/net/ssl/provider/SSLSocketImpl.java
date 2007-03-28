@@ -200,7 +200,7 @@ public class SSLSocketImpl extends SSLSocket
   
   public SSLSocketImpl(SSLContextImpl contextImpl, String host, int port)
   {
-    this(contextImpl, host, port, null, false);
+    this(contextImpl, host, port, new Socket(), true);
   }
   
   public SSLSocketImpl(SSLContextImpl contextImpl, String host, int port,
@@ -412,17 +412,8 @@ public class SSLSocketImpl extends SSLSocket
     ByteBuffer emptyBuffer = ByteBuffer.allocate(0);
     SSLEngineResult result = null;
     
-    DataInputStream sockIn = null;
-    if (underlyingSocket != null)
-      sockIn = new DataInputStream(underlyingSocket.getInputStream());
-    else
-      sockIn = new DataInputStream(super.getInputStream());
-
-    OutputStream sockOut = null;
-    if (underlyingSocket != null)
-      sockOut = underlyingSocket.getOutputStream();
-    else
-      sockOut = super.getOutputStream();
+    DataInputStream sockIn = new DataInputStream(underlyingSocket.getInputStream());
+    OutputStream sockOut = underlyingSocket.getOutputStream();
     
     try
       {
@@ -550,69 +541,48 @@ public class SSLSocketImpl extends SSLSocket
 
   @Override public void bind(SocketAddress bindpoint) throws IOException
   {
-    if (underlyingSocket != null)
-      underlyingSocket.bind(bindpoint);
-    else
-      super.bind(bindpoint);
+    underlyingSocket.bind(bindpoint);
   }
   
   @Override public void connect(SocketAddress endpoint) throws IOException
   {
-    if (underlyingSocket != null)
-      underlyingSocket.connect(endpoint);
-    else
-      super.connect(endpoint);
+    underlyingSocket.connect(endpoint);
   }
 
   @Override public void connect(SocketAddress endpoint, int timeout)
     throws IOException
   {
-    if (underlyingSocket != null)
-      underlyingSocket.connect(endpoint, timeout);
-    else
-      super.connect(endpoint, timeout);
+    underlyingSocket.connect(endpoint, timeout);
   }
 
   @Override public InetAddress getInetAddress()
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.getInetAddress();
-    return super.getInetAddress();
+    return underlyingSocket.getInetAddress();
   }
   
   @Override public InetAddress getLocalAddress()
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.getLocalAddress();
-    return super.getLocalAddress();
+    return underlyingSocket.getLocalAddress();
   }
   
   @Override public int getPort()
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.getPort();
-    return super.getPort();
+    return underlyingSocket.getPort();
   }
 
   @Override public int getLocalPort()
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.getLocalPort();
-    return super.getLocalPort();
+    return underlyingSocket.getLocalPort();
   }
 
   @Override public SocketAddress getRemoteSocketAddress()
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.getRemoteSocketAddress();
-    return super.getRemoteSocketAddress();
+    return underlyingSocket.getRemoteSocketAddress();
   }
 
   public SocketAddress getLocalSocketAddress()
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.getLocalSocketAddress();
-    return super.getLocalSocketAddress();
+    return underlyingSocket.getLocalSocketAddress();
   }
 
   @Override public SocketChannel getChannel()
@@ -632,32 +602,22 @@ public class SSLSocketImpl extends SSLSocket
 
   @Override public void setTcpNoDelay(boolean on) throws SocketException
   {
-    if (underlyingSocket != null)
-      underlyingSocket.setTcpNoDelay(on);
-    else
-      super.setTcpNoDelay(on);
+    underlyingSocket.setTcpNoDelay(on);
   }
 
   @Override public boolean getTcpNoDelay() throws SocketException
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.getTcpNoDelay();
-    return super.getTcpNoDelay();
+    return underlyingSocket.getTcpNoDelay();
   }
 
   @Override public void setSoLinger(boolean on, int linger) throws SocketException
   {
-    if (underlyingSocket != null)
-      underlyingSocket.setSoLinger(on, linger);
-    else
-      super.setSoLinger(on, linger);
+    underlyingSocket.setSoLinger(on, linger);
   }
 
   public int getSoLinger() throws SocketException
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.getSoLinger();
-    return super.getSoLinger();
+    return underlyingSocket.getSoLinger();
   }
 
   @Override public void sendUrgentData(int x) throws IOException
@@ -667,167 +627,114 @@ public class SSLSocketImpl extends SSLSocket
 
   @Override public void setOOBInline(boolean on) throws SocketException
   {
-    if (underlyingSocket != null)
-      underlyingSocket.setOOBInline(on);
-    else
-      super.setOOBInline(on);
+    underlyingSocket.setOOBInline(on);
   }
 
   @Override public boolean getOOBInline() throws SocketException
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.getOOBInline();
-    return super.getOOBInline();
+    return underlyingSocket.getOOBInline();
   }
 
   @Override public void setSoTimeout(int timeout) throws SocketException
   {
-    if (underlyingSocket != null)
-      underlyingSocket.setSoTimeout(timeout);
-    else
-      super.setSoTimeout(timeout);
+    underlyingSocket.setSoTimeout(timeout);
   }
 
   @Override public int getSoTimeout() throws SocketException
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.getSoTimeout();
-    return super.getSoTimeout();
+    return underlyingSocket.getSoTimeout();
   }
 
   @Override public void setSendBufferSize(int size) throws SocketException
   {
-    if (underlyingSocket != null)
-      underlyingSocket.setSendBufferSize(size);
-    else
-      super.setSendBufferSize(size);
+    underlyingSocket.setSendBufferSize(size);
   }
 
   @Override public int getSendBufferSize() throws SocketException
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.getSendBufferSize();
-    return super.getSendBufferSize();
+    return underlyingSocket.getSendBufferSize();
   }
 
   @Override public void setReceiveBufferSize(int size) throws SocketException
   {
-    if (underlyingSocket != null)
-      underlyingSocket.setReceiveBufferSize(size);
-    else
-      underlyingSocket.setReceiveBufferSize(size);
+    underlyingSocket.setReceiveBufferSize(size);
   }
 
   @Override public int getReceiveBufferSize() throws SocketException
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.getReceiveBufferSize();
-    return super.getReceiveBufferSize();
+    return underlyingSocket.getReceiveBufferSize();
   }
 
   @Override public void setKeepAlive(boolean on) throws SocketException
   {
-    if (underlyingSocket != null)
-      underlyingSocket.setKeepAlive(on);
-    else
-      super.setKeepAlive(on);
+    underlyingSocket.setKeepAlive(on);
   }
 
   @Override public boolean getKeepAlive() throws SocketException
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.getKeepAlive();
-    return super.getKeepAlive();
+    return underlyingSocket.getKeepAlive();
   }
 
   @Override public void setTrafficClass(int tc) throws SocketException
   {
-    if (underlyingSocket != null)
-      underlyingSocket.setTrafficClass(tc);
-    else
-      super.setTrafficClass(tc);
+    underlyingSocket.setTrafficClass(tc);
   }
 
   @Override public int getTrafficClass() throws SocketException
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.getTrafficClass();
-    return super.getTrafficClass();
+    return underlyingSocket.getTrafficClass();
   }
 
   @Override public void setReuseAddress(boolean reuseAddress)
     throws SocketException
   {
-    if (underlyingSocket != null)
-      underlyingSocket.setReuseAddress(reuseAddress);
-    else
-      super.setReuseAddress(reuseAddress);
+    underlyingSocket.setReuseAddress(reuseAddress);
   }
 
   @Override public boolean getReuseAddress() throws SocketException
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.getReuseAddress();
-    return super.getReuseAddress();
+    return underlyingSocket.getReuseAddress();
   }
 
   @Override public void close() throws IOException
   {
     // XXX closure alerts.
-    if (underlyingSocket != null && autoClose)
+    if (autoClose)
       underlyingSocket.close();
-    else
-      super.close();
   }
 
   @Override public void shutdownInput() throws IOException
   {
-    if (underlyingSocket != null)
-      underlyingSocket.shutdownInput();
-    else
-      super.shutdownInput();
+    underlyingSocket.shutdownInput();
   }
 
   @Override public void shutdownOutput() throws IOException
   {
-    if (underlyingSocket != null)
-      underlyingSocket.shutdownOutput();
-    else
-      super.shutdownOutput();
+    underlyingSocket.shutdownOutput();
   }
 
   @Override public boolean isConnected()
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.isConnected();
-    return super.isConnected();
+    return underlyingSocket.isConnected();
   }
 
   @Override public boolean isBound()
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.isBound();
-    return super.isBound();
+    return underlyingSocket.isBound();
   }
 
   @Override public boolean isClosed()
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.isClosed();
-    return super.isClosed();
+    return underlyingSocket.isClosed();
   }
 
   @Override public boolean isInputShutdown()
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.isInputShutdown();
-    return super.isInputShutdown();
+    return underlyingSocket.isInputShutdown();
   }
 
   @Override public boolean isOutputShutdown()
   {
-    if (underlyingSocket != null)
-      return underlyingSocket.isOutputShutdown();
-    return super.isOutputShutdown();
+    return underlyingSocket.isOutputShutdown();
   }
 }

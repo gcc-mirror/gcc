@@ -1,3 +1,19 @@
+2007-03-27  Casey Marshall  <csm@gnu.org>
+
+	PR classpath/31302:
+	* gnu/javax/net/ssl/provider/SSLSocketImpl.java (SSLSocketImpl):
+	Always make a new socket.
+	(bind, connect, getInetAddress, getLocalAddress, getPort,
+	getLocalPort, getRemoteSocketAddress, getLocalSocketAddress,
+	setTcpNoDelay, getTcpNoDelay, setSoLinger, getSoLinger,
+	setOOBInline, getOOBInline, setSoTimeout, getSoTimeout,
+	setSendBufferSize, getSendBufferSize, setReceiveBufferSize,
+	getReceiveBufferSize, setKeepAlive, getKeepAlive, setTrafficClass,
+	getTrafficClass, setReuseAddress, getReuseAddress, close,
+	shutdownInput, shutdownOutput, isConnected, isBound, isClosed,
+	isInputShutdown, isOutputShutdown): Always use
+	'underlyingSocket'.
+
 2007-03-27  Tom Tromey  <tromey@redhat.com>
 
 	PR classpath/31303:
