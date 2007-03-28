@@ -1,3 +1,7 @@
+2007-03-28  Christian Bruel  <christian.bruel@st.com>
+
+	* config/sh/sh.md (movsi_i): Fix type attribute.
+
 2007-03-38  Christian Bruel  <christian.bruel@st.com>
 
 	* config/sh/sh.md (movsi_ie): Fix memory constraints attribute length.
