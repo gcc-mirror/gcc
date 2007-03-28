@@ -1,3 +1,9 @@
+2007-03-28  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (is_global_var): Move ...
+	* tree-flow-inline.h (is_global_var): ... here.
+	* tree.h (is_global_var): Remove declaration.
+
 2007-03-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (X86_TUNE_PROMOTE_HIMODE_IMUL): New tuning
