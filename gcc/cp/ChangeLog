@@ -1,3 +1,21 @@
+2007-03-28 Douglas Gregor <doug.gregor@gmail.com>
+
+	* parser.c (struct cp_parser): Update comment for
+	greater_than_is_operator_p.
+	(cp_parser_primary_expression): In C++0x mode, a cast operator can
+	be terminated with a `>>' token when !GREATER_THAN_IS_OPERATOR_P.
+	(TOKEN_PRECEDENCE): In C++0x mode, `>>' is treated like `>' when
+	!GREATER_THAN_IS_OPERATOR_P.
+	(cp_parser_binary_expression): When -Wc++0x-compat, warn about
+	`>>' operators that will become two `>' tokens in C++0x.
+	(cp_parser_parameter_declaration): Treat `>>' like `>' in C++0x
+	mode, allowing it to terminate default arguments.
+	(cp_parser_enclosed_template_argument_list): In C++0x mode, treat
+	`>>' like two consecutive `>' tokens.
+	(cp_parser_skip_to_end_of_template_parameter_list): Ditto.
+	(cp_parser_next_token_ends_template_argument_p): In C++0x, `>>'
+	ends a template argument.
+
 2007-03-28  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* decl.c (redeclaration_error_message): Complain when redeclaring
