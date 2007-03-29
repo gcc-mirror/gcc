@@ -1,4 +1,4 @@
-! { dg-compile }
+! { dg-do compile }
 ! Tests the fix for PR29634, in which an ICE would occur in the
 ! interface declaration of a function with an 'old-style' type
 ! declaration.  When fixed, it was found that the error message

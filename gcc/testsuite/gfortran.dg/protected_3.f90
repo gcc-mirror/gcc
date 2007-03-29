@@ -1,5 +1,3 @@
-! { dg-run }
-! { dg-shouldfail "Fortran 2003 code with -std=f95" }
 ! { dg-options "-std=f95 -fall-intrinsics" }
 ! PR fortran/23994
 !

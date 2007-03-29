@@ -1,4 +1,4 @@
-! { dg-compile }
+! { dg-do compile }
 ! { dg-options "-std=f95" }
 ! { dg-shouldfail "Fortran 2003 feature with -std=f95" }
 !

@@ -1,4 +1,4 @@
-! {dg-do run }
+! { dg-do run }
 ! Vector subscripts, ranks and shapes of initialization expressions (PRs 29393,
 ! 29630 and 29679)
 program test

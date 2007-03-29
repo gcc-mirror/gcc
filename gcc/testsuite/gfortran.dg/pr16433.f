@@ -1,4 +1,4 @@
-! { dg-do-compile }
+! { dg-do compile }
       real x
       double precision dx
       x = x'2ffde' ! { dg-warning "exadecimal constant" "Hex constant can't begin with x" }

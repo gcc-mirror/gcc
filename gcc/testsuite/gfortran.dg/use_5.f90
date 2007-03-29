@@ -1,4 +1,4 @@
-! { dg-do "run" }
+! { dg-do run }
 ! Renaming of operators
 module z
   interface operator(.addfive.)

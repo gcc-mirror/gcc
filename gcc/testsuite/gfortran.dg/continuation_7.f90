@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! { dg-options "-Wall -std=f95" }
 ! There should only two warnings be printed.
 ! PR fortran/30968
