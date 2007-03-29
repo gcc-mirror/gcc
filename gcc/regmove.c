@@ -471,15 +471,15 @@ optimize_reg_copy_1 (rtx insn, rtx dest, rtx src)
 		  if (sregno < FIRST_PSEUDO_REGISTER
 		      && reg_mentioned_p (dest, PATTERN (q)))
 		    failed = 1;
+		  
+		  /* Attempt to replace all uses.  */
+		  else if (!validate_replace_rtx (src, dest, q))
+		    failed = 1;
 
-		  /* Replace all uses and make sure that the register
-		     isn't still present.  */
-		  else if (validate_replace_rtx (src, dest, q)
-			   && (sregno >= FIRST_PSEUDO_REGISTER
-			       || ! reg_overlap_mentioned_p (src,
-							     PATTERN (q))))
-		    ;
-		  else
+		  /* If this succeeded, but some part of the register
+		     is still present, undo the replacement.  */
+		  else if (sregno < FIRST_PSEUDO_REGISTER
+			   && reg_overlap_mentioned_p (src, PATTERN (q)))
 		    {
 		      validate_replace_rtx (dest, src, q);
 		      failed = 1;

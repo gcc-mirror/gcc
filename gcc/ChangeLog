@@ -1,3 +1,8 @@
+2007-03-29  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* regmove.c (optimize_reg_copy_1): Don't perform DEST->SRC repair action if
+	SRC->DEST replacement failed anyway.
+
 2007-03-28  Mike Stump  <mrs@apple.com>
 
 	* config/darwin9.h (ASM_OUTPUT_ALIGNED_COMMON): Add.
