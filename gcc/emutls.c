@@ -48,6 +48,12 @@ struct __emutls_object
   void *templ;
 };
 
+struct __emutls_array
+{
+  pointer size;
+  void **data[];
+};
+
 #ifdef __GTHREADS
 #ifdef __GTHREAD_MUTEX_INIT
 static __gthread_mutex_t emutls_mutex = __GTHREAD_MUTEX_INIT;
@@ -60,15 +66,16 @@ static pointer emutls_size;
 static void
 emutls_destroy (void *ptr)
 {
-  void ***arr = (void ***) ptr;
-  unsigned long int size = (unsigned long int) arr[0];
-  ++arr;
-  while (--size)
+  struct __emutls_array *arr = ptr;
+  pointer size = arr->size;
+  pointer i;
+
+  for (i = 0; i < size; ++i)
     {
-      if (*arr)
-	free ((*arr)[-1]);
-      ++arr;
+      if (arr->data[i])
+	free (arr->data[i][-1]);
     }
+
   free (ptr);
 }
 
@@ -130,9 +137,9 @@ __emutls_get_address (struct __emutls_object *obj)
 #ifndef __GTHREADS
   abort ();
 #else
-  pointer offset;
+  pointer offset = obj->loc.offset;
 
-  if (__builtin_expect (obj->loc.offset == 0, 0))
+  if (__builtin_expect (offset == 0, 0))
     {
       static __gthread_once_t once = __GTHREAD_ONCE_INIT;
       __gthread_once (&once, emutls_init);
@@ -141,37 +148,37 @@ __emutls_get_address (struct __emutls_object *obj)
       obj->loc.offset = offset;
       __gthread_mutex_unlock (&emutls_mutex);
     }
-  else
-    offset = obj->loc.offset;
 
-  void **arr = (void **) __gthread_getspecific (emutls_key);
+  struct __emutls_array *arr = __gthread_getspecific (emutls_key);
   if (__builtin_expect (arr == NULL, 0))
     {
       pointer size = offset + 32;
       arr = calloc (size, sizeof (void *));
       if (arr == NULL)
 	abort ();
-      arr[0] = (void *) size;
+      arr->size = size;
       __gthread_setspecific (emutls_key, (void *) arr);
     }
-  else if (__builtin_expect (offset >= (pointer) arr[0], 0))
+  else if (__builtin_expect (offset >= arr->size, 0))
     {
-      pointer orig_size = (pointer) arr[0];
+      pointer orig_size = arr->size;
       pointer size = orig_size * 2;
       if (offset >= size)
 	size = offset + 32;
       arr = realloc (arr, size * sizeof (void *));
       if (arr == NULL)
 	abort ();
-      memset (arr + orig_size, 0, (size - orig_size) * sizeof (void *));
+      arr->size = size;
+      memset (arr->data + orig_size - 1, 0,
+	      (size - orig_size) * sizeof (void *));
       __gthread_setspecific (emutls_key, (void *) arr);
     }
 
-  void *ret = arr[offset];
+  void *ret = arr->data[offset - 1];
   if (__builtin_expect (ret == NULL, 0))
     {
       ret = emutls_alloc (obj);
-      arr[offset] = ret;
+      arr->data[offset - 1] = ret;
     }
   return ret;
 #endif

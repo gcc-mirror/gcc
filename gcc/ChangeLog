@@ -1,5 +1,11 @@
 2007-03-29  Richard Henderson  <rth@redhat.com>
 
+	* emutls.c (struct __emutls_array): New.
+	(emutls_destroy): Use it instead of casting element 0 from void*.
+	(__emutls_get_address): Likewise.
+
+2007-03-29  Richard Henderson  <rth@redhat.com>
+
 	* varasm.c (initializer_constant_valid_p): Don't deny
 	DECL_DLLIMPORT_P on functions.
 
