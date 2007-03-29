@@ -150,7 +150,6 @@ Boston, MA 02110-1301, USA.  */
    the number of registers used, and an atsign (@). */
 void i386_nlm_encode_section_info (tree, rtx, int);
 const char *i386_nlm_strip_name_encoding (const char *);
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO  i386_nlm_encode_section_info
+#define SUBTARGET_ENCODE_SECTION_INFO  i386_nlm_encode_section_info
 #undef  TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING  i386_nlm_strip_name_encoding

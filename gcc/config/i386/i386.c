@@ -2569,12 +2569,11 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 	}
     }
 
-#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
   /* Dllimport'd functions are also called indirectly.  */
-  if (decl && DECL_DLLIMPORT_P (decl)
+  if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+      && decl && DECL_DLLIMPORT_P (decl)
       && ix86_function_regparm (TREE_TYPE (decl), NULL) >= 3)
     return false;
-#endif
 
   /* If we forced aligned the stack, then sibcalling would unalign the
      stack, which may break the called function.  */
@@ -6332,6 +6331,11 @@ legitimate_constant_p (rtx x)
       /* TLS symbols are never valid.  */
       if (SYMBOL_REF_TLS_MODEL (x))
 	return false;
+
+      /* DLLIMPORT symbols are never valid.  */
+      if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+	  && SYMBOL_REF_DLLIMPORT_P (x))
+	return false;
       break;
 
     case CONST_DOUBLE:
@@ -7189,6 +7193,90 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
   return dest;
 }
 
+/* Create or return the unique __imp_DECL dllimport symbol corresponding
+   to symbol DECL.  */
+
+static GTY((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
+  htab_t dllimport_map;
+
+static tree
+get_dllimport_decl (tree decl)
+{
+  struct tree_map *h, in;
+  void **loc;
+  const char *name;
+  const char *prefix;
+  size_t namelen, prefixlen;
+  char *imp_name;
+  tree to;
+  rtx rtl;
+
+  if (!dllimport_map)
+    dllimport_map = htab_create_ggc (512, tree_map_hash, tree_map_eq, 0);
+
+  in.hash = htab_hash_pointer (decl);
+  in.base.from = decl;
+  loc = htab_find_slot_with_hash (dllimport_map, &in, in.hash, INSERT);
+  h = *loc;
+  if (h)
+    return h->to;
+
+  *loc = h = ggc_alloc (sizeof (struct tree_map));
+  h->hash = in.hash;
+  h->base.from = decl;
+  h->to = to = build_decl (VAR_DECL, NULL, ptr_type_node);
+  DECL_ARTIFICIAL (to) = 1;
+  DECL_IGNORED_P (to) = 1;
+  DECL_EXTERNAL (to) = 1;
+  TREE_READONLY (to) = 1;
+
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  name = targetm.strip_name_encoding (name);
+  if (name[0] == FASTCALL_PREFIX)
+    {
+      name++;
+      prefix = "*__imp_";
+    }
+  else
+    prefix = "*__imp__";
+
+  namelen = strlen (name);
+  prefixlen = strlen (prefix);
+  imp_name = alloca (namelen + prefixlen + 1);
+  memcpy (imp_name, prefix, prefixlen);
+  memcpy (imp_name + prefixlen, name, namelen + 1);
+
+  name = ggc_alloc_string (imp_name, namelen + prefixlen);
+  rtl = gen_rtx_SYMBOL_REF (Pmode, name);
+  SET_SYMBOL_REF_DECL (rtl, to);
+  SYMBOL_REF_FLAGS (rtl) = SYMBOL_FLAG_LOCAL;
+
+  rtl = gen_const_mem (Pmode, rtl);
+  set_mem_alias_set (rtl, ix86_GOT_alias_set ());
+
+  SET_DECL_RTL (to, rtl);
+
+  return to;
+}
+
+/* Expand SYMBOL into its corresponding dllimport symbol.  WANT_REG is
+   true if we require the result be a register.  */
+
+static rtx
+legitimize_dllimport_symbol (rtx symbol, bool want_reg)
+{
+  tree imp_decl;
+  rtx x;
+
+  gcc_assert (SYMBOL_REF_DECL (symbol));
+  imp_decl = get_dllimport_decl (SYMBOL_REF_DECL (symbol));
+
+  x = DECL_RTL (imp_decl);
+  if (want_reg)
+    x = force_reg (Pmode, x);
+  return x;
+}
+
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
    This macro is used in only one place: `memory_address' in explow.c.
@@ -7230,6 +7318,20 @@ legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED, enum machine_mode mode)
 
   if (flag_pic && SYMBOLIC_CONST (x))
     return legitimize_pic_address (x, 0);
+
+  if (TARGET_DLLIMPORT_DECL_ATTRIBUTES)
+    {
+      if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_DLLIMPORT_P (x))
+	return legitimize_dllimport_symbol (x, true);
+      if (GET_CODE (x) == CONST
+	  && GET_CODE (XEXP (x, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
+	  && SYMBOL_REF_DLLIMPORT_P (XEXP (XEXP (x, 0), 0)))
+	{
+	  rtx t = legitimize_dllimport_symbol (XEXP (XEXP (x, 0), 0), true);
+	  return gen_rtx_PLUS (Pmode, t, XEXP (XEXP (x, 0), 1));
+	}
+    }
 
   /* Canonicalize shifts by 0, 1, 2, 3 into multiply */
   if (GET_CODE (x) == ASHIFT
@@ -9236,20 +9338,31 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
 	  if (op1 == op0)
 	    return;
 	}
+      else if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+	       && SYMBOL_REF_DLLIMPORT_P (op1))
+	op1 = legitimize_dllimport_symbol (op1, false);
     }
   else if (GET_CODE (op1) == CONST
 	   && GET_CODE (XEXP (op1, 0)) == PLUS
 	   && GET_CODE (XEXP (XEXP (op1, 0), 0)) == SYMBOL_REF)
     {
-      model = SYMBOL_REF_TLS_MODEL (XEXP (XEXP (op1, 0), 0));
+      rtx addend = XEXP (XEXP (op1, 0), 1);
+      rtx symbol = XEXP (XEXP (op1, 0), 0);
+      rtx tmp = NULL;
+
+      model = SYMBOL_REF_TLS_MODEL (symbol);
       if (model)
+	tmp = legitimize_tls_address (symbol, model, true);
+      else if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+	       && SYMBOL_REF_DLLIMPORT_P (symbol))
+	tmp = legitimize_dllimport_symbol (symbol, true);
+
+      if (tmp)
 	{
-	  rtx addend = XEXP (XEXP (op1, 0), 1);
-	  op1 = legitimize_tls_address (XEXP (XEXP (op1, 0), 0), model, true);
-	  op1 = force_operand (op1, NULL);
-	  op1 = expand_simple_binop (Pmode, PLUS, op1, addend,
+	  tmp = force_operand (tmp, NULL);
+	  tmp = expand_simple_binop (Pmode, PLUS, tmp, addend,
 				     op0, 1, OPTAB_DIRECT);
-	  if (op1 == op0)
+	  if (tmp == op0)
 	    return;
 	}
     }
@@ -21647,6 +21760,10 @@ static const struct attribute_spec ix86_attribute_table[] =
 #if TARGET_MACHO
 #undef TARGET_BINDS_LOCAL_P
 #define TARGET_BINDS_LOCAL_P darwin_binds_local_p
+#endif
+#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
+#undef TARGET_BINDS_LOCAL_P
+#define TARGET_BINDS_LOCAL_P i386_pe_binds_local_p
 #endif
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
