@@ -464,16 +464,6 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 #define PREFERRED_RELOAD_CLASS(X, CLASS)	\
   s390_preferred_reload_class ((X), (CLASS))
 
-/* We need a secondary reload when loading a PLUS which is
-   not a valid operand for LOAD ADDRESS.  */
-#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, IN)	\
-  s390_secondary_input_reload_class ((CLASS), (MODE), (IN))
-
-/* We need a secondary reload when storing a double-word
-   to a non-offsettable memory address.  */
-#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, OUT)	\
-  s390_secondary_output_reload_class ((CLASS), (MODE), (OUT))
-
 /* We need secondary memory to move data between GPRs and FPRs.  */
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
  ((CLASS1) != (CLASS2)                                \

@@ -2638,67 +2638,57 @@ s390_preferred_reload_class (rtx op, enum reg_class class)
   return class;
 }
 
-/* Return the register class of a scratch register needed to
-   load IN into a register of class CLASS in MODE.
+/* Inform reload about cases where moving X with a mode MODE to a register in
+   CLASS requires an extra scratch or immediate register.  Return the class
+   needed for the immediate register.  */
 
-   We need a temporary when loading a PLUS expression which
-   is not a legitimate operand of the LOAD ADDRESS instruction.  */
-
-enum reg_class
-s390_secondary_input_reload_class (enum reg_class class,
-				   enum machine_mode mode, rtx in)
+static enum reg_class
+s390_secondary_reload (bool in_p, rtx x, enum reg_class class,
+		       enum machine_mode mode, secondary_reload_info *sri)
 {
-  if (s390_plus_operand (in, mode))
-    return ADDR_REGS;
-
-  if (reg_classes_intersect_p (FP_REGS, class)
-      && mode == TFmode
-      && GET_CODE (in) == MEM
-      && GET_CODE (XEXP (in, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (in, 0), 1)) == CONST_INT
-      && !DISP_IN_RANGE (INTVAL (XEXP (XEXP (in, 0), 1))
-			 + GET_MODE_SIZE (mode) - 1))
-    return ADDR_REGS;
-
+  /* Intermediate register needed.  */
   if (reg_classes_intersect_p (CC_REGS, class))
     return GENERAL_REGS;
 
-  return NO_REGS;
-}
+  /* We need a scratch register when loading a PLUS expression which
+     is not a legitimate operand of the LOAD ADDRESS instruction.  */
+  if (in_p && s390_plus_operand (x, mode))
+    sri->icode = (TARGET_64BIT ?
+		  CODE_FOR_reloaddi_plus : CODE_FOR_reloadsi_plus);
 
-/* Return the register class of a scratch register needed to
-   store a register of class CLASS in MODE into OUT:
-
-   We need a temporary when storing a double-word to a
-   non-offsettable memory address.  */
-
-enum reg_class
-s390_secondary_output_reload_class (enum reg_class class,
-				    enum machine_mode mode, rtx out)
-{
-  if ((TARGET_64BIT ? (mode == TImode || mode == TFmode)
-                    : (mode == DImode || mode == DFmode))
-      && reg_classes_intersect_p (GENERAL_REGS, class)
-      && GET_CODE (out) == MEM
-      && GET_CODE (XEXP (out, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (out, 0), 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (out, 0), 1)) == CONST_INT
-      && !DISP_IN_RANGE (INTVAL (XEXP (XEXP (out, 0), 1))
+  /* Peforming a multiword move from or to memory we have to make sure the
+     second chunk in memory is addressable without causing a displacement
+     overflow.  If that would be the case we calculate the address in
+     a scratch register.  */
+  if (MEM_P (x)
+      && GET_CODE (XEXP (x, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+      && !DISP_IN_RANGE (INTVAL (XEXP (XEXP (x, 0), 1))
 			 + GET_MODE_SIZE (mode) - 1))
-    return ADDR_REGS;
+    {
+      /* For GENERAL_REGS a displacement overflow is no problem if occuring
+	 in a s_operand address since we may fallback to lm/stm.  So we only
+	 have to care about overflows in the b+i+d case.  */
+      if ((reg_classes_intersect_p (GENERAL_REGS, class)
+	   && s390_class_max_nregs (GENERAL_REGS, mode) > 1
+	   && GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS)
+	  /* For FP_REGS no lm/stm is available so this check is triggered
+	     for displacement overflows in b+i+d and b+d like addresses.  */
+	  || (reg_classes_intersect_p (FP_REGS, class)
+	      && s390_class_max_nregs (FP_REGS, mode) > 1))
+	{
+	  if (in_p)
+	    sri->icode = (TARGET_64BIT ?
+			  CODE_FOR_reloaddi_nonoffmem_in :
+			  CODE_FOR_reloadsi_nonoffmem_in);
+	  else
+	    sri->icode = (TARGET_64BIT ?
+			  CODE_FOR_reloaddi_nonoffmem_out :
+			  CODE_FOR_reloadsi_nonoffmem_out);
+	}
+    }
 
-  if (reg_classes_intersect_p (FP_REGS, class)
-      && mode == TFmode
-      && GET_CODE (out) == MEM
-      && GET_CODE (XEXP (out, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (out, 0), 1)) == CONST_INT
-      && !DISP_IN_RANGE (INTVAL (XEXP (XEXP (out, 0), 1))
-			 + GET_MODE_SIZE (mode) - 1))
-    return ADDR_REGS;
-
-  if (reg_classes_intersect_p (CC_REGS, class))
-    return GENERAL_REGS;
-
+  /* Either scratch or no register needed.  */
   return NO_REGS;
 }
 
@@ -9363,6 +9353,9 @@ s390_reorg (void)
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P s390_scalar_mode_supported_p
+
+#undef TARGET_SECONDARY_RELOAD
+#define TARGET_SECONDARY_RELOAD s390_secondary_reload
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

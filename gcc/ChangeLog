@@ -1,5 +1,19 @@
 2007-03-29  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/s390.c (s390_secondary_input_reload_class,
+	s390_secondary_output_reload_class): Functions removed.
+	(s390_secondary_reload): New function.
+	(TARGET_SECONDARY_RELOAD): Target macro defined.
+	* config/s390/s390.h (SECONDARY_INPUT_RELOAD_CLASS,
+	SECONDARY_OUTPUT_RELOAD_CLASS): Macro definitions removed.
+	* config/s390/s390.md ("reload_outti", "reload_outdi",
+	"reload_indi", "reload_insi", "reload_out<mode>", "reload_in<mode>",
+	"reload_out<mode>"): Expanders removed.
+	("reload<mode>_plus", "reload<mode>_nonoffmem_in",
+	"reload<mode>_nonoffmem_out"): Expanders added.
+
+2007-03-29  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* regmove.c (optimize_reg_copy_1): Don't perform DEST->SRC repair action if
 	SRC->DEST replacement failed anyway.
 
