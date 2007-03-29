@@ -621,6 +621,12 @@ struct noce_if_info
 
   /* The SET_DEST of INSN_A.  */
   rtx x;
+
+  /* True if this if block is not canonical.  In the canonical form of
+     if blocks, the THEN_BB is the block reached via the fallthru edge
+     from TEST_BB.  For the noce transformations, we allow the symmetric
+     form as well.  */
+  bool then_else_reversed;
 };
 
 static rtx noce_emit_store_flag (struct noce_if_info *, rtx, int, int);
@@ -1503,6 +1509,8 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
   reverse
     = GET_CODE (XEXP (SET_SRC (set), 2)) == LABEL_REF
       && XEXP (XEXP (SET_SRC (set), 2), 0) == JUMP_LABEL (if_info->jump);
+  if (if_info->then_else_reversed)
+    reverse = !reverse;
 
   /* If we're looking for a constant, try to make the conditional
      have that constant in it.  There are two reasons why it may
@@ -2017,8 +2025,8 @@ noce_try_bitop (struct noce_if_info *if_info)
 /* Similar to get_condition, only the resulting condition must be
    valid at JUMP, instead of at EARLIEST.
 
-   If THEN_ELSE_REVERSED is true, the fallthrough goes to the THEN
-   block of the caller, and we have to reverse the condition.  */
+   If THEN_ELSE_REVERSED is true, the fallthrough does not go to the
+   THEN block of the caller, and we have to reverse the condition.  */
 
 static rtx
 noce_get_condition (rtx jump, rtx *earliest, bool then_else_reversed)
@@ -2036,8 +2044,9 @@ noce_get_condition (rtx jump, rtx *earliest, bool then_else_reversed)
   reverse = (GET_CODE (XEXP (SET_SRC (set), 2)) == LABEL_REF
 	     && XEXP (XEXP (SET_SRC (set), 2), 0) == JUMP_LABEL (jump));
 
-  /* We may have to reverse because the caller's if block is not canonical
-     (i.e. the ELSE block isn't the fallthrough block for the TEST block).  */
+  /* We may have to reverse because the caller's if block is not canonical,
+     i.e. the THEN block isn't the fallthrough block for the TEST block
+     (see find_if_header).  */
   if (then_else_reversed)
     reverse = !reverse;
 
@@ -2671,7 +2680,7 @@ noce_find_if_block (basic_block test_bb,
   /* Recognize an IF-ELSE-JOIN block.  We can have those because the order
      of basic blocks in cfglayout mode does not matter, so the fallthrough
      edge can go to any basic block (and not just to bb->next_bb, like in
-     cfgrtl mode).  */ 
+     cfgrtl mode).  */
   else if (single_pred_p (else_edge->dest)
 	   && single_succ_p (else_edge->dest)
 	   && single_succ (else_edge->dest) == then_edge->dest)
@@ -2687,7 +2696,7 @@ noce_find_if_block (basic_block test_bb,
   else
     /* Not a form we can handle.  */
     return FALSE;
-     
+
   /* The edges of the THEN and ELSE blocks cannot have complex edges.  */
   if (single_succ_edge (then_bb)->flags & EDGE_COMPLEX)
     return FALSE;
@@ -2735,6 +2744,7 @@ noce_find_if_block (basic_block test_bb,
   if_info.join_bb = join_bb;
   if_info.cond = cond;
   if_info.jump = jump;
+  if_info.then_else_reversed = then_else_reversed;
 
   /* Do the real work.  */
 
