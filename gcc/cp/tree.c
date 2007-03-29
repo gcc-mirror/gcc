@@ -2203,7 +2203,6 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 		  void *data, struct pointer_set_t *pset)
 {
   enum tree_code code = TREE_CODE (*tp);
-  location_t save_locus;
   tree result;
 
 #define WALK_SUBTREE(NODE)				\
@@ -2213,12 +2212,6 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       if (result) goto out;				\
     }							\
   while (0)
-
-  /* Set input_location here so we get the right instantiation context
-     if we call instantiate_decl from inlinable_function_p.  */
-  save_locus = input_location;
-  if (EXPR_HAS_LOCATION (*tp))
-    input_location = EXPR_LOCATION (*tp);
 
   /* Not one of the easy cases.  We must explicitly go through the
      children.  */
@@ -2301,13 +2294,11 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       break;
 
     default:
-      input_location = save_locus;
       return NULL_TREE;
     }
 
   /* We didn't find what we were looking for.  */
  out:
-  input_location = save_locus;
   return result;
 
 #undef WALK_SUBTREE
