@@ -1,3 +1,8 @@
+2007-03-29  Joel Brobecker  <brobecker@adacore.com>
+
+	* filenames.h (FILENAME_CMP): Adjust define to call filename_cmp
+	regardless of the type of file system.
+
 2007-03-06  Jan Hubicka  <jh@suse.cz>
 	
 	* ansidecl.h (ATTRIBUTE_COLD, ATTRIBUTE_HOT): New.
