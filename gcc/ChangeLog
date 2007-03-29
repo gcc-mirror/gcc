@@ -1,3 +1,12 @@
+2007-03-29  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR tree-optimization/30666
+	* tree.c (build_complex_type): When creating type names for DWARF2
+	debug info, create TYPE_DECLs for TYPE_NAME instead of
+	IDENTIFIER_NODEs.
+	(build_common_tree_nodes_2): Use build_complex_type when building
+	predefined complex types, to preserve canonical types.
+
 2007-03-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* ifcvt.c (struct noce_if_info): Add then_else_reversed field.
