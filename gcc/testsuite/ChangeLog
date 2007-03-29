@@ -1,3 +1,7 @@
+2007-03-29  Dirk Mueller  <dmueller@suse.de>
+
+	* g++.dg/warn/pedantic2.C: New testcase.
+
 2007-03-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* size_dim.f90: Fix dg directive.
