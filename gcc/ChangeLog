@@ -1,3 +1,12 @@
+2007-03-29  Lars Poeschel <larsi@wh2.tu-dresden.de>
+
+	* config/fr30/fr30.md (movdi): Do not accept immediates as the
+	destination of this insn.
+	* config/fr30/fr30.c (fr30_move_double): Use emit_move_insn rather
+	than calling gen_rtx_SET directly.  Use r0 to hold the value of
+	'address + 4' rather than a stack based temporary which can be
+	mis-optimized away.
+	
 2007-03-29  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_secondary_input_reload_class,
