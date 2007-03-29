@@ -1,3 +1,7 @@
+2007-03-28  Mike Stump  <mrs@apple.com>
+
+	* gcc.dg/darwin-comm.c: Add.
+
 2007-03-28  Eric Christopher  <echristo@apple.com>
 
 	* lib/target-supports.exp (check_effective_target_fstack_protector): New.
