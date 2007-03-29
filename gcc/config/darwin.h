@@ -652,11 +652,11 @@ extern GTY(()) int darwin_ms_struct;
       }									\
   } while (0)
 
-/* The maximum alignment which the object file format can support.
-   For Mach-O, this is 2^15.  */
+/* The maximum alignment which the object file format can support in
+   bits.  For Mach-O, this is 2^15 bytes.  */
 
 #undef	MAX_OFILE_ALIGNMENT
-#define MAX_OFILE_ALIGNMENT 0x8000
+#define MAX_OFILE_ALIGNMENT (0x8000 * 8)
 
 /* Declare the section variables.  */
 #ifndef USED_FOR_TARGET

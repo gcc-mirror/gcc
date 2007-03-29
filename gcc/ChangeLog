@@ -1,3 +1,8 @@
+2007-03-28  Mike Stump  <mrs@apple.com>
+
+	* config/darwin9.h (ASM_OUTPUT_ALIGNED_COMMON): Add.
+	* config/darwin.h (MAX_OFILE_ALIGNMENT): Fix.
+
 2007-03-27  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (avr_mcu_types): Move at90usb82 device to 'avr4' 
