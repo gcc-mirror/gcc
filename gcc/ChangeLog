@@ -1,5 +1,10 @@
 2007-03-29  Richard Henderson  <rth@redhat.com>
 
+	* unwind-generic.h (_sleb128_t, _uleb128_t): Don't use HAVE_LONG_LONG
+	to decide, but __SIZEOF_LONG_LONG__.
+
+2007-03-29  Richard Henderson  <rth@redhat.com>
+
 	* emutls.c (struct __emutls_array): New.
 	(emutls_destroy): Use it instead of casting element 0 from void*.
 	(__emutls_get_address): Likewise.
