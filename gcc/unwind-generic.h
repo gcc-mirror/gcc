@@ -247,16 +247,14 @@ extern void * _Unwind_FindEnclosingFunction (void *pc);
    except when a unsigned long data type on the target machine is not
    capable of storing a pointer.  */
 
-#if __SIZEOF_LONG__ < __SIZEOF_POINTER__
-#ifdef HAVE_LONG_LONG
+#if __SIZEOF_LONG__ >= __SIZEOF_POINTER__
+  typedef long _sleb128_t;
+  typedef unsigned long _uleb128_t;
+#elif __SIZEOF_LONG_LONG__ >= __SIZEOF_POINTER__
   typedef long long _sleb128_t;
   typedef unsigned long long _uleb128_t;
 #else
-  #error "long long data type is needed to define _sleb128_t"
-#endif
-#else
-  typedef long _sleb128_t;
-  typedef unsigned long _uleb128_t;
+# error "What type shall we use for _sleb128_t?"
 #endif
 
 #ifdef __cplusplus
