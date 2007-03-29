@@ -242,8 +242,6 @@
 
 /* This says how to output an assembler line to define a global common
    symbol.  */
-/* ? */
-#undef  ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)			\
   do {									\
     unsigned HOST_WIDE_INT _new_size = SIZE;				\
