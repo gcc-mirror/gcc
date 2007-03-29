@@ -1,3 +1,11 @@
+2007-03-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* ifcvt.c (struct noce_if_info): Add then_else_reversed field.
+	(noce_get_alt_condition): Look at it to determine whether to
+	reverse the condition or not.
+	(noce_get_condition): Substitute the truth for lies.
+	(noce_find_if_block): Set the then_else_reversed field.
+
 2007-03-29  Lars Poeschel <larsi@wh2.tu-dresden.de>
 
 	* config/fr30/fr30.md (movdi): Do not accept immediates as the
