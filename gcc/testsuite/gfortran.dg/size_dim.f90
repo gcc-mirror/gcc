@@ -1,4 +1,4 @@
-! { dg-do "run" }
+! { dg-do run }
 ! Check size with initialization expression value for dim=
 ! PR fortran/30882
 !

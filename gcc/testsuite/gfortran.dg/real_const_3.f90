@@ -1,4 +1,4 @@
-!{ dg-run }
+!{ dg-do run }
 !{ dg-options "-fno-range-check" }
 ! PR19310 and PR19904, allow disabling range check during compile.
 ! Contributed by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
@@ -26,16 +26,16 @@ program main
   print *, z4
 
 end program main
-!{dg-output "      +Infinity"
-!{dg-output "   0.000000"
-!{dg-output "      -Infinity"
-!{dg-output "            NaN"
-!{dg-output "            NaN"
-!{dg-output "      -Infinity"
-!{dg-output "      -Infinity"
-!{dg-output "      +Infinity"
-!{dg-output "            NaN"
-!{dg-output " (           NaN,           NaN)"
-!{dg-output " (           NaN,           NaN)"
-!{dg-output " (     +Infinity,     -Infinity)"
-!{dg-output " (  0.000000    ,  0.000000    )"
+!{ dg-output "      +Infinity"
+!{ dg-output "   0.000000"
+!{ dg-output "      -Infinity"
+!{ dg-output "            NaN"
+!{ dg-output "            NaN"
+!{ dg-output "      -Infinity"
+!{ dg-output "      -Infinity"
+!{ dg-output "      +Infinity"
+!{ dg-output "            NaN"
+!{ dg-output " (           NaN,           NaN)"
+!{ dg-output " (           NaN,           NaN)"
+!{ dg-output " (     +Infinity,     -Infinity)"
+!{ dg-output " (  0.000000    ,  0.000000    )"

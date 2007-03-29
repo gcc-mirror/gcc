@@ -1,4 +1,4 @@
-! { dg-do "run" }
+! { dg-do run }
 ! Check whether RESULT of ENTRY defaults to entry-name.
 ! PR fortran/30873
 !

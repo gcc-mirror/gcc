@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! PR fortran/30973
 ! Using symbols with the name of the module
 

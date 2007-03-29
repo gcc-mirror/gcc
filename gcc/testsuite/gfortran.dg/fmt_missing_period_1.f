@@ -1,4 +1,4 @@
-! { dg-compile }
+! { dg-do compile }
 ! PR27634 Missing period in format specifier. Test case derived from case given
 ! in PR.  Submitted by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
       real      aval

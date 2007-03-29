@@ -1,4 +1,4 @@
-! {dg-do compile }
+! { dg-do compile }
 ! PR 24426
 ! Pointer-components of derived type with initialized components
 module crash

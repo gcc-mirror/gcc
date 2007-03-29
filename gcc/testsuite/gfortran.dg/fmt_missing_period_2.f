@@ -1,4 +1,4 @@
-! { dg-run }
+! { dg-do run }
 ! { dg-options "-w -std=legacy" }
 ! PR27634 Missing period in format specifier. Test case derived from case given
 ! in PR.  Submitted by Jerry DeLisle  <jvdelisle@gcc.gnu.org>

@@ -1,4 +1,4 @@
-! { dg-compile }
+! { dg-do compile }
 ! { dg-options "-std=f2003 -fall-intrinsics" }
 ! { dg-shouldfail "Invalid code" }
 !

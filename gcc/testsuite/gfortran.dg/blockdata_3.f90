@@ -1,4 +1,4 @@
-! { dg-compile }
+! { dg-do compile }
 ! { dg-options "-W -Wall" }
 ! Tests the fix for PR29539, in which the derived type in a blockdata
 ! cause an ICE.  With the fix for PR29565, this now compiles and runs

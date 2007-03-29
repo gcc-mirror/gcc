@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! Renaming of operators
 module z
   type myT

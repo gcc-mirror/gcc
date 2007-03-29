@@ -1,3 +1,32 @@
+2007-03-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* size_dim.f90: Fix dg directive.
+	* pr16433.f: Likewise.
+	* use_6.f90: Likewise.
+	* use_7.f90: Likewise.
+	* entry_9.f90: Likewise.
+	* pointer_intent_2.f90: Likewise.
+	* protected_1.f90: Likewise.
+	* fmt_missing_period_2.f: Likewise.
+	* pointer_intent_3.f90: Likewise.
+	* protected_2.f90: Likewise.
+	* protected_3.f90: Likewise.
+	* pr15754.f90: Likewise.
+	* protected_4.f90: Likewise.
+	* protected_5.f90: Likewise.
+	* initialization_2.f90: Likewise.
+	* protected_6.f90: Likewise.
+	* continuation_7.f90: Likewise.
+	* derived_function_interface_1.f90: Likewise.
+	* der_pointer_4.f90: Likewise.
+	* fmt_zero_precision.f90: Likewise.
+	* blockdata_3.f90: Likewise.
+	* fmt_missing_period_1.f: Likewise.
+	* real_const_3.f90: Likewise.
+	* use_4.f90: Likewise.
+	* fmt_missing_period_3.f: Likewise.
+	* use_5.f90: Likewise.
+
 2007-03-28  Mike Stump  <mrs@apple.com>
 
 	* gcc.dg/darwin-comm.c: Add.
