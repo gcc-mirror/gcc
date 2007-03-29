@@ -326,8 +326,7 @@ while (0)
    differently depending on something about the variable or
    function named by the symbol (such as what section it is in).  */
 
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO i386_pe_encode_section_info
+#define SUBTARGET_ENCODE_SECTION_INFO i386_pe_encode_section_info
 #undef  TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING  i386_pe_strip_name_encoding_full
 

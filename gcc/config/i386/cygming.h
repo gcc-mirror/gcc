@@ -148,39 +148,20 @@ do {									\
    section and we need to set DECL_SECTION_NAME so we do that here.
    Note that we can be called twice on the same decl.  */
 
-#undef SUBTARGET_ENCODE_SECTION_INFO
 #define SUBTARGET_ENCODE_SECTION_INFO  i386_pe_encode_section_info
 #undef  TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING  i386_pe_strip_name_encoding_full
-
-/* Output a reference to a label.  */
-#undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF  i386_pe_output_labelref
-
-#undef  COMMON_ASM_OP
-#define COMMON_ASM_OP	"\t.comm\t"
 
 /* Output a common block.  */
-#undef ASM_OUTPUT_COMMON
-#define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)	\
-do {							\
-  if (i386_pe_dllexport_name_p (NAME))			\
-    i386_pe_record_exported_symbol (NAME, 1);		\
-  if (! i386_pe_dllimport_name_p (NAME))		\
-    {							\
-      fprintf ((STREAM), "\t.comm\t");			\
-      assemble_name ((STREAM), (NAME));			\
-      fprintf ((STREAM), ", %d\t%s %d\n",		\
-	       (int)(ROUNDED), ASM_COMMENT_START, (int)(SIZE));	\
-    }							\
-} while (0)
+#undef ASM_OUTPUT_ALIGNED_DECL_COMMON
+#define ASM_OUTPUT_ALIGNED_DECL_COMMON \
+  i386_pe_asm_output_aligned_decl_common
 
 /* Output the label for an initialized variable.  */
 #undef ASM_DECLARE_OBJECT_NAME
 #define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL)	\
 do {							\
-  if (i386_pe_dllexport_name_p (NAME))			\
-    i386_pe_record_exported_symbol (NAME, 1);		\
+  i386_pe_maybe_record_exported_symbol (DECL, NAME, 1);	\
   ASM_OUTPUT_LABEL ((STREAM), (NAME));			\
 } while (0)
 
@@ -210,7 +191,6 @@ do {							\
 /* Windows uses explicit import from shared libraries.  */
 #define MULTIPLE_SYMBOL_SPACES 1
 
-extern void i386_pe_unique_section (TREE, int);
 #define TARGET_ASM_UNIQUE_SECTION i386_pe_unique_section
 #define TARGET_ASM_FUNCTION_RODATA_SECTION default_no_function_rodata_section
 
@@ -229,8 +209,7 @@ extern void i386_pe_unique_section (TREE, int);
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do									\
     {									\
-      if (i386_pe_dllexport_name_p (NAME))				\
-	i386_pe_record_exported_symbol (NAME, 0);			\
+      i386_pe_maybe_record_exported_symbol (DECL, NAME, 0);		\
       if (write_symbols != SDB_DEBUG)					\
 	i386_pe_declare_function_type (FILE, NAME, TREE_PUBLIC (DECL));	\
       ASM_OUTPUT_LABEL (FILE, NAME);					\
@@ -289,15 +268,6 @@ extern void i386_pe_unique_section (TREE, int);
 			       build_tree_list (get_identifier ("stdcall"),   \
 						NULL))
 
-/* External function declarations.  */
-
-extern void i386_pe_record_external_function (tree, const char *);
-extern void i386_pe_declare_function_type (FILE *, const char *, int);
-extern void i386_pe_record_exported_symbol (const char *, int);
-extern void i386_pe_file_end (void);
-extern int i386_pe_dllexport_name_p (const char *);
-extern int i386_pe_dllimport_name_p (const char *);
-
 /* For Win32 ABI compatibility */
 #undef DEFAULT_PCC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 0
@@ -315,10 +285,10 @@ extern int i386_pe_dllimport_name_p (const char *);
    machine.  Use this macro to limit the alignment which can be
    specified using the `__attribute__ ((aligned (N)))' construct.  If
    not defined, the default value is `BIGGEST_ALIGNMENT'.  */
-#undef MAX_OFILE_ALIGNMENT
 /* IMAGE_SCN_ALIGN_8192BYTES is the largest section alignment flag
    specified in the PECOFF60 spec.  Native MS compiler also limits
    user-specified alignment to 8192 bytes.  */
+#undef MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT (8192 * 8)
 
 /* Native complier aligns internal doubles in structures on dword boundaries.  */
@@ -334,6 +304,7 @@ extern int i386_pe_dllimport_name_p (const char *);
 #ifndef SET_ASM_OP
 #define SET_ASM_OP "\t.set\t"
 #endif
+
 /* This implements the `alias' attribute, keeping any stdcall or
    fastcall decoration.  */
 #undef	ASM_OUTPUT_DEF_FROM_DECLS

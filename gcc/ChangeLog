@@ -1,3 +1,52 @@
+2007-03-29  Richard Henderson  <rth@redhat.com>
+
+	* varasm.c (initializer_constant_valid_p): Don't deny
+	DECL_DLLIMPORT_P on functions.
+
+	* config/i386/cygming.h: Remove function declarations.
+	(SUBTARGET_ENCODE_SECTION_INFO): Don't undef first.
+	(ASM_OUTPUT_LABELREF): Remove.
+	(COMMON_ASM_OP): Remove.
+	(ASM_OUTPUT_COMMON): Remove.
+	(ASM_OUTPUT_ALIGNED_DECL_COMMON): New.
+	(ASM_DECLARE_OBJECT_NAME): Use i386_pe_maybe_record_exported_symbol.
+	(ASM_DECLARE_FUNCTION_NAME): Likewise.
+	* config/i386/i386-interix.h (SUBTARGET_ENCODE_SECTION_INFO):
+	Rename from TARGET_ENCODE_SECTION_INFO.
+	* config/i386/netware.h: Likewise.
+	* config/i386/i386-protos.h: Update.
+	* config/i386/i386.c (ix86_function_ok_for_sibcall): Turn ifdef
+	of TARGET_DLLIMPORT_DECL_ATTRIBUTES into straight if.
+	(legitimate_constant_p): Reject dllimports.
+	(dllimport_map, get_dllimport_decl): New.
+	(legitimize_dllimport_symbol): New.
+	(legitimize_address, ix86_expand_move): Use it.
+	(TARGET_BINDS_LOCAL_P): Redefine for TARGET_DLLIMPORT_DECL_ATTRIBUTES.
+	* config/i386/i386.h (DLL_IMPORT_EXPORT_PREFIX): Remove.
+	(SYMBOL_FLAG_DLLIMPORT, SYMBOL_REF_DLLIMPORT_P): New.
+	(SYMBOL_FLAG_DLLEXPORT, SYMBOL_REF_DLLEXPORT_P): New.
+	* config/i386/predicates.md (constant_call_address_operand): Only
+	accept symbols; reject dllimport_p symbols.
+	* config/i386/uwin.h (ASM_DECLARE_FUNCTION_NAME): Use
+	i386_pe_maybe_record_exported_symbol.
+	* config/i386/winnt.c (DLL_IMPORT_PREFIX, DLL_EXPORT_PREFIX): Remove.
+	(i386_pe_determine_dllexport_p): Rename from i386_pe_dllexport_p.
+	(i386_pe_determine_dllimport_p): Rename from i386_pe_dllimport_p;
+	trust the setting of DECL_DLLIMPORT_P.
+	(i386_pe_dllexport_name_p, i386_pe_dllimport_name_p): Remove.
+	(i386_pe_mark_dllexport, i386_pe_mark_dllimport): Remove.
+	(gen_stdcall_or_fastcall_suffix): Return NULL if no change required;
+	tidy the argument scanning loop.
+	(i386_pe_encode_section_info): Set SYMBOL_FLAG_DLLIMPORT and
+	SYMBOL_FLAG_DLLEXPORT in SYMBOL_REF_FLAGS.
+	(i386_pe_strip_name_encoding): Remove.
+	(i386_pe_binds_local_p): New.
+	(i386_pe_strip_name_encoding_full): Use default_strip_name_encoding.
+	(i386_pe_output_labelref): Remove.
+	(i386_pe_asm_output_aligned_decl_common): New.
+	(i386_pe_maybe_record_exported_symbol): Rename from
+	i386_pe_record_exported_symbol; check for dllexported symbols.
+
 2007-03-29  Zack Weinberg  <zack@mrtock.ucsd.edu>
 
 	* gengtype.c (oprintf): Mostly revert changes from 2007-03-26;
