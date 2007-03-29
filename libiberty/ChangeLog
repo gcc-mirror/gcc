@@ -1,3 +1,11 @@
+2007-03-29  Joel Brobecker  <brobecker@adacore.com>
+
+	* filename_cmp.c: New file.
+	* Makefile.in (CFILES): Add filename_cmp.c.
+	(REQUIRED_OFILES): Add filename_cmp.o
+	(filename_cmp.o): New rule.
+	* functions.texi: Regenerate.
+
 2007-03-15  Geoffrey Keating  <geoffk@apple.com>
 
 	* cp-demangle.c (d_encoding): Exit early on error.
