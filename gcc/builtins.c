@@ -5492,14 +5492,19 @@ expand_builtin_sync_operation (enum machine_mode mode, tree arglist,
 			       rtx target, bool ignore)
 {
   rtx val, mem;
+  enum machine_mode old_mode;
 
   /* Expand the operands.  */
   mem = get_builtin_sync_mem (TREE_VALUE (arglist), mode);
 
   arglist = TREE_CHAIN (arglist);
   val = expand_expr (TREE_VALUE (arglist), NULL, mode, EXPAND_NORMAL);
-  /* If VAL is promoted to a wider mode, convert it back to MODE.  */
-  val = convert_to_mode (mode, val, 1);
+  /* If VAL is promoted to a wider mode, convert it back to MODE.  Take care
+     of CONST_INTs, where we know the old_mode only from the call argument.  */
+  old_mode = GET_MODE (val);
+  if (old_mode == VOIDmode)
+    old_mode = TYPE_MODE (TREE_TYPE (TREE_VALUE (arglist)));
+  val = convert_modes (mode, old_mode, val, 1);
 
   if (ignore)
     return expand_sync_operation (mem, val, code);
@@ -5517,19 +5522,28 @@ expand_builtin_compare_and_swap (enum machine_mode mode, tree arglist,
 				 bool is_bool, rtx target)
 {
   rtx old_val, new_val, mem;
+  enum machine_mode old_mode;
 
   /* Expand the operands.  */
   mem = get_builtin_sync_mem (TREE_VALUE (arglist), mode);
 
   arglist = TREE_CHAIN (arglist);
   old_val = expand_expr (TREE_VALUE (arglist), NULL, mode, EXPAND_NORMAL);
-  /* If OLD_VAL is promoted to a wider mode, convert it back to MODE.  */
-  old_val = convert_to_mode (mode, old_val, 1);
+  /* If VAL is promoted to a wider mode, convert it back to MODE.  Take care
+     of CONST_INTs, where we know the old_mode only from the call argument.  */
+  old_mode = GET_MODE (old_val);
+  if (old_mode == VOIDmode)
+    old_mode = TYPE_MODE (TREE_TYPE (TREE_VALUE (arglist)));
+  old_val = convert_modes (mode, old_mode, old_val, 1);
 
   arglist = TREE_CHAIN (arglist);
   new_val = expand_expr (TREE_VALUE (arglist), NULL, mode, EXPAND_NORMAL);
-  /* If NEW_VAL is promoted to a wider mode, convert it back to MODE.  */
-  new_val = convert_to_mode (mode, new_val, 1);
+  /* If VAL is promoted to a wider mode, convert it back to MODE.  Take care
+     of CONST_INTs, where we know the old_mode only from the call argument.  */
+  old_mode = GET_MODE (new_val);
+  if (old_mode == VOIDmode)
+    old_mode = TYPE_MODE (TREE_TYPE (TREE_VALUE (arglist)));
+  new_val = convert_modes (mode, old_mode, new_val, 1);
 
   if (is_bool)
     return expand_bool_compare_and_swap (mem, old_val, new_val, target);
@@ -5548,14 +5562,19 @@ expand_builtin_lock_test_and_set (enum machine_mode mode, tree arglist,
 				  rtx target)
 {
   rtx val, mem;
+  enum machine_mode old_mode;
 
   /* Expand the operands.  */
   mem = get_builtin_sync_mem (TREE_VALUE (arglist), mode);
 
   arglist = TREE_CHAIN (arglist);
   val = expand_expr (TREE_VALUE (arglist), NULL, mode, EXPAND_NORMAL);
-  /* If VAL is promoted to a wider mode, convert it back to MODE.  */
-  val = convert_to_mode (mode, val, 1);
+  /* If VAL is promoted to a wider mode, convert it back to MODE.  Take care
+     of CONST_INTs, where we know the old_mode only from the call argument.  */
+  old_mode = GET_MODE (val);
+  if (old_mode == VOIDmode)
+    old_mode = TYPE_MODE (TREE_TYPE (TREE_VALUE (arglist)));
+  val = convert_modes (mode, old_mode, val, 1);
 
   return expand_sync_lock_test_and_set (mem, val, target);
 }

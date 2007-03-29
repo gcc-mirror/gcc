@@ -1,3 +1,14 @@
+2007-03-29  Michael Matz  <matz@suse.de>
+
+	* builtins.c (expand_builtin_sync_operation,
+	expand_builtin_compare_and_swap,
+	expand_builtin_lock_test_and_set): Care for extending CONST_INTs
+	correctly.
+
+	* config/i386/sync.md (sync_double_compare_and_swapdi_pic,
+	sync_double_compare_and_swap_ccdi_pic): Use "SD" as constraint
+	for operand 3.
+
 2007-03-28  Mike Stump  <mrs@apple.com>
 
 	* config/darwin9.h (ASM_OUTPUT_ALIGNED_COMMON): Add.
