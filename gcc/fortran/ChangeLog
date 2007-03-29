@@ -1,3 +1,10 @@
+2007-03-29  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* intrinsic.c (conv_name): Let gfc_get_string handle the format.
+	(find_conv): Compare pointers instead of calling strcmp.
+	(find_sym): Likewise, but ensure that the compared pointer is in
+	the global string table.
+
 2007-03-28  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* gfc-internals.texi: Fix output filename.  Merge type index into

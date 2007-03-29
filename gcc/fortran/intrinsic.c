@@ -120,12 +120,9 @@ gfc_get_intrinsic_sub_symbol (const char *name)
 static const char *
 conv_name (gfc_typespec *from, gfc_typespec *to)
 {
-  static char name[30];
-
-  sprintf (name, "__convert_%c%d_%c%d", gfc_type_letter (from->type),
-	   from->kind, gfc_type_letter (to->type), to->kind);
-
-  return gfc_get_string (name);
+  return gfc_get_string ("__convert_%c%d_%c%d",
+			 gfc_type_letter (from->type), from->kind,
+			 gfc_type_letter (to->type), to->kind);
 }
 
 
@@ -144,7 +141,7 @@ find_conv (gfc_typespec *from, gfc_typespec *to)
   sym = conversion;
 
   for (i = 0; i < nconv; i++, sym++)
-    if (strcmp (target, sym->name) == 0)
+    if (target == sym->name)
       return sym;
 
   return NULL;
@@ -701,9 +698,14 @@ add_sym_5s (const char *name, int elemental, bt type, int kind, int standard,
 static gfc_intrinsic_sym *
 find_sym (gfc_intrinsic_sym *start, int n, const char *name)
 {
+  /* name may be a user-supplied string, so we must first make sure
+     that we're comparing against a pointer into the global string
+     table.  */
+  const char *p = gfc_get_string (name);
+
   while (n > 0)
     {
-      if (strcmp (name, start->name) == 0)
+      if (p == start->name)
 	return start;
 
       start++;
