@@ -52,6 +52,7 @@
 
 	* config/darwin9.h (ASM_OUTPUT_ALIGNED_COMMON): Add.
 	* config/darwin.h (MAX_OFILE_ALIGNMENT): Fix.
+	* config/rs6000/darwin.h (ASM_OUTPUT_ALIGNED_COMMON): Removed #undef.
 
 2007-03-28  Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
 
