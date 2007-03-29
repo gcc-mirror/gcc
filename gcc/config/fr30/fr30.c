@@ -1,5 +1,5 @@
 /* FR30 specific functions.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2007
    Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
@@ -890,12 +890,11 @@ fr30_move_double (rtx * operands)
       rtx src1;
 
       gcc_assert (GET_CODE (addr) == REG);
-      
+
       src0 = operand_subword (src, 0, TRUE, mode);
       src1 = operand_subword (src, 1, TRUE, mode);
-      
-      emit_insn (gen_rtx_SET (VOIDmode, adjust_address (dest, SImode, 0),
-			      src0));
+
+      emit_move_insn (adjust_address (dest, SImode, 0), src0);
 
       if (REGNO (addr) == STACK_POINTER_REGNUM
 	  || REGNO (addr) == FRAME_POINTER_REGNUM)
@@ -905,30 +904,31 @@ fr30_move_double (rtx * operands)
       else
 	{
 	  rtx new_mem;
-	  
+	  rtx scratch_reg_r0 = gen_rtx_REG (SImode, 0);
+
 	  /* We need a scratch register to hold the value of 'address + 4'.
-	     We ought to allow gcc to find one for us, but for now, just
-	     push one of the source registers.  */
-	  emit_insn (gen_movsi_push (src0));
-	  emit_insn (gen_movsi_internal (src0, addr));
-	  emit_insn (gen_addsi_small_int (src0, src0, GEN_INT (UNITS_PER_WORD)));
-	  
-	  new_mem = gen_rtx_MEM (SImode, src0);
+	     We use r0 for this purpose. It is used for example for long
+	     jumps and is already marked to not be used by normal register
+	     allocation.  */
+	  emit_insn (gen_movsi_internal (scratch_reg_r0, addr));
+	  emit_insn (gen_addsi_small_int (scratch_reg_r0, scratch_reg_r0,
+					  GEN_INT (UNITS_PER_WORD)));
+	  new_mem = gen_rtx_MEM (SImode, scratch_reg_r0);
 	  MEM_COPY_ATTRIBUTES (new_mem, dest);
-	  
-	  emit_insn (gen_rtx_SET (VOIDmode, new_mem, src1));
-	  emit_insn (gen_movsi_pop (src0));
+	  emit_move_insn (new_mem, src1);
+	  emit_insn (gen_blockage ());
 	}
     }
   else
     /* This should have been prevented by the constraints on movdi_insn.  */
     gcc_unreachable ();
-  
+
   val = get_insns ();
   end_sequence ();
 
   return val;
 }
+
 /*}}}*/
 /* Local Variables: */
 /* folded-file: t   */
