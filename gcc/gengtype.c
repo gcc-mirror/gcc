@@ -1475,24 +1475,26 @@ create_file (const char *name, const char *oname)
   return f;
 }
 
-/* Print, like fprintf, to O.  */
+/* Print, like fprintf, to O.  
+   N.B. You might think this could be implemented more efficiently
+   with vsnprintf().  Unfortunately, there are C libraries that
+   provide that function but without the C99 semantics for its return
+   value, making it impossible to know how much space is required.  */
 void
 oprintf (outf_p o, const char *format, ...)
 {
+  char *s;
   size_t slength;
+  va_list ap;
 
-  /* Try first with the assumption that there is enough space.  */
-  {
-    va_list ap;
-    va_start (ap, format);
-    slength = vsnprintf (o->buf + o->bufused, o->buflength - o->bufused,
-			 format, ap);
-    va_end (ap);
-  }
+  va_start (ap, format);
+  slength = vasprintf (&s, format, ap);
+  if (s == NULL || (int)slength < 0)
+    fatal ("out of memory");
+  va_end (ap);
 
-  if (o->bufused + slength >= o->buflength)
+  if (o->bufused + slength > o->buflength)
     {
-      /* There wasn't enough space.  */
       size_t new_len = o->buflength;
       if (new_len == 0)
 	new_len = 1024;
@@ -1501,21 +1503,10 @@ oprintf (outf_p o, const char *format, ...)
       } while (o->bufused + slength >= new_len);
       o->buf = XRESIZEVEC (char, o->buf, new_len);
       o->buflength = new_len;
-
-      /* We now know that there is enough space. */
-      {
-	size_t slen2;
-	va_list ap;
-	va_start (ap, format);
-	slen2 = vsnprintf (o->buf + o->bufused, o->buflength - o->bufused,
-			   format, ap);
-	va_end (ap);
-
-	gcc_assert (slen2 == slength);
-	gcc_assert (o->bufused + slen2 < o->buflength);
-      }
     }
+  memcpy (o->buf + o->bufused, s, slength);
   o->bufused += slength;
+  free (s);
 }
 
 /* Open the global header file and the language-specific header files.  */

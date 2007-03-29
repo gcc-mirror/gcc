@@ -1,3 +1,8 @@
+2007-03-29  Zack Weinberg  <zack@mrtock.ucsd.edu>
+
+	* gengtype.c (oprintf): Mostly revert changes from 2007-03-26;
+	add comment explaining why vsnprintf cannot be used.
+
 2007-03-29  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR tree-optimization/30666
