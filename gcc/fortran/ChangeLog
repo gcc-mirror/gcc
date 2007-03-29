@@ -1,3 +1,8 @@
+2007-03-30  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* symbol.c (gfc_find_gsymbol): Simplify, don't unconditionally
+	descend into all branches.
+
 2007-03-29  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* intrinsic.c (conv_name): Let gfc_get_string handle the format.

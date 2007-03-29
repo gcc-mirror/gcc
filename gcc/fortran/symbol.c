@@ -2770,20 +2770,19 @@ gfc_symbol_state(void) {
 gfc_gsymbol *
 gfc_find_gsymbol (gfc_gsymbol *symbol, const char *name)
 {
-  gfc_gsymbol *s;
+  int c;
 
   if (symbol == NULL)
     return NULL;
-  if (strcmp (symbol->name, name) == 0)
-    return symbol;
 
-  s = gfc_find_gsymbol (symbol->left, name);
-  if (s != NULL)
-    return s;
+  while (symbol)
+    {
+      c = strcmp (name, symbol->name);
+      if (!c)
+	return symbol;
 
-  s = gfc_find_gsymbol (symbol->right, name);
-  if (s != NULL)
-    return s;
+      symbol = (c < 0) ? symbol->left : symbol->right;
+    }
 
   return NULL;
 }
