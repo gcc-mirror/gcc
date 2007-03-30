@@ -2078,6 +2078,65 @@ cpp_undef (cpp_reader *pfile, const char *macro)
   run_directive (pfile, T_UNDEF, buf, len);
 }
 
+/* Like lex_macro_node, but read the input from STR.  */
+static cpp_hashnode *
+lex_macro_node_from_str (cpp_reader *pfile, const char *str)
+{
+  size_t len = strlen (str);
+  uchar *buf = (char *) alloca (len + 1);
+  cpp_hashnode *node;
+
+  memcpy (buf, str, len);
+  buf[len] = '\n';
+  cpp_push_buffer (pfile, buf, len, true);
+  node = lex_macro_node (pfile, true);
+  _cpp_pop_buffer (pfile);
+
+  return node;
+}
+
+/* If STR is a defined macro, return its definition node, else return NULL.  */
+cpp_macro *
+cpp_push_definition (cpp_reader *pfile, const char *str)
+{
+  cpp_hashnode *node = lex_macro_node_from_str (pfile, str);
+  if (node && node->type == NT_MACRO)
+    return node->value.macro;
+  else
+    return NULL;
+}
+
+/* Replace a previous definition DFN of the macro STR.  If DFN is NULL,
+   then the macro should be undefined.  */
+void
+cpp_pop_definition (cpp_reader *pfile, const char *str, cpp_macro *dfn)
+{
+  cpp_hashnode *node = lex_macro_node_from_str (pfile, str);
+  if (node == NULL)
+    return;
+
+  if (node->type == NT_MACRO)
+    {
+      if (pfile->cb.undef)
+	pfile->cb.undef (pfile, pfile->directive_line, node);
+      if (CPP_OPTION (pfile, warn_unused_macros))
+	_cpp_warn_if_unused_macro (pfile, node, NULL);
+    }
+  if (node->type != NT_VOID)
+    _cpp_free_definition (node);
+
+  if (dfn)
+    {
+      node->type = NT_MACRO;
+      node->value.macro = dfn;
+      if (! ustrncmp (NODE_NAME (node), DSC ("__STDC_")))
+	node->flags |= NODE_WARN;
+
+      if (pfile->cb.define)
+	pfile->cb.define (pfile, pfile->directive_line, node);
+    }
+}
+
 /* Process the string STR as if it appeared as the body of a #assert.  */
 void
 cpp_assert (cpp_reader *pfile, const char *str)
