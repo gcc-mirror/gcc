@@ -10121,11 +10121,23 @@ reference_to_unused (tree * tp, int * walk_subtrees,
   if (DECL_P (*tp) && ! TREE_PUBLIC (*tp) && ! TREE_USED (*tp)
       && ! TREE_ASM_WRITTEN (*tp))
     return *tp;
-  else if (DECL_P (*tp) && TREE_CODE (*tp) != FUNCTION_DECL)
+  else if (!flag_unit_at_a_time)
+    return NULL_TREE;
+  else if (!cgraph_global_info_ready
+	   && (TREE_CODE (*tp) == VAR_DECL || TREE_CODE (*tp) == FUNCTION_DECL))
+    gcc_unreachable ();
+  else if (DECL_P (*tp) && TREE_CODE (*tp) == VAR_DECL)
     {
       struct varpool_node *node = varpool_node (*tp);
       if (!node->needed)
 	return *tp;
+    }
+  else if (DECL_P (*tp) && TREE_CODE (*tp) == FUNCTION_DECL
+	   && (!DECL_EXTERNAL (*tp) || DECL_DECLARED_INLINE_P (*tp)))
+    {
+      struct cgraph_node *node = cgraph_node (*tp);
+      if (!node->output)
+        return *tp;
     }
 
   return NULL_TREE;
