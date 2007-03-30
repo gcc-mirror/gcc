@@ -1,3 +1,10 @@
+2007-03-30  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/PR30700
+	* dwarf2out.c (reference_to_unused): Ask cgraph for functions 
+	availablility; add more sanity checking; ask varpool only about
+	VAR_DECL.
+
 2007-03-29  Richard Henderson  <rth@redhat.com>
 
 	* unwind-generic.h (_sleb128_t, _uleb128_t): Don't use HAVE_LONG_LONG
