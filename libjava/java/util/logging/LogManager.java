@@ -559,13 +559,21 @@ public class LogManager
 
 	if ("handlers".equals(key))
 	  {
-	    StringTokenizer tokenizer = new StringTokenizer(value);
+	    // In Java 5 and earlier this was specified to be
+	    // whitespace-separated, but in reality it also accepted
+	    // commas (tomcat relied on this), and in Java 6 the
+	    // documentation was updated to fit the implementation.
+	    StringTokenizer tokenizer = new StringTokenizer(value,
+							    " \t\n\r\f,");
 	    while (tokenizer.hasMoreTokens())
 	      {
 		String handlerName = tokenizer.nextToken();
                 Handler handler = (Handler)
                   createInstance(handlerName, Handler.class, key);
-                Logger.root.addHandler(handler);
+		// Tomcat also relies on the implementation ignoring
+		// items in 'handlers' which are not class names.
+		if (handler != null)
+		  Logger.root.addHandler(handler);
 	      }
 	  }
 

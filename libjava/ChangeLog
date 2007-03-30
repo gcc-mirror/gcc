@@ -1,3 +1,10 @@
+2007-03-29  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/29869:
+	* java/util/logging/LogManager.java (readConfiguration): Handle
+	comma-separated 'handlers'.  Don't try to add a non-existing
+	handler.
+
 2007-03-27  Tom Tromey  <tromey@redhat.com>
 
 	* sources.am, Makefile.in: Rebuilt.
