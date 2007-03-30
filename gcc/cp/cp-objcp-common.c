@@ -135,6 +135,9 @@ cp_tree_size (enum tree_code code)
     case ARGUMENT_PACK_SELECT:
       return sizeof (struct tree_argument_pack_select);
 
+    case TRAIT_EXPR:
+      return sizeof (struct tree_trait_expr);
+
     default:
       gcc_unreachable ();
     }

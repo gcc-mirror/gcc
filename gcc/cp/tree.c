@@ -2293,6 +2293,12 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       *walk_subtrees_p = 0;
       break;
 
+    case TRAIT_EXPR:
+      WALK_SUBTREE (TRAIT_EXPR_TYPE1 (*tp));
+      WALK_SUBTREE (TRAIT_EXPR_TYPE2 (*tp));
+      *walk_subtrees_p = 0;
+      break;
+
     default:
       return NULL_TREE;
     }

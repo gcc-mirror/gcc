@@ -1897,6 +1897,8 @@ static void cp_parser_late_parsing_default_args
   (cp_parser *, tree);
 static tree cp_parser_sizeof_operand
   (cp_parser *, enum rid);
+static tree cp_parser_trait_expr
+  (cp_parser *, enum rid);
 static bool cp_parser_declares_only_class_p
   (cp_parser *);
 static void cp_parser_set_storage_class
@@ -2959,6 +2961,25 @@ cp_parser_translation_unit (cp_parser* parser)
      __builtin_va_arg ( assignment-expression , type-id )
      __builtin_offsetof ( type-id , offsetof-expression )
 
+   C++ Extensions:
+     __has_nothrow_assign ( type-id )   
+     __has_nothrow_constructor ( type-id )
+     __has_nothrow_copy ( type-id )
+     __has_trivial_assign ( type-id )   
+     __has_trivial_constructor ( type-id )
+     __has_trivial_copy ( type-id )
+     __has_trivial_destructor ( type-id )
+     __has_virtual_destructor ( type-id )     
+     __is_abstract ( type-id )
+     __is_base_of ( type-id , type-id )
+     __is_class ( type-id )
+     __is_convertible_to ( type-id , type-id )     
+     __is_empty ( type-id )
+     __is_enum ( type-id )
+     __is_pod ( type-id )
+     __is_polymorphic ( type-id )
+     __is_union ( type-id )
+
    Objective-C++ Extension:
 
    primary-expression:
@@ -3201,7 +3222,26 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_OFFSETOF:
 	  return cp_parser_builtin_offsetof (parser);
 
-	  /* Objective-C++ expressions.  */
+	case RID_HAS_NOTHROW_ASSIGN:
+	case RID_HAS_NOTHROW_CONSTRUCTOR:
+	case RID_HAS_NOTHROW_COPY:	  
+	case RID_HAS_TRIVIAL_ASSIGN:
+	case RID_HAS_TRIVIAL_CONSTRUCTOR:
+	case RID_HAS_TRIVIAL_COPY:	  
+	case RID_HAS_TRIVIAL_DESTRUCTOR:
+	case RID_HAS_VIRTUAL_DESTRUCTOR:
+	case RID_IS_ABSTRACT:
+	case RID_IS_BASE_OF:
+	case RID_IS_CLASS:
+	case RID_IS_CONVERTIBLE_TO:
+	case RID_IS_EMPTY:
+	case RID_IS_ENUM:
+	case RID_IS_POD:
+	case RID_IS_POLYMORPHIC:
+	case RID_IS_UNION:
+	  return cp_parser_trait_expr (parser, token->keyword);
+
+	/* Objective-C++ expressions.  */
 	case RID_AT_ENCODE:
 	case RID_AT_PROTOCOL:
 	case RID_AT_SELECTOR:
@@ -6307,6 +6347,112 @@ cp_parser_builtin_offsetof (cp_parser *parser)
   parser->non_integral_constant_expression_p = save_non_ice_p;
 
   return expr;
+}
+
+/* Parse a trait expression.  */
+
+static tree
+cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
+{
+  cp_trait_kind kind;
+  tree type1, type2 = NULL_TREE;
+  bool binary = false;
+  cp_decl_specifier_seq decl_specs;
+
+  switch (keyword)
+    {
+    case RID_HAS_NOTHROW_ASSIGN:
+      kind = CPTK_HAS_NOTHROW_ASSIGN;
+      break;
+    case RID_HAS_NOTHROW_CONSTRUCTOR:
+      kind = CPTK_HAS_NOTHROW_CONSTRUCTOR;
+      break;
+    case RID_HAS_NOTHROW_COPY:
+      kind = CPTK_HAS_NOTHROW_COPY;
+      break;
+    case RID_HAS_TRIVIAL_ASSIGN:
+      kind = CPTK_HAS_TRIVIAL_ASSIGN;
+      break;
+    case RID_HAS_TRIVIAL_CONSTRUCTOR:
+      kind = CPTK_HAS_TRIVIAL_CONSTRUCTOR;
+      break;
+    case RID_HAS_TRIVIAL_COPY:
+      kind = CPTK_HAS_TRIVIAL_COPY;
+      break;
+    case RID_HAS_TRIVIAL_DESTRUCTOR:
+      kind = CPTK_HAS_TRIVIAL_DESTRUCTOR;
+      break;
+    case RID_HAS_VIRTUAL_DESTRUCTOR:
+      kind = CPTK_HAS_VIRTUAL_DESTRUCTOR;
+      break;
+    case RID_IS_ABSTRACT:
+      kind = CPTK_IS_ABSTRACT;
+      break;
+    case RID_IS_BASE_OF:
+      kind = CPTK_IS_BASE_OF;
+      binary = true;
+      break;
+    case RID_IS_CLASS:
+      kind = CPTK_IS_CLASS;
+      break;
+    case RID_IS_CONVERTIBLE_TO:
+      kind = CPTK_IS_CONVERTIBLE_TO;
+      binary = true;
+      break;
+    case RID_IS_EMPTY:
+      kind = CPTK_IS_EMPTY;
+      break;
+    case RID_IS_ENUM:
+      kind = CPTK_IS_ENUM;
+      break;
+    case RID_IS_POD:
+      kind = CPTK_IS_POD;
+      break;
+    case RID_IS_POLYMORPHIC:
+      kind = CPTK_IS_POLYMORPHIC;
+      break;
+    case RID_IS_UNION:
+      kind = CPTK_IS_UNION;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Consume the token.  */
+  cp_lexer_consume_token (parser->lexer);
+
+  cp_parser_require (parser, CPP_OPEN_PAREN, "`('");
+
+  type1 = cp_parser_type_id (parser);
+
+  /* Build a trivial decl-specifier-seq.  */
+  clear_decl_specs (&decl_specs);
+  decl_specs.type = type1;
+
+  /* Call grokdeclarator to figure out what type this is.  */
+  type1 = grokdeclarator (NULL, &decl_specs, TYPENAME,
+			  /*initialized=*/0, /*attrlist=*/NULL);
+
+  if (binary)
+    {
+      cp_parser_require (parser, CPP_COMMA, "`,'");
+ 
+      type2 = cp_parser_type_id (parser);
+
+      /* Build a trivial decl-specifier-seq.  */
+      clear_decl_specs (&decl_specs);
+      decl_specs.type = type2;
+
+      /* Call grokdeclarator to figure out what type this is.  */
+      type2 = grokdeclarator (NULL, &decl_specs, TYPENAME,
+			      /*initialized=*/0, /*attrlist=*/NULL);
+    }
+
+  cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
+
+  /* Complete the trait expr, which may mean either processing the
+     static assert now or saving it for template instantiation.  */
+  return finish_trait_expr (kind, type1, type2);
 }
 
 /* Statements [gram.stmt.stmt]  */
