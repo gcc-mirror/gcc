@@ -1,5 +1,5 @@
 /* JarUtils.java -- Utility methods for reading/writing Manifest[-like] files
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -62,7 +62,10 @@ import java.util.logging.Logger;
  */
 public abstract class JarUtils
 {
-  private static final Logger log = Logger.getLogger(JarUtils.class.getName());
+  // We used to log here, but this causes problems during bootstrap,
+  // and it didn't seem worthwhile to preserve this.  Still, this
+  // might be useful for debugging.
+  // private static final Logger log = Logger.getLogger(JarUtils.class.getName());
   public static final String META_INF = "META-INF/";
   public static final String DSA_SUFFIX = ".DSA";
   public static final String SF_SUFFIX = ".SF";
@@ -112,9 +115,10 @@ public abstract class JarUtils
       {
         String version = expectHeader(version_header, br);
         attr.putValue(SIGNATURE_VERSION, version);
-        if (! DEFAULT_SF_VERSION.equals(version))
-          log.warning("Unexpected version number: " + version
-                      + ". Continue (but may fail later)");
+	// This may cause problems during VM bootstrap.
+        // if (! DEFAULT_SF_VERSION.equals(version))
+        //  log.warning("Unexpected version number: " + version
+        //              + ". Continue (but may fail later)");
       }
     catch (IOException ioe)
       {
