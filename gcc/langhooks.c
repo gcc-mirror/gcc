@@ -621,3 +621,24 @@ lhd_builtin_function (tree decl)
   lang_hooks.decls.pushdecl (decl);
   return decl;
 }
+
+/* If TYPE is an integral type, return an equivalent type which is
+    unsigned iff UNSIGNEDP is true.  If TYPE is not an integral type,
+    return TYPE itself.  */
+
+tree
+get_signed_or_unsigned_type (int unsignedp, tree type)
+{
+  if (!INTEGRAL_TYPE_P (type) || TYPE_UNSIGNED (type) == unsignedp)
+    return type;
+
+  return lang_hooks.types.signed_or_unsigned_type(unsignedp, type);
+}
+
+/* Default implementation of the signed_or_unsigned_type language hook */
+
+tree
+lhd_signed_or_unsigned_type (int unsignedp, tree type)
+{
+  return lang_hooks.types.type_for_size (TYPE_PRECISION (type), unsignedp);
+}

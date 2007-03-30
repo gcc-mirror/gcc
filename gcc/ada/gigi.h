@@ -454,10 +454,6 @@ extern tree gnat_unsigned_type (tree type_node);
 /* Return the signed version of a TYPE_NODE, a scalar type.  */
 extern tree gnat_signed_type (tree type_node);
 
-/* Return a type the same as TYPE except unsigned or signed according to
-   UNSIGNEDP.  */
-extern tree gnat_signed_or_unsigned_type (int unsignedp, tree type);
-
 /* Create an expression whose value is that of EXPR,
    converted to type TYPE.  The TREE_TYPE of the value
    is always TYPE.  This function implements all reasonable

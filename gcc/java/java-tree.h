@@ -1101,7 +1101,6 @@ extern tree java_type_for_mode (enum machine_mode, int);
 extern tree java_type_for_size (unsigned int, int);
 extern tree java_unsigned_type (tree);
 extern tree java_signed_type (tree);
-extern tree java_signed_or_unsigned_type (int, tree);
 extern tree java_truthvalue_conversion (tree);
 extern void add_assume_compiled (const char *, int);
 extern void add_enable_assert (const char *, int);

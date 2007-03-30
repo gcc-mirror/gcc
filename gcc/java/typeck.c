@@ -195,31 +195,12 @@ java_type_for_size (unsigned bits, int unsignedp)
   return 0;
 }
 
-/* Return a type the same as TYPE except unsigned or
-   signed according to UNSIGNEDP.  */
-
-tree
-java_signed_or_unsigned_type (int unsignedp, tree type)
-{
-  if (! INTEGRAL_TYPE_P (type))
-    return type;
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (int_type_node))
-    return unsignedp ? unsigned_int_type_node : int_type_node;
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (byte_type_node))
-    return unsignedp ? unsigned_byte_type_node : byte_type_node;
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (short_type_node))
-    return unsignedp ? unsigned_short_type_node : short_type_node;
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (long_type_node))
-    return unsignedp ? unsigned_long_type_node : long_type_node;
-  return type;
-}
-
 /* Return a signed type the same as TYPE in other respects.  */
 
 tree
 java_signed_type (tree type)
 {
-  return java_signed_or_unsigned_type (0, type);
+  return get_signed_or_unsigned_type (0, type);
 }
 
 /* Return an unsigned type the same as TYPE in other respects.  */
@@ -227,7 +208,7 @@ java_signed_type (tree type)
 tree
 java_unsigned_type (tree type)
 {
-  return java_signed_or_unsigned_type (1, type);
+  return get_signed_or_unsigned_type (1, type);
 }
 
 /* Mark EXP saying that we need to be able to take the

@@ -876,7 +876,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	  /* 'Length or 'Range_Length.  */
 	  {
 	    tree gnu_compute_type
-	      = gnat_signed_or_unsigned_type (0,
+	      = get_signed_or_unsigned_type (0,
 					      get_base_type (gnu_result_type));
 
 	    gnu_result

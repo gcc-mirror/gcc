@@ -2307,17 +2307,6 @@ gnat_signed_type (tree type_node)
   return type;
 }
 
-/* Return a type the same as TYPE except unsigned or signed according to
-   UNSIGNEDP.  */
-
-tree
-gnat_signed_or_unsigned_type (int unsignedp, tree type)
-{
-  if (!INTEGRAL_TYPE_P (type) || TYPE_UNSIGNED (type) == unsignedp)
-    return type;
-  else
-    return gnat_type_for_size (TYPE_PRECISION (type), unsignedp);
-}
 
 /* EXP is an expression for the size of an object.  If this size contains
    discriminant references, replace them with the maximum (if MAX_P) or
