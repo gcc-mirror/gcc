@@ -1,3 +1,11 @@
+2007-03-30  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/31401
+	* include/bits/basic_string.tcc (find(const _CharT*, size_type,
+	size_type)): Avoid unsigned overflow.
+	* testsuite/21_strings/basic_string/find/char/4.cc: New.
+	* testsuite/21_strings/basic_string/find/wchar_t/4.cc: Likewise.
+
 2007-03-27  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/fstream.tcc (basic_filebuf<>::underflow):
