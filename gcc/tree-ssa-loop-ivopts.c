@@ -91,6 +91,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "params.h"
 #include "langhooks.h"
 #include "tree-affine.h"
+#include "target.h"
 
 /* The infinite cost.  */
 #define INFTY 10000000
@@ -2380,11 +2381,17 @@ produce_memory_decl_rtl (tree obj, int *regno)
     {
       const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (obj));
       x = gen_rtx_SYMBOL_REF (Pmode, name);
+      SET_SYMBOL_REF_DECL (x, obj);
+      x = gen_rtx_MEM (DECL_MODE (obj), x);
+      targetm.encode_section_info (obj, x, true);
     }
   else
-    x = gen_raw_REG (Pmode, (*regno)++);
+    {
+      x = gen_raw_REG (Pmode, (*regno)++);
+      x = gen_rtx_MEM (DECL_MODE (obj), x);
+    }
 
-  return gen_rtx_MEM (DECL_MODE (obj), x);
+  return x;
 }
 
 /* Prepares decl_rtl for variables referred in *EXPR_P.  Callback for
@@ -2943,6 +2950,12 @@ get_address_cost (bool symbol_present, bool var_present,
 	  if (sym_p)
 	    {
 	      base = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (""));
+	      /* ??? We can run into trouble with some backends by presenting
+		 it with symbols which havn't been properly passed through
+		 targetm.encode_section_info.  By setting the local bit, we
+		 enhance the probability of things working.  */
+	      SYMBOL_REF_FLAGS (base) = SYMBOL_FLAG_LOCAL;
+
 	      if (off_p)
 		base = gen_rtx_fmt_e (CONST, Pmode,
 				      gen_rtx_fmt_ee (PLUS, Pmode,
@@ -3070,17 +3083,18 @@ force_expr_to_var_cost (tree expr)
 
   if (!costs_initialized)
     {
-      tree var = create_tmp_var_raw (integer_type_node, "test_var");
-      rtx x = gen_rtx_MEM (DECL_MODE (var),
-			   gen_rtx_SYMBOL_REF (Pmode, "test_var"));
-      tree addr;
       tree type = build_pointer_type (integer_type_node);
+      tree var, addr;
+      rtx x;
+
+      var = create_tmp_var_raw (integer_type_node, "test_var");
+      TREE_STATIC (var) = 1;
+      x = produce_memory_decl_rtl (var, NULL);
+      SET_DECL_RTL (var, x);
 
       integer_cost = computation_cost (build_int_cst (integer_type_node,
 						      2000));
 
-      SET_DECL_RTL (var, x);
-      TREE_STATIC (var) = 1;
       addr = build1 (ADDR_EXPR, type, var);
       symbol_cost = computation_cost (addr) + 1;
 
