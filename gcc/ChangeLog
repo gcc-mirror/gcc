@@ -1,3 +1,9 @@
+2007-03-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* regmove.c: Move all of pass_stack_adjustments from here...
+	* combine-stack-adj.c: ...to this new file.
+	* Makefile.in: Add rules for combine-stack-adj.o.
+
 2007-03-30  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/31383

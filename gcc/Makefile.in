@@ -969,6 +969,7 @@ OBJS-common = \
 	cfgloopmanip.o \
 	cfgrtl.o \
 	combine.o \
+	combine-stack-adj.o \
 	convert.o \
 	coverage.o \
 	cse.o \
@@ -2677,6 +2678,10 @@ alias.o : alias.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(SPLAY_TREE_H) $(VARRAY_H) $(IPA_TYPE_ESCAPE_H) tree-pass.h
 regmove.o : regmove.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    insn-config.h $(TIMEVAR_H) tree-pass.h \
+   $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
+   $(EXPR_H) $(BASIC_BLOCK_H) toplev.h $(TM_P_H) except.h reload.h
+combine-stack-adj.o : combine-stack-adj.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(TM_H) $(RTL_H) insn-config.h $(TIMEVAR_H) tree-pass.h \
    $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
    $(EXPR_H) $(BASIC_BLOCK_H) toplev.h $(TM_P_H) except.h reload.h
 ddg.o : ddg.c $(DDG_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TARGET_H) \
