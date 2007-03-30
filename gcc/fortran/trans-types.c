@@ -1832,24 +1832,12 @@ gfc_type_for_mode (enum machine_mode mode, int unsignedp)
   return NULL_TREE;
 }
 
-/* Return a type the same as TYPE except unsigned or
-   signed according to UNSIGNEDP.  */
-
-tree
-gfc_signed_or_unsigned_type (int unsignedp, tree type)
-{
-  if (TREE_CODE (type) != INTEGER_TYPE || TYPE_UNSIGNED (type) == unsignedp)
-    return type;
-  else
-    return gfc_type_for_size (TYPE_PRECISION (type), unsignedp);
-}
-
 /* Return an unsigned type the same as TYPE in other respects.  */
 
 tree
 gfc_unsigned_type (tree type)
 {
-  return gfc_signed_or_unsigned_type (1, type);
+  return get_signed_or_unsigned_type (1, type);
 }
 
 /* Return a signed type the same as TYPE in other respects.  */
@@ -1857,7 +1845,7 @@ gfc_unsigned_type (tree type)
 tree
 gfc_signed_type (tree type)
 {
-  return gfc_signed_or_unsigned_type (0, type);
+  return get_signed_or_unsigned_type (0, type);
 }
 
 #include "gt-fortran-trans-types.h"

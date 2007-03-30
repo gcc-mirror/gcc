@@ -1,3 +1,12 @@
+2007-03-30  Rafael Avila de Espindola  <espindola@google.com>
+
+	* trans-types.c (gfc_signed_or_unsigned_type): Remove.
+	(gfc_unsigned_type): Use get_signed_or_unsigned_type instead of
+	gfc_signed_or_unsigned_type.
+	(gfc_signed_type): Ditto.
+	* trans-types.h (gfc_signed_or_unsigned_type): Remove.
+	* f95-lang.c (LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): Remove.
+
 2007-03-30  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* symbol.c (gfc_find_gsymbol): Simplify, don't unconditionally

@@ -1,3 +1,15 @@
+2007-03-30  Rafael Avila de Espindola  <espindola@google.com>
+
+	* tree.h (get_signed_or_unsigned_type): New.
+	* fold-const.c (operand_equal_for_comparison_p): Use
+	get_signed_or_unsigned_type instead of
+	lang_hooks.types.signed_or_unsigned_type.
+	* expr.c (store_expr): Ditto.
+	* langhooks.c (get_signed_or_unsigned_type): New.
+	(lhd_signed_or_unsigned_type): New.
+	* langhooks.h (lhd_signed_or_unsigned_type): New.
+	* langhooks-def.h (LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): Define.
+
 2007-03-30  Richard Henderson  <rth@redhat.com>
 
 	* tree-ssa-loop-ivopts.c: Include target.h.

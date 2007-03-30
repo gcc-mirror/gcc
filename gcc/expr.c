@@ -4384,7 +4384,7 @@ store_expr (tree exp, rtx target, int call_param_p)
 	  if (TYPE_UNSIGNED (TREE_TYPE (exp))
 	      != SUBREG_PROMOTED_UNSIGNED_P (target))
 	    exp = fold_convert
-	      (lang_hooks.types.signed_or_unsigned_type
+	      (get_signed_or_unsigned_type
 	       (SUBREG_PROMOTED_UNSIGNED_P (target), TREE_TYPE (exp)), exp);
 
 	  exp = fold_convert (lang_hooks.types.type_for_mode

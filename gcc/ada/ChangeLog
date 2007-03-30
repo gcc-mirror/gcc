@@ -1,3 +1,11 @@
+2007-03-30  Rafael Avila de Espindola  <espindola@google.com>
+
+	* trans.c (Attribute_to_gnu): Use get_signed_or_unsigned_type
+	instead of gnat_signed_or_unsigned_type.
+	* utils.c (gnat_signed_or_unsigned_type): Remove.
+	* misc.c (LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): Remove
+	* gigi.h (gnat_signed_or_unsigned_type): Remove
+
 2007-03-09  Roger Sayle  <roger@eyesopen.com>
 
 	* cuintp.c (UI_To_gnu): Use fold_buildN calls instead of calling

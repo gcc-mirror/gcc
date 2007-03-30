@@ -129,7 +129,6 @@ static tree tree_lang_type_for_size (unsigned precision, int unsignedp);
 static tree tree_lang_type_for_mode (enum machine_mode mode, int unsignedp);
 static tree tree_lang_unsigned_type (tree type_node);
 static tree tree_lang_signed_type (tree type_node);
-static tree tree_lang_signed_or_unsigned_type (int unsignedp, tree type);
 
 /* Functions to keep track of the current scope.  */
 static void pushlevel (int ignore);
@@ -156,8 +155,6 @@ static void treelang_expand_function (tree fndecl);
 #define LANG_HOOKS_SIGNED_TYPE tree_lang_signed_type
 #undef LANG_HOOKS_UNSIGNED_TYPE
 #define LANG_HOOKS_UNSIGNED_TYPE tree_lang_unsigned_type
-#undef LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE
-#define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE tree_lang_signed_or_unsigned_type
 #undef LANG_HOOKS_TYPE_FOR_MODE
 #define LANG_HOOKS_TYPE_FOR_MODE tree_lang_type_for_mode
 #undef LANG_HOOKS_TYPE_FOR_SIZE
@@ -884,17 +881,6 @@ tree_lang_signed_type (tree type_node)
   return tree_lang_type_for_size (TYPE_PRECISION (type_node), 0);
 }
 
-/* Return a type the same as TYPE except unsigned or signed according to
-   UNSIGNEDP.  */
-
-static tree
-tree_lang_signed_or_unsigned_type (int unsignedp, tree type)
-{
-  if (! INTEGRAL_TYPE_P (type) || TYPE_UNSIGNED (type) == unsignedp)
-    return type;
-  else
-    return tree_lang_type_for_size (TYPE_PRECISION (type), unsignedp);
-}
 
 /* These functions and variables deal with binding contours.  We only
    need these functions for the list of PARM_DECLs, but we leave the

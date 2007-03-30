@@ -461,5 +461,6 @@ extern tree add_builtin_function (const char *name, tree type,
 				  int function_code, enum built_in_class cl,
 				  const char *library_name,
 				  tree attrs);
+extern tree lhd_signed_or_unsigned_type (int unsignedp, tree type);
 
 #endif /* GCC_LANG_HOOKS_H */

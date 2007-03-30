@@ -161,8 +161,6 @@ static tree gnat_type_max_size		(tree);
 #define LANG_HOOKS_SIGNED_TYPE		gnat_signed_type
 #undef  LANG_HOOKS_UNSIGNED_TYPE
 #define LANG_HOOKS_UNSIGNED_TYPE	gnat_unsigned_type
-#undef  LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE
-#define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE gnat_signed_or_unsigned_type
 #undef  LANG_HOOKS_ATTRIBUTE_TABLE
 #define LANG_HOOKS_ATTRIBUTE_TABLE	gnat_internal_attribute_table
 #undef  LANG_HOOKS_BUILTIN_FUNCTION

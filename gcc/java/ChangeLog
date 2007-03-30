@@ -1,3 +1,12 @@
+2007-03-30  Rafael Avila de Espindola  <espindola@google.com>
+
+	* typeck.c (java_signed_or_unsigned_type): Removed.
+	(java_signed_type): use get_signed_or_unsigned_type instead of
+	java_signed_or_unsigned_type.
+	(java_unsigned_type): Ditto.
+	* lang.c (LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): Removed.
+	* java-tree.h (java_signed_or_unsigned_type): Removed.
+
 2007-03-26  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (JAVA_MANFILES): Removed grmiregistry.1.

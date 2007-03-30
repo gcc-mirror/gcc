@@ -76,7 +76,6 @@ tree gfc_type_for_size (unsigned, int);
 tree gfc_type_for_mode (enum machine_mode, int);
 tree gfc_unsigned_type (tree);
 tree gfc_signed_type (tree);
-tree gfc_signed_or_unsigned_type (int, tree);
 
 tree gfc_get_element_type (tree);
 tree gfc_get_array_type_bounds (tree, int, tree *, tree *, int);

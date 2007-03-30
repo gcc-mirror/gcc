@@ -1,3 +1,8 @@
+2007-03-30  Rafael Avila de Espindola  <espindola@google.com>
+
+	* treetree.c (tree_lang_signed_or_unsigned_type): Remove.
+	(LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE) Remove.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Make-lang.in: Add install-pdf target as copied from

@@ -3032,7 +3032,7 @@ operand_equal_for_comparison_p (tree arg0, tree arg1, tree other)
 
       /* Make sure shorter operand is extended the right way
 	 to match the longer operand.  */
-      primarg1 = fold_convert (lang_hooks.types.signed_or_unsigned_type
+      primarg1 = fold_convert (get_signed_or_unsigned_type
 			       (unsignedp1, TREE_TYPE (primarg1)), primarg1);
 
       if (operand_equal_p (arg0, fold_convert (type, primarg1), 0))
