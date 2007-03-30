@@ -2069,7 +2069,8 @@ affine_function_equal_p (affine_fn fna, affine_fn fnb)
 {
   unsigned i, n = VEC_length (tree, fna);
 
-  gcc_assert (n == VEC_length (tree, fnb));
+  if (n != VEC_length (tree, fnb))
+    return false;
 
   for (i = 0; i < n; i++)
     if (!operand_equal_p (VEC_index (tree, fna, i),

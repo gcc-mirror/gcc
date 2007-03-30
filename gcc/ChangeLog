@@ -1,3 +1,9 @@
+2007-03-30  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/31383
+	* tree-data-ref.c (affine_function_equal_p): Do not require the vectors
+	to have the same length.
+
 2007-03-30  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/PR30700
