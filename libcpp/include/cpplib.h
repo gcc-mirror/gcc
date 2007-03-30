@@ -704,6 +704,9 @@ extern void cpp_assert (cpp_reader *, const char *);
 extern void cpp_undef (cpp_reader *, const char *);
 extern void cpp_unassert (cpp_reader *, const char *);
 
+extern cpp_macro *cpp_push_definition (cpp_reader *, const char *);
+extern void cpp_pop_definition (cpp_reader *, const char *, cpp_macro *);
+
 /* Undefine all macros and assertions.  */
 extern void cpp_undef_all (cpp_reader *);
 

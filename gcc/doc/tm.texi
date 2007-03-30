@@ -9719,6 +9719,18 @@ This must be a value that would also be valid to use with
 @samp{#pragma pack()} (that is, a small power of two).
 @end defmac
 
+@findex #pragma
+@findex pragma
+@defmac HANDLE_PRAGMA_PUSH_POP_MACRO
+Define this macro if you want to support the Win32 style pragmas
+@samp{#pragma push_macro(macro-name-as-string)} and @samp{#pragma
+pop_macro(macro-name-as-string)}.  The @samp{#pragma push_macro(
+macro-name-as-string)} pragma saves the named macro and via
+@samp{#pragma pop_macro(macro-name-as-string)} it will return to the
+previous value.
+@end defmac
+
+
 @defmac DOLLARS_IN_IDENTIFIERS
 Define this macro to control use of the character @samp{$} in
 identifier names for the C family of languages.  0 means @samp{$} is

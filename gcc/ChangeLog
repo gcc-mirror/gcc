@@ -1,3 +1,14 @@
+2007-03-30  Richard Henderson  <rth@redhat.com>
+	    Kai Tietz  <kai.tietz@onevision.com>
+
+	* c-pragma.c (struct def_pragma_macro_value): New.
+	(struct def_pragma_macro): New.
+	(pushed_macro_table): New.
+	(dpm_hash, dpm_eq): New.
+	(handle_pragma_push_macro, handle_pragma_pop_macro): New.
+	(init_pragma): Install them.
+	* doc/tm.texi (HANDLE_PRAGMA_PUSH_POP_MACRO): New.
+
 2007-03-30  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (avr_override_options): Clear 

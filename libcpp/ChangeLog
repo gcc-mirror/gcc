@@ -1,3 +1,9 @@
+2007-03-30  Richard Henderson  <rth@redhat.com>
+
+	* directives.c (lex_macro_node_from_str): New.
+	(cpp_push_definition, cpp_pop_definition): New.
+	* include/cpplib.h (cpp_push_definition, cpp_pop_definition): Declare.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.in: Add dummy install-pdf target.
