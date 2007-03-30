@@ -1,3 +1,7 @@
+2007-03-30  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.c-torture/execute/mayalias-2.x: New.
+
 2007-03-28  Mike Stump  <mrs@apple.com>
 
 	* gcc.dg/darwin-comm.c: Add.
