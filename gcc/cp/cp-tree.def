@@ -422,6 +422,11 @@ DEFTREECODE (EXPR_PACK_EXPANSION, "expr_pack_expansion", tcc_expression, 1)
    index is a machine integer.  */
 DEFTREECODE (ARGUMENT_PACK_SELECT, "argument_pack_select", tcc_exceptional, 0)
 
+/** C++ extensions. */
+
+/* Represents a trait expression during template expansion.  */
+DEFTREECODE (TRAIT_EXPR, "trait_expr", tcc_exceptional, 0)
+
 /*
 Local variables:
 mode:c

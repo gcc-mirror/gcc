@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -132,7 +132,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #undef __glibcxx_base_allocator
 
   // To implement Option 3 of DR 431.
-  template<typename _Alloc, bool = std::__is_empty<_Alloc>::__value>
+  template<typename _Alloc, bool = __is_empty(_Alloc)>
     struct __alloc_swap
     { static void _S_do_it(_Alloc&, _Alloc&) { } };
 

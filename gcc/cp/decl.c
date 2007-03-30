@@ -11739,6 +11739,7 @@ cp_tree_node_structure (union lang_tree_node * t)
     case BASELINK:		return TS_CP_BASELINK;
     case STATIC_ASSERT:		return TS_CP_STATIC_ASSERT;
     case ARGUMENT_PACK_SELECT:  return TS_CP_ARGUMENT_PACK_SELECT;
+    case TRAIT_EXPR:		return TS_CP_TRAIT_EXPR;
     default:			return TS_CP_GENERIC;
     }
 }

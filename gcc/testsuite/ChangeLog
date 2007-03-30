@@ -1,3 +1,26 @@
+2007-03-30  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/26099
+	* g++.dg/ext/is_base_of.C: New.
+	* g++.dg/ext/has_virtual_destructor.C: New.
+	* g++.dg/ext/is_polymorphic.C: New.
+	* g++.dg/ext/is_base_of_diagnostic.C: New.
+	* g++.dg/ext/is_enum.C: New.
+	* g++.dg/ext/has_nothrow_assign.C: New.
+	* g++.dg/ext/has_nothrow_constructor.C: New.
+	* g++.dg/ext/is_empty.C: New.
+	* g++.dg/ext/has_trivial_copy.C: New.
+	* g++.dg/ext/has_trivial_assign.C: New.
+	* g++.dg/ext/is_abstract.C: New.
+	* g++.dg/ext/is_pod.C: New.
+	* g++.dg/ext/has_nothrow_copy.C: New.
+	* g++.dg/ext/is_class.C: New.
+	* g++.dg/ext/has_trivial_constructor.C: New.
+	* g++.dg/ext/is_union.C: New.
+	* g++.dg/ext/has_trivial_destructor.C: New.
+	* g++.dg/tree-ssa/pr22444.C: Adjust, avoid __is_pod.
+	* g++.dg/template/crash43.C: Likewise.
+
 2007-03-29  Dirk Mueller  <dmueller@suse.de>
 
 	* g++.dg/warn/pedantic2.C: New testcase.

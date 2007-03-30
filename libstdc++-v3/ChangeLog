@@ -1,5 +1,14 @@
 2007-03-30  Paolo Carlini  <pcarlini@suse.de>
 
+	PR c++/26099
+	* include/bits/cpp_type_traits.h (struct __is_pod, struct __is_empty):
+	Remove.
+	* include/bits/valarray_array.h: Adjust.
+	* include/bits/allocator.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+
+2007-03-30  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/31401
 	* include/bits/basic_string.tcc (find(const _CharT*, size_type,
 	size_type)): Avoid unsigned overflow.

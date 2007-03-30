@@ -1,3 +1,35 @@
+2007-03-30  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/26099
+	* cp-tree.h (enum cp_trait_kind, struct tree_trait_expr,
+	TRAIT_EXPR_TYPE1, TRAIT_EXPR_TYPE2, TRAIT_EXPR_KIND): Add.
+	(enum cp_tree_node_structure_enum, union lang_tree_node): Update.
+	(CLASS_TYPE_NON_UNION_P): Add.
+	(struct lang_type_class): Add has_complex_dflt.
+	(TYPE_HAS_COMPLEX_DFLT, TYPE_HAS_TRIVIAL_DFLT): Add.
+	(locate_copy, locate_ctor, locate_dtor, finish_trait_expr): Declare.
+	* cp-tree.def: Add TRAIT_EXPR.
+	* cp-objcp-common.c (cp_tree_size): Add TRAIT_EXPR case.
+	* lex.c (struct resword): Add __has_nothrow_assign,
+	__has_nothrow_constructor, __has_nothrow_copy, __has_trivial_assign,
+	__has_trivial_constructor, __has_trivial_copy,
+	__has_trivial_destructor, __has_virtual_destructor, __is_abstract,
+	__is_base_of, __is_class, __is_convertible_to, __is_empty, __is_enum,
+	__is_pod, __is_polymorphic, __is_union.
+	* parser.c (cp_parser_primary_expression): Deal with the new RIDs.
+	(cp_parser_trait_expr): New.
+	* semantics.c (finish_trait_expr, trait_expr_value
+	classtype_has_nothrow_copy_or_assign_p): New.
+	* method.c (locate_copy, locate_ctor, locate_dtor): Do not define
+	as static.
+	* decl.c (cp_tree_node_structure): Add TRAIT_EXPR.
+	* class.c (check_bases, check_field_decl, check_bases_and_members):
+	Deal with TYPE_HAS_COMPLEX_DFLT (t) too.
+	* pt.c (uses_template_parms, tsubst_copy_and_build,
+	value_dependent_expression_p, type_dependent_expression_p): Deal with
+	TRAIT_EXPR.
+	* tree.c (cp_walk_subtrees): Deal with TRAIT_EXPR.
+
 2007-03-29  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (cp_walk_subtrees): Do not set input_location.

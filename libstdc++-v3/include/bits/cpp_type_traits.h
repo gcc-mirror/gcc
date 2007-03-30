@@ -1,6 +1,6 @@
 // The  -*- C++ -*- type traits classes for internal use in libstdc++
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -79,20 +79,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 _GLIBCXX_END_NAMESPACE
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
-
-namespace __detail
-{
-  // NB: g++ can not compile these if declared within the class
-  // __is_pod itself.
-  typedef char __one;
-  typedef char __two[2];
-
-  template<typename _Tp>
-  __one __test_type(int _Tp::*);
-  template<typename _Tp>
-  __two& __test_type(...);
-} // namespace __detail
-
 
   struct __true_type { };
   struct __false_type { };
@@ -340,37 +326,6 @@ namespace __detail
     struct __is_scalar
     : public __traitor<__is_arithmetic<_Tp>, __is_pointer<_Tp> >
     { };
-
-  // For the immediate use, the following is a good approximation.
-  template<typename _Tp>
-    struct __is_pod
-    {
-      enum
-	{
-	  __value = (sizeof(__detail::__test_type<_Tp>(0))
-		     != sizeof(__detail::__one))
-	};
-    };
-
-  //
-  // A stripped-down version of std::tr1::is_empty
-  //
-  template<typename _Tp>
-    struct __is_empty
-    { 
-    private:
-      template<typename>
-        struct __first { };
-      template<typename _Up>
-        struct __second
-        : public _Up { };
-           
-    public:
-      enum
-	{
-	  __value = sizeof(__first<_Tp>) == sizeof(__second<_Tp>)
-	};
-    };
 
   //
   // For use in std::copy and std::find overloads for streambuf iterators.

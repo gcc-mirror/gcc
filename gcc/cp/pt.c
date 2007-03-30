@@ -5818,6 +5818,7 @@ uses_template_parms (tree t)
 	   || TREE_CODE (t) == OVERLOAD
 	   || TREE_CODE (t) == BASELINK
 	   || TREE_CODE (t) == IDENTIFIER_NODE
+	   || TREE_CODE (t) == TRAIT_EXPR
 	   || CONSTANT_CLASS_P (t))
     dependent_p = (type_dependent_expression_p (t)
 		   || value_dependent_expression_p (t));
@@ -10703,6 +10704,18 @@ tsubst_copy_and_build (tree t,
     case OFFSETOF_EXPR:
       return finish_offsetof (RECUR (TREE_OPERAND (t, 0)));
 
+    case TRAIT_EXPR:
+      {
+	tree type1 = tsubst_copy (TRAIT_EXPR_TYPE1 (t), args,
+				  complain, in_decl);
+
+	tree type2 = TRAIT_EXPR_TYPE2 (t);
+	if (type2)
+	  type2 = tsubst_copy (type2, args, complain, in_decl);
+	
+	return finish_trait_expr (TRAIT_EXPR_KIND (t), type1, type2);
+      }
+
     case STMT_EXPR:
       {
 	tree old_stmt_expr = cur_stmt_expr;
@@ -14912,6 +14925,13 @@ value_dependent_expression_p (tree expression)
         return false;
       }
 
+    case TRAIT_EXPR:
+      {
+	tree type2 = TRAIT_EXPR_TYPE2 (expression);
+	return (dependent_type_p (TRAIT_EXPR_TYPE1 (expression))
+		|| (type2 ? dependent_type_p (type2) : false));
+      }
+
     default:
       /* A constant expression is value-dependent if any subexpression is
 	 value-dependent.  */
@@ -14975,6 +14995,7 @@ type_dependent_expression_p (tree expression)
   if (TREE_CODE (expression) == PSEUDO_DTOR_EXPR
       || TREE_CODE (expression) == SIZEOF_EXPR
       || TREE_CODE (expression) == ALIGNOF_EXPR
+      || TREE_CODE (expression) == TRAIT_EXPR
       || TREE_CODE (expression) == TYPEID_EXPR
       || TREE_CODE (expression) == DELETE_EXPR
       || TREE_CODE (expression) == VEC_DELETE_EXPR

@@ -61,9 +61,6 @@ static tree thunk_adjust (tree, bool, HOST_WIDE_INT, tree);
 static void do_build_assign_ref (tree);
 static void do_build_copy_constructor (tree);
 static tree synthesize_exception_spec (tree, tree (*) (tree, void *), void *);
-static tree locate_dtor (tree, void *);
-static tree locate_ctor (tree, void *);
-static tree locate_copy (tree, void *);
 static tree make_alias_for_thunk (tree);
 
 /* Called once to initialize method.c.  */
@@ -868,7 +865,7 @@ synthesize_exception_spec (tree type, tree (*extractor) (tree, void*),
 
 /* Locate the dtor of TYPE.  */
 
-static tree
+tree
 locate_dtor (tree type, void *client ATTRIBUTE_UNUSED)
 {
   return CLASSTYPE_DESTRUCTORS (type);
@@ -876,7 +873,7 @@ locate_dtor (tree type, void *client ATTRIBUTE_UNUSED)
 
 /* Locate the default ctor of TYPE.  */
 
-static tree
+tree
 locate_ctor (tree type, void *client ATTRIBUTE_UNUSED)
 {
   tree fns;
@@ -912,7 +909,7 @@ struct copy_data
    points to a COPY_DATA holding the name (NULL for the ctor)
    and desired qualifiers of the source operand.  */
 
-static tree
+tree
 locate_copy (tree type, void *client_)
 {
   struct copy_data *client = (struct copy_data *)client_;
