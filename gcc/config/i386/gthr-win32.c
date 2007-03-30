@@ -102,7 +102,8 @@ __gthr_win32_once (__gthread_once_t *once, void (*func) (void))
    C++ EH. Mingw uses a thread-support DLL to work-around this problem.  */
 
 int
-__gthr_win32_key_create (__gthread_key_t *key, void (*dtor) (void *))
+__gthr_win32_key_create (__gthread_key_t *key,
+			 void (*dtor) (void *) __attribute__((unused)))
 {
   int status = 0;
   DWORD tls_index = TlsAlloc ();

@@ -27,11 +27,6 @@ Boston, MA 02110-1301, USA.  */
 
 #define TARGET_VERSION fprintf (stderr, " (i386 bare ELF target)");
 
-/* By default, target has a 80387, uses IEEE compatible arithmetic,
-   and returns float values in the 387.  */
-
-#define TARGET_SUBTARGET_DEFAULT (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS)
-
 /* The ELF ABI for the i386 says that records and unions are returned
    in memory.  */
 
