@@ -20,40 +20,6 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
-#include "config/vxworks-dummy.h"
-
-/* Algorithm to expand string function with.  */
-enum stringop_alg
-{
-   no_stringop,
-   libcall,
-   rep_prefix_1_byte,
-   rep_prefix_4_byte,
-   rep_prefix_8_byte,
-   loop_1_byte,
-   loop,
-   unrolled_loop
-};
-#define NAX_STRINGOP_ALGS 4
-/* Specify what algorithm to use for stringops on known size.
-   When size is unknown, the UNKNOWN_SIZE alg is used.  When size is
-   known at compile time or estimated via feedback, the SIZE array
-   is walked in order until MAX is greater then the estimate (or -1
-   means infinity).  Corresponding ALG is used then.  
-   For example initializer:
-    {{256, loop}, {-1, rep_prefix_4_byte}}		
-   will use loop for blocks smaller or equal to 256 bytes, rep prefix will
-   be used otherwise.
-*/
-struct stringop_algs
-{
-  const enum stringop_alg unknown_size;
-  const struct stringop_strategy {
-    const int max;
-    const enum stringop_alg alg;
-  } size [NAX_STRINGOP_ALGS];
-};
-
 /* The purpose of this file is to define the characteristics of the i386,
    independent of assembler syntax or operating system.
 
@@ -68,6 +34,41 @@ struct stringop_algs
    assemblers.  These include RP, IP, LPREFIX, PUT_OP_SIZE, USE_STAR,
    ADDR_BEG, ADDR_END, PRINT_IREG, PRINT_SCALE, PRINT_B_I_S, and many
    that start with ASM_ or end in ASM_OP.  */
+
+#include "config/vxworks-dummy.h"
+
+/* Algorithm to expand string function with.  */
+enum stringop_alg
+{
+   no_stringop,
+   libcall,
+   rep_prefix_1_byte,
+   rep_prefix_4_byte,
+   rep_prefix_8_byte,
+   loop_1_byte,
+   loop,
+   unrolled_loop
+};
+
+#define NAX_STRINGOP_ALGS 4
+
+/* Specify what algorithm to use for stringops on known size.
+   When size is unknown, the UNKNOWN_SIZE alg is used.  When size is
+   known at compile time or estimated via feedback, the SIZE array
+   is walked in order until MAX is greater then the estimate (or -1
+   means infinity).  Corresponding ALG is used then.  
+   For example initializer:
+    {{256, loop}, {-1, rep_prefix_4_byte}}		
+   will use loop for blocks smaller or equal to 256 bytes, rep prefix will
+   be used otherwise.  */
+struct stringop_algs
+{
+  const enum stringop_alg unknown_size;
+  const struct stringop_strategy {
+    const int max;
+    const enum stringop_alg alg;
+  } size [NAX_STRINGOP_ALGS];
+};
 
 /* Define the specific costs for a given cpu */
 
@@ -372,10 +373,16 @@ extern int x86_prefetch_sse;
    the frame pointer in leaf functions.  */
 #define TARGET_DEFAULT 0
 
+/* Extra bits to force on w/ 64-bit mode.  */
+#define TARGET_SUBTARGET64_DEFAULT 0
+
 /* This is not really a target flag, but is done this way so that
    it's analogous to similar code for Mach-O on PowerPC.  darwin.h
    redefines this to 1.  */
 #define TARGET_MACHO 0
+
+/* Likewise, for the Windows 64-bit ABI.  */
+#define TARGET_64BIT_MS_ABI 0
 
 /* Subtargets may reset this to 1 in order to enable 96-bit long double
    with the rounding mode forced to 53 bits.  */
@@ -997,6 +1004,11 @@ do {									\
 	  reg_names[i] = "";						\
 	for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)		\
 	  reg_names[i] = "";						\
+      }									\
+    if (TARGET_64BIT_MS_ABI)						\
+      {									\
+        call_used_regs[4 /*RSI*/] = 0;                                  \
+        call_used_regs[5 /*RDI*/] = 0;                                  \
       }									\
   } while (0)
 

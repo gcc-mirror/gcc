@@ -1308,9 +1308,15 @@ static int const x86_64_int_parameter_registers[6] =
   FIRST_REX_INT_REG /*R8 */, FIRST_REX_INT_REG + 1 /*R9 */
 };
 
+static int const x86_64_ms_abi_int_parameter_registers[4] =
+{
+  2 /*RCX*/, 1 /*RDX*/,
+  FIRST_REX_INT_REG /*R8 */, FIRST_REX_INT_REG + 1 /*R9 */
+};
+
 static int const x86_64_int_return_registers[4] =
 {
-  0 /*RAX*/, 1 /*RDI*/, 5 /*RDI*/, 4 /*RSI*/
+  0 /*RAX*/, 1 /*RDX*/, 5 /*RDI*/, 4 /*RSI*/
 };
 
 /* The "default" register map used in 64bit mode.  */
@@ -1857,9 +1863,16 @@ override_options (void)
     }
   else
     {
-      ix86_cmodel = CM_32;
-      if (TARGET_64BIT)
+      /* For TARGET_64BIT_MS_ABI, force pic on, in order to enable the
+	 use of rip-relative addressing.  This eliminates fixups that
+	 would otherwise be needed if this object is to be placed in a
+	 DLL, and is essentially just as efficient as direct addressing.  */
+      if (TARGET_64BIT_MS_ABI)
+	ix86_cmodel = CM_SMALL_PIC, flag_pic = 1;
+      else if (TARGET_64BIT)
 	ix86_cmodel = flag_pic ? CM_SMALL_PIC : CM_SMALL;
+      else
+        ix86_cmodel = CM_32;
     }
   if (ix86_asm_string != 0)
     {
@@ -1981,15 +1994,16 @@ override_options (void)
   /* Validate -mregparm= value.  */
   if (ix86_regparm_string)
     {
+      if (TARGET_64BIT)
+	warning (0, "-mregparm is ignored in 64-bit mode");
       i = atoi (ix86_regparm_string);
       if (i < 0 || i > REGPARM_MAX)
 	error ("-mregparm=%d is not between 0 and %d", i, REGPARM_MAX);
       else
 	ix86_regparm = i;
     }
-  else
-   if (TARGET_64BIT)
-     ix86_regparm = REGPARM_MAX;
+  if (TARGET_64BIT)
+    ix86_regparm = REGPARM_MAX;
 
   /* If the user has provided any of the -malign-* options,
      warn and use that value only if -falign-* is not set.
@@ -2135,18 +2149,16 @@ override_options (void)
 
   if (TARGET_64BIT)
     {
-      if (TARGET_ALIGN_DOUBLE)
-	error ("-malign-double makes no sense in the 64bit mode");
       if (TARGET_RTD)
-	error ("-mrtd calling convention not supported in the 64bit mode");
+	warning (0, "-mrtd is ignored in 64bit mode");
 
       /* Enable by default the SSE and MMX builtins.  Do allow the user to
 	 explicitly disable any of these.  In particular, disabling SSE and
 	 MMX for kernel code is extremely useful.  */
       target_flags
-	|= ((MASK_SSE2 | MASK_SSE | MASK_MMX | MASK_128BIT_LONG_DOUBLE)
+	|= ((MASK_SSE2 | MASK_SSE | MASK_MMX | TARGET_SUBTARGET64_DEFAULT)
 	    & ~target_flags_explicit);
-     }
+    }
   else
     {
       /* i386 ABI does not specify red zone.  It still makes sense to use it
@@ -2644,8 +2656,10 @@ ix86_handle_cconv_attribute (tree *node, tree name,
 
   if (TARGET_64BIT)
     {
-      warning (OPT_Wattributes, "%qs attribute ignored",
-	       IDENTIFIER_POINTER (name));
+      /* Do not warn when emulating the MS ABI.  */
+      if (!TARGET_64BIT_MS_ABI)
+	warning (OPT_Wattributes, "%qs attribute ignored",
+	         IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -2932,6 +2946,7 @@ bool
 ix86_function_arg_regno_p (int regno)
 {
   int i;
+  const int *parm_regs;
 
   if (!TARGET_64BIT)
     {
@@ -2959,11 +2974,15 @@ ix86_function_arg_regno_p (int regno)
     }
 
   /* RAX is used as hidden argument to va_arg functions.  */
-  if (regno == 0)
+  if (!TARGET_64BIT_MS_ABI && regno == 0)
     return true;
 
+  if (TARGET_64BIT_MS_ABI)
+    parm_regs = x86_64_ms_abi_int_parameter_registers;
+  else
+    parm_regs = x86_64_int_parameter_registers;
   for (i = 0; i < REGPARM_MAX; i++)
-    if (regno == x86_64_int_parameter_registers[i])
+    if (regno == parm_regs[i])
       return true;
   return false;
 }
@@ -3741,6 +3760,21 @@ function_arg_advance_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     cum->words += words;
 }
 
+static void
+function_arg_advance_ms_64 (CUMULATIVE_ARGS *cum, HOST_WIDE_INT bytes,
+			    HOST_WIDE_INT words)
+{
+  /* Otherwise, this should be passed indirect.  */
+  gcc_assert (bytes == 1 || bytes == 2 || bytes == 4 || bytes == 8);
+
+  cum->words += words;
+  if (cum->nregs > 0)
+    {
+      cum->nregs -= 1;
+      cum->regno += 1;
+    }
+}
+
 void
 function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 		      tree type, int named ATTRIBUTE_UNUSED)
@@ -3756,7 +3790,9 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   if (type)
     mode = type_natural_mode (type);
 
-  if (TARGET_64BIT)
+  if (TARGET_64BIT_MS_ABI)
+    function_arg_advance_ms_64 (cum, bytes, words);
+  else if (TARGET_64BIT)
     function_arg_advance_64 (cum, mode, type, words);
   else
     function_arg_advance_32 (cum, mode, type, bytes, words);
@@ -3887,9 +3923,47 @@ function_arg_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 			      cum->sse_regno);
 }
 
+static rtx
+function_arg_ms_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		    enum machine_mode orig_mode, int named)
+{
+  unsigned int regno;
+
+  /* Avoid the AL settings for the Unix64 ABI.  */
+  if (mode == VOIDmode)
+    return constm1_rtx;
+
+  /* If we've run out of registers, it goes on the stack.  */
+  if (cum->nregs == 0)
+    return NULL_RTX;
+
+  regno = x86_64_ms_abi_int_parameter_registers[cum->regno];
+
+  /* Only floating point modes are passed in anything but integer regs.  */
+  if (TARGET_SSE && (mode == SFmode || mode == DFmode))
+    {
+      if (named)
+	regno = cum->regno + FIRST_SSE_REG;
+      else
+	{
+	  rtx t1, t2;
+
+	  /* Unnamed floating parameters are passed in both the
+	     SSE and integer registers.  */
+	  t1 = gen_rtx_REG (mode, cum->regno + FIRST_SSE_REG);
+	  t2 = gen_rtx_REG (mode, regno);
+	  t1 = gen_rtx_EXPR_LIST (VOIDmode, t1, const0_rtx);
+	  t2 = gen_rtx_EXPR_LIST (VOIDmode, t2, const0_rtx);
+	  return gen_rtx_PARALLEL (mode, gen_rtvec (2, t1, t2));
+	}
+    }
+
+  return gen_reg_or_parallel (mode, orig_mode, regno);
+}
+
 rtx
 function_arg (CUMULATIVE_ARGS *cum, enum machine_mode omode,
-	      tree type, int named ATTRIBUTE_UNUSED)
+	      tree type, int named)
 {
   enum machine_mode mode = omode;
   HOST_WIDE_INT bytes, words;
@@ -3905,7 +3979,9 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode omode,
   if (type && TREE_CODE (type) == VECTOR_TYPE)
     mode = type_natural_mode (type);
 
-  if (TARGET_64BIT)
+  if (TARGET_64BIT_MS_ABI)
+    return function_arg_ms_64 (cum, mode, omode, named);
+  else if (TARGET_64BIT)
     return function_arg_64 (cum, mode, omode, type);
   else
     return function_arg_32 (cum, mode, omode, type, bytes, words);
@@ -3922,7 +3998,30 @@ ix86_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 			enum machine_mode mode ATTRIBUTE_UNUSED,
 			tree type, bool named ATTRIBUTE_UNUSED)
 {
-  if (TARGET_64BIT && type && int_size_in_bytes (type) == -1)
+  if (TARGET_64BIT_MS_ABI)
+    {
+      if (type)
+	{
+	  /* Arrays are passed by reference.  */
+	  if (TREE_CODE (type) == ARRAY_TYPE)
+	    return true;
+
+	  if (AGGREGATE_TYPE_P (type))
+	    {
+	      /* Structs/unions of sizes other than 8, 16, 32, or 64 bits
+	         are passed by reference.  */
+	      int el2 = exact_log2 (int_size_in_bytes (type));
+	      return !(el2 >= 0 && el2 <= 3);
+	    }
+	}
+
+      /* __m128 is passed by reference.  */
+      /* ??? How to handle complex?  For now treat them as structs,
+	 and pass them by reference if they're too large.  */
+      if (GET_MODE_SIZE (mode) > 8)
+	return true;
+    }
+  else if (TARGET_64BIT && type && int_size_in_bytes (type) == -1)
     return 1;
 
   return 0;
@@ -4025,6 +4124,8 @@ ix86_function_value_regno_p (int regno)
       return true;
 
     case FIRST_FLOAT_REG:
+      if (TARGET_64BIT_MS_ABI)
+	return false;
       return TARGET_FLOAT_RETURNS_IN_80387;
 
     case FIRST_SSE_REG:
@@ -4132,6 +4233,22 @@ function_value_64 (enum machine_mode orig_mode, enum machine_mode mode,
 }
 
 static rtx
+function_value_ms_64 (enum machine_mode orig_mode, enum machine_mode mode)
+{
+  unsigned int regno = 0;
+
+  if (TARGET_SSE)
+    {
+      if (mode == SFmode || mode == DFmode)
+	regno = FIRST_SSE_REG;
+      else if (VECTOR_MODE_P (mode) || GET_MODE_SIZE (mode) == 16)
+	regno = FIRST_SSE_REG;
+    }
+
+  return gen_rtx_REG (orig_mode, regno);
+}
+
+static rtx
 ix86_function_value_1 (tree valtype, tree fntype_or_decl,
 		       enum machine_mode orig_mode, enum machine_mode mode)
 {
@@ -4142,7 +4259,9 @@ ix86_function_value_1 (tree valtype, tree fntype_or_decl,
     fn = fntype_or_decl;
   fntype = fn ? TREE_TYPE (fn) : fntype_or_decl;
 
-  if (TARGET_64BIT)
+  if (TARGET_64BIT_MS_ABI)
+    return function_value_ms_64 (orig_mode, mode);
+  else if (TARGET_64BIT)
     return function_value_64 (orig_mode, mode, valtype);
   else
     return function_value_32 (orig_mode, mode, fntype, fn);
@@ -4214,12 +4333,27 @@ return_in_memory_64 (tree type, enum machine_mode mode)
   return !examine_argument (mode, type, 1, &needed_intregs, &needed_sseregs);
 }
 
+static int
+return_in_memory_ms_64 (tree type, enum machine_mode mode)
+{
+  HOST_WIDE_INT size = int_size_in_bytes (type);
+
+  /* __m128 and friends are returned in xmm0.  */
+  if (size == 16 && VECTOR_MODE_P (mode))
+    return 0;
+
+  /* Otherwise, the size must be exactly in [1248].  */
+  return (size != 1 && size != 2 && size != 4 && size != 8);
+}
+
 int
 ix86_return_in_memory (tree type)
 {
   enum machine_mode mode = type_natural_mode (type);
 
-  if (TARGET_64BIT)
+  if (TARGET_64BIT_MS_ABI)
+    return return_in_memory_ms_64 (type, mode);
+  else if (TARGET_64BIT)
     return return_in_memory_64 (type, mode);
   else
     return return_in_memory_32 (type, mode);
@@ -4280,7 +4414,7 @@ ix86_build_builtin_va_list (void)
   tree f_gpr, f_fpr, f_ovf, f_sav, record, type_decl;
 
   /* For i386 we use plain pointer to argument area.  */
-  if (!TARGET_64BIT)
+  if (!TARGET_64BIT || TARGET_64BIT_MS_ABI)
     return build_pointer_type (char_type_node);
 
   record = (*lang_hooks.types.make_type) (RECORD_TYPE);
@@ -4400,6 +4534,27 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
 }
 
 static void
+setup_incoming_varargs_ms_64 (CUMULATIVE_ARGS *cum)
+{
+  int set = get_varargs_alias_set ();
+  int i;
+
+  for (i = cum->regno; i < REGPARM_MAX; i++)
+    {
+      rtx reg, mem;
+
+      mem = gen_rtx_MEM (Pmode,
+			 plus_constant (virtual_incoming_args_rtx,
+					i * UNITS_PER_WORD));
+      MEM_NOTRAP_P (mem) = 1;
+      set_mem_alias_set (mem, set);
+
+      reg = gen_rtx_REG (Pmode, x86_64_ms_abi_int_parameter_registers[i]);
+      emit_move_insn (mem, reg);
+    }
+}
+
+static void
 ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 			     tree type, int *pretend_size ATTRIBUTE_UNUSED,
 			     int no_rtl)
@@ -4426,7 +4581,10 @@ ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   if (stdarg_p)
     function_arg_advance (&next_cum, mode, type, 1);
 
-  setup_incoming_varargs_64 (&next_cum);
+  if (TARGET_64BIT_MS_ABI)
+    setup_incoming_varargs_ms_64 (&next_cum);
+  else
+    setup_incoming_varargs_64 (&next_cum);
 }
 
 /* Implement va_start.  */
@@ -4440,7 +4598,7 @@ ix86_va_start (tree valist, rtx nextarg)
   tree type;
 
   /* Only 64bit target needs something special.  */
-  if (!TARGET_64BIT)
+  if (!TARGET_64BIT || TARGET_64BIT_MS_ABI)
     {
       std_expand_builtin_va_start (valist, nextarg);
       return;
@@ -4519,7 +4677,7 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   enum machine_mode nat_mode;
 
   /* Only 64bit target needs something special.  */
-  if (!TARGET_64BIT)
+  if (!TARGET_64BIT || TARGET_64BIT_MS_ABI)
     return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
@@ -5711,21 +5869,30 @@ ix86_expand_prologue (void)
   else
     {
       /* Only valid for Win32.  */
-      rtx eax = gen_rtx_REG (SImode, 0);
-      bool eax_live = ix86_eax_live_at_start_p ();
+      rtx eax = gen_rtx_REG (Pmode, 0);
+      bool eax_live;
       rtx t;
 
-      gcc_assert (!TARGET_64BIT);
+      gcc_assert (!TARGET_64BIT || TARGET_64BIT_MS_ABI);
+
+      if (TARGET_64BIT_MS_ABI)
+	eax_live = false;
+      else
+	eax_live = ix86_eax_live_at_start_p ();
 
       if (eax_live)
 	{
 	  emit_insn (gen_push (eax));
-	  allocate -= 4;
+	  allocate -= UNITS_PER_WORD;
 	}
 
       emit_move_insn (eax, GEN_INT (allocate));
 
-      insn = emit_insn (gen_allocate_stack_worker (eax));
+      if (TARGET_64BIT)
+	insn = gen_allocate_stack_worker_64 (eax);
+      else
+	insn = gen_allocate_stack_worker_32 (eax);
+      insn = emit_insn (insn);
       RTX_FRAME_RELATED_P (insn) = 1;
       t = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (-allocate));
       t = gen_rtx_SET (VOIDmode, stack_pointer_rtx, t);
@@ -5741,7 +5908,7 @@ ix86_expand_prologue (void)
 			       - frame.nregs * UNITS_PER_WORD);
 	  else
 	    t = plus_constant (stack_pointer_rtx, allocate);
-	  emit_move_insn (eax, gen_rtx_MEM (SImode, t));
+	  emit_move_insn (eax, gen_rtx_MEM (Pmode, t));
 	}
     }
 
@@ -5995,7 +6162,7 @@ ix86_expand_epilogue (int style)
 	{
 	  rtx ecx = gen_rtx_REG (SImode, 2);
 
-	  /* There is no "pascal" calling convention in 64bit ABI.  */
+	  /* There is no "pascal" calling convention in any 64bit ABI.  */
 	  gcc_assert (!TARGET_64BIT);
 
 	  emit_insn (gen_popsi1 (ecx));
@@ -6848,7 +7015,8 @@ legitimize_pic_address (rtx orig, rtx reg)
 	addr = XEXP (addr, 0);
       if (GET_CODE (addr) == PLUS)
 	  {
-            new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, XEXP (addr, 0)), UNSPEC_GOTOFF);
+            new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, XEXP (addr, 0)),
+				  UNSPEC_GOTOFF);
 	    new = gen_rtx_PLUS (Pmode, new, XEXP (addr, 1));
 	  }
 	else
@@ -6879,7 +7047,8 @@ legitimize_pic_address (rtx orig, rtx reg)
 	addr = XEXP (addr, 0);
       if (GET_CODE (addr) == PLUS)
 	  {
-            new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, XEXP (addr, 0)), UNSPEC_GOTOFF);
+            new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, XEXP (addr, 0)),
+				  UNSPEC_GOTOFF);
 	    new = gen_rtx_PLUS (Pmode, new, XEXP (addr, 1));
 	  }
 	else
@@ -6898,6 +7067,11 @@ legitimize_pic_address (rtx orig, rtx reg)
 	      see gotoff_operand.  */
 	   || (TARGET_VXWORKS_RTP && GET_CODE (addr) == LABEL_REF))
     {
+      /* Given that we've already handled dllimport variables separately
+	 in legitimize_address, and all other variables should satisfy
+	 legitimate_pic_address_disp_p, we should never arrive here.  */
+      gcc_assert (!TARGET_64BIT_MS_ABI);
+
       if (TARGET_64BIT && ix86_cmodel != CM_LARGE_PIC)
 	{
 	  new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTPCREL);
@@ -7505,7 +7679,8 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 	{
 	  const char *name = XSTR (x, 0);
 
-	  /* Mark the decl as referenced so that cgraph will output the function.  */
+	  /* Mark the decl as referenced so that cgraph will
+	     output the function.  */
 	  if (SYMBOL_REF_DECL (x))
 	    mark_decl_referenced (SYMBOL_REF_DECL (x));
 
@@ -7516,7 +7691,8 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 #endif
 	  assemble_name (file, name);
 	}
-      if (!TARGET_MACHO && code == 'P' && ! SYMBOL_REF_LOCAL_P (x))
+      if (!TARGET_MACHO && !TARGET_64BIT_MS_ABI
+	  && code == 'P' && ! SYMBOL_REF_LOCAL_P (x))
 	fputs ("@PLT", file);
       break;
 
@@ -9291,7 +9467,6 @@ ix86_expand_clear (rtx dest)
   /* Avoid HImode and its attendant prefix byte.  */
   if (GET_MODE_SIZE (GET_MODE (dest)) < 4)
     dest = gen_rtx_REG (SImode, REGNO (dest));
-
   tmp = gen_rtx_SET (VOIDmode, dest, const0_rtx);
 
   /* This predicate should match that for movsi_xor and movdi_xor_rex64.  */
@@ -19508,37 +19683,29 @@ static rtx
 x86_this_parameter (tree function)
 {
   tree type = TREE_TYPE (function);
+  bool aggr = aggregate_value_p (TREE_TYPE (type), type) != 0;
 
   if (TARGET_64BIT)
     {
-      int n = aggregate_value_p (TREE_TYPE (type), type) != 0;
-      return gen_rtx_REG (DImode, x86_64_int_parameter_registers[n]);
+      const int *parm_regs;
+
+      if (TARGET_64BIT_MS_ABI)
+        parm_regs = x86_64_ms_abi_int_parameter_registers;
+      else
+        parm_regs = x86_64_int_parameter_registers;
+      return gen_rtx_REG (DImode, parm_regs[aggr]);
     }
 
-  if (ix86_function_regparm (type, function) > 0)
+  if (ix86_function_regparm (type, function) > 0
+      && !type_has_variadic_args_p (type))
     {
-      tree parm;
-
-      parm = TYPE_ARG_TYPES (type);
-      /* Figure out whether or not the function has a variable number of
-	 arguments.  */
-      for (; parm; parm = TREE_CHAIN (parm))
-	if (TREE_VALUE (parm) == void_type_node)
-	  break;
-      /* If not, the this parameter is in the first argument.  */
-      if (parm)
-	{
-	  int regno = 0;
-	  if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type)))
-	    regno = 2;
-	  return gen_rtx_REG (SImode, regno);
-	}
+      int regno = 0;
+      if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type)))
+	regno = 2;
+      return gen_rtx_REG (SImode, regno);
     }
 
-  if (aggregate_value_p (TREE_TYPE (type), type))
-    return gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, 8));
-  else
-    return gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, 4));
+  return gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, aggr ? 8 : 4));
 }
 
 /* Determine whether x86_output_mi_thunk can succeed.  */
@@ -19627,7 +19794,7 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 	{
 	  int tmp_regno = 2 /* ECX */;
 	  if (lookup_attribute ("fastcall",
-	      TYPE_ATTRIBUTES (TREE_TYPE (function))))
+				TYPE_ATTRIBUTES (TREE_TYPE (function))))
 	    tmp_regno = 0 /* EAX */;
 	  tmp = gen_rtx_REG (SImode, tmp_regno);
 	}
@@ -19669,6 +19836,10 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
     {
       if (!flag_pic || (*targetm.binds_local_p) (function))
 	output_asm_insn ("jmp\t%P0", xops);
+      /* All thunks should be in the same object as their target,
+	 and thus binds_local_p should be true.  */
+      else if (TARGET_64BIT_MS_ABI)
+	gcc_unreachable ();
       else
 	{
 	  tmp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, xops[0]), UNSPEC_GOTPCREL);
@@ -19745,20 +19916,16 @@ void
 x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 {
   if (TARGET_64BIT)
-    if (flag_pic)
-      {
+    {
 #ifndef NO_PROFILE_COUNTERS
-	fprintf (file, "\tleaq\t%sP%d@(%%rip),%%r11\n", LPREFIX, labelno);
+      fprintf (file, "\tleaq\t%sP%d@(%%rip),%%r11\n", LPREFIX, labelno);
 #endif
+
+      if (!TARGET_64BIT_MS_ABI && flag_pic)
 	fprintf (file, "\tcall\t*%s@GOTPCREL(%%rip)\n", MCOUNT_NAME);
-      }
-    else
-      {
-#ifndef NO_PROFILE_COUNTERS
-	fprintf (file, "\tmovq\t$%sP%d,%%r11\n", LPREFIX, labelno);
-#endif
+      else
 	fprintf (file, "\tcall\t%s\n", MCOUNT_NAME);
-      }
+    }
   else if (flag_pic)
     {
 #ifndef NO_PROFILE_COUNTERS
@@ -21817,6 +21984,8 @@ static const struct attribute_spec ix86_attribute_table[] =
 #define TARGET_INTERNAL_ARG_POINTER ix86_internal_arg_pointer
 #undef TARGET_DWARF_HANDLE_FRAME_UNSPEC
 #define TARGET_DWARF_HANDLE_FRAME_UNSPEC ix86_dwarf_handle_frame_unspec
+#undef TARGET_STRICT_ARGUMENT_NAMING
+#define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
 
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR ix86_gimplify_va_arg

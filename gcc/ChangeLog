@@ -1,4 +1,81 @@
 2007-03-30  Richard Henderson  <rth@redhat.com>
+
+	* tree-ssa-loop-ivopts.c: Include target.h.
+	(produce_memory_decl_rtl): Pass the rtx through encode_section_info.
+	(get_address_cost): Force SYMBOL_FLAG_LOCAL set.
+	(force_expr_to_var_cost): Use produce_memory_decl_rtl.
+	* Makefile.in (tree-ssa-loop-ivopts.o): Depend on TARGET_H.
+
+2007-03-30  Richard Henderson  <rth@redhat.com>
+	    Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/cygming.h (DWARF2_DEBUGGING_INFO): Enable by
+	default for 64-bit.
+	(PREFERRED_DEBUGGING_TYPE): Prefer dwarf2 for 64-bit.
+	(TARGET_64BIT_MS_ABI): New.
+	(DBX_REGISTER_NUMBER): Handle 64-bit.
+	(SIZE_TYPE, PTRDIFF_TYPE): Use long long for 64-bit.
+	(LONG_TYPE_SIZE): Force to 32.
+	(REG_PARM_STACK_SPACE): New.
+	(OUTGOING_REG_PARM_STACK_SPACE): New.
+	(REGPARM_MAX, SSE_REGPARM_MAX): New.
+	(HANDLE_PRAGMA_PUSH_POP_MACRO): New.
+	(STACK_BOUNDARY): Use 128 for 64-bit.
+	* config/i386/cygwin.asm: Use push/ret to preserve call stack.
+	Add 64-bit implementation.
+	* config/i386/gthr-win32.c (__gthr_win32_key_create): Mark dtor
+	argument unused.
+	* config/i386/i386.c (x86_64_ms_abi_int_parameter_registers): New.
+	(override_options): Set ix86_cmodel for TARGET_64BIT_MS_ABI.
+	Warn for -mregparm, -mrtd in 64-bit mode; force ix86_regparm
+	for 64-bit; use TARGET_SUBTARGET64_DEFAULT.
+	(ix86_handle_cconv_attribute): Don't warn when ignoring if
+	TARGET_64BIT_MS_ABI.
+	(ix86_function_arg_regno_p): Handle TARGET_64BIT_MS_ABI.
+	(ix86_pass_by_reference): Likewise.
+	(ix86_function_value_regno_p): Likewise.
+	(ix86_build_builtin_va_list): Likewise.
+	(ix86_va_start, ix86_gimplify_va_arg): Likewise.
+	(function_arg_advance_ms_64): New.
+	(function_arg_advance): Call it.
+	(function_arg_ms_64): New.
+	(function_arg): Call it.
+	(function_value_ms_64): New.
+	(ix86_function_value_1): Call it.
+	(return_in_memory_ms_64): New.
+	(ix86_return_in_memory): Call it.
+	(setup_incoming_varargs_ms_64): New.
+	(ix86_setup_incoming_varargs): Call it.
+	(ix86_expand_prologue): Handle 64-bit stack probing.
+	(legitimize_pic_address): Handle TARGET_64BIT_MS_ABI.
+	(output_pic_addr_const): Likewise.
+	(x86_this_parameter): Likewise.
+	(x86_output_mi_thunk): Likewise.
+	(x86_function_profiler): Likewise.
+	(TARGET_STRICT_ARGUMENT_NAMING): New.
+	* config/i386/i386.h (TARGET_SUBTARGET64_DEFAULT): New.
+	(TARGET_64BIT_MS_ABI): New.
+	(CONDITIONAL_REGISTER_USAGE): Handle TARGET_64BIT_MS_ABI.
+	* config/i386/i386.md (allocate_stack_worker): Remove.
+	(allocate_stack_worker_32): Rename from allocate_stack_worker_1;
+	describe the clobber of eax without a match_scratch.
+	(allocate_stack_worker_postreload): Remove.
+	(allocate_stack_worker_64): Rename from allocate_stack_worker_rex64;
+	describe the clobbers of rax, r10, r11 properly; use __chkstk symbol.
+	(allocate_stack_worker_rex64_postreload): Remove.
+	(allocate_stack): Handle 64-bit.
+	* config/i386/i386elf (TARGET_SUBTARGET_DEFAULT): Remove.
+	* config/i386/mingw32.h (TARGET_VERSION): Set correctly for 64-bit.
+	(EXTRA_OS_CPP_BUILTINS): Handle 64-bit.
+	(STANDARD_INCLUDE_DIR): Handle TARGET_64BIT_DEFAULT.
+	(STANDARD_STARTFILE_PREFIX_1): Likewise.
+	* config/i386/unix.h (TARGET_SUBTARGET64_DEFAULT): New.
+	* config.build (x86_64-*-mingw*): New host.
+	* config.host (x86_64-*-mingw*): New host.
+	* config.gcc (x86_64-*-mingw*): New target.
+	* gthr-win32.h (__gthread_key_create): Mark dtor unused.
+
+2007-03-30  Richard Henderson  <rth@redhat.com>
 	    Kai Tietz  <kai.tietz@onevision.com>
 
 	* c-pragma.c (struct def_pragma_macro_value): New.

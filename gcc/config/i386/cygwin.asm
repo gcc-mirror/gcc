@@ -42,27 +42,66 @@
 
 	.global ___chkstk
 	.global	__alloca
+#ifndef _WIN64
 ___chkstk:
 __alloca:
-	pushl  %ecx		/* save temp */
-	movl   %esp,%ecx	/* get sp */
-	addl   $0x8,%ecx	/* and point to return addr */
+	pushl	%ecx		/* save temp */
+	leal	8(%esp), %ecx	/* point past return addr */
+	cmpl	$0x1000, %eax	/* > 4k ?*/
+	jb	Ldone
 
-probe: 	cmpl   $0x1000,%eax	/* > 4k ?*/
-	jb    done		
+Lprobe:
+	subl	$0x1000, %ecx  		/* yes, move pointer down 4k*/
+	orl	$0x0, (%ecx)   		/* probe there */
+	subl	$0x1000, %eax  	 	/* decrement count */
+	cmpl	$0x1000, %eax
+	ja	Lprobe         	 	/* and do it again */
 
-	subl   $0x1000,%ecx  		/* yes, move pointer down 4k*/
-	orl    $0x0,(%ecx)   		/* probe there */
-	subl   $0x1000,%eax  	 	/* decrement count */
-	jmp    probe           	 	/* and do it again */
+Ldone:
+	subl	%eax, %ecx	   
+	orl	$0x0, (%ecx)	/* less than 4k, just peek here */
 
-done: 	subl   %eax,%ecx	   
-	orl    $0x0,(%ecx)	/* less that 4k, just peek here */
+	movl	%esp, %eax	/* save old stack pointer */
+	movl	%ecx, %esp	/* decrement stack */
+	movl	(%eax), %ecx	/* recover saved temp */
+	movl	4(%eax), %eax	/* recover return address */
 
-	movl   %esp,%eax
-	movl   %ecx,%esp	/* decrement stack */
+	/* Push the return value back.  Doing this instead of just
+	   jumping to %eax preserves the cached call-return stack
+	   used by most modern processors.  */
+	pushl	%eax
+	ret
+#else
+/* __alloca is a normal function call, which uses %rcx as the argument.  */
+__alloca:
+	movq	%rcx, %rax
+	/* FALLTHRU */
 
-	movl   (%eax),%ecx	/* recover saved temp */
-	movl   4(%eax),%eax	/* get return address */
-	jmp    *%eax	
+/* ___chkstk is a *special* function call, which uses %rax as the argument.
+   We avoid clobbering the 4 integer argument registers, %rcx, %rdx, 
+   %r8 and %r9, which leaves us with %rax, %r10, and %r11 to use.  */
+___chkstk:
+	popq	%r11		/* pop return address */
+	movq	%rsp, %r10	/* get sp */
+	cmpq	$0x1000, %rax	/* > 4k ?*/
+	jb	Ldone
+
+Lprobe:
+	subq	$0x1000, %r10  		/* yes, move pointer down 4k*/
+	orl	$0x0, (%r10)   		/* probe there */
+	subq	$0x1000, %rax  	 	/* decrement count */
+	cmpq	$0x1000, %rax
+	ja	Lprobe         	 	/* and do it again */
+
+Ldone:
+	subq	%rax, %r10
+	orl	$0x0, (%r10)	/* less than 4k, just peek here */
+	movq	%r10, %rsp	/* decrement stack */
+
+	/* Push the return value back.  Doing this instead of just
+	   jumping to %r11 preserves the cached call-return stack
+	   used by most modern processors.  */
+	pushq	%r11
+	ret
+#endif
 #endif

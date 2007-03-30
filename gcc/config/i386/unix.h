@@ -61,5 +61,10 @@ Boston, MA 02110-1301, USA.  */
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
    and returns float values in the 387.  */
+#define TARGET_SUBTARGET_DEFAULT \
+	(MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS)
 
-#define TARGET_SUBTARGET_DEFAULT (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS)
+/* By default, 64-bit mode uses 128-bit long double.  */
+#undef TARGET_SUBTARGET64_DEFAULT
+#define TARGET_SUBTARGET64_DEFAULT \
+	MASK_128BIT_LONG_DOUBLE

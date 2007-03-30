@@ -77,7 +77,7 @@ case $build in
     build_xm_file=i386/xm-cygwin.h
     build_exeext=.exe
     ;;
-  i[34567]86-*-mingw32*)
+  i[34567]86-*-mingw32* | x86_64-*-mingw*)
     build_xm_file=i386/xm-mingw32.h
     build_exeext=.exe
     ;;

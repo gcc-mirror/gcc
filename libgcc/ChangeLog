@@ -1,3 +1,7 @@
+2007-02-30  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config.host (x86_64-*-mingw*): New target.
+
 2007-03-23  Michael Meissner  <michael.meissner@amd.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 

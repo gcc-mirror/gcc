@@ -21,7 +21,11 @@ the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
 #undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (x86 MinGW)"); 
+#if TARGET_64BIT_DEFAULT
+#define TARGET_VERSION fprintf (stderr,"(x86_64 MinGW");
+#else
+#define TARGET_VERSION fprintf (stderr," (x86 MinGW)");
+#endif
 
 /* See i386/crtdll.h for an alternative definition.  */
 #define EXTRA_OS_CPP_BUILTINS()					\
@@ -32,13 +36,28 @@ Boston, MA 02110-1301, USA.  */
       builtin_define ("_WIN32");				\
       builtin_define_std ("WIN32");				\
       builtin_define_std ("WINNT");				\
+      if (TARGET_64BIT_MS_ABI)					\
+	{							\
+	  builtin_define ("__MINGW64__");			\
+	  builtin_define_with_value("_INTEGRAL_MAX_BITS","64",0); \
+	  builtin_define_std ("WIN64");				\
+	  builtin_define_std ("_WIN64");			\
+	}							\
+      else							\
+	{							\
+	  builtin_define_with_value("_INTEGRAL_MAX_BITS","32",0); \
+	}							\
     }								\
   while (0)
 
 /* Override the standard choice of /usr/include as the default prefix
    to try when searching for header files.  */
 #undef STANDARD_INCLUDE_DIR
+#if TARGET_64BIT_DEFAULT
+#define STANDARD_INCLUDE_DIR "/mingw/include64"
+#else
 #define STANDARD_INCLUDE_DIR "/mingw/include"
+#endif
 #undef STANDARD_INCLUDE_COMPONENT
 #define STANDARD_INCLUDE_COMPONENT "MINGW"
 
@@ -71,7 +90,11 @@ Boston, MA 02110-1301, USA.  */
 
 /* Override startfile prefix defaults.  */
 #ifndef STANDARD_STARTFILE_PREFIX_1
+#if TARGET_64BIT_DEFAULT
+#define STANDARD_STARTFILE_PREFIX_1 "/mingw/lib64/"
+#else
 #define STANDARD_STARTFILE_PREFIX_1 "/mingw/lib/"
+#endif
 #endif
 #ifndef STANDARD_STARTFILE_PREFIX_2
 #define STANDARD_STARTFILE_PREFIX_2 ""
