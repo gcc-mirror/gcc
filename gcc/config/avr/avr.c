@@ -269,6 +269,8 @@ avr_override_options (void)
   const struct mcu_type_s *t;
   const struct base_arch_s *base;
 
+  flag_delete_null_pointer_checks = 0;
+
   for (t = avr_mcu_types; t->name; t++)
     if (strcmp (t->name, avr_mcu_name) == 0)
       break;
