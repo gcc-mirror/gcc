@@ -2083,7 +2083,7 @@ static cpp_hashnode *
 lex_macro_node_from_str (cpp_reader *pfile, const char *str)
 {
   size_t len = strlen (str);
-  uchar *buf = (char *) alloca (len + 1);
+  uchar *buf = (uchar *) alloca (len + 1);
   cpp_hashnode *node;
 
   memcpy (buf, str, len);

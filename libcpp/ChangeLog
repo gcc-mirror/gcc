@@ -1,3 +1,8 @@
+2007-03-30  Michael Meissner  <michael.meissner@amd.com>
+
+	* directives.c (lex_macro_node_from_str): Fix alloca call to be
+	type correct.
+
 2007-03-30  Richard Henderson  <rth@redhat.com>
 
 	* directives.c (lex_macro_node_from_str): New.
