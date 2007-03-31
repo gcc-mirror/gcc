@@ -1,3 +1,8 @@
+2007-03-31  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 29585
+	* g++.dg/tree-ssa/pr29585.C: New test.
+
 2007-03-30  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.c-torture/execute/mayalias-2.x: New.

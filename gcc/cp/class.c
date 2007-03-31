@@ -7101,7 +7101,7 @@ dfs_accumulate_vtbl_inits (tree binfo,
 
       /* Figure out the position to which the VPTR should point.  */
       vtbl = TREE_PURPOSE (l);
-      vtbl = build1 (ADDR_EXPR, vtbl_ptr_type_node, vtbl);
+      vtbl = build_address (vtbl);
       index = size_binop (PLUS_EXPR,
 			  size_int (non_fn_entries),
 			  size_int (list_length (TREE_VALUE (l))));
