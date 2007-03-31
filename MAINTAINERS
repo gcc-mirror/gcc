@@ -130,6 +130,7 @@ fortran 95		Paul Thomas		pault@gcc.gnu.org
 fortran 95		Tobias Schlüter		tobias.schlueter@physik.uni-muenchen.de
 fortran 95		Janne Blomqvist		jb@gcc.gnu.org
 fortran 95		Brooks Moses		brooks.moses@codesourcery.com
+fortran 95		Tobias Burnus		burnus@net-b.de
 c++			Jason Merrill		jason@redhat.com
 c++			Mark Mitchell		mark@codesourcery.com
 c++			Nathan Sidwell		nathan@codesourcery.com
@@ -258,7 +259,6 @@ Robert Bowdidge                                 bowdidge@apple.com
 Joel Brobecker					brobecker@gnat.com
 Dave Brolley					brolley@redhat.com
 Kevin Buettner					kevinb@redhat.com
-Tobias Burnus					burnus@net-b.de
 Andrew Cagney					cagney@redhat.com
 John Carr					jfc@mit.edu
 Steve Chamberlain				sac@transmeta.com
