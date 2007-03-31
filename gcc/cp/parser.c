@@ -1055,6 +1055,36 @@ make_array_declarator (cp_declarator *element, tree bounds)
   return declarator;
 }
 
+/* Determine whether the declarator we've seen so far can be a
+   parameter pack, when followed by an ellipsis.  */
+static bool 
+declarator_can_be_parameter_pack (cp_declarator *declarator)
+{
+  /* Search for a declarator name, or any other declarator that goes
+     after the point where the ellipsis could appear in a parameter
+     pack. If we find any of these, then this declarator can not be
+     made into a parameter pack.  */
+  bool found = false;
+  while (declarator && !found)
+    {
+      switch ((int)declarator->kind)
+	{
+	case cdk_id:
+	case cdk_error:
+	case cdk_array:
+	case cdk_ptrmem:
+	  found = true;
+	  break;
+	  
+	default:
+	  declarator = declarator->declarator;
+	  break;
+	}
+    }
+
+  return !found;
+}
+
 cp_parameter_declarator *no_parameters;
 
 /* Create a parameter declarator with the indicated DECL_SPECIFIERS,
@@ -9049,9 +9079,9 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
      marked as a parameter pack, then we have a parameter pack (that
      has no declarator); */
   if (!*is_parameter_pack
-      && cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
+      && cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS)
+      && declarator_can_be_parameter_pack (parameter_declarator->declarator))
     {
-
       /* Consume the `...'. */
       cp_lexer_consume_token (parser->lexer);
       maybe_warn_variadic_templates ();
@@ -13095,32 +13125,35 @@ cp_parser_parameter_declaration (cp_parser *parser,
 		   cp_parser_attributes_opt (parser));
     }
 
-  /* If the next token is an ellipsis, and the type of the declarator
-     contains parameter packs but it is not a TYPE_PACK_EXPANSION, then
-     we actually have a parameter pack expansion expression. Otherwise,
-     leave the ellipsis for a C-style variadic function. */
+  /* If the next token is an ellipsis, and we have not seen a
+     declarator name, and the type of the declarator contains parameter
+     packs but it is not a TYPE_PACK_EXPANSION, then we actually have
+     a parameter pack expansion expression. Otherwise, leave the
+     ellipsis for a C-style variadic function. */
   token = cp_lexer_peek_token (parser->lexer);
   if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
     {
       tree type = decl_specifiers.type;
 
-      if (DECL_P (type))
+      if (type && DECL_P (type))
         type = TREE_TYPE (type);
 
-      if (TREE_CODE (type) != TYPE_PACK_EXPANSION
+      if (type
+	  && TREE_CODE (type) != TYPE_PACK_EXPANSION
+	  && declarator_can_be_parameter_pack (declarator)
           && (!declarator || !declarator->parameter_pack_p)
           && uses_parameter_packs (type))
         {
-          /* Consume the `...'. */
-          cp_lexer_consume_token (parser->lexer);
-          maybe_warn_variadic_templates ();
-          
-          /* Build a pack expansion type */
-          if (declarator)
-            declarator->parameter_pack_p = true;
-          else
-            decl_specifiers.type = make_pack_expansion (type);
-        }
+	  /* Consume the `...'. */
+	  cp_lexer_consume_token (parser->lexer);
+	  maybe_warn_variadic_templates ();
+	  
+	  /* Build a pack expansion type */
+	  if (declarator)
+	    declarator->parameter_pack_p = true;
+	  else
+	    decl_specifiers.type = make_pack_expansion (type);
+	}
     }
 
   /* The restriction on defining new types applies only to the type

@@ -1,3 +1,19 @@
+2007-03-31  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/31138
+	PR c++/31140
+	PR c++/31141
+	* parser.c (declarator_can_be_parameter_pack): New.
+	(cp_parser_template_parameter): Only parse the `...' if the
+	declarator can be a parameter pack.
+	(cp_parser_parameter_declaration): Ditto. Also, handle when TYPE
+	is NULL.
+	* pt.c (find_parameter_packs_r): Look into the bounds on integer
+	types (they could be used as array bounds). 
+	(check_for_bare_parameter_packs): Deal with TEMPLATE_PARM_INDEX.
+	(tsubst_pack_expansion): Handle failure to expand parameter
+	packs.
+	
 2007-03-30  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/26099

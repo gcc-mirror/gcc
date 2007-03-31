@@ -2441,6 +2441,12 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
       *walk_subtrees = 0;
       return NULL_TREE;
 
+    case INTEGER_TYPE:
+      walk_tree (&TYPE_MAX_VALUE (t), &find_parameter_packs_r, 
+		 ppd, ppd->visited);
+      *walk_subtrees = 0;
+      return NULL_TREE;
+
     default:
       return NULL_TREE;
     }
@@ -2621,6 +2627,8 @@ check_for_bare_parameter_packs (tree t)
         if (TREE_CODE (pack) == TEMPLATE_TYPE_PARM
             || TREE_CODE (pack) == TEMPLATE_TEMPLATE_PARM)
           name = TYPE_NAME (pack);
+	else if (TREE_CODE (pack) == TEMPLATE_PARM_INDEX)
+	  name = DECL_NAME (TEMPLATE_PARM_DECL (pack));
         else
           name = DECL_NAME (pack);
         inform ("        %qD", name);
@@ -6860,6 +6868,15 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       if (arg_pack && TREE_CODE (arg_pack) == ARGUMENT_PACK_SELECT)
 	arg_pack = ARGUMENT_PACK_SELECT_FROM_PACK (arg_pack);
       
+      if (arg_pack && !ARGUMENT_PACK_P (arg_pack))
+	/* This can only happen if we forget to expand an argument
+	   pack somewhere else. Just return an error, silently.  */
+	{
+	  result = make_tree_vec (1);
+	  TREE_VEC_ELT (result, 0) = error_mark_node;
+	  return result;
+	}
+
       if (arg_pack)
         {
           int my_len = 
