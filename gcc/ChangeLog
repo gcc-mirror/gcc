@@ -1,3 +1,33 @@
+2007-03-31  Richard Guenther  <rguenther@suse.de>
+
+	* omp-low.c (splay-tree.h): Include.
+	(lookup_decl): Replace splay-tree usage by pointer-map.
+	(maybe_lookup_decl): Likewise.
+	(new_omp_context): Likewise.
+	(delete_omp_context): Likewise.
+	* gimplify.c (splay-tree.h): Include.
+	* tree-inline.c (insert_decl_map): Replace splay-tree usage by
+	pointer-map.
+	(remap_ssa_name): Likewise.
+	(remap_decl): Likewise.
+	(remap_type_1): Likewise.
+	(remap_type): Likewise.
+	(copy_body_r): Likewise.
+	(expand_call_inline): Likewise.
+	(clone_body): Likewise.
+	(copy_tree_r): Likewise.
+	(remap_save_expr): Likewise.
+	(unsave_r): Likewise.
+	(unsave_expr_now): Likewise.
+	(tree_function_versioning): Likewise.
+	(build_duplicate_type): Likewise.
+	* tree-inline.h (pointer-set.h): Include instead of splay-tree.h.
+	(struct copy_body_data): Replace splay-tree by pointer-map.
+	* Makefile.in (TREE_INLINE_H): Depend on pointer-map.h,
+	not $(SPLAY_TREE_H).
+	(gimplify.o): Depend on $(SPLAY_TREE_H).
+	(omp-low.p): Likewise.
+
 2007-03-31  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/predicates.md (even_register_operand, 

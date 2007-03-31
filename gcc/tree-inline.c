@@ -148,14 +148,12 @@ static tree copy_decl_maybe_to_var (tree, copy_body_data *);
 void
 insert_decl_map (copy_body_data *id, tree key, tree value)
 {
-  splay_tree_insert (id->decl_map, (splay_tree_key) key,
-		     (splay_tree_value) value);
+  *pointer_map_insert (id->decl_map, key) = value;
 
   /* Always insert an identity map as well.  If we see this same new
      node again, we won't want to duplicate it a second time.  */
   if (key != value)
-    splay_tree_insert (id->decl_map, (splay_tree_key) value,
-		       (splay_tree_value) value);
+    *pointer_map_insert (id->decl_map, value) = value;
 }
 
 /* Construct new SSA name for old NAME. ID is the inline context.  */
@@ -164,13 +162,13 @@ static tree
 remap_ssa_name (tree name, copy_body_data *id)
 {
   tree new;
-  splay_tree_node n;
+  tree *n;
 
   gcc_assert (TREE_CODE (name) == SSA_NAME);
 
-  n = splay_tree_lookup (id->decl_map, (splay_tree_key) name);
+  n = (tree *) pointer_map_contains (id->decl_map, name);
   if (n)
-    return (tree) n->value;
+    return *n;
 
   /* Do not set DEF_STMT yet as statement is not copied yet. We do that
      in copy_bb.  */
@@ -207,7 +205,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 tree
 remap_decl (tree decl, copy_body_data *id)
 {
-  splay_tree_node n;
+  tree *n;
   tree fn;
 
   /* We only remap local variables in the current function.  */
@@ -215,7 +213,7 @@ remap_decl (tree decl, copy_body_data *id)
 
   /* See if we have remapped this declaration.  */
 
-  n = splay_tree_lookup (id->decl_map, (splay_tree_key) decl);
+  n = (tree *) pointer_map_contains (id->decl_map, decl);
 
   /* If we didn't already have an equivalent for this declaration,
      create one now.  */
@@ -268,22 +266,22 @@ remap_decl (tree decl, copy_body_data *id)
       return t;
     }
 
-  return unshare_expr ((tree) n->value);
+  return unshare_expr (*n);
 }
 
 static tree
 remap_type_1 (tree type, copy_body_data *id)
 {
-  splay_tree_node node;
+  tree *node;
   tree new, t;
 
   if (type == NULL)
     return type;
 
   /* See if we have remapped this type.  */
-  node = splay_tree_lookup (id->decl_map, (splay_tree_key) type);
+  node = (tree *) pointer_map_contains (id->decl_map, type);
   if (node)
-    return (tree) node->value;
+    return *node;
 
   /* The type only needs remapping if it's variably modified.  */
   if (! variably_modified_type_p (type, id->src_fn))
@@ -396,15 +394,15 @@ remap_type_1 (tree type, copy_body_data *id)
 tree
 remap_type (tree type, copy_body_data *id)
 {
-  splay_tree_node node;
+  tree *node;
 
   if (type == NULL)
     return type;
 
   /* See if we have remapped this type.  */
-  node = splay_tree_lookup (id->decl_map, (splay_tree_key) type);
+  node = (tree *) pointer_map_contains (id->decl_map, type);
   if (node)
-    return (tree) node->value;
+    return *node;
 
   /* The type only needs remapping if it's variably modified.  */
   if (! variably_modified_type_p (type, id->src_fn))
@@ -650,12 +648,12 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	     and thus don't count as variable modification.  Avoid
 	     keeping bogosities like 0 = 0.  */
 	  tree decl = GIMPLE_STMT_OPERAND (*tp, 0), value;
-	  splay_tree_node n;
+	  tree *n;
 
-	  n = splay_tree_lookup (id->decl_map, (splay_tree_key) decl);
+	  n = (tree *) pointer_map_contains (id->decl_map, decl);
 	  if (n)
 	    {
-	      value = (tree) n->value;
+	      value = *n;
 	      STRIP_TYPE_NOPS (value);
 	      if (TREE_CONSTANT (value) || TREE_READONLY_DECL_P (value))
 		{
@@ -669,9 +667,9 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	  /* Get rid of *& from inline substitutions that can happen when a
 	     pointer argument is an ADDR_EXPR.  */
 	  tree decl = TREE_OPERAND (*tp, 0);
-	  splay_tree_node n;
+	  tree *n;
 
-	  n = splay_tree_lookup (id->decl_map, (splay_tree_key) decl);
+	  n = (tree *) pointer_map_contains (id->decl_map, decl);
 	  if (n)
 	    {
 	      tree new;
@@ -682,8 +680,8 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 		 build_fold_indirect_ref wouldn't strip the INDIRECT_REF,
 		 but we absolutely rely on that.  As fold_indirect_ref
 	         does other useful transformations, try that first, though.  */
-	      tree type = TREE_TYPE (TREE_TYPE ((tree)n->value));
-	      new = unshare_expr ((tree)n->value);
+	      tree type = TREE_TYPE (TREE_TYPE (*n));
+	      new = unshare_expr (*n);
 	      old = *tp;
 	      *tp = fold_indirect_ref_1 (type, new);
 	      if (! *tp)
@@ -718,11 +716,11 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	  new_block = id->block;
 	  if (TREE_BLOCK (*tp))
 	    {
-	      splay_tree_node n;
-	      n = splay_tree_lookup (id->decl_map,
-				     (splay_tree_key) TREE_BLOCK (*tp));
+	      tree *n;
+	      n = (tree *) pointer_map_contains (id->decl_map,
+						 TREE_BLOCK (*tp));
 	      gcc_assert (n);
-	      new_block = (tree) n->value;
+	      new_block = *n;
 	    }
 	  TREE_BLOCK (*tp) = new_block;
 	}
@@ -2354,7 +2352,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   tree t;
   tree use_retvar;
   tree fn;
-  splay_tree st;
+  struct pointer_map_t *st;
   tree return_slot;
   tree modify_dest;
   location_t saved_location;
@@ -2509,8 +2507,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   /* Local declarations will be replaced by their equivalents in this
      map.  */
   st = id->decl_map;
-  id->decl_map = splay_tree_new (splay_tree_compare_pointers,
-				 NULL, NULL);
+  id->decl_map = pointer_map_create ();
 
   /* Record the function we are about to inline.  */
   id->src_fn = fn;
@@ -2576,7 +2573,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
     }
 
   /* Clean up.  */
-  splay_tree_delete (id->decl_map);
+  pointer_map_destroy (id->decl_map);
   id->decl_map = st;
 
   /* If the inlined function returns a result that we care about,
@@ -2870,7 +2867,7 @@ clone_body (tree clone, tree fn, void *arg_map)
   id.src_fn = fn;
   id.dst_fn = clone;
   id.src_cfun = DECL_STRUCT_FUNCTION (fn);
-  id.decl_map = (splay_tree)arg_map;
+  id.decl_map = (struct pointer_map_t *)arg_map;
 
   id.copy_decl = copy_decl_no_change;
   id.transform_call_graph_edges = CB_CGE_DUPLICATE;
@@ -2964,12 +2961,12 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 static void
 remap_save_expr (tree *tp, void *st_, int *walk_subtrees)
 {
-  splay_tree st = (splay_tree) st_;
-  splay_tree_node n;
+  struct pointer_map_t *st = (struct pointer_map_t *) st_;
+  tree *n;
   tree t;
 
   /* See if we already encountered this SAVE_EXPR.  */
-  n = splay_tree_lookup (st, (splay_tree_key) *tp);
+  n = (tree *) pointer_map_contains (st, *tp);
 
   /* If we didn't already remap this SAVE_EXPR, do so now.  */
   if (!n)
@@ -2977,15 +2974,15 @@ remap_save_expr (tree *tp, void *st_, int *walk_subtrees)
       t = copy_node (*tp);
 
       /* Remember this SAVE_EXPR.  */
-      splay_tree_insert (st, (splay_tree_key) *tp, (splay_tree_value) t);
+      *pointer_map_insert (st, *tp) = t;
       /* Make sure we don't remap an already-remapped SAVE_EXPR.  */
-      splay_tree_insert (st, (splay_tree_key) t, (splay_tree_value) t);
+      *pointer_map_insert (st, t) = t;
     }
   else
     {
       /* We've already walked into this SAVE_EXPR; don't do it again.  */
       *walk_subtrees = 0;
-      t = (tree) n->value;
+      t = *n;
     }
 
   /* Replace this SAVE_EXPR with the copy.  */
@@ -3050,19 +3047,19 @@ static tree
 unsave_r (tree *tp, int *walk_subtrees, void *data)
 {
   copy_body_data *id = (copy_body_data *) data;
-  splay_tree st = id->decl_map;
-  splay_tree_node n;
+  struct pointer_map_t *st = id->decl_map;
+  tree *n;
 
   /* Only a local declaration (variable or label).  */
   if ((TREE_CODE (*tp) == VAR_DECL && !TREE_STATIC (*tp))
       || TREE_CODE (*tp) == LABEL_DECL)
     {
       /* Lookup the declaration.  */
-      n = splay_tree_lookup (st, (splay_tree_key) *tp);
+      n = (tree *) pointer_map_contains (st, *tp);
 
       /* If it's there, remap it.  */
       if (n)
-	*tp = (tree) n->value;
+	*tp = *n;
     }
 
   else if (TREE_CODE (*tp) == STATEMENT_LIST)
@@ -3099,7 +3096,7 @@ unsave_expr_now (tree expr)
   memset (&id, 0, sizeof (id));
   id.src_fn = current_function_decl;
   id.dst_fn = current_function_decl;
-  id.decl_map = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
+  id.decl_map = pointer_map_create ();
 
   id.copy_decl = copy_decl_no_change;
   id.transform_call_graph_edges = CB_CGE_DUPLICATE;
@@ -3114,7 +3111,7 @@ unsave_expr_now (tree expr)
   walk_tree (&expr, unsave_r, &id, NULL);
 
   /* Clean up.  */
-  splay_tree_delete (id.decl_map);
+  pointer_map_destroy (id.decl_map);
 
   return expr;
 }
@@ -3373,7 +3370,7 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
       id.statements_to_fold = pointer_set_create ();
     }
   
-  id.decl_map = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
+  id.decl_map = pointer_map_create ();
   id.src_fn = old_decl;
   id.dst_fn = new_decl;
   id.src_node = old_version_node;
@@ -3450,7 +3447,7 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   number_blocks (new_decl);
 
   /* Clean up.  */
-  splay_tree_delete (id.decl_map);
+  pointer_map_destroy (id.decl_map);
   if (!update_clones)
     {
       fold_marked_statements (0, id.statements_to_fold);
@@ -3491,11 +3488,11 @@ build_duplicate_type (tree type)
   id.src_fn = current_function_decl;
   id.dst_fn = current_function_decl;
   id.src_cfun = cfun;
-  id.decl_map = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
+  id.decl_map = pointer_map_create ();
 
   type = remap_type_1 (type, &id);
 
-  splay_tree_delete (id.decl_map);
+  pointer_map_destroy (id.decl_map);
 
   return type;
 }

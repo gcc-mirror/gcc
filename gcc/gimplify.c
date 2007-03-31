@@ -49,6 +49,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target.h"
 #include "optabs.h"
 #include "pointer-set.h"
+#include "splay-tree.h"
 
 
 enum gimplify_omp_var_data
