@@ -49,6 +49,9 @@ Boston, MA 02110-1301, USA.  */
 
 #include <errno.h>
 
+
+#ifdef HAVE_STAT
+
 /* SUBROUTINE STAT(FILE, SARRAY, STATUS)
    CHARACTER(len=*), INTENT(IN) :: FILE
    INTEGER, INTENT(OUT), :: SARRAY(13)
@@ -88,9 +91,12 @@ stat_i4_sub_0 (char *name, gfc_array_i4 *sarray, GFC_INTEGER_4 *status,
   memcpy (str, name, name_len);
   str[name_len] = '\0';
 
+  /* On platforms that don't provide lstat(), we use stat() instead.  */
+#ifdef HAVE_LSTAT
   if (is_lstat)
     val = lstat(str, &sb);
   else
+#endif
     val = stat(str, &sb);
 
   if (val == 0)
@@ -204,9 +210,12 @@ stat_i8_sub_0 (char *name, gfc_array_i8 *sarray, GFC_INTEGER_8 *status,
   memcpy (str, name, name_len);
   str[name_len] = '\0';
 
+  /* On platforms that don't provide lstat(), we use stat() instead.  */
+#ifdef HAVE_LSTAT
   if (is_lstat)
     val = lstat(str, &sb);
   else
+#endif
     val = stat(str, &sb);
 
   if (val == 0)
@@ -319,13 +328,13 @@ stat_i8 (char *name, gfc_array_i8 *sarray, gfc_charlen_type name_len)
 }
 
 
-/* SUBROUTINE STAT(FILE, SARRAY, STATUS)
+/* SUBROUTINE LSTAT(FILE, SARRAY, STATUS)
    CHARACTER(len=*), INTENT(IN) :: FILE
    INTEGER, INTENT(OUT), :: SARRAY(13)
    INTEGER, INTENT(OUT), OPTIONAL :: STATUS
 
-   FUNCTION STAT(FILE, SARRAY)
-   INTEGER STAT
+   FUNCTION LSTAT(FILE, SARRAY)
+   INTEGER LSTAT
    CHARACTER(len=*), INTENT(IN) :: FILE
    INTEGER, INTENT(OUT), :: SARRAY(13)  */
 
@@ -351,7 +360,10 @@ lstat_i8 (char *name, gfc_array_i8 *sarray, gfc_charlen_type name_len)
   return val;
 }
 
+#endif
 
+
+#ifdef HAVE_FSTAT
 
 /* SUBROUTINE FSTAT(UNIT, SARRAY, STATUS)
    INTEGER, INTENT(IN) :: UNIT
@@ -546,3 +558,5 @@ fstat_i8 (GFC_INTEGER_8 *unit, gfc_array_i8 *sarray)
   fstat_i8_sub (unit, sarray, &val);
   return val;
 }
+
+#endif
