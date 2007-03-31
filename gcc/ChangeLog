@@ -1,3 +1,10 @@
+2007-03-31  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR target/31364
+	* config/rs6000/rs6000.md (call): Convert to LR hard reg for
+	secureplt.
+	(call_value): Likewise.
+
 2007-03-31  Wolfgang Bangerth  <bangerth@dealii.org>
             Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
