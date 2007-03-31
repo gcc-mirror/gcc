@@ -1,3 +1,8 @@
+2007-03-31  Tobias Burnus  <burnus@net-b.de>
+
+	* intrinsic.c (add_functions): Fix name of dummy argument
+	  for new_line and exit intrinsic.
+
 2007-03-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31160
