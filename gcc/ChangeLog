@@ -1,3 +1,10 @@
+2007-03-31  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/predicates.md (even_register_operand, 
+	odd_register_operand): New predicates.
+	* config/avr/avr.md (movw peephole2): New.
+	(movw_r peephole2): New.
+
 2007-03-30  Rafael Avila de Espindola  <espindola@google.com>
 
 	* tree.h (get_signed_or_unsigned_type): New.

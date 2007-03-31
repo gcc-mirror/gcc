@@ -28,6 +28,16 @@
   (and (match_code "reg")
        (match_test "REGNO (op) >= 16 && REGNO (op) <= 31")))
 
+(define_predicate "even_register_operand"
+  (and (match_code "reg")
+       (and (match_test "REGNO (op) <= 31")
+            (match_test "(REGNO (op) & 1) == 0"))))
+
+(define_predicate "odd_register_operand"
+  (and (match_code "reg")
+       (and (match_test "REGNO (op) <= 31")
+            (match_test "(REGNO (op) & 1) != 0"))))
+
 ;; SP register.
 (define_predicate "stack_register_operand"
   (and (match_code "reg")

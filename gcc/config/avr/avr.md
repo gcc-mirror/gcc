@@ -283,6 +283,34 @@
   [(set_attr "length" "2,6,7,2,6,5,2")
    (set_attr "cc" "none,clobber,clobber,none,clobber,none,none")])
 
+(define_peephole2 ; movw
+  [(set (match_operand:QI 0 "even_register_operand" "")
+        (match_operand:QI 1 "even_register_operand" ""))
+   (set (match_operand:QI 2 "odd_register_operand" "")
+        (match_operand:QI 3 "odd_register_operand" ""))]
+  "(AVR_HAVE_MOVW
+    && REGNO (operands[0]) == REGNO (operands[2]) - 1
+    && REGNO (operands[1]) == REGNO (operands[3]) - 1)"
+  [(set (match_dup 4) (match_dup 5))]
+  {
+    operands[4] = gen_rtx_REG (HImode, REGNO (operands[0]));
+    operands[5] = gen_rtx_REG (HImode, REGNO (operands[1]));
+  })
+
+(define_peephole2 ; movw_r
+  [(set (match_operand:QI 0 "odd_register_operand" "")
+        (match_operand:QI 1 "odd_register_operand" ""))
+   (set (match_operand:QI 2 "even_register_operand" "")
+        (match_operand:QI 3 "even_register_operand" ""))]
+  "(AVR_HAVE_MOVW
+    && REGNO (operands[2]) == REGNO (operands[0]) - 1
+    && REGNO (operands[3]) == REGNO (operands[1]) - 1)"
+  [(set (match_dup 4) (match_dup 5))]
+  {
+    operands[4] = gen_rtx_REG (HImode, REGNO (operands[2]));
+    operands[5] = gen_rtx_REG (HImode, REGNO (operands[3]));
+  })
+
 ;;==========================================================================
 ;; move double word (32 bit)
 
