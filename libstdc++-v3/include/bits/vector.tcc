@@ -1,6 +1,7 @@
 // Vector implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -388,18 +389,19 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 	}
     }
 
-  template<typename _Tp, typename _Alloc> template<typename _InputIterator>
-    void
-    vector<_Tp, _Alloc>::
-    _M_range_insert(iterator __pos, _InputIterator __first,
-		    _InputIterator __last, std::input_iterator_tag)
-    {
-      for (; __first != __last; ++__first)
-	{
-	  __pos = insert(__pos, *__first);
-	  ++__pos;
-	}
-    }
+  template<typename _Tp, typename _Alloc>
+    template<typename _InputIterator>
+      void
+      vector<_Tp, _Alloc>::
+      _M_range_insert(iterator __pos, _InputIterator __first,
+		      _InputIterator __last, std::input_iterator_tag)
+      {
+	for (; __first != __last; ++__first)
+	  {
+	    __pos = insert(__pos, *__first);
+	    ++__pos;
+	  }
+      }
 
   template<typename _Tp, typename _Alloc>
     template<typename _ForwardIterator>
@@ -490,6 +492,105 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 	      }
 	  }
       }
+
+
+  // vector<bool>
+
+  template<typename _Alloc>
+    void
+    vector<bool, _Alloc>::
+    _M_fill_insert(iterator __position, size_type __n, bool __x)
+    {
+      if (__n == 0)
+	return;
+      if (capacity() - size() >= __n)
+	{
+	  std::copy_backward(__position, end(),
+			     this->_M_impl._M_finish + difference_type(__n));
+	  std::fill(__position, __position + difference_type(__n), __x);
+	  this->_M_impl._M_finish += difference_type(__n);
+	}
+      else
+	{
+	  const size_type __len = size() + std::max(size(), __n);
+	  _Bit_type * __q = this->_M_allocate(__len);
+	  iterator __i = _M_copy_aligned(begin(), __position,
+					 iterator(__q, 0));
+	  std::fill(__i, __i + difference_type(__n), __x);
+	  this->_M_impl._M_finish = std::copy(__position, end(),
+					      __i + difference_type(__n));
+	  this->_M_deallocate();
+	  this->_M_impl._M_end_of_storage = (__q + ((__len
+						     + int(_S_word_bit) - 1)
+						    / int(_S_word_bit)));
+	  this->_M_impl._M_start = iterator(__q, 0);
+	}
+    }
+
+  template<typename _Alloc>
+    template<typename _ForwardIterator>
+      void
+      vector<bool, _Alloc>::
+      _M_insert_range(iterator __position, _ForwardIterator __first, 
+		      _ForwardIterator __last, std::forward_iterator_tag)
+      {
+	if (__first != __last)
+	  {
+	    size_type __n = std::distance(__first, __last);
+	    if (capacity() - size() >= __n)
+	      {
+		std::copy_backward(__position, end(),
+				   this->_M_impl._M_finish
+				   + difference_type(__n));
+		std::copy(__first, __last, __position);
+		this->_M_impl._M_finish += difference_type(__n);
+	      }
+	    else
+	      {
+		const size_type __len = size() + std::max(size(), __n);
+		_Bit_type * __q = this->_M_allocate(__len);
+		iterator __i = _M_copy_aligned(begin(), __position,
+					       iterator(__q, 0));
+		__i = std::copy(__first, __last, __i);
+		this->_M_impl._M_finish = std::copy(__position, end(), __i);
+		this->_M_deallocate();
+		this->_M_impl._M_end_of_storage = (__q
+						   + ((__len
+						       + int(_S_word_bit) - 1)
+						      / int(_S_word_bit)));
+		this->_M_impl._M_start = iterator(__q, 0);
+	      }
+	  }
+      }
+
+  template<typename _Alloc>
+    void
+    vector<bool, _Alloc>::
+    _M_insert_aux(iterator __position, bool __x)
+    {
+      if (this->_M_impl._M_finish._M_p != this->_M_impl._M_end_of_storage)
+	{
+	  std::copy_backward(__position, this->_M_impl._M_finish, 
+			     this->_M_impl._M_finish + 1);
+	  *__position = __x;
+	  ++this->_M_impl._M_finish;
+	}
+      else
+	{
+	  const size_type __len = size() ? 2 * size()
+	                                 : static_cast<size_type>(_S_word_bit);
+	  _Bit_type * __q = this->_M_allocate(__len);
+	  iterator __i = _M_copy_aligned(begin(), __position,
+					 iterator(__q, 0));
+	  *__i++ = __x;
+	  this->_M_impl._M_finish = std::copy(__position, end(), __i);
+	  this->_M_deallocate();
+	  this->_M_impl._M_end_of_storage = (__q + ((__len
+						     + int(_S_word_bit) - 1)
+						    / int(_S_word_bit)));
+	  this->_M_impl._M_start = iterator(__q, 0);
+	}
+    }
 
 _GLIBCXX_END_NESTED_NAMESPACE
 

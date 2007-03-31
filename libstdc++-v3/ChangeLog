@@ -1,3 +1,11 @@
+2007-03-31  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_bvector.h (_M_fill_insert(iterator, size_type,
+	bool), _M_insert_range(iterator, _ForwardIterator, _ForwardIterator,
+	std::forward_iterator_tag), _M_insert_aux(iterator, bool)): Move
+	out of line...
+	* include/bits/vector.tcc: ... here.
+
 2007-03-30  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/26099
