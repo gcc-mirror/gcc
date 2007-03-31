@@ -1,3 +1,9 @@
+2007-03-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31160
+	* gfortran.texi: Add a section for the %VAL, %REF and %LOC
+	extensions.
+
 2007-03-30  Rafael Avila de Espindola  <espindola@google.com>
 
 	* trans-types.c (gfc_signed_or_unsigned_type): Remove.

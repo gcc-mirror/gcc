@@ -808,6 +808,7 @@ of extensions, and @option{-std=legacy} allows both without warning.
 * Cray pointers::
 * CONVERT specifier::
 * OpenMP::
+* Argument list functions::
 @end menu
 
 @node Old-style kind specifications
@@ -1287,6 +1288,44 @@ routines are provided both in a form of a Fortran 90 module named
 For details refer to the actual
 @uref{http://www.openmp.org/drupal/mp-documents/spec25.pdf,
 OpenMP Application Program Interface v2.5} specification.
+
+@node Argument list functions
+@section Argument list functions %VAL, %REF and %LOC
+@cindex Argument list functions %VAL, %REF and %LOC
+
+GNU Fortran supports argument list functions @code{%VAL}, @code{%REF} 
+and @code{%LOC} statements, for backward compatibility with g77. 
+It is recommended that these should be used only for code that is 
+accessing facilities outside of GNU Fortran, such as operating system 
+or windowing facilities. It is best to constrain such uses to isolated 
+portions of a program--portions that deal specifically and exclusively 
+with low-level, system-dependent facilities. Such portions might well 
+provide a portable interface for use by the program as a whole, but are 
+themselves not portable, and should be thoroughly tested each time they 
+are rebuilt using a new compiler or version of a compiler.
+
+@code{%VAL} passes a scalar argument by value, @code{%REF} passes it by 
+reference and @code{%LOC} passes its memory location.  Since gfortran 
+already passes scalar arguments by reference, @code{%REF} is in effect 
+a do-nothing.  @code{%LOC} has the same effect as a fortran pointer.
+
+An example of passing an argument by value to a C subroutine foo.:
+@smallexample
+C
+C prototype      void foo_ (float x);
+C
+      external foo
+      real*4 x
+      x = 3.14159
+      call foo (%VAL (x))
+      end
+@end smallexample
+
+For details refer to the g77 manual
+@uref{http://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/index.html#Top}.
+
+Also, the gfortran testsuite c_by_val.f and its partner c_by_val.c are
+worth a look.
 
 @c ---------------------------------------------------------------------
 @c Intrinsic Procedures
