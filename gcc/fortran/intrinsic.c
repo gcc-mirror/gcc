@@ -1913,7 +1913,7 @@ add_functions (void)
 
   add_sym_1 ("new_line", NOT_ELEMENTAL, ACTUAL_NO, BT_CHARACTER, dc,
 	     GFC_STD_F2003, gfc_check_new_line, gfc_simplify_new_line, NULL,
-	     i, BT_CHARACTER, dc, REQUIRED);
+	     a, BT_CHARACTER, dc, REQUIRED);
 
   add_sym_2 ("nint", ELEMENTAL, ACTUAL_YES, BT_INTEGER, di, GFC_STD_F77,
 	     gfc_check_a_ikind, gfc_simplify_nint, gfc_resolve_nint,
@@ -2459,7 +2459,7 @@ add_subroutines (void)
 
   add_sym_1s ("exit", 0, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_exit, NULL, gfc_resolve_exit,
-	      c, BT_INTEGER, di, OPTIONAL);
+	      st, BT_INTEGER, di, OPTIONAL);
 
   if ((gfc_option.allow_std & GFC_STD_GNU) || gfc_option.flag_all_intrinsics)
     make_noreturn();
