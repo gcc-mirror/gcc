@@ -1,3 +1,8 @@
+2007-04-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_web_docs_svn (MANUALS): Move towards the top of the
+	script.  Reformat for easier editing/diffing.
+
 2006-03-31  Tobias Burnus  <burnus@net-b.de>
 
 	* update_web_docs_svn: Build also gfc-internals.

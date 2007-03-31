@@ -11,6 +11,26 @@ export SVNROOT
 
 PATH=/usr/local/bin:$PATH
 
+MANUALS="cpp
+  cppinternals
+  fastjar
+  gcc
+  gccint
+  gcj
+  g77
+  gfortran
+  gfc-internals
+  gnat_ug_unx
+  gnat_ug_vms
+  gnat_ug_vxw
+  gnat_ug_wnt
+  gnat_ugn_unw
+  gnat-style
+  gnat_rm
+  libgomp
+  libiberty
+  porting"
+
 WWWBASE=/www/gcc/htdocs
 WWWBASE_PREFORMATTED=/www/gcc/htdocs-preformatted
 WWWPREPROCESS='/www/gcc/bin/preprocess -r'
@@ -109,8 +129,6 @@ tar cf docs-sources.tar gcc
 # and fdl.texi.
 includedir=gcc/gcc/doc/include
 
-MANUALS="cpp cppinternals fastjar gcc gccint gcj g77 gfortran gfc-internals gnat_ug_unx gnat_ug_vms gnat_ug_vxw gnat_ug_wnt gnat_ugn_unw gnat-style gnat_rm libgomp libiberty porting"
-
 # Generate gnat_ugn_unw
 
 if [ -f gcc/gcc/ada/xgnatugn.adb ]; then
@@ -157,7 +175,7 @@ if test $today = 15; then
   done
 fi
 
-# And copy the resulting files to the web server
+# Copy the resulting files to the web server.
 for file in */*.html *.ps *.pdf *.tar; do
   if [ -f $DOCSDIR/$file ]; then
     cat $DOCSDIR/$file | 
@@ -177,18 +195,25 @@ done
 
 cd $DOCSDIR
 
-# Finally, generate the installation documentation
+# And generate version-specific installation documentation.
+SOURCEDIR=$WORKDIR/gcc/gcc/doc
+DESTDIR=$DOCSDOR/install
+export SOURCEDIR
+export DESTDIR
+$WORKDIR/gcc/gcc/doc/install.texi2html
+
+# Finally, generate the primary installation documentation.
 if [ "$RELEASE" = "trunk" ]; then
   SOURCEDIR=$WORKDIR/gcc/gcc/doc
   DESTDIR=$WWWBASE_PREFORMATTED/install
   export SOURCEDIR
   export DESTDIR
   $WORKDIR/gcc/gcc/doc/install.texi2html
-
-  # Preprocess the entire web site, not just the install docs!
-  echo "Invoking $WWWPREPROCESS"
-  $WWWPREPROCESS |grep -v '^  Warning: Keeping'
 fi
+
+# Preprocess the entire web site, not just the install docs!
+echo "Invoking $WWWPREPROCESS"
+$WWWPREPROCESS | grep -v '^  Warning: Keeping'
 
 # Clean up behind us.
 
