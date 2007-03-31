@@ -5909,10 +5909,11 @@ Sets @option{-fno-math-errno}, @option{-funsafe-math-optimizations}, @*
 
 This option causes the preprocessor macro @code{__FAST_MATH__} to be defined.
 
-This option should never be turned on by any @option{-O} option since
+This option is not turned on by any @option{-O} option since
 it can result in incorrect output for programs which depend on
 an exact implementation of IEEE or ISO rules/specifications for
-math functions.
+math functions. It may, however, yield faster code for programs
+that do not require the guarantees of these specifications.
 
 @item -fno-math-errno
 @opindex fno-math-errno
@@ -5921,10 +5922,11 @@ with a single instruction, e.g., sqrt.  A program that relies on
 IEEE exceptions for math error handling may want to use this flag
 for speed while maintaining IEEE arithmetic compatibility.
 
-This option should never be turned on by any @option{-O} option since
+This option is not turned on by any @option{-O} option since
 it can result in incorrect output for programs which depend on
 an exact implementation of IEEE or ISO rules/specifications for
-math functions.
+math functions. It may, however, yield faster code for programs
+that do not require the guarantees of these specifications.
 
 The default is @option{-fmath-errno}.
 
@@ -5940,10 +5942,11 @@ ANSI standards.  When used at link-time, it may include libraries
 or startup files that change the default FPU control word or other
 similar optimizations.
 
-This option should never be turned on by any @option{-O} option since
+This option is not turned on by any @option{-O} option since
 it can result in incorrect output for programs which depend on
 an exact implementation of IEEE or ISO rules/specifications for
-math functions.
+math functions. It may, however, yield faster code for programs
+that do not require the guarantees of these specifications.
 
 The default is @option{-fno-unsafe-math-optimizations}.
 
@@ -5952,9 +5955,11 @@ The default is @option{-fno-unsafe-math-optimizations}.
 Allow optimizations for floating-point arithmetic that assume
 that arguments and results are not NaNs or +-Infs.
 
-This option should never be turned on by any @option{-O} option since
+This option is not turned on by any @option{-O} option since
 it can result in incorrect output for programs which depend on
-an exact implementation of IEEE or ISO rules/specifications.
+an exact implementation of IEEE or ISO rules/specifications for
+math functions. It may, however, yield faster code for programs
+that do not require the guarantees of these specifications.
 
 The default is @option{-fno-finite-math-only}.
 
