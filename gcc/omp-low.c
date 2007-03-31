@@ -41,6 +41,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-pass.h"
 #include "ggc.h"
 #include "except.h"
+#include "splay-tree.h"
 
 
 /* Lowering of OpenMP parallel and workshare constructs proceeds in two 
@@ -441,17 +442,17 @@ is_reference (tree decl)
 static inline tree
 lookup_decl (tree var, omp_context *ctx)
 {
-  splay_tree_node n;
-  n = splay_tree_lookup (ctx->cb.decl_map, (splay_tree_key) var);
-  return (tree) n->value;
+  tree *n;
+  n = (tree *) pointer_map_contains (ctx->cb.decl_map, var);
+  return *n;
 }
 
 static inline tree
 maybe_lookup_decl (tree var, omp_context *ctx)
 {
-  splay_tree_node n;
-  n = splay_tree_lookup (ctx->cb.decl_map, (splay_tree_key) var);
-  return n ? (tree) n->value : NULL_TREE;
+  tree *n;
+  n = (tree *) pointer_map_contains (ctx->cb.decl_map, var);
+  return n ? *n : NULL_TREE;
 }
 
 static inline tree
@@ -844,7 +845,7 @@ new_omp_context (tree stmt, omp_context *outer_ctx)
       ctx->depth = 1;
     }
 
-  ctx->cb.decl_map = splay_tree_new (splay_tree_compare_pointers, 0, 0);
+  ctx->cb.decl_map = pointer_map_create ();
 
   return ctx;
 }
@@ -857,7 +858,7 @@ delete_omp_context (splay_tree_value value)
 {
   omp_context *ctx = (omp_context *) value;
 
-  splay_tree_delete (ctx->cb.decl_map);
+  pointer_map_destroy (ctx->cb.decl_map);
 
   if (ctx->field_map)
     splay_tree_delete (ctx->field_map);

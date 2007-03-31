@@ -23,7 +23,7 @@ Boston, MA 02110-1301, USA.  */
 #define GCC_TREE_INLINE_H
 
 #include "varray.h"
-#include "splay-tree.h"
+#include "pointer-set.h"
 
 
 /* Data required for function body duplication.  */
@@ -49,7 +49,7 @@ typedef struct copy_body_data
   tree retvar;
   /* The map from local declarations in the inlined function to
      equivalents in the function into which it is being inlined.  */
-  splay_tree decl_map;
+  struct pointer_map_t *decl_map;
 
   /* Create a new decl to replace DECL in the destination function.  */
   tree (*copy_decl) (tree, struct copy_body_data *);

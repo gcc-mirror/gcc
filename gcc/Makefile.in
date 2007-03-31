@@ -787,7 +787,7 @@ SCEV_H = tree-scalar-evolution.h $(GGC_H) tree-chrec.h $(PARAMS_H)
 LAMBDA_H = lambda.h $(TREE_H) vec.h $(GGC_H)
 TREE_DATA_REF_H = tree-data-ref.h $(LAMBDA_H) omega.h
 VARRAY_H = varray.h $(MACHMODE_H) $(SYSTEM_H) coretypes.h $(TM_H)
-TREE_INLINE_H = tree-inline.h $(VARRAY_H) $(SPLAY_TREE_H)
+TREE_INLINE_H = tree-inline.h $(VARRAY_H) pointer-set.h
 REAL_H = real.h $(MACHMODE_H)
 
 #
@@ -2180,7 +2180,7 @@ gimplify.o : gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
    $(LANGHOOKS_DEF_H) $(TREE_FLOW_H) $(CGRAPH_H) $(TIMEVAR_H) $(TM_H) \
    coretypes.h except.h $(FLAGS_H) $(RTL_H) $(FUNCTION_H) $(EXPR_H) output.h \
    $(GGC_H) gt-gimplify.h $(HASHTAB_H) $(TARGET_H) toplev.h $(OPTABS_H) \
-   $(REAL_H)
+   $(REAL_H) $(SPLAY_TREE_H)
 gimple-low.o : gimple-low.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
    $(DIAGNOSTIC_H) $(TREE_GIMPLE_H) $(TREE_INLINE_H) $(VARRAY_H) langhooks.h \
    $(LANGHOOKS_DEF_H) $(TREE_FLOW_H) $(TIMEVAR_H) $(TM_H) coretypes.h \
@@ -2189,7 +2189,7 @@ gimple-low.o : gimple-low.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
 omp-low.o : omp-low.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) $(TREE_GIMPLE_H) $(TREE_INLINE_H) langhooks.h $(DIAGNOSTIC_H) \
    $(TREE_FLOW_H) $(TIMEVAR_H) $(FLAGS_H) $(EXPR_H) toplev.h tree-pass.h \
-   $(GGC_H)
+   $(GGC_H) $(SPLAY_TREE_H)
 tree-browser.o : tree-browser.c tree-browser.def $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TREE_INLINE_H) $(DIAGNOSTIC_H) $(HASHTAB_H) \
    $(TM_H) coretypes.h
