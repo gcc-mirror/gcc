@@ -4074,6 +4074,11 @@
   [(set_attr "type"	"mfc")
    (set_attr "mode"	"SF")])
 
+;; Move a constant that satisfies CONST_GP_P into operand 0.
+(define_expand "load_const_gp"
+  [(set (match_operand 0 "register_operand" "=d")
+	(const (unspec [(const_int 0)] UNSPEC_GP)))])
+
 ;; Insn to initialize $gp for n32/n64 abicalls.  Operand 0 is the offset
 ;; of _gp from the start of this function.  Operand 1 is the incoming
 ;; function address.

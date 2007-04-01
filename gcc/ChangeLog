@@ -1,3 +1,11 @@
+2007-04-01  Richard Sandiford  <richard@codesourcery.com>
+
+	PR target/31388
+	* config/mips/mips.md (load_const_gp): New insn.
+	* config/mips/mips.c (mips_split_symbol): Avoid using or creating
+	the MIPS16 GP pseudo register if no_new_pseudos.
+	(mips16_gp_pseudo_reg): Use gen_load_const_gp.
+
 2007-03-31  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR target/31364
