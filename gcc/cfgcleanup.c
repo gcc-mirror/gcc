@@ -2034,6 +2034,8 @@ try_optimize_cfg (int mode)
 
 		      reorder_insns_nobb (label, label, bb_note);
 		      BB_HEAD (b) = bb_note;
+		      if (BB_END (b) == bb_note)
+			BB_END (b) = label;
 		    }
 		  if (dump_file)
 		    fprintf (dump_file, "Deleted label in block %i.\n",
