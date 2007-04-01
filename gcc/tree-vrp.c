@@ -1813,15 +1813,23 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 	  return;
 	}
 
-      /* If we have a RSHIFT_EXPR with a possibly negative shift
-	 count or an anti-range shift count drop to VR_VARYING.
-	 We currently cannot handle the overflow cases correctly.  */
-      if (code == RSHIFT_EXPR
-	  && (vr1.type == VR_ANTI_RANGE
-	      || !vrp_expr_computes_nonnegative (op1, &sop)))
+      /* If we have a RSHIFT_EXPR with any shift values outside [0..prec-1],
+	 then drop to VR_VARYING.  Outside of this range we get undefined
+	 behaviour from the shift operation.  We cannot even trust
+	 SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
+	 shifts, and the operation at the tree level may be widened.  */
+      if (code == RSHIFT_EXPR)
 	{
-	  set_value_range_to_varying (vr);
-	  return;
+	  if (vr1.type == VR_ANTI_RANGE
+	      || !vrp_expr_computes_nonnegative (op1, &sop)
+	      || (operand_less_p
+		  (build_int_cst (TREE_TYPE (vr1.max),
+				  TYPE_PRECISION (TREE_TYPE (expr)) - 1),
+		   vr1.max) != 0))
+	    {
+	      set_value_range_to_varying (vr);
+	      return;
+	    }
 	}
 
       /* Multiplications and divisions are a bit tricky to handle,
@@ -1838,9 +1846,8 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 	 the new range.  */
 
       /* Divisions by zero result in a VARYING value.  */
-      if ((code != MULT_EXPR
-	   && code != RSHIFT_EXPR)
-	  && (vr0.type == VR_ANTI_RANGE || range_includes_zero_p (&vr1)))
+      else if (code != MULT_EXPR
+	       && (vr0.type == VR_ANTI_RANGE || range_includes_zero_p (&vr1)))
 	{
 	  set_value_range_to_varying (vr);
 	  return;

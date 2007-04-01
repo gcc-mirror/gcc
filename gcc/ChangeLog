@@ -1,3 +1,9 @@
+2007-04-01  Richard Henderson  <rth@redhat.com>
+
+	PR tree-optimization/31169
+	* tree-vrp.c (extract_range_from_binary_expr) <RSHIFT_EXPR>: Drop
+	to varying if the range is outside [0,  prec-1].
+
 2007-04-01  Richard Sandiford  <richard@codesourcery.com>
 
 	PR target/31388
