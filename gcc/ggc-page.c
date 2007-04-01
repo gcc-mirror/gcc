@@ -2017,10 +2017,10 @@ ggc_print_statistics (void)
     for (i = 0; i < NUM_ORDERS; i++)
       if (G.stats.total_allocated_per_order[i])
         {
-          fprintf (stderr, "Total Overhead  page size %7ul:     %10lld\n",
+          fprintf (stderr, "Total Overhead  page size %7lu:     %10lld\n",
                    (unsigned long) OBJECT_SIZE (i),
 		   G.stats.total_overhead_per_order[i]);
-          fprintf (stderr, "Total Allocated page size %7ul:     %10lld\n",
+          fprintf (stderr, "Total Allocated page size %7lu:     %10lld\n",
                    (unsigned long) OBJECT_SIZE (i),
 		   G.stats.total_allocated_per_order[i]);
         }

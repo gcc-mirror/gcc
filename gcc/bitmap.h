@@ -80,7 +80,7 @@ typedef struct bitmap_head_def GTY(()) {
   unsigned int indx;		/* Index of last element looked at.  */
   bitmap_obstack *obstack;	/* Obstack to allocate elements from.
 				   If NULL, then use ggc_alloc.  */
-#ifndef GATHER_STATISTICS
+#ifdef GATHER_STATISTICS
   struct bitmap_descriptor GTY((skip)) *desc;
 #endif
 } bitmap_head;
