@@ -1,5 +1,15 @@
 2007-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libgfortran/31052
+	* io/open.c (test_endfile): Delete this function.
+	(edit_modes): Delete call to test_endfile.
+	(new_unit): Likewise.
+	* io/io.h: Delete prototype for test_endfile.
+	* io/transfer.c (next_record_r): Remove use of test_endfile.
+	(st_read):  Add test for end file condition and adjust status. 
+
+2007-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libgfortran/31366
 	* io/transfer.c (read_block_direct): Do not generate error when reading
 	past EOF on a short record that is less than the RECL= specified.
