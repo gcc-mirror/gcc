@@ -1,3 +1,14 @@
+2007-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/31366
+	* gfortran.dg/direct_io_6.f90: New test.
+	
+2007-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/31207
+	* gfortran.dg/advance_5.f90: New test.
+	* gfortran.dg/advance_6.f90: New test.
+
 2007-04-01  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* g++.dg/ext/dllimport6.C: Remove extra ';'.
