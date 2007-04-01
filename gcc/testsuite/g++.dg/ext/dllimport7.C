@@ -5,7 +5,7 @@
 
 struct Baz
 {
-  Baz(int a_ =0) : a(a_) {}; 
+  Baz(int a_ =0) : a(a_) {} 
   int a;
 };
 

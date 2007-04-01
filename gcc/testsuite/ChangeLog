@@ -1,3 +1,9 @@
+2007-04-01  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* g++.dg/ext/dllimport6.C: Remove extra ';'.
+	* g++.dg/ext/dllimport7.C: Likewise.
+	* g++.dg/ext/selectany1.C: Likewise.
+
 2007-03-31  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* g++.dg/parser/pr31138.C: New.
