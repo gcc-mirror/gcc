@@ -695,9 +695,6 @@ internal_proto(unlock_unit);
 
 /* open.c */
 
-extern void test_endfile (gfc_unit *);
-internal_proto(test_endfile);
-
 extern gfc_unit *new_unit (st_parameter_open *, gfc_unit *, unit_flags *);
 internal_proto(new_unit);
 
