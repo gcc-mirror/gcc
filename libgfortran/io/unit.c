@@ -590,6 +590,30 @@ close_unit_1 (gfc_unit *u, int locked)
 {
   int i, rc;
 
+  /* If there are previously written bytes from a write with ADVANCE="no"
+     Reposition the buffer before closing.  */
+  if (u->saved_pos > 0)
+    {
+      char *p;
+
+      p = salloc_w (u->s, &u->saved_pos);
+
+      if (!(u->unit_number == options.stdout_unit
+	    || u->unit_number == options.stderr_unit))
+	{
+	  size_t len;
+
+	  const char crlf[] = "\r\n";
+#ifdef HAVE_CRLF
+	  len = 2;
+#else
+	  len = 1;
+#endif
+	  if (swrite (u->s, &crlf[2-len], &len) != 0)
+	    os_error ("Close after ADVANCE_NO failed");
+	}
+    }
+
   rc = (u->s == NULL) ? 0 : sclose (u->s) == FAILURE;
 
   u->closed = 1;
