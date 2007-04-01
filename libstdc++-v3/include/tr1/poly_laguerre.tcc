@@ -275,7 +275,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
       else if (__n > 10000000 && _Tp(__alpha1) > -_Tp(1)
             && __x < _Tp(2) * (_Tp(__alpha1) + _Tp(1)) + _Tp(4 * __n))
         return __poly_laguerre_large_n(__n, __alpha1, __x);
-      else if (_Tp(__alpha) >= _Tp(0)
+      else if (_Tp(__alpha1) >= _Tp(0)
            || (__x > _Tp(0) && _Tp(__alpha1) < -_Tp(__n + 1)))
         return __poly_laguerre_recursion(__n, __alpha1, __x);
       else
