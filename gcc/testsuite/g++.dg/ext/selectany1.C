@@ -15,7 +15,7 @@ private:
   int m_i;
 public:
   X(int i): m_i(i){}
-  ~X(){};
+  ~X(){}
 };
 
 __declspec(selectany) X x(1);
