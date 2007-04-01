@@ -627,9 +627,9 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
               const _Tp __znroot = std::sqrt(__zn);
               const _Tp __lambda = __xnroot * (__ynroot + __znroot)
                                  + __ynroot * __znroot;
-              const _Tp __alpha = __pn * (__xnroot + __ynroot + __znroot)
+              const _Tp __alpha1 = __pn * (__xnroot + __ynroot + __znroot)
                                 + __xnroot * __ynroot * __znroot;
-              const _Tp __alpha2 = __alpha * __alpha;
+              const _Tp __alpha2 = __alpha1 * __alpha1;
               const _Tp __beta = __pn * (__pn + __lambda)
                                       * (__pn + __lambda);
               __sigma += __power4 * __ellint_rc(__alpha2, __beta);
