@@ -411,7 +411,6 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 	  /* Short read, e.g. if we hit EOF.  Apparently, we read
 	   more than was written to the last record.  */
 	  *nbytes = to_read_record;
-	  generate_error (&dtp->common, ERROR_SHORT_RECORD, NULL);
 	  return;
 	}
 
