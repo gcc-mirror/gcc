@@ -1,3 +1,10 @@
+2007-04-01  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/31391
+	* cfgcleanup.c (try_optimize_cfg): If a removed label is turned
+	into a DELETED_LABEL note, and the label is in an empty basic
+	block, update BB_END as well as BB_HEAD.
+
 2007-04-01  Richard Henderson  <rth@redhat.com>
 
 	PR tree-optimization/31169
