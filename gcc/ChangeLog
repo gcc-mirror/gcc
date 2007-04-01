@@ -1,3 +1,14 @@
+2007-04-01  Jan Hubicka  <jh@suse.cz>
+
+	* emit-rtl.c (emit_insn_before_setloc): Do not ICE when asked to emit
+	before very first instruction.
+
+2007-04-01  Jan Hubicka  <jh@suse.cz>
+
+	* ggc-page.c (ggc_print_statistics): Fix formatting string to avoid
+	waring on 64bit hosts.
+	* bitmap.h: Fix typo in bitmap_head_def.
+
 2007-04-01  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR rtl-optimization/31391
