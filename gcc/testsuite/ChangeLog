@@ -1,5 +1,10 @@
 2007-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libgfortran/31052
+	* gfortran.dg/namelist_28.f90: New test.
+
+2007-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libgfortran/31366
 	* gfortran.dg/direct_io_6.f90: New test.
 	
