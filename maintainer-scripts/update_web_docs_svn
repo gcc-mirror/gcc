@@ -175,7 +175,7 @@ if test $today = 15; then
   done
 fi
 
-# Copy the resulting files to the web server.
+# And copy the resulting files to the web server
 for file in */*.html *.ps *.pdf *.tar; do
   if [ -f $DOCSDIR/$file ]; then
     cat $DOCSDIR/$file | 
@@ -195,25 +195,18 @@ done
 
 cd $DOCSDIR
 
-# And generate version-specific installation documentation.
-SOURCEDIR=$WORKDIR/gcc/gcc/doc
-DESTDIR=$DOCSDOR/install
-export SOURCEDIR
-export DESTDIR
-$WORKDIR/gcc/gcc/doc/install.texi2html
-
-# Finally, generate the primary installation documentation.
+# Finally, generate the installation documentation
 if [ "$RELEASE" = "trunk" ]; then
   SOURCEDIR=$WORKDIR/gcc/gcc/doc
   DESTDIR=$WWWBASE_PREFORMATTED/install
   export SOURCEDIR
   export DESTDIR
   $WORKDIR/gcc/gcc/doc/install.texi2html
-fi
 
-# Preprocess the entire web site, not just the install docs!
-echo "Invoking $WWWPREPROCESS"
-$WWWPREPROCESS | grep -v '^  Warning: Keeping'
+  # Preprocess the entire web site, not just the install docs!
+  echo "Invoking $WWWPREPROCESS"
+  $WWWPREPROCESS |grep -v '^  Warning: Keeping'
+fi
 
 # Clean up behind us.
 
