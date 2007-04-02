@@ -1,3 +1,8 @@
+2007-04-02  Kyle Galloway  <kgallowa@redhat.com>
+
+	* classpath/gnu/classpath/jdwp/processor/ThreadReferenceCommandSet.java
+	(executeResume): Call VMVirtualMachine.resumeThread.
+
 2007-03-29  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/29869:

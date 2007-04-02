@@ -142,7 +142,7 @@ public class ThreadReferenceCommandSet
   {
     ThreadId tid = (ThreadId) idMan.readObjectId(bb);
     Thread thread = tid.getThread();
-    VMVirtualMachine.suspendThread(thread);
+    VMVirtualMachine.resumeThread(thread);
   }
 
   private void executeStatus(ByteBuffer bb, DataOutputStream os)
