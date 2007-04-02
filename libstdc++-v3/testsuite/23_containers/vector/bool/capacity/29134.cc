@@ -1,4 +1,4 @@
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,11 @@ void test01()
 
   std::vector<bool> vb;
 
-  VERIFY( vb.max_size() == std::vector<bool>::size_type(-1) );
+  // Actually, vector<bool> is special, see libstdc++/31370.
+  typedef std::vector<bool>::difference_type difference_type;
+  VERIFY( vb.max_size()
+	  == (std::numeric_limits<difference_type>::max()
+	      - int(std::_S_word_bit) + 1) );
 }
 
 int main()

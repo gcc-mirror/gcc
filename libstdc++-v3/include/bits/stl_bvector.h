@@ -582,9 +582,11 @@ template<typename _Alloc>
     size_type
     max_size() const
     {
+      const size_type __isize =
+	std::numeric_limits<difference_type>::max() - int(_S_word_bit) + 1;
       const size_type __asize = _M_get_Bit_allocator().max_size();
-      return (__asize <= size_type(-1) / int(_S_word_bit) ?
-	      __asize * int(_S_word_bit) : size_type(-1));
+      return (__asize <= __isize / int(_S_word_bit)
+	      ? __asize * int(_S_word_bit) : __isize);
     }
 
     size_type
@@ -921,6 +923,16 @@ template<typename _Alloc>
 
     void
     _M_insert_aux(iterator __position, bool __x);
+
+    size_type
+    _M_check_len(size_type __n, const char* __s) const
+    {
+      if (max_size() - size() < __n)
+	__throw_length_error(__N(__s));
+
+      const size_type __len = size() + std::max(size(), __n);
+      return (__len < size() || __len > max_size()) ? max_size() : __len;
+    }
 
     void
     _M_erase_at_end(iterator __pos)

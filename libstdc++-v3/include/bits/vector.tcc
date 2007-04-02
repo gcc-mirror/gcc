@@ -258,17 +258,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 	}
       else
 	{
-	  const size_type __old_size = size();
-	  if (__old_size == this->max_size())
-	    __throw_length_error(__N("vector::_M_insert_aux"));
-
-	  // When sizeof(value_type) == 1 and __old_size > size_type(-1)/2
-	  // __len overflows: if we don't notice and _M_allocate doesn't
-	  // throw we crash badly later.
-	  size_type __len = __old_size != 0 ? 2 * __old_size : 1;	  
-	  if (__len < __old_size)
-	    __len = this->max_size();
-
+	  const size_type __len =
+	    _M_check_len(size_type(1), "vector::_M_insert_aux");
 	  pointer __new_start(this->_M_allocate(__len));
 	  pointer __new_finish(__new_start);
 	  try
@@ -343,15 +334,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 	    }
 	  else
 	    {
-	      const size_type __old_size = size();
-	      if (this->max_size() - __old_size < __n)
-		__throw_length_error(__N("vector::_M_fill_insert"));
-	      
-	      // See _M_insert_aux above.
-	      size_type __len = __old_size + std::max(__old_size, __n);
-	      if (__len < __old_size)
-		__len = this->max_size();
-
+	      const size_type __len =
+		_M_check_len(__n, "vector::_M_fill_insert");
 	      pointer __new_start(this->_M_allocate(__len));
 	      pointer __new_finish(__new_start);
 	      try
@@ -447,15 +431,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 	      }
 	    else
 	      {
-		const size_type __old_size = size();
-		if (this->max_size() - __old_size < __n)
-		  __throw_length_error(__N("vector::_M_range_insert"));	
-
-		// See _M_insert_aux above.
-		size_type __len = __old_size + std::max(__old_size, __n);
-		if (__len < __old_size)
-		  __len = this->max_size();
-
+		const size_type __len =
+		  _M_check_len(__n, "vector::_M_range_insert");
 		pointer __new_start(this->_M_allocate(__len));
 		pointer __new_finish(__new_start);
 		try
@@ -512,7 +489,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 	}
       else
 	{
-	  const size_type __len = size() + std::max(size(), __n);
+	  const size_type __len = 
+	    _M_check_len(__n, "vector<bool>::_M_fill_insert");
 	  _Bit_type * __q = this->_M_allocate(__len);
 	  iterator __i = _M_copy_aligned(begin(), __position,
 					 iterator(__q, 0));
@@ -547,7 +525,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 	      }
 	    else
 	      {
-		const size_type __len = size() + std::max(size(), __n);
+		const size_type __len =
+		  _M_check_len(__n, "vector<bool>::_M_insert_range");
 		_Bit_type * __q = this->_M_allocate(__len);
 		iterator __i = _M_copy_aligned(begin(), __position,
 					       iterator(__q, 0));
@@ -577,8 +556,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 	}
       else
 	{
-	  const size_type __len = size() ? 2 * size()
-	                                 : static_cast<size_type>(_S_word_bit);
+	  const size_type __len =
+	    _M_check_len(size_type(1), "vector<bool>::_M_insert_aux");
 	  _Bit_type * __q = this->_M_allocate(__len);
 	  iterator __i = _M_copy_aligned(begin(), __position,
 					 iterator(__q, 0));
