@@ -789,6 +789,7 @@ TREE_DATA_REF_H = tree-data-ref.h $(LAMBDA_H) omega.h
 VARRAY_H = varray.h $(MACHMODE_H) $(SYSTEM_H) coretypes.h $(TM_H)
 TREE_INLINE_H = tree-inline.h $(VARRAY_H) pointer-set.h
 REAL_H = real.h $(MACHMODE_H)
+EBIMAP_H = ebitmap.h sbitmap.h
 
 #
 # Now figure out from those variables how to compile and link.
@@ -988,6 +989,7 @@ OBJS-common = \
 	double-int.o \
 	dwarf2asm.o \
 	dwarf2out.o \
+	ebitmap.o \
 	emit-rtl.o \
 	et-forest.o \
 	except.o \
@@ -1746,6 +1748,8 @@ graph.o: graph.c $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(FLAGS_H) output.h \
     $(RTL_H) $(FUNCTION_H) hard-reg-set.h $(BASIC_BLOCK_H) graph.h $(OBSTACK_H)
 sbitmap.o: sbitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
     $(FLAGS_H) hard-reg-set.h $(BASIC_BLOCK_H) $(OBSTACK_H)
+ebitmap.o: ebitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+	$(EBITMAP_H)
 
 COLLECT2_OBJS = collect2.o tlink.o intl.o version.o
 COLLECT2_LIBS = @COLLECT2_LIBS@

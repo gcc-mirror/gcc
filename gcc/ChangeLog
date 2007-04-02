@@ -1,3 +1,9 @@
+2007-04-01  Daniel Berlin  <dberlin@dberlin.org>
+
+	* ebitmap.h: New file
+	* ebitmap.c: New file
+	* Makefile.in (ebitmap.o): New target.
+
 2007-04-01  Jan Hubicka  <jh@suse.cz>
 
 	* emit-rtl.c (emit_insn_before_setloc): Do not ICE when asked to emit
