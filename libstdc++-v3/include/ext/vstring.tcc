@@ -1,6 +1,6 @@
 // Versatile string -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -279,7 +279,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       if (__n <= __size)
 	{
-	  for (; __pos + __n <= __size; ++__pos)
+	  for (; __pos <= __size - __n; ++__pos)
 	    if (traits_type::eq(__data[__pos], __s[0])
 		&& traits_type::compare(__data + __pos + 1,
 					__s + 1, __n - 1) == 0)

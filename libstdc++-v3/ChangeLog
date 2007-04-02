@@ -1,3 +1,9 @@
+2007-04-02  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/31401 (vstring bits)
+	* include/ext/vstring.tcc (find(const _CharT*, size_type,
+	size_type)): Avoid unsigned overflow.
+
 2007-03-30  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/31401
