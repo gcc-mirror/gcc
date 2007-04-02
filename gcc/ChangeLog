@@ -1,3 +1,11 @@
+2007-04-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Backport from mainline:
+	2007-03-28  Grigory Zagorodnev <grigory_zagorodnev@linux.intel.com>
+
+	PR target/31380
+	* config/i386/sse.md (uminv16qi3): Use UMIN instead of UMAX.
+
 2007-03-30  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (avr_override_options): Clear 
