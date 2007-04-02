@@ -370,7 +370,7 @@ public class MBeanServerFactory
     MBeanServerDelegate delegate = builder.newMBeanServerDelegate();
     if (delegate == null)
       throw new JMRuntimeException("A delegate could not be created.");
-    MBeanServer server = builder.newMBeanServer("DefaultDomain", null, delegate);
+    MBeanServer server = builder.newMBeanServer(domain, null, delegate);
     if (server == null)
       throw new JMRuntimeException("A server could not be created.");
     return server;
