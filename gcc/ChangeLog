@@ -1,3 +1,8 @@
+2007-04-02  Anatoly Sokolov <aesok@post.ru>
+
+	PR target/31137
+	* config/avr/avr.c (avr_rtx_costs): Add missing 'break' statements.
+
 2007-04-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Backport from mainline:
