@@ -5094,6 +5094,7 @@ avr_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total)
 	    *total = COSTS_N_INSNS (AVR_MEGA ? 2 : 1);
 	  else
 	    return false;
+	  break;
 
 	case HImode:
 	  if (AVR_ENHANCED)
@@ -5102,6 +5103,7 @@ avr_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total)
 	    *total = COSTS_N_INSNS (AVR_MEGA ? 2 : 1);
 	  else
 	    return false;
+	  break;
 
 	default:
 	  return false;
