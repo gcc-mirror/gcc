@@ -64,6 +64,10 @@ union SockAddr
 void
 gnu::java::net::PlainSocketImpl::create (jboolean stream)
 {
+  // We might already have been create()d in the nio case.
+  if (native_fd != -1)
+    return;
+
   int sock = _Jv_socket (AF_INET, stream ? SOCK_STREAM : SOCK_DGRAM, 0);
 
   if (sock < 0)

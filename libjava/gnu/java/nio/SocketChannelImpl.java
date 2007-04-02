@@ -1,5 +1,5 @@
 /* SocketChannelImpl.java -- 
-   Copyright (C) 2002, 2003, 2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -71,6 +71,7 @@ public final class SocketChannelImpl extends SocketChannel
   {
     super (provider);
     impl = new PlainSocketImpl();
+    impl.create(true);
     socket = new NIOSocket (impl, this);
     configureBlocking(true);
   }

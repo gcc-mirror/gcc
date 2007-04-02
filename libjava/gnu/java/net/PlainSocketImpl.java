@@ -228,7 +228,9 @@ public final class PlainSocketImpl extends SocketImpl
    *
    * @param stream true for a stream socket, false for a datagram socket
    */
-  protected native void create(boolean stream) throws IOException;
+  // FIXME: this is public for nio ... but this is just a hack
+  // until we upgrade to Classpath's nio.
+  public native void create(boolean stream) throws IOException;
 
   /**
    * Connects to the remote hostname and port specified as arguments.
@@ -336,7 +338,7 @@ public final class PlainSocketImpl extends SocketImpl
 	  {
 	    localSocketAddress
 	      = new InetSocketAddress ((InetAddress) getOption(SocketOptions.SO_BINDADDR),
-				       localport);
+				       localport == -1 ? 0 : localport);
 	  }
 	catch (SocketException _)
 	  {
