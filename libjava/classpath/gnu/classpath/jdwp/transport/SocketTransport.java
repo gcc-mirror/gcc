@@ -1,5 +1,5 @@
 /* SocketTransport.java -- a socket transport
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -89,27 +89,36 @@ class SocketTransport
    * @param  properties  the properties of the JDWP session
    * @throws TransportException for any configury errors
    */
-  public void configure (HashMap properties)
+  public void configure(HashMap properties)
     throws TransportException
   {
-    // Get address [form: "hostname:port"]
-    String p = (String) properties.get (_PROPERTY_ADDRESS);
+    // Get server [form: "y" or "n"]
+    String p = (String) properties.get(_PROPERTY_SERVER);
     if (p != null)
       {
-	String[] s = p.split (":");
-	if (s.length == 2)
-	  {
-	    _host = s[0];
-	    _port = Integer.parseInt (s[1]);
-	  }
+	if (p.toLowerCase().equals("y"))
+	  _server = true;
       }
 
-    // Get server [form: "y" or "n"]
-    p = (String) properties.get (_PROPERTY_SERVER);
+    // Get address [form: "hostname:port"]
+    p = (String) properties.get(_PROPERTY_ADDRESS);
     if (p != null)
       {
-	if (p.toLowerCase().equals ("y"))
-	  _server = true;
+	String[] s = p.split(":");
+	if (s.length == 1)
+	  {
+	    // Port number only. Assume "localhost"
+	    _port = Integer.parseInt(s[0]);
+	    _host = "localhost";
+	  }
+	else
+	  {
+	    if (s[0].length() == 0)
+	      _host = "localhost";
+	    else
+	      _host = s[0];
+	    _port = Integer.parseInt(s[1]);
+	  }
       }
   }
 

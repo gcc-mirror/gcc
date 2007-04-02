@@ -1,6 +1,6 @@
 /* ThreadStartEvent.java -- An event specifying that a new thread
    has started in the virtual machine
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -75,7 +75,7 @@ public class ThreadStartEvent
    * @param thread  the thread ID in which event occurred
    */
   public ThreadStartEvent (Thread thread) {
-    super (JdwpConstants.EventKind.THREAD_END);
+    super (JdwpConstants.EventKind.THREAD_START);
     _thread = thread;
   }
 
