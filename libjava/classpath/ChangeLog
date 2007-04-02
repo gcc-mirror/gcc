@@ -1,3 +1,11 @@
+2007-04-02  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/event/ThreadStartEvent.java (Event):
+	Event type is "THREAD_START" not "THREAD_END".
+
+	* gnu/classpath/jdwp/transport/SocketTransport.java (ITransport):
+	Handle configure strings ":port" and "port".
+
 2007-03-30  Andrew Haley  <aph@redhat.com>
 
 	* javax/management/ObjectName.java: Handle 0-length names.
