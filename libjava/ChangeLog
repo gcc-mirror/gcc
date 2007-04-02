@@ -1,3 +1,12 @@
+2007-04-02  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/reflect/natVMProxy.cc (run_proxy): Use
+	_Jv_LookupProxyMethod to find the Method.
+	If parameter_types->length == 0, pass a null paramameter list,
+	not a zero-length parameter list.
+	* java/lang/natClass.cc (_Jv_LookupProxyMethod): New function.
+	* java/lang/Class.h (_Jv_LookupProxyMethod): Declare.
+
 2007-04-02  Kyle Galloway  <kgallowa@redhat.com>
 
 	* interpret-run.cc: Add code to properly set up variable slots

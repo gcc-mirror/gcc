@@ -301,6 +301,8 @@ run_proxy (ffi_cif *cif,
 	   void **args,
 	   void*user_data)
 {
+  using namespace java::lang::reflect;
+
   Proxy *proxy = *(Proxy**)args[0];
   ncode_closure *self = (ncode_closure *) user_data;
 
@@ -312,17 +314,22 @@ run_proxy (ffi_cif *cif,
   Thread *thread = Thread::currentThread();
   _Jv_InterpFrame frame_desc (self->self, thread, proxy->getClass());
 
-  Method *meth = _Jv_GetReflectedMethod (proxy->getClass(), 
-					 self->self->name,
-					 self->self->signature);
+  Method *meth = _Jv_LookupProxyMethod (proxy->getClass(), 
+					self->self->name,
+					self->self->signature);
   JArray<jclass> *parameter_types = meth->internalGetParameterTypes ();
   JArray<jclass> *exception_types = meth->internalGetExceptionTypes ();
 
   InvocationHandler *handler = proxy->h;
-  void *poo 
-    = _Jv_NewObjectArray (parameter_types->length, &Object::class$, NULL);
-  JArray<jobject> *argsArray = (JArray<jobject> *) poo;
-  jobject *jargs = elements(argsArray);
+  JArray<jobject> *argsArray = NULL;
+  jobject *jargs = NULL;
+  if (parameter_types->length)
+    {
+      void *poo 
+	= _Jv_NewObjectArray (parameter_types->length, &Object::class$, NULL);
+      argsArray = (JArray<jobject> *) poo;
+      jargs = elements(argsArray);
+    }
 
   // FIXME: It must be possible to use fast interface dispatch here,
   // but I've not quite figured out how to do it.
