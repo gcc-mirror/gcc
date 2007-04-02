@@ -143,6 +143,9 @@ public class ObjectName
   public ObjectName(String name)
     throws MalformedObjectNameException
   {
+    if (name.length() == 0)
+      name = "*:*";
+
     int domainSep = name.indexOf(':');
     if (domainSep == -1)
       throw new MalformedObjectNameException("No domain separator was found.");
