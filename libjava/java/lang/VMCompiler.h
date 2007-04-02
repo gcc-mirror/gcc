@@ -41,6 +41,7 @@ public:
 private:
   VMCompiler();
   static ::java::lang::Class * loadSharedLibrary(::java::lang::ClassLoader *, ::java::lang::String *, ::java::security::ProtectionDomain *, ::java::lang::String *);
+  static ::java::lang::String * bytesToString(JArray< jbyte > *);
 public:
   static ::java::lang::Class * compileClass(::java::lang::ClassLoader *, ::java::lang::String *, JArray< jbyte > *, jint, jint, ::java::security::ProtectionDomain *);
   static jboolean compileClass(::java::lang::Class *);
