@@ -27,12 +27,91 @@ details.  */
 
   _Jv_word locals[meth->max_locals];
 
-#ifdef DEBUG  
+#ifdef DEBUG
+  // This is the information needed to get and set local variables with
+  // proper type checking.
   frame_desc.locals = locals;
   char locals_type[meth->max_locals];
-  memset (locals_type, 'x', meth->max_locals);
   frame_desc.locals_type = locals_type;
-#endif
+  
+  // Set all slots as invalid until they are written to.
+  memset (locals_type, 'x', meth->max_locals);
+  
+  // We need to set the local variable types for the method arguments since
+  // they are valid at invocation.
+  
+  _Jv_Method *method = meth->get_method ();
+  int type_ctr = 0;
+  
+  // If the method is non-static, we need to set the type for the "this" pointer.
+  if ((method->accflags & java::lang::reflect::Modifier::STATIC) == 0)
+    {
+      // Set the "this" pointer for this frame
+      _Jv_word *this_ptr = reinterpret_cast<_Jv_word *> (args);
+      frame_desc.obj_ptr = this_ptr[0].o;
+      frame_desc.locals_type[0] = 'o';
+      type_ctr++;
+    }
+  
+  // Now parse the method signature to set the types of the other arguments.  
+  int sig_len = method->signature->len ();
+  char *signature = method->signature->chars ();
+  for (int i = 1; signature[i] != ')' && i <= sig_len; i++)
+    {
+      if (signature[i] == 'Z' || signature[i] == 'B' || signature[i] == 'C' 
+          || signature[i] == 'S' || signature[i] == 'I')
+        {
+          frame_desc.locals_type[type_ctr] = 'i';
+          type_ctr++;
+          continue;
+        }
+      else if (signature[i] == 'F')
+        {
+          frame_desc.locals_type[type_ctr] = 'f';
+          type_ctr++;
+          continue;
+        }
+      else if (signature[i] == 'J')
+        {
+          frame_desc.locals_type[type_ctr] = 'l';
+          frame_desc.locals_type[type_ctr+1] = 'x';
+          type_ctr += 2;
+          continue;
+        }
+      else if (signature[i] == 'D')
+        {
+          frame_desc.locals_type[type_ctr] = 'd';
+          frame_desc.locals_type[type_ctr+1] = 'x';
+          type_ctr += 2;
+          continue;
+        }
+      else if (signature[i] == 'L')
+        {
+          frame_desc.locals_type[type_ctr] = 'o';
+          type_ctr++;
+          while (signature[i] != ';')
+            i++;
+          continue;
+        }
+      else if (signature[i] == '[')
+        {
+          frame_desc.locals_type[type_ctr] = 'o';
+          type_ctr++;
+          
+          // Ignore multi-dimensional arrays.
+          while (signature[i] == '[')
+            i++;
+          
+          // Check for an object array
+          if (signature[i] == 'L')
+            {
+              while (signature[i] != ';')
+                i++;
+            }
+          continue;
+        }
+    }
+#endif /* DEBUG */
 
 #define INSN_LABEL(op) &&insn_##op
 
@@ -355,15 +434,6 @@ details.  */
      stack representation exactly.  At least, that's the idea.
   */
   memcpy ((void*) locals, (void*) args, meth->args_raw_size);
-
-#ifdef DEBUG
-  // Get the object pointer for this method, after checking that it is
-  // non-static.
-  _Jv_Method *method = meth->get_method ();
-   
-  if ((method->accflags & java::lang::reflect::Modifier::STATIC) == 0)
-    frame_desc.obj_ptr = locals[0].o;
-#endif
 
   _Jv_word *pool_data = meth->defining_class->constants.data;
 

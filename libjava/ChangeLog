@@ -1,5 +1,24 @@
 2007-04-02  Kyle Galloway  <kgallowa@redhat.com>
 
+	* interpret-run.cc: Add code to properly set up variable slots
+	when debugging.
+	* gnu/classpath/jdwp/natVMFrame.cc (checkJVMTIError): New function.
+	(getObjectJVMTI): New function.
+	(setObjectJVMTI): New function.
+	(getIntJVMTI): New function.
+	(setIntJVMTI): New function.
+	(getLongJVMTI): New function.
+	(setLongJVMTI): New function.
+	(getFloatJVMTI): New function.
+	(setFloatJVMTI): New function.
+	(getDoubleJVMTI): New function.
+	(setDoubleJVMTI): New function.
+	(getFrameDepth): New function.
+	(getValue): Implement.
+	(setValue): Implement. 
+
+2007-04-02  Kyle Galloway  <kgallowa@redhat.com>
+
 	* classpath/gnu/classpath/jdwp/processor/ThreadReferenceCommandSet.java
 	(executeResume): Call VMVirtualMachine.resumeThread.
 
