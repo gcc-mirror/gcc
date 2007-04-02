@@ -1,3 +1,9 @@
+2007-04-02  Dave Korn  <dave.korn@artimi.com>
+
+	* libgcc2.h (exception_descriptor):  Don't forward-declare.
+	(__get_eh_table_language, __get_eh_table_version):  Delete
+	prototypes of long-dead functions.
+
 2007-04-01  Daniel Berlin  <dberlin@dberlin.org>
 
 	* ebitmap.h: New file

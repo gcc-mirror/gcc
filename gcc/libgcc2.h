@@ -39,10 +39,6 @@ extern void __clear_cache (char *, char *);
 extern void __eprintf (const char *, const char *, unsigned int, const char *)
   __attribute__ ((__noreturn__));
 
-struct exception_descriptor;
-extern short int __get_eh_table_language (struct exception_descriptor *);
-extern short int __get_eh_table_version (struct exception_descriptor *);
-
 /* Permit the tm.h file to select the endianness to use just for this
    file.  This is used when the endianness is determined when the
    compiler is run.  */
