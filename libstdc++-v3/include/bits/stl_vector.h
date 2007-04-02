@@ -911,6 +911,17 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       void
       _M_insert_aux(iterator __position, const value_type& __x);
 
+      // Called by the latter.
+      size_type
+      _M_check_len(size_type __n, const char* __s) const
+      {
+	if (max_size() - size() < __n)
+	  __throw_length_error(__N(__s));
+
+	const size_type __len = size() + std::max(size(), __n);
+	return (__len < size() || __len > max_size()) ? max_size() : __len;
+      }
+
       // Internal erase functions follow.
 
       // Called by erase(q1,q2), clear(), resize(), _M_fill_assign,

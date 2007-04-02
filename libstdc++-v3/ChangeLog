@@ -1,3 +1,21 @@
+2007-04-02  Matthew Levine  <gcc@severeweblint.org>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/31370
+	* include/bits/stl_bvector.h (vector<bool>::max_size): Fix.
+	(vector<bool>::_M_check_len): Add.
+	* include/bits/vector.tcc (_M_fill_insert(iterator, size_type, bool),
+	_M_insert_range(iterator, _ForwardIterator, _ForwardIterator,
+	std::forward_iterator_tag), _M_insert_aux(iterator, bool)): Use it.
+	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc: New.
+	* testsuite/23_containers/vector/bool/capacity/29134.cc: Adjust.
+
+	* include/bits/stl_vector.h (vector<>::_M_check_len): Add.
+	* include/bits/vector.tcc (_M_insert_aux(iterator, const _Tp&),
+	_M_fill_insert(iterator, size_type, const value_type&),
+	_M_range_insert(iterator, _ForwardIterator, _ForwardIterator,
+	std::forward_iterator_tag)): Use it.
+
 2007-04-02  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/31401 (vstring bits)
