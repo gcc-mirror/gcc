@@ -2942,7 +2942,7 @@
 	(umin:V16QI (match_operand:V16QI 1 "nonimmediate_operand" "")
 		    (match_operand:V16QI 2 "nonimmediate_operand" "")))]
   "TARGET_SSE2"
-  "ix86_fixup_binary_operands_no_copy (UMAX, V16QImode, operands);")
+  "ix86_fixup_binary_operands_no_copy (UMIN, V16QImode, operands);")
 
 (define_insn "*uminv16qi3"
   [(set (match_operand:V16QI 0 "register_operand" "=x")
