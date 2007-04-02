@@ -9577,8 +9577,11 @@ to @code{Pmode}.
 
 @defmac FUNCTION_MODE
 An alias for the machine mode used for memory references to functions
-being called, in @code{call} RTL expressions.  On most machines this
-should be @code{QImode}.
+being called, in @code{call} RTL expressions.  On most CISC machines,
+where an instruction can begin at any byte address, this should be 
+@code{QImode}.  On most RISC machines, where all instructions have fixed
+size and alignment, this should be a mode with the same size and alignment
+as the machine instruction words - typically @code{SImode} or @code{HImode}.
 @end defmac
 
 @defmac STDC_0_IN_SYSTEM_HEADERS
