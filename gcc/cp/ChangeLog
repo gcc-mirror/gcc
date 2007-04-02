@@ -1,3 +1,11 @@
+2007-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/31187
+	* typeck.c (cp_type_readonly): New fn.
+	* cp-tree.h: Declare it.
+	* decl.c (start_decl): Set implicit DECL_THIS_STATIC here.
+	(cp_finish_decl): Not here.
+
 2007-03-31  Diego Novillo  <dnovillo@redhat.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 

@@ -6795,6 +6795,16 @@ cp_type_quals (tree type)
   return TYPE_QUALS (type);
 }
 
+/* Returns nonzero if the TYPE is const from a C++ perspective: look inside
+   arrays.  */
+
+bool
+cp_type_readonly (tree type)
+{
+  type = strip_array_types (type);
+  return TYPE_READONLY (type);
+}
+
 /* Returns nonzero if the TYPE contains a mutable member.  */
 
 bool
