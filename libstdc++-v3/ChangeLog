@@ -1,3 +1,9 @@
+2007-04-02  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_put<>::do_put(iter_type,
+	ios_base&, char_type, const void*)): Fix for sizeof(const void*)
+	> sizeof(unsigned long).
+
 2007-04-01  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* include/tr1/poly_laguerre.tcc: Missing s/__alpha/__alpha1, line 278.
