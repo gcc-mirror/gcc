@@ -1,0 +1,16 @@
+EXTRA_PARTS += crtprec32.o crtprec64.o crtprec80.o
+
+$(T)crtprec32.o: $(srcdir)/config/i386/crtprec.c $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -D__PREC=32 -c \
+		$(srcdir)/config/i386/crtprec.c \
+		-o $(T)crtprec32$(objext)
+
+$(T)crtprec64.o: $(srcdir)/config/i386/crtprec.c $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -D__PREC=64 -c \
+		$(srcdir)/config/i386/crtprec.c \
+		-o $(T)crtprec64$(objext)
+
+$(T)crtprec80.o: $(srcdir)/config/i386/crtprec.c $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -D__PREC=80 -c \
+		$(srcdir)/config/i386/crtprec.c \
+		-o $(T)crtprec80$(objext)

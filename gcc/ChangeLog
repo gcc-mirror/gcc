@@ -1,3 +1,22 @@
+2007-04-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config.gcc (i[34567]86-*-linux*): Add i386/t-crtpc to tm-file.
+	(x86_64-*-linux*): Ditto.
+	* config/i386/i386.opt (mpc): New option.
+	* config/i386/i386.c (overrride_options): Handle
+	ix87_precision_string.
+	* config/i386/crtprec.c: New file.
+	* config/i386/t-crtpc: Ditto.
+	* config/i386/linux.h (ENDFILE_SPEC): Add handling of -mpc32, -mpc64
+	and -mpc80 options.
+	* config/i386/linux64.h (ENDFILE_SPEC): Ditto.
+	* config/i386/t-linux64 (EXTRA_MULTILIB_PARTS): Add
+	crtprec32.o, crtprec64.o and crtprec80.o.
+
+	* doc/invoke.texi (Machine Dependent Options): Add -mpc32, -mpc64
+	and -mpc80 options.
+	(i386 and x86-64 Options): Document -mpc32, -mpc64 and -mpc80 options.
+
 2007-04-02  Eric Christopher  <echristo@apple.com>
 
 	* doc/invoke.texi (i386 and x86-64 Options): Document -m64
@@ -64,7 +83,7 @@
 	(call_value): Likewise.
 
 2007-03-31  Wolfgang Bangerth  <bangerth@dealii.org>
-            Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 14737
 	* doc/invoke.texi: (optimization options): Reword description

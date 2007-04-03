@@ -1,0 +1,8 @@
+crtprec32.o: $(gcc_srcdir)/config/i386/crtprec.c
+	$(gcc_compile) -D__PREC=32 -c $<
+
+crtprec64.o: $(gcc_srcdir)/config/i386/crtprec.c
+	$(gcc_compile) -D__PREC=64 -c $<
+
+crtprec80.o: $(gcc_srcdir)/config/i386/crtprec.c
+	$(gcc_compile) -D__PREC=80 -c $<
