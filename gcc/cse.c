@@ -4542,6 +4542,14 @@ record_jump_equiv (rtx insn, int taken)
   op1 = fold_rtx (XEXP (XEXP (SET_SRC (set), 0), 1), insn);
 
   code = find_comparison_args (code, &op0, &op1, &mode0, &mode1);
+
+  /* If the mode is a MODE_CC mode, we don't know what kinds of things
+     are being compared, so we can't do anything with this
+     comparison.  */
+
+  if (GET_MODE_CLASS (mode0) == MODE_CC)
+    return;
+
   if (! cond_known_true)
     {
       code = reversed_comparison_code_parts (code, op0, op1, insn);

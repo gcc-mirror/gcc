@@ -1,3 +1,9 @@
+2007-04-03  Stuart Hastings  <stuart@apple.com>
+
+	PR 31281
+	* objc/objc-act.c (next_sjlj_build_catch_list): Delete volatile from rethrow decl.
+	* cse.c (record_jump_equiv): Bail out on CCmode comparisons.
+
 2007-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/30704
