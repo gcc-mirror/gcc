@@ -1,3 +1,7 @@
+2007-04-03  Eric Christopher  <echristo@apple.com>
+
+	* g++.dg/tree-ssa/pr29902.C: Require ilp32.
+
 2007-04-03  Stuart Hastings  <stuart@apple.com>
 
 	PR 31281
@@ -191,12 +195,12 @@
 	PR rtl-optimization/30643
 	* gcc.dg/pr30643.c: New.
 
-2007-03-09  Andrew Pinski  <andrew_pinski@playstation.sony.com> 
+2007-03-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/30045
 	* gcc.dg/pr30045.c: New test.
 
-2007-03-09  Andrew Pinski  <andrew_pinski@playstation.sony.com> 
+2007-03-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/30729
 	* gcc.dg/Wunused-value-2.c: New testcase.
@@ -231,7 +235,7 @@
 2007-03-08  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	Backport from trunk.
-	* gfortran.dg/gomp/reduction1.f90: Add -fmax-errors=100 to 
+	* gfortran.dg/gomp/reduction1.f90: Add -fmax-errors=100 to
 	dg-options.
 
 2007-03-08  Paul Thomas  <pault@gcc.gnu.org>
@@ -284,7 +288,7 @@
 	* gcc.dg/Wstring-literal-comparison-4.c: Likewise.
 	* g++.dg/warn/Wstring-literal-comparison-1.C: Likewise.
 	* g++.dg/warn/Wstring-literal-comparison-4.c: Likewise.
-	
+
 2007-03-06  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/30744
@@ -383,7 +387,7 @@
 
 2007-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/30910	
+	PR libgfortran/30910
 	* gfortran.dg/fmt_zero_precision.f90: Update test.
 
 2007-02-23  Tobias Burnus  <burnus@net-b.de>
@@ -548,7 +552,7 @@
 
 2007-02-07  Hans-Peter Nilsson  <hp@axis.com>
 
-	* lib/target-supports.exp (check_effective_target_simulator): New. 
+	* lib/target-supports.exp (check_effective_target_simulator): New.
 
 2007-02-05  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -682,7 +686,7 @@
 
 	PR fortran/30532
 	* gfortran.dg/ctrl-z.f90:  New test.
-	
+
 2007-01-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/30481
