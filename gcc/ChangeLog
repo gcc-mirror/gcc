@@ -1,3 +1,8 @@
+2007-04-03  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (store_expr): If get_signed_or_unsigned_type doesn't yield
+	an appropriate type, use the mode instead.
+
 2007-04-03  Richard Sandiford  <richard@codesourcery.com>
 
 	* config.gcc (mips-wrs-vxworks): Add vx-common.h to tm_file.
