@@ -2788,23 +2788,76 @@ gfc_expr *
 gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
 {
   gfc_expr *result;
-  int i, j, len, ncopies, nlen;
+  int i, j, len, ncop, nlen;
+  mpz_t ncopies;
 
-  if (e->expr_type != EXPR_CONSTANT || n->expr_type != EXPR_CONSTANT)
+  /* If NCOPIES isn't a constant, there's nothing we can do.  */
+  if (n->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  if (n != NULL && (gfc_extract_int (n, &ncopies) != NULL || ncopies < 0))
+  /* If NCOPIES is negative, it's an error.  */
+  if (mpz_sgn (n->value.integer) < 0)
     {
-      gfc_error ("Invalid second argument of REPEAT at %L", &n->where);
+      gfc_error ("Argument NCOPIES of REPEAT intrinsic is negative at %L",
+		 &n->where);
       return &gfc_bad_expr;
     }
 
+  /* If we don't know the character length, we can do no more.  */
+  if (e->ts.cl == NULL || e->ts.cl->length == NULL
+      || e->ts.cl->length->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  /* If the source length is 0, any value of NCOPIES is valid
+     and everything behaves as if NCOPIES == 0.  */
+  mpz_init (ncopies);
+  if (mpz_sgn (e->ts.cl->length->value.integer) == 0)
+    mpz_set_ui (ncopies, 0);
+  else
+    mpz_set (ncopies, n->value.integer);
+
+  /* Check that NCOPIES isn't too large.  */
+  if (mpz_sgn (e->ts.cl->length->value.integer) != 0)
+    {
+      mpz_t max;
+      int i;
+
+      /* Compute the maximum value allowed for NCOPIES: huge(cl) / len.  */
+      mpz_init (max);
+      i = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
+      mpz_tdiv_q (max, gfc_integer_kinds[i].huge,
+		  e->ts.cl->length->value.integer);
+
+      /* The check itself.  */
+      if (mpz_cmp (ncopies, max) > 0)
+	{
+	  mpz_clear (max);
+	  mpz_clear (ncopies);
+	  gfc_error ("Argument NCOPIES of REPEAT intrinsic is too large at %L",
+		     &n->where);
+	  return &gfc_bad_expr;
+	}
+
+      mpz_clear (max);
+    }
+  mpz_clear (ncopies);
+
+  /* For further simplication, we need the character string to be
+     constant.  */
+  if (e->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  if (mpz_sgn (e->ts.cl->length->value.integer) != 0)
+    gcc_assert (gfc_extract_int (n, &ncop) == NULL);
+  else
+    ncop = 0;
+
   len = e->value.character.length;
-  nlen = ncopies * len;
+  nlen = ncop * len;
 
   result = gfc_constant_result (BT_CHARACTER, e->ts.kind, &e->where);
 
-  if (ncopies == 0)
+  if (ncop == 0)
     {
       result->value.character.string = gfc_getmem (1);
       result->value.character.length = 0;
@@ -2815,7 +2868,7 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
   result->value.character.length = nlen;
   result->value.character.string = gfc_getmem (nlen + 1);
 
-  for (i = 0; i < ncopies; i++)
+  for (i = 0; i < ncop; i++)
     for (j = 0; j < len; j++)
       result->value.character.string[j + i * len]
       = e->value.character.string[j];

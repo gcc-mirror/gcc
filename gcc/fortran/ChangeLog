@@ -1,3 +1,19 @@
+2007-04-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31304
+	* fortran/gfortran.h (gfc_charlen_int_kind): New prototype.
+	* fortran/trans-types.c (gfc_charlen_int_kind): New variable.
+	(gfc_init_types): Define gfc_charlen_int_kind. 
+	* fortran/trans.h (gfor_fndecl_string_repeat): Remove prototype.
+	* fortran/trans-decl.c (gfor_fndecl_string_repeat): Delete.
+	(gfc_build_intrinsic_function_decls): Don't set
+	gfor_fndecl_string_repeat.
+	* fortran/trans-intrinsic.c (gfc_conv_intrinsic_repeat): Rewrite
+	so that we don't have to call a library function.
+	* fortran/simplify.c (gfc_simplify_repeat): Perform the necessary
+	checks on the NCOPIES argument, and work with arbitrary size
+	arguments.
+
 2007-03-31  Tobias Burnus  <burnus@net-b.de>
 
 	* intrinsic.c (add_functions): Fix name of dummy argument

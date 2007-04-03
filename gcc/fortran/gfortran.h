@@ -1844,6 +1844,7 @@ extern int gfc_default_logical_kind;
 extern int gfc_default_complex_kind;
 extern int gfc_c_int_kind;
 extern int gfc_intio_kind;
+extern int gfc_charlen_int_kind;
 extern int gfc_numeric_storage_size;
 extern int gfc_character_storage_size;
 

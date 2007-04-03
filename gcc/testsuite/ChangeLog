@@ -1,3 +1,10 @@
+2007-04-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31304
+	* gfortran.dg/repeat_2.f90: New test.
+	* gfortran.dg/repeat_3.f90: New test.
+	* gfortran.dg/repeat_4.f90: New test.
+
 2007-04-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tls/opt-3.c: Use -mregparm=3 only for ilp32 on x86_64 targets.
