@@ -1,3 +1,8 @@
+2007-04-03  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_map.h (map<>::insert(iterator, const value_type&):
+	Uglify parameter.
+
 2007-04-02  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/31401 (vstring bits)
