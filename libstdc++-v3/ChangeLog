@@ -1,5 +1,10 @@
 2007-04-03  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_map.h (map<>::insert(iterator, const value_type&):
+	Uglify parameter.
+
+2007-04-03  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/31440
 	* include/bits/stl_tree.h (_M_lower_bound(_Link_type, _Link_type,
 	const _Key&), _M_upper_bound(_Link_type, _Link_type, const _Key&)):
