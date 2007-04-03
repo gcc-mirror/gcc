@@ -1,3 +1,14 @@
+2007-04-03  Richard Guenther  <rguenther@suse.de>
+
+	* genpreds.c (write_insn_constraint_len): Write function
+	optimized for CONSTRAINT_LEN implementation.
+	(write_tm_preds_h): Output insn_constraint_len inline and
+	use it for CONSTRAINT_LEN.
+	(write_insn_preds_c): Don't output insn_constraint_len.
+	* doc/md.texi (define_register_constraint): Document multi-letter
+	constraints shall have the same length if they start with the same
+	letter.
+
 2007-04-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config.gcc (i[34567]86-*-linux*): Add i386/t-crtpc to tm-file.

@@ -3063,7 +3063,9 @@ definitions.
 @deffn {MD Expression} define_register_constraint name regclass docstring
 All three arguments are string constants.
 @var{name} is the name of the constraint, as it will appear in
-@code{match_operand} expressions.  @var{regclass} can be either the
+@code{match_operand} expressions.  If @var{name} is a multi-letter
+constraint its length shall be the same for all constraints starting
+with the same letter.  @var{regclass} can be either the
 name of the corresponding register class (@pxref{Register Classes}),
 or a C expression which evaluates to the appropriate register class.
 If it is an expression, it must have no side effects, and it cannot
