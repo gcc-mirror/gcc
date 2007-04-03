@@ -1,5 +1,6 @@
 /* { dg-do compile { target i?86-*-* } } */
 /* { dg-options "-O1 -fprefetch-loop-arrays -march=athlon" } */
+/* { dg-require-effective-target ilp32 } */
 
 int length1();
 int g(int);
@@ -16,4 +17,3 @@ void f(int capacity_, char *old_storage)
       for (int i = 1; i < capacity_; i++){old_storage[i] = 0;}
   }
 }
-
