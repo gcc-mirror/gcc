@@ -1,3 +1,11 @@
+2007-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30704
+	* fold-const.c (native_encode_real): Encode real.c provided longs
+	as a series of 32-bit native integers.
+	(native_interpret_real): Interpret buffer as a series of 32-bit
+	native integers.
+
 2007-04-02  Eric Christopher  <echristo@apple.com>
 
 	* doc/invoke.texi (i386 and x86-64 Options): Document -m64

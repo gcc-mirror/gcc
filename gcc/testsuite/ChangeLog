@@ -1,3 +1,8 @@
+2007-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30704
+	* gcc.c-torture/execute/ieee/pr30704.c: New test.
+
 2007-04-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/31187
