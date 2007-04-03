@@ -2095,6 +2095,25 @@ static rewrite_rule rules[] =
 
    {NULL, NULL, NULL, NULL, 0, NULL}};
 
+/* True if this method is special, i.e. it's a private method that
+   should be exported from a DSO.  */
+
+bool
+special_method_p (tree candidate_method)
+{
+  tree context = DECL_NAME (TYPE_NAME (DECL_CONTEXT (candidate_method)));
+  tree method = DECL_NAME (candidate_method);
+  rewrite_rule *p;
+
+  for (p = rules; p->classname; p++)
+    {
+      if (get_identifier (p->classname) == context
+	  && get_identifier (p->method) == method)
+	return true;
+    }
+  return false;
+}
+
 /* Scan the rules list for replacements for *METHOD_P and replace the
    args accordingly.  If the rewrite results in an access to a private
    method, update SPECIAL.*/

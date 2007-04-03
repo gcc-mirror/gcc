@@ -428,8 +428,7 @@ push_class (tree class_type, tree class_name)
   tree decl, signature;
   location_t saved_loc = input_location;
 #ifndef USE_MAPPED_LOCATION
-  tree source_name = identifier_subst (class_name, "", '.', '/', ".java");
-  input_filename = IDENTIFIER_POINTER (source_name);
+  input_filename = "<unknown>";
   input_line = 0;
 #endif
   CLASS_P (class_type) = 1;
@@ -691,6 +690,13 @@ build_java_method_type (tree fntype, tree this_class, int access_flags)
   return fntype;
 }
 
+static void
+hide (tree decl)
+{
+  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
+  DECL_VISIBILITY_SPECIFIED (decl) = 1;
+}
+
 tree
 add_method_1 (tree this_class, int access_flags, tree name, tree function_type)
 {
@@ -801,6 +807,10 @@ add_field (tree class, tree name, tree field_type, int flags)
       /* Always make field externally visible.  This is required so
 	 that native methods can always access the field.  */
       TREE_PUBLIC (field) = 1;
+      /* Hide everything that shouldn't be visible outside a DSO.  */
+      if (flag_indirect_classes
+	  || (FIELD_PRIVATE (field)))
+	hide (field);
       /* Considered external unless we are compiling it into this
 	 object file.  */
       DECL_EXTERNAL (field) = (is_compiled_class (class) != 2);
@@ -958,7 +968,11 @@ build_static_class_ref (tree type)
       decl = build_decl (VAR_DECL, decl_name, class_type_node);
       TREE_STATIC (decl) = 1;
       if (! flag_indirect_classes)
-	TREE_PUBLIC (decl) = 1;
+	{
+	  TREE_PUBLIC (decl) = 1;
+	  if (CLASS_PRIVATE (TYPE_NAME (type)))
+	    hide (decl);
+	}
       DECL_IGNORED_P (decl) = 1;
       DECL_ARTIFICIAL (decl) = 1;
       if (is_compiled_class (type) == 1)
@@ -997,6 +1011,7 @@ build_classdollar_field (tree type)
       TREE_CONSTANT (decl) = 1;
       TREE_READONLY (decl) = 1;
       TREE_PUBLIC (decl) = 1;
+      hide (decl);
       DECL_IGNORED_P (decl) = 1;
       DECL_ARTIFICIAL (decl) = 1;
       MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
@@ -1684,6 +1699,10 @@ make_class_data (tree type)
 
       TREE_PUBLIC (dtable_decl) = 1;
       DECL_INITIAL (dtable_decl) = dtable;
+      /* The only dispatch table exported from a DSO is the dispatch
+	 table for java.lang.Class.  */
+      if (DECL_NAME (type_decl) != id_class)
+	hide (dtable_decl);
       if (! flag_indirect_classes)
 	rest_of_decl_compilation (dtable_decl, 1, 0);
       /* Maybe we're compiling Class as the first class.  If so, set
@@ -2552,6 +2571,12 @@ layout_class_method (tree this_class, tree super_class,
   tree method_name = DECL_NAME (method_decl);
 
   TREE_PUBLIC (method_decl) = 1;
+
+  if (flag_indirect_classes
+      || (METHOD_PRIVATE (method_decl) && METHOD_STATIC (method_decl)
+	  && ! METHOD_NATIVE (method_decl)
+	  && ! special_method_p (method_decl)))
+    hide (method_decl);
 
   /* Considered external unless it is being compiled into this object
      file, or it was already flagged as external.  */
