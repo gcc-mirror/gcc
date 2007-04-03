@@ -1,5 +1,11 @@
 2007-04-02  Tom Tromey  <tromey@redhat.com>
 
+	http://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=205157
+	* gnu/java/nio/channels/natFileChannelPosix.cc (mapImpl): Extend
+	file, when writing, if it is too short.
+
+2007-04-02  Tom Tromey  <tromey@redhat.com>
+
 	https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=233406
 	* gnu/java/net/natPlainSocketImplPosix.cc (create): Return if
 	already created.

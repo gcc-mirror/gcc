@@ -1,7 +1,7 @@
 
 // natFileChannelImplPosix.cc - Native part of FileChannelImpl class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -499,6 +499,18 @@ FileChannelImpl::mapImpl (jchar mmode, jlong position, jint size)
     {
       prot = PROT_READ|PROT_WRITE;
       flags = mmode == '+' ? MAP_SHARED : MAP_PRIVATE;
+
+      // If the file is too short, we must extend it.  While using
+      // ftruncate() to extend a file is not portable in general, it
+      // should work on all systems where you can mmap() a file.
+      struct stat st;
+      if (fstat (fd, &st) == -1)
+	throw new IOException (JvNewStringLatin1 (strerror (errno)));
+      if (position + size > st.st_size)
+	{
+	  if (ftruncate (fd, position + size) == -1)
+	    throw new IOException (JvNewStringLatin1 (strerror (errno)));
+	}
     }
   jint page_size = ::getpagesize();
   jint offset = position & ~(page_size-1);
