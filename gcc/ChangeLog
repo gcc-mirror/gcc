@@ -36,6 +36,12 @@
 
 2007-04-03  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/31175
+	* config/i386/i386.md (isinf<mode>2): Expand only when
+	TARGET_C99_FUNCTIONS is set.
+
+2007-04-03  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config.gcc (i[34567]86-*-linux*): Add i386/t-crtpc to tm-file.
 	(x86_64-*-linux*): Ditto.
 	* config/i386/i386.opt (mpc): New option.
