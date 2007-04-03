@@ -1,3 +1,13 @@
+2007-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/closures.c: Include sys/statfs.h.
+	(_GNU_SOURCE): Define on Linux.
+	(FFI_MMAP_EXEC_SELINUX): Define.
+	(selinux_enabled): New variable.
+	(selinux_enabled_check): New function.
+	(is_selinux_enabled): Define.
+	(dlmmap): Use it.
+
 2007-03-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/libffi.call/return_fl2.c (return_fl): Mark as static.

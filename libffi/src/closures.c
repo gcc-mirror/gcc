@@ -23,6 +23,10 @@
    OTHER DEALINGS IN THE SOFTWARE.
    ----------------------------------------------------------------------- */
 
+#if defined __linux__ && !defined _GNU_SOURCE
+#define _GNU_SOURCE 1
+#endif
+
 #include <ffi.h>
 #include <ffi_common.h>
 
@@ -36,6 +40,15 @@
    locations in the virtual memory space, one location writable and
    another executable.  */
 #  define FFI_MMAP_EXEC_WRIT 1
+# endif
+#endif
+
+#if FFI_MMAP_EXEC_WRIT && !defined FFI_MMAP_EXEC_SELINUX
+# ifdef __linux__
+/* When defined to 1 check for SELinux and if SELinux is active,
+   don't attempt PROT_EXEC|PROT_WRITE mapping at all, as that
+   might cause audit messages.  */
+#  define FFI_MMAP_EXEC_SELINUX 1
 # endif
 #endif
 
@@ -86,6 +99,55 @@
    dlmunmap.  */
 #include <sys/mman.h>
 #define LACKS_SYS_MMAN_H 1
+
+#if FFI_MMAP_EXEC_SELINUX
+#include <sys/statfs.h>
+#include <stdlib.h>
+
+static int selinux_enabled = -1;
+
+static int
+selinux_enabled_check (void)
+{
+  struct statfs sfs;
+  FILE *f;
+  char *buf = NULL;
+  size_t len = 0;
+
+  if (statfs ("/selinux", &sfs) >= 0
+      && (unsigned int) sfs.f_type == 0xf97cff8cU)
+    return 1;
+  f = fopen ("/proc/mounts", "r");
+  if (f == NULL)
+    return 0;
+  while (getline (&buf, &len, f) >= 0)
+    {
+      char *p = strchr (buf, ' ');
+      if (p == NULL)
+        break;
+      p = strchr (p + 1, ' ');
+      if (p == NULL)
+        break;
+      if (strncmp (p + 1, "selinuxfs ", 10) != 0)
+        {
+          free (buf);
+          fclose (f);
+          return 1;
+        }
+    }
+  free (buf);
+  fclose (f);
+  return 0;
+}
+
+#define is_selinux_enabled() (selinux_enabled >= 0 ? selinux_enabled \
+			      : (selinux_enabled = selinux_enabled_check ()))
+
+#else
+
+#define is_selinux_enabled() 0
+
+#endif
 
 #define MAYBE_UNUSED __attribute__((__unused__))
 
@@ -358,7 +420,7 @@ dlmmap (void *start, size_t length, int prot,
   printf ("mapping in %zi\n", length);
 #endif
 
-  if (execfd == -1)
+  if (execfd == -1 && !is_selinux_enabled ())
     {
       ptr = mmap (start, length, prot | PROT_EXEC, flags, fd, offset);
 
