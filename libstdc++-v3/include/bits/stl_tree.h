@@ -554,15 +554,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_erase(_Link_type __x);
 
       iterator
+      _M_lower_bound(_Link_type __x, _Link_type __y,
+		     const _Key& __k);
+
+      const_iterator
       _M_lower_bound(_Const_Link_type __x, _Const_Link_type __y,
 		     const _Key& __k) const;
 
       iterator
+      _M_upper_bound(_Link_type __x, _Link_type __y,
+		     const _Key& __k);
+
+      const_iterator
       _M_upper_bound(_Const_Link_type __x, _Const_Link_type __y,
 		     const _Key& __k) const;
-
-      pair<iterator, iterator>
-      _M_equal_range(const _Key& __k) const;
 
     public:
       // allocation/deallocation
@@ -717,27 +722,25 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       iterator
       lower_bound(const key_type& __k)
-      { return iterator(_M_lower_bound(_M_begin(), _M_end(), __k)); }
+      { return _M_lower_bound(_M_begin(), _M_end(), __k); }
 
       const_iterator
       lower_bound(const key_type& __k) const
-      { return const_iterator(_M_lower_bound(_M_begin(), _M_end(), __k)); }
+      { return _M_lower_bound(_M_begin(), _M_end(), __k); }
 
       iterator
       upper_bound(const key_type& __k)
-      { return iterator(_M_upper_bound(_M_begin(), _M_end(), __k)); }
+      { return _M_upper_bound(_M_begin(), _M_end(), __k); }
 
       const_iterator
       upper_bound(const key_type& __k) const
-      { return const_iterator(_M_upper_bound(_M_begin(), _M_end(), __k)); }
+      { return _M_upper_bound(_M_begin(), _M_end(), __k); }
 
       pair<iterator, iterator>
-      equal_range(const key_type& __k)
-      { return pair<iterator, iterator>(_M_equal_range(__k)); }
+      equal_range(const key_type& __k);
 
       pair<const_iterator, const_iterator>
-      equal_range(const key_type& __k) const
-      { return pair<const_iterator, const_iterator>(_M_equal_range(__k)); }
+      equal_range(const key_type& __k) const;
 
       // Debugging.
       bool
@@ -929,7 +932,24 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-    typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator
+    typename _Rb_tree<_Key, _Val, _KeyOfValue,
+		      _Compare, _Alloc>::iterator
+    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
+    _M_lower_bound(_Link_type __x, _Link_type __y,
+		   const _Key& __k)
+    {
+      while (__x != 0)
+	if (!_M_impl._M_key_compare(_S_key(__x), __k))
+	  __y = __x, __x = _S_left(__x);
+	else
+	  __x = _S_right(__x);
+      return iterator(__y);
+    }
+
+  template<typename _Key, typename _Val, typename _KeyOfValue,
+           typename _Compare, typename _Alloc>
+    typename _Rb_tree<_Key, _Val, _KeyOfValue,
+		      _Compare, _Alloc>::const_iterator
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     _M_lower_bound(_Const_Link_type __x, _Const_Link_type __y,
 		   const _Key& __k) const
@@ -939,12 +959,29 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  __y = __x, __x = _S_left(__x);
 	else
 	  __x = _S_right(__x);
-      return iterator(const_cast<_Link_type>(__y));
+      return const_iterator(__y);
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-    typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator
+    typename _Rb_tree<_Key, _Val, _KeyOfValue,
+		      _Compare, _Alloc>::iterator
+    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
+    _M_upper_bound(_Link_type __x, _Link_type __y,
+		   const _Key& __k)
+    {
+      while (__x != 0)
+	if (_M_impl._M_key_compare(__k, _S_key(__x)))
+	  __y = __x, __x = _S_left(__x);
+	else
+	  __x = _S_right(__x);
+      return iterator(__y);
+    }
+
+  template<typename _Key, typename _Val, typename _KeyOfValue,
+           typename _Compare, typename _Alloc>
+    typename _Rb_tree<_Key, _Val, _KeyOfValue,
+		      _Compare, _Alloc>::const_iterator
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     _M_upper_bound(_Const_Link_type __x, _Const_Link_type __y,
 		   const _Key& __k) const
@@ -954,16 +991,48 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  __y = __x, __x = _S_left(__x);
 	else
 	  __x = _S_right(__x);
-      return iterator(const_cast<_Link_type>(__y));
+      return const_iterator(__y);
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
     pair<typename _Rb_tree<_Key, _Val, _KeyOfValue,
 			   _Compare, _Alloc>::iterator,
-	 typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator>
+	 typename _Rb_tree<_Key, _Val, _KeyOfValue,
+			   _Compare, _Alloc>::iterator>
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-    _M_equal_range(const _Key& __k) const
+    equal_range(const _Key& __k)
+    {
+      _Link_type __x = _M_begin();
+      _Link_type __y = _M_end();
+      while (__x != 0)
+	{
+	  if (_M_impl._M_key_compare(_S_key(__x), __k))
+	    __x = _S_right(__x);
+	  else if (_M_impl._M_key_compare(__k, _S_key(__x)))
+	    __y = __x, __x = _S_left(__x);
+	  else
+	    {
+	      _Link_type __xu(__x), __yu(__y);
+	      __y = __x, __x = _S_left(__x);
+	      __xu = _S_right(__xu);
+	      return pair<iterator,
+		          iterator>(_M_lower_bound(__x, __y, __k),
+				    _M_upper_bound(__xu, __yu, __k));
+	    }
+	}
+      return pair<iterator, iterator>(iterator(__y),
+				      iterator(__y));
+    }
+
+  template<typename _Key, typename _Val, typename _KeyOfValue,
+           typename _Compare, typename _Alloc>
+    pair<typename _Rb_tree<_Key, _Val, _KeyOfValue,
+			   _Compare, _Alloc>::const_iterator,
+	 typename _Rb_tree<_Key, _Val, _KeyOfValue,
+			   _Compare, _Alloc>::const_iterator>
+    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
+    equal_range(const _Key& __k) const
     {
       _Const_Link_type __x = _M_begin();
       _Const_Link_type __y = _M_end();
@@ -978,12 +1047,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      _Const_Link_type __xu(__x), __yu(__y);
 	      __y = __x, __x = _S_left(__x);
 	      __xu = _S_right(__xu);
-	      return pair<iterator, iterator>(_M_lower_bound(__x, __y, __k),
-					      _M_upper_bound(__xu, __yu, __k));	  
+	      return pair<const_iterator,
+		          const_iterator>(_M_lower_bound(__x, __y, __k),
+					  _M_upper_bound(__xu, __yu, __k));
 	    }
 	}
-      return pair<iterator, iterator>(iterator(const_cast<_Link_type>(__y)),
-				      iterator(const_cast<_Link_type>(__y)));
+      return pair<const_iterator, const_iterator>(const_iterator(__y),
+						  const_iterator(__y));
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
@@ -1295,11 +1365,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-    typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator
+    typename _Rb_tree<_Key, _Val, _KeyOfValue,
+		      _Compare, _Alloc>::iterator
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     find(const _Key& __k)
     {
-      iterator __j = iterator(_M_lower_bound(_M_begin(), _M_end(), __k));
+      iterator __j = _M_lower_bound(_M_begin(), _M_end(), __k);
       return (__j == end()
 	      || _M_impl._M_key_compare(__k,
 					_S_key(__j._M_node))) ? end() : __j;
@@ -1307,12 +1378,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-    typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::const_iterator
+    typename _Rb_tree<_Key, _Val, _KeyOfValue,
+		      _Compare, _Alloc>::const_iterator
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     find(const _Key& __k) const
     {
-      const_iterator __j = const_iterator(_M_lower_bound(_M_begin(),
-							 _M_end(), __k));
+      const_iterator __j = _M_lower_bound(_M_begin(), _M_end(), __k);
       return (__j == end()
 	      || _M_impl._M_key_compare(__k, 
 					_S_key(__j._M_node))) ? end() : __j;
