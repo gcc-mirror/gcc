@@ -97,6 +97,9 @@ int gfc_c_int_kind;
    kind=8, this will be set to 8, otherwise it is set to 4.  */
 int gfc_intio_kind; 
 
+/* The integer kind used to store character lengths.  */
+int gfc_charlen_int_kind;
+
 /* The size of the numeric storage unit and character storage unit.  */
 int gfc_numeric_storage_size;
 int gfc_character_storage_size;
@@ -607,7 +610,8 @@ gfc_init_types (void)
   boolean_false_node = build_int_cst (boolean_type_node, 0);
 
   /* ??? Shouldn't this be based on gfc_index_integer_kind or so?  */
-  gfc_charlen_type_node = gfc_get_int_type (4);
+  gfc_charlen_int_kind = 4;
+  gfc_charlen_type_node = gfc_get_int_type (gfc_charlen_int_kind);
 }
 
 /* Get the type node for the given type and kind.  */

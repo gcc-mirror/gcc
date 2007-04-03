@@ -3378,41 +3378,111 @@ gfc_conv_intrinsic_trim (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
 {
-  tree gfc_int4_type_node = gfc_get_int_type (4);
-  tree tmp;
-  tree len;
-  tree args;
-  tree ncopies;
-  tree var;
-  tree type;
-  tree cond;
+  tree args, ncopies, dest, dlen, src, slen, ncopies_type;
+  tree type, cond, tmp, count, exit_label, n, max, largest;
+  stmtblock_t block, body;
+  int i;
 
+  /* Get the arguments.  */
   args = gfc_conv_intrinsic_function_args (se, expr);
-  len = TREE_VALUE (args);
-  tmp = gfc_advance_chain (args, 2);
-  ncopies = TREE_VALUE (tmp);
-
-  /* Check that ncopies is not negative.  */
+  slen = fold_convert (size_type_node, gfc_evaluate_now (TREE_VALUE (args),
+							 &se->pre));
+  src = TREE_VALUE (TREE_CHAIN (args));
+  ncopies = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (args)));
   ncopies = gfc_evaluate_now (ncopies, &se->pre);
+  ncopies_type = TREE_TYPE (ncopies);
+
+  /* Check that NCOPIES is not negative.  */
   cond = fold_build2 (LT_EXPR, boolean_type_node, ncopies,
-		      build_int_cst (TREE_TYPE (ncopies), 0));
+		      build_int_cst (ncopies_type, 0));
   gfc_trans_runtime_check (cond,
 			   "Argument NCOPIES of REPEAT intrinsic is negative",
 			   &se->pre, &expr->where);
 
-  /* Compute the destination length.  */
-  len = fold_build2 (MULT_EXPR, gfc_int4_type_node, len, ncopies);
-  type = gfc_get_character_type (expr->ts.kind, expr->ts.cl);
-  var = gfc_conv_string_tmp (se, build_pointer_type (type), len);
+  /* If the source length is zero, any non negative value of NCOPIES
+     is valid, and nothing happens.  */
+  n = gfc_create_var (ncopies_type, "ncopies");
+  cond = fold_build2 (EQ_EXPR, boolean_type_node, slen,
+		      build_int_cst (size_type_node, 0));
+  tmp = fold_build3 (COND_EXPR, ncopies_type, cond,
+		     build_int_cst (ncopies_type, 0), ncopies);
+  gfc_add_modify_expr (&se->pre, n, tmp);
+  ncopies = n;
 
-  /* Create the argument list and generate the function call.  */
-  tmp = build_call_expr (gfor_fndecl_string_repeat, 4, var,
-			 TREE_VALUE (args),
-			 TREE_VALUE (TREE_CHAIN (args)), ncopies);
+  /* Check that ncopies is not too large: ncopies should be less than
+     (or equal to) MAX / slen, where MAX is the maximal integer of
+     the gfc_charlen_type_node type.  If slen == 0, we need a special
+     case to avoid the division by zero.  */
+  i = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
+  max = gfc_conv_mpz_to_tree (gfc_integer_kinds[i].huge, gfc_charlen_int_kind);
+  max = fold_build2 (TRUNC_DIV_EXPR, size_type_node,
+		     fold_convert (size_type_node, max), slen);
+  largest = TYPE_PRECISION (size_type_node) > TYPE_PRECISION (ncopies_type)
+	      ? size_type_node : ncopies_type;
+  cond = fold_build2 (GT_EXPR, boolean_type_node,
+		      fold_convert (largest, ncopies),
+		      fold_convert (largest, max));
+  tmp = fold_build2 (EQ_EXPR, boolean_type_node, slen,
+		     build_int_cst (size_type_node, 0));
+  cond = fold_build3 (COND_EXPR, boolean_type_node, tmp, boolean_false_node,
+		      cond);
+  gfc_trans_runtime_check (cond,
+			   "Argument NCOPIES of REPEAT intrinsic is too large",
+			   &se->pre, &expr->where);
+
+  /* Compute the destination length.  */
+  dlen = fold_build2 (MULT_EXPR, gfc_charlen_type_node, slen, ncopies);
+  type = gfc_get_character_type (expr->ts.kind, expr->ts.cl);
+  dest = gfc_conv_string_tmp (se, build_pointer_type (type), dlen);
+
+  /* Generate the code to do the repeat operation:
+       for (i = 0; i < ncopies; i++)
+         memmove (dest + (i * slen), src, slen);  */
+  gfc_start_block (&block);
+  count = gfc_create_var (ncopies_type, "count");
+  gfc_add_modify_expr (&block, count, build_int_cst (ncopies_type, 0));
+  exit_label = gfc_build_label_decl (NULL_TREE);
+
+  /* Start the loop body.  */
+  gfc_start_block (&body);
+
+  /* Exit the loop if count >= ncopies.  */
+  cond = fold_build2 (GE_EXPR, boolean_type_node, count, ncopies);
+  tmp = build1_v (GOTO_EXPR, exit_label);
+  TREE_USED (exit_label) = 1;
+  tmp = fold_build3 (COND_EXPR, void_type_node, cond, tmp,
+		     build_empty_stmt ());
+  gfc_add_expr_to_block (&body, tmp);
+
+  /* Call memmove (dest + (i*slen), src, slen).  */
+  tmp = fold_build2 (MULT_EXPR, gfc_charlen_type_node, slen,
+		     fold_convert (gfc_charlen_type_node, count));
+  tmp = fold_build2 (PLUS_EXPR, pchar_type_node, dest,
+		     fold_convert (pchar_type_node, tmp));
+  tmp = build_call_expr (built_in_decls[BUILT_IN_MEMMOVE], 3,
+			 tmp, src, slen);
+  gfc_add_expr_to_block (&body, tmp);
+
+  /* Increment count.  */
+  tmp = build2 (PLUS_EXPR, ncopies_type, count,
+		build_int_cst (TREE_TYPE (count), 1));
+  gfc_add_modify_expr (&body, count, tmp);
+
+  /* Build the loop.  */
+  tmp = build1_v (LOOP_EXPR, gfc_finish_block (&body));
+  gfc_add_expr_to_block (&block, tmp);
+
+  /* Add the exit label.  */
+  tmp = build1_v (LABEL_EXPR, exit_label);
+  gfc_add_expr_to_block (&block, tmp);
+
+  /* Finish the block.  */
+  tmp = gfc_finish_block (&block);
   gfc_add_expr_to_block (&se->pre, tmp);
 
-  se->expr = var;
-  se->string_length = len;
+  /* Set the result value.  */
+  se->expr = dest;
+  se->string_length = dlen;
 }
 
 
