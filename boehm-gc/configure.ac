@@ -364,11 +364,9 @@ LIBS="$oldLIBS"
 
 # Configuration of machine-dependent code
 #
-# We don't set NO_EXECUTE_PERMISSION by default because gcj (and
-# anything else that creates trampolines in gc-allocated memory)
-# always needs exec permission.  The exceptions to this are IA-64 and
-# some variations of Power PC, where trampolines don't contain
-# executable code.
+# Set NO_EXECUTE_PERMISSION by default because gcj already uses
+# ffi_closure_{alloc,free} which takes care of allocating trampolines
+# in executable memory.
 #
 AC_MSG_CHECKING(which machine-dependent code should be used)
 machdep=
@@ -411,10 +409,10 @@ case "$host" in
     machdep="sparc_mach_dep.lo"
     ;;
  ia64-*-*)
-    AC_DEFINE(NO_EXECUTE_PERMISSION,1,[cause some or all of the heap to not have execute permission])
     machdep="mach_dep.lo ia64_save_regs_in_stack.lo"
     ;;
 esac
+AC_DEFINE(NO_EXECUTE_PERMISSION,1,[cause some or all of the heap to not have execute permission])
 if test x"$machdep" = x; then
 AC_MSG_RESULT($machdep)
    machdep="mach_dep.lo"

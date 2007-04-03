@@ -1,3 +1,8 @@
+2007-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (NO_EXECUTE_PERMISSION): Set by default.
+	* configure: Rebuilt.
+
 2007-03-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	* include/gc.h (GC_REGISTER_FINALIZER_UNREACHABLE): New.
