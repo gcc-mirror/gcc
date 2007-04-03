@@ -1,16 +1,17 @@
-# Multilibs for VxWorks.
-
-# default is mips1 EB hard-float
-MULTILIB_OPTIONS = mips2/mips3 EL msoft-float
-MULTILIB_MATCHES = EL=mel mips2=mips32 mips3=mips4 mips3=mips64
-
-MULTILIB_EXCEPTIONS = EL EL/msoft-float mips3/msoft-float mips3/EL/msoft-float
+# Multilibs for VxWorks.  We want these 8 architecture combinations:
+#
+#    {-mips2,-mips3} x {-EB,-EL} x {-mhard-float,-msoft-float}
+#
+# where the first option in each group is the default.  The -mips2
+# multilibs use o32 and the -mips3 multilibs use o64.
+#
+# We want three multilibs for each architecture combination:
+# default (kernel mode), -mrtp and -mrtp/-fPIC.
+MULTILIB_OPTIONS = mabi=o64 mips3 EL msoft-float mrtp fPIC
+MULTILIB_DIRNAMES = o64 mips3 EL msoft-float mrtp pic
+MULTILIB_MATCHES = EL=mel fPIC=fpic
+MULTILIB_EXCEPTIONS = mips3* mabi=o64 fPIC \
+		      $(addprefix mabi=o64/, EL* msoft-float* mrtp* fPIC*) \
+		      $(addsuffix /fPIC, *mabi=o64 *mips3 *EL *msoft-float)
 
 MUTLILIB_EXTRA_OPTS = -G 0 -mno-branch-likely
-
-MULTILIB_OSDIRNAMES = msoft-float=!MIPS32sfr3kgnu \
-		    mips2=!MIPS32gnu mips2/msoft-float=!MIPS32sfgnu \
-		    mips2/EL=!MIPS32gnule \
-		    mips2/EL/msoft-float=!MIPS32sfgnule \
-		    mips3=!MIPS64gnu mips3/EL=!MIPS64gnule 
-

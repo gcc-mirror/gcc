@@ -46,23 +46,43 @@ Boston, MA 02110-1301, USA.  */
 #define LINK_SPEC "\
 %(endian_spec) \
 %{!G:-G 0} %{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips64} \
-%{bestGnum}"
+%{bestGnum}" \
+VXWORKS_LINK_SPEC
+
+#undef  LIB_SPEC
+#define LIB_SPEC VXWORKS_LIB_SPEC
+#undef  STARTFILE_SPEC
+#define STARTFILE_SPEC VXWORKS_STARTFILE_SPEC
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC VXWORKS_ENDFILE_SPEC
 
 #define TARGET_OS_CPP_BUILTINS()                        \
   do                                                    \
     {                                                   \
-      builtin_define ("__vxworks");                     \
-      builtin_assert ("system=unix");                   \
+      if (TARGET_64BIT)					\
+	builtin_define ("CPU=MIPS64");			\
+      else						\
+	builtin_define ("CPU=MIPS32");			\
+      if (TARGET_BIG_ENDIAN)				\
+	builtin_define ("MIPSEB");			\
+      else						\
+	builtin_define ("MIPSEL");			\
+      if (TARGET_SOFT_FLOAT)				\
+	builtin_define ("SOFT_FLOAT");			\
+      VXWORKS_OS_CPP_BUILTINS ();			\
     }                                                   \
   while (0)
 
 #undef SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC \
-"%{!DCPU=*: %{mips3|mips4|mips64:-DCPU=MIPS64;:-DCPU=MIPS32}} \
-  %{EL|mel:-DMIPSEL;:-DMIPSEB} \
-  %{msoft-float:-DSOFT_FLOAT} \
-  %{mips1:-D_WRS_R3K_EXC_SUPPORT}"
+#define SUBTARGET_CPP_SPEC VXWORKS_ADDITIONAL_CPP_SPEC
 
 /* No sdata.  */
 #undef MIPS_DEFAULT_GVALUE
 #define MIPS_DEFAULT_GVALUE 0
+
+/* Other formats are already disabled in config/vxworks.h.  */
+#undef MIPS_DEBUGGING_INFO
+
+/* No _mcount profiling on VxWorks.  */
+#undef FUNCTION_PROFILER
+#define FUNCTION_PROFILER VXWORKS_FUNCTION_PROFILER
