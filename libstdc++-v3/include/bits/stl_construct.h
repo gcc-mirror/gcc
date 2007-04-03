@@ -1,6 +1,7 @@
 // nonstandard construct and destroy functions -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -61,7 +62,6 @@
 #ifndef _STL_CONSTRUCT_H
 #define _STL_CONSTRUCT_H 1
 
-#include <bits/cpp_type_traits.h>
 #include <new>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
@@ -108,36 +108,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    * @if maint
-   * Destroy a range of objects with nontrivial destructors.
-   *
-   * This is a helper function used only by _Destroy().
-   * @endif
-   */
-  template<typename _ForwardIterator>
-    inline void
-    __destroy_aux(_ForwardIterator __first, _ForwardIterator __last,
-		  __false_type)
-    {
-      for (; __first != __last; ++__first)
-	std::_Destroy(&*__first);
-    }
-
-  /**
-   * @if maint
-   * Destroy a range of objects with trivial destructors.  Since the destructors
-   * are trivial, there's nothing to do and hopefully this function will be
-   * entirely optimized away.
-   *
-   * This is a helper function used only by _Destroy().
-   * @endif
-   */
-  template<typename _ForwardIterator>
-    inline void
-    __destroy_aux(_ForwardIterator, _ForwardIterator, __true_type)
-    { }
-
-  /**
-   * @if maint
    * Destroy a range of objects.  If the value_type of the object has
    * a trivial destructor, the compiler should optimize all of this
    * away, otherwise the objects' destructors must be invoked.
@@ -149,10 +119,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type
                        _Value_type;
-      typedef typename std::__is_scalar<_Value_type>::__type
-	               _Has_trivial_destructor;
-
-      std::__destroy_aux(__first, __last, _Has_trivial_destructor());
+      if (!__has_trivial_destructor(_Value_type))
+	for (; __first != __last; ++__first)
+	  std::_Destroy(&*__first);
     }
 
   /**

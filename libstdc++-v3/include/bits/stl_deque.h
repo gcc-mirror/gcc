@@ -1,6 +1,6 @@
 // Deque implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -1424,13 +1424,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       void
       _M_destroy_data_aux(iterator __first, iterator __last);
 
-      void
-      _M_destroy_data_dispatch(iterator, iterator, __true_type) { }
-      
-      void
-      _M_destroy_data_dispatch(iterator __first, iterator __last, __false_type)
-      { _M_destroy_data_aux(__first, __last); }
-
       // Called by ~deque().
       // NB: Doesn't deallocate the nodes.
       template<typename _Alloc1>
@@ -1442,9 +1435,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       _M_destroy_data(iterator __first, iterator __last,
 		      const std::allocator<_Tp>&)
       {
-	typedef typename std::__is_scalar<value_type>::__type
-	  _Has_trivial_destructor;
-	_M_destroy_data_dispatch(__first, __last, _Has_trivial_destructor());
+	if (!__has_trivial_destructor(value_type))
+	  _M_destroy_data_aux(__first, __last);
       }
 
       // Called by erase(q1, q2).

@@ -1,5 +1,23 @@
 2007-04-03  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_algobase.h (__copy_aux(_II, _II, _OI),
+	__copy_backward_aux(_BI1, _BI1, _BI2)): Use __is_pod.
+	* include/bits/stl_deque.h (deque<>::_M_destroy_data(iterator,
+	iterator, const std::allocator<>&)): Use __has_trivial_constructor.
+	(deque<>::_M_destroy_data_dispatch): Remove.
+	* include/bits/stl_uninitialized.h (uninitialized_copy(_InputIterator,
+	_InputIterator, _ForwardIterator), uninitialized_fill(_ForwardIterator,
+	_ForwardIterator, const _Tp&), uninitialized_fill_n(_ForwardIterator,
+	_Size, const _Tp&)): Use __is_pod.
+	* include/bits/stl_tempbuf.h (_Temporary_buffer::
+	_Temporary_buffer(_ForwardIterator, _ForwardIterator)): Use __is_pod.
+	(_Temporary_buffer::_M_initialize_buffer): Remove.
+	* include/bits/stl_construct.h (_Destroy(_ForwardIterator,
+	_ForwardIterator)): Use __has_trivial_destructor.
+	(__destroy_aux): Remove.
+
+2007-04-03  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_map.h (map<>::insert(iterator, const value_type&):
 	Uglify parameter.
 
