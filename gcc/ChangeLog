@@ -1,3 +1,20 @@
+2007-04-03  Richard Sandiford  <richard@codesourcery.com>
+
+	* config.gcc (mips-wrs-vxworks): Add vx-common.h to tm_file.
+	Set the default --with-arch setting to mips2.
+	* config/mips/t-vxworks (MULTILIB_OPTIONS, MULTILIB_MATCHES)
+	(MULTILIB_EXCEPTIONS): Redefine with new multilibs.
+	(MULTILIB_OSDIRNAMES): Delete.
+	(MULTILIB_DIRNAMES): Define.
+	* config/mips/vxworks.h (LINK_SPEC): Add VXWORKS_LINK_SPEC.
+	(LIB_SPEC, STARTFILE_SPEC, ENDFILE_SPEC): Define.
+	(TARGET_OS_CPP_BUILTINS): Incorporate old SUBTARGET_CPP_SPEC
+	definitions, except for _WRS_R3K_EXC_SUPPORT.  Call
+	VXWORKS_OS_CPP_BUILTINS.
+	(SUBTARGET_CPP_SPEC): Redefine to VXWORKS_ADDITIONAL_CPP_SPEC.
+	(MIPS_DEBUGGING_INFO): Undefine.
+	(FUNCTION_PROFILER): Define to VXWORKS_FUNCTION_PROFILER.
+
 2007-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/30704

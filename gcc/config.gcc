@@ -1708,7 +1708,7 @@ mips*-*-rtems*)
 mips-wrs-vxworks)
 	# We want vxworks.h after mips/elf.h, which unfortunately means we
 	# have to redo the tm_file list from scratch.
-	tm_file="elfos.h mips/mips.h svr4.h mips/elf.h vxworks.h mips/vxworks.h"
+	tm_file="elfos.h mips/mips.h svr4.h mips/elf.h vx-common.h vxworks.h mips/vxworks.h"
 	tmake_file="${tmake_file} mips/t-vxworks"
 	;;
 mips-wrs-windiss)	# Instruction-level simulator for VxWorks.
@@ -2691,6 +2691,9 @@ if test x$with_cpu = x ; then
 	  with_cpu=m${default_m68k_cpu}
 	  ;;
       esac
+      ;;
+    mips*-*-vxworks)
+      with_arch=mips2
       ;;
     sparc*-*-*)
       with_cpu="`echo ${target} | sed 's/-.*$//'`"
