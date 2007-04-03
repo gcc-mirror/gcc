@@ -1001,26 +1001,44 @@ write_lookup_constraint (void)
 	"}\n");
 }
 
-/* Write out the function which computes constraint name lengths from
-   their enumerators. */
+/* Write out a function which looks at a string and determines what
+   the constraint name length is.  */
 static void
 write_insn_constraint_len (void)
 {
-  struct constraint_data *c;
+  unsigned int i;
 
-  if (constraint_max_namelen == 1)
-    return;
-
-  puts ("size_t\n"
-	"insn_constraint_len (enum constraint_num c)\n"
+  puts ("static inline size_t\n"
+	"insn_constraint_len (char fc, const char *str ATTRIBUTE_UNUSED)\n"
 	"{\n"
-	"  switch (c)\n"
+	"  switch (fc)\n"
 	"    {");
 
-  FOR_ALL_CONSTRAINTS (c)
-    if (c->namelen > 1)
-      printf ("    case CONSTRAINT_%s: return %lu;\n", c->c_name,
-	      (unsigned long int) c->namelen);
+  for (i = 0; i < ARRAY_SIZE(constraints_by_letter_table); i++)
+    {
+      struct constraint_data *c = constraints_by_letter_table[i];
+
+      if (!c
+      	  || c->namelen == 1)
+	continue;
+
+      /* Constraints with multiple characters should have the same
+	 length.  */
+      {
+	struct constraint_data *c2 = c->next_this_letter;
+	size_t len = c->namelen;
+	while (c2)
+	  {
+	    if (c2->namelen != len)
+	      error ("Multi-letter constraints with first letter '%c' "
+		     "should have same length", i);
+	    c2 = c2->next_this_letter;
+	  }
+      }
+
+      printf ("    case '%c': return %lu;\n",
+	      i, (unsigned long int) c->namelen);
+    }
 
   puts ("    default: break;\n"
 	"    }\n"
@@ -1248,9 +1266,11 @@ write_tm_preds_h (void)
 	    "extern bool constraint_satisfied_p (rtx, enum constraint_num);\n");
 
       if (constraint_max_namelen > 1)
-	puts ("extern size_t insn_constraint_len (enum constraint_num);\n"
-	      "#define CONSTRAINT_LEN(c_,s_) "
-	      "insn_constraint_len (lookup_constraint (s_))\n");
+        {
+	  write_insn_constraint_len ();
+	  puts ("#define CONSTRAINT_LEN(c_,s_) "
+		"insn_constraint_len (c_,s_)\n");
+	}
       else
 	puts ("#define CONSTRAINT_LEN(c_,s_) 1\n");
       if (have_register_constraints)
@@ -1341,9 +1361,6 @@ write_insn_preds_c (void)
 	write_regclass_for_constraint ();
       write_constraint_satisfied_p ();
       
-      if (constraint_max_namelen > 1)
-	write_insn_constraint_len ();
-
       if (have_const_int_constraints)
 	write_insn_const_int_ok_for_constraint ();
 
