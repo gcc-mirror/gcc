@@ -1,3 +1,17 @@
+2007-04-03  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/31440
+	* include/bits/stl_tree.h (_M_lower_bound(_Link_type, _Link_type,
+	const _Key&), _M_upper_bound(_Link_type, _Link_type, const _Key&)):
+	Add.
+	(_M_equal_range(const _Key&) const): Remove.
+	(lower_bound(const key_type&), lower_bound(const key_type&) const,
+	upper_bound(const key_type&), upper_bound(const key_type&) const,
+	equal_range(const key_type&), equal_range(const key_type&) const):
+	Adjust.
+	(find(const _Key&), find(const _Key&) const): Tweak.
+	* testsuite/23_containers/map/operations/31440.cc: New.
+
 2007-04-02  Matthew Levine  <gcc@severeweblint.org>
 	    Paolo Carlini  <pcarlini@suse.de>
 
