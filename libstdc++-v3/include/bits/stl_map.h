@@ -1,6 +1,7 @@
 // Map implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -394,7 +395,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
        *
        *  Insertion requires logarithmic time.
        */
-      std::pair<iterator,bool>
+      std::pair<iterator, bool>
       insert(const value_type& __x)
       { return _M_t._M_insert_unique(__x); }
 
@@ -422,8 +423,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
        *  Insertion requires logarithmic time (if the hint is not taken).
        */
       iterator
-      insert(iterator position, const value_type& __x)
-      { return _M_t._M_insert_unique_(position, __x); }
+      insert(iterator __position, const value_type& __x)
+      { return _M_t._M_insert_unique_(__position, __x); }
 
       /**
        *  @brief Template function that attemps to insert a range of elements.
