@@ -1,3 +1,11 @@
+2007-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30704
+	* fold-const.c (native_encode_real): Encode real.c provided longs
+	as a series of 32-bit native integers.
+	(native_interpret_real): Interpret buffer as a series of 32-bit
+	native integers.
+
 2007-04-03  Richard Guenther  <rguenther@suse.de>
 
 	* genpreds.c (write_insn_constraint_len): Write function
