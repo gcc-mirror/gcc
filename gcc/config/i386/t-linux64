@@ -12,7 +12,8 @@ LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 
 EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o \
-		     crtbeginT.o crtfastmath.o
+		     crtbeginT.o crtprec32.o crtprec64.o crtprec80.o \
+		     crtfastmath.o
 
 # The pushl in CTOR initialization interferes with frame pointer elimination.
 # crtend*.o cannot be compiled without -fno-asynchronous-unwind-tables,

@@ -328,12 +328,12 @@ i[34567]86-*-openbsd*)
 i[34567]86-*-coff*)
 	;;
 i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu)
-	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="${tmake_file} i386/t-crtfm"
+	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
+	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm"
 	;;
 x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
-	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="${tmake_file} i386/t-crtfm"
+	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
+	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm"
 	;;
 i[34567]86-*-gnu*)
 	;;

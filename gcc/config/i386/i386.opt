@@ -151,6 +151,10 @@ momit-leaf-frame-pointer
 Target Report Mask(OMIT_LEAF_FRAME_POINTER)
 Omit the frame pointer in leaf functions
 
+mpc
+Target RejectNegative Report Joined Var(ix87_precision_string)
+Set 80387 floating-point precision (-mpc32, -mpc64, -mpc80)
+
 mpentium
 Target RejectNegative Undocumented
 ;; Deprecated

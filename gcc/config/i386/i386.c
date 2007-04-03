@@ -2095,6 +2095,13 @@ override_options (void)
 	       ix86_tls_dialect_string);
     }
 
+  if (ix87_precision_string)
+    {
+      i = atoi (ix87_precision_string);
+      if (i != 32 && i != 64 && i != 80)
+	error ("pc%d is not valid precision setting (32, 64 or 80)", i);
+    }
+
   /* Keep nonleaf frame pointers.  */
   if (flag_omit_frame_pointer)
     target_flags &= ~MASK_OMIT_LEAF_FRAME_POINTER;

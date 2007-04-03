@@ -548,7 +548,7 @@ Objective-C and Objective-C++ Dialects}.
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
 -m96bit-long-double  -mregparm=@var{num}  -msseregparm @gol
--mstackrealign @gol
+-mpc32 -mpc64 -mpc80 mstackrealign @gol
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} @gol
 -m32  -m64 -mlarge-data-threshold=@var{num}}
@@ -10017,6 +10017,21 @@ function by using the function attribute @samp{sseregparm}.
 @strong{Warning:} if you use this switch then you must build all
 modules with the same value, including any libraries.  This includes
 the system libraries and startup modules.
+
+@item -mpc32
+@itemx -mpc64
+@itemx -mpc80
+@opindex mpc32
+@opindex mpc64
+@opindex mpc80
+
+Set 80387 floating-point precision to 32, 64 or 80 bits.  When @option{-mpc32}
+is specified, the significand of floating-point operations is rounded to 24
+bits (single precision), @option{-mpc64} rounds the significand of
+floating-point operations to 53 bits (double precision) and @option{-mpc80}
+rounds the significand of floating-point operations to 64 bits (extended
+double precision).  Note that a change of default precision control may
+affect the results returned by some of the mathematical functions.
 
 @item -mstackrealign
 @opindex mstackrealign
