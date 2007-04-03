@@ -9759,7 +9759,9 @@ Generate code for a 32-bit or 64-bit environment.
 The 32-bit environment sets int, long and pointer to 32 bits and
 generates code that runs on any i386 system.
 The 64-bit environment sets int to 32 bits and long and pointer
-to 64 bits and generates code for AMD's x86-64 architecture.
+to 64 bits and generates code for AMD's x86-64 architecture. For
+darwin only the -m64 option turns off the @option{-fno-pic} and
+@option{-mdynamic-no-pic} options.
 
 @item -mno-red-zone
 @opindex no-red-zone

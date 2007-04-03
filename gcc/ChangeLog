@@ -1,3 +1,8 @@
+2007-04-02  Eric Christopher  <echristo@apple.com>
+
+	* doc/invoke.texi (i386 and x86-64 Options): Document -m64
+	limitations on darwin.
+
 2007-04-02  Anatoly Sokolov <aesok@post.ru>
 
 	PR target/31137
@@ -13,7 +18,7 @@
 
 2007-03-30  Anatoly Sokolov <aesok@post.ru>
 
-	* config/avr/avr.c (avr_override_options): Clear 
+	* config/avr/avr.c (avr_override_options): Clear
 	'flag_delete_null_pointer_checks'.
 
 2007-03-29  Michael Matz  <matz@suse.de>
@@ -35,7 +40,7 @@
 
 2007-03-27  Anatoly Sokolov <aesok@post.ru>
 
-	* config/avr/avr.c (avr_mcu_types): Move at90usb82 device to 'avr4' 
+	* config/avr/avr.c (avr_mcu_types): Move at90usb82 device to 'avr4'
 	architecture.
 
 2007-03-26  Ian Lance Taylor  <iant@google.com>
@@ -102,7 +107,7 @@
 	PR target/31123
 	* pa.md (vdepi_ior): Don't allow zero length deposit.  Likewise for
 	two unamed patterns.
-	
+
 2007-03-12  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* doc/extend.texi: Edit "gnu_inline" documentation.
@@ -115,7 +120,7 @@
 	* doc/passes.texi: Fix gcc.info cross-reference.
 
 2007-03-12  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	Fix PR tree-optimization/28544
 	* tree-ssa-operands.c (add_virtual_operand):
 	Move assert triggering on aliasing violations into
@@ -493,7 +498,7 @@
 2007-03-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/28624
-	* tree-ssa-dom.c (eliminate_degenerate_phis): Use a temporary 
+	* tree-ssa-dom.c (eliminate_degenerate_phis): Use a temporary
 	bitmap for EXECUTE_IF_SET_IN_BITMAP.
 
 2006-03-09  Mark Shinwell  <shinwell@codesourcery.com>
@@ -514,7 +519,7 @@
 	* builtins.def (lceil, lceilf, lceill, lfloor, lfloorf, lfloorl,
 	llceil, llceilf, llceill, llfloor, llfloorf, llfloorl): Mark with
 	ATTR_CONST_NOTHROW_LIST.
-	
+
 	* fold-const.c (tree_expr_nonnegative_p): Handle FIX_TRUNC_EXPR.
 
 2007-03-08 Andrew Pinski <andrew_pinski@playstation.sony.com>
@@ -562,11 +567,11 @@
 	* doc/invoke.texi (Warning Options): Replace -Werror- with
 	-Werror=.
 	* opts.c (common_handle_option): Likewise.
-	
+
 2007-03-06  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (avr_mcu_types): Add support for ATmega325P,
-	ATmega3250P, ATmega329P, ATmega3290P, AT90USB82 and AT90USB162 
+	ATmega3250P, ATmega329P, ATmega3290P, AT90USB82 and AT90USB162
 	devices.
 	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): (Ditto.).
 	* config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
@@ -587,7 +592,7 @@
 	in soft-float DFmode pattern.
 	(movdf): Fail if operand1 is a CONST_DOUBLE and operand0 is a hard
 	floating register.
-	(movsf): Likewise. 
+	(movsf): Likewise.
 
 2007-03-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -696,7 +701,7 @@
 2007-03-01  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (Wextra): Delete outdated paragraph.
-	
+
 2007-02-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa/predicates.md (move_src_operand): Allow zero for mode.
@@ -784,7 +789,7 @@
 2007-02-18 Ira Rosen  <irar@il.ibm.com>
 
 	* tree-ssa-alias.c (may_aliases_intersect): New function.
-	* tree-data-ref.c (ptr_ptr_may_alias_p): Call may_aliases_intersect 
+	* tree-data-ref.c (ptr_ptr_may_alias_p): Call may_aliases_intersect
 	for different tags.
 	* tree-flow.h (may_aliases_intersect): Add function declaration.
 
@@ -842,7 +847,7 @@
 
 2007-02-06  Rask Ingemann Lamberisen  <rask@sygehus.dk>
 
-	PR 30370 
+	PR 30370
 	* config/rs6000/t-ppccomm: Correct Makefile typo.
 
 2007-02-06  Roger Sayle  <roger@eyesopen.com>
@@ -866,7 +871,7 @@
 2007-02-05  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (constantpool_mem_p): Skip over SUBREGs.
-	
+
 2007-02-02  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	PR target/29682
@@ -895,7 +900,7 @@
 
 	Revert for x86 darwin:
 	2005-06-19  Uros Bizjak  <uros@kss-loka.si>
-	
+
 	* config/i386/i386.c (ix86_function_arg_regno_p): Put back the
 	code before the following patch under TARGET_MACHO.
 	(ix86_function_value_regno_p): Likewise.
