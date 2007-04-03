@@ -5614,6 +5614,12 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 	tree cond;
 	tree preeval = NULL_TREE;
 
+	if (VOID_TYPE_P (TREE_TYPE (rhs)))
+	  {
+	    error ("void value not ignored as it ought to be");
+	    return error_mark_node;
+	  }
+
 	rhs = stabilize_expr (rhs, &preeval);
 
 	/* Check this here to avoid odd errors when trying to convert
