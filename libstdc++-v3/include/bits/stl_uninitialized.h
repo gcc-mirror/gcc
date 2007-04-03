@@ -64,19 +64,11 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  // uninitialized_copy
   template<typename _InputIterator, typename _ForwardIterator>
-    inline _ForwardIterator
-    __uninitialized_copy_aux(_InputIterator __first, _InputIterator __last,
-			     _ForwardIterator __result,
-			     __true_type)
-    { return std::copy(__first, __last, __result); }
-
-  template<typename _InputIterator, typename _ForwardIterator>
-    inline _ForwardIterator
-    __uninitialized_copy_aux(_InputIterator __first, _InputIterator __last,
-			     _ForwardIterator __result,
-			     __false_type)
+    _ForwardIterator
+    __uninitialized_copy_aux(_InputIterator __first,
+			     _InputIterator __last,
+			     _ForwardIterator __result)
     {
       _ForwardIterator __cur = __result;
       try
@@ -106,25 +98,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     uninitialized_copy(_InputIterator __first, _InputIterator __last,
 		       _ForwardIterator __result)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
-      typedef typename std::__is_scalar<_ValueType>::__type _Is_POD;
-      return std::__uninitialized_copy_aux(__first, __last, __result,
-					   _Is_POD());
+      typedef typename iterator_traits<_ForwardIterator>::value_type
+	_ValueType;
+      if (__is_pod(_ValueType))
+	return std::copy(__first, __last, __result);
+      else
+	return std::__uninitialized_copy_aux(__first, __last, __result);
     }
 
-  // Valid if copy construction is equivalent to assignment, and if the
-  // destructor is trivial.
-  template<typename _ForwardIterator, typename _Tp>
-    inline void
-    __uninitialized_fill_aux(_ForwardIterator __first,
-			     _ForwardIterator __last,
-			     const _Tp& __x, __true_type)
-    { std::fill(__first, __last, __x); }
 
   template<typename _ForwardIterator, typename _Tp>
     void
-    __uninitialized_fill_aux(_ForwardIterator __first, _ForwardIterator __last,
-			     const _Tp& __x, __false_type)
+    __uninitialized_fill_aux(_ForwardIterator __first,
+			     _ForwardIterator __last,
+			     const _Tp& __x)
     {
       _ForwardIterator __cur = __first;
       try
@@ -153,23 +140,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     uninitialized_fill(_ForwardIterator __first, _ForwardIterator __last,
 		       const _Tp& __x)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
-      typedef typename std::__is_scalar<_ValueType>::__type _Is_POD;
-      std::__uninitialized_fill_aux(__first, __last, __x, _Is_POD());
+      typedef typename iterator_traits<_ForwardIterator>::value_type
+	_ValueType;
+      if (__is_pod(_ValueType))
+	std::fill(__first, __last, __x);
+      else
+	std::__uninitialized_fill_aux(__first, __last, __x);
     }
 
-  // Valid if copy construction is equivalent to assignment, and if the
-  //  destructor is trivial.
-  template<typename _ForwardIterator, typename _Size, typename _Tp>
-    inline void
-    __uninitialized_fill_n_aux(_ForwardIterator __first, _Size __n,
-			       const _Tp& __x, __true_type)
-    { std::fill_n(__first, __n, __x); }
 
   template<typename _ForwardIterator, typename _Size, typename _Tp>
     void
     __uninitialized_fill_n_aux(_ForwardIterator __first, _Size __n,
-			       const _Tp& __x, __false_type)
+			       const _Tp& __x)
     {
       _ForwardIterator __cur = __first;
       try
@@ -197,9 +180,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline void
     uninitialized_fill_n(_ForwardIterator __first, _Size __n, const _Tp& __x)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
-      typedef typename std::__is_scalar<_ValueType>::__type _Is_POD;
-      std::__uninitialized_fill_n_aux(__first, __n, __x, _Is_POD());
+      typedef typename iterator_traits<_ForwardIterator>::value_type
+	_ValueType;
+      if (__is_pod(_ValueType))
+	std::fill_n(__first, __n, __x);
+      else
+	std::__uninitialized_fill_n_aux(__first, __n, __x);
     }
 
   // Extensions: versions of uninitialized_copy, uninitialized_fill,
