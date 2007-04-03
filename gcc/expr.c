@@ -4383,9 +4383,19 @@ store_expr (tree exp, rtx target, int call_param_p)
 	{
 	  if (TYPE_UNSIGNED (TREE_TYPE (exp))
 	      != SUBREG_PROMOTED_UNSIGNED_P (target))
-	    exp = fold_convert
-	      (get_signed_or_unsigned_type
-	       (SUBREG_PROMOTED_UNSIGNED_P (target), TREE_TYPE (exp)), exp);
+	    {
+	      /* Some types, e.g. Fortran's logical*4, won't have a signed
+		 version, so use the mode instead.  */
+	      tree ntype
+		= (get_signed_or_unsigned_type
+		   (SUBREG_PROMOTED_UNSIGNED_P (target), TREE_TYPE (exp)));
+	      if (ntype == NULL)
+		ntype = lang_hooks.types.type_for_mode
+		  (TYPE_MODE (TREE_TYPE (exp)),
+		   SUBREG_PROMOTED_UNSIGNED_P (target));
+
+	      exp = fold_convert (ntype, exp);
+	    }
 
 	  exp = fold_convert (lang_hooks.types.type_for_mode
 				(GET_MODE (SUBREG_REG (target)),
