@@ -143,8 +143,8 @@ main (int argc, char **argv)
     fprintf (stream, "   JvRunMainName (\"%s\", argc, argv);\n", classname);
   else
     {
-      fprintf (stream, "   extern void *%s;\n", mangled_classname);
-      fprintf (stream, "   JvRunMain (%s, argc, argv);\n", mangled_classname);
+      fprintf (stream, "   extern char %s;\n", mangled_classname);
+      fprintf (stream, "   JvRunMain (&%s, argc, argv);\n", mangled_classname);
     }
   fprintf (stream, "}\n");
   if (stream != stdout && fclose (stream) != 0)
@@ -176,7 +176,7 @@ do_mangle_classname (const char *string)
 	count++;
     }
   append_gpp_mangled_name (&ptr [-count], count);
-  obstack_grow (mangle_obstack, "7class$$E", strlen ("7class$$E"));
+  obstack_grow (mangle_obstack, "6class$E", strlen ("6class$E"));
   obstack_1grow (mangle_obstack, '\0');
   return obstack_finish (mangle_obstack);
 }

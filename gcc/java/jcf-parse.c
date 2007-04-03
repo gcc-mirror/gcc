@@ -1218,9 +1218,12 @@ give_name_to_class (JCF *jcf, int i)
 	main_input_filename = sfname;
       }
 #else
-      input_location = DECL_SOURCE_LOCATION (TYPE_NAME (this_class));
-      if (main_input_filename == NULL && jcf == main_jcf)
-	main_input_filename = input_filename;
+     if (! DECL_ARTIFICIAL (TYPE_NAME (this_class)))
+      {
+	input_location = DECL_SOURCE_LOCATION (TYPE_NAME (this_class));
+	if (main_input_filename == NULL && jcf == main_jcf)
+	  main_input_filename = input_filename;
+      }
 #endif
 
       jcf->cpool.data[i].t = this_class;

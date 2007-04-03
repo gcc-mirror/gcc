@@ -1174,6 +1174,7 @@ extern tree check_for_builtin (tree, tree);
 extern void initialize_builtins (void);
 
 extern tree lookup_name (tree);
+extern bool special_method_p (tree);
 extern void maybe_rewrite_invocation (tree *, tree *, tree *, tree *);
 extern tree build_known_method_ref (tree, tree, tree, tree, tree, tree);
 extern tree build_class_init (tree, tree);

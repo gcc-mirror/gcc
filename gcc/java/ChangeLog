@@ -1,3 +1,20 @@
+2007-04-03  Andrew Haley  <aph@redhat.com>
+
+        * jvgenmain.c (main): Change main to use class$, not class$$.
+        (do_mangle_classname): Likewise.
+        * class.c (hide): New function.
+        (add_field): Hide everything that shouldn't be visible outside a
+        DSO.
+        (build_static_class_ref): Likewise.
+        (build_classdollar_field): Likewise.
+        (make_class_data): Likewise.
+        (layout_class_method): Likewise.
+        * expr.c (special_method_p): New function.
+
+	* class.c (push_class): Don't bogusly guess the source filename.
+	* jcf-parse.c (give_name_to_class): Don't set input_location from
+	DECL_ARTIFICIAL decls.
+
 2007-03-30  Rafael Avila de Espindola  <espindola@google.com>
 
 	* typeck.c (java_signed_or_unsigned_type): Removed.
