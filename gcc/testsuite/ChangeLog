@@ -1,3 +1,7 @@
+2007-04-03  Eric Christopher  <echristo@apple.com>
+
+	* g++.dg/tree-ssa/pr29902.C: Require ilp32.
+
 2007-04-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31304
@@ -8,7 +12,7 @@
 2007-04-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tls/opt-3.c: Use -mregparm=3 only for ilp32 on x86_64 targets.
-	
+
 2007-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/30847
@@ -31,7 +35,7 @@
 
 	PR libgfortran/31366
 	* gfortran.dg/direct_io_6.f90: New test.
-	
+
 2007-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/31207
