@@ -107,7 +107,7 @@ of the same kind; for example, if you specify @option{-L} more than once,
 the directories are searched in the order specified.
 
 Many options have long names starting with @samp{-f} or with
-@samp{-W}---for example, 
+@samp{-W}---for example,
 @option{-fmove-loop-invariants}, @option{-Wformat} and so on.  Most of
 these have both positive and negative forms; the negative form of
 @option{-ffoo} would be @option{-fno-foo}.  This manual documents
@@ -161,7 +161,7 @@ in the following sections.
 @item Overall Options
 @xref{Overall Options,,Options Controlling the Kind of Output}.
 @gccoptlist{-c  -S  -E  -o @var{file}  -combine  -pipe  -pass-exit-codes  @gol
--x @var{language}  -v  -###  --help@r{[}=@var{class}@r{]}  --target-help  @gol 
+-x @var{language}  -v  -###  --help@r{[}=@var{class}@r{]}  --target-help  @gol
 --version @@@var{file}}
 
 @item C Language Options
@@ -712,7 +712,7 @@ See RS/6000 and PowerPC Options.
 @gccoptlist{-mel -mel @gol
 -mmac @gol
 -mscore5u -mscore7}
- 
+
 @emph{SH Options}
 @gccoptlist{-m1  -m2  -m2e  -m3  -m3e @gol
 -m4-nofpu  -m4-single-only  -m4-single  -m4 @gol
@@ -2771,7 +2771,7 @@ It is not specified when between sequence points modifications to the
 values of objects take effect.  Programs whose behavior depends on this
 have undefined behavior; the C and C++ standards specify that ``Between
 the previous and next sequence point an object shall have its stored
-value modified at most once by the evaluation of an expression.  
+value modified at most once by the evaluation of an expression.
 Furthermore, the prior value shall be read only to determine the value
 to be stored.''.  If a program breaks these rules, the results on any
 particular implementation are entirely unpredictable.
@@ -3351,7 +3351,7 @@ ISO C and ISO C++, e.g.@: request for implicit conversion from
 
 @item -Wc++0x-compat @r{(C++ and Objective-C++ only)}
 Warn about C++ constructs whose meaning differs between ISO C++ 1998 and
-ISO C++ 200x, e.g., identifiers in ISO C++ 1998 that will become keywords 
+ISO C++ 200x, e.g., identifiers in ISO C++ 1998 that will become keywords
 in ISO C++ 200x.  This warning is enabled by @option{-Wall}.
 
 @item -Wcast-qual
@@ -4533,7 +4533,7 @@ file name is made by appending @file{.sra} to the source file name.
 @item sink
 @opindex fdump-tree-sink
 Dump each function after performing code sinking.  The file name is made
-by appending @file{.sink} to the source file name. 
+by appending @file{.sink} to the source file name.
 
 @item dom
 @opindex fdump-tree-dom
@@ -4584,26 +4584,26 @@ Enable all the available tree dumps with the flags provided in this option.
 @item -ftree-vectorizer-verbose=@var{n}
 @opindex ftree-vectorizer-verbose
 This option controls the amount of debugging output the vectorizer prints.
-This information is written to standard error, unless 
-@option{-fdump-tree-all} or @option{-fdump-tree-vect} is specified, 
+This information is written to standard error, unless
+@option{-fdump-tree-all} or @option{-fdump-tree-vect} is specified,
 in which case it is output to the usual dump listing file, @file{.vect}.
 For @var{n}=0 no diagnostic information is reported.
-If @var{n}=1 the vectorizer reports each loop that got vectorized, 
+If @var{n}=1 the vectorizer reports each loop that got vectorized,
 and the total number of loops that got vectorized.
-If @var{n}=2 the vectorizer also reports non-vectorized loops that passed 
-the first analysis phase (vect_analyze_loop_form) - i.e. countable, 
-inner-most, single-bb, single-entry/exit loops.  This is the same verbosity 
+If @var{n}=2 the vectorizer also reports non-vectorized loops that passed
+the first analysis phase (vect_analyze_loop_form) - i.e. countable,
+inner-most, single-bb, single-entry/exit loops.  This is the same verbosity
 level that @option{-fdump-tree-vect-stats} uses.
-Higher verbosity levels mean either more information dumped for each 
+Higher verbosity levels mean either more information dumped for each
 reported loop, or same amount of information reported for more loops:
 If @var{n}=3, alignment related information is added to the reports.
-If @var{n}=4, data-references related information (e.g. memory dependences, 
+If @var{n}=4, data-references related information (e.g. memory dependences,
 memory access-patterns) is added to the reports.
-If @var{n}=5, the vectorizer reports also non-vectorized inner-most loops 
-that did not pass the first analysis phase (i.e. may not be countable, or 
+If @var{n}=5, the vectorizer reports also non-vectorized inner-most loops
+that did not pass the first analysis phase (i.e. may not be countable, or
 may have complicated control-flow).
 If @var{n}=6, the vectorizer reports also non-vectorized nested loops.
-For @var{n}=7, all the information the vectorizer generates during its 
+For @var{n}=7, all the information the vectorizer generates during its
 analysis and transformation is reported.  This is the same verbosity level
 that @option{-fdump-tree-vect-details} uses.
 
@@ -6044,7 +6044,7 @@ When enabled, this option states that a range reduction step is not
 needed when performing complex division.  The default is
 @option{-fno-cx-limited-range}, but is enabled by @option{-ffast-math}.
 
-This option controls the default setting of the ISO C99 
+This option controls the default setting of the ISO C99
 @code{CX_LIMITED_RANGE} pragma.  Nevertheless, the option applies to
 all languages.
 
@@ -6119,7 +6119,7 @@ Enabled with @option{-fprofile-use}.
 @opindex funroll-loops
 Unroll loops whose number of iterations can be determined at compile time or
 upon entry to the loop.  @option{-funroll-loops} implies
-@option{-frerun-cse-after-loop}, @option{-fweb} and @option{-frename-registers}. 
+@option{-frerun-cse-after-loop}, @option{-fweb} and @option{-frename-registers}.
 It also turns on complete loop peeling (i.e.@: complete removal of loops with
 small constant number of iterations).  This option makes code larger, and may
 or may not make it run faster.
@@ -6249,7 +6249,7 @@ In each case, the @var{value} is an integer.  The allowable choices for
 @table @gcctabopt
 @item salias-max-implicit-fields
 The maximum number of fields in a variable without direct
-structure accesses for which structure aliasing will consider trying 
+structure accesses for which structure aliasing will consider trying
 to track each field.  The default is 5
 
 @item salias-max-array-elements
@@ -6426,8 +6426,8 @@ pass the arguments to other functions) and decrease inlining for code with low
 abstraction penalty.  The default value is 16.
 
 @item min-vect-loop-bound
-The minimum number of iterations under which a loop will not get vectorized 
-when @option{-ftree-vectorize} is used.  The number of iterations after 
+The minimum number of iterations under which a loop will not get vectorized
+when @option{-ftree-vectorize} is used.  The number of iterations after
 vectorization needs to be greater than the value specified by this option
 to allow vectorization.  The default value is 0.
 
@@ -7117,7 +7117,7 @@ are processed in order, from left to right.
 Use @var{dir} as the logical root directory for headers and libraries.
 For example, if the compiler would normally search for headers in
 @file{/usr/include} and libraries in @file{/usr/lib}, it will instead
-search @file{@var{dir}/usr/include} and @file{@var{dir}/usr/lib}.  
+search @file{@var{dir}/usr/include} and @file{@var{dir}/usr/lib}.
 
 If you use both this option and the @option{-isysroot} option, then
 the @option{--sysroot} option will apply to libraries, but the
@@ -7701,7 +7701,7 @@ example, if a cross-compiler was configured with @samp{configure
 arm-elf}, meaning to compile for an arm processor with elf binaries,
 then you would specify @option{-b arm-elf} to run that cross compiler.
 Because there are other options beginning with @option{-b}, the
-configuration must contain a hyphen. 
+configuration must contain a hyphen.
 
 @item -V @var{version}
 @opindex V
@@ -8567,7 +8567,7 @@ is @var{version}.  Typical values of @var{version} include @code{10.1},
 @code{10.2}, and @code{10.3.9}.
 
 The default for this option is to make choices that seem to be most
-useful.  
+useful.
 
 @item -mkernel
 @opindex mkernel
@@ -10198,7 +10198,9 @@ Generate code for a 32-bit or 64-bit environment.
 The 32-bit environment sets int, long and pointer to 32 bits and
 generates code that runs on any i386 system.
 The 64-bit environment sets int to 32 bits and long and pointer
-to 64 bits and generates code for AMD's x86-64 architecture.
+to 64 bits and generates code for AMD's x86-64 architecture. For
+darwin only the -m64 option turns off the @option{-fno-pic} and
+@option{-mdynamic-no-pic} options.
 
 @item -mno-red-zone
 @opindex no-red-zone
@@ -10231,7 +10233,7 @@ building of shared libraries are not supported with the medium model.
 @item -mcmodel=large
 @opindex mcmodel=large
 Generate code for the large model: This model makes no assumptions
-about addresses and sizes of sections.  
+about addresses and sizes of sections.
 @end table
 
 @node IA-64 Options
@@ -10450,7 +10452,7 @@ The default is 'enable'.
 @item -mno-sched-control-ldc
 @itemx -msched-control-ldc
 @opindex -mno-sched-control-ldc
-@opindex -msched-control-ldc 
+@opindex -msched-control-ldc
 (Dis/En)able use of ld.c instructions to check control speculative loads.
 If enabled, in case of control speculative load with no speculatively
 scheduled dependent instructions this load will be emitted as ld.sa and
@@ -12909,7 +12911,7 @@ These options are defined for Score implementations:
 @table @gcctabopt
 @item -mel
 @opindex -mel
-Compile code for little endian mode. 
+Compile code for little endian mode.
 
 @item -meb
 @opindex meb
@@ -12917,7 +12919,7 @@ Compile code for big endian mode.  This is the default.
 
 @item -mmac
 @opindex mmac
-Enable the use of multiply-accumulate instructions. Disabled by default. 
+Enable the use of multiply-accumulate instructions. Disabled by default.
 
 @item -mscore5u
 @opindex mscore5u
@@ -14566,8 +14568,8 @@ replacing that beginning with the specified prefix to produce an
 alternate directory name.  Thus, with @option{-Bfoo/}, GCC will search
 @file{foo/bar} where it would normally search @file{/usr/local/lib/bar}.
 These alternate directories are searched first; the standard directories
-come next. If a standard directory begins with the configured 
-@var{prefix} then the value of @var{prefix} is replaced by 
+come next. If a standard directory begins with the configured
+@var{prefix} then the value of @var{prefix} is replaced by
 @env{GCC_EXEC_PREFIX} when looking for header files.
 
 @item COMPILER_PATH

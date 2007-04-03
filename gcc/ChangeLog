@@ -1,3 +1,8 @@
+2007-04-02  Eric Christopher  <echristo@apple.com>
+
+	* doc/invoke.texi (i386 and x86-64 Options): Document -m64
+	limitations on darwin.
+
 2007-04-02  Anatoly Sokolov <aesok@post.ru>
 
 	PR target/31137
@@ -6,7 +11,7 @@
 2007-04-02  Dave Korn  <dave.korn@artimi.com>
 
 	* doc/tm.texi (FUNCTION_MODE): Update and extend documentation.
-	
+
 2007-04-02  Dave Korn  <dave.korn@artimi.com>
 
 	* libgcc2.h (exception_descriptor): Don't forward-declare.
@@ -64,7 +69,7 @@
 	PR 14737
 	* doc/invoke.texi: (optimization options): Reword description
 	of -ffast-math. Document its primary purpose.
-	
+
 2007-03-31  Richard Guenther  <rguenther@suse.de>
 
 	* omp-low.c (splay-tree.h): Include.
@@ -97,7 +102,7 @@
 
 2007-03-31  Anatoly Sokolov <aesok@post.ru>
 
-	* config/avr/predicates.md (even_register_operand, 
+	* config/avr/predicates.md (even_register_operand,
 	odd_register_operand): New predicates.
 	* config/avr/avr.md (movw peephole2): New.
 	(movw_r peephole2): New.
@@ -204,7 +209,7 @@
 
 2007-03-30  Anatoly Sokolov <aesok@post.ru>
 
-	* config/avr/avr.c (avr_override_options): Clear 
+	* config/avr/avr.c (avr_override_options): Clear
 	'flag_delete_null_pointer_checks'.
 
 2007-03-30  Paolo Carlini  <pcarlini@suse.de>
@@ -235,7 +240,7 @@
 2007-03-30  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/PR30700
-	* dwarf2out.c (reference_to_unused): Ask cgraph for functions 
+	* dwarf2out.c (reference_to_unused): Ask cgraph for functions
 	availablility; add more sanity checking; ask varpool only about
 	VAR_DECL.
 
@@ -329,7 +334,7 @@
 	than calling gen_rtx_SET directly.  Use r0 to hold the value of
 	'address + 4' rather than a stack based temporary which can be
 	mis-optimized away.
-	
+
 2007-03-29  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_secondary_input_reload_class,
@@ -360,7 +365,7 @@
 	* config.gcc: Accept barcelona as a variant of amdfam10.
 	* config/i386/i386.c (override_options): Likewise.
 	* doc/invoke.texi: Likewise.
-	
+
 2007-03-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-dfa.c (get_ref_base_and_extent): Do not expect positive
@@ -390,7 +395,7 @@
 2007-03-28  Lars Poeschel <larsi@wh2.tu-dresden.de>
 
 	* config/fr30/fr30.md (movsi_internal): Change destination
-	constraint from m to V and add m to the end. 
+	constraint from m to V and add m to the end.
 
 2007-03-28  Christian Bruel  <christian.bruel@st.com>
 
@@ -411,7 +416,7 @@
 	* config/s390/s390.md ("fix_trunc<mode>di2"): New expander.
 	("fix_trunc<DFP:mode>di2_dfp"): New insn definition renamed from
 	fix_trunc<mode>di2.
-	("fixuns_truncdddi2", "fixuns_trunctddi2"): Use 
+	("fixuns_truncdddi2", "fixuns_trunctddi2"): Use
 	fix_trunc<DFP:mode>di2_dfp instead of fix_trunc<mode>di2.
 	("fix_truncdfsi2", "fix_truncsfsi2", "fixuns_truncdddi2",
 	"fixuns_trunctddi2"): Whitespace fix.
@@ -438,7 +443,7 @@
 
 2007-03-27  Anatoly Sokolov <aesok@post.ru>
 
-	* config/avr/avr.c (avr_mcu_types): Move at90usb82 device to 'avr4' 
+	* config/avr/avr.c (avr_mcu_types): Move at90usb82 device to 'avr4'
 	architecture.
 
 2007-03-27  Janis Johnson  <janis187@us.ibm.com>
@@ -458,7 +463,7 @@
 2007-03-27  Richard Guenther  <rguenther@suse.de>
 
 	* tree-dfa.c (get_ref_base_and_extent): Replace bit_offset and
-	computations with it with a HOST_WIDE_INT variable.  
+	computations with it with a HOST_WIDE_INT variable.
 
 2007-03-26  Mike Stump  <mrs@apple.com>
 
@@ -483,7 +488,7 @@
 	_mm_srli_epi64): Mark __B const.
 	(_mm_srli_si128, _mm_srli_si128): Fix disabled inline versions.
 	(_mm_sll_epi16, _mm_sll_epi32, _mm_sll_epi64, _mm_sra_epi16,
-	_mm_sra_epi32, _mm_srl_epi16, _mm_srl_epi32, _mm_srl_epi64): Use 
+	_mm_sra_epi32, _mm_srl_epi16, _mm_srl_epi32, _mm_srl_epi64): Use
 	new two-vector shift builtins.
 
 2007-03-26  Ian Lance Taylor  <iant@google.com>
