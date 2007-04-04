@@ -14576,12 +14576,6 @@ ix86_init_mmx_sse_builtins (void)
   tree v8hi_ftype_v8hi_int
     = build_function_type_list (V8HI_type_node,
 				V8HI_type_node, integer_type_node, NULL_TREE);
-  tree v8hi_ftype_v8hi_v2di
-    = build_function_type_list (V8HI_type_node,
-				V8HI_type_node, V2DI_type_node, NULL_TREE);
-  tree v4si_ftype_v4si_v2di
-    = build_function_type_list (V4SI_type_node,
-				V4SI_type_node, V2DI_type_node, NULL_TREE);
   tree v4si_ftype_v8hi_v8hi
     = build_function_type_list (V4SI_type_node,
 				V8HI_type_node, V8HI_type_node, NULL_TREE);
@@ -14852,16 +14846,16 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (MASK_SSE2, "__builtin_ia32_pmuludq", di_ftype_v2si_v2si, IX86_BUILTIN_PMULUDQ);
   def_builtin (MASK_SSE2, "__builtin_ia32_pmuludq128", v2di_ftype_v4si_v4si, IX86_BUILTIN_PMULUDQ128);
 
-  def_builtin (MASK_SSE2, "__builtin_ia32_psllw128", v8hi_ftype_v8hi_v2di, IX86_BUILTIN_PSLLW128);
-  def_builtin (MASK_SSE2, "__builtin_ia32_pslld128", v4si_ftype_v4si_v2di, IX86_BUILTIN_PSLLD128);
+  def_builtin (MASK_SSE2, "__builtin_ia32_psllw128", v8hi_ftype_v8hi_v8hi, IX86_BUILTIN_PSLLW128);
+  def_builtin (MASK_SSE2, "__builtin_ia32_pslld128", v4si_ftype_v4si_v4si, IX86_BUILTIN_PSLLD128);
   def_builtin (MASK_SSE2, "__builtin_ia32_psllq128", v2di_ftype_v2di_v2di, IX86_BUILTIN_PSLLQ128);
 
-  def_builtin (MASK_SSE2, "__builtin_ia32_psrlw128", v8hi_ftype_v8hi_v2di, IX86_BUILTIN_PSRLW128);
-  def_builtin (MASK_SSE2, "__builtin_ia32_psrld128", v4si_ftype_v4si_v2di, IX86_BUILTIN_PSRLD128);
+  def_builtin (MASK_SSE2, "__builtin_ia32_psrlw128", v8hi_ftype_v8hi_v8hi, IX86_BUILTIN_PSRLW128);
+  def_builtin (MASK_SSE2, "__builtin_ia32_psrld128", v4si_ftype_v4si_v4si, IX86_BUILTIN_PSRLD128);
   def_builtin (MASK_SSE2, "__builtin_ia32_psrlq128", v2di_ftype_v2di_v2di, IX86_BUILTIN_PSRLQ128);
 
-  def_builtin (MASK_SSE2, "__builtin_ia32_psraw128", v8hi_ftype_v8hi_v2di, IX86_BUILTIN_PSRAW128);
-  def_builtin (MASK_SSE2, "__builtin_ia32_psrad128", v4si_ftype_v4si_v2di, IX86_BUILTIN_PSRAD128);
+  def_builtin (MASK_SSE2, "__builtin_ia32_psraw128", v8hi_ftype_v8hi_v8hi, IX86_BUILTIN_PSRAW128);
+  def_builtin (MASK_SSE2, "__builtin_ia32_psrad128", v4si_ftype_v4si_v4si, IX86_BUILTIN_PSRAD128);
 
   def_builtin (MASK_SSE2, "__builtin_ia32_pslldqi128", v2di_ftype_v2di_int, IX86_BUILTIN_PSLLDQI128);
   def_builtin (MASK_SSE2, "__builtin_ia32_psllwi128", v8hi_ftype_v8hi_int, IX86_BUILTIN_PSLLWI128);
@@ -15577,9 +15571,106 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       emit_insn (pat);
       return target;
 
+    case IX86_BUILTIN_PSLLWI128:
+      icode = CODE_FOR_ashlv8hi3;
+      goto do_pshifti;
+    case IX86_BUILTIN_PSLLDI128:
+      icode = CODE_FOR_ashlv4si3;
+      goto do_pshifti;
+    case IX86_BUILTIN_PSLLQI128:
+      icode = CODE_FOR_ashlv2di3;
+      goto do_pshifti;
+    case IX86_BUILTIN_PSRAWI128:
+      icode = CODE_FOR_ashrv8hi3;
+      goto do_pshifti;
+    case IX86_BUILTIN_PSRADI128:
+      icode = CODE_FOR_ashrv4si3;
+      goto do_pshifti;
+    case IX86_BUILTIN_PSRLWI128:
+      icode = CODE_FOR_lshrv8hi3;
+      goto do_pshifti;
+    case IX86_BUILTIN_PSRLDI128:
+      icode = CODE_FOR_lshrv4si3;
+      goto do_pshifti;
+    case IX86_BUILTIN_PSRLQI128:
+      icode = CODE_FOR_lshrv2di3;
+      goto do_pshifti;
+    do_pshifti:
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+
+      if (GET_CODE (op1) != CONST_INT)
+	{
+	  error ("shift must be an immediate");
+	  return const0_rtx;
+	}
+      if (INTVAL (op1) < 0 || INTVAL (op1) > 255)
+	op1 = GEN_INT (255);
+
+      tmode = insn_data[icode].operand[0].mode;
+      mode1 = insn_data[icode].operand[1].mode;
+      if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
+	op0 = copy_to_reg (op0);
+
+      target = gen_reg_rtx (tmode);
+      pat = GEN_FCN (icode) (target, op0, op1);
+      if (!pat)
+	return 0;
+      emit_insn (pat);
+      return target;
+
+    case IX86_BUILTIN_PSLLW128:
+      icode = CODE_FOR_ashlv8hi3;
+      goto do_pshift;
+    case IX86_BUILTIN_PSLLD128:
+      icode = CODE_FOR_ashlv4si3;
+      goto do_pshift;
+    case IX86_BUILTIN_PSLLQ128:
+      icode = CODE_FOR_ashlv2di3;
+      goto do_pshift;
+    case IX86_BUILTIN_PSRAW128:
+      icode = CODE_FOR_ashrv8hi3;
+      goto do_pshift;
+    case IX86_BUILTIN_PSRAD128:
+      icode = CODE_FOR_ashrv4si3;
+      goto do_pshift;
+    case IX86_BUILTIN_PSRLW128:
+      icode = CODE_FOR_lshrv8hi3;
+      goto do_pshift;
+    case IX86_BUILTIN_PSRLD128:
+      icode = CODE_FOR_lshrv4si3;
+      goto do_pshift;
+    case IX86_BUILTIN_PSRLQ128:
+      icode = CODE_FOR_lshrv2di3;
+      goto do_pshift;
+    do_pshift:
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+
+      tmode = insn_data[icode].operand[0].mode;
+      mode1 = insn_data[icode].operand[1].mode;
+
+      if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
+	op0 = copy_to_reg (op0);
+
+      op1 = simplify_gen_subreg (TImode, op1, GET_MODE (op1), 0);
+      if (! (*insn_data[icode].operand[2].predicate) (op1, TImode))
+	op1 = copy_to_reg (op1);
+
+      target = gen_reg_rtx (tmode);
+      pat = GEN_FCN (icode) (target, op0, op1);
+      if (!pat)
+	return 0;
+      emit_insn (pat);
+      return target;
+
     case IX86_BUILTIN_PSLLDQI128:
     case IX86_BUILTIN_PSRLDQI128:
-      icode = (  fcode == IX86_BUILTIN_PSLLDQI128 ? CODE_FOR_sse2_ashlti3
+      icode = (fcode == IX86_BUILTIN_PSLLDQI128 ? CODE_FOR_sse2_ashlti3
 	       : CODE_FOR_sse2_lshrti3);
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
@@ -15600,7 +15691,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	  return const0_rtx;
 	}
       target = gen_reg_rtx (V2DImode);
-      pat = GEN_FCN (icode) (simplify_gen_subreg (tmode, target, V2DImode, 0), op0, op1);
+      pat = GEN_FCN (icode) (simplify_gen_subreg (tmode, target, V2DImode, 0),
+			     op0, op1);
       if (! pat)
 	return 0;
       emit_insn (pat);
