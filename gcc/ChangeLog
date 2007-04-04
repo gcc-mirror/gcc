@@ -1,5 +1,12 @@
 2007-04-04  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	PR other/31353
+	* gcc.c (main): Do not run the linker if
+	print_subprocess_help indicates that it shouldn't be
+	run.
+
+2007-04-04  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	PR doc/31355
 	* doc/invoke.texi (--help=): Document <languages> value, fix
 	formatting in tables of values.
