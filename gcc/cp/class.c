@@ -2343,16 +2343,6 @@ check_for_override (tree decl, tree ctype)
       if (!DECL_VINDEX (decl))
 	DECL_VINDEX (decl) = error_mark_node;
       IDENTIFIER_VIRTUAL_P (DECL_NAME (decl)) = 1;
-      if (DECL_DLLIMPORT_P (decl))
-	{
-	  /* When we handled the dllimport attribute we may not have known
-	     that this function is virtual   We can't use dllimport
-	     semantics for a virtual method because we need to initialize
-	     the vtable entry with a constant address.  */
-	  DECL_DLLIMPORT_P (decl) = 0;
-	  DECL_ATTRIBUTES (decl)
-	    = remove_attribute ("dllimport", DECL_ATTRIBUTES (decl));
-	}
     }
 }
 

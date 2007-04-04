@@ -1,3 +1,7 @@
+2007-04-04  Danny Smith  <dannysmith.users.sourceforge.net>
+
+	* g++.dg/ext/dllimport12.C: Update comments.
+
 2007-04-03  Eric Christopher  <echristo@apple.com>
 
 	* g++.dg/tree-ssa/pr29902.C: Require ilp32.
