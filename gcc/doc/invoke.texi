@@ -695,9 +695,11 @@ See RS/6000 and PowerPC Options.
 -mwarn-framesize  -mwarn-dynamicstack  -mstack-size -mstack-guard}
 
 @emph{Score Options}
-@gccoptlist{-mel -mel @gol
+@gccoptlist{-meb -mel @gol
+-mnhwloop @gol
+-muls @gol
 -mmac @gol
--mscore5u -mscore7}
+-mscore5 -mscore5u -mscore7 -mscore7d}
  
 @emph{SH Options}
 @gccoptlist{-m1  -m2  -m2e  -m3  -m3e @gol
@@ -12275,17 +12277,29 @@ at an address aligned to the value given by @var{stack-size}.
 These options are defined for Score implementations:
 
 @table @gcctabopt
-@item -mel
-@opindex -mel
-Compile code for little endian mode. 
-
 @item -meb
 @opindex meb
 Compile code for big endian mode.  This is the default.
 
+@item -mel
+@opindex -mel
+Compile code for little endian mode. 
+
+@item -mnhwloop
+@opindex -mnhwloop
+Disable generate bcnz instruction.
+
+@item -muls
+@opindex -muls
+Enable generate unaligned load and store instruction.
+
 @item -mmac
 @opindex mmac
 Enable the use of multiply-accumulate instructions. Disabled by default. 
+
+@item -mscore5
+@opindex mscore5
+Specify the SCORE5 as the target architecture.
 
 @item -mscore5u
 @opindex mscore5u
@@ -12293,7 +12307,11 @@ Specify the SCORE5U of the target architecture.
 
 @item -mscore7
 @opindex mscore7
-Specify the SCORE7 of the target architecture. This is the default.
+Specify the SCORE7 as the target architecture. This is the default.
+
+@item -mscore7d
+@opindex mscore7d
+Specify the SCORE7D as the target architecture.
 @end table
 
 @node SH Options

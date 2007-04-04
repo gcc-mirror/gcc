@@ -38,7 +38,9 @@ extern GTY(()) rtx cmp_op1;
 
 #undef ASM_SPEC
 #define ASM_SPEC \
-  "%{!mel:-EB} %{mel:-EL} %{mscore5u:-SCORE5U} %{mscore7:-SCORE7} %{G*}"
+  "%{!mel:-EB} %{mel:-EL} %{mscore5:-SCORE5} %{mscore5u:-SCORE5U} \
+   %{mscore7:%{!mmac:-SCORE7}} %{mscore7:%{mmac:-SCORE7D}} \
+   %{mscore7d:-SCORE7D} %{G*}"
 
 #undef LINK_SPEC
 #define LINK_SPEC                "%{!mel:-EB} %{mel:-EL} %{G*}"
@@ -285,6 +287,16 @@ extern GTY(()) rtx cmp_op1;
   112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,        \
   128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,        \
   144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159        }
+
+/* Macro to conditionally modify fixed_regs/call_used_regs.  */
+#define PIC_OFFSET_TABLE_REGNUM          29
+
+#define CONDITIONAL_REGISTER_USAGE                     \
+{                                                      \
+   if (!flag_pic)                                      \
+     fixed_regs[PIC_OFFSET_TABLE_REGNUM] =             \
+     call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 0;      \
+}
 
 #define HARD_REGNO_NREGS(REGNO, MODE) \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
@@ -534,7 +546,7 @@ enum reg_class
    If `ACCUMULATE_OUTGOING_ARGS' is also defined, the only effect
    of this macro is to determine whether the space is included in
    `current_function_outgoing_args_size'.  */
-#define OUTGOING_REG_PARM_STACK_SPACE
+#define OUTGOING_REG_PARM_STACK_SPACE   1
 
 #define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
 

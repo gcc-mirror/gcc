@@ -2814,7 +2814,7 @@ cp3 registers.
 cp1 + cp2 + cp3 registers.
 
 @item I
-Unsigned 15 bit integer (in the range 0 to 32767).
+High 16-bit constant (32-bit constant with 16 LSBs zero).
 
 @item J
 Unsigned 5 bit integer (in the range 0 to 31).
@@ -2830,18 +2830,6 @@ Unsigned 14 bit integer (in the range 0 to 16383).
 
 @item N
 Signed 14 bit integer (in the range @minus{}8192 to 8191).
-
-@item O
-Signed 15 bit integer (in the range @minus{}16384 to 16383).
-
-@item P
-Signed 12 bit integer (in the range @minus{}2048 to 2047).
-
-@item J
-An integer constant with exactly a single bit set.
-
-@item Q
-An integer constant.
 
 @item Z
 Any SYMBOL_REF.
