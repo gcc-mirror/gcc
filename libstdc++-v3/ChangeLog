@@ -1,3 +1,8 @@
+2007-04-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/valarray_array.h (__valarray_default_construct(_Tp*,
+	_Tp*)): Use __is_scalar instead of __is_pod.
+
 2007-04-03  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algobase.h (__copy_aux(_II, _II, _OI),
