@@ -27,9 +27,21 @@ mel
 Target RejectNegative Report Mask(LITTLE_ENDIAN)
 Generate little-endian code
 
+mnhwloop
+Target RejectNegative Report Mask(NHWLOOP)
+Disable bcnz instruction
+
+muls
+Target RejectNegative Report Mask(ULS)
+Enable unaligned load/store instruction
+
 mmac
 Target RejectNegative Report Mask(MAC)
 Enable mac instruction
+
+mscore5
+Target RejectNegative Report Mask(SCORE5)
+Support SCORE 5 ISA
 
 mscore5u
 Target RejectNegative Report Mask(SCORE5U)
@@ -39,3 +51,6 @@ mscore7
 Target RejectNegative Report Mask(SCORE7)
 Support SCORE 7 ISA
 
+mscore7d
+Target RejectNegative Report Mask(SCORE7D)
+Support SCORE 7D ISA

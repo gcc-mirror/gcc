@@ -111,7 +111,7 @@
         (zero_extract (match_operand:SI 1 "memory_operand" "")
                       (match_operand:SI 2 "immediate_operand" "")
                       (match_operand:SI 3 "immediate_operand" "")))]
-  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN"
+  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN && TARGET_ULS"
 {
   if (mdx_unaligned_load (operands))
     DONE;
@@ -124,7 +124,7 @@
                       (match_operand:SI 1 "immediate_operand" "")
                       (match_operand:SI 2 "immediate_operand" ""))
         (match_operand:SI 3 "register_operand" ""))]
-  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN"
+  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN && TARGET_ULS"
 {
   if (mdx_unaligned_store (operands))
     DONE;
@@ -137,7 +137,7 @@
         (sign_extract (match_operand:SI 1 "memory_operand" "")
                       (match_operand:SI 2 "immediate_operand" "")
                       (match_operand:SI 3 "immediate_operand" "")))]
-  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN"
+  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN && TARGET_ULS"
 {
   if (mdx_unaligned_load (operands))
     DONE;
@@ -150,7 +150,7 @@
                    (match_operand:BLK 1 "general_operand"))
               (use (match_operand:SI 2 ""))
               (use (match_operand:SI 3 "const_int_operand"))])]
-  "!TARGET_SCORE5U"
+  "!TARGET_SCORE5U && TARGET_ULS"
 {
   if (mdx_block_move (operands))
     DONE;
@@ -164,7 +164,7 @@
                  (match_operand:SI 2 "const_simm12" "")))
    (set (match_operand:QI 3 "register_operand" "=d")
         (mem:QI (match_dup 1)))]
-  "!TARGET_SCORE5U"
+  ""
   "lbu     %3, [%1]+, %2"
   [(set_attr "type" "load")
    (set_attr "mode" "QI")])
@@ -175,7 +175,7 @@
                  (match_operand:SI 2 "const_simm12" "")))
    (set (match_operand:HI 3 "register_operand" "=d")
         (mem:HI (match_dup 1)))]
-  "!TARGET_SCORE5U"
+  ""
   "lhu     %3, [%1]+, %2"
   [(set_attr "type" "load")
    (set_attr "mode" "HI")])
@@ -186,7 +186,7 @@
                  (match_operand:SI 2 "const_simm12" "")))
    (set (match_operand:SI 3 "register_operand" "=d")
         (mem:SI (match_dup 1)))]
-  "!TARGET_SCORE5U"
+  ""
   "lw      %3, [%1]+, %2"
   [(set_attr "type" "load")
    (set_attr "mode" "SI")])
@@ -197,7 +197,7 @@
                  (match_operand:SI 2 "const_simm12" "")))
    (set (mem:QI (match_dup 1))
         (match_operand:QI 3 "register_operand" "d"))]
-  "!TARGET_SCORE5U"
+  ""
   "sb      %3, [%1]+, %2"
   [(set_attr "type" "store")
    (set_attr "mode" "QI")])
@@ -208,7 +208,7 @@
                  (match_operand:SI 2 "const_simm12" "")))
    (set (mem:HI (match_dup 1))
         (match_operand:HI 3 "register_operand" "d"))]
-  "!TARGET_SCORE5U"
+  ""
   "sh      %3, [%1]+, %2"
   [(set_attr "type" "store")
    (set_attr "mode" "HI")])
@@ -219,7 +219,7 @@
                  (match_operand:SI 2 "const_simm12" "")))
    (set (mem:SI (match_dup 1))
         (match_operand:SI 3 "register_operand" "d"))]
-  "!TARGET_SCORE5U"
+  ""
   "sw      %3, [%1]+, %2"
   [(set_attr "type" "store")
    (set_attr "mode" "SI")])
@@ -231,7 +231,7 @@
    (set (match_operand:QI 3 "register_operand" "=d")
         (mem:QI (plus:SI (match_dup 1)
                          (match_dup 2))))]
-  "!TARGET_SCORE5U"
+  ""
   "lbu     %3, [%1, %2]+"
   [(set_attr "type" "load")
    (set_attr "mode" "QI")])
@@ -243,7 +243,7 @@
    (set (match_operand:HI 3 "register_operand" "=d")
         (mem:HI (plus:SI (match_dup 1)
                          (match_dup 2))))]
-  "!TARGET_SCORE5U"
+  ""
   "lhu     %3, [%1, %2]+"
   [(set_attr "type" "load")
    (set_attr "mode" "HI")])
@@ -255,7 +255,7 @@
    (set (match_operand:SI 3 "register_operand" "=d")
         (mem:SI (plus:SI (match_dup 1)
                          (match_dup 2))))]
-  "!TARGET_SCORE5U"
+  ""
   "lw      %3, [%1, %2]+"
   [(set_attr "type" "load")
    (set_attr "mode" "SI")])
@@ -267,7 +267,7 @@
    (set (mem:QI (plus:SI (match_dup 1)
                          (match_dup 2)))
         (match_operand:QI 3 "register_operand" "d"))]
-  "!TARGET_SCORE5U"
+  ""
   "sb      %3, [%1, %2]+"
   [(set_attr "type" "store")
    (set_attr "mode" "QI")])
@@ -279,7 +279,7 @@
    (set (mem:HI (plus:SI (match_dup 1)
                          (match_dup 2)))
         (match_operand:HI 3 "register_operand" "d"))]
-  "!TARGET_SCORE5U"
+  ""
   "sh      %3, [%1, %2]+"
   [(set_attr "type" "store")
    (set_attr "mode" "HI")])
@@ -291,7 +291,7 @@
    (set (mem:SI (plus:SI (match_dup 1)
                          (match_dup 2)))
         (match_operand:SI 3 "register_operand" "d"))]
-  "!TARGET_SCORE5U"
+  ""
   "sw      %3, [%1, %2]+"
   [(set_attr "type" "store")
    (set_attr "mode" "SI")])
@@ -302,7 +302,7 @@
                  (const_int 4)))
    (set (reg:SI LC_REGNUM)
         (unspec:SI [(mem:BLK (match_dup 1))] LCB))]
-  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN"
+  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN && TARGET_ULS"
   "lcb     [%1]+"
   [(set_attr "type" "load")
    (set_attr "mode" "SI")])
@@ -316,7 +316,7 @@
                     (reg:SI LC_REGNUM)] LCW))
    (set (reg:SI LC_REGNUM)
         (unspec:SI [(mem:BLK (match_dup 1))] LCB))]
-  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN"
+  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN && TARGET_ULS"
   "lcw     %2, [%1]+"
   [(set_attr "type" "load")
    (set_attr "mode" "SI")])
@@ -328,7 +328,7 @@
    (set (match_operand:SI 2 "register_operand" "=d")
         (unspec:SI [(mem:BLK (match_dup 1))
                     (reg:SI LC_REGNUM)] LCE))]
-  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN"
+  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN && TARGET_ULS"
   "lce     %2, [%1]+"
   [(set_attr "type" "load")
    (set_attr "mode" "SI")])
@@ -341,7 +341,7 @@
         (unspec:BLK [(match_operand:SI 2 "register_operand" "d")] SCB))
    (set (reg:SI SC_REGNUM)
         (unspec:SI [(match_dup 2)] SCLC))]
-  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN"
+  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN && TARGET_ULS"
   "scb     %2, [%1]+"
   [(set_attr "type" "store")
    (set_attr "mode" "SI")])
@@ -355,7 +355,7 @@
                      (reg:SI SC_REGNUM)] SCW))
    (set (reg:SI SC_REGNUM)
         (unspec:SI [(match_dup 2)] SCLC))]
-  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN"
+  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN && TARGET_ULS"
   "scw     %2, [%1]+"
   [(set_attr "type" "store")
    (set_attr "mode" "SI")])
@@ -366,7 +366,7 @@
                  (const_int 4)))
    (set (mem:BLK (match_dup 1))
         (unspec:BLK [(reg:SI SC_REGNUM)] SCE))]
-  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN"
+  "!TARGET_SCORE5U && !TARGET_LITTLE_ENDIAN && TARGET_ULS"
   "sce     [%1]+"
   [(set_attr "type" "store")
    (set_attr "mode" "SI")])
