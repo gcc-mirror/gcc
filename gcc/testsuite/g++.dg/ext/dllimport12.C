@@ -1,8 +1,9 @@
 // PR target/27650
-// Don't use dllimport semantics on virtual methods
+// Don't use dllimport semantics on virtual methods when initializing
+// vtables
 // { dg-do compile { target i?86-*-cygwin* i?86-*-mingw*} }
 
-// Don't import explicitly virtual method.
+// Use import lib thunk for vtable entry of explicitly virtual method,
 struct base
 {
   virtual void key_method();
@@ -12,7 +13,7 @@ struct base
 void base::key_method() {}
 
 
-// Nor an implicitly virtual method.
+// Likewise for an implicitly virtual method.
 struct derived : public base
 {
   void key_method(); 

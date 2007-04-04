@@ -1,3 +1,10 @@
+2007-04-04  Danny Smith  <dannysmith.users.sourceforge.net>
+
+	* class.c (check_for_override): Don't remove dllmport attribute
+	of virtual methods.
+
+
+
 2007-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/30847
