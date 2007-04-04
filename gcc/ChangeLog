@@ -1,5 +1,12 @@
 2007-04-04  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	PR other/31356
+	* opts.c (print_specific_help): Fix --help=<language>
+	header line.
+	(common_handle_option): Support --help=common.
+
+2007-04-04  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	PR other/31353
 	* gcc.c (main): Do not run the linker if
 	print_subprocess_help indicates that it shouldn't be
