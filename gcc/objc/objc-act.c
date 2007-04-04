@@ -3642,7 +3642,7 @@ next_sjlj_build_catch_list (void)
 
 	{
 	  struct _objc_exception_data _stack;
-	  id volatile _rethrow = 0;
+	  id _rethrow = 0;
 	  try
 	    {
 	      objc_exception_try_enter (&_stack);
@@ -3686,7 +3686,6 @@ next_sjlj_build_try_catch_finally (void)
 
   rethrow_decl = objc_create_temporary_var (objc_object_type);
   cur_try_context->rethrow_decl = rethrow_decl;
-  TREE_THIS_VOLATILE (rethrow_decl) = 1;
   TREE_CHAIN (rethrow_decl) = stack_decl;
 
   /* Build the outermost variable binding level.  */

@@ -1,3 +1,8 @@
+2007-04-04  Stuart Hastings  <stuart@apple.com>
+
+	PR 31281
+	* objc/objc-act.c (next_sjlj_build_catch_list): Delete volatile from rethrow decl.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Make-lang.in: Add dummy lang.install-pdf target.
