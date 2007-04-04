@@ -1,3 +1,9 @@
+2007-04-04  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	PR doc/31355
+	* doc/invoke.texi (--help=): Document <languages> value, fix
+	formatting in tables of values.
+
 2007-04-04  Danny Smith  <dannysmith.users.sourceforge.net>
 
 	* config/i386/winnt-cxx.c (i386_pe_type_dllimport_p): Don't ignore
