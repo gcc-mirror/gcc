@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -42,6 +42,8 @@ bool gomp_dyn_var = false;
 bool gomp_nest_var = false;
 enum gomp_schedule_type gomp_run_sched_var = GFS_DYNAMIC;
 unsigned long gomp_run_sched_chunk = 1;
+unsigned short *gomp_cpu_affinity;
+size_t gomp_cpu_affinity_len;
 
 /* Parse the OMP_SCHEDULE environment variable.  */
 
@@ -177,6 +179,97 @@ parse_boolean (const char *name, bool *value)
     gomp_error ("Invalid value for environment variable %s", name);
 }
 
+/* Parse the GOMP_CPU_AFFINITY environment varible.  Return true if one was
+   present and it was successfully parsed.  */
+
+static bool
+parse_affinity (void)
+{
+  char *env, *end;
+  unsigned long cpu_beg, cpu_end, cpu_stride;
+  unsigned short *cpus = NULL;
+  size_t allocated = 0, used = 0, needed;
+
+  env = getenv ("GOMP_CPU_AFFINITY");
+  if (env == NULL)
+    return false;
+
+  do
+    {
+      while (*env == ' ' || *env == '\t')
+	env++;
+
+      cpu_beg = strtoul (env, &end, 0);
+      cpu_end = cpu_beg;
+      cpu_stride = 1;
+      if (env == end || cpu_beg >= 65536)
+	goto invalid;
+
+      env = end;
+      if (*env == '-')
+	{
+	  cpu_end = strtoul (++env, &end, 0);
+	  if (env == end || cpu_end >= 65536 || cpu_end < cpu_beg)
+	    goto invalid;
+
+	  env = end;
+	  if (*env == ':')
+	    {
+	      cpu_stride = strtoul (++env, &end, 0);
+	      if (env == end || cpu_stride == 0 || cpu_stride >= 65536)
+		goto invalid;
+
+	      env = end;
+	    }
+	}
+
+      needed = (cpu_end - cpu_beg) / cpu_stride + 1;
+      if (used + needed >= allocated)
+	{
+	  unsigned short *new_cpus;
+
+	  if (allocated < 64)
+	    allocated = 64;
+	  if (allocated > needed)
+	    allocated <<= 1;
+	  else
+	    allocated += 2 * needed;
+	  new_cpus = realloc (cpus, allocated * sizeof (unsigned short));
+	  if (new_cpus == NULL)
+	    {
+	      free (cpus);
+	      gomp_error ("not enough memory to store GOMP_CPU_AFFINITY list");
+	      return false;
+	    }
+
+	  cpus = new_cpus;
+	}
+
+      while (needed--)
+	{
+	  cpus[used++] = cpu_beg;
+	  cpu_beg += cpu_stride;
+	}
+
+      while (*env == ' ' || *env == '\t')
+	env++;
+
+      if (*env == ',')
+	env++;
+      else if (*env == '\0')
+	break;
+    }
+  while (1);
+
+  gomp_cpu_affinity = cpus;
+  gomp_cpu_affinity_len = used;
+  return true;
+
+ invalid:
+  gomp_error ("Invalid value for enviroment variable GOMP_CPU_AFFINITY");
+  return false;
+}
+
 static void __attribute__((constructor))
 initialize_env (void)
 {
@@ -190,6 +283,8 @@ initialize_env (void)
   parse_boolean ("OMP_NESTED", &gomp_nest_var);
   if (!parse_unsigned_long ("OMP_NUM_THREADS", &gomp_nthreads_var))
     gomp_init_num_threads ();
+  if (parse_affinity ())
+    gomp_init_affinity ();
 
   /* Not strictly environment related, but ordering constructors is tricky.  */
   pthread_attr_init (&gomp_thread_attr);

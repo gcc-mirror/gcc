@@ -1,3 +1,22 @@
+2007-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.h (gomp_cpu_affinity, gomp_cpu_affinity_len): New extern
+	decls.
+	(gomp_init_affinity, gomp_init_thread_affinity): New prototypes.
+	* env.c (gomp_cpu_affinity, gomp_cpu_affinity_len): New variables.
+	(parse_affinity): New function.
+	(initialize_env): Call it and gomp_init_affinity.
+	* team.c (gomp_team_start): If gomp_cpu_affinity != NULL,
+	create new pthread_attr_t and call gomp_init_thread_affinity
+	on it for each thread before passing the attribute to pthread_create.
+	* config/linux/affinity.c: New file.
+	* config/posix/affinity.c: New file.
+	* configure.ac (HAVE_PTHREAD_AFFINITY_NP): New test.
+	* configure: Rebuilt.
+	* config.h.in: Rebuilt.
+	* Makefile.am (libgomp_la_SOURCES): Add affinity.c.
+	* Makefile.in: Rebuilt.
+
 2007-03-23  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* testsuite/lib/libgomp.exp (libgomp_init): Add -shared-libgcc for
