@@ -120,7 +120,7 @@ Valid choices are 'yes', 'bid', 'dpd', and 'no'.]) ;;
   esac
 ],
 [
-  case $target in
+  case $host in
     powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux*)
       enable_decimal_float=yes
       ;;
@@ -132,7 +132,7 @@ Valid choices are 'yes', 'bid', 'dpd', and 'no'.]) ;;
 
 # x86's use BID format instead of DPD
 if test x$enable_decimal_float = xyes; then
-  case $target in
+  case $host in
     i?86*-*-linux* | x86_64*-*-linux*)
       enable_decimal_float=bid
       ;;
@@ -194,7 +194,6 @@ if test -n "$CONFIG_FILES"; then
 fi]],
 [[srcdir=${srcdir}
 host=${host}
-target=${target}
 with_target_subdir=${with_target_subdir}
 with_multisubdir=${with_multisubdir}
 ac_configure_args="--enable-multilib ${ac_configure_args}"
