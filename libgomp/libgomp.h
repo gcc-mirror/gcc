@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2007 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -246,7 +246,17 @@ extern unsigned long gomp_run_sched_chunk;
 /* The attributes to be used during thread creation.  */
 extern pthread_attr_t gomp_thread_attr;
 
+/* Other variables.  */
+
+extern unsigned short *gomp_cpu_affinity;
+extern size_t gomp_cpu_affinity_len;
+
 /* Function prototypes.  */
+
+/* affinity.c */
+
+extern void gomp_init_affinity (void);
+extern void gomp_init_thread_affinity (pthread_attr_t *);
 
 /* alloc.c */
 

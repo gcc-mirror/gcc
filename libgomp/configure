@@ -8851,6 +8851,68 @@ rm -f conftest.err conftest.$ac_objext \
     ;;
 esac
 
+# Check for pthread_{,attr_}[sg]etaffinity_np.
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#define _GNU_SOURCE
+   #include <pthread.h>
+int
+main ()
+{
+cpu_set_t cpuset;
+   pthread_attr_t attr;
+   pthread_getaffinity_np (pthread_self (), sizeof (cpu_set_t), &cpuset);
+   if (CPU_ISSET (0, &cpuset))
+     CPU_SET (1, &cpuset);
+   else
+     CPU_ZERO (&cpuset);
+   pthread_setaffinity_np (pthread_self (), sizeof (cpu_set_t), &cpuset);
+   pthread_attr_init (&attr);
+   pthread_attr_getaffinity_np (&attr, sizeof (cpu_set_t), &cpuset);
+   pthread_attr_setaffinity_np (&attr, sizeof (cpu_set_t), &cpuset);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_PTHREAD_AFFINITY_NP 1
+_ACEOF
+
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+
 # At least for glibc, clock_gettime is in librt.  But don't pull that
 # in if it still doesn't give us the function we want.
 if test $ac_cv_func_clock_gettime = no; then
