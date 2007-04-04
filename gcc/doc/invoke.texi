@@ -1102,43 +1102,48 @@ line options for each tool.
 @item --help=@var{class}@r{[},@var{qualifier}@r{]}
 Print (on the standard output) a description of the command line
 options understood by the compiler that fit into a specific class.
-The class can be one of @var{optimizers}, @var{warnings}, @var{target}
-or @var{params}:
+The class can be one of @samp{optimizers}, @samp{warnings}, @samp{target},
+@samp{params}, or @var{language}:
 
-@table @gcctabopt
-@item @var{optimizers}
+@table @asis
+@item @samp{optimizers}
 This will display all of the optimization options supported by the
 compiler.
 
-@item @var{warnings}
+@item @samp{warnings}
 This will display all of the options controlling warning messages
 produced by the compiler.
 
-@item @var{target}
+@item @samp{target}
 This will display target-specific options.  Unlike the
 @option{--target-help} option however, target-specific options of the
 linker and assembler will not be displayed.  This is because those
 tools do not currently support the extended @option{--help=} syntax.
 
-@item @var{params}
+@item @samp{params}
 This will display the values recognized by the @option{--param}
 option.
+
+@item @var{language}
+This will display the options supported for @var{language}, where 
+@var{language} is the name of one of the languages supported in this 
+version of GCC.
 @end table
 
 It is possible to further refine the output of the @option{--help=}
 option by adding a comma separated list of qualifiers after the
 class.  These can be any from the following list:
 
-@table @gcctabopt
-@item undocumented
+@table @asis
+@item @samp{undocumented}
 Display only those options which are undocumented.
 
-@item joined
+@item @samp{joined}
 Display options which take an argument that appears after an equal
 sign in the same continuous piece of text, such as:
 @samp{--help=target}.
 
-@item separate
+@item @samp{separate}
 Display options which take an argument that appears as a separate word
 following the original option, such as: @samp{-o output-file}.
 @end table
