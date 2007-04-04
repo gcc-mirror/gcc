@@ -43,8 +43,8 @@
         .mask   0x00000000, 0
 _start:
         la      r28, _gp
-        la      r8, _bss_start
-        la      r9, _bss_end__
+        la      r8, __bss_start
+        la      r9, __bss_end__
         sub!    r9, r8
         srli!   r9, 2
         addi    r9, -1
@@ -91,8 +91,8 @@ _fini:
         .mask   0x00000000,0
 _start:
         la      r28, _gp
-        la      r8, _bss_start
-        la      r9, _bss_end__
+        la      r8, __bss_start
+        la      r9, __bss_end__
         sub!    r9, r8
         srli!   r9, 2
         addi    r9, -1

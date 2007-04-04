@@ -1511,7 +1511,7 @@
    (use (match_operand 2 "" ""))    ; max iterations
    (use (match_operand 3 "" ""))    ; loop level
    (use (match_operand 4 "" ""))]   ; label
-  ""
+  "!TARGET_NHWLOOP"
   {
     if (INTVAL (operands[3]) > 1)
       FAIL;
@@ -1539,6 +1539,6 @@
                  (const_int -1)))
    (clobber (reg:CC CC_REGNUM))
 ]
-  ""
+  "!TARGET_NHWLOOP"
   "bcnz %1"
   [(set_attr "type" "branch")])
