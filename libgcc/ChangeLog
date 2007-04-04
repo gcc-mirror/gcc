@@ -1,3 +1,7 @@
+2007-04-04  Janis Johnson  <janis187@us.ibm.com>
+
+	* configure: Check host, not target, for decimal float support.
+
 2007-04-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/t-crtpc: New file.
