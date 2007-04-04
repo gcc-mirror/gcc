@@ -1,15 +1,32 @@
+2007-04-04  Richard Henderson  <rth@redhat.com>
+
+	PR target/31361
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Remove
+	v8hi_ftype_v8hi_v2di, v4si_ftype_v4si_v2di.  Use like-types for
+	the variable shift builtins.
+	(ix86_expand_builtin): Properly expand the variable shift builtins.
+	* config/i386/sse.md (ashr<mode>3, lshr<mode>3, ashl<mode>3): Make
+	operand 2 be TImode.
+	* config/i386/emmintrin.h (_mm_slli_epi16, _mm_slli_epi32,
+	_mm_slli_epi64, _mm_srai_epi16, _mm_srai_epi32, _mm_srli_epi16,
+	_mm_srli_epi32, _mm_srli_epi64): Turn into macros.
+	(_mm_srli_si128, _mm_srli_si128): Fix disabled inline versions.
+	(_mm_sll_epi16, _mm_sll_epi32, _mm_sll_epi64, _mm_sra_epi16,
+	_mm_sra_epi32, _mm_srl_epi16, _mm_srl_epi32, _mm_srl_epi64): Use
+	two-vector shift builtins.
+
 2007-04-04  Chen liqin  <liqin@sunnorth.com.cn>
 
-        * config/score/crti.asm: Change _bss_start to __bss_start.
-        * config/score/score.h (CONDITIONAL_REGISTER_USAGE): Added.
-        (OUTGOING_REG_PARM_STACK_SPACE) update.
-        * config/score/score.opt: add options to make backend support
-        score5, score5u, score7 and score7d.
-        * config/score/score.md: Likewise.
-        * config/score/misc.md: Likewise.
-        * config/score/mac.md: Likewise.
-        * doc/invoke.texi: Likewise.
-        * doc/md.texi: update constraints define.
+	* config/score/crti.asm: Change _bss_start to __bss_start.
+	* config/score/score.h (CONDITIONAL_REGISTER_USAGE): Added.
+	(OUTGOING_REG_PARM_STACK_SPACE) update.
+	* config/score/score.opt: add options to make backend support
+	score5, score5u, score7 and score7d.
+	* config/score/score.md: Likewise.
+	* config/score/misc.md: Likewise.
+	* config/score/mac.md: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/md.texi: update constraints define.
 
 2007-04-03  Stuart Hastings  <stuart@apple.com>
 

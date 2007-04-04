@@ -2778,7 +2778,7 @@
   [(set (match_operand:SSEMODE24 0 "register_operand" "=x")
 	(ashiftrt:SSEMODE24
 	  (match_operand:SSEMODE24 1 "register_operand" "0")
-	  (match_operand:SI 2 "nonmemory_operand" "xi")))]
+	  (match_operand:TI 2 "nonmemory_operand" "xn")))]
   "TARGET_SSE2"
   "psra<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseishft")
@@ -2788,7 +2788,7 @@
   [(set (match_operand:SSEMODE248 0 "register_operand" "=x")
 	(lshiftrt:SSEMODE248
 	  (match_operand:SSEMODE248 1 "register_operand" "0")
-	  (match_operand:SI 2 "nonmemory_operand" "xi")))]
+	  (match_operand:TI 2 "nonmemory_operand" "xn")))]
   "TARGET_SSE2"
   "psrl<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseishft")
@@ -2798,7 +2798,7 @@
   [(set (match_operand:SSEMODE248 0 "register_operand" "=x")
 	(ashift:SSEMODE248
 	  (match_operand:SSEMODE248 1 "register_operand" "0")
-	  (match_operand:SI 2 "nonmemory_operand" "xi")))]
+	  (match_operand:TI 2 "nonmemory_operand" "xn")))]
   "TARGET_SSE2"
   "psll<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseishft")
