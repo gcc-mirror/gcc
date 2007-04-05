@@ -2392,17 +2392,23 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 
   /* Generate the actual call.  */
   gfc_conv_function_val (se, sym);
+
   /* If there are alternate return labels, function type should be
      integer.  Can't modify the type in place though, since it can be shared
-     with other functions.  */
+     with other functions.  For dummy arguments, the typing is done to
+     to this result, even if it has to be repeated for each call.  */
   if (has_alternate_specifier
       && TREE_TYPE (TREE_TYPE (TREE_TYPE (se->expr))) != integer_type_node)
     {
-      gcc_assert (! sym->attr.dummy);
-      TREE_TYPE (sym->backend_decl)
-        = build_function_type (integer_type_node,
-                               TYPE_ARG_TYPES (TREE_TYPE (sym->backend_decl)));
-      se->expr = build_fold_addr_expr (sym->backend_decl);
+      if (!sym->attr.dummy)
+	{
+	  TREE_TYPE (sym->backend_decl)
+		= build_function_type (integer_type_node,
+		      TYPE_ARG_TYPES (TREE_TYPE (sym->backend_decl)));
+	  se->expr = build_fold_addr_expr (sym->backend_decl);
+	}
+      else
+	TREE_TYPE (TREE_TYPE (TREE_TYPE (se->expr))) = integer_type_node;
     }
 
   fntype = TREE_TYPE (TREE_TYPE (se->expr));

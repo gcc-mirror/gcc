@@ -1,5 +1,11 @@
 2007-04-05  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/31483
+	* trans-expr.c (gfc_conv_function_call): Give a dummy
+	procedure the correct type if it has alternate returns.
+
+2007-04-05  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/31292
 	* decl.c (gfc_match_modproc): Go up to the top of the namespace
 	tree to find the module namespace for gfc_get_symbol.
