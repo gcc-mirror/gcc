@@ -46,8 +46,8 @@ public:
   ::java::lang::Object * getOption(jint);
   void shutdownInput();
   void shutdownOutput();
-public: // actually protected
   void create(jboolean);
+public: // actually protected
   void connect(::java::lang::String *, jint);
   void connect(::java::net::InetAddress *, jint);
   void connect(::java::net::SocketAddress *, jint);

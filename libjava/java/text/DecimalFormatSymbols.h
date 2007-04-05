@@ -83,6 +83,7 @@ private:
   jint serialVersionOnStream;
   jchar zeroDigit;
   ::java::util::Locale * locale;
+  ::java::util::Currency * currency;
   static const jlong serialVersionUID = 5772796243397350300LL;
 public:
   static ::java::lang::Class class$;

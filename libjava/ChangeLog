@@ -1,3 +1,21 @@
+2007-04-04  Tania Bento  <tbento@redhat.com>
+
+	* java/text/DecimalFormatSymbols.java: Added the year 2007 to
+	Copyright information and introduced new variable, currency.
+	(DecimalFormatSymbols(Locale)): Define currency and intlCurrencySymbol
+	to "XXX", currencySymbol to "?" and localCurrency appropriately.
+	(getCurrency): Fixed documentation and return the value of currency.
+	(setCurrency): Fixed documentation and update the value of currency.
+	(setInternationalCurrencySymbol): Fixed documentation and update the
+	value of currency.
+	* java/util/Currency.java: Introduced two new variables, properties
+	and fractionDigits. In the static block, a properties object is
+	created and the currency resource is loaded.
+	(Currency(Locale)): fractionDigits is defined.
+	(Currency(String)): New method.
+	(getDefaultFractionDigits): Return the value of fractionDigits.
+	(getInstance(String)): Check if String is equal to "XXX".
+
 2007-04-04  Kyle Galloway  <kgallowa@redhat.com>
 
 	* classpath/gnu/classpath/jdwp/util/VariableTable.java: Change longs
