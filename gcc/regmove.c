@@ -739,7 +739,6 @@ copy_src_to_dest (rtx insn, rtx src, rtx dest)
   rtx *p_move_notes;
   int src_regno;
   int dest_regno;
-  int bb;
   int insn_uid;
   int move_uid;
 
@@ -1021,7 +1020,6 @@ regmove_optimize (rtx f, int nregs)
   int pass;
   int i;
   rtx copy_src, copy_dst;
-  basic_block bb;
 
   /* ??? Hack.  Regmove doesn't examine the CFG, and gets mightily
      confused by non-call exceptions ending blocks.  */

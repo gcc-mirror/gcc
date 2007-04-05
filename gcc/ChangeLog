@@ -1,5 +1,9 @@
 2007-04-05  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* regmove.c: Fix unused variable warnings due to previous commit.
+
+2007-04-05  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* regmove.c (STACK_GROWS_DOWNWARD): Don't boolean-ize.
 	(regmove_bb_head): Remove.
 	(copy_src_to_dest): Don't update regmove_bb_head and BB_HEAD.
