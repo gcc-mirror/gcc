@@ -1363,14 +1363,11 @@ do {						\
 
    -	Generates double precision suffix for floating point
 	instructions (t for IEEE, g for VAX)
-
-   +	Generates a nop instruction after a noreturn call at the very end
-	of the function
    */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
   ((CODE) == '/' || (CODE) == ',' || (CODE) == '-' || (CODE) == '~' \
-   || (CODE) == '#' || (CODE) == '*' || (CODE) == '&' || (CODE) == '+')
+   || (CODE) == '#' || (CODE) == '*' || (CODE) == '&')
 
 /* Print a memory address as an operand to reference that memory location.  */
 
