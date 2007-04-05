@@ -4990,13 +4990,6 @@ print_operand (FILE *file, rtx x, int code)
       fputc ((TARGET_FLOAT_VAX ? 'g' : 't'), file);
       break;
 
-    case '+':
-      /* Generates a nop after a noreturn call at the very end of the
-	 function.  */
-      if (next_real_insn (current_output_insn) == 0)
-	fprintf (file, "\n\tnop");
-      break;
-
     case '#':
       if (alpha_this_literal_sequence_number == 0)
 	alpha_this_literal_sequence_number = alpha_next_sequence_number++;
@@ -8221,6 +8214,17 @@ alpha_expand_epilogue (void)
 void
 alpha_end_function (FILE *file, const char *fnname, tree decl ATTRIBUTE_UNUSED)
 {
+  rtx insn;
+
+  /* We output a nop after noreturn calls at the very end of the function to
+     ensure that the return address always remains in the caller's code range,
+     as not doing so might confuse unwinding engines.  */
+  insn = get_last_insn ();
+  if (!INSN_P (insn))
+    insn = prev_active_insn (insn);
+  if (GET_CODE (insn) == CALL_INSN)
+    output_asm_insn (get_insn_template (CODE_FOR_nop, NULL), NULL);
+
 #if TARGET_ABI_OPEN_VMS
   alpha_write_linkage (file, fnname, decl);
 #endif

@@ -26,6 +26,7 @@
 
 (define_constants
   [(UNSPEC_ARG_HOME	0)
+   (UNSPEC_LDGP1	1)
    (UNSPEC_INSXH	2)
    (UNSPEC_MSKXH	3)
    (UNSPEC_CVTQL	4)
@@ -4759,6 +4760,20 @@
   emit_move_insn (gen_rtx_REG (DImode, 25), operands[2]);
 })
 
+(define_insn "*call_osf_1_er_noreturn"
+  [(call (mem:DI (match_operand:DI 0 "call_operand" "c,R,s"))
+	 (match_operand 1 "" ""))
+   (use (reg:DI 29))
+   (clobber (reg:DI 26))]
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF
+   && find_reg_note (insn, REG_NORETURN, NULL_RTX)"
+  "@
+   jsr $26,($27),0
+   bsr $26,%0\t\t!samegp
+   ldq $27,%0($29)\t\t!literal!%#\;jsr $26,($27),%0\t\t!lituse_jsr!%#"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "*,*,8")])
+
 (define_insn "*call_osf_1_er"
   [(call (mem:DI (match_operand:DI 0 "call_operand" "c,R,s"))
 	 (match_operand 1 "" ""))
@@ -4785,10 +4800,10 @@
        || find_reg_note (insn, REG_NORETURN, NULL_RTX))"
   [(parallel [(call (mem:DI (match_dup 2))
 		    (match_dup 1))
-	      (set (reg:DI 26) (plus:DI (pc) (const_int 4)))
-	      (unspec_volatile [(reg:DI 29)] UNSPECV_BLOCKAGE)
+	      (use (reg:DI 29))
 	      (use (match_dup 0))
-	      (use (match_dup 3))])]
+	      (use (match_dup 3))
+	      (clobber (reg:DI 26))])]
 {
   if (CONSTANT_P (operands[0]))
     {
@@ -4816,14 +4831,13 @@
          || find_reg_note (insn, REG_NORETURN, NULL_RTX))"
   [(parallel [(call (mem:DI (match_dup 2))
 		    (match_dup 1))
-	      (set (reg:DI 26) (plus:DI (pc) (const_int 4)))
-	      (unspec_volatile [(reg:DI 29)] UNSPECV_BLOCKAGE)
+	      (set (match_dup 5)
+		   (unspec:DI [(match_dup 5) (match_dup 3)] UNSPEC_LDGP1))
 	      (use (match_dup 0))
-	      (use (match_dup 4))])
-   (set (reg:DI 29)
-	(unspec_volatile:DI [(reg:DI 26) (match_dup 3)] UNSPECV_LDGP1))
-   (set (reg:DI 29)
-	(unspec:DI [(reg:DI 29) (match_dup 3)] UNSPEC_LDGP2))]
+	      (use (match_dup 4))
+	      (clobber (reg:DI 26))])
+   (set (match_dup 5)
+	(unspec:DI [(match_dup 5) (match_dup 3)] UNSPEC_LDGP2))]
 {
   if (CONSTANT_P (operands[0]))
     {
@@ -4839,32 +4853,34 @@
       operands[4] = const0_rtx;
     }
   operands[3] = GEN_INT (alpha_next_sequence_number++);
+  operands[5] = pic_offset_table_rtx;
 })
 
-;; We add a blockage unspec_volatile to prevent insns from moving down
-;; from above the call to in between the call and the ldah gpdisp.
+(define_insn "*call_osf_2_er_nogp"
+  [(call (mem:DI (match_operand:DI 0 "register_operand" "c"))
+	 (match_operand 1 "" ""))
+   (use (reg:DI 29))
+   (use (match_operand 2 "" ""))
+   (use (match_operand 3 "const_int_operand" ""))
+   (clobber (reg:DI 26))]
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
+  "jsr $26,(%0),%2%J3"
+  [(set_attr "type" "jsr")])
 
 (define_insn "*call_osf_2_er"
   [(call (mem:DI (match_operand:DI 0 "register_operand" "c"))
 	 (match_operand 1 "" ""))
-   (set (reg:DI 26) (plus:DI (pc) (const_int 4)))
-   (unspec_volatile [(reg:DI 29)] UNSPECV_BLOCKAGE)
+   (set (reg:DI 29)
+	(unspec:DI [(reg:DI 29) (match_operand 4 "const_int_operand" "")]
+		   UNSPEC_LDGP1))
    (use (match_operand 2 "" ""))
-   (use (match_operand 3 "const_int_operand" ""))]
+   (use (match_operand 3 "const_int_operand" ""))
+   (clobber (reg:DI 26))]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
-  "jsr $26,(%0),%2%J3"
+  "jsr $26,(%0),%2%J3\;ldah $29,0($26)\t\t!gpdisp!%4"
   [(set_attr "type" "jsr")
-   (set_attr "cannot_copy" "true")])
-
-;; We output a nop after noreturn calls at the very end of the function to
-;; ensure that the return address always remains in the caller's code range,
-;; as not doing so might confuse unwinding engines.
-;;
-;; The potential change in insn length is not reflected in the length
-;; attributes at this stage. Since the extra space is only actually added at
-;; the very end of the compilation process (via final/print_operand), it
-;; really seems harmless and not worth the trouble of some extra computation
-;; cost and complexity.
+   (set_attr "cannot_copy" "true")
+   (set_attr "length" "8")])
 
 (define_insn "*call_osf_1_noreturn"
   [(call (mem:DI (match_operand:DI 0 "call_operand" "c,R,s"))
@@ -4874,9 +4890,9 @@
   "! TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF
    && find_reg_note (insn, REG_NORETURN, NULL_RTX)"
   "@
-   jsr $26,($27),0%+
-   bsr $26,$%0..ng%+
-   jsr $26,%0%+"
+   jsr $26,($27),0
+   bsr $26,$%0..ng
+   jsr $26,%0"
   [(set_attr "type" "jsr")
    (set_attr "length" "*,*,8")])
 
@@ -4893,8 +4909,6 @@
   [(set_attr "type" "jsr")
    (set_attr "length" "12,*,16")])
 
-;; Note that the DEC assembler expands "jmp foo" with $at, which
-;; doesn't do what we want.
 (define_insn "*sibcall_osf_1_er"
   [(call (mem:DI (match_operand:DI 0 "symbolic_operand" "R,s"))
 	 (match_operand 1 "" ""))
@@ -4906,6 +4920,8 @@
   [(set_attr "type" "jsr")
    (set_attr "length" "*,8")])
 
+;; Note that the DEC assembler expands "jmp foo" with $at, which
+;; doesn't do what we want.
 (define_insn "*sibcall_osf_1"
   [(call (mem:DI (match_operand:DI 0 "symbolic_operand" "R,s"))
 	 (match_operand 1 "" ""))
@@ -5070,10 +5086,6 @@
 
 ;; Cache flush.  Used by INITIALIZE_TRAMPOLINE.  0x86 is PAL_imb, but we don't
 ;; want to have to include pal.h in our .s file.
-;;
-;; Technically the type for call_pal is jsr, but we use that for determining
-;; if we need a GP.  Use ibr instead since it has the same EV5 scheduling
-;; characteristics.
 (define_insn "imb"
   [(unspec_volatile [(const_int 0)] UNSPECV_IMB)]
   ""
@@ -7925,6 +7937,21 @@
 ;; The call patterns are at the end of the file because their
 ;; wildcard operand0 interferes with nice recognition.
 
+(define_insn "*call_value_osf_1_er_noreturn"
+  [(set (match_operand 0 "" "")
+	(call (mem:DI (match_operand:DI 1 "call_operand" "c,R,s"))
+	      (match_operand 2 "" "")))
+   (use (reg:DI 29))
+   (clobber (reg:DI 26))]
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF
+   && find_reg_note (insn, REG_NORETURN, NULL_RTX)"
+  "@
+   jsr $26,($27),0
+   bsr $26,%1\t\t!samegp
+   ldq $27,%1($29)\t\t!literal!%#\;jsr $26,($27),%1\t\t!lituse_jsr!%#"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "*,*,8")])
+
 (define_insn "*call_value_osf_1_er"
   [(set (match_operand 0 "" "")
 	(call (mem:DI (match_operand:DI 1 "call_operand" "c,R,s"))
@@ -7954,10 +7981,10 @@
   [(parallel [(set (match_dup 0)
 		   (call (mem:DI (match_dup 3))
 			 (match_dup 2)))
-	      (set (reg:DI 26) (plus:DI (pc) (const_int 4)))
-	      (unspec_volatile [(reg:DI 29)] UNSPECV_BLOCKAGE)
+	      (use (reg:DI 29))
 	      (use (match_dup 1))
-	      (use (match_dup 4))])]
+	      (use (match_dup 4))
+	      (clobber (reg:DI 26))])]
 {
   if (CONSTANT_P (operands[1]))
     {
@@ -7987,14 +8014,13 @@
   [(parallel [(set (match_dup 0)
 		   (call (mem:DI (match_dup 3))
 			 (match_dup 2)))
-	      (set (reg:DI 26) (plus:DI (pc) (const_int 4)))
-	      (unspec_volatile [(reg:DI 29)] UNSPECV_BLOCKAGE)
+	      (set (match_dup 6)
+		   (unspec:DI [(match_dup 6) (match_dup 4)] UNSPEC_LDGP1))
 	      (use (match_dup 1))
-	      (use (match_dup 5))])
-   (set (reg:DI 29)
-	(unspec_volatile:DI [(reg:DI 26) (match_dup 4)] UNSPECV_LDGP1))
-   (set (reg:DI 29)
-	(unspec:DI [(reg:DI 29) (match_dup 4)] UNSPEC_LDGP2))]
+	      (use (match_dup 5))
+	      (clobber (reg:DI 26))])
+   (set (match_dup 6)
+	(unspec:DI [(match_dup 6) (match_dup 4)] UNSPEC_LDGP2))]
 {
   if (CONSTANT_P (operands[1]))
     {
@@ -8010,23 +8036,36 @@
       operands[5] = const0_rtx;
     }
   operands[4] = GEN_INT (alpha_next_sequence_number++);
+  operands[6] = pic_offset_table_rtx;
 })
 
-;; We add a blockage unspec_volatile to prevent insns from moving down
-;; from above the call to in between the call and the ldah gpdisp.
+(define_insn "*call_value_osf_2_er_nogp"
+  [(set (match_operand 0 "" "")
+	(call (mem:DI (match_operand:DI 1 "register_operand" "c"))
+	      (match_operand 2 "" "")))
+   (use (reg:DI 29))
+   (use (match_operand 3 "" ""))
+   (use (match_operand 4 "" ""))
+   (clobber (reg:DI 26))]
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
+  "jsr $26,(%1),%3%J4"
+  [(set_attr "type" "jsr")])
+
 (define_insn "*call_value_osf_2_er"
   [(set (match_operand 0 "" "")
 	(call (mem:DI (match_operand:DI 1 "register_operand" "c"))
 	      (match_operand 2 "" "")))
-   (set (reg:DI 26)
-	(plus:DI (pc) (const_int 4)))
-   (unspec_volatile [(reg:DI 29)] UNSPECV_BLOCKAGE)
+   (set (reg:DI 29)
+	(unspec:DI [(reg:DI 29) (match_operand 5 "const_int_operand" "")]
+		   UNSPEC_LDGP1))
    (use (match_operand 3 "" ""))
-   (use (match_operand 4 "" ""))]
+   (use (match_operand 4 "" ""))
+   (clobber (reg:DI 26))]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
-  "jsr $26,(%1),%3%J4"
+  "jsr $26,(%1),%3%J4\;ldah $29,0($26)\t\t!gpdisp!%5"
   [(set_attr "type" "jsr")
-   (set_attr "cannot_copy" "true")])
+   (set_attr "cannot_copy" "true")
+   (set_attr "length" "8")])
 
 (define_insn "*call_value_osf_1_noreturn"
   [(set (match_operand 0 "" "")
@@ -8037,9 +8076,9 @@
   "! TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF
    && find_reg_note (insn, REG_NORETURN, NULL_RTX)"
   "@
-   jsr $26,($27),0%+
-   bsr $26,$%1..ng%+
-   jsr $26,%1%+"
+   jsr $26,($27),0
+   bsr $26,$%1..ng
+   jsr $26,%1"
   [(set_attr "type" "jsr")
    (set_attr "length" "*,*,8")])
 
@@ -8060,12 +8099,11 @@
    (parallel [(set (match_dup 0)
 		   (call (mem:DI (match_dup 3))
 			 (const_int 0)))
-	      (set (reg:DI 26) (plus:DI (pc) (const_int 4)))
-	      (unspec_volatile [(match_dup 5)] UNSPECV_BLOCKAGE)
+	      (set (match_dup 5)
+		   (unspec:DI [(match_dup 5) (match_dup 4)] UNSPEC_LDGP1))
 	      (use (match_dup 1))
-	      (use (unspec [(match_dup 2)] UNSPEC_TLSGD_CALL))])
-   (set (match_dup 5)
-	(unspec_volatile:DI [(reg:DI 26) (match_dup 4)] UNSPECV_LDGP1))
+	      (use (unspec [(match_dup 2)] UNSPEC_TLSGD_CALL))
+	      (clobber (reg:DI 26))])
    (set (match_dup 5)
 	(unspec:DI [(match_dup 5) (match_dup 4)] UNSPEC_LDGP2))]
 {
@@ -8092,14 +8130,13 @@
    (parallel [(set (match_dup 0)
 		   (call (mem:DI (match_dup 3))
 			 (const_int 0)))
-	      (set (reg:DI 26) (plus:DI (pc) (const_int 4)))
-	      (unspec_volatile [(match_dup 5)] UNSPECV_BLOCKAGE)
+	      (set (match_dup 5)
+		   (unspec:DI [(match_dup 5) (match_dup 4)] UNSPEC_LDGP1))
 	      (use (match_dup 1))
-	      (use (unspec [(match_dup 2)] UNSPEC_TLSLDM_CALL))])
-   (set (reg:DI 29)
-	(unspec_volatile:DI [(reg:DI 26) (match_dup 4)] UNSPECV_LDGP1))
-   (set (reg:DI 29)
-	(unspec:DI [(reg:DI 29) (match_dup 4)] UNSPEC_LDGP2))]
+	      (use (unspec [(match_dup 2)] UNSPEC_TLSLDM_CALL))
+	      (clobber (reg:DI 26))])
+   (set (match_dup 5)
+	(unspec:DI [(match_dup 5) (match_dup 4)] UNSPEC_LDGP2))]
 {
   operands[3] = gen_rtx_REG (Pmode, 27);
   operands[4] = GEN_INT (alpha_next_sequence_number++);

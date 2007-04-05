@@ -1,3 +1,14 @@
+2007-04-05  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (print_operand) [+]: Remove.
+	(alpha_end_function): Print nop if call at end of function.
+	* config/alpha/alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Remove +.
+	* config/alpha/alpha.md (UNSPEC_LDGP1): New.
+	(call_osf_1_er_noreturn, call_value_osf_1_er_noreturn): New.
+	(call_osf_2_er_nogp, call_value_osf_2_er_nogp): New.
+	(call_osf_2_er, call_value_osf_2_er): Merge the ldgp highpart into
+	the call pattern. Update peepholes to match.
+
 2007-04-05  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/extend.texi (Other Builtins): Add decimal float variants
