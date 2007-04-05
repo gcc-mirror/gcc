@@ -1,3 +1,42 @@
+2007-04-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR middle-end/22156
+	* tree-sra.c (struct sra_elt): Add in_bitfld_block.  Remove
+	all_no_warning.
+	(struct sra_walk_fns): Remove use_all parameter from use.
+	(sra_hash_tree): Handle BIT_FIELD_REFs.
+	(sra_elt_hash): Don't hash bitfld blocks.
+	(sra_elt_eq): Skip them in parent compares as well.  Handle
+	BIT_FIELD_REFs.
+	(sra_walk_expr): Don't maintain or pass down use_all_p.
+	(scan_use): Remove use_all parameter.
+	(scalarize_use): Likewise.  Re-expand assignment to
+	BIT_FIELD_REF of gimple_reg.  De-scalarize before input or
+	output, and re-scalarize after output.  Don't mark anything
+	for no warning.
+	(scalarize_ldst): Adjust.
+	(scalarize_walk_gimple_modify_statement): Likewise.
+	(build_element_name_1): Handle BIT_FIELD_REFs.
+	(instantiate_element): Don't warn for any element whose parent
+	is used as a whole.
+	(instantiate_missing_elements_1): Return the sra_elt.
+	(canon_type_for_field): New.
+	(try_instantiate_multiple_fields): New.
+	(instantiate_missing_elemnts): Use them.
+	(mark_no_warning): Removed.
+	(generate_one_element_ref): Handle BIT_FIELD_REFs.
+	(REPLDUP, sra_build_elt_assignment): New.
+	(generate_copy_inout): Use them.
+	(generate_element_copy): Likewise.  Handle bitfld differences.
+	(generate_element_zero): Don't recurse for blocks.  Use
+	sra_build_elt_assignment.
+	(generate_one_element_int): Take elt instead of var.  Use
+	sra_build_elt_assignment.
+	(generate_element_init_1): Adjust.
+	(scalarize_use, scalarize_copy): Use REPLDUP.
+	(scalarize_ldst): Move assert before dereference.
+	(dump_sra_elt_name): Handle BIT_FIELD_REFs.
+
 2007-04-05  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* regmove.c: Fix unused variable warnings due to previous commit.
