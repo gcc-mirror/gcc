@@ -460,7 +460,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
       size_t arch_len = strlen (ix86_arch_string);		\
       size_t tune_len = strlen (ix86_tune_string);		\
       int last_arch_char = ix86_arch_string[arch_len - 1];	\
-      int last_tune_char = ix86_tune_string[tune_len - 1];		\
+      int last_tune_char = ix86_tune_string[tune_len - 1];	\
 								\
       if (TARGET_64BIT)						\
 	{							\
@@ -549,7 +549,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 	builtin_define ("__SSE3__");				\
       if (TARGET_SSSE3)						\
 	builtin_define ("__SSSE3__");				\
-      if (TARGET_SSE4A)					\
+      if (TARGET_SSE4A)						\
  	builtin_define ("__SSE4A__");		                \
       if (TARGET_SSE_MATH && TARGET_SSE)			\
 	builtin_define ("__SSE_MATH__");			\
@@ -969,10 +969,10 @@ do {									\
 			       == (TARGET_64BIT ? 3 : 2));		\
       }									\
     j = PIC_OFFSET_TABLE_REGNUM;					\
-    if (j != INVALID_REGNUM)			\
+    if (j != INVALID_REGNUM)						\
       {									\
-	fixed_regs[j] = 1;			\
-	call_used_regs[j] = 1;			\
+	fixed_regs[j] = 1;						\
+	call_used_regs[j] = 1;						\
       }									\
     if (! TARGET_MMX)							\
       {									\
