@@ -33,8 +33,8 @@ public:
   VariableTable(jint, jint, JArray< jlong > *, JArray< ::java::lang::String * > *, JArray< ::java::lang::String * > *, JArray< jint > *, JArray< jint > *);
   virtual void write(::java::io::DataOutputStream *);
 private:
-  jlong __attribute__((aligned(__alignof__( ::java::lang::Object)))) argCnt;
-  jlong slots;
+  jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) argCnt;
+  jint slots;
   JArray< jlong > * lineCI;
   JArray< jint > * slot;
   JArray< jint > * lengths;
