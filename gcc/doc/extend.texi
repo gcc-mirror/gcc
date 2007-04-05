@@ -5609,6 +5609,9 @@ should be called and the @var{flag} argument passed to it.
 @findex signbit
 @findex signbitf
 @findex signbitl
+@findex signbitd32
+@findex signbitd64
+@findex signbitd128
 @findex significand
 @findex significandf
 @findex significandl
@@ -5713,6 +5716,7 @@ Outside strict ISO C mode (@option{-ansi}, @option{-std=c89} or
 @code{mempcpy}, @code{pow10f}, @code{pow10l}, @code{pow10},
 @code{printf_unlocked}, @code{rindex}, @code{scalbf}, @code{scalbl},
 @code{scalb}, @code{signbit}, @code{signbitf}, @code{signbitl},
+@code{signbitd32}, @code{signbitd64}, @code{signbitd128},
 @code{significandf}, @code{significandl}, @code{significand},
 @code{sincosf}, @code{sincosl}, @code{sincos}, @code{stpcpy},
 @code{stpncpy}, @code{strcasecmp}, @code{strdup}, @code{strfmon},
