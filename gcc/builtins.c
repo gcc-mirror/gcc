@@ -5553,7 +5553,8 @@ expand_builtin_adjust_trampoline (tree exp)
   return tramp;
 }
 
-/* Expand a call to the built-in signbit, signbitf or signbitl function.
+/* Expand a call to the built-in signbit, signbitf, signbitl, signbitd32,
+   signbitd64, or signbitd128 function.
    Return NULL_RTX if a normal call should be emitted rather than expanding
    the function in-line.  EXP is the expression that is a call to the builtin
    function; if convenient, the result should be placed in TARGET.  */
@@ -6490,6 +6491,9 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     CASE_FLT_FN (BUILT_IN_SIGNBIT):
+    case BUILT_IN_SIGNBITD32:
+    case BUILT_IN_SIGNBITD64:
+    case BUILT_IN_SIGNBITD128:
       target = expand_builtin_signbit (exp, target);
       if (target)
 	return target;

@@ -1,3 +1,8 @@
+2007-04-05  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/dfp/signbit-1.c
+	* gcc.dg/dfp/signbit-2.c
+
 2007-04-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31483
