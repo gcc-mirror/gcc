@@ -162,6 +162,8 @@ while(<$inf>) {
 	} elsif ($ended =~ /^(?:itemize|enumerate|[fv]?table)$/) {
 	    $_ = "\n=back\n";
 	    $ic = pop @icstack;
+	} elsif ($ended eq "multitable") {
+	    $_ = "\n=back\n";
 	} else {
 	    die "unknown command \@end $ended at line $.\n";
 	}
@@ -252,6 +254,8 @@ while(<$inf>) {
 	and $_ = "\n=head2 $1\n";
     /^\@subsection\s+(.+)$/
 	and $_ = "\n=head3 $1\n";
+    /^\@subsubsection\s+(.+)$/
+	and $_ = "\n=head4 $1\n";
 
     # Block command handlers:
     /^\@itemize(?:\s+(\@[a-z]+|\*|-))?/ and do {
@@ -260,7 +264,7 @@ while(<$inf>) {
 	if (defined $1) {
 	    $ic = $1;
 	} else {
-	    $ic = '@bullet';
+	    $ic = '*';
 	}
 	$_ = "\n=over 4\n";
 	$endw = "itemize";
@@ -276,6 +280,12 @@ while(<$inf>) {
 	}
 	$_ = "\n=over 4\n";
 	$endw = "enumerate";
+    };
+
+    /^\@multitable\s.*/ and do {
+	push @endwstack, $endw;
+	$endw = "multitable";
+	$_ = "\n=over 4\n";
     };
 
     /^\@([fv]?table)\s+(\@[a-z]+)/ and do {
@@ -295,6 +305,16 @@ while(<$inf>) {
 	$endw = $1;
 	$shift = "\t";
 	$_ = "";	# need a paragraph break
+    };
+
+    /^\@item\s+(.*\S)\s*$/ and $endw eq "multitable" and do {
+	@columns = ();
+	for $column (split (/\s*\@tab\s*/, $1)) {
+	    # @strong{...} is used a @headitem work-alike
+	    $column =~ s/^\@strong{(.*)}$/$1/;
+	    push @columns, $column;
+	}
+	$_ = "\n=item ".join (" : ", @columns)."\n";
     };
 
     /^\@itemx?\s*(.+)?$/ and do {
@@ -381,6 +401,9 @@ sub postprocess
     s/\@refill//g;
     s/\@gol//g;
     s/\@\*\s*\n?//g;
+
+    # Anchors are thrown away
+    s/\@anchor\{(?:[^\}]*)\}//g;
 
     # @uref can take one, two, or three arguments, with different
     # semantics each time.  @url and @email are just like @uref with
