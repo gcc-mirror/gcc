@@ -47,20 +47,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-pass.h"
 
 
-/* Turn STACK_GROWS_DOWNWARD into a boolean.  */
-#ifdef STACK_GROWS_DOWNWARD
-#undef STACK_GROWS_DOWNWARD
-#define STACK_GROWS_DOWNWARD 1
-#else
-#define STACK_GROWS_DOWNWARD 0
-#endif
-
 static int perhaps_ends_bb_p (rtx);
 static int optimize_reg_copy_1 (rtx, rtx, rtx);
 static void optimize_reg_copy_2 (rtx, rtx, rtx);
 static void optimize_reg_copy_3 (rtx, rtx, rtx);
-static void copy_src_to_dest (rtx, rtx, rtx, int);
-static int *regmove_bb_head;
+static void copy_src_to_dest (rtx, rtx, rtx);
 
 struct match {
   int with[MAX_RECOG_OPERANDS];
@@ -737,7 +728,7 @@ optimize_reg_copy_3 (rtx insn, rtx dest, rtx src)
    instead moving the value to dest directly before the operation.  */
 
 static void
-copy_src_to_dest (rtx insn, rtx src, rtx dest, int old_max_uid)
+copy_src_to_dest (rtx insn, rtx src, rtx dest)
 {
   rtx seq;
   rtx link;
@@ -806,18 +797,8 @@ copy_src_to_dest (rtx insn, rtx src, rtx dest, int old_max_uid)
       *p_move_notes = NULL_RTX;
       *p_insn_notes = NULL_RTX;
 
-      /* Is the insn the head of a basic block?  If so extend it.  */
       insn_uid = INSN_UID (insn);
       move_uid = INSN_UID (move_insn);
-      if (insn_uid < old_max_uid)
-	{
-	  bb = regmove_bb_head[insn_uid];
-	  if (bb >= 0)
-	    {
-	      BB_HEAD (BASIC_BLOCK (bb)) = move_insn;
-	      regmove_bb_head[insn_uid] = -1;
-	    }
-	}
 
       /* Update the various register tables.  */
       dest_regno = REGNO (dest);
@@ -854,8 +835,7 @@ static unsigned int max_reg_computed;
    may increase register pressure and make reload harder.  If REG is
    set in the same basic block as INSN, we don't worry about it,
    because we'll probably need a register anyhow (??? but what if REG
-   is used in a different basic block as well as this one?).  FIRST is
-   the first insn in the function.  */
+   is used in a different basic block as well as this one?).  */
 
 static bool
 reg_is_remote_constant_p (rtx reg, rtx insn)
@@ -870,44 +850,27 @@ reg_is_remote_constant_p (rtx reg, rtx insn)
       reg_set_in_bb = xcalloc (max, sizeof (*reg_set_in_bb));
 
       FOR_EACH_BB (bb)
-	for (p = BB_HEAD (bb); p != NEXT_INSN (BB_END (bb));
-	     p = NEXT_INSN (p))
-	{
-	  rtx s;
+	FOR_BB_INSNS (bb, p)
+	  {
+	    rtx s;
 
-	  if (!INSN_P (p))
-	    continue;
-	  s = single_set (p);
-	  /* This is the instruction which sets REG.  If there is a
-	     REG_EQUAL note, then REG is equivalent to a constant.  */
-	  if (s != 0
-	      && REG_P (SET_DEST (s))
-	      && REG_N_SETS (REGNO (SET_DEST (s))) == 1
-	      && find_reg_note (p, REG_EQUAL, NULL_RTX))
-	    reg_set_in_bb[REGNO (SET_DEST (s))] = bb;
-	}
+	    if (!INSN_P (p))
+	      continue;
+	    s = single_set (p);
+	    /* This is the instruction which sets REG.  If there is a
+	       REG_EQUAL note, then REG is equivalent to a constant.  */
+	    if (s != 0
+	        && REG_P (SET_DEST (s))
+	        && REG_N_SETS (REGNO (SET_DEST (s))) == 1
+	        && find_reg_note (p, REG_EQUAL, NULL_RTX))
+	      reg_set_in_bb[REGNO (SET_DEST (s))] = bb;
+	  }
     }
+
   gcc_assert (REGNO (reg) < max_reg_computed);
   if (reg_set_in_bb[REGNO (reg)] == NULL)
     return false;
-  if (reg_set_in_bb[REGNO (reg)] != BLOCK_FOR_INSN (insn))
-    return true;
-  /* Look for the set.  */
-  for (p = BB_HEAD (BLOCK_FOR_INSN (insn)); p != insn; p = NEXT_INSN (p))
-    {
-      rtx s;
-
-      if (!INSN_P (p))
-	continue;
-      s = single_set (p);
-      if (s != 0
-	  && REG_P (SET_DEST (s)) && REGNO (SET_DEST (s)) == REGNO (reg))
-	{
-	  /* The register is set in the same basic block.  */
-	  return false;
-	}
-    }
-  return true;
+  return (reg_set_in_bb[REGNO (reg)] != BLOCK_FOR_INSN (insn));
 }
 
 /* INSN is adding a CONST_INT to a REG.  We search backwards looking for
@@ -1053,7 +1016,6 @@ fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset)
 static void
 regmove_optimize (rtx f, int nregs)
 {
-  int old_max_uid = get_max_uid ();
   rtx insn;
   struct match match;
   int pass;
@@ -1071,12 +1033,8 @@ regmove_optimize (rtx f, int nregs)
   mark_flags_life_zones (discover_flags_reg ());
 
   regno_src_regno = XNEWVEC (int, nregs);
-  for (i = nregs; --i >= 0; ) regno_src_regno[i] = -1;
-
-  regmove_bb_head = XNEWVEC (int, old_max_uid + 1);
-  for (i = old_max_uid; i >= 0; i--) regmove_bb_head[i] = -1;
-  FOR_EACH_BB (bb)
-    regmove_bb_head[INSN_UID (BB_HEAD (bb))] = bb->index;
+  for (i = nregs; --i >= 0; )
+    regno_src_regno[i] = -1;
 
   /* A forward/backward pass.  Replace output operands with input operands.  */
 
@@ -1500,28 +1458,14 @@ regmove_optimize (rtx f, int nregs)
 	  /* If we weren't able to replace any of the alternatives, try an
 	     alternative approach of copying the source to the destination.  */
 	  if (!success && copy_src != NULL_RTX)
-	    copy_src_to_dest (insn, copy_src, copy_dst, old_max_uid);
+	    copy_src_to_dest (insn, copy_src, copy_dst);
 
 	}
-    }
-
-  /* In fixup_match_1, some insns may have been inserted after basic block
-     ends.  Fix that here.  */
-  FOR_EACH_BB (bb)
-    {
-      rtx end = BB_END (bb);
-      rtx new = end;
-      rtx next = NEXT_INSN (new);
-      while (next != 0 && INSN_UID (next) >= old_max_uid
-	     && (bb->next_bb == EXIT_BLOCK_PTR || BB_HEAD (bb->next_bb) != next))
-	new = next, next = NEXT_INSN (new);
-      BB_END (bb) = new;
     }
 
  done:
   /* Clean up.  */
   free (regno_src_regno);
-  free (regmove_bb_head);
   if (reg_set_in_bb)
     {
       free (reg_set_in_bb);
