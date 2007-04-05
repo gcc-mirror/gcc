@@ -1,5 +1,10 @@
 2007-04-05  Alexandre Oliva  <aoliva@redhat.com>
 
+	* tree-sra.c (try_instantiate_multiple_fields): Needlessly
+	initialize align to silence bogus warning.
+
+2007-04-05  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR middle-end/22156
 	* tree-sra.c (struct sra_elt): Add in_bitfld_block.  Remove
 	all_no_warning.
