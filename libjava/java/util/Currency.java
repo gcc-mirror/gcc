@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package java.util;
 
+import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.text.NumberFormat;
@@ -83,6 +84,16 @@ public final class Currency
   private transient ResourceBundle res;
 
   /**
+   * The set of properties which map a currency to
+   * the currency information such as the ISO 4217
+   * currency code and the number of decimal points.
+   *
+   * @see #getCurrencyCode()
+   * @serial ignored.
+   */
+  private static transient Properties properties;
+
+  /**
    * The ISO 4217 currency code associated with this
    * particular instance.
    *
@@ -90,6 +101,15 @@ public final class Currency
    * @serial the ISO 4217 currency code
    */
   private String currencyCode;
+
+  /**
+   * The number of fraction digits associated with this
+   * particular instance.
+   *
+   * @see #getDefaultFractionDigits()
+   * @serial the number of fraction digits
+   */
+  private transient int fractionDigits;
 
   /**
    * A cache of <code>Currency</code> instances to
@@ -108,6 +128,17 @@ public final class Currency
   static
   {
     cache = new HashMap();
+    /* Create the properties object */
+    properties = new Properties();
+    /* Try and load the properties from our iso4217.properties resource */
+    try 
+      {
+        properties.load(Currency.class.getResourceAsStream("iso4217.properties"));
+      }
+    catch (IOException exception)
+      {
+        System.out.println("Failed to load currency resource: " + exception);
+      }
   }
 
   /**
@@ -130,9 +161,24 @@ public final class Currency
    */
   private Currency (Locale loc)
   {
+    String countryCode;
+    String fractionDigitsKey;  
+ 
+    /* Retrieve the country code from the locale */
+    countryCode = loc.getCountry();
+
+    /* If there is no country code, return */
+    if (countryCode.equals(""))
+      {
+        throw new
+	  IllegalArgumentException("Invalid (empty) country code for locale:"
+			  	   + loc);
+      }
+
     this.locale = loc;
     this.res = ResourceBundle.getBundle ("gnu.java.locale.LocaleInformation", 
       locale, ClassLoader.getSystemClassLoader());
+
     /* Retrieve the ISO4217 currency code */
     try
       {
@@ -142,6 +188,25 @@ public final class Currency
       {
 	currencyCode = null;
       }
+
+    /* Construct the key for the fraction digits */
+    fractionDigitsKey = countryCode + ".fractionDigits";
+
+    /* Retrieve the fraction digits */
+    fractionDigits = Integer.parseInt(properties.getProperty(fractionDigitsKey));
+  }
+
+  /**
+   * Constructor for the "XXX" special case.  This allows
+   * a Currency to be constructed from an assumed good
+   * currency code.
+   *
+   * @param code the code to use.
+   */  
+  private Currency(String code)
+  {
+    currencyCode = code;
+    fractionDigits = -1; /* Pseudo currency */
   }
 
   /**
@@ -168,9 +233,7 @@ public final class Currency
    */   
   public int getDefaultFractionDigits ()
   {
-    NumberFormat currency = NumberFormat.getCurrencyInstance (locale);
-    
-    return currency.getMaximumFractionDigits();
+    return fractionDigits;
   }
     
   /**
@@ -226,6 +289,10 @@ public final class Currency
   {
     Locale[] allLocales = Locale.getAvailableLocales ();
     
+    /* Nasty special case to allow an erroneous currency... blame Sun */
+    if (currencyCode.equals("XXX"))
+      return new Currency("XXX");
+
     for (int i = 0;i < allLocales.length; i++)
       {
 	Currency testCurrency = getInstance (allLocales[i]);

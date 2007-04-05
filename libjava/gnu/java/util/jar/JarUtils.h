@@ -50,7 +50,6 @@ private:
   static void writeVersionInfo(::java::util::jar::Attributes *, ::java::io::OutputStream *);
   static void writeAttributeEntry(::java::util::Map$Entry *, ::java::io::OutputStream *);
   static void writeHeader(::java::lang::String *, ::java::lang::String *, ::java::io::OutputStream *);
-  static ::java::util::logging::Logger * log;
 public:
   static ::java::lang::String * META_INF;
   static ::java::lang::String * DSA_SUFFIX;

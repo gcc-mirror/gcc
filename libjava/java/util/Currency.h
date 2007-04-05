@@ -13,6 +13,7 @@ class java::util::Currency : public ::java::lang::Object
 
   Currency();
   Currency(::java::util::Locale *);
+  Currency(::java::lang::String *);
 public:
   ::java::lang::String * getCurrencyCode();
   jint getDefaultFractionDigits();
@@ -28,7 +29,9 @@ public: // actually package-private
 private:
   ::java::util::Locale * __attribute__((aligned(__alignof__( ::java::lang::Object)))) locale;
   ::java::util::ResourceBundle * res;
+  static ::java::util::Properties * properties;
   ::java::lang::String * currencyCode;
+  jint fractionDigits;
   static ::java::util::Map * cache;
 public:
   static ::java::lang::Class class$;
