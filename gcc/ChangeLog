@@ -1,3 +1,9 @@
+2007-04-05  Anatoly Sokolov <aesok@post.ru>
+
+	PR target/25448
+	* config/avr/avr.c (avr_handle_fndecl_attribute): Use the 
+	DECL_ASSEMBLER_NAME, not the DECL_NAME.
+
 2007-04-04  Richard Henderson  <rth@redhat.com>
 
         PR target/31361
