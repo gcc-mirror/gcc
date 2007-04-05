@@ -264,7 +264,7 @@ while(<$inf>) {
 	if (defined $1) {
 	    $ic = $1;
 	} else {
-	    $ic = '@bullet';
+	    $ic = '*';
 	}
 	$_ = "\n=over 4\n";
 	$endw = "itemize";
