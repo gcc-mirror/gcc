@@ -2752,7 +2752,7 @@
 	    (vec_select:V2SI
 	      (match_operand:V4SI 2 "nonimmediate_operand" "xm")
 	      (parallel [(const_int 0) (const_int 2)])))))]
-  "TARGET_SSE2 && ix86_binary_operator_ok (MULT, V8HImode, operands)"
+  "TARGET_SSE2 && ix86_binary_operator_ok (MULT, V4SImode, operands)"
   "pmuludq\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseimul")
    (set_attr "mode" "TI")])
@@ -2788,7 +2788,7 @@
 			   (const_int 3)
 			   (const_int 5)
 			   (const_int 7)]))))))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && ix86_binary_operator_ok (MULT, V8HImode, operands)"
   "pmaddwd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
    (set_attr "mode" "TI")])
@@ -3041,8 +3041,8 @@
 
 (define_expand "sdot_prodv8hi"
   [(match_operand:V4SI 0 "register_operand" "")
-   (match_operand:V8HI 1 "nonimmediate_operand" "")
-   (match_operand:V8HI 2 "nonimmediate_operand" "")
+   (match_operand:V8HI 1 "register_operand" "")
+   (match_operand:V8HI 2 "register_operand" "")
    (match_operand:V4SI 3 "register_operand" "")]
   "TARGET_SSE2"
 {

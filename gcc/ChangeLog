@@ -1,3 +1,12 @@
+2007-04-05  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/31478
+	* config/i386/sse.md (sse2_umulv2siv2di3): Use V4SImode instead
+	of V8HImode when calling ix86_binary_operator_ok.
+	(sse2_pmaddwd): Call ix86_binary_operator_ok.
+	(sdot_prodv8hi): Operands 1 and 2 must be register.
+
 2007-04-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree-sra.c (try_instantiate_multiple_fields): Needlessly
