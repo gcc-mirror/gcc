@@ -1,3 +1,8 @@
+2007-04-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.h (TARGET_CPU_CPP_BUILTINS): Reformat.
+	(CONDITIONAL_REGISTER_USAGE): Likewise.
+
 2007-04-04  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/lib1funcs.asm: Remove unused file.
