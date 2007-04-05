@@ -1431,7 +1431,11 @@ try_instantiate_multiple_fields (struct sra_elt *elt, tree f)
     return f;
 
   /* Taking the alignment of elt->element is not enough, since it
-     might be just an array index or some such.  */
+     might be just an array index or some such.  We shouldn't need to
+     initialize align here, but our optimizers don't always realize
+     that, if we leave the loop without initializing align, we'll fail
+     the assertion right after the loop.  */
+  align = (unsigned HOST_WIDE_INT)-1;
   for (block = elt; block; block = block->parent)
     if (DECL_P (block->element))
       {
