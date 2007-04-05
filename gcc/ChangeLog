@@ -1,3 +1,15 @@
+2007-04-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* regmove.c (STACK_GROWS_DOWNWARD): Don't boolean-ize.
+	(regmove_bb_head): Remove.
+	(copy_src_to_dest): Don't update regmove_bb_head and BB_HEAD.
+	(regmove_optimize): Don't do unnecessary CFG fixes for non-existing
+	problems with fixup_match_1.
+	Don't initialize/free regmove_bb_head.
+
+	(reg_is_remote_constant_p): If an insn is in the same basic block
+	but not before INSN, consider it remote, too.
+
 2007-04-05  Anatoly Sokolov <aesok@post.ru>
 
 	PR target/25448
