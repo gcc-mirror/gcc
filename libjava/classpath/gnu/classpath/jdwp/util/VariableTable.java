@@ -50,9 +50,9 @@ import java.io.IOException;
 public class VariableTable
 {
 
-  private final long argCnt;
+  private final int argCnt;
 
-  private final long slots;
+  private final int slots;
 
   private final long[] lineCI;
 
@@ -95,8 +95,8 @@ public class VariableTable
    */
   public void write(DataOutputStream os) throws IOException
   {
-    os.writeLong(argCnt);
-    os.writeLong(slots);
+    os.writeInt(argCnt);
+    os.writeInt(slots);
     for (int i = 0; i < slots; i++)
       {
         os.writeLong(lineCI[i]);

@@ -1,3 +1,9 @@
+2007-04-04  Kyle Galloway  <kgallowa@redhat.com>
+
+	* classpath/gnu/classpath/jdwp/util/VariableTable.java: Change longs
+	to ints for argCnt and slots.
+	(write): Replace writeLong with writeInt for the above. 
+
 2007-04-03  Andrew Haley  <aph@redhat.com>
 
 	* testsuite/libjava.lang/ProxyTest.java: New test.
