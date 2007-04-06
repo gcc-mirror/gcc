@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---       Copyright (C) 2002-2003 Free Software Foundation, Inc.             --
+--       Copyright (C) 2002-2006 Free Software Foundation, Inc.             --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,15 +39,6 @@ package body Gnatvsn is
    --  The size is not the real one, which does not matter since we will
    --  check for the nul character in Gnat_Version_String.
    pragma Import (C, Version_String, "version_string");
-
-   -------------------------
-   -- Get_Gnat_Build_Type --
-   -------------------------
-
-   function Get_Gnat_Build_Type return Gnat_Build_Type is
-   begin
-      return FSF;
-   end Get_Gnat_Build_Type;
 
    -------------------------
    -- Gnat_Version_String --

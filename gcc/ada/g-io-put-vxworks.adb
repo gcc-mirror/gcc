@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                             E X P _ A G G R                              --
+--                              G N A T . I O                               --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--                     Copyright (C) 1995-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -19,34 +19,37 @@
 -- to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, --
 -- Boston, MA 02110-1301, USA.                                              --
 --                                                                          --
+-- As a special exception,  if other files  instantiate  generics from this --
+-- unit, or you link  this unit with other files  to produce an executable, --
+-- this  unit  does not  by itself cause  the resulting  executable  to  be --
+-- covered  by the  GNU  General  Public  License.  This exception does not --
+-- however invalidate  any other reasons why  the executable file  might be --
+-- covered by the  GNU Public License.                                      --
+--                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Types; use Types;
+--  vxworks zfp version of Put (C : Character)
 
-package Exp_Aggr is
+with Interfaces.C; use Interfaces.C;
 
-   procedure Expand_N_Aggregate           (N : Node_Id);
-   procedure Expand_N_Extension_Aggregate (N : Node_Id);
+separate (GNAT.IO)
+procedure Put (C : Character) is
 
-   function Is_Delayed_Aggregate (N : Node_Id) return Boolean;
-   --  Returns True if N is an aggregate of some kind whose Expansion_Delayed
-   --  flag is set (see sinfo for meaning of flag).
+   function ioGlobalStdGet
+     (File : int) return int;
+   pragma Import (C, ioGlobalStdGet, "ioGlobalStdGet");
 
-   procedure Convert_Aggr_In_Object_Decl  (N : Node_Id);
-   --  N is a N_Object_Declaration with an expression which must be
-   --  an N_Aggregate or N_Extension_Aggregate with Expansion_Delayed
-   --  This procedure performs in-place aggregate assignment.
+   procedure fdprintf
+     (File   : int;
+      Format : String;
+      Value  : Character);
+   pragma Import (C, fdprintf, "fdprintf");
 
-   procedure Convert_Aggr_In_Allocator (Decl, Aggr : Node_Id);
-   --  Decl is an access N_Object_Declaration (produced during
-   --  allocator expansion), Aggr is the initial expression aggregate
-   --  of an allocator. This procedure perform in-place aggregate
-   --  assignment in the newly allocated object.
+   Stdout_ID : constant int := 1;
 
-   procedure Convert_Aggr_In_Assignment (N : Node_Id);
-   --  ??? documentation needed
-
-end Exp_Aggr;
+begin
+   fdprintf (ioGlobalStdGet (Stdout_ID), "%c" & ASCII.NUL, C);
+end Put;

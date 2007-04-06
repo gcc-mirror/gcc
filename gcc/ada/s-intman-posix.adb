@@ -78,9 +78,8 @@ package body System.Interrupt_Management is
 
    function State (Int : Interrupt_ID) return Character;
    pragma Import (C, State, "__gnat_get_interrupt_state");
-   --  Get interrupt state. Defined in init.c
-   --  The input argument is the interrupt number,
-   --  and the result is one of the following:
+   --  Get interrupt state. Defined in init.c The input argument is the
+   --  interrupt number, and the result is one of the following:
 
    User    : constant Character := 'u';
    Runtime : constant Character := 'r';
@@ -95,10 +94,10 @@ package body System.Interrupt_Management is
      (signo    : Signal;
       siginfo  : System.Address;
       ucontext : System.Address);
-   --  This function identifies the Ada exception to be raised using
-   --  the information when the system received a synchronous signal.
-   --  Since this function is machine and OS dependent, different code
-   --  has to be provided for different target.
+   --  This function identifies the Ada exception to be raised using the
+   --  information when the system received a synchronous signal. Since this
+   --  function is machine and OS dependent, different code has to be provided
+   --  for different target.
 
    ----------------------
    -- Notify_Exception --
@@ -114,10 +113,10 @@ package body System.Interrupt_Management is
    is
       pragma Unreferenced (siginfo);
 
-      --  The GCC unwinder requires adjustments to the signal's machine
-      --  context to be able to properly unwind through the signal handler.
-      --  This is achieved by the target specific subprogram below, provided
-      --  by init.c to be usable by the non-tasking handler also.
+      --  The GCC unwinder requires adjustments to the signal's machine context
+      --  to be able to properly unwind through the signal handler. This is
+      --  achieved by the target specific subprogram below, provided by init.c
+      --  to be usable by the non-tasking handler also.
 
       procedure Adjust_Context_For_Raise
         (signo    : Signal;
@@ -125,7 +124,7 @@ package body System.Interrupt_Management is
       pragma Import
         (C, Adjust_Context_For_Raise, "__gnat_adjust_context_for_raise");
 
-      Result  : Interfaces.C.int;
+      Result : Interfaces.C.int;
 
    begin
       --  With the __builtin_longjmp, the signal mask is not restored, so we
@@ -139,9 +138,8 @@ package body System.Interrupt_Management is
 
       Adjust_Context_For_Raise (signo, ucontext);
 
-      --  Check that treatment of exception propagation here
-      --  is consistent with treatment of the abort signal in
-      --  System.Task_Primitives.Operations.
+      --  Check that treatment of exception propagation here is consistent with
+      --  treatment of the abort signal in System.Task_Primitives.Operations.
 
       case signo is
          when SIGFPE =>
@@ -199,18 +197,19 @@ package body System.Interrupt_Management is
       --  handler execution we do not change the Signal_Mask to be masked for
       --  the Signal.
 
-      --  This is a temporary fix to the problem that the Signal_Mask is
-      --  not restored after the exception (longjmp) from the handler.
-      --  The right fix should be made in sigsetjmp so that we save
-      --  the Signal_Set and restore it after a longjmp.
+      --  This is a temporary fix to the problem that the Signal_Mask is not
+      --  restored after the exception (longjmp) from the handler. The right
+      --  fix should be made in sigsetjmp so that we save the Signal_Set and
+      --  restore it after a longjmp.
 
-      --  Since SA_NODEFER is obsolete, instead we reset explicitely
-      --  the mask in the exception handler.
+      --  Since SA_NODEFER is obsolete, instead we reset explicitely the mask
+      --  in the exception handler.
 
       Result := sigemptyset (Signal_Mask'Access);
       pragma Assert (Result = 0);
 
-      --  Add signals that map to Ada exceptions to the mask.
+      --  Add signals that map to Ada exceptions to the mask
+
       for J in Exception_Interrupts'Range loop
          if State (Exception_Interrupts (J)) /= Default  then
             Result :=
@@ -225,6 +224,7 @@ package body System.Interrupt_Management is
       pragma Assert (Reserve = (Interrupt_ID'Range => False));
 
       --  Process state of exception signals
+
       for J in Exception_Interrupts'Range loop
          if State (Exception_Interrupts (J)) /= User then
             Keep_Unmasked (Exception_Interrupts (J)) := True;
@@ -245,16 +245,16 @@ package body System.Interrupt_Management is
          Reserve (Abort_Task_Interrupt) := True;
       end if;
 
-      --  Set SIGINT to unmasked state as long as it is not in "User"
-      --  state. Check for Unreserve_All_Interrupts last
+      --  Set SIGINT to unmasked state as long as it is not in "User" state.
+      --  Check for Unreserve_All_Interrupts last
 
       if State (SIGINT) /= User then
          Keep_Unmasked (SIGINT) := True;
          Reserve (SIGINT) := True;
       end if;
 
-      --  Check all signals for state that requires keeping them
-      --  unmasked and reserved
+      --  Check all signals for state that requires keeping them unmasked and
+      --  reserved
 
       for J in Interrupt_ID'Range loop
          if State (J) = Default or else State (J) = Runtime then
@@ -276,18 +276,17 @@ package body System.Interrupt_Management is
          Reserve (Interrupt_ID (Reserved (J))) := True;
       end loop;
 
-      --  Process pragma Unreserve_All_Interrupts. This overrides any
-      --  settings due to pragma Interrupt_State:
+      --  Process pragma Unreserve_All_Interrupts. This overrides any settings
+      --  due to pragma Interrupt_State:
 
       if Unreserve_All_Interrupts /= 0 then
          Keep_Unmasked (SIGINT) := False;
          Reserve (SIGINT) := False;
       end if;
 
-      --  We do not have Signal 0 in reality. We just use this value
-      --  to identify non-existent signals (see s-intnam.ads). Therefore,
-      --  Signal 0 should not be used in all signal related operations hence
-      --  mark it as reserved.
+      --  We do not really have Signal 0. We just use this value to identify
+      --  non-existent signals (see s-intnam.ads). Therefore, Signal should not
+      --  be used in all signal related operations hence mark it as reserved.
 
       Reserve (0) := True;
    end Initialize;

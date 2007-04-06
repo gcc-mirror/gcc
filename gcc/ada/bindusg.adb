@@ -180,10 +180,10 @@ package body Bindusg is
 
       Write_Line ("  -s        Require all source files to be present");
 
-      --  Line for -Sxx switch
+      --  Line for -S?? switch
 
-      Write_Line ("  -S??      Sin/lo/hi/xx for Initialize_Scalars " &
-                  "invalid/low/high/hex");
+      Write_Line ("  -S??      Sin/lo/hi/xx/ev Initialize_Scalars " &
+                  "invalid/low/high/hex/env var");
 
       --  Line for -static
 

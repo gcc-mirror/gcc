@@ -39,9 +39,14 @@
 
 #include <dirent.h>
 
+/*  Constants used for the form parameter encoding values  */
+#define Encoding_UTF8 0
+#define Encoding_8bits 1
+
 typedef long OS_Time; /* Type corresponding to GNAT.OS_Lib.OS_Time */
 
 extern int    __gnat_max_path_len;
+extern OS_Time __gnat_current_time		   (void);
 extern void   __gnat_to_gm_time			   (OS_Time *, int *,
 						    int *, int *,
 						    int *, int *,
@@ -66,8 +71,8 @@ extern int    __gnat_open_new_temp		   (char *, int);
 extern int    __gnat_mkdir			   (char *);
 extern int    __gnat_stat			   (char *,
 						    struct stat *);
-extern FILE  *__gnat_fopen			   (char *, char *);
-extern FILE  *__gnat_freopen			   (char *, char *, FILE *);
+extern FILE  *__gnat_fopen			   (char *, char *, int);
+extern FILE  *__gnat_freopen			 (char *, char *, FILE *, int);
 extern int    __gnat_open_read                     (char *, int);
 extern int    __gnat_open_rw                       (char *, int);
 extern int    __gnat_open_create                   (char *, int);
@@ -117,7 +122,7 @@ extern char  *__gnat_to_host_dir_spec              (char *, int);
 extern char  *__gnat_to_host_file_spec             (char *);
 extern char  *__gnat_to_canonical_path_spec	   (char *);
 extern void   __gnat_adjust_os_resource_limits	   (void);
-extern void   convert_addresses			   (void *, int,
+extern void   convert_addresses			   (const char *, void *, int,
 						    void *, int *);
 extern int    __gnat_copy_attribs		   (char *, char *, int);
 extern int    __gnat_feof		  	   (FILE *);
