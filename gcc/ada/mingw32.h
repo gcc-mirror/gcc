@@ -71,13 +71,19 @@
    the proper translations using the UTF-8 encoding.  */
 
 #ifdef GNAT_UNICODE_SUPPORT
+#define S2WSU(wstr,str,len) \
+   MultiByteToWideChar (CP_UTF8,0,str,-1,wstr,len)
+#define WS2SU(str,wstr,len) \
+   WideCharToMultiByte (CP_UTF8,0,wstr,-1,str,len,NULL,NULL)
 #define S2WS(wstr,str,len) \
-   MultiByteToWideChar (CP_UTF8,0,str,-1,wstr,len);
+   MultiByteToWideChar (CP_ACP,0,str,-1,wstr,len)
 #define WS2S(str,wstr,len) \
-   WideCharToMultiByte (CP_UTF8,0,wstr,-1,str,len,NULL,NULL);
+   WideCharToMultiByte (CP_ACP,0,wstr,-1,str,len,NULL,NULL)
 #else
-#define S2WS(wstr,str,len) strncpy(wstr,str,len);
-#define WS2S(str,wstr,len) strncpy(str,wstr,len);
+#define S2WSU(wstr,str,len) strncpy(wstr,str,len)
+#define WS2SU(str,wstr,len) strncpy(str,wstr,len)
+#define S2WS(wstr,str,len) strncpy(wstr,str,len)
+#define WS2S(str,wstr,len) strncpy(str,wstr,len)
 #endif
 
 #include <stdlib.h>

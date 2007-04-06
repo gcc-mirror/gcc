@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -105,10 +105,14 @@ package Interfaces.C_Streams is
 
    function fileno (stream : FILEs) return int;
 
-   function fopen (filename : chars; Mode : chars) return FILEs
+   function fopen
+     (filename : chars;
+      mode     : chars;
+      encoding : System.CRTL.Filename_Encoding := System.CRTL.UTF8)
+      return FILEs
      renames System.CRTL.fopen;
    --  Note: to maintain target independence, use text_translation_required,
-   --  a boolean variable defined in a-sysdep.c to deal with the target
+   --  a boolean variable defined in sysdep.c to deal with the target
    --  dependent text translation requirement. If this variable is set,
    --  then b/t should be appended to the standard mode argument to set
    --  the text translation mode off or on as required.
@@ -140,14 +144,16 @@ package Interfaces.C_Streams is
    function freopen
      (filename : chars;
       mode     : chars;
-      stream   : FILEs)
-      return     FILEs renames System.CRTL.freopen;
+      stream   : FILEs;
+      encoding : System.CRTL.Filename_Encoding := System.CRTL.UTF8)
+      return FILEs
+     renames System.CRTL.freopen;
 
    function fseek
      (stream : FILEs;
       offset : long;
-      origin : int)
-      return   int renames System.CRTL.fseek;
+      origin : int) return int
+     renames System.CRTL.fseek;
 
    function ftell (stream : FILEs) return long
      renames System.CRTL.ftell;
@@ -156,8 +162,7 @@ package Interfaces.C_Streams is
      (buffer : voids;
       size   : size_t;
       count  : size_t;
-      stream : FILEs)
-      return   size_t;
+      stream : FILEs) return size_t;
 
    function isatty (handle : int) return int renames System.CRTL.isatty;
 
@@ -170,8 +175,7 @@ package Interfaces.C_Streams is
      (stream : FILEs;
       buffer : chars;
       mode   : int;
-      size   : size_t)
-      return   int;
+      size   : size_t) return int;
 
    procedure tmpnam (string : chars) renames System.CRTL.tmpnam;
    --  The parameter must be a pointer to a string buffer of at least L_tmpnam

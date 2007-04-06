@@ -199,12 +199,12 @@ package body System.File_IO is
       Dup_Strm     : Boolean := False;
 
    begin
-      Check_File_Open (File);
-      AFCB_Close (File);
-
       --  Take a task lock, to protect the global data value Open_Files
 
       SSL.Lock_Task.all;
+
+      Check_File_Open (File);
+      AFCB_Close (File);
 
       --  Sever the association between the given file and its associated
       --  external file. The given file is left closed. Do not perform system
@@ -435,7 +435,7 @@ package body System.File_IO is
       Amethod : Character;
       Fopstr  : out Fopen_String)
    is
-      Fptr  : Positive;
+      Fptr : Positive;
 
    begin
       case Mode is
@@ -733,6 +733,9 @@ package body System.File_IO is
       Full_Name_Len : Integer;
       --  Length of name actually stored in Fullname
 
+      Encoding : System.CRTL.Filename_Encoding;
+      --  Filename encoding specified into the form parameter
+
    begin
       if File_Ptr /= null then
          raise Status_Error;
@@ -767,6 +770,28 @@ package body System.File_IO is
 
          elsif Formstr (V1 .. V2) = "no" then
             Shared := No;
+
+         else
+            raise Use_Error;
+         end if;
+      end;
+
+      --  Acquire setting of shared parameter
+
+      declare
+         V1, V2 : Natural;
+
+      begin
+         Form_Parameter (Formstr, "encoding", V1, V2);
+
+         if V1 = 0 then
+            Encoding := System.CRTL.UTF8;
+
+         elsif Formstr (V1 .. V2) = "utf8" then
+            Encoding := System.CRTL.UTF8;
+
+         elsif Formstr (V1 .. V2) = "8bits" then
+            Encoding := System.CRTL.ASCII_8bits;
 
          else
             raise Use_Error;
@@ -928,7 +953,7 @@ package body System.File_IO is
             --  current working directory may have changed and
             --  we do not want to delete a different file!
 
-            Stream := fopen (Namestr'Address, Fopstr'Address);
+            Stream := fopen (Namestr'Address, Fopstr'Address, Encoding);
 
             if Stream = NULL_Stream then
                if file_exists (Namestr'Address) = 0 then
@@ -946,18 +971,17 @@ package body System.File_IO is
 
       File_Ptr := AFCB_Allocate (Dummy_FCB);
 
-      File_Ptr.Is_Regular_File   := (is_regular_file
-                                      (fileno (Stream)) /= 0);
+      File_Ptr.Is_Regular_File   := (is_regular_file (fileno (Stream)) /= 0);
       File_Ptr.Is_System_File    := False;
       File_Ptr.Is_Text_File      := Text;
       File_Ptr.Shared_Status     := Shared;
       File_Ptr.Access_Method     := Amethod;
       File_Ptr.Stream            := Stream;
       File_Ptr.Form              := new String'(Formstr);
-      File_Ptr.Name              := new String'(Fullname
-                                                 (1 .. Full_Name_Len));
+      File_Ptr.Name              := new String'(Fullname (1 .. Full_Name_Len));
       File_Ptr.Mode              := Mode;
       File_Ptr.Is_Temporary_File := Tempfile;
+      File_Ptr.Encoding          := Encoding;
 
       Chain_File (File_Ptr);
       Append_Set (File_Ptr);
@@ -1050,8 +1074,8 @@ package body System.File_IO is
          Fopen_Mode
            (Mode, File.Is_Text_File, False, File.Access_Method, Fopstr);
 
-         File.Stream :=
-           freopen (File.Name.all'Address, Fopstr'Address, File.Stream);
+         File.Stream := freopen
+           (File.Name.all'Address, Fopstr'Address, File.Stream, File.Encoding);
 
          if File.Stream = NULL_Stream then
             Close (File);

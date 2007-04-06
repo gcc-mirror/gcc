@@ -57,6 +57,11 @@ package System.CRTL is
 
    type size_t is mod 2 ** Standard'Address_Size;
 
+   type Filename_Encoding is (UTF8, ASCII_8bits);
+   for Filename_Encoding use (UTF8 => 0, ASCII_8bits => 1);
+   pragma Convention (C, Filename_Encoding);
+   --  Describes the filename's encoding
+
    function atoi (A : System.Address) return Integer;
    pragma Import (C, atoi, "decc$atoi");
 
@@ -84,8 +89,11 @@ package System.CRTL is
    function fgets (strng : chars; n : int; stream : FILEs) return chars;
    pragma Import (C, fgets, "decc$_fgets64");
 
-   function fopen (filename : chars; Mode : chars) return FILEs;
-   pragma Import (C, fopen, "decc$fopen");
+   function fopen
+     (filename : chars;
+      mode     : chars;
+      encoding : Filename_Encoding := UTF8) return FILEs;
+   pragma Import (C, fopen, "__gnat_fopen");
 
    function fputc (C : int; stream : FILEs) return int;
    pragma Import (C, fputc, "decc$fputc");
@@ -99,9 +107,10 @@ package System.CRTL is
    function freopen
      (filename : chars;
       mode     : chars;
-      stream   : FILEs)
+      stream   : FILEs;
+      encoding : Filename_Encoding := UTF8)
       return     FILEs;
-   pragma Import (C, freopen, "decc$freopen");
+   pragma Import (C, freopen, "__gnat_freopen");
 
    function fseek
      (stream : FILEs;
@@ -175,4 +184,5 @@ package System.CRTL is
 
    function write (fd : int; buffer : chars; nbytes : int) return int;
    pragma Import (C, write, "decc$write");
+
 end System.CRTL;
