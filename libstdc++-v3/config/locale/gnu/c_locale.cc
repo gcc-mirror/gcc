@@ -1,6 +1,6 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -34,7 +34,6 @@
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
-#include <cerrno>  // For errno
 #include <locale>
 #include <stdexcept>
 #include <langinfo.h>
@@ -48,9 +47,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		   const __c_locale& __cloc)
     {
       char* __sanity;
-      errno = 0;
       float __f = __strtof_l(__s, &__sanity, __cloc);
-      if (__sanity != __s && errno != ERANGE)
+      if (__sanity != __s && __f != __builtin_huge_valf()
+	  && __f != -__builtin_huge_valf())
 	__v = __f;
       else
 	__err |= ios_base::failbit;
@@ -62,9 +61,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		   const __c_locale& __cloc)
     {
       char* __sanity;
-      errno = 0;
       double __d = __strtod_l(__s, &__sanity, __cloc);
-      if (__sanity != __s && errno != ERANGE)
+      if (__sanity != __s && __d != __builtin_huge_val()
+	  && __d != -__builtin_huge_val())
 	__v = __d;
       else
 	__err |= ios_base::failbit;
@@ -76,7 +75,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		   const __c_locale& __cloc)
     {
       char* __sanity;
-      errno = 0;
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
       // Prefer strtold_l, as __strtold_l isn't prototyped in more recent
       // glibc versions.
@@ -84,7 +82,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #else
       long double __ld = __strtold_l(__s, &__sanity, __cloc);
 #endif
-      if (__sanity != __s && errno != ERANGE)
+      if (__sanity != __s && __ld != __builtin_huge_vall()
+	  && __ld != -__builtin_huge_vall())
 	__v = __ld;
       else
 	__err |= ios_base::failbit;
