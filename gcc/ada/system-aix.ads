@@ -92,14 +92,14 @@ package System is
 
    --  Priority-related Declarations (RM D.1)
 
-   Max_Priority           : constant Positive := 125;
-   Max_Interrupt_Priority : constant Positive := 126;
+   Max_Priority           : constant Positive := 30;
+   Max_Interrupt_Priority : constant Positive := 31;
 
-   subtype Any_Priority       is Integer      range   0 .. 126;
-   subtype Priority           is Any_Priority range   0 .. 125;
-   subtype Interrupt_Priority is Any_Priority range 126 .. 126;
+   subtype Any_Priority       is Integer      range  0 .. 31;
+   subtype Priority           is Any_Priority range  0 .. 30;
+   subtype Interrupt_Priority is Any_Priority range 31 .. 31;
 
-   Default_Priority : constant Priority := 62;
+   Default_Priority : constant Priority := 15;
 
 private
 
@@ -127,7 +127,6 @@ private
    Exit_Status_Supported     : constant Boolean := True;
    Fractional_Fixed_Ops      : constant Boolean := False;
    Frontend_Layout           : constant Boolean := False;
-   Functions_Return_By_DSP   : constant Boolean := False;
    Machine_Overflows         : constant Boolean := False;
    Machine_Rounds            : constant Boolean := True;
    OpenVMS                   : constant Boolean := False;
