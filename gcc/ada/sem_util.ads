@@ -33,6 +33,10 @@ with Urealp; use Urealp;
 
 package Sem_Util is
 
+   function Abstract_Interface_List (Typ : Entity_Id) return List_Id;
+   --  Given a type that implements interfaces look for its associated
+   --  definition node and return its list of interfaces.
+
    procedure Add_Access_Type_To_Process (E : Entity_Id; A : Entity_Id);
    --  Add A to the list of access types to process when expanding the
    --  freeze node of E.
@@ -139,12 +143,6 @@ package Sem_Util is
    --  part in  which the type appears, and collect subprograms that have
    --  one subsidiary subtype of the type. These subprograms can only
    --  appear after the type itself.
-
-   procedure Collect_Synchronized_Interfaces
-     (Typ         : Entity_Id;
-      Ifaces_List : out Elist_Id);
-   --  Similar to Collect_Abstract_Interfaces, but tailored to task and
-   --  protected types.
 
    function Compile_Time_Constraint_Error
      (N    : Node_Id;
@@ -598,12 +596,20 @@ package Sem_Util is
    --  is a variable (in the Is_Variable sense) with a non-tagged type
    --  target are considered view conversions and hence variables.
 
+   function Is_Parent
+     (E1 : Entity_Id;
+      E2 : Entity_Id) return Boolean;
+   --  Determine whether E1 is a parent of E2. For a concurrent type, the
+   --  parent is the first element of its list of interface types; for other
+   --  types, this function provides the same result as Is_Ancestor.
+
    function Is_Partially_Initialized_Type (Typ : Entity_Id) return Boolean;
    --  Typ is a type entity. This function returns true if this type is
    --  partly initialized, meaning that an object of the type is at least
    --  partly initialized (in particular in the record case, that at least
-   --  one field has an initialization expression). Note that initialization
-   --  resulting from the use of pragma Normalized_Scalars does not count.
+   --  one component has an initialization expression). Note that
+   --  initialization resulting from the use of pragma Normalized_Scalars does
+   --  not count.
 
    function Is_Potentially_Persistent_Type (T : Entity_Id) return Boolean;
    --  Determines if type T is a potentially persistent type. A potentially
@@ -618,7 +624,7 @@ package Sem_Util is
    --  body of a remote call interface package.
 
    function Is_Remote_Access_To_Class_Wide_Type (E : Entity_Id) return Boolean;
-   --  Return True if E is a remote access-to-class-wide-limited_private type
+   --  Return True if E is a remote access-to-class-wide type
 
    function Is_Remote_Access_To_Subprogram_Type (E : Entity_Id) return Boolean;
    --  Return True if E is a remote access to subprogram type
@@ -709,6 +715,11 @@ package Sem_Util is
    --  it returns True. It tries hard to get the answer right, but it is hard
    --  to guarantee this in all cases. Note that it is more possible to give
    --  correct answer if the tree is fully analyzed.
+
+   function Needs_One_Actual (E : Entity_Id) return Boolean;
+   --  Returns True if a function has defaults for all but its first
+   --  formal. Used in Ada 2005 mode to solve the syntactic ambiguity that
+   --  results from an indexing of a function call written in prefix form.
 
    function New_External_Entity
      (Kind         : Entity_Kind;
