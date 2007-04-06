@@ -365,6 +365,12 @@ package Scans is
    --  on the line containing the current token. This is used for error
    --  recovery circuits which depend on looking at the column line up.
 
+   Type_Token_Location : Source_Ptr;
+   --  Within a type declaration, gives the location of the TYPE keyword that
+   --  opened the type declaration. Used in checking the end column of a record
+   --  declaration, which can line up either with the TYPE keyword, or with the
+   --  start of the line containing the RECORD keyword.
+
    Checksum : Word;
    --  Used to accumulate a CRC representing the tokens in the source
    --  file being compiled. This CRC includes only program tokens, and

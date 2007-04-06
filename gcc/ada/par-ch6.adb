@@ -1084,7 +1084,13 @@ package body Ch6 is
                Specification_Node :=
                  New_Node (N_Parameter_Specification, Ident_Sloc);
                Set_Defining_Identifier (Specification_Node, Idents (Ident));
-               Not_Null_Present := P_Null_Exclusion;     --  Ada 2005 (AI-231)
+
+               --  Scan possible NOT NULL for Ada 2005 (AI-231, AI-447)
+
+               Not_Null_Present :=
+                 P_Null_Exclusion (Allow_Anonymous_In_95 => True);
+
+               --  Case of ACCESS keyword present
 
                if Token = Tok_Access then
                   Set_Null_Exclusion_Present
@@ -1094,8 +1100,11 @@ package body Ch6 is
                      Error_Msg_SC ("(Ada 83) access parameters not allowed");
                   end if;
 
-                  Set_Parameter_Type (Specification_Node,
-                    P_Access_Definition (Not_Null_Present));
+                  Set_Parameter_Type
+                    (Specification_Node,
+                     P_Access_Definition (Not_Null_Present));
+
+               --  Case of IN or OUT present
 
                else
                   if Token = Tok_In or else Token = Tok_Out then
@@ -1236,6 +1245,11 @@ package body Ch6 is
 
          if Style.Mode_In_Check and then Token /= Tok_Out then
             Error_Msg_SP ("(style) IN should be omitted");
+         end if;
+
+         if Token = Tok_Access then
+            Error_Msg_SP ("IN not allowed together with ACCESS");
+            Scan; -- past ACCESS
          end if;
       end if;
 
