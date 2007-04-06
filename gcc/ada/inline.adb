@@ -308,7 +308,7 @@ package body Inline is
       --  no enclosing package to retrieve. In this case, it is the body of
       --  the function that will have to be loaded.
 
-      if not Is_Abstract (E) and then not Is_Nested (E)
+      if not Is_Abstract_Subprogram (E) and then not Is_Nested (E)
         and then Convention (E) /= Convention_Protected
       then
          Pack := Scope (E);

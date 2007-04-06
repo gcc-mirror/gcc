@@ -2612,7 +2612,7 @@ package body Sem_Aggr is
 
       --  STEP 1: abstract type and null record verification
 
-      if Is_Abstract (Typ) then
+      if Is_Abstract_Type (Typ) then
          Error_Msg_N ("type of aggregate cannot be abstract",  N);
       end if;
 
@@ -3000,7 +3000,9 @@ package body Sem_Aggr is
                --  pass the component to the expander, which will generate
                --  the call to such IP.
 
-               if Has_Non_Null_Base_Init_Proc (Ctyp) then
+               if Has_Non_Null_Base_Init_Proc (Ctyp)
+                 or else not Expander_Active
+               then
                   Add_Association
                     (Component      => Component,
                      Expr           => Empty,
@@ -3075,12 +3077,34 @@ package body Sem_Aggr is
                end loop;
 
                --  If no association, this is not a legal component of
-               --  of the type in question,  except if this is an internal
-               --  component supplied by a previous expansion.
+               --  of the type in question, except if its association
+               --  is provided with a box.
 
                if No (New_Assoc) then
                   if Box_Present (Parent (Selectr)) then
-                     null;
+
+                     --  This may still be a bogus component with a box. Scan
+                     --  list of components to verify that a component with
+                     --  that name exists.
+
+                     declare
+                        C : Entity_Id;
+
+                     begin
+                        C := First_Component (Typ);
+                        while Present (C) loop
+                           if Chars (C) = Chars (Selectr) then
+                              exit;
+                           end if;
+
+                           Next_Component (C);
+                        end loop;
+
+                        if No (C) then
+                           Error_Msg_Node_2 := Typ;
+                           Error_Msg_N ("& is not a component of}", Selectr);
+                        end if;
+                     end;
 
                   elsif Chars (Selectr) /= Name_uTag
                     and then Chars (Selectr) /= Name_uParent
@@ -3088,9 +3112,7 @@ package body Sem_Aggr is
                   then
                      if not Has_Discriminants (Typ) then
                         Error_Msg_Node_2 := Typ;
-                        Error_Msg_N
-                          ("& is not a component of}",
-                            Selectr);
+                        Error_Msg_N ("& is not a component of}", Selectr);
                      else
                         Error_Msg_N
                           ("& is not a component of the aggregate subtype",
