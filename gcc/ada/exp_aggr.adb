@@ -133,7 +133,12 @@ package body Exp_Aggr is
    --  which to attach the controlled components if any. Obj is present in the
    --  object declaration and dynamic allocation cases, it contains an entity
    --  that allows to know if the value being created needs to be attached to
-   --  the final list in case of pragma finalize_Storage_Only.
+   --  the final list in case of pragma Finalize_Storage_Only.
+   --
+   --  ???
+   --  The meaning of the Obj formal is extremely unclear. *What* entity
+   --  should be passed? For the object declaration case we may guess that
+   --  this is the object being declared, but what about the allocator case?
    --
    --  Is_Limited_Ancestor_Expansion indicates that the function has been
    --  called recursively to expand the limited ancestor to avoid copying it.
@@ -372,8 +377,8 @@ package body Exp_Aggr is
 
    begin
       Siz  := Component_Count (Component_Type (Typ));
-      Indx := First_Index (Typ);
 
+      Indx := First_Index (Typ);
       while Present (Indx) loop
          Lo  := Type_Low_Bound (Etype (Indx));
          Hi  := Type_High_Bound (Etype (Indx));
@@ -474,12 +479,19 @@ package body Exp_Aggr is
 
          --  Recurse to check subaggregates, which may appear in qualified
          --  expressions. If delayed, the front-end will have to expand.
+         --  If the component is a discriminated record, treat as non-static,
+         --  as the back-end cannot handle this properly.
 
          Expr := First (Expressions (N));
-
          while Present (Expr) loop
-
             if Is_Delayed_Aggregate (Expr) then
+               return False;
+            end if;
+
+            if Present (Etype (Expr))
+              and then Is_Record_Type (Etype (Expr))
+              and then Has_Discriminants (Etype (Expr))
+            then
                return False;
             end if;
 
@@ -955,9 +967,10 @@ package body Exp_Aggr is
                --  do not have an assigned type.
 
                declare
-                  P : Node_Id := Parent (Expr);
+                  P : Node_Id;
 
                begin
+                  P := Parent (Expr);
                   while Present (P) loop
                      if Nkind (P) = N_Aggregate
                        and then Present (Etype (P))
@@ -1551,7 +1564,6 @@ package body Exp_Aggr is
 
          Expr        := First (Expressions (N));
          Nb_Elements := -1;
-
          while Present (Expr) loop
             Nb_Elements := Nb_Elements + 1;
             Append_List (Gen_Assign (Add (Nb_Elements, To => Aggr_L), Expr),
@@ -1625,7 +1637,9 @@ package body Exp_Aggr is
 
       Init_Typ : Entity_Id := Empty;
       Attach   : Node_Id;
+
       Ctrl_Stuff_Done : Boolean := False;
+      --  Could use comments here ???
 
       function Ancestor_Discriminant_Value (Disc : Entity_Id) return Node_Id;
       --  Returns the value that the given discriminant of an ancestor
@@ -1801,11 +1815,12 @@ package body Exp_Aggr is
       ----------------------------------
 
       procedure Check_Ancestor_Discriminants (Anc_Typ : Entity_Id) is
-         Discr      : Entity_Id := First_Discriminant (Base_Type (Anc_Typ));
+         Discr      : Entity_Id;
          Disc_Value : Node_Id;
          Cond       : Node_Id;
 
       begin
+         Discr := First_Discriminant (Base_Type (Anc_Typ));
          while Present (Discr) loop
             Disc_Value := Ancestor_Discriminant_Value (Discr);
 
@@ -1958,6 +1973,12 @@ package body Exp_Aggr is
 
       procedure Gen_Ctrl_Actions_For_Aggr is
       begin
+         if not Ctrl_Stuff_Done then
+            Ctrl_Stuff_Done := True;
+         else
+            return;
+         end if;
+
          if Present (Obj)
           and then Finalize_Storage_Only (Typ)
           and then (Is_Library_Level_Entity (Obj)
@@ -2036,11 +2057,9 @@ package body Exp_Aggr is
                At_Root   : Boolean;
 
             begin
-
-               Outer_Typ := Base_Type (Typ);
-
                --  Find outer type with a controller
 
+               Outer_Typ := Base_Type (Typ);
                while Outer_Typ /= Init_Typ
                  and then not Has_New_Controlled_Component (Outer_Typ)
                loop
@@ -2372,7 +2391,6 @@ package body Exp_Aggr is
 
             begin
                Btype := Base_Type (Typ);
-
                while Is_Derived_Type (Btype)
                   and then Present (Stored_Constraint (Btype))
                loop
@@ -2421,9 +2439,7 @@ package body Exp_Aggr is
 
             begin
                Discriminant := First_Stored_Discriminant (Typ);
-
                while Present (Discriminant) loop
-
                   Comp_Expr :=
                     Make_Selected_Component (Loc,
                       Prefix        => New_Copy_Tree (Target),
@@ -2465,6 +2481,10 @@ package body Exp_Aggr is
          if Box_Present (Comp)
            and then Has_Non_Null_Base_Init_Proc (Etype (Selector))
          then
+            if Ekind (Selector) /= E_Discriminant then
+               Gen_Ctrl_Actions_For_Aggr;
+            end if;
+
             --  Ada 2005 (AI-287): If the component type has tasks then
             --  generate the activation chain and master entities (except
             --  in case of an allocator because in that case these entities
@@ -2499,6 +2519,7 @@ package body Exp_Aggr is
                             Selector_Name => New_Occurrence_Of (Selector,
                                                                    Loc)),
                 Typ    => Etype (Selector),
+                Enclos_Type => Typ,
                 With_Default_Init => True));
 
             goto Next_Comp;
@@ -2509,16 +2530,12 @@ package body Exp_Aggr is
          if Ekind (Selector) /= E_Discriminant
            or else Nkind (N) = N_Extension_Aggregate
          then
-
             --  All the discriminants have now been assigned
             --  This is now a good moment to initialize and attach all the
             --  controllers. Their position may depend on the discriminants.
 
-            if Ekind (Selector) /= E_Discriminant
-              and then not Ctrl_Stuff_Done
-            then
+            if Ekind (Selector) /= E_Discriminant then
                Gen_Ctrl_Actions_For_Aggr;
-               Ctrl_Stuff_Done := True;
             end if;
 
             Comp_Type := Etype (Selector);
@@ -2587,19 +2604,18 @@ package body Exp_Aggr is
                --    Temp (Y) := (...);
                --    Obj_Rec_Typ.Obj_Arr_Typ := Temp;
 
-               if Present (Obj)
-                 and then Ekind (Comp_Type) = E_Array_Subtype
+               if Ekind (Comp_Type) = E_Array_Subtype
                  and then Is_Int_Range_Bounds (Aggregate_Bounds (Expr_Q))
                  and then Is_Int_Range_Bounds (First_Index (Comp_Type))
                  and then not
-                   Compatible_Int_Bounds (
-                     Agg_Bounds => Aggregate_Bounds (Expr_Q),
-                     Typ_Bounds => First_Index (Comp_Type))
+                   Compatible_Int_Bounds
+                     (Agg_Bounds => Aggregate_Bounds (Expr_Q),
+                      Typ_Bounds => First_Index (Comp_Type))
                then
-                  declare
-                     --  Create the array subtype with bounds equal to those
-                     --  of the corresponding aggregate.
+                  --  Create the array subtype with bounds equal to those of
+                  --  the corresponding aggregate.
 
+                  declare
                      SubE : constant Entity_Id :=
                               Make_Defining_Identifier (Loc,
                                 New_Internal_Name ('T'));
@@ -2637,8 +2653,7 @@ package body Exp_Aggr is
                      Append_To (L, SubD);
                      Append_To (L, TmpD);
 
-                     --  Expand the aggregate into assignments to the temporary
-                     --  array.
+                     --  Expand aggregate into assignments to the temp array
 
                      Append_List_To (L,
                        Late_Expansion (Expr_Q, Comp_Type,
@@ -2651,13 +2666,14 @@ package body Exp_Aggr is
                          Name       => New_Copy_Tree (Comp_Expr),
                          Expression => New_Reference_To (TmpE, Loc)));
 
-                     --  Do not pass the original aggregate to Gigi as is
-                     --  since it will potentially clobber the front or the
-                     --  end of the array. Setting the expression to empty
-                     --  is safe since all aggregates will be expanded into
-                     --  assignments.
+                     --  Do not pass the original aggregate to Gigi as is,
+                     --  since it will potentially clobber the front or the end
+                     --  of the array. Setting the expression to empty is safe
+                     --  since all aggregates are expanded into assignments.
 
-                     Set_Expression (Parent (Obj), Empty);
+                     if Present (Obj) then
+                        Set_Expression (Parent (Obj), Empty);
+                     end if;
                   end;
 
                --  Normal case (sliding not required)
@@ -2667,6 +2683,8 @@ package body Exp_Aggr is
                     Late_Expansion (Expr_Q, Comp_Type, Comp_Expr,
                       Internal_Final_List));
                end if;
+
+            --  Expr_Q is not delayed aggregate
 
             else
                Instr :=
@@ -2737,7 +2755,6 @@ package body Exp_Aggr is
             begin
                D_Val := First_Elmt (Discriminant_Constraint (Typ));
                Disc  := First_Discriminant (Typ);
-
                while Chars (Disc) /= Chars (Selector) loop
                   Next_Discriminant (Disc);
                   Next_Elmt (D_Val);
@@ -2804,10 +2821,7 @@ package body Exp_Aggr is
       --  If the controllers have not been initialized yet (by lack of non-
       --  discriminant components), let's do it now.
 
-      if not Ctrl_Stuff_Done then
-         Gen_Ctrl_Actions_For_Aggr;
-         Ctrl_Stuff_Done := True;
-      end if;
+      Gen_Ctrl_Actions_For_Aggr;
 
       return L;
    end Build_Record_Aggr_Code;
@@ -2827,8 +2841,25 @@ package body Exp_Aggr is
                    New_Reference_To (Temp, Loc)));
 
       Access_Type : constant Entity_Id := Etype (Temp);
+      Flist       : Entity_Id;
 
    begin
+      --  If the allocator is for an access discriminant, there is no
+      --  finalization list for the anonymous access type, and the eventual
+      --  finalization of the object is handled through the coextension
+      --  mechanism. If the enclosing object is not dynamically allocated,
+      --  the access discriminant is itself placed on the stack. Otherwise,
+      --  some other finalization list is used (see exp_ch4.adb).
+
+      if Ekind (Access_Type) = E_Anonymous_Access_Type
+        and then Nkind (Associated_Node_For_Itype (Access_Type)) =
+                                              N_Discriminant_Specification
+      then
+         Flist := Empty;
+      else
+         Flist := Find_Final_List (Access_Type);
+      end if;
+
       if Is_Array_Type (Typ) then
          Convert_Array_Aggr_In_Allocator (Decl, Aggr, Occ);
 
@@ -2838,9 +2869,14 @@ package body Exp_Aggr is
             Init_Stmts : List_Id;
 
          begin
-            Init_Stmts := Late_Expansion (Aggr, Typ, Occ,
-                            Find_Final_List (Access_Type),
-                            Associated_Final_Chain (Base_Type (Access_Type)));
+            Init_Stmts :=
+              Late_Expansion
+                (Aggr, Typ, Occ,
+                 Flist,
+                 Associated_Final_Chain (Base_Type (Access_Type)));
+
+            --  ??? Dubious actual for Obj: expect 'the original object
+            --  being initialized'
 
             Build_Task_Allocate_Block_With_Init_Stmts (L, Aggr, Init_Stmts);
             Insert_Actions_After (Decl, L);
@@ -2848,9 +2884,13 @@ package body Exp_Aggr is
 
       else
          Insert_Actions_After (Decl,
-           Late_Expansion (Aggr, Typ, Occ,
-             Find_Final_List (Access_Type),
-             Associated_Final_Chain (Base_Type (Access_Type))));
+           Late_Expansion
+             (Aggr, Typ, Occ, Flist,
+              Associated_Final_Chain (Base_Type (Access_Type))));
+
+         --  ??? Dubious actual for Obj: expect 'the original object
+         --  being initialized'
+
       end if;
    end Convert_Aggr_In_Allocator;
 
@@ -2869,8 +2909,9 @@ package body Exp_Aggr is
       end if;
 
       Insert_Actions_After (N,
-        Late_Expansion (Aggr, Typ, Occ,
-          Find_Final_List (Typ, New_Copy_Tree (Occ))));
+        Late_Expansion
+          (Aggr, Typ, Occ,
+           Find_Final_List (Typ, New_Copy_Tree (Occ))));
    end Convert_Aggr_In_Assignment;
 
    ---------------------------------
@@ -2907,7 +2948,6 @@ package body Exp_Aggr is
          D := First_Discriminant (Typ);
          Disc1 := First_Elmt (Discriminant_Constraint (Typ));
          Disc2 := First_Elmt (Discriminant_Constraint (Etype (Obj)));
-
          while Present (Disc1) and then Present (Disc2) loop
             Val1 := Node (Disc1);
             Val2 := Node (Disc2);
@@ -3175,7 +3215,6 @@ package body Exp_Aggr is
          begin
             if Present (Expressions (N)) then
                Elmt := First (Expressions (N));
-
                while Present (Elmt) loop
                   if Nkind (Elmt) = N_Aggregate
                     and then Present (Next_Index (Ix))
@@ -3336,7 +3375,6 @@ package body Exp_Aggr is
 
             else
                Elmt := First (Expressions (N));
-
                while Present (Elmt) loop
                   if not Is_Flat (Elmt, Dims - 1) then
                      return False;
@@ -3513,11 +3551,10 @@ package body Exp_Aggr is
             Sub_Agg := N;
 
             for D in 1 .. Number_Dimensions (Typ) loop
-               Comp := First (Expressions (Sub_Agg));
+               Sub_Agg := First (Expressions (Sub_Agg));
 
-               Sub_Agg := Comp;
+               Comp := Sub_Agg;
                Num := 0;
-
                while Present (Comp) loop
                   Num := Num + 1;
                   Next (Comp);
@@ -3789,9 +3826,10 @@ package body Exp_Aggr is
 
       function Has_Address_Clause (D : Node_Id) return Boolean is
          Id   : constant Entity_Id := Defining_Identifier (D);
-         Decl : Node_Id := Next (D);
+         Decl : Node_Id;
 
       begin
+         Decl := Next (D);
          while Present (Decl) loop
             if Nkind (Decl) = N_At_Clause
                and then Chars (Identifier (Decl)) = Chars (Id)
@@ -3857,7 +3895,6 @@ package body Exp_Aggr is
          begin
             if Present (Expressions (Aggr)) then
                Expr := First (Expressions (Aggr));
-
                while Present (Expr) loop
                   if Nkind (Expr) = N_Aggregate then
                      if not Safe_Aggregate (Expr) then
@@ -3874,7 +3911,6 @@ package body Exp_Aggr is
 
             if Present (Component_Associations (Aggr)) then
                Expr := First (Component_Associations (Aggr));
-
                while Present (Expr) loop
                   if Nkind (Expression (Expr)) = N_Aggregate then
                      if not Safe_Aggregate (Expression (Expr)) then
@@ -4391,7 +4427,6 @@ package body Exp_Aggr is
 
          begin
             Index := First_Index (Itype);
-
             while Present (Index) loop
                if not Is_Static_Subtype (Etype (Index)) then
                   Needs_Type := True;
@@ -4515,7 +4550,7 @@ package body Exp_Aggr is
          Set_Expansion_Delayed (N);
          return;
 
-      --  In the remaining cases  the aggregate is the RHS of an assignment
+      --  In the remaining cases the aggregate is the RHS of an assignment
 
       elsif Maybe_In_Place_OK
         and then Is_Entity_Name (Name (Parent (N)))
@@ -4890,7 +4925,6 @@ package body Exp_Aggr is
                procedure Prepend_Stored_Values (T : Entity_Id) is
                begin
                   Discriminant := First_Stored_Discriminant (T);
-
                   while Present (Discriminant) loop
                      New_Comp :=
                        Make_Component_Association (Loc,
@@ -4922,13 +4956,12 @@ package body Exp_Aggr is
                --  the derived type.
 
                First_Comp := First (Component_Associations (N));
-
                while Present (First_Comp) loop
                   Comp := First_Comp;
                   Next (First_Comp);
 
-                  if Ekind (Entity (First (Choices (Comp)))) =
-                    E_Discriminant
+                  if Ekind (Entity
+                             (First (Choices (Comp)))) = E_Discriminant
                   then
                      Remove (Comp);
                      Num_Disc := Num_Disc + 1;
@@ -4947,7 +4980,6 @@ package body Exp_Aggr is
                First_Comp := Empty;
 
                Discriminant := First_Stored_Discriminant (Base_Type (Typ));
-
                while Present (Discriminant) loop
                   Num_Gird := Num_Gird + 1;
                   Next_Stored_Discriminant (Discriminant);
@@ -4962,7 +4994,6 @@ package body Exp_Aggr is
                   --  convert it to the intended target type.
 
                   Discriminant := First_Stored_Discriminant (Base_Type (Typ));
-
                   while Present (Discriminant) loop
                      New_Comp :=
                        New_Copy_Tree (
@@ -5022,19 +5053,12 @@ package body Exp_Aggr is
             if Present (Parent_Expr)
               and then Is_Empty_List (Comps)
             then
-               Comp := First_Entity (Typ);
+               Comp := First_Component_Or_Discriminant (Typ);
                while Present (Comp) loop
-
-                  --  Skip all entities that aren't discriminants or components
-
-                  if Ekind (Comp) /= E_Discriminant
-                    and then Ekind (Comp) /= E_Component
-                  then
-                     null;
 
                   --  Skip all expander-generated components
 
-                  elsif
+                  if
                     not Comes_From_Source (Original_Record_Component (Comp))
                   then
                      null;
@@ -5058,7 +5082,7 @@ package body Exp_Aggr is
                      Analyze_And_Resolve (New_Comp, Etype (Comp));
                   end if;
 
-                  Next_Entity (Comp);
+                  Next_Component_Or_Discriminant (Comp);
                end loop;
             end if;
 
@@ -5093,7 +5117,6 @@ package body Exp_Aggr is
 
                   First_Comp := First (Component_Associations (N));
                   Parent_Comps := New_List;
-
                   while Present (First_Comp)
                     and then Scope (Original_Record_Component (
                             Entity (First (Choices (First_Comp))))) /= Base_Typ
@@ -5325,10 +5348,8 @@ package body Exp_Aggr is
 
       Assoc := First (Component_Associations (N));
       while Present (Assoc) loop
-
          Choice := First (Choices (Assoc));
          while Present (Choice) loop
-
             if Nkind (Choice) /= N_Others_Choice then
                Nb_Choices := Nb_Choices + 1;
             end if;
@@ -5569,7 +5590,6 @@ package body Exp_Aggr is
 
    begin
       Comp := First_Component (Typ);
-
       while Present (Comp) loop
          if Is_Record_Type (Etype (Comp))
            and then Has_Discriminants (Etype (Comp))
@@ -5737,11 +5757,10 @@ package body Exp_Aggr is
 
    begin
       K := L;
-
       while K /= U loop
          T := Case_Table (K + 1);
-         J := K + 1;
 
+         J := K + 1;
          while J /= L
            and then Expr_Value (Case_Table (J - 1).Choice_Lo) >
                     Expr_Value (T.Choice_Lo)
