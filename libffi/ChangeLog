@@ -1,3 +1,28 @@
+2007-04-06  Richard Henderson  <rth@redhat.com>
+
+	* configure.ac: Tidy target case.
+	(HAVE_LONG_DOUBLE): Allow the target to override.
+	* configure: Regenerate.
+	* include/ffi.h.in: Don't define ffi_type_foo if
+	LIBFFI_HIDE_BASIC_TYPES is defined.
+	(ffi_type_longdouble): If not HAVE_LONG_DOUBLE, define
+	to ffi_type_double.
+	* types.c (LIBFFI_HIDE_BASIC_TYPES): Define.
+	(FFI_TYPEDEF, ffi_type_void): Mark the data const.
+	(ffi_type_longdouble): Special case for Alpha.  Don't define
+	if long double == double.
+
+	* src/alpha/ffi.c (FFI_TYPE_LONGDOUBLE): Assert unique value.
+	(ffi_prep_cif_machdep): Handle it as the 128-bit type.
+	(ffi_call, ffi_closure_osf_inner): Likewise.
+	(ffi_closure_osf_inner): Likewise.  Mark hidden.
+	(ffi_call_osf, ffi_closure_osf): Mark hidden.
+	* src/alpha/ffitarget.h (FFI_LAST_ABI): Tidy definition.
+	* src/alpha/osf.S (ffi_call_osf, ffi_closure_osf): Mark hidden.
+	(load_table): Handle 128-bit long double.
+
+	* testsuite/libffi.call/float4.c: Add -mieee for alpha.
+
 2007-04-06  Tom Tromey  <tromey@redhat.com>
 
 	PR libffi/31491:
