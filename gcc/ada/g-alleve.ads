@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                         (Soft Binding Version)                           --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -317,21 +317,20 @@ private
    --  We simply use the natural array definitions corresponding to each
    --  user-level vector type.
 
-   type LL_VUI is new VUC_View;
-   type LL_VSI is new VUC_View;
+   type LL_VUI is new VUI_View;
+   type LL_VSI is new VSI_View;
+   type LL_VBI is new VBI_View;
 
-   type LL_VUS is new VUC_View;
-   type LL_VSS is new VUC_View;
+   type LL_VUS is new VUS_View;
+   type LL_VSS is new VSS_View;
+   type LL_VBS is new VBS_View;
 
    type LL_VUC is new VUC_View;
-   type LL_VSC is new VUC_View;
+   type LL_VSC is new VSC_View;
+   type LL_VBC is new VBC_View;
 
-   type LL_VF is new VUC_View;
-
-   type LL_VBC is new VUC_View;
-   type LL_VBS is new VUC_View;
-   type LL_VBI is new VUC_View;
-   type LL_VP is new VUC_View;
+   type LL_VF is new VF_View;
+   type LL_VP is new VP_View;
 
    ------------------------------------
    -- Low level functional interface --

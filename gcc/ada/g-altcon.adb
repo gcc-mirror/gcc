@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2005, Free Software Foundation, Inc.            --
+--          Copyright (C) 2005-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,450 +35,480 @@ with Ada.Unchecked_Conversion;
 
 with System; use System;
 
-with GNAT.Altivec.Low_Level_Interface; use GNAT.Altivec.Low_Level_Interface;
-with GNAT.Altivec.Low_Level_Vectors;   use GNAT.Altivec.Low_Level_Vectors;
-
 package body GNAT.Altivec.Conversions is
 
-   function To_Varray_unsigned_char is
-     new Ada.Unchecked_Conversion (Varray_signed_char,
-                                   Varray_unsigned_char);
+   --  All the vector/view conversions operate similarily: bare unchecked
+   --  conversion on big endian targets, and elements permutation on little
+   --  endian targets. We call "Mirroring" the elements permutation process.
 
-   function To_Varray_unsigned_char is
-     new Ada.Unchecked_Conversion (Varray_bool_char,
-                                   Varray_unsigned_char);
+   --  We would like to provide a generic version of the conversion routines
+   --  and just have a set of "renaming as body" declarations to satisfy the
+   --  public interface. This unfortunately prevents inlining, which we must
+   --  preserve at least for the hard binding.
 
-   function To_Varray_unsigned_short is
-     new Ada.Unchecked_Conversion (Varray_signed_short,
-                                   Varray_unsigned_short);
+   --  We instead provide a generic version of facilities needed by all the
+   --  conversion routines and use them repeatedly.
 
-   function To_Varray_unsigned_short is
-     new Ada.Unchecked_Conversion (Varray_bool_short,
-                                   Varray_unsigned_short);
+   generic
+      type Vitem_Type is private;
 
-   function To_Varray_unsigned_short is
-      new Ada.Unchecked_Conversion (Varray_pixel,
-                                    Varray_unsigned_short);
+      type Varray_Index_Type is range <>;
+      type Varray_Type is array (Varray_Index_Type) of Vitem_Type;
 
-   function To_Varray_unsigned_int is
-     new Ada.Unchecked_Conversion (Varray_signed_int,
-                                   Varray_unsigned_int);
+      type Vector_Type is private;
+      type View_Type is private;
 
-   function To_Varray_unsigned_int is
-     new Ada.Unchecked_Conversion (Varray_bool_int,
-                                   Varray_unsigned_int);
+   package Generic_Conversions is
 
-   function To_Varray_unsigned_int is
-      new Ada.Unchecked_Conversion (Varray_float,
-                                    Varray_unsigned_int);
+      subtype Varray is Varray_Type;
+      --  This provides an easy common way to refer to the type parameter
+      --  in contexts where a specific instance of this package is "use"d.
 
-   function To_Varray_signed_char is
-     new Ada.Unchecked_Conversion (Varray_unsigned_char,
-                                   Varray_signed_char);
+      procedure Mirror (A : Varray_Type; Into : out Varray_Type);
+      pragma Inline (Mirror);
+      --  Mirror the elements of A into INTO, not touching the per-element
+      --  internal ordering.
 
-   function To_Varray_bool_char is
-     new Ada.Unchecked_Conversion (Varray_unsigned_char,
-                                   Varray_bool_char);
+      --  A procedure with an out parameter is a bit heavier to use than a
+      --  function but reduces the amount of temporary creations around the
+      --  call. Instances are typically not front-end inlined. They can still
+      --  be back-end inlined on request with the proper command-line option.
 
-   function To_Varray_signed_short is
-     new Ada.Unchecked_Conversion (Varray_unsigned_short,
-                                   Varray_signed_short);
+      --  Below are Unchecked Conversion routines for various purposes,
+      --  relying on internal knowledge about the bits layout in the different
+      --  types (all 128 value bits blocks).
 
-   function To_Varray_bool_short is
-     new Ada.Unchecked_Conversion (Varray_unsigned_short,
-                                   Varray_bool_short);
+      --  View<->Vector straight bitwise conversions on BE targets.
 
-   function To_Varray_pixel is
-     new Ada.Unchecked_Conversion (Varray_unsigned_short,
-                                   Varray_pixel);
+      function UNC_To_Vector is
+         new Ada.Unchecked_Conversion (View_Type, Vector_Type);
 
-   function To_Varray_signed_int is
-     new Ada.Unchecked_Conversion (Varray_unsigned_int,
-                                   Varray_signed_int);
+      function UNC_To_View is
+         new Ada.Unchecked_Conversion (Vector_Type, View_Type);
 
-   function To_Varray_bool_int is
-     new Ada.Unchecked_Conversion (Varray_unsigned_int,
-                                   Varray_bool_int);
+      --  Varray->Vector/View for returning mirrored results on LE targets.
 
-   function To_Varray_float is
-     new Ada.Unchecked_Conversion (Varray_unsigned_int,
-                                   Varray_float);
+      function UNC_To_Vector is
+         new Ada.Unchecked_Conversion (Varray_Type, Vector_Type);
 
-   function To_VUC is new Ada.Unchecked_Conversion (VUC_View, VUC);
-   function To_VSC is new Ada.Unchecked_Conversion (VSC_View, VSC);
-   function To_VBC is new Ada.Unchecked_Conversion (VBC_View, VBC);
-   function To_VUS is new Ada.Unchecked_Conversion (VUS_View, VUS);
-   function To_VSS is new Ada.Unchecked_Conversion (VSS_View, VSS);
-   function To_VBS is new Ada.Unchecked_Conversion (VBS_View, VBS);
-   function To_VUI is new Ada.Unchecked_Conversion (VUI_View, VUI);
-   function To_VSI is new Ada.Unchecked_Conversion (VSI_View, VSI);
-   function To_VBI is new Ada.Unchecked_Conversion (VBI_View, VBI);
-   function To_VF  is new Ada.Unchecked_Conversion (VF_View,  VF);
-   function To_VP  is new Ada.Unchecked_Conversion (VP_View,  VP);
+      function UNC_To_View is
+         new Ada.Unchecked_Conversion (Varray_Type, View_Type);
 
-   function To_VUC_View is new Ada.Unchecked_Conversion (VUC, VUC_View);
-   function To_VSC_View is new Ada.Unchecked_Conversion (VSC, VSC_View);
-   function To_VBC_View is new Ada.Unchecked_Conversion (VBC, VBC_View);
-   function To_VUS_View is new Ada.Unchecked_Conversion (VUS, VUS_View);
-   function To_VSS_View is new Ada.Unchecked_Conversion (VSS, VSS_View);
-   function To_VBS_View is new Ada.Unchecked_Conversion (VBS, VBS_View);
-   function To_VUI_View is new Ada.Unchecked_Conversion (VUI, VUI_View);
-   function To_VSI_View is new Ada.Unchecked_Conversion (VSI, VSI_View);
-   function To_VBI_View is new Ada.Unchecked_Conversion (VBI, VBI_View);
-   function To_VF_View  is new Ada.Unchecked_Conversion (VF,  VF_View);
-   function To_VP_View  is new Ada.Unchecked_Conversion (VP,  VP_View);
+      --  Vector/View->Varray for to-be-permuted source on LE targets.
 
-   pragma Warnings (Off, Default_Bit_Order);
+      function UNC_To_Varray is
+         new Ada.Unchecked_Conversion (Vector_Type, Varray_Type);
 
-   ---------------
-   -- To_Vector --
-   ---------------
+      function UNC_To_Varray is
+         new Ada.Unchecked_Conversion (View_Type, Varray_Type);
+
+   end Generic_Conversions;
+
+   package body Generic_Conversions is
+
+      procedure Mirror (A : Varray_Type; Into : out Varray_Type) is
+      begin
+         for J in A'Range loop
+            Into (J) := A (A'Last - J + A'First);
+         end loop;
+      end Mirror;
+
+   end Generic_Conversions;
+
+   --  Now we declare the instances and implement the interface function
+   --  bodies simply calling the instantiated routines.
+
+   ---------------------
+   -- Char components --
+   ---------------------
+
+   package SC_Conversions is new Generic_Conversions
+     (signed_char, Vchar_Range, Varray_signed_char, VSC, VSC_View);
 
    function To_Vector (S : VSC_View) return VSC is
+      use SC_Conversions;
    begin
       if Default_Bit_Order = High_Order_First then
-         return To_VSC (S);
+         return UNC_To_Vector (S);
       else
          declare
-            Result : LL_VUC;
-            VS     : constant VUC_View :=
-                       (Values => To_Varray_unsigned_char (S.Values));
+            M : Varray;
          begin
-            Result := To_Vector (VS);
-            return To_LL_VSC (Result);
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_Vector (M);
          end;
       end if;
    end To_Vector;
-
-   function To_Vector (S : VBC_View) return VBC is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VBC (S);
-      else
-         declare
-            Result : LL_VUC;
-            VS     : constant VUC_View :=
-                       (Values => To_Varray_unsigned_char (S.Values));
-         begin
-            Result := To_Vector (VS);
-            return To_LL_VBC (Result);
-         end;
-      end if;
-   end To_Vector;
-
-   function To_Vector (S : VSS_View) return VSS is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VSS (S);
-      else
-         declare
-            Result : LL_VUS;
-            VS     : constant VUS_View :=
-                       (Values => To_Varray_unsigned_short (S.Values));
-         begin
-            Result := To_Vector (VS);
-            return VSS (To_LL_VSS (Result));
-         end;
-      end if;
-   end To_Vector;
-
-   function To_Vector (S : VBS_View) return VBS is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VBS (S);
-      else
-         declare
-            Result : LL_VUS;
-            VS     : constant VUS_View :=
-                       (Values => To_Varray_unsigned_short (S.Values));
-         begin
-            Result := To_Vector (VS);
-            return To_LL_VBS (Result);
-         end;
-      end if;
-   end To_Vector;
-
-   function To_Vector (S : VP_View) return VP is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VP (S);
-      else
-         declare
-            Result : LL_VUS;
-            VS     : constant VUS_View :=
-                       (Values => To_Varray_unsigned_short (S.Values));
-         begin
-            Result := To_Vector (VS);
-            return To_LL_VP (Result);
-         end;
-      end if;
-   end To_Vector;
-
-   function To_Vector (S : VSI_View) return VSI is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VSI (S);
-      else
-         declare
-            Result : LL_VUI;
-            VS     : constant VUI_View :=
-                       (Values => To_Varray_unsigned_int (S.Values));
-         begin
-            Result := To_Vector (VS);
-            return To_LL_VSI (Result);
-         end;
-      end if;
-   end To_Vector;
-
-   function To_Vector (S : VBI_View) return VBI is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VBI (S);
-      else
-         declare
-            Result : LL_VUI;
-            VS     : constant VUI_View :=
-                       (Values => To_Varray_unsigned_int (S.Values));
-         begin
-            Result := To_Vector (VS);
-            return To_LL_VBI (Result);
-         end;
-      end if;
-   end To_Vector;
-
-   function To_Vector (S : VF_View) return VF is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VF (S);
-      else
-         declare
-            Result : LL_VUI;
-            VS     : constant VUI_View :=
-                       (Values => To_Varray_unsigned_int (S.Values));
-         begin
-            Result := To_Vector (VS);
-            return To_LL_VF (Result);
-         end;
-      end if;
-   end To_Vector;
-
-   function To_Vector (S : VUC_View) return VUC is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VUC (S);
-      else
-         declare
-            Result : VUC_View;
-         begin
-            for J in Vchar_Range'Range loop
-               Result.Values (J) :=
-                 S.Values (Vchar_Range'Last - J + Vchar_Range'First);
-            end loop;
-            return To_VUC (Result);
-         end;
-      end if;
-   end To_Vector;
-
-   function To_Vector (S : VUS_View) return VUS is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VUS (S);
-      else
-         declare
-            Result : VUS_View;
-         begin
-            for J in Vshort_Range'Range loop
-               Result.Values (J) :=
-                 S.Values (Vshort_Range'Last - J + Vshort_Range'First);
-            end loop;
-            return To_VUS (Result);
-         end;
-      end if;
-   end To_Vector;
-
-   function To_Vector (S : VUI_View) return VUI is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VUI (S);
-      else
-         declare
-            Result : VUI_View;
-         begin
-            for J in Vint_Range'Range loop
-               Result.Values (J) :=
-                 S.Values (Vint_Range'Last - J + Vint_Range'First);
-            end loop;
-            return To_VUI (Result);
-         end;
-      end if;
-   end To_Vector;
-
-   --------------
-   -- To_View --
-   --------------
 
    function To_View (S : VSC) return VSC_View is
+      use SC_Conversions;
    begin
       if Default_Bit_Order = High_Order_First then
-         return To_VSC_View (S);
+         return UNC_To_View (S);
       else
          declare
-            Result : VUC_View;
+            M : Varray;
          begin
-            Result := To_View (To_LL_VUC (S));
-            return (Values => To_Varray_signed_char (Result.Values));
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_View (M);
          end;
       end if;
    end To_View;
 
-   function To_View (S : VBC) return VBC_View is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VBC_View (S);
-      else
-         declare
-            Result : VUC_View;
-         begin
-            Result := To_View (To_LL_VUC (S));
-            return (Values => To_Varray_bool_char (Result.Values));
-         end;
-      end if;
-   end To_View;
+   --
 
-   function To_View (S : VSS) return VSS_View is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VSS_View (S);
-      else
-         declare
-            Result : VUS_View;
-         begin
-            Result := To_View (To_LL_VUS (S));
-            return (Values => To_Varray_signed_short (Result.Values));
-         end;
-      end if;
-   end To_View;
+   package UC_Conversions is new Generic_Conversions
+     (unsigned_char, Vchar_Range, Varray_unsigned_char, VUC, VUC_View);
 
-   function To_View (S : VBS) return VBS_View is
+   function To_Vector (S : VUC_View) return VUC is
+      use UC_Conversions;
    begin
       if Default_Bit_Order = High_Order_First then
-         return To_VBS_View (S);
+         return UNC_To_Vector (S);
       else
          declare
-            Result : VUS_View;
+            M : Varray;
          begin
-            Result := To_View (To_LL_VUS (S));
-            return (Values => To_Varray_bool_short (Result.Values));
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_Vector (M);
          end;
       end if;
-   end To_View;
-
-   function To_View (S : VP) return VP_View is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VP_View (S);
-      else
-         declare
-            Result : VUS_View;
-         begin
-            Result := To_View (To_LL_VUS (S));
-            return (Values => To_Varray_pixel (Result.Values));
-         end;
-      end if;
-   end To_View;
-
-   function To_View (S : VSI) return VSI_View is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VSI_View (S);
-      else
-         declare
-            Result : VUI_View;
-         begin
-            Result := To_View (To_LL_VUI (S));
-            return (Values => To_Varray_signed_int (Result.Values));
-         end;
-      end if;
-   end To_View;
-
-   function To_View (S : VBI) return VBI_View is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VBI_View (S);
-      else
-         declare
-            Result : VUI_View;
-         begin
-            Result := To_View (To_LL_VUI (S));
-            return (Values => To_Varray_bool_int (Result.Values));
-         end;
-      end if;
-   end To_View;
-
-   function To_View (S : VF) return VF_View is
-   begin
-      if Default_Bit_Order = High_Order_First then
-         return To_VF_View (S);
-      else
-         declare
-            Result : VUI_View;
-         begin
-            Result := To_View (To_LL_VUI (S));
-            return (Values => To_Varray_float (Result.Values));
-         end;
-      end if;
-   end To_View;
+   end To_Vector;
 
    function To_View (S : VUC) return VUC_View is
+      use UC_Conversions;
    begin
       if Default_Bit_Order = High_Order_First then
-         return To_VUC_View (S);
+         return UNC_To_View (S);
       else
          declare
-            VS     : constant VUC_View := To_VUC_View (S);
-            Result : VUC_View;
+            M : Varray;
          begin
-            for J in Vchar_Range'Range loop
-               Result.Values (J) :=
-                 VS.Values (Vchar_Range'Last - J + Vchar_Range'First);
-            end loop;
-            return Result;
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_View (M);
          end;
       end if;
    end To_View;
+
+   --
+
+   package BC_Conversions is new Generic_Conversions
+     (bool_char, Vchar_Range, Varray_bool_char, VBC, VBC_View);
+
+   function To_Vector (S : VBC_View) return VBC is
+      use BC_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_Vector (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_Vector (M);
+         end;
+      end if;
+   end To_Vector;
+
+   function To_View (S : VBC) return VBC_View is
+      use BC_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_View (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_View (M);
+         end;
+      end if;
+   end To_View;
+
+   ----------------------
+   -- Short components --
+   ----------------------
+
+   package SS_Conversions is new Generic_Conversions
+     (signed_short, Vshort_Range, Varray_signed_short, VSS, VSS_View);
+
+   function To_Vector (S : VSS_View) return VSS is
+      use SS_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_Vector (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_Vector (M);
+         end;
+      end if;
+   end To_Vector;
+
+   function To_View (S : VSS) return VSS_View is
+      use SS_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_View (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_View (M);
+         end;
+      end if;
+   end To_View;
+
+   --
+
+   package US_Conversions is new Generic_Conversions
+     (unsigned_short, Vshort_Range, Varray_unsigned_short, VUS, VUS_View);
+
+   function To_Vector (S : VUS_View) return VUS is
+      use US_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_Vector (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_Vector (M);
+         end;
+      end if;
+   end To_Vector;
 
    function To_View (S : VUS) return VUS_View is
+      use US_Conversions;
    begin
       if Default_Bit_Order = High_Order_First then
-         return To_VUS_View (S);
+         return UNC_To_View (S);
       else
          declare
-            VS     : constant VUS_View := To_VUS_View (S);
-            Result : VUS_View;
+            M : Varray;
          begin
-            for J in Vshort_Range'Range loop
-               Result.Values (J) :=
-                 VS.Values (Vshort_Range'Last - J + Vshort_Range'First);
-            end loop;
-            return Result;
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_View (M);
          end;
       end if;
    end To_View;
 
-   function To_View (S : VUI) return VUI_View is
+   --
+
+   package BS_Conversions is new Generic_Conversions
+     (bool_short, Vshort_Range, Varray_bool_short, VBS, VBS_View);
+
+   function To_Vector (S : VBS_View) return VBS is
+      use BS_Conversions;
    begin
       if Default_Bit_Order = High_Order_First then
-         return To_VUI_View (S);
+         return UNC_To_Vector (S);
       else
          declare
-            VS     : constant VUI_View := To_VUI_View (S);
-            Result : VUI_View;
+            M : Varray;
          begin
-            for J in Vint_Range'Range loop
-               Result.Values (J) :=
-                 VS.Values (Vint_Range'Last - J + Vint_Range'First);
-            end loop;
-            return Result;
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_Vector (M);
+         end;
+      end if;
+   end To_Vector;
+
+   function To_View (S : VBS) return VBS_View is
+      use BS_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_View (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_View (M);
+         end;
+      end if;
+   end To_View;
+
+   --------------------
+   -- Int components --
+   --------------------
+
+   package SI_Conversions is new Generic_Conversions
+     (signed_int, Vint_Range, Varray_signed_int, VSI, VSI_View);
+
+   function To_Vector (S : VSI_View) return VSI is
+      use SI_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_Vector (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_Vector (M);
+         end;
+      end if;
+   end To_Vector;
+
+   function To_View (S : VSI) return VSI_View is
+      use SI_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_View (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_View (M);
+         end;
+      end if;
+   end To_View;
+
+   --
+
+   package UI_Conversions is new Generic_Conversions
+     (unsigned_int, Vint_Range, Varray_unsigned_int, VUI, VUI_View);
+
+   function To_Vector (S : VUI_View) return VUI is
+      use UI_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_Vector (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_Vector (M);
+         end;
+      end if;
+   end To_Vector;
+
+   function To_View (S : VUI) return VUI_View is
+      use UI_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_View (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_View (M);
+         end;
+      end if;
+   end To_View;
+
+   --
+
+   package BI_Conversions is new Generic_Conversions
+     (bool_int, Vint_Range, Varray_bool_int, VBI, VBI_View);
+
+   function To_Vector (S : VBI_View) return VBI is
+      use BI_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_Vector (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_Vector (M);
+         end;
+      end if;
+   end To_Vector;
+
+   function To_View (S : VBI) return VBI_View is
+      use BI_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_View (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_View (M);
+         end;
+      end if;
+   end To_View;
+
+   ----------------------
+   -- Float components --
+   ----------------------
+
+   package F_Conversions is new Generic_Conversions
+     (C_float, Vfloat_Range, Varray_float, VF, VF_View);
+
+   function To_Vector (S : VF_View) return VF is
+      use F_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_Vector (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_Vector (M);
+         end;
+      end if;
+   end To_Vector;
+
+   function To_View (S : VF) return VF_View is
+      use F_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_View (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_View (M);
+         end;
+      end if;
+   end To_View;
+
+   ----------------------
+   -- Pixel components --
+   ----------------------
+
+   package P_Conversions is new Generic_Conversions
+     (pixel, Vpixel_Range, Varray_pixel, VP, VP_View);
+
+   function To_Vector (S : VP_View) return VP is
+      use P_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_Vector (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_Vector (M);
+         end;
+      end if;
+   end To_Vector;
+
+   function To_View (S : VP) return VP_View is
+      use P_Conversions;
+   begin
+      if Default_Bit_Order = High_Order_First then
+         return UNC_To_View (S);
+      else
+         declare
+            M : Varray;
+         begin
+            Mirror (UNC_To_Varray (S), Into => M);
+            return UNC_To_View (M);
          end;
       end if;
    end To_View;
