@@ -698,7 +698,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
    ------------------
 
    procedure Generic_Read
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Tree   : in out Tree_Type)
    is
       N : Count_Type'Base;
@@ -776,7 +776,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
    -------------------
 
    procedure Generic_Write
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Tree   : Tree_Type)
    is
       procedure Process (Node : Node_Access);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1997-2005, AdaCore                     --
+--                     Copyright (C) 1997-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -782,7 +782,7 @@ package GNAT.Spitbol.Patterns is
    function Any    (Str : VString)                          return Pattern;
    function Any    (Str : Character)                        return Pattern;
    function Any    (Str : Character_Set)                    return Pattern;
-   function Any    (Str : access VString)                   return Pattern;
+   function Any    (Str : not null access VString)          return Pattern;
    function Any    (Str : VString_Func)                     return Pattern;
    --  Constructs a pattern that matches a single character that is one of
    --  the characters in the given argument. The pattern fails if the current
@@ -797,7 +797,7 @@ package GNAT.Spitbol.Patterns is
    function Break  (Str : VString)                          return Pattern;
    function Break  (Str : Character)                        return Pattern;
    function Break  (Str : Character_Set)                    return Pattern;
-   function Break  (Str : access VString)                   return Pattern;
+   function Break  (Str : not null access VString)          return Pattern;
    function Break  (Str : VString_Func)                     return Pattern;
    --  Constructs a pattern that matches a (possibly null) string which
    --  is immediately followed by a character in the given argument. This
@@ -809,7 +809,7 @@ package GNAT.Spitbol.Patterns is
    function BreakX (Str : VString)                          return Pattern;
    function BreakX (Str : Character)                        return Pattern;
    function BreakX (Str : Character_Set)                    return Pattern;
-   function BreakX (Str : access VString)                   return Pattern;
+   function BreakX (Str : not null access VString)          return Pattern;
    function BreakX (Str : VString_Func)                     return Pattern;
    --  Like Break, but the pattern attempts to extend on a failure to find
    --  the next occurrence of a character in Str, and only fails when the
@@ -833,7 +833,7 @@ package GNAT.Spitbol.Patterns is
    --  one attempt is made to match P, without trying alternatives.
 
    function Len    (Count : Natural)                        return Pattern;
-   function Len    (Count : access Natural)                 return Pattern;
+   function Len    (Count : not null access Natural)        return Pattern;
    function Len    (Count : Natural_Func)                   return Pattern;
    --  Constructs a pattern that matches exactly the given number of
    --  characters. The pattern fails if fewer than this number of characters
@@ -843,7 +843,7 @@ package GNAT.Spitbol.Patterns is
    function NotAny (Str : VString)                          return Pattern;
    function NotAny (Str : Character)                        return Pattern;
    function NotAny (Str : Character_Set)                    return Pattern;
-   function NotAny (Str : access VString)                   return Pattern;
+   function NotAny (Str : not null access VString)          return Pattern;
    function NotAny (Str : VString_Func)                     return Pattern;
    --  Constructs a pattern that matches a single character that is not
    --  one of the characters in the given argument. The pattern Fails if
@@ -853,14 +853,14 @@ package GNAT.Spitbol.Patterns is
    function NSpan  (Str : VString)                          return Pattern;
    function NSpan  (Str : Character)                        return Pattern;
    function NSpan  (Str : Character_Set)                    return Pattern;
-   function NSpan  (Str : access VString)                   return Pattern;
+   function NSpan  (Str : not null access VString)          return Pattern;
    function NSpan  (Str : VString_Func)                     return Pattern;
    --  Constructs a pattern that matches the longest possible string
    --  consisting entirely of characters from the given argument. The
    --  string may be empty, so this pattern always succeeds.
 
    function Pos    (Count : Natural)                        return Pattern;
-   function Pos    (Count : access Natural)                 return Pattern;
+   function Pos    (Count : not null access Natural)        return Pattern;
    function Pos    (Count : Natural_Func)                   return Pattern;
    --  Constructs a pattern that matches the null string if exactly Count
    --  characters have already been matched, and otherwise fails.
@@ -870,19 +870,19 @@ package GNAT.Spitbol.Patterns is
    --  unmatched characters in the pattern.
 
    function Rpos   (Count : Natural)                        return Pattern;
-   function Rpos   (Count : access Natural)                 return Pattern;
+   function Rpos   (Count : not null access Natural)        return Pattern;
    function Rpos   (Count : Natural_Func)                   return Pattern;
    --  Constructs a pattern that matches the null string if exactly Count
    --  characters remain to be matched in the string, and otherwise fails.
 
    function Rtab   (Count : Natural)                        return Pattern;
-   function Rtab   (Count : access Natural)                 return Pattern;
+   function Rtab   (Count : not null access Natural)        return Pattern;
    function Rtab   (Count : Natural_Func)                   return Pattern;
    --  Constructs a pattern that matches from the current location until
    --  exactly Count characters remain to be matched in the string. The
    --  pattern fails if fewer than Count characters remain to be matched.
 
-   function Setcur (Var : access Natural)                   return Pattern;
+   function Setcur (Var : not null access Natural)          return Pattern;
    --  Constructs a pattern that matches the null string, and assigns the
    --  current cursor position in the string. This value is the number of
    --  characters matched so far. So it is zero at the start of the match.
@@ -891,7 +891,7 @@ package GNAT.Spitbol.Patterns is
    function Span   (Str : VString)                          return Pattern;
    function Span   (Str : Character)                        return Pattern;
    function Span   (Str : Character_Set)                    return Pattern;
-   function Span   (Str : access VString)                   return Pattern;
+   function Span   (Str : not null access VString)          return Pattern;
    function Span   (Str : VString_Func)                     return Pattern;
    --  Constructs a pattern that matches the longest possible string
    --  consisting entirely of characters from the given argument. The
@@ -904,7 +904,7 @@ package GNAT.Spitbol.Patterns is
    --  infinite alternation of null strings.
 
    function Tab    (Count : Natural)                        return Pattern;
-   function Tab    (Count : access Natural)                 return Pattern;
+   function Tab    (Count : not null access Natural)        return Pattern;
    function Tab    (Count : Natural_Func)                   return Pattern;
    --  Constructs a pattern that from the current location until Count
    --  characters have been matched. The pattern fails if more than Count

@@ -55,10 +55,10 @@ package body Expander is
    -- Local Data --
    ----------------
 
-   --  The following table is used to save values of the Expander_Active
-   --  flag when they are saved by Expander_Mode_Save_And_Set. We use an
-   --  extendible table (which is a bit of overkill) because it is easier
-   --  than figuring out a maximum value or bothering with range checks!
+   --  The following table is used to save values of the Expander_Active flag
+   --  when they are saved by Expander_Mode_Save_And_Set. We use an extendible
+   --  table (which is a bit of overkill) because it is easier than figuring
+   --  out a maximum value or bothering with range checks!
 
    package Expander_Flags is new Table.Table (
      Table_Component_Type => Boolean,
@@ -74,17 +74,16 @@ package body Expander is
 
    procedure Expand (N : Node_Id) is
    begin
-      --  If we were analyzing a default expression the Full_Analysis flag
-      --  must be off. If we are in expansion mode then we must be
-      --  performing a full analysis. If we are analyzing a generic then
-      --  Expansion must be off.
+      --  If we were analyzing a default expression the Full_Analysis flag must
+      --  be off. If we are in expansion mode then we must be performing a full
+      --  analysis. If we are analyzing a generic then Expansion must be off.
 
       pragma Assert
         (not (Full_Analysis and then In_Default_Expression)
-         and then (Full_Analysis or else not Expander_Active)
-         and then not (Inside_A_Generic and then Expander_Active));
+          and then (Full_Analysis or else not Expander_Active)
+          and then not (Inside_A_Generic and then Expander_Active));
 
-      --  There are three reasons for the Expander_Active flag to be false.
+      --  There are three reasons for the Expander_Active flag to be false
       --
       --  The first is when are not generating code. In this mode the
       --  Full_Analysis flag indicates whether we are performing a complete
@@ -93,19 +92,18 @@ package body Expander is
       --  info on this.
       --
       --  The second reason for the Expander_Active flag to be False is that
-      --  we are performing a pre-analysis. During pre-analysis all
-      --  expansion activity is turned off to make sure nodes are
-      --  semantically decorated but no extra nodes are generated.  This is
-      --  for instance needed for the first pass of aggregate semantic
-      --  processing. Note that in this case the Full_Analysis flag is set
-      --  to False because the node will subsequently be re-analyzed with
-      --  expansion on (see the spec of sem).
+      --  we are performing a pre-analysis. During pre-analysis all expansion
+      --  activity is turned off to make sure nodes are semantically decorated
+      --  but no extra nodes are generated. This is for instance needed for
+      --  the first pass of aggregate semantic processing. Note that in this
+      --  case the Full_Analysis flag is set to False because the node will
+      --  subsequently be re-analyzed with expansion on (see the spec of sem).
 
       --  Finally, expansion is turned off in a regular compilation if there
       --  are serious errors. In that case there will be no further expansion,
       --  but one cleanup action may be required: if a transient scope was
-      --  created (e.g. for a function that returns an unconstrained type)
-      --  the scope may still be on the stack, and must be removed explicitly,
+      --  created (e.g. for a function that returns an unconstrained type) the
+      --  scope may still be on the stack, and must be removed explicitly,
       --  given that the expansion actions that would normally process it will
       --  not take place. This prevents cascaded errors due to stack mismatch.
 
@@ -129,8 +127,8 @@ package body Expander is
          Debug_A_Entry ("expanding  ", N);
 
          --  Processing depends on node kind. For full details on the expansion
-         --  activity required in each case, see bodies of corresponding
-         --  expand routines
+         --  activity required in each case, see bodies of corresponding expand
+         --  routines.
 
          begin
             case Nkind (N) is
@@ -490,9 +488,9 @@ package body Expander is
       Expander_Active := Expander_Flags.Table (Expander_Flags.Last);
       Expander_Flags.Decrement_Last;
 
-      --  Keep expander off if serious errors detected. In this case we do
-      --  not need expansion, and continued expansion may cause cascaded
-      --  errors or compiler bombs.
+      --  Keep expander off if serious errors detected. In this case we do not
+      --  need expansion, and continued expansion may cause cascaded errors or
+      --  compiler bombs.
 
       if Serious_Errors_Detected /= 0 then
          Expander_Active := False;

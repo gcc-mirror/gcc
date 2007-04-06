@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                   (Dummy body for non-distributed case)                  --
 --                                                                          --
---          Copyright (C) 1995-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -311,8 +311,8 @@ package body System.Partition_Interface is
    --------------------
 
    function Same_Partition
-      (Left  : access RACW_Stub_Type;
-       Right : access RACW_Stub_Type) return Boolean
+      (Left  : not null access RACW_Stub_Type;
+       Right : not null access RACW_Stub_Type) return Boolean
    is
       pragma Unreferenced (Left);
       pragma Unreferenced (Right);

@@ -59,7 +59,7 @@ package body System.Sequential_IO is
 
    --  No special processing required for Sequential_IO close
 
-   procedure AFCB_Close (File : access Sequential_AFCB) is
+   procedure AFCB_Close (File : not null access Sequential_AFCB) is
       pragma Warnings (Off, File);
 
    begin
@@ -70,7 +70,7 @@ package body System.Sequential_IO is
    -- AFCB_Free --
    ---------------
 
-   procedure AFCB_Free (File : access Sequential_AFCB) is
+   procedure AFCB_Free (File : not null access Sequential_AFCB) is
 
       type FCB_Ptr is access all Sequential_AFCB;
 

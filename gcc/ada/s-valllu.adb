@@ -42,7 +42,7 @@ package body System.Val_LLU is
 
    function Scan_Raw_Long_Long_Unsigned
      (Str : String;
-      Ptr : access Integer;
+      Ptr : not null access Integer;
       Max : Integer) return Long_Long_Unsigned
    is
       P : Integer;
@@ -271,7 +271,7 @@ package body System.Val_LLU is
 
    function Scan_Long_Long_Unsigned
      (Str : String;
-      Ptr : access Integer;
+      Ptr : not null access Integer;
       Max : Integer) return Long_Long_Unsigned
    is
       Start : Positive;

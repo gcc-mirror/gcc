@@ -81,7 +81,7 @@ package body System.Val_Util is
 
    function Scan_Exponent
      (Str  : String;
-      Ptr  : access Integer;
+      Ptr  : not null access Integer;
       Max  : Integer;
       Real : Boolean := False) return Integer
    is
@@ -165,7 +165,7 @@ package body System.Val_Util is
 
    procedure Scan_Plus_Sign
      (Str   : String;
-      Ptr   : access Integer;
+      Ptr   : not null access Integer;
       Max   : Integer;
       Start : out Positive)
    is
@@ -209,7 +209,7 @@ package body System.Val_Util is
 
    procedure Scan_Sign
      (Str   : String;
-      Ptr   : access Integer;
+      Ptr   : not null access Integer;
       Max   : Integer;
       Minus : out Boolean;
       Start : out Positive)
@@ -286,7 +286,7 @@ package body System.Val_Util is
    procedure Scan_Underscore
      (Str : String;
       P   : in out Natural;
-      Ptr : access Integer;
+      Ptr : not null access Integer;
       Max : Integer;
       Ext : Boolean)
    is

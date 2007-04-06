@@ -54,12 +54,12 @@ private package Ada.Wide_Text_IO.Decimal_Aux is
 
    function Gets_Dec
      (From  : String;
-      Last  : access Positive;
+      Last  : not null access Positive;
       Scale : Integer) return Integer;
 
    function Gets_LLD
      (From  : String;
-      Last  : access Positive;
+      Last  : not null access Positive;
       Scale : Integer) return Long_Long_Integer;
 
    procedure Put_Dec

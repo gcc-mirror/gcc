@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2005, AdaCore                     --
+--                     Copyright (C) 2000-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -229,7 +229,7 @@ package GNAT.Expect is
      (Command    : String;
       Arguments  : GNAT.OS_Lib.Argument_List;
       Input      : String;
-      Status     : access Integer;
+      Status     : not null access Integer;
       Err_To_Out : Boolean := False) return String;
    --  Execute Command with the specified Arguments and Input, and return the
    --  generated standard output data as a single string. If Err_To_Out is
@@ -555,9 +555,9 @@ private
    procedure Set_Up_Communications
      (Pid        : in out Process_Descriptor;
       Err_To_Out : Boolean;
-      Pipe1      : access Pipe_Type;
-      Pipe2      : access Pipe_Type;
-      Pipe3      : access Pipe_Type);
+      Pipe1      : not null access Pipe_Type;
+      Pipe2      : not null access Pipe_Type;
+      Pipe3      : not null access Pipe_Type);
    --  Set up all the communication pipes and file descriptors prior to
    --  spawning the child process.
 
@@ -601,7 +601,7 @@ private
    --  possibly in future child units providing extensions to this package.
 
    procedure Portable_Execvp
-     (Pid  : access Process_Id;
+     (Pid  : not null access Process_Id;
       Cmd  : String;
       Args : System.Address);
    pragma Import (C, Portable_Execvp, "__gnat_expect_portable_execvp");

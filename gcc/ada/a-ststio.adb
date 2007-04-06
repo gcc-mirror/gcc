@@ -76,7 +76,7 @@ package body Ada.Streams.Stream_IO is
 
    --  No special processing required for closing Stream_IO file
 
-   procedure AFCB_Close (File : access Stream_AFCB) is
+   procedure AFCB_Close (File : not null access Stream_AFCB) is
       pragma Warnings (Off, File);
    begin
       null;
@@ -86,7 +86,7 @@ package body Ada.Streams.Stream_IO is
    -- AFCB_Free --
    ---------------
 
-   procedure AFCB_Free (File : access Stream_AFCB) is
+   procedure AFCB_Free (File : not null access Stream_AFCB) is
       type FCB_Ptr is access all Stream_AFCB;
       FT : FCB_Ptr := FCB_Ptr (File);
 

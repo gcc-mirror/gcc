@@ -4,9 +4,9 @@
 --                                                                          --
 --                  S Y S T E M . O S _ P R I M I T I V E S                 --
 --                                                                          --
---                                  B o d y                                 --
+--                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,16 +51,17 @@ package body System.OS_Primitives is
    type BOOL is new Boolean;
    for BOOL'Size use Interfaces.C.unsigned_long'Size;
 
-   procedure GetSystemTimeAsFileTime (lpFileTime : access Long_Long_Integer);
+   procedure GetSystemTimeAsFileTime
+     (lpFileTime : not null access Long_Long_Integer);
    pragma Import (Stdcall, GetSystemTimeAsFileTime, "GetSystemTimeAsFileTime");
 
    function QueryPerformanceCounter
-     (lpPerformanceCount : access LARGE_INTEGER) return BOOL;
+     (lpPerformanceCount : not null access LARGE_INTEGER) return BOOL;
    pragma Import
      (Stdcall, QueryPerformanceCounter, "QueryPerformanceCounter");
 
    function QueryPerformanceFrequency
-     (lpFrequency : access LARGE_INTEGER) return BOOL;
+     (lpFrequency : not null access LARGE_INTEGER) return BOOL;
    pragma Import
      (Stdcall, QueryPerformanceFrequency, "QueryPerformanceFrequency");
 
@@ -241,9 +242,29 @@ package body System.OS_Primitives is
    -----------------
 
    procedure Timed_Delay (Time : Duration; Mode : Integer) is
+
+      function Mode_Clock return Duration;
+      pragma Inline (Mode_Clock);
+      --  Return the current clock value using either the monotonic clock or
+      --  standard clock depending on the Mode value.
+
+      ----------------
+      -- Mode_Clock --
+      ----------------
+
+      function Mode_Clock return Duration is
+      begin
+         case Mode is
+            when Absolute_RT =>
+               return Monotonic_Clock;
+            when others =>
+               return Clock;
+         end case;
+      end Mode_Clock;
+
       Rel_Time   : Duration;
       Abs_Time   : Duration;
-      Check_Time : Duration := Monotonic_Clock;
+      Check_Time : Duration := Mode_Clock;
 
    begin
       if Mode = Relative then
@@ -257,7 +278,7 @@ package body System.OS_Primitives is
       if Rel_Time > 0.0 then
          loop
             Sleep (DWORD (Rel_Time * 1000.0));
-            Check_Time := Monotonic_Clock;
+            Check_Time := Mode_Clock;
 
             exit when Abs_Time <= Check_Time;
 

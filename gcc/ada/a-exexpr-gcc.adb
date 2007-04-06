@@ -179,7 +179,7 @@ package body Exception_Propagation is
      (UW_Version   : Integer;
       UW_Phases    : Unwind_Action;
       UW_Eclass    : Exception_Class;
-      UW_Exception : access GNAT_GCC_Exception;
+      UW_Exception : not null access GNAT_GCC_Exception;
       UW_Context   : System.Address;
       UW_Argument  : System.Address) return Unwind_Reason_Code;
    --  Hook called at each step of the forced unwinding we perform to
@@ -191,11 +191,11 @@ package body Exception_Propagation is
    --  __gnat stubs for these.
 
    procedure Unwind_RaiseException
-     (UW_Exception : access GNAT_GCC_Exception);
+     (UW_Exception : not null access GNAT_GCC_Exception);
    pragma Import (C, Unwind_RaiseException, "__gnat_Unwind_RaiseException");
 
    procedure Unwind_ForcedUnwind
-     (UW_Exception : access GNAT_GCC_Exception;
+     (UW_Exception : not null access GNAT_GCC_Exception;
       UW_Handler   : System.Address;
       UW_Argument  : System.Address);
    pragma Import (C, Unwind_ForcedUnwind, "__gnat_Unwind_ForcedUnwind");
@@ -353,7 +353,7 @@ package body Exception_Propagation is
      (UW_Version   : Integer;
       UW_Phases    : Unwind_Action;
       UW_Eclass    : Exception_Class;
-      UW_Exception : access GNAT_GCC_Exception;
+      UW_Exception : not null access GNAT_GCC_Exception;
       UW_Context   : System.Address;
       UW_Argument  : System.Address) return Unwind_Reason_Code
    is

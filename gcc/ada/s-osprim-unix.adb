@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2006 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,7 @@ package body System.OS_Primitives is
    pragma Convention (C, struct_timeval);
 
    procedure gettimeofday
-     (tv : access struct_timeval;
+     (tv : not null access struct_timeval;
       tz : Address := Null_Address);
    pragma Import (C, gettimeofday, "gettimeofday");
 
@@ -57,7 +57,7 @@ package body System.OS_Primitives is
       readfds,
       writefds,
       exceptfds : Address := Null_Address;
-      timeout   : access struct_timeval);
+      timeout   : not null access struct_timeval);
    pragma Import (C, C_select, "select");
 
    -----------

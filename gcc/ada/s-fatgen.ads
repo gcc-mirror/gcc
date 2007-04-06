@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,7 +89,7 @@ package System.Fat_Gen is
 
    function Unbiased_Rounding (X : T)                       return T;
 
-   function Valid (X : access T) return Boolean;
+   function Valid (X : not null access T) return Boolean;
    --  This function checks if the object of type T referenced by X
    --  is valid, and returns True/False accordingly. The parameter is
    --  passed by reference (access) here, as the object of type T may

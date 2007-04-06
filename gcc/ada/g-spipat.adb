@@ -1646,7 +1646,7 @@ package body GNAT.Spitbol.Patterns is
       return (AFC with 0, new PE'(PC_Any_CS, 1, EOP, Str));
    end Any;
 
-   function Any (Str : access VString) return Pattern is
+   function Any (Str : not null access VString) return Pattern is
    begin
       return (AFC with 0, new PE'(PC_Any_VP, 1, EOP, VString_Ptr (Str)));
    end Any;
@@ -1825,7 +1825,7 @@ package body GNAT.Spitbol.Patterns is
       return (AFC with 0, new PE'(PC_Break_CS, 1, EOP, Str));
    end Break;
 
-   function Break (Str : access VString) return Pattern is
+   function Break (Str : not null access VString) return Pattern is
    begin
       return (AFC with 0, new PE'(PC_Break_VP, 1, EOP, VString_Ptr (Str)));
    end Break;
@@ -1859,7 +1859,7 @@ package body GNAT.Spitbol.Patterns is
       return BreakX_Make (new PE'(PC_BreakX_CS, 3, N, Str));
    end BreakX;
 
-   function BreakX (Str : access VString) return Pattern is
+   function BreakX (Str : not null access VString) return Pattern is
    begin
       return BreakX_Make (new PE'(PC_BreakX_VP, 3, N, VString_Ptr (Str)));
    end BreakX;
@@ -2779,7 +2779,7 @@ package body GNAT.Spitbol.Patterns is
       return (AFC with 0, new PE'(PC_Len_NF, 1, EOP, Count));
    end Len;
 
-   function Len (Count : access Natural) return Pattern is
+   function Len (Count : not null access Natural) return Pattern is
    begin
       return (AFC with 0, new PE'(PC_Len_NP, 1, EOP, Natural_Ptr (Count)));
    end Len;
@@ -3266,7 +3266,7 @@ package body GNAT.Spitbol.Patterns is
       return (AFC with 0, new PE'(PC_NotAny_CS, 1, EOP, Str));
    end NotAny;
 
-   function NotAny (Str : access VString) return Pattern is
+   function NotAny (Str : not null access VString) return Pattern is
    begin
       return (AFC with 0, new PE'(PC_NotAny_VP, 1, EOP, VString_Ptr (Str)));
    end NotAny;
@@ -3300,7 +3300,7 @@ package body GNAT.Spitbol.Patterns is
       return (AFC with 0, new PE'(PC_NSpan_CS, 1, EOP, Str));
    end NSpan;
 
-   function NSpan (Str : access VString) return Pattern is
+   function NSpan (Str : not null access VString) return Pattern is
    begin
       return (AFC with 0, new PE'(PC_NSpan_VP, 1, EOP, VString_Ptr (Str)));
    end NSpan;
@@ -3324,7 +3324,7 @@ package body GNAT.Spitbol.Patterns is
       return (AFC with 0, new PE'(PC_Pos_NF, 1, EOP, Count));
    end Pos;
 
-   function Pos (Count : access Natural) return Pattern is
+   function Pos (Count : not null access Natural) return Pattern is
    begin
       return (AFC with 0, new PE'(PC_Pos_NP, 1, EOP, Natural_Ptr (Count)));
    end Pos;
@@ -3394,7 +3394,7 @@ package body GNAT.Spitbol.Patterns is
       return (AFC with 0, new PE'(PC_RPos_NF, 1, EOP, Count));
    end Rpos;
 
-   function Rpos (Count : access Natural) return Pattern is
+   function Rpos (Count : not null access Natural) return Pattern is
    begin
       return (AFC with 0, new PE'(PC_RPos_NP, 1, EOP, Natural_Ptr (Count)));
    end Rpos;
@@ -3413,7 +3413,7 @@ package body GNAT.Spitbol.Patterns is
       return (AFC with 0, new PE'(PC_RTab_NF, 1, EOP, Count));
    end Rtab;
 
-   function Rtab (Count : access Natural) return Pattern is
+   function Rtab (Count : not null access Natural) return Pattern is
    begin
       return (AFC with 0, new PE'(PC_RTab_NP, 1, EOP, Natural_Ptr (Count)));
    end Rtab;
@@ -3500,7 +3500,7 @@ package body GNAT.Spitbol.Patterns is
    -- Setcur --
    ------------
 
-   function Setcur (Var : access Natural) return Pattern is
+   function Setcur (Var : not null access Natural) return Pattern is
    begin
       return (AFC with 0, new PE'(PC_Setcur, 1, EOP, Natural_Ptr (Var)));
    end Setcur;
@@ -3529,7 +3529,7 @@ package body GNAT.Spitbol.Patterns is
       return (AFC with 0, new PE'(PC_Span_CS, 1, EOP, Str));
    end Span;
 
-   function Span (Str : access VString) return Pattern is
+   function Span (Str : not null access VString) return Pattern is
    begin
       return (AFC with 0, new PE'(PC_Span_VP, 1, EOP, VString_Ptr (Str)));
    end Span;
@@ -3628,7 +3628,7 @@ package body GNAT.Spitbol.Patterns is
       return (AFC with 0, new PE'(PC_Tab_NF, 1, EOP, Count));
    end Tab;
 
-   function Tab (Count : access Natural) return Pattern is
+   function Tab (Count : not null access Natural) return Pattern is
    begin
       return (AFC with 0, new PE'(PC_Tab_NP, 1, EOP, Natural_Ptr (Count)));
    end Tab;

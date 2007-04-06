@@ -1382,11 +1382,11 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    ----------
 
    procedure Read
-     (Stream    : access Root_Stream_Type'Class;
+     (Stream    : not null access Root_Stream_Type'Class;
       Container : out Set)
    is
       function Read_Node
-        (Stream : access Root_Stream_Type'Class) return Node_Access;
+        (Stream : not null access Root_Stream_Type'Class) return Node_Access;
       pragma Inline (Read_Node);
 
       procedure Read is
@@ -1397,7 +1397,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       ---------------
 
       function Read_Node
-        (Stream : access Root_Stream_Type'Class) return Node_Access
+        (Stream : not null access Root_Stream_Type'Class) return Node_Access
       is
          Node : Node_Access := new Node_Type;
 
@@ -1418,7 +1418,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    end Read;
 
    procedure Read
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Item   : out Cursor)
    is
    begin
@@ -1717,11 +1717,11 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    -----------
 
    procedure Write
-     (Stream    : access Root_Stream_Type'Class;
+     (Stream    : not null access Root_Stream_Type'Class;
       Container : Set)
    is
       procedure Write_Node
-        (Stream : access Root_Stream_Type'Class;
+        (Stream : not null access Root_Stream_Type'Class;
          Node   : Node_Access);
       pragma Inline (Write_Node);
 
@@ -1733,7 +1733,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       ----------------
 
       procedure Write_Node
-        (Stream : access Root_Stream_Type'Class;
+        (Stream : not null access Root_Stream_Type'Class;
          Node   : Node_Access)
       is
       begin
@@ -1747,7 +1747,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    end Write;
 
    procedure Write
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Item   : Cursor)
    is
    begin

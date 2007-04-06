@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2005, AdaCore                     --
+--                     Copyright (C) 1999-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -228,17 +228,18 @@ package body System.Traceback is
    --  of shared library code, the offset from the beginning of the library
    --  is expected as Pc.
 
-   procedure U_init_frame_record (Frame : access CFD);
+   procedure U_init_frame_record (Frame : not null access CFD);
    pragma Import (C, U_init_frame_record, "U_init_frame_record");
 
-   procedure U_prep_frame_rec_for_unwind (Frame : access CFD);
+   procedure U_prep_frame_rec_for_unwind (Frame : not null access CFD);
    pragma Import (C, U_prep_frame_rec_for_unwind,
                     "U_prep_frame_rec_for_unwind");
 
    --  Fetch the description data of the frame in which these two procedures
    --  are called.
 
-   function U_get_u_rlo (Cur : access CFD; Prev : access PFD) return Integer;
+   function U_get_u_rlo
+     (Cur : not null access CFD; Prev : not null access PFD) return Integer;
    pragma Import (C, U_get_u_rlo, "U_IS_STUB_OR_CALLX");
    --  From a complete current frame with a return location possibly located
    --  into a linker generated stub, and basic information about the previous
@@ -251,8 +252,8 @@ package body System.Traceback is
    --  in a shared library, or something non null otherwise.
 
    function U_get_previous_frame_x
-     (current_frame  : access CFD;
-      previous_frame : access PFD;
+     (current_frame  : not null access CFD;
+      previous_frame : not null access PFD;
       previous_size  : Integer) return Integer;
    pragma Import (C, U_get_previous_frame_x, "U_get_previous_frame_x");
    --  Fetch the data describing the "previous" frame relatively to the
@@ -316,15 +317,15 @@ package body System.Traceback is
 
       --  The backtracing process needs a set of subprograms :
 
-      function UWD_For_RLO_Of (Frame : access CFD) return UWD_Ptr;
+      function UWD_For_RLO_Of (Frame : not null access CFD) return UWD_Ptr;
       --  Return an access to the unwind descriptor for the caller of
       --  a given frame, using only the provided return location.
 
-      function UWD_For_Caller_Of (Frame : access CFD) return UWD_Ptr;
+      function UWD_For_Caller_Of (Frame : not null access CFD) return UWD_Ptr;
       --  Return an access to the unwind descriptor for the user code caller
       --  of a given frame, or null if the information is not available.
 
-      function Pop_Frame (Frame : access CFD) return Boolean;
+      function Pop_Frame (Frame : not null access CFD) return Boolean;
       --  Update the provided machine state structure so that it reflects
       --  the state one call frame "above" the initial one.
       --
@@ -332,7 +333,8 @@ package body System.Traceback is
       --  Failure typically occurs when the top of the call stack has been
       --  reached.
 
-      function Prepare_For_Unwind_Of (Frame : access CFD) return Boolean;
+      function Prepare_For_Unwind_Of
+        (Frame : not null access CFD) return Boolean;
       --  Perform the necessary adaptations to the machine state before
       --  calling the unwinder. Currently used for the specific case of
       --  dynamically sized previous frames.
@@ -345,7 +347,7 @@ package body System.Traceback is
       -- Pop_Frame --
       ---------------
 
-      function Pop_Frame (Frame : access CFD) return Boolean is
+      function Pop_Frame (Frame : not null access CFD) return Boolean is
          Up_Frame    : aliased PFD;
          State_Ready : Boolean;
 
@@ -391,7 +393,8 @@ package body System.Traceback is
       -- Prepare_State_For_Unwind_Of --
       ---------------------------------
 
-      function Prepare_For_Unwind_Of (Frame : access CFD) return Boolean
+      function Prepare_For_Unwind_Of
+        (Frame : not null access CFD) return Boolean
       is
          Caller_UWD    : UWD_Ptr;
          FP_Adjustment : Integer;
@@ -453,7 +456,7 @@ package body System.Traceback is
       -- UWD_For_Caller_Of --
       -----------------------
 
-      function UWD_For_Caller_Of (Frame : access CFD) return UWD_Ptr
+      function UWD_For_Caller_Of (Frame : not null access CFD) return UWD_Ptr
       is
          UWD_Access : UWD_Ptr;
 
@@ -499,7 +502,7 @@ package body System.Traceback is
       -- UWD_For_RLO_Of --
       --------------------
 
-      function UWD_For_RLO_Of (Frame : access CFD) return UWD_Ptr
+      function UWD_For_RLO_Of (Frame : not null access CFD) return UWD_Ptr
       is
          UWD_Address : Address;
 

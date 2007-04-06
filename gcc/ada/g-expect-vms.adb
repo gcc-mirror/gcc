@@ -95,7 +95,7 @@ package body GNAT.Expect is
    procedure Kill (Pid : Process_Id; Sig_Num : Integer);
    pragma Import (C, Kill, "decc$kill");
 
-   function Create_Pipe (Pipe : access Pipe_Type) return Integer;
+   function Create_Pipe (Pipe : not null access Pipe_Type) return Integer;
    pragma Import (C, Create_Pipe, "__gnat_pipe");
 
    function Poll
@@ -769,7 +769,7 @@ package body GNAT.Expect is
      (Command    : String;
       Arguments  : GNAT.OS_Lib.Argument_List;
       Input      : String;
-      Status     : access Integer;
+      Status     : not null access Integer;
       Err_To_Out : Boolean := False) return String
    is
       use GNAT.Expect;
@@ -1096,9 +1096,9 @@ package body GNAT.Expect is
    procedure Set_Up_Communications
      (Pid        : in out Process_Descriptor;
       Err_To_Out : Boolean;
-      Pipe1      : access Pipe_Type;
-      Pipe2      : access Pipe_Type;
-      Pipe3      : access Pipe_Type)
+      Pipe1      : not null access Pipe_Type;
+      Pipe2      : not null access Pipe_Type;
+      Pipe3      : not null access Pipe_Type)
    is
    begin
       --  Create the pipes

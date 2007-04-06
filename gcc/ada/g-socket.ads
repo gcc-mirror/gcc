@@ -881,8 +881,7 @@ package GNAT.Sockets is
    type Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
    --  Same interface as Ada.Streams.Stream_IO
 
-   function Stream
-     (Socket : Socket_Type) return Stream_Access;
+   function Stream (Socket : Socket_Type) return Stream_Access;
    --  Create a stream associated with a stream-based socket that is
    --  already connected.
 
@@ -892,8 +891,7 @@ package GNAT.Sockets is
    --  Create a stream associated with a datagram-based socket that is already
    --  bound. Send_To is the socket address to which messages are being sent.
 
-   function Get_Address
-     (Stream : Stream_Access) return Sock_Addr_Type;
+   function Get_Address (Stream : Stream_Access) return Sock_Addr_Type;
    --  Return the socket address from which the last message was received
 
    procedure Free is new Ada.Unchecked_Deallocation
@@ -921,8 +919,7 @@ package GNAT.Sockets is
    --  Extract a Socket from socket set Item. Socket is set to
    --  No_Socket when the set is empty.
 
-   function Is_Empty
-     (Item : Socket_Set_Type) return Boolean;
+   function Is_Empty (Item : Socket_Set_Type) return Boolean;
    --  Return True iff Item is empty
 
    function Is_Set

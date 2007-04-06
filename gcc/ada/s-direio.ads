@@ -66,8 +66,8 @@ package System.Direct_IO is
 
    function AFCB_Allocate (Control_Block : Direct_AFCB) return FCB.AFCB_Ptr;
 
-   procedure AFCB_Close (File : access Direct_AFCB);
-   procedure AFCB_Free  (File : access Direct_AFCB);
+   procedure AFCB_Close (File : not null access Direct_AFCB);
+   procedure AFCB_Free  (File : not null access Direct_AFCB);
 
    procedure Read
      (File : in out Direct_AFCB;

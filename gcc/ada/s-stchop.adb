@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1999-2006 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 ------------------------------------------------------------------------------
 
 --  This is the general implementation of this package. There is a VxWorks
---  specific version of this package (5zstchop.adb). This file should
+--  specific version of this package (s-stchop-vxworks.adb). This file should
 --  be kept synchronized with it.
 
 pragma Restrictions (No_Elaboration_Code);
@@ -50,7 +50,8 @@ package body System.Stack_Checking.Operations is
 
    Kilobyte : constant := 1024;
 
-   function Set_Stack_Info (Stack : access Stack_Access) return Stack_Access;
+   function Set_Stack_Info
+     (Stack : not null access Stack_Access) return Stack_Access;
 
    --  The function Set_Stack_Info is the actual function that updates
    --  the cache containing a pointer to the Stack_Info. It may also
@@ -90,7 +91,7 @@ package body System.Stack_Checking.Operations is
    --------------------
 
    function Set_Stack_Info
-     (Stack : access Stack_Access) return Stack_Access
+     (Stack : not null access Stack_Access) return Stack_Access
    is
       type Frame_Mark is null record;
       Frame_Location : Frame_Mark;

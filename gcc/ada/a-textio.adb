@@ -69,7 +69,7 @@ package body Ada.Text_IO is
    -- AFCB_Close --
    ----------------
 
-   procedure AFCB_Close (File : access Text_AFCB) is
+   procedure AFCB_Close (File : not null access Text_AFCB) is
    begin
       --  If the file being closed is one of the current files, then close
       --  the corresponding current file. It is not clear that this action
@@ -91,7 +91,7 @@ package body Ada.Text_IO is
    -- AFCB_Free --
    ---------------
 
-   procedure AFCB_Free (File : access Text_AFCB) is
+   procedure AFCB_Free (File : not null access Text_AFCB) is
       type FCB_Ptr is access all Text_AFCB;
       FT : FCB_Ptr := FCB_Ptr (File);
 

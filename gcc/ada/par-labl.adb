@@ -477,7 +477,6 @@ procedure Labl is
 
 begin
    Next_Label_Elmt := First_Elmt (Label_List);
-
    while Present (Next_Label_Elmt) loop
       Label_Node := Node (Next_Label_Elmt);
 

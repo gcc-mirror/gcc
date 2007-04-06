@@ -37,9 +37,9 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
    --------------------------
 
    procedure Delete_Key_Sans_Free
-     (HT   : in out Hash_Table_Type;
-      Key  : Key_Type;
-      X    : out Node_Access)
+     (HT  : in out Hash_Table_Type;
+      Key : Key_Type;
+      X   : out Node_Access)
    is
       Indx : Hash_Type;
       Prev : Node_Access;
@@ -59,7 +59,8 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
 
       if Equivalent_Keys (Key, X) then
          if HT.Busy > 0 then
-            raise Program_Error;
+            raise Program_Error with
+              "attempt to tamper with elements (container is busy)";
          end if;
          HT.Buckets (Indx) := Next (X);
          HT.Length := HT.Length - 1;
@@ -76,7 +77,8 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
 
          if Equivalent_Keys (Key, X) then
             if HT.Busy > 0 then
-               raise Program_Error;
+               raise Program_Error with
+                 "attempt to tamper with elements (container is busy)";
             end if;
             Set_Next (Node => Prev, Next => Next (X));
             HT.Length := HT.Length - 1;
@@ -130,7 +132,8 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
    begin
       if B = null then
          if HT.Busy > 0 then
-            raise Program_Error;
+            raise Program_Error with
+              "attempt to tamper with elements (container is busy)";
          end if;
 
          if HT.Length = Count_Type'Last then
@@ -159,7 +162,8 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
       end loop;
 
       if HT.Busy > 0 then
-         raise Program_Error;
+         raise Program_Error with
+           "attempt to tamper with elements (container is busy)";
       end if;
 
       if HT.Length = Count_Type'Last then
@@ -184,20 +188,74 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
       return Hash (Key) mod HT.Buckets'Length;
    end Index;
 
-   ---------------------
-   -- Replace_Element --
-   ---------------------
+   -----------------------------
+   -- Generic_Replace_Element --
+   -----------------------------
 
    procedure Generic_Replace_Element
      (HT   : in out Hash_Table_Type;
       Node : Node_Access;
       Key  : Key_Type)
    is
-   begin
       pragma Assert (HT.Length > 0);
+      pragma Assert (Node /= null);
 
+      Old_Hash : constant Hash_Type := Hash (Node);
+      Old_Indx : constant Hash_Type := Old_Hash mod HT.Buckets'Length;
+
+      New_Hash : constant Hash_Type := Hash (Key);
+      New_Indx : constant Hash_Type := New_Hash mod HT.Buckets'Length;
+
+      New_Bucket : Node_Access renames HT.Buckets (New_Indx);
+      N, M       : Node_Access;
+
+   begin
       if Equivalent_Keys (Key, Node) then
-         pragma Assert (Hash (Key) = Hash (Node));
+         pragma Assert (New_Hash = Old_Hash);
+
+         if HT.Lock > 0 then
+            raise Program_Error with
+              "attempt to tamper with cursors (container is locked)";
+         end if;
+
+         --  We can change a node's key to Key (that's what Assign is for), but
+         --  only if Key is not already in the hash table. (In a unique-key
+         --  hash table as this one a key is mapped to exactly one node only.)
+         --  The exception is when Key is mapped to Node, in which case the
+         --  change is allowed.
+
+         Assign (Node, Key);
+         pragma Assert (Hash (Node) = New_Hash);
+         pragma Assert (Equivalent_Keys (Key, Node));
+         return;
+      end if;
+
+      --  Key is not equivalent to Node, so we now have to determine if it's
+      --  equivalent to some other node in the hash table. This is the case
+      --  irrespective of whether Key is in the same or a different bucket from
+      --  Node.
+
+      N := New_Bucket;
+      while N /= null loop
+         if Equivalent_Keys (Key, N) then
+            pragma Assert (N /= Node);
+            raise Program_Error with
+              "attempt to replace existing element";
+         end if;
+
+         N := Next (N);
+      end loop;
+
+      --  We have determined that Key is not already in the hash table, so
+      --  the change is tenatively allowed. We now perform the standard
+      --  checks to determine whether the hash table is locked (because you
+      --  cannot change an element while it's in use by Query_Element or
+      --  Update_Element), or if the container is busy (because moving a
+      --  node to a different bucket would interfere with iteration).
+
+      if Old_Indx = New_Indx then
+         --  The node is already in the bucket implied by Key. In this case
+         --  we merely change its value without moving it.
 
          if HT.Lock > 0 then
             raise Program_Error with
@@ -205,70 +263,54 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
          end if;
 
          Assign (Node, Key);
+         pragma Assert (Hash (Node) = New_Hash);
+         pragma Assert (Equivalent_Keys (Key, Node));
          return;
       end if;
 
-      declare
-         J : Hash_Type;
-         K : constant Hash_Type := Index (HT, Key);
-         B : Node_Access renames HT.Buckets (K);
-         N : Node_Access := B;
-         M : Node_Access;
+      --  The node is a bucket different from the bucket implied by Key.
 
-      begin
-         while N /= null loop
-            if Equivalent_Keys (Key, N) then
-               raise Program_Error with
-                 "attempt to replace existing element";
+      if HT.Busy > 0 then
+         raise Program_Error with
+           "attempt to tamper with elements (container is busy)";
+      end if;
+
+      --  Do the assignment first, before moving the node, so that if Assign
+      --  propagates an exception, then the hash table will not have been
+      --  modified (except for any possible side-effect Assign had on Node).
+
+      Assign (Node, Key);
+      pragma Assert (Hash (Node) = New_Hash);
+      pragma Assert (Equivalent_Keys (Key, Node));
+
+      --  Now we can safely remove the node from its current bucket
+
+      N := HT.Buckets (Old_Indx);
+      pragma Assert (N /= null);
+
+      if N = Node then
+         HT.Buckets (Old_Indx) := Next (Node);
+
+      else
+         pragma Assert (HT.Length > 1);
+
+         loop
+            M := Next (N);
+            pragma Assert (M /= null);
+
+            if M = Node then
+               Set_Next (Node => N, Next => Next (Node));
+               exit;
             end if;
 
-            N := Next (N);
+            N := M;
          end loop;
+      end if;
 
-         J := Hash (Node);
+      --  Now we link the node into its new bucket (corresponding to Key)
 
-         if J = K then
-            if HT.Lock > 0 then
-               raise Program_Error with
-                 "attempt to tamper with cursors (container is locked)";
-            end if;
-
-            Assign (Node, Key);
-            return;
-         end if;
-
-         if HT.Busy > 0 then
-            raise Program_Error with
-              "attempt to tamper with elements (container is busy)";
-         end if;
-
-         Assign (Node, Key);
-
-         N := HT.Buckets (J);
-         pragma Assert (N /= null);
-
-         if N = Node then
-            HT.Buckets (J) := Next (Node);
-
-         else
-            pragma Assert (HT.Length > 1);
-
-            loop
-               M := Next (N);
-               pragma Assert (M /= null);
-
-               if M = Node then
-                  Set_Next (Node => N, Next => Next (Node));
-                  exit;
-               end if;
-
-               N := M;
-            end loop;
-         end if;
-
-         Set_Next (Node => Node, Next => B);
-         B := Node;
-      end;
+      Set_Next (Node => Node, Next => New_Bucket);
+      New_Bucket := Node;
    end Generic_Replace_Element;
 
 end Ada.Containers.Hash_Tables.Generic_Keys;

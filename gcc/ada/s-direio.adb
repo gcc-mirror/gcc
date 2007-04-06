@@ -74,7 +74,7 @@ package body System.Direct_IO is
 
    --  No special processing required for Direct_IO close
 
-   procedure AFCB_Close (File : access Direct_AFCB) is
+   procedure AFCB_Close (File : not null access Direct_AFCB) is
       pragma Unreferenced (File);
 
    begin
@@ -85,7 +85,7 @@ package body System.Direct_IO is
    -- AFCB_Free --
    ---------------
 
-   procedure AFCB_Free (File : access Direct_AFCB) is
+   procedure AFCB_Free (File : not null access Direct_AFCB) is
 
       type FCB_Ptr is access all Direct_AFCB;
 

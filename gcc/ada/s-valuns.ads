@@ -41,7 +41,7 @@ package System.Val_Uns is
 
    function Scan_Raw_Unsigned
      (Str : String;
-      Ptr : access Integer;
+      Ptr : not null access Integer;
       Max : Integer) return System.Unsigned_Types.Unsigned;
    --  This function scans the string starting at Str (Ptr.all) for a valid
    --  integer according to the syntax described in (RM 3.5(43)). The substring
@@ -71,7 +71,7 @@ package System.Val_Uns is
 
    function Scan_Unsigned
      (Str : String;
-      Ptr : access Integer;
+      Ptr : not null access Integer;
       Max : Integer) return System.Unsigned_Types.Unsigned;
    --  Same as Scan_Raw_Unsigned, except scans optional leading
    --  blanks, and an optional leading plus sign.
