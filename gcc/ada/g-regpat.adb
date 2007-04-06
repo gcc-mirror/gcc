@@ -1828,15 +1828,13 @@ package body GNAT.Regpat is
             --  Check for class names based on first letter
 
             case Expression (Parse_Pos) is
-
                when 'a' =>
 
                   --  All 'a' classes have the same length (Alnum'Length)
 
                   if Parse_Pos + Alnum'Length - 1 <= Parse_End then
-
-                     if E (Parse_Pos .. Parse_Pos + Alnum'Length - 1) =
-                                                                      Alnum
+                     if
+                       E (Parse_Pos .. Parse_Pos + Alnum'Length - 1) = Alnum
                      then
                         if Invert then
                            Class := ANYOF_NALNUMC;
@@ -1846,8 +1844,8 @@ package body GNAT.Regpat is
 
                         Parse_Pos := Parse_Pos + Alnum'Length;
 
-                     elsif E (Parse_Pos .. Parse_Pos + Alpha'Length - 1) =
-                                                                      Alpha
+                     elsif
+                       E (Parse_Pos .. Parse_Pos + Alpha'Length - 1) = Alpha
                      then
                         if Invert then
                            Class := ANYOF_NALPHA;
@@ -1867,13 +1865,19 @@ package body GNAT.Regpat is
                         end if;
 
                         Parse_Pos := Parse_Pos + Ascii_C'Length;
+
+                     else
+                        Fail ("Invalid character class: " & E);
                      end if;
+
+                  else
+                     Fail ("Invalid character class: " & E);
                   end if;
 
                when 'c' =>
                   if Parse_Pos + Cntrl'Length - 1 <= Parse_End
-                    and then E (Parse_Pos .. Parse_Pos + Cntrl'Length - 1) =
-                                                                      Cntrl
+                    and then
+                      E (Parse_Pos .. Parse_Pos + Cntrl'Length - 1) = Cntrl
                   then
                      if Invert then
                         Class := ANYOF_NCNTRL;
@@ -1882,12 +1886,15 @@ package body GNAT.Regpat is
                      end if;
 
                      Parse_Pos := Parse_Pos + Cntrl'Length;
+
+                  else
+                     Fail ("Invalid character class: " & E);
                   end if;
 
                when 'd' =>
                   if Parse_Pos + Digit'Length - 1 <= Parse_End
-                    and then E (Parse_Pos .. Parse_Pos + Digit'Length - 1) =
-                                                                      Digit
+                    and then
+                      E (Parse_Pos .. Parse_Pos + Digit'Length - 1) = Digit
                   then
                      if Invert then
                         Class := ANYOF_NDIGIT;
@@ -1900,28 +1907,36 @@ package body GNAT.Regpat is
 
                when 'g' =>
                   if Parse_Pos + Graph'Length - 1 <= Parse_End
-                    and then E (Parse_Pos .. Parse_Pos + Graph'Length - 1) =
-                                                                      Graph
+                    and then
+                      E (Parse_Pos .. Parse_Pos + Graph'Length - 1) = Graph
                   then
                      if Invert then
                         Class := ANYOF_NGRAPH;
                      else
                         Class := ANYOF_GRAPH;
                      end if;
+
                      Parse_Pos := Parse_Pos + Graph'Length;
+
+                  else
+                     Fail ("Invalid character class: " & E);
                   end if;
 
                when 'l' =>
                   if Parse_Pos + Lower'Length - 1 <= Parse_End
-                    and then E (Parse_Pos .. Parse_Pos + Lower'Length - 1) =
-                                                                      Lower
+                    and then
+                      E (Parse_Pos .. Parse_Pos + Lower'Length - 1) = Lower
                   then
                      if Invert then
                         Class := ANYOF_NLOWER;
                      else
                         Class := ANYOF_LOWER;
                      end if;
+
                      Parse_Pos := Parse_Pos + Lower'Length;
+
+                  else
+                     Fail ("Invalid character class: " & E);
                   end if;
 
                when 'p' =>
@@ -1929,8 +1944,8 @@ package body GNAT.Regpat is
                   --  All 'p' classes have the same length
 
                   if Parse_Pos + Print'Length - 1 <= Parse_End then
-                     if E (Parse_Pos .. Parse_Pos + Print'Length - 1) =
-                                                                      Print
+                     if
+                       E (Parse_Pos .. Parse_Pos + Print'Length - 1) = Print
                      then
                         if Invert then
                            Class := ANYOF_NPRINT;
@@ -1940,8 +1955,8 @@ package body GNAT.Regpat is
 
                         Parse_Pos := Parse_Pos + Print'Length;
 
-                     elsif E (Parse_Pos .. Parse_Pos + Punct'Length - 1) =
-                                                                      Punct
+                     elsif
+                       E (Parse_Pos .. Parse_Pos + Punct'Length - 1) = Punct
                      then
                         if Invert then
                            Class := ANYOF_NPUNCT;
@@ -1950,13 +1965,19 @@ package body GNAT.Regpat is
                         end if;
 
                         Parse_Pos := Parse_Pos + Punct'Length;
+
+                     else
+                        Fail ("Invalid character class: " & E);
                      end if;
+
+                  else
+                     Fail ("Invalid character class: " & E);
                   end if;
 
                when 's' =>
                   if Parse_Pos + Space'Length - 1 <= Parse_End
-                    and then E (Parse_Pos .. Parse_Pos + Space'Length - 1) =
-                                                                      Space
+                    and then
+                      E (Parse_Pos .. Parse_Pos + Space'Length - 1) = Space
                   then
                      if Invert then
                         Class := ANYOF_NSPACE;
@@ -1965,41 +1986,49 @@ package body GNAT.Regpat is
                      end if;
 
                      Parse_Pos := Parse_Pos + Space'Length;
+
+                  else
+                     Fail ("Invalid character class: " & E);
                   end if;
 
                when 'u' =>
-
                   if Parse_Pos + Upper'Length - 1 <= Parse_End
-                    and then E (Parse_Pos .. Parse_Pos + Upper'Length - 1) =
-                    Upper
+                    and then
+                      E (Parse_Pos .. Parse_Pos + Upper'Length - 1) = Upper
                   then
                      if Invert then
                         Class := ANYOF_NUPPER;
                      else
                         Class := ANYOF_UPPER;
                      end if;
+
                      Parse_Pos := Parse_Pos + Upper'Length;
+
+                  else
+                     Fail ("Invalid character class: " & E);
                   end if;
 
                when 'w' =>
-
                   if Parse_Pos + Word'Length - 1 <= Parse_End
-                    and then E (Parse_Pos .. Parse_Pos + Word'Length - 1) =
-                    Word
+                    and then
+                      E (Parse_Pos .. Parse_Pos + Word'Length - 1) = Word
                   then
                      if Invert then
                         Class := ANYOF_NALNUM;
                      else
                         Class := ANYOF_ALNUM;
                      end if;
+
                      Parse_Pos := Parse_Pos + Word'Length;
+
+                  else
+                     Fail ("Invalid character class: " & E);
                   end if;
 
                when 'x' =>
-
                   if Parse_Pos + Xdigit'Length - 1 <= Parse_End
-                    and then E (Parse_Pos .. Parse_Pos + Xdigit'Length - 1)
-                    = Digit
+                    and then
+                      E (Parse_Pos .. Parse_Pos + Xdigit'Length - 1) = Xdigit
                   then
                      if Invert then
                         Class := ANYOF_NXDIGIT;
@@ -2008,10 +2037,13 @@ package body GNAT.Regpat is
                      end if;
 
                      Parse_Pos := Parse_Pos + Xdigit'Length;
+
+                  else
+                     Fail ("Invalid character class: " & E);
                   end if;
 
                when others =>
-                  Fail ("Invalid character class");
+                  Fail ("Invalid character class: " & E);
             end case;
 
          --  Character class not specified
@@ -2072,7 +2104,6 @@ package body GNAT.Regpat is
       Flags      : Regexp_Flags := No_Flags)
    is
       Size : Program_Size;
-
    begin
       Compile (Matcher, Expression, Size, Flags);
    end Compile;
@@ -2082,10 +2113,6 @@ package body GNAT.Regpat is
    ----------
 
    procedure Dump (Self : Pattern_Matcher) is
-
-      --  Index  : Pointer := Program_First + 1;
-      --  What is the above line for ???
-
       Op      : Opcode;
       Program : Program_Data renames Self.Program;
 
@@ -2106,14 +2133,14 @@ package body GNAT.Regpat is
          Till   : Pointer;
          Indent : Natural := 0)
       is
-         Next : Pointer;
-         Index : Pointer := Start;
+         Next         : Pointer;
+         Index        : Pointer;
          Local_Indent : Natural := Indent;
-         Length : Pointer;
+         Length       : Pointer;
 
       begin
+         Index := Start;
          while Index < Till loop
-
             Op := Opcode'Val (Character'Pos ((Self.Program (Index))));
 
             if Op = CLOSE then
@@ -2296,7 +2323,6 @@ package body GNAT.Regpat is
       C      : Character) return Boolean
    is
       Value : constant Class_Byte := Character'Pos (C);
-
    begin
       return
         (Bitmap (Value / 8) and Bit_Conversion (Value mod 8)) /= 0;
@@ -2308,7 +2334,6 @@ package body GNAT.Regpat is
 
    function Get_Next (Program : Program_Data; IP : Pointer) return Pointer is
       Offset : constant Pointer := Get_Next_Offset (Program, IP);
-
    begin
       if Offset = 0 then
          return 0;
@@ -2680,8 +2705,8 @@ package body GNAT.Regpat is
                      Opnd    : Pointer  := String_Operand (Scan);
                      Current : Positive := Input_Pos;
 
-                     Last    : constant Pointer :=
-                                 Opnd + String_Length (Program, Scan);
+                     Last : constant Pointer :=
+                              Opnd + String_Length (Program, Scan);
 
                   begin
                      while Opnd <= Last loop
@@ -2697,7 +2722,6 @@ package body GNAT.Regpat is
                when ANYOF =>
                   declare
                      Bitmap : Character_Class;
-
                   begin
                      Bitmap_Operand (Program, Scan, Bitmap);
                      exit State_Machine when Input_Pos > Last_In_Data
@@ -2709,7 +2733,6 @@ package body GNAT.Regpat is
                   declare
                      No : constant Natural :=
                             Character'Pos (Program (Operand (Scan)));
-
                   begin
                      Matches_Tmp (No) := Input_Pos;
                   end;
@@ -2761,7 +2784,6 @@ package body GNAT.Regpat is
                when STAR | PLUS | CURLY =>
                   declare
                      Greed : constant Boolean := Greedy;
-
                   begin
                      Greedy := True;
                      return Match_Simple_Operator (Op, Scan, Next, Greed);
@@ -3492,11 +3514,8 @@ package body GNAT.Regpat is
    --------------
 
    procedure Optimize (Self : in out Pattern_Matcher) is
-      Max_Length  : Program_Size;
-      This_Length : Program_Size;
-      Longest     : Pointer;
-      Scan        : Pointer;
-      Program     : Program_Data renames Self.Program;
+      Scan    : Pointer;
+      Program : Program_Data renames Self.Program;
 
    begin
       --  Start with safe defaults (no optimization):
@@ -3519,33 +3538,6 @@ package body GNAT.Regpat is
         or else Program (Scan) = MBOL
       then
          Self.Anchored := True;
-      end if;
-
-      --  If there's something expensive in the regexp, find the
-      --  longest literal string that must appear and make it the
-      --  regmust. Resolve ties in favor of later strings, since
-      --  the regstart check works with the beginning of the regexp.
-      --  and avoiding duplication strengthens checking. Not a
-      --  strong reason, but sufficient in the absence of others.
-
-      if False then -- if Flags.SP_Start then ???
-         Longest := 0;
-         Max_Length := 0;
-         while Scan /= 0 loop
-            if Program (Scan) = EXACT or else Program (Scan) = EXACTF then
-               This_Length := String_Length (Program, Scan);
-
-               if This_Length >= Max_Length then
-                  Longest := String_Operand (Scan);
-                  Max_Length := This_Length;
-               end if;
-            end if;
-
-            Scan := Get_Next (Program, Scan);
-         end loop;
-
-         Self.Must_Have        := Longest;
-         Self.Must_Have_Length := Natural (Max_Length) + 1;
       end if;
    end Optimize;
 
