@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,15 @@ package Styleg.C is
    procedure Body_With_No_Spec (N : Node_Id);
    --  Called where N is a subprogram body node for a subprogram body
    --  for which no spec was given, i.e. a body acting as its own spec.
+
+   procedure Check_Array_Attribute_Index
+     (N  : Node_Id;
+      E1 : Node_Id;
+      D  : Int);
+   --  Called for an array attribute specifying an index number. N is the
+   --  node for the attribute, and E1 is the index expression (Empty if none
+   --  present). If E1 is present, it is known to be a static integer. D is
+   --  the number of dimensions of the array.
 
    procedure Check_Identifier
      (Ref : Node_Or_Entity_Id;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,6 +66,29 @@ package body Styleg.C is
          Error_Msg_N ("(style) subprogram body has no previous spec", N);
       end if;
    end Body_With_No_Spec;
+
+   ---------------------------------
+   -- Check_Array_Attribute_Index --
+   ---------------------------------
+
+   procedure Check_Array_Attribute_Index
+     (N  : Node_Id;
+      E1 : Node_Id;
+      D  : Int)
+   is
+   begin
+      if Style_Check_Array_Attribute_Index then
+         if D = 1 and then Present (E1) then
+            Error_Msg_N
+              ("(style) index number not allowed for one dimensional array",
+               E1);
+         elsif D > 1 and then No (E1) then
+            Error_Msg_N
+              ("(style) index number required for multi-dimensional array",
+               N);
+         end if;
+      end if;
+   end Check_Array_Attribute_Index;
 
    ----------------------
    -- Check_Identifier --

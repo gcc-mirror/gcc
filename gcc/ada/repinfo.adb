@@ -784,172 +784,165 @@ package body Repinfo is
       Max_Name_Length := 0;
       Max_Suni_Length   := 0;
 
-      Comp := First_Entity (Ent);
+      Comp := First_Component_Or_Discriminant (Ent);
       while Present (Comp) loop
-         if Ekind (Comp) = E_Component
-           or else Ekind (Comp) = E_Discriminant
-         then
-            Get_Decoded_Name_String (Chars (Comp));
-            Max_Name_Length := Natural'Max (Max_Name_Length, Name_Len);
+         Get_Decoded_Name_String (Chars (Comp));
+         Max_Name_Length := Natural'Max (Max_Name_Length, Name_Len);
 
-            Cfbit := Component_Bit_Offset (Comp);
+         Cfbit := Component_Bit_Offset (Comp);
 
-            if Rep_Not_Constant (Cfbit) then
-               UI_Image_Length := 2;
+         if Rep_Not_Constant (Cfbit) then
+            UI_Image_Length := 2;
 
-            else
-               --  Complete annotation in case not done
+         else
+            --  Complete annotation in case not done
 
-               Set_Normalized_Position (Comp, Cfbit / SSU);
-               Set_Normalized_First_Bit (Comp, Cfbit mod SSU);
+            Set_Normalized_Position (Comp, Cfbit / SSU);
+            Set_Normalized_First_Bit (Comp, Cfbit mod SSU);
 
-               Sunit := Cfbit / SSU;
-               UI_Image (Sunit);
-            end if;
-
-            --  If the record is not packed, then we know that all fields whose
-            --  position is not specified have a starting normalized bit
-            --  position of zero
-
-            if Unknown_Normalized_First_Bit (Comp)
-              and then not Is_Packed (Ent)
-            then
-               Set_Normalized_First_Bit (Comp, Uint_0);
-            end if;
-
-            Max_Suni_Length :=
-              Natural'Max (Max_Suni_Length, UI_Image_Length);
+            Sunit := Cfbit / SSU;
+            UI_Image (Sunit);
          end if;
 
-         Comp := Next_Entity (Comp);
+         --  If the record is not packed, then we know that all fields whose
+         --  position is not specified have a starting normalized bit position
+         --  of zero.
+
+         if Unknown_Normalized_First_Bit (Comp)
+           and then not Is_Packed (Ent)
+         then
+            Set_Normalized_First_Bit (Comp, Uint_0);
+         end if;
+
+         Max_Suni_Length :=
+           Natural'Max (Max_Suni_Length, UI_Image_Length);
+
+         Next_Component_Or_Discriminant (Comp);
       end loop;
 
       --  Second loop does actual output based on those values
 
-      Comp := First_Entity (Ent);
+      Comp := First_Component_Or_Discriminant (Ent);
       while Present (Comp) loop
-         if Ekind (Comp) = E_Component
-           or else Ekind (Comp) = E_Discriminant
-         then
-            declare
-               Esiz : constant Uint := Esize (Comp);
-               Bofs : constant Uint := Component_Bit_Offset (Comp);
-               Npos : constant Uint := Normalized_Position (Comp);
-               Fbit : constant Uint := Normalized_First_Bit (Comp);
-               Lbit : Uint;
+         declare
+            Esiz : constant Uint := Esize (Comp);
+            Bofs : constant Uint := Component_Bit_Offset (Comp);
+            Npos : constant Uint := Normalized_Position (Comp);
+            Fbit : constant Uint := Normalized_First_Bit (Comp);
+            Lbit : Uint;
 
-            begin
-               Write_Str ("   ");
-               Get_Decoded_Name_String (Chars (Comp));
-               Set_Casing (Unit_Casing);
-               Write_Str (Name_Buffer (1 .. Name_Len));
+         begin
+            Write_Str ("   ");
+            Get_Decoded_Name_String (Chars (Comp));
+            Set_Casing (Unit_Casing);
+            Write_Str (Name_Buffer (1 .. Name_Len));
 
-               for J in 1 .. Max_Name_Length - Name_Len loop
-                  Write_Char (' ');
-               end loop;
+            for J in 1 .. Max_Name_Length - Name_Len loop
+               Write_Char (' ');
+            end loop;
 
-               Write_Str (" at ");
+            Write_Str (" at ");
 
-               if Known_Static_Normalized_Position (Comp) then
-                  UI_Image (Npos);
-                  Spaces (Max_Suni_Length - UI_Image_Length);
-                  Write_Str (UI_Image_Buffer (1 .. UI_Image_Length));
+            if Known_Static_Normalized_Position (Comp) then
+               UI_Image (Npos);
+               Spaces (Max_Suni_Length - UI_Image_Length);
+               Write_Str (UI_Image_Buffer (1 .. UI_Image_Length));
 
-               elsif Known_Component_Bit_Offset (Comp)
-                 and then List_Representation_Info = 3
-               then
-                  Spaces (Max_Suni_Length - 2);
-                  Write_Str ("bit offset");
-                  Write_Val (Bofs, Paren => True);
-                  Write_Str (" size in bits = ");
-                  Write_Val (Esiz, Paren => True);
-                  Write_Eol;
+            elsif Known_Component_Bit_Offset (Comp)
+              and then List_Representation_Info = 3
+            then
+               Spaces (Max_Suni_Length - 2);
+               Write_Str ("bit offset");
+               Write_Val (Bofs, Paren => True);
+               Write_Str (" size in bits = ");
+               Write_Val (Esiz, Paren => True);
+               Write_Eol;
+               goto Continue;
+
+            elsif Known_Normalized_Position (Comp)
+              and then List_Representation_Info = 3
+            then
+               Spaces (Max_Suni_Length - 2);
+               Write_Val (Npos);
+
+            else
+               --  For the packed case, we don't know the bit positions if we
+               --  don't know the starting position!
+
+               if Is_Packed (Ent) then
+                  Write_Line ("?? range  ? .. ??;");
                   goto Continue;
 
-               elsif Known_Normalized_Position (Comp)
-                 and then List_Representation_Info = 3
-               then
-                  Spaces (Max_Suni_Length - 2);
-                  Write_Val (Npos);
+               --  Otherwise we can continue
 
                else
-                  --  For the packed case, we don't know the bit positions
-                  --  if we don't know the starting position!
-
-                  if Is_Packed (Ent) then
-                     Write_Line ("?? range  ? .. ??;");
-                     goto Continue;
-
-                  --  Otherwise we can continue
-
-                  else
-                     Write_Str ("??");
-                  end if;
-               end if;
-
-               Write_Str (" range  ");
-               UI_Write (Fbit);
-               Write_Str (" .. ");
-
-               --  Allowing Uint_0 here is a kludge, really this should be a
-               --  fine Esize value but currently it means unknown, except that
-               --  we know after gigi has back annotated that a size of zero is
-               --  real, since otherwise gigi back annotates using No_Uint as
-               --  the value to indicate unknown).
-
-               if (Esize (Comp) = Uint_0 or else Known_Static_Esize (Comp))
-                 and then Known_Static_Normalized_First_Bit (Comp)
-               then
-                  Lbit := Fbit + Esiz - 1;
-
-                  if Lbit < 10 then
-                     Write_Char (' ');
-                  end if;
-
-                  UI_Write (Lbit);
-
-               --  The test for Esize (Comp) not being Uint_0 here is a kludge.
-               --  Officially a value of zero for Esize means unknown, but here
-               --  we use the fact that we know that gigi annotates Esize with
-               --  No_Uint, not Uint_0. Really everyone should use No_Uint???
-
-               elsif List_Representation_Info < 3
-                 or else (Esize (Comp) /= Uint_0 and then Unknown_Esize (Comp))
-               then
                   Write_Str ("??");
+               end if;
+            end if;
 
-               else -- List_Representation >= 3 and Known_Esize (Comp)
+            Write_Str (" range  ");
+            UI_Write (Fbit);
+            Write_Str (" .. ");
 
-                  Write_Val (Esiz, Paren => True);
+            --  Allowing Uint_0 here is a kludge, really this should be a
+            --  fine Esize value but currently it means unknown, except that
+            --  we know after gigi has back annotated that a size of zero is
+            --  real, since otherwise gigi back annotates using No_Uint as
+            --  the value to indicate unknown).
 
-                  --  If in front end layout mode, then dynamic size is stored
-                  --  in storage units, so renormalize for output
+            if (Esize (Comp) = Uint_0 or else Known_Static_Esize (Comp))
+              and then Known_Static_Normalized_First_Bit (Comp)
+            then
+               Lbit := Fbit + Esiz - 1;
 
-                  if not Back_End_Layout then
-                     Write_Str (" * ");
-                     Write_Int (SSU);
-                  end if;
-
-                  --  Add appropriate first bit offset
-
-                  if Fbit = 0 then
-                     Write_Str (" - 1");
-
-                  elsif Fbit = 1 then
-                     null;
-
-                  else
-                     Write_Str (" + ");
-                     Write_Int (UI_To_Int (Fbit) - 1);
-                  end if;
+               if Lbit < 10 then
+                  Write_Char (' ');
                end if;
 
-               Write_Line (";");
-            end;
-         end if;
+               UI_Write (Lbit);
+
+            --  The test for Esize (Comp) not being Uint_0 here is a kludge.
+            --  Officially a value of zero for Esize means unknown, but here
+            --  we use the fact that we know that gigi annotates Esize with
+            --  No_Uint, not Uint_0. Really everyone should use No_Uint???
+
+            elsif List_Representation_Info < 3
+              or else (Esize (Comp) /= Uint_0 and then Unknown_Esize (Comp))
+            then
+               Write_Str ("??");
+
+            --  List_Representation >= 3 and Known_Esize (Comp)
+
+            else
+               Write_Val (Esiz, Paren => True);
+
+               --  If in front end layout mode, then dynamic size is stored
+               --  in storage units, so renormalize for output
+
+               if not Back_End_Layout then
+                  Write_Str (" * ");
+                  Write_Int (SSU);
+               end if;
+
+               --  Add appropriate first bit offset
+
+               if Fbit = 0 then
+                  Write_Str (" - 1");
+
+               elsif Fbit = 1 then
+                  null;
+
+               else
+                  Write_Str (" + ");
+                  Write_Int (UI_To_Int (Fbit) - 1);
+               end if;
+            end if;
+
+            Write_Line (";");
+         end;
 
       <<Continue>>
-         Comp := Next_Entity (Comp);
+         Next_Component_Or_Discriminant (Comp);
       end loop;
 
       Write_Line ("end record;");

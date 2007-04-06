@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,13 @@ package Sem_Ch13 is
    procedure Analyze_Free_Statement                     (N : Node_Id);
    procedure Analyze_Record_Representation_Clause       (N : Node_Id);
    procedure Analyze_Code_Statement                     (N : Node_Id);
+
+   procedure Adjust_Record_For_Reverse_Bit_Order (R : Entity_Id);
+   --  Called from Freeze where R is a record entity for which reverse bit
+   --  order is specified and there is at least one component clause. Adjusts
+   --  component positions according to Ada 2005 AI-133. Note that this is only
+   --  called in Ada 2005 mode. The Ada 95 handling for bit order is entirely
+   --  contained in Freeze.
 
    procedure Initialize;
    --  Initialize internal tables for new compilation

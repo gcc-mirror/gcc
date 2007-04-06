@@ -47,6 +47,12 @@ package Stylesw is
    --  through a call to Set_Default_Style_Check_Options. They should
    --  not be set directly in any other manner.
 
+   Style_Check_Array_Attribute_Index : Boolean := False;
+   --  This can be set True by using -gnatg or -gnatyA switches. If it is True
+   --  then index numbers for array attributes (like Length) are required to
+   --  be absent for one-dimensional arrays and present for multi-dimensional
+   --  array attribute references.
+
    Style_Check_Attribute_Casing : Boolean := False;
    --  This can be set True by using the -gnatg or -gnatya switches. If
    --  it is True, then attribute names (including keywords such as

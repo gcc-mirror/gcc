@@ -65,6 +65,16 @@ package Style is
      renames Style_Inst.Check_Apostrophe;
    --  Called after scanning an apostrophe to check spacing
 
+   procedure Check_Array_Attribute_Index
+     (N  : Node_Id;
+      E1 : Node_Id;
+      D  : Int)
+     renames Style_C_Inst.Check_Array_Attribute_Index;
+   --  Called for an array attribute specifying an index number. N is the
+   --  node for the attribute, and E1 is the index expression (Empty if none
+   --  present). If E1 is present, it is known to be a static integer. D is
+   --  the number of dimensions of the array.
+
    procedure Check_Arrow
      renames Style_Inst.Check_Arrow;
    --  Called after scanning out an arrow to check spacing

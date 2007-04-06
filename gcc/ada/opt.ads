@@ -430,7 +430,8 @@ package Opt is
    Extensions_Allowed : Boolean := False;
    --  GNAT
    --  Set to True by switch -gnatX if GNAT specific language extensions
-   --  are allowed. For example, "limited with" is a GNAT extension.
+   --  are allowed. For example, the use of 'Constrained with objects of
+   --  generic types is a GNAT extension.
 
    type External_Casing_Type is (
      As_Is,       -- External names cased as they appear in the Ada source
@@ -1163,12 +1164,19 @@ package Opt is
    --  variable that is at least partially uninitialized. Set to false to
    --  suppress such warnings. The default is that such warnings are enabled.
 
+   Warn_On_Non_Local_Exception : Boolean := True;
+   --  GNAT
+   --  Set to True to generate warnings for non-local exception raises and also
+   --  handlers that can never handle a local raise. This warning is only ever
+   --  generated if pragma Restrictions (No_Exception_Propagation) is set. The
+   --  default is to generate the warnings if the restriction is set.
+
    Warn_On_Obsolescent_Feature : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings on use of any feature in Annex or if a
    --  subprogram is called for which a pragma Obsolescent applies.
 
-   Warn_On_Questionable_Missing_Parens : Boolean := False;
+   Warn_On_Questionable_Missing_Parens : Boolean := True;
    --  GNAT
    --  Set to True to generate warnings for cases where parenthese are missing
    --  and the usage is questionable, because the intent is unclear.
@@ -1177,6 +1185,12 @@ package Opt is
    --  GNAT
    --  Set to True to generate warnings for redundant constructs (e.g. useless
    --  assignments/conversions). The default is that this warning is disabled.
+
+   Warn_On_Reverse_Bit_Order : Boolean := True;
+   --  GNAT
+   --  Set to True to generate warning (informational) messages for component
+   --  clauses that are affected by non-standard bit-order. The default is
+   --  that this warning is enabled.
 
    Warn_On_Unchecked_Conversion : Boolean := True;
    --  GNAT
