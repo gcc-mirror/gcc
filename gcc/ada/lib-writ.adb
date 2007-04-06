@@ -629,6 +629,34 @@ package body Lib.Writ is
          Body_Fname : File_Name_Type;
          Body_Index : Nat;
 
+         procedure Write_With_File_Names
+           (Nam : in out File_Name_Type;
+            Idx : Nat);
+         --  Write source file name Nam and ALI file name for unit index Idx.
+         --  Possibly change Nam to lowercase (generating a new file name).
+
+         --------------------------
+         -- Write_With_File_Name --
+         --------------------------
+
+         procedure Write_With_File_Names
+           (Nam : in out File_Name_Type;
+            Idx : Nat)
+         is
+         begin
+            if not File_Names_Case_Sensitive then
+               Get_Name_String (Nam);
+               To_Lower (Name_Buffer (1 .. Name_Len));
+               Nam := Name_Find;
+            end if;
+
+            Write_Info_Name (Nam);
+            Write_Info_Tab (49);
+            Write_Info_Name (Lib_File_Name (Nam, Idx));
+         end Write_With_File_Names;
+
+      --  Start of processing for Write_With_Lines
+
       begin
          --  Loop to build the with table. A with on the main unit itself
          --  is ignored (AARM 10.2(14a)). Such a with-clause can occur if
@@ -705,33 +733,9 @@ package body Lib.Writ is
                  or else (Ada_Version = Ada_83
                            and then Full_Source_Name (Body_Fname) /= No_File)
                then
-                  --  Ensure that on platforms where the file names are not
-                  --  case sensitive, the recorded file name is in lower case.
-
-                  if not File_Names_Case_Sensitive then
-                     Get_Name_String (Body_Fname);
-                     To_Lower (Name_Buffer (1 .. Name_Len));
-                     Body_Fname := Name_Find;
-                  end if;
-
-                  Write_Info_Name (Body_Fname);
-                  Write_Info_Tab (49);
-                  Write_Info_Name
-                    (Lib_File_Name (Body_Fname, Body_Index));
+                  Write_With_File_Names (Body_Fname, Body_Index);
                else
-                  --  Ensure that on platforms where the file names are not
-                  --  case sensitive, the recorded file name is in lower case.
-
-                  if not File_Names_Case_Sensitive then
-                     Get_Name_String (Fname);
-                     To_Lower (Name_Buffer (1 .. Name_Len));
-                     Fname := Name_Find;
-                  end if;
-
-                  Write_Info_Name (Fname);
-                  Write_Info_Tab (49);
-                  Write_Info_Name
-                    (Lib_File_Name (Fname, Munit_Index (Unum)));
+                  Write_With_File_Names (Fname, Munit_Index (Unum));
                end if;
 
                if Elab_Flags (Unum) then
