@@ -152,6 +152,6 @@ package Sem_Cat is
    --  Enforce constraints on primitive operations of the designated type of
    --  an RACW. Note that since the complete set of primitive operations of the
    --  designated type needs to be known, we must defer these checks until the
-   --  desgianted type is frozen.
+   --  designated type is frozen.
 
 end Sem_Cat;

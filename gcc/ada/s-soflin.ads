@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,12 +32,12 @@
 ------------------------------------------------------------------------------
 
 --  This package contains a set of subprogram access variables that access
---  some low-level primitives that are called different depending whether
---  tasking is involved or not (e.g. the Get/Set_Jmpbuf_Address that needs
---  to provide a different value for each task). To avoid dragging in the
---  tasking all the time, we use a system of soft links where the links are
---  initialized to non-tasking versions, and then if the tasking is
---  initialized, they are reset to the real tasking versions.
+--  some low-level primitives that are different depending whether tasking is
+--  involved or not (e.g. the Get/Set_Jmpbuf_Address that needs to provide a
+--  different value for each task). To avoid dragging in the tasking runtimes
+--  all the time, we use a system of soft links where the links are
+--  initialized to non-tasking versions, and then if the tasking support is
+--  initialized, they are set to the real tasking versions.
 
 with Ada.Exceptions;
 with System.Stack_Checking;
@@ -58,7 +58,7 @@ package System.Soft_Links is
 
    --  First we have the access subprogram types used to establish the links.
    --  The approach is to establish variables containing access subprogram
-   --  values which by default point to dummy no tasking versions of routines.
+   --  values, which by default point to dummy no tasking versions of routines.
 
    type No_Param_Proc     is access procedure;
    type Addr_Param_Proc   is access procedure (Addr : Address);
@@ -88,7 +88,7 @@ package System.Soft_Links is
    type Task_Name_Call is access
      function return String;
 
-   --  Suppress checks on all these types, since we know corrresponding
+   --  Suppress checks on all these types, since we know the corrresponding
    --  values can never be null (the soft links are always initialized).
 
    pragma Suppress (Access_Check, No_Param_Proc);
@@ -126,7 +126,7 @@ package System.Soft_Links is
    --  uses this.
 
    procedure Update_Exception_NT (X : EO := Current_Target_Exception);
-   --  Handle exception setting. This routine is provided for targets which
+   --  Handle exception setting. This routine is provided for targets that
    --  have built-in exception handling such as the Java Virtual Machine.
    --  Currently, only JGNAT uses this. See 4jexcept.ads for an explanation on
    --  how this routine is used.
@@ -241,7 +241,7 @@ package System.Soft_Links is
    -- Master_Id Soft-Links --
    --------------------------
 
-   --  Soft-Links are used for procedures that manipulate  Master_Ids because
+   --  Soft-Links are used for procedures that manipulate Master_Ids because
    --  a Master_Id must be generated for access to limited class-wide types,
    --  whose root may be extended with task components.
 

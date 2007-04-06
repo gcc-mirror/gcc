@@ -97,7 +97,7 @@ package body Elists is
      Table_Name           => "Elists");
 
    type Elmt_Item is record
-      Node : Node_Id;
+      Node : Node_Or_Entity_Id;
       Next : Union_Id;
    end record;
 
@@ -113,12 +113,12 @@ package body Elists is
    -- Append_Elmt --
    -----------------
 
-   procedure Append_Elmt (Node : Node_Id; To : Elist_Id) is
+   procedure Append_Elmt (N : Node_Or_Entity_Id; To : Elist_Id) is
       L : constant Elmt_Id := Elists.Table (To).Last;
 
    begin
       Elmts.Increment_Last;
-      Elmts.Table (Elmts.Last).Node := Node;
+      Elmts.Table (Elmts.Last).Node := N;
       Elmts.Table (Elmts.Last).Next := Union_Id (To);
 
       if L = No_Elmt then
@@ -134,11 +134,31 @@ package body Elists is
          Write_Int (Int (Elmts.Last));
          Write_Str (" to list Elist_Id = ");
          Write_Int (Int (To));
-         Write_Str (" referencing Node_Id = ");
-         Write_Int (Int (Node));
+         Write_Str (" referencing Node_Or_Entity_Id = ");
+         Write_Int (Int (N));
          Write_Eol;
       end if;
    end Append_Elmt;
+
+   ------------------------
+   -- Append_Unique_Elmt --
+   ------------------------
+
+   procedure Append_Unique_Elmt (N : Node_Or_Entity_Id; To : Elist_Id) is
+      Elmt : Elmt_Id;
+   begin
+      Elmt := First_Elmt (To);
+      loop
+         if No (Elmt) then
+            Append_Elmt (N, To);
+            return;
+         elsif Node (Elmt) = N then
+            return;
+         else
+            Next_Elmt (Elmt);
+         end if;
+      end loop;
+   end Append_Unique_Elmt;
 
    --------------------
    -- Elists_Address --
@@ -182,20 +202,20 @@ package body Elists is
    -- Insert_Elmt_After --
    -----------------------
 
-   procedure Insert_Elmt_After (Node : Node_Id; Elmt : Elmt_Id) is
-      N : constant Union_Id := Elmts.Table (Elmt).Next;
+   procedure Insert_Elmt_After (N : Node_Or_Entity_Id; Elmt : Elmt_Id) is
+      Nxt : constant Union_Id := Elmts.Table (Elmt).Next;
 
    begin
       pragma Assert (Elmt /= No_Elmt);
 
       Elmts.Increment_Last;
-      Elmts.Table (Elmts.Last).Node := Node;
-      Elmts.Table (Elmts.Last).Next := N;
+      Elmts.Table (Elmts.Last).Node := N;
+      Elmts.Table (Elmts.Last).Next := Nxt;
 
       Elmts.Table (Elmt).Next := Union_Id (Elmts.Last);
 
-      if N in Elist_Range then
-         Elists.Table (Elist_Id (N)).Last := Elmts.Last;
+      if Nxt in Elist_Range then
+         Elists.Table (Elist_Id (Nxt)).Last := Elmts.Last;
       end if;
    end Insert_Elmt_After;
 
@@ -326,12 +346,12 @@ package body Elists is
    -- Prepend_Elmt --
    ------------------
 
-   procedure Prepend_Elmt (Node : Node_Id; To : Elist_Id) is
+   procedure Prepend_Elmt (N : Node_Or_Entity_Id; To : Elist_Id) is
       F : constant Elmt_Id := Elists.Table (To).First;
 
    begin
       Elmts.Increment_Last;
-      Elmts.Table (Elmts.Last).Node := Node;
+      Elmts.Table (Elmts.Last).Node := N;
 
       if F = No_Elmt then
          Elists.Table (To).Last := Elmts.Last;
@@ -341,7 +361,6 @@ package body Elists is
       end if;
 
       Elists.Table (To).First  := Elmts.Last;
-
    end Prepend_Elmt;
 
    -------------
@@ -438,7 +457,7 @@ package body Elists is
    -- Replace_Elmt --
    ------------------
 
-   procedure Replace_Elmt (Elmt : Elmt_Id; New_Node : Node_Id) is
+   procedure Replace_Elmt (Elmt : Elmt_Id; New_Node : Node_Or_Entity_Id) is
    begin
       Elmts.Table (Elmt).Node := New_Node;
    end Replace_Elmt;

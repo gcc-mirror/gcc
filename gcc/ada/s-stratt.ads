@@ -155,28 +155,6 @@ package System.Stream_Attributes is
    procedure W_U   (Stream : not null access RST; Item : UST.Unsigned);
    procedure W_WC  (Stream : not null access RST; Item : Wide_Character);
 
-   ----------------------------
-   -- Composite Input/Output --
-   ----------------------------
-
-   --  The following Boolean constant is defined and set to True only if the
-   --  stream representation of a series of elementary items of the same
-   --  type (one of the types handled by the above procedures) has the same
-   --  representation as an array of such items in memory. This allows such
-   --  a series of items to be read or written as a block, instead of
-   --  element by element.
-
-   --  If the stream representation does not have this property for all the
-   --  above types, then this constant can be omitted or set to False,
-   --  and the front end will generate element-by-element operations.
-
-   --  This interface assumes that a Stream_Element has the same size as
-   --  a Storage_Unit. If that is not the case, then this flag should
-   --  also be omitted (or set to False).
-
-   Block_Stream_Ops_OK : constant Boolean := True;
-   --  Set to False if block stream operations not permitted
-
 private
    pragma Inline (I_AD);
    pragma Inline (I_AS);

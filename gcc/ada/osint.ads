@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,8 @@ with GNAT.OS_Lib; use GNAT.OS_Lib;
 with System;      use System;
 with Types;       use Types;
 
-pragma Elaborate (GNAT.OS_Lib);
+pragma Elaborate_All (GNAT.OS_Lib);
+--  For the call to function Get_Target_Object_Suffix in the private part
 
 package Osint is
 

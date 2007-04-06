@@ -663,9 +663,9 @@ package body Sem_Cat is
          if Ekind (E) in Subprogram_Kind then
             Declaration := Unit_Declaration_Node (E);
 
-            if False
-              or else Nkind (Declaration) = N_Subprogram_Body
-              or else Nkind (Declaration) = N_Subprogram_Renaming_Declaration
+            if Nkind (Declaration) = N_Subprogram_Body
+                 or else
+               Nkind (Declaration) = N_Subprogram_Renaming_Declaration
             then
                Specification := Corresponding_Spec (Declaration);
             end if;

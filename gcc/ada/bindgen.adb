@@ -1964,6 +1964,12 @@ package body Bindgen is
 
       Create_Binder_Output (Filename, 's', Bfiles);
 
+      --  We always compile the binder file in Ada 95 mode so that we properly
+      --  handle use of Ada 2005 keywords as identifiers in Ada 95 mode. None
+      --  of the Ada 2005 constructs are needed by the binder file.
+
+      WBI ("pragma Ada_95;");
+
       --  If we are operating in Restrictions (No_Exception_Handlers) mode,
       --  then we need to make sure that the binder program is compiled with
       --  the same restriction, so that no exception tables are generated.
@@ -2152,6 +2158,12 @@ package body Bindgen is
       --  Prepare to write body
 
       Create_Binder_Output (Filename, 'b', Bfileb);
+
+      --  We always compile the binder file in Ada 95 mode so that we properly
+      --  handle use of Ada 2005 keywords as identifiers in Ada 95 mode. None
+      --  of the Ada 2005 constructs are needed by the binder file.
+
+      WBI ("pragma Ada_95;");
 
       --  Output Source_File_Name pragmas which look like
 
