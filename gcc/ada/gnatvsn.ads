@@ -46,10 +46,10 @@ package Gnatvsn is
    --  to e.g. pragma Ident.
 
    type Gnat_Build_Type is (FSF, GPL);
-   --  See Get_Gnat_Build_Type below for the meaning of these values.
+   --  See Build_Type below for the meaning of these values.
 
-   function Get_Gnat_Build_Type return Gnat_Build_Type;
-   --  This function returns one of the following values of Gnat_Build_Type:
+   Build_Type : constant Gnat_Build_Type := FSF;
+   --  Kind of GNAT build:
    --
    --    FSF
    --       GNAT FSF version. This version of GNAT is part of a Free Software

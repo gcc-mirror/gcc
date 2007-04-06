@@ -36,7 +36,7 @@
 /* comperr:  */
 
 #define Compiler_Abort comperr__compiler_abort
-extern int Compiler_Abort (Fat_Pointer, int) ATTRIBUTE_NORETURN;
+extern int Compiler_Abort (Fat_Pointer, int, Fat_Pointer) ATTRIBUTE_NORETURN;
 
 /* csets: */
 
