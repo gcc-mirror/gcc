@@ -21089,16 +21089,36 @@ ix86_reverse_condition (enum rtx_code code, enum machine_mode mode)
 const char *
 output_387_reg_move (rtx insn, rtx *operands)
 {
-  if (REG_P (operands[1])
-      && find_regno_note (insn, REG_DEAD, REGNO (operands[1])))
+  if (REG_P (operands[0]))
     {
-      if (REGNO (operands[0]) == FIRST_STACK_REG)
-	return output_387_ffreep (operands, 0);
-      return "fstp\t%y0";
+      if (REG_P (operands[1])
+	  && find_regno_note (insn, REG_DEAD, REGNO (operands[1])))
+	{
+	  if (REGNO (operands[0]) == FIRST_STACK_REG)
+	    return output_387_ffreep (operands, 0);
+	  return "fstp\t%y0";
+	}
+      if (STACK_TOP_P (operands[0]))
+	return "fld%z1\t%y1";
+      return "fst\t%y0";
     }
-  if (STACK_TOP_P (operands[0]))
-    return "fld%z1\t%y1";
-  return "fst\t%y0";
+  else if (MEM_P (operands[0]))
+    {
+      gcc_assert (REG_P (operands[1]));
+      if (find_regno_note (insn, REG_DEAD, REGNO (operands[1])))
+	return "fstp%z0\t%y0";
+      else
+	{
+	  /* There is no non-popping store to memory for XFmode.
+	     So if we need one, follow the store with a load.  */
+	  if (GET_MODE (operands[0]) == XFmode)
+	    return "fstp%z0\t%y0\n\tfld%z0\t%y0";
+	  else
+	    return "fst%z0\t%y0";
+	}
+    }
+  else
+    gcc_unreachable();
 }
 
 /* Output code to perform a conditional jump to LABEL, if C2 flag in

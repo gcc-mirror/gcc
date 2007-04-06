@@ -1,3 +1,13 @@
+2007-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (output_387_reg_move): Handle memory operand[0].
+	* config/i386/i386.md (*movsf_1, *movdf_nointeger,
+	*movdf_integer_rex64, *movdf_integer, *movxf_nointeger,
+	*movxf_integer): Use output_387_reg_move() for x87 reg->mem
+	alternative.
+	(*extendsfdf2_mixed, *extendsfdf2_i387, *extendsfxf2_i387,
+	*extenddfxf2_i387, *truncdfsf_fast_mixed): Ditto.
+
 2007-04-05  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (print_operand) [+]: Remove.
