@@ -362,10 +362,8 @@ struct layout
    library. On HP-UX 11.23 this requires patch PHSS_33352, which adds
    _Unwind_Backtrace to the system unwind library. */
 
-#define PC_ADJUST -16
-/* Every call on ia64 is part of a 128 bit bundle, so an adjustment of
-   minus 16 bytes from the point of return finds the address of the
-   previous bundle. */
+#define PC_ADJUST -4
+
 
 #endif
 
