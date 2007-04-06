@@ -2443,15 +2443,13 @@ package body Sem_Elab is
                      Chars (Subp) = Name_Initialize
                        and then Comes_From_Source (Subp)
                        and then Present (Parameter_Associations (Call))
-                       and then Is_Controlled
-                         (Etype (First (Parameter_Associations (Call))));
+                       and then Is_Controlled (Etype (First_Actual (Call)));
    begin
       --  If the unit is mentioned in a with_clause of the current
       --  unit, it is visible, and we can set the elaboration flag.
 
       if Is_Immediately_Visible (Scop)
-        or else
-          (Is_Child_Unit (Scop) and then Is_Visible_Child_Unit (Scop))
+        or else (Is_Child_Unit (Scop) and then Is_Visible_Child_Unit (Scop))
       then
          Activate_Elaborate_All_Desirable (Call, Scop);
          Set_Suppress_Elaboration_Warnings (Scop, True);
@@ -2482,10 +2480,10 @@ package body Sem_Elab is
       if Is_Init_Proc (Subp)
         or else Init_Call
       then
-         --  The initialization call is on an object whose type is not
-         --  declared in the same scope as the subprogram. The type of
-         --  the object must be a subtype of the type of operation. This
-         --  object is the first actual in the call.
+         --  The initialization call is on an object whose type is not declared
+         --  in the same scope as the subprogram. The type of the object must
+         --  be a subtype of the type of operation. This object is the first
+         --  actual in the call.
 
          declare
             Typ : constant Entity_Id :=
