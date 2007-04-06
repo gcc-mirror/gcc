@@ -117,14 +117,6 @@ lhd_print_tree_nothing (FILE * ARG_UNUSED (file),
 {
 }
 
-/* Called from safe_from_p.  */
-
-int
-lhd_safe_from_p (rtx ARG_UNUSED (x), tree ARG_UNUSED (exp))
-{
-  return 1;
-}
-
 /* Called from staticp.  */
 
 tree

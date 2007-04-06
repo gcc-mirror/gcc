@@ -1,3 +1,12 @@
+2007-04-06  Daniel Berlin  <dberlin@dberlin.org>
+
+	* langhooks-def.h (LANG_HOOKS_INITIALIZER): Remove
+	LANG_HOOKS_SAFE_FROM_P.
+	* expr.c (safe_from_p): Remove langhook call.
+	* langhooks.h (lang_hooks): Remove safe_from_p.
+	(lhd_safe_from_p): Remove prototype.
+	* langhooks.c (lhd_safe_from_p): Remove.
+	
 2007-04-06  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (decide_is_function_needed): Do not keep always_inline

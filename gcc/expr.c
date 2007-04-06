@@ -6302,12 +6302,6 @@ safe_from_p (rtx x, tree exp, int top_p)
 	    && ! safe_from_p (x, TREE_OPERAND (exp, i), 0))
 	  return 0;
 
-      /* If this is a language-specific tree code, it may require
-	 special handling.  */
-      if ((unsigned int) TREE_CODE (exp)
-	  >= (unsigned int) LAST_AND_UNUSED_TREE_CODE
-	  && !lang_hooks.safe_from_p (x, exp))
-	return 0;
       break;
 
     case tcc_type:
