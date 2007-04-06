@@ -202,7 +202,8 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
      for extern inline ones.  */
   if (flag_keep_inline_functions
       && DECL_DECLARED_INLINE_P (decl)
-      && !DECL_EXTERNAL (decl))
+      && !DECL_EXTERNAL (decl)
+      && !lookup_attribute ("always_inline", DECL_ATTRIBUTES (decl)))
      return true;
 
   /* If we decided it was needed before, but at the time we didn't have
