@@ -506,12 +506,13 @@ package body GPrep is
 
          Scanner.Initialize_Scanner (Infile);
 
-         --  Output the SFN pragma if asked to
+         --  Output the pragma Source_Reference if asked to
 
          if Source_Ref_Pragma then
-            Put_Line (Outfile.all, "pragma Source_Reference (1, """ &
-                      Get_Name_String (Sinput.File_Name (Infile)) &
-                      """);");
+            Put_Line
+              (Outfile.all,
+               "pragma Source_Reference (1, """ &
+                 Get_Name_String (Sinput.Full_File_Name (Infile)) & """);");
          end if;
 
          --  Preprocess the input file
