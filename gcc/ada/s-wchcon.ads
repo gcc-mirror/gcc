@@ -81,6 +81,7 @@ package System.WCh_Con is
    --     4.  Adjust definition of WC_Longest_Sequence if necessary
    --     5.  Add an entry in WC_Encoding_Letters for the new method
    --     6.  Add proper code to s-wchstw.adb, s-wchwts.adb, s-widwch.adb
+   --     7.  Update documentation (remember section on form strings)
 
    --  Note that the WC_Encoding_Method values must be kept ordered so that
    --  the definitions of the subtypes WC_Upper_Half_Encoding_Method and

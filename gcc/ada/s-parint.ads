@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1995-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -112,8 +112,8 @@ package System.Partition_Interface is
    --  unit has has the same version than the caller's one.
 
    function Same_Partition
-      (Left  : access RACW_Stub_Type;
-       Right : access RACW_Stub_Type) return Boolean;
+      (Left  : not null access RACW_Stub_Type;
+       Right : not null access RACW_Stub_Type) return Boolean;
    --  Determine whether Left and Right correspond to objects instantiated
    --  on the same partition, for enforcement of E.4(19).
 
@@ -171,7 +171,10 @@ package System.Partition_Interface is
 
    generic
       RCI_Name : String;
+      Version  : String;
    package RCI_Locator is
+      pragma Unreferenced (Version);
+
       function Get_RCI_Package_Receiver return Interfaces.Unsigned_64;
       function Get_Active_Partition_ID return RPC.Partition_ID;
    end RCI_Locator;

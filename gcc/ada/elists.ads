@@ -121,17 +121,22 @@ package Elists is
    --  This function determines if a given tree id references an element list
    --  that contains no items.
 
-   procedure Append_Elmt (Node : Node_Id; To : Elist_Id);
-   --  Appends Node at the end of To, allocating a new element
+   procedure Append_Elmt (N : Node_Or_Entity_Id; To : Elist_Id);
+   --  Appends N at the end of To, allocating a new element. N must be a
+   --  non-empty node or entity Id, and To must be an Elist (not No_Elist).
 
-   procedure Prepend_Elmt (Node : Node_Id; To : Elist_Id);
-   --  Appends Node at the beginning of To, allocating a new element
+   procedure Append_Unique_Elmt (N : Node_Or_Entity_Id; To : Elist_Id);
+   --  Like Append_Elmt, except that a check is made to see if To already
+   --  contains N and if so the call has no effect.
 
-   procedure Insert_Elmt_After (Node : Node_Id; Elmt : Elmt_Id);
-   --  Add a new element (Node) right after the pre-existing element Elmt
+   procedure Prepend_Elmt (N : Node_Or_Entity_Id; To : Elist_Id);
+   --  Appends N at the beginning of To, allocating a new element
+
+   procedure Insert_Elmt_After (N : Node_Or_Entity_Id; Elmt : Elmt_Id);
+   --  Add a new element (N) right after the pre-existing element Elmt
    --  It is invalid to call this subprogram with Elmt = No_Elmt.
 
-   procedure Replace_Elmt (Elmt : Elmt_Id; New_Node : Node_Id);
+   procedure Replace_Elmt (Elmt : Elmt_Id; New_Node : Node_Or_Entity_Id);
    pragma Inline (Replace_Elmt);
    --  Causes the given element of the list to refer to New_Node, the node
    --  which was previously referred to by Elmt is effectively removed from

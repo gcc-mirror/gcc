@@ -84,7 +84,12 @@ procedure Load is
    --  Unit number of loaded unit
 
    Limited_With_Found : Boolean := False;
-   --  Set True if a limited WITH is found, used to ???
+   --  We load the context items in two rounds: the first round handles normal
+   --  withed units and the second round handles Ada 2005 limited-withed units.
+   --  This is required to allow the low-level circuitry that detects circular
+   --  dependencies of units the correct notification of errors (see comment
+   --  bellow). This variable is used to indicate that the second round is
+   --  required.
 
    function Same_File_Name_Except_For_Case
      (Expected_File_Name : File_Name_Type;

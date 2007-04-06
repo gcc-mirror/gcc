@@ -744,11 +744,14 @@ package body Treepr is
          elsif N = Error_Name then
             Print_Str ("<Error_Name>");
 
-         else
+         elsif Is_Valid_Name (N) then
             Get_Name_String (N);
             Print_Char ('"');
             Write_Name (N);
             Print_Char ('"');
+
+         else
+            Print_Str ("<invalid name ???>");
          end if;
       end if;
    end Print_Name;
@@ -792,6 +795,13 @@ package body Treepr is
       Print_Node_Ref (N);
 
       Notes := False;
+
+      if N not in
+        Atree_Private_Part.Nodes.First .. Atree_Private_Part.Nodes.Last then
+         Print_Str (" (no such node)");
+         Print_Eol;
+         return;
+      end if;
 
       if Comes_From_Source (N) then
          Notes := True;
