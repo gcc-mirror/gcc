@@ -27,6 +27,12 @@
 with Types; use Types;
 package Sem_Ch6 is
 
+   type Conformance_Type is
+     (Type_Conformant, Mode_Conformant, Subtype_Conformant, Fully_Conformant);
+   --  Conformance type used in conformance checks between specs and bodies,
+   --  and for overriding. The literals match the RM definitions of the
+   --  corresponding terms.
+
    procedure Analyze_Abstract_Subprogram_Declaration (N : Node_Id);
    procedure Analyze_Extended_Return_Statement       (N : Node_Id);
    procedure Analyze_Function_Call                   (N : Node_Id);
@@ -39,7 +45,8 @@ package Sem_Ch6 is
 
    function Analyze_Subprogram_Specification (N : Node_Id) return Entity_Id;
    --  Analyze subprogram specification in both subprogram declarations
-   --  and body declarations. Returns the defining entity for the spec.
+   --  and body declarations. Returns the defining entity for the
+   --  specification N.
 
    procedure Cannot_Inline (Msg : String; N : Node_Id; Subp : Entity_Id);
    --  This procedure is called if the node N, an instance of a call to
@@ -55,9 +62,9 @@ package Sem_Ch6 is
    --  their respective counterparts.
 
    procedure Check_Delayed_Subprogram (Designator : Entity_Id);
-   --  Designator can be a E_Subrpgram_Type, E_Procedure or E_Function. If a
+   --  Designator can be a E_Subprogram_Type, E_Procedure or E_Function. If a
    --  type in its profile depends on a private type without a full
-   --  declaration, indicate that the subprogram is delayed.
+   --  declaration, indicate that the subprogram or type is delayed.
 
    procedure Check_Discriminant_Conformance
      (N        : Node_Id;
@@ -111,6 +118,16 @@ package Sem_Ch6 is
    --  are type conformant, post error message if not (RM 6.3.1(14)) with
    --  the flag being placed on the Err_Loc node if it is specified, and
    --  on the appropriate component of the New_Id construct if not.
+
+   function Conforming_Types
+     (T1       : Entity_Id;
+      T2       : Entity_Id;
+      Ctype    : Conformance_Type;
+      Get_Inst : Boolean := False) return Boolean;
+   --  Check that the types of two formal parameters are conforming. In most
+   --  cases this is just a name comparison, but within an instance it involves
+   --  generic actual types, and in the presence of anonymous access types
+   --  it must examine the designated types.
 
    procedure Create_Extra_Formals (E : Entity_Id);
    --  For each parameter of a subprogram or entry that requires an additional

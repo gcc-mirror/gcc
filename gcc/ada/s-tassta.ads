@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -143,6 +143,8 @@ package System.Tasking.Stages is
    --  it is not needed if priority-based scheduling is supported, since all
    --  the activated tasks synchronize on the activators lock before they
    --  start activating and so they should start activating in priority order.
+   --  ??? Actually, the body of this package DOES reverse the chain, so I
+   --  don't understand the above comment.
 
    procedure Complete_Activation;
    --  Compiler interface only. Do not call from within the RTS.
@@ -254,6 +256,22 @@ package System.Tasking.Stages is
    --  Recover all runtime system storage associated with the task T, but only
    --  if T has terminated. Do nothing in the other case. It is called from
    --  Unchecked_Deallocation, for objects that are or contain tasks.
+
+   procedure Move_Activation_Chain
+     (From, To   : Activation_Chain_Access;
+      New_Master : Master_ID);
+   --  Compiler interface only. Do not call from within the RTS.
+   --  Move all tasks on From list to To list, and change their Master_of_Task
+   --  to be New_Master. This is used to implement build-in-place function
+   --  returns. Tasks that are part of the return object are initially placed
+   --  on an activation chain local to the return statement, and their master
+   --  is the return statement, in case the return statement is left
+   --  prematurely (due to raising an exception, being aborted, or a goto or
+   --  exit statement). Once the return statement has completed successfully,
+   --  Move_Activation_Chain is called to move them to the caller's activation
+   --  chain, and change their master to the one passed in by the caller. If
+   --  that doesn't happen, they will never be activated, and will become
+   --  terminated on leaving the return statement.
 
    function Terminated (T : Task_Id) return Boolean;
    --  This is called by the compiler to implement the 'Terminated attribute.

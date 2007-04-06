@@ -168,7 +168,7 @@ package body System.Finalization_Implementation is
       Nb_Link : Short_Short_Integer)
    is
    begin
-      --  Simple case: attachement to a one way list
+      --  Simple case: attachment to a one way list
 
       if Nb_Link = 1 then
          Obj.Next := L;
@@ -176,7 +176,7 @@ package body System.Finalization_Implementation is
 
       --  Dynamically allocated objects: they are attached to a doubly linked
       --  list, so that an element can be finalized at any moment by means of
-      --  an unchecked deallocation. Attachement is protected against
+      --  an unchecked deallocation. Attachment is protected against
       --  multi-threaded access.
 
       elsif Nb_Link = 2 then
@@ -203,7 +203,7 @@ package body System.Finalization_Implementation is
                raise;
          end Locked_Processing;
 
-      --  Attachement of arrays to the final list (used only for objects
+      --  Attachment of arrays to the final list (used only for objects
       --  returned by function). Obj, in this case is the last element,
       --  but all other elements are already threaded after it. We just
       --  attach the rest of the final list at the end of the array list.
@@ -231,32 +231,6 @@ package body System.Finalization_Implementation is
    end Attach_To_Final_List;
 
    ---------------------
-   -- Deep_Tag_Adjust --
-   ---------------------
-
-   procedure Deep_Tag_Adjust
-     (L : in out SFR.Finalizable_Ptr;
-      A : System.Address;
-      B : Short_Short_Integer)
-   is
-      V          : constant SFR.Finalizable_Ptr := To_Finalizable_Ptr (A);
-      Controller : constant RC_Ptr := Get_Deep_Controller (A);
-
-   begin
-      if Controller /= null then
-         Adjust (Controller.all);
-         Attach_To_Final_List (L, Controller.all, B);
-      end if;
-
-      --  Is controlled
-
-      if V.all in Finalizable then
-         Adjust (V.all);
-         Attach_To_Final_List (L, Finalizable (V.all), 1);
-      end if;
-   end Deep_Tag_Adjust;
-
-   ---------------------
    -- Deep_Tag_Attach --
    ----------------------
 
@@ -279,74 +253,6 @@ package body System.Finalization_Implementation is
          Attach_To_Final_List (L, V.all, B);
       end if;
    end Deep_Tag_Attach;
-
-   -----------------------
-   -- Deep_Tag_Finalize --
-   -----------------------
-
-   procedure Deep_Tag_Finalize
-     (L : in out SFR.Finalizable_Ptr;
-      A : System.Address;
-      B : Boolean)
-   is
-      pragma Warnings (Off, L);
-
-      V          : constant SFR.Finalizable_Ptr := To_Finalizable_Ptr (A);
-      Controller : constant RC_Ptr := Get_Deep_Controller (A);
-
-   begin
-      if Controller /= null then
-         if B then
-            Finalize_One (Controller.all);
-         else
-            Finalize (Controller.all);
-         end if;
-      end if;
-
-      --  Is controlled
-
-      if V.all in Finalizable then
-         if B then
-            Finalize_One (V.all);
-         else
-            Finalize (V.all);
-         end if;
-      end if;
-   end Deep_Tag_Finalize;
-
-   -------------------------
-   -- Deep_Tag_Initialize --
-   -------------------------
-
-   procedure Deep_Tag_Initialize
-     (L : in out SFR.Finalizable_Ptr;
-      A :        System.Address;
-      B :        Short_Short_Integer)
-   is
-      V          : constant SFR.Finalizable_Ptr := To_Finalizable_Ptr (A);
-      Controller : constant RC_Ptr := Get_Deep_Controller (A);
-
-   begin
-      --  This procedure should not be called if the object has no
-      --  controlled components
-
-      if Controller = null then
-         raise Program_Error;
-
-      --  Has controlled components
-
-      else
-         Initialize (Controller.all);
-         Attach_To_Final_List (L, Controller.all, B);
-      end if;
-
-      --  Is controlled
-
-      if V.all in Finalizable then
-         Initialize (V.all);
-         Attach_To_Final_List (Controller.F, Finalizable (Controller.all), 1);
-      end if;
-   end Deep_Tag_Initialize;
 
    -----------------------------
    -- Detach_From_Final_List --
@@ -441,7 +347,7 @@ package body System.Finalization_Implementation is
       --  programs using controlled types heavily.
 
       if System.Restrictions.Abort_Allowed then
-         X := To_Ptr (System.Soft_Links.Get_Current_Excep.all).Id;
+         X := To_Ptr (SSL.Get_Current_Excep.all).Id;
       end if;
 
       while P /= null loop
@@ -553,6 +459,34 @@ package body System.Finalization_Implementation is
    begin
       Object.My_Address := Object'Address;
    end Initialize;
+
+   ---------------------
+   -- Move_Final_List --
+   ---------------------
+
+   procedure Move_Final_List
+     (From : in out SFR.Finalizable_Ptr;
+      To   : Finalizable_Ptr_Ptr)
+   is
+   begin
+      --  This is currently called at the end of the return statement, and the
+      --  caller does NOT defer aborts. We need to defer aborts to prevent
+      --  mangling the finalization lists.
+
+      SSL.Abort_Defer.all;
+
+      --  Put the return statement's finalization list onto the caller's one,
+      --  thus transferring responsibility for finalization of the return
+      --  object to the caller.
+
+      Attach_To_Final_List (To.all, From.all, Nb_Link => 3);
+
+      --  Empty the return statement's finalization list, so that when the
+      --  cleanup code executes, there will be nothing to finalize.
+      From := null;
+
+      SSL.Abort_Undefer.all;
+   end Move_Final_List;
 
    -------------------------
    -- Raise_From_Finalize --

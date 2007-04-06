@@ -364,10 +364,12 @@ package System.Tasking is
    ------------------------------------
 
    type Activation_Chain is limited private;
-   --  Comment required ???
+   --  Linked list of to-be-activated tasks, linked through
+   --  Activation_Link. The order of tasks on the list is irrelevant, because
+   --  the priority rules will ensure that they actually start activating in
+   --  priority order.
 
    type Activation_Chain_Access is access all Activation_Chain;
-   --  Comment required ???
 
    type Task_Procedure_Access is access procedure (Arg : System.Address);
 
@@ -651,11 +653,14 @@ package System.Tasking is
    --  Normally, a task starts out with internal master nesting level one
    --  larger than external master nesting level. It is incremented to one by
    --  Enter_Master, which is called in the task body only if the compiler
-   --  thinks the task may have dependent tasks. It is set to for the
+   --  thinks the task may have dependent tasks. It is set to 1 for the
    --  environment task, the level 2 is reserved for server tasks of the
    --  run-time system (the so called "independent tasks"), and the level 3 is
-   --  for the library level tasks.
+   --  for the library level tasks. Foreign threads which are detected by
+   --  the run-time have a level of 0, allowing these tasks to be easily
+   --  distinguished if needed.
 
+   Foreign_Task_Level     : constant Master_Level := 0;
    Environment_Task_Level : constant Master_Level := 1;
    Independent_Task_Level : constant Master_Level := 2;
    Library_Task_Level     : constant Master_Level := 3;
@@ -1062,14 +1067,14 @@ package System.Tasking is
 private
    Null_Task : constant Task_Id := null;
 
-   type Activation_Chain is record
+   type Activation_Chain is limited record
       T_ID : Task_Id;
    end record;
-   pragma Volatile (Activation_Chain);
 
-   --  Activation_chain is an in-out parameter of initialization procedures
-   --  and it must be passed by reference because the init proc may terminate
+   --  Activation_Chain is an in-out parameter of initialization procedures and
+   --  it must be passed by reference because the init proc may terminate
    --  abnormally after creating task components, and these must be properly
-   --  registered for removal (Expunge_Unactivated_Tasks).
+   --  registered for removal (Expunge_Unactivated_Tasks). The "limited" forces
+   --  Activation_Chain to be a by-reference type; see RM-6.2(4).
 
 end System.Tasking;
