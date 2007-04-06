@@ -35,8 +35,8 @@ pragma Style_Checks (All_Checks);
 --  Turn off subprogram ordering check for this package
 
 --  WARNING: There is a C version of this package. Any changes to this source
---  file must be properly reflected in the C header a-atree.h (for inlined
---  bodies) and the C file a-atree.c (for remaining non-inlined bodies).
+--  file must be properly reflected in the file atree.h which is a C header
+--  file containing equivalent definitions for use by gigi.
 
 with Debug;   use Debug;
 with Namet;   use Namet;
@@ -49,6 +49,55 @@ with Tree_IO; use Tree_IO;
 with GNAT.HTable; use GNAT.HTable;
 
 package body Atree is
+
+   ---------------
+   -- Debugging --
+   ---------------
+
+   --  Suppose you find that node 12345 is messed up. You might want to find
+   --  the code that created that node. There are two ways to do this:
+
+   --  One way is to set a conditional breakpoint on New_Node_Debugging_Output
+   --  (nickname "nnd"):
+   --     break nnd if n = 12345
+   --  and run gnat1 again from the beginning.
+
+   --  The other way is to set a breakpoint near the beginning (e.g. on
+   --  gnat1drv), and run. Then set Watch_Node (nickname "ww") to 12345 in gdb:
+   --     ww := 12345
+   --  and set a breakpoint on New_Node_Breakpoint (nickname "nn"). Continue.
+
+   --  Either way, gnat1 will stop when node 12345 is created
+
+   --  The second method is faster
+
+   ww : Node_Id'Base := Node_Id'First - 1;
+   pragma Export (Ada, ww); --  trick the optimizer
+   Watch_Node : Node_Id'Base renames ww;
+   --  Node to "watch"; that is, whenever a node is created, we check if it is
+   --  equal to Watch_Node, and if so, call New_Node_Breakpoint. You have
+   --  presumably set a breakpoint on New_Node_Breakpoint. Note that the
+   --  initial value of Node_Id'First - 1 ensures that by default, no node
+   --  will be equal to Watch_Node.
+
+   procedure nn;
+   pragma Export (Ada, nn);
+   procedure New_Node_Breakpoint renames nn;
+   --  This doesn't do anything interesting; it's just for setting breakpoint
+   --  on as explained above.
+
+   procedure nnd (N : Node_Id);
+   pragma Export (Ada, nnd);
+   procedure New_Node_Debugging_Output (N : Node_Id) renames nnd;
+   --  For debugging. If debugging is turned on, New_Node and New_Entity call
+   --  this. If debug flag N is turned on, this prints out the new node.
+   --
+   --  If Node = Watch_Node, this prints out the new node and calls
+   --  New_Node_Breakpoint. Otherwise, does nothing.
+
+   -----------------------------
+   -- Local Objects and Types --
+   -----------------------------
 
    Node_Count : Nat;
    --  Count allocated nodes for Num_Nodes function
@@ -1387,12 +1436,71 @@ package body Atree is
       is
          New_Node : Node_Id;
 
+         procedure Adjust_Named_Associations
+           (Old_Node : Node_Id;
+            New_Node : Node_Id);
+         --  If a call node has named associations, these are chained through
+         --  the First_Named_Actual, Next_Named_Actual links. These must be
+         --  propagated separately to the new parameter list, because these
+         --  are not syntactic fields.
+
          function Copy_Field_With_Replacement
            (Field : Union_Id) return Union_Id;
          --  Given Field, which is a field of Old_Node, return a copy of it
          --  if it is a syntactic field (i.e. its parent is Node), setting
          --  the parent of the copy to poit to New_Node. Otherwise returns
          --  the field (possibly mapped if it is an entity).
+
+         -------------------------------
+         -- Adjust_Named_Associations --
+         -------------------------------
+
+         procedure Adjust_Named_Associations
+           (Old_Node : Node_Id;
+            New_Node : Node_Id)
+         is
+            Old_E : Node_Id;
+            New_E : Node_Id;
+
+            Old_Next : Node_Id;
+            New_Next : Node_Id;
+
+         begin
+            Old_E := First (Parameter_Associations (Old_Node));
+            New_E := First (Parameter_Associations (New_Node));
+            while Present (Old_E) loop
+               if Nkind (Old_E) = N_Parameter_Association
+                 and then Present (Next_Named_Actual (Old_E))
+               then
+                  if First_Named_Actual (Old_Node)
+                    =  Explicit_Actual_Parameter (Old_E)
+                  then
+                     Set_First_Named_Actual
+                       (New_Node, Explicit_Actual_Parameter (New_E));
+                  end if;
+
+                  --  Now scan parameter list from the beginning,to locate
+                  --  next named actual, which can be out of order.
+
+                  Old_Next := First (Parameter_Associations (Old_Node));
+                  New_Next := First (Parameter_Associations (New_Node));
+
+                  while Nkind (Old_Next) /= N_Parameter_Association
+                    or else  Explicit_Actual_Parameter (Old_Next)
+                      /= Next_Named_Actual (Old_E)
+                  loop
+                     Next (Old_Next);
+                     Next (New_Next);
+                  end loop;
+
+                  Set_Next_Named_Actual
+                    (New_E, Explicit_Actual_Parameter (New_Next));
+               end if;
+
+               Next (Old_E);
+               Next (New_E);
+            end loop;
+         end Adjust_Named_Associations;
 
          ---------------------------------
          -- Copy_Field_With_Replacement --
@@ -1534,6 +1642,18 @@ package body Atree is
 
                Nodes.Table (New_Node).Comes_From_Source :=
                  Default_Node.Comes_From_Source;
+            end if;
+
+            --  If the node is call and has named associations,
+            --  set the corresponding links in the copy.
+
+            if (Nkind (Old_Node) = N_Function_Call
+                 or else Nkind (Old_Node) = N_Entry_Call_Statement
+                 or else
+                   Nkind (Old_Node) = N_Procedure_Call_Statement)
+              and then Present (First_Named_Actual (Old_Node))
+            then
+               Adjust_Named_Associations (Old_Node, New_Node);
             end if;
 
             --  Reset First_Real_Statement for Handled_Sequence_Of_Statements.
@@ -1935,29 +2055,6 @@ package body Atree is
    is
       Ent : Entity_Id;
 
-      procedure New_Entity_Debugging_Output;
-      pragma Inline (New_Entity_Debugging_Output);
-      --  Debugging routine for debug flag N
-
-      ---------------------------------
-      -- New_Entity_Debugging_Output --
-      ---------------------------------
-
-      procedure New_Entity_Debugging_Output is
-      begin
-         if Debug_Flag_N then
-            Write_Str ("Allocate entity, Id = ");
-            Write_Int (Int (Ent));
-            Write_Str ("  ");
-            Write_Location (New_Sloc);
-            Write_Str ("  ");
-            Write_Str (Node_Kind'Image (New_Node_Kind));
-            Write_Eol;
-         end if;
-      end New_Entity_Debugging_Output;
-
-   --  Start of processing for New_Entity
-
    begin
       pragma Assert (New_Node_Kind in N_Entity);
 
@@ -1973,7 +2070,7 @@ package body Atree is
 
       Nodes.Table (Ent).Nkind  := New_Node_Kind;
       Nodes.Table (Ent).Sloc   := New_Sloc;
-      pragma Debug (New_Entity_Debugging_Output);
+      pragma Debug (New_Node_Debugging_Output (Ent));
 
       return Ent;
    end New_Entity;
@@ -1988,35 +2085,12 @@ package body Atree is
    is
       Nod : Node_Id;
 
-      procedure New_Node_Debugging_Output;
-      pragma Inline (New_Node_Debugging_Output);
-      --  Debugging routine for debug flag N
-
-      --------------------------
-      -- New_Debugging_Output --
-      --------------------------
-
-      procedure New_Node_Debugging_Output is
-      begin
-         if Debug_Flag_N then
-            Write_Str ("Allocate node, Id = ");
-            Write_Int (Int (Nod));
-            Write_Str ("  ");
-            Write_Location (New_Sloc);
-            Write_Str ("  ");
-            Write_Str (Node_Kind'Image (New_Node_Kind));
-            Write_Eol;
-         end if;
-      end New_Node_Debugging_Output;
-
-   --  Start of processing for New_Node
-
    begin
       pragma Assert (New_Node_Kind not in N_Entity);
       Nod := Allocate_Initialize_Node (Empty, With_Extension => False);
       Nodes.Table (Nod).Nkind := New_Node_Kind;
       Nodes.Table (Nod).Sloc  := New_Sloc;
-      pragma Debug (New_Node_Debugging_Output);
+      pragma Debug (New_Node_Debugging_Output (Nod));
 
       --  If this is a node with a real location and we are generating
       --  source nodes, then reset Current_Error_Node. This is useful
@@ -2028,6 +2102,49 @@ package body Atree is
 
       return Nod;
    end New_Node;
+
+   -------------------------
+   -- New_Node_Breakpoint --
+   -------------------------
+
+   procedure nn is -- New_Node_Breakpoint
+   begin
+      Write_Str ("Watched node ");
+      Write_Int (Int (Watch_Node));
+      Write_Str (" created");
+      Write_Eol;
+   end nn;
+
+   -------------------------------
+   -- New_Node_Debugging_Output --
+   -------------------------------
+
+   procedure nnd (N : Node_Id) is -- New_Node_Debugging_Output
+      Node_Is_Watched : constant Boolean := N = Watch_Node;
+
+   begin
+      if Debug_Flag_N or else Node_Is_Watched then
+         Write_Str ("Allocate ");
+
+         if Nkind (N) in N_Entity then
+            Write_Str ("entity");
+         else
+            Write_Str ("node");
+         end if;
+
+         Write_Str (", Id = ");
+         Write_Int (Int (N));
+         Write_Str ("  ");
+         Write_Location (Sloc (N));
+         Write_Str ("  ");
+         Write_Str (Node_Kind'Image (Nkind (N)));
+         Write_Eol;
+
+         if Node_Is_Watched then
+            New_Node_Breakpoint;
+         end if;
+      end if;
+   end nnd;
 
    -----------
    -- Nkind --
@@ -2896,6 +3013,17 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          return List_Id (Nodes.Table (N + 2).Field7);
       end List14;
+
+      function Elist1 (N : Node_Id) return Elist_Id is
+         pragma Assert (N in Nodes.First .. Nodes.Last);
+         Value : constant Union_Id := Nodes.Table (N).Field1;
+      begin
+         if Value = 0 then
+            return No_Elist;
+         else
+            return Elist_Id (Value);
+         end if;
+      end Elist1;
 
       function Elist2 (N : Node_Id) return Elist_Id is
          pragma Assert (N in Nodes.First .. Nodes.Last);
@@ -4874,6 +5002,11 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          Nodes.Table (N + 2).Field7 := Union_Id (Val);
       end Set_List14;
+
+      procedure Set_Elist1 (N : Node_Id; Val : Elist_Id) is
+      begin
+         Nodes.Table (N).Field1 := Union_Id (Val);
+      end Set_Elist1;
 
       procedure Set_Elist2 (N : Node_Id; Val : Elist_Id) is
       begin
