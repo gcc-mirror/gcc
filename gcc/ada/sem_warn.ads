@@ -37,9 +37,16 @@ package Sem_Warn is
    --------------------
 
    function Set_Warning_Switch (C : Character) return Boolean;
-   --  This function sets the warning switch or switches corresponding to
-   --  the given character. It is used for processing a -gnatw switch on the
-   --  command line, or a string literal in pragma Warnings.
+   --  This function sets the warning switch or switches corresponding to the
+   --  given character. It is used to process a -gnatw switch on the command
+   --  line, or a character in a string literal in pragma Warnings. Returns
+   --  True for valid warning character C, False for invalid character.
+
+   function Set_Dot_Warning_Switch (C : Character) return Boolean;
+   --  This function sets the warning switch or switches corresponding to the
+   --  given character preceded by a dot. Used to process a -gnatw. switch on
+   --  the command line or .C in a string literal in pragma Warnings. Returns
+   --  True for valid warning character C, False for invalid character.
 
    ------------------------------------------
    -- Routines to Handle Unused References --

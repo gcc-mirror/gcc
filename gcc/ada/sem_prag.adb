@@ -35,7 +35,6 @@ with Casing;   use Casing;
 with Csets;    use Csets;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
-with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Dist; use Exp_Dist;
 with Hostparm; use Hostparm;
@@ -54,7 +53,6 @@ with Sem;      use Sem;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
-with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
 with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
@@ -512,6 +510,9 @@ package body Sem_Prag is
       --  Common processing for pragmas Atomic, Shared, Volatile. Note that
       --  Shared is an obsolete Ada 83 pragma, treated as being identical
       --  in effect to pragma Atomic.
+
+      procedure Process_Compile_Time_Warning_Or_Error;
+      --  Common processing for Compile_Time_Error and Compile_Time_Warning
 
       procedure Process_Convention (C : out Convention_Id; E : out Entity_Id);
       --  Common procesing for Convention, Interface, Import and Export.
@@ -1985,6 +1986,78 @@ package body Sem_Prag is
          end if;
       end Process_Atomic_Shared_Volatile;
 
+      -------------------------------------------
+      -- Process_Compile_Time_Warning_Or_Error --
+      -------------------------------------------
+
+      procedure Process_Compile_Time_Warning_Or_Error is
+         Arg1x : constant Node_Id := Get_Pragma_Arg (Arg1);
+
+      begin
+         GNAT_Pragma;
+         Check_Arg_Count (2);
+         Check_No_Identifiers;
+         Check_Arg_Is_Static_Expression (Arg2, Standard_String);
+         Analyze_And_Resolve (Arg1x, Standard_Boolean);
+
+         if Compile_Time_Known_Value (Arg1x) then
+            if Is_True (Expr_Value (Get_Pragma_Arg (Arg1))) then
+               declare
+                  Str   : constant String_Id :=
+                            Strval (Get_Pragma_Arg (Arg2));
+                  Len   : constant Int := String_Length (Str);
+                  Cont  : Boolean;
+                  Ptr   : Nat;
+                  CC    : Char_Code;
+                  C     : Character;
+
+               begin
+                  Cont := False;
+                  Ptr := 1;
+
+                  --  Loop through segments of message separated by line
+                  --  feeds. We output these segments as separate messages
+                  --  with continuation marks for all but the first.
+
+                  loop
+                     Error_Msg_Strlen := 0;
+
+                     --  Loop to copy characters from argument to error
+                     --  message string buffer.
+
+                     loop
+                        exit when Ptr > Len;
+                        CC := Get_String_Char (Str, Ptr);
+                        Ptr := Ptr + 1;
+
+                        --  Ignore wide chars ??? else store character
+
+                        if In_Character_Range (CC) then
+                           C := Get_Character (CC);
+                           exit when C = ASCII.LF;
+                           Error_Msg_Strlen := Error_Msg_Strlen + 1;
+                           Error_Msg_String (Error_Msg_Strlen) := C;
+                        end if;
+                     end loop;
+
+                     --  Here with one line ready to go
+
+                     Error_Msg_Warn := Prag_Id = Pragma_Compile_Time_Warning;
+
+                     if Cont = False then
+                        Error_Msg_N ("<~", Arg1);
+                        Cont := True;
+                     else
+                        Error_Msg_N ("\<~", Arg1);
+                     end if;
+
+                     exit when Ptr > Len;
+                  end loop;
+               end;
+            end if;
+         end if;
+      end Process_Compile_Time_Warning_Or_Error;
+
       ------------------------
       -- Process_Convention --
       ------------------------
@@ -2247,7 +2320,7 @@ package body Sem_Prag is
             --  Treat a pragma Import as an implicit body, for GPS use
 
             if Prag_Id = Pragma_Import then
-                  Generate_Reference (E, Id, 'b');
+               Generate_Reference (E, Id, 'b');
             end if;
 
             E1 := E;
@@ -3174,6 +3247,19 @@ package body Sem_Prag is
             Set_Imported (Def_Id);
             Set_Is_Public (Def_Id);
             Process_Interface_Name (Def_Id, Arg3, Arg4);
+
+         --  Import a CPP class
+
+         elsif Is_Record_Type (Def_Id)
+           and then C = Convention_CPP
+         then
+            if not Is_Tagged_Type (Def_Id) then
+               Error_Msg_Sloc := Sloc (Def_Id);
+               Error_Pragma_Arg ("imported 'C'P'P type must be tagged", Arg2);
+            else
+               Set_Is_CPP_Class (Def_Id);
+               Set_Is_Limited_Record (Def_Id);
+            end if;
 
          else
             Error_Pragma_Arg
@@ -5035,6 +5121,16 @@ package body Sem_Prag is
 
          --  Processing for this pragma is shared with Psect_Object
 
+         ------------------------
+         -- Compile_Time_Error --
+         ------------------------
+
+         --  pragma Compile_Time_Error
+         --    (boolean_EXPRESSION, static_string_EXPRESSION);
+
+         when Pragma_Compile_Time_Error =>
+            Process_Compile_Time_Warning_Or_Error;
+
          --------------------------
          -- Compile_Time_Warning --
          --------------------------
@@ -5042,71 +5138,8 @@ package body Sem_Prag is
          --  pragma Compile_Time_Warning
          --    (boolean_EXPRESSION, static_string_EXPRESSION);
 
-         when Pragma_Compile_Time_Warning => Compile_Time_Warning : declare
-            Arg1x : constant Node_Id := Get_Pragma_Arg (Arg1);
-
-         begin
-            GNAT_Pragma;
-            Check_Arg_Count (2);
-            Check_No_Identifiers;
-            Check_Arg_Is_Static_Expression (Arg2, Standard_String);
-            Analyze_And_Resolve (Arg1x, Standard_Boolean);
-
-            if Compile_Time_Known_Value (Arg1x) then
-               if Is_True (Expr_Value (Get_Pragma_Arg (Arg1))) then
-                  declare
-                     Str   : constant String_Id :=
-                               Strval (Get_Pragma_Arg (Arg2));
-                     Len   : constant Int := String_Length (Str);
-                     Cont  : Boolean;
-                     Ptr   : Nat;
-                     CC    : Char_Code;
-                     C     : Character;
-
-                  begin
-                     Cont := False;
-                     Ptr := 1;
-
-                     --  Loop through segments of message separated by line
-                     --  feeds. We output these segments as separate messages
-                     --  with continuation marks for all but the first.
-
-                     loop
-                        Error_Msg_Strlen := 0;
-
-                        --  Loop to copy characters from argument to error
-                        --  message string buffer.
-
-                        loop
-                           exit when Ptr > Len;
-                           CC := Get_String_Char (Str, Ptr);
-                           Ptr := Ptr + 1;
-
-                           --  Ignore wide chars ??? else store character
-
-                           if In_Character_Range (CC) then
-                              C := Get_Character (CC);
-                              exit when C = ASCII.LF;
-                              Error_Msg_Strlen := Error_Msg_Strlen + 1;
-                              Error_Msg_String (Error_Msg_Strlen) := C;
-                           end if;
-                        end loop;
-
-                        --  Here with one line ready to go
-
-                        if Cont = False then
-                           Error_Msg_N ("?~", Arg1);
-                           Cont := True;
-                        else
-                           Error_Msg_N ("\?~", Arg1);
-                        end if;
-
-                        exit when Ptr > Len;
-                     end loop;
-                  end;
-               end if;
-            end if;
-         end Compile_Time_Warning;
+         when Pragma_Compile_Time_Warning =>
+            Process_Compile_Time_Warning_Or_Error;
 
          -----------------------------
          -- Complete_Representation --
@@ -5346,14 +5379,16 @@ package body Sem_Prag is
          --  pragma CPP_Class ([Entity =>] local_NAME)
 
          when Pragma_CPP_Class => CPP_Class : declare
-            Arg         : Node_Id;
-            Typ         : Entity_Id;
-            Default_DTC : Entity_Id := Empty;
-            VTP_Type    : constant Entity_Id  := RTE (RE_Vtable_Ptr);
-            C           : Entity_Id;
-            Tag_C       : Entity_Id;
+            Arg : Node_Id;
+            Typ : Entity_Id;
 
          begin
+            if Warn_On_Obsolescent_Feature then
+               Error_Msg_N
+                 ("'G'N'A'T pragma cpp'_class is now obsolete; replace it" &
+                  " by pragma import?", N);
+            end if;
+
             GNAT_Pragma;
             Check_Arg_Count (1);
             Check_Optional_Identifier (Arg1, Name_Entity);
@@ -5374,79 +5409,22 @@ package body Sem_Prag is
 
             Typ := Entity (Arg);
 
-            if not Is_Record_Type (Typ) then
-               Error_Pragma_Arg ("pragma% applicable to a record, "
-                 & "tagged record or record extension", Arg1);
-            end if;
-
-            Default_DTC := First_Component (Typ);
-            while Present (Default_DTC)
-              and then Etype (Default_DTC) /= VTP_Type
-            loop
-               Next_Component (Default_DTC);
-            end loop;
-
-            --  Case of non tagged type
-
             if not Is_Tagged_Type (Typ) then
-               Set_Is_CPP_Class (Typ);
-
-               if Present (Default_DTC) then
-                  Error_Pragma_Arg
-                    ("only tagged records can contain vtable pointers", Arg1);
-               end if;
-
-            --  Case of tagged type with no user-defined vtable ptr. In this
-            --  case, because of our C++ ABI compatibility, the programmer
-            --  does not need to specify the tag component.
-
-            elsif Is_Tagged_Type (Typ)
-              and then No (Default_DTC)
-            then
-               Set_Is_CPP_Class (Typ);
-               Set_Is_Limited_Record (Typ);
-
-            --  Tagged type that has a vtable ptr
-
-            elsif Present (Default_DTC) then
-               Set_Is_CPP_Class (Typ);
-               Set_Is_Limited_Record (Typ);
-               Set_Is_Tag (Default_DTC);
-               Set_DT_Entry_Count (Default_DTC, No_Uint);
-
-               --  Since a CPP type has no direct link to its associated tag
-               --  most tags checks cannot be performed
-
-               Set_Kill_Tag_Checks (Typ);
-               Set_Kill_Tag_Checks (Class_Wide_Type (Typ));
-
-               --  Get rid of the _tag component when there was one.
-               --  It is only useful for regular tagged types
-
-               if Expander_Active and then Typ = Root_Type (Typ) then
-
-                  Tag_C := First_Tag_Component (Typ);
-                  C := First_Entity (Typ);
-
-                  if C = Tag_C then
-                     Set_First_Entity (Typ, Next_Entity (Tag_C));
-
-                  else
-                     while Next_Entity (C) /= Tag_C loop
-                        Next_Entity (C);
-                     end loop;
-
-                     Set_Next_Entity (C, Next_Entity (Tag_C));
-                  end if;
-               end if;
+               Error_Pragma_Arg ("pragma% applicable to tagged types ", Arg1);
             end if;
+
+            Set_Is_CPP_Class      (Typ);
+            Set_Is_Limited_Record (Typ);
+            Set_Convention        (Typ, Convention_CPP);
          end CPP_Class;
 
          ---------------------
          -- CPP_Constructor --
          ---------------------
 
-         --  pragma CPP_Constructor ([Entity =>] LOCAL_NAME);
+         --  pragma CPP_Constructor ([Entity =>] LOCAL_NAME
+         --    [, [External_Name =>] static_string_EXPRESSION ]
+         --    [, [Link_Name     =>] static_string_EXPRESSION ]);
 
          when Pragma_CPP_Constructor => CPP_Constructor : declare
             Id     : Entity_Id;
@@ -5454,7 +5432,8 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
-            Check_Arg_Count (1);
+            Check_At_Least_N_Arguments (1);
+            Check_At_Most_N_Arguments (3);
             Check_Optional_Identifier (Arg1, Name_Entity);
             Check_Arg_Is_Local_Name (Arg1);
 
@@ -5473,10 +5452,9 @@ package body Sem_Prag is
               and then Is_Class_Wide_Type (Etype (Def_Id))
               and then Is_CPP_Class (Etype (Etype (Def_Id)))
             then
-               --  What the heck is this??? this pragma allows only 1 arg
-
                if Arg_Count >= 2 then
-                  Check_At_Most_N_Arguments (3);
+                  Set_Imported (Def_Id);
+                  Set_Is_Public (Def_Id);
                   Process_Interface_Name (Def_Id, Arg2, Arg3);
                end if;
 
@@ -5499,119 +5477,12 @@ package body Sem_Prag is
          -- CPP_Virtual --
          -----------------
 
-         --  pragma CPP_Virtual
-         --      [Entity =>]       LOCAL_NAME
-         --    [ [Vtable_Ptr =>]   LOCAL_NAME,
-         --      [Position =>]     static_integer_EXPRESSION]);
-
          when Pragma_CPP_Virtual => CPP_Virtual : declare
-            Arg      : Node_Id;
-            Typ      : Entity_Id;
-            Subp     : Entity_Id;
-            VTP_Type : constant Entity_Id  := RTE (RE_Vtable_Ptr);
-            DTC      : Entity_Id;
-            V        : Uint;
-
          begin
-            GNAT_Pragma;
-            Check_Arg_Order ((Name_Entity, Name_Vtable_Ptr, Name_Position));
-
-            if Arg_Count = 3 then
-               Check_Optional_Identifier (Arg2, Name_Vtable_Ptr);
-
-               --  We allow Entry_Count as well as Position for the third
-               --  parameter for back compatibility with versions of GNAT
-               --  before version 3.12. The documentation has always said
-               --  Position, but the code up to 3.12 said Entry_Count.
-
-               if Chars (Arg3) /= Name_Entry_Count then
-                  Check_Optional_Identifier (Arg3, Name_Position);
-               end if;
-
-            else
-               Check_Arg_Count (1);
-            end if;
-
-            Check_Optional_Identifier (Arg1, Name_Entity);
-            Check_Arg_Is_Local_Name (Arg1);
-
-            --  First argument must be a subprogram name
-
-            Arg := Expression (Arg1);
-            Find_Program_Unit_Name (Arg);
-
-            if Etype (Arg) = Any_Type then
-               return;
-            else
-               Subp := Entity (Arg);
-            end if;
-
-            if not (Is_Subprogram (Subp)
-                     and then Is_Dispatching_Operation (Subp))
-            then
-               Error_Pragma_Arg
-                 ("pragma% must reference a primitive operation", Arg1);
-            end if;
-
-            Typ := Find_Dispatching_Type (Subp);
-
-            --  If only one Argument defaults are :
-            --    . DTC_Entity is the default Vtable pointer
-            --    . DT_Position will be set at the freezing point
-
-            if Arg_Count = 1 then
-               Set_DTC_Entity (Subp, First_Tag_Component (Typ));
-               return;
-            end if;
-
-            --  Second argument is a component name of type Vtable_Ptr
-
-            Arg := Expression (Arg2);
-
-            if Nkind (Arg) /= N_Identifier then
-               Error_Msg_NE ("must be a& component name", Arg, Typ);
-               raise Pragma_Exit;
-            end if;
-
-            DTC := First_Component (Typ);
-            while Present (DTC) and then Chars (DTC) /= Chars (Arg) loop
-               Next_Component (DTC);
-            end loop;
-
-            --  Case of tagged type with no user-defined vtable ptr
-
-            if No (DTC) then
-               Error_Msg_NE ("must be a& component name", Arg, Typ);
-               raise Pragma_Exit;
-
-            elsif Etype (DTC) /= VTP_Type then
-               Wrong_Type (Arg, VTP_Type);
-               return;
-            end if;
-
-            --  Third argument is an integer (DT_Position)
-
-            Arg := Expression (Arg3);
-            Analyze_And_Resolve (Arg, Any_Integer);
-
-            if not Is_Static_Expression (Arg) then
-               Flag_Non_Static_Expr
-                 ("third argument of pragma CPP_Virtual must be static!",
-                  Arg3);
-               raise Pragma_Exit;
-
-            else
-               V := Expr_Value (Expression (Arg3));
-
-               if V <= 0 then
-                  Error_Pragma_Arg
-                    ("third argument of pragma% must be positive",
-                     Arg3);
-
-               else
-                  Set_DTC_Entity (Subp, DTC);
-                  Set_DT_Position (Subp, V);
-               end if;
+            if Warn_On_Obsolescent_Feature then
+               Error_Msg_N
+                 ("'G'N'A'T pragma cpp'_virtual is now obsolete and has " &
+                  "no effect?", N);
             end if;
          end CPP_Virtual;
 
@@ -5619,110 +5490,12 @@ package body Sem_Prag is
          -- CPP_Vtable --
          ----------------
 
-         --  pragma CPP_Vtable (
-         --    [Entity =>]       LOCAL_NAME
-         --    [Vtable_Ptr =>]   LOCAL_NAME,
-         --    [Entry_Count =>]  static_integer_EXPRESSION);
-
          when Pragma_CPP_Vtable => CPP_Vtable : declare
-            Arg      : Node_Id;
-            Typ      : Entity_Id;
-            VTP_Type : constant Entity_Id  := RTE (RE_Vtable_Ptr);
-            DTC      : Entity_Id;
-            V        : Uint;
-            Elmt     : Elmt_Id;
-
          begin
-            GNAT_Pragma;
-            Check_Arg_Order ((Name_Entity, Name_Vtable_Ptr, Name_Entry_Count));
-            Check_Arg_Count (3);
-            Check_Optional_Identifier (Arg1, Name_Entity);
-            Check_Optional_Identifier (Arg2, Name_Vtable_Ptr);
-            Check_Optional_Identifier (Arg3, Name_Entry_Count);
-            Check_Arg_Is_Local_Name (Arg1);
-
-            --  First argument is a record type name
-
-            Arg := Expression (Arg1);
-            Analyze (Arg);
-
-            if Etype (Arg) = Any_Type then
-               return;
-            else
-               Typ := Entity (Arg);
-            end if;
-
-            if not (Is_Tagged_Type (Typ) and then Is_CPP_Class (Typ)) then
-               Error_Pragma_Arg ("'C'P'P_Class tagged type expected", Arg1);
-            end if;
-
-            --  Second argument is a component name of type Vtable_Ptr
-
-            Arg := Expression (Arg2);
-
-            if Nkind (Arg) /= N_Identifier then
-               Error_Msg_NE ("must be a& component name", Arg, Typ);
-               raise Pragma_Exit;
-            end if;
-
-            DTC := First_Component (Typ);
-            while Present (DTC) and then Chars (DTC) /= Chars (Arg) loop
-               Next_Component (DTC);
-            end loop;
-
-            if No (DTC) then
-               Error_Msg_NE ("must be a& component name", Arg, Typ);
-               raise Pragma_Exit;
-
-            elsif Etype (DTC) /= VTP_Type then
-               Wrong_Type (DTC, VTP_Type);
-               return;
-
-            --  If it is the first pragma Vtable, This becomes the default tag
-
-            elsif (not Is_Tag (DTC))
-              and then DT_Entry_Count (First_Tag_Component (Typ)) = No_Uint
-            then
-               Set_Is_Tag (First_Tag_Component (Typ), False);
-               Set_Is_Tag (DTC, True);
-               Set_DT_Entry_Count (DTC, No_Uint);
-            end if;
-
-            --  Those pragmas must appear before any primitive operation
-            --  definition (except inherited ones) otherwise the default
-            --  may be wrong
-
-            Elmt := First_Elmt (Primitive_Operations (Typ));
-            while Present (Elmt) loop
-               if No (Alias (Node (Elmt))) then
-                  Error_Msg_Sloc := Sloc (Node (Elmt));
-                  Error_Pragma
-                    ("pragma% must appear before this primitive operation");
-               end if;
-
-               Next_Elmt (Elmt);
-            end loop;
-
-            --  Third argument is an integer (DT_Entry_Count)
-
-            Arg := Expression (Arg3);
-            Analyze_And_Resolve (Arg, Any_Integer);
-
-            if not Is_Static_Expression (Arg) then
-               Flag_Non_Static_Expr
-                 ("entry count for pragma CPP_Vtable must be a static " &
-                  "expression!", Arg3);
-               raise Pragma_Exit;
-
-            else
-               V := Expr_Value (Expression (Arg3));
-
-               if V <= 0 then
-                  Error_Pragma_Arg
-                    ("entry count for pragma% must be positive", Arg3);
-               else
-                  Set_DT_Entry_Count (DTC, V);
-               end if;
+            if Warn_On_Obsolescent_Feature then
+               Error_Msg_N
+                 ("'G'N'A'T pragma cpp'_vtable is now obsolete and has " &
+                  "no effect?", N);
             end if;
          end CPP_Vtable;
 
@@ -6560,13 +6333,9 @@ package body Sem_Prag is
 
             if Chars (Expression (Arg1)) = Name_On then
                Extensions_Allowed := True;
-               Ada_Version := Ada_Version_Type'Last;
             else
                Extensions_Allowed := False;
-               Ada_Version := Ada_Version_Type'Min (Ada_Version, Ada_95);
             end if;
-
-            Ada_Version_Explicit := Ada_Version;
 
          --------------
          -- External --
@@ -7674,7 +7443,7 @@ package body Sem_Prag is
             --  java.lang.Object.Typ and that all primitives of the type
             --  should be declared abstract. ???
 
-            if not Is_Tagged_Type (Typ) or else not Is_Abstract (Typ) then
+            if not Is_Tagged_Type (Typ) or else not Is_Abstract_Type (Typ) then
                Error_Pragma_Arg ("pragma% requires an abstract "
                  & "tagged type", Arg1);
 
@@ -8927,7 +8696,19 @@ package body Sem_Prag is
                end if;
 
                Set_Main_Priority
-                 (Current_Sem_Unit, UI_To_Int (Expr_Value (Arg)));
+                    (Current_Sem_Unit, UI_To_Int (Expr_Value (Arg)));
+
+               --  Load an arbitrary entity from System.Tasking to make sure
+               --  this package is implicitly with'ed, since we need to have
+               --  the tasking run-time active for the pragma Priority to have
+               --  any effect.
+
+               declare
+                  Discard : Entity_Id;
+                  pragma Warnings (Off, Discard);
+               begin
+                  Discard := RTE (RE_Task_List);
+               end;
 
             --  Task or Protected, must be of type Integer
 
@@ -10586,7 +10367,7 @@ package body Sem_Prag is
                Get_Name_String (Chars (Cunitent));
                Set_Casing (Mixed_Case);
                Write_Str (Name_Buffer (1 .. Name_Len));
-               Write_Str (" is not implemented");
+               Write_Str (" is not supported in this configuration");
                Write_Eol;
                raise Unrecoverable_Error;
             end if;
@@ -10708,6 +10489,38 @@ package body Sem_Prag is
                end loop;
             end if;
          end Unreferenced;
+
+         --------------------------
+         -- Unreferenced_Objects --
+         --------------------------
+
+         --  pragma Unreferenced_Objects (local_Name {, local_Name});
+
+         when Pragma_Unreferenced_Objects => Unreferenced_Objects : declare
+            Arg_Node : Node_Id;
+            Arg_Expr : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (1);
+
+            Arg_Node := Arg1;
+            while Present (Arg_Node) loop
+               Check_No_Identifier (Arg_Node);
+               Check_Arg_Is_Local_Name (Arg_Node);
+               Arg_Expr := Get_Pragma_Arg (Arg_Node);
+
+               if not Is_Entity_Name (Arg_Expr)
+                 or else not Is_Type (Entity (Arg_Expr))
+               then
+                  Error_Pragma_Arg
+                    ("argument for pragma% must be type or subtype", Arg_Node);
+               end if;
+
+               Set_Has_Pragma_Unreferenced_Objects (Entity (Arg_Expr));
+               Next (Arg_Node);
+            end loop;
+         end Unreferenced_Objects;
 
          ------------------------------
          -- Unreserve_All_Interrupts --
@@ -10862,20 +10675,48 @@ package body Sem_Prag is
                      declare
                         Lit : constant Node_Id   := Expr_Value_S (Argx);
                         Str : constant String_Id := Strval (Lit);
+                        Len : constant Nat       := String_Length (Str);
                         C   : Char_Code;
+                        J   : Nat;
+                        OK  : Boolean;
+                        Chr : Character;
 
                      begin
-                        for J in 1 .. String_Length (Str) loop
+                        J := 1;
+                        while J <= Len loop
                            C := Get_String_Char (Str, J);
+                           OK := In_Character_Range (C);
 
-                           if In_Character_Range (C)
-                             and then Set_Warning_Switch (Get_Character (C))
-                           then
-                              null;
-                           else
-                              Error_Pragma_Arg
-                                ("invalid warning switch character", Arg1);
+                           if OK then
+                              Chr := Get_Character (C);
+
+                              --  Dot case
+
+                              if J < Len and then Chr = '.' then
+                                 J := J + 1;
+                                 C := Get_String_Char (Str, J);
+                                 Chr := Get_Character (C);
+
+                                 if not Set_Dot_Warning_Switch (Chr) then
+                                    Error_Pragma_Arg
+                                      ("invalid warning switch character " &
+                                       '.' & Chr, Arg1);
+                                 end if;
+
+                              --  Non-Dot case
+
+                              else
+                                 OK := Set_Warning_Switch (Chr);
+                              end if;
                            end if;
+
+                           if not OK then
+                              Error_Pragma_Arg
+                                ("invalid warning switch character " & Chr,
+                                 Arg1);
+                           end if;
+
+                           J := J + 1;
                         end loop;
                      end;
                   end if;
@@ -10953,7 +10794,7 @@ package body Sem_Prag is
                         if Is_Configuration_Pragma then
                            if Chars (Argx) = Name_On then
                               Error_Pragma
-                                ("pragma Warnings (Off, string) cannot be " &
+                                ("pragma Warnings (On, string) cannot be " &
                                  "used as configuration pragma");
 
                            else
@@ -11178,6 +11019,7 @@ package body Sem_Prag is
       Pragma_C_Pass_By_Copy                =>  0,
       Pragma_Comment                       =>  0,
       Pragma_Common_Object                 => -1,
+      Pragma_Compile_Time_Error            => -1,
       Pragma_Compile_Time_Warning          => -1,
       Pragma_Complete_Representation       =>  0,
       Pragma_Complex_Representation        =>  0,
@@ -11302,6 +11144,7 @@ package body Sem_Prag is
       Pragma_Unimplemented_Unit            => -1,
       Pragma_Universal_Data                => -1,
       Pragma_Unreferenced                  => -1,
+      Pragma_Unreferenced_Objects          => -1,
       Pragma_Unreserve_All_Interrupts      => -1,
       Pragma_Unsuppress                    =>  0,
       Pragma_Use_VADS_Size                 => -1,
