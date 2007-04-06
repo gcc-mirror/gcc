@@ -30,6 +30,7 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
+with Exp_Atag; use Exp_Atag;
 with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
@@ -46,6 +47,8 @@ with Inline;   use Inline;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Cat;  use Sem_Cat;
@@ -481,37 +484,47 @@ package body Exp_Ch4 is
          --  type, generate an accessibility check to verify that the level of
          --  the type of the created object is not deeper than the level of the
          --  access type. If the type of the qualified expression is class-
-         --  wide, then always generate the check. Otherwise, only generate the
-         --  check if the level of the qualified expression type is statically
-         --  deeper than the access type. Although the static accessibility
-         --  will generally have been performed as a legality check, it won't
-         --  have been done in cases where the allocator appears in generic
-         --  body, so a run-time check is needed in general.
+         --  wide, then always generate the check (except in the case where it
+         --  is known to be unnecessary, see comment below). Otherwise, only
+         --  generate the check if the level of the qualified expression type
+         --  is statically deeper than the access type. Although the static
+         --  accessibility will generally have been performed as a legality
+         --  check, it won't have been done in cases where the allocator
+         --  appears in generic body, so a run-time check is needed in general.
+         --  One special case is when the access type is declared in the same
+         --  scope as the class-wide allocator, in which case the check can
+         --  never fail, so it need not be generated. As an open issue, there
+         --  seem to be cases where the static level associated with the
+         --  class-wide object's underlying type is not sufficient to perform
+         --  the proper accessibility check, such as for allocators in nested
+         --  subprograms or accept statements initialized by class-wide formals
+         --  when the actual originates outside at a deeper static level. The
+         --  nested subprogram case might require passing accessibility levels
+         --  along with class-wide parameters, and the task case seems to be
+         --  an actual gap in the language rules that needs to be fixed by the
+         --  ARG. ???
 
          if Ada_Version >= Ada_05
            and then Is_Class_Wide_Type (DesigT)
            and then not Scope_Suppress (Accessibility_Check)
            and then
-             (Is_Class_Wide_Type (Etype (Exp))
-                or else
-              Type_Access_Level (Etype (Exp)) > Type_Access_Level (PtrT))
+             (Type_Access_Level (Etype (Exp)) > Type_Access_Level (PtrT)
+               or else
+                 (Is_Class_Wide_Type (Etype (Exp))
+                   and then Scope (PtrT) /= Current_Scope))
          then
             Insert_Action (N,
                Make_Raise_Program_Error (Loc,
                  Condition =>
                    Make_Op_Gt (Loc,
                      Left_Opnd  =>
-                       Make_Function_Call (Loc,
-                         Name =>
-                           New_Reference_To (RTE (RE_Get_Access_Level), Loc),
-                         Parameter_Associations =>
-                           New_List (Make_Attribute_Reference (Loc,
-                                       Prefix         =>
-                                          New_Reference_To (Temp, Loc),
-                                       Attribute_Name =>
-                                          Name_Tag))),
+                       Build_Get_Access_Level (Loc,
+                         Make_Attribute_Reference (Loc,
+                           Prefix => New_Reference_To (Temp, Loc),
+                           Attribute_Name => Name_Tag)),
                      Right_Opnd =>
-                       Make_Integer_Literal (Loc, Type_Access_Level (PtrT))),
+                       Make_Integer_Literal (Loc,
+                         Type_Access_Level (PtrT))),
                  Reason => PE_Accessibility_Check_Failed));
          end if;
 
@@ -2489,6 +2502,72 @@ package body Exp_Ch4 is
       Temp  : Entity_Id;
       Node  : Node_Id;
 
+      function Is_Local_Access_Discriminant (N : Node_Id) return Boolean;
+      --  If the allocator is for an access discriminant of a stack-allocated
+      --  object, the discriminant can be allocated locally as well, to ensure
+      --  that its lifetime does not exceed that of the enclosing object.
+      --  This is an optimization mandated / suggested by Ada 2005 AI-162.
+
+      ----------------------------------
+      -- Is_Local_Access_Discriminant --
+      ----------------------------------
+
+      function Is_Local_Access_Discriminant (N : Node_Id) return Boolean is
+         Decl : Node_Id;
+         Temp : Entity_Id;
+
+      begin
+         if Nkind (Parent (N)) = N_Index_Or_Discriminant_Constraint
+           and then not Is_Coextension (N)
+           and then not Is_Record_Type (Current_Scope)
+         then
+            Temp :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_Internal_Name ('T'));
+
+            Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Temp,
+                Aliased_Present     => True,
+                Object_Definition   => New_Occurrence_Of (Etyp, Loc));
+
+            if Nkind (Expression (N)) = N_Qualified_Expression then
+               Set_Expression (Decl, Expression (Expression (N)));
+            end if;
+
+            declare
+               Nod : Node_Id;
+
+            begin
+               Nod := Parent (N);
+               while Present (Nod) loop
+                  exit when
+                      Nkind (Nod) in N_Statement_Other_Than_Procedure_Call
+                    or else Nkind (Nod) = N_Procedure_Call_Statement
+                    or else Nkind (Nod) in N_Declaration;
+                  Nod := Parent (Nod);
+               end loop;
+
+               Insert_Before (Nod, Decl);
+               Analyze (Decl);
+            end;
+
+            Rewrite (N,
+              Make_Attribute_Reference (Loc,
+                Prefix => New_Occurrence_Of (Temp, Loc),
+                Attribute_Name => Name_Unrestricted_Access));
+
+            Analyze_And_Resolve (N, PtrT);
+
+            return True;
+
+         else
+            return False;
+         end if;
+      end Is_Local_Access_Discriminant;
+
+   --  Start of processing for Expand_N_Allocator
+
    begin
       --  RM E.2.3(22). We enforce that the expected type of an allocator
       --  shall not be a remote access-to-class-wide-limited-private type
@@ -2578,6 +2657,14 @@ package body Exp_Ch4 is
          --  want it going on the stack of the current procedure!
 
          Set_Is_Statically_Allocated (Temp);
+         return;
+      end if;
+
+      --  Same if the allocator is an access discriminant for a local object:
+      --  instead of an allocator we create a local value and constrain the
+      --  the enclosing object with the corresponding access attribute.
+
+      if Is_Local_Access_Discriminant (N) then
          return;
       end if;
 
@@ -2721,6 +2808,7 @@ package body Exp_Ch4 is
                      --  The designated type was an incomplete type, and the
                      --  access type did not get expanded. Salvage it now.
 
+                     pragma Assert (Present (Parent (Base_Type (PtrT))));
                      Expand_N_Full_Type_Declaration
                        (Parent (Base_Type (PtrT)));
                   end if;
@@ -2895,11 +2983,26 @@ package body Exp_Ch4 is
 
                if Controlled_Type (T) then
                   Flist := Get_Allocator_Final_List (N, Base_Type (T), PtrT);
-                  if Ekind (PtrT) = E_Anonymous_Access_Type then
+
+                  --  Anonymous access types created for access parameters
+                  --  are attached to an explicitly constructed controller,
+                  --  which ensures that they can be finalized properly, even
+                  --  if their deallocation might not happen. The list
+                  --  associated with the controller is doubly-linked. For
+                  --  other anonymous access types, the object may end up
+                  --  on the global final list which is singly-linked.
+                  --  Work needed for access discriminants in Ada 2005 ???
+
+                  if Ekind (PtrT) = E_Anonymous_Access_Type
+                      and then
+                        Nkind (Associated_Node_For_Itype (PtrT))
+                          not in N_Subprogram_Specification
+                  then
                      Attach_Level := Uint_1;
                   else
                      Attach_Level := Uint_2;
                   end if;
+
                   Insert_Actions (N,
                     Make_Init_Call (
                       Ref          => New_Copy_Tree (Arg1),
@@ -4570,6 +4673,14 @@ package body Exp_Ch4 is
          --  For tagged types, use the primitive "="
 
          if Is_Tagged_Type (Typl) then
+
+            --  No need to do anything else compiling under restriction
+            --  No_Dispatching_Calls. During the semantic analysis we
+            --  already notified such violation.
+
+            if Restriction_Active (No_Dispatching_Calls) then
+               return;
+            end if;
 
             --  If this is derived from an untagged private type completed
             --  with a tagged type, it does not have a full view, so we
@@ -6420,6 +6531,18 @@ package body Exp_Ch4 is
         and then (not Is_Entity_Name (Pfx)
                    or else not Index_Checks_Suppressed (Entity (Pfx)))
         and then Nkind (Discrete_Range (N)) /= N_Subtype_Indication
+
+         --  Do not enable range check to nodes associated with the frontend
+         --  expansion of the dispatch table. We first check if Ada.Tags is
+         --  already loaded to avoid the addition of an undesired dependence
+         --  on such run-time unit.
+
+        and then not
+          (RTU_Loaded (Ada_Tags)
+            and then Nkind (Prefix (N)) = N_Selected_Component
+            and then Present (Entity (Selector_Name (Prefix (N))))
+            and then Entity (Selector_Name (Prefix (N))) =
+                                         RTE_Record_Component (RE_Prims_Ptr))
       then
          Enable_Range_Check (Discrete_Range (N));
       end if;
@@ -6431,7 +6554,7 @@ package body Exp_Ch4 is
       --       situation correctly in the assignment statement expansion).
 
       --    2. Prefix of indexed component (the slide is optimized away
-      --       in this case, see the start of Expand_N_Slice.
+      --       in this case, see the start of Expand_N_Slice.)
 
       --    3. Object renaming declaration, since we want the name of
       --       the slice, not the value.
@@ -6906,7 +7029,7 @@ package body Exp_Ch4 is
             return;
          end if;
 
-         --  Oherwise, proceed with processing tagged conversion
+         --  Otherwise, proceed with processing tagged conversion
 
          declare
             Actual_Operand_Type : Entity_Id;
@@ -7072,32 +7195,16 @@ package body Exp_Ch4 is
             or else
           (Is_Fixed_Point_Type (Target_Type) and then Conversion_OK (N)))
       then
-         --  Special processing required if the conversion is the expression
-         --  of a Truncation attribute reference. In this case we replace:
-
-         --     ityp (ftyp'Truncation (x))
-
-         --  by
-
-         --     ityp (x)
-
-         --  with the Float_Truncate flag set. This is clearly more efficient
-
-         if Nkind (Operand) = N_Attribute_Reference
-           and then Attribute_Name (Operand) = Name_Truncation
-         then
-            Rewrite (Operand,
-              Relocate_Node (First (Expressions (Operand))));
-            Set_Float_Truncate (N, True);
-         end if;
-
          --  One more check here, gcc is still not able to do conversions of
          --  this type with proper overflow checking, and so gigi is doing an
          --  approximation of what is required by doing floating-point compares
          --  with the end-point. But that can lose precision in some cases, and
          --  give a wrong result. Converting the operand to Universal_Real is
          --  helpful, but still does not catch all cases with 64-bit integers
-         --  on targets with only 64-bit floats ???
+         --  on targets with only 64-bit floats
+
+         --  The above comment seems obsoleted by Apply_Float_Conversion_Check
+         --  Can this code be removed ???
 
          if Do_Range_Check (Operand) then
             Rewrite (Operand,
@@ -8358,6 +8465,11 @@ package body Exp_Ch4 is
    --  is usually implemented by looking in the ancestor tables contained in
    --  the dispatch table pointed by Left_Expr.Tag for Typ'Tag
 
+   --  Ada 2005 (AI-251): If it is a class-wide interface type we use the RT
+   --  function IW_Membership which is usually implemented by looking in the
+   --  table of abstract interface types plus the ancestor table contained in
+   --  the dispatch table pointed by Left_Expr.Tag for Typ'Tag
+
    function Tagged_Membership (N : Node_Id) return Node_Id is
       Left  : constant Node_Id    := Left_Opnd  (N);
       Right : constant Node_Id    := Right_Opnd (N);
@@ -8383,11 +8495,44 @@ package body Exp_Ch4 is
 
       if Is_Class_Wide_Type (Right_Type) then
 
+         --  No need to issue a run-time check if we statically know that the
+         --  result of this membership test is always true. For example,
+         --  considering the following declarations:
+
+         --    type Iface is interface;
+         --    type T     is tagged null record;
+         --    type DT    is new T and Iface with null record;
+
+         --    Obj1 : T;
+         --    Obj2 : DT;
+
+         --  These membership tests are always true:
+
+         --    Obj1 in T'Class
+         --    Obj2 in T'Class;
+         --    Obj2 in Iface'Class;
+
+         --  We do not need to handle cases where the membership is illegal.
+         --  For example:
+
+         --    Obj1 in DT'Class;     --  Compile time error
+         --    Obj1 in Iface'Class;  --  Compile time error
+
+         if not Is_Class_Wide_Type (Left_Type)
+           and then (Is_Parent (Etype (Right_Type), Left_Type)
+                       or else (Is_Interface (Etype (Right_Type))
+                                 and then Interface_Present_In_Ancestor
+                                           (Typ   => Left_Type,
+                                            Iface => Etype (Right_Type))))
+         then
+            return New_Reference_To (Standard_True, Loc);
+         end if;
+
          --  Ada 2005 (AI-251): Class-wide applied to interfaces
 
          if Is_Interface (Etype (Class_Wide_Type (Right_Type)))
 
-            --   Give support to: "Iface_CW_Typ in Typ'Class"
+            --   Support to: "Iface_CW_Typ in Typ'Class"
 
            or else Is_Interface (Left_Type)
          then
@@ -8415,23 +8560,31 @@ package body Exp_Ch4 is
 
          else
             return
-              Make_Function_Call (Loc,
-                 Name => New_Occurrence_Of (RTE (RE_CW_Membership), Loc),
-                 Parameter_Associations => New_List (
-                   Obj_Tag,
+              Build_CW_Membership (Loc,
+                Obj_Tag_Node => Obj_Tag,
+                Typ_Tag_Node =>
                    New_Reference_To (
                      Node (First_Elmt
                             (Access_Disp_Table (Root_Type (Right_Type)))),
-                     Loc)));
+                     Loc));
          end if;
 
+      --  Right_Type is not a class-wide type
+
       else
-         return
-           Make_Op_Eq (Loc,
-             Left_Opnd  => Obj_Tag,
-             Right_Opnd =>
-               New_Reference_To
-                 (Node (First_Elmt (Access_Disp_Table (Right_Type))), Loc));
+         --  No need to check the tag of the object if Right_Typ is abstract
+
+         if Is_Abstract_Type (Right_Type) then
+            return New_Reference_To (Standard_False, Loc);
+
+         else
+            return
+              Make_Op_Eq (Loc,
+                Left_Opnd  => Obj_Tag,
+                Right_Opnd =>
+                  New_Reference_To
+                    (Node (First_Elmt (Access_Disp_Table (Right_Type))), Loc));
+         end if;
       end if;
    end Tagged_Membership;
 
