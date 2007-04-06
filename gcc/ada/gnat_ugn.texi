@@ -2920,6 +2920,12 @@ gnatlink unit2.ali main.o -o exec_file
 This procedure yields a binary executable called @file{exec_file}.
 @end enumerate
 
+@noindent
+Depending on the circumstances (for example when your non-Ada main object
+does not provide symbol @code{main}), you may also need to instruct the
+GNAT linker not to include the standard startup objects by passing the
+@option{^-nostartfiles^/NOSTART_FILES^} switch to @command{gnatlink}.
+
 @node Calling Conventions
 @subsection Calling Conventions
 @cindex Foreign Languages
@@ -3028,7 +3034,7 @@ Equivalent to C.
 @findex C++
 @cindex Interfacing to C++
 @cindex Convention C++
-@item CPP
+@item C_Plus_Plus (or CPP)
 This stands for C++. For most purposes this is identical to C.
 See the separate description of the specialized GNAT pragmas relating to
 C++ interfacing for further details.
@@ -3147,24 +3153,24 @@ with a new C++ compiler.
 * Interfacing to C++::
 * Linking a Mixed C++ & Ada Program::
 * A Simple Example::
-* Adapting the Run Time to a New C++ Compiler::
+* Interfacing with C++ at the Class Level::
 @end menu
 
 @node Interfacing to C++
 @subsection Interfacing to C++
 
 @noindent
-GNAT supports interfacing with C++ compilers generating code that is
-compatible with the standard Application Binary Interface of the given
-platform.
+GNAT supports interfacing with the G++ compiler (or any C++ compiler
+generating code that is compatible with the G++ Application Binary
+Interface ---see http://www.codesourcery.com/archives/cxx-abi).
 
 @noindent
 Interfacing can be done at 3 levels: simple data, subprograms, and
 classes. In the first two cases, GNAT offers a specific @var{Convention
-CPP} that behaves exactly like @var{Convention C}. Usually, C++ mangles
-the names of subprograms, and currently, GNAT does not provide any help
-to solve the demangling problem. This problem can be addressed in two
-ways:
+C_Plus_Plus} (or @var{CPP}) that behaves exactly like @var{Convention C}.
+Usually, C++ mangles the names of subprograms, and currently, GNAT does
+not provide any help to solve the demangling problem. This problem can be
+addressed in two ways:
 @itemize @bullet
 @item
 by modifying the C++ code in order to force a C convention using
@@ -3177,8 +3183,8 @@ the pragma import.
 
 @noindent
 Interfacing at the class level can be achieved by using the GNAT specific
-pragmas such as @code{CPP_Class} and @code{CPP_Virtual}. See the GNAT
-Reference Manual for additional information.
+pragmas such as @code{CPP_Constructor}. See the GNAT Reference Manual for
+additional information.
 
 @node Linking a Mixed C++ & Ada Program
 @subsection Linking a Mixed C++ & Ada Program
@@ -3377,9 +3383,11 @@ A::A(void)
 
 @b{end} Simple_Cpp_Interface;
 
+@b{with} System;
 @b{package} Simple_Cpp_Interface @b{is}
    @b{type} A @b{is} @b{limited}
       @b{record}
+         Vptr    : System.Address;
          O_Value : Integer;
          A_Value : Integer;
       @b{end} @b{record};
@@ -3394,22 +3402,240 @@ A::A(void)
 @b{end} Simple_Cpp_Interface;
 @end smallexample
 
-@node Adapting the Run Time to a New C++ Compiler
-@subsection Adapting the Run Time to a New C++ Compiler
+@node Interfacing with C++ at the Class Level
+@subsection Interfacing with C++ at the Class Level
 @noindent
-GNAT offers the capability to derive Ada 95 tagged types directly from
-preexisting C++ classes and . See ``Interfacing with C++'' in the
-@cite{GNAT Reference Manual}. The mechanism used by GNAT for achieving
-such a goal
-has been made user configurable through a GNAT library unit
-@code{Interfaces.CPP}. The default version of this file is adapted to
-the GNU C++ compiler. Internal knowledge of the virtual
-table layout used by the new C++ compiler is needed to configure
-properly this unit. The Interface of this unit is known by the compiler
-and cannot be changed except for the value of the constants defining the
-characteristics of the virtual table: CPP_DT_Prologue_Size, CPP_DT_Entry_Size,
-CPP_TSD_Prologue_Size, CPP_TSD_Entry_Size. Read comments in the source
-of this unit for more details.
+In this section we demonstrate the GNAT features for interfacing with
+C++ by means of an example making use of Ada 2005 abstract interface
+types. This example consists of a classification of animals; classes
+have been used to model our main classification of animals, and
+interfaces provide support for the management of secondary
+classifications. We first demonstrate a case in which the types and
+constructors are defined on the C++ side and imported from the Ada
+side, and latter the reverse case.
+
+The root of our derivation will be the @code{Animal} class, with a
+single private attribute (the @code{Age} of the animal) and two public
+primitives to set and get the value of this attribute.
+
+@smallexample
+@b{class} Animal @{
+ @b{public}:
+   @b{virtual} void Set_Age (int New_Age);
+   @b{virtual} int Age ();
+ @b{private}:
+   int Age_Count;
+@};
+@end smallexample
+
+Abstract interface types are defined in C++ by means of classes with pure
+virtual functions and no data members. In our example we will use two
+interfaces that provide support for the common management of @code{Carnivore}
+and @code{Domestic} animals:
+
+@smallexample
+@b{class} Carnivore @{
+@b{public}:
+   @b{virtual} int Number_Of_Teeth () = 0;
+@};
+
+@b{class} Domestic @{
+@b{public}:
+   @b{virtual void} Set_Owner (char* Name) = 0;
+@};
+@end smallexample
+
+Using these declarations, we can now say that a @code{Dog} is an animal that is
+both Carnivore and Domestic, that is:
+
+@smallexample
+@b{class} Dog : Animal, Carnivore, Domestic @{
+ @b{public}:
+   @b{virtual} int  Number_Of_Teeth ();
+   @b{virtual} void Set_Owner (char* Name);
+
+   Dog(); // Constructor
+ @b{private}:
+   int  Tooth_Count;
+   char *Owner;
+@};
+@end smallexample
+
+In the following examples we will assume that the previous declarations are
+located in a file named @code{animals.h}. The following package demonstrates
+how to import these C++ declarations from the Ada side:
+
+@smallexample
+@b{with} Interfaces.C.Strings; @b{use} Interfaces.C.Strings;
+@b{package} Animals @b{is}
+  @b{type} Carnivore @b{is interface};
+  @b{pragma} Convention (C_Plus_Plus, Carnivore);
+  @b{function} Number_Of_Teeth (X : Carnivore)
+     @b{return} Natural @b{is abstract};
+
+  @b{type} Domestic @b{is interface};
+  @b{pragma} Convention (C_Plus_Plus, Set_Owner);
+  @b{procedure} Set_Owner
+    (X    : @b{in out} Domestic;
+     Name : Chars_Ptr) @b{is abstract};
+
+  @b{type} Animal @b{is tagged record}
+    Age : Natural := 0;
+  @b{end record};
+  @b{pragma} Import (C_Plus_Plus, Animal);
+
+  @b{procedure} Set_Age (X : @b{in out} Animal; Age : Integer);
+  @b{pragma} Import (C_Plus_Plus, Set_Age);
+
+  @b{function} Age (X : Animal) @b{return} Integer;
+  @b{pragma} Import (C_Plus_Plus, Age);
+
+  @b{type} Dog @b{is new} Animal @b{and} Carnivore @b{and} Domestic @b{with record}
+    Tooth_Count : Natural;
+    Owner       : String (1 .. 30);
+  @b{end record};
+  @b{pragma} Import (C_Plus_Plus, Dog);
+
+  @b{function} Number_Of_Teeth (A : Dog) @b{return} Integer;
+  @b{pragma} Import (C_Plus_Plus, Number_Of_Teeth);
+
+  @b{procedure} Set_Owner (A : @b{in out} Dog; Name : Chars_Ptr);
+  @b{pragma} Import (C_Plus_Plus, Set_Owner);
+
+  @b{function} New_Dog @b{return} Dog'Class;
+  @b{pragma} CPP_Constructor (New_Dog);
+  @b{pragma} Import (CPP, New_Dog, "_ZN3DogC2Ev");
+@b{end} Animals;
+@end smallexample
+
+Thanks to the compatibility between GNAT run-time structures and the C++ ABI,
+interfacing with these C++ classes is easy. The only requirement is that all
+the primitives and components must be declared exactly in the same order in
+the two languages.
+
+Regarding the abstract interfaces, we must indicate to the GNAT compiler by
+means of a @code{pragma Convention (C_Plus_Plus)}, the convention used to pass
+the arguments to the called primitives will be the same as for C++. For the
+imported classes we use @code{pragma Import} with convention @code{C_Plus_Plus}
+to indicate that they have been defined on the C++ side; this is required
+because the dispatch table associated with these tagged types will be built
+in the C++ side and therefore will not contain the predefined Ada primitives
+which Ada would otherwise expect.
+
+As the reader can see there is no need to indicate the C++ mangled names
+associated with each subprogram because it is assumed that all the calls to
+these primitives will be dispatching calls. The only exception is the
+constructor, which must be registered with the compiler by means of
+@code{pragma CPP_Constructor} and needs to provide its associated C++
+mangled name because the Ada compiler generates direct calls to it.
+
+With the above packages we can now declare objects of type Dog on the Ada side
+and dispatch calls to the corresponding subprograms on the C++ side. We can
+also extend the tagged type Dog with further fields and primitives, and
+override some of its C++ primitives on the Ada side. For example, here we have
+a type derivation defined on the Ada side that inherits all the dispatching
+primitives of the ancestor from the C++ side.
+
+@smallexample
+@b{with} Animals; @b{use} Animals;
+@b{package} Vaccinated_Animals @b{is}
+  @b{type} Vaccinated_Dog @b{is new} Dog @b{with null record};
+  @b{function} Vaccination_Expired (A : Vaccinated_Dog) @b{return} Boolean;
+@b{end} Vaccinated_Animals;
+@end smallexample
+
+It is important to note that, because of the ABI compatibility, the programmer
+does not need to add any further information to indicate either the object
+layout or the dispatch table entry associated with each dispatching operation.
+
+Now let us define all the types and constructors on the Ada side and export
+them to C++, using the same hierarchy of our previous example:
+
+@smallexample
+@b{with} Interfaces.C.Strings;
+@b{use} Interfaces.C.Strings;
+@b{package} Animals @b{is}
+  @b{type} Carnivore @b{is interface};
+  @b{pragma} Convention (C_Plus_Plus, Carnivore);
+  @b{function} Number_Of_Teeth (X : Carnivore)
+     @b{return} Natural @b{is abstract};
+
+  @b{type} Domestic @b{is interface};
+  @b{pragma} Convention (C_Plus_Plus, Set_Owner);
+  @b{procedure} Set_Owner
+    (X    : @b{in out} Domestic;
+     Name : Chars_Ptr) @b{is abstract};
+
+  @b{type} Animal @b{is tagged record}
+    Age : Natural := 0;
+  @b{end record};
+  @b{pragma} Convention (C_Plus_Plus, Animal);
+
+  @b{procedure} Set_Age (X : @b{in out} Animal; Age : Integer);
+  @b{pragma} Export (C_Plus_Plus, Set_Age);
+
+  @b{function} Age (X : Animal) @b{return} Integer;
+  @b{pragma} Export (C_Plus_Plus, Age);
+
+  @b{type} Dog @b{is new} Animal @b{and} Carnivore @b{and} Domestic @b{with record}
+    Tooth_Count : Natural;
+    Owner       : String (1 .. 30);
+  @b{end record};
+  @b{pragma} Convention (C_Plus_Plus, Dog);
+
+  @b{function} Number_Of_Teeth (A : Dog) @b{return} Integer;
+  @b{pragma} Export (C_Plus_Plus, Number_Of_Teeth);
+
+  @b{procedure} Set_Owner (A : @b{in out} Dog; Name : Chars_Ptr);
+  @b{pragma} Export (C_Plus_Plus, Set_Owner);
+
+  @b{function} New_Dog @b{return} Dog'Class;
+  @b{pragma} Export (C_Plus_Plus, New_Dog);
+@b{end} Animals;
+@end smallexample
+
+Compared with our previous example the only difference is the use of
+@code{pragma Export} to indicate to the GNAT compiler that the primitives will
+be available to C++. Thanks to the ABI compatibility, on the C++ side there is
+nothing else to be done; as explained above, the only requirement is that all
+the primitives and components are declared in exactly the same order.
+
+For completeness, let us see a brief C++ main program that uses the
+declarations available in @code{animals.h} (presented in our first example) to
+import and use the declarations from the Ada side, properly initializing and
+finalizing the Ada run-time system along the way:
+
+@smallexample
+@b{#include} "animals.h"
+@b{#include} <iostream>
+@b{using namespace} std;
+
+void Check_Carnivore (Carnivore *obj) @{ ... @}
+void Check_Domestic (Domestic *obj)   @{ ... @}
+void Check_Animal (Animal *obj)       @{ ... @}
+void Check_Dog (Dog *obj)             @{ ... @}
+
+@b{extern} "C" @{
+  void adainit (void);
+  void adafinal (void);
+  Dog* new_dog ();
+@}
+
+void test ()
+@{
+  Dog *obj = new_dog();  // Ada constructor
+  Check_Carnivore (obj); // Check secondary DT
+  Check_Domestic (obj);  // Check secondary DT
+  Check_Animal (obj);    // Check primary DT
+  Check_Dog (obj);       // Check primary DT
+@}
+
+int main ()
+@{
+  adainit ();  test();  adafinal ();
+  return 0;
+@}
+@end smallexample
 
 @node Comparison between GNAT and C/C++ Compilation Models
 @section Comparison between GNAT and C/C++ Compilation Models
@@ -3872,9 +4098,10 @@ Externals names are folded to all uppercase.
 Internal GNAT implementation mode. This should not be used for
 applications programs, it is intended only for use by the compiler
 and its run-time library. For documentation, see the GNAT sources.
-Note that @option{-gnatg} implies @option{-gnatwu} so that warnings
-are generated on unreferenced entities, and all warnings are treated
-as errors.
+Note that @option{-gnatg} implies @option{-gnatwae} so that all
+standard warnings are turned on, and @option{-gnaty} so that all
+standard style options are turned on. All warnings and style error
+messages are treated as errors.
 
 @item -gnatG
 @cindex @option{-gnatG} (@command{gcc})
@@ -4972,12 +5199,12 @@ request silently.
 @cindex Parentheses, warnings
 This switch activates warnings for cases where parentheses are not used and
 the result is potential ambiguity from a readers point of view. For example
-(not a > b) when a and b are modular means (not (a) > b) and very likely the
+(not a > b) when a and b are modular means ((not a) > b) and very likely the
 programmer intended (not (a > b)). Similarly (-x mod 5) means (-(x mod 5)) and
 quite likely ((-x) mod 5) was intended. In such situations it seems best to
 follow the rule of always parenthesizing to make the association clear, and
 this warning switch warns if such parentheses are not present. The default
-is that these warnings are not given.
+is that these warnings are given.
 This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwQ
@@ -5099,7 +5326,6 @@ with a literal or S'Length. This is a case where the code is assuming that the
 low bound is one, which is in general not true (for example when a slice is
 passed). The default is that such warnings are generated.
 This warning can also be turned on using @option{-gnatwa}.
-F
 
 @item -gnatwW
 @emph{Suppress warnings on wrong low bound assumption.}
@@ -5542,6 +5768,13 @@ used as attributes names, must be written in mixed case, that is, the
 initial letter and any letter following an underscore must be uppercase.
 All other letters must be lowercase.
 
+@item ^A^ARRAY_INDEXES^
+@emph{Use of array index numbers in array attributes.}
+If the ^letter A^word ARRAY_INDEXES^ appears in the string after
+@option{-gnaty} then when using the array attributes First, Last, Range,
+or Length, the index number must be omitted for one-dimensional arrays
+and is required for multi-dimensional arrays.
+
 @item ^b^BLANKS^
 @emph{Blanks not allowed at statement end.}
 If the ^letter b^word BLANKS^ appears in the string after @option{-gnaty} then
@@ -5664,7 +5897,8 @@ option are more liberal than those in the Ada Reference Manual. First
 in the case of record declarations, it is permissible to put the
 @code{record} keyword on the same line as the @code{type} keyword, and
 then the @code{end} in @code{end record} must line up under @code{type}.
-For example, either of the following two layouts is acceptable:
+This is also permitted when the type declaration is split on two lines.
+For example, any of the following three layouts is acceptable:
 
 @smallexample @c ada
 @cartouche
@@ -5678,6 +5912,13 @@ type q is
       a : integer;
       b : integer;
    end record;
+
+type q is
+   record
+      a : integer;
+      b : integer;
+end record;
+
 @end cartouche
 @end smallexample
 
@@ -5872,7 +6113,7 @@ The switch
 @ifclear vms
 @option{-gnaty} on its own (that is not
 followed by any letters or digits),
-is equivalent to @code{gnaty3abcefhiklmnprst}, that is all checking
+is equivalent to @code{gnaty3aAbcefhiklmnprst}, that is all checking
 options enabled with the exception of @option{-gnatyo},
 @option{-gnatyd}, @option{-gnatyu}, and @option{-gnatyx}.
 @end ifclear
@@ -6197,7 +6438,7 @@ Although GNAT is primarily an Ada 95 compiler, it can be set to operate
 in Ada 2005 mode using this option. Although the new standard has not
 yet been issued (as of early 2005), many features have been discussed and
 approved in ``Ada Issues'' (AI's). For the text of these AI's, see
-@url{www.ada-auth.org/cgi-bin/cvsweb.cgi/AIs}. Included with GNAT
+@url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/AIs}. Included with GNAT
 releases is a file @file{features-ada0y} that describes the current set
 of implemented Ada 2005 features.
 
@@ -6642,7 +6883,7 @@ to propagate an exception through a C/C++ code, the C/C++ code
 must be compiled with the @option{-funwind-tables} GCC's
 option.
 
-The following switches can be used to control which of the
+The following switches may be used to control which of the
 two exception handling methods is used.
 
 @table @option
@@ -6650,9 +6891,8 @@ two exception handling methods is used.
 
 @item --RTS=sjlj
 @cindex @option{--RTS=sjlj} (@command{gnatmake})
-This switch causes the setjmp/longjmp run-time to be used
-for exception handling. If this is the default mechanism for the
-target (see below), then this has no effect. If the default
+This switch causes the setjmp/longjmp run-time (when available) to be used
+for exception handling. If the default
 mechanism for the target is zero cost exceptions, then
 this switch can be used to modify this default, and must be
 used for all units in the partition.
@@ -6666,12 +6906,12 @@ application is improved by favoring exception propagation.
 @cindex Zero Cost Exceptions
 This switch causes the zero cost approach to be used
 for exception handling. If this is the default mechanism for the
-target (see below), then this has no effect. If the default
+target (see below), then this switch is unneeded. If the default
 mechanism for the target is setjmp/longjmp exceptions, then
 this switch can be used to modify this default, and must be
 used for all units in the partition.
 This option can only be used if the zero cost approach
-is available for the target in use (see below).
+is available for the target in use, otherwise it will generate an error.
 @end table
 
 @noindent
@@ -6679,18 +6919,6 @@ The same option @option{--RTS} must be used both for @command{gcc}
 and @command{gnatbind}. Passing this option to @command{gnatmake}
 (@pxref{Switches for gnatmake}) will ensure the required consistency
 through the compilation and binding steps.
-
-The @code{setjmp/longjmp} approach is available on all targets, while
-the @code{zero cost} approach is available on selected targets.
-To determine whether zero cost exceptions can be used for a
-particular target, look at the private part of the file system.ads.
-Either @code{GCC_ZCX_Support} or @code{Front_End_ZCX_Support} must
-be True to use the zero cost approach. If both of these switches
-are set to False, this means that zero cost exception handling
-is not yet available for that target. The switch
-@code{ZCX_By_Default} indicates the default approach. If this
-switch is set to True, then the @code{zero cost} approach is
-used by default.
 
 @node Units to Sources Mapping Files
 @subsection Units to Sources Mapping Files
@@ -8514,6 +8742,12 @@ This switch cannot be used when using a project file.
 Follow all symbolic links when processing project files.
 @end ifclear
 
+@item ^-eS^/STANDARD_OUTPUT_FOR_COMMANDS^
+@cindex @option{^-eS^/STANDARD_OUTPUT_FOR_COMMANDS^} (@command{gnatmake})
+Output the commands for the compiler, the binder and the linker
+on ^standard output^SYS$OUTPUT^,
+instead of ^standard error^SYS$ERROR^.
+
 @item ^-f^/FORCE_COMPILE^
 @cindex @option{^-f^/FORCE_COMPILE^} (@command{gnatmake})
 Force recompilations. Recompile all sources, even though some object
@@ -8633,6 +8867,12 @@ for an executable file on the host system.
 
 This switch cannot be used when invoking @command{gnatmake} with several
 @file{file_names}.
+
+@item ^-p or --create-missing-dirs^/CREATE_MISSING_DIRS^
+@cindex @option{^-p^/CREATE_MISSING_DIRS^} (@command{gnatmake})
+When using project files (^-P^/PROJECT_FILE=^@var{project}), create
+automatically missing object directories, library directories and exec
+directories.
 
 @item ^-P^/PROJECT_FILE=^@var{project}
 @cindex @option{^-P^/PROJECT_FILE^} (@command{gnatmake})
@@ -14965,6 +15205,13 @@ semantically legal.
 If this condition is not met, @command{gnatpp} will terminate with an
 error message; no output file will be generated.
 
+If the source files presented to @command{gnatpp} contain
+preprocessing directives, then the output file will
+correspond to the generated source after all
+preprocessing is carried out. There is no way
+using @command{gnatpp} to obtain pretty printed files that
+include the preprocessing directives.
+
 If the compilation unit
 contained in the input source depends semantically upon units located
 outside the current directory, you have to provide the source search path
@@ -16379,7 +16626,7 @@ maximal loop nesting level
 
 @noindent
 The McCabe complexity metrics are defined
-in @url{www.mccabe.com/pdf/nist235r.pdf}
+in @url{http://www.mccabe.com/pdf/nist235r.pdf}
 
 According to McCabe, both control statements and short-circuit control forms
 should be taken into account when computing cyclomatic complexity. For each
@@ -19286,7 +19533,26 @@ quotation marks.
 @item -R@i{rule_id}
 Turn off the check for a specified rule
 
+@cindex @option{-from} (@command{gnatcheck})
+@item -from=@i{rule_option_filename}
+Read the rule options from the text file @i{rule_option_filename}, referred as
+``rule file'' below.
+
 @end table
+
+@noindent
+A rule file is supposed to be a text file containing an arbitrary set of
+rule options. The file may contain empty lines and Ada-style comments (comment
+lines and end-of-line comments). The rule file have free format, that is,
+you do not have to start a new rule option from the new line.
+
+A rule file may contain another @option{-from=@i{rule_option_filename}}
+options, each of such options is replaced with the content of the
+corresponding rule file during the rule files processing. In case if a
+cycling is detected (that is, @i{rule_file_1} reads rule options from
+@i{rule_file_2}, and  @i{rule_file_2} reads (directly or indirectly)
+rule options from @i{rule_file_1}), the process of macro-expansions
+of rule files is interrupted and a part of their content is ignored.
 
 @node Add the Results of Compiler Checks to gnatcheck Output
 @section Add the Results of Compiler Checks to @command{gnatcheck} Output
@@ -21716,10 +21982,6 @@ GNAT also supplies a number of implementation-defined pragmas as follows:
 @item  @code{CPP_CONSTRUCTOR}
 
 @item  @code{CPP_DESTRUCTOR}
-
-@item  @code{CPP_VIRTUAL}
-
-@item  @code{CPP_VTABLE}
 
 @item  @code{DEBUG}
 
@@ -27615,16 +27877,14 @@ pragma Import (Stdcall, Get_Val, Link_Name => "retrieve_val");
 @end smallexample
 
 @noindent
-then the imported routine is @code{retrieve_val@@4}, that is, there is no
-trailing underscore but the appropriate @code{@@}@code{@i{nn}} is always
-added at the end of the @code{Link_Name} by the compiler.
+then the imported routine is @code{retrieve_val}, that is, there is no
+decoration at all. No leading underscore and no Stdcall suffix
+@code{@@}@code{@i{nn}}.
 
 @noindent
-Note, that in some special cases a DLL's entry point name lacks a trailing
-@code{@@}@code{@i{nn}} while the exported name generated for a call has it.
-The @code{gnatdll} tool, which creates the import library for the DLL, is able
-to handle those cases (@pxref{Using gnatdll} for the description of
-the switches).
+This is especially important as in some special cases a DLL's entry
+point name lacks a trailing @code{@@}@code{@i{nn}} while the exported
+name generated for a call has it.
 
 @noindent
 It is also possible to import variables defined in a DLL by using an

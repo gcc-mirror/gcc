@@ -107,6 +107,7 @@ Implementation Defined Pragmas
 * Pragma C_Pass_By_Copy::
 * Pragma Comment::
 * Pragma Common_Object::
+* Pragma Compile_Time_Error::
 * Pragma Compile_Time_Warning::
 * Pragma Complete_Representation::
 * Pragma Complex_Representation::
@@ -187,6 +188,7 @@ Implementation Defined Pragmas
 * Pragma Unimplemented_Unit::
 * Pragma Universal_Data::
 * Pragma Unreferenced::
+* Pragma Unreferenced_Objects::
 * Pragma Unreserve_All_Interrupts::
 * Pragma Unsuppress::
 * Pragma Use_VADS_Size::
@@ -258,6 +260,7 @@ The Implementation of Standard I/O
 * Wide_Wide_Text_IO::
 * Stream_IO::
 * Shared Files::
+* Filenames encoding::
 * Open Modes::
 * Operations on C Streams::
 * Interfacing to C Streams::
@@ -294,6 +297,7 @@ The GNAT Library
 * GNAT.Bubble_Sort (g-bubsor.ads)::
 * GNAT.Bubble_Sort_A (g-busora.ads)::
 * GNAT.Bubble_Sort_G (g-busorg.ads)::
+* GNAT.Byte_Swapping (g-bytswa.ads)::
 * GNAT.Calendar (g-calend.ads)::
 * GNAT.Calendar.Time_IO (g-catiio.ads)::
 * GNAT.Case_Util (g-casuti.ads)::
@@ -332,6 +336,7 @@ The GNAT Library
 * GNAT.Regpat (g-regpat.ads)::
 * GNAT.Secondary_Stack_Info (g-sestin.ads)::
 * GNAT.Semaphores (g-semaph.ads)::
+* GNAT.SHA1 (g-sha1.ads)::
 * GNAT.Signals (g-signal.ads)::
 * GNAT.Sockets (g-socket.ads)::
 * GNAT.Source_Info (g-souinf.ads)::
@@ -650,6 +655,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma C_Pass_By_Copy::
 * Pragma Comment::
 * Pragma Common_Object::
+* Pragma Compile_Time_Error::
 * Pragma Compile_Time_Warning::
 * Pragma Complete_Representation::
 * Pragma Complex_Representation::
@@ -730,6 +736,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Unimplemented_Unit::
 * Pragma Universal_Data::
 * Pragma Unreferenced::
+* Pragma Unreferenced_Objects::
 * Pragma Unreserve_All_Interrupts::
 * Pragma Unsuppress::
 * Pragma Use_VADS_Size::
@@ -1035,6 +1042,33 @@ support is available, then the code generator will issue a message
 indicating that the necessary attribute for implementation of this
 pragma is not available.
 
+@node Pragma Compile_Time_Error
+@unnumberedsec Pragma Compile_Time_Error
+@findex Compile_Time_Error
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Compile_Time_Error
+         (boolean_EXPRESSION, static_string_EXPRESSION);
+@end smallexample
+
+@noindent
+This pragma can be used to generate additional compile time
+error messages. It
+is particularly useful in generics, where errrs can be issued for
+specific problematic instantiations. The first parameter is a boolean
+expression. The pragma is effective only if the value of this expression
+is known at compile time, and has the value True. The set of expressions
+whose values are known at compile time includes all static boolean
+expressions, and also other values which the compiler can determine
+at compile time (e.g. the size of a record type set by an explicit
+size representation clause, or the value of a variable which was
+initialized to a constant and is known not to have been modified).
+If these conditions are met, an error message is generated using
+the value given as the second argument. This string value may contain
+embedded ASCII.LF characters to break the message into multiple lines.
+
 @node Pragma Compile_Time_Warning
 @unnumberedsec Pragma Compile_Time_Warning
 @findex Compile_Time_Warning
@@ -1227,24 +1261,23 @@ pragma CPP_Class ([Entity =>] local_NAME);
 @end smallexample
 
 @noindent
-The argument denotes an entity in the current declarative region
-that is declared as a tagged or untagged record type.  It indicates that
-the type corresponds to an externally declared C++ class type, and is to
-be laid out the same way that C++ would lay out the type.
-
-If (and only if) the type is tagged, at least one component in the
-record must be of type @code{Interfaces.CPP.Vtable_Ptr}, corresponding
-to the C++ Vtable (or Vtables in the case of multiple inheritance) used
-for dispatching.
+The argument denotes an entity in the current declarative region that is
+declared as a tagged record type. It indicates that the type corresponds
+to an externally declared C++ class type, and is to be laid out the same
+way that C++ would lay out the type.
 
 Types for which @code{CPP_Class} is specified do not have assignment or
 equality operators defined (such operations can be imported or declared
-as subprograms as required).  Initialization is allowed only by
-constructor functions (see pragma @code{CPP_Constructor}).
+as subprograms as required). Initialization is allowed only by constructor
+functions (see pragma @code{CPP_Constructor}).
 
 Pragma @code{CPP_Class} is intended primarily for automatic generation
 using an automatic binding generator tool.
 See @ref{Interfacing to C++} for related information.
+
+Note: Pragma @code{CPP_Class} is currently obsolete. It is supported
+for backward compatibility but its functionality is available
+using pragma @code{Import} with @code{Convention} = @code{CPP}.
 
 @node Pragma CPP_Constructor
 @unnumberedsec Pragma CPP_Constructor
@@ -1254,16 +1287,18 @@ See @ref{Interfacing to C++} for related information.
 Syntax:
 
 @smallexample @c ada
-pragma CPP_Constructor ([Entity =>] local_NAME);
+pragma CPP_Constructor ([Entity =>] local_NAME
+  [, [External_Name =>] static_string_EXPRESSION ]
+  [, [Link_Name     =>] static_string_EXPRESSION ]);
 @end smallexample
 
 @noindent
 This pragma identifies an imported function (imported in the usual way
-with pragma @code{Import}) as corresponding to a C++
-constructor.  The argument is a name that must have been
-previously mentioned in a pragma @code{Import}
-with @code{Convention} = @code{CPP}, and must be of one of the following
-forms:
+with pragma @code{Import}) as corresponding to a C++ constructor. If
+@code{External_Name} and @code{Link_Name} are not specified then the
+@code{Entity} argument is a name that must have been previously mentioned
+in a pragma @code{Import} with @code{Convention} = @code{CPP}. Such name
+must be of one of the following forms:
 
 @itemize @bullet
 @item
@@ -1325,37 +1360,9 @@ See @ref{Interfacing to C++} for more related information.
 @cindex Interfacing to C++
 @findex CPP_Virtual
 @noindent
-Syntax:
+This pragma is now obsolete has has no effect because GNAT generates
+the same object layout than the G++ compiler.
 
-@smallexample @c ada
-pragma CPP_Virtual
-     [Entity     =>] ENTITY,
-  [, [Vtable_Ptr =>] vtable_ENTITY,]
-  [, [Position   =>] static_integer_EXPRESSION]);
-@end smallexample
-
-@noindent
-This pragma serves the same function as pragma @code{Import} in that
-case of a virtual function imported from C++.  The @var{Entity} argument
-must be a
-primitive subprogram of a tagged type to which pragma @code{CPP_Class}
-applies.  The @var{Vtable_Ptr} argument specifies
-the Vtable_Ptr component which contains the
-entry for this virtual function.  The @var{Position} argument
-is the sequential number
-counting virtual functions for this Vtable starting at 1.
-
-The @code{Vtable_Ptr} and @code{Position} arguments may be omitted if
-there is one Vtable_Ptr present (single inheritance case) and all
-virtual functions are imported.  In that case the compiler can deduce both
-these values.
-
-No @code{External_Name} or @code{Link_Name} arguments are required for a
-virtual function, since it is always accessed indirectly via the
-appropriate Vtable entry.
-
-Pragma @code{CPP_Virtual} is intended primarily for automatic generation
-using an automatic binding generator tool.
 See @ref{Interfacing to C++} for related information.
 
 @node Pragma CPP_Vtable
@@ -1363,31 +1370,9 @@ See @ref{Interfacing to C++} for related information.
 @cindex Interfacing with C++
 @findex CPP_Vtable
 @noindent
-Syntax:
+This pragma is now obsolete has has no effect because GNAT generates
+the same object layout than the G++ compiler.
 
-@smallexample @c ada
-pragma CPP_Vtable (
-  [Entity      =>] ENTITY,
-  [Vtable_Ptr  =>] vtable_ENTITY,
-  [Entry_Count =>] static_integer_EXPRESSION);
-@end smallexample
-
-@noindent
-Given a record to which the pragma @code{CPP_Class} applies,
-this pragma can be specified for each component of type
-@code{CPP.Interfaces.Vtable_Ptr}.
-@var{Entity} is the tagged type, @var{Vtable_Ptr}
-is the record field of type @code{Vtable_Ptr}, and @var{Entry_Count} is
-the number of virtual functions on the C++ side.  Not all of these
-functions need to be imported on the Ada side.
-
-You may omit the @code{CPP_Vtable} pragma if there is only one
-@code{Vtable_Ptr} component in the record and all virtual functions are
-imported on the Ada side (the default value for the entry count in this
-case is simply the total number of virtual functions).
-
-Pragma @code{CPP_Vtable} is intended primarily for automatic generation
-using an automatic binding generator tool.
 See @ref{Interfacing to C++} for related information.
 
 @node Pragma Debug
@@ -3350,7 +3335,7 @@ This set of configuration pragmas and restrictions correspond to the
 definition of the ``Ravenscar Profile'' for limited tasking, devised and
 published by the @cite{International Real-Time Ada Workshop}, 1997,
 and whose most recent description is available at
-@url{ftp://ftp.openravenscar.org/openravenscar/ravenscar00.pdf}.
+@url{http://www-users.cs.york.ac.uk/~burns/ravenscar.ps}.
 
 The original definition of the profile was revised at subsequent IRTAW
 meetings. It has been included in the ISO
@@ -4041,7 +4026,7 @@ equivalent to a C union. It was introduced as a GNAT implementation defined
 pragma in the GNAT Ada 95 mode. Ada 2005 includes an extended version of this
 pragma, making it language defined, and GNAT fully implements this extended
 version in all language modes (Ada 83, Ada 95, and Ada 2005). For full
-details, consult the Ada 2005 RM, section 8.3.3.
+details, consult the Ada 2005 RM, section B.3.3.
 
 @node Pragma Unimplemented_Unit
 @unnumberedsec Pragma Unimplemented_Unit
@@ -4136,6 +4121,29 @@ clause. In this case the arguments must be unit names of units previously
 mentioned in @code{with} clauses (similar to the usage of pragma
 @code{Elaborate_All}. The effect is to suppress warnings about unreferenced
 units.
+
+@node Pragma Unreferenced_Objects
+@unnumberedsec Pragma Unreferenced_Objects
+@findex Unreferenced_Objects
+@cindex Warnings, unreferenced
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Unreferenced_Objects (local_subtype_NAME @{, local_subtype_NAME@});
+@end smallexample
+
+@noindent
+This pragma signals that for the types or subtypes whose names are
+listed, objects which are declared with one of these types or subtypes may
+not be referenced, and if no references appear, no warnings are given.
+
+This is particularly useful for objects which are declared solely for their
+initialization and finalization effect. Such variables are sometimes referred
+to as RAII variables (Resource Acquisition Is Initialization). Using this
+pragma on the relevant type (most typically a limited controlled type), the
+compiler will automatically suppress unwanted warnings about these variables
+not being referenced.
 
 @node Pragma Unreserve_All_Interrupts
 @unnumberedsec Pragma Unreserve_All_Interrupts
@@ -4358,9 +4366,13 @@ o   turn on warnings for address clause overlay
 O   turn off warnings for address clause overlay
 p   turn on warnings for ineffective pragma Inline
 P   turn off warnings for ineffective pragma Inline
+q   turn on warnings for questionable missing parentheses
+Q   turn off warnings for questionable missing parentheses
 r   turn on warnings for redundant construct
 R   turn off warnings for redundant construct
 s   suppress all warnings
+t   turn on warnings for tracking deleted code
+T   turn off warnings for tracking deleted code
 u   turn on warnings for unused entity
 U   turn off warnings for unused entity
 v   turn on warnings for unassigned variable
@@ -5072,6 +5084,14 @@ by default be 32 bits (four bytes).  But objects of type
 @code{R2} will be only
 8 bits (one byte), since @code{R2'Object_Size} has been set to 8.
 
+Although @code{Object_Size} does properly reflect the default object size
+value, it is not necessarily the case that all objects will be of this size
+in a case where it is not specified explicitly. The compiler is free to
+increase the size and alignment of stand alone objects to improve efficiency
+of the generated code and sometimes does so in the case of large composite
+objects. If the size of a stand alone object is critical to the
+application, it should be specified explicitly.
+
 @node Passed_By_Reference
 @unnumberedsec Passed_By_Reference
 @cindex Parameters, when passed by reference
@@ -5400,10 +5420,6 @@ Affects semantics
 @item CPP_Class
 Affects semantics
 @item CPP_Constructor
-Affects semantics
-@item CPP_Virtual
-Affects semantics
-@item CPP_Vtable
 Affects semantics
 @item Debug
 Affects semantics
@@ -6216,7 +6232,7 @@ convention.  Any declarations useful for interfacing to any language on
 the given hardware architecture should be provided directly in
 @code{Interfaces}.
 @end cartouche
-Followed.  An additional package not defined
+Followed. An additional package not defined
 in the Ada 95 Reference Manual is @code{Interfaces.CPP}, used
 for interfacing to C++.
 
@@ -7970,7 +7986,7 @@ Allowed only for record types, like C, but also notes that record
 is to be passed by copy rather than reference.
 @item COBOL
 COBOL
-@item CPP
+@item C_Plus_Plus (or CPP)
 C++
 @item Default
 Treated the same as C
@@ -8148,9 +8164,27 @@ Pos values.
 attribute.  See C.7.1(7).
 @end cartouche
 @noindent
-The result of this attribute is an 8-digit hexadecimal string
-representing the virtual address of the task control block.
-
+The result of this attribute is a string that identifies
+the object or component that denotes a given task. If a variable Var has a task
+type, the image for this task will have the form Var_XXXXXXXX, where the sufffix
+is the hexadecimal representation of the virtual address of the corresponding
+task control block. If the variable is an array of tasks, the image of each
+task will have the form of an indexed component indicating the position of a
+given task in the array, eg.  Group(5)_XXXXXXX. If the task is a
+component of a record, the image of the task will have the form of a selected
+component. These rules are fully recursive, so that the image of a task that
+is a subcomponent of a composite object corresponds to the expression that
+designates this task.
+@noindent
+If a task is created by an allocator, its image depends on the context. If the
+allocator is part of an object declaration, the rules described above  are used
+to construct its image, and this image is not affected by subsequent assignments. If the allocator appears within an expression, the image
+includes only the name of the task type.
+@noindent
+If the configuration pragma Discard_Names is present, or if the restriction
+No_Implicit_Heap_Allocation is in effect,  the image reduces to
+the numeric suffix, that is to say the hexadecimal representation of the
+virtual address of the control block of the task.
 @sp 1
 @cartouche
 @noindent
@@ -11221,6 +11255,7 @@ these additional facilities are also described in this chapter.
 * Wide_Wide_Text_IO::
 * Stream_IO::
 * Shared Files::
+* Filenames encoding::
 * Open Modes::
 * Operations on C Streams::
 * Interfacing to C Streams::
@@ -11299,7 +11334,7 @@ there are two keywords defined.
 
 @smallexample
 SHARED=[YES|NO]
-WCEM=[n|h|u|s\e]
+WCEM=[n|h|u|s|e|8|b]
 @end smallexample
 
 @noindent
@@ -12060,6 +12095,28 @@ heterogeneous input-output.  Although this approach will work in GNAT if
 @samp{shared=yes} is specified, it is preferable in Ada 95 to use Stream_IO
 for this purpose (using the stream attributes)
 
+@node Filenames encoding
+@section Filenames encoding
+
+@noindent
+An encoding form parameter can be used to specify the filename
+encoding @samp{encoding=@var{xxx}}.
+
+@itemize @bullet
+@item
+If the form parameter @samp{encoding=utf8} appears in the form string, the
+filename must be encoded in UTF-8.
+
+@item
+If the form parameter @samp{encoding=8bits} appears in the form
+string, the filename must be a standard 8bits string.
+@end itemize
+
+In the absence of a @samp{encoding=@var{xxx}} form parameter, the
+value UTF-8 is used. This encoding form parameter is only supported on
+the Windows platform. On the other Operating Systems the runtime is
+supporting UTF-8 natively.
+
 @node Open Modes
 @section Open Modes
 
@@ -12405,6 +12462,7 @@ of GNAT, and will generate a warning message.
 * GNAT.Bubble_Sort (g-bubsor.ads)::
 * GNAT.Bubble_Sort_A (g-busora.ads)::
 * GNAT.Bubble_Sort_G (g-busorg.ads)::
+* GNAT.Byte_Swapping (g-bytswa.ads)::
 * GNAT.Calendar (g-calend.ads)::
 * GNAT.Calendar.Time_IO (g-catiio.ads)::
 * GNAT.CRC32 (g-crc32.ads)::
@@ -12443,6 +12501,7 @@ of GNAT, and will generate a warning message.
 * GNAT.Regpat (g-regpat.ads)::
 * GNAT.Secondary_Stack_Info (g-sestin.ads)::
 * GNAT.Semaphores (g-semaph.ads)::
+* GNAT.SHA1 (g-sha1.ads)::
 * GNAT.Signals (g-signal.ads)::
 * GNAT.Sockets (g-socket.ads)::
 * GNAT.Source_Info (g-souinf.ads)::
@@ -12820,6 +12879,16 @@ Similar to @code{Bubble_Sort_A} except that the move and sorting procedures
 are provided as generic parameters, this improves efficiency, especially
 if the procedures can be inlined, at the expense of duplicating code for
 multiple instantiations.
+
+@node GNAT.Byte_Swapping (g-bytswa.ads)
+@section @code{GNAT.Byte_Swapping} (@file{g-bytswa.ads})
+@cindex @code{GNAT.Byte_Swapping} (@file{g-bytswa.ads})
+@cindex Byte swapping
+@cindex Endian
+
+@noindent
+General routines for swapping the bytes in 2-, 4-, and 8-byte quantities.
+Machine-specific implementations are available in some cases.
 
 @node GNAT.Calendar (g-calend.ads)
 @section @code{GNAT.Calendar} (@file{g-calend.ads})
@@ -13246,6 +13315,14 @@ secondary stack.
 
 @noindent
 Provides classic counting and binary semaphores using protected types.
+
+@node GNAT.SHA1 (g-sha1.ads)
+@section @code{GNAT.SHA1} (@file{g-sha1.ads})
+@cindex @code{GNAT.SHA1} (@file{g-sha1.ads})
+@cindex Secure Hash Algorithm SHA-1
+
+@noindent
+Implements the SHA-1 Secure Hash Algorithm as described in RFC 3174.
 
 @node GNAT.Signals (g-signal.ads)
 @section @code{GNAT.Signals} (@file{g-signal.ads})
@@ -13769,24 +13846,23 @@ tool, although it is possible to construct them by hand.  No suitable binding
 generator tool is supplied with GNAT though.
 
 Using these pragmas it is possible to achieve complete
-inter-operability between Ada tagged types and C class definitions.
+inter-operability between Ada tagged types and C++ class definitions.
 See @ref{Implementation Defined Pragmas}, for more details.
 
 @table @code
 @item pragma CPP_Class ([Entity =>] @var{local_NAME})
 The argument denotes an entity in the current declarative region that is
-declared as a tagged or untagged record type.  It indicates that the type
+declared as a tagged or untagged record type. It indicates that the type
 corresponds to an externally declared C++ class type, and is to be laid
 out the same way that C++ would lay out the type.
+
+Note: Pragma @code{CPP_Class} is currently obsolete. It is supported
+for backward compatibility but its functionality is available
+using pragma @code{Import} with @code{Convention} = @code{CPP}.
 
 @item pragma CPP_Constructor ([Entity =>] @var{local_NAME})
 This pragma identifies an imported function (imported in the usual way
 with pragma @code{Import}) as corresponding to a C++ constructor.
-
-@item pragma CPP_Vtable @dots{}
-One @code{CPP_Vtable} pragma can be present for each component of type
-@code{CPP.Interfaces.Vtable_Ptr} in a record to which pragma @code{CPP_Class}
-applies.
 @end table
 
 @node Interfacing to COBOL
