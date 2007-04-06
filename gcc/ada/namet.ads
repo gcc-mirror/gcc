@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -291,6 +291,10 @@ package Namet is
    --  passed in Name_Buffer and Name_Len (which are not affected by the call).
    --  Name_Buffer (it loads these as for Get_Name_String).
 
+   function Is_Valid_Name (Id : Name_Id) return Boolean;
+   --  True if Id is a valid name -- points to a valid entry in the
+   --  Name_Entries table.
+
    procedure Reset_Name_Table;
    --  This procedure is used when there are multiple source files to reset
    --  the name table info entries associated with current entries in the
@@ -358,15 +362,21 @@ package Namet is
    --  in encoded form (i.e. including Uhh, Whhh, Qx, _op as they appear in
    --  the name table). If Id is Error_Name, or No_Name, no text is output.
 
-   procedure wn (Id : Name_Id);
-   pragma Export (Ada, wn);
-   --  Like Write_Name, but includes new line at end. Intended for use
-   --  from the debugger only.
-
    procedure Write_Name_Decoded (Id : Name_Id);
    --  Like Write_Name, except that the name written is the decoded name, as
    --  described for Get_Decoded_Name_String, and the resulting value stored
    --  in Name_Len and Name_Buffer is the decoded name.
+
+   procedure wn (Id : Name_Id);
+   pragma Export (Ada, wn);
+   --  This routine is intended for debugging use only (i.e. it is intended to
+   --  be called from the debugger). It writes the characters of the specified
+   --  name using the standard output procedures in package Output, followed by
+   --  a new line. The name is written in encoded form (i.e. including Uhh,
+   --  Whhh, Qx, _op as they appear in the name table). If Id is Error_Name,
+   --  No_Name, or invalid an appropriate string is written (<Error_Name>,
+   --  <No_Name>, <invalid name>). Unlike Write_Name, this call does not affect
+   --  the contents of Name_Buffer or Name_Len.
 
    ---------------------------
    -- Table Data Structures --
@@ -403,6 +413,12 @@ private
 
       Byte_Info : Byte;
       --  Byte value associated with this name
+
+      Name_Has_No_Encodings : Boolean;
+      --  This flag is set True if the name entry is known not to contain any
+      --  special character encodings. This is used to speed up repeated calls
+      --  to Get_Decoded_Name_String. A value of False means that it is not
+      --  known whether the name contains any such encodings.
 
       Hash_Link : Name_Id;
       --  Link to next entry in names table for same hash code

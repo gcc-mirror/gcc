@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -244,11 +244,18 @@ package body Namet is
    begin
       Get_Name_String (Id);
 
+      --  Skip scan if we already know there are no encodings
+
+      if Name_Entries.Table (Id).Name_Has_No_Encodings then
+         return;
+      end if;
+
       --  Quick loop to see if there is anything special to do
 
       P := 1;
       loop
          if P = Name_Len then
+            Name_Entries.Table (Id).Name_Has_No_Encodings := True;
             return;
 
          else
@@ -865,17 +872,16 @@ package body Namet is
       --  Initialize entries for one character names
 
       for C in Character loop
-         Name_Entries.Increment_Last;
-         Name_Entries.Table (Name_Entries.Last).Name_Chars_Index :=
-           Name_Chars.Last;
-         Name_Entries.Table (Name_Entries.Last).Name_Len  := 1;
-         Name_Entries.Table (Name_Entries.Last).Hash_Link := No_Name;
-         Name_Entries.Table (Name_Entries.Last).Int_Info  := 0;
-         Name_Entries.Table (Name_Entries.Last).Byte_Info := 0;
-         Name_Chars.Increment_Last;
-         Name_Chars.Table (Name_Chars.Last) := C;
-         Name_Chars.Increment_Last;
-         Name_Chars.Table (Name_Chars.Last) := ASCII.NUL;
+         Name_Entries.Append
+           ((Name_Chars_Index      => Name_Chars.Last,
+             Name_Len              => 1,
+             Byte_Info             => 0,
+             Int_Info              => 0,
+             Name_Has_No_Encodings => True,
+             Hash_Link             => No_Name));
+
+         Name_Chars.Append (C);
+         Name_Chars.Append (ASCII.NUL);
       end loop;
 
       --  Clear hash table
@@ -961,6 +967,15 @@ package body Namet is
       return Name_Chars.Table (S + 1) = 'O';
    end Is_Operator_Name;
 
+   -------------------
+   -- Is_Valid_Name --
+   -------------------
+
+   function Is_Valid_Name (Id : Name_Id) return Boolean is
+   begin
+      return Id in Name_Entries.First .. Name_Entries.Last;
+   end Is_Valid_Name;
+
    --------------------
    -- Length_Of_Name --
    --------------------
@@ -999,23 +1014,21 @@ package body Namet is
 
    function Name_Enter return Name_Id is
    begin
-      Name_Entries.Increment_Last;
-      Name_Entries.Table (Name_Entries.Last).Name_Chars_Index :=
-        Name_Chars.Last;
-      Name_Entries.Table (Name_Entries.Last).Name_Len  := Short (Name_Len);
-      Name_Entries.Table (Name_Entries.Last).Hash_Link := No_Name;
-      Name_Entries.Table (Name_Entries.Last).Int_Info  := 0;
-      Name_Entries.Table (Name_Entries.Last).Byte_Info := 0;
+      Name_Entries.Append
+        ((Name_Chars_Index      => Name_Chars.Last,
+          Name_Len              => Short (Name_Len),
+          Byte_Info             => 0,
+          Int_Info              => 0,
+          Name_Has_No_Encodings => False,
+          Hash_Link             => No_Name));
 
       --  Set corresponding string entry in the Name_Chars table
 
       for J in 1 .. Name_Len loop
-         Name_Chars.Increment_Last;
-         Name_Chars.Table (Name_Chars.Last) := Name_Buffer (J);
+         Name_Chars.Append (Name_Buffer (J));
       end loop;
 
-      Name_Chars.Increment_Last;
-      Name_Chars.Table (Name_Chars.Last) := ASCII.NUL;
+      Name_Chars.Append (ASCII.NUL);
 
       return Name_Entries.Last;
    end Name_Enter;
@@ -1095,7 +1108,6 @@ package body Namet is
                        Name_Entries.Last + 1;
                      exit Search;
                   end if;
-
             end loop Search;
          end if;
 
@@ -1103,23 +1115,21 @@ package body Namet is
          --  hash table. We now create a new entry in the names table. The hash
          --  link pointing to the new entry (Name_Entries.Last+1) has been set.
 
-         Name_Entries.Increment_Last;
-         Name_Entries.Table (Name_Entries.Last).Name_Chars_Index :=
-           Name_Chars.Last;
-         Name_Entries.Table (Name_Entries.Last).Name_Len  := Short (Name_Len);
-         Name_Entries.Table (Name_Entries.Last).Hash_Link := No_Name;
-         Name_Entries.Table (Name_Entries.Last).Int_Info  := 0;
-         Name_Entries.Table (Name_Entries.Last).Byte_Info := 0;
+         Name_Entries.Append
+           ((Name_Chars_Index      => Name_Chars.Last,
+             Name_Len              => Short (Name_Len),
+             Hash_Link             => No_Name,
+             Name_Has_No_Encodings => False,
+             Int_Info              => 0,
+             Byte_Info             => 0));
 
          --  Set corresponding string entry in the Name_Chars table
 
          for J in 1 .. Name_Len loop
-            Name_Chars.Increment_Last;
-            Name_Chars.Table (Name_Chars.Last) := Name_Buffer (J);
+            Name_Chars.Append (Name_Buffer (J));
          end loop;
 
-         Name_Chars.Increment_Last;
-         Name_Chars.Table (Name_Chars.Last) := ASCII.NUL;
+         Name_Chars.Append (ASCII.NUL);
 
          return Name_Entries.Last;
       end if;
@@ -1343,8 +1353,27 @@ package body Namet is
    --------
 
    procedure wn (Id : Name_Id) is
+      S : Int;
+
    begin
-      Write_Name (Id);
+      if not Id'Valid then
+         Write_Str ("<invalid name_id>");
+
+      elsif Id = No_Name then
+         Write_Str ("<No_Name>");
+
+      elsif Id = Error_Name then
+         Write_Str ("<Error_Name>");
+
+      else
+         S := Name_Entries.Table (Id).Name_Chars_Index;
+         Name_Len := Natural (Name_Entries.Table (Id).Name_Len);
+
+         for J in 1 .. Name_Len loop
+            Write_Char (Name_Chars.Table (S + Int (J)));
+         end loop;
+      end if;
+
       Write_Eol;
    end wn;
 
