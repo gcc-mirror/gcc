@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,6 +40,9 @@ package body GNAT.Array_Split is
 
    procedure Free is
       new Ada.Unchecked_Deallocation (Separators_Indexes, Indexes_Access);
+
+   procedure Free is
+      new Ada.Unchecked_Deallocation (Element_Sequence, Element_Access);
 
    function Count
      (Source  : Element_Sequence;
@@ -81,6 +84,7 @@ package body GNAT.Array_Split is
       Mode       : Separator_Mode := Single)
    is
    begin
+      Free (S.Source);
       S.Source := new Element_Sequence'(From);
       Set (S, Separators, Mode);
    end Create;
