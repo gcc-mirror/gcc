@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---        Copyright (C) 2005 - 2006, Free Software Foundation, Inc.         --
+--         Copyright (C) 2005-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -35,6 +35,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package provides routines to determine the offset of dates to GMT.
+--  It is defined in the Ada 2005 RM (9.6.1).
+
 package Ada.Calendar.Time_Zones is
 
    --  Time zone manipulation
@@ -44,5 +47,9 @@ package Ada.Calendar.Time_Zones is
    Unknown_Zone_Error : exception;
 
    function UTC_Time_Offset (Date : Time := Clock) return Time_Offset;
+   --  Returns, as a number of minutes, the difference between the
+   --  implementation-defined time zone of Calendar, and UTC time, at the time
+   --  Date. If the time zone of the Calendar implementation is unknown, then
+   --  Unknown_Zone_Error is raised.
 
 end Ada.Calendar.Time_Zones;

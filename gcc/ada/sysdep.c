@@ -687,7 +687,7 @@ get_gmtoff (void)
 
 /* This value is returned as the time zone offset when a valid value
    cannot be determined. It is simply a bizarre value that will never
-   occur. It is 3 days plus 73 seconds (offset is in seconds. */
+   occur. It is 3 days plus 73 seconds (offset is in seconds). */
 
 long __gnat_invalid_tzoff = 259273;
 
@@ -755,8 +755,9 @@ __gnat_localtime_tzoff (const time_t *, struct tm *, long *);
 struct tm *
 __gnat_localtime_tzoff (const time_t *timer, struct tm *tp, long *off)
 {
+  /* Treat all time values in GMT */
   localtime_r (tp, timer);
-  *off = __gnat_invalid_tzoff;
+  *off = 0;
   return NULL;
 }
 
@@ -779,17 +780,60 @@ __gnat_localtime_tzoff (const time_t *timer, struct tm *tp, long *off)
 
 /* AIX, HPUX, SGI Irix, Sun Solaris */
 #if defined (_AIX) || defined (__hpux__) || defined (sgi) || defined (sun)
-  *off = (long) -timezone;
-  if (tp->tm_isdst > 0)
-    *off = *off + 3600;
+  /* The contents of external variable "timezone" may not always be
+     initialized. Instead of returning an incorrect offset, treat the local
+     time zone as 0 (UTC). The value of 28 hours is the maximum valid offset
+     allowed by Ada.Calendar.Time_Zones. */
+  if ((timezone < -28 * 3600) || (timezone > 28 * 3600))
+    *off = 0;
+  else
+  {
+    *off = (long) -timezone;
+    if (tp->tm_isdst > 0)
+      *off = *off + 3600;
+   }
+/* Lynx - Treat all time values in GMT */
+#elif defined (__Lynx__)
+  *off = 0;
 
-/* Lynx, VXWorks */
-#elif defined (__Lynx__) || defined (__vxworks)
-  *off = __gnat_invalid_tzoff;
+/* VxWorks */
+#elif defined (__vxworks)
+#include <stdlib.h>
+{
+  /* Try to read the environment variable TIMEZONE. The variable may not have
+     been initialize, in that case return an offset of zero (0) for UTC. */
+  char *tz_str = getenv ("TIMEZONE");
 
-/* Darwin, Free BSD, Linux, Tru64 */
-#else
+  if ((tz_str == NULL) || (*tz_str == '\0'))
+    *off = 0;
+  else
+  {
+    char *tz_start, *tz_end;
+
+    /* The format of the data contained in TIMEZONE is N::U:S:E where N is the
+       name of the time zone, U are the minutes difference from UTC, S is the
+       start of DST in mmddhh and E is the end of DST in mmddhh. Extracting
+       the value of U involves setting two pointers, one at the beginning and
+       one at the end of the value. The end pointer is then set to null in
+       order to delimit a string slice for atol to process. */
+    tz_start = index (tz_str, ':') + 2;
+    tz_end = index (tz_start, ':');
+    tz_end = '\0';
+
+    /* The Ada layer expects an offset in seconds */
+    *off = atol (tz_start) * 60;
+  }
+}
+
+/* Darwin, Free BSD, Linux, Tru64, where there exists a component tm_gmtoff
+   in struct tm */
+#elif defined (__APPLE__) || defined (__FreeBSD__) || defined (linux) ||\
+     (defined (__alpha__) && defined (__osf__))
   *off = tp->tm_gmtoff;
+
+/* All other platforms: Treat all time values in GMT */
+#else
+  *off = 0;
 #endif
    return NULL;
 }
@@ -797,3 +841,59 @@ __gnat_localtime_tzoff (const time_t *timer, struct tm *tp, long *off)
 #endif
 #endif
 #endif
+
+#ifdef __vxworks
+
+#include <taskLib.h>
+
+/* __gnat_get_task_options is used by s-taprop.adb only for VxWorks. This
+   function returns the options to be set when creating a new task. It fetches
+   the options assigned to the current task (parent), so offering some user
+   level control over the options for a task hierarchy. It forces VX_FP_TASK
+   because it is almost always required. */
+extern int __gnat_get_task_options (void);
+
+int
+__gnat_get_task_options (void)
+{
+  int options;
+
+  /* Get the options for the task creator */
+  taskOptionsGet (taskIdSelf (), &options);
+
+  /* Force VX_FP_TASK because it is almost always required */
+  options |= VX_FP_TASK;
+
+  /* Mask those bits that are not under user control */
+#ifdef VX_USR_TASK_OPTIONS
+  return options & VX_USR_TASK_OPTIONS;
+#else
+  return options;
+#endif
+}
+
+#endif
+
+#ifdef __Lynx__
+
+/*
+   The following code works around a problem in LynxOS version 4.2. As
+   of that version, the symbol pthread_mutex_lock has been removed
+   from libc and replaced with an inline C function in a system
+   header.
+
+   LynuxWorks has indicated that this is a bug and that they intend to
+   put that symbol back in libc in a future patch level, following
+   which this patch can be removed. However, for the time being we use
+   a wrapper which can be imported from the runtime.
+*/
+
+#include <pthread.h>
+
+int
+__gnat_pthread_mutex_lock (pthread_mutex_t *mutex)
+{
+  return pthread_mutex_lock (mutex);
+}
+
+#endif /* __Lynx__ */

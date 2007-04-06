@@ -31,26 +31,29 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Conversion;
-
 package body Ada.Calendar.Arithmetic is
 
-   use Leap_Sec_Ops;
+   --------------------------
+   -- Implementation Notes --
+   --------------------------
 
-   Day_Duration : constant Duration := 86_400.0;
+   --  All operations in this package are target and time representation
+   --  independent, thus only one source file is needed for multiple targets.
 
    ---------
    -- "+" --
    ---------
 
    function "+" (Left : Time; Right : Day_Count) return Time is
+      R : constant Long_Integer := Long_Integer (Right);
    begin
-      return Left + Integer (Right) * Day_Duration;
+      return Arithmetic_Operations.Add (Left, R);
    end "+";
 
    function "+" (Left : Day_Count; Right : Time) return Time is
+      L : constant Long_Integer := Long_Integer (Left);
    begin
-      return Integer (Left) * Day_Duration + Right;
+      return Arithmetic_Operations.Add (Right, L);
    end "+";
 
    ---------
@@ -58,18 +61,19 @@ package body Ada.Calendar.Arithmetic is
    ---------
 
    function "-" (Left : Time; Right : Day_Count) return Time is
+      R : constant Long_Integer := Long_Integer (Right);
    begin
-      return Left - Integer (Right) * Day_Duration;
+      return Arithmetic_Operations.Subtract (Left, R);
    end "-";
 
    function "-" (Left, Right : Time) return Day_Count is
-      Days         : Day_Count;
+      Days         : Long_Integer;
       Seconds      : Duration;
-      Leap_Seconds : Leap_Seconds_Count;
-
+      Leap_Seconds : Integer;
    begin
-      Difference (Left, Right, Days, Seconds, Leap_Seconds);
-      return Days;
+      Arithmetic_Operations.Difference
+        (Left, Right, Days, Seconds, Leap_Seconds);
+      return Day_Count (Days);
    end "-";
 
    ----------------
@@ -77,66 +81,19 @@ package body Ada.Calendar.Arithmetic is
    ----------------
 
    procedure Difference
-     (Left, Right  : Time;
+     (Left         : Time;
+      Right        : Time;
       Days         : out Day_Count;
       Seconds      : out Duration;
       Leap_Seconds : out Leap_Seconds_Count)
    is
-      Diff        : Duration;
-      Earlier     : Time;
-      Later       : Time;
-      Leaps_Dur   : Duration;
-      Negate      : Boolean;
-      Next_Leap   : Time;
-      Secs_Diff   : Long_Integer;
-      Sub_Seconds : Duration;
-
+      Op_Days  : Long_Integer;
+      Op_Leaps : Integer;
    begin
-      if Left >= Right then
-         Later   := Left;
-         Earlier := Right;
-         Negate  := False;
-      else
-         Later   := Right;
-         Earlier := Left;
-         Negate  := True;
-      end if;
-
-      Diff := Later - Earlier;
-
-      Cumulative_Leap_Secs (Earlier, Later, Leaps_Dur, Next_Leap);
-
-      if Later >= Next_Leap then
-         Leaps_Dur := Leaps_Dur + 1.0;
-      end if;
-
-      Diff := Diff - Leaps_Dur;
-
-      declare
-         type D_Int is range 0 .. 2 ** (Duration'Size - 1) - 1;
-         for D_Int'Size use Duration'Size;
-
-         Small_Div : constant D_Int := D_Int (1.0 / Duration'Small);
-         D_As_Int  : D_Int;
-
-         function To_D_As_Int is new Unchecked_Conversion (Duration, D_Int);
-         function To_Duration is new Unchecked_Conversion (D_Int, Duration);
-
-      begin
-         D_As_Int    := To_D_As_Int (Diff);
-         Secs_Diff   := Long_Integer (D_As_Int / Small_Div);
-         Sub_Seconds := To_Duration (D_As_Int rem Small_Div);
-      end;
-
-      Days    := Day_Count (Secs_Diff / 86_400);
-      Seconds := Duration (Secs_Diff mod 86_400) + Sub_Seconds;
-      Leap_Seconds := Leap_Seconds_Count (Leaps_Dur);
-
-      if Negate then
-         Days         := -Days;
-         Seconds      := -Seconds;
-         Leap_Seconds := -Leap_Seconds;
-      end if;
+      Arithmetic_Operations.Difference
+        (Left, Right, Op_Days, Seconds, Op_Leaps);
+      Days := Day_Count (Op_Days);
+      Leap_Seconds := Leap_Seconds_Count (Op_Leaps);
    end Difference;
 
 end Ada.Calendar.Arithmetic;
