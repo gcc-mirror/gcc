@@ -23,7 +23,6 @@
 	mode macro.
 	(*truncxf?f_i387 splitter): Ditto.
 
->>>>>>> .r123627
 2007-04-06  Daniel Berlin  <dberlin@dberlin.org>
 
 	* langhooks-def.h (LANG_HOOKS_INITIALIZER): Remove
