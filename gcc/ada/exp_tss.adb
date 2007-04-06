@@ -44,7 +44,7 @@ package body Exp_Tss is
       Proc      : Entity_Id;
 
    begin
-      pragma Assert (Ekind (Typ) in Type_Kind);
+      pragma Assert (Is_Type (Typ));
 
       if Is_Private_Type (Typ) then
          Full_Type := Underlying_Type (Base_Type (Typ));
