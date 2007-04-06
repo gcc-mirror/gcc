@@ -24,8 +24,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with GNAT.OS_Lib; use GNAT.OS_Lib;
-
 with Debug;    use Debug;
 with Lib;      use Lib;
 with Osint;    use Osint;
@@ -34,6 +32,8 @@ with Prepcomp; use Prepcomp;
 with Validsw;  use Validsw;
 with Sem_Warn; use Sem_Warn;
 with Stylesw;  use Stylesw;
+
+with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 with System.WCh_Con; use System.WCh_Con;
 
@@ -47,24 +47,29 @@ package body Switch.C is
    -----------------------------
 
    procedure Scan_Front_End_Switches (Switch_Chars : String) is
-      Switch_Starts_With_Gnat : Boolean;
-      --  True if first four switch characters are "gnat"
-
       First_Switch : Boolean := True;
       --  False for all but first switch
 
-      Ptr : Integer := Switch_Chars'First;
-      Max : constant Integer := Switch_Chars'Last;
+      Max : constant Natural := Switch_Chars'Last;
+      Ptr : Natural;
       C   : Character := ' ';
       Dot : Boolean;
 
-      Store_Switch : Boolean  := True;
-      First_Char   : Integer  := Ptr;
-      Storing      : String   := Switch_Chars;
-      First_Stored : Positive := Ptr + 1;
-      --  The above need comments ???
+      Store_Switch : Boolean;
+      --  For -gnatxx switches, the normal processing, signalled by this flag
+      --  being set to True, is to store the switch on exit from the case
+      --  statement, the switch stored is -gnat followed by the characters
+      --  from First_Char to Ptr-1. For cases like -gnaty, where the switch
+      --  is stored in separate pieces, this flag is set to False, and the
+      --  appropriate calls to Store_Compilation_Switch are made from within
+      --  the case branch.
+
+      First_Char : Positive;
+      --  Marks start of switch to be stored
 
    begin
+      Ptr := Switch_Chars'First;
+
       --  Skip past the initial character (must be the switch character)
 
       if Ptr = Max then
@@ -73,123 +78,120 @@ package body Switch.C is
          Ptr := Ptr + 1;
       end if;
 
-      --  Remove "gnat" from the switch, if present
+      --  Handle switches that do not start with -gnat
 
-      Switch_Starts_With_Gnat :=
-        Ptr + 3 <= Max and then Switch_Chars (Ptr .. Ptr + 3) = "gnat";
+      if Ptr + 3 > Max
+        or else Switch_Chars (Ptr .. Ptr + 3) /= "gnat"
+      then
+         --  There are two front-end switches that do not start with -gnat:
+         --  -I, --RTS
 
-      if Switch_Starts_With_Gnat then
-         Ptr := Ptr + 4;
-         First_Stored := Ptr;
-      end if;
+         if Switch_Chars (Ptr) = 'I' then
 
-      --  Loop to scan through switches given in switch string
+            --  Set flag Search_Directory_Present if switch is "-I" only:
+            --  the directory will be the next argument.
 
-      while Ptr <= Max loop
-         Store_Switch := True;
-         First_Char := Ptr;
-         C := Switch_Chars (Ptr);
+            if Ptr = Max then
+               Search_Directory_Present := True;
+               return;
+            end if;
 
-         --  Processing for a switch
+            Ptr := Ptr + 1;
 
-         case Switch_Starts_With_Gnat is
+            --  Find out whether this is a -I- or regular -Ixxx switch
 
-            when False =>
+            --  Note: -I switches are not recorded in the ALI file, since the
+            --  meaning of the program depends on the source files compiled,
+            --  not where they came from.
 
-            --  There are few front-end switches that
-            --  do not start with -gnat: -I, --RTS
+            if Ptr = Max and then Switch_Chars (Ptr) = '-' then
+               Look_In_Primary_Dir := False;
+            else
+               Add_Src_Search_Dir (Switch_Chars (Ptr .. Max));
+            end if;
 
-               if Switch_Chars (Ptr) = 'I' then
-                  Store_Switch := False;
+         --  Processing of the --RTS switch. --RTS has been modified by
+         --  gcc and is now of the form -fRTS.
 
-                  --  Set flag Search_Directory_Present if switch is "-I" only:
-                  --  the directory will be the next argument.
+         elsif Ptr + 3 <= Max
+           and then Switch_Chars (Ptr .. Ptr + 3) = "fRTS"
+         then
+            Ptr := Ptr + 1;
 
-                  if Ptr = Max then
-                     Search_Directory_Present := True;
-                     return;
-                  end if;
+            if Ptr + 4 > Max
+              or else Switch_Chars (Ptr + 3) /= '='
+            then
+               Osint.Fail ("missing path for --RTS");
+            else
+               --  Check that this is the first time --RTS is specified or if
+               --  it is not the first time, the same path has been specified.
 
-                  Ptr := Ptr + 1;
+               if RTS_Specified = null then
+                  RTS_Specified :=
+                    new String'(Switch_Chars (Ptr + 4 .. Max));
 
-                  --  Find out whether this is a -I- or regular -Ixxx switch
-
-                  if Ptr = Max and then Switch_Chars (Ptr) = '-' then
-                     Look_In_Primary_Dir := False;
-
-                  else
-                     Add_Src_Search_Dir (Switch_Chars (Ptr .. Max));
-                  end if;
-
-                  Ptr := Max + 1;
-
-               --  Processing of the --RTS switch. --RTS has been modified by
-               --  gcc and is now of the form -fRTS
-
-               elsif Ptr + 3 <= Max
-                 and then Switch_Chars (Ptr .. Ptr + 3) = "fRTS"
+               elsif
+                 RTS_Specified.all /= Switch_Chars (Ptr + 4 .. Max)
                then
-                  Ptr := Ptr + 1;
-
-                  if Ptr + 4 > Max
-                    or else Switch_Chars (Ptr + 3) /= '='
-                  then
-                     Osint.Fail ("missing path for --RTS");
-                  else
-                     --  Check that this is the first time --RTS is specified
-                     --  or if it is not the first time, the same path has
-                     --  been specified.
-
-                     if RTS_Specified = null then
-                        RTS_Specified :=
-                          new String'(Switch_Chars (Ptr + 4 .. Max));
-
-                     elsif
-                       RTS_Specified.all /= Switch_Chars (Ptr + 4 .. Max)
-                     then
-                        Osint.Fail
-                          ("--RTS cannot be specified multiple times");
-                     end if;
-
-                     --  Valid --RTS switch
-
-                     Opt.No_Stdinc := True;
-                     Opt.RTS_Switch := True;
-
-                     RTS_Src_Path_Name := Get_RTS_Search_Dir
-                                            (Switch_Chars (Ptr + 4 .. Max),
-                                             Include);
-                     RTS_Lib_Path_Name := Get_RTS_Search_Dir
-                                            (Switch_Chars (Ptr + 4 .. Max),
-                                             Objects);
-
-                     if RTS_Src_Path_Name /= null and then
-                        RTS_Lib_Path_Name /= null
-                     then
-                        Ptr := Max + 1;
-
-                     elsif RTS_Src_Path_Name = null and then
-                           RTS_Lib_Path_Name = null
-                     then
-                        Osint.Fail ("RTS path not valid: missing " &
-                                    "adainclude and adalib directories");
-
-                     elsif RTS_Src_Path_Name = null then
-                        Osint.Fail ("RTS path not valid: missing " &
-                                    "adainclude directory");
-
-                     elsif RTS_Lib_Path_Name = null then
-                        Osint.Fail ("RTS path not valid: missing " &
-                                    "adalib directory");
-                     end if;
-                  end if;
-               else
-                  Bad_Switch (C);
+                  Osint.Fail
+                    ("--RTS cannot be specified multiple times");
                end if;
 
-         when True =>
+               --  Valid --RTS switch
 
-            --  Process -gnat* options
+               Opt.No_Stdinc := True;
+               Opt.RTS_Switch := True;
+
+               RTS_Src_Path_Name :=
+                 Get_RTS_Search_Dir
+                   (Switch_Chars (Ptr + 4 .. Max), Include);
+
+               RTS_Lib_Path_Name :=
+                 Get_RTS_Search_Dir
+                   (Switch_Chars (Ptr + 4 .. Max), Objects);
+
+               if RTS_Src_Path_Name /= null
+                 and then RTS_Lib_Path_Name /= null
+               then
+                  --  Store the -fRTS switch (Note: Store_Compilation_Switch
+                  --  changes -fRTS back into --RTS for the actual output).
+
+                  Store_Compilation_Switch (Switch_Chars);
+
+               elsif RTS_Src_Path_Name = null
+                 and then RTS_Lib_Path_Name = null
+               then
+                  Osint.Fail ("RTS path not valid: missing " &
+                              "adainclude and adalib directories");
+
+               elsif RTS_Src_Path_Name = null then
+                  Osint.Fail ("RTS path not valid: missing " &
+                              "adainclude directory");
+
+               elsif RTS_Lib_Path_Name = null then
+                  Osint.Fail ("RTS path not valid: missing " &
+                              "adalib directory");
+               end if;
+            end if;
+
+            --  There are no other switches not starting with -gnat
+
+         else
+            Bad_Switch (C);
+         end if;
+
+      --  Case of switch starting with -gnat
+
+      else
+         Ptr := Ptr + 4;
+
+         --  Loop to scan through switches given in switch string
+
+         while Ptr <= Max loop
+            First_Char := Ptr;
+            Store_Switch := True;
+
+            C := Switch_Chars (Ptr);
 
             case C is
 
@@ -229,7 +231,6 @@ package body Switch.C is
 
             when 'd' =>
                Store_Switch := False;
-               Storing (First_Stored) := 'd';
                Dot := False;
 
                --  Note: for the debug switch, the remaining characters in this
@@ -249,17 +250,10 @@ package body Switch.C is
                   then
                      if Dot then
                         Set_Dotted_Debug_Flag (C);
-                        Storing (First_Stored + 1) := '.';
-                        Storing (First_Stored + 2) := C;
-                        Store_Compilation_Switch
-                          (Storing (Storing'First .. First_Stored + 2));
-                        Dot := False;
-
+                        Store_Compilation_Switch ("-gnatd." & C);
                      else
                         Set_Debug_Flag (C);
-                        Storing (First_Stored + 1) := C;
-                        Store_Compilation_Switch
-                          (Storing (Storing'First .. First_Stored + 1));
+                        Store_Compilation_Switch ("-gnatd" & C);
                      end if;
 
                   elsif C = '.' then
@@ -349,7 +343,7 @@ package body Switch.C is
 
                      return;
 
-                  --  -gnateD switch (symbol definition)
+                  --  -gnateD switch (preprocessing symbol definition)
 
                   when 'D' =>
                      Store_Switch := False;
@@ -363,13 +357,9 @@ package body Switch.C is
 
                      --  Store the switch
 
-                     Storing (First_Stored .. First_Stored + 1) := "eD";
-                     Storing
-                       (First_Stored + 2 .. First_Stored + Max - Ptr + 2) :=
-                       Switch_Chars (Ptr .. Max);
-                     Store_Compilation_Switch (Storing
-                              (Storing'First .. First_Stored + Max - Ptr + 2));
-                     return;
+                     Store_Compilation_Switch
+                       ("-gnateD" & Switch_Chars (Ptr .. Max));
+                     Ptr := Max + 1;
 
                   --  -gnatef (full source path for brief error messages)
 
@@ -383,8 +373,7 @@ package body Switch.C is
 
                   when 'I' =>
                      Ptr := Ptr + 1;
-                     Scan_Pos
-                       (Switch_Chars, Max, Ptr, Multiple_Unit_Index, C);
+                     Scan_Pos (Switch_Chars, Max, Ptr, Multiple_Unit_Index, C);
 
                   --  -gnatem (mapping file)
 
@@ -427,22 +416,12 @@ package body Switch.C is
                      Preprocessing_Data_File :=
                        new String'(Switch_Chars (Ptr .. Max));
 
-                     --  Store the switch.
-                     --  Because we may store a longer switch (we normalize
-                     --  to -gnatep=), use a local variable.
+                     --  Store the switch, normalizing to -gnatep=
 
-                     declare
-                        To_Store : String
-                          (1 .. Preprocessing_Data_File'Length + 8);
+                     Store_Compilation_Switch
+                       ("-gnatep=" & Preprocessing_Data_File.all);
 
-                     begin
-                        To_Store (1 .. 8) := "-gnatep=";
-                        To_Store (9 .. Preprocessing_Data_File'Length + 8) :=
-                          Preprocessing_Data_File.all;
-                        Store_Compilation_Switch (To_Store);
-                     end;
-
-                  return;
+                     Ptr := Max + 1;
 
                   when 'z' =>
                      Store_Switch := False;
@@ -509,7 +488,7 @@ package body Switch.C is
                Warn_On_Unchecked_Conversion := True;
                Warn_On_Unrecognized_Pragma  := True;
 
-               Set_Style_Check_Options ("3abcdefhiklmnprstux");
+               Set_Style_Check_Options ("3aAbcdefhiklmnprstux");
 
             --  Processing for G switch
 
@@ -680,10 +659,10 @@ package body Switch.C is
             --  Processing for R switch
 
             when 'R' =>
-               Ptr := Ptr + 1;
                Back_Annotate_Rep_Info := True;
                List_Representation_Info := 1;
 
+               Ptr := Ptr + 1;
                while Ptr <= Max loop
                   C := Switch_Chars (Ptr);
 
@@ -761,7 +740,6 @@ package body Switch.C is
 
             when 'V' =>
                Store_Switch := False;
-               Storing (First_Stored) := 'V';
                Ptr := Ptr + 1;
 
                if Ptr > Max then
@@ -780,10 +758,8 @@ package body Switch.C is
                      end if;
 
                      for Index in First_Char + 1 .. Max loop
-                        Storing (First_Stored + 1) :=
-                          Switch_Chars (Index);
                         Store_Compilation_Switch
-                          (Storing (Storing'First .. First_Stored + 1));
+                          ("-gnatV" & Switch_Chars (Index));
                      end loop;
                   end;
                end if;
@@ -794,7 +770,6 @@ package body Switch.C is
 
             when 'w' =>
                Store_Switch := False;
-               Storing (First_Stored) := 'w';
                Ptr := Ptr + 1;
 
                if Ptr > Max then
@@ -804,16 +779,26 @@ package body Switch.C is
                while Ptr <= Max loop
                   C := Switch_Chars (Ptr);
 
-                  if Set_Warning_Switch (C) then
-                     null;
-                  else
-                     Bad_Switch (C);
-                  end if;
+                  --  Case of dot switch
 
-                  if C /= 'w' then
-                     Storing (First_Stored + 1) := C;
-                     Store_Compilation_Switch
-                       (Storing (Storing'First .. First_Stored + 1));
+                  if C = '.' and then Ptr < Max then
+                     Ptr := Ptr + 1;
+                     C := Switch_Chars (Ptr);
+
+                     if Set_Dot_Warning_Switch (C) then
+                        Store_Compilation_Switch ("-gnatw." & C);
+                     else
+                        Bad_Switch (C);
+                     end if;
+
+                     --  Normal case, no dot
+
+                  else
+                     if Set_Warning_Switch (C) then
+                        Store_Compilation_Switch ("-gnatw" & C);
+                     else
+                        Bad_Switch (C);
+                     end if;
                   end if;
 
                   Ptr := Ptr + 1;
@@ -855,8 +840,6 @@ package body Switch.C is
             when 'X' =>
                Ptr := Ptr + 1;
                Extensions_Allowed := True;
-               Ada_Version := Ada_Version_Type'Last;
-               Ada_Version_Explicit := Ada_Version;
 
             --  Processing for y switch
 
@@ -868,11 +851,9 @@ package body Switch.C is
 
                else
                   Store_Switch := False;
-                  Storing (First_Stored) := 'y';
 
                   declare
                      OK  : Boolean;
-                     Last_Stored : Integer;
 
                   begin
                      Set_Style_Check_Options
@@ -886,24 +867,22 @@ package body Switch.C is
 
                      Ptr := First_Char + 1;
                      while Ptr <= Max loop
-                        Last_Stored := First_Stored + 1;
-                        Storing (Last_Stored) := Switch_Chars (Ptr);
-
                         if Switch_Chars (Ptr) = 'M' then
+                           First_Char := Ptr;
                            loop
                               Ptr := Ptr + 1;
                               exit when Ptr > Max
                                 or else Switch_Chars (Ptr) not in '0' .. '9';
-                              Last_Stored := Last_Stored + 1;
-                              Storing (Last_Stored) := Switch_Chars (Ptr);
                            end loop;
 
+                           Store_Compilation_Switch
+                             ("-gnaty" & Switch_Chars (First_Char .. Ptr - 1));
+
                         else
+                           Store_Compilation_Switch
+                             ("-gnaty" & Switch_Chars (Ptr));
                            Ptr := Ptr + 1;
                         end if;
-
-                        Store_Compilation_Switch
-                          (Storing (Storing'First .. Last_Stored));
                      end loop;
                   end;
                end if;
@@ -929,7 +908,6 @@ package body Switch.C is
                   end case;
 
                   Ptr := Ptr + 1;
-
                end if;
 
             --  Processing for Z switch
@@ -1000,17 +978,15 @@ package body Switch.C is
             when others =>
                Bad_Switch (C);
             end case;
-         end case;
 
-         if Store_Switch then
-            Storing (First_Stored .. First_Stored + Ptr - First_Char - 1) :=
-              Switch_Chars (First_Char .. Ptr - 1);
-            Store_Compilation_Switch
-              (Storing (Storing'First .. First_Stored + Ptr - First_Char - 1));
-         end if;
+            if Store_Switch then
+               Store_Compilation_Switch
+                 ("-gnat" & Switch_Chars (First_Char .. Ptr - 1));
+            end if;
 
-         First_Switch := False;
-      end loop;
+            First_Switch := False;
+         end loop;
+      end if;
    end Scan_Front_End_Switches;
 
 end Switch.C;

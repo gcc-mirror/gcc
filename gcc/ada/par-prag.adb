@@ -376,13 +376,9 @@ begin
 
          if Chars (Expression (Arg1)) = Name_On then
             Extensions_Allowed := True;
-            Ada_Version := Ada_Version_Type'Last;
          else
             Extensions_Allowed := False;
-            Ada_Version := Ada_Version_Type'Min (Ada_Version, Ada_95);
          end if;
-
-         Ada_Version_Explicit := Ada_Version;
 
       ----------------
       -- List (2.8) --
@@ -1058,6 +1054,7 @@ begin
            Pragma_Atomic                        |
            Pragma_Atomic_Components             |
            Pragma_Attach_Handler                |
+           Pragma_Compile_Time_Error            |
            Pragma_Compile_Time_Warning          |
            Pragma_Convention_Identifier         |
            Pragma_CPP_Class                     |
@@ -1179,6 +1176,7 @@ begin
            Pragma_Unimplemented_Unit            |
            Pragma_Universal_Data                |
            Pragma_Unreferenced                  |
+           Pragma_Unreferenced_Objects          |
            Pragma_Unreserve_All_Interrupts      |
            Pragma_Unsuppress                    |
            Pragma_Use_VADS_Size                 |

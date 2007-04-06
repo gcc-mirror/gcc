@@ -392,6 +392,7 @@ package body Sem_Warn is
                      --  or if it is a parameter, to the corresponding spec.
 
                      if Has_Pragma_Unreferenced (E1)
+                       or else Has_Pragma_Unreferenced_Objects (Etype (E1))
                        or else (Is_Formal (E1)
                                   and then Present (Spec_Entity (E1))
                                   and then
@@ -1641,6 +1642,7 @@ package body Sem_Warn is
                   then
                      if Warn_On_Modified_Unread
                        and then not Is_Imported (E)
+                       and then not Is_Return_Object (E)
 
                         --  Suppress message for aliased or renamed variables,
                         --  since there may be other entities that read the
@@ -1658,20 +1660,12 @@ package body Sem_Warn is
                   --  Normal case of neither assigned nor read
 
                   else
-                     --  We suppress the message for limited controlled types,
-                     --  to catch the common design pattern (known as RAII, or
-                     --  Resource Acquisition Is Initialization) which uses
-                     --  such types solely for their initialization and
-                     --  finalization semantics.
+                     --  We suppress the message for types for which a valid
+                     --  pragma Unreferenced_Objects has been given, otherwise
+                     --  we go ahead and give the message.
 
-                     if Is_Controlled (Etype (E))
-                       and then Is_Limited_Type (Etype (E))
-                     then
-                        null;
+                     if not Has_Pragma_Unreferenced_Objects (Etype (E)) then
 
-                     --  Normal case where we want to give message
-
-                     else
                         --  Distinguish renamed case in message
 
                         if Present (Renamed_Object (E))
@@ -1740,6 +1734,26 @@ package body Sem_Warn is
       end loop;
    end Output_Unreferenced_Messages;
 
+   ----------------------------
+   -- Set_Dot_Warning_Switch --
+   ----------------------------
+
+   function Set_Dot_Warning_Switch (C : Character) return Boolean is
+   begin
+      case C is
+         when 'x' =>
+            Warn_On_Non_Local_Exception         := True;
+
+         when 'X' =>
+            Warn_On_Non_Local_Exception         := False;
+
+         when others =>
+            return False;
+      end case;
+
+      return True;
+   end Set_Dot_Warning_Switch;
+
    ------------------------
    -- Set_Warning_Switch --
    ------------------------
@@ -1761,6 +1775,7 @@ package body Sem_Warn is
             Warn_On_Export_Import               := True;
             Warn_On_Modified_Unread             := True;
             Warn_On_No_Value_Assigned           := True;
+            Warn_On_Non_Local_Exception         := True;
             Warn_On_Obsolescent_Feature         := True;
             Warn_On_Questionable_Missing_Parens := True;
             Warn_On_Redundant_Constructs        := True;
@@ -1784,8 +1799,9 @@ package body Sem_Warn is
             Warn_On_Hiding                      := False;
             Warn_On_Modified_Unread             := False;
             Warn_On_No_Value_Assigned           := False;
+            Warn_On_Non_Local_Exception         := False;
             Warn_On_Obsolescent_Feature         := False;
-            Warn_On_Questionable_Missing_Parens := True;
+            Warn_On_Questionable_Missing_Parens := False;
             Warn_On_Redundant_Constructs        := False;
             Warn_On_Unchecked_Conversion        := False;
             Warn_On_Unrecognized_Pragma         := False;
@@ -2409,11 +2425,12 @@ package body Sem_Warn is
    --  Start of processing for Warn_On_Useless_Assignment
 
    begin
-      --  Check if this is a case we want to warn on, a variable with
-      --  the last assignment field set, with warnings enabled, and
-      --  which is not imported or exported.
+      --  Check if this is a case we want to warn on, a variable with the
+      --  last assignment field set, with warnings enabled, and which is
+      --  not imported or exported.
 
       if Ekind (Ent) = E_Variable
+        and then not Is_Return_Object (Ent)
         and then Present (Last_Assignment (Ent))
         and then not Warnings_Off (Ent)
         and then not Has_Pragma_Unreferenced (Ent)

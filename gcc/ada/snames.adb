@@ -139,7 +139,7 @@ package body Snames is
      "partition#" &
      "partition_interface#" &
      "ras#" &
-     "call#" &
+     "_call#" &
      "rci_name#" &
      "receiver#" &
      "result#" &
@@ -178,6 +178,7 @@ package body Snames is
      "ada_2005#" &
      "assertion_policy#" &
      "c_pass_by_copy#" &
+     "compile_time_error#" &
      "compile_time_warning#" &
      "component_alignment#" &
      "convention_identifier#" &
@@ -317,6 +318,7 @@ package body Snames is
      "unchecked_union#" &
      "unimplemented_unit#" &
      "unreferenced#" &
+     "unreferenced_objects#" &
      "unreserve_all_interrupts#" &
      "volatile#" &
      "volatile_components#" &
@@ -333,6 +335,7 @@ package body Snames is
      "asm#" &
      "assembly#" &
      "default#" &
+     "c_plus_plus#" &
      "dll#" &
      "win32#" &
      "as_is#" &
@@ -664,13 +667,16 @@ package body Snames is
      "ada_roots#" &
      "archive_builder#" &
      "archive_indexer#" &
+     "archive_suffix#" &
      "binder#" &
      "binder_driver#" &
      "body_suffix#" &
      "builder#" &
+     "builder_switches#" &
      "compiler#" &
      "compiler_driver#" &
      "compiler_kind#" &
+     "compiler_minimum_options#" &
      "compiler_pic_option#" &
      "compute_dependency#" &
      "config_body_file_name#" &
@@ -695,6 +701,7 @@ package body Snames is
      "finder#" &
      "global_compiler_switches#" &
      "global_configuration_pragmas#" &
+     "global_config_file#" &
      "gnatls#" &
      "gnatstub#" &
      "implementation#" &
@@ -707,32 +714,47 @@ package body Snames is
      "language_processing#" &
      "languages#" &
      "library_ali_dir#" &
-     "library_dir#" &
      "library_auto_init#" &
+     "library_auto_init_supported#" &
+     "library_builder#" &
+     "library_dir#" &
      "library_gcc#" &
      "library_interface#" &
      "library_kind#" &
      "library_name#" &
+     "library_major_minor_id_supported#" &
      "library_options#" &
      "library_reference_symbol_file#" &
      "library_src_dir#" &
+     "library_support#" &
      "library_symbol_file#" &
      "library_symbol_policy#" &
      "library_version#" &
+     "library_version_options#" &
      "linker#" &
      "linker_executable_option#" &
      "linker_lib_dir_option#" &
      "linker_lib_name_option#" &
+     "local_config_file#" &
      "local_configuration_pragmas#" &
      "locally_removed_files#" &
      "mapping_file_switches#" &
+     "mapping_spec_suffix#" &
+     "mapping_body_suffix#" &
      "metrics#" &
+     "minimum_binder_options#" &
      "naming#" &
+     "objects_path#" &
+     "objects_path_file#" &
      "object_dir#" &
      "pretty_printer#" &
      "project#" &
      "roots#" &
+     "run_path_option#" &
      "runtime_project#" &
+     "shared_library_minimum_options#" &
+     "shared_library_prefix#" &
+     "shared_library_suffix#" &
      "separate_suffix#" &
      "source_dirs#" &
      "source_files#" &
@@ -742,7 +764,10 @@ package body Snames is
      "specification#" &
      "specification_exceptions#" &
      "specification_suffix#" &
+     "stack#" &
      "switches#" &
+     "symbolic_link_supported#" &
+     "toolchain_version#" &
      "unaligned_valid#" &
      "interface#" &
      "overriding#" &
@@ -976,14 +1001,16 @@ package body Snames is
 
       Convention_Identifiers.Init;
 
-      Convention_Identifiers.Append ((Name_Asm,      Convention_Assembler));
-      Convention_Identifiers.Append ((Name_Assembly, Convention_Assembler));
+      Convention_Identifiers.Append ((Name_Asm,         Convention_Assembler));
+      Convention_Identifiers.Append ((Name_Assembly,    Convention_Assembler));
 
-      Convention_Identifiers.Append ((Name_Default,  Convention_C));
-      Convention_Identifiers.Append ((Name_External, Convention_C));
+      Convention_Identifiers.Append ((Name_Default,     Convention_C));
+      Convention_Identifiers.Append ((Name_External,    Convention_C));
 
-      Convention_Identifiers.Append ((Name_DLL,      Convention_Stdcall));
-      Convention_Identifiers.Append ((Name_Win32,    Convention_Stdcall));
+      Convention_Identifiers.Append ((Name_C_Plus_Plus, Convention_CPP));
+
+      Convention_Identifiers.Append ((Name_DLL,         Convention_Stdcall));
+      Convention_Identifiers.Append ((Name_Win32,       Convention_Stdcall));
    end Initialize;
 
    -----------------------
