@@ -727,144 +727,132 @@ package body Freeze is
 
                --  Loop through components
 
-               Comp := First_Entity (T);
+               Comp := First_Component_Or_Discriminant (T);
                while Present (Comp) loop
-                  if Ekind (Comp) = E_Component
-                       or else
-                     Ekind (Comp) = E_Discriminant
+                  Ctyp := Etype (Comp);
+
+                  --  We do not know the packed size if there is a component
+                  --  clause present (we possibly could, but this would only
+                  --  help in the case of a record with partial rep clauses.
+                  --  That's because in the case of full rep clauses, the
+                  --  size gets figured out anyway by a different circuit).
+
+                  if Present (Component_Clause (Comp)) then
+                     Packed_Size_Known := False;
+                  end if;
+
+                  --  We need to identify a component that is an array where
+                  --  the index type is an enumeration type with non-standard
+                  --  representation, and some bound of the type depends on a
+                  --  discriminant.
+
+                  --  This is because gigi computes the size by doing a
+                  --  substituation of the appropriate discriminant value in
+                  --  the size expression for the base type, and gigi is not
+                  --  clever enough to evaluate the resulting expression (which
+                  --  involves a call to rep_to_pos) at compile time.
+
+                  --  It would be nice if gigi would either recognize that
+                  --  this expression can be computed at compile time, or
+                  --  alternatively figured out the size from the subtype
+                  --  directly, where all the information is at hand ???
+
+                  if Is_Array_Type (Etype (Comp))
+                    and then Present (Packed_Array_Type (Etype (Comp)))
                   then
-                     Ctyp := Etype (Comp);
+                     declare
+                        Ocomp  : constant Entity_Id :=
+                                   Original_Record_Component (Comp);
+                        OCtyp  : constant Entity_Id := Etype (Ocomp);
+                        Ind    : Node_Id;
+                        Indtyp : Entity_Id;
+                        Lo, Hi : Node_Id;
 
-                     --  We do not know the packed size if there is a
-                     --  component clause present (we possibly could,
-                     --  but this would only help in the case of a record
-                     --  with partial rep clauses. That's because in the
-                     --  case of full rep clauses, the size gets figured
-                     --  out anyway by a different circuit).
+                     begin
+                        Ind := First_Index (OCtyp);
+                        while Present (Ind) loop
+                           Indtyp := Etype (Ind);
 
-                     if Present (Component_Clause (Comp)) then
-                        Packed_Size_Known := False;
-                     end if;
+                           if Is_Enumeration_Type (Indtyp)
+                             and then Has_Non_Standard_Rep (Indtyp)
+                           then
+                              Lo := Type_Low_Bound  (Indtyp);
+                              Hi := Type_High_Bound (Indtyp);
 
-                     --  We need to identify a component that is an array
-                     --  where the index type is an enumeration type with
-                     --  non-standard representation, and some bound of the
-                     --  type depends on a discriminant.
-
-                     --  This is because gigi computes the size by doing a
-                     --  substituation of the appropriate discriminant value
-                     --  in the size expression for the base type, and gigi
-                     --  is not clever enough to evaluate the resulting
-                     --  expression (which involves a call to rep_to_pos)
-                     --  at compile time.
-
-                     --  It would be nice if gigi would either recognize that
-                     --  this expression can be computed at compile time, or
-                     --  alternatively figured out the size from the subtype
-                     --  directly, where all the information is at hand ???
-
-                     if Is_Array_Type (Etype (Comp))
-                       and then Present (Packed_Array_Type (Etype (Comp)))
-                     then
-                        declare
-                           Ocomp  : constant Entity_Id :=
-                                      Original_Record_Component (Comp);
-                           OCtyp  : constant Entity_Id := Etype (Ocomp);
-                           Ind    : Node_Id;
-                           Indtyp : Entity_Id;
-                           Lo, Hi : Node_Id;
-
-                        begin
-                           Ind := First_Index (OCtyp);
-                           while Present (Ind) loop
-                              Indtyp := Etype (Ind);
-
-                              if Is_Enumeration_Type (Indtyp)
-                                and then Has_Non_Standard_Rep (Indtyp)
+                              if Is_Entity_Name (Lo)
+                                and then Ekind (Entity (Lo)) = E_Discriminant
                               then
-                                 Lo := Type_Low_Bound  (Indtyp);
-                                 Hi := Type_High_Bound (Indtyp);
+                                 return False;
 
-                                 if Is_Entity_Name (Lo)
-                                   and then
-                                     Ekind (Entity (Lo)) = E_Discriminant
-                                 then
-                                    return False;
-
-                                 elsif Is_Entity_Name (Hi)
-                                   and then
-                                     Ekind (Entity (Hi)) = E_Discriminant
-                                 then
-                                    return False;
-                                 end if;
+                              elsif Is_Entity_Name (Hi)
+                                and then Ekind (Entity (Hi)) = E_Discriminant
+                              then
+                                 return False;
                               end if;
-
-                              Next_Index (Ind);
-                           end loop;
-                        end;
-                     end if;
-
-                     --  Clearly size of record is not known if the size of
-                     --  one of the components is not known.
-
-                     if not Size_Known (Ctyp) then
-                        return False;
-                     end if;
-
-                     --  Accumulate packed size if possible
-
-                     if Packed_Size_Known then
-
-                        --  We can only deal with elementary types, since for
-                        --  non-elementary components, alignment enters into
-                        --  the picture, and we don't know enough to handle
-                        --  proper alignment in this context. Packed arrays
-                        --  count as elementary if the representation is a
-                        --  modular type.
-
-                        if Is_Elementary_Type (Ctyp)
-                          or else (Is_Array_Type (Ctyp)
-                                     and then
-                                       Present (Packed_Array_Type (Ctyp))
-                                     and then
-                                       Is_Modular_Integer_Type
-                                         (Packed_Array_Type (Ctyp)))
-                        then
-                           --  If RM_Size is known and static, then we can
-                           --  keep accumulating the packed size.
-
-                           if Known_Static_RM_Size (Ctyp) then
-
-                              --  A little glitch, to be removed sometime ???
-                              --  gigi does not understand zero sizes yet.
-
-                              if RM_Size (Ctyp) = Uint_0 then
-                                 Packed_Size_Known := False;
-
-                              --  Normal case where we can keep accumulating
-                              --  the packed array size.
-
-                              else
-                                 Packed_Size := Packed_Size + RM_Size (Ctyp);
-                              end if;
-
-                           --  If we have a field whose RM_Size is not known
-                           --  then we can't figure out the packed size here.
-
-                           else
-                              Packed_Size_Known := False;
                            end if;
 
-                        --  If we have a non-elementary type we can't figure
-                        --  out the packed array size (alignment issues).
+                           Next_Index (Ind);
+                        end loop;
+                     end;
+                  end if;
+
+                  --  Clearly size of record is not known if the size of
+                  --  one of the components is not known.
+
+                  if not Size_Known (Ctyp) then
+                     return False;
+                  end if;
+
+                  --  Accumulate packed size if possible
+
+                  if Packed_Size_Known then
+
+                     --  We can only deal with elementary types, since for
+                     --  non-elementary components, alignment enters into the
+                     --  picture, and we don't know enough to handle proper
+                     --  alignment in this context. Packed arrays count as
+                     --  elementary if the representation is a modular type.
+
+                     if Is_Elementary_Type (Ctyp)
+                       or else (Is_Array_Type (Ctyp)
+                                and then Present (Packed_Array_Type (Ctyp))
+                                and then Is_Modular_Integer_Type
+                                           (Packed_Array_Type (Ctyp)))
+                     then
+                        --  If RM_Size is known and static, then we can
+                        --  keep accumulating the packed size.
+
+                        if Known_Static_RM_Size (Ctyp) then
+
+                           --  A little glitch, to be removed sometime ???
+                           --  gigi does not understand zero sizes yet.
+
+                           if RM_Size (Ctyp) = Uint_0 then
+                              Packed_Size_Known := False;
+
+                           --  Normal case where we can keep accumulating the
+                           --  packed array size.
+
+                           else
+                              Packed_Size := Packed_Size + RM_Size (Ctyp);
+                           end if;
+
+                        --  If we have a field whose RM_Size is not known then
+                        --  we can't figure out the packed size here.
 
                         else
                            Packed_Size_Known := False;
                         end if;
+
+                     --  If we have a non-elementary type we can't figure out
+                     --  the packed array size (alignment issues).
+
+                     else
+                        Packed_Size_Known := False;
                      end if;
                   end if;
 
-                  Next_Entity (Comp);
+                  Next_Component_Or_Discriminant (Comp);
                end loop;
 
                if Packed_Size_Known then
@@ -1627,9 +1615,9 @@ package body Freeze is
                   end if;
 
                   --  If component clause is present, then deal with the
-                  --  non-default bit order case. We cannot do this before
-                  --  the freeze point, because there is no required order
-                  --  for the component clause and the bit_order clause.
+                  --  non-default bit order case for Ada 95 mode. The required
+                  --  processing for Ada 2005 mode is handled separately after
+                  --  processing all components.
 
                   --  We only do this processing for the base type, and in
                   --  fact that's important, since otherwise if there are
@@ -1639,6 +1627,7 @@ package body Freeze is
                   if Present (CC)
                     and then Reverse_Bit_Order (Rec)
                     and then Ekind (E) = E_Record_Type
+                    and then Ada_Version <= Ada_95
                   then
                      declare
                         CFB : constant Uint    := Component_Bit_Offset (Comp);
@@ -1693,7 +1682,9 @@ package body Freeze is
                         else
                            --  Give warning if suspicious component clause
 
-                           if Intval (FB) >= System_Storage_Unit then
+                           if Intval (FB) >= System_Storage_Unit
+                             and then Warn_On_Reverse_Bit_Order
+                           then
                               Error_Msg_N
                                 ("?Bit_Order clause does not affect " &
                                  "byte ordering", Pos);
@@ -1762,20 +1753,20 @@ package body Freeze is
                   S : Entity_Id := Scope (Rec);
 
                begin
-                  --  We have a pretty bad kludge here. Suppose Rec is a
-                  --  subtype being defined in a subprogram that's created
-                  --  as part of the freezing of Rec'Base. In that case,
-                  --  we know that Comp'Base must have already been frozen by
-                  --  the time we get to elaborate this because Gigi doesn't
-                  --  elaborate any bodies until it has elaborated all of the
-                  --  declarative part. But Is_Frozen will not be  set at this
-                  --  point because we are processing code in lexical order.
+                  --  We have a pretty bad kludge here. Suppose Rec is subtype
+                  --  being defined in a subprogram that's created as part of
+                  --  the freezing of Rec'Base. In that case, we know that
+                  --  Comp'Base must have already been frozen by the time we
+                  --  get to elaborate this because Gigi doesn't elaborate any
+                  --  bodies until it has elaborated all of the declarative
+                  --  part. But Is_Frozen will not be set at this point because
+                  --  we are processing code in lexical order.
 
-                  --  We detect this case by going up the Scope chain of
-                  --  Rec and seeing if we have a subprogram scope before
-                  --  reaching the top of the scope chain or that of Comp'Base.
-                  --  If we do, then mark that Comp'Base will actually be
-                  --  frozen. If so, we merely undelay it.
+                  --  We detect this case by going up the Scope chain of Rec
+                  --  and seeing if we have a subprogram scope before reaching
+                  --  the top of the scope chain or that of Comp'Base. If we
+                  --  do, then mark that Comp'Base will actually be frozen. If
+                  --  so, we merely undelay it.
 
                   while Present (S) loop
                      if Is_Subprogram (S) then
@@ -1873,12 +1864,23 @@ package body Freeze is
             Next_Entity (Comp);
          end loop;
 
-         --  Check for useless pragma Bit_Order
+         --  Deal with pragma Bit_Order
 
-         if not Placed_Component and then Reverse_Bit_Order (Rec) then
-            ADC := Get_Attribute_Definition_Clause (Rec, Attribute_Bit_Order);
-            Error_Msg_N ("?Bit_Order specification has no effect", ADC);
-            Error_Msg_N ("\?since no component clauses were specified", ADC);
+         if Reverse_Bit_Order (Rec) and then Base_Type (Rec) = Rec then
+            if not Placed_Component then
+               ADC :=
+                 Get_Attribute_Definition_Clause (Rec, Attribute_Bit_Order);
+               Error_Msg_N
+                 ("?Bit_Order specification has no effect", ADC);
+               Error_Msg_N
+                 ("\?since no component clauses were specified", ADC);
+
+            --  Here is where we do Ada 2005 processing for bit order (the
+            --  Ada 95 case was already taken care of above).
+
+            elsif Ada_Version >= Ada_05 then
+               Adjust_Record_For_Reverse_Bit_Order (Rec);
+            end if;
          end if;
 
          --  Check for useless pragma Pack when all components placed. We only
@@ -2017,6 +2019,8 @@ package body Freeze is
       --  must be diagnosed (see e.g. 1522-005). If the enclosing subprogram
       --  comes from source, or is a generic instance, then the freeze point
       --  is the one mandated by the language. and we freze the entity.
+      --  A subprogram that is a child unit body that acts as a spec does not
+      --  have a spec that comes from source, but can only come from source.
 
       elsif In_Open_Scopes (Scope (Test_E))
         and then Scope (Test_E) /= Current_Scope
@@ -2030,6 +2034,7 @@ package body Freeze is
                if Is_Overloadable (S) then
                   if Comes_From_Source (S)
                     or else Is_Generic_Instance (S)
+                    or else Is_Child_Unit (S)
                   then
                      exit;
                   else
@@ -2318,17 +2323,6 @@ package body Freeze is
 
             if Present (Alias (E)) then
                Freeze_And_Append (Alias (E), Loc, Result);
-            end if;
-
-            --  If the return type requires a transient scope, and we are on
-            --  a target allowing functions to return with a depressed stack
-            --  pointer, then we mark the function as requiring this treatment.
-
-            if Ekind (E) = E_Function
-              and then Functions_Return_By_DSP_On_Target
-              and then Requires_Transient_Scope (Etype (E))
-            then
-               Set_Function_Returns_With_DSP (E);
             end if;
 
             if not Is_Internal (E) then
@@ -2766,10 +2760,17 @@ package body Freeze is
                   Freeze_And_Append (Packed_Array_Type (E), Loc, Result);
 
                   --  Size information of packed array type is copied to the
-                  --  array type, since this is really the representation.
+                  --  array type, since this is really the representation. But
+                  --  do not override explicit existing size values.
 
-                  Set_Size_Info (E, Packed_Array_Type (E));
-                  Set_RM_Size   (E, RM_Size (Packed_Array_Type (E)));
+                  if not Has_Size_Clause (E) then
+                     Set_Esize     (E, Esize     (Packed_Array_Type (E)));
+                     Set_RM_Size   (E, RM_Size   (Packed_Array_Type (E)));
+                  end if;
+
+                  if not Has_Alignment_Clause (E) then
+                     Set_Alignment (E, Alignment (Packed_Array_Type (E)));
+                  end if;
                end if;
 
                --  For non-packed arrays set the alignment of the array
@@ -2993,16 +2994,6 @@ package body Freeze is
                Next_Formal (Formal);
             end loop;
 
-            --  If the return type requires a transient scope, and we are on
-            --  a target allowing functions to return with a depressed stack
-            --  pointer, then we mark the function as requiring this treatment.
-
-            if Functions_Return_By_DSP_On_Target
-              and then Requires_Transient_Scope (Etype (E))
-            then
-               Set_Function_Returns_With_DSP (E);
-            end if;
-
             Freeze_Subprogram (E);
 
             --  Ada 2005 (AI-326): Check wrong use of tag incomplete type
@@ -3022,7 +3013,7 @@ package body Freeze is
          --  (however this is not set if we are not generating code or if this
          --  is an anonymous type used just for resolution).
 
-         elsif Ekind (E) = E_Access_Protected_Subprogram_Type then
+         elsif Is_Access_Protected_Subprogram_Type (E) then
 
             --  AI-326: Check wrong use of tagged incomplete types
 
@@ -3192,10 +3183,6 @@ package body Freeze is
                if Is_Concurrent_Type (Aux_E)
                  and then Present (Corresponding_Record_Type (Aux_E))
                then
-                  pragma Assert (not Is_Empty_Elmt_List
-                                       (Abstract_Interfaces
-                                        (Corresponding_Record_Type (Aux_E))));
-
                   Prim_List := Primitive_Operations
                                 (Corresponding_Record_Type (Aux_E));
                else
@@ -4458,7 +4445,6 @@ package body Freeze is
 
          elsif Is_Record_Type (Typ) then
             C := First_Entity (Typ);
-
             while Present (C) loop
                if Ekind (C) = E_Discriminant
                  or else Ekind (C) = E_Component

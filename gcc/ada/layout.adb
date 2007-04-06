@@ -2252,12 +2252,9 @@ package body Layout is
 
          Prev_Comp := Empty;
 
-         Comp := First_Entity (E);
+         Comp := First_Component_Or_Discriminant (E);
          while Present (Comp) loop
-            if (Ekind (Comp) = E_Component
-                 or else Ekind (Comp) = E_Discriminant)
-              and then Present (Component_Clause (Comp))
-            then
+            if Present (Component_Clause (Comp)) then
                if No (Prev_Comp)
                  or else
                    Component_Bit_Offset (Comp) >
@@ -2267,7 +2264,7 @@ package body Layout is
                end if;
             end if;
 
-            Next_Entity (Comp);
+            Next_Component_Or_Discriminant (Comp);
          end loop;
 
          --  We have two separate circuits, one for non-variant records and
@@ -2336,7 +2333,7 @@ package body Layout is
          --  backend figure out what is needed (it may be some kind
          --  of fat pointer, including the static link for example.
 
-         elsif Ekind (E) = E_Access_Protected_Subprogram_Type then
+         elsif Is_Access_Protected_Subprogram_Type (E) then
             null;
 
          --  For access subtypes, copy the size information from base type
