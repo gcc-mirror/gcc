@@ -285,21 +285,25 @@ package body Exp_Ch9 is
      (Loc  : Source_Ptr;
       Hi   : Node_Id;
       Lo   : Node_Id;
-      Ttyp : Entity_Id) return Node_Id;
+      Ttyp : Entity_Id;
+      Cap  : Boolean) return Node_Id;
    --  Compute (Hi - Lo) for two entry family indices. Hi is the index in
    --  an accept statement, or the upper bound in the discrete subtype of
    --  an entry declaration. Lo is the corresponding lower bound. Ttyp is
-   --  the concurrent type of the entry.
+   --  the concurrent type of the entry. If Cap is true, the result is
+   --  capped according to Entry_Family_Bound.
 
    function Family_Size
      (Loc  : Source_Ptr;
       Hi   : Node_Id;
       Lo   : Node_Id;
-      Ttyp : Entity_Id) return Node_Id;
+      Ttyp : Entity_Id;
+      Cap  : Boolean) return Node_Id;
    --  Compute (Hi - Lo) + 1 Max 0, to determine the number of entries in
    --  a family, and handle properly the superflat case. This is equivalent
    --  to the use of 'Length on the index type, but must use Family_Offset
    --  to handle properly the case of bounds that depend on discriminants.
+   --  If Cap is true, the result is capped according to Entry_Family_Bound.
 
    procedure Extract_Dispatching_Call
      (N        : Node_Id;
@@ -338,6 +342,12 @@ package body Exp_Ch9 is
    --     I : constant Index_Type := Index_Type'Val (
    --       E - <<index of first family member>> +
    --       Protected_Entry_Index (Index_Type'Pos (Index_Type'First)));
+
+   function Is_Potentially_Large_Family
+     (Base_Index : Entity_Id;
+      Conctyp    : Entity_Id;
+      Lo         : Node_Id;
+      Hi         : Node_Id) return Boolean;
 
    function Parameter_Block_Pack
      (Loc     : Source_Ptr;
@@ -457,19 +467,19 @@ package body Exp_Ch9 is
    --  Start of processing for Actual_Index_Expression
 
    begin
-      --  The queues of entries and entry families appear in  textual
-      --  order in the associated record. The entry index is computed as
-      --  the sum of the number of queues for all entries that precede the
-      --  designated one, to which is added the index expression, if this
-      --  expression denotes a member of a family.
+      --  The queues of entries and entry families appear in textual order in
+      --  the associated record. The entry index is computed as the sum of the
+      --  number of queues for all entries that precede the designated one, to
+      --  which is added the index expression, if this expression denotes a
+      --  member of a family.
 
       --  The following is a place holder for the count of simple entries
 
       Num := Make_Integer_Literal (Sloc, 1);
 
-      --  We construct an expression which is a series of addition
-      --  operations. See comments in Entry_Index_Expression, which is
-      --  identical in structure.
+      --  We construct an expression which is a series of addition operations.
+      --  See comments in Entry_Index_Expression, which is identical in
+      --  structure.
 
       if Present (Index) then
          S := Etype (Discrete_Subtype_Definition (Declaration_Node (Ent)));
@@ -818,7 +828,7 @@ package body Exp_Ch9 is
 
       Set_Exception_Handlers (New_S,
         New_List (
-          Make_Exception_Handler (Loc,
+          Make_Implicit_Exception_Handler (Loc,
             Exception_Choices => New_List (Ohandle),
 
             Statements =>  New_List (
@@ -846,8 +856,8 @@ package body Exp_Ch9 is
 
    procedure Build_Activation_Chain_Entity (N : Node_Id) is
       P     : Node_Id;
-      B     : Node_Id;
       Decls : List_Id;
+      Chain : Entity_Id;
 
    begin
       --  Loop to find enclosing construct containing activation chain variable
@@ -859,38 +869,54 @@ package body Exp_Ch9 is
         and then Nkind (P) /= N_Package_Body
         and then Nkind (P) /= N_Block_Statement
         and then Nkind (P) /= N_Task_Body
+        and then Nkind (P) /= N_Extended_Return_Statement
       loop
          P := Parent (P);
       end loop;
 
       --  If we are in a package body, the activation chain variable is
-      --  allocated in the corresponding spec. First, we save the package
-      --  body node because we enter the new entity in its Declarations list.
-
-      B := P;
+      --  declared in the body, but the Activation_Chain_Entity is attached to
+      --  the spec.
 
       if Nkind (P) = N_Package_Body then
+         Decls := Declarations (P);
          P := Unit_Declaration_Node (Corresponding_Spec (P));
-         Decls := Declarations (B);
 
       elsif Nkind (P) = N_Package_Declaration then
-         Decls := Visible_Declarations (Specification (B));
+         Decls := Visible_Declarations (Specification (P));
+
+      elsif Nkind (P) = N_Extended_Return_Statement then
+         Decls := Return_Object_Declarations (P);
 
       else
-         Decls := Declarations (B);
+         Decls := Declarations (P);
       end if;
 
       --  If activation chain entity not already declared, declare it
 
-      if No (Activation_Chain_Entity (P)) then
-         Set_Activation_Chain_Entity
-           (P, Make_Defining_Identifier (Sloc (N), Name_uChain));
+      if Nkind (P) = N_Extended_Return_Statement
+        or else No (Activation_Chain_Entity (P))
+      then
+         Chain := Make_Defining_Identifier (Sloc (N), Name_uChain);
+
+         --  An extended return statement is not really a task activator, but
+         --  it does have an activation chain on which to store the tasks
+         --  temporarily. On successful return, the tasks on this chain are
+         --  moved to the chain passed in by the
+         --  caller. N_Extended_Return_Statement does not have an
+         --  Activation_Chain_Entity, because we do not want to build a call
+         --  to Activate_Tasks; task activation is the responsibility of the
+         --  caller.
+
+         if Nkind (P) /= N_Extended_Return_Statement then
+            Set_Activation_Chain_Entity (P, Chain);
+         end if;
 
          Prepend_To (Decls,
            Make_Object_Declaration (Sloc (P),
-             Defining_Identifier => Activation_Chain_Entity (P),
+             Defining_Identifier => Chain,
              Aliased_Present => True,
-             Object_Definition   =>
+             Object_Definition =>
                New_Reference_To (RTE (RE_Activation_Chain), Sloc (P))));
 
          Analyze (First (Decls));
@@ -1111,6 +1137,7 @@ package body Exp_Ch9 is
       Lo     : Node_Id;
       Hi     : Node_Id;
       Typ    : Entity_Id;
+      Large  : Boolean;
 
    begin
       --  Count number of non-family entries
@@ -1140,11 +1167,13 @@ package body Exp_Ch9 is
             Typ := Etype (Discrete_Subtype_Definition (Parent (Ent)));
             Hi := Type_High_Bound (Typ);
             Lo := Type_Low_Bound  (Typ);
-
+            Large := Is_Potentially_Large_Family
+                       (Base_Type (Typ), Concurrent_Type, Lo, Hi);
             Ecount :=
               Make_Op_Add (Loc,
                 Left_Opnd  => Ecount,
-                Right_Opnd => Family_Size (Loc, Hi, Lo, Concurrent_Type));
+                Right_Opnd => Family_Size
+                                (Loc, Hi, Lo, Concurrent_Type, Large));
          end if;
 
          Next_Entity (Ent);
@@ -1440,13 +1469,12 @@ package body Exp_Ch9 is
             while Present (Prim_Op_Param)
               and then Present (Proc_Param)
             loop
-               --  The two parameters must be mode conformant and have
-               --  the exact same types.
+               --  The two parameters must be mode conformant
 
-               if Ekind (Defining_Identifier (Prim_Op_Param)) /=
-                  Ekind (Defining_Identifier (Proc_Param))
-                 or else Etype (Parameter_Type (Prim_Op_Param)) /=
-                         Etype (Parameter_Type (Proc_Param))
+               if not Conforming_Types (
+                 Etype (Parameter_Type (Prim_Op_Param)),
+                 Etype (Parameter_Type (Proc_Param)),
+                 Mode_Conformant)
                then
                   return False;
                end if;
@@ -1542,50 +1570,89 @@ package body Exp_Ch9 is
       --  The mode is determined by the first parameter of the interface-level
       --  procedure that the current entry is trying to override.
 
-      pragma Assert (Present (Abstract_Interfaces
-                     (Corresponding_Record_Type (Scope (Proc_Nam)))));
-
-      Iface_Elmt :=
-        First_Elmt (Abstract_Interfaces
-                    (Corresponding_Record_Type (Scope (Proc_Nam))));
+      pragma Assert (Is_Non_Empty_List (Abstract_Interface_List (Obj_Typ)));
 
       --  We must examine all the protected operations of the implemented
       --  interfaces in order to discover a possible overriding candidate.
 
-      Examine_Interfaces : while Present (Iface_Elmt) loop
-         Iface := Node (Iface_Elmt);
+      Iface := Etype (First (Abstract_Interface_List (Obj_Typ)));
 
+      Examine_Parents : loop
          if Present (Primitive_Operations (Iface)) then
             Iface_Prim_Op_Elmt := First_Elmt (Primitive_Operations (Iface));
             while Present (Iface_Prim_Op_Elmt) loop
                Iface_Prim_Op := Node (Iface_Prim_Op_Elmt);
 
-               while Present (Alias (Iface_Prim_Op)) loop
-                  Iface_Prim_Op := Alias (Iface_Prim_Op);
-               end loop;
+               if not Is_Predefined_Dispatching_Operation (Iface_Prim_Op) then
+                  while Present (Alias (Iface_Prim_Op)) loop
+                     Iface_Prim_Op := Alias (Iface_Prim_Op);
+                  end loop;
 
-               --  The current primitive operation can be overriden by the
-               --  generated entry wrapper.
+                  --  The current primitive operation can be overriden by the
+                  --  generated entry wrapper.
 
-               if Overriding_Possible (Iface_Prim_Op, Proc_Nam) then
-                  First_Param :=
-                    First (Parameter_Specifications (Parent (Iface_Prim_Op)));
+                  if Overriding_Possible (Iface_Prim_Op, Proc_Nam) then
+                     First_Param := First  (Parameter_Specifications
+                                             (Parent (Iface_Prim_Op)));
 
-                  exit Examine_Interfaces;
+                     goto Found;
+                  end if;
                end if;
 
                Next_Elmt (Iface_Prim_Op_Elmt);
             end loop;
          end if;
 
-         Next_Elmt (Iface_Elmt);
-      end loop Examine_Interfaces;
+         exit Examine_Parents when Etype (Iface) = Iface;
+
+         Iface := Etype (Iface);
+      end loop Examine_Parents;
+
+      if Present (Abstract_Interfaces
+                   (Corresponding_Record_Type (Scope (Proc_Nam))))
+      then
+         Iface_Elmt := First_Elmt
+                         (Abstract_Interfaces
+                           (Corresponding_Record_Type (Scope (Proc_Nam))));
+         Examine_Interfaces : while Present (Iface_Elmt) loop
+            Iface := Node (Iface_Elmt);
+
+            if Present (Primitive_Operations (Iface)) then
+               Iface_Prim_Op_Elmt := First_Elmt (Primitive_Operations (Iface));
+               while Present (Iface_Prim_Op_Elmt) loop
+                  Iface_Prim_Op := Node (Iface_Prim_Op_Elmt);
+
+                  if not Is_Predefined_Dispatching_Operation
+                           (Iface_Prim_Op)
+                  then
+                     while Present (Alias (Iface_Prim_Op)) loop
+                        Iface_Prim_Op := Alias (Iface_Prim_Op);
+                     end loop;
+
+                     --  The current primitive operation can be overriden by
+                     --  the generated entry wrapper.
+
+                     if Overriding_Possible (Iface_Prim_Op, Proc_Nam) then
+                        First_Param := First (Parameter_Specifications
+                                               (Parent (Iface_Prim_Op)));
+
+                        goto Found;
+                     end if;
+                  end if;
+
+                  Next_Elmt (Iface_Prim_Op_Elmt);
+               end loop;
+            end if;
+
+            Next_Elmt (Iface_Elmt);
+         end loop Examine_Interfaces;
+      end if;
 
       --  Return if no interface primitive can be overriden
 
-      if No (First_Param) then
-         return Empty;
-      end if;
+      return Empty;
+
+      <<Found>>
 
       New_Formals := Replicate_Entry_Formals (Loc, Formals);
 
@@ -1802,7 +1869,7 @@ package body Exp_Ch9 is
                E_Typ := Etype (Discrete_Subtype_Definition (Parent (Ent)));
                Hi := Convert_Discriminant_Ref (Type_High_Bound (E_Typ));
                Lo := Convert_Discriminant_Ref (Type_Low_Bound  (E_Typ));
-               Add_If_Clause (Family_Size (Loc, Hi, Lo, Typ));
+               Add_If_Clause (Family_Size (Loc, Hi, Lo, Typ, False));
             end if;
 
             Next_Entity (Ent);
@@ -2047,7 +2114,7 @@ package body Exp_Ch9 is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => Op_Stats,
                  Exception_Handlers => New_List (
-                   Make_Exception_Handler (Loc,
+                   Make_Implicit_Exception_Handler (Loc,
                      Exception_Choices => New_List (Ohandle),
 
                      Statements =>  New_List (
@@ -2833,6 +2900,12 @@ package body Exp_Ch9 is
                       Object_Definition =>
                         New_Reference_To (Etype (Formal), Loc));
 
+                  --  Mark the object as not needing initialization since the
+                  --  initialization is performed separately, avoiding errors
+                  --  on cases such as formals of null-excluding access types.
+
+                  Set_No_Initialization (N_Node);
+
                   --  We have to make an assignment statement separate for the
                   --  case of limited type. We cannot assign it unless the
                   --  Assignment_OK flag is set first.
@@ -3079,7 +3152,7 @@ package body Exp_Ch9 is
 
    begin
       --  Get the activation chain entity. Except in the case of a package
-      --  body, this is in the node that w as passed. For a package body, we
+      --  body, this is in the node that was passed. For a package body, we
       --  have to find the corresponding package declaration node.
 
       if Nkind (N) = N_Package_Body then
@@ -3375,15 +3448,8 @@ package body Exp_Ch9 is
             begin
                Get_Index_Bounds
                  (Discrete_Subtype_Definition (Parent (Efam)), Lo, Hi);
-               if Scope (Bas) = Standard_Standard
-                 and then Bas = Base_Type (Standard_Integer)
-                 and then Has_Discriminants (Conctyp)
-                 and then Present
-                   (Discriminant_Default_Value (First_Discriminant (Conctyp)))
-                 and then
-                   (Denotes_Discriminant (Lo, True)
-                     or else Denotes_Discriminant (Hi, True))
-               then
+
+               if Is_Potentially_Large_Family (Bas, Conctyp, Lo, Hi) then
                   Bas :=
                     Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
                   Bas_Decl :=
@@ -3696,7 +3762,8 @@ package body Exp_Ch9 is
                    Prefix => New_Reference_To (Base_Type (S), Sloc),
                    Expressions => New_List (Relocate_Node (Index))),
                  Type_Low_Bound (S),
-                 Ttyp));
+                 Ttyp,
+                 False));
       else
          Expr := Num;
       end if;
@@ -3721,7 +3788,7 @@ package body Exp_Ch9 is
             Expr :=
               Make_Op_Add (Sloc,
               Left_Opnd  => Expr,
-              Right_Opnd => Family_Size (Sloc, Hi, Lo, Ttyp));
+              Right_Opnd => Family_Size (Sloc, Hi, Lo, Ttyp, False));
 
          --  Other components are anonymous types to be ignored
 
@@ -5288,7 +5355,7 @@ package body Exp_Ch9 is
             --  Create the inner block to protect the abortable part
 
             Hdle := New_List (
-              Make_Exception_Handler (Loc,
+              Make_Implicit_Exception_Handler (Loc,
                 Exception_Choices =>
                   New_List (New_Reference_To (Stand.Abort_Signal, Loc)),
                 Statements => New_List (
@@ -5470,7 +5537,7 @@ package body Exp_Ch9 is
                --  exception
 
                  Exception_Handlers => New_List (
-                   Make_Exception_Handler (Loc,
+                   Make_Implicit_Exception_Handler (Loc,
 
                --  when Abort_Signal =>
                --     Abort_Undefer.all;
@@ -5538,7 +5605,7 @@ package body Exp_Ch9 is
          --  Create the inner block to protect the abortable part
 
          Hdle :=  New_List (
-           Make_Exception_Handler (Loc,
+           Make_Implicit_Exception_Handler (Loc,
              Exception_Choices =>
                New_List (New_Reference_To (Stand.Abort_Signal, Loc)),
              Statements => New_List (
@@ -6421,8 +6488,8 @@ package body Exp_Ch9 is
       Loc          : constant Source_Ptr := Sloc (N);
       Pid          : constant Entity_Id  := Corresponding_Spec (N);
       Has_Entries  : Boolean := False;
-      Op_Decl      : Node_Id;
       Op_Body      : Node_Id;
+      Op_Decl      : Node_Id;
       Op_Id        : Entity_Id;
       Disp_Op_Body : Node_Id;
       New_Op_Body  : Node_Id;
@@ -6556,29 +6623,47 @@ package body Exp_Ch9 is
                   New_Op_Body :=
                     Build_Unprotected_Subprogram_Body (Op_Body, Pid);
 
+                  --  Propagate the finalization chain to the new body.
+                  --  In the unlikely event that the subprogram contains a
+                  --  declaration or allocator for an object that requires
+                  --  finalization, the corresponding chain is created when
+                  --  analyzing the body, and attached to its entity. This
+                  --  entity is not further elaborated, and so the chain
+                  --  properly belongs to the newly created subprogram body.
+
+                  if Present
+                    (Finalization_Chain_Entity (Defining_Entity (Op_Body)))
+                  then
+                     Set_Finalization_Chain_Entity
+                       (Protected_Body_Subprogram
+                         (Corresponding_Spec (Op_Body)),
+                       Finalization_Chain_Entity (Defining_Entity (Op_Body)));
+                     Set_Analyzed
+                         (Handled_Statement_Sequence (New_Op_Body), False);
+                  end if;
+
                   Insert_After (Current_Node, New_Op_Body);
                   Current_Node := New_Op_Body;
                   Analyze (New_Op_Body);
 
                   Update_Prival_Subtypes (New_Op_Body);
 
-                  --  Build the corresponding protected operation only if
-                  --  this is a visible operation of the type, or if it is
-                  --  an interrupt handler. Otherwise it is only callable
-                  --  from within the object, and the unprotected version
-                  --  is sufficient.
+                  --  Build the corresponding protected operation. It may
+                  --  appear that this is needed only this is a visible
+                  --  operation of the type, or if it is an interrupt handler,
+                  --  and this was the strategy used previously in GNAT.
+                  --  However, the operation may be exported through a
+                  --  'Access to an external caller. This is the common idiom
+                  --  in code that uses the Ada 2005 Timing_Events package
+                  --  As a result we need to produce the protected body for
+                  --  both visible and private operations.
 
                   if Present (Corresponding_Spec (Op_Body)) then
                      Op_Decl :=
-                       Unit_Declaration_Node (Corresponding_Spec (Op_Body));
+                        Unit_Declaration_Node (Corresponding_Spec (Op_Body));
 
-                     if Nkind (Parent (Op_Decl)) = N_Protected_Definition
-                       and then
-                         (List_Containing (Op_Decl) =
-                                  Visible_Declarations (Parent (Op_Decl))
-                           or else
-                            Is_Interrupt_Handler
-                              (Corresponding_Spec (Op_Body)))
+                     if
+                       Nkind (Parent (Op_Decl)) = N_Protected_Definition
                      then
                         New_Op_Body :=
                            Build_Protected_Subprogram_Body (
@@ -6591,7 +6676,7 @@ package body Exp_Ch9 is
 
                         --  Generate an overriding primitive operation body for
                         --  this subprogram if the protected type implements
-                        --  an inerface.
+                        --  an interface.
 
                         if Ada_Version >= Ada_05
                           and then Present (Abstract_Interfaces (
@@ -7093,19 +7178,19 @@ package body Exp_Ch9 is
 
                Current_Node := Sub;
 
+               Sub :=
+                 Make_Subprogram_Declaration (Loc,
+                   Specification =>
+                     Build_Protected_Sub_Specification
+                       (Priv, Prottyp, Protected_Mode));
+
+               Insert_After (Current_Node, Sub);
+               Analyze (Sub);
+               Current_Node := Sub;
+
                if Is_Interrupt_Handler
                  (Defining_Unit_Name (Specification (Priv)))
                then
-                  Sub :=
-                    Make_Subprogram_Declaration (Loc,
-                      Specification =>
-                        Build_Protected_Sub_Specification
-                          (Priv, Prottyp, Protected_Mode));
-
-                  Insert_After (Current_Node, Sub);
-                  Analyze (Sub);
-                  Current_Node := Sub;
-
                   if not Restricted_Profile then
                      Register_Handler;
                   end if;
@@ -8331,7 +8416,7 @@ package body Exp_Ch9 is
       --  and the parameter references have already been expanded to be direct
       --  references to Ann (see Exp_Ch2.Expand_Entry_Parameter). Furthermore,
       --  any embedded tasking statements (which would normally be illegal in
-      --  procedures, have been converted to calls to the tasking runtime so
+      --  procedures), have been converted to calls to the tasking runtime so
       --  there is no problem in putting them into procedures.
 
       --  The original accept statement has been expanded into a block in
@@ -9173,11 +9258,37 @@ package body Exp_Ch9 is
          Ent_Stack := Make_Defining_Identifier (Loc, Name_uStack);
 
          if Present (Taskdef) and then Has_Storage_Size_Pragma (Taskdef) then
-            Task_Size := Relocate_Node (
-              Expression (First (
-                Pragma_Argument_Associations (
-                  Find_Task_Or_Protected_Pragma
-                    (Taskdef, Name_Storage_Size)))));
+            declare
+               Expr_N : constant Node_Id :=
+                          Expression (First (
+                            Pragma_Argument_Associations (
+                              Find_Task_Or_Protected_Pragma
+                                (Taskdef, Name_Storage_Size))));
+               Etyp   : constant Entity_Id := Etype (Expr_N);
+               P      : constant Node_Id   := Parent (Expr_N);
+
+            begin
+               --  The stack is defined inside the corresponding record.
+               --  Therefore if the size of the stack is set by means of
+               --  a discriminant, we must reference the discriminant of the
+               --  corresponding record type.
+
+               if Nkind (Expr_N) in N_Has_Entity
+                 and then Present (Discriminal_Link (Entity (Expr_N)))
+               then
+                  Task_Size :=
+                    New_Reference_To
+                      (CR_Discriminant (Discriminal_Link (Entity (Expr_N))),
+                       Loc);
+                  Set_Parent   (Task_Size, P);
+                  Set_Etype    (Task_Size, Etyp);
+                  Set_Analyzed (Task_Size);
+
+               else
+                  Task_Size := Relocate_Node (Expr_N);
+               end if;
+            end;
+
          else
             Task_Size :=
               New_Reference_To (RTE (RE_Default_Stack_Size), Loc);
@@ -10050,23 +10161,15 @@ package body Exp_Ch9 is
 
    function External_Subprogram (E : Entity_Id) return Entity_Id is
       Subp : constant Entity_Id := Protected_Body_Subprogram (E);
-      Decl : constant Node_Id   := Unit_Declaration_Node (E);
 
    begin
-      --  If the protected operation is defined in the visible part of the
-      --  protected type, or if it is an interrupt handler, the internal and
-      --  external subprograms follow each other on the entity chain. If the
-      --  operation is defined in the private part of the type, there is no
-      --  need for a separate locking version of the operation, and internal
-      --  calls use the protected_body_subprogram directly.
+      --  The internal and external subprograms follow each other on the
+      --  entity chain. Note that previously private operations had no
+      --  separate external subprogram. We now create one in all cases,
+      --  because a private operation may actually appear in an external
+      --  call, through a 'Access reference used for a callback.
 
-      if List_Containing (Decl) = Visible_Declarations (Parent (Decl))
-        or else Is_Interrupt_Handler (E)
-      then
-         return Next_Entity (Subp);
-      else
-         return (Subp);
-      end if;
+      return Next_Entity (Subp);
    end External_Subprogram;
 
    ------------------------------
@@ -10160,14 +10263,19 @@ package body Exp_Ch9 is
      (Loc  : Source_Ptr;
       Hi   : Node_Id;
       Lo   : Node_Id;
-      Ttyp : Entity_Id) return Node_Id
+      Ttyp : Entity_Id;
+      Cap  : Boolean) return Node_Id
    is
+      Ityp : Entity_Id;
+      Real_Hi : Node_Id;
+      Real_Lo : Node_Id;
+
       function Convert_Discriminant_Ref (Bound : Node_Id) return Node_Id;
       --  If one of the bounds is a reference to a discriminant, replace with
       --  corresponding discriminal of type. Within the body of a task retrieve
       --  the renamed discriminant by simple visibility, using its generated
-      --  name. Within a protected object, find the original dis- criminant and
-      --  replace it with the discriminal of the current prot- ected operation.
+      --  name. Within a protected object, find the original discriminant and
+      --  replace it with the discriminal of the current protected operation.
 
       ------------------------------
       -- Convert_Discriminant_Ref --
@@ -10217,10 +10325,34 @@ package body Exp_Ch9 is
    --  Start of processing for Family_Offset
 
    begin
-      return
-        Make_Op_Subtract (Loc,
-          Left_Opnd  => Convert_Discriminant_Ref (Hi),
-          Right_Opnd => Convert_Discriminant_Ref (Lo));
+      Real_Hi := Convert_Discriminant_Ref (Hi);
+      Real_Lo := Convert_Discriminant_Ref (Lo);
+
+      if Cap then
+         if Is_Task_Type (Ttyp) then
+            Ityp := RTE (RE_Task_Entry_Index);
+         else
+            Ityp := RTE (RE_Protected_Entry_Index);
+         end if;
+
+         Real_Hi :=
+           Make_Attribute_Reference (Loc,
+             Prefix         => New_Reference_To (Ityp, Loc),
+             Attribute_Name => Name_Min,
+             Expressions    => New_List (
+               Real_Hi,
+               Make_Integer_Literal (Loc, Entry_Family_Bound - 1)));
+
+         Real_Lo :=
+           Make_Attribute_Reference (Loc,
+             Prefix         => New_Reference_To (Ityp, Loc),
+             Attribute_Name => Name_Max,
+             Expressions    => New_List (
+               Real_Lo,
+               Make_Integer_Literal (Loc, -Entry_Family_Bound)));
+      end if;
+
+      return Make_Op_Subtract (Loc, Real_Hi, Real_Lo);
    end Family_Offset;
 
    -----------------
@@ -10231,7 +10363,8 @@ package body Exp_Ch9 is
      (Loc  : Source_Ptr;
       Hi   : Node_Id;
       Lo   : Node_Id;
-      Ttyp : Entity_Id) return Node_Id
+      Ttyp : Entity_Id;
+      Cap  : Boolean) return Node_Id
    is
       Ityp : Entity_Id;
 
@@ -10249,7 +10382,7 @@ package body Exp_Ch9 is
           Expressions    => New_List (
             Make_Op_Add (Loc,
               Left_Opnd  =>
-                Family_Offset (Loc, Hi, Lo, Ttyp),
+                Family_Offset (Loc, Hi, Lo, Ttyp, Cap),
               Right_Opnd =>
                 Make_Integer_Literal (Loc, 1)),
             Make_Integer_Literal (Loc, 0)));
@@ -10327,6 +10460,27 @@ package body Exp_Ch9 is
 
       return First_Op;
    end First_Protected_Operation;
+
+   ---------------------------------
+   -- Is_Potentially_Large_Family --
+   ---------------------------------
+
+   function Is_Potentially_Large_Family
+     (Base_Index : Entity_Id;
+      Conctyp    : Entity_Id;
+      Lo         : Node_Id;
+      Hi         : Node_Id) return Boolean
+   is
+   begin
+      return Scope (Base_Index) = Standard_Standard
+        and then Base_Index = Base_Type (Standard_Integer)
+        and then Has_Discriminants (Conctyp)
+        and then Present
+          (Discriminant_Default_Value (First_Discriminant (Conctyp)))
+        and then
+          (Denotes_Discriminant (Lo, True)
+            or else Denotes_Discriminant (Hi, True));
+   end Is_Potentially_Large_Family;
 
    --------------------------------
    -- Index_Constant_Declaration --
@@ -11219,8 +11373,16 @@ package body Exp_Ch9 is
                --  new itype for the corresponding prival in each protected
                --  operation, to avoid scoping problems. We create new itypes
                --  by copying the tree for the component definition.
+               --  (Ada 2005) If the itype is an anonymous access type created
+               --  for an access definition for a component, it is declared in
+               --  the enclosing scope, and we do no create a local version of
+               --  it, to prevent scoping anomalies in gigi.
 
-               if Is_Itype (Etype (P_Id)) then
+               if Is_Itype (Etype (P_Id))
+                  and then not
+                    (Is_Access_Type (Etype (P_Id))
+                      and then Is_Local_Anonymous_Access (Etype (P_Id)))
+               then
                   Append_Elmt (P_Id, Assoc_L);
                   Append_Elmt (Priv, Assoc_L);
 
