@@ -272,6 +272,8 @@ package body System.Tasking.Protected_Objects.Operations is
       pragma Import (C, Transfer_Occurrence, "__gnat_transfer_occurrence");
 
       Entry_Call : constant Entry_Call_Link := Object.Call_In_Progress;
+      Self_Id    : Task_Id;
+
    begin
       pragma Debug
        (Debug.Trace (STPO.Self, "Exceptional_Complete_Entry_Body", 'P'));
@@ -285,9 +287,15 @@ package body System.Tasking.Protected_Objects.Operations is
          Entry_Call.Exception_To_Raise := Ex;
 
          if Ex /= Ada.Exceptions.Null_Id then
+            --  An exception was raised and abort was deferred, so adjust
+            --  before propagating, otherwise the task will stay with deferral
+            --  enabled for its remaining life.
+
+            Self_Id := STPO.Self;
+            Initialization.Undefer_Abort_Nestable (Self_Id);
             Transfer_Occurrence
               (Entry_Call.Self.Common.Compiler_Data.Current_Excep'Access,
-               STPO.Self.Common.Compiler_Data.Current_Excep);
+               Self_Id.Common.Compiler_Data.Current_Excep);
          end if;
 
          --  Wakeup_Entry_Caller will be called from PO_Do_Or_Queue or
