@@ -1,3 +1,7 @@
+2007-04-06  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* tree-sra.c (sra_build_elt_assignment): Initialize min/maxshift.
+
 2007-04-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (extend<mode>xf2): Rename from extendsfxf2
@@ -19,6 +23,7 @@
 	mode macro.
 	(*truncxf?f_i387 splitter): Ditto.
 
+>>>>>>> .r123627
 2007-04-06  Daniel Berlin  <dberlin@dberlin.org>
 
 	* langhooks-def.h (LANG_HOOKS_INITIALIZER): Remove

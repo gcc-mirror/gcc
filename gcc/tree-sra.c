@@ -2056,7 +2056,7 @@ sra_build_elt_assignment (struct sra_elt *elt, tree src)
   tree var, type, tmp, tmp2, tmp3;
   tree list, stmt;
   tree cst, cst2, mask;
-  tree minshift, maxshift;
+  tree minshift = NULL, maxshift = NULL;
 
   if (TREE_CODE (dst) != BIT_FIELD_REF
       || !elt->in_bitfld_block)
