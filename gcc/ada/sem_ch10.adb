@@ -305,6 +305,28 @@ package body Sem_Ch10 is
             Subt_Mark : Node_Id;
             Use_Item  : Node_Id;
 
+            function Same_Unit (N : Node_Id; P : Entity_Id) return Boolean;
+            --  In an expanded name in a use clause, if the prefix is a
+            --  renamed package, the entity is set to the original package
+            --  as a result, when checking whether the package appears in a
+            --  previous with_clause, the renaming has to be taken into
+            --  account, to prevent spurious or incorrect warnings. The
+            --  common case is the use of Text_IO.
+
+            ---------------
+            -- Same_Unit --
+            ---------------
+
+            function Same_Unit (N : Node_Id; P : Entity_Id) return Boolean is
+            begin
+               return Entity (N) = P
+                 or else
+                   (Present (Renamed_Object (P))
+                     and then Entity (N) = Renamed_Object (P));
+            end Same_Unit;
+
+         --  Start of processing for Process_Body_Clauses
+
          begin
             Used := False;
             Used_Type_Or_Elab := False;
@@ -338,7 +360,7 @@ package body Sem_Ch10 is
 
                            UE := Use_Item;
                            while Nkind (UE) = N_Expanded_Name loop
-                              if Entity (Prefix (UE)) = Nam_Ent then
+                              if Same_Unit (Prefix (UE), Nam_Ent) then
                                  Used := True;
                                  exit;
                               end if;
@@ -360,7 +382,7 @@ package body Sem_Ch10 is
                   while Present (Subt_Mark)
                     and then not Used_Type_Or_Elab
                   loop
-                     if Entity (Prefix (Subt_Mark)) = Nam_Ent then
+                     if Same_Unit (Prefix (Subt_Mark), Nam_Ent) then
                         Used_Type_Or_Elab := True;
                      end if;
 
@@ -3652,7 +3674,7 @@ package body Sem_Ch10 is
               Make_With_Clause (Loc,
                 Name => Make_Selected_Component (Loc,
                   Prefix        => New_Copy_Tree (Prefix (Nam)),
-                  Selector_Name => Selector_Name (Nam)));
+                  Selector_Name => New_Copy (Selector_Name (Nam))));
             Set_Parent (Withn, Parent (N));
          end if;
 
@@ -3767,21 +3789,31 @@ package body Sem_Ch10 is
                   Def_Id := Defining_Identifier (Decl);
                   Non_Lim_View := Non_Limited_View (Def_Id);
 
-                  --  Convert an incomplete subtype declaration into a
-                  --  corresponding non-limited view subtype declaration.
+                  if not Is_Incomplete_Type (Non_Lim_View) then
 
-                  Set_Subtype_Indication (Decl,
-                    New_Reference_To (Non_Lim_View, Sloc (Def_Id)));
-                  Set_Etype (Def_Id, Non_Lim_View);
-                  Set_Ekind (Def_Id, Subtype_Kind (Ekind (Non_Lim_View)));
-                  Set_Analyzed (Decl, False);
+                     --  Convert an incomplete subtype declaration into a
+                     --  corresponding non-limited view subtype declaration.
+                     --  This is usually the case when analyzing a body that
+                     --  has regular with-clauses, when the spec has limited
+                     --  ones.
+                     --  if the non-limited view is still incomplete, it is
+                     --  the dummy entry already created, and the declaration
+                     --  cannot be reanalyzed. This is the case when installing
+                     --  a parent unit that has limited with-clauses.
 
-                  --  Reanalyze the declaration, suppressing the call to
-                  --  Enter_Name to avoid duplicate names.
+                     Set_Subtype_Indication (Decl,
+                       New_Reference_To (Non_Lim_View, Sloc (Def_Id)));
+                     Set_Etype (Def_Id, Non_Lim_View);
+                     Set_Ekind (Def_Id, Subtype_Kind (Ekind (Non_Lim_View)));
+                     Set_Analyzed (Decl, False);
 
-                  Analyze_Subtype_Declaration
-                   (N    => Decl,
-                    Skip => True);
+                     --  Reanalyze the declaration, suppressing the call to
+                     --  Enter_Name to avoid duplicate names.
+
+                     Analyze_Subtype_Declaration
+                      (N    => Decl,
+                       Skip => True);
+                  end if;
                end if;
 
                Next (Decl);
