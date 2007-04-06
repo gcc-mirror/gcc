@@ -28,6 +28,7 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
+with Exp_Atag; use Exp_Atag;
 with Exp_Ch2;  use Exp_Ch2;
 with Exp_Ch9;  use Exp_Ch9;
 with Exp_Imgv; use Exp_Imgv;
@@ -159,6 +160,12 @@ package body Exp_Attr is
    function Is_Constrained_Packed_Array (Typ : Entity_Id) return Boolean;
    --  Utility for array attributes, returns true on packed constrained
    --  arrays, and on access to same.
+
+   function Is_Inline_Floating_Point_Attribute (N : Node_Id) return Boolean;
+   --  Returns true iff the given node refers to an attribute call that
+   --  can be expanded directly by the back end and does not need front end
+   --  expansion. Typically used for rounding and truncation attributes that
+   --  appear directly inside a conversion to integer.
 
    ----------------------------------
    -- Compile_Stream_Body_In_Scope --
@@ -497,7 +504,7 @@ package body Exp_Attr is
    -- Expand_Fpt_Attribute_RR --
    -----------------------------
 
-   --  The two arguments is converted to their root types to call the
+   --  The two arguments are converted to their root types to call the
    --  appropriate runtime function, with the actual call being built
    --  by Expand_Fpt_Attribute
 
@@ -665,7 +672,7 @@ package body Exp_Attr is
 
       when Attribute_Access =>
 
-         if Ekind (Btyp) = E_Access_Protected_Subprogram_Type then
+         if Is_Access_Protected_Subprogram_Type (Btyp) then
             Expand_Access_To_Protected_Op (N, Pref, Typ);
 
          elsif Ekind (Btyp) = E_General_Access_Type then
@@ -795,6 +802,23 @@ package body Exp_Attr is
 
                Analyze_And_Resolve (N, Addr);
             end;
+
+         --  Ada 2005 (AI-251): Class-wide interface objects are always
+         --  "displaced" to reference the tag associated with the interface
+         --  type. In order to obtain the real address of such objects we
+         --  generate a call to a run-time subprogram that returns the base
+         --  address of the object.
+
+         elsif Is_Class_Wide_Type (Etype (Pref))
+            and then Is_Interface (Etype (Pref))
+         then
+            Rewrite (N,
+              Make_Function_Call (Loc,
+                Name => New_Reference_To (RTE (RE_Base_Address), Loc),
+                Parameter_Associations => New_List (
+                  Relocate_Node (N))));
+            Analyze (N);
+            return;
          end if;
 
          --  Deal with packed array reference, other cases are handled by gigi
@@ -829,6 +853,15 @@ package body Exp_Attr is
          --  operation _Alignment applied to X.
 
          elsif Is_Class_Wide_Type (Ptyp) then
+
+            --  No need to do anything else compiling under restriction
+            --  No_Dispatching_Calls. During the semantic analysis we
+            --  already notified such violation.
+
+            if Restriction_Active (No_Dispatching_Calls) then
+               return;
+            end if;
+
             New_Node :=
               Make_Function_Call (Loc,
                 Name => New_Reference_To
@@ -1327,8 +1360,13 @@ package body Exp_Attr is
                --  not accurate (the procedure formal case), has been
                --  handled above.
 
+               --  We use the Underlying_Type here (and below) in case the
+               --  type is private without discriminants, but the full type
+               --  has discriminants. This case is illegal, but we generate it
+               --  internally for passing to the Extra_Constrained parameter.
+
                else
-                  Res := Is_Constrained (Etype (Ent));
+                  Res := Is_Constrained (Underlying_Type (Etype (Ent)));
                end if;
 
                Rewrite (N,
@@ -1350,7 +1388,7 @@ package body Exp_Attr is
                      (Nkind (Pref) = N_Explicit_Dereference
                         and then
                           not Has_Constrained_Partial_View (Base_Type (Typ)))
-                    or else Is_Constrained (Typ)),
+                    or else Is_Constrained (Underlying_Type (Typ))),
                 Loc));
          end if;
 
@@ -2013,6 +2051,14 @@ package body Exp_Attr is
 
             elsif Is_Class_Wide_Type (P_Type) then
 
+               --  No need to do anything else compiling under restriction
+               --  No_Dispatching_Calls. During the semantic analysis we
+               --  already notified such violation.
+
+               if Restriction_Active (No_Dispatching_Calls) then
+                  return;
+               end if;
+
                declare
                   Rtyp : constant Entity_Id := Root_Type (P_Type);
                   Dnn  : Entity_Id;
@@ -2430,10 +2476,13 @@ package body Exp_Attr is
 
       --  Transforms 'Machine_Rounding into a call to the floating-point
       --  attribute function Machine_Rounding in Fat_xxx (where xxx is the root
-      --  type).
+      --  type). Expansion is avoided for cases the back end can handle
+      --  directly.
 
       when Attribute_Machine_Rounding =>
-         Expand_Fpt_Attribute_R (N);
+         if not Is_Inline_Floating_Point_Attribute (N) then
+            Expand_Fpt_Attribute_R (N);
+         end if;
 
       ------------------
       -- Machine_Size --
@@ -2707,6 +2756,15 @@ package body Exp_Attr is
             --  to the appropriate primitive Output function (RM 13.13.2(31)).
 
             elsif Is_Class_Wide_Type (P_Type) then
+
+               --  No need to do anything else compiling under restriction
+               --  No_Dispatching_Calls. During the semantic analysis we
+               --  already notified such violation.
+
+               if Restriction_Active (No_Dispatching_Calls) then
+                  return;
+               end if;
+
                Tag_Write : declare
                   Strm : constant Node_Id := First (Exprs);
                   Item : constant Node_Id := Next (Strm);
@@ -2730,21 +2788,18 @@ package body Exp_Attr is
                          Condition =>
                            Make_Op_Ne (Loc,
                              Left_Opnd  =>
-                               Make_Function_Call (Loc,
-                                 Name =>
-                                   New_Reference_To
-                                     (RTE (RE_Get_Access_Level), Loc),
-                                 Parameter_Associations =>
-                                   New_List (Make_Attribute_Reference (Loc,
-                                               Prefix         =>
-                                                 Relocate_Node (
-                                                   Duplicate_Subexpr (Item,
-                                                     Name_Req => True)),
-                                               Attribute_Name =>
-                                                  Name_Tag))),
+                               Build_Get_Access_Level (Loc,
+                                 Make_Attribute_Reference (Loc,
+                                   Prefix         =>
+                                     Relocate_Node (
+                                       Duplicate_Subexpr (Item,
+                                         Name_Req => True)),
+                                   Attribute_Name => Name_Tag)),
+
                              Right_Opnd =>
-                               Make_Integer_Literal
-                                 (Loc, Type_Access_Level (P_Type))),
+                               Make_Integer_Literal (Loc,
+                                 Type_Access_Level (P_Type))),
+
                          Then_Statements =>
                            New_List (Make_Raise_Statement (Loc,
                                        New_Occurrence_Of (
@@ -2775,9 +2830,9 @@ package body Exp_Attr is
             elsif Is_Tagged_Type (U_Type) then
                Pname := Find_Prim_Op (U_Type, TSS_Stream_Output);
 
---              --  All other record type cases, including protected records.
---              --  The latter only arise for expander generated code for
---              --  handling shared passive partition access.
+            --  All other record type cases, including protected records.
+            --  The latter only arise for expander generated code for
+            --  handling shared passive partition access.
 
             else
                pragma Assert
@@ -3450,6 +3505,15 @@ package body Exp_Attr is
          --  X'Size into a call to the primitive operation _Size applied to X.
 
          elsif Is_Class_Wide_Type (Ptyp) then
+
+            --  No need to do anything else compiling under restriction
+            --  No_Dispatching_Calls. During the semantic analysis we
+            --  already notified such violation.
+
+            if Restriction_Active (No_Dispatching_Calls) then
+               return;
+            end if;
+
             New_Node :=
               Make_Function_Call (Loc,
                 Name => New_Reference_To
@@ -3912,10 +3976,13 @@ package body Exp_Attr is
       ----------------
 
       --  Transforms 'Truncation into a call to the floating-point attribute
-      --  function Truncation in Fat_xxx (where xxx is the root type)
+      --  function Truncation in Fat_xxx (where xxx is the root type).
+      --  Expansion is avoided for cases the back end can handle directly.
 
       when Attribute_Truncation =>
-         Expand_Fpt_Attribute_R (N);
+         if not Is_Inline_Floating_Point_Attribute (N) then
+            Expand_Fpt_Attribute_R (N);
+         end if;
 
       -----------------------
       -- Unbiased_Rounding --
@@ -3923,10 +3990,13 @@ package body Exp_Attr is
 
       --  Transforms 'Unbiased_Rounding into a call to the floating-point
       --  attribute function Unbiased_Rounding in Fat_xxx (where xxx is the
-      --  root type)
+      --  root type). Expansion is avoided for cases the back end can handle
+      --  directly.
 
       when Attribute_Unbiased_Rounding =>
-         Expand_Fpt_Attribute_R (N);
+         if not Is_Inline_Floating_Point_Attribute (N) then
+            Expand_Fpt_Attribute_R (N);
+         end if;
 
       ----------------------
       -- Unchecked_Access --
@@ -3999,7 +4069,7 @@ package body Exp_Attr is
 
       when Attribute_Unrestricted_Access =>
 
-         if Ekind (Btyp) = E_Access_Protected_Subprogram_Type then
+         if Is_Access_Protected_Subprogram_Type (Btyp) then
             Expand_Access_To_Protected_Op (N, Pref, Typ);
 
          --  Ada 2005 (AI-251): If the designated type is an interface, then
@@ -4184,7 +4254,7 @@ package body Exp_Attr is
                   --  to call the special routine Unaligned_Valid, which makes
                   --  the needed copy, being careful not to load the value into
                   --  any floating-point register. The argument in this case is
-                  --  obj'Address (see Unchecked_Valid routine in Fat_Gen).
+                  --  obj'Address (see Unaligned_Valid routine in Fat_Gen).
 
                   if Is_Possibly_Unaligned_Object (Pref) then
                      Set_Attribute_Name (N, Name_Unaligned_Valid);
@@ -4667,9 +4737,14 @@ package body Exp_Attr is
 
                --  Ada 2005 (AI-216): Program_Error is raised when executing
                --  the default implementation of the Write attribute of an
-               --  Unchecked_Union type.
+               --  Unchecked_Union type. However, if the 'Write reference is
+               --  within the generated Output stream procedure, Write outputs
+               --  the components, and the default values of the discriminant
+               --  are streamed by the Output procedure itself.
 
-               if Is_Unchecked_Union (Base_Type (U_Type)) then
+               if Is_Unchecked_Union (Base_Type (U_Type))
+                 and not Is_TSS (Current_Scope, TSS_Stream_Output)
+               then
                   Insert_Action (N,
                     Make_Raise_Program_Error (Loc,
                       Reason => PE_Unchecked_Union_Restriction));
@@ -5037,5 +5112,25 @@ package body Exp_Attr is
         and then Is_Constrained (Arr)
         and then Present (Packed_Array_Type (Arr));
    end Is_Constrained_Packed_Array;
+
+   ----------------------------------------
+   -- Is_Inline_Floating_Point_Attribute --
+   ----------------------------------------
+
+   function Is_Inline_Floating_Point_Attribute (N : Node_Id) return Boolean is
+      Id : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
+
+   begin
+      if Nkind (Parent (N)) /= N_Type_Conversion
+        or else not Is_Integer_Type (Etype (Parent (N)))
+      then
+         return False;
+      end if;
+
+      --  Should also support 'Machine_Rounding and 'Unbiased_Rounding, but
+      --  required back end support has not been implemented yet ???
+
+      return Id = Attribute_Truncation;
+   end Is_Inline_Floating_Point_Attribute;
 
 end Exp_Attr;
