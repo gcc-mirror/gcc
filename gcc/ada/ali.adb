@@ -195,6 +195,7 @@ package body ALI is
 
       function Get_Nat return Nat;
       --  Skip blanks, then scan out an unsigned integer value in Nat range
+      --  raises ALI_Reading_Error if the encoutered type is not natural.
 
       function Get_Stamp return Time_Stamp_Type;
       --  Skip blanks, then scan out a time stamp
@@ -347,7 +348,6 @@ package body ALI is
          --  Find start of line
 
          Ptr1 := P;
-
          while Ptr1 > T'First
            and then T (Ptr1 - 1) /= CR
            and then T (Ptr1 - 1) /= LF
@@ -478,9 +478,17 @@ package body ALI is
       begin
          Skip_Space;
 
+         --  Check if we are on a number. In the case of bas ALI files, this
+         --  may not be true.
+
+         if not (Nextc in '0' .. '9') then
+            Fatal_Error;
+         end if;
+
          V := 0;
          loop
             V := V * 10 + (Character'Pos (Getc) - Character'Pos ('0'));
+
             exit when At_End_Of_Field;
             exit when Nextc < '0' or Nextc > '9';
          end loop;
@@ -2186,6 +2194,24 @@ package body ALI is
 
                   XE.Last_Xref := Xref.Last;
                   C := Nextc;
+
+               exception
+                  when Bad_ALI_Format =>
+
+                     --  If ignoring errors, then we skip a line with an
+                     --  unexpected error, and try to continue subsequent
+                     --  xref lines.
+
+                     if Ignore_Errors then
+                        Xref_Entity.Decrement_Last;
+                        Skip_Line;
+                        C := Nextc;
+
+                     --  Otherwise, we reraise the fatal exception
+
+                     else
+                        raise;
+                     end if;
                end Read_Refs_For_One_Entity;
             end loop;
 
@@ -2209,7 +2235,6 @@ package body ALI is
    exception
       when Bad_ALI_Format =>
          return No_ALI_Id;
-
    end Scan_ALI;
 
    ---------

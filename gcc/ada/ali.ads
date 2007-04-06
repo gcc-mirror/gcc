@@ -839,7 +839,7 @@ package ALI is
       --  reference for the entity name.
 
       Oref_File_Num : Sdep_Id;
-      --  This field is set to No_Sdep_Id is the entity doesn't override any
+      --  This field is set to No_Sdep_Id if the entity doesn't override any
       --  other entity, or to the dependency reference for the overriden
       --  entity.
 
