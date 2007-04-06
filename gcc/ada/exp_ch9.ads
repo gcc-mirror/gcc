@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,11 +77,7 @@ package Exp_Ch9 is
    --  (other than allocators to tasks) this routine ensures that an activation
    --  chain has been declared in the appropriate scope, building the required
    --  declaration for the chain variable if not. The name of this variable
-   --  is always _Chain and it is accessed by name. This procedure also adds
-   --  an appropriate call to Activate_Tasks to activate the tasks for this
-   --  activation chain. It does not however deal with the call needed in the
-   --  case of allocators to Expunge_Unactivated_Tasks, this is separately
-   --  handled in the Expand_Task_Allocator routine.
+   --  is always _Chain and it is accessed by name.
 
    function Build_Call_With_Task (N : Node_Id; E : Entity_Id) return Node_Id;
    --  N is a node representing the name of a task or an access to a task.
