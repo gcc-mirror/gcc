@@ -48,7 +48,6 @@ package body Targparm is
       CSV,  --   Compiler_System_Version
       D32,  --   Duration_32_Bits
       DEN,  --   Denorm
-      DSP,  --   Functions_Return_By_DSP
       EXS,  --   Exit_Status_Supported
       FEL,  --   Frontend_Layout
       FFO,  --   Fractional_Fixed_Ops
@@ -85,7 +84,6 @@ package body Targparm is
    CSV_Str : aliased constant Source_Buffer := "Compiler_System_Version";
    D32_Str : aliased constant Source_Buffer := "Duration_32_Bits";
    DEN_Str : aliased constant Source_Buffer := "Denorm";
-   DSP_Str : aliased constant Source_Buffer := "Functions_Return_By_DSP";
    EXS_Str : aliased constant Source_Buffer := "Exit_Status_Supported";
    FEL_Str : aliased constant Source_Buffer := "Frontend_Layout";
    FFO_Str : aliased constant Source_Buffer := "Fractional_Fixed_Ops";
@@ -119,7 +117,6 @@ package body Targparm is
       CSV_Str'Access,
       D32_Str'Access,
       DEN_Str'Access,
-      DSP_Str'Access,
       EXS_Str'Access,
       FEL_Str'Access,
       FFO_Str'Access,
@@ -556,7 +553,6 @@ package body Targparm is
                      when CSV => Compiler_System_Version             := Result;
                      when D32 => Duration_32_Bits_On_Target          := Result;
                      when DEN => Denorm_On_Target                    := Result;
-                     when DSP => Functions_Return_By_DSP_On_Target   := Result;
                      when EXS => Exit_Status_Supported_On_Target     := Result;
                      when FEL => Frontend_Layout_On_Target           := Result;
                      when FFO => Fractional_Fixed_Ops_On_Target      := Result;
