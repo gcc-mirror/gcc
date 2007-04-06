@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,10 +26,12 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
+with Exp_Ch6;  use Exp_Ch6;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Nlists;   use Nlists;
+with Opt;      use Opt;
 with Sem;      use Sem;
 with Sem_Ch8;  use Sem_Ch8;
 with Sinfo;    use Sinfo;
@@ -266,6 +268,19 @@ package body Exp_Ch8 is
          if Frontend_Layout_On_Target then
             Freeze_Before (N, Entity (Subtype_Mark (N)));
          end if;
+      end if;
+
+      --  Ada 2005 (AI-318-02): If the renamed object is a call to a build-in-
+      --  place function, then a temporary return object needs to be created
+      --  and access to it must be passed to the function. Currently we limit
+      --  such functions to those with inherently limited result subtypes, but
+      --  eventually we plan to expand the functions that are treated as
+      --  build-in-place to include other composite result types.
+
+      if Ada_Version >= Ada_05
+        and then Is_Build_In_Place_Function_Call (Nam)
+      then
+         Make_Build_In_Place_Call_In_Anonymous_Context (Nam);
       end if;
 
       --  Create renaming entry for debug information

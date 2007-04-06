@@ -238,240 +238,240 @@ package body Einfo is
    --  are used for the flags Analyzed, Comes_From_Source, and Error_Posted,
    --  which are common to all nodes, including entity nodes.
 
-   --    Is_Frozen                      Flag4
-   --    Has_Discriminants              Flag5
-   --    Is_Dispatching_Operation       Flag6
-   --    Is_Immediately_Visible         Flag7
-   --    In_Use                         Flag8
-   --    Is_Potentially_Use_Visible     Flag9
-   --    Is_Public                      Flag10
+   --    Is_Frozen                       Flag4
+   --    Has_Discriminants               Flag5
+   --    Is_Dispatching_Operation        Flag6
+   --    Is_Immediately_Visible          Flag7
+   --    In_Use                          Flag8
+   --    Is_Potentially_Use_Visible      Flag9
+   --    Is_Public                       Flag10
 
-   --    Is_Inlined                     Flag11
-   --    Is_Constrained                 Flag12
-   --    Is_Generic_Type                Flag13
-   --    Depends_On_Private             Flag14
-   --    Is_Aliased                     Flag15
-   --    Is_Volatile                    Flag16
-   --    Is_Internal                    Flag17
-   --    Has_Delayed_Freeze             Flag18
-   --    Is_Abstract                    Flag19
-   --    Is_Concurrent_Record_Type      Flag20
+   --    Is_Inlined                      Flag11
+   --    Is_Constrained                  Flag12
+   --    Is_Generic_Type                 Flag13
+   --    Depends_On_Private              Flag14
+   --    Is_Aliased                      Flag15
+   --    Is_Volatile                     Flag16
+   --    Is_Internal                     Flag17
+   --    Has_Delayed_Freeze              Flag18
+   --    Is_Abstract_Subprogram          Flag19
+   --    Is_Concurrent_Record_Type       Flag20
 
-   --    Has_Master_Entity              Flag21
-   --    Needs_No_Actuals               Flag22
-   --    Has_Storage_Size_Clause        Flag23
-   --    Is_Imported                    Flag24
-   --    Is_Limited_Record              Flag25
-   --    Has_Completion                 Flag26
-   --    Has_Pragma_Controlled          Flag27
-   --    Is_Statically_Allocated        Flag28
-   --    Has_Size_Clause                Flag29
-   --    Has_Task                       Flag30
+   --    Has_Master_Entity               Flag21
+   --    Needs_No_Actuals                Flag22
+   --    Has_Storage_Size_Clause         Flag23
+   --    Is_Imported                     Flag24
+   --    Is_Limited_Record               Flag25
+   --    Has_Completion                  Flag26
+   --    Has_Pragma_Controlled           Flag27
+   --    Is_Statically_Allocated         Flag28
+   --    Has_Size_Clause                 Flag29
+   --    Has_Task                        Flag30
 
-   --    Checks_May_Be_Suppressed       Flag31
-   --    Kill_Elaboration_Checks        Flag32
-   --    Kill_Range_Checks              Flag33
-   --    Kill_Tag_Checks                Flag34
-   --    Is_Class_Wide_Equivalent_Type  Flag35
-   --    Referenced_As_LHS              Flag36
-   --    Is_Known_Non_Null              Flag37
-   --    Can_Never_Be_Null              Flag38
-   --    Is_Overriding_Operation        Flag39
-   --    Body_Needed_For_SAL            Flag40
+   --    Checks_May_Be_Suppressed        Flag31
+   --    Kill_Elaboration_Checks         Flag32
+   --    Kill_Range_Checks               Flag33
+   --    Kill_Tag_Checks                 Flag34
+   --    Is_Class_Wide_Equivalent_Type   Flag35
+   --    Referenced_As_LHS               Flag36
+   --    Is_Known_Non_Null               Flag37
+   --    Can_Never_Be_Null               Flag38
+   --    Is_Overriding_Operation         Flag39
+   --    Body_Needed_For_SAL             Flag40
 
-   --    Treat_As_Volatile              Flag41
-   --    Is_Controlled                  Flag42
-   --    Has_Controlled_Component       Flag43
-   --    Is_Pure                        Flag44
-   --    In_Private_Part                Flag45
-   --    Has_Alignment_Clause           Flag46
-   --    Has_Exit                       Flag47
-   --    In_Package_Body                Flag48
-   --    Reachable                      Flag49
-   --    Delay_Subprogram_Descriptors   Flag50
+   --    Treat_As_Volatile               Flag41
+   --    Is_Controlled                   Flag42
+   --    Has_Controlled_Component        Flag43
+   --    Is_Pure                         Flag44
+   --    In_Private_Part                 Flag45
+   --    Has_Alignment_Clause            Flag46
+   --    Has_Exit                        Flag47
+   --    In_Package_Body                 Flag48
+   --    Reachable                       Flag49
+   --    Delay_Subprogram_Descriptors    Flag50
 
-   --    Is_Packed                      Flag51
-   --    Is_Entry_Formal                Flag52
-   --    Is_Private_Descendant          Flag53
-   --    Return_Present                 Flag54
-   --    Is_Tagged_Type                 Flag55
-   --    Has_Homonym                    Flag56
-   --    Is_Hidden                      Flag57
-   --    Non_Binary_Modulus             Flag58
-   --    Is_Preelaborated               Flag59
-   --    Is_Shared_Passive              Flag60
+   --    Is_Packed                       Flag51
+   --    Is_Entry_Formal                 Flag52
+   --    Is_Private_Descendant           Flag53
+   --    Return_Present                  Flag54
+   --    Is_Tagged_Type                  Flag55
+   --    Has_Homonym                     Flag56
+   --    Is_Hidden                       Flag57
+   --    Non_Binary_Modulus              Flag58
+   --    Is_Preelaborated                Flag59
+   --    Is_Shared_Passive               Flag60
 
-   --    Is_Remote_Types                Flag61
-   --    Is_Remote_Call_Interface       Flag62
-   --    Is_Character_Type              Flag63
-   --    Is_Intrinsic_Subprogram        Flag64
-   --    Has_Record_Rep_Clause          Flag65
-   --    Has_Enumeration_Rep_Clause     Flag66
-   --    Has_Small_Clause               Flag67
-   --    Has_Component_Size_Clause      Flag68
-   --    Is_Access_Constant             Flag69
-   --    Is_First_Subtype               Flag70
+   --    Is_Remote_Types                 Flag61
+   --    Is_Remote_Call_Interface        Flag62
+   --    Is_Character_Type               Flag63
+   --    Is_Intrinsic_Subprogram         Flag64
+   --    Has_Record_Rep_Clause           Flag65
+   --    Has_Enumeration_Rep_Clause      Flag66
+   --    Has_Small_Clause                Flag67
+   --    Has_Component_Size_Clause       Flag68
+   --    Is_Access_Constant              Flag69
+   --    Is_First_Subtype                Flag70
 
-   --    Has_Completion_In_Body         Flag71
-   --    Has_Unknown_Discriminants      Flag72
-   --    Is_Child_Unit                  Flag73
-   --    Is_CPP_Class                   Flag74
-   --    Has_Non_Standard_Rep           Flag75
-   --    Is_Constructor                 Flag76
-   --    Is_Thread_Body                 Flag77
-   --    Is_Tag                         Flag78
-   --    Has_All_Calls_Remote           Flag79
-   --    Is_Constr_Subt_For_U_Nominal   Flag80
+   --    Has_Completion_In_Body          Flag71
+   --    Has_Unknown_Discriminants       Flag72
+   --    Is_Child_Unit                   Flag73
+   --    Is_CPP_Class                    Flag74
+   --    Has_Non_Standard_Rep            Flag75
+   --    Is_Constructor                  Flag76
+   --    Is_Thread_Body                  Flag77
+   --    Is_Tag                          Flag78
+   --    Has_All_Calls_Remote            Flag79
+   --    Is_Constr_Subt_For_U_Nominal    Flag80
 
-   --    Is_Asynchronous                Flag81
-   --    Has_Gigi_Rep_Item              Flag82
-   --    Has_Machine_Radix_Clause       Flag83
-   --    Machine_Radix_10               Flag84
-   --    Is_Atomic                      Flag85
-   --    Has_Atomic_Components          Flag86
-   --    Has_Volatile_Components        Flag87
-   --    Discard_Names                  Flag88
-   --    Is_Interrupt_Handler           Flag89
-   --    Returns_By_Ref                 Flag90
+   --    Is_Asynchronous                 Flag81
+   --    Has_Gigi_Rep_Item               Flag82
+   --    Has_Machine_Radix_Clause        Flag83
+   --    Machine_Radix_10                Flag84
+   --    Is_Atomic                       Flag85
+   --    Has_Atomic_Components           Flag86
+   --    Has_Volatile_Components         Flag87
+   --    Discard_Names                   Flag88
+   --    Is_Interrupt_Handler            Flag89
+   --    Returns_By_Ref                  Flag90
 
-   --    Is_Itype                       Flag91
-   --    Size_Known_At_Compile_Time     Flag92
-   --    Has_Subprogram_Descriptor      Flag93
-   --    Is_Generic_Actual_Type         Flag94
-   --    Uses_Sec_Stack                 Flag95
-   --    Warnings_Off                   Flag96
-   --    Is_Controlling_Formal          Flag97
-   --    Has_Controlling_Result         Flag98
-   --    Is_Exported                    Flag99
-   --    Has_Specified_Layout           Flag100
+   --    Is_Itype                        Flag91
+   --    Size_Known_At_Compile_Time      Flag92
+   --    Has_Subprogram_Descriptor       Flag93
+   --    Is_Generic_Actual_Type          Flag94
+   --    Uses_Sec_Stack                  Flag95
+   --    Warnings_Off                    Flag96
+   --    Is_Controlling_Formal           Flag97
+   --    Has_Controlling_Result          Flag98
+   --    Is_Exported                     Flag99
+   --    Has_Specified_Layout            Flag100
 
-   --    Has_Nested_Block_With_Handler  Flag101
-   --    Is_Called                      Flag102
-   --    Is_Completely_Hidden           Flag103
-   --    Address_Taken                  Flag104
-   --    Suppress_Init_Proc             Flag105
-   --    Is_Limited_Composite           Flag106
-   --    Is_Private_Composite           Flag107
-   --    Default_Expressions_Processed  Flag108
-   --    Is_Non_Static_Subtype          Flag109
-   --    Has_External_Tag_Rep_Clause    Flag110
+   --    Has_Nested_Block_With_Handler   Flag101
+   --    Is_Called                       Flag102
+   --    Is_Completely_Hidden            Flag103
+   --    Address_Taken                   Flag104
+   --    Suppress_Init_Proc              Flag105
+   --    Is_Limited_Composite            Flag106
+   --    Is_Private_Composite            Flag107
+   --    Default_Expressions_Processed   Flag108
+   --    Is_Non_Static_Subtype           Flag109
+   --    Has_External_Tag_Rep_Clause     Flag110
 
-   --    Is_Formal_Subprogram           Flag111
-   --    Is_Renaming_Of_Object          Flag112
-   --    No_Return                      Flag113
-   --    Delay_Cleanups                 Flag114
-   --    Never_Set_In_Source            Flag115
-   --    Is_Visible_Child_Unit          Flag116
-   --    Is_Unchecked_Union             Flag117
-   --    Is_For_Access_Subtype          Flag118
-   --    Has_Convention_Pragma          Flag119
-   --    Has_Primitive_Operations       Flag120
+   --    Is_Formal_Subprogram            Flag111
+   --    Is_Renaming_Of_Object           Flag112
+   --    No_Return                       Flag113
+   --    Delay_Cleanups                  Flag114
+   --    Never_Set_In_Source             Flag115
+   --    Is_Visible_Child_Unit           Flag116
+   --    Is_Unchecked_Union              Flag117
+   --    Is_For_Access_Subtype           Flag118
+   --    Has_Convention_Pragma           Flag119
+   --    Has_Primitive_Operations        Flag120
 
-   --    Has_Pragma_Pack                Flag121
-   --    Is_Bit_Packed_Array            Flag122
-   --    Has_Unchecked_Union            Flag123
-   --    Is_Eliminated                  Flag124
-   --    C_Pass_By_Copy                 Flag125
-   --    Is_Instantiated                Flag126
-   --    Is_Valued_Procedure            Flag127
-   --    (used for Component_Alignment) Flag128
-   --    (used for Component_Alignment) Flag129
-   --    Is_Generic_Instance            Flag130
+   --    Has_Pragma_Pack                 Flag121
+   --    Is_Bit_Packed_Array             Flag122
+   --    Has_Unchecked_Union             Flag123
+   --    Is_Eliminated                   Flag124
+   --    C_Pass_By_Copy                  Flag125
+   --    Is_Instantiated                 Flag126
+   --    Is_Valued_Procedure             Flag127
+   --    (used for Component_Alignment)  Flag128
+   --    (used for Component_Alignment)  Flag129
+   --    Is_Generic_Instance             Flag130
 
-   --    No_Pool_Assigned               Flag131
-   --    Is_AST_Entry                   Flag132
-   --    Is_VMS_Exception               Flag133
-   --    Is_Optional_Parameter          Flag134
-   --    Has_Aliased_Components         Flag135
-   --    No_Strict_Aliasing             Flag136
-   --    Is_Machine_Code_Subprogram     Flag137
-   --    Is_Packed_Array_Type           Flag138
-   --    Has_Biased_Representation      Flag139
-   --    Has_Complex_Representation     Flag140
+   --    No_Pool_Assigned                Flag131
+   --    Is_AST_Entry                    Flag132
+   --    Is_VMS_Exception                Flag133
+   --    Is_Optional_Parameter           Flag134
+   --    Has_Aliased_Components          Flag135
+   --    No_Strict_Aliasing              Flag136
+   --    Is_Machine_Code_Subprogram      Flag137
+   --    Is_Packed_Array_Type            Flag138
+   --    Has_Biased_Representation       Flag139
+   --    Has_Complex_Representation      Flag140
 
-   --    Is_Constr_Subt_For_UN_Aliased  Flag141
-   --    Has_Missing_Return             Flag142
-   --    Has_Recursive_Call             Flag143
-   --    Is_Unsigned_Type               Flag144
-   --    Strict_Alignment               Flag145
-   --    (unused)                       Flag146
-   --    Needs_Debug_Info               Flag147
-   --    Suppress_Elaboration_Warnings  Flag148
-   --    Is_Compilation_Unit            Flag149
-   --    Has_Pragma_Elaborate_Body      Flag150
+   --    Is_Constr_Subt_For_UN_Aliased   Flag141
+   --    Has_Missing_Return              Flag142
+   --    Has_Recursive_Call              Flag143
+   --    Is_Unsigned_Type                Flag144
+   --    Strict_Alignment                Flag145
+   --    Is_Abstract_Type                Flag146
+   --    Needs_Debug_Info                Flag147
+   --    Suppress_Elaboration_Warnings   Flag148
+   --    Is_Compilation_Unit             Flag149
+   --    Has_Pragma_Elaborate_Body       Flag150
 
-   --    Vax_Float                      Flag151
-   --    Entry_Accepted                 Flag152
-   --    Is_Obsolescent                 Flag153
-   --    Has_Per_Object_Constraint      Flag154
-   --    Has_Private_Declaration        Flag155
-   --    Referenced                     Flag156
-   --    Has_Pragma_Inline              Flag157
-   --    Finalize_Storage_Only          Flag158
-   --    From_With_Type                 Flag159
-   --    Is_Package_Body_Entity         Flag160
+   --    Vax_Float                       Flag151
+   --    Entry_Accepted                  Flag152
+   --    Is_Obsolescent                  Flag153
+   --    Has_Per_Object_Constraint       Flag154
+   --    Has_Private_Declaration         Flag155
+   --    Referenced                      Flag156
+   --    Has_Pragma_Inline               Flag157
+   --    Finalize_Storage_Only           Flag158
+   --    From_With_Type                  Flag159
+   --    Is_Package_Body_Entity          Flag160
 
-   --    Has_Qualified_Name             Flag161
-   --    Nonzero_Is_True                Flag162
-   --    Is_True_Constant               Flag163
-   --    Reverse_Bit_Order              Flag164
-   --    Suppress_Style_Checks          Flag165
-   --    Debug_Info_Off                 Flag166
-   --    Sec_Stack_Needed_For_Return    Flag167
-   --    Materialize_Entity             Flag168
-   --    Function_Returns_With_DSP      Flag169
-   --    Is_Known_Valid                 Flag170
+   --    Has_Qualified_Name              Flag161
+   --    Nonzero_Is_True                 Flag162
+   --    Is_True_Constant                Flag163
+   --    Reverse_Bit_Order               Flag164
+   --    Suppress_Style_Checks           Flag165
+   --    Debug_Info_Off                  Flag166
+   --    Sec_Stack_Needed_For_Return     Flag167
+   --    Materialize_Entity              Flag168
+   --    Function_Returns_With_DSP       Flag169
+   --    Is_Known_Valid                  Flag170
 
-   --    Is_Hidden_Open_Scope           Flag171
-   --    Has_Object_Size_Clause         Flag172
-   --    Has_Fully_Qualified_Name       Flag173
-   --    Elaboration_Entity_Required    Flag174
-   --    Has_Forward_Instantiation      Flag175
-   --    Is_Discrim_SO_Function         Flag176
-   --    Size_Depends_On_Discriminant   Flag177
-   --    Is_Null_Init_Proc              Flag178
-   --    Has_Pragma_Pure_Function       Flag179
-   --    Has_Pragma_Unreferenced        Flag180
+   --    Is_Hidden_Open_Scope            Flag171
+   --    Has_Object_Size_Clause          Flag172
+   --    Has_Fully_Qualified_Name        Flag173
+   --    Elaboration_Entity_Required     Flag174
+   --    Has_Forward_Instantiation       Flag175
+   --    Is_Discrim_SO_Function          Flag176
+   --    Size_Depends_On_Discriminant    Flag177
+   --    Is_Null_Init_Proc               Flag178
+   --    Has_Pragma_Pure_Function        Flag179
+   --    Has_Pragma_Unreferenced         Flag180
 
-   --    Has_Contiguous_Rep             Flag181
-   --    Has_Xref_Entry                 Flag182
-   --    Must_Be_On_Byte_Boundary       Flag183
-   --    Has_Stream_Size_Clause         Flag184
-   --    Is_Ada_2005_Only               Flag185
-   --    Is_Interface                   Flag186
-   --    Has_Constrained_Partial_View   Flag187
-   --    Has_Persistent_BSS             Flag188
-   --    Is_Pure_Unit_Access_Type       Flag189
-   --    Has_Specified_Stream_Input     Flag190
+   --    Has_Contiguous_Rep              Flag181
+   --    Has_Xref_Entry                  Flag182
+   --    Must_Be_On_Byte_Boundary        Flag183
+   --    Has_Stream_Size_Clause          Flag184
+   --    Is_Ada_2005_Only                Flag185
+   --    Is_Interface                    Flag186
+   --    Has_Constrained_Partial_View    Flag187
+   --    Has_Persistent_BSS              Flag188
+   --    Is_Pure_Unit_Access_Type        Flag189
+   --    Has_Specified_Stream_Input      Flag190
 
-   --    Has_Specified_Stream_Output    Flag191
-   --    Has_Specified_Stream_Read      Flag192
-   --    Has_Specified_Stream_Write     Flag193
-   --    Is_Local_Anonymous_Access      Flag194
-   --    Is_Primitive_Wrapper           Flag195
-   --    Was_Hidden                     Flag196
-   --    Is_Limited_Interface           Flag197
-   --    Is_Protected_Interface         Flag198
-   --    Is_Synchronized_Interface      Flag199
-   --    Is_Task_Interface              Flag200
+   --    Has_Specified_Stream_Output     Flag191
+   --    Has_Specified_Stream_Read       Flag192
+   --    Has_Specified_Stream_Write      Flag193
+   --    Is_Local_Anonymous_Access       Flag194
+   --    Is_Primitive_Wrapper            Flag195
+   --    Was_Hidden                      Flag196
+   --    Is_Limited_Interface            Flag197
+   --    Is_Protected_Interface          Flag198
+   --    Is_Synchronized_Interface       Flag199
+   --    Is_Task_Interface               Flag200
 
-   --    Has_Anon_Block_Suffix          Flag201
-   --    Itype_Printed                  Flag202
-   --    Has_Pragma_Pure                Flag203
-   --    Is_Known_Null                  Flag204
-   --    Low_Bound_Known                Flag205
-   --    Is_Visible_Formal              Flag206
-   --    Known_To_Have_Preelab_Init     Flag207
-   --    Must_Have_Preelab_Init         Flag208
-   --    Is_Return_Object               Flag209
-   --    Elaborate_Body_Desirable       Flag210
+   --    Has_Anon_Block_Suffix           Flag201
+   --    Itype_Printed                   Flag202
+   --    Has_Pragma_Pure                 Flag203
+   --    Is_Known_Null                   Flag204
+   --    Low_Bound_Known                 Flag205
+   --    Is_Visible_Formal               Flag206
+   --    Known_To_Have_Preelab_Init      Flag207
+   --    Must_Have_Preelab_Init          Flag208
+   --    Is_Return_Object                Flag209
+   --    Elaborate_Body_Desirable        Flag210
 
-   --    Has_Static_Discriminants       Flag211
+   --    Has_Static_Discriminants        Flag211
+   --    Has_Pragma_Unreferenced_Objects Flag212
+   --    Requires_Overriding             Flag213
+   --    Has_RACW                        Flag214
 
-   --    (unused)                       Flag212
-   --    (unused)                       Flag213
-   --    (unused)                       Flag214
-   --    (unused)                       Flag215
+   --    (unused)                        Flag215
 
    -----------------------
    -- Local subprograms --
@@ -509,12 +509,7 @@ package body Einfo is
 
    function Abstract_Interfaces (Id : E) return L is
    begin
-      pragma Assert
-        (Ekind (Id) = E_Record_Type
-          or else Ekind (Id) = E_Record_Subtype
-          or else Ekind (Id) = E_Record_Type_With_Private
-          or else Ekind (Id) = E_Record_Subtype_With_Private
-          or else Ekind (Id) = E_Class_Wide_Type);
+      pragma Assert (Is_Record_Type (Id));
       return Elist25 (Id);
    end Abstract_Interfaces;
 
@@ -956,9 +951,10 @@ package body Einfo is
    function Equivalent_Type (Id : E) return E is
    begin
       pragma Assert
-        (Ekind (Id) = E_Class_Wide_Subtype               or else
-         Ekind (Id) = E_Access_Protected_Subprogram_Type or else
-         Ekind (Id) = E_Access_Subprogram_Type           or else
+        (Ekind (Id) = E_Class_Wide_Subtype                         or else
+         Ekind (Id) = E_Access_Protected_Subprogram_Type           or else
+         Ekind (Id) = E_Anonymous_Access_Protected_Subprogram_Type or else
+         Ekind (Id) = E_Access_Subprogram_Type                     or else
          Ekind (Id) = E_Exception_Type);
       return Node18 (Id);
    end Equivalent_Type;
@@ -1019,11 +1015,13 @@ package body Einfo is
 
    function First_Index (Id : E) return N is
    begin
+      pragma Assert (Is_Array_Type (Id) or else Is_String_Type (Id));
       return Node17 (Id);
    end First_Index;
 
    function First_Literal (Id : E) return E is
    begin
+      pragma Assert (Is_Enumeration_Type (Id));
       return Node17 (Id);
    end First_Literal;
 
@@ -1295,6 +1293,12 @@ package body Einfo is
       return Flag180 (Id);
    end Has_Pragma_Unreferenced;
 
+   function Has_Pragma_Unreferenced_Objects (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag212 (Id);
+   end Has_Pragma_Unreferenced_Objects;
+
    function Has_Primitive_Operations (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
@@ -1310,6 +1314,12 @@ package body Einfo is
    begin
       return Flag161 (Id);
    end Has_Qualified_Name;
+
+   function Has_RACW (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Package);
+      return Flag214 (Id);
+   end Has_RACW;
 
    function Has_Record_Rep_Clause (Id : E) return B is
    begin
@@ -1449,10 +1459,17 @@ package body Einfo is
       return Node21 (Id);
    end Interface_Name;
 
-   function Is_Abstract (Id : E) return B is
+   function Is_Abstract_Subprogram (Id : E) return B is
    begin
+      pragma Assert (Is_Overloadable (Id));
       return Flag19 (Id);
-   end Is_Abstract;
+   end Is_Abstract_Subprogram;
+
+   function Is_Abstract_Type (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag146 (Id);
+   end Is_Abstract_Type;
 
    function Is_Local_Anonymous_Access (Id : E) return B is
    begin
@@ -2003,6 +2020,7 @@ package body Einfo is
 
    function Master_Id (Id : E) return E is
    begin
+      pragma Assert (Is_Access_Type (Id));
       return Node17 (Id);
    end Master_Id;
 
@@ -2084,8 +2102,7 @@ package body Einfo is
 
    function Non_Limited_View (Id : E) return E is
    begin
-      pragma Assert (False
-        or else Ekind (Id) in Incomplete_Kind);
+      pragma Assert (Ekind (Id) in Incomplete_Kind);
       return Node17 (Id);
    end Non_Limited_View;
 
@@ -2279,6 +2296,12 @@ package body Einfo is
    begin
       return Uint9 (Id);
    end Renaming_Map;
+
+   function Requires_Overriding (Id : E) return B is
+   begin
+      pragma Assert (Is_Overloadable (Id));
+      return Flag213 (Id);
+   end Requires_Overriding;
 
    function Return_Present (Id : E) return B is
    begin
@@ -2475,6 +2498,11 @@ package body Einfo is
    begin
       return Ekind (Id) in Access_Kind;
    end Is_Access_Type;
+
+   function Is_Access_Protected_Subprogram_Type (Id : E) return B is
+   begin
+      return Ekind (Id) in Access_Protected_Kind;
+   end Is_Access_Protected_Subprogram_Type;
 
    function Is_Array_Type                       (Id : E) return B is
    begin
@@ -2676,12 +2704,7 @@ package body Einfo is
 
    procedure Set_Abstract_Interfaces (Id : E; V : L) is
    begin
-      pragma Assert
-        (Ekind (Id) = E_Record_Type
-          or else Ekind (Id) = E_Record_Subtype
-          or else Ekind (Id) = E_Record_Type_With_Private
-          or else Ekind (Id) = E_Record_Subtype_With_Private
-          or else Ekind (Id) = E_Class_Wide_Type);
+      pragma Assert (Is_Record_Type (Id));
       Set_Elist25 (Id, V);
    end Set_Abstract_Interfaces;
 
@@ -3130,10 +3153,11 @@ package body Einfo is
    procedure Set_Equivalent_Type (Id : E; V : E) is
    begin
       pragma Assert
-        (Ekind (Id) = E_Class_Wide_Type                  or else
-         Ekind (Id) = E_Class_Wide_Subtype               or else
-         Ekind (Id) = E_Access_Protected_Subprogram_Type or else
-         Ekind (Id) = E_Access_Subprogram_Type           or else
+        (Ekind (Id) = E_Class_Wide_Type                            or else
+         Ekind (Id) = E_Class_Wide_Subtype                         or else
+         Ekind (Id) = E_Access_Protected_Subprogram_Type           or else
+         Ekind (Id) = E_Anonymous_Access_Protected_Subprogram_Type or else
+         Ekind (Id) = E_Access_Subprogram_Type                     or else
          Ekind (Id) = E_Exception_Type);
       Set_Node18 (Id, V);
    end Set_Equivalent_Type;
@@ -3194,11 +3218,13 @@ package body Einfo is
 
    procedure Set_First_Index (Id : E; V : N) is
    begin
+      pragma Assert (Is_Array_Type (Id) or else Is_String_Type (Id));
       Set_Node17 (Id, V);
    end Set_First_Index;
 
    procedure Set_First_Literal (Id : E; V : E) is
    begin
+      pragma Assert (Is_Enumeration_Type (Id));
       Set_Node17 (Id, V);
    end Set_First_Literal;
 
@@ -3479,6 +3505,12 @@ package body Einfo is
       Set_Flag180 (Id, V);
    end Set_Has_Pragma_Unreferenced;
 
+   procedure Set_Has_Pragma_Unreferenced_Objects (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag212 (Id, V);
+   end Set_Has_Pragma_Unreferenced_Objects;
+
    procedure Set_Has_Primitive_Operations (Id : E; V : B := True) is
    begin
       pragma Assert (Id = Base_Type (Id));
@@ -3494,6 +3526,12 @@ package body Einfo is
    begin
       Set_Flag161 (Id, V);
    end Set_Has_Qualified_Name;
+
+   procedure Set_Has_RACW (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Package);
+      Set_Flag214 (Id, V);
+   end Set_Has_RACW;
 
    procedure Set_Has_Record_Rep_Clause (Id : E; V : B := True) is
    begin
@@ -3637,10 +3675,17 @@ package body Einfo is
       Set_Node21 (Id, V);
    end Set_Interface_Name;
 
-   procedure Set_Is_Abstract (Id : E; V : B := True) is
+   procedure Set_Is_Abstract_Subprogram (Id : E; V : B := True) is
    begin
+      pragma Assert (Is_Overloadable (Id));
       Set_Flag19 (Id, V);
-   end Set_Is_Abstract;
+   end Set_Is_Abstract_Subprogram;
+
+   procedure Set_Is_Abstract_Type (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag146 (Id, V);
+   end Set_Is_Abstract_Type;
 
    procedure Set_Is_Local_Anonymous_Access (Id : E; V : B := True) is
    begin
@@ -4219,6 +4264,7 @@ package body Einfo is
 
    procedure Set_Master_Id (Id : E; V : E) is
    begin
+      pragma Assert (Is_Access_Type (Id));
       Set_Node17 (Id, V);
    end Set_Master_Id;
 
@@ -4304,8 +4350,7 @@ package body Einfo is
 
    procedure Set_Non_Limited_View (Id : E; V : E) is
    begin
-      pragma Assert (False
-        or else Ekind (Id) in Incomplete_Kind);
+      pragma Assert (Ekind (Id) in Incomplete_Kind);
       Set_Node17 (Id, V);
    end Set_Non_Limited_View;
 
@@ -4501,6 +4546,12 @@ package body Einfo is
    begin
       Set_Uint9 (Id, V);
    end Set_Renaming_Map;
+
+   procedure Set_Requires_Overriding (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Overloadable (Id));
+      Set_Flag213 (Id, V);
+   end Set_Requires_Overriding;
 
    procedure Set_Return_Present (Id : E; V : B := True) is
    begin
@@ -5252,7 +5303,7 @@ package body Einfo is
    end Entry_Index_Type;
 
    ---------------------
-   -- 1 --
+   -- First_Component --
    ---------------------
 
    function First_Component (Id : E) return E is
@@ -5270,6 +5321,28 @@ package body Einfo is
 
       return Comp_Id;
    end First_Component;
+
+   -------------------------------------
+   -- First_Component_Or_Discriminant --
+   -------------------------------------
+
+   function First_Component_Or_Discriminant (Id : E) return E is
+      Comp_Id : E;
+
+   begin
+      pragma Assert
+        (Is_Record_Type (Id) or else Is_Incomplete_Or_Private_Type (Id));
+
+      Comp_Id := First_Entity (Id);
+      while Present (Comp_Id) loop
+         exit when Ekind (Comp_Id) = E_Component
+                     or else
+                   Ekind (Comp_Id) = E_Discriminant;
+         Comp_Id := Next_Entity (Comp_Id);
+      end loop;
+
+      return Comp_Id;
+   end First_Component_Or_Discriminant;
 
    ------------------------
    -- First_Discriminant --
@@ -6132,6 +6205,25 @@ package body Einfo is
       return Comp_Id;
    end Next_Component;
 
+   ------------------------------------
+   -- Next_Component_Or_Discriminant --
+   ------------------------------------
+
+   function Next_Component_Or_Discriminant (Id : E) return E is
+      Comp_Id : E;
+
+   begin
+      Comp_Id := Next_Entity (Id);
+      while Present (Comp_Id) loop
+         exit when Ekind (Comp_Id) = E_Component
+                     or else
+                   Ekind (Comp_Id) = E_Discriminant;
+         Comp_Id := Next_Entity (Comp_Id);
+      end loop;
+
+      return Comp_Id;
+   end Next_Component_Or_Discriminant;
+
    -----------------------
    -- Next_Discriminant --
    -----------------------
@@ -6182,10 +6274,10 @@ package body Einfo is
       P : E;
 
    begin
-      --  Follow the chain of declared entities as long as the kind of
-      --  the entity corresponds to a formal parameter. Skip internal
-      --  entities that may have been created for implicit subtypes,
-      --  in the process of analyzing default expressions.
+      --  Follow the chain of declared entities as long as the kind of the
+      --  entity corresponds to a formal parameter. Skip internal entities
+      --  that may have been created for implicit subtypes, in the process
+      --  of analyzing default expressions.
 
       P := Id;
 
@@ -6765,210 +6857,214 @@ package body Einfo is
          Write_Eol;
       end if;
 
-      W ("Address_Taken",                 Flag104 (Id));
-      W ("Body_Needed_For_SAL",           Flag40  (Id));
-      W ("C_Pass_By_Copy",                Flag125 (Id));
-      W ("Can_Never_Be_Null",             Flag38  (Id));
-      W ("Checks_May_Be_Suppressed",      Flag31  (Id));
-      W ("Debug_Info_Off",                Flag166 (Id));
-      W ("Default_Expressions_Processed", Flag108 (Id));
-      W ("Delay_Cleanups",                Flag114 (Id));
-      W ("Delay_Subprogram_Descriptors",  Flag50  (Id));
-      W ("Depends_On_Private",            Flag14  (Id));
-      W ("Discard_Names",                 Flag88  (Id));
-      W ("Elaboration_Entity_Required",   Flag174 (Id));
-      W ("Elaborate_Body_Desirable",      Flag210 (Id));
-      W ("Entry_Accepted",                Flag152 (Id));
-      W ("Finalize_Storage_Only",         Flag158 (Id));
-      W ("From_With_Type",                Flag159 (Id));
-      W ("Function_Returns_With_DSP",     Flag169 (Id));
-      W ("Has_Aliased_Components",        Flag135 (Id));
-      W ("Has_Alignment_Clause",          Flag46  (Id));
-      W ("Has_All_Calls_Remote",          Flag79  (Id));
-      W ("Has_Anon_Block_Suffix",         Flag201 (Id));
-      W ("Has_Atomic_Components",         Flag86  (Id));
-      W ("Has_Biased_Representation",     Flag139 (Id));
-      W ("Has_Completion",                Flag26  (Id));
-      W ("Has_Completion_In_Body",        Flag71  (Id));
-      W ("Has_Complex_Representation",    Flag140 (Id));
-      W ("Has_Component_Size_Clause",     Flag68  (Id));
-      W ("Has_Contiguous_Rep",            Flag181 (Id));
-      W ("Has_Controlled_Component",      Flag43  (Id));
-      W ("Has_Controlling_Result",        Flag98  (Id));
-      W ("Has_Convention_Pragma",         Flag119 (Id));
-      W ("Has_Delayed_Freeze",            Flag18  (Id));
-      W ("Has_Discriminants",             Flag5   (Id));
-      W ("Has_Enumeration_Rep_Clause",    Flag66  (Id));
-      W ("Has_Exit",                      Flag47  (Id));
-      W ("Has_External_Tag_Rep_Clause",   Flag110 (Id));
-      W ("Has_Forward_Instantiation",     Flag175 (Id));
-      W ("Has_Fully_Qualified_Name",      Flag173 (Id));
-      W ("Has_Gigi_Rep_Item",             Flag82  (Id));
-      W ("Has_Homonym",                   Flag56  (Id));
-      W ("Has_Machine_Radix_Clause",      Flag83  (Id));
-      W ("Has_Master_Entity",             Flag21  (Id));
-      W ("Has_Missing_Return",            Flag142 (Id));
-      W ("Has_Nested_Block_With_Handler", Flag101 (Id));
-      W ("Has_Non_Standard_Rep",          Flag75  (Id));
-      W ("Has_Object_Size_Clause",        Flag172 (Id));
-      W ("Has_Per_Object_Constraint",     Flag154 (Id));
-      W ("Has_Persistent_BSS",            Flag188 (Id));
-      W ("Has_Pragma_Controlled",         Flag27  (Id));
-      W ("Has_Pragma_Elaborate_Body",     Flag150 (Id));
-      W ("Has_Pragma_Inline",             Flag157 (Id));
-      W ("Has_Pragma_Pack",               Flag121 (Id));
-      W ("Has_Pragma_Pure",               Flag203 (Id));
-      W ("Has_Pragma_Pure_Function",      Flag179 (Id));
-      W ("Has_Pragma_Unreferenced",       Flag180 (Id));
-      W ("Has_Primitive_Operations",      Flag120 (Id));
-      W ("Has_Private_Declaration",       Flag155 (Id));
-      W ("Has_Qualified_Name",            Flag161 (Id));
-      W ("Has_Record_Rep_Clause",         Flag65  (Id));
-      W ("Has_Recursive_Call",            Flag143 (Id));
-      W ("Has_Size_Clause",               Flag29  (Id));
-      W ("Has_Small_Clause",              Flag67  (Id));
-      W ("Has_Specified_Layout",          Flag100 (Id));
-      W ("Has_Specified_Stream_Input",    Flag190 (Id));
-      W ("Has_Specified_Stream_Output",   Flag191 (Id));
-      W ("Has_Specified_Stream_Read",     Flag192 (Id));
-      W ("Has_Specified_Stream_Write",    Flag193 (Id));
-      W ("Has_Static_Discriminants",      Flag211 (Id));
-      W ("Has_Storage_Size_Clause",       Flag23  (Id));
-      W ("Has_Stream_Size_Clause",        Flag184 (Id));
-      W ("Has_Subprogram_Descriptor",     Flag93  (Id));
-      W ("Has_Task",                      Flag30  (Id));
-      W ("Has_Unchecked_Union",           Flag123 (Id));
-      W ("Has_Unknown_Discriminants",     Flag72  (Id));
-      W ("Has_Volatile_Components",       Flag87  (Id));
-      W ("Has_Xref_Entry",                Flag182 (Id));
-      W ("In_Package_Body",               Flag48  (Id));
-      W ("In_Private_Part",               Flag45  (Id));
-      W ("In_Use",                        Flag8   (Id));
-      W ("Is_AST_Entry",                  Flag132 (Id));
-      W ("Is_Abstract",                   Flag19  (Id));
-      W ("Is_Local_Anonymous_Access",     Flag194 (Id));
-      W ("Is_Access_Constant",            Flag69  (Id));
-      W ("Is_Ada_2005_Only",              Flag185 (Id));
-      W ("Is_Aliased",                    Flag15  (Id));
-      W ("Is_Asynchronous",               Flag81  (Id));
-      W ("Is_Atomic",                     Flag85  (Id));
-      W ("Is_Bit_Packed_Array",           Flag122 (Id));
-      W ("Is_CPP_Class",                  Flag74  (Id));
-      W ("Is_Called",                     Flag102 (Id));
-      W ("Is_Character_Type",             Flag63  (Id));
-      W ("Is_Child_Unit",                 Flag73  (Id));
-      W ("Is_Class_Wide_Equivalent_Type", Flag35  (Id));
-      W ("Is_Compilation_Unit",           Flag149 (Id));
-      W ("Is_Completely_Hidden",          Flag103 (Id));
-      W ("Is_Concurrent_Record_Type",     Flag20  (Id));
-      W ("Is_Constr_Subt_For_UN_Aliased", Flag141 (Id));
-      W ("Is_Constr_Subt_For_U_Nominal",  Flag80  (Id));
-      W ("Is_Constrained",                Flag12  (Id));
-      W ("Is_Constructor",                Flag76  (Id));
-      W ("Is_Controlled",                 Flag42  (Id));
-      W ("Is_Controlling_Formal",         Flag97  (Id));
-      W ("Is_Discrim_SO_Function",        Flag176 (Id));
-      W ("Is_Dispatching_Operation",      Flag6   (Id));
-      W ("Is_Eliminated",                 Flag124 (Id));
-      W ("Is_Entry_Formal",               Flag52  (Id));
-      W ("Is_Exported",                   Flag99  (Id));
-      W ("Is_First_Subtype",              Flag70  (Id));
-      W ("Is_For_Access_Subtype",         Flag118 (Id));
-      W ("Is_Formal_Subprogram",          Flag111 (Id));
-      W ("Is_Frozen",                     Flag4   (Id));
-      W ("Is_Generic_Actual_Type",        Flag94  (Id));
-      W ("Is_Generic_Instance",           Flag130 (Id));
-      W ("Is_Generic_Type",               Flag13  (Id));
-      W ("Is_Hidden",                     Flag57  (Id));
-      W ("Is_Hidden_Open_Scope",          Flag171 (Id));
-      W ("Is_Immediately_Visible",        Flag7   (Id));
-      W ("Is_Imported",                   Flag24  (Id));
-      W ("Is_Inlined",                    Flag11  (Id));
-      W ("Is_Instantiated",               Flag126 (Id));
-      W ("Is_Interface",                  Flag186 (Id));
-      W ("Is_Internal",                   Flag17  (Id));
-      W ("Is_Interrupt_Handler",          Flag89  (Id));
-      W ("Is_Intrinsic_Subprogram",       Flag64  (Id));
-      W ("Is_Itype",                      Flag91  (Id));
-      W ("Is_Known_Non_Null",             Flag37  (Id));
-      W ("Is_Known_Null",                 Flag204 (Id));
-      W ("Is_Known_Valid",                Flag170 (Id));
-      W ("Is_Limited_Composite",          Flag106 (Id));
-      W ("Is_Limited_Interface",          Flag197 (Id));
-      W ("Is_Limited_Record",             Flag25  (Id));
-      W ("Is_Machine_Code_Subprogram",    Flag137 (Id));
-      W ("Is_Non_Static_Subtype",         Flag109 (Id));
-      W ("Is_Null_Init_Proc",             Flag178 (Id));
-      W ("Is_Obsolescent",                Flag153 (Id));
-      W ("Is_Optional_Parameter",         Flag134 (Id));
-      W ("Is_Overriding_Operation",       Flag39  (Id));
-      W ("Is_Package_Body_Entity",        Flag160 (Id));
-      W ("Is_Packed",                     Flag51  (Id));
-      W ("Is_Packed_Array_Type",          Flag138 (Id));
-      W ("Is_Potentially_Use_Visible",    Flag9   (Id));
-      W ("Is_Preelaborated",              Flag59  (Id));
-      W ("Is_Primitive_Wrapper",          Flag195 (Id));
-      W ("Is_Private_Composite",          Flag107 (Id));
-      W ("Is_Private_Descendant",         Flag53  (Id));
-      W ("Is_Protected_Interface",        Flag198 (Id));
-      W ("Is_Public",                     Flag10  (Id));
-      W ("Is_Pure",                       Flag44  (Id));
-      W ("Is_Pure_Unit_Access_Type",      Flag189 (Id));
-      W ("Is_Remote_Call_Interface",      Flag62  (Id));
-      W ("Is_Remote_Types",               Flag61  (Id));
-      W ("Is_Renaming_Of_Object",         Flag112 (Id));
-      W ("Is_Return_Object",              Flag209 (Id));
-      W ("Is_Shared_Passive",             Flag60  (Id));
-      W ("Is_Synchronized_Interface",     Flag199 (Id));
-      W ("Is_Statically_Allocated",       Flag28  (Id));
-      W ("Is_Tag",                        Flag78  (Id));
-      W ("Is_Tagged_Type",                Flag55  (Id));
-      W ("Is_Task_Interface",             Flag200 (Id));
-      W ("Is_Thread_Body",                Flag77  (Id));
-      W ("Is_True_Constant",              Flag163 (Id));
-      W ("Is_Unchecked_Union",            Flag117 (Id));
-      W ("Is_Unsigned_Type",              Flag144 (Id));
-      W ("Is_VMS_Exception",              Flag133 (Id));
-      W ("Is_Valued_Procedure",           Flag127 (Id));
-      W ("Is_Visible_Child_Unit",         Flag116 (Id));
-      W ("Is_Visible_Formal",             Flag206 (Id));
-      W ("Is_Volatile",                   Flag16  (Id));
-      W ("Itype_Printed",                 Flag202 (Id));
-      W ("Kill_Elaboration_Checks",       Flag32  (Id));
-      W ("Kill_Range_Checks",             Flag33  (Id));
-      W ("Kill_Tag_Checks",               Flag34  (Id));
-      W ("Known_To_Have_Preelab_Init",    Flag207 (Id));
-      W ("Low_Bound_Known",               Flag205 (Id));
-      W ("Machine_Radix_10",              Flag84  (Id));
-      W ("Materialize_Entity",            Flag168 (Id));
-      W ("Must_Be_On_Byte_Boundary",      Flag183 (Id));
-      W ("Must_Have_Preelab_Init",        Flag208 (Id));
-      W ("Needs_Debug_Info",              Flag147 (Id));
-      W ("Needs_No_Actuals",              Flag22  (Id));
-      W ("Never_Set_In_Source",           Flag115 (Id));
-      W ("No_Pool_Assigned",              Flag131 (Id));
-      W ("No_Return",                     Flag113 (Id));
-      W ("No_Strict_Aliasing",            Flag136 (Id));
-      W ("Non_Binary_Modulus",            Flag58  (Id));
-      W ("Nonzero_Is_True",               Flag162 (Id));
-      W ("Reachable",                     Flag49  (Id));
-      W ("Referenced",                    Flag156 (Id));
-      W ("Referenced_As_LHS",             Flag36  (Id));
-      W ("Return_Present",                Flag54  (Id));
-      W ("Returns_By_Ref",                Flag90  (Id));
-      W ("Reverse_Bit_Order",             Flag164 (Id));
-      W ("Sec_Stack_Needed_For_Return",   Flag167 (Id));
-      W ("Size_Depends_On_Discriminant",  Flag177 (Id));
-      W ("Size_Known_At_Compile_Time",    Flag92  (Id));
-      W ("Strict_Alignment",              Flag145 (Id));
-      W ("Suppress_Elaboration_Warnings", Flag148 (Id));
-      W ("Suppress_Init_Proc",            Flag105 (Id));
-      W ("Suppress_Style_Checks",         Flag165 (Id));
-      W ("Treat_As_Volatile",             Flag41  (Id));
-      W ("Uses_Sec_Stack",                Flag95  (Id));
-      W ("Vax_Float",                     Flag151 (Id));
-      W ("Warnings_Off",                  Flag96  (Id));
-      W ("Was_Hidden",                    Flag196 (Id));
+      W ("Address_Taken",                   Flag104 (Id));
+      W ("Body_Needed_For_SAL",             Flag40  (Id));
+      W ("C_Pass_By_Copy",                  Flag125 (Id));
+      W ("Can_Never_Be_Null",               Flag38  (Id));
+      W ("Checks_May_Be_Suppressed",        Flag31  (Id));
+      W ("Debug_Info_Off",                  Flag166 (Id));
+      W ("Default_Expressions_Processed",   Flag108 (Id));
+      W ("Delay_Cleanups",                  Flag114 (Id));
+      W ("Delay_Subprogram_Descriptors",    Flag50  (Id));
+      W ("Depends_On_Private",              Flag14  (Id));
+      W ("Discard_Names",                   Flag88  (Id));
+      W ("Elaboration_Entity_Required",     Flag174 (Id));
+      W ("Elaborate_Body_Desirable",        Flag210 (Id));
+      W ("Entry_Accepted",                  Flag152 (Id));
+      W ("Finalize_Storage_Only",           Flag158 (Id));
+      W ("From_With_Type",                  Flag159 (Id));
+      W ("Function_Returns_With_DSP",       Flag169 (Id));
+      W ("Has_Aliased_Components",          Flag135 (Id));
+      W ("Has_Alignment_Clause",            Flag46  (Id));
+      W ("Has_All_Calls_Remote",            Flag79  (Id));
+      W ("Has_Anon_Block_Suffix",           Flag201 (Id));
+      W ("Has_Atomic_Components",           Flag86  (Id));
+      W ("Has_Biased_Representation",       Flag139 (Id));
+      W ("Has_Completion",                  Flag26  (Id));
+      W ("Has_Completion_In_Body",          Flag71  (Id));
+      W ("Has_Complex_Representation",      Flag140 (Id));
+      W ("Has_Component_Size_Clause",       Flag68  (Id));
+      W ("Has_Contiguous_Rep",              Flag181 (Id));
+      W ("Has_Controlled_Component",        Flag43  (Id));
+      W ("Has_Controlling_Result",          Flag98  (Id));
+      W ("Has_Convention_Pragma",           Flag119 (Id));
+      W ("Has_Delayed_Freeze",              Flag18  (Id));
+      W ("Has_Discriminants",               Flag5   (Id));
+      W ("Has_Enumeration_Rep_Clause",      Flag66  (Id));
+      W ("Has_Exit",                        Flag47  (Id));
+      W ("Has_External_Tag_Rep_Clause",     Flag110 (Id));
+      W ("Has_Forward_Instantiation",       Flag175 (Id));
+      W ("Has_Fully_Qualified_Name",        Flag173 (Id));
+      W ("Has_Gigi_Rep_Item",               Flag82  (Id));
+      W ("Has_Homonym",                     Flag56  (Id));
+      W ("Has_Machine_Radix_Clause",        Flag83  (Id));
+      W ("Has_Master_Entity",               Flag21  (Id));
+      W ("Has_Missing_Return",              Flag142 (Id));
+      W ("Has_Nested_Block_With_Handler",   Flag101 (Id));
+      W ("Has_Non_Standard_Rep",            Flag75  (Id));
+      W ("Has_Object_Size_Clause",          Flag172 (Id));
+      W ("Has_Per_Object_Constraint",       Flag154 (Id));
+      W ("Has_Persistent_BSS",              Flag188 (Id));
+      W ("Has_Pragma_Controlled",           Flag27  (Id));
+      W ("Has_Pragma_Elaborate_Body",       Flag150 (Id));
+      W ("Has_Pragma_Inline",               Flag157 (Id));
+      W ("Has_Pragma_Pack",                 Flag121 (Id));
+      W ("Has_Pragma_Pure",                 Flag203 (Id));
+      W ("Has_Pragma_Pure_Function",        Flag179 (Id));
+      W ("Has_Pragma_Unreferenced",         Flag180 (Id));
+      W ("Has_Pragma_Unreferenced_Objects", Flag212 (Id));
+      W ("Has_Primitive_Operations",        Flag120 (Id));
+      W ("Has_Private_Declaration",         Flag155 (Id));
+      W ("Has_Qualified_Name",              Flag161 (Id));
+      W ("Has_RACW",                        Flag214 (Id));
+      W ("Has_Record_Rep_Clause",           Flag65  (Id));
+      W ("Has_Recursive_Call",              Flag143 (Id));
+      W ("Has_Size_Clause",                 Flag29  (Id));
+      W ("Has_Small_Clause",                Flag67  (Id));
+      W ("Has_Specified_Layout",            Flag100 (Id));
+      W ("Has_Specified_Stream_Input",      Flag190 (Id));
+      W ("Has_Specified_Stream_Output",     Flag191 (Id));
+      W ("Has_Specified_Stream_Read",       Flag192 (Id));
+      W ("Has_Specified_Stream_Write",      Flag193 (Id));
+      W ("Has_Static_Discriminants",        Flag211 (Id));
+      W ("Has_Storage_Size_Clause",         Flag23  (Id));
+      W ("Has_Stream_Size_Clause",          Flag184 (Id));
+      W ("Has_Subprogram_Descriptor",       Flag93  (Id));
+      W ("Has_Task",                        Flag30  (Id));
+      W ("Has_Unchecked_Union",             Flag123 (Id));
+      W ("Has_Unknown_Discriminants",       Flag72  (Id));
+      W ("Has_Volatile_Components",         Flag87  (Id));
+      W ("Has_Xref_Entry",                  Flag182 (Id));
+      W ("In_Package_Body",                 Flag48  (Id));
+      W ("In_Private_Part",                 Flag45  (Id));
+      W ("In_Use",                          Flag8   (Id));
+      W ("Is_AST_Entry",                    Flag132 (Id));
+      W ("Is_Abstract_Subprogram",          Flag19  (Id));
+      W ("Is_Abstract_Type",                Flag146  (Id));
+      W ("Is_Local_Anonymous_Access",       Flag194 (Id));
+      W ("Is_Access_Constant",              Flag69  (Id));
+      W ("Is_Ada_2005_Only",                Flag185 (Id));
+      W ("Is_Aliased",                      Flag15  (Id));
+      W ("Is_Asynchronous",                 Flag81  (Id));
+      W ("Is_Atomic",                       Flag85  (Id));
+      W ("Is_Bit_Packed_Array",             Flag122 (Id));
+      W ("Is_CPP_Class",                    Flag74  (Id));
+      W ("Is_Called",                       Flag102 (Id));
+      W ("Is_Character_Type",               Flag63  (Id));
+      W ("Is_Child_Unit",                   Flag73  (Id));
+      W ("Is_Class_Wide_Equivalent_Type",   Flag35  (Id));
+      W ("Is_Compilation_Unit",             Flag149 (Id));
+      W ("Is_Completely_Hidden",            Flag103 (Id));
+      W ("Is_Concurrent_Record_Type",       Flag20  (Id));
+      W ("Is_Constr_Subt_For_UN_Aliased",   Flag141 (Id));
+      W ("Is_Constr_Subt_For_U_Nominal",    Flag80  (Id));
+      W ("Is_Constrained",                  Flag12  (Id));
+      W ("Is_Constructor",                  Flag76  (Id));
+      W ("Is_Controlled",                   Flag42  (Id));
+      W ("Is_Controlling_Formal",           Flag97  (Id));
+      W ("Is_Discrim_SO_Function",          Flag176 (Id));
+      W ("Is_Dispatching_Operation",        Flag6   (Id));
+      W ("Is_Eliminated",                   Flag124 (Id));
+      W ("Is_Entry_Formal",                 Flag52  (Id));
+      W ("Is_Exported",                     Flag99  (Id));
+      W ("Is_First_Subtype",                Flag70  (Id));
+      W ("Is_For_Access_Subtype",           Flag118 (Id));
+      W ("Is_Formal_Subprogram",            Flag111 (Id));
+      W ("Is_Frozen",                       Flag4   (Id));
+      W ("Is_Generic_Actual_Type",          Flag94  (Id));
+      W ("Is_Generic_Instance",             Flag130 (Id));
+      W ("Is_Generic_Type",                 Flag13  (Id));
+      W ("Is_Hidden",                       Flag57  (Id));
+      W ("Is_Hidden_Open_Scope",            Flag171 (Id));
+      W ("Is_Immediately_Visible",          Flag7   (Id));
+      W ("Is_Imported",                     Flag24  (Id));
+      W ("Is_Inlined",                      Flag11  (Id));
+      W ("Is_Instantiated",                 Flag126 (Id));
+      W ("Is_Interface",                    Flag186 (Id));
+      W ("Is_Internal",                     Flag17  (Id));
+      W ("Is_Interrupt_Handler",            Flag89  (Id));
+      W ("Is_Intrinsic_Subprogram",         Flag64  (Id));
+      W ("Is_Itype",                        Flag91  (Id));
+      W ("Is_Known_Non_Null",               Flag37  (Id));
+      W ("Is_Known_Null",                   Flag204 (Id));
+      W ("Is_Known_Valid",                  Flag170 (Id));
+      W ("Is_Limited_Composite",            Flag106 (Id));
+      W ("Is_Limited_Interface",            Flag197 (Id));
+      W ("Is_Limited_Record",               Flag25  (Id));
+      W ("Is_Machine_Code_Subprogram",      Flag137 (Id));
+      W ("Is_Non_Static_Subtype",           Flag109 (Id));
+      W ("Is_Null_Init_Proc",               Flag178 (Id));
+      W ("Is_Obsolescent",                  Flag153 (Id));
+      W ("Is_Optional_Parameter",           Flag134 (Id));
+      W ("Is_Overriding_Operation",         Flag39  (Id));
+      W ("Is_Package_Body_Entity",          Flag160 (Id));
+      W ("Is_Packed",                       Flag51  (Id));
+      W ("Is_Packed_Array_Type",            Flag138 (Id));
+      W ("Is_Potentially_Use_Visible",      Flag9   (Id));
+      W ("Is_Preelaborated",                Flag59  (Id));
+      W ("Is_Primitive_Wrapper",            Flag195 (Id));
+      W ("Is_Private_Composite",            Flag107 (Id));
+      W ("Is_Private_Descendant",           Flag53  (Id));
+      W ("Is_Protected_Interface",          Flag198 (Id));
+      W ("Is_Public",                       Flag10  (Id));
+      W ("Is_Pure",                         Flag44  (Id));
+      W ("Is_Pure_Unit_Access_Type",        Flag189 (Id));
+      W ("Is_Remote_Call_Interface",        Flag62  (Id));
+      W ("Is_Remote_Types",                 Flag61  (Id));
+      W ("Is_Renaming_Of_Object",           Flag112 (Id));
+      W ("Is_Return_Object",                Flag209 (Id));
+      W ("Is_Shared_Passive",               Flag60  (Id));
+      W ("Is_Synchronized_Interface",       Flag199 (Id));
+      W ("Is_Statically_Allocated",         Flag28  (Id));
+      W ("Is_Tag",                          Flag78  (Id));
+      W ("Is_Tagged_Type",                  Flag55  (Id));
+      W ("Is_Task_Interface",               Flag200 (Id));
+      W ("Is_Thread_Body",                  Flag77  (Id));
+      W ("Is_True_Constant",                Flag163 (Id));
+      W ("Is_Unchecked_Union",              Flag117 (Id));
+      W ("Is_Unsigned_Type",                Flag144 (Id));
+      W ("Is_VMS_Exception",                Flag133 (Id));
+      W ("Is_Valued_Procedure",             Flag127 (Id));
+      W ("Is_Visible_Child_Unit",           Flag116 (Id));
+      W ("Is_Visible_Formal",               Flag206 (Id));
+      W ("Is_Volatile",                     Flag16  (Id));
+      W ("Itype_Printed",                   Flag202 (Id));
+      W ("Kill_Elaboration_Checks",         Flag32  (Id));
+      W ("Kill_Range_Checks",               Flag33  (Id));
+      W ("Kill_Tag_Checks",                 Flag34  (Id));
+      W ("Known_To_Have_Preelab_Init",      Flag207 (Id));
+      W ("Low_Bound_Known",                 Flag205 (Id));
+      W ("Machine_Radix_10",                Flag84  (Id));
+      W ("Materialize_Entity",              Flag168 (Id));
+      W ("Must_Be_On_Byte_Boundary",        Flag183 (Id));
+      W ("Must_Have_Preelab_Init",          Flag208 (Id));
+      W ("Needs_Debug_Info",                Flag147 (Id));
+      W ("Needs_No_Actuals",                Flag22  (Id));
+      W ("Never_Set_In_Source",             Flag115 (Id));
+      W ("No_Pool_Assigned",                Flag131 (Id));
+      W ("No_Return",                       Flag113 (Id));
+      W ("No_Strict_Aliasing",              Flag136 (Id));
+      W ("Non_Binary_Modulus",              Flag58  (Id));
+      W ("Nonzero_Is_True",                 Flag162 (Id));
+      W ("Reachable",                       Flag49  (Id));
+      W ("Referenced",                      Flag156 (Id));
+      W ("Referenced_As_LHS",               Flag36  (Id));
+      W ("Requires_Overriding",             Flag213 (Id));
+      W ("Return_Present",                  Flag54  (Id));
+      W ("Returns_By_Ref",                  Flag90  (Id));
+      W ("Reverse_Bit_Order",               Flag164 (Id));
+      W ("Sec_Stack_Needed_For_Return",     Flag167 (Id));
+      W ("Size_Depends_On_Discriminant",    Flag177 (Id));
+      W ("Size_Known_At_Compile_Time",      Flag92  (Id));
+      W ("Strict_Alignment",                Flag145 (Id));
+      W ("Suppress_Elaboration_Warnings",   Flag148 (Id));
+      W ("Suppress_Init_Proc",              Flag105 (Id));
+      W ("Suppress_Style_Checks",           Flag165 (Id));
+      W ("Treat_As_Volatile",               Flag41  (Id));
+      W ("Uses_Sec_Stack",                  Flag95  (Id));
+      W ("Vax_Float",                       Flag151 (Id));
+      W ("Warnings_Off",                    Flag96  (Id));
+      W ("Was_Hidden",                      Flag196 (Id));
    end Write_Entity_Flags;
 
    -----------------------
@@ -7126,28 +7222,28 @@ package body Einfo is
    procedure Write_Field8_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Component                                |
-              E_Discriminant                             =>
+         when E_Component                                  |
+              E_Discriminant                               =>
             Write_Str ("Normalized_First_Bit");
 
-         when Formal_Kind                                |
-              E_Function                                 |
-              E_Subprogram_Body                          =>
+         when Formal_Kind                                  |
+              E_Function                                   |
+              E_Subprogram_Body                            =>
             Write_Str ("Mechanism");
 
-         when Type_Kind                                  =>
+         when Type_Kind                                    =>
             Write_Str ("Associated_Node_For_Itype");
 
-         when E_Package                                  =>
+         when E_Package                                    =>
             Write_Str ("Dependent_Instances");
 
-         when E_Return_Statement                         =>
+         when E_Return_Statement                           =>
             Write_Str ("Return_Applies_To");
 
-         when E_Variable                                 =>
+         when E_Variable                                   =>
             Write_Str ("Hiding_Loop_Variable");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field8??");
       end case;
    end Write_Field8_Name;
@@ -7159,21 +7255,21 @@ package body Einfo is
    procedure Write_Field9_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when Type_Kind                                  =>
+         when Type_Kind                                    =>
             Write_Str ("Class_Wide_Type");
 
-         when E_Function                                 |
-              E_Generic_Function                         |
-              E_Generic_Package                          |
-              E_Generic_Procedure                        |
-              E_Package                                  |
-              E_Procedure                                =>
+         when E_Function                                   |
+              E_Generic_Function                           |
+              E_Generic_Package                            |
+              E_Generic_Procedure                          |
+              E_Package                                    |
+              E_Procedure                                  =>
             Write_Str ("Renaming_Map");
 
-         when Object_Kind                                =>
+         when Object_Kind                                  =>
             Write_Str ("Current_Value");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field9??");
       end case;
    end Write_Field9_Name;
@@ -7185,24 +7281,24 @@ package body Einfo is
    procedure Write_Field10_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when Type_Kind                                  =>
+         when Type_Kind                                    =>
             Write_Str ("Referenced_Object");
 
-         when E_In_Parameter                             |
-              E_Constant                                 =>
+         when E_In_Parameter                               |
+              E_Constant                                   =>
             Write_Str ("Discriminal_Link");
 
-         when E_Function                                 |
-              E_Package                                  |
-              E_Package_Body                             |
-              E_Procedure                                =>
+         when E_Function                                   |
+              E_Package                                    |
+              E_Package_Body                               |
+              E_Procedure                                  =>
             Write_Str ("Handler_Records");
 
-         when E_Component                                |
-              E_Discriminant                             =>
+         when E_Component                                  |
+              E_Discriminant                               =>
             Write_Str ("Normalized_Position_Max");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field10??");
       end case;
    end Write_Field10_Name;
@@ -7214,35 +7310,35 @@ package body Einfo is
    procedure Write_Field11_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when Formal_Kind                                =>
+         when Formal_Kind                                  =>
             Write_Str ("Entry_Component");
 
-         when E_Component                                |
-              E_Discriminant                             =>
+         when E_Component                                  |
+              E_Discriminant                               =>
             Write_Str ("Component_Bit_Offset");
 
-         when E_Constant                                 =>
+         when E_Constant                                   =>
             Write_Str ("Full_View");
 
-         when E_Enumeration_Literal                      =>
+         when E_Enumeration_Literal                        =>
             Write_Str ("Enumeration_Pos");
 
-         when E_Block                                    =>
+         when E_Block                                      =>
             Write_Str ("Block_Node");
 
-         when E_Function                                 |
-              E_Procedure                                |
-              E_Entry                                    |
-              E_Entry_Family                             =>
+         when E_Function                                   |
+              E_Procedure                                  |
+              E_Entry                                      |
+              E_Entry_Family                               =>
             Write_Str ("Protected_Body_Subprogram");
 
-         when E_Generic_Package                          =>
+         when E_Generic_Package                            =>
             Write_Str ("Generic_Homonym");
 
-         when Type_Kind                                  =>
+         when Type_Kind                                    =>
             Write_Str ("Full_View");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field11??");
       end case;
    end Write_Field11_Name;
@@ -7254,31 +7350,31 @@ package body Einfo is
    procedure Write_Field12_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when Entry_Kind                                 =>
+         when Entry_Kind                                   =>
             Write_Str ("Barrier_Function");
 
-         when E_Enumeration_Literal                      =>
+         when E_Enumeration_Literal                        =>
             Write_Str ("Enumeration_Rep");
 
-         when Type_Kind                                  |
-              E_Component                                |
-              E_Constant                                 |
-              E_Discriminant                             |
-              E_In_Parameter                             |
-              E_In_Out_Parameter                         |
-              E_Out_Parameter                            |
-              E_Loop_Parameter                           |
-              E_Variable                                 =>
+         when Type_Kind                                    |
+              E_Component                                  |
+              E_Constant                                   |
+              E_Discriminant                               |
+              E_In_Parameter                               |
+              E_In_Out_Parameter                           |
+              E_Out_Parameter                              |
+              E_Loop_Parameter                             |
+              E_Variable                                   =>
             Write_Str ("Esize");
 
-         when E_Function                                 |
-              E_Procedure                                =>
+         when E_Function                                   |
+              E_Procedure                                  =>
             Write_Str ("Next_Inlined_Subprogram");
 
-         when E_Package                                  =>
+         when E_Package                                    =>
             Write_Str ("Associated_Formal_Package");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field12??");
       end case;
    end Write_Field12_Name;
@@ -7290,17 +7386,17 @@ package body Einfo is
    procedure Write_Field13_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when Type_Kind                                  =>
+         when Type_Kind                                    =>
             Write_Str ("RM_Size");
 
-         when E_Component                                |
-              E_Discriminant                             =>
+         when E_Component                                  |
+              E_Discriminant                               =>
             Write_Str ("Component_Clause");
 
-         when E_Enumeration_Literal                      =>
+         when E_Enumeration_Literal                        =>
             Write_Str ("Debug_Renaming_Link");
 
-         when E_Function                                 =>
+         when E_Function                                   =>
             if not Comes_From_Source (Id)
                  and then
                Chars (Id) = Name_Op_Ne
@@ -7314,16 +7410,16 @@ package body Einfo is
                Write_Str ("Field13??");
             end if;
 
-         when Formal_Kind                                |
-              E_Variable                                 =>
+         when Formal_Kind                                  |
+              E_Variable                                   =>
             Write_Str ("Extra_Accessibility");
 
-         when E_Procedure                                |
-              E_Package                                  |
-              Generic_Unit_Kind                          =>
+         when E_Procedure                                  |
+              E_Package                                    |
+              Generic_Unit_Kind                            =>
             Write_Str ("Elaboration_Entity");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field13??");
       end case;
    end Write_Field13_Name;
@@ -7335,26 +7431,26 @@ package body Einfo is
    procedure Write_Field14_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when Type_Kind                                  |
-              Formal_Kind                                |
-              E_Constant                                 |
-              E_Variable                                 |
-              E_Loop_Parameter                           =>
+         when Type_Kind                                    |
+              Formal_Kind                                  |
+              E_Constant                                   |
+              E_Variable                                   |
+              E_Loop_Parameter                             =>
             Write_Str ("Alignment");
 
-         when E_Component                                |
-              E_Discriminant                             =>
+         when E_Component                                  |
+              E_Discriminant                               =>
             Write_Str ("Normalized_Position");
 
-         when E_Function                                 |
-              E_Procedure                                =>
+         when E_Function                                   |
+              E_Procedure                                  =>
             Write_Str ("First_Optional_Parameter");
 
-         when E_Package                                  |
-              E_Generic_Package                          =>
+         when E_Package                                    |
+              E_Generic_Package                            =>
             Write_Str ("Shadow_Entities");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field14??");
       end case;
    end Write_Field14_Name;
@@ -7366,52 +7462,52 @@ package body Einfo is
    procedure Write_Field15_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when Access_Kind                                |
-              Task_Kind                                  =>
+         when Access_Kind                                  |
+              Task_Kind                                    =>
             Write_Str ("Storage_Size_Variable");
 
-         when Class_Wide_Kind                            |
-              E_Record_Type                              |
-              E_Record_Subtype                           |
-              Private_Kind                               =>
+         when Class_Wide_Kind                              |
+              E_Record_Type                                |
+              E_Record_Subtype                             |
+              Private_Kind                                 =>
             Write_Str ("Primitive_Operations");
 
-         when E_Component                                =>
+         when E_Component                                  =>
             Write_Str ("DT_Entry_Count");
 
-         when Decimal_Fixed_Point_Kind                   =>
+         when Decimal_Fixed_Point_Kind                     =>
             Write_Str ("Scale_Value");
 
-         when E_Discriminant                             =>
+         when E_Discriminant                               =>
             Write_Str ("Discriminant_Number");
 
-         when Formal_Kind                                =>
+         when Formal_Kind                                  =>
             Write_Str ("Extra_Formal");
 
-         when E_Function                                 |
-              E_Procedure                                =>
+         when E_Function                                   |
+              E_Procedure                                  =>
             Write_Str ("DT_Position");
 
-         when Entry_Kind                                 =>
+         when Entry_Kind                                   =>
             Write_Str ("Entry_Parameters_Type");
 
-         when Enumeration_Kind                           =>
+         when Enumeration_Kind                             =>
             Write_Str ("Lit_Indexes");
 
-         when E_Package                                  |
-              E_Package_Body                             =>
+         when E_Package                                    |
+              E_Package_Body                               =>
             Write_Str ("Related_Instance");
 
-         when E_Protected_Type                           =>
+         when E_Protected_Type                             =>
             Write_Str ("Entry_Bodies_Array");
 
-         when E_String_Literal_Subtype                   =>
+         when E_String_Literal_Subtype                     =>
             Write_Str ("String_Literal_Low_Bound");
 
-         when E_Variable                                 =>
+         when E_Variable                                   =>
             Write_Str ("Shared_Var_Read_Proc");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field15??");
       end case;
    end Write_Field15_Name;
@@ -7423,37 +7519,37 @@ package body Einfo is
    procedure Write_Field16_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Component                                =>
+         when E_Component                                  =>
             Write_Str ("Entry_Formal");
 
-         when E_Function                                 |
-              E_Procedure                                =>
+         when E_Function                                   |
+              E_Procedure                                  =>
             Write_Str ("DTC_Entity");
 
-         when E_Package                                  |
-              E_Generic_Package                          |
-              Concurrent_Kind                            =>
+         when E_Package                                    |
+              E_Generic_Package                            |
+              Concurrent_Kind                              =>
             Write_Str ("First_Private_Entity");
 
-         when E_Record_Type                              |
-              E_Record_Type_With_Private                 =>
+         when E_Record_Type                                |
+              E_Record_Type_With_Private                   =>
             Write_Str ("Access_Disp_Table");
 
-         when E_String_Literal_Subtype                   =>
+         when E_String_Literal_Subtype                     =>
             Write_Str ("String_Literal_Length");
 
-         when Enumeration_Kind                           =>
+         when Enumeration_Kind                             =>
             Write_Str ("Lit_Strings");
 
-         when E_Variable                                 |
-              E_Out_Parameter                            =>
+         when E_Variable                                   |
+              E_Out_Parameter                              =>
             Write_Str ("Unset_Reference");
 
-         when E_Record_Subtype                           |
-              E_Class_Wide_Subtype                       =>
+         when E_Record_Subtype                             |
+              E_Class_Wide_Subtype                         =>
             Write_Str ("Cloned_Subtype");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field16??");
       end case;
    end Write_Field16_Name;
@@ -7465,67 +7561,67 @@ package body Einfo is
    procedure Write_Field17_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when Digits_Kind                                =>
+         when Digits_Kind                                  =>
             Write_Str ("Digits_Value");
 
-         when E_Component                                =>
+         when E_Component                                  =>
             Write_Str ("Prival");
 
-         when E_Discriminant                             =>
+         when E_Discriminant                               =>
             Write_Str ("Discriminal");
 
-         when E_Block                                    |
-              Class_Wide_Kind                            |
-              Concurrent_Kind                            |
-              Private_Kind                               |
-              E_Entry                                    |
-              E_Entry_Family                             |
-              E_Function                                 |
-              E_Generic_Function                         |
-              E_Generic_Package                          |
-              E_Generic_Procedure                        |
-              E_Loop                                     |
-              E_Operator                                 |
-              E_Package                                  |
-              E_Package_Body                             |
-              E_Procedure                                |
-              E_Record_Type                              |
-              E_Record_Subtype                           |
-              E_Return_Statement                         |
-              E_Subprogram_Body                          |
-              E_Subprogram_Type                          =>
+         when E_Block                                      |
+              Class_Wide_Kind                              |
+              Concurrent_Kind                              |
+              Private_Kind                                 |
+              E_Entry                                      |
+              E_Entry_Family                               |
+              E_Function                                   |
+              E_Generic_Function                           |
+              E_Generic_Package                            |
+              E_Generic_Procedure                          |
+              E_Loop                                       |
+              E_Operator                                   |
+              E_Package                                    |
+              E_Package_Body                               |
+              E_Procedure                                  |
+              E_Record_Type                                |
+              E_Record_Subtype                             |
+              E_Return_Statement                           |
+              E_Subprogram_Body                            |
+              E_Subprogram_Type                            =>
             Write_Str ("First_Entity");
 
-         when Array_Kind                                 =>
+         when Array_Kind                                   =>
             Write_Str ("First_Index");
 
-         when E_Protected_Body                           =>
+         when E_Protected_Body                             =>
             Write_Str ("Object_Ref");
 
-         when Enumeration_Kind                           =>
+         when Enumeration_Kind                             =>
             Write_Str ("First_Literal");
 
-         when Access_Kind                                =>
+         when Access_Kind                                  =>
             Write_Str ("Master_Id");
 
-         when Modular_Integer_Kind                       =>
+         when Modular_Integer_Kind                         =>
             Write_Str ("Modulus");
 
-         when Formal_Kind                                |
-              E_Constant                                 |
-              E_Generic_In_Out_Parameter                 |
-              E_Variable                                 =>
+         when Formal_Kind                                  |
+              E_Constant                                   |
+              E_Generic_In_Out_Parameter                   |
+              E_Variable                                   =>
             Write_Str ("Actual_Subtype");
 
-         when E_Incomplete_Type                          =>
+         when E_Incomplete_Type                            =>
             Write_Str ("Non_Limited_View");
 
-         when E_Incomplete_Subtype                       =>
+         when E_Incomplete_Subtype                         =>
             if From_With_Type (Id) then
                Write_Str ("Non_Limited_View");
             end if;
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field17??");
       end case;
    end Write_Field17_Name;
@@ -7537,50 +7633,51 @@ package body Einfo is
    procedure Write_Field18_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Enumeration_Literal                      |
-              E_Function                                 |
-              E_Operator                                 |
-              E_Procedure                                =>
+         when E_Enumeration_Literal                        |
+              E_Function                                   |
+              E_Operator                                   |
+              E_Procedure                                  =>
             Write_Str ("Alias");
 
-         when E_Record_Type                              =>
+         when E_Record_Type                                =>
             Write_Str ("Corresponding_Concurrent_Type");
 
-         when E_Entry_Index_Parameter                    =>
+         when E_Entry_Index_Parameter                      =>
             Write_Str ("Entry_Index_Constant");
 
-         when E_Class_Wide_Subtype                       |
-              E_Access_Protected_Subprogram_Type         |
-              E_Access_Subprogram_Type                   |
-              E_Exception_Type                           =>
+         when E_Class_Wide_Subtype                         |
+              E_Access_Protected_Subprogram_Type           |
+              E_Anonymous_Access_Protected_Subprogram_Type |
+              E_Access_Subprogram_Type                     |
+              E_Exception_Type                             =>
             Write_Str ("Equivalent_Type");
 
-         when Fixed_Point_Kind                           =>
+         when Fixed_Point_Kind                             =>
             Write_Str ("Delta_Value");
 
-         when E_Constant                                 |
-              E_Variable                                 =>
+         when E_Constant                                   |
+              E_Variable                                   =>
             Write_Str ("Renamed_Object");
 
-         when E_Exception                                |
-              E_Package                                  |
-              E_Generic_Function                         |
-              E_Generic_Procedure                        |
-              E_Generic_Package                          =>
+         when E_Exception                                  |
+              E_Package                                    |
+              E_Generic_Function                           |
+              E_Generic_Procedure                          |
+              E_Generic_Package                            =>
             Write_Str ("Renamed_Entity");
 
-         when Incomplete_Or_Private_Kind                 =>
+         when Incomplete_Or_Private_Kind                   =>
             Write_Str ("Private_Dependents");
 
-         when Concurrent_Kind                            =>
+         when Concurrent_Kind                              =>
             Write_Str ("Corresponding_Record_Type");
 
-         when E_Label                                    |
-              E_Loop                                     |
-              E_Block                                    =>
+         when E_Label                                      |
+              E_Loop                                       |
+              E_Block                                      =>
             Write_Str ("Enclosing_Scope");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field18??");
       end case;
    end Write_Field18_Name;
@@ -7592,38 +7689,39 @@ package body Einfo is
    procedure Write_Field19_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Array_Type                               |
-              E_Array_Subtype                            =>
+         when E_Array_Type                                 |
+              E_Array_Subtype                              =>
             Write_Str ("Related_Array_Object");
 
-         when E_Block                                    |
-              Concurrent_Kind                            |
-              E_Function                                 |
-              E_Procedure                                |
-              Entry_Kind                                 =>
+         when E_Block                                      |
+              Concurrent_Kind                              |
+              E_Function                                   |
+              E_Procedure                                  |
+              E_Return_Statement                           |
+              Entry_Kind                                   =>
             Write_Str ("Finalization_Chain_Entity");
 
-         when E_Constant | E_Variable                    =>
+         when E_Constant | E_Variable                      =>
             Write_Str ("Size_Check_Code");
 
-         when E_Discriminant                             =>
+         when E_Discriminant                               =>
             Write_Str ("Corresponding_Discriminant");
 
-         when E_Package                                  |
-              E_Generic_Package                          =>
+         when E_Package                                    |
+              E_Generic_Package                            =>
             Write_Str ("Body_Entity");
 
-         when E_Package_Body                             |
-              Formal_Kind                                =>
+         when E_Package_Body                               |
+              Formal_Kind                                  =>
             Write_Str ("Spec_Entity");
 
-         when Private_Kind                               =>
+         when Private_Kind                                 =>
             Write_Str ("Underlying_Full_View");
 
-         when E_Record_Type                              =>
+         when E_Record_Type                                =>
             Write_Str ("Parent_Subtype");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field19??");
       end case;
    end Write_Field19_Name;
@@ -7635,55 +7733,55 @@ package body Einfo is
    procedure Write_Field20_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when Array_Kind                                 =>
+         when Array_Kind                                   =>
             Write_Str ("Component_Type");
 
-         when E_In_Parameter                            |
-              E_Generic_In_Parameter                     =>
+         when E_In_Parameter                               |
+              E_Generic_In_Parameter                       =>
             Write_Str ("Default_Value");
 
-         when Access_Kind                                =>
+         when Access_Kind                                  =>
             Write_Str ("Directly_Designated_Type");
 
-         when E_Component                                =>
+         when E_Component                                  =>
             Write_Str ("Discriminant_Checking_Func");
 
-         when E_Discriminant                             =>
+         when E_Discriminant                               =>
             Write_Str ("Discriminant_Default_Value");
 
-         when E_Block                                    |
-              Class_Wide_Kind                            |
-              Concurrent_Kind                            |
-              Private_Kind                               |
-              E_Entry                                    |
-              E_Entry_Family                             |
-              E_Function                                 |
-              E_Generic_Function                         |
-              E_Generic_Package                          |
-              E_Generic_Procedure                        |
-              E_Loop                                     |
-              E_Operator                                 |
-              E_Package                                  |
-              E_Package_Body                             |
-              E_Procedure                                |
-              E_Record_Type                              |
-              E_Record_Subtype                           |
-              E_Return_Statement                         |
-              E_Subprogram_Body                          |
-              E_Subprogram_Type                          =>
+         when E_Block                                      |
+              Class_Wide_Kind                              |
+              Concurrent_Kind                              |
+              Private_Kind                                 |
+              E_Entry                                      |
+              E_Entry_Family                               |
+              E_Function                                   |
+              E_Generic_Function                           |
+              E_Generic_Package                            |
+              E_Generic_Procedure                          |
+              E_Loop                                       |
+              E_Operator                                   |
+              E_Package                                    |
+              E_Package_Body                               |
+              E_Procedure                                  |
+              E_Record_Type                                |
+              E_Record_Subtype                             |
+              E_Return_Statement                           |
+              E_Subprogram_Body                            |
+              E_Subprogram_Type                            =>
 
             Write_Str ("Last_Entity");
 
-         when Scalar_Kind                                =>
+         when Scalar_Kind                                  =>
             Write_Str ("Scalar_Range");
 
-         when E_Exception                                =>
+         when E_Exception                                  =>
             Write_Str ("Register_Exception_Call");
 
-         when E_Variable                                 =>
+         when E_Variable                                   =>
             Write_Str ("Last_Assignment");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field20??");
       end case;
    end Write_Field20_Name;
@@ -7695,40 +7793,40 @@ package body Einfo is
    procedure Write_Field21_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Constant                                 |
-              E_Exception                                |
-              E_Function                                 |
-              E_Generic_Function                         |
-              E_Procedure                                |
-              E_Generic_Procedure                        |
-              E_Variable                                 =>
+         when E_Constant                                   |
+              E_Exception                                  |
+              E_Function                                   |
+              E_Generic_Function                           |
+              E_Procedure                                  |
+              E_Generic_Procedure                          |
+              E_Variable                                   =>
             Write_Str ("Interface_Name");
 
-         when Concurrent_Kind                            |
-              Incomplete_Or_Private_Kind                 |
-              Class_Wide_Kind                            |
-              E_Record_Type                              |
-              E_Record_Subtype                           =>
+         when Concurrent_Kind                              |
+              Incomplete_Or_Private_Kind                   |
+              Class_Wide_Kind                              |
+              E_Record_Type                                |
+              E_Record_Subtype                             =>
             Write_Str ("Discriminant_Constraint");
 
-         when Entry_Kind                                 =>
+         when Entry_Kind                                   =>
             Write_Str ("Accept_Address");
 
-         when Fixed_Point_Kind                           =>
+         when Fixed_Point_Kind                             =>
             Write_Str ("Small_Value");
 
-         when E_In_Parameter                             =>
+         when E_In_Parameter                               =>
             Write_Str ("Default_Expr_Function");
 
-         when Array_Kind                                 |
-              Modular_Integer_Kind                       =>
+         when Array_Kind                                   |
+              Modular_Integer_Kind                         =>
             Write_Str ("Original_Array_Type");
 
-         when E_Access_Subprogram_Type                   |
-              E_Access_Protected_Subprogram_Type         =>
+         when E_Access_Subprogram_Type                     |
+              E_Access_Protected_Subprogram_Type           =>
             Write_Str ("Original_Access_Type");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field21??");
       end case;
    end Write_Field21_Name;
@@ -7740,57 +7838,57 @@ package body Einfo is
    procedure Write_Field22_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when Access_Kind                                =>
+         when Access_Kind                                  =>
             Write_Str ("Associated_Storage_Pool");
 
-         when Array_Kind                                 =>
+         when Array_Kind                                   =>
             Write_Str ("Component_Size");
 
-         when E_Component                                |
-              E_Discriminant                             =>
+         when E_Component                                  |
+              E_Discriminant                               =>
             Write_Str ("Original_Record_Component");
 
-         when E_Enumeration_Literal                      =>
+         when E_Enumeration_Literal                        =>
             Write_Str ("Enumeration_Rep_Expr");
 
-         when E_Exception                                =>
+         when E_Exception                                  =>
             Write_Str ("Exception_Code");
 
-         when Formal_Kind                                =>
+         when Formal_Kind                                  =>
             Write_Str ("Protected_Formal");
 
-         when E_Record_Type                              =>
+         when E_Record_Type                                =>
             Write_Str ("Corresponding_Remote_Type");
 
-         when E_Block                                    |
-              E_Entry                                    |
-              E_Entry_Family                             |
-              E_Function                                 |
-              E_Loop                                     |
-              E_Package                                  |
-              E_Package_Body                             |
-              E_Generic_Package                          |
-              E_Generic_Function                         |
-              E_Generic_Procedure                        |
-              E_Procedure                                |
-              E_Protected_Type                           |
-              E_Return_Statement                         |
-              E_Subprogram_Body                          |
-              E_Task_Type                                =>
+         when E_Block                                      |
+              E_Entry                                      |
+              E_Entry_Family                               |
+              E_Function                                   |
+              E_Loop                                       |
+              E_Package                                    |
+              E_Package_Body                               |
+              E_Generic_Package                            |
+              E_Generic_Function                           |
+              E_Generic_Procedure                          |
+              E_Procedure                                  |
+              E_Protected_Type                             |
+              E_Return_Statement                           |
+              E_Subprogram_Body                            |
+              E_Task_Type                                  =>
             Write_Str ("Scope_Depth_Value");
 
-         when E_Record_Type_With_Private                 |
-              E_Record_Subtype_With_Private              |
-              E_Private_Type                             |
-              E_Private_Subtype                          |
-              E_Limited_Private_Type                     |
-              E_Limited_Private_Subtype                  =>
+         when E_Record_Type_With_Private                   |
+              E_Record_Subtype_With_Private                |
+              E_Private_Type                               |
+              E_Private_Subtype                            |
+              E_Limited_Private_Type                       |
+              E_Limited_Private_Subtype                    =>
             Write_Str ("Private_View");
 
-         when E_Variable                                 =>
+         when E_Variable                                   =>
             Write_Str ("Shared_Var_Assign_Proc");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field22??");
       end case;
    end Write_Field22_Name;
@@ -7802,45 +7900,45 @@ package body Einfo is
    procedure Write_Field23_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when Access_Kind                                =>
+         when Access_Kind                                  =>
             Write_Str ("Associated_Final_Chain");
 
-         when Array_Kind                                 =>
+         when Array_Kind                                   =>
             Write_Str ("Packed_Array_Type");
 
-         when E_Block                                    =>
+         when E_Block                                      =>
             Write_Str ("Entry_Cancel_Parameter");
 
-         when E_Component                                =>
+         when E_Component                                  =>
             Write_Str ("Protected_Operation");
 
-         when E_Discriminant                             =>
+         when E_Discriminant                               =>
             Write_Str ("CR_Discriminant");
 
-         when E_Enumeration_Type                         =>
+         when E_Enumeration_Type                           =>
             Write_Str ("Enum_Pos_To_Rep");
 
-         when Formal_Kind                                |
-              E_Variable                                 =>
+         when Formal_Kind                                  |
+              E_Variable                                   =>
             Write_Str ("Extra_Constrained");
 
-         when E_Generic_Function                         |
-              E_Generic_Package                          |
-              E_Generic_Procedure                        =>
+         when E_Generic_Function                           |
+              E_Generic_Package                            |
+              E_Generic_Procedure                          =>
             Write_Str ("Inner_Instances");
 
-         when Concurrent_Kind                            |
-              Incomplete_Or_Private_Kind                 |
-              Class_Wide_Kind                            |
-              E_Record_Type                              |
-              E_Record_Subtype                           =>
+         when Concurrent_Kind                              |
+              Incomplete_Or_Private_Kind                   |
+              Class_Wide_Kind                              |
+              E_Record_Type                                |
+              E_Record_Subtype                             =>
             Write_Str ("Stored_Constraint");
 
-         when E_Function                                 |
-              E_Procedure                                =>
+         when E_Function                                   |
+              E_Procedure                                  =>
             Write_Str ("Generic_Renamings");
 
-         when E_Package                                  =>
+         when E_Package                                    =>
             if Is_Generic_Instance (Id) then
                Write_Str ("Generic_Renamings");
             else
@@ -7849,10 +7947,10 @@ package body Einfo is
 
          --  What about Privals_Chain for protected operations ???
 
-         when Entry_Kind                                 =>
+         when Entry_Kind                                   =>
             Write_Str ("Privals_Chain");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field23??");
       end case;
    end Write_Field23_Name;
@@ -7874,26 +7972,26 @@ package body Einfo is
    procedure Write_Field25_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Component                                =>
+         when E_Component                                  =>
             Write_Str ("DT_Offset_To_Top_Func");
 
-         when E_Procedure                                |
-              E_Function                                 =>
+         when E_Procedure                                  |
+              E_Function                                   =>
             Write_Str ("Abstract_Interface_Alias");
 
-         when E_Package                                  =>
+         when E_Package                                    =>
             Write_Str ("Current_Use_Clause");
 
-         when E_Record_Type                              |
-              E_Record_Subtype                           |
-              E_Record_Type_With_Private                 |
-              E_Record_Subtype_With_Private              =>
+         when E_Record_Type                                |
+              E_Record_Subtype                             |
+              E_Record_Type_With_Private                   |
+              E_Record_Subtype_With_Private                =>
             Write_Str ("Abstract_Interfaces");
 
-         when Task_Kind                                  =>
+         when Task_Kind                                    =>
             Write_Str ("Task_Body_Procedure");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field25??");
       end case;
    end Write_Field25_Name;
@@ -7905,15 +8003,15 @@ package body Einfo is
    procedure Write_Field26_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Generic_Package                          |
-              E_Package                                  =>
+         when E_Generic_Package                            |
+              E_Package                                    =>
             Write_Str ("Package_Instantiation");
 
-         when E_Procedure                                |
-              E_Function                                 =>
+         when E_Procedure                                  |
+              E_Function                                   =>
             Write_Str ("Overridden_Operation");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field26??");
       end case;
    end Write_Field26_Name;
@@ -7925,10 +8023,10 @@ package body Einfo is
    procedure Write_Field27_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Procedure                                =>
+         when E_Procedure                                  =>
             Write_Str ("Wrapped_Entity");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field27??");
       end case;
    end Write_Field27_Name;
@@ -7940,10 +8038,10 @@ package body Einfo is
    procedure Write_Field28_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Procedure | E_Function | E_Entry         =>
+         when E_Procedure | E_Function | E_Entry           =>
             Write_Str ("Extra_Formals");
 
-         when others                                     =>
+         when others                                       =>
             Write_Str ("Field28??");
       end case;
    end Write_Field28_Name;
@@ -7952,42 +8050,47 @@ package body Einfo is
    -- Iterator Procedures --
    -------------------------
 
-   procedure Proc_Next_Component           (N : in out Node_Id) is
+   procedure Proc_Next_Component                 (N : in out Node_Id) is
    begin
       N := Next_Component (N);
    end Proc_Next_Component;
 
-   procedure Proc_Next_Discriminant        (N : in out Node_Id) is
+   procedure Proc_Next_Component_Or_Discriminant (N : in out Node_Id) is
+   begin
+      N := Next_Component (N);
+   end Proc_Next_Component_Or_Discriminant;
+
+   procedure Proc_Next_Discriminant              (N : in out Node_Id) is
    begin
       N := Next_Discriminant (N);
    end Proc_Next_Discriminant;
 
-   procedure Proc_Next_Formal              (N : in out Node_Id) is
+   procedure Proc_Next_Formal                    (N : in out Node_Id) is
    begin
       N := Next_Formal (N);
    end Proc_Next_Formal;
 
-   procedure Proc_Next_Formal_With_Extras  (N : in out Node_Id) is
+   procedure Proc_Next_Formal_With_Extras        (N : in out Node_Id) is
    begin
       N := Next_Formal_With_Extras (N);
    end Proc_Next_Formal_With_Extras;
 
-   procedure Proc_Next_Index               (N : in out Node_Id) is
+   procedure Proc_Next_Index                     (N : in out Node_Id) is
    begin
       N := Next_Index (N);
    end Proc_Next_Index;
 
-   procedure Proc_Next_Inlined_Subprogram  (N : in out Node_Id) is
+   procedure Proc_Next_Inlined_Subprogram        (N : in out Node_Id) is
    begin
       N := Next_Inlined_Subprogram (N);
    end Proc_Next_Inlined_Subprogram;
 
-   procedure Proc_Next_Literal             (N : in out Node_Id) is
+   procedure Proc_Next_Literal                   (N : in out Node_Id) is
    begin
       N := Next_Literal (N);
    end Proc_Next_Literal;
 
-   procedure Proc_Next_Stored_Discriminant (N : in out Node_Id) is
+   procedure Proc_Next_Stored_Discriminant       (N : in out Node_Id) is
    begin
       N := Next_Stored_Discriminant (N);
    end Proc_Next_Stored_Discriminant;

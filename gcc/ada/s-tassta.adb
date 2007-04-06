@@ -149,6 +149,9 @@ package body System.Tasking.Stages is
    --  trigger an automatic stack alignment suitable for GCC's assumptions if
    --  need be.
 
+   --  "Vulnerable_..." in the procedure names below means they must be called
+   --  with abort deferred.
+
    procedure Vulnerable_Complete_Task (Self_ID : Task_Id);
    --  Complete the calling task. This procedure must be called with
    --  abort deferred. It should only be called by Complete_Task and
@@ -520,9 +523,11 @@ package body System.Tasking.Stages is
    begin
       --  If Master is greater than the current master, it means that Master
       --  has already awaited its dependent tasks. This raises Program_Error,
-      --  by 4.8(10.3/2). See AI-280.
+      --  by 4.8(10.3/2). See AI-280. Ignore this check for foreign threads.
 
-      if Master > Self_ID.Master_Within then
+      if Self_ID.Master_of_Task /= Foreign_Task_Level
+        and then Master > Self_ID.Master_Within
+      then
          raise Program_Error with
            "create task after awaiting termination";
       end if;
@@ -876,6 +881,53 @@ package body System.Tasking.Stages is
          null;
       end if;
    end Free_Task;
+
+   ---------------------------
+   -- Move_Activation_Chain --
+   ---------------------------
+
+   procedure Move_Activation_Chain
+     (From, To   : Activation_Chain_Access;
+      New_Master : Master_ID)
+   is
+      Self_ID : constant Task_Id := STPO.Self;
+      C       : Task_Id;
+
+   begin
+      pragma Debug
+        (Debug.Trace (Self_ID, "Move_Activation_Chain", 'C'));
+
+      --  Nothing to do if From is empty, and we can check that without
+      --  deferring aborts.
+
+      C := From.all.T_ID;
+
+      if C = null then
+         return;
+      end if;
+
+      Initialization.Defer_Abort (Self_ID);
+
+      --  Loop through the From chain, changing their Master_of_Task
+      --  fields, and to find the end of the chain.
+
+      loop
+         C.Master_of_Task := New_Master;
+         exit when C.Common.Activation_Link = null;
+         C := C.Common.Activation_Link;
+      end loop;
+
+      --  Hook From in at the start of To
+
+      C.Common.Activation_Link := To.all.T_ID;
+      To.all.T_ID := From.all.T_ID;
+
+      --  Set From to empty
+
+      From.all.T_ID := null;
+
+      Initialization.Undefer_Abort (Self_ID);
+   end Move_Activation_Chain;
 
    ------------------
    -- Task_Wrapper --
@@ -1407,7 +1459,7 @@ package body System.Tasking.Stages is
 
          C := All_Tasks_List;
          while C /= null loop
-            if C.Common.Activator = Self_ID then
+            if C.Common.Activator = Self_ID and then C.Master_of_Task = CM then
                return False;
             end if;
 
@@ -1449,13 +1501,24 @@ package body System.Tasking.Stages is
       --  zero for new tasks, and the task should not exit the
       --  sleep-loops that use this count until the count reaches zero.
 
+      --  While we're counting, if we run across any unactivated tasks that
+      --  belong to this master, we summarily terminate them as required by
+      --  RM-9.2(6).
+
       Lock_RTS;
       Write_Lock (Self_ID);
 
       C := All_Tasks_List;
       while C /= null loop
-         if C.Common.Activator = Self_ID then
+
+         --  Terminate unactivated (never-to-be activated) tasks
+
+         if C.Common.Activator = Self_ID and then C.Master_of_Task = CM then
             pragma Assert (C.Common.State = Unactivated);
+            --  Usually, C.Common.Activator = Self_ID implies C.Master_of_Task
+            --  = CM. The only case where C is pending activation by this
+            --  task, but the master of C is not CM is in Ada 2005, when C is
+            --  part of a return object of a build-in-place function.
 
             Write_Lock (C);
             C.Common.Activator := null;
@@ -1464,6 +1527,8 @@ package body System.Tasking.Stages is
             Utilities.Cancel_Queued_Entry_Calls (C);
             Unlock (C);
          end if;
+
+         --  Count it if dependent on this master
 
          if C.Common.Parent = Self_ID and then C.Master_of_Task = CM then
             Write_Lock (C);
@@ -1733,9 +1798,9 @@ package body System.Tasking.Stages is
 
    --  Complete the calling task
 
-   --  This procedure must be called with abort deferred. (That's why the
-   --  name has "Vulnerable" in it.) It should only be called by Complete_Task
-   --  and Finalize_Global_Tasks (for the environment task).
+   --  This procedure must be called with abort deferred. It should only be
+   --  called by Complete_Task and Finalize_Global_Tasks (for the environment
+   --  task).
 
    --  The effect is similar to that of Complete_Master. Differences include
    --  the closing of entries here, and computation of the number of active
