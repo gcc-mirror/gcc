@@ -67,6 +67,8 @@ package Sprint is
    --    Multiply wi Treat_Fixed_As_Integer  x #* y
    --    Multiply wi Rounded_Result          x @* y
    --    Others choice for cleanup           when all others
+   --    Pop exception label                 %pop_xxx_exception_label
+   --    Push exception label                %push_xxx_exception_label (label)
    --    Raise xxx error                     [xxx_error [when cond]]
    --    Raise xxx error with msg            [xxx_error [when cond], "msg"]
    --    Rational literal                    See UR_Write for details
