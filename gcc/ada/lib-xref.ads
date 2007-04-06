@@ -114,6 +114,10 @@ package Lib.Xref is
    --          enumeration literals (points to enum type)  LR={}
    --          objects and components (points to type)     LR={}
 
+   --          For a type that implements multiple interfaces, there is an
+   --          entry of the form  LR=<> for each of the interfaces appearing
+   --          in the type declaration.
+
    --          In the above list LR shows the brackets used in the output,
    --          which has one of the two following forms:
 
@@ -493,7 +497,7 @@ package Lib.Xref is
    --    e     non-Boolean enumeration object  non_Boolean enumeration type
    --    f     floating-point object           floating-point type
    --    g     (unused)                        (unused)
-   --    h     (unused)                        Abstract type
+   --    h     Interface (Ada 2005)            Abstract type
    --    i     signed integer object           signed integer type
    --    j     (unused)                        (unused)
    --    k     generic package                 package
