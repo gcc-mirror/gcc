@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 2000-2003 Free Software Foundation, Inc.           *
+ *         Copyright (C) 2000-2006, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -54,7 +54,7 @@ static FILE *gmemfile;
 
 /* tb_len is the number of call level supported by this module */
 #define tb_len 200
-static char * tracebk [tb_len];
+static void * tracebk [tb_len];
 static int cur_tb_len, cur_tb_pos;
 
 #define LOG_EOF   '*'
@@ -67,8 +67,34 @@ struct struct_storage_elmt {
   size_t Size;
 };
 
-extern void
-convert_addresses (char *addrs[], int n_addr, void *buf, int *len);
+static void
+__gnat_convert_addresses (void *addrs[], int n_addrs, void *buf, int *len);
+/* Place in BUF a string representing the symbolic translation of N_ADDRS raw
+   addresses provided in ADDRS.  LEN is filled with the result length.
+
+   This is a GNAT specific interface to the libaddr2line convert_addresses
+   routine.  The latter examines debug info from a provided executable file
+   name to perform the translation into symbolic form of an input sequence of
+   raw binary addresses.  It attempts to open the file from the provided name
+   "as is", so an an absolute path must be provided to ensure the file is
+   always found.  We compute this name once, at initialization time.  */
+
+static const char * exename = 0;
+
+extern void convert_addresses (const char * , void *[], int, void *, int *);
+extern char  *__gnat_locate_exec_on_path (char *);
+/* ??? Both of these extern functions are prototyped in adaint.h, which
+   also refers to "time_t" hence needs complex extra header inclusions to
+   be satisfied on every target.  */
+
+static void
+__gnat_convert_addresses (void *addrs[], int n_addrs, void *buf, int *len)
+{
+  if (exename != 0)
+    convert_addresses (exename, addrs, n_addrs, buf, len);
+  else
+    *len = 0;
+}
 
 /* reads backtrace information from gmemfile placing them in tracebk
    array. cur_tb_len is the size of this array
@@ -78,7 +104,7 @@ static void
 gmem_read_backtrace (void)
 {
   fread (&cur_tb_len, sizeof (int), 1, gmemfile);
-  fread (tracebk, sizeof (char *), cur_tb_len, gmemfile);
+  fread (tracebk, sizeof (void *), cur_tb_len, gmemfile);
   cur_tb_pos = 0;
 }
 
@@ -106,14 +132,11 @@ int __gnat_gmem_initialize (char *dumpname)
 
 /* initialize addr2line library */
 
-void __gnat_gmem_a2l_initialize (char *exename)
+void __gnat_gmem_a2l_initialize (char *exearg)
 {
-  extern char **gnat_argv;
-  char s [100];
-  int l;
-
-  gnat_argv [0] = exename;
-  convert_addresses (tracebk, 1, s, &l);
+  /* Resolve the executable filename to use in later invocations of
+     the libaddr2line symbolization service.  */
+  exename = __gnat_locate_exec_on_path (exearg);
 }
 
 /* Read next allocation of deallocation information from the GMEM file and
@@ -172,8 +195,7 @@ void __gnat_gmem_read_next_frame (void** addr)
 
 void __gnat_gmem_symbolic (void * addr, char* buf, int* length)
 {
-  char* addresses [] = { (char*)addr };
-  extern char** gnat_argv;
+  void * addresses [] = { addr };
 
-  convert_addresses (addresses, 1, buf, length);
+  __gnat_convert_addresses (addresses, 1, buf, length);
 }
