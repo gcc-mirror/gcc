@@ -166,10 +166,20 @@ package body Uintp is
    function Sum_Double_Digits (Left : Uint; Sign : Int) return Int;
    --  Same as above but work in New_Base = Base * Base
 
+   procedure UI_Div_Rem
+     (Left, Right       : Uint;
+      Quotient          : out Uint;
+      Remainder         : out Uint;
+      Discard_Quotient  : Boolean;
+      Discard_Remainder : Boolean);
+   --  Compute euclidian division of Left by Right, and return Quotient and
+   --  signed Remainder (Left rem Right).
+   --  If Discard_Quotient is True, Quotient is left unchanged.
+   --  If Discard_Remainder is True, Remainder is left unchanged.
+
    function Vector_To_Uint
      (In_Vec   : UI_Vector;
-      Negative : Boolean)
-      return     Uint;
+      Negative : Boolean) return Uint;
    --  Functions that calculate values in UI_Vectors, call this function
    --  to create and return the Uint value. In_Vec contains the multiple
    --  precision (Base) representation of a non-negative value. Leading
@@ -1244,13 +1254,49 @@ package body Uintp is
    end UI_Div;
 
    function UI_Div (Left, Right : Uint) return Uint is
+      Quotient  : Uint;
+      Remainder : Uint;
+   begin
+      UI_Div_Rem
+        (Left, Right,
+         Quotient, Remainder,
+         Discard_Quotient  => False,
+         Discard_Remainder => True);
+      return Quotient;
+   end UI_Div;
+
+   ----------------
+   -- UI_Div_Rem --
+   ----------------
+
+   procedure UI_Div_Rem
+     (Left, Right       : Uint;
+      Quotient          : out Uint;
+      Remainder         : out Uint;
+      Discard_Quotient  : Boolean;
+      Discard_Remainder : Boolean)
+   is
    begin
       pragma Assert (Right /= Uint_0);
 
       --  Cases where both operands are represented directly
 
       if Direct (Left) and then Direct (Right) then
-         return UI_From_Int (Direct_Val (Left) / Direct_Val (Right));
+         declare
+            DV_Left  : constant Int := Direct_Val (Left);
+            DV_Right : constant Int := Direct_Val (Right);
+
+         begin
+            if not Discard_Quotient then
+               Quotient := UI_From_Int (DV_Left / DV_Right);
+            end if;
+
+            if not Discard_Remainder then
+               Remainder := UI_From_Int (DV_Left rem DV_Right);
+            end if;
+
+            return;
+         end;
       end if;
 
       declare
@@ -1260,17 +1306,54 @@ package body Uintp is
          L_Vec       : UI_Vector (1 .. L_Length);
          R_Vec       : UI_Vector (1 .. R_Length);
          D           : Int;
-         Remainder   : Int;
+         Remainder_I : Int;
          Tmp_Divisor : Int;
          Carry       : Int;
          Tmp_Int     : Int;
          Tmp_Dig     : Int;
 
+         procedure UI_Div_Vector
+           (L_Vec     : UI_Vector;
+            R_Int     : Int;
+            Quotient  : out UI_Vector;
+            Remainder : out Int);
+         pragma Inline (UI_Div_Vector);
+         --  Specialised variant for case where the divisor is a single digit
+
+         procedure UI_Div_Vector
+           (L_Vec     : UI_Vector;
+            R_Int     : Int;
+            Quotient  : out UI_Vector;
+            Remainder : out Int)
+         is
+            Tmp_Int : Int;
+
+         begin
+            Remainder := 0;
+            for J in L_Vec'Range loop
+               Tmp_Int := Remainder * Base + abs L_Vec (J);
+               Quotient (Quotient'First + J - L_Vec'First) := Tmp_Int / R_Int;
+               Remainder := Tmp_Int rem R_Int;
+            end loop;
+
+            if L_Vec (L_Vec'First) < Int_0 then
+               Remainder := -Remainder;
+            end if;
+         end UI_Div_Vector;
+
+      --  Start of processing for UI_Div_Rem
+
       begin
          --  Result is zero if left operand is shorter than right
 
          if L_Length < R_Length then
-            return Uint_0;
+            if not Discard_Quotient then
+               Quotient := Uint_0;
+            end if;
+            if not Discard_Remainder then
+               Remainder := Left;
+            end if;
+            return;
          end if;
 
          Init_Operand (Left, L_Vec);
@@ -1282,22 +1365,24 @@ package body Uintp is
          --  ordinary long division by hand).
 
          if R_Length = Int_1 then
-            Remainder := 0;
             Tmp_Divisor := abs R_Vec (1);
 
             declare
-               Quotient : UI_Vector (1 .. L_Length);
+               Quotient_V : UI_Vector (1 .. L_Length);
 
             begin
-               for J in L_Vec'Range loop
-                  Tmp_Int      := Remainder * Base + abs L_Vec (J);
-                  Quotient (J) := Tmp_Int / Tmp_Divisor;
-                  Remainder    := Tmp_Int rem Tmp_Divisor;
-               end loop;
+               UI_Div_Vector (L_Vec, Tmp_Divisor, Quotient_V, Remainder_I);
 
-               return
-                 Vector_To_Uint
-                   (Quotient, (L_Vec (1) < Int_0 xor R_Vec (1) < Int_0));
+               if not Discard_Quotient then
+                  Quotient :=
+                    Vector_To_Uint
+                      (Quotient_V, (L_Vec (1) < Int_0 xor R_Vec (1) < Int_0));
+               end if;
+
+               if not Discard_Remainder then
+                  Remainder := UI_From_Int (Remainder_I);
+               end if;
+               return;
             end;
          end if;
 
@@ -1308,7 +1393,7 @@ package body Uintp is
          Algorithm_D : declare
             Dividend     : UI_Vector (1 .. L_Length + 1);
             Divisor      : UI_Vector (1 .. R_Length);
-            Quotient     : UI_Vector (1 .. Q_Length);
+            Quotient_V   : UI_Vector (1 .. Q_Length);
             Divisor_Dig1 : Int;
             Divisor_Dig2 : Int;
             Q_Guess      : Int;
@@ -1359,7 +1444,7 @@ package body Uintp is
             Divisor_Dig1 := Divisor (1);
             Divisor_Dig2 := Divisor (2);
 
-            for J in Quotient'Range loop
+            for J in Quotient_V'Range loop
 
                --  [ CALCULATE Q (hat) ] (step D3 in the algorithm)
 
@@ -1382,7 +1467,7 @@ package body Uintp is
                   Q_Guess := Q_Guess - 1;
                end loop;
 
-               --  [ MULTIPLY & SUBTRACT] (step D4). Q_Guess * Divisor is
+               --  [ MULTIPLY & SUBTRACT ] (step D4). Q_Guess * Divisor is
                --  subtracted from the remaining dividend.
 
                Carry := 0;
@@ -1433,15 +1518,31 @@ package body Uintp is
 
                --  Finally we can get the next quotient digit
 
-               Quotient (J) := Q_Guess;
+               Quotient_V (J) := Q_Guess;
             end loop;
 
-            return Vector_To_Uint
-              (Quotient, (L_Vec (1) < Int_0 xor R_Vec (1) < Int_0));
+            --  [ UNNORMALIZE ] (step D8)
 
+            if not Discard_Quotient then
+               Quotient := Vector_To_Uint
+                 (Quotient_V, (L_Vec (1) < Int_0 xor R_Vec (1) < Int_0));
+            end if;
+
+            if not Discard_Remainder then
+               declare
+                  Remainder_V : UI_Vector (1 .. R_Length);
+                  Discard_Int : Int;
+               begin
+                  UI_Div_Vector
+                    (Dividend (Dividend'Last - R_Length + 1 .. Dividend'Last),
+                     D,
+                     Remainder_V, Discard_Int);
+                  Remainder := Vector_To_Uint (Remainder_V, L_Vec (1) < Int_0);
+               end;
+            end if;
          end Algorithm_D;
       end;
-   end UI_Div;
+   end UI_Div_Rem;
 
    ------------
    -- UI_Eq --
@@ -2046,6 +2147,83 @@ package body Uintp is
       end if;
    end UI_Mod;
 
+   -------------------------------
+   -- UI_Modular_Exponentiation --
+   -------------------------------
+
+   function UI_Modular_Exponentiation
+     (B      : Uint;
+      E      : Uint;
+      Modulo : Uint) return Uint
+   is
+      M : constant Save_Mark := Mark;
+
+      Result   : Uint := Uint_1;
+      Base     : Uint := B;
+      Exponent : Uint := E;
+
+   begin
+      while Exponent /= Uint_0 loop
+         if Least_Sig_Digit (Exponent) rem Int'(2) = Int'(1) then
+            Result := (Result * Base) rem Modulo;
+         end if;
+
+         Exponent := Exponent / Uint_2;
+         Base := (Base * Base) rem Modulo;
+      end loop;
+
+      Release_And_Save (M, Result);
+      return Result;
+   end UI_Modular_Exponentiation;
+
+   ------------------------
+   -- UI_Modular_Inverse --
+   ------------------------
+
+   function UI_Modular_Inverse (N : Uint; Modulo : Uint) return Uint is
+      M : constant Save_Mark := Mark;
+      U : Uint;
+      V : Uint;
+      Q : Uint;
+      R : Uint;
+      X : Uint;
+      Y : Uint;
+      T : Uint;
+      S : Int := 1;
+
+   begin
+      U := Modulo;
+      V := N;
+
+      X := Uint_1;
+      Y := Uint_0;
+
+      loop
+         UI_Div_Rem
+           (U, V,
+            Quotient => Q, Remainder => R,
+            Discard_Quotient  => False,
+            Discard_Remainder => False);
+
+         U := V;
+         V := R;
+
+         T := X;
+         X := Y + Q * X;
+         Y := T;
+         S := -S;
+
+         exit when R = Uint_1;
+      end loop;
+
+      if S = Int'(-1) then
+         X := Modulo - X;
+      end if;
+
+      Release_And_Save (M, X);
+      return X;
+   end UI_Modular_Inverse;
+
    ------------
    -- UI_Mul --
    ------------
@@ -2246,6 +2424,7 @@ package body Uintp is
             return UI_From_Int (Direct_Val (Left) rem Direct_Val (Right));
 
          else
+
             --  Special cases when Right is less than 13 and Left is larger
             --  larger than one digit. All of these algorithms depend on the
             --  base being 2 ** 15 We work with Abs (Left) and Abs(Right)
@@ -2375,15 +2554,20 @@ package body Uintp is
 
             --  Else fall through to general case
 
-            --  ???This needs to be improved. We have the Rem when we do the
-            --  Div. Div throws it away!
-
-            --  The special case Length (Left) = Length(right) = 1 in Div
+            --  The special case Length (Left) = Length (Right) = 1 in Div
             --  looks slow. It uses UI_To_Int when Int should suffice. ???
          end if;
       end if;
 
-      return Left - (Left / Right) * Right;
+      declare
+         Quotient, Remainder : Uint;
+      begin
+         UI_Div_Rem
+           (Left, Right, Quotient, Remainder,
+            Discard_Quotient  => True,
+            Discard_Remainder => False);
+         return Remainder;
+      end;
    end UI_Rem;
 
    ------------

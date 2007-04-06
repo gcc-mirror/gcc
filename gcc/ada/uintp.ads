@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -224,6 +224,17 @@ package Uintp is
    pragma Inline (UI_Sub);
    --  Returns difference of two integer values
 
+   function UI_Modular_Exponentiation
+     (B      : Uint;
+      E      : Uint;
+      Modulo : Uint) return Uint;
+   --  Efficiently compute (B ** E) rem Modulo
+
+   function UI_Modular_Inverse (N : Uint; Modulo : Uint) return Uint;
+   --  Compute the multiplicative inverse of N in modular arithmetics with the
+   --  given Modulo (uses Euclid's algorithm). Note: the call is considered
+   --  to be erroneous (and the behavior is undefined) if n is not inversible.
+
    function UI_From_Dint (Input : Dint) return Uint;
    --  Converts Dint value to universal integer form
 
@@ -392,18 +403,18 @@ private
    --  a multi-digit format using Base as the base. This value is chosen so
    --  that the product Base*Base is within the range of allowed Int values.
 
-   --  Base is defined to allow efficient execution of the primitive
-   --  operations (a0, b0, c0) defined in the section "The Classical
-   --  Algorithms" (sec. 4.3.1) of Donald Knuth's "The Art of Computer
-   --  Programming", Vol. 2. These algorithms are used in this package.
+   --  Base is defined to allow efficient execution of the primitive operations
+   --  (a0, b0, c0) defined in the section "The Classical Algorithms"
+   --  (sec. 4.3.1) of Donald Knuth's "The Art of Computer  Programming",
+   --  Vol. 2. These algorithms are used in this package.
 
    Base_Bits : constant := 15;
    --  Number of bits in base value
 
    Base : constant Int := 2 ** Base_Bits;
 
-   --  Values in the range -(Base+1) .. maxdirect are encoded directly as
-   --  Uint values by adding a bias value. The value of maxdirect is chosen
+   --  Values in the range -(Base+1) .. Max_Direct are encoded directly as
+   --  Uint values by adding a bias value. The value of Max_Direct is chosen
    --  so that a directly represented number always fits in two digits when
    --  represented in base format.
 
@@ -411,10 +422,10 @@ private
    Max_Direct : constant Int := (Base - 1) * (Base - 1);
 
    --  The following values define the bias used to store Uint values which
-   --  are in this range, as well as the biased values for the first and
-   --  last values in this range. We use a new derived type for these
-   --  constants to avoid accidental use of Uint arithmetic on these
-   --  values, which is never correct.
+   --  are in this range, as well as the biased values for the first and last
+   --  values in this range. We use a new derived type for these constants to
+   --  avoid accidental use of Uint arithmetic on these values, which is never
+   --  correct.
 
    type Ctrl is range Int'First .. Int'Last;
 
@@ -466,11 +477,11 @@ private
       Save_Udigit : Int;
    end record;
 
-   --  Values outside the range that is represented directly are stored
-   --  using two tables. The secondary table Udigits contains sequences of
-   --  Int values consisting of the digits of the number in a radix Base
-   --  system. The digits are stored from most significant to least
-   --  significant with the first digit only carrying the sign.
+   --  Values outside the range that is represented directly are stored using
+   --  two tables. The secondary table Udigits contains sequences of Int values
+   --  consisting of the digits of the number in a radix Base system. The
+   --  digits are stored from most significant to least significant with the
+   --  first digit only carrying the sign.
 
    --  There is one entry in the primary Uints table for each distinct Uint
    --  value. This table entry contains the length (number of digits) and
@@ -478,11 +489,11 @@ private
 
    Uint_First_Entry : constant Uint := Uint (Uint_Table_Start);
 
-   --  Some subprograms defined in this package manipulate the Udigits
-   --  table directly, while for others it is more convenient to work with
-   --  locally defined arrays of the digits of the Universal Integers.
-   --  The type UI_Vector is defined for this purpose and some internal
-   --  subprograms used for converting from one to the other are defined.
+   --  Some subprograms defined in this package manipulate the Udigits table
+   --  directly, while for others it is more convenient to work with locally
+   --  defined arrays of the digits of the Universal Integers. The type
+   --  UI_Vector is defined for this purpose and some internal subprograms
+   --  used for converting from one to the other are defined.
 
    type UI_Vector is array (Pos range <>) of Int;
    --  Vector containing the integer values of a Uint value
@@ -522,7 +533,7 @@ private
      Table_Name           => "Udigits");
 
    --  Note: the reason these tables are defined here in the private part of
-   --  the spec, rather than in the body, is that they are refrerenced
-   --  directly by gigi.
+   --  the spec, rather than in the body, is that they are referenced directly
+   --  by gigi.
 
 end Uintp;
