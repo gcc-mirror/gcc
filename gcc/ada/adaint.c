@@ -324,6 +324,14 @@ to_ptr32 (char **ptr64)
 #define MAYBE_TO_PTR32(argv) argv
 #endif
 
+OS_Time
+__gnat_current_time
+  (void)
+{
+  time_t res = time (NULL);
+  return (OS_Time) res;
+}
+
 void
 __gnat_to_gm_time
   (OS_Time *p_time,
@@ -418,8 +426,8 @@ __gnat_try_lock (char *dir, char *file)
   TCHAR wfile[GNAT_MAX_PATH_LEN];
   TCHAR wdir[GNAT_MAX_PATH_LEN];
 
-  S2WS (wdir, dir, GNAT_MAX_PATH_LEN);
-  S2WS (wfile, file, GNAT_MAX_PATH_LEN);
+  S2WSU (wdir, dir, GNAT_MAX_PATH_LEN);
+  S2WSU (wfile, file, GNAT_MAX_PATH_LEN);
 
   _stprintf (wfull_path, _T("%s%c%s"), wdir, _T(DIR_SEPARATOR), wfile);
   fd = _topen (wfull_path, O_CREAT | O_EXCL, 0600);
@@ -542,7 +550,7 @@ __gnat_get_current_dir (char *dir, int *length)
 
   _tgetcwd (wdir, *length);
 
-  WS2S (dir, wdir, GNAT_MAX_PATH_LEN);
+  WS2SU (dir, wdir, GNAT_MAX_PATH_LEN);
 
 #elif defined (VMS)
    /* Force Unix style, which is what GNAT uses internally.  */
@@ -612,31 +620,44 @@ __gnat_get_debuggable_suffix_ptr (int *len, const char **value)
 }
 
 FILE *
-__gnat_fopen (char *path, char *mode)
+__gnat_fopen (char *path, char *mode, int encoding)
 {
 #if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_DIRECTORY_STRUCTURE)
   TCHAR wpath[GNAT_MAX_PATH_LEN];
   TCHAR wmode[10];
 
-  S2WS (wpath, path, GNAT_MAX_PATH_LEN);
   S2WS (wmode, mode, 10);
+
+  if (encoding == Encoding_UTF8)
+    S2WSU (wpath, path, GNAT_MAX_PATH_LEN);
+  else
+    S2WS (wpath, path, GNAT_MAX_PATH_LEN);
+
   return _tfopen (wpath, wmode);
+#elif defined (VMS)
+  return decc$fopen (path, mode);
 #else
   return fopen (path, mode);
 #endif
 }
 
-
 FILE *
-__gnat_freopen (char *path, char *mode, FILE *stream)
+__gnat_freopen (char *path, char *mode, FILE *stream, int encoding)
 {
 #if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_DIRECTORY_STRUCTURE)
   TCHAR wpath[GNAT_MAX_PATH_LEN];
   TCHAR wmode[10];
 
-  S2WS (wpath, path, GNAT_MAX_PATH_LEN);
   S2WS (wmode, mode, 10);
+
+  if (encoding == Encoding_UTF8)
+    S2WSU (wpath, path, GNAT_MAX_PATH_LEN);
+  else
+    S2WS (wpath, path, GNAT_MAX_PATH_LEN);
+
   return _tfreopen (wpath, wmode, stream);
+#elif defined (VMS)
+  return decc$freopen (path, mode, stream);
 #else
   return freopen (path, mode, stream);
 #endif
@@ -661,7 +682,7 @@ __gnat_open_read (char *path, int fmode)
  {
    TCHAR wpath[GNAT_MAX_PATH_LEN];
 
-   S2WS (wpath, path, GNAT_MAX_PATH_LEN);
+   S2WSU (wpath, path, GNAT_MAX_PATH_LEN);
    fd = _topen (wpath, O_RDONLY | o_fmode, 0444);
  }
 #else
@@ -702,7 +723,7 @@ __gnat_open_rw (char *path, int fmode)
   {
     TCHAR wpath[GNAT_MAX_PATH_LEN];
 
-    S2WS (wpath, path, GNAT_MAX_PATH_LEN);
+    S2WSU (wpath, path, GNAT_MAX_PATH_LEN);
     fd = _topen (wpath, O_RDWR | o_fmode, PERM);
   }
 #else
@@ -728,7 +749,7 @@ __gnat_open_create (char *path, int fmode)
   {
     TCHAR wpath[GNAT_MAX_PATH_LEN];
 
-    S2WS (wpath, path, GNAT_MAX_PATH_LEN);
+    S2WSU (wpath, path, GNAT_MAX_PATH_LEN);
     fd = _topen (wpath, O_WRONLY | O_CREAT | O_TRUNC | o_fmode, PERM);
   }
 #else
@@ -750,7 +771,7 @@ __gnat_create_output_file (char *path)
   {
     TCHAR wpath[GNAT_MAX_PATH_LEN];
 
-    S2WS (wpath, path, GNAT_MAX_PATH_LEN);
+    S2WSU (wpath, path, GNAT_MAX_PATH_LEN);
     fd = _topen (wpath, O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, PERM);
   }
 #else
@@ -776,7 +797,7 @@ __gnat_open_append (char *path, int fmode)
   {
     TCHAR wpath[GNAT_MAX_PATH_LEN];
 
-    S2WS (wpath, path, GNAT_MAX_PATH_LEN);
+    S2WSU (wpath, path, GNAT_MAX_PATH_LEN);
     fd = _topen (wpath, O_WRONLY | O_CREAT | O_APPEND | o_fmode, PERM);
   }
 #else
@@ -804,7 +825,7 @@ __gnat_open_new (char *path, int fmode)
   {
     TCHAR wpath[GNAT_MAX_PATH_LEN];
 
-    S2WS (wpath, path, GNAT_MAX_PATH_LEN);
+    S2WSU (wpath, path, GNAT_MAX_PATH_LEN);
     fd = _topen (wpath, O_WRONLY | O_CREAT | O_EXCL | o_fmode, PERM);
   }
 #else
@@ -940,7 +961,7 @@ DIR* __gnat_opendir (char *name)
 #ifdef __MINGW32__
   TCHAR wname[GNAT_MAX_PATH_LEN];
 
-  S2WS (wname, name, GNAT_MAX_PATH_LEN);
+  S2WSU (wname, name, GNAT_MAX_PATH_LEN);
   return (DIR*)_topendir (wname);
 
 #else
@@ -959,7 +980,7 @@ __gnat_readdir (DIR *dirp, char *buffer, int *len)
 
   if (dirent != NULL)
     {
-      WS2S (buffer, dirent->d_name, GNAT_MAX_PATH_LEN);
+      WS2SU (buffer, dirent->d_name, GNAT_MAX_PATH_LEN);
       *len = strlen (buffer);
 
       return buffer;
@@ -1058,7 +1079,7 @@ __gnat_file_time_name (char *name)
   time_t ret = -1;
   TCHAR wname[GNAT_MAX_PATH_LEN];
 
-  S2WS (wname, name, GNAT_MAX_PATH_LEN);
+  S2WSU (wname, name, GNAT_MAX_PATH_LEN);
 
   HANDLE h = CreateFile
     (wname, GENERIC_READ, FILE_SHARE_READ, 0,
@@ -1195,7 +1216,7 @@ __gnat_set_file_time_name (char *name, time_t time_stamp)
   } t_write;
   TCHAR wname[GNAT_MAX_PATH_LEN];
 
-  S2WS (wname, name, GNAT_MAX_PATH_LEN);
+  S2WSU (wname, name, GNAT_MAX_PATH_LEN);
 
   HANDLE h  = CreateFile
     (wname, GENERIC_WRITE, FILE_SHARE_WRITE, NULL,
@@ -1462,7 +1483,7 @@ __gnat_stat (char *name, struct stat *statbuf)
   int name_len;
   TCHAR last_char;
 
-  S2WS (wname, name, GNAT_MAX_PATH_LEN + 2);
+  S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
   name_len = _tcslen (wname);
 
   if (name_len > GNAT_MAX_PATH_LEN)
@@ -1854,7 +1875,7 @@ win32_no_block_spawn (char *command, char *args[])
     int wsize = csize * 2;
     TCHAR *wcommand = (TCHAR *) xmalloc (wsize);
 
-    S2WS (wcommand, full_command, wsize);
+    S2WSU (wcommand, full_command, wsize);
 
     free (full_command);
 
@@ -2145,7 +2166,7 @@ __gnat_locate_exec_on_path (char *exec_name)
 
   apath_val = alloca (EXPAND_BUFFER_SIZE);
 
-  WS2S (apath_val, wapath_val, EXPAND_BUFFER_SIZE);
+  WS2SU (apath_val, wapath_val, EXPAND_BUFFER_SIZE);
   return __gnat_locate_exec (exec_name, apath_val);
 
 #else
@@ -2623,7 +2644,8 @@ _flush_cache()
    version of this procedure in libaddr2line.a.  */
 
 void
-convert_addresses (void *addrs ATTRIBUTE_UNUSED,
+convert_addresses (const char *file_name ATTRIBUTE_UNUSED,
+		   void *addrs ATTRIBUTE_UNUSED,
 		   int n_addr ATTRIBUTE_UNUSED,
 		   void *buf ATTRIBUTE_UNUSED,
 		   int *len ATTRIBUTE_UNUSED)
