@@ -1042,6 +1042,13 @@ package body Endh is
             if Style.RM_Column_Check then
                if End_Column /= Scope.Table (Scope.Last).Ecol
                  and then Current_Line_Start > Scope.Table (Scope.Last).Sloc
+
+               --  A special case, for END RECORD, we are also allowed to
+               --  line up with the TYPE keyword opening the declaration.
+
+                 and then (Scope.Table (Scope.Last).Etyp /= E_Record
+                            or else Get_Column_Number (End_Sloc) /=
+                                    Get_Column_Number (Type_Token_Location))
                then
                   Error_Msg_Col := Scope.Table (Scope.Last).Ecol;
                   Error_Msg
