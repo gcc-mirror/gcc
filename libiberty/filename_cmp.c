@@ -31,12 +31,13 @@
 
 @deftypefn Extension int filename_cmp (const char *@var{s1}, const char *@var{s2})
 
-Return zero if the two paths @var{s1} and @var{s2} are equivalent.
-If not equivalent, the returned value is similar to what strcmp would
-return.  In other words, it returns a negative value if @var{s1} is less
-than @var{s2}, or a positive value if @var{s2} is greater than @var{s2}.
+Return zero if the two file names @var{s1} and @var{s2} are equivalent.
+If not equivalent, the returned value is similar to what @code{strcmp}
+would return.  In other words, it returns a negative value if @var{s1}
+is less than @var{s2}, or a positive value if @var{s2} is greater than
+@var{s2}.
 
-This function does not normalize path names. As a result, this function
+This function does not normalize file names.  As a result, this function
 will treat filenames that are spelled differently as different even in
 the case when the two filenames point to the same underlying file.
 However, it does handle the fact that on DOS-like file systems, forward

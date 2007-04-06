@@ -1,3 +1,7 @@
+2007-04-06  Joel Brobecker  <brobecker@adacore.com>
+
+	* filename_cmp.c (filename_cmp): Improve documentation.
+
 2007-04-02  Andreas Schwab  <schwab@suse.de>
 
 	* filename_cmp.c: Include "config.h".
