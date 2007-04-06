@@ -99,7 +99,7 @@ package body Debug is
    --  d.d
    --  d.e
    --  d.f  Inhibit folding of static expressions
-   --  d.g
+   --  d.g  Enable conversion of raise into goto
    --  d.h
    --  d.i
    --  d.j
@@ -473,6 +473,11 @@ package body Debug is
    --  d.f  Suppress folding of static expressions. This of course results
    --       in seriously non-conforming behavior, but is useful sometimes
    --       when tracking down handling of complex expressions.
+
+   --  d.g  Enables conversion of a raise statement into a goto when the
+   --       relevant handler is statically determinable. For now we only try
+   --       this if this debug flag is set. Later we will enable this more
+   --       generally by default.
 
    --  d.l  Use Ada 95 semantics for limited function returns. This may be
    --       used to work around the incompatibility introduced by AI-318-2.

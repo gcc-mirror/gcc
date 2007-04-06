@@ -610,6 +610,12 @@ package body Sem is
            N_Mod_Clause                             |
            N_Modular_Type_Definition                |
            N_Ordinary_Fixed_Point_Definition        |
+           N_Pop_Constraint_Error_Label             |
+           N_Pop_Program_Error_Label                |
+           N_Pop_Storage_Error_Label                |
+           N_Push_Constraint_Error_Label            |
+           N_Push_Program_Error_Label               |
+           N_Push_Storage_Error_Label               |
            N_Parameter_Specification                |
            N_Pragma_Argument_Association            |
            N_Procedure_Specification                |
@@ -626,18 +632,24 @@ package body Sem is
 
       Debug_A_Exit ("analyzing  ", N, "  (done)");
 
-      --  Now that we have analyzed the node, we call the expander to
-      --  perform possible expansion. This is done only for nodes that
-      --  are not subexpressions, because in the case of subexpressions,
-      --  we don't have the type yet, and the expander will need to know
-      --  the type before it can do its job. For subexpression nodes, the
-      --  call to the expander happens in the Sem_Res.Resolve.
+      --  Now that we have analyzed the node, we call the expander to perform
+      --  possible expansion. We skip this for subexpressions, because we don't
+      --  have the type yet, and the expander will need to know the type before
+      --  it can do its job. For subexpression nodes, the call to the expander
+      --  happens in Sem_Res.Resolve. A special exception is Raise_xxx_Error,
+      --  which can appear in a statement context, and needs expanding now in
+      --  the case (distinguished by Etype, as documented in Sinfo).
 
       --  The Analyzed flag is also set at this point for non-subexpression
-      --  nodes (in the case of subexpression nodes, we can't set the flag
-      --  yet, since resolution and expansion have not yet been completed)
+      --  nodes (in the case of subexpression nodes, we can't set the flag yet,
+      --  since resolution and expansion have not yet been completed). Note
+      --  that for N_Raise_xxx_Error we have to distinguish the expression
+      --  case from the statement case.
 
-      if Nkind (N) not in N_Subexpr then
+      if Nkind (N) not in N_Subexpr
+        or else (Nkind (N) in N_Raise_xxx_Error
+                  and then Etype (N) = Standard_Void_Type)
+      then
          Expand (N);
       end if;
    end Analyze;

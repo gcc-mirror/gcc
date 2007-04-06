@@ -121,12 +121,15 @@ procedure Gnatbind is
 
       --  Define those restrictions that should be output if the gnatbind
       --  -r switch is used. Not all restrictions are output for the reasons
-      --  given above in the list, and this array is used to test whether
+      --  given below in the list, and this array is used to test whether
       --  the corresponding pragma should be listed. True means that it
       --  should not be listed.
 
       No_Restriction_List : constant array (All_Restrictions) of Boolean :=
-        (No_Exceptions            => True,
+        (No_Exception_Propagation => True,
+         --  Modifies code resulting in different exception semantics
+
+         No_Exceptions            => True,
          --  Has unexpected Suppress (All_Checks) effect
 
          No_Implicit_Conditionals => True,
@@ -268,7 +271,7 @@ procedure Gnatbind is
                   "procedure names missing in -L");
             end if;
 
-         --  -Sin -Slo -Shi -Sxx
+         --  -Sin -Slo -Shi -Sxx -Sev
 
          elsif Argv'Length = 4
            and then Argv (2) = 'S'

@@ -55,16 +55,14 @@ package body Sem_Ch11 is
    procedure Analyze_Exception_Declaration (N : Node_Id) is
       Id : constant Entity_Id := Defining_Identifier (N);
       PF : constant Boolean   := Is_Pure (Current_Scope);
-
    begin
-      Generate_Definition (Id);
-      Enter_Name          (Id);
-      Set_Ekind           (Id, E_Exception);
-      Set_Exception_Code  (Id, Uint_0);
-      Set_Etype           (Id, Standard_Exception_Type);
-
+      Generate_Definition         (Id);
+      Enter_Name                  (Id);
+      Set_Ekind                   (Id, E_Exception);
+      Set_Exception_Code          (Id, Uint_0);
+      Set_Etype                   (Id, Standard_Exception_Type);
       Set_Is_Statically_Allocated (Id);
-      Set_Is_Pure (Id, PF);
+      Set_Is_Pure                 (Id, PF);
    end Analyze_Exception_Declaration;
 
    --------------------------------
@@ -182,28 +180,35 @@ package body Sem_Ch11 is
          --  Otherwise we have a real exception handler
 
          else
-            --  Deal with choice parameter. The exception handler is
-            --  a declarative part for it, so it constitutes a scope
-            --  for visibility purposes. We create an entity to denote
-            --  the whole exception part, and use it as the scope of all
-            --  the choices, which may even have the same name without
-            --  conflict. This scope plays no other role in expansion or
-            --  or code generation.
+            --  Deal with choice parameter. The exception handler is a
+            --  declarative part for the choice parameter, so it constitutes a
+            --  scope for visibility purposes. We create an entity to denote
+            --  the whole exception part, and use it as the scope of all the
+            --  choices, which may even have the same name without conflict.
+            --  This scope plays no other role in expansion or or code
+            --  generation.
 
             Choice := Choice_Parameter (Handler);
 
             if Present (Choice) then
+               Set_Local_Raise_Not_OK (Handler);
+
+               if Comes_From_Source (Choice) then
+                  Check_Restriction (No_Exception_Propagation, Choice);
+               end if;
+
                if No (H_Scope) then
-                  H_Scope := New_Internal_Entity
-                    (E_Block, Current_Scope, Sloc (Choice), 'E');
+                  H_Scope :=
+                    New_Internal_Entity
+                     (E_Block, Current_Scope, Sloc (Choice), 'E');
                end if;
 
                New_Scope (H_Scope);
                Set_Etype (H_Scope, Standard_Void_Type);
 
                --  Set the Finalization Chain entity to Error means that it
-               --  should not be used at that level but the parent one
-               --  should be used instead.
+               --  should not be used at that level but the parent one should
+               --  be used instead.
 
                --  ??? this usage needs documenting in Einfo/Exp_Ch7 ???
                --  ??? using Error for this non-error condition is nasty ???
@@ -215,8 +220,8 @@ package body Sem_Ch11 is
                Set_Etype (Choice, RTE (RE_Exception_Occurrence));
                Generate_Definition (Choice);
 
-               --  Set source assigned flag, since in effect this field
-               --  is always assigned an initial value by the exception.
+               --  Set source assigned flag, since in effect this field is
+               --  always assigned an initial value by the exception.
 
                Set_Never_Set_In_Source (Choice, False);
             end if;
@@ -234,8 +239,20 @@ package body Sem_Ch11 is
                else
                   Analyze (Id);
 
+                  --  In most cases the choice has already been analyzed in
+                  --  Analyze_Handled_Statement_Sequence, in order to expand
+                  --  local handlers. This advance analysis does not take into
+                  --  account the case in which a choice has the same name as
+                  --  the choice parameter of the handler, which may hide an
+                  --  outer exception. This pathological case appears in ACATS
+                  --  B80001_3.adb, and requires an explicit check to verify
+                  --  that the id is not hidden.
+
                   if not Is_Entity_Name (Id)
                     or else Ekind (Entity (Id)) /= E_Exception
+                    or else
+                      (Nkind (Id) = N_Identifier
+                        and then Chars (Id) = Chars (Choice))
                   then
                      Error_Msg_N ("exception name expected", Id);
 
@@ -303,9 +320,9 @@ package body Sem_Ch11 is
                Next (Id);
             end loop;
 
-            --  Check for redundant handler (has only raise statement) and
-            --  is either an others handler, or is a specific handler when
-            --  no others handler is present.
+            --  Check for redundant handler (has only raise statement) and is
+            --  either an others handler, or is a specific handler when no
+            --  others handler is present.
 
             if Warn_On_Redundant_Constructs
               and then List_Length (Statements (Handler)) = 1
@@ -342,20 +359,45 @@ package body Sem_Ch11 is
 
    procedure Analyze_Handled_Statements (N : Node_Id) is
       Handlers : constant List_Id := Exception_Handlers (N);
+      Handler  : Node_Id;
+      Choice   : Node_Id;
 
    begin
       if Present (Handlers) then
          Kill_All_Checks;
       end if;
 
+      --  We are now going to analyze the statements and then the exception
+      --  handlers. We certainly need to do things in this order to get the
+      --  proper sequential semantics for various warnings.
+
+      --  However, there is a glitch. When we process raise statements, an
+      --  optimization is to look for local handlers and specialize the code
+      --  in this case.
+
+      --  In order to detect if a handler is matching, we must have at least
+      --  analyzed the choices in the proper scope so that proper visibility
+      --  analysis is performed. Hence we analyze just the choices first,
+      --  before we analyze the statement sequence.
+
+      Handler := First_Non_Pragma (Handlers);
+      while Present (Handler) loop
+         Choice := First_Non_Pragma (Exception_Choices (Handler));
+         while Present (Choice) loop
+            Analyze (Choice);
+            Next_Non_Pragma (Choice);
+         end loop;
+
+         Next_Non_Pragma (Handler);
+      end loop;
+
       --  Analyze statements in sequence
 
       Analyze_Statements (Statements (N));
 
-      --  If the current scope is a subprogram, and there are no explicit
-      --  exception handlers, then this is the right place to check for
-      --  hanging useless assignments from the statement sequence of the
-      --  subprogram body.
+      --  If the current scope is a subprogram, then this is the right place to
+      --  check for hanging useless assignments from the statement sequence of
+      --  the subprogram body.
 
       if Is_Subprogram (Current_Scope) then
          Warn_On_Useless_Assignments (Current_Scope);
@@ -389,9 +431,9 @@ package body Sem_Ch11 is
          Check_Restriction (No_Exceptions, N);
       end if;
 
-      --  Check for useless assignment to OUT or IN OUT scalar
-      --  immediately preceding the raise. Right now we only look
-      --  at assignment statements, we could do more.
+      --  Check for useless assignment to OUT or IN OUT scalar immediately
+      --  preceding the raise. Right now we only look at assignment statements,
+      --  we could do more.
 
       if Is_List_Member (N) then
          declare
@@ -424,7 +466,6 @@ package body Sem_Ch11 is
       --  Reraise statement
 
       if No (Exception_Id) then
-
          P := Parent (N);
          Nkind_P := Nkind (P);
 
@@ -441,6 +482,14 @@ package body Sem_Ch11 is
          if Nkind (P) /= N_Exception_Handler then
             Error_Msg_N
               ("reraise statement must appear directly in a handler", N);
+
+         --  If a handler has a reraise, it cannot be the target of a local
+         --  raise (goto optimization is impossible), and if the no exception
+         --  propagation restriction is set, this is a violation.
+
+         else
+            Set_Local_Raise_Not_OK (P);
+            Check_Restriction (No_Exception_Propagation, N);
          end if;
 
       --  Normal case with exception id present

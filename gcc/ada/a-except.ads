@@ -35,7 +35,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version of Ada.Exceptions is a full Ada 95 version.
+--  This version of Ada.Exceptions is a full Ada 95 version. It omits Ada 2005
+--  features such as the additional definitions of Exception_Name returning
+--  Wide_[Wide_]String.
+
 --  It is used for building the compiler and the basic tools, since these
 --  builds may be done with bootstrap compilers that cannot handle these
 --  additions. The full version of Ada.Exceptions can be found in the files
@@ -171,6 +174,15 @@ private
    --  compiler generated code (using Rtsfind, which does not respect the
    --  private barrier, so we can place this function in the private part
    --  where the compiler can find it, but the spec is unchanged.)
+
+   procedure Local_Raise (Excep : Exception_Id);
+   pragma Export (Ada, Local_Raise);
+   --  This is a dummy routine, used only by the debugger for the purpose of
+   --  logging local raise statements that were transformed into a direct goto
+   --  to the handler code. The compiler in this case generates:
+   --
+   --    Local_Raise (exception_id);
+   --    goto Handler
 
    procedure Raise_Exception_Always (E : Exception_Id; Message : String := "");
    pragma No_Return (Raise_Exception_Always);

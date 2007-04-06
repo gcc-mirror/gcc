@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,6 +55,19 @@ package Exp_Ch11 is
    --  of statements that has the exception handler(s) to be expanded. This
    --  is also called to expand the special exception handler built for
    --  accept bodies (see Exp_Ch9.Build_Accept_Body).
+
+   function Get_Local_Raise_Call_Entity return Entity_Id;
+   --  This function is provided for use by the back end in conjunction with
+   --  generation of Local_Raise calls when an exception raise is converted to
+   --  a goto statement. If Local_Raise is defined, its entity is returned,
+   --  if not, Empty is returned (in which case the call is silently skipped).
+
+   function Get_RT_Exception_Entity (R : RT_Exception_Code) return Entity_Id;
+   --  This function is provided for use by the back end in conjunction with
+   --  generation of Local_Raise calls when an exception raise is converted to
+   --  a goto statement. The argument is the reason code which would be used
+   --  to determine which Rcheck_nn procedure to call. The returned result is
+   --  the exception entity to be passed to Local_Raise.
 
    function Is_Non_Ada_Error (E : Entity_Id) return Boolean;
    --  This function is provided for Gigi use. It returns True if operating on
