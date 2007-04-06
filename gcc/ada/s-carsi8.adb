@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2006 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,13 +80,15 @@ package body System.Compare_Array_Signed_8 is
       --  Here we can go by words
 
       declare
-         LeftP  : constant Big_Words_Ptr := To_Big_Words (Left);
-         RightP : constant Big_Words_Ptr := To_Big_Words (Right);
-         Clen4  : constant Natural       := Compare_Len / 4 - 1;
-         Clen4F : constant Natural       := Clen4 * 4;
+         LeftP                   : constant Big_Words_Ptr :=
+                                     To_Big_Words (Left);
+         RightP                  : constant Big_Words_Ptr :=
+                                     To_Big_Words (Right);
+         Words_To_Compare        : constant Natural := Compare_Len / 4;
+         Bytes_Compared_As_Words : constant Natural := Words_To_Compare * 4;
 
       begin
-         for J in 0 .. Clen4 loop
+         for J in 0 .. Words_To_Compare - 1 loop
             if LeftP (J) /= RightP (J) then
                return Compare_Array_S8_Unaligned
                         (AddA (Left,  Address (4 * J)),
@@ -96,10 +98,10 @@ package body System.Compare_Array_Signed_8 is
          end loop;
 
          return Compare_Array_S8_Unaligned
-                  (AddA (Left,  Address (Clen4F)),
-                   AddA (Right, Address (Clen4F)),
-                   Left_Len  - Clen4F,
-                   Right_Len - Clen4F);
+                  (AddA (Left,  Address (Bytes_Compared_As_Words)),
+                   AddA (Right, Address (Bytes_Compared_As_Words)),
+                   Left_Len  - Bytes_Compared_As_Words,
+                   Right_Len - Bytes_Compared_As_Words);
       end;
    end Compare_Array_S8;
 
