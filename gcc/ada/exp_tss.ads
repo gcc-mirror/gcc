@@ -198,7 +198,7 @@ package Exp_Tss is
    --  the corresponding base type (see Base_Init_Proc function). A special
    --  case arises for concurrent types. Such types do not themselves have an
    --  init proc TSS, but initialization is required. The init proc used is
-   --  the one fot the corresponding record type (see Base_Init_Proc).
+   --  the one for the corresponding record type (see Base_Init_Proc).
 
    function Base_Init_Proc (Typ : Entity_Id) return Entity_Id;
    --  Obtains the _Init TSS entry from the base type of the entity, and also

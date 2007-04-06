@@ -133,7 +133,8 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
 
    begin
       if HT.Busy > 0 then
-         raise Program_Error;
+         raise Program_Error with
+           "attempt to tamper with elements (container is busy)";
       end if;
 
       while HT.Length > 0 loop
@@ -171,14 +172,16 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
 
    begin
       if HT.Length = 0 then
-         raise Program_Error;
+         raise Program_Error with
+           "attempt to delete node from empty hashed container";
       end if;
 
       Indx := Index (HT, X);
       Prev := HT.Buckets (Indx);
 
       if Prev = null then
-         raise Program_Error;
+         raise Program_Error with
+           "attempt to delete node from empty hash bucket";
       end if;
 
       if Prev = X then
@@ -188,14 +191,16 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       end if;
 
       if HT.Length = 1 then
-         raise Program_Error;
+         raise Program_Error with
+           "attempt to delete node not in its proper hash bucket";
       end if;
 
       loop
          Curr := Next (Prev);
 
          if Curr = null then
-            raise Program_Error;
+            raise Program_Error with
+              "attempt to delete node not in its proper hash bucket";
          end if;
 
          if Curr = X then
@@ -288,16 +293,19 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
          return True;
       end if;
 
-      L_Index := 0;
+      --  Find the first node of hash table L
 
+      L_Index := 0;
       loop
          L_Node := L.Buckets (L_Index);
          exit when L_Node /= null;
          L_Index := L_Index + 1;
       end loop;
 
-      N := L.Length;
+      --  For each node of hash table L, search for an equivalent node in hash
+      --  table R.
 
+      N := L.Length;
       loop
          if not Find (HT => R, Key => L_Node) then
             return False;
@@ -308,9 +316,13 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
          L_Node := Next (L_Node);
 
          if L_Node = null then
+            --  We have exhausted the nodes in this bucket
+
             if N = 0 then
                return True;
             end if;
+
+            --  Find the next bucket
 
             loop
                L_Index := L_Index + 1;
@@ -347,7 +359,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
    ------------------
 
    procedure Generic_Read
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       HT     : out Hash_Table_Type)
    is
       N  : Count_Type'Base;
@@ -359,12 +371,17 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       Count_Type'Base'Read (Stream, N);
 
       if N < 0 then
-         raise Program_Error;
+         raise Program_Error with "stream appears to be corrupt";
       end if;
 
       if N = 0 then
          return;
       end if;
+
+      --  The RM does not specify whether or how the capacity changes when a
+      --  hash table is streamed in. Therefore we decide here to allocate a new
+      --  buckets array only when it's necessary to preserve representation
+      --  invariants.
 
       if HT.Buckets = null
         or else HT.Buckets'Length < N
@@ -393,7 +410,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
    -------------------
 
    procedure Generic_Write
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       HT     : Hash_Table_Type)
    is
       procedure Write (Node : Node_Access);
@@ -411,6 +428,9 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       end Write;
 
    begin
+      --  See Generic_Read for an explanation of why we do not stream out the
+      --  buckets array length too.
+
       Count_Type'Base'Write (Stream, HT.Length);
       Write (HT);
    end Generic_Write;
@@ -444,7 +464,8 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       end if;
 
       if Source.Busy > 0 then
-         raise Program_Error;
+         raise Program_Error with
+           "attempt to tamper with elements (container is busy)";
       end if;
 
       Clear (Target);
@@ -507,6 +528,13 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       end if;
 
       if HT.Length = 0 then
+
+         --  This is the easy case. There are no nodes, so no rehashing is
+         --  necessary. All we need to do is allocate a new buckets array
+         --  having a length implied by the specified capacity. (We say
+         --  "implied by" because bucket arrays are always allocated with a
+         --  length that corresponds to a prime number.)
+
          if N = 0 then
             Free (HT.Buckets);
             return;
@@ -537,6 +565,12 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       end if;
 
       if N < HT.Buckets'Length then
+
+         --  This is a request to contract the buckets array. The amount of
+         --  contraction is bounded in order to preserve the invariant that the
+         --  buckets array length is never smaller than the number of elements
+         --  (the load factor is 1).
+
          if HT.Length >= HT.Buckets'Length then
             return;
          end if;
@@ -556,7 +590,8 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       end if;
 
       if HT.Busy > 0 then
-         raise Program_Error;
+         raise Program_Error with
+           "attempt to tamper with elements (container is busy)";
       end if;
 
       Rehash : declare
@@ -622,7 +657,8 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
                   end loop;
 
                   Free (Dst_Buckets);
-                  raise Program_Error;
+                  raise Program_Error with
+                    "hash function raised exception during rehash";
             end;
 
             Src_Index := Src_Index + 1;
