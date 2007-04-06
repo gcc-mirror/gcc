@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -116,7 +116,7 @@ package body Sem_Dist is
       Primitive_Spec : constant Node_Id :=
                          Copy_Specification (Loc,
                            Spec     => Subp_Spec,
-                           New_Name => Name_Call);
+                           New_Name => Name_uCall);
 
       Subtype_Mark_For_Self : Node_Id;
 
@@ -142,9 +142,8 @@ package body Sem_Dist is
               Subtype_Mark =>
                 Subtype_Mark_For_Self)));
 
-      --  Trick later semantic analysis into considering this
-      --  operation as a primitive (dispatching) operation of
-      --  tagged type Obj_Type.
+      --  Trick later semantic analysis into considering this operation as a
+      --  primitive (dispatching) operation of tagged type Obj_Type.
 
       Set_Comes_From_Source (
         Defining_Unit_Name (Primitive_Spec), True);
@@ -398,45 +397,43 @@ package body Sem_Dist is
    ------------------------------------
 
    procedure Process_Remote_AST_Declaration (N : Node_Id) is
-      Loc            : constant Source_Ptr := Sloc (N);
-      User_Type      : constant Node_Id := Defining_Identifier (N);
-      Scop           : constant Entity_Id := Scope (User_Type);
-      Is_RCI         : constant Boolean :=
-        Is_Remote_Call_Interface (Scop);
-      Is_RT          : constant Boolean :=
-        Is_Remote_Types (Scop);
-      Type_Def       : constant Node_Id := Type_Definition (N);
+      Loc       : constant Source_Ptr := Sloc (N);
+      User_Type : constant Node_Id    := Defining_Identifier (N);
+      Scop      : constant Entity_Id  := Scope (User_Type);
+      Is_RCI    : constant Boolean    := Is_Remote_Call_Interface (Scop);
+      Is_RT     : constant Boolean    := Is_Remote_Types (Scop);
+      Type_Def  : constant Node_Id    := Type_Definition (N);
+      Parameter : Node_Id;
 
-      Parameter      : Node_Id;
-      Is_Degenerate  : Boolean;
+      Is_Degenerate : Boolean;
       --  True iff this RAS has an access formal parameter (see
       --  Exp_Dist.Add_RAS_Dereference_TSS for details).
 
-      Subpkg         : constant Entity_Id :=
-                         Make_Defining_Identifier
-                           (Loc, New_Internal_Name ('S'));
-      Subpkg_Decl    : Node_Id;
-      Vis_Decls      : constant List_Id := New_List;
-      Priv_Decls     : constant List_Id := New_List;
+      Subpkg      : constant Entity_Id :=
+                      Make_Defining_Identifier (Loc,
+                        New_Internal_Name ('S'));
+      Subpkg_Decl : Node_Id;
+      Subpkg_Body : Node_Id;
+      Vis_Decls   : constant List_Id := New_List;
+      Priv_Decls  : constant List_Id := New_List;
 
-      Obj_Type       : constant Entity_Id :=
-                         Make_Defining_Identifier
-                           (Loc, New_External_Name (
-                                   Chars (User_Type), 'R'));
+      Obj_Type : constant Entity_Id :=
+                    Make_Defining_Identifier (Loc,
+                      New_External_Name (Chars (User_Type), 'R'));
 
-      Full_Obj_Type  : constant Entity_Id :=
-                         Make_Defining_Identifier
-                           (Loc, Chars (Obj_Type));
+      Full_Obj_Type : constant Entity_Id :=
+                        Make_Defining_Identifier (Loc,
+                          Chars (Obj_Type));
 
-      RACW_Type      : constant Entity_Id :=
-                         Make_Defining_Identifier
-                           (Loc, New_External_Name (
-                                   Chars (User_Type), 'P'));
+      RACW_Type : constant Entity_Id :=
+                    Make_Defining_Identifier (Loc,
+                      New_External_Name (Chars (User_Type), 'P'));
 
-      Fat_Type       : constant Entity_Id :=
-                        Make_Defining_Identifier
-                          (Loc, Chars (User_Type));
-      Fat_Type_Decl  : Node_Id;
+      Fat_Type : constant Entity_Id :=
+                   Make_Defining_Identifier (Loc,
+                     Chars (User_Type));
+
+      Fat_Type_Decl : Node_Id;
 
    begin
       Is_Degenerate := False;
@@ -461,6 +458,7 @@ package body Sem_Dist is
          --  anonymous access type is null, because it cannot be subtype-
          --  conformant with any legal remote subprogram declaration. In this
          --  case, we cannot generate a corresponding primitive operation.
+
       end if;
 
       if Get_PCS_Name = Name_No_DSA then
@@ -492,6 +490,11 @@ package body Sem_Dist is
               Limited_Present  => True,
               Null_Present     => True,
               Component_List   => Empty)));
+
+      --  Trick semantic analysis into swapping the public and full view when
+      --  freezing the public view.
+
+      Set_Comes_From_Source (Full_Obj_Type, True);
 
       if not Is_Degenerate then
          Append_To (Vis_Decls,
@@ -531,6 +534,19 @@ package body Sem_Dist is
       Set_Is_Remote_Types (Subpkg, Is_RT);
       Insert_After_And_Analyze (N, Subpkg_Decl);
 
+      --  Generate package body to receive RACW calling stubs
+      --  Note: Analyze_Declarations has an absolute requirement that
+      --  the declaration list be non-empty, so we provide a dummy null
+      --  statement here.
+
+      Subpkg_Body :=
+        Make_Package_Body (Loc,
+          Defining_Unit_Name =>
+            Make_Defining_Identifier (Loc, Chars (Subpkg)),
+          Declarations => New_List (
+            Make_Null_Statement (Loc)));
+      Insert_After_And_Analyze (Subpkg_Decl, Subpkg_Body);
+
       --  Many parts of the analyzer and expander expect
       --  that the fat pointer type used to implement remote
       --  access to subprogram types be a record.
@@ -556,7 +572,7 @@ package body Sem_Dist is
                           New_Occurrence_Of (RACW_Type, Loc)))))));
       Set_Equivalent_Type (User_Type, Fat_Type);
       Set_Corresponding_Remote_Type (Fat_Type, User_Type);
-      Insert_After_And_Analyze (Subpkg_Decl, Fat_Type_Decl);
+      Insert_After_And_Analyze (Subpkg_Body, Fat_Type_Decl);
 
       --  The reason we suppress the initialization procedure is that we know
       --  that no initialization is required (even if Initialize_Scalars mode
