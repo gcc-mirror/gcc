@@ -93,7 +93,7 @@ package body GNAT.Expect is
    pragma Import (C, Kill, "__gnat_kill");
    --  if Close is set to 1 all OS resources used by the Pid must be freed
 
-   function Create_Pipe (Pipe : access Pipe_Type) return Integer;
+   function Create_Pipe (Pipe : not null access Pipe_Type) return Integer;
    pragma Import (C, Create_Pipe, "__gnat_pipe");
 
    function Poll
@@ -782,7 +782,7 @@ package body GNAT.Expect is
      (Command    : String;
       Arguments  : GNAT.OS_Lib.Argument_List;
       Input      : String;
-      Status     : access Integer;
+      Status     : not null access Integer;
       Err_To_Out : Boolean := False) return String
    is
       use GNAT.Expect;
@@ -821,10 +821,11 @@ package body GNAT.Expect is
                pragma Assert (S'Length > 0);
 
             begin
-               --  Expand buffer if we need more space
+               --  Expand buffer if we need more space. Note here that we add
+               --  S'Length to ensure that S will fit in the new buffer size.
 
                if Last + S'Length > Output'Last then
-                  NOutput := new String (1 .. 2 * Output'Last);
+                  NOutput := new String (1 .. 2 * Output'Last + S'Length);
                   NOutput (Output'Range) := Output.all;
                   Free (Output);
 
@@ -1215,9 +1216,9 @@ package body GNAT.Expect is
    procedure Set_Up_Communications
      (Pid        : in out Process_Descriptor;
       Err_To_Out : Boolean;
-      Pipe1      : access Pipe_Type;
-      Pipe2      : access Pipe_Type;
-      Pipe3      : access Pipe_Type)
+      Pipe1      : not null access Pipe_Type;
+      Pipe2      : not null access Pipe_Type;
+      Pipe3      : not null access Pipe_Type)
    is
       Status : Boolean;
 
