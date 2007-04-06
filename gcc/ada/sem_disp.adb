@@ -204,6 +204,12 @@ package body Sem_Disp is
                Tagged_Type := Base_Type (Designated_Type (T));
             end if;
 
+         --  Ada 2005 : an incomplete type can be tagged. An operation with
+         --  an access parameter of the type is dispatching.
+
+         elsif Scope (Designated_Type (T)) = Current_Scope then
+            Tagged_Type := Designated_Type (T);
+
          --  Ada 2005 (AI-50217)
 
          elsif From_With_Type (Designated_Type (T))
@@ -231,13 +237,13 @@ package body Sem_Disp is
                and then (not Is_Generic_Type (Tagged_Type)
                           or else not Comes_From_Source (Subp)))
         or else
-          (Is_Formal_Subprogram (Subp) and then Is_Abstract (Subp))
+          (Is_Formal_Subprogram (Subp) and then Is_Abstract_Subprogram (Subp))
         or else
           (Nkind (Parent (Parent (Subp))) = N_Subprogram_Renaming_Declaration
             and then
               Present (Corresponding_Formal_Spec (Parent (Parent (Subp))))
             and then
-              Is_Abstract (Subp))
+              Is_Abstract_Subprogram (Subp))
       then
          return Tagged_Type;
 
@@ -274,11 +280,11 @@ package body Sem_Disp is
          Par  : Node_Id;
 
       begin
-         if Is_Abstract (Subp)
+         if Is_Abstract_Subprogram (Subp)
            and then No (Controlling_Argument (N))
          then
             if Present (Alias (Subp))
-              and then not Is_Abstract (Alias (Subp))
+              and then not Is_Abstract_Subprogram (Alias (Subp))
               and then No (DTC_Entity (Subp))
             then
                --  Private overriding of inherited abstract operation,
@@ -428,6 +434,7 @@ package body Sem_Disp is
             --  Mark call as a dispatching call
 
             Set_Controlling_Argument (N, Control);
+            Check_Restriction (No_Dispatching_Calls, N);
 
             --  Ada 2005 (AI-318-02): Check current implementation restriction
             --  that a dispatching call cannot be made to a primitive function
@@ -481,7 +488,7 @@ package body Sem_Disp is
                            (Expression (Original_Node (Actual)))));
                   end if;
 
-                  if Present (Func) and then Is_Abstract (Func) then
+                  if Present (Func) and then Is_Abstract_Subprogram (Func) then
                      Error_Msg_N (
                        "call to abstract function must be dispatching", N);
                   end if;
@@ -1080,7 +1087,8 @@ package body Sem_Disp is
                --  a descendant type and inherits a nonabstract version.
 
                if Etype (Subp) /= Tagged_Type then
-                  Set_Is_Abstract (Old_Subp, Is_Abstract (Alias (Subp)));
+                  Set_Is_Abstract_Subprogram
+                    (Old_Subp, Is_Abstract_Subprogram (Alias (Subp)));
                end if;
             end if;
          end if;
@@ -1315,7 +1323,8 @@ package body Sem_Disp is
       then
          --  Ada 2005 (AI-251): Update the attribute alias of all the aliased
          --  entities of the overriden primitive to reference New_Op, and also
-         --  propagate them the new value of the attribute Is_Abstract.
+         --  propagate them the new value of the attribute
+         --  Is_Abstract_Subprogram.
 
          Elmt := First_Elmt (Primitive_Operations (Tagged_Type));
          while Present (Elmt) loop
@@ -1328,12 +1337,13 @@ package body Sem_Disp is
               and then Alias (Prim) = Prev_Op
             then
                Set_Alias (Prim, New_Op);
-               Set_Is_Abstract (Prim, Is_Abstract (New_Op));
+               Set_Is_Abstract_Subprogram
+                 (Prim, Is_Abstract_Subprogram (New_Op));
 
                --  Ensure that this entity will be expanded to fill the
                --  corresponding entry in its dispatch table.
 
-               if not Is_Abstract (Prim) then
+               if not Is_Abstract_Subprogram (Prim) then
                   Set_Has_Delayed_Freeze (Prim);
                end if;
             end if;

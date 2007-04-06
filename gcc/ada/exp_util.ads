@@ -33,21 +33,6 @@ with Types;   use Types;
 
 package Exp_Util is
 
-   --  An enumeration type used to capture all the possible interface
-   --  kinds and their hierarchical relation. These values are used in
-   --  Find_Implemented_Interface and Implements_Interface.
-
-   type Interface_Kind is (
-     Any_Interface,               --  Any interface
-     Any_Limited_Interface,       --  Only limited interfaces
-     Any_Synchronized_Interface,  --  Only synchronized interfaces
-
-     Iface,                       --  Individual kinds
-     Limited_Interface,
-     Protected_Interface,
-     Synchronized_Interface,
-     Task_Interface);
-
    -----------------------------------------------
    -- Handling of Actions Associated with Nodes --
    -----------------------------------------------
@@ -363,16 +348,6 @@ package Exp_Util is
    --  Ada 2005 (AI-251): Given a type T implementing the interface Iface,
    --  return the record component containing the tag of Iface.
 
-   function Find_Implemented_Interface
-     (Typ          : Entity_Id;
-      Kind         : Interface_Kind;
-      Check_Parent : Boolean := False) return Entity_Id;
-   --  Ada 2005 (AI-345): Find a designated kind of interface implemented by
-   --  Typ or any parent subtype. Return the first encountered interface that
-   --  correspond to the selected class. Return Empty if no such interface is
-   --  found. Use Check_Parent to climb a potential derivation chain and
-   --  examine the parent subtypes for any implementation.
-
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
    --  Find the first primitive operation of type T whose name is 'Name'.
    --  This function allows the use of a primitive operation which is not
@@ -443,14 +418,6 @@ package Exp_Util is
    --  they are unique). The number is the ordinal position on the Homonym
    --  chain, counting only entries in the curren scope. If an entity is not
    --  overloaded, the returned number will be one.
-
-   function Implements_Interface
-     (Typ          : Entity_Id;
-      Kind         : Interface_Kind;
-      Check_Parent : Boolean := False) return Boolean;
-   --  Ada 2005 (AI-345): Determine whether Typ implements a designated kind
-   --  of interface. Use Check_Parent to climb a potential derivation chain
-   --  and examine the parent subtypes for any implementation.
 
    function Inside_Init_Proc return Boolean;
    --  Returns True if current scope is within an init proc

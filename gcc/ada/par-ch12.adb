@@ -635,8 +635,7 @@ package body Ch12 is
             return P_Formal_Floating_Point_Definition;
 
          when Tok_Interface => --  Ada 2005 (AI-251)
-            return P_Interface_Type_Definition (Abstract_Present => False,
-                                                Is_Synchronized => False);
+            return P_Interface_Type_Definition (Abstract_Present => False);
 
          when Tok_Left_Paren =>
             return P_Formal_Discrete_Type_Definition;
@@ -646,9 +645,8 @@ package body Ch12 is
             Scan; --  past LIMITED
 
             if Token = Tok_Interface then
-               Typedef_Node := P_Interface_Type_Definition
-                                (Abstract_Present => False,
-                                 Is_Synchronized  => False);
+               Typedef_Node :=
+                 P_Interface_Type_Definition (Abstract_Present => False);
                Set_Limited_Present (Typedef_Node);
                return Typedef_Node;
 
@@ -720,9 +718,8 @@ package body Ch12 is
                --  Interface
 
                else
-                  Typedef_Node := P_Interface_Type_Definition
-                                    (Abstract_Present => False,
-                                     Is_Synchronized  => True);
+                  Typedef_Node :=
+                    P_Interface_Type_Definition (Abstract_Present => False);
 
                   case Saved_Token is
                      when Tok_Task =>

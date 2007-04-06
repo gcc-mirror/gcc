@@ -168,46 +168,24 @@ package Exp_Disp is
    --    Exp_Disp.Set_All_DT_Position      - direct   use
 
    type DT_Access_Action is
-      (CW_Membership,
-       IW_Membership,
-       DT_Entry_Size,
-       DT_Prologue_Size,
-       Get_Access_Level,
+      (IW_Membership,
        Get_Entry_Index,
-       Get_External_Tag,
-       Get_Predefined_Prim_Op_Address,
-       Get_Prim_Op_Address,
        Get_Prim_Op_Kind,
-       Get_RC_Offset,
-       Get_Remotely_Callable,
        Get_Tagged_Kind,
-       Inherit_DT,
-       Inherit_TSD,
        Register_Interface_Tag,
        Register_Tag,
-       Set_Access_Level,
        Set_Entry_Index,
-       Set_Expanded_Name,
-       Set_External_Tag,
-       Set_Interface_Table,
        Set_Offset_Index,
        Set_OSD,
-       Set_Predefined_Prim_Op_Address,
-       Set_Prim_Op_Address,
        Set_Prim_Op_Kind,
-       Set_RC_Offset,
-       Set_Remotely_Callable,
        Set_Signature,
        Set_SSD,
-       Set_TSD,
-       Set_Tagged_Kind,
-       TSD_Entry_Size,
-       TSD_Prologue_Size);
+       Set_Tagged_Kind);
 
    procedure Expand_Dispatching_Call (Call_Node : Node_Id);
    --  Expand the call to the operation through the dispatch table and perform
-   --  the required tag checks when appropriate. For CPP types the call is
-   --  done through the Vtable (tag checks are not relevant)
+   --  the required tag checks when appropriate. For CPP types tag checks are
+   --  not relevant.
 
    procedure Expand_Interface_Actuals (Call_Node : Node_Id);
    --  Ada 2005 (AI-251): Displace all the actuals corresponding to class-wide
@@ -244,15 +222,6 @@ package Exp_Disp is
    --  (Ada 2005): Generate the code necessary to fill the appropriate entry of
    --  the secondary dispatch table of Prim's controlling type with Thunk_Id's
    --  address.
-
-   function Get_Remotely_Callable (Obj : Node_Id) return Node_Id;
-   --  Return an expression that holds True if the object can be transmitted
-   --  onto another partition according to E.4 (18)
-
-   function Init_Predefined_Interface_Primitives
-     (Typ : Entity_Id) return List_Id;
-   --  Ada 2005 (AI-251): Initialize the entries associated with predefined
-   --  primitives in all the secondary dispatch tables of Typ.
 
    function Make_DT_Access_Action
      (Typ    : Entity_Id;
@@ -333,7 +302,7 @@ package Exp_Disp is
    procedure Make_Secondary_DT
      (Typ             : Entity_Id;
       Ancestor_Typ    : Entity_Id;
-      Suffix_Index    : Int;
+      Suffix_Index    : Nat;
       Iface           : Entity_Id;
       AI_Tag          : Entity_Id;
       Acc_Disp_Tables : in out Elist_Id;

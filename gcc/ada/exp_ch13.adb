@@ -27,6 +27,7 @@
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
+with Exp_Atag; use Exp_Atag;
 with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Imgv; use Exp_Imgv;
@@ -211,16 +212,16 @@ package body Exp_Ch13 is
             Make_String_Literal (Loc, Strval => New_Val)));
 
       Append_Freeze_Actions (Ent, New_List (
-        Make_Procedure_Call_Statement (Loc,
-          Name => New_Reference_To (RTE (RE_Set_External_Tag), Loc),
-          Parameter_Associations => New_List (
+
+        Build_Set_External_Tag (Loc,
+          Tag_Node =>
             Make_Attribute_Reference (Loc,
               Attribute_Name => Name_Tag,
               Prefix         => New_Occurrence_Of (Ent, Loc)),
-
+          Value_Node =>
             Make_Attribute_Reference (Loc,
               Attribute_Name => Name_Address,
-              Prefix         => New_Occurrence_Of (E, Loc)))),
+              Prefix         => New_Occurrence_Of (E, Loc))),
 
         Make_Procedure_Call_Statement (Loc,
           Name => New_Reference_To (RTE (RE_Register_Tag), Loc),
