@@ -380,6 +380,14 @@ package body Sinfo is
       return List1 (N);
    end Choices;
 
+   function Coextensions
+      (N : Node_Id) return Elist_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Allocator);
+      return Elist4 (N);
+   end Coextensions;
+
    function Comes_From_Extended_Return_Statement
      (N : Node_Id) return Boolean is
    begin
@@ -1100,6 +1108,17 @@ package body Sinfo is
       return Flag7 (N);
    end Exception_Junk;
 
+   function Exception_Label
+     (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Exception_Handler
+        or else NT (N).Nkind = N_Push_Constraint_Error_Label
+        or else NT (N).Nkind = N_Push_Program_Error_Label
+        or else NT (N).Nkind = N_Push_Storage_Error_Label);
+      return Node5 (N);
+   end Exception_Label;
+
    function Expansion_Delayed
      (N : Node_Id) return Boolean is
    begin
@@ -1522,6 +1541,14 @@ package body Sinfo is
       return Flag7 (N);
    end Is_Asynchronous_Call_Block;
 
+   function Is_Coextension
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Allocator);
+      return Flag18 (N);
+   end Is_Coextension;
+
    function Is_Component_Left_Opnd
       (N : Node_Id) return Boolean is
    begin
@@ -1739,6 +1766,22 @@ package body Sinfo is
         or else NT (N).Nkind = N_Enumeration_Type_Definition);
       return List1 (N);
    end Literals;
+
+   function Local_Raise_Not_OK
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Exception_Handler);
+      return Flag7 (N);
+   end Local_Raise_Not_OK;
+
+   function Local_Raise_Statements
+      (N : Node_Id) return Elist_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Exception_Handler);
+      return Elist1 (N);
+   end Local_Raise_Statements;
 
    function Loop_Actions
       (N : Node_Id) return List_Id is
@@ -3022,6 +3065,14 @@ package body Sinfo is
       Set_List1_With_Parent (N, Val);
    end Set_Choices;
 
+   procedure Set_Coextensions
+      (N : Node_Id; Val : Elist_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Allocator);
+      Set_Elist4 (N, Val);
+   end Set_Coextensions;
+
    procedure Set_Comes_From_Extended_Return_Statement
      (N : Node_Id; Val : Boolean := True) is
    begin
@@ -3733,6 +3784,17 @@ package body Sinfo is
       Set_Flag7 (N, Val);
    end Set_Exception_Junk;
 
+   procedure Set_Exception_Label
+     (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Exception_Handler
+        or else NT (N).Nkind = N_Push_Constraint_Error_Label
+        or else NT (N).Nkind = N_Push_Program_Error_Label
+        or else NT (N).Nkind = N_Push_Storage_Error_Label);
+      Set_Node5 (N, Val); -- semantic field, no parent set
+   end Set_Exception_Label;
+
    procedure Set_Expansion_Delayed
      (N : Node_Id; Val : Boolean := True) is
    begin
@@ -4155,6 +4217,14 @@ package body Sinfo is
       Set_Flag7 (N, Val);
    end Set_Is_Asynchronous_Call_Block;
 
+   procedure Set_Is_Coextension
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Allocator);
+      Set_Flag18 (N, Val);
+   end Set_Is_Coextension;
+
    procedure Set_Is_Component_Left_Opnd
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -4372,6 +4442,22 @@ package body Sinfo is
         or else NT (N).Nkind = N_Enumeration_Type_Definition);
       Set_List1_With_Parent (N, Val);
    end Set_Literals;
+
+   procedure Set_Local_Raise_Not_OK
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Exception_Handler);
+      Set_Flag7 (N, Val);
+   end Set_Local_Raise_Not_OK;
+
+   procedure Set_Local_Raise_Statements
+      (N : Node_Id; Val : Elist_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Exception_Handler);
+      Set_Elist1 (N, Val);
+   end Set_Local_Raise_Statements;
 
    procedure Set_Loop_Actions
       (N : Node_Id; Val : List_Id) is

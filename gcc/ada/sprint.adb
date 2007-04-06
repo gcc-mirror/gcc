@@ -2218,6 +2218,42 @@ package body Sprint is
                Write_Str (", ");
             end if;
 
+         when N_Pop_Constraint_Error_Label =>
+            Write_Indent_Str ("%pop_constraint_error_label");
+
+         when N_Pop_Program_Error_Label =>
+            Write_Indent_Str ("%pop_program_error_label");
+
+         when N_Pop_Storage_Error_Label =>
+            Write_Indent_Str ("%pop_storage_error_label");
+
+         when N_Push_Constraint_Error_Label =>
+            Write_Indent_Str ("%push_constraint_error_label (");
+
+            if Present (Exception_Label (Node)) then
+               Write_Name_With_Col_Check (Chars (Exception_Label (Node)));
+            end if;
+
+            Write_Str (")");
+
+         when N_Push_Program_Error_Label =>
+            Write_Indent_Str ("%push_program_error_label (");
+
+            if Present (Exception_Label (Node)) then
+               Write_Name_With_Col_Check (Chars (Exception_Label (Node)));
+            end if;
+
+            Write_Str (")");
+
+         when N_Push_Storage_Error_Label =>
+            Write_Indent_Str ("%push_storage_error_label (");
+
+            if Present (Exception_Label (Node)) then
+               Write_Name_With_Col_Check (Chars (Exception_Label (Node)));
+            end if;
+
+            Write_Str (")");
+
          when N_Pragma =>
             Write_Indent_Str_Sloc ("pragma ");
             Write_Name_With_Col_Check (Chars (Node));
@@ -3698,7 +3734,8 @@ package body Sprint is
 
                   --  Class-Wide types
 
-                  when E_Class_Wide_Type =>
+                  when E_Class_Wide_Type    |
+                       E_Class_Wide_Subtype =>
                      Write_Header;
                      Write_Name_With_Col_Check (Chars (Etype (Typ)));
                      Write_Str ("'Class");

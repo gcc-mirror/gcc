@@ -462,6 +462,10 @@ package Sinfo is
    --    already been analyzed, both for efficiency and functional correctness
    --    reasons.
 
+   --  Coextensions (Elist4-Sem)
+   --    Present in allocators nodes. Points to list of allocators for the
+   --    access discriminants of the allocated object,
+
    --  Comes_From_Source (Flag2)
    --    This flag is on for any nodes built by the scanner or parser from the
    --    source program, and off for any nodes built by the analyzer or
@@ -473,6 +477,15 @@ package Sinfo is
    --    referring to the same node. This flag is set if an error message
    --    refers to a node or is posted on its source location, and has the
    --    effect of inhibiting further messages involving this same node.
+
+   --  Local_Raise_Statements (Elist1)
+   --    This field is present in exception handler nodes. It is set to
+   --    No_Elist in the normal case. If there is at least one raise statement
+   --    which can potentially be handled as a local raise, then this field
+   --    points to a list of raise nodes, which are calls to a routine to raise
+   --    an exception. These are raise nodes which can be optimized into gotos
+   --    if the handler turns out to meet the conditions which permit this
+   --    transformation.
 
    --  Has_Dynamic_Length_Check (Flag10-Sem)
    --    This flag is present on all nodes. It is set to indicate that one of
@@ -532,7 +545,12 @@ package Sinfo is
    --    declared Activation_Chain variable when the first task is declared.
    --    When tasks are declared in the corresponding declarative region this
    --    entity is located by name (its name is always _Chain) and the declared
-   --    tasks are added to the chain.
+   --    tasks are added to the chain. Note that N_Extended_Return_Statement
+   --    does not have this attribute, although it does have an activation
+   --    chain. This chain is used to store the tasks temporarily, and is not
+   --    used for activating them. On successful completion of the return
+   --    statement, the tasks are moved to the caller's chain, and the caller
+   --    activates them.
 
    --  Acts_As_Spec (Flag4-Sem)
    --    A flag set in the N_Subprogram_Body node for a subprogram body which
@@ -643,7 +661,7 @@ package Sinfo is
    --    freeze point.
 
    --  Comes_From_Extended_Return_Statement (Flag18-Sem)
-   --    Present in N_Return_Statement nodes.  True if this node was
+   --    Present in N_Return_Statement nodes. True if this node was
    --    constructed as part of the expansion of an
    --    N_Extended_Return_Statement.
 
@@ -702,7 +720,7 @@ package Sinfo is
    --  Corresponding_Generic_Association (Node5-Sem)
    --    This field is defined for object declarations and object renaming
    --    declarations. It is set for the declarations within an instance that
-   --    map generic formals to their actuals.  If set, the field points to
+   --    map generic formals to their actuals. If set, the field points to
    --    a generic_association which is the original parent of the expression
    --    or name appearing in the declaration. This simplifies ASIS queries.
 
@@ -939,6 +957,15 @@ package Sinfo is
    --    analyzing the control flow of the relevant sequence of statements
    --    (e.g. to check that it does not end with a bad return statement).
 
+   --  Exception_Label (Node5-Sem)
+   --    Appears in N_Push_xxx_Label nodes. Points to the entity of the label
+   --    to be used for transforming the corresponding exception into a goto,
+   --    or contains Empty, if this exception is not to be transformed. Also
+   --    appears in N_Exception_Handler nodes, where, if set, it indicates
+   --    that there may be a local raise for the handler, so that expansion
+   --    to allow a goto is required (and this field contains the label for
+   --    this goto). See Exp_Ch11.Expand_Local_Exception_Handlers for details.
+
    --  Expansion_Delayed (Flag11-Sem)
    --    Set on aggregates and extension aggregates that need a top-down rather
    --    than bottom up expansion. Typically aggregate expansion happens bottom
@@ -1116,6 +1143,12 @@ package Sinfo is
    --    expansion of an asynchronous entry call. Such a block needs cleanup
    --    handler to assure that the call is cancelled.
 
+   --  Is_Coextension (Flag18-Sem)
+   --    Present in allocator nodes, to indicate that this is an allocator
+   --    for an access discriminant of a dynamically allocated object. The
+   --    coextension must be deallocated and finalized at the same time as
+   --    the enclosing object.
+
    --  Is_Component_Left_Opnd  (Flag13-Sem)
    --  Is_Component_Right_Opnd (Flag14-Sem)
    --    Present in concatenation nodes, to indicate that the corresponding
@@ -1214,6 +1247,8 @@ package Sinfo is
    --    N_Block_Statement or N_Loop_Statement node to which the label
    --    declaration applies. This is not currently used in the compiler
    --    itself, but it is useful in the implementation of ASIS queries.
+   --    This field is left empty for the special labels generated as part
+   --    of expanding raise statements with a local exception handler.
 
    --  Library_Unit (Node4-Sem)
    --    In a stub node, Library_Unit points to the compilation unit node of
@@ -1258,6 +1293,12 @@ package Sinfo is
    --    indicates that the limited view has already been created because the
    --    package is mentioned in a limited_with_clause in the closure of the
    --    unit being compiled.
+
+   --  Local_Raise_Not_OK (Flag7-Sem)
+   --    Present in N_Exception_Handler nodes. Set if the handler contains
+   --    a construct (reraise statement, or call to subprogram in package
+   --    GNAT.Current_Exception) that makes the handler unsuitable as a target
+   --    for a local raise (one that could otherwise be converted to a goto).
 
    --  Must_Be_Byte_Aligned (Flag14-Sem)
    --    This flag is present in N_Attribute_Reference nodes. It can be set
@@ -1483,25 +1524,23 @@ package Sinfo is
    --  Static_Processing_OK (Flag4-Sem)
    --    Present in N_Aggregate nodes. When the Compile_Time_Known_Aggregate
    --    flag is set, the full value of the aggregate can be determined at
-   --    compile time and the aggregate can be passed as is to the back-end. In
-   --    this event it is irrelevant whether this flag is set or not. However,
-   --    if the Compile_Time_Known_Aggregate flag is not set but
+   --    compile time and the aggregate can be passed as is to the back-end.
+   --    In this event it is irrelevant whether this flag is set or not.
+   --    However, if the flag Compile_Time_Known_Aggregate is not set but
    --    Static_Processing_OK is set, the aggregate can (but need not) be
    --    converted into a compile time known aggregate by the expander. See
    --    Sem_Aggr for the specific conditions under which an aggregate has its
    --    Static_Processing_OK flag set.
 
    --  Storage_Pool (Node1-Sem)
-   --    Present in N_Allocator, N_Free_Statement, N_Return_Statement,
-   --    and N_Extended_Return_Statement nodes.
-   --    References the entity for the storage pool to be used for the allocate
-   --    or free call or for the allocation of the returned value from a
-   --    function. Empty indicates that the global default default pool is to
-   --    be used. Note that in the case of a return statement, this field is
-   --    set only if the function returns value of a type whose size is not
-   --    known at compile time on the secondary stack. It is never set on
-   --    targets for which the parameter Functions_Return_By_DSP_On_Target in
-   --    Targparm is True.
+   --    Present in N_Allocator, N_Free_Statement, N_Return_Statement, and
+   --    N_Extended_Return_Statement nodes. References the entity for the
+   --    storage pool to be used for the allocate or free call or for the
+   --    allocation of the returned value from function. Empty indicates that
+   --    the global default default pool is to be used. Note that in the case
+   --    of a return statement, this field is set only if the function returns
+   --    value of a type whose size is not known at compile time on the
+   --    secondary stack.
 
    --  Target_Type (Node2-Sem)
    --    Used in an N_Validate_Unchecked_Conversion node to point to the target
@@ -3602,8 +3641,10 @@ package Sinfo is
       --  Null_Exclusion_Present (Flag11)
       --  Storage_Pool (Node1-Sem)
       --  Procedure_To_Call (Node2-Sem)
+      --  Coextensions (Elist4-Sem)
       --  No_Initialization (Flag13-Sem)
       --  Do_Storage_Check (Flag17-Sem)
+      --  Is_Coextension (Flag18-Sem)
       --  plus fields for expression
 
       ---------------------------------
@@ -3868,19 +3909,21 @@ package Sinfo is
 
       --  Note that the occurrence of a block identifier is not a defining
       --  identifier, but rather a referencing occurrence. The defining
-      --  occurrence is in the implicit label declaration which occurs in
-      --  the innermost enclosing block.
+      --  occurrence is an E_Block entity declared by the implicit label
+      --  declaration which occurs in the innermost enclosing block statement
+      --  or body; the block identifier denotes that E_Block.
 
-      --  Note: there is always a block statement identifier present in
-      --  the tree, even if none was given in the source. In the case where
-      --  no block identifier is given in the source, the parser creates
-      --  a name of the form _Block_n, where n is a decimal integer (the
-      --  two underlines ensure that the block names created in this manner
-      --  do not conflict with any user defined identifiers), and the flag
-      --  Has_Created_Identifier is set to True. The only exception to the
-      --  rule that all loop statement nodes have identifiers occurs for
-      --  blocks constructed by the expander, and the semantic analyzer
-      --  creates and supplies dummy names for the blocks).
+      --  For block statements that come from source code, there is always a
+      --  block statement identifier present in the tree, denoting an
+      --  E_Block. In the case where no block identifier is given in the
+      --  source, the parser creates a name of the form B_n, where n is a
+      --  decimal integer, and the flag Has_Created_Identifier is set to
+      --  True. Blocks constructed by the expander usually have no identifier,
+      --  and no corresponding entity.
+
+      --  Note well: the block statement created for an extended return
+      --  statement has an entity, and this entity is an E_Return_Statement,
+      --  rather than the usual E_Block.
 
       --  N_Block_Statement
       --  Sloc points to DECLARE or BEGIN
@@ -5518,7 +5561,10 @@ package Sinfo is
       --  Choice_Parameter (Node2) (set to Empty if not present)
       --  Exception_Choices (List4)
       --  Statements (List3)
+      --  Exception_Label (Node5-Sem) (set to Empty of not present)
       --  Zero_Cost_Handling (Flag5-Sem)
+      --  Local_Raise_Statements (Elist1-Sem) (set to No_Elist if not present)
+      --  Local_Raise_Not_OK (Flag7-Sem)
 
       ------------------------------------------
       -- 11.2  Choice parameter specification --
@@ -6483,7 +6529,10 @@ package Sinfo is
       --  error. The creation of this node will usually be accompanied by a
       --  message (unless it appears within the right operand of a short
       --  circuit form whose left argument is static and decisively
-      --  eliminates elaboration of the raise operation.
+      --  eliminates elaboration of the raise operation. The condition field
+      --  can ONLY be present when the node is used as a statement form, it
+      --  may NOT be present in the case where the node appears within an
+      --  expression.
 
       --  The exception is generated with a message that contains the
       --  file name and line number, and then appended text. The Reason
@@ -6521,6 +6570,72 @@ package Sinfo is
       --  Note: Sloc is copied from the expression generating the exception.
       --  In the case where a debug source file is generated, the Sloc for
       --  this node points to the left bracket in the Sprint file output.
+
+      --  Note: the back end may be required to translate these nodes into
+      --  appropriate goto statements. See description of N_Push/Pop_xxx_Label.
+
+      ---------------------------------------------
+      -- Optimization of Exception Raise to Goto --
+      ---------------------------------------------
+
+      --  In some cases, the front end will determine that any exception raised
+      --  by the back end for a certain exception should be transformed into a
+      --  goto statement.
+
+      --  There are three kinds of exceptions raised by the back end (note that
+      --  for this purpose we consider gigi to be part of the back end in the
+      --  gcc case):
+
+      --     1. Exceptions resulting from N_Raise_xxx_Error nodes
+      --     2. Exceptions from checks triggered by Do_xxx_Check flags
+      --     3. Other cases not specifically marked by the front end
+
+      --  Normally all such exceptions are translated into calls to the proper
+      --  Rcheck_xx procedure, where xx encodes both the exception to be raised
+      --  and the exception message.
+
+      --  The front end may determine that for a particular sequence of code,
+      --  exceptions in any of these three categories for a particular builtin
+      --  exception should result in a goto, rather than a call to Rcheck_xx.
+      --  The exact sequence to be generated is:
+
+      --      Local_Raise (exception'Identity);
+      --      goto Label
+
+      --  The front end marks such a sequence of code by bracketing it with
+      --  push and pop nodes:
+
+      --       N_Push_xxx_Label (referencing the label)
+      --       ...
+      --       (code where transformation is expected for exception xxx)
+      --       ...
+      --       N_Pop_xxx_Label
+
+      --  The use of push/pop reflects the fact that such regions can properly
+      --  nest, and one special case is a subregion in which no transformation
+      --  is allowed. Such a region is marked by a N_Push_xxx_Label node whose
+      --  Exception_Label field is Empty.
+
+      --  N_Push_Constraint_Error_Label
+      --  Sloc references first statement in region covered
+      --  Exception_Label (Node5-Sem)
+
+      --  N_Push_Program_Error_Label
+      --  Sloc references first statement in region covered
+      --  Exception_Label (Node5-Sem)
+
+      --  N_Push_Storage_Error_Label
+      --  Sloc references first statement in region covered
+      --  Exception_Label (Node5-Sem)
+
+      --  N_Pop_Constraint_Error_Label
+      --  Sloc references last statement in region covered
+
+      --  N_Pop_Program_Error_Label
+      --  Sloc references last statement in region covered
+
+      --  N_Pop_Storage_Error_Label
+      --  Sloc references last statement in region covered
 
       ---------------
       -- Reference --
@@ -6978,6 +7093,18 @@ package Sinfo is
       N_Formal_Abstract_Subprogram_Declaration,
       N_Formal_Concrete_Subprogram_Declaration,
 
+      --  N_Push_xxx_Label
+
+      N_Push_Constraint_Error_Label,
+      N_Push_Program_Error_Label,
+      N_Push_Storage_Error_Label,
+
+      --  N_Pop_xxx_Label
+
+      N_Pop_Constraint_Error_Label,
+      N_Pop_Program_Error_Label,
+      N_Pop_Storage_Error_Label,
+
       --  Other nodes (not part of any subtype class)
 
       N_Abortable_Part,
@@ -7161,6 +7288,14 @@ package Sinfo is
      N_Package_Body ..
      N_Task_Body;
 
+   subtype N_Push_xxx_Label is Node_Kind range
+     N_Push_Constraint_Error_Label ..
+     N_Push_Storage_Error_Label;
+
+   subtype N_Pop_xxx_Label is Node_Kind range
+     N_Pop_Constraint_Error_Label ..
+     N_Pop_Storage_Error_Label;
+
    subtype N_Raise_xxx_Error is Node_Kind range
      N_Raise_Constraint_Error ..
      N_Raise_Storage_Error;
@@ -7326,6 +7461,9 @@ package Sinfo is
 
    function Choices
      (N : Node_Id) return List_Id;    -- List1
+
+   function Coextensions
+      (N : Node_Id) return Elist_Id;  -- Elist4
 
    function Comes_From_Extended_Return_Statement
      (N : Node_Id) return Boolean;    -- Flag18
@@ -7549,6 +7687,9 @@ package Sinfo is
    function Exception_Junk
      (N : Node_Id) return Boolean;    -- Flag7
 
+   function Exception_Label
+     (N : Node_Id) return Node_Id;    -- Node5
+
    function Explicit_Actual_Parameter
      (N : Node_Id) return Node_Id;    -- Node3
 
@@ -7681,6 +7822,9 @@ package Sinfo is
    function Is_Asynchronous_Call_Block
      (N : Node_Id) return Boolean;    -- Flag7
 
+   function Is_Coextension
+     (N : Node_Id) return Boolean;    -- Flag18
+
    function Is_Component_Left_Opnd
      (N : Node_Id) return Boolean;    -- Flag13
 
@@ -7755,6 +7899,12 @@ package Sinfo is
 
    function Literals
      (N : Node_Id) return List_Id;    -- List1
+
+   function Local_Raise_Not_OK
+     (N : Node_Id) return Boolean;    -- Flag7
+
+   function Local_Raise_Statements
+     (N : Node_Id) return Elist_Id;   -- Elist1
 
    function Loop_Actions
      (N : Node_Id) return List_Id;    -- List2
@@ -8158,6 +8308,9 @@ package Sinfo is
    procedure Set_Choice_Parameter
      (N : Node_Id; Val : Node_Id);            -- Node2
 
+   procedure Set_Coextensions
+     (N : Node_Id; Val : Elist_Id);           -- Elist4
+
    procedure Set_Choices
      (N : Node_Id; Val : List_Id);            -- List1
 
@@ -8380,6 +8533,9 @@ package Sinfo is
    procedure Set_Exception_Junk
      (N : Node_Id; Val : Boolean := True);    -- Flag7
 
+   procedure Set_Exception_Label
+     (N : Node_Id; Val : Node_Id);            -- Node5
+
    procedure Set_Expansion_Delayed
      (N : Node_Id; Val : Boolean := True);    -- Flag11
 
@@ -8512,6 +8668,9 @@ package Sinfo is
    procedure Set_Is_Asynchronous_Call_Block
      (N : Node_Id; Val : Boolean := True);    -- Flag7
 
+   procedure Set_Is_Coextension
+     (N : Node_Id; Val : Boolean := True);    -- Flag18
+
    procedure Set_Is_Component_Left_Opnd
      (N : Node_Id; Val : Boolean := True);    -- Flag13
 
@@ -8586,6 +8745,12 @@ package Sinfo is
 
    procedure Set_Literals
      (N : Node_Id; Val : List_Id);            -- List1
+
+   procedure Set_Local_Raise_Not_OK
+     (N : Node_Id; Val : Boolean := True);    -- Flag7
+
+   procedure Set_Local_Raise_Statements
+     (N : Node_Id; Val : Elist_Id);           -- Elist1
 
    procedure Set_Loop_Actions
      (N : Node_Id; Val : List_Id);            -- List2
@@ -9463,7 +9628,7 @@ package Sinfo is
        (1 => False,   --  Storage_Pool (Node1-Sem)
         2 => False,   --  Procedure_To_Call (Node2-Sem)
         3 => True,    --  Expression (Node3)
-        4 => False,   --  unused
+        4 => False,   --  Coextensions (Elist4-Sem)
         5 => False),  --  Etype (Node5-Sem)
 
      N_Null_Statement =>
@@ -10034,11 +10199,11 @@ package Sinfo is
         5 => True),   --  Exception_Handlers (List5)
 
      N_Exception_Handler =>
-       (1 => False,   --  unused
+       (1 => False,   --  Local_Raise_Statements (Elist1)
         2 => True,    --  Choice_Parameter (Node2)
         3 => True,    --  Statements (List3)
         4 => True,    --  Exception_Choices (List4)
-        5 => False),  --  unused
+        5 => False),  --  Exception_Label (Node5)
 
      N_Raise_Statement =>
        (1 => False,   --  unused
@@ -10334,6 +10499,48 @@ package Sinfo is
         4 => False,   --  unused
         5 => False),  --  Etype (Node5-Sem)
 
+     N_Push_Constraint_Error_Label =>
+       (1 => False,   --  unused
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  unused
+        5 => False),  --  unused
+
+     N_Push_Program_Error_Label =>
+       (1 => False,   --  Exception_Label
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  unused
+        5 => False),  --  Exception_Label
+
+     N_Push_Storage_Error_Label =>
+       (1 => False,   --  Exception_Label
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  unused
+        5 => False),  --  Exception_Label
+
+     N_Pop_Constraint_Error_Label =>
+       (1 => False,   --  unused
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  unused
+        5 => False),  --  unused
+
+     N_Pop_Program_Error_Label =>
+       (1 => False,   --  unused
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  unused
+        5 => False),  --  unused
+
+     N_Pop_Storage_Error_Label =>
+       (1 => False,   --  unused
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  unused
+        5 => False),  --  unused
+
      N_Reference =>
        (1 => False,   --  unused
         2 => False,   --  unused
@@ -10443,6 +10650,7 @@ package Sinfo is
    pragma Inline (Check_Address_Alignment);
    pragma Inline (Choice_Parameter);
    pragma Inline (Choices);
+   pragma Inline (Coextensions);
    pragma Inline (Comes_From_Extended_Return_Statement);
    pragma Inline (Compile_Time_Known_Aggregate);
    pragma Inline (Component_Associations);
@@ -10515,8 +10723,9 @@ package Sinfo is
    pragma Inline (Entry_Index_Specification);
    pragma Inline (Etype);
    pragma Inline (Exception_Choices);
-   pragma Inline (Exception_Junk);
    pragma Inline (Exception_Handlers);
+   pragma Inline (Exception_Junk);
+   pragma Inline (Exception_Label);
    pragma Inline (Expansion_Delayed);
    pragma Inline (Explicit_Actual_Parameter);
    pragma Inline (Explicit_Generic_Actual_Parameter);
@@ -10542,6 +10751,7 @@ package Sinfo is
    pragma Inline (Has_Created_Identifier);
    pragma Inline (Has_Dynamic_Length_Check);
    pragma Inline (Has_Dynamic_Range_Check);
+   pragma Inline (Has_Self_Reference);
    pragma Inline (Has_No_Elaboration_Code);
    pragma Inline (Has_Priority_Pragma);
    pragma Inline (Has_Private_View);
@@ -10560,6 +10770,7 @@ package Sinfo is
    pragma Inline (Instance_Spec);
    pragma Inline (Intval);
    pragma Inline (Is_Asynchronous_Call_Block);
+   pragma Inline (Is_Coextension);
    pragma Inline (Is_Component_Left_Opnd);
    pragma Inline (Is_Component_Right_Opnd);
    pragma Inline (Is_Controlling_Actual);
@@ -10570,7 +10781,6 @@ package Sinfo is
    pragma Inline (Is_Overloaded);
    pragma Inline (Is_Power_Of_2_For_Shift);
    pragma Inline (Is_Protected_Subprogram_Body);
-   pragma Inline (Has_Self_Reference);
    pragma Inline (Is_Static_Expression);
    pragma Inline (Is_Subprogram_Descriptor);
    pragma Inline (Is_Task_Allocation_Block);
@@ -10586,6 +10796,8 @@ package Sinfo is
    pragma Inline (Limited_View_Installed);
    pragma Inline (Limited_Present);
    pragma Inline (Literals);
+   pragma Inline (Local_Raise_Not_OK);
+   pragma Inline (Local_Raise_Statements);
    pragma Inline (Loop_Actions);
    pragma Inline (Loop_Parameter_Specification);
    pragma Inline (Low_Bound);
@@ -10718,6 +10930,7 @@ package Sinfo is
    pragma Inline (Set_Check_Address_Alignment);
    pragma Inline (Set_Choice_Parameter);
    pragma Inline (Set_Choices);
+   pragma Inline (Set_Coextensions);
    pragma Inline (Set_Comes_From_Extended_Return_Statement);
    pragma Inline (Set_Compile_Time_Known_Aggregate);
    pragma Inline (Set_Component_Associations);
@@ -10789,8 +11002,9 @@ package Sinfo is
    pragma Inline (Set_Entry_Index_Specification);
    pragma Inline (Set_Etype);
    pragma Inline (Set_Exception_Choices);
-   pragma Inline (Set_Exception_Junk);
    pragma Inline (Set_Exception_Handlers);
+   pragma Inline (Set_Exception_Junk);
+   pragma Inline (Set_Exception_Label);
    pragma Inline (Set_Expansion_Delayed);
    pragma Inline (Set_Explicit_Actual_Parameter);
    pragma Inline (Set_Explicit_Generic_Actual_Parameter);
@@ -10834,6 +11048,7 @@ package Sinfo is
    pragma Inline (Set_Instance_Spec);
    pragma Inline (Set_Intval);
    pragma Inline (Set_Is_Asynchronous_Call_Block);
+   pragma Inline (Set_Is_Coextension);
    pragma Inline (Set_Is_Component_Left_Opnd);
    pragma Inline (Set_Is_Component_Right_Opnd);
    pragma Inline (Set_Is_Controlling_Actual);
@@ -10860,6 +11075,8 @@ package Sinfo is
    pragma Inline (Set_Limited_View_Installed);
    pragma Inline (Set_Limited_Present);
    pragma Inline (Set_Literals);
+   pragma Inline (Set_Local_Raise_Not_OK);
+   pragma Inline (Set_Local_Raise_Statements);
    pragma Inline (Set_Loop_Actions);
    pragma Inline (Set_Loop_Parameter_Specification);
    pragma Inline (Set_Low_Bound);
