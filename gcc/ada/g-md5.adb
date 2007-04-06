@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---                     Copyright (C) 2002-2005, AdaCore                     --
+--                     Copyright (C) 2002-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -187,7 +187,6 @@ package body GNAT.MD5 is
 
       procedure Convert (X : Unsigned_32) is
          Y : Unsigned_32 := X;
-
       begin
          for J in 1 .. 4 loop
             Result (Cur + 1) := Hex_Digit (Y and Unsigned_32'(16#0F#));
@@ -205,7 +204,9 @@ package body GNAT.MD5 is
 
       Last_Block (1 .. C.Last) := C.Buffer (1 .. C.Last);
 
-      if C.Last > 56 then
+      --  Too many magic literals below, should be defined as constants ???
+
+      if C.Last > 55 then
          Last_Block (C.Last + 1 .. 64) := Padding (1 .. 64 - C.Last);
          Transform (C1, Last_Block);
          Last_Block := (others => ASCII.NUL);
