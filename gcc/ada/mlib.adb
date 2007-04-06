@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2005, AdaCore                     --
+--                     Copyright (C) 1999-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,7 +53,7 @@ package body MLib is
       pragma Warnings (Off, Afiles);
 
    begin
-      if not Opt.Quiet_Output then
+      if Opt.Verbose_Mode and not Opt.Quiet_Output then
          Write_Line ("building a library...");
          Write_Str  ("   make ");
          Write_Line (Output_File);

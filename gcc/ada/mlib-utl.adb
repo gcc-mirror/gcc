@@ -124,6 +124,14 @@ package body MLib.Utl is
             end if;
 
             Write_Char (' ');
+
+            --  Only output the first object files when not in verbose mode
+
+            if (not Opt.Verbose_Mode) and then J = Ar_Options'Length + 3 then
+               Write_Str ("...");
+               exit;
+            end if;
+
             Write_Str  (Arguments (J).all);
             Line_Length := Line_Length + 1 + Arguments (J)'Length;
          end loop;
@@ -209,6 +217,10 @@ package body MLib.Utl is
 
       Driver    : String_Access;
 
+      type Object_Position is (First, Second, Last);
+
+      Position : Object_Position;
+
    begin
       if Driver_Name = No_Name then
          if Gcc_Exec = null then
@@ -246,12 +258,6 @@ package body MLib.Utl is
       A := A + Options'Length;
       Arguments (A - Options'Length + 1 .. A) := Options;
 
-      A := A + Objects'Length;
-      Arguments (A - Objects'Length + 1 .. A) := Objects;
-
-      A := A + Options_2'Length;
-      Arguments (A - Options_2'Length + 1 .. A) := Options_2;
-
       if not Opt.Quiet_Output then
          Write_Str (Driver.all);
 
@@ -260,8 +266,35 @@ package body MLib.Utl is
             Write_Str  (Arguments (J).all);
          end loop;
 
+         --  Do not display all the object files if not in verbose mode, only
+         --  the first one.
+
+         Position := First;
+         for J in Objects'Range loop
+            if Opt.Verbose_Mode or else Position = First then
+               Write_Char (' ');
+               Write_Str (Objects (J).all);
+               Position := Second;
+
+            elsif Position = Second then
+               Write_Str (" ...");
+               Position := Last;
+            end if;
+         end loop;
+
+         for J in Options_2'Range loop
+            Write_Char (' ');
+            Write_Str (Options_2 (J).all);
+         end loop;
+
          Write_Eol;
       end if;
+
+      A := A + Objects'Length;
+      Arguments (A - Objects'Length + 1 .. A) := Objects;
+
+      A := A + Options_2'Length;
+      Arguments (A - Options_2'Length + 1 .. A) := Options_2;
 
       OS_Lib.Spawn (Driver.all, Arguments (1 .. A), Success);
 

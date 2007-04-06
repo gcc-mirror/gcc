@@ -1393,30 +1393,35 @@ package body MLib.Prj is
             Write_Str  (" library for project ");
             Write_Line (Project_Name);
 
-            Write_Eol;
+            --  Only output the list of object files and ALI files in verbose
+            --  mode.
 
-            Write_Line ("object files:");
+            if Opt.Verbose_Mode then
+               Write_Eol;
 
-            for Index in Object_Files'Range loop
-               Write_Str  ("   ");
-               Write_Line (Object_Files (Index).all);
-            end loop;
+               Write_Line ("object files:");
 
-            Write_Eol;
-
-            if Ali_Files'Length = 0 then
-               Write_Line ("NO ALI files");
-
-            else
-               Write_Line ("ALI files:");
-
-               for Index in Ali_Files'Range loop
+               for Index in Object_Files'Range loop
                   Write_Str  ("   ");
-                  Write_Line (Ali_Files (Index).all);
+                  Write_Line (Object_Files (Index).all);
                end loop;
-            end if;
 
-            Write_Eol;
+               Write_Eol;
+
+               if Ali_Files'Length = 0 then
+                  Write_Line ("NO ALI files");
+
+               else
+                  Write_Line ("ALI files:");
+
+                  for Index in Ali_Files'Range loop
+                     Write_Str  ("   ");
+                     Write_Line (Ali_Files (Index).all);
+                  end loop;
+               end if;
+
+               Write_Eol;
+            end if;
          end if;
 
          --  We check that all object files are regular files
