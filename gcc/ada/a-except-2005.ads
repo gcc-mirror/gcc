@@ -139,6 +139,23 @@ package Ada.Exceptions is
      (Source : Exception_Occurrence)
       return   Exception_Occurrence_Access;
 
+   --  Ada 2005 (AI-438): The language revision introduces the
+   --  following subprograms and attribute definitions. We do not
+   --  provide them explicitly; instead, the corresponding stream
+   --  attributes are made available through a pragma Stream_Convert
+   --  in the private part of this package.
+
+   --  procedure Read_Exception_Occurrence
+   --    (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+   --     Item   : out Exception_Occurrence);
+
+   --  procedure Write_Exception_Occurrence
+   --    (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+   --     Item   : Exception_Occurrence);
+
+   --  for Exception_Occurrence'Read use Read_Exception_Occurrence;
+   --  for Exception_Occurrence'Write use Write_Exception_Occurrence;
+
 private
    package SSL renames System.Standard_Library;
    package SP renames System.Parameters;
@@ -191,6 +208,15 @@ private
    --  compiler generated code (using Rtsfind, which does not respect the
    --  private barrier, so we can place this function in the private part
    --  where the compiler can find it, but the spec is unchanged.)
+
+   procedure Local_Raise (Excep : Exception_Id);
+   pragma Export (Ada, Local_Raise);
+   --  This is a dummy routine, used only by the debugger for the purpose of
+   --  logging local raise statements that were transformed into a direct goto
+   --  to the handler code. The compiler in this case generates:
+   --
+   --    Local_Raise (exception_id);
+   --    goto Handler
 
    procedure Raise_Exception_Always (E : Exception_Id; Message : String := "");
    pragma No_Return (Raise_Exception_Always);

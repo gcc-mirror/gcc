@@ -74,6 +74,7 @@ package System.Rident is
       No_Entry_Calls_In_Elaboration_Code,      -- GNAT
       No_Entry_Queue,                          -- GNAT (Ravenscar)
       No_Exception_Handlers,                   -- GNAT
+      No_Exception_Propagation,                -- GNAT
       No_Exception_Registration,               -- GNAT
       No_Exceptions,                           -- (RM H.4(12))
       No_Finalization,                         -- GNAT

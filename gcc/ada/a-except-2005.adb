@@ -760,6 +760,16 @@ package body Ada.Exceptions is
    --  in case we do not want any exception tracing support. This is
    --  why this package is separated.
 
+   -----------------
+   -- Local_Raise --
+   -----------------
+
+   procedure Local_Raise (Excep : Exception_Id) is
+      pragma Warnings (Off, Excep);
+   begin
+      return;
+   end Local_Raise;
+
    -----------------------
    -- Stream Attributes --
    -----------------------
