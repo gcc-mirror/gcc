@@ -1,3 +1,8 @@
+2007-04-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/31395
+	* io/format.c (parse_format_list): Fix parsing.
+
 2007-04-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31304
