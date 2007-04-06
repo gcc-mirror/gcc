@@ -1,3 +1,24 @@
+2007-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (extend<mode>xf2): Rename from extendsfxf2
+	and extenddfxf2. Macroize expander using X87MODEF12 mode macro.
+	(*truncdfsf_mixed, *truncdfsf_i387, *truncdfsf2_i387_1):
+	Use output_387_reg_move().
+	(*truncxf<mode>2): Rename from *truncxfsf2 and truncxfdf2. Macroize
+	expander using X87MODEF12 mode macro.
+	(*truncxfsf2_mixed): Combine alternatives, ignore "r" alternative when
+	choosing register preferences.  Use output_387_reg_move().
+	(*truncxfdf2_mixed): Combine alternatives, use "r" alternative
+	instead of "x".  Use output_387_reg_move().
+	(*truncxf<mode>2_i387_noop): Rename from *truncxfsf2_i387_noop and
+	*truncxfdf2_i387_noop.  Macroize insn using X87MODEF12 mode macro.
+	(*truncxf<mode>2_i387): Rename from *truncxfsf2_i387 and
+	*truncxfdf2_i387.  Macroize insn using X87MODEF12 mode macro.
+	Use output_387_reg_move().
+	(*truncxf?f_mixed splitter): Macroize splitter using X87MODEF12
+	mode macro.
+	(*truncxf?f_i387 splitter): Ditto.
+
 2007-04-06  Daniel Berlin  <dberlin@dberlin.org>
 
 	* langhooks-def.h (LANG_HOOKS_INITIALIZER): Remove
