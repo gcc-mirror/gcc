@@ -191,6 +191,11 @@ package body Prj.Attr is
      "SVvcs_file_check#" &
      "SVvcs_log_check#" &
 
+   --  package Stack
+
+     "Pstack#" &
+     "LVswitches#" &
+
    --  package Language_Processing
 
      "Planguage_processing#" &

@@ -36,6 +36,134 @@ with Ada.Text_IO;             use Ada.Text_IO;
 
 package body VMS_Conv is
 
+   -------------------------
+   -- Internal Structures --
+   -------------------------
+
+   --  The switches and commands are defined by strings in the previous
+   --  section so that they are easy to modify, but internally, they are
+   --  kept in a more conveniently accessible form described in this
+   --  section.
+
+   --  Commands, command qualifers and options have a similar common format
+   --  so that searching for matching names can be done in a common manner.
+
+   type Item_Id is (Id_Command, Id_Switch, Id_Option);
+
+   type Translation_Type is
+     (
+      T_Direct,
+      --  A qualifier with no options.
+      --  Example: GNAT MAKE /VERBOSE
+
+      T_Directories,
+      --  A qualifier followed by a list of directories
+      --  Example: GNAT COMPILE /SEARCH=([], [.FOO], [.BAR])
+
+      T_Directory,
+      --  A qualifier followed by one directory
+      --  Example: GNAT LIBRARY /SET=[.VAXFLOATLIB]
+
+      T_File,
+      --  A qualifier followed by a filename
+      --  Example: GNAT LINK /EXECUTABLE=FOO.EXE
+
+      T_No_Space_File,
+      --  A qualifier followed by a filename
+      --  Example: GNAT MAKE /PROJECT_FILE=PRJ.GPR
+
+      T_Numeric,
+      --  A qualifier followed by a numeric value.
+      --  Example: GNAT CHOP /FILE_NAME_MAX_LENGTH=39
+
+      T_String,
+      --  A qualifier followed by a quoted string. Only used by
+      --  /IDENTIFICATION qualifier.
+      --  Example: GNAT LINK /IDENTIFICATION="3.14a1 version"
+
+      T_Options,
+      --  A qualifier followed by a list of options.
+      --  Example: GNAT COMPILE /REPRESENTATION_INFO=(ARRAYS,OBJECTS)
+
+      T_Commands,
+      --  A qualifier followed by a list. Only used for
+      --  MAKE /COMPILER_QUALIFIERS /BINDER_QUALIFIERS /LINKER_QUALIFIERS
+      --  (gnatmake -cargs -bargs -largs )
+      --  Example: GNAT MAKE ... /LINKER_QUALIFIERS /VERBOSE FOOBAR.OBJ
+
+      T_Other,
+      --  A qualifier passed directly to the linker. Only used
+      --  for LINK and SHARED if no other match is found.
+      --  Example: GNAT LINK FOO.ALI /SYSSHR
+
+      T_Alphanumplus
+      --  A qualifier followed by a legal linker symbol prefix. Only used
+      --  for BIND /BUILD_LIBRARY (gnatbind -Lxyz).
+      --  Example: GNAT BIND /BUILD_LIBRARY=foobar
+      );
+
+   type Item (Id : Item_Id);
+   type Item_Ptr is access all Item;
+
+   type Item (Id : Item_Id) is record
+      Name : String_Ptr;
+      --  Name of the command, switch (with slash) or option
+
+      Next : Item_Ptr;
+      --  Pointer to next item on list, always has the same Id value
+
+      Command : Command_Type := Undefined;
+
+      Unix_String : String_Ptr := null;
+      --  Corresponding Unix string. For a command, this is the unix command
+      --  name and possible default switches. For a switch or option it is
+      --  the unix switch string.
+
+      case Id is
+
+         when Id_Command =>
+
+            Switches : Item_Ptr;
+            --  Pointer to list of switch items for the command, linked
+            --  through the Next fields with null terminating the list.
+
+            Usage : String_Ptr;
+            --  Usage information, used only for errors and the default
+            --  list of commands output.
+
+            Params : Parameter_Ref;
+            --  Array of parameters
+
+            Defext : String (1 .. 3);
+            --  Default extension. If non-blank, then this extension is
+            --  supplied by default as the extension for any file parameter
+            --  which does not have an extension already.
+
+         when Id_Switch =>
+
+            Translation : Translation_Type;
+            --  Type of switch translation. For all cases, except Options,
+            --  this is the only field needed, since the Unix translation
+            --  is found in Unix_String.
+
+            Options : Item_Ptr;
+            --  For the Options case, this field is set to point to a list
+            --  of options item (for this case Unix_String is null in the
+            --  main switch item). The end of the list is marked by null.
+
+         when Id_Option =>
+
+            null;
+            --  No special fields needed, since Name and Unix_String are
+            --  sufficient to completely described an option.
+
+      end case;
+   end record;
+
+   subtype Command_Item is Item (Id_Command);
+   subtype Switch_Item  is Item (Id_Switch);
+   subtype Option_Item  is Item (Id_Option);
+
    Keep_Temps_Option : constant Item_Ptr :=
                          new Item'
                            (Id          => Id_Option,
@@ -80,6 +208,19 @@ package body VMS_Conv is
       Table_Initial        => 4096,
       Table_Increment      => 100,
       Table_Name           => "Buffer");
+   --  Table to store the command to be used
+
+   package Cargs_Buffer is new Table.Table
+     (Table_Component_Type => Character,
+      Table_Index_Type     => Integer,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 4096,
+      Table_Increment      => 100,
+      Table_Name           => "Cargs_Buffer");
+   --  Table to store the compiler switches for GNAT COMPILE
+
+   Cargs : Boolean := False;
+   --  When True, commands should go to Cargs_Buffer instead of Buffer table
 
    function Init_Object_Dirs return Argument_List;
    --  Get the list of the object directories
@@ -144,6 +285,10 @@ package body VMS_Conv is
    procedure Process_Argument (The_Command : in out Command_Type);
    --  Process one argument from the command line, or one line from
    --  from a command line file. For the first call, set The_Command.
+
+   procedure Process_Buffer (S : String);
+   --  Process the characters in the Buffer table or the Cargs_Buffer table
+   --  to convert these into arguments.
 
    procedure Validate_Command_Or_Option (N : VMS_Data.String_Ptr);
    --  Check that N is a valid command or option name, i.e. that it is of the
@@ -360,16 +505,6 @@ package body VMS_Conv is
             Params   => new Parameter_Array'(1 => Unlimited_Files),
             Defext   => "   "),
 
-         Setup =>
-           (Cname    => new S'("SETUP"),
-            Usage    => new S'("GNAT SETUP /qualifiers"),
-            VMS_Only => False,
-            Unixcmd  => new S'(""),
-            Unixsws  => null,
-            Switches => Setup_Switches'Access,
-            Params   => new Parameter_Array'(1 => Unlimited_Files),
-            Defext   => "   "),
-
          Shared =>
            (Cname    => new S'("SHARED"),
             Usage    => new S'("GNAT SHARED [obj_&_lib_&_exe_&_opt"
@@ -381,6 +516,16 @@ package body VMS_Conv is
             Switches => Shared_Switches'Access,
             Params   => new Parameter_Array'(1 => Unlimited_Files),
             Defext   => "   "),
+
+         Stack =>
+           (Cname    => new S'("STACK"),
+            Usage    => new S'("GNAT STACK /qualifiers ci_files"),
+            VMS_Only => False,
+            Unixcmd  => new S'("gnatstack"),
+            Unixsws  => null,
+            Switches => Stack_Switches'Access,
+            Params   => new Parameter_Array'(1 => Unlimited_Files),
+            Defext   => "ci" & ASCII.NUL),
 
          Stub =>
            (Cname    => new S'("STUB"),
@@ -673,8 +818,11 @@ package body VMS_Conv is
 
    procedure Place (C : Character) is
    begin
-      Buffer.Increment_Last;
-      Buffer.Table (Buffer.Last) := C;
+      if Cargs then
+         Cargs_Buffer.Append (C);
+      else
+         Buffer.Append (C);
+      end if;
    end Place;
 
    procedure Place (S : String) is
@@ -1052,6 +1200,8 @@ package body VMS_Conv is
       --  Start of processing for Process_Argument
 
    begin
+      Cargs := False;
+
       --  If an argument file is open, read the next non empty line
 
       if Is_Open (Arg_File) then
@@ -1554,6 +1704,8 @@ package body VMS_Conv is
             else
                Output_File_Expected := False;
 
+               Cargs := Command.Name.all = "COMPILE";
+
                --  This code is too heavily nested, should be
                --  separated out as separate subprogram ???
 
@@ -1966,6 +2118,73 @@ package body VMS_Conv is
       end if;
    end Process_Argument;
 
+   --------------------
+   -- Process_Buffer --
+   --------------------
+
+   procedure Process_Buffer (S : String) is
+      P1, P2     : Natural;
+      Inside_Nul : Boolean := False;
+      Arg        : String (1 .. 1024);
+      Arg_Ctr    : Natural;
+
+   begin
+      P1 := 1;
+      while P1 <= S'Last and then S (P1) = ' ' loop
+         P1 := P1 + 1;
+      end loop;
+
+      Arg_Ctr := 1;
+      Arg (Arg_Ctr) := S (P1);
+
+      while P1 <= S'Last loop
+         if S (P1) = ASCII.NUL then
+            if Inside_Nul then
+               Inside_Nul := False;
+            else
+               Inside_Nul := True;
+            end if;
+         end if;
+
+         if S (P1) = ' ' and then not Inside_Nul then
+            P1 := P1 + 1;
+            Arg_Ctr := Arg_Ctr + 1;
+            Arg (Arg_Ctr) := S (P1);
+
+         else
+            Last_Switches.Increment_Last;
+            P2 := P1;
+
+            while P2 < S'Last
+              and then (S (P2 + 1) /= ' ' or else
+                        Inside_Nul)
+            loop
+               P2 := P2 + 1;
+               Arg_Ctr := Arg_Ctr + 1;
+               Arg (Arg_Ctr) := S (P2);
+               if S (P2) = ASCII.NUL then
+                  Arg_Ctr := Arg_Ctr - 1;
+
+                  if Inside_Nul then
+                     Inside_Nul := False;
+                  else
+                     Inside_Nul := True;
+                  end if;
+               end if;
+            end loop;
+
+            Last_Switches.Table (Last_Switches.Last) :=
+              new String'(String (Arg (1 .. Arg_Ctr)));
+            P1 := P2 + 2;
+
+            exit when P1 > S'Last;
+
+            Arg_Ctr := 1;
+            Arg (Arg_Ctr) := S (P1);
+         end if;
+      end loop;
+   end Process_Buffer;
+
    --------------------------------
    -- Validate_Command_Or_Option --
    --------------------------------
@@ -2012,8 +2231,9 @@ package body VMS_Conv is
    --------------------
 
    procedure VMS_Conversion (The_Command : out Command_Type) is
-      Result : Command_Type := Undefined;
-      Result_Set : Boolean := False;
+      Result     : Command_Type := Undefined;
+      Result_Set : Boolean      := False;
+
    begin
       Buffer.Init;
 
@@ -2040,10 +2260,9 @@ package body VMS_Conv is
          raise Normal_Exit;
       end if;
 
-      Arg_Num := 1;
-
       --  Loop through arguments
 
+      Arg_Num := 1;
       while Arg_Num <= Argument_Count loop
          Process_Argument (Result);
 
@@ -2079,66 +2298,13 @@ package body VMS_Conv is
          --  Prepare arguments for a call to spawn, filtering out
          --  embedded nulls place there to delineate strings.
 
-         declare
-            P1, P2     : Natural;
-            Inside_Nul : Boolean := False;
-            Arg        : String (1 .. 1024);
-            Arg_Ctr    : Natural;
+         Process_Buffer (String (Buffer.Table (1 .. Buffer.Last)));
 
-         begin
-            P1 := 1;
-
-            while P1 <= Buffer.Last and then Buffer.Table (P1) = ' ' loop
-               P1 := P1 + 1;
-            end loop;
-
-            Arg_Ctr := 1;
-            Arg (Arg_Ctr) := Buffer.Table (P1);
-
-            while P1 <= Buffer.Last loop
-
-               if Buffer.Table (P1) = ASCII.NUL then
-                  if Inside_Nul then
-                     Inside_Nul := False;
-                  else
-                     Inside_Nul := True;
-                  end if;
-               end if;
-
-               if Buffer.Table (P1) = ' ' and then not Inside_Nul then
-                  P1 := P1 + 1;
-                  Arg_Ctr := Arg_Ctr + 1;
-                  Arg (Arg_Ctr) := Buffer.Table (P1);
-
-               else
-                  Last_Switches.Increment_Last;
-                  P2 := P1;
-
-                  while P2 < Buffer.Last
-                    and then (Buffer.Table (P2 + 1) /= ' ' or else
-                              Inside_Nul)
-                  loop
-                     P2 := P2 + 1;
-                     Arg_Ctr := Arg_Ctr + 1;
-                     Arg (Arg_Ctr) := Buffer.Table (P2);
-                     if Buffer.Table (P2) = ASCII.NUL then
-                        Arg_Ctr := Arg_Ctr - 1;
-                        if Inside_Nul then
-                           Inside_Nul := False;
-                        else
-                           Inside_Nul := True;
-                        end if;
-                     end if;
-                  end loop;
-
-                  Last_Switches.Table (Last_Switches.Last) :=
-                    new String'(String (Arg (1 .. Arg_Ctr)));
-                  P1 := P2 + 2;
-                  Arg_Ctr := 1;
-                  Arg (Arg_Ctr) := Buffer.Table (P1);
-               end if;
-            end loop;
-         end;
+         if Cargs_Buffer.Last > 1 then
+            Last_Switches.Append (new String'("-cargs"));
+            Process_Buffer
+              (String (Cargs_Buffer.Table (1 .. Cargs_Buffer.Last)));
+         end if;
       end if;
    end VMS_Conversion;
 
