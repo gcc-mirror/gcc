@@ -263,7 +263,8 @@ package body System.Task_Primitives.Operations is
    -- Initialize_Lock --
    ---------------------
 
-   procedure Initialize_Lock (Prio : System.Any_Priority; L : access Lock) is
+   procedure Initialize_Lock
+     (Prio : System.Any_Priority; L : not null access Lock) is
    begin
       L.Mutex := semMCreate (SEM_Q_PRIORITY + SEM_INVERSION_SAFE);
       L.Prio_Ceiling := int (Prio);
@@ -271,7 +272,9 @@ package body System.Task_Primitives.Operations is
       pragma Assert (L.Mutex /= 0);
    end Initialize_Lock;
 
-   procedure Initialize_Lock (L : access RTS_Lock; Level : Lock_Level) is
+   procedure Initialize_Lock
+     (L : not null access RTS_Lock; Level : Lock_Level)
+   is
       pragma Unreferenced (Level);
 
    begin
@@ -285,14 +288,14 @@ package body System.Task_Primitives.Operations is
    -- Finalize_Lock --
    -------------------
 
-   procedure Finalize_Lock (L : access Lock) is
+   procedure Finalize_Lock (L : not null access Lock) is
       Result : int;
    begin
       Result := semDelete (L.Mutex);
       pragma Assert (Result = 0);
    end Finalize_Lock;
 
-   procedure Finalize_Lock (L : access RTS_Lock) is
+   procedure Finalize_Lock (L : not null access RTS_Lock) is
       Result : int;
    begin
       Result := semDelete (L.Mutex);
@@ -303,7 +306,9 @@ package body System.Task_Primitives.Operations is
    -- Write_Lock --
    ----------------
 
-   procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
+   procedure Write_Lock
+     (L : not null access Lock; Ceiling_Violation : out Boolean)
+   is
       Result : int;
    begin
       if L.Protocol = Prio_Protect
@@ -320,7 +325,7 @@ package body System.Task_Primitives.Operations is
    end Write_Lock;
 
    procedure Write_Lock
-     (L           : access RTS_Lock;
+     (L           : not null access RTS_Lock;
       Global_Lock : Boolean := False)
    is
       Result : int;
@@ -344,7 +349,8 @@ package body System.Task_Primitives.Operations is
    -- Read_Lock --
    ---------------
 
-   procedure Read_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
+   procedure Read_Lock
+     (L : not null access Lock; Ceiling_Violation : out Boolean) is
    begin
       Write_Lock (L, Ceiling_Violation);
    end Read_Lock;
@@ -353,14 +359,16 @@ package body System.Task_Primitives.Operations is
    -- Unlock --
    ------------
 
-   procedure Unlock (L : access Lock) is
+   procedure Unlock (L : not null access Lock) is
       Result : int;
    begin
       Result := semGive (L.Mutex);
       pragma Assert (Result = 0);
    end Unlock;
 
-   procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
+   procedure Unlock
+     (L : not null access RTS_Lock; Global_Lock : Boolean := False)
+   is
       Result : int;
    begin
       if not Single_Lock or else Global_Lock then
@@ -903,12 +911,13 @@ package body System.Task_Primitives.Operations is
          Name_Address : System.Address;
          --  Task name we are going to hand down to VxWorks
 
-         Task_Options : aliased int;
-         --  VxWorks options we are going to set for the created task,
-         --  a combination of VX_optname_TASK attributes.
-
-         function To_int  is new Unchecked_Conversion (unsigned_int, int);
-         function To_uint is new Unchecked_Conversion (int, unsigned_int);
+         function Get_Task_Options return int;
+         pragma Import (C, Get_Task_Options, "__gnat_get_task_options");
+         --  Function that returns the options to be set for the task that we
+         --  are creating. We fetch the options assigned to the current task,
+         --  so offering some user level control over the options for a task
+         --  hierarchy, and force VX_FP_TASK because it is almost always
+         --  required.
 
       begin
          --  If there is no Ada task name handy, let VxWorks choose one.
@@ -923,24 +932,12 @@ package body System.Task_Primitives.Operations is
             Name_Address := Name'Address;
          end if;
 
-         --  For task options, we fetch the options assigned to the current
-         --  task, so offering some user level control over the options for a
-         --  task hierarchy, and force VX_FP_TASK because it is almost always
-         --  required.
-
-         if taskOptionsGet (taskIdSelf, Task_Options'Access) /= OK then
-            Task_Options := 0;
-         end if;
-
-         Task_Options :=
-           To_int (To_uint (Task_Options) or To_uint (VX_FP_TASK));
-
          --  Now spawn the VxWorks task for real
 
          T.Common.LL.Thread := taskSpawn
            (Name_Address,
             To_VxWorks_Priority (int (Priority)),
-            Task_Options,
+            Get_Task_Options,
             Adjusted_Stack_Size,
             Wrapper,
             To_Address (T));

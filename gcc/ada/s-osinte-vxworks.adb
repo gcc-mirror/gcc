@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---             Copyright (C) 1997-2006 Free Software Foundation             --
+--         Copyright (C) 1997-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the VxWorks version.
+--  This is the VxWorks version
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.
@@ -45,7 +45,7 @@ package body System.OS_Interface is
    use type Interfaces.C.int;
 
    Low_Priority : constant := 255;
-   --  VxWorks native (default) lowest scheduling priority.
+   --  VxWorks native (default) lowest scheduling priority
 
    ------------
    -- getpid --
@@ -123,12 +123,13 @@ package body System.OS_Interface is
    function To_Timespec (D : Duration) return timespec is
       S : time_t;
       F : Duration;
+
    begin
       S := time_t (Long_Long_Integer (D));
       F := D - Duration (S);
 
-      --  If F has negative value due to a round-up, adjust for positive F
-      --  value.
+      --  If F is negative due to a round-up, adjust for positive F value
+
       if F < 0.0 then
          S := S - 1;
          F := F + 1.0;
@@ -151,16 +152,15 @@ package body System.OS_Interface is
    -- To_Clock_Ticks --
    --------------------
 
-   --  ??? - For now, we'll always get the system clock rate
-   --  since it is allowed to be changed during run-time in
-   --  VxWorks. A better method would be to provide an operation
-   --  to set it that so we can always know its value.
-   --
-   --  Another thing we should probably allow for is a resultant
-   --  tick count greater than int'Last. This should probably
-   --  be a procedure with two output parameters, one in the
-   --  range 0 .. int'Last, and another representing the overflow
-   --  count.
+   --  ??? - For now, we'll always get the system clock rate since it is
+   --  allowed to be changed during run-time in VxWorks. A better method would
+   --  be to provide an operation to set it that so we can always know its
+   --  value.
+
+   --  Another thing we should probably allow for is a resultant tick count
+   --  greater than int'Last. This should probably be a procedure with two
+   --  output parameters, one in the range 0 .. int'Last, and another
+   --  representing the overflow count.
 
    function To_Clock_Ticks (D : Duration) return int is
       Ticks          : Long_Long_Integer;
@@ -194,14 +194,5 @@ package body System.OS_Interface is
 
       return int (Ticks);
    end To_Clock_Ticks;
-
-   ----------------
-   -- VX_FP_TASK --
-   ----------------
-
-   function VX_FP_TASK return int is
-   begin
-      return 16#0008#;
-   end VX_FP_TASK;
 
 end System.OS_Interface;
