@@ -53,12 +53,6 @@ package body GNAT.Debug_Pools is
    --  and at the same time makes it easy to find the location of the extra
    --  header allocated for each chunk.
 
-   Initial_Memory_Size : constant Storage_Offset := 2 ** 26; --  64 Mb
-   --  Initial size of memory that the debug pool can handle. This is used to
-   --  compute the size of the htable used to monitor the blocks, but this is
-   --  dynamic and will grow as needed. Having a bigger size here means a
-   --  longer setup time, but less time spent later on to grow the array.
-
    Max_Ignored_Levels : constant Natural := 10;
    --  Maximum number of levels that will be ignored in backtraces. This is so
    --  that we still have enough significant levels in the tracebacks returned
@@ -211,64 +205,6 @@ package body GNAT.Debug_Pools is
    --  multiple of default alignment + worst-case padding.
 
    -----------------------
-   -- Allocations table --
-   -----------------------
-
-   --  This table is indexed on addresses modulo Default_Alignment, and for
-   --  each index it indicates whether that memory block is valid. Its behavior
-   --  is similar to GNAT.Table, except that we need to pack the table to save
-   --  space, so we cannot reuse GNAT.Table as is.
-
-   --  This table is the reason why all alignments have to be forced to common
-   --  value (Default_Alignment), so that this table can be kept to a
-   --  reasonnable size.
-
-   type Byte is mod 2 ** System.Storage_Unit;
-
-   Big_Table_Size : constant Storage_Offset :=
-                      (Storage_Offset'Last - 1) / Default_Alignment;
-   type Big_Table is array (0 .. Big_Table_Size) of Byte;
-   --  A simple, flat-array type used to access memory bytes (see the comment
-   --  for Valid_Blocks below).
-   --
-   --  It would be cleaner to represent this as a packed array of Boolean.
-   --  However, we cannot specify pragma Pack for such an array, since the
-   --  total size on a 64 bit machine would be too big (> Integer'Last).
-   --
-   --  Given an address, we know if it is under control of the debug pool if
-   --  the byte at index:
-   --       ((Address - Edata'Address) / Default_Alignment)
-   --        / Storage_unit
-   --  has the bit
-   --       ((Address - Edata'Address) / Default_Alignment)
-   --        mod Storage_Unit
-   --  set to 1.
-   --
-   --  See the subprograms Is_Valid and Set_Valid for proper manipulation of
-   --  this array.
-
-   type Table_Ptr is access Big_Table;
-   function To_Pointer is new Ada.Unchecked_Conversion
-     (System.Address, Table_Ptr);
-
-   Valid_Blocks      : Table_Ptr      := null;
-   Valid_Blocks_Size : Storage_Offset := 0;
-   --  These two variables represents a mapping of the currently allocated
-   --  memory. Every time the pool works on an address, we first check that the
-   --  index Address / Default_Alignment is True. If not, this means that this
-   --  address is not under control of the debug pool and thus this is probably
-   --  an invalid memory access (it could also be a general access type).
-   --
-   --  Note that in fact we never allocate the full size of Big_Table, only a
-   --  slice big enough to manage the currently allocated memory.
-
-   Edata : System.Address := System.Null_Address;
-   --  Address in memory that matches the index 0 in Valid_Blocks. It is named
-   --  after the symbol _edata, which, on most systems, indicate the lowest
-   --  possible address returned by malloc. Unfortunately, this symbol doesn't
-   --  exist on windows, so we cannot use it instead of this variable.
-
-   -----------------------
    -- Local subprograms --
    -----------------------
 
@@ -297,16 +233,19 @@ package body GNAT.Debug_Pools is
    --  addresses up to the first one in the range
    --  Ignored_Frame_Start .. Ignored_Frame_End
 
-   function Is_Valid (Storage : System.Address) return Boolean;
-   pragma Inline (Is_Valid);
-   --  Return True if Storage is an address that the debug pool has under its
-   --  control.
+   package Validity is
+      function Is_Valid (Storage : System.Address) return Boolean;
+      pragma Inline (Is_Valid);
+      --  Return True if Storage is an address that the debug pool has under
+      --  its control.
 
-   procedure Set_Valid (Storage : System.Address; Value : Boolean);
-   pragma Inline (Set_Valid);
-   --  Mark the address Storage as being under control of the memory pool (if
-   --  Value is True), or not (if Value is False). This procedure will
-   --  reallocate the table Valid_Blocks as needed.
+      procedure Set_Valid (Storage : System.Address; Value : Boolean);
+      pragma Inline (Set_Valid);
+      --  Mark the address Storage as being under control of the memory pool
+      --  (if Value is True), or not (if Value is False).
+   end Validity;
+
+   use Validity;
 
    procedure Set_Dead_Beef
      (Storage_Address          : System.Address;
@@ -551,143 +490,129 @@ package body GNAT.Debug_Pools is
    end Find_Or_Create_Traceback;
 
    --------------
-   -- Is_Valid --
+   -- Validity --
    --------------
 
-   function Is_Valid (Storage : System.Address) return Boolean is
+   package body Validity is
 
-      --  We use the following constant declaration, instead of
-      --     Offset : constant Storage_Offset :=
-      --                (Storage - Edata) / Default_Alignment;
-      --  See comments in Set_Valid for details.
+      --  The validity bits of the allocated blocks are kept in a has table.
+      --  Each component of the hash table contains the validity bits for a
+      --  16 Mbyte memory chunk.
 
-      Offset : constant Storage_Offset :=
-                 Storage_Offset ((To_Integer (Storage) - To_Integer (Edata)) /
-                                   Default_Alignment);
+      --  The reason the validity bits are kept for chunks of memory rather
+      --  than in a big array is that on some 64 bit platforms, it may happen
+      --  that two chunk of allocated data are very far from each other.
 
-      Bit : constant Byte := 2 ** Natural (Offset mod System.Storage_Unit);
+      Memory_Chunk_Size : constant Integer_Address := 2 ** 24; --  16 MB
+      Validity_Divisor  : constant := Default_Alignment * System.Storage_Unit;
 
-   begin
-      return (Storage mod Default_Alignment) = 0
-        and then Offset >= 0
-        and then Offset < Valid_Blocks_Size * Storage_Unit
-        and then (Valid_Blocks (Offset / Storage_Unit) and Bit) /= 0;
-   end Is_Valid;
+      Max_Validity_Byte_Index : constant :=
+                                 Memory_Chunk_Size / Validity_Divisor;
 
-   ---------------
-   -- Set_Valid --
-   ---------------
+      subtype Validity_Byte_Index is Integer_Address
+                                      range 0 .. Max_Validity_Byte_Index - 1;
 
-   procedure Set_Valid (Storage : System.Address; Value : Boolean) is
-      Offset : Storage_Offset;
-      Bit    : Byte;
-      Bytes  : Storage_Offset;
-      Tmp    : constant Table_Ptr := Valid_Blocks;
+      type Byte is mod 2 ** System.Storage_Unit;
 
-      Edata_Align : constant Storage_Offset :=
-                      Default_Alignment * Storage_Unit;
+      type Validity_Bits is array (Validity_Byte_Index) of Byte;
+
+      type Validity_Bits_Ref is access all Validity_Bits;
+      No_Validity_Bits : constant Validity_Bits_Ref := null;
+
+      Max_Header_Num : constant := 1023;
+
+      type Header_Num is range 0 .. Max_Header_Num - 1;
+
+      function Hash (F : Integer_Address) return Header_Num;
+
+      package Validy_Htable is new GNAT.HTable.Simple_HTable
+        (Header_Num => Header_Num,
+         Element    => Validity_Bits_Ref,
+         No_Element => No_Validity_Bits,
+         Key        => Integer_Address,
+         Hash       => Hash,
+         Equal      => "=");
+      --  Table to keep the validity bit blocks for the allocated data
+
+      function To_Pointer is new Ada.Unchecked_Conversion
+        (System.Address, Validity_Bits_Ref);
 
       procedure Memset (A : Address; C : Integer; N : size_t);
       pragma Import (C, Memset, "memset");
 
-      procedure Memmove (Dest, Src : Address; N : size_t);
-      pragma Import (C, Memmove, "memmove");
+      ----------
+      -- Hash --
+      ----------
 
-   begin
-      --  Allocate, or reallocate, the valid blocks table as needed. We start
-      --  with a size big enough to handle Initial_Memory_Size bytes of memory,
-      --  to avoid too many reallocations. The table will typically be around
-      --  16Mb in that case, which is still small enough.
+      function Hash (F : Integer_Address) return Header_Num is
+      begin
+         return Header_Num (F mod Max_Header_Num);
+      end Hash;
 
-      if Valid_Blocks_Size = 0 then
-         Valid_Blocks_Size := (Initial_Memory_Size / Default_Alignment)
-                                                      / Storage_Unit;
-         Valid_Blocks := To_Pointer (Alloc (size_t (Valid_Blocks_Size)));
-         Edata := Storage;
+      --------------
+      -- Is_Valid --
+      --------------
 
-         --  Reset the memory using memset, which is much faster than the
-         --  standard Ada code with "when others"
+      function Is_Valid (Storage : System.Address) return Boolean is
+         Int_Storage  : constant Integer_Address := To_Integer (Storage);
+         Block_Number : constant Integer_Address :=
+                          Int_Storage /  Memory_Chunk_Size;
+         Ptr          : constant Validity_Bits_Ref :=
+                          Validy_Htable.Get (Block_Number);
+         Offset       : constant Integer_Address :=
+                          (Int_Storage - (Block_Number * Memory_Chunk_Size)) /
+                             Default_Alignment;
+         Bit          : constant Byte :=
+                          2 ** Natural (Offset mod System.Storage_Unit);
+      begin
+         if Ptr = No_Validity_Bits then
+            return False;
+         else
+            return (Ptr (Offset / System.Storage_Unit) and Bit) /= 0;
+         end if;
+      end Is_Valid;
 
-         Memset (Valid_Blocks.all'Address, 0, size_t (Valid_Blocks_Size));
-      end if;
+      ---------------
+      -- Set_Valid --
+      ---------------
 
-      --  First case : the new address is outside of the current scope of
-      --  Valid_Blocks, before the current start address. We need to reallocate
-      --  the table accordingly. This should be a rare occurence, since in most
-      --  cases, the first allocation will also have the lowest address. But
-      --  there is no garantee...
+      procedure Set_Valid (Storage : System.Address; Value : Boolean) is
+         Int_Storage  : constant Integer_Address := To_Integer (Storage);
+         Block_Number : constant Integer_Address :=
+                          Int_Storage /  Memory_Chunk_Size;
+         Ptr          : Validity_Bits_Ref := Validy_Htable.Get (Block_Number);
+         Offset       : constant Integer_Address :=
+                          (Int_Storage - (Block_Number * Memory_Chunk_Size)) /
+                             Default_Alignment;
+         Bit          : constant Byte :=
+                          2 ** Natural (Offset mod System.Storage_Unit);
 
-      if Storage < Edata then
+      begin
+         if Ptr = No_Validity_Bits then
 
-         --  The difference between the new Edata and the current one must be
-         --  a multiple of Default_Alignment * Storage_Unit, so that the bit
-         --  representing an address in Valid_Blocks are kept the same.
+            --  First time in this memory area: allocate a new block and put
+            --  it in the table.
 
-         Offset := ((Edata - Storage) / Edata_Align + 1) * Edata_Align;
-         Offset := Offset / Default_Alignment;
-         Bytes  := Offset / Storage_Unit;
-         Valid_Blocks :=
-           To_Pointer (Alloc (Size => size_t (Valid_Blocks_Size + Bytes)));
-         Memmove (Dest => Valid_Blocks.all'Address + Bytes,
-                  Src  => Tmp.all'Address,
-                  N    => size_t (Valid_Blocks_Size));
-         Memset (A => Valid_Blocks.all'Address,
-                 C => 0,
-                 N => size_t (Bytes));
-         Free (Tmp.all'Address);
-         Valid_Blocks_Size := Valid_Blocks_Size + Bytes;
+            if Value then
+               Ptr := To_Pointer (Alloc (size_t (Max_Validity_Byte_Index)));
+               Validy_Htable.Set (Block_Number, Ptr);
+               Memset (Ptr.all'Address, 0, size_t (Max_Validity_Byte_Index));
+               Ptr (Offset / System.Storage_Unit) := Bit;
+            end if;
 
-         --  Take into the account the new start address
+         else
+            if Value then
+               Ptr (Offset / System.Storage_Unit) :=
+                 Ptr (Offset / System.Storage_Unit) or Bit;
 
-         Edata := Storage - Edata_Align + (Edata - Storage) mod Edata_Align;
-      end if;
+            else
+               Ptr (Offset / System.Storage_Unit) :=
+                 Ptr (Offset / System.Storage_Unit) and (not Bit);
+            end if;
+         end if;
+      end Set_Valid;
 
-      --  Second case : the new address is outside of the current scope of
-      --  Valid_Blocks, so we have to grow the table as appropriate.
-
-      --  Note: it might seem more natural for the following statement to
-      --  be written:
-
-      --      Offset := (Storage - Edata) / Default_Alignment;
-
-      --  but that won't work since Storage_Offset is signed, and it is
-      --  possible to subtract a small address from a large address and
-      --  get a negative value. This may seem strange, but it is quite
-      --  specifically allowed in the RM, and is what most implementations
-      --  including GNAT actually do. Hence the conversion to Integer_Address
-      --  which is a full range modular type, not subject to this glitch.
-
-      Offset := Storage_Offset ((To_Integer (Storage) - To_Integer (Edata)) /
-                                              Default_Alignment);
-
-      if Offset >= Valid_Blocks_Size * System.Storage_Unit then
-         Bytes := Valid_Blocks_Size;
-         loop
-            Bytes := 2 * Bytes;
-            exit when Offset <= Bytes * System.Storage_Unit;
-         end loop;
-
-         Valid_Blocks := To_Pointer
-           (Realloc (Ptr  => Valid_Blocks.all'Address,
-                     Size => size_t (Bytes)));
-         Memset
-           (Valid_Blocks.all'Address + Valid_Blocks_Size,
-            0,
-            size_t (Bytes - Valid_Blocks_Size));
-         Valid_Blocks_Size := Bytes;
-      end if;
-
-      Bit    := 2 ** Natural (Offset mod System.Storage_Unit);
-      Bytes  := Offset / Storage_Unit;
-
-      --  Then set the value as valid
-
-      if Value then
-         Valid_Blocks (Bytes) := Valid_Blocks (Bytes) or Bit;
-      else
-         Valid_Blocks (Bytes) := Valid_Blocks (Bytes) and (not Bit);
-      end if;
-   end Set_Valid;
+   end Validity;
 
    --------------
    -- Allocate --
@@ -706,11 +631,10 @@ package body GNAT.Debug_Pools is
         (1 .. Size_In_Storage_Elements + Minimum_Allocation);
 
       type Ptr is access Local_Storage_Array;
-      --  On some systems, we might want to physically protect pages
-      --  against writing when they have been freed (of course, this is
-      --  expensive in terms of wasted memory). To do that, all we should
-      --  have to do it to set the size of this array to the page size.
-      --  See mprotect().
+      --  On some systems, we might want to physically protect pages against
+      --  writing when they have been freed (of course, this is expensive in
+      --  terms of wasted memory). To do that, all we should have to do it to
+      --  set the size of this array to the page size. See mprotect().
 
       P : Ptr;
 
@@ -723,10 +647,10 @@ package body GNAT.Debug_Pools is
 
       --  If necessary, start physically releasing memory. The reason this is
       --  done here, although Pool.Logically_Deallocated has not changed above,
-      --  is so that we do this only after a series of deallocations (e.g a
-      --  loop that deallocates a big array). If we were doing that in
-      --  Deallocate, we might be physically freeing memory several times
-      --  during the loop, which is expensive.
+      --  is so that we do this only after a series of deallocations (e.g loop
+      --  that deallocates a big array). If we were doing that in Deallocate,
+      --  we might be physically freeing memory several times during the loop,
+      --  which is expensive.
 
       if Pool.Logically_Deallocated >
         Byte_Count (Pool.Maximum_Logically_Freed_Memory)
@@ -764,8 +688,8 @@ package body GNAT.Debug_Pools is
          Allocate_Label'Address, Code_Address_For_Allocate_End);
 
       pragma Warnings (Off);
-      --  Turn warning on alignment for convert call off. We know that in
-      --  fact this conversion is safe since P itself is always aligned on
+      --  Turn warning on alignment for convert call off. We know that in fact
+      --  this conversion is safe since P itself is always aligned on
       --  Default_Alignment.
 
       Header_Of (Storage_Address).all :=
@@ -822,9 +746,9 @@ package body GNAT.Debug_Pools is
    -- Allocate_End --
    ------------------
 
-   --  DO NOT MOVE, this must be right after Allocate. This is similar to
-   --  what is done in a-except, so that we can hide the traceback frames
-   --  internal to this package
+   --  DO NOT MOVE, this must be right after Allocate. This is similar to what
+   --  is done in a-except, so that we can hide the traceback frames internal
+   --  to this package
 
    procedure Allocate_End is
    begin
@@ -946,7 +870,7 @@ package body GNAT.Debug_Pools is
             Header := Header_Of (Tmp);
 
             --  If we know, or at least assume, the block is no longer
-            --  reference anywhere, we can free it physically.
+            --  referenced anywhere, we can free it physically.
 
             if Ignore_Marks or else not Marked (Tmp) then
 
@@ -1043,6 +967,7 @@ package body GNAT.Debug_Pools is
 
                   --  Do not even attempt to mark blocks in use. That would
                   --  screw up the whole application, of course.
+
                   if Header.Block_Size < 0 then
                      Mark (Header, Pointed, In_Use => True);
                   end if;
@@ -1085,7 +1010,11 @@ package body GNAT.Debug_Pools is
       Lock_Task.all;
 
       if Pool.Advanced_Scanning then
-         Reset_Marks; --  Reset the mark for each freed block
+
+         --  Reset the mark for each freed block
+
+         Reset_Marks;
+
          Mark_Blocks;
       end if;
 
@@ -1232,7 +1161,10 @@ package body GNAT.Debug_Pools is
    --------------------
 
    --  DO NOT MOVE, this must be right after Deallocate
+
    --  See Allocate_End
+
+   --  This is making assumptions about code order that may be invalid ???
 
    procedure Deallocate_End is
    begin
@@ -1301,7 +1233,10 @@ package body GNAT.Debug_Pools is
    ---------------------
 
    --  DO NOT MOVE: this must be right after Dereference
+
    --  See Allocate_End
+
+   --  This is making assumptions about code order that may be invalid ???
 
    procedure Dereference_End is
    begin
@@ -1650,6 +1585,8 @@ package body GNAT.Debug_Pools is
 
       fclose (File);
    end Dump_Gnatmem;
+
+--  Package initialization
 
 begin
    Allocate_End;
