@@ -1,3 +1,8 @@
+2007-04-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/31395
+	* gfortran.dg/fmt_colon.f90: New test.
+
 2007-04-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.other/init18.C: Use
