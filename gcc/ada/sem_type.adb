@@ -375,7 +375,8 @@ package body Sem_Type is
       --  instance).
 
       elsif In_Instance
-        and then Is_Abstract (E)
+        and then Is_Overloadable (E)
+        and then Is_Abstract_Subprogram (E)
         and then not Is_Dispatching_Operation (E)
       then
          return;
@@ -1008,7 +1009,9 @@ package body Sem_Type is
 
          elsif Ekind (T2) = E_Class_Wide_Type then
             return
-              Covers (T1, Class_Wide_Type (Non_Limited_View (Etype (T2))));
+              Present (Non_Limited_View (Etype (T2)))
+                and then
+                  Covers (T1, Class_Wide_Type (Non_Limited_View (Etype (T2))));
          else
             return False;
          end if;
@@ -1218,18 +1221,41 @@ package body Sem_Type is
             E : Entity_Id;
 
          begin
-            E := Current_Entity (N);
-            while Present (E) loop
-               if Is_Abstract (E)
-                 and then Is_Numeric_Type (Etype (E))
-               then
-                  return True;
-               else
-                  E := Homonym (E);
-               end if;
-            end loop;
+            if Nkind (N) not in N_Op
+              or else Ada_Version < Ada_05
+              or else not Is_Overloaded (N)
+              or else No (Universal_Interpretation (N))
+            then
+               return False;
 
-            return False;
+            else
+               E := Get_Name_Entity_Id (Chars (N));
+               while Present (E) loop
+                  if Is_Overloadable (E)
+                    and then Is_Abstract_Subprogram (E)
+                    and then Is_Numeric_Type (Etype (E))
+                  then
+                     return True;
+                  else
+                     E := Homonym (E);
+                  end if;
+               end loop;
+
+               --  Finally, if an operand of the binary operator is itself
+               --  an operator, recurse to see whether its own abstract
+               --  interpretation is responsible for the spurious ambiguity.
+
+               if Nkind (N) in N_Binary_Op then
+                  return Has_Abstract_Interpretation (Left_Opnd (N))
+                    or else Has_Abstract_Interpretation (Right_Opnd (N));
+
+               elsif Nkind (N) in N_Unary_Op then
+                  return Has_Abstract_Interpretation (Right_Opnd (N));
+
+               else
+                  return False;
+               end if;
+            end if;
          end Has_Abstract_Interpretation;
 
       --  Start of processing for Remove_Conversions
@@ -1267,6 +1293,12 @@ package body Sem_Type is
                elsif Nkind (N) in N_Binary_Op then
                   Act1 := Left_Opnd (N);
                   Act2 := Right_Opnd (N);
+
+                  --  Use type of second formal, so as to include
+                  --  exponentiation, where the exponent may be
+                  --  ambiguous and the result non-universal.
+
+                  Next_Formal (F1);
 
                else
                   return It1;
@@ -1314,12 +1346,10 @@ package body Sem_Type is
                      It1 := It;
                   end if;
 
-               elsif Nkind (Act1) in N_Op
-                 and then Is_Overloaded (Act1)
-                 and then Present (Universal_Interpretation (Act1))
-                 and then Is_Numeric_Type (Etype (F1))
-                 and then Ada_Version >= Ada_05
-                 and then Has_Abstract_Interpretation (Act1)
+               elsif Is_Numeric_Type (Etype (F1))
+                 and then
+                   (Has_Abstract_Interpretation (Act1)
+                     or else Has_Abstract_Interpretation (Act2))
                then
                   if It = Disambiguate.It1 then
                      return Disambiguate.It2;
@@ -1716,7 +1746,7 @@ package body Sem_Type is
                         return It2;
                      end if;
                   else
-                     return No_Interp;
+                     return Remove_Conversions;
                   end if;
                end;
 
@@ -2102,6 +2132,10 @@ package body Sem_Type is
          Target_Typ := Etype (Directly_Designated_Type (Typ));
       else
          Target_Typ := Typ;
+      end if;
+
+      if Is_Concurrent_Record_Type (Target_Typ) then
+         Target_Typ := Corresponding_Concurrent_Type (Target_Typ);
       end if;
 
       --  In case of concurrent types we can't use the Corresponding Record_Typ
@@ -2671,16 +2705,14 @@ package body Sem_Type is
       if B1 = B2 then
          return B1;
 
-      elsif False
-        or else (T1 = Universal_Integer and then Is_Integer_Type (T2))
+      elsif     (T1 = Universal_Integer and then Is_Integer_Type (T2))
         or else (T1 = Universal_Real    and then Is_Real_Type (T2))
         or else (T1 = Universal_Fixed   and then Is_Fixed_Point_Type (T2))
         or else (T1 = Any_Fixed         and then Is_Fixed_Point_Type (T2))
       then
          return B2;
 
-      elsif False
-        or else (T2 = Universal_Integer and then Is_Integer_Type (T1))
+      elsif     (T2 = Universal_Integer and then Is_Integer_Type (T1))
         or else (T2 = Universal_Real    and then Is_Real_Type (T1))
         or else (T2 = Universal_Fixed   and then Is_Fixed_Point_Type (T1))
         or else (T2 = Any_Fixed         and then Is_Fixed_Point_Type (T1))
