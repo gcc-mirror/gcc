@@ -33,7 +33,6 @@ Boston, MA 02110-1301, USA.  */
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
-#include <float.h>
 #include <errno.h>
 
 #ifdef HAVE_SIGNAL_H

@@ -31,8 +31,6 @@ Boston, MA 02110-1301, USA.  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <stddef.h>
 #include <limits.h>
 
 #include "libgfortran.h"
