@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,9 +58,10 @@ package Sem_Ch7 is
    --  if it contains declarations that require completion in a body.
 
    procedure May_Need_Implicit_Body (E : Entity_Id);
-   --  If a package declaration contains tasks and does not require a
-   --  body, create an implicit body at the end of the current declarative
-   --  part to activate those tasks.
+   --  If a package declaration contains tasks or RACWs and does not require
+   --  a body, create an implicit body at the end of the current declarative
+   --  part to activate those tasks or contain the bodies for the RACW
+   --  calling stubs.
 
    procedure New_Private_Type (N : Node_Id; Id : Entity_Id; Def : Node_Id);
    --  Common processing for private type declarations and for formal

@@ -35,6 +35,7 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Disp; use Exp_Disp;
+with Exp_Dist; use Exp_Dist;
 with Exp_Dbug; use Exp_Dbug;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
@@ -89,19 +90,25 @@ package body Sem_Ch7 is
 
    procedure Check_Anonymous_Access_Types
      (Spec_Id : Entity_Id;
-      P_Body  :  Node_Id);
+      P_Body  : Node_Id);
    --  If the spec of a package has a limited_with_clause, it may declare
-   --  anonymous access types whose designated type is a limited view, such
-   --  an anonymous access return type for a function. This access type
-   --  cannot be elaborated in the spec itself, but it may need an itype
-   --  reference if it is used within a nested scope. In that case the itype
-   --  reference is created at the beginning of the corresponding package body
-   --  and inserted before other body declarations.
+   --  anonymous access types whose designated type is a limited view, such an
+   --  anonymous access return type for a function. This access type cannot be
+   --  elaborated in the spec itself, but it may need an itype reference if it
+   --  is used within a nested scope. In that case the itype reference is
+   --  created at the beginning of the corresponding package body and inserted
+   --  before other body declarations.
+
+   procedure Inspect_Deferred_Constant_Completion (Decls : List_Id);
+   --  Examines the deferred constants in the private part of the package
+   --  specification, or in a package body. Emits the error message
+   --  "constant declaration requires initialization expression" if not
+   --  completed by an Import pragma.
 
    procedure Install_Package_Entity (Id : Entity_Id);
-   --  Basic procedure for the previous two. Places one entity on its
-   --  visibility chain, and recurses on the visible part if the entity
-   --  is an inner package.
+   --  Supporting procedure for Install_{Visible,Private}_Declarations.
+   --  Places one entity on its visibility chain, and recurses on the visible
+   --  part if the entity is an inner package.
 
    function Is_Private_Base_Type (E : Entity_Id) return Boolean;
    --  True for a private type that is not a subtype
@@ -322,9 +329,9 @@ package body Sem_Ch7 is
       Set_Use (Visible_Declarations (Specification (Pack_Decl)));
       Set_Use (Private_Declarations (Specification (Pack_Decl)));
 
-      --  This is a nested package, so it may be necessary to declare
-      --  certain inherited subprograms that are not yet visible because
-      --  the parent type's subprograms are now visible.
+      --  This is a nested package, so it may be necessary to declare certain
+      --  inherited subprograms that are not yet visible because the parent
+      --  type's subprograms are now visible.
 
       if Ekind (Scope (Spec_Id)) = E_Package
         and then Scope (Spec_Id) /= Standard_Standard
@@ -334,6 +341,18 @@ package body Sem_Ch7 is
 
       if Present (Declarations (N)) then
          Analyze_Declarations (Declarations (N));
+         Inspect_Deferred_Constant_Completion (Declarations (N));
+      end if;
+
+      --  Analyze_Declarations has caused freezing of all types; now generate
+      --  bodies for RACW primitives and stream attributes, if any.
+
+      if Ekind (Spec_Id) = E_Package and then Has_RACW (Spec_Id) then
+
+         --  Attach subprogram bodies to support RACWs declared in spec
+
+         Append_RACW_Bodies (Declarations (N), Spec_Id);
+         Analyze_List (Declarations (N));
       end if;
 
       HSS := Handled_Statement_Sequence (N);
@@ -630,7 +649,15 @@ package body Sem_Ch7 is
 
    procedure Analyze_Package_Declaration (N : Node_Id) is
       Id : constant Node_Id := Defining_Entity (N);
+
       PF : Boolean;
+      --  True when in the context of a declared pure library unit
+
+      Body_Required : Boolean;
+      --  True when this package declaration requires a corresponding body
+
+      Comp_Unit : Boolean;
+      --  True when this package declaration is not a nested declaration
 
    begin
       --  Ada 2005 (AI-217): Check if the package has been erroneously named
@@ -666,18 +693,43 @@ package body Sem_Ch7 is
 
       Analyze (Specification (N));
       Validate_Categorization_Dependency (N, Id);
-      End_Package_Scope (Id);
 
-      --  For a compilation unit, indicate whether it needs a body, and
-      --  whether elaboration warnings may be meaningful on it.
+      Body_Required := Unit_Requires_Body (Id);
 
-      if Nkind (Parent (N)) = N_Compilation_Unit then
-         Set_Body_Required (Parent (N), Unit_Requires_Body (Id));
+      --  When this spec does not require an explicit body, we know that
+      --  there are no entities requiring completion in the language sense;
+      --  we call Check_Completion here only to ensure that any nested package
+      --  declaration that requires an implicit body gets one. (In the case
+      --  where a body is required, Check_Completion is called at the end of
+      --  the body's declarative part.)
 
-         if not Body_Required (Parent (N)) then
+      if not Body_Required then
+         Check_Completion;
+      end if;
+
+      Comp_Unit := Nkind (Parent (N)) = N_Compilation_Unit;
+      if Comp_Unit then
+
+         --  Set Body_Required indication on the compilation unit node, and
+         --  determine whether elaboration warnings may be meaningful on it.
+
+         Set_Body_Required (Parent (N), Body_Required);
+
+         if not Body_Required then
             Set_Suppress_Elaboration_Warnings (Id);
          end if;
 
+      end if;
+
+      End_Package_Scope (Id);
+
+      --  For the declaration of a library unit that is a remote types package,
+      --  check legality rules regarding availability of stream attributes for
+      --  types that contain non-remote access values. This subprogram performs
+      --  visibility tests that rely on the fact that we have exited the scope
+      --  of Id.
+
+      if Comp_Unit then
          Validate_RT_RAT_Component (N);
       end if;
    end Analyze_Package_Declaration;
@@ -718,11 +770,6 @@ package body Sem_Ch7 is
       function Is_Public_Child (Child, Unit : Entity_Id) return Boolean;
       --  Child and Unit are entities of compilation units. True if Child
       --  is a public child of Parent as defined in 10.1.1
-
-      procedure Inspect_Deferred_Constant_Completion;
-      --  Examines the deferred constants in the private part of the package
-      --  specification. Emits the error message "constant declaration requires
-      --  initialization expression " if not completed by an Import pragma.
 
       procedure Inspect_Unchecked_Union_Completion (Decls : List_Id);
       --  Detects all incomplete or private type declarations having a known
@@ -846,41 +893,6 @@ package body Sem_Ch7 is
             end if;
          end if;
       end Is_Public_Child;
-
-      ------------------------------------------
-      -- Inspect_Deferred_Constant_Completion --
-      ------------------------------------------
-
-      procedure Inspect_Deferred_Constant_Completion is
-         Decl   : Node_Id;
-
-      begin
-         Decl := First (Priv_Decls);
-         while Present (Decl) loop
-
-            --  Deferred constant signature
-
-            if Nkind (Decl) = N_Object_Declaration
-              and then Constant_Present (Decl)
-              and then No (Expression (Decl))
-
-               --  No need to check internally generated constants
-
-              and then Comes_From_Source (Decl)
-
-               --  The constant is not completed. A full object declaration
-               --  or a pragma Import complete a deferred constant.
-
-              and then not Has_Completion (Defining_Identifier (Decl))
-            then
-               Error_Msg_N
-                 ("constant declaration requires initialization expression",
-                 Defining_Identifier (Decl));
-            end if;
-
-            Decl := Next (Decl);
-         end loop;
-      end Inspect_Deferred_Constant_Completion;
 
       ----------------------------------------
       -- Inspect_Unchecked_Union_Completion --
@@ -1130,7 +1142,7 @@ package body Sem_Ch7 is
 
          --  Check the private declarations for incomplete deferred constants
 
-         Inspect_Deferred_Constant_Completion;
+         Inspect_Deferred_Constant_Completion (Priv_Decls);
 
          --  The first private entity is the immediate follower of the last
          --  visible entity, if there was one.
@@ -1514,6 +1526,41 @@ package body Sem_Ch7 is
       Set_Homonym     (Full_Id, H2);
    end Exchange_Declarations;
 
+   ------------------------------------------
+   -- Inspect_Deferred_Constant_Completion --
+   ------------------------------------------
+
+   procedure Inspect_Deferred_Constant_Completion (Decls : List_Id) is
+      Decl   : Node_Id;
+
+   begin
+      Decl := First (Decls);
+      while Present (Decl) loop
+
+         --  Deferred constant signature
+
+         if Nkind (Decl) = N_Object_Declaration
+           and then Constant_Present (Decl)
+           and then No (Expression (Decl))
+
+            --  No need to check internally generated constants
+
+           and then Comes_From_Source (Decl)
+
+            --  The constant is not completed. A full object declaration
+            --  or a pragma Import complete a deferred constant.
+
+           and then not Has_Completion (Defining_Identifier (Decl))
+         then
+            Error_Msg_N
+              ("constant declaration requires initialization expression",
+              Defining_Identifier (Decl));
+         end if;
+
+         Decl := Next (Decl);
+      end loop;
+   end Inspect_Deferred_Constant_Completion;
+
    ----------------------------
    -- Install_Package_Entity --
    ----------------------------
@@ -1723,7 +1770,7 @@ package body Sem_Ch7 is
    begin
       if not Has_Completion (E)
         and then Nkind (P) = N_Package_Declaration
-        and then Present (Activation_Chain_Entity (P))
+        and then (Present (Activation_Chain_Entity (P)) or else Has_RACW (E))
       then
          B :=
            Make_Package_Body (Sloc (E),
@@ -1792,7 +1839,7 @@ package body Sem_Ch7 is
          Set_Ekind                (Id, E_Record_Type_With_Private);
          Make_Class_Wide_Type     (Id);
          Set_Primitive_Operations (Id, New_Elmt_List);
-         Set_Is_Abstract          (Id, Abstract_Present (Def));
+         Set_Is_Abstract_Type     (Id, Abstract_Present (Def));
          Set_Is_Limited_Record    (Id, Limited_Present (Def));
          Set_Has_Delayed_Freeze   (Id, True);
 
@@ -1828,13 +1875,16 @@ package body Sem_Ch7 is
 
       begin
          Set_Size_Info (Priv, (Full));
-         Set_RM_Size (Priv, RM_Size (Full));
-         Set_Size_Known_At_Compile_Time (Priv, Size_Known_At_Compile_Time
-                                                                      (Full));
-         Set_Is_Volatile        (Priv, Is_Volatile        (Full));
-         Set_Treat_As_Volatile  (Priv, Treat_As_Volatile  (Full));
-         Set_Is_Ada_2005_Only   (Priv, Is_Ada_2005_Only   (Full));
-
+         Set_RM_Size                 (Priv, RM_Size (Full));
+         Set_Size_Known_At_Compile_Time
+                                     (Priv, Size_Known_At_Compile_Time (Full));
+         Set_Is_Volatile             (Priv, Is_Volatile                (Full));
+         Set_Treat_As_Volatile       (Priv, Treat_As_Volatile          (Full));
+         Set_Is_Ada_2005_Only        (Priv, Is_Ada_2005_Only           (Full));
+         Set_Has_Pragma_Unreferenced (Priv, Has_Pragma_Unreferenced    (Full));
+         Set_Has_Pragma_Unreferenced_Objects
+                                     (Priv, Has_Pragma_Unreferenced_Objects
+                                                                       (Full));
          if Is_Unchecked_Union (Full) then
             Set_Is_Unchecked_Union (Base_Type (Priv));
          end if;
@@ -1892,8 +1942,22 @@ package body Sem_Ch7 is
                end if;
             end if;
 
-            Set_First_Entity (Priv, First_Entity (Full));
-            Set_Last_Entity  (Priv, Last_Entity (Full));
+            if Is_Tagged_Type (Priv) then
+
+               --  If the type is tagged, the tag itself must be available
+               --  on the partial view, for expansion purposes.
+
+               Set_First_Entity (Priv, First_Entity (Full));
+
+               --  If there are discriminants in the partial view, these remain
+               --  visible. Otherwise only the tag itself is visible, and there
+               --  are no nameable components in the partial view.
+
+               if No (Last_Entity (Priv)) then
+                  Set_Last_Entity (Priv, First_Entity (Priv));
+               end if;
+            end if;
+
             Set_Has_Discriminants (Priv, Has_Discriminants (Full));
          end if;
       end Preserve_Full_Attributes;
@@ -1905,7 +1969,7 @@ package body Sem_Ch7 is
       function Type_In_Use (T : Entity_Id) return Boolean is
       begin
          return Scope (Base_Type (T)) = P
-           and then  (In_Use (T) or else In_Use (Base_Type (T)));
+           and then (In_Use (T) or else In_Use (Base_Type (T)));
       end Type_In_Use;
 
    --  Start of processing for Uninstall_Declarations
@@ -2206,13 +2270,17 @@ package body Sem_Ch7 is
          then
             null;
 
-         --  Otherwise test to see if entity requires a completion
+         --  Otherwise test to see if entity requires a completion.
+         --  Note that subprogram entities whose declaration does not come
+         --  from source are ignored here on the basis that we assume the
+         --  expander will provide an implicit completion at some point.
 
          elsif (Is_Overloadable (E)
                and then Ekind (E) /= E_Enumeration_Literal
                and then Ekind (E) /= E_Operator
-               and then not Is_Abstract (E)
-               and then not Has_Completion (E))
+               and then not Is_Abstract_Subprogram (E)
+               and then not Has_Completion (E)
+               and then Comes_From_Source (Parent (E)))
 
            or else
              (Ekind (E) = E_Package
