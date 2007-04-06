@@ -158,11 +158,17 @@ known_alignment (tree exp)
   switch (TREE_CODE (exp))
     {
     case CONVERT_EXPR:
+    case VIEW_CONVERT_EXPR:
     case NOP_EXPR:
     case NON_LVALUE_EXPR:
       /* Conversions between pointers and integers don't change the alignment
 	 of the underlying object.  */
       this_alignment = known_alignment (TREE_OPERAND (exp, 0));
+      break;
+
+    case COMPOUND_EXPR:
+      /* The value of a COMPOUND_EXPR is that of it's second operand.  */
+      this_alignment = known_alignment (TREE_OPERAND (exp, 1));
       break;
 
     case PLUS_EXPR:
@@ -171,6 +177,13 @@ known_alignment (tree exp)
 	 minimum of the two alignments.  */
       lhs = known_alignment (TREE_OPERAND (exp, 0));
       rhs = known_alignment (TREE_OPERAND (exp, 1));
+      this_alignment = MIN (lhs, rhs);
+      break;
+
+    case COND_EXPR:
+      /* If there is a choice between two values, use the smallest one.  */
+      lhs = known_alignment (TREE_OPERAND (exp, 1));
+      rhs = known_alignment (TREE_OPERAND (exp, 2));
       this_alignment = MIN (lhs, rhs);
       break;
 
@@ -193,6 +206,14 @@ known_alignment (tree exp)
 	this_alignment = MIN (BIGGEST_ALIGNMENT, MAX (lhs, rhs));
       else
 	this_alignment = MIN (BIGGEST_ALIGNMENT, lhs * rhs);
+      break;
+
+    case BIT_AND_EXPR:
+      /* A bit-and expression is as aligned as the maximum alignment of the
+	 operands.  We typically get here for a complex lhs and a constant
+	 negative power of two on the rhs to force an explicit alignment, so
+	 don't bother looking at the lhs.  */
+      this_alignment = known_alignment (TREE_OPERAND (exp, 1));
       break;
 
     case ADDR_EXPR:
