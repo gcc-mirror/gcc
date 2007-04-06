@@ -1,3 +1,8 @@
+2007-04-06  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (decide_is_function_needed): Do not keep always_inline
+	functions.
+
 2007-04-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (output_387_reg_move): Handle memory operand[0].
