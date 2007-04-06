@@ -37,7 +37,7 @@
 
 #pragma GCC system_header
 
-#include <limits>
+#include <bits/c++config.h>
 #include <bits/cpp_type_traits.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
@@ -147,57 +147,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   template<>
     struct __remove_unsigned<wchar_t>;
 
-
-  // Compile time constants for builtin types.
-  // Sadly std::numeric_limits member functions cannot be used for this.
-#define __glibcxx_signed(_Tp) ((_Tp)(-1) < 0)
-#define __glibcxx_digits(_Tp) \
-  (sizeof(_Tp) * __CHAR_BIT__ - __glibcxx_signed(_Tp))
-
-#define __glibcxx_min(_Tp) \
-  (__glibcxx_signed(_Tp) ? (_Tp)1 << __glibcxx_digits(_Tp) : (_Tp)0)
-
-#define __glibcxx_max(_Tp) \
-  (__glibcxx_signed(_Tp) ? \
-   (((((_Tp)1 << (__glibcxx_digits(_Tp) - 1)) - 1) << 1) + 1) : ~(_Tp)0)
-
-  template<typename _Value>
-    struct __numeric_traits_integer
-    {
-      // Only integers for initialization of member constant.
-      static const _Value __min = __glibcxx_min(_Value);
-      static const _Value __max = __glibcxx_max(_Value);
-    };
-
-  template<typename _Value>
-    const _Value __numeric_traits_integer<_Value>::__min;
-
-  template<typename _Value>
-    const _Value __numeric_traits_integer<_Value>::__max;
-
-  template<typename _Value>
-    struct __numeric_traits_floating
-    {
-      // Only floating point types. See N1822. 
-      static const int __max_digits10 =
-	2 + std::numeric_limits<_Value>::digits * 3010/10000;
-    };
-
-  template<typename _Value>
-    const int __numeric_traits_floating<_Value>::__max_digits10;
-
-  template<typename _Value>
-    struct __numeric_traits 
-    : public __conditional_type<std::__is_integer<_Value>::__value,
-				__numeric_traits_integer<_Value>,
-				__numeric_traits_floating<_Value> >::__type
-    { };
-
 _GLIBCXX_END_NAMESPACE
-
-#undef __glibcxx_signed
-#undef __glibcxx_min
-#undef __glibcxx_max
-#undef __glibcxx_digits
 
 #endif 

@@ -52,6 +52,7 @@
 #include <utility>
 #include <tr1/type_traits>
 #include <ext/type_traits.h>
+#include <ext/numeric_traits.h>
 
 namespace pb_ds
 {

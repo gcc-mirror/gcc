@@ -44,6 +44,7 @@
 #include <tr1/type_traits>
 #include <tr1/cmath>
 #include <ext/type_traits.h>
+#include <ext/numeric_traits.h>
 #include <bits/concept_check.h>
 #include <debug/debug.h>
 
