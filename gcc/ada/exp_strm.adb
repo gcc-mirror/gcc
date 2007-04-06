@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -954,14 +954,26 @@ package body Exp_Strm is
    is
       Stms  : List_Id;
       Disc  : Entity_Id;
+      D_Ref : Node_Id;
 
    begin
       Stms := New_List;
       Disc := First_Discriminant (Typ);
 
       --  Generate Writes for the discriminants of the type
+      --  If the type is an unchecked union, use the default values of
+      --  the discriminants, because they are not stored.
 
       while Present (Disc) loop
+         if Is_Unchecked_Union (Typ) then
+            D_Ref :=
+               New_Copy_Tree (Discriminant_Default_Value (Disc));
+         else
+            D_Ref :=
+              Make_Selected_Component (Loc,
+                Prefix => Make_Identifier (Loc, Name_V),
+                Selector_Name => New_Occurrence_Of (Disc, Loc));
+         end if;
 
          Append_To (Stms,
            Make_Attribute_Reference (Loc,
@@ -969,9 +981,7 @@ package body Exp_Strm is
                Attribute_Name => Name_Write,
                Expressions => New_List (
                  Make_Identifier (Loc, Name_S),
-                 Make_Selected_Component (Loc,
-                   Prefix => Make_Identifier (Loc, Name_V),
-                   Selector_Name => New_Occurrence_Of (Disc, Loc)))));
+                 D_Ref)));
 
          Next_Discriminant (Disc);
       end loop;
@@ -986,15 +996,6 @@ package body Exp_Strm is
 
       --  Write the discriminants before the rest of the components, so
       --  that discriminant values are properly set of variants, etc.
-      --  If this is an unchecked union, the stream procedure is erroneous
-      --  because there are no discriminants to write.
-
-      if Is_Unchecked_Union (Typ) then
-         Stms :=
-           New_List (
-             Make_Raise_Program_Error (Loc,
-               Reason => PE_Unchecked_Union_Restriction));
-      end if;
 
       if Is_Non_Empty_List (
         Statements (Handled_Statement_Sequence (Decl)))
@@ -1121,8 +1122,9 @@ package body Exp_Strm is
       Decl : out Node_Id;
       Pnam : out Entity_Id)
    is
-      Stms : List_Id;
-      Disc : Entity_Id;
+      Stms     : List_Id;
+      Disc     : Entity_Id;
+      Disc_Ref : Node_Id;
 
    begin
       Stms := New_List;
@@ -1134,6 +1136,21 @@ package body Exp_Strm is
          Disc := First_Discriminant (Typ);
 
          while Present (Disc) loop
+
+            --  If the type is an unchecked union, it must have default
+            --  discriminants (this is checked earlier), and those defaults
+            --  are written out to the stream.
+
+            if Is_Unchecked_Union (Typ) then
+               Disc_Ref := New_Copy_Tree (Discriminant_Default_Value (Disc));
+
+            else
+               Disc_Ref :=
+                 Make_Selected_Component (Loc,
+                   Prefix => Make_Identifier (Loc, Name_V),
+                   Selector_Name => New_Occurrence_Of (Disc, Loc));
+            end if;
+
             Append_To (Stms,
               Make_Attribute_Reference (Loc,
                 Prefix =>
@@ -1141,9 +1158,7 @@ package body Exp_Strm is
                 Attribute_Name => Name_Write,
                 Expressions => New_List (
                   Make_Identifier (Loc, Name_S),
-                  Make_Selected_Component (Loc,
-                    Prefix => Make_Identifier (Loc, Name_V),
-                    Selector_Name => New_Occurrence_Of (Disc, Loc)))));
+                  Disc_Ref)));
 
             Next_Discriminant (Disc);
          end loop;
@@ -1250,25 +1265,18 @@ package body Exp_Strm is
          V      : Node_Id;
          DC     : Node_Id;
          DCH    : List_Id;
+         D_Ref  : Node_Id;
 
       begin
          Result := Make_Field_Attributes (CI);
 
-         --  If a component is an unchecked union, there is no discriminant
-         --  and we cannot generate a read/write procedure for it.
-
          if Present (VP) then
-            if Is_Unchecked_Union (Scope (Entity (Name (VP)))) then
-               return New_List (
-                 Make_Raise_Program_Error (Sloc (VP),
-                   Reason => PE_Unchecked_Union_Restriction));
-            end if;
+            Alts := New_List;
 
             V := First_Non_Pragma (Variants (VP));
-            Alts := New_List;
             while Present (V) loop
-
                DCH := New_List;
+
                DC := First (Discrete_Choices (V));
                while Present (DC) loop
                   Append_To (DCH, New_Copy_Tree (DC));
@@ -1287,15 +1295,27 @@ package body Exp_Strm is
             --  of for the selector, since there are cases in which we make a
             --  reference to a hidden discriminant that is not visible.
 
-            Append_To (Result,
-              Make_Case_Statement (Loc,
-                Expression =>
+            --  If the enclosing record is an unchecked_union, we use the
+            --  default expressions for the discriminant (it must exist)
+            --  because we cannot generate a reference to it, given that
+            --  it is not stored..
+
+            if Is_Unchecked_Union (Scope (Entity (Name (VP)))) then
+               D_Ref :=
+                 New_Copy_Tree
+                   (Discriminant_Default_Value (Entity (Name (VP))));
+            else
+               D_Ref :=
                   Make_Selected_Component (Loc,
                     Prefix => Make_Identifier (Loc, Name_V),
                     Selector_Name =>
-                      New_Occurrence_Of (Entity (Name (VP)), Loc)),
-                Alternatives => Alts));
+                      New_Occurrence_Of (Entity (Name (VP)), Loc));
+            end if;
 
+            Append_To (Result,
+              Make_Case_Statement (Loc,
+                Expression => D_Ref,
+                Alternatives => Alts));
          end if;
 
          return Result;
@@ -1323,8 +1343,8 @@ package body Exp_Strm is
            and then No (Find_Inherited_TSS (Field_Typ, TSS_Names (Nam)))
          then
             --  The declaration is illegal per 13.13.2(9/1), and this is
-            --  enforced in Exp_Ch3.Check_Stream_Attributes. Keep the
-            --  caller happy by returning a null statement.
+            --  enforced in Exp_Ch3.Check_Stream_Attributes. Keep the caller
+            --  happy by returning a null statement.
 
             return Make_Null_Statement (Loc);
          end if;
