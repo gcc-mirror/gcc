@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
--- This specification is adapted from the Ada Reference Manual for use with --
+-- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT.  In accordance with the copyright of that document, you can freely --
 -- copy and modify this specification,  provided that if you redistribute a --
 -- modified version,  any changes that you have made are clearly indicated. --
@@ -35,7 +35,12 @@ package Interfaces.Fortran is
    package Single_Precision_Complex_Types is
       new Ada.Numerics.Generic_Complex_Types (Real);
 
+   package Double_Precision_Complex_Types is
+      new Ada.Numerics.Generic_Complex_Types (Double_Precision);
+
    type Complex is new Single_Precision_Complex_Types.Complex;
+
+   type Double_Complex is new Double_Precision_Complex_Types.Complex;
 
    subtype Imaginary is Single_Precision_Complex_Types.Imaginary;
    i : Imaginary renames Single_Precision_Complex_Types.i;

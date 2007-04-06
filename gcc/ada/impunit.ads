@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,5 +57,11 @@ package Impunit is
    function Get_Kind_Of_Unit (U : Unit_Number_Type) return Kind_Of_Unit;
    --  Given the unit number of a unit, this function determines the type
    --  of the unit, as defined above.
+
+   function Is_Known_Unit (Nam : Node_Id) return Boolean;
+   --  Nam is the possible name of a child unit, represented as a selected
+   --  component node. This function determines whether the name matches
+   --  one of the known library units, and if so, returns True. If the name
+   --  does not match any known library unit, False is returned.
 
 end Impunit;

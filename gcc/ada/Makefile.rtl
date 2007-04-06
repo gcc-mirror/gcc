@@ -26,7 +26,6 @@
 
 # Objects needed only for tasking
 GNATRTL_TASKING_OBJS= \
-  a-diroro$(objext) \
   a-dispat$(objext) \
   a-dynpri$(objext) \
   a-interr$(objext) \
@@ -135,9 +134,11 @@ GNATRTL_NONTASKING_OBJS= \
   a-finali$(objext) \
   a-flteio$(objext) \
   a-fwteio$(objext) \
+  a-fzteio$(objext) \
   a-inteio$(objext) \
   a-ioexce$(objext) \
   a-iwteio$(objext) \
+  a-izteio$(objext) \
   a-lcteio$(objext) \
   a-lfteio$(objext) \
   a-llctio$(objext) \
@@ -313,6 +314,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-bubsor$(objext) \
   g-busora$(objext) \
   g-busorg$(objext) \
+  g-bytswa$(objext) \
   g-calend$(objext) \
   g-casuti$(objext) \
   g-catiio$(objext) \
@@ -350,6 +352,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-regexp$(objext) \
   g-regpat$(objext) \
   g-sestin$(objext) \
+  g-sha1$(objext) \
   g-soccon$(objext) \
   g-socket$(objext) \
   g-socthi$(objext) \
