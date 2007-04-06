@@ -26,10 +26,10 @@
 
 with Atree;    use Atree;
 with Checks;   use Checks;
-with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
+with Exp_Atag; use Exp_Atag;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
@@ -91,6 +91,20 @@ package body Exp_Ch3 is
    --  is set, the list is built using the already defined discriminals
    --  of the type. Otherwise new identifiers are created, with the source
    --  names of the discriminants.
+
+   function Build_Master_Renaming
+     (N : Node_Id;
+      T : Entity_Id) return Entity_Id;
+   --  If the designated type of an access type is a task type or contains
+   --  tasks, we make sure that a _Master variable is declared in the current
+   --  scope, and then declare a renaming for it:
+   --
+   --    atypeM : Master_Id renames _Master;
+   --
+   --  where atyp is the name of the access type. This declaration is used when
+   --  an allocator for the access type is expanded. The node is the full
+   --  declaration of the designated type that contains tasks. The renaming
+   --  declaration is inserted before N, and after the Master declaration.
 
    procedure Build_Record_Init_Proc (N : Node_Id; Pe : Entity_Id);
    --  Build record initialization procedure. N is the type declaration
@@ -508,7 +522,10 @@ package body Exp_Ch3 is
          else
             Clean_Task_Names (Comp_Type, Proc_Id);
             return
-              Build_Initialization_Call (Loc, Comp, Comp_Type, True, A_Type);
+              Build_Initialization_Call
+                (Loc, Comp, Comp_Type,
+                 In_Init_Proc => True,
+                 Enclos_Type  => A_Type);
          end if;
       end Init_Component;
 
@@ -1143,6 +1160,7 @@ package body Exp_Ch3 is
             --  for the value 3 (should be rtsfindable constant ???)
 
             Append_To (Args, Make_Integer_Literal (Loc, 3));
+
          else
             Append_To (Args, Make_Identifier (Loc, Name_uMaster));
          end if;
@@ -1343,7 +1361,10 @@ package body Exp_Ch3 is
    -- Build_Master_Renaming --
    ---------------------------
 
-   procedure Build_Master_Renaming (N : Node_Id; T : Entity_Id) is
+   function Build_Master_Renaming
+     (N : Node_Id;
+      T : Entity_Id) return Entity_Id
+   is
       Loc  : constant Source_Ptr := Sloc (N);
       M_Id : Entity_Id;
       Decl : Node_Id;
@@ -1352,7 +1373,7 @@ package body Exp_Ch3 is
       --  Nothing to do if there is no task hierarchy
 
       if Restriction_Active (No_Task_Hierarchy) then
-         return;
+         return Empty;
       end if;
 
       M_Id :=
@@ -1366,7 +1387,28 @@ package body Exp_Ch3 is
           Name => Make_Identifier (Loc, Name_uMaster));
       Insert_Before (N, Decl);
       Analyze (Decl);
+      return M_Id;
 
+   exception
+      when RE_Not_Available =>
+         return Empty;
+   end Build_Master_Renaming;
+
+   ---------------------------
+   -- Build_Master_Renaming --
+   ---------------------------
+
+   procedure Build_Master_Renaming (N : Node_Id; T : Entity_Id) is
+      M_Id : Entity_Id;
+
+   begin
+      --  Nothing to do if there is no task hierarchy
+
+      if Restriction_Active (No_Task_Hierarchy) then
+         return;
+      end if;
+
+      M_Id := Build_Master_Renaming (N, T);
       Set_Master_Id (T, M_Id);
 
    exception
@@ -1764,9 +1806,20 @@ package body Exp_Ch3 is
 
          procedure Build_Offset_To_Top_Internal (Typ : Entity_Id) is
          begin
-            --  Climb to the ancestor (if any) handling private types
+            --  Climb to the ancestor (if any) handling synchronized interface
+            --  derivations and private types
 
-            if Present (Full_View (Etype (Typ))) then
+            if Is_Concurrent_Record_Type (Typ) then
+               declare
+                  Iface_List : constant List_Id :=
+                                 Abstract_Interface_List (Typ);
+               begin
+                  if Is_Non_Empty_List (Iface_List) then
+                     Build_Offset_To_Top_Internal (Etype (First (Iface_List)));
+                  end if;
+               end;
+
+            elsif Present (Full_View (Etype (Typ))) then
                if Full_View (Etype (Typ)) /= Typ then
                   Build_Offset_To_Top_Internal (Full_View (Etype (Typ)));
                end if;
@@ -1842,7 +1895,12 @@ package body Exp_Ch3 is
       --  Start of processing for Build_Offset_To_Top_Functions
 
       begin
-         if Etype (Rec_Type) = Rec_Type
+         if Is_Concurrent_Record_Type (Rec_Type)
+           and then Is_Empty_List (Abstract_Interface_List (Rec_Type))
+         then
+            return;
+
+         elsif Etype (Rec_Type) = Rec_Type
            or else not Has_Discriminants (Etype (Rec_Type))
            or else No (Abstract_Interfaces (Rec_Type))
            or else Is_Empty_Elmt_List (Abstract_Interfaces (Rec_Type))
@@ -2011,7 +2069,6 @@ package body Exp_Ch3 is
                declare
                   Nod   : Node_Id := First (Body_Stmts);
                   New_N : Node_Id;
-                  Args  : List_Id;
 
                begin
                   --  We assume the first init_proc call is for the parent
@@ -2026,82 +2083,61 @@ package body Exp_Ch3 is
                   --  Generate:
                   --     ancestor_constructor (_init.parent);
                   --     if Arg2 then
+                  --        inherit_prim_ops (_init._tag, new_dt, num_prims);
                   --        _init._tag := new_dt;
                   --     end if;
 
-                  if Debug_Flag_QQ then
-                     Init_Tag :=
-                       Make_If_Statement (Loc,
-                         Condition => New_Occurrence_Of (Set_Tag, Loc),
-                         Then_Statements => New_List (Init_Tag));
-                     Insert_After (Nod, Init_Tag);
+                  New_N :=
+                    Build_Inherit_Prims (Loc,
+                      Old_Tag_Node =>
+                        Make_Selected_Component (Loc,
+                          Prefix => Make_Identifier (Loc, Name_uInit),
+                          Selector_Name =>
+                            New_Reference_To
+                              (First_Tag_Component (Rec_Type), Loc)),
+                      New_Tag_Node =>
+                        New_Reference_To
+                          (Node (First_Elmt (Access_Disp_Table (Rec_Type))),
+                           Loc),
+                      Num_Prims =>
+                        UI_To_Int
+                          (DT_Entry_Count (First_Tag_Component (Rec_Type))));
 
-                  --  Generate:
-                  --     ancestor_constructor (_init.parent);
-                  --     if Arg2 then
-                  --        inherit_dt (_init._tag, new_dt, num_prims);
-                  --        _init._tag := new_dt;
-                  --     end if;
-                  else
-                     Args := New_List (
-                        Node1 =>
-                          Make_Selected_Component (Loc,
-                            Prefix => Make_Identifier (Loc, Name_uInit),
-                            Selector_Name =>
-                              New_Reference_To
-                                (First_Tag_Component (Rec_Type), Loc)),
+                  Init_Tag :=
+                    Make_If_Statement (Loc,
+                      Condition => New_Occurrence_Of (Set_Tag, Loc),
+                      Then_Statements => New_List (New_N, Init_Tag));
 
-                        Node2 =>
-                          New_Reference_To
-                            (Node (First_Elmt (Access_Disp_Table (Rec_Type))),
-                             Loc),
+                  Insert_After (Nod, Init_Tag);
 
-                        Node3 =>
-                          Make_Integer_Literal (Loc,
-                            DT_Entry_Count (First_Tag_Component (Rec_Type))));
+                  --  We have inherited the whole contents of the DT table
+                  --  from the CPP side. Therefore all our previous initia-
+                  --  lization has been lost and we must refill entries
+                  --  associated with Ada primitives. This needs more work
+                  --  to avoid its execution each time an object is
+                  --  initialized???
 
-                     New_N :=
-                       Make_Procedure_Call_Statement (Loc,
-                         Name => New_Reference_To (RTE (RE_Inherit_CPP_DT),
-                                                   Loc),
-                         Parameter_Associations => Args);
+                  declare
+                     E    : Elmt_Id;
+                     Prim : Node_Id;
 
-                     Init_Tag :=
-                       Make_If_Statement (Loc,
-                         Condition => New_Occurrence_Of (Set_Tag, Loc),
-                         Then_Statements => New_List (New_N, Init_Tag));
+                  begin
+                     E := First_Elmt (Primitive_Operations (Rec_Type));
+                     while Present (E) loop
+                        Prim := Node (E);
 
-                     Insert_After (Nod, Init_Tag);
+                        if not Is_Imported (Prim)
+                          and then Convention (Prim) = Convention_CPP
+                          and then not Present (Abstract_Interface_Alias
+                                                 (Prim))
+                        then
+                           Insert_After (Init_Tag,
+                              Fill_DT_Entry (Loc, Prim));
+                        end if;
 
-                     --  We have inherited the whole contents of the DT table
-                     --  from the CPP side. Therefore all our previous initia-
-                     --  lization has been lost and we must refill entries
-                     --  associated with Ada primitives. This needs more work
-                     --  to avoid its execution each time an object is
-                     --  initialized???
-
-                     declare
-                        E    : Elmt_Id;
-                        Prim : Node_Id;
-
-                     begin
-                        E := First_Elmt (Primitive_Operations (Rec_Type));
-                        while Present (E) loop
-                           Prim := Node (E);
-
-                           if not Is_Imported (Prim)
-                             and then Convention (Prim) = Convention_CPP
-                             and then not Present (Abstract_Interface_Alias
-                                                    (Prim))
-                           then
-                              Insert_After (Init_Tag,
-                                 Fill_DT_Entry (Loc, Prim));
-                           end if;
-
-                           Next_Elmt (E);
-                        end loop;
-                     end;
-                  end if;
+                        Next_Elmt (E);
+                     end loop;
+                  end;
                end;
             end if;
 
@@ -2244,8 +2280,8 @@ package body Exp_Ch3 is
                          Prefix => Make_Identifier (Loc, Name_uInit),
                          Selector_Name => New_Occurrence_Of (Id, Loc)),
                        Typ,
-                       True,
-                       Rec_Type,
+                       In_Init_Proc => True,
+                       Enclos_Type => Rec_Type,
                        Discr_Map => Discr_Map);
 
                   Clean_Task_Names (Typ, Proc_Id);
@@ -2276,7 +2312,7 @@ package body Exp_Ch3 is
                   --  if the parent holds discriminants that can be used
                   --  to compute the offset of the controller. We assume here
                   --  that the last statement of the initialization call is the
-                  --  attachement of the parent (see Build_Initialization_Call)
+                  --  attachment of the parent (see Build_Initialization_Call)
 
                   if Chars (Id) = Name_uController
                     and then Rec_Type /= Etype (Rec_Type)
@@ -2311,9 +2347,12 @@ package body Exp_Ch3 is
                      Append_List_To (Statement_List,
                        Build_Initialization_Call (Loc,
                          Make_Selected_Component (Loc,
-                           Prefix => Make_Identifier (Loc, Name_uInit),
+                           Prefix        => Make_Identifier (Loc, Name_uInit),
                            Selector_Name => New_Occurrence_Of (Id, Loc)),
-                         Typ, True, Rec_Type, Discr_Map => Discr_Map));
+                         Typ,
+                         In_Init_Proc => True,
+                         Enclos_Type  => Rec_Type,
+                         Discr_Map    => Discr_Map));
 
                      Clean_Task_Names (Typ, Proc_Id);
 
@@ -2486,7 +2525,6 @@ package body Exp_Ch3 is
          return
            Needs_Simple_Initialization (T)
              and then not Is_RTE (T, RE_Tag)
-             and then not Is_RTE (T, RE_Vtable_Ptr)
 
                --  Ada 2005 (AI-251): Check also the tag of abstract interfaces
 
@@ -3453,9 +3491,15 @@ package body Exp_Ch3 is
       Par_Id : Entity_Id;
       FN     : Node_Id;
 
-   begin
-      if Is_Access_Type (Def_Id) then
+      procedure Build_Master (Def_Id : Entity_Id);
+      --  Create the master associated with Def_Id
 
+      ------------------
+      -- Build_Master --
+      ------------------
+
+      procedure Build_Master (Def_Id : Entity_Id) is
+      begin
          --  Anonymous access types are created for the components of the
          --  record parameter for an entry declaration. No master is created
          --  for such a type.
@@ -3497,19 +3541,97 @@ package body Exp_Ch3 is
            and then Convention (Designated_Type (Def_Id)) /= Convention_Java
          then
             Build_Class_Wide_Master (Def_Id);
+         end if;
+      end Build_Master;
 
-         elsif Ekind (Def_Id) = E_Access_Protected_Subprogram_Type then
+   --  Start of processing for Expand_N_Full_Type_Declaration
+
+   begin
+      if Is_Access_Type (Def_Id) then
+         Build_Master (Def_Id);
+
+         if Ekind (Def_Id) = E_Access_Protected_Subprogram_Type then
             Expand_Access_Protected_Subprogram_Type (N);
          end if;
 
+      elsif Ada_Version >= Ada_05
+        and then Is_Array_Type (Def_Id)
+        and then Is_Access_Type (Component_Type (Def_Id))
+        and then Ekind (Component_Type (Def_Id)) = E_Anonymous_Access_Type
+      then
+         Build_Master (Component_Type (Def_Id));
+
       elsif Has_Task (Def_Id) then
          Expand_Previous_Access_Type (Def_Id);
+
+      elsif Ada_Version >= Ada_05
+        and then
+         (Is_Record_Type (Def_Id)
+           or else (Is_Array_Type (Def_Id)
+                      and then Is_Record_Type (Component_Type (Def_Id))))
+      then
+         declare
+            Comp : Entity_Id;
+            Typ  : Entity_Id;
+            M_Id : Entity_Id;
+
+         begin
+            --  Look for the first anonymous access type component
+
+            if Is_Array_Type (Def_Id) then
+               Comp := First_Entity (Component_Type (Def_Id));
+            else
+               Comp := First_Entity (Def_Id);
+            end if;
+
+            while Present (Comp) loop
+               Typ := Etype (Comp);
+
+               exit when Is_Access_Type (Typ)
+                 and then Ekind (Typ) = E_Anonymous_Access_Type;
+
+               Next_Entity (Comp);
+            end loop;
+
+            --  If found we add a renaming reclaration of master_id and we
+            --  associate it to each anonymous access type component. Do
+            --  nothing if the access type already has a master. This will be
+            --  the case if the array type is the packed array created for a
+            --  user-defined array type T, where the master_id is created when
+            --  expanding the declaration for T.
+
+            if Present (Comp)
+              and then not Restriction_Active (No_Task_Hierarchy)
+              and then No (Master_Id (Typ))
+            then
+               Build_Master_Entity (Def_Id);
+               M_Id := Build_Master_Renaming (N, Def_Id);
+
+               if Is_Array_Type (Def_Id) then
+                  Comp := First_Entity (Component_Type (Def_Id));
+               else
+                  Comp := First_Entity (Def_Id);
+               end if;
+
+               while Present (Comp) loop
+                  Typ := Etype (Comp);
+
+                  if Is_Access_Type (Typ)
+                    and then Ekind (Typ) = E_Anonymous_Access_Type
+                  then
+                     Set_Master_Id (Typ, M_Id);
+                  end if;
+
+                  Next_Entity (Comp);
+               end loop;
+            end if;
+         end;
       end if;
 
       Par_Id := Etype (B_Id);
 
-      --  The parent type is private then we need to inherit
-      --  any TSS operations from the full view.
+      --  The parent type is private then we need to inherit any TSS operations
+      --  from the full view.
 
       if Ekind (Par_Id) in Private_Kind
         and then Present (Full_View (Par_Id))
@@ -3517,26 +3639,25 @@ package body Exp_Ch3 is
          Par_Id := Base_Type (Full_View (Par_Id));
       end if;
 
-      if Nkind (Type_Definition (Original_Node (N)))
-         = N_Derived_Type_Definition
+      if Nkind (Type_Definition (Original_Node (N))) =
+                                                N_Derived_Type_Definition
         and then not Is_Tagged_Type (Def_Id)
         and then Present (Freeze_Node (Par_Id))
         and then Present (TSS_Elist (Freeze_Node (Par_Id)))
       then
          Ensure_Freeze_Node (B_Id);
-         FN :=  Freeze_Node (B_Id);
+         FN := Freeze_Node (B_Id);
 
          if No (TSS_Elist (FN)) then
             Set_TSS_Elist (FN, New_Elmt_List);
          end if;
 
          declare
-            T_E   : constant Elist_Id := TSS_Elist (FN);
-            Elmt  : Elmt_Id;
+            T_E  : constant Elist_Id := TSS_Elist (FN);
+            Elmt : Elmt_Id;
 
          begin
-            Elmt  := First_Elmt (TSS_Elist (Freeze_Node (Par_Id)));
-
+            Elmt := First_Elmt (TSS_Elist (Freeze_Node (Par_Id)));
             while Present (Elmt) loop
                if Chars (Node (Elmt)) /= Name_uInit then
                   Append_Elmt (Node (Elmt), T_E);
@@ -3572,13 +3693,12 @@ package body Exp_Ch3 is
 
    procedure Expand_N_Object_Declaration (N : Node_Id) is
       Def_Id  : constant Entity_Id  := Defining_Identifier (N);
-      Typ     : constant Entity_Id  := Etype (Def_Id);
-      Loc     : constant Source_Ptr := Sloc (N);
       Expr    : constant Node_Id    := Expression (N);
-
-      New_Ref : Node_Id;
-      Id_Ref  : Node_Id;
+      Loc     : constant Source_Ptr := Sloc (N);
+      Typ     : constant Entity_Id  := Etype (Def_Id);
       Expr_Q  : Node_Id;
+      Id_Ref  : Node_Id;
+      New_Ref : Node_Id;
 
    begin
       --  Don't do anything for deferred constants. All proper actions will
@@ -3650,16 +3770,16 @@ package body Exp_Ch3 is
 
             declare
                L   : constant List_Id :=
-                      Make_Init_Call (
-                        Ref         => New_Occurrence_Of (Def_Id, Loc),
-                        Typ         => Base_Type (Typ),
-                        Flist_Ref   => Find_Final_List (Def_Id),
-                        With_Attach => Make_Integer_Literal (Loc, 1));
+                       Make_Init_Call
+                         (Ref         => New_Occurrence_Of (Def_Id, Loc),
+                          Typ         => Base_Type (Typ),
+                          Flist_Ref   => Find_Final_List (Def_Id),
+                          With_Attach => Make_Integer_Literal (Loc, 1));
 
                Blk : constant Node_Id :=
-                 Make_Block_Statement (Loc,
-                   Handled_Statement_Sequence =>
-                     Make_Handled_Sequence_Of_Statements (Loc, L));
+                       Make_Block_Statement (Loc,
+                         Handled_Statement_Sequence =>
+                           Make_Handled_Sequence_Of_Statements (Loc, L));
 
             begin
                Prepend_To (L, Build_Runtime_Call (Loc, RE_Abort_Defer));
@@ -3680,12 +3800,12 @@ package body Exp_Ch3 is
          if Has_Non_Null_Base_Init_Proc (Typ)
            and then not No_Initialization (N)
          then
-            --  The call to the initialization procedure does NOT freeze
-            --  the object being initialized. This is because the call is
-            --  not a source level call. This works fine, because the only
-            --  possible statements depending on freeze status that can
-            --  appear after the _Init call are rep clauses which can
-            --  safely appear after actual references to the object.
+            --  The call to the initialization procedure does NOT freeze the
+            --  object being initialized. This is because the call is not a
+            --  source level call. This works fine, because the only possible
+            --  statements depending on freeze status that can appear after the
+            --  _Init call are rep clauses which can safely appear after actual
+            --  references to the object.
 
             Id_Ref := New_Reference_To (Def_Id, Loc);
             Set_Must_Not_Freeze (Id_Ref);
@@ -3699,8 +3819,8 @@ package body Exp_Ch3 is
          --  initialization is required even though No_Init_Flag is present.
 
          --  An internally generated temporary needs no initialization because
-         --  it will be assigned subsequently. In particular, there is no
-         --  point in applying Initialize_Scalars to such a temporary.
+         --  it will be assigned subsequently. In particular, there is no point
+         --  in applying Initialize_Scalars to such a temporary.
 
          elsif Needs_Simple_Initialization (Typ)
             and then not Is_Internal (Def_Id)
@@ -3791,23 +3911,112 @@ package body Exp_Ch3 is
                end if;
             end if;
 
+            --  Ada 2005 (AI-251): Rewrite the expression that initializes a
+            --  class-wide object to ensure that we copy the full object.
+
+            --  Replace
+            --      CW : I'Class := Obj;
+            --  by
+            --      CW__1 : I'Class := I'Class (Base_Address (Obj'Address));
+            --      CW    : I'Class renames Displace (CW__1, I'Tag);
+
+            if Is_Interface (Typ)
+              and then Is_Class_Wide_Type (Etype (Expr))
+              and then Comes_From_Source (Def_Id)
+            then
+               declare
+                  Decl_1 : Node_Id;
+                  Decl_2 : Node_Id;
+
+               begin
+                  Decl_1 :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier =>
+                        Make_Defining_Identifier (Loc,
+                          New_Internal_Name ('D')),
+
+                      Object_Definition =>
+                        Make_Attribute_Reference (Loc,
+                          Prefix => Make_Identifier (Loc,
+                                      Chars (Root_Type (Etype (Def_Id)))),
+                          Attribute_Name => Name_Class),
+
+                      Expression =>
+                        Unchecked_Convert_To
+                          (Class_Wide_Type (Root_Type (Etype (Def_Id))),
+                            Make_Explicit_Dereference (Loc,
+                              Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                                Make_Function_Call (Loc,
+                                  Name =>
+                                    New_Reference_To (RTE (RE_Base_Address),
+                                                      Loc),
+                                  Parameter_Associations => New_List (
+                                    Make_Attribute_Reference (Loc,
+                                      Prefix         => Relocate_Node (Expr),
+                                      Attribute_Name => Name_Address)))))));
+
+                  Insert_Action (N, Decl_1);
+
+                  Decl_2 :=
+                    Make_Object_Renaming_Declaration (Loc,
+                      Defining_Identifier =>
+                        Make_Defining_Identifier (Loc,
+                          New_Internal_Name ('D')),
+
+                      Subtype_Mark =>
+                        Make_Attribute_Reference (Loc,
+                          Prefix =>
+                            Make_Identifier (Loc,
+                              Chars => Chars (Root_Type (Etype (Def_Id)))),
+                          Attribute_Name => Name_Class),
+
+                      Name =>
+                        Unchecked_Convert_To (
+                          Class_Wide_Type (Root_Type (Etype (Def_Id))),
+                          Make_Explicit_Dereference (Loc,
+                            Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                              Make_Function_Call (Loc,
+                                Name =>
+                                  New_Reference_To (RTE (RE_Displace), Loc),
+
+                                Parameter_Associations => New_List (
+                                  Make_Attribute_Reference (Loc,
+                                    Prefix =>
+                                      New_Reference_To
+                                        (Defining_Identifier (Decl_1), Loc),
+                                    Attribute_Name => Name_Address),
+
+                                  Unchecked_Convert_To (RTE (RE_Tag),
+                                    New_Reference_To
+                                      (Node
+                                        (First_Elmt
+                                          (Access_Disp_Table
+                                             (Root_Type (Typ)))),
+                                       Loc))))))));
+
+                  Rewrite (N, Decl_2);
+                  Analyze (N);
+
+                  --  Replace internal identifier of Decl_2 by the identifier
+                  --  found in the sources. We also have to exchange entities
+                  --  containing their defining identifiers to ensure the
+                  --  correct replacement of the object declaration by this
+                  --  object renaming declaration (because such definings
+                  --  identifier have been previously added by Enter_Name to
+                  --  the current scope).
+
+                  Set_Chars (Defining_Identifier (N), Chars (Def_Id));
+                  Exchange_Entities (Defining_Identifier (N), Def_Id);
+
+                  return;
+               end;
+            end if;
+
             --  If the type is controlled we attach the object to the final
             --  list and adjust the target after the copy. This
             --  ??? incomplete sentence
 
-            --  Ada 2005 (AI-251): Do not register in the final list objects
-            --  containing class-wide interfaces; otherwise we erroneously
-            --  register the tag of the interface in the final list. Example:
-
-            --    Obj1 : T; --  Controlled object that implements Iface
-            --    Obj2 : Iface'Class := Iface'Class (Obj1);
-
-            --  Obj1 is registered in the final list; Obj2 is not registered.
-
-            if Controlled_Type (Typ)
-              and then not (Is_Interface (Typ)
-                             and then Is_Class_Wide_Type (Typ))
-            then
+            if Controlled_Type (Typ) then
                declare
                   Flist : Node_Id;
                   F     : Entity_Id;
@@ -3984,7 +4193,6 @@ package body Exp_Ch3 is
            or else
          Nkind (Parent (N)) = N_Slice
       then
-         Resolve (Ran, Typ);
          Apply_Range_Check (Ran, Typ);
       end if;
    end Expand_N_Subtype_Indication;
@@ -3996,10 +4204,9 @@ package body Exp_Ch3 is
    --  If the last variant does not contain the Others choice, replace it with
    --  an N_Others_Choice node since Gigi always wants an Others. Note that we
    --  do not bother to call Analyze on the modified variant part, since it's
-   --  only effect would be to compute the contents of the
-   --  Others_Discrete_Choices node laboriously, and of course we already know
-   --  the list of choices that corresponds to the others choice (it's the
-   --  list we are replacing!)
+   --  only effect would be to compute the Others_Discrete_Choices node
+   --  laboriously, and of course we already know the list of choices that
+   --  corresponds to the others choice (it's the list we are replacing!)
 
    procedure Expand_N_Variant_Part (N : Node_Id) is
       Last_Var    : constant Node_Id := Last_Non_Pragma (Variants (N));
@@ -4096,8 +4303,8 @@ package body Exp_Ch3 is
 
       else
          --  The controller cannot be placed before the _Parent field since
-         --  gigi lays out field in order and _parent must be first to
-         --  preserve the polymorphism of tagged types.
+         --  gigi lays out field in order and _parent must be first to preserve
+         --  the polymorphism of tagged types.
 
          First_Comp := First (Component_Items (Comp_List));
 
@@ -4770,9 +4977,15 @@ package body Exp_Ch3 is
             --  must be before the freeze point).
 
             Set_Is_Frozen (Def_Id, False);
-            Make_Predefined_Primitive_Specs
-              (Def_Id, Predef_List, Renamed_Eq);
-            Insert_List_Before_And_Analyze (N, Predef_List);
+
+            --  Do not add the spec of the predefined primitives if we are
+            --  compiling under restriction No_Dispatching_Calls
+
+            if not Restriction_Active (No_Dispatching_Calls) then
+               Make_Predefined_Primitive_Specs
+                 (Def_Id, Predef_List, Renamed_Eq);
+               Insert_List_Before_And_Analyze (N, Predef_List);
+            end if;
 
             --  Ada 2005 (AI-391): For a nonabstract null extension, create
             --  wrapper functions for each nonoverridden inherited function
@@ -4781,7 +4994,7 @@ package body Exp_Ch3 is
             --  the parent function.
 
             if Ada_Version >= Ada_05
-              and then not Is_Abstract (Def_Id)
+              and then not Is_Abstract_Type (Def_Id)
               and then Is_Null_Extension (Def_Id)
             then
                Make_Controlling_Function_Wrappers
@@ -4797,7 +5010,7 @@ package body Exp_Ch3 is
 
             if Ada_Version >= Ada_05
               and then Etype (Def_Id) /= Def_Id
-              and then not Is_Abstract (Def_Id)
+              and then not Is_Abstract_Type (Def_Id)
             then
                Make_Null_Procedure_Specs (Def_Id, Null_Proc_Decl_List);
                Insert_Actions (N, Null_Proc_Decl_List);
@@ -4839,7 +5052,13 @@ package body Exp_Ch3 is
                   begin
                      --  Climb to the ancestor (if any) handling private types
 
-                     if Present (Full_View (Etype (Typ))) then
+                     if Is_Concurrent_Record_Type (Typ) then
+                        if Present (Abstract_Interface_List (Typ)) then
+                           Add_Secondary_Tables
+                             (Etype (First (Abstract_Interface_List (Typ))));
+                        end if;
+
+                     elsif Present (Full_View (Etype (Typ))) then
                         if Full_View (Etype (Typ)) /= Typ then
                            Add_Secondary_Tables (Full_View (Etype (Typ)));
                         end if;
@@ -4913,12 +5132,14 @@ package body Exp_Ch3 is
                    (Find_Prim_Op (Def_Id, Name_Finalize), Sloc (Def_Id)));
             end if;
 
-            --  Freeze rest of primitive operations
+            --  Freeze rest of primitive operations. There is no need to handle
+            --  the predefined primitives if we are compiling under restriction
+            --  No_Dispatching_Calls
 
-            Append_Freeze_Actions
-              (Def_Id, Predefined_Primitive_Freeze (Def_Id));
-            Append_Freeze_Actions
-              (Def_Id, Init_Predefined_Interface_Primitives (Def_Id));
+            if not Restriction_Active (No_Dispatching_Calls) then
+               Append_Freeze_Actions
+                 (Def_Id, Predefined_Primitive_Freeze (Def_Id));
+            end if;
          end if;
 
       --  In the non-tagged case, an equality function is provided only for
@@ -4990,8 +5211,14 @@ package body Exp_Ch3 is
       --  the primitive operations may need the initialization routine
 
       if Is_Tagged_Type (Def_Id) then
-         Predef_List := Predefined_Primitive_Bodies (Def_Id, Renamed_Eq);
-         Append_Freeze_Actions (Def_Id, Predef_List);
+
+         --  Do not add the body of the predefined primitives if we are
+         --  compiling under restriction No_Dispatching_Calls
+
+         if not Restriction_Active (No_Dispatching_Calls) then
+            Predef_List := Predefined_Primitive_Bodies (Def_Id, Renamed_Eq);
+            Append_Freeze_Actions (Def_Id, Predef_List);
+         end if;
 
          --  Ada 2005 (AI-391): If any wrappers were created for nonoverridden
          --  inherited functions, then add their bodies to the freeze actions.
@@ -5007,10 +5234,7 @@ package body Exp_Ch3 is
          if Ada_Version >= Ada_05
            and then not Restriction_Active (No_Dispatching_Calls)
            and then Is_Concurrent_Record_Type (Def_Id)
-           and then Implements_Interface (
-                      Typ          => Def_Id,
-                      Kind         => Any_Limited_Interface,
-                      Check_Parent => True)
+           and then Has_Abstract_Interfaces (Def_Id)
          then
             Append_Freeze_Actions (Def_Id,
               Make_Select_Specific_Data_Table (Def_Id));
@@ -5867,31 +6091,227 @@ package body Exp_Ch3 is
       Target     : Node_Id;
       Stmts_List : List_Id)
    is
-      Loc      : constant Source_Ptr := Sloc (Target);
-      ADT      : Elmt_Id;
-      Full_Typ : Entity_Id;
+      Loc         : constant Source_Ptr := Sloc (Target);
+      ADT         : Elmt_Id;
+      Full_Typ    : Entity_Id;
+      AI_Tag_Comp : Entity_Id;
+
+      Is_Synch_Typ : Boolean := False;
+      --  In case of non concurrent-record-types each parent-type has the
+      --  tags associated with the interface types that are not implemented
+      --  by the ancestors; concurrent-record-types have their whole list of
+      --  interface tags (and this case requires some special management).
+
+      procedure Initialize_Tag
+        (Typ       : Entity_Id;
+         Iface     : Entity_Id;
+         Tag_Comp  : in out Entity_Id;
+         Iface_Tag : Node_Id);
+      --  Initialize the tag of the secondary dispatch table of Typ associated
+      --  with Iface. Tag_Comp is the component of Typ that stores Iface_Tag.
 
       procedure Init_Secondary_Tags_Internal (Typ : Entity_Id);
       --  Internal subprogram used to recursively climb to the root type.
       --  We assume that all the primitives of the imported C++ class are
       --  defined in the C side.
 
+      --------------------
+      -- Initialize_Tag --
+      --------------------
+
+      procedure Initialize_Tag
+        (Typ       : Entity_Id;
+         Iface     : Entity_Id;
+         Tag_Comp  : in out Entity_Id;
+         Iface_Tag : Node_Id)
+      is
+         Prev_E : Entity_Id;
+
+      begin
+         --  If we are compiling under the CPP full ABI compatibility mode and
+         --  the ancestor is a CPP_Pragma tagged type then we generate code to
+         --  inherit the contents of the dispatch table directly from the
+         --  ancestor.
+
+         if Is_CPP_Class (Etype (Typ)) then
+            Append_To (Stmts_List,
+              Build_Inherit_Prims (Loc,
+                Old_Tag_Node =>
+                  Make_Selected_Component (Loc,
+                    Prefix        => New_Copy_Tree (Target),
+                    Selector_Name => New_Reference_To (Tag_Comp, Loc)),
+                New_Tag_Node =>
+                  New_Reference_To (Iface_Tag, Loc),
+                Num_Prims =>
+                  UI_To_Int
+                    (DT_Entry_Count (First_Tag_Component (Iface)))));
+         end if;
+
+         --  Initialize the pointer to the secondary DT associated with the
+         --  interface.
+
+         Append_To (Stmts_List,
+           Make_Assignment_Statement (Loc,
+             Name =>
+               Make_Selected_Component (Loc,
+                 Prefix => New_Copy_Tree (Target),
+                 Selector_Name => New_Reference_To (Tag_Comp, Loc)),
+             Expression =>
+               New_Reference_To (Iface_Tag, Loc)));
+
+         --  If the ancestor is CPP_Class, nothing else to do here
+
+         if Is_CPP_Class (Etype (Typ)) then
+            null;
+
+         --  Otherwise, comment required ???
+
+         else
+            --  Issue error if Set_Offset_To_Top is not available in a
+            --  configurable run-time environment.
+
+            if not RTE_Available (RE_Set_Offset_To_Top) then
+               Error_Msg_CRT ("abstract interface types", Typ);
+               return;
+            end if;
+
+            --  We generate a different call when the parent of the type has
+            --  discriminants.
+
+            if Typ /= Etype (Typ)
+              and then Has_Discriminants (Etype (Typ))
+            then
+               pragma Assert
+                 (Present (DT_Offset_To_Top_Func (Tag_Comp)));
+
+               --  Generate:
+               --    Set_Offset_To_Top
+               --      (This         => Init,
+               --       Interface_T  => Iface'Tag,
+               --       Is_Constant  => False,
+               --       Offset_Value => n,
+               --       Offset_Func  => Fn'Address)
+
+               Append_To (Stmts_List,
+                 Make_Procedure_Call_Statement (Loc,
+                   Name => New_Reference_To
+                             (RTE (RE_Set_Offset_To_Top), Loc),
+                   Parameter_Associations => New_List (
+                     Make_Attribute_Reference (Loc,
+                       Prefix => New_Copy_Tree (Target),
+                       Attribute_Name => Name_Address),
+
+                     Unchecked_Convert_To (RTE (RE_Tag),
+                       New_Reference_To
+                         (Node (First_Elmt (Access_Disp_Table (Iface))),
+                          Loc)),
+
+                     New_Occurrence_Of (Standard_False, Loc),
+
+                     Unchecked_Convert_To
+                       (RTE (RE_Storage_Offset),
+                        Make_Attribute_Reference (Loc,
+                          Prefix         =>
+                            Make_Selected_Component (Loc,
+                              Prefix => New_Copy_Tree (Target),
+                              Selector_Name =>
+                                New_Reference_To (Tag_Comp, Loc)),
+                          Attribute_Name => Name_Position)),
+
+                     Unchecked_Convert_To (RTE (RE_Address),
+                       Make_Attribute_Reference (Loc,
+                         Prefix => New_Reference_To
+                                     (DT_Offset_To_Top_Func (Tag_Comp), Loc),
+                         Attribute_Name => Name_Address)))));
+
+               --  In this case the next component stores the value of the
+               --  offset to the top.
+
+               Prev_E := Tag_Comp;
+               Next_Entity (Tag_Comp);
+               pragma Assert (Present (Tag_Comp));
+
+               Append_To (Stmts_List,
+                 Make_Assignment_Statement (Loc,
+                   Name =>
+                     Make_Selected_Component (Loc,
+                       Prefix => New_Copy_Tree (Target),
+                       Selector_Name => New_Reference_To (Tag_Comp, Loc)),
+                   Expression =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         =>
+                         Make_Selected_Component (Loc,
+                           Prefix => New_Copy_Tree (Target),
+                           Selector_Name =>
+                             New_Reference_To (Prev_E, Loc)),
+                     Attribute_Name => Name_Position)));
+
+            --  Normal case: No discriminants in the parent type
+
+            else
+               --  Generate:
+               --    Set_Offset_To_Top
+               --      (This         => Init,
+               --       Interface_T  => Iface'Tag,
+               --       Is_Constant  => True,
+               --       Offset_Value => n,
+               --       Offset_Func  => null);
+
+               Append_To (Stmts_List,
+                 Make_Procedure_Call_Statement (Loc,
+                   Name => New_Reference_To
+                             (RTE (RE_Set_Offset_To_Top), Loc),
+                   Parameter_Associations => New_List (
+                     Make_Attribute_Reference (Loc,
+                       Prefix => New_Copy_Tree (Target),
+                       Attribute_Name => Name_Address),
+
+                     Unchecked_Convert_To (RTE (RE_Tag),
+                       New_Reference_To
+                         (Node (First_Elmt
+                                (Access_Disp_Table (Iface))),
+                          Loc)),
+
+                     New_Occurrence_Of (Standard_True, Loc),
+
+                     Unchecked_Convert_To
+                       (RTE (RE_Storage_Offset),
+                        Make_Attribute_Reference (Loc,
+                          Prefix =>
+                            Make_Selected_Component (Loc,
+                              Prefix => New_Copy_Tree (Target),
+                              Selector_Name  =>
+                                New_Reference_To (Tag_Comp, Loc)),
+                         Attribute_Name => Name_Position)),
+
+                     New_Reference_To
+                       (RTE (RE_Null_Address), Loc))));
+            end if;
+         end if;
+      end Initialize_Tag;
+
       ----------------------------------
       -- Init_Secondary_Tags_Internal --
       ----------------------------------
 
       procedure Init_Secondary_Tags_Internal (Typ : Entity_Id) is
-         Args   : List_Id;
-         Aux_N  : Node_Id;
-         E      : Entity_Id;
-         Iface  : Entity_Id;
-         New_N  : Node_Id;
-         Prev_E : Entity_Id;
+         AI_Elmt : Elmt_Id;
 
       begin
-         --  Climb to the ancestor (if any) handling private types
+         --  Climb to the ancestor (if any) handling synchronized interface
+         --  derivations and private types
 
-         if Present (Full_View (Etype (Typ))) then
+         if Is_Concurrent_Record_Type (Typ) then
+            declare
+               Iface_List : constant List_Id := Abstract_Interface_List (Typ);
+
+            begin
+               if Is_Non_Empty_List (Iface_List) then
+                  Init_Secondary_Tags_Internal (Etype (First (Iface_List)));
+               end if;
+            end;
+
+         elsif Present (Full_View (Etype (Typ))) then
             if Full_View (Etype (Typ)) /= Typ then
                Init_Secondary_Tags_Internal (Full_View (Etype (Typ)));
             end if;
@@ -5916,220 +6336,36 @@ package body Exp_Ch3 is
                   Make_Attribute_Reference (Loc,
                     Prefix => New_Copy_Tree (Target),
                     Attribute_Name => Name_Address),
-
                   Unchecked_Convert_To (RTE (RE_Tag),
                     New_Reference_To
                       (Node (First_Elmt (Access_Disp_Table (Typ))),
                        Loc)),
-
                   New_Occurrence_Of (Standard_True, Loc),
-
                   Make_Integer_Literal (Loc, Uint_0),
-
                   New_Reference_To (RTE (RE_Null_Address), Loc))));
          end if;
 
          if Present (Abstract_Interfaces (Typ))
            and then not Is_Empty_Elmt_List (Abstract_Interfaces (Typ))
          then
-            E := First_Entity (Typ);
-            while Present (E) loop
-               if Is_Tag (E)
-                 and then Chars (E) /= Name_uTag
-               then
-                  Aux_N := Node (ADT);
-                  pragma Assert (Present (Aux_N));
+            if not Is_Synch_Typ then
+               AI_Tag_Comp := Next_Tag_Component (First_Tag_Component (Typ));
+               pragma Assert (Present (AI_Tag_Comp));
+            end if;
 
-                  Iface := Find_Interface (Typ, E);
+            AI_Elmt := First_Elmt (Abstract_Interfaces (Typ));
+            while Present (AI_Elmt) loop
+               pragma Assert (Present (Node (ADT)));
 
-                  --  If we are compiling under the CPP full ABI compatibility
-                  --  mode and the ancestor is a CPP_Pragma tagged type then
-                  --  we generate code to inherit the contents of the dispatch
-                  --  table directly from the ancestor.
+               Initialize_Tag
+                 (Typ       => Typ,
+                  Iface     => Node (AI_Elmt),
+                  Tag_Comp  => AI_Tag_Comp,
+                  Iface_Tag => Node (ADT));
 
-                  if Is_CPP_Class (Etype (Typ))
-                    and then not Debug_Flag_QQ
-                  then
-                     Args := New_List (
-                       Node1 =>
-                         Unchecked_Convert_To (RTE (RE_Tag),
-                           Make_Selected_Component (Loc,
-                             Prefix        => New_Copy_Tree (Target),
-                             Selector_Name => New_Reference_To (E, Loc))),
-                       Node2 =>
-                         Unchecked_Convert_To (RTE (RE_Tag),
-                           New_Reference_To (Aux_N, Loc)),
-
-                       Node3 =>
-                         Make_Integer_Literal (Loc,
-                           DT_Entry_Count (First_Tag_Component (Iface))));
-
-                     --  Issue error if Inherit_CPP_DT is not available
-                     --  in a configurable run-time environment.
-
-                     if not RTE_Available (RE_Inherit_CPP_DT) then
-                        Error_Msg_CRT ("cpp interfacing", Typ);
-                        return;
-                     end if;
-
-                     New_N :=
-                       Make_Procedure_Call_Statement (Loc,
-                         Name => New_Reference_To (RTE (RE_Inherit_CPP_DT),
-                                                   Loc),
-                         Parameter_Associations => Args);
-
-                     Append_To (Stmts_List, New_N);
-                  end if;
-
-                  --  Initialize the pointer to the secondary DT associated
-                  --  with the interface
-
-                  Append_To (Stmts_List,
-                    Make_Assignment_Statement (Loc,
-                      Name =>
-                        Make_Selected_Component (Loc,
-                          Prefix => New_Copy_Tree (Target),
-                          Selector_Name => New_Reference_To (E, Loc)),
-                      Expression =>
-                        New_Reference_To (Aux_N, Loc)));
-
-                  --  If the ancestor is CPP_Class, nothing else to do here
-
-                  if Is_CPP_Class (Etype (Typ)) and then not Debug_Flag_QQ then
-                     null;
-
-                  --  Otherwise, comment required ???
-
-                  else
-                     --  Issue error if Set_Offset_To_Top is not available in a
-                     --  configurable run-time environment.
-
-                     if not RTE_Available (RE_Set_Offset_To_Top) then
-                        Error_Msg_CRT ("abstract interface types", Typ);
-                        return;
-                     end if;
-
-                     --  We generate a different call when the parent of the
-                     --  type has discriminants.
-
-                     if Typ /= Etype (Typ)
-                       and then Has_Discriminants (Etype (Typ))
-                     then
-                        pragma Assert
-                          (Present (DT_Offset_To_Top_Func (E)));
-
-                        --  Generate:
-                        --    Set_Offset_To_Top
-                        --      (This         => Init,
-                        --       Interface_T  => Iface'Tag,
-                        --       Is_Constant  => False,
-                        --       Offset_Value => n,
-                        --       Offset_Func  => Fn'Address)
-
-                        Append_To (Stmts_List,
-                          Make_Procedure_Call_Statement (Loc,
-                            Name => New_Reference_To
-                                      (RTE (RE_Set_Offset_To_Top), Loc),
-                            Parameter_Associations => New_List (
-                              Make_Attribute_Reference (Loc,
-                                Prefix => New_Copy_Tree (Target),
-                                Attribute_Name => Name_Address),
-
-                              Unchecked_Convert_To (RTE (RE_Tag),
-                                New_Reference_To
-                                  (Node (First_Elmt
-                                         (Access_Disp_Table (Iface))),
-                                   Loc)),
-
-                              New_Occurrence_Of (Standard_False, Loc),
-
-                              Unchecked_Convert_To
-                                (RTE (RE_Storage_Offset),
-                                 Make_Attribute_Reference (Loc,
-                                   Prefix         =>
-                                     Make_Selected_Component (Loc,
-                                       Prefix => New_Copy_Tree (Target),
-                                       Selector_Name =>
-                                         New_Reference_To (E, Loc)),
-                                   Attribute_Name => Name_Position)),
-
-                              Unchecked_Convert_To (RTE (RE_Address),
-                                Make_Attribute_Reference (Loc,
-                                  Prefix => New_Reference_To
-                                              (DT_Offset_To_Top_Func (E),
-                                               Loc),
-                                  Attribute_Name =>
-                                    Name_Address)))));
-
-                        --  In this case the next component stores the
-                        --  value of the offset to the top.
-
-                        Prev_E := E;
-                        Next_Entity (E);
-                        pragma Assert (Present (E));
-
-                        Append_To (Stmts_List,
-                          Make_Assignment_Statement (Loc,
-                            Name =>
-                              Make_Selected_Component (Loc,
-                                Prefix => New_Copy_Tree (Target),
-                                Selector_Name => New_Reference_To (E, Loc)),
-                            Expression =>
-                              Make_Attribute_Reference (Loc,
-                                Prefix         =>
-                                  Make_Selected_Component (Loc,
-                                    Prefix => New_Copy_Tree (Target),
-                                    Selector_Name =>
-                                      New_Reference_To (Prev_E, Loc)),
-                              Attribute_Name => Name_Position)));
-
-                     --  Normal case: No discriminants in the parent type
-
-                     else
-                        --  Generate:
-                        --    Set_Offset_To_Top
-                        --      (This         => Init,
-                        --       Interface_T  => Iface'Tag,
-                        --       Is_Constant  => True,
-                        --       Offset_Value => n,
-                        --       Offset_Func  => null);
-
-                        Append_To (Stmts_List,
-                          Make_Procedure_Call_Statement (Loc,
-                            Name => New_Reference_To
-                                      (RTE (RE_Set_Offset_To_Top), Loc),
-                            Parameter_Associations => New_List (
-                              Make_Attribute_Reference (Loc,
-                                Prefix => New_Copy_Tree (Target),
-                                Attribute_Name => Name_Address),
-
-                              Unchecked_Convert_To (RTE (RE_Tag),
-                                New_Reference_To
-                                  (Node (First_Elmt
-                                         (Access_Disp_Table (Iface))),
-                                   Loc)),
-
-                              New_Occurrence_Of (Standard_True, Loc),
-
-                              Unchecked_Convert_To
-                                (RTE (RE_Storage_Offset),
-                                 Make_Attribute_Reference (Loc,
-                                   Prefix =>
-                                    Make_Selected_Component (Loc,
-                                      Prefix => New_Copy_Tree (Target),
-                                      Selector_Name  =>
-                                        New_Reference_To (E, Loc)),
-                                  Attribute_Name => Name_Position)),
-
-                              New_Reference_To
-                                (RTE (RE_Null_Address), Loc))));
-                     end if;
-                  end if;
-
-                  Next_Elmt (ADT);
-               end if;
-
-               Next_Entity (E);
+               Next_Elmt (ADT);
+               AI_Tag_Comp := Next_Tag_Component (AI_Tag_Comp);
+               Next_Elmt (AI_Elmt);
             end loop;
          end if;
       end Init_Secondary_Tags_Internal;
@@ -6148,6 +6384,11 @@ package body Exp_Ch3 is
          Full_Typ := Full_View (Typ);
       else
          Full_Typ := Typ;
+      end if;
+
+      if Is_Concurrent_Record_Type (Typ) then
+         Is_Synch_Typ := True;
+         AI_Tag_Comp  := Next_Tag_Component (First_Tag_Component (Typ));
       end if;
 
       Init_Secondary_Tags_Internal (Full_Typ);
@@ -6195,9 +6436,9 @@ package body Exp_Ch3 is
          --  is needed to distinguish inherited operations from renamings
          --  (which also have Alias set).
 
-         if Is_Abstract (Subp)
+         if Is_Abstract_Subprogram (Subp)
            and then Present (Alias (Subp))
-           and then not Is_Abstract (Alias (Subp))
+           and then not Is_Abstract_Subprogram (Alias (Subp))
            and then not Comes_From_Source (Subp)
            and then Ekind (Subp) = E_Function
            and then Has_Controlling_Result (Subp)
@@ -6668,7 +6909,7 @@ package body Exp_Ch3 is
 
             elsif Chars (Node (Prim)) = Name_Op_Eq
               and then Present (Alias (Node (Prim)))
-              and then Is_Abstract (Alias (Node (Prim)))
+              and then Is_Abstract_Subprogram (Alias (Node (Prim)))
             then
                Eq_Needed := False;
                exit;
@@ -6767,12 +7008,8 @@ package body Exp_Ch3 is
       if Ada_Version >= Ada_05
         and then
           ((Is_Interface (Tag_Typ) and then Is_Limited_Record (Tag_Typ))
-              or else
-                (Is_Concurrent_Record_Type (Tag_Typ)
-                   and then Implements_Interface (
-                              Typ          => Tag_Typ,
-                              Kind         => Any_Limited_Interface,
-                              Check_Parent => True)))
+              or else (Is_Concurrent_Record_Type (Tag_Typ)
+                        and then Has_Abstract_Interfaces (Tag_Typ)))
       then
          Append_To (Res,
            Make_Subprogram_Declaration (Loc,
@@ -7002,7 +7239,7 @@ package body Exp_Ch3 is
       elsif (Is_TSS (Name, TSS_Stream_Input)
               or else
              Is_TSS (Name, TSS_Stream_Output))
-        and then Is_Abstract (Tag_Typ)
+        and then Is_Abstract_Type (Tag_Typ)
       then
          return Make_Abstract_Subprogram_Declaration (Loc, Spec);
 
@@ -7147,7 +7384,7 @@ package body Exp_Ch3 is
       --  Skip bodies of _Input and _Output for the abstract case, since
       --  the corresponding specs are abstract (see Predef_Spec_Or_Body)
 
-      if not Is_Abstract (Tag_Typ) then
+      if not Is_Abstract_Type (Tag_Typ) then
          if Stream_Operation_OK (Tag_Typ, TSS_Stream_Input)
            and then No (TSS (Tag_Typ, TSS_Stream_Input))
          then
@@ -7181,12 +7418,8 @@ package body Exp_Ch3 is
           not Restriction_Active (No_Dispatching_Calls)
         and then
           ((Is_Interface (Tag_Typ) and then Is_Limited_Record (Tag_Typ))
-              or else
-                (Is_Concurrent_Record_Type (Tag_Typ)
-                   and then Implements_Interface (
-                              Typ          => Tag_Typ,
-                              Kind         => Any_Limited_Interface,
-                              Check_Parent => True)))
+              or else (Is_Concurrent_Record_Type (Tag_Typ)
+                        and then Has_Abstract_Interfaces (Tag_Typ)))
       then
          Append_To (Res, Make_Disp_Asynchronous_Select_Body (Tag_Typ));
          Append_To (Res, Make_Disp_Conditional_Select_Body  (Tag_Typ));
@@ -7415,9 +7648,13 @@ package body Exp_Ch3 is
         not (Is_Limited_Type (Typ)
                and then not Has_Inheritable_Stream_Attribute)
           and then not Has_Unknown_Discriminants (Typ)
-          and then RTE_Available (RE_Tag)
-          and then RTE_Available (RE_Root_Stream_Type)
+          and then not (Is_Interface (Typ)
+                         and then (Is_Task_Interface (Typ)
+                                   or else Is_Protected_Interface (Typ)
+                                   or else Is_Synchronized_Interface (Typ)))
+          and then not Restriction_Active (No_Streams)
           and then not Restriction_Active (No_Dispatch)
-          and then not Restriction_Active (No_Streams);
+          and then RTE_Available (RE_Tag)
+          and then RTE_Available (RE_Root_Stream_Type);
    end Stream_Operation_OK;
 end Exp_Ch3;
