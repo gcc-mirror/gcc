@@ -447,17 +447,19 @@ __gnat_machine_state_length (void)
   return sizeof (struct sigcontext);
 }
 
-/********************/
-/* PA HP-UX section */
-/********************/
+/*****************/
+/* HP-UX section */
+/*****************/
 
-#elif defined (__hppa__) && defined (__hpux__)
+#elif defined (__hpux__)
 
 #include <signal.h>
 #include <sys/ucontext.h>
 
 static void
 __gnat_error_handler (int sig, siginfo_t *siginfo, void *ucontext);
+
+#if defined (__hppa__)
 
 /* __gnat_adjust_context_for_raise - see comments along with the default
    version later in this file.  */
@@ -474,6 +476,8 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
   else
     mcontext->ss_narrow.ss_pcoq_head ++;
 }
+
+#endif
 
 static void
 __gnat_error_handler
@@ -1627,7 +1631,8 @@ __gnat_install_handler ()
      exceptions.  Make sure that the handler isn't interrupted by another
      signal that might cause a scheduling event! */
 
-  act.sa_handler = __gnat_error_handler;
+  act.sa_sigaction
+    = (void (*)(int, struct __siginfo *, void*)) __gnat_error_handler;
   act.sa_flags = SA_NODEFER | SA_RESTART | SA_SIGINFO;
   (void) sigemptyset (&act.sa_mask);
 
@@ -1803,6 +1808,12 @@ __gnat_init_float (void)
 #if defined (_ARCH_PPC) && !defined (_SOFT_FLOAT) && !defined (VTHREADS)
   asm ("mtfsb0 25");
   asm ("mtfsb0 26");
+#endif
+
+#if (defined (__i386__) || defined (i386)) && !defined (VTHREADS)
+  /* This is used to properly initialize the FPU on an x86 for each
+     process thread. */
+  asm ("finit");
 #endif
 
   /* Similarly for sparc64. Achieved by masking bits in the Trap Enable Mask
