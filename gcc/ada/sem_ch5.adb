@@ -517,10 +517,27 @@ package body Sem_Ch5 is
       --  Propagate the tag from a class-wide target to the rhs when the rhs
       --  is a tag-indeterminate call.
 
-      if Is_Class_Wide_Type (T1)
-        and then Is_Tag_Indeterminate (Rhs)
-      then
-         Propagate_Tag (Lhs, Rhs);
+      if Is_Tag_Indeterminate (Rhs) then
+         if Is_Class_Wide_Type (T1) then
+            Propagate_Tag (Lhs, Rhs);
+
+         elsif Nkind (Rhs) = N_Function_Call
+              and then Is_Entity_Name (Name (Rhs))
+              and then Is_Abstract_Subprogram (Entity (Name (Rhs)))
+         then
+            Error_Msg_N
+              ("call to abstract function must be dispatching", Name (Rhs));
+
+         elsif Nkind (Rhs) = N_Qualified_Expression
+           and then Nkind (Expression (Rhs)) = N_Function_Call
+              and then Is_Entity_Name (Name (Expression (Rhs)))
+              and then
+                Is_Abstract_Subprogram (Entity (Name (Expression (Rhs))))
+         then
+            Error_Msg_N
+              ("call to abstract function must be dispatching",
+                Name (Expression (Rhs)));
+         end if;
       end if;
 
       --  Ada 2005 (AI-230 and AI-385): When the lhs type is an anonymous
@@ -1117,25 +1134,38 @@ package body Sem_Ch5 is
       Label       : constant Node_Id := Name (N);
       Scope_Id    : Entity_Id;
       Label_Scope : Entity_Id;
+      Label_Ent   : Entity_Id;
 
    begin
       Check_Unreachable_Code (N);
 
       Analyze (Label);
+      Label_Ent := Entity (Label);
 
-      if Entity (Label) = Any_Id then
+      --  Ignore previous error
+
+      if Label_Ent = Any_Id then
          return;
 
-      elsif Ekind (Entity (Label)) /= E_Label then
+      --  We just have a label as the target of a goto
+
+      elsif Ekind (Label_Ent) /= E_Label then
          Error_Msg_N ("target of goto statement must be a label", Label);
          return;
 
-      elsif not Reachable (Entity (Label)) then
+      --  Check that the target of the goto is reachable according to Ada
+      --  scoping rules. Note: the special gotos we generate for optimizing
+      --  local handling of exceptions would violate these rules, but we mark
+      --  such gotos as analyzed when built, so this code is never entered.
+
+      elsif not Reachable (Label_Ent) then
          Error_Msg_N ("target of goto statement is not reachable", Label);
          return;
       end if;
 
-      Label_Scope := Enclosing_Scope (Entity (Label));
+      --  Here if goto passes initial validity checks
+
+      Label_Scope := Enclosing_Scope (Label_Ent);
 
       for J in reverse 0 .. Scope_Stack.Last loop
          Scope_Id := Scope_Stack.Table (J).Entity;
@@ -1873,65 +1903,162 @@ package body Sem_Ch5 is
       --  Initial conditions met, see if condition is of right form
 
       declare
-         Cond : constant Node_Id := Condition (Iter);
-         Var  : Entity_Id;
-         Loc  : Node_Id;
+         Loc  : Node_Id := Empty;
+         Var  : Entity_Id := Empty;
 
-      begin
-         --  Condition is a direct variable reference
+         function Has_Indirection (T : Entity_Id) return Boolean;
+         --  If the controlling variable is an access type, or is a record type
+         --  with access components, assume that it is changed indirectly and
+         --  suppress the warning. As a concession to low-level programming, in
+         --  particular within Declib, we also suppress warnings on a record
+         --  type that contains components of type Address or Short_Address.
 
-         if Is_Entity_Name (Cond)
-           and then not Is_Library_Level_Entity (Entity (Cond))
-         then
-            Loc := Cond;
+         procedure Find_Var (N : Node_Id);
+         --  Find whether the condition in a while-loop can be reduced to
+         --  a test on a single variable. Recurse if condition is negation.
 
-         --  Case of condition is a comparison with compile time known value
+         ---------------------
+         -- Has_Indirection --
+         ---------------------
 
-         elsif Nkind (Cond) in N_Op_Compare then
-            if Is_Entity_Name (Left_Opnd (Cond))
-              and then Compile_Time_Known_Value (Right_Opnd (Cond))
+         function Has_Indirection (T : Entity_Id) return Boolean is
+            Comp : Entity_Id;
+            Rec  : Entity_Id;
+
+         begin
+            if Is_Access_Type (T) then
+               return True;
+
+            elsif Is_Private_Type (T)
+              and then Present (Full_View (T))
+              and then Is_Access_Type (Full_View (T))
             then
-               Loc := Left_Opnd (Cond);
+               return True;
 
-            elsif Is_Entity_Name (Right_Opnd (Cond))
-              and then Compile_Time_Known_Value (Left_Opnd (Cond))
+            elsif Is_Record_Type (T) then
+               Rec := T;
+
+            elsif Is_Private_Type (T)
+              and then Present (Full_View (T))
+              and then Is_Record_Type (Full_View (T))
             then
-               Loc := Right_Opnd (Cond);
+               Rec := Full_View (T);
+            else
+               return False;
+            end if;
+
+            Comp := First_Component (Rec);
+            while Present (Comp) loop
+               if Is_Access_Type (Etype (Comp))
+                 or else Is_Descendent_Of_Address (Etype (Comp))
+               then
+                  return True;
+               end if;
+
+               Next_Component (Comp);
+            end loop;
+
+            return False;
+         end Has_Indirection;
+
+         --------------
+         -- Find_Var --
+         --------------
+
+         procedure Find_Var (N : Node_Id) is
+         begin
+            --  Condition is a direct variable reference
+
+            if Is_Entity_Name (N)
+              and then not Is_Library_Level_Entity (Entity (N))
+            then
+               Loc := N;
+
+            --  Case of condition is a comparison with compile time known value
+
+            elsif Nkind (N) in N_Op_Compare then
+               if Is_Entity_Name (Left_Opnd (N))
+                 and then Compile_Time_Known_Value (Right_Opnd (N))
+               then
+                  Loc := Left_Opnd (N);
+
+               elsif Is_Entity_Name (Right_Opnd (N))
+                 and then Compile_Time_Known_Value (Left_Opnd (N))
+               then
+                  Loc :=  Right_Opnd (N);
+
+               else
+                  return;
+               end if;
+
+            --  If condition is a negation, check whether the operand has the
+            --  proper form.
+
+            elsif Nkind (N) = N_Op_Not then
+               Find_Var (Right_Opnd (N));
+
+            --  Case of condition is function call with one parameter
+
+            elsif Nkind (N) = N_Function_Call then
+               declare
+                  PA : constant List_Id := Parameter_Associations (N);
+               begin
+                  if Present (PA)
+                    and then List_Length (PA) = 1
+                    and then Is_Entity_Name (First (PA))
+                  then
+                     Loc := First (PA);
+                  else
+                     return;
+                  end if;
+               end;
 
             else
                return;
             end if;
+         end Find_Var;
 
-         --  Case of condition is function call with one parameter
+      begin
+         Find_Var (Condition (Iter));
 
-         elsif Nkind (Cond) = N_Function_Call then
-            declare
-               PA : constant List_Id := Parameter_Associations (Cond);
-            begin
-               if Present (PA)
-                 and then List_Length (PA) = 1
-                 and then Is_Entity_Name (First (PA))
-               then
-                  Loc := First (PA);
-               else
-                  return;
-               end if;
-            end;
-
-         else
-            return;
+         if Present (Loc) then
+            Var := Entity (Loc);
          end if;
-
-         --  If we fall through Loc is set to the node that is an entity ref
-
-         Var := Entity (Loc);
 
          if Present (Var)
            and then Ekind (Var) = E_Variable
            and then not Is_Library_Level_Entity (Var)
            and then Comes_From_Source (Var)
          then
-            null;
+            if Has_Indirection (Etype (Var)) then
+
+               --  Assume that the designated object is modified in some
+               --  other way, to avoid false positives.
+
+               return;
+
+            elsif Is_Volatile (Var) then
+
+               --  If the variable is marked as volatile, we assume that
+               --  the condition may be affected by other tasks.
+
+               return;
+
+            elsif Nkind (Original_Node (First (Statements (N))))
+                 = N_Delay_Relative_Statement
+              or else Nkind (Original_Node (First (Statements (N))))
+                 = N_Delay_Until_Statement
+            then
+
+               --  Assume that this is a multitasking program, and the
+               --  condition is affected by other threads.
+
+               return;
+
+            end if;
+
+         --  There no identifiable single variable in the condition
+
          else
             return;
          end if;
@@ -1979,13 +2106,15 @@ package body Sem_Ch5 is
                then
                   return Abandon;
 
-               --  Check for call to other than library level subprogram
+               --  Calls to subprograms are OK, unless the subprogram is
+               --  within the scope of the entity in question and could
+               --  therefore possibly modify it
 
                elsif Nkind (N) = N_Procedure_Call_Statement
                  or else Nkind (N) = N_Function_Call
                then
                   if not Is_Entity_Name (Name (N))
-                    or else not Is_Library_Level_Entity (Entity (Name (N)))
+                    or else Scope_Within (Entity (Name (N)), Scope (Var))
                   then
                      return Abandon;
                   end if;
