@@ -25,6 +25,7 @@
 ------------------------------------------------------------------------------
 
 with Hostparm;
+with Makeutl;  use Makeutl;
 with Namet;    use Namet;
 with Output;   use Output;
 with Osint;    use Osint;
@@ -48,8 +49,11 @@ package body Prj.Ext is
    No_Project_Default_Dir : constant String := "-";
 
    Current_Project_Path : String_Access;
-   --  The project path. Initialized during elaboration of package Contains at
-   --  least the current working directory.
+   --  The project path. Initialized by procedure Initialize_Project_Path
+   --  below.
+
+   procedure Initialize_Project_Path;
+   --  Initialize Current_Project_Path
 
    package Htable is new GNAT.HTable.Simple_HTable
      (Header_Num => Header_Num,
@@ -107,81 +111,11 @@ package body Prj.Ext is
       return False;
    end Check;
 
-   ------------------
-   -- Project_Path --
-   ------------------
+   -----------------------------
+   -- Initialize_Project_Path --
+   -----------------------------
 
-   function Project_Path return String is
-   begin
-      return Current_Project_Path.all;
-   end Project_Path;
-
-   -----------
-   -- Reset --
-   -----------
-
-   procedure Reset is
-   begin
-      Htable.Reset;
-   end Reset;
-
-   ----------------------
-   -- Set_Project_Path --
-   ----------------------
-
-   procedure Set_Project_Path (New_Path : String) is
-   begin
-      Free (Current_Project_Path);
-      Current_Project_Path := new String'(New_Path);
-   end Set_Project_Path;
-
-   --------------
-   -- Value_Of --
-   --------------
-
-   function Value_Of
-     (External_Name : Name_Id;
-      With_Default  : Name_Id := No_Name)
-      return          Name_Id
-   is
-      The_Value : Name_Id;
-      Name      : String := Get_Name_String (External_Name);
-
-   begin
-      Canonical_Case_File_Name (Name);
-      Name_Len := Name'Length;
-      Name_Buffer (1 .. Name_Len) := Name;
-      The_Value := Htable.Get (Name_Find);
-
-      if The_Value /= No_Name then
-         return The_Value;
-      end if;
-
-      --  Find if it is an environment, if it is, put value in the hash table
-
-      declare
-         Env_Value : String_Access := Getenv (Name);
-
-      begin
-         if Env_Value /= null and then Env_Value'Length > 0 then
-            Name_Len := Env_Value'Length;
-            Name_Buffer (1 .. Name_Len) := Env_Value.all;
-            The_Value := Name_Find;
-            Htable.Set (External_Name, The_Value);
-            Free (Env_Value);
-            return The_Value;
-
-         else
-            Free (Env_Value);
-            return With_Default;
-         end if;
-      end;
-   end Value_Of;
-
-begin
-   --  Initialize Current_Project_Path during package elaboration
-
-   declare
+   procedure Initialize_Project_Path is
       Add_Default_Dir : Boolean := True;
       First           : Positive;
       Last            : Positive;
@@ -286,13 +220,105 @@ begin
       --  Set the initial value of Current_Project_Path
 
       if Add_Default_Dir then
-         Current_Project_Path :=
-           new String'(Name_Buffer (1 .. Name_Len) & Path_Separator &
-                       Sdefault.Search_Dir_Prefix.all & ".." &
-                       Directory_Separator & ".." & Directory_Separator &
-                       ".." & Directory_Separator & "gnat");
+         declare
+            Prefix : String_Ptr := Sdefault.Search_Dir_Prefix;
+         begin
+            if Prefix = null then
+               Prefix := new String'(Executable_Prefix_Path);
+
+               if Prefix.all /= "" then
+                  Current_Project_Path :=
+                    new String'(Name_Buffer (1 .. Name_Len) & Path_Separator &
+                                Prefix.all & Directory_Separator & "gnat");
+               end if;
+
+            else
+               Current_Project_Path :=
+                 new String'(Name_Buffer (1 .. Name_Len) & Path_Separator &
+                             Prefix.all &
+                             ".." &  Directory_Separator &
+                             ".." & Directory_Separator &
+                             ".." & Directory_Separator & "gnat");
+            end if;
+         end;
       else
          Current_Project_Path := new String'(Name_Buffer (1 .. Name_Len));
       end if;
-   end;
+   end Initialize_Project_Path;
+
+   ------------------
+   -- Project_Path --
+   ------------------
+
+   function Project_Path return String is
+   begin
+      if Current_Project_Path = null then
+         Initialize_Project_Path;
+      end if;
+
+      return Current_Project_Path.all;
+   end Project_Path;
+
+   -----------
+   -- Reset --
+   -----------
+
+   procedure Reset is
+   begin
+      Htable.Reset;
+   end Reset;
+
+   ----------------------
+   -- Set_Project_Path --
+   ----------------------
+
+   procedure Set_Project_Path (New_Path : String) is
+   begin
+      Free (Current_Project_Path);
+      Current_Project_Path := new String'(New_Path);
+   end Set_Project_Path;
+
+   --------------
+   -- Value_Of --
+   --------------
+
+   function Value_Of
+     (External_Name : Name_Id;
+      With_Default  : Name_Id := No_Name)
+      return          Name_Id
+   is
+      The_Value : Name_Id;
+      Name      : String := Get_Name_String (External_Name);
+
+   begin
+      Canonical_Case_File_Name (Name);
+      Name_Len := Name'Length;
+      Name_Buffer (1 .. Name_Len) := Name;
+      The_Value := Htable.Get (Name_Find);
+
+      if The_Value /= No_Name then
+         return The_Value;
+      end if;
+
+      --  Find if it is an environment, if it is, put value in the hash table
+
+      declare
+         Env_Value : String_Access := Getenv (Name);
+
+      begin
+         if Env_Value /= null and then Env_Value'Length > 0 then
+            Name_Len := Env_Value'Length;
+            Name_Buffer (1 .. Name_Len) := Env_Value.all;
+            The_Value := Name_Find;
+            Htable.Set (External_Name, The_Value);
+            Free (Env_Value);
+            return The_Value;
+
+         else
+            Free (Env_Value);
+            return With_Default;
+         end if;
+      end;
+   end Value_Of;
+
 end Prj.Ext;

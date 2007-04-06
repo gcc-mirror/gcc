@@ -29,6 +29,7 @@ with Fmap;     use Fmap;
 with Hostparm;
 with MLib.Tgt; use MLib.Tgt;
 with Namet;    use Namet;
+with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Env;  use Prj.Env;
@@ -40,6 +41,7 @@ with Table;    use Table;
 with Targparm; use Targparm;
 
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
+with Ada.Directories;            use Ada.Directories;
 with Ada.Strings;                use Ada.Strings;
 with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
 with Ada.Strings.Maps.Constants; use Ada.Strings.Maps.Constants;
@@ -295,22 +297,30 @@ package body Prj.Nmsc is
    --  a spec suffix, a body suffix or a separate suffix.
 
    procedure Locate_Directory
-     (Name    : Name_Id;
-      Parent  : Name_Id;
-      Dir     : out Name_Id;
-      Display : out Name_Id);
-   --  Locate a directory (returns No_Name for Dir and Display if directory
-   --  does not exist). Name is the directory name. Parent is the root
-   --  directory, if Name is a relative path name. Dir is the canonical case
-   --  path name of the directory, Display is the directory path name for
-   --  display purposes.
+     (Project  : Project_Id;
+      In_Tree  : Project_Tree_Ref;
+      Name     : Name_Id;
+      Parent   : Name_Id;
+      Dir      : out Name_Id;
+      Display  : out Name_Id;
+      Create   : String := "";
+      Location : Source_Ptr := No_Location);
+   --  Locate a directory. Name is the directory name. Parent is the root
+   --  directory, if Name a relative path name. Dir is set to the canonical
+   --  case path name of the directory, and Display is the directory path name
+   --  for display purposes. If the directory does not exist and Project_Setup
+   --  is True and Create is a non null string, an attempt is made to create
+   --  the directory. If the directory does not exist and Project_Setup is
+   --  false, then Dir and Display are set to No_Name.
 
    procedure Look_For_Sources
      (Project      : Project_Id;
       In_Tree      : Project_Tree_Ref;
       Data         : in out Project_Data;
       Follow_Links : Boolean);
-   --  Find all the sources of a project
+   --  Find all the sources of project Project in project tree In_Tree and
+   --  update its Data accordingly. Resolve symbolic links in the path names
+   --  if Follow_Links is True.
 
    function Path_Name_Of
      (File_Name : Name_Id;
@@ -634,21 +644,21 @@ package body Prj.Nmsc is
 
       if Naming /= In_Tree.Private_Part.Default_Naming then
          declare
-            Dot_Replacement       : constant String :=
-                                     Get_Name_String
-                                       (Naming.Dot_Replacement);
+            Dot_Replacement : constant String :=
+                                Get_Name_String
+                                  (Naming.Dot_Replacement);
 
-            Spec_Suffix : constant String :=
-                                     Get_Name_String
-                                       (Naming.Ada_Spec_Suffix);
+            Spec_Suffix     : constant String :=
+                                Get_Name_String
+                                  (Naming.Ada_Spec_Suffix);
 
-            Body_Suffix : constant String :=
-                                     Get_Name_String
-                                       (Naming.Ada_Body_Suffix);
+            Body_Suffix     : constant String :=
+                                Get_Name_String
+                                  (Naming.Ada_Body_Suffix);
 
-            Separate_Suffix       : constant String :=
-                                     Get_Name_String
-                                       (Naming.Separate_Suffix);
+            Separate_Suffix : constant String :=
+                                Get_Name_String
+                                  (Naming.Separate_Suffix);
 
          begin
             --  Dot_Replacement cannot
@@ -771,7 +781,7 @@ package body Prj.Nmsc is
       Suffix           : String;
       Naming_Exception : Boolean)
    is
-      Name : String := Get_Name_String (File_Name);
+      Name          : String := Get_Name_String (File_Name);
       Real_Location : Source_Ptr := Location;
 
    begin
@@ -1401,23 +1411,23 @@ package body Prj.Nmsc is
       In_Tree : Project_Tree_Ref;
       Data    : in out Project_Data)
    is
-      Attributes : constant Prj.Variable_Id := Data.Decl.Attributes;
+      Attributes   : constant Prj.Variable_Id := Data.Decl.Attributes;
 
-      Lib_Dir : constant Prj.Variable_Value :=
-                  Prj.Util.Value_Of
-                    (Snames.Name_Library_Dir, Attributes, In_Tree);
+      Lib_Dir      : constant Prj.Variable_Value :=
+                       Prj.Util.Value_Of
+                         (Snames.Name_Library_Dir, Attributes, In_Tree);
 
-      Lib_Name : constant Prj.Variable_Value :=
-                   Prj.Util.Value_Of
-                     (Snames.Name_Library_Name, Attributes, In_Tree);
+      Lib_Name     : constant Prj.Variable_Value :=
+                       Prj.Util.Value_Of
+                         (Snames.Name_Library_Name, Attributes, In_Tree);
 
-      Lib_Version : constant Prj.Variable_Value :=
-                      Prj.Util.Value_Of
-                        (Snames.Name_Library_Version, Attributes, In_Tree);
+      Lib_Version  : constant Prj.Variable_Value :=
+                       Prj.Util.Value_Of
+                         (Snames.Name_Library_Version, Attributes, In_Tree);
 
-      Lib_ALI_Dir : constant Prj.Variable_Value :=
-                      Prj.Util.Value_Of
-                        (Snames.Name_Library_Ali_Dir, Attributes, In_Tree);
+      Lib_ALI_Dir  : constant Prj.Variable_Value :=
+                       Prj.Util.Value_Of
+                         (Snames.Name_Library_Ali_Dir, Attributes, In_Tree);
 
       The_Lib_Kind : constant Prj.Variable_Value :=
                        Prj.Util.Value_Of
@@ -1469,8 +1479,9 @@ package body Prj.Nmsc is
          --  Find path name, check that it is a directory
 
          Locate_Directory
-           (Lib_Dir.Value, Data.Display_Directory,
-            Data.Library_Dir, Data.Display_Library_Dir);
+           (Project, In_Tree, Lib_Dir.Value, Data.Display_Directory,
+            Data.Library_Dir, Data.Display_Library_Dir, Create => "library",
+            Location => Lib_Dir.Location);
 
          if Data.Library_Dir = No_Name then
 
@@ -1641,8 +1652,9 @@ package body Prj.Nmsc is
                --  Find path name, check that it is a directory
 
                Locate_Directory
-                 (Lib_ALI_Dir.Value, Data.Display_Directory,
-                  Data.Library_ALI_Dir, Data.Display_Library_ALI_Dir);
+                 (Project, In_Tree, Lib_ALI_Dir.Value, Data.Display_Directory,
+                  Data.Library_ALI_Dir, Data.Display_Library_ALI_Dir,
+                  Create => "library ALI", Location => Lib_ALI_Dir.Location);
 
                if Data.Library_ALI_Dir = No_Name then
 
@@ -1865,7 +1877,7 @@ package body Prj.Nmsc is
       Naming_Id : constant Package_Id :=
                     Util.Value_Of (Name_Naming, Data.Decl.Packages, In_Tree);
 
-      Naming : Package_Element;
+      Naming    : Package_Element;
 
    begin
       --  If there is a package Naming, we will put in Data.Naming
@@ -2468,9 +2480,11 @@ package body Prj.Nmsc is
 
             begin
                Locate_Directory
-                 (Dir_Id, Data.Display_Directory,
+                 (Project, In_Tree, Dir_Id, Data.Display_Directory,
                   Data.Library_Src_Dir,
-                  Data.Display_Library_Src_Dir);
+                  Data.Display_Library_Src_Dir,
+                  Create => "library source copy",
+                  Location => Lib_Src_Dir.Location);
 
                --  If directory does not exist, report an error
 
@@ -2819,10 +2833,10 @@ package body Prj.Nmsc is
       Flag_Location : Source_Ptr)
    is
       Real_Location : Source_Ptr := Flag_Location;
-      Error_Buffer : String (1 .. 5_000);
-      Error_Last   : Natural := 0;
-      Msg_Name     : Natural := 0;
-      First        : Positive := Msg'First;
+      Error_Buffer  : String (1 .. 5_000);
+      Error_Last    : Natural := 0;
+      Msg_Name      : Natural := 0;
+      First         : Positive := Msg'First;
 
       procedure Add (C : Character);
       --  Add a character to the buffer
@@ -3081,13 +3095,13 @@ package body Prj.Nmsc is
       In_Tree : Project_Tree_Ref;
       Data    : in out Project_Data)
    is
-      Object_Dir : constant Variable_Value :=
-                     Util.Value_Of
-                       (Name_Object_Dir, Data.Decl.Attributes, In_Tree);
+      Object_Dir  : constant Variable_Value :=
+                      Util.Value_Of
+                        (Name_Object_Dir, Data.Decl.Attributes, In_Tree);
 
-      Exec_Dir   : constant Variable_Value :=
-                     Util.Value_Of
-                       (Name_Exec_Dir, Data.Decl.Attributes, In_Tree);
+      Exec_Dir    : constant Variable_Value :=
+                      Util.Value_Of
+                        (Name_Exec_Dir, Data.Decl.Attributes, In_Tree);
 
       Source_Dirs : constant Variable_Value :=
                       Util.Value_Of
@@ -3354,7 +3368,9 @@ package body Prj.Nmsc is
 
             begin
                Locate_Directory
-                 (From, Data.Display_Directory, Path_Name, Display_Path_Name);
+                 (Project, In_Tree,
+                  From, Data.Display_Directory,
+                  Path_Name, Display_Path_Name);
 
                if Path_Name = No_Name then
                   Err_Vars.Error_Msg_Name_1 := From;
@@ -3438,8 +3454,9 @@ package body Prj.Nmsc is
             --  We check that the specified object directory does exist
 
             Locate_Directory
-              (Object_Dir.Value, Data.Display_Directory,
-               Data.Object_Directory, Data.Display_Object_Dir);
+              (Project, In_Tree, Object_Dir.Value, Data.Display_Directory,
+               Data.Object_Directory, Data.Display_Object_Dir,
+               Create => "object", Location => Object_Dir.Location);
 
             if Data.Object_Directory = No_Name then
 
@@ -3498,8 +3515,9 @@ package body Prj.Nmsc is
             --  does exist.
 
             Locate_Directory
-              (Exec_Dir.Value, Data.Directory,
-               Data.Exec_Directory, Data.Display_Exec_Dir);
+              (Project, In_Tree, Exec_Dir.Value, Data.Directory,
+               Data.Exec_Directory, Data.Display_Exec_Dir,
+               Create => "exec", Location => Exec_Dir.Location);
 
             if Data.Exec_Directory = No_Name then
                Err_Vars.Error_Msg_Name_1 := Exec_Dir.Value;
@@ -3619,7 +3637,8 @@ package body Prj.Nmsc is
    procedure Get_Mains
      (Project : Project_Id;
       In_Tree : Project_Tree_Ref;
-      Data    : in out Project_Data) is
+      Data    : in out Project_Data)
+   is
       Mains : constant Variable_Value :=
                 Prj.Util.Value_Of (Name_Main, Data.Decl.Attributes, In_Tree);
 
@@ -3718,8 +3737,8 @@ package body Prj.Nmsc is
       Unit_Kind           : out Spec_Or_Body;
       Needs_Pragma        : out Boolean)
    is
-      Info_Id  : Ada_Naming_Exception_Id
-        := Ada_Naming_Exceptions.Get (Canonical_File_Name);
+      Info_Id  : Ada_Naming_Exception_Id :=
+                   Ada_Naming_Exceptions.Get (Canonical_File_Name);
       VMS_Name : Name_Id;
 
    begin
@@ -4035,18 +4054,24 @@ package body Prj.Nmsc is
    ----------------------
 
    procedure Locate_Directory
-     (Name    : Name_Id;
-      Parent  : Name_Id;
-      Dir     : out Name_Id;
-      Display : out Name_Id)
+     (Project  : Project_Id;
+      In_Tree  : Project_Tree_Ref;
+      Name     : Name_Id;
+      Parent   : Name_Id;
+      Dir      : out Name_Id;
+      Display  : out Name_Id;
+      Create   : String := "";
+      Location : Source_Ptr := No_Location)
    is
-      The_Name   : constant String := Get_Name_String (Name);
+      The_Name        : constant String := Get_Name_String (Name);
 
-      The_Parent : constant String :=
-                     Get_Name_String (Parent) & Directory_Separator;
+      The_Parent      : constant String :=
+                          Get_Name_String (Parent) & Directory_Separator;
 
       The_Parent_Last : constant Natural :=
-                     Compute_Directory_Last (The_Parent);
+                          Compute_Directory_Last (The_Parent);
+
+      Full_Name       : Name_Id;
 
    begin
       if Current_Verbosity = High then
@@ -4061,11 +4086,47 @@ package body Prj.Nmsc is
       Display := No_Name;
 
       if Is_Absolute_Path (The_Name) then
-         if Is_Directory (The_Name) then
+         Full_Name := Name;
+
+      else
+         Name_Len := 0;
+         Add_Str_To_Name_Buffer
+           (The_Parent (The_Parent'First .. The_Parent_Last));
+         Add_Str_To_Name_Buffer (The_Name);
+         Full_Name := Name_Find;
+      end if;
+
+      declare
+         Full_Path_Name : constant String := Get_Name_String (Full_Name);
+
+      begin
+         if Setup_Projects and then Create'Length > 0
+           and then not Is_Directory (Full_Path_Name)
+         then
+            begin
+               Create_Path (Full_Path_Name);
+
+               if not Quiet_Output then
+                  Write_Str (Create);
+                  Write_Str (" directory """);
+                  Write_Str (Full_Path_Name);
+                  Write_Line (""" created");
+               end if;
+
+            exception
+               when Use_Error =>
+                  Error_Msg
+                    (Project, In_Tree,
+                     "could not create " & Create &
+                     " directory " & Full_Path_Name,
+                     Location);
+            end;
+         end if;
+         if Is_Directory (Full_Path_Name) then
             declare
                Normed : constant String :=
                           Normalize_Pathname
-                            (The_Name,
+                            (Full_Path_Name,
                              Resolve_Links  => False,
                              Case_Sensitive => True);
 
@@ -4085,40 +4146,7 @@ package body Prj.Nmsc is
                Dir := Name_Find;
             end;
          end if;
-
-      else
-         declare
-            Full_Path : constant String :=
-                          The_Parent (The_Parent'First .. The_Parent_Last) &
-                          The_Name;
-
-         begin
-            if Is_Directory (Full_Path) then
-               declare
-                  Normed : constant String :=
-                             Normalize_Pathname
-                               (Full_Path,
-                                Resolve_Links  => False,
-                                Case_Sensitive => True);
-
-                  Canonical_Path : constant String :=
-                                     Normalize_Pathname
-                                       (Normed,
-                                        Resolve_Links  => True,
-                                        Case_Sensitive => False);
-
-               begin
-                  Name_Len := Normed'Length;
-                  Name_Buffer (1 .. Name_Len) := Normed;
-                  Display := Name_Find;
-
-                  Name_Len := Canonical_Path'Length;
-                  Name_Buffer (1 .. Name_Len) := Canonical_Path;
-                  Dir := Name_Find;
-               end;
-            end if;
-         end;
-      end if;
+      end;
    end Locate_Directory;
 
    ----------------------
@@ -4149,16 +4177,16 @@ package body Prj.Nmsc is
          Element    : String_Element;
          Path       : Name_Id;
 
-         Dir      : Dir_Type;
-         Name     : Name_Id;
-         Canonical_Name : Name_Id;
-         Name_Str : String (1 .. 1_024);
-         Last     : Natural := 0;
-         NL       : Name_Location;
+         Dir             : Dir_Type;
+         Name            : Name_Id;
+         Canonical_Name  : Name_Id;
+         Name_Str        : String (1 .. 1_024);
+         Last            : Natural := 0;
+         NL              : Name_Location;
 
-         Current_Source : String_List_Id := Nil_String;
+         Current_Source  : String_List_Id := Nil_String;
 
-         First_Error : Boolean := True;
+         First_Error     : Boolean := True;
 
          Source_Recorded : Boolean := False;
 
@@ -4171,7 +4199,8 @@ package body Prj.Nmsc is
             Element := In_Tree.String_Elements.Table (Source_Dir);
 
             declare
-               Dir_Path : constant String := Get_Name_String (Element.Value);
+               Dir_Path : constant String :=
+                            Get_Name_String (Element.Display_Value);
             begin
                if Current_Verbosity = High then
                   Write_Str ("checking directory """);
@@ -4184,13 +4213,15 @@ package body Prj.Nmsc is
                loop
                   Read (Dir, Name_Str, Last);
                   exit when Last = 0;
+
                   Name_Len := Last;
                   Name_Buffer (1 .. Name_Len) := Name_Str (1 .. Last);
                   Name := Name_Find;
+
                   Canonical_Case_File_Name (Name_Str (1 .. Last));
-                  Name_Len := Last;
                   Name_Buffer (1 .. Name_Len) := Name_Str (1 .. Last);
                   Canonical_Name := Name_Find;
+
                   NL := Source_Names.Get (Canonical_Name);
 
                   if NL /= No_Name_Location and then not NL.Found then
@@ -4822,8 +4853,7 @@ package body Prj.Nmsc is
    is
       Current : Array_Element_Id := List;
       Element : Array_Element;
-
-      Unit : Unit_Info;
+      Unit    : Unit_Info;
 
    begin
       --  Traverse the list
@@ -5194,8 +5224,8 @@ package body Prj.Nmsc is
          Element := In_Tree.String_Elements.Table (Source_Dir);
 
          declare
-            Dir_Path : constant String := Get_Name_String (Element.Value);
-
+            Dir_Path : constant String :=
+                         Get_Name_String (Element.Display_Value);
          begin
             if Current_Verbosity = High then
                Write_Str ("checking directory """);
