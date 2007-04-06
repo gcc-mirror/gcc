@@ -28,7 +28,6 @@ write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
-#include <sys/types.h>
 #include "libgfortran.h"
 
 #ifdef HAVE_UNISTD_H
@@ -66,7 +65,9 @@ Boston, MA 02110-1301, USA.  */
 #    ifdef HAVE_SYS_PARAM_H
 #      include <sys/param.h>
 #    endif
-#    include <sys/times.h>
+#    if defined (HAVE_SYS_TIMES_H)
+#      include <sys/times.h>
+#    endif
 #    ifndef HZ
 #      if defined _SC_CLK_TCK
 #        define HZ  sysconf(_SC_CLK_TCK)

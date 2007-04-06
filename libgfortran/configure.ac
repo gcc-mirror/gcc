@@ -161,8 +161,8 @@ AC_TYPE_OFF_T
 # check header files
 AC_STDC_HEADERS
 AC_HEADER_TIME
-AC_HAVE_HEADERS(stdlib.h stdio.h string.h stddef.h math.h unistd.h signal.h)
-AC_CHECK_HEADERS(time.h sys/params.h sys/time.h sys/times.h sys/resource.h)
+AC_HAVE_HEADERS(stdlib.h string.h unistd.h signal.h)
+AC_CHECK_HEADERS(time.h sys/time.h sys/times.h sys/resource.h)
 AC_CHECK_HEADERS(sys/types.h sys/stat.h sys/wait.h floatingpoint.h ieeefp.h)
 AC_CHECK_HEADERS(fenv.h fptrap.h float.h execinfo.h)
 AC_CHECK_HEADER([complex.h],[AC_DEFINE([HAVE_COMPLEX_H], [1], [complex.h exists])])
@@ -361,9 +361,6 @@ LIBGFOR_CHECK_FOR_BROKEN_FPCLASSIFY
 
 # Check whether the system has a working stat()
 LIBGFOR_CHECK_WORKING_STAT
-
-# Fallback in case isfinite is not available.
-AC_CHECK_LIB([m],[finite],[AC_DEFINE([HAVE_FINITE],[1],[libm includes finite])])
 
 # Check for GNU libc feenableexcept
 AC_CHECK_LIB([m],[feenableexcept],[have_feenableexcept=yes AC_DEFINE([HAVE_FEENABLEEXCEPT],[1],[libm includes feenableexcept])])

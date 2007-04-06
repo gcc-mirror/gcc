@@ -30,9 +30,6 @@ Boston, MA 02110-1301, USA.  */
 
 
 /* FPU-related code for SysV platforms with fpsetmask().  */
-#ifdef HAVE_IEEEFP_H
-#include <ieeefp.h>
-#endif
 
 void
 set_fpu (void)

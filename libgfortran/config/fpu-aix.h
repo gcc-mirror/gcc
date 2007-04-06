@@ -34,10 +34,6 @@ Boston, MA 02110-1301, USA.  */
 #include <fptrap.h>
 #endif
 
-#ifdef HAVE_FLOAT_H
-#include <float.h>
-#endif
-
 void
 set_fpu (void)
 {
