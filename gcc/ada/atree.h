@@ -26,7 +26,7 @@
 
 /* This is the C header corresponding to the Ada package specification for
    Atree. It also contains the implementations of inlined functions from the
-   package body for Tree.  It was generated manually from atree.ads and
+   package body for Atree.  It was generated manually from atree.ads and
    atree.adb and must be kept synchronized with changes in these files.
 
    Note that only routines for reading the tree are included, since the tree
@@ -421,6 +421,7 @@ extern Node_Id Current_Error_Node;
 #define List10(N)     Field10 (N)
 #define List14(N)     Field14 (N)
 
+#define Elist1(N)     Field1  (N)
 #define Elist2(N)     Field2  (N)
 #define Elist3(N)     Field3  (N)
 #define Elist4(N)     Field4  (N)
