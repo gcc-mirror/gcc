@@ -243,7 +243,7 @@ capitalized when used as @syntax{attribute_designator}.
 
 @itemize @bullet
 @item
-A comment starts with @code{--} followed by two spaces).
+A comment starts with @code{--} followed by two spaces.
 The only exception to this rule (i.e.@: one space is tolerated) is when the
 comment ends with a single space followed by @code{--}.
 It is also acceptable to have only one space between @code{--} and the start
