@@ -2706,7 +2706,7 @@ package body Errout is
          if Is_Access_Type (Ent) then
             if Ekind (Ent) = E_Access_Subprogram_Type
               or else Ekind (Ent) = E_Anonymous_Access_Subprogram_Type
-              or else Ekind (Ent) = E_Access_Protected_Subprogram_Type
+              or else Is_Access_Protected_Subprogram_Type (Ent)
             then
                Ent := Directly_Designated_Type (Ent);
 
