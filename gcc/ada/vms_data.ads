@@ -1961,6 +1961,8 @@ package VMS_Data is
                                                "-gnaty9 "                  &
                                             "ATTRIBUTE "                   &
                                                "-gnatya "                  &
+                                            "ARRAY_INDEXES "               &
+                                               "-gnatyA "                  &
                                             "BLANKS "                      &
                                                "-gnatyb "                  &
                                             "COMMENTS "                    &
@@ -2029,6 +2031,12 @@ package VMS_Data is
    --                           the initial letter and any letter following an
    --                           underscore must be uppercase.
    --                           All other letters must be lowercase.
+   --
+   --      ARRAY_INDEXES        Check indexes of array attributes.
+   --                           For array attributes First, Last, Range,
+   --                           or Length, the index number must be omitted
+   --                           for one-dimensional arrays and is required
+   --                           for multi-dimensional arrays.
    --
    --      BLANKS               Blanks not allowed at statement end.
    --                           Trailing blanks are not allowed at the end of
@@ -4101,6 +4109,14 @@ package VMS_Data is
    --   when the only modifications to a source file consist in
    --   adding/removing comments, empty lines, spaces or tabs.
 
+   S_Make_Missing : aliased constant S := "/CREATE_MISSING_DIRS "          &
+                                            "-p";
+   --        /NOCREATE_MISSING_DIRS (D)
+   --        /CREATE_MISSING_DIRS
+   --
+   --   When an object directory, a library directory or an exec directory
+   --   in missing, attempt to create the directory.
+
    S_Make_Nolink  : aliased constant S := "/NOLINK "                       &
                                             "-c";
    --        /NOLINK
@@ -4212,7 +4228,7 @@ package VMS_Data is
    --   When looking for source files also look in the specified directories.
 
    S_Make_Stand   : aliased constant S := "/STANDARD_OUTPUT_FOR_COMMANDS " &
-                                            "-S";
+                                            "-eS";
    --        /NOSTANDARD_OUTPUT_FOR_COMMANDS (D)
    --        /STANDARD_OUTPUT_FOR_COMMANDS
    --
@@ -4286,6 +4302,7 @@ package VMS_Data is
       S_Make_Med_Verb'Access,
       S_Make_Mess    'Access,
       S_Make_Minimal 'Access,
+      S_Make_Missing 'Access,
       S_Make_Nolink  'Access,
       S_Make_Nomain  'Access,
       S_Make_Nonpro  'Access,
@@ -4993,6 +5010,36 @@ package VMS_Data is
    --   used in the default dictionary file, are defined in the GNAT User's
    --   Guide.
 
+   S_Pretty_Encoding  : aliased constant S := "/RESULT_ENCODING="          &
+                                              "BRACKETS "                  &
+                                                 "-Wb "                    &
+                                              "HEX_ESC "                   &
+                                                 "-Wh "                    &
+                                              "UPPER_HALF "                &
+                                                 "-Wu "                    &
+                                              "SHIFT_JIS "                 &
+                                                 "-Ws "                    &
+                                              "EUC "                       &
+                                                 "-We "                    &
+                                              "UTF_8 "                     &
+                                                 "-W8";
+   --        /RESULT_ENCODING[=encoding-option]
+   --
+   --   Specify the wide character encoding of the result file.
+   --   '=encoding-option' may be one of:
+   --
+   --      BRACKETS (D)      Brackets encoding.
+   --
+   --      HEX_ESC           Hex ESC encoding.
+   --
+   --      UPPER_HALF        Upper half encoding.
+   --
+   --      SHIFT_JIS         Shift-JIS encoding.
+   --
+   --      EUC               EUC Encoding.
+   --
+   --      UTF_8             UTF-8 encoding.
+
    S_Pretty_Files     : aliased constant S := "/FILES=@"                   &
                                                  "-files=@";
    --      /FILES=filename
@@ -5225,6 +5272,7 @@ package VMS_Data is
       S_Pretty_Dico      'Access,
       S_Pretty_Eol       'Access,
       S_Pretty_Ext       'Access,
+      S_Pretty_Encoding  'Access,
       S_Pretty_Files     'Access,
       S_Pretty_Forced    'Access,
       S_Pretty_Formfeed  'Access,
@@ -5248,69 +5296,6 @@ package VMS_Data is
       S_Pretty_Standard  'Access,
       S_Pretty_Verbose   'Access,
       S_Pretty_Warnings  'Access);
-
-   -----------------------------
-   -- Switches for GNAT SETUP --
-   -----------------------------
-
-   S_Setup_Ext       : aliased constant S := "/EXTERNAL_REFERENCE=" & '"' &
-                                              "-X" & '"';
-   --        /EXTERNAL_REFERENCE="name=val"
-   --
-   --   Specifies an external reference to the project manager. Useful only if
-   --   /PROJECT_FILE is used.
-   --
-   --   Example:
-   --      /EXTERNAL_REFERENCE="DEBUG=TRUE"
-
-   S_Setup_Mess      : aliased constant S := "/MESSAGES_PROJECT_FILE="    &
-                                             "DEFAULT "                   &
-                                                "-vP0 "                   &
-                                             "MEDIUM "                    &
-                                                "-vP1 "                   &
-                                             "HIGH "                      &
-                                                "-vP2";
-   --        /MESSAGES_PROJECT_FILE[=messages-option]
-   --
-   --   Specifies the "verbosity" of the parsing of project files.
-   --   messages-option may be one of the following:
-   --
-   --      DEFAULT (D)  No messages are output if there is no error or warning.
-   --
-   --      MEDIUM       A small number of messages are output.
-   --
-   --      HIGH         A great number of messages are output, most of them not
-   --                   being useful for the user.
-
-   S_Setup_Project   : aliased constant S := "/PROJECT_FILE=<"            &
-                                                "-P>";
-   --        /PROJECT_FILE=filename
-   --
-   --   Specifies the main project file to be used. The project files rooted
-   --   at the main project file are parsed and non existing object
-   --   directories, library directories and exec directories are created.
-
-   S_Setup_Quiet     : aliased constant S := "/QUIET "                    &
-                                            "-q";
-   --        /NOQUIET (D)
-   --        /QUIET
-   --
-   --   Work quietly, only output warnings and errors.
-
-   S_Setup_Verbose   : aliased constant S := "/VERBOSE "                  &
-                                              "-v";
-   --        /NOVERBOSE (D)
-   --        /VERBOSE
-   --
-   --   Verbose mode; GNAT PRETTY generates version information and then a
-   --   trace of the actions it takes to produce or obtain the ASIS tree.
-
-   Setup_Switches : aliased constant Switches :=
-     (S_Setup_Ext     'Access,
-      S_Setup_Mess    'Access,
-      S_Setup_Project 'Access,
-      S_Setup_Quiet   'Access,
-      S_Setup_Verbose 'Access);
 
    ------------------------------
    -- Switches for GNAT SHARED --
@@ -5389,6 +5374,185 @@ package VMS_Data is
       S_Shared_Noinhib 'Access,
       S_Shared_Verb    'Access,
       S_Shared_ZZZZZ   'Access);
+
+   -----------------------------
+   -- Switches for GNAT STACK --
+   -----------------------------
+
+   S_Stack_All        : aliased constant S := "/ALL_SUBPROGRAMS "          &
+                                                "-a";
+   --        /NOALL_SUBPROGRAMS (D)
+   --        /ALL_SUBPROGRAMS
+   --
+   --   Consider all subprograms as entry points.
+
+   S_Stack_All_Cycles : aliased constant S := "/ALL_CYCLES "               &
+                                                "-ca";
+   --        /NOALL_CYCLES (D)
+   --        /ALL_CYCLES
+   --
+   --   Extract all possible cycles in the call graph.
+
+   S_Stack_All_Prjs   : aliased constant S := "/ALL_PROJECTS "             &
+                                                "-U";
+   --        /NOALL_PROJECTS (D)
+   --        /ALL_PROJECTS
+   --
+   --   When GNAT STACK is used with a Project File and no source is
+   --   specified, the underlying tool gnatstack is called for all the
+   --   units of all the Project Files in the project tree.
+
+   S_Stack_Debug      : aliased constant S := "/DEBUG "                    &
+                                                "-g";
+   --        /NODEBUG (D)
+   --        /DEBUG
+   --
+   --   Generate internal debug information.
+
+   S_Stack_Directory  : aliased constant S := "/DIRECTORY=*"               &
+                                                "-aO*";
+   --        /DIRECTORY=(direc[,...])
+   --
+   --   When looking for .ci files look also in directories specified.
+
+   S_Stack_Entries    : aliased constant S := "/ENTRIES=*"                 &
+                                                "-e*";
+   --
+   --        /ENTRY=(entry_point[,...])
+   --
+   --   Name of symbol to be used as entry point for the analysis.
+
+   S_Stack_Files      : aliased constant S := "/FILES=@"                   &
+                                                "-files=@";
+   --      /FILES=filename
+   --
+   --   Take as arguments the files that are listed in the specified
+   --   text file.
+
+   S_Stack_Help       : aliased constant S := "/HELP "                     &
+                                                "-h";
+   --        /NOHELP (D)
+   --        /HELP
+   --
+   --   Output a message explaining the usage of gnatstack.
+
+   S_Stack_List       : aliased constant S := "/LIST=#"                    &
+                                                "-l#";
+   --        /LIST=nnn
+   --
+   --   Print the nnn subprograms requiring the biggest local stack usage. By
+   --   default none will be displayed.
+
+   S_Stack_Order      : aliased constant S := "/ORDER="                    &
+                                              "STACK "                     &
+                                                 "-os "                    &
+                                              "ALPHABETICAL "              &
+                                                 "-oa";
+   --        /ORDER[=order-option]
+   --
+   --   Specifies the order for displaying the different call graphs.
+   --   order-option may be one of the following:
+   --
+   --      STACK (D)    Select stack usage order
+   --
+   --      ALPHABETICAL Select alphabetical order
+
+   S_Stack_Path       : aliased constant S := "/PATH "                     &
+                                                "-p";
+   --        /NOPATH (D)
+   --        /PATH
+   --
+   --   Print all the subprograms that make up the worst-case path for every
+   --   entry point.
+
+   S_Stack_Project    : aliased constant S := "/PROJECT_FILE=<"            &
+                                                "-P>";
+   --        /PROJECT_FILE=filename
+   --
+   --   Specifies the main project file to be used. The project files rooted
+   --   at the main project file will be parsed before the invocation of
+   --   gnatstack.
+
+   S_Stack_Output     : aliased constant S := "/OUTPUT=@"                  &
+                                                "-f@";
+   --        /OUTPUT=filename
+   --
+   --   Name of the file containing the generated graph (VCG format).
+
+   S_Stack_Regexp     : aliased constant S := "/EXPRESSION=|"              &
+                                                "-r|";
+   --
+   --        /EXPRESSION=regular-expression
+   --
+   --   Any symbol matching the regular expression will be considered as a
+   --   potential entry point for the analysis.
+
+   S_Stack_Unbounded  : aliased constant S := "/UNBOUNDED=#"               &
+                                                "-d#";
+   --        /UNBOUNDED=nnn
+   --
+   --   Default stack size to be used for unbounded (dynamic) frames.
+
+   S_Stack_Unknown    : aliased constant S := "/UNKNOWN=#"                 &
+                                                "-u#";
+   --        /UNKNOWN=nnn
+   --
+   --   Default stack size to be used for unknown (external) calls.
+
+   S_Stack_Verbose    : aliased constant S := "/VERBOSE "                  &
+                                                "-v";
+   --        /NOVERBOSE (D)
+   --        /VERBOSE
+   --
+   --   Specifies the amount of information to be displayed about the
+   --   different subprograms. In verbose mode the full location of the
+   --   subprogram will be part of the output, as well as detailed information
+   --   about inaccurate data.
+
+   S_Stack_Warnings   : aliased constant S := "/WARNINGS="                 &
+                                              "ALL "                       &
+                                                 "-Wa "                    &
+                                              "CYCLES "                    &
+                                                 "-Wc "                    &
+                                              "UNBOUNDED "                 &
+                                                 "-Wu "                    &
+                                              "EXTERNAL "                  &
+                                                 "-We "                    &
+                                              "INDIRECT "                  &
+                                                 "-Wi";
+   --        /WARNINGS[=(keyword[,...])]
+   --
+   --    The following keywords are supported:
+   --
+   --        ALL        Turn on all optional warnings
+   --
+   --        CYCLES     Turn on warnings for cycles
+   --
+   --        UNBOUNDED  Turn on warnings for unbounded frames
+   --
+   --        EXTERNAL   Turn on warnings for external calls
+   --
+   --        INDIRECT   Turn on warnings for indirect calls
+
+   Stack_Switches : aliased constant Switches :=
+     (S_Stack_All        'Access,
+      S_Stack_All_Cycles 'Access,
+      S_Stack_All_Prjs   'Access,
+      S_Stack_Debug      'Access,
+      S_Stack_Directory  'Access,
+      S_Stack_Entries    'Access,
+      S_Stack_Files      'Access,
+      S_Stack_Help       'Access,
+      S_Stack_List       'Access,
+      S_Stack_Order      'Access,
+      S_Stack_Path       'Access,
+      S_Stack_Project    'Access,
+      S_Stack_Output     'Access,
+      S_Stack_Regexp     'Access,
+      S_Stack_Unbounded  'Access,
+      S_Stack_Unknown    'Access,
+      S_Stack_Verbose    'Access,
+      S_Stack_Warnings   'Access);
 
    ----------------------------
    -- Switches for GNAT STUB --

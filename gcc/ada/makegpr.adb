@@ -31,6 +31,7 @@ with Ada.Unchecked_Deallocation;
 
 with Csets;
 with Gnatvsn;
+with Hostparm; use Hostparm;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.Dynamic_Tables;
@@ -55,6 +56,10 @@ with Table;
 with Types;            use Types;
 
 package body Makegpr is
+
+   On_Windows : constant Boolean := Directory_Separator = '\';
+   --  True when on Windows. Used in Check_Compilation_Needed when processing
+   --  C/C++ dependency files for backslash handling.
 
    Max_In_Archives : constant := 50;
    --  The maximum number of arguments for a single invocation of the
@@ -1803,6 +1808,9 @@ package body Makegpr is
       Start    : Natural;
       Finish   : Natural;
 
+      Looping : Boolean := False;
+      --  Set to True at the end of the first Big_Loop
+
    begin
       --  Assume the worst, so that statement "return;" may be used if there
       --  is any problem.
@@ -1881,179 +1889,213 @@ package body Makegpr is
          return;
       end if;
 
-      declare
-         End_Of_File_Reached : Boolean := False;
+      --  Loop Big_Loop is executed several times only when the dependency file
+      --  contains several times
+      --     <object file>: <source1> ...
+      --  When there is only one of such occurence, Big_Loop is exited
+      --  successfully at the beginning of the second loop.
 
-      begin
-         loop
-            if End_Of_File (Dep_File) then
-               End_Of_File_Reached := True;
-               exit;
+      Big_Loop :
+      loop
+         declare
+            End_Of_File_Reached : Boolean := False;
+
+         begin
+            loop
+               if End_Of_File (Dep_File) then
+                  End_Of_File_Reached := True;
+                  exit;
+               end if;
+
+               Get_Line (Dep_File, Name_Buffer, Name_Len);
+
+               exit when Name_Len > 0 and then Name_Buffer (1) /= '#';
+            end loop;
+
+            --  If dependency file contains only empty lines or comments, then
+            --  dependencies are unknown, and the source needs to be
+            --  recompiled.
+
+            if End_Of_File_Reached then
+               --  If we have reached the end of file after the first loop,
+               --  there is nothing else to do.
+
+               exit Big_Loop when Looping;
+
+               if Verbose_Mode then
+                  Write_Str  ("      -> dependency file ");
+                  Write_Str  (Dep_Name);
+                  Write_Line (" is empty");
+               end if;
+
+               Close (Dep_File);
+               return;
             end if;
+         end;
 
-            Get_Line (Dep_File, Name_Buffer, Name_Len);
+         Start  := 1;
+         Finish := Index (Name_Buffer (1 .. Name_Len), ": ");
 
-            exit when Name_Len > 0 and then Name_Buffer (1) /= '#';
-         end loop;
+         --  First line must start with name of object file, followed by colon
 
-         --  If dependency file contains only empty lines or comments, then
-         --  dependencies are unknown, and the source needs to be recompiled.
-
-         if End_Of_File_Reached then
+         if Finish = 0 or else
+            Name_Buffer (1 .. Finish - 1) /= Object_Name
+         then
             if Verbose_Mode then
                Write_Str  ("      -> dependency file ");
                Write_Str  (Dep_Name);
-               Write_Line (" is empty");
+               Write_Line (" has wrong format");
             end if;
 
             Close (Dep_File);
             return;
-         end if;
-      end;
 
-      Start  := 1;
-      Finish := Index (Name_Buffer (1 .. Name_Len), ": ");
+         else
+            Start := Finish + 2;
 
-      --  First line must start with name of object file, followed by colon
+            --  Process each line
 
-      if Finish = 0 or else Name_Buffer (1 .. Finish - 1) /= Object_Name then
-         if Verbose_Mode then
-            Write_Str  ("      -> dependency file ");
-            Write_Str  (Dep_Name);
-            Write_Line (" has wrong format");
-         end if;
+            Line_Loop : loop
+               declare
+                  Line : String  := Name_Buffer (1 .. Name_Len);
+                  Last : Natural := Name_Len;
 
-         Close (Dep_File);
-         return;
+               begin
+                  Name_Loop : loop
 
-      else
-         Start := Finish + 2;
+                     --  Find the beginning of the next source path name
 
-         --  Process each line
+                     while Start < Last and then Line (Start) = ' ' loop
+                        Start := Start + 1;
+                     end loop;
 
-         Line_Loop : loop
-            declare
-               Line : String  := Name_Buffer (1 .. Name_Len);
-               Last : Natural := Name_Len;
+                     --  Go to next line when there is a continuation character
+                     --  \ at the end of the line.
 
-            begin
-               Name_Loop : loop
+                     exit Name_Loop when Start = Last
+                       and then Line (Start) = '\';
 
-                  --  Find the beginning of the next source path name
+                     --  We should not be at the end of the line, without
+                     --  a continuation character \.
 
-                  while Start < Last and then Line (Start) = ' ' loop
-                     Start := Start + 1;
-                  end loop;
-
-                  --  Go to next line when there is a continuation character \
-                  --  at the end of the line.
-
-                  exit Name_Loop when Start = Last
-                                   and then Line (Start) = '\';
-
-                  --  We should not be at the end of the line, without
-                  --  a continuation character \.
-
-                  if Start = Last then
-                     if Verbose_Mode then
-                        Write_Str  ("      -> dependency file ");
-                        Write_Str  (Dep_Name);
-                        Write_Line (" has wrong format");
-                     end if;
-
-                     Close (Dep_File);
-                     return;
-                  end if;
-
-                  --  Look for the end of the source path name
-
-                  Finish := Start;
-                  while Finish < Last loop
-                     if Line (Finish) = '\' then
-
-                        --  When we are getting a '\' that is not the last
-                        --  character of the line, the next character is part
-                        --  of the path name, even if it is a space.
-
-                        Line (Finish .. Last - 1) := Line (Finish + 1 .. Last);
-                        Last := Last - 1;
-
-                     else
-                        --  A space that is not preceded by '\' indicates the
-                        --  end of the path name.
-
-                        exit when Line (Finish + 1) = ' ';
-
-                        Finish := Finish + 1;
-                     end if;
-                  end loop;
-
-                  --  Check this source
-
-                  declare
-                     Src_Name : constant String :=
-                                  Normalize_Pathname
-                                    (Name           => Line (Start .. Finish),
-                                     Resolve_Links  => False,
-                                     Case_Sensitive => False);
-                     Src_TS   : Time_Stamp_Type;
-
-                  begin
-                     --  If it is original source, set Source_In_Dependencies
-
-                     if Src_Name = Source_Path then
-                        Source_In_Dependencies := True;
-                     end if;
-
-                     Name_Len := 0;
-                     Add_Str_To_Name_Buffer (Src_Name);
-                     Src_TS := File_Stamp (Name_Find);
-
-                     --  If the source does not exist, we need to recompile
-
-                     if Src_TS = Empty_Time_Stamp then
+                     if Start = Last then
                         if Verbose_Mode then
-                           Write_Str  ("      -> source ");
-                           Write_Str  (Src_Name);
-                           Write_Line (" does not exist");
-                        end if;
-
-                        Close (Dep_File);
-                        return;
-
-                     --  If the source has been modified after the object file,
-                     --  we need to recompile.
-
-                     elsif Src_TS > Source.Object_TS then
-                        if Verbose_Mode then
-                           Write_Str  ("      -> source ");
-                           Write_Str  (Src_Name);
-                           Write_Line
-                             (" has time stamp later than object file");
+                           Write_Str  ("      -> dependency file ");
+                           Write_Str  (Dep_Name);
+                           Write_Line (" has wrong format");
                         end if;
 
                         Close (Dep_File);
                         return;
                      end if;
-                  end;
 
-                  --  If the source path name ends the line, we are done
+                     --  Look for the end of the source path name
 
-                  exit Line_Loop when Finish = Last;
+                     Finish := Start;
+                     while Finish < Last loop
+                        if Line (Finish) = '\' then
 
-                  --  Go get the next source on the line
+                           --  On Windows, a '\' is part of the path name,
+                           --  except when it is followed by another '\' or by
+                           --  a space. On other platforms, when we are getting
+                           --  a '\' that is not the last character of the
+                           --  line, the next character is part of the path
+                           --  name, even if it is a space.
 
-                  Start := Finish + 1;
-               end loop Name_Loop;
-            end;
+                           if On_Windows and then
+                             Line (Finish + 1) /= '\' and then
+                             Line (Finish + 1) /= ' '
+                           then
+                              Finish := Finish + 1;
 
-            --  If we are here, we had a continuation character \ at the end
-            --  of the line, so we continue with the next line.
+                           else
+                              Line (Finish .. Last - 1) :=
+                                Line (Finish + 1 .. Last);
+                              Last := Last - 1;
+                           end if;
 
-            Get_Line (Dep_File, Name_Buffer, Name_Len);
-            Start := 1;
-         end loop Line_Loop;
-      end if;
+                        else
+                           --  A space that is not preceded by '\' indicates
+                           --  the end of the path name.
+
+                           exit when Line (Finish + 1) = ' ';
+
+                           Finish := Finish + 1;
+                        end if;
+                     end loop;
+
+                     --  Check this source
+
+                     declare
+                        Src_Name : constant String :=
+                                     Normalize_Pathname
+                                       (Name           =>
+                                                       Line (Start .. Finish),
+                                        Resolve_Links  => False,
+                                        Case_Sensitive => False);
+                        Src_TS   : Time_Stamp_Type;
+
+                     begin
+                        --  If it is original source, set
+                        --  Source_In_Dependencies.
+
+                        if Src_Name = Source_Path then
+                           Source_In_Dependencies := True;
+                        end if;
+
+                        Name_Len := 0;
+                        Add_Str_To_Name_Buffer (Src_Name);
+                        Src_TS := File_Stamp (Name_Find);
+
+                        --  If the source does not exist, we need to recompile
+
+                        if Src_TS = Empty_Time_Stamp then
+                           if Verbose_Mode then
+                              Write_Str  ("      -> source ");
+                              Write_Str  (Src_Name);
+                              Write_Line (" does not exist");
+                           end if;
+
+                           Close (Dep_File);
+                           return;
+
+                           --  If the source has been modified after the object
+                           --  file, we need to recompile.
+
+                        elsif Src_TS > Source.Object_TS then
+                           if Verbose_Mode then
+                              Write_Str  ("      -> source ");
+                              Write_Str  (Src_Name);
+                              Write_Line
+                                (" has time stamp later than object file");
+                           end if;
+
+                           Close (Dep_File);
+                           return;
+                        end if;
+                     end;
+
+                     --  If the source path name ends the line, we are done
+
+                     exit Line_Loop when Finish = Last;
+
+                     --  Go get the next source on the line
+
+                     Start := Finish + 1;
+                  end loop Name_Loop;
+               end;
+
+               --  If we are here, we had a continuation character \ at the end
+               --  of the line, so we continue with the next line.
+
+               Get_Line (Dep_File, Name_Buffer, Name_Len);
+               Start := 1;
+            end loop Line_Loop;
+         end if;
+
+         --  Set Looping at the end of the first loop
+         Looping := True;
+      end loop Big_Loop;
 
       Close (Dep_File);
 
@@ -3271,6 +3313,51 @@ package body Makegpr is
       Prj.Initialize (Project_Tree);
       Mains.Delete;
 
+      --  Add the directory where gprmake is invoked in front of the path,
+      --  if gprmake is invoked from a bin directory or with directory
+      --  information. information. Only do this if the platform is not VMS,
+      --  where the notion of path does not really exist.
+
+      --  Below code shares nasty code duplication with make.adb code???
+
+      if not OpenVMS then
+         declare
+            Prefix  : constant String := Executable_Prefix_Path;
+            Command : constant String := Command_Name;
+
+         begin
+            if Prefix'Length > 0 then
+               declare
+                  PATH : constant String :=
+                           Prefix & Directory_Separator & "bin" &
+                           Path_Separator &
+                           Getenv ("PATH").all;
+               begin
+                  Setenv ("PATH", PATH);
+               end;
+
+            else
+               for Index in reverse Command'Range loop
+                  if Command (Index) = Directory_Separator then
+                     declare
+                        Absolute_Dir : constant String :=
+                                         Normalize_Pathname
+                                           (Command (Command'First .. Index));
+                        PATH         : constant String :=
+                                         Absolute_Dir &
+                                         Path_Separator &
+                                         Getenv ("PATH").all;
+                     begin
+                        Setenv ("PATH", PATH);
+                     end;
+
+                     exit;
+                  end if;
+               end loop;
+            end if;
+         end;
+      end if;
+
       --  Set Name_Ide and Name_Compiler_Command
 
       Name_Len := 0;
@@ -4107,6 +4194,9 @@ package body Makegpr is
                Project_File_Name := new String'(Arg (3 .. Arg'Last));
             end if;
 
+         elsif Arg = "-p" or else Arg = "--create-missing-dirs" then
+            Setup_Projects := True;
+
          elsif Arg = "-q" then
             Quiet_Output := True;
 
@@ -4193,11 +4283,7 @@ package body Makegpr is
          Write_Str ("Usage: ");
          Osint.Write_Program_Name;
          Write_Str (" -P<project file> [opts]  [name] {");
-
-         for Lang in First_Language_Indexes loop
-            Write_Str ("[-cargs:lang opts] ");
-         end loop;
-
+         Write_Str ("[-cargs:lang opts] ");
          Write_Str ("[-largs opts] [-gargs opts]}");
          Write_Eol;
          Write_Eol;
@@ -4228,6 +4314,11 @@ package body Makegpr is
          --  Line for -o
 
          Write_Str ("  -o name  Choose an alternate executable name");
+         Write_Eol;
+
+         --  Line for -p
+
+         Write_Str ("  -p       Create missing obj, lib and exec dirs");
          Write_Eol;
 
          --  Line for -P
