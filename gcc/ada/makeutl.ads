@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2004-2006 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,11 @@ package Makeutl is
    function Unit_Index_Of (ALI_File : File_Name_Type) return Int;
    --  Find the index of a unit in a source file. Return zero if the file
    --  is not a multi-unit source file.
+
+   function Executable_Prefix_Path return String;
+   --  Return the absolute path parent directory of the directory where the
+   --  current executable resides, if its directory is named "bin", otherwise
+   --  return an empty string.
 
    function Is_External_Assignment (Argv : String) return Boolean;
    --  Verify that an external assignment switch is syntactically correct

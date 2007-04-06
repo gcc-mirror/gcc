@@ -26,7 +26,7 @@
 
 with Err_Vars; use Err_Vars;
 with Namet;    use Namet;
-with Opt;
+with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Attr; use Prj.Attr;
@@ -950,7 +950,7 @@ package body Prj.Proc is
                   Value := Prj.Ext.Value_Of (Name, Default);
 
                   if Value = No_Name then
-                     if not Opt.Quiet_Output then
+                     if not Quiet_Output then
                         if Error_Report = null then
                            Error_Msg
                              ("?undefined external reference",
@@ -1268,7 +1268,10 @@ package body Prj.Proc is
          end loop;
       end if;
 
-      Success := Total_Errors_Detected = 0;
+      Success :=
+        Total_Errors_Detected = 0
+          and then
+            (Warning_Mode /= Treat_As_Error or else Warnings_Detected = 0);
    end Process;
 
    -------------------------------
@@ -2295,7 +2298,7 @@ package body Prj.Proc is
                 (Imported_Project_List).Next;
          end loop;
 
-         if Opt.Verbose_Mode then
+         if Verbose_Mode then
             Write_Str ("Checking project file """);
             Write_Str (Get_Name_String (Data.Name));
             Write_Line ("""");

@@ -1811,21 +1811,16 @@ package body Make is
                Path             => Arguments_Path_Name,
                In_Tree          => Project_Tree);
 
-            --  If the source is not a source of a project file, check if
-            --  this is allowed.
+            --  If the source is not a source of a project file, add the
+            --  recorded arguments. Check will be done later if the source
+            --  need to be compiled that the switch -x has been used.
 
             if Arguments_Project = No_Project then
-               if not External_Unit_Compilation_Allowed then
-                  Make_Failed ("external source (", Source_File_Name,
-                               ") is not part of any project; cannot be " &
-                               "compiled without gnatmake switch -x");
-               end if;
-
-               --  If it is allowed, simply add the saved gcc switches
-
                Add_Arguments (The_Saved_Gcc_Switches.all);
 
-            else
+            elsif not Project_Tree.Projects.Table
+                         (Arguments_Project).Externally_Built
+            then
                --  We get the project directory for the relative path
                --  switches and arguments.
 
@@ -2521,8 +2516,10 @@ package body Make is
          begin
             if Is_Predefined_File_Name (Fname, False) then
                if Check_Readonly_Files then
+                  Comp_Args (Comp_Args'First + 2 .. Comp_Last + 1) :=
+                    Comp_Args (Comp_Args'First + 1 .. Comp_Last);
                   Comp_Last := Comp_Last + 1;
-                  Comp_Args (Comp_Last) := GNAT_Flag;
+                  Comp_Args (Comp_Args'First + 1) := GNAT_Flag;
 
                else
                   Make_Failed
@@ -2816,7 +2813,7 @@ package body Make is
 
                elsif not Check_Readonly_Files
                  and then Full_Lib_File /= No_File
-                 and then Is_Internal_File_Name (Source_File)
+                 and then Is_Internal_File_Name (Source_File, False)
                then
                   if Force_Compilations then
                      Fail
@@ -2837,49 +2834,60 @@ package body Make is
                else
                   Arguments_Collected := False;
 
-                  --  Don't waste any time if we have to recompile anyway
+                  --  Do nothing if project of source is externally built
 
-                  Obj_Stamp       := Empty_Time_Stamp;
-                  Need_To_Compile := Force_Compilations;
+                  Collect_Arguments (Source_File, Source_Index, Args);
 
-                  if not Force_Compilations then
-                     Read_Only :=
-                       Full_Lib_File /= No_File
-                       and then not Check_Readonly_Files
-                       and then Is_Readonly_Library (Full_Lib_File);
-                     Check (Source_File, Source_Index, Args, Lib_File,
-                            Read_Only, ALI, Obj_File, Obj_Stamp);
-                     Need_To_Compile := (ALI = No_ALI_Id);
-                  end if;
+                  if Arguments_Project = No_Project
+                    or else not Project_Tree.Projects.Table
+                                  (Arguments_Project).Externally_Built
+                  then
+                     --  Don't waste any time if we have to recompile anyway
 
-                  if not Need_To_Compile then
+                     Obj_Stamp       := Empty_Time_Stamp;
+                     Need_To_Compile := Force_Compilations;
 
-                     --  The ALI file is up-to-date. Record its Id
-
-                     Record_Good_ALI (ALI);
-
-                     --  Record the time stamp of the most recent object file
-                     --  as long as no (re)compilations are needed.
-
-                     if First_Compiled_File = No_File
-                       and then (Most_Recent_Obj_File = No_File
-                                   or else Obj_Stamp > Most_Recent_Obj_Stamp)
-                     then
-                        Most_Recent_Obj_File  := Obj_File;
-                        Most_Recent_Obj_Stamp := Obj_Stamp;
+                     if not Force_Compilations then
+                        Read_Only :=
+                          Full_Lib_File /= No_File
+                          and then not Check_Readonly_Files
+                          and then Is_Readonly_Library (Full_Lib_File);
+                        Check (Source_File, Source_Index, Args, Lib_File,
+                               Read_Only, ALI, Obj_File, Obj_Stamp);
+                        Need_To_Compile := (ALI = No_ALI_Id);
                      end if;
 
-                  else
-                     --  Do nothing if project of source is externally built
+                     if not Need_To_Compile then
+                        --  The ALI file is up-to-date. Record its Id
 
-                     if not Arguments_Collected then
-                        Collect_Arguments (Source_File, Source_Index, Args);
-                     end if;
+                        Record_Good_ALI (ALI);
 
-                     if Arguments_Project = No_Project
-                       or else not Project_Tree.Projects.Table
-                                     (Arguments_Project).Externally_Built
-                     then
+                        --  Record the time stamp of the most recent object
+                        --  file as long as no (re)compilations are needed.
+
+                        if First_Compiled_File = No_File
+                          and then (Most_Recent_Obj_File = No_File
+                                    or else Obj_Stamp > Most_Recent_Obj_Stamp)
+                        then
+                           Most_Recent_Obj_File  := Obj_File;
+                           Most_Recent_Obj_Stamp := Obj_Stamp;
+                        end if;
+
+                     else
+                        --  Check that switch -x has been used if a source
+                        --  outside of project files need to be compiled.
+
+                        if Main_Project /= No_Project and then
+                          Arguments_Project = No_Project and then
+                          not External_Unit_Compilation_Allowed
+                        then
+                           Make_Failed ("external source (",
+                                        Get_Name_String (Source_File),
+                                        ") is not part of any project;"
+                                        & " cannot be compiled without" &
+                                        " gnatmake switch -x");
+                        end if;
+
                         --  Is this the first file we have to compile?
 
                         if First_Compiled_File = No_File then
@@ -3088,7 +3096,7 @@ package body Make is
                               Debug_Msg ("Skipping marked file:", Sfile);
 
                            elsif not Check_Readonly_Files
-                             and then Is_Internal_File_Name (Sfile)
+                             and then Is_Internal_File_Name (Sfile, False)
                            then
                               Debug_Msg ("Skipping internal file:", Sfile);
 
@@ -3938,47 +3946,18 @@ package body Make is
                        and then
                          Project_Tree.Projects.Table
                            (ALI_Project).Extended_By = No_Project
-                       and then
-                         Project_Tree.Projects.Table
-                           (ALI_Project).Extends = No_Project
+                         and then
+                           Project_Tree.Projects.Table
+                             (ALI_Project).Extends = No_Project
                      then
-                        --  First line is the unit name
-
-                        Get_Name_String (ALI_Unit);
-                        Name_Len := Name_Len + 1;
-                        Name_Buffer (Name_Len) := ASCII.LF;
-                        Bytes :=
-                          Write
-                            (Mapping_FD,
-                             Name_Buffer (1)'Address,
-                             Name_Len);
-                        OK := Bytes = Name_Len;
-
-                        exit when not OK;
-
-                        --  Second line it the ALI file name
-
-                        Get_Name_String (ALI_Name);
-                        Name_Len := Name_Len + 1;
-                        Name_Buffer (Name_Len) := ASCII.LF;
-                        Bytes :=
-                          Write
-                            (Mapping_FD,
-                             Name_Buffer (1)'Address,
-                             Name_Len);
-                        OK := Bytes = Name_Len;
-
-                        exit when not OK;
-
-                        --  Third line it the ALI path name, concatenation
-                        --  of either the library directory or the object
-                        --  directory with the ALI file name.
+                        --  First check if the ALI file exists. If it does not,
+                        --  do not put the unit in the mapping file.
 
                         declare
                            ALI : constant String :=
                                    Get_Name_String (ALI_Name);
                            PD  : Project_Data renames
-                                   Project_Tree.Projects.Table (ALI_Project);
+                             Project_Tree.Projects.Table (ALI_Project);
 
                         begin
                            --  For library projects, use the library directory,
@@ -4004,19 +3983,61 @@ package body Make is
                            Name_Len :=
                              Name_Len + ALI'Length + 1;
                            Name_Buffer (Name_Len) := ASCII.LF;
-                           Bytes :=
-                             Write
-                               (Mapping_FD,
-                                Name_Buffer (1)'Address,
-                                Name_Len);
-                           OK := Bytes = Name_Len;
+
+                           declare
+                              ALI_Path_Name : constant String :=
+                                                Name_Buffer (1 .. Name_Len);
+
+                           begin
+                              if Is_Regular_File
+                                (ALI_Path_Name (1 .. ALI_Path_Name'Last - 1))
+                              then
+
+                                 --  First line is the unit name
+
+                                 Get_Name_String (ALI_Unit);
+                                 Name_Len := Name_Len + 1;
+                                 Name_Buffer (Name_Len) := ASCII.LF;
+                                 Bytes :=
+                                   Write
+                                     (Mapping_FD,
+                                      Name_Buffer (1)'Address,
+                                      Name_Len);
+                                 OK := Bytes = Name_Len;
+
+                                 exit when not OK;
+
+                                 --  Second line it the ALI file name
+
+                                 Get_Name_String (ALI_Name);
+                                 Name_Len := Name_Len + 1;
+                                 Name_Buffer (Name_Len) := ASCII.LF;
+                                 Bytes :=
+                                   Write
+                                     (Mapping_FD,
+                                      Name_Buffer (1)'Address,
+                                      Name_Len);
+                                 OK := Bytes = Name_Len;
+
+                                 exit when not OK;
+
+                                 --  Third line it the ALI path name.
+
+                                 Bytes :=
+                                   Write
+                                     (Mapping_FD,
+                                      ALI_Path_Name (1)'Address,
+                                      ALI_Path_Name'Length);
+                                 OK := Bytes = ALI_Path_Name'Length;
+
+                                 --  If OK is False, it means we were unable
+                                 --  to write a line. No point in continuing
+                                 --  with the other units.
+
+                                 exit when not OK;
+                              end if;
+                           end;
                         end;
-
-                        --  If OK is False, it means we were unable
-                        --  to write a line. No point in continuing
-                        --  with the other units.
-
-                        exit when not OK;
                      end if;
                   end if;
                end;
@@ -6086,34 +6107,45 @@ package body Make is
       Mains.Delete;
 
       --  Add the directory where gnatmake is invoked in front of the
-      --  path, if gnatmake is invoked with directory information.
-      --  Only do this if the platform is not VMS, where the notion of path
-      --  does not really exist.
+      --  path, if gnatmake is invoked from a bin directory or with directory
+      --  information. Only do this if the platform is not VMS, where the
+      --  notion of path does not really exist.
 
       if not OpenVMS then
          declare
+            Prefix  : constant String := Executable_Prefix_Path;
             Command : constant String := Command_Name;
 
          begin
-            for Index in reverse Command'Range loop
-               if Command (Index) = Directory_Separator then
-                  declare
-                     Absolute_Dir : constant String :=
-                                      Normalize_Pathname
-                                        (Command (Command'First .. Index));
+            if Prefix'Length > 0 then
+               declare
+                  PATH : constant String :=
+                           Prefix & Directory_Separator & "bin" &
+                           Path_Separator &
+                           Getenv ("PATH").all;
+               begin
+                  Setenv ("PATH", PATH);
+               end;
 
-                     PATH : constant String :=
-                                      Absolute_Dir &
-                                      Path_Separator &
-                                      Getenv ("PATH").all;
+            else
+               for Index in reverse Command'Range loop
+                  if Command (Index) = Directory_Separator then
+                     declare
+                        Absolute_Dir : constant String :=
+                                         Normalize_Pathname
+                                           (Command (Command'First .. Index));
+                        PATH         : constant String :=
+                                         Absolute_Dir &
+                                         Path_Separator &
+                                         Getenv ("PATH").all;
+                     begin
+                        Setenv ("PATH", PATH);
+                     end;
 
-                  begin
-                     Setenv ("PATH", PATH);
-                  end;
-
-                  exit;
-               end if;
-            end loop;
+                     exit;
+                  end if;
+               end loop;
+            end if;
          end;
       end if;
 
@@ -6541,13 +6573,7 @@ package body Make is
             --  in its object directory. If it is not, return False, so that
             --  the ALI file will not be skipped.
 
-            --  If the source is not in an extending project, we fall back to
-            --  the general case and return True at the end of the function.
-
-            if Project /= No_Project
-              and then Project_Tree.Projects.Table
-                         (Project).Extends /= No_Project
-            then
+            if Project /= No_Project then
                Data := Project_Tree.Projects.Table (Project);
 
                declare
@@ -6843,6 +6869,8 @@ package body Make is
    -------------------
 
    procedure Scan_Make_Arg (Argv : String; And_Save : Boolean) is
+      Success : Boolean;
+
    begin
       pragma Assert (Argv'First = 1);
 
@@ -7098,7 +7126,7 @@ package body Make is
             end if;
 
          else
-            Make_Failed ("unknown switch: ", Argv);
+            Scan_Make_Switches (Argv, Success);
          end if;
 
       --  If we have seen a regular switch process it
@@ -7107,6 +7135,15 @@ package body Make is
 
          if Argv'Length = 1 then
             Make_Failed ("switch character cannot be followed by a blank");
+
+         --  Incorrect switches that should start with "--"
+
+         elsif     (Argv'Length > 5  and then Argv (1 .. 5) = "-RTS=")
+           or else (Argv'Length > 5  and then Argv (1 .. 5) = "-GCC=")
+           or else (Argv'Length > 10 and then Argv (1 .. 10) = "-GNATLINK=")
+           or else (Argv'Length > 10 and then Argv (1 .. 10) = "-GNATBIND=")
+         then
+            Make_Failed ("option ", Argv, " should start with '--'");
 
          --  -I-
 
@@ -7206,7 +7243,7 @@ package body Make is
                             "project file");
 
             else
-               Scan_Make_Switches (Argv);
+               Scan_Make_Switches (Argv, Success);
             end if;
 
          --  -d
@@ -7224,13 +7261,13 @@ package body Make is
                             "project file");
 
             else
-               Scan_Make_Switches (Argv);
+               Scan_Make_Switches (Argv, Success);
             end if;
 
          --  -j (need to save the result)
 
          elsif Argv (2) = 'j' then
-            Scan_Make_Switches (Argv);
+            Scan_Make_Switches (Argv, Success);
 
             if And_Save then
                Saved_Maximum_Processes := Maximum_Processes;
@@ -7365,29 +7402,16 @@ package body Make is
             Add_Switch (Argv, Compiler, And_Save => And_Save);
             Add_Switch (Argv, Binder, And_Save => And_Save);
 
-            --  By default all switches with more than one character or one
-            --  character switches are passed to the compiler with the
-            --  exception of those tested below, which belong to make.
-
-         elsif Argv (2) /= 'd'
-           and then Argv (2) /= 'e'
-           and then Argv (2 .. Argv'Last) /= "B"
-           and then Argv (2 .. Argv'Last) /= "C"
-           and then Argv (2 .. Argv'Last) /= "F"
-           and then Argv (2 .. Argv'Last) /= "M"
-           and then Argv (2 .. Argv'Last) /= "R"
-           and then Argv (2 .. Argv'Last) /= "S"
-           and then Argv (2 .. Argv'Last) /= "vl"
-           and then Argv (2 .. Argv'Last) /= "vm"
-           and then Argv (2 .. Argv'Last) /= "vh"
-           and then (Argv'Length > 2 or else Argv (2) not in 'a' .. 'z')
-         then
-            Add_Switch (Argv, Compiler, And_Save => And_Save);
-
-         --  All other options are handled by Scan_Make_Switches
+         --  All other switches are processed by Scan_Make_Switches.
+         --  If the call returns with Success = False, then the switch is
+         --  passed to the compiler.
 
          else
-            Scan_Make_Switches (Argv);
+            Scan_Make_Switches (Argv, Success);
+
+            if not Success then
+               Add_Switch (Argv, Compiler, And_Save => And_Save);
+            end if;
          end if;
 
       --  If not a switch it must be a file name

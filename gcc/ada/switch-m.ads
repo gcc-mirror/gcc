@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001 Free Software Foundation, Inc.               --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,14 +34,14 @@ with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 package Switch.M is
 
-   procedure Scan_Make_Switches (Switch_Chars : String);
-   --  Procedures to scan out binder switches stored in the given string.
-   --  The first character is known to be a valid switch character, and there
-   --  are no blanks or other switch terminator characters in the string, so
-   --  the entire string should consist of valid switch characters, except that
-   --  an optional terminating NUL character is allowed. A bad switch causes
-   --  a fatal error exit and control does not return. The call also sets
-   --  Usage_Requested to True if a ? switch is encountered.
+   procedure Scan_Make_Switches
+     (Switch_Chars : String;
+      Success      : out Boolean);
+   --  Scan a gnatmake switch and act accordingly. For switches that are
+   --  recognized, Success is set to True. A switch that is not recognized and
+   --  consists of one small letter causes a fatal error exit and control does
+   --  not return. For all other not recognized switches, Success is set to
+   --  False, so that the switch may be passed to the compiler.
 
    procedure Normalize_Compiler_Switches
      (Switch_Chars : String;
