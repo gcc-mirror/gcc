@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,6 @@
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 
-with Hostparm;
 with Namet;    use Namet;
 with Output;   use Output;
 with Snames;
@@ -37,8 +36,9 @@ package body Prj.PP is
 
    Not_Tested : array (Project_Node_Kind) of Boolean := (others => True);
 
-   Max_Line_Length : constant := Hostparm.Max_Line_Length - 5;
-   --  Maximum length of a line
+   Max_Line_Length : constant := 255;
+   --  Maximum length of a line. This is chosen to be compatible with older
+   --  versions of GNAT that had a strict limit on the maximum line length.
 
    Column : Natural := 0;
    --  Column number of the last character in the line. Used to avoid
