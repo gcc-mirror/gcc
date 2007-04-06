@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2005, AdaCore                     --
+--                     Copyright (C) 2001-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,13 +48,13 @@ package body GNAT.Sockets.Thin is
 
    WSAData_Dummy : array (1 .. 512) of C.int;
 
-   WS_Version  : constant := 16#0101#;
+   WS_Version  : constant := 16#0202#;
    Initialized : Boolean := False;
 
-   SYSNOTREADY          : constant := 10091;
-   VERNOTSUPPORTED      : constant := 10092;
-   NOTINITIALISED       : constant := 10093;
-   EDISCON              : constant := 10101;
+   SYSNOTREADY     : constant := 10091;
+   VERNOTSUPPORTED : constant := 10092;
+   NOTINITIALISED  : constant := 10093;
+   EDISCON         : constant := 10101;
 
    function Standard_Connect
      (S       : C.int;
@@ -258,11 +258,11 @@ package body GNAT.Sockets.Thin is
    -------------
 
    function C_Readv
-     (Socket : C.int;
+     (Fd     : C.int;
       Iov    : System.Address;
       Iovcnt : C.int) return C.int
    is
-      Res : C.int;
+      Res   : C.int;
       Count : C.int := 0;
 
       Iovec : array (0 .. Iovcnt - 1) of Vector_Element;
@@ -272,7 +272,7 @@ package body GNAT.Sockets.Thin is
    begin
       for J in Iovec'Range loop
          Res := C_Recv
-           (Socket,
+           (Fd,
             Iovec (J).Base.all'Address,
             C.int (Iovec (J).Length),
             0);
@@ -434,11 +434,11 @@ package body GNAT.Sockets.Thin is
    --------------
 
    function C_Writev
-     (Socket : C.int;
+     (Fd     : C.int;
       Iov    : System.Address;
       Iovcnt : C.int) return C.int
    is
-      Res : C.int;
+      Res   : C.int;
       Count : C.int := 0;
 
       Iovec : array (0 .. Iovcnt - 1) of Vector_Element;
@@ -448,7 +448,7 @@ package body GNAT.Sockets.Thin is
    begin
       for J in Iovec'Range loop
          Res := C_Send
-           (Socket,
+           (Fd,
             Iovec (J).Base.all'Address,
             C.int (Iovec (J).Length),
             0);
@@ -478,7 +478,7 @@ package body GNAT.Sockets.Thin is
    -- Initialize --
    ----------------
 
-   procedure Initialize (Process_Blocking_IO : Boolean := False) is
+   procedure Initialize (Process_Blocking_IO : Boolean) is
       pragma Unreferenced (Process_Blocking_IO);
 
       Return_Value : Interfaces.C.int;
@@ -541,6 +541,12 @@ package body GNAT.Sockets.Thin is
    begin
       Sin.Sin_Port := Port;
    end Set_Port;
+
+   --------------------
+   -- Signalling_Fds --
+   --------------------
+
+   package body Signalling_Fds is separate;
 
    --------------------------
    -- Socket_Error_Message --

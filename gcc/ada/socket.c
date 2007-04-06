@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 2003-2005 Free Software Foundation, Inc.          *
+ *          Copyright (C) 2003-2006, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -36,6 +36,11 @@
 /* Include all the necessary system-specific headers and define the
    necessary macros (shared with gen-soccon). */
 
+#if !defined(SO_NOSIGPIPE) && !defined (MSG_NOSIGNAL)
+#include <signal.h>
+#endif
+/* Required if we will be calling signal() in __gnat_disable_all_sigpipes() */
+
 #include "raise.h"
 /* Required for __gnat_malloc() */
 
@@ -43,6 +48,10 @@
 /* Required for memcpy() */
 
 extern void __gnat_disable_sigpipe (int fd);
+extern void __gnat_disable_all_sigpipes (void);
+extern int  __gnat_create_signalling_fds (int *fds);
+extern int  __gnat_read_signalling_fd (int rsig);
+extern int  __gnat_write_signalling_fd (int wsig);
 extern void __gnat_free_socket_set (fd_set *);
 extern void __gnat_last_socket_in_set (fd_set *, int *);
 extern void __gnat_get_socket_from_set (fd_set *, int *, int *);
@@ -50,7 +59,7 @@ extern void __gnat_insert_socket_in_set (fd_set *, int);
 extern int __gnat_is_socket_in_set (fd_set *, int);
 extern fd_set *__gnat_new_socket_set (fd_set *);
 extern void __gnat_remove_socket_from_set (fd_set *, int);
-extern int __gnat_get_h_errno (void);
+extern int  __gnat_get_h_errno (void);
 
 /* Disable the sending of SIGPIPE for writes on a broken stream */
 
@@ -63,6 +72,51 @@ __gnat_disable_sigpipe (int fd)
 #endif
 }
 
+void
+__gnat_disable_all_sigpipes (void)
+{
+#if !defined(SO_NOSIGPIPE) && !defined(MSG_NOSIGNAL) && defined(SIGPIPE)
+  (void) signal (SIGPIPE, SIG_IGN);
+#endif
+}
+
+#if defined (_WIN32) || defined (__vxworks) || defined (VMS)
+/*
+ * Signalling FDs operations are implemented in Ada for these platforms
+ * (see subunit GNAT.Sockets.Thin.Signalling_Fds).
+ */
+#else
+/*
+ * Create a pair of connected file descriptors fds[0] and fds[1] used for
+ * signalling by a Selector object. fds[0] is the read end, and fds[1] the
+ * write end.
+ */
+int
+__gnat_create_signalling_fds (int *fds) {
+  return pipe (fds);
+}
+
+/*
+ * Read one byte of data from rsig, the read end of a pair of signalling fds
+ * created by __gnat_create_signalling_fds.
+ */
+int
+__gnat_read_signalling_fd (int rsig) {
+  char c;
+  return read (rsig, &c, 1);
+}
+
+/*
+ * Write one byte of data to wsig, the write end of a pair of signalling fds
+ * created by __gnat_create_signalling_fds.
+ */
+int
+__gnat_write_signalling_fd (int wsig) {
+  char c = 0;
+  return write (wsig, &c, 1);
+}
+#endif
+
 /* Free socket set. */
 
 void
@@ -83,7 +137,7 @@ __gnat_last_socket_in_set (fd_set *set, int *last)
   int l;
   l = -1;
 
-#ifdef WINNT
+#ifdef _WIN32
   /* More efficient method for NT. */
   for (s = 0; s < set->fd_count; s++)
     if ((int) set->fd_array[s] > l)

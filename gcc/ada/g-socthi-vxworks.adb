@@ -92,7 +92,7 @@ package body GNAT.Sockets.Thin is
    function Syscall_Accept
      (S       : C.int;
       Addr    : System.Address;
-      Addrlen : access C.int) return C.int;
+      Addrlen : not null access C.int) return C.int;
    pragma Import (C, Syscall_Accept, "accept");
 
    function Syscall_Connect
@@ -120,7 +120,7 @@ package body GNAT.Sockets.Thin is
       Len     : C.int;
       Flags   : C.int;
       From    : Sockaddr_In_Access;
-      Fromlen : access C.int) return C.int;
+      Fromlen : not null access C.int) return C.int;
    pragma Import (C, Syscall_Recvfrom, "recvfrom");
 
    function Syscall_Send
@@ -155,7 +155,7 @@ package body GNAT.Sockets.Thin is
    function C_Accept
      (S       : C.int;
       Addr    : System.Address;
-      Addrlen : access C.int) return C.int
+      Addrlen : not null access C.int) return C.int
    is
       R   : C.int;
       Val : aliased C.int := 1;
@@ -398,7 +398,7 @@ package body GNAT.Sockets.Thin is
       Len     : C.int;
       Flags   : C.int;
       From    : Sockaddr_In_Access;
-      Fromlen : access C.int) return C.int
+      Fromlen : not null access C.int) return C.int
    is
       Res : C.int;
 
@@ -593,6 +593,12 @@ package body GNAT.Sockets.Thin is
    begin
       Sin.Sin_Port   := Port;
    end Set_Port;
+
+   --------------------
+   -- Signalling_Fds --
+   --------------------
+
+   package body Signalling_Fds is separate;
 
    --------------------------
    -- Socket_Error_Message --

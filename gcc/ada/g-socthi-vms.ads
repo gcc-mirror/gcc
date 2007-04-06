@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2002-2005, AdaCore                     --
+--                     Copyright (C) 2002-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,8 +38,8 @@
 --  This is the Alpha/VMS version
 
 with Interfaces.C.Pointers;
-
 with Interfaces.C.Strings;
+
 with GNAT.Sockets.Constants;
 with GNAT.OS_Lib;
 
@@ -60,9 +60,12 @@ package GNAT.Sockets.Thin is
    function Socket_Errno return Integer renames GNAT.OS_Lib.Errno;
    --  Returns last socket error number
 
+   procedure Set_Socket_Errno (Errno : Integer) renames GNAT.OS_Lib.Set_Errno;
+   --  Set last socket error number
+
    function Socket_Error_Message (Errno : Integer) return C.Strings.chars_ptr;
-   --  Returns the error message string for the error number Errno. If
-   --  Errno is not known it returns "Unknown system error".
+   --  Returns the error message string for the error number Errno. If Errno is
+   --  not known it returns "Unknown system error".
 
    function Host_Errno return Integer;
    pragma Import (C, Host_Errno, "__gnat_get_h_errno");
@@ -165,8 +168,8 @@ package GNAT.Sockets.Thin is
    --  Set Sin.Sin_Family to Family
 
    procedure Set_Port
-     (Sin     : Sockaddr_In_Access;
-      Port    : C.unsigned_short);
+     (Sin  : Sockaddr_In_Access;
+      Port : C.unsigned_short);
    pragma Inline (Set_Port);
    --  Set Sin.Sin_Port to Port
 
@@ -203,14 +206,24 @@ package GNAT.Sockets.Thin is
    pragma Convention (C, Servent_Access);
    --  Access to service entry
 
-   type Two_Int is array (0 .. 1) of C.int;
-   pragma Convention (C, Two_Int);
-   --  Used with pipe()
+   type Two_Ints is array (0 .. 1) of C.int;
+   pragma Convention (C, Two_Ints);
+   --  Container for two int values
+
+   subtype Fd_Pair is Two_Ints;
+   --  Two_Ints as used for Create_Signalling_Fds: a pair of connected file
+   --  descriptors, one of which (the "read end" of the connection) being used
+   --  for reading, the other one (the "write end") being used for writing.
+
+   Read_End  : constant := 0;
+   Write_End : constant := 1;
+   --  Indices into an Fd_Pair value providing access to each of the connected
+   --  file descriptors.
 
    function C_Accept
      (S       : C.int;
       Addr    : System.Address;
-      Addrlen : access C.int) return C.int;
+      Addrlen : not null access C.int) return C.int;
 
    function C_Bind
      (S       : C.int;
@@ -240,7 +253,7 @@ package GNAT.Sockets.Thin is
    function C_Getpeername
      (S       : C.int;
       Name    : System.Address;
-      Namelen : access C.int) return C.int;
+      Namelen : not null access C.int) return C.int;
 
    function C_Getservbyname
      (Name  : C.char_array;
@@ -253,24 +266,26 @@ package GNAT.Sockets.Thin is
    function C_Getsockname
      (S       : C.int;
       Name    : System.Address;
-      Namelen : access C.int) return C.int;
+      Namelen : not null access C.int) return C.int;
 
    function C_Getsockopt
      (S       : C.int;
       Level   : C.int;
       Optname : C.int;
       Optval  : System.Address;
-      Optlen  : access C.int) return C.int;
+      Optlen  : not null access C.int) return C.int;
 
    function C_Inet_Addr
-     (Cp   : C.Strings.chars_ptr) return C.int;
+     (Cp : C.Strings.chars_ptr) return C.int;
 
    function C_Ioctl
      (S    : C.int;
       Req  : C.int;
       Arg  : Int_Access) return C.int;
 
-   function C_Listen (S, Backlog : C.int) return C.int;
+   function C_Listen
+     (S       : C.int;
+      Backlog : C.int) return C.int;
 
    function C_Readv
      (Fd     : C.int;
@@ -289,7 +304,7 @@ package GNAT.Sockets.Thin is
       Len     : C.int;
       Flags   : C.int;
       From    : Sockaddr_In_Access;
-      Fromlen : access C.int) return C.int;
+      Fromlen : not null access C.int) return C.int;
 
    function C_Select
      (Nfds      : C.int;
@@ -320,8 +335,8 @@ package GNAT.Sockets.Thin is
       Optlen  : C.int) return C.int;
 
    function C_Shutdown
-     (S    : C.int;
-      How  : C.int) return C.int;
+     (S   : C.int;
+      How : C.int) return C.int;
 
    function C_Socket
      (Domain   : C.int;
@@ -338,6 +353,25 @@ package GNAT.Sockets.Thin is
      (Fd     : C.int;
       Iov    : System.Address;
       Iovcnt : C.int) return C.int;
+
+   package Signalling_Fds is
+
+      function Create (Fds : not null access Fd_Pair) return C.int;
+      pragma Convention (C, Create);
+      --  Create a pair of connected descriptors suitable for use with C_Select
+      --  (used for signalling in Selector objects).
+
+      function Read (Rsig : C.int) return C.int;
+      pragma Convention (C, Read);
+      --  Read one byte of data from rsig, the read end of a pair of signalling
+      --  fds created by Create_Signalling_Fds.
+
+      function Write (Wsig : C.int) return C.int;
+      pragma Convention (C, Write);
+      --  Write one byte of data to wsig, the write end of a pair of signalling
+      --  fds created by Create_Signalling_Fds.
+
+   end Signalling_Fds;
 
    procedure Free_Socket_Set
      (Set : Fd_Set_Access);
@@ -367,17 +401,17 @@ package GNAT.Sockets.Thin is
    procedure Last_Socket_In_Set
      (Set    : Fd_Set_Access;
       Last   : Int_Access);
-   --  Find the largest socket in the socket set. This is needed for
-   --  select(). When Last_Socket_In_Set is called, parameter Last is
-   --  a maximum value of the largest socket. This hint is used to
-   --  avoid scanning very large socket sets. After the call, Last is
-   --  set back to the real largest socket in the socket set.
+   --  Find the largest socket in the socket set. This is needed for select().
+   --  When Last_Socket_In_Set is called, parameter Last is a maximum value of
+   --  the largest socket. This hint is used to avoid scanning very large
+   --  socket sets. After the call, Last is set back to the real largest socket
+   --  in the socket set.
 
    function  New_Socket_Set
      (Set : Fd_Set_Access) return Fd_Set_Access;
-   --  Allocate a new socket set which is a system-dependent structure
-   --  and initialize by copying Set if it is non-null, by making it
-   --  empty otherwise.
+   --  Allocate a new socket set which is a system-dependent structure and
+   --  initialize by copying Set if it is non-null, by making it empty
+   --  otherwise.
 
    procedure Remove_Socket_From_Set
      (Set    : Fd_Set_Access;
@@ -414,4 +448,5 @@ private
    pragma Import (C, New_Socket_Set, "__gnat_new_socket_set");
    pragma Import (C, Insert_Socket_In_Set, "__gnat_insert_socket_in_set");
    pragma Import (C, Remove_Socket_From_Set, "__gnat_remove_socket_from_set");
+
 end GNAT.Sockets.Thin;
