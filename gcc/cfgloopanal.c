@@ -423,11 +423,12 @@ average_num_loop_insns (struct loop *loop)
   return ninsns;
 }
 
-/* Returns expected number of LOOP iterations.
-   Compute upper bound on number of iterations in case they do not fit integer
-   to help loop peeling heuristics.  Use exact counts if at all possible.  */
-unsigned
-expected_loop_iterations (const struct loop *loop)
+/* Returns expected number of iterations of LOOP, according to
+   measured or guessed profile.  No bounding is done on the
+   value.  */
+
+gcov_type
+expected_loop_iterations_unbounded (const struct loop *loop)
 {
   edge e;
   edge_iterator ei;
@@ -450,8 +451,7 @@ expected_loop_iterations (const struct loop *loop)
       else
 	expected = (count_latch + count_in - 1) / count_in;
 
-      /* Avoid overflows.  */
-      return (expected > REG_BR_PROB_BASE ? REG_BR_PROB_BASE : expected);
+      return expected;
     }
   else
     {
@@ -471,6 +471,16 @@ expected_loop_iterations (const struct loop *loop)
 
       return (freq_latch + freq_in - 1) / freq_in;
     }
+}
+
+/* Returns expected number of LOOP iterations.  The returned value is bounded
+   by REG_BR_PROB_BASE.  */
+
+unsigned
+expected_loop_iterations (const struct loop *loop)
+{
+  gcov_type expected = expected_loop_iterations_unbounded (loop);
+  return (expected > REG_BR_PROB_BASE ? REG_BR_PROB_BASE : expected);
 }
 
 /* Returns the maximum level of nesting of subloops of LOOP.  */

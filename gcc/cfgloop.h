@@ -262,11 +262,13 @@ extern void verify_loop_structure (void);
 
 /* Loop analysis.  */
 extern bool just_once_each_iteration_p (const struct loop *, basic_block);
+gcov_type expected_loop_iterations_unbounded (const struct loop *);
 extern unsigned expected_loop_iterations (const struct loop *);
 extern rtx doloop_condition_get (rtx);
 
 void estimate_numbers_of_iterations_loop (struct loop *);
 HOST_WIDE_INT estimated_loop_iterations_int (struct loop *, bool);
+bool estimated_loop_iterations (struct loop *, bool, double_int *);
 
 /* Loop manipulation.  */
 extern bool can_duplicate_loop_p (struct loop *loop);

@@ -2553,7 +2553,7 @@ analyze_ziv_subscript (tree chrec_a,
    large as the number of iterations.  If we have no reliable estimate,
    the function returns false, otherwise returns true.  */
 
-static bool
+bool
 estimated_loop_iterations (struct loop *loop, bool conservative,
 			   double_int *nit)
 {
@@ -4873,8 +4873,7 @@ get_references_in_stmt (tree stmt, VEC (data_ref_loc, heap) **references)
 {
   bool clobbers_memory = false;
   data_ref_loc *ref;
-  tree *op0, *op1, arg, call;
-  call_expr_arg_iterator iter;
+  tree *op0, *op1, call;
 
   *references = NULL;
 
@@ -4915,9 +4914,12 @@ get_references_in_stmt (tree stmt, VEC (data_ref_loc, heap) **references)
 
   if (call)
     {
-      FOR_EACH_CALL_EXPR_ARG (arg, iter, call)
+      unsigned i, n = call_expr_nargs (call);
+
+      for (i = 0; i < n; i++)
 	{
-	  op0 = &arg;
+	  op0 = &CALL_EXPR_ARG (call, i);
+
 	  if (DECL_P (*op0)
 	      || REFERENCE_CLASS_P (*op0))
 	    {
