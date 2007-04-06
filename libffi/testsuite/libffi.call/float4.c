@@ -5,6 +5,8 @@
    Originator:	From the original ffitest.c  */
 
 /* { dg-do run } */
+/* { dg-options "-mieee" { target alpha*-*-* } } */
+
 #include "ffitest.h"
 #include "float.h"
 
