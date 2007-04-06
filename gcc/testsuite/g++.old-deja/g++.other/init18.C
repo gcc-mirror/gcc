@@ -5,7 +5,9 @@
 //
 // Any platform that doesn't have proper __cxa_atexit support will also fail.
 //
-// { dg-do run { xfail { { mmix-knuth-mmixware xtensa-*-elf* arm*-*-elf arm*-*-eabi m68k-*-elf } || { ! cxa_atexit } } } }
+// { dg-do run }
+// { dg-require-effective-target unwrapped }
+// { dg-require-effective-target cxa_atexit }
 
 #include <stdlib.h>
 extern "C" void _exit (int);
