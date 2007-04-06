@@ -236,14 +236,13 @@ package body GNAT.Sockets is
    --------------------
 
    procedure Abort_Selector (Selector : Selector_Type) is
-      Buf : aliased Character := ASCII.NUL;
       Res : C.int;
 
    begin
-      --  Send an empty array to unblock C select system call
+      --  Send one byte to unblock select system call
 
-      Res := C_Send (C.int (Selector.W_Sig_Socket), Buf'Address, 1,
-                     Constants.MSG_Forced_Flags);
+      Res := Signalling_Fds.Write (C.int (Selector.W_Sig_Socket));
+
       if Res = Failure then
          Raise_Socket_Error (Socket_Errno);
       end if;
@@ -454,16 +453,11 @@ package body GNAT.Sockets is
          if Is_Set (RSet, RSig) then
             Clear (RSet, RSig);
 
-            declare
-               Buf : Character;
+            Res := Signalling_Fds.Read (C.int (RSig));
 
-            begin
-               Res := C_Recv (C.int (RSig), Buf'Address, 1, 0);
-
-               if Res = Failure then
-                  Raise_Socket_Error (Socket_Errno);
-               end if;
-            end;
+            if Res = Failure then
+               Raise_Socket_Error (Socket_Errno);
+            end if;
 
             Status := Aborted;
 
@@ -674,105 +668,23 @@ package body GNAT.Sockets is
    ---------------------
 
    procedure Create_Selector (Selector : out Selector_Type) is
-      S0  : C.int;
-      S1  : C.int;
-      S2  : C.int;
-      Res : C.int;
-      Sin : aliased Sockaddr_In;
-      Len : aliased C.int := Sin'Size / 8;
-      Err : Integer;
+      Two_Fds : aliased Fd_Pair;
+      Res     : C.int;
 
    begin
-      --  We open two signalling sockets. One of them is used to send data to
-      --  the other, which is included in a C_Select socket set. The
-      --  communication is used to force the call to C_Select to complete, and
+      --  We open two signalling file descriptors. One of them is used to send
+      --  data to the other, which is included in a C_Select socket set. The
+      --  communication is used to force a call to C_Select to complete, and
       --  the waiting task to resume its execution.
 
-      --  Create a listening socket
-
-      S0 := C_Socket (Constants.AF_INET, Constants.SOCK_STREAM, 0);
-
-      if S0 = Failure then
-         Raise_Socket_Error (Socket_Errno);
-      end if;
-
-      --  Bind the socket to any unused port on localhost
-
-      Sin.Sin_Addr.S_B1 := 127;
-      Sin.Sin_Addr.S_B2 := 0;
-      Sin.Sin_Addr.S_B3 := 0;
-      Sin.Sin_Addr.S_B4 := 1;
-      Sin.Sin_Port := 0;
-
-      Res := C_Bind (S0, Sin'Address, Len);
-
-      if Res = Failure then
-         Err := Socket_Errno;
-         Res := C_Close (S0);
-         Raise_Socket_Error (Err);
-      end if;
-
-      --  Get the port used by the socket
-
-      Res := C_Getsockname (S0, Sin'Address, Len'Access);
-
-      if Res = Failure then
-         Err := Socket_Errno;
-         Res := C_Close (S0);
-         Raise_Socket_Error (Err);
-      end if;
-
-      --  Set backlog to 1 to guarantee that exactly one call to connect(2)
-      --  can succeed.
-
-      Res := C_Listen (S0, 1);
-
-      if Res = Failure then
-         Err := Socket_Errno;
-         Res := C_Close (S0);
-         Raise_Socket_Error (Err);
-      end if;
-
-      S1 := C_Socket (Constants.AF_INET, Constants.SOCK_STREAM, 0);
-
-      if S1 = Failure then
-         Err := Socket_Errno;
-         Res := C_Close (S0);
-         Raise_Socket_Error (Err);
-      end if;
-
-      --  Do a connect and accept the connection
-
-      Res := C_Connect (S1, Sin'Address, Len);
-
-      if Res = Failure then
-         Err := Socket_Errno;
-         Res := C_Close (S0);
-         Res := C_Close (S1);
-         Raise_Socket_Error (Err);
-      end if;
-
-      --  Since the call to connect(2) has suceeded and the backlog limit on
-      --  the listening socket is 1, we know that there is now exactly one
-      --  pending connection on S0, which is the one from S1.
-
-      S2 := C_Accept (S0, Sin'Address, Len'Access);
-
-      if S2 = Failure then
-         Err := Socket_Errno;
-         Res := C_Close (S0);
-         Res := C_Close (S1);
-         Raise_Socket_Error (Err);
-      end if;
-
-      Res := C_Close (S0);
+      Res := Signalling_Fds.Create (Two_Fds'Access);
 
       if Res = Failure then
          Raise_Socket_Error (Socket_Errno);
       end if;
 
-      Selector.R_Sig_Socket := Socket_Type (S1);
-      Selector.W_Sig_Socket := Socket_Type (S2);
+      Selector.R_Sig_Socket := Socket_Type (Two_Fds (Read_End));
+      Selector.W_Sig_Socket := Socket_Type (Two_Fds (Write_End));
    end Create_Selector;
 
    -------------------
@@ -1073,7 +985,7 @@ package body GNAT.Sockets is
    is
       use type C.unsigned_char;
 
-      V8  : aliased Two_Int;
+      V8  : aliased Two_Ints;
       V4  : aliased C.int;
       V1  : aliased C.unsigned_char;
       VT  : aliased Timeval;
@@ -1899,7 +1811,7 @@ package body GNAT.Sockets is
       Level  : Level_Type := Socket_Level;
       Option : Option_Type)
    is
-      V8  : aliased Two_Int;
+      V8  : aliased Two_Ints;
       V4  : aliased C.int;
       V1  : aliased C.unsigned_char;
       VT  : aliased Timeval;

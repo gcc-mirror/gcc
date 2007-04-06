@@ -1,5 +1,5 @@
 # Makefile for GNU Ada Compiler (GNAT).
-#   Copyright (C) 1994-2005 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2006 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -409,6 +409,7 @@ ifeq ($(strip $(filter-out m68k% wrs vx%,$(targ))),)
   g-soccon.ads<g-soccon-vxworks.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
+  g-stsifd.adb<g-stsifd-sockets.adb \
   system.ads<system-vxworks-m68k.ads
 
   TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
@@ -444,7 +445,8 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   s-vxwork.ads<s-vxwork-ppc.ads \
   g-soccon.ads<g-soccon-vxworks.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
-  g-socthi.adb<g-socthi-vxworks.adb
+  g-socthi.adb<g-socthi-vxworks.adb \
+  g-stsifd.adb<g-stsifd-sockets.adb
 
   TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
 
@@ -501,6 +503,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   g-soccon.ads<g-soccon-vxworks.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
+  g-stsifd.adb<g-stsifd-sockets.adb \
   system.ads<system-vxworks-ppc-vthread.ads
 
   TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
@@ -546,6 +549,7 @@ ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
   g-soccon.ads<g-soccon-vxworks.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
+  g-stsifd.adb<g-stsifd-sockets.adb \
   system.ads<system-vxworks-sparcv9.ads   \
 
   TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
@@ -572,9 +576,11 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
   s-taprop.adb<s-taprop-vxworks.adb \
   s-taspri.ads<s-taspri-vxworks.ads \
   s-vxwork.ads<s-vxwork-x86.ads \
+  g-bytswa.adb<g-bytswa-x86.adb \
   g-soccon.ads<g-soccon-vxworks.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
-  g-socthi.adb<g-socthi-vxworks.adb
+  g-socthi.adb<g-socthi-vxworks.adb \
+  g-stsifd.adb<g-stsifd-sockets.adb
 
   TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
 
@@ -627,6 +633,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(targ))),)
   g-soccon.ads<g-soccon-vxworks.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
+  g-stsifd.adb<g-stsifd-sockets.adb \
   system.ads<system-vxworks-arm.ads
 
   TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
@@ -656,6 +663,7 @@ ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
   g-soccon.ads<g-soccon-vxworks.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
+  g-stsifd.adb<g-stsifd-sockets.adb \
   system.ads<system-vxworks-mips.ads
 
   TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
@@ -752,6 +760,7 @@ ifeq ($(strip $(filter-out %86 solaris2%,$(arch) $(osys))),)
   s-tasinf.ads<s-tasinf-solaris.ads \
   s-taspri.ads<s-taspri-solaris.ads \
   s-tpopsp.adb<s-tpopsp-solaris.adb \
+  g-bytswa.adb<g-bytswa-x86.adb \
   g-soccon.ads<g-soccon-solaris.ads \
   g-soliop.ads<g-soliop-solaris.ads \
   system.ads<system-solaris-x86.ads
@@ -772,6 +781,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
   a-intnam.ads<a-intnam-linux.ads \
   a-numaux.adb<a-numaux-x86.adb \
   a-numaux.ads<a-numaux-x86.ads \
+  g-bytswa.adb<g-bytswa-x86.adb \
   g-soccon.ads<g-soccon-linux-x86.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
@@ -828,6 +838,7 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(arch) $(osys))),)
   a-intnam.ads<a-intnam-freebsd.ads \
   a-numaux.adb<a-numaux-x86.adb \
   a-numaux.ads<a-numaux-x86.ads \
+  g-bytswa.adb<g-bytswa-x86.adb \
   g-soccon.ads<g-soccon-freebsd.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
@@ -844,7 +855,7 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(arch) $(osys))),)
   GNATLIB_SHARED = gnatlib-shared-dual
 
   EH_MECHANISM=-gcc
-  THREADSLIB= -lc_r
+  THREADSLIB= -lpthread
   GMEM_LIB = gmemlib
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
@@ -1010,6 +1021,7 @@ ifeq ($(strip $(filter-out lynxos,$(osys))),)
     a-numaux.adb<a-numaux-x86.adb \
     a-numaux.ads<a-numaux-x86.ads \
     a-intnam.ads<a-intnam-lynxos.ads \
+    g-bytswa.adb<g-bytswa-x86.adb \
     s-inmaop.adb<s-inmaop-posix.adb \
     s-intman.adb<s-intman-posix.adb \
     s-osinte.adb<s-osinte-lynxos.adb \
@@ -1142,6 +1154,7 @@ endif
   g-soccon.ads<g-soccon-vms.ads \
   g-socthi.ads<g-socthi-vms.ads \
   g-socthi.adb<g-socthi-vms.adb \
+  g-stsifd.adb<g-stsifd-sockets.adb \
   i-c.ads<i-c-vms_64.ads \
   i-cstrin.ads<i-cstrin-vms_64.ads \
   i-cstrin.adb<i-cstrin-vms_64.adb \
@@ -1212,8 +1225,10 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
   s-osprim.adb<s-osprim-mingw.adb \
   s-taprop.adb<s-taprop-mingw.adb \
   s-taspri.ads<s-taspri-mingw.ads \
+  g-bytswa.adb<g-bytswa-x86.adb \
   g-socthi.ads<g-socthi-mingw.ads \
   g-socthi.adb<g-socthi-mingw.adb \
+  g-stsifd.adb<g-stsifd-sockets.adb \
   g-soccon.ads<g-soccon-mingw.ads \
   g-soliop.ads<g-soliop-mingw.ads \
   system.ads<system-mingw.ads
