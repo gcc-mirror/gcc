@@ -858,12 +858,9 @@ parse_format_list (st_parameter_dt *dtp)
       goto finished;
 
     case FMT_SLASH:
-      get_fnode (fmt, &head, &tail, FMT_SLASH);
-      tail->repeat = 1;
-
-      /* Fall Through */
-
     case FMT_COLON:
+      get_fnode (fmt, &head, &tail, t);
+      tail->repeat = 1;
       goto optional_comma;
 
     case FMT_END:
