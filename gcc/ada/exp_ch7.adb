@@ -35,9 +35,11 @@ with Errout;   use Errout;
 with Exp_Ch9;  use Exp_Ch9;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Dbug; use Exp_Dbug;
+with Exp_Dist; use Exp_Dist;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
+with Lib;      use Lib;
 with Hostparm; use Hostparm;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -46,7 +48,6 @@ with Output;   use Output;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
-with Targparm; use Targparm;
 with Sinfo;    use Sinfo;
 with Sem;      use Sem;
 with Sem_Ch3;  use Sem_Ch3;
@@ -900,6 +901,15 @@ package body Exp_Ch7 is
                    and then Controlled_Type (Corresponding_Record_Type (T)));
    end Controlled_Type;
 
+   ---------------------------
+   -- CW_Or_Controlled_Type --
+   ---------------------------
+
+   function CW_Or_Controlled_Type (T : Entity_Id) return Boolean is
+   begin
+      return Is_Class_Wide_Type (T) or else Controlled_Type (T);
+   end CW_Or_Controlled_Type;
+
    --------------------------
    -- Controller_Component --
    --------------------------
@@ -977,7 +987,7 @@ package body Exp_Ch7 is
          Atyp := Etype (Arg);
       end if;
 
-      if Is_Abstract (Proc) and then Is_Tagged_Type (Ftyp) then
+      if Is_Abstract_Subprogram (Proc) and then Is_Tagged_Type (Ftyp) then
          return Unchecked_Convert_To (Class_Wide_Type (Ftyp), Arg);
 
       elsif Ftyp /= Atyp
@@ -1020,17 +1030,12 @@ package body Exp_Ch7 is
       Loc       : constant Source_Ptr := Sloc (N);
       Wrap_Node : Node_Id;
 
-      Sec_Stk : constant Boolean :=
-                  Sec_Stack and not Functions_Return_By_DSP_On_Target;
-      --  We never need a secondary stack if functions return by DSP
-
    begin
       --  Do not create a transient scope if we are already inside one
 
       for S in reverse Scope_Stack.First .. Scope_Stack.Last loop
-
          if Scope_Stack.Table (S).Is_Transient then
-            if Sec_Stk then
+            if Sec_Stack then
                Set_Uses_Sec_Stack (Scope_Stack.Table (S).Entity);
             end if;
 
@@ -1064,7 +1069,7 @@ package body Exp_Ch7 is
          New_Scope (New_Internal_Entity (E_Block, Current_Scope, Loc, 'B'));
          Set_Scope_Is_Transient;
 
-         if Sec_Stk then
+         if Sec_Stack then
             Set_Uses_Sec_Stack (Current_Scope);
             Check_Restriction (No_Secondary_Stack, N);
          end if;
@@ -1546,12 +1551,12 @@ package body Exp_Ch7 is
    -- Expand_N_Package_Body --
    ---------------------------
 
-   --  Add call to Activate_Tasks if body is an activator (actual
-   --  processing is in chapter 9).
+   --  Add call to Activate_Tasks if body is an activator (actual processing
+   --  is in chapter 9).
 
    --  Generate subprogram descriptor for elaboration routine
 
-   --  ENcode entity names in package body
+   --  Encode entity names in package body
 
    procedure Expand_N_Package_Body (N : Node_Id) is
       Ent : constant Entity_Id := Corresponding_Spec (N);
@@ -1583,14 +1588,76 @@ package body Exp_Ch7 is
    --  whether a body will eventually appear.
 
    procedure Expand_N_Package_Declaration (N : Node_Id) is
+      Spec    : constant Node_Id := Specification (N);
+      Decls   : List_Id;
+
+      No_Body : Boolean;
+      --  True in the case of a package declaration that is a compilation unit
+      --  and for which no associated body will be compiled in
+      --  this compilation.
    begin
-      if Nkind (Parent (N)) = N_Compilation_Unit
-        and then not Body_Required (Parent (N))
+
+      No_Body := False;
+
+      --  Case of a package declaration other than a compilation unit
+
+      if Nkind (Parent (N)) /= N_Compilation_Unit then
+         null;
+
+      --  Case of a compilation unit that does not require a body
+
+      elsif not Body_Required (Parent (N))
         and then not Unit_Requires_Body (Defining_Entity (N))
-        and then Present (Activation_Chain_Entity (N))
       then
+         No_Body := True;
+
+      --  Special case of generating calling stubs for a remote call interface
+      --  package: even though the package declaration requires one, the
+      --  body won't be processed in this compilation (so any stubs for RACWs
+      --  declared in the package must be generated here, along with the
+      --  spec).
+
+      elsif Parent (N) = Cunit (Main_Unit)
+        and then Is_Remote_Call_Interface (Defining_Entity (N))
+        and then Distribution_Stub_Mode = Generate_Caller_Stub_Body
+      then
+         No_Body := True;
+      end if;
+
+      --  For a package declaration that implies no associated body, generate
+      --  task activation call and RACW supporting bodies now (since we won't
+      --  have a specific separate compilation unit for that).
+
+      if No_Body then
+
          New_Scope (Defining_Entity (N));
-         Build_Task_Activation_Call (N);
+
+         if Has_RACW (Defining_Entity (N)) then
+
+            --  Generate RACW subprogram bodies
+
+            Decls := Private_Declarations (Spec);
+
+            if No (Decls) then
+               Decls := Visible_Declarations (Spec);
+            end if;
+
+            if No (Decls) then
+               Decls := New_List;
+               Set_Visible_Declarations (Spec, Decls);
+            end if;
+
+            Append_RACW_Bodies (Decls, Defining_Entity (N));
+            Analyze_List (Decls);
+         end if;
+
+         if Present (Activation_Chain_Entity (N)) then
+
+            --  Generate task activation call as last step of elaboration
+
+            Build_Task_Activation_Call (N);
+         end if;
+
          Pop_Scope;
       end if;
 
@@ -1652,12 +1719,18 @@ package body Exp_Ch7 is
              Selector_Name => Make_Identifier (Loc, Name_F));
 
       --  Case of a dynamically allocated object. The final list is the
-      --  corresponding list controller (The next entity in the scope of
-      --  the access type with the right type). If the type comes from a
-      --  With_Type clause, no controller was created, and we use the
-      --  global chain instead.
+      --  corresponding list controller (the next entity in the scope of the
+      --  access type with the right type). If the type comes from a With_Type
+      --  clause, no controller was created, we use the global chain instead.
 
-      elsif Is_Access_Type (E) then
+      --  An anonymous access type either has a list created for it when the
+      --  allocator is a for an access parameter or an access discriminant,
+      --  or else it uses the list of the enclosing dynamic scope, when the
+      --  context is a declaration or an assignment.
+
+      elsif Is_Access_Type (E)
+        and then Ekind (E) /= E_Anonymous_Access_Type
+      then
          if not From_With_Type (E) then
             return
               Make_Selected_Component (Loc,
@@ -2589,7 +2662,7 @@ package body Exp_Ch7 is
 
       if Prim = Finalize_Case or else Prim = Adjust_Case then
          Handler := New_List (
-           Make_Exception_Handler (Loc,
+           Make_Implicit_Exception_Handler (Loc,
              Exception_Choices => New_List (Make_Others_Choice (Loc)),
              Statements        => New_List (
                Make_Raise_Program_Error (Loc,
@@ -3025,10 +3098,8 @@ package body Exp_Ch7 is
                   Set_Uses_Sec_Stack (Current_Scope, False);
 
                   if not Requires_Transient_Scope (Etype (S)) then
-                     if not Functions_Return_By_DSP_On_Target then
-                        Set_Uses_Sec_Stack (S, True);
-                        Check_Restriction (No_Secondary_Stack, Action);
-                     end if;
+                     Set_Uses_Sec_Stack (S, True);
+                     Check_Restriction (No_Secondary_Stack, Action);
                   end if;
 
                   exit;
@@ -3046,11 +3117,8 @@ package body Exp_Ch7 is
                elsif K = E_Procedure
                  or else K = E_Block
                then
-                  if not Functions_Return_By_DSP_On_Target then
-                     Set_Uses_Sec_Stack (S, True);
-                     Check_Restriction (No_Secondary_Stack, Action);
-                  end if;
-
+                  Set_Uses_Sec_Stack (S, True);
+                  Check_Restriction (No_Secondary_Stack, Action);
                   Set_Uses_Sec_Stack (Current_Scope, False);
                   exit;
 

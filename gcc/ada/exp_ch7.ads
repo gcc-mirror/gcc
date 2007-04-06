@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,15 +60,21 @@ package Exp_Ch7 is
    function Controlled_Type (T : Entity_Id) return Boolean;
    --  True if T potentially needs finalization actions
 
+   function CW_Or_Controlled_Type (T : Entity_Id) return Boolean;
+   --  True if T is either a potentially controlled type or a class-wide type.
+   --  Note that in normal mode, class-wide types are potentially controlled so
+   --  this function is different from Controlled_Type only under restrictions
+   --  No_Finalization.
+
    function Find_Final_List
      (E   : Entity_Id;
       Ref : Node_Id := Empty) return Node_Id;
-   --  E is an entity representing a controlled object, a controlled type
-   --  or a scope. If Ref is not empty, it is a reference to a controlled
-   --  record, the closest Final list is in the controller component of
-   --  the record containing Ref otherwise this function returns a
-   --  reference to the final list attached to the closest dynamic scope
-   --  (that can be E itself) creating this final list if necessary.
+   --  E is an entity representing a controlled object, a controlled type or a
+   --  scope. If Ref is not empty, it is a reference to a controlled record,
+   --  the closest Final list is in the controller component of the record
+   --  containing Ref otherwise this function returns a reference to the final
+   --  list attached to the closest dynamic scope (that can be E itself)
+   --  creating this final list if necessary.
 
    function Has_New_Controlled_Component (E : Entity_Id) return Boolean;
    --  E is a type entity. Give the same resul as Has_Controlled_Component
@@ -79,30 +85,28 @@ package Exp_Ch7 is
      (Obj_Ref     : Node_Id;
       Flist_Ref   : Node_Id;
       With_Attach : Node_Id) return Node_Id;
-   --  Attach the referenced object to the referenced Final Chain
-   --  'Flist_Ref' With_Attach is an expression of type Short_Short_Integer
-   --  which can be either '0' to signify no attachment, '1' for
-   --  attachement to a simply linked list or '2' for attachement to a
-   --  doubly linked list.
+   --  Attach the referenced object to the referenced Final Chain 'Flist_Ref'
+   --  With_Attach is an expression of type Short_Short_Integer which can be
+   --  either '0' to signify no attachment, '1' for attachement to a simply
+   --  linked list or '2' for attachement to a doubly linked list.
 
    function Make_Init_Call
      (Ref         : Node_Id;
       Typ         : Entity_Id;
       Flist_Ref   : Node_Id;
       With_Attach : Node_Id) return List_Id;
-   --  Ref is an expression (with no-side effect and is not required to
-   --  have been previously analyzed) that references the object to be
-   --  initialized. Typ is the expected type of Ref, which is a controlled
-   --  type (Is_Controlled) or a type with controlled components
-   --  (Has_Controlled). With_Attach is an integer expression representing
-   --  the level of attachment, see Attach_To_Final_List's Nb_Link param
-   --  documentation in s-finimp.ads.
+   --  Ref is an expression (with no-side effect and is not required to have
+   --  been previously analyzed) that references the object to be initialized.
+   --  Typ is the expected type of Ref, which is either a controlled type
+   --  (Is_Controlled) or a type with controlled components (Has_Controlled).
+   --  With_Attach is an integer expression which is the attchment level,
+   --  see System.Finalization_Implementation.Attach_To_Final_List for the
+   --  documentation of Nb_Link.
    --
-   --  This function will generate the appropriate calls to make
-   --  sure that the objects referenced by Ref are initialized. The
-   --  generate code is quite different depending on the fact the type
-   --  IS_Controlled or HAS_Controlled but this is not the problem of the
-   --  caller, the details are in the body.
+   --  This function will generate the appropriate calls to make sure that the
+   --  objects referenced by Ref are initialized. The generated code is quite
+   --  different for an IS_Controlled type or a HAS_Controlled type, but this
+   --  is not the problem for the caller, the details are in the body.
 
    function Make_Adjust_Call
      (Ref         : Node_Id;
@@ -110,23 +114,23 @@ package Exp_Ch7 is
       Flist_Ref   : Node_Id;
       With_Attach : Node_Id;
       Allocator   : Boolean := False) return List_Id;
-   --  Ref is an expression (with no-side effect and is not required to
-   --  have been previously analyzed) that references the object to be
-   --  adjusted. Typ is the expected type of Ref, which is a controlled
-   --  type (Is_Controlled) or a type with controlled components
-   --  (Has_Controlled).  With_Attach is an integer expression representing
-   --  the level of attachment, see Attach_To_Final_List's Nb_Link param
-   --  documentation in s-finimp.ads. Note: if Typ is Finalize_Storage_Only
-   --  and the object is at library level, then With_Attach will be ignored,
-   --  and a zero link level will be passed to Attach_To_Final_List.
+   --  Ref is an expression (with no-side effect and is not required to have
+   --  been previously analyzed) that references the object to be adjusted. Typ
+   --  is the expected type of Ref, which is a controlled type (Is_Controlled)
+   --  or a type with controlled components (Has_Controlled). With_Attach is an
+   --  integer expression giving the attachment level (see documentation of
+   --  Attach_To_Final_List.Nb_Link param documentation in s-finimp.ads.
+   --  Note: if Typ is Finalize_Storage_Only and the object is at library
+   --  level, then With_Attach will be ignored, and a zero link level will be
+   --  passed to Attach_To_Final_List.
    --
-   --  This function will generate the appropriate calls to make
-   --  sure that the objects referenced by Ref are adjusted. The generated
-   --  code is quite different depending on the fact the type IS_Controlled
-   --  or HAS_Controlled but this is not the problem of the caller, the
-   --  details are in the body. The objects must be attached when the adjust
-   --  takes place after an initialization expression but not when it takes
-   --  place after a regular assignment.
+   --  This function will generate the appropriate calls to make sure that the
+   --  objects referenced by Ref are adjusted. The generated code is quite
+   --  different depending on the fact the type IS_Controlled or HAS_Controlled
+   --  but this is not the problem of the caller, the details are in the body.
+   --  The objects must be attached when the adjust takes place after an
+   --  initialization expression but not when it takes place after a regular
+   --  assignment.
    --
    --  If Allocator is True, we are adjusting a newly-created object. The
    --  existing chaining pointers should not be left unchanged, because they
@@ -138,21 +142,21 @@ package Exp_Ch7 is
      (Ref         : Node_Id;
       Typ         : Entity_Id;
       With_Detach : Node_Id) return List_Id;
-   --  Ref is an expression (with no-side effect and is not required
-   --  to have been previously analyzed) that references the object to
-   --  be Finalized. Typ is the expected type of Ref, which is a
-   --  controlled type (Is_Controlled) or a type with controlled
-   --  components (Has_Controlled). With_Detach is a boolean expression
-   --  indicating whether to detach the controlled object from whatever
-   --  finalization list it is currently attached to.
+   --  Ref is an expression (with no-side effect and is not required to have
+   --  been previously analyzed) that references the object to be Finalized.
+   --  Typ is the expected type of Ref, which is a controlled type
+   --  (Is_Controlled) or a type with controlled components (Has_Controlled).
+   --  With_Detach is a boolean expression indicating whether to detach the
+   --  controlled object from whatever finalization list it is currently
+   --  attached to.
    --
-   --  This function will generate the appropriate calls to make
-   --  sure that the objects referenced by Ref are finalized. The generated
-   --  code is quite different depending on the fact the type IS_Controlled
-   --  or HAS_Controlled but this is not the problem of the caller, the
-   --  details are in the body. The objects must be detached when finalizing
-   --  an unchecked deallocated object but not when finalizing the target of
-   --  an assignment, it is not necessary either on scope exit.
+   --  This function will generate the appropriate calls to make sure that the
+   --  objects referenced by Ref are finalized. The generated code is quite
+   --  different depending on the fact the type IS_Controlled or HAS_Controlled
+   --  but this is not the problem of the caller, the details are in the body.
+   --  The objects must be detached when finalizing an unchecked deallocated
+   --  object but not when finalizing the target of an assignment, it is not
+   --  necessary either on scope exit.
 
    procedure Expand_Ctrl_Function_Call (N : Node_Id);
    --  Expand a call to a function returning a controlled value. That is to
@@ -167,8 +171,8 @@ package Exp_Ch7 is
      (N   : Node_Id;
       Obj : Node_Id;
       Typ : Entity_Id) return List_Id;
-   --  Generate loops to finalize any tasks or simple protected objects
-   --  that are subcomponents of an array.
+   --  Generate loops to finalize any tasks or simple protected objects that
+   --  are subcomponents of an array.
 
    function Cleanup_Protected_Object
      (N   : Node_Id;
@@ -191,10 +195,10 @@ package Exp_Ch7 is
    --  Check whether composite type contains a simple protected component
 
    function Is_Simple_Protected_Type (T : Entity_Id) return Boolean;
-   --  Check whether argument is a protected type without entries.
-   --  Protected types with entries are controlled, and their cleanup
-   --  is handled by the standard finalization machinery. For simple
-   --  protected types we generate inline code to release their locks.
+   --  Check whether argument is a protected type without entries. Protected
+   --  types with entries are controlled, and their cleanup is handled by the
+   --  standard finalization machinery. For simple protected types we generate
+   --  inline code to release their locks.
 
    --------------------------------
    -- Transient Scope Management --
@@ -215,12 +219,12 @@ package Exp_Ch7 is
    --  return the node to be wrapped if the current scope is transient
 
    procedure Store_Before_Actions_In_Scope (L : List_Id);
-   --  Append the list L of actions to the end of the before-actions store
-   --  in the top of the scope stack
+   --  Append the list L of actions to the end of the before-actions store in
+   --  the top of the scope stack
 
    procedure Store_After_Actions_In_Scope (L : List_Id);
-   --  Append the list L of actions to the beginning of the after-actions
-   --  store in the top of the scope stack
+   --  Append the list L of actions to the beginning of the after-actions store
+   --  in the top of the scope stack
 
    procedure Wrap_Transient_Declaration (N : Node_Id);
    --  N is an object declaration. Expand the finalization calls after the
