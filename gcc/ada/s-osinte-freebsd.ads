@@ -298,6 +298,9 @@ package System.OS_Interface is
    PTHREAD_CREATE_DETACHED : constant := 1;
    PTHREAD_CREATE_JOINABLE : constant := 0;
 
+   PTHREAD_SCOPE_PROCESS : constant := 0;
+   PTHREAD_SCOPE_SYSTEM  : constant := 2;
+
    -----------
    -- Stack --
    -----------

@@ -34,8 +34,8 @@
 
 --  This is a AIX (Native THREADS) version of this package
 
---  This package encapsulates all direct interfaces to OS services
---  that are needed by children of System.
+--  This package encapsulates all direct interfaces to OS services that are
+--  needed by children of System.
 
 --  PLEASE DO NOT add any with-clauses to this package or remove the pragma
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package.
@@ -132,15 +132,15 @@ package System.OS_Interface is
    SIGSAK      : constant := 63; -- secure attention key
 
    SIGADAABORT : constant := SIGTERM;
-   --  Note: on other targets, we usually use SIGABRT, but on AiX, it
-   --  appears that SIGABRT can't be used in sigwait(), so we use SIGTERM.
+   --  Note: on other targets, we usually use SIGABRT, but on AIX, it appears
+   --  that SIGABRT can't be used in sigwait(), so we use SIGTERM.
 
    type Signal_Set is array (Natural range <>) of Signal;
 
-   Unmasked    : constant Signal_Set :=
-     (SIGTRAP, SIGTTIN, SIGTTOU, SIGTSTP, SIGPROF);
-   Reserved    : constant Signal_Set :=
-     (SIGABRT, SIGKILL, SIGSTOP, SIGALRM1, SIGWAITING, SIGCPUFAIL);
+   Unmasked : constant Signal_Set :=
+                (SIGTRAP, SIGTTIN, SIGTTOU, SIGTSTP, SIGPROF);
+   Reserved : constant Signal_Set :=
+                (SIGABRT, SIGKILL, SIGSTOP, SIGALRM1, SIGWAITING, SIGCPUFAIL);
 
    type sigset_t is private;
 
@@ -198,8 +198,7 @@ package System.OS_Interface is
    function clock_gettime
      (clock_id : clockid_t;
       tp       : access timespec) return int;
-   --  AiX threads don't have clock_gettime
-   --  We instead use gettimeofday()
+   --  AIX threads don't have clock_gettime, so use gettimeofday() instead
 
    function To_Duration (TS : timespec) return Duration;
    pragma Inline (To_Duration);
@@ -215,8 +214,8 @@ package System.OS_Interface is
    type struct_timezone_ptr is access all struct_timezone;
 
    type struct_timeval is private;
-   --  This is needed on systems that do not have clock_gettime()
-   --  but do have gettimeofday().
+   --  This is needed on systems that do not have clock_gettime() but do have
+   --  gettimeofday().
 
    function To_Duration (TV : struct_timeval) return Duration;
    pragma Inline (To_Duration);
@@ -234,7 +233,7 @@ package System.OS_Interface is
 
    function To_Target_Priority
      (Prio : System.Any_Priority) return Interfaces.C.int;
-   --  Maps System.Any_Priority to a POSIX priority.
+   --  Maps System.Any_Priority to a POSIX priority
 
    -------------
    -- Process --
@@ -277,23 +276,25 @@ package System.OS_Interface is
 
    PTHREAD_CREATE_DETACHED : constant := 1;
 
+   PTHREAD_SCOPE_PROCESS : constant := 1;
+   PTHREAD_SCOPE_SYSTEM  : constant := 0;
+
    -----------
    -- Stack --
    -----------
 
    Stack_Base_Available : constant Boolean := False;
-   --  Indicates wether the stack base is available on this target.
+   --  Indicates wether the stack base is available on this target
 
    function Get_Stack_Base (thread : pthread_t) return Address;
    pragma Inline (Get_Stack_Base);
-   --  returns the stack base of the specified thread.
-   --  Only call this function when Stack_Base_Available is True.
+   --  Returns the stack base of the specified thread. Only call this function
+   --  when Stack_Base_Available is True.
 
    function Get_Page_Size return size_t;
    function Get_Page_Size return Address;
    pragma Import (C, Get_Page_Size, "getpagesize");
-   --  returns the size of a page, or 0 if this is not relevant on this
-   --  target
+   --  Returns the size of a page, or 0 if this is not relevant on this target
 
    PROT_NONE  : constant := 0;
    PROT_READ  : constant := 1;
@@ -312,7 +313,7 @@ package System.OS_Interface is
    ---------------------------------------
 
    --  Though not documented, pthread_init *must* be called before any other
-   --  pthread call
+   --  pthread call.
 
    procedure pthread_init;
    pragma Import (C, pthread_init, "pthread_init");
@@ -450,7 +451,7 @@ package System.OS_Interface is
    pragma Import (C, pthread_attr_setschedparam);
 
    function sched_yield return int;
-   --  AiX have a nonstandard sched_yield.
+   --  AIX have a nonstandard sched_yield
 
    --------------------------
    -- P1003.1c  Section 16 --
@@ -508,7 +509,6 @@ package System.OS_Interface is
    pragma Import (C, pthread_key_create, "pthread_key_create");
 
 private
-
    type sigset_t is record
       losigs : unsigned_long;
       hisigs : unsigned_long;
