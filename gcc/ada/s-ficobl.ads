@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1992-2004 Free Software Foundation, Inc.        --
+--            Copyright (C) 1992-2006, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,6 +39,7 @@
 
 with Ada.Streams;
 with Interfaces.C_Streams;
+with System.CRTL;
 
 package System.File_Control_Block is
 
@@ -89,6 +90,9 @@ package System.File_Control_Block is
       --  A pointer to the file name. The file name is null for temporary
       --  files, and also for standard files (stdin, stdout, stderr). The
       --  name is always null-terminated if it is non-null.
+
+      Encoding : System.CRTL.Filename_Encoding;
+      --  Encoding used to specified the filename
 
       Form : Pstring;
       --  A pointer to the form string. This is the string used in the
@@ -143,13 +147,13 @@ package System.File_Control_Block is
    --  that the argument Control_Block is not used other than as the argument
    --  that controls which version of AFCB_Allocate is called.
 
-   procedure AFCB_Close (File : access AFCB) is abstract;
+   procedure AFCB_Close (File : not null access AFCB) is abstract;
    --  Performs any specialized close actions on a file before the file is
    --  actually closed at the system level. This is called by Close, and
    --  the reason we need the primitive operation is for the automatic
    --  close operations done as part of finalization.
 
-   procedure AFCB_Free (File : access AFCB) is abstract;
+   procedure AFCB_Free (File : not null access AFCB) is abstract;
    --  Frees the AFCB referenced by the given parameter. It is not necessary
    --  to free the strings referenced by the Form and Name fields, but if the
    --  extension has any other heap objects, they must be freed as well. This
