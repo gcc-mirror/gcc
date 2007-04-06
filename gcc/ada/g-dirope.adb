@@ -661,7 +661,7 @@ package body GNAT.Directory_Operations is
       function readdir_gnat
         (Directory : System.Address;
          Buffer    : System.Address;
-         Last      : access Integer) return System.Address;
+         Last      : not null access Integer) return System.Address;
       pragma Import (C, readdir_gnat, "__gnat_readdir");
 
    begin

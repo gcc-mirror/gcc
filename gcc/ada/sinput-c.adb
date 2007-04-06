@@ -24,12 +24,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Namet;  use Namet;
+with Opt;    use Opt;
+with System; use System;
+
 with Ada.Unchecked_Conversion;
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
-with Namet;       use Namet;
-with Opt;         use Opt;
-with System;      use System;
 
 package body Sinput.C is
 

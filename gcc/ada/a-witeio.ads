@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -393,8 +393,8 @@ private
 
    function AFCB_Allocate (Control_Block : Wide_Text_AFCB) return FCB.AFCB_Ptr;
 
-   procedure AFCB_Close (File : access Wide_Text_AFCB);
-   procedure AFCB_Free  (File : access Wide_Text_AFCB);
+   procedure AFCB_Close (File : not null access Wide_Text_AFCB);
+   procedure AFCB_Free  (File : not null access Wide_Text_AFCB);
 
    procedure Read
      (File : in out Wide_Text_AFCB;

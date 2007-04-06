@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -137,8 +137,10 @@ package System.Task_Primitives.Operations is
    --  call specified below. See locking rules in System.Tasking (spec) for
    --  more details.
 
-   procedure Initialize_Lock (Prio : System.Any_Priority; L : access Lock);
-   procedure Initialize_Lock (L : access RTS_Lock; Level : Lock_Level);
+   procedure Initialize_Lock
+     (Prio : System.Any_Priority; L : not null access Lock);
+   procedure Initialize_Lock
+     (L : not null access RTS_Lock; Level : Lock_Level);
    pragma Inline (Initialize_Lock);
    --  Initialize a lock object.
    --
@@ -160,15 +162,18 @@ package System.Task_Primitives.Operations is
    --
    --  These operations raise Storage_Error if a lack of storage is detected.
 
-   procedure Finalize_Lock (L : access Lock);
-   procedure Finalize_Lock (L : access RTS_Lock);
+   procedure Finalize_Lock (L : not null access Lock);
+   procedure Finalize_Lock (L : not null access RTS_Lock);
    pragma Inline (Finalize_Lock);
    --  Finalize a lock object, freeing any resources allocated by the
    --  corresponding Initialize_Lock operation.
 
-   procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean);
-   procedure Write_Lock (L : access RTS_Lock; Global_Lock : Boolean := False);
-   procedure Write_Lock (T : ST.Task_Id);
+   procedure Write_Lock
+     (L : not null access Lock; Ceiling_Violation : out Boolean);
+   procedure Write_Lock
+     (L : not null access RTS_Lock; Global_Lock : Boolean := False);
+   procedure Write_Lock
+     (T : ST.Task_Id);
    pragma Inline (Write_Lock);
    --  Lock a lock object for write access. After this operation returns,
    --  the calling task holds write permission for the lock object. No other
@@ -192,7 +197,8 @@ package System.Task_Primitives.Operations is
    --  holds T's lock, or has interrupt-level priority. Finalization of the
    --  per-task lock is implicit in Exit_Task.
 
-   procedure Read_Lock (L : access Lock; Ceiling_Violation : out Boolean);
+   procedure Read_Lock
+     (L : not null access Lock; Ceiling_Violation : out Boolean);
    pragma Inline (Read_Lock);
    --  Lock a lock object for read access. After this operation returns,
    --  the calling task has non-exclusive read permission for the logical
@@ -214,9 +220,12 @@ package System.Task_Primitives.Operations is
    --  potential write access, and (3) implementations of priority ceiling
    --  locking that make a reader-writer distinction have higher overhead.
 
-   procedure Unlock (L : access Lock);
-   procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False);
-   procedure Unlock (T : ST.Task_Id);
+   procedure Unlock
+     (L : not null access Lock);
+   procedure Unlock
+     (L : not null access RTS_Lock; Global_Lock : Boolean := False);
+   procedure Unlock
+     (T : ST.Task_Id);
    pragma Inline (Unlock);
    --  Unlock a locked lock object.
    --

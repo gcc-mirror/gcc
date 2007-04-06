@@ -53,7 +53,7 @@ package body Xref_Lib is
    --  the .ali files
 
    procedure Parse_EOL
-     (Source                 : access String;
+     (Source                 : not null access String;
       Ptr                    : in out Positive;
       Skip_Continuation_Line : Boolean := False);
    --  On return Source (Ptr) is the first character of the next line
@@ -98,7 +98,7 @@ package body Xref_Lib is
    --  The entity will never be reported as unreferenced by gnatxref -u
 
    procedure Parse_Token
-     (Source    : access String;
+     (Source    : not null access String;
       Ptr       : in out Positive;
       Token_Ptr : out Positive);
    --  Skips any separators and stores the start of the token in Token_Ptr.
@@ -107,7 +107,7 @@ package body Xref_Lib is
    --  and ASCII.HT. Parse_Token will never skip to the next line.
 
    procedure Parse_Number
-     (Source : access String;
+     (Source : not null access String;
       Ptr    : in out Positive;
       Number : out Natural);
    --  Skips any separators and parses Source upto the first character that
@@ -694,7 +694,7 @@ package body Xref_Lib is
    ---------------
 
    procedure Parse_EOL
-     (Source                 : access String;
+     (Source                 : not null access String;
       Ptr                    : in out Positive;
       Skip_Continuation_Line : Boolean := False)
    is
@@ -1143,7 +1143,7 @@ package body Xref_Lib is
    ------------------
 
    procedure Parse_Number
-     (Source : access String;
+     (Source : not null access String;
       Ptr    : in out Positive;
       Number : out Natural)
    is
@@ -1167,7 +1167,7 @@ package body Xref_Lib is
    -----------------
 
    procedure Parse_Token
-     (Source    : access String;
+     (Source    : not null access String;
       Ptr       : in out Positive;
       Token_Ptr : out Positive)
    is

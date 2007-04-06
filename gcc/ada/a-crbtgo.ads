@@ -137,10 +137,10 @@ package Ada.Containers.Red_Black_Trees.Generic_Operations is
 
    generic
       with procedure Write_Node
-        (Stream : access Root_Stream_Type'Class;
+        (Stream : not null access Root_Stream_Type'Class;
          Node   : Node_Access);
    procedure Generic_Write
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Tree   : Tree_Type);
    --  Used to implement stream attribute T'Write. Generic_Write
    --  first writes the number of nodes into Stream, then calls
@@ -149,9 +149,9 @@ package Ada.Containers.Red_Black_Trees.Generic_Operations is
    generic
       with procedure Clear (Tree : in out Tree_Type);
       with function Read_Node
-        (Stream : access Root_Stream_Type'Class) return Node_Access;
+        (Stream : not null access Root_Stream_Type'Class) return Node_Access;
    procedure Generic_Read
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Tree   : in out Tree_Type);
    --  Used to implement stream attribute T'Read. Generic_Read
    --  first clears Tree. It then reads the number of nodes out of

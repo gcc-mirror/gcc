@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2005, AdaCore                     --
+--                     Copyright (C) 1998-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -240,12 +240,14 @@ procedure Gnatchop is
    end record;
 
    function Get_EOL
-     (Source : access String;
+     (Source : not null access String;
       Start  : Positive)
       return   EOL_String;
    --  Return the line terminator used in the passed string
 
-   procedure Parse_EOL (Source : access String; Ptr : in out Positive);
+   procedure Parse_EOL
+     (Source : not null access String;
+      Ptr    : in out Positive);
    --  On return Source (Ptr) is the first character of the next line
    --  or EOF. Source.all must be terminated by EOF.
 
@@ -255,12 +257,14 @@ procedure Gnatchop is
    --  completes, False if some system error (e.g. failure to read the
    --  offset information) occurs.
 
-   procedure Parse_Offset_Info (Chop_File : File_Num; Source : access String);
+   procedure Parse_Offset_Info
+     (Chop_File : File_Num;
+      Source    : not null access String);
    --  Parses the output of the compiler indicating the offsets
    --  and names of the compilation units in Chop_File.
 
    procedure Parse_Token
-     (Source    : access String;
+     (Source    : not null access String;
       Ptr       : in out Positive;
       Token_Ptr : out Positive);
    --  Skips any separators and stores the start of the token in Token_Ptr.
@@ -324,7 +328,7 @@ procedure Gnatchop is
    --  of line sequence to be written at the end of the pragma.
 
    procedure Write_Unit
-     (Source  : access String;
+     (Source  : not null access String;
       Num     : Unit_Num;
       TS_Time : OS_Time;
       Success : out Boolean);
@@ -462,7 +466,7 @@ procedure Gnatchop is
    -------------
 
    function Get_EOL
-     (Source : access String;
+     (Source : not null access String;
       Start  : Positive)
       return   EOL_String
    is
@@ -576,7 +580,9 @@ procedure Gnatchop is
    -- Parse_EOL --
    ---------------
 
-   procedure Parse_EOL (Source : access String; Ptr : in out Positive) is
+   procedure Parse_EOL
+     (Source : not null access String;
+      Ptr    : in out Positive) is
    begin
       --  Skip to end of line
 
@@ -705,7 +711,7 @@ procedure Gnatchop is
 
    procedure Parse_Offset_Info
      (Chop_File : File_Num;
-      Source    : access String)
+      Source    : not null access String)
    is
       First_Unit : constant Unit_Num := Unit.Last + 1;
       Bufferg    : String_Access     := null;
@@ -944,7 +950,7 @@ procedure Gnatchop is
    -----------------
 
    procedure Parse_Token
-     (Source    : access String;
+     (Source    : not null access String;
       Ptr       : in out Positive;
       Token_Ptr : out Positive)
    is
@@ -1607,7 +1613,7 @@ procedure Gnatchop is
    ----------------
 
    procedure Write_Unit
-     (Source  : access String;
+     (Source  : not null access String;
       Num     : Unit_Num;
       TS_Time : OS_Time;
       Success : out Boolean)

@@ -31,12 +31,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides a implementation of stack checking operations
---  using comparison with stack base and limit.
+--  This package provides a implementation of stack checking operations using
+--  comparison with stack base and limit.
 
 pragma Restrictions (No_Elaboration_Code);
---  We want to guarantee the absence of elaboration code because the
---  binder does not handle references to this package.
+--  We want to guarantee the absence of elaboration code because the binder
+--  does not handle references to this package.
 
 pragma Polling (Off);
 --  Turn off polling, we do not want polling to take place during stack
@@ -46,22 +46,20 @@ package System.Stack_Checking.Operations is
    pragma Preelaborate;
 
    procedure Update_Stack_Cache (Stack : Stack_Access);
-   --  Set the stack cache for the current task. Note that this is only
-   --  for optimization purposes, nothing can be assumed about the
-   --  contents of the cache at any time, see Set_Stack_Info.
+   --  Set the stack cache for the current task. Note that this is only for
+   --  optimization purposes, nothing can be assumed about the contents of the
+   --  cache at any time, see Set_Stack_Info.
 
    procedure Invalidate_Stack_Cache (Any_Stack : Stack_Access);
-   --  Invalidate cache entries for the task T that owns Any_Stack.
-   --  This causes the Set_Stack_Info function to be called during
-   --  the next stack check done by T. This can be used to interrupt
-   --  task T asynchronously.
+   --  Invalidate cache entries for the task T that owns Any_Stack. This causes
+   --  the Set_Stack_Info function to be called during the next stack check
+   --  done by T. This can be used to interrupt task T asynchronously.
    --  Stack_Check should be called in loops for this to work reliably.
 
    function Stack_Check (Stack_Address : System.Address) return Stack_Access;
-   --  This version of Stack_Check should not be inlined.
+   --  This version of Stack_Check should not be inlined
 
 private
-
    Cache : aliased Stack_Access := Null_Stack;
 
    pragma Export (C, Cache, "_gnat_stack_cache");

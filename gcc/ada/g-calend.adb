@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2005, AdaCore                     --
+--                     Copyright (C) 1999-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,13 +41,13 @@ package body GNAT.Calendar is
    -----------------
 
    function Day_In_Year (Date : Time) return Day_In_Year_Number is
-      Year  : Year_Number;
-      Month : Month_Number;
-      Day   : Day_Number;
-      Dsecs : Day_Duration;
+      Year     : Year_Number;
+      Month    : Month_Number;
+      Day      : Day_Number;
+      Day_Secs : Day_Duration;
 
    begin
-      Split (Date, Year, Month, Day, Dsecs);
+      Split (Date, Year, Month, Day, Day_Secs);
 
       return Julian_Day (Year, Month, Day) - Julian_Day (Year, 1, 1) + 1;
    end Day_In_Year;
@@ -57,13 +57,13 @@ package body GNAT.Calendar is
    -----------------
 
    function Day_Of_Week (Date : Time) return Day_Name is
-      Year  : Year_Number;
-      Month : Month_Number;
-      Day   : Day_Number;
-      Dsecs : Day_Duration;
+      Year     : Year_Number;
+      Month    : Month_Number;
+      Day      : Day_Number;
+      Day_Secs : Day_Duration;
 
    begin
-      Split (Date, Year, Month, Day, Dsecs);
+      Split (Date, Year, Month, Day, Day_Secs);
 
       return Day_Name'Val ((Julian_Day (Year, Month, Day)) mod 7);
    end Day_Of_Week;
@@ -90,8 +90,8 @@ package body GNAT.Calendar is
    -- Julian_Day --
    ----------------
 
-   --  Julian_Day is used to by Day_Of_Week and Day_In_Year. Note
-   --  that this implementation is not expensive.
+   --  Julian_Day is used to by Day_Of_Week and Day_In_Year. Note that this
+   --  implementation is not expensive.
 
    function Julian_Day
      (Year  : Year_Number;
@@ -178,21 +178,21 @@ package body GNAT.Calendar is
       Second     : out Second_Number;
       Sub_Second : out Second_Duration)
    is
-      Dsecs : Day_Duration;
-      Secs  : Natural;
+      Day_Secs : Day_Duration;
+      Secs     : Natural;
 
    begin
-      Split (Date, Year, Month, Day, Dsecs);
+      Split (Date, Year, Month, Day, Day_Secs);
 
-      if Dsecs = 0.0 then
+      if Day_Secs = 0.0 then
          Secs := 0;
       else
-         Secs := Natural (Dsecs - 0.5);
+         Secs := Natural (Day_Secs - 0.5);
       end if;
 
-      Sub_Second := Second_Duration (Dsecs - Day_Duration (Secs));
-      Hour       := Hour_Number (Secs / 3600);
-      Secs       := Secs mod 3600;
+      Sub_Second := Second_Duration (Day_Secs - Day_Duration (Secs));
+      Hour       := Hour_Number (Secs / 3_600);
+      Secs       := Secs mod 3_600;
       Minute     := Minute_Number (Secs / 60);
       Second     := Second_Number (Secs mod 60);
    end Split;
@@ -228,23 +228,25 @@ package body GNAT.Calendar is
       Second     : Second_Number;
       Sub_Second : Second_Duration := 0.0) return Time
    is
-      Dsecs : constant Day_Duration :=
-                Day_Duration (Hour * 3600 + Minute * 60 + Second) +
-                                                             Sub_Second;
+      Day_Secs : constant Day_Duration :=
+                   Day_Duration (Hour   * 3_600) +
+                   Day_Duration (Minute *    60) +
+                   Day_Duration (Second)         +
+                                 Sub_Second;
    begin
-      return Time_Of (Year, Month, Day, Dsecs);
+      return Time_Of (Year, Month, Day, Day_Secs);
    end Time_Of;
 
    -----------------
    -- To_Duration --
    -----------------
 
-   function To_Duration (T : access timeval) return Duration is
+   function To_Duration (T : not null access timeval) return Duration is
 
       procedure timeval_to_duration
-        (T    : access timeval;
-         sec  : access C.long;
-         usec : access C.long);
+        (T    : not null access timeval;
+         sec  : not null access C.long;
+         usec : not null access C.long);
       pragma Import (C, timeval_to_duration, "__gnat_timeval_to_duration");
 
       Micro : constant := 10**6;
@@ -260,9 +262,12 @@ package body GNAT.Calendar is
    -- To_Timeval --
    ----------------
 
-   function To_Timeval  (D : Duration) return timeval is
+   function To_Timeval (D : Duration) return timeval is
 
-      procedure duration_to_timeval (Sec, Usec : C.long; T : access timeval);
+      procedure duration_to_timeval
+        (Sec  : C.long;
+         Usec : C.long;
+         T : not null access timeval);
       pragma Import (C, duration_to_timeval, "__gnat_duration_to_timeval");
 
       Micro  : constant := 10**6;
@@ -288,9 +293,7 @@ package body GNAT.Calendar is
    -- Week_In_Year --
    ------------------
 
-   function Week_In_Year
-     (Date : Ada.Calendar.Time) return Week_In_Year_Number
-   is
+   function Week_In_Year (Date : Time) return Week_In_Year_Number is
       Year       : Year_Number;
       Month      : Month_Number;
       Day        : Day_Number;

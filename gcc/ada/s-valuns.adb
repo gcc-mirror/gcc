@@ -42,7 +42,7 @@ package body System.Val_Uns is
 
    function Scan_Raw_Unsigned
      (Str : String;
-      Ptr : access Integer;
+      Ptr : not null access Integer;
       Max : Integer) return Unsigned
    is
       P : Integer;
@@ -268,7 +268,7 @@ package body System.Val_Uns is
 
    function Scan_Unsigned
      (Str : String;
-      Ptr : access Integer;
+      Ptr : not null access Integer;
       Max : Integer) return Unsigned
    is
       Start : Positive;

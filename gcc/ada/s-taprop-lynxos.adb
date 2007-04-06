@@ -256,7 +256,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Initialize_Lock
      (Prio : System.Any_Priority;
-      L    : access Lock)
+      L    : not null access Lock)
    is
       Attributes : aliased pthread_mutexattr_t;
       Result : Interfaces.C.int;
@@ -284,7 +284,9 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result = 0);
    end Initialize_Lock;
 
-   procedure Initialize_Lock (L : access RTS_Lock; Level : Lock_Level) is
+   procedure Initialize_Lock
+     (L : not null access RTS_Lock; Level : Lock_Level)
+   is
       pragma Unreferenced (Level);
 
       Attributes : aliased pthread_mutexattr_t;
@@ -314,14 +316,14 @@ package body System.Task_Primitives.Operations is
    -- Finalize_Lock --
    -------------------
 
-   procedure Finalize_Lock (L : access Lock) is
+   procedure Finalize_Lock (L : not null access Lock) is
       Result : Interfaces.C.int;
    begin
       Result := pthread_mutex_destroy (L.Mutex'Access);
       pragma Assert (Result = 0);
    end Finalize_Lock;
 
-   procedure Finalize_Lock (L : access RTS_Lock) is
+   procedure Finalize_Lock (L : not null access RTS_Lock) is
       Result : Interfaces.C.int;
    begin
       Result := pthread_mutex_destroy (L);
@@ -332,7 +334,9 @@ package body System.Task_Primitives.Operations is
    -- Write_Lock --
    ----------------
 
-   procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
+   procedure Write_Lock
+     (L : not null access Lock; Ceiling_Violation : out Boolean)
+   is
       Result : Interfaces.C.int;
       T : constant Task_Id := Self;
 
@@ -361,7 +365,7 @@ package body System.Task_Primitives.Operations is
    --  No tricks on RTS_Locks
 
    procedure Write_Lock
-     (L : access RTS_Lock; Global_Lock : Boolean := False)
+     (L : not null access RTS_Lock; Global_Lock : Boolean := False)
    is
       Result : Interfaces.C.int;
    begin
@@ -384,7 +388,8 @@ package body System.Task_Primitives.Operations is
    -- Read_Lock --
    ---------------
 
-   procedure Read_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
+   procedure Read_Lock
+     (L : not null access Lock; Ceiling_Violation : out Boolean) is
    begin
       Write_Lock (L, Ceiling_Violation);
    end Read_Lock;
@@ -393,7 +398,7 @@ package body System.Task_Primitives.Operations is
    -- Unlock --
    ------------
 
-   procedure Unlock (L : access Lock) is
+   procedure Unlock (L : not null access Lock) is
       Result : Interfaces.C.int;
       T : constant Task_Id := Self;
 
@@ -408,7 +413,9 @@ package body System.Task_Primitives.Operations is
       end if;
    end Unlock;
 
-   procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
+   procedure Unlock
+     (L : not null access RTS_Lock; Global_Lock : Boolean := False)
+   is
       Result : Interfaces.C.int;
    begin
       if not Single_Lock or else Global_Lock then
@@ -432,7 +439,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Sleep
      (Self_ID : Task_Id;
-      Reason   : System.Tasking.Task_States)
+      Reason  : System.Tasking.Task_States)
    is
       pragma Unreferenced (Reason);
       Result : Interfaces.C.int;

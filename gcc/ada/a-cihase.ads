@@ -241,13 +241,13 @@ private
       end record;
 
    procedure Write
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Item   : Cursor);
 
    for Cursor'Write use Write;
 
    procedure Read
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Item   : out Cursor);
 
    for Cursor'Read use Read;
@@ -257,13 +257,13 @@ private
                    Node      => null);
 
    procedure Write
-     (Stream    : access Root_Stream_Type'Class;
+     (Stream    : not null access Root_Stream_Type'Class;
       Container : Set);
 
    for Set'Write use Write;
 
    procedure Read
-     (Stream    : access Root_Stream_Type'Class;
+     (Stream    : not null access Root_Stream_Type'Class;
       Container : out Set);
 
    for Set'Read use Read;

@@ -48,8 +48,8 @@ package System.Sequential_IO is
    function AFCB_Allocate
      (Control_Block : Sequential_AFCB) return FCB.AFCB_Ptr;
 
-   procedure AFCB_Close (File : access Sequential_AFCB);
-   procedure AFCB_Free  (File : access Sequential_AFCB);
+   procedure AFCB_Close (File : not null access Sequential_AFCB);
+   procedure AFCB_Free  (File : not null access Sequential_AFCB);
 
    procedure Read
      (File : in out Sequential_AFCB;

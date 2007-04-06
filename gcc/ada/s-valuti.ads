@@ -49,7 +49,7 @@ package System.Val_Util is
 
    procedure Scan_Sign
      (Str   : String;
-      Ptr   : access Integer;
+      Ptr   : not null access Integer;
       Max   : Integer;
       Minus : out Boolean;
       Start : out Positive);
@@ -72,7 +72,7 @@ package System.Val_Util is
 
    procedure Scan_Plus_Sign
      (Str   : String;
-      Ptr   : access Integer;
+      Ptr   : not null access Integer;
       Max   : Integer;
       Start : out Positive);
    --  Same as Scan_Sign, but allows only plus, not minus.
@@ -80,7 +80,7 @@ package System.Val_Util is
 
    function Scan_Exponent
      (Str  : String;
-      Ptr  : access Integer;
+      Ptr  : not null access Integer;
       Max  : Integer;
       Real : Boolean := False) return Integer;
    --  Called to scan a possible exponent. Str, Ptr, Max are as described above
@@ -101,7 +101,7 @@ package System.Val_Util is
    procedure Scan_Underscore
      (Str : String;
       P   : in out Natural;
-      Ptr : access Integer;
+      Ptr : not null access Integer;
       Max : Integer;
       Ext : Boolean);
    --  Called if an underscore is encountered while scanning digits. Str (P)

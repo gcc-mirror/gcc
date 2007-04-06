@@ -1048,7 +1048,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       Container : out Map)
    is
       function Read_Node
-        (Stream : access Root_Stream_Type'Class) return Node_Access;
+        (Stream : not null access Root_Stream_Type'Class) return Node_Access;
       pragma Inline (Read_Node);
 
       procedure Read is
@@ -1059,7 +1059,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       ---------------
 
       function Read_Node
-        (Stream : access Root_Stream_Type'Class) return Node_Access
+        (Stream : not null access Root_Stream_Type'Class) return Node_Access
       is
          Node : Node_Access := new Node_Type;
       begin
@@ -1326,7 +1326,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       Container : Map)
    is
       procedure Write_Node
-        (Stream : access Root_Stream_Type'Class;
+        (Stream : not null access Root_Stream_Type'Class;
          Node   : Node_Access);
       pragma Inline (Write_Node);
 
@@ -1338,7 +1338,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       ----------------
 
       procedure Write_Node
-        (Stream : access Root_Stream_Type'Class;
+        (Stream : not null access Root_Stream_Type'Class;
          Node   : Node_Access)
       is
       begin

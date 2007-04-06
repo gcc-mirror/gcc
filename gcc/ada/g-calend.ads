@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,7 +106,7 @@ package GNAT.Calendar is
 
    type timeval is private;
 
-   function To_Duration (T : access timeval) return Duration;
+   function To_Duration (T : not null access timeval) return Duration;
    function To_Timeval  (D : Duration) return timeval;
 
 private

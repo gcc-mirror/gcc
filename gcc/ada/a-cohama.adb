@@ -65,7 +65,7 @@ package body Ada.Containers.Hashed_Maps is
    pragma Inline (Next);
 
    function Read_Node
-     (Stream : access Root_Stream_Type'Class) return Node_Access;
+     (Stream : not null access Root_Stream_Type'Class) return Node_Access;
    pragma Inline (Read_Node);
 
    procedure Set_Next (Node : Node_Access; Next : Node_Access);
@@ -74,7 +74,7 @@ package body Ada.Containers.Hashed_Maps is
    function Vet (Position : Cursor) return Boolean;
 
    procedure Write_Node
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Node   : Node_Access);
    pragma Inline (Write_Node);
 
@@ -703,7 +703,7 @@ package body Ada.Containers.Hashed_Maps is
    ----------
 
    procedure Read
-     (Stream    : access Root_Stream_Type'Class;
+     (Stream    : not null access Root_Stream_Type'Class;
       Container : out Map)
    is
    begin
@@ -711,7 +711,7 @@ package body Ada.Containers.Hashed_Maps is
    end Read;
 
    procedure Read
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Item   : out Cursor)
    is
    begin
@@ -723,7 +723,7 @@ package body Ada.Containers.Hashed_Maps is
    ---------------
 
    function Read_Node
-     (Stream : access Root_Stream_Type'Class) return Node_Access
+     (Stream : not null access Root_Stream_Type'Class) return Node_Access
    is
       Node : Node_Access := new Node_Type;
 
@@ -924,7 +924,7 @@ package body Ada.Containers.Hashed_Maps is
    -----------
 
    procedure Write
-     (Stream    : access Root_Stream_Type'Class;
+     (Stream    : not null access Root_Stream_Type'Class;
       Container : Map)
    is
    begin
@@ -932,7 +932,7 @@ package body Ada.Containers.Hashed_Maps is
    end Write;
 
    procedure Write
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Item   : Cursor)
    is
    begin
@@ -944,7 +944,7 @@ package body Ada.Containers.Hashed_Maps is
    ----------------
 
    procedure Write_Node
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Node   : Node_Access)
    is
    begin

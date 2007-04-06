@@ -168,23 +168,23 @@ package body System.Task_Primitives.Operations is
    -- Condition Variable Functions --
    ----------------------------------
 
-   procedure Initialize_Cond (Cond : access Condition_Variable);
+   procedure Initialize_Cond (Cond : not null access Condition_Variable);
    --  Initialize given condition variable Cond
 
-   procedure Finalize_Cond (Cond : access Condition_Variable);
+   procedure Finalize_Cond (Cond : not null access Condition_Variable);
    --  Finalize given condition variable Cond
 
-   procedure Cond_Signal (Cond : access Condition_Variable);
+   procedure Cond_Signal (Cond : not null access Condition_Variable);
    --  Signal condition variable Cond
 
    procedure Cond_Wait
-     (Cond : access Condition_Variable;
-      L    : access RTS_Lock);
+     (Cond : not null access Condition_Variable;
+      L    : not null access RTS_Lock);
    --  Wait on conditional variable Cond, using lock L
 
    procedure Cond_Timed_Wait
-     (Cond      : access Condition_Variable;
-      L         : access RTS_Lock;
+     (Cond      : not null access Condition_Variable;
+      L         : not null access RTS_Lock;
       Rel_Time  : Duration;
       Timed_Out : out Boolean;
       Status    : out Integer);
@@ -198,7 +198,7 @@ package body System.Task_Primitives.Operations is
    -- Initialize_Cond --
    ---------------------
 
-   procedure Initialize_Cond (Cond : access Condition_Variable) is
+   procedure Initialize_Cond (Cond : not null access Condition_Variable) is
       hEvent : HANDLE;
 
    begin
@@ -214,7 +214,7 @@ package body System.Task_Primitives.Operations is
    --  No such problem here, DosCloseEventSem has been derived.
    --  What does such refer to in above comment???
 
-   procedure Finalize_Cond (Cond : access Condition_Variable) is
+   procedure Finalize_Cond (Cond : not null access Condition_Variable) is
       Result : BOOL;
    begin
       Result := CloseHandle (HANDLE (Cond.all));
@@ -225,7 +225,7 @@ package body System.Task_Primitives.Operations is
    -- Cond_Signal --
    -----------------
 
-   procedure Cond_Signal (Cond : access Condition_Variable) is
+   procedure Cond_Signal (Cond : not null access Condition_Variable) is
       Result : BOOL;
    begin
       Result := SetEvent (HANDLE (Cond.all));
@@ -243,8 +243,8 @@ package body System.Task_Primitives.Operations is
    --                  L is locked.
 
    procedure Cond_Wait
-     (Cond : access Condition_Variable;
-      L    : access RTS_Lock)
+     (Cond : not null access Condition_Variable;
+      L    : not null access RTS_Lock)
    is
       Result      : DWORD;
       Result_Bool : BOOL;
@@ -276,8 +276,8 @@ package body System.Task_Primitives.Operations is
    --                  L is locked.
 
    procedure Cond_Timed_Wait
-     (Cond      : access Condition_Variable;
-      L         : access RTS_Lock;
+     (Cond      : not null access Condition_Variable;
+      L         : not null access RTS_Lock;
       Rel_Time  : Duration;
       Timed_Out : out Boolean;
       Status    : out Integer)
@@ -385,7 +385,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Initialize_Lock
      (Prio : System.Any_Priority;
-      L    : access Lock)
+      L    : not null access Lock)
    is
    begin
       InitializeCriticalSection (L.Mutex'Access);
@@ -393,7 +393,9 @@ package body System.Task_Primitives.Operations is
       L.Priority := Prio;
    end Initialize_Lock;
 
-   procedure Initialize_Lock (L : access RTS_Lock; Level : Lock_Level) is
+   procedure Initialize_Lock
+     (L : not null access RTS_Lock; Level : Lock_Level)
+   is
       pragma Unreferenced (Level);
    begin
       InitializeCriticalSection (CRITICAL_SECTION (L.all)'Unrestricted_Access);
@@ -403,12 +405,12 @@ package body System.Task_Primitives.Operations is
    -- Finalize_Lock --
    -------------------
 
-   procedure Finalize_Lock (L : access Lock) is
+   procedure Finalize_Lock (L : not null access Lock) is
    begin
       DeleteCriticalSection (L.Mutex'Access);
    end Finalize_Lock;
 
-   procedure Finalize_Lock (L : access RTS_Lock) is
+   procedure Finalize_Lock (L : not null access RTS_Lock) is
    begin
       DeleteCriticalSection (CRITICAL_SECTION (L.all)'Unrestricted_Access);
    end Finalize_Lock;
@@ -417,7 +419,8 @@ package body System.Task_Primitives.Operations is
    -- Write_Lock --
    ----------------
 
-   procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
+   procedure Write_Lock
+     (L : not null access Lock; Ceiling_Violation : out Boolean) is
    begin
       L.Owner_Priority := Get_Priority (Self);
 
@@ -432,7 +435,7 @@ package body System.Task_Primitives.Operations is
    end Write_Lock;
 
    procedure Write_Lock
-     (L           : access RTS_Lock;
+     (L           : not null access RTS_Lock;
       Global_Lock : Boolean := False)
    is
    begin
@@ -453,7 +456,8 @@ package body System.Task_Primitives.Operations is
    -- Read_Lock --
    ---------------
 
-   procedure Read_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
+   procedure Read_Lock
+     (L : not null access Lock; Ceiling_Violation : out Boolean) is
    begin
       Write_Lock (L, Ceiling_Violation);
    end Read_Lock;
@@ -462,12 +466,13 @@ package body System.Task_Primitives.Operations is
    -- Unlock --
    ------------
 
-   procedure Unlock (L : access Lock) is
+   procedure Unlock (L : not null access Lock) is
    begin
       LeaveCriticalSection (L.Mutex'Access);
    end Unlock;
 
-   procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
+   procedure Unlock
+     (L : not null access RTS_Lock; Global_Lock : Boolean := False) is
    begin
       if not Single_Lock or else Global_Lock then
          LeaveCriticalSection (CRITICAL_SECTION (L.all)'Unrestricted_Access);

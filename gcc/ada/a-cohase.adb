@@ -85,7 +85,7 @@ package body Ada.Containers.Hashed_Sets is
    function Next (Node : Node_Access) return Node_Access;
    pragma Inline (Next);
 
-   function Read_Node (Stream : access Root_Stream_Type'Class)
+   function Read_Node (Stream : not null access Root_Stream_Type'Class)
      return Node_Access;
    pragma Inline (Read_Node);
 
@@ -95,7 +95,7 @@ package body Ada.Containers.Hashed_Sets is
    function Vet (Position : Cursor) return Boolean;
 
    procedure Write_Node
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Node   : Node_Access);
    pragma Inline (Write_Node);
 
@@ -1009,15 +1009,15 @@ package body Ada.Containers.Hashed_Sets is
    ----------
 
    procedure Read
-     (Stream    : access Root_Stream_Type'Class;
-      Container :    out Set)
+     (Stream    : not null access Root_Stream_Type'Class;
+      Container : out Set)
    is
    begin
       Read_Nodes (Stream, Container.HT);
    end Read;
 
    procedure Read
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Item   : out Cursor)
    is
    begin
@@ -1028,7 +1028,7 @@ package body Ada.Containers.Hashed_Sets is
    -- Read_Node --
    ---------------
 
-   function Read_Node (Stream : access Root_Stream_Type'Class)
+   function Read_Node (Stream : not null access Root_Stream_Type'Class)
      return Node_Access
    is
       Node : Node_Access := new Node_Type;
@@ -1561,7 +1561,7 @@ package body Ada.Containers.Hashed_Sets is
    -----------
 
    procedure Write
-     (Stream    : access Root_Stream_Type'Class;
+     (Stream    : not null access Root_Stream_Type'Class;
       Container : Set)
    is
    begin
@@ -1569,7 +1569,7 @@ package body Ada.Containers.Hashed_Sets is
    end Write;
 
    procedure Write
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Item   : Cursor)
    is
    begin
@@ -1581,7 +1581,7 @@ package body Ada.Containers.Hashed_Sets is
    ----------------
 
    procedure Write_Node
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Node   : Node_Access)
    is
    begin

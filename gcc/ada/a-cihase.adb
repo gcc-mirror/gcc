@@ -84,7 +84,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    function Next (Node : Node_Access) return Node_Access;
    pragma Inline (Next);
 
-   function Read_Node (Stream : access Root_Stream_Type'Class)
+   function Read_Node (Stream : not null access Root_Stream_Type'Class)
      return Node_Access;
    pragma Inline (Read_Node);
 
@@ -94,7 +94,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    function Vet (Position : Cursor) return Boolean;
 
    procedure Write_Node
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Node   : Node_Access);
    pragma Inline (Write_Node);
 
@@ -1094,7 +1094,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    ----------
 
    procedure Read
-     (Stream    : access Root_Stream_Type'Class;
+     (Stream    : not null access Root_Stream_Type'Class;
       Container : out Set)
    is
    begin
@@ -1102,7 +1102,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    end Read;
 
    procedure Read
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Item   : out Cursor)
    is
    begin
@@ -1114,7 +1114,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    ---------------
 
    function Read_Node
-     (Stream : access Root_Stream_Type'Class) return Node_Access
+     (Stream : not null access Root_Stream_Type'Class) return Node_Access
    is
       X : Element_Access := new Element_Type'(Element_Type'Input (Stream));
 
@@ -1730,7 +1730,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    -----------
 
    procedure Write
-     (Stream    : access Root_Stream_Type'Class;
+     (Stream    : not null access Root_Stream_Type'Class;
       Container : Set)
    is
    begin
@@ -1738,7 +1738,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    end Write;
 
    procedure Write
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Item   : Cursor)
    is
    begin
@@ -1750,7 +1750,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    ----------------
 
    procedure Write_Node
-     (Stream : access Root_Stream_Type'Class;
+     (Stream : not null access Root_Stream_Type'Class;
       Node   : Node_Access)
    is
    begin

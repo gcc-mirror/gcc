@@ -43,7 +43,7 @@ package body System.Val_Int is
 
    function Scan_Integer
      (Str : String;
-      Ptr : access Integer;
+      Ptr : not null access Integer;
       Max : Integer) return Integer
    is
       Uval : Unsigned;

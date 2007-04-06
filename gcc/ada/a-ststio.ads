@@ -176,8 +176,8 @@ private
 
    function AFCB_Allocate (Control_Block : Stream_AFCB) return FCB.AFCB_Ptr;
 
-   procedure AFCB_Close (File : access Stream_AFCB);
-   procedure AFCB_Free  (File : access Stream_AFCB);
+   procedure AFCB_Close (File : not null access Stream_AFCB);
+   procedure AFCB_Free  (File : not null access Stream_AFCB);
 
    procedure Read
      (File : in out Stream_AFCB;
