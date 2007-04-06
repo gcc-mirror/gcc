@@ -29,6 +29,7 @@ with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Exp_Atag; use Exp_Atag;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch11; use Exp_Ch11;
@@ -41,6 +42,7 @@ with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Eval; use Sem_Eval;
@@ -161,7 +163,11 @@ package body Exp_Intr is
           Parameter_Associations => New_List (Relocate_Node (Param_Arg)));
 
       --  Establish its controlling tag from the tag passed to the instance
+      --  The tag may be given by a function call, in which case a temporary
+      --  should be generated now, to prevent out-of-order insertions during
+      --  the expansion of that call when stack-checking is enabled.
 
+      Remove_Side_Effects (Tag_Arg);
       Set_Controlling_Argument (Cnstr_Call, Relocate_Node (Tag_Arg));
 
       --  Rewrite and analyze the call to the instance as a class-wide
@@ -171,7 +177,7 @@ package body Exp_Intr is
       Analyze_And_Resolve (N, Etype (Act_Constr));
 
       --  Do not generate a run-time check on the built object if tag
-      --  checks is suppressed for the result type.
+      --  checks are suppressed for the result type.
 
       if Tag_Checks_Suppressed (Etype (Result_Typ)) then
          null;
@@ -191,13 +197,12 @@ package body Exp_Intr is
            Make_Implicit_If_Statement (N,
              Condition =>
                Make_Op_Not (Loc,
-                 Make_DT_Access_Action (Result_Typ,
-                    Action => CW_Membership,
-                    Args   => New_List (
-                      Duplicate_Subexpr (Tag_Arg),
-                      New_Reference_To (
+                 Build_CW_Membership (Loc,
+                   Obj_Tag_Node => Duplicate_Subexpr (Tag_Arg),
+                   Typ_Tag_Node =>
+                     New_Reference_To (
                         Node (First_Elmt (Access_Disp_Table (
-                                            Root_Type (Result_Typ)))), Loc)))),
+                                            Root_Type (Result_Typ)))), Loc))),
              Then_Statements =>
                New_List (Make_Raise_Statement (Loc,
                            New_Occurrence_Of (RTE (RE_Tag_Error), Loc)))));
@@ -231,9 +236,9 @@ package body Exp_Intr is
    -- Expand_Exception_Call --
    ---------------------------
 
-   --  If the function call is not within an exception handler, then the
-   --  call is replaced by a null string. Otherwise the appropriate routine
-   --  in Ada.Exceptions is called passing the choice parameter specification
+   --  If the function call is not within an exception handler, then the call
+   --  is replaced by a null string. Otherwise the appropriate routine in
+   --  Ada.Exceptions is called passing the choice parameter specification
    --  from the enclosing handler. If the enclosing handler lacks a choice
    --  parameter, then one is supplied.
 
@@ -258,12 +263,18 @@ package body Exp_Intr is
          --  Case of in exception handler
 
          elsif Nkind (P) = N_Exception_Handler then
+
+            --  Handler cannot be used for a local raise, and furthermore, this
+            --  is a violation of the No_Exception_Propagation restriction.
+
+            Set_Local_Raise_Not_OK (P);
+            Check_Restriction (No_Exception_Propagation, N);
+
+            --  If no choice parameter present, then put one there. Note that
+            --  we do not need to put it on the entity chain, since no one will
+            --  be referencing it by normal visibility methods.
+
             if No (Choice_Parameter (P)) then
-
-               --  If no choice parameter present, then put one there. Note
-               --  that we do not need to put it on the entity chain, since
-               --  no one will be referencing it by normal visibility methods.
-
                E := Make_Defining_Identifier (Loc, New_Internal_Name ('E'));
                Set_Choice_Parameter (P, E);
                Set_Ekind (E, E_Variable);
