@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2005, AdaCore                     --
+--                     Copyright (C) 1995-2006, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,12 +54,12 @@ package body Ada.Calendar.Delays is
 
    use System.Traces;
 
-   --  Earlier, the following operations were implemented using
-   --  System.Time_Operations.  The idea was to avoid sucking in the tasking
-   --  packages.  This did not work.  Logically, we can't have it both ways.
-   --  There is no way to implement time delays that will have correct task
-   --  semantics without reference to the tasking run-time system.
-   --  To achieve this goal, we now use soft links.
+   --  Earlier, System.Time_Opeations was used to implement the following
+   --  operations. The idea was to avoid sucking in the tasking packages. This
+   --  did not work. Logically, we can't have it both ways. There is no way to
+   --  implement time delays that will have correct task semantics without
+   --  reference to the tasking run-time system. To achieve this goal, we now
+   --  use soft links.
 
    -----------------------
    -- Local Subprograms --
@@ -120,18 +120,23 @@ package body Ada.Calendar.Delays is
 
    function To_Duration (T : Time) return Duration is
    begin
-      return Duration (T);
+      --  Since time has multiple representations on different platforms, a
+      --  target independent operation in Ada.Calendar is used to perform
+      --  this conversion.
+
+      return Delays_Operations.To_Duration (T);
    end To_Duration;
 
 begin
-   --  Set up the Timed_Delay soft link to the non tasking version
-   --  if it has not been already set.
+   --  Set up the Timed_Delay soft link to the non tasking version if it has
+   --  not been already set.
 
-   --  If tasking is present, Timed_Delay has already set this soft
-   --  link, or this will be overriden during the elaboration of
+   --  If tasking is present, Timed_Delay has already set this soft link, or
+   --  this will be overriden during the elaboration of
    --  System.Tasking.Initialization
 
    if SSL.Timed_Delay = null then
       SSL.Timed_Delay := Timed_Delay_NT'Access;
    end if;
+
 end Ada.Calendar.Delays;

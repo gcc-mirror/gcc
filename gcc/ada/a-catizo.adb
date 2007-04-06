@@ -33,35 +33,39 @@
 
 package body Ada.Calendar.Time_Zones is
 
+   --------------------------
+   -- Implementation Notes --
+   --------------------------
+
+   --  All operations in this package are target and time representation
+   --  independent, thus only one source file is needed for multiple targets.
+
    ---------------------
    -- UTC_Time_Offset --
    ---------------------
 
    function UTC_Time_Offset (Date : Time := Clock) return Time_Offset is
-      Year    : Year_Number;
-      Month   : Month_Number;
-      Day     : Day_Number;
-      Seconds : Day_Duration;
-      Offset  : Long_Integer;
+      Offset_L : constant Long_Integer :=
+                   Time_Zones_Operations.UTC_Time_Offset (Date);
+      Offset   : Time_Offset;
 
    begin
-      Split_With_Offset (Date, Year, Month, Day, Seconds, Offset);
-
-      --  The system dependent code does not support time zones
-
-      if Offset = Invalid_TZ_Offset then
+      if Offset_L = Invalid_Time_Zone_Offset then
          raise Unknown_Zone_Error;
       end if;
 
-      Offset := Offset / 60;
+      --  The offset returned by Time_Zones_Operations.UTC_Time_Offset is in
+      --  seconds, the returned value needs to be in minutes.
 
-      if Offset < Long_Integer (Time_Offset'First)
-        or else Offset > Long_Integer (Time_Offset'Last)
-      then
+      Offset := Time_Offset (Offset_L / 60);
+
+      --  Validity checks
+
+      if not Offset'Valid then
          raise Unknown_Zone_Error;
       end if;
 
-      return Time_Offset (Offset);
+      return Offset;
    end UTC_Time_Offset;
 
 end Ada.Calendar.Time_Zones;

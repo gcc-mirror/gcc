@@ -31,10 +31,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Calendar;               use Ada.Calendar;
+with Ada.Calendar.Formatting;    use Ada.Calendar.Formatting;
 with Ada.Directories.Validity;   use Ada.Directories.Validity;
 with Ada.Strings.Unbounded;      use Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
-with Ada.Unchecked_Conversion;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 
 with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
@@ -45,13 +46,6 @@ with GNAT.Regexp;                use GNAT.Regexp;
 with System;
 
 package body Ada.Directories is
-
-   function Duration_To_Time is new
-     Ada.Unchecked_Conversion (Duration, Ada.Calendar.Time);
-   function OS_Time_To_Long_Integer is new
-     Ada.Unchecked_Conversion (OS_Time, Long_Integer);
-   --  These two unchecked conversions are used in function Modification_Time
-   --  to convert an OS_Time to a Calendar.Time.
 
    type Search_Data is record
       Is_Valid      : Boolean := False;
@@ -724,7 +718,7 @@ package body Ada.Directories is
    -- Modification_Time --
    -----------------------
 
-   function Modification_Time (Name : String) return Ada.Calendar.Time is
+   function Modification_Time (Name : String) return Time is
       Date   : OS_Time;
       Year   : Year_Type;
       Month  : Month_Type;
@@ -732,8 +726,7 @@ package body Ada.Directories is
       Hour   : Hour_Type;
       Minute : Minute_Type;
       Second : Second_Type;
-
-      Result : Ada.Calendar.Time;
+      Result : Time;
 
    begin
       --  First, the invalid cases
@@ -744,26 +737,31 @@ package body Ada.Directories is
       else
          Date := File_Time_Stamp (Name);
 
-         --  ??? This implementation should be revisited when AI 00351 has
-         --  implemented.
+         --  Break down the time stamp into its constituents relative to GMT.
+         --  This version of Split does not recognize leap seconds or buffer
+         --  space for time zone processing.
+
+         GM_Split (Date, Year, Month, Day, Hour, Minute, Second);
+
+         --  On OpenVMS, the resulting time value must be in the local time
+         --  zone. Ada.Calendar.Time_Of is exactly what we need. Note that
+         --  in both cases, the sub seconds are set to zero (0.0) because the
+         --  time stamp does not store them in its value.
 
          if OpenVMS then
+            Result :=
+              Ada.Calendar.Time_Of
+                (Year, Month, Day, Seconds_Of (Hour, Minute, Second, 0.0));
 
-            --  On OpenVMS, OS_Time is in local time
-
-            GM_Split (Date, Year, Month, Day, Hour, Minute, Second);
-
-            return Ada.Calendar.Time_Of
-              (Year, Month, Day,
-               Duration (Second + 60 * (Minute + 60 * Hour)));
+         --  On Unix and Windows, the result must be in GMT. Ada.Calendar.
+         --  Formatting.Time_Of with default time zone of zero (0) is the
+         --  routine of choice.
 
          else
-            --  On Unix and Windows, OS_Time is in GMT
-
-            Result :=
-              Duration_To_Time (Duration (OS_Time_To_Long_Integer (Date)));
-            return Result;
+            Result := Time_Of (Year, Month, Day, Hour, Minute, Second, 0.0);
          end if;
+
+         return Result;
       end if;
    end Modification_Time;
 
