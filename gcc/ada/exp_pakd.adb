@@ -1824,7 +1824,7 @@ package body Exp_Pakd is
                P := Make_Op_Xor (Loc, L, R);
             end if;
 
-            Rewrite (N, Unchecked_Convert_To (Rtyp, P));
+            Rewrite (N, Unchecked_Convert_To (Ltyp, P));
          end;
 
       --  For the array case, we insert the actions
