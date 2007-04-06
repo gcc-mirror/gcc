@@ -1,3 +1,22 @@
+2007-04-06  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-ssa-loop-niter.c (idx_infer_loop_bounds): Add and use
+	argument "reliable".
+	(infer_loop_bounds_from_ref, infer_loop_bounds_from_array):
+	Add argument "reliable".  Propagate it through calls.
+	(infer_loop_bounds_from_undefined):  Derive number of iterations
+	estimates from references in blocks that do not dominate loop latch.
+	(gcov_type_to_double_int): New function.
+	(estimate_numbers_of_iterations_loop): Use gcov_type_to_double_int
+	and expected_loop_iterations_unbounded.
+	* cfgloopanal.c (expected_loop_iterations_unbounded): New function.
+	(expected_loop_iterations): Use expected_loop_iterations_unbounded.
+	* tree-data-ref.c (estimated_loop_iterations): Export.
+	(get_references_in_stmt): Fix -- do not return addresses of local
+	objects.
+	* cfgloop.h (expected_loop_iterations_unbounded,
+	estimated_loop_iterations): Declare.
+
 2007-04-06  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* tree-sra.c (sra_build_elt_assignment): Initialize min/maxshift.

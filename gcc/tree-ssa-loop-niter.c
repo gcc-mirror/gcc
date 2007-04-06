@@ -2581,12 +2581,15 @@ array_at_struct_end_p (tree ref)
 }
 
 /* Determine information about number of iterations a LOOP from the index
-   IDX of a data reference accessed in STMT.  Callback for for_each_index.  */
+   IDX of a data reference accessed in STMT.  RELIABLE is true if STMT is
+   guaranteed to be executed in every iteration of LOOP.  Callback for
+   for_each_index.  */
 
 struct ilb_data
 {
   struct loop *loop;
   tree stmt;
+  bool reliable;
 };
 
 static bool
@@ -2595,7 +2598,7 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
   struct ilb_data *data = dta;
   tree ev, init, step;
   tree low, high, type, next;
-  bool sign, upper = true;
+  bool sign, upper = data->reliable, at_end = false;
   struct loop *loop = data->loop;
 
   if (TREE_CODE (base) != ARRAY_REF)
@@ -2605,7 +2608,10 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
      do not really extend over their declared size.  However, for arrays of
      size greater than one, this is unlikely to be intended.  */
   if (array_at_struct_end_p (base))
-    upper = false;
+    {
+      at_end = true;
+      upper = false;
+    }
 
   ev = instantiate_parameters (loop, analyze_scalar_evolution (loop, *idx));
   init = initial_condition (ev);
@@ -2633,7 +2639,7 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
 
   /* The array of length 1 at the end of a structure most likely extends
      beyond its bounds.  */
-  if (!upper
+  if (at_end
       && operand_equal_p (low, high, 0))
     return true;
 
@@ -2665,23 +2671,27 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
 }
 
 /* Determine information about number of iterations a LOOP from the bounds
-   of arrays in the data reference REF accessed in STMT.  */
+   of arrays in the data reference REF accessed in STMT.  RELIABLE is true if
+   STMT is guaranteed to be executed in every iteration of LOOP.*/
 
 static void
-infer_loop_bounds_from_ref (struct loop *loop, tree stmt, tree ref)
+infer_loop_bounds_from_ref (struct loop *loop, tree stmt, tree ref,
+			    bool reliable)
 {
   struct ilb_data data;
 
   data.loop = loop;
   data.stmt = stmt;
+  data.reliable = reliable;
   for_each_index (&ref, idx_infer_loop_bounds, &data);
 }
 
 /* Determine information about number of iterations of a LOOP from the way
-   arrays are used in STMT.  */
+   arrays are used in STMT.  RELIABLE is true if STMT is guaranteed to be
+   executed in every iteration of LOOP.  */
 
 static void
-infer_loop_bounds_from_array (struct loop *loop, tree stmt)
+infer_loop_bounds_from_array (struct loop *loop, tree stmt, bool reliable)
 {
   tree call;
 
@@ -2693,10 +2703,10 @@ infer_loop_bounds_from_array (struct loop *loop, tree stmt)
       /* For each memory access, analyze its access function
 	 and record a bound on the loop iteration domain.  */
       if (REFERENCE_CLASS_P (op0))
-	infer_loop_bounds_from_ref (loop, stmt, op0);
+	infer_loop_bounds_from_ref (loop, stmt, op0, reliable);
 
       if (REFERENCE_CLASS_P (op1))
-	infer_loop_bounds_from_ref (loop, stmt, op1);
+	infer_loop_bounds_from_ref (loop, stmt, op1, reliable);
     }
   
   
@@ -2708,7 +2718,7 @@ infer_loop_bounds_from_array (struct loop *loop, tree stmt)
 
       FOR_EACH_CALL_EXPR_ARG (arg, iter, call)
 	if (REFERENCE_CLASS_P (arg))
-	  infer_loop_bounds_from_ref (loop, stmt, arg);
+	  infer_loop_bounds_from_ref (loop, stmt, arg, reliable);
     }
 }
 
@@ -2768,6 +2778,7 @@ infer_loop_bounds_from_undefined (struct loop *loop)
   basic_block *bbs;
   block_stmt_iterator bsi;
   basic_block bb;
+  bool reliable;
   
   bbs = get_loop_body (loop);
 
@@ -2776,21 +2787,40 @@ infer_loop_bounds_from_undefined (struct loop *loop)
       bb = bbs[i];
 
       /* If BB is not executed in each iteration of the loop, we cannot
-	 use it to infer any information about # of iterations of the loop.  */
-      if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
-	continue;
+	 use the operations in it to infer reliable upper bound on the
+	 # of iterations of the loop.  However, we can use it as a guess.  */
+      reliable = dominated_by_p (CDI_DOMINATORS, loop->latch, bb);
 
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
 	  tree stmt = bsi_stmt (bsi);
 
-	  infer_loop_bounds_from_array (loop, stmt);
-	  infer_loop_bounds_from_signedness (loop, stmt);
+	  infer_loop_bounds_from_array (loop, stmt, reliable);
+
+	  if (reliable)
+	    infer_loop_bounds_from_signedness (loop, stmt);
   	}
 
     }
 
   free (bbs);
+}
+
+/* Converts VAL to double_int.  */
+
+static double_int
+gcov_type_to_double_int (gcov_type val)
+{
+  double_int ret;
+
+  ret.low = (unsigned HOST_WIDE_INT) val;
+  /* If HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_WIDEST_INT, avoid shifting by
+     the size of type.  */
+  val >>= HOST_BITS_PER_WIDE_INT - 1;
+  val >>= 1;
+  ret.high = (unsigned HOST_WIDE_INT) val;
+
+  return ret;
 }
 
 /* Records estimates on numbers of iterations of LOOP.  */
@@ -2836,7 +2866,8 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
      iterations.  */
   if (loop->header->count != 0)
     {
-      bound = uhwi_to_double_int (expected_loop_iterations (loop) + 1);
+      gcov_type nit = expected_loop_iterations_unbounded (loop) + 1;
+      bound = gcov_type_to_double_int (nit);
       record_niter_bound (loop, bound, true, false);
     }
 
