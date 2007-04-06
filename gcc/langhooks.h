@@ -315,15 +315,6 @@ struct lang_hooks
      1 if handled, 0 otherwise.  */
   int (*expand_decl) (tree);
 
-  /* Hook called by safe_from_p for language-specific tree codes.  It is
-     up to the language front-end to install a hook if it has any such
-     codes that safe_from_p needs to know about.  Since same_from_p will
-     recursively explore the TREE_OPERANDs of an expression, this hook
-     should not reexamine those pieces.  This routine may recursively
-     call safe_from_p; it should always pass `0' as the TOP_P
-     parameter.  */
-  int (*safe_from_p) (rtx, tree);
-
   /* Function to finish handling an incomplete decl at the end of
      compilation.  Default hook is does nothing.  */
   void (*finish_incomplete_decl) (tree);
