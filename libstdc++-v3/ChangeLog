@@ -1,5 +1,12 @@
 2007-04-06  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/31117
+	* config/locale/gnu/c_locale.cc (__convert_to_v): Do not use errno,
+	just check that the value is finite.
+	* config/locale/generic/c_locale.cc (__convert_to_v): Likewise.
+
+2007-04-06  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/ext/type_traits.h (__numeric_traits): Move...
 	* include/ext/numeric_traits.h: ... here.
 	* include/Makefile.am: Add.
