@@ -127,14 +127,13 @@ private
    Exit_Status_Supported     : constant Boolean := True;
    Fractional_Fixed_Ops      : constant Boolean := False;
    Frontend_Layout           : constant Boolean := False;
-   Functions_Return_By_DSP   : constant Boolean := False;
    Machine_Overflows         : constant Boolean := False;
    Machine_Rounds            : constant Boolean := True;
    OpenVMS                   : constant Boolean := False;
    Preallocated_Stacks       : constant Boolean := False;
    Signed_Zeros              : constant Boolean := True;
    Stack_Check_Default       : constant Boolean := False;
-   Stack_Check_Probes        : constant Boolean := False;
+   Stack_Check_Probes        : constant Boolean := True;
    Support_64_Bit_Divides    : constant Boolean := True;
    Support_Aggregates        : constant Boolean := True;
    Support_Composite_Assign  : constant Boolean := True;
