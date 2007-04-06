@@ -530,28 +530,27 @@ package Lib is
    --  incremented value.
 
    procedure Synchronize_Serial_Number;
-   --  This function increments the Serial_Number field for the current
-   --  unit but does not return the incremented value. This is used when
-   --  there is a situation where one path of control increments a serial
-   --  number (using Increment_Serial_Number), and the other path does not
-   --  and it is important to keep the serial numbers synchronized in the
-   --  two cases (e.g. when the references in a package and a client must
-   --  be kept consistent).
+   --  This function increments the Serial_Number field for the current unit
+   --  but does not return the incremented value. This is used when there
+   --  is a situation where one path of control increments a serial number
+   --  (using Increment_Serial_Number), and the other path does not and it is
+   --  important to keep the serial numbers synchronized in the two cases (e.g.
+   --  when the references in a package and a client must be kept consistent).
 
    procedure Replace_Linker_Option_String
      (S            : String_Id;
       Match_String : String);
-   --  Replace an existing Linker_Option if the prefix Match_String
-   --  matches, otherwise call Store_Linker_Option_String.
+   --  Replace an existing Linker_Option if the prefix Match_String matches,
+   --  otherwise call Store_Linker_Option_String.
 
    procedure Store_Compilation_Switch (Switch : String);
-   --  Called to register a compilation switch, either front-end or
-   --  back-end, which may influence the generated output file(s).
+   --  Called to register a compilation switch, either front-end or back-end,
+   --  which may influence the generated output file(s). Switch is the text of
+   --  the switch to store (except that -fRTS gets changed back to --RTS).
 
    procedure Disable_Switch_Storing;
-   --  Disable the registration of compilation switches with
-   --  Store_Compilation_Switch. This is used to not register switches added
-   --  automatically by the gcc driver.
+   --  Disable registration of switches by Store_Compilation_Switch. Used to
+   --  avoid registering switches added automatically by the gcc driver.
 
    procedure Store_Linker_Option_String (S : String_Id);
    --  This procedure is called to register the string from a pragma
@@ -584,11 +583,11 @@ package Lib is
 
    procedure List (File_Names_Only : Boolean := False);
    --  Lists units in active library (i.e. generates output consisting of a
-   --  sorted listing of the units represented in File table, with the
-   --  exception of the main unit). If File_Names_Only is set to True, then
-   --  the list includes only file names, and no other information. Otherwise
-   --  the unit name and time stamp are also output. File_Names_Only also
-   --  restricts the list to exclude any predefined files.
+   --  sorted listing of the units represented in File table, except for the
+   --  main unit). If File_Names_Only is set to True, then the list includes
+   --  only file names, and no other information. Otherwise the unit name and
+   --  time stamp are also output. File_Names_Only also restricts the list to
+   --  exclude any predefined files.
 
    function Generic_Separately_Compiled (E : Entity_Id) return Boolean;
    --  This is the old version of tbe documentation of this function:
@@ -615,10 +614,10 @@ package Lib is
    --  because of the backward compatibility (to keep the ability to use old
    --  compiler versions to build GNAT) compiling library generics is an
    --  option. That is, now GNAT compiles a library generic as an ordinary
-   --  unit, but it also can build an exeutable in case if its library
-   --  contains some (or all) predefined generics non compiled. See 9628-002
-   --  for the description of changes to be done to get rid of a special
-   --  processing of library generic.
+   --  unit, but it also can build an exeutable in case if its library contains
+   --  some (or all) predefined generics non compiled. See 9628-002 for the
+   --  description of changes to be done to get rid of a special processing of
+   --  library generic.
    --
    --  So now this function returns TRUE if a generic MUST be separately
    --  compiled with the current approach.

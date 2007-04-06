@@ -994,7 +994,12 @@ package body Lib is
    begin
       Units.Tree_Read;
 
-      --  Read Compilation_Switches table
+      --  Read Compilation_Switches table. First release the memory occupied
+      --  by the previously loaded switches.
+
+      for J in Compilation_Switches.First .. Compilation_Switches.Last loop
+         Free (Compilation_Switches.Table (J));
+      end loop;
 
       Tree_Read_Int (N);
       Compilation_Switches.Set_Last (N);
