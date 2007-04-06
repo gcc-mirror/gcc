@@ -1,3 +1,15 @@
+2007-04-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/type_traits.h (__numeric_traits): Move...
+	* include/ext/numeric_traits.h: ... here.
+	* include/Makefile.am: Add.
+	* include/ext/pb_ds/detail/type_utils.hpp: Include 
+	<ext/numeric_traits.h> too.
+	* include/tr1/random: Likewise.
+	* testsuite/ext/type_traits/numeric_traits.cc: Move...
+	* testsuite/ext/numeric_traits/numeric_traits.cc: ... here.
+	* include/Makefile.in: Regenerate.
+
 2007-04-04  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/valarray_array.h (__valarray_default_construct(_Tp*,

@@ -20,7 +20,7 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-#include <ext/type_traits.h>
+#include <ext/numeric_traits.h>
 
 using __gnu_cxx::__numeric_traits;
 template struct __numeric_traits<short>;
