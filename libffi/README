@@ -212,7 +212,7 @@ Here is a trivial example that calls puts() a few times.
       int rc;
       
       /* Initialize the argument info vectors */    
-      args[0] = &ffi_type_uint;
+      args[0] = &ffi_type_pointer;
       values[0] = &s;
       
       /* Initialize the cif */
