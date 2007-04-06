@@ -71,8 +71,9 @@ package body Comperr is
    --------------------
 
    procedure Compiler_Abort
-     (X    : String;
-      Code : Integer := 0)
+     (X            : String;
+      Code         : Integer := 0;
+      Fallback_Loc : String := "")
    is
       --  The procedures below output a "bug box" with information about
       --  the cause of the compiler abort and about the preferred method
@@ -96,8 +97,8 @@ package body Comperr is
          Write_Eol;
       end End_Line;
 
-      Is_GPL_Version : constant Boolean := Get_Gnat_Build_Type = GPL;
-      Is_FSF_Version : constant Boolean := Get_Gnat_Build_Type = FSF;
+      Is_GPL_Version : constant Boolean := Gnatvsn.Build_Type = GPL;
+      Is_FSF_Version : constant Boolean := Gnatvsn.Build_Type = FSF;
 
    --  Start of processing for Compiler_Abort
 
@@ -213,10 +214,14 @@ package body Comperr is
 
          --  Output source location information
 
-         if Sloc (Current_Error_Node) <= Standard_Location
-           or else Sloc (Current_Error_Node) = No_Location
-         then
-            Write_Str ("| No source file position information available");
+         if Sloc (Current_Error_Node) <= No_Location then
+            if Fallback_Loc'Length > 0 then
+               Write_Str ("| Error detected around ");
+               Write_Str (Fallback_Loc);
+            else
+               Write_Str ("| No source file position information available");
+            end if;
+
             End_Line;
          else
             Write_Str ("| Error detected at ");

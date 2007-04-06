@@ -378,10 +378,10 @@ static void
 internal_error_function (const char *msgid, va_list *ap)
 {
   text_info tinfo;
-  char *buffer;
-  char *p;
-  String_Template temp;
-  Fat_Pointer fp;
+  char *buffer, *p, *loc;
+  String_Template temp, temp_loc;
+  Fat_Pointer fp, fp_loc;
+  expanded_location s;
 
   /* Reset the pretty-printer.  */
   pp_clear_output_area (global_dc->printer);
@@ -408,8 +408,20 @@ internal_error_function (const char *msgid, va_list *ap)
   fp.Bounds = &temp;
   fp.Array = buffer;
 
+  s = expand_location (input_location);
+#ifdef USE_MAPPED_LOCATION
+  if (flag_show_column && s.column != 0)
+    asprintf (&loc, "%s:%d:%d", s.file, s.line, s.column);
+  else
+#endif
+    asprintf (&loc, "%s:%d", s.file, s.line);
+  temp_loc.Low_Bound = 1;
+  temp_loc.High_Bound = strlen (loc);
+  fp_loc.Bounds = &temp_loc;
+  fp_loc.Array = loc;
+
   Current_Error_Node = error_gnat_node;
-  Compiler_Abort (fp, -1);
+  Compiler_Abort (fp, -1, fp_loc);
 }
 
 /* Perform all the initialization steps that are language-specific.  */
@@ -751,21 +763,19 @@ gnat_get_alias_set (tree type)
   return -1;
 }
 
-/* GNU_TYPE is a type.  Return its maxium size in bytes, if known,
+/* GNU_TYPE is a type.  Return its maximum size in bytes, if known,
    as a constant when possible.  */
 
 static tree
 gnat_type_max_size (tree gnu_type)
 {
-  /* First see what we can get from TYPE_SIZE_UNIT, which might not be
-     constant even for simple expressions if it has already been gimplified
-     and replaced by a VAR_DECL.  */
-
+  /* First see what we can get from TYPE_SIZE_UNIT, which might not
+     be constant even for simple expressions if it has already been
+     elaborated and possibly replaced by a VAR_DECL.  */
   tree max_unitsize = max_size (TYPE_SIZE_UNIT (gnu_type), true);
 
   /* If we don't have a constant, see what we can get from TYPE_ADA_SIZE,
-     typically not gimplified.  */
-
+     which should stay untouched.  */
   if (!host_integerp (max_unitsize, 1)
       && (TREE_CODE (gnu_type) == RECORD_TYPE
 	  || TREE_CODE (gnu_type) == UNION_TYPE
@@ -775,8 +785,7 @@ gnat_type_max_size (tree gnu_type)
       tree max_adasize = max_size (TYPE_ADA_SIZE (gnu_type), true);
 
       /* If we have succeeded in finding a constant, round it up to the
-	 type's alignment and return the result in byte units.  */
-
+	 type's alignment and return the result in units.  */
       if (host_integerp (max_adasize, 1))
 	max_unitsize
 	  = size_binop (CEIL_DIV_EXPR,
