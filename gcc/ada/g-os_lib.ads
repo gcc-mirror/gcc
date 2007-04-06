@@ -114,6 +114,9 @@ package GNAT.OS_Lib is
    subtype Second_Type is Integer range    0 ..   59;
    --  Declarations similar to those in Calendar, breaking down the time
 
+   function Current_Time return OS_Time;
+   --  Return the system clock value as OS_Time
+
    function GM_Year    (Date : OS_Time) return Year_Type;
    function GM_Month   (Date : OS_Time) return Month_Type;
    function GM_Day     (Date : OS_Time) return Day_Type;
@@ -131,15 +134,16 @@ package GNAT.OS_Lib is
    --  to create accesses to any of these functions.
 
    procedure GM_Split
-     (Date    : OS_Time;
-      Year    : out Year_Type;
-      Month   : out Month_Type;
-      Day     : out Day_Type;
-      Hour    : out Hour_Type;
-      Minute  : out Minute_Type;
-      Second  : out Second_Type);
-   --  Analogous to the routine of similar name in Calendar, takes an OS_Time
-   --  and splits it into its component parts with obvious meanings.
+     (Date   : OS_Time;
+      Year   : out Year_Type;
+      Month  : out Month_Type;
+      Day    : out Day_Type;
+      Hour   : out Hour_Type;
+      Minute : out Minute_Type;
+      Second : out Second_Type);
+   --  Analogous to the Split routine in Ada.Calendar, takes an OS_Time
+   --  and provides a representation of it as a set of component parts,
+   --  to be interpreted as a date point in UTC.
 
    ----------------
    -- File Stuff --
@@ -836,6 +840,7 @@ package GNAT.OS_Lib is
 private
    pragma Import (C, Path_Separator, "__gnat_path_separator");
    pragma Import (C, Directory_Separator, "__gnat_dir_separator");
+   pragma Import (C, Current_Time, "__gnat_current_time");
 
    type OS_Time is new Long_Integer;
    --  Type used for timestamps in the compiler. This type is used to hold
