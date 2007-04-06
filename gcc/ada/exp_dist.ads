@@ -44,7 +44,7 @@ package Exp_Dist is
    procedure Add_RACW_Primitive_Declarations_And_Bodies
      (Designated_Type : Entity_Id;
       Insertion_Node  : Node_Id;
-      Decls           : List_Id);
+      Body_Decls      : List_Id);
    --  Add primitive for the stub type, and the RPC receiver. The declarations
    --  are inserted after insertion_Node, while the bodies are appened at the
    --  end of Decls.
@@ -86,21 +86,28 @@ package Exp_Dist is
    function Copy_Specification
      (Loc         : Source_Ptr;
       Spec        : Node_Id;
-      Object_Type : Entity_Id := Empty;
-      Stub_Type   : Entity_Id := Empty;
+      Ctrl_Type   : Entity_Id := Empty;
       New_Name    : Name_Id   := No_Name) return Node_Id;
-   --  Build a subprogram specification from another one, or from
-   --  an access-to-subprogram definition. If Object_Type is not Empty
-   --  and any access to Object_Type is found, then it is replaced by an
-   --  access to Stub_Type. If New_Name is given, then it will be used as
-   --  the name for the newly created spec.
+   --  Build a subprogram specification from another one, or from an
+   --  access-to-subprogram definition. If Ctrl_Type is not Empty, and any
+   --  controlling formal of an anonymous access type is found, then it is
+   --  replaced by an access to Ctrl_Type. If New_Name is given, then it will
+   --  be used as the name for the newly created spec.
 
    function Corresponding_Stub_Type (RACW_Type : Entity_Id) return Entity_Id;
    --  Return the stub type associated with the given RACW type
 
-   function Underlying_RACW_Type
-     (RAS_Typ : Entity_Id) return Entity_Id;
+   function Underlying_RACW_Type (RAS_Typ : Entity_Id) return Entity_Id;
    --  Given a remote access-to-subprogram type or its equivalent
    --  record type, return the RACW type generated to implement it.
+
+   procedure Append_RACW_Bodies (Decls : List_Id; Spec_Id : Entity_Id);
+   --  Append the unanalyzed subprogram bodies generated to support RACWs
+   --  declared in the given package spec (RACW stream subprograms, calling
+   --  stubs primitive operations) to the given list (which is expected to be
+   --  the declarations list for the corresponding package body, if there is
+   --  one). In the case where a body is present, the subprogram bodies must
+   --  not be generated in the package spec because this would cause an
+   --  incorrect attempt to freeze Taft amendment types declared in the spec.
 
 end Exp_Dist;
