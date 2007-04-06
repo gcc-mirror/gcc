@@ -45,6 +45,7 @@ with Rtsfind;  use Rtsfind;
 with Scans;    use Scans;
 with Scn;      use Scn;
 with Sem;      use Sem;
+with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
@@ -83,6 +84,58 @@ package body Sem_Util is
    function Has_Null_Extension (T : Entity_Id) return Boolean;
    --  T is a derived tagged type. Check whether the type extension is null.
    --  If the parent type is fully initialized, T can be treated as such.
+
+   ------------------------------
+   --  Abstract_Interface_List --
+   ------------------------------
+
+   function Abstract_Interface_List (Typ : Entity_Id) return List_Id is
+      Nod : Node_Id;
+
+   begin
+      if Is_Concurrent_Type (Typ) then
+         Nod := Parent (Typ);
+
+      elsif Ekind (Typ) = E_Record_Type_With_Private then
+         if Nkind (Parent (Typ)) = N_Full_Type_Declaration then
+            Nod := Type_Definition (Parent (Typ));
+
+         elsif Nkind (Parent (Typ)) = N_Private_Type_Declaration then
+            if Present (Full_View (Typ)) then
+               Nod := Type_Definition (Parent (Full_View (Typ)));
+
+            --  If the full-view is not available we cannot do anything
+            --  else here (the source has errors)
+
+            else
+               return Empty_List;
+            end if;
+
+         --  The support for generic formals with interfaces is still
+         --  missing???
+
+         elsif Nkind (Parent (Typ)) = N_Formal_Type_Declaration then
+            return Empty_List;
+
+         else
+            pragma Assert
+              (Nkind (Parent (Typ)) = N_Private_Extension_Declaration);
+            Nod := Parent (Typ);
+         end if;
+
+      elsif Ekind (Typ) = E_Record_Subtype then
+         Nod := Type_Definition (Parent (Etype (Typ)));
+
+      else pragma Assert ((Ekind (Typ)) = E_Record_Type);
+         if Nkind (Parent (Typ)) = N_Formal_Type_Declaration then
+            Nod := Formal_Type_Definition (Parent (Typ));
+         else
+            Nod := Type_Definition (Parent (Typ));
+         end if;
+      end if;
+
+      return Interface_List (Nod);
+   end Abstract_Interface_List;
 
    --------------------------------
    -- Add_Access_Type_To_Process --
@@ -971,6 +1024,13 @@ package body Sem_Util is
       --  Subsidiary subprogram used to traverse the whole list
       --  of directly and indirectly implemented interfaces
 
+      function Interface_Present_In_Parent
+         (Typ   : Entity_Id;
+          Iface : Entity_Id) return Boolean;
+      --  Typ must be a tagged record type/subtype and Iface must be an
+      --  abstract interface type. This function is used to check if Typ
+      --  or some parent of Typ implements Iface.
+
       -------------------
       -- Add_Interface --
       -------------------
@@ -994,54 +1054,31 @@ package body Sem_Util is
       -------------
 
       procedure Collect (Typ : Entity_Id) is
-         Ancestor : Entity_Id;
-         Id       : Node_Id;
-         Iface    : Entity_Id;
-         Nod      : Node_Id;
+         Iface_List : constant List_Id := Abstract_Interface_List (Typ);
+         Ancestor   : Entity_Id;
+         Id         : Node_Id;
+         Iface      : Entity_Id;
 
       begin
-         if Ekind (Typ) = E_Record_Type_With_Private then
-            if Nkind (Parent (Typ)) = N_Full_Type_Declaration then
-               Nod := Type_Definition (Parent (Typ));
-
-            elsif Nkind (Parent (Typ)) = N_Private_Type_Declaration then
-               if Present (Full_View (Typ)) then
-                  Nod := Type_Definition (Parent (Full_View (Typ)));
-
-               --  If the full-view is not available we cannot do anything
-               --  else here (the source has errors)
-
-               else
-                  return;
-               end if;
-
-            --  The support for generic formals with interfaces is still
-            --  missing???
-
-            elsif Nkind (Parent (Typ)) = N_Formal_Type_Declaration then
-               return;
-
-            else
-               pragma Assert
-                 (Nkind (Parent (Typ)) = N_Private_Extension_Declaration);
-               Nod := Parent (Typ);
-            end if;
-
-         elsif Ekind (Typ) = E_Record_Subtype then
-            Nod := Type_Definition (Parent (Etype (Typ)));
-
-         else pragma Assert ((Ekind (Typ)) = E_Record_Type);
-            if Nkind (Parent (Typ)) = N_Formal_Type_Declaration then
-               Nod := Formal_Type_Definition (Parent (Typ));
-            else
-               Nod := Type_Definition (Parent (Typ));
-            end if;
-         end if;
-
          --  Include the ancestor if we are generating the whole list of
          --  abstract interfaces.
 
-         if Etype (Typ) /= Typ
+         --  In concurrent types the ancestor interface (if any) is the
+         --  first element of the list of interface types.
+
+         if Is_Concurrent_Type (Typ)
+           or else Is_Concurrent_Record_Type (Typ)
+         then
+            if Is_Non_Empty_List (Iface_List) then
+               Ancestor := Etype (First (Iface_List));
+               Collect (Ancestor);
+
+               if not Exclude_Parent_Interfaces then
+                  Add_Interface (Ancestor);
+               end if;
+            end if;
+
+         elsif Etype (Typ) /= Typ
 
             --  Protect the frontend against wrong sources. For example:
 
@@ -1068,8 +1105,19 @@ package body Sem_Util is
 
          --  Traverse the graph of ancestor interfaces
 
-         if Is_Non_Empty_List (Interface_List (Nod)) then
-            Id := First (Interface_List (Nod));
+         if Is_Non_Empty_List (Iface_List) then
+            Id := First (Iface_List);
+
+            --  In concurrent types the ancestor interface (if any) is the
+            --  first element of the list of interface types and we have
+            --  already processed them while climbing to the root type.
+
+            if Is_Concurrent_Type (Typ)
+              or else Is_Concurrent_Record_Type (Typ)
+            then
+               Next (Id);
+            end if;
+
             while Present (Id) loop
                Iface := Etype (Id);
 
@@ -1080,7 +1128,7 @@ package body Sem_Util is
 
                if Is_Interface (Iface) then
                   if Exclude_Parent_Interfaces
-                    and then Interface_Present_In_Ancestor (T, Iface)
+                    and then Interface_Present_In_Parent (T, Iface)
                   then
                      null;
                   else
@@ -1094,10 +1142,37 @@ package body Sem_Util is
          end if;
       end Collect;
 
+      ---------------------------------
+      -- Interface_Present_In_Parent --
+      ---------------------------------
+
+      function Interface_Present_In_Parent
+         (Typ   : Entity_Id;
+          Iface : Entity_Id) return Boolean
+      is
+         Aux        : Entity_Id := Typ;
+         Iface_List : List_Id;
+
+      begin
+         if Is_Concurrent_Type (Typ)
+           or else Is_Concurrent_Record_Type (Typ)
+         then
+            Iface_List := Abstract_Interface_List (Typ);
+
+            if Is_Non_Empty_List (Iface_List) then
+               Aux := Etype (First (Iface_List));
+            else
+               return False;
+            end if;
+         end if;
+
+         return Interface_Present_In_Ancestor (Aux, Iface);
+      end Interface_Present_In_Parent;
+
    --  Start of processing for Collect_Abstract_Interfaces
 
    begin
-      pragma Assert (Is_Tagged_Type (T));
+      pragma Assert (Is_Tagged_Type (T) or else Is_Concurrent_Type (T));
       Ifaces_List := New_Elmt_List;
       Collect (T);
    end Collect_Abstract_Interfaces;
@@ -1235,92 +1310,6 @@ package body Sem_Util is
 
       return Op_List;
    end Collect_Primitive_Operations;
-
-   -------------------------------------
-   -- Collect_Synchronized_Interfaces --
-   -------------------------------------
-
-   procedure Collect_Synchronized_Interfaces
-     (Typ         : Entity_Id;
-      Ifaces_List : out Elist_Id)
-   is
-      Iface : Entity_Id;
-
-      procedure Collect (Typ : Entity_Id);
-      --  Gather any parent or progenitor interfaces of type Typ
-
-      -------------
-      -- Collect --
-      -------------
-
-      procedure Collect (Typ : Entity_Id) is
-         Iface_Elmt : Elmt_Id;
-
-         procedure Add (Iface : Entity_Id);
-         --  Add a single interface to list Ifaces if the interface is
-         --  not already in the list.
-
-         ---------
-         -- Add --
-         ---------
-
-         procedure Add (Iface : Entity_Id) is
-            Iface_Elmt : Elmt_Id;
-
-         begin
-            Iface_Elmt := First_Elmt (Ifaces_List);
-            while Present (Iface_Elmt)
-              and then Node (Iface_Elmt) /= Iface
-            loop
-               Next_Elmt (Iface_Elmt);
-            end loop;
-
-            if No (Iface_Elmt) then
-               Append_Elmt (Iface, Ifaces_List);
-            end if;
-         end Add;
-
-      --  Start of processing for Collect
-
-      begin
-         if Is_Interface (Typ) then
-
-            --  Potential parent interface
-
-            if Etype (Typ) /= Typ then
-               Collect (Etype (Typ));
-            end if;
-
-            --  Progenitors
-
-            if Present (Abstract_Interfaces (Typ)) then
-               Iface_Elmt := First_Elmt (Abstract_Interfaces (Typ));
-               while Present (Iface_Elmt) loop
-                  Collect (Node (Iface_Elmt));
-                  Next_Elmt (Iface_Elmt);
-               end loop;
-            end if;
-
-            Add (Typ);
-         end if;
-      end Collect;
-
-   --  Start of processing for Collect_Synchronized_Interfaces
-
-   begin
-      pragma Assert (Is_Concurrent_Type (Typ));
-
-      Ifaces_List := New_Elmt_List;
-
-      if Present (Interface_List (Parent (Typ))) then
-         Iface := First (Interface_List (Parent (Typ)));
-         while Present (Iface) loop
-            Collect (Etype (Iface));
-
-            Next (Iface);
-         end loop;
-      end if;
-   end Collect_Synchronized_Interfaces;
 
    -----------------------------------
    -- Compile_Time_Constraint_Error --
@@ -1945,7 +1934,9 @@ package body Sem_Util is
       elsif Ekind (Dynamic_Scope) = E_Subprogram_Body then
          return Corresponding_Spec (Parent (Parent (Dynamic_Scope)));
 
-      elsif Ekind (Dynamic_Scope) = E_Block then
+      elsif Ekind (Dynamic_Scope) = E_Block
+        or else Ekind (Dynamic_Scope) = E_Return_Statement
+      then
          return Enclosing_Subprogram (Dynamic_Scope);
 
       elsif Ekind (Dynamic_Scope) = E_Task_Type then
@@ -2285,6 +2276,17 @@ package body Sem_Util is
       --  Warn if new entity hides an old one
 
       if Warn_On_Hiding and then Present (C)
+
+         --  Don't warn for record components since they always have a well
+         --  defined scope which does not confuse other uses. Note that in
+         --  some cases, Ekind has not been set yet.
+
+         and then Ekind (C) /= E_Component
+         and then Ekind (C) /= E_Discriminant
+         and then Nkind (Parent (C)) /= N_Component_Declaration
+         and then Ekind (Def_Id) /= E_Component
+         and then Ekind (Def_Id) /= E_Discriminant
+         and then Nkind (Parent (Def_Id)) /= N_Component_Declaration
 
          --  Don't warn for one character variables. It is too common to use
          --  such variables as locals and will just cause too many false hits.
@@ -3062,6 +3064,17 @@ package body Sem_Util is
    begin
       if Nkind (Nod) = N_Accept_Statement then
          Nam := Entry_Direct_Name (Nod);
+
+      --  For an entry call, the prefix of the call is a selected component.
+      --  Need additional code for internal calls ???
+
+      elsif Nkind (Nod) = N_Entry_Call_Statement then
+         if Nkind (Name (Nod)) = N_Selected_Component then
+            Nam := Entity (Selector_Name (Name (Nod)));
+         else
+            Nam := Empty;
+         end if;
+
       else
          Nam := Name (Nod);
       end if;
@@ -3167,6 +3180,14 @@ package body Sem_Util is
       pragma Assert (Is_Record_Type (Tagged_Type)
          and then Is_Tagged_Type (Tagged_Type));
 
+      --  Handle concurrent record types
+
+      if Is_Concurrent_Record_Type (Tagged_Type)
+        and then Is_Non_Empty_List (Abstract_Interface_List (Tagged_Type))
+      then
+         return True;
+      end if;
+
       --  Handle private types
 
       if Present (Full_View (Tagged_Type)) then
@@ -3236,17 +3257,13 @@ package body Sem_Util is
             Comp : Entity_Id;
 
          begin
-            Comp := First_Entity (Typ);
+            Comp := First_Component_Or_Discriminant (Typ);
             while Present (Comp) loop
-               if (Ekind (Comp) = E_Component
-                     or else
-                   Ekind (Comp) = E_Discriminant)
-                 and then Has_Access_Values (Etype (Comp))
-               then
+               if Has_Access_Values (Etype (Comp)) then
                   return True;
                end if;
 
-               Next_Entity (Comp);
+               Next_Component_Or_Discriminant (Comp);
             end loop;
          end;
 
@@ -3776,8 +3793,8 @@ package body Sem_Util is
             --  We are interested only in components and discriminants
 
             if Ekind (Ent) = E_Component
-              or else
-                Ekind (Ent) = E_Discriminant
+                or else
+               Ekind (Ent) = E_Discriminant
             then
                --  Get default expression if any. If there is no declaration
                --  node, it means we have an internal entity. The parent and
@@ -4382,9 +4399,8 @@ package body Sem_Util is
                       or else Ekind (E) = E_Generic_In_Parameter)
                     and then Is_Tagged_Type (Etype (E)))
 
-           or else ((Ekind (E) = E_Task_Type
-                      or else Ekind (E) = E_Protected_Type)
-                    and then In_Open_Scopes (E))
+           or else (Is_Concurrent_Type (E)
+                     and then In_Open_Scopes (E))
 
             --  Current instance of type, either directly or as rewritten
             --  reference to the current object.
@@ -4394,6 +4410,7 @@ package body Sem_Util is
                      and then Is_Type (Entity (Original_Node (Obj))))
 
            or else (Is_Type (E) and then E = Current_Scope)
+
            or else (Is_Incomplete_Or_Private_Type (E)
                      and then Full_View (E) = Current_Scope);
 
@@ -5258,6 +5275,33 @@ package body Sem_Util is
          return False;
       end if;
    end Is_OK_Variable_For_Out_Formal;
+
+   ---------------
+   -- Is_Parent --
+   ---------------
+
+   function Is_Parent
+     (E1 : Entity_Id;
+      E2 : Entity_Id) return Boolean
+   is
+      Iface_List : List_Id;
+      T          : Entity_Id := E2;
+
+   begin
+      if Is_Concurrent_Type (T)
+        or else Is_Concurrent_Record_Type (T)
+      then
+         Iface_List := Abstract_Interface_List (E2);
+
+         if Is_Empty_List (Iface_List) then
+            return False;
+         end if;
+
+         T := Etype (First (Iface_List));
+      end if;
+
+      return Is_Ancestor (E1, T);
+   end Is_Parent;
 
    -----------------------------------
    -- Is_Partially_Initialized_Type --
@@ -6241,9 +6285,10 @@ package body Sem_Util is
          when N_Function_Call =>
             return False;
 
-         --  Positional parameter for procedure or accept call
+         --  Positional parameter for procedure, entry,  or accept call
 
          when N_Procedure_Call_Statement |
+              N_Entry_Call_Statement |
               N_Accept_Statement
           =>
             declare
@@ -6339,6 +6384,33 @@ package body Sem_Util is
 
       end case;
    end May_Be_Lvalue;
+
+   ----------------------
+   -- Needs_One_Actual --
+   ----------------------
+
+   function Needs_One_Actual (E : Entity_Id) return Boolean is
+      Formal : Entity_Id;
+
+   begin
+      if Ada_Version >= Ada_05
+        and then Present (First_Formal (E))
+      then
+         Formal := Next_Formal (First_Formal (E));
+         while Present (Formal) loop
+            if No (Default_Value (Formal)) then
+               return False;
+            end if;
+
+            Next_Formal (Formal);
+         end loop;
+
+         return True;
+
+      else
+         return False;
+      end if;
+   end Needs_One_Actual;
 
    -------------------------
    -- New_External_Entity --
@@ -6853,6 +6925,34 @@ package body Sem_Util is
    --  is not always one is immaterial (invariant: if level(E2) is
    --  deeper than level(E1), then Scope_Depth(E1) < Scope_Depth(E2)).
 
+      function Reference_To (Obj : Node_Id) return Node_Id;
+      --  An explicit dereference is created when removing side-effects
+      --  from expressions for constraint checking purposes. In this case
+      --  a local access type is created for it. The correct access level
+      --  is that of the original source node. We detect this case by
+      --  noting that the prefix of the dereference is created by an object
+      --  declaration whose initial expression is a reference.
+
+      ------------------
+      -- Reference_To --
+      ------------------
+
+      function Reference_To (Obj : Node_Id) return Node_Id is
+         Pref : constant Node_Id := Prefix (Obj);
+      begin
+         if Is_Entity_Name (Pref)
+           and then Nkind (Parent (Entity (Pref))) = N_Object_Declaration
+           and then Present (Expression (Parent (Entity (Pref))))
+           and then Nkind (Expression (Parent (Entity (Pref)))) = N_Reference
+         then
+            return (Prefix (Expression (Parent (Entity (Pref)))));
+         else
+            return Empty;
+         end if;
+      end Reference_To;
+
+   --  Start of processing for Object_Access_Level
+
    begin
       if Is_Entity_Name (Obj) then
          E := Entity (Obj);
@@ -6912,6 +7012,18 @@ package body Sem_Util is
              Ekind (Entity (Selector_Name (Prefix (Obj)))) = E_Discriminant
          then
             return Object_Access_Level (Prefix (Obj));
+
+         elsif not (Comes_From_Source (Obj)) then
+            declare
+               Ref : constant Node_Id := Reference_To (Obj);
+            begin
+               if Present (Ref) then
+                  return Object_Access_Level (Ref);
+               else
+                  return Type_Access_Level (Etype (Prefix (Obj)));
+               end if;
+            end;
+
          else
             return Type_Access_Level (Etype (Prefix (Obj)));
          end if;
@@ -7044,8 +7156,10 @@ package body Sem_Util is
             if Ekind (Defining_Identifier (Subp_Param)) /=
                  Ekind (Defining_Identifier (Over_Param))
               or else
-                Etype (Parameter_Type (Subp_Param)) /=
-                  Etype (Parameter_Type (Over_Param))
+                not Conforming_Types
+                  (Etype (Parameter_Type (Subp_Param)),
+                   Etype (Parameter_Type (Over_Param)),
+                   Subtype_Conformant)
             then
                return False;
             end if;
@@ -7083,7 +7197,7 @@ package body Sem_Util is
          if Ekind (Def_Id) = E_Entry
            and then Ekind (Candidate) = E_Procedure
            and then Nkind (Parent (Candidate)) = N_Procedure_Specification
-           and then (Is_Abstract (Candidate)
+           and then (Is_Abstract_Subprogram (Candidate)
                        or else Null_Present (Parent (Candidate)))
          then
             while Present (Alias (Candidate)) loop
@@ -7102,7 +7216,7 @@ package body Sem_Util is
          elsif Ekind (Def_Id) = E_Procedure
            and then Ekind (Candidate) = E_Procedure
            and then Nkind (Parent (Candidate)) = N_Procedure_Specification
-           and then (Is_Abstract (Candidate)
+           and then (Is_Abstract_Subprogram (Candidate)
                        or else Null_Present (Parent (Candidate)))
            and then Matches_Prefixed_View_Profile
                       (Parameter_Specifications (Parent (Def_Id)),
@@ -7115,7 +7229,7 @@ package body Sem_Util is
          elsif Ekind (Def_Id) = E_Function
            and then Ekind (Candidate) = E_Function
            and then Nkind (Parent (Candidate)) = N_Function_Specification
-           and then Is_Abstract (Candidate)
+           and then Is_Abstract_Subprogram (Candidate)
            and then Matches_Prefixed_View_Profile
                       (Parameter_Specifications (Parent (Def_Id)),
                        Parameter_Specifications (Parent (Candidate)))
@@ -7995,6 +8109,7 @@ package body Sem_Util is
       then
          Set_Is_Unsigned_Type       (T1, Is_Unsigned_Type          (T2));
       end if;
+
       Set_Alignment                 (T1, Alignment                 (T2));
    end Set_Size_Info;
 
@@ -8461,9 +8576,9 @@ package body Sem_Util is
          else
             if From_With_Type (Found_Type) then
                Error_Msg_NE ("\\found incomplete}!", Expr, Found_Type);
-               Error_Msg_NE
-                 ("\possibly missing with_clause on&", Expr,
-                   Scope (Found_Type));
+               Error_Msg_Qual_Level := 99;
+               Error_Msg_NE ("\\missing `WITH &;", Expr, Scope (Found_Type));
+               Error_Msg_Qual_Level := 0;
             else
                Error_Msg_NE ("found}!", Expr, Found_Type);
             end if;
