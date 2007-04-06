@@ -683,6 +683,15 @@ package body CStand is
       Init_Size_Align    (Standard_String);
       Set_Alignment      (Standard_String, Uint_1);
 
+      --  On targets where a storage unit is larger than a byte (such as AAMP),
+      --  pragma Pack has a real effect on the representation of type String,
+      --  and the type must be marked as having a nonstandard representation.
+
+      if System_Storage_Unit > Uint_8 then
+         Set_Has_Non_Standard_Rep (Standard_String);
+         Set_Has_Pragma_Pack      (Standard_String);
+      end if;
+
       --  Set index type of String
 
       E_Id := First
