@@ -245,8 +245,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
      when a Full_View exists.  */
 
   if (present_gnu_tree (gnat_entity)
-      && (! definition
-	  || (Is_Type (gnat_entity) && imported_p)))
+      && (!definition || (Is_Type (gnat_entity) && imported_p)))
     {
       gnu_decl = get_gnu_tree (gnat_entity);
 
@@ -272,6 +271,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      || (!IN (kind, Numeric_Kind) && !IN (kind, Enumeration_Kind)
 		  && (!IN (kind, Access_Kind)
 		      || kind == E_Access_Protected_Subprogram_Type
+		      || kind == E_Anonymous_Access_Protected_Subprogram_Type
 		      || kind == E_Access_Subtype)));
 
   /* Likewise, RM_Size must be specified for all discrete and fixed-point
@@ -326,7 +326,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       if (!definition && Present (Full_View (gnat_entity)))
 	{
 	  gnu_decl = gnat_to_gnu_entity (Full_View (gnat_entity),
-					 gnu_expr, definition);
+					 gnu_expr, 0);
 	  saved = true;
 	  break;
 	}
@@ -433,7 +433,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  {
 	    gnu_decl = gnat_to_gnu_entity (CR_Discriminant (gnat_entity),
 					   gnu_expr, definition);
-	    saved = 1;
+	    saved = true;
 	    break;
 	  }
 
@@ -469,7 +469,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		gnu_decl
 		  = gnat_to_gnu_entity (Original_Record_Component
 					(gnat_entity),
-					gnu_expr, definition);
+					gnu_expr, 0);
 		saved = true;
 		break;
 	      }
@@ -715,8 +715,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   should treat other types of objects as volatile as well.  */
 	if ((Treat_As_Volatile (gnat_entity)
 	     || Is_Exported (gnat_entity)
-	     || Is_Imported (gnat_entity)
-	     || Present (Address_Clause (gnat_entity)))
+	     || Is_Imported (gnat_entity))
 	    && !TYPE_VOLATILE (gnu_type))
 	  gnu_type = build_qualified_type (gnu_type,
 					   (TYPE_QUALS (gnu_type)
@@ -937,18 +936,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    /* Ignore the size.  It's either meaningless or was handled
 	       above.  */
 	    gnu_size = NULL_TREE;
-	    /* The address expression contains a conversion from pointer type
-	       to the system__address integer type, which means the address
-	       of the underlying object escapes.  We therefore have no other
-	       choice than forcing the type of the object being defined to
-	       alias everything in order to make type-based alias analysis
-	       aware that it will dereference the escaped address.
-	       ??? This uncovers problems in ACATS at -O2 with the volatility
-	       of the original type: it may not be correctly propagated, thus
-	       causing PRE to enter an infinite loop creating value numbers
-	       out of volatile expressions.  Disable it for now.  */
+	    /* Convert the type of the object to a reference type that can
+	       alias everything as per 13.3(19).  */
 	    gnu_type
-	      = build_reference_type_for_mode (gnu_type, ptr_mode, false);
+	      = build_reference_type_for_mode (gnu_type, ptr_mode, true);
 	    gnu_address = convert (gnu_type, gnu_address);
 	    used_by_ref = true;
 	    const_flag = !Is_Public (gnat_entity);
@@ -977,9 +968,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    || (Is_Imported (gnat_entity)
 		&& Has_Stdcall_Convention (gnat_entity)))
 	  {
-	    /* See the definition case above for the rationale.  */
+	    /* Convert the type of the object to a reference type that can
+	       alias everything as per 13.3(19).  */
 	    gnu_type
-	      = build_reference_type_for_mode (gnu_type, ptr_mode, false);
+	      = build_reference_type_for_mode (gnu_type, ptr_mode, true);
 	    gnu_size = NULL_TREE;
 
 	    gnu_expr = NULL_TREE;
@@ -1174,10 +1166,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			      gnat_entity);
 
 	/* If this is a public constant or we're not optimizing and we're not
-	   making a VAR_DECL for it, make one just for export or debugger
-	   use.  Likewise if the address is taken or if the object or type is
-	   aliased.  */
-	if (definition && TREE_CODE (gnu_decl) == CONST_DECL
+	   making a VAR_DECL for it, make one just for export or debugger use.
+	   Likewise if the address is taken or if either the object or type is
+	   aliased.  Make an external declaration for a reference, unless this
+	   is a Standard entity since there no real symbol at the object level
+	   for these.  */
+	if (TREE_CODE (gnu_decl) == CONST_DECL
+	    && (definition || Sloc (gnat_entity) > Standard_Location)
 	    && (Is_Public (gnat_entity)
 		|| optimize == 0
 		|| Address_Taken (gnat_entity)
@@ -1187,7 +1182,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    tree gnu_corr_var
 	      = create_true_var_decl (gnu_entity_id, gnu_ext_name, gnu_type,
 				      gnu_expr, true, Is_Public (gnat_entity),
-				      false, static_p, NULL, gnat_entity);
+				      !definition, static_p, NULL,
+				      gnat_entity);
 
 	    SET_DECL_CONST_CORRESPONDING_VAR (gnu_decl, gnu_corr_var);
 	  }
@@ -1384,13 +1380,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 bounds by always elaborating the first such subtype first, thus
 	 using its name. */
 
-      if (definition == 0
+      if (!definition
 	  && Present (Ancestor_Subtype (gnat_entity))
 	  && !In_Extended_Main_Code_Unit (Ancestor_Subtype (gnat_entity))
 	  && (!Compile_Time_Known_Value (Type_Low_Bound (gnat_entity))
 	      || !Compile_Time_Known_Value (Type_High_Bound (gnat_entity))))
 	gnat_to_gnu_entity (Ancestor_Subtype (gnat_entity),
-			    gnu_expr, definition);
+			    gnu_expr, 0);
 
       gnu_type = make_node (INTEGER_TYPE);
       if (Is_Packed_Array_Type (gnat_entity))
@@ -1511,13 +1507,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	}
 
       {
-	if (definition == 0
+	if (!definition
 	    && Present (Ancestor_Subtype (gnat_entity))
 	    && !In_Extended_Main_Code_Unit (Ancestor_Subtype (gnat_entity))
 	    && (!Compile_Time_Known_Value (Type_Low_Bound (gnat_entity))
 		|| !Compile_Time_Known_Value (Type_High_Bound (gnat_entity))))
 	  gnat_to_gnu_entity (Ancestor_Subtype (gnat_entity),
-			      gnu_expr, definition);
+			      gnu_expr, 0);
 
 	gnu_type = make_node (REAL_TYPE);
 	TREE_TYPE (gnu_type) = get_unpadded_type (Etype (gnat_entity));
@@ -2613,7 +2609,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       /* If an equivalent type is present, that is what we should use.
 	 Otherwise, fall through to handle this like a record subtype
 	 since it may have constraints.  */
-
       if (Present (Equivalent_Type (gnat_entity)))
 	{
 	  gnu_decl = gnat_to_gnu_entity (Equivalent_Type (gnat_entity),
@@ -2855,6 +2850,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      /* Recompute the mode of this record type now that we know its
 		 actual size.  */
 	      compute_record_mode (gnu_type);
+
+	      /* Reapply variable_size since we have changed the sizes.  */
+	      TYPE_SIZE (gnu_type) = variable_size (TYPE_SIZE (gnu_type));
+	      TYPE_SIZE_UNIT (gnu_type)
+		= variable_size (TYPE_SIZE_UNIT (gnu_type));
 
 	      /* Fill in locations of fields.  */
 	      annotate_rep (gnat_entity, gnu_type);
@@ -3883,7 +3883,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	    save_gnu_tree (gnat_entity, NULL_TREE, false);
 
-	    gnu_type = build_reference_type (gnu_type);
+	    /* Convert the type of the object to a reference type that can
+	       alias everything as per 13.3(19).  */
+	    gnu_type
+	      = build_reference_type_for_mode (gnu_type, ptr_mode, true);
 	    if (gnu_address)
 	      gnu_address = convert (gnu_type, gnu_address);
 
@@ -3989,9 +3992,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 by Gigi unless an Equivalent_Type is specified.  */
     case E_Class_Wide_Type:
       if (Present (Equivalent_Type (gnat_entity)))
-	gnu_type = gnat_to_gnu_type (Equivalent_Type (gnat_entity));
+	gnu_decl = gnat_to_gnu_entity (Equivalent_Type (gnat_entity),
+				       NULL_TREE, 0);
       else
-	gnu_type = gnat_to_gnu_type (Root_Type (gnat_entity));
+	gnu_decl = gnat_to_gnu_entity (Root_Type (gnat_entity),
+				       NULL_TREE, 0);
 
       maybe_present = true;
       break;
@@ -4171,6 +4176,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 right now, we have to put in an explicit multiply and
 		 divide by that value.  */
 	      if (!CONTAINS_PLACEHOLDER_P (DECL_FIELD_OFFSET (gnu_field)))
+		{
 		DECL_FIELD_OFFSET (gnu_field)
 		  = build_binary_op
 		    (MULT_EXPR, sizetype,
@@ -4183,6 +4189,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      get_identifier ("OFFSET"),
 		      definition, 0),
 		     size_int (DECL_OFFSET_ALIGN (gnu_field) / BITS_PER_UNIT));
+
+		/* ??? The context of gnu_field is not necessarily gnu_type so
+		   the MULT_EXPR node built above may not be marked by the call
+		   to create_type_decl below.  Mark it manually for now.  */
+		if (global_bindings_p ())
+		  TREE_VISITED (DECL_FIELD_OFFSET (gnu_field)) = 1;
+		}
 	    }
 
       gnu_type = build_qualified_type (gnu_type,
