@@ -259,7 +259,7 @@ open_class (const char *filename, JCF *jcf, int fd, const char *dep_name)
       jcf->read_ptr = jcf->buffer;
       jcf->read_end = jcf->buffer_end;
       jcf->read_state = NULL;
-      jcf->filename = filename;
+      jcf->filename = xstrdup (filename);
       if (read (fd, jcf->buffer, stat_buf.st_size) != stat_buf.st_size)
 	{
 	  perror ("Failed to read .class file");
