@@ -873,7 +873,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   int byref;
 
   gcc_assert (sym->attr.referenced
-               || sym->ns->proc_name->attr.if_source == IFSRC_IFBODY);
+		|| sym->attr.use_assoc
+		|| sym->ns->proc_name->attr.if_source == IFSRC_IFBODY);
 
   if (sym->ns && sym->ns->proc_name->attr.function)
     byref = gfc_return_by_reference (sym->ns->proc_name);

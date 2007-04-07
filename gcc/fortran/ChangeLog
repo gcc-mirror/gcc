@@ -1,5 +1,11 @@
 2007-04-07  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/31214
+	* trans-decl.c (gfc_get_symbol_decl): Allow unreferenced use
+	associated symbols.
+
+2007-04-07  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/31293
 	* symbol.c (gfc_check_function_type): New function.
 	* gfortran.h : Add prototype for previous.
