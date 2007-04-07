@@ -1,3 +1,7 @@
+2007-04-07  Daniel Berlin  <dberlin@dberlin.org>
+
+	Revert change removing staticp.
+
 2007-04-06  Daniel Berlin  <dberlin@dberlin.org>
 
 	* cp-objcp-common.c (cxx_staticp): Remove.

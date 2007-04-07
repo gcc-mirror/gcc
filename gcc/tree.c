@@ -1986,7 +1986,10 @@ staticp (tree arg)
       return arg;
 
     case COMPONENT_REF:
-      gcc_assert (TREE_CODE (TREE_OPERAND (arg, 1)) == FIELD_DECL);
+      /* If the thing being referenced is not a field, then it is
+	 something language specific.  */
+      if (TREE_CODE (TREE_OPERAND (arg, 1)) != FIELD_DECL)
+	return (*lang_hooks.staticp) (arg);
 
       /* If we are referencing a bitfield, we can't evaluate an
 	 ADDR_EXPR at compile time and so it isn't a constant.  */
@@ -2012,10 +2015,11 @@ staticp (tree arg)
 	return false;
 
     default:
-      /* All language specific tree codes should have been lowered by
-	 now. */
-      gcc_assert_lowered (arg);
-      return NULL;
+      if ((unsigned int) TREE_CODE (arg)
+	  >= (unsigned int) LAST_AND_UNUSED_TREE_CODE)
+	return lang_hooks.staticp (arg);
+      else
+	return NULL;
     }
 }
 

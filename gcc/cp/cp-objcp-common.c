@@ -200,6 +200,21 @@ cxx_types_compatible_p (tree x, tree y)
   return 0;
 }
 
+tree
+cxx_staticp (tree arg)
+{
+  switch (TREE_CODE (arg))
+    {
+    case BASELINK:
+      return staticp (BASELINK_FUNCTIONS (arg));
+
+    default:
+      break;
+    }
+  
+  return NULL_TREE;
+}
+
 /* Stubs to keep c-opts.c happy.  */
 void
 push_file_scope (void)
