@@ -1,3 +1,10 @@
+2007-04-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/31369
+	* testsuite/libgomp.c++/c++.exp: Don't use concat when setting
+	ld_library_path.
+	* testsuite/libgomp.fortran/fortran.exp: Likewise.
+
 2007-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.h (gomp_cpu_affinity, gomp_cpu_affinity_len): New extern
