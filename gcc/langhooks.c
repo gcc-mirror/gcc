@@ -117,14 +117,6 @@ lhd_print_tree_nothing (FILE * ARG_UNUSED (file),
 {
 }
 
-/* Called from staticp.  */
-
-tree
-lhd_staticp (tree ARG_UNUSED (exp))
-{
-  return NULL;
-}
-
 /* Called from check_global_declarations.  */
 
 bool

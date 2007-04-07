@@ -1,3 +1,14 @@
+2007-04-06  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree.c (staticp): No longer use staticp langhook.
+	* langhooks.c (lhd_staticp): Removed.
+	* langhooks.h (struct lang_hooks): Remove staticp.
+	* c-common.c (c_staticp): Remove.
+	* c-common.h (c_staticp): Ditto.
+	* langhooks-defs.h (lhd_staticp): Ditto.
+	(LHD_HOOKS_STATICP): Ditto
+	* tree.h (gcc_assert_lowered): New macro.
+
 2007-04-06  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-ssa-loop-niter.c (idx_infer_loop_bounds): Add and use

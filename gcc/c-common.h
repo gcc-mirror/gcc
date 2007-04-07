@@ -825,8 +825,6 @@ extern bool vector_types_convertible_p (tree t1, tree t2, bool emit_lax_note);
 extern rtx c_expand_expr (tree, rtx, enum machine_mode, int, rtx *);
 extern void c_expand_body (tree);
 
-extern tree c_staticp (tree);
-
 extern void init_c_lex (void);
 
 extern void c_cpp_builtins (cpp_reader *);

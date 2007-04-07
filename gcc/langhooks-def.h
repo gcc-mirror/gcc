@@ -49,7 +49,6 @@ extern tree lhd_return_tree (tree);
 extern tree lhd_return_null_tree_v (void);
 extern tree lhd_return_null_tree (tree);
 extern tree lhd_do_nothing_iii_return_null_tree (int, int, int);
-extern tree lhd_staticp (tree);
 extern void lhd_print_tree_nothing (FILE *, tree, int);
 extern const char *lhd_decl_printable_name (tree, int);
 extern const char *lhd_dwarf_name (tree, int);
@@ -110,7 +109,6 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 #define LANG_HOOKS_EXPAND_EXPR		lhd_expand_expr
 #define LANG_HOOKS_EXPAND_DECL		lhd_expand_decl
 #define LANG_HOOKS_FINISH_INCOMPLETE_DECL lhd_do_nothing_t
-#define LANG_HOOKS_STATICP		lhd_staticp
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL lhd_do_nothing_t
 #define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME lhd_set_decl_assembler_name
 #define LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS false
@@ -296,7 +294,6 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_EXPAND_DECL, \
   LANG_HOOKS_FINISH_INCOMPLETE_DECL, \
   LANG_HOOKS_MARK_ADDRESSABLE, \
-  LANG_HOOKS_STATICP, \
   LANG_HOOKS_DUP_LANG_SPECIFIC_DECL, \
   LANG_HOOKS_SET_DECL_ASSEMBLER_NAME, \
   LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS, \

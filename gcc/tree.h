@@ -921,6 +921,7 @@ extern void omp_clause_range_check_failed (const tree, const char *, int,
 
 #endif
 
+#define gcc_assert_lowered(NODE) gcc_assert (TREE_CODE (NODE) <= LAST_AND_UNUSED_TREE_CODE)
 #define TREE_BLOCK(NODE)		*(tree_block (NODE))
 
 #include "tree-check.h"
