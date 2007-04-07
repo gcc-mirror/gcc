@@ -216,6 +216,10 @@ Wformat-nonliteral
 C ObjC C++ ObjC++ Var(warn_format_nonliteral) Warning
 Warn about format strings that are not literals
 
+Wformat-contains-nul
+C ObjC C++ ObjC++ Var(warn_format_contains_nul)
+Warn about format strings that contain NUL bytes
+
 Wformat-security
 C ObjC C++ ObjC++ Var(warn_format_security) Warning
 Warn about possible security problems with format functions

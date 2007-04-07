@@ -1,3 +1,9 @@
+2007-04-07  Bruce Korb  <bkorb@gnu.org>
+
+	* gcc.dg/format/opt-6.c: New test.
+	* gcc.dg/format/nul-1.c: New test.
+	* gcc.dg/format/nul-2.c: New test.
+
 2007-04-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/31395

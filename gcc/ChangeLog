@@ -1,3 +1,11 @@
+2007-04-07  Bruce Korb  <bkorb@gnu.org>
+
+	* c.opt: Add -Wformat-contains-nul.
+	* c-format.c (set_Wformat):  Set warn_format_contains_nul to the
+	  -Wformat setting.
+	(check_format_info_main): Check OPT_Wformat_contains_nul before emitting
+	the NUL byte warning.
+
 2007-04-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_handle_option): Handle SSSE3.
