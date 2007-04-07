@@ -4294,6 +4294,15 @@ c_expand_body (tree fndecl)
 				decl_fini_priority_lookup (fndecl));
 }
 
+/* Hook used by staticp to handle language-specific tree codes.  */
+
+tree
+c_staticp (tree exp)
+{
+  return (TREE_CODE (exp) == COMPOUND_LITERAL_EXPR
+	  && TREE_STATIC (COMPOUND_LITERAL_EXPR_DECL (exp))
+	  ? exp : NULL);
+}
 
 
 /* Given a boolean expression ARG, return a tree representing an increment
