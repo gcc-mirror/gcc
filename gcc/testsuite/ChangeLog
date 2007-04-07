@@ -1,5 +1,10 @@
 2007-04-07  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/31257
+	* gfortran.dg/achar_4.f90: New test.
+
+2007-04-07  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/30880
 	* gfortran.dg/used_dummy_types_8.f90: New test.
 
