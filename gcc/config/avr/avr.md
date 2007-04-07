@@ -448,7 +448,7 @@
    (use (match_operand:QI 1 "register_operand" "r"))
    (use (match_operand:QI 2 "const_int_operand" "n"))
    (clobber (match_scratch:HI 3 "=0"))
-   (clobber (match_scratch:QI 4 "=1"))]
+   (clobber (match_scratch:QI 4 "=&1"))]
   ""
   "st %a0+,__zero_reg__
         dec %1
@@ -462,7 +462,7 @@
    (use (match_operand:HI 1 "register_operand" "!w,d"))
    (use (match_operand:HI 2 "const_int_operand" "n,n"))
    (clobber (match_scratch:HI 3 "=0,0"))
-   (clobber (match_scratch:HI 4 "=1,1"))]
+   (clobber (match_scratch:HI 4 "=&1,&1"))]
   ""
   "*{
      if (which_alternative==0)
