@@ -1,3 +1,9 @@
+2007-04-06  Daniel Berlin  <dberlin@dberlin.org>
+
+	* cp-objcp-common.c (cxx_staticp): Remove.
+	* cp-objcp-common.h (LANG_HOOKS_STATICP): Remove.
+	* cp-tree.h (cxx_staticp): 	
+
 2007-04-04  Danny Smith  <dannysmith.users.sourceforge.net>
 
 	* class.c (check_for_override): Don't remove dllmport attribute
