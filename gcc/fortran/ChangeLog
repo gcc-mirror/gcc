@@ -1,5 +1,12 @@
 2007-04-07  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/30880
+	* resolve.c (resolve_fl_variable): Set flag to 2 for automatic
+	arrays.  Make condition for automatic array error explicit.
+	If a dummy, no error on an INTENT(OUT) derived type.
+
+2007-04-07  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/30872
 	* expr.c (find_array_element): Correct arithmetic for rank > 1.
 
