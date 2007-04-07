@@ -1,3 +1,11 @@
+2007-04-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31293
+	* symbol.c (gfc_check_function_type): New function.
+	* gfortran.h : Add prototype for previous.
+	* parse.c (parse_progunit): Call it after parsing specification
+	statements.
+
 2007-04-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31483

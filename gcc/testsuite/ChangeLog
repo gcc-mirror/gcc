@@ -1,3 +1,8 @@
+2007-04-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31293
+	* gfortran.dg/interface_12.f90: New test.
+
 2007-04-07  Bruce Korb  <bkorb@gnu.org>
 
 	* gcc.dg/format/opt-6.c: New test.

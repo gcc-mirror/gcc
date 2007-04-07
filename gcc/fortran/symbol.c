@@ -253,6 +253,37 @@ gfc_set_default_type (gfc_symbol * sym, int error_flag, gfc_namespace * ns)
 }
 
 
+/* This function is called from parse.c(parse_progunit) to check the
+   type of the function is not implicitly typed in the host namespace
+   and to implicitly type the function result, if necessary.  */
+
+void
+gfc_check_function_type (gfc_namespace *ns)
+{
+  gfc_symbol *proc = ns->proc_name;
+
+  if (!proc->attr.contained || proc->result->attr.implicit_type)
+    return;
+
+  if (proc->result->ts.type == BT_UNKNOWN)
+    {
+      if (gfc_set_default_type (proc->result, 0, gfc_current_ns)
+		== SUCCESS)
+	{
+	  if (proc->result != proc)
+	    proc->ts = proc->result->ts;
+	}
+      else
+	{
+	  gfc_error ("unable to implicitly type the function result "
+		     "'%s' at %L", proc->result->name,
+		     &proc->result->declared_at);
+	  proc->result->attr.untyped = 1;
+	}
+    }
+}
+
+
 /******************** Symbol attribute stuff *********************/
 
 /* This is a generic conflict-checker.  We do this to avoid having a
