@@ -5648,7 +5648,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 	      || sym->as->upper[i] == NULL
 	      || sym->as->upper[i]->expr_type != EXPR_CONSTANT)
 	    {
-	      flag = 1;
+	      flag = 2;
 	      break;
 	    }
 	}
@@ -5670,7 +5670,8 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
       else if (sym->attr.external)
 	gfc_error ("External '%s' at %L cannot have an initializer",
 		   sym->name, &sym->declared_at);
-      else if (sym->attr.dummy)
+      else if (sym->attr.dummy
+	&& !(sym->ts.type == BT_DERIVED && sym->attr.intent == INTENT_OUT))
 	gfc_error ("Dummy '%s' at %L cannot have an initializer",
 		   sym->name, &sym->declared_at);
       else if (sym->attr.intrinsic)
@@ -5679,12 +5680,15 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
       else if (sym->attr.result)
 	gfc_error ("Function result '%s' at %L cannot have an initializer",
 		   sym->name, &sym->declared_at);
-      else
+      else if (flag == 2)
 	gfc_error ("Automatic array '%s' at %L cannot have an initializer",
 		   sym->name, &sym->declared_at);
+      else
+	goto no_init_error;
       return FAILURE;
     }
 
+no_init_error:
   /* Check to see if a derived type is blocked from being host associated
      by the presence of another class I symbol in the same namespace.
      14.6.1.3 of the standard and the discussion on comp.lang.fortran.  */
