@@ -1571,20 +1571,30 @@ ix86_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
     case OPT_msse:
       if (!value)
 	{
-	  target_flags &= ~(MASK_SSE2 | MASK_SSE3 | MASK_SSE4A);
-	  target_flags_explicit |= MASK_SSE2 | MASK_SSE3 | MASK_SSE4A;
+	  target_flags &= ~(MASK_SSE2 | MASK_SSE3 | MASK_SSSE3
+			    | MASK_SSE4A);
+	  target_flags_explicit |= (MASK_SSE2 | MASK_SSE3 | MASK_SSSE3
+				    | MASK_SSE4A);
 	}
       return true;
 
     case OPT_msse2:
       if (!value)
 	{
-	  target_flags &= ~(MASK_SSE3 | MASK_SSE4A);
-	  target_flags_explicit |= MASK_SSE3 | MASK_SSE4A;
+	  target_flags &= ~(MASK_SSE3 | MASK_SSSE3 | MASK_SSE4A);
+	  target_flags_explicit |= MASK_SSE3 | MASK_SSSE3 | MASK_SSE4A;
 	}
       return true;
 
     case OPT_msse3:
+      if (!value)
+	{
+	  target_flags &= ~(MASK_SSSE3 | MASK_SSE4A);
+	  target_flags_explicit |= MASK_SSSE3 | MASK_SSE4A;
+	}
+      return true;
+
+    case OPT_mssse3:
       if (!value)
 	{
 	  target_flags &= ~MASK_SSE4A;
