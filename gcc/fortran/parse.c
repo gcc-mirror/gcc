@@ -2915,6 +2915,9 @@ parse_progunit (gfc_statement st)
       break;
     }
 
+  if (gfc_current_state () == COMP_FUNCTION)
+    gfc_check_function_type (gfc_current_ns);
+
 loop:
   for (;;)
     {

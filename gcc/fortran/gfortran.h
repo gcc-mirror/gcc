@@ -483,7 +483,8 @@ typedef struct
   /* Variable attributes.  */
   unsigned allocatable:1, dimension:1, external:1, intrinsic:1,
     optional:1, pointer:1, save:1, target:1, value:1, volatile_:1,
-    dummy:1, result:1, assign:1, threadprivate:1, not_always_present:1;
+    dummy:1, result:1, assign:1, threadprivate:1, not_always_present:1,
+    implied_index:1;
 
   unsigned data:1,		/* Symbol is named in a DATA statement.  */
     protected:1,		/* Symbol has been marked as protected.  */
@@ -1853,6 +1854,7 @@ void gfc_clear_new_implicit (void);
 try gfc_add_new_implicit_range (int, int);
 try gfc_merge_new_implicit (gfc_typespec *);
 void gfc_set_implicit_none (void);
+void gfc_check_function_type (gfc_namespace *);
 
 gfc_typespec *gfc_get_default_type (gfc_symbol *, gfc_namespace *);
 try gfc_set_default_type (gfc_symbol *, int, gfc_namespace *);
