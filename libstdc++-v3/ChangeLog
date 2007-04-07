@@ -1,3 +1,25 @@
+2007-04-07  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/31481
+	* include/ext/type_traits.h (__numeric_traits): Move...
+	* include/ext/numeric_traits.h: ... here; fix type of
+	__max_digits10.
+	* include/Makefile.am: Add.
+	* include/ext/pb_ds/detail/type_utils.hpp: Include 
+	<ext/numeric_traits.h> too.
+	* include/tr1/random: Likewise.
+	* testsuite/ext/type_traits/numeric_traits.cc: Move...
+	* testsuite/ext/numeric_traits/numeric_traits.cc: ... here.
+	* include/Makefile.in: Regenerate.
+	* testsuite/ext/type_traits/remove_unsigned_integer_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/ext/type_traits/add_unsigned_floating_neg.cc:
+	Likewise.
+	* testsuite/ext/type_traits/remove_unsigned_floating_neg.cc:
+	Likewise.
+	* testsuite/ext/type_traits/add_unsigned_integer_neg.cc:
+	Likewise.
+
 2007-04-03  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_map.h (map<>::insert(iterator, const value_type&):

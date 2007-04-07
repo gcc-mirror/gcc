@@ -1,7 +1,7 @@
 // { dg-do compile }
 // -*- C++ -*-
 
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,5 +36,5 @@ int main()
 }
 
 // { dg-error "instantiated from" "" { target *-*-* } 29 } 
-// { dg-error "no type" "" { target *-*-* } 76 } 
+// { dg-error "no type" "" { target *-*-* } 74 } 
 // { dg-excess-errors "In instantiation of" }
