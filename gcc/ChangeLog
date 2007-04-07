@@ -1,3 +1,9 @@
+2007-04-07  Anatoly Sokolov <aesok@post.ru>
+
+	PR target/30289
+	* config/avr/avr.md (*clrmemqi, *clrmemhi): Mark operand 4 as 
+	earlyclobber.
+
 2007-04-07  Bruce Korb  <bkorb@gnu.org>
 
 	* c.opt: Add -Wformat-contains-nul.
