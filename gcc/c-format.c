@@ -40,6 +40,7 @@ set_Wformat (int setting)
   warn_format = setting;
   warn_format_extra_args = setting;
   warn_format_zero_length = setting;
+  warn_format_contains_nul = setting;
   if (setting != 1)
     {
       warn_format_nonliteral = setting;
@@ -1482,7 +1483,7 @@ check_format_info_main (format_check_results *res,
       if (*format_chars == 0)
 	{
 	  if (format_chars - orig_format_chars != format_length)
-	    warning (OPT_Wformat, "embedded %<\\0%> in format");
+	    warning (OPT_Wformat_contains_nul, "embedded %<\\0%> in format");
 	  if (info->first_arg_num != 0 && params != 0
 	      && has_operand_number <= 0)
 	    {
