@@ -58,6 +58,18 @@ numeric_check (gfc_expr *e, int n)
   if (gfc_numeric_ts (&e->ts))
     return SUCCESS;
 
+  /* If the expression has not got a type, check if its namespace can
+     offer a default type.  */
+  if ((e->expr_type == EXPR_VARIABLE || e->expr_type == EXPR_VARIABLE)
+	&& e->symtree->n.sym->ts.type == BT_UNKNOWN
+	&& gfc_set_default_type (e->symtree->n.sym, 0,
+				 e->symtree->n.sym->ns) == SUCCESS
+	&& gfc_numeric_ts (&e->symtree->n.sym->ts))
+    {
+      e->ts = e->symtree->n.sym->ts;
+      return SUCCESS;
+    }
+
   gfc_error ("'%s' argument of '%s' intrinsic at %L must be a numeric type",
 	     gfc_current_intrinsic_arg[n], gfc_current_intrinsic, &e->where);
 

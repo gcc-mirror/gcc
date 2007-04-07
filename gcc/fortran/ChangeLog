@@ -1,5 +1,11 @@
 2007-04-07  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/31222
+	* check.c (numeric_check): If an expresson has not got a type,
+	see if it is a symbol for which a default type applies.
+
+2007-04-07  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/31214
 	* trans-decl.c (gfc_get_symbol_decl): Allow unreferenced use
 	associated symbols.
