@@ -2022,9 +2022,6 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
       decl = to;
     }
 
-  if (lang_hooks.decls.prepare_assemble_variable)
-    lang_hooks.decls.prepare_assemble_variable (decl);
-
   last_assemble_variable_decl = 0;
 
   /* Normally no need to say anything here for external references,
