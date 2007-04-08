@@ -1,3 +1,12 @@
+2007-04-08  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* varasm.c (assemble_variable): Remove call to
+	lang_hooks.decls.prepare_assemble_variable.
+	* langhooks-def.h (LANG_HOOKS_PREPARE_ASSEMBLE_VARIABLE): Kill.
+	(LANG_HOOKS_DECLS): Remove LANG_HOOKS_PREPARE_ASSEMBLE_VARIABLE.
+	* langhooks.h (lang_hooks_for_decls): Remove
+	prepare_assemble_variable.
+
 2007-04-08  Mike Stump  <mrs@apple.com>
 
 	* config/i386/i386.c: Use inc/dec on Core2.
