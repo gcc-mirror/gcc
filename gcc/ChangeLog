@@ -1,3 +1,13 @@
+2007-04-08  Anatoly Sokolov <aesok@post.ru>
+
+	PR target/29932
+	* config/avr/predicates.md (io_address_operand): Delete predicate.
+	(low_io_address_operand): Don't use 'mode' argument.
+	(higth_io_address_operand): Rename ...
+	(high_io_address_operand): ... to this. Don't use 'mode' argument.
+	* config/avr/avr.md (*sbix_branch_tmp, *sbix_branch_tmp_bit7): Adjust
+	for above change.
+
 2007-04-07  Anatoly Sokolov <aesok@post.ru>
 
 	PR target/30289

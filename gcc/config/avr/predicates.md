@@ -1,5 +1,5 @@
 ;; Predicate definitions for ATMEL AVR micro controllers.
-;; Copyright (C) 2006 Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -33,23 +33,15 @@
   (and (match_code "reg")
        (match_test "REGNO (op) == REG_SP")))
 
-;; Return true if OP is a valid address for an I/O register.
-(define_predicate "io_address_operand"
-  (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 0x20 
-                    && INTVAL (op) <= 0x60 - GET_MODE_SIZE (mode)")))
-
 ;; Return true if OP is a valid address for lower half of I/O space.
 (define_predicate "low_io_address_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 0x20 
-                    && INTVAL (op) <= 0x40 - GET_MODE_SIZE (mode)")))
-       
-;; Return true if OP is a valid address for higth half of I/O space.
-(define_predicate "higth_io_address_operand"
+       (match_test "IN_RANGE((INTVAL (op)), 0x20, 0x3F)")))
+
+;; Return true if OP is a valid address for high half of I/O space.
+(define_predicate "high_io_address_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 0x40 
-                    && INTVAL (op) <= 0x60 - GET_MODE_SIZE (mode)")))
+       (match_test "IN_RANGE((INTVAL (op)), 0x40, 0x5F)")))
        
 ;; Returns 1 if OP is a SYMBOL_REF.
 (define_predicate "symbol_ref_operand"

@@ -1,7 +1,7 @@
 ;; -*- Mode: Scheme -*-
 ;;   Machine description for GNU compiler,
 ;;   for ATMEL AVR micro controllers.
-;;   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006
+;;   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007
 ;;   Free Software Foundation, Inc.
 ;;   Contributed by Denis Chertykov (denisc@overta.ru)
 
@@ -2364,7 +2364,7 @@
 	(if_then_else
 	 (match_operator 0 "eqne_operator"
 			 [(zero_extract
-			   (mem:QI (match_operand 1 "higth_io_address_operand" "n"))
+			   (mem:QI (match_operand 1 "high_io_address_operand" "n"))
 			   (const_int 1)
 			   (match_operand 2 "const_int_operand" "n"))
 			  (const_int 0)])
@@ -2385,7 +2385,7 @@
   [(set (pc)
 	(if_then_else
 	 (match_operator 0 "gelt_operator"
-			 [(mem:QI (match_operand 1 "higth_io_address_operand" "n"))
+			 [(mem:QI (match_operand 1 "high_io_address_operand" "n"))
 			  (const_int 0)])
 	 (label_ref (match_operand 2 "" ""))
 	 (pc)))]
