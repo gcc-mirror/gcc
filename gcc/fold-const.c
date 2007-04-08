@@ -7735,6 +7735,13 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	    return fold_convert (type, build_fold_addr_expr (base));
         }
 
+      /* Convert (type *)&A into &A->field_of_type_and_offset_0.  */
+      if (TREE_CODE (op0) == ADDR_EXPR && POINTER_TYPE_P (type)
+	  && (tem = maybe_fold_offset_to_component_ref
+		      (TREE_TYPE (TREE_OPERAND (op0, 0)), TREE_OPERAND (op0, 0),
+		       integer_zero_node, TREE_TYPE (type), false)))
+        return build_fold_addr_expr_with_type (tem, type);
+
       if ((TREE_CODE (op0) == MODIFY_EXPR
 	   || TREE_CODE (op0) == GIMPLE_MODIFY_STMT)
 	  && TREE_CONSTANT (GENERIC_TREE_OPERAND (op0, 1))

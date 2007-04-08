@@ -1643,7 +1643,7 @@ maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type)
    is the desired result type.  */
 /* ??? This doesn't handle class inheritance.  */
 
-static tree
+tree
 maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
 				    tree orig_type, bool base_is_ptr)
 {
