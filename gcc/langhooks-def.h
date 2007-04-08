@@ -76,11 +76,7 @@ extern tree lhd_tree_inlining_walk_subtrees (tree *, int *, walk_tree_fn,
 					     void *, struct pointer_set_t*);
 extern int lhd_tree_inlining_cannot_inline_tree_fn (tree *);
 extern int lhd_tree_inlining_disregard_inline_limits (tree);
-extern tree lhd_tree_inlining_add_pending_fn_decls (void *, tree);
 extern int lhd_tree_inlining_auto_var_in_fn_p (tree, tree);
-extern int lhd_tree_inlining_anon_aggr_type_p (tree);
-extern int lhd_tree_inlining_start_inlining (tree);
-extern void lhd_tree_inlining_end_inlining (tree);
 extern tree lhd_tree_inlining_convert_parm_for_inlining (tree, tree, tree, int);
 extern void lhd_initialize_diagnostics (struct diagnostic_context *);
 extern tree lhd_callgraph_analyze_expr (tree *, int *, tree);
@@ -150,18 +146,10 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
   lhd_tree_inlining_cannot_inline_tree_fn
 #define LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS \
   lhd_tree_inlining_disregard_inline_limits
-#define LANG_HOOKS_TREE_INLINING_ADD_PENDING_FN_DECLS \
-  lhd_tree_inlining_add_pending_fn_decls
 #define LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P \
   lhd_tree_inlining_auto_var_in_fn_p
-#define LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P \
-  lhd_tree_inlining_anon_aggr_type_p
 #define LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P \
   hook_bool_tree_tree_false
-#define LANG_HOOKS_TREE_INLINING_START_INLINING \
-  lhd_tree_inlining_start_inlining
-#define LANG_HOOKS_TREE_INLINING_END_INLINING \
-  lhd_tree_inlining_end_inlining
 #define LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING \
   lhd_tree_inlining_convert_parm_for_inlining
 
@@ -169,12 +157,8 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
   LANG_HOOKS_TREE_INLINING_WALK_SUBTREES, \
   LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN, \
   LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS, \
-  LANG_HOOKS_TREE_INLINING_ADD_PENDING_FN_DECLS, \
   LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P, \
-  LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P, \
   LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P, \
-  LANG_HOOKS_TREE_INLINING_START_INLINING, \
-  LANG_HOOKS_TREE_INLINING_END_INLINING, \
   LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING \
 }
 

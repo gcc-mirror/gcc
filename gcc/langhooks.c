@@ -318,19 +318,6 @@ lhd_tree_inlining_disregard_inline_limits (tree fn)
   return 0;
 }
 
-/* lang_hooks.tree_inlining.add_pending_fn_decls is called before
-   starting to inline a function, to push any language-specific
-   functions that should not be inlined into the current function,
-   into VAFNP.  PFN is the top of varray, and should be returned if no
-   functions are pushed into VAFNP.  The top of the varray should be
-   returned.  */
-
-tree
-lhd_tree_inlining_add_pending_fn_decls (void *vafnp ATTRIBUTE_UNUSED, tree pfn)
-{
-  return pfn;
-}
-
 /* lang_hooks.tree_inlining.auto_var_in_fn_p is called to determine
    whether VT is an automatic variable defined in function FT.  */
 
@@ -342,35 +329,6 @@ lhd_tree_inlining_auto_var_in_fn_p (tree var, tree fn)
 	       && ! TREE_STATIC (var))
 	      || TREE_CODE (var) == LABEL_DECL
 	      || TREE_CODE (var) == RESULT_DECL));
-}
-
-/* lang_hooks.tree_inlining.anon_aggr_type_p determines whether T is a
-   type node representing an anonymous aggregate (union, struct, etc),
-   i.e., one whose members are in the same scope as the union itself.  */
-
-int
-lhd_tree_inlining_anon_aggr_type_p (tree t ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
-/* lang_hooks.tree_inlining.start_inlining and end_inlining perform any
-   language-specific bookkeeping necessary for processing
-   FN. start_inlining returns nonzero if inlining should proceed, zero if
-   not.
-
-   For instance, the C++ version keeps track of template instantiations to
-   avoid infinite recursion.  */
-
-int
-lhd_tree_inlining_start_inlining (tree fn ATTRIBUTE_UNUSED)
-{
-  return 1;
-}
-
-void
-lhd_tree_inlining_end_inlining (tree fn ATTRIBUTE_UNUSED)
-{
 }
 
 /* lang_hooks.tree_inlining.convert_parm_for_inlining performs any

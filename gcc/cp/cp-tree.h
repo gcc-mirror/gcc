@@ -4686,7 +4686,6 @@ extern linkage_kind decl_linkage		(tree);
 extern tree cp_walk_subtrees (tree*, int*, walk_tree_fn,
 			      void*, struct pointer_set_t*);
 extern int cp_cannot_inline_tree_fn		(tree*);
-extern tree cp_add_pending_fn_decls		(void*,tree);
 extern int cp_auto_var_in_fn_p			(tree,tree);
 extern tree fold_if_not_in_template		(tree);
 extern tree rvalue				(tree);

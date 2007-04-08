@@ -1,3 +1,22 @@
+2007-04-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* langhooks.c (lhd_tree_inlining_add_pending_fn_decls,
+	lhd_tree_inlining_anon_aggr_type_p, lhd_tree_inlining_start_inlining,
+	lhd_tree_inlining_end_inlining): Remove.
+	* langhooks.h (struct lang_hooks_for_tree_inlining): Remove then
+	add_pending_fn_decls, anon_aggr_type_p, start_inlining, and
+	end_inlining hooks.
+	* langhooks-def.h (lhd_tree_inlining_add_pending_fn_decls,
+	lhd_tree_inlining_anon_aggr_type_p, lhd_tree_inlining_start_inlining,
+	lhd_tree_inlining_end_inlining): Remove prototypes.
+	(LANG_HOOKS_TREE_INLINING_ADD_PENDING_FN_DECLS,
+	LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P,
+	LANG_HOOKS_TREE_INLINING_START_INLINING,
+	LANG_HOOKS_TREE_INLINING_END_INLINING): Remove.
+
+	* c-objc-common.h (LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P): Do
+	not set it.
+
 2007-04-08  Anatoly Sokolov <aesok@post.ru>
 
 	PR target/29932
