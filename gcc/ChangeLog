@@ -1,3 +1,9 @@
+2007-04-08  Jan Hubicka  <jh@suse.cz>
+
+	* tree.h (maybe_fold_offset_to_component_ref): Declare.
+	* tree-ssa-ccp.c (maybe_fold_offset_to_component_ref): Export.
+	* fold-const.c (fold_unary): Use it.
+
 2007-04-08  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* varasm.c (assemble_variable): Remove call to

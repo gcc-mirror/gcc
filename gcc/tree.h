@@ -4412,6 +4412,8 @@ extern void fold_defer_overflow_warnings (void);
 extern void fold_undefer_overflow_warnings (bool, tree, int);
 extern void fold_undefer_and_ignore_overflow_warnings (void);
 extern bool fold_deferring_overflow_warnings_p (void);
+extern tree maybe_fold_offset_to_component_ref (tree, tree, tree,
+				                tree, bool);
 
 extern tree force_fit_type_double (tree, unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 				   int, bool);
