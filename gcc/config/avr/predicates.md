@@ -43,23 +43,15 @@
   (and (match_code "reg")
        (match_test "REGNO (op) == REG_SP")))
 
-;; Return true if OP is a valid address for an I/O register.
-(define_predicate "io_address_operand"
-  (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 0x20 
-                    && INTVAL (op) <= 0x60 - GET_MODE_SIZE (mode)")))
-
 ;; Return true if OP is a valid address for lower half of I/O space.
 (define_predicate "low_io_address_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 0x20 
-                    && INTVAL (op) <= 0x40 - GET_MODE_SIZE (mode)")))
-       
-;; Return true if OP is a valid address for higth half of I/O space.
-(define_predicate "higth_io_address_operand"
+       (match_test "IN_RANGE((INTVAL (op)), 0x20, 0x3F)")))
+
+;; Return true if OP is a valid address for high half of I/O space.
+(define_predicate "high_io_address_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 0x40 
-                    && INTVAL (op) <= 0x60 - GET_MODE_SIZE (mode)")))
+       (match_test "IN_RANGE((INTVAL (op)), 0x40, 0x5F)")))
 
 ;; Return 1 if OP is the zero constant for MODE.
 (define_predicate "const0_operand"
