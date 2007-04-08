@@ -1186,7 +1186,7 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
   m_ATHLON_K8_AMDFAM10,
 
   /* X86_TUNE_USE_INCDEC */
-  ~(m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC),
+  ~(m_PENT4 | m_NOCONA | m_GENERIC),
 
   /* X86_TUNE_PAD_RETURNS */
   m_ATHLON_K8_AMDFAM10 | m_CORE2 | m_GENERIC,

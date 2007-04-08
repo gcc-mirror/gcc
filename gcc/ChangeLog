@@ -1,3 +1,7 @@
+2007-04-08  Mike Stump  <mrs@apple.com>
+
+	* config/i386/i386.c: Use inc/dec on Core2.
+
 2007-04-08  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* langhooks.c (lhd_tree_inlining_add_pending_fn_decls,
