@@ -1,6 +1,7 @@
 // -*- C++ -*- C math library.
 
-// Copyright (C) 2000, 2003, 2004, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,7 +43,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline _Tp
     __cmath_power(_Tp __x, unsigned int __n)
     {
-      _Tp __y = __n % 2 ? __x : 1;
+      _Tp __y = __n % 2 ? __x : _Tp(1);
 
       while (__n >>= 1)
         {
