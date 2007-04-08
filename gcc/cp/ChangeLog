@@ -1,3 +1,11 @@
+2007-04-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cp-objcp-common.h (LANG_HOOKS_TREE_INLINING_ADD_PENDING_FN_DECLS):
+	Do not set it.
+	(LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P): Do not set it.
+	* tree.c (cp_add_pending_fn_decls): Remove.
+	* cp-tree.h (cp_add_pending_fn_decls): Remove prototype.
+
 2007-04-07  Daniel Berlin  <dberlin@dberlin.org>
 
 	Revert change removing staticp.
