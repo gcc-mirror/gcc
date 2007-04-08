@@ -1,3 +1,9 @@
+2007-04-08  Alexey Beshenov  <bav.272304@gmail.com>
+
+	PR libstdc++/31511
+	* include/c_global/cmath.tcc (__cmath_power): Use _Tp(1).
+	* include/c_std/cmath.tcc (__cmath_power): Likewise.
+
 2007-04-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/31117
