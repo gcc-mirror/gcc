@@ -1,6 +1,6 @@
-// 2005-02-25  Paolo Carlini  <pcarlini@suse.de>
+// 2007-04-08  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,7 @@
 void test01()
 {
   // Check for required typedefs
-  typedef std::tr1::__is_union_or_class<int>  test_type;
+  typedef std::tr1::is_class<int>             test_type;
   typedef test_type::value_type               value_type;
   typedef test_type::type                     type;
   typedef test_type::type::value_type         type_value_type;

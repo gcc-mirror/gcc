@@ -1,3 +1,39 @@
+2007-04-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits_fwd.h (__is_union_or_class): Remove.
+	* include/tr1/type_traits (struct __in_array,
+	struct __is_union_or_class, struct __is_union_or_class_helper,
+	struct __is_empty_helper, struct __is_polymorphic_helper):
+	Remove.
+	(struct is_enum): Use __is_enum.
+	(struct is_union): Use __is_union.
+	(struct is_class): Use __is_class.
+	(struct is_function): Adjust.
+	(struct is_empty): Use __is_empty.
+	(struct is_polymorphic): Use __is_polymorphic.
+	(struct is_abstract): Use __is_abstract.
+	(struct has_virtual_destructor): Use __has_virtual_destructor.
+	(struct __is_base_of_helper): Use __is_base_of.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_union_or_class/typedefs.cc: Remove.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_union_or_class/is_union_or_class.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_class/typedefs.cc: New.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_class/is_class.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_union/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_union/is_union.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_virtual_destructor/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_virtual_destructor/has_virtual_destructor.cc: Likewise.
+	* testsuite/util/testsuite_tr1.h (class VirtualDestructorClass): Add.
+	* testsuite/tr1/4_metaprogramming/type_properties/is_polymorphic/
+	is_polymorphic.cc: Add test.
+
 2007-04-08  Alexey Beshenov  <bav.272304@gmail.com>
 
 	PR libstdc++/31511

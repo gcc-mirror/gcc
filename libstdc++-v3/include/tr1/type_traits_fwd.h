@@ -1,6 +1,6 @@
 // TR1 type_traits -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -104,10 +104,6 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
   template<typename _Tp>
     struct is_member_pointer;
 
-  // Extension.
-  template<typename _Tp>
-    struct __is_union_or_class;
-   
   /// @brief  type properties [4.5.3].
   template<typename _Tp>
     struct is_const;
