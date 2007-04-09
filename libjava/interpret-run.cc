@@ -46,9 +46,13 @@ details.  */
   // If the method is non-static, we need to set the type for the "this" pointer.
   if ((method->accflags & java::lang::reflect::Modifier::STATIC) == 0)
     {
-      // Set the "this" pointer for this frame
-      _Jv_word *this_ptr = reinterpret_cast<_Jv_word *> (args);
-      frame_desc.obj_ptr = this_ptr[0].o;
+      if (args)
+        {
+          // Set the "this" pointer for this frame.
+          _Jv_word *this_ptr = reinterpret_cast<_Jv_word *> (args);
+          frame_desc.obj_ptr = this_ptr[0].o;
+        }
+
       frame_desc.locals_type[0] = 'o';
       type_ctr++;
     }

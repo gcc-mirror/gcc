@@ -1,5 +1,10 @@
 2007-04-09  Kyle Galloway  <kgallowa@redhat.com>
 
+	* interpret-run.cc: If debugging, check if args is NULL before
+	getting the "this" pointer.
+
+2007-04-09  Kyle Galloway  <kgallowa@redhat.com>
+
 	* classpath/gnu/classpath/jdwp/value/ArrayValue.java: New file.
 	* classpath/lib/gnu/classpath/jdwp/value/ArrayValue.class: New file.
 	* gnu/classpath/jdwp/ArrayValue.h: New file.
