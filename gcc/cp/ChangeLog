@@ -1,3 +1,7 @@
+2007-04-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* tree.c (cp_tree_equal): Deal with TRAIT_EXPR.
+
 2007-04-08  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cp-objcp-common.h (LANG_HOOKS_TREE_INLINING_ADD_PENDING_FN_DECLS):
