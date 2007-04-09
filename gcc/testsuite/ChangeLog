@@ -1,3 +1,7 @@
+2007-04-09  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/foldaddr-3.c: New file.
+
 2007-04-08  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/foldaddr-2.c: New file.
