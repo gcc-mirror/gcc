@@ -1,3 +1,8 @@
+2007-04-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/31449
+	* g++.dg/init/const5.C: New test.
+
 2007-04-09  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/foldaddr-3.c: New file.
