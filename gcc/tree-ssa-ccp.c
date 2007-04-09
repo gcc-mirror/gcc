@@ -1648,6 +1648,8 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
 				    tree orig_type, bool base_is_ptr)
 {
   tree f, t, field_type, tail_array_field, field_offset;
+  tree ret;
+  tree new_base;
 
   if (TREE_CODE (record_type) != RECORD_TYPE
       && TREE_CODE (record_type) != UNION_TYPE
@@ -1719,8 +1721,20 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
 
       /* If we matched, then set offset to the displacement into
 	 this field.  */
-      offset = t;
-      goto found;
+      if (base_is_ptr)
+	new_base = build1 (INDIRECT_REF, record_type, base);
+      else
+	new_base = base;
+      new_base = build3 (COMPONENT_REF, field_type, new_base, f, NULL_TREE);
+
+      /* Recurse to possibly find the match.  */
+      ret = maybe_fold_offset_to_array_ref (new_base, t, orig_type);
+      if (ret)
+	return ret;
+      ret = maybe_fold_offset_to_component_ref (field_type, new_base, t,
+						orig_type, false);
+      if (ret)
+	return ret;
     }
 
   if (!tail_array_field)
@@ -1730,7 +1744,6 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
   field_type = TREE_TYPE (f);
   offset = int_const_binop (MINUS_EXPR, offset, byte_position (f), 1);
 
- found:
   /* If we get here, we've got an aggregate field, and a possibly 
      nonzero offset into them.  Recurse and hope for a valid match.  */
   if (base_is_ptr)

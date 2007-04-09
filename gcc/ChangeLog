@@ -1,3 +1,8 @@
+2007-04-09  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-ccp (maybe_fold_offset_to_component_ref): Recurse into
+	multiple fields of union.
+
 2007-04-09  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* cfgloopmanip.c (create_preheader): Do not use loop_preheader_edge.
