@@ -1,3 +1,12 @@
+2007-04-08  David Daney  <ddaney@avtrex.com>
+
+	PR libgcj/23758
+	* java/lang/natPosixProcess.cc (nativeSpawn): Move building of
+	environment before the fork.
+	* testsuite/libjava.lang/Process_7.java: New test.
+	* testsuite/libjava.lang/Process_7.out: Its expected results.
+	* testsuite/libjava.lang/Process_7.jar: Generated file.
+
 2007-04-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* prims.cc (load_jvmti_agent): Add the missing `,'.
