@@ -1,3 +1,23 @@
+2007-04-09  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* cfgloopmanip.c (create_preheader): Do not use loop_preheader_edge.
+	(create_preheaders): Check that loops are available.
+	(fix_loop_structure): Clean up, improve comments.
+	* tree-ssa-loop-manip.c (rewrite_into_loop_closed_ssa):
+	Check that loops are available.  Set LOOP_CLOSED_SSA to the loops
+	state flags.
+	* tree-scalar-evolution.c (scev_finalize): Clear scalar_evolution_info.
+	* predict.c (tree_estimate_probability): Do not call
+	calculate_dominance_info.  Call create_preheaders.
+	* tree-cfgcleanup.c (cleanup_tree_cfg_loop): Only call
+	rewrite_into_loop_closed_ssa if LOOP_CLOSED_SSA is set in loops state
+	flags.
+	* cfgloop.c (loop_preheader_edge): Assert that loops have preheaders.
+	* cfgloop.h (LOOP_CLOSED_SSA): New constant.
+	* tree-cfg.c (tree_split_edge): Make an assert more precise.
+	* tree-ssa-threadedge.c (thread_across_edge): Comment the function
+	arguments.
+
 2007-04-08  Jan Hubicka  <jh@suse.cz>
 
 	* tree.h (maybe_fold_offset_to_component_ref): Declare.

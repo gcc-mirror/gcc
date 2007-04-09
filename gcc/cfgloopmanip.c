@@ -1105,7 +1105,7 @@ create_preheader (struct loop *loop, int flags)
   int nentry = 0;
   bool irred = false;
   bool latch_edge_was_fallthru;
-  edge one_succ_pred = 0;
+  edge one_succ_pred = NULL, single_entry = NULL;
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, loop->header->preds)
@@ -1114,21 +1114,20 @@ create_preheader (struct loop *loop, int flags)
 	continue;
       irred |= (e->flags & EDGE_IRREDUCIBLE_LOOP) != 0;
       nentry++;
+      single_entry = e;
       if (single_succ_p (e->src))
 	one_succ_pred = e;
     }
   gcc_assert (nentry);
   if (nentry == 1)
     {
-      e = loop_preheader_edge (loop);
-
       if (/* We do not allow entry block to be the loop preheader, since we
 	     cannot emit code there.  */
-	  e->src != ENTRY_BLOCK_PTR
+	  single_entry->src != ENTRY_BLOCK_PTR
 	  /* If we want simple preheaders, also force the preheader to have
 	     just a single successor.  */
 	  && !((flags & CP_SIMPLE_PREHEADERS)
-	       && !single_succ_p (e->src)))
+	       && !single_succ_p (single_entry->src)))
 	return NULL;
     }
 
@@ -1176,6 +1175,9 @@ create_preheaders (int flags)
 {
   loop_iterator li;
   struct loop *loop;
+
+  if (!current_loops)
+    return;
 
   FOR_EACH_LOOP (li, loop, 0)
     create_preheader (loop, flags);
@@ -1380,19 +1382,33 @@ fix_loop_structure (bitmap changed_bbs)
   basic_block bb;
   struct loop *loop, *ploop;
   loop_iterator li;
+  bool record_exits = false;
+  struct loop **superloop = XNEWVEC (struct loop *, number_of_loops ());
 
-  /* Remove the old bb -> loop mapping.  */
+  gcc_assert (current_loops->state & LOOPS_HAVE_SIMPLE_LATCHES);
+
+  /* Remove the old bb -> loop mapping.  Remember the depth of the blocks in
+     the loop hierarchy, so that we can recognize blocks whose loop nesting
+     relationship has changed.  */
   FOR_EACH_BB (bb)
     {
-      bb->aux = (void *) (size_t) bb->loop_father->depth;
+      if (changed_bbs)
+	bb->aux = (void *) (size_t) bb->loop_father->depth;
       bb->loop_father = current_loops->tree_root;
     }
 
-  /* Remove the dead loops from structures.  */
-  current_loops->tree_root->num_nodes = n_basic_blocks;
-  FOR_EACH_LOOP (li, loop, 0)
+  if (current_loops->state & LOOPS_HAVE_RECORDED_EXITS)
     {
-      loop->num_nodes = 0;
+      release_recorded_exits ();
+      record_exits = true;
+    }
+
+  /* Remove the dead loops from structures.  We start from the innermost
+     loops, so that when we remove the loops, we know that the loops inside
+     are preserved, and do not waste time relinking loops that will be
+     removed later.  */
+  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+    {
       if (loop->header)
 	continue;
 
@@ -1407,39 +1423,52 @@ fix_loop_structure (bitmap changed_bbs)
       delete_loop (loop);
     }
 
-  /* Rescan the bodies of loops, starting from the outermost.  */
+  /* Rescan the bodies of loops, starting from the outermost ones.  We assume
+     that no optimization interchanges the order of the loops, i.e., it cannot
+     happen that L1 was superloop of L2 before and it is subloop of L2 now
+     (without explicitly updating loop information).  At the same time, we also
+     determine the new loop structure.  */
+  current_loops->tree_root->num_nodes = n_basic_blocks;
   FOR_EACH_LOOP (li, loop, 0)
     {
+      superloop[loop->num] = loop->header->loop_father;
       loop->num_nodes = flow_loop_nodes_find (loop->header, loop);
     }
 
   /* Now fix the loop nesting.  */
   FOR_EACH_LOOP (li, loop, 0)
     {
-      bb = loop_preheader_edge (loop)->src;
-      if (bb->loop_father != loop->outer)
+      ploop = superloop[loop->num];
+      if (ploop != loop->outer)
 	{
 	  flow_loop_tree_node_remove (loop);
-	  flow_loop_tree_node_add (bb->loop_father, loop);
+	  flow_loop_tree_node_add (ploop, loop);
+	}
+    }
+  free (superloop);
+
+  /* Mark the blocks whose loop has changed.  */
+  if (changed_bbs)
+    {
+      FOR_EACH_BB (bb)
+	{
+	  if ((void *) (size_t) bb->loop_father->depth != bb->aux)
+	    bitmap_set_bit (changed_bbs, bb->index);
+
+    	  bb->aux = NULL;
 	}
     }
 
-  /* Mark the blocks whose loop has changed.  */
-  FOR_EACH_BB (bb)
-    {
-      if (changed_bbs
-	  && (void *) (size_t) bb->loop_father->depth != bb->aux)
-	bitmap_set_bit (changed_bbs, bb->index);
-
-      bb->aux = NULL;
-    }
+  if (current_loops->state & LOOPS_HAVE_PREHEADERS)
+    create_preheaders (CP_SIMPLE_PREHEADERS);
 
   if (current_loops->state & LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
     mark_irreducible_loops ();
 
-  if (current_loops->state & LOOPS_HAVE_RECORDED_EXITS)
-    {
-      release_recorded_exits ();
-      record_loop_exits ();
-    }
+  if (record_exits)
+    record_loop_exits ();
+
+#ifdef ENABLE_CHECKING
+  verify_loop_structure ();
+#endif
 }

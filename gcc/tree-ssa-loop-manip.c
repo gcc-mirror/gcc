@@ -355,10 +355,16 @@ find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks, bitmap need_phis)
 void
 rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
 {
-  bitmap loop_exits = get_loops_exits ();
+  bitmap loop_exits;
   bitmap *use_blocks;
   unsigned i, old_num_ssa_names;
-  bitmap names_to_rename = BITMAP_ALLOC (NULL);
+  bitmap names_to_rename;
+
+  if (!current_loops)
+    return;
+
+  loop_exits = get_loops_exits ();
+  names_to_rename = BITMAP_ALLOC (NULL);
 
   /* If the pass has caused the SSA form to be out-of-date, update it
      now.  */
@@ -383,6 +389,8 @@ rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
   /* Fix up all the names found to be used outside their original
      loops.  */
   update_ssa (TODO_update_ssa);
+
+  current_loops->state |= LOOP_CLOSED_SSA;
 }
 
 /* Check invariants of the loop closed ssa form for the USE in BB.  */

@@ -3118,7 +3118,7 @@ tree_split_edge (edge edge_in)
   new_edge->count = edge_in->count;
 
   e = redirect_edge_and_branch (edge_in, new_bb);
-  gcc_assert (e);
+  gcc_assert (e == edge_in);
   reinstall_phi_args (new_edge, e);
 
   return new_bb;
