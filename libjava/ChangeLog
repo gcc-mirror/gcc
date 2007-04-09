@@ -1,3 +1,7 @@
+2007-04-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* prims.cc (load_jvmti_agent): Add the missing `,'.
+
 2007-04-09  Kyle Galloway  <kgallowa@redhat.com>
 
 	* gij.cc (main): Accept -agentlib and -agentpath options.

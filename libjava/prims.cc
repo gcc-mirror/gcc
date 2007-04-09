@@ -1398,7 +1398,7 @@ load_jvmti_agent (const char *name)
       if (!jvmti_agentonload)
         {
           fprintf (stderr, 
-                   "libgcj: Error finding agent function in library %s.\n"
+                   "libgcj: Error finding agent function in library %s.\n",
                    name);
           lt_dlclose (lib);
           lib = NULL;
