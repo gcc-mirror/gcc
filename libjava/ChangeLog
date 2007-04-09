@@ -1,3 +1,11 @@
+2007-04-09  Kyle Galloway  <kgallowa@redhat.com>
+
+	* classpath/gnu/classpath/jdwp/value/ArrayValue.java: New file.
+	* classpath/lib/gnu/classpath/jdwp/value/ArrayValue.class: New file.
+	* gnu/classpath/jdwp/ArrayValue.h: New file.
+	* gnu/classpath/jdwp/natVMFrame.cc (getValue): Add array case.
+	(setValue): Ditto. 
+
 2007-04-09  David Daney  <ddaney@avtrex.com>
 
 	PR libgcj/23758

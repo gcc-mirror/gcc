@@ -24,6 +24,7 @@ details. */
 #include <gnu/classpath/jdwp/exception/JdwpInternalErrorException.h>
 #include <gnu/classpath/jdwp/exception/TypeMismatchException.h>
 #include <gnu/classpath/jdwp/util/NullObject.h>
+#include <gnu/classpath/jdwp/value/ArrayValue.h>
 #include <gnu/classpath/jdwp/value/ByteValue.h>
 #include <gnu/classpath/jdwp/value/BooleanValue.h>
 #include <gnu/classpath/jdwp/value/CharValue.h>
@@ -240,6 +241,14 @@ gnu::classpath::jdwp::VMFrame::getValue (jint slot, jbyte sig)
     case 'V':
       value = new VoidValue ();
       break;
+    case '[':
+      {
+        Object *obj = getObjectJVMTI (env, thread, slot, depth, sig);
+        if (obj == NULL)
+          obj = new util::NullObject ();
+        value = new ArrayValue (obj);
+        break;
+      }
     default:
       Object *obj = getObjectJVMTI (env, thread, slot, depth, sig);
       if (obj == NULL)
@@ -313,6 +322,12 @@ gnu::classpath::jdwp::VMFrame::setValue (jint slot, Value* value)
       }
     case 'V':
       break;
+    case '[':
+      {
+        ArrayValue *val = reinterpret_cast<ArrayValue *> (value);
+        setObjectJVMTI (env, thread, slot, depth, sig, val->getObject ());
+        break;
+      }
     default:
       {
         ObjectValue *val = reinterpret_cast<ObjectValue *> (value);
