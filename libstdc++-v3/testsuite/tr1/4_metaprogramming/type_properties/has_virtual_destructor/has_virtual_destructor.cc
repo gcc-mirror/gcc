@@ -1,6 +1,6 @@
-// 2005-03-03  Paolo Carlini  <pcarlini@suse.de>
+// 2007-04-08  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,24 +28,25 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  using std::tr1::is_polymorphic;
+  using std::tr1::has_virtual_destructor;
   using namespace __gnu_test;
 
   // Positive tests.
-  VERIFY( (test_category<is_polymorphic, PolymorphicClass>(true)) );
-  VERIFY( (test_category<is_polymorphic, DerivedPolymorphic>(true)) );
-  VERIFY( (test_category<is_polymorphic, AbstractClass>(true)) );
-  VERIFY( (test_category<is_polymorphic, VirtualDestructorClass>(true)) );
-  VERIFY( (test_category<is_polymorphic, std::iostream>(true)) );
-  VERIFY( (test_category<is_polymorphic, std::streambuf>(true)) );
+  VERIFY( (test_category<has_virtual_destructor,
+	   VirtualDestructorClass>(true)) );
+  VERIFY( (test_category<has_virtual_destructor, std::iostream>(true)) );
+  VERIFY( (test_category<has_virtual_destructor, std::streambuf>(true)) );
 
   // Negative tests.
-  VERIFY( (test_category<is_polymorphic, void>(false)) );
-  VERIFY( (test_category<is_polymorphic, int (int)>(false)) );
-  VERIFY( (test_category<is_polymorphic, int&>(false)) );
-  VERIFY( (test_category<is_polymorphic, EnumType>(false)) );
-  VERIFY( (test_category<is_polymorphic, ClassType>(false)) );
-  VERIFY( (test_category<is_polymorphic, DerivedType>(false)) );
+  VERIFY( (test_category<has_virtual_destructor, PolymorphicClass>(false)) );
+  VERIFY( (test_category<has_virtual_destructor, DerivedPolymorphic>(false)) );
+  VERIFY( (test_category<has_virtual_destructor, AbstractClass>(false)) );
+  VERIFY( (test_category<has_virtual_destructor, void>(false)) );
+  VERIFY( (test_category<has_virtual_destructor, int (int)>(false)) );
+  VERIFY( (test_category<has_virtual_destructor, int&>(false)) );
+  VERIFY( (test_category<has_virtual_destructor, EnumType>(false)) );
+  VERIFY( (test_category<has_virtual_destructor, ClassType>(false)) );
+  VERIFY( (test_category<has_virtual_destructor, DerivedType>(false)) );
 }
 
 int main()
