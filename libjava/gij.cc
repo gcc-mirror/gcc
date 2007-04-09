@@ -121,11 +121,11 @@ main (int argc, char const** argv)
         continue;
       else if (! strcmp (arg, "-jrockit"))
         continue;
-      // Ignore JVM Tool Interface options
+      // JVM Tool Interface options.
       else if (! strncmp (arg, "-agentlib:", sizeof ("-agentlib:") - 1))
-        continue;
+        add_option (vm_args, arg, NULL);
       else if (! strncmp (arg, "-agentpath:", sizeof ("-agentpath:") - 1))
-        continue;
+        add_option (vm_args, arg, NULL);
       else if (! strcmp (arg, "-classpath") || ! strcmp (arg, "-cp"))
         {
           if (i >= argc - 1)
