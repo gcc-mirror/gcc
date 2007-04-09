@@ -1548,6 +1548,8 @@ loop_preheader_edge (const struct loop *loop)
   edge e;
   edge_iterator ei;
 
+  gcc_assert ((current_loops->state & LOOPS_HAVE_PREHEADERS) != 0);
+
   FOR_EACH_EDGE (e, ei, loop->header->preds)
     if (e->src != loop->latch)
       break;

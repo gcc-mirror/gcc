@@ -2862,6 +2862,7 @@ scev_finalize (void)
 {
   htab_delete (scalar_evolution_info);
   BITMAP_FREE (already_instantiated);
+  scalar_evolution_info = NULL;
 }
 
 /* Replace ssa names for that scev can prove they are constant by the

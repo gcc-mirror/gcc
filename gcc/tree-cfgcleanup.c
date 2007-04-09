@@ -599,7 +599,7 @@ cleanup_tree_cfg_loop (void)
 {
   bool changed = cleanup_tree_cfg ();
 
-  if (changed)
+  if (changed && current_loops != NULL)
     {
       bitmap changed_bbs = BITMAP_ALLOC (NULL);
       calculate_dominance_info (CDI_DOMINATORS);
@@ -608,7 +608,8 @@ cleanup_tree_cfg_loop (void)
       /* This usually does nothing.  But sometimes parts of cfg that originally
 	 were inside a loop get out of it due to edge removal (since they
 	 become unreachable by back edges from latch).  */
-      rewrite_into_loop_closed_ssa (changed_bbs, TODO_update_ssa);
+      if ((current_loops->state & LOOP_CLOSED_SSA) != 0)
+	rewrite_into_loop_closed_ssa (changed_bbs, TODO_update_ssa);
 
       BITMAP_FREE (changed_bbs);
 

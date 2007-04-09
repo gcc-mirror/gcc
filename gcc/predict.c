@@ -1290,7 +1290,9 @@ tree_estimate_probability (void)
 
   add_noreturn_fake_exit_edges ();
   connect_infinite_loops_to_exit ();
-  calculate_dominance_info (CDI_DOMINATORS);
+  /* We use loop_niter_by_eval, which requires that the loops have
+     preheaders.  */
+  create_preheaders (CP_SIMPLE_PREHEADERS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
 
   tree_bb_level_predictions ();
