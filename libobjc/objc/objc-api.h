@@ -41,11 +41,9 @@ extern "C" {
 /* For functions which return Method_t */
 #define METHOD_NULL	(Method_t)0
                                                 /* Boolean typedefs */
-/*
-** Method descriptor returned by introspective Object methods.
-** This is really just the first part of the more complete objc_method
-** structure defined below and used internally by the runtime.
-*/
+/* Method descriptor returned by introspective Object methods.
+   This is really just the first part of the more complete objc_method
+   structure defined below and used internally by the runtime.  */
 struct objc_method_description
 {
     SEL name;			/* this is a selector, not a string */
@@ -85,36 +83,32 @@ struct objc_method_description
 #define _C_COMPLEX   'j'
 
 
-/*
-** Error handling
-**
-** Call objc_error() or objc_verror() to record an error; this error
-** routine will generally exit the program but not necessarily if the
-** user has installed his own error handler.
-**
-** Call objc_set_error_handler to assign your own function for
-** handling errors.  The function should return YES if it is ok
-** to continue execution, or return NO or just abort if the
-** program should be stopped.  The default error handler is just to
-** print a message on stderr.
-**
-** The error handler function should be of type objc_error_handler
-** The first parameter is an object instance of relevance.
-** The second parameter is an error code.
-** The third parameter is a format string in the printf style.
-** The fourth parameter is a variable list of arguments.
-*/
+/* Error handling
+  
+   Call objc_error() or objc_verror() to record an error; this error
+   routine will generally exit the program but not necessarily if the
+   user has installed his own error handler.
+  
+   Call objc_set_error_handler to assign your own function for
+   handling errors.  The function should return YES if it is ok
+   to continue execution, or return NO or just abort if the
+   program should be stopped.  The default error handler is just to
+   print a message on stderr.
+  
+   The error handler function should be of type objc_error_handler
+   The first parameter is an object instance of relevance.
+   The second parameter is an error code.
+   The third parameter is a format string in the printf style.
+   The fourth parameter is a variable list of arguments.  */
 extern void objc_error(id object, int code, const char* fmt, ...);
 extern void objc_verror(id object, int code, const char* fmt, va_list ap);
 typedef BOOL (*objc_error_handler)(id, int code, const char *fmt, va_list ap);
 extern objc_error_handler objc_set_error_handler(objc_error_handler func);
 
-/*
-** Error codes
-** These are used by the runtime library, and your
-** error handling may use them to determine if the error is
-** hard or soft thus whether execution can continue or abort.
-*/
+/* Error codes
+   These are used by the runtime library, and your
+   error handling may use them to determine if the error is
+   hard or soft thus whether execution can continue or abort.  */
 #define OBJC_ERR_UNKNOWN 0             /* Generic error */
 
 #define OBJC_ERR_OBJC_VERSION 1        /* Incorrect runtime version */
@@ -139,10 +133,8 @@ extern objc_error_handler objc_set_error_handler(objc_error_handler func);
 
 #define OBJC_ERR_BAD_STATE 40          /* Bad thread state */
 
-/*
-** Set this variable nonzero to print a line describing each
-** message that is sent.  (this is currently disabled)
-*/
+/* Set this variable nonzero to print a line describing each
+   message that is sent.  (this is currently disabled)  */
 extern BOOL objc_trace;
 
 
@@ -160,14 +152,12 @@ struct objc_static_instances
 #endif
 };
 
-/*
-** Whereas a Module (defined further down) is the root (typically) of a file,
-** a Symtab is the root of the class and category definitions within the
-** module.  
-** 
-** A Symtab contains a variable length array of pointers to classes and
-** categories  defined in the module. 
-*/
+/* Whereas a Module (defined further down) is the root (typically) of a file,
+   a Symtab is the root of the class and category definitions within the
+   module.  
+   
+   A Symtab contains a variable length array of pointers to classes and
+   categories  defined in the module.   */
 typedef struct objc_symtab {
   unsigned long sel_ref_cnt;                     /* Unknown. */
   SEL        refs;                              /* Unknown. */
@@ -431,11 +421,14 @@ objc_EXPORT void *(*_objc_calloc)(size_t, size_t);
 objc_EXPORT void (*_objc_free)(void *);
 
 /*
-**  Hook for method forwarding. This makes it easy to substitute a
+**  Hooks for method forwarding. This makes it easy to substitute a
 **  library, such as ffcall, that implements closures, thereby avoiding
-**  gcc's __builtin_apply problems.
+**  gcc's __builtin_apply problems.  __objc_msg_forward2's result will
+**  be preferred over that of __objc_msg_forward if both are set and
+**  return non-NULL.
 */
 objc_EXPORT IMP (*__objc_msg_forward)(SEL);
+objc_EXPORT IMP (*__objc_msg_forward2)(id, SEL);
 
 Method_t class_get_class_method(MetaClass _class, SEL aSel);
 

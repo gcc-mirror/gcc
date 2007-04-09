@@ -1,3 +1,10 @@
+2007-04-09  Andrew Ruder  <andy@aeruder.net>
+
+	* sendmsg.c: Added __objc_msg_forward2, a hook that allows
+	external libraries to provide a function that returns the real
+	forwarding function based on both the selector and the receiver.
+	* objc/objc-api.h: Define __objc_msg_forward2.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.in: Add dummy install-pdf target.
