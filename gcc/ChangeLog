@@ -1,5 +1,14 @@
 2007-04-09  Jan Hubicka  <jh@suse.cz>
 
+	PR target/27869
+	* config/i386/sse.md
+	(sse_vmaddv4sf3, sse_vmmulv4sf3): Remove '%' modifier.
+	(sse_vmsmaxv4sf3_finite, sse_vmsminv4sf3_finite): Remove.
+	(sse2_vmaddv2df3, sse2_vmmulv2df3): Remove '%' modifier.
+	(sse2_vmsmaxv2df3_finite, sse2_vmsminv2df3_finite): Remove.
+
+2007-04-09  Jan Hubicka  <jh@suse.cz>
+
 	* tree-ssa-ccp (maybe_fold_offset_to_component_ref): Recurse into
 	multiple fields of union.
 
