@@ -1,3 +1,9 @@
+2007-04-09  Kyle Galloway  <kgallowa@redhat.com>
+
+	* gij.cc (main): Accept -agentlib and -agentpath options.
+	* prims.cc (parse_init_args): Deal with -agentlib and -agentpath.
+	(load_jvmti_agent): New function.
+
 2007-04-04  Tania Bento  <tbento@redhat.com>
 
 	* java/text/DecimalFormatSymbols.java: Added the year 2007 to
