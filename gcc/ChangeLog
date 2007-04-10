@@ -1,3 +1,9 @@
+2007-04-10  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/31526
+	* tree-inline.c (copy_cfg_body): Use last_basic_block instead of
+	n_basic_blocks to find newly added blocks.
+
 2007-04-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (fix_trunc<mode>di_sse): Remove "x" from "xm"
