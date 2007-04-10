@@ -2414,7 +2414,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 586. string inserter not a formatted function
-      return __os._M_insert(__str.data(), __str.size());
+      return __ostream_insert(__os, __str.data(), __str.size());
     }
 
   /**

@@ -42,7 +42,8 @@
 #include <debug/debug.h>
 #include <bits/stl_function.h>  // For less
 #include <bits/functexcept.h>
-#include <locale>
+#include <bits/localefwd.h>
+#include <bits/ostream_insert.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -93,17 +94,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 	  _CharT*  _M_p; // The actual data.
 	};
-
-      // For use in _M_construct (_S_construct) forward_iterator_tag.
-      template<typename _Type>
-        static bool
-        _S_is_null_pointer(_Type* __ptr)
-        { return __ptr == 0; }
-
-      template<typename _Type>
-        static bool
-        _S_is_null_pointer(_Type)
-        { return false; }
 
       // When __n = 1 way faster than the general multichar
       // traits_type::copy/move/assign.

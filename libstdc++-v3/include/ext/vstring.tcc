@@ -551,16 +551,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	       __gnu_cxx::__versa_string<_CharT, _Traits,
 	                                 _Alloc, _Base>& __str)
     {
-      typedef basic_istream<_CharT, _Traits>	        __istream_type;
-      typedef typename __istream_type::int_type		__int_type;
-      typedef typename __istream_type::__streambuf_type __streambuf_type;
-      typedef typename __istream_type::__ctype_type	__ctype_type;
+      typedef basic_istream<_CharT, _Traits>            __istream_type;
+      typedef typename __istream_type::ios_base         __ios_base;
       typedef __gnu_cxx::__versa_string<_CharT, _Traits, _Alloc, _Base>
 	                                                __string_type;
+      typedef typename __istream_type::int_type		__int_type;
       typedef typename __string_type::size_type		__size_type;
+      typedef ctype<_CharT>				__ctype_type;
+      typedef typename __ctype_type::ctype_base         __ctype_base;
 
       __size_type __extracted = 0;
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      typename __ios_base::iostate __err = __ios_base::goodbit;
       typename __istream_type::sentry __cerb(__in, false);
       if (__cerb)
 	{
@@ -575,12 +576,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		                              : __str.max_size();
 	      const __ctype_type& __ct = use_facet<__ctype_type>(__in.getloc());
 	      const __int_type __eof = _Traits::eof();
-	      __streambuf_type* __sb = __in.rdbuf();
-	      __int_type __c = __sb->sgetc();
+	      __int_type __c = __in.rdbuf()->sgetc();
 
 	      while (__extracted < __n
 		     && !_Traits::eq_int_type(__c, __eof)
-		     && !__ct.is(ctype_base::space, _Traits::to_char_type(__c)))
+		     && !__ct.is(__ctype_base::space,
+				 _Traits::to_char_type(__c)))
 		{
 		  if (__len == sizeof(__buf) / sizeof(_CharT))
 		    {
@@ -589,12 +590,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		    }
 		  __buf[__len++] = _Traits::to_char_type(__c);
 		  ++__extracted;
-		  __c = __sb->snextc();
+		  __c = __in.rdbuf()->snextc();
 		}
 	      __str.append(__buf, __len);
 
 	      if (_Traits::eq_int_type(__c, __eof))
-		__err |= ios_base::eofbit;
+		__err |= __ios_base::eofbit;
 	      __in.width(0);
 	    }
 	  catch(...)
@@ -602,49 +603,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 91. Description of operator>> and getline() for string<>
 	      // might cause endless loop
-	      __in._M_setstate(ios_base::badbit);
+	      __in._M_setstate(__ios_base::badbit);
 	    }
 	}
       // 211.  operator>>(istream&, string&) doesn't set failbit
       if (!__extracted)
-	__err |= ios_base::failbit;
+	__err |= __ios_base::failbit;
       if (__err)
 	__in.setstate(__err);
       return __in;
     }      
-
-  template<typename _CharT, typename _Traits, typename _Alloc,
-           template <typename, typename, typename> class _Base>
-    basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>& __out,
-	       const __gnu_cxx::__versa_string<_CharT, _Traits,
-	                                       _Alloc, _Base>& __str)
-    {
-      typedef basic_ostream<_CharT, _Traits>            __ostream_type;
-
-      typename __ostream_type::sentry __cerb(__out);
-      if (__cerb)
-	{
-	  const streamsize __w = __out.width();
-	  streamsize __len = static_cast<streamsize>(__str.size());
-	  const _CharT* __s = __str.data();
-
-	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	  // 25. String operator<< uses width() value wrong
-	  if (__w > __len)
-	    {
-	      _CharT* __cs = (static_cast<
-			      _CharT*>(__builtin_alloca(sizeof(_CharT) * __w)));
-	      __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __cs,
-					     __s, __w, __len, false);
-	      __s = __cs;
-	      __len = __w;
-	    }
-	  __out._M_write(__s, __len);
-	  __out.width(0);
-	}
-      return __out;
-    }
 
   template<typename _CharT, typename _Traits, typename _Alloc,
            template <typename, typename, typename> class _Base>
@@ -654,16 +622,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    _CharT __delim)
     {
       typedef basic_istream<_CharT, _Traits>	        __istream_type;
-      typedef typename __istream_type::int_type		__int_type;
-      typedef typename __istream_type::__streambuf_type __streambuf_type;
-      typedef typename __istream_type::__ctype_type	__ctype_type;
+      typedef typename __istream_type::ios_base         __ios_base;
       typedef __gnu_cxx::__versa_string<_CharT, _Traits, _Alloc, _Base>
 	                                                __string_type;
+      typedef typename __istream_type::int_type		__int_type;
       typedef typename __string_type::size_type		__size_type;
 
       __size_type __extracted = 0;
       const __size_type __n = __str.max_size();
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      typename __ios_base::iostate __err = __ios_base::goodbit;
       typename __istream_type::sentry __cerb(__in, true);
       if (__cerb)
 	{
@@ -675,8 +642,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      __size_type __len = 0;
 	      const __int_type __idelim = _Traits::to_int_type(__delim);
 	      const __int_type __eof = _Traits::eof();
-	      __streambuf_type* __sb = __in.rdbuf();
-	      __int_type __c = __sb->sgetc();
+	      __int_type __c = __in.rdbuf()->sgetc();
 
 	      while (__extracted < __n
 		     && !_Traits::eq_int_type(__c, __eof)
@@ -689,35 +655,35 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		    }
 		  __buf[__len++] = _Traits::to_char_type(__c);
 		  ++__extracted;
-		  __c = __sb->snextc();
+		  __c = __in.rdbuf()->snextc();
 		}
 	      __str.append(__buf, __len);
 
 	      if (_Traits::eq_int_type(__c, __eof))
-		__err |= ios_base::eofbit;
+		__err |= __ios_base::eofbit;
 	      else if (_Traits::eq_int_type(__c, __idelim))
 		{
 		  ++__extracted;		  
-		  __sb->sbumpc();
+		  __in.rdbuf()->sbumpc();
 		}
 	      else
-		__err |= ios_base::failbit;
+		__err |= __ios_base::failbit;
 	    }
 	  catch(...)
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 91. Description of operator>> and getline() for string<>
 	      // might cause endless loop
-	      __in._M_setstate(ios_base::badbit);
+	      __in._M_setstate(__ios_base::badbit);
 	    }
 	}
       if (!__extracted)
-	__err |= ios_base::failbit;
+	__err |= __ios_base::failbit;
       if (__err)
 	__in.setstate(__err);
       return __in;
     }      
-  
+
 _GLIBCXX_END_NAMESPACE
 
 #endif // _VSTRING_TCC
