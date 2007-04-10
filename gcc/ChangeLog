@@ -1,3 +1,20 @@
+2007-04-10  Eric Christopher  <echristo@apple.com>
+
+	* config/i386/i386.h (X87_FLOAT_MODE_P): New.
+	* config/i386/i386.md (*cmpfp0): Use.
+	(*cmpfp_u, *cmpfp_<mode>, *cmpfp_i_i387): Ditto.
+	(*cmpfp_iu_387, fix_trunc<mode>_fisttp_i386_1): Ditto.
+	(fix_trunc<mode>_i386_fisttp): Ditto.
+	(fix_trunc<mode>_i387_fisttp_with_temp): Ditto.
+	(*fix_trunc<mode>_i387_1, fix_truncdi_i387): Ditto.
+	(fix_truncdi_i387_with_temp, fix_trunc<mode>_i387): Ditto.
+	(fix_trunc<mode>_i387_with_temp, *fp_jcc_1_387): Ditto.
+	(*fp_jcc_2_387, *fp_jcc_5_387, *fp_jcc_6_387): Ditto.
+	(*fp_jcc_7_387, *fp_jcc_8<mode>_387): Ditto.
+	(unnamed_splitters): Ditto.
+	* config/i386/i386.c (output_fix_trunc): Assert that
+	we're not being passed a TFmode operand.
+
 2007-04-10  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/31526
@@ -121,7 +138,7 @@
 2007-04-07  Anatoly Sokolov <aesok@post.ru>
 
 	PR target/30289
-	* config/avr/avr.md (*clrmemqi, *clrmemhi): Mark operand 4 as 
+	* config/avr/avr.md (*clrmemqi, *clrmemhi): Mark operand 4 as
 	earlyclobber.
 
 2007-04-07  Bruce Korb  <bkorb@gnu.org>
@@ -199,7 +216,7 @@
 	* langhooks.h (lang_hooks): Remove safe_from_p.
 	(lhd_safe_from_p): Remove prototype.
 	* langhooks.c (lhd_safe_from_p): Remove.
-	
+
 2007-04-06  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (decide_is_function_needed): Do not keep always_inline
@@ -305,7 +322,7 @@
 2007-04-05  Anatoly Sokolov <aesok@post.ru>
 
 	PR target/25448
-	* config/avr/avr.c (avr_handle_fndecl_attribute): Use the 
+	* config/avr/avr.c (avr_handle_fndecl_attribute): Use the
 	DECL_ASSEMBLER_NAME, not the DECL_NAME.
 
 2007-04-05  H.J. Lu  <hongjiu.lu@intel.com>
