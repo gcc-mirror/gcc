@@ -1,5 +1,10 @@
 2007-04-10  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/cmath: Include <bits/stl_algobase.h> instead of
+	the whole <algorithm>.
+
+2007-04-10  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/type_traits (__is_function_helper): New, uses
 	variadic templates.
 	(is_function): Forward to the latter.
