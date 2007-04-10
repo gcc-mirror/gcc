@@ -1,3 +1,9 @@
+2007-04-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/31449
+	* class.c (build_base_path): Ensure that the converted pointer has
+	the same cv-qualification as the input.
+
 2007-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/30847

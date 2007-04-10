@@ -1,3 +1,8 @@
+2007-04-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/31449
+	* g++.dg/init/const5.C: New test.
+
 2007-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/30847
