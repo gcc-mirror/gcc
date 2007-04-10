@@ -1294,6 +1294,7 @@ classpath/gnu/classpath/jdwp/util/VariableTable.java
 
 gnu_classpath_jdwp_util_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_jdwp_util_source_files)))
 gnu_classpath_jdwp_value_source_files = \
+classpath/gnu/classpath/jdwp/value/ArrayValue.java \
 classpath/gnu/classpath/jdwp/value/BooleanValue.java \
 classpath/gnu/classpath/jdwp/value/ByteValue.java \
 classpath/gnu/classpath/jdwp/value/CharValue.java \
