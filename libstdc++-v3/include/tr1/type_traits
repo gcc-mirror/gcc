@@ -34,6 +34,8 @@
 #ifndef _TR1_TYPE_TRAITS
 #define _TR1_TYPE_TRAITS 1
 
+#pragma GCC system_header
+
 #include <bits/c++config.h>
 #include <tr1/type_traits_fwd.h>
 
@@ -171,14 +173,22 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
     : public integral_constant<bool, __is_class(_Tp)>
     { };
 
+  template<typename>
+    struct __is_function_helper
+    : public false_type { };
+
+  template<typename _Res, typename... _ArgTypes>
+    struct __is_function_helper<_Res(_ArgTypes...)>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
+    struct __is_function_helper<_Res(_ArgTypes......)>
+    : public true_type { };
+
   template<typename _Tp>
     struct is_function
-    : public integral_constant<bool, !(is_void<_Tp>::value
-				       || is_scalar<_Tp>::value
-				       || is_array<_Tp>::value				       
-				       || is_reference<_Tp>::value
-				       || is_union<_Tp>::value
-				       || is_class<_Tp>::value)>
+    : public integral_constant<bool, (__is_function_helper<typename
+				      remove_cv<_Tp>::type>::value)>
     { };
 
   /// @brief  composite type traits [4.5.2].
