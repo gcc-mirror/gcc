@@ -1,3 +1,25 @@
+2007-04-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (fix_trunc<mode>di_sse): Remove "x" from "xm"
+	alternative.
+	(fix_trunc<mode>si_sse): Ditto.
+	(*floatsisf2_mixed, *floatsisf2_sse): Ditto.
+	(*floatsidf2_mixed, *floatsidf2_sse): Ditto.
+	(*floatdisf2_mixed, *floatdisf2_sse): Ditto.
+	(*floatdidf2_mixed, *floatdidf2_sse): Ditto.
+	(floathi<mode>2): Rename from floathisf2 and floathidf2. Macroize
+	expander using SSEMODEF mode macro.
+	(floatsi<mode>2): Rename from floatsisf2 and floashidf2. Macroize
+	expander using SSEMODEF mode macro.
+	(*floathi<mode>2_i387): Rename from *floathisf2_i387 and
+	*floathidf2_i387. Macroize insn using X87MODEF12 mode macro.
+	(*floatsi<mode>2_i387): Rename from *floatsisf2_i387 and
+	*floatsidf2_i387. Macroize insn using X87MODEF12 mode macro.
+	(*floatdi<mode>2_i387): Rename from *floatdisf2_i387 and
+	*floatdidf2_i387. Macroize insn using X87MODEF12 mode macro.
+	(float<mode>xf2): Rename from floathixf2, floatsixf2 and floatdixf2.
+	Macroize insn using X87MODEF mode macro.
+
 2007-04-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/sse.md (sse2_pinsrw): Removed.
