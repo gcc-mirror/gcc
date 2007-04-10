@@ -3787,19 +3787,6 @@
   [(set_attr "type" "sselog")
    (set_attr "mode" "TI")])
 
-(define_expand "sse2_pinsrw"
-  [(set (match_operand:V8HI 0 "register_operand" "")
-	(vec_merge:V8HI
-	  (vec_duplicate:V8HI
-	    (match_operand:SI 2 "nonimmediate_operand" ""))
-	  (match_operand:V8HI 1 "register_operand" "")
-	  (match_operand:SI 3 "const_0_to_7_operand" "")))]
-  "TARGET_SSE2"
-{
-  operands[2] = gen_lowpart (HImode, operands[2]);
-  operands[3] = GEN_INT ((1 << INTVAL (operands[3])));
-})
-
 (define_insn "*sse2_pinsrw"
   [(set (match_operand:V8HI 0 "register_operand" "=x")
 	(vec_merge:V8HI
@@ -3815,7 +3802,7 @@
   [(set_attr "type" "sselog")
    (set_attr "mode" "TI")])
 
-(define_insn "sse2_pextrw"
+(define_insn "*sse2_pextrw"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extend:SI
 	  (vec_select:HI
