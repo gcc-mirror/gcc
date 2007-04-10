@@ -1,3 +1,8 @@
+2007-04-10  Eric Christopher  <echristo@apple.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_fstack_protector): Rewrite.
+
 2007-04-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/31449
