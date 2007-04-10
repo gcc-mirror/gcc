@@ -1205,7 +1205,7 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency,
       new->aux = bb;
     }
 
-  last = n_basic_blocks;
+  last = last_basic_block;
   /* Now that we've duplicated the blocks, duplicate their edges.  */
   FOR_ALL_BB_FN (bb, cfun_to_copy)
     copy_edges_for_bb (bb, count_scale);
@@ -1219,7 +1219,7 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency,
     }
   /* Zero out AUX fields of newly created block during EH edge
      insertion. */
-  for (; last < n_basic_blocks; last++)
+  for (; last < last_basic_block; last++)
     BASIC_BLOCK (last)->aux = NULL;
   entry_block_map->aux = NULL;
   exit_block_map->aux = NULL;
