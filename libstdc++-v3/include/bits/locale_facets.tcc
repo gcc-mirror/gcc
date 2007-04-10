@@ -1,6 +1,7 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+// 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -910,8 +911,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
     {
       // [22.2.2.2.2] Stage 3.
       // If necessary, pad.
-      __pad<_CharT, char_traits<_CharT> >::_S_pad(__io, __fill, __new, __cs,
-						  __w, __len, true);
+      __pad<_CharT, char_traits<_CharT> >::_S_pad(__io, __fill, __new,
+						  __cs, __w, __len);
       __len = static_cast<int>(__w);
     }
 
@@ -2503,10 +2504,6 @@ _GLIBCXX_END_LDBL_NAMESPACE
   // Assumes
   // __newlen > __oldlen
   // __news is allocated for __newlen size
-  // Used by both num_put and ostream inserters: if __num,
-  // internal-adjusted objects are padded according to the rules below
-  // concerning 0[xX] and +-, otherwise, exactly as right-adjusted
-  // ones are.
 
   // NB: Of the two parameters, _CharT can be deduced from the
   // function arguments. The other (_Traits) has to be explicitly specified.
@@ -2515,7 +2512,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
     __pad<_CharT, _Traits>::_S_pad(ios_base& __io, _CharT __fill,
 				   _CharT* __news, const _CharT* __olds,
 				   const streamsize __newlen,
-				   const streamsize __oldlen, const bool __num)
+				   const streamsize __oldlen)
     {
       const size_t __plen = static_cast<size_t>(__newlen - __oldlen);
       const ios_base::fmtflags __adjust = __io.flags() & ios_base::adjustfield;
@@ -2529,7 +2526,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
 	}
 
       size_t __mod = 0;
-      if (__adjust == ios_base::internal && __num)
+      if (__adjust == ios_base::internal)
 	{
 	  // Pad after the sign, if there is one.
 	  // Pad after 0[xX], if there is one.

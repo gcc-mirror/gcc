@@ -328,6 +328,7 @@ bits_headers = \
 	${bits_srcdir}/localefwd.h \
 	${bits_srcdir}/mask_array.h \
 	${bits_srcdir}/ostream.tcc \
+	${bits_srcdir}/ostream_insert.h \
 	${bits_srcdir}/postypes.h \
 	${bits_srcdir}/stream_iterator.h \
 	${bits_srcdir}/streambuf_iterator.h \

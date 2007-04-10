@@ -1,3 +1,60 @@
+2007-04-10  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28277 (partial: vstring bits)
+	* include/bits/ostream_insert.h: New.
+	* include/Makefile.am: Add.
+	* include/ext/vstring.h (operator<<(basic_ostream<>&,
+	const __versa_string<>&): Forward to __ostream_insert.
+	* include/bits/basic_string.h (operator<<(basic_ostream<>&,
+	const string<>&)): Likewise.
+	* include/std/ostream (operator<<(basic_ostream<>&, _CharT),
+	operator<<(basic_ostream<char,>&, char), operator<<(basic_ostream<>&,
+	const _CharT*), operator<<(basic_ostream<char,>&, const char*)):
+	Likewise.
+	* include/ext/vstring.tcc (operator<<(basic_ostream<>&,
+	const __versa_string<>&)): Remove.
+	(class basic_ostream): Remove friend declarations.
+	(basic_ostream<>::_M_write(char_type, streamsize),
+	_M_insert(const char_type*, streamsize)): Remove.
+	* include/bits/ostream.tcc (_M_insert(const char_type*, streamsize)):
+	Remove definition.
+	(operator<<(basic_ostream<>&, const char*)): Use __ostream_insert.
+	* config/abi/pre/gnu.ver: Adjust.
+	* src/ostream-inst.cc: Add __ostream_insert instantiations.
+	* include/bits/locale_facets.h (__pad<>::_S_pad): Remove __num
+	parameter.
+	* include/bits/locale_facets.tcc (__pad<>::_S_pad): Adjust.
+	(num_put<>::_M_pad(_CharT, streamsize, ios_base&, _CharT*,
+	const _CharT*, int&)): Likewise.
+	* include/Makefile.in: Rebuild.
+	* testsuite/ext/vstring/inserters_extractors/char/28277.cc: New.
+	* testsuite/ext/vstring/inserters_extractors/wchar_t/28277.cc: New.
+
+	* include/ext/vstring_util.h: Do not include the whole <locale>.
+	* include/ext/vstring.tcc (operator>>(basic_istream<>&,
+	__versa_string<>&, getline(basic_istream<>&, __versa_string<>&,
+	_CharT)): Tweak to refer to ios_base as a base of istream; do not
+	refer to non-standard types of istream.
+	* include/bits/istream.tcc (operator>>(basic_istream<>&, _CharT*),
+	ws(basic_istream<>&)): Do not refer to non-standard types of istream.
+	* include/std/bitset (operator>>(std::basic_istream<>&, bitset<>&)):
+	Avoid using basic_streambuf<>*.
+
+	* include/bits/istream.tcc (operator>>(basic_istream<>&,
+	basic_string<>&), getline(basic_istream<>&, basic_string<>&, _CharT)):
+	Move...
+	* include/bits/basic_string.tcc: ... here; tweak to refer to ios_base
+	as a base of istream; do not refer to non-standard types of istream.
+	* include/std/string: Tweak includes.
+
+	* include/ext/type_traits.h (__is_null_pointer): Add.
+	* include/ext/rc_string_base.h: Use it.
+	* include/ext/sso_string_base.h: Likewise.
+	* include/bits/basic_string.tcc (__is_null_pointer): Remove, use
+	the above.
+	* include/ext/vstring_util.h (__vstring_utility<>::_S_is_null_pointer):
+	Remove.
+
 2007-04-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits_fwd.h (__is_union_or_class): Remove.

@@ -55,6 +55,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template ostream& operator<<(ostream&, _Setbase);
   template ostream& operator<<(ostream&, _Setprecision);
   template ostream& operator<<(ostream&, _Setw);
+  template ostream& __ostream_insert(ostream&, const char*, streamsize);
 
   template ostream& ostream::_M_insert(long);
   template ostream& ostream::_M_insert(unsigned long);
@@ -83,6 +84,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template wostream& operator<<(wostream&, _Setbase);
   template wostream& operator<<(wostream&, _Setprecision);
   template wostream& operator<<(wostream&, _Setw);
+  template wostream& __ostream_insert(wostream&, const wchar_t*, streamsize);
 
   template wostream& wostream::_M_insert(long);
   template wostream& wostream::_M_insert(unsigned long);

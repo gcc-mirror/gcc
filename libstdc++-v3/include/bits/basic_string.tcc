@@ -48,16 +48,6 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  template<typename _Type>
-    inline bool
-    __is_null_pointer(_Type* __ptr)
-    { return __ptr == 0; }
-
-  template<typename _Type>
-    inline bool
-    __is_null_pointer(_Type)
-    { return false; }
-
   template<typename _CharT, typename _Traits, typename _Alloc>
     const typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
@@ -142,7 +132,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  return _S_empty_rep()._M_refdata();
 #endif
 	// NB: Not required, but considered best practice.
-	if (__builtin_expect(__is_null_pointer(__beg) && __beg != __end, 0))
+	if (__builtin_expect(__gnu_cxx::__is_null_pointer(__beg)
+			     && __beg != __end, 0))
 	  __throw_logic_error(__N("basic_string::_S_construct NULL not valid"));
 
 	const size_type __dnew = static_cast<size_type>(std::distance(__beg,
@@ -970,6 +961,132 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       if (!__r)
 	__r = _S_compare(__n1, __n2);
       return __r;
+    }
+
+  // 21.3.7.9 basic_string::getline and operators
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    basic_istream<_CharT, _Traits>&
+    operator>>(basic_istream<_CharT, _Traits>& __in,
+	       basic_string<_CharT, _Traits, _Alloc>& __str)
+    {
+      typedef basic_istream<_CharT, _Traits>		__istream_type;
+      typedef basic_string<_CharT, _Traits, _Alloc>	__string_type;
+      typedef typename __istream_type::ios_base         __ios_base;
+      typedef typename __istream_type::int_type		__int_type;
+      typedef typename __string_type::size_type		__size_type;
+      typedef ctype<_CharT>				__ctype_type;
+      typedef typename __ctype_type::ctype_base         __ctype_base;
+
+      __size_type __extracted = 0;
+      typename __ios_base::iostate __err = __ios_base::goodbit;
+      typename __istream_type::sentry __cerb(__in, false);
+      if (__cerb)
+	{
+	  try
+	    {
+	      // Avoid reallocation for common case.
+	      __str.erase();
+	      _CharT __buf[128];
+	      __size_type __len = 0;	      
+	      const streamsize __w = __in.width();
+	      const __size_type __n = __w > 0 ? static_cast<__size_type>(__w)
+		                              : __str.max_size();
+	      const __ctype_type& __ct = use_facet<__ctype_type>(__in.getloc());
+	      const __int_type __eof = _Traits::eof();
+	      __int_type __c = __in.rdbuf()->sgetc();
+
+	      while (__extracted < __n
+		     && !_Traits::eq_int_type(__c, __eof)
+		     && !__ct.is(__ctype_base::space,
+				 _Traits::to_char_type(__c)))
+		{
+		  if (__len == sizeof(__buf) / sizeof(_CharT))
+		    {
+		      __str.append(__buf, sizeof(__buf) / sizeof(_CharT));
+		      __len = 0;
+		    }
+		  __buf[__len++] = _Traits::to_char_type(__c);
+		  ++__extracted;
+		  __c = __in.rdbuf()->snextc();
+		}
+	      __str.append(__buf, __len);
+
+	      if (_Traits::eq_int_type(__c, __eof))
+		__err |= __ios_base::eofbit;
+	      __in.width(0);
+	    }
+	  catch(...)
+	    {
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 91. Description of operator>> and getline() for string<>
+	      // might cause endless loop
+	      __in._M_setstate(__ios_base::badbit);
+	    }
+	}
+      // 211.  operator>>(istream&, string&) doesn't set failbit
+      if (!__extracted)
+	__err |= __ios_base::failbit;
+      if (__err)
+	__in.setstate(__err);
+      return __in;
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    basic_istream<_CharT, _Traits>&
+    getline(basic_istream<_CharT, _Traits>& __in,
+	    basic_string<_CharT, _Traits, _Alloc>& __str, _CharT __delim)
+    {
+      typedef basic_istream<_CharT, _Traits>		__istream_type;
+      typedef basic_string<_CharT, _Traits, _Alloc>	__string_type;
+      typedef typename __istream_type::ios_base         __ios_base;
+      typedef typename __istream_type::int_type		__int_type;
+      typedef typename __string_type::size_type		__size_type;
+
+      __size_type __extracted = 0;
+      const __size_type __n = __str.max_size();
+      typename __ios_base::iostate __err = __ios_base::goodbit;
+      typename __istream_type::sentry __cerb(__in, true);
+      if (__cerb)
+	{
+	  try
+	    {
+	      __str.erase();
+	      const __int_type __idelim = _Traits::to_int_type(__delim);
+	      const __int_type __eof = _Traits::eof();
+	      __int_type __c = __in.rdbuf()->sgetc();
+
+	      while (__extracted < __n
+		     && !_Traits::eq_int_type(__c, __eof)
+		     && !_Traits::eq_int_type(__c, __idelim))
+		{
+		  __str += _Traits::to_char_type(__c);
+		  ++__extracted;
+		  __c = __in.rdbuf()->snextc();
+		}
+
+	      if (_Traits::eq_int_type(__c, __eof))
+		__err |= __ios_base::eofbit;
+	      else if (_Traits::eq_int_type(__c, __idelim))
+		{
+		  ++__extracted;		  
+		  __in.rdbuf()->sbumpc();
+		}
+	      else
+		__err |= __ios_base::failbit;
+	    }
+	  catch(...)
+	    {
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 91. Description of operator>> and getline() for string<>
+	      // might cause endless loop
+	      __in._M_setstate(__ios_base::badbit);
+	    }
+	}
+      if (!__extracted)
+	__err |= __ios_base::failbit;
+      if (__err)
+	__in.setstate(__err);
+      return __in;
     }
 
   // Inhibit implicit instantiations for required instantiations,

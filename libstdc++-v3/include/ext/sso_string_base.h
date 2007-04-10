@@ -1,6 +1,6 @@
 // Short-string-optimized versatile string base -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -405,7 +405,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		   std::forward_iterator_tag)
       {
 	// NB: Not required, but considered best practice.
-	if (__builtin_expect(_S_is_null_pointer(__beg) && __beg != __end, 0))
+	if (__builtin_expect(__is_null_pointer(__beg) && __beg != __end, 0))
 	  std::__throw_logic_error(__N("__sso_string_base::"
 				       "_M_construct NULL not valid"));
 

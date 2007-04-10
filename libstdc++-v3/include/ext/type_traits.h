@@ -147,6 +147,18 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   template<>
     struct __remove_unsigned<wchar_t>;
 
+
+  // For use in string and vstring.
+  template<typename _Type>
+    inline bool
+    __is_null_pointer(_Type* __ptr)
+    { return __ptr == 0; }
+
+  template<typename _Type>
+    inline bool
+    __is_null_pointer(_Type)
+    { return false; }
+
 _GLIBCXX_END_NAMESPACE
 
 #endif 

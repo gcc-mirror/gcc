@@ -281,38 +281,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>&
-    basic_ostream<_CharT, _Traits>::
-    _M_insert(const char_type* __s, streamsize __n)
-    {
-      sentry __cerb(*this);
-      if (__cerb)
-	{
-	  try
-	    {
-	      const streamsize __w = this->width();
-	      if (__w > __n)
-		{
-		  const bool __left = ((this->flags() & ios_base::adjustfield)
-				       == ios_base::left);
-		  if (!__left)
-		    _M_write(this->fill(), __w - __n);
-		  if (this->good())
-		    _M_write(__s, __n);
-		  if (__left && this->good())
-		    _M_write(this->fill(), __w - __n);
-		}
-	      else
-		_M_write(__s, __n);
-	      this->width(0);
-	    }
-	  catch(...)
-	    { this->_M_setstate(ios_base::badbit); }
-	}
-      return *this;
-    }
-
-  template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __out, const char* __s)
     {
       if (!__s)
@@ -338,7 +306,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 	  try
 	    {
-	      __out._M_insert(__ws, __clen);
+	      __ostream_insert(__out, __ws, __clen);
 	      delete [] __ws;
 	    }
 	  catch(...)
@@ -364,6 +332,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   extern template ostream& operator<<(ostream&, const char*);
   extern template ostream& operator<<(ostream&, const unsigned char*);
   extern template ostream& operator<<(ostream&, const signed char*);
+  extern template ostream& __ostream_insert(ostream&, const char*, streamsize);
 
   extern template ostream& ostream::_M_insert(long);
   extern template ostream& ostream::_M_insert(unsigned long);
@@ -385,6 +354,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   extern template wostream& operator<<(wostream&, char);
   extern template wostream& operator<<(wostream&, const wchar_t*);
   extern template wostream& operator<<(wostream&, const char*);
+  extern template wostream& __ostream_insert(wostream&, const wchar_t*,
+					     streamsize);
 
   extern template wostream& wostream::_M_insert(long);
   extern template wostream& wostream::_M_insert(unsigned long);

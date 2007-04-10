@@ -93,7 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       static void
       _S_pad(ios_base& __io, _CharT __fill, _CharT* __news,
 	     const _CharT* __olds, const streamsize __newlen,
-	     const streamsize __oldlen, const bool __num);
+	     const streamsize __oldlen);
     };
 
   // Used by both numeric and monetary facets.
