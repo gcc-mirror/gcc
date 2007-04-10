@@ -1,5 +1,13 @@
 2007-04-10  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/type_traits (__is_function_helper): New, uses
+	variadic templates.
+	(is_function): Forward to the latter.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_function/is_function.cc: Add test.
+
+2007-04-10  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/28277 (partial: vstring bits)
 	* include/bits/ostream_insert.h: New.
 	* include/Makefile.am: Add.
