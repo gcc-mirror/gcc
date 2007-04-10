@@ -1,6 +1,6 @@
 // TR1 cmath -*- C++ -*-
 
-// Copyright (C) 2006-2007 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,7 @@
 #define _TR1_CMATH 1
 
 #include <bits/c++config.h>
-#include <algorithm>
+#include <bits/stl_algobase.h>
 #include <cmath>
 #include <tr1/common.h>
 
@@ -375,11 +375,12 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
       inline typename
       __gnu_cxx::__enable_if<std::__is_floating<_Tp>::__value
                              || std::__is_floating<_Up>::__value,
-			     typename
-			     std::_GLIBCXX_TR1::__promote_2<_Tp, _Up>::__type>::__type
+			     typename std::_GLIBCXX_TR1::
+			     __promote_2<_Tp, _Up>::__type>::__type
       atan2(_Tp __y, _Up __x)
       {
-	typedef typename std::_GLIBCXX_TR1::__promote_2<_Tp, _Up>::__type __type;
+	typedef typename std::_GLIBCXX_TR1::__promote_2<_Tp, _Up>::__type
+	  __type;
 	return std::atan2(__type(__y), __type(__x));
       }
   } // namespace __detail
