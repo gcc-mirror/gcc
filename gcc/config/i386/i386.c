@@ -1037,7 +1037,7 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_DOUBLE_WITH_ADD */
   ~m_386,
-  
+
   /* X86_TUNE_USE_SAHF */
   m_PPRO | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_PENT4
   | m_NOCONA | m_CORE2 | m_GENERIC,
@@ -1059,7 +1059,7 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_PARTIAL_FLAG_REG_STALL */
   m_CORE2 | m_GENERIC,
-  
+
   /* X86_TUNE_USE_HIMODE_FIOP */
   m_386 | m_486 | m_K6_GEODE,
 
@@ -1068,7 +1068,7 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_USE_MOV0 */
   m_K6,
-  
+
   /* X86_TUNE_USE_CLTD */
   ~(m_PENT | m_K6 | m_CORE2 | m_GENERIC),
 
@@ -1093,10 +1093,10 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_SINGLE_STRINGOP */
   m_386 | m_PENT4 | m_NOCONA,
-  
+
   /* X86_TUNE_QIMODE_MATH */
   ~0,
-  
+
   /* X86_TUNE_HIMODE_MATH: On PPro this flag is meant to avoid partial
      register stalls.  Just like X86_TUNE_PARTIAL_REG_STALL this option
      might be considered for Generic32 if our scheme for avoiding partial
@@ -9261,6 +9261,7 @@ output_fix_trunc (rtx insn, rtx *operands, int fisttp)
 
   gcc_assert (STACK_TOP_P (operands[1]));
   gcc_assert (MEM_P (operands[0]));
+  gcc_assert (GET_MODE (operands[1]) != TFmode);
 
   if (fisttp)
       output_asm_insn ("fisttp%z0\t%0", operands);
@@ -9293,7 +9294,7 @@ output_387_ffreep (rtx *operands ATTRIBUTE_UNUSED, int opno)
     {
       static char retval[] = ".word\t0xc_df";
       int regno = REGNO (operands[opno]);
-      
+
       gcc_assert (FP_REGNO_P (regno));
 
       retval[9] = '0' + (regno - FIRST_STACK_REG);
@@ -9683,7 +9684,7 @@ ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
        movlpd mem, reg      (gas syntax)
      else
        movsd mem, reg
- 
+
    Code generation for unaligned packed loads of single precision data
    (x86_sse_unaligned_move_optimal overrides x86_sse_partial_reg_dependency):
      if (x86_sse_unaligned_move_optimal)
@@ -9872,7 +9873,7 @@ ix86_expand_push (enum machine_mode mode, rtx x)
 
 /* Helper function of ix86_fixup_binary_operands to canonicalize
    operand order.  Returns true if the operands should be swapped.  */
-   
+
 static bool
 ix86_swap_binary_operands_p (enum rtx_code code, enum machine_mode mode,
 			     rtx operands[])
@@ -10267,7 +10268,7 @@ ix86_expand_convert_sign_didf_sse (rtx target, rtx input)
 {
   REAL_VALUE_TYPE TWO32r;
   rtx fp_lo, fp_hi, x;
-  
+
   fp_lo = gen_reg_rtx (DFmode);
   fp_hi = gen_reg_rtx (DFmode);
 
@@ -12686,11 +12687,11 @@ ix86_expand_sse_unpack (rtx operands[2], bool unsigned_p, bool high_p)
     case V4SImode:
       if (high_p)
         unpack = gen_vec_interleave_highv4si;
-      else 
+      else
         unpack = gen_vec_interleave_lowv4si;
       break;
     default:
-      gcc_unreachable (); 
+      gcc_unreachable ();
     }
 
   dest = gen_lowpart (imode, operands[0]);
@@ -13566,7 +13567,7 @@ counter_mode (rtx count_exp)
 
    The size is rounded down to whole number of chunk size moved at once.
    SRCMEM and DESTMEM provide MEMrtx to feed proper aliasing info.  */
-  
+
 
 static void
 expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
@@ -13610,7 +13611,7 @@ expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
       srcmem = change_address (srcmem, mode, y_addr);
 
       /* When unrolling for chips that reorder memory reads and writes,
-	 we can save registers by using single temporary.  
+	 we can save registers by using single temporary.
 	 Also using 4 temporaries is overkill in 32bit mode.  */
       if (!TARGET_64BIT && 0)
 	{
@@ -13694,7 +13695,7 @@ expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
   emit_label (out_label);
 }
 
-/* Output "rep; mov" instruction.  
+/* Output "rep; mov" instruction.
    Arguments have same meaning as for previous function */
 static void
 expand_movmem_via_rep_mov (rtx destmem, rtx srcmem,
@@ -13734,7 +13735,7 @@ expand_movmem_via_rep_mov (rtx destmem, rtx srcmem,
 			  destexp, srcexp));
 }
 
-/* Output "rep; stos" instruction.  
+/* Output "rep; stos" instruction.
    Arguments have same meaning as for previous function */
 static void
 expand_setmem_via_rep_stos (rtx destmem, rtx destptr, rtx value,
@@ -14182,7 +14183,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
   /* When asked to inline the call anyway, try to pick meaningful choice.
      We look for maximal size of block that is faster to copy by hand and
      take blocks of at most of that size guessing that average size will
-     be roughly half of the block.  
+     be roughly half of the block.
 
      If this turns out to be bad, we might simply specify the preferred
      choice in ix86_costs.  */
@@ -14292,7 +14293,7 @@ smallest_pow2_greater_than (int val)
 
    4) Epilogue: code copying tail of the block that is too small to be
       handled by main body (or up to size guarded by prologue guard).  */
-   
+
 int
 ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 		    rtx expected_align_exp, rtx expected_size_exp)
@@ -14484,7 +14485,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
  	 while we want to copy only COUNT_EXP & SIZE_NEEDED bytes.
 	 Epilogue code will actually copy COUNT_EXP & EPILOGUE_SIZE_NEEDED
 	 bytes. Compensate if needed.  */
-	 
+
       if (size_needed < epilogue_size_needed)
 	{
 	  tmp =
@@ -14680,7 +14681,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 	mode = DImode;
       count_exp = force_reg (mode, count_exp);
     }
-  /* Do the cheap promotion to allow better CSE across the 
+  /* Do the cheap promotion to allow better CSE across the
      main loop and epilogue (ie one load of the big constant in the
      front of all code.  */
   if (CONST_INT_P (val_exp))
@@ -17414,11 +17415,11 @@ ix86_init_mmx_sse_builtins (void)
 	       IX86_BUILTIN_PALIGNR);
 
   /* AMDFAM10 SSE4A New built-ins  */
-  def_builtin (MASK_SSE4A, "__builtin_ia32_movntsd", 
+  def_builtin (MASK_SSE4A, "__builtin_ia32_movntsd",
                void_ftype_pdouble_v2df, IX86_BUILTIN_MOVNTSD);
-  def_builtin (MASK_SSE4A, "__builtin_ia32_movntss", 
+  def_builtin (MASK_SSE4A, "__builtin_ia32_movntss",
                void_ftype_pfloat_v4sf, IX86_BUILTIN_MOVNTSS);
-  def_builtin (MASK_SSE4A, "__builtin_ia32_extrqi", 
+  def_builtin (MASK_SSE4A, "__builtin_ia32_extrqi",
                v2di_ftype_v2di_unsigned_unsigned, IX86_BUILTIN_EXTRQI);
   def_builtin (MASK_SSE4A, "__builtin_ia32_extrq",
                v2di_ftype_v2di_v16qi,  IX86_BUILTIN_EXTRQ);
@@ -18647,7 +18648,7 @@ ix86_builtin_conversion (enum tree_code code, tree type)
 {
   if (TREE_CODE (type) != VECTOR_TYPE)
     return NULL_TREE;
-  
+
   switch (code)
     {
     case FLOAT_EXPR:
