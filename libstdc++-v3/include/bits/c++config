@@ -51,7 +51,7 @@
 // includes that inject C90/C99 names into the global namespace.
 // XXX May not be necessary
 #if __cplusplus == 199711L
-# define _GLIBCXX_NAMESPACE_C 1
+# define _GLIBCXX_NAMESPACE_GLOBAL_INJECTION 1
 #endif
 
 // Macros for visibility.

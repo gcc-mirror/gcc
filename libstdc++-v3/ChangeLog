@@ -1,3 +1,20 @@
+2007-04-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/pb_ds/detail/resize_policy/
+	cc_hash_max_collision_check_resize_trigger_imp.hpp: Qualify
+	namespace std members.	
+	* include/ext/pb_ds/detail/list_update_policy/
+	counter_lu_metadata.hpp: Same.
+	* include/ext/throw_allocator.h: Same.
+	* include/ext/pod_char_traits.h: Same.
+	* include/ext/malloc_allocator.h: Same.
+	* libsupc++/del_op.cc: Same, simplify.
+
+	* include/bits/c++config: Adjust macro name.
+	
+	* include/c_global/cstring: Alphabetize.
+	* include/c_global/cwctype: Same.
+	
 2007-04-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/cmath: Include <bits/stl_algobase.h> instead of

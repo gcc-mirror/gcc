@@ -79,10 +79,9 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  using ::wint_t;	  // cwchar
-
-  using ::wctype_t;
   using ::wctrans_t;
+  using ::wctype_t;
+  using ::wint_t;
 
   using ::iswalnum;
   using ::iswalpha;

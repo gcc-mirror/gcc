@@ -1,6 +1,7 @@
 // Allocator that wraps "C" malloc -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -89,7 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	if (__builtin_expect(__n > this->max_size(), false))
 	  std::__throw_bad_alloc();
 
-	pointer __ret = static_cast<_Tp*>(malloc(__n * sizeof(_Tp)));
+	pointer __ret = static_cast<_Tp*>(std::malloc(__n * sizeof(_Tp)));
 	if (!__ret)
 	  std::__throw_bad_alloc();
 	return __ret;
@@ -98,7 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       // __p is not permitted to be a null pointer.
       void
       deallocate(pointer __p, size_type)
-      { free(static_cast<void*>(__p)); }
+      { std::free(static_cast<void*>(__p)); }
 
       size_type
       max_size() const throw() 

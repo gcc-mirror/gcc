@@ -1,6 +1,6 @@
 // POD character, std::char_traits specialization -*- C++ -*-
 
-// Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,7 +46,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   // int_type to properly hold the full range of char_type values as
   // well as EOF.
   /// @brief A POD class that serves as a character abstraction class.
-  template<typename V, typename I, typename S = mbstate_t>
+  template<typename V, typename I, typename S = std::mbstate_t>
     struct character
     {
       typedef V				value_type;
