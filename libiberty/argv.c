@@ -312,9 +312,7 @@ operating system to free the memory when the program exits.
 */
 
 void
-expandargv (argcp, argvp)
-     int *argcp;
-     char ***argvp;
+expandargv (int *argcp, char ***argvp)
 {
   /* The argument we are currently processing.  */
   int i = 0;
