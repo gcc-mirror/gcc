@@ -1,3 +1,9 @@
+2007-04-11  Sebastian Pop  <sebastian.pop@inria.fr>
+
+	* tree-data-ref.c (affine_function_zero_p, constant_access_functions,
+	insert_innermost_unit_dist_vector, add_distance_for_zero_overlaps): New.
+	(build_classic_dist_vector): Call add_distance_for_zero_overlaps.
+
 2007-04-10  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-data-ref.c (add_multivariate_self_dist): Force the distance

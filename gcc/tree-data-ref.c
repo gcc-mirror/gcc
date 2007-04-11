@@ -2124,6 +2124,15 @@ affine_function_constant_p (affine_fn fn)
   return true;
 }
 
+/* Returns true if FN is the zero constant function.  */
+
+static bool
+affine_function_zero_p (affine_fn fn)
+{
+  return (integer_zerop (affine_function_base (fn))
+	  && affine_function_constant_p (fn));
+}
+
 /* Applies operation OP on affine functions FNA and FNB, and returns the
    result.  */
 
@@ -3847,6 +3856,22 @@ same_access_functions (struct data_dependence_relation *ddr)
   return true;
 }
 
+/* Return true when the DDR contains only constant access functions.  */
+
+static bool
+constant_access_functions (struct data_dependence_relation *ddr)
+{
+  unsigned i;
+
+  for (i = 0; i < DDR_NUM_SUBSCRIPTS (ddr); i++)
+    if (!evolution_function_is_constant_p (DR_ACCESS_FN (DDR_A (ddr), i))
+	|| !evolution_function_is_constant_p (DR_ACCESS_FN (DDR_B (ddr), i)))
+      return false;
+
+  return true;
+}
+
+
 /* Helper function for the case where DDR_A and DDR_B are the same
    multivariate access function.  */
 
@@ -3928,6 +3953,53 @@ add_other_self_distances (struct data_dependence_relation *ddr)
   add_outer_distances (ddr, dist_v, index_carry);
 }
 
+static void
+insert_innermost_unit_dist_vector (struct data_dependence_relation *ddr)
+{
+  lambda_vector dist_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
+
+  dist_v[DDR_INNER_LOOP (ddr)] = 1;
+  save_dist_v (ddr, dist_v);
+}
+
+/* Adds a unit distance vector to DDR when there is a 0 overlap.  This
+   is the case for example when access functions are the same and
+   equal to a constant, as in:
+
+   | loop_1
+   |   A[3] = ...
+   |   ... = A[3]
+   | endloop_1
+
+   in which case the distance vectors are (0) and (1).  */
+
+static void
+add_distance_for_zero_overlaps (struct data_dependence_relation *ddr)
+{
+  unsigned i, j;
+
+  for (i = 0; i < DDR_NUM_SUBSCRIPTS (ddr); i++)
+    {
+      subscript_p sub = DDR_SUBSCRIPT (ddr, i);
+      conflict_function *ca = SUB_CONFLICTS_IN_A (sub);
+      conflict_function *cb = SUB_CONFLICTS_IN_B (sub);
+
+      for (j = 0; j < ca->n; j++)
+	if (affine_function_zero_p (ca->fns[j]))
+	  {
+	    insert_innermost_unit_dist_vector (ddr);
+	    return;
+	  }
+
+      for (j = 0; j < cb->n; j++)
+	if (affine_function_zero_p (cb->fns[j]))
+	  {
+	    insert_innermost_unit_dist_vector (ddr);
+	    return;
+	  }
+    }
+}
+
 /* Compute the classic per loop distance vector.  DDR is the data
    dependence relation to build a vector from.  Return false when fail
    to represent the data dependence as a distance vector.  */
@@ -3947,6 +4019,9 @@ build_classic_dist_vector (struct data_dependence_relation *ddr)
       /* Save the 0 vector.  */
       dist_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
       save_dist_v (ddr, dist_v);
+
+      if (constant_access_functions (ddr))
+	add_distance_for_zero_overlaps (ddr);
 
       if (DDR_NB_LOOPS (ddr) > 1)
 	add_other_self_distances (ddr);
