@@ -3462,36 +3462,29 @@ analyze_siv_subscript (tree chrec_a,
     fprintf (dump_file, ")\n");
 }
 
-/* Return true when the property can be computed.  RES should contain
-   true when calling the first time this function, then it is set to
-   false when one of the evolution steps of an affine CHREC does not
-   divide the constant CST.  */
+/* Returns false if we can prove that the greatest common divisor of the steps
+   of CHREC does not divide CST, false otherwise.  */
 
 static bool
-chrec_steps_divide_constant_p (tree chrec, 
-			       tree cst, 
-			       bool *res)
+gcd_of_steps_may_divide_p (tree chrec, tree cst)
 {
-  switch (TREE_CODE (chrec))
-    {
-    case POLYNOMIAL_CHREC:
-      if (evolution_function_is_constant_p (CHREC_RIGHT (chrec)))
-	{
-	  if (tree_fold_divides_p (CHREC_RIGHT (chrec), cst))
-	    /* Keep RES to true, and iterate on other dimensions.  */
-	    return chrec_steps_divide_constant_p (CHREC_LEFT (chrec), cst, res);
-	  
-	  *res = false;
-	  return true;
-	}
-      else
-	/* When the step is a parameter the result is undetermined.  */
-	return false;
+  HOST_WIDE_INT cd = 0, val;
+  tree step;
 
-    default:
-      /* On the initial condition, return true.  */
-      return true;
+  if (!host_integerp (cst, 0))
+    return true;
+  val = tree_low_cst (cst, 0);
+
+  while (TREE_CODE (chrec) == POLYNOMIAL_CHREC)
+    {
+      step = CHREC_RIGHT (chrec);
+      if (!host_integerp (step, 0))
+	return true;
+      cd = gcd (cd, tree_low_cst (step, 0));
+      chrec = CHREC_LEFT (chrec);
     }
+
+  return val % cd == 0;
 }
 
 /* Analyze a MIV (Multiple Index Variable) subscript.  *OVERLAPS_A and
@@ -3516,7 +3509,6 @@ analyze_miv_subscript (tree chrec_a,
      variables.  In the MIV case we have to solve a Diophantine
      equation with 2*n variables (if the subscript uses n IVs).
   */
-  bool divide_p = true;
   tree difference;
   dependence_stats.num_miv++;
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3540,14 +3532,13 @@ analyze_miv_subscript (tree chrec_a,
   else if (evolution_function_is_constant_p (difference)
 	   /* For the moment, the following is verified:
 	      evolution_function_is_affine_multivariate_p (chrec_a) */
-	   && chrec_steps_divide_constant_p (chrec_a, difference, &divide_p)
-	   && !divide_p)
+	   && !gcd_of_steps_may_divide_p (chrec_a, difference))
     {
       /* testsuite/.../ssa-chrec-33.c
 	 {{21, +, 2}_1, +, -2}_2  vs.  {{20, +, 2}_1, +, -2}_2 
 	 
-	 The difference is 1, and the evolution steps are equal to 2,
-	 consequently there are no overlapping elements.  */
+	 The difference is 1, and all the evolution steps are multiples
+	 of 2, consequently there are no overlapping elements.  */
       *overlaps_a = conflict_fn_no_dependence ();
       *overlaps_b = conflict_fn_no_dependence ();
       *last_conflicts = integer_zero_node;

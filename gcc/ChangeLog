@@ -1,3 +1,9 @@
+2007-04-11  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-data-ref.c (chrec_steps_divide_constant_p): Removed.
+	(gcd_of_steps_may_divide_p): New function.
+	(analyze_miv_subscript): Use gcd_of_steps_may_divide_p.
+
 2007-04-11  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* reload.c (find_reloads_toplev, find_reloads_address,
@@ -11,7 +17,7 @@
 	insert_innermost_unit_dist_vector, add_distance_for_zero_overlaps): New.
 	(build_classic_dist_vector): Call add_distance_for_zero_overlaps.
 
-2007-04-10  Zdenek Dvorak  <dvorakz@suse.cz>
+2007-04-11  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-data-ref.c (add_multivariate_self_dist): Force the distance
 	vector to be positive.
