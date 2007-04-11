@@ -1,3 +1,8 @@
+2007-04-11  Jan Hubicka  <jh@suse.cz>
+
+	* cp/class.c (convert_to_base_statically): Fold produced tree; verify
+	that we are not processing template_decl.
+
 2007-04-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/31449
