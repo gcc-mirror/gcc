@@ -1,3 +1,15 @@
+2007-04-11  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get<>::do_get(iter_type,
+	ios_base&, ios_base::iostate&, void*&)): Fix for sizeof(void*)
+	> sizeof(unsigned long).
+
+	* testsuite/22_locale/num_get/get/char/1.cc: Fix void* test.
+	* testsuite/22_locale/num_get/get/wchar_t/1.cc: Likewise.
+
+	* testsuite/22_locale/num_put/put/char/1.cc: Tweak comment.
+	* testsuite/22_locale/num_put/put/wchar_t/1.cc: Likewise.
+
 2007-04-11  Zack Weinberg  <zack@mrtock.ucsd.edu>
 
 	* include/std/iosfwd: Do not include <bits/c++locale.h> and
