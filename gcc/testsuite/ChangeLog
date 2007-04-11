@@ -1,3 +1,9 @@
+2007-04-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR testsuite/31538
+	* gfortran.dg/result_in_spec_1.f90: Increase dimension from 2
+	to 4 at line 38 to fix bounds problem.
+
 2007-04-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR testsuite/31240
