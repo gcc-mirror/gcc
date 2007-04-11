@@ -52,7 +52,7 @@ void test01()
   double d;
   long double ld1 = 6.630025e+4;
   long double ld;
-  void* v;
+  void* v = 0;
 
   // cache the num_get facet
   wistringstream iss;

@@ -1,5 +1,9 @@
 2007-04-11  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/22_locale/num_get/get/wchar_t/1.cc: Initialize v.
+
+2007-04-11  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (num_get<>::do_get(iter_type,
 	ios_base&, ios_base::iostate&, void*&)): Fix for sizeof(void*)
 	> sizeof(unsigned long).
