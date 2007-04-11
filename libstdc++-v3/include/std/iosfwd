@@ -43,10 +43,8 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <bits/c++locale.h> 
 #include <bits/stringfwd.h> 	// For string forward declarations.
 #include <bits/postypes.h>
-#include <bits/functexcept.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
