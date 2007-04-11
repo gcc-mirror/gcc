@@ -1,3 +1,9 @@
+2007-04-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/31530
+	* simplify-rtx.c (simplify_binary_operation_1): Do not simplify
+	a * -b + c as c - a * b if we honor sign dependent rounding.
+
 2007-04-11  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin-protos.h (bfin_expand_movmem): Renamed from
