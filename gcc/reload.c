@@ -4570,7 +4570,7 @@ find_reloads_toplev (rtx x, int opnum, enum reload_type type,
 	      x = mem;
 	      i = find_reloads_address (GET_MODE (x), &x, XEXP (x, 0), &XEXP (x, 0),
 					opnum, type, ind_levels, insn);
-	      if (x != mem)
+	      if (!rtx_equal_p (x, mem))
 		push_reg_equiv_alt_mem (regno, x);
 	      if (address_reloaded)
 		*address_reloaded = i;
@@ -4785,7 +4785,7 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 		  find_reloads_address (GET_MODE (tem), &tem, XEXP (tem, 0),
 					&XEXP (tem, 0), opnum,
 					ADDR_TYPE (type), ind_levels, insn);
-		  if (tem != orig)
+		  if (!rtx_equal_p (tem, orig))
 		    push_reg_equiv_alt_mem (regno, tem);
 		}
 	      /* We can avoid a reload if the register's equivalent memory
@@ -5589,7 +5589,7 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 				      RELOAD_OTHER,
 				      ind_levels, insn);
 
-		if (tem != orig)
+		if (!rtx_equal_p (tem, orig))
 		  push_reg_equiv_alt_mem (regno, tem);
 
 		/* Then reload the memory location into a base
@@ -5656,7 +5656,7 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 		  find_reloads_address (GET_MODE (tem), &tem, XEXP (tem, 0),
 					&XEXP (tem, 0), opnum, type,
 					ind_levels, insn);
-		  if (tem != orig)
+		  if (!rtx_equal_p (tem, orig))
 		    push_reg_equiv_alt_mem (regno, tem);
 		  /* Put this inside a new increment-expression.  */
 		  x = gen_rtx_fmt_e (GET_CODE (x), GET_MODE (x), tem);
@@ -5811,7 +5811,7 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 		find_reloads_address (GET_MODE (x), &x, XEXP (x, 0),
 				      &XEXP (x, 0), opnum, ADDR_TYPE (type),
 				      ind_levels, insn);
-		if (x != tem)
+		if (!rtx_equal_p (x, tem))
 		  push_reg_equiv_alt_mem (regno, x);
 	      }
 	  }
@@ -6037,7 +6037,7 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 				    &XEXP (tem, 0), opnum, type,
 				    ind_levels, insn);
 	      /* ??? Do we need to handle nonzero offsets somehow?  */
-	      if (!offset && tem != orig)
+	      if (!offset && !rtx_equal_p (tem, orig))
 		push_reg_equiv_alt_mem (regno, tem);
 
 	      /* If this is not a toplevel operand, find_reloads doesn't see
