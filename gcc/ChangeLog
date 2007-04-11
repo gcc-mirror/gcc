@@ -1,3 +1,10 @@
+2007-04-10  Sebastian Pop  <sebastian.pop@inria.fr>
+
+	PR tree-optimization/31343
+	* tree-chrec.h (chrec_zerop): Moved before build_polynomial_chrec.
+	(build_polynomial_chrec): Return a scalar when the evolution is zero.
+	* testsuite/gcc.dg/vect/pr31343.c: New.
+
 2007-04-10  Eric Christopher  <echristo@apple.com>
 
 	* config/i386/i386.h (X87_FLOAT_MODE_P): New.
