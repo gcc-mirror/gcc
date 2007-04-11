@@ -1,3 +1,9 @@
+2007-04-11  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-alias.c (dump_mem_ref_stats): Do not call
+	need_to_partition_p if there are no memory statements in the
+	function.
+
 2007-04-11  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-data-ref.c (chrec_steps_divide_constant_p): Removed.
