@@ -3121,11 +3121,10 @@ infer_value_range (tree stmt, tree op, enum tree_code *comp_code_p, tree *val_p)
      non-NULL if -fdelete-null-pointer-checks is enabled.  */
   if (flag_delete_null_pointer_checks && POINTER_TYPE_P (TREE_TYPE (op)))
     {
-      bool is_store;
-      unsigned num_uses, num_derefs;
+      unsigned num_uses, num_loads, num_stores;
 
-      count_uses_and_derefs (op, stmt, &num_uses, &num_derefs, &is_store);
-      if (num_derefs > 0)
+      count_uses_and_derefs (op, stmt, &num_uses, &num_loads, &num_stores);
+      if (num_loads + num_stores > 0)
 	{
 	  *val_p = build_int_cst (TREE_TYPE (op), 0);
 	  *comp_code_p = NE_EXPR;

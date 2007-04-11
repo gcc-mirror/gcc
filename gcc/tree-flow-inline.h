@@ -871,31 +871,6 @@ memory_partition (tree sym)
   return tag;
 }
 
-
-/* Set MPT to be the memory partition associated with symbol SYM.  */
-
-static inline void
-set_memory_partition (tree sym, tree mpt)
-{
-#if defined ENABLE_CHECKING
-  if (mpt)
-    gcc_assert (TREE_CODE (mpt) == MEMORY_PARTITION_TAG
-	        && !is_gimple_reg (sym));
-#endif
-  var_ann (sym)->mpt = mpt;
-  if (mpt)
-    {
-      bitmap_set_bit (MPT_SYMBOLS (mpt), DECL_UID (sym));
-
-      /* MPT inherits the call-clobbering attributes from SYM.  */
-      if (is_call_clobbered (sym))
-	{
-	  MTAG_GLOBAL (mpt) = 1;
-	  mark_call_clobbered (mpt, ESCAPE_IS_GLOBAL);
-	}
-    }
-}
-
 /* Return true if NAME is a memory factoring SSA name (i.e., an SSA
    name for a memory partition.  */
 
@@ -1809,5 +1784,12 @@ static inline struct ssa_operands *
 gimple_ssa_operands (struct function *fun)
 {
   return &fun->gimple_df->ssa_operands;
+}
+
+/* Map describing reference statistics for function FN.  */
+static inline struct mem_ref_stats_d *
+gimple_mem_ref_stats (struct function *fn)
+{
+  return &fn->gimple_df->mem_ref_stats;
 }
 #endif /* _TREE_FLOW_INLINE_H  */

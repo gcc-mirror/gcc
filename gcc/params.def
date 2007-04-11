@@ -530,8 +530,13 @@ DEFPARAM(PARAM_MAX_RELOAD_SEARCH_INSNS,
 
 DEFPARAM(PARAM_MAX_ALIASED_VOPS,
          "max-aliased-vops",
-	 "The maximum number of virtual operators per statement allowed to represent aliases before triggering alias grouping",
-	 10, 0, 0)
+	 "The maximum number of virtual operators that a function is allowed to have before triggering memory partitioning heuristics",
+	 100, 0, 0)
+
+DEFPARAM(PARAM_AVG_ALIASED_VOPS,
+    	 "avg-aliased-vops",
+	 "The average number of virtual operators that memory statements are allowed to have before triggering memory partitioning heuristics",
+	 1, 0, 0)
 
 DEFPARAM(PARAM_MAX_SCHED_REGION_BLOCKS,
 	 "max-sched-region-blocks",

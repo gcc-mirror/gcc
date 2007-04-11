@@ -1,3 +1,97 @@
+2007-04-11  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 30735
+	PR 31090
+	* doc/invoke.texi: Document --params max-aliased-vops and
+	avg-aliased-vops.
+	* tree-ssa-operands.h (get_mpt_for, dump_memory_partitions,
+	debug_memory_partitions): Move to tree-flow.h
+	* params.h (AVG_ALIASED_VOPS): Define.
+	* tree-ssa-alias.c (struct mp_info_def): Remove.  Update all
+	users.
+	(mp_info_t): Likewise.
+	(get_mem_sym_stats_for): New.
+	(set_memory_partition): Move from tree-flow-inline.h.
+	(mark_non_addressable): Only clear the set of symbols for the
+	partition if it exists.
+	(dump_memory_partitions): Move from tree-ssa-operands.c
+	(debug_memory_partitions): Likewise.
+	(need_to_partition_p): New.
+	(dump_mem_ref_stats): New.
+	(debug_mem_ref_stats): New.
+	(dump_mem_sym_stats): New.
+	(debug_mem_sym_stats): New.
+	(update_mem_sym_stats_from_stmt): New.
+	(compare_mp_info_entries): New.
+	(mp_info_cmp): Call it.
+	(sort_mp_info): Change argument to a list of mem_sym_stats_t
+	objects.
+	(get_mpt_for): Move from tree-ssa-operands.c.
+	(find_partition_for): New.
+	(create_partition_for): Remove.
+	(estimate_vop_reduction): New.
+	(update_reference_counts): New.
+	(build_mp_info): New.
+	(compute_memory_partitions): Refactor.
+	Document new heuristic.
+	Call build_mp_info, update_reference_counts,
+	find_partition_for and estimate_vop_reduction.
+	(compute_may_aliases): Populate virtual operands before
+	calling debugging dumps.
+	(delete_mem_sym_stats): New.
+	(delete_mem_ref_stats): New.
+	(init_mem_ref_stats): New.
+	(init_alias_info): Call it.
+	(maybe_create_global_var): Remove alias_info argument.
+	Get number of call sites and number of pure/const call sites
+	from gimple_mem_ref_stats().
+	(dump_alias_info): Call dump_memory_partitions first.
+	(dump_points_to_info_for): Show how many times a pointer has
+	been dereferenced.
+	* opts.c (decode_options): For -O2 set --param
+	max-aliased-vops to 500.
+	For -O3 set --param max-aliased-vops to 1000 and --param
+	avg-aliased-vops to 3.
+	* fortran/options.c (gfc_init_options): Remove assignment to
+	MAX_ALIASED_VOPS.
+	* tree-flow-inline.h (gimple_mem_ref_stats): New.
+	* tree-dfa.c (dump_variable): Dump memory reference
+	statistics.
+	Dump NO_ALIAS* settings.
+	(referenced_var_lookup): Tidy.
+	(mem_sym_stats): New.
+	* tree-ssa-copy.c (may_propagate_copy): Return true if DEST
+	and ORIG are different SSA names for a memory partition.
+	* tree-ssa.c (delete_tree_ssa): Call delete_mem_ref_stats.
+	* tree-flow.h (struct mem_sym_stats_d): Define.
+	(mem_sym_stats_t): Define.
+	(struct mem_ref_stats_d): Define.
+	(struct gimple_df): Add field mem_ref_stats.
+	(enum noalias_state): Define.
+	(struct var_ann_d): Add bitfield noalias_state.
+	(mem_sym_stats, delete_mem_ref_stats, dump_mem_ref_stats,
+	debug_mem_ref_stats, debug_memory_partitions,
+	debug_mem_sym_stats): Declare.
+	* tree-ssa-structalias.c (update_alias_info): Update call
+	sites, pure/const call sites and asm sites in structure
+	returned by gimple_mem_ref_stats.
+	Remove local variable IS_POTENTIAL_DEREF.
+	Increase NUM_DEREFS if the memory expression is a potential
+	dereference.
+	Call update_mem_sym_stats_from_stmt.
+	If the memory references memory, call
+	update_mem_sym_stats_from_stmt for all the direct memory
+	symbol references found.
+	(intra_create_variable_infos): Set noalias_state field for
+	pointer arguments according to the value of
+	flag_argument_noalias.
+	* tree-ssa-structalias.h (struct alias_info): Remove fields
+	num_calls_found and num_pure_const_calls_found.
+	(update_mem_sym_stats_from_stmt): Declare.
+	* params.def (PARAM_MAX_ALIASED_VOPS): Change description.
+	Set default value to 100.
+	(PARAM_AVG_ALIASED_VOPS): Define.
+
 2007-04-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/31530

@@ -538,6 +538,51 @@ verify_call_clobbering (void)
     internal_error ("verify_call_clobbering failed");
 }
 
+
+/* Verify invariants in memory partitions.  */
+
+static void
+verify_memory_partitions (void)
+{
+  unsigned i;
+  tree mpt;
+  VEC(tree,heap) *mpt_table = gimple_ssa_operands (cfun)->mpt_table;
+  struct pointer_set_t *partitioned_syms = pointer_set_create ();
+
+  for (i = 0; VEC_iterate (tree, mpt_table, i, mpt); i++)
+    {
+      unsigned j;
+      bitmap_iterator bj;
+
+      if (MPT_SYMBOLS (mpt) == NULL)
+	{
+	  error ("Memory partitions should have at least one symbol");
+	  debug_variable (mpt);
+	  goto err;
+	}
+
+      EXECUTE_IF_SET_IN_BITMAP (MPT_SYMBOLS (mpt), 0, j, bj)
+	{
+	  tree var = referenced_var (j);
+	  if (pointer_set_insert (partitioned_syms, var))
+	    {
+	      error ("Partitioned symbols should belong to exactly one "
+		     "partition");
+	      debug_variable (var);
+	      goto err;
+	    }
+	}
+    }
+
+  pointer_set_destroy (partitioned_syms);
+
+  return;
+
+err:
+  internal_error ("verify_memory_partitions failed");
+}
+
+
 /* Verify the consistency of aliasing information.  */
 
 static void
@@ -546,6 +591,7 @@ verify_alias_info (void)
   verify_flow_sensitive_alias_info ();
   verify_call_clobbering ();
   verify_flow_insensitive_alias_info ();
+  verify_memory_partitions ();
 }
 
 
@@ -835,6 +881,7 @@ delete_tree_ssa (void)
       gcc_assert (!need_ssa_update_p ());
     }
   cfun->gimple_df->aliases_computed_p = false;
+  delete_mem_ref_stats (cfun);
 
   cfun->gimple_df = NULL;
 }

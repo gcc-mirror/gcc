@@ -3011,15 +3011,21 @@ update_alias_info (tree stmt, struct alias_info *ai)
   bitmap addr_taken;
   use_operand_p use_p;
   ssa_op_iter iter;
+  bool stmt_dereferences_ptr_p;
   enum escape_type stmt_escape_type = is_escape_site (stmt);
+  struct mem_ref_stats_d *mem_ref_stats = gimple_mem_ref_stats (cfun);
+
+  stmt_dereferences_ptr_p = false;
 
   if (stmt_escape_type == ESCAPE_TO_CALL
       || stmt_escape_type == ESCAPE_TO_PURE_CONST)
     {
-      ai->num_calls_found++;
+      mem_ref_stats->num_call_sites++;
       if (stmt_escape_type == ESCAPE_TO_PURE_CONST)
-	ai->num_pure_const_calls_found++;
+	mem_ref_stats->num_pure_const_call_sites++;
     }
+  else if (stmt_escape_type == ESCAPE_TO_ASM)
+    mem_ref_stats->num_asm_sites++;
 
   /* Mark all the variables whose address are taken by the statement.  */
   addr_taken = addresses_taken (stmt);
@@ -3043,17 +3049,15 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	}
     }
 
-  /* Process each operand use.  If an operand may be aliased, keep
-     track of how many times it's being used.  For pointers, determine
-     whether they are dereferenced by the statement, or whether their
-     value escapes, etc.  */
+  /* Process each operand use.  For pointers, determine whether they
+     are dereferenced by the statement, or whether their value
+     escapes, etc.  */
   FOR_EACH_PHI_OR_STMT_USE (use_p, stmt, iter, SSA_OP_USE)
     {
       tree op, var;
       var_ann_t v_ann;
       struct ptr_info_def *pi;
-      bool is_store, is_potential_deref;
-      unsigned num_uses, num_derefs;
+      unsigned num_uses, num_loads, num_stores;
 
       op = USE_FROM_PTR (use_p);
 
@@ -3073,12 +3077,11 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	     so that they can be treated like regular statements?
 	     Currently, they are treated as second-class
 	     statements.  */
-	  add_to_addressable_set (TREE_OPERAND (op, 0),
-				  &addressable_vars);
+	  add_to_addressable_set (TREE_OPERAND (op, 0), &addressable_vars);
 	  continue;
 	}
 
-      /* Ignore constants.  */
+      /* Ignore constants (they may occur in PHI node arguments).  */
       if (TREE_CODE (op) != SSA_NAME)
 	continue;
 
@@ -3109,7 +3112,7 @@ update_alias_info (tree stmt, struct alias_info *ai)
 
       /* Determine whether OP is a dereferenced pointer, and if STMT
 	 is an escape point, whether OP escapes.  */
-      count_uses_and_derefs (op, stmt, &num_uses, &num_derefs, &is_store);
+      count_uses_and_derefs (op, stmt, &num_uses, &num_loads, &num_stores);
 
       /* Handle a corner case involving address expressions of the
 	 form '&PTR->FLD'.  The problem with these expressions is that
@@ -3132,7 +3135,6 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	 are not GIMPLE invariants), they can only appear on the RHS
 	 of an assignment and their base address is always an
 	 INDIRECT_REF expression.  */
-      is_potential_deref = false;
       if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
 	  && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == ADDR_EXPR
 	  && !is_gimple_val (GIMPLE_STMT_OPERAND (stmt, 1)))
@@ -3143,10 +3145,10 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	  tree base = get_base_address (TREE_OPERAND (rhs, 0));
 	  if (TREE_CODE (base) == INDIRECT_REF
 	      && TREE_OPERAND (base, 0) == op)
-	    is_potential_deref = true;
+	    num_loads++;
 	}
 
-      if (num_derefs > 0 || is_potential_deref)
+      if (num_loads + num_stores > 0)
 	{
 	  /* Mark OP as dereferenced.  In a subsequent pass,
 	     dereferenced pointers that point to a set of
@@ -3157,13 +3159,20 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	  /* If this is a store operation, mark OP as being
 	     dereferenced to store, otherwise mark it as being
 	     dereferenced to load.  */
-	  if (is_store)
+	  if (num_stores > 0)
 	    pointer_set_insert (ai->dereferenced_ptrs_store, var);
 	  else
 	    pointer_set_insert (ai->dereferenced_ptrs_load, var);
+
+	  /* Update the frequency estimate for all the dereferences of
+	     pointer OP.  */
+	  update_mem_sym_stats_from_stmt (op, stmt, num_loads, num_stores);
+	  
+	  /* Indicate that STMT contains pointer dereferences.  */
+	  stmt_dereferences_ptr_p = true;
 	}
 
-      if (stmt_escape_type != NO_ESCAPE && num_derefs < num_uses)
+      if (stmt_escape_type != NO_ESCAPE && num_loads + num_stores < num_uses)
 	{
 	  /* If STMT is an escape point and STMT contains at
 	     least one direct use of OP, then the value of OP
@@ -3188,13 +3197,55 @@ update_alias_info (tree stmt, struct alias_info *ai)
     return;
 
   /* Mark stored variables in STMT as being written to and update the
-     reference counter for potentially aliased symbols in STMT.  */
-  if (stmt_references_memory_p (stmt) && STORED_SYMS (stmt))
+     memory reference stats for all memory symbols referenced by STMT.  */
+  if (stmt_references_memory_p (stmt))
     {
       unsigned i;
       bitmap_iterator bi;
-      EXECUTE_IF_SET_IN_BITMAP (STORED_SYMS (stmt), 0, i, bi)
-	pointer_set_insert (ai->written_vars, referenced_var (i));
+
+      mem_ref_stats->num_mem_stmts++;
+
+      /* Notice that we only update memory reference stats for symbols
+	 loaded and stored by the statement if the statement does not
+	 contain pointer dereferences and it is not a call/asm site.
+	 This is to avoid double accounting problems when creating
+	 memory partitions.  After computing points-to information,
+	 pointer dereference statistics are used to update the
+	 reference stats of the pointed-to variables, so here we
+	 should only update direct references to symbols.
+
+	 Indirect references are not updated here for two reasons: (1)
+	 The first time we compute alias information, the sets
+	 LOADED/STORED are empty for pointer dereferences, (2) After
+	 partitioning, LOADED/STORED may have references to
+	 partitions, not the original pointed-to variables.  So, if we
+	 always counted LOADED/STORED here and during partitioning, we
+	 would count many symbols more than once.
+
+	 This does cause some imprecision when a statement has a
+	 combination of direct symbol references and pointer
+	 dereferences (e.g., MEMORY_VAR = *PTR) or if a call site has
+	 memory symbols in its argument list, but these cases do not
+	 occur so frequently as to constitue a serious problem.  */
+      if (STORED_SYMS (stmt))
+	EXECUTE_IF_SET_IN_BITMAP (STORED_SYMS (stmt), 0, i, bi)
+	  {
+	    tree sym = referenced_var (i);
+	    pointer_set_insert (ai->written_vars, sym);
+	    if (!stmt_dereferences_ptr_p
+		&& stmt_escape_type != ESCAPE_TO_CALL
+		&& stmt_escape_type != ESCAPE_TO_PURE_CONST
+		&& stmt_escape_type != ESCAPE_TO_ASM)
+	      update_mem_sym_stats_from_stmt (sym, stmt, 0, 1);
+	  }
+
+      if (!stmt_dereferences_ptr_p
+	  && LOADED_SYMS (stmt)
+	  && stmt_escape_type != ESCAPE_TO_CALL
+	  && stmt_escape_type != ESCAPE_TO_PURE_CONST
+	  && stmt_escape_type != ESCAPE_TO_ASM)
+	EXECUTE_IF_SET_IN_BITMAP (LOADED_SYMS (stmt), 0, i, bi)
+	  update_mem_sym_stats_from_stmt (referenced_var (i), stmt, 1, 0);
     }
 }
 
@@ -4108,11 +4159,11 @@ intra_create_variable_infos (void)
       if (!could_have_pointers (t))
 	continue;
 
-      /* With flag_argument_noalias greater than two means that the incoming
-	 argument cannot alias anything except for itself so create a HEAP
-	 variable.  */
-      if (POINTER_TYPE_P (TREE_TYPE (t))
-	  && flag_argument_noalias > 2)
+      /* If flag_argument_noalias is set, then function pointer
+	 arguments are guaranteed not to point to each other.  In that
+	 case, create an artificial variable PARM_NOALIAS and the
+	 constraint ARG = &PARM_NOALIAS.  */
+      if (POINTER_TYPE_P (TREE_TYPE (t)) && flag_argument_noalias > 0)
 	{
 	  varinfo_t vi;
 	  tree heapvar = heapvar_lookup (t);
@@ -4123,14 +4174,26 @@ intra_create_variable_infos (void)
 
 	  if (heapvar == NULL_TREE)
 	    {
+	      var_ann_t ann;
 	      heapvar = create_tmp_var_raw (TREE_TYPE (TREE_TYPE (t)),
 					    "PARM_NOALIAS");
-	      get_var_ann (heapvar)->is_heapvar = 1;
 	      DECL_EXTERNAL (heapvar) = 1;
 	      if (gimple_referenced_vars (cfun))
 		add_referenced_var (heapvar);
+
 	      heapvar_insert (t, heapvar);
+
+	      ann = get_var_ann (heapvar);
+	      if (flag_argument_noalias == 1)
+		ann->noalias_state = NO_ALIAS;
+	      else if (flag_argument_noalias == 2)
+		ann->noalias_state = NO_ALIAS_GLOBAL;
+	      else if (flag_argument_noalias == 3)
+		ann->noalias_state = NO_ALIAS_ANYTHING;
+	      else
+		gcc_unreachable ();
 	    }
+
 	  vi = get_vi_for_tree (heapvar);
 	  vi->is_artificial_var = 1;
 	  vi->is_heap_var = 1;

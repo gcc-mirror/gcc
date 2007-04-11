@@ -346,33 +346,53 @@ dump_variable (FILE *file, tree var)
   if (TREE_THIS_VOLATILE (var))
     fprintf (file, ", is volatile");
 
+  if (mem_sym_stats (cfun, var))
+    {
+      mem_sym_stats_t stats = mem_sym_stats (cfun, var);
+      fprintf (file, ", direct reads: %ld", stats->num_direct_reads);
+      fprintf (file, ", direct writes: %ld", stats->num_direct_writes);
+      fprintf (file, ", indirect reads: %ld", stats->num_indirect_reads);
+      fprintf (file, ", indirect writes: %ld", stats->num_indirect_writes);
+      fprintf (file, ", read frequency: %ld", stats->frequency_reads);
+      fprintf (file, ", write frequency: %ld", stats->frequency_writes);
+    }
+
   if (is_call_clobbered (var))
     {
+      const char *s = "";
       var_ann_t va = var_ann (var);
       unsigned int escape_mask = va->escape_mask;
 
       fprintf (file, ", call clobbered");
       fprintf (file, " (");
       if (escape_mask & ESCAPE_STORED_IN_GLOBAL)
-	fprintf (file, ", stored in global");
+	{ fprintf (file, "%sstored in global", s); s = ", "; }
       if (escape_mask & ESCAPE_TO_ASM)
-	fprintf (file, ", goes through ASM");
+	{ fprintf (file, "%sgoes through ASM", s); s = ", "; }
       if (escape_mask & ESCAPE_TO_CALL)
-	fprintf (file, ", passed to call");
+	{ fprintf (file, "%spassed to call", s); s = ", "; }
       if (escape_mask & ESCAPE_BAD_CAST)
-	fprintf (file, ", bad cast");
+	{ fprintf (file, "%sbad cast", s); s = ", "; }
       if (escape_mask & ESCAPE_TO_RETURN)
-	fprintf (file, ", returned from func");
+	{ fprintf (file, "%sreturned from func", s); s = ", "; }
       if (escape_mask & ESCAPE_TO_PURE_CONST)
-	fprintf (file, ", passed to pure/const");
+	{ fprintf (file, "%spassed to pure/const", s); s = ", "; }
       if (escape_mask & ESCAPE_IS_GLOBAL)
-	fprintf (file, ", is global var");
+	{ fprintf (file, "%sis global var", s); s = ", "; }
       if (escape_mask & ESCAPE_IS_PARM)
-	fprintf (file, ", is incoming pointer");
+	{ fprintf (file, "%sis incoming pointer", s); s = ", "; }
       if (escape_mask & ESCAPE_UNKNOWN)
-	fprintf (file, ", unknown escape");
-      fprintf (file, " )");
+	{ fprintf (file, "%sunknown escape", s); s = ", "; }
+      fprintf (file, ")");
     }
+
+  if (ann->noalias_state == NO_ALIAS)
+    fprintf (file, ", NO_ALIAS (does not alias other NO_ALIAS symbols)");
+  else if (ann->noalias_state == NO_ALIAS_GLOBAL)
+    fprintf (file, ", NO_ALIAS_GLOBAL (does not alias other NO_ALIAS symbols"
+	           " and global vars)");
+  else if (ann->noalias_state == NO_ALIAS_ANYTHING)
+    fprintf (file, ", NO_ALIAS_ANYTHING (does not alias any other symbols)");
 
   if (gimple_default_def (cfun, var))
     {
@@ -618,8 +638,8 @@ referenced_var_lookup (unsigned int uid)
 {
   struct int_tree_map *h, in;
   in.uid = uid;
-  h = (struct int_tree_map *) htab_find_with_hash (gimple_referenced_vars (cfun),
-						   &in, uid);
+  h = (struct int_tree_map *)
+	htab_find_with_hash (gimple_referenced_vars (cfun), &in, uid);
   gcc_assert (h || uid == 0);
   if (h)
     return h->to;
@@ -1010,4 +1030,27 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
   *pmax_size = maxsize;
 
   return exp;
+}
+
+
+/* Return memory reference statistics for variable VAR in function FN.
+   This is computed by alias analysis, but it is not kept
+   incrementally up-to-date.  So, these stats are only accurate if
+   pass_may_alias has been run recently.  If no alias information
+   exists, this function returns NULL.  */
+
+mem_sym_stats_t
+mem_sym_stats (struct function *fn, tree var)
+{
+  void **slot;
+  struct pointer_map_t *stats_map = gimple_mem_ref_stats (fn)->mem_sym_stats;
+
+  if (stats_map == NULL)
+    return NULL;
+
+  slot = pointer_map_contains (stats_map, var);
+  if (slot == NULL)
+    return NULL;
+
+  return (mem_sym_stats_t) *slot;
 }
