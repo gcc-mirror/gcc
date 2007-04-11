@@ -1,4 +1,4 @@
-! { dg-run }
+! { dg-do run }
 ! { dg-options "-std=f2003 -fall-intrinsics" }
 ! Pointer intent test
 ! PR fortran/29624
@@ -21,7 +21,11 @@ program test
  deallocate(p)
  nullify(p)
  call a(p,t)
+ t2%x     = 5
+ allocate(t2%point)
+ t2%point = 42
  call nonpointer(t2)
+ if(t2%point /= 7) call abort()
 contains
   subroutine a(p,t)
     integer, pointer,intent(in)    :: p
@@ -60,12 +64,14 @@ contains
   subroutine foo(comp)
     type(myT), intent(inout) :: comp
     if(comp%x     /= -15) call abort()
-    !if(comp%point /=  27) call abort()
+    if(comp%point /=  27) call abort()
     comp%x     = 32
     comp%point = -98
   end subroutine foo
   subroutine nonpointer(t)
      type(myT), intent(in) :: t
+     if(t%x     /= 5 ) call abort()
+     if(t%point /= 42) call abort()
      t%point = 7
   end subroutine nonpointer
 end program
