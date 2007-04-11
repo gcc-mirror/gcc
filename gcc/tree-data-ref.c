@@ -3857,6 +3857,7 @@ add_multivariate_self_dist (struct data_dependence_relation *ddr, tree c_2)
   tree c_1 = CHREC_LEFT (c_2);
   tree c_0 = CHREC_LEFT (c_1);
   lambda_vector dist_v;
+  int v1, v2, cd;
 
   /* Polynomials with more than 2 variables are not handled yet.  */
   if (TREE_CODE (c_0) != INTEGER_CST)
@@ -3870,8 +3871,20 @@ add_multivariate_self_dist (struct data_dependence_relation *ddr, tree c_2)
 
   /* For "{{0, +, 2}_1, +, 3}_2" the distance vector is (3, -2).  */
   dist_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
-  dist_v[x_1] = int_cst_value (CHREC_RIGHT (c_2));
-  dist_v[x_2] = -int_cst_value (CHREC_RIGHT (c_1));
+  v1 = int_cst_value (CHREC_RIGHT (c_1));
+  v2 = int_cst_value (CHREC_RIGHT (c_2));
+  cd = gcd (v1, v2);
+  v1 /= cd;
+  v2 /= cd;
+
+  if (v2 < 0)
+    {
+      v2 = -v2;
+      v1 = -v1;
+    }
+
+  dist_v[x_1] = v2;
+  dist_v[x_2] = -v1;
   save_dist_v (ddr, dist_v);
 
   add_outer_distances (ddr, dist_v, x_1);
