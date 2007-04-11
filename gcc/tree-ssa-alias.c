@@ -643,7 +643,7 @@ dump_mem_ref_stats (FILE *file)
 
   fprintf (file, "Partitioning thresholds:         MAX = %d   AVG = %d "
            "(%sNEED TO PARTITION)\n", MAX_ALIASED_VOPS, AVG_ALIASED_VOPS,
-	   need_to_partition_p (stats) ? "" : "NO ");
+	   stats->num_mem_stmts && need_to_partition_p (stats) ? "" : "NO ");
   fprintf (file, "Number of partitioned symbols:   %ld\n", num_partitioned);
   fprintf (file, "Number of unpartitioned symbols: %ld\n", num_unpartitioned);
 }
