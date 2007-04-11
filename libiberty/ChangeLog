@@ -1,3 +1,8 @@
+2007-04-11  Thomas Neumann  tneumann@users.sourceforge.net
+
+	* argv.c: Use ANSI C declarations.
+	* make-relative-prefix.c: Likewise.
+
 2007-04-06  Joel Brobecker  <brobecker@adacore.com>
 
 	* filename_cmp.c (filename_cmp): Improve documentation.
