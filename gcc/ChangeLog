@@ -1,3 +1,8 @@
+2007-04-10  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-data-ref.c (add_multivariate_self_dist): Force the distance
+	vector to be positive.
+
 2007-04-11  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 30735
