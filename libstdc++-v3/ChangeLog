@@ -1,5 +1,11 @@
 2007-04-11  Paolo Carlini  <pcarlini@suse.de>
 
+	* config/locale/gnu/c_locale.h: Do not include <langinfo.h>
+	and <iconv.h>.
+	* config/locale/gnu/c++locale_internal.h: Include <langinfo.h>.
+
+2007-04-11  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/std/istream (class basic_istream<>): Remove unneded friend
 	declarations.
 
@@ -19,7 +25,7 @@
 	* testsuite/22_locale/num_put/put/char/1.cc: Tweak comment.
 	* testsuite/22_locale/num_put/put/wchar_t/1.cc: Likewise.
 
-2007-04-11  Zack Weinberg  <zack@mrtock.ucsd.edu>
+2007-04-11  Zack Weinberg  <zackw@panix.com>
 
 	* include/std/iosfwd: Do not include <bits/c++locale.h> and
 	<bits/functexcept.h>.
