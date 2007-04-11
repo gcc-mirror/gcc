@@ -890,7 +890,11 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       const fmtflags __fmt = __io.flags();
       __io.flags((__fmt & ~ios_base::basefield) | ios_base::hex);
 
-      unsigned long __ul;
+      typedef __gnu_cxx::__conditional_type<(sizeof(void*)
+					     <= sizeof(unsigned long)),
+	unsigned long, unsigned long long>::__type _UIntPtrType;       
+
+      _UIntPtrType __ul;
       __beg = _M_extract_int(__beg, __end, __io, __err, __ul);
 
       // Reset from hex formatted input.

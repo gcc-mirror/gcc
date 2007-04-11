@@ -65,7 +65,6 @@ void test01()
   iterator_type os_it01 = np.put(os_it00, oss, '+', b1);
   result1 = oss.str();
   VERIFY( result1 == "1" );
-  //  VERIFY( os_it00 != os_it01 );
 
   oss.str(empty);
   np.put(oss.rdbuf(), oss, '+', b0);
@@ -134,7 +133,7 @@ void test01()
   result1 = oss.str();
   VERIFY( result1 == "0" );
 
-  // const void
+  // const void*
   oss.str(empty);
   oss.clear();
   np.put(oss.rdbuf(), oss, '+', cv);

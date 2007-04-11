@@ -2,7 +2,8 @@
 
 // 2001-11-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,7 +53,6 @@ void test01()
   long double ld1 = 6.630025e+4;
   long double ld;
   void* v;
-  const void* cv = &ul2;
 
   // cache the num_get facet
   wistringstream iss;
@@ -124,12 +124,12 @@ void test01()
   VERIFY( ld == 0 );
   VERIFY( err == goodbit );
 
-  // const void
+  // void*
   iss.str(L"0xbffff74c,");
   iss.clear();
   err = goodbit;
   ng.get(iss.rdbuf(), 0, iss, err, v);
-  VERIFY( &v != &cv );
+  VERIFY( v != 0 );
   VERIFY( err == goodbit );
 
 #ifdef _GLIBCXX_USE_LONG_LONG

@@ -2,7 +2,8 @@
 
 // 2001-11-19 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -65,7 +66,6 @@ void test01()
   iterator_type os_it01 = np.put(os_it00, oss, L'+', b1);
   result1 = oss.str();
   VERIFY( result1 == L"1" );
-  //  VERIFY( os_it00 != os_it01 );
 
   oss.str(empty);
   np.put(oss.rdbuf(), oss, L'+', b0);
@@ -134,7 +134,7 @@ void test01()
   result1 = oss.str();
   VERIFY( result1 == L"0" );
 
-  // const void
+  // const void*
   oss.str(empty);
   oss.clear();
   np.put(oss.rdbuf(), oss, L'+', cv);
