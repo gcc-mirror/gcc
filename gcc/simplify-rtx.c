@@ -1688,7 +1688,8 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 							 XEXP (op0, 1)));
 
       /* Canonicalize (plus (mult (neg B) C) A) to (minus A (mult B C)).  */
-      if (GET_CODE (op0) == MULT
+      if (!HONOR_SIGN_DEPENDENT_ROUNDING (mode)
+	  && GET_CODE (op0) == MULT
 	  && GET_CODE (XEXP (op0, 0)) == NEG)
 	{
 	  rtx in1, in2;
@@ -1916,7 +1917,8 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	return reversed;
 
       /* Canonicalize (minus A (mult (neg B) C)) to (plus (mult B C) A).  */
-      if (GET_CODE (op1) == MULT
+      if (!HONOR_SIGN_DEPENDENT_ROUNDING (mode)
+	  && GET_CODE (op1) == MULT
 	  && GET_CODE (XEXP (op1, 0)) == NEG)
 	{
 	  rtx in1, in2;
@@ -1931,7 +1933,8 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 
       /* Canonicalize (minus (neg A) (mult B C)) to
 	 (minus (mult (neg B) C) A).  */
-      if (GET_CODE (op1) == MULT
+      if (!HONOR_SIGN_DEPENDENT_ROUNDING (mode)
+	  && GET_CODE (op1) == MULT
 	  && GET_CODE (op0) == NEG)
 	{
 	  rtx in1, in2;
