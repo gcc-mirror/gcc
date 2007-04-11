@@ -1,3 +1,10 @@
+2007-04-11  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* reload.c (find_reloads_toplev, find_reloads_address,
+	find_reloads_address_1, find_reloads_subreg_address): Use rtx_equal_p,
+	not a pointer equality test, to decide if we need to call
+	push_reg_equiv_alt_mem.
+
 2007-04-11  Sebastian Pop  <sebastian.pop@inria.fr>
 
 	* tree-data-ref.c (affine_function_zero_p, constant_access_functions,
