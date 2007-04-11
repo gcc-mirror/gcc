@@ -52,50 +52,49 @@
 #define _GLIBCXX_CSTRING 1
 
 // Get rid of those macros defined in <string.h> in lieu of real functions.
+#undef memchr
+#undef memcmp
 #undef memcpy
 #undef memmove
-#undef strcpy
-#undef strncpy
+#undef memset
 #undef strcat
-#undef strncat
-#undef memcmp
+#undef strchr
 #undef strcmp
 #undef strcoll
-#undef strncmp
-#undef strxfrm
-#undef memchr
-#undef strchr
+#undef strcpy
 #undef strcspn
+#undef strerror
+#undef strlen
+#undef strncat
+#undef strncmp
+#undef strncpy
 #undef strpbrk
 #undef strrchr
 #undef strspn
 #undef strstr
 #undef strtok
-#undef memset
-#undef strerror
-#undef strlen
+#undef strxfrm
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
+  using ::memchr;
+  using ::memcmp;
   using ::memcpy;
   using ::memmove;
-  using ::strcpy;
-  using ::strncpy;
+  using ::memset;
   using ::strcat;
-  using ::strncat;
-  using ::memcmp;
   using ::strcmp;
   using ::strcoll;
-  using ::strncmp;
-  using ::strxfrm;
+  using ::strcpy;
   using ::strcspn;
-  using ::strspn;
-  using ::strtok;
-  using ::memset;
   using ::strerror;
   using ::strlen;
-
-  using ::memchr;
+  using ::strncat;
+  using ::strncmp;
+  using ::strncpy;
+  using ::strspn;
+  using ::strtok;
+  using ::strxfrm;
 
   inline void*
   memchr(void* __p, int __c, size_t __n)

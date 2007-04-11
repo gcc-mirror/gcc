@@ -161,8 +161,8 @@ PB_DS_CLASS_C_DEC::
 calc_max_num_coll()
 {
   // max_col <-- \sqrt{2 load \ln( 2 m \ln( m ) ) }
-  const double ln_arg = 2 * m_size * ::log(double(m_size));
-  m_max_col = size_type(::ceil(::sqrt(2 * m_load * ::log(ln_arg))));
+  const double ln_arg = 2 * m_size * std::log(double(m_size));
+  m_max_col = size_type(std::ceil(std::sqrt(2 * m_load * std::log(ln_arg))));
 
 #ifdef PB_DS_HT_MAP_RESIZE_TRACE_
   std::cerr << "chmccrt::calc_max_num_coll " 

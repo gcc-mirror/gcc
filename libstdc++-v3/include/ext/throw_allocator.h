@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -109,7 +109,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       : _M_throw_prob_orig(_S_throw_prob)
       {
 	_S_throw_prob =
-	  1 - ::pow(double(1 - _S_throw_prob), double(0.5 / (size + 1)));
+	  1 - std::pow(double(1 - _S_throw_prob), double(0.5 / (size + 1)));
       }
 
       ~group_throw_prob_adjustor()

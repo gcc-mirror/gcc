@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -76,7 +76,7 @@ namespace pb_ds
 
       counter_lu_metadata<size_type>
       operator()(size_type max_size) const
-      { return counter_lu_metadata<Size_Type>(rand() % max_size); }
+      { return counter_lu_metadata<Size_Type>(std::rand() % max_size); }
 
       template<typename Metadata_Reference>
       bool
