@@ -69,17 +69,17 @@ may_propagate_copy (tree dest, tree orig)
       && TREE_CODE (SSA_NAME_VAR (dest)) == MEMORY_PARTITION_TAG)
     return (TREE_CODE (orig) == SSA_NAME
             && !is_gimple_reg (orig)
-	    && (bitmap_bit_p (MPT_SYMBOLS (SSA_NAME_VAR (dest)),
-	                      DECL_UID (SSA_NAME_VAR (orig)))
-	        || SSA_NAME_VAR (dest) == SSA_NAME_VAR (orig)));
+	    && (SSA_NAME_VAR (dest) == SSA_NAME_VAR (orig)
+	        || bitmap_bit_p (MPT_SYMBOLS (SSA_NAME_VAR (dest)),
+	                         DECL_UID (SSA_NAME_VAR (orig)))));
 
   if (TREE_CODE (orig) == SSA_NAME
       && TREE_CODE (SSA_NAME_VAR (orig)) == MEMORY_PARTITION_TAG)
     return (TREE_CODE (dest) == SSA_NAME
             && !is_gimple_reg (dest)
-	    && (bitmap_bit_p (MPT_SYMBOLS (SSA_NAME_VAR (orig)),
-	                      DECL_UID (SSA_NAME_VAR (dest)))
-	        || SSA_NAME_VAR (dest) == SSA_NAME_VAR (orig)));
+	    && (SSA_NAME_VAR (dest) == SSA_NAME_VAR (orig)
+                || bitmap_bit_p (MPT_SYMBOLS (SSA_NAME_VAR (orig)),
+	                         DECL_UID (SSA_NAME_VAR (dest)))));
   
   /* Do not copy between types for which we *do* need a conversion.  */
   if (!tree_ssa_useless_type_conversion_1 (type_d, type_o))

@@ -506,6 +506,9 @@ decode_options (unsigned int argc, const char **argv)
           /* PRE tends to generate bigger code.  */
           flag_tree_pre = 1;
 	}
+
+      /* Allow more virtual operators to increase alias precision.  */
+      set_param_value ("max-aliased-vops", 500);
     }
 
   if (optimize >= 3)
@@ -513,6 +516,10 @@ decode_options (unsigned int argc, const char **argv)
       flag_inline_functions = 1;
       flag_unswitch_loops = 1;
       flag_gcse_after_reload = 1;
+
+      /* Allow even more virtual operators.  */
+      set_param_value ("max-aliased-vops", 1000);
+      set_param_value ("avg-aliased-vops", 3);
     }
 
   if (optimize < 2 || optimize_size)

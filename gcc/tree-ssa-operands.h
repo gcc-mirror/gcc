@@ -357,8 +357,4 @@ typedef struct ssa_operand_iterator_d
 /* This macro counts the number of operands in STMT matching FLAGS.  */
 #define NUM_SSA_OPERANDS(STMT, FLAGS)	num_ssa_operands (STMT, FLAGS)
 
-extern tree get_mpt_for (tree);
-extern void dump_memory_partitions (FILE *);
-extern void debug_memory_partitions (void);
-
 #endif  /* GCC_TREE_SSA_OPERANDS_H  */

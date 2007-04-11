@@ -6588,10 +6588,29 @@ The maximum instructions CSE process before flushing. The default is 1000.
 
 @item max-aliased-vops
 
-Maximum number of virtual operands per statement allowed to represent
-aliases before triggering the alias grouping heuristic.  Alias
-grouping reduces compile times and memory consumption needed for
-aliasing at the expense of precision loss in alias information.
+Maximum number of virtual operands per function allowed to represent
+aliases before triggering the alias partitioning heuristic.  Alias
+partitioning reduces compile times and memory consumption needed for
+aliasing at the expense of precision loss in alias information.  The
+default value for this parameter is 100 for -O1, 500 for -O2 and 1000
+for -O3.
+
+Notice that if a function contains more memory statements than the
+value of this parameter, it is not really possible to achieve this
+reduction.  In this case, the compiler will use the number of memory
+statements as the value for @option{max-aliased-vops}.
+
+@item avg-aliased-vops
+
+Average number of virtual operands per statement allowed to represent
+aliases before triggering the alias partitioning heuristic.  This
+works in conjunction with @option{max-aliased-vops}.  If a function
+contains more than @option{max-aliased-vops} virtual operators, then
+memory symbols will be grouped into memory partitions until either the
+total number of virtual operators is below @option{max-aliased-vops}
+or the average number of virtual operators per memory statement is
+below @option{avg-aliased-vops}.  The default value for this parameter
+is 1 for -O1 and -O2, and 3 for -O3.
 
 @item ggc-min-expand
 

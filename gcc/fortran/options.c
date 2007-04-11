@@ -117,10 +117,6 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   /* -fshort-enums can be default on some targets.  */
   gfc_option.fshort_enums = targetm.default_short_enums ();
 
-  /* Increase MAX_ALIASED_VOPS to account for different characteristics
-     of Fortran regarding VOPs.  */
-  MAX_ALIASED_VOPS = 50;
-
   return CL_Fortran;
 }
 

@@ -49,12 +49,6 @@ struct alias_info
   struct alias_map_d **pointers;
   size_t num_pointers;
 
-  /* Number of function calls found in the program.  */
-  size_t num_calls_found;
-
-  /* Number of const/pure function calls found in the program.  */
-  size_t num_pure_const_calls_found;
-
   /* Variables that have been written to directly (i.e., not through a
      pointer dereference).  */
   struct pointer_set_t *written_vars;
@@ -71,6 +65,7 @@ struct alias_info
 
 /* In tree-ssa-alias.c.  */
 enum escape_type is_escape_site (tree);
+void update_mem_sym_stats_from_stmt (tree, tree, long, long);
 
 /* In tree-ssa-structalias.c.  */
 extern void compute_points_to_sets (struct alias_info *);
