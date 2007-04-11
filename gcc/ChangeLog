@@ -1,3 +1,13 @@
+2007-04-11  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin-protos.h (bfin_expand_movmem): Renamed from
+	bfin_expand_strmov.
+	* config/bfin/bfin.c (bfin_expand_prologue, bfin_delegitimize_address,
+	bfin_function_ok_for_sibcall, split_load_immediate): Remove unused
+	variables.
+	(initialize_trampoline): Don't use old-style function definition.
+	(bfin_secondary_reload): Mark IN_P argument as unused.
+
 2007-04-10  Sebastian Pop  <sebastian.pop@inria.fr>
 
 	PR tree-optimization/31343
