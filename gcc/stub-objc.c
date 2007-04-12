@@ -197,7 +197,7 @@ objc_finish_method_definition (tree ARG_UNUSED (fndecl))
 
 tree
 objc_build_keyword_decl (tree ARG_UNUSED (selector),
-			 tree ARG_UNUSED (typename),
+			 tree ARG_UNUSED (type),
 			 tree ARG_UNUSED (identifier))
 {
   return 0;
