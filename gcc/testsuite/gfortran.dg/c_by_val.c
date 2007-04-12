@@ -1,14 +1,18 @@
 /*  Passing from fortran to C by value, using %VAL.  */
 
 #include <inttypes.h>
-#include <complex.h>
+
+/* We used to #include <complex.h>, but this fails for some platforms
+   (like cygwin) who don't have it yet.  */
+#define complex __complex__
+#define _Complex_I (1.0iF)
 
 extern void f_to_f__ (float*, float, float*, float**);
 extern void f_to_f8__ (double*, double, double*, double**);
 extern void i_to_i__ (int*, int, int*, int**);
 extern void i_to_i8__ (int64_t*, int64_t, int64_t*, int64_t**);
-extern void c_to_c__ (float _Complex*, float _Complex, float _Complex*, float _Complex**);
-extern void c_to_c8__ (double _Complex*, double _Complex, double _Complex*, double _Complex**);
+extern void c_to_c__ (complex float*, complex float, complex float*, complex float**);
+extern void c_to_c8__ (complex double*, complex double, complex double*, complex double**);
 extern void abort (void);
 
 void
@@ -52,7 +56,7 @@ i_to_i8__(int64_t *retval, int64_t i1, int64_t *i2, int64_t **i3)
 }
 
 void
-c_to_c__(float _Complex *retval, float _Complex c1, float _Complex *c2, float _Complex **c3)
+c_to_c__(complex float *retval, complex float c1, complex float *c2, complex float **c3)
 {
   if ( c1 != *c2    ) abort();
   if ( c1 != *(*c3) ) abort();
@@ -62,7 +66,7 @@ c_to_c__(float _Complex *retval, float _Complex c1, float _Complex *c2, float _C
 }
 
 void
-c_to_c8__(double _Complex *retval, double _Complex c1, double _Complex *c2, double _Complex **c3)
+c_to_c8__(complex double *retval, complex double c1, complex double *c2, complex double **c3)
 {
   if ( c1 != *c2    ) abort();
   if ( c1 != *(*c3) ) abort();
