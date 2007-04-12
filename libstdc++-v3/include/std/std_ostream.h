@@ -1,6 +1,7 @@
 // Output streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2006
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+// 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -42,6 +43,7 @@
 #pragma GCC system_header
 
 #include <ios>
+#include <bits/ostream_insert.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -71,31 +73,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef num_put<_CharT, ostreambuf_iterator<_CharT, _Traits> >        
       							__num_put_type;
       typedef ctype<_CharT>           			__ctype_type;
-
-      template<typename _CharT2, typename _Traits2>
-        friend basic_ostream<_CharT2, _Traits2>&
-        operator<<(basic_ostream<_CharT2, _Traits2>&, _CharT2);
- 
-      template<typename _Traits2>
-        friend basic_ostream<char, _Traits2>&
-        operator<<(basic_ostream<char, _Traits2>&, char);
- 
-      template<typename _CharT2, typename _Traits2>
-        friend basic_ostream<_CharT2, _Traits2>&
-        operator<<(basic_ostream<_CharT2, _Traits2>&, const _CharT2*);
- 
-      template<typename _Traits2>
-        friend basic_ostream<char, _Traits2>&
-        operator<<(basic_ostream<char, _Traits2>&, const char*);
- 
-      template<typename _CharT2, typename _Traits2>
-        friend basic_ostream<_CharT2, _Traits2>&
-        operator<<(basic_ostream<_CharT2, _Traits2>&, const char*);
-
-      template<typename _CharT2, typename _Traits2, typename _Alloc>
-        friend basic_ostream<_CharT2, _Traits2>&
-        operator<<(basic_ostream<_CharT2, _Traits2>&,
-		   const basic_string<_CharT2, _Traits2, _Alloc>&);
 
       // [27.6.2.2] constructor/destructor
       /**
@@ -318,20 +295,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  this->setstate(ios_base::badbit);
       }
 
-      void
-      _M_write(char_type __c, streamsize __n)
-      {
-	for (; __n > 0; --__n)
-	  {
-	    const int_type __put = this->rdbuf()->sputc(__c);
-	    if (traits_type::eq_int_type(__put, traits_type::eof()))
-	      {
-		this->setstate(ios_base::badbit);
-		break;
-	      }
-	  }
-      }
-
       /**
        *  @brief  Character string insertion.
        *  @param  s  The array to insert.
@@ -405,9 +368,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<typename _ValueT>
         __ostream_type&
         _M_insert(_ValueT __v);
-
-      __ostream_type&
-      _M_insert(const char_type* __s, streamsize __n);
     };
 
   /**
@@ -491,7 +451,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __out, _CharT __c)
-    { return __out._M_insert(&__c, 1); }
+    { return __ostream_insert(__out, &__c, 1); }
 
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
@@ -502,7 +462,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template <class _Traits> 
     inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, char __c)
-    { return __out._M_insert(&__c, 1); }
+    { return __ostream_insert(__out, &__c, 1); }
 
   // Signed and unsigned
   template<class _Traits>
@@ -537,7 +497,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       if (!__s)
 	__out.setstate(ios_base::badbit);
       else
-	__out._M_insert(__s, static_cast<streamsize>(_Traits::length(__s)));
+	__ostream_insert(__out, __s,
+			 static_cast<streamsize>(_Traits::length(__s)));
       return __out;
     }
 
@@ -553,7 +514,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       if (!__s)
 	__out.setstate(ios_base::badbit);
       else
-	__out._M_insert(__s, static_cast<streamsize>(_Traits::length(__s)));
+	__ostream_insert(__out, __s,
+			 static_cast<streamsize>(_Traits::length(__s)));
       return __out;
     }
 

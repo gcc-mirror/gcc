@@ -615,39 +615,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _CharT, typename _Traits, typename _Alloc,
            template <typename, typename, typename> class _Base>
-    basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>& __out,
-	       const __gnu_cxx::__versa_string<_CharT, _Traits,
-	                                       _Alloc, _Base>& __str)
-    {
-      typedef basic_ostream<_CharT, _Traits>            __ostream_type;
-
-      typename __ostream_type::sentry __cerb(__out);
-      if (__cerb)
-	{
-	  const streamsize __w = __out.width();
-	  streamsize __len = static_cast<streamsize>(__str.size());
-	  const _CharT* __s = __str.data();
-
-	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	  // 25. String operator<< uses width() value wrong
-	  if (__w > __len)
-	    {
-	      _CharT* __cs = (static_cast<
-			      _CharT*>(__builtin_alloca(sizeof(_CharT) * __w)));
-	      __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __cs,
-					     __s, __w, __len, false);
-	      __s = __cs;
-	      __len = __w;
-	    }
-	  __out._M_write(__s, __len);
-	  __out.width(0);
-	}
-      return __out;
-    }
-
-  template<typename _CharT, typename _Traits, typename _Alloc,
-           template <typename, typename, typename> class _Base>
     basic_istream<_CharT, _Traits>&
     getline(basic_istream<_CharT, _Traits>& __in,
 	    __gnu_cxx::__versa_string<_CharT, _Traits, _Alloc, _Base>& __str,

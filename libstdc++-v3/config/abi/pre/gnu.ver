@@ -676,8 +676,7 @@ GLIBCXX_3.4.9 {
 
     _ZSt21__copy_streambufs_eofI[cw]St11char_traitsI[cw]EE[il]PSt15basic_streambuf*;
 
-    _ZNSo9_M_insertEPKc[il];
-    _ZNSt13basic_ostreamIwSt11char_traitsIwEE9_M_insertEPKw[il];
+    _ZSt16__ostream_insert*;
 
     _ZN11__gnu_debug19_Safe_sequence_base12_M_get_mutexEv;
     _ZN11__gnu_debug19_Safe_iterator_base16_M_attach_singleEPNS_19_Safe_sequence_baseEb;

@@ -1,6 +1,6 @@
 // Versatile string utility -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,6 +44,7 @@
 #include <bits/functexcept.h>
 #include <locale>
 #include <algorithm> // For std::distance, srd::search.
+#include <bits/ostream_insert.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
