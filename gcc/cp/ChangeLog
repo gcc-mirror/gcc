@@ -1,3 +1,8 @@
+2007-04-10  Mike Stump  <mrs@apple.com>
+
+	* class.c (dfs_accumulate_vtbl_inits): Slam the vtbl type back to
+	vtbl_ptr_type_node to ensure the mode is correct.
+
 2007-04-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/31449

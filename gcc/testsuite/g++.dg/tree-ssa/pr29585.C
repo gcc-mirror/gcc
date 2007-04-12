@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -w" } */
 
 class ios_base{};
 struct basic_ostream : virtual ios_base{};

@@ -1,3 +1,7 @@
+2007-04-10  Mike Stump  <mrs@apple.com>
+
+	* g++.dg/tree-ssa/pr29585.C: Don't die on an expected warning.
+
 2007-04-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/31449
