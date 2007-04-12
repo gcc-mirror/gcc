@@ -78,7 +78,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
   "-lgcc %{mrtp:--exclude-libs=libc_internal,libgcc -lc_internal}"
 
 #undef VXWORKS_STARTFILE_SPEC
-#define	VXWORKS_STARTFILE_SPEC "%{mrtp:%{!shared:crt0.o%s}}"
+#define	VXWORKS_STARTFILE_SPEC "%{mrtp:%{!shared:-l:crt0.o}}"
 #define VXWORKS_ENDFILE_SPEC ""
 
 /* Do VxWorks-specific parts of OVERRIDE_OPTIONS.  */
