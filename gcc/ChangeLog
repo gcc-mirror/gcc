@@ -1,5 +1,11 @@
 2007-04-12  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips.c (mips_ok_for_lazy_binding_p): Always return
+	false for locally-binding symbols.
+	(mips_dangerous_for_la25_p): Check mips_global_symbol_p.
+
+2007-04-12  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips-protos.h (SYMBOL_GOT_LOCAL): Rename to...
 	(SYMBOL_GOT_PAGE_OFST): ...this.
 	(SYMBOL_GOT_GLOBAL): Rename to...
