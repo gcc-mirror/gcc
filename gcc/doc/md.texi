@@ -2249,6 +2249,14 @@ Unsigned 3 bit integer (in the range 0 to 7)
 @item P@var{n}
 Constant @var{n}, where @var{n} is a single-digit constant in the range 0 to 4.
 
+@item PA
+An integer equal to one of the MACFLAG_XXX constants that is suitable for
+use with either accumulator.
+
+@item PB
+An integer equal to one of the MACFLAG_XXX constants that is suitable for
+use only with accumulator A1.
+
 @item M1
 Constant 255.
 
