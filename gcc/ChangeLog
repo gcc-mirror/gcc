@@ -1,5 +1,17 @@
 2007-04-12  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips-protos.h: In comments, refer to loadgp_absolute
+	rather than loadgp_noshared.
+	* config/mips/mips.c (mips_emit_loadgp): Use gen_loadgp_absolute
+	instead of gen_loadgp_noshared.  Use gen_loadgp_newabi instead of
+	gen_loadgp.
+	* config/mips/mips.md (loadgp): Rename to...
+	(loadgp_newabi): ...this.
+	(loadgp_noshared): Rename to...
+	(loadgp_absolute): ...this.
+
+2007-04-12  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips.c (mips_ok_for_lazy_binding_p): Always return
 	false for locally-binding symbols.
 	(mips_dangerous_for_la25_p): Check mips_global_symbol_p.
