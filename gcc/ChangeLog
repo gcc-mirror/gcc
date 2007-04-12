@@ -17,6 +17,21 @@
 	(flag_macinit1hi): Tighten constraints.
 	(flag_mul_macv2hi_parts_acconly): New pattern.
 
+	2007-02-11  Jie Zhang  <jie.zhang@analog.com>
+	* config/bfin/bfin.opt (msim): New option.
+	(mcpu=): New option.
+	* config/bfin/bfin-protos.h (enum bfin_cpu): New.
+	(bfin_cpu_t): Typedef of enum bfin_cpu.
+	(bfin_cpu_type): New declaration.
+	* config/bfin/elf.h (STARTFILE_SPEC): Add support for
+	-msim and -mcpu= options.
+	(LIB_SPEC): Likewise.
+	* config/bfin/bfin.c (bfin_cpu_type): Define.
+	(bfin_handle_option): Handle -mcpu= option.
+	* config/bfin/bfin.h (DEFAULT_CPU_TYPE): Define as BFIN_CPU_BF532.
+	(TARGET_CPU_CPP_BUILTINS): Define __ADSPBF531__, __ADSPBF532__,
+	__ADSPBF533__ or __ADSPBF537__ according to the cpu type.
+
 2007-04-12  Richard Sandiford  <richard@codesourcery.com>
 
 	* config.gcc (*-*-vxworks*): Don't add to tm_files in this stanza.
