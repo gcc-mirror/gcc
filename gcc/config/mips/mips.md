@@ -221,15 +221,16 @@
 ;; This attribute is YES if the instruction is a jal macro (not a
 ;; real jal instruction).
 ;;
-;; jal is always a macro for o32 and o64 abicalls because it includes an
-;; instruction to restore $gp.  Direct jals are also macros for -mshared
-;; abicalls because they first load the target address into $25.
+;; jal is always a macro for TARGET_CALL_CLOBBERED_GP because it includes
+;; an instruction to restore $gp.  Direct jals are also macros for
+;; flag_pic && !TARGET_ABSOLUTE_ABICALLS because they first load
+;; the target address into a register.
 (define_attr "jal_macro" "no,yes"
   (cond [(eq_attr "jal" "direct")
-	 (symbol_ref "TARGET_ABICALLS
-		      && (TARGET_OLDABI || !TARGET_ABSOLUTE_ABICALLS)")
+	 (symbol_ref "TARGET_CALL_CLOBBERED_GP
+		      || (flag_pic && !TARGET_ABSOLUTE_ABICALLS)")
 	 (eq_attr "jal" "indirect")
-	 (symbol_ref "TARGET_ABICALLS && TARGET_OLDABI")]
+	 (symbol_ref "TARGET_CALL_CLOBBERED_GP")]
 	(const_string "no")))
 
 ;; Classification of each insn.
@@ -4947,14 +4948,14 @@
   [(set_attr "type" "jump")
    (set_attr "mode" "none")])
 
-;; For TARGET_ABICALLS, we save the gp in the jmp_buf as well.
+;; For TARGET_USE_GOT, we save the gp in the jmp_buf as well.
 ;; While it is possible to either pull it off the stack (in the
 ;; o32 case) or recalculate it given t9 and our target label,
 ;; it takes 3 or 4 insns to do so.
 
 (define_expand "builtin_setjmp_setup"
   [(use (match_operand 0 "register_operand"))]
-  "TARGET_ABICALLS"
+  "TARGET_USE_GOT"
 {
   rtx addr;
 
@@ -4969,7 +4970,7 @@
 
 (define_expand "builtin_longjmp"
   [(use (match_operand 0 "register_operand"))]
-  "TARGET_ABICALLS"
+  "TARGET_USE_GOT"
 {
   /* The elements of the buffer are, in order:  */
   int W = GET_MODE_SIZE (Pmode);
@@ -5105,7 +5106,7 @@
 (define_insn_and_split "exception_receiver"
   [(set (reg:SI 28)
 	(unspec_volatile:SI [(const_int 0)] UNSPEC_EH_RECEIVER))]
-  "TARGET_ABICALLS && TARGET_OLDABI"
+  "TARGET_CALL_CLOBBERED_GP"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -5143,7 +5144,7 @@
 		   (match_operand:P 2 "immediate_operand" "")
 		   (reg:P FAKE_CALL_REGNO)]
 		  UNSPEC_LOAD_CALL))]
-  "TARGET_ABICALLS"
+  "TARGET_USE_GOT"
   "<load>\t%0,%R2(%1)"
   [(set_attr "type" "load")
    (set_attr "mode" "<MODE>")
@@ -5157,9 +5158,10 @@
 ;; constraints.
 
 ;; When we use an indirect jump, we need a register that will be
-;; preserved by the epilogue.  Since TARGET_ABICALLS forces us to
-;; use $25 for this purpose -- and $25 is never clobbered by the
-;; epilogue -- we might as well use it for !TARGET_ABICALLS as well.
+;; preserved by the epilogue.  Since TARGET_USE_PIC_FN_ADDR_REG forces
+;; us to use $25 for this purpose -- and $25 is never clobbered by the
+;; epilogue -- we might as well use it for !TARGET_USE_PIC_FN_ADDR_REG
+;; as well.
 
 (define_expand "sibcall"
   [(parallel [(call (match_operand 0 "")

@@ -1,3 +1,42 @@
+2007-04-12  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.h (TARGET_SPLIT_CALLS): Check
+	TARGET_CALL_CLOBBERED_GP.
+	(TARGET_SIBCALLS): Check TARGET_USE_GOT instead of TARGET_ABICALLS.
+	(TARGET_USE_GOT, TARGET_CALL_CLOBBERED_GP): New macros.
+	(TARGET_CALL_SAVED_GP, TARGET_USE_PIC_FN_ADDR_REG): Likewise.
+	(STARTING_FRAME_OFFSET): Check TARGET_CALL_CLOBBERED_GP instead
+	of TARGET_ABICALLS && !TARGET_NEWABI.
+	(MIPS_CALL): Check TARGET_USE_GOT instead of TARGET_ABICALLS.
+	* config/mips/mips.c (mips_load_call_address): Check
+	TARGET_CALL_SAVED_GP instead of TARGET_NEWABI.
+	(mips_global_pointer): Check TARGET_USE_GOT instead of TARGET_ABICALLS.
+	Check TARGET_CALL_SAVED_GP instead of TARGET_NEWABI.
+	(mips_save_reg_p): Check TARGET_CALL_SAVED_GP instead of
+	TARGET_ABICALLS && TARGET_NEWABI.
+	(mips_current_loadgp_style): Check TARGET_USE_GOT instead of
+	TARGET_ABICALLS.
+	(mips_expand_prologue): Check TARGET_OLDABI instead of !TARGET_NEWABI.
+	(mips_expand_epilogue): Check TARGET_CALL_SAVED_GP instead of
+	TARGET_ABICALLS && TARGET_NEWABI.
+	(mips_output_mi_thunk): Check TARGET_USE_GOT instead of
+	TARGET_ABICALLS.  Check TARGET_CALL_SAVED_GP instead of
+	TARGET_NEWABI.  Use TARGET_USE_PIC_FN_ADDR_REG to decide
+	whether indirect calls must use $25.
+	(mips_extra_live_on_entry): Check TARGET_GOT instead of
+	TARGET_ABICALLS.
+	* config/mips/mips.md (jal_macro): Check flag_pic and
+	TARGET_CALL_CLOBBERED_GP instead of TARGET_ABICALLS and TARGET_NEWABI.
+	(builtin_setjmp_setup, builtin_longjmp): Check TARGET_USE_GOT
+	instead of TARGET_ABICALLS.
+	(exception_receiver): Check TARGET_CALL_CLOBBERED_GP instead of
+	TARGET_ABICALLS && TARGET_OLDABI.
+	(load_call<mode>): Check TARGET_USE_GOT instead of TARGET_ABICALLS.
+	(sibcall): In the comment above the define_insn, mention
+	TARGET_USE_PIC_FN_ADDR_REG instead of TARGET_ABICALLS.
+	* config/mips/constraints.md (c): Check TARGET_USE_PIC_FN_ADDR_REG
+	instead of TARGET_ABICALLS.
+
 2007-04-12  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* doc/md.texi (Blackfin family constraints): Document PA and PB.
