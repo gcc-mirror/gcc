@@ -1844,7 +1844,14 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
       case REF_COMPONENT:
 	gfc_get_component_attr (&attr, ref->u.c.component);
 	if (ts != NULL)
-	  *ts = ref->u.c.component->ts;
+	  {
+	    *ts = ref->u.c.component->ts;
+	    /* Don't set the string length if a substring reference
+	       follows.  */
+	    if (ts->type == BT_CHARACTER
+		&& ref->next && ref->next->type == REF_SUBSTRING)
+		ts->cl = NULL;
+	  }
 
 	pointer = ref->u.c.component->pointer;
 	allocatable = ref->u.c.component->allocatable;

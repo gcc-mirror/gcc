@@ -5135,8 +5135,9 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 		rlen = mpz_get_si (code->expr2->ts.cl->length->value.integer);
 
 	      if (rlen && llen && rlen > llen)
-		gfc_warning_now ("rhs of CHARACTER assignment at %L will be "
-				 "truncated (%d/%d)", &code->loc, rlen, llen);
+		gfc_warning_now ("CHARACTER expression will be truncated "
+				 "in assignment (%d/%d) at %L",
+				 llen, rlen, &code->loc);
 	    }
 
 	  if (gfc_pure (NULL))
