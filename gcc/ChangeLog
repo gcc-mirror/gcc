@@ -1,3 +1,8 @@
+2007-04-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (pa_som_asm_init_sections): Ensure that cfun->machine is not
+	null before emitting a .nsubspa directive.
+
 2007-04-11  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-alias.c (dump_mem_ref_stats): Do not call
