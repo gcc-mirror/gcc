@@ -1084,6 +1084,8 @@ do {					       \
      : (STR)[1] == '2' ? (VALUE) == 2 \
      : (STR)[1] == '3' ? (VALUE) == 3 \
      : (STR)[1] == '4' ? (VALUE) == 4 \
+     : (STR)[1] == 'A' ? (VALUE) != MACFLAG_M && (VALUE) != MACFLAG_IS_M \
+     : (STR)[1] == 'B' ? (VALUE) == MACFLAG_M || (VALUE) == MACFLAG_IS_M \
      : 0)
 
 #define CONST_OK_FOR_K(VALUE, STR)			\
@@ -1142,6 +1144,17 @@ do {					       \
 
 #define EXTRA_CONSTRAINT(VALUE, D) \
     ((D) == 'Q' ? GET_CODE (VALUE) == SYMBOL_REF : 0)
+
+/* Evaluates to true if A and B are mac flags that can be used
+   together in a single multiply insn.  That is the case if they are
+   both the same flag not involving M, or if one is a combination of
+   the other with M.  */
+#define MACFLAGS_MATCH_P(A, B) \
+ ((A) == (B) \
+  || ((A) == MACFLAG_NONE && (B) == MACFLAG_M) \
+  || ((A) == MACFLAG_M && (B) == MACFLAG_NONE) \
+  || ((A) == MACFLAG_IS && (B) == MACFLAG_IS_M) \
+  || ((A) == MACFLAG_IS_M && (B) == MACFLAG_IS))
 
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section

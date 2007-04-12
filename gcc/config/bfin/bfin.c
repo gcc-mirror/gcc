@@ -1356,6 +1356,9 @@ print_operand (FILE *file, rtx x, char code)
 		case MACFLAG_M:
 		  fputs ("(M)", file);
 		  break;
+		case MACFLAG_IS_M:
+		  fputs ("(IS,M)", file);
+		  break;
 		case MACFLAG_ISS2:
 		  fputs ("(ISS2)", file);
 		  break;
@@ -2014,10 +2017,12 @@ bfin_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x, enum reg_class class,
   /* Data can usually be moved freely between registers of most classes.
      AREGS are an exception; they can only move to or from another register
      in AREGS or one in DREGS.  They can also be assigned the constant 0.  */
-  if (x_class == AREGS)
-    return class == DREGS || class == AREGS ? NO_REGS : DREGS;
+  if (x_class == AREGS || x_class == EVEN_AREGS || x_class == ODD_AREGS)
+    return (class == DREGS || class == AREGS || class == EVEN_AREGS
+	    || class == ODD_AREGS
+	    ? NO_REGS : DREGS);
 
-  if (class == AREGS)
+  if (class == AREGS || class == EVEN_AREGS || class == ODD_AREGS)
     {
       if (x != const0_rtx && x_class != DREGS)
 	return DREGS;

@@ -1,3 +1,22 @@
+2007-04-12  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* doc/md.texi (Blackfin family constraints): Document PA and PB.
+	* config/bfin/bfin.h (CONST_OK_FOR_P): Handle PA and PB.
+	(MACFLAGS_MATCH_P): New macro.
+	* config/bfin/bfin.c (print_operand): Handle MACFLAG_IS_M.
+	(bfin_secondary_reload): Treat EVEN_AREGS and ODD_AREGS like AREGS.
+	* config/bfin/bfin.md (MACFLAG_IS_M): New constant.  Renumber some of
+	the other MACFLAG constants.
+	(sum_of_accumulators, lshrpdi3, ashrpdi3): New patterns.
+	(flag_machi): Tighten constraints.  Renumber some of the operands.
+	(flag_machi_acconly): Tighten constraints.  Correct operand numbers in
+	output template.
+	(flag_machi_parts_acconly): New pattern.
+	(flag_macinithi): Tighten constraints.  Allow any accumulator to be
+	used.
+	(flag_macinit1hi): Tighten constraints.
+	(flag_mul_macv2hi_parts_acconly): New pattern.
+
 2007-04-12  Richard Sandiford  <richard@codesourcery.com>
 
 	* config.gcc (*-*-vxworks*): Don't add to tm_files in this stanza.
