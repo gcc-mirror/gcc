@@ -22,10 +22,10 @@ end subroutine bar
 
 program test
   implicit none
-  character(len=0), parameter :: s0 = ""
+  character(len=0), parameter :: s0 = ""   ! { dg-warning "zero length" }
   character(len=1), parameter :: s1 = "a"
   character(len=2), parameter :: s2 = "ab"
-  character(len=0) :: t0
+  character(len=0) :: t0 ! { dg-warning "CHARACTER variable has zero length" }
   character(len=1) :: t1
   character(len=2) :: t2
   integer :: i
