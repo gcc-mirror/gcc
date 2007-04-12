@@ -1128,6 +1128,9 @@ option.
 This will display the options supported for @var{language}, where 
 @var{language} is the name of one of the languages supported in this 
 version of GCC.
+
+@item @samp{common}
+This will display the options that are common to all languages.
 @end table
 
 It is possible to further refine the output of the @option{--help=}
