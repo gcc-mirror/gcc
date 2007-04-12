@@ -4083,7 +4083,7 @@
 ;; Insn to initialize $gp for n32/n64 abicalls.  Operand 0 is the offset
 ;; of _gp from the start of this function.  Operand 1 is the incoming
 ;; function address.
-(define_insn_and_split "loadgp"
+(define_insn_and_split "loadgp_newabi"
   [(unspec_volatile [(match_operand 0 "" "")
 		     (match_operand 1 "register_operand" "")] UNSPEC_LOADGP)]
   "mips_current_loadgp_style () == LOADGP_NEWABI"
@@ -4101,7 +4101,7 @@
   [(set_attr "length" "12")])
 
 ;; Likewise, for -mno-shared code.  Operand 0 is the __gnu_local_gp symbol.
-(define_insn_and_split "loadgp_noshared"
+(define_insn_and_split "loadgp_absolute"
   [(unspec_volatile [(match_operand 0 "" "")] UNSPEC_LOADGP)]
   "mips_current_loadgp_style () == LOADGP_ABSOLUTE"
   "#"
