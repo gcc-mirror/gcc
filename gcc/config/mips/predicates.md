@@ -118,7 +118,7 @@
 	 addressing.  */
       return !TARGET_LONG_CALLS && !SYMBOL_REF_LONG_CALL_P (op);
 
-    case SYMBOL_GOT_GLOBAL:
+    case SYMBOL_GOT_DISP:
       /* Without explicit relocs, there is no special syntax for
 	 loading the address of a call destination into a register.
 	 Using "la $25,foo; jal $25" would prevent the lazy binding
@@ -237,18 +237,18 @@
   return mips_symbolic_constant_p (op, &type) && type == SYMBOL_GENERAL;
 })
 
-(define_predicate "global_got_operand"
+(define_predicate "got_disp_operand"
   (match_code "const,symbol_ref,label_ref")
 {
   enum mips_symbol_type type;
-  return mips_symbolic_constant_p (op, &type) && type == SYMBOL_GOT_GLOBAL;
+  return mips_symbolic_constant_p (op, &type) && type == SYMBOL_GOT_DISP;
 })
 
-(define_predicate "local_got_operand"
+(define_predicate "got_page_ofst_operand"
   (match_code "const,symbol_ref,label_ref")
 {
   enum mips_symbol_type type;
-  return mips_symbolic_constant_p (op, &type) && type == SYMBOL_GOT_LOCAL;
+  return mips_symbolic_constant_p (op, &type) && type == SYMBOL_GOT_PAGE_OFST;
 })
 
 (define_predicate "stack_operand"

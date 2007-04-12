@@ -37,23 +37,23 @@ Boston, MA 02110-1301, USA.  */
    SYMBOL_CONSTANT_POOL
        The symbol refers to something in the mips16 constant pool.
 
-   SYMBOL_GOT_LOCAL
-       The symbol refers to local data that will be found using
-       the global offset table.
+   SYMBOL_GOT_PAGE_OFST
+       The symbol's value will be calculated by loading an address
+       from the GOT and then applying a 16-bit offset.
 
-   SYMBOL_GOT_GLOBAL
-       Likewise non-local data.
+   SYMBOL_GOT_DISP
+       The symbol's value will be loaded directly from the GOT.
 
    SYMBOL_GOTOFF_PAGE
-       An UNSPEC wrapper around a SYMBOL_GOT_LOCAL.  It represents the
-       offset from _gp of a GOT page entry.
+       An UNSPEC wrapper around a SYMBOL_GOT_PAGE_OFST.  It represents the
+       offset from _gp of the GOT entry.
 
-   SYMBOL_GOTOFF_GLOBAL
-       An UNSPEC wrapper around a SYMBOL_GOT_GLOBAL.  It represents the
+   SYMBOL_GOTOFF_DISP
+       An UNSPEC wrapper around a SYMBOL_GOT_DISP.  It represents the
        the offset from _gp of the symbol's GOT entry.
 
    SYMBOL_GOTOFF_CALL
-       Like SYMBOL_GOTOFF_GLOBAL, but used when calling a global function.
+       Like SYMBOL_GOTOFF_DISP, but used when calling a global function.
        The GOT entry is allowed to point to a stub rather than to the
        function itself.
 
@@ -87,10 +87,10 @@ enum mips_symbol_type {
   SYMBOL_GENERAL,
   SYMBOL_SMALL_DATA,
   SYMBOL_CONSTANT_POOL,
-  SYMBOL_GOT_LOCAL,
-  SYMBOL_GOT_GLOBAL,
+  SYMBOL_GOT_PAGE_OFST,
+  SYMBOL_GOT_DISP,
   SYMBOL_GOTOFF_PAGE,
-  SYMBOL_GOTOFF_GLOBAL,
+  SYMBOL_GOTOFF_DISP,
   SYMBOL_GOTOFF_CALL,
   SYMBOL_GOTOFF_LOADGP,
   SYMBOL_TLS,
