@@ -3354,10 +3354,10 @@ mips_load_call_address (rtx dest, rtx addr, int sibcall_p)
 {
   /* If we're generating PIC, and this call is to a global function,
      try to allow its address to be resolved lazily.  This isn't
-     possible for NewABI sibcalls since the value of $gp on entry
+     possible if TARGET_CALL_SAVED_GP since the value of $gp on entry
      to the stub would be our caller's gp, not ours.  */
   if (TARGET_EXPLICIT_RELOCS
-      && !(sibcall_p && TARGET_NEWABI)
+      && !(sibcall_p && TARGET_CALL_SAVED_GP)
       && global_got_operand (addr, VOIDmode))
     {
       rtx high, lo_sum_symbol;
@@ -6144,8 +6144,8 @@ mips_global_pointer (void)
 {
   unsigned int regno;
 
-  /* $gp is always available in non-abicalls code.  */
-  if (!TARGET_ABICALLS)
+  /* $gp is always available unless we're using a GOT.  */
+  if (!TARGET_USE_GOT)
     return GLOBAL_POINTER_REGNUM;
 
   /* We must always provide $gp when it is used implicitly.  */
@@ -6182,7 +6182,7 @@ mips_global_pointer (void)
 
   /* We need a global pointer, but perhaps we can use a call-clobbered
      register instead of $gp.  */
-  if (TARGET_NEWABI && current_function_is_leaf)
+  if (TARGET_CALL_SAVED_GP && current_function_is_leaf)
     for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
       if (!regs_ever_live[regno]
 	  && call_used_regs[regno]
@@ -6199,10 +6199,10 @@ mips_global_pointer (void)
 static bool
 mips_save_reg_p (unsigned int regno)
 {
-  /* We only need to save $gp for NewABI PIC.  */
+  /* We only need to save $gp if TARGET_CALL_SAVED_GP and only then
+     if we have not chosen a call-clobbered substitute.  */
   if (regno == GLOBAL_POINTER_REGNUM)
-    return (TARGET_ABICALLS && TARGET_NEWABI
-	    && cfun->machine->global_pointer == regno);
+    return TARGET_CALL_SAVED_GP && cfun->machine->global_pointer == regno;
 
   /* Check call-saved registers.  */
   if (regs_ever_live[regno] && !call_used_regs[regno])
@@ -6546,7 +6546,7 @@ mips_output_cplocal (void)
 enum mips_loadgp_style
 mips_current_loadgp_style (void)
 {
-  if (!TARGET_ABICALLS || cfun->machine->global_pointer == 0)
+  if (!TARGET_USE_GOT || cfun->machine->global_pointer == 0)
     return LOADGP_NONE;
 
   if (TARGET_ABSOLUTE_ABICALLS)
@@ -6858,7 +6858,7 @@ mips_expand_prologue (void)
   mips_emit_loadgp ();
 
   /* If generating o32/o64 abicalls, save $gp on the stack.  */
-  if (TARGET_ABICALLS && !TARGET_NEWABI && !current_function_is_leaf)
+  if (TARGET_ABICALLS && TARGET_OLDABI && !current_function_is_leaf)
     emit_insn (gen_cprestore (GEN_INT (current_function_outgoing_args_size)));
 
   /* If we are profiling, make sure no instructions are scheduled before
@@ -6992,10 +6992,10 @@ mips_expand_epilogue (int sibcall_p)
   if (target != stack_pointer_rtx)
     emit_move_insn (stack_pointer_rtx, target);
 
-  /* If we're using addressing macros for n32/n64 abicalls, $gp is
-     implicitly used by all SYMBOL_REFs.  We must emit a blockage
-     insn before restoring it.  */
-  if (TARGET_ABICALLS && TARGET_NEWABI && !TARGET_EXPLICIT_RELOCS)
+  /* If we're using addressing macros, $gp is implicitly used by all
+     SYMBOL_REFs.  We must emit a blockage insn before restoring $gp
+     from the stack.  */
+  if (TARGET_CALL_SAVED_GP && !TARGET_EXPLICIT_RELOCS)
     emit_insn (gen_blockage ());
 
   /* Restore the registers.  */
@@ -7086,12 +7086,12 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   reload_completed = 1;
   reset_block_changes ();
 
-  /* Pick a global pointer for -mabicalls.  Use $15 rather than $28
-     for TARGET_NEWABI since the latter is a call-saved register.  */
-  if (TARGET_ABICALLS)
+  /* Pick a global pointer.  Use a call-clobbered register if
+     TARGET_CALL_SAVED_GP, so that we can use a sibcall.  */
+  if (TARGET_USE_GOT)
     cfun->machine->global_pointer
       = REGNO (pic_offset_table_rtx)
-      = TARGET_NEWABI ? 15 : GLOBAL_POINTER_REGNUM;
+      = TARGET_CALL_SAVED_GP ? 15 : GLOBAL_POINTER_REGNUM;
 
   /* Set up the global pointer for n32 or n64 abicalls.  */
   mips_emit_loadgp ();
@@ -7137,24 +7137,27 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Jump to the target function.  Use a sibcall if direct jumps are
      allowed, otherwise load the address into a register first.  */
   fnaddr = XEXP (DECL_RTL (function), 0);
-  if (TARGET_MIPS16 || TARGET_ABICALLS || TARGET_LONG_CALLS)
+  if (TARGET_MIPS16 || TARGET_USE_GOT || TARGET_LONG_CALLS)
     {
       /* This is messy.  gas treats "la $25,foo" as part of a call
 	 sequence and may allow a global "foo" to be lazily bound.
 	 The general move patterns therefore reject this combination.
 
-	 In this context, lazy binding would actually be OK for o32 and o64,
-	 but it's still wrong for n32 and n64; see mips_load_call_address.
-	 We must therefore load the address via a temporary register if
-	 mips_dangerous_for_la25_p.
+	 In this context, lazy binding would actually be OK
+	 for TARGET_CALL_CLOBBERED_GP, but it's still wrong for
+	 TARGET_CALL_SAVED_GP; see mips_load_call_address.
+	 We must therefore load the address via a temporary
+	 register if mips_dangerous_for_la25_p.
 
 	 If we jump to the temporary register rather than $25, the assembler
 	 can use the move insn to fill the jump's delay slot.  */
-      if (TARGET_ABICALLS && !mips_dangerous_for_la25_p (fnaddr))
+      if (TARGET_USE_PIC_FN_ADDR_REG
+	  && !mips_dangerous_for_la25_p (fnaddr))
 	temp1 = gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM);
       mips_load_call_address (temp1, fnaddr, true);
 
-      if (TARGET_ABICALLS && REGNO (temp1) != PIC_FUNCTION_ADDR_REGNUM)
+      if (TARGET_USE_PIC_FN_ADDR_REG
+	  && REGNO (temp1) != PIC_FUNCTION_ADDR_REGNUM)
 	emit_move_insn (gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM), temp1);
       emit_jump_insn (gen_indirect_jump (temp1));
     }
@@ -10878,13 +10881,13 @@ mips_encode_section_info (tree decl, rtx rtl, int first)
     }
 }
 
-/* Implement TARGET_EXTRA_LIVE_ON_ENTRY.  PIC_FUNCTION_ADDR_REGNUM is live
-   on entry to a function when generating -mshared abicalls code.  */
+/* Implement TARGET_EXTRA_LIVE_ON_ENTRY.  Some code models use the incoming
+   value of PIC_FUNCTION_ADDR_REGNUM to set up the global pointer.  */
 
 static void
 mips_extra_live_on_entry (bitmap regs)
 {
-  if (TARGET_ABICALLS && !TARGET_ABSOLUTE_ABICALLS)
+  if (TARGET_USE_GOT && !TARGET_ABSOLUTE_ABICALLS)
     bitmap_set_bit (regs, PIC_FUNCTION_ADDR_REGNUM);
 }
 

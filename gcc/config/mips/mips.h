@@ -144,12 +144,11 @@ extern const struct mips_rtx_cost_data *mips_cost;
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
 /* True if the call patterns should be split into a jalr followed by
-   an instruction to restore $gp.  This is only ever true for SVR4 PIC,
-   in which $gp is call-clobbered.  It is only safe to split the load
+   an instruction to restore $gp.  It is only safe to split the load
    from the call when every use of $gp is explicit.  */
 
 #define TARGET_SPLIT_CALLS \
-  (TARGET_EXPLICIT_RELOCS && TARGET_ABICALLS && !TARGET_NEWABI)
+  (TARGET_EXPLICIT_RELOCS && TARGET_CALL_CLOBBERED_GP)
 
 /* True if we're generating a form of -mabicalls in which we can use
    operators like %hi and %lo to refer to locally-binding symbols.
@@ -173,12 +172,22 @@ extern const struct mips_rtx_cost_data *mips_cost;
 	using sibling calls in this case anyway; they would usually
 	be longer than normal calls.
 
-      - TARGET_ABICALLS && !TARGET_EXPLICIT_RELOCS.  call_insn_operand
-	accepts global constants, but "jr $25" is the only allowed
-	sibcall.  */
-
+      - TARGET_USE_GOT && !TARGET_EXPLICIT_RELOCS.  call_insn_operand
+	accepts global constants, but all sibcalls must be indirect.  */
 #define TARGET_SIBCALLS \
-  (!TARGET_MIPS16 && (!TARGET_ABICALLS || TARGET_EXPLICIT_RELOCS))
+  (!TARGET_MIPS16 && (!TARGET_USE_GOT || TARGET_EXPLICIT_RELOCS))
+
+/* True if we need to use a global offset table to access some symbols.  */
+#define TARGET_USE_GOT TARGET_ABICALLS
+
+/* True if TARGET_USE_GOT and if $gp is a call-clobbered register.  */
+#define TARGET_CALL_CLOBBERED_GP (TARGET_ABICALLS && TARGET_OLDABI)
+
+/* True if TARGET_USE_GOT and if $gp is a call-saved register.  */
+#define TARGET_CALL_SAVED_GP (TARGET_USE_GOT && !TARGET_CALL_CLOBBERED_GP)
+
+/* True if indirect calls must use register class PIC_FN_ADDR_REG.  */
+#define TARGET_USE_PIC_FN_ADDR_REG TARGET_ABICALLS
 
 /* True if .gpword or .gpdword should be used for switch tables.
 
@@ -1746,8 +1755,7 @@ extern const enum reg_class mips_regno_to_class[];
   ((flag_profile_values && ! TARGET_64BIT				\
     ? MAX (REG_PARM_STACK_SPACE(NULL), current_function_outgoing_args_size) \
     : current_function_outgoing_args_size)				\
-   + (TARGET_ABICALLS && !TARGET_NEWABI					\
-      ? MIPS_STACK_ALIGN (UNITS_PER_WORD) : 0))
+   + (TARGET_CALL_CLOBBERED_GP ? MIPS_STACK_ALIGN (UNITS_PER_WORD) : 0))
 
 #define RETURN_ADDR_RTX mips_return_addr
 
@@ -2301,13 +2309,13 @@ typedef struct mips_args {
    ("j" or "jal"), OPERANDS are its operands, and OPNO is the operand number
    of the target.
 
-   When generating -mabicalls without explicit relocation operators,
+   When generating GOT code without explicit relocation operators,
    all calls should use assembly macros.  Otherwise, all indirect
    calls should use "jr" or "jalr"; we will arrange to restore $gp
    afterwards if necessary.  Finally, we can only generate direct
    calls for -mabicalls by temporarily switching to non-PIC mode.  */
 #define MIPS_CALL(INSN, OPERANDS, OPNO)				\
-  (TARGET_ABICALLS && !TARGET_EXPLICIT_RELOCS			\
+  (TARGET_USE_GOT && !TARGET_EXPLICIT_RELOCS			\
    ? "%*" INSN "\t%" #OPNO "%/"					\
    : REG_P (OPERANDS[OPNO])					\
    ? "%*" INSN "r\t%" #OPNO "%/"				\

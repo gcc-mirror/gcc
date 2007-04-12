@@ -42,7 +42,7 @@
 (define_register_constraint "b" "ALL_REGS"
   "@internal")
 
-(define_register_constraint "c" "TARGET_ABICALLS ? PIC_FN_ADDR_REG
+(define_register_constraint "c" "TARGET_USE_PIC_FN_ADDR_REG ? PIC_FN_ADDR_REG
 				 : TARGET_MIPS16 ? M16_NA_REGS
 				 : GR_REGS"
   "A register suitable for use in an indirect jump.  This will always be
