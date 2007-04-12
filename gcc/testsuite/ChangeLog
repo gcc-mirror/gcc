@@ -1,3 +1,10 @@
+2007-04-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/24689
+	PR tree-optimization/31307
+	* g++.dg/tree-ssa/pr31307.C: New testcase.
+	* gcc.dg/tree-ssa/pr24689.c: Likewise.
+
 2007-04-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/31472

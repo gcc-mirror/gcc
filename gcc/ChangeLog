@@ -1,3 +1,15 @@
+2007-04-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/24689
+	PR tree-optimization/31307
+	* fold-const.c (operand_equal_p): Compare INTEGER_CST array
+	indices by value.
+	* gimplify.c (canonicalize_addr_expr): To be consistent with
+	gimplify_compound_lval only set operands two and three of
+	ARRAY_REFs if they are not gimple_min_invariant.  This makes
+	it never at this place.
+	* tree-ssa-ccp.c (maybe_fold_offset_to_array_ref): Likewise.
+
 2007-04-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (pa_som_asm_init_sections): Ensure that cfun->machine is not
