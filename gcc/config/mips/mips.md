@@ -4125,6 +4125,30 @@
    (set_attr "mode"	"none")
    (set_attr "length"	"0")])
 
+;; Initialize $gp for RTP PIC.  Operand 0 is the __GOTT_BASE__ symbol
+;; and operand 1 is the __GOTT_INDEX__ symbol.
+(define_insn "loadgp_rtp"
+  [(unspec_volatile [(match_operand 0 "symbol_ref_operand")
+		     (match_operand 1 "symbol_ref_operand")] UNSPEC_LOADGP)]
+  "mips_current_loadgp_style () == LOADGP_RTP"
+  "#"
+  [(set_attr "length" "12")])
+
+(define_split
+  [(unspec_volatile [(match_operand:P 0 "symbol_ref_operand")
+		     (match_operand:P 1 "symbol_ref_operand")] UNSPEC_LOADGP)]
+  "mips_current_loadgp_style () == LOADGP_RTP"
+  [(set (match_dup 2) (high:P (match_dup 3)))
+   (set (match_dup 2) (unspec:P [(match_dup 2)
+				 (match_dup 3)] UNSPEC_LOAD_GOT))
+   (set (match_dup 2) (unspec:P [(match_dup 2)
+				 (match_dup 4)] UNSPEC_LOAD_GOT))]
+{
+  operands[2] = pic_offset_table_rtx;
+  operands[3] = mips_unspec_address (operands[0], SYMBOL_GENERAL);
+  operands[4] = mips_unspec_address (operands[1], SYMBOL_HALF);
+})
+
 ;; Emit a .cprestore directive, which normally expands to a single store
 ;; instruction.  Note that we continue to use .cprestore for explicit reloc
 ;; code so that jals inside inline asms will work correctly.
@@ -4931,6 +4955,15 @@
   else if (TARGET_GPWORD)
     operands[0] = expand_binop (Pmode, add_optab, operands[0],
 				pic_offset_table_rtx, 0, 0, OPTAB_WIDEN);
+  else if (TARGET_RTP_PIC)
+    {
+      /* When generating RTP PIC, we use case table entries that are relative
+	 to the start of the function.  Add the function's address to the
+	 value we loaded.  */
+      rtx start = get_hard_reg_initial_val (Pmode, PIC_FUNCTION_ADDR_REGNUM);
+      operands[0] = expand_binop (ptr_mode, add_optab, operands[0],
+				  start, 0, 0, OPTAB_WIDEN);
+    }
 
   if (Pmode == SImode)
     emit_jump_insn (gen_tablejumpsi (operands[0], operands[1]));

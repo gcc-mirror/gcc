@@ -251,6 +251,9 @@
   return mips_symbolic_constant_p (op, &type) && type == SYMBOL_GOT_PAGE_OFST;
 })
 
+(define_predicate "symbol_ref_operand"
+  (match_code "symbol_ref"))
+
 (define_predicate "stack_operand"
   (and (match_code "mem")
        (match_test "mips_stack_address_p (XEXP (op, 0), GET_MODE (op))")))
