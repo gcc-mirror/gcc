@@ -1,3 +1,8 @@
+2007-04-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	* stdint.m4: Make template compatible with older cygwin 
+	types.h, wrapping each type in a __XXX_t_defined #ifdef.
+
 2007-03-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* acx.m4 (ACX_BUGURL): Set BUGURL first. Quote $BUGURL first
