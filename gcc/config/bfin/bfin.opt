@@ -19,6 +19,14 @@
 ; Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 ; 02110-1301, USA.
 
+msim
+Target RejectNegative
+Use simulator runtime
+
+mcpu=
+Target RejectNegative Joined
+Specify the name of the target CPU
+
 momit-leaf-frame-pointer
 Target Report Mask(OMIT_LEAF_FRAME_POINTER)
 Omit frame pointer for leaf functions

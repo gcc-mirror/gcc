@@ -92,6 +92,9 @@ static int bfin_flag_schedule_insns2;
    reorganization.  */
 static int bfin_flag_var_tracking;
 
+/* -mcpu support */
+bfin_cpu_t bfin_cpu_type = DEFAULT_CPU_TYPE;
+
 int splitting_for_sched;
 
 static void
@@ -2056,6 +2059,19 @@ bfin_handle_option (size_t code, const char *arg, int value)
 	error ("-mshared-library-id=%s is not between 0 and %d",
 	       arg, MAX_LIBRARY_ID);
       bfin_lib_id_given = 1;
+      return true;
+
+    case OPT_mcpu_:
+      if (strcmp (arg, "bf531") == 0)
+	bfin_cpu_type = BFIN_CPU_BF531;
+      else if (strcmp (arg, "bf532") == 0)
+	bfin_cpu_type = BFIN_CPU_BF532;
+      else if (strcmp (arg, "bf533") == 0)
+	bfin_cpu_type = BFIN_CPU_BF533;
+      else if (strcmp (arg, "bf537") == 0)
+	bfin_cpu_type = BFIN_CPU_BF537;
+      else
+	return false;
       return true;
 
     default:
