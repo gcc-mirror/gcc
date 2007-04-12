@@ -1,5 +1,13 @@
 2007-04-12  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips.md (load_call<mode>): Allow any general register.
+	destination.
+	(sibcall_value_internal, sibcall_value_multiple_internal)
+	(call_value_internal, call_value_split, call_value_multiple_internal)
+	(call_value_multiple_split): Remove constraints from operand 0.
+
+2007-04-12  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips-protos.h: In comments, refer to loadgp_absolute
 	rather than loadgp_noshared.
 	* config/mips/mips.c (mips_emit_loadgp): Use gen_loadgp_absolute

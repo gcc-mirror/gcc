@@ -5139,7 +5139,7 @@
 ;; we tell the target-independent code that the address could be changed
 ;; by any call insn.
 (define_insn "load_call<mode>"
-  [(set (match_operand:P 0 "register_operand" "=c")
+  [(set (match_operand:P 0 "register_operand" "=d")
 	(unspec:P [(match_operand:P 1 "register_operand" "r")
 		   (match_operand:P 2 "immediate_operand" "")
 		   (reg:P FAKE_CALL_REGNO)]
@@ -5194,7 +5194,7 @@
 })
 
 (define_insn "sibcall_value_internal"
-  [(set (match_operand 0 "register_operand" "=df,df")
+  [(set (match_operand 0 "register_operand" "")
         (call (mem:SI (match_operand 1 "call_insn_operand" "j,S"))
               (match_operand 2 "" "")))]
   "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
@@ -5202,10 +5202,10 @@
   [(set_attr "type" "call")])
 
 (define_insn "sibcall_value_multiple_internal"
-  [(set (match_operand 0 "register_operand" "=df,df")
+  [(set (match_operand 0 "register_operand" "")
         (call (mem:SI (match_operand 1 "call_insn_operand" "j,S"))
               (match_operand 2 "" "")))
-   (set (match_operand 3 "register_operand" "=df,df")
+   (set (match_operand 3 "register_operand" "")
 	(call (mem:SI (match_dup 1))
 	      (match_dup 2)))]
   "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
@@ -5300,7 +5300,7 @@
 
 ;; See comment for call_internal.
 (define_insn_and_split "call_value_internal"
-  [(set (match_operand 0 "register_operand" "=df,df")
+  [(set (match_operand 0 "register_operand" "")
         (call (mem:SI (match_operand 1 "call_insn_operand" "c,S"))
               (match_operand 2 "" "")))
    (clobber (reg:SI 31))]
@@ -5319,7 +5319,7 @@
    (set_attr "extended_mips16" "no,yes")])
 
 (define_insn "call_value_split"
-  [(set (match_operand 0 "register_operand" "=df")
+  [(set (match_operand 0 "register_operand" "")
         (call (mem:SI (match_operand 1 "call_insn_operand" "cS"))
               (match_operand 2 "" "")))
    (clobber (reg:SI 31))
@@ -5330,10 +5330,10 @@
 
 ;; See comment for call_internal.
 (define_insn_and_split "call_value_multiple_internal"
-  [(set (match_operand 0 "register_operand" "=df,df")
+  [(set (match_operand 0 "register_operand" "")
         (call (mem:SI (match_operand 1 "call_insn_operand" "c,S"))
               (match_operand 2 "" "")))
-   (set (match_operand 3 "register_operand" "=df,df")
+   (set (match_operand 3 "register_operand" "")
 	(call (mem:SI (match_dup 1))
 	      (match_dup 2)))
    (clobber (reg:SI 31))]
@@ -5352,10 +5352,10 @@
    (set_attr "extended_mips16" "no,yes")])
 
 (define_insn "call_value_multiple_split"
-  [(set (match_operand 0 "register_operand" "=df")
+  [(set (match_operand 0 "register_operand" "")
         (call (mem:SI (match_operand 1 "call_insn_operand" "cS"))
               (match_operand 2 "" "")))
-   (set (match_operand 3 "register_operand" "=df")
+   (set (match_operand 3 "register_operand" "")
 	(call (mem:SI (match_dup 1))
 	      (match_dup 2)))
    (clobber (reg:SI 31))
