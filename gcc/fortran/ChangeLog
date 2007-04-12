@@ -1,5 +1,9 @@
 2007-04-12  Tobias Schlüter  <tobi@gcc.gnu.org>
 
+	* trans-types.c: Update copyright years.  Reformat long comment
+	explaining array descriptor format.  Remove obsolete mention of
+	TYPE_SET.
+
 	* arith.c (gfc_arith_uplus): Rename to ...
 	(gfc_arith_identity): ... this.
 	(gfc_parentheses): New function.
