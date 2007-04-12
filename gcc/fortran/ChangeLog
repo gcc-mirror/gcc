@@ -1,5 +1,10 @@
 2007-04-12  Tobias Schlüter  <tobi@gcc.gnu.org>
 
+	PR fortran/31266
+	* primary.c (gfc_variable_attr): Don't copy string length if it
+	doesn't make sense.
+	* resolve.c (resolve_code): Clarify error message.
+
 	PR fortran/31471
 	* decl.c (gfc_match_end): Also check for construct name in END
 	FORALL and END WERE statements.
