@@ -1451,42 +1451,102 @@
   [(set_attr "type" "mult")])
 
 (define_expand "umulsi3_highpart"
-  [(set (match_operand:SI 0 "register_operand" "")
-       (truncate:SI
-        (lshiftrt:DI
-         (mult:DI (zero_extend:DI
-                   (match_operand:SI 1 "nonimmediate_operand" ""))
-                  (zero_extend:DI
-                   (match_operand:SI 2 "register_operand" "")))
-         (const_int 32))))]
+  [(parallel
+    [(set (match_operand:SI 0 "register_operand" "")
+	  (truncate:SI
+	   (lshiftrt:DI
+	    (mult:DI (zero_extend:DI
+		      (match_operand:SI 1 "nonimmediate_operand" ""))
+		     (zero_extend:DI
+		      (match_operand:SI 2 "register_operand" "")))
+	    (const_int 32))))
+     (clobber (reg:PDI REG_A0))
+     (clobber (reg:PDI REG_A1))])]
   ""
 {
-  rtx umulsi3_highpart_libfunc
-    = init_one_libfunc ("__umulsi3_highpart");
+  if (!optimize_size)
+    {
+      rtx a1reg = gen_rtx_REG (PDImode, REG_A1);
+      rtx a0reg = gen_rtx_REG (PDImode, REG_A0);
+      emit_insn (gen_flag_macinit1hi (a1reg,
+				      gen_lowpart (HImode, operands[1]),
+				      gen_lowpart (HImode, operands[2]),
+				      GEN_INT (MACFLAG_FU)));
+      emit_insn (gen_lshrpdi3 (a1reg, a1reg, GEN_INT (16)));
+      emit_insn (gen_flag_mul_macv2hi_parts_acconly (a0reg, a1reg,
+						     gen_lowpart (V2HImode, operands[1]),
+						     gen_lowpart (V2HImode, operands[2]),
+						     const1_rtx, const1_rtx,
+						     const1_rtx, const0_rtx, a1reg,
+						     const0_rtx, GEN_INT (MACFLAG_FU),
+						     GEN_INT (MACFLAG_FU)));
+      emit_insn (gen_flag_machi_parts_acconly (a1reg,
+					       gen_lowpart (V2HImode, operands[2]),
+					       gen_lowpart (V2HImode, operands[1]),
+					       const1_rtx, const0_rtx,
+					       a1reg, const0_rtx, GEN_INT (MACFLAG_FU)));
+      emit_insn (gen_lshrpdi3 (a1reg, a1reg, GEN_INT (16)));
+      emit_insn (gen_sum_of_accumulators (operands[0], a0reg, a0reg, a1reg));
+    }
+  else
+    {
+      rtx umulsi3_highpart_libfunc
+	= init_one_libfunc ("__umulsi3_highpart");
 
-  emit_library_call_value (umulsi3_highpart_libfunc,
-			   operands[0], LCT_NORMAL, SImode,
-			   2, operands[1], SImode, operands[2], SImode);
+      emit_library_call_value (umulsi3_highpart_libfunc,
+			       operands[0], LCT_NORMAL, SImode,
+			       2, operands[1], SImode, operands[2], SImode);
+    }
   DONE;
 })
 
 (define_expand "smulsi3_highpart"
-  [(set (match_operand:SI 0 "register_operand" "")
-       (truncate:SI
-        (lshiftrt:DI
-         (mult:DI (sign_extend:DI
-                   (match_operand:SI 1 "nonimmediate_operand" ""))
-                  (sign_extend:DI
-                   (match_operand:SI 2 "register_operand" "")))
-         (const_int 32))))]
+  [(parallel
+    [(set (match_operand:SI 0 "register_operand" "")
+	  (truncate:SI
+	   (lshiftrt:DI
+	    (mult:DI (sign_extend:DI
+		      (match_operand:SI 1 "nonimmediate_operand" ""))
+		     (sign_extend:DI
+		      (match_operand:SI 2 "register_operand" "")))
+	    (const_int 32))))
+     (clobber (reg:PDI REG_A0))
+     (clobber (reg:PDI REG_A1))])]
   ""
 {
-  rtx smulsi3_highpart_libfunc
-    = init_one_libfunc ("__smulsi3_highpart");
+  if (!optimize_size)
+    {
+      rtx a1reg = gen_rtx_REG (PDImode, REG_A1);
+      rtx a0reg = gen_rtx_REG (PDImode, REG_A0);
+      emit_insn (gen_flag_macinit1hi (a1reg,
+				      gen_lowpart (HImode, operands[1]),
+				      gen_lowpart (HImode, operands[2]),
+				      GEN_INT (MACFLAG_FU)));
+      emit_insn (gen_lshrpdi3 (a1reg, a1reg, GEN_INT (16)));
+      emit_insn (gen_flag_mul_macv2hi_parts_acconly (a0reg, a1reg,
+						     gen_lowpart (V2HImode, operands[1]),
+						     gen_lowpart (V2HImode, operands[2]),
+						     const1_rtx, const1_rtx,
+						     const1_rtx, const0_rtx, a1reg,
+						     const0_rtx, GEN_INT (MACFLAG_IS),
+						     GEN_INT (MACFLAG_IS_M)));
+      emit_insn (gen_flag_machi_parts_acconly (a1reg,
+					       gen_lowpart (V2HImode, operands[2]),
+					       gen_lowpart (V2HImode, operands[1]),
+					       const1_rtx, const0_rtx,
+					       a1reg, const0_rtx, GEN_INT (MACFLAG_IS_M)));
+      emit_insn (gen_ashrpdi3 (a1reg, a1reg, GEN_INT (16)));
+      emit_insn (gen_sum_of_accumulators (operands[0], a0reg, a0reg, a1reg));
+    }
+  else
+    {
+      rtx smulsi3_highpart_libfunc
+	= init_one_libfunc ("__smulsi3_highpart");
 
-  emit_library_call_value (smulsi3_highpart_libfunc,
-			   operands[0], LCT_NORMAL, SImode,
-			   2, operands[1], SImode, operands[2], SImode);
+      emit_library_call_value (smulsi3_highpart_libfunc,
+			       operands[0], LCT_NORMAL, SImode,
+			       2, operands[1], SImode, operands[2], SImode);
+    }
   DONE;
 })
 
