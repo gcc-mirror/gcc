@@ -3156,18 +3156,18 @@
 }
   [(set_attr "length" "24")])
 
-;; Insns to fetch a global symbol from a big GOT.
+;; Insns to fetch a symbol from a big GOT.
 
 (define_insn_and_split "*xgot_hi<mode>"
   [(set (match_operand:P 0 "register_operand" "=d")
-	(high:P (match_operand:P 1 "global_got_operand" "")))]
+	(high:P (match_operand:P 1 "got_disp_operand" "")))]
   "TARGET_EXPLICIT_RELOCS && TARGET_XGOT"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (high:P (match_dup 2)))
    (set (match_dup 0) (plus:P (match_dup 0) (match_dup 3)))]
 {
-  operands[2] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_GLOBAL);
+  operands[2] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_DISP);
   operands[3] = pic_offset_table_rtx;
 }
   [(set_attr "got" "xgot_high")
@@ -3176,21 +3176,21 @@
 (define_insn_and_split "*xgot_lo<mode>"
   [(set (match_operand:P 0 "register_operand" "=d")
 	(lo_sum:P (match_operand:P 1 "register_operand" "d")
-		  (match_operand:P 2 "global_got_operand" "")))]
+		  (match_operand:P 2 "got_disp_operand" "")))]
   "TARGET_EXPLICIT_RELOCS && TARGET_XGOT"
   "#"
   "&& reload_completed"
   [(set (match_dup 0)
 	(unspec:P [(match_dup 1) (match_dup 3)] UNSPEC_LOAD_GOT))]
-  { operands[3] = mips_unspec_address (operands[2], SYMBOL_GOTOFF_GLOBAL); }
+  { operands[3] = mips_unspec_address (operands[2], SYMBOL_GOTOFF_DISP); }
   [(set_attr "got" "load")
    (set_attr "mode" "<MODE>")])
 
-;; Insns to fetch a global symbol from a normal GOT.
+;; Insns to fetch a symbol from a normal GOT.
 
 (define_insn_and_split "*got_disp<mode>"
   [(set (match_operand:P 0 "register_operand" "=d")
-	(match_operand:P 1 "global_got_operand" ""))]
+	(match_operand:P 1 "got_disp_operand" ""))]
   "TARGET_EXPLICIT_RELOCS && !TARGET_XGOT"
   "#"
   "&& reload_completed"
@@ -3198,16 +3198,16 @@
 	(unspec:P [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
 {
   operands[2] = pic_offset_table_rtx;
-  operands[3] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_GLOBAL);
+  operands[3] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_DISP);
 }
   [(set_attr "got" "load")
    (set_attr "mode" "<MODE>")])
 
-;; Insns for loading the high part of a local symbol.
+;; Insns for loading the "page" part of a page/ofst address from the GOT.
 
 (define_insn_and_split "*got_page<mode>"
   [(set (match_operand:P 0 "register_operand" "=d")
-	(high:P (match_operand:P 1 "local_got_operand" "")))]
+	(high:P (match_operand:P 1 "got_page_ofst_operand" "")))]
   "TARGET_EXPLICIT_RELOCS"
   "#"
   "&& reload_completed"

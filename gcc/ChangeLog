@@ -1,5 +1,40 @@
 2007-04-12  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips-protos.h (SYMBOL_GOT_LOCAL): Rename to...
+	(SYMBOL_GOT_PAGE_OFST): ...this.
+	(SYMBOL_GOT_GLOBAL): Rename to...
+	(SYMBOL_GOT_DISP): ...this.
+	(SYMBOL_GOTOFF_GLOBAL): Rename to...
+	(SYMBOL_GOTOFF_DISP): ...this.  Update comments accordingly.
+	* config/mips/mips.c (mips_global_symbol_p): New function.
+	(mips_symbol_binds_local_p): Likewise.
+	(mips_classify_symbol): Rename SYMBOL_GOT_GLOBAL to SYMBOL_GOT_DISP
+	and SYMBOL_GOT_LOCAL to SYMBOL_GOT_PAGE_OFST.  Use mips_global_symbol_p
+	and mips_symbol_binds_local_p.
+	(mips_symbolic_constant_p, mips_symbolic_address_p, mips_symbol_insns)
+	(override_options): Rename SYMBOL_GOT_GLOBAL to SYMBOL_GOT_DISP,
+	SYMBOL_GOT_LOCAL to SYMBOL_GOT_PAGE_OFST and SYMBOL_GOTOFF_GLOBAL to
+	SYMBOL_GOTOFF_DISP.
+	(mips_ok_for_lazy_binding_p): New function.
+	(mips_load_call_address, mips_expand_call): Use it.
+	(mips_dangerous_for_la25_p): Likewise.
+	* config/mips/mips.md (*xgot_hi<mode>, *xgot_lo<mode>)
+	(*got_disp<mode>): Use got_disp_operand instead of
+	global_got_operand.  Use SYMBOL_GOTOFF_DISP instead of
+	SYMBOL_GOTOFF_GLOBAL.
+	(*got_page<mode>): Use got_page_ofst_operand instead of
+	local_got_operand.
+	* config/mips/predicates.md (const_call_insn_operand): Use
+	SYMBOL_GOT_DISP instead of SYMBOL_GOT_GLOBAL.
+	(global_got_operand): Rename to...
+	(got_disp_operand): ...this and use SYMBOL_GOT_DISP instead of
+	SYMBOL_GOT_GLOBAL.
+	(local_got_operand): Rename to...
+	(got_page_ofst_operand): ...this and use SYMBOL_GOT_PAGE_OFST instead
+	of SYMBOL_GOT_LOCAL.
+
+2007-04-12  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips.h (TARGET_SPLIT_CALLS): Check
 	TARGET_CALL_CLOBBERED_GP.
 	(TARGET_SIBCALLS): Check TARGET_USE_GOT instead of TARGET_ABICALLS.

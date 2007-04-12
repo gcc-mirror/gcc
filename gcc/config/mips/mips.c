@@ -1212,19 +1212,45 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+/* Return true if SYMBOL_REF X is associated with a global symbol
+   (in the STB_GLOBAL sense).  */
+
+static bool
+mips_global_symbol_p (rtx x)
+{
+  tree decl;
+
+  decl = SYMBOL_REF_DECL (x);
+  if (!decl)
+    return !SYMBOL_REF_LOCAL_P (x);
+
+  /* Weakref symbols are not TREE_PUBLIC, but their targets are global
+     or weak symbols.  Relocations in the object file will be against
+     the target symbol, so it's that symbol's binding that matters here.  */
+  return DECL_P (decl) && (TREE_PUBLIC (decl) || DECL_WEAK (decl));
+}
+
+/* Return true if SYMBOL_REF X binds locally.  */
+
+static bool
+mips_symbol_binds_local_p (rtx x)
+{
+  return (SYMBOL_REF_DECL (x)
+	  ? targetm.binds_local_p (SYMBOL_REF_DECL (x))
+	  : SYMBOL_REF_LOCAL_P (x));
+}
+
 /* Classify symbol X, which must be a SYMBOL_REF or a LABEL_REF.  */
 
 static enum mips_symbol_type
 mips_classify_symbol (rtx x)
 {
-  tree decl;
-
   if (GET_CODE (x) == LABEL_REF)
     {
       if (TARGET_MIPS16)
 	return SYMBOL_CONSTANT_POOL;
       if (TARGET_ABICALLS && !TARGET_ABSOLUTE_ABICALLS)
-	return SYMBOL_GOT_LOCAL;
+	return SYMBOL_GOT_PAGE_OFST;
       return SYMBOL_GENERAL;
     }
 
@@ -1250,49 +1276,34 @@ mips_classify_symbol (rtx x)
 
   if (TARGET_ABICALLS)
     {
-      decl = SYMBOL_REF_DECL (x);
-      if (decl == 0)
-	{
-	  if (!SYMBOL_REF_LOCAL_P (x))
-	    return SYMBOL_GOT_GLOBAL;
-	}
-      else
-	{
-	  /* Don't use GOT accesses for locally-binding symbols if
-	     TARGET_ABSOLUTE_ABICALLS.  Otherwise, there are three
-	     cases to consider:
+      /* Don't use GOT accesses for locally-binding symbols; we can use
+	 %hi and %lo instead.  */
+      if (TARGET_ABSOLUTE_ABICALLS && mips_symbol_binds_local_p (x))
+	return SYMBOL_GENERAL;
 
-		- o32 PIC (either with or without explicit relocs)
-		- n32/n64 PIC without explicit relocs
-		- n32/n64 PIC with explicit relocs
+      /* There are three cases to consider:
 
-	     In the first case, both local and global accesses will use an
-	     R_MIPS_GOT16 relocation.  We must correctly predict which of
-	     the two semantics (local or global) the assembler and linker
-	     will apply.  The choice doesn't depend on the symbol's
-	     visibility, so we deliberately ignore decl_visibility and
-	     binds_local_p here.
+	    - o32 PIC (either with or without explicit relocs)
+	    - n32/n64 PIC without explicit relocs
+	    - n32/n64 PIC with explicit relocs
 
-	     In the second case, the assembler will not use R_MIPS_GOT16
-	     relocations, but it chooses between local and global accesses
-	     in the same way as for o32 PIC.
+	 In the first case, both local and global accesses will use an
+	 R_MIPS_GOT16 relocation.  We must correctly predict which of
+	 the two semantics (local or global) the assembler and linker
+	 will apply.  The choice depends on the symbol's binding rather
+	 than its visibility.
 
-	     In the third case we have more freedom since both forms of
-	     access will work for any kind of symbol.  However, there seems
-	     little point in doing things differently.
+	 In the second case, the assembler will not use R_MIPS_GOT16
+	 relocations, but it chooses between local and global accesses
+	 in the same way as for o32 PIC.
 
-	     Note that weakref symbols are not TREE_PUBLIC, but their
-	     targets are global or weak symbols.  Relocations in the
-	     object file will be against the target symbol, so it's
-	     that symbol's binding that matters here.  */
-	  if (DECL_P (decl)
-	      && (TREE_PUBLIC (decl) || DECL_WEAK (decl))
-	      && !(TARGET_ABSOLUTE_ABICALLS && targetm.binds_local_p (decl)))
-	    return SYMBOL_GOT_GLOBAL;
-	}
+	 In the third case we have more freedom since both forms of
+	 access will work for any kind of symbol.  However, there seems
+	 little point in doing things differently.  */
+      if (mips_global_symbol_p (x))
+	return SYMBOL_GOT_DISP;
 
-      if (!TARGET_ABSOLUTE_ABICALLS)
-	return SYMBOL_GOT_LOCAL;
+      return SYMBOL_GOT_PAGE_OFST;
     }
 
   return SYMBOL_GENERAL;
@@ -1355,14 +1366,17 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
 	 PC- or GP-relative offset is within the 16-bit limit.  */
       return offset_within_block_p (x, INTVAL (offset));
 
-    case SYMBOL_GOT_LOCAL:
+    case SYMBOL_GOT_PAGE_OFST:
     case SYMBOL_GOTOFF_PAGE:
-      /* The linker should provide enough local GOT entries for a
-	 16-bit offset.  Larger offsets may lead to GOT overflow.  */
+      /* If the symbol is global, the GOT entry will contain the symbol's
+	 address, and we will apply a 16-bit offset after loading it.
+	 If the symbol is local, the linker should provide enough local
+	 GOT entries for a 16-bit offset, but larger offsets may lead
+	 to GOT overflow.  */
       return SMALL_INT (offset);
 
-    case SYMBOL_GOT_GLOBAL:
-    case SYMBOL_GOTOFF_GLOBAL:
+    case SYMBOL_GOT_DISP:
+    case SYMBOL_GOTOFF_DISP:
     case SYMBOL_GOTOFF_CALL:
     case SYMBOL_GOTOFF_LOADGP:
     case SYMBOL_TLSGD:
@@ -1450,15 +1464,15 @@ mips_symbolic_address_p (enum mips_symbol_type symbol_type,
       /* PC-relative addressing is only available for lw and ld.  */
       return GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8;
 
-    case SYMBOL_GOT_LOCAL:
+    case SYMBOL_GOT_PAGE_OFST:
       return true;
 
-    case SYMBOL_GOT_GLOBAL:
+    case SYMBOL_GOT_DISP:
       /* The address will have to be loaded from the GOT first.  */
       return false;
 
     case SYMBOL_GOTOFF_PAGE:
-    case SYMBOL_GOTOFF_GLOBAL:
+    case SYMBOL_GOTOFF_DISP:
     case SYMBOL_GOTOFF_CALL:
     case SYMBOL_GOTOFF_LOADGP:
     case SYMBOL_TLS:
@@ -1623,8 +1637,8 @@ mips_symbol_insns (enum mips_symbol_type type)
 	 extended instruction.  */
       return 2;
 
-    case SYMBOL_GOT_LOCAL:
-    case SYMBOL_GOT_GLOBAL:
+    case SYMBOL_GOT_PAGE_OFST:
+    case SYMBOL_GOT_DISP:
       /* Unless -funit-at-a-time is in effect, we can't be sure whether
 	 the local/global classification is accurate.  See override_options
 	 for details.
@@ -1648,7 +1662,7 @@ mips_symbol_insns (enum mips_symbol_type type)
       return 3;
 
     case SYMBOL_GOTOFF_PAGE:
-    case SYMBOL_GOTOFF_GLOBAL:
+    case SYMBOL_GOTOFF_DISP:
     case SYMBOL_GOTOFF_CALL:
     case SYMBOL_GOTOFF_LOADGP:
     case SYMBOL_64_HIGH:
@@ -3346,6 +3360,18 @@ mips_gen_conditional_trap (rtx *operands)
 			      operands[1]));
 }
 
+/* Return true if calls to X can use R_MIPS_CALL* relocations.  */
+
+static bool
+mips_ok_for_lazy_binding_p (rtx x)
+{
+  return (TARGET_USE_GOT
+	  && GET_CODE (x) == SYMBOL_REF
+	  && (TARGET_ABSOLUTE_ABICALLS
+	      ? !mips_symbol_binds_local_p (x)
+	      : mips_global_symbol_p (x)));
+}
+
 /* Load function address ADDR into register DEST.  SIBCALL_P is true
    if the address is needed for a sibling call.  */
 
@@ -3358,7 +3384,7 @@ mips_load_call_address (rtx dest, rtx addr, int sibcall_p)
      to the stub would be our caller's gp, not ours.  */
   if (TARGET_EXPLICIT_RELOCS
       && !(sibcall_p && TARGET_CALL_SAVED_GP)
-      && global_got_operand (addr, VOIDmode))
+      && mips_ok_for_lazy_binding_p (addr))
     {
       rtx high, lo_sum_symbol;
 
@@ -3423,7 +3449,7 @@ mips_expand_call (rtx result, rtx addr, rtx args_size, rtx aux, int sibcall_p)
   insn = emit_call_insn (pattern);
 
   /* Lazy-binding stubs require $gp to be valid on entry.  */
-  if (global_got_operand (orig_addr, VOIDmode))
+  if (mips_ok_for_lazy_binding_p (orig_addr))
     use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
 }
 
@@ -5115,26 +5141,26 @@ override_options (void)
 	 then lowered by mips_rewrite_small_data.  */
       mips_lo_relocs[SYMBOL_SMALL_DATA] = "%gp_rel(";
 
-      mips_split_p[SYMBOL_GOT_LOCAL] = true;
+      mips_split_p[SYMBOL_GOT_PAGE_OFST] = true;
       if (TARGET_NEWABI)
 	{
 	  mips_lo_relocs[SYMBOL_GOTOFF_PAGE] = "%got_page(";
-	  mips_lo_relocs[SYMBOL_GOT_LOCAL] = "%got_ofst(";
+	  mips_lo_relocs[SYMBOL_GOT_PAGE_OFST] = "%got_ofst(";
 	}
       else
 	{
 	  mips_lo_relocs[SYMBOL_GOTOFF_PAGE] = "%got(";
-	  mips_lo_relocs[SYMBOL_GOT_LOCAL] = "%lo(";
+	  mips_lo_relocs[SYMBOL_GOT_PAGE_OFST] = "%lo(";
 	}
 
       if (TARGET_XGOT)
 	{
 	  /* The HIGH and LO_SUM are matched by special .md patterns.  */
-	  mips_split_p[SYMBOL_GOT_GLOBAL] = true;
+	  mips_split_p[SYMBOL_GOT_DISP] = true;
 
-	  mips_split_p[SYMBOL_GOTOFF_GLOBAL] = true;
-	  mips_hi_relocs[SYMBOL_GOTOFF_GLOBAL] = "%got_hi(";
-	  mips_lo_relocs[SYMBOL_GOTOFF_GLOBAL] = "%got_lo(";
+	  mips_split_p[SYMBOL_GOTOFF_DISP] = true;
+	  mips_hi_relocs[SYMBOL_GOTOFF_DISP] = "%got_hi(";
+	  mips_lo_relocs[SYMBOL_GOTOFF_DISP] = "%got_lo(";
 
 	  mips_split_p[SYMBOL_GOTOFF_CALL] = true;
 	  mips_hi_relocs[SYMBOL_GOTOFF_CALL] = "%call_hi(";
@@ -5143,9 +5169,9 @@ override_options (void)
       else
 	{
 	  if (TARGET_NEWABI)
-	    mips_lo_relocs[SYMBOL_GOTOFF_GLOBAL] = "%got_disp(";
+	    mips_lo_relocs[SYMBOL_GOTOFF_DISP] = "%got_disp(";
 	  else
-	    mips_lo_relocs[SYMBOL_GOTOFF_GLOBAL] = "%got(";
+	    mips_lo_relocs[SYMBOL_GOTOFF_DISP] = "%got(";
 	  mips_lo_relocs[SYMBOL_GOTOFF_CALL] = "%call16(";
 	}
     }
@@ -7604,13 +7630,7 @@ mips_cannot_change_mode_class (enum machine_mode from,
 bool
 mips_dangerous_for_la25_p (rtx x)
 {
-  rtx offset;
-
-  if (TARGET_EXPLICIT_RELOCS)
-    return false;
-
-  split_const (x, &x, &offset);
-  return global_got_operand (x, VOIDmode);
+  return !TARGET_EXPLICIT_RELOCS && mips_ok_for_lazy_binding_p (x);
 }
 
 /* Implement PREFERRED_RELOAD_CLASS.  */
