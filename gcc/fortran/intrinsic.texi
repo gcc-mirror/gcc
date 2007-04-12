@@ -7614,10 +7614,11 @@ end program test_rand
 @cindex @code{RANDOM_NUMBER} intrinsic
 @cindex random numbers
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Returns a single pseudorandom number or an array of pseudorandom numbers
+from the uniform distribution over the range @math{ 0 \leq x < 1}.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -7625,9 +7626,31 @@ F95 and later
 Elemental subroutine
 
 @item @emph{Syntax}:
+@code{RANDOM_NUMBER(HARVEST)}
+
 @item @emph{Arguments}:
-@item @emph{Return value}:
+@multitable @columnfractions .15 .70
+@item @var{HARVEST} @tab Shall be a scalar or an array of type @code{REAL(*)}.
+@end multitable
+
 @item @emph{Example}:
+@smallexample
+program test_random_number
+  REAL :: r(5,5)
+  CALL init_random_seed()         ! see example of RANDOM_SEED
+  CALL RANDOM_NUMBER(r)
+end program
+@end smallexample
+
+@item @emph{Note}:
+The implemented random number generator is thread safe if used within
+OpenMP directives, i. e. its state will be consistent while called from
+multiple threads. Please note that the currently implemented KISS generator 
+does not create random numbers in parallel from multiple sources, but in
+sequence from a single source. If your OpenMP-enabled application heavily
+relies on random numbers, you should consider employing a dedicated parallel
+random number generator instead.
+
 @item @emph{See also}:
 @ref{RANDOM_SEED}
 @end table
@@ -7639,10 +7662,15 @@ Elemental subroutine
 @cindex @code{RANDOM_SEED} intrinsic
 @cindex random numbers
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Restarts or queries the state of the pseudorandom number generator used by 
+@code{RANDOM_NUMBER}.
+
+If @code{RANDOM_SEED} is called without arguments, it is initialized to
+a default state. The example below shows how to initialize the random 
+seed based on the system's time.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -7650,9 +7678,41 @@ F95 and later
 Subroutine
 
 @item @emph{Syntax}:
+@code{CALL RANDOM_SEED(SIZE, PUT, GET)}
+
 @item @emph{Arguments}:
-@item @emph{Return value}:
+@multitable @columnfractions .15 .70
+@item @var{SIZE} @tab (Optional) Shall be a scalar and of type default 
+@code{INTEGER}, with @code{INTENT(OUT)}. It specifies the minimum size 
+of the arrays used with the @var{PUT} and @var{GET} arguments.
+@item @var{PUT}  @tab (Optional) Shall be an array of type default 
+@code{INTEGER} and rank one. It is @code{INTENT(IN)} and the size of 
+the array must be larger than or equal to the number returned by the 
+@var{SIZE} argument.
+@item @var{GET}  @tab (Optional) Shall be an array of type default 
+@code{INTEGER} and rank one. It is @code{INTENT(OUT)} and the size 
+of the array must be larger than or equal to the number returned by 
+the @var{SIZE} argument.
+@end multitable
+
 @item @emph{Example}:
+@smallexample
+SUBROUTINE init_random_seed()
+  INTEGER :: i, n, clock
+  INTEGER, DIMENSION(:), ALLOCATABLE :: seed
+
+  CALL RANDOM_SEED(size = n)
+  ALLOCATE(seed(n))
+
+  CALL SYSTEM_CLOCK(COUNT=clock)
+
+  seed = clock + 37 * (/ (i - 1, i = 1, n) /)
+  CALL RANDOM_SEED(PUT = seed)
+
+  DEALLOCATE(seed)
+END SUBROUTINE
+@end smallexample
+
 @item @emph{See also}:
 @ref{RANDOM_NUMBER}
 @end table
