@@ -595,10 +595,11 @@ check_result (arith rc, gfc_expr *x, gfc_expr *r, gfc_expr **rp)
 
 /* It may seem silly to have a subroutine that actually computes the
    unary plus of a constant, but it prevents us from making exceptions
-   in the code elsewhere.  */
+   in the code elsewhere.  Used for unary plus and parenthesized
+   expressions.  */
 
 static arith
-gfc_arith_uplus (gfc_expr *op1, gfc_expr **resultp)
+gfc_arith_identity (gfc_expr *op1, gfc_expr **resultp)
 {
   *resultp = gfc_copy_expr (op1);
   return ARITH_OK;
@@ -1763,9 +1764,16 @@ eval_intrinsic_f3 (gfc_intrinsic_op operator,
 
 
 gfc_expr *
+gfc_parentheses (gfc_expr *op)
+{
+  return eval_intrinsic_f2 (INTRINSIC_PARENTHESES, gfc_arith_identity,
+			    op, NULL);
+}
+
+gfc_expr *
 gfc_uplus (gfc_expr *op)
 {
-  return eval_intrinsic_f2 (INTRINSIC_UPLUS, gfc_arith_uplus, op, NULL);
+  return eval_intrinsic_f2 (INTRINSIC_UPLUS, gfc_arith_identity, op, NULL);
 }
 
 

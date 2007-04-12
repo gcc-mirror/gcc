@@ -43,6 +43,7 @@ int gfc_compare_expr (gfc_expr *, gfc_expr *);
 int gfc_compare_string (gfc_expr *, gfc_expr *);
 
 /* Constant folding for gfc_expr trees.  */
+gfc_expr *gfc_parentheses (gfc_expr * op);
 gfc_expr *gfc_uplus (gfc_expr * op);
 gfc_expr *gfc_uminus (gfc_expr * op);
 gfc_expr *gfc_add (gfc_expr *, gfc_expr *);
