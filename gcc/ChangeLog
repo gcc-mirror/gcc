@@ -1,3 +1,7 @@
+2007-04-12  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* doc/invoke.text (--help): Document --help=common.
+
 2007-04-12  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	* stub-objc.c (objc_build_keyword_decl): Avoid C++ keywords.
