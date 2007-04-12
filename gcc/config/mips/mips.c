@@ -3367,9 +3367,7 @@ mips_ok_for_lazy_binding_p (rtx x)
 {
   return (TARGET_USE_GOT
 	  && GET_CODE (x) == SYMBOL_REF
-	  && (TARGET_ABSOLUTE_ABICALLS
-	      ? !mips_symbol_binds_local_p (x)
-	      : mips_global_symbol_p (x)));
+	  && !mips_symbol_binds_local_p (x));
 }
 
 /* Load function address ADDR into register DEST.  SIBCALL_P is true
@@ -7630,7 +7628,10 @@ mips_cannot_change_mode_class (enum machine_mode from,
 bool
 mips_dangerous_for_la25_p (rtx x)
 {
-  return !TARGET_EXPLICIT_RELOCS && mips_ok_for_lazy_binding_p (x);
+  return (!TARGET_EXPLICIT_RELOCS
+	  && TARGET_USE_GOT
+	  && GET_CODE (x) == SYMBOL_REF
+	  && mips_global_symbol_p (x));
 }
 
 /* Implement PREFERRED_RELOAD_CLASS.  */
