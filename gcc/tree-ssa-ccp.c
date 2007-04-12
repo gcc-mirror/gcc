@@ -1632,9 +1632,7 @@ maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type)
   if (!integer_zerop (elt_offset))
     idx = int_const_binop (PLUS_EXPR, idx, elt_offset, 0);
 
-  return build4 (ARRAY_REF, orig_type, base, idx, min_idx,
-		 size_int (tree_low_cst (elt_size, 1)
-			   / (TYPE_ALIGN_UNIT (elt_type))));
+  return build4 (ARRAY_REF, orig_type, base, idx, NULL_TREE, NULL_TREE);
 }
 
 
