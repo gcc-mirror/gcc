@@ -9276,7 +9276,7 @@ som_output_text_section_asm_op (const void *data ATTRIBUTE_UNUSED)
   gcc_assert (TARGET_SOM);
   if (TARGET_GAS)
     {
-      if (cfun && !cfun->machine->in_nsubspa)
+      if (cfun && cfun->machine && !cfun->machine->in_nsubspa)
 	{
 	  /* We only want to emit a .nsubspa directive once at the
 	     start of the function.  */
@@ -9301,7 +9301,8 @@ som_output_text_section_asm_op (const void *data ATTRIBUTE_UNUSED)
 	     text section to output debugging information.  Thus, we
 	     need to forget that we are in the text section so that
 	     varasm.c will call us when text_section is selected again.  */
-	  gcc_assert (!cfun || cfun->machine->in_nsubspa == 2);
+	  gcc_assert (!cfun || !cfun->machine
+		      || cfun->machine->in_nsubspa == 2);
 	  in_section = NULL;
 	}
       output_section_asm_op ("\t.SPACE $TEXT$\n\t.NSUBSPA $CODE$");
