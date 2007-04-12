@@ -2734,50 +2734,6 @@
 
 ;; First, all sorts of move variants
 
-(define_insn "movhi_low2high"
-  [(set (match_operand:V2HI 0 "register_operand" "=d")
-	(vec_concat:V2HI
-	 (vec_select:HI (match_operand:V2HI 1 "register_operand" "0")
-			(parallel [(const_int 0)]))
-	 (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
-			(parallel [(const_int 0)]))))]
-  ""
-  "%d0 = %h2 << 0%!"
-  [(set_attr "type" "dsp32")])
-
-(define_insn "movhi_high2high"
-  [(set (match_operand:V2HI 0 "register_operand" "=d")
-	(vec_concat:V2HI
-	 (vec_select:HI (match_operand:V2HI 1 "register_operand" "0")
-			(parallel [(const_int 0)]))
-	 (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
-			(parallel [(const_int 1)]))))]
-  ""
-  "%d0 = %d2 << 0%!"
-  [(set_attr "type" "dsp32")])
-
-(define_insn "movhi_low2low"
-  [(set (match_operand:V2HI 0 "register_operand" "=d")
-	(vec_concat:V2HI
-	 (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
-			(parallel [(const_int 0)]))
-	 (vec_select:HI (match_operand:V2HI 1 "register_operand" "0")
-			(parallel [(const_int 1)]))))]
-  ""
-  "%h0 = %h2 << 0%!"
-  [(set_attr "type" "dsp32")])
-
-(define_insn "movhi_high2low"
-  [(set (match_operand:V2HI 0 "register_operand" "=d")
-	(vec_concat:V2HI
-	 (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
-			(parallel [(const_int 1)]))
-	 (vec_select:HI (match_operand:V2HI 1 "register_operand" "0")
-			(parallel [(const_int 1)]))))]
-  ""
-  "%h0 = %d2 << 0%!"
-  [(set_attr "type" "dsp32")])
-
 (define_insn "movhiv2hi_low"
   [(set (match_operand:V2HI 0 "register_operand" "=d")
 	(vec_concat:V2HI
@@ -2825,15 +2781,19 @@
 ; Useful on its own, and as a combiner bridge for the multiply and
 ; mac patterns.
 (define_insn "packv2hi"
-  [(set (match_operand:V2HI 0 "register_operand" "=d,d,d,d")
+  [(set (match_operand:V2HI 0 "register_operand" "=d,d,d,d,d,d,d,d")
 	(vec_concat:V2HI (vec_select:HI
-			  (match_operand:V2HI 1 "register_operand" "d,d,d,d")
-			  (parallel [(match_operand 3 "const01_operand" "P0,P1,P0,P1")]))
+			  (match_operand:V2HI 1 "register_operand" "0,0,d,d,d,d,d,d")
+			  (parallel [(match_operand 3 "const01_operand" "P0,P0,P0,P1,P0,P1,P0,P1")]))
 			 (vec_select:HI
-			  (match_operand:V2HI 2 "register_operand" "d,d,d,d")
-			  (parallel [(match_operand 4 "const01_operand" "P0,P0,P1,P1")]))))]
+			  (match_operand:V2HI 2 "register_operand" "d,d,0,0,d,d,d,d")
+			  (parallel [(match_operand 4 "const01_operand" "P0,P1,P1,P1,P0,P0,P1,P1")]))))]
   ""
   "@
+   %d0 = %h2 << 0%!
+   %d0 = %d2 << 0%!
+   %h0 = %h1 << 0%!
+   %h0 = %d1 << 0%!
    %0 = PACK (%h2,%h1)%!
    %0 = PACK (%h2,%d1)%!
    %0 = PACK (%d2,%h1)%!
