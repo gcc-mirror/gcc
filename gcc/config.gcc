@@ -569,7 +569,6 @@ case ${target} in
   ;;
 *-*-vxworks*)
   tmake_file=t-vxworks
-  tm_file="${tm_file} elfos.h svr4.h"
   xm_defines=POSIX
   extra_options="${extra_options} vxworks.opt"
   extra_objs=vxworks.o
@@ -694,7 +693,7 @@ arm-semi-aof | armel-semi-aof)
 	tmake_file="arm/t-arm arm/t-semi"
 	;;
 arm-wrs-vxworks)
-	tm_file="dbxelf.h elfos.h svr4.h vxworks.h arm/elf.h arm/aout.h arm/arm.h arm/vxworks.h"
+	tm_file="dbxelf.h elfos.h svr4.h vxworks.h arm/elf.h arm/aout.h ${tm_file} arm/vxworks.h"
 	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
 	;;
 arm*-*-freebsd*|strongarm*-*-freebsd*)
@@ -1317,14 +1316,14 @@ i[34567]86-*-sysv4*)		# Intel 80386's running system V.4
 	use_fixproto=yes
 	;;
 i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
-	tm_file="${tm_file} i386/sysv4.h i386/unix.h i386/att.h elfos.h vx-common.h"
+	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h svr4.h vx-common.h"
 	case ${target} in
 	  *-vxworksae*)
-	    tm_file="${tm_file} vxworksae.h i386/vxworksae.h"
+	    tm_file="${tm_file} vxworksae.h i386/vx-common.h i386/vxworksae.h"
 	    tmake_file="${tmake_file} i386/t-vxworks i386/t-vxworksae"
 	    ;;
 	  *)
-	    tm_file="${tm_file} vxworks.h i386/vxworks.h"
+	    tm_file="${tm_file} vxworks.h i386/vx-common.h i386/vxworks.h"
 	    tmake_file="${tmake_file} i386/t-vxworks"
 	    ;;
 	esac
@@ -1706,9 +1705,7 @@ mips*-*-rtems*)
 	tmake_file="mips/t-elf t-rtems mips/t-rtems"
 	;;
 mips-wrs-vxworks)
-	# We want vxworks.h after mips/elf.h, which unfortunately means we
-	# have to redo the tm_file list from scratch.
-	tm_file="elfos.h mips/mips.h svr4.h mips/elf.h vx-common.h vxworks.h mips/vxworks.h"
+	tm_file="elfos.h ${tm_file} svr4.h mips/elf.h vx-common.h vxworks.h mips/vxworks.h"
 	tmake_file="${tmake_file} mips/t-vxworks"
 	;;
 mips-wrs-windiss)	# Instruction-level simulator for VxWorks.
@@ -1909,9 +1906,7 @@ powerpc-*-gnu*)
 	fi
 	;;
 powerpc-wrs-vxworks|powerpc-wrs-vxworksae)
-	# We want vxworks.h after rs6000/sysv4.h, which unfortunately
-	# means we have to redo the tm_file list from scratch.
-	tm_file="rs6000/rs6000.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
+	tm_file="${tm_file} elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppccomm rs6000/t-vxworks"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	extra_headers=ppc-asm.h

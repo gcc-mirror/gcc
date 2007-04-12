@@ -1,5 +1,14 @@
 2007-04-12  Richard Sandiford  <richard@codesourcery.com>
 
+	* config.gcc (*-*-vxworks*): Don't add to tm_files in this stanza.
+	(arm-wrs-vxworks, mips-wrs-vxworks, powerpc-wrs-vxworks)
+	(powerpc-wrs-vxworksae): Use ${tm_file}.
+	(i[4567]86-wrs-vxworks, i[4567]86-wrs-vxworksae): Add svr4.h
+	after elfos.h.  Remove i386/sysv4.h and add i386/vx-common.h.
+	* config/i386/vx-common.h: New file.
+
+2007-04-12  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/vxworks.h (VXWORKS_STARTFILE_SPEC): Use -l:crt0.o instead
 	of crt0.o%s.
 
