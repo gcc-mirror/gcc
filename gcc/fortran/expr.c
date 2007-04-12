@@ -465,6 +465,7 @@ gfc_copy_expr (gfc_expr *p)
       switch (q->value.op.operator)
 	{
 	case INTRINSIC_NOT:
+	case INTRINSIC_PARENTHESES:
 	case INTRINSIC_UPLUS:
 	case INTRINSIC_UMINUS:
 	  q->value.op.op1 = gfc_copy_expr (p->value.op.op1);
@@ -771,8 +772,11 @@ simplify_intrinsic_op (gfc_expr *p, int type)
 
   switch (p->value.op.operator)
     {
-    case INTRINSIC_UPLUS:
     case INTRINSIC_PARENTHESES:
+      result = gfc_parentheses (op1);
+      break;
+
+    case INTRINSIC_UPLUS:
       result = gfc_uplus (op1);
       break;
 

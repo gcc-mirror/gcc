@@ -1,3 +1,14 @@
+2007-04-12  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* arith.c (gfc_arith_uplus): Rename to ...
+	(gfc_arith_identity): ... this.
+	(gfc_parentheses): New function.
+	(gfc_uplus): Adapt to renamed function.
+	* arith.h (gfc_parentheses): Add prototype.
+	* expr.c (gfc_copy_expr): Deal with INTRINSIC_PARENTHESES.
+	(simplifiy_intrinsic_op): Treat INTRINSIC_UPLUS separately from
+	INTRINSIC_PARENTHESES.
+
 2007-04-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/31472
