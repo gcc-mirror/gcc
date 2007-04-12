@@ -1,5 +1,11 @@
 2007-04-12  Richard Guenther  <rguenther@suse.de>
 
+	* tree-pretty-print.c (dump_generic_node): Print ARRAY_REF
+	lower bound and element size if lower bound is not zero
+	or either of the ARRAY_REF operands is set.
+
+2007-04-12  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/24689
 	PR tree-optimization/31307
 	* fold-const.c (operand_equal_p): Compare INTEGER_CST array

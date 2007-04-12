@@ -952,8 +952,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       op1 = array_ref_element_size (node);
 
       if (!integer_zerop (op0)
-	  || (TYPE_SIZE_UNIT (TREE_TYPE (node))
-	      && !operand_equal_p (op1, TYPE_SIZE_UNIT (TREE_TYPE (node)), 0)))
+	  || TREE_OPERAND (node, 2)
+	  || TREE_OPERAND (node, 3))
 	{
 	  pp_string (buffer, "{lb: ");
 	  dump_generic_node (buffer, op0, spc, flags, false);
