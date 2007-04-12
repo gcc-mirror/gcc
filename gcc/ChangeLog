@@ -1,3 +1,10 @@
+2007-04-12  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/31078
+	PR c++/31103
+	* c-common.c (c_build_qualified_type): Set canonical type
+	appropriately.  
+
 2007-04-12  Richard Guenther  <rguenther@suse.de>
 
 	* tree-pretty-print.c (dump_generic_node): Print ARRAY_REF
