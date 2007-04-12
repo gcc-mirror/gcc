@@ -5389,6 +5389,8 @@ resolve_index_expr (gfc_expr *e)
 static try
 resolve_charlen (gfc_charlen *cl)
 {
+  int i;
+
   if (cl->resolved)
     return SUCCESS;
 
@@ -5400,6 +5402,15 @@ resolve_charlen (gfc_charlen *cl)
     {
       specification_expr = 0;
       return FAILURE;
+    }
+
+  /* "If the character length parameter value evaluates to a negative
+     value, the length of character entities declared is zero."  */
+  if (cl->length && !gfc_extract_int (cl->length, &i) && i <= 0)
+    {
+      gfc_warning_now ("CHARACTER variable has zero length at %L",
+		       &cl->length->where);
+      gfc_replace_expr (cl->length, gfc_int_expr (0));
     }
 
   return SUCCESS;
@@ -7270,6 +7281,9 @@ resolve_types (gfc_namespace *ns)
 
   resolve_contained_functions (ns);
 
+  for (cl = ns->cl_list; cl; cl = cl->next)
+    resolve_charlen (cl);
+
   gfc_traverse_ns (ns, resolve_symbol);
 
   resolve_fntype (ns);
@@ -7286,9 +7300,6 @@ resolve_types (gfc_namespace *ns)
 
   forall_flag = 0;
   gfc_check_interfaces (ns);
-
-  for (cl = ns->cl_list; cl; cl = cl->next)
-    resolve_charlen (cl);
 
   gfc_traverse_ns (ns, resolve_values);
 

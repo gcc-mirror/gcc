@@ -1,3 +1,11 @@
+2007-04-12  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/31250
+	* decl.c (match_char_spec): Move check for negative CHARACTER
+	length ...
+	* resolve.c (resolve_charlen): ... here.
+	(resolve_types): Resolve CHARACTER lengths earlier.
+
 2007-04-12  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/31234
