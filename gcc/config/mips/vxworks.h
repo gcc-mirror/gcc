@@ -86,3 +86,6 @@ VXWORKS_LINK_SPEC
 /* No _mcount profiling on VxWorks.  */
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER VXWORKS_FUNCTION_PROFILER
+
+#undef SUBTARGET_ASM_SPEC
+#define SUBTARGET_ASM_SPEC "%{mrtp:%{fPIC|fpic:-mvxworks-pic}}"

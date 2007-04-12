@@ -24,6 +24,8 @@ the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
 
+#include "config/vxworks-dummy.h"
+
 /* MIPS external variables defined in mips.c.  */
 
 /* Which processor to schedule for.  Since there is no difference between
@@ -143,6 +145,9 @@ extern const struct mips_rtx_cost_data *mips_cost;
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
+/* True if we are generating position-independent VxWorks RTP code.  */
+#define TARGET_RTP_PIC (TARGET_VXWORKS_RTP && flag_pic)
+
 /* True if the call patterns should be split into a jalr followed by
    an instruction to restore $gp.  It is only safe to split the load
    from the call when every use of $gp is explicit.  */
@@ -178,7 +183,7 @@ extern const struct mips_rtx_cost_data *mips_cost;
   (!TARGET_MIPS16 && (!TARGET_USE_GOT || TARGET_EXPLICIT_RELOCS))
 
 /* True if we need to use a global offset table to access some symbols.  */
-#define TARGET_USE_GOT TARGET_ABICALLS
+#define TARGET_USE_GOT (TARGET_ABICALLS || TARGET_RTP_PIC)
 
 /* True if TARGET_USE_GOT and if $gp is a call-clobbered register.  */
 #define TARGET_CALL_CLOBBERED_GP (TARGET_ABICALLS && TARGET_OLDABI)
@@ -186,8 +191,9 @@ extern const struct mips_rtx_cost_data *mips_cost;
 /* True if TARGET_USE_GOT and if $gp is a call-saved register.  */
 #define TARGET_CALL_SAVED_GP (TARGET_USE_GOT && !TARGET_CALL_CLOBBERED_GP)
 
-/* True if indirect calls must use register class PIC_FN_ADDR_REG.  */
-#define TARGET_USE_PIC_FN_ADDR_REG TARGET_ABICALLS
+/* True if indirect calls must use register class PIC_FN_ADDR_REG.
+   This is true for both the PIC and non-PIC VxWorks RTP modes.  */
+#define TARGET_USE_PIC_FN_ADDR_REG (TARGET_ABICALLS || TARGET_VXWORKS_RTP)
 
 /* True if .gpword or .gpdword should be used for switch tables.
 
@@ -2578,6 +2584,16 @@ do {									\
     fprintf (STREAM, "\t%s\t%sL%d\n",					\
 	     ptr_mode == DImode ? ".gpdword" : ".gpword",		\
 	     LOCAL_LABEL_PREFIX, VALUE);				\
+  else if (TARGET_RTP_PIC)						\
+    {									\
+      /* Make the entry relative to the start of the function.  */	\
+      rtx fnsym = XEXP (DECL_RTL (current_function_decl), 0);		\
+      fprintf (STREAM, "\t%s\t%sL%d-",					\
+	       Pmode == DImode ? ".dword" : ".word",			\
+	       LOCAL_LABEL_PREFIX, VALUE);				\
+      assemble_name (STREAM, XSTR (fnsym, 0));				\
+      fprintf (STREAM, "\n");						\
+    }									\
   else									\
     fprintf (STREAM, "\t%s\t%sL%d\n",					\
 	     ptr_mode == DImode ? ".dword" : ".word",			\

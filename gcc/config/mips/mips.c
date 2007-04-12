@@ -1245,6 +1245,9 @@ mips_symbol_binds_local_p (rtx x)
 static enum mips_symbol_type
 mips_classify_symbol (rtx x)
 {
+  if (TARGET_RTP_PIC)
+    return SYMBOL_GOT_DISP;
+
   if (GET_CODE (x) == LABEL_REF)
     {
       if (TARGET_MIPS16)
@@ -1385,6 +1388,7 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
     case SYMBOL_TPREL:
     case SYMBOL_GOTTPREL:
     case SYMBOL_TLS:
+    case SYMBOL_HALF:
       return false;
     }
   gcc_unreachable ();
@@ -1484,6 +1488,7 @@ mips_symbolic_address_p (enum mips_symbol_type symbol_type,
     case SYMBOL_64_HIGH:
     case SYMBOL_64_MID:
     case SYMBOL_64_LOW:
+    case SYMBOL_HALF:
       return true;
     }
   gcc_unreachable ();
@@ -1630,6 +1635,7 @@ mips_symbol_insns (enum mips_symbol_type type)
       return (ABI_HAS_64BIT_SYMBOLS ? 6 : 2);
 
     case SYMBOL_SMALL_DATA:
+    case SYMBOL_HALF:
       return 1;
 
     case SYMBOL_CONSTANT_POOL:
@@ -4886,6 +4892,9 @@ override_options (void)
 	warning (0, "%<-G%> is incompatible with %<-mabicalls%>");
     }
 
+  if (TARGET_VXWORKS_RTP && mips_section_threshold > 0)
+    warning (0, "-G and -mrtp are incompatible");
+
   /* mips_split_addresses is a half-way house between explicit
      relocations and the traditional assembler macros.  It can
      split absolute 32-bit symbolic constants into a high/lo_sum
@@ -5191,6 +5200,8 @@ override_options (void)
   mips_split_p[SYMBOL_TPREL] = 1;
   mips_hi_relocs[SYMBOL_TPREL] = "%tprel_hi(";
   mips_lo_relocs[SYMBOL_TPREL] = "%tprel_lo(";
+
+  mips_lo_relocs[SYMBOL_HALF] = "%half(";
 
   /* We don't have a thread pointer access instruction on MIPS16, or
      appropriate TLS relocations.  */
@@ -6573,6 +6584,9 @@ mips_current_loadgp_style (void)
   if (!TARGET_USE_GOT || cfun->machine->global_pointer == 0)
     return LOADGP_NONE;
 
+  if (TARGET_RTP_PIC)
+    return LOADGP_RTP;
+
   if (TARGET_ABSOLUTE_ABICALLS)
     return LOADGP_ABSOLUTE;
 
@@ -6589,7 +6603,7 @@ static GTY(()) rtx mips_gnu_local_gp;
 static void
 mips_emit_loadgp (void)
 {
-  rtx addr, offset, incoming_address;
+  rtx addr, offset, incoming_address, base, index;
 
   switch (mips_current_loadgp_style ())
     {
@@ -6607,6 +6621,14 @@ mips_emit_loadgp (void)
       offset = mips_unspec_address (addr, SYMBOL_GOTOFF_LOADGP);
       incoming_address = gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM);
       emit_insn (gen_loadgp_newabi (offset, incoming_address));
+      if (!TARGET_EXPLICIT_RELOCS)
+	emit_insn (gen_loadgp_blockage ());
+      break;
+
+    case LOADGP_RTP:
+      base = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (VXWORKS_GOTT_BASE));
+      index = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (VXWORKS_GOTT_INDEX));
+      emit_insn (gen_loadgp_rtp (base, index));
       if (!TARGET_EXPLICIT_RELOCS)
 	emit_insn (gen_loadgp_blockage ());
       break;
@@ -7313,9 +7335,9 @@ mips_in_small_data_p (tree decl)
   if (TREE_CODE (decl) == STRING_CST || TREE_CODE (decl) == FUNCTION_DECL)
     return false;
 
-  /* We don't yet generate small-data references for -mabicalls.  See related
-     -G handling in override_options.  */
-  if (TARGET_ABICALLS)
+  /* We don't yet generate small-data references for -mabicalls or
+     VxWorks RTP code.  See the related -G handling in override_options.  */
+  if (TARGET_ABICALLS || TARGET_VXWORKS_RTP)
     return false;
 
   if (TREE_CODE (decl) == VAR_DECL && DECL_SECTION_NAME (decl) != 0)

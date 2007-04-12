@@ -1,5 +1,33 @@
 2007-04-12  Richard Sandiford  <richard@codesourcery.com>
 
+	* Makefile.in (insn-emit.o): Depend on $(INTEGRATE_H).
+	* genemit.c (main): Emit #include "integrate.h".
+	* config/mips/mips-protos.h (SYMBOL_HALF): New mips_symbol_type.
+	(LOADGP_RTP): New mips_loadgp_style.
+	* config/mips/mips.h: Include config/vxworks-dummy.h.
+	(TARGET_RTP_PIC): New macro.
+	(TARGET_USE_GOT): Return true for TARGET_RTP_PIC.
+	(TARGET_USE_PIC_FN_ADDR_REG): Return true for TARGET_VXWORKS_RTP.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Emit function-relative case tables
+	for TARGET_RTP_PIC.
+	* config/mips/vxworks.h (SUBTARGET_ASM_SPEC): Define.  Pass down
+	-mvxworks-pic when using -mrtp and a PIC option.
+	* config/mips/mips.c (mips_classify_symbol): Return SYMBOL_GOT_DISP
+	for RTP PIC.
+	(mips_symbolic_constant_p, mips_symbolic_address_p)
+	(mips_symbol_insns): Handle SYMBOL_HALF.
+	(override_options): Warn about -G and -mrtp being used together.
+	Initialize mips_lo_relocs[SYMBOL_HALF].
+	(mips_current_loadgp_style): Return LOADGP_RTP for RTP PIC.
+	(mips_emit_loadgp): Handle LOADGP_RTP.
+	(mips_in_small_data_p): Return false for TARGET_VXWORKS_RTP.
+	* config/mips/mips.md (loadgp_rtp): New insn and splitter.
+	(tablejump): Handle function-relative case table entries if
+	TARGET_RTP_PIC.
+	* config/mips/predicates.md (symbol_ref_operand): New predicate.
+
+2007-04-12  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips.md (load_call<mode>): Allow any general register.
 	destination.
 	(sibcall_value_internal, sibcall_value_multiple_internal)
