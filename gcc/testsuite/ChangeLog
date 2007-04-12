@@ -1,5 +1,8 @@
 2007-04-12  Tobias Schlüter  <tobi@gcc.gnu.org>
 
+	PR fortran/31250
+	* gfortran.dg/char_length_2.f90: New.
+
 	PR fortran/31266
 	* gfortran.dg/char_assign_1.f90: New.
 
