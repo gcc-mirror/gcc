@@ -1,5 +1,13 @@
 2007-04-12  Tobias Schlüter  <tobi@gcc.gnu.org>
 
+	PR fortran/31471
+	* decl.c (gfc_match_end): Also check for construct name in END
+	FORALL and END WERE statements.
+	* match.c (match_case_eos): Use uppercase for statement name in
+	error message.
+	(match_elsewhere): Construct name may appear iff construct has a
+	name.
+
 	* trans-types.c: Update copyright years.  Reformat long comment
 	explaining array descriptor format.  Remove obsolete mention of
 	TYPE_SET.
