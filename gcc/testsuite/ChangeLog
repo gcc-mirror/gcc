@@ -1,3 +1,10 @@
+2007-04-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/31472
+	* gfortran.dg/access_spec_1.f90: New test.
+	* gfortran.dg/access_spec_2.f90: New test.
+	* gfortran.dg/non_module_public.f90: Match new error message.
+
 2007-04-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR testsuite/31538

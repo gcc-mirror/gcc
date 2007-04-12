@@ -1,3 +1,14 @@
+2007-04-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/31472
+	* decl.c (match_attr_spec): Allow PRIVATE/PUBLIC
+	attribute in type definitions.
+	(gfc_match_private): Allow PRIVATE statement only
+	in specification part of modules.
+	(gfc_match_public): Ditto for PUBLIC.
+	(gfc_match_derived_decl): Allow PRIVATE/PUBLIC attribute only in
+	specificification part of modules.
+
 2007-04-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31257
