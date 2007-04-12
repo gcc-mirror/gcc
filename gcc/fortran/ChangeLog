@@ -1,3 +1,8 @@
+2007-04-12  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/31234
+	* intrinsic.texi (RANDOM_SEED, RANDOM_NUMBER): New.
+
 2007-03-23  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* invoke.texi: Misc. small typo fixes.
