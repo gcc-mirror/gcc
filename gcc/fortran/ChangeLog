@@ -1,3 +1,8 @@
+2007-04-12  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/31234
+	* intrinsic.texi (RANDOM_SEED, RANDOM_NUMBER): New.
+
 2007-04-12  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/31266
