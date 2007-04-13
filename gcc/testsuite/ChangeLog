@@ -18,6 +18,8 @@
 
 	PR fortran/31250
 	* gfortran.dg/char_length_2.f90: New.
+	* gfortran.dg/repeat_2.f90: Add dg-warning annotations.
+	* gfortran.dg/repeat_4.f90: Likewise.
 
 	PR fortran/31266
 	* gfortran.dg/char_assign_1.f90: New.
