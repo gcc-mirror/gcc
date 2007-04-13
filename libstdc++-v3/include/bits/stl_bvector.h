@@ -583,7 +583,8 @@ template<typename _Alloc>
     max_size() const
     {
       const size_type __isize =
-	std::numeric_limits<difference_type>::max() - int(_S_word_bit) + 1;
+	__gnu_cxx::__numeric_traits<difference_type>::__max
+	- int(_S_word_bit) + 1;
       const size_type __asize = _M_get_Bit_allocator().max_size();
       return (__asize <= __isize / int(_S_word_bit)
 	      ? __asize * int(_S_word_bit) : __isize);

@@ -39,7 +39,7 @@
 
 #pragma GCC system_header
 
-#include <limits>		// For numeric_limits
+#include <ext/numeric_traits.h>
 #include <typeinfo>		// For bad_cast.
 #include <bits/streambuf_iterator.h>
 #include <ext/type_traits.h>
@@ -538,7 +538,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	if (!__testeof)
 	  {
 	    __c = *__beg;
-	    if (numeric_limits<_ValueT>::is_signed)
+	    if (__gnu_cxx::__numeric_traits<_ValueT>::__is_signed)
 	      __negative = __c == __lit[__num_base::_S_iminus];
 	    if ((__negative || __c == __lit[__num_base::_S_iplus])
 		&& !(__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
@@ -607,8 +607,9 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	if (__lc->_M_use_grouping)
 	  __found_grouping.reserve(32);
 	bool __testfail = false;
-	const __unsigned_type __max = __negative ?
-	  -numeric_limits<_ValueT>::min() : numeric_limits<_ValueT>::max();
+	const __unsigned_type __max = __negative
+	  ? -__gnu_cxx::__numeric_traits<_ValueT>::__min
+	  : __gnu_cxx::__numeric_traits<_ValueT>::__max;
 	const __unsigned_type __smax = __max / __base;
 	__unsigned_type __result = 0;
 	int __digit = 0;
@@ -1029,7 +1030,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	    if (__v > 0)
 	      {
 		if (__flags & ios_base::showpos
-		    && numeric_limits<_ValueT>::is_signed)
+		    && __gnu_cxx::__numeric_traits<_ValueT>::__is_signed)
 		  *--__cs = __lit[__num_base::_S_oplus], ++__len;
 	      }
 	    else if (__v)
@@ -1116,7 +1117,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	// Use default precision if out of range.
 	const streamsize __prec = __io.precision() < 0 ? 6 : __io.precision();
 
-	const int __max_digits = numeric_limits<_ValueT>::digits10;
+	const int __max_digits =
+	  __gnu_cxx::__numeric_traits<_ValueT>::__digits10;
 
 	// [22.2.2.2.2] Stage 1, numeric conversion to character.
 	int __len;
@@ -1143,7 +1145,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 #else
 	// Consider the possibility of long ios_base::fixed outputs
 	const bool __fixed = __io.flags() & ios_base::fixed;
-	const int __max_exp = numeric_limits<_ValueT>::max_exponent10;
+	const int __max_exp =
+	  __gnu_cxx::__numeric_traits<_ValueT>::__max_exponent10;
 
 	// The size of the output string is computed as follows.
 	// ios_base::fixed outputs may need up to __max_exp + 1 chars
@@ -1790,7 +1793,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	}
 #else
       // max_exponent10 + 1 for the integer part, + 2 for sign and '\0'.
-      const int __cs_size = numeric_limits<long double>::max_exponent10 + 3;
+      const int __cs_size =
+	__gnu_cxx::__numeric_traits<long double>::__max_exponent10 + 3;
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
       int __len = std::__convert_from_v(_S_get_c_locale(), __cs, 0, "%.*Lf", 
 					0, __units);
@@ -2499,8 +2503,10 @@ _GLIBCXX_END_LDBL_NAMESPACE
     {
       unsigned long __val = 0;
       for (; __lo < __hi; ++__lo)
-	__val = *__lo + ((__val << 7) |
-		       (__val >> (numeric_limits<unsigned long>::digits - 7)));
+	__val =
+	  *__lo + ((__val << 7)
+		   | (__val >> (__gnu_cxx::__numeric_traits<unsigned long>::
+				__digits - 7)));
       return static_cast<long>(__val);
     }
 

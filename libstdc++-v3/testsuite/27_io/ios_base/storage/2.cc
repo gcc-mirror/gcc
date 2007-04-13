@@ -1,6 +1,7 @@
 // 2000-12-19 bkoz
 
-// Copyright (C) 2000, 2002, 2003, 2004 Free Software Foundation
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +33,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <limits>
 #include <testsuite_hooks.h>
 
 // libstdc++/3129

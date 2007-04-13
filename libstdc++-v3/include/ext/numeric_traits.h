@@ -37,7 +37,6 @@
 
 #pragma GCC system_header
 
-#include <limits>
 #include <bits/cpp_type_traits.h>
 #include <ext/type_traits.h>
 
@@ -62,6 +61,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       // Only integers for initialization of member constant.
       static const _Value __min = __glibcxx_min(_Value);
       static const _Value __max = __glibcxx_max(_Value);
+
+      // NB: these two also available in std::numeric_limits as compile
+      // time constants, but <limits> is big and we avoid including it.
+      static const bool __is_signed = __glibcxx_signed(_Value);
+      static const int __digits = __glibcxx_digits(_Value);      
     };
 
   template<typename _Value>
@@ -71,15 +75,50 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     const _Value __numeric_traits_integer<_Value>::__max;
 
   template<typename _Value>
+    const bool __numeric_traits_integer<_Value>::__is_signed;
+
+  template<typename _Value>
+    const int __numeric_traits_integer<_Value>::__digits;
+
+#undef __glibcxx_signed
+#undef __glibcxx_digits
+#undef __glibcxx_min
+#undef __glibcxx_max
+
+#define __glibcxx_floating(_Tp, _Fval, _Dval, _LDval) \
+  (std::__are_same<_Tp, float>::__value ? _Fval \
+   : std::__are_same<_Tp, double>::__value ? _Dval : _LDval)
+
+#define __glibcxx_max_digits10(_Tp) \
+  (2 + __glibcxx_floating(_Tp, __FLT_MANT_DIG__, __DBL_MANT_DIG__, \
+			  __LDBL_MANT_DIG__) * 3010 / 10000)
+
+#define __glibcxx_digits10(_Tp) \
+  __glibcxx_floating(_Tp, __FLT_DIG__, __DBL_DIG__, __LDBL_DIG__)
+
+#define __glibcxx_max_exponent10(_Tp) \
+  __glibcxx_floating(_Tp, __FLT_MAX_10_EXP__, __DBL_MAX_10_EXP__, \
+		     __LDBL_MAX_10_EXP__)
+
+  template<typename _Value>
     struct __numeric_traits_floating
     {
       // Only floating point types. See N1822. 
-      static const int __max_digits10 =
-	2 + std::numeric_limits<_Value>::digits * 3010/10000;
+      static const int __max_digits10 = __glibcxx_max_digits10(_Value);
+
+      // See above comment...
+      static const int __digits10 = __glibcxx_digits10(_Value);
+      static const int __max_exponent10 = __glibcxx_max_exponent10(_Value);
     };
 
   template<typename _Value>
     const int __numeric_traits_floating<_Value>::__max_digits10;
+
+  template<typename _Value>
+    const int __numeric_traits_floating<_Value>::__digits10;
+
+  template<typename _Value>
+    const int __numeric_traits_floating<_Value>::__max_exponent10;
 
   template<typename _Value>
     struct __numeric_traits
@@ -90,9 +129,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 _GLIBCXX_END_NAMESPACE
 
-#undef __glibcxx_signed
-#undef __glibcxx_min
-#undef __glibcxx_max
-#undef __glibcxx_digits
+#undef __glibcxx_floating
+#undef __glibcxx_max_digits10
+#undef __glibcxx_digits10
+#undef __glibcxx_max_exponent10
 
 #endif 

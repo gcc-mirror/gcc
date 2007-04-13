@@ -1,3 +1,44 @@
+2007-04-13  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/numeric_traits.h: Do not include <limits>.
+	(__numeric_traits_integer::__is_signed, __digits): Add.
+	(__numeric_traits_floating::__digits10, __max_exponent10): Add.
+	* src/istream.cc (ignore<char>(streamsize, int_type), operator>>
+	(basic_istream<char>&, char*), ignore<wchar_t>(streamsize,
+	int_type)): Use the latter.
+	* src/compatibility.cc (ignore<char>(streamsize),
+	ignore<wchar_t>(streamsize)): Likewise.
+	* include/ext/vstring_util.h (__vstring_utility<>::_S_compare):
+	Likewise.
+	* include/bits/stl_memory.h (__get_temporary_buffer): Likewise.
+	* include/bits/stl_algobase.h (lexicographical_compare(const char*,
+	const char*, const char*, const char*)): Likewise.
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_int(_InIter,
+	_InIter, ios_base&, ios_base::iostate&, _ValueT&),
+	num_put<>::_M_insert_int(_OutIter, ios_base&, _CharT, _ValueT),
+	num_put<>::_M_insert_float(_OutIter, ios_base&, _CharT, char,
+	_ValueT), collate<>::do_hash(const _CharT*, const _CharT*)): Likewise.
+	* include/bits/basic_string.h (basic_string<>::_S_compare): Likewise.
+	* include/bits/istream.tcc (operator>>(short&), operator>>(int&),
+	ignore(streamsize), ignore(streamsize, int_type), operator>>
+	(basic_istream<>&, _CharT*)): Likewise.
+	* include/bits/stl_bvector.h (vector<bool>::max_size): Likewise.
+	* include/tr1/functional_hash.h (struct hash<long double>): Likewise.
+	* include/std/istream: Do not include <limits>.
+	* include/tr1/cmath: Include <limits>.
+	* testsuite/23_containers/vector/bool/capacity/29134.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/12.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/13.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/12.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/13.cc:
+	Likewise.
+	* testsuite/27_io/ios_base/storage/2.cc: Likewise.
+
+	* include/tr1/hashtable: Do not include the whole <iterator>.
+
 2007-04-11  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/gnu/c_locale.h: Do not include <langinfo.h>
