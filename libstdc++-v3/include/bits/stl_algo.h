@@ -2186,7 +2186,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  return
 	    std::__stable_partition_adaptive(__first, __last, __pred,
 					  _DistanceType(__buf.requested_size()),
-					  __buf.begin(), __buf.size());
+					  __buf.begin(),
+					  _DistanceType(__buf.size()));
 	else
 	  return
 	    std::__inplace_stable_partition(__first, __last, __pred,

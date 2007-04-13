@@ -1,5 +1,11 @@
 2007-04-13  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/31554
+	* include/bits/stl_algo.h (stable_partition): Convert __buf.size()
+	to _DistanceType.
+
+2007-04-13  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/ext/numeric_traits.h: Do not include <limits>.
 	(__numeric_traits_integer::__is_signed, __digits): Add.
 	(__numeric_traits_floating::__digits10, __max_exponent10): Add.
