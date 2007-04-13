@@ -5,10 +5,12 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 
 SUBDIRS = include testsuite
 
-EXTRA_DIST = LICENSE ChangeLog.v1 \
+EXTRA_DIST = LICENSE ChangeLog.v1 ChangeLog.libgcj configure.host \
 	src/alpha/ffi.c src/alpha/osf.S src/alpha/ffitarget.h \
 	src/arm/ffi.c src/arm/sysv.S src/arm/ffitarget.h \
 	src/cris/ffi.c src/cris/sysv.S src/cris/ffitarget.h \
+	src/ia64/ffi.c src/ia64/ffitarget.h src/ia64/ia64_flags.h \
+	src/ia64/unix.S \
 	src/mips/ffi.c src/mips/n32.S src/mips/o32.S \
 	src/mips/ffitarget.h \
 	src/m32r/ffi.c src/m32r/sysv.S src/m32r/ffitarget.h \
@@ -26,8 +28,8 @@ EXTRA_DIST = LICENSE ChangeLog.v1 \
 	src/sparc/ffi.c \
 	src/x86/ffi.c src/x86/sysv.S src/x86/win32.S src/x86/darwin.S \
 	src/x86/ffi64.c src/x86/unix64.S src/x86/ffitarget.h \
-	src/pa/ffi.c src/pa/linux.S src/pa/hpux32.S \
-	src/frv/eabi.S src/frv/ffitarget.h
+	src/pa/ffitarget.h src/pa/ffi.c src/pa/linux.S src/pa/hpux32.S \
+	src/frv/ffi.c src/frv/eabi.S src/frv/ffitarget.h
 
 ## ################################################################
 

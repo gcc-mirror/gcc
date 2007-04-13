@@ -350,10 +350,12 @@ toolexeclibdir = @toolexeclibdir@
 AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = -I .. -I ../config
 SUBDIRS = include testsuite
-EXTRA_DIST = LICENSE ChangeLog.v1 \
+EXTRA_DIST = LICENSE ChangeLog.v1 ChangeLog.libgcj configure.host \
 	src/alpha/ffi.c src/alpha/osf.S src/alpha/ffitarget.h \
 	src/arm/ffi.c src/arm/sysv.S src/arm/ffitarget.h \
 	src/cris/ffi.c src/cris/sysv.S src/cris/ffitarget.h \
+	src/ia64/ffi.c src/ia64/ffitarget.h src/ia64/ia64_flags.h \
+	src/ia64/unix.S \
 	src/mips/ffi.c src/mips/n32.S src/mips/o32.S \
 	src/mips/ffitarget.h \
 	src/m32r/ffi.c src/m32r/sysv.S src/m32r/ffitarget.h \
@@ -371,8 +373,8 @@ EXTRA_DIST = LICENSE ChangeLog.v1 \
 	src/sparc/ffi.c \
 	src/x86/ffi.c src/x86/sysv.S src/x86/win32.S src/x86/darwin.S \
 	src/x86/ffi64.c src/x86/unix64.S src/x86/ffitarget.h \
-	src/pa/ffi.c src/pa/linux.S src/pa/hpux32.S \
-	src/frv/eabi.S src/frv/ffitarget.h
+	src/pa/ffitarget.h src/pa/ffi.c src/pa/linux.S src/pa/hpux32.S \
+	src/frv/ffi.c src/frv/eabi.S src/frv/ffitarget.h
 
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
@@ -1065,7 +1067,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/.. $(distdir)/../config $(distdir)/include $(distdir)/src/alpha $(distdir)/src/arm $(distdir)/src/cris $(distdir)/src/frv $(distdir)/src/m32r $(distdir)/src/m68k $(distdir)/src/mips $(distdir)/src/pa $(distdir)/src/powerpc $(distdir)/src/s390 $(distdir)/src/sh $(distdir)/src/sh64 $(distdir)/src/sparc $(distdir)/src/x86
+	$(mkdir_p) $(distdir)/.. $(distdir)/../config $(distdir)/include $(distdir)/src/alpha $(distdir)/src/arm $(distdir)/src/cris $(distdir)/src/frv $(distdir)/src/ia64 $(distdir)/src/m32r $(distdir)/src/m68k $(distdir)/src/mips $(distdir)/src/pa $(distdir)/src/powerpc $(distdir)/src/s390 $(distdir)/src/sh $(distdir)/src/sh64 $(distdir)/src/sparc $(distdir)/src/x86
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
