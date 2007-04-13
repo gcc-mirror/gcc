@@ -1,3 +1,8 @@
+2007-04-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/21258
+	* gcc.dg/tree-ssa/vrp34.c: New testcase.
+
 2007-04-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gfortran.dg/c_by_val.c: Use GCC extensions instead of including
