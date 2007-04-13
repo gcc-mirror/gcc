@@ -848,7 +848,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
       __glibcxx_requires_valid_range(__first1, __last1);
 
-      while (__first1 != __last1 && __binary_pred(*__first1, *__first2))
+      while (__first1 != __last1 && bool(__binary_pred(*__first1, *__first2)))
         {
 	  ++__first1;
 	  ++__first2;
@@ -912,7 +912,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first1, __last1);
 
       for (; __first1 != __last1; ++__first1, ++__first2)
-	if (!__binary_pred(*__first1, *__first2))
+	if (!bool(__binary_pred(*__first1, *__first2)))
 	  return false;
       return true;
     }
