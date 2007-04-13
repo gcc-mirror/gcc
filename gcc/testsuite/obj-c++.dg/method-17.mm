@@ -30,4 +30,3 @@ int main(void)
 	[foo brokenType: (int)d floatingPoint: d];
 	return 0;
 }
-

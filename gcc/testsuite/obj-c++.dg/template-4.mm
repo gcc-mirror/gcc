@@ -1,6 +1,7 @@
 /* Author:  Ziemowit Laski <zlaski@apple.com>.  */
 
 /* { dg-do run } */
+/* { dg-skip-if "" { *-*-darwin* } { "-m64" } { "" } } */
 
 #include <objc/Object.h>
 #include <stdarg.h>
