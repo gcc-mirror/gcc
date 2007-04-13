@@ -13349,6 +13349,11 @@ fi
 
 ORIGINAL_AS_FOR_TARGET=$gcc_cv_as
 
+case "$ORIGINAL_AS_FOR_TARGET" in
+  ./as | ./as$build_exeext) ;;
+  *)           ac_config_files="$ac_config_files as:exec-tool.in"
+ ;;
+esac
 
 echo "$as_me:$LINENO: checking what assembler to use" >&5
 echo $ECHO_N "checking what assembler to use... $ECHO_C" >&6
@@ -13465,6 +13470,11 @@ fi
 
 ORIGINAL_LD_FOR_TARGET=$gcc_cv_ld
 
+case "$ORIGINAL_LD_FOR_TARGET" in
+  ./collect-ld | ./collect-ld$build_exeext) ;;
+  *)           ac_config_files="$ac_config_files collect-ld:exec-tool.in"
+ ;;
+esac
 
 echo "$as_me:$LINENO: checking what linker to use" >&5
 echo $ECHO_N "checking what linker to use... $ECHO_C" >&6
@@ -13568,6 +13578,12 @@ echo "${ECHO_T}$gcc_cv_nm" >&6
 fi
 
 ORIGINAL_NM_FOR_TARGET=$gcc_cv_nm
+
+case "$ORIGINAL_NM_FOR_TARGET" in
+  ./nm | ./nm$build_exeext) ;;
+  *)           ac_config_files="$ac_config_files nm:exec-tool.in"
+ ;;
+esac
 
 
 # Figure out what objdump we will be using.
@@ -17526,6 +17542,9 @@ for ac_config_target in $ac_config_targets
 do
   case "$ac_config_target" in
   # Handling of arguments.
+  "as" ) CONFIG_FILES="$CONFIG_FILES as:exec-tool.in" ;;
+  "collect-ld" ) CONFIG_FILES="$CONFIG_FILES collect-ld:exec-tool.in" ;;
+  "nm" ) CONFIG_FILES="$CONFIG_FILES nm:exec-tool.in" ;;
   "$all_outputs" ) CONFIG_FILES="$CONFIG_FILES $all_outputs" ;;
   "default" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
   "auto-host.h" ) CONFIG_HEADERS="$CONFIG_HEADERS auto-host.h:config.in" ;;
@@ -18020,6 +18039,12 @@ s,@abs_top_builddir@,$ac_abs_top_builddir,;t t
     rm -f $tmp/out
   fi
 
+  # Run the commands associated with the file.
+  case $ac_file in
+    as ) chmod +x as ;;
+    collect-ld ) chmod +x collect-ld ;;
+    nm ) chmod +x nm ;;
+  esac
 done
 _ACEOF
 cat >>$CONFIG_STATUS <<\_ACEOF
