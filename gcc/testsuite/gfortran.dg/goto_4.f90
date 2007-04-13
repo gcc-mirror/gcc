@@ -1,4 +1,5 @@
 ! { dg-do run }
+! PR 17708: Jumping to END DO statements didn't do the right thing
       program test
         j = 0
         do 10 i=1,3

@@ -1,3 +1,14 @@
+2007-04-13  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/18937
+	* resolve.c: Include obstack.h and bitmap.h.  New variable
+	labels_obstack.
+	(code_stack): Add tail and reachable_labels fields.
+	(reachable_labels): New function.
+	(resolve_branch): Rework to use new fields in code_stack.
+	(resolve_code): Call reachable_labels.
+	(resolve_codes): Allocate and free labels_obstack.
+
 2007-04-12  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/31250
