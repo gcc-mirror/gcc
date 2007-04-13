@@ -36,7 +36,7 @@ Target RejectNegative Report Var(darwin_one_byte_bool)
 Set sizeof(bool) to 1
 
 fapple-kext
-Target Report Var(flag_apple_kext)
+Target Report C++ Var(flag_apple_kext)
 Generate code for darwin loadable kernel extensions
 
 mkernel
