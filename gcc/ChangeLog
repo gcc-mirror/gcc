@@ -1,3 +1,11 @@
+2007-04-13  Mike Stump  <mrs@apple.com>
+
+	* config/darwin-c.c (handle_c_option): Handle -fapple-kext here so
+	we can...
+	* config/darwin.opt (fapple-kext): Make C++ only.
+	* config/darwin.c (darwin_override_options): Remove code to ensure
+	-fapple-kext is given for C++ only.
+
 2007-04-13  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/vxworks.h (SUBTARGET_OVERRIDE_OPTIONS): Define.

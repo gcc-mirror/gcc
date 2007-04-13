@@ -635,6 +635,9 @@ handle_c_option (size_t code,
     case OPT_iframework:
       add_system_framework_path (xstrdup (arg));
       break;
+
+    case OPT_fapple_kext:
+      ;
     }
 
   /* We recognized the option.  */
