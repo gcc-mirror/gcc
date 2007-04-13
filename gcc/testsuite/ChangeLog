@@ -1,3 +1,9 @@
+2007-04-13  Joseph Myers  <joseph@codesourcery.com>
+
+	PR tree-optimization/29598
+	* gcc.dg/tree-ssa/loadpre1.c, gcc.dg/tree-ssa/loadpre14.c,
+	gcc.dg/tree-ssa/loadpre15.c: XFAIL.
+
 2007-04-10  Mike Stump  <mrs@apple.com>
 
 	* g++.dg/tree-ssa/pr29585.C: Don't die on an expected warning.

@@ -15,5 +15,5 @@ int main(type *a, int argc, int t)
   e = (*a)[t];
   return d + e;
 }
-/* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre"} } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "pre" } } */
