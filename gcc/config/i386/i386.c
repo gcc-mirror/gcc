@@ -4181,27 +4181,21 @@ function_value_32 (enum machine_mode orig_mode, enum machine_mode mode,
 	   || (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 16))
     regno = TARGET_SSE ? FIRST_SSE_REG : 0;
 
-  /* Decimal floating point values can go in %eax, unlike other float modes.  */
-  else if (DECIMAL_FLOAT_MODE_P (mode))
-    regno = 0;
-
-  /* Most things go in %eax, except (unless -mno-fp-ret-in-387) fp values.  */
-  else if (!SCALAR_FLOAT_MODE_P (mode) || !TARGET_FLOAT_RETURNS_IN_80387)
-    regno = 0;
-
-  /* Floating point return values in %st(0), except for local functions when
-     SSE math is enabled or for functions with sseregparm attribute.  */
+  /* Floating point return values in %st(0) (unless -mno-fp-ret-in-387).  */
+  else if (X87_FLOAT_MODE_P (mode) && TARGET_FLOAT_RETURNS_IN_80387)
+    regno = FIRST_FLOAT_REG;
   else
+    /* Most things go in %eax.  */
+    regno = 0;
+  
+  /* Override FP return register with %xmm0 for local functions when
+     SSE math is enabled or for functions with sseregparm attribute.  */
+  if ((fn || fntype) && (mode == SFmode || mode == DFmode))
     {
-      regno = FIRST_FLOAT_REG;
-
-      if ((fn || fntype) && (mode == SFmode || mode == DFmode))
-	{
-	  int sse_level = ix86_function_sseregparm (fntype, fn);
-	  if ((sse_level >= 1 && mode == SFmode)
-	      || (sse_level == 2 && mode == DFmode))
-	    regno = FIRST_SSE_REG;
-	}
+      int sse_level = ix86_function_sseregparm (fntype, fn);
+      if ((sse_level >= 1 && mode == SFmode)
+	  || (sse_level == 2 && mode == DFmode))
+	regno = FIRST_SSE_REG;
     }
 
   return gen_rtx_REG (orig_mode, regno);
@@ -4976,21 +4970,23 @@ init_ext_80387_constants (void)
 int
 standard_80387_constant_p (rtx x)
 {
+  enum machine_mode mode = GET_MODE (x);
+
   REAL_VALUE_TYPE r;
 
-  if (GET_CODE (x) != CONST_DOUBLE || !FLOAT_MODE_P (GET_MODE (x)))
+  if (!(X87_FLOAT_MODE_P (mode) && (GET_CODE (x) == CONST_DOUBLE)))
     return -1;
 
-  if (x == CONST0_RTX (GET_MODE (x)))
+  if (x == CONST0_RTX (mode))
     return 1;
-  if (x == CONST1_RTX (GET_MODE (x)))
+  if (x == CONST1_RTX (mode))
     return 2;
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, x);
 
   /* For XFmode constants, try to find a special 80387 instruction when
      optimizing for size or on those CPUs that benefit from them.  */
-  if (GET_MODE (x) == XFmode
+  if (mode == XFmode
       && (optimize_size || TARGET_EXT_80387_CONSTANTS))
     {
       int i;
@@ -10683,8 +10679,14 @@ ix86_fp_compare_mode (enum rtx_code code ATTRIBUTE_UNUSED)
 enum machine_mode
 ix86_cc_mode (enum rtx_code code, rtx op0, rtx op1)
 {
-  if (SCALAR_FLOAT_MODE_P (GET_MODE (op0)))
-    return ix86_fp_compare_mode (code);
+  enum machine_mode mode = GET_MODE (op0);
+
+  if (SCALAR_FLOAT_MODE_P (mode))
+    {
+      gcc_assert (!DECIMAL_FLOAT_MODE_P (mode));
+      return ix86_fp_compare_mode (code);
+    }
+
   switch (code)
     {
       /* Only zero flag is needed.  */
@@ -11269,8 +11271,11 @@ ix86_expand_compare (enum rtx_code code, rtx *second_test, rtx *bypass_test)
       ix86_compare_emitted = NULL_RTX;
     }
   else if (SCALAR_FLOAT_MODE_P (GET_MODE (op0)))
-    ret = ix86_expand_fp_compare (code, op0, op1, NULL_RTX,
-				  second_test, bypass_test);
+    {
+      gcc_assert (!DECIMAL_FLOAT_MODE_P (GET_MODE (op0)));
+      ret = ix86_expand_fp_compare (code, op0, op1, NULL_RTX,
+				    second_test, bypass_test);
+    }
   else
     ret = ix86_expand_int_compare (code, op0, op1);
 
@@ -11631,16 +11636,20 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
   enum machine_mode mode =
     GET_MODE (op0) != VOIDmode ? GET_MODE (op0) : GET_MODE (op1);
 
-  /* Do not handle DImode compares that go through special path.  Also we can't
-     deal with FP compares yet.  This is possible to add.  */
+  /* Do not handle DImode compares that go through special path.
+     Also we can't deal with FP compares yet.  This is possible to add.  */
   if (mode == (TARGET_64BIT ? TImode : DImode))
     return false;
-  if (FLOAT_MODE_P (mode))
+
+  if (SCALAR_FLOAT_MODE_P (mode))
     {
       rtx second_test = NULL, bypass_test = NULL;
       rtx compare_op, compare_seq;
 
-      /* Shortcut:  following common codes never translate into carry flag compares.  */
+      gcc_assert (!DECIMAL_FLOAT_MODE_P (mode));
+
+      /* Shortcut:  following common codes never translate
+	 into carry flag compares.  */
       if (code == EQ || code == NE || code == UNEQ || code == LTGT
 	  || code == ORDERED || code == UNORDERED)
 	return false;
@@ -11929,11 +11938,16 @@ ix86_expand_int_movcc (rtx operands[])
 
       if (diff < 0)
 	{
+	  enum machine_mode cmp_mode = GET_MODE (ix86_compare_op0);
+
 	  HOST_WIDE_INT tmp;
 	  tmp = ct, ct = cf, cf = tmp;
 	  diff = -diff;
-	  if (FLOAT_MODE_P (GET_MODE (ix86_compare_op0)))
+
+	  if (SCALAR_FLOAT_MODE_P (cmp_mode))
 	    {
+	      gcc_assert (!DECIMAL_FLOAT_MODE_P (cmp_mode));
+
 	      /* We may be reversing unordered compare to normal compare, that
 		 is not valid in general (we may convert non-trapping condition
 		 to trapping one), however on i386 we currently emit all
@@ -12082,14 +12096,21 @@ ix86_expand_int_movcc (rtx operands[])
 	{
 	  if (cf == 0)
 	    {
+	      enum machine_mode cmp_mode = GET_MODE (ix86_compare_op0);
+
 	      cf = ct;
 	      ct = 0;
-	      if (FLOAT_MODE_P (GET_MODE (ix86_compare_op0)))
-		/* We may be reversing unordered compare to normal compare,
-		   that is not valid in general (we may convert non-trapping
-		   condition to trapping one), however on i386 we currently
-		   emit all comparisons unordered.  */
-		code = reverse_condition_maybe_unordered (code);
+
+	      if (SCALAR_FLOAT_MODE_P (cmp_mode))
+		{
+		  gcc_assert (!DECIMAL_FLOAT_MODE_P (cmp_mode));
+
+		  /* We may be reversing unordered compare to normal compare,
+		     that is not valid in general (we may convert non-trapping
+		     condition to trapping one), however on i386 we currently
+		     emit all comparisons unordered.  */
+		  code = reverse_condition_maybe_unordered (code);
+		}
 	      else
 		{
 		  code = reverse_condition (code);
@@ -18863,7 +18884,7 @@ ix86_preferred_output_reload_class (rtx x, enum reg_class class)
   if (TARGET_SSE_MATH && SSE_FLOAT_MODE_P (mode))
     return MAYBE_SSE_CLASS_P (class) ? SSE_REGS : NO_REGS;
 
-  if (TARGET_80387 && SCALAR_FLOAT_MODE_P (mode))
+  if (X87_FLOAT_MODE_P (mode))
     {
       if (class == FP_TOP_SSE_REGS)
 	return FP_TOP_REG;
@@ -19348,8 +19369,20 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
       return false;
 
     case MULT:
-      if (FLOAT_MODE_P (mode))
+      if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	{
+	  /* ??? SSE scalar cost should be used here.  */
+	  *total = ix86_cost->fmul;
+	  return false;
+	}
+      else if (X87_FLOAT_MODE_P (mode))
+	{
+	  *total = ix86_cost->fmul;
+	  return false;
+	}
+      else if (FLOAT_MODE_P (mode))
+	{
+	  /* ??? SSE vector cost should be used here.  */
 	  *total = ix86_cost->fmul;
 	  return false;
 	}
@@ -19402,16 +19435,20 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
     case UDIV:
     case MOD:
     case UMOD:
-      if (FLOAT_MODE_P (mode))
+      if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+	/* ??? SSE cost should be used here.  */
+	*total = ix86_cost->fdiv;
+      else if (X87_FLOAT_MODE_P (mode))
+	*total = ix86_cost->fdiv;
+      else if (FLOAT_MODE_P (mode))
+	/* ??? SSE vector cost should be used here.  */
 	*total = ix86_cost->fdiv;
       else
 	*total = ix86_cost->divide[MODE_INDEX (mode)];
       return false;
 
     case PLUS:
-      if (FLOAT_MODE_P (mode))
-	*total = ix86_cost->fadd;
-      else if (GET_MODE_CLASS (mode) == MODE_INT
+      if (GET_MODE_CLASS (mode) == MODE_INT
 	       && GET_MODE_BITSIZE (mode) <= GET_MODE_BITSIZE (Pmode))
 	{
 	  if (GET_CODE (XEXP (x, 0)) == PLUS
@@ -19454,8 +19491,20 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
       /* FALLTHRU */
 
     case MINUS:
-      if (FLOAT_MODE_P (mode))
+      if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	{
+	  /* ??? SSE cost should be used here.  */
+	  *total = ix86_cost->fadd;
+	  return false;
+	}
+      else if (X87_FLOAT_MODE_P (mode))
+	{
+	  *total = ix86_cost->fadd;
+	  return false;
+	}
+      else if (FLOAT_MODE_P (mode))
+	{
+	  /* ??? SSE vector cost should be used here.  */
 	  *total = ix86_cost->fadd;
 	  return false;
 	}
@@ -19476,8 +19525,20 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
       /* FALLTHRU */
 
     case NEG:
-      if (FLOAT_MODE_P (mode))
+      if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	{
+	  /* ??? SSE cost should be used here.  */
+	  *total = ix86_cost->fchs;
+	  return false;
+	}
+      else if (X87_FLOAT_MODE_P (mode))
+	{
+	  *total = ix86_cost->fchs;
+	  return false;
+	}
+      else if (FLOAT_MODE_P (mode))
+	{
+	  /* ??? SSE vector cost should be used here.  */
 	  *total = ix86_cost->fchs;
 	  return false;
 	}
@@ -19506,19 +19567,29 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
       return false;
 
     case FLOAT_EXTEND:
-      if (!TARGET_SSE_MATH
-	  || mode == XFmode
-	  || (mode == DFmode && !TARGET_SSE2))
+      if (!(SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH))
 	*total = 0;
       return false;
 
     case ABS:
-      if (FLOAT_MODE_P (mode))
+      if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+	/* ??? SSE cost should be used here.  */
+	*total = ix86_cost->fabs;
+      else if (X87_FLOAT_MODE_P (mode))
+	*total = ix86_cost->fabs;
+      else if (FLOAT_MODE_P (mode))
+	/* ??? SSE vector cost should be used here.  */
 	*total = ix86_cost->fabs;
       return false;
 
     case SQRT:
-      if (FLOAT_MODE_P (mode))
+      if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+	/* ??? SSE cost should be used here.  */
+	*total = ix86_cost->fsqrt;
+      else if (X87_FLOAT_MODE_P (mode))
+	*total = ix86_cost->fsqrt;
+      else if (FLOAT_MODE_P (mode))
+	/* ??? SSE vector cost should be used here.  */
 	*total = ix86_cost->fsqrt;
       return false;
 
