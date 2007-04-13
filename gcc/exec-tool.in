@@ -1,0 +1,64 @@
+#! /bin/sh
+
+# Copyright (C) 2007 Free Software Foundation, Inc.
+# This file is part of GCC.
+
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING.  If not, write to
+# the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+# Boston MA 02110-1301, USA.
+
+# Invoke as, ld or nm from the build tree.
+
+ORIGINAL_AS_FOR_TARGET="@ORIGINAL_AS_FOR_TARGET@"
+ORIGINAL_LD_FOR_TARGET="@ORIGINAL_LD_FOR_TARGET@"
+ORIGINAL_NM_FOR_TARGET="@ORIGINAL_NM_FOR_TARGET@"
+exeext=@host_exeext@
+
+invoked=`basename "$0"`
+case "$invoked" in
+  as)
+    original=$ORIGINAL_AS_FOR_TARGET
+    prog=as-new$exeext
+    dir=gas
+    ;;
+  collect-ld)
+    original=$ORIGINAL_LD_FOR_TARGET
+    prog=ld-new$exeext
+    dir=ld
+    ;;
+  nm)
+    original=$ORIGINAL_NM_FOR_TARGET
+    prog=nm-new$exeext
+    dir=binutils
+    ;;
+esac
+
+case "$original" in
+  ../*)
+    # compute absolute path of the location of this script
+    tdir=`dirname "$0"`
+    scriptdir=`cd "$tdir" && pwd`
+
+    if test -x $scriptdir/../$dir/$prog; then
+      exec $scriptdir/../$dir/$prog ${1+"$@"}
+    else
+      exec $scriptdir/../prev-$dir/$prog ${1+"$@"}
+    fi
+    ;;
+  *)
+    exec "$original" ${1+"$@"}
+    ;;
+esac
+
+

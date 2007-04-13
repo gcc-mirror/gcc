@@ -1466,60 +1466,6 @@ cpp$(exeext): $(GCC_OBJS) cppspec.o version.o intl.o prefix.o \
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) cppspec.o \
 	  intl.o prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
-# Create links to binutils, especially for in-tree builds, to make -B.
-# use them.  We need hard links so that directories can be shuffled
-# during toplevel bootstrap.
-# Go through an additional indirection, because the file we create
-# can be either `sometool' (if it is a script) or `sometool$(exeext)'
-# (if it is a hard link).
-stamp-as: $(ORIGINAL_AS_FOR_TARGET)
-	@echo creating as; \
-	case "$(ORIGINAL_AS_FOR_TARGET)" in \
-	  ./as) ;; \
-	  ../*) \
-	     rm -f as$(exeext); \
-	     echo $(LN) $< as$(exeext); \
-	     $(LN) $< as$(exeext) || cp $< as$(exeext) ;; \
-	  *) \
-	     rm -f as; \
-	     echo '#!$(SHELL)' > as; \
-	     echo 'exec $(ORIGINAL_AS_FOR_TARGET) "$$@"' >> as ; \
-	     chmod +x as ;; \
-	esac
-	echo timestamp > $@
-
-stamp-collect-ld: $(ORIGINAL_LD_FOR_TARGET)
-	@echo creating collect-ld; \
-	case "$(ORIGINAL_LD_FOR_TARGET)" in \
-	  ./collect-ld) ;; \
-	  ../*) \
-	     rm -f collect-ld$(exeext); \
-	     echo $(LN) $< collect-ld$(exeext); \
-	     $(LN) $< collect-ld$(exeext) || cp $< collect-ld$(exeext) ;; \
-	  *) \
-	     rm -f collect-ld$(exeext); \
-	     echo '#!$(SHELL)' > collect-ld; \
-	     echo 'exec $(ORIGINAL_LD_FOR_TARGET) "$$@"' >> collect-ld ; \
-	     chmod +x collect-ld ;; \
-	esac
-	echo timestamp > $@
-
-stamp-nm: $(ORIGINAL_NM_FOR_TARGET)
-	@echo creating nm; \
-	case "$(ORIGINAL_NM_FOR_TARGET)" in \
-	  ./nm) ;; \
-	  ../*) \
-	     rm -f nm$(exeext); \
-	     echo $(LN) $< nm$(exeext); \
-	     $(LN) $< nm$(exeext) || cp $< nm$(exeext) ;; \
-	  *) \
-	     rm -f nm$(exeext); \
-	     echo '#!$(SHELL)' > nm; \
-	     echo 'exec $(ORIGINAL_NM_FOR_TARGET) "$$@"' >> nm ; \
-	     chmod +x nm ;; \
-	esac
-	echo timestamp > $@
-
 # Dump a specs file to make -B./ read these specs over installed ones.
 $(SPECS): xgcc$(exeext)
 	$(GCC_FOR_TARGET) -dumpspecs > tmp-specs
@@ -1567,7 +1513,7 @@ libgcc-support: libgcc.mvars stmp-int-hdrs $(STMP_FIXPROTO) $(TCONFIG_H) \
 	$(LIB2ADD_ST) $(LIB2ADDEH) $(srcdir)/emutls.c gcov-iov.h $(SFP_MACHINE)
 
 libgcc.mvars: config.status Makefile $(LIB2ADD) $(LIB2ADD_ST) specs \
-		xgcc$(exeext) stamp-as stamp-collect-ld stamp-nm
+		xgcc$(exeext)
 	: > tmp-libgcc.mvars
 	echo LIB1ASMFUNCS = '$(LIB1ASMFUNCS)' >> tmp-libgcc.mvars
 	echo LIB1ASMSRC = '$(LIB1ASMSRC)' >> tmp-libgcc.mvars

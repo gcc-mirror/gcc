@@ -1,3 +1,11 @@
+2007-04-12  Paolo Bonzini  <bonzini@gnu.org>
+            Charles Wilson  <libtool@cwilson.fastmail.fm>
+
+	* Makefile.in (stamp-as, stamp-collect-ld, stamp-nm): Remove.
+	(libgcc.mvars): Don't depend on them.
+	* configure.ac (as, collect-ld, nm): Create from exec-tool.in.
+	* exec-tool.in: New.
+
 2007-04-12  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* doc/invoke.text (--help): Document --help=common.
