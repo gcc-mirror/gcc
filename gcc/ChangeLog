@@ -1,3 +1,7 @@
+2007-04-13  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_expand_builtin): Use CALL_EXPR_FN.
+
 2007-04-13  Mike Stump  <mrs@apple.com>
 
 	* config/darwin-c.c (handle_c_option): Handle -fapple-kext here so

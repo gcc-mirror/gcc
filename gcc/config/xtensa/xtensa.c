@@ -2473,7 +2473,7 @@ xtensa_expand_builtin (tree exp, rtx target,
 		       enum machine_mode mode ATTRIBUTE_UNUSED,
 		       int ignore)
 {
-  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
 
   /* The umulsidi3 builtin is just a mechanism to avoid calling the real
