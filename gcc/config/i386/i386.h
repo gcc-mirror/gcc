@@ -1363,9 +1363,7 @@ enum reg_class
 #define ANY_FP_REGNO_P(N) (FP_REGNO_P (N) || SSE_REGNO_P (N))
 
 #define X87_FLOAT_MODE_P(MODE)	\
-  ((MODE) == SFmode		\
-   || (MODE) == DFmode		\
-   || (MODE) == XFmode)
+  (TARGET_80387 && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode))
 
 #define SSE_REG_P(N) (REG_P (N) && SSE_REGNO_P (REGNO (N)))
 #define SSE_REGNO_P(N)						\

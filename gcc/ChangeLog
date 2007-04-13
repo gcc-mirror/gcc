@@ -1,3 +1,43 @@
+2007-04-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (X87_FLOAT_MODE_P): Check for TARGET_80387.
+	* config/i386/i386.md (*cmpfp0): Remove check for TARGET_80387, this
+	check is now implied in X87_FLOAT_MODE_P.
+	(*cmpfp_u, *cmpfp_<mode>, *cmpfp_i_i387): Ditto.
+	(*cmpfp_iu_387, fix_trunc<mode>_fisttp_i386_1): Ditto.
+	(fix_trunc<mode>_i386_fisttp): Ditto.
+	(fix_trunc<mode>_i387_fisttp_with_temp): Ditto.
+	(*fix_trunc<mode>_i387_1, fix_truncdi_i387): Ditto.
+	(fix_truncdi_i387_with_temp, fix_trunc<mode>_i387): Ditto.
+	(fix_trunc<mode>_i387_with_temp, *fp_jcc_1_387): Ditto.
+	(*fp_jcc_2_387, *fp_jcc_5_387, *fp_jcc_6_387): Ditto.
+	(*fp_jcc_7_387, *fp_jcc_8<mode>_387): Ditto.
+	(unnamed_splitters): Ditto.
+	* config/i386/i386.c (function_value_32): Generate FIRST_FLOAT_REG
+	for X87_FLOAT_MODE_P mode.  Override FIRST_FLOAT_REG with
+	FIRST_SSE_REG for local functions when SSE math is enabled or
+	for functions with sseregparm attribute.
+	(standard_80387_constant_p): Return -1 if mode is not
+	X87_FLOAT_MODE_P.
+	(ix86_cc_mode): Assert that scalar mode is not DECIMAL_FLOAT_MODE_P.
+	(ix86_expand_compare): Ditto.
+	(ix86_expand_carry_flag_compare): Ditto.
+	(ix86_expand_int_movcc): Check for SCALAR_FLOAT_MODE_P instead
+	of FLOAT_MODE_P for cmp_mode and assert that cmp_mode is not
+	DECIMAL_FLOAT_MODE_P.
+	(ix86_preferred_output_reload_class): Use X87_FLOAT_MODE_P instead
+	of SCALAR_FLOAT_MODE_P.
+	(ix86_rtx_costs) [PLUS] Remove FLOAT_MODE_P and fall through to ...
+	[MINUS]: ... here.  Add SSE_FLOAT_MODE_P and X87_FLOAT_MODE_P
+	checks before FLOAT_MODE_P.
+	[MULT]: Add SSE_FLOAT_MODE_P and X87_FLOAT_MODE_P checks
+	before FLOAT_MODE_P.
+	[DIV]: Ditto.
+	[NEG]: Ditto.
+	[ABS]: Ditto.
+	[SQRT]: Ditto.
+	[FLOAT_EXTEND]: Use SSE_FLOAT_MODE_P.
+
 2007-04-12  Paolo Bonzini  <bonzini@gnu.org>
             Charles Wilson  <libtool@cwilson.fastmail.fm>
 
