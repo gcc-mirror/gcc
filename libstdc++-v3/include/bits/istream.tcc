@@ -117,8 +117,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_extract(__l);
       if (!this->fail())
 	{
-	  if (numeric_limits<short>::min() <= __l
-	      && __l <= numeric_limits<short>::max())
+	  if (__gnu_cxx::__numeric_traits<short>::__min <= __l
+	      && __l <= __gnu_cxx::__numeric_traits<short>::__max)
 	    __n = short(__l);
 	  else
 	    this->setstate(ios_base::failbit);
@@ -137,8 +137,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_extract(__l);
       if (!this->fail())
 	{
-	  if (numeric_limits<int>::min() <= __l
-	      && __l <= numeric_limits<int>::max())
+	  if (__gnu_cxx::__numeric_traits<int>::__min <= __l
+	      && __l <= __gnu_cxx::__numeric_traits<int>::__max)
 	    __n = int(__l);
 	  else
 	    this->setstate(ios_base::failbit);
@@ -432,10 +432,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		      ++_M_gcount;
 		      __c = __sb->snextc();
 		    }
-		  if (__n == numeric_limits<streamsize>::max()
+		  if (__n == __gnu_cxx::__numeric_traits<streamsize>::__max
 		      && !traits_type::eq_int_type(__c, __eof))
 		    {
-		      _M_gcount = numeric_limits<streamsize>::min();
+		      _M_gcount =
+			__gnu_cxx::__numeric_traits<streamsize>::__min;
 		      __large_ignore = true;
 		    }
 		  else
@@ -443,7 +444,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		}
 
 	      if (__large_ignore)
-		_M_gcount = numeric_limits<streamsize>::max();
+		_M_gcount = __gnu_cxx::__numeric_traits<streamsize>::__max;
 
 	      if (traits_type::eq_int_type(__c, __eof))
                 __err |= ios_base::eofbit;
@@ -483,11 +484,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		      ++_M_gcount;
 		      __c = __sb->snextc();
 		    }
-		  if (__n == numeric_limits<streamsize>::max()
+		  if (__n == __gnu_cxx::__numeric_traits<streamsize>::__max
 		      && !traits_type::eq_int_type(__c, __eof)
 		      && !traits_type::eq_int_type(__c, __delim))
 		    {
-		      _M_gcount = numeric_limits<streamsize>::min();
+		      _M_gcount =
+			__gnu_cxx::__numeric_traits<streamsize>::__min;
 		      __large_ignore = true;
 		    }
 		  else
@@ -495,13 +497,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		}
 
 	      if (__large_ignore)
-		_M_gcount = numeric_limits<streamsize>::max();
+		_M_gcount = __gnu_cxx::__numeric_traits<streamsize>::__max;
 
               if (traits_type::eq_int_type(__c, __eof))
                 __err |= ios_base::eofbit;
 	      else if (traits_type::eq_int_type(__c, __delim))
 		{
-		  if (_M_gcount < numeric_limits<streamsize>::max())
+		  if (_M_gcount
+		      < __gnu_cxx::__numeric_traits<streamsize>::__max)
 		    ++_M_gcount;
 		  __sb->sbumpc();
 		}
@@ -800,7 +803,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      // Figure out how many characters to extract.
 	      streamsize __num = __in.width();
 	      if (__num <= 0)
-		__num = numeric_limits<streamsize>::max();
+		__num = __gnu_cxx::__numeric_traits<streamsize>::__max;
 
 	      const __ctype_type& __ct = use_facet<__ctype_type>(__in.getloc());
 

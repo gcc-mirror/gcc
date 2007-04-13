@@ -208,7 +208,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 	__ldval = __ldval < 0.0l ? -(__ldval + 0.5l) : __ldval;
 
 	const long double __mult =
-	  std::numeric_limits<std::size_t>::max() + 1.0l;
+	  __gnu_cxx::__numeric_traits<std::size_t>::__max + 1.0l;
 	__ldval *= __mult;
 
 	// Try to use all the bits of the mantissa (really necessary only
@@ -217,8 +217,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 	__ldval = (__ldval - (long double)__hibits) * __mult;
 
 	const std::size_t __coeff =
-	  (std::numeric_limits<std::size_t>::max()
-	   / std::numeric_limits<long double>::max_exponent);
+	  __gnu_cxx::__numeric_traits<std::size_t>::__max / __LDBL_MAX_EXP__;
 
 	__result = __hibits + (std::size_t)__ldval + __coeff * __exponent;
 

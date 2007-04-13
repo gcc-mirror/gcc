@@ -53,9 +53,10 @@
 #define _TR1_HASHTABLE 1
 
 #include <utility>		// For std::pair
-#include <iterator>
 #include <cstddef>
 #include <cmath>
+#include <bits/stl_iterator_base_types.h>
+#include <bits/stl_iterator_base_funcs.h>
 #include <bits/allocator.h>
 #include <bits/functexcept.h>
 #include <tr1/type_traits>	// For true_type and false_type

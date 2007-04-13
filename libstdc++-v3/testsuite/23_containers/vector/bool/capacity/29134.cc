@@ -19,6 +19,7 @@
 // 23.2.5 class vector<bool> [lib.vector.bool]
 
 #include <vector>
+#include <limits>
 #include <testsuite_hooks.h>
 
 // libstdc++/29134

@@ -36,6 +36,7 @@
 
 #include <bits/c++config.h>
 #include <bits/stl_algobase.h>
+#include <limits>
 #include <cmath>
 #include <tr1/common.h>
 

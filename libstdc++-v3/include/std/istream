@@ -45,7 +45,6 @@
 #include <ios>
 #include <locale>
 #include <ostream>
-#include <limits> // For numeric_limits
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 

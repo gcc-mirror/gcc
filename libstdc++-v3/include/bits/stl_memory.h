@@ -41,7 +41,6 @@
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_raw_storage_iter.h>
 #include <debug/debug.h>
-#include <limits>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -57,7 +56,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     pair<_Tp*, ptrdiff_t>
     __get_temporary_buffer(ptrdiff_t __len, _Tp*)
     {
-      const ptrdiff_t __max = numeric_limits<ptrdiff_t>::max() / sizeof(_Tp);
+      const ptrdiff_t __max =
+	__gnu_cxx::__numeric_traits<ptrdiff_t>::__max / sizeof(_Tp);
       if (__len > __max)
 	__len = __max;
       

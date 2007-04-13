@@ -165,12 +165,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       {
 	const difference_type __d = difference_type(__n1 - __n2);
 
-	if (__d > std::numeric_limits<int>::max())
-	  return std::numeric_limits<int>::max();
-	else if (__d < std::numeric_limits<int>::min())
-	  return std::numeric_limits<int>::min();
+	if (__d > __numeric_traits_integer<int>::__max)
+	  return __numeric_traits_integer<int>::__max;
+	else if (__d < __numeric_traits_integer<int>::__min)
+	  return __numeric_traits_integer<int>::__min;
 	else
-	  return int(__d);	
+	  return int(__d);
       }
     };
 
