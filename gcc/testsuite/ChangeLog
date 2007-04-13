@@ -1,3 +1,8 @@
+2007-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/31074
+	* conv3.C: New test.
+
 2007-04-13  Mike Stump  <mrs@apple.com>
 
 	* obj-c++.dg/stubify-1.mm: Only run on powerpc.
