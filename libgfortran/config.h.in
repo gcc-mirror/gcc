@@ -357,6 +357,9 @@
 /* libm includes frexpl */
 #undef HAVE_FREXPL
 
+/* Define to 1 if you have the `fstat' function. */
+#undef HAVE_FSTAT
+
 /* Define to 1 if you have the `ftruncate' function. */
 #undef HAVE_FTRUNCATE
 
@@ -462,6 +465,9 @@
 /* libm includes logl */
 #undef HAVE_LOGL
 
+/* Define to 1 if you have the `lstat' function. */
+#undef HAVE_LSTAT
+
 /* Define to 1 if you have the <math.h> header file. */
 #undef HAVE_MATH_H
 
@@ -551,6 +557,9 @@
 
 /* libm includes sqrtl */
 #undef HAVE_SQRTL
+
+/* Define to 1 if you have the `stat' function. */
+#undef HAVE_STAT
 
 /* Define to 1 if you have the <stddef.h> header file. */
 #undef HAVE_STDDEF_H

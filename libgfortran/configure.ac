@@ -177,7 +177,7 @@ AC_CHECK_MEMBERS([struct stat.st_rdev])
 AC_CHECK_FUNCS(getrusage times mkstemp strtof strtold snprintf ftruncate chsize)
 AC_CHECK_FUNCS(chdir strerror getlogin gethostname kill link symlink perror)
 AC_CHECK_FUNCS(sleep time ttyname signal alarm ctime clock access fork execl)
-AC_CHECK_FUNCS(wait setmode gettimeofday)
+AC_CHECK_FUNCS(wait setmode gettimeofday stat fstat lstat)
 
 # Check for types
 AC_CHECK_TYPES([intptr_t])

@@ -1,3 +1,13 @@
+2007-04-13  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/31335
+	* intrinsics/stat.c: Only provide STAT and FSTAT library routines
+	if stat() and fstat() library functions are available. When lstat()
+	is not available, use stat() instead.
+	* configure.ac: Add checks for stat, fstat and lstat.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2007-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/31099
