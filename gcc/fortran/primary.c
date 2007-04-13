@@ -2420,7 +2420,8 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
 
     case FL_PROCEDURE:
       /* Check for a nonrecursive function result */
-      if (sym->attr.function && (sym->result == sym || sym->attr.entry))
+      if (sym->attr.function && (sym->result == sym || sym->attr.entry)
+	  && !sym->attr.external)
 	{
 	  /* If a function result is a derived type, then the derived
 	     type may still have to be resolved.  */

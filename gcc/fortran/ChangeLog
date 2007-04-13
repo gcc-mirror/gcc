@@ -1,3 +1,9 @@
+2007-04-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/31559
+	* primary.c (match_variable): External functions
+	are no variables.
+
 2007-04-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31550
