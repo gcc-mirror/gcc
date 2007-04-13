@@ -3593,7 +3593,7 @@ static bool find_assert_locations (basic_block bb);
 
 /* Determine whether the outgoing edges of BB should receive an
    ASSERT_EXPR for each of the operands of BB's LAST statement.
-   The last statement of BB must be a COND_EXPR or a SWITCH_EXPR.
+   The last statement of BB must be a COND_EXPR.
 
    If any of the sub-graphs rooted at BB have an interesting use of
    the predicate operands, an assert location node is added to the
@@ -3666,6 +3666,131 @@ find_conditional_asserts (basic_block bb, tree last)
   return need_assert;
 }
 
+/* Compare two case labels sorting first by the destination label uid
+   and then by the case value.  */
+
+static int
+compare_case_labels (const void *p1, const void *p2)
+{
+  tree case1 = *(tree *)p1;
+  tree case2 = *(tree *)p2;
+  unsigned int uid1 = DECL_UID (CASE_LABEL (case1));
+  unsigned int uid2 = DECL_UID (CASE_LABEL (case2));
+
+  if (uid1 < uid2)
+    return -1;
+  else if (uid1 == uid2)
+    {
+      /* Make sure the default label is first in a group.  */
+      if (!CASE_LOW (case1))
+	return -1;
+      else if (!CASE_LOW (case2))
+	return 1;
+      else
+        return tree_int_cst_compare (CASE_LOW (case1), CASE_LOW (case2));
+    }
+  else
+    return 1;
+}
+
+/* Determine whether the outgoing edges of BB should receive an
+   ASSERT_EXPR for each of the operands of BB's LAST statement.
+   The last statement of BB must be a SWITCH_EXPR.
+
+   If any of the sub-graphs rooted at BB have an interesting use of
+   the predicate operands, an assert location node is added to the
+   list of assertions for the corresponding operands.  */
+
+static bool
+find_switch_asserts (basic_block bb, tree last)
+{
+  bool need_assert;
+  block_stmt_iterator bsi;
+  tree op, cond;
+  edge e;
+  tree vec = SWITCH_LABELS (last), vec2;
+  size_t n = TREE_VEC_LENGTH (vec);
+  unsigned int idx;
+
+  need_assert = false;
+  bsi = bsi_for_stmt (last);
+  op = TREE_OPERAND (last, 0);
+  if (TREE_CODE (op) != SSA_NAME)
+    return false;
+
+  /* Build a vector of case labels sorted by destination label.  */
+  vec2 = make_tree_vec (n);
+  for (idx = 0; idx < n; ++idx)
+    TREE_VEC_ELT (vec2, idx) = TREE_VEC_ELT (vec, idx);
+  qsort (&TREE_VEC_ELT (vec2, 0), n, sizeof (tree), compare_case_labels);
+
+  for (idx = 0; idx < n; ++idx)
+    {
+      tree min, max;
+      tree cl = TREE_VEC_ELT (vec2, idx);
+
+      min = CASE_LOW (cl);
+      max = CASE_HIGH (cl);
+
+      /* If there are multiple case labels with the same destination
+	 we need to combine them to a single value range for the edge.  */
+      if (idx + 1 < n
+	  && CASE_LABEL (cl) == CASE_LABEL (TREE_VEC_ELT (vec2, idx + 1)))
+	{
+	  /* Skip labels until the last of the group.  */
+	  do {
+	    ++idx;
+	  } while (idx < n
+		   && CASE_LABEL (cl) == CASE_LABEL (TREE_VEC_ELT (vec2, idx)));
+	  --idx;
+
+	  /* Pick up the maximum of the case label range.  */
+	  if (CASE_HIGH (TREE_VEC_ELT (vec2, idx)))
+	    max = CASE_HIGH (TREE_VEC_ELT (vec2, idx));
+	  else
+	    max = CASE_LOW (TREE_VEC_ELT (vec2, idx));
+	}
+
+      /* Nothing to do if the range includes the default label until we
+	 can register anti-ranges.  */
+      if (min == NULL_TREE)
+	continue;
+
+      /* Find the edge to register the assert expr on.  */
+      e = find_edge (bb, label_to_block (CASE_LABEL (cl)));
+
+      /* Remove the SWITCH_EXPR operand from the FOUND_IN_SUBGRAPH bitmap.
+	 Otherwise, when we finish traversing each of the sub-graphs, we
+	 won't know whether the variables were found in the sub-graphs or
+	 if they had been found in a block upstream from BB.  */
+      RESET_BIT (found_in_subgraph, SSA_NAME_VERSION (op));
+
+      /* Traverse the strictly dominated sub-graph rooted at E->DEST
+	 to determine if any of the operands in the conditional
+	 predicate are used.  */
+      if (e->dest != bb)
+	need_assert |= find_assert_locations (e->dest);
+
+      /* Register the necessary assertions for the operand in the
+	 SWITCH_EXPR.  */
+      cond = build2 (max ? GE_EXPR : EQ_EXPR, boolean_type_node,
+		     op, fold_convert (TREE_TYPE (op), min));
+      need_assert |= register_edge_assert_for (op, e, bsi, cond);
+      if (max)
+	{
+	  cond = build2 (LE_EXPR, boolean_type_node,
+			 op, fold_convert (TREE_TYPE (op), max));
+	  need_assert |= register_edge_assert_for (op, e, bsi, cond);
+	}
+    }
+
+  /* Finally, indicate that we have found the operand in the
+     SWITCH_EXPR.  */
+  SET_BIT (found_in_subgraph, SSA_NAME_VERSION (op));
+
+  return need_assert;
+}
+
 
 /* Traverse all the statements in block BB looking for statements that
    may generate useful assertions for the SSA names in their operand.
@@ -3728,9 +3853,7 @@ find_conditional_asserts (basic_block bb, tree last)
 
    If this function returns true, then it means that there are names
    for which we need to generate ASSERT_EXPRs.  Those assertions are
-   inserted by process_assert_insertions.
-
-   TODO.  Handle SWITCH_EXPR.  */
+   inserted by process_assert_insertions.  */
 
 static bool
 find_assert_locations (basic_block bb)
@@ -3852,6 +3975,11 @@ find_assert_locations (basic_block bb)
       && !fp_predicate (COND_EXPR_COND (last))
       && !ZERO_SSA_OPERANDS (last, SSA_OP_USE))
     need_assert |= find_conditional_asserts (bb, last);
+
+  if (last
+      && TREE_CODE (last) == SWITCH_EXPR
+      && !ZERO_SSA_OPERANDS (last, SSA_OP_USE))
+    need_assert |= find_switch_asserts (bb, last);
 
   /* Recurse into the dominator children of BB.  */
   for (son = first_dom_son (CDI_DOMINATORS, bb);
@@ -4759,8 +4887,7 @@ vrp_visit_cond_stmt (tree stmt, edge *taken_edge_p)
 
   *taken_edge_p = NULL;
 
-  /* FIXME.  Handle SWITCH_EXPRs.  But first, the assert pass needs to
-     add ASSERT_EXPRs for them.  */
+  /* FIXME.  Handle SWITCH_EXPRs.  */
   if (TREE_CODE (stmt) == SWITCH_EXPR)
     return SSA_PROP_VARYING;
 

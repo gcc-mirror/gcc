@@ -1,3 +1,10 @@
+2007-04-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/21258
+	* tree-vrp.c (compare_case_labels): New helper.
+	(find_switch_asserts): New function.
+	(find_assert_locations): Call it for SWITCH_EXPRs.
+
 2007-04-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (X87_FLOAT_MODE_P): Check for TARGET_80387.
