@@ -541,7 +541,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
 -mfpmath=@var{unit} @gol
 -masm=@var{dialect}  -mno-fancy-math-387 @gol
--mno-fp-ret-in-387  -msoft-float  -msvr3-shlib @gol
+-mno-fp-ret-in-387  -msoft-float @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
 -mpreferred-stack-boundary=@var{num} -mcx16 -msahf @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4a -m3dnow -mpopcnt -mabm @gol
@@ -9988,14 +9988,6 @@ compatible with arrays or structures in code compiled without that switch.
 When @option{-mcmodel=medium} is specified, the data greater than
 @var{threshold} are placed in large data section.  This value must be the
 same across all object linked into the binary and defaults to 65535.
-
-@item -msvr3-shlib
-@itemx -mno-svr3-shlib
-@opindex msvr3-shlib
-@opindex mno-svr3-shlib
-Control whether GCC places uninitialized local variables into the
-@code{bss} or @code{data} segments.  @option{-msvr3-shlib} places them
-into @code{bss}.  These options are meaningful only on System V Release 3.
 
 @item -mrtd
 @opindex mrtd
