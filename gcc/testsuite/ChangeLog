@@ -1,3 +1,8 @@
+2007-04-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/31559
+	* gfortran.dg/func_assign.f90: New test.
+
 2007-04-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31550
