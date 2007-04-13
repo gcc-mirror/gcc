@@ -1,3 +1,8 @@
+2007-04-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31550
+	* gfortran.dg/used_types_16.f90: New test.
+
 2007-04-13  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/18937
