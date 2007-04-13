@@ -1,3 +1,11 @@
+2007-04-13  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/18937
+	* gfortran.dg/goto_2.f90: New.
+	* gfortran.dg/goto_3.f90: New.
+	* gfortran.dg/pr17708.f90: Rename to ...
+	* gfortran.dg/goto_4.f90: ... this, add comment pointing to PR.
+
 2007-04-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/31562
