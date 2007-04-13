@@ -25,4 +25,3 @@ id<Foo> func(void) {
   return o;  /* { dg-warning "distinct Objective\\-C type in return" } */
 }
 @end
-

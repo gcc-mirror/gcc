@@ -11,4 +11,3 @@ static Derived *test(void)
 
    return m;
 }
-

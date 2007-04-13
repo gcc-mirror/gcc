@@ -1,7 +1,7 @@
 /* All calls must be properly stubified.  Complain about any "call
    _objc_msgSend<end-of-line>" without the $stub suffix.  */
 
-/* { dg-do compile { target *-*-darwin* } } */
+/* { dg-do compile { target powerpc*-*-darwin* } } */
 /* { dg-options "-Os -mdynamic-no-pic -fno-exceptions" } */
 
 typedef struct objc_object { } *id ;
