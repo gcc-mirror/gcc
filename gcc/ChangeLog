@@ -1,5 +1,11 @@
 2007-04-13  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.opt (msvr3-shlib): Removed.
+
+	* doc/invoke.texi: Remove -msvr3-shlib.
+
+2007-04-13  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.opt (mpopcnt): Replace "popcount" instruction
 	with "popcnt" instruction.
 
