@@ -1,3 +1,9 @@
+2007-04-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/31562
+	* gfortran.dg/value_4.c: Use GNU extensions for complex
+	instead of a struct.
+
 2007-04-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/21258
