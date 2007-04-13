@@ -1,3 +1,9 @@
+2007-04-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.am (EXTRA_DIST): Bring up to date.
+	* Makefile.in: Regenerate.
+	* src/frv/eabi.S: Remove RCS keyword.
+
 2007-04-06  Richard Henderson  <rth@redhat.com>
 
 	* configure.ac: Tidy target case.
