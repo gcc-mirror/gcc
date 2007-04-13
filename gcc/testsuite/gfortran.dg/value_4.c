@@ -3,10 +3,14 @@
 
     Contributed by Paul Thomas <pault@gcc.gnu.org>  */
 
-typedef struct { float r, i; } complex;
+/* We used to #include <complex.h>, but this fails for some platforms
+   (like cygwin) who don't have it yet.  */
+#define complex __complex__
+#define _Complex_I (1.0iF)
+
 extern float *f_to_f__ (float, float*);
 extern int *i_to_i__ (int, int*);
-extern void c_to_c__ (complex*, complex, complex*);
+extern void c_to_c__ (complex float*, complex float, complex float*);
 extern void abort (void);
 
 /* In f_to_f and i_to_i we return the second argument, so that we do
@@ -35,14 +39,11 @@ i_to_i__(int i1, int *i2)
 }
 
 void
-c_to_c__(complex *retval, complex c1, complex *c2)
+c_to_c__(complex float *retval, complex float c1, complex float *c2)
 {
-  if ( c1.r != c2->r ) abort();
-  if ( c1.i != c2->i ) abort();
-  c1.r = 0.0;
-  c1.i = 0.0;
-  retval->r = c2->r * 4.0;
-  retval->i = c2->i * 4.0;
+  if ( c1 != *c2 ) abort();
+  c1 = 0.0 + 0.0 * _Complex_I;
+  *retval = *c2 * 4.0;
   return;
 }
 
