@@ -209,7 +209,7 @@ Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation
 
 mpopcnt
 Target Report Mask(POPCNT)
-Support code generation of popcount instruction for popcount built-ins 
+Support code generation of popcnt instruction for popcount built-ins 
 namely __builtin_popcount, __builtin_popcountl and __builtin_popcountll
 
 mabm

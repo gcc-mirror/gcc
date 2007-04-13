@@ -1,3 +1,8 @@
+2007-04-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.opt (mpopcnt): Replace "popcount" instruction
+	with "popcnt" instruction.
+
 2007-04-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/21258
