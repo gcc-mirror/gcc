@@ -1,3 +1,9 @@
+2007-04-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31550
+	* trans-types.c (copy_dt_decls_ifequal): Do not get pointer
+	derived type components.
+
 2007-04-13  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/18937
