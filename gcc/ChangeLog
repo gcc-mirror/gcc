@@ -1,3 +1,9 @@
+2007-04-13  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/vxworks.h (SUBTARGET_OVERRIDE_OPTIONS): Define.
+	* config/mips/mips.c (override_options): Call
+	SUBTARGET_OVERRIDE_OPTIONS, if defined.
+
 2007-04-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.opt (msvr3-shlib): Removed.

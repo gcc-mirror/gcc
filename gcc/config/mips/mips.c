@@ -4719,6 +4719,10 @@ override_options (void)
   int i, start, regno;
   enum machine_mode mode;
 
+#ifdef SUBTARGET_OVERRIDE_OPTIONS
+  SUBTARGET_OVERRIDE_OPTIONS;
+#endif
+
   mips_section_threshold = g_switch_set ? g_switch_value : MIPS_DEFAULT_GVALUE;
 
   /* The following code determines the architecture and register size.
