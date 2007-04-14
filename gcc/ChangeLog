@@ -1,3 +1,9 @@
+2007-04-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/31322
+	* dwarf2out.c (output_call_frame_info): Call assemble_external_libcall
+	when a personality function is used.
+
 2007-04-13  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_expand_builtin): Use CALL_EXPR_FN.

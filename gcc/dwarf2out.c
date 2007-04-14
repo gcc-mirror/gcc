@@ -2304,6 +2304,7 @@ output_call_frame_info (int for_eh)
 	{
 	  *p++ = 'P';
 	  augmentation_size += 1 + size_of_encoded_value (per_encoding);
+	  assemble_external_libcall (eh_personality_libfunc);
 	}
       if (any_lsda_needed)
 	{
