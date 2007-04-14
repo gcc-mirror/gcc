@@ -142,3 +142,6 @@ M68K_DEVICE ("5483",  mcf5483,  "5485",  "5475",  cfv4e,    isa_b,     FL_CF_USP
 M68K_DEVICE ("5484",  mcf5484,  "5485",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
 M68K_DEVICE ("5485",  mcf5485,  "5485",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
 M68K_DEVICE ("548x",  mcf548x,  "5485",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
+
+/* Fido processor.  */
+M68K_DEVICE ("fidoa", fidoa,    "cpu32", "fidoa", cpu32,    isa_cpu32, FL_FIDOA | FL_MMU)

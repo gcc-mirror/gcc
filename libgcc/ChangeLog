@@ -1,3 +1,7 @@
+2007-04-14  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config.host: Recognize fido.
+
 2007-04-04  Janis Johnson  <janis187@us.ibm.com>
 
 	* configure: Check host, not target, for decimal float support.

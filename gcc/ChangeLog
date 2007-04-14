@@ -1,3 +1,12 @@
+2007-04-14  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config.gcc: Recognize fido.
+	* config/m68k/m68k-devices.def (fidoa): New.
+	* config/m68k/m68k.h (TARGET_CPU_CPP_BUILTINS): Define
+	__mfido__.
+	(FL_FIDOA, TARGET_FIDOA): New.
+	* config/m68k/m68k.opt (mfidoa): New.
+
 2007-04-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/31322
