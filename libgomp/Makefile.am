@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-ACLOCAL_AMFLAGS = -I ../config
+ACLOCAL_AMFLAGS = -I .. -I ../config
 SUBDIRS = testsuite
 
 ## May be used by toolexeclibdir.

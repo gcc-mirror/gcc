@@ -1,3 +1,8 @@
+2007-04-14  Steve Ellcey  <sje@cup.hp.com>
+
+	* Makefile.am: Add -I .. to ACLOCAL_AMFLAGS.
+	* Makefile.in: Regenerate.
+
 2007-04-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/31369
