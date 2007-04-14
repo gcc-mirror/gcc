@@ -1,3 +1,8 @@
+2007-04-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31561
+	* gfortran.dg/vect/vect-4.f90: xfail on vect_no_align targets.
+
 2007-04-14 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/29507
