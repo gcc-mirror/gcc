@@ -37,6 +37,7 @@
 #include <cmath>  // For isinf, finite, finitef, fabs
 #include <cstdlib>  // For strof, strtold
 #include <locale>
+#include <limits>
 
 #ifdef _GLIBCXX_HAVE_IEEEFP_H
 #include <ieeefp.h>
