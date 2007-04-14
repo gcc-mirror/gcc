@@ -1,3 +1,9 @@
+2007-04-14 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/29507
+	PR fortran/31404
+	* gfortran.dg/initialization_6.f90: New test.
+
 2007-04-14  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.c-torture/compile/pr27528.c: Require nonpic.

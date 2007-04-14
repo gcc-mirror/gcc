@@ -1,4 +1,14 @@
-2007-04-13  Tobias Burnus  <burnus@net-b.de>
+2007-04-14 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/29507
+	PR fortran/31404
+	* expr.c (scalarize_intrinsic_call): New function to
+	scalarize elemental intrinsic functions in initialization
+	expressions.
+	(check_init_expr): Detect elemental intrinsic functions
+	in initalization expressions and call previous.
+
+	2007-04-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/31559
 	* primary.c (match_variable): External functions
