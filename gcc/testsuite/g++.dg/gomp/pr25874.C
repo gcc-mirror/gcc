@@ -1,3 +1,5 @@
+// { dg-options "-O -fopenmp" }
+
 int foo();
 
 struct wigner_d

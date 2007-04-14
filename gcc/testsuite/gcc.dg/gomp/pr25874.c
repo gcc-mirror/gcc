@@ -1,3 +1,5 @@
+/* { dg-options "-O -fopenmp" } */
+
 void foo();
 
 inline void bar()

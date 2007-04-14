@@ -1,3 +1,9 @@
+2007-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/25874
+	* omp-low.c (expand_omp_parallel): If child_cfun->cfg, free dominators,
+	post dominators and cleanup cfg before returning.
+
 2007-04-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (pa_som_asm_init_sections): Ensure that cfun->machine is not
