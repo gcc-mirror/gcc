@@ -471,8 +471,8 @@ fforce-addr
 Common Report Var(flag_force_addr) Optimization
 Copy memory address constants into registers before use
 
-fforward-propagate Optimization
-Common Report Var(flag_forward_propagate)
+fforward-propagate
+Common Report Var(flag_forward_propagate) Optimization
 Perform a forward propagation pass on RTL
 
 ; Nonzero means don't put addresses of constant functions in registers.
