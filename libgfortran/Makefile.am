@@ -1,12 +1,13 @@
 ## Process this file with automake to produce Makefile.in
 
 
-ACLOCAL_AMFLAGS = -I ../config
+ACLOCAL_AMFLAGS = -I .. -I ../config
 
 ## May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
 toolexeclib_LTLIBRARIES = libgfortran.la
+libgfortran_la_LINK = $(LINK)
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lm $(extra_ldflags_libgfortran)
 
 myexeclib_LTLIBRARIES = libgfortranbegin.la

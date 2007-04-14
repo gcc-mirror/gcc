@@ -1,3 +1,8 @@
+2007-04-14  Steve Ellcey  <sje@cup.hp.com>
+
+	* Makefile.am: Add -I .. to ACLOCAL_AMFLAGS.  Add libgfortran_la_LINK.
+	* Makefile.in: Regenerate.
+
 2007-04-11  Kai Tietz   <kai.tietz@onevision.com>
 
         * configure: Regenerate.
