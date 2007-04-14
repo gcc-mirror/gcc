@@ -124,6 +124,10 @@ mdiv
 Target Report Mask(CF_HWDIV)
 Use hardware division instructions on ColdFire
 
+mfidoa
+Target RejectNegative
+Generate code for a Fido A
+
 mhard-float
 Target RejectNegative Mask(HARD_FLOAT) MaskExists
 Generate code which uses hardware floating point instructions

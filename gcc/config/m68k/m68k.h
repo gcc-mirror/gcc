@@ -187,6 +187,9 @@ Boston, MA 02110-1301, USA.  */
       if (TARGET_CF_HWDIV)						\
 	builtin_define ("__mcfhwdiv__");				\
 									\
+      if (TARGET_FIDOA)							\
+	builtin_define ("__mfido__");					\
+									\
       builtin_assert ("cpu=m68k");					\
       builtin_assert ("machine=m68k");					\
     }									\
@@ -220,6 +223,7 @@ Boston, MA 02110-1301, USA.  */
 #define FL_ISA_APLUS (1 << 14)
 #define FL_ISA_B     (1 << 15)
 #define FL_ISA_C     (1 << 16)
+#define FL_FIDOA     (1 << 17)
 #define FL_MMU 	     0   /* Used by multilib machinery.  */
 
 #define TARGET_68010		((m68k_cpu_flags & FL_ISA_68010) != 0)
@@ -228,6 +232,7 @@ Boston, MA 02110-1301, USA.  */
 #define TARGET_COLDFIRE		((m68k_cpu_flags & FL_COLDFIRE) != 0)
 #define TARGET_COLDFIRE_FPU	(m68k_fpu == FPUTYPE_COLDFIRE)
 #define TARGET_68881		(m68k_fpu == FPUTYPE_68881)
+#define TARGET_FIDOA		((m68k_cpu_flags & FL_FIDOA) != 0)
 
 /* Size (in bytes) of FPU registers.  */
 #define TARGET_FP_REG_SIZE	(TARGET_COLDFIRE ? 8 : 12)

@@ -83,6 +83,9 @@ bfin*-*)
 ep9312*-*-*)
 	cpu_type=arm
 	;;
+fido-*-*)
+	cpu_type=m68k
+	;;
 frv*)	cpu_type=frv
 	;;
 xscale-*-*)
@@ -267,6 +270,8 @@ cris-*-elf | cris-*-none)
 cris-*-linux*)
 	;;
 crx-*-elf)
+	;;
+fido-*-elf)
 	;;
 fr30-*-elf)
 	;;

@@ -265,6 +265,10 @@ ep9312*-*-*)
 	;;
 frv*)	cpu_type=frv
 	;;
+fido-*-*)
+	cpu_type=m68k
+	extra_headers=math-68881.h
+        ;;
 xscale-*-*)
 	cpu_type=arm
 	extra_headers="mmintrin.h"
@@ -1508,12 +1512,36 @@ m68k-*-coff*)
 	tm_file="${tm_file} m68k/m68k-none.h m68k/m68kemb.h dbxcoff.h m68k/coff.h dbx.h"
 	use_fixproto=yes
 	;;
-m68020-*-elf* | m68k-*-elf*)
-	default_m68k_cpu=68020
-	default_cf_cpu=5206
+m68020-*-elf* | m68k-*-elf* | fido-*-elf*)
+	case ${target} in
+	fido-*-elf*)
+		# Check that $with_cpu makes sense.
+		case $with_cpu in
+		"" | "fidoa")
+			;;
+		*)
+			echo "Cannot accept --with-cpu=$with_cpu"
+			exit 1
+			;;
+		esac
+		with_cpu=fidoa
+		;;
+	*)
+		default_m68k_cpu=68020
+		default_cf_cpu=5206
+		;;
+	esac
 	tm_file="${tm_file} m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/m68kemb.h m68k/m68020-elf.h"
 	tm_defines="${tm_defines} MOTOROLA=1 USE_GAS"
-	tmake_file="m68k/t-floatlib m68k/t-m68kbare m68k/t-m68kelf m68k/t-mlibs"
+	tmake_file="m68k/t-floatlib m68k/t-m68kbare m68k/t-m68kelf"
+	# Add multilibs for targets other than fido.
+	case ${target} in
+	fido-*-elf*)
+		;;
+	*)
+		tmake_file="$tmake_file m68k/t-mlibs"
+		;;
+	esac
 	extra_parts="crtbegin.o crtend.o"
 	;;
 m68010-*-netbsdelf* | m68k*-*-netbsdelf*)
@@ -2838,7 +2866,7 @@ case "${target}" in
 		esac
 		;;
 
-	m680[012]0-*-* | m68k*-*-*)
+	fido-*-* | m680[012]0-*-* | m68k*-*-*)
 		supported_defaults="arch cpu"
 		case "$with_arch" in
 		"" | "m68k"| "cf")
@@ -3132,7 +3160,7 @@ case ${target} in
 		fi
 		;;
 
-	m680[012]0-*-* | m68k*-*-*)
+	fido*-*-* | m680[012]0-*-* | m68k*-*-*)
 		target_cpu_default2=$m68k_cpu_ident
 		if [ x"$m68k_arch_family" != x ]; then
 		        tmake_file="m68k/t-$m68k_arch_family $tmake_file"
