@@ -1,3 +1,7 @@
+2007-04-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* common.opt (fforward-propagate): Fix "Optimization" annotation.
+
 2007-04-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/25874
