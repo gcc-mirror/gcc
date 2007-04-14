@@ -1,3 +1,7 @@
+2007-04-14  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.c-torture/compile/pr27528.c: Require nonpic.
+
 2007-04-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/31074

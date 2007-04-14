@@ -1,6 +1,6 @@
 /* Check that constant constraints like "i", "n" and "s" can be used in
    cases where the operand is an initializer constant.  */
-/* { dg-options "-fno-pic" } */
+/* { dg-require-effective-target nonpic } */
 
 int x[2] = { 1, 2 };
 
