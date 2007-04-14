@@ -1,3 +1,8 @@
+2007-04-14  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.h (MODES_TIEABLE_P): Allow more modes to be tied.
+	* config/bfin/bfin.md (movsi_insn): Delete two unused alternatives.
+
 2007-04-14  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config.gcc: Recognize fido.

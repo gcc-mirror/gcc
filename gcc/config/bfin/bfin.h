@@ -684,7 +684,15 @@ enum reg_class
    If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R,
    MODE2)' are ever different for any R, then `MODES_TIEABLE_P (MODE1,
    MODE2)' must be zero. */
-#define MODES_TIEABLE_P(MODE1, MODE2) ((MODE1) == (MODE2))
+#define MODES_TIEABLE_P(MODE1, MODE2)			\
+ ((MODE1) == (MODE2)					\
+  || ((GET_MODE_CLASS (MODE1) == MODE_INT		\
+       || GET_MODE_CLASS (MODE1) == MODE_FLOAT)		\
+      && (GET_MODE_CLASS (MODE2) == MODE_INT		\
+	  || GET_MODE_CLASS (MODE2) == MODE_FLOAT)	\
+      && (MODE1) != BImode && (MODE2) != BImode		\
+      && GET_MODE_SIZE (MODE1) <= UNITS_PER_WORD	\
+      && GET_MODE_SIZE (MODE2) <= UNITS_PER_WORD))
 
 /* `PREFERRED_RELOAD_CLASS (X, CLASS)'
    A C expression that places additional restrictions on the register

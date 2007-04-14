@@ -522,12 +522,10 @@
 ;; with a PLUS.  We generally require fewer secondary reloads this way.
 
 (define_insn "*movsi_insn"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=da,x*y,*k,da,da,x,x,x,da,mr")
-	(match_operand:SI 1 "general_operand" "da,x*y,da,*k,xKs7,xKsh,xKuh,ix,mr,da"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=da,x*y,da,x,x,x,da,mr")
+	(match_operand:SI 1 "general_operand" "da,x*y,xKs7,xKsh,xKuh,ix,mr,da"))]
   "GET_CODE (operands[0]) != MEM || GET_CODE (operands[1]) != MEM"
  "@
-   %0 = %1;
-   %0 = %1;
    %0 = %1;
    %0 = %1;
    %0 = %1 (X);
@@ -536,8 +534,8 @@
    #
    %0 = %1%!
    %0 = %1%!"
-  [(set_attr "type" "move,move,move,move,mvi,mvi,mvi,*,mcld,mcst")
-   (set_attr "length" "2,2,2,2,2,4,4,*,*,*")])
+  [(set_attr "type" "move,move,mvi,mvi,mvi,*,mcld,mcst")
+   (set_attr "length" "2,2,2,4,4,*,*,*")])
 
 (define_insn "*movsi_insn32"
   [(set (match_operand:SI 0 "register_operand" "=d,d")
