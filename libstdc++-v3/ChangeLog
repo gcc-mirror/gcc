@@ -1,3 +1,7 @@
+2007-04-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/generic/c_locale.cc: Include <limits>.
+
 2007-04-13  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/31556
