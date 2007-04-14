@@ -1,3 +1,9 @@
+2007-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/25874
+	* gcc.dg/gomp/pr25874.c: Add dg-options.
+	* g++.dg/gomp/pr25874.C: Add dg-options.
+
 2007-04-14  Bernhard Fischer  <aldot@gcc.gnu.org>
 	
 	PR fortran/21061

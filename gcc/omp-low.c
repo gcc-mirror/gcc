@@ -2409,6 +2409,7 @@ expand_omp_parallel (struct omp_region *region)
   block_stmt_iterator si;
   tree entry_stmt;
   edge e;
+  bool do_cleanup_cfg = false;
 
   entry_stmt = last_stmt (region->entry);
   child_fn = OMP_PARALLEL_FN (entry_stmt);
@@ -2444,6 +2445,7 @@ expand_omp_parallel (struct omp_region *region)
 	  exit_succ_e = single_succ_edge (exit_bb);
 	  make_edge (new_bb, exit_succ_e->dest, EDGE_FALLTHRU);
 	}
+      do_cleanup_cfg = true;
     }
   else
     {
@@ -2537,6 +2539,14 @@ expand_omp_parallel (struct omp_region *region)
 
   /* Emit a library call to launch the children threads.  */
   expand_parallel_call (region, new_bb, entry_stmt, ws_args);
+
+  if (do_cleanup_cfg)
+    {
+      /* Clean up the unreachable sub-graph we created above.  */
+      free_dominance_info (CDI_DOMINATORS);
+      free_dominance_info (CDI_POST_DOMINATORS);
+      cleanup_tree_cfg ();
+    }
 }
 
 
