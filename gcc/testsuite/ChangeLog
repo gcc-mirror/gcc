@@ -2,6 +2,9 @@
 
 	* gcc.c-torture/compile/pr27528.c: Require nonpic.
 
+	* lib/target-supports.exp (check_gc_sections_available):
+	Return false if ldflags includes -elf2flt.
+
 2007-04-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/31074
