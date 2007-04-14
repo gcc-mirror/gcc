@@ -1516,7 +1516,7 @@ cleanup:
    the opening parenthesis to the closing parenthesis.  The argument
    list is assumed to allow keyword arguments because we don't know if
    the symbol associated with the procedure has an implicit interface
-   or not.  We make sure keywords are unique. If SUB_FLAG is set,
+   or not.  We make sure keywords are unique. If sub_flag is set,
    we're matching the argument list of a subroutine.  */
 
 match
@@ -2233,6 +2233,7 @@ gfc_match_rvalue (gfc_expr **result)
 	      break;
 	    }
 
+	  /*FIXME:??? match_varspec does set this for us: */
 	  e->ts = sym->ts;
 	  m = match_varspec (e, 0);
 	  break;
