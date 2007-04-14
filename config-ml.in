@@ -108,6 +108,11 @@ ml_realsrcdir=${srcdir}
 ml_verbose=--verbose
 for option in ${ac_configure_args}
 do
+  # strip single quotes surrounding individual options
+  case $option in
+  \'*\') eval option=$option ;;
+  esac
+
   case $option in
   --*) ;;
   -*) option=-$option ;;
@@ -890,7 +895,7 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 
     if eval ${ml_config_env} ${ml_config_shell} ${ml_recprog} \
 	--with-multisubdir=${ml_dir} --with-multisrctop=${multisrctop} \
-	${ac_configure_args} ${ml_srcdiroption} ; then
+	${ac_configure_args} ${ml_config_env} ${ml_srcdiroption} ; then
       true
     else
       exit 1
