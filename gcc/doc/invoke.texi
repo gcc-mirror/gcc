@@ -5423,7 +5423,7 @@ enabled by default at @option{-O2} and @option{-O3}.
 Perform Full Redundancy Elimination (FRE) on trees.  The difference
 between FRE and PRE is that FRE only considers expressions
 that are computed on all paths leading to the redundant computation.
-This analysis faster than PRE, though it exposes fewer redundancies.
+This analysis is faster than PRE, though it exposes fewer redundancies.
 This flag is enabled by default at @option{-O} and higher.
 
 @item -ftree-copy-prop
