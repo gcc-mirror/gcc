@@ -1,3 +1,8 @@
+2007-04-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR C/31520
+	* testsuite/gcc.dg/gnu89-init-4.c: New testcase.
+
 2007-04-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/25874
