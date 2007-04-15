@@ -425,12 +425,12 @@ Boston, MA 02110-1301, USA.  */
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 
-#define STACK_POINTER_REGNUM 15
+#define STACK_POINTER_REGNUM SP_REG
 
 /* Most m68k targets use %a6 as a frame pointer.  The AmigaOS
    ABI uses %a6 for shared library calls, therefore the frame
    pointer is shifted to %a5 on this target.  */
-#define FRAME_POINTER_REGNUM 14
+#define FRAME_POINTER_REGNUM FP_REG
 
 #define FRAME_POINTER_REQUIRED 0
 
@@ -440,12 +440,12 @@ Boston, MA 02110-1301, USA.  */
  */
 #define ARG_POINTER_REGNUM 24
 
-#define STATIC_CHAIN_REGNUM 8
+#define STATIC_CHAIN_REGNUM A0_REG
 #define M68K_STATIC_CHAIN_REG_NAME REGISTER_PREFIX "a0"
 
 /* Register in which address to store a structure value
    is passed to a function.  */
-#define M68K_STRUCT_VALUE_REGNUM 9
+#define M68K_STRUCT_VALUE_REGNUM A1_REG
 
 
 
@@ -593,13 +593,13 @@ extern enum reg_class regno_reg_class[];
 
 /* On the m68k the return value defaults to D0.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx_REG (TYPE_MODE (VALTYPE), 0)
+  gen_rtx_REG (TYPE_MODE (VALTYPE), D0_REG)
 
 /* On the m68k the return value defaults to D0.  */
-#define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, 0)
+#define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, D0_REG)
 
 /* On the m68k, D0 is usually the only register used.  */
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == 0)
+#define FUNCTION_VALUE_REGNO_P(N) ((N) == D0_REG)
 
 /* Define this to be true when FUNCTION_VALUE_REGNO_P is true for
    more than one register.

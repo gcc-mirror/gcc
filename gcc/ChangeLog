@@ -1,5 +1,20 @@
 2007-04-15  Kazu Hirata  <kazu@codesourcery.com>
 
+	* config/m68k/linux.h (FUNCTION_VALUE_REGNO_P): Use macros for
+	register numbers more.
+	* config/m68k/m68k.h (STACK_POINTER_REGNUM,
+	FRAME_POINTER_REGNUM, STATIC_CHAIN_REGNUM,
+	M68K_STRUCT_VALUE_REGNUM, FUNCTION_VALUE, LIBCALL_VALUE,
+	FUNCTION_VALUE_REGNO_P): Likewise.
+	* config/m68k/m68kelf.h (M68K_STRUCT_VALUE_REGNUM,
+	STATIC_CHAIN_REGNUM): Likewise.
+	* config/m68k/m68kemb.h (FUNCTION_VALUE_REGNO_P): Likewise.
+	* config/m68k/netbsd-elf.h (M68K_STRUCT_VALUE_REGNUM,
+	STATIC_CHAIN_REGNUM, FUNCTION_VALUE_REGNO_P): Likewise.
+	* config/m68k/m68k.md (FP_REG): New.
+
+2007-04-15  Kazu Hirata  <kazu@codesourcery.com>
+
 	* config/m68k/m68k.h (PREFERRED_STACK_BOUNDARY): Prefer 32-bit
 	alignment on fido.
 
