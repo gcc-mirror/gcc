@@ -3337,7 +3337,7 @@ c_maybe_initialize_eh (void)
 void
 finish_decl (tree decl, tree init, tree asmspec_tree)
 {
-  tree type = TREE_TYPE (decl);
+  tree type;
   int was_incomplete = (DECL_SIZE (decl) == 0);
   const char *asmspec = 0;
 
@@ -3363,6 +3363,8 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 			    || TREE_CODE (decl) == FUNCTION_DECL
 			    || TREE_CODE (decl) == FIELD_DECL))
     objc_check_decl (decl);
+
+  type = TREE_TYPE (decl);
 
   /* Deduce size of array from initialization, if not already known.  */
   if (TREE_CODE (type) == ARRAY_TYPE
