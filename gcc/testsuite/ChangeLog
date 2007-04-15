@@ -1,3 +1,8 @@
+2007-04-15  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.dg/pr19340.c, gcc.dg/tree-ssa/loop-1.c,
+	gcc.dg/weak/typeof-2.c: XFAIL on fido-*-*.
+
 2007-04-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR rtl-optimization/31500
