@@ -1815,7 +1815,7 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 
       /* If we have a RSHIFT_EXPR with any shift values outside [0..prec-1],
 	 then drop to VR_VARYING.  Outside of this range we get undefined
-	 behaviour from the shift operation.  We cannot even trust
+	 behavior from the shift operation.  We cannot even trust
 	 SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
 	 shifts, and the operation at the tree level may be widened.  */
       if (code == RSHIFT_EXPR)

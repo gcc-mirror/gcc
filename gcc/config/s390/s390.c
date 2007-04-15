@@ -2656,7 +2656,7 @@ s390_secondary_reload (bool in_p, rtx x, enum reg_class class,
     sri->icode = (TARGET_64BIT ?
 		  CODE_FOR_reloaddi_plus : CODE_FOR_reloadsi_plus);
 
-  /* Peforming a multiword move from or to memory we have to make sure the
+  /* Performing a multiword move from or to memory we have to make sure the
      second chunk in memory is addressable without causing a displacement
      overflow.  If that would be the case we calculate the address in
      a scratch register.  */
@@ -2666,7 +2666,7 @@ s390_secondary_reload (bool in_p, rtx x, enum reg_class class,
       && !DISP_IN_RANGE (INTVAL (XEXP (XEXP (x, 0), 1))
 			 + GET_MODE_SIZE (mode) - 1))
     {
-      /* For GENERAL_REGS a displacement overflow is no problem if occuring
+      /* For GENERAL_REGS a displacement overflow is no problem if occurring
 	 in a s_operand address since we may fallback to lm/stm.  So we only
 	 have to care about overflows in the b+i+d case.  */
       if ((reg_classes_intersect_p (GENERAL_REGS, class)

@@ -13566,8 +13566,8 @@ scale_counter (rtx countreg, int scale)
   return sc;
 }
 
-/* Return mode for the memcpy/memset loop counter.  Preffer SImode over DImode
-   for constant loop counts.  */
+/* Return mode for the memcpy/memset loop counter.  Prefer SImode over
+   DImode for constant loop counts.  */
 
 static enum machine_mode
 counter_mode (rtx count_exp)
@@ -21141,7 +21141,7 @@ ix86_md_asm_clobbers (tree outputs ATTRIBUTE_UNUSED,
   return clobbers;
 }
 
-/* Implementes target vector targetm.asm.encode_section_info.  This
+/* Implements target vector targetm.asm.encode_section_info.  This
    is not used by netware.  */
 
 static void ATTRIBUTE_UNUSED
