@@ -2529,7 +2529,7 @@ void
 maybe_warn_variadic_templates (void)
 {
   if ((!flag_cpp0x || flag_iso) && !in_system_header)
-    /* We really want to surpress this warning in system headers,
+    /* We really want to suppress this warning in system headers,
        because libstdc++ uses variadic templates even when we aren't
        in C++0x mode. */
     pedwarn ("ISO C++ does not include variadic templates");
