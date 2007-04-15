@@ -1,5 +1,10 @@
 2007-04-15  Kazu Hirata  <kazu@codesourcery.com>
 
+	* config/m68k/m68k.h (PREFERRED_STACK_BOUNDARY): Prefer 32-bit
+	alignment on fido.
+
+2007-04-15  Kazu Hirata  <kazu@codesourcery.com>
+
 	* config/i386/i386.c, config/s390/s390.c, config/s390/s390.md,
 	tree-ssa-loop-niter.c, tree-ssa-structalias.c, tree-vrp.c: Fix
 	comment typos.
