@@ -1,3 +1,8 @@
+2007-04-14  Andrew Pinski  <pinskia@gmail.com>
+
+	PR C++/30168
+	* g++.dg/opt/complex6.C: New test.
+
 2007-04-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C/31520

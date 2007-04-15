@@ -69,6 +69,8 @@ update_cloned_parm (tree parm, tree cloned_parm, bool first)
   DECL_NAME (cloned_parm) = DECL_NAME (parm);
   DECL_SOURCE_LOCATION (cloned_parm) = DECL_SOURCE_LOCATION (parm);
   TREE_TYPE (cloned_parm) = TREE_TYPE (parm);
+
+  DECL_COMPLEX_GIMPLE_REG_P (cloned_parm) = DECL_COMPLEX_GIMPLE_REG_P (parm);
 }
 
 /* FN is a function that has a complete body.  Clone the body as

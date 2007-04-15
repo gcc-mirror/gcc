@@ -1,3 +1,8 @@
+2007-04-14  Andrew Pinski  <pinskia@gmail.com> 
+
+	PR C++/30168
+	* optimize.c (update_cloned_parm): Copy DECL_COMPLEX_GIMPLE_REG_P also.
+
 2007-04-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/31074
