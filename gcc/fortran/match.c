@@ -536,6 +536,8 @@ gfc_match_iterator (gfc_iterator *iter, int init_flag)
       goto cleanup;
     }
 
+  var->symtree->n.sym->attr.implied_index = 1;
+
   m = init_flag ? gfc_match_init_expr (&e1) : gfc_match_expr (&e1);
   if (m == MATCH_NO)
     goto syntax;

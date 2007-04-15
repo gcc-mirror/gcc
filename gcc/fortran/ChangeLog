@@ -1,3 +1,16 @@
+2007-04-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31204
+	* primary.c (check_for_implicit_index): New function to check
+	that a host associated variable is not an undeclared implied
+	do loop index.
+	(gfc_match_rvalue, match_variable): Use it and reset the
+	implied_index attribute.
+	* gfortran.h : Add the implied_index field to symbol_attribute.
+	* match.c (gfc_match_iterator): Mark the iterator variable
+	with the new attribute.
+	* decl.c (build_sym): Reset the new attribute.
+
 2007-04-15  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gfc-internals.texi: Fix typos.
