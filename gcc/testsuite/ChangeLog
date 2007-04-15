@@ -1,4 +1,9 @@
-2007-04-14  Andrew Pinski  <pinskia@gmail.com>
+2007-04-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR testsuite/31578
+	* gcc.dg/gnu89-init-4.c: Change to a compile only test.
+
+2007-04-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/30045
 	* gcc.dg/pr30045.c: New test.
@@ -16,7 +21,7 @@
 2007-04-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C/31520
-	* testsuite/gcc.dg/gnu89-init-4.c: New testcase.
+	* gcc.dg/gnu89-init-4.c: New testcase.
 
 2007-04-13  Jason Merrill  <jason@redhat.com>
 

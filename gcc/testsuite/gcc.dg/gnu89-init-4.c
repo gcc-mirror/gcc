@@ -1,5 +1,5 @@
 /* Test for GNU extensions to compound literals are giving the correct array bounds */
-/* { dg-do run } */
+/* { dg-do compile } */
 /* { dg-options "-std=gnu89 -W -Wall -O2" } */
 
 int a[] = (int[4]){1, 1, 2};
