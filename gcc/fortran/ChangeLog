@@ -1,3 +1,8 @@
+2007-04-15  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gfc-internals.texi: Fix typos.
+	* simplify.c: Fix a comment typo.
+
 2007-04-14  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* primary.c: Commentary typo fix; Add question about redundant (?)

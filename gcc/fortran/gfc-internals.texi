@@ -298,7 +298,7 @@ nested chain of @code{gfc_code} structures.  The type of statement is
 identified by the @code{op} member of the structure, the different
 possible values are enumerated in @code{gfc_exec_op}.  A special
 member of this @code{enum} is @code{EXEC_NOP} which is used to
-reperesent the various @code{END} statements if they carry a label.
+represent the various @code{END} statements if they carry a label.
 Depending on the type of statement some of the other fields will be
 filled in.  Fields that are generally applicable are the @code{next}
 and @code{here} fields.  The former points to the next statement in
@@ -314,7 +314,7 @@ block in question.  The @code{SELECT} and @code{IF} statements may
 contain various blocks (the chain of @code{ELSE IF} and @code{ELSE}
 blocks or the various @code{CASE}s, respectively).
 
-@c What would be nice here would be an example program togehter with
+@c What would be nice here would be an example program together with
 @c an image that says more than the mythical thousand words.
 
 

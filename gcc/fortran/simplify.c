@@ -2842,7 +2842,7 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
     }
   mpz_clear (ncopies);
 
-  /* For further simplication, we need the character string to be
+  /* For further simplification, we need the character string to be
      constant.  */
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
