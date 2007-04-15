@@ -1,3 +1,8 @@
+2007-04-11  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-ssa-loop-prefetch.c (loop_prefetch_arrays): Ignore
+	cold loops.
+
 2007-04-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR c/31520

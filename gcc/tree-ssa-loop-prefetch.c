@@ -947,6 +947,13 @@ loop_prefetch_arrays (struct loop *loop)
   struct tree_niter_desc desc;
   bool unrolled = false;
 
+  if (!maybe_hot_bb_p (loop->header))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "  ignored (cold area)\n");
+      return false;
+    }
+
   /* Step 1: gather the memory references.  */
   refs = gather_memory_references (loop);
 
