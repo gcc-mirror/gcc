@@ -1,3 +1,8 @@
+2007-04-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31204
+	* gfortran.dg/array_constructor_16.f90: New test.
+
 2007-04-15  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.dg/pr19340.c, gcc.dg/tree-ssa/loop-1.c,

@@ -769,6 +769,8 @@ build_sym (const char *name, gfc_charlen *cl,
   if (gfc_copy_attr (&sym->attr, &attr, var_locus) == FAILURE)
     return FAILURE;
 
+  sym->attr.implied_index = 0;
+
   return SUCCESS;
 }
 
