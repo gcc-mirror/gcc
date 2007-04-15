@@ -1,3 +1,7 @@
+2007-04-15  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cp-tree.h, error.c: Fix comment typos.
+
 2007-04-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/31074
