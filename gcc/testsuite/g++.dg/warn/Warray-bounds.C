@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "PR 31500" { hppa*-*-* } { "*" } { "" } } */
 /* { dg-options "-O2 -Warray-bounds" } */
 
 int a[10];
