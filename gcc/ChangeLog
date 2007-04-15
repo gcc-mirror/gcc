@@ -1,3 +1,9 @@
+2007-04-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR c/31520
+        * c-del.c (finish_decl): Grab the type of the decl after the call
+	to store_init_value.
+
 2007-04-07  Anatoly Sokolov <aesok@post.ru>
 
 	PR target/30289
