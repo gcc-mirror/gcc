@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-Werror -Wunused" }
+! { dg-options "-Werror -Wunused -std=f95" }
 ! PR fortran/21061
 ! gfortran ignores -Werror
 ! free-form tests
