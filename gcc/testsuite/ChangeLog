@@ -1,5 +1,10 @@
 2007-04-14  Andrew Pinski  <pinskia@gmail.com>
 
+	PR middle-end/30729
+	* gcc.dg/Wunused-value-2.c: New testcase.
+
+2007-04-14  Andrew Pinski  <pinskia@gmail.com>
+
 	PR C++/30168
 	* g++.dg/opt/complex6.C: New test.
 

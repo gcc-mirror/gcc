@@ -1419,6 +1419,7 @@ warn_if_unused_value (tree exp, location_t locus)
     case TRY_CATCH_EXPR:
     case WITH_CLEANUP_EXPR:
     case EXIT_EXPR:
+    case VA_ARG_EXPR:
       return 0;
 
     case BIND_EXPR:

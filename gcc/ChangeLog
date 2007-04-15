@@ -1,5 +1,11 @@
 2007-04-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	PR middle-end/30729
+	* stmt.c (warn_if_unused_value): VA_ARG_EXPR has side
+	effects unknown to this function, return early.
+
+2007-04-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	PR c/31520
         * c-del.c (finish_decl): Grab the type of the decl after the call
 	to store_init_value.
