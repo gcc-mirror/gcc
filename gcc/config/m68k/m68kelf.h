@@ -81,13 +81,13 @@ do {								\
    function.  The default in m68k.h is a1.  For m68k/SVR4 it is a0.  */
 
 #undef M68K_STRUCT_VALUE_REGNUM
-#define M68K_STRUCT_VALUE_REGNUM 8
+#define M68K_STRUCT_VALUE_REGNUM A0_REG
 
 /* The static chain regnum defaults to a0, but we use that for
    structure return, so have to use a1 for the static chain.  */
 
 #undef STATIC_CHAIN_REGNUM
-#define STATIC_CHAIN_REGNUM 9
+#define STATIC_CHAIN_REGNUM A1_REG
 #undef M68K_STATIC_CHAIN_REG_NAME
 #define M68K_STATIC_CHAIN_REG_NAME REGISTER_PREFIX "a1"
 

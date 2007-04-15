@@ -224,7 +224,7 @@ while (0)
    function.  The default in m68k.h is a1.  For m68k/SVR4 it is a0. */
 
 #undef M68K_STRUCT_VALUE_REGNUM
-#define M68K_STRUCT_VALUE_REGNUM 8
+#define M68K_STRUCT_VALUE_REGNUM A0_REG
 
 
 /* Register in which static-chain is passed to a function.  The
@@ -232,7 +232,7 @@ while (0)
    regnum.  Make it a1 instead.  */
 
 #undef STATIC_CHAIN_REGNUM
-#define STATIC_CHAIN_REGNUM 9
+#define STATIC_CHAIN_REGNUM A1_REG
 #undef M68K_STATIC_CHAIN_REG_NAME
 #define M68K_STATIC_CHAIN_REG_NAME REGISTER_PREFIX "a1"
 
@@ -253,7 +253,7 @@ while (0)
 
 #undef FUNCTION_VALUE_REGNO_P
 #define FUNCTION_VALUE_REGNO_P(N)					\
-  ((N) == 0 || (N) == 8 || (TARGET_68881 && (N) == 16))
+  ((N) == D0_REG || (N) == A0_REG || (TARGET_68881 && (N) == FP0_REG))
 
 
 /* Define this to be true when FUNCTION_VALUE_REGNO_P is true for

@@ -26,7 +26,8 @@
   m68k_libcall_value (MODE)
 
 #undef FUNCTION_VALUE_REGNO_P
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == 0 || (TARGET_68881 && (N) == 16))
+#define FUNCTION_VALUE_REGNO_P(N)			\
+  ((N) == D0_REG || (TARGET_68881 && (N) == FP0_REG))
 
 #undef NEEDS_UNTYPED_CALL
 #define NEEDS_UNTYPED_CALL 1
