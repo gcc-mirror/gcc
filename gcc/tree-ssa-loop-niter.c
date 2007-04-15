@@ -2474,7 +2474,7 @@ record_estimate (struct loop *loop, tree bound, double_int i_bound,
     delta = double_int_two;
   i_bound = double_int_add (i_bound, delta);
 
-  /* If an overflow occured, ignore the result.  */
+  /* If an overflow occurred, ignore the result.  */
   if (double_int_ucmp (i_bound, delta) < 0)
     return;
 

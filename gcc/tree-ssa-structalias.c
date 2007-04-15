@@ -3226,7 +3226,7 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	 combination of direct symbol references and pointer
 	 dereferences (e.g., MEMORY_VAR = *PTR) or if a call site has
 	 memory symbols in its argument list, but these cases do not
-	 occur so frequently as to constitue a serious problem.  */
+	 occur so frequently as to constitute a serious problem.  */
       if (STORED_SYMS (stmt))
 	EXECUTE_IF_SET_IN_BITMAP (STORED_SYMS (stmt), 0, i, bi)
 	  {
