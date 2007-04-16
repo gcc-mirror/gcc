@@ -430,7 +430,7 @@ Boston, MA 02110-1301, USA.  */
 /* Most m68k targets use %a6 as a frame pointer.  The AmigaOS
    ABI uses %a6 for shared library calls, therefore the frame
    pointer is shifted to %a5 on this target.  */
-#define FRAME_POINTER_REGNUM FP_REG
+#define FRAME_POINTER_REGNUM A6_REG
 
 #define FRAME_POINTER_REQUIRED 0
 
@@ -933,7 +933,7 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
    We don't replace %fp for targets that don't map it to %a6
    since it may confuse GAS.  */
 #define M68K_REGNAME(r) ( \
-  ((FRAME_POINTER_REGNUM == 14) \
+  ((FRAME_POINTER_REGNUM == A6_REG) \
     && ((r) == FRAME_POINTER_REGNUM) \
     && frame_pointer_needed) ? \
     M68K_FP_REG_NAME : reg_names[(r)])

@@ -3,6 +3,11 @@
 	* config/m68k/m68k.c (m68k_libcall_value,
 	m68k_function_value): Use macros for register names more.
 
+	* config/m68k/m68k.h (FRAME_POINTER_REGNUM): Use A6_REG
+	instead.
+	(M68K_REGNAME): Use A6_REG.
+	* config/m68k/m68k.md (FP_REG): Rename to A6_REG.
+
 2007-04-16  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	PR middle-end/28071
