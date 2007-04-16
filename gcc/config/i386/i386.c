@@ -17902,7 +17902,7 @@ ix86_expand_vec_set_builtin (tree exp)
   enum machine_mode tmode, mode1;
   tree arg0, arg1, arg2;
   int elt;
-  rtx op0, op1;
+  rtx op0, op1, target;
 
   arg0 = CALL_EXPR_ARG (exp, 0);
   arg1 = CALL_EXPR_ARG (exp, 1);
@@ -17922,9 +17922,13 @@ ix86_expand_vec_set_builtin (tree exp)
   op0 = force_reg (tmode, op0);
   op1 = force_reg (mode1, op1);
 
-  ix86_expand_vector_set (true, op0, op1, elt);
+  /* OP0 is the source of these builtin functions and shouldn't be
+     modifified.  Create a copy, use it and return it as target.  */
+  target = gen_reg_rtx (tmode);
+  emit_move_insn (target, op0);
+  ix86_expand_vector_set (true, target, op1, elt);
 
-  return op0;
+  return target;
 }
 
 /* Expand an expression EXP that calls a built-in function,

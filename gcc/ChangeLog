@@ -1,5 +1,12 @@
+2007-04-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/31582
+	* config/i386/i386.c (ix86_expand_vec_set_builtin): Make a
+	copy of source, pass it to ix86_expand_vector_set and return
+	it as target.
+
 2007-04-16  David Ung  <davidu@mips.com>
-            Joseph Myers  <joseph@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/mips.h (PROCESSOR_74KC, PROCESSOR_74KF,
 	PROCESSOR_74KX, TUNE_74K, GENERATE_MADD_MSUB): Define.
