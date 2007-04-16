@@ -2463,7 +2463,10 @@ propagate_deps (int bb, struct deps *pred_deps)
 	= concat_INSN_LIST (pred_deps->last_pending_memory_flush,
 			    succ_deps->last_pending_memory_flush);
 
-      succ_deps->pending_lists_length += pred_deps->pending_lists_length;
+      succ_deps->pending_read_list_length
+	+= pred_deps->pending_read_list_length;
+      succ_deps->pending_write_list_length
+	+= pred_deps->pending_write_list_length;
       succ_deps->pending_flush_length += pred_deps->pending_flush_length;
 
       /* last_function_call is inherited by successor.  */

@@ -1,3 +1,16 @@
+2007-04-16  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	PR middle-end/28071
+	* sched-int.h (struct deps): Split field 'pending_lists_length' into
+	'pending_read_list_length' and 'pending_write_list_length'.  Update
+	comment.
+	* sched-deps.c (add_insn_mem_dependence): Change signature.  Update
+	to handle two length counters instead of one.  Update all uses.
+	(flush_pending_lists, sched_analyze_1, init_deps): Update to handle
+	two length counters instead of one.
+	* sched-rgn.c (propagate_deps): Update to handle two length counters
+	instead of one.
+
 2007-04-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/31582
