@@ -1,7 +1,17 @@
+2007-04-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Backport from mainline:
+	2007-04-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/31582
+	* config/i386/i386.c (ix86_expand_vec_set_builtin): Make a
+	copy of source, pass it to ix86_expand_vector_set and return
+	it as target.
+
 2007-04-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR c/31520
-        * c-del.c (finish_decl): Grab the type of the decl after the call
+	* c-decl.c (finish_decl): Grab the type of the decl after the call
 	to store_init_value.
 
 2007-04-14  Jakub Jelinek  <jakub@redhat.com>
