@@ -1,5 +1,5 @@
 /* SSLSocketFactoryImpl.java -- 
-   Copyright (C) 2006  Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -93,10 +93,7 @@ public class SSLSocketFactoryImpl extends SSLSocketFactory
   @Override public SSLSocketImpl createSocket(String host, int port)
     throws IOException, UnknownHostException
   {
-    SSLSocketImpl socket = new SSLSocketImpl(contextImpl, host, port);
-    InetSocketAddress endpoint = new InetSocketAddress(host, port);
-    socket.connect(endpoint);
-    return socket;
+    return createSocket(host, port, null, 0);
   }
 
   /* (non-Javadoc)
@@ -106,8 +103,10 @@ public class SSLSocketFactoryImpl extends SSLSocketFactory
                                               InetAddress localHost, int localPort)
     throws IOException, UnknownHostException
   {
-    SSLSocketImpl socket = createSocket(host, port);
+    SSLSocketImpl socket = new SSLSocketImpl(contextImpl, host, port);
+    InetSocketAddress endpoint = new InetSocketAddress(host, port);
     socket.bind(new InetSocketAddress(localHost, localPort));
+    socket.connect(endpoint);
     return socket;
   }
 
@@ -117,10 +116,7 @@ public class SSLSocketFactoryImpl extends SSLSocketFactory
   @Override public SSLSocketImpl createSocket(InetAddress host, int port)
     throws IOException
   {
-    SSLSocketImpl socket = new SSLSocketImpl(contextImpl,
-                                             host.getCanonicalHostName(), port);
-    socket.connect(new InetSocketAddress(host, port));
-    return socket;
+    return createSocket(host, port, null, 0);
   }
 
   /* (non-Javadoc)
@@ -130,8 +126,10 @@ public class SSLSocketFactoryImpl extends SSLSocketFactory
                                               InetAddress localHost, int localPort)
     throws IOException
   {
-    SSLSocketImpl socket = createSocket(host, port);
+    SSLSocketImpl socket = new SSLSocketImpl(contextImpl,
+                                             host.getCanonicalHostName(), port);
     socket.bind(new InetSocketAddress(localHost, localPort));
+    socket.connect(new InetSocketAddress(host, port));
     return socket;
   }
 }
