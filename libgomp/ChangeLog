@@ -1,3 +1,10 @@
+2007-04-16  Matthias Klose  <doko@debian.org>
+
+	* configure.tgt (i[456]86-*-linux*): Only add ia32 specific
+	flags if not building with -m64.
+	* testsuite/lib/libgomp-dg.exp (libgomp_init): Don't add -march
+	flag for i?86-*-* targets, if current target matches -m64.
+
 2007-04-14  Steve Ellcey  <sje@cup.hp.com>
 
 	* Makefile.am: Add -I .. to ACLOCAL_AMFLAGS.
