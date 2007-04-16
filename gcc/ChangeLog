@@ -1,3 +1,16 @@
+2007-04-16  David Ung  <davidu@mips.com>
+            Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/mips.h (PROCESSOR_74KC, PROCESSOR_74KF,
+	PROCESSOR_74KX, TUNE_74K, GENERATE_MADD_MSUB): Define.
+	* config/mips/mips.c (mips_cpu_info_table, mips_rtx_cost_data):
+	Add 74K processor information.
+	* config/mips/mips.md: Include 74k.md.
+	(cpu): Add 74kc,74kf,74kx.
+	(ISA_HAS_MADD_MSUB): Change to GENERATE_MADD_MSUB throughout.
+	* config/mips/74k.md: New.
+	* doc/invoke.texi (MIPS Options): Document 74K support.
+
 2007-04-16  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vect-analyze.c (vect_analyze_operations): Reorganize calls to

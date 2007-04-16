@@ -396,7 +396,7 @@
 ;; Attribute describing the processor.  This attribute must match exactly
 ;; with the processor_type enumeration in mips.h.
 (define_attr "cpu"
-  "r3000,4kc,4kp,5kc,5kf,20kc,24kc,24kf,24kx,m4k,r3900,r6000,r4000,r4100,r4111,r4120,r4130,r4300,r4600,r4650,r5000,r5400,r5500,r7000,r8000,r9000,sb1,sb1a,sr71000"
+  "r3000,4kc,4kp,5kc,5kf,20kc,24kc,24kf,24kx,74kc,74kf,74kx,m4k,r3900,r6000,r4000,r4100,r4111,r4120,r4130,r4300,r4600,r4650,r5000,r5400,r5500,r7000,r8000,r9000,sb1,sb1a,sr71000"
   (const (symbol_ref "mips_tune")))
 
 ;; The type of hardware hazard associated with this instruction.
@@ -633,6 +633,7 @@
 (include "4k.md")
 (include "5k.md")
 (include "24k.md")
+(include "74k.md")
 (include "3000.md")
 (include "4000.md")
 (include "4100.md")
@@ -1208,13 +1209,13 @@
    (clobber (match_scratch:SI 5 "=X,3,l"))
    (clobber (match_scratch:SI 6 "=X,X,&d"))]
   "(TARGET_MIPS3900
-   || ISA_HAS_MADD_MSUB)
+   || GENERATE_MADD_MSUB)
    && !TARGET_MIPS16"
 {
   static const char *const madd[] = { "madd\t%1,%2", "madd\t%0,%1,%2" };
   if (which_alternative == 2)
     return "#";
-  if (ISA_HAS_MADD_MSUB && which_alternative != 0)
+  if (GENERATE_MADD_MSUB && which_alternative != 0)
     return "#";
   return madd[which_alternative];
 }
@@ -1468,7 +1469,7 @@
    (clobber (match_scratch:SI 4 "=h,h,h"))
    (clobber (match_scratch:SI 5 "=X,1,l"))
    (clobber (match_scratch:SI 6 "=X,X,&d"))]
-  "ISA_HAS_MADD_MSUB"
+  "GENERATE_MADD_MSUB"
   "@
    msub\t%2,%3
    #

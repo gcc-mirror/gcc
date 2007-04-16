@@ -750,6 +750,9 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   { "34kc", PROCESSOR_24KC, 33 },  /* 34K with MT/DSP */
   { "34kf", PROCESSOR_24KF, 33 },
   { "34kx", PROCESSOR_24KX, 33 },
+  { "74kc", PROCESSOR_74KC, 33 },
+  { "74kf", PROCESSOR_74KF, 33 },
+  { "74kx", PROCESSOR_74KX, 33 },
 
   /* MIPS64 */
   { "5kc", PROCESSOR_5KC, 64 },
@@ -882,6 +885,41 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
                        4            /* memory_latency */
     },
     { /* 24KX */
+      COSTS_N_INSNS (4),            /* fp_add */
+      COSTS_N_INSNS (4),            /* fp_mult_sf */
+      COSTS_N_INSNS (5),            /* fp_mult_df */
+      COSTS_N_INSNS (17),           /* fp_div_sf */
+      COSTS_N_INSNS (32),           /* fp_div_df */
+      COSTS_N_INSNS (5),            /* int_mult_si */
+      COSTS_N_INSNS (5),            /* int_mult_di */
+      COSTS_N_INSNS (41),           /* int_div_si */
+      COSTS_N_INSNS (41),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
+    },
+    { /* 74KC */
+      SOFT_FP_COSTS,
+      COSTS_N_INSNS (5),            /* int_mult_si */
+      COSTS_N_INSNS (5),            /* int_mult_di */
+      COSTS_N_INSNS (41),           /* int_div_si */
+      COSTS_N_INSNS (41),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
+    },
+    { /* 74KF */
+      COSTS_N_INSNS (8),            /* fp_add */
+      COSTS_N_INSNS (8),            /* fp_mult_sf */
+      COSTS_N_INSNS (10),           /* fp_mult_df */
+      COSTS_N_INSNS (34),           /* fp_div_sf */
+      COSTS_N_INSNS (64),           /* fp_div_df */
+      COSTS_N_INSNS (5),            /* int_mult_si */
+      COSTS_N_INSNS (5),            /* int_mult_di */
+      COSTS_N_INSNS (41),           /* int_div_si */
+      COSTS_N_INSNS (41),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
+    },
+    { /* 74KX */
       COSTS_N_INSNS (4),            /* fp_add */
       COSTS_N_INSNS (4),            /* fp_mult_sf */
       COSTS_N_INSNS (5),            /* fp_mult_df */
@@ -9951,6 +9989,9 @@ mips_issue_rate (void)
 {
   switch (mips_tune)
     {
+    case PROCESSOR_74KC:
+    case PROCESSOR_74KF:
+    case PROCESSOR_74KX:
     case PROCESSOR_R4130:
     case PROCESSOR_R5400:
     case PROCESSOR_R5500:
