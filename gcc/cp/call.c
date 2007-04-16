@@ -4658,6 +4658,7 @@ type_passed_as (tree type)
 tree
 convert_for_arg_passing (tree type, tree val)
 {
+  val = convert_bitfield_to_declared_type (val);
   if (val == error_mark_node)
     ;
   /* Pass classes with copy ctors by invisible reference.  */

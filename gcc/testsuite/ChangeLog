@@ -1,3 +1,8 @@
+2007-04-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/31513
+	* g++.dg/expr/bitfield8.C: New test.
+
 2007-04-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR testsuite/31578
