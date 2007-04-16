@@ -173,16 +173,34 @@ java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
     }
 
   // Check accessibility, if required.
-  if (! (Modifier::isPublic (meth->accflags) || this->isAccessible()))
+  if (! this->isAccessible())
     {
-      Class *caller = _Jv_StackTrace::GetCallingClass (&Method::class$);
-      if (! _Jv_CheckAccess(caller, declaringClass, meth->accflags))
-	throw new IllegalAccessException;
+      if (! (Modifier::isPublic (meth->accflags)))
+	{
+	  Class *caller = _Jv_StackTrace::GetCallingClass (&Method::class$);
+	  if (! _Jv_CheckAccess(caller, declaringClass, meth->accflags))
+	    throw new IllegalAccessException;
+	}
+      else
+	// Method is public, check to see if class is accessible.
+	{
+	  jint flags = (declaringClass->accflags
+			& (Modifier::PUBLIC
+			   | Modifier::PROTECTED
+			   | Modifier::PRIVATE));
+	  if (flags == 0) // i.e. class is package private
+	    {
+	      Class *caller = _Jv_StackTrace::GetCallingClass (&Method::class$);
+	      if (! _Jv_ClassNameSamePackage (caller->name,
+					      declaringClass->name))
+		throw new IllegalAccessException;
+	    }
+	}
     }
 
   if (declaringClass->isInterface())
     iface = declaringClass;
-  
+
   return _Jv_CallAnyMethodA (obj, return_type, meth, false,
 			     parameter_types, args, iface);
 }
