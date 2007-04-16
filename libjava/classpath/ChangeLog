@@ -1,3 +1,12 @@
+2007-04-16  Andrew Haley  <aph@redhat.com>
+
+	* java/io/ObjectInputStream.java: (parseContent):  Call (String,
+	Object) version of dumpElementln.
+	(dumpElementln(String, Object)): New method.
+	* java/io/ObjectOutputStream.java (writeObject): Call (String,
+	Object) version of dumpElementln.
+	(dumpElementln(String, Object)): New method.
+
 2007-04-16  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* javax/management/ObjectName.java:

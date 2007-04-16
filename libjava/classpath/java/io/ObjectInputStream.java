@@ -307,7 +307,7 @@ public class ObjectInputStream extends InputStream
  	  readArrayElements(array, componentType);
  	  if(dump)
  	    for (int i = 0, len = Array.getLength(array); i < len; i++)
- 	      dumpElementln("  ELEMENT[" + i + "]=" + Array.get(array, i));
+ 	      dumpElementln("  ELEMENT[" + i + "]=", Array.get(array, i));
  	  ret_val = processResolution(null, array, handle);
  	  break;
  	}
@@ -1979,6 +1979,24 @@ public class ObjectInputStream extends InputStream
   private void dumpElementln (String msg)
   {
     System.out.println(msg);
+    for (int i = 0; i < depth; i++)
+      System.out.print (" ");
+    System.out.print (Thread.currentThread() + ": ");
+  }
+
+  private void dumpElementln (String msg, Object obj)
+  {
+    try
+      {
+	System.out.print(msg);
+	if (java.lang.reflect.Proxy.isProxyClass(obj.getClass()))
+	  System.out.println(obj.getClass());
+	else
+	System.out.println(obj);
+      }
+    catch (Exception _)
+      {
+      }
     for (int i = 0; i < depth; i++)
       System.out.print (" ");
     System.out.print (Thread.currentThread() + ": ");

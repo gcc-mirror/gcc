@@ -191,7 +191,7 @@ public class ObjectOutputStream extends OutputStream
       }
 
     if (dump)
-      dumpElementln ("WRITE: " + obj);
+      dumpElementln ("WRITE: ", obj);
     
     depth += 2;    
 
@@ -352,18 +352,18 @@ public class ObjectOutputStream extends OutputStream
 		    if (currentObjectStreamClass.hasWriteMethod())
 		      {
 			if (dump)
-			  dumpElementln ("WRITE METHOD CALLED FOR: " + obj);
+			  dumpElementln ("WRITE METHOD CALLED FOR: ", obj);
 			setBlockDataMode(true);
 			callWriteMethod(obj, currentObjectStreamClass);
 			setBlockDataMode(false);
 			realOutput.writeByte(TC_ENDBLOCKDATA);
 			if (dump)
-			  dumpElementln ("WRITE ENDBLOCKDATA FOR: " + obj);
+			  dumpElementln ("WRITE ENDBLOCKDATA FOR: ", obj);
 		      }
 		    else
 		      {
 			if (dump)
-			  dumpElementln ("WRITE FIELDS CALLED FOR: " + obj);
+			  dumpElementln ("WRITE FIELDS CALLED FOR: ", obj);
 			writeFields(obj, currentObjectStreamClass);
 		      }
 		  }
@@ -420,7 +420,7 @@ public class ObjectOutputStream extends OutputStream
 	depth -= 2;
 
 	if (dump)
-	  dumpElementln ("END: " + obj);
+	  dumpElementln ("END: ", obj);
       }
   }
 
@@ -1337,6 +1337,28 @@ public class ObjectOutputStream extends OutputStream
 			    x.getClass().getName());
 	ioe.initCause(x);
 	throw ioe;
+      }
+  }
+
+  private void dumpElementln (String msg, Object obj)
+  {
+    try
+      {
+	for (int i = 0; i < depth; i++)
+	  System.out.print (" ");
+	System.out.print (Thread.currentThread() + ": ");
+	System.out.print (msg);
+	if (java.lang.reflect.Proxy.isProxyClass(obj.getClass()))
+	  System.out.print (obj.getClass());
+	else
+	  System.out.print (obj);
+      }
+    catch (Exception _)
+      {
+      }
+    finally
+      {
+	System.out.println ();
       }
   }
 
