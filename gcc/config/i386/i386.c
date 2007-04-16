@@ -17923,7 +17923,7 @@ ix86_expand_vec_set_builtin (tree exp)
   op1 = force_reg (mode1, op1);
 
   /* OP0 is the source of these builtin functions and shouldn't be
-     modifified.  Create a copy, use it and return it as target.  */
+     modified.  Create a copy, use it and return it as target.  */
   target = gen_reg_rtx (tmode);
   emit_move_insn (target, op0);
   ix86_expand_vector_set (true, target, op1, elt);
