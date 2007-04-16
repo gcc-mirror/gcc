@@ -1,3 +1,10 @@
+2007-04-16  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/m68k/m68k.h (LONG_DOUBLE_TYPE_SIZE): Change to 64 on
+	TARGET_FIDOA.
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Change to 64 if __mfido__ is
+	defined.
+
 2007-04-16  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (avr_arch_types): Rearranging  array.
