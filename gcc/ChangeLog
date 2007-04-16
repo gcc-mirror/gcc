@@ -1,3 +1,11 @@
+2007-04-16  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.c (avr_arch_types): Rearranging  array.
+	(enum avr_arch): Add.
+	(avr_mcu_types): Use avr_arch enumeration constants instead of 
+	numbers.
+	* config/avr/avr.h (LINK_SPEC): Simplify.
+
 2007-04-16  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/m68k/m68k.c (m68k_libcall_value,
