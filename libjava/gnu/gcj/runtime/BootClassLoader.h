@@ -24,6 +24,7 @@ extern "Java"
     namespace net
     {
         class URL;
+        class URLClassLoader;
     }
   }
 }
@@ -35,10 +36,16 @@ public: // actually package-private
   BootClassLoader(::java::lang::String *);
 public:
   ::java::lang::Class * bootLoadClass(::java::lang::String *);
+private:
+  ::java::net::URLClassLoader * getBootURLLoader();
+public:
   ::java::net::URL * bootGetResource(::java::lang::String *);
   ::java::util::Enumeration * bootGetResources(::java::lang::String *);
 public: // actually package-private
   static ::java::lang::Class * coreHandler;
+private:
+  jboolean __attribute__((aligned(__alignof__( ::gnu::gcj::runtime::HelperClassLoader)))) initialized;
+  ::java::net::URLClassLoader * bootURLLoader;
 public:
   static ::java::lang::Class class$;
 };

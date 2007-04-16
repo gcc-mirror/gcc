@@ -75,6 +75,7 @@ private:
   void callReadMethod(::java::lang::reflect::Method *, ::java::lang::Class *, ::java::lang::Object *);
   void dumpElement(::java::lang::String *);
   void dumpElementln(::java::lang::String *);
+  void dumpElementln(::java::lang::String *, ::java::lang::Object *);
   static const jint BUFFER_SIZE = 1024;
   ::java::io::DataInputStream * __attribute__((aligned(__alignof__( ::java::io::InputStream)))) realInputStream;
   ::java::io::DataInputStream * dataInputStream;
