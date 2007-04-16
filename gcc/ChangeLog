@@ -1,3 +1,8 @@
+2007-04-16  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/m68k/m68k.c (m68k_libcall_value,
+	m68k_function_value): Use macros for register names more.
+
 2007-04-16  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	PR middle-end/28071
