@@ -1816,6 +1816,20 @@ vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   int ncopies, j, nargs;
   call_expr_arg_iterator iter;
 
+  if (!STMT_VINFO_RELEVANT_P (stmt_info))
+    return false;
+
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
+    return false;
+
+  /* FORNOW: not yet supported.  */
+  if (STMT_VINFO_LIVE_P (stmt_info))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "value used after loop.");
+      return false;
+    }
+
   /* Is STMT a vectorizable call?   */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
@@ -1994,7 +2008,8 @@ vectorizable_conversion (tree stmt, block_stmt_iterator * bsi,
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
 
-  gcc_assert (STMT_VINFO_DEF_TYPE (stmt_info) == vect_loop_def);
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
+    return false;
 
   if (STMT_VINFO_LIVE_P (stmt_info))
     {
@@ -2134,12 +2149,21 @@ vectorizable_assignment (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   if (ncopies > 1)
     return false; /* FORNOW */
 
-  /* Is vectorizable assignment?  */
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
 
-  gcc_assert (STMT_VINFO_DEF_TYPE (stmt_info) == vect_loop_def);
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
+    return false;
 
+  /* FORNOW: not yet supported.  */
+  if (STMT_VINFO_LIVE_P (stmt_info))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "value used after loop.");
+      return false;
+    }
+
+  /* Is vectorizable assignment?  */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
 
@@ -2246,20 +2270,21 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
   gcc_assert (ncopies >= 1);
 
-  /* Is STMT a vectorizable binary/unary operation?   */
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
 
-  gcc_assert (STMT_VINFO_DEF_TYPE (stmt_info) == vect_loop_def);
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
+    return false;
 
+  /* FORNOW: not yet supported.  */
   if (STMT_VINFO_LIVE_P (stmt_info))
     {
-      /* FORNOW: not yet supported.  */
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "value used after loop.");
       return false;
     }
 
+  /* Is STMT a vectorizable binary/unary operation?   */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
 
@@ -2514,21 +2539,21 @@ vectorizable_type_demotion (tree stmt, block_stmt_iterator *bsi,
   optab optab;
   enum machine_mode vec_mode;
                                                                                 
-  /* Is STMT a vectorizable type-demotion operation?  */
-                                                                                
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
-                                                                                
-  gcc_assert (STMT_VINFO_DEF_TYPE (stmt_info) == vect_loop_def);
-                                                                                
+
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
+    return false;
+
+  /* FORNOW: not yet supported.  */
   if (STMT_VINFO_LIVE_P (stmt_info))
     {
-      /* FORNOW: not yet supported.  */
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "value used after loop.");
       return false;
     }
                                                                                 
+  /* Is STMT a vectorizable type-demotion operation?  */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
                                                                                 
@@ -2723,21 +2748,21 @@ vectorizable_type_promotion (tree stmt, block_stmt_iterator *bsi,
   int j;
   tree vectype_in;
   
-  /* Is STMT a vectorizable type-promotion operation?  */
-
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
 
-  gcc_assert (STMT_VINFO_DEF_TYPE (stmt_info) == vect_loop_def);
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
+    return false;
 
+  /* FORNOW: not yet supported.  */
   if (STMT_VINFO_LIVE_P (stmt_info))
     {
-      /* FORNOW: not yet supported.  */
       if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "value used after loop.");
+        fprintf (vect_dump, "value used after loop.");
       return false;
     }
 
+  /* Is STMT a vectorizable type-promotion operation?  */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
 
@@ -3063,6 +3088,19 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   unsigned int group_size, i;
   VEC(tree,heap) *dr_chain = NULL, *oprnds = NULL, *result_chain = NULL;
   gcc_assert (ncopies >= 1);
+
+  if (!STMT_VINFO_RELEVANT_P (stmt_info))
+    return false;
+
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
+    return false;
+
+  if (STMT_VINFO_LIVE_P (stmt_info))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "value used after loop.");
+      return false;
+    }
 
   /* Is vectorizable store? */
 
@@ -3710,20 +3748,21 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   bool strided_load = false;
   tree first_stmt;
 
-  /* Is vectorizable load? */
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
 
-  gcc_assert (STMT_VINFO_DEF_TYPE (stmt_info) == vect_loop_def);
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
+    return false;
 
+  /* FORNOW: not yet supported.  */
   if (STMT_VINFO_LIVE_P (stmt_info))
     {
-      /* FORNOW: not yet supported.  */
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "value used after loop.");
       return false;
     }
 
+  /* Is vectorizable load? */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
 
@@ -4010,7 +4049,9 @@ vectorizable_live_operation (tree stmt,
   tree def, def_stmt;
   enum vect_def_type dt; 
 
-  if (!STMT_VINFO_LIVE_P (stmt_info))
+  gcc_assert (STMT_VINFO_LIVE_P (stmt_info));
+
+  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def)
     return false;
 
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
@@ -4123,16 +4164,18 @@ vectorizable_condition (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
 
-  gcc_assert (STMT_VINFO_DEF_TYPE (stmt_info) == vect_loop_def);
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
+    return false;
 
+  /* FORNOW: not yet supported.  */
   if (STMT_VINFO_LIVE_P (stmt_info))
     {
-      /* FORNOW: not yet supported.  */
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "value used after loop.");
       return false;
     }
 
+  /* Is vectorizable conditional operation?  */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
 
@@ -4225,110 +4268,103 @@ vect_transform_stmt (tree stmt, block_stmt_iterator *bsi, bool *strided_store)
   tree orig_stmt_in_pattern;
   bool done;
 
-  if (STMT_VINFO_RELEVANT_P (stmt_info))
+  switch (STMT_VINFO_TYPE (stmt_info))
     {
-      switch (STMT_VINFO_TYPE (stmt_info))
-      {
-      case type_demotion_vec_info_type:
-        done = vectorizable_type_demotion (stmt, bsi, &vec_stmt);
-        gcc_assert (done);
-        break;
+    case type_demotion_vec_info_type:
+      done = vectorizable_type_demotion (stmt, bsi, &vec_stmt);
+      gcc_assert (done);
+      break;
                                                                                 
-      case type_promotion_vec_info_type:
-	done = vectorizable_type_promotion (stmt, bsi, &vec_stmt);
-	gcc_assert (done);
-	break;
+    case type_promotion_vec_info_type:
+      done = vectorizable_type_promotion (stmt, bsi, &vec_stmt);
+      gcc_assert (done);
+      break;
 
-      case type_conversion_vec_info_type:
-	done = vectorizable_conversion (stmt, bsi, &vec_stmt);
-	gcc_assert (done);
-	break;
+    case type_conversion_vec_info_type:
+      done = vectorizable_conversion (stmt, bsi, &vec_stmt);
+      gcc_assert (done);
+      break;
 
-      case op_vec_info_type:
-	done = vectorizable_operation (stmt, bsi, &vec_stmt);
-	gcc_assert (done);
-	break;
+    case op_vec_info_type:
+      done = vectorizable_operation (stmt, bsi, &vec_stmt);
+      gcc_assert (done);
+      break;
 
-      case assignment_vec_info_type:
-	done = vectorizable_assignment (stmt, bsi, &vec_stmt);
-	gcc_assert (done);
-	break;
+    case assignment_vec_info_type:
+      done = vectorizable_assignment (stmt, bsi, &vec_stmt);
+      gcc_assert (done);
+      break;
 
-      case load_vec_info_type:
-	done = vectorizable_load (stmt, bsi, &vec_stmt);
-	gcc_assert (done);
-	break;
+    case load_vec_info_type:
+      done = vectorizable_load (stmt, bsi, &vec_stmt);
+      gcc_assert (done);
+      break;
 
-      case store_vec_info_type:
-	done = vectorizable_store (stmt, bsi, &vec_stmt);
-	gcc_assert (done);
-	if (DR_GROUP_FIRST_DR (stmt_info))
-	  {
-	    /* In case of interleaving, the whole chain is vectorized when the
-	       last store in the chain is reached. Store stmts before the last
-	       one are skipped, and there vec_stmt_info shouldn't be freed
-	       meanwhile.  */
-	    *strided_store = true;
-	    if (STMT_VINFO_VEC_STMT (stmt_info))
-	      is_store = true;
-	  }
-	else
-	  is_store = true;
-	break;
-
-      case condition_vec_info_type:
-	done = vectorizable_condition (stmt, bsi, &vec_stmt);
-	gcc_assert (done);
-	break;
-
-      case call_vec_info_type:
-	done = vectorizable_call (stmt, bsi, &vec_stmt);
-	break;
-
-      default:
-	if (vect_print_dump_info (REPORT_DETAILS))
-	  fprintf (vect_dump, "stmt not supported.");
-	gcc_unreachable ();
-      }
-
-      gcc_assert (vec_stmt || *strided_store);
-      if (vec_stmt)
+    case store_vec_info_type:
+      done = vectorizable_store (stmt, bsi, &vec_stmt);
+      gcc_assert (done);
+      if (DR_GROUP_FIRST_DR (stmt_info))
 	{
-	  STMT_VINFO_VEC_STMT (stmt_info) = vec_stmt;
-	  orig_stmt_in_pattern = STMT_VINFO_RELATED_STMT (stmt_info);
-	  if (orig_stmt_in_pattern)
-	    {
-	      stmt_vec_info stmt_vinfo = vinfo_for_stmt (orig_stmt_in_pattern);
-	      if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
-		{
-		  gcc_assert (STMT_VINFO_RELATED_STMT (stmt_vinfo) == stmt);
-		  
-		  /* STMT was inserted by the vectorizer to replace a 
-		     computation idiom.  ORIG_STMT_IN_PATTERN is a stmt in the 
-		     original sequence that computed this idiom.  We need to 
-		     record a pointer to VEC_STMT in the stmt_info of 
-		     ORIG_STMT_IN_PATTERN.  See more details in the 
-		     documentation of vect_pattern_recog.  */
+	  /* In case of interleaving, the whole chain is vectorized when the
+	     last store in the chain is reached. Store stmts before the last
+	     one are skipped, and there vec_stmt_info shouldn't be freed
+	     meanwhile.  */
+	  *strided_store = true;
+	  if (STMT_VINFO_VEC_STMT (stmt_info))
+	    is_store = true;
+	  }
+      else
+	is_store = true;
+      break;
 
-		  STMT_VINFO_VEC_STMT (stmt_vinfo) = vec_stmt;
-		}
-	    }
+    case condition_vec_info_type:
+      done = vectorizable_condition (stmt, bsi, &vec_stmt);
+      gcc_assert (done);
+      break;
+
+    case call_vec_info_type:
+      done = vectorizable_call (stmt, bsi, &vec_stmt);
+      break;
+
+    case reduc_vec_info_type:
+      done = vectorizable_reduction (stmt, bsi, &vec_stmt);
+      gcc_assert (done);
+      break;
+
+    default:
+      if (!STMT_VINFO_LIVE_P (stmt_info))
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "stmt not supported.");
+	  gcc_unreachable ();
 	}
     }
 
-  if (STMT_VINFO_LIVE_P (stmt_info))
+  if (STMT_VINFO_LIVE_P (stmt_info)
+      && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type)
     {
-      switch (STMT_VINFO_TYPE (stmt_info))
-      {
-      case reduc_vec_info_type:
-        done = vectorizable_reduction (stmt, bsi, &vec_stmt);
-        gcc_assert (done);
-        break;
+      done = vectorizable_live_operation (stmt, bsi, &vec_stmt);
+      gcc_assert (done);
+    }
 
-      default:
-        done = vectorizable_live_operation (stmt, bsi, &vec_stmt);
-        gcc_assert (done);
-      }
+  if (vec_stmt)
+    {
+      STMT_VINFO_VEC_STMT (stmt_info) = vec_stmt;
+      orig_stmt_in_pattern = STMT_VINFO_RELATED_STMT (stmt_info);
+      if (orig_stmt_in_pattern)
+	{
+	  stmt_vec_info stmt_vinfo = vinfo_for_stmt (orig_stmt_in_pattern);
+	  /* STMT was inserted by the vectorizer to replace a computation idiom.
+	     ORIG_STMT_IN_PATTERN is a stmt in the original sequence that 
+	     computed this idiom.  We need to record a pointer to VEC_STMT in 
+	     the stmt_info of ORIG_STMT_IN_PATTERN.  See more details in the 
+	     documentation of vect_pattern_recog.  */
+	  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
+	    {
+	      gcc_assert (STMT_VINFO_RELATED_STMT (stmt_vinfo) == stmt);
+	      STMT_VINFO_VEC_STMT (stmt_vinfo) = vec_stmt;
+	    }
+	}
     }
 
   return is_store; 
