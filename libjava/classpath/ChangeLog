@@ -1,3 +1,9 @@
+2007-04-16  Tom Tromey  <tromey@redhat.com>
+
+	https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=236614
+	* gnu/javax/net/ssl/provider/SSLSocketFactoryImpl.java
+	(createSocket): Change order of delegation.
+
 2007-04-16  Andrew Haley  <aph@redhat.com>
 
 	* java/io/ObjectInputStream.java: (parseContent):  Call (String,
