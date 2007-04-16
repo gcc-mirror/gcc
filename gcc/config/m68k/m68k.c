@@ -4302,12 +4302,12 @@ m68k_libcall_value (enum machine_mode mode)
   case DFmode:
   case XFmode:
     if (TARGET_68881)
-      return gen_rtx_REG (mode, 16);
+      return gen_rtx_REG (mode, FP0_REG);
     break;
   default:
     break;
   }
-  return gen_rtx_REG (mode, 0);
+  return gen_rtx_REG (mode, D0_REG);
 }
 
 rtx
@@ -4321,7 +4321,7 @@ m68k_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
   case DFmode:
   case XFmode:
     if (TARGET_68881)
-      return gen_rtx_REG (mode, 16);
+      return gen_rtx_REG (mode, FP0_REG);
     break;
   default:
     break;
