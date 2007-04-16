@@ -1,3 +1,13 @@
+2007-04-16  Andrew Haley  <aph@redhat.com>
+
+	* gnu/gcj/runtime/BootClassLoader.java (getBootURLLoader): New
+	method.
+	(bootGetResource): Use getBootURLLoader() to load resources.
+	(bootGetResources): Likewise.
+
+	* java/lang/reflect/natMethod.cc (Method::invoke): In invoke also
+	check that the method's declaring class is accessible.
+
 2007-04-10  Keith Seitz  <keiths@redhat.com>
 
 	* sources.am: Regenerate.

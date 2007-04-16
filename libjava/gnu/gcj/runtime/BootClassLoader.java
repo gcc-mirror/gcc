@@ -9,9 +9,13 @@ details.  */
 package gnu.gcj.runtime;
 
 import gnu.java.net.protocol.core.Handler;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Enumeration;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 /**
  * This is a helper for the bootstrap class loader.  It is a
@@ -26,6 +30,9 @@ public final class BootClassLoader extends HelperClassLoader
   // linked executables.  The line that adds core:/ to the search
   // path fails otherwise.
   static Class coreHandler = gnu.java.net.protocol.core.Handler.class;
+
+  private boolean initialized;
+  private URLClassLoader bootURLLoader;
 
   BootClassLoader(String libdir)
   {
@@ -68,13 +75,64 @@ public final class BootClassLoader extends HelperClassLoader
     return c;
   }
 
+  // Parse the boot classpath and create a URLClassLoader that loads
+  // resources from it.  This is provided for the benefit of code that
+  // does things like
+  //   ClassLoader.getResourceAsStream("java/lang/Object.class")
+  private synchronized URLClassLoader getBootURLLoader()
+  {
+    if (initialized)
+      return bootURLLoader;
+    initialized = true;
+
+    Vector<URL> urls = new Vector<URL>();
+    String bootClasspath = System.getProperty ("sun.boot.class.path");
+    StringTokenizer st =
+      new StringTokenizer(bootClasspath, File.pathSeparator);
+    while (st.hasMoreTokens())
+      {
+	try
+	  {
+	    urls.add(new File(st.nextToken()).toURL());
+	  }
+	catch (java.net.MalformedURLException e)
+	  {
+	  }
+      }
+
+    if (urls.size() > 0)
+      bootURLLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
+    return bootURLLoader;
+  }
+
   public URL bootGetResource(String name)
   {
-    return findResource(name);
+    URL url = findResource(name);
+    if (url != null)
+      return url;
+
+    URLClassLoader loader = getBootURLLoader();
+    if (loader != null)
+      url = loader.findResource(name);
+
+    return url;
   }
 
   public Enumeration bootGetResources(String name) throws IOException
   {
-    return findResources(name);
+    URLClassLoader loader = getBootURLLoader();
+    Enumeration[] e =
+      {
+	findResources(name),
+	(loader != null) ? loader.findResources(name) : null
+      };
+
+    Vector v = new Vector();
+    for (Enumeration en : e)
+      if (en != null)
+	while (en.hasMoreElements())
+	  v.add(en.nextElement());
+
+    return v.elements();
   }
 }
