@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.PortableServer;
 
 import org.omg.CORBA.BAD_OPERATION;
+import org.omg.CORBA.BAD_INV_ORDER;
 import org.omg.CORBA.NO_IMPLEMENT;
 import org.omg.CORBA.OBJECT_NOT_EXIST;
 import org.omg.CORBA.ORB;
@@ -109,6 +110,10 @@ public abstract class Servant
    */
   public final Delegate _get_delegate()
   {
+    if (delegate == null) {
+      throw new BAD_INV_ORDER
+	("The Servant has not been associated with an ORBinstance");
+    }
     return delegate;
   }
 
