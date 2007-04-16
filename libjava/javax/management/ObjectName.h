@@ -24,6 +24,9 @@ class javax::management::ObjectName : public ::java::lang::Object
 
 public:
   ObjectName(::java::lang::String *);
+private:
+  void parse(::java::lang::String *);
+public:
   ObjectName(::java::lang::String *, ::java::lang::String *, ::java::lang::String *);
   ObjectName(::java::lang::String *, ::java::util::Hashtable *);
 private:
@@ -51,7 +54,15 @@ public:
   static ::java::lang::String * quote(::java::lang::String *);
   virtual void setMBeanServer(::javax::management::MBeanServer *);
   virtual ::java::lang::String * toString();
+private:
+  void writeObject(::java::io::ObjectOutputStream *);
+  void readObject(::java::io::ObjectInputStream *);
+public:
   static ::java::lang::String * unquote(::java::lang::String *);
+private:
+  static const jlong serialVersionUID = 1081892073854801359LL;
+public:
+  static ::javax::management::ObjectName * WILDCARD;
 private:
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) domain;
   ::java::util::TreeMap * properties;

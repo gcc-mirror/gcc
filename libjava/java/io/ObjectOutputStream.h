@@ -90,6 +90,7 @@ public: // actually package-private
   virtual jboolean setBlockDataMode(jboolean);
 private:
   void callWriteMethod(::java::lang::Object *, ::java::io::ObjectStreamClass *);
+  void dumpElementln(::java::lang::String *, ::java::lang::Object *);
   void dumpElementln(::java::lang::String *);
   static const jint BUFFER_SIZE = 1024;
   static jint defaultProtocolVersion;
