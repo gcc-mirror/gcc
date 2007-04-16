@@ -46,8 +46,6 @@ struct sequence_stack GTY(())
   struct sequence_stack *next;
 };
 
-extern struct sequence_stack *sequence_stack;
-
 /* Stack of single obstacks.  */
 
 struct simple_obstack_stack

@@ -1,3 +1,7 @@
+2007-04-16  Aldy Hernandez  <aldyh@redhat.com>
+
+        * function.h: Remove sequence_stack extern declaration.
+
 2007-04-16  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/m68k/m68k.h (LONG_DOUBLE_TYPE_SIZE): Change to 64 on
