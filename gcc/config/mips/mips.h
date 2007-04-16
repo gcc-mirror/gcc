@@ -43,6 +43,9 @@ enum processor_type {
   PROCESSOR_24KC,
   PROCESSOR_24KF,
   PROCESSOR_24KX,
+  PROCESSOR_74KC,
+  PROCESSOR_74KF,
+  PROCESSOR_74KX,
   PROCESSOR_M4K,
   PROCESSOR_R3900,
   PROCESSOR_R6000,
@@ -243,6 +246,9 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #define TUNE_MIPS9000               (mips_tune == PROCESSOR_R9000)
 #define TUNE_SB1                    (mips_tune == PROCESSOR_SB1		\
 				     || mips_tune == PROCESSOR_SB1A)
+#define TUNE_74K                    (mips_tune == PROCESSOR_74KC	\
+				     || mips_tune == PROCESSOR_74KF	\
+				     || mips_tune == PROCESSOR_74KX)
 
 /* True if the pre-reload scheduler should try to create chains of
    multiply-add or multiply-subtract instructions.  For example,
@@ -638,6 +644,9 @@ extern const struct mips_rtx_cost_data *mips_cost;
 				  || ISA_MIPS32R2			\
 				  || ISA_MIPS64)			\
 				 && !TARGET_MIPS16)
+
+/* Integer multiply-accumulate instructions should be generated.  */
+#define GENERATE_MADD_MSUB      (ISA_HAS_MADD_MSUB && !TUNE_74K)
 
 /* ISA has floating-point nmadd and nmsub instructions.  */
 #define ISA_HAS_NMADD_NMSUB	((ISA_MIPS4				\
