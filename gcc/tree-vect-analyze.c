@@ -325,8 +325,8 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	      /* FORNOW: not yet supported.  */
 	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
 		fprintf (vect_dump, "not vectorized: value used after loop.");
-	    return false;
-	  }
+	      return false;
+	    }
 
 	  if (STMT_VINFO_RELEVANT (stmt_info) == vect_used_in_loop
 	      && STMT_VINFO_DEF_TYPE (stmt_info) != vect_induction_def)
@@ -337,12 +337,16 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	        fprintf (vect_dump, "not vectorized: unsupported pattern.");
  	     return false;
 	    }
+
+	  if (STMT_VINFO_RELEVANT_P (stmt_info))
+	    need_to_vectorize = true;
 	}
 
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
 	{
 	  tree stmt = bsi_stmt (si);
 	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	  enum vect_def_type relevance = STMT_VINFO_RELEVANT (stmt_info);
 
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    {
@@ -367,55 +371,57 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	      continue;
 	    }
 
-          if (STMT_VINFO_RELEVANT_P (stmt_info))
-            {
-              gcc_assert (GIMPLE_STMT_P (stmt)
-		  	  || !VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (stmt))));
-              gcc_assert (STMT_VINFO_VECTYPE (stmt_info));
-
-	      ok = (vectorizable_type_promotion (stmt, NULL, NULL)
-		    || vectorizable_type_demotion (stmt, NULL, NULL)
-		    || vectorizable_conversion (stmt, NULL, NULL)
-		    || vectorizable_operation (stmt, NULL, NULL)
-		    || vectorizable_assignment (stmt, NULL, NULL)
-		    || vectorizable_load (stmt, NULL, NULL)
-		    || vectorizable_call (stmt, NULL, NULL)
-		    || vectorizable_store (stmt, NULL, NULL)
-		    || vectorizable_condition (stmt, NULL, NULL));
-
-	      if (!ok)
-		{
-		  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
-		    {
-		      fprintf (vect_dump, 
-			       "not vectorized: relevant stmt not supported: ");
-		      print_generic_expr (vect_dump, stmt, TDF_SLIM);
-		    }
-		  return false;
-		}	
-	      need_to_vectorize = true;
-            }
-
-	  if (STMT_VINFO_LIVE_P (stmt_info))
+	  switch (STMT_VINFO_DEF_TYPE (stmt_info))
 	    {
-	      ok = vectorizable_reduction (stmt, NULL, NULL);
+ 	    case vect_loop_def:
+	      break;
+	
+	    case vect_reduction_def:
+	      gcc_assert (relevance == vect_unused_in_loop);
+	      break;	
 
-	      if (ok)
-                need_to_vectorize = true;
-              else
-	        ok = vectorizable_live_operation (stmt, NULL, NULL);
-
-	      if (!ok)
-		{
-		  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
-		    {
-		      fprintf (vect_dump, 
-			       "not vectorized: live stmt not supported: ");
-		      print_generic_expr (vect_dump, stmt, TDF_SLIM);
-		    }
-		  return false;
-		}
+	    case vect_induction_def:
+	    case vect_constant_def:
+	    case vect_invariant_def:
+	    case vect_unknown_def_type:
+	    default:
+	      gcc_unreachable ();	
 	    }
+
+	  if (STMT_VINFO_RELEVANT_P (stmt_info))
+	    {
+	      gcc_assert (GIMPLE_STMT_P (stmt)
+			  || !VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (stmt))));
+	      gcc_assert (STMT_VINFO_VECTYPE (stmt_info));
+	      need_to_vectorize = true;
+	    }
+
+	  ok = (vectorizable_type_promotion (stmt, NULL, NULL)
+		|| vectorizable_type_demotion (stmt, NULL, NULL)
+		|| vectorizable_conversion (stmt, NULL, NULL)
+		|| vectorizable_operation (stmt, NULL, NULL)
+		|| vectorizable_assignment (stmt, NULL, NULL)
+		|| vectorizable_load (stmt, NULL, NULL)
+		|| vectorizable_call (stmt, NULL, NULL)
+		|| vectorizable_store (stmt, NULL, NULL)
+		|| vectorizable_condition (stmt, NULL, NULL)
+		|| vectorizable_reduction (stmt, NULL, NULL));
+
+	  /* Stmts that are (also) "live" (i.e. - that are used out of the loop)
+	     need extra handling, except for vectorizable reductions.  */
+	  if (STMT_VINFO_LIVE_P (stmt_info)
+	      && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type) 
+	    ok |= vectorizable_live_operation (stmt, NULL, NULL);
+
+	  if (!ok)
+	    {
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+		{
+		  fprintf (vect_dump, "not vectorized: stmt not supported: ");
+		  print_generic_expr (vect_dump, stmt, TDF_SLIM);
+		}
+	      return false;
+	    }	
 	} /* stmts in bb */
     } /* bbs */
 

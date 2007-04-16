@@ -1,3 +1,19 @@
+2007-04-16  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vect-analyze.c (vect_analyze_operations): Reorganize calls to
+	vectorizable_* functions.
+	* tree-vect-transform.c (vectorizable_call): Add check for
+	STMT_VINFO_RELEVANT_P, STMT_VINFO_DEF_TYPE and STMT_VINFO_LIVE_P.
+	(vectorizable_store): likewise.
+	(vectorizable_conversion): Add check for STMT_VINFO_DEF_TYPE.
+	Add comments.
+	(vectorizable_operation, vectorizable_type_demotion): Likewise.
+	(vectorizable_type_promotion, vectorizable_load): Likewise.
+	(vectorizable_live_operation, vectorizable_condition): Likewise.
+	(vectorizable_assignment): Add check for STMT_VINFO_DEF_TYPE and
+	STMT_VINFO_LIVE_P.
+	(vect_transform_stmt): Reorganize calls to vectorizable_* functions.
+
 2007-04-15  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/m68k/linux.h (FUNCTION_VALUE_REGNO_P): Use macros for
