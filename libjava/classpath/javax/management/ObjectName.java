@@ -105,6 +105,13 @@ public class ObjectName
   private static final long serialVersionUID = 1081892073854801359L;
 
   /**
+   * The wildcard {@link ObjectName} {@code "*:*"}
+   *
+   * @since 1.6
+   */
+  public static final ObjectName WILDCARD;
+
+  /**
    * The domain of the name.
    */
   private transient String domain;
@@ -128,6 +135,23 @@ public class ObjectName
    * The management server associated with this object name.
    */
   private transient MBeanServer server;
+
+  /**
+   * Static initializer to set up the wildcard.
+   */
+  static
+  {
+    try
+      {
+	WILDCARD = new ObjectName("");
+      }
+    catch (MalformedObjectNameException e)
+      {
+	throw (InternalError) (new InternalError("A problem occurred " +
+						 "initializing the ObjectName " +
+						 "wildcard.").initCause(e));
+      }
+  }
 
   /**
    * Constructs an {@link ObjectName} instance from the given string,
@@ -159,7 +183,6 @@ public class ObjectName
    * Parse the name in the same form as the constructor.  Used by
    * readObject().
    */
-
   private void parse(String name)
     throws MalformedObjectNameException
   {
@@ -169,32 +192,37 @@ public class ObjectName
     domain = name.substring(0, domainSep);
     String rest = name.substring(domainSep + 1);
     properties = new TreeMap<String,String>();
-    if (rest.equals("*"))
-      propertyPattern = true;
-    else
+    String[] pairs = rest.split(",");
+    if (pairs.length == 0 && !isPattern())
+      throw new MalformedObjectNameException("A name that is not a " +
+					     "pattern must contain at " +
+					     "least one key-value pair.");
+    propertyListString = "";
+    for (int a = 0; a < pairs.length; ++a)
       {
-	if (rest.endsWith(",*"))
+	if (pairs[a].equals("*"))
 	  {
+	    if (propertyPattern)
+	      throw new MalformedObjectNameException("Multiple wildcards " +
+						     "in properties.");
 	    propertyPattern = true;
-	    propertyListString = rest.substring(0, rest.length() - 2);
+	    continue;
 	  }
-	else
-	  propertyListString = rest;
-	String[] pairs = propertyListString.split(",");
-	if (pairs.length == 0 && !isPattern())
-	  throw new MalformedObjectNameException("A name that is not a " +
-						 "pattern must contain at " +
-						 "least one key-value pair.");
-	for (int a = 0; a < pairs.length; ++a)
-	  {
-	    int sep = pairs[a].indexOf('=');
-	    String key = pairs[a].substring(0, sep);
-	    if (properties.containsKey(key))
-	      throw new MalformedObjectNameException("The same key occurs " +
-						     "more than once.");
-	    properties.put(key, pairs[a].substring(sep + 1));
-	  }	
+	int sep = pairs[a].indexOf('=');
+	if (sep == -1)
+	  throw new MalformedObjectNameException("A key must be " +
+						 "followed by a value.");
+	String key = pairs[a].substring(0, sep);
+	if (properties.containsKey(key))
+	  throw new MalformedObjectNameException("The same key occurs " +
+						 "more than once.");
+	String value = pairs[a].substring(sep+1);
+	properties.put(key, value);
+	propertyListString += key + "=" + value + ",";
       }
+    if (propertyListString.length() > 0)
+      propertyListString =
+	propertyListString.substring(0, propertyListString.length() - 1);
     checkComponents();
   }
 
@@ -263,7 +291,7 @@ public class ObjectName
     if (domain.indexOf('\n') != -1)
       throw new MalformedObjectNameException("The domain includes a newline " +
 					     "character.");
-    char[] chars = new char[] { ':', ',', '*', '?', '=' };
+    char[] chars = new char[] { '\n', ':', ',', '*', '?', '=' };
     Iterator i = properties.entrySet().iterator();
     while (i.hasNext())
       {
@@ -284,8 +312,9 @@ public class ObjectName
 	      }
 	    catch (IllegalArgumentException e)
 	      {
-		throw new MalformedObjectNameException("The quoted value is " +
-						       "invalid.");
+		throw (MalformedObjectNameException)
+		  new MalformedObjectNameException("The quoted value is " +
+						   "invalid.").initCause(e);
 	      }
 	  }
 	else if (quote != -1)
@@ -763,10 +792,12 @@ public class ObjectName
 
 
   /**
-   * Serialization methods.  The serialized form is the same as the
-   * string parsed by the constructor.
+   * Serialize this {@link ObjectName}.  The serialized
+   * form is the same as the string parsed by the constructor.
+   *
+   * @param out the output stream to write to.
+   * @throws IOException if an I/O error occurs.
    */
-
   private void writeObject(ObjectOutputStream out)
     throws IOException
   {
@@ -777,14 +808,21 @@ public class ObjectName
     buffer.append(properties);
     if (isPropertyPattern())
       {
-	if (properties.length() == 0)
-	  buffer.append("*");
-	else
-	  buffer.append(",*");
+       if (properties.length() == 0)
+         buffer.append("*");
+       else
+         buffer.append(",*");
       }
     out.writeObject(buffer.toString());
   }
 
+  /**
+   * Reads the serialized form, which is that used
+   * by the constructor.
+   *
+   * @param in the input stream to read from.
+   * @throws IOException if an I/O error occurs.
+   */
   private void readObject(ObjectInputStream in) 
     throws IOException, ClassNotFoundException
    {
@@ -833,10 +871,12 @@ public class ObjectName
 	  {
 	    n = q.charAt(++a);
 	    if (n != '"' && n != '?' && n != '*' &&
-		n != '\n' && n != '\\')
+		n != 'n' && n != '\\')
 	      throw new IllegalArgumentException("Illegal escaped character: "
 						 + n);
 	  }
+	else if (n == '"' || n == '\n') 
+	  throw new IllegalArgumentException("Illegal character: " + n);
 	builder.append(n);
       }
 
