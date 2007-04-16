@@ -1,3 +1,17 @@
+2007-04-16  Andrew Haley  <aph@redhat.com>
+
+	* org/omg/IOP/TaggedComponentHelper.java (read): Use
+	read_octet_array(), not read().
+	(write): Use write_octet_array(), not write().
+
+	* org/omg/PortableServer/Servant.java (_get_delegate): Throw if no
+	delegate has been set.
+
+	* javax/management/ObjectName.java serialVersionUID: Declare.
+	Make all fields transient.
+	(parse): Break out from constructor.
+	(writeObject, readObject): New methods.
+
 2007-04-02  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/event/ThreadStartEvent.java (Event):
