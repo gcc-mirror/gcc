@@ -1,3 +1,8 @@
+2007-04-16  Matthias Klose  <doko@debian.org>
+
+	* gcc/config/alpha/linux.h (CPP_SPEC): Define.
+	* gcc/config/arm/linux-gas.h (SUBTARGET_CPP_SPEC): Extend.
+
 2007-04-16  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (avr_arch_types): Rearranging  array.
