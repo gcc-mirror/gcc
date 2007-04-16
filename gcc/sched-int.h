@@ -278,11 +278,16 @@ struct deps
   /* An EXPR_LIST containing all MEM rtx's which are pending writes.  */
   rtx pending_write_mems;
 
-  /* Indicates the combined length of the two pending lists.  We must prevent
-     these lists from ever growing too large since the number of dependencies
-     produced is at least O(N*N), and execution time is at least O(4*N*N), as
-     a function of the length of these pending lists.  */
-  int pending_lists_length;
+  /* We must prevent the above lists from ever growing too large since
+     the number of dependencies produced is at least O(N*N),
+     and execution time is at least O(4*N*N), as a function of the
+     length of these pending lists.  */
+
+  /* Indicates the length of the pending_read list.  */
+  int pending_read_list_length;
+
+  /* Indicates the length of the pending_write list.  */
+  int pending_write_list_length;
 
   /* Length of the pending memory flush list. Large functions with no
      calls may build up extremely large lists.  */

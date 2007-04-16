@@ -1017,10 +1017,25 @@ fixup_sched_groups (rtx insn)
    so that we can do memory aliasing on it.  */
 
 static void
-add_insn_mem_dependence (struct deps *deps, rtx *insn_list, rtx *mem_list,
+add_insn_mem_dependence (struct deps *deps, bool read_p,
 			 rtx insn, rtx mem)
 {
+  rtx *insn_list;
+  rtx *mem_list;
   rtx link;
+
+  if (read_p)
+    {
+      insn_list = &deps->pending_read_insns;
+      mem_list = &deps->pending_read_mems;
+      deps->pending_read_list_length++;
+    }
+  else
+    {
+      insn_list = &deps->pending_write_insns;
+      mem_list = &deps->pending_write_mems;
+      deps->pending_write_list_length++;
+    }
 
   link = alloc_INSN_LIST (insn, *insn_list);
   *insn_list = link;
@@ -1032,8 +1047,6 @@ add_insn_mem_dependence (struct deps *deps, rtx *insn_list, rtx *mem_list,
     }
   link = alloc_EXPR_LIST (VOIDmode, canon_rtx (mem), *mem_list);
   *mem_list = link;
-
-  deps->pending_lists_length++;
 }
 
 /* Make a dependency between every memory reference on the pending lists
@@ -1049,12 +1062,13 @@ flush_pending_lists (struct deps *deps, rtx insn, int for_read,
       add_dependence_list_and_free (insn, &deps->pending_read_insns, 1,
 				    REG_DEP_ANTI);
       free_EXPR_LIST_list (&deps->pending_read_mems);
+      deps->pending_read_list_length = 0;
     }
 
   add_dependence_list_and_free (insn, &deps->pending_write_insns, 1,
 				for_read ? REG_DEP_ANTI : REG_DEP_OUTPUT);
   free_EXPR_LIST_list (&deps->pending_write_mems);
-  deps->pending_lists_length = 0;
+  deps->pending_write_list_length = 0;
 
   add_dependence_list_and_free (insn, &deps->last_pending_memory_flush, 1,
 				for_read ? REG_DEP_ANTI : REG_DEP_OUTPUT);
@@ -1218,7 +1232,8 @@ sched_analyze_1 (struct deps *deps, rtx x, rtx insn)
 	}
       t = canon_rtx (t);
 
-      if (deps->pending_lists_length > MAX_PENDING_LIST_LENGTH)
+      if ((deps->pending_read_list_length + deps->pending_write_list_length)
+	  > MAX_PENDING_LIST_LENGTH)
 	{
 	  /* Flush all pending reads and writes to prevent the pending lists
 	     from getting any larger.  Insn scheduling runs too slowly when
@@ -1258,8 +1273,7 @@ sched_analyze_1 (struct deps *deps, rtx x, rtx insn)
 	  add_dependence_list (insn, deps->last_pending_memory_flush, 1,
 			       REG_DEP_ANTI);
 
-	  add_insn_mem_dependence (deps, &deps->pending_write_insns,
-				   &deps->pending_write_mems, insn, dest);
+	  add_insn_mem_dependence (deps, false, insn, dest);
 	}
       sched_analyze_2 (deps, XEXP (dest, 0), insn);
     }
@@ -1380,8 +1394,7 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
 
 	/* Always add these dependencies to pending_reads, since
 	   this insn may be followed by a write.  */
-	add_insn_mem_dependence (deps, &deps->pending_read_insns,
-				 &deps->pending_read_mems, insn, x);
+	add_insn_mem_dependence (deps, true, insn, x);
 
 	/* Take advantage of tail recursion here.  */
 	sched_analyze_2 (deps, XEXP (x, 0), insn);
@@ -2081,7 +2094,8 @@ init_deps (struct deps *deps)
   deps->pending_read_mems = 0;
   deps->pending_write_insns = 0;
   deps->pending_write_mems = 0;
-  deps->pending_lists_length = 0;
+  deps->pending_read_list_length = 0;
+  deps->pending_write_list_length = 0;
   deps->pending_flush_length = 0;
   deps->last_pending_memory_flush = 0;
   deps->last_function_call = 0;
