@@ -1348,7 +1348,7 @@ gfc_get_interface_mapping_charlen (gfc_interface_mapping * mapping,
 
 static tree
 gfc_get_interface_mapping_array (stmtblock_t * block, gfc_symbol * sym,
-				 int packed, tree data)
+				 gfc_packed packed, tree data)
 {
   tree type;
   tree var;
@@ -1500,14 +1500,16 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
 
       /* Create the replacement variable.  */
       tmp = gfc_conv_descriptor_data_get (desc);
-      value = gfc_get_interface_mapping_array (&se->pre, sym, 0, tmp);
+      value = gfc_get_interface_mapping_array (&se->pre, sym,
+					       PACKED_NO, tmp);
 
       /* Use DESC to work out the upper bounds, strides and offset.  */
       gfc_set_interface_mapping_bounds (&se->pre, TREE_TYPE (value), desc);
     }
   else
     /* Otherwise we have a packed array.  */
-    value = gfc_get_interface_mapping_array (&se->pre, sym, 2, se->expr);
+    value = gfc_get_interface_mapping_array (&se->pre, sym,
+					     PACKED_FULL, se->expr);
 
   new_sym->backend_decl = value;
 }

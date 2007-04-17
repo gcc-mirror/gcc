@@ -664,7 +664,7 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
   tree type;
   gfc_array_spec *as;
   char *name;
-  int packed;
+  gfc_packed packed;
   int n;
   bool known_size;
 
@@ -697,28 +697,28 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
     {
       /* Create a descriptorless array pointer.  */
       as = sym->as;
-      packed = 0;
+      packed = PACKED_NO;
       if (!gfc_option.flag_repack_arrays)
 	{
 	  if (as->type == AS_ASSUMED_SIZE)
-	    packed = 2;
+	    packed = PACKED_FULL;
 	}
       else
 	{
 	  if (as->type == AS_EXPLICIT)
 	    {
-	      packed = 2;
+	      packed = PACKED_FULL;
 	      for (n = 0; n < as->rank; n++)
 		{
 		  if (!(as->upper[n]
 			&& as->lower[n]
 			&& as->upper[n]->expr_type == EXPR_CONSTANT
 			&& as->lower[n]->expr_type == EXPR_CONSTANT))
-		    packed = 1;
+		    packed = PACKED_PARTIAL;
 		}
 	    }
 	  else
-	    packed = 1;
+	    packed = PACKED_PARTIAL;
 	}
 
       type = gfc_typenode_for_spec (&sym->ts);
@@ -732,7 +732,7 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
       DECL_ARTIFICIAL (sym->backend_decl) = 1;
       sym->backend_decl = NULL_TREE;
       type = gfc_sym_type (sym);
-      packed = 2;
+      packed = PACKED_FULL;
     }
 
   ASM_FORMAT_PRIVATE_NAME (name, IDENTIFIER_POINTER (DECL_NAME (dummy)), 0);
@@ -747,16 +747,10 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
      frontend bugs.  */
   gcc_assert (sym->as->type != AS_DEFERRED);
 
-  switch (packed)
-    {
-    case 1:
-      GFC_DECL_PARTIAL_PACKED_ARRAY (decl) = 1;
-      break;
-
-    case 2:
-      GFC_DECL_PACKED_ARRAY (decl) = 1;
-      break;
-    }
+  if (packed == PACKED_PARTIAL)
+    GFC_DECL_PARTIAL_PACKED_ARRAY (decl) = 1;
+  else if (packed == PACKED_FULL)
+    GFC_DECL_PACKED_ARRAY (decl) = 1;
 
   gfc_build_qualified_array (decl, sym);
 

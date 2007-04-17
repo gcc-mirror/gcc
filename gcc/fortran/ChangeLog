@@ -1,5 +1,19 @@
 2007-04-17  Tobias Schlüter  <tobi@gcc.gnu.org>
 
+	* trans-types.h (gfc_packed): New enum.
+	(gfc_get_nodesc_array_type): Change prototype to use new enum.
+	* trans-types.c (gfc_get_nodesc_array): Use gfc_packed for
+	argument packed.  Adapt all references to values accordingly.
+	(gfc_sym_type): Use enum values in call to gfc_get_nodesc_array.
+	(gfc_get_derived_type): Likewise.
+	* trans-array.c (gfc_build_constant_array_constructor): Likewise.
+	* trans-expr.c (gfc_get_interface_mapping_charlen): Changed packed
+	argument to type gfc_packed.
+	(gfc_add_interface_mapping): Use enum values in call to
+	gfc_get_interface_mapping.
+	* trans-decl.c (gfc_build_dummy_array_decl): Adapt to use enum
+	values when determining packing.
+
 	* arith.h: Update copyright years.
 	* dependency.h: Likewise.
 	* gfortran.h: Likewise.

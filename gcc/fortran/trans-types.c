@@ -1006,11 +1006,11 @@ gfc_get_dtype (tree type)
 }
 
 
-/* Build an array type for use without a descriptor.  Valid values of packed
-   are 0=no, 1=partial, 2=full, 3=static.  */
+/* Build an array type for use without a descriptor, packed according
+   to the value of PACKED.  */
 
 tree
-gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, int packed)
+gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed)
 {
   tree range;
   tree type;
@@ -1036,7 +1036,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, int packed)
   TYPE_LANG_SPECIFIC (type) = (struct lang_type *)
     ggc_alloc_cleared (sizeof (struct lang_type));
 
-  known_stride = (packed != 0);
+  known_stride = (packed != PACKED_NO);
   known_offset = 1;
   for (n = 0; n < as->rank; n++)
     {
@@ -1092,7 +1092,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, int packed)
         }
 
       /* Only the first stride is known for partial packed arrays.  */
-      if (packed < 2)
+      if (packed == PACKED_NO || packed == PACKED_PARTIAL)
         known_stride = 0;
     }
 
@@ -1140,7 +1140,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, int packed)
   mpz_clear (stride);
   mpz_clear (delta);
 
-  if (packed < 3 || !known_stride)
+  if (packed != PACKED_STATIC || !known_stride)
     {
       /* For dummy arrays and automatic (heap allocated) arrays we
 	 want a pointer to the array.  */
@@ -1350,7 +1350,8 @@ gfc_sym_type (gfc_symbol * sym)
 	      || sym->ts.cl->backend_decl)
 	    {
 	      type = gfc_get_nodesc_array_type (type, sym->as,
-						byref ? 2 : 3);
+						byref ? PACKED_FULL
+						      : PACKED_STATIC);
 	      byref = 0;
 	    }
         }
@@ -1538,7 +1539,8 @@ gfc_get_derived_type (gfc_symbol * derived)
 	      field_type = gfc_build_array_type (field_type, c->as);
 	    }
 	  else
-	    field_type = gfc_get_nodesc_array_type (field_type, c->as, 3);
+	    field_type = gfc_get_nodesc_array_type (field_type, c->as,
+						    PACKED_STATIC);
 	}
       else if (c->pointer)
 	field_type = build_pointer_type (field_type);

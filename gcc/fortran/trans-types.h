@@ -54,6 +54,13 @@ extern GTY(()) tree pchar_type_node;
    and runtime library.  */
 extern GTY(()) tree gfc_charlen_type_node;
 
+typedef enum {
+  PACKED_NO = 0,
+  PACKED_PARTIAL,
+  PACKED_FULL,
+  PACKED_STATIC
+} gfc_packed;
+
 /* be-function.c */
 void gfc_convert_function_code (gfc_namespace *);
 
@@ -80,7 +87,7 @@ tree gfc_signed_type (tree);
 
 tree gfc_get_element_type (tree);
 tree gfc_get_array_type_bounds (tree, int, tree *, tree *, int);
-tree gfc_get_nodesc_array_type (tree, gfc_array_spec *, int);
+tree gfc_get_nodesc_array_type (tree, gfc_array_spec *, gfc_packed);
 
 /* Add a field of given name and type to a UNION_TYPE or RECORD_TYPE.  */
 tree gfc_add_field_to_struct (tree *, tree, tree, tree);

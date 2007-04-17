@@ -1493,7 +1493,7 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
 	as.upper[i] = gfc_int_expr (tmp - 1);
       }
 
-  tmptype = gfc_get_nodesc_array_type (type, &as, 3);
+  tmptype = gfc_get_nodesc_array_type (type, &as, PACKED_STATIC);
 
   init = build_constructor_from_list (tmptype, nreverse (list));
 
