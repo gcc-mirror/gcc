@@ -1041,7 +1041,7 @@ ptrreg_to_str (int regno)
     case REG_Y: return "Y";
     case REG_Z: return "Z";
     default:
-      gcc_unreachable ();
+      error ("address operand requires constraint for X, Y, or Z register");
     }
   return NULL;
 }

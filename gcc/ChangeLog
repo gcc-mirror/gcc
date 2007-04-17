@@ -1,3 +1,9 @@
+2007-04-17  Anatoly Sokolov <aesok@post.ru>
+
+	PR target/30483
+	* config/avr/avr.c (ptrreg_to_str): Replace gcc_unreachable() with
+	error().
+
 2007-04-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/sse.md (sse_vmaddv4sf3): Use register_operand
