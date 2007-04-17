@@ -1,3 +1,14 @@
+2007-04-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Backport from mainline:
+	2007-04-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (sse_vmaddv4sf3): Use register_operand
+	on "0".
+	(sse_vmmulv4sf3): Likewise.
+	(sse2_vmaddv2df3): Likewise.
+	(sse2_vmmulv2df3): Likewise.
+
 2007-04-16  Matthias Klose  <doko@debian.org>
 
 	* gcc/config/alpha/linux.h (CPP_SPEC): Define.
