@@ -122,13 +122,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 
 	  gcc_assert (stmt_info);
 
-	  /* Two cases of "relevant" phis: those that define an 
-	     induction that is used in the loop, and those that
-	     define a reduction.  */
-	  if ((STMT_VINFO_RELEVANT (stmt_info) == vect_used_in_loop
-	       && STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def)
-	      || (STMT_VINFO_RELEVANT (stmt_info) == vect_used_by_reduction
-		  && STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def))
+	  if (STMT_VINFO_RELEVANT_P (stmt_info))
             {
 	      gcc_assert (!STMT_VINFO_VECTYPE (stmt_info));
               scalar_type = TREE_TYPE (PHI_RESULT (phi));
@@ -311,6 +305,8 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
         {
+	  ok = true;
+
 	  stmt_info = vinfo_for_stmt (phi);
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    {
@@ -331,15 +327,29 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	  if (STMT_VINFO_RELEVANT (stmt_info) == vect_used_in_loop
 	      && STMT_VINFO_DEF_TYPE (stmt_info) != vect_induction_def)
 	    {
-	      /* Most likely a reduction-like computation that is used
-		 in the loop.  */
+	      /* A scalar-dependence cycle that we don't support.  */
 	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
-	        fprintf (vect_dump, "not vectorized: unsupported pattern.");
- 	     return false;
+		fprintf (vect_dump, "not vectorized: scalar dependence cycle.");
+	      return false;
 	    }
 
 	  if (STMT_VINFO_RELEVANT_P (stmt_info))
-	    need_to_vectorize = true;
+	    {
+	      need_to_vectorize = true;
+	      if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def)
+		ok = vectorizable_induction (phi, NULL, NULL);
+	    }
+
+	  if (!ok)
+	    {
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+		{
+		  fprintf (vect_dump,
+			   "not vectorized: relevant phi not supported: ");
+		  print_generic_expr (vect_dump, phi, TDF_SLIM);
+		}
+	      return false;
+	    }
 	}
 
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
@@ -2106,11 +2116,6 @@ vect_mark_relevant (VEC(tree,heap) **worklist, tree stmt,
   if (relevant > STMT_VINFO_RELEVANT (stmt_info))
     STMT_VINFO_RELEVANT (stmt_info) = relevant;
 
-  if (TREE_CODE (stmt) == PHI_NODE)
-    /* Don't put phi-nodes in the worklist. Phis that are marked relevant
-       or live will fail vectorization later on.  */
-    return;
-
   if (STMT_VINFO_RELEVANT (stmt_info) == save_relevant
       && STMT_VINFO_LIVE_P (stmt_info) == save_live_p)
     {
@@ -2228,27 +2233,23 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
   worklist = VEC_alloc (tree, heap, 64);
 
   /* 1. Init worklist.  */
-
-  bb = loop->header;
-  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "init: phi relevant? ");
-          print_generic_expr (vect_dump, phi, TDF_SLIM);
-        }
-
-      if (vect_stmt_relevant_p (phi, loop_vinfo, &relevant, &live_p))
-	vect_mark_relevant (&worklist, phi, relevant, live_p);
-    }
-
   for (i = 0; i < nbbs; i++)
     {
       bb = bbs[i];
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	{ 
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    {
+	      fprintf (vect_dump, "init: phi relevant? ");
+	      print_generic_expr (vect_dump, phi, TDF_SLIM);
+	    }
+
+	  if (vect_stmt_relevant_p (phi, loop_vinfo, &relevant, &live_p))
+	    vect_mark_relevant (&worklist, phi, relevant, live_p);
+	}
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
 	{
 	  stmt = bsi_stmt (si);
-
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    {
 	      fprintf (vect_dump, "init: stmt relevant? ");
@@ -2278,8 +2279,6 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
          relevant/irrelevant and live/dead according to the liveness and
          relevance properties of STMT.
        */
-
-      gcc_assert (TREE_CODE (stmt) != PHI_NODE);
 
       ann = stmt_ann (stmt);
       stmt_vinfo = vinfo_for_stmt (stmt);
@@ -2318,7 +2317,6 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
       /* case 2.2:  */
       if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def)
 	{
-	  gcc_assert (relevant == vect_unused_in_loop && live_p);
 	  relevant = vect_used_by_reduction;
 	  live_p = false;
 	}
