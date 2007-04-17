@@ -1,3 +1,10 @@
+2007-04-17  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/31144
+	* decl.c (gfc_sym_mangled_identifier): Use capital letters in name
+	mangling.
+	(gfc_sym_mangled_function_id): Likewise.
+
 2007-04-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31204

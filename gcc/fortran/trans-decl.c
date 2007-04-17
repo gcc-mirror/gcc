@@ -299,7 +299,7 @@ gfc_sym_mangled_identifier (gfc_symbol * sym)
     return gfc_sym_identifier (sym);
   else
     {
-      snprintf (name, sizeof name, "__%s__%s", sym->module, sym->name);
+      snprintf (name, sizeof name, "__%s_MOD_%s", sym->module, sym->name);
       return get_identifier (name);
     }
 }
@@ -335,7 +335,7 @@ gfc_sym_mangled_function_id (gfc_symbol * sym)
     }
   else
     {
-      snprintf (name, sizeof name, "__%s__%s", sym->module, sym->name);
+      snprintf (name, sizeof name, "__%s_MOD_%s", sym->module, sym->name);
       return get_identifier (name);
     }
 }
