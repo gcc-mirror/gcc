@@ -3101,7 +3101,8 @@ eliminate_regs_in_insn (rtx insn, int replace)
 	  rtx links;
 	  for (links = REG_NOTES (insn); links; links = XEXP (links, 1))
 	    {
-	      if (REG_NOTE_KIND (links) == REG_EQUAL
+	      if ((REG_NOTE_KIND (links) == REG_EQUAL
+		   || REG_NOTE_KIND (links) == REG_EQUIV)
 		  && GET_CODE (XEXP (links, 0)) == PLUS
 		  && GET_CODE (XEXP (XEXP (links, 0), 1)) == CONST_INT)
 		{
