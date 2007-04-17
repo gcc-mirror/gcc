@@ -1,5 +1,5 @@
 /* gnu_java_awt_peer_gtk_ComponentGraphics.c
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -159,38 +159,11 @@ Java_gnu_java_awt_peer_gtk_ComponentGraphics_initState
 
   cr = cairo_create (surface);
   g_assert(cr != NULL);
+  cairo_surface_destroy(surface);
 
   gdk_threads_leave();
 
   return PTR_TO_JLONG(cr);
-}
-
-/**
- * Disposes of the surface
- */
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_ComponentGraphics_disposeSurface
-  (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
-   jlong value)
-{
-  struct cairographics2d *gr;
-  cairo_surface_t *surface;
-
-  gr = JLONG_TO_PTR(struct cairographics2d, value);
-
-  if (gr == NULL)
-    return;
-
-  if (gr->cr == NULL)
-    return;
-
-  surface = cairo_get_target (gr->cr);
-  if (surface != NULL)
-    {
-      gdk_threads_enter();
-      cairo_surface_destroy (surface);
-      gdk_threads_leave();
-    }
 }
 
 JNIEXPORT jlong JNICALL 
@@ -224,6 +197,7 @@ Java_gnu_java_awt_peer_gtk_ComponentGraphics_initFromVolatile
 
   cr = cairo_create (surface);
   g_assert(cr != NULL);
+  cairo_surface_destroy(surface);
 
   gdk_threads_leave();
 

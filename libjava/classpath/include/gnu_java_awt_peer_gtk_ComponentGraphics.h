@@ -11,7 +11,6 @@ extern "C"
 #endif
 
 JNIEXPORT jlong JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_initState (JNIEnv *env, jobject, jobject);
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_disposeSurface (JNIEnv *env, jobject, jlong);
 JNIEXPORT jlong JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_initFromVolatile (JNIEnv *env, jobject, jlong, jint, jint);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_start_1gdk_1drawing (JNIEnv *env, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_end_1gdk_1drawing (JNIEnv *env, jobject);
