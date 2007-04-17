@@ -1,3 +1,7 @@
+2007-04-17  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.dg/cpp/_Pragma6.c: Skip on fido-*-* and m68k-*-*.
+
 2007-04-17  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/31144
@@ -33,7 +37,7 @@
 2007-04-15  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.dg/pr19340.c, gcc.dg/tree-ssa/loop-1.c,
-	gcc.dg/weak/typeof-2.c: XFAIL on fido-*-*.
+	gcc.dg/weak/typeof-2.c: Skip on fido-*-*.
 
 2007-04-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
