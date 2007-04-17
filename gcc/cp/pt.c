@@ -14949,6 +14949,10 @@ value_dependent_expression_p (tree expression)
 		|| (type2 ? dependent_type_p (type2) : false));
       }
 
+    case MODOP_EXPR:
+      return ((value_dependent_expression_p (TREE_OPERAND (expression, 0)))
+	      || (value_dependent_expression_p (TREE_OPERAND (expression, 2))));
+
     default:
       /* A constant expression is value-dependent if any subexpression is
 	 value-dependent.  */
