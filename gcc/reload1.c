@@ -7156,10 +7156,6 @@ do_input_reload (struct insn_chain *chain, struct reload *rl, int j)
      actually no need to store the old value in it.  */
 
   if (optimize
-      /* Only attempt this for input reloads; for RELOAD_OTHER we miss
-	 that there may be multiple uses of the previous output reload.
-	 Restricting to RELOAD_FOR_INPUT is mostly paranoia.  */
-      && rl->when_needed == RELOAD_FOR_INPUT
       && (reload_inherited[j] || reload_override_in[j])
       && rl->reg_rtx
       && REG_P (rl->reg_rtx)
@@ -8010,16 +8006,7 @@ delete_output_reload (rtx insn, int j, int last_reload_reg)
       if (rtx_equal_p (reg2, reg))
 	{
 	  if (reload_inherited[k] || reload_override_in[k] || k == j)
-	    {
-	      n_inherited++;
-	      reg2 = rld[k].out_reg;
-	      if (! reg2)
-		continue;
-	      while (GET_CODE (reg2) == SUBREG)
-		reg2 = XEXP (reg2, 0);
-	      if (rtx_equal_p (reg2, reg))
-		n_inherited++;
-	    }
+	    n_inherited++;
 	  else
 	    return;
 	}
