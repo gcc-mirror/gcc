@@ -1,3 +1,13 @@
+2007-04-17  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* reload1.c (delete_output_reload): Don't count output in n_inherited.
+
+	Revert
+	2005-01-05  Richard Henderson  <rth@redhat.com>
+	PR rtl-opt/10692
+	* reload1.c (do_input_reload): Restrict the optimization deleteing
+	a previous output reload to RELOAD_FOR_INPUT.
+
 2007-04-17  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vectorizer.h (stmt_vec_info_type): Add enum value
