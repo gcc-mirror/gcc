@@ -1,3 +1,25 @@
+2007-04-17  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR rtl-optimization/31360
+	* cfgloopanal.c (target_small_cost, target_pres_cost): Removed.
+	(target_reg_cost): New.
+	(init_set_costs): Initialize target_reg_cost.  Add comments
+	regarding the rationale of the costs.
+	(global_cost_for_size): Renamed to...
+	(estimate_reg_pressure_cost): ... and simplify.  Decrease importance
+	of register pressure.
+	* tree-ssa-loop-ivopts.c (ivopts_global_cost_for_size): Use
+	estimate_reg_pressure_cost.  Add number of ivs.
+	(determine_set_costs): Dump target_reg_cost.
+	* loop-invariant.c (gain_for_invariant):  Use
+	estimate_reg_pressure_cost.  Removed n_inv_uses argument.
+	(best_gain_for_invariant, find_invariants_to_move): Remove
+	n_inv_uses.
+	* cfgloop.h (target_small_cost, target_pres_cost): Removed.
+	(target_reg_cost): Declare.
+	(global_cost_for_size): Declaration removed.
+	(estimate_reg_pressure_cost): Declare.
+
 2007-04-17  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): Force TDmode
