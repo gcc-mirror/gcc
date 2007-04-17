@@ -96,7 +96,7 @@ proc c-torture-compile { src option } {
 
     set comp_output [gcc_target_compile "$src" "$output" object $options]
     gcc_check_compile $testcase $option $output $comp_output
-    remote_file build delete $output
+    file_on_host delete $output
 }
 
 #
@@ -171,7 +171,7 @@ proc c-torture-execute { sources args } {
             set ignore_me [eval $torture_eval_before_compile]
 	}
 
-	remote_file build delete $execname
+	file_on_host delete $execname
 	verbose "Testing $testcase, $option" 1
 
 	set options ""
@@ -183,7 +183,7 @@ proc c-torture-execute { sources args } {
 
 	if ![gcc_check_compile "$testcase compilation" $option $execname $comp_output] {
 	    unresolved "$testcase execution, $option"
-	    remote_file build delete $execname
+	    file_on_host delete $execname
 	    continue
 	}
 
@@ -220,7 +220,7 @@ proc c-torture-execute { sources args } {
 	# the entire process down because it usually does not "hit".
 	set skip 0
 	if { ![isnative] && [info exists oldexec] } {
-	    if { [remote_file build cmp $oldexec $execname] == 0 } {
+	    if { [file_on_host cmp $oldexec $execname] == 0 } {
 		set skip 1
 	    }
 	}
@@ -230,14 +230,14 @@ proc c-torture-execute { sources args } {
 	    set output [lindex $result 1]
 	}
         if { $oldstatus == "pass" } {
-	    remote_file build delete $oldexec
+	    file_on_host delete $oldexec
         }
 	$status "$testcase execution, $option"
 	set oldstatus $status
     }
     if [info exists status] {
 	if { $status == "pass" } {
-	    remote_file build delete $execname
+	    file_on_host delete $execname
 	}
     }
 }

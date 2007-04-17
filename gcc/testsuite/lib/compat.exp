@@ -115,7 +115,7 @@ proc compat-run { testname objlist dest optall optfile optstr } {
 
     # Check that all of the objects were built successfully.
     foreach obj [split $objlist] {
-	if ![file exists $obj] then {
+	if ![file_on_host exists $obj] then {
 	    unresolved "$testcase $testname link $optstr"
 	    unresolved "$testcase $testname execute $optstr"
 	    return
@@ -142,7 +142,7 @@ proc compat-run { testname objlist dest optall optfile optstr } {
     set result [${tool}_load $dest "" ""]
     set status [lindex $result 0]
     if { $status == "pass" } then {
-	remote_file build delete $dest
+	file_on_host delete $dest
     }
     $status "$testcase $testname execute $optstr"
 }
@@ -330,10 +330,10 @@ proc compat-execute { src1 sid use_alt } {
 	set execname4 "${execbase}-${count}4"
 	incr count
 
-	remote_file build delete $execname1
-	remote_file build delete $execname2
-	remote_file build delete $execname3
-	remote_file build delete $execname4
+	file_on_host delete $execname1
+	file_on_host delete $execname2
+	file_on_host delete $execname3
+	file_on_host delete $execname4
 
 	# Compile pieces with the alternate compiler; we'll catch problems
 	# later.  Skip this if we don't have an alternate compiler.
@@ -373,7 +373,7 @@ proc compat-execute { src1 sid use_alt } {
 	if { $files != "" } {
 	    foreach objfile $files {
 		if { ![info exists gluefile] || $objfile != $gluefile } {
-		    eval "remote_file build delete $objfile"
+		    eval "file_on_host delete $objfile"
 		}
 	    }
 	}

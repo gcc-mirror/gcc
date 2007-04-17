@@ -1,3 +1,19 @@
+2007-04-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.misc-tests/linkage.exp: Do not run on remote hosts.
+	* lib/compat.exp (compat-run): Use file_on_host, not remote_file
+	build.
+	(compat-execute): Likewise.
+	* lib/copy-file.exp (gcc_copy_files): Use remote_download to copy
+	files to remote hosts.
+	* lib/c-ctorture.exp (c-torture-compile): Likewise.
+	(c-torture-execute): Likewise.
+	* lib/dg-pch.exp (dg-pch): Use file_on_host, not remote_file build
+	or plain file.  Use remote_upload and remote_download to copy
+	files about.
+	* lib/scanasm.exp (dg-scan): Upload the file from the remote host
+	before scanning it.
+
 2007-04-17  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-3.c: New test.
@@ -55,6 +71,7 @@
 	* g++.dg/warn/anonymous-namespace-1.C: New test
 	* g++.dg/warn/anonymous-namespace-1.h: New test
 
+>>>>>>> .r123913
 2007-04-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR testsuite/31578
@@ -224,6 +241,7 @@
 	* lib/target-supports.exp
 	(check_effective_target_fstack_protector): Rewrite.
 
+>>>>>>> .r123860
 2007-04-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/31449
