@@ -1,6 +1,7 @@
 /* Contribution to the specs for the GNU Compiler Collection
    from GNU Fortran 95 compiler.
-   Copyright (C) 2002, 2003, 2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation,
+   Inc.
 
 This file is licensed under the GPL.  */
 

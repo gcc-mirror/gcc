@@ -1,5 +1,26 @@
 2007-04-17  Tobias Schlüter  <tobi@gcc.gnu.org>
 
+	* arith.h: Update copyright years.
+	* dependency.h: Likewise.
+	* gfortran.h: Likewise.
+	* lang-specs.h: Likewise.
+	* parse.h: Likewise.
+	* symbol.c: Likewise.
+	* trans.h: Likewise.
+	* trans.c: Likewise.
+	* trans-array.c: Likewise.
+	* trans-common.c: Likewise.
+	* trans-const.h: Likewise.
+	* trans-const.c: Likewise.
+	* trans-decl.c: Likewise.
+	* trans-expr.c: Likewise.
+	* trans-io.c: Likewise.
+	* trans-openmp.c: Likewise.
+	* trans-types.h: Likewise.
+	* types.def: Likewise.
+
+2007-04-17  Tobias Schlüter  <tobi@gcc.gnu.org>
+
 	PR fortran/31144
 	* decl.c (gfc_sym_mangled_identifier): Use capital letters in name
 	mangling.
