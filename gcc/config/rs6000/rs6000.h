@@ -590,6 +590,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)				\
   (STRICT_ALIGNMENT							\
    || (((MODE) == SFmode || (MODE) == DFmode || (MODE) == TFmode	\
+	|| (MODE) == DDmode || (MODE) == TDmode				\
 	|| (MODE) == DImode)						\
        && (ALIGN) < 32))
 
@@ -1147,10 +1148,14 @@ enum reg_class
 #define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE)			\
  ((CLASS1) != (CLASS2) && (((CLASS1) == FLOAT_REGS			\
                             && (!TARGET_MFPGPR || !TARGET_POWERPC64	\
-				|| ((MODE != DFmode) && (MODE != DImode)))) \
+				|| ((MODE != DFmode)			\
+				    && (MODE != DDmode)			\
+				    && (MODE != DImode))))		\
 			   || ((CLASS2) == FLOAT_REGS			\
                                && (!TARGET_MFPGPR || !TARGET_POWERPC64	\
-				|| ((MODE != DFmode) && (MODE != DImode)))) \
+				   || ((MODE != DFmode)			\
+				       && (MODE != DDmode)		\
+				       && (MODE != DImode))))		\
 			   || (CLASS1) == ALTIVEC_REGS			\
 			   || (CLASS2) == ALTIVEC_REGS))
 

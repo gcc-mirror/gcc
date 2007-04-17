@@ -1,3 +1,16 @@
+2007-04-17  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): Force TDmode
+	regnos into even/odd register pairs.
+	* config/rs6000/rs6000.h [SLOW_UNALIGNED_ACCESS]: Treat DDmode and
+	TDmode similar to the other floating point modes.
+	[SECONDARY_MEMORY_NEEDED]: Treat DDmode similar to DFmode.
+	* config/rs6000/dfp.md (negdd2, absdd2, negtd2, abstd2): New
+	define_expand's.
+	(negdd2_fpr, absdd2_fpr, nabsdd2_fpr, negtd2_fpr, abstd2_fpr,
+	nabstd2_fpr, movdd_hardfloat64_mfpgpr): New define_insn's.
+	(movdd_hardfloat64): Use TARGET_MFPGPR.
+
 2007-04-17  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* reload1.c (delete_output_reload): Don't count output in n_inherited.
