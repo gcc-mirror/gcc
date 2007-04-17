@@ -109,10 +109,6 @@ widened_name_p (tree name, tree use_stmt, tree *half_type, tree *def_stmt)
   if (!vect_is_simple_use (oprnd0, loop_vinfo, &dummy, &dummy, &dt))
     return false;
 
-  if (dt != vect_invariant_def && dt != vect_constant_def
-      && dt != vect_loop_def)
-    return false;
-
   return true;
 }
 

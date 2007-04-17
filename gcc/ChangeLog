@@ -1,3 +1,24 @@
+2007-04-17  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vectorizer.h (stmt_vec_info_type): Add enum value
+	induc_vec_info_type.
+	(vectorizable_induction): New function declaration.
+	* tree-vect-transform.c (get_initial_def_for_induction): No need to
+	check if already vectorized.  Find first place in BB where new stmts
+	can be inserted.  Takes only one argument.
+	(vectorizable_induction): New function.
+	(vect_transform_stmt): Add case for induc_vec_info_type to call
+	vectorizable_induction.
+	(vect_transform_loop): Consider phis for vectorization.
+	* tree-vect-analyze.c (vect_determine_vectorization_factor): Simplify
+	condition.
+	(analyze_operations): Call vectorizable_induction when analyzing phis.  
+	Fix comment.
+	(vect_mark_stmts_to_be_vectorized): Remove redundant checks.
+	(vect_mark_relevant): Include phis in relevance analysis.
+	(vect_mark_stmts_to_be_vectorize): Likewise.
+	* tree-vect-patterns.c (widened_name_p): Remove obsolete asserts.
+
 2007-04-16  Lawrence Crowl  <crowl@google.com>
 
 	* doc/invoke.texi (Debugging Options): Add documentation for the

@@ -514,7 +514,6 @@ vect_init_vector (tree stmt, tree vector_var, tree vector_type)
 /* Function get_initial_def_for_induction
 
    Input:
-   STMT - a stmt that performs an induction operation in the loop.
    IV_PHI - the initial value of the induction variable
 
    Output:
@@ -524,9 +523,9 @@ vect_init_vector (tree stmt, tree vector_var, tree vector_type)
    [X, X + S, X + 2*S, X + 3*S].  */
 
 static tree
-get_initial_def_for_induction (tree stmt, tree iv_phi)
+get_initial_def_for_induction (tree iv_phi)
 {
-  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
+  stmt_vec_info stmt_vinfo = vinfo_for_stmt (iv_phi);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree scalar_type = TREE_TYPE (iv_phi);
@@ -549,27 +548,17 @@ get_initial_def_for_induction (tree stmt, tree iv_phi)
   tree expr;
   stmt_vec_info phi_info = vinfo_for_stmt (iv_phi);
   tree stmts;
+  tree stmt = NULL_TREE;
+  block_stmt_iterator si;
+  basic_block bb = bb_for_stmt (iv_phi);
 
   gcc_assert (phi_info);
-
-  if (STMT_VINFO_VEC_STMT (phi_info))
-    {
-      induction_phi = STMT_VINFO_VEC_STMT (phi_info);
-      gcc_assert (TREE_CODE (induction_phi) == PHI_NODE);
-
-      if (vect_print_dump_info (REPORT_DETAILS))
-	{
-	  fprintf (vect_dump, "induction already vectorized:");
-	  print_generic_expr (vect_dump, iv_phi, TDF_SLIM);
-	  fprintf (vect_dump, "\n");
-	  print_generic_expr (vect_dump, induction_phi, TDF_SLIM);
-	}
-
-      return PHI_RESULT (induction_phi);
-    }
-
   gcc_assert (ncopies >= 1);
- 
+
+  /* Find the first insertion point in the BB.  */
+  si = bsi_after_labels (bb);
+  stmt = bsi_stmt (si);
+
   access_fn = analyze_scalar_evolution (loop, PHI_RESULT (iv_phi));
   gcc_assert (access_fn);
   ok = vect_is_simple_iv_evolution (loop->num, access_fn, &init_expr, &step_expr);
@@ -833,7 +822,7 @@ vect_get_vec_def_for_operand (tree op, tree stmt, tree *scalar_def)
 	gcc_assert (TREE_CODE (def_stmt) == PHI_NODE);
 
 	/* Get the def before the loop  */
-	return get_initial_def_for_induction (stmt, def_stmt);
+	return get_initial_def_for_induction (def_stmt);
       }
 
     default:
@@ -2230,6 +2219,59 @@ vect_min_worthwhile_factor (enum tree_code code)
     default:
       return INT_MAX;
     }
+}
+
+
+/* Function vectorizable_induction
+
+   Check if PHI performs an induction computation that can be vectorized.
+   If VEC_STMT is also passed, vectorize the induction PHI: create a vectorized
+   phi to replace it, put it in VEC_STMT, and add it to the same basic block.
+   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
+
+bool
+vectorizable_induction (tree phi, block_stmt_iterator *bsi ATTRIBUTE_UNUSED,
+                        tree *vec_stmt)
+{
+  stmt_vec_info stmt_info = vinfo_for_stmt (phi);
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  int nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  int ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
+  tree vec_def;
+
+  gcc_assert (ncopies >= 1);
+
+  if (!STMT_VINFO_RELEVANT_P (stmt_info))
+    return false;
+
+  gcc_assert (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def);
+
+  if (STMT_VINFO_LIVE_P (stmt_info))
+    {
+      /* FORNOW: not yet supported.  */
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "value used after loop.");
+      return false;
+    }
+
+  if (TREE_CODE (phi) != PHI_NODE)
+    return false;
+
+  if (!vec_stmt) /* transformation not required.  */
+    {
+      STMT_VINFO_TYPE (stmt_info) = induc_vec_info_type;
+      return true;
+    }
+
+  /** Transform.  **/
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "transform induction phi.");
+
+  vec_def = get_initial_def_for_induction (phi);
+  *vec_stmt = SSA_NAME_DEF_STMT (vec_def);
+  return true;
 }
 
 
@@ -4285,6 +4327,11 @@ vect_transform_stmt (tree stmt, block_stmt_iterator *bsi, bool *strided_store)
       gcc_assert (done);
       break;
 
+    case induc_vec_info_type:
+      done = vectorizable_induction (stmt, bsi, &vec_stmt);
+      gcc_assert (done);
+      break;
+
     case op_vec_info_type:
       done = vectorizable_operation (stmt, bsi, &vec_stmt);
       gcc_assert (done);
@@ -5192,11 +5239,39 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   for (i = 0; i < nbbs; i++)
     {
       basic_block bb = bbs[i];
+      stmt_vec_info stmt_info;
+      tree phi;
+
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+        {
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    {
+	      fprintf (vect_dump, "------>vectorizing phi: ");
+	      print_generic_expr (vect_dump, phi, TDF_SLIM);
+	    }
+	  stmt_info = vinfo_for_stmt (phi);
+	  if (!stmt_info)
+	    continue;
+	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
+	      && !STMT_VINFO_LIVE_P (stmt_info))
+	    continue;
+
+	  if ((TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info))
+	        != (unsigned HOST_WIDE_INT) vectorization_factor)
+	      && vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "multiple-types.");
+
+	  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def)
+	    {
+	      if (vect_print_dump_info (REPORT_DETAILS))
+		fprintf (vect_dump, "transform phi.");
+	      vect_transform_stmt (phi, NULL, NULL);
+	    }
+	}
 
       for (si = bsi_start (bb); !bsi_end_p (si);)
 	{
 	  tree stmt = bsi_stmt (si);
-	  stmt_vec_info stmt_info;
 	  bool is_store;
 
 	  if (vect_print_dump_info (REPORT_DETAILS))
