@@ -19,7 +19,9 @@
 
 proc gcc_copy_files {srcfiles dstdir} {
     foreach f $srcfiles {
-	if { [catch { set symlink [file readlink $f] } x] } then {
+	if { [is_remote host] } {
+	    remote_download host $f $dstdir
+	} elseif { [catch { set symlink [file readlink $f] } x] } then {
 	    file copy -force $f $dstdir
 	} else {
 	    if { [regexp "^/" "$symlink"] } then {

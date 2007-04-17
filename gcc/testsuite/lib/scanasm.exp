@@ -44,6 +44,9 @@ proc dg-scan { name positive testcase output_file orig_args } {
 	}
     }
 
+    if { [is_remote host] } {
+	remote_upload host "$output_file"
+    } 
     set fd [open $output_file r]
     set text [read $fd]
     close $fd

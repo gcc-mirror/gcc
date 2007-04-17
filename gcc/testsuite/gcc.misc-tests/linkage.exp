@@ -18,7 +18,7 @@
 # was written by Rob Savoye. (rob@cygnus.com)
 # All the other tests driven by that file have since been moved elsewhere.
 
-if [isnative] then {
+if { [isnative] && ![is_remote host] } then {
     set lines [gcc_target_compile "$srcdir/$subdir/linkage-x.c" "linkage-x.o" object {additional_flags="-w"}]
     if ![string match "" $lines] then {
 	fail "$subdir/linkage.c compile"
