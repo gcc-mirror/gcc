@@ -351,7 +351,7 @@
 (define_insn "sse_vmaddv4sf3"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(vec_merge:V4SF
-	  (plus:V4SF (match_operand:V4SF 1 "nonimmediate_operand" "0")
+	  (plus:V4SF (match_operand:V4SF 1 "register_operand" "0")
 		     (match_operand:V4SF 2 "nonimmediate_operand" "xm"))
 	  (match_dup 1)
 	  (const_int 1)))]
@@ -407,7 +407,7 @@
 (define_insn "sse_vmmulv4sf3"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(vec_merge:V4SF
-	  (mult:V4SF (match_operand:V4SF 1 "nonimmediate_operand" "0")
+	  (mult:V4SF (match_operand:V4SF 1 "register_operand" "0")
 		     (match_operand:V4SF 2 "nonimmediate_operand" "xm"))
 	  (match_dup 1)
 	  (const_int 1)))]
@@ -1455,7 +1455,7 @@
 (define_insn "sse2_vmaddv2df3"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(vec_merge:V2DF
-	  (plus:V2DF (match_operand:V2DF 1 "nonimmediate_operand" "0")
+	  (plus:V2DF (match_operand:V2DF 1 "register_operand" "0")
 		     (match_operand:V2DF 2 "nonimmediate_operand" "xm"))
 	  (match_dup 1)
 	  (const_int 1)))]
@@ -1511,7 +1511,7 @@
 (define_insn "sse2_vmmulv2df3"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(vec_merge:V2DF
-	  (mult:V2DF (match_operand:V2DF 1 "nonimmediate_operand" "0")
+	  (mult:V2DF (match_operand:V2DF 1 "register_operand" "0")
 		     (match_operand:V2DF 2 "nonimmediate_operand" "xm"))
 	  (match_dup 1)
 	  (const_int 1)))]
