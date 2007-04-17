@@ -1,3 +1,8 @@
+2007-04-17  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR rtl-optimization/31360
+	* gcc.dg/loop-7.c: New test.
+
 2007-04-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.misc-tests/linkage.exp: Do not run on remote hosts.

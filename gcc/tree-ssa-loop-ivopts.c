@@ -3908,7 +3908,9 @@ determine_iv_costs (struct ivopts_data *data)
 static unsigned
 ivopts_global_cost_for_size (struct ivopts_data *data, unsigned size)
 {
-  return global_cost_for_size (size, data->regs_used, n_iv_uses (data));
+  /* We add size to the cost, so that we prefer eliminating ivs
+     if possible.  */
+  return size + estimate_reg_pressure_cost (size, data->regs_used);
 }
 
 /* For each size of the induction variable set determine the penalty.  */
@@ -3945,8 +3947,7 @@ determine_set_costs (struct ivopts_data *data)
     {
       fprintf (dump_file, "Global costs:\n");
       fprintf (dump_file, "  target_avail_regs %d\n", target_avail_regs);
-      fprintf (dump_file, "  target_small_cost %d\n", target_small_cost);
-      fprintf (dump_file, "  target_pres_cost %d\n", target_pres_cost);
+      fprintf (dump_file, "  target_reg_cost %d\n", target_reg_cost);
       fprintf (dump_file, "  target_spill_cost %d\n", target_spill_cost);
     }
 

@@ -562,18 +562,14 @@ fel_init (loop_iterator *li, loop_p *loop, unsigned flags)
 
 /* The properties of the target.  */
 
-extern unsigned target_avail_regs;	/* Number of available registers.  */
-extern unsigned target_res_regs;	/* Number of reserved registers.  */
-extern unsigned target_small_cost;	/* The cost for register when there
-					   is a free one.  */
-extern unsigned target_pres_cost;	/* The cost for register when there are
-					   not too many free ones.  */
-extern unsigned target_spill_cost;	/* The cost for register when we need
-					   to spill.  */
+extern unsigned target_avail_regs;
+extern unsigned target_res_regs;
+extern unsigned target_reg_cost;
+extern unsigned target_spill_cost;
 
 /* Register pressure estimation for induction variable optimizations & loop
    invariant motion.  */
-extern unsigned global_cost_for_size (unsigned, unsigned, unsigned);
+extern unsigned estimate_reg_pressure_cost (unsigned, unsigned);
 extern void init_set_costs (void);
 
 /* Loop optimizer initialization.  */
