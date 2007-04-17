@@ -1,3 +1,8 @@
+2007-04-17  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/31517
+	* g++.dg/template/init7.C: New test.
+
 2007-04-17  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR rtl-optimization/31360
