@@ -791,6 +791,18 @@ gen-decls
 ObjC ObjC++
 Dump declarations to a .decl file
 
+femit-struct-debug-baseonly
+C ObjC C++ ObjC++
+-femit-struct-debug-baseonly	Aggressive reduced debug info for structs
+
+femit-struct-debug-reduced
+C ObjC C++ ObjC++
+-femit-struct-debug-reduced	Conservative reduced debug info for structs
+
+femit-struct-debug-detailed=
+C ObjC C++ ObjC++ Joined
+-femit-struct-debug-detailed=<spec-list>	Detailed reduced debug info for structs
+
 idirafter
 C ObjC C++ ObjC++ Joined Separate
 -idirafter <dir>	Add <dir> to the end of the system include path

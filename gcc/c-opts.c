@@ -832,6 +832,18 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       flag_gen_declaration = 1;
       break;
 
+    case OPT_femit_struct_debug_baseonly:
+      set_struct_debug_option ("base");
+      break;
+
+    case OPT_femit_struct_debug_reduced:
+      set_struct_debug_option ("dir:ord:sys,dir:gen:any,ind:base");
+      break;
+
+    case OPT_femit_struct_debug_detailed_:
+      set_struct_debug_option (arg);
+      break;
+
     case OPT_idirafter:
       add_path (xstrdup (arg), AFTER, 0, true);
       break;

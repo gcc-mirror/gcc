@@ -4236,7 +4236,8 @@ static void gen_ptr_to_mbr_type_die (tree, dw_die_ref);
 static dw_die_ref gen_compile_unit_die (const char *);
 static void gen_inheritance_die (tree, tree, dw_die_ref);
 static void gen_member_die (tree, dw_die_ref);
-static void gen_struct_or_union_type_die (tree, dw_die_ref);
+static void gen_struct_or_union_type_die (tree, dw_die_ref,
+						enum debug_info_usage);
 static void gen_subroutine_type_die (tree, dw_die_ref);
 static void gen_typedef_die (tree, dw_die_ref);
 static void gen_type_die (tree, dw_die_ref);
@@ -12604,7 +12605,8 @@ gen_member_die (tree type, dw_die_ref context_die)
    member DIEs needed by later specification DIEs.  */
 
 static void
-gen_struct_or_union_type_die (tree type, dw_die_ref context_die)
+gen_struct_or_union_type_die (tree type, dw_die_ref context_die,
+				enum debug_info_usage usage)
 {
   dw_die_ref type_die = lookup_type_die (type);
   dw_die_ref scope_die = 0;
@@ -12613,6 +12615,7 @@ gen_struct_or_union_type_die (tree type, dw_die_ref context_die)
 		  && (! TYPE_STUB_DECL (type)
 		      || ! TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (type))));
   int ns_decl = (context_die && context_die->die_tag == DW_TAG_namespace);
+  complete = complete && should_emit_struct_debug (type, usage);
 
   if (type_die && ! complete)
     return;
@@ -12749,7 +12752,8 @@ gen_typedef_die (tree decl, dw_die_ref context_die)
 /* Generate a type description DIE.  */
 
 static void
-gen_type_die (tree type, dw_die_ref context_die)
+gen_type_die_with_usage (tree type, dw_die_ref context_die,
+				enum debug_info_usage usage)
 {
   int need_pop;
 
@@ -12797,16 +12801,19 @@ gen_type_die (tree type, dw_die_ref context_die)
 
       /* For these types, all that is required is that we output a DIE (or a
 	 set of DIEs) to represent the "basis" type.  */
-      gen_type_die (TREE_TYPE (type), context_die);
+      gen_type_die_with_usage (TREE_TYPE (type), context_die,
+				DINFO_USAGE_IND_USE);
       break;
 
     case OFFSET_TYPE:
       /* This code is used for C++ pointer-to-data-member types.
 	 Output a description of the relevant class type.  */
-      gen_type_die (TYPE_OFFSET_BASETYPE (type), context_die);
+      gen_type_die_with_usage (TYPE_OFFSET_BASETYPE (type), context_die,
+					DINFO_USAGE_IND_USE);
 
       /* Output a description of the type of the object pointed to.  */
-      gen_type_die (TREE_TYPE (type), context_die);
+      gen_type_die_with_usage (TREE_TYPE (type), context_die,
+					DINFO_USAGE_IND_USE);
 
       /* Now output a DIE to represent this pointer-to-data-member type
 	 itself.  */
@@ -12815,13 +12822,15 @@ gen_type_die (tree type, dw_die_ref context_die)
 
     case FUNCTION_TYPE:
       /* Force out return type (in case it wasn't forced out already).  */
-      gen_type_die (TREE_TYPE (type), context_die);
+      gen_type_die_with_usage (TREE_TYPE (type), context_die,
+					DINFO_USAGE_DIR_USE);
       gen_subroutine_type_die (type, context_die);
       break;
 
     case METHOD_TYPE:
       /* Force out return type (in case it wasn't forced out already).  */
-      gen_type_die (TREE_TYPE (type), context_die);
+      gen_type_die_with_usage (TREE_TYPE (type), context_die,
+					DINFO_USAGE_DIR_USE);
       gen_subroutine_type_die (type, context_die);
       break;
 
@@ -12847,7 +12856,7 @@ gen_type_die (tree type, dw_die_ref context_die)
 	  && AGGREGATE_TYPE_P (TYPE_CONTEXT (type))
 	  && ! TREE_ASM_WRITTEN (TYPE_CONTEXT (type)))
 	{
-	  gen_type_die (TYPE_CONTEXT (type), context_die);
+	  gen_type_die_with_usage (TYPE_CONTEXT (type), context_die, usage);
 
 	  if (TREE_ASM_WRITTEN (type))
 	    return;
@@ -12871,7 +12880,7 @@ gen_type_die (tree type, dw_die_ref context_die)
 	    gen_enumeration_type_die (type, context_die);
 	}
       else
-	gen_struct_or_union_type_die (type, context_die);
+	gen_struct_or_union_type_die (type, context_die, usage);
 
       if (need_pop)
 	pop_decl_scope ();
@@ -12898,6 +12907,12 @@ gen_type_die (tree type, dw_die_ref context_die)
     }
 
   TREE_ASM_WRITTEN (type) = 1;
+}
+
+static void
+gen_type_die (tree type, dw_die_ref context_die)
+{
+  gen_type_die_with_usage (type, context_die, DINFO_USAGE_DIR_USE);
 }
 
 /* Generate a DIE for a tagged type instantiation.  */
@@ -13496,7 +13511,11 @@ dwarf2out_imported_module_or_decl (tree decl, tree context)
   if (!context)
     scope_die = comp_unit_die;
   else if (TYPE_P (context))
+    {
+      if (!should_emit_struct_debug (context, DINFO_USAGE_DIR_USE))
+	return;
     scope_die = force_type_die (context);
+    }
   else
     scope_die = force_decl_die (context);
 
@@ -13522,7 +13541,12 @@ dwarf2out_imported_module_or_decl (tree decl, tree context)
 
 	      if (TYPE_CONTEXT (type))
 		if (TYPE_P (TYPE_CONTEXT (type)))
+		  {
+		    if (!should_emit_struct_debug (TYPE_CONTEXT (type),
+						   DINFO_USAGE_DIR_USE))
+		      return;
 		  type_context_die = force_type_die (TYPE_CONTEXT (type));
+		  }
 	      else
 		type_context_die = force_decl_die (TYPE_CONTEXT (type));
 	      else

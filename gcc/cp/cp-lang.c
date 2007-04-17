@@ -45,6 +45,8 @@ static const char * cxx_dwarf_name (tree t, int verbosity);
 #define LANG_HOOKS_NAME "GNU C++"
 #undef LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT cxx_init
+#undef LANG_HOOKS_GENERIC_TYPE_P
+#define LANG_HOOKS_GENERIC_TYPE_P class_tmpl_impl_spec_p
 #undef LANG_HOOKS_DECL_PRINTABLE_NAME
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	cxx_printable_name
 #undef LANG_HOOKS_DWARF_NAME

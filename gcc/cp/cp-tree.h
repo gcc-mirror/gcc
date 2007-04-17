@@ -4632,6 +4632,7 @@ extern tree add_stmt_to_compound		(tree, tree);
 extern tree cxx_maybe_build_cleanup		(tree);
 extern void init_tree				(void);
 extern int pod_type_p				(tree);
+extern bool class_tmpl_impl_spec_p		(tree);
 extern int zero_init_p				(tree);
 extern tree canonical_type_variant		(tree);
 extern tree copy_binfo				(tree, tree, tree,
