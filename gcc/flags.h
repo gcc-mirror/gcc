@@ -23,6 +23,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #ifndef GCC_FLAGS_H
 #define GCC_FLAGS_H
 
+#include "coretypes.h"
 #include "options.h"
 
 enum debug_info_type
@@ -53,6 +54,25 @@ enum debug_info_level
 
 /* Specify how much debugging info to generate.  */
 extern enum debug_info_level debug_info_level;
+
+/* A major contribution to object and executable size is debug
+   information size.  A major contribution to debug information
+   size is struct descriptions replicated in several object files.
+   The following function determines whether or not debug information
+   should be generated for a given struct.  The indirect parameter
+   indicates that the struct is being handled indirectly, via
+   a pointer.  See opts.c for the implementation. */
+
+enum debug_info_usage
+{
+  DINFO_USAGE_DFN,	/* A struct definition. */
+  DINFO_USAGE_DIR_USE,	/* A direct use, such as the type of a variable. */
+  DINFO_USAGE_IND_USE,	/* An indirect use, such as through a pointer. */
+  DINFO_USAGE_NUM_ENUMS	/* The number of enumerators. */
+};
+
+extern bool should_emit_struct_debug (tree type_decl, enum debug_info_usage);
+extern void set_struct_debug_option (const char *value);
 
 /* Nonzero means use GNU-only extensions in the generated symbolic
    debugging information.  */

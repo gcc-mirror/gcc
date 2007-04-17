@@ -1,3 +1,54 @@
+2007-04-16  Lawrence Crowl  <crowl@google.com>
+
+	* doc/invoke.texi (Debugging Options): Add documentation for the
+	-femit-struct-debug options -femit-struct-debug-baseonly,
+	-femit-struct-debug-reduced, and
+	-femit-struct-debug-detailed[=...].
+
+	* c-opts.c (c_common_handle_option): Add
+	OPT_femit_struct_debug_baseonly, OPT_femit_struct_debug_reduced,
+	and OPT_femit_struct_debug_detailed_.
+	* c.opt: Add specifications for
+	-femit-struct-debug-baseonly, -femit-struct-debug-reduced,
+	and -femit-struct-debug-detailed[=...].
+	* opts.c (set_struct_debug_option): Parse the
+	-femit-struct-debug-... options.
+	* opts.c (matches_main_base, main_input_basename,
+	main_input_baselength, base_of_path, matches_main_base): Add
+	variables and functions to compare header base name to compilation
+	unit base name.
+	* opts.c (should_emit_struct_debug): Add to determine to emit a
+	structure based on the option.
+	(dump_struct_debug) Also disabled function to debug this
+	function.
+	* opts.c (handle_options): Save the base name of the
+	compilation unit.
+
+	* langhooks-def.h (LANG_HOOKS_GENERIC_TYPE_P): Define.
+        (LANG_HOOKS_FOR_TYPES_INITIALIZER): Add.
+	This hook indicates if a type is generic.  Set it by default
+	to "never generic".
+	* langhooks.h (struct lang_hooks_for_types): Add a new hook
+	to determine if a struct type is generic or not.
+	* cp/cp-tree.h (class_tmpl_impl_spec_p): Declare a C++ hook.
+	* cp/tree.c (class_tmpl_impl_spec_p): Implement the C++ hook.
+	* cp/cp-lang.c (LANG_HOOKS_GENERIC_TYPE_P): Override null C hook
+	with live C++ hook.
+
+	* flags.h (enum debug_info_usage): Add an enumeration to describe
+	a program's use of a structure type.
+	* dwarf2out.c (gen_struct_or_union_type_die): Add a new parameter
+	to indicate the program's usage of the type.  Filter structs based
+	on the -femit-struct-debug-... specification.
+	(gen_type_die): Split into two routines, gen_type_die and
+	gen_type_die_with_usage.  gen_type_die is now a wrapper
+	that assumes direct usage.
+	(gen_type_die_with_usage): Replace calls to gen_type_die
+	with gen_type_die_with_usage adding the program usage of
+	the referenced type.
+	(dwarf2out_imported_module_or_decl): Suppress struct debug
+	information using should_emit_struct_debug when appropriate.
+
 2007-04-16  Ian Lance Taylor  <iant@google.com>
 
 	PR tree-optimization/31522

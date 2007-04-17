@@ -2007,6 +2007,14 @@ pod_type_p (tree t)
   return 1;
 }
 
+/* Nonzero iff type T is a class template implicit specialization.  */
+
+bool
+class_tmpl_impl_spec_p (tree t)
+{
+  return CLASS_TYPE_P (t) && CLASSTYPE_TEMPLATE_INSTANTIATION (t);
+}
+
 /* Returns 1 iff zero initialization of type T means actually storing
    zeros in it.  */
 

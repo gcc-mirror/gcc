@@ -1,3 +1,29 @@
+2007-04-16  Lawrence Crowl  <crowl@google.com>
+
+	* g++.dg/other/fesd-any.C: Test -femit-struct-debug-detailed=any.
+	* g++.dg/other/fesd-any.h: Test -femit-struct-debug-detailed=any.
+	* g++.dg/other/fesd-baseonly.C: Test -femit-struct-debug-baseonly.
+	* g++.dg/other/fesd-baseonly.h: Test -femit-struct-debug-baseonly.
+	* g++.dg/other/fesd-none.C: Test -femit-struct-debug-detailed=none.
+	* g++.dg/other/fesd-none.h: Test -femit-struct-debug-detailed=none.
+	* g++.dg/other/fesd-reduced.C: Test -femit-struct-debug-reduced.
+	* g++.dg/other/fesd-reduced.h: Test -femit-struct-debug-reduced.
+	* g++.dg/other/fesd-sys.C: Test -femit-struct-debug-detailed=sys.
+	* g++.dg/other/fesd-sys.h: Test -femit-struct-debug-detailed=sys.
+	* g++.dg/other/fesd.h: Common to -femit-struct-debug-... tests.
+
+	* gcc.dg/fesd-any.c: Test -femit-struct-debug-detailed=any.
+	* gcc.dg/fesd-any.h: Test -femit-struct-debug-detailed=any.
+	* gcc.dg/fesd-baseonly.c: Test -femit-struct-debug-baseonly.
+	* gcc.dg/fesd-baseonly.h: Test -femit-struct-debug-baseonly.
+	* gcc.dg/fesd-none.c: Test -femit-struct-debug-detailed=none.
+	* gcc.dg/fesd-none.h: Test -femit-struct-debug-detailed=none.
+	* gcc.dg/fesd-reduced.c: Test -femit-struct-debug-reduced.
+	* gcc.dg/fesd-reduced.h: Test -femit-struct-debug-reduced.
+	* gcc.dg/fesd-sys.c: Test -femit-struct-debug-detailed=sys.
+	* gcc.dg/fesd-sys.h: Test -femit-struct-debug-detailed=sys.
+	* gcc.dg/fesd.h: Common to -femit-struct-debug-... tests.
+
 2007-04-16  Ian Lance Taylor  <iant@google.com>
 
 	PR tree-optimization/31522
