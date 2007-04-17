@@ -348,6 +348,13 @@ proc check_profiling_available { test_what } {
 	return 0
     }
 
+    # uClibc does not have gcrt1.o.
+    if { [check_effective_target_uclibc]
+	 && ([lindex $test_what 1] == "-p"
+	     || [lindex $test_what 1] == "-pg") } {
+	return 0
+    }
+
     # Now examine the cache variable.
     if {![info exists profiling_available_saved]} {
 	# Some targets don't have any implementation of __bb_init_func or are
