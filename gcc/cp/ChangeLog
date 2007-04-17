@@ -1,3 +1,8 @@
+2007-04-17  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/31517
+	* pt.c (value_dependent_expression_p): Handle MODOP_EXPRs.
+
 2007-04-14  Andrew Pinski  <pinskia@gmail.com> 
 
 	PR C++/30168
