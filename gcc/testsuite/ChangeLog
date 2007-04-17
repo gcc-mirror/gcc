@@ -1,3 +1,8 @@
+2007-04-17  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/31144
+	* gfortran.dg/module_naming_1.f90: New.
+
 2007-04-16  Richard Sandiford  <richard@codesourcery.com>
 
 	* lib/target-supports.exp (check_profiling_available): Return
