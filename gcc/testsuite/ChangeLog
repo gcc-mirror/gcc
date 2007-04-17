@@ -1,3 +1,8 @@
+2007-04-16  Ian Lance Taylor  <iant@google.com>
+
+	PR tree-optimization/31522
+	* gcc.dg/Wstrict-overflow-16.c: New test.
+
 2007-04-17  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.dg/cpp/_Pragma6.c: Skip on fido-*-* and m68k-*-*.

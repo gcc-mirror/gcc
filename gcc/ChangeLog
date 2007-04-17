@@ -1,5 +1,12 @@
 2007-04-16  Ian Lance Taylor  <iant@google.com>
 
+	PR tree-optimization/31522
+	* tree-vrp.c (vr_phi_edge_counts): New static variable.
+	(vrp_initialize): Allocate vr_phi_edge_counts.
+	(vrp_visit_phi_node): Don't push to infinity if we saw a new
+	executable edge.  Drop test for all constants.
+	(vrp_finalize): Free vrp_phi_edge_counts.
+
 	* doc/cpp.texi (Common Predefined Macros): Clarify description of
 	__GNUC_GNU_INLINE__ and __GNUC_STDC_INLINE__.
 

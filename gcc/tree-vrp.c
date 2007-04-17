@@ -95,6 +95,11 @@ static sbitmap blocks_visited;
    of values that SSA name N_I may take.  */
 static value_range_t **vr_value;
 
+/* For a PHI node which sets SSA name N_I, VR_COUNTS[I] holds the
+   number of executable edges we saw the last time we visited the
+   node.  */
+static int *vr_phi_edge_counts;
+
 
 /* Return whether TYPE should use an overflow infinity distinct from
    TYPE_{MIN,MAX}_VALUE.  We use an overflow infinity value to
@@ -4433,6 +4438,7 @@ vrp_initialize (void)
   basic_block bb;
 
   vr_value = XCNEWVEC (value_range_t *, num_ssa_names);
+  vr_phi_edge_counts = XCNEWVEC (int, num_ssa_names);
 
   FOR_EACH_BB (bb)
     {
@@ -5185,7 +5191,7 @@ vrp_visit_phi_node (tree phi)
   tree lhs = PHI_RESULT (phi);
   value_range_t *lhs_vr = get_value_range (lhs);
   value_range_t vr_result = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
-  bool all_const = true;
+  int edges, old_edges;
 
   copy_value_range (&vr_result, lhs_vr);
 
@@ -5195,6 +5201,7 @@ vrp_visit_phi_node (tree phi)
       print_generic_expr (dump_file, phi, dump_flags);
     }
 
+  edges = 0;
   for (i = 0; i < PHI_NUM_ARGS (phi); i++)
     {
       edge e = PHI_ARG_EDGE (phi, i);
@@ -5212,10 +5219,11 @@ vrp_visit_phi_node (tree phi)
 	  tree arg = PHI_ARG_DEF (phi, i);
 	  value_range_t vr_arg;
 
+	  ++edges;
+
 	  if (TREE_CODE (arg) == SSA_NAME)
 	    {
 	      vr_arg = *(get_value_range (arg));
-	      all_const = false;
 	    }
 	  else
 	    {
@@ -5244,11 +5252,16 @@ vrp_visit_phi_node (tree phi)
   if (vr_result.type == VR_VARYING)
     goto varying;
 
+  old_edges = vr_phi_edge_counts[SSA_NAME_VERSION (lhs)];
+  vr_phi_edge_counts[SSA_NAME_VERSION (lhs)] = edges;
+
   /* To prevent infinite iterations in the algorithm, derive ranges
      when the new value is slightly bigger or smaller than the
-     previous one.  */
+     previous one.  We don't do this if we have seen a new executable
+     edge; this helps us avoid an overflow infinity for conditionals
+     which are not in a loop.  */
   if (lhs_vr->type == VR_RANGE && vr_result.type == VR_RANGE
-      && !all_const)
+      && edges <= old_edges)
     {
       if (!POINTER_TYPE_P (TREE_TYPE (lhs)))
 	{
@@ -5827,10 +5840,12 @@ vrp_finalize (void)
 
   free (single_val_range);
   free (vr_value);
+  free (vr_phi_edge_counts);
 
   /* So that we can distinguish between VRP data being available
      and not available.  */
   vr_value = NULL;
+  vr_phi_edge_counts = NULL;
 }
 
 
