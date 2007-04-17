@@ -2016,18 +2016,17 @@ are defined.  If they are defined, their value is 1.
 
 @item __GNUC_GNU_INLINE__
 GCC defines this macro if functions declared @code{inline} will be
-handled in GCC's traditional gnu89 mode.  In this mode an @code{extern
-inline} function will never be compiled as a standalone function, and
-an @code{inline} function which is neither @code{extern} nor
-@code{static} will always be compiled as a standalone function.
+handled in GCC's traditional gnu89 mode.  Object files will contain
+externally visible definitions of all functions declared @code{inline}
+without @code{extern} or @code{static}.  They will not contain any
+definitions of any functions declared @code{extern inline}.
 
 @item __GNUC_STDC_INLINE__
 GCC defines this macro if functions declared @code{inline} will be
-handled according to the ISO C99 standard.  In this mode an
-@code{extern inline} function will always be compiled as a standalone
-externally visible function, and an @code{inline} function which is
-neither @code{extern} nor @code{static} will never be compiled as a
-standalone function.
+handled according to the ISO C99 standard.  Object files will contain
+externally visible definitions of all functions declared @code{extern
+inline}.  They will not contain definitions of any functions declared
+@code{inline} without @code{extern}.
 
 If this macro is defined, GCC supports the @code{gnu_inline} function
 attribute as a way to always get the gnu89 behavior.  Support for

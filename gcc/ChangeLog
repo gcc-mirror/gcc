@@ -1,5 +1,8 @@
 2007-04-16  Ian Lance Taylor  <iant@google.com>
 
+	* doc/cpp.texi (Common Predefined Macros): Clarify description of
+	__GNUC_GNU_INLINE__ and __GNUC_STDC_INLINE__.
+
 	* tree-ssa-propagate.c (cfg_blocks_add): Insert blocks with fewer
 	predecessors at head rather than tail.
 
