@@ -406,59 +406,38 @@ gfc_finish_cray_pointee (tree decl, gfc_symbol *sym)
 }
 
 
-/* Finish processing of a declaration and install its initial value.  */
+/* Finish processing of a declaration without an initial value.  */
 
 static void
-gfc_finish_decl (tree decl, tree init)
+gfc_finish_decl (tree decl)
 {
-  if (TREE_CODE (decl) == PARM_DECL)
-    gcc_assert (init == NULL_TREE);
-  /* Remember that PARM_DECL doesn't have a DECL_INITIAL field per se
-     -- it overlaps DECL_ARG_TYPE.  */
-  else if (init == NULL_TREE)
-    gcc_assert (DECL_INITIAL (decl) == NULL_TREE);
-  else
-    gcc_assert (DECL_INITIAL (decl) == error_mark_node);
+  gcc_assert (TREE_CODE (decl) == PARM_DECL
+	      || DECL_INITIAL (decl) == NULL_TREE);
 
-  if (init != NULL_TREE)
-    {
-      if (TREE_CODE (decl) != TYPE_DECL)
-	DECL_INITIAL (decl) = init;
-      else
-	{
-	  /* typedef foo = bar; store the type of bar as the type of foo.  */
-	  TREE_TYPE (decl) = TREE_TYPE (init);
-	  DECL_INITIAL (decl) = init = 0;
-	}
-    }
+  if (TREE_CODE (decl) != VAR_DECL)
+    return;
 
-  if (TREE_CODE (decl) == VAR_DECL)
-    {
-      if (DECL_SIZE (decl) == NULL_TREE
-	  && TYPE_SIZE (TREE_TYPE (decl)) != NULL_TREE)
-	layout_decl (decl, 0);
+  if (DECL_SIZE (decl) == NULL_TREE
+      && TYPE_SIZE (TREE_TYPE (decl)) != NULL_TREE)
+    layout_decl (decl, 0);
 
-      /* A static variable with an incomplete type is an error if it is
-         initialized. Also if it is not file scope. Otherwise, let it
-         through, but if it is not `extern' then it may cause an error
-         message later.  */
-      /* An automatic variable with an incomplete type is an error.  */
-      if (DECL_SIZE (decl) == NULL_TREE
-          && (TREE_STATIC (decl) ? (DECL_INITIAL (decl) != 0
-				    || DECL_CONTEXT (decl) != 0)
-                                 : !DECL_EXTERNAL (decl)))
-	{
-	  gfc_fatal_error ("storage size not known");
-	}
+  /* A few consistency checks.  */
+  /* A static variable with an incomplete type is an error if it is
+     initialized. Also if it is not file scope. Otherwise, let it
+     through, but if it is not `extern' then it may cause an error
+     message later.  */
+  /* An automatic variable with an incomplete type is an error.  */
 
-      if ((DECL_EXTERNAL (decl) || TREE_STATIC (decl))
-	  && (DECL_SIZE (decl) != 0)
-	  && (TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST))
-	{
-	  gfc_fatal_error ("storage size not constant");
-	}
-    }
+  /* We should know the storage size.  */
+  gcc_assert (DECL_SIZE (decl) != NULL_TREE
+	      || (TREE_STATIC (decl) 
+		  ? (!DECL_INITIAL (decl) || !DECL_CONTEXT (decl))
+		  : DECL_EXTERNAL (decl)));
 
+  /* The storage size should be constant.  */
+  gcc_assert ((!DECL_EXTERNAL (decl) && !TREE_STATIC (decl))
+	      || !DECL_SIZE (decl)
+	      || TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST);
 }
 
 
@@ -1324,7 +1303,7 @@ create_function_arglist (gfc_symbol * sym)
       DECL_CONTEXT (parm) = fndecl;
       DECL_ARG_TYPE (parm) = type;
       TREE_READONLY (parm) = 1;
-      gfc_finish_decl (parm, NULL_TREE);
+      gfc_finish_decl (parm);
       DECL_ARTIFICIAL (parm) = 1;
 
       arglist = chainon (arglist, parm);
@@ -1354,7 +1333,7 @@ create_function_arglist (gfc_symbol * sym)
 	  DECL_ARG_TYPE (length) = len_type;
 	  TREE_READONLY (length) = 1;
 	  DECL_ARTIFICIAL (length) = 1;
-	  gfc_finish_decl (length, NULL_TREE);
+	  gfc_finish_decl (length);
 	  if (sym->ts.cl->backend_decl == NULL
 	      || sym->ts.cl->backend_decl == length)
 	    {
@@ -1389,7 +1368,7 @@ create_function_arglist (gfc_symbol * sym)
       DECL_ARG_TYPE (parm) = TREE_VALUE (typelist);
       TREE_READONLY (parm) = 1;
       DECL_ARTIFICIAL (parm) = 1;
-      gfc_finish_decl (parm, NULL_TREE);
+      gfc_finish_decl (parm);
 
       arglist = chainon (arglist, parm);
       typelist = TREE_CHAIN (typelist);
@@ -1432,7 +1411,7 @@ create_function_arglist (gfc_symbol * sym)
 	  DECL_ARTIFICIAL (length) = 1;
 	  DECL_ARG_TYPE (length) = len_type;
 	  TREE_READONLY (length) = 1;
-	  gfc_finish_decl (length, NULL_TREE);
+	  gfc_finish_decl (length);
 
 	  /* TODO: Check string lengths when -fbounds-check.  */
 
@@ -1501,7 +1480,7 @@ create_function_arglist (gfc_symbol * sym)
       /* All implementation args are read-only.  */
       TREE_READONLY (parm) = 1;
 
-      gfc_finish_decl (parm, NULL_TREE);
+      gfc_finish_decl (parm);
 
       f->sym->backend_decl = parm;
 
@@ -2417,7 +2396,7 @@ gfc_trans_dummy_character (gfc_symbol *sym, gfc_charlen *cl, tree fnbody)
 {
   stmtblock_t body;
 
-  gfc_finish_decl (cl->backend_decl, NULL_TREE);
+  gfc_finish_decl (cl->backend_decl);
 
   gfc_start_block (&body);
 
