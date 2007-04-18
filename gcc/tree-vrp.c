@@ -4233,6 +4233,36 @@ check_array_ref (tree ref, location_t* locus, bool ignore_off_by_one)
     }
 }
 
+/* Searches if the expr T, located at LOCATION computes
+   address of an ARRAY_REF, and call check_array_ref on it.  */
+
+static void
+search_for_addr_array(tree t, location_t* location)
+{
+  while (TREE_CODE (t) == SSA_NAME)
+    {
+      t = SSA_NAME_DEF_STMT (t);
+      if (TREE_CODE (t) != GIMPLE_MODIFY_STMT)
+	return;
+      t = GIMPLE_STMT_OPERAND (t, 1);
+    }
+
+
+  /* We are only interested in addresses of ARRAY_REF's.  */
+  if (TREE_CODE (t) != ADDR_EXPR) 
+    return;
+
+  /* Check each ARRAY_REFs in the reference chain. */
+  do 
+    {
+      if (TREE_CODE (t) == ARRAY_REF)
+	check_array_ref (t, location, true /*ignore_off_by_one*/);
+
+      t = TREE_OPERAND(t,0);
+    }
+  while (handled_component_p (t));
+}
+
 /* walk_tree() callback that checks if *TP is
    an ARRAY_REF inside an ADDR_EXPR (in which an array
    subscript one outside the valid range is allowed). Call
@@ -4250,43 +4280,21 @@ check_array_bounds (tree *tp, int *walk_subtree, void *data)
 
   if (TREE_CODE (t) == ARRAY_REF)
     check_array_ref (t, location, false /*ignore_off_by_one*/);
-  else if (TREE_CODE (t) == ADDR_EXPR)
+
+  if (TREE_CODE (t) == INDIRECT_REF
+      || (TREE_CODE (t) == RETURN_EXPR && TREE_OPERAND (t, 0)))
+    search_for_addr_array (TREE_OPERAND (t, 0), location);
+  else if (TREE_CODE (t) == CALL_EXPR)
     {
-       use_operand_p op;
-       tree use_stmt;
-       t = TREE_OPERAND (t, 0);
+      tree arg;
+      call_expr_arg_iterator iter;
 
-       /* Don't warn on statements like
-
-          ssa_name = 500 + &array[-200]
-
-          or
-
-          ssa_name = &array[-200]
-          other_name = ssa_name + 300;
-
-          which are sometimes
-          produced by other optimizing passes.  */
-
-       if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-           && BINARY_CLASS_P (GIMPLE_STMT_OPERAND (stmt, 1)))
-         *walk_subtree = FALSE;
-
-       if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-           && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == SSA_NAME
-           && single_imm_use (GIMPLE_STMT_OPERAND (stmt, 0), &op, &use_stmt)
-           && TREE_CODE (use_stmt) == GIMPLE_MODIFY_STMT
-           && BINARY_CLASS_P (GIMPLE_STMT_OPERAND (use_stmt, 1)))
-         *walk_subtree = FALSE;
-
-       while (*walk_subtree && handled_component_p (t))
-         {
-           if (TREE_CODE (t) == ARRAY_REF)
-             check_array_ref (t, location, true /*ignore_off_by_one*/);
-           t = TREE_OPERAND (t, 0);
-         }
-       *walk_subtree = FALSE;
+      FOR_EACH_CALL_EXPR_ARG (arg, iter, t) 
+	search_for_addr_array (arg, location);
     }
+
+  if (TREE_CODE (t) == ADDR_EXPR)
+    *walk_subtree = FALSE;
 
   return NULL_TREE;
 }

@@ -1,3 +1,8 @@
+2007-04-18  Dirk Mueller  <dmueller@suse.de>
+
+	PR diagnostic/31227
+	* gcc.dg/Warray-bounds-3.c: New.
+
 2007-04-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/19431
