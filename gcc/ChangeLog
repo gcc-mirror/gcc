@@ -1,6 +1,10 @@
-2007-04-18  Philippe De Muyter  <phdm@macqel.be>
+2007-04-18  Eric Christopher  <echristo@apple.com>
 
-	* config/m68k/m68k.c (output_btst): Use `movew to ccr' when useful.
+	* config/rs6000/darwin.md (load_macho_picbase): Use link register
+	only. Update operands.
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Update caller.
+	* config/rs6000/rs6000.md (builtin_setjmp_receiver): Ditto. Move from
+	link register to pic register.
 
 2007-04-18  Dirk Mueller  <dmueller@suse.de>
 
@@ -15,10 +19,10 @@
 	* tree-vect-analyze.c (vect_analyze_loop_form): Set loop->aux.
 
 	* tree-vectorizer.h (NITERS_KNOWN_P): New.
-	* tree-vect-analyze.c (vect_analyze_loop_form): Call NITERS_KNOWN_P 
+	* tree-vect-analyze.c (vect_analyze_loop_form): Call NITERS_KNOWN_P
 	instead of LOOP_VINFO_INT_NITERS to avoid having to geneate loop_info.
 
-	* tree-vect-analyze.c (vect_determine_vectorization_factor): Add 
+	* tree-vect-analyze.c (vect_determine_vectorization_factor): Add
 	dump print.
 	(vect_analyze_operations): Fix indenetation.  Fix a comment.  Fix a
 	print message.
@@ -163,7 +167,7 @@
 	(vect_transform_loop): Consider phis for vectorization.
 	* tree-vect-analyze.c (vect_determine_vectorization_factor): Simplify
 	condition.
-	(analyze_operations): Call vectorizable_induction when analyzing phis.  
+	(analyze_operations): Call vectorizable_induction when analyzing phis.
 	Fix comment.
 	(vect_mark_stmts_to_be_vectorized): Remove redundant checks.
 	(vect_mark_relevant): Include phis in relevance analysis.
@@ -256,7 +260,7 @@
 
 	* config/avr/avr.c (avr_arch_types): Rearranging  array.
 	(enum avr_arch): Add.
-	(avr_mcu_types): Use avr_arch enumeration constants instead of 
+	(avr_mcu_types): Use avr_arch enumeration constants instead of
 	numbers.
 	* config/avr/avr.h (LINK_SPEC): Simplify.
 
@@ -673,7 +677,7 @@
 	PR c++/31078
 	PR c++/31103
 	* c-common.c (c_build_qualified_type): Set canonical type
-	appropriately.  
+	appropriately.
 
 2007-04-12  Richard Guenther  <rguenther@suse.de>
 

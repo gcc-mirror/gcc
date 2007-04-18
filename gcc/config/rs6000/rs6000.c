@@ -15160,7 +15160,7 @@ rs6000_emit_prologue (void)
       if (!info->lr_save_p)
 	rs6000_maybe_dead (emit_move_insn (gen_rtx_REG (Pmode, 0), lr));
 
-      rs6000_maybe_dead (emit_insn (gen_load_macho_picbase (lr, src)));
+      rs6000_maybe_dead (emit_insn (gen_load_macho_picbase (src)));
 
       insn = emit_move_insn (gen_rtx_REG (Pmode,
 					  RS6000_PIC_OFFSET_TABLE_REGNUM),
