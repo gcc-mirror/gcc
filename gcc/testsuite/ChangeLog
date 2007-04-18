@@ -1,3 +1,8 @@
+2007-04-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/31366
+	* gfortran.dg/direct_io_6.f90: New test.
+
 2007-04-17  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/31517
