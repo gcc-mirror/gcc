@@ -1,3 +1,16 @@
+2007-04-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/19431
+	PR tree-optimization/21463
+	* tree-pass.h (pass_phiprop): Declare.
+	* passes.c (init_optimization_passes): New phiprop pass.
+	* tree-ssa-forwprop.c (struct phiprop_d): New structure.
+	(phivn_valid_p): New helper function.
+	(phiprop_insert_phi): Likewise.
+	(propagate_with_phi): Likewise.
+	(tree_ssa_phiprop): New propagator propagating loads
+	through phi nodes if profitable.
+
 2007-04-18  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vect-analyze.c (process_use): New function.
