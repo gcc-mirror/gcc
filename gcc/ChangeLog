@@ -1,3 +1,22 @@
+2007-04-18  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vectorizer.c (destroy_loop_vec_info): Set loop->aux to NULL.
+	* tree-vect-analyze.c (vect_analyze_loop_form): Set loop->aux.
+
+	* tree-vectorizer.h (NITERS_KNOWN_P): New.
+	* tree-vect-analyze.c (vect_analyze_loop_form): Call NITERS_KNOWN_P 
+	instead of LOOP_VINFO_INT_NITERS to avoid having to geneate loop_info.
+
+	* tree-vect-analyze.c (vect_determine_vectorization_factor): Add 
+	dump print.
+	(vect_analyze_operations): Fix indenetation.  Fix a comment.  Fix a
+	print message.
+	(vect_analyze_scalar_cycles): Fix indentation.
+	(vect_enhance_data_refs_alignment): Fix check in case of peeling.
+	(vect_mark_relevant): Include phis in relevance analysis.
+
+	* tree-vect-transform.c (vect_transform_loop): Add an assert.
+
 2007-04-18  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (ptrreg_to_str): Replace error() with
