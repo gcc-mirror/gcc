@@ -1,3 +1,9 @@
+2007-04-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/31513
+	* call.c (convert_for_arg_passing): Convert bitfields to their
+	declared types.
+
 2007-04-17  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/31517

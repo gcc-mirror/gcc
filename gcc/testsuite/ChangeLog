@@ -1,3 +1,8 @@
+2007-04-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/31513
+	* g++.dg/expr/bitfield8.C: New test.
+
 2007-04-17  Joseph Myers  <joseph@codesourcery.com>
             Richard Sandiford  <richard@codesourcery.com>
 
