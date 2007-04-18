@@ -1,3 +1,10 @@
+2007-04-18  Dirk Mueller  <dmueller@suse.de>
+
+	PR diagnostic/31227
+	* tree-vrp.c (search_for_addr_array): New.
+	(check_array_bounds): Suppress warning about
+	address taken of array refs if its not de-referenced.
+
 2007-04-18  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vectorizer.c (destroy_loop_vec_info): Set loop->aux to NULL.
