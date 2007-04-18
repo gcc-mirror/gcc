@@ -8,6 +8,7 @@
 	* java/lang/Class.h: Remove _Jv_LookupProxyMethod.
 	* java/lang/natClass.cc: Likewise.
 	* headers.txt: Likewise.
+	* java/lang/reflect/Method.h: Likewise.
 
 2007-04-16  Andrew Haley  <aph@redhat.com>
 
