@@ -14,6 +14,13 @@
 	* trans-decl.c (gfc_build_dummy_array_decl): Adapt to use enum
 	values when determining packing.
 
+	* trans-decl.c (gfc_finish_decl): Remove unused second argument
+	'init'.  Simplify code accordingly.  Remove calls to
+	gfc_fatal_error in favor of gcc_assert.
+	(create_function_arglist): Remove second argument from calls to
+	gfc_finish-decl.
+	(gfc_trans_dummy_character): Likewise.
+
 	* arith.h: Update copyright years.
 	* dependency.h: Likewise.
 	* gfortran.h: Likewise.
