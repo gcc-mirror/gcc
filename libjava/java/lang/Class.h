@@ -237,8 +237,6 @@ _Jv_Method* _Jv_LookupDeclaredMethod (jclass, _Jv_Utf8Const *,
 java::lang::reflect::Method *_Jv_GetReflectedMethod (jclass klass, 
 						    _Jv_Utf8Const *name,
 						    _Jv_Utf8Const *signature);
-java::lang::reflect::Method *_Jv_LookupProxyMethod (jclass, _Jv_Utf8Const *,
-						    _Jv_Utf8Const *);
 jfieldID JvGetFirstInstanceField (jclass);
 jint JvNumInstanceFields (jclass);
 jfieldID JvGetFirstStaticField (jclass);
@@ -547,9 +545,6 @@ private:
   friend java::lang::reflect::Method* ::_Jv_GetReflectedMethod (jclass klass, 
 						    _Jv_Utf8Const *name,
 						    _Jv_Utf8Const *signature);
-  friend java::lang::reflect::Method *::_Jv_LookupProxyMethod (jclass, _Jv_Utf8Const *,
-							       _Jv_Utf8Const *);
-
   friend jfieldID (::JvGetFirstInstanceField) (jclass);
   friend jint (::JvNumInstanceFields) (jclass);
   friend jfieldID (::JvGetFirstStaticField) (jclass);

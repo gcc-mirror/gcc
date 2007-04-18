@@ -66,7 +66,7 @@ using namespace java::lang::reflect;
 using namespace java::lang;
 
 typedef void (*closure_fun) (ffi_cif*, void*, void**, void*);
-static void *ncode (jclass klass, _Jv_Method *self, closure_fun fun);
+static void *ncode (int method_index, jclass klass, _Jv_Method *self, closure_fun fun);
 static void run_proxy (ffi_cif*, void*, void**, void*);
 
 typedef jobject invoke_t (jobject, Proxy *, Method *, JArray< jobject > *);
@@ -92,14 +92,23 @@ java::lang::reflect::VMProxy::generateProxyClass
     return (new Proxy$ClassFactory(d))->generate(loader);
 
   jclass klass = new Class ();
-  klass->superclass = &Proxy::class$;
-  klass->engine = &_Jv_soleIndirectCompiledEngine;
-  klass->size_in_bytes = Proxy::class$.size_in_bytes;
-  klass->vtable_method_count = -1;
 
   // Synchronize on the class, so that it is not attempted initialized
   // until we're done.
   JvSynchronize sync (klass);
+
+  klass->superclass = &Proxy::class$;
+  klass->engine = &_Jv_soleIndirectCompiledEngine;
+  klass->size_in_bytes = -1;
+  klass->vtable_method_count = -1;
+
+  // Declare  private static transient java.lang.reflect.Method[] $Proxy0.m
+  klass->field_count = klass->static_field_count = 1;
+  klass->fields = (_Jv_Field*)_Jv_AllocRawObj (sizeof (_Jv_Field));
+  klass->fields[0].name = _Jv_makeUtf8Const ("m");
+  klass->fields[0].type = d->methods->getClass();
+  klass->fields[0].flags = (Modifier::PRIVATE | Modifier::STATIC 
+			    | Modifier::TRANSIENT);
 
   // Record the defining loader.  For the bootstrap class loader,
   // we record NULL.
@@ -158,19 +167,26 @@ java::lang::reflect::VMProxy::generateProxyClass
   for (size_t i = 0; i < count; i++)
     {
       _Jv_Method &method = klass->methods[method_count++];
-      const _Jv_Method &imethod = *_Jv_FromReflectedMethod (elements(d->methods)[i]);
+      const _Jv_Method &imethod 
+	= *_Jv_FromReflectedMethod (elements(d->methods)[i]);
       // We use a shallow copy of IMETHOD rather than a deep copy;
       // this means that the pointer fields of METHOD point into the
       // interface.  As long as this subclass of Proxy is reachable,
       // the interfaces of which it is a proxy will also be reachable,
       // so this is safe.
       method = imethod;
-      method.ncode = ncode (klass, &method, run_proxy);
+      method.ncode = ncode (i, klass, &method, run_proxy);
       method.accflags &= ~Modifier::ABSTRACT;
     }
 
   _Jv_Linker::layout_vtable_methods (klass);
   _Jv_RegisterInitiatingLoader (klass, klass->loader);
+
+  // Set $Proxy0.m to point to the methods arrray
+  java::lang::reflect::Field *f
+    = klass->getDeclaredField (JvNewStringLatin1 ("m"));
+  f->flag = true;
+  f->set(NULL, d->methods);
 
   return klass;
 }
@@ -292,6 +308,7 @@ typedef struct {
   _Jv_ClosureList list;
   ffi_cif   cif;
   _Jv_Method *self;
+  int method_index;
   ffi_type *arg_types[0];
 } ncode_closure;
 
@@ -306,17 +323,26 @@ run_proxy (ffi_cif *cif,
   Proxy *proxy = *(Proxy**)args[0];
   ncode_closure *self = (ncode_closure *) user_data;
 
+  jclass proxyClass = proxy->getClass();
+
   // FRAME_DESC registers this particular invocation as the top-most
   // interpreter frame.  This lets the stack tracing code (for
   // Throwable) print information about the Proxy being run rather
   // than about Proxy.class itself.  FRAME_DESC has a destructor so it
   // cleans up automatically when this proxy invocation returns.
   Thread *thread = Thread::currentThread();
-  _Jv_InterpFrame frame_desc (self->self, thread, proxy->getClass());
+  _Jv_InterpFrame frame_desc (self->self, thread, proxyClass);
 
-  Method *meth = _Jv_LookupProxyMethod (proxy->getClass(), 
-					self->self->name,
-					self->self->signature);
+  // The method to invoke is saved in $Proxy0.m[method_index].
+  // FIXME: We could somewhat improve efficiency by storing a pointer
+  // to the method (rather than its index) in ncode_closure.  This
+  // would avoid the lookup, but it probably wouldn't make a huge
+  // difference.  We'd still have to save the method array because
+  // ncode structs are not scanned by the gc.
+  Field *f = proxyClass->getDeclaredField (JvNewStringLatin1 ("m"));
+  JArray<Method*> *methods = (JArray<Method*>*)f->get (NULL);
+  Method *meth = elements(methods)[self->method_index];
+
   JArray<jclass> *parameter_types = meth->internalGetParameterTypes ();
   JArray<jclass> *exception_types = meth->internalGetExceptionTypes ();
 
@@ -374,7 +400,7 @@ run_proxy (ffi_cif *cif,
 // the address of its closure.
 
 static void *
-ncode (jclass klass, _Jv_Method *self, closure_fun fun)
+ncode (int method_index, jclass klass, _Jv_Method *self, closure_fun fun)
 {
   using namespace java::lang::reflect;
 
@@ -386,6 +412,7 @@ ncode (jclass klass, _Jv_Method *self, closure_fun fun)
     (ncode_closure*)ffi_closure_alloc (sizeof (ncode_closure)
 				       + arg_count * sizeof (ffi_type*),
 				       &code);
+  closure->method_index = method_index;
   closure->list.registerClosure (klass, closure);
 
   _Jv_init_cif (self->signature,
