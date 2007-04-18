@@ -1,3 +1,28 @@
+2007-04-18  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
+	* config/s390/s390.h (S390_TDC_POSITIVE_ZERO): New constant.
+	(S390_TDC_NEGATIVE_ZERO): New constant.
+	(S390_TDC_POSITIVE_NORMALIZED_NUMBER): New constant.
+	(S390_TDC_NEGATIVE_NORMALIZED_NUMBER): New constant.
+	(S390_TDC_POSITIVE_DENORMALIZED_NUMBER): New constant.
+	(S390_TDC_NEGATIVE_DENORMALIZED_NUMBER): New constant.
+	(S390_TDC_POSITIVE_INFINITY): New constant.
+	(S390_TDC_NEGATIVE_INFINITY): New constant.
+	(S390_TDC_POSITIVE_QUIET_NAN): New constant.
+	(S390_TDC_NEGATIVE_QUIET_NAN): New constant.
+	(S390_TDC_POSITIVE_SIGNALING_NAN): New constant.
+	(S390_TDC_NEGATIVE_SIGNALING_NAN): New constant.
+	(S390_TDC_INFINITY): New constant.
+	* config/s390/s390.c (s390_canonicalize_comparison): Renamed
+	UNSPEC_CMPINT to UNSPEC_CCU_TO_INT, added a UNSPEC_CCU_TO_INT-like
+	optimization for UNSPEC_CCZ_TO_INT.
+	* config/s390/s390.md ("*TDC_insn_<mode>"): New insn.
+	("*ccz_to_int"): New insn.
+	("isinf<mode>2"): New insn.
+	(UNSPEC_CMPINT): Renamed to UNSPEC_CCU_TO_INT.
+	(UNSPEC_CCU_TO_INT): New constant, replaces UNSPEC_CMPINT.
+	(UNSPEC_CCZ_TO_INT): New constant.
+
 2007-04-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/19431

@@ -699,10 +699,9 @@ s390_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1)
       *op1 = constm1_rtx;
     }
 
-
-  /* Remove redundant UNSPEC_CMPINT conversions if possible.  */
+  /* Remove redundant UNSPEC_CCU_TO_INT conversions if possible.  */
   if (GET_CODE (*op0) == UNSPEC
-      && XINT (*op0, 1) == UNSPEC_CMPINT
+      && XINT (*op0, 1) == UNSPEC_CCU_TO_INT
       && XVECLEN (*op0, 0) == 1
       && GET_MODE (XVECEXP (*op0, 0, 0)) == CCUmode
       && GET_CODE (XVECEXP (*op0, 0, 0)) == REG
@@ -718,6 +717,30 @@ s390_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1)
 	  case GT: new_code = LTU; break;
 	  case LE: new_code = GEU; break;
 	  case GE: new_code = LEU; break;
+	  default: break;
+	}
+
+      if (new_code != UNKNOWN)
+	{
+	  *op0 = XVECEXP (*op0, 0, 0);
+	  *code = new_code;
+	}
+    }
+
+  /* Remove redundant UNSPEC_CCZ_TO_INT conversions if possible.  */
+  if (GET_CODE (*op0) == UNSPEC
+      && XINT (*op0, 1) == UNSPEC_CCZ_TO_INT
+      && XVECLEN (*op0, 0) == 1
+      && GET_MODE (XVECEXP (*op0, 0, 0)) == CCZmode
+      && GET_CODE (XVECEXP (*op0, 0, 0)) == REG
+      && REGNO (XVECEXP (*op0, 0, 0)) == CC_REGNUM
+      && *op1 == const0_rtx)
+    {
+      enum rtx_code new_code = UNKNOWN;
+      switch (*code)
+	{
+	  case EQ: new_code = EQ;  break;
+	  case NE: new_code = NE;  break;
 	  default: break;
 	}
 
