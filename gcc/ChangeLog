@@ -1,3 +1,11 @@
+2007-04-18  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vect-analyze.c (process_use): New function.
+	(vect_mark_stmts_to_be_vectorized): Factor out code to process_use.
+	Check phis in all bbs.
+	* tree-vectorizer.c (vect_is_simple_use): Remove a no longer relavant
+	assert.
+
 2007-04-18  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* reload1.c (eliminte_regs_in_insn): Use REG_EQUIV notes the same way
