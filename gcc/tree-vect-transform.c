@@ -940,8 +940,6 @@ vect_finish_stmt_generation (tree stmt, tree vec_stmt,
 }
 
 
-#define ADJUST_IN_EPILOG 1
-
 /* Function get_initial_def_for_reduction
 
    Input:
@@ -949,18 +947,18 @@ vect_finish_stmt_generation (tree stmt, tree vec_stmt,
    INIT_VAL - the initial value of the reduction variable
 
    Output:
-   SCALAR_DEF - a tree that holds a value to be added to the final result
-	of the reduction (used for "ADJUST_IN_EPILOG" - see below).
+   ADJUSTMENT_DEF - a tree that holds a value to be added to the final result
+        of the reduction (used for adjusting the epilog - see below).
    Return a vector variable, initialized according to the operation that STMT
-	performs. This vector will be used as the initial value of the
-	vector of partial results.
+        performs. This vector will be used as the initial value of the
+        vector of partial results.
 
-   Option1 ("ADJUST_IN_EPILOG"): Initialize the vector as follows:
+   Option1 (adjust in epilog): Initialize the vector as follows:
      add:         [0,0,...,0,0]
      mult:        [1,1,...,1,1]
      min/max:     [init_val,init_val,..,init_val,init_val]
      bit and/or:  [init_val,init_val,..,init_val,init_val]
-   and when necessary (e.g. add/mult case) let the caller know 
+   and when necessary (e.g. add/mult case) let the caller know
    that it needs to adjust the result by init_val.
 
    Option2: Initialize the vector as follows:
@@ -981,84 +979,56 @@ vect_finish_stmt_generation (tree stmt, tree vec_stmt,
    or [0,0,0,0] and let the caller know that it needs to adjust
    the result at the end by 'init_val'.
 
-   FORNOW: We use the "ADJUST_IN_EPILOG" scheme.
-   TODO: Use some cost-model to estimate which scheme is more profitable.
-*/
+   FORNOW, we are using the 'adjust in epilog' scheme, because this way the
+   initialization vector is simpler (same element in all entries).
+   A cost model should help decide between these two schemes.  */
 
 static tree
-get_initial_def_for_reduction (tree stmt, tree init_val, tree *scalar_def)
+get_initial_def_for_reduction (tree stmt, tree init_val, tree *adjustment_def)
 {
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
   int nunits =  TYPE_VECTOR_SUBPARTS (vectype);
-  int nelements;
   enum tree_code code = TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1));
   tree type = TREE_TYPE (init_val);
-  tree def;
-  tree vec, t = NULL_TREE;
-  bool need_epilog_adjust;
+  tree vecdef;
+  tree def_for_init;
+  tree init_def;
+  tree t = NULL_TREE;
   int i;
   tree vector_type;
 
   gcc_assert (INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type));
+  vecdef = vect_get_vec_def_for_operand (init_val, stmt, NULL);
 
   switch (code)
   {
   case WIDEN_SUM_EXPR:
   case DOT_PROD_EXPR:
   case PLUS_EXPR:
+    *adjustment_def = init_val;
+    /* Create a vector of zeros for init_def.  */
     if (INTEGRAL_TYPE_P (type))
-      def = build_int_cst (type, 0);
+      def_for_init = build_int_cst (type, 0);
     else
-      def = build_real (type, dconst0);
-
-#ifdef ADJUST_IN_EPILOG
-    /* All the 'nunits' elements are set to 0. The final result will be
-       adjusted by 'init_val' at the loop epilog.  */
-    nelements = nunits;
-    need_epilog_adjust = true;
-#else
-    /* 'nunits - 1' elements are set to 0; The last element is set to 
-        'init_val'.  No further adjustments at the epilog are needed.  */
-    nelements = nunits - 1;
-    need_epilog_adjust = false;
-#endif
+      def_for_init = build_real (type, dconst0);
+      for (i = nunits - 1; i >= 0; --i)
+    t = tree_cons (NULL_TREE, def_for_init, t);
+    vector_type = get_vectype_for_scalar_type (TREE_TYPE (def_for_init));
+    init_def = build_vector (vector_type, t);
     break;
 
   case MIN_EXPR:
   case MAX_EXPR:
-    def = init_val;
-    nelements = nunits;
-    need_epilog_adjust = false;
+    *adjustment_def = NULL_TREE;
+    init_def = vecdef;
     break;
 
   default:
     gcc_unreachable ();
   }
 
-  for (i = nelements - 1; i >= 0; --i)
-    t = tree_cons (NULL_TREE, def, t);
-
-  if (nelements == nunits - 1)
-    {
-      /* Set the last element of the vector.  */
-      t = tree_cons (NULL_TREE, init_val, t);
-      nelements += 1;
-    }
-  gcc_assert (nelements == nunits);
-
-  vector_type = get_vectype_for_scalar_type (TREE_TYPE (def));
-  if (TREE_CODE (init_val) == INTEGER_CST || TREE_CODE (init_val) == REAL_CST)
-    vec = build_vector (vector_type, t);
-  else
-    vec = build_constructor_from_list (vector_type, t);
-    
-  if (!need_epilog_adjust)
-    *scalar_def = NULL_TREE;
-  else
-    *scalar_def = init_val;
-
-  return vect_init_vector (stmt, vec, vector_type);
+  return init_def;
 }
 
 
