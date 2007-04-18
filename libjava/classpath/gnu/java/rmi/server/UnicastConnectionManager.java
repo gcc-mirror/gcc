@@ -181,7 +181,13 @@ private UnicastConnectionManager(int port, RMIServerSocketFactory ssf) throws Re
 		serverPort = 0;
 		throw new java.rmi.server.ExportException("can not create Server Socket on port " + port,ioex);
 	}
-	serverName = localhost;
+	// Note that for compatibility the serverName is "localhost",
+	// not UnicastConnectionManager.localhost, which is the name
+	// of the local box.  A server listening on localhost:port is
+	// listening on the loopback interface, 127.0.0.1, but
+	// UnicastConnectionManager.localhost is an externally
+	// accessible IP address.
+	serverName = "localhost";
 	serverFactory = ssf;
 	clientFactory = null;
 }
