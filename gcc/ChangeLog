@@ -1,3 +1,9 @@
+2007-04-18  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vect-transform.c (get_initial_def_for_reduction): Clean away
+	the unused code for reduction without adjust-in-epilog to simplify the
+	function.
+
 2007-04-18  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* config/s390/s390.h (S390_TDC_POSITIVE_ZERO): New constant.
