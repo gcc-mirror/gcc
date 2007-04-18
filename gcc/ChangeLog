@@ -1,3 +1,7 @@
+2007-04-18  Philippe De Muyter  <phdm@macqel.be>
+
+	* config/m68k/m68k.c (output_btst): Use `movew to ccr' when useful.
+
 2007-04-18  Dirk Mueller  <dmueller@suse.de>
 
 	PR diagnostic/31227
