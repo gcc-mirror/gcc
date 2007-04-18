@@ -239,15 +239,15 @@ Boston, MA 02110-1301, USA.  */
   "")
 
 (define_expand "load_macho_picbase"
-  [(set (match_operand 0 "" "")
-        (unspec [(match_operand 1 "" "")]
+  [(set (reg:SI 65)
+        (unspec [(match_operand 0 "" "")]
                    UNSPEC_LD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
 {
   if (TARGET_32BIT)
-    emit_insn (gen_load_macho_picbase_si (operands[1]));
+    emit_insn (gen_load_macho_picbase_si (operands[0]));
   else
-    emit_insn (gen_load_macho_picbase_di (operands[1]));
+    emit_insn (gen_load_macho_picbase_di (operands[0]));
 
   DONE;
 })
@@ -437,4 +437,3 @@ Boston, MA 02110-1301, USA.  */
 }"
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
-
