@@ -13,7 +13,6 @@
 jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);
 jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);
 ::java::lang::reflect::Method *_Jv_GetReflectedMethod (jclass, _Jv_Utf8Const*, _Jv_Utf8Const*);
-::java::lang::reflect::Method *_Jv_LookupProxyMethod (jclass, _Jv_Utf8Const *, _Jv_Utf8Const *);
 
 class java::lang::reflect::Method : public ::java::lang::reflect::AccessibleObject
 {
@@ -80,7 +79,6 @@ public:
   friend class java::lang::Class;
   friend class java::io::ObjectInputStream;
   friend java::lang::reflect::Method* ::_Jv_GetReflectedMethod (jclass, _Jv_Utf8Const*, _Jv_Utf8Const*);
-  friend java::lang::reflect::Method* ::_Jv_LookupProxyMethod (jclass, _Jv_Utf8Const *, _Jv_Utf8Const *);
 };
 
 #endif // __java_lang_reflect_Method__
