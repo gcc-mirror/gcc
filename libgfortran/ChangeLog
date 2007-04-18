@@ -1,4 +1,5 @@
 2007-04-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
 
 	PR libfortran/31286
 	PR libfortran/31296
