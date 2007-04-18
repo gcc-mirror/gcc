@@ -5258,6 +5258,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	      continue;
 	    }
 
+	  gcc_assert (STMT_VINFO_VECTYPE (stmt_info));
 	  if ((TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info))
 		 != (unsigned HOST_WIDE_INT) vectorization_factor)
 	      && vect_print_dump_info (REPORT_DETAILS))

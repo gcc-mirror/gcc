@@ -262,7 +262,8 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
     }
 
   /* TODO: Analyze cost. Decide if worth while to vectorize.  */
-
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "vectorization factor = %d", vectorization_factor);
   if (vectorization_factor <= 1)
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
@@ -1434,6 +1435,7 @@ static bool
 vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 {
   VEC (data_reference_p, heap) *datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   enum dr_alignment_support supportable_dr_alignment;
   struct data_reference *dr0 = NULL;
   struct data_reference *dr;
@@ -1531,7 +1533,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
   /* Often peeling for alignment will require peeling for loop-bound, which in 
      turn requires that we know how to adjust the loop ivs after the loop.  */
-  if (!vect_can_advance_ivs_p (loop_vinfo))
+  if (!vect_can_advance_ivs_p (loop_vinfo)
+      || !slpeel_can_duplicate_loop_p (loop, single_exit (loop)))
     do_peeling = false;
 
   if (do_peeling)
@@ -2641,10 +2644,7 @@ vect_analyze_loop_form (struct loop *loop)
       return false;
     }
 
-  loop_vinfo = new_loop_vec_info (loop);
-  LOOP_VINFO_NITERS (loop_vinfo) = number_of_iterations;
-
-  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+  if (!NITERS_KNOWN_P (number_of_iterations))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         {
@@ -2652,16 +2652,19 @@ vect_analyze_loop_form (struct loop *loop)
           print_generic_expr (vect_dump, number_of_iterations, TDF_DETAILS);
         }
     }
-  else
-  if (LOOP_VINFO_INT_NITERS (loop_vinfo) == 0)
+  else if (TREE_INT_CST_LOW (number_of_iterations) == 0)
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
         fprintf (vect_dump, "not vectorized: number of iterations = 0.");
       return NULL;
     }
 
+  loop_vinfo = new_loop_vec_info (loop);
+  LOOP_VINFO_NITERS (loop_vinfo) = number_of_iterations;
   LOOP_VINFO_EXIT_COND (loop_vinfo) = loop_cond;
 
+  gcc_assert (!loop->aux);
+  loop->aux = loop_vinfo;
   return loop_vinfo;
 }
 

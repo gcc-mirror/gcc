@@ -151,9 +151,12 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_MAY_MISALIGN_STMTS(L) (L)->may_misalign_stmts
 #define LOOP_VINFO_LOC(L)             (L)->loop_line_number
 
+#define NITERS_KNOWN_P(n)                     \
+(host_integerp ((n),0)                        \
+&& TREE_INT_CST_LOW ((n)) > 0)
+
 #define LOOP_VINFO_NITERS_KNOWN_P(L)                     \
-(host_integerp ((L)->num_iters,0)                        \
-&& TREE_INT_CST_LOW ((L)->num_iters) > 0)
+NITERS_KNOWN_P((L)->num_iters)
 
 /*-----------------------------------------------------------------*/
 /* Info on vectorized defs.                                        */

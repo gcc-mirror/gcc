@@ -1511,6 +1511,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo)
   VEC_free (tree, heap, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo));
 
   free (loop_vinfo);
+  loop->aux = NULL;
 }
 
 
