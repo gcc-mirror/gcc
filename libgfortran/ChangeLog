@@ -1,3 +1,11 @@
+2007-04-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/31286
+	PR libfortran/31296
+	* intrinsics/cshift0.c (cshift0): Initialize sstride[0] and rstride[0].
+	* intrinsics/unpack_generic.c (unpack0, unpack0_char): Zero the
+	array structures we pass to unpack_internal.
+
 2007-04-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* io/open.c (test_endfile): Revert changes for 31052, restoring this
@@ -10,7 +18,7 @@
 
 2007-04-11  Kai Tietz  <kai.tietz@onevision.com>
 
-        * configure: Regenerate.
+	* configure: Regenerate.
 
 2007-04-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
@@ -201,7 +209,7 @@
 
 2007-04-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/31395
+	PR libfortran/31395
 	* io/format.c (parse_format_list): Fix parsing.
 
 2007-04-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
@@ -211,7 +219,7 @@
 
 2007-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/31052
+	PR libfortran/31052
 	* io/open.c (test_endfile): Delete this function.
 	(edit_modes): Delete call to test_endfile.
 	(new_unit): Likewise.
@@ -221,13 +229,13 @@
 
 2007-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/31366
+	PR libfortran/31366
 	* io/transfer.c (read_block_direct): Do not generate error when reading
 	past EOF on a short record that is less than the RECL= specified.
 	
 2007-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/31207
+	PR libfortran/31207
 	* io/unit.c (close_unit_1): If there are bytes previously written from
 	ADVANCE="no", move to the end before closing.
 
@@ -243,13 +251,13 @@
 
 2007-03-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/31052
+	PR libfortran/31052
 	* io/transfer.c (next_record_r): Do not call test_endfile if in namelist
 	mode.
 
 2007-03-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/31199
+	PR libfortran/31199
 	* io/io.h: Add saved_pos to gfc_unit structure.
 	* io/open.c (new_unit): Initialize saved_pos.
 	* io/transfer.c (data_transfer_init): Set max_pos to value in saved_pos.
@@ -265,7 +273,7 @@
 
 2007-03-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/31052
+	PR libfortran/31052
 	* file_pos.c: Update Copyright year.
 	* io/open.c (test_endfile): Restore test_endfile to fix SPEC regression.
 	Update Copyright year.
@@ -283,7 +291,7 @@
 
 2007-03-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/31052
+	PR libfortran/31052
 	* io/file_position (st_rewind): Fix comments. Remove use of
 	test_endfile. Don't seek if already at 0 position.  Use new is_special
 	function to set endfile state.
@@ -299,7 +307,7 @@
 
 2007-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/31099
+	PR libfortran/31099
 	* io/file_pos.c (st_rewind): Don't set bytes_left to zero.
 
 2007-03-15  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
@@ -323,7 +331,7 @@
 
 2007-03-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/31051
+	PR libfortran/31051
 	* io/transfer.c (formatted_transfer_scalar): Adjust position for pending
 	spaces when in writing mode.  Clean up some formatting.
 
@@ -359,7 +367,7 @@
 
 2007-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/31099
+	PR libfortran/31099
 	* io/open.c (new_unit): Initialize bytes_left and recl_subrecord.
 	* io/transfer.c (next_record_w): Set bytes left to record length for
 	sequential unformatted I/O.
@@ -423,12 +431,12 @@
 
 2007-02-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/30918
+	PR libfortran/30918
 	* io/listread.c (namelist_read): Eat comment line.
 
 2007-02-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/30910
+	PR libfortran/30910
 	* io/write.c (output_float): Add condition of format F only for
 	special case rounding with zero precision.
 
@@ -753,7 +761,7 @@
 
 2007-01-17  Tom Tromey  <tromey@redhat.com>
 
-	PR libgfortran/27107:
+	PR libfortran/27107:
 	* aclocal.m4, configure, Makefile.in: Rebuilt.
 	* configure.ac: Enable automake dependency tracking.  Update
 	minimum automake version.
@@ -789,14 +797,14 @@
 
 2007-01-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/30435
+	PR libfortran/30435
 	* io/list_read.c (finish_separator): Don't call next_record.
 	(list_formatted_read_scalar): Clean up some comments and whitespace.
 	(nml_read_obj): Whitespace fix.
 
 2007-01-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/30162
+	PR libfortran/30162
 	* io/unix.c (fd_flush): Don't seek if file is not seekable, defined as
 	s->file_length == -1.
 	(fd_alloc_w_at): Do not adjust file_length if file is not seekable.
