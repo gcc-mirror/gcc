@@ -209,6 +209,7 @@ unpack0 (gfc_array_char *ret, const gfc_array_char *vector,
 {
   gfc_array_char tmp;
 
+  memset (&tmp, 0, sizeof (tmp));
   tmp.dtype = 0;
   tmp.data = field;
   unpack_internal (ret, vector, mask, &tmp, GFC_DESCRIPTOR_SIZE (vector), 0);
@@ -228,6 +229,7 @@ unpack0_char (gfc_array_char *ret,
 {
   gfc_array_char tmp;
 
+  memset (&tmp, 0, sizeof (tmp));
   tmp.dtype = 0;
   tmp.data = field;
   unpack_internal (ret, vector, mask, &tmp, vector_length, 0);

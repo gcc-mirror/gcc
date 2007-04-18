@@ -105,7 +105,7 @@
 
 2006-12-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/30014
+	PR libfortran/30014
 	*io/io.h (st_parameter_dt): Change *size and *iolength type to
 	GFC_IO_INT.
 	*io/transfer.c (finalize_transfer): Cast dtp->u.p.size_used to
@@ -237,7 +237,7 @@
 
 2006-11-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/29752
+	PR libfortran/29752
 	* io/transfer.c (finalize_transfer): Flush on ADVANCE_NO.
 
 2006-11-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
@@ -246,7 +246,7 @@
 
 2006-11-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25545
+	PR libfortran/25545
 	* io/transfer.c (write_block): Cleanup code paths between
 	stream and non-stream I/O.
 	(write_buf):  Cleanup.
@@ -304,12 +304,12 @@
 
 2006-10-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/29563
+	PR libfortran/29563
 	* io/list_read.c (next_char): Fix an error in previous commit.
 
 2006-10-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/29563
+	PR libfortran/29563
 	* io/io.h (st_parameter_dt): Add new flag at_eof.
 	* io/list_read.c (next_char): Set flag when EOF and return '\n' to
 	signal EOR.  Check flag on next call and jump out.
@@ -518,7 +518,7 @@
 
 2006-10-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/29277
+	PR libfortran/29277
 	* io/write.c (write_a): Add conversion of LF to CR-LF for systems with
 	#define HAVE_CRLF.
 
@@ -551,7 +551,7 @@
 
 2006-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/29277
+	PR libfortran/29277
 	* io/list_read.c (next_char): Update strm_pos.
 	(eat_separator): Delete extra call to unget_char.
 	* io/transfer.c (read_block): Use read_sf for formatted stream I/O.
@@ -610,7 +610,7 @@
 2006-10-08  Paul Thomas  <pault@gcc.gnu.org>
 	    Erik Edelmann  <edelmann@gcc.gnu.org>
 
-	PR libgfortran/20541
+	PR libfortran/20541
 	* Makefile.in : Add move_alloc.
 	* intrinsics/move_alloc.c: New function.
 	* Makefile.am : Add move_alloc.
@@ -712,12 +712,12 @@ D
 
 2006-09-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/29099
+	PR libfortran/29099
 	* intrinsics/date_and_time.c (secnds): Fix case of zero time.
 
 2006-09-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/29053
+	PR libfortran/29053
 	* io.h (gfc_unit): Add variable, strm_pos, to track
 	STREAM I/O file position.
 	* file_pos.c (st_rewind): Set strm_pos to beginning.
@@ -750,13 +750,13 @@ D
 
 2006-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/28354
+	PR libfortran/28354
 	* io/write.c: Check for special case of zero precision in format
 	and pre-round the real value.
 
 2006-08-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25828
+	PR libfortran/25828
 	* libgfortran.h: Rename GFC_LARGE_IO_INT to GFC_IO_INT.
 	* io/file_pos.c (st_backspace): Ignore if access=STREAM.
 	(st_rewind): Handle case of access=STREAM.
@@ -834,13 +834,13 @@ D
 
 2006-07-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/28335
+	PR libfortran/28335
 	* file_position.c (st_flush): Add clearer error when UNIT does not
 	exist. Add reference to standard in comment.
 
 2006-07-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/28335
+	PR libfortran/28335
 	* close.c (st_close): Revert previous patch and add comment.
 	* file_position.c (st_flush): Revert previous patch and add comment.
 
@@ -875,7 +875,7 @@ D
 
 2006-07-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/28335
+	PR libfortran/28335
 	* close.c (st_close): Add error when UNIT does not exist.
 	* file_position.c (st_flush): Add error when UNIT does not exist.
 
@@ -886,13 +886,13 @@ D
 
 2006-07-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25289
+	PR libfortran/25289
 	* libgfortran.h: Add conditional definition of GFC_LARGE_IO_INT type.
 	* io/io.h (st_parameter_dt): Define rec as type GFC_LARGE_IO_INT.
 
 2006-07-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/28339
+	PR libfortran/28339
 	* io/transfer.c (next_record_w): Use next_array_record result to set
 	END_FILE. (write_block): Test for END_FILE before the next write occurs.
 	* io/unit.c (get_internal_unit): Initialize iunit->endfile for internal
@@ -930,7 +930,7 @@ D
 
 2006-07-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/27704
+	PR libfortran/27704
 	* runtime/error.c (notify_std): Pass common flags into function. Use
 	flags to show locus of error or warning.
 	* libgfortran.h: Add enum try.  Add prototype for notify_std.
@@ -1028,12 +1028,12 @@ D
 	
 2006-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/27757
+	PR libfortran/27757
 	* io/unix.c (fd_seek): Set active to zero.
 
 2006-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/27634
+	PR libfortran/27634
 	* io/format.c (parse_format_list): Allow missing period in format only
 	if -std=legacy.
 
@@ -1072,7 +1072,7 @@ D
 	
 2006-05-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/24459
+	PR libfortran/24459
 	* io/list_read.c (nml_parse_qualifier): Leave loop spec end value
 	at default value unless -std=f95 or if an array section
 	is specified in namelist input.  Warn if -pedantic.
@@ -1080,12 +1080,12 @@ D
 
 2006-05-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/22423
+	PR libfortran/22423
 	* io/transfer.c (read_block): Return NULL instead of nothing.
 	
 2006-05-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/27575
+	PR libfortran/27575
 	* io/transfer.c (read_block):  Add check for end file condition.
 	(read_block_direct): Add check for end file condition.
 
@@ -1108,19 +1108,19 @@ D
 
 2006-04-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/27360
+	PR libfortran/27360
 	* io/list_read.c (read_logical):  Free line_buffer and free saved.
 
 2006-04-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/27304
+	PR libfortran/27304
 	* io/transfer.c (formatted_transfer_scalar):  Generate error if data
 	descriptors are exhausted.
 	* io/format.c (next_format0): Fix comment.
 
 2006-04-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/20257
+	PR libfortran/20257
 	* io/io.h: Add prototypes for get_internal_unit and free_internal_unit.
 	* io/unit.c (get_internal_unit): Initialize unit number, not zero.
 	(free_internal_unit): New function to consolidate freeing memory.
@@ -1149,7 +1149,7 @@ D
 
 2006-04-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/27138
+	PR libfortran/27138
 	* io/list_read.c (eat_line): New function.
 	(parse_repeat): Use new function and free_saved.
 	(read_logical): Same.
@@ -1160,7 +1160,7 @@ D
 
 2006-04-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/26766
+	PR libfortran/26766
 	* io/io.h: Add bit to identify associated unit as internal.
 	* io/unit.c (get_external_unit): Renamed the find_unit_1 function to
 	reflect the external unit functionality vs internal unit.
@@ -1181,7 +1181,7 @@ D
 
 2006-04-10  Jakub Jelinek  <jakub@redhat.com>
 
-	PR libgfortran/24685
+	PR libfortran/24685
 	* io/write.c (MIN_FIELD_WIDTH, STR, STR1): Define.
 	(output_float): Increase buffer sizes for IEEE quad and IBM extended
 	long double.
@@ -1189,7 +1189,7 @@ D
 
 2006-04-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/26890
+	PR libfortran/26890
 	* io/io.h: Revert change to pad size made on 2006-03-30.
 	Add comment explaining dependency with fortran/trans-io.c.
 	
@@ -1205,7 +1205,7 @@ D
 
 2006-03-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/26890
+	PR libfortran/26890
 	* io/io.h: Add size_used to st_parameter_dt, adjust pad size.
 	*io/transfer.c (data_transfer_init): Initialize size_used to zero.
 	(read_sf): Use size_used.
@@ -1231,12 +1231,12 @@ D
 
 2006-03-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/26880
+	PR libfortran/26880
 	* io/file_pos.c (st_rewind): Clear read_bad flag.
 
 2006-03-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/26661
+	PR libfortran/26661
 	* io/io.h: Add read_sf so it can be used by read_x.
 	* io/transfer.c (read_sf): Pass no_error flag to read_sf.  Use it to
 	break out rather than error on EOF or EOR conditions.
@@ -1414,7 +1414,7 @@ D
 
 2006-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/26509
+	PR libfortran/26509
 	* libgfortran.h: Add ERROR_DIRECT_EOR.
 	* runtime/error.c (translate_error): Add translation for new error.
 	* io/transfer.c (write_buf): Add check for EOR when mode is 
@@ -1437,7 +1437,7 @@ D
 
 2006-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/26499
+	PR libfortran/26499
 	* io/file_pos (st_rewind): Flush always.
 	* io/unix.c (fd_truncate): Return SUCCESS rather than FAILURE for
 	special files like /dev/null.
@@ -1446,7 +1446,7 @@ D
 
 2006-03-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/26554
+	PR libfortran/26554
 	* io/list_read.c (read_logical): Return the value if not in namelist
 	mode.
 
@@ -1460,7 +1460,7 @@ D
 
 2006-02-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/26136
+	PR libfortran/26136
 	* io/io.h: Add flag for reading from line_buffer.
 	* io/list_read.c (l_push_char): New function to save namelist
 	input when reading logicals.
@@ -1472,14 +1472,14 @@ D
 
 2006-02-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/26464
+	PR libfortran/26464
 	* io/file_pos.c (st_backspace): Flush and truncate file
 	when in AFTER_ENDFILE condition.
 	* io/transfer.c (st_read_done): Remove flush, no longer needed.
 
 2006-02-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/26423
+	PR libfortran/26423
 	* io/unix.c (fd_seek): Revert change from 25949.
 	(fd_read): Same.
 	(fd_write): Same.
@@ -1500,7 +1500,7 @@ D
 
 2006-02-12  Janne Blomqvist  <jb@gcc.gnu.org>
 
-	PR libgfortran/25949
+	PR libfortran/25949
 	* io/io.h: Add set function pointer to struct stream.  
 	* io/unix.c (fd_seek): Only update offset, don't seek.
 	(fd_sset): New function.
@@ -1572,18 +1572,18 @@ D
 
 2006-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25835
+	PR libfortran/25835
 	* io/transfer.c (st_read_done): Flush buffers when read is done.
 
 2006-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25697
+	PR libfortran/25697
 	* io/transfer.c (us_read): Detect end of file condition from previous
 	operations and bail out (no need to pre-position).
 
 2006-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25631
+	PR libfortran/25631
 	* io/transfer.c (formatted_transfer_scalar): Adjust pending_spaces and
 	skips so that TL works correctly when no bytes_used yet.  
 
@@ -1611,7 +1611,7 @@ D
 	
 2006-01-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25598
+	PR libfortran/25598
 	* io/file_pos.c (unformatted_backspace): Assure the new file position
 	to seek is not less than zero.
 	(st_backspace): Set unit bytes_left to zero.

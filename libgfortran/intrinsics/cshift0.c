@@ -103,6 +103,8 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
     runtime_error ("Argument 'DIM' is out of range in call to 'CSHIFT'");
 
   which = which - 1;
+  sstride[0] = 0;
+  rstride[0] = 0;
 
   extent[0] = 1;
   count[0] = 0;

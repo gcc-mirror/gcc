@@ -1,15 +1,15 @@
 2005-12-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25594
-	PR libgfortran/25419
+	PR libfortran/25594
+	PR libfortran/25419
 	* io/list_read.c (list_formatted_read_scalar): Test for comma to return
 	a null value (default). Revert patch of 25419 on 2005-12-28.  
 
 2005-12-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25139
+	PR libfortran/25139
 	* io/unix.c (fd_truncate): Set s->active to zero.
-	PR libgfortran/25510
+	PR libfortran/25510
 	* libgfortran.h: Add ERROR_INTERNAL and ERROR_INTERNAL_UNIT.
 	* runtime/error.c (translate_error): Add messages for new errors.
 	* io/list_read.c (next_char): Use new errors.
@@ -17,32 +17,32 @@
 
 2005-12-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25550
+	PR libfortran/25550
 	* io/file_pos.c (st_rewind): Reset bytes left so no error occurs in
 	next_record_r.
 
 2005-12-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25419
+	PR libfortran/25419
 	* io/list_read.c (list_formatted_read_scalar): Allow comma to return a
 	null value (default).
 
 2005-12-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25307
+	PR libfortran/25307
 	* io/list_read.c (next_char): Handle end-of-file conditions for
 	internal units and add support for internal character array units.
 
 2005-12-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25463
+	PR libfortran/25463
 	* io/transfer.c (finalize_transfer): Fix execution order so that
 	next_record is set to zero in all cases.
 
 2005-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25264
-	PR libgfortran/25349
+	PR libfortran/25264
+	PR libfortran/25349
 	* io/unit.c (get_unit): Delete code that cleared the string when the
 	unit was opened, which is too soon.
 	* io/transfer.c (next_record_w): Pass done flag in.  Change logic for
@@ -104,7 +104,7 @@
 
 2005-12-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25039
+	PR libfortran/25039
 	* io/io.h: Create a new flag sf_read_comma to control comma
 	separators in numeric reads.
 	* io/transfer.c (formatted_transfer_scalar): Initialize the flag.
@@ -131,7 +131,7 @@
 
 2005-11-28  Steven G. Kargl  <kargls@comcast.net>
 
-	PR libgfortran/25149
+	PR libfortran/25149
 	* intrinsics/abort.c: Add external abort_ to allow linking when 
 	invoking -std=f95 in testsuite.
 
@@ -154,7 +154,7 @@
 
 2005-11-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/25109
+	PR libfortran/25109
 	* io/unit.c (init_units): Set default flag to BLANK_NULL per
 	requirement of F95 standard.  Set PAD_YES for stdin.
 
@@ -214,7 +214,7 @@
 
 2005-11-26  Janne Blomqvist  <jb@gcc.gnu.org>
 
-	PR libgfortran/24945
+	PR libfortran/24945
 	* io/open.c (edit_modes): Check for STATUS_UNKNOWN flag.
 	
 2005-11-25  Richard Henderson  <rth@redhat.com>
@@ -234,7 +234,7 @@
 
 2005-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/24794
+	PR libfortran/24794
 	* io/list_read.c (read_character): Add auto completion on short
 	namelist reads.
 
@@ -522,7 +522,7 @@
 
 2005-11-12  Steven G. Kargl  <kargls@comcast.net>
 
-	PR libgfortran/24787
+	PR libfortran/24787
 	*  intrinsics/string_intrinsics.c (string_scan): Off by one; Fix typos
 	in nearby comment.
 
@@ -611,7 +611,7 @@
 
 2005-10-31  Jerry DeLisle  <jvdelisle@verizon.net>
 
-	PR libgfortran/24584
+	PR libfortran/24584
 	* io/list_read.c (free_saved): Set saved_used to zero.
 
 2005-10-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
@@ -663,7 +663,7 @@
 
 2005-10-24  Jerry DeLisle  <jvdelisle@verizon.net>
 
-	PR libgfortran/24224
+	PR libfortran/24224
 	* libgfortran.h: Remove array stride error code.
 	* runtime/error.c: Remove array stride error.
 	* io/io.h: Change name of 'nml_loop_spec' to 'array_loop_spec' to be
@@ -688,7 +688,7 @@
 
 2005-10-23  Jerry DeLisle  <jvdelisle@verizon.net>
 
-	PR libgfortran/24489
+	PR libfortran/24489
 	* io/transfer.c (read_block): Change the order of execution to not read
 	past end-of-record.
 	(read_block_direct): Same change.
@@ -787,7 +787,7 @@
 
 2005-10-11  Steven G. Kargl  <kargls@comcast.net>
 
-	PR libgfortran/24313
+	PR libfortran/24313
 	*  c99_functions.c (csqrtf, csqrt): Fix choice of branch cut.  Note
 	csqrt{f} were imported from glibc, and this bug is still present
 	there. glibc PR is 1146.
@@ -1375,7 +1375,7 @@
 
 2005-07-11  David Edelsohn  <edelsohn@gnu.org>
 
-	PR libgfortran/22412
+	PR libfortran/22412
 	* io/write.c (otoa): Bias p by SCRATCH_SIZE, not
 	sizeof (SCRATCH_SIZE).
 	(btoa): Same.
@@ -2114,13 +2114,13 @@
 
 2005-04-17 Paul Thomas <pault@gcc.gnu.org>
 
-	PR libgfortran/12884
-	PR libgfortran/17285
-	PR libgfortran/18122
-	PR libgfortran/18210
-	PR libgfortran/18392
-	PR libgfortran/18591
-	PR libgfortran/18879
+	PR libfortran/12884
+	PR libfortran/17285
+	PR libfortran/18122
+	PR libfortran/18210
+	PR libfortran/18392
+	PR libfortran/18591
+	PR libfortran/18879
 	* io/io.h (nml_ls): Declare.
 	(namelist_info): Modify for arrays.
 	* io/list_read.c (namelist_read): Reduced to call to new functions.
@@ -2495,7 +2495,7 @@
 2005-02-25  Peter O'Gorman  <peter@pogma.com>
 	    Toon Moene  <toon@moene.indiv.nluug.nl>
 
-	PR libgfortran/17748
+	PR libfortran/17748
 	* runtime/environ.c: Remove references to environ.
 	(show_variables): remove GFORTRAN_UNBUFFERED_* and
 	GFORTRAN_NAME_* because they require environ.
@@ -2534,8 +2534,8 @@
 
 2005-02-01  Paul Thomas <paulthomas2@wanadoo.fr>
 
-	PR libgfortran/19363
-	PR libgfortran/19691
+	PR libfortran/19363
+	PR libfortran/19691
 	* libgfortran.h (isfinite): Work around broken isfinite(x) in Cygwin.
 
 2005-01-30  Bud Davis  <bdavis@gfortran.org>
@@ -2572,7 +2572,7 @@
 
 2005-01-22  David Edelsohn  <edelsohn@gnu.org>
 
-	PR libgfortran/19052
+	PR libfortran/19052
 	* libgfortran.h (options_t): Add stderr_unit.
 	* io/io.h (error_stream): Declare.
 	* io/open.c (new_unit): Do not terminate abnormally if opening
