@@ -4382,6 +4382,10 @@ extern void using_eh_for_cleanups (void);
    otherwise.  */
 extern int folding_initializer;
 
+/* Convert between trees and native memory representation.  */
+extern int native_encode_expr (tree, unsigned char *, int);
+extern tree native_interpret_expr (tree, unsigned char *, int);
+
 /* Fold constants as much as possible in an expression.
    Returns the simplified expression.
    Acts only on the top level of the expression;
