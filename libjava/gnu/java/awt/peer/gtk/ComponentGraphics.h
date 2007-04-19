@@ -72,10 +72,6 @@ private:
   jlong initState(::gnu::java::awt::peer::gtk::GtkComponentPeer *);
   void lock();
   void unlock();
-public:
-  virtual void dispose();
-private:
-  void disposeSurface(jlong);
 public: // actually protected
   virtual jlong initFromVolatile(jlong, jint, jint);
 private:

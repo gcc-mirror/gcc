@@ -1,3 +1,9 @@
+2007-04-19  Casey Marshall  <csm@gnu.org>
+
+	PR classpath/31626:
+	* gnu/javax/net/ssl/provider/SSLSocketFactoryImpl.java
+	(createSocket): New method.
+
 2007-04-18  Tom Tromey  <tromey@redhat.com>
 
 	* tools/gnu/classpath/tools/javah/MethodHelper.java (print):

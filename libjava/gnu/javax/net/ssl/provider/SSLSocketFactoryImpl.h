@@ -51,6 +51,7 @@ public:
   virtual ::gnu::javax::net::ssl::provider::SSLSocketImpl * SSLSocketFactoryImpl$createSocket(::java::lang::String *, jint, ::java::net::InetAddress *, jint);
   virtual ::gnu::javax::net::ssl::provider::SSLSocketImpl * SSLSocketFactoryImpl$createSocket(::java::net::InetAddress *, jint);
   virtual ::gnu::javax::net::ssl::provider::SSLSocketImpl * SSLSocketFactoryImpl$createSocket(::java::net::InetAddress *, jint, ::java::net::InetAddress *, jint);
+  virtual ::java::net::Socket * createSocket();
   virtual ::java::net::Socket * createSocket(::java::net::InetAddress *, jint, ::java::net::InetAddress *, jint);
   virtual ::java::net::Socket * createSocket(::java::net::InetAddress *, jint);
   virtual ::java::net::Socket * createSocket(::java::lang::String *, jint, ::java::net::InetAddress *, jint);

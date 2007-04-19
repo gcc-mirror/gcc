@@ -132,4 +132,12 @@ public class SSLSocketFactoryImpl extends SSLSocketFactory
     socket.connect(new InetSocketAddress(host, port));
     return socket;
   }
+
+  /* (non-Javadoc)
+   * @see javax.net.SocketFactory#createSocket()
+   */
+  @Override public Socket createSocket() throws IOException
+  {
+    return new SSLSocketImpl(contextImpl, null, -1, new Socket(), true);
+  }
 }
