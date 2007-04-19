@@ -101,11 +101,15 @@ _GLIBCXX_END_NAMESPACE
 
 _GLIBCXX_LDBL_COMPAT (_ZStlsIdcSt11char_traitsIcEERSt13basic_ostreamIT0_T1_ES6_RKSt7complexIT_E,
 		      _ZStlsIecSt11char_traitsIcEERSt13basic_ostreamIT0_T1_ES6_RKSt7complexIT_E);
+#ifdef _GLIBCXX_USE_WCHAR_T
 _GLIBCXX_LDBL_COMPAT (_ZStlsIdwSt11char_traitsIwEERSt13basic_ostreamIT0_T1_ES6_RKSt7complexIT_E,
 		      _ZStlsIewSt11char_traitsIwEERSt13basic_ostreamIT0_T1_ES6_RKSt7complexIT_E);
+#endif
 _GLIBCXX_LDBL_COMPAT (_ZStrsIdcSt11char_traitsIcEERSt13basic_istreamIT0_T1_ES6_RSt7complexIT_E,
 		      _ZStrsIecSt11char_traitsIcEERSt13basic_istreamIT0_T1_ES6_RSt7complexIT_E);
+#ifdef _GLIBCXX_USE_WCHAR_T
 _GLIBCXX_LDBL_COMPAT (_ZStrsIdwSt11char_traitsIwEERSt13basic_istreamIT0_T1_ES6_RSt7complexIT_E,
 		      _ZStrsIewSt11char_traitsIwEERSt13basic_istreamIT0_T1_ES6_RSt7complexIT_E);
+#endif
 
 #endif // _GLIBCXX_LONG_DOUBLE_COMPAT

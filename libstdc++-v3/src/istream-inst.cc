@@ -103,11 +103,15 @@ _GLIBCXX_END_NAMESPACE
 #define _GLIBCXX_LDBL_COMPAT(dbl, ldbl) \
   extern "C" void ldbl (void) __attribute__ ((alias (#dbl), weak))
 _GLIBCXX_LDBL_COMPAT (_ZNSirsERd, _ZNSirsERe);
+#ifdef _GLIBCXX_USE_WCHAR_T
 _GLIBCXX_LDBL_COMPAT (_ZNSt13basic_istreamIwSt11char_traitsIwEErsERd,
 		      _ZNSt13basic_istreamIwSt11char_traitsIwEErsERe);
+#endif
 _GLIBCXX_LDBL_COMPAT (_ZNSi10_M_extractIdEERSiRT_,
 		      _ZNSi10_M_extractIeEERSiRT_);
+#ifdef _GLIBCXX_USE_WCHAR_T
 _GLIBCXX_LDBL_COMPAT (_ZNSt13basic_istreamIwSt11char_traitsIwEE10_M_extractIdEERS2_RT_,
 		      _ZNSt13basic_istreamIwSt11char_traitsIwEE10_M_extractIeEERS2_RT_);
+#endif
 
 #endif // _GLIBCXX_LONG_DOUBLE_COMPAT
