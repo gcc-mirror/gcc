@@ -97,6 +97,7 @@ get_args (int *argc, char ***argv)
 
 
 static const char *exe_path;
+static int please_free_exe_path_when_done;
 
 /* Save the path under which the program was called, for use in the
    backtrace routines.  */
@@ -116,15 +117,18 @@ store_exe_path (const char * argv0)
   if (argv0[0] == '/')
     {
       exe_path = argv0;
+      please_free_exe_path_when_done = 0;
       return;
     }
 
+  memset (buf, 0, sizeof (buf));
   cwd = getcwd (buf, sizeof (buf));
 
   /* exe_path will be cwd + "/" + argv[0] + "\0" */
   path = malloc (strlen (cwd) + 1 + strlen (argv0) + 1);
   st_sprintf (path, "%s%c%s", cwd, DIR_SEPARATOR, argv0);
   exe_path = path;
+  please_free_exe_path_when_done = 1;
 }
 
 /* Return the full path of the executable.  */
@@ -168,4 +172,7 @@ static void __attribute__((destructor))
 cleanup (void)
 {
   close_units ();
+  
+  if (please_free_exe_path_when_done)
+    free (exe_path);
 }

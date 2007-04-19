@@ -1,3 +1,10 @@
+2007-04-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* runtime/main.c (please_free_exe_path_when_done): New variable.
+	(store_exe_path): Initialize character buffer, and mark whether
+	exe_path should be free'd by the library destructor function.
+	(cleanup): Only free exe_path if needed.
+
 2007-04-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
