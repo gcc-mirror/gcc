@@ -1,3 +1,8 @@
+2007-04-18  Jan Hubicka  <jh@suse.cz>
+
+	* fold-const.c (div_if_zero_remainder): Do signed divide for pointer
+	types.
+
 2007-04-18  Eric Christopher  <echristo@apple.com>
 
 	* config/rs6000/darwin.md (load_macho_picbase): Use link register
