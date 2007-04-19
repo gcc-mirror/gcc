@@ -1,3 +1,7 @@
+2007-04-19  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/javax/net/ssl/provider/SSLSocketFactoryImpl.h: Rebuilt.
+
 2007-04-18  Tom Tromey  <tromey@redhat.com>
 
 	* Regenerated headers with new gjavah.
