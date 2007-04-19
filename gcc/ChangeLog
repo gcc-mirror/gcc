@@ -1,3 +1,8 @@
+2007-04-19  Janis Johnson  <janis187@us.ibm.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Remove definition of
+	__STDC_WANT_DEC_FP__.
+
 2007-04-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac: Allow both powerpc*-*-linux* and powerpc*-*-gnu*
