@@ -2224,7 +2224,8 @@
   [(set (match_operand:TF 0 "gpc_reg_operand" "=r")
         (subreg:TF (match_operand:TI 1 "gpc_reg_operand" "r") 0))]
   "TARGET_E500_DOUBLE"
-  "evmergelo %0,%1,%L1\;evmergelo %L0,%Y1,%Z1")
+  "evmergelo %0,%1,%L1\;evmergelo %L0,%Y1,%Z1"
+  [(set_attr "length" "8")])
 
 (define_insn "*frob_<mode>_di_2"
   [(set (subreg:DI (match_operand:SPE64TF 0 "nonimmediate_operand" "+&r,r") 0)
@@ -2255,7 +2256,8 @@
   [(set (match_operand:TI 0 "nonimmediate_operand" "=&r")
         (subreg:TI (match_operand:TF 1 "input_operand" "r") 0))]
   "TARGET_E500_DOUBLE"
-  "evmergehi %0,%1,%1\;mr %L0,%1\;evmergehi %Y0,%L1,%L1\;mr %Z0,%L1")
+  "evmergehi %0,%1,%1\;mr %L0,%1\;evmergehi %Y0,%L1,%L1\;mr %Z0,%L1"
+  [(set_attr "length" "16")])
 
 (define_insn "*frob_<DITI:mode>_<SPE64:mode>_2"
   [(set (subreg:SPE64 (match_operand:DITI 0 "register_operand" "+&r,r") 0)
@@ -2319,7 +2321,8 @@
   [(set (subreg:TF (match_operand:TI 0 "gpc_reg_operand" "=&r") 0)
 	(match_operand:TF 1 "gpc_reg_operand" "r"))]
   "TARGET_E500_DOUBLE"
-  "evmergehi %0,%1,%1\;mr %L0,%1\;evmergehi %Y0,%L1,%L1\;mr %Z0,%L1")
+  "evmergehi %0,%1,%1\;mr %L0,%1\;evmergehi %Y0,%L1,%L1\;mr %Z0,%L1"
+  [(set_attr "length" "16")])
 
 (define_insn "*mov_si<mode>_e500_subreg0"
   [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r,&r") 0)
@@ -2328,7 +2331,8 @@
    || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode)"
   "@
    evmergelo %0,%1,%0
-   evmergelohi %0,%0,%0\;{l%U1%X1|lwz%U1%X1} %0,%1\;evmergelohi %0,%0,%0")
+   evmergelohi %0,%0,%0\;{l%U1%X1|lwz%U1%X1} %0,%1\;evmergelohi %0,%0,%0"
+  [(set_attr "length" "4,12")])
 
 ;; ??? Could use evstwwe for memory stores in some cases, depending on
 ;; the offset.
@@ -2339,7 +2343,8 @@
    || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode)"
   "@
    evmergehi %0,%0,%1
-   evmergelohi %1,%1,%1\;{st%U0%X0|stw%U0%X0} %1,%0")
+   evmergelohi %1,%1,%1\;{st%U0%X0|stw%U0%X0} %1,%0"
+  [(set_attr "length" "4,8")])
 
 (define_insn "*mov_si<mode>_e500_subreg4"
   [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r,r") 4)
@@ -2365,7 +2370,8 @@
   "TARGET_E500_DOUBLE"
   "@
    evmergelo %L0,%1,%L0
-   evmergelohi %L0,%L0,%L0\;{l%U1%X1|lwz%U1%X1} %L0,%1\;evmergelohi %L0,%L0,%L0")
+   evmergelohi %L0,%L0,%L0\;{l%U1%X1|lwz%U1%X1} %L0,%1\;evmergelohi %L0,%L0,%L0"
+  [(set_attr "length" "4,12")])
 
 (define_insn "*mov_sitf_e500_subreg8_2"
   [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
@@ -2373,7 +2379,8 @@
   "TARGET_E500_DOUBLE"
   "@
    evmergehi %0,%0,%L1
-   evmergelohi %L1,%L1,%L1\;{st%U0%X0|stw%U0%X0} %L1,%0")
+   evmergelohi %L1,%L1,%L1\;{st%U0%X0|stw%U0%X0} %L1,%0"
+  [(set_attr "length" "4,8")])
 
 (define_insn "*mov_sitf_e500_subreg12"
   [(set (subreg:SI (match_operand:TF 0 "register_operand" "+r,r") 12)
@@ -2508,7 +2515,8 @@
    evxor %L0,%L0,%L0
    evor %0,%1,%1\;evxor %L0,%L0,%L0
    evldd%X1 %0,%y1\;evxor %L0,%L0,%L0
-   evstdd%X0 %1,%y0\;evxor %2,%2,%2\;evstdd %2,%Y0")
+   evstdd%X0 %1,%y0\;evxor %2,%2,%2\;evstdd %2,%Y0"
+  [(set_attr "length" "4,8,8,12")])
 
 (define_expand "spe_fix_trunctfsi2"
   [(parallel [(set (match_operand:SI 0 "gpc_reg_operand" "")
@@ -2533,7 +2541,8 @@
    (clobber (match_operand:SI 4 "gpc_reg_operand" "=&r"))]
   "!TARGET_IEEEQUAD
    && TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && TARGET_LONG_DOUBLE_128"
-  "mfspefscr %3\;rlwinm %4,%3,0,0,29\;ori %4,%4,1\;efdadd %2,%1,%L1\;mtspefscr %3\;efdctsiz %0, %2")
+  "mfspefscr %3\;rlwinm %4,%3,0,0,29\;ori %4,%4,1\;efdadd %2,%1,%L1\;mtspefscr %3\;efdctsiz %0, %2"
+  [(set_attr "length" "24")])
 
 (define_insn "spe_negtf2_internal"
   [(set (match_operand:TF 0 "gpc_reg_operand" "=r")
@@ -2546,7 +2555,8 @@
     return \"efdneg %L0,%L1\;efdneg %0,%1\";
   else
     return \"efdneg %0,%1\;efdneg %L0,%L1\";
-}")
+}"
+  [(set_attr "length" "8")])
 
 (define_expand "spe_abstf2_cmp"
   [(set (match_operand:TF 0 "gpc_reg_operand" "=f")
@@ -3055,7 +3065,8 @@
    && TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && TARGET_LONG_DOUBLE_128
    && !flag_unsafe_math_optimizations"
   "efdcmpeq %0,%1,%2\;bng %0,$+8\;efdcmpeq %0,%L1,%L2"
-  [(set_attr "type" "veccmp")])
+  [(set_attr "type" "veccmp")
+   (set_attr "length" "12")])
 
 (define_insn "tsttfeq_gpr"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
@@ -3067,7 +3078,8 @@
    && TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && TARGET_LONG_DOUBLE_128
    && flag_unsafe_math_optimizations"
   "efdtsteq %0,%1,%2\;bng %0,$+8\;efdtsteq %0,%L1,%L2"
-  [(set_attr "type" "veccmpsimple")])
+  [(set_attr "type" "veccmpsimple")
+   (set_attr "length" "12")])
 
 (define_insn "cmptfgt_gpr"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
@@ -3079,7 +3091,8 @@
    && TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && TARGET_LONG_DOUBLE_128
    && !flag_unsafe_math_optimizations"
   "efdcmpgt %0,%1,%2\;bgt %0,$+16\;efdcmpeq %0,%1,%2\;bng %0,$+8\;efdcmpgt %0,%L1,%L2"
-  [(set_attr "type" "veccmp")])
+  [(set_attr "type" "veccmp")
+   (set_attr "length" "20")])
 
 (define_insn "tsttfgt_gpr"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
@@ -3091,7 +3104,8 @@
    && TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && TARGET_LONG_DOUBLE_128
    && flag_unsafe_math_optimizations"
   "efdtstgt %0,%1,%2\;bgt %0,$+16\;efdtsteq %0,%1,%2\;bng %0,$+8\;efdtstgt %0,%L1,%L2"
-  [(set_attr "type" "veccmpsimple")])
+  [(set_attr "type" "veccmpsimple")
+   (set_attr "length" "20")])
 
 (define_insn "cmptflt_gpr"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
@@ -3103,7 +3117,8 @@
    && TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && TARGET_LONG_DOUBLE_128
    && !flag_unsafe_math_optimizations"
   "efdcmplt %0,%1,%2\;bgt %0,$+16\;efdcmpeq %0,%1,%2\;bng %0,$+8\;efdcmplt %0,%L1,%L2"
-  [(set_attr "type" "veccmp")])
+  [(set_attr "type" "veccmp")
+   (set_attr "length" "20")])
 
 (define_insn "tsttflt_gpr"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
@@ -3115,7 +3130,8 @@
    && TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && TARGET_LONG_DOUBLE_128
    && flag_unsafe_math_optimizations"
   "efdtstlt %0,%1,%2\;bgt %0,$+16\;efdtsteq %0,%1,%2\;bng %0,$+8\;efdtstlt %0,%L1,%L2"
-  [(set_attr "type" "veccmpsimple")])
+  [(set_attr "type" "veccmpsimple")
+   (set_attr "length" "20")])
 
 ;; Like cceq_ior_compare, but compare the GT bits.
 (define_insn "e500_cr_ior_compare"

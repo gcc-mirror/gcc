@@ -1,3 +1,13 @@
+2007-04-19  Joseph Myers  <joseph@codesourcery.com>
+
+	gcc/
+	* config/rs6000/spe.md (*frob_tf_ti, *frob_ti_tf, *frob_ti_tf_2,
+	*mov_si<mode>_e500_subreg0, *mov_si<mode>_e500_subreg0_2,
+	*mov_sitf_e500_subreg8, *mov_sitf_e500_subreg8_2, spe_extenddftf2,
+	spe_fix_trunctfsi2_internal, spe_negtf2_internal, cmptfeq_gpr,
+	tsttfeq_gpr, cmptfgt_gpr, tsttfgt_gpr, cmptflt_gpr, tsttflt_gpr):
+	Add length attributes.
+
 2007-04-19  Janis Johnson  <janis187@us.ibm.com>
 
 	* ginclude/float.h: Check that __STDC_WANT_DEC_FP__ is defined,
