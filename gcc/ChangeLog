@@ -1,3 +1,11 @@
+2007-04-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/29841
+	* cfgbuild.c (control_flow_insn_p): Return TRUE for unconditional
+	trap instructions.
+	* sched-deps.c (sched_analyze_insn): Prevent all non-jump instructions
+	that may cause control flow transfer from being moved.
+
 2007-04-18  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (ptrreg_to_str): Replace error() with
