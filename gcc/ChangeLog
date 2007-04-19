@@ -1,5 +1,8 @@
 2007-04-19  Janis Johnson  <janis187@us.ibm.com>
 
+	* ginclude/float.h: Check that __STDC_WANT_DEC_FP__ is defined,
+	not that it is 1.
+
 	* c-cppbuiltin.c (c_cpp_builtins): Remove definition of
 	__STDC_WANT_DEC_FP__.
 

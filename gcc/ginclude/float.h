@@ -160,7 +160,7 @@ Boston, MA 02110-1301, USA.  */
 
 #endif /* C99 */
 
-#if __STDC_WANT_DEC_FP__ == 1
+#ifdef __STDC_WANT_DEC_FP__
 /* Draft Technical Report 24732, extension for decimal floating-point
    arithmetic: Characteristic of decimal floating types <float.h>.  */
 
@@ -236,6 +236,6 @@ Boston, MA 02110-1301, USA.  */
 #undef DECFLT_EVAL_METHOD
 #define DECFLT_EVAL_METHOD	__DECFLT_EVAL_METHOD__
 
-#endif /* __STDC_WANT_DEC_FP__ == 1 */
+#endif /* __STDC_WANT_DEC_FP__ */
 
 #endif /* _FLOAT_H___ */
