@@ -143,8 +143,6 @@ static bool reorder_operands_p (tree, tree);
 static tree fold_negate_const (tree, tree);
 static tree fold_not_const (tree, tree);
 static tree fold_relational_const (enum tree_code, tree, tree, tree);
-static int native_encode_expr (tree, unsigned char *, int);
-static tree native_interpret_expr (tree, unsigned char *, int);
 
 
 /* We know that A1 + B1 = SUM1, using 2's complement arithmetic and ignoring
@@ -7286,7 +7284,7 @@ native_encode_vector (tree expr, unsigned char *ptr, int len)
    buffer PTR of length LEN bytes.  Return the number of bytes
    placed in the buffer, or zero upon failure.  */
 
-static int
+int
 native_encode_expr (tree expr, unsigned char *ptr, int len)
 {
   switch (TREE_CODE (expr))
@@ -7465,7 +7463,7 @@ native_interpret_vector (tree type, unsigned char *ptr, int len)
    we return a REAL_CST, etc...  If the buffer cannot be interpreted,
    return NULL_TREE.  */
 
-static tree
+tree
 native_interpret_expr (tree type, unsigned char *ptr, int len)
 {
   switch (TREE_CODE (type))
