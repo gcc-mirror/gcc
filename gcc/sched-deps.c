@@ -1598,8 +1598,12 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
 
   /* If this instruction can throw an exception, then moving it changes
      where block boundaries fall.  This is mighty confusing elsewhere.
-     Therefore, prevent such an instruction from being moved.  */
-  if (can_throw_internal (insn))
+     Therefore, prevent such an instruction from being moved.  Same for
+     non-jump instructions that define block boundaries.
+     ??? Unclear whether this is still necessary in EBB mode.  If not,
+     add_branch_dependences should be adjusted for RGN mode instead.  */
+  if (((CALL_P (insn) || JUMP_P (insn)) && can_throw_internal (insn))
+      || (NONJUMP_INSN_P (insn) && control_flow_insn_p (insn)))
     reg_pending_barrier = MOVE_BARRIER;
 
   /* Add dependencies if a scheduling barrier was found.  */
