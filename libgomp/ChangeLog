@@ -1,3 +1,7 @@
+2007-04-19  Daniel Franke  <franke.daniel@gmail.com>
+
+	* libgomp.texi (GOMP_CPU_AFFINITY): Updated.
+
 2007-04-16  Matthias Klose  <doko@debian.org>
 
 	* configure.tgt (i[456]86-*-linux*): Only add ia32 specific
