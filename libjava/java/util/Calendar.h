@@ -66,7 +66,7 @@ public:
   virtual jint getLeastMaximum(jint) = 0;
   virtual jint getActualMinimum(jint);
   virtual jint getActualMaximum(jint);
-  virtual jint target$compareTo(::java::util::Calendar *);
+  virtual jint Calendar$compareTo(::java::util::Calendar *);
   virtual ::java::lang::Object * clone();
   virtual ::java::lang::String * toString();
 private:

@@ -24,9 +24,9 @@ public:
   virtual void write(JArray< jchar > *, jint, jint) = 0;
   virtual void write(::java::lang::String *);
   virtual void write(::java::lang::String *, jint, jint);
-  virtual ::java::io::Writer * target$append(jchar);
-  virtual ::java::io::Writer * target$append(::java::lang::CharSequence *);
-  virtual ::java::io::Writer * target$append(::java::lang::CharSequence *, jint, jint);
+  virtual ::java::io::Writer * Writer$append(jchar);
+  virtual ::java::io::Writer * Writer$append(::java::lang::CharSequence *);
+  virtual ::java::io::Writer * Writer$append(::java::lang::CharSequence *, jint, jint);
   virtual ::java::lang::Appendable * append(::java::lang::CharSequence *, jint, jint);
   virtual ::java::lang::Appendable * append(::java::lang::CharSequence *);
   virtual ::java::lang::Appendable * append(jchar);

@@ -22,7 +22,7 @@ public:
   jint hashCode();
   jboolean equals(::java::lang::Object *);
   static jboolean getBoolean(::java::lang::String *);
-  jint target$compareTo(::java::lang::Boolean *);
+  jint Boolean$compareTo(::java::lang::Boolean *);
   static jboolean parseBoolean(::java::lang::String *);
   jint compareTo(::java::lang::Object *);
 private:

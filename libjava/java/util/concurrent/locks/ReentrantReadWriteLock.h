@@ -14,8 +14,8 @@ class java::util::concurrent::locks::ReentrantReadWriteLock : public ::java::lan
 public:
   ReentrantReadWriteLock();
   ReentrantReadWriteLock(jboolean);
-  virtual ::java::util::concurrent::locks::ReentrantReadWriteLock$WriteLock * target$writeLock();
-  virtual ::java::util::concurrent::locks::ReentrantReadWriteLock$ReadLock * target$readLock();
+  virtual ::java::util::concurrent::locks::ReentrantReadWriteLock$WriteLock * ReentrantReadWriteLock$writeLock();
+  virtual ::java::util::concurrent::locks::ReentrantReadWriteLock$ReadLock * ReentrantReadWriteLock$readLock();
   virtual jboolean isFair();
 public: // actually protected
   virtual ::java::lang::Thread * getOwner();

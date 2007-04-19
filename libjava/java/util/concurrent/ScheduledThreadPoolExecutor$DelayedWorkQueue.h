@@ -15,16 +15,16 @@ class java::util::concurrent::ScheduledThreadPoolExecutor$DelayedWorkQueue : pub
 
   ScheduledThreadPoolExecutor$DelayedWorkQueue();
 public:
-  virtual ::java::lang::Runnable * target$poll();
-  virtual ::java::lang::Runnable * target$peek();
-  virtual ::java::lang::Runnable * target$take();
-  virtual ::java::lang::Runnable * target$poll(jlong, ::java::util::concurrent::TimeUnit *);
-  virtual jboolean target$add(::java::lang::Runnable *);
-  virtual jboolean target$offer(::java::lang::Runnable *);
-  virtual void target$put(::java::lang::Runnable *);
-  virtual jboolean target$offer(::java::lang::Runnable *, jlong, ::java::util::concurrent::TimeUnit *);
-  virtual ::java::lang::Runnable * target$remove();
-  virtual ::java::lang::Runnable * target$element();
+  virtual ::java::lang::Runnable * ScheduledThreadPoolExecutor$DelayedWorkQueue$poll();
+  virtual ::java::lang::Runnable * ScheduledThreadPoolExecutor$DelayedWorkQueue$peek();
+  virtual ::java::lang::Runnable * ScheduledThreadPoolExecutor$DelayedWorkQueue$take();
+  virtual ::java::lang::Runnable * ScheduledThreadPoolExecutor$DelayedWorkQueue$poll(jlong, ::java::util::concurrent::TimeUnit *);
+  virtual jboolean ScheduledThreadPoolExecutor$DelayedWorkQueue$add(::java::lang::Runnable *);
+  virtual jboolean ScheduledThreadPoolExecutor$DelayedWorkQueue$offer(::java::lang::Runnable *);
+  virtual void ScheduledThreadPoolExecutor$DelayedWorkQueue$put(::java::lang::Runnable *);
+  virtual jboolean ScheduledThreadPoolExecutor$DelayedWorkQueue$offer(::java::lang::Runnable *, jlong, ::java::util::concurrent::TimeUnit *);
+  virtual ::java::lang::Runnable * ScheduledThreadPoolExecutor$DelayedWorkQueue$remove();
+  virtual ::java::lang::Runnable * ScheduledThreadPoolExecutor$DelayedWorkQueue$element();
   virtual void clear();
   virtual jint drainTo(::java::util::Collection *);
   virtual jint drainTo(::java::util::Collection *, jint);

@@ -35,15 +35,15 @@ class gnu::javax::net::ssl::provider::CompressionMethodList$Iterator : public ::
 public: // actually package-private
   CompressionMethodList$Iterator(::gnu::javax::net::ssl::provider::CompressionMethodList *);
 public:
-  virtual void target$add(::gnu::javax::net::ssl::provider::CompressionMethod *);
+  virtual void CompressionMethodList$Iterator$add(::gnu::javax::net::ssl::provider::CompressionMethod *);
   virtual jboolean hasNext();
   virtual jboolean hasPrevious();
-  virtual ::gnu::javax::net::ssl::provider::CompressionMethod * target$next();
+  virtual ::gnu::javax::net::ssl::provider::CompressionMethod * CompressionMethodList$Iterator$next();
   virtual jint nextIndex();
-  virtual ::gnu::javax::net::ssl::provider::CompressionMethod * target$previous();
+  virtual ::gnu::javax::net::ssl::provider::CompressionMethod * CompressionMethodList$Iterator$previous();
   virtual jint previousIndex();
   virtual void remove();
-  virtual void target$set(::gnu::javax::net::ssl::provider::CompressionMethod *);
+  virtual void CompressionMethodList$Iterator$set(::gnu::javax::net::ssl::provider::CompressionMethod *);
   virtual ::java::lang::Object * next();
   virtual ::java::lang::Object * previous();
   virtual void add(::java::lang::Object *);

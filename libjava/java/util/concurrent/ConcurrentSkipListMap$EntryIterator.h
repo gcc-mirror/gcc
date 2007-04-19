@@ -14,7 +14,7 @@ class java::util::concurrent::ConcurrentSkipListMap$EntryIterator : public ::jav
 public: // actually package-private
   ConcurrentSkipListMap$EntryIterator(::java::util::concurrent::ConcurrentSkipListMap *);
 public:
-  ::java::util::Map$Entry * target$next();
+  ::java::util::Map$Entry * ConcurrentSkipListMap$EntryIterator$next();
   ::java::lang::Object * next();
 public: // actually package-private
   ::java::util::concurrent::ConcurrentSkipListMap * __attribute__((aligned(__alignof__( ::java::util::concurrent::ConcurrentSkipListMap$Iter)))) this$0;

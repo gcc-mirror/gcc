@@ -76,7 +76,7 @@ public:
   static jbyte getDirectionality(jint);
   static jboolean isMirrored(jchar);
   static jboolean isMirrored(jint);
-  jint target$compareTo(::java::lang::Character *);
+  jint Character$compareTo(::java::lang::Character *);
   static ::java::lang::Character * valueOf(jchar);
   static jchar reverseBytes(jchar);
   static JArray< jchar > * toChars(jint);

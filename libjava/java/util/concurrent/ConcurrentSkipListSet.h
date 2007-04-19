@@ -29,7 +29,7 @@ public:
 public: // actually package-private
   ConcurrentSkipListSet(::java::util::concurrent::ConcurrentNavigableMap *);
 public:
-  virtual ::java::util::concurrent::ConcurrentSkipListSet * target$clone();
+  virtual ::java::util::concurrent::ConcurrentSkipListSet * ConcurrentSkipListSet$clone();
   virtual jint size();
   virtual jboolean isEmpty();
   virtual jboolean contains(::java::lang::Object *);
@@ -52,9 +52,9 @@ public:
   virtual ::java::util::NavigableSet * subSet(::java::lang::Object *, jboolean, ::java::lang::Object *, jboolean);
   virtual ::java::util::NavigableSet * headSet(::java::lang::Object *, jboolean);
   virtual ::java::util::NavigableSet * tailSet(::java::lang::Object *, jboolean);
-  virtual ::java::util::NavigableSet * target$subSet(::java::lang::Object *, ::java::lang::Object *);
-  virtual ::java::util::NavigableSet * target$headSet(::java::lang::Object *);
-  virtual ::java::util::NavigableSet * target$tailSet(::java::lang::Object *);
+  virtual ::java::util::NavigableSet * ConcurrentSkipListSet$subSet(::java::lang::Object *, ::java::lang::Object *);
+  virtual ::java::util::NavigableSet * ConcurrentSkipListSet$headSet(::java::lang::Object *);
+  virtual ::java::util::NavigableSet * ConcurrentSkipListSet$tailSet(::java::lang::Object *);
   virtual ::java::util::NavigableSet * descendingSet();
 private:
   void setMap(::java::util::concurrent::ConcurrentNavigableMap *);

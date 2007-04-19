@@ -46,9 +46,9 @@ public:
   SSLServerSocketFactoryImpl(::gnu::javax::net::ssl::provider::SSLContextImpl *);
   virtual JArray< ::java::lang::String * > * getDefaultCipherSuites();
   virtual JArray< ::java::lang::String * > * getSupportedCipherSuites();
-  virtual ::gnu::javax::net::ssl::provider::SSLServerSocketImpl * target$createServerSocket(jint);
-  virtual ::gnu::javax::net::ssl::provider::SSLServerSocketImpl * target$createServerSocket(jint, jint);
-  virtual ::gnu::javax::net::ssl::provider::SSLServerSocketImpl * target$createServerSocket(jint, jint, ::java::net::InetAddress *);
+  virtual ::gnu::javax::net::ssl::provider::SSLServerSocketImpl * SSLServerSocketFactoryImpl$createServerSocket(jint);
+  virtual ::gnu::javax::net::ssl::provider::SSLServerSocketImpl * SSLServerSocketFactoryImpl$createServerSocket(jint, jint);
+  virtual ::gnu::javax::net::ssl::provider::SSLServerSocketImpl * SSLServerSocketFactoryImpl$createServerSocket(jint, jint, ::java::net::InetAddress *);
   virtual ::java::net::ServerSocket * createServerSocket(jint, jint, ::java::net::InetAddress *);
   virtual ::java::net::ServerSocket * createServerSocket(jint, jint);
   virtual ::java::net::ServerSocket * createServerSocket(jint);

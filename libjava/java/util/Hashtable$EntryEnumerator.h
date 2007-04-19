@@ -15,7 +15,7 @@ public: // actually package-private
   Hashtable$EntryEnumerator(::java::util::Hashtable *);
 public:
   virtual jboolean hasMoreElements();
-  virtual ::java::util::Map$Entry * target$nextElement();
+  virtual ::java::util::Map$Entry * Hashtable$EntryEnumerator$nextElement();
   virtual ::java::lang::Object * nextElement();
 public: // actually package-private
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) count;

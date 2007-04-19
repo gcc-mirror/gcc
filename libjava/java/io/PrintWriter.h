@@ -52,19 +52,19 @@ public:
   virtual void write(::java::lang::String *, jint, jint);
   virtual void write(JArray< jchar > *);
   virtual void write(::java::lang::String *);
-  virtual ::java::io::PrintWriter * target$append(jchar);
-  virtual ::java::io::PrintWriter * target$append(::java::lang::CharSequence *);
-  virtual ::java::io::PrintWriter * target$append(::java::lang::CharSequence *, jint, jint);
+  virtual ::java::io::PrintWriter * PrintWriter$append(jchar);
+  virtual ::java::io::PrintWriter * PrintWriter$append(::java::lang::CharSequence *);
+  virtual ::java::io::PrintWriter * PrintWriter$append(::java::lang::CharSequence *, jint, jint);
   virtual ::java::io::PrintWriter * printf(::java::lang::String *, JArray< ::java::lang::Object * > *);
   virtual ::java::io::PrintWriter * printf(::java::util::Locale *, ::java::lang::String *, JArray< ::java::lang::Object * > *);
   virtual ::java::io::PrintWriter * format(::java::lang::String *, JArray< ::java::lang::Object * > *);
   virtual ::java::io::PrintWriter * format(::java::util::Locale *, ::java::lang::String *, JArray< ::java::lang::Object * > *);
   virtual ::java::lang::Appendable * append(::java::lang::CharSequence *, jint, jint);
-  virtual ::java::io::Writer * target$append(::java::lang::CharSequence *, jint, jint);
+  virtual ::java::io::Writer * Writer$append(::java::lang::CharSequence *, jint, jint);
   virtual ::java::lang::Appendable * append(::java::lang::CharSequence *);
-  virtual ::java::io::Writer * target$append(::java::lang::CharSequence *);
+  virtual ::java::io::Writer * Writer$append(::java::lang::CharSequence *);
   virtual ::java::lang::Appendable * append(jchar);
-  virtual ::java::io::Writer * target$append(jchar);
+  virtual ::java::io::Writer * Writer$append(jchar);
 private:
   jboolean __attribute__((aligned(__alignof__( ::java::io::Writer)))) autoflush;
   jboolean error;

@@ -33,7 +33,7 @@ public:
   GetSecurityPropertyAction(::java::lang::String *, ::java::lang::String *);
   virtual ::gnu::java::security::action::GetSecurityPropertyAction * setParameters(::java::lang::String *);
   virtual ::gnu::java::security::action::GetSecurityPropertyAction * setParameters(::java::lang::String *, ::java::lang::String *);
-  virtual ::java::lang::String * target$run();
+  virtual ::java::lang::String * GetSecurityPropertyAction$run();
   virtual ::java::lang::Object * run();
 private:
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) name;

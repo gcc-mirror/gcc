@@ -46,15 +46,15 @@ class gnu::javax::net::ssl::provider::X500PrincipalList$Iterator : public ::java
 
 public:
   X500PrincipalList$Iterator(::gnu::javax::net::ssl::provider::X500PrincipalList *);
-  virtual void target$add(::javax::security::auth::x500::X500Principal *);
+  virtual void X500PrincipalList$Iterator$add(::javax::security::auth::x500::X500Principal *);
   virtual jboolean hasNext();
   virtual jboolean hasPrevious();
-  virtual ::javax::security::auth::x500::X500Principal * target$next();
+  virtual ::javax::security::auth::x500::X500Principal * X500PrincipalList$Iterator$next();
   virtual jint nextIndex();
-  virtual ::javax::security::auth::x500::X500Principal * target$previous();
+  virtual ::javax::security::auth::x500::X500Principal * X500PrincipalList$Iterator$previous();
   virtual jint previousIndex();
   virtual void remove();
-  virtual void target$set(::javax::security::auth::x500::X500Principal *);
+  virtual void X500PrincipalList$Iterator$set(::javax::security::auth::x500::X500Principal *);
   virtual ::java::lang::Object * next();
   virtual ::java::lang::Object * previous();
   virtual void add(::java::lang::Object *);

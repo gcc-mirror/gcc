@@ -34,7 +34,7 @@ class gnu::javax::net::ssl::provider::AbstractHandshake$1 : public ::java::lang:
 public: // actually package-private
   AbstractHandshake$1(::gnu::javax::net::ssl::provider::AbstractHandshake$CertVerifier *);
 public:
-  ::java::lang::ClassLoader * target$run();
+  ::java::lang::ClassLoader * AbstractHandshake$1$run();
   ::java::lang::Object * run();
 public: // actually package-private
   ::gnu::javax::net::ssl::provider::AbstractHandshake$CertVerifier * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$1;

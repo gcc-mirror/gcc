@@ -15,7 +15,7 @@ public: // actually package-private
   ScheduledThreadPoolExecutor$1(::java::util::concurrent::ScheduledThreadPoolExecutor$DelayedWorkQueue *);
 public:
   jboolean hasNext();
-  ::java::lang::Runnable * target$next();
+  ::java::lang::Runnable * ScheduledThreadPoolExecutor$1$next();
   void remove();
   ::java::lang::Object * next();
 private:

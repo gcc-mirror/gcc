@@ -62,7 +62,7 @@ public:
   jboolean contentEquals(::java::lang::StringBuffer *);
   jboolean contentEquals(::java::lang::CharSequence *);
   jboolean equalsIgnoreCase(::java::lang::String *);
-  jint target$compareTo(::java::lang::String *);
+  jint String$compareTo(::java::lang::String *);
 private:
   jint nativeCompareTo(::java::lang::String *);
 public:

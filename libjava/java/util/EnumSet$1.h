@@ -15,7 +15,7 @@ public: // actually package-private
   EnumSet$1(::java::util::EnumSet *);
 public:
   jboolean hasNext();
-  ::java::lang::Enum * target$next();
+  ::java::lang::Enum * EnumSet$1$next();
   void remove();
   ::java::lang::Object * next();
 public: // actually package-private

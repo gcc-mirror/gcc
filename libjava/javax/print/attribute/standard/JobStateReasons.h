@@ -33,7 +33,7 @@ public:
   JobStateReasons(jint, jfloat);
   JobStateReasons(jint);
   JobStateReasons(::java::util::Collection *);
-  jboolean target$add(::javax::print::attribute::standard::JobStateReason *);
+  jboolean JobStateReasons$add(::javax::print::attribute::standard::JobStateReason *);
   ::java::lang::Class * getCategory();
   ::java::lang::String * getName();
   jboolean add(::java::lang::Object *);

@@ -57,7 +57,7 @@ public:
   virtual void setNeedClientAuth(jboolean);
   virtual void setUseClientMode(jboolean);
   virtual void setWantClientAuth(jboolean);
-  virtual ::gnu::javax::net::ssl::provider::SSLSocketImpl * target$accept();
+  virtual ::gnu::javax::net::ssl::provider::SSLSocketImpl * SSLServerSocketImpl$accept();
   virtual ::java::net::Socket * accept();
 private:
   ::gnu::javax::net::ssl::provider::SSLContextImpl * __attribute__((aligned(__alignof__( ::javax::net::ssl::SSLServerSocket)))) contextImpl;

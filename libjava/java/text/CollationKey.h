@@ -27,7 +27,7 @@ class java::text::CollationKey : public ::java::lang::Object
 public: // actually package-private
   CollationKey(::java::text::Collator *, ::java::lang::String *, JArray< jbyte > *);
 public:
-  virtual jint target$compareTo(::java::text::CollationKey *);
+  virtual jint CollationKey$compareTo(::java::text::CollationKey *);
   virtual jboolean equals(::java::lang::Object *);
   virtual ::java::lang::String * getSourceString();
   virtual jint hashCode();

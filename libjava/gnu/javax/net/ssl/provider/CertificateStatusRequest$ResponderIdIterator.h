@@ -35,7 +35,7 @@ class gnu::javax::net::ssl::provider::CertificateStatusRequest$ResponderIdIterat
 
 public:
   CertificateStatusRequest$ResponderIdIterator(::gnu::javax::net::ssl::provider::CertificateStatusRequest *);
-  virtual JArray< jbyte > * target$next();
+  virtual JArray< jbyte > * CertificateStatusRequest$ResponderIdIterator$next();
   virtual jboolean hasNext();
   virtual void remove();
   virtual ::java::lang::Object * next();

@@ -18,7 +18,7 @@ public:
   virtual jboolean equals(::java::lang::Object *);
   virtual jint hashCode();
   virtual ::java::lang::String * toString();
-  virtual jint target$compareTo(::java::lang::Enum *);
+  virtual jint Enum$compareTo(::java::lang::Enum *);
 public: // actually protected
   virtual ::java::lang::Object * clone();
 public:

@@ -17,7 +17,7 @@ public: // actually package-private
   Collections$UnmodifiableMap$UnmodifiableEntrySet(::java::util::Set *);
 public:
   ::java::util::Iterator * iterator();
-  JArray< ::java::util::Map$Entry * > * target$toArray();
+  JArray< ::java::util::Map$Entry * > * Collections$UnmodifiableMap$UnmodifiableEntrySet$toArray();
   JArray< ::java::lang::Object * > * toArray(JArray< ::java::lang::Object * > *);
   JArray< ::java::lang::Object * > * toArray();
 private:

@@ -15,7 +15,7 @@ public: // actually package-private
   EnumMap$6(::java::util::EnumMap$5 *);
 public:
   jboolean hasNext();
-  ::java::util::Map$Entry * target$next();
+  ::java::util::Map$Entry * EnumMap$6$next();
   void remove();
   ::java::lang::Object * next();
 public: // actually package-private

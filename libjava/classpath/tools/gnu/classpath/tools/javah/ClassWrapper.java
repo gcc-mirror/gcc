@@ -1,5 +1,5 @@
 /* ClassWrapper.java - wrap ASM class objects
- Copyright (C) 2006 Free Software Foundation, Inc.
+ Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -67,6 +68,11 @@ public class ClassWrapper
 
   // A set of all the method names in this class.
   HashSet methodNames = new HashSet();
+
+  // This maps a method name + descriptor, e.g. "method()V", to the
+  // name chosen for the method.  This is used when computing the
+  // names of bridge method targets.
+  HashMap methodNameMap = new HashMap();
 
   public ClassWrapper(Main classpath)
   {
@@ -187,18 +193,24 @@ public class ClassWrapper
         superClass.makeVtable();
         vtable = new ArrayList(superClass.vtable);
         bridgeTargets = new HashSet(superClass.bridgeTargets);
+	methodNameMap = new HashMap(superClass.methodNameMap);
       }
     else
       {
         // Object.
         vtable = new ArrayList();
         bridgeTargets = new HashSet();
+	methodNameMap = new HashMap();
       }
     addLocalMethods();
     addInterfaces(this);
 
-    // Make a set of all the targets of bridge methods.
-    // We rename bridge methods to avoid problems with C++.
+    // Make a set of all the targets of bridge methods.  We rename
+    // bridge target methods to avoid problems with C++.  You might
+    // think we could rename the bridge methods themselves, but bridge
+    // methods by definition override a method from the superclass --
+    // and we have to consider the superclass' header as an
+    // unchangeable entity.
     Iterator i = methods.iterator();
     while (i.hasNext())
       {
@@ -232,8 +244,25 @@ public class ClassWrapper
     while (i.hasNext())
       {
         MethodNode m = (MethodNode) i.next();
-        boolean isTarget = bridgeTargets.contains(m.name + m.desc);
-        MethodHelper.print(out, m, this, isTarget);
+	String nameToUse;
+	String sum = m.name + m.desc;
+	if (bridgeTargets.contains(sum))
+	  {
+	    if (methodNameMap.containsKey(sum))
+	      nameToUse = (String) methodNameMap.get(sum);
+	    else
+	      {
+		// Bridge target that is new in this class.
+		String cname = this.name;
+		int index = cname.lastIndexOf('/');
+		cname = cname.substring(index + 1);
+		nameToUse = cname + "$" + m.name;
+	      }
+	  }
+	else
+	  nameToUse = Keywords.getCxxName(m.name);
+	methodNameMap.put(sum, nameToUse);
+        MethodHelper.print(out, m, this, nameToUse);
       }
   }
 

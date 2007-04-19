@@ -62,7 +62,7 @@ public:
 private:
   ::java::math::BigDecimal * floor();
 public:
-  virtual jint target$compareTo(::java::math::BigDecimal *);
+  virtual jint BigDecimal$compareTo(::java::math::BigDecimal *);
   virtual jboolean equals(::java::lang::Object *);
   virtual jint hashCode();
   virtual ::java::math::BigDecimal * max(::java::math::BigDecimal *);

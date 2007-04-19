@@ -26,7 +26,7 @@ public: // actually package-private
   ImageIO$1(::java::util::Iterator *);
 public:
   jboolean hasNext();
-  ::javax::imageio::ImageTranscoder * target$next();
+  ::javax::imageio::ImageTranscoder * ImageIO$1$next();
   void remove();
   ::java::lang::Object * next();
 private:

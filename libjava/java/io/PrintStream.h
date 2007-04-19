@@ -63,9 +63,9 @@ public:
   virtual void println(JArray< jchar > *);
   virtual void write(jint);
   virtual void write(JArray< jbyte > *, jint, jint);
-  virtual ::java::io::PrintStream * target$append(jchar);
-  virtual ::java::io::PrintStream * target$append(::java::lang::CharSequence *);
-  virtual ::java::io::PrintStream * target$append(::java::lang::CharSequence *, jint, jint);
+  virtual ::java::io::PrintStream * PrintStream$append(jchar);
+  virtual ::java::io::PrintStream * PrintStream$append(::java::lang::CharSequence *);
+  virtual ::java::io::PrintStream * PrintStream$append(::java::lang::CharSequence *, jint, jint);
   virtual ::java::io::PrintStream * printf(::java::lang::String *, JArray< ::java::lang::Object * > *);
   virtual ::java::io::PrintStream * printf(::java::util::Locale *, ::java::lang::String *, JArray< ::java::lang::Object * > *);
   virtual ::java::io::PrintStream * format(::java::lang::String *, JArray< ::java::lang::Object * > *);

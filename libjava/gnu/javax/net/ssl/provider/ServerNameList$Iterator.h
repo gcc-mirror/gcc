@@ -35,7 +35,7 @@ class gnu::javax::net::ssl::provider::ServerNameList$Iterator : public ::java::l
 public:
   ServerNameList$Iterator(::gnu::javax::net::ssl::provider::ServerNameList *);
   virtual jboolean hasNext();
-  virtual ::gnu::javax::net::ssl::provider::ServerNameList$ServerName * target$next();
+  virtual ::gnu::javax::net::ssl::provider::ServerNameList$ServerName * ServerNameList$Iterator$next();
   virtual void remove();
   virtual ::java::lang::Object * next();
 private:

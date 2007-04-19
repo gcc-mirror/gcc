@@ -17,7 +17,7 @@ public: // actually package-private
   ScheduledThreadPoolExecutor$ScheduledFutureTask(::java::util::concurrent::ScheduledThreadPoolExecutor *, ::java::util::concurrent::Callable *, jlong);
 public:
   virtual jlong getDelay(::java::util::concurrent::TimeUnit *);
-  virtual jint target$compareTo(::java::util::concurrent::Delayed *);
+  virtual jint ScheduledThreadPoolExecutor$ScheduledFutureTask$compareTo(::java::util::concurrent::Delayed *);
   virtual jboolean isPeriodic();
 private:
   void runPeriodic();

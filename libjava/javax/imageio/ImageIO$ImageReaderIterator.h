@@ -26,7 +26,7 @@ public:
   ImageIO$ImageReaderIterator(::java::util::Iterator *, ::java::lang::Object *);
   ImageIO$ImageReaderIterator(::java::util::Iterator *);
   jboolean hasNext();
-  ::javax::imageio::ImageReader * target$next();
+  ::javax::imageio::ImageReader * ImageIO$ImageReaderIterator$next();
   void remove();
   ::java::lang::Object * next();
 public: // actually package-private

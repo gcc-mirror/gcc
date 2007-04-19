@@ -16,10 +16,10 @@ class java::util::EnumSet : public ::java::util::AbstractSet
 public: // actually package-private
   EnumSet();
 public:
-  virtual ::java::util::EnumSet * target$clone();
+  virtual ::java::util::EnumSet * EnumSet$clone();
   virtual jint size();
   virtual ::java::util::Iterator * iterator();
-  virtual jboolean target$add(::java::lang::Enum *);
+  virtual jboolean EnumSet$add(::java::lang::Enum *);
   virtual jboolean addAll(::java::util::Collection *);
   virtual void clear();
   virtual jboolean contains(::java::lang::Object *);

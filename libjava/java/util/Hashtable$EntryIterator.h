@@ -15,7 +15,7 @@ public: // actually package-private
   Hashtable$EntryIterator(::java::util::Hashtable *);
 public:
   virtual jboolean hasNext();
-  virtual ::java::util::Map$Entry * target$next();
+  virtual ::java::util::Map$Entry * Hashtable$EntryIterator$next();
   virtual void remove();
   virtual ::java::lang::Object * next();
 public: // actually package-private
