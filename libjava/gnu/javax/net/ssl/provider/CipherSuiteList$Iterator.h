@@ -35,15 +35,15 @@ class gnu::javax::net::ssl::provider::CipherSuiteList$Iterator : public ::java::
 public: // actually package-private
   CipherSuiteList$Iterator(::gnu::javax::net::ssl::provider::CipherSuiteList *);
 public:
-  virtual void target$add(::gnu::javax::net::ssl::provider::CipherSuite *);
+  virtual void CipherSuiteList$Iterator$add(::gnu::javax::net::ssl::provider::CipherSuite *);
   virtual jboolean hasNext();
   virtual jboolean hasPrevious();
-  virtual ::gnu::javax::net::ssl::provider::CipherSuite * target$next();
+  virtual ::gnu::javax::net::ssl::provider::CipherSuite * CipherSuiteList$Iterator$next();
   virtual jint nextIndex();
-  virtual ::gnu::javax::net::ssl::provider::CipherSuite * target$previous();
+  virtual ::gnu::javax::net::ssl::provider::CipherSuite * CipherSuiteList$Iterator$previous();
   virtual jint previousIndex();
   virtual void remove();
-  virtual void target$set(::gnu::javax::net::ssl::provider::CipherSuite *);
+  virtual void CipherSuiteList$Iterator$set(::gnu::javax::net::ssl::provider::CipherSuite *);
   virtual ::java::lang::Object * next();
   virtual ::java::lang::Object * previous();
   virtual void add(::java::lang::Object *);

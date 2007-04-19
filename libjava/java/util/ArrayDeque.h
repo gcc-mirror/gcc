@@ -55,7 +55,7 @@ public:
   virtual void clear();
   virtual JArray< ::java::lang::Object * > * toArray();
   virtual JArray< ::java::lang::Object * > * toArray(JArray< ::java::lang::Object * > *);
-  virtual ::java::util::ArrayDeque * target$clone();
+  virtual ::java::util::ArrayDeque * ArrayDeque$clone();
 private:
   void writeObject(::java::io::ObjectOutputStream *);
   void readObject(::java::io::ObjectInputStream *);

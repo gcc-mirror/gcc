@@ -46,13 +46,13 @@ public:
 private:
   ::java::util::concurrent::ConcurrentSkipListMap$SubMap * newSubMap(::java::lang::Object *, jboolean, ::java::lang::Object *, jboolean);
 public:
-  ::java::util::concurrent::ConcurrentSkipListMap$SubMap * target$subMap(::java::lang::Object *, jboolean, ::java::lang::Object *, jboolean);
-  ::java::util::concurrent::ConcurrentSkipListMap$SubMap * target$headMap(::java::lang::Object *, jboolean);
-  ::java::util::concurrent::ConcurrentSkipListMap$SubMap * target$tailMap(::java::lang::Object *, jboolean);
-  ::java::util::concurrent::ConcurrentSkipListMap$SubMap * target$subMap(::java::lang::Object *, ::java::lang::Object *);
-  ::java::util::concurrent::ConcurrentSkipListMap$SubMap * target$headMap(::java::lang::Object *);
-  ::java::util::concurrent::ConcurrentSkipListMap$SubMap * target$tailMap(::java::lang::Object *);
-  ::java::util::concurrent::ConcurrentSkipListMap$SubMap * target$descendingMap();
+  ::java::util::concurrent::ConcurrentSkipListMap$SubMap * ConcurrentSkipListMap$SubMap$subMap(::java::lang::Object *, jboolean, ::java::lang::Object *, jboolean);
+  ::java::util::concurrent::ConcurrentSkipListMap$SubMap * ConcurrentSkipListMap$SubMap$headMap(::java::lang::Object *, jboolean);
+  ::java::util::concurrent::ConcurrentSkipListMap$SubMap * ConcurrentSkipListMap$SubMap$tailMap(::java::lang::Object *, jboolean);
+  ::java::util::concurrent::ConcurrentSkipListMap$SubMap * ConcurrentSkipListMap$SubMap$subMap(::java::lang::Object *, ::java::lang::Object *);
+  ::java::util::concurrent::ConcurrentSkipListMap$SubMap * ConcurrentSkipListMap$SubMap$headMap(::java::lang::Object *);
+  ::java::util::concurrent::ConcurrentSkipListMap$SubMap * ConcurrentSkipListMap$SubMap$tailMap(::java::lang::Object *);
+  ::java::util::concurrent::ConcurrentSkipListMap$SubMap * ConcurrentSkipListMap$SubMap$descendingMap();
   ::java::util::Map$Entry * ceilingEntry(::java::lang::Object *);
   ::java::lang::Object * ceilingKey(::java::lang::Object *);
   ::java::util::Map$Entry * lowerEntry(::java::lang::Object *);
@@ -67,7 +67,7 @@ public:
   ::java::util::Map$Entry * lastEntry();
   ::java::util::Map$Entry * pollFirstEntry();
   ::java::util::Map$Entry * pollLastEntry();
-  ::java::util::NavigableSet * target$keySet();
+  ::java::util::NavigableSet * ConcurrentSkipListMap$SubMap$keySet();
   ::java::util::NavigableSet * navigableKeySet();
   ::java::util::Collection * values();
   ::java::util::Set * entrySet();

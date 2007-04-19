@@ -34,7 +34,7 @@ class gnu::javax::net::ssl::provider::CertificateURL$Iterator : public ::java::l
 
 public:
   CertificateURL$Iterator(::gnu::javax::net::ssl::provider::CertificateURL *);
-  virtual ::gnu::javax::net::ssl::provider::CertificateURL$URLAndOptionalHash * target$next();
+  virtual ::gnu::javax::net::ssl::provider::CertificateURL$URLAndOptionalHash * CertificateURL$Iterator$next();
   virtual jboolean hasNext();
   virtual void remove();
   virtual ::java::lang::Object * next();

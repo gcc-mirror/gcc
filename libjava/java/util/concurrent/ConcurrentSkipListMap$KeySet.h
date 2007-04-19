@@ -38,9 +38,9 @@ public:
   ::java::util::NavigableSet * subSet(::java::lang::Object *, jboolean, ::java::lang::Object *, jboolean);
   ::java::util::NavigableSet * headSet(::java::lang::Object *, jboolean);
   ::java::util::NavigableSet * tailSet(::java::lang::Object *, jboolean);
-  ::java::util::NavigableSet * target$subSet(::java::lang::Object *, ::java::lang::Object *);
-  ::java::util::NavigableSet * target$headSet(::java::lang::Object *);
-  ::java::util::NavigableSet * target$tailSet(::java::lang::Object *);
+  ::java::util::NavigableSet * ConcurrentSkipListMap$KeySet$subSet(::java::lang::Object *, ::java::lang::Object *);
+  ::java::util::NavigableSet * ConcurrentSkipListMap$KeySet$headSet(::java::lang::Object *);
+  ::java::util::NavigableSet * ConcurrentSkipListMap$KeySet$tailSet(::java::lang::Object *);
   ::java::util::NavigableSet * descendingSet();
   ::java::util::SortedSet * subSet(::java::lang::Object *, ::java::lang::Object *);
   ::java::util::SortedSet * tailSet(::java::lang::Object *);

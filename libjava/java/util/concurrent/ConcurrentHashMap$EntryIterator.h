@@ -14,7 +14,7 @@ class java::util::concurrent::ConcurrentHashMap$EntryIterator : public ::java::u
 public: // actually package-private
   ConcurrentHashMap$EntryIterator(::java::util::concurrent::ConcurrentHashMap *);
 public:
-  ::java::util::Map$Entry * target$next();
+  ::java::util::Map$Entry * ConcurrentHashMap$EntryIterator$next();
   ::java::lang::Object * next();
 public: // actually package-private
   ::java::util::concurrent::ConcurrentHashMap * __attribute__((aligned(__alignof__( ::java::util::concurrent::ConcurrentHashMap$HashIterator)))) this$0;

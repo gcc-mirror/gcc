@@ -48,7 +48,7 @@ public:
 private:
   static jint compareTo(::java::math::BigInteger *, ::java::math::BigInteger *);
 public:
-  virtual jint target$compareTo(::java::math::BigInteger *);
+  virtual jint BigInteger$compareTo(::java::math::BigInteger *);
   virtual ::java::math::BigInteger * min(::java::math::BigInteger *);
   virtual ::java::math::BigInteger * max(::java::math::BigInteger *);
 private:

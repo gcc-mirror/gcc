@@ -40,7 +40,7 @@ public:
   virtual jint arrayOffset();
   virtual jint hashCode();
   virtual jboolean equals(::java::lang::Object *);
-  virtual jint target$compareTo(::java::nio::FloatBuffer *);
+  virtual jint FloatBuffer$compareTo(::java::nio::FloatBuffer *);
   virtual ::java::nio::ByteOrder * order() = 0;
   virtual jfloat get() = 0;
   virtual ::java::nio::FloatBuffer * put(jfloat) = 0;

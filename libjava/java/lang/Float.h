@@ -36,7 +36,7 @@ public:
   static jint floatToIntBits(jfloat);
   static jint floatToRawIntBits(jfloat);
   static jfloat intBitsToFloat(jint);
-  jint target$compareTo(::java::lang::Float *);
+  jint Float$compareTo(::java::lang::Float *);
   static jint compare(jfloat, jfloat);
   jint compareTo(::java::lang::Object *);
 private:

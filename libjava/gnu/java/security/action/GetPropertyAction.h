@@ -31,7 +31,7 @@ public:
   GetPropertyAction();
   GetPropertyAction(::java::lang::String *);
   GetPropertyAction(::java::lang::String *, ::java::lang::String *);
-  virtual ::java::lang::String * target$run();
+  virtual ::java::lang::String * GetPropertyAction$run();
   virtual ::gnu::java::security::action::GetPropertyAction * setParameters(::java::lang::String *);
   virtual ::gnu::java::security::action::GetPropertyAction * setParameters(::java::lang::String *, ::java::lang::String *);
   virtual ::java::lang::Object * run();

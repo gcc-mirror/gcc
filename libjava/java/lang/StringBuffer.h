@@ -34,9 +34,9 @@ public:
   ::java::lang::StringBuffer * append(JArray< jchar > *, jint, jint);
   ::java::lang::StringBuffer * appendCodePoint(jint);
   ::java::lang::StringBuffer * append(jboolean);
-  ::java::lang::StringBuffer * target$append(jchar);
-  ::java::lang::StringBuffer * target$append(::java::lang::CharSequence *);
-  ::java::lang::StringBuffer * target$append(::java::lang::CharSequence *, jint, jint);
+  ::java::lang::StringBuffer * StringBuffer$append(jchar);
+  ::java::lang::StringBuffer * StringBuffer$append(::java::lang::CharSequence *);
+  ::java::lang::StringBuffer * StringBuffer$append(::java::lang::CharSequence *, jint, jint);
   ::java::lang::StringBuffer * append(jint);
   ::java::lang::StringBuffer * append(jlong);
   ::java::lang::StringBuffer * append(jfloat);

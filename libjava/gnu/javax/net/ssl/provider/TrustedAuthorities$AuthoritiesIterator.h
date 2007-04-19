@@ -34,7 +34,7 @@ class gnu::javax::net::ssl::provider::TrustedAuthorities$AuthoritiesIterator : p
 
 public:
   TrustedAuthorities$AuthoritiesIterator(::gnu::javax::net::ssl::provider::TrustedAuthorities *);
-  virtual ::gnu::javax::net::ssl::provider::TrustedAuthorities$TrustedAuthority * target$next();
+  virtual ::gnu::javax::net::ssl::provider::TrustedAuthorities$TrustedAuthority * TrustedAuthorities$AuthoritiesIterator$next();
   virtual jboolean hasNext();
   virtual void remove();
   virtual ::java::lang::Object * next();

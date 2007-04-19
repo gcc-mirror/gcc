@@ -28,7 +28,7 @@ public:
   virtual jboolean after(::java::util::Date *);
   virtual jboolean before(::java::util::Date *);
   virtual jboolean equals(::java::lang::Object *);
-  virtual jint target$compareTo(::java::util::Date *);
+  virtual jint Date$compareTo(::java::util::Date *);
   virtual jint hashCode();
   virtual ::java::lang::String * toString();
   virtual ::java::lang::String * toLocaleString();

@@ -26,7 +26,7 @@ public:
   ImageIO$ImageWriterIterator(::java::util::Iterator *, ::java::lang::Object *);
   ImageIO$ImageWriterIterator(::java::util::Iterator *);
   jboolean hasNext();
-  ::javax::imageio::ImageWriter * target$next();
+  ::javax::imageio::ImageWriter * ImageIO$ImageWriterIterator$next();
   void remove();
   ::java::lang::Object * next();
 public: // actually package-private

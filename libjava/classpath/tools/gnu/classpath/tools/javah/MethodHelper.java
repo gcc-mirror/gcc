@@ -1,5 +1,5 @@
 /* MethodHelper.java - helper class for manipulating methods
- Copyright (C) 2006 Free Software Foundation, Inc.
+ Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -76,7 +76,7 @@ public class MethodHelper
   }
 
   public static void print(CniPrintStream out, MethodNode meth,
-                           ClassWrapper declarer, boolean isBridgeTarget)
+                           ClassWrapper declarer, String realMethodName)
   {
     if ("<clinit>".equals(meth.name))
       return;
@@ -97,15 +97,7 @@ public class MethodHelper
       {
         out.print(Type.getReturnType(meth.desc));
         out.print(" ");
-        if (isBridgeTarget)
-          {
-            out.print("target$");
-            out.print(meth.name);
-          }
-        else
-          {
-            out.print(Keywords.getCxxName(meth.name));
-          }
+	out.print(realMethodName);
       }
     else
       {

@@ -31,9 +31,9 @@ public:
   ::java::lang::StringBuilder * append(JArray< jchar > *);
   ::java::lang::StringBuilder * append(JArray< jchar > *, jint, jint);
   ::java::lang::StringBuilder * append(jboolean);
-  ::java::lang::StringBuilder * target$append(jchar);
-  ::java::lang::StringBuilder * target$append(::java::lang::CharSequence *);
-  ::java::lang::StringBuilder * target$append(::java::lang::CharSequence *, jint, jint);
+  ::java::lang::StringBuilder * StringBuilder$append(jchar);
+  ::java::lang::StringBuilder * StringBuilder$append(::java::lang::CharSequence *);
+  ::java::lang::StringBuilder * StringBuilder$append(::java::lang::CharSequence *, jint, jint);
   ::java::lang::StringBuilder * appendCodePoint(jint);
   ::java::lang::StringBuilder * append(jint);
   ::java::lang::StringBuilder * append(jlong);

@@ -43,7 +43,7 @@ public:
   virtual jint arrayOffset();
   virtual jint hashCode();
   virtual jboolean equals(::java::lang::Object *);
-  virtual jint target$compareTo(::java::nio::CharBuffer *);
+  virtual jint CharBuffer$compareTo(::java::nio::CharBuffer *);
   virtual ::java::nio::ByteOrder * order() = 0;
   virtual jchar get() = 0;
   virtual ::java::nio::CharBuffer * put(jchar) = 0;
@@ -60,9 +60,9 @@ public:
   virtual ::java::nio::CharBuffer * put(::java::lang::String *, jint, jint);
   virtual ::java::nio::CharBuffer * put(::java::lang::String *);
   virtual jchar charAt(jint);
-  virtual ::java::nio::CharBuffer * target$append(jchar);
-  virtual ::java::nio::CharBuffer * target$append(::java::lang::CharSequence *);
-  virtual ::java::nio::CharBuffer * target$append(::java::lang::CharSequence *, jint, jint);
+  virtual ::java::nio::CharBuffer * CharBuffer$append(jchar);
+  virtual ::java::nio::CharBuffer * CharBuffer$append(::java::lang::CharSequence *);
+  virtual ::java::nio::CharBuffer * CharBuffer$append(::java::lang::CharSequence *, jint, jint);
   virtual ::java::lang::Appendable * append(::java::lang::CharSequence *, jint, jint);
   virtual ::java::lang::Appendable * append(::java::lang::CharSequence *);
   virtual ::java::lang::Appendable * append(jchar);

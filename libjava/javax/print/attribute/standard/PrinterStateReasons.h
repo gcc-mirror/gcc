@@ -35,7 +35,7 @@ public:
   PrinterStateReasons(jint);
   PrinterStateReasons(::java::util::Map *);
   ::java::util::Set * printerStateReasonSet(::javax::print::attribute::standard::Severity *);
-  ::javax::print::attribute::standard::Severity * target$put(::javax::print::attribute::standard::PrinterStateReason *, ::javax::print::attribute::standard::Severity *);
+  ::javax::print::attribute::standard::Severity * PrinterStateReasons$put(::javax::print::attribute::standard::PrinterStateReason *, ::javax::print::attribute::standard::Severity *);
   ::java::lang::Class * getCategory();
   ::java::lang::String * getName();
   ::java::lang::Object * put(::java::lang::Object *, ::java::lang::Object *);

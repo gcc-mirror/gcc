@@ -35,15 +35,15 @@ class gnu::javax::net::ssl::provider::ClientCertificateTypeList$Iterator : publi
 public: // actually package-private
   ClientCertificateTypeList$Iterator(::gnu::javax::net::ssl::provider::ClientCertificateTypeList *);
 public:
-  virtual void target$add(::gnu::javax::net::ssl::provider::CertificateRequest$ClientCertificateType *);
+  virtual void ClientCertificateTypeList$Iterator$add(::gnu::javax::net::ssl::provider::CertificateRequest$ClientCertificateType *);
   virtual jboolean hasNext();
   virtual jboolean hasPrevious();
-  virtual ::gnu::javax::net::ssl::provider::CertificateRequest$ClientCertificateType * target$next();
+  virtual ::gnu::javax::net::ssl::provider::CertificateRequest$ClientCertificateType * ClientCertificateTypeList$Iterator$next();
   virtual jint nextIndex();
-  virtual ::gnu::javax::net::ssl::provider::CertificateRequest$ClientCertificateType * target$previous();
+  virtual ::gnu::javax::net::ssl::provider::CertificateRequest$ClientCertificateType * ClientCertificateTypeList$Iterator$previous();
   virtual jint previousIndex();
   virtual void remove();
-  virtual void target$set(::gnu::javax::net::ssl::provider::CertificateRequest$ClientCertificateType *);
+  virtual void ClientCertificateTypeList$Iterator$set(::gnu::javax::net::ssl::provider::CertificateRequest$ClientCertificateType *);
   virtual ::java::lang::Object * next();
   virtual ::java::lang::Object * previous();
   virtual void add(::java::lang::Object *);

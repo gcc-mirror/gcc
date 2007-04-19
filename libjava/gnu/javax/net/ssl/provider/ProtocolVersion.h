@@ -45,7 +45,7 @@ public:
   jint rawValue();
   jboolean equals(::java::lang::Object *);
   jint hashCode();
-  jint target$compareTo(::gnu::javax::net::ssl::provider::ProtocolVersion *);
+  jint ProtocolVersion$compareTo(::gnu::javax::net::ssl::provider::ProtocolVersion *);
   ::java::lang::String * toString(::java::lang::String *);
   ::java::lang::String * toString();
   jint compareTo(::java::lang::Object *);

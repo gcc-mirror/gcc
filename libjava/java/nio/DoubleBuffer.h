@@ -40,7 +40,7 @@ public:
   virtual jint arrayOffset();
   virtual jint hashCode();
   virtual jboolean equals(::java::lang::Object *);
-  virtual jint target$compareTo(::java::nio::DoubleBuffer *);
+  virtual jint DoubleBuffer$compareTo(::java::nio::DoubleBuffer *);
   virtual ::java::nio::ByteOrder * order() = 0;
   virtual jdouble get() = 0;
   virtual ::java::nio::DoubleBuffer * put(jdouble) = 0;

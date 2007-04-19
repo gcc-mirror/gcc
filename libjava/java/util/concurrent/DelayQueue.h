@@ -16,14 +16,14 @@ class java::util::concurrent::DelayQueue : public ::java::util::AbstractQueue
 public:
   DelayQueue();
   DelayQueue(::java::util::Collection *);
-  virtual jboolean target$add(::java::util::concurrent::Delayed *);
-  virtual jboolean target$offer(::java::util::concurrent::Delayed *);
-  virtual void target$put(::java::util::concurrent::Delayed *);
-  virtual jboolean target$offer(::java::util::concurrent::Delayed *, jlong, ::java::util::concurrent::TimeUnit *);
-  virtual ::java::util::concurrent::Delayed * target$poll();
-  virtual ::java::util::concurrent::Delayed * target$take();
-  virtual ::java::util::concurrent::Delayed * target$poll(jlong, ::java::util::concurrent::TimeUnit *);
-  virtual ::java::util::concurrent::Delayed * target$peek();
+  virtual jboolean DelayQueue$add(::java::util::concurrent::Delayed *);
+  virtual jboolean DelayQueue$offer(::java::util::concurrent::Delayed *);
+  virtual void DelayQueue$put(::java::util::concurrent::Delayed *);
+  virtual jboolean DelayQueue$offer(::java::util::concurrent::Delayed *, jlong, ::java::util::concurrent::TimeUnit *);
+  virtual ::java::util::concurrent::Delayed * DelayQueue$poll();
+  virtual ::java::util::concurrent::Delayed * DelayQueue$take();
+  virtual ::java::util::concurrent::Delayed * DelayQueue$poll(jlong, ::java::util::concurrent::TimeUnit *);
+  virtual ::java::util::concurrent::Delayed * DelayQueue$peek();
   virtual jint size();
   virtual jint drainTo(::java::util::Collection *);
   virtual jint drainTo(::java::util::Collection *, jint);

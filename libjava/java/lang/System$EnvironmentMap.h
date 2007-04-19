@@ -18,10 +18,10 @@ public:
   virtual jboolean containsKey(::java::lang::Object *);
   virtual jboolean containsValue(::java::lang::Object *);
   virtual ::java::util::Set * entrySet();
-  virtual ::java::lang::String * target$get(::java::lang::Object *);
+  virtual ::java::lang::String * System$EnvironmentMap$get(::java::lang::Object *);
   virtual ::java::util::Set * keySet();
-  virtual ::java::lang::String * target$put(::java::lang::String *, ::java::lang::String *);
-  virtual ::java::lang::String * target$remove(::java::lang::Object *);
+  virtual ::java::lang::String * System$EnvironmentMap$put(::java::lang::String *, ::java::lang::String *);
+  virtual ::java::lang::String * System$EnvironmentMap$remove(::java::lang::Object *);
   virtual ::java::util::Collection * values();
   virtual ::java::lang::Object * get(::java::lang::Object *);
   virtual ::java::lang::Object * remove(::java::lang::Object *);

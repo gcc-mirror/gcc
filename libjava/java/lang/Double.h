@@ -35,7 +35,7 @@ public:
   static jlong doubleToLongBits(jdouble);
   static jlong doubleToRawLongBits(jdouble);
   static jdouble longBitsToDouble(jlong);
-  jint target$compareTo(::java::lang::Double *);
+  jint Double$compareTo(::java::lang::Double *);
   static jint compare(jdouble, jdouble);
   jint compareTo(::java::lang::Object *);
 private:

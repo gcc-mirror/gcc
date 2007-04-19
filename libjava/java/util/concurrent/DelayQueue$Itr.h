@@ -17,7 +17,7 @@ public: // actually package-private
   DelayQueue$Itr(::java::util::concurrent::DelayQueue *, JArray< ::java::lang::Object * > *);
 public:
   virtual jboolean hasNext();
-  virtual ::java::util::concurrent::Delayed * target$next();
+  virtual ::java::util::concurrent::Delayed * DelayQueue$Itr$next();
   virtual void remove();
   virtual ::java::lang::Object * next();
 public: // actually package-private

@@ -47,10 +47,10 @@ public:
   virtual ::java::net::Socket * createSocket(::java::net::Socket *, ::java::lang::String *, jint, jboolean);
   virtual JArray< ::java::lang::String * > * getDefaultCipherSuites();
   virtual JArray< ::java::lang::String * > * getSupportedCipherSuites();
-  virtual ::gnu::javax::net::ssl::provider::SSLSocketImpl * target$createSocket(::java::lang::String *, jint);
-  virtual ::gnu::javax::net::ssl::provider::SSLSocketImpl * target$createSocket(::java::lang::String *, jint, ::java::net::InetAddress *, jint);
-  virtual ::gnu::javax::net::ssl::provider::SSLSocketImpl * target$createSocket(::java::net::InetAddress *, jint);
-  virtual ::gnu::javax::net::ssl::provider::SSLSocketImpl * target$createSocket(::java::net::InetAddress *, jint, ::java::net::InetAddress *, jint);
+  virtual ::gnu::javax::net::ssl::provider::SSLSocketImpl * SSLSocketFactoryImpl$createSocket(::java::lang::String *, jint);
+  virtual ::gnu::javax::net::ssl::provider::SSLSocketImpl * SSLSocketFactoryImpl$createSocket(::java::lang::String *, jint, ::java::net::InetAddress *, jint);
+  virtual ::gnu::javax::net::ssl::provider::SSLSocketImpl * SSLSocketFactoryImpl$createSocket(::java::net::InetAddress *, jint);
+  virtual ::gnu::javax::net::ssl::provider::SSLSocketImpl * SSLSocketFactoryImpl$createSocket(::java::net::InetAddress *, jint, ::java::net::InetAddress *, jint);
   virtual ::java::net::Socket * createSocket(::java::net::InetAddress *, jint, ::java::net::InetAddress *, jint);
   virtual ::java::net::Socket * createSocket(::java::net::InetAddress *, jint);
   virtual ::java::net::Socket * createSocket(::java::lang::String *, jint, ::java::net::InetAddress *, jint);

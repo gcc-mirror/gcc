@@ -1,3 +1,7 @@
+2007-04-18  Tom Tromey  <tromey@redhat.com>
+
+	* Regenerated headers with new gjavah.
+
 2007-04-18  Andrew Haley  <aph@redhat.com>
 
 	* java/lang/reflect/natVMProxy.cc (ncode_closure): Add

@@ -69,7 +69,7 @@ public:
   ::java::lang::String * getFragment();
   jboolean equals(::java::lang::Object *);
   jint hashCode();
-  jint target$compareTo(::java::net::URI *);
+  jint URI$compareTo(::java::net::URI *);
 private:
   jint compareFragments(::java::net::URI *);
 public:

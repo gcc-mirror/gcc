@@ -15,7 +15,7 @@ public: // actually package-private
   JarFile$JarEnumeration(::java::util::Enumeration *, ::java::util::jar::JarFile *);
 public:
   virtual jboolean hasMoreElements();
-  virtual ::java::util::jar::JarEntry * target$nextElement();
+  virtual ::java::util::jar::JarEntry * JarFile$JarEnumeration$nextElement();
   virtual ::java::lang::Object * nextElement();
 private:
   ::java::util::Enumeration * __attribute__((aligned(__alignof__( ::java::lang::Object)))) entries;

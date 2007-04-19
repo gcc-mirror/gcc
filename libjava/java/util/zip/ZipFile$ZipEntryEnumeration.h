@@ -14,7 +14,7 @@ class java::util::zip::ZipFile$ZipEntryEnumeration : public ::java::lang::Object
 public:
   ZipFile$ZipEntryEnumeration(::java::util::Iterator *);
   virtual jboolean hasMoreElements();
-  virtual ::java::util::zip::ZipEntry * target$nextElement();
+  virtual ::java::util::zip::ZipEntry * ZipFile$ZipEntryEnumeration$nextElement();
   virtual ::java::lang::Object * nextElement();
 private:
   ::java::util::Iterator * __attribute__((aligned(__alignof__( ::java::lang::Object)))) elements;

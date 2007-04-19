@@ -16,7 +16,7 @@ class java::util::UUID : public ::java::lang::Object
 public:
   UUID(jlong, jlong);
   jint clockSequence();
-  jint target$compareTo(::java::util::UUID *);
+  jint UUID$compareTo(::java::util::UUID *);
   jboolean equals(::java::lang::Object *);
   static ::java::util::UUID * fromString(::java::lang::String *);
   ::java::lang::String * toString();

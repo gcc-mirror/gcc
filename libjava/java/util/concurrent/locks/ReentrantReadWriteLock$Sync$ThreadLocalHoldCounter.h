@@ -14,7 +14,7 @@ class java::util::concurrent::locks::ReentrantReadWriteLock$Sync$ThreadLocalHold
 public: // actually package-private
   ReentrantReadWriteLock$Sync$ThreadLocalHoldCounter();
 public:
-  ::java::util::concurrent::locks::ReentrantReadWriteLock$Sync$HoldCounter * target$initialValue();
+  ::java::util::concurrent::locks::ReentrantReadWriteLock$Sync$HoldCounter * ReentrantReadWriteLock$Sync$ThreadLocalHoldCounter$initialValue();
   ::java::lang::Object * initialValue();
   static ::java::lang::Class class$;
 };

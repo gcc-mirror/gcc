@@ -1,3 +1,12 @@
+2007-04-18  Tom Tromey  <tromey@redhat.com>
+
+	* tools/gnu/classpath/tools/javah/MethodHelper.java (print):
+	Changed arguments.  Directly print method name.
+	* tools/gnu/classpath/tools/javah/ClassWrapper.java
+	(methodNameMap): New field.
+	(makeVtable): Initialize it.
+	(printMethods): Compute name for bridge targets.
+
 2007-04-17  Andrew Haley  <aph@redhat.com>
 
 	* gnu/java/rmi/server/UnicastConnectionManager.java

@@ -36,13 +36,13 @@ public:
   ExtensionList$ExtensionsIterator(::gnu::javax::net::ssl::provider::ExtensionList *);
   jboolean hasNext();
   jboolean hasPrevious();
-  ::gnu::javax::net::ssl::provider::Extension * target$next();
-  ::gnu::javax::net::ssl::provider::Extension * target$previous();
+  ::gnu::javax::net::ssl::provider::Extension * ExtensionList$ExtensionsIterator$next();
+  ::gnu::javax::net::ssl::provider::Extension * ExtensionList$ExtensionsIterator$previous();
   jint nextIndex();
   jint previousIndex();
-  void target$add(::gnu::javax::net::ssl::provider::Extension *);
+  void ExtensionList$ExtensionsIterator$add(::gnu::javax::net::ssl::provider::Extension *);
   void remove();
-  void target$set(::gnu::javax::net::ssl::provider::Extension *);
+  void ExtensionList$ExtensionsIterator$set(::gnu::javax::net::ssl::provider::Extension *);
   ::java::lang::Object * next();
   ::java::lang::Object * previous();
   void add(::java::lang::Object *);

@@ -51,7 +51,7 @@ public:
   ConcurrentSkipListMap(::java::util::Comparator *);
   ConcurrentSkipListMap(::java::util::Map *);
   ConcurrentSkipListMap(::java::util::SortedMap *);
-  virtual ::java::util::concurrent::ConcurrentSkipListMap * target$clone();
+  virtual ::java::util::concurrent::ConcurrentSkipListMap * ConcurrentSkipListMap$clone();
 private:
   void buildFromSorted(::java::util::SortedMap *);
   void writeObject(::java::io::ObjectOutputStream *);
@@ -65,11 +65,11 @@ public:
   virtual jint size();
   virtual jboolean isEmpty();
   virtual void clear();
-  virtual ::java::util::NavigableSet * target$keySet();
+  virtual ::java::util::NavigableSet * ConcurrentSkipListMap$keySet();
   virtual ::java::util::NavigableSet * navigableKeySet();
   virtual ::java::util::Collection * values();
   virtual ::java::util::Set * entrySet();
-  virtual ::java::util::concurrent::ConcurrentNavigableMap * target$descendingMap();
+  virtual ::java::util::concurrent::ConcurrentNavigableMap * ConcurrentSkipListMap$descendingMap();
   virtual ::java::util::NavigableSet * descendingKeySet();
   virtual jboolean equals(::java::lang::Object *);
   virtual ::java::lang::Object * putIfAbsent(::java::lang::Object *, ::java::lang::Object *);
@@ -79,12 +79,12 @@ public:
   virtual ::java::util::Comparator * comparator();
   virtual ::java::lang::Object * firstKey();
   virtual ::java::lang::Object * lastKey();
-  virtual ::java::util::concurrent::ConcurrentNavigableMap * target$subMap(::java::lang::Object *, jboolean, ::java::lang::Object *, jboolean);
-  virtual ::java::util::concurrent::ConcurrentNavigableMap * target$headMap(::java::lang::Object *, jboolean);
-  virtual ::java::util::concurrent::ConcurrentNavigableMap * target$tailMap(::java::lang::Object *, jboolean);
-  virtual ::java::util::concurrent::ConcurrentNavigableMap * target$subMap(::java::lang::Object *, ::java::lang::Object *);
-  virtual ::java::util::concurrent::ConcurrentNavigableMap * target$headMap(::java::lang::Object *);
-  virtual ::java::util::concurrent::ConcurrentNavigableMap * target$tailMap(::java::lang::Object *);
+  virtual ::java::util::concurrent::ConcurrentNavigableMap * ConcurrentSkipListMap$subMap(::java::lang::Object *, jboolean, ::java::lang::Object *, jboolean);
+  virtual ::java::util::concurrent::ConcurrentNavigableMap * ConcurrentSkipListMap$headMap(::java::lang::Object *, jboolean);
+  virtual ::java::util::concurrent::ConcurrentNavigableMap * ConcurrentSkipListMap$tailMap(::java::lang::Object *, jboolean);
+  virtual ::java::util::concurrent::ConcurrentNavigableMap * ConcurrentSkipListMap$subMap(::java::lang::Object *, ::java::lang::Object *);
+  virtual ::java::util::concurrent::ConcurrentNavigableMap * ConcurrentSkipListMap$headMap(::java::lang::Object *);
+  virtual ::java::util::concurrent::ConcurrentNavigableMap * ConcurrentSkipListMap$tailMap(::java::lang::Object *);
   virtual ::java::util::Map$Entry * lowerEntry(::java::lang::Object *);
   virtual ::java::lang::Object * lowerKey(::java::lang::Object *);
   virtual ::java::util::Map$Entry * floorEntry(::java::lang::Object *);

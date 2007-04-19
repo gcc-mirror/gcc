@@ -24,15 +24,15 @@ public:
   virtual void write(JArray< jchar > *, jint, jint);
   virtual void write(::java::lang::String *);
   virtual void write(::java::lang::String *, jint, jint);
-  virtual ::java::io::StringWriter * target$append(jchar);
-  virtual ::java::io::StringWriter * target$append(::java::lang::CharSequence *);
-  virtual ::java::io::StringWriter * target$append(::java::lang::CharSequence *, jint, jint);
+  virtual ::java::io::StringWriter * StringWriter$append(jchar);
+  virtual ::java::io::StringWriter * StringWriter$append(::java::lang::CharSequence *);
+  virtual ::java::io::StringWriter * StringWriter$append(::java::lang::CharSequence *, jint, jint);
   virtual ::java::lang::Appendable * append(::java::lang::CharSequence *, jint, jint);
-  virtual ::java::io::Writer * target$append(::java::lang::CharSequence *, jint, jint);
+  virtual ::java::io::Writer * Writer$append(::java::lang::CharSequence *, jint, jint);
   virtual ::java::lang::Appendable * append(::java::lang::CharSequence *);
-  virtual ::java::io::Writer * target$append(::java::lang::CharSequence *);
+  virtual ::java::io::Writer * Writer$append(::java::lang::CharSequence *);
   virtual ::java::lang::Appendable * append(jchar);
-  virtual ::java::io::Writer * target$append(jchar);
+  virtual ::java::io::Writer * Writer$append(jchar);
 private:
   static const jint DEFAULT_BUFFER_SIZE = 16;
   ::java::lang::StringBuffer * __attribute__((aligned(__alignof__( ::java::io::Writer)))) buffer;
