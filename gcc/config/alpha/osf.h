@@ -61,8 +61,8 @@ Boston, MA 02110-1301, USA.  */
    instead of PTHREAD_USE_D4 since both have the same effect and the former
    doesn't invade the users' namespace.  */
 
-#undef CPP_SUBTARGET_SPEC
-#define CPP_SUBTARGET_SPEC \
+#undef CPP_SPEC
+#define CPP_SPEC \
 "%{pthread|threads:-D_REENTRANT} %{threads:-D_PTHREAD_USE_D4}"
 
 /* Under OSF4, -p and -pg require -lprof1, and -lprof1 requires -lpdf.  */
@@ -134,8 +134,8 @@ Boston, MA 02110-1301, USA.  */
 
 #endif
 
-#undef SUBTARGET_EXTRA_SPECS
-#define SUBTARGET_EXTRA_SPECS { "asm_oldas", ASM_OLDAS_SPEC }
+#undef EXTRA_SPECS
+#define EXTRA_SPECS { "asm_oldas", ASM_OLDAS_SPEC }
 
 /* Indicate that we have a stamp.h to use.  */
 #ifndef CROSS_DIRECTORY_STRUCTURE

@@ -38,14 +38,14 @@ Boston, MA 02110-1301, USA.  */
 #define TARGET_PROFILING_NEEDS_GP 1
 
 
-/* Provide a CPP_SUBTARGET_SPEC appropriate for NetBSD/alpha.  We use
+/* Provide a CPP_SPEC appropriate for NetBSD/alpha.  We use
    this to pull in CPP specs that all NetBSD configurations need.  */
 
-#undef CPP_SUBTARGET_SPEC
-#define CPP_SUBTARGET_SPEC NETBSD_CPP_SPEC
+#undef CPP_SPEC
+#define CPP_SPEC NETBSD_CPP_SPEC
 
-#undef SUBTARGET_EXTRA_SPECS
-#define SUBTARGET_EXTRA_SPECS			\
+#undef EXTRA_SPECS
+#define EXTRA_SPECS			\
   { "netbsd_link_spec", NETBSD_LINK_SPEC_ELF },	\
   { "netbsd_entry_point", NETBSD_ENTRY_POINT },	\
   { "netbsd_endfile_spec", NETBSD_ENDFILE_SPEC },
