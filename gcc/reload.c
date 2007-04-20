@@ -1853,7 +1853,12 @@ combine_reloads (void)
 		    ||  ! (TEST_HARD_REG_BIT
 			   (reg_class_contents[(int) rld[secondary_out].class],
 			    REGNO (XEXP (note, 0)))))))
-	&& ! fixed_regs[REGNO (XEXP (note, 0))])
+	&& ! fixed_regs[REGNO (XEXP (note, 0))]
+	/* Check that we don't use a hardreg for an uninitialized
+	   pseudo.  See also find_dummy_reload().  */
+	&& (ORIGINAL_REGNO (XEXP (note, 0)) < FIRST_PSEUDO_REGISTER
+	    || ! bitmap_bit_p (ENTRY_BLOCK_PTR->il.rtl->global_live_at_end,
+			       ORIGINAL_REGNO (XEXP (note, 0)))))
       {
 	rld[output_reload].reg_rtx
 	  = gen_rtx_REG (rld[output_reload].outmode,

@@ -1,3 +1,8 @@
+2007-04-19  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* reload.c (combine_reloads): When trying to use a dying register,
+	check whether it's uninitialized and don't use if so.
+
 2007-04-19  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* fold-const.c: Remove prototypes for native_encode_expr and
