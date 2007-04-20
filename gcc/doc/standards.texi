@@ -4,6 +4,12 @@
 
 @node Standards
 @chapter Language Standards Supported by GCC
+
+For each language compiled by GCC for which there is a standard, GCC
+attempts to follow one or more versions of that standard, possibly
+with some exceptions, and possibly with some extensions.
+
+@section C language
 @cindex C standard
 @cindex C standards
 @cindex ANSI C standard
@@ -37,10 +43,6 @@
 @cindex hosted implementation
 @cindex hosted environment
 @findex __STDC_HOSTED__
-
-For each language compiled by GCC for which there is a standard, GCC
-attempts to follow one or more versions of that standard, possibly
-with some exceptions, and possibly with some extensions.
 
 GCC supports three versions of the C standard, although support for
 the most recent version is not yet complete.
@@ -154,8 +156,45 @@ For references to Technical Corrigenda, Rationale documents and
 information concerning the history of C that is available online, see
 @uref{http://gcc.gnu.org/readings.html}
 
-@c FIXME: details of C++ standard.
+@section C++ language
 
+GCC supports the ISO C++ standard (1998) and contains experimental
+support for the upcoming ISO C++ standard (200x).
+
+The original ISO C++ standard was published as the ISO standard (ISO/IEC
+14882:1998) and amended by a Technical Corrigenda published in 2003
+(ISO/IEC 14882:2003). These standards are referred to as C++98 and
+C++03, respectively. GCC implements the majority of C++98 (@code{export}
+is a notable exception) and most of the changes in C++03.  To select
+this standard in GCC, use one of the options @option{-ansi} or
+@option{-std=c++98}; to obtain all the diagnostics required by the
+standard, you should also specify @option{-pedantic} (or
+@option{-pedantic-errors} if you want them to be errors rather than
+warnings).
+
+The ISO C++ committee is working on a new ISO C++ standard, dubbed
+C++0x, that is intended to be published by 2009. C++0x contains several
+changes to the C++ language, some of which have been implemented in an
+experimental C++0x mode in GCC. The C++0x mode in GCC tracks the draft
+working paper for the C++0x standard; the latest working paper is
+available on the ISO C++ committee's web site at
+@uref{http://www.open-std.org/jtc1/sc22/wg21/}. For information
+regarding the C++0x features available in the experimental C++0x mode,
+see @uref{http://gcc.gnu.org/gcc-4.3/cxx0x_status.html}. To select this
+standard in GCC, use the option @option{-std=c++0x}; to obtain all the
+diagnostics required by the standard, you should also specify
+@option{-pedantic} (or @option{-pedantic-errors} if you want them to be
+errors rather than warnings).
+
+By default, GCC provides some extensions to the C++ language; @xref{C++
+Dialect Options,Options Controlling C++ Dialect}.  Use of the
+@option{-std} option listed above will disable these extensions.  You
+may also select an extended version of the C++ language explicitly with
+@option{-std=gnu++98} (for C++98 with GNU extensions) or
+@option{-std=gnu++0x} (for C++0x with GNU extensions).  The default, if
+no C++ language dialect options are given, is @option{-std=gnu++98}.
+
+@section Objective-C and Objective-C++ languages
 @cindex Objective-C
 @cindex Objective-C++
 
@@ -177,6 +216,7 @@ and
 have additional useful information.
 @end itemize
 
+@section Treelang language
 @cindex treelang
 There is no standard for treelang, which is a sample language front end
 for GCC@.  Its only purpose is as a sample for people wishing to write a
