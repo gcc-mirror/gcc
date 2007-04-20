@@ -2895,12 +2895,15 @@ ix86_eax_live_at_start_p (void)
 static bool
 type_has_variadic_args_p (tree type)
 {
-  tree t;
+  tree n, t = TYPE_ARG_TYPES (type);
 
-  for (t = TYPE_ARG_TYPES (type); t; t = TREE_CHAIN (t))
-    if (t == void_list_node)
-      return false;
-  return true;
+  if (t == NULL)
+    return false;
+
+  while ((n = TREE_CHAIN (t)) != NULL)
+    t = n;
+
+  return TREE_VALUE (t) != void_type_node;
 }
 
 /* Value is the number of bytes of arguments automatically

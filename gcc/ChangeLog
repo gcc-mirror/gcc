@@ -1,3 +1,9 @@
+2007-04-20  Richard Henderson  <rth@redhat.com>
+
+	PR target/31628
+	* config/i386/i386.c (type_has_variadic_args_p): Look for any
+	TREE_LIST with a void_type_node value, not void_list_node exactly.
+
 2007-04-21  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* doc/standards.texi: Re-arrange into language-specific
@@ -307,7 +313,7 @@
 	compilation unit.
 
 	* langhooks-def.h (LANG_HOOKS_GENERIC_TYPE_P): Define.
-        (LANG_HOOKS_FOR_TYPES_INITIALIZER): Add.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Add.
 	This hook indicates if a type is generic.  Set it by default
 	to "never generic".
 	* langhooks.h (struct lang_hooks_for_types): Add a new hook
@@ -353,7 +359,7 @@
 
 2007-04-16  Aldy Hernandez  <aldyh@redhat.com>
 
-        * function.h: Remove sequence_stack extern declaration.
+	* function.h: Remove sequence_stack extern declaration.
 
 2007-04-16  Kazu Hirata  <kazu@codesourcery.com>
 
@@ -463,7 +469,7 @@
 2007-04-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR c/31520
-        * c-decl.c (finish_decl): Grab the type of the decl after the call
+	* c-decl.c (finish_decl): Grab the type of the decl after the call
 	to store_init_value.
 
 2007-04-14  Steven Bosscher  <steven@gcc.gnu.org>
@@ -573,7 +579,7 @@
 	[FLOAT_EXTEND]: Use SSE_FLOAT_MODE_P.
 
 2007-04-12  Paolo Bonzini  <bonzini@gnu.org>
-            Charles Wilson  <libtool@cwilson.fastmail.fm>
+	    Charles Wilson  <libtool@cwilson.fastmail.fm>
 
 	* Makefile.in (stamp-as, stamp-collect-ld, stamp-nm): Remove.
 	(libgcc.mvars): Don't depend on them.
@@ -1318,16 +1324,16 @@
 
 2007-04-04  Chen Liqin  <liqin@sunnorth.com.cn>
 
-        * config/score/crti.asm: Change _bss_start to __bss_start.
-        * config/score/score.h (CONDITIONAL_REGISTER_USAGE): Added.
-        (OUTGOING_REG_PARM_STACK_SPACE) update.
-        * config/score/score.opt: add options to make backend support
-        score5, score5u, score7 and score7d.
-        * config/score/score.md: Likewise.
-        * config/score/misc.md: Likewise.
-        * config/score/mac.md: Likewise.
-        * doc/invoke.texi: Likewise.
-        * doc/md.texi: update constraints define.
+	* config/score/crti.asm: Change _bss_start to __bss_start.
+	* config/score/score.h (CONDITIONAL_REGISTER_USAGE): Added.
+	(OUTGOING_REG_PARM_STACK_SPACE) update.
+	* config/score/score.opt: add options to make backend support
+	score5, score5u, score7 and score7d.
+	* config/score/score.md: Likewise.
+	* config/score/misc.md: Likewise.
+	* config/score/mac.md: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/md.texi: update constraints define.
 
 2007-04-03  Richard Henderson  <rth@redhat.com>
 
