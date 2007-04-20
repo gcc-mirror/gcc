@@ -1,6 +1,6 @@
 // BreakpointManager.java - A convenience class for dealing with breakpoints
 
-/* Copyright (C) 2006  Free Software Foundation
+/* Copyright (C) 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -45,6 +45,7 @@ public class BreakpointManager
   {
     Breakpoint bp = new Breakpoint (method, location);
     Location loc = new Location (method, location);
+    bp.install ();
     _instance._breakpoints.put (loc, bp);
     return bp;
   }
@@ -58,7 +59,12 @@ public class BreakpointManager
   public static void deleteBreakpoint (long method, long location)
   {
     Location loc = new Location (method, location);
-    _instance._breakpoints.remove (loc);
+    Breakpoint bp = (Breakpoint) _instance._breakpoints.get (loc);
+    if (bp != null)
+      {
+	bp.remove ();
+	_instance._breakpoints.remove (loc);
+      }
   }
 
   /**

@@ -1,6 +1,6 @@
 // natBreakpoint.cc - C++ side of Breakpoint
 
-/* Copyright (C) 2006  Free Software Foundation
+/* Copyright (C) 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -39,7 +39,6 @@ gnu::gcj::jvmti::Breakpoint::initialize_native ()
   pc_t code = imeth->get_insn (location);
   data = (RawDataManaged *) JvAllocBytes (sizeof (*code));
   memcpy (data, code, sizeof (*code));
-  install ();
 }
 
 void
