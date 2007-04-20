@@ -2600,18 +2600,19 @@ details.  */
 	Thread *thread = Thread::currentThread ();
 	JNIEnv *jni_env = _Jv_GetCurrentJNIEnv ();
 
-	_Jv_JVMTI_PostEvent (JVMTI_EVENT_BREAKPOINT, thread, jni_env,
-			     method, location);
-
-	// Continue execution
+	// Save the insn here since the breakpoint could be removed
+	// before the JVMTI notification returns.
 	using namespace gnu::gcj::jvmti;
 	Breakpoint *bp
 	  = BreakpointManager::getBreakpoint (reinterpret_cast<jlong> (method),
 					      location);
 	JvAssert (bp != NULL);
-
 	pc_t opc = reinterpret_cast<pc_t> (bp->getInsn ());
 
+	_Jv_JVMTI_PostEvent (JVMTI_EVENT_BREAKPOINT, thread, jni_env,
+			     method, location);
+
+	// Continue execution
 #ifdef DIRECT_THREADED
 	goto *(opc->insn);
 #else

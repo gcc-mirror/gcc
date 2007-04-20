@@ -1,3 +1,8 @@
+2007-04-19  Keith Seitz  <keiths@redhat.com>
+
+	* interpret-run.cc [insn_breakpoint]: Save the original
+	insn for the breakpoint before posting the JVMTI notification.
+
 2007-04-19  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/javax/net/ssl/provider/SSLSocketFactoryImpl.h: Rebuilt.
