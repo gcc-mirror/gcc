@@ -1461,7 +1461,7 @@ get_aligned_mem (rtx ref, rtx *paligned_mem, rtx *pbitnum)
    Add EXTRA_OFFSET to the address we return.  */
 
 rtx
-get_unaligned_address (rtx ref, int extra_offset)
+get_unaligned_address (rtx ref)
 {
   rtx base;
   HOST_WIDE_INT offset = 0;
@@ -1481,7 +1481,23 @@ get_unaligned_address (rtx ref, int extra_offset)
   if (GET_CODE (base) == PLUS)
     offset += INTVAL (XEXP (base, 1)), base = XEXP (base, 0);
 
-  return plus_constant (base, offset + extra_offset);
+  return plus_constant (base, offset);
+}
+
+/* Compute a value X, such that X & 7 == (ADDR + OFS) & 7.
+   X is always returned in a register.  */
+
+rtx
+get_unaligned_offset (rtx addr, HOST_WIDE_INT ofs)
+{
+  if (GET_CODE (addr) == PLUS)
+    {
+      ofs += INTVAL (XEXP (addr, 1));
+      addr = XEXP (addr, 0);
+    }
+
+  return expand_simple_binop (Pmode, PLUS, addr, GEN_INT (ofs & 7),
+			      NULL_RTX, 1, OPTAB_LIB_WIDEN);
 }
 
 /* On the Alpha, all (non-symbolic) constants except zero go into
@@ -2230,7 +2246,7 @@ alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
 	  seq = ((mode == QImode
 		  ? gen_unaligned_loadqi
 		  : gen_unaligned_loadhi)
-		 (subtarget, get_unaligned_address (operands[1], 0),
+		 (subtarget, get_unaligned_address (operands[1]),
 		  temp1, temp2));
 	  alpha_set_memflags (seq, operands[1]);
 	  emit_insn (seq);
@@ -2269,7 +2285,7 @@ alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
 	  rtx seq = ((mode == QImode
 		      ? gen_unaligned_storeqi
 		      : gen_unaligned_storehi)
-		     (get_unaligned_address (operands[0], 0),
+		     (get_unaligned_address (operands[0]),
 		      operands[1], temp1, temp2, temp3));
 
 	  alpha_set_memflags (seq, operands[0]);
