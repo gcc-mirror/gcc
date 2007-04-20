@@ -1,3 +1,15 @@
+2007-04-20  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.h (CPP_SPEC, CPP_SUBTARGET_SPEC): Remove.
+	(EXTRA_SPECS, SUBTARGET_EXTRA_SPECS): Remove.
+	* config/alpha/linux.h (CPP_SPEC): Undef before redefine.
+	* config/alpha/linux-elf.h (EXTRA_SPECS): Rename SUBTARGET_EXTRA_SPECS.
+	* config/alpha/freebsd.h (EXTRA_SPECS): Rename SUBTARGET_EXTRA_SPECS.
+	(CPP_SPEC): Don't include %(cpp_subtarget).
+	* config/alpha/netbsd.h (CPP_SPEC): Rename CPP_SUBTARGET_SPEC.
+	(EXTRA_SPECS): Rename SUBTARGET_EXTRA_SPECS.
+	* config/alpha/osf.h (CPP_SPEC, EXTRA_SPECS): Similarly.
+
 2007-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (bdesc_2arg): Use ORDERED rather than UNORDERED

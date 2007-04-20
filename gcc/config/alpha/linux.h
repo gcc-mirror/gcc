@@ -44,6 +44,7 @@ Boston, MA 02110-1301, USA.  */
    %{shared:-lc} \
    %{!shared: %{profile:-lc_p}%{!profile:-lc}}"
 
+#undef CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
 /* Show that we need a GP when profiling.  */
