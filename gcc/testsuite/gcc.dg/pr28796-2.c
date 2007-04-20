@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -funsafe-math-optimizations -fno-finite-math-only" } */
+/* { dg-options "-mieee -O2 -funsafe-math-optimizations -fno-finite-math-only" { target alpha*-*-* } } */
 
 extern void abort (void);
 
