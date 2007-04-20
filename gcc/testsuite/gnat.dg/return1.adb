@@ -4,7 +4,7 @@
 package body return1 is
     function X_Func (O : access Child) return access Base'Class is
     begin
-       return X_Local : access Child'Class do
+       return X_Local : access Base'Class do
           X_Local := O;
        end return;
     end X_Func;
