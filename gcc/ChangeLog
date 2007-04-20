@@ -1,3 +1,11 @@
+2007-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/31632
+	* fold-const.c (fold_binary): Use op0 and op1 instead of arg0
+	and arg1 for optimizations of comparison against min/max values.
+	Fold arg0 to arg1's type for optimizations of comparison against
+	min+1 and max-1 values.
+
 2007-04-18  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (ptrreg_to_str): Replace error() with
@@ -11,8 +19,8 @@
 
 2007-04-16  Matthias Klose  <doko@debian.org>
 
-	* gcc/config/alpha/linux.h (CPP_SPEC): Define.
-	* gcc/config/arm/linux-gas.h (SUBTARGET_CPP_SPEC): Extend.
+	* config/alpha/linux.h (CPP_SPEC): Define.
+	* config/arm/linux-gas.h (SUBTARGET_CPP_SPEC): Extend.
 
 2007-04-16  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -549,7 +557,7 @@
 2006-12-17  Matthias Klose  <doko@debian.org>
 
 	PR libstdc++/11953
-	* gcc/config/mips/linux.h (SUBTARGET_CPP_SPEC): Extend.
+	* config/mips/linux.h (SUBTARGET_CPP_SPEC): Extend.
 
 2006-12-16  Joseph Myers  <joseph@codesourcery.com>
 	    David Edelsohn  <edelsohn@gnu.org>
@@ -1000,7 +1008,7 @@
 	2006-08-23  Stuart Hastings  <stuart@apple.com>
 
 	PR target/28825
-	* gcc/config/i386/i386.c (ix86_expand_vector_init_duplicate,
+	* config/i386/i386.c (ix86_expand_vector_init_duplicate,
 	ix86_expand_vector_init_one_nonzero): Remove TARGET_SSE test.
 
 2006-10-16  Richard Guenther  <rguenther@suse.de>
@@ -2758,7 +2766,7 @@
 2006-03-16  Paul Brook  <paul@codesourcery.com>
 
 	Backport from mainline.
-	* gcc/config/arm/arm.c (minipool_pad): New.
+	* config/arm/arm.c (minipool_pad): New.
 	(add_minipool_forward_ref): Include pool alignment padding in address
 	calculation.
 	(push_minipool_fix): Set minipool_pad.
@@ -3426,14 +3434,14 @@
 
 2006-01-31  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* gcc/config/m68k/lb1sf68.asm: Use moveq to load small constants.
+	* config/m68k/lb1sf68.asm: Use moveq to load small constants.
 
 2006-01-31  Richard Guenther  <rguenther@suse.de>
 
 	Backport
 	2006-01-03  Adrian Straetling  <straetling@de.ibm.com>
 
-	* gcc/builtins.c (get_builtin_sync_mem): New function.
+	* builtins.c (get_builtin_sync_mem): New function.
 	(expand_builtin_sync_operation, expand_builtin_compare_and_swap,
 	expand_builtin_lock_test_and_set, expand_builtin_lock_release):
 	Call get_builtin_sync_mem to generate mem rtx.
@@ -3604,7 +3612,7 @@
 
 2006-01-19  Paul Brook  <paul@codesourcery.com>
 
-	* gcc/config/arm/arm.c (arm_compute_func_type): Treat all functions
+	* config/arm/arm.c (arm_compute_func_type): Treat all functions
 	as nothrow when unwinding tables are disabled.
 
 2006-01-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
@@ -4752,7 +4760,7 @@
 	(_Unwind_Stop_Fn): New typedef.
 	(_Unwind_ForcedUnwind): Declare.
 	(_Unwind_Resume_or_Rethrow): Declare.
-	* gcc/config/arm/libunwind.S (UNWIND_WRAPER): Add nargs
+	* config/arm/libunwind.S (UNWIND_WRAPER): Add nargs
 	argument.  Adjust.
 	(_Unwind_Resume_or_Rethrow, _Unwind_ForcedUnwind): New.
 	* config/arm/unwind-arm.c (UCB_FORCED_STOP_FN)
@@ -5620,8 +5628,8 @@
 2005-11-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/18452
-	* gcc/c.opt: Add a -lang-fortran option.
-	* gcc/c-opts.c: Add a lang_fortran flag.
+	* c.opt: Add a -lang-fortran option.
+	* c-opts.c: Add a lang_fortran flag.
 	(c_common_init_options): Handling the -lang-fortran option.
 	(c_common_handle_option): Add a case for Fortran options in
 	preprocessing. Remove cases for -ffixed-form and

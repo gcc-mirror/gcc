@@ -1,3 +1,8 @@
+2007-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/31632
+	* gcc.c-torture/compile/20070419-1.c: New test.
+
 2007-04-17  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/31517
