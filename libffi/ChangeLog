@@ -1,3 +1,16 @@
+2007-04-20  Richard Henderson  <rth@redhat.com>
+
+	* configure.ac (alpha*-*-*): Define HAVE_LONG_DOUBLE.
+	* configure: Regenerate.
+	* include/ffi.h.in (ffi_type_longdouble): Define as ffi_type_double
+	if HAVE_LONG_DOUBLE is false.
+	* src/alpha/ffi.c (ffi_prep_cif_machdep): Support the 128-bit
+	long double type.
+	(ffi_call_osf, ffi_closure_osf): Likewise.
+	* src/alpha/osf.S (ffi_call_osf, ffi_closure_osf): Mark hidden.
+	* src/types.c (ffi_type_longdouble): For alpha, always generate
+	for the 128-bit long double type.
+
 2007-02-13  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* src/s390/ffi.c (ffi_prep_args, ffi_prep_cif_machdep,

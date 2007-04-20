@@ -153,9 +153,13 @@ extern ffi_type ffi_type_uint64;
 extern ffi_type ffi_type_sint64;
 extern ffi_type ffi_type_float;
 extern ffi_type ffi_type_double;
-extern ffi_type ffi_type_longdouble;
 extern ffi_type ffi_type_pointer;
 
+#if @HAVE_LONG_DOUBLE@
+extern ffi_type ffi_type_longdouble;
+#else
+#define ffi_type_longdouble ffi_type_double
+#endif
 
 typedef enum {
   FFI_OK = 0,

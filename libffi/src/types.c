@@ -57,4 +57,17 @@ FFI_TYPEDEF(pointer, void*, FFI_TYPE_POINTER);
 
 FFI_TYPEDEF(float, float, FFI_TYPE_FLOAT);
 FFI_TYPEDEF(double, double, FFI_TYPE_DOUBLE);
+
+#ifdef __alpha__
+/* Even if we're not configured to default to 128-bit long double, 
+   maintain binary compatibility, as -mlong-double-128 can be used
+   at any time.  */
+/* Validate the hard-coded number below.  */
+# if defined(__LONG_DOUBLE_128__) && FFI_TYPE_LONGDOUBLE != 4
+#  error FFI_TYPE_LONGDOUBLE out of date
+# endif
+# undef ffi_type_longdouble
+ffi_type ffi_type_longdouble = { 16, 16, 4, NULL };
+#elif FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
 FFI_TYPEDEF(longdouble, long double, FFI_TYPE_LONGDOUBLE);
+#endif
