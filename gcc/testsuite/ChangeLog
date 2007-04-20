@@ -1,5 +1,8 @@
 2007-04-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/i386/ordcmp-1.c: New test.
+	* gcc.target/i386/unordcmp-1.c: New test.
+
 	PR tree-optimization/31632
 	* gcc.c-torture/compile/20070419-1.c: New test.
 

@@ -1,5 +1,8 @@
 2007-04-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (bdesc_2arg): Use ORDERED rather than UNORDERED
+	for __builtin_ia32_cmpordss.
+
 	PR tree-optimization/31632
 	* fold-const.c (fold_binary): Use op0 and op1 instead of arg0
 	and arg1 for optimizations of comparison against min/max values.
