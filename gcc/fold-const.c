@@ -11128,13 +11128,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		  return omit_one_operand (type, integer_zero_node, arg0);
 
 		case GE_EXPR:
-		  return fold_build2 (EQ_EXPR, type, arg0, arg1);
+		  return fold_build2 (EQ_EXPR, type, op0, op1);
 
 		case LE_EXPR:
 		  return omit_one_operand (type, integer_one_node, arg0);
 
 		case LT_EXPR:
-		  return fold_build2 (NE_EXPR, type, arg0, arg1);
+		  return fold_build2 (NE_EXPR, type, op0, op1);
 
 		/* The GE_EXPR and LT_EXPR cases above are not normally
 		   reached because of previous transformations.  */
@@ -11149,10 +11149,14 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		{
 		case GT_EXPR:
 		  arg1 = const_binop (PLUS_EXPR, arg1, integer_one_node, 0);
-		  return fold_build2 (EQ_EXPR, type, arg0, arg1);
+		  return fold_build2 (EQ_EXPR, type,
+				      fold_convert (TREE_TYPE (arg1), arg0),
+				      arg1);
 		case LE_EXPR:
 		  arg1 = const_binop (PLUS_EXPR, arg1, integer_one_node, 0);
-		  return fold_build2 (NE_EXPR, type, arg0, arg1);
+		  return fold_build2 (NE_EXPR, type,
+				      fold_convert (TREE_TYPE (arg1), arg0),
+				      arg1);
 		default:
 		  break;
 		}
@@ -11165,7 +11169,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		  return omit_one_operand (type, integer_zero_node, arg0);
 
 		case LE_EXPR:
-		  return fold_build2 (EQ_EXPR, type, arg0, arg1);
+		  return fold_build2 (EQ_EXPR, type, op0, op1);
 
 		case GE_EXPR:
 		  return omit_one_operand (type, integer_one_node, arg0);
@@ -11183,10 +11187,14 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		{
 		case GE_EXPR:
 		  arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
-		  return fold_build2 (NE_EXPR, type, arg0, arg1);
+		  return fold_build2 (NE_EXPR, type,
+				      fold_convert (TREE_TYPE (arg1), arg0),
+				      arg1);
 		case LT_EXPR:
 		  arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
-		  return fold_build2 (EQ_EXPR, type, arg0, arg1);
+		  return fold_build2 (EQ_EXPR, type,
+				      fold_convert (TREE_TYPE (arg1), arg0),
+				      arg1);
 		default:
 		  break;
 		}
@@ -11202,12 +11210,11 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		   and X >= signed_max+1 because previous transformations.  */
 		if (code == LE_EXPR || code == GT_EXPR)
 		  {
-		    tree st0, st1;
-		    st0 = lang_hooks.types.signed_type (TREE_TYPE (arg0));
-		    st1 = lang_hooks.types.signed_type (TREE_TYPE (arg1));
-		    return fold_build2 (code == LE_EXPR ? GE_EXPR: LT_EXPR,
-			       		type, fold_convert (st0, arg0),
-			       		build_int_cst (st1, 0));
+		    tree st;
+		    st = lang_hooks.types.signed_type (TREE_TYPE (arg1));
+		    return fold_build2 (code == LE_EXPR ? GE_EXPR : LT_EXPR,
+					type, fold_convert (st, arg0),
+					build_int_cst (st, 0));
 		  }
 	      }
 	  }

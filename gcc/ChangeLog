@@ -1,3 +1,11 @@
+2007-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/31632
+	* fold-const.c (fold_binary): Use op0 and op1 instead of arg0
+	and arg1 for optimizations of comparison against min/max values.
+	Fold arg0 to arg1's type for optimizations of comparison against
+	min+1 and max-1 values.
+
 2007-04-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/29841
@@ -37,8 +45,8 @@
 
 2007-04-16  Matthias Klose  <doko@debian.org>
 
-	* gcc/config/alpha/linux.h (CPP_SPEC): Define.
-	* gcc/config/arm/linux-gas.h (SUBTARGET_CPP_SPEC): Extend.
+	* config/alpha/linux.h (CPP_SPEC): Define.
+	* config/arm/linux-gas.h (SUBTARGET_CPP_SPEC): Extend.
 
 2007-04-16  Anatoly Sokolov <aesok@post.ru>
 
@@ -354,7 +362,7 @@
 	(thread_across_edge): Likewise.
 	* tree-flow.h (vrp_evaluate_conditional): Update declaration.
 	(thread_across_edge): Likewise.
-	* gcc/Makefile.in (tree-vrp.o): Depend upon toplev.h and intl.h.
+	* Makefile.in (tree-vrp.o): Depend upon toplev.h and intl.h.
 
 	2007-03-05  Ian Lance Taylor  <iant@google.com>
 
