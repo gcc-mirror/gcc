@@ -58,7 +58,11 @@ sparc*-sun-*) TARGET=SPARC; TARGETDIR=sparc;;
 sparc-*-linux* | sparc-*-netbsdelf* | sparc-*-knetbsd*-gnu) TARGET=SPARC; TARGETDIR=sparc;;
 sparc*-*-rtems*) TARGET=SPARC; TARGETDIR=sparc;;
 sparc64-*-linux* | sparc64-*-netbsd* | sparc64-*-knetbsd*-gnu) TARGET=SPARC; TARGETDIR=sparc;;
-alpha*-*-linux* | alpha*-*-osf* | alpha*-*-freebsd* | alpha*-*-kfreebsd*-gnu | alpha*-*-netbsd* | alpha*-*-knetbsd*-gnu) TARGET=ALPHA; TARGETDIR=alpha;;
+alpha*-*-linux* | alpha*-*-osf* | alpha*-*-freebsd* | alpha*-*-kfreebsd*-gnu | alpha*-*-netbsd* | alpha*-*-knetbsd*-gnu)
+	TARGET=ALPHA; TARGETDIR=alpha
+	# Support 128-bit long double, changable via command-line switch.
+	HAVE_LONG_DOUBLE='defined(__LONG_DOUBLE_128__)'
+	;;
 ia64*-*-*) TARGET=IA64; TARGETDIR=ia64;;
 m32r*-*-linux* ) TARGET=M32R; TARGETDIR=m32r;;
 m68k-*-linux*) TARGET=M68K; TARGETDIR=m68k;;
@@ -126,11 +130,13 @@ AC_CHECK_SIZEOF(double)
 AC_CHECK_SIZEOF(long double)
 
 # Also AC_SUBST this variable for ffi.h.
-HAVE_LONG_DOUBLE=0
-if test $ac_cv_sizeof_double != $ac_cv_sizeof_long_double; then
-  if test $ac_cv_sizeof_long_double != 0; then
-    HAVE_LONG_DOUBLE=1
-    AC_DEFINE(HAVE_LONG_DOUBLE, 1, [Define if you have the long double type and it is bigger than a double])
+if test -z "$HAVE_LONG_DOUBLE"; then
+  HAVE_LONG_DOUBLE=0
+  if test $ac_cv_sizeof_double != $ac_cv_sizeof_long_double; then
+    if test $ac_cv_sizeof_long_double != 0; then
+      HAVE_LONG_DOUBLE=1
+      AC_DEFINE(HAVE_LONG_DOUBLE, 1, [Define if you have the long double type and it is bigger than a double])
+    fi
   fi
 fi
 AC_SUBST(HAVE_LONG_DOUBLE)
