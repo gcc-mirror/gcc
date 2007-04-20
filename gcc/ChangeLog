@@ -1,3 +1,10 @@
+2007-04-20  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/rs6000/sysv4.h (STARTFILE_DEFAULT_SPEC): Include
+	ecrti.o and crtbegin.o.
+	(LIB_DEFAULT_SPEC): Include -lc.
+	(ENDFILE_DEFAULT_SPEC): Include crtend.o and ecrtn.o.
+
 2007-04-20  Richard Henderson  <rth@redhat.com>
 
 	PR target/28623
