@@ -3036,8 +3036,8 @@
 2007-01-02  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
 
 	PR c/19977
-	* gcc/testsuite/gcc.dg/overflow-warn-3.c: Remove XFAIL.
-	* gcc/testsuite/gcc.dg/overflow-warn-4.c: Remove XFAIL.
+	* gcc.dg/overflow-warn-3.c: Remove XFAIL.
+	* gcc.dg/overflow-warn-4.c: Remove XFAIL.
 
 2006-01-02  Ian Lance Taylor  <iant@google.com>
 
@@ -4303,8 +4303,8 @@
 
 	PR fortran/29391
 	PR fortran/29489
-	* gcc/testsuite/gfortran.dg/bound_2.f90: Add more checks.
-	* gcc/testsuite/gfortran.dg/bound_3.f90: New test.
+	* gfortran.dg/bound_2.f90: Add more checks.
+	* gfortran.dg/bound_3.f90: New test.
 
 2006-11-16  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
@@ -5352,16 +5352,16 @@
 2006-10-13  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/21435
-	* gcc/testsuite/gfortran.dg/io_constraints_3.f90: New test.
-	* gcc/testsuite/gfortran.dg/open_access_append_1.f90: Add checks
+	* gfortran.dg/io_constraints_3.f90: New test.
+	* gfortran.dg/open_access_append_1.f90: Add checks
 	for compile-time warnings.
-	* gcc/testsuite/gfortran.dg/pr20163-2.f: Likewise.
-	* gcc/testsuite/gfortran.dg/iostat_2.f90: Likewise.
-	* gcc/testsuite/gfortran.dg/label_4.f90: Delete the temporary
+	* gfortran.dg/pr20163-2.f: Likewise.
+	* gfortran.dg/iostat_2.f90: Likewise.
+	* gfortran.dg/label_4.f90: Delete the temporary
 	file.
-	* gcc/testsuite/gfortran.dg/direct_io_2.f90: Add a FILE=
+	* gfortran.dg/direct_io_2.f90: Add a FILE=
 	specifier.
-	* gcc/testsuite/gfortran.dg/iomsg_1.f90: Add check for
+	* gfortran.dg/iomsg_1.f90: Add check for
 	compile-time warning.
 
 2006-10-12  Jan Hubicka  <jh@suse.cz>
@@ -5498,12 +5498,12 @@
 
 	PR fortran/16580
 	PR fortran/29288
-	* gcc/testsuite/gfortran.fortran-torture/execute/specifics.f90:
+	* gfortran.fortran-torture/execute/specifics.f90:
 	Add tests for using all possible intrinsics as actual arguments.
-	* gcc/testsuite/gfortran.dg/specifics_1.f90: Add tests for using
+	* gfortran.dg/specifics_1.f90: Add tests for using
 	all possible intrinsics as actual arguments.
-	* gcc/testsuite/gfortran.dg/specifics_2.f90: New file.
-	* gcc/testsuite/gfortran.dg/specifics_3.f90: New file.
+	* gfortran.dg/specifics_2.f90: New file.
+	* gfortran.dg/specifics_3.f90: New file.
 
 2006-10-07  Richard Sandiford  <richard@codesourcery.com>
 
@@ -7757,7 +7757,7 @@
 2006-06-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/27958
-	* gcc/testsuite/gfortran.dg/substr_2.f: New test.
+	* gfortran.dg/substr_2.f: New test.
 
 2006-06-08  Asher Langton  <langton2@llnl.gov>
 
@@ -9794,7 +9794,7 @@
 
 2006-03-03  Paul Brook  <paul@codesourcery.com>
 
-	* gcc/testsuite/lib/target-supports.exp (check_profiling_available):
+	* lib/target-supports.exp (check_profiling_available):
 	Add m68k-*-elf.
 
 2006-03-03  Thomas Koenig  <Thomas.Koenig@online.de>
@@ -13550,11 +13550,11 @@
 2005-11-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/22298
-	* gcc/testsuite/lib/target-supports.exp
+	* lib/target-supports.exp
 	(check_effective_target_static_libgfortran): New
 	static_libgfortran effective target.
-	* gcc/testsuite/gfortran.dg/static_linking_1.f: New test.
-	* gcc/testsuite/gfortran.dg/static_linking_1.c: New file.
+	* gfortran.dg/static_linking_1.f: New test.
+	* gfortran.dg/static_linking_1.c: New file.
 
 2005-11-04  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -21070,7 +21070,7 @@
 2005-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/19666
-	* gcc/testsuite/g++.dg/other/ptrmem6.C: New test.
+	* g++.dg/other/ptrmem6.C: New test.
 
 	PR middle-end/19858
 	* gcc.c-torture/compile/20050210-1.c: New test.
@@ -36688,33 +36688,33 @@
 
 2003-01-16  Mark Mitchell  <mark@codesourcery.com>
 
-	* gcc/testsuite/g++.dg/ext/typename1.C: Add typename keyword.
-	* gcc/testsuite/g++.dg/template/crash1.C: Update error messages.
-	* gcc/testsuite/g++.dg/template/crash2.C: Remove error message.
-	* gcc/testsuite/g++.dg/parse/typename2.C: New test.
-	* gcc/testsuite/g++.dg/template/typename2.C: Change implicit
+	* g++.dg/ext/typename1.C: Add typename keyword.
+	* g++.dg/template/crash1.C: Update error messages.
+	* g++.dg/template/crash2.C: Remove error message.
+	* g++.dg/parse/typename2.C: New test.
+	* g++.dg/template/typename2.C: Change implicit
 	typename warning into error.
-	* gcc/testsuite/g++.old-deja/g++.benjamin/tem03.C: Issue more
+	* g++.old-deja/g++.benjamin/tem03.C: Issue more
 	error messages.
-	* gcc/testsuite/g++.old-deja/g++.benjamin/tem04.C: Fix typos.
-	* gcc/testsuite/g++.old-deja/g++.brendan/crash56.C: Add this->.
-	* gcc/testsuite/g++.old-deja/g++.law/visibility13.C: Remove error
+	* g++.old-deja/g++.benjamin/tem04.C: Fix typos.
+	* g++.old-deja/g++.brendan/crash56.C: Add this->.
+	* g++.old-deja/g++.law/visibility13.C: Remove error
 	messages.
-	* gcc/testsuite/g++.old-deja/g++.ns/template17.C: Reorder code to
+	* g++.old-deja/g++.ns/template17.C: Reorder code to
 	make declaration visible in template.
-	* gcc/testsuite/g++.old-deja/g++.pt/crash3.C: Fix typos.
-	* gcc/testsuite/g++.old-deja/g++.pt/crash36.C: Issue more error
+	* g++.old-deja/g++.pt/crash3.C: Fix typos.
+	* g++.old-deja/g++.pt/crash36.C: Issue more error
 	messages.
-	* gcc/testsuite/g++.old-deja/g++.pt/crash5.C: Improve error
+	* g++.old-deja/g++.pt/crash5.C: Improve error
 	message.
-	* gcc/testsuite/g++.old-deja/g++.pt/crash67.C: Remove warning.
-	* gcc/testsuite/g++.old-deja/g++.pt/inherit1.C: Add this->.
-	* gcc/testsuite/g++.old-deja/g++.pt/niklas01a.C: Add error message.
-	* gcc/testsuite/g++.old-deja/g++.pt/typename16.C: Replace implicit
+	* g++.old-deja/g++.pt/crash67.C: Remove warning.
+	* g++.old-deja/g++.pt/inherit1.C: Add this->.
+	* g++.old-deja/g++.pt/niklas01a.C: Add error message.
+	* g++.old-deja/g++.pt/typename16.C: Replace implicit
 	typename warning with error message.
-	* gcc/testsuite/g++.old-deja/g++.pt/typename19.C: Remove warning.
-	* gcc/testsuite/g++.old-deja/g++.robertl/eb112.C: Fix typo.
-	* gcc/testsuite/g++.old-deja/g++.robertl/eb24.C: Use this->.
+	* g++.old-deja/g++.pt/typename19.C: Remove warning.
+	* g++.old-deja/g++.robertl/eb112.C: Fix typo.
+	* g++.old-deja/g++.robertl/eb24.C: Use this->.
 
 2003-01-16  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -38305,9 +38305,9 @@
 
 2002-09-25  Mark Mitchell  <mark@codesourcery.com>
 
-	* gcc/testsuite/g++.dg/abi/empty5.C: New test.
-	* gcc/testsuite/g++.dg/abi/empty6.C: New test.
-	* gcc/testsuite/g++.dg/abi/vbase12.C: New test.
+	* g++.dg/abi/empty5.C: New test.
+	* g++.dg/abi/empty6.C: New test.
+	* g++.dg/abi/vbase12.C: New test.
 
 2002-09-25  Richard Henderson  <rth@redhat.com>
 
@@ -39329,7 +39329,7 @@
 
 2002-05-23  Mark Mitchell  <mark@codesourcery.com>
 
-	* gcc/testsuite/gcc.dg/weak-8.c: New test.
+	* gcc.dg/weak-8.c: New test.
 
 2002-05-23  J"orn Rennecke <joern.rennecke@superh.com>
 
