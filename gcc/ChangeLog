@@ -1,3 +1,7 @@
+2007-04-20  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/linux.h (CPP_SPEC): Undef before redefine.
+
 2007-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (bdesc_2arg): Use ORDERED rather than UNORDERED
