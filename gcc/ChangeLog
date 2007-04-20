@@ -1,3 +1,8 @@
+2007-04-21  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-ssa-structalias.c (delete_points_to_sets): Free graph->complex.
+	* tree-ssa-operands.c (finalize_ssa_vuse_ops): Free new_ops.
+
 2007-04-20  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/rs6000/sysv4.h (STARTFILE_DEFAULT_SPEC): Include

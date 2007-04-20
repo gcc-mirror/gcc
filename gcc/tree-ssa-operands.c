@@ -1072,6 +1072,7 @@ finalize_ssa_vuse_ops (tree stmt)
 	SET_USE (VUSE_OP_PTR (last, (int) i), op);
 
       VUSE_OPS (stmt) = last;
+      VEC_free (tree, heap, new_ops);
     }
 
 #ifdef ENABLE_CHECKING
