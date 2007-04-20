@@ -1,3 +1,11 @@
+2007-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/31632
+	* fold-const.c (fold_binary): Use op0 and op1 instead of arg0
+	and arg1 for optimizations of comparison against min/max values.
+	Fold arg0 to arg1's type for optimizations of comparison against
+	min+1 and max-1 values.
+
 2007-04-19  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* reload.c (combine_reloads): When trying to use a dying register,
@@ -13,7 +21,6 @@
 
 2007-04-19  Joseph Myers  <joseph@codesourcery.com>
 
-	gcc/
 	* config/rs6000/spe.md (*frob_tf_ti, *frob_ti_tf, *frob_ti_tf_2,
 	*mov_si<mode>_e500_subreg0, *mov_si<mode>_e500_subreg0_2,
 	*mov_sitf_e500_subreg8, *mov_sitf_e500_subreg8_2, spe_extenddftf2,
@@ -292,8 +299,8 @@
 
 2007-04-16  Matthias Klose  <doko@debian.org>
 
-	* gcc/config/alpha/linux.h (CPP_SPEC): Define.
-	* gcc/config/arm/linux-gas.h (SUBTARGET_CPP_SPEC): Extend.
+	* config/alpha/linux.h (CPP_SPEC): Define.
+	* config/arm/linux-gas.h (SUBTARGET_CPP_SPEC): Extend.
 
 2007-04-16  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -3505,7 +3512,7 @@
 	(thread_across_edge): Likewise.
 	* tree-flow.h (vrp_evaluate_conditional): Update declaration.
 	(thread_across_edge): Likewise.
-	* gcc/Makefile.in (tree-vrp.o): Depend upon intl.h.
+	* Makefile.in (tree-vrp.o): Depend upon intl.h.
 
 2007-03-08  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -6303,7 +6310,7 @@
 
 2007-02-13  Stuart Hastings  <stuart@apple.com>
 
-	* gcc/config/i386/i386.md (fixuns_truncdfhi2): Require SSE2.
+	* config/i386/i386.md (fixuns_truncdfhi2): Require SSE2.
 
 2007-02-13  Richard Henderson  <rth@redhat.com>
 
@@ -6593,21 +6600,21 @@
 2007-02-09  Stuart Hastings  <stuart@apple.com>
 	    Richard Henderson  <rth@redhat.com>
 
-	* gcc/config/i386/i386.h (TARGET_KEEPS_VECTOR_ALIGNED_STACK): New.
-	* gcc/config/i386/darwin.h: (TARGET_KEEPS_VECTOR_ALIGNED_STACK): New.
-	* gcc/config/i386/i386.md (fixuns_trunc<mode>si2, fixuns_truncsfhi2,
+	* config/i386/i386.h (TARGET_KEEPS_VECTOR_ALIGNED_STACK): New.
+	* config/i386/darwin.h: (TARGET_KEEPS_VECTOR_ALIGNED_STACK): New.
+	* config/i386/i386.md (fixuns_trunc<mode>si2, fixuns_truncsfhi2,
 	fixuns_truncdfhi2): New.
 	(fix_truncsfdi_sse): Call ix86_expand_convert_sign_didf_sse.
 	(floatunsdidf2): Call ix86_expand_convert_uns_didf_sse.
 	(floatunssisf2): Add call to ix86_expand_convert_uns_sisf_sse.
 	(floatunssidf2): Allow nonimmediate source.
-	* gcc/config/i386/sse.md (movdi_to_sse): New.
+	* config/i386/sse.md (movdi_to_sse): New.
 	(vec_concatv2di): Drop '*'.
-	* gcc/config/i386/i386-protos.h (ix86_expand_convert_uns_si_sse,
+	* config/i386/i386-protos.h (ix86_expand_convert_uns_si_sse,
 	ix86_expand_convert_uns_didf_sse, ix86_expand_convert_uns_sidf_sse,
 	ix86_expand_convert_uns_sisf_sse, ix86_expand_convert_sign_didf_sse):
 	New.
-	* gcc/config/i386/i386.c (ix86_expand_convert_uns_si_sse,
+	* config/i386/i386.c (ix86_expand_convert_uns_si_sse,
 	ix86_expand_convert_uns_didf_sse, ix86_expand_convert_uns_sidf_sse,
 	ix86_expand_convert_uns_sisf_sse, ix86_expand_convert_sign_didf_sse,
 	ix86_build_const_vector, ix86_expand_vector_init_one_nonzero): New.
@@ -7902,7 +7909,7 @@
 
 2007-01-31  Kazu Hirata  <kazu@codesourcery.com>
 
-	* gcc/config/arm/unwind-arm.h (_sleb128_t, _uleb128_t): New.
+	* config/arm/unwind-arm.h (_sleb128_t, _uleb128_t): New.
 
 2007-01-30  Eric Christopher  <echristo@apple.com>
 
