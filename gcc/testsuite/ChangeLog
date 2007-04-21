@@ -1,3 +1,8 @@
+2007-04-21  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/31136
+	* gcc.c-torture/execute/pr31136.c: New testcase.
+
 2007-04-21  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.target/i386/movsi-sm-1.c: New.
