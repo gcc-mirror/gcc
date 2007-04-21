@@ -1,3 +1,23 @@
+2007-04-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree.h (GIMPLE_TUPLE_P): Also true for PHI_NODEs.
+	(GENERIC_NEXT): New function macro.
+	(PHI_CHAIN): Use phi_node's new chain variable.
+	(tree_phi_node): Change tree_common to tree_base
+	and add the chain field.
+	* tree-phinodes.c (make_phi_node): Don't set
+	TREE_TYPE on the new node.
+	* c-decl.c (lang_tree_node): Use GENERIC_NEXT
+	instead of checking GIMPLE_TUPLE_P in chain_next.
+	* tree-vect-transform.c
+	(get_initial_def_for_induction): Look at
+	PHI_RESULT_TREE for the type of the phi node.
+	(update_vuses_to_preheader): Use PHI_CHAIN
+	instead of TREE_CHAIN on the phi node.
+	* tree-ssa-structalias.c (compute_points_to_sets):
+	Likewise.
+	(ipa_pta_execute): Likewise.
+
 2007-04-21  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/31136

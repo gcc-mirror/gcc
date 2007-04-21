@@ -1,3 +1,8 @@
+2007-04-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* cp-tree.h (lang_tree_node): Use GENERIC_NEXT
+	instead of checking GIMPLE_STMT_P in chain_next.
+
 2007-04-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/31513

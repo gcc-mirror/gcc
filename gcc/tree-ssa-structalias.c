@@ -4793,7 +4793,7 @@ compute_points_to_sets (struct alias_info *ai)
       block_stmt_iterator bsi;
       tree phi;
 
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  if (is_gimple_reg (PHI_RESULT (phi)))
 	    {
@@ -4946,7 +4946,7 @@ ipa_pta_execute (void)
 	      block_stmt_iterator bsi;
 	      tree phi;
 
-	      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+	      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 		{
 		  if (is_gimple_reg (PHI_RESULT (phi)))
 		    {
