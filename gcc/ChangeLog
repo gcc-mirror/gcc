@@ -1,5 +1,14 @@
 2007-04-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	PR C/30265
+	* c-gimplifier.c (gimplify_compound_literal_expr): Mark the
+	decl as addressable if the compound literal was marked as
+	addressable.
+	Mark the decl as a gimple register if it is a complex or
+	vector decl and does not live in memory.
+
+2007-04-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	* tree.h (GIMPLE_TUPLE_P): Also true for PHI_NODEs.
 	(GENERIC_NEXT): New function macro.
 	(PHI_CHAIN): Use phi_node's new chain variable.
