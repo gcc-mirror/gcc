@@ -1,7 +1,7 @@
 # Swedish messages for GCC.
-# Copyright © 2000, 2005, 2006 Free Software Foundation, Inc.
+# Copyright © 2000, 2005, 2006, 2007 Free Software Foundation, Inc.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006.
+# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007.
 #
 # Remember: GCC team does not want RCS keywords in the header!
 #
@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.1.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2006-05-24 16:19-0700\n"
-"PO-Revision-Date: 2006-12-13 22:05+0100\n"
+"PO-Revision-Date: 2007-04-03 09:58+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -364,7 +364,7 @@ msgstr "klamrar saknas runt initierare"
 
 #: c-typeck.c:5209
 msgid "braces around scalar initializer"
-msgstr "klamrar funt skalär initierare"
+msgstr "klamrar runt skalär initierare"
 
 #: c-typeck.c:5266
 msgid "initialization of flexible array member in a nested context"
@@ -9266,19 +9266,19 @@ msgstr "-private_bundle är inte tillåten med -dynamiclib"
 
 #: java/lang.opt:66
 msgid "Warn if a deprecated compiler feature, class, method, or field is used"
-msgstr "Varna om en kompilatorfunktion, klass, metod eller fält som avrådes ifrån används"
+msgstr "Varna för en kompilatorfunktion, klass, metod eller fält som bör undvikas används"
 
 #: java/lang.opt:70
 msgid "Warn if deprecated empty statements are found"
-msgstr "Varna om föråldrade tomma satser finns"
+msgstr "Varna för tomma satser som bör undvikas finns"
 
 #: java/lang.opt:74
 msgid "Warn if .class files are out of date"
-msgstr "Varna om .class-filer är inaktuella"
+msgstr "Varna för .class-filer är inaktuella"
 
 #: java/lang.opt:78
 msgid "Warn if modifiers are specified when not necessary"
-msgstr "Varna om modifierare anges när de inte behövs"
+msgstr "Varna för modifierare anges när de inte behövs"
 
 #: java/lang.opt:82
 msgid "Deprecated; use --classpath instead"
@@ -9370,23 +9370,23 @@ msgstr "Lägg MODULE-filer i \"directory\""
 
 #: fortran/lang.opt:42
 msgid "Warn about possible aliasing of dummy arguments"
-msgstr "Varna om eventuell aliasning av atrappargument"
+msgstr "Varna för eventuell aliasning av atrappargument"
 
 #: fortran/lang.opt:46
 msgid "Warn about missing ampersand in continued character literals"
-msgstr "Varna om saknade ampersander i fortsatta teckenliteraler"
+msgstr "Varna för saknade ampersander i fortsatta teckenliteraler"
 
 #: fortran/lang.opt:50
 msgid "Warn about implicit conversion"
-msgstr "Varna om implicita konverteringar"
+msgstr "Varna för implicita konverteringar"
 
 #: fortran/lang.opt:54
 msgid "Warn about calls with implicit interface"
-msgstr "Varna om anrop med implicit gränssnitt"
+msgstr "Varna för anrop med implicit gränssnitt"
 
 #: fortran/lang.opt:58
 msgid "Warn about truncated source lines"
-msgstr "Varna om avhuggna källkodsrader"
+msgstr "Varna för avhuggna källkodsrader"
 
 #: fortran/lang.opt:62
 msgid "Warn about usage of non-standard intrinsics"
@@ -9394,11 +9394,11 @@ msgstr "Varna för användning av inbyggda som inte är standard"
 
 #: fortran/lang.opt:66
 msgid "Warn about \"suspicious\" constructs"
-msgstr "Varna om \"misstänkta\" konstruktioner"
+msgstr "Varna för \"misstänkta\" konstruktioner"
 
 #: fortran/lang.opt:70
 msgid "Warn about underflow of numerical constant expressions"
-msgstr "Varna om underspill i numeriska konstantuttryck"
+msgstr "Varna för underspill i numeriska konstantuttryck"
 
 #: fortran/lang.opt:74 common.opt:162
 msgid "Warn when a label is unused"
@@ -9936,11 +9936,11 @@ msgstr "använd mvcle"
 
 #: config/s390/s390.opt:92
 msgid "Warn if a function uses alloca or creates an array with dynamic size"
-msgstr "Varna om en funktion använder alloca eller skapar en vektor med dynamisk storlek"
+msgstr "Varna för en funktion använder alloca eller skapar en vektor med dynamisk storlek"
 
 #: config/s390/s390.opt:96
 msgid "Warn if a single function's framesize exceeds the given framesize"
-msgstr "Varna om en enskild funktions ramstorlek överskrider den angivna ramstorleken"
+msgstr "Varna för en enskild funktions ramstorlek överskrider den angivna ramstorleken"
 
 #: config/s390/s390.opt:100
 msgid "z/Architecture"
@@ -10690,7 +10690,7 @@ msgstr "Undvik alla avståndsgränser vid anropsinstruktioner"
 
 #: config/rs6000/rs6000.opt:215
 msgid "Warn about deprecated 'vector long ...' AltiVec type usage"
-msgstr "Varna för användning av AltiVec-typen \"vector long ...\" som avrådes från"
+msgstr "Varna för användning av AltiVec-typen \"vector long ...\" som bör undvikas"
 
 #: config/rs6000/rs6000.opt:219
 msgid "Select GPR floating point method"
@@ -12214,7 +12214,7 @@ msgstr "Avdefiniera <makro>"
 
 #: c.opt:117
 msgid "Warn about things that will change when compiling with an ABI-compliant compiler"
-msgstr "Varna om saker som skulle ändras vid kompilering med en kompilator som följer ABI"
+msgstr "Varna för saker som skulle ändras vid kompilering med en kompilator som följer ABI"
 
 #: c.opt:121
 msgid "Enable most warning messages"
@@ -12226,23 +12226,23 @@ msgstr "Varna när en Objective-C-tilldelning fångas upp av skräpsamlaren"
 
 #: c.opt:129
 msgid "Warn about casting functions to incompatible types"
-msgstr "Varna om typkonvertering av funktioner till inkompatibla typer"
+msgstr "Varna för typkonvertering av funktioner till inkompatibla typer"
 
 #: c.opt:133
 msgid "Warn about C constructs that are not in the common subset of C and C++"
-msgstr "Varna om C-konstruktioner som inte är i den gemensamma delmängden av C och C++"
+msgstr "Varna för C-konstruktioner som inte är i den gemensamma delmängden av C och C++"
 
 #: c.opt:138
 msgid "Warn about casts which discard qualifiers"
-msgstr "Varna om typkonvertering som slänger kvalificerare"
+msgstr "Varna för typkonvertering som slänger kvalificerare"
 
 #: c.opt:142
 msgid "Warn about subscripts whose type is \"char\""
-msgstr "Varna om index vars typ är \"char\""
+msgstr "Varna för index vars typ är \"char\""
 
 #: c.opt:146
 msgid "Warn about possibly nested block comments, and C++ comments spanning more than one physical line"
-msgstr "Varna om möjliga nästade blockkommentarer, och C++-kommentarer som spänner över mer än en fysisk rad"
+msgstr "Varna för möjliga nästade blockkommentarer, och C++-kommentarer som spänner över mer än en fysisk rad"
 
 #: c.opt:150
 msgid "Synonym for -Wcomment"
@@ -12250,7 +12250,7 @@ msgstr "Synonym för -Wcommment"
 
 #: c.opt:154
 msgid "Warn about possibly confusing type conversions"
-msgstr "Varna om eventuellt förvirrande typkonverteringar"
+msgstr "Varna för eventuellt förvirrande typkonverteringar"
 
 #: c.opt:158
 msgid "Warn when all constructors and destructors are private"
@@ -12262,19 +12262,19 @@ msgstr "Varna när en deklaration hittas efter en sats"
 
 #: c.opt:166
 msgid "Warn about deprecated compiler features"
-msgstr "Varna om kompilatorfunktioner som undanbedes"
+msgstr "Varna för kompilatorfunktioner bör undvikas"
 
 #: c.opt:170
 msgid "Warn about compile-time integer division by zero"
-msgstr "Varna om heltalsdivision med noll vid kompileringstillfället"
+msgstr "Varna för heltalsdivision med noll vid kompileringstillfället"
 
 #: c.opt:174
 msgid "Warn about violations of Effective C++ style rules"
-msgstr "Varna om brott mot Effective C++ stilregler"
+msgstr "Varna för brott mot stilreglerna i Effective C++"
 
 #: c.opt:178
 msgid "Warn about stray tokens after #elif and #endif"
-msgstr "Varna om vilsekomna symboler efter #elif och #endif"
+msgstr "Varna för vilsekomna symboler efter #elif och #endif"
 
 #: c.opt:186
 msgid "Make implicit function declarations an error"
@@ -12286,35 +12286,35 @@ msgstr "Varna vid test av flyttal på likhet"
 
 #: c.opt:194
 msgid "Warn about printf/scanf/strftime/strfmon format string anomalies"
-msgstr "Varna om anomalier i formatsträngar till printf/scanf/strftime/strfmon"
+msgstr "Varna för anomalier i formatsträngar till printf/scanf/strftime/strfmon"
 
 #: c.opt:198
 msgid "Warn if passing too many arguments to a function for its format string"
-msgstr "Varna om för många argument argument till en funktion för dess formatsträng"
+msgstr "Varna för för många argument argument till en funktion för dess formatsträng"
 
 #: c.opt:202
 msgid "Warn about format strings that are not literals"
-msgstr "Varna om formatsträngar som inte är literaler"
+msgstr "Varna för formatsträngar som inte är literaler"
 
 #: c.opt:206
 msgid "Warn about possible security problems with format functions"
-msgstr "Varna om möjliga säkerhetsproblem med formatfunktioner"
+msgstr "Varna för möjliga säkerhetsproblem med formatfunktioner"
 
 #: c.opt:210
 msgid "Warn about strftime formats yielding 2-digit years"
-msgstr "Varna om format till strftime som ger 2-siffrigt årtal"
+msgstr "Varna för format till strftime som ger 2-siffrigt årtal"
 
 #: c.opt:214
 msgid "Warn about zero-length formats"
-msgstr "Varna om format med längden noll"
+msgstr "Varna för format med längden noll"
 
 #: c.opt:221
 msgid "Warn about variables which are initialized to themselves"
-msgstr "Varna om variabler som intieras till sig själva"
+msgstr "Varna för variabler som intieras till sig själva"
 
 #: c.opt:228
 msgid "Warn about implicit function declarations"
-msgstr "Varna om implicita funktionsdeklarationer"
+msgstr "Varna för implicita funktionsdeklarationer"
 
 #: c.opt:232
 msgid "Warn when a declaration does not specify a type"
@@ -12326,15 +12326,15 @@ msgstr "Avrådes ifrån.  Denna flagga har ingen effekt"
 
 #: c.opt:240
 msgid "Warn when there is a cast to a pointer from an integer of a different size"
-msgstr "Varna om typkonverteringar till pekare från ett heltal med annan storlek"
+msgstr "Varna för typkonverteringar till pekare från ett heltal med annan storlek"
 
 #: c.opt:244
 msgid "Warn about invalid uses of the \"offsetof\" macro"
-msgstr "Varna om ogiltiga användningar av makrot \"offsetof\""
+msgstr "Varna för ogiltiga användningar av makrot \"offsetof\""
 
 #: c.opt:248
 msgid "Warn about PCH files that are found but not used"
-msgstr "Varna om PCH-filer som hittas men inte används"
+msgstr "Varna för PCH-filer som hittas men inte används"
 
 #: c.opt:252
 msgid "Do not warn about using \"long long\" when -pedantic"
@@ -12342,31 +12342,31 @@ msgstr "Varna inte om användning av \"long long\" vid -pedantic"
 
 #: c.opt:256
 msgid "Warn about suspicious declarations of \"main\""
-msgstr "Varna om tveksamma deklarationer av \"main\""
+msgstr "Varna för tveksamma deklarationer av \"main\""
 
 #: c.opt:260
 msgid "Warn about possibly missing braces around initializers"
-msgstr "Varna om eventuellt saknade klamrar runt initierare"
+msgstr "Varna för eventuellt saknade klamrar runt initierare"
 
 #: c.opt:264
 msgid "Warn about global functions without previous declarations"
-msgstr "Varna om globala globala funktioner utan tidigare deklaration"
+msgstr "Varna för globala globala funktioner utan tidigare deklaration"
 
 #: c.opt:268
 msgid "Warn about missing fields in struct initializers"
-msgstr "Varna om saknade fält i postinitierare"
+msgstr "Varna för saknade fält i postinitierare"
 
 #: c.opt:272
 msgid "Warn about functions which might be candidates for format attributes"
-msgstr "Varna om funktioner som kan vara kandidater för formatattribut"
+msgstr "Varna för funktioner som kan vara kandidater för formatattribut"
 
 #: c.opt:276
 msgid "Warn about user-specified include directories that do not exist"
-msgstr "Varna om användarangivna inkluderingskataloger som inte finns"
+msgstr "Varna för användarangivna inkluderingskataloger som inte finns"
 
 #: c.opt:280
 msgid "Warn about global functions without prototypes"
-msgstr "Varna om globala funktioner utan prototyper"
+msgstr "Varna för globala funktioner utan prototyper"
 
 #: c.opt:284
 msgid "Warn about use of multi-character character constants"
@@ -12374,7 +12374,7 @@ msgstr "Varna vid användning av flerteckens teckenkonstant"
 
 #: c.opt:288
 msgid "Warn about \"extern\" declarations not at file scope"
-msgstr "Varna om \"extern\"-deklaration som inte är på filnivå"
+msgstr "Varna för \"extern\"-deklaration som inte är på filnivå"
 
 #: c.opt:292
 msgid "Warn when non-templatized friend functions are declared within a template"
@@ -12382,31 +12382,31 @@ msgstr "Varna när en vänfuktion som inte är en mall deklareras inuti en mall"
 
 #: c.opt:296
 msgid "Warn about non-virtual destructors"
-msgstr "Varna om ickevirtuella destruerare"
+msgstr "Varna för ickevirtuella destruerare"
 
 #: c.opt:300
 msgid "Warn about NULL being passed to argument slots marked as requiring non-NULL"
-msgstr "Varna om NULL skickas som argument till fack markerde att de kräver icke-NULL"
+msgstr "Varna om NULL skickas som argument som är markerade att de kräver icke-NULL"
 
 #: c.opt:304
 msgid "Warn about non-normalised Unicode strings"
-msgstr "Varna om icke normaliserade Unicodesträngar"
+msgstr "Varna för icke normaliserade Unicodesträngar"
 
 #: c.opt:308
 msgid "Warn if a C-style cast is used in a program"
-msgstr "Varna om en typkonvertering i C-stil används i ett program"
+msgstr "Varna för en typkonvertering i C-stil används i ett program"
 
 #: c.opt:312
 msgid "Warn if an old-style parameter definition is used"
-msgstr "Varna om en gammaldags parameterdefinition används"
+msgstr "Varna för en gammaldags parameterdefinition används"
 
 #: c.opt:316
 msgid "Warn about overloaded virtual function names"
-msgstr "Varna om överlastade virtuella funktionsnamn"
+msgstr "Varna för överlagrade virtuella funktionsnamn"
 
 #: c.opt:320
 msgid "Warn about possibly missing parentheses"
-msgstr "Varna om eventuellt saknade parenteser"
+msgstr "Varna för eventuellt saknade parenteser"
 
 #: c.opt:324
 msgid "Warn when converting the type of pointers to member functions"
@@ -12414,7 +12414,7 @@ msgstr "Varna vid typkonvertering av pekare till medlemsfunktioner"
 
 #: c.opt:328
 msgid "Warn about function pointer arithmetic"
-msgstr "Varna om aritmetik med funktionspekare"
+msgstr "Varna för aritmetik med funktionspekare"
 
 #: c.opt:332
 msgid "Warn when a pointer is cast to an integer of a different size"
@@ -12422,15 +12422,15 @@ msgstr "Varna när en pkare typkonverteras till ett heltal av annan storlek"
 
 #: c.opt:336
 msgid "Warn about misuses of pragmas"
-msgstr "Varna om missbruk av pragman"
+msgstr "Varna för missbruk av pragman"
 
 #: c.opt:340
 msgid "Warn if inherited methods are unimplemented"
-msgstr "Varna om ärvda metoder är oimplementerade"
+msgstr "Varna för ärvda metoder är oimplementerade"
 
 #: c.opt:344
 msgid "Warn about multiple declarations of the same object"
-msgstr "Varna om multipla deklarationer av samma objekt"
+msgstr "Varna för multipla deklarationer av samma objekt"
 
 #: c.opt:348
 msgid "Warn when the compiler reorders code"
@@ -12442,31 +12442,31 @@ msgstr "Varna när en funktions returtyp får \"int\" som skönsvärde (C), eller om
 
 #: c.opt:356
 msgid "Warn if a selector has multiple methods"
-msgstr "Varna om en väljare har multipla metoder"
+msgstr "Varna för en väljare har multipla metoder"
 
 #: c.opt:360
 msgid "Warn about possible violations of sequence point rules"
-msgstr "Varna om möjliga brott mot sekvenspunktregler"
+msgstr "Varna för möjliga brott mot sekvenspunktregler"
 
 #: c.opt:364
 msgid "Warn about signed-unsigned comparisons"
-msgstr "Varna om jämförelser mellan signed/unsigned"
+msgstr "Varna för jämförelser mellan signed/unsigned"
 
 #: c.opt:368
 msgid "Warn when overload promotes from unsigned to signed"
-msgstr "Varna när överlastning anpassar från teckenlöst till med tecken"
+msgstr "Varna när överlagring anpassar från teckenlöst till med tecken"
 
 #: c.opt:372
 msgid "Warn about uncasted NULL used as sentinel"
-msgstr "Varna om ej typkonverterad NULL används som vaktpost"
+msgstr "Varna för ej typkonverterad NULL används som vaktpost"
 
 #: c.opt:376
 msgid "Warn about unprototyped function declarations"
-msgstr "Varna om funktionsdeklarationer utan prototyp"
+msgstr "Varna för funktionsdeklarationer utan prototyp"
 
 #: c.opt:380
 msgid "Warn if type signatures of candidate methods do not match exactly"
-msgstr "Varna om typsignaturer till kandidatmetoder inte stämmer exakt"
+msgstr "Varna för typsignaturer till kandidatmetoder inte stämmer exakt"
 
 #: c.opt:384
 msgid "Warn when synthesis behavior differs from Cfront"
@@ -12478,27 +12478,27 @@ msgstr "Undertryck inte varningar från systemhuvudfiler"
 
 #: c.opt:392
 msgid "Warn about features not present in traditional C"
-msgstr "Varna om funktioner som inte finns i traditionell C"
+msgstr "Varna för funktioner som inte finns i traditionell C"
 
 #: c.opt:396
 msgid "Warn if trigraphs are encountered that might affect the meaning of the program"
-msgstr "Varna om trigrafer upptäcks som kan påverka betydelsen av programmet"
+msgstr "Varna för trigrafer upptäcks som kan påverka betydelsen av programmet"
 
 #: c.opt:400
 msgid "Warn about @selector()s without previously declared methods"
-msgstr "Varna om @selector()er utan tidigare deklarerade metoder"
+msgstr "Varna för @selector()er utan tidigare deklarerade metoder"
 
 #: c.opt:404
 msgid "Warn if an undefined macro is used in an #if directive"
-msgstr "Varna om ett odefinierat makro används i ett #if-direktiv"
+msgstr "Varna för ett odefinierat makro används i ett #if-direktiv"
 
 #: c.opt:408
 msgid "Warn about unrecognized pragmas"
-msgstr "Varna om okända pragman"
+msgstr "Varna för okända pragman"
 
 #: c.opt:412
 msgid "Warn about macros defined in the main file that are not used"
-msgstr "Varna om makron definierade i huvudfilen som inte används"
+msgstr "Varna för makron definierade i huvudfilen som inte används"
 
 #: c.opt:416
 msgid "Do not warn about using variadic macros when -pedantic"
@@ -12886,23 +12886,23 @@ msgstr "Optimera för storlek istället för hastighet"
 
 #: common.opt:54
 msgid "This switch is deprecated; use -Wextra instead"
-msgstr "Denna flagga avrådes ifrån, använd -Wextra istället"
+msgstr "Denna flagga bör undvikas, använd -Wextra istället"
 
 #: common.opt:58
 msgid "Warn about returning structures, unions or arrays"
-msgstr "Varna om retur av poster, unioner eller vektorer"
+msgstr "Varna för retur av poster, unioner eller vektorer"
 
 #: common.opt:62
 msgid "Warn about inappropriate attribute usage"
-msgstr "Varna om felaktig användning av attribut"
+msgstr "Varna för felaktig användning av attribut"
 
 #: common.opt:66
 msgid "Warn about pointer casts which increase alignment"
-msgstr "Varna om typkonvertering av pekare som ökar justeringen"
+msgstr "Varna för typkonvertering av pekare som ökar justeringen"
 
 #: common.opt:70
 msgid "Warn about uses of __attribute__((deprecated)) declarations"
-msgstr "Varna om användning av __attribute__((deprecated))-deklarationer"
+msgstr "Varna för användning av __attribute__((deprecated))-deklarationer"
 
 #: common.opt:74
 msgid "Warn when an optimization pass is disabled"
@@ -12926,15 +12926,15 @@ msgstr "Varna när en inline:ad funktion inte kan inline:as"
 
 #: common.opt:94
 msgid "Warn if an object is larger than <number> bytes"
-msgstr "Varna om ett objekt är större än <antal> byte"
+msgstr "Varna för ett objekt är större än <antal> byte"
 
 #: common.opt:98
 msgid "Warn if the loop cannot be optimized due to nontrivial assumptions."
-msgstr "Varna om slingan inte kan optimeras på grund av icketriviala antaganden."
+msgstr "Varna för slingan inte kan optimeras på grund av icketriviala antaganden."
 
 #: common.opt:102
 msgid "Warn about functions which might be candidates for __attribute__((noreturn))"
-msgstr "Varna om funktioner som är möjliga kandidater för __attribute__((noreturn))"
+msgstr "Varna för funktioner som är möjliga kandidater för __attribute__((noreturn))"
 
 #: common.opt:106
 msgid "Warn when the packed attribute has no effect on struct layout"
@@ -12950,31 +12950,31 @@ msgstr "Varna när en lokal variabel skuggar en annan"
 
 #: common.opt:118
 msgid "Warn when not issuing stack smashing protection for some reason"
-msgstr "Varna när stacksprängningsskydd inte läggs ut av någon anledning"
+msgstr "Varna när stacköverskrivningsskydd inte läggs ut av någon anledning"
 
 #: common.opt:122 common.opt:126
 msgid "Warn about code which might break strict aliasing rules"
-msgstr "Varna om kod som kan bryta strikta aliasregler"
+msgstr "Varna för kod som kan bryta strikta aliasregler"
 
 #: common.opt:130
 msgid "Warn about enumerated switches, with no default, missing a case"
-msgstr "Varna om uppräkningshopptabeller, utan standardfall, saknar ett fall"
+msgstr "Varna när hopptabeller för uppräkningstyper inte har standardfall och saknar ett fall"
 
 #: common.opt:134
 msgid "Warn about enumerated switches missing a \"default:\" statement"
-msgstr "Varna om uppräkningshopptabeller saknar en \"default:\"-sats"
+msgstr "Varna för uppräkningshopptabeller saknar en \"default:\"-sats"
 
 #: common.opt:138
 msgid "Warn about all enumerated switches missing a specific case"
-msgstr "Varna om alla uppräkningshopptabeller som saknar ett specifikt fall"
+msgstr "Varna för alla uppräkningshopptabeller som saknar ett specifikt fall"
 
 #: common.opt:146
 msgid "Warn about uninitialized automatic variables"
-msgstr "Varna om oinitierade automatiska variabler"
+msgstr "Varna för oinitierade automatiska variabler"
 
 #: common.opt:150
 msgid "Warn about code that will never be executed"
-msgstr "Varna om kod som aldrig kommer köras"
+msgstr "Varna för kod som aldrig kommer köras"
 
 #: common.opt:154
 msgid "Enable all -Wunused- warnings"
@@ -13106,7 +13106,7 @@ msgstr "Uteslut intervallreduktionssteget när komplex division görs"
 
 #: common.opt:334
 msgid "Place data items into their own section"
-msgstr "Placera dataföremål i sin egen sektion"
+msgstr "Placera dataobjekt i sin egen sektion"
 
 #: common.opt:340
 msgid "Defer popping functions args from stack until later"
@@ -13118,7 +13118,7 @@ msgstr "Försök fylla fördröjningsfack av greninstruktioner"
 
 #: common.opt:348
 msgid "Delete useless null pointer checks"
-msgstr "Tag bort oanvändbara nollpekarkontroller"
+msgstr "Tag bort onödiga nollpekarkontroller"
 
 #: common.opt:352
 msgid "How often to emit source location at the beginning of line-wrapped diagnostics"
@@ -13214,7 +13214,7 @@ msgstr "Hantera #ident-direktiv"
 
 #: common.opt:464
 msgid "Perform conversion of conditional jumps to branchless equivalents"
-msgstr "Utvör konvertering av villkorliga hopp till grenlösa motsvarigheter"
+msgstr "Utför konvertering av villkorliga hopp till grenlösa motsvarigheter"
 
 #: common.opt:468
 msgid "Perform conversion of conditional jumps to conditional execution"
@@ -13730,15 +13730,15 @@ msgstr "Använd uttrycksvärdeprofiler i optimeringar"
 
 #: common.opt:1034
 msgid "Construct webs and split unrelated uses of single variable"
-msgstr "Kostruera nät och dela orelaterade användningar av en enskild variabel"
+msgstr "Konstruera nät och dela orelaterade användningar av en enskild variabel"
 
 #: common.opt:1038
 msgid "Perform whole program optimizations"
-msgstr "Utför optimeringav hela program"
+msgstr "Utför optimering av hela program"
 
 #: common.opt:1042
 msgid "Assume signed arithmetic overflow wraps around"
-msgstr "Anta spill vid teckenaritmetik slår runt"
+msgstr "Anta att spill vid teckenaritmetik slår runt"
 
 #: common.opt:1046
 msgid "Put zero initialized data in the bss section"
@@ -14044,7 +14044,7 @@ msgstr "negativt heltal implicit konverterat till unsigned typ"
 #: c-common.c:975
 #, gcc-internal-format
 msgid "type-punning to incomplete type might break strict-aliasing rules"
-msgstr "typstampning till ofullständiga typ kan bryta strikta aliasregler"
+msgstr "typstampning till ofullständig typ kan bryta strikta aliasregler"
 
 #: c-common.c:983
 #, gcc-internal-format
@@ -14059,7 +14059,7 @@ msgstr "dereferering av en typstampad pekare kan bryta strikta aliasregler"
 #: c-common.c:1049
 #, gcc-internal-format
 msgid "overflow in implicit constant conversion"
-msgstr "spill i implicit constant konvertering"
+msgstr "spill i implicit konstant konvertering"
 
 #: c-common.c:1185
 #, gcc-internal-format
@@ -14129,12 +14129,12 @@ msgstr "pekare av typen %<void *%> använd i aritmetik"
 #: c-common.c:2288
 #, gcc-internal-format
 msgid "pointer to a function used in arithmetic"
-msgstr "pekare till funktion använd med aritmetik"
+msgstr "pekare till funktion använd i aritmetik"
 
 #: c-common.c:2294
 #, gcc-internal-format
 msgid "pointer to member function used in arithmetic"
-msgstr "pekare till medlemsfunktion använd med aritmetik"
+msgstr "pekare till medlemsfunktion använd i aritmetik"
 
 #. Common Ada/Pascal programmer's mistake.  We always warn
 #. about this since it is so bad.
@@ -14196,7 +14196,7 @@ msgstr "tomt intervall angivet"
 #: c-common.c:3724
 #, gcc-internal-format
 msgid "duplicate (or overlapping) case value"
-msgstr "dubbla (eller överlappand) case-värden"
+msgstr "dubbla (eller överlappande) case-värden"
 
 #: c-common.c:3725
 #, gcc-internal-format
@@ -14236,7 +14236,7 @@ msgstr "%Jcase-värde %qs är inte i uppräkningstyp %qT"
 #: c-common.c:3844
 #, gcc-internal-format
 msgid "%Hswitch missing default case"
-msgstr "%Hswitch saknare default-fall"
+msgstr "%Hswitch saknar default-fall"
 
 #. Warn if there are enumerators that don't correspond to
 #. case expressions.
@@ -14279,7 +14279,7 @@ msgstr "okänt maskinläge %qs"
 #: c-common.c:4540
 #, gcc-internal-format
 msgid "specifying vector types with __attribute__ ((mode)) is deprecated"
-msgstr "det avrådes från att ange vektortyper med __attribute__ ((sätt))"
+msgstr "att ange vektortyper med __attribute__ ((sätt)) bör unvikas"
 
 #: c-common.c:4543
 #, gcc-internal-format
@@ -14339,7 +14339,7 @@ msgstr "efterfrågad minnesjustering är inte konstant"
 #: c-common.c:4708
 #, gcc-internal-format
 msgid "requested alignment is not a power of 2"
-msgstr "efterrågad minnesjustering är inte en potens av 2"
+msgstr "efterfågad minnesjustering är inte en potens av 2"
 
 #: c-common.c:4713
 #, gcc-internal-format
@@ -19077,7 +19077,7 @@ msgstr "asm-operand %d stämmer förmodligen inte med begränsningarna"
 #: stmt.c:910
 #, gcc-internal-format
 msgid "use of memory input without lvalue in asm operand %d is deprecated"
-msgstr "användning av minnesindata utan lvärde i asm-operand %d undanbedes"
+msgstr "användning av minnesindata utan lvärde i asm-operand %d bör undvikas"
 
 #: stmt.c:1057
 #, gcc-internal-format
@@ -19234,22 +19234,22 @@ msgstr "%q+D är definierad men inte använd"
 #: toplev.c:892 toplev.c:916
 #, gcc-internal-format
 msgid "%qs is deprecated (declared at %s:%d)"
-msgstr "%qs undanbedes (deklarerad vid %s:%d)"
+msgstr "%qs bör undvikas (deklarerad vid %s:%d)"
 
 #: toplev.c:920
 #, gcc-internal-format
 msgid "type is deprecated (declared at %s:%d)"
-msgstr "typen undanbedes (deklarerad vid %s:%d)"
+msgstr "typen bör undvikas (deklarerad vid %s:%d)"
 
 #: toplev.c:926
 #, gcc-internal-format
 msgid "%qs is deprecated"
-msgstr "%qs undanbedes"
+msgstr "%qs bör undvikas"
 
 #: toplev.c:928
 #, gcc-internal-format
 msgid "type is deprecated"
-msgstr "type undanbedes"
+msgstr "typen bör undvikas"
 
 #: toplev.c:1095
 #, gcc-internal-format
@@ -21694,7 +21694,7 @@ msgstr "argument till %qs måste vara en 2-bitars literal utan tecken"
 #: config/rs6000/rs6000.c:7259
 #, gcc-internal-format
 msgid "unresolved overload for Altivec builtin %qF"
-msgstr "ej upplöst överlastning för inbyggd Altivec %qF"
+msgstr "ej upplöst överlagring för inbyggd Altivec %qF"
 
 #: config/rs6000/rs6000.c:7341
 #, gcc-internal-format
@@ -21729,7 +21729,7 @@ msgstr "användning av %<long%> i AltiVec-typer är ogiltigt för 64-bitskod"
 #: config/rs6000/rs6000.c:17299
 #, gcc-internal-format
 msgid "use of %<long%> in AltiVec types is deprecated; use %<int%>"
-msgstr "användning av %<long%> i AltiVec-typer undanbedes, använd %<int%>"
+msgstr "användning av %<long%> i AltiVec-typer bör undvikas, använd %<int%>"
 
 #: config/rs6000/rs6000.c:17303
 #, gcc-internal-format
@@ -22307,7 +22307,7 @@ msgstr "ingen funktion som stämmer för anrop av %<%D(%A)%>"
 #: cp/call.c:2800 cp/call.c:2858
 #, gcc-internal-format
 msgid "call of overloaded %<%D(%A)%> is ambiguous"
-msgstr "anrop av överlastad %<%D(%A)%> är tvetydigt"
+msgstr "anrop av överlagrad %<%D(%A)%> är tvetydigt"
 
 #. It's no good looking for an overloaded operator() on a
 #. pointer-to-member-function.
@@ -22522,7 +22522,7 @@ msgstr "ingen matchande funktion för anrop av %<%T::%s(%A)%#V%>"
 #: cp/call.c:5404
 #, gcc-internal-format
 msgid "call of overloaded %<%s(%A)%> is ambiguous"
-msgstr "anrop av överlastad %<%s(%A)%> är tvetydigt"
+msgstr "anrop av överlagrad %<%s(%A)%> är tvetydigt"
 
 #: cp/call.c:5428
 #, gcc-internal-format
@@ -22602,7 +22602,7 @@ msgstr "using-deklaration %q+D står i konflikt med en tidigare using-deklaration
 #: cp/class.c:1061
 #, gcc-internal-format
 msgid "%q+#D cannot be overloaded"
-msgstr "%q+#D kan inte överlastas"
+msgstr "%q+#D kan inte överlagras"
 
 #: cp/class.c:1062
 #, gcc-internal-format
@@ -22880,7 +22880,7 @@ msgstr "språksträng %<\"%E\"%> känns inte igen"
 #: cp/class.c:5714
 #, gcc-internal-format
 msgid "cannot resolve overloaded function %qD based on conversion to type %qT"
-msgstr "det går inte att lösa upp  överlastad funktion %qD baserat på konvertering till typ %qT"
+msgstr "det går inte att lösa upp överlagrad funktion %qD baserat på konvertering till typ %qT"
 
 #: cp/class.c:5841
 #, gcc-internal-format
@@ -22890,7 +22890,7 @@ msgstr "ingen match som konverterar funktionen %qD till typen %q#T"
 #: cp/class.c:5864
 #, gcc-internal-format
 msgid "converting overloaded function %qD to type %q#T is ambiguous"
-msgstr "konvertering av överlastad funktion %qD till typ %q#T är tvetydig"
+msgstr "konvertering av överlagrad funktion %qD till typ %q#T är tvetydig"
 
 #: cp/class.c:5890
 #, gcc-internal-format
@@ -23022,7 +23022,7 @@ msgstr "objekt %qE med ofullständig typ %qT kommer inte användas i %s"
 #: cp/cvt.c:902
 #, gcc-internal-format
 msgid "%s cannot resolve address of overloaded function"
-msgstr "%s kan inte lösa upp adress till överlastad funktion"
+msgstr "%s kan inte lösa upp adress till överlagrad funktion"
 
 #. Only warn when there is no &.
 #: cp/cvt.c:908
@@ -23565,7 +23565,7 @@ msgstr "%qT har ingen icke-statisk medlem med namnet %qD"
 #: cp/decl.c:4387
 #, gcc-internal-format
 msgid "braces around scalar initializer for type %qT"
-msgstr "klamrar funt skalär initierare för typen %qT"
+msgstr "klamrar runt skalär initierare för typen %qT"
 
 #: cp/decl.c:4465
 #, gcc-internal-format
@@ -24427,7 +24427,7 @@ msgstr "konvertering till %s%s kommer aldrig använda en typkonverteringsoperator
 #: cp/decl.c:9012
 #, gcc-internal-format
 msgid "ISO C++ prohibits overloading operator ?:"
-msgstr "ISO C++ förhindrar överlastning av operatorn ?:"
+msgstr "ISO C++ förhindrar överlagring av operatorn ?:"
 
 #: cp/decl.c:9015
 #, gcc-internal-format
@@ -24848,7 +24848,7 @@ msgstr "kastar NULL, som har heltals-, inte pekartyp"
 #: cp/except.c:631 cp/init.c:1929
 #, gcc-internal-format
 msgid "%qD should never be overloaded"
-msgstr "%qD skall aldrig överlastas"
+msgstr "%qD skall aldrig överlagras"
 
 #: cp/except.c:698
 #, gcc-internal-format
@@ -25242,7 +25242,7 @@ msgstr "det finns inga argument till %qD som beror på en mallparameter, så en de
 #: cp/lex.c:651
 #, gcc-internal-format
 msgid "(if you use %<-fpermissive%>, G++ will accept your code, but allowing the use of an undeclared name is deprecated)"
-msgstr "(om du använder %<-fpermissive%>, kommer G++ acceptera din kod, men det avrådes från att tillåta användning av ett odeklarerat namn)"
+msgstr "(om du använder %<-fpermissive%>, kommer G++ acceptera din kod, men man bör undvika att tillåta användning av ett odeklarerat namn)"
 
 #: cp/mangle.c:2139
 #, gcc-internal-format
@@ -25562,7 +25562,7 @@ msgstr "XXX lämnar pop_everything ()\n"
 #: cp/parser.c:1875
 #, gcc-internal-format
 msgid "minimum/maximum operators are deprecated"
-msgstr "minimum-/maximumoperatorer undanbedes"
+msgstr "minimum-/maximumoperatorer bör undvikas"
 
 #: cp/parser.c:1895
 #, gcc-internal-format
@@ -25905,7 +25905,7 @@ msgstr "filen tar slut i standardargument"
 #: cp/parser.c:12370
 #, gcc-internal-format
 msgid "deprecated use of default argument for parameter of non-function"
-msgstr "undanbedd användning av standardargument för parametrar till annat än funktioner"
+msgstr "användning av standardargument för parametrar till annat än funktioner bör undvikas"
 
 #: cp/parser.c:12373
 #, gcc-internal-format
@@ -26728,7 +26728,7 @@ msgstr "%qT är en oåtkomlig bas till %qT"
 #: cp/search.c:1847
 #, gcc-internal-format
 msgid "deprecated covariant return type for %q+#D"
-msgstr "undanbedd kovariant returtyp för %q+#D"
+msgstr "kovariant returtyp för %q+#D bör undvikas"
 
 #: cp/search.c:1849 cp/search.c:1864 cp/search.c:1869
 #, gcc-internal-format
@@ -27013,7 +27013,7 @@ msgstr "ogiltig användning av icke-statisk medlemsfunktion"
 #: cp/typeck.c:1502
 #, gcc-internal-format
 msgid "deprecated conversion from string constant to %qT'"
-msgstr "undanbedd konvertering från strängkonstant till %qT'"
+msgstr "konvertering från strängkonstant till %qT' bör undvikas"
 
 #: cp/typeck.c:1613 cp/typeck.c:1961
 #, gcc-internal-format
@@ -27155,7 +27155,7 @@ msgstr "för få argument till funktion"
 #: cp/typeck.c:2885 cp/typeck.c:2895
 #, gcc-internal-format
 msgid "assuming cast to type %qT from overloaded function"
-msgstr "antar typkonvertering till %qT från överlastad funktion"
+msgstr "antar typkonvertering till %qT från överlagrad funktion"
 
 #: cp/typeck.c:2963
 #, gcc-internal-format
