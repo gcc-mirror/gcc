@@ -7734,7 +7734,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	    return fold_build1 (BIT_NOT_EXPR, type, fold_convert (type, tem));
 	}
 
-      tem = fold_convert_const (code, type, arg0);
+      tem = fold_convert_const (code, type, op0);
       return tem ? tem : NULL_TREE;
 
     case VIEW_CONVERT_EXPR:
