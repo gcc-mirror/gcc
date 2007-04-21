@@ -1,3 +1,8 @@
+2007-04-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* java-tree.h (lang_tree_node): Use GENERIC_NEXT
+	instead of checking GIMPLE_STMT_P in chain_next.
+
 2007-04-06  Colin Walters  <walters@redhat.com>
 
 	https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=161701

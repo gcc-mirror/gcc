@@ -218,7 +218,6 @@ make_phi_node (tree var, int len)
   TREE_SET_CODE (phi, PHI_NODE);
   PHI_NUM_ARGS (phi) = len;
   PHI_ARG_CAPACITY (phi) = capacity;
-  TREE_TYPE (phi) = TREE_TYPE (var);
   if (TREE_CODE (var) == SSA_NAME)
     SET_PHI_RESULT (phi, var);
   else

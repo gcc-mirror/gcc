@@ -528,7 +528,7 @@ get_initial_def_for_induction (tree iv_phi)
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (iv_phi);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  tree scalar_type = TREE_TYPE (iv_phi);
+  tree scalar_type = TREE_TYPE (PHI_RESULT_TREE (iv_phi));
   tree vectype = get_vectype_for_scalar_type (scalar_type);
   int nunits =  TYPE_VECTOR_SUBPARTS (vectype);
   edge pe = loop_preheader_edge (loop);
@@ -4547,7 +4547,7 @@ update_vuses_to_preheader (tree stmt, struct loop *loop)
 	  tree phi;
 	  bool updated = false;
 
-	  for (phi = phi_nodes (header_bb); phi; phi = TREE_CHAIN (phi))
+	  for (phi = phi_nodes (header_bb); phi; phi = PHI_CHAIN (phi))
 	    {
 	      if (SSA_NAME_VAR (PHI_RESULT (phi)) == name_var)
 		{

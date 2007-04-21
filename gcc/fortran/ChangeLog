@@ -1,3 +1,8 @@
+2007-04-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* f95-lang.c (lang_tree_node): Use GENERIC_NEXT
+	instead of checking GIMPLE_STMT_P in chain_next.
+
 2007-04-17  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* trans-types.h (gfc_packed): New enum.

@@ -36,7 +36,7 @@ enum gnat_tree_code {
 /* Ada uses the lang_decl and lang_type fields to hold a tree.  */
 union lang_tree_node
   GTY((desc ("0"),
-       chain_next ("(GIMPLE_STMT_P (&%h.t) ? (union lang_tree_node *) 0 : (union lang_tree_node *)TREE_CHAIN (&%h.t))")))
+       chain_next ("(union lang_tree_node *)GENERIC_NEXT (&%h.generic)")))
 
 {
   union tree_node GTY((tag ("0"))) t;

@@ -250,7 +250,7 @@ extern char C_SIZEOF_STRUCT_LANG_IDENTIFIER_isnt_accurate
 
 union lang_tree_node
   GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
-       chain_next ("TREE_CODE (&%h.generic) == INTEGER_TYPE ? (union lang_tree_node *) TYPE_NEXT_VARIANT (&%h.generic) : (GIMPLE_TUPLE_P (&%h.generic) ? (union lang_tree_node *) 0 : (union lang_tree_node *) TREE_CHAIN (&%h.generic))")))
+       chain_next ("TREE_CODE (&%h.generic) == INTEGER_TYPE ? (union lang_tree_node *) TYPE_NEXT_VARIANT (&%h.generic) : ((union lang_tree_node *) GENERIC_NEXT (&%h.generic))")))
 {
   union tree_node GTY ((tag ("0"),
 			desc ("tree_node_structure (&%h)")))
