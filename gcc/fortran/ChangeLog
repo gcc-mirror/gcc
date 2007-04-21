@@ -1,3 +1,9 @@
+2007-04-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/31495
+	* scanner.c (load_line):  Remove check for comment after ampersand and
+	adjust tracking of ampersand.
+
 2007-04-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* f95-lang.c (lang_tree_node): Use GENERIC_NEXT
