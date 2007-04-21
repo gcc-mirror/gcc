@@ -1,5 +1,10 @@
 2007-04-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	* timevar.c (timevar_print): Change reference of --disable-checking to
+	--enable-checking=release.  Also warn if assert checking is disabled.
+
+2007-04-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	PR C/30265
 	* c-gimplifier.c (gimplify_compound_literal_expr): Mark the
 	decl as addressable if the compound literal was marked as
