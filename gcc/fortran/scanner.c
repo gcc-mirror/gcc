@@ -1050,7 +1050,7 @@ load_line (FILE *input, char **pbuf, int *pbuflen)
 	{
 	  /* Check for illegal use of ampersand. See F95 Standard 3.3.1.3.  */
 	  if (gfc_current_form == FORM_FREE 
-		&& !seen_printable && seen_ampersand)
+	      && !seen_printable && seen_ampersand)
 	    {
 	      if (pedantic)
 		gfc_error_now ("'&' not allowed by itself in line %d",
@@ -1067,24 +1067,16 @@ load_line (FILE *input, char **pbuf, int *pbuflen)
       if (c == '\0')
 	continue;
 
-      /* Check for illegal use of ampersand. See F95 Standard 3.3.1.3.  */
       if (c == '&')
-	seen_ampersand = 1;
-
-      if ((c != ' ' && c != '&' && c != '!') || (c == '!' && !seen_ampersand))
-	seen_printable = 1;
-      
-      if (gfc_current_form == FORM_FREE 
-	    && c == '!' && !seen_printable && seen_ampersand)
 	{
-	  if (pedantic)
-	    gfc_error_now ("'&' not allowed by itself with comment in "
-			   "line %d", current_line);
+	  if (seen_ampersand)
+	    seen_ampersand = 0;
 	  else
-	    gfc_warning_now ("'&' not allowed by itself with comment in "
-			     "line %d", current_line);
-	  seen_printable = 1;
+	    seen_ampersand = 1;
 	}
+
+      if ((c != '&' && c != '!') || (c == '!' && !seen_ampersand))
+	seen_printable = 1;
 
       /* Is this a fixed-form comment?  */
       if (gfc_current_form == FORM_FIXED && i == 0
