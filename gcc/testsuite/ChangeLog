@@ -1,5 +1,9 @@
 2007-04-22  Revital Eres  <eres@il.ibm.com>
 
+        * gcc.dg/var-expand2.c: New test.
+
+2007-04-22  Revital Eres  <eres@il.ibm.com>
+
 	* gcc.dg/var-expand3.c: New test.
 
 2007-04-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
