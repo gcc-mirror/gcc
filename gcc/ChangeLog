@@ -1,3 +1,19 @@
+2007-04-20  Richard Henderson  <rth@redhat.com>
+
+	PR target/28623
+	* config/alpha/alpha.c (get_unaligned_address): Remove extra_offset
+	argument; update all callers.
+	(get_unaligned_offset): New.
+	* config/alpha/alpha.md (extendqidi2, extendhidi2): Don't use
+	get_unaligned_address, just pass on the address directly.
+	(unaligned_extendqidi): Use gen_lowpart instead of open-coding
+	the subreg in the helper patterns.
+	(unaligned_extendqidi_le): Use get_unaligned_offset.
+	(unaligned_extendqidi_be, unaligned_extendhidi_le): Likewise.
+	(unaligned_extendhidi_be): Likewise.
+	(unaligned_extendhidi): Tidy.
+	* config/alpha/alpha-protos.h: Update.
+
 2007-04-21  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/31136
@@ -6,7 +22,7 @@
 
 2007-04-20  Richard Henderson  <rth@redhat.com>
 
-        * config/alpha/linux.h (CPP_SPEC): Undef before redefine.
+	* config/alpha/linux.h (CPP_SPEC): Undef before redefine.
 
 2007-04-20  Bernd Schmidt  <bernd.schmidt@analog.com>
 
