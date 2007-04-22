@@ -460,6 +460,11 @@ stmt_cost (tree stmt)
       cost += 20;
       break;
 
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+      cost += 20;
+      break;
+
     default:
       break;
     }
@@ -571,6 +576,123 @@ free_lim_aux_data (struct lim_aux_data *data)
   free (data);
 }
 
+/* Rewrite a/b to a*(1/b).  Return the invariant stmt to process.  */
+
+static tree
+rewrite_reciprocal (block_stmt_iterator *bsi)
+{
+  tree stmt, lhs, rhs, stmt1, stmt2, var, name, tmp;
+
+  stmt = bsi_stmt (*bsi);
+  lhs = GENERIC_TREE_OPERAND (stmt, 0);
+  rhs = GENERIC_TREE_OPERAND (stmt, 1);
+
+  /* stmt must be GIMPLE_MODIFY_STMT.  */
+  var = create_tmp_var (TREE_TYPE (rhs), "reciptmp");
+  add_referenced_var (var);
+
+  tmp = build2 (RDIV_EXPR, TREE_TYPE (rhs),
+		build_real (TREE_TYPE (rhs), dconst1),
+		TREE_OPERAND (rhs, 1));
+  stmt1 = build_gimple_modify_stmt (var, tmp);
+  name = make_ssa_name (var, stmt1);
+  GIMPLE_STMT_OPERAND (stmt1, 0) = name;
+  tmp = build2 (MULT_EXPR, TREE_TYPE (rhs),
+		name, TREE_OPERAND (rhs, 0));
+  stmt2 = build_gimple_modify_stmt (lhs, tmp);
+
+  /* Replace division stmt with reciprocal and multiply stmts.
+     The multiply stmt is not invariant, so update iterator
+     and avoid rescanning.  */
+  bsi_replace (bsi, stmt1, true);
+  bsi_insert_after (bsi, stmt2, BSI_NEW_STMT);
+  SSA_NAME_DEF_STMT (lhs) = stmt2;
+
+  /* Continue processing with invariant reciprocal statement.  */
+  return stmt1;
+}
+
+/* Check if the pattern at *BSI is a bittest of the form
+   (A >> B) & 1 != 0 and in this case rewrite it to A & (1 << B) != 0.  */
+
+static tree
+rewrite_bittest (block_stmt_iterator *bsi)
+{
+  tree stmt, lhs, rhs, var, name, stmt1, stmt2, t;
+  use_operand_p use;
+
+  stmt = bsi_stmt (*bsi);
+  lhs = GENERIC_TREE_OPERAND (stmt, 0);
+  rhs = GENERIC_TREE_OPERAND (stmt, 1);
+
+  /* Verify that the single use of lhs is a comparison against zero.  */
+  if (TREE_CODE (lhs) != SSA_NAME
+      || !single_imm_use (lhs, &use, &stmt1)
+      || TREE_CODE (stmt1) != COND_EXPR)
+    return stmt;
+  t = COND_EXPR_COND (stmt1);
+  if (TREE_OPERAND (t, 0) != lhs
+      || (TREE_CODE (t) != NE_EXPR
+	  && TREE_CODE (t) != EQ_EXPR)
+      || !integer_zerop (TREE_OPERAND (t, 1)))
+    return stmt;
+
+  /* Get at the operands of the shift.  The rhs is TMP1 & 1.  */
+  stmt1 = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 0));
+  if (TREE_CODE (stmt1) != GIMPLE_MODIFY_STMT)
+    return stmt;
+
+  /* There is a conversion inbetween possibly inserted by fold.  */
+  t = GIMPLE_STMT_OPERAND (stmt1, 1);
+  if (TREE_CODE (t) == NOP_EXPR
+      || TREE_CODE (t) == CONVERT_EXPR)
+    {
+      t = TREE_OPERAND (t, 0);
+      if (TREE_CODE (t) != SSA_NAME
+	  || !has_single_use (t))
+	return stmt;
+      stmt1 = SSA_NAME_DEF_STMT (t);
+      if (TREE_CODE (stmt1) != GIMPLE_MODIFY_STMT)
+	return stmt;
+      t = GIMPLE_STMT_OPERAND (stmt1, 1);
+    }
+
+  /* Verify that B is loop invariant but A is not.  Verify that with
+     all the stmt walking we are still in the same loop.  */
+  if (TREE_CODE (t) == RSHIFT_EXPR
+      && loop_containing_stmt (stmt1) == loop_containing_stmt (stmt)
+      && outermost_invariant_loop_expr (TREE_OPERAND (t, 1),
+                                        loop_containing_stmt (stmt1)) != NULL
+      && outermost_invariant_loop_expr (TREE_OPERAND (t, 0),
+                                        loop_containing_stmt (stmt1)) == NULL)
+    {
+      tree a = TREE_OPERAND (t, 0);
+      tree b = TREE_OPERAND (t, 1);
+
+      /* 1 << B */
+      var = create_tmp_var (TREE_TYPE (a), "shifttmp");
+      add_referenced_var (var);
+      t = fold_build2 (LSHIFT_EXPR, TREE_TYPE (a),
+		       build_int_cst (TREE_TYPE (a), 1), b);
+      stmt1 = build_gimple_modify_stmt (var, t);
+      name = make_ssa_name (var, stmt1);
+      GIMPLE_STMT_OPERAND (stmt1, 0) = name;
+
+      /* A & (1 << B) */
+      t = fold_build2 (BIT_AND_EXPR, TREE_TYPE (a), a, name);
+      stmt2 = build_gimple_modify_stmt (lhs, t);
+
+      bsi_insert_before (bsi, stmt1, BSI_SAME_STMT);
+      bsi_replace (bsi, stmt2, true);
+      SSA_NAME_DEF_STMT (lhs) = stmt2;
+
+      return stmt1;
+    }
+
+  return stmt;
+}
+
+
 /* Determine the outermost loops in that statements in basic block BB are
    invariant, and record them to the LIM_DATA associated with the statements.
    Callback for walk_dominator_tree.  */
@@ -607,10 +729,11 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 	  continue;
 	}
 
+      rhs = GENERIC_TREE_OPERAND (stmt, 1);
+
       /* If divisor is invariant, convert a/b to a*(1/b), allowing reciprocal
 	 to be hoisted out of loop, saving expensive divide.  */
       if (pos == MOVE_POSSIBLE
-	  && (rhs = GENERIC_TREE_OPERAND (stmt, 1)) != NULL
 	  && TREE_CODE (rhs) == RDIV_EXPR
 	  && flag_unsafe_math_optimizations
 	  && !flag_trapping_math
@@ -618,35 +741,17 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 					    loop_containing_stmt (stmt)) != NULL
 	  && outermost_invariant_loop_expr (rhs,
 					    loop_containing_stmt (stmt)) == NULL)
-	{
-	  tree lhs, stmt1, stmt2, var, name, tmp;
+	stmt = rewrite_reciprocal (&bsi);
 
-	  lhs = GENERIC_TREE_OPERAND (stmt, 0);
-
-	  /* stmt must be GIMPLE_MODIFY_STMT.  */
-	  var = create_tmp_var (TREE_TYPE (rhs), "reciptmp");
-	  add_referenced_var (var);
-
-	  tmp = build2 (RDIV_EXPR, TREE_TYPE (rhs),
-			build_real (TREE_TYPE (rhs), dconst1),
-			TREE_OPERAND (rhs, 1));
-	  stmt1 = build_gimple_modify_stmt (var, tmp);
-	  name = make_ssa_name (var, stmt1);
-	  GIMPLE_STMT_OPERAND (stmt1, 0) = name;
-	  tmp = build2 (MULT_EXPR, TREE_TYPE (rhs),
-			name, TREE_OPERAND (rhs, 0));
-	  stmt2 = build_gimple_modify_stmt (lhs, tmp);
-
-	  /* Replace division stmt with reciprocal and multiply stmts.
-	     The multiply stmt is not invariant, so update iterator
-	     and avoid rescanning.  */
-	  bsi_replace (&bsi, stmt1, true);
-	  bsi_insert_after (&bsi, stmt2, BSI_NEW_STMT);
-	  SSA_NAME_DEF_STMT (lhs) = stmt2;
-
-	  /* Continue processing with invariant reciprocal statement.  */
-	  stmt = stmt1;
-	}
+      /* If the shift count is invariant, convert (A >> B) & 1 to
+	 A & (1 << B) allowing the bit mask to be hoisted out of the loop
+	 saving an expensive shift.  */
+      if (pos == MOVE_POSSIBLE
+	  && TREE_CODE (rhs) == BIT_AND_EXPR
+	  && integer_onep (TREE_OPERAND (rhs, 1))
+	  && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME
+	  && has_single_use (TREE_OPERAND (rhs, 0)))
+	stmt = rewrite_bittest (&bsi);
 
       stmt_ann (stmt)->common.aux = xcalloc (1, sizeof (struct lim_aux_data));
       LIM_DATA (stmt)->always_executed_in = outermost;
