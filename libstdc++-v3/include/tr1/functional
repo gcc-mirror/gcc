@@ -569,17 +569,17 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
     cref(reference_wrapper<_Tp> __t)
     { return cref(__t.get()); }
 
-   template<typename _Tp, bool>
-     struct _Mem_fn_const_or_non
-     {
-       typedef const _Tp& type;
-     };
+  template<typename _Tp, bool>
+    struct _Mem_fn_const_or_non
+    {
+      typedef const _Tp& type;
+    };
 
-    template<typename _Tp>
-      struct _Mem_fn_const_or_non<_Tp, false>
-      {
-        typedef _Tp& type;
-      };
+  template<typename _Tp>
+    struct _Mem_fn_const_or_non<_Tp, false>
+    {
+      typedef _Tp& type;
+    };
 
   /**
    * @if maint
@@ -588,26 +588,26 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
    * primary template is the basis case, which derives nothing.
    * @endif maint
    */
-   template<typename _Res, typename... _ArgTypes> 
-     struct _Maybe_unary_or_binary_function { };
+  template<typename _Res, typename... _ArgTypes> 
+    struct _Maybe_unary_or_binary_function { };
 
   /**
    * @if maint
    * Derives from @c unary_function, as appropriate.
    * @endif
    */ 
-   template<typename _Res, typename _T1> 
-     struct _Maybe_unary_or_binary_function<_Res, _T1>
-     : std::unary_function<_T1, _Res> { };
+  template<typename _Res, typename _T1> 
+    struct _Maybe_unary_or_binary_function<_Res, _T1>
+    : std::unary_function<_T1, _Res> { };
 
   /**
    * @if maint
    * Derives from @c binary_function, as appropriate.
    * @endif
    */ 
-   template<typename _Res, typename _T1, typename _T2> 
-     struct _Maybe_unary_or_binary_function<_Res, _T1, _T2>
-     : std::binary_function<_T1, _T2, _Res> { };
+  template<typename _Res, typename _T1, typename _T2> 
+    struct _Maybe_unary_or_binary_function<_Res, _T1, _T2>
+    : std::binary_function<_T1, _T2, _Res> { };
 
   /**
    * @if maint
@@ -842,7 +842,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
       template<typename _Tp>
         static __sfinae_types::__two __check_const(_Tp&, const volatile void*);
 
-  public:
+    public:
       template<typename _Tp>
         struct _Result_type
 	: _Mem_fn_const_or_non<_Res,
@@ -987,7 +987,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
    * in a tuple. 
    * @endif
    */
-  template<int... Indexes>
+  template<int... _Indexes>
     struct _Index_tuple { };
 
   /**
@@ -1411,7 +1411,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
                       (_GLIBCXX_TR1::get<_Indexes>(_M_bound_args), __args)...);
         }
 
-     public:
+    public:
       typedef _Result result_type;
 
       explicit
@@ -1457,11 +1457,11 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
    *  @endif
    */
   template<typename _Signature>
-     struct is_bind_expression<_Bind<_Signature> >
-     { static const bool value = true; };
+    struct is_bind_expression<_Bind<_Signature> >
+    { static const bool value = true; };
 
-   template<typename _Signature>
-     const bool is_bind_expression<_Bind<_Signature> >::value;
+  template<typename _Signature>
+    const bool is_bind_expression<_Bind<_Signature> >::value;
 
   /**
    *  @if maint
@@ -1470,9 +1470,10 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
    */
   template<typename _Result, typename _Signature>
     struct is_bind_expression<_Bind_result<_Result, _Signature> >
-    {
-      static const bool value = true;
-    };
+    { static const bool value = true; };
+
+  template<typename _Result, typename _Signature>
+    const bool is_bind_expression<_Bind_result<_Result, _Signature> >::value;
 
   template<typename _Functor, typename... _ArgTypes>
     inline
@@ -1498,9 +1499,6 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 	__result_type;
       return __result_type(__maybe_type::__do_wrap(__f), __args...);
     }
-
-  template<typename _Result, typename _Signature>
-    const bool is_bind_expression<_Bind_result<_Result, _Signature> >::value;
 
   /**
    *  @brief Exception class thrown when class template function's
@@ -1589,7 +1587,9 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
   // Converts a reference to a function object into a callable
   // function object.
   template<typename _Functor>
-    inline _Functor& __callable_functor(_Functor& __f) { return __f; }
+    inline _Functor&
+    __callable_functor(_Functor& __f)
+    { return __f; }
 
   template<typename _Member, typename _Class>
     inline _Mem_fn<_Member _Class::*>
