@@ -98,6 +98,10 @@ struct var_to_expand
                                       the accumulator.  If REUSE_EXPANSION is 0 reuse 
                                       the original accumulator.  Else use 
                                       var_expansions[REUSE_EXPANSION - 1].  */
+  unsigned accum_pos;              /* The position in which the accumulator is placed in
+                                      the insn src.  For example in x = x + something
+                                      accum_pos is 0 while in x = something + x accum_pos
+                                      is 1.  */
 };
 
 /* Information about optimization applied in
@@ -1565,10 +1569,11 @@ referenced_in_one_insn_in_loop_p (struct loop *loop, rtx reg)
 static struct var_to_expand *
 analyze_insn_to_expand_var (struct loop *loop, rtx insn)
 {
-  rtx set, dest, src, op1;
+  rtx set, dest, src, op1, op2, something;
   struct var_to_expand *ves;
   enum machine_mode mode1, mode2;
-  
+  unsigned accum_pos;
+
   set = single_set (insn);
   if (!set)
     return NULL;
@@ -1593,27 +1598,39 @@ analyze_insn_to_expand_var (struct loop *loop, rtx insn)
   if (!have_insn_for (GET_CODE (src), GET_MODE (src)))
     return NULL;
 
-  if (!XEXP (src, 0))
-    return NULL;
-  
   op1 = XEXP (src, 0);
+  op2 = XEXP (src, 1);
   
   if (!REG_P (dest)
       && !(GET_CODE (dest) == SUBREG
            && REG_P (SUBREG_REG (dest))))
     return NULL;
   
-  if (!rtx_equal_p (dest, op1))
-    return NULL;      
-  
+  if (rtx_equal_p (dest, op1))
+    accum_pos = 0;
+  else if (rtx_equal_p (dest, op2))
+    accum_pos = 1;
+  else
+    return NULL;
+
+  /* The method of expansion that we are using; which includes
+     the initialization of the expansions with zero and the summation of
+     the expansions at the end of the computation will yield wrong results
+     for (x = something - x) thus avoid using it in that case.  */
+  if (accum_pos == 1  
+    && GET_CODE (src) == MINUS)
+   return NULL;
+
+  something = (accum_pos == 0)? op2 : op1;
+
   if (!referenced_in_one_insn_in_loop_p (loop, dest))
     return NULL;
   
-  if (rtx_referenced_p (dest, XEXP (src, 1)))
+  if (rtx_referenced_p (dest, something))
     return NULL;
   
   mode1 = GET_MODE (dest); 
-  mode2 = GET_MODE (XEXP (src, 1));
+  mode2 = GET_MODE (something);
   if ((FLOAT_MODE_P (mode1) 
        || FLOAT_MODE_P (mode2)) 
       && !flag_unsafe_math_optimizations) 
@@ -1635,6 +1652,7 @@ analyze_insn_to_expand_var (struct loop *loop, rtx insn)
   ves->op = GET_CODE (src);
   ves->expansion_count = 0;
   ves->reuse_expansion = 0;
+  ves->accum_pos = accum_pos;
   return ves; 
 }
 
@@ -1983,7 +2001,7 @@ expand_var_during_unrolling (struct var_to_expand *ve, rtx insn)
     new_reg = get_expansion (ve);
 
   validate_change (insn, &SET_DEST (set), new_reg, 1);
-  validate_change (insn, &XEXP (SET_SRC (set), 0), new_reg, 1);
+  validate_change (insn, &XEXP (SET_SRC (set), ve->accum_pos), new_reg, 1);
   
   if (apply_change_group ())
     if (really_new_expansion)
