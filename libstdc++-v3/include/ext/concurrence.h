@@ -1,6 +1,6 @@
 // Support for concurrent programing -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006
+// Copyright (C) 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -36,7 +36,6 @@
 #ifndef _CONCURRENCE_H
 #define _CONCURRENCE_H 1
 
-#include <cstdlib>
 #include <exception>
 #include <bits/gthr.h> 
 #include <bits/functexcept.h>
@@ -90,7 +89,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #if __EXCEPTIONS
     throw __concurrence_lock_error();
 #else
-    std::abort();
+    __builtin_abort();
 #endif
   }
 
@@ -100,7 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #if __EXCEPTIONS
     throw __concurrence_unlock_error();
 #else
-    std::abort();
+    __builtin_abort();
 #endif
   }
 

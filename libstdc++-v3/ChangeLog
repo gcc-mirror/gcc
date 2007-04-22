@@ -1,5 +1,14 @@
 2007-04-22  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/ext/concurrence.h: Do not include <cstdlib>, use
+	__builtin_abort.
+	* include/debug/debug.h: Likewise.
+	* include/tr1/memory: Likewise.
+	* include/tr1/boost_shared_ptr.h: Likewise.
+	* include/tr1/functional: Likewise.
+
+2007-04-22  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc: Do not include <typeinfo>.
 	* testsuite/27_io/basic_ios/imbue/14072.cc: Do it here.
 	* testsuite/27_io/basic_ios/cons/char/3.cc: Likewise.
