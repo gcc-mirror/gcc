@@ -1,3 +1,9 @@
+2007-04-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/29789
+	* gcc.dg/tree-ssa/ssa-lim-1.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-lim-2.c: Likewise.
+
 2007-04-22  Revital Eres  <eres@il.ibm.com>
 
         * gcc.dg/var-expand2.c: New test.

@@ -1,3 +1,14 @@
+2007-04-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/29789
+	* tree-ssa-loop-im.c (stmt_cost): Adjust cost of shifts.
+	(rewrite_reciprocal): New helper split out from
+	determine_invariantness_stmt.
+	(rewrite_bittest): Likewise.
+	(determine_invariantness_stmt): Rewrite (A >> B) & 1 to
+	A & (1 << B) if (1 << B) is loop invariant but (A >> B)
+	is not.
+
 2007-04-22  Revital Eres  <eres@il.ibm.com>
 
         * loop-unroll.c (var_to_expand): New field to support also
