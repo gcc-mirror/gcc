@@ -23,6 +23,7 @@
 #include <cwchar> // for mbstate_t
 #include <locale>
 #include <stdexcept>
+#include <typeinfo>
 #include <testsuite_hooks.h>
 #include <ext/codecvt_specializations.h>
 

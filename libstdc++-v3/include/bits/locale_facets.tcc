@@ -39,10 +39,9 @@
 
 #pragma GCC system_header
 
-#include <ext/numeric_traits.h>
-#include <typeinfo>		// For bad_cast.
-#include <bits/streambuf_iterator.h>
 #include <ext/type_traits.h>
+#include <ext/numeric_traits.h>
+#include <bits/streambuf_iterator.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
