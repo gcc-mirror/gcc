@@ -174,7 +174,7 @@ vect_create_addr_base_for_vector_ref (tree stmt,
       offset = fold_build2 (MULT_EXPR, TREE_TYPE (offset), offset, step);
       base_offset = fold_build2 (PLUS_EXPR, TREE_TYPE (base_offset),
 				 base_offset, offset);
-      base_offset = force_gimple_operand (base_offset, &new_stmt, false, tmp);  
+      base_offset = force_gimple_operand (base_offset, &new_stmt, false, tmp);
       append_to_statement_list_force (new_stmt, new_stmt_list);
     }
   
@@ -561,7 +561,8 @@ get_initial_def_for_induction (tree iv_phi)
 
   access_fn = analyze_scalar_evolution (loop, PHI_RESULT (iv_phi));
   gcc_assert (access_fn);
-  ok = vect_is_simple_iv_evolution (loop->num, access_fn, &init_expr, &step_expr);
+  ok = vect_is_simple_iv_evolution (loop->num, access_fn,
+				    &init_expr, &step_expr);
   gcc_assert (ok);
 
   /* Create the vector that holds the initial_value of the induction.  */
@@ -837,7 +838,7 @@ vect_get_vec_def_for_operand (tree op, tree stmt, tree *scalar_def)
    vectorized stmt to be created (by the caller to this function) is a "copy" 
    created in case the vectorized result cannot fit in one vector, and several 
    copies of the vector-stmt are required. In this case the vector-def is 
-   retrieved from the vector stmt recorded in the STMT_VINFO_RELATED_STMT field 
+   retrieved from the vector stmt recorded in the STMT_VINFO_RELATED_STMT field
    of the stmt that defines VEC_OPRND. 
    DT is the type of the vector def VEC_OPRND.
 
@@ -1057,7 +1058,7 @@ get_initial_def_for_reduction (tree stmt, tree init_val, tree *adjustment_def)
     
         loop:
           vec_def = phi <null, null>            # REDUCTION_PHI
-          VECT_DEF = vector_stmt                # vectorized form of STMT       
+          VECT_DEF = vector_stmt                # vectorized form of STMT
           s_loop = scalar_stmt                  # (scalar) STMT
         loop_exit:
           s_out0 = phi <s_loop>                 # (scalar) EXIT_PHI
@@ -1176,8 +1177,8 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
   exit_bsi = bsi_start (exit_bb);
 
   /* 2.2 Get the relevant tree-code to use in the epilog for schemes 2,3 
-         (i.e. when reduc_code is not available) and in the final adjustment code
-         (if needed).  Also get the original scalar reduction variable as
+         (i.e. when reduc_code is not available) and in the final adjustment
+	 code (if needed).  Also get the original scalar reduction variable as
          defined in the loop.  In case STMT is a "pattern-stmt" (i.e. - it 
          represents a reduction pattern), the tree-code and scalar-def are 
          taken from the original stmt that the pattern-stmt (STMT) replaces.  
@@ -1327,7 +1328,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
 				 bitpos);
 		
 	      BIT_FIELD_REF_UNSIGNED (rhs) = TYPE_UNSIGNED (scalar_type);
-	      epilog_stmt = build_gimple_modify_stmt (new_scalar_dest, rhs);	
+	      epilog_stmt = build_gimple_modify_stmt (new_scalar_dest, rhs);
 	      new_name = make_ssa_name (new_scalar_dest, epilog_stmt);
 	      GIMPLE_STMT_OPERAND (epilog_stmt, 0) = new_name;
 	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
@@ -1422,28 +1423,28 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
    and it's STMT_VINFO_RELATED_STMT points to the last stmt in the original
    sequence that had been detected and replaced by the pattern-stmt (STMT).
   
-   In some cases of reduction patterns, the type of the reduction variable X is 
+   In some cases of reduction patterns, the type of the reduction variable X is
    different than the type of the other arguments of STMT.
    In such cases, the vectype that is used when transforming STMT into a vector
-   stmt is different than the vectype that is used to determine the 
+   stmt is different than the vectype that is used to determine the
    vectorization factor, because it consists of a different number of elements 
    than the actual number of elements that are being operated upon in parallel.
 
-   For example, consider an accumulation of shorts into an int accumulator. 
+   For example, consider an accumulation of shorts into an int accumulator.
    On some targets it's possible to vectorize this pattern operating on 8
    shorts at a time (hence, the vectype for purposes of determining the
    vectorization factor should be V8HI); on the other hand, the vectype that
-   is used to create the vector form is actually V4SI (the type of the result). 
+   is used to create the vector form is actually V4SI (the type of the result).
 
-   Upon entry to this function, STMT_VINFO_VECTYPE records the vectype that 
-   indicates what is the actual level of parallelism (V8HI in the example), so 
-   that the right vectorization factor would be derived. This vectype 
-   corresponds to the type of arguments to the reduction stmt, and should *NOT* 
+   Upon entry to this function, STMT_VINFO_VECTYPE records the vectype that
+   indicates what is the actual level of parallelism (V8HI in the example), so
+   that the right vectorization factor would be derived. This vectype
+   corresponds to the type of arguments to the reduction stmt, and should *NOT*
    be used to create the vectorized stmt. The right vectype for the vectorized
-   stmt is obtained from the type of the result X: 
+   stmt is obtained from the type of the result X:
         get_vectype_for_scalar_type (TREE_TYPE (X))
 
-   This means that, contrary to "regular" reductions (or "regular" stmts in 
+   This means that, contrary to "regular" reductions (or "regular" stmts in
    general), the following equation:
       STMT_VINFO_VECTYPE == get_vectype_for_scalar_type (TREE_TYPE (X))
    does *NOT* necessarily hold for reduction patterns.  */
@@ -1687,7 +1688,7 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
               op = TREE_OPERAND (operation, 1);
               loop_vec_def1 = vect_get_vec_def_for_operand (op, stmt, NULL);
             }
-                                                                                
+
           /* Get the vector def for the reduction variable from the phi node */
           reduc_def = PHI_RESULT (new_phi);
         }
@@ -1697,34 +1698,33 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
           loop_vec_def0 = vect_get_vec_def_for_stmt_copy (dt, loop_vec_def0);
           if (op_type == ternary_op)
             loop_vec_def1 = vect_get_vec_def_for_stmt_copy (dt, loop_vec_def1);
-                                                                                
+
           /* Get the vector def for the reduction variable from the vectorized
              reduction operation generated in the previous iteration (j-1)  */
           reduc_def = GIMPLE_STMT_OPERAND (new_stmt ,0);
         }
-                                                                                
+
       /* Arguments are ready. create the new vector stmt.  */
-                                                                                
       if (op_type == binary_op)
         expr = build2 (code, vectype, loop_vec_def0, reduc_def);
       else
         expr = build3 (code, vectype, loop_vec_def0, loop_vec_def1, 
-								reduc_def);
+		       reduc_def);
       new_stmt = build_gimple_modify_stmt (vec_dest, expr);
       new_temp = make_ssa_name (vec_dest, new_stmt);
       GIMPLE_STMT_OPERAND (new_stmt, 0) = new_temp;
       vect_finish_stmt_generation (stmt, new_stmt, bsi);
-                                                                                
+
       if (j == 0)
 	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
       else
 	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
       prev_stmt_info = vinfo_for_stmt (new_stmt);
     }
-                                                                                
+
   /* Finalize the reduction-phi (set it's arguments) and create the
      epilog reduction code.  */
-  vect_create_epilog_for_reduction (new_temp, stmt, epilog_reduc_code, new_phi);                                                                                
+  vect_create_epilog_for_reduction (new_temp, stmt, epilog_reduc_code, new_phi);
   return true;
 }
 
@@ -2329,7 +2329,7 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
         fprintf (vect_dump, "use not simple.");
       return false;
     }
-                                                                                
+
   if (op_type == binary_op)
     {
       op1 = TREE_OPERAND (operation, 1);
@@ -2415,12 +2415,12 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
      stmts that use the defs of the current stmt. The example below illustrates
      the vectorization process when VF=16 and nunits=4 (i.e - we need to create
      4 vectorized stmts):
-                                                                                
+
      before vectorization:
                                 RELATED_STMT    VEC_STMT
         S1:     x = memref      -               -
         S2:     z = x + 1       -               -
-                                                                                
+
      step 1: vectorize stmt S1 (done in vectorizable_load. See more details
              there):
                                 RELATED_STMT    VEC_STMT
@@ -2430,7 +2430,7 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
         VS1_3:  vx3 = memref3   -               -
         S1:     x = load        -               VS1_0
         S2:     z = x + 1       -               -
-                                                                                
+
      step2: vectorize stmt S2 (done here):
         To vectorize stmt S2 we first need to find the relevant vector
         def for the first operand 'x'. This is, as usual, obtained from
@@ -2457,7 +2457,7 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
         VS2_2:  vz2 = vx2 + v1  VS2_3           -
         VS2_3:  vz3 = vx3 + v1  -               -
         S2:     z = x + 1       -               VS2_0  */
-                                                                                
+
   prev_stmt_info = NULL;
   for (j = 0; j < ncopies; j++)
     {
@@ -2493,7 +2493,7 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	}
 
       /* Arguments are ready. create the new vector stmt.  */
-                                                                                
+
       if (op_type == binary_op)
         new_stmt = build_gimple_modify_stmt (vec_dest,
                     build2 (code, vectype, vec_oprnd0, vec_oprnd1));
@@ -2503,7 +2503,7 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       new_temp = make_ssa_name (vec_dest, new_stmt);
       GIMPLE_STMT_OPERAND (new_stmt, 0) = new_temp;
       vect_finish_stmt_generation (stmt, new_stmt, bsi);
-                                                                                
+
       if (j == 0)
 	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
       else
@@ -2516,13 +2516,13 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
 
 /* Function vectorizable_type_demotion
-                                                                                
+
    Check if STMT performs a binary or unary operation that involves
    type demotion, and if it can be vectorized.
    If VEC_STMT is also passed, vectorize the STMT: create a vectorized
    stmt to replace it, put it in VEC_STMT, and insert it at BSI.
    Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
-                                                                                
+
 bool
 vectorizable_type_demotion (tree stmt, block_stmt_iterator *bsi,
                              tree *vec_stmt)
@@ -2550,7 +2550,7 @@ vectorizable_type_demotion (tree stmt, block_stmt_iterator *bsi,
   tree scalar_type;
   optab optab;
   enum machine_mode vec_mode;
-                                                                                
+
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
 
@@ -2564,37 +2564,40 @@ vectorizable_type_demotion (tree stmt, block_stmt_iterator *bsi,
         fprintf (vect_dump, "value used after loop.");
       return false;
     }
-                                                                                
+
   /* Is STMT a vectorizable type-demotion operation?  */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
-                                                                                
+
   if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) != SSA_NAME)
     return false;
-                                                                                
+
   operation = GIMPLE_STMT_OPERAND (stmt, 1);
   code = TREE_CODE (operation);
   if (code != NOP_EXPR && code != CONVERT_EXPR)
     return false;
-                                                                                
+
   op0 = TREE_OPERAND (operation, 0);
   vectype_in = get_vectype_for_scalar_type (TREE_TYPE (op0));
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
-                                                                                
+
   scalar_dest = GIMPLE_STMT_OPERAND (stmt, 0);
   scalar_type = TREE_TYPE (scalar_dest);
   vectype_out = get_vectype_for_scalar_type (scalar_type);
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
   if (nunits_in != nunits_out / 2) /* FORNOW */
     return false;
-                                                                                
+
   ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_out;
   gcc_assert (ncopies >= 1);
 
-  if (! INTEGRAL_TYPE_P (scalar_type)
-      || !INTEGRAL_TYPE_P (TREE_TYPE (op0)))
+  if (! ((INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
+	  && INTEGRAL_TYPE_P (TREE_TYPE (op0)))
+	 || (SCALAR_FLOAT_TYPE_P (TREE_TYPE (scalar_dest))
+	     && SCALAR_FLOAT_TYPE_P (TREE_TYPE (op0))
+	     && (code == NOP_EXPR || code == CONVERT_EXPR))))
     return false;
-                                                                                
+
   /* Check the operands of the operation.  */
   if (!vect_is_simple_use (op0, loop_vinfo, &def_stmt, &def, &dt0))
     {
@@ -2602,31 +2605,30 @@ vectorizable_type_demotion (tree stmt, block_stmt_iterator *bsi,
         fprintf (vect_dump, "use not simple.");
       return false;
     }
-                                                                                
+
   /* Supportable by target?  */
-  code = VEC_PACK_MOD_EXPR;
-  optab = optab_for_tree_code (VEC_PACK_MOD_EXPR, vectype_in);
+  code = VEC_PACK_TRUNC_EXPR;
+  optab = optab_for_tree_code (code, vectype_in);
   if (!optab)
     return false;
-                                                                                
+
   vec_mode = TYPE_MODE (vectype_in);
   if (optab->handlers[(int) vec_mode].insn_code == CODE_FOR_nothing)
     return false;
-                                                                                
+
   STMT_VINFO_VECTYPE (stmt_info) = vectype_in;
-                                                                                
+
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = type_demotion_vec_info_type;
       return true;
     }
-                                                                                
+
   /** Transform.  **/
-                                                                                
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "transform type demotion operation. ncopies = %d.",
-                        ncopies);
-                                                                                
+	     ncopies);
+
   /* Handle def.  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
   
@@ -2648,22 +2650,22 @@ vectorizable_type_demotion (tree stmt, block_stmt_iterator *bsi,
 	  vec_oprnd0 = vect_get_vec_def_for_stmt_copy (dt0, vec_oprnd1);
 	  vec_oprnd1 = vect_get_vec_def_for_stmt_copy (dt0, vec_oprnd0);
 	}
-                                                                                
+
       /* Arguments are ready. Create the new vector stmt.  */
       expr = build2 (code, vectype_out, vec_oprnd0, vec_oprnd1);
       new_stmt = build_gimple_modify_stmt (vec_dest, expr);
       new_temp = make_ssa_name (vec_dest, new_stmt);
       GIMPLE_STMT_OPERAND (new_stmt, 0) = new_temp;
       vect_finish_stmt_generation (stmt, new_stmt, bsi);
-                                                                                
+
       if (j == 0)
 	STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
       else
 	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-                                                                                
+
       prev_stmt_info = vinfo_for_stmt (new_stmt);
     }
-                                                                                
+
   *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
   return true;
 }
@@ -2798,8 +2800,11 @@ vectorizable_type_promotion (tree stmt, block_stmt_iterator *bsi,
   if (nunits_out != nunits_in / 2) /* FORNOW */
     return false;
 
-  if (! INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
-      || !INTEGRAL_TYPE_P (TREE_TYPE (op0))) 
+  if (! ((INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
+	  && INTEGRAL_TYPE_P (TREE_TYPE (op0)))
+	 || (SCALAR_FLOAT_TYPE_P (TREE_TYPE (scalar_dest))
+	     && SCALAR_FLOAT_TYPE_P (TREE_TYPE (op0))
+	     && (code == CONVERT_EXPR || code == NOP_EXPR))))
     return false;
 
   /* Check the operands of the operation.  */
@@ -3268,7 +3273,7 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	  /* For interleaved stores we created vectorized defs for all the 
 	     defs stored in OPRNDS in the previous iteration (previous copy). 
 	     DR_CHAIN is then used as an input to vect_permute_store_chain(), 
-	     and OPRNDS as an input to vect_get_vec_def_for_stmt_copy() for the 
+	     and OPRNDS as an input to vect_get_vec_def_for_stmt_copy() for the
 	     next copy.
 	     If the store is not strided, GROUP_SIZE is 1, and DR_CHAIN and
 	     OPRNDS are of size 1.  */
@@ -4286,7 +4291,7 @@ vect_transform_stmt (tree stmt, block_stmt_iterator *bsi, bool *strided_store)
       done = vectorizable_type_demotion (stmt, bsi, &vec_stmt);
       gcc_assert (done);
       break;
-                                                                                
+
     case type_promotion_vec_info_type:
       done = vectorizable_type_promotion (stmt, bsi, &vec_stmt);
       gcc_assert (done);

@@ -333,19 +333,19 @@ optab_for_tree_code (enum tree_code code, tree type)
 	vec_widen_umult_lo_optab : vec_widen_smult_lo_optab;
 
     case VEC_UNPACK_HI_EXPR:
-      return TYPE_UNSIGNED (type) ? 
+      return TYPE_UNSIGNED (type) ?
 	vec_unpacku_hi_optab : vec_unpacks_hi_optab;
 
     case VEC_UNPACK_LO_EXPR:
       return TYPE_UNSIGNED (type) ? 
 	vec_unpacku_lo_optab : vec_unpacks_lo_optab;
 
-    case VEC_PACK_MOD_EXPR:
-      return vec_pack_mod_optab;
-                                                                                
+    case VEC_PACK_TRUNC_EXPR:
+      return vec_pack_trunc_optab;
+
     case VEC_PACK_SAT_EXPR:
       return TYPE_UNSIGNED (type) ? vec_pack_usat_optab : vec_pack_ssat_optab;
-                                                                                
+
     default:
       break;
     }
@@ -1373,7 +1373,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	  && mode1 != VOIDmode)
 	xop1 = copy_to_mode_reg (mode1, xop1);
 
-      if (binoptab == vec_pack_mod_optab 
+      if (binoptab == vec_pack_trunc_optab 
 	  || binoptab == vec_pack_usat_optab
           || binoptab == vec_pack_ssat_optab)
 	{
@@ -5560,7 +5560,7 @@ init_optabs (void)
   vec_unpacks_lo_optab = init_optab (UNKNOWN);
   vec_unpacku_hi_optab = init_optab (UNKNOWN);
   vec_unpacku_lo_optab = init_optab (UNKNOWN);
-  vec_pack_mod_optab = init_optab (UNKNOWN);
+  vec_pack_trunc_optab = init_optab (UNKNOWN);
   vec_pack_usat_optab = init_optab (UNKNOWN);
   vec_pack_ssat_optab = init_optab (UNKNOWN);
 

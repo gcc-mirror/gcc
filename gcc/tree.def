@@ -1093,12 +1093,12 @@ DEFTREECODE (VEC_UNPACK_HI_EXPR, "vec_unpack_hi_expr", tcc_unary, 1)
 DEFTREECODE (VEC_UNPACK_LO_EXPR, "vec_unpack_lo_expr", tcc_unary, 1)
 
 /* Pack (demote/narrow and merge) the elements of the two input vectors
-   into the output vector, using modulo/saturating arithmetic.
+   into the output vector using truncation/saturation.
    The elements of the input vectors are twice the size of the elements of the
    output vector.  This is used to support type demotion.  */
-DEFTREECODE (VEC_PACK_MOD_EXPR, "vec_pack_mod_expr", tcc_binary, 2)
+DEFTREECODE (VEC_PACK_TRUNC_EXPR, "vec_pack_trunc_expr", tcc_binary, 2)
 DEFTREECODE (VEC_PACK_SAT_EXPR, "vec_pack_sat_expr", tcc_binary, 2)
-                                                                                
+
 /* Extract even/odd fields from vectors.  */
 DEFTREECODE (VEC_EXTRACT_EVEN_EXPR, "vec_extracteven_expr", tcc_binary, 2)
 DEFTREECODE (VEC_EXTRACT_ODD_EXPR, "vec_extractodd_expr", tcc_binary, 2)

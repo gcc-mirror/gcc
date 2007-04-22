@@ -1943,8 +1943,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, " > ");
       break;
 
-    case VEC_PACK_MOD_EXPR:
-      pp_string (buffer, " VEC_PACK_MOD_EXPR < ");
+    case VEC_PACK_TRUNC_EXPR:
+      pp_string (buffer, " VEC_PACK_TRUNC_EXPR < ");
       dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
       pp_string (buffer, ", ");
       dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
@@ -2348,7 +2348,7 @@ op_prio (tree op)
     case VEC_RSHIFT_EXPR:
     case VEC_UNPACK_HI_EXPR:
     case VEC_UNPACK_LO_EXPR:
-    case VEC_PACK_MOD_EXPR:
+    case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
       return 16;
 

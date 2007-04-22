@@ -2149,7 +2149,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case VEC_WIDEN_MULT_LO_EXPR:
     case VEC_UNPACK_HI_EXPR:
     case VEC_UNPACK_LO_EXPR:
-    case VEC_PACK_MOD_EXPR:
+    case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
 
     case WIDEN_MULT_EXPR:

@@ -2603,7 +2603,7 @@
   DONE;
 }")
 
-(define_expand "vec_pack_mod_v8hi"
+(define_expand "vec_pack_trunc_v8hi"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
         (unspec:V16QI [(match_operand:V8HI 1 "register_operand" "v")
                        (match_operand:V8HI 2 "register_operand" "v")]
@@ -2615,7 +2615,7 @@
   DONE;
 }")
                                                                                 
-(define_expand "vec_pack_mod_v4si"
+(define_expand "vec_pack_trunc_v4si"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
         (unspec:V8HI [(match_operand:V4SI 1 "register_operand" "v")
                       (match_operand:V4SI 2 "register_operand" "v")]

@@ -3591,35 +3591,48 @@ Operand 2 is an integer shift amount in bits.
 Operand 0 is where the resulting shifted vector is stored.
 The output and input vectors should have the same modes.
 
-@cindex @code{vec_pack_mod_@var{m}} instruction pattern
+@cindex @code{vec_pack_trunc_@var{m}} instruction pattern
+@item @samp{vec_pack_trunc_@var{m}}
+Narrow (demote) and merge the elements of two vectors. Operands 1 and 2
+are vectors of the same mode having N integral or floating point elements
+of size S.  Operand 0 is the resulting vector in which 2*N elements of
+size N/2 are concatenated after narrowing them down using truncation.
+
 @cindex @code{vec_pack_ssat_@var{m}} instruction pattern
 @cindex @code{vec_pack_usat_@var{m}} instruction pattern
-@item @samp{vec_pack_mod_@var{m}}, @samp{vec_pack_ssat_@var{m}}, @samp{vec_pack_usat_@var{m}}
-Narrow (demote) and merge the elements of two vectors.
-Operands 1 and 2 are vectors of the same mode.
+@item @samp{vec_pack_ssat_@var{m}}, @samp{vec_pack_usat_@var{m}}
+Narrow (demote) and merge the elements of two vectors.  Operands 1 and 2
+are vectors of the same mode having N integral elements of size S.
 Operand 0 is the resulting vector in which the elements of the two input
-vectors are concatenated after narrowing them down using modulo arithmetic or
-signed/unsigned saturating arithmetic.
+vectors are concatenated after narrowing them down using signed/unsigned
+saturating arithmetic.
 
 @cindex @code{vec_unpacks_hi_@var{m}} instruction pattern
 @cindex @code{vec_unpacks_lo_@var{m}} instruction pattern
+@item @samp{vec_unpacks_hi_@var{m}}, @samp{vec_unpacks_lo_@var{m}}
+Extract and widen (promote) the high/low part of a vector of signed
+integral or floating point elements.  The input vector (operand 1) has N
+elements of size S.  Widen (promote) the high/low elements of the vector
+using signed or floating point extension and place the resulting N/2
+values of size 2*S in the output vector (operand 0).
+
 @cindex @code{vec_unpacku_hi_@var{m}} instruction pattern
 @cindex @code{vec_unpacku_lo_@var{m}} instruction pattern
-@item @samp{vec_unpacks_hi_@var{m}}, @samp{vec_unpacks_lo_@var{m}}, @samp{vec_unpacku_hi_@var{m}}, @samp{vec_unpacku_lo_@var{m}}
-Extract and widen (promote) the high/low part of a vector of signed/unsigned
-elements. The input vector (operand 1) has N signed/unsigned elements of size S. 
-Using sign/zero extension widen (promote) the high/low elements of the vector,
-and place the resulting N/2 values of size 2*S in the output vector (operand 0).
+@item @samp{vec_unpacku_hi_@var{m}}, @samp{vec_unpacku_lo_@var{m}}
+Extract and widen (promote) the high/low part of a vector of unsigned
+integral elements.  The input vector (operand 1) has N elements of size S.
+Widen (promote) the high/low elements of the vector using zero extension and
+place the resulting N/2 values of size 2*S in the output vector (operand 0).
 
 @cindex @code{vec_widen_umult_hi_@var{m}} instruction pattern
 @cindex @code{vec_widen_umult_lo__@var{m}} instruction pattern
 @cindex @code{vec_widen_smult_hi_@var{m}} instruction pattern
 @cindex @code{vec_widen_smult_lo_@var{m}} instruction pattern
 @item @samp{vec_widen_umult_hi_@var{m}}, @samp{vec_widen_umult_lo_@var{m}}, @samp{vec_widen_smult_hi_@var{m}}, @samp{vec_widen_smult_lo_@var{m}}
-Signed/Unsigned widening multiplication. 
-The two inputs (operands 1 and 2) are vectors with N 
-signed/unsigned elements of size S. Multiply the high/low elements of the two 
-vectors, and put the N/2 products of size 2*S in the output vector (operand 0). 
+Signed/Unsigned widening multiplication.  The two inputs (operands 1 and 2)
+are vectors with N signed/unsigned elements of size S.  Multiply the high/low
+elements of the two vectors, and put the N/2 products of size 2*S in the
+output vector (operand 0).
 
 @cindex @code{mulhisi3} instruction pattern
 @item @samp{mulhisi3}

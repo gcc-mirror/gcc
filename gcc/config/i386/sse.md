@@ -2150,6 +2150,51 @@
    (set_attr "mode" "V2DF")
    (set_attr "amdfam10_decode" "direct")])
 
+(define_expand "vec_unpacks_hi_v4sf"
+  [(set (match_dup 2)
+   (vec_select:V4SF
+     (vec_concat:V8SF
+       (match_dup 2)
+       (match_operand:V4SF 1 "nonimmediate_operand" ""))
+     (parallel [(const_int 6)
+		(const_int 7)
+		(const_int 2)
+		(const_int 3)])))
+  (set (match_operand:V2DF 0 "register_operand" "")
+   (float_extend:V2DF
+     (vec_select:V2SF
+       (match_dup 2)
+       (parallel [(const_int 0) (const_int 1)]))))]
+ "TARGET_SSE2"
+{
+ operands[2] = gen_reg_rtx (V4SFmode);
+})
+
+(define_expand "vec_unpacks_lo_v4sf"
+  [(set (match_operand:V2DF 0 "register_operand" "")
+	(float_extend:V2DF
+	  (vec_select:V2SF
+	    (match_operand:V4SF 1 "nonimmediate_operand" "")
+	    (parallel [(const_int 0) (const_int 1)]))))]
+  "TARGET_SSE2")
+
+(define_expand "vec_pack_trunc_v2df"
+  [(match_operand:V4SF 0 "register_operand" "")
+   (match_operand:V2DF 1 "nonimmediate_operand" "")
+   (match_operand:V2DF 2 "nonimmediate_operand" "")]
+  "TARGET_SSE2"
+{
+  rtx r1, r2;
+
+  r1 = gen_reg_rtx (V4SFmode);
+  r2 = gen_reg_rtx (V4SFmode);
+
+  emit_insn (gen_sse2_cvtpd2ps (r1, operands[1]));
+  emit_insn (gen_sse2_cvtpd2ps (r2, operands[2]));
+  emit_insn (gen_sse_movlhps (operands[0], r1, r2));
+  DONE;
+})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel double-precision floating point element swizzling
@@ -3420,7 +3465,7 @@
 ;;       h3 = aeimquy2bfjnrvz3
 ;;       l3 = cgkosw04dhlptx15
 ;;   result = bdfhjlnprtvxz135
-(define_expand "vec_pack_mod_v8hi"
+(define_expand "vec_pack_trunc_v8hi"
   [(match_operand:V16QI 0 "register_operand" "")
    (match_operand:V8HI 1 "register_operand" "")
    (match_operand:V8HI 2 "register_operand" "")]
@@ -3455,7 +3500,7 @@
 ;;       h2 = aeimbfjn
 ;;       l2 = cgkodhlp
 ;;   result = bdfhjlnp
-(define_expand "vec_pack_mod_v4si"
+(define_expand "vec_pack_trunc_v4si"
   [(match_operand:V8HI 0 "register_operand" "")
    (match_operand:V4SI 1 "register_operand" "")
    (match_operand:V4SI 2 "register_operand" "")]
@@ -3484,7 +3529,7 @@
 ;;      h1 = aebf
 ;;      l1 = cgdh
 ;;  result = bdfh
-(define_expand "vec_pack_mod_v2di"
+(define_expand "vec_pack_trunc_v2di"
   [(match_operand:V4SI 0 "register_operand" "")
    (match_operand:V2DI 1 "register_operand" "")
    (match_operand:V2DI 2 "register_operand" "")]
