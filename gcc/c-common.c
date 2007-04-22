@@ -4295,21 +4295,7 @@ c_expand_expr (tree exp, rtx target, enum machine_mode tmode,
 void
 c_expand_body (tree fndecl)
 {
-
-  if (!DECL_INITIAL (fndecl)
-      || DECL_INITIAL (fndecl) == error_mark_node)
-    return;
-
   tree_rest_of_compilation (fndecl);
-
-  if (DECL_STATIC_CONSTRUCTOR (fndecl)
-      && targetm.have_ctors_dtors)
-    targetm.asm_out.constructor (XEXP (DECL_RTL (fndecl), 0),
-				 decl_init_priority_lookup (fndecl));
-  if (DECL_STATIC_DESTRUCTOR (fndecl)
-      && targetm.have_ctors_dtors)
-    targetm.asm_out.destructor (XEXP (DECL_RTL (fndecl), 0),
-				decl_fini_priority_lookup (fndecl));
 }
 
 /* Hook used by staticp to handle language-specific tree codes.  */

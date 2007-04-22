@@ -676,18 +676,7 @@ gnat_expand_expr (tree exp, rtx target, enum machine_mode tmode,
 static void
 gnat_expand_body (tree gnu_decl)
 {
-  if (!DECL_INITIAL (gnu_decl) || DECL_INITIAL (gnu_decl) == error_mark_node)
-    return;
-
   tree_rest_of_compilation (gnu_decl);
-
-  if (DECL_STATIC_CONSTRUCTOR (gnu_decl) && targetm.have_ctors_dtors)
-    targetm.asm_out.constructor (XEXP (DECL_RTL (gnu_decl), 0),
-                                 DEFAULT_INIT_PRIORITY);
-
-  if (DECL_STATIC_DESTRUCTOR (gnu_decl) && targetm.have_ctors_dtors)
-    targetm.asm_out.destructor (XEXP (DECL_RTL (gnu_decl), 0),
-                                DEFAULT_INIT_PRIORITY);
 }
 
 /* Adjusts the RLI used to layout a record after all the fields have been
