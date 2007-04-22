@@ -1,5 +1,9 @@
 2007-04-22  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/functional: Formatting fixes.
+
+2007-04-22  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/ext/concurrence.h: Do not include <cstdlib>, use
 	__builtin_abort.
 	* include/debug/debug.h: Likewise.
