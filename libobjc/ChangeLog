@@ -1,3 +1,8 @@
+2007-04-21  Andrew Ruder  <andy@aeruder.net>
+
+	* sendmsg.c (__objc_get_forward_imp): Call
+	__objc_msg_forward2 for real.
+
 2007-04-09  Andrew Ruder  <andy@aeruder.net>
 
 	* sendmsg.c: Added __objc_msg_forward2, a hook that allows

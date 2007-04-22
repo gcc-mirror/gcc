@@ -96,6 +96,12 @@ __objc_get_forward_imp (id rcv, SEL sel)
   /* If a custom forwarding hook was registered, try getting a forwarding
      function from it. There are two forward routine hooks, one that
      takes the receiver as an argument and one that does not. */
+  if (__objc_msg_forward2)
+    {
+      IMP result;
+      if ((result = __objc_msg_forward2 (rcv, sel)) != NULL)
+       return result;
+    }
   if (__objc_msg_forward)
     {
       IMP result;
