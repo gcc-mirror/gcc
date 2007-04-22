@@ -60,6 +60,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "timevar.h"
 #include "tree-scalar-evolution.h"
 #include "cfgloop.h"
+#include "pointer-set.h"
 
 /* real constants: 0, 1, 1-1/REG_BR_PROB_BASE, REG_BR_PROB_BASE,
 		   1/REG_BR_PROB_BASE, 0.5, BB_FREQ_MAX.  */
@@ -174,6 +175,11 @@ rtl_predicted_by_p (basic_block bb, enum br_predictor predictor)
   return false;
 }
 
+/* This map contains for a basic block the list of predictions for the
+   outgoing edges.  */
+
+static struct pointer_map_t *bb_predictions;
+
 /* Return true if the one of outgoing edges is already predicted by
    PREDICTOR.  */
 
@@ -181,7 +187,12 @@ bool
 tree_predicted_by_p (basic_block bb, enum br_predictor predictor)
 {
   struct edge_prediction *i;
-  for (i = bb->predictions; i; i = i->ep_next)
+  void **preds = pointer_map_contains (bb_predictions, bb);
+
+  if (!preds)
+    return false;
+  
+  for (i = *preds; i; i = i->ep_next)
     if (i->ep_predictor == predictor)
       return true;
   return false;
@@ -283,10 +294,11 @@ tree_predict_edge (edge e, enum br_predictor predictor, int probability)
   if ((e->src != ENTRY_BLOCK_PTR && EDGE_COUNT (e->src->succs) > 1)
       && flag_guess_branch_prob && optimize)
     {
-      struct edge_prediction *i = ggc_alloc (sizeof (struct edge_prediction));
+      struct edge_prediction *i = XNEW (struct edge_prediction);
+      void **preds = pointer_map_insert (bb_predictions, e->src);
 
-      i->ep_next = e->src->predictions;
-      e->src->predictions = i;
+      i->ep_next = *preds;
+      *preds = i;
       i->ep_probability = probability;
       i->ep_predictor = predictor;
       i->ep_edge = e;
@@ -298,17 +310,49 @@ tree_predict_edge (edge e, enum br_predictor predictor, int probability)
 void
 remove_predictions_associated_with_edge (edge e)
 {
-  if (e->src->predictions)
+  void **preds;
+  
+  if (!bb_predictions)
+    return;
+
+  preds = pointer_map_contains (bb_predictions, e->src);
+
+  if (preds)
     {
-      struct edge_prediction **prediction = &e->src->predictions;
+      struct edge_prediction **prediction = (struct edge_prediction **) preds;
+      struct edge_prediction *next;
+
       while (*prediction)
 	{
 	  if ((*prediction)->ep_edge == e)
-	    *prediction = (*prediction)->ep_next;
+	    {
+	      next = (*prediction)->ep_next;
+	      free (*prediction);
+	      *prediction = next;
+	    }
 	  else
 	    prediction = &((*prediction)->ep_next);
 	}
     }
+}
+
+/* Clears the list of predictions stored for BB.  */
+
+static void
+clear_bb_predictions (basic_block bb)
+{
+  void **preds = pointer_map_contains (bb_predictions, bb);
+  struct edge_prediction *pred, *next;
+
+  if (!preds)
+    return;
+
+  for (pred = *preds; pred; pred = next)
+    {
+      next = pred->ep_next;
+      free (pred);
+    }
+  *preds = NULL;
 }
 
 /* Return true when we can store prediction on insn INSN.
@@ -538,6 +582,7 @@ combine_predictions_for_bb (basic_block bb)
   int nedges = 0;
   edge e, first = NULL, second = NULL;
   edge_iterator ei;
+  void **preds;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
@@ -559,7 +604,7 @@ combine_predictions_for_bb (basic_block bb)
     {
       if (!bb->count)
 	set_even_probabilities (bb);
-      bb->predictions = NULL;
+      clear_bb_predictions (bb);
       if (dump_file)
 	fprintf (dump_file, "%i edges in bb %i predicted to even probabilities\n",
 		 nedges, bb->index);
@@ -569,31 +614,36 @@ combine_predictions_for_bb (basic_block bb)
   if (dump_file)
     fprintf (dump_file, "Predictions for bb %i\n", bb->index);
 
-  /* We implement "first match" heuristics and use probability guessed
-     by predictor with smallest index.  */
-  for (pred = bb->predictions; pred; pred = pred->ep_next)
+  preds = pointer_map_contains (bb_predictions, bb);
+  if (preds)
     {
-      int predictor = pred->ep_predictor;
-      int probability = pred->ep_probability;
+      /* We implement "first match" heuristics and use probability guessed
+	 by predictor with smallest index.  */
+      for (pred = *preds; pred; pred = pred->ep_next)
+	{
+	  int predictor = pred->ep_predictor;
+	  int probability = pred->ep_probability;
 
-      if (pred->ep_edge != first)
-	probability = REG_BR_PROB_BASE - probability;
+	  if (pred->ep_edge != first)
+	    probability = REG_BR_PROB_BASE - probability;
 
-      found = true;
-      if (best_predictor > predictor)
-	best_probability = probability, best_predictor = predictor;
+	  found = true;
+	  if (best_predictor > predictor)
+	    best_probability = probability, best_predictor = predictor;
 
-      d = (combined_probability * probability
-	   + (REG_BR_PROB_BASE - combined_probability)
-	   * (REG_BR_PROB_BASE - probability));
+	  d = (combined_probability * probability
+	       + (REG_BR_PROB_BASE - combined_probability)
+	       * (REG_BR_PROB_BASE - probability));
 
-      /* Use FP math to avoid overflows of 32bit integers.  */
-      if (d == 0)
-	/* If one probability is 0% and one 100%, avoid division by zero.  */
-	combined_probability = REG_BR_PROB_BASE / 2;
-      else
-	combined_probability = (((double) combined_probability) * probability
-				* REG_BR_PROB_BASE / d + 0.5);
+	  /* Use FP math to avoid overflows of 32bit integers.  */
+	  if (d == 0)
+	    /* If one probability is 0% and one 100%, avoid division by zero.  */
+	    combined_probability = REG_BR_PROB_BASE / 2;
+	  else
+	    combined_probability = (((double) combined_probability)
+				    * probability
+		    		    * REG_BR_PROB_BASE / d + 0.5);
+	}
     }
 
   /* Decide which heuristic to use.  In case we didn't match anything,
@@ -617,17 +667,20 @@ combine_predictions_for_bb (basic_block bb)
     combined_probability = best_probability;
   dump_prediction (dump_file, PRED_COMBINED, combined_probability, bb, true);
 
-  for (pred = bb->predictions; pred; pred = pred->ep_next)
+  if (preds)
     {
-      int predictor = pred->ep_predictor;
-      int probability = pred->ep_probability;
+      for (pred = *preds; pred; pred = pred->ep_next)
+	{
+	  int predictor = pred->ep_predictor;
+	  int probability = pred->ep_probability;
 
-      if (pred->ep_edge != EDGE_SUCC (bb, 0))
-	probability = REG_BR_PROB_BASE - probability;
-      dump_prediction (dump_file, predictor, probability, bb,
-		       !first_match || best_predictor == predictor);
+	  if (pred->ep_edge != EDGE_SUCC (bb, 0))
+	    probability = REG_BR_PROB_BASE - probability;
+	  dump_prediction (dump_file, predictor, probability, bb,
+			   !first_match || best_predictor == predictor);
+	}
     }
-  bb->predictions = NULL;
+  clear_bb_predictions (bb);
 
   if (!bb->count)
     {
@@ -1278,6 +1331,20 @@ call_expr:;
   free (heads);
 }
 
+#ifdef ENABLE_CHECKING
+
+/* Callback for pointer_map_traverse, asserts that the pointer map is
+   empty.  */
+
+static bool
+assert_is_empty (void *key ATTRIBUTE_UNUSED, void **value,
+		 void *data ATTRIBUTE_UNUSED)
+{
+  gcc_assert (!*value);
+  return false;
+}
+#endif
+
 /* Predict branch probabilities and estimate profile of the tree CFG.  */
 static unsigned int
 tree_estimate_probability (void)
@@ -1295,6 +1362,7 @@ tree_estimate_probability (void)
   create_preheaders (CP_SIMPLE_PREHEADERS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
 
+  bb_predictions = pointer_map_create ();
   tree_bb_level_predictions ();
 
   mark_irreducible_loops ();
@@ -1382,6 +1450,12 @@ tree_estimate_probability (void)
     }
   FOR_EACH_BB (bb)
     combine_predictions_for_bb (bb);
+
+#ifdef ENABLE_CHECKING
+  pointer_map_traverse (bb_predictions, assert_is_empty, NULL);
+#endif
+  pointer_map_destroy (bb_predictions);
+  bb_predictions = NULL;
 
   strip_builtin_expect ();
   estimate_bb_frequencies ();
