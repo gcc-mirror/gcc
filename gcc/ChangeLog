@@ -1,3 +1,19 @@
+2007-04-21  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* predict.c: Include pointer-set.h.
+	(bb_predictions): New variable.
+	(tree_predicted_by_p, tree_predict_edge,
+	remove_predictions_associated_with_edge): Use bb_predictions map
+	instead of bb->predictions.
+	(clear_bb_predictions, assert_is_empty): New functions.
+	(combine_predictions_for_bb): Use bb_predictions map.  Call
+	clear_bb_predictions.
+	(tree_estimate_probability): Create and free bb_predictions map.
+	* Makefile.in (predict.o): Add pointer-set.h dependency.
+	* basic-block.h (struct basic_block_def): Remove predictions
+	field.
+	* cfgrtl.c (rtl_verify_flow_info_1): Do not check bb->predictions.
+
 2007-04-21  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/31480

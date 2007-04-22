@@ -1716,12 +1716,6 @@ rtl_verify_flow_info_1 (void)
 		   bb->index);
 	    err = 1;
 	  }
-
-      if (bb->predictions)
-	{
-	  error ("bb prediction set for block %d, but it is not used in RTL land", bb->index);
-	  err = 1;
-	}
     }
 
   /* Now check the basic blocks (boundaries etc.) */

@@ -240,9 +240,6 @@ struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")
   /* Chain of PHI nodes for this block.  */
   tree phi_nodes;
 
-  /* A list of predictions.  */
-  struct edge_prediction *predictions;
-
   /* Expected number of executions: calculated in profile.c.  */
   gcov_type count;
 
