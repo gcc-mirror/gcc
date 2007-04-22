@@ -1607,10 +1607,7 @@
 
   if (unaligned_memory_operand (operands[1], QImode))
     {
-      rtx seq
-	= gen_unaligned_extendqidi (operands[0],
-				    get_unaligned_address (operands[1], 1));
-
+      rtx seq = gen_unaligned_extendqidi (operands[0], XEXP (operands[1], 0));
       alpha_set_memflags (seq, operands[1]);
       emit_insn (seq);
       DONE;
@@ -1670,9 +1667,7 @@
 
   if (unaligned_memory_operand (operands[1], HImode))
     {
-      rtx seq
-	= gen_unaligned_extendhidi (operands[0],
-				    get_unaligned_address (operands[1], 2));
+      rtx seq = gen_unaligned_extendhidi (operands[0], XEXP (operands[1], 0));
 
       alpha_set_memflags (seq, operands[1]);
       emit_insn (seq);
@@ -1687,12 +1682,13 @@
 ;; as a pattern saves one instruction.  The code is similar to that for
 ;; the unaligned loads (see below).
 ;;
-;; Operand 1 is the address + 1 (+2 for HI), operand 0 is the result.
+;; Operand 1 is the address, operand 0 is the result.
 (define_expand "unaligned_extendqidi"
   [(use (match_operand:QI 0 "register_operand" ""))
    (use (match_operand:DI 1 "address_operand" ""))]
   ""
 {
+  operands[0] = gen_lowpart (DImode, operands[0]);
   if (WORDS_BIG_ENDIAN)
     emit_insn (gen_unaligned_extendqidi_be (operands[0], operands[1]));
   else
@@ -1701,48 +1697,40 @@
 })
 
 (define_expand "unaligned_extendqidi_le"
-  [(set (match_dup 2) (match_operand:DI 1 "address_operand" ""))
-   (set (match_dup 3)
-	(mem:DI (and:DI (plus:DI (match_dup 2) (const_int -1))
-			(const_int -8))))
+  [(set (match_dup 3)
+	(mem:DI (and:DI (match_operand:DI 1 "" "") (const_int -8))))
    (set (match_dup 4)
 	(ashift:DI (match_dup 3)
 		   (minus:DI (const_int 64)
 			     (ashift:DI
 			      (and:DI (match_dup 2) (const_int 7))
 			      (const_int 3)))))
-   (set (subreg:DI (match_operand:QI 0 "register_operand" "") 0)
+   (set (match_operand:DI 0 "register_operand" "")
 	(ashiftrt:DI (match_dup 4) (const_int 56)))]
   "! WORDS_BIG_ENDIAN"
 {
-  operands[2] = gen_reg_rtx (DImode);
+  operands[2] = get_unaligned_offset (operands[1], 1);
   operands[3] = gen_reg_rtx (DImode);
   operands[4] = gen_reg_rtx (DImode);
 })
 
 (define_expand "unaligned_extendqidi_be"
-  [(set (match_dup 2) (match_operand:DI 1 "address_operand" ""))
-   (set (match_dup 3) (plus:DI (match_dup 2) (const_int -1)))
+  [(set (match_dup 3)
+	(mem:DI (and:DI (match_operand:DI 1 "" "") (const_int -8))))
    (set (match_dup 4)
-	(mem:DI (and:DI (match_dup 3)
-			(const_int -8))))
-   (set (match_dup 5) (plus:DI (match_dup 2) (const_int -2)))
-   (set (match_dup 6)
-	(ashift:DI (match_dup 4)
+	(ashift:DI (match_dup 3)
 		   (ashift:DI
 		     (and:DI
-		       (plus:DI (match_dup 5) (const_int 1))
+		       (plus:DI (match_dup 2) (const_int 1))
 		       (const_int 7))
 		     (const_int 3))))
-   (set (subreg:DI (match_operand:QI 0 "register_operand" "") 0)
-	(ashiftrt:DI (match_dup 6) (const_int 56)))]
+   (set (match_operand:DI 0 "register_operand" "")
+	(ashiftrt:DI (match_dup 4) (const_int 56)))]
   "WORDS_BIG_ENDIAN"
 {
-  operands[2] = gen_reg_rtx (DImode);
+  operands[2] = get_unaligned_offset (operands[1], -1);
   operands[3] = gen_reg_rtx (DImode);
   operands[4] = gen_reg_rtx (DImode);
-  operands[5] = gen_reg_rtx (DImode);
-  operands[6] = gen_reg_rtx (DImode);
 })
 
 (define_expand "unaligned_extendhidi"
@@ -1751,17 +1739,16 @@
   ""
 {
   operands[0] = gen_lowpart (DImode, operands[0]);
-  emit_insn ((WORDS_BIG_ENDIAN
-	      ? gen_unaligned_extendhidi_be
-	      : gen_unaligned_extendhidi_le) (operands[0], operands[1]));
+  if (WORDS_BIG_ENDIAN)
+    emit_insn (gen_unaligned_extendhidi_be (operands[0], operands[1]));
+  else
+    emit_insn (gen_unaligned_extendhidi_le (operands[0], operands[1]));
   DONE;
 })
 
 (define_expand "unaligned_extendhidi_le"
-  [(set (match_dup 2) (match_operand:DI 1 "address_operand" ""))
-   (set (match_dup 3)
-	(mem:DI (and:DI (plus:DI (match_dup 2) (const_int -2))
-			(const_int -8))))
+  [(set (match_dup 3)
+	(mem:DI (and:DI (match_operand:DI 1 "" "") (const_int -8))))
    (set (match_dup 4)
 	(ashift:DI (match_dup 3)
 		   (minus:DI (const_int 64)
@@ -1772,34 +1759,28 @@
 	(ashiftrt:DI (match_dup 4) (const_int 48)))]
   "! WORDS_BIG_ENDIAN"
 {
-  operands[2] = gen_reg_rtx (DImode);
+  operands[2] = get_unaligned_offset (operands[1], 2);
   operands[3] = gen_reg_rtx (DImode);
   operands[4] = gen_reg_rtx (DImode);
 })
 
 (define_expand "unaligned_extendhidi_be"
-  [(set (match_dup 2) (match_operand:DI 1 "address_operand" ""))
-   (set (match_dup 3) (plus:DI (match_dup 2) (const_int -2)))
+  [(set (match_dup 3)
+	(mem:DI (and:DI (match_operand:DI 1 "" "") (const_int -8))))
    (set (match_dup 4)
-	(mem:DI (and:DI (match_dup 3)
-			(const_int -8))))
-   (set (match_dup 5) (plus:DI (match_dup 2) (const_int -3)))
-   (set (match_dup 6)
-	(ashift:DI (match_dup 4)
+	(ashift:DI (match_dup 3)
 		   (ashift:DI
 		     (and:DI
-		       (plus:DI (match_dup 5) (const_int 1))
+		       (plus:DI (match_dup 2) (const_int 1))
 		       (const_int 7))
 		     (const_int 3))))
    (set (match_operand:DI 0 "register_operand" "")
-	(ashiftrt:DI (match_dup 6) (const_int 48)))]
+	(ashiftrt:DI (match_dup 4) (const_int 48)))]
   "WORDS_BIG_ENDIAN"
 {
-  operands[2] = gen_reg_rtx (DImode);
+  operands[2] = get_unaligned_offset (operands[1], -1);
   operands[3] = gen_reg_rtx (DImode);
   operands[4] = gen_reg_rtx (DImode);
-  operands[5] = gen_reg_rtx (DImode);
-  operands[6] = gen_reg_rtx (DImode);
 })
 
 (define_insn "*extxl_const"
@@ -5997,7 +5978,7 @@
       else
 	scratch = gen_rtx_REG (DImode, REGNO (operands[2]));
 
-      addr = get_unaligned_address (operands[1], 0);
+      addr = get_unaligned_address (operands[1]);
       operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
       seq = gen_unaligned_loadqi (operands[0], addr, scratch, operands[0]);
       alpha_set_memflags (seq, operands[1]);
@@ -6031,7 +6012,7 @@
       else
 	scratch = gen_rtx_REG (DImode, REGNO (operands[2]));
 
-      addr = get_unaligned_address (operands[1], 0);
+      addr = get_unaligned_address (operands[1]);
       operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
       seq = gen_unaligned_loadhi (operands[0], addr, scratch, operands[0]);
       alpha_set_memflags (seq, operands[1]);
@@ -6055,7 +6036,7 @@
     }
   else
     {
-      rtx addr = get_unaligned_address (operands[0], 0);
+      rtx addr = get_unaligned_address (operands[0]);
       rtx scratch1 = gen_rtx_REG (DImode, REGNO (operands[2]));
       rtx scratch2 = gen_rtx_REG (DImode, REGNO (operands[2]) + 1);
       rtx scratch3 = scratch1;
@@ -6087,7 +6068,7 @@
     }
   else
     {
-      rtx addr = get_unaligned_address (operands[0], 0);
+      rtx addr = get_unaligned_address (operands[0]);
       rtx scratch1 = gen_rtx_REG (DImode, REGNO (operands[2]));
       rtx scratch2 = gen_rtx_REG (DImode, REGNO (operands[2]) + 1);
       rtx scratch3 = scratch1;

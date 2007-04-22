@@ -1,5 +1,21 @@
 2007-04-20  Richard Henderson  <rth@redhat.com>
 
+	PR target/28623
+	* config/alpha/alpha.c (get_unaligned_address): Remove extra_offset
+	argument; update all callers.
+	(get_unaligned_offset): New.
+	* config/alpha/alpha.md (extendqidi2, extendhidi2): Don't use
+	get_unaligned_address, just pass on the address directly.
+	(unaligned_extendqidi): Use gen_lowpart instead of open-coding
+	the subreg in the helper patterns.
+	(unaligned_extendqidi_le): Use get_unaligned_offset.
+	(unaligned_extendqidi_be, unaligned_extendhidi_le): Likewise.
+	(unaligned_extendhidi_be): Likewise.
+	(unaligned_extendhidi): Tidy.
+	* config/alpha/alpha-protos.h: Update.
+
+2007-04-20  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/linux.h (CPP_SPEC): Undef before redefine.
 
 2007-04-20  Jakub Jelinek  <jakub@redhat.com>
@@ -71,20 +87,20 @@
 
 2007-04-04  Richard Henderson  <rth@redhat.com>
 
-        PR target/31361
-        * config/i386/i386.c (ix86_init_mmx_sse_builtins): Remove
+	PR target/31361
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Remove
 	v8hi_ftype_v8hi_v2di, v4si_ftype_v4si_v2di.  Use like-types for
 	the variable shift builtins.
-        (ix86_expand_builtin): Properly expand the variable shift builtins.
-        * config/i386/sse.md (ashr<mode>3, lshr<mode>3, ashl<mode>3): Make
-        operand 2 be TImode.
-        * config/i386/emmintrin.h (_mm_slli_epi16, _mm_slli_epi32,
+	(ix86_expand_builtin): Properly expand the variable shift builtins.
+	* config/i386/sse.md (ashr<mode>3, lshr<mode>3, ashl<mode>3): Make
+	operand 2 be TImode.
+	* config/i386/emmintrin.h (_mm_slli_epi16, _mm_slli_epi32,
 	_mm_slli_epi64, _mm_srai_epi16, _mm_srai_epi32, _mm_srli_epi16,
 	_mm_srli_epi32, _mm_srli_epi64): Turn into macros.
-        (_mm_srli_si128, _mm_srli_si128): Fix disabled inline versions.
-        (_mm_sll_epi16, _mm_sll_epi32, _mm_sll_epi64, _mm_sra_epi16,
-        _mm_sra_epi32, _mm_srl_epi16, _mm_srl_epi32, _mm_srl_epi64): Use
-        two-vector shift builtins.
+	(_mm_srli_si128, _mm_srli_si128): Fix disabled inline versions.
+	(_mm_sll_epi16, _mm_sll_epi32, _mm_sll_epi64, _mm_sra_epi16,
+	_mm_sra_epi32, _mm_srl_epi16, _mm_srl_epi32, _mm_srl_epi64): Use
+	two-vector shift builtins.
 
 2007-04-02  Anatoly Sokolov <aesok@post.ru>
 
@@ -177,7 +193,7 @@
 
 2007-03-12  Richard Henderson  <rth@redhat.com>
 
-        PR target/26090
+	PR target/26090
 	* config/alpha/alpha.c (alpha_elf_select_section): New.
 	(alpha_elf_unique_section, alpha_elf_section_type_flags): New.
 	(alpha_elf_select_rtx_section): Force flag_pic true.
