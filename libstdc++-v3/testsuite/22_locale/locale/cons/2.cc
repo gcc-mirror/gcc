@@ -2,7 +2,7 @@
 
 // 2000-09-13 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -26,6 +26,7 @@
 #include <cwchar> // for mbstate_t
 #include <locale>
 #include <stdexcept>
+#include <typeinfo>
 #include <testsuite_hooks.h>
 
 typedef std::codecvt<char, char, std::mbstate_t> 	      c_codecvt;

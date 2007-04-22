@@ -1,6 +1,6 @@
 // 2004-02-09  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +31,7 @@
 
 #include <sstream>
 #include <locale>
-
+#include <typeinfo>
 #include <testsuite_hooks.h>
 #include <testsuite_character.h>
 

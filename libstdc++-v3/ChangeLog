@@ -1,3 +1,19 @@
+2007-04-22  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc: Do not include <typeinfo>.
+	* testsuite/27_io/basic_ios/imbue/14072.cc: Do it here.
+	* testsuite/27_io/basic_ios/cons/char/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/pod/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/sentry/pod/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/
+	pod/10081-in.cc: Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/
+	pod/10081-out.cc: Likewise.
+	* testsuite/22_locale/locale/cons/2.cc: Likewise.
+	* testsuite/22_locale/locale/cons/unicode.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/pod/2.cc: Likewise.
+	* testsuite/22_locale/global_templates/1.cc: Likewise.
+
 2007-04-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac: Allow both powerpc*-*-linux* and powerpc*-*-gnu*
