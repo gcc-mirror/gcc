@@ -36,7 +36,6 @@
 
 #pragma GCC system_header
 
-#include <cstdlib>              // for std::abort
 #include <cmath>                // for std::frexp
 #include <string>               // for std::tr1::hash
 #include <functional>
@@ -2183,7 +2182,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 #if __EXCEPTIONS
           throw bad_function_call();
 #else
-          std::abort();
+          __builtin_abort();
 #endif
         }
       return _M_invoker(_M_functor, __args...);

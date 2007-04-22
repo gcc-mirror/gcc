@@ -1,6 +1,6 @@
 // <tr1/boost_shared_ptr.h> -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -73,7 +73,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 #if __EXCEPTIONS
     throw bad_weak_ptr();
 #else
-    std::abort();
+    __builtin_abort();
 #endif
   }
 

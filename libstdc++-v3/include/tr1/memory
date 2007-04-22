@@ -36,7 +36,6 @@
 #define _TR1_MEMORY 1
 
 #include <cstddef>          	// std::size_t
-#include <cstdlib>          	// std::abort
 #include <exception>        	// std::exception
 #include <new>              	// std::bad_alloc
 #include <typeinfo>         	// std::type_info in get_deleter

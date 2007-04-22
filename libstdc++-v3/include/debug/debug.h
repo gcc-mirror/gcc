@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2005, 2006
+// Copyright (C) 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -80,7 +80,6 @@ namespace __gnu_debug
 
 #else
 
-# include <cstdlib>
 # include <cstdio>
 # include <debug/macros.h>
 
@@ -96,7 +95,7 @@ namespace std
     {
       printf("%s:%d: %s: Assertion '%s' failed.\n", __file, __line,
 	     __function, __condition);
-      abort();
+      __builtin_abort();
     }
   } // namespace __debug
 } // namespace std
