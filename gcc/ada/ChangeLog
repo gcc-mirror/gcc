@@ -1,3 +1,8 @@
+2007-04-21  Jan Hubicka  <jh@suse.cz>
+
+	* misc.c (gnat_expand_body): Don't call target for destructors,
+	avoid redundant check on syntax errors.
+
 2007-04-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* ada-tree.h (lang_tree_node): Use GENERIC_NEXT

@@ -1366,9 +1366,11 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
     {
     case 'I':
       DECL_STATIC_CONSTRUCTOR (decl) = 1;
+      decl_init_priority_insert (decl, priority);
       break;
     case 'D':
       DECL_STATIC_DESTRUCTOR (decl) = 1;
+      decl_fini_priority_insert (decl, priority);
       break;
     default:
       gcc_unreachable ();
@@ -1378,17 +1380,6 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
 
   cgraph_add_new_function (decl, false);
   cgraph_mark_needed_node (cgraph_node (decl));
-
-  if (targetm.have_ctors_dtors)
-    {
-      void (*fn) (rtx, int);
-
-      if (which == 'I')
-	fn = targetm.asm_out.constructor;
-      else
-	fn = targetm.asm_out.destructor;
-      fn (XEXP (DECL_RTL (decl), 0), priority);
-    }
 }
 
 void
