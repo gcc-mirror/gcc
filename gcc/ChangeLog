@@ -11,10 +11,10 @@
 
 2007-04-22  Revital Eres  <eres@il.ibm.com>
 
-        * loop-unroll.c (var_to_expand): New field to support also
-        insns of the form x = something + x.
-        (analyze_insn_to_expand_var): Use it.
-        (expand_var_during_unrolling): Likewise.
+	* loop-unroll.c (var_to_expand): New field to support also
+	insns of the form x = something + x.
+	(analyze_insn_to_expand_var): Use it.
+	(expand_var_during_unrolling): Likewise.
 
 2007-04-21  Zdenek Dvorak  <dvorakz@suse.cz>
 
