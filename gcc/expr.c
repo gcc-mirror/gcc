@@ -8926,7 +8926,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	return target;
       }
 
-    case VEC_PACK_MOD_EXPR:
+    case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
       {
 	mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));

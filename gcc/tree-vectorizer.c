@@ -1773,7 +1773,7 @@ supportable_widening_operation (enum tree_code code, tree stmt, tree vectype,
   tree wide_vectype = get_vectype_for_scalar_type (type);
   enum tree_code c1, c2;
 
-  /* The result of a vectorized widening operation usually requires two vectors 
+  /* The result of a vectorized widening operation usually requires two vectors
      (because the widened results do not fit int one vector). The generated 
      vector results would normally be expected to be generated in the same 
      order as in the original scalar computation. i.e. if 8 results are 

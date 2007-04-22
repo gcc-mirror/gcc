@@ -278,14 +278,16 @@ enum optab_index
   OTI_vec_widen_umult_lo,
   OTI_vec_widen_smult_hi,
   OTI_vec_widen_smult_lo,
-  /* Extract and widen the high/low part of a vector of signed/unsigned 
-     elements.  */
+  /* Extract and widen the high/low part of a vector of signed or
+     floating point elements.  */
   OTI_vec_unpacks_hi,
   OTI_vec_unpacks_lo,
+  /* Extract and widen the high/low part of a vector of unsigned
+     elements.  */
   OTI_vec_unpacku_hi,
   OTI_vec_unpacku_lo,
   /* Narrow (demote) and merge the elements of two vectors.  */
-  OTI_vec_pack_mod,
+  OTI_vec_pack_trunc,
   OTI_vec_pack_usat,
   OTI_vec_pack_ssat,
 
@@ -404,7 +406,7 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define reduc_umin_optab (optab_table[OTI_reduc_umin])
 #define reduc_splus_optab (optab_table[OTI_reduc_splus])
 #define reduc_uplus_optab (optab_table[OTI_reduc_uplus])
-                                                                                
+
 #define ssum_widen_optab (optab_table[OTI_ssum_widen])
 #define usum_widen_optab (optab_table[OTI_usum_widen])
 #define sdot_prod_optab (optab_table[OTI_sdot_prod])
@@ -425,13 +427,13 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define vec_widen_smult_hi_optab (optab_table[OTI_vec_widen_smult_hi])
 #define vec_widen_smult_lo_optab (optab_table[OTI_vec_widen_smult_lo])
 #define vec_unpacks_hi_optab (optab_table[OTI_vec_unpacks_hi])
-#define vec_unpacku_hi_optab (optab_table[OTI_vec_unpacku_hi])
 #define vec_unpacks_lo_optab (optab_table[OTI_vec_unpacks_lo])
+#define vec_unpacku_hi_optab (optab_table[OTI_vec_unpacku_hi])
 #define vec_unpacku_lo_optab (optab_table[OTI_vec_unpacku_lo])
-#define vec_pack_mod_optab (optab_table[OTI_vec_pack_mod])
+#define vec_pack_trunc_optab (optab_table[OTI_vec_pack_trunc])
 #define vec_pack_ssat_optab (optab_table[OTI_vec_pack_ssat])
 #define vec_pack_usat_optab (optab_table[OTI_vec_pack_usat])
-                                                                                
+
 #define powi_optab (optab_table[OTI_powi])
 
 /* Conversion optabs have their own table and indexes.  */

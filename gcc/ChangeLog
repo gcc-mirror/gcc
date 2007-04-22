@@ -1,3 +1,46 @@
+2007-04-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/24659
+	* optabs.h (enum optab_index) [OTI_vec_unpacks_hi,
+	OTI_vec_unpacks_lo]: Update comment to mention floating point operands.
+	(vec_pack_trunc_optab): Rename from vec_pack_mod_optab.
+	* genopinit.c (optabs): Rename vec_pack_mod_optab
+	to vec_pack_trunc_optab.
+	* tree-vect-transform.c (vectorizable_type_demotion): Do not fail
+	early for scalar floating point operands for NOP_EXPR.
+	(vectorizable_type_promotion): Ditto.
+	* optabs.c (optab_for_tree_code) [VEC_PACK_TRUNC_EXPR]: Return
+	vec_pack_trunc_optab.
+	(expand_binop): Rename vec_float_trunc_optab to vec_pack_mod_optab.
+
+	* tree.def (VEC_PACK_TRUNC_EXPR): Rename from VEC_PACK_MOD_EXPR.
+	* tree-pretty-print.c (dump_generic_node) [VEC_PACK_TRUNC_EXPR]:
+	Rename from VEC_PACK_MOD_EXPR.
+	(op_prio) [VEC_PACK_TRUNC_EXPR]: Ditto.
+	* expr.c (expand_expr_real_1): Ditto.
+	* tree-inline.c (estimate_num_insns_1): Ditto.
+	* tree-vect-generic.c (expand_vector_operations_1): Ditto.
+
+	* config/i386/sse.md (vec_unpacks_hi_v4sf): New expander.
+	(vec_unpacks_lo_v4sf): Ditto.
+	(vec_pack_trunc_v2df): Ditto.
+	(vec_pack_trunc_v8hi): Rename from vec_pack_mod_v8hi.
+	(vec_pack_trunc_v4si): Rename from vec_pack_mod_v4si.
+	(vec_pack_trunc_v2di): Rename from vec_pack_mod_v2di.
+
+	* config/rs6000/altivec.md (vec_pack_trunc_v8hi): Rename from
+	vec_pack_mod_v8hi.
+	(vec_pack_trunc_v4si): Rename from vec_pack_mod_v4si.
+
+	* doc/c-tree.texi (Expression trees) [VEC_PACK_TRUNC_EXPR]:
+	Rename from VEC_PACK_MOD_EXPR.  This expression also represent
+	packing of floating point operands.
+	[VEC_UNPACK_HI_EXPR, VEC_UNPACK_LO_EXPR]: These expression also
+	represent unpacking of floating point operands.
+	* doc/md.texi (Standard Names) [vec_pack_trunc]: Update documentation.
+	[vec_unpacks_hi]: Ditto.
+	[vec_unpacks_lo]: Ditto.
+
 2007-04-22  Jan Hubicka  <jh@suse.cz>
 
 	* final.c (rest_of_handle_final): Call
