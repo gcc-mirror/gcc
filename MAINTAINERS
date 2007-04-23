@@ -144,7 +144,8 @@ treelang                James A. Morrison	phython@gcc.gnu.org
 
 			Various Maintainers
 
-cpplib			Per Bothner		per@bothner.com
+libcpp			Per Bothner		per@bothner.com
+libcpp			All C and C++ front end maintainers
 fp-bit			Ian Lance Taylor	ian@airs.com
 libdecnumber		Ben Elliston		bje@au.ibm.com
 libgcc			Ian Lance Taylor	ian@airs.com
