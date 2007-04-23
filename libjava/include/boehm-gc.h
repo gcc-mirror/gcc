@@ -1,7 +1,7 @@
 // -*- c++ -*-
 // boehm-gc.h - Defines for Boehm collector.
 
-/* Copyright (C) 1998, 1999, 2002, 2004, 2006  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2002, 2004, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -93,4 +93,6 @@ extern "C" void _Jv_SuspendThread (_Jv_Thread_t *);
 // Resume a suspended thread.
 extern "C" void _Jv_ResumeThread (_Jv_Thread_t *);
 
+// Is the given thread suspended?
+extern "C" int _Jv_IsThreadSuspended (_Jv_Thread_t *);
 #endif /* __JV_BOEHM_GC__ */

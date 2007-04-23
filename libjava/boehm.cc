@@ -722,6 +722,17 @@ _Jv_ResumeThread (_Jv_Thread_t *thread)
 #endif
 }
 
+int
+_Jv_IsThreadSuspended (_Jv_Thread_t *thread)
+{
+#if defined(GC_PTHREADS) && !defined(GC_SOLARIS_THREADS) \
+     && !defined(GC_WIN32_THREADS) && !defined(GC_DARWIN_THREADS)
+  return GC_is_thread_suspended (_Jv_GetPlatformThreadID (thread));
+#else
+  return 0;
+#endif
+}
+
 void
 _Jv_GCAttachThread ()
 {
