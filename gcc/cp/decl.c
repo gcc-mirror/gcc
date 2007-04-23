@@ -52,6 +52,7 @@ Boston, MA 02110-1301, USA.  */
 #include "debug.h"
 #include "timevar.h"
 #include "tree-flow.h"
+#include "pointer-set.h"
 
 static tree grokparms (cp_parameter_declarator *, tree *);
 static const char *redeclaration_error_message (tree, tree);
@@ -8898,6 +8899,7 @@ grokparms (cp_parameter_declarator *first_parm, tree *parms)
   int ellipsis = !first_parm || first_parm->ellipsis_p;
   cp_parameter_declarator *parm;
   int any_error = 0;
+  struct pointer_set_t *unique_decls = pointer_set_create ();
 
   for (parm = first_parm; parm != NULL; parm = parm->next)
     {
@@ -8982,6 +8984,14 @@ grokparms (cp_parameter_declarator *first_parm, tree *parms)
           && parm->next)
         error ("parameter packs must be at the end of the parameter list");
 
+      if (DECL_NAME (decl))
+        {
+          if (pointer_set_contains (unique_decls, DECL_NAME (decl)))
+            error ("multiple parameters named %qD", DECL_NAME (decl));
+          else
+            pointer_set_insert (unique_decls, DECL_NAME (decl));
+        }
+
       TREE_CHAIN (decl) = decls;
       decls = decl;
       result = tree_cons (init, type, result);
@@ -8992,6 +9002,7 @@ grokparms (cp_parameter_declarator *first_parm, tree *parms)
     result = chainon (result, void_list_node);
   *parms = decls;
 
+  pointer_set_destroy (unique_decls);
   return result;
 }
 
