@@ -689,4 +689,5 @@ DEFPARAM (PARAM_VERIFY_CANONICAL_TYPES,
 /*
 Local variables:
 mode:c
-End: */
+End:
+*/

@@ -1,3 +1,7 @@
+2007-04-23  Nick Clifton  <nickc@redhat.com>
+
+	* params.def: Fix formatting of emacs local variables.
+
 2007-04-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/sse.md (sse2_stored): Don't split to inter-unit
