@@ -46,6 +46,7 @@ details. */
 #include <gnu/classpath/jdwp/event/filters/IEventFilter.h>
 #include <gnu/classpath/jdwp/event/filters/LocationOnlyFilter.h>
 #include <gnu/classpath/jdwp/event/filters/StepFilter.h>
+#include <gnu/classpath/jdwp/exception/AbsentInformationException.h>
 #include <gnu/classpath/jdwp/exception/InvalidFrameException.h>
 #include <gnu/classpath/jdwp/exception/InvalidLocationException.h>
 #include <gnu/classpath/jdwp/exception/InvalidMethodException.h>
@@ -647,7 +648,14 @@ jstring
 gnu::classpath::jdwp::VMVirtualMachine::
 getSourceFile (jclass clazz)
 {
-  return _Jv_GetInterpClassSourceFile (clazz);
+  jstring file = _Jv_GetInterpClassSourceFile (clazz);
+  
+  // Check if the source file was found.
+  if (file == NULL)
+    throw new exception::AbsentInformationException (
+                           _Jv_NewStringUTF("Source file not found"));
+  
+  return file;
 }
 
 void
