@@ -2495,7 +2495,7 @@ expand_omp_parallel (struct omp_region *region)
       /* Declare local variables needed in CHILD_CFUN.  */
       block = DECL_INITIAL (child_fn);
       BLOCK_VARS (block) = list2chain (child_cfun->unexpanded_var_list);
-      DECL_SAVED_TREE (child_fn) = single_succ (entry_bb)->stmt_list;
+      DECL_SAVED_TREE (child_fn) = bb_stmt_list (single_succ (entry_bb));
 
       /* Reset DECL_CONTEXT on locals and function arguments.  */
       for (t = BLOCK_VARS (block); t; t = TREE_CHAIN (t))

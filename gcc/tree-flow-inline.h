@@ -637,7 +637,19 @@ addresses_taken (tree stmt)
 static inline tree
 phi_nodes (basic_block bb)
 {
-  return bb->phi_nodes;
+  gcc_assert (!(bb->flags & BB_RTL));
+  if (!bb->il.tree)
+    return NULL;
+  return bb->il.tree->phi_nodes;
+}
+
+/* Return pointer to the list of PHI nodes for basic block BB.  */
+
+static inline tree *
+phi_nodes_ptr (basic_block bb)
+{
+  gcc_assert (!(bb->flags & BB_RTL));
+  return &bb->il.tree->phi_nodes;
 }
 
 /* Set list of phi nodes of a basic block BB to L.  */
@@ -647,7 +659,8 @@ set_phi_nodes (basic_block bb, tree l)
 {
   tree phi;
 
-  bb->phi_nodes = l;
+  gcc_assert (!(bb->flags & BB_RTL));
+  bb->il.tree->phi_nodes = l;
   for (phi = l; phi; phi = PHI_CHAIN (phi))
     set_bb_for_stmt (phi, bb);
 }
@@ -746,20 +759,37 @@ phi_ssa_name_p (tree t)
 
 /*  -----------------------------------------------------------------------  */
 
+/* Returns the list of statements in BB.  */
+
+static inline tree
+bb_stmt_list (basic_block bb)
+{
+  gcc_assert (!(bb->flags & BB_RTL));
+  return bb->il.tree->stmt_list;
+}
+
+/* Sets the list of statements in BB to LIST.  */
+
+static inline void
+set_bb_stmt_list (basic_block bb, tree list)
+{
+  gcc_assert (!(bb->flags & BB_RTL));
+  bb->il.tree->stmt_list = list;
+}
+
 /* Return a block_stmt_iterator that points to beginning of basic
    block BB.  */
 static inline block_stmt_iterator
 bsi_start (basic_block bb)
 {
   block_stmt_iterator bsi;
-  if (bb->stmt_list)
-    bsi.tsi = tsi_start (bb->stmt_list);
-  else
+  if (bb->index < NUM_FIXED_BLOCKS)
     {
-      gcc_assert (bb->index < NUM_FIXED_BLOCKS);
       bsi.tsi.ptr = NULL;
       bsi.tsi.container = NULL;
     }
+  else
+    bsi.tsi = tsi_start (bb_stmt_list (bb));
   bsi.bb = bb;
   return bsi;
 }
@@ -784,14 +814,14 @@ static inline block_stmt_iterator
 bsi_last (basic_block bb)
 {
   block_stmt_iterator bsi;
-  if (bb->stmt_list)
-    bsi.tsi = tsi_last (bb->stmt_list);
-  else
+
+  if (bb->index < NUM_FIXED_BLOCKS)
     {
-      gcc_assert (bb->index < NUM_FIXED_BLOCKS);
       bsi.tsi.ptr = NULL;
       bsi.tsi.container = NULL;
     }
+  else
+    bsi.tsi = tsi_last (bb_stmt_list (bb));
   bsi.bb = bb;
   return bsi;
 }
