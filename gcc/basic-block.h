@@ -213,9 +213,6 @@ struct rtl_bb_info;
 /* Basic block information indexed by block number.  */
 struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")))
 {
-  /* Pointers to the first and last trees of the block.  */
-  tree stmt_list;
-
   /* The edges into and out of the block.  */
   VEC(edge,gc) *preds;
   VEC(edge,gc) *succs;
@@ -234,11 +231,9 @@ struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")
   struct basic_block_def *next_bb;
 
   union basic_block_il_dependent {
+      struct tree_bb_info * GTY ((tag ("0"))) tree;
       struct rtl_bb_info * GTY ((tag ("1"))) rtl;
     } GTY ((desc ("((%1.flags & BB_RTL) != 0)"))) il;
-
-  /* Chain of PHI nodes for this block.  */
-  tree phi_nodes;
 
   /* Expected number of executions: calculated in profile.c.  */
   gcov_type count;
@@ -275,6 +270,15 @@ struct rtl_bb_info GTY(())
 
   /* This field is used by the bb-reorder and tracer passes.  */
   int visited;
+};
+
+struct tree_bb_info GTY(())
+{
+  /* Pointers to the first and last trees of the block.  */
+  tree stmt_list;
+
+  /* Chain of PHI nodes for this block.  */
+  tree phi_nodes;
 };
 
 typedef struct basic_block_def *basic_block;

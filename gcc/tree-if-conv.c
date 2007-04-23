@@ -865,7 +865,7 @@ process_phi_nodes (struct loop *loop)
 	  release_phi_node (phi);
 	  phi = next;
 	}
-      bb->phi_nodes = NULL;
+      set_phi_nodes (bb, NULL_TREE);
     }
   return;
 }
@@ -960,9 +960,9 @@ combine_blocks (struct loop *loop)
 	}
 
       /* Update stmt list.  */
-      last = tsi_last (merge_target_bb->stmt_list);
-      tsi_link_after (&last, bb->stmt_list, TSI_NEW_STMT);
-      bb->stmt_list = alloc_stmt_list ();
+      last = tsi_last (bb_stmt_list (merge_target_bb));
+      tsi_link_after (&last, bb_stmt_list (bb), TSI_NEW_STMT);
+      set_bb_stmt_list (bb, NULL);
 
       delete_basic_block (bb);
     }

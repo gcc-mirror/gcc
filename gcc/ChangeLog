@@ -1,3 +1,26 @@
+2007-04-23  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-phinodes.c (reserve_phi_args_for_new_edge, remove_phi_node):
+	Use phi_nodes_ptr.
+	(create_phi_node): Use set_phi_nodes.
+	* omp-low.c (expand_omp_parallel): Use bb_stmt_list.
+	* tree-if-conv.c (process_phi_nodes): Use set_phi_nodes.
+	(combine_blocks):  Use bb_stmt_list and set_bb_stmt_list.
+	* tree-flow-inline.h (phi_nodes, set_phi_nodes,
+	(bsi_start, bsi_last): Use bb_stmt_list.
+	(phi_nodes_ptr, bb_stmt_list, set_bb_stmt_list): New functions.
+	* cfgexpand.c (expand_gimple_basic_block): Use bb_stmt_list.
+	Traverse the statements using tsi iterator.
+	* basic-block.h (struct basic_block_def): Fields stmt_list
+	and phi_nodes moved to ...
+	(struct tree_bb_info): ... new structure.
+	* tree-cfg.c (create_bb): Allocate il.tree.  Use set_bb_stmt_list.
+	(tree_merge_blocks): Use bb_stmt_list and set_bb_stmt_list.
+	(remove_bb): Handle blocks with NULL stmt list.  Clear il.tree field.
+	(tree_verify_flow_info): Verify that il.tree is not set for
+	entry and exit block.
+	(tree_split_block): Use set_bb_stmt_list.
+
 2007-04-23  Mike Stump  <mrs@apple.com>
 
 	* config/i386/i386.c (ix86_tune_features

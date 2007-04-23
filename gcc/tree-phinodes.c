@@ -313,7 +313,7 @@ reserve_phi_args_for_new_edge (basic_block bb)
   int len = EDGE_COUNT (bb->preds);
   int cap = ideal_phi_node_len (len + 4);
 
-  for (loc = &(bb->phi_nodes);
+  for (loc = phi_nodes_ptr (bb);
        *loc;
        loc = &PHI_CHAIN (*loc))
     {
@@ -354,7 +354,7 @@ create_phi_node (tree var, basic_block bb)
 
   /* Add the new PHI node to the list of PHI nodes for block BB.  */
   PHI_CHAIN (phi) = phi_nodes (bb);
-  bb->phi_nodes = phi;
+  set_phi_nodes (bb, phi);
 
   /* Associate BB to the PHI node.  */
   set_bb_for_stmt (phi, bb);
@@ -458,7 +458,7 @@ remove_phi_node (tree phi, tree prev, bool release_lhs_p)
     }
   else
     {
-      for (loc = &(bb_for_stmt (phi)->phi_nodes);
+      for (loc = phi_nodes_ptr (bb_for_stmt (phi));
 	   *loc != phi;
 	   loc = &PHI_CHAIN (*loc))
 	;

@@ -368,7 +368,8 @@ create_bb (void *h, void *e, basic_block after)
 
   bb->index = last_basic_block;
   bb->flags = BB_NEW;
-  bb->stmt_list = h ? (tree) h : alloc_stmt_list ();
+  bb->il.tree = GGC_CNEW (struct tree_bb_info);
+  set_bb_stmt_list (bb, h ? (tree) h : alloc_stmt_list ());
 
   /* Add the new block to the linked list of blocks.  */
   link_block (bb, after);
@@ -1306,9 +1307,9 @@ tree_merge_blocks (basic_block a, basic_block b)
     }
 
   /* Merge the chains.  */
-  last = tsi_last (a->stmt_list);
-  tsi_link_after (&last, b->stmt_list, TSI_NEW_STMT);
-  b->stmt_list = NULL;
+  last = tsi_last (bb_stmt_list (a));
+  tsi_link_after (&last, bb_stmt_list (b), TSI_NEW_STMT);
+  set_bb_stmt_list (b, NULL_TREE);
 }
 
 
@@ -1944,57 +1945,60 @@ remove_bb (basic_block bb)
     }
 
   /* Remove all the instructions in the block.  */
-  for (i = bsi_start (bb); !bsi_end_p (i);)
+  if (bb_stmt_list (bb) != NULL_TREE)
     {
-      tree stmt = bsi_stmt (i);
-      if (TREE_CODE (stmt) == LABEL_EXPR
-          && (FORCED_LABEL (LABEL_EXPR_LABEL (stmt))
-	      || DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt))))
+      for (i = bsi_start (bb); !bsi_end_p (i);)
 	{
-	  basic_block new_bb;
-	  block_stmt_iterator new_bsi;
-
-	  /* A non-reachable non-local label may still be referenced.
-	     But it no longer needs to carry the extra semantics of
-	     non-locality.  */
-	  if (DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt)))
+	  tree stmt = bsi_stmt (i);
+	  if (TREE_CODE (stmt) == LABEL_EXPR
+	      && (FORCED_LABEL (LABEL_EXPR_LABEL (stmt))
+		  || DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt))))
 	    {
-	      DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt)) = 0;
-	      FORCED_LABEL (LABEL_EXPR_LABEL (stmt)) = 1;
+	      basic_block new_bb;
+	      block_stmt_iterator new_bsi;
+
+	      /* A non-reachable non-local label may still be referenced.
+		 But it no longer needs to carry the extra semantics of
+		 non-locality.  */
+	      if (DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt)))
+		{
+		  DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt)) = 0;
+		  FORCED_LABEL (LABEL_EXPR_LABEL (stmt)) = 1;
+		}
+
+	      new_bb = bb->prev_bb;
+	      new_bsi = bsi_start (new_bb);
+	      bsi_remove (&i, false);
+	      bsi_insert_before (&new_bsi, stmt, BSI_NEW_STMT);
+	    }
+	  else
+	    {
+	      /* Release SSA definitions if we are in SSA.  Note that we
+		 may be called when not in SSA.  For example,
+		 final_cleanup calls this function via
+		 cleanup_tree_cfg.  */
+	      if (gimple_in_ssa_p (cfun))
+		release_defs (stmt);
+
+	      bsi_remove (&i, true);
 	    }
 
-	  new_bb = bb->prev_bb;
-	  new_bsi = bsi_start (new_bb);
-	  bsi_remove (&i, false);
-	  bsi_insert_before (&new_bsi, stmt, BSI_NEW_STMT);
-	}
-      else
-        {
-	  /* Release SSA definitions if we are in SSA.  Note that we
-	     may be called when not in SSA.  For example,
-	     final_cleanup calls this function via
-	     cleanup_tree_cfg.  */
-	  if (gimple_in_ssa_p (cfun))
-	    release_defs (stmt);
-
-	  bsi_remove (&i, true);
-	}
-
-      /* Don't warn for removed gotos.  Gotos are often removed due to
-	 jump threading, thus resulting in bogus warnings.  Not great,
-	 since this way we lose warnings for gotos in the original
-	 program that are indeed unreachable.  */
-      if (TREE_CODE (stmt) != GOTO_EXPR && EXPR_HAS_LOCATION (stmt) && !loc)
-	{
+	  /* Don't warn for removed gotos.  Gotos are often removed due to
+	     jump threading, thus resulting in bogus warnings.  Not great,
+	     since this way we lose warnings for gotos in the original
+	     program that are indeed unreachable.  */
+	  if (TREE_CODE (stmt) != GOTO_EXPR && EXPR_HAS_LOCATION (stmt) && !loc)
+	    {
 #ifdef USE_MAPPED_LOCATION
-	  if (EXPR_HAS_LOCATION (stmt))
-	    loc = EXPR_LOCATION (stmt);
+	      if (EXPR_HAS_LOCATION (stmt))
+		loc = EXPR_LOCATION (stmt);
 #else
-	  source_locus t;
-	  t = EXPR_LOCUS (stmt);
-	  if (t && LOCATION_LINE (*t) > 0)
-	    loc = t;
+	      source_locus t;
+	      t = EXPR_LOCUS (stmt);
+	      if (t && LOCATION_LINE (*t) > 0)
+		loc = t;
 #endif
+	    }
 	}
     }
 
@@ -2011,6 +2015,7 @@ remove_bb (basic_block bb)
 #endif
 
   remove_phi_nodes_and_edges_for_unreachable_block (bb);
+  bb->il.tree = NULL;
 }
 
 
@@ -3651,15 +3656,15 @@ tree_verify_flow_info (void)
   edge e;
   edge_iterator ei;
 
-  if (ENTRY_BLOCK_PTR->stmt_list)
+  if (ENTRY_BLOCK_PTR->il.tree)
     {
-      error ("ENTRY_BLOCK has a statement list associated with it");
+      error ("ENTRY_BLOCK has IL associated with it");
       err = 1;
     }
 
-  if (EXIT_BLOCK_PTR->stmt_list)
+  if (EXIT_BLOCK_PTR->il.tree)
     {
-      error ("EXIT_BLOCK has a statement list associated with it");
+      error ("EXIT_BLOCK has IL associated with it");
       err = 1;
     }
 
@@ -4200,7 +4205,7 @@ tree_split_block (basic_block bb, void *stmt)
 {
   block_stmt_iterator bsi;
   tree_stmt_iterator tsi_tgt;
-  tree act;
+  tree act, list;
   basic_block new_bb;
   edge e;
   edge_iterator ei;
@@ -4240,8 +4245,9 @@ tree_split_block (basic_block bb, void *stmt)
      brings ugly quadratic memory consumption in the inliner.  
      (We are still quadratic since we need to update stmt BB pointers,
      sadly.)  */
-  new_bb->stmt_list = tsi_split_statement_list_before (&bsi.tsi);
-  for (tsi_tgt = tsi_start (new_bb->stmt_list);
+  list = tsi_split_statement_list_before (&bsi.tsi);
+  set_bb_stmt_list (new_bb, list);
+  for (tsi_tgt = tsi_start (list);
        !tsi_end_p (tsi_tgt); tsi_next (&tsi_tgt))
     change_bb_for_stmt (tsi_stmt (tsi_tgt), new_bb);
 

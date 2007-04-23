@@ -1439,7 +1439,8 @@ expand_gimple_tailcall (basic_block bb, tree stmt, bool *can_fallthru)
 static basic_block
 expand_gimple_basic_block (basic_block bb)
 {
-  block_stmt_iterator bsi = bsi_start (bb);
+  tree_stmt_iterator tsi;
+  tree stmts = bb_stmt_list (bb);
   tree stmt = NULL;
   rtx note, last;
   edge e;
@@ -1452,11 +1453,13 @@ expand_gimple_basic_block (basic_block bb)
 	       bb->index);
     }
 
+  bb->il.tree = NULL;
   init_rtl_bb_info (bb);
   bb->flags |= BB_RTL;
 
-  if (!bsi_end_p (bsi))
-    stmt = bsi_stmt (bsi);
+  tsi = tsi_start (stmts);
+  if (!tsi_end_p (tsi))
+    stmt = tsi_stmt (tsi);
 
   if (stmt && TREE_CODE (stmt) == LABEL_EXPR)
     {
@@ -1469,7 +1472,7 @@ expand_gimple_basic_block (basic_block bb)
       BB_HEAD (bb) = NEXT_INSN (last);
       if (NOTE_P (BB_HEAD (bb)))
 	BB_HEAD (bb) = NEXT_INSN (BB_HEAD (bb));
-      bsi_next (&bsi);
+      tsi_next (&tsi);
       note = emit_note_after (NOTE_INSN_BASIC_BLOCK, BB_HEAD (bb));
 
       maybe_dump_rtl_for_tree_stmt (stmt, last);
@@ -1493,9 +1496,9 @@ expand_gimple_basic_block (basic_block bb)
 	ei_next (&ei);
     }
 
-  for (; !bsi_end_p (bsi); bsi_next (&bsi))
+  for (; !tsi_end_p (tsi); tsi_next (&tsi))
     {
-      tree stmt = bsi_stmt (bsi);
+      tree stmt = tsi_stmt (tsi);
       basic_block new_bb;
 
       if (!stmt)
