@@ -1,3 +1,8 @@
+2007-04-23  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sink.c (execute_sink_code): Calculate CDI_DOMINATORS
+	and CDI_POST_DOMINATORS separately.
+
 2007-04-23  Nick Clifton  <nickc@redhat.com>
 
 	* c.opt (Wformat-contains-nul): Add warning attribute.
