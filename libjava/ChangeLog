@@ -1,5 +1,17 @@
 2007-04-23  Kyle Galloway  <kgallowa@redhat.com>
 
+	* include/java-interp.h (_Jv_InterpFrame): Add pointer to the
+	interpreter PC.
+	(<init>): Add a pointer to the interpreter PC as a parameter with
+	default value NULL.
+	(get_pc): New method.
+	* interpret-run.cc: If debugging, pass a pointer to the PC when
+	creating the stack frame.
+	* jvmti.cc (_Jv_JVMTI_GetStackTrace): Call _Jv_InterpFrame::get_pc
+	to get the PC.
+
+2007-04-23  Kyle Galloway  <kgallowa@redhat.com>
+
 	* gnu/classpath/jdwp/natVMVirtualMachine.cc (getSourceFile): Check
 	for null source file and throw an exception indicating this.
 

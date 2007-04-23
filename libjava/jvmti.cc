@@ -1245,7 +1245,7 @@ _Jv_JVMTI_GetStackTrace (MAYBE_UNUSED jvmtiEnv *env, jthread thread,
             = static_cast<_Jv_InterpMethod *> (frame->self);
           _Jv_InterpFrame *interp_frame 
             = static_cast<_Jv_InterpFrame *> (frame);
-          frames[i].location = imeth->insn_index (interp_frame->pc);
+          frames[i].location = imeth->insn_index (interp_frame->get_pc ());
         }
       else
         frames[i].location = -1;
