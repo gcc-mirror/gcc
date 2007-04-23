@@ -1,3 +1,8 @@
+2007-04-23  Jan Hubicka  <jh@suse.cz>
+
+	* cp/decl2.c (finish_objects): Do not call target constructor/destructor
+	bits dirrectly.
+
 2007-04-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* cp-tree.h (lang_tree_node): Use GENERIC_NEXT

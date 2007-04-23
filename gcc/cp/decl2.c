@@ -2363,23 +2363,19 @@ finish_objects (int method_type, int initp, tree body)
   /* Finish up.  */
   finish_compound_stmt (body);
   fn = finish_function (0);
-  expand_or_defer_fn (fn);
 
-  /* When only doing semantic analysis, and no RTL generation, we
-     can't call functions that directly emit assembly code; there is
-     no assembly file in which to put the code.  */
-  if (flag_syntax_only)
-    return;
-
-  if (targetm.have_ctors_dtors)
+  if (method_type == 'I')
     {
-      rtx fnsym = XEXP (DECL_RTL (fn), 0);
-      cgraph_mark_needed_node (cgraph_node (fn));
-      if (method_type == 'I')
-	(* targetm.asm_out.constructor) (fnsym, initp);
-      else
-	(* targetm.asm_out.destructor) (fnsym, initp);
+      DECL_STATIC_CONSTRUCTOR (fn) = 1;
+      decl_init_priority_insert (fn, initp);
     }
+  else
+    {
+      DECL_STATIC_DESTRUCTOR (fn) = 1;
+      decl_fini_priority_insert (fn, initp);
+    }
+
+  expand_or_defer_fn (fn);
 }
 
 /* The names of the parameters to the function created to handle
