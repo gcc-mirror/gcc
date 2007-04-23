@@ -15,7 +15,7 @@ open(77,file=n,status="old", iomsg=msg, iostat=i)
 if (msg /= "File 'temptestfile' does not exist") call abort()
 
 open(77,file="./", iomsg=msg, iostat=i)
-if (msg /= "'./' is a directory") call abort()
+if (msg /= "'./' is a directory" .and. msg /= "Invalid argument") call abort()
 
 open(77,file=n,status="new")
 i = chmod(n, "-w")
