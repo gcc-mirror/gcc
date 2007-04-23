@@ -44,7 +44,6 @@
 
 #include <istream>
 #include <ostream>
-#include <locale>	// For codecvt
 #include <cstdio>       // For BUFSIZ     
 #include <bits/basic_file.h>  // For __basic_file, __c_lock
 

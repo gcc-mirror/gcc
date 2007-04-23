@@ -1,3 +1,30 @@
+2007-04-23  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.h (class time_base,
+	struct __timepunct_cache, class __timepunct, class time_get,
+	class time_get_byname, class time_put, class time_put_byname,
+	class money_base, struct __moneypunct_cache, class moneypunct,
+	class moneypunct_byname, class money_get, class money_put,
+	struct messages_base, class messages, class messages_byname): Move...
+	* include/bits/locale_facets_nonio.h: ... here.
+	* include/bits/locale_facets.tcc
+	(struct __use_cache<__moneypunct_cache<> >,
+	__moneypunct_cache<>::_M_cache, money_get<>::_M_extract,
+	money_get<>::__do_get, money_get<>::do_get, money_put<>::_M_insert,
+	money_put<>::__do_put, money_put<>::do_put, time_get<>::do_date_order,
+	time_get<>::_M_extract_via_format, time_get<>::_M_extract_num,
+	time_get<>::_M_extract_name, time_get<>::do_get_time,
+	time_get<>::do_get_date, time_get<>::do_get_weekday,
+	time_get<>::do_get_monthname, time_get<>::do_get_year, time_put<>::put,
+	time_put<>::do_put): Move...
+	* include/bits/locale_facets_nonio.tcc: ... here.
+	* include/Makefile.am: Add.
+	* include/std/locale: Adjust includes.
+	* include/std/fstream: Likewise.
+	* include/std/istream: Likewise.
+	* include/std/ostream: Likewise.
+	* include/Makefile.in: Regenerate.
+
 2007-04-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* scripts/testsuite_flags.in: Add --build-cc option.
