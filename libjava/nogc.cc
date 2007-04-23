@@ -184,3 +184,9 @@ void
 _Jv_ResumeThread (_Jv_Thread_t *thread)
 {
 }
+
+int
+_Jv_IsThreadSuspended (_Jv_Thread_t *thread)
+{
+  return 0;
+}
