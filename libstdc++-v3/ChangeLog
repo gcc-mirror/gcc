@@ -1,3 +1,10 @@
+2007-04-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* scripts/testsuite_flags.in: Add --build-cc option.
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Set cc.  Fix typo
+	in previous change.
+	(v3_target_compile_as_c): Use cc.
+
 2007-04-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Use the same flags

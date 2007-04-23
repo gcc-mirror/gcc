@@ -15,6 +15,7 @@ Usage:
     testsuite_flags --install-includes
 		    --build-includes
 		    --build-cxx
+		    --build-cc
 		    --install-cxx
 		    --cxxflags
 		    --cxxpchflags
@@ -46,6 +47,11 @@ case ${query} in
       CXX_build="@CXX@"
       CXX=`echo "$CXX_build" | sed 's,gcc/xgcc ,gcc/g++ ,'`
       echo ${CXX}
+      ;;
+    --build-cc)
+      CC_build="@CC@"
+      CC="$CC_build"
+      echo ${CC}
       ;;
     --cxxflags)
       CXXFLAGS_save="-g -O2 -D_GLIBCXX_ASSERT"
