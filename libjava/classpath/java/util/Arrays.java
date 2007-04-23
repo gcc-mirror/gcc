@@ -1040,7 +1040,7 @@ public class Arrays
       }
 
     // Determine a good median element.
-    int mid = count / 2;
+    int mid = from + count / 2;
     int lo = from;
     int hi = from + count - 1;
 
@@ -1204,7 +1204,7 @@ public class Arrays
       }
 
     // Determine a good median element.
-    int mid = count / 2;
+    int mid = from + count / 2;
     int lo = from;
     int hi = from + count - 1;
 
@@ -1368,7 +1368,7 @@ public class Arrays
       }
 
     // Determine a good median element.
-    int mid = count / 2;
+    int mid = from + count / 2;
     int lo = from;
     int hi = from + count - 1;
 
@@ -1544,7 +1544,7 @@ public class Arrays
       }
 
     // Determine a good median element.
-    int mid = count / 2;
+    int mid = from + count / 2;
     int lo = from;
     int hi = from + count - 1;
 
@@ -1720,7 +1720,7 @@ public class Arrays
       }
 
     // Determine a good median element.
-    int mid = count / 2;
+    int mid = from + count / 2;
     int lo = from;
     int hi = from + count - 1;
 
@@ -1890,7 +1890,7 @@ public class Arrays
       }
 
     // Determine a good median element.
-    int mid = count / 2;
+    int mid = from + count / 2;
     int lo = from;
     int hi = from + count - 1;
 
@@ -2060,7 +2060,7 @@ public class Arrays
       }
 
     // Determine a good median element.
-    int mid = count / 2;
+    int mid = from + count / 2;
     int lo = from;
     int hi = from + count - 1;
 
