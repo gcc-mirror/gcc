@@ -1,3 +1,9 @@
+2007-04-23  Mike Stump  <mrs@apple.com>
+
+	* config/i386/i386.c (ix86_tune_features
+	[X86_TUNE_DEEP_BRANCH_PREDICTION]: Prefer call over thunks on
+	nocona and core2.
+
 2007-04-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md (prefix_extra): New attribute.
