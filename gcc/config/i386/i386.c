@@ -1026,8 +1026,7 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
   m_486 | m_PENT | m_PPRO | m_ATHLON_K8_AMDFAM10 | m_K6 | m_CORE2 | m_GENERIC,
 
   /* X86_TUNE_DEEP_BRANCH_PREDICTION */
-  m_PPRO | m_K6_GEODE | m_ATHLON_K8_AMDFAM10 | m_PENT4
-  | m_NOCONA | m_CORE2 | m_GENERIC,
+  m_PPRO | m_K6_GEODE | m_ATHLON_K8_AMDFAM10 | m_PENT4 | m_GENERIC,
 
   /* X86_TUNE_BRANCH_PREDICTION_HINTS: Branch hints were put in P4 based
      on simulation result. But after P4 was made, no performance benefit
