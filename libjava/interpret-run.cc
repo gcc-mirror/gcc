@@ -12,6 +12,8 @@ details.  */
  * compiled directly.	*/
 
   using namespace java::lang::reflect;
+  
+  pc_t pc = NULL;
 
   // FRAME_DESC registers this particular invocation as the top-most
   // interpreter frame.  This lets the stack tracing code (for
@@ -20,7 +22,12 @@ details.  */
   // destructor so it cleans up automatically when the interpreter
   // returns.
   java::lang::Thread *thread = java::lang::Thread::currentThread();
+  
+#ifdef DEBUG
+  _Jv_InterpFrame frame_desc (meth, thread, NULL, &pc);
+#else
   _Jv_InterpFrame frame_desc (meth, thread);
+#endif
 
   _Jv_word stack[meth->max_stack];
   _Jv_word *sp = stack;
@@ -333,8 +340,6 @@ details.  */
     0
 #endif
   };
-
-  pc_t pc;
 
 #ifdef DIRECT_THREADED
 
