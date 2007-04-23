@@ -1,3 +1,8 @@
+2007-04-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* MAINTAINERS (cpplib): Rename to ...
+	(libcpp): ... this.  Add C/C++ front end maintainers.
+
 2007-04-14  Steve Ellcey  <sje@cup.hp.com>
 
 	* config-ml.in: Pass ${ml_config_env} to configure calls.
