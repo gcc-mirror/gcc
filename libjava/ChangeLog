@@ -1,3 +1,8 @@
+2007-04-23  Kyle Galloway  <kgallowa@redhat.com>
+
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc (getSourceFile): Check
+	for null source file and throw an exception indicating this.
+
 2007-04-20  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/gcj/jvmti/BreakpointManager.java (newBreakpoint):
