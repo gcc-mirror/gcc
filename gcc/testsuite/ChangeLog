@@ -1,3 +1,11 @@
+2007-04-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31630
+	* gfortran.dg/used_types_17.f90: New test.
+
+	PR fortran/31620
+	* gfortran.dg/zero_array_components_1.f90: New test.
+
 2007-04-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR fortran/31616
