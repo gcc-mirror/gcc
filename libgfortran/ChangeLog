@@ -1,3 +1,12 @@
+2007-04-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/31618
+	* io/transfer.c (read_block_direct):  Instead of calling us_read,
+	set dtp->u.p.current_unit->current_record = 0 so that pre_position
+	will read the record marker.
+	(data_transfer_init):  For different error conditions, call
+	generate_error, then return.
+
 2007-04-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* runtime/main.c (please_free_exe_path_when_done): New variable.
