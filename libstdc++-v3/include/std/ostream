@@ -43,7 +43,6 @@
 #pragma GCC system_header
 
 #include <ios>
-#include <locale>
 #include <bits/ostream_insert.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
@@ -571,6 +570,7 @@ _GLIBCXX_END_NAMESPACE
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include <bits/ostream.tcc>
+# include <bits/locale_facets.tcc>
 #endif
 
 #endif	/* _GLIBCXX_OSTREAM */

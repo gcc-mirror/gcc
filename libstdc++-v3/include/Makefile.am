@@ -91,6 +91,8 @@ bits_headers = \
 	${bits_srcdir}/locale_classes.h \
 	${bits_srcdir}/locale_facets.h \
 	${bits_srcdir}/locale_facets.tcc \
+	${bits_srcdir}/locale_facets_nonio.h \
+	${bits_srcdir}/locale_facets_nonio.tcc \
 	${bits_srcdir}/localefwd.h \
 	${bits_srcdir}/mask_array.h \
 	${bits_srcdir}/ostream.tcc \

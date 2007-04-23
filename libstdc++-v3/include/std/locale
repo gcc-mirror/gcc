@@ -1,6 +1,7 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,6 +44,11 @@
 #include <bits/localefwd.h>
 #include <bits/locale_classes.h>
 #include <bits/locale_facets.h>
-#include <bits/locale_facets.tcc>
+#include <bits/locale_facets_nonio.h>
+
+#ifndef _GLIBCXX_EXPORT_TEMPLATE
+# include <bits/locale_facets.tcc>
+# include <bits/locale_facets_nonio.tcc>
+#endif
 
 #endif /* _GLIBCXX_LOCALE */
