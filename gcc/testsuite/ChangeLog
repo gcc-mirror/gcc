@@ -1,3 +1,14 @@
+2007-04-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_pack_trunc):
+	Rename from check_effective_target_vect_pack_mod.  Rename global
+	variable et_vect_pack_mod to et_vect_pack_trunc.  Update debug
+	messages.
+	* gcc.dg/vect/vect-iv-8.c: Update target check for vect_pack_trunc
+	rename.
+	* gcc.dg/vect/vect-iv-8a.c: Ditto.
+	* gcc.dg/vect/vect-multitypes-8.c: Ditto.
+
 2007-04-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/31448

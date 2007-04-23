@@ -1862,21 +1862,21 @@ proc check_effective_target_vect_udot_hi { } {
 #
 # This won't change for different subtargets so cache the result.
                                                                                 
-proc check_effective_target_vect_pack_mod { } {
-    global et_vect_pack_mod
+proc check_effective_target_vect_pack_trunc { } {
+    global et_vect_pack_trunc
                                                                                 
-    if [info exists et_vect_pack_mod_saved] {
-        verbose "check_effective_target_vect_pack_mod: using cached result" 2
+    if [info exists et_vect_pack_trunc_saved] {
+        verbose "check_effective_target_vect_pack_trunc: using cached result" 2
     } else {
-        set et_vect_pack_mod_saved 0
+        set et_vect_pack_trunc_saved 0
         if { [istarget powerpc*-*-*]
              || [istarget i?86-*-*]
              || [istarget x86_64-*-*] } {
-            set et_vect_pack_mod_saved 1
+            set et_vect_pack_trunc_saved 1
         }
     }
-    verbose "check_effective_target_vect_pack_mod: returning $et_vect_pack_mod_saved" 2
-    return $et_vect_pack_mod_saved
+    verbose "check_effective_target_vect_pack_trunc: returning $et_vect_pack_trunc_saved" 2
+    return $et_vect_pack_trunc_saved
 }
 
 # Return 1 if the target plus current options supports a vector
