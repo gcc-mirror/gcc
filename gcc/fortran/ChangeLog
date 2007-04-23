@@ -1,3 +1,8 @@
+2007-04-23  Tobias Burnus  <burnus@net-b.de>
+
+	* primary.c (match_integer_constant): Mention -fno-range-check
+	in the error message.
+
 2007-04-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/31495
