@@ -1,3 +1,10 @@
+2007-04-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Use the same flags
+	for remote host testing we use for local host testing.  Copy all
+	testsuite headers to the remote host
+	(v3_target_compile_as_c): Use remote_exec, not just exec.
+
 2007-04-22  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/functional: Formatting fixes.
