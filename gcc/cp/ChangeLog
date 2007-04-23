@@ -1,3 +1,8 @@
+2007-04-23  Simon Baldwin  <simonb@google.com>
+
+	* decl.c (grokparms): Added new error for duplicate function
+	parameters names in function prototypes, to match gcc behavior.
+
 2007-04-23  Jan Hubicka  <jh@suse.cz>
 
 	* cp/decl2.c (finish_objects): Do not call target constructor/destructor

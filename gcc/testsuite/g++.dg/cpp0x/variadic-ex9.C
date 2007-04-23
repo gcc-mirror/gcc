@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 template<typename... Args>              char& f(Args... args);         // #1
 template<typename T1, typename... Args> short& f(T1 a1, Args... args); // #2
-template<typename T1, typename T2>      int& f(T1 a2, T2 a2);          // #3
+template<typename T1, typename T2>      int& f(T1 a2, T2 a3);          // #3
 
 void g() {
   char& x = f();                      // calls #1

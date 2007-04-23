@@ -1,3 +1,9 @@
+2007-04-23  Simon Baldwin  <simonb@google.com>
+
+	* g++.dg/other/error15.C: New.
+	* g++.dg/cpp0x/variadic-ex9.C: Renamed function parameter to avoid
+	triggering a "multiple parameters named" error.
+
 2007-04-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/31618
