@@ -1,3 +1,8 @@
+2007-04-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR fortran/31616
+	* gfortran.dg/open_errors.f90: Allow a different error message.
+
 2007-04-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_pack_trunc):
