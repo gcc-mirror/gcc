@@ -229,6 +229,7 @@ in changes outside of the parts of the compiler they maintain.
 loop optimizer		Zdenek Dvorak		dvorakz@suse.cz
 loop optimizer		Daniel Berlin		dberlin@dberlin.org
 middle-end		Richard Guenther	rguenther@suse.de
+libcpp			Tom Tromey		tromey@redhat.com
 
 Note individuals who maintain parts of the compiler as non-algorithmic
 maintainer need approval to check in algorithmic changes or changes
