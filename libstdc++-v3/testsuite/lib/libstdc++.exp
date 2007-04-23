@@ -83,7 +83,7 @@ proc libstdc++_init { testfile } {
     global env
     global v3-sharedlib 
     global srcdir blddir objdir tool_root_dir
-    global cxx cxxflags cxxldflags
+    global cc cxx cxxflags cxxldflags
     global includes
     global gluefile wrap_flags
     global ld_library_path
@@ -175,6 +175,7 @@ proc libstdc++_init { testfile } {
     set cxx [transform "g++"]
     set cxxflags "-g -O2 -D_GLIBCXX_ASSERT -fmessage-length=0" 
     set cxxldflags ""
+    set cc [transform "gcc"]
     # Locate testsuite_hooks.h and other testsuite headers.
     set includes "-I${srcdir}/util"
     # Adapt the defaults for special circumstances.
@@ -198,10 +199,10 @@ proc libstdc++_init { testfile } {
 	    # Create the directory containing the file.
 	    set dir [file dirname $dst]
 	    remote_exec host "mkdir" [list "-p" "$dir"]
-	    # Download teh file.
+	    # Download the file.
 	    set result [remote_download host $src $dst]
 	    if { $result == "" } {
-		verbose -log "Unable to download ${srcdir}/${f} to host."
+		verbose -log "Unable to download ${srcdir}/${src} to host."
 		return "untested"
 	    }
 	}
@@ -210,12 +211,14 @@ proc libstdc++_init { testfile } {
         # If we find a testsuite_flags file, we're testing in the build dir.
 	set cxx [exec sh $flags_file --build-cxx]
 	set cxxflags [exec sh $flags_file --cxxflags]
-        set cxxldflags [exec sh $flags_file --cxxldflags]
+	set cxxldflags [exec sh $flags_file --cxxldflags]
+	set cc [exec sh $flags_file --build-cc]
 	set includes [exec sh $flags_file --build-includes]
     }
 
     # Always use MO files built by this test harness.
     set cxxflags "$cxxflags -DLOCALEDIR=\".\""
+    set ccflags "$cxxflags -DLOCALEDIR=\".\""
 
     # If a PCH file is available, use it.  We must delay performing
     # this check until $cxx and such have been initialized because we
@@ -376,6 +379,7 @@ proc v3_target_compile_as_c { source dest type options } {
     global includes
     global flags_file
     global blddir
+    global cc
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
         lappend options "libs=${gluefile}"
@@ -383,7 +387,6 @@ proc v3_target_compile_as_c { source dest type options } {
     }
 
     set tname [target_info name]
-    set cc [board_info $tname compiler]
     set cc_final $cc
     set cxxlibglossflags [libgloss_link_flags]
     set cc_final [concat $cc_final $cxxlibglossflags]
