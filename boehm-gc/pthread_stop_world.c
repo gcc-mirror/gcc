@@ -483,6 +483,14 @@ void GC_resume_thread(pthread_t thread) {
   t -> flags &= ~SUSPENDED;
 }
 
+int GC_is_thread_suspended(pthread_t thread) {
+  GC_thread t = GC_lookup_thread(thread);
+  if (t == NULL)
+    ABORT("querying suspension state of unknown thread");
+
+  return (t -> flags & SUSPENDED);
+}
+
 /* Caller holds allocation lock, and has held it continuously since	*/
 /* the world stopped.							*/
 void GC_start_world()
