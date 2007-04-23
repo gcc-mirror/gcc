@@ -267,6 +267,7 @@
   "TARGET_SSE2 && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "movdqu\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssemov")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse_movntv4sf"
@@ -294,6 +295,7 @@
   "TARGET_SSE2"
   "movntdq\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_movntsi"
@@ -312,6 +314,7 @@
   "TARGET_SSE3"
   "lddqu\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "TI")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -650,6 +653,7 @@
   "TARGET_SSE3"
   "addsubps\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseadd")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "V4SF")])
 
 (define_insn "sse3_haddv4sf3"
@@ -676,6 +680,7 @@
   "TARGET_SSE3"
   "haddps\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseadd")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "V4SF")])
 
 (define_insn "sse3_hsubv4sf3"
@@ -702,6 +707,7 @@
   "TARGET_SSE3"
   "hsubps\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseadd")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "V4SF")])
 
 (define_expand "reduc_splus_v4sf"
@@ -1005,6 +1011,7 @@
   "cvtss2si\t{%1, %0|%0, %1}"
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "SI")])
 
 (define_insn "sse_cvtss2si_2"
@@ -1016,6 +1023,7 @@
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "SI")])
 
 (define_insn "sse_cvtss2siq"
@@ -1029,6 +1037,7 @@
   "cvtss2siq\t{%1, %0|%0, %1}"
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "sse_cvtss2siq_2"
@@ -1040,6 +1049,7 @@
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "sse_cvttss2si"
@@ -1053,6 +1063,7 @@
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "SI")])
 
 (define_insn "sse_cvttss2siq"
@@ -1066,6 +1077,7 @@
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "sse2_cvtdq2ps"
@@ -1074,7 +1086,7 @@
   "TARGET_SSE2"
   "cvtdq2ps\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
-   (set_attr "mode" "V2DF")])
+   (set_attr "mode" "V4SF")])
 
 (define_insn "sse2_cvtps2dq"
   [(set (match_operand:V4SI 0 "register_operand" "=x")
@@ -1083,6 +1095,7 @@
   "TARGET_SSE2"
   "cvtps2dq\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_cvttps2dq"
@@ -1091,6 +1104,7 @@
   "TARGET_SSE2"
   "cvttps2dq\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "TI")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1176,6 +1190,7 @@
   "TARGET_SSE3"
   "movshdup\t{%1, %0|%0, %1}"
   [(set_attr "type" "sse")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "V4SF")])
 
 (define_insn "sse3_movsldup"
@@ -1191,6 +1206,7 @@
   "TARGET_SSE3"
   "movsldup\t{%1, %0|%0, %1}"
   [(set_attr "type" "sse")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "V4SF")])
 
 (define_expand "sse_shufps"
@@ -1923,6 +1939,7 @@
   "cvtpd2pi\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "unit" "mmx")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "sse2_cvttpd2pi"
@@ -1932,6 +1949,7 @@
   "cvttpd2pi\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "unit" "mmx")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_cvtsi2sd"
@@ -1973,6 +1991,7 @@
   "cvtsd2si\t{%1, %0|%0, %1}"
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "SI")])
 
 (define_insn "sse2_cvtsd2si_2"
@@ -1984,6 +2003,7 @@
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "SI")])
 
 (define_insn "sse2_cvtsd2siq"
@@ -1997,6 +2017,7 @@
   "cvtsd2siq\t{%1, %0|%0, %1}"
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "sse2_cvtsd2siq_2"
@@ -2008,6 +2029,7 @@
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "sse2_cvttsd2si"
@@ -2019,6 +2041,7 @@
   "TARGET_SSE2"
   "cvttsd2si\t{%1, %0|%0, %1}"
   [(set_attr "type" "sseicvt")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "SI")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")])
@@ -2032,6 +2055,7 @@
   "TARGET_SSE2 && TARGET_64BIT"
   "cvttsd2siq\t{%1, %0|%0, %1}"
   [(set_attr "type" "sseicvt")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "DI")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")])
@@ -2065,6 +2089,7 @@
   "TARGET_SSE2"
   "cvtpd2dq\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "TI")
    (set_attr "amdfam10_decode" "double")])
 
@@ -2084,6 +2109,7 @@
   "TARGET_SSE2"
   "cvttpd2dq\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "TI")
    (set_attr "amdfam10_decode" "double")])
 
@@ -2135,6 +2161,7 @@
   "TARGET_SSE2"
   "cvtpd2ps\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "V4SF")
    (set_attr "amdfam10_decode" "double")])
 
@@ -2472,7 +2499,7 @@
   "TARGET_SSE2"
   "unpcklpd\t%0, %0"
   [(set_attr "type" "sselog1")
-   (set_attr "mode" "V4SF")])
+   (set_attr "mode" "V2DF")])
 
 (define_insn "*vec_concatv2df_sse3"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
@@ -2559,6 +2586,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (PLUS, <MODE>mode, operands)"
   "padd<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_ssadd<mode>3"
@@ -2569,6 +2597,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (SS_PLUS, <MODE>mode, operands)"
   "padds<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_usadd<mode>3"
@@ -2579,6 +2608,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (US_PLUS, <MODE>mode, operands)"
   "paddus<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "sub<mode>3"
@@ -2596,6 +2626,7 @@
   "TARGET_SSE2"
   "psub<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_sssub<mode>3"
@@ -2606,6 +2637,7 @@
   "TARGET_SSE2"
   "psubs<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_ussub<mode>3"
@@ -2616,6 +2648,7 @@
   "TARGET_SSE2"
   "psubus<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "mulv16qi3"
@@ -2676,6 +2709,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (MULT, V8HImode, operands)"
   "pmullw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseimul")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "smulv8hi3_highpart"
@@ -2704,6 +2738,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (MULT, V8HImode, operands)"
   "pmulhw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseimul")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "umulv8hi3_highpart"
@@ -2732,6 +2767,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (MULT, V8HImode, operands)"
   "pmulhuw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseimul")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_umulv2siv2di3"
@@ -2748,6 +2784,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (MULT, V4SImode, operands)"
   "pmuludq\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseimul")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_pmaddwd"
@@ -2784,6 +2821,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (MULT, V8HImode, operands)"
   "pmaddwd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "mulv4si3"
@@ -3082,6 +3120,7 @@
   "TARGET_SSE2"
   "psra<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseishft")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "lshr<mode>3"
@@ -3092,6 +3131,7 @@
   "TARGET_SSE2"
   "psrl<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseishft")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "ashl<mode>3"
@@ -3102,6 +3142,7 @@
   "TARGET_SSE2"
   "psll<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseishft")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_ashlti3"
@@ -3114,6 +3155,7 @@
   return "pslldq\t{%2, %0|%0, %2}";
 }
   [(set_attr "type" "sseishft")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "vec_shl_<mode>"
@@ -3138,6 +3180,7 @@
   return "psrldq\t{%2, %0|%0, %2}";
 }
   [(set_attr "type" "sseishft")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "vec_shr_<mode>"
@@ -3166,6 +3209,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (UMAX, V16QImode, operands)"
   "pmaxub\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "smaxv8hi3"
@@ -3182,6 +3226,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (SMAX, V8HImode, operands)"
   "pmaxsw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "umaxv8hi3"
@@ -3251,6 +3296,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (UMIN, V16QImode, operands)"
   "pminub\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "sminv8hi3"
@@ -3267,6 +3313,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (SMIN, V8HImode, operands)"
   "pminsw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "smin<mode>3"
@@ -3323,6 +3370,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (EQ, <MODE>mode, operands)"
   "pcmpeq<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "ssecmp")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_gt<mode>3"
@@ -3333,6 +3381,7 @@
   "TARGET_SSE2"
   "pcmpgt<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "ssecmp")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "vcond<mode>"
@@ -3403,6 +3452,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (AND, <MODE>mode, operands)"
   "pand\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_nand<mode>3"
@@ -3413,6 +3463,7 @@
   "TARGET_SSE2"
   "pandn\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "ior<mode>3"
@@ -3430,6 +3481,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (IOR, <MODE>mode, operands)"
   "por\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "xor<mode>3"
@@ -3447,6 +3499,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (XOR, <MODE>mode, operands)"
   "pxor\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -3686,6 +3739,7 @@
   "TARGET_SSE2"
   "packsswb\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_packssdw"
@@ -3698,6 +3752,7 @@
   "TARGET_SSE2"
   "packssdw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_packuswb"
@@ -3710,6 +3765,7 @@
   "TARGET_SSE2"
   "packuswb\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_punpckhbw"
@@ -3729,6 +3785,7 @@
   "TARGET_SSE2"
   "punpckhbw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_punpcklbw"
@@ -3748,6 +3805,7 @@
   "TARGET_SSE2"
   "punpcklbw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_punpckhwd"
@@ -3763,6 +3821,7 @@
   "TARGET_SSE2"
   "punpckhwd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_punpcklwd"
@@ -3778,6 +3837,7 @@
   "TARGET_SSE2"
   "punpcklwd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_punpckhdq"
@@ -3791,6 +3851,7 @@
   "TARGET_SSE2"
   "punpckhdq\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_punpckldq"
@@ -3804,6 +3865,7 @@
   "TARGET_SSE2"
   "punpckldq\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_punpckhqdq"
@@ -3817,6 +3879,7 @@
   "TARGET_SSE2"
   "punpckhqdq\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_punpcklqdq"
@@ -3830,6 +3893,7 @@
   "TARGET_SSE2"
   "punpcklqdq\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "*sse2_pinsrw"
@@ -3845,6 +3909,7 @@
   return "pinsrw\t{%3, %k2, %0|%0, %k2, %3}";
 }
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "*sse2_pextrw"
@@ -3856,6 +3921,7 @@
   "TARGET_SSE2"
   "pextrw\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "sse2_pshufd"
@@ -3893,6 +3959,7 @@
   return "pshufd\t{%2, %1, %0|%0, %1, %2}";
 }
   [(set_attr "type" "sselog1")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "sse2_pshuflw"
@@ -3934,6 +4001,7 @@
   return "pshuflw\t{%2, %1, %0|%0, %1, %2}";
 }
   [(set_attr "type" "sselog")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "sse2_pshufhw"
@@ -3975,6 +4043,7 @@
   return "pshufhw\t{%2, %1, %0|%0, %1, %2}";
 }
   [(set_attr "type" "sselog")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "sse2_loadd"
@@ -4428,6 +4497,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (PLUS, V16QImode, operands)"
   "pavgb\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_uavgv8hi3"
@@ -4448,6 +4518,7 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (PLUS, V8HImode, operands)"
   "pavgw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 ;; The correct representation for this is absolutely enormous, and 
@@ -4460,6 +4531,7 @@
   "TARGET_SSE2"
   "psadbw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse_movmskps"
@@ -4487,7 +4559,8 @@
   "TARGET_SSE2"
   "pmovmskb\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
-   (set_attr "mode" "V2DF")])
+   (set_attr "prefix_data16" "1")
+   (set_attr "mode" "SI")])
 
 (define_expand "sse2_maskmovdqu"
   [(set (match_operand:V16QI 0 "memory_operand" "")
@@ -4508,6 +4581,7 @@
   ;; @@@ check ordering of operands in intel/nonintel syntax
   "maskmovdqu\t{%2, %1|%1, %2}"
   [(set_attr "type" "ssecvt")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "*sse2_maskmovdqu_rex64"
@@ -4520,6 +4594,7 @@
   ;; @@@ check ordering of operands in intel/nonintel syntax
   "maskmovdqu\t{%2, %1|%1, %2}"
   [(set_attr "type" "ssecvt")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse_ldmxcsr"
@@ -4670,6 +4745,8 @@
   "TARGET_SSSE3"
   "phaddw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "ssse3_phaddwv4hi3"
@@ -4696,6 +4773,7 @@
   "TARGET_SSSE3"
   "phaddw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "ssse3_phadddv4si3"
@@ -4722,6 +4800,8 @@
   "TARGET_SSSE3"
   "phaddd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "ssse3_phadddv2si3"
@@ -4740,6 +4820,7 @@
   "TARGET_SSSE3"
   "phaddd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "ssse3_phaddswv8hi3"
@@ -4782,6 +4863,8 @@
   "TARGET_SSSE3"
   "phaddsw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "ssse3_phaddswv4hi3"
@@ -4808,6 +4891,7 @@
   "TARGET_SSSE3"
   "phaddsw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "ssse3_phsubwv8hi3"
@@ -4850,6 +4934,8 @@
   "TARGET_SSSE3"
   "phsubw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "ssse3_phsubwv4hi3"
@@ -4876,6 +4962,7 @@
   "TARGET_SSSE3"
   "phsubw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "ssse3_phsubdv4si3"
@@ -4902,6 +4989,8 @@
   "TARGET_SSSE3"
   "phsubd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "ssse3_phsubdv2si3"
@@ -4920,6 +5009,7 @@
   "TARGET_SSSE3"
   "phsubd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "ssse3_phsubswv8hi3"
@@ -4962,6 +5052,8 @@
   "TARGET_SSSE3"
   "phsubsw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "ssse3_phsubswv4hi3"
@@ -4988,6 +5080,7 @@
   "TARGET_SSSE3"
   "phsubsw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "ssse3_pmaddubswv8hi3"
@@ -5040,6 +5133,8 @@
   "TARGET_SSSE3"
   "pmaddubsw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "ssse3_pmaddubswv4hi3"
@@ -5076,6 +5171,7 @@
   "TARGET_SSSE3"
   "pmaddubsw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "ssse3_pmulhrswv8hi3"
@@ -5098,6 +5194,8 @@
   "TARGET_SSSE3 && ix86_binary_operator_ok (MULT, V8HImode, operands)"
   "pmulhrsw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseimul")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "ssse3_pmulhrswv4hi3"
@@ -5118,6 +5216,7 @@
   "TARGET_SSSE3 && ix86_binary_operator_ok (MULT, V4HImode, operands)"
   "pmulhrsw\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseimul")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "ssse3_pshufbv16qi3"
@@ -5128,6 +5227,8 @@
   "TARGET_SSSE3"
   "pshufb\t{%2, %0|%0, %2}";
   [(set_attr "type" "sselog1")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "ssse3_pshufbv8qi3"
@@ -5138,6 +5239,7 @@
   "TARGET_SSSE3"
   "pshufb\t{%2, %0|%0, %2}";
   [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "ssse3_psign<mode>3"
@@ -5148,6 +5250,8 @@
   "TARGET_SSSE3"
   "psign<ssevecsize>\t{%2, %0|%0, %2}";
   [(set_attr "type" "sselog1")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "ssse3_psign<mode>3"
@@ -5158,6 +5262,7 @@
   "TARGET_SSSE3"
   "psign<mmxvecsize>\t{%2, %0|%0, %2}";
   [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "ssse3_palignrti"
@@ -5172,6 +5277,8 @@
   return "palignr\t{%3, %2, %0|%0, %2, %3}";
 }
   [(set_attr "type" "sseishft")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "ssse3_palignrdi"
@@ -5186,6 +5293,7 @@
   return "palignr\t{%3, %2, %0|%0, %2, %3}";
 }
   [(set_attr "type" "sseishft")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "DI")])
 
 (define_insn "abs<mode>2"
@@ -5194,6 +5302,8 @@
   "TARGET_SSSE3"
   "pabs<ssevecsize>\t{%1, %0|%0, %1}";
   [(set_attr "type" "sselog1")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "abs<mode>2"
@@ -5202,6 +5312,7 @@
   "TARGET_SSSE3"
   "pabs<mmxvecsize>\t{%1, %0|%0, %1}";
   [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
    (set_attr "mode" "DI")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -5259,6 +5370,7 @@
   "TARGET_SSE4A"
   "extrq\t{%3, %2, %0|%0, %2, %3}"
   [(set_attr "type" "sse")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse4a_extrq"
@@ -5269,6 +5381,7 @@
   "TARGET_SSE4A"
   "extrq\t{%2, %0|%0, %2}"
   [(set_attr "type" "sse")
+   (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse4a_insertqi"
@@ -5281,6 +5394,7 @@
   "TARGET_SSE4A"
   "insertq\t{%4, %3, %2, %0|%0, %2, %3, %4}"
   [(set_attr "type" "sseins")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "sse4a_insertq"
@@ -5291,4 +5405,5 @@
   "TARGET_SSE4A"
   "insertq\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseins")
+   (set_attr "prefix_rep" "1")
    (set_attr "mode" "TI")])

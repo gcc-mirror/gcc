@@ -1,3 +1,115 @@
+2007-04-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (prefix_extra): New attribute.
+	(length): Add prefix_extra.
+
+	* onfig/i386/sse.md (sse2_movdqu): Set prefix_data16.
+	(sse2_movntv2di): Likewise.
+	(sse2_cvtps2dq): Likewise.
+	(sse2_cvtpd2pi): Likewise.
+	(sse2_cvttpd2pi): Likewise.
+	(*sse2_cvtpd2ps): Likewise.
+	(*add<mode>3): Likewise.
+	(sse2_ssadd<mode>3): Likewise.
+	(sse2_usadd<mode>3): Likewise.
+	(*sub<mode>3): Likewise.
+	(sse2_sssub<mode>3): Likewise.
+	(sse2_ussub<mode>3): Likewise.
+	(*mulv8hi3): Likewise.
+	(*smulv8hi3_highpart): Likewise.
+	(*umulv8hi3_highpart): Likewise.
+	(sse2_umulv2siv2di3): Likewise.
+	(sse2_pmaddwd): Likewise.
+	(ashr<mode>3): Likewise.
+	(lshr<mode>3): Likewise.
+	(ashl<mode>3): Likewise.
+	(sse2_ashlti3): Likewise.
+	(sse2_lshrti3): Likewise.
+	(*umaxv16qi3): Likewise.
+	(*smaxv8hi3): Likewise.
+	(*uminv16qi3): Likewise.
+	(*sminv8hi3): Likewise.
+	(sse2_eq<mode>3): Likewise.
+	(sse2_gt<mode>3): Likewise.
+	(*and<mode>3): Likewise.
+	(sse2_nand<mode>3): Likewise.
+	(*ior<mode>3): Likewise.
+	(*xor<mode>3): Likewise.
+	(sse2_packsswb): Likewise.
+	(sse2_packssdw): Likewise.
+	(sse2_packuswb): Likewise.
+	(sse2_punpckhbw): Likewise.
+	(sse2_punpcklbw): Likewise.
+	(sse2_punpckhwd): Likewise.
+	(sse2_punpcklwd): Likewise.
+	(sse2_punpckhdq): Likewise.
+	(sse2_punpckldq): Likewise.
+	(sse2_punpckhqdq): Likewise.
+	(sse2_punpcklqdq): Likewise.
+	(*sse2_pinsrw): Likewise.
+	(*sse2_pextrw): Likewise.
+	(sse2_pshufd_1): Likewise.
+	(sse2_uavgv16qi3): Likewise.
+	(sse2_uavgv8hi3): Likewise.
+	(sse2_psadbw): Likewise.
+	(sse2_pmovmskb): Likewise.
+	(*sse2_maskmovdqu): Likewise.
+	(*sse2_maskmovdqu_rex64): Likewise.
+	(sse4a_extrqi): Likewise.
+	(sse4a_extrq): Likewise.
+	(sse3_lddqu): Set prefix_rep.
+	(sse3_addsubv4sf3): Likewise.
+	(sse3_haddv4sf3): Likewise.
+	(sse3_hsubv4sf3): Likewise.
+	(sse_cvtss2si): Likewise.
+	(sse_cvtss2si_2): Likewise.
+	(sse_cvtss2siq): Likewise.
+	(sse_cvtss2siq_2): Likewise.
+	(sse_cvttss2si): Likewise.
+	(sse_cvttss2siq): Likewise.
+	(sse2_cvttps2dq): Likewise.
+	(sse3_movshdup): Likewise.
+	(sse3_movsldup): Likewise.
+	(sse2_cvtsd2si): Likewise.
+	(sse2_cvtsd2si_2): Likewise.
+	(sse2_cvtsd2siq): Likewise.
+	(sse2_cvtsd2siq_2): Likewise.
+	(sse2_cvttsd2si): Likewise.
+	(sse2_cvttsd2siq): Likewise.
+	(*sse2_cvtpd2dq): Likewise.
+	(*sse2_cvttpd2dq): Likewise.
+	(sse2_pshuflw_1): Likewise.
+	(sse2_pshufhw_1): Likewise.
+	(sse4a_insertqi): Likewise.
+	(sse4a_insertq): Likewise.
+	(ssse3_phaddwv8hi3): Set prefix_data16 and prefix_extra.
+	(ssse3_phadddv4si3): Likewise.
+	(ssse3_phaddswv8hi3): Likewise.
+	(ssse3_phsubwv8hi3): Likewise.
+	(ssse3_phsubdv4si3): Likewise.
+	(ssse3_phsubswv8hi3): Likewise.
+	(ssse3_pmaddubswv8hi3): Likewise.
+	(ssse3_pmulhrswv8hi3): Likewise.
+	(ssse3_pshufbv16qi3): Likewise.
+	(ssse3_psign<mode>3): Likewise.
+	(ssse3_palignrti): Likewise.
+	(abs<mode>2): Likewise.
+	(ssse3_phaddwv4hi3): Set prefix_extra.
+	(ssse3_phadddv2si3): Likewise.
+	(ssse3_phaddswv4hi3): Likewise.
+	(ssse3_phsubwv4hi3): Likewise.
+	(ssse3_phsubdv2si3): Likewise.
+	(ssse3_phsubswv4hi3): Likewise.
+	(ssse3_pmaddubswv4hi3): Likewise.
+	(ssse3_pmulhrswv4hi3): Likewise.
+	(ssse3_pshufbv8qi3): Likewise.
+	(ssse3_psign<mode>3): Likewise.
+	(ssse3_palignrdi): Likewise.
+	(abs<mode>2): Likewise.
+	(sse2_cvtdq2ps): Set mode to V4SF instead of V2DF.
+	(*vec_dupv2df): Set mode to V2DF instead of V4SF.
+	(sse2_pmovmskb): Set mode to SI instead of V2DF.
+
 2007-04-23  Nick Clifton  <nickc@redhat.com>
 
 	* params.def: Fix formatting of emacs local variables.
