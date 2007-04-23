@@ -1,3 +1,7 @@
+2007-04-23  Nick Clifton  <nickc@redhat.com>
+
+	* c.opt (Wformat-contains-nul): Add warning attribute.
+
 2007-04-23  Jan Hubicka  <jh@suse.cz>
 
 	* function.c (init_function_start): Don't init line number info.
