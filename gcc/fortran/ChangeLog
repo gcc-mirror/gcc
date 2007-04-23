@@ -1,3 +1,14 @@
+2007-04-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31630
+	* resolve.c (resolve_symbol): Allow resolution of formal
+	namespaces nested within formal namespaces coming from modules.
+
+	PR fortran/31620
+	* trans-expr.c (gfc_trans_assignment): Make the call to
+	gfc_trans_zero_assign conditional on the lhs array ref being
+	the only reference.
+
 2007-04-23  Tobias Burnus  <burnus@net-b.de>
 
 	* primary.c (match_integer_constant): Mention -fno-range-check

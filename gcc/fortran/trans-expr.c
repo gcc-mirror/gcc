@@ -3943,6 +3943,7 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
   if (expr1->expr_type == EXPR_VARIABLE
       && expr1->rank > 0
       && expr1->ref
+      && expr1->ref->next == NULL
       && gfc_full_array_ref_p (expr1->ref)
       && is_zero_initializer_p (expr2))
     {
