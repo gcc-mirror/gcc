@@ -1,3 +1,10 @@
+2007-04-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (sse2_stored): Don't split to inter-unit
+	move if inter-unit move isn't allowed.
+	Don't split moving the first element of V2DI to DI to inter-unit
+	move if inter-unit move isn't allowed.
+
 2007-04-23  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sink.c (execute_sink_code): Calculate CDI_DOMINATORS

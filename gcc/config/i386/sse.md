@@ -4010,7 +4010,10 @@
 	  (parallel [(const_int 0)])))]
   "TARGET_SSE"
   "#"
-  "&& reload_completed"
+  "&& reload_completed
+   && (TARGET_INTER_UNIT_MOVES 
+       || MEM_P (operands [0])
+       || !GENERAL_REGNO_P (true_regnum (operands [0])))"
   [(set (match_dup 0) (match_dup 1))]
 {
   operands[1] = gen_rtx_REG (SImode, REGNO (operands[1]));
@@ -4045,7 +4048,11 @@
 	(vec_select:DI
 	  (match_operand:V2DI 1 "register_operand" "")
 	  (parallel [(const_int 0)])))]
-  "TARGET_SSE && reload_completed"
+  "TARGET_SSE
+   && reload_completed
+   && (TARGET_INTER_UNIT_MOVES 
+       || MEM_P (operands [0])
+       || !GENERAL_REGNO_P (true_regnum (operands [0])))"
   [(set (match_dup 0) (match_dup 1))]
 {
   operands[1] = gen_rtx_REG (DImode, REGNO (operands[1]));
