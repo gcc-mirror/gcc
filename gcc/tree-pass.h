@@ -329,7 +329,6 @@ extern struct tree_opt_pass pass_fixup_cfg;
 
 extern struct tree_opt_pass pass_init_function;
 extern struct tree_opt_pass pass_jump;
-extern struct tree_opt_pass pass_insn_locators_initialize;
 extern struct tree_opt_pass pass_rtl_eh;
 extern struct tree_opt_pass pass_initial_value_sets;
 extern struct tree_opt_pass pass_unshare_all_rtl;
