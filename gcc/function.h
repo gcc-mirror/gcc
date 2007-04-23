@@ -347,9 +347,6 @@ struct function GTY(())
   /* Line number of the end of the function.  */
   location_t function_end_locus;
 
-  /* Array mapping insn uids to blocks.  */
-  VEC(tree,gc) *ib_boundaries_block;
-
   /* The variables unexpanded so far.  */
   tree unexpanded_var_list;
 
@@ -552,11 +549,6 @@ extern void number_blocks (tree);
 
 extern void clear_block_marks (tree);
 extern tree blocks_nreverse (tree);
-extern void reset_block_changes (void);
-extern void record_block_change (tree);
-extern void finalize_block_changes (void);
-extern void check_block_change (rtx, tree *);
-extern void free_block_changes (void);
 
 /* Return size needed for stack frame based on slots so far allocated.
    This size counts from zero.  It is not rounded to STACK_BOUNDARY;

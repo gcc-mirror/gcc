@@ -1117,7 +1117,6 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count,
   new_cfun->unexpanded_var_list = NULL;
   new_cfun->cfg = NULL;
   new_cfun->decl = new_fndecl /*= copy_node (callee_fndecl)*/;
-  new_cfun->ib_boundaries_block = NULL;
   DECL_STRUCT_FUNCTION (new_fndecl) = new_cfun;
   push_cfun (new_cfun);
   init_empty_tree_cfg ();
