@@ -1085,5 +1085,6 @@ GC_API void GC_register_has_static_roots_callback
   && !defined(GC_WIN32_THREADS) && !defined(GC_DARWIN_THREADS)
 GC_API void GC_suspend_thread GC_PROTO((pthread_t));
 GC_API void GC_resume_thread GC_PROTO((pthread_t));
+GC_API int GC_is_thread_suspended GC_PROTO((pthread_t));
 #endif
 #endif /* _GC_H */

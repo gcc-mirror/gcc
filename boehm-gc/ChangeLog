@@ -1,3 +1,8 @@
+2007-04-23  Keith Seitz  <keiths@redhat.com>
+
+	* include/gc.h (GC_is_thread_suspended): Declare.
+	* pthread_stop_world.c (GC_is_thread_suspended): New function.
+
 2007-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac (NO_EXECUTE_PERMISSION): Set by default.
