@@ -1,3 +1,8 @@
+2007-04-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/31618
+	* gfortran.dg/backspace_8.f:  New test case.
+
 2007-04-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31630
