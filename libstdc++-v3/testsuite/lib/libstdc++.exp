@@ -171,31 +171,47 @@ proc libstdc++_init { testfile } {
 	set compiler [transform "g++"]
     }
 
-    # Do a bunch of handstands and backflips for cross compiling and
-    # finding simulators...
+    # Default settings.
+    set cxx [transform "g++"]
+    set cxxflags "-g -O2 -D_GLIBCXX_ASSERT -fmessage-length=0" 
+    set cxxldflags ""
+    # Locate testsuite_hooks.h and other testsuite headers.
+    set includes "-I${srcdir}/util"
+    # Adapt the defaults for special circumstances.
     if [is_remote host] {
-        set header [remote_download host ${blddir}/testsuite/util/testsuite_hooks.h]
-        if { $header == "" } {
-            verbose -log "Unable to download ${blddir}/testsuite/util/testsuite_hooks.h to host."
-            return "untested"
-        }
-      set cxx [transform "g++"]
-      set cxxflags "-ggdb3"
-      set cxxldflags ""
-      set includes "-I./"
-    } else {
+	# A remote host does not, in general, have access to the
+	# $srcdir so we copy the testsuite headers into the current
+	# directory, and then add that to the search path.
+	foreach src [glob "${srcdir}/util/*.h" \
+		          "${srcdir}/util/*.cc" \
+ 		          "${srcdir}/util/*/*.hpp" \
+		          "${srcdir}/util/*/*.cc" \
+			  "${srcdir}/util/*/*.hpp" \
+		          "${srcdir}/util/*/*/*.cc" \
+			  "${srcdir}/util/*/*/*.hpp" \
+		          "${srcdir}/util/*/*/*/*.cc" \
+  			  "${srcdir}/util/*/*/*/*.hpp" \
+		          "${srcdir}/util/*/*/*/*/*.cc" \
+  			  "${srcdir}/util/*/*/*/*/*.hpp" ] {
+	    # Remove everything up to "util/..."
+	    set dst [string range $src [string length "${srcdir}/"] end]
+	    # Create the directory containing the file.
+	    set dir [file dirname $dst]
+	    remote_exec host "mkdir" [list "-p" "$dir"]
+	    # Download teh file.
+	    set result [remote_download host $src $dst]
+	    if { $result == "" } {
+		verbose -log "Unable to download ${srcdir}/${f} to host."
+		return "untested"
+	    }
+	}
+	set includes "-Iutil"
+    } elseif { [file exists $flags_file] } {
         # If we find a testsuite_flags file, we're testing in the build dir.
-        if { [file exists $flags_file] } {
-            set cxx [exec sh $flags_file --build-cxx]
-            set cxxflags [exec sh $flags_file --cxxflags]
-            set cxxldflags [exec sh $flags_file --cxxldflags]
-            set includes [exec sh $flags_file --build-includes]
-        } else {
-            set cxx [transform "g++"]
-            set cxxldflags ""
-            set cxxflags "-g -O2 -D_GLIBCXX_ASSERT -fmessage-length=0" 
-            set includes "-I${srcdir}/util"
-        }
+	set cxx [exec sh $flags_file --build-cxx]
+	set cxxflags [exec sh $flags_file --cxxflags]
+        set cxxldflags [exec sh $flags_file --cxxldflags]
+	set includes [exec sh $flags_file --build-includes]
     }
 
     # Always use MO files built by this test harness.
@@ -376,11 +392,16 @@ proc v3_target_compile_as_c { source dest type options } {
 
     # This is needed for "C" tests, as this type of test may need the
     # C++ includes. And if we're not testing in the build directory,
-    # the includes variable is not likely to include the necessary info.
+    # the includes variable is not likely to include the necessary
+    # info.
     if { ![file exists $flags_file] } {
-	set version [exec ${cc} -dumpversion]
-	set machine [exec ${cc} -dumpmachine]
-	set comp_base_dir [file dirname [file dirname [file dirname [file dirname [file dirname [exec ${cc} --print-prog-name=cc1]]]]]]
+	set version [remote_exec host ${cc} -dumpversion]
+	set version [lindex $version 1]
+	set machine [remote_exec exec ${cc} -dumpmachine]
+	set machine [lindex $machine 1]
+	set comp_base_dir [remote_exec host ${cc} --print-prog-name=cc1]
+	set comp_base_dir [lindex $comp_base_dir 1]
+	set comp_base_dir [file dirname [file dirname [file dirname [file dirname [file dirname $comp_base_dir]]]]]
 	set includesbase "${comp_base_dir}/include/c++/${version}"
 	set includestarget "${includesbase}/${machine}"
 	set cc_final [concat $cc_final "-I$includesbase -I$includestarget"]
