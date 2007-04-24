@@ -5411,6 +5411,7 @@ void
 init_optabs (void)
 {
   unsigned int i;
+  enum machine_mode int_mode;
 
   /* Start by initializing all tables to contain CODE_FOR_nothing.  */
 
@@ -5620,6 +5621,11 @@ init_optabs (void)
   /* Fill in the optabs with the insns we support.  */
   init_all_optabs ();
 
+  /* The ffs function operates on `int'.  Fall back on it if we do not
+     have a libgcc2 function for that width.  */
+  int_mode = mode_for_size (INT_TYPE_SIZE, MODE_INT, 0);
+  ffs_optab->handlers[(int) int_mode].libfunc = init_one_libfunc ("ffs");
+
   /* Initialize the optabs with the names of the library functions.  */
   init_integral_libfuncs (add_optab, "add", '3');
   init_floating_libfuncs (add_optab, "add", '3');
@@ -5730,10 +5736,6 @@ init_optabs (void)
   if (complex_double_type_node)
     abs_optab->handlers[TYPE_MODE (complex_double_type_node)].libfunc
       = init_one_libfunc ("cabs");
-
-  /* The ffs function operates on `int'.  */
-  ffs_optab->handlers[(int) mode_for_size (INT_TYPE_SIZE, MODE_INT, 0)].libfunc
-    = init_one_libfunc ("ffs");
 
   abort_libfunc = init_one_libfunc ("abort");
   memcpy_libfunc = init_one_libfunc ("memcpy");

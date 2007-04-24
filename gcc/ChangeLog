@@ -1,3 +1,8 @@
+2007-04-24  Richard Sandiford  <richard@codesourcery.com>
+
+	* optabs.c (set_conv_libfunc): Prefer libgcc2's __ffsMM2 functions
+	over an external ffs function.
+
 2007-04-24  Chao-ying Fu  <fu@mips.com>
 	    Richard Sandiford  <richard@nildram.co.uk>
 
