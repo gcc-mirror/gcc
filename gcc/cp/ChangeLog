@@ -1,3 +1,8 @@
+2007-04-24  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/30500
+	* pt.c (instantiate_decl): Set in_system_header.
+
 2007-04-17  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/31517
