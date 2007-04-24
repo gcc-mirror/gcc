@@ -1,4 +1,5 @@
 // PR c++/23667
+// { dg-options "-std=gnu++98" }
 
 template<int dummy>
   struct X
