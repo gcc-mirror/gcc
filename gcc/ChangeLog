@@ -1,3 +1,13 @@
+2007-04-24  Ian Lance Taylor  <iant@google.com>
+
+	PR tree-optimization/31602
+	* tree-ssa-loop-ch.c (copy_loop_headers): Set TREE_NO_WARNING for
+	conditionals in the copied loop header.
+	* tree-cfg.c (fold_cond_expr_cond): Don't issue undefined overflow
+	warnings if TREE_NO_WARNING is set.
+	* doc/invoke.texi (Warning Options): Clarify that
+	-Wstrict-overflow does not warn about loops.
+
 2007-04-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR target/31641

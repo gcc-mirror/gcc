@@ -1,5 +1,5 @@
 /* Loop header copying on trees.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    
 This file is part of GCC.
    
@@ -202,6 +202,27 @@ copy_loop_headers (void)
 	{
 	  fprintf (dump_file, "Duplication failed.\n");
 	  continue;
+	}
+
+      /* If the loop has the form "for (i = j; i < j + 10; i++)" then
+	 this copying can introduce a case where we rely on undefined
+	 signed overflow to eliminate the preheader condition, because
+	 we assume that "j < j + 10" is true.  We don't want to warn
+	 about that case for -Wstrict-overflow, because in general we
+	 don't warn about overflow involving loops.  Prevent the
+	 warning by setting TREE_NO_WARNING.  */
+      if (warn_strict_overflow > 0)
+	{
+	  unsigned int i;
+
+	  for (i = 0; i < n_bbs; ++i)
+	    {
+	      tree last;
+
+	      last = last_stmt (copied_bbs[i]);
+	      if (TREE_CODE (last) == COND_EXPR)
+		TREE_NO_WARNING (last) = 1;
+	    }
 	}
 
       /* Ensure that the latch and the preheader is simple (we know that they

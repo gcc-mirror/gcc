@@ -2849,7 +2849,10 @@ perfectly safe if the values of the variables involved are such that
 overflow never does, in fact, occur.  Therefore this warning can
 easily give a false positive: a warning about code which is not
 actually a problem.  To help focus on important issues, several
-warning levels are defined.
+warning levels are defined.  No warnings are issued for the use of
+undefined signed overflow when estimating how many iterations a loop
+will require, in particular when determining whether a loop will be
+executed at all.
 
 @table @option
 @item -Wstrict-overflow=1
