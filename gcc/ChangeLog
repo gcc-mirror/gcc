@@ -1,3 +1,11 @@
+2007-04-24  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR target/31641
+	* config/s390/s390.c (s390_expand_setmem): Don't ICE for constant length
+	argument of 0 for memset.
+	(s390_expand_movmem, s390_expand_setmem, s390_expand_cmpmem): Use
+	unsigned shift instead of the signed variant.
+
 2007-04-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/31448

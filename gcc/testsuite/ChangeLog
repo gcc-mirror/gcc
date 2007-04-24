@@ -1,3 +1,8 @@
+2007-04-24  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR target/31641
+	* gcc.c-torture/compile/pr31641.c: New testcase.
+
 2007-04-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/31448

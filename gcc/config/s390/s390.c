@@ -3540,7 +3540,7 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
       if (temp != count)
         emit_move_insn (count, temp);
 
-      temp = expand_binop (mode, ashr_optab, count, GEN_INT (8), blocks, 1, 0);
+      temp = expand_binop (mode, lshr_optab, count, GEN_INT (8), blocks, 1, 0);
       if (temp != blocks)
         emit_move_insn (blocks, temp);
 
@@ -3577,10 +3577,12 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
 void
 s390_expand_setmem (rtx dst, rtx len, rtx val)
 {
-  gcc_assert (GET_CODE (len) != CONST_INT || INTVAL (len) > 0);
+  if (GET_CODE (len) == CONST_INT && INTVAL (len) == 0)
+    return;
+
   gcc_assert (GET_CODE (val) == CONST_INT || GET_MODE (val) == QImode);
   
-  if (GET_CODE (len) == CONST_INT && INTVAL (len) <= 257)
+  if (GET_CODE (len) == CONST_INT && INTVAL (len) > 0 && INTVAL (len) <= 257)
     {
       if (val == const0_rtx && INTVAL (len) <= 256)
         emit_insn (gen_clrmem_short (dst, GEN_INT (INTVAL (len) - 1)));
@@ -3654,7 +3656,7 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
       if (temp != count)
         emit_move_insn (count, temp);
 
-      temp = expand_binop (mode, ashr_optab, count, GEN_INT (8), blocks, 1, 0);
+      temp = expand_binop (mode, lshr_optab, count, GEN_INT (8), blocks, 1, 0);
       if (temp != blocks)
         emit_move_insn (blocks, temp);
 
@@ -3746,7 +3748,7 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
       if (temp != count)
         emit_move_insn (count, temp);
 
-      temp = expand_binop (mode, ashr_optab, count, GEN_INT (8), blocks, 1, 0);
+      temp = expand_binop (mode, lshr_optab, count, GEN_INT (8), blocks, 1, 0);
       if (temp != blocks)
         emit_move_insn (blocks, temp);
 
