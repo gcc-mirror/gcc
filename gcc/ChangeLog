@@ -1,5 +1,20 @@
 2007-04-24  Ian Lance Taylor  <iant@google.com>
 
+	PR tree-optimization/31605
+	* tree-vrp.c (set_value_range): Check that min and max are not
+	both overflow infinities.
+	(set_value_range_to_value): New static function.
+	(extract_range_from_binary_expr): Call set_value_range_to_value.
+	(extract_range_from_cond_expr): Likewise.
+	(extract_range_from_expr): Likewise.
+	(extract_range_from_unary_expr): Likewise.  Don't create a range
+	which overflows on both sides.
+	(vrp_meet): Check for a useless range.
+	(vrp_visit_phi_node): If we see a constant which looks like an
+	overflow infinity, turn off the TREE_OVERFLOW flag.
+
+2007-04-24  Ian Lance Taylor  <iant@google.com>
+
 	* flow.c (elim_reg_cond): Handle a comparison of a subreg.
 
 2007-04-24  Simon Martin  <simartin@users.sourceforge.net>
