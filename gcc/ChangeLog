@@ -1,5 +1,13 @@
 2007-04-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	PR target/31641
+	* config/s390/s390.c (s390_expand_setmem): Don't ICE for constant length
+	argument of 0 for memset.
+	(s390_expand_movmem, s390_expand_setmem, s390_expand_cmpmem): Use
+	unsigned shift instead of the signed variant.
+
+2007-04-24  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* config/s390/s390.md ("*cmp<mode>_ccs_0_ibm", "*cmp<mode>_ccs_ibm",
 	"fix_trunc<BFP:mode><GPR:mode>2_ieee", "fix_truncdfsi2_ibm",
 	"floatsidf2_ibm", "floatsisf2", "truncdfsf2_ieee", "truncdfsf2_ibm",
