@@ -1,3 +1,8 @@
+2007-04-24  Hui-May Chang <hm.chang@apple.com>
+
+	* reload1.c (merge_assigned_reloads) : Do not merge a RELOAD_OTHER
+	instruction with a RELOAD_FOR_OPERAND_ADDRESS instruction.
+
 2007-04-24  Richard Guenther  <rguenther@suse.de>
 	    Olga Golovanevsky  <olga@il.ibm.com>
 
