@@ -2836,7 +2836,7 @@ cases that are safe.
 
 @item -Wstrict-overflow
 @item -Wstrict-overflow=@var{n}
-@opindex -Wstrict-overflow
+@opindex Wstrict-overflow
 This option is only active when @option{-fstrict-overflow} is active.
 It warns about cases where the compiler optimizes based on the
 assumption that signed overflow does not occur.  Note that it does not
@@ -5300,7 +5300,7 @@ the loop is entered.  This usually makes programs run more slowly.
 @option{-funroll-loops},
 
 @item -fsplit-ivs-in-unroller
-@opindex -fsplit-ivs-in-unroller
+@opindex fsplit-ivs-in-unroller
 Enables expressing of values of induction variables in later iterations
 of the unrolled loop using the value in the first iteration.  This breaks
 long dependency chains, thus improving efficiency of the scheduling passes.
@@ -5313,7 +5313,7 @@ on some of the architectures due to restrictions in the CSE pass.
 This optimization is enabled by default.
 
 @item -fvariable-expansion-in-unroller
-@opindex -fvariable-expansion-in-unroller
+@opindex fvariable-expansion-in-unroller
 With this option, the compiler will create multiple copies of some
 local variables when unrolling a loop which can result in superior code.
 
@@ -8163,13 +8163,13 @@ the name of the framework and header.h is found in the
 @samp{"PrivateHeaders"} or @samp{"Headers"} directory.
 
 @item -gused
-@opindex -gused
+@opindex gused
 Emit debugging information for symbols that are used.  For STABS
 debugging format, this enables @option{-feliminate-unused-debug-symbols}.
 This is by default ON@.
 
 @item -gfull
-@opindex -gfull
+@opindex gfull
 Emit debugging information for all symbols and types.
 
 @item -mmacosx-version-min=@var{version}
@@ -8191,7 +8191,7 @@ applicable.  This mode also sets @option{-mno-altivec},
 @option{-mlong-branch} for PowerPC targets.
 
 @item -mone-byte-bool
-@opindex -mone-byte-bool
+@opindex mone-byte-bool
 Override the defaults for @samp{bool} so that @samp{sizeof(bool)==1}.
 By default @samp{sizeof(bool)} is @samp{4} when compiling for
 Darwin/PowerPC and @samp{1} when compiling for Darwin/x86, so this
@@ -8240,12 +8240,12 @@ This option specifies the @var{executable} that will be loading the build
 output file being linked.  See man ld(1) for more information.
 
 @item -dynamiclib
-@opindex -dynamiclib
+@opindex dynamiclib
 When passed this option, GCC will produce a dynamic library instead of
 an executable when linking, using the Darwin @file{libtool} command.
 
 @item -force_cpusubtype_ALL
-@opindex -force_cpusubtype_ALL
+@opindex force_cpusubtype_ALL
 This causes GCC's output file to have the @var{ALL} subtype, instead of
 one controlled by the @option{-mcpu} or @option{-march} option.
 
@@ -9951,8 +9951,8 @@ to 64 bits.  These are HP-UX specific flags.
 
 @item -mno-sched-br-data-spec
 @itemx -msched-br-data-spec
-@opindex -mno-sched-br-data-spec
-@opindex -msched-br-data-spec
+@opindex mno-sched-br-data-spec
+@opindex msched-br-data-spec
 (Dis/En)able data speculative scheduling before reload.
 This will result in generation of the ld.a instructions and
 the corresponding check instructions (ld.c / chk.a).
@@ -9960,8 +9960,8 @@ The default is 'disable'.
 
 @item -msched-ar-data-spec
 @itemx -mno-sched-ar-data-spec
-@opindex -msched-ar-data-spec
-@opindex -mno-sched-ar-data-spec
+@opindex msched-ar-data-spec
+@opindex mno-sched-ar-data-spec
 (En/Dis)able data speculative scheduling after reload.
 This will result in generation of the ld.a instructions and
 the corresponding check instructions (ld.c / chk.a).
@@ -9969,8 +9969,8 @@ The default is 'enable'.
 
 @item -mno-sched-control-spec
 @itemx -msched-control-spec
-@opindex -mno-sched-control-spec
-@opindex -msched-control-spec
+@opindex mno-sched-control-spec
+@opindex msched-control-spec
 (Dis/En)able control speculative scheduling.  This feature is
 available only during region scheduling (i.e. before reload).
 This will result in generation of the ld.s instructions and
@@ -9979,8 +9979,8 @@ The default is 'disable'.
 
 @item -msched-br-in-data-spec
 @itemx -mno-sched-br-in-data-spec
-@opindex -msched-br-in-data-spec
-@opindex -mno-sched-br-in-data-spec
+@opindex msched-br-in-data-spec
+@opindex mno-sched-br-in-data-spec
 (En/Dis)able speculative scheduling of the instructions that
 are dependent on the data speculative loads before reload.
 This is effective only with @option{-msched-br-data-spec} enabled.
@@ -9988,8 +9988,8 @@ The default is 'enable'.
 
 @item -msched-ar-in-data-spec
 @itemx -mno-sched-ar-in-data-spec
-@opindex -msched-ar-in-data-spec
-@opindex -mno-sched-ar-in-data-spec
+@opindex msched-ar-in-data-spec
+@opindex mno-sched-ar-in-data-spec
 (En/Dis)able speculative scheduling of the instructions that
 are dependent on the data speculative loads after reload.
 This is effective only with @option{-msched-ar-data-spec} enabled.
@@ -9997,8 +9997,8 @@ The default is 'enable'.
 
 @item -msched-in-control-spec
 @itemx -mno-sched-in-control-spec
-@opindex -msched-in-control-spec
-@opindex -mno-sched-in-control-spec
+@opindex msched-in-control-spec
+@opindex mno-sched-in-control-spec
 (En/Dis)able speculative scheduling of the instructions that
 are dependent on the control speculative loads.
 This is effective only with @option{-msched-control-spec} enabled.
@@ -10006,8 +10006,8 @@ The default is 'enable'.
 
 @item -msched-ldc
 @itemx -mno-sched-ldc
-@opindex -msched-ldc
-@opindex -mno-sched-ldc
+@opindex msched-ldc
+@opindex mno-sched-ldc
 (En/Dis)able use of simple data speculation checks ld.c .
 If disabled, only chk.a instructions will be emitted to check
 data speculative loads.
@@ -10015,8 +10015,8 @@ The default is 'enable'.
 
 @item -mno-sched-control-ldc
 @itemx -msched-control-ldc
-@opindex -mno-sched-control-ldc
-@opindex -msched-control-ldc 
+@opindex mno-sched-control-ldc
+@opindex msched-control-ldc 
 (Dis/En)able use of ld.c instructions to check control speculative loads.
 If enabled, in case of control speculative load with no speculatively
 scheduled dependent instructions this load will be emitted as ld.sa and
@@ -10025,14 +10025,14 @@ The default is 'disable'.
 
 @item -mno-sched-spec-verbose
 @itemx -msched-spec-verbose
-@opindex -mno-sched-spec-verbose
-@opindex -msched-spec-verbose
+@opindex mno-sched-spec-verbose
+@opindex msched-spec-verbose
 (Dis/En)able printing of the information about speculative motions.
 
 @item -mno-sched-prefer-non-data-spec-insns
 @itemx -msched-prefer-non-data-spec-insns
-@opindex -mno-sched-prefer-non-data-spec-insns
-@opindex -msched-prefer-non-data-spec-insns
+@opindex mno-sched-prefer-non-data-spec-insns
+@opindex msched-prefer-non-data-spec-insns
 If enabled, data speculative instructions will be chosen for schedule
 only if there are no other choices at the moment.  This will make
 the use of the data speculation much more conservative.
@@ -10040,8 +10040,8 @@ The default is 'disable'.
 
 @item -mno-sched-prefer-non-control-spec-insns
 @itemx -msched-prefer-non-control-spec-insns
-@opindex -mno-sched-prefer-non-control-spec-insns
-@opindex -msched-prefer-non-control-spec-insns
+@opindex mno-sched-prefer-non-control-spec-insns
+@opindex msched-prefer-non-control-spec-insns
 If enabled, control speculative instructions will be chosen for schedule
 only if there are no other choices at the moment.  This will make
 the use of the control speculation much more conservative.
@@ -10049,8 +10049,8 @@ The default is 'disable'.
 
 @item -mno-sched-count-spec-in-critical-path
 @itemx -msched-count-spec-in-critical-path
-@opindex -mno-sched-count-spec-in-critical-path
-@opindex -msched-count-spec-in-critical-path
+@opindex mno-sched-count-spec-in-critical-path
+@opindex msched-count-spec-in-critical-path
 If enabled, speculative dependencies will be considered during
 computation of the instructions priorities.  This will make the use of the
 speculation a bit more conservative.
@@ -12282,15 +12282,15 @@ These options are defined for Score implementations:
 Compile code for big endian mode.  This is the default.
 
 @item -mel
-@opindex -mel
+@opindex mel
 Compile code for little endian mode. 
 
 @item -mnhwloop
-@opindex -mnhwloop
+@opindex mnhwloop
 Disable generate bcnz instruction.
 
 @item -muls
-@opindex -muls
+@opindex muls
 Enable generate unaligned load and store instruction.
 
 @item -mmac

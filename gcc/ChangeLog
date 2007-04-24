@@ -1,3 +1,7 @@
+2007-04-24  Daniel Franke  <franke.daniel@gmail.com>
+
+	* doc/invoke.texi: Removed leading '-' from option index entries.
+
 2007-04-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/31448
