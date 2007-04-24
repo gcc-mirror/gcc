@@ -1,3 +1,44 @@
+2007-04-24  Jan Hubicka  <j@suse.cz>
+
+	Revert:
+
+	2007-04-23  Jan Hubicka  <jh@suse.cz>
+	* function.c (init_function_start): Don't init line number info.
+	(expand_function_end): Update.
+	(reset_block_changes, record_block_change, finalize_block_changes,
+	check_block_change, free_block_changes): Kill.
+	* function.h (reset_block_changes, record_block_change,
+	finalize_block_changes, check_block_change, free_block_changes): Remove
+	prototypes.
+	(struct function): Remove ib_boundaries_block.
+	* emit-rtl.c (make_insn_raw, make_jump_insn_raw, make_call_insn_raw):
+	Use curr_insn_locator to initialize locator.
+	(emit_line_note): Remove.
+	* cfgexpand.c (expand_gimple_cond_expr): Update.
+	(construct_exit_block): Likewise.
+	(tree_expand_cfg): Initialize/finalize locators.
+	* expr.c (expand_expr_real): Update.
+	* cfglayout.c (line_locators_locs, line_locators_lines,
+	file_locators_locs, file_locators_files): Remove.
+	(set_block_levels): Move to cfgexpand.c.
+	(insn_locators_initialize): Remove.
+	(pass_insn_locators_initialize): Remove.
+	(locations_locators_locs, locations_locators_vals): New static vars.
+	(curr_location, last_location, curr_block, last_block, curr_rtl_loc):
+	Likewise.
+	(insn_locators_alloc, insn_locators_finalize,
+	set_curr_insn_source_location, set_curr_insn_block, curr_insn_locator):
+	New functions.
+	(locator_location): New.
+	(locator_line, locator_file): Rewrite.
+	* rtl.h (emit_line_note): Kill.
+	(insn_locators_alloc, insn_locators_finalize,
+	set_curr_insn_source_location, set_curr_insn_block, curr_insn_locator):
+	Declare.
+	* tree-inline.c (initialize_cfun): Do not initialize
+	ib_boundaries_block.
+	* passes.c (pass_insn_locators_initialize): Remove.
+
 2007-04-24  Daniel Franke  <franke.daniel@gmail.com>
 
 	* doc/invoke.texi: Removed leading '-' from option index entries.

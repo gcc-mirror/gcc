@@ -654,6 +654,7 @@ init_optimization_passes (void)
       struct tree_opt_pass **p = &pass_rest_of_compilation.sub;
       NEXT_PASS (pass_init_function);
       NEXT_PASS (pass_jump);
+      NEXT_PASS (pass_insn_locators_initialize);
       NEXT_PASS (pass_rtl_eh);
       NEXT_PASS (pass_initial_value_sets);
       NEXT_PASS (pass_unshare_all_rtl);
