@@ -1,3 +1,7 @@
+2007-04-24  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/vect/vect.exp: Don't run tests on Alpha.
+
 2007-04-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR target/31641
