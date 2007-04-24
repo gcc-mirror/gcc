@@ -1,3 +1,18 @@
+2007-04-24  Douglas Gregor  <doug.gregor@gmail.com>
+
+       * g++.old-deja/g++.pt/defarg6.C: Only run with
+       -std=gnu++98.
+       * g++.old-deja/g++.pt/ucnid-1.C: Ditto.
+       * g++.dg/cpp0x/variadic61.C: Ditto.
+       * g++.dg/cpp0x/warn_cxx0x.C: Ditto.
+       * g++.dg/cpp0x/variadic62.C: Ditto.
+       * g++.dg/template/meminit1.C: Ditto.
+       * g++.dg/template/operator7.C: Ditto.
+       * g++.dg/template/static15.C: Ditto.
+       * g++.dg/template/invalid1.C: Ditto.
+       * g++.dg/template/shift1.C: Ditto.
+       * g++.dg/template/error10.C: Ditto.
+	
 2007-04-24  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR diagnostic/25923

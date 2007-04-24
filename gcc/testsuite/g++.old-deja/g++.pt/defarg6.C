@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-options "-std=gnu++98" }
 
 template <class T>
 struct C {

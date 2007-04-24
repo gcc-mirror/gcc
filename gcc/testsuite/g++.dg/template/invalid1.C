@@ -1,4 +1,5 @@
 // PR c++/14883
+// { dg-options "-std=gnu++98" }
 
 template < class T > struct DomainTraits {};
 template < int Dim > class Interval;

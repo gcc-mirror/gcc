@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-options "-std=gnu++98" }
 // Origin: <tilps at hotmail dot com>
 // c++/9154: poor error message for ">>" vs "> >" in template argument list
 
