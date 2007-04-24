@@ -1,3 +1,9 @@
+2007-04-24  Richard Guenther  <rguenther@suse.de>
+	    Olga Golovanevsky  <olga@il.ibm.com>
+
+	* fold-const.c (multiple_of_p): Check for bottom 
+	to be zero. 
+
 2007-04-24  Richard Henderson  <rth@redhat.com>
 
 	* libgcc2.h (AVOID_FP_TYPE_CONVERSION): Rename from 

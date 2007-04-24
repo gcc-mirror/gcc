@@ -1,3 +1,8 @@
+2007-04-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+	    Olga Golovanevsky  <olga@il.ibm.com>
+
+	* g++.dg/other/str_empty.C: New test.
+	
 2007-04-24  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/vect/vect.exp: Don't run tests on Alpha.
