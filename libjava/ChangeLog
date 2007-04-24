@@ -1,3 +1,22 @@
+2007-04-24  Keith Seitz  <keiths@redhat.com>
+
+	* headers.txt (gnu/gcj/jvmti/Breakpoint.h)[DIRECT_THREADED]:
+	Add _Jv_RewriteBreakpointInsn friend declaration.
+	* gnu/gcj/jvmti/natBreakpoint.cc (_Jv_RewriteBreakpointInsn)
+	[DIRECT_THREADED]: New function.
+	* gnu/gcj/jvmti/Breakpoint.h: Regenerate.
+	* interpret-run.cc: Define new REWRITE_INSN macro.
+	Changed all occurrences of insn rewriting to call REWRITE_INSN.
+
+2007-04-23  Keith Seitz  <keiths@redhat.com>
+
+	* include/no-gc.h (_Jv_IsThreadSuspended): Declare.
+	* include/boehm-gc.h (_Jv_IsThreadSuspended): Likewise.
+	* boehm.cc (_Jv_IsThreadSuspended): New function.
+	* nogc.cc (_Jv_IsThreadSuspended): Likewise.
+	* jvmti.cc (_Jv_JVMTI_GetThreadState): New function.
+	(_Jv_JVMTI_Interface): Define GetThreadState.
+
 2007-04-23  Kyle Galloway  <kgallowa@redhat.com>
 
 	* include/java-interp.h (_Jv_InterpFrame): Add pointer to the

@@ -359,9 +359,32 @@ details.  */
       goto *((pc++)->insn);						\
     }									\
   while (0)
+
+#undef REWRITE_INSN
+#define REWRITE_INSN(INSN,SLOT,VALUE)					\
+  do {									\
+    if (pc[-2].insn == breakpoint_insn->insn)				\
+      {									\
+	using namespace ::gnu::gcj::jvmti;				\
+	jlocation location = meth->insn_index (pc - 2);			\
+	_Jv_RewriteBreakpointInsn (meth->self, location, (pc_t) INSN);	\
+      }									\
+    else								\
+      pc[-2].insn = INSN;						\
+									\
+    pc[-1].SLOT = VALUE;						\
+  }									\
+  while (0)
+
 #else
 #undef NEXT_INSN
 #define NEXT_INSN goto *((pc++)->insn)
+#define REWRITE_INSN(INSN,SLOT,VALUE)		\
+  do {						\
+    pc[-2].insn = INSN;				\
+    pc[-1].SLOT = VALUE;			\
+  }						\
+  while (0)
 #endif
 
 #define INTVAL() ((pc++)->int_val)
@@ -511,8 +534,7 @@ details.  */
 #ifdef DIRECT_THREADED
 	// Rewrite instruction so that we use a faster pre-resolved
 	// method.
-	pc[-2].insn = &&invokevirtual_resolved;
-	pc[-1].datum = rmeth;
+	REWRITE_INSN (&&invokevirtual_resolved, datum, rmeth);
 #endif /* DIRECT_THREADED */
       }
       goto perform_invoke;
@@ -1846,8 +1868,7 @@ details.  */
 	  }
 
 #ifdef DIRECT_THREADED
-	pc[-2].insn = newinsn;
-	pc[-1].datum = field->u.addr;
+	REWRITE_INSN (newinsn, datum, field->u.addr);
 #endif /* DIRECT_THREADED */
       }
       NEXT_INSN;
@@ -1937,8 +1958,7 @@ details.  */
 	  }
 
 #ifdef DIRECT_THREADED
-	pc[-2].insn = newinsn;
-	pc[-1].int_val = field_offset;
+	REWRITE_INSN (newinsn, int_val, field_offset);
 #endif /* DIRECT_THREADED */
       }
       NEXT_INSN;
@@ -2053,8 +2073,7 @@ details.  */
 	  }
 
 #ifdef DIRECT_THREADED
-	pc[-2].insn = newinsn;
-	pc[-1].datum = field->u.addr;
+	REWRITE_INSN (newinsn, datum, field->u.addr);
 #endif /* DIRECT_THREADED */
       }
       NEXT_INSN;
@@ -2152,8 +2171,7 @@ details.  */
 	  }
 
 #ifdef DIRECT_THREADED
-	pc[-2].insn = newinsn;
-	pc[-1].int_val = field_offset;
+	REWRITE_INSN (newinsn, int_val, field_offset);
 #endif /* DIRECT_THREADED */
       }
       NEXT_INSN;
@@ -2228,8 +2246,7 @@ details.  */
 #ifdef DIRECT_THREADED
 	// Rewrite instruction so that we use a faster pre-resolved
 	// method.
-	pc[-2].insn = &&invokespecial_resolved;
-	pc[-1].datum = rmeth;
+	REWRITE_INSN (&&invokespecial_resolved, datum, rmeth);
 #endif /* DIRECT_THREADED */
       }
       goto perform_invoke;
@@ -2266,8 +2283,7 @@ details.  */
 #ifdef DIRECT_THREADED
 	// Rewrite instruction so that we use a faster pre-resolved
 	// method.
-	pc[-2].insn = &&invokestatic_resolved;
-	pc[-1].datum = rmeth;
+	REWRITE_INSN (&&invokestatic_resolved, datum, rmeth);
 #endif /* DIRECT_THREADED */
       }
       goto perform_invoke;
@@ -2305,8 +2321,7 @@ details.  */
 #ifdef DIRECT_THREADED
 	// Rewrite instruction so that we use a faster pre-resolved
 	// method.
-	pc[-2].insn = &&invokeinterface_resolved;
-	pc[-1].datum = rmeth;
+	REWRITE_INSN (&&invokeinterface_resolved, datum, rmeth);
 #else
 	// Skip dummy bytes.
 	pc += 2;
@@ -2344,8 +2359,7 @@ details.  */
 	PUSHA (res);
 
 #ifdef DIRECT_THREADED
-	pc[-2].insn = &&new_resolved;
-	pc[-1].datum = klass;
+	REWRITE_INSN (&&new_resolved, datum, klass);
 #endif /* DIRECT_THREADED */
       }
       NEXT_INSN;
@@ -2380,8 +2394,7 @@ details.  */
 	PUSHA (result);
 
 #ifdef DIRECT_THREADED
-	pc[-2].insn = &&anewarray_resolved;
-	pc[-1].datum = klass;
+	REWRITE_INSN (&&anewarray_resolved, datum, klass);
 #endif /* DIRECT_THREADED */
       }
       NEXT_INSN;
@@ -2425,8 +2438,7 @@ details.  */
 	PUSHA (value);
 
 #ifdef DIRECT_THREADED
-	pc[-2].insn = &&checkcast_resolved;
-	pc[-1].datum = to;
+	REWRITE_INSN (&&checkcast_resolved, datum, to);
 #endif /* DIRECT_THREADED */
       }
       NEXT_INSN;
@@ -2453,8 +2465,7 @@ details.  */
 	PUSHI (to->isInstance (value));
 
 #ifdef DIRECT_THREADED
-	pc[-2].insn = &&instanceof_resolved;
-	pc[-1].datum = to;
+	REWRITE_INSN (&&instanceof_resolved, datum, to);
 #endif /* DIRECT_THREADED */
       }
       NEXT_INSN;

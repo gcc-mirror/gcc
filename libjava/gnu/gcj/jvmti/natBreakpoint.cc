@@ -17,6 +17,7 @@ details.  */
 #include <jvmti.h>
 
 #include <gnu/gcj/jvmti/Breakpoint.h>
+#include <gnu/gcj/jvmti/BreakpointManager.h>
 
 static _Jv_InterpMethod *
 get_interp_method (jlong method)
@@ -54,3 +55,18 @@ gnu::gcj::jvmti::Breakpoint::remove ()
   _Jv_InterpMethod *imeth = get_interp_method (method);
   imeth->set_insn (location, reinterpret_cast<pc_t> (data));
 }
+
+#ifdef DIRECT_THREADED
+void
+_Jv_RewriteBreakpointInsn (jmethodID mid, jlocation loc, pc_t new_insn)
+{
+  using namespace ::gnu::gcj::jvmti;
+  Breakpoint *bp
+    = BreakpointManager::getBreakpoint (reinterpret_cast<jlong> (mid), loc);
+  if (bp != NULL)
+    {
+      pc_t old_insn = (pc_t) bp->data;
+      old_insn->insn = new_insn;
+    }
+}
+#endif // DIRECT_THREADED
