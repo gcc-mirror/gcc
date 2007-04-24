@@ -39,6 +39,8 @@
 #ifndef _LOCALE_FACETS_NONIO_H
 #define _LOCALE_FACETS_NONIO_H 1
 
+#pragma GCC system_header
+
 #include <ctime>	// For struct tm
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
@@ -1903,7 +1905,14 @@ _GLIBCXX_END_LDBL_NAMESPACE
 
 _GLIBCXX_END_NAMESPACE
 
-  // Include host and configuration specific messages functions.
+// Include host and configuration specific messages functions.
 #include <bits/messages_members.h>
+
+// 22.2.1.5  Template class codecvt
+#include <bits/codecvt.h>
+
+#ifndef _GLIBCXX_EXPORT_TEMPLATE
+# include <bits/locale_facets_nonio.tcc>
+#endif
 
 #endif

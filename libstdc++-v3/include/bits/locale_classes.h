@@ -1,6 +1,7 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+// 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -561,22 +562,270 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _M_install_cache(const facet*, size_t);
   };
 
-  template<typename _Facet>
-    locale::locale(const locale& __other, _Facet* __f)
-    {
-      _M_impl = new _Impl(*__other._M_impl, 1);
 
-      try
-	{ _M_impl->_M_install_facet(&_Facet::id, __f); }
-      catch(...)
-	{
-	  _M_impl->_M_remove_reference();
-	  __throw_exception_again;
-	}
-      delete [] _M_impl->_M_names[0];
-      _M_impl->_M_names[0] = 0;   // Unnamed.
+  /**
+   *  @brief  Test for the presence of a facet.
+   *
+   *  has_facet tests the locale argument for the presence of the facet type
+   *  provided as the template parameter.  Facets derived from the facet
+   *  parameter will also return true.
+   *
+   *  @param  Facet  The facet type to test the presence of.
+   *  @param  locale  The locale to test.
+   *  @return  true if locale contains a facet of type Facet, else false.
+  */
+  template<typename _Facet>
+    inline bool
+    has_facet(const locale& __loc) throw()
+    {
+      const size_t __i = _Facet::id._M_id();
+      const locale::facet** __facets = __loc._M_impl->_M_facets;
+      return (__i < __loc._M_impl->_M_facets_size && __facets[__i]);
     }
 
+  /**
+   *  @brief  Return a facet.
+   *
+   *  use_facet looks for and returns a reference to a facet of type Facet
+   *  where Facet is the template parameter.  If has_facet(locale) is true,
+   *  there is a suitable facet to return.  It throws std::bad_cast if the
+   *  locale doesn't contain a facet of type Facet.
+   *
+   *  @param  Facet  The facet type to access.
+   *  @param  locale  The locale to use.
+   *  @return  Reference to facet of type Facet.
+   *  @throw  std::bad_cast if locale doesn't contain a facet of type Facet.
+  */
+  template<typename _Facet>
+    inline const _Facet&
+    use_facet(const locale& __loc)
+    {
+      const size_t __i = _Facet::id._M_id();
+      const locale::facet** __facets = __loc._M_impl->_M_facets;
+      if (!(__i < __loc._M_impl->_M_facets_size && __facets[__i]))
+        __throw_bad_cast();
+      return static_cast<const _Facet&>(*__facets[__i]);
+    }
+
+
+  /**
+   *  @brief  Facet for localized string comparison.
+   *
+   *  This facet encapsulates the code to compare strings in a localized
+   *  manner.
+   *
+   *  The collate template uses protected virtual functions to provide
+   *  the actual results.  The public accessors forward the call to
+   *  the virtual functions.  These virtual functions are hooks for
+   *  developers to implement the behavior they require from the
+   *  collate facet.
+  */
+  template<typename _CharT>
+    class collate : public locale::facet
+    {
+    public:
+      // Types:
+      //@{
+      /// Public typedefs
+      typedef _CharT			char_type;
+      typedef basic_string<_CharT>	string_type;
+      //@}
+
+    protected:
+      // Underlying "C" library locale information saved from
+      // initialization, needed by collate_byname as well.
+      __c_locale			_M_c_locale_collate;
+
+    public:
+      /// Numpunct facet id.
+      static locale::id			id;
+
+      /**
+       *  @brief  Constructor performs initialization.
+       *
+       *  This is the constructor provided by the standard.
+       *
+       *  @param refs  Passed to the base facet class.
+      */
+      explicit
+      collate(size_t __refs = 0)
+      : facet(__refs), _M_c_locale_collate(_S_get_c_locale())
+      { }
+
+      /**
+       *  @brief  Internal constructor. Not for general use.
+       *
+       *  This is a constructor for use by the library itself to set up new
+       *  locales.
+       *
+       *  @param cloc  The "C" locale.
+       *  @param refs  Passed to the base facet class.
+      */
+      explicit
+      collate(__c_locale __cloc, size_t __refs = 0)
+      : facet(__refs), _M_c_locale_collate(_S_clone_c_locale(__cloc))
+      { }
+
+      /**
+       *  @brief  Compare two strings.
+       *
+       *  This function compares two strings and returns the result by calling
+       *  collate::do_compare().
+       *
+       *  @param lo1  Start of string 1.
+       *  @param hi1  End of string 1.
+       *  @param lo2  Start of string 2.
+       *  @param hi2  End of string 2.
+       *  @return  1 if string1 > string2, -1 if string1 < string2, else 0.
+      */
+      int
+      compare(const _CharT* __lo1, const _CharT* __hi1,
+	      const _CharT* __lo2, const _CharT* __hi2) const
+      { return this->do_compare(__lo1, __hi1, __lo2, __hi2); }
+
+      /**
+       *  @brief  Transform string to comparable form.
+       *
+       *  This function is a wrapper for strxfrm functionality.  It takes the
+       *  input string and returns a modified string that can be directly
+       *  compared to other transformed strings.  In the "C" locale, this
+       *  function just returns a copy of the input string.  In some other
+       *  locales, it may replace two chars with one, change a char for
+       *  another, etc.  It does so by returning collate::do_transform().
+       *
+       *  @param lo  Start of string.
+       *  @param hi  End of string.
+       *  @return  Transformed string_type.
+      */
+      string_type
+      transform(const _CharT* __lo, const _CharT* __hi) const
+      { return this->do_transform(__lo, __hi); }
+
+      /**
+       *  @brief  Return hash of a string.
+       *
+       *  This function computes and returns a hash on the input string.  It
+       *  does so by returning collate::do_hash().
+       *
+       *  @param lo  Start of string.
+       *  @param hi  End of string.
+       *  @return  Hash value.
+      */
+      long
+      hash(const _CharT* __lo, const _CharT* __hi) const
+      { return this->do_hash(__lo, __hi); }
+
+      // Used to abstract out _CharT bits in virtual member functions, below.
+      int
+      _M_compare(const _CharT*, const _CharT*) const;
+
+      size_t
+      _M_transform(_CharT*, const _CharT*, size_t) const;
+
+  protected:
+      /// Destructor.
+      virtual
+      ~collate()
+      { _S_destroy_c_locale(_M_c_locale_collate); }
+
+      /**
+       *  @brief  Compare two strings.
+       *
+       *  This function is a hook for derived classes to change the value
+       *  returned.  @see compare().
+       *
+       *  @param lo1  Start of string 1.
+       *  @param hi1  End of string 1.
+       *  @param lo2  Start of string 2.
+       *  @param hi2  End of string 2.
+       *  @return  1 if string1 > string2, -1 if string1 < string2, else 0.
+      */
+      virtual int
+      do_compare(const _CharT* __lo1, const _CharT* __hi1,
+		 const _CharT* __lo2, const _CharT* __hi2) const;
+
+      /**
+       *  @brief  Transform string to comparable form.
+       *
+       *  This function is a hook for derived classes to change the value
+       *  returned.
+       *
+       *  @param lo1  Start of string 1.
+       *  @param hi1  End of string 1.
+       *  @param lo2  Start of string 2.
+       *  @param hi2  End of string 2.
+       *  @return  1 if string1 > string2, -1 if string1 < string2, else 0.
+      */
+      virtual string_type
+      do_transform(const _CharT* __lo, const _CharT* __hi) const;
+
+      /**
+       *  @brief  Return hash of a string.
+       *
+       *  This function computes and returns a hash on the input string.  This
+       *  function is a hook for derived classes to change the value returned.
+       *
+       *  @param lo  Start of string.
+       *  @param hi  End of string.
+       *  @return  Hash value.
+      */
+      virtual long
+      do_hash(const _CharT* __lo, const _CharT* __hi) const;
+    };
+
+  template<typename _CharT>
+    locale::id collate<_CharT>::id;
+
+  // Specializations.
+  template<>
+    int
+    collate<char>::_M_compare(const char*, const char*) const;
+
+  template<>
+    size_t
+    collate<char>::_M_transform(char*, const char*, size_t) const;
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  template<>
+    int
+    collate<wchar_t>::_M_compare(const wchar_t*, const wchar_t*) const;
+
+  template<>
+    size_t
+    collate<wchar_t>::_M_transform(wchar_t*, const wchar_t*, size_t) const;
+#endif
+
+  /// @brief  class collate_byname [22.2.4.2].
+  template<typename _CharT>
+    class collate_byname : public collate<_CharT>
+    {
+    public:
+      //@{
+      /// Public typedefs
+      typedef _CharT               char_type;
+      typedef basic_string<_CharT> string_type;
+      //@}
+
+      explicit
+      collate_byname(const char* __s, size_t __refs = 0)
+      : collate<_CharT>(__refs)
+      {
+	if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
+	  {
+	    this->_S_destroy_c_locale(this->_M_c_locale_collate);
+	    this->_S_create_c_locale(this->_M_c_locale_collate, __s);
+	  }
+      }
+
+    protected:
+      virtual
+      ~collate_byname() { }
+    };
+
 _GLIBCXX_END_NAMESPACE
+
+#ifndef _GLIBCXX_EXPORT_TEMPLATE
+# include <bits/locale_classes.tcc>
+#endif
 
 #endif

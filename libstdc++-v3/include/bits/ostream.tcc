@@ -332,7 +332,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   extern template ostream& operator<<(ostream&, const char*);
   extern template ostream& operator<<(ostream&, const unsigned char*);
   extern template ostream& operator<<(ostream&, const signed char*);
-  extern template ostream& __ostream_insert(ostream&, const char*, streamsize);
 
   extern template ostream& ostream::_M_insert(long);
   extern template ostream& ostream::_M_insert(unsigned long);
@@ -354,8 +353,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   extern template wostream& operator<<(wostream&, char);
   extern template wostream& operator<<(wostream&, const wchar_t*);
   extern template wostream& operator<<(wostream&, const char*);
-  extern template wostream& __ostream_insert(wostream&, const wchar_t*,
-					     streamsize);
 
   extern template wostream& wostream::_M_insert(long);
   extern template wostream& wostream::_M_insert(unsigned long);

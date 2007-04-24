@@ -89,6 +89,7 @@ bits_headers = \
 	${bits_srcdir}/istream.tcc \
 	${bits_srcdir}/list.tcc \
 	${bits_srcdir}/locale_classes.h \
+	${bits_srcdir}/locale_classes.tcc \
 	${bits_srcdir}/locale_facets.h \
 	${bits_srcdir}/locale_facets.tcc \
 	${bits_srcdir}/locale_facets_nonio.h \

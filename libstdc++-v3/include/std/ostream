@@ -570,7 +570,6 @@ _GLIBCXX_END_NAMESPACE
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include <bits/ostream.tcc>
-# include <bits/locale_facets.tcc>
 #endif
 
 #endif	/* _GLIBCXX_OSTREAM */

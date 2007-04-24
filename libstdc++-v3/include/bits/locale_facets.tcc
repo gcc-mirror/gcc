@@ -41,78 +41,6 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  template<typename _Facet>
-    locale
-    locale::combine(const locale& __other) const
-    {
-      _Impl* __tmp = new _Impl(*_M_impl, 1);
-      try
-	{
-	  __tmp->_M_replace_facet(__other._M_impl, &_Facet::id);
-	}
-      catch(...)
-	{
-	  __tmp->_M_remove_reference();
-	  __throw_exception_again;
-	}
-      return locale(__tmp);
-    }
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    bool
-    locale::operator()(const basic_string<_CharT, _Traits, _Alloc>& __s1,
-                       const basic_string<_CharT, _Traits, _Alloc>& __s2) const
-    {
-      typedef std::collate<_CharT> __collate_type;
-      const __collate_type& __collate = use_facet<__collate_type>(*this);
-      return (__collate.compare(__s1.data(), __s1.data() + __s1.length(),
-				__s2.data(), __s2.data() + __s2.length()) < 0);
-    }
-
-  /**
-   *  @brief  Test for the presence of a facet.
-   *
-   *  has_facet tests the locale argument for the presence of the facet type
-   *  provided as the template parameter.  Facets derived from the facet
-   *  parameter will also return true.
-   *
-   *  @param  Facet  The facet type to test the presence of.
-   *  @param  locale  The locale to test.
-   *  @return  true if locale contains a facet of type Facet, else false.
-  */
-  template<typename _Facet>
-    inline bool
-    has_facet(const locale& __loc) throw()
-    {
-      const size_t __i = _Facet::id._M_id();
-      const locale::facet** __facets = __loc._M_impl->_M_facets;
-      return (__i < __loc._M_impl->_M_facets_size && __facets[__i]);
-    }
-
-  /**
-   *  @brief  Return a facet.
-   *
-   *  use_facet looks for and returns a reference to a facet of type Facet
-   *  where Facet is the template parameter.  If has_facet(locale) is true,
-   *  there is a suitable facet to return.  It throws std::bad_cast if the
-   *  locale doesn't contain a facet of type Facet.
-   *
-   *  @param  Facet  The facet type to access.
-   *  @param  locale  The locale to use.
-   *  @return  Reference to facet of type Facet.
-   *  @throw  std::bad_cast if locale doesn't contain a facet of type Facet.
-  */
-  template<typename _Facet>
-    inline const _Facet&
-    use_facet(const locale& __loc)
-    {
-      const size_t __i = _Facet::id._M_id();
-      const locale::facet** __facets = __loc._M_impl->_M_facets;
-      if (!(__i < __loc._M_impl->_M_facets_size && __facets[__i]))
-        __throw_bad_cast();
-      return static_cast<const _Facet&>(*__facets[__i]);
-    }
-
   // Routine to access a cache for the facet.  If the cache didn't
   // exist before, it gets constructed on the fly.
   template<typename _Facet>
@@ -1252,127 +1180,6 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 
 _GLIBCXX_END_LDBL_NAMESPACE
 
-  // Generic version does nothing.
-  template<typename _CharT>
-    int
-    collate<_CharT>::_M_compare(const _CharT*, const _CharT*) const
-    { return 0; }
-
-  // Generic version does nothing.
-  template<typename _CharT>
-    size_t
-    collate<_CharT>::_M_transform(_CharT*, const _CharT*, size_t) const
-    { return 0; }
-
-  template<typename _CharT>
-    int
-    collate<_CharT>::
-    do_compare(const _CharT* __lo1, const _CharT* __hi1,
-	       const _CharT* __lo2, const _CharT* __hi2) const
-    {
-      // strcoll assumes zero-terminated strings so we make a copy
-      // and then put a zero at the end.
-      const string_type __one(__lo1, __hi1);
-      const string_type __two(__lo2, __hi2);
-
-      const _CharT* __p = __one.c_str();
-      const _CharT* __pend = __one.data() + __one.length();
-      const _CharT* __q = __two.c_str();
-      const _CharT* __qend = __two.data() + __two.length();
-
-      // strcoll stops when it sees a nul character so we break
-      // the strings into zero-terminated substrings and pass those
-      // to strcoll.
-      for (;;)
-	{
-	  const int __res = _M_compare(__p, __q);
-	  if (__res)
-	    return __res;
-
-	  __p += char_traits<_CharT>::length(__p);
-	  __q += char_traits<_CharT>::length(__q);
-	  if (__p == __pend && __q == __qend)
-	    return 0;
-	  else if (__p == __pend)
-	    return -1;
-	  else if (__q == __qend)
-	    return 1;
-
-	  __p++;
-	  __q++;
-	}
-    }
-
-  template<typename _CharT>
-    typename collate<_CharT>::string_type
-    collate<_CharT>::
-    do_transform(const _CharT* __lo, const _CharT* __hi) const
-    {
-      string_type __ret;
-
-      // strxfrm assumes zero-terminated strings so we make a copy
-      const string_type __str(__lo, __hi);
-
-      const _CharT* __p = __str.c_str();
-      const _CharT* __pend = __str.data() + __str.length();
-
-      size_t __len = (__hi - __lo) * 2;
-
-      _CharT* __c = new _CharT[__len];
-
-      try
-	{
-	  // strxfrm stops when it sees a nul character so we break
-	  // the string into zero-terminated substrings and pass those
-	  // to strxfrm.
-	  for (;;)
-	    {
-	      // First try a buffer perhaps big enough.
-	      size_t __res = _M_transform(__c, __p, __len);
-	      // If the buffer was not large enough, try again with the
-	      // correct size.
-	      if (__res >= __len)
-		{
-		  __len = __res + 1;
-		  delete [] __c, __c = 0;
-		  __c = new _CharT[__len];
-		  __res = _M_transform(__c, __p, __len);
-		}
-
-	      __ret.append(__c, __res);
-	      __p += char_traits<_CharT>::length(__p);
-	      if (__p == __pend)
-		break;
-
-	      __p++;
-	      __ret.push_back(_CharT());
-	    }
-	}
-      catch(...)
-	{
-	  delete [] __c;
-	  __throw_exception_again;
-	}
-
-      delete [] __c;
-
-      return __ret;
-    }
-
-  template<typename _CharT>
-    long
-    collate<_CharT>::
-    do_hash(const _CharT* __lo, const _CharT* __hi) const
-    {
-      unsigned long __val = 0;
-      for (; __lo < __hi; ++__lo)
-	__val =
-	  *__lo + ((__val << 7)
-		   | (__val >> (__gnu_cxx::__numeric_traits<unsigned long>::
-				__digits - 7)));
-      return static_cast<long>(__val);
-    }
-
   // Construct correctly padded string, as per 22.2.2.2.2
   // Assumes
   // __newlen > __oldlen
@@ -1502,17 +1309,6 @@ _GLIBCXX_END_LDBL_NAMESPACE
   extern template class _GLIBCXX_LDBL_NAMESPACE num_get<char>;
   extern template class _GLIBCXX_LDBL_NAMESPACE num_put<char>;
   extern template class ctype_byname<char>;
-  extern template class codecvt_byname<char, char, mbstate_t>;
-  extern template class collate<char>;
-  extern template class collate_byname<char>;
-
-  extern template
-    const codecvt<char, char, mbstate_t>&
-    use_facet<codecvt<char, char, mbstate_t> >(const locale&);
-
-  extern template
-    const collate<char>&
-    use_facet<collate<char> >(const locale&);
 
   extern template
     const numpunct<char>&
@@ -1532,14 +1328,6 @@ _GLIBCXX_END_LDBL_NAMESPACE
 
   extern template
     bool
-    has_facet<codecvt<char, char, mbstate_t> >(const locale&);
-
-  extern template
-    bool
-    has_facet<collate<char> >(const locale&);
-
-  extern template
-    bool
     has_facet<numpunct<char> >(const locale&);
 
   extern template
@@ -1556,17 +1344,6 @@ _GLIBCXX_END_LDBL_NAMESPACE
   extern template class _GLIBCXX_LDBL_NAMESPACE num_get<wchar_t>;
   extern template class _GLIBCXX_LDBL_NAMESPACE num_put<wchar_t>;
   extern template class ctype_byname<wchar_t>;
-  extern template class codecvt_byname<wchar_t, char, mbstate_t>;
-  extern template class collate<wchar_t>;
-  extern template class collate_byname<wchar_t>;
-
-  extern template
-    const codecvt<wchar_t, char, mbstate_t>&
-    use_facet<codecvt<wchar_t, char, mbstate_t> >(locale const&);
-
-  extern template
-    const collate<wchar_t>&
-    use_facet<collate<wchar_t> >(const locale&);
 
   extern template
     const numpunct<wchar_t>&
@@ -1583,14 +1360,6 @@ _GLIBCXX_END_LDBL_NAMESPACE
  extern template
     bool
     has_facet<ctype<wchar_t> >(const locale&);
-
-  extern template
-    bool
-    has_facet<codecvt<wchar_t, char, mbstate_t> >(const locale&);
-
-  extern template
-    bool
-    has_facet<collate<wchar_t> >(const locale&);
 
   extern template
     bool

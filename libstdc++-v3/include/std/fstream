@@ -44,7 +44,8 @@
 
 #include <istream>
 #include <ostream>
-#include <cstdio>       // For BUFSIZ     
+#include <bits/codecvt.h>
+#include <cstdio>             // For BUFSIZ     
 #include <bits/basic_file.h>  // For __basic_file, __c_lock
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
@@ -61,7 +62,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // Requirements on traits_type, specific to this class:
   // traits_type::pos_type must be fpos<traits_type::state_type>
   // traits_type::off_type must be streamoff
-  // traits_type::state_type must be Assignable and DefaultConstructable,
+  // traits_type::state_type must be Assignable and DefaultConstructible,
   // and traits_type::state_type() must be the initial state for codecvt.
   template<typename _CharT, typename _Traits>
     class basic_filebuf : public basic_streambuf<_CharT, _Traits>
