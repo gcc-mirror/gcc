@@ -1,3 +1,10 @@
+2007-04-24  Richard Sandiford  <richard@nildram.co.uk>
+
+	* gcc.target/mips/madd-1.c, gcc.target/mips/madd-2.c,
+	* gcc.target/mips/madd-3.c, gcc.target/mips/madd-4.c,
+	* gcc.target/mips/maddu-1.c, gcc.target/mips/maddu-2.c,
+	* gcc.target/mips/maddu-3.c, gcc.target/mips/maddu-4.c: New tests.
+
 2007-04-23  Simon Baldwin  <simonb@google.com>
 
 	* g++.dg/other/error15.C: New.

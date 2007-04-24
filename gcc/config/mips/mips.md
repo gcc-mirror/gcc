@@ -1767,18 +1767,20 @@
   [(set_attr "type"	"imadd")
    (set_attr "mode"	"SI")])
 
-(define_insn "*<su>mul_acc_di"
-  [(set (match_operand:DI 0 "register_operand" "=x")
+(define_insn "<u>maddsidi4"
+  [(set (match_operand:DI 0 "register_operand" "=ka")
 	(plus:DI
 	 (mult:DI (any_extend:DI (match_operand:SI 1 "register_operand" "d"))
 		  (any_extend:DI (match_operand:SI 2 "register_operand" "d")))
 	 (match_operand:DI 3 "register_operand" "0")))]
-  "(TARGET_MAD || ISA_HAS_MACC)
+  "(TARGET_MAD || ISA_HAS_MACC || GENERATE_MADD_MSUB || TARGET_DSPR2)
    && !TARGET_64BIT"
 {
   if (TARGET_MAD)
     return "mad<u>\t%1,%2";
-  else if (TARGET_MIPS5500)
+  else if (TARGET_DSPR2)
+    return "madd<u>\t%q0,%1,%2";
+  else if (GENERATE_MADD_MSUB || TARGET_MIPS5500)
     return "madd<u>\t%1,%2";
   else
     /* See comment in *macc.  */

@@ -3669,6 +3669,24 @@ The least significant half of the product is discarded.
 @item @samp{umul@var{m}3_highpart}
 Similar, but the multiplication is unsigned.
 
+@cindex @code{madd@var{m}@var{n}4} instruction pattern
+@item @samp{madd@var{m}@var{n}4}
+Multiply operands 1 and 2, sign-extend them to mode @var{n}, add
+operand 3, and store the result in operand 0.  Operands 1 and 2
+have mode @var{m} and operands 0 and 3 have mode @var{n}.
+Both modes must be integer modes and @var{n} must be twice
+the size of @var{m}.
+
+In other words, @code{madd@var{m}@var{n}4} is like
+@code{mul@var{m}@var{n}3} except that it also adds operand 3.
+
+These instructions are not allowed to @code{FAIL}.
+
+@cindex @code{umadd@var{m}@var{n}4} instruction pattern
+@item @samp{umadd@var{m}@var{n}4}
+Like @code{madd@var{m}@var{n}4}, but zero-extend the multiplication
+operands instead of sign-extending them.
+
 @cindex @code{divmod@var{m}4} instruction pattern
 @item @samp{divmod@var{m}4}
 Signed division that produces both a quotient and a remainder.
