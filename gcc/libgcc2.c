@@ -1420,11 +1420,7 @@ __floatunditf (UDWtype u)
 #define F_MODE_OK(SIZE) \
   (SIZE < DI_SIZE							\
    && SIZE > (DI_SIZE - SIZE + FSSIZE)					\
-   /* Don't use IBM Extended Double TFmode for TI->SF calculations.	\
-      The conversion from long double to float suffers from double	\
-      rounding, because we convert via double.  In any case, the	\
-      fallback code is faster.  */					\
-   && !IS_IBM_EXTENDED (SIZE))
+   && !AVOID_FP_TYPE_CONVERSION(SIZE))
 #if defined(L_floatdisf)
 #define FUNC __floatdisf
 #define FSTYPE SFtype
@@ -1515,13 +1511,21 @@ FUNC (DWtype u)
   hi = u >> shift;
 
   /* If we lost any nonzero bits, set the lsb to ensure correct rounding.  */
-  if (u & (((DWtype)1 << shift) - 1))
+  if ((UWtype)u << (W_TYPE_SIZE - shift))
     hi |= 1;
 
   /* Convert the one word of data, and rescale.  */
-  FSTYPE f = hi;
-  f *= (UDWtype)1 << shift;
-  return f;
+  FSTYPE f = hi, e;
+  if (shift == W_TYPE_SIZE)
+    e = Wtype_MAXp1_F;
+  /* The following two cases could be merged if we knew that the target
+     supported a native unsigned->float conversion.  More often, we only
+     have a signed conversion, and have to add extra fixup code.  */
+  else if (shift == W_TYPE_SIZE - 1)
+    e = Wtype_MAXp1_F / 2;
+  else
+    e = (Wtype)1 << shift;
+  return f * e;
 #endif
 }
 #endif
@@ -1532,11 +1536,7 @@ FUNC (DWtype u)
 #define F_MODE_OK(SIZE) \
   (SIZE < DI_SIZE							\
    && SIZE > (DI_SIZE - SIZE + FSSIZE)					\
-   /* Don't use IBM Extended Double TFmode for TI->SF calculations.	\
-      The conversion from long double to float suffers from double	\
-      rounding, because we convert via double.  In any case, the	\
-      fallback code is faster.  */					\
-   && !IS_IBM_EXTENDED (SIZE))
+   && !AVOID_FP_TYPE_CONVERSION(SIZE))
 #if defined(L_floatundisf)
 #define FUNC __floatundisf
 #define FSTYPE SFtype
@@ -1620,13 +1620,21 @@ FUNC (UDWtype u)
   hi = u >> shift;
 
   /* If we lost any nonzero bits, set the lsb to ensure correct rounding.  */
-  if (u & (((UDWtype)1 << shift) - 1))
+  if ((UWtype)u << (W_TYPE_SIZE - shift))
     hi |= 1;
 
   /* Convert the one word of data, and rescale.  */
-  FSTYPE f = hi;
-  f *= (UDWtype)1 << shift;
-  return f;
+  FSTYPE f = hi, e;
+  if (shift == W_TYPE_SIZE)
+    e = Wtype_MAXp1_F;
+  /* The following two cases could be merged if we knew that the target
+     supported a native unsigned->float conversion.  More often, we only
+     have a signed conversion, and have to add extra fixup code.  */
+  else if (shift == W_TYPE_SIZE - 1)
+    e = Wtype_MAXp1_F / 2;
+  else
+    e = (Wtype)1 << shift;
+  return f * e;
 #endif
 }
 #endif
