@@ -122,6 +122,20 @@ fi
 AC_SUBST(AM_FCFLAGS)
 AC_SUBST(AM_CFLAGS)
 
+# Check for symbol versioning (copied from libssp).
+AC_MSG_CHECKING([whether symbol versioning is supported])
+cat > conftest.map <<EOF
+FOO_1.0 {
+  global: *foo*; bar; local: *;
+};
+EOF
+save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
+AC_TRY_LINK([int foo;],[],[gfortran_use_symver=yes],[gfortran_use_symver=no])
+LDFLAGS="$save_LDFLAGS"
+AC_MSG_RESULT($gfortran_use_symver)
+AM_CONDITIONAL(LIBGFOR_USE_SYMVER, [test "x$gfortran_use_symver" = xyes])
+
 # Find other programs we need.
 AC_CHECK_TOOL(AS, as)
 AC_CHECK_TOOL(AR, ar)
