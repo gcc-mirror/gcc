@@ -1,3 +1,12 @@
+2007-04-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31587
+	* module.c (write_char): Add character to the MD5 buffer.
+	(read_md5_from_module_file): New function.
+	(gfc_dump_module): Compute MD5 for new module file. Call
+	read_md5_from_module_file. Only overwrite old module file
+	if the new MD5 is different.
+
 2007-04-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31630
