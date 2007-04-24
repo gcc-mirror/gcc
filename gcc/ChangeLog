@@ -1,3 +1,24 @@
+2007-04-24  Chao-ying Fu  <fu@mips.com>
+	    Richard Sandiford  <richard@nildram.co.uk>
+
+	* doc/md.texi (madd@var{m}@var{n}4, umadd@var{m}@var{n}4): Document.
+	* optabs.h (OTI_smadd_widen, OTI_umadd_widen): New optab_indexes.
+	(smadd_widen_optab, umadd_widen_optab): Define.
+	* optabs.c (init_optabs): Initialize smadd_widen_optab and
+	umadd_widen_optab.
+	* genopinit.c (optabs): Fill in smadd_widen_optab and
+	umadd_widen_optab.
+	* expr.c (expand_expr_real_1): Try to use smadd_widen_optab
+	and umadd_widen_optab to implement multiply-add sequences.
+	* config/mips/mips.md (*<su>mul_acc_di): Rename to...
+	(<u>maddsidi4): ...this.  Extend condition to include
+	GENERATE_MADD_MSUB and TARGET_DSPR2.  Change the constraint
+	of operand 0 to "ka" and use the three-operand form of madd<u>
+	for TARGET_DSPR2.
+	* config/mips/mips-dspr2.md (mips_madd, mips_maddu): Convert
+	to define_expands.
+	* config/mips/constraints.md (ka): New register constraint.
+
 2007-04-24  Jan Hubicka  <j@suse.cz>
 
 	Revert:

@@ -6824,7 +6824,7 @@ static rtx
 expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		    enum expand_modifier modifier, rtx *alt_rtl)
 {
-  rtx op0, op1, temp, decl_rtl;
+  rtx op0, op1, op2, temp, decl_rtl;
   tree type;
   int unsignedp;
   enum machine_mode mode;
@@ -7977,6 +7977,47 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return op0;
 
     case PLUS_EXPR:
+      /* Check if this is a case for multiplication and addition.  */
+      if (TREE_CODE (type) == INTEGER_TYPE
+	  && TREE_CODE (TREE_OPERAND (exp, 0)) == MULT_EXPR)
+	{
+	  tree subsubexp0, subsubexp1;
+	  enum tree_code code0, code1;
+
+	  subexp0 = TREE_OPERAND (exp, 0);
+	  subsubexp0 = TREE_OPERAND (subexp0, 0);
+	  subsubexp1 = TREE_OPERAND (subexp0, 1);
+	  code0 = TREE_CODE (subsubexp0);
+	  code1 = TREE_CODE (subsubexp1);
+	  if (code0 == NOP_EXPR && code1 == NOP_EXPR
+	      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (subsubexp0, 0)))
+		  < TYPE_PRECISION (TREE_TYPE (subsubexp0)))
+	      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (subsubexp0, 0)))
+		  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (subsubexp1, 0))))
+	      && (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (subsubexp0, 0)))
+		  == TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (subsubexp1, 0)))))
+	    {
+	      tree op0type = TREE_TYPE (TREE_OPERAND (subsubexp0, 0));
+	      enum machine_mode innermode = TYPE_MODE (op0type);
+	      bool zextend_p = TYPE_UNSIGNED (op0type);
+	      this_optab = zextend_p ? umadd_widen_optab : smadd_widen_optab;
+	      if (mode == GET_MODE_2XWIDER_MODE (innermode)
+		  && (this_optab->handlers[(int) mode].insn_code
+		      != CODE_FOR_nothing))
+		{
+		  expand_operands (TREE_OPERAND (subsubexp0, 0),
+				   TREE_OPERAND (subsubexp1, 0),
+				   NULL_RTX, &op0, &op1, EXPAND_NORMAL);
+		  op2 = expand_expr (TREE_OPERAND (exp, 1), subtarget,
+				     VOIDmode, 0);
+		  temp = expand_ternary_op (mode, this_optab, op0, op1, op2,
+					    target, unsignedp);
+		  gcc_assert (temp);
+		  return REDUCE_BIT_FIELD (temp);
+		}
+	    }
+	}
+
       /* If we are adding a constant, a VAR_DECL that is sp, fp, or ap, and
 	 something else, make sure we add the register to the constant and
 	 then to the other thing.  This case can occur during strength

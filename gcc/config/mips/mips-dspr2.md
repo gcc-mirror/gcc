@@ -154,31 +154,13 @@
   [(set_attr "type"	"imadd")
    (set_attr "mode"	"SI")])
 
-(define_insn "mips_madd"
-  [(set (match_operand:DI 0 "register_operand" "=a")
+(define_expand "mips_madd<u>"
+  [(set (match_operand:DI 0 "register_operand")
 	(plus:DI
-	 (mult:DI (sign_extend:DI
-		   (match_operand:SI 2 "register_operand" "d"))
-		  (sign_extend:DI
-		   (match_operand:SI 3 "register_operand" "d")))
-	 (match_operand:DI 1 "register_operand" "0")))]
-  "TARGET_DSPR2 && !TARGET_64BIT"
-  "madd\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
-   (set_attr "mode"	"SI")])
-
-(define_insn "mips_maddu"
-  [(set (match_operand:DI 0 "register_operand" "=a")
-	(plus:DI
-	 (mult:DI (zero_extend:DI
-		   (match_operand:SI 2 "register_operand" "d"))
-		  (zero_extend:DI
-		   (match_operand:SI 3 "register_operand" "d")))
-	 (match_operand:DI 1 "register_operand" "0")))]
-  "TARGET_DSPR2 && !TARGET_64BIT"
-  "maddu\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
-   (set_attr "mode"	"SI")])
+	 (mult:DI (any_extend:DI (match_operand:SI 2 "register_operand"))
+		  (any_extend:DI (match_operand:SI 3 "register_operand")))
+	 (match_operand:DI 1 "register_operand")))]
+  "TARGET_DSPR2 && !TARGET_64BIT")
 
 (define_insn "mips_msub"
   [(set (match_operand:DI 0 "register_operand" "=a")
@@ -623,4 +605,3 @@
   "dpsqx_sa.w.ph\t%q0,%z2,%z3"
   [(set_attr "type"	"imadd")
    (set_attr "mode"	"SI")])
-
