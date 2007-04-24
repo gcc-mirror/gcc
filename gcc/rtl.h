@@ -1562,6 +1562,7 @@ extern rtx emit_label (rtx);
 extern rtx emit_barrier (void);
 extern rtx emit_note (int);
 extern rtx emit_note_copy (rtx);
+extern rtx emit_line_note (location_t);
 extern rtx make_insn_raw (rtx);
 extern rtx make_jump_insn_raw (rtx);
 extern void add_function_usage_to (rtx, rtx);
@@ -2296,11 +2297,5 @@ extern const struct rtl_hooks general_rtl_hooks;
 
 /* Keep this for the nonce.  */
 #define gen_lowpart rtl_hooks.gen_lowpart
-
-extern void insn_locators_alloc (void);
-extern void insn_locators_finalize (void);
-extern void set_curr_insn_source_location (location_t);
-extern void set_curr_insn_block (tree);
-extern int curr_insn_locator (void);
 
 #endif /* ! GCC_RTL_H */

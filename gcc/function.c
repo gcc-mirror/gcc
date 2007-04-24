@@ -3843,6 +3843,18 @@ init_function_start (tree subr)
 {
   prepare_function_start (subr);
 
+  /* Prevent ever trying to delete the first instruction of a
+     function.  Also tell final how to output a linenum before the
+     function prologue.  Note linenums could be missing, e.g. when
+     compiling a Java .class file.  */
+  if (! DECL_IS_BUILTIN (subr))
+    emit_line_note (DECL_SOURCE_LOCATION (subr));
+
+  /* Make sure first insn is a note even if we don't want linenums.
+     This makes sure the first insn will never be deleted.
+     Also, final expects a note to appear there.  */
+  emit_note (NOTE_INSN_DELETED);
+
   /* Warn if this value is an aggregate type,
      regardless of which calling convention we are using for it.  */
   if (AGGREGATE_TYPE_P (TREE_TYPE (DECL_RESULT (subr))))
@@ -4293,7 +4305,7 @@ expand_function_end (void)
   /* Output a linenumber for the end of the function.
      SDB depends on this.  */
   force_next_line_note ();
-  set_curr_insn_source_location (input_location);
+  emit_line_note (input_location);
 
   /* Before the return label (if any), clobber the return
      registers so that they are not propagated live to the rest of
@@ -5334,6 +5346,62 @@ reposition_prologue_and_epilogue_notes (rtx f ATTRIBUTE_UNUSED)
 	}
     }
 #endif /* HAVE_prologue or HAVE_epilogue */
+}
+
+/* Resets insn_block_boundaries array.  */
+
+void
+reset_block_changes (void)
+{
+  cfun->ib_boundaries_block = VEC_alloc (tree, gc, 100);
+  VEC_quick_push (tree, cfun->ib_boundaries_block, NULL_TREE);
+}
+
+/* Record the boundary for BLOCK.  */
+void
+record_block_change (tree block)
+{
+  int i, n;
+  tree last_block;
+
+  if (!block)
+    return;
+
+  if(!cfun->ib_boundaries_block)
+    return;
+
+  last_block = VEC_pop (tree, cfun->ib_boundaries_block);
+  n = get_max_uid ();
+  for (i = VEC_length (tree, cfun->ib_boundaries_block); i < n; i++)
+    VEC_safe_push (tree, gc, cfun->ib_boundaries_block, last_block);
+
+  VEC_safe_push (tree, gc, cfun->ib_boundaries_block, block);
+}
+
+/* Finishes record of boundaries.  */
+void
+finalize_block_changes (void)
+{
+  record_block_change (DECL_INITIAL (current_function_decl));
+}
+
+/* For INSN return the BLOCK it belongs to.  */ 
+void
+check_block_change (rtx insn, tree *block)
+{
+  unsigned uid = INSN_UID (insn);
+
+  if (uid >= VEC_length (tree, cfun->ib_boundaries_block))
+    return;
+
+  *block = VEC_index (tree, cfun->ib_boundaries_block, uid);
+}
+
+/* Releases the ib_boundaries_block records.  */
+void
+free_block_changes (void)
+{
+  VEC_free (tree, gc, cfun->ib_boundaries_block);
 }
 
 /* Returns the name of the current function.  */

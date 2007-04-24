@@ -3336,7 +3336,7 @@ make_insn_raw (rtx pattern)
   INSN_CODE (insn) = -1;
   LOG_LINKS (insn) = NULL;
   REG_NOTES (insn) = NULL;
-  INSN_LOCATOR (insn) = curr_insn_locator ();
+  INSN_LOCATOR (insn) = 0;
   BLOCK_FOR_INSN (insn) = NULL;
 
 #ifdef ENABLE_RTL_CHECKING
@@ -3369,7 +3369,7 @@ make_jump_insn_raw (rtx pattern)
   LOG_LINKS (insn) = NULL;
   REG_NOTES (insn) = NULL;
   JUMP_LABEL (insn) = NULL;
-  INSN_LOCATOR (insn) = curr_insn_locator ();
+  INSN_LOCATOR (insn) = 0;
   BLOCK_FOR_INSN (insn) = NULL;
 
   return insn;
@@ -3390,7 +3390,7 @@ make_call_insn_raw (rtx pattern)
   LOG_LINKS (insn) = NULL;
   REG_NOTES (insn) = NULL;
   CALL_INSN_FUNCTION_USAGE (insn) = NULL;
-  INSN_LOCATOR (insn) = curr_insn_locator ();
+  INSN_LOCATOR (insn) = 0;
   BLOCK_FOR_INSN (insn) = NULL;
 
   return insn;
@@ -4458,6 +4458,42 @@ emit_barrier (void)
   INSN_UID (barrier) = cur_insn_uid++;
   add_insn (barrier);
   return barrier;
+}
+
+/* Make line numbering NOTE insn for LOCATION add it to the end
+   of the doubly-linked list, but only if line-numbers are desired for
+   debugging info and it doesn't match the previous one.  */
+
+rtx
+emit_line_note (location_t location)
+{
+  rtx note;
+  
+#ifdef USE_MAPPED_LOCATION
+  if (location == last_location)
+    return NULL_RTX;
+#else
+  if (location.file && last_location.file
+      && !strcmp (location.file, last_location.file)
+      && location.line == last_location.line)
+    return NULL_RTX;
+#endif
+  last_location = location;
+  
+  if (no_line_numbers)
+    {
+      cur_insn_uid++;
+      return NULL_RTX;
+    }
+
+#ifdef USE_MAPPED_LOCATION
+  note = emit_note ((int) location);
+#else
+  note = emit_note (location.line);
+  NOTE_SOURCE_FILE (note) = location.file;
+#endif
+  
+  return note;
 }
 
 /* Emit a copy of note ORIG.  */
