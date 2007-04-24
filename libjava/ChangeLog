@@ -1,3 +1,8 @@
+2007-04-24  Kyle Galloway  <kgallowa@redhat.com>
+
+	* gnu/classpath/jdwp/natVMVirtualMachine.java
+	(getThreadStatus): Implement.
+
 2007-04-24  Keith Seitz  <keiths@redhat.com>
 
 	* headers.txt (gnu/gcj/jvmti/Breakpoint.h)[DIRECT_THREADED]:
