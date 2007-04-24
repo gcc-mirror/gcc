@@ -81,11 +81,8 @@ struct processor_costs
   const int maebr;    /* cost of multiply and add in SFmode.  */
   /* division */
   const int dxbr;
-  const int dxr;
   const int ddbr;
-  const int ddr;
   const int debr;
-  const int der;
   const int dlgr;
   const int dlr;
   const int dr;
@@ -118,11 +115,8 @@ struct processor_costs z900_cost =
   COSTS_N_INSNS (18),    /* MADBR */
   COSTS_N_INSNS (13),    /* MAEBR */
   COSTS_N_INSNS (134),   /* DXBR */
-  COSTS_N_INSNS (135),   /* DXR */
   COSTS_N_INSNS (30),    /* DDBR */
-  COSTS_N_INSNS (30),    /* DDR  */
   COSTS_N_INSNS (27),    /* DEBR */
-  COSTS_N_INSNS (26),    /* DER  */
   COSTS_N_INSNS (220),   /* DLGR */
   COSTS_N_INSNS (34),    /* DLR */
   COSTS_N_INSNS (34),    /* DR */
@@ -153,11 +147,8 @@ struct processor_costs z990_cost =
   COSTS_N_INSNS (1),     /* MADBR */
   COSTS_N_INSNS (1),     /* MAEBR */
   COSTS_N_INSNS (60),    /* DXBR */
-  COSTS_N_INSNS (72),    /* DXR */
   COSTS_N_INSNS (40),    /* DDBR */
-  COSTS_N_INSNS (44),    /* DDR  */
-  COSTS_N_INSNS (26),    /* DDBR */
-  COSTS_N_INSNS (28),    /* DER  */
+  COSTS_N_INSNS (26),    /* DEBR */
   COSTS_N_INSNS (176),   /* DLGR */
   COSTS_N_INSNS (31),    /* DLR */
   COSTS_N_INSNS (31),    /* DR */
@@ -188,11 +179,8 @@ struct processor_costs z9_109_cost =
   COSTS_N_INSNS (1),     /* MADBR */
   COSTS_N_INSNS (1),     /* MAEBR */
   COSTS_N_INSNS (60),    /* DXBR */
-  COSTS_N_INSNS (72),    /* DXR */
   COSTS_N_INSNS (40),    /* DDBR */
-  COSTS_N_INSNS (37),    /* DDR  */
-  COSTS_N_INSNS (26),    /* DDBR */
-  COSTS_N_INSNS (28),    /* DER  */
+  COSTS_N_INSNS (26),    /* DEBR */
   COSTS_N_INSNS (30),    /* DLGR */
   COSTS_N_INSNS (23),    /* DLR */
   COSTS_N_INSNS (23),    /* DR */
@@ -2185,7 +2173,7 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
       /* Check for multiply and add.  */
       if ((GET_MODE (x) == DFmode || GET_MODE (x) == SFmode)
 	  && GET_CODE (XEXP (x, 0)) == MULT
-	  && TARGET_HARD_FLOAT && TARGET_IEEE_FLOAT && TARGET_FUSED_MADD)
+	  && TARGET_HARD_FLOAT && TARGET_FUSED_MADD)
 	{
 	  /* This is the multiply and add case.  */
 	  if (GET_MODE (x) == DFmode)
@@ -2292,24 +2280,15 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
 	*total = s390_cost->dlr;
       else if (GET_MODE (x) == SFmode)
 	{
-	  if (TARGET_IEEE_FLOAT)
-	    *total = s390_cost->debr;
-	  else /* TARGET_IBM_FLOAT */
-	    *total = s390_cost->der;
+	  *total = s390_cost->debr;
 	}
       else if (GET_MODE (x) == DFmode)
 	{
-	  if (TARGET_IEEE_FLOAT)
-	    *total = s390_cost->ddbr;
-	  else /* TARGET_IBM_FLOAT */
-	    *total = s390_cost->ddr;
+	  *total = s390_cost->ddbr;
 	}
       else if (GET_MODE (x) == TFmode)
 	{
-	  if (TARGET_IEEE_FLOAT)
-	    *total = s390_cost->dxbr;
-	  else /* TARGET_IBM_FLOAT */
-	    *total = s390_cost->dxr;
+	  *total = s390_cost->dxbr;
 	}
       return false;
 
@@ -8387,28 +8366,6 @@ s390_initialize_trampoline (rtx addr, rtx fnaddr, rtx cxt)
   emit_move_insn (gen_rtx_MEM (Pmode,
 		   memory_address (Pmode,
 		   plus_constant (addr, (TARGET_64BIT ? 24 : 12)))), fnaddr);
-}
-
-/* Return rtx for 64-bit constant formed from the 32-bit subwords
-   LOW and HIGH, independent of the host word size.  */
-
-rtx
-s390_gen_rtx_const_DI (int high, int low)
-{
-#if HOST_BITS_PER_WIDE_INT >= 64
-  HOST_WIDE_INT val;
-  val = (HOST_WIDE_INT)high;
-  val <<= 32;
-  val |= (HOST_WIDE_INT)low;
-
-  return GEN_INT (val);
-#else
-#if HOST_BITS_PER_WIDE_INT >= 32
-  return immed_double_const ((HOST_WIDE_INT)low, (HOST_WIDE_INT)high, DImode);
-#else
-  gcc_unreachable ();
-#endif
-#endif
 }
 
 /* Output assembler code to FILE to increment profiler label # LABELNO

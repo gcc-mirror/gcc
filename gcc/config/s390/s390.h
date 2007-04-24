@@ -103,10 +103,6 @@ extern enum processor_flags s390_arch_flags;
     }							\
   while (0)
 
-/* ??? Once this actually works, it could be made a runtime option.  */
-#define TARGET_IBM_FLOAT           0
-#define TARGET_IEEE_FLOAT          1
-
 #ifdef DEFAULT_TARGET_64BIT
 #define TARGET_DEFAULT             (MASK_64BIT | MASK_ZARCH)
 #else
@@ -225,10 +221,6 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
   (LEVEL == SAVE_FUNCTION ? VOIDmode    \
   : LEVEL == SAVE_NONLOCAL ? (TARGET_64BIT ? OImode : TImode) : Pmode)
 
-/* Define target floating point format.  */
-#define TARGET_FLOAT_FORMAT \
-  (TARGET_IEEE_FLOAT? IEEE_FLOAT_FORMAT : IBM_FLOAT_FORMAT)
-
 
 /* Type layout.  */
 
@@ -285,7 +277,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 /* Standard register usage.  */
 #define GENERAL_REGNO_P(N)	((int)(N) >= 0 && (N) < 16)
 #define ADDR_REGNO_P(N)		((N) >= 1 && (N) < 16)
-#define FP_REGNO_P(N)		((N) >= 16 && (N) < (TARGET_IEEE_FLOAT? 32 : 20))
+#define FP_REGNO_P(N)		((N) >= 16 && (N) < 32)
 #define CC_REGNO_P(N)		((N) == 33)
 #define FRAME_REGNO_P(N)	((N) == 32 || (N) == 34 || (N) == 35)
 #define ACCESS_REGNO_P(N)	((N) == 36 || (N) == 37)
