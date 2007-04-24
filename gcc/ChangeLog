@@ -1,3 +1,11 @@
+2007-04-24  Janis Johnson  <janis187@us.ibm.com>
+
+	* config/rs6000/rs6000.c (function_arg_advance): For 32-bit ELF ABI,
+	expand on the comment about _Decimal128 arguments and check the
+	integer result of the modulus operation; for 64-bit ELF ABI, ensure
+	that _Decimal128 argument uses even/odd register pair.
+	(function_arg): Ditto.
+
 2007-04-24  Hui-May Chang <hm.chang@apple.com>
 
 	* reload1.c (merge_assigned_reloads) : Do not merge a RELOAD_OTHER

@@ -1,4 +1,9 @@
-2007-04-24  Hui-May Chang <hm.chang@apple.com>
+2007-04-24  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.target/powerpc/ppc32-abi-dfp-1.c: New test.
+	* gcc.target/powerpc/ppc64-abi-dfp-1.c: New test.
+
+2007-04-24  Hui-May Chang  <hm.chang@apple.com>
 
 	* gcc.target/i386/reload-1.c. New.
 
