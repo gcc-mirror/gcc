@@ -1,3 +1,9 @@
+2007-04-24  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* dwarf2out.c (field_byte_offset): Move the existing logic
+	under the control of PCC_BITFIELD_TYPE_MATTERS and just use
+	the bit offset of the field if !PCC_BITFIELD_TYPE_MATTERS.
+
 2007-04-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR target/31641
