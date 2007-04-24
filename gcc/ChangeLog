@@ -1,3 +1,12 @@
+2007-04-24  Richard Henderson  <rth@redhat.com>
+
+	* libgcc2.h (AVOID_FP_TYPE_CONVERSION): Rename from 
+	IS_IBM_EXTENDED.  Also define in terms of WIDEST_HARDWARE_FP_SIZE.
+	* libgcc2.c (__floatdisf): Avoid double-word arithmetic when
+	looking for non-zero bits shifted out.  Avoid a recursive call
+	when constructing the scalar.
+	(__floatundisf): Likewise.
+
 2007-04-24  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* dwarf2out.c (field_byte_offset): Move the existing logic
