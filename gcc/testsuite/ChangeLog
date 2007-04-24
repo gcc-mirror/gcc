@@ -1,3 +1,8 @@
+2007-04-24  Ian Lance Taylor  <iant@google.com>
+
+	PR tree-optimization/31605
+	* gcc.c-torture/execute/pr31605.c: New test.
+
 2007-04-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR target/31641
