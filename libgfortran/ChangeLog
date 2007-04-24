@@ -1,3 +1,15 @@
+2007-04-24  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/27740
+	* configure.ac: New test to determine if symbol versioning is
+	supported.
+	* Makefile.am: Use result of above test to add appropriate linker
+	flags.
+	* gfortran.map: New file.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* config.h.in: Regenerated.
+
 2007-04-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/31618

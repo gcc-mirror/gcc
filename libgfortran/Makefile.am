@@ -6,9 +6,16 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 ## May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
+## Symbol versioning (copied from libssp).
+if LIBGFOR_USE_SYMVER
+version_arg = -Wl,--version-script=$(srcdir)/gfortran.map
+else
+version_arg =
+endif
+
 toolexeclib_LTLIBRARIES = libgfortran.la
 libgfortran_la_LINK = $(LINK)
-libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lm $(extra_ldflags_libgfortran)
+libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lm $(extra_ldflags_libgfortran) $(version_arg)
 
 myexeclib_LTLIBRARIES = libgfortranbegin.la
 myexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
