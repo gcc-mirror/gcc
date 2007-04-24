@@ -1,10 +1,15 @@
+2007-04-24  Ian Lance Taylor  <iant@google.com>
+
+	* flow.c (elim_reg_cond): Handle a comparison of a subreg.
+
 2007-04-24  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR diagnostic/25923
 	* tree-pass.h (TDF_DIAGNOSTIC): New dump control to specify that a
 	diagnostic message is being built.
-	* tree-pretty-print.c (dump_generic_node): Only write the formatted text
-	into BUFFER's stream if we are not building a diagnostic message.
+	* tree-pretty-print.c (dump_generic_node): Only write the
+	formatted text into BUFFER's stream if we are not building a
+	diagnostic message.
 	* toplev.c (default_tree_printer): Pass TDF_DIAGNOSTIC to
 	dump_generic_node.
 	* Makefile.in (toplev.o): Depend on tree-pass.h.
