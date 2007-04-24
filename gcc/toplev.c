@@ -82,6 +82,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "value-prof.h"
 #include "alloc-pool.h"
 #include "tree-mudflap.h"
+#include "tree-pass.h"
 
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
@@ -1567,7 +1568,7 @@ default_tree_printer (pretty_printer * pp, text_info *text, const char *spec,
       pp_string (pp, n);
     }
   else
-    dump_generic_node (pp, t, 0, 0, 0);
+    dump_generic_node (pp, t, 0, TDF_DIAGNOSTIC, 0);
 
   return true;
 }

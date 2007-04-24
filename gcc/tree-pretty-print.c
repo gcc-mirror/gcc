@@ -431,8 +431,8 @@ dump_symbols (pretty_printer *buffer, bitmap syms, int flags)
 
 
 /* Dump the node NODE on the pretty_printer BUFFER, SPC spaces of indent.
-   FLAGS specifies details to show in the dump (see TDF_* in tree.h).  If
-   IS_STMT is true, the object printed is considered to be a statement
+   FLAGS specifies details to show in the dump (see TDF_* in tree-pass.h).
+   If IS_STMT is true, the object printed is considered to be a statement
    and it is terminated by ';' if appropriate.  */
 
 int
@@ -2055,7 +2055,11 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
   if (is_stmt && is_expr)
     pp_semicolon (buffer);
-  pp_write_text_to_stream (buffer);
+
+  /* If we're building a diagnostic, the formatted text will be written
+     into BUFFER's stream by the caller; otherwise, write it now.  */
+  if (!(flags & TDF_DIAGNOSTIC))
+    pp_write_text_to_stream (buffer);
 
   return spc;
 }
