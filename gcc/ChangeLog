@@ -1,3 +1,33 @@
+2007-04-24  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md ("*cmp<mode>_ccs_0_ibm", "*cmp<mode>_ccs_ibm",
+	"fix_trunc<BFP:mode><GPR:mode>2_ieee", "fix_truncdfsi2_ibm",
+	"floatsidf2_ibm", "floatsisf2", "truncdfsf2_ieee", "truncdfsf2_ibm",
+	"*trunctfdf2_ieee", "*trunctfdf2_ibm", "*trunctfsf2_ieee",
+	"*trunctfsf2_ibm", "extendsfdf2_ieee", "extendsfdf2_ibm",
+	"*extenddftf2_ieee", "*extenddftf2_ibm", "*extendsftf2_ieee",
+	"*extendsftf2_ibm", "*add<mode>3", "*add<mode>3_ibm", "*sub<mode>3_ibm",
+	"*mul<mode>3", "*mul<mode>3_ibm", "*div<mode>3", "*div<mode>3_ibm",
+	"*neg<mode>2_ibm", "*abs<mode>2_ibm"): Insn definitions removed.
+	("fix_trunc<BFP:mode><GPR:mode>2_bfp", "floatsi<mode>2",
+	"truncdfsf2", "trunctf<mode>2", "add<mode>3", "sub<mode>3",
+	"mul<mode>3", "div<mode>3"): Insn definitions added.
+	("fixuns_trunc<BFP:mode><GPR:mode>2", "fix_trunc<mode>di2",
+	"fix_trunc<mode>si2"): gen_fix_trunc<BFP:mode><GPR:mode>2_ieee renamed
+	to gen_fix_trunc<BFP:mode><GPR:mode>2_bfp.
+	("fix_truncdfsi2", "floatsitf2", "truncdfsf2", "trunctfdf2",
+	"trunctfsf2", "extendsfdf2", "extenddftf2", "extendsftf2", "add<mode>3",
+	"sub<mode>3", "mul<mode>3", "div<mode>3"): Expander removed.
+	("fix_trunc<mode>si2", "extend<DSF:mode><BFP:mode>2"): Expander added.
+	* config/s390/s390.h (TARGET_IBM_FLOAT, TARGET_IEEE_FLOAT,
+	TARGET_FLOAT_FORMAT): Macro definitions removed.
+	(FP_REGNO_P): No special case for !TARGET_IEEE_FLOAT anymore.
+	* config/s390/s390.c (struct processor_costs, z900_cost, z990_cost,
+	z9_109_cost): Remove fields for hexfloat instructions: dxr, ddr and der.
+	(s390_rtx_costs): Remove !TARGET_IEEE_FLOAT special branches.
+	(s390_gen_rtx_const_DI): Function removed.
+	* config/s390/s390-protos.h (s390_gen_rtx_const_DI): Prototype removed.
+
 2007-04-24  Richard Sandiford  <richard@codesourcery.com>
 
 	* optabs.c (set_conv_libfunc): Prefer libgcc2's __ffsMM2 functions
