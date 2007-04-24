@@ -1,3 +1,8 @@
+2007-04-24  Ian Lance Taylor  <iant@google.com>
+
+	PR tree-optimization/31602
+	* gcc.dg/Wstrict-overflow-11.c: We no longer issue a warning.
+
 2007-04-24  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.target/powerpc/ppc32-abi-dfp-1.c: New test.
