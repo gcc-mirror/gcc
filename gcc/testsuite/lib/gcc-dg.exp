@@ -455,6 +455,24 @@ proc cleanup-modules { modlist } {
     }
 }
 
+# Scan Fortran modules for a given regexp.
+#
+# Argument 0 is the module name
+# Argument 1 is the regexp to match
+proc scan-module { args } {
+    set modfilename [string tolower [lindex $args 0]].mod
+    set fd [open $modfilename r]
+    set text [read $fd]
+    close $fd
+
+    upvar 2 name testcase
+    if [regexp -- [lindex $args 1] $text] {
+      pass "$testcase scan-module [lindex $args 1]"
+    } else {
+      fail "$testcase scan-module [lindex $args 1]"
+    }
+}
+
 # Verify that the compiler output file exists, invoked via dg-final.
 proc output-exists { args } {
     # Process an optional target or xfail list.
