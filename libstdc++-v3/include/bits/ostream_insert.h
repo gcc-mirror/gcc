@@ -109,6 +109,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return __out;
     }
 
+  // Inhibit implicit instantiations for required instantiations,
+  // which are defined via explicit instantiations elsewhere.
+  // NB:  This syntax is a GNU extension.
+#if _GLIBCXX_EXTERN_TEMPLATE
+  extern template ostream& __ostream_insert(ostream&, const char*, streamsize);
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  extern template wostream& __ostream_insert(wostream&, const wchar_t*,
+					     streamsize);
+#endif
+#endif
+
 _GLIBCXX_END_NAMESPACE
 
 #endif /* _OSTREAM_INSERT_H */

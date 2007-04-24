@@ -35,6 +35,8 @@
 #ifndef _LOCALE_FACETS_NONIO_TCC
 #define _LOCALE_FACETS_NONIO_TCC 1
 
+#pragma GCC system_header
+
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _CharT, bool _Intl>
@@ -1167,6 +1169,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
       // Write resulting, fully-formatted string to output iterator.
       return std::__write(__s, __res, char_traits<char_type>::length(__res));
     }
+
 
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.

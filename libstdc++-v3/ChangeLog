@@ -1,3 +1,28 @@
+2007-04-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.h (class collate, class collate_byname):
+	Move...
+	* include/bits/locale_classes.h: ... here.
+	* include/bits/locale_facets.tcc (locale::combine, locale::operator(),
+	has_facet, use_facet, collate::_M_compare, collate::_M_transform,
+	collate::do_compare, collate::do_transform, collate::do_hash): Move...
+	* include/bits/locale_classes.tcc: ... here, new.
+	* include/Makefile.am: Add.
+	* testsuite/util/testsuite_abi.h: Include <locale>.
+	* include/std/locale: Tweak.
+	* include/std/istream: Likewise.
+	* include/std/ostream: Likewise.
+	* include/bits/codecvt.h: Likewise.
+	* include/Makefile.in: Regenerate.
+
+	* include/bits/codecvt.h: Adjust extern template declarations.
+	* include/bits/ostream_insert.h: Likewise.
+	* include/bits/ostream.tcc: Likewise.
+
+	* include/bits/locale_facets.h: Do not include <bits/codecvt.h>.
+	* include/std/fstream: Do it here.
+	* include/bits/locale_facets_nonio.h: Likewise.
+
 2007-04-23  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.h (class time_base,

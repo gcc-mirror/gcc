@@ -836,7 +836,6 @@ _GLIBCXX_END_NAMESPACE
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include <bits/istream.tcc>
-# include <bits/locale_facets.tcc>
 #endif
 
 #endif	/* _GLIBCXX_ISTREAM */
