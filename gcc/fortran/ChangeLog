@@ -1,3 +1,11 @@
+2007-04-25  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* module.c (module_char): Replace fgetc() with
+	getc(). 
+	(write_char): Replace fputc() with putc().
+	* scanner.c (load_line): Replace fgetc() with getc().
+	(gfc_read_orig_filename): Likewise.
+
 2007-04-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/31668
