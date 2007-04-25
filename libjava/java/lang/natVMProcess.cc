@@ -10,10 +10,9 @@ details.  */
 
 #include <config.h>
 
-#include <gcj/cni.h>
-#include <jvm.h>
-
 #include <platform.h>
+
+#include <jvm.h>
 
 #include <java/lang/VMProcess.h>
 #include <java/lang/Process.h>

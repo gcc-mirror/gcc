@@ -1,3 +1,8 @@
+2007-04-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR libgcj/31084
+	* java/lang/natVMProcess.cc: Include platform.h before jvm.h.
+
 2007-04-24  Kyle Galloway  <kgallowa@redhat.com>
 
 	* gnu/classpath/jdwp/natVMVirtualMachine.java
