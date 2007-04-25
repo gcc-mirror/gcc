@@ -1,3 +1,11 @@
+2007-04-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/31668
+	* error.c (error_print): Fix %% support.
+	* intrinsic.c (sort_actual): Improve error message.
+	* resolve.c (resolve_actual_arglist): Allow %VAL for
+	interfaces defined in the module declaration part.
+
 2007-04-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/31299

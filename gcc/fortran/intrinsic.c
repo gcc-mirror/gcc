@@ -2861,8 +2861,8 @@ keywords:
       if (f == NULL)
 	{
 	  if (a->name[0] == '%')
-	    gfc_error ("Argument list function at %L is not allowed in this "
-		       "context", where);
+	    gfc_error ("The argument list functions %%VAL, %%LOC or %%REF "
+		       "are not allowed in this context at %L", where);
 	  else
 	    gfc_error ("Can't find keyword named '%s' in call to '%s' at %L",
 		       a->name, name, where);
