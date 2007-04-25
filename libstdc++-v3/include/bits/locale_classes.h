@@ -237,9 +237,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *  @param  other  The locale to compare against.
      *  @return  ! (*this == other)
     */
-    inline bool
+    bool
     operator!=(const locale& __other) const throw ()
-    { return !(this->operator==(__other));  }
+    { return !(this->operator==(__other)); }
 
     /**
      *  @brief  Compare two strings according to collate.
@@ -398,11 +398,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _S_get_c_name();
 
   private:
-    inline void
+    void
     _M_add_reference() const throw()
     { __gnu_cxx::__atomic_add_dispatch(&_M_refcount, 1); }
 
-    inline void
+    void
     _M_remove_reference() const throw()
     {
       if (__gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1) == 1)
@@ -503,11 +503,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     static const locale::id* const	_S_id_messages[];
     static const locale::id* const* const _S_facet_categories[];
 
-    inline void
+    void
     _M_add_reference() throw()
     { __gnu_cxx::__atomic_add_dispatch(&_M_refcount, 1); }
 
-    inline void
+    void
     _M_remove_reference() throw()
     {
       if (__gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1) == 1)
@@ -530,7 +530,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     void
     operator=(const _Impl&);  // Not defined.
 
-    inline bool
+    bool
     _M_check_same_name()
     {
       bool __ret = true;
@@ -554,7 +554,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _M_install_facet(const locale::id*, const facet*);
 
     template<typename _Facet>
-      inline void
+      void
       _M_init_facet(_Facet* __facet)
       { _M_install_facet(&_Facet::id, __facet); }
 
