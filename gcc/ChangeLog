@@ -1,3 +1,9 @@
+2007-04-25  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/lib1funcs.asm (__udivsi3, __divsi3): Throw an exception
+	for divide-by-zero.
+	(__umodsi3, __modsi3): Likewise.
+
 2007-04-25  Dirk Mueller  <dmueller@suse.de>
 
 	* c-typeck.c (build_compound_expr): Annotate warning()
