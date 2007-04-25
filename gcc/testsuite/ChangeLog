@@ -1,3 +1,10 @@
+2007-04-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/31668
+	* gfortran.dg/c_by_val_2.f90: Add rejection test of %VAL with
+	statement functions.
+	* gfortran.dg/c_by_val_5.f90: New test.
+
 2007-04-25  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* gfortran.dg/equiv_6.f90 (set_arrays): Replaced subroutine
@@ -23,19 +30,19 @@
 
 2007-04-24  Douglas Gregor  <doug.gregor@gmail.com>
 
-       * g++.old-deja/g++.pt/defarg6.C: Only run with
-       -std=gnu++98.
-       * g++.old-deja/g++.pt/ucnid-1.C: Ditto.
-       * g++.dg/cpp0x/variadic61.C: Ditto.
-       * g++.dg/cpp0x/warn_cxx0x.C: Ditto.
-       * g++.dg/cpp0x/variadic62.C: Ditto.
-       * g++.dg/template/meminit1.C: Ditto.
-       * g++.dg/template/operator7.C: Ditto.
-       * g++.dg/template/static15.C: Ditto.
-       * g++.dg/template/invalid1.C: Ditto.
-       * g++.dg/template/shift1.C: Ditto.
-       * g++.dg/template/error10.C: Ditto.
-	
+	* g++.old-deja/g++.pt/defarg6.C: Only run with
+	-std=gnu++98.
+	* g++.old-deja/g++.pt/ucnid-1.C: Ditto.
+	* g++.dg/cpp0x/variadic61.C: Ditto.
+	* g++.dg/cpp0x/warn_cxx0x.C: Ditto.
+	* g++.dg/cpp0x/variadic62.C: Ditto.
+	* g++.dg/template/meminit1.C: Ditto.
+	* g++.dg/template/operator7.C: Ditto.
+	* g++.dg/template/static15.C: Ditto.
+	* g++.dg/template/invalid1.C: Ditto.
+	* g++.dg/template/shift1.C: Ditto.
+	* g++.dg/template/error10.C: Ditto.
+
 2007-04-24  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR diagnostic/25923
@@ -134,7 +141,7 @@
 
 2007-04-22  Revital Eres  <eres@il.ibm.com>
 
-        * gcc.dg/var-expand2.c: New test.
+	* gcc.dg/var-expand2.c: New test.
 
 2007-04-22  Revital Eres  <eres@il.ibm.com>
 

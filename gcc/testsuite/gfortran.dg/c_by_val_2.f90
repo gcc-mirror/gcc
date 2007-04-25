@@ -9,6 +9,11 @@ program c_by_val_2
   end type mytype
   type(mytype)  :: z
   character(8)  :: c = "blooey"
+  real :: stmfun, x
+  stmfun(x)=x**2
+
+  x = 5
+  print *, stmfun(%VAL(x))   ! { dg-error "not allowed in this context" }
   print *, sin (%VAL(2.0))   ! { dg-error "not allowed in this context" }
   print *, foo (%VAL(1.0))   ! { dg-error "not allowed in this context" }
   call  foobar (%VAL(0.5))   ! { dg-error "not allowed in this context" }

@@ -414,7 +414,10 @@ error_print (const char *type, const char *format0, va_list argp)
 	continue;
 
       if (*format == '%')
-	continue;
+	{
+	  format++;
+	  continue;
+	}
 
       if (ISDIGIT (*format))
 	{

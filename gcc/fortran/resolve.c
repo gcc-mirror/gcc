@@ -1040,7 +1040,8 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype)
 		 intrinsic.c.  */
 	      if (ptype != PROC_UNKNOWN
 		  && ptype != PROC_DUMMY
-		  && ptype != PROC_EXTERNAL)
+		  && ptype != PROC_EXTERNAL
+		  && ptype != PROC_MODULE)
 		{
 		  gfc_error ("By-value argument at %L is not allowed "
 			     "in this context", &e->where);
