@@ -1,3 +1,10 @@
+2007-04-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+            Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/30222
+	* expmed.c (make_tree): Use the correct type, i.e. the inner
+	type, when constructing the individual elements of a CONST_VECTOR.
+
 2007-04-24  Ian Lance Taylor  <iant@google.com>
 
 	PR tree-optimization/31605
