@@ -1,3 +1,8 @@
+2007-04-25  Anatoly Sokolov <aesok@post.ru>
+
+	PR target/18989
+ 	* config/avr/avr.h (ASM_OUTPUT_ALIGN): Redefine.
+
 2007-04-24  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* real.c (mpfr_from_real): Handle Inf and NaN, and allow the
