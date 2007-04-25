@@ -51,6 +51,10 @@ mdivide-traps
 Target Report RejectNegative InverseMask(DIVIDE_BREAKS, DIVIDE_TRAPS)
 Use trap instructions to check for integer divide by zero
 
+mdmx
+Target Report RejectNegative Var(TARGET_MDMX)
+Allow the use of MDMX instructions
+
 mdouble-float
 Target Report RejectNegative InverseMask(SINGLE_FLOAT, DOUBLE_FLOAT)
 Allow hardware floating-point instructions to cover both 32-bit and 64-bit operations
@@ -147,7 +151,7 @@ Target RejectNegative Joined
 
 mips16
 Target Report RejectNegative Mask(MIPS16)
-Generate mips16 code
+Generate MIPS16 code
 
 mips3d
 Target Report RejectNegative Mask(MIPS3D)
@@ -173,9 +177,17 @@ mmips-tfile
 Target
 Use the mips-tfile postpass
 
+mmt
+Target Report Var(TARGET_MT)
+Allow the use of MT instructions
+
 mno-flush-func
 Target RejectNegative
 Do not use a cache-flushing function before calling stack trampolines
+
+mno-mdmx
+Target Report RejectNegative InverseVar(MDMX)
+Do not use MDMX instructions
 
 mno-mips16
 Target Report RejectNegative InverseMask(MIPS16)
