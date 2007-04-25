@@ -956,7 +956,7 @@ module_char (void)
 {
   int c;
 
-  c = fgetc (module_fp);
+  c = getc (module_fp);
 
   if (c == EOF)
     bad_module ("Unexpected EOF");
@@ -1276,7 +1276,7 @@ find_enum (const mstring *m)
 static void
 write_char (char out)
 {
-  if (fputc (out, module_fp) == EOF)
+  if (putc (out, module_fp) == EOF)
     gfc_fatal_error ("Error writing modules file: %s", strerror (errno));
 
   /* Add this to our MD5.  */

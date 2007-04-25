@@ -1033,7 +1033,7 @@ load_line (FILE *input, char **pbuf, int *pbuflen)
   buffer = *pbuf;
 
   preprocessor_flag = 0;
-  c = fgetc (input);
+  c = getc (input);
   if (c == '#')
     /* In order to not truncate preprocessor lines, we have to
        remember that this is one.  */
@@ -1042,7 +1042,7 @@ load_line (FILE *input, char **pbuf, int *pbuflen)
 
   for (;;)
     {
-      c = fgetc (input);
+      c = getc (input);
 
       if (c == EOF)
 	break;
@@ -1121,7 +1121,7 @@ load_line (FILE *input, char **pbuf, int *pbuflen)
 	  /* Truncate the rest of the line.  */
 	  for (;;)
 	    {
-	      c = fgetc (input);
+	      c = getc (input);
 	      if (c == '\n' || c == EOF)
 		break;
 
@@ -1602,7 +1602,7 @@ gfc_read_orig_filename (const char *filename, const char **canon_source_file)
   if (gfc_src_file == NULL)
     return NULL;
 
-  c = fgetc (gfc_src_file);
+  c = getc (gfc_src_file);
   ungetc (c, gfc_src_file);
 
   if (c != '#')
@@ -1618,7 +1618,7 @@ gfc_read_orig_filename (const char *filename, const char **canon_source_file)
   if (filename == NULL)
     return NULL;
 
-  c = fgetc (gfc_src_file);
+  c = getc (gfc_src_file);
   ungetc (c, gfc_src_file);
 
   if (c != '#')
