@@ -1,3 +1,10 @@
+2007-04-25  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
+	* gfortran.dg/equiv_6.f90 (set_arrays): Replaced subroutine
+	with two new subroutines to avoid parameter-induced aliasing.
+	* gfortran.dg/equiv_6.f90 (set_array_listpr): New.
+	* gfortran.dg/equiv_6.f90 (set_array_lisbit): New.
+
 2007-04-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/Warray-bounds.c: XFAIL test on 32-bit hppa targets.
