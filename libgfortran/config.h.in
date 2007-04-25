@@ -381,6 +381,9 @@
 /* Define to 1 if you have the `ftruncate' function. */
 #undef HAVE_FTRUNCATE
 
+/* libc includes geteuid */
+#undef HAVE_GETEUID
+
 /* libc includes getgid */
 #undef HAVE_GETGID
 
@@ -395,6 +398,9 @@
 
 /* libc includes getppid */
 #undef HAVE_GETPPID
+
+/* Define to 1 if you have the `getpwuid' function. */
+#undef HAVE_GETPWUID
 
 /* Define to 1 if you have the `getrlimit' function. */
 #undef HAVE_GETRLIMIT
@@ -521,6 +527,9 @@
 
 /* libm includes powl */
 #undef HAVE_POWL
+
+/* Define to 1 if you have the <pwd.h> header file. */
+#undef HAVE_PWD_H
 
 /* libm includes round */
 #undef HAVE_ROUND

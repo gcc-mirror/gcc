@@ -178,7 +178,7 @@ AC_HEADER_TIME
 AC_HAVE_HEADERS(stdlib.h string.h unistd.h signal.h)
 AC_CHECK_HEADERS(time.h sys/time.h sys/times.h sys/resource.h)
 AC_CHECK_HEADERS(sys/types.h sys/stat.h sys/wait.h floatingpoint.h ieeefp.h)
-AC_CHECK_HEADERS(fenv.h fptrap.h float.h execinfo.h)
+AC_CHECK_HEADERS(fenv.h fptrap.h float.h execinfo.h pwd.h)
 AC_CHECK_HEADER([complex.h],[AC_DEFINE([HAVE_COMPLEX_H], [1], [complex.h exists])])
 GCC_HEADER_STDINT(gstdint.h)
 
@@ -191,7 +191,7 @@ AC_CHECK_FUNCS(getrusage times mkstemp strtof strtold snprintf ftruncate chsize)
 AC_CHECK_FUNCS(chdir strerror getlogin gethostname kill link symlink perror)
 AC_CHECK_FUNCS(sleep time ttyname signal alarm ctime clock access fork execl)
 AC_CHECK_FUNCS(wait setmode execvp pipe dup2 close fdopen strcasestr getrlimit)
-AC_CHECK_FUNCS(gettimeofday stat fstat lstat)
+AC_CHECK_FUNCS(gettimeofday stat fstat lstat getpwuid)
 
 # Check for glibc backtrace functions
 AC_CHECK_FUNCS(backtrace backtrace_symbols)
@@ -204,9 +204,9 @@ AC_CHECK_LIB([c],[getgid],[AC_DEFINE([HAVE_GETGID],[1],[libc includes getgid])])
 AC_CHECK_LIB([c],[getpid],[AC_DEFINE([HAVE_GETPID],[1],[libc includes getpid])])
 AC_CHECK_LIB([c],[getppid],[AC_DEFINE([HAVE_GETPPID],[1],[libc includes getppid])])
 AC_CHECK_LIB([c],[getuid],[AC_DEFINE([HAVE_GETUID],[1],[libc includes getuid])])
+AC_CHECK_LIB([c],[geteuid],[AC_DEFINE([HAVE_GETEUID],[1],[libc includes geteuid])])
 
 # Check for C99 (and other IEEE) math functions
-# ??? This list seems awful long. Is there a better way to test for these?
 AC_CHECK_LIB([m],[acosf],[AC_DEFINE([HAVE_ACOSF],[1],[libm includes acosf])])
 AC_CHECK_LIB([m],[acos],[AC_DEFINE([HAVE_ACOS],[1],[libm includes acos])])
 AC_CHECK_LIB([m],[acosl],[AC_DEFINE([HAVE_ACOSL],[1],[libm includes acosl])])
