@@ -4007,62 +4007,36 @@ finish_static_assert (tree condition, tree message, location_t location,
     }
 }
 
-/* Called from trait_expr_value to evaluate either __has_nothrow_copy or 
-   __has_nothrow_assign, depending on copy_p.  */
+/* Called from trait_expr_value to evaluate either __has_nothrow_assign or 
+   __has_nothrow_copy, depending on assign_p.  */
 
 static bool
-classtype_has_nothrow_copy_or_assign_p (tree type, bool copy_p)
+classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
 {
-  if ((copy_p && TYPE_HAS_INIT_REF (type))
-      || (!copy_p && TYPE_HAS_ASSIGN_REF (type)))
+  tree fns;
+
+  if (assign_p)
     {
-      bool const_p = false;
-      tree t;
-
-      struct copy_data 
-      {
-	tree name;
-	int quals;
-      } data;
-
-      data.name = copy_p ? NULL_TREE : ansi_assopname (NOP_EXPR);
-
-      data.quals = TYPE_QUAL_CONST;
-      t = locate_copy (type, &data);
-      if (t)
-	{
-	  const_p = true;
-	  if (!TREE_NOTHROW (t))
-	    return false;
-	}
-
-      if (copy_p || !CP_TYPE_CONST_P (type))
-	{
-	  data.quals = TYPE_UNQUALIFIED;
-	  t = locate_copy (type, &data);
-	  if (t && !TREE_NOTHROW (t))
-	    return false;
-
-	  data.quals = TYPE_QUAL_VOLATILE;
-	  t = locate_copy (type, &data);
-	  if (t && !TREE_NOTHROW (t))
-	    return false;
-	}
-
-      data.quals = (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
-      t = locate_copy (type, &data);
-      if (t)
-	{
-	  const_p = true;
-	  if (!TREE_NOTHROW (t))
-	    return false;
-	}
-
-      if (!copy_p && CP_TYPE_CONST_P (type) && !const_p)
+      int ix;
+      ix = lookup_fnfields_1 (type, ansi_assopname (NOP_EXPR));
+      if (ix < 0)
 	return false;
+      fns = VEC_index (tree, CLASSTYPE_METHOD_VEC (type), ix);
+    } 
+  else if (TYPE_HAS_INIT_REF (type))
+    {
+      /* If construction of the copy constructor was postponed, create
+	 it now.  */
+      if (CLASSTYPE_LAZY_COPY_CTOR (type))
+	lazily_declare_fn (sfk_copy_constructor, type);
+      fns = CLASSTYPE_CONSTRUCTORS (type);
     }
   else
     return false;
+
+  for (; fns; fns = OVL_NEXT (fns))
+    if (!TREE_NOTHROW (OVL_CURRENT (fns)))
+      return false;
 
   return true;
 }
@@ -4080,9 +4054,11 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
   switch (kind)
     {
     case CPTK_HAS_NOTHROW_ASSIGN:
-      return (trait_expr_value (CPTK_HAS_TRIVIAL_ASSIGN, type1, type2)
-	      || (CLASS_TYPE_P (type1)
-		  && classtype_has_nothrow_copy_or_assign_p (type1, false)));
+      return (!CP_TYPE_CONST_P (type1) && type_code1 != REFERENCE_TYPE
+	      && (trait_expr_value (CPTK_HAS_TRIVIAL_ASSIGN, type1, type2)
+		  || (CLASS_TYPE_P (type1)
+		      && classtype_has_nothrow_assign_or_copy_p (type1,
+								 true))));
 
     case CPTK_HAS_TRIVIAL_ASSIGN:
       return (!CP_TYPE_CONST_P (type1) && type_code1 != REFERENCE_TYPE
@@ -4104,7 +4080,7 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_HAS_NOTHROW_COPY:
       return (trait_expr_value (CPTK_HAS_TRIVIAL_COPY, type1, type2)
 	      || (CLASS_TYPE_P (type1)
-		  && classtype_has_nothrow_copy_or_assign_p (type1, true)));
+		  && classtype_has_nothrow_assign_or_copy_p (type1, false)));
 
     case CPTK_HAS_TRIVIAL_COPY:
       return (pod_type_p (type1) || type_code1 == REFERENCE_TYPE

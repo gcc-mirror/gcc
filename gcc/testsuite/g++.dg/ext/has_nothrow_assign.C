@@ -146,7 +146,7 @@ int main()
   assert (NTEST (I1));
   assert (PTEST (J));
   assert (NTEST (const K));
-  assert (PTEST (const L));
+  assert (NTEST (const L));
 
   return 0;
 }

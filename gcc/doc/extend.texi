@@ -11246,13 +11246,12 @@ pair of types).
 
 @table @code
 @item __has_nothrow_assign (type)
-If @code{__has_trivial_assign (type)} is true then the trait is true, else if
-@code{type} is a cv class or union type with copy assignment operators that
-are known not to throw an exception then the trait is true, else it is false.
-If @code{type} is const qualified, any copy assignment operator must
-be both known not to throw an exception, and const qualified, for the
-trait to be true.  Requires: @code{type} shall be a complete type, an
-array type of unknown bound, or is a @code{void} type.
+If @code{type} is const qualified or is a reference type then the trait is
+false.  Otherwise if @code{__has_trivial_assign (type)} is true then the trait
+is true, else if @code{type} is a cv class or union type with copy assignment
+operators that are known not to throw an exception then the trait is true,
+else it is false.  Requires: @code{type} shall be a complete type, an array
+type of unknown bound, or is a @code{void} type.
 
 @item __has_nothrow_copy (type)
 If @code{__has_trivial_copy (type)} is true then the trait is true, else if
