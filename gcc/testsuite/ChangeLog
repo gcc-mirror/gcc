@@ -1,3 +1,14 @@
+2007-04-25  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/31698
+	* g++.dg/other/pr31698.C: New testcase.
+
+	Backport from mainline:
+	2006-10-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/29446
+	* gcc.dg/torture/pr29446.c: New testcase.
+
 2007-04-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR target/31641

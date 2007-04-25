@@ -1,3 +1,16 @@
+2007-04-25  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-10-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/29446
+	* tree-vrp.c (fix_equivalence_set): Remove.
+	(extract_range_from_assert): Do not call fix_equivalence_set.
+	(debug_value_range): Print a newline.
+	(compare_name_with_value): For equivalence sets with
+	inconsistent value ranges conservatively bail out.
+	(compare_names): Likewise.
+
 2007-04-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR target/31641
