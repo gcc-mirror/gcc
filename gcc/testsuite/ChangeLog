@@ -1,3 +1,8 @@
+2007-04-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/Warray-bounds.c: XFAIL test on 32-bit hppa targets.
+	* g++.dg/warn/Warray-bounds.C: Likewise.
+
 2007-04-24  Ian Lance Taylor  <iant@google.com>
 
 	PR tree-optimizatoin/31605
