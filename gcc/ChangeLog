@@ -1,3 +1,14 @@
+2007-04-25  Thiemo Seufer  <ths@mips.com>
+
+	* config/mips/mips.opt (mdmx, mmt, mno-mdmx): New options.
+	(mips16): Fix typo.
+	* config/mips/mips.h (ASM_SPEC): Pass -mmt/-mno-mt and -mdmx/-mno-mdmx
+	on to the assembler.  Improve handling of -mno-mips16.  Add handling
+	of -mno-mips3d, -mno-dsp, -mno-dspr2.
+	* doc/invoke.texi (MIPS Options): Whitespace cleanup.  Fix wrong use
+	of @itemx.  Document -mno-dsp, -mno-dspr2, -mno-paired-single, -mdmx,
+	-mno-mdmx, -mno-mips3d, -mmt and -mno-mt.
+
 2007-04-25  Danny Smith  <dannysmith.users.sourceforge.net>
 
 	PR target/31680

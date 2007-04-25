@@ -844,10 +844,12 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #define ASM_SPEC "\
 %{G*} %(endian_spec) %{mips1} %{mips2} %{mips3} %{mips4} \
 %{mips32} %{mips32r2} %{mips64} \
-%{mips16:%{!mno-mips16:-mips16}} %{mno-mips16:-no-mips16} \
-%{mips3d:-mips3d} \
-%{mdsp} \
-%{mdspr2} \
+%{mips16} %{mno-mips16:-no-mips16} \
+%{mips3d} %{mno-mips3d:-no-mips3d} \
+%{mdmx} %{mno-mdmx:-no-mdmx} \
+%{mdsp} %{mno-dsp} \
+%{mdspr2} %{mno-dspr2} \
+%{mmt} %{mno-mt} \
 %{mfix-vr4120} %{mfix-vr4130} \
 %(subtarget_asm_optimizing_spec) \
 %(subtarget_asm_debugging_spec) \
