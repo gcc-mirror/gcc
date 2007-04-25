@@ -1,3 +1,9 @@
+2007-04-25  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure: Regenerate using autoconf 2.59.
+	* Makefile.in: Likewise.  
+	* config.h.in: Likewise.
+
 2007-04-24  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/27740
