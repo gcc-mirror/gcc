@@ -22,29 +22,36 @@ Boston, MA 02110-1301, USA.  */
 
 
 #define TARGET_OS_CPP_BUILTINS()	\
-  do {					\
-    builtin_define ("__vxworks");	\
-    builtin_define ("CPU=SH7000");		\
-  } while (0)
+  do					\
+    {					\
+      builtin_define ("CPU=SH7000");	\
+      VXWORKS_OS_CPP_BUILTINS ();	\
+    }					\
+  while (0)
 
-/* VxWorks does all the library stuff itself.  */
-#undef  LIB_SPEC
-#define LIB_SPEC 	""
+#undef SUBTARGET_OVERRIDE_OPTIONS
+#define SUBTARGET_OVERRIDE_OPTIONS VXWORKS_OVERRIDE_OPTIONS
 
-/* VxWorks uses object files, not loadable images.  Make the linker just
-   combine objects.  */
-#undef  LINK_SPEC
-#define LINK_SPEC 	"-r"
+#undef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC VXWORKS_ADDITIONAL_CPP_SPEC
 
-/* VxWorks provides the functionality of crt0.o and friends itself.  */
-#undef  STARTFILE_SPEC
-#define STARTFILE_SPEC 	""
+#undef SUBTARGET_LINK_EMUL_SUFFIX
+#define SUBTARGET_LINK_EMUL_SUFFIX "_vxworks"
 
-#undef  ENDFILE_SPEC
-#define ENDFILE_SPEC 	""
+#undef LIB_SPEC
+#define LIB_SPEC VXWORKS_LIB_SPEC
+#undef LINK_SPEC
+#define LINK_SPEC VXWORKS_LINK_SPEC " " SH_LINK_SPEC
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC VXWORKS_STARTFILE_SPEC
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC VXWORKS_ENDFILE_SPEC
 
-#undef  TARGET_VERSION
+#undef TARGET_VERSION
 #define TARGET_VERSION	fputs (" (SH/VxWorks)", stderr);
 
 /* There is no default multilib.  */
 #undef MULTILIB_DEFAULTS
+
+#undef FUNCTION_PROFILER
+#define FUNCTION_PROFILER VXWORKS_FUNCTION_PROFILER

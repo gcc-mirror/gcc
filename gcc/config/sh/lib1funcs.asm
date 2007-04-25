@@ -40,6 +40,13 @@ Boston, MA 02110-1301, USA.  */
 
 #include "lib1funcs.h"
 
+/* t-vxworks needs to build both PIC and non-PIC versions of libgcc,
+   so it is more convenient to define NO_FPSCR_VALUES here than to
+   define it on the command line.  */
+#if defined __vxworks && defined __PIC__
+#define NO_FPSCR_VALUES
+#endif
+	
 #if ! __SH5__
 #ifdef L_ashiftrt
 	.global	GLOBAL(ashiftrt_r4_0)
@@ -1967,9 +1974,16 @@ GLOBAL(set_fpscr):
 	lds r4,fpscr
 #ifdef __PIC__
 	mov.l	r12,@-r15
+#ifdef __vxworks
+	mov.l	LOCAL(set_fpscr_L0_base),r12
+	mov.l	LOCAL(set_fpscr_L0_index),r0
+	mov.l	@r12,r12
+	mov.l	@(r0,r12),r12
+#else
 	mova	LOCAL(set_fpscr_L0),r0
 	mov.l	LOCAL(set_fpscr_L0),r12
 	add	r0,r12
+#endif
 	mov.l	LOCAL(set_fpscr_L1),r0
 	mov.l	@(r0,r12),r1
 	mov.l	@r15+,r12
@@ -2004,8 +2018,15 @@ GLOBAL(set_fpscr):
 #endif
 	.align 2
 #ifdef __PIC__
+#ifdef __vxworks
+LOCAL(set_fpscr_L0_base):
+	.long ___GOTT_BASE__
+LOCAL(set_fpscr_L0_index):
+	.long ___GOTT_INDEX__
+#else
 LOCAL(set_fpscr_L0):
 	.long _GLOBAL_OFFSET_TABLE_
+#endif
 LOCAL(set_fpscr_L1):
 	.long GLOBAL(fpscr_values@GOT)
 #else
@@ -2080,12 +2101,22 @@ GLOBAL(ic_invalidate):
 	.global GLOBAL(ic_invalidate)
 	HIDDEN_FUNC(GLOBAL(ic_invalidate))
 GLOBAL(ic_invalidate):
-	mov.l	0f,r1
 #ifdef __pic__
-	mova	0f,r0
-	mov.l	1f,r2
+#ifdef __vxworks
+	mov.l	1f,r1
+	mov.l	2f,r0
+	mov.l	@r1,r1
+	mov.l	0f,r2
+	mov.l	@(r0,r1),r0
+#else
+	mov.l	1f,r1
+	mova	1f,r0
+	mov.l	0f,r2
 	add	r1,r0
+#endif
 	mov.l	@(r0,r2),r1
+#else
+	mov.l	0f,r1
 #endif
 	ocbwb	@r4
 	mov.l	@(8,r1),r0
@@ -2098,9 +2129,13 @@ GLOBAL(ic_invalidate):
 0:	.long   GLOBAL(ic_invalidate_array)
 #else /* __pic__ */
 	.global GLOBAL(ic_invalidate_array)
-	/* ??? Why won't the assembler allow to add these two constants?  */
-0:	.long   _GLOBAL_OFFSET_TABLE_
-1:	.long   GLOBAL(ic_invalidate_array)@GOT
+0:	.long   GLOBAL(ic_invalidate_array)@GOT
+#ifdef __vxworks
+1:	.long	___GOTT_BASE__
+2:	.long	___GOTT_INDEX__
+#else
+1:	.long   _GLOBAL_OFFSET_TABLE_
+#endif
 	ENDFUNC(GLOBAL(ic_invalidate))
 #endif /* __pic__ */
 #endif /* SH4 */

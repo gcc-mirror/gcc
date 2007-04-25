@@ -2236,7 +2236,7 @@ sh-*-rtems*)
 	;;
 sh-wrs-vxworks)
 	tmake_file="$tmake_file sh/t-sh sh/t-elf sh/t-vxworks"
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/embed-elf.h sh/vxworks.h"
+	tm_file="${tm_file} elfos.h svr4.h sh/elf.h sh/embed-elf.h vx-common.h vxworks.h sh/vxworks.h"
 	;;
 sh-*-*)
 	tm_file="${tm_file} dbxcoff.h sh/coff.h"
