@@ -1,3 +1,9 @@
+2007-04-25  Kyle Galloway  <kgallowa@redhat.com>
+
+	* gnu/classpath/jdwp/VMIdManager.java (getObjectId): Deal with null
+	objects.
+	(get): Deal with ObjectId of 0. 
+
 2007-04-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR libgcj/31084
