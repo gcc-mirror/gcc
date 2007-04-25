@@ -1,3 +1,26 @@
+2007-04-25  Richard Sandiford  <richard@codesourcery.com>
+
+	* config.gcc (sh-wrs-vxworks): Don't include dbxelf.h.  Include
+	sh/elf.h, vx-common.h and vxworks.h.
+	* config/sh/sh.h: Include config/vxworks-dummy.h.
+	(SUBTARGET_OVERRIDE_OPTIONS): Define.
+	(OVERRIDE_OPTIONS): Use it.
+	* config/sh/sh.md (GOTaddr2picreg): Add suport for VxWorks RTPs.
+	(vxworks_picreg): New pattern.
+	* config/sh/vxworks.h (TARGET_OS_CPP_BUILTINS): Use
+	VXWORKS_OS_CPP_BUILTINS.
+	(LIB_SPEC, LINK_SPEC, STARTFILE_SPEC, ENDFILE_SPEC): Redefine
+	to their VXWORKS_* equivalents.
+	(SUBTARGET_OVERRIDE_OPTIONS, SUBTARGET_CPP_SPEC): Define.
+	(SUBTARGET_LINK_EMUL_SUFFIX, FUNCTION_PROFILER): Define.
+	* config/sh/lib1funcs.asm (NO_FPSCR_VALUES): Define for VxWorks PIC.
+	(set_fpscr, ic_invalidate): Add VxWorks PIC sequences.
+	* config/sh/t-vxworks (MULTILIB_OPTIONS): Add m4a, -mrtp and
+	-mrtp/-fPIC multilibs.
+	(MULTILIB_EXCEPTIONS): Generalize globs accordingly.
+	(MULTILIB_MATCHES, EXTRA_MULTILIB_PARTS): Define.
+	(MULTILIB_OSDIRNAMES): Delete.
+
 2007-04-25  Anatoly Sokolov <aesok@post.ru>
 
 	PR target/18989

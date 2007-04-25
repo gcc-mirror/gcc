@@ -24,6 +24,8 @@ Boston, MA 02110-1301, USA.  */
 #ifndef GCC_SH_H
 #define GCC_SH_H
 
+#include "config/vxworks-dummy.h"
+
 #define TARGET_VERSION \
   fputs (" (Hitachi SH)", stderr);
 
@@ -530,10 +532,13 @@ extern enum sh_divide_strategy_e sh_div_strategy;
 #define SH_DIV_STRATEGY_DEFAULT SH_DIV_CALL
 #endif
 
+#define SUBTARGET_OVERRIDE_OPTIONS (void) 0
+
 #define OVERRIDE_OPTIONS 						\
 do {									\
   int regno;								\
 									\
+  SUBTARGET_OVERRIDE_OPTIONS;						\
   if (flag_finite_math_only == 2)					\
     flag_finite_math_only						\
       = !flag_signaling_nans && TARGET_SH2E && ! TARGET_IEEE;		\
