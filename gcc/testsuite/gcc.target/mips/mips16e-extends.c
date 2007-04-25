@@ -8,7 +8,7 @@ short cksum16 (unsigned long n)
   return l;
 }
 
-char cksum8 (unsigned long n)
+signed char cksum8 (unsigned long n)
 {
   unsigned long l;
   l = validate (n, (n >> 8) + (n & 0xff));
