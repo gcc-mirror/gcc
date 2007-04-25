@@ -1,3 +1,11 @@
+2007-04-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_classes.h: Remove redundant inline specifiers.
+	* include/bits/ios_base.h: Likewise.
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Adjust dg-error line
+	numbers.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Likewise.
+
 2007-04-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.h (class collate, class collate_byname):

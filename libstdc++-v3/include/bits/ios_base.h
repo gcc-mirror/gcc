@@ -546,8 +546,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *  @brief  Access to format flags.
      *  @return  The format control flags for both input and output.
     */
-    inline fmtflags
-    flags() const { return _M_flags; }
+    fmtflags
+    flags() const
+    { return _M_flags; }
 
     /**
      *  @brief  Setting new format flags all at once.
@@ -556,7 +557,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *
      *  This function overwrites all the format flags with @a fmtfl.
     */
-    inline fmtflags
+    fmtflags
     flags(fmtflags __fmtfl)
     {
       fmtflags __old = _M_flags;
@@ -572,7 +573,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *  This function sets additional flags in format control.  Flags that
      *  were previously set remain set.
     */
-    inline fmtflags
+    fmtflags
     setf(fmtflags __fmtfl)
     {
       fmtflags __old = _M_flags;
@@ -589,7 +590,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *  This function clears @a mask in the format flags, then sets
      *  @a fmtfl @c & @a mask.  An example mask is @c ios_base::adjustfield.
     */
-    inline fmtflags
+    fmtflags
     setf(fmtflags __fmtfl, fmtflags __mask)
     {
       fmtflags __old = _M_flags;
@@ -604,8 +605,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *
      *  This function clears @a mask in the format flags.
     */
-    inline void
-    unsetf(fmtflags __mask) { _M_flags &= ~__mask; }
+    void
+    unsetf(fmtflags __mask)
+    { _M_flags &= ~__mask; }
 
     /**
      *  @brief  Flags access.
@@ -616,15 +618,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *  DR 189.
      *  @endif
     */
-    inline streamsize
-    precision() const { return _M_precision; }
+    streamsize
+    precision() const
+    { return _M_precision; }
 
     /**
      *  @brief  Changing flags.
      *  @param  prec  The new precision value.
      *  @return  The previous value of precision().
     */
-    inline streamsize
+    streamsize
     precision(streamsize __prec)
     {
       streamsize __old = _M_precision;
@@ -638,15 +641,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *
      *  "Minimum field width" refers to the number of characters.
     */
-    inline streamsize
-    width() const { return _M_width; }
+    streamsize
+    width() const
+    { return _M_width; }
 
     /**
      *  @brief  Changing flags.
      *  @param  wide  The new width value.
      *  @return  The previous value of width().
     */
-    inline streamsize
+    streamsize
     width(streamsize __wide)
     {
       streamsize __old = _M_width;
@@ -688,8 +692,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *  returns @c loc.  Otherwise, it returns a copy of @c std::locale(),
      *  the global C++ locale.
     */
-    inline locale
-    getloc() const { return _M_ios_locale; }
+    locale
+    getloc() const
+    { return _M_ios_locale; }
 
     /**
      *  @brief  Locale access
@@ -698,8 +703,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *  Like getloc above, but returns a reference instead of
      *  generating a copy.
     */
-    inline const locale&
-    _M_getloc() const { return _M_ios_locale; }
+    const locale&
+    _M_getloc() const
+    { return _M_ios_locale; }
 
     // [27.4.2.5] ios_base storage functions
     /**
@@ -732,7 +738,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *  obtain an index that is safe to use.  Also note that since the array
      *  can grow dynamically, it is not safe to hold onto the reference.
     */
-    inline long&
+    long&
     iword(int __ix)
     {
       _Words& __word = (__ix < _M_word_size)
@@ -753,7 +759,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *  obtain an index that is safe to use.  Also note that since the array
      *  can grow dynamically, it is not safe to hold onto the reference.
     */
-    inline void*&
+    void*&
     pword(int __ix)
     {
       _Words& __word = (__ix < _M_word_size)
