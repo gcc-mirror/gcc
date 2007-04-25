@@ -1,3 +1,8 @@
+2007-04-25  Dirk Mueller  <dmueller@suse.de>
+
+	* c-typeck.c (build_compound_expr): Annotate warning()
+	call with OPT_Wunused_value.
+
 2007-04-25  Thiemo Seufer  <ths@mips.com>
 
 	* config/mips/mips.opt (mdmx, mmt, mno-mdmx): New options.
