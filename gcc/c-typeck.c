@@ -3402,7 +3402,8 @@ build_compound_expr (tree expr1, tree expr2)
 		       || TREE_CODE (TREE_OPERAND (expr1, 1)) == NOP_EXPR))
 	    ; /* (void) a, (void) b, c */
 	  else
-	    warning (0, "left-hand operand of comma expression has no effect");
+	    warning (OPT_Wunused_value, 
+		     "left-hand operand of comma expression has no effect");
 	}
     }
 
