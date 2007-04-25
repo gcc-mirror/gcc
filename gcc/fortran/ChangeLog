@@ -1,3 +1,9 @@
+2007-04-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/31299
+	* intrinsic.texi (GETLOG): Update documentation to reflect
+	library changes.
+
 2007-04-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31587
