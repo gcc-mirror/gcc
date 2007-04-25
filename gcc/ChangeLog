@@ -1,3 +1,12 @@
+2007-04-24  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* real.c (mpfr_from_real): Handle Inf and NaN, and allow the
+	rounding mode to be specified by the caller.
+	(real_to_mpfr) Likewise.
+	* real.h: Update mpfr_from_real, mpfr_to_real prototypes to
+	include new arguments.
+	* builtins.c: Update mpfr_from_real, mpfr_to_real calls.
+
 2007-04-24  Ian Lance Taylor  <iant@google.com>
 
 	PR tree-optimization/31605

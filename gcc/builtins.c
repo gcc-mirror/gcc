@@ -12205,7 +12205,7 @@ do_mpfr_ckconv (mpfr_srcptr m, tree type, int inexact)
     {
       REAL_VALUE_TYPE rr;
 
-      real_from_mpfr (&rr, m);
+      real_from_mpfr (&rr, m, type, GMP_RNDN);
       /* Proceed iff GCC's REAL_VALUE_TYPE can hold the MPFR value,
 	 check for overflow/underflow.  If the REAL_VALUE_TYPE is zero
 	 but the mpft_t is not, then we underflowed in the
@@ -12258,7 +12258,7 @@ do_mpfr_arg1 (tree arg, tree type, int (*func)(mpfr_ptr, mpfr_srcptr, mp_rnd_t),
 	  mpfr_t m;
 
 	  mpfr_init2 (m, prec);
-	  mpfr_from_real (m, ra);
+	  mpfr_from_real (m, ra, GMP_RNDN);
 	  mpfr_clear_flags ();
 	  inexact = func (m, m, GMP_RNDN);
 	  result = do_mpfr_ckconv (m, type, inexact);
@@ -12301,8 +12301,8 @@ do_mpfr_arg2 (tree arg1, tree arg2, tree type,
 	  mpfr_t m1, m2;
 
 	  mpfr_inits2 (prec, m1, m2, NULL);
-	  mpfr_from_real (m1, ra1);
-	  mpfr_from_real (m2, ra2);
+	  mpfr_from_real (m1, ra1, GMP_RNDN);
+	  mpfr_from_real (m2, ra2, GMP_RNDN);
 	  mpfr_clear_flags ();
 	  inexact = func (m1, m1, m2, GMP_RNDN);
 	  result = do_mpfr_ckconv (m1, type, inexact);
@@ -12349,9 +12349,9 @@ do_mpfr_arg3 (tree arg1, tree arg2, tree arg3, tree type,
 	  mpfr_t m1, m2, m3;
 
 	  mpfr_inits2 (prec, m1, m2, m3, NULL);
-	  mpfr_from_real (m1, ra1);
-	  mpfr_from_real (m2, ra2);
-	  mpfr_from_real (m3, ra3);
+	  mpfr_from_real (m1, ra1, GMP_RNDN);
+	  mpfr_from_real (m2, ra2, GMP_RNDN);
+	  mpfr_from_real (m3, ra3, GMP_RNDN);
 	  mpfr_clear_flags ();
 	  inexact = func (m1, m1, m2, m3, GMP_RNDN);
 	  result = do_mpfr_ckconv (m1, type, inexact);
@@ -12393,7 +12393,7 @@ do_mpfr_sincos (tree arg, tree arg_sinp, tree arg_cosp)
 	  mpfr_t m, ms, mc;
 
 	  mpfr_inits2 (prec, m, ms, mc, NULL);
-	  mpfr_from_real (m, ra);
+	  mpfr_from_real (m, ra, GMP_RNDN);
 	  mpfr_clear_flags ();
 	  inexact = mpfr_sin_cos (ms, mc, m, GMP_RNDN);
 	  result_s = do_mpfr_ckconv (ms, type, inexact);
