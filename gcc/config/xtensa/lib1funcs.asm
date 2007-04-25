@@ -1,5 +1,6 @@
 /* Assembly functions for the Xtensa version of libgcc1.
-   Copyright (C) 2001, 2002, 2003, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -530,7 +531,11 @@ __udivsi3:
 	leaf_return
 
 .Lerror:
-	/* just return 0; could throw an exception */
+	/* Divide by zero: Use an illegal instruction to force an exception.
+	   The subsequent "DIV0" string can be recognized by the exception
+	   handler to identify the real cause of the exception.  */
+	ill
+	.ascii	"DIV0"
 
 .Lreturn0:
 	movi	a2, 0
@@ -597,7 +602,11 @@ __divsi3:
 	leaf_return
 
 .Lerror:
-	/* just return 0; could throw an exception */
+	/* Divide by zero: Use an illegal instruction to force an exception.
+	   The subsequent "DIV0" string can be recognized by the exception
+	   handler to identify the real cause of the exception.  */
+	ill
+	.ascii	"DIV0"
 
 .Lreturn0:
 	movi	a2, 0
@@ -645,10 +654,16 @@ __umodsi3:
 	leaf_return
 
 .Lle_one:
-	/* The divisor is either 0 or 1, so just return 0.
-	   Someday we may want to throw an exception if the divisor is 0.  */
+	beqz	a3, .Lerror
 	movi	a2, 0
 	leaf_return
+
+.Lerror:
+	/* Divide by zero: Use an illegal instruction to force an exception.
+	   The subsequent "DIV0" string can be recognized by the exception
+	   handler to identify the real cause of the exception.  */
+	ill
+	.ascii	"DIV0"
 	.size	__umodsi3,.-__umodsi3
 
 #endif /* L_umodsi3 */
@@ -697,10 +712,16 @@ __modsi3:
 	leaf_return
 
 .Lle_one:
-	/* udivisor is either 0 or 1, so just return 0.
-	   Someday we may want to throw an exception if udivisor is 0.  */
+	beqz	a3, .Lerror
 	movi	a2, 0
 	leaf_return
+
+.Lerror:
+	/* Divide by zero: Use an illegal instruction to force an exception.
+	   The subsequent "DIV0" string can be recognized by the exception
+	   handler to identify the real cause of the exception.  */
+	ill
+	.ascii	"DIV0"
 	.size	__modsi3,.-__modsi3
 
 #endif /* L_modsi3 */
