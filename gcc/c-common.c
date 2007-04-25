@@ -6065,14 +6065,16 @@ handle_sentinel_attribute (tree *node, tree name, tree args,
 
       if (TREE_CODE (position) != INTEGER_CST)
 	{
-	  warning (0, "requested position is not an integer constant");
+	  warning (OPT_Wattributes, 
+		   "requested position is not an integer constant");
 	  *no_add_attrs = true;
 	}
       else
 	{
 	  if (tree_int_cst_lt (position, integer_zero_node))
 	    {
-	      warning (0, "requested position is less than zero");
+	      warning (OPT_Wattributes,
+		       "requested position is less than zero");
 	      *no_add_attrs = true;
 	    }
 	}

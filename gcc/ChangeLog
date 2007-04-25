@@ -2,8 +2,10 @@
 
 	* c-typeck.c (build_compound_expr): Annotate warning()
 	call with OPT_Wunused_value.
-	* tree-ssa.c ((warn_uninit): Annotate warning with
-	-Wuninitialized.
+	* tree-ssa.c (warn_uninit): Annotate warning with
+	OPT_Wunintialized.
+	* c-common.c (handle_sentinel_attribute): Annotate warning
+	call with OPT_Wattributes.
 
 2007-04-25  Thiemo Seufer  <ths@mips.com>
 
