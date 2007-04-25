@@ -4401,8 +4401,9 @@ Subroutine
 @end multitable
 
 @item @emph{Return value}:
-Stores the current user name in @var{LOGIN}.  (On systems where 
-the @code{getlogin(3)} function is not implemented, this will
+Stores the current user name in @var{LOGIN}.  (On systems where POSIX
+functions @code{geteuid} and @code{getpwuid} are not available, and 
+the @code{getlogin} function is not implemented either, this will
 return a blank string.)
 
 @item @emph{Example}:
