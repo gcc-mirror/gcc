@@ -1,3 +1,9 @@
+2007-04-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* semantics.c (classtype_has_nothrow_copy_or_assign_p): Adjust
+	per N2255; rename as classtype_has_nothrow_assign_or_copy_p.
+	(trait_expr_value): Adjust.
+
 2007-04-23  Simon Baldwin  <simonb@google.com>
 
 	* decl.c (grokparms): Added new error for duplicate function
