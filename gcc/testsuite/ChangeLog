@@ -1,3 +1,9 @@
+2007-04-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/reload-1.c. Include <stdint.h>.  Compile for all
+	ilp32 i?86-*-* and x86_64-*-* targets.  Do not skip test for -m64.
+	Use scan-rtl-dump-not procedure to scan RTL dump.  Cleanup csa dump.
+
 2007-04-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/31668
