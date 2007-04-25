@@ -1,3 +1,12 @@
+2007-04-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/31299
+	* intrinsics/getlog.c: Use getpwuid and geteuid instead of
+	getlogin if they are available.
+	* configure.ac: Add checks for getpwuid and geteuid.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2007-04-25  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* configure: Regenerate using autoconf 2.59.
@@ -6,7 +15,7 @@
 
 2007-04-24  Janne Blomqvist  <jb@gcc.gnu.org>
 
-	PR fortran/27740
+	PR libfortran/27740
 	* configure.ac: New test to determine if symbol versioning is
 	supported.
 	* Makefile.am: Use result of above test to add appropriate linker
