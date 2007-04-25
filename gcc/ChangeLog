@@ -2,6 +2,8 @@
 
 	* c-typeck.c (build_compound_expr): Annotate warning()
 	call with OPT_Wunused_value.
+	* tree-ssa.c ((warn_uninit): Annotate warning with
+	-Wuninitialized.
 
 2007-04-25  Thiemo Seufer  <ths@mips.com>
 
