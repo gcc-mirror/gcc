@@ -1,8 +1,9 @@
-/* { dg-do compile { target i?86-*-* } } */
+/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 /* { dg-options "-O3 -msse2 -fdump-rtl-csa" } */
-/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
-/* { dg-final { scan-file-not reload-1.c.167r.csa "deleted 1 dead insns" } }*/
+
 #include <emmintrin.h>
+#include <stdint.h>
+
 typedef __SIZE_TYPE__ size_t;
 typedef float vFloat __attribute__ ((__vector_size__ (16)));
 typedef double vDouble __attribute__ ((__vector_size__ (16)));
@@ -107,3 +108,6 @@ long foo (job *j )
   fj *jd = (fj*) j;
   return bar (&jd->src, &jd->dest, jd->g, jd->flags);
 }
+
+/* { dg-final { scan-rtl-dump-not "deleted 1 dead insns" "csa" } } */
+/* { dg-final { cleanup-rtl-dump "csa" } } */
