@@ -14,7 +14,13 @@ program check_6
               (lispat(1),listpr(10))
   lischk = (/0, 0, 0, 0, 0, 0, 0, 0, 0, 1, &
              2, 0, 0, 5, 6, 7, 8, 9,10, 0/)
-  call set_arrays (listpr, lisbit)
+
+! These two calls replace the previously made call to subroutine
+! set_arrays which was erroneous because of parameter-induced 
+! aliasing.
+  call set_array_listpr (listpr)
+  call set_array_lisbit (lisbit)
+
   if (any (listpr.ne.lischk)) call abort ()
   call sub1
   call sub2
@@ -28,7 +34,8 @@ subroutine sub1
   equivalence (listpr(10),lisbit(1)), &
               (listpr(10),mwkx(10)),  &
               (listpr(10),lispat(1))
-  call set_arrays (listpr, lisbit)
+  call set_array_listpr (listpr)
+  call set_array_lisbit (lisbit)
   if (any (listpr .ne. lischk)) call abort ()
 end
 !
@@ -41,7 +48,8 @@ subroutine sub2
   dimension    listpr(20),lisbit(10),lispat(8)
   equivalence (lispat(1),listpr(10)), &
               (mwkx(10),lisbit(1),listpr(10))
-  call set_arrays (listpr, lisbit)
+  call set_array_listpr (listpr)
+  call set_array_lisbit (lisbit)
   if (any (listpr .ne. lischk)) call abort ()
 end
 ! This gave correct results because the order in which the
@@ -52,12 +60,18 @@ subroutine sub3
   dimension    listpr(20),lisbit(10),lispat(8)
   equivalence (listpr(10),lisbit(1),mwkx(10)), &
               (lispat(1),listpr(10))
-  call set_arrays (listpr, lisbit)
+  call set_array_listpr (listpr)
+  call set_array_lisbit (lisbit)
   if (any (listpr .ne. lischk)) call abort ()
 end
-subroutine set_arrays (listpr, lisbit)
-  dimension listpr(20),lisbit(10)
+
+subroutine set_array_listpr (listpr)
+  dimension listpr(20)
   listpr = 0
+end
+
+subroutine set_array_lisbit (lisbit)
+  dimension lisbit(10)
   lisbit = (/(i, i = 1, 10)/)
   lisbit((/3,4/)) = 0
 end
