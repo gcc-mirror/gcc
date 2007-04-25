@@ -603,7 +603,7 @@ i386_pe_file_end (void)
       for (q = export_head; q != NULL; q = q->next)
 	{
 	  fprintf (asm_out_file, "\t.ascii \" -export:%s%s\"\n",
-		   targetm.strip_name_encoding (q->name),
+		   default_strip_name_encoding (q->name),
 		   (q->is_data ? ",data" : ""));
 	}
     }
