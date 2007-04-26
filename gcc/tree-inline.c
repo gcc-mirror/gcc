@@ -644,7 +644,8 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	    (NULL_TREE,
 	     id->eh_region_offset + TREE_INT_CST_LOW (TREE_OPERAND (*tp, 0)));
 
-      TREE_TYPE (*tp) = remap_type (TREE_TYPE (*tp), id);
+      if (TREE_CODE (*tp) != OMP_CLAUSE)
+	TREE_TYPE (*tp) = remap_type (TREE_TYPE (*tp), id);
 
       /* The copied TARGET_EXPR has never been expanded, even if the
 	 original node was expanded already.  */

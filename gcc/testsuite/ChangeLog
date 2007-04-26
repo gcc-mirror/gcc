@@ -1,5 +1,8 @@
 2007-04-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/31598
+	* g++.dg/gomp/pr31598.C: New test.
+
 	PR tree-optimization/30558
 	* g++.dg/gomp/pr30558.C: New test.
 
