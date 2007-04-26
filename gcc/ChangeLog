@@ -1,3 +1,10 @@
+2007-04-26  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.c (avr_mcu_types): Add support for ATmega8HVA and 
+	ATmega16HVA devices. Move AT90USB82 device to 'avr5' architecture.
+	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): (Ditto.).
+	* config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
+
 2007-04-26  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.md (ip_value):  Fix itanium_class attribute.
