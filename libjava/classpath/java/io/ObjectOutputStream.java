@@ -1211,11 +1211,17 @@ public class ObjectOutputStream extends OutputStream
   }
 
 
+/* GCJ LOCAL */
   // writes out FIELDS of OBJECT for the specified ObjectStreamClass.
-  // FIELDS are already in canonical order.
+  // FIELDS are already supposed already to be in canonical order, but
+  // under some circumstances (to do with Proxies) this isn't the
+  // case, so we call ensureFieldsSet().
   private void writeFields(Object obj, ObjectStreamClass osc)
     throws IOException
   {
+    osc.ensureFieldsSet(osc.forClass());
+/* END GCJ LOCAL */
+
     ObjectStreamField[] fields = osc.fields;
     boolean oldmode = setBlockDataMode(false);
 

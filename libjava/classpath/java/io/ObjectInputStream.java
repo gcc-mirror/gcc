@@ -223,6 +223,15 @@ public class ObjectInputStream extends InputStream
        case TC_PROXYCLASSDESC:
  	{
  	  if(dump) dumpElementln("PROXYCLASS");
+
+/* GCJ LOCAL */
+	  // The grammar at this point is
+	  //   TC_PROXYCLASSDESC newHandle proxyClassDescInfo
+	  // i.e. we have to assign the handle immediately after
+	  // reading the marker.
+ 	  int handle = assignNewHandle("Dummy proxy");
+/* END GCJ LOCAL */
+
  	  int n_intf = this.realInputStream.readInt();
  	  String[] intfs = new String[n_intf];
  	  for (int i = 0; i < n_intf; i++)
@@ -250,7 +259,9 @@ public class ObjectInputStream extends InputStream
                     new InternalError("Object ctor missing").initCause(x);
                 }
             }
- 	  assignNewHandle(osc);
+/* GCJ LOCAL */
+	  rememberHandle(osc,handle);
+/* END GCJ LOCAL */
  	  
  	  if (!is_consumed)
  	    {
