@@ -1,3 +1,29 @@
+2007-04-27  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-cfgcleanup.c (cfgcleanup_altered_bbs): New global variable.
+	(remove_fallthru_edge): Use remove_edge_and_dominated_blocks.
+	(cleanup_control_expr_graph): Do not invalidate dominance info.
+	Record altered blocks.
+	(cleanup_control_flow, cleanup_forwarder_blocks): Removed.
+	(cleanup_control_flow_bb, split_bbs_on_noreturn_calls,
+	cleanup_tree_cfg_bb): New functions.
+	(remove_forwarder_block): Do not maintain the worklist of blocks.
+	Record altered blocks.
+	(cleanup_tree_cfg_1): Iterate over cfgcleanup_altered_bbs,
+	not over whole cfg.
+	(cleanup_tree_cfg): Do not iterate cleanup_tree_cfg_1.  Only call
+	delete_unreachable_blocks if dominators are not available.
+	* tree-inline.c (optimize_inline_calls): Free dominance information
+	earlier.
+	* tree-flow.h (remove_edge_and_dominated_blocks,
+	cfgcleanup_altered_bbs): Altered.
+	* tree-cfg.c (replace_uses_by, tree_merge_blocks): Record altered
+	blocks.
+	(get_all_dominated_blocks, remove_edge_and_dominated_blocks): New
+	functions.
+	(tree_purge_dead_eh_edges): Use remove_edge_and_dominated_blocks,
+	do not invalidate dominators.
+
 2007-04-26  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (avr_mcu_types): Add support for ATmega8HVA and 

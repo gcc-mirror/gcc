@@ -778,8 +778,10 @@ extern void start_recording_case_labels (void);
 extern void end_recording_case_labels (void);
 extern basic_block move_sese_region_to_fn (struct function *, basic_block,
 				           basic_block);
+void remove_edge_and_dominated_blocks (edge);
 
 /* In tree-cfgcleanup.c  */
+extern bitmap cfgcleanup_altered_bbs;
 extern bool cleanup_tree_cfg (void);
 extern bool cleanup_tree_cfg_loop (void);
 

@@ -1199,6 +1199,8 @@ replace_uses_by (tree name, tree val)
 	  tree rhs;
 
 	  fold_stmt_inplace (stmt);
+	  if (cfgcleanup_altered_bbs)
+	    bitmap_set_bit (cfgcleanup_altered_bbs, bb_for_stmt (stmt)->index);
 
 	  /* FIXME.  This should go in pop_stmt_changes.  */
 	  rhs = get_rhs (stmt);
@@ -1312,6 +1314,9 @@ tree_merge_blocks (basic_block a, basic_block b)
   last = tsi_last (bb_stmt_list (a));
   tsi_link_after (&last, bb_stmt_list (b), TSI_NEW_STMT);
   set_bb_stmt_list (b, NULL_TREE);
+
+  if (cfgcleanup_altered_bbs)
+    bitmap_set_bit (cfgcleanup_altered_bbs, a->index);
 }
 
 
@@ -5429,6 +5434,144 @@ tree_purge_dead_abnormal_call_edges (basic_block bb)
   return changed;
 }
 
+/* Stores all basic blocks dominated by BB to DOM_BBS.  */
+
+static void
+get_all_dominated_blocks (basic_block bb, VEC (basic_block, heap) **dom_bbs)
+{
+  basic_block son;
+
+  VEC_safe_push (basic_block, heap, *dom_bbs, bb);
+  for (son = first_dom_son (CDI_DOMINATORS, bb);
+       son;
+       son = next_dom_son (CDI_DOMINATORS, son))
+    get_all_dominated_blocks (son, dom_bbs);
+}
+
+/* Removes edge E and all the blocks dominated by it, and updates dominance
+   information.  The IL in E->src needs to be updated separately.
+   If dominance info is not available, only the edge E is removed.*/
+
+void
+remove_edge_and_dominated_blocks (edge e)
+{
+  VEC (basic_block, heap) *bbs_to_remove = NULL;
+  VEC (basic_block, heap) *bbs_to_fix_dom = NULL;
+  bitmap df, df_idom;
+  edge f;
+  edge_iterator ei;
+  bool none_removed = false;
+  unsigned i;
+  basic_block bb, dbb;
+  bitmap_iterator bi;
+
+  if (!dom_computed[CDI_DOMINATORS])
+    {
+      remove_edge (e);
+      return;
+    }
+
+  /* No updating is needed for edges to exit.  */
+  if (e->dest == EXIT_BLOCK_PTR)
+    {
+      if (cfgcleanup_altered_bbs)
+	bitmap_set_bit (cfgcleanup_altered_bbs, e->src->index);
+      remove_edge (e);
+      return;
+    }
+
+  /* First, we find the basic blocks to remove.  If E->dest has a predecessor
+     that is not dominated by E->dest, then this set is empty.  Otherwise,
+     all the basic blocks dominated by E->dest are removed.
+
+     Also, to DF_IDOM we store the immediate dominators of the blocks in
+     the dominance frontier of E (i.e., of the successors of the
+     removed blocks, if there are any, and of E->dest otherwise).  */
+  FOR_EACH_EDGE (f, ei, e->dest->preds)
+    {
+      if (f == e)
+	continue;
+
+      if (!dominated_by_p (CDI_DOMINATORS, f->src, e->dest))
+	{
+	  none_removed = true;
+	  break;
+	}
+    }
+
+  df = BITMAP_ALLOC (NULL);
+  df_idom = BITMAP_ALLOC (NULL);
+
+  if (none_removed)
+    bitmap_set_bit (df_idom,
+		    get_immediate_dominator (CDI_DOMINATORS, e->dest)->index);
+  else
+    {
+      get_all_dominated_blocks (e->dest, &bbs_to_remove);
+      for (i = 0; VEC_iterate (basic_block, bbs_to_remove, i, bb); i++)
+	{
+	  FOR_EACH_EDGE (f, ei, bb->succs)
+	    {
+	      if (f->dest != EXIT_BLOCK_PTR)
+		bitmap_set_bit (df, f->dest->index);
+	    }
+	}
+      for (i = 0; VEC_iterate (basic_block, bbs_to_remove, i, bb); i++)
+	bitmap_clear_bit (df, bb->index);
+
+      EXECUTE_IF_SET_IN_BITMAP (df, 0, i, bi)
+	{
+	  bb = BASIC_BLOCK (i);
+	  bitmap_set_bit (df_idom,
+			  get_immediate_dominator (CDI_DOMINATORS, bb)->index);
+	}
+    }
+
+  if (cfgcleanup_altered_bbs)
+    {
+      /* Record the set of the altered basic blocks.  */
+      bitmap_set_bit (cfgcleanup_altered_bbs, e->src->index);
+      bitmap_ior_into (cfgcleanup_altered_bbs, df);
+    }
+
+  /* Remove E and the cancelled blocks.  */
+  if (none_removed)
+    remove_edge (e);
+  else
+    {
+      for (i = 0; VEC_iterate (basic_block, bbs_to_remove, i, bb); i++)
+	delete_basic_block (bb);
+    }
+
+  /* Update the dominance information.  The immediate dominator may change only
+     for blocks whose immediate dominator belongs to DF_IDOM:
+   
+     Suppose that idom(X) = Y before removal of E and idom(X) != Y after the
+     removal.  Let Z the arbitrary block such that idom(Z) = Y and
+     Z dominates X after the removal.  Before removal, there exists a path P
+     from Y to X that avoids Z.  Let F be the last edge on P that is
+     removed, and let W = F->dest.  Before removal, idom(W) = Y (since Y
+     dominates W, and because of P, Z does not dominate W), and W belongs to
+     the dominance frontier of E.  Therefore, Y belongs to DF_IDOM.  */ 
+  EXECUTE_IF_SET_IN_BITMAP (df_idom, 0, i, bi)
+    {
+      bb = BASIC_BLOCK (i);
+      for (dbb = first_dom_son (CDI_DOMINATORS, bb);
+	   dbb;
+	   dbb = next_dom_son (CDI_DOMINATORS, dbb))
+	VEC_safe_push (basic_block, heap, bbs_to_fix_dom, dbb);
+    }
+
+  iterate_fix_dominators (CDI_DOMINATORS,
+			  VEC_address (basic_block, bbs_to_fix_dom),
+			  VEC_length (basic_block, bbs_to_fix_dom));
+
+  BITMAP_FREE (df);
+  BITMAP_FREE (df_idom);
+  VEC_free (basic_block, heap, bbs_to_remove);
+  VEC_free (basic_block, heap, bbs_to_fix_dom);
+}
+
 /* Purge dead EH edges from basic block BB.  */
 
 bool
@@ -5446,32 +5589,12 @@ tree_purge_dead_eh_edges (basic_block bb)
     {
       if (e->flags & EDGE_EH)
 	{
-	  remove_edge (e);
+	  remove_edge_and_dominated_blocks (e);
 	  changed = true;
 	}
       else
 	ei_next (&ei);
     }
-
-  /* Removal of dead EH edges might change dominators of not
-     just immediate successors.  E.g. when bb1 is changed so that
-     it no longer can throw and bb1->bb3 and bb1->bb4 are dead
-     eh edges purged by this function in:
-           0
-	  / \
-	 v   v
-	 1-->2
-        / \  |
-       v   v |
-       3-->4 |
-        \    v
-	 --->5
-	     |
-	     -
-     idom(bb5) must be recomputed.  For now just free the dominance
-     info.  */
-  if (changed)
-    free_dominance_info (CDI_DOMINATORS);
 
   return changed;
 }
