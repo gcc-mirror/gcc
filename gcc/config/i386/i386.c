@@ -4380,7 +4380,7 @@ ix86_return_in_memory (tree type)
 int 
 ix86_sol10_return_in_memory (tree type)
 {
-  int needed_intregs, needed_sseregs, size;
+  int size;
   enum machine_mode mode = type_natural_mode (type);
 
   if (TARGET_64BIT)
