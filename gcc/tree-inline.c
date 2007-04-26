@@ -2804,6 +2804,10 @@ optimize_inline_calls (tree fn)
 
   push_gimplify_context ();
 
+  /* We make no attempts to keep dominance info up-to-date.  */
+  free_dominance_info (CDI_DOMINATORS);
+  free_dominance_info (CDI_POST_DOMINATORS);
+
   /* Reach the trees by walking over the CFG, and note the
      enclosing basic-blocks in the call edges.  */
   /* We walk the blocks going forward, because inlined function bodies
@@ -2840,9 +2844,6 @@ optimize_inline_calls (tree fn)
   fold_cond_expr_cond ();
   if (current_function_has_nonlocal_label)
     make_nonlocal_label_edges ();
-  /* We make no attempts to keep dominance info up-to-date.  */
-  free_dominance_info (CDI_DOMINATORS);
-  free_dominance_info (CDI_POST_DOMINATORS);
   /* It would be nice to check SSA/CFG/statement consistency here, but it is
      not possible yet - the IPA passes might make various functions to not
      throw and they don't care to proactively update local EH info.  This is

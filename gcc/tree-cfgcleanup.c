@@ -48,6 +48,15 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-ssa-propagate.h"
 #include "tree-scalar-evolution.h"
 
+/* The set of blocks in that at least one of the following changes happened:
+   -- the statement at the end of the block was changed
+   -- the block was newly created
+   -- the set of the predecessors of the block changed
+   -- the set of the successors of the block changed
+   ??? Maybe we could track these changes separately, since they determine
+       what cleanups it makes sense to try on the block.  */
+bitmap cfgcleanup_altered_bbs;
+
 /* Remove any fallthru edge from EV.  Return true if an edge was removed.  */
 
 static bool
@@ -59,7 +68,7 @@ remove_fallthru_edge (VEC(edge,gc) *ev)
   FOR_EACH_EDGE (e, ei, ev)
     if ((e->flags & EDGE_FALLTHRU) != 0)
       {
-	remove_edge (e);
+	remove_edge_and_dominated_blocks (e);
 	return true;
       }
   return false;
@@ -124,7 +133,7 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
 
 	      taken_edge->probability += e->probability;
 	      taken_edge->count += e->count;
-	      remove_edge (e);
+	      remove_edge_and_dominated_blocks (e);
 	      retval = true;
 	    }
 	  else
@@ -138,106 +147,82 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
   else
     taken_edge = single_succ_edge (bb);
 
+  bitmap_set_bit (cfgcleanup_altered_bbs, bb->index);
   bsi_remove (&bsi, true);
   taken_edge->flags = EDGE_FALLTHRU;
-
-  /* We removed some paths from the cfg.  */
-  free_dominance_info (CDI_DOMINATORS);
 
   return retval;
 }
 
-/* Try to remove superfluous control structures.  */
+/* Try to remove superfluous control structures in basic block BB.  Returns
+   true if anything changes.  */
 
 static bool
-cleanup_control_flow (void)
+cleanup_control_flow_bb (basic_block bb)
 {
-  basic_block bb;
   block_stmt_iterator bsi;
   bool retval = false;
   tree stmt;
 
-  /* Detect cases where a mid-block call is now known not to return.  */
-  if (cfun->gimple_df)
-    while (VEC_length (tree, MODIFIED_NORETURN_CALLS (cfun)))
-      {
-	stmt = VEC_pop (tree, MODIFIED_NORETURN_CALLS (cfun));
-	bb = bb_for_stmt (stmt);
-	if (bb != NULL && last_stmt (bb) != stmt && noreturn_call_p (stmt))
-	  split_block (bb, stmt);
-      }
+  /* If the last statement of the block could throw and now cannot,
+     we need to prune cfg.  */
+  retval |= tree_purge_dead_eh_edges (bb);
 
-  FOR_EACH_BB (bb)
+  bsi = bsi_last (bb);
+  if (bsi_end_p (bsi))
+    return retval;
+
+  stmt = bsi_stmt (bsi);
+
+  if (TREE_CODE (stmt) == COND_EXPR
+      || TREE_CODE (stmt) == SWITCH_EXPR)
+    retval |= cleanup_control_expr_graph (bb, bsi);
+  /* If we had a computed goto which has a compile-time determinable
+     destination, then we can eliminate the goto.  */
+  else if (TREE_CODE (stmt) == GOTO_EXPR
+	   && TREE_CODE (GOTO_DESTINATION (stmt)) == ADDR_EXPR
+	   && (TREE_CODE (TREE_OPERAND (GOTO_DESTINATION (stmt), 0))
+	       == LABEL_DECL))
     {
-      bsi = bsi_last (bb);
+      edge e;
+      tree label;
+      edge_iterator ei;
+      basic_block target_block;
 
-      /* If the last statement of the block could throw and now cannot,
-	 we need to prune cfg.  */
-      retval |= tree_purge_dead_eh_edges (bb);
-
-      if (bsi_end_p (bsi))
-	continue;
-
-      stmt = bsi_stmt (bsi);
-
-      if (TREE_CODE (stmt) == COND_EXPR
-	  || TREE_CODE (stmt) == SWITCH_EXPR)
-	retval |= cleanup_control_expr_graph (bb, bsi);
-      /* If we had a computed goto which has a compile-time determinable
-	 destination, then we can eliminate the goto.  */
-      else if (TREE_CODE (stmt) == GOTO_EXPR
-	       && TREE_CODE (GOTO_DESTINATION (stmt)) == ADDR_EXPR
-	       && (TREE_CODE (TREE_OPERAND (GOTO_DESTINATION (stmt), 0))
-		   == LABEL_DECL))
+      /* First look at all the outgoing edges.  Delete any outgoing
+	 edges which do not go to the right block.  For the one
+	 edge which goes to the right block, fix up its flags.  */
+      label = TREE_OPERAND (GOTO_DESTINATION (stmt), 0);
+      target_block = label_to_block (label);
+      for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
 	{
-	  edge e;
-	  tree label;
-	  edge_iterator ei;
-	  basic_block target_block;
-	  bool removed_edge = false;
-
-	  /* First look at all the outgoing edges.  Delete any outgoing
-	     edges which do not go to the right block.  For the one
-	     edge which goes to the right block, fix up its flags.  */
-	  label = TREE_OPERAND (GOTO_DESTINATION (stmt), 0);
-	  target_block = label_to_block (label);
-	  for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
+	  if (e->dest != target_block)
+	    remove_edge_and_dominated_blocks (e);
+	  else
 	    {
-	      if (e->dest != target_block)
-		{
-		  removed_edge = true;
-		  remove_edge (e);
-		}
-	      else
-	        {
-		  /* Turn off the EDGE_ABNORMAL flag.  */
-		  e->flags &= ~EDGE_ABNORMAL;
+	      /* Turn off the EDGE_ABNORMAL flag.  */
+	      e->flags &= ~EDGE_ABNORMAL;
 
-		  /* And set EDGE_FALLTHRU.  */
-		  e->flags |= EDGE_FALLTHRU;
-		  ei_next (&ei);
-		}
+	      /* And set EDGE_FALLTHRU.  */
+	      e->flags |= EDGE_FALLTHRU;
+	      ei_next (&ei);
 	    }
-
-	  /* If we removed one or more edges, then we will need to fix the
-	     dominators.  It may be possible to incrementally update them.  */
-	  if (removed_edge)
-	    free_dominance_info (CDI_DOMINATORS);
-
-	  /* Remove the GOTO_EXPR as it is not needed.  The CFG has all the
-	     relevant information we need.  */
-	  bsi_remove (&bsi, true);
-	  retval = true;
 	}
 
-      /* Check for indirect calls that have been turned into
-	 noreturn calls.  */
-      else if (noreturn_call_p (stmt) && remove_fallthru_edge (bb->succs))
-	{
-	  free_dominance_info (CDI_DOMINATORS);
-	  retval = true;
-	}
+      bitmap_set_bit (cfgcleanup_altered_bbs, bb->index);
+      bitmap_set_bit (cfgcleanup_altered_bbs, target_block->index);
+
+      /* Remove the GOTO_EXPR as it is not needed.  The CFG has all the
+	 relevant information we need.  */
+      bsi_remove (&bsi, true);
+      retval = true;
     }
+
+  /* Check for indirect calls that have been turned into
+     noreturn calls.  */
+  else if (noreturn_call_p (stmt) && remove_fallthru_edge (bb->succs))
+    retval = true;
+
   return retval;
 }
 
@@ -366,12 +351,10 @@ phi_alternatives_equal (basic_block dest, edge e1, edge e2)
   return true;
 }
 
-/* Removes forwarder block BB.  Returns false if this failed.  If a new
-   forwarder block is created due to redirection of edges, it is
-   stored to worklist.  */
+/* Removes forwarder block BB.  Returns false if this failed.  */
 
 static bool
-remove_forwarder_block (basic_block bb, basic_block **worklist)
+remove_forwarder_block (basic_block bb)
 {
   edge succ = single_succ_edge (bb), e, s;
   basic_block dest = succ->dest;
@@ -434,6 +417,8 @@ remove_forwarder_block (basic_block bb, basic_block **worklist)
   /* Redirect the edges.  */
   for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
     {
+      bitmap_set_bit (cfgcleanup_altered_bbs, e->src->index);
+
       if (e->flags & EDGE_ABNORMAL)
 	{
 	  /* If there is an abnormal edge, redirect it anyway, and
@@ -449,15 +434,6 @@ remove_forwarder_block (basic_block bb, basic_block **worklist)
 	     here before.  */
 	  for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
 	    add_phi_arg (phi, PHI_ARG_DEF (phi, succ->dest_idx), s);
-	}
-      else
-	{
-	  /* The source basic block might become a forwarder.  We know
-	     that it was not a forwarder before, since it used to have
-	     at least two outgoing edges, so we may just add it to
-	     worklist.  */
-	  if (tree_forwarder_block_p (s->src, false))
-	    *(*worklist)++ = s->src;
 	}
     }
 
@@ -475,6 +451,8 @@ remove_forwarder_block (basic_block bb, basic_block **worklist)
 	  bsi_insert_before (&bsi_to, label, BSI_CONTINUE_LINKING);
 	}
     }
+
+  bitmap_set_bit (cfgcleanup_altered_bbs, dest->index);
 
   /* Update the dominators.  */
   if (dom_info_available_p (CDI_DOMINATORS))
@@ -501,62 +479,117 @@ remove_forwarder_block (basic_block bb, basic_block **worklist)
   return true;
 }
 
-/* Removes forwarder blocks.  */
+/* Split basic blocks on calls in the middle of a basic block that are now
+   known not to return, and remove the unreachable code.  */
 
 static bool
-cleanup_forwarder_blocks (void)
+split_bbs_on_noreturn_calls (void)
 {
-  basic_block bb;
   bool changed = false;
-  basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks);
-  basic_block *current = worklist;
+  tree stmt;
+  basic_block bb;
 
-  FOR_EACH_BB (bb)
-    {
-      if (tree_forwarder_block_p (bb, false))
-	*current++ = bb;
-    }
+  /* Detect cases where a mid-block call is now known not to return.  */
+  if (cfun->gimple_df)
+    while (VEC_length (tree, MODIFIED_NORETURN_CALLS (cfun)))
+      {
+	stmt = VEC_pop (tree, MODIFIED_NORETURN_CALLS (cfun));
+	bb = bb_for_stmt (stmt);
+	if (bb == NULL
+	    || last_stmt (bb) == stmt
+	    || !noreturn_call_p (stmt))
+	  continue;
 
-  while (current != worklist)
-    {
-      bb = *--current;
-      changed |= remove_forwarder_block (bb, &current);
-    }
+	changed = true;
+	split_block (bb, stmt);
+	remove_fallthru_edge (bb->succs);
+      }
 
-  free (worklist);
   return changed;
 }
 
-/* Do one round of CFG cleanup.  */
+/* Tries to cleanup cfg in basic block BB.  Returns true if anything
+   changes.  */
 
 static bool
-cleanup_tree_cfg_1 (void)
+cleanup_tree_cfg_bb (basic_block bb)
 {
-  bool retval;
+  bool retval = false;
 
-  retval = cleanup_control_flow ();
-  retval |= delete_unreachable_blocks ();
+  retval = cleanup_control_flow_bb (bb);
 
   /* Forwarder blocks can carry line number information which is
      useful when debugging, so we only clean them up when
      optimizing.  */
 
-  if (optimize > 0)
-    {
-      /* cleanup_forwarder_blocks can redirect edges out of
-	 SWITCH_EXPRs, which can get expensive.  So we want to enable
-	 recording of edge to CASE_LABEL_EXPR mappings around the call
-	 to cleanup_forwarder_blocks.  */
-      start_recording_case_labels ();
-      retval |= cleanup_forwarder_blocks ();
-      end_recording_case_labels ();
-    }
+  if (optimize > 0
+      && tree_forwarder_block_p (bb, false)
+      && remove_forwarder_block (bb))
+    return true;
 
   /* Merging the blocks may create new opportunities for folding
      conditional branches (due to the elimination of single-valued PHI
      nodes).  */
-  retval |= merge_seq_blocks ();
+  if (single_succ_p (bb)
+      && can_merge_blocks_p (bb, single_succ (bb)))
+    {
+      merge_blocks (bb, single_succ (bb));
+      return true;
+    }
 
+  return retval;
+}
+
+/* Iterate the cfg cleanups, while anything changes.  */
+
+static bool
+cleanup_tree_cfg_1 (void)
+{
+  bool retval = false;
+  basic_block bb;
+  unsigned i, n;
+
+  retval |= split_bbs_on_noreturn_calls ();
+
+  /* Prepare the worklists of altered blocks.  */
+  cfgcleanup_altered_bbs = BITMAP_ALLOC (NULL);
+
+  /* During forwarder block cleanup, we may redirect edges out of
+     SWITCH_EXPRs, which can get expensive.  So we want to enable
+     recording of edge to CASE_LABEL_EXPR.  */
+  start_recording_case_labels ();
+
+  /* Start by iterating over all basic blocks.  We cannot use FOR_EACH_BB,
+     since the basic blocks may get removed.  */
+  n = last_basic_block;
+  for (i = NUM_FIXED_BLOCKS; i < n; i++)
+    {
+      bb = BASIC_BLOCK (i);
+      if (bb)
+	retval |= cleanup_tree_cfg_bb (bb);
+    }
+
+  /* Now process the altered blocks, as long as any are available.  */
+  while (!bitmap_empty_p (cfgcleanup_altered_bbs))
+    {
+      i = bitmap_first_set_bit (cfgcleanup_altered_bbs);
+      bitmap_clear_bit (cfgcleanup_altered_bbs, i);
+      if (i < NUM_FIXED_BLOCKS)
+	continue;
+
+      bb = BASIC_BLOCK (i);
+      if (!bb)
+	continue;
+
+      retval |= cleanup_tree_cfg_bb (bb);
+
+      /* Rerun split_bbs_on_noreturn_calls, in case we have altered any noreturn
+	 calls.  */
+      retval |= split_bbs_on_noreturn_calls ();
+    }
+  
+  end_recording_case_labels ();
+  BITMAP_FREE (cfgcleanup_altered_bbs);
   return retval;
 }
 
@@ -567,20 +600,26 @@ cleanup_tree_cfg_1 (void)
 bool
 cleanup_tree_cfg (void)
 {
-  bool retval, changed;
+  bool changed;
 
   timevar_push (TV_TREE_CLEANUP_CFG);
 
   /* Iterate until there are no more cleanups left to do.  If any
-     iteration changed the flowgraph, set CHANGED to true.  */
-  changed = false;
-  do
-    {
-      retval = cleanup_tree_cfg_1 ();
-      changed |= retval;
-    }
-  while (retval);
+     iteration changed the flowgraph, set CHANGED to true.
 
+     If dominance information is available, there cannot be any unreachable
+     blocks.  */
+  if (!dom_computed[CDI_DOMINATORS])
+    {
+      changed = delete_unreachable_blocks ();
+      calculate_dominance_info (CDI_DOMINATORS);
+    }
+  else
+    changed = false;
+
+  changed |= cleanup_tree_cfg_1 ();
+
+  gcc_assert (dom_computed[CDI_DOMINATORS]);
   compact_blocks ();
 
 #ifdef ENABLE_CHECKING
@@ -602,7 +641,6 @@ cleanup_tree_cfg_loop (void)
   if (changed && current_loops != NULL)
     {
       bitmap changed_bbs = BITMAP_ALLOC (NULL);
-      calculate_dominance_info (CDI_DOMINATORS);
       fix_loop_structure (changed_bbs);
 
       /* This usually does nothing.  But sometimes parts of cfg that originally
