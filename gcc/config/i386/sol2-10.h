@@ -111,12 +111,5 @@ Boston, MA 02110-1301, USA.  */
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION i386_solaris_elf_named_section
 
-/* In 32-bit mode, follow the SVR4 ABI definition; in 64-bit mode, use
-   the AMD64 ABI definition.  */
 #undef RETURN_IN_MEMORY
-#define RETURN_IN_MEMORY(TYPE)			\
-  (TARGET_64BIT 				\
-   ? ix86_return_in_memory (TYPE)		\
-   : (TYPE_MODE (TYPE) == BLKmode		\
-      || (VECTOR_MODE_P (TYPE_MODE (TYPE)) 	\
-	  && int_size_in_bytes (TYPE) == 8)))
+#define RETURN_IN_MEMORY ix86_sol10_return_in_memory

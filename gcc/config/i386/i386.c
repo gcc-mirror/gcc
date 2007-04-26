@@ -4372,6 +4372,43 @@ ix86_return_in_memory (tree type)
     return return_in_memory_32 (type, mode);
 }
 
+/* Return false iff TYPE is returned in memory.  This version is used
+   on Solaris 10.  It is similar to the generic ix86_return_in_memory,
+   but differs notably in that when MMX is available, 8-byte vectors
+   are returned in memory, rather than in MMX registers.  */
+
+int 
+ix86_sol10_return_in_memory (tree type)
+{
+  int needed_intregs, needed_sseregs, size;
+  enum machine_mode mode = type_natural_mode (type);
+
+  if (TARGET_64BIT)
+    return return_in_memory_64 (type, mode);
+
+  if (mode == BLKmode)
+    return 1;
+
+  size = int_size_in_bytes (type);
+
+  if (VECTOR_MODE_P (mode))
+    {
+      /* Return in memory only if MMX registers *are* available.  This
+	 seems backwards, but it is consistent with the existing
+	 Solaris x86 ABI.  */
+      if (size == 8)
+	return TARGET_MMX;
+      if (size == 16)
+	return !TARGET_SSE;
+    }
+  else if (mode == TImode)
+    return !TARGET_SSE;
+  else if (mode == XFmode)
+    return 0;
+
+  return size > 12;
+}
+
 /* When returning SSE vector types, we have a choice of either
      (1) being abi incompatible with a -march switch, or
      (2) generating an error.
