@@ -178,8 +178,7 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
        items with static storage duration that are not otherwise
        initialized are initialized to zero.  */
     ;
-  else if (SCALAR_TYPE_P (type)
-	   || TREE_CODE (type) == COMPLEX_TYPE)
+  else if (SCALAR_TYPE_P (type))
     init = convert (type, integer_zero_node);
   else if (CLASS_TYPE_P (type))
     {
