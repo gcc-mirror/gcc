@@ -1,4 +1,10 @@
 2007-04-26  Richard Guenther  <rguenther@suse.de>
+	Daniel Berlin  <dberlin@dberlin.org>
+
+	PR tree-optimization/30567
+	* g++.dg/other/pr30567.C: New testcase.
+
+2007-04-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/31703
 	* gcc.c-torture/compile/pr31703.c: New testcase.
