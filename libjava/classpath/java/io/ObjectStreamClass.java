@@ -654,11 +654,29 @@ outer:
       flags |= ObjectStreamConstants.SC_ENUM;
   }
 
+/* GCJ LOCAL */
+  // FIXME: This is a workaround for a fairly obscure bug that happens
+  // when reading a Proxy and then writing it back out again.  The
+  // result is that the ObjectStreamClass doesn't have its fields set,
+  // generating a NullPointerException.  Rather than this kludge we
+  // should probably fix the real bug, but it would require a fairly
+  // radical reorganization to do so.
+  final void ensureFieldsSet(Class cl)
+  {
+    if (! fieldsSet)
+      setFields(cl);
+  }
+/* END GCJ LOCAL */
+
 
   // Sets fields to be a sorted array of the serializable fields of
   // clazz.
   private void setFields(Class cl)
   {
+/* GCJ LOCAL */
+    fieldsSet = true;
+/* END GCJ LOCAL */
+
     SetAccessibleAction setAccessible = new SetAccessibleAction();
 
     if (!isSerializable() || isExternalizable() || isEnum())
@@ -1093,6 +1111,11 @@ outer:
   private Constructor constructor;  // default constructor for Externalizable
 
   boolean isProxyClass = false;
+
+/* GCJ LOCAL */
+  // True after setFields() has been called
+  private boolean fieldsSet = false;
+/* END GCJ LOCAL */
 
   // This is probably not necessary because this class is special cased already
   // but it will avoid showing up as a discrepancy when comparing SUIDs.

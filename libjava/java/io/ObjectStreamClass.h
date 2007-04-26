@@ -57,6 +57,9 @@ private:
   void cacheMethods();
   ObjectStreamClass(::java::lang::Class *);
   void setFlags(::java::lang::Class *);
+public: // actually package-private
+  virtual void ensureFieldsSet(::java::lang::Class *);
+private:
   void setFields(::java::lang::Class *);
   jlong getClassUID(::java::lang::Class *);
 public: // actually package-private
@@ -105,6 +108,7 @@ private:
 public: // actually package-private
   jboolean isProxyClass;
 private:
+  jboolean fieldsSet;
   static const jlong serialVersionUID = -6120832682080437368LL;
 public:
   static ::java::lang::Class class$;
