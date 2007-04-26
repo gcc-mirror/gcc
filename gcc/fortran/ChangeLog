@@ -1,3 +1,10 @@
+2007-04-26  Daniel Franke  <franke.daniel@gmail.com>
+
+	* intrinsic.texi (NULL, PACK, PRESENT, REPEAT, SCAN, SHAPE, 
+	SIZE, TRANSPOSE, TRIM, VERIFY): New.
+	(ADJUSTL, ADJUSTR, INDEX): Added cross references.
+	(INT, INT2, INT8, LONG): Enabled section header.
+
 2007-04-25  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* module.c (module_char): Replace fgetc() with
