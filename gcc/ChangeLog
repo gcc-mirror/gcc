@@ -1,3 +1,9 @@
+2007-04-25  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/31403
+	* config/sh/sh.md (movsi_ie): Fix length for TARGET_SH2A.
+	(movsf_ie): Likewise.
+
 2007-04-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* doc/extend.texi ([Type Traits]): Adjust per N2255.
