@@ -1,3 +1,9 @@
+2007-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/31598
+	* semantics.c (finish_omp_clauses): Don't create CP_OMP_CLAUSE_INFO
+	for type dependent OMP_CLAUSE_DECLs.
+
 2007-04-24  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/31338

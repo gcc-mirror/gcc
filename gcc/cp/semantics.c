@@ -3627,7 +3627,8 @@ finish_omp_clauses (tree clauses)
 	 Save the results, because later we won't be in the right context
 	 for making these queries.  */
       if (CLASS_TYPE_P (inner_type)
-	  && (need_default_ctor || need_copy_ctor || need_copy_assignment))
+	  && (need_default_ctor || need_copy_ctor || need_copy_assignment)
+	  && !type_dependent_expression_p (t))
 	{
 	  int save_errorcount = errorcount;
 	  tree info;
