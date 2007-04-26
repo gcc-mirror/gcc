@@ -10,7 +10,7 @@ struct polynomial {
 
 void spline_rep1 ()
 {
-  new polynomial[0];
+  new polynomial[0];  // { dg-warning "allocating zero-element array" }
 }
 
 
