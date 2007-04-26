@@ -1,3 +1,8 @@
+2007-04-26  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
+	* gfortran.dg/open_errors.f90: Added if statements checking
+	the value of iostat.
+
 2007-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/31598
