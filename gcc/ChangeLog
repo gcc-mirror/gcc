@@ -1,3 +1,9 @@
+2007-04-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/31703
+	* tree-ssa-loop-im.c (rewrite_bittest): Make sure to use
+	the right type for the target of the bittest.
+
 2007-04-26  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/i386/vx-common.h (RETURN_IN_MEMORY): Use

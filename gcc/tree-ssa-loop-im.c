@@ -618,7 +618,7 @@ rewrite_reciprocal (block_stmt_iterator *bsi)
 static tree
 rewrite_bittest (block_stmt_iterator *bsi)
 {
-  tree stmt, lhs, rhs, var, name, stmt1, stmt2, t;
+  tree stmt, lhs, rhs, var, name, use_stmt, stmt1, stmt2, t;
   use_operand_p use;
 
   stmt = bsi_stmt (*bsi);
@@ -627,10 +627,10 @@ rewrite_bittest (block_stmt_iterator *bsi)
 
   /* Verify that the single use of lhs is a comparison against zero.  */
   if (TREE_CODE (lhs) != SSA_NAME
-      || !single_imm_use (lhs, &use, &stmt1)
-      || TREE_CODE (stmt1) != COND_EXPR)
+      || !single_imm_use (lhs, &use, &use_stmt)
+      || TREE_CODE (use_stmt) != COND_EXPR)
     return stmt;
-  t = COND_EXPR_COND (stmt1);
+  t = COND_EXPR_COND (use_stmt);
   if (TREE_OPERAND (t, 0) != lhs
       || (TREE_CODE (t) != NE_EXPR
 	  && TREE_CODE (t) != EQ_EXPR)
@@ -680,11 +680,13 @@ rewrite_bittest (block_stmt_iterator *bsi)
 
       /* A & (1 << B) */
       t = fold_build2 (BIT_AND_EXPR, TREE_TYPE (a), a, name);
-      stmt2 = build_gimple_modify_stmt (lhs, t);
+      stmt2 = build_gimple_modify_stmt (var, t);
+      name = make_ssa_name (var, stmt2);
+      GIMPLE_STMT_OPERAND (stmt2, 0) = name;
+      SET_USE (use, name);
 
       bsi_insert_before (bsi, stmt1, BSI_SAME_STMT);
       bsi_replace (bsi, stmt2, true);
-      SSA_NAME_DEF_STMT (lhs) = stmt2;
 
       return stmt1;
     }

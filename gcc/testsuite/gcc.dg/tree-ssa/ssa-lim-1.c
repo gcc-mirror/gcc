@@ -18,5 +18,5 @@ quantum_toffoli (int control1, int control2, int target,
     }
 }
 
-/* { dg-final { scan-tree-dump-times "shifttmp" 6 "lim" } } */
+/* { dg-final { scan-tree-dump-times "1 <<" 3 "lim" } } */
 /* { dg-final { cleanup-tree-dump "lim" } } */

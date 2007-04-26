@@ -1,3 +1,10 @@
+2007-04-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/31703
+	* gcc.c-torture/compile/pr31703.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-lim-1.c: Adjust pattern.
+	* gcc.dg/tree-ssa/ssa-lim-2.c: Likewise.
+
 2007-04-26  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* gfortran.dg/open_errors.f90: Added if statements checking
