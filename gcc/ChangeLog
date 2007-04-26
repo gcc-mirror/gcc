@@ -1,4 +1,11 @@
 2007-04-26  Richard Sandiford  <richard@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	* config/i386/i386-protos.h (ix86_sol10_return_in_memory): Declare.
+	* config/i386/i386.c (ix86_sol10_return_in_memory): New function.
+	* config/i386/sol2-10.h (RETURN_IN_MEMORY): Use it.
+
+2007-04-26  Richard Sandiford  <richard@codesourcery.com>
 
 	PR driver/31107
 	* doc/invoke.texi (%:print-asm-header): Document.
