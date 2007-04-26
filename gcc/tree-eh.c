@@ -1505,6 +1505,10 @@ lower_eh_filter (struct leh_state *state, tree *tp)
 					 EH_FILTER_TYPES (inner));
   this_state = *state;
   this_state.cur_region = this_region;
+  /* For must not throw regions any cleanup regions inside it
+     can't reach outer catch regions.  */
+  if (EH_FILTER_MUST_NOT_THROW (inner))
+    this_state.prev_try = NULL;
 
   lower_eh_constructs_1 (&this_state, &TREE_OPERAND (*tp, 0));
 
