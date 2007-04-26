@@ -1,3 +1,9 @@
+2007-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/30558
+	* tree-eh.c (lower_eh_filter): If EH_FILTER_MUST_NOT_THROW
+	clear this_state.prev_try.
+
 2007-04-26  Richard Sandiford  <richard@codesourcery.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 
