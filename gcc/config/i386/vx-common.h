@@ -21,10 +21,7 @@ Boston, MA 02110-1301, USA.  */
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 
-/* The svr4 ABI for the i386 says that records and unions are returned
-   in memory.  */
+/* VxWorks uses the same ABI as Solaris 10.  */
 
 #undef RETURN_IN_MEMORY
-#define RETURN_IN_MEMORY(TYPE) \
-  (TYPE_MODE (TYPE) == BLKmode \
-   || (VECTOR_MODE_P (TYPE_MODE (TYPE)) && int_size_in_bytes (TYPE) == 8))
+#define RETURN_IN_MEMORY ix86_sol10_return_in_memory

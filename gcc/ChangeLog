@@ -1,5 +1,10 @@
 2007-04-26  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/i386/vx-common.h (RETURN_IN_MEMORY): Use
+	ix86_sol10_return_in_memory.
+
+2007-04-26  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/i386/i386.c (ix86_sol10_return_in_memory): Remove unused
 	variables.
 
