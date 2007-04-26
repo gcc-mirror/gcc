@@ -3228,7 +3228,8 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	  /* If the statement makes a function call, assume
 	     that pointer OP will be dereferenced in a store
 	     operation inside the called function.  */
-	  if (get_call_expr_in (stmt))
+	  if (get_call_expr_in (stmt)
+	      || stmt_escape_type == ESCAPE_STORED_IN_GLOBAL)
 	    {
 	      bitmap_set_bit (ai->dereferenced_ptrs_store, DECL_UID (var));
 	      pi->is_dereferenced = 1;

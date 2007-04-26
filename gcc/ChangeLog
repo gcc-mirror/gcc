@@ -1,3 +1,10 @@
+2007-04-26  Richard Guenther  <rguenther@suse.de>
+	Daniel Berlin  <dberlin@dberlin.org>
+
+	PR tree-optimization/30567
+	* tree-ssa-structalias.c (update_alias_info): Record dereference
+	also if ESCAPE_STORED_IN_GLOBAL.
+
 2007-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/31598
