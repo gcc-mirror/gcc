@@ -1,3 +1,8 @@
+2007-04-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/31338
+	* g++.dg/ext/complex2.C: New test.
+
 2007-04-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* g++.dg/ext/has_nothrow_assign.C: Adjust per N2255.

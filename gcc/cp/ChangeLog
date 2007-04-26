@@ -1,6 +1,6 @@
 2007-04-24  Mark Mitchell  <mark@codesourcery.com>
 
-	PR c++/31388
+	PR c++/31338
 	* cp-tree.h (ARITHMETIC_TYPE): Include COMPLEX_TYPE.
 	* typeck.c (type_after_usual_arithmetic_conversions): Adjust, as
 	COMPLEX_TYPE is now an ARITHMETIC_TYPE.
