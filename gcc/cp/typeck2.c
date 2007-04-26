@@ -702,7 +702,8 @@ digest_init (tree type, tree init)
     }
 
   /* Handle scalar types (including conversions) and references.  */
-  if (SCALAR_TYPE_P (type) || code == REFERENCE_TYPE)
+  if (TREE_CODE (type) != COMPLEX_TYPE
+      && (SCALAR_TYPE_P (type) || code == REFERENCE_TYPE))
     return convert_for_initialization (0, type, init, LOOKUP_NORMAL,
 				       "initialization", NULL_TREE, 0);
 
