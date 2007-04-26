@@ -194,7 +194,7 @@ Some basic guidelines for editing this document:
 * @code{PACK}:          PACK,      Pack an array into an array of rank one
 * @code{PERROR}:        PERROR,    Print system error message
 * @code{PRECISION}:     PRECISION, Decimal precision of a real kind
-* @code{PRESENT}:       PRESENT,   Determine whether an optional argument is specified
+* @code{PRESENT}:       PRESENT,   Determine whether an optional dummy argument is specified
 * @code{PRODUCT}:       PRODUCT,   Product of array elements
 * @code{RADIX}:         RADIX,     Base of a data model
 * @code{RANDOM_NUMBER}: RANDOM_NUMBER, Pseudo-random number
@@ -239,7 +239,7 @@ Some basic guidelines for editing this document:
 * @code{TINY}:          TINY,      Smallest positive number of a real kind
 * @code{TRANSFER}:      TRANSFER,  Transfer bit patterns
 * @code{TRANSPOSE}:     TRANSPOSE, Transpose an array of rank two
-* @code{TRIM}:          TRIM,      Function to remove trailing blank characters of a string
+* @code{TRIM}:          TRIM,      Remove trailing blank characters of a string
 * @code{TTYNAM}:        TTYNAM,    Get the name of a terminal device.
 * @code{UBOUND}:        UBOUND,    Upper dimension bounds of an array
 * @code{UMASK}:         UMASK,     Set the file creation mask
@@ -597,7 +597,7 @@ Inverse function: @ref{COSH}
 @node ADJUSTL
 @section @code{ADJUSTL} --- Left adjust a string 
 @cindex @code{ADJUSTL} intrinsic
-@cindex adjust string
+@cindex string manipulation
 
 @table @asis
 @item @emph{Description}:
@@ -631,6 +631,9 @@ program test_adjustl
   print *, str
 end program test_adjustl
 @end smallexample
+
+@item @emph{See also}:
+@ref{ADJUSTR}, @ref{TRIM}
 @end table
 
 
@@ -638,7 +641,7 @@ end program test_adjustl
 @node ADJUSTR
 @section @code{ADJUSTR} --- Right adjust a string 
 @cindex @code{ADJUSTR} intrinsic
-@cindex adjust string
+@cindex string manipulation
 
 @table @asis
 @item @emph{Description}:
@@ -672,6 +675,9 @@ program test_adjustr
   print *, str
 end program test_adjustr
 @end smallexample
+
+@item @emph{See also}:
+@ref{ADJUSTL}, @ref{TRIM}
 @end table
 
 
@@ -5053,6 +5059,7 @@ kind.
 @node INDEX
 @section @code{INDEX} --- Position of a substring within a string
 @cindex @code{INDEX} intrinsic
+@cindex string manipulation
 
 @table @asis
 @item @emph{Description}:
@@ -5086,6 +5093,7 @@ The return value is of type @code{INTEGER} and of the default integer
 kind.
 
 @item @emph{See also}:
+@ref{SCAN}, @ref{VERIFY}
 @end table
 
 
@@ -5151,7 +5159,6 @@ end program
 @item @code{IDINT(A)}  @tab @code{REAL(8) A}    @tab @code{INTEGER}    @tab F77 and later
 @end multitable
 
-@comment @item @emph{See also}:
 @end table
 
 
@@ -5188,7 +5195,7 @@ Elemental function
 @item @emph{Return value}:
 The return value is a @code{INTEGER(2)} variable.
 
-@comment @item @emph{See also}:
+@item @emph{See also}:
 @ref{INT}, @ref{INT8}, @ref{LONG}
 @end table
 
@@ -5223,7 +5230,7 @@ Elemental function
 @item @emph{Return value}:
 The return value is a @code{INTEGER(8)} variable.
 
-@comment @item @emph{See also}:
+@item @emph{See also}:
 @ref{INT}, @ref{INT2}, @ref{LONG}
 @end table
 
@@ -6133,7 +6140,7 @@ Elemental function
 @item @emph{Return value}:
 The return value is a @code{INTEGER(4)} variable.
 
-@comment @item @emph{See also}:
+@item @emph{See also}:
 @ref{INT}, @ref{INT2}, @ref{INT8}
 @end table
 
@@ -7280,12 +7287,18 @@ argument.
 @node NULL
 @section @code{NULL} --- Function that returns an disassociated pointer
 @cindex @code{NULL} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
+@cindex pointer status
 
 @table @asis
 @item @emph{Description}:
+Returns a disassociated pointer.
+
+If @var{MOLD} is present, a dissassociated pointer of the same type is
+returned, otherwise the type is determined by context.
+
+In Fortran 95, @var{MOLD} is optional. Please note that F2003 includes
+cases where it is required.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -7293,9 +7306,22 @@ F95 and later
 Transformational function
 
 @item @emph{Syntax}:
+@code{PTR => NULL([MOLD])}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{MOLD} @tab (Optional) shall be a pointer of any association
+status and of any type.
+@end multitable
+
 @item @emph{Return value}:
+A disassociated pointer.
+
 @item @emph{Example}:
+@smallexample
+REAL, POINTER, DIMENSION(:) :: VEC => NULL ()
+@end smallexample
+
 @item @emph{See also}:
 @ref{ASSOCIATED}
 @end table
@@ -7355,12 +7381,16 @@ F95 elemental function: @ref{IOR}
 @node PACK
 @section @code{PACK} --- Pack an array into an array of rank one
 @cindex @code{PACK} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
+@cindex array manipulation
 
 @table @asis
 @item @emph{Description}:
+Stores the elements of @var{ARRAY} in an array of rank one.
+
+The beginning of the resulting array is made up of elements whose @var{MASK} 
+equals @code{TRUE}. Afterwards, positions are filled with elements taken from
+@var{VECTOR}.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -7368,10 +7398,46 @@ F95 and later
 Transformational function
 
 @item @emph{Syntax}:
+@code{RESULT = PACK(ARRAY, MASK[,VECTOR]}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ARRAY}  @tab Shall be an array of any type.
+@item @var{MASK}   @tab Shall be an array of type @code{LOGICAL} and 
+of the same size as @var{ARRAY}. Alternatively, it may be a @code{LOGICAL} 
+scalar.
+@item @var{VECTOR} @tab (Optional) shall be an array of the same type 
+as @var{ARRAY} and of rank one. If present, the number of elements in 
+@var{VECTOR} shall be equal to or greater than the number of true elements 
+in @var{MASK}. If @var{MASK} is scalar, the number of elements in 
+@var{VECTOR} shall be equal to or greater than the number of elements in
+@var{ARRAY}.
+@end multitable
+
 @item @emph{Return value}:
+The result is an array of rank one and the same type as that of @var{ARRAY}.
+If @var{VECTOR} is present, the result size is that of @var{VECTOR}, the
+number of @code{TRUE} values in @var{MASK} otherwise.
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+Gathering non-zero elements from an array:
+@smallexample
+PROGRAM test_pack_1
+  INTEGER :: m(6)
+  m = (/ 1, 0, 0, 0, 5, 0 /)
+  WRITE(*, FMT="(6(I0, ' '))") pack(m, m /= 0)  ! "1 5"
+END PROGRAM
+@end smallexample
+
+Gathering non-zero elements from an array and appending elements from @var{VECTOR}:
+@smallexample
+PROGRAM test_pack_2
+  INTEGER :: m(4)
+  m = (/ 1, 0, 0, 2 /)
+  WRITE(*, FMT="(4(I0, ' '))") pack(m, m /= 0, (/ 0, 0, 3, 4 /))  ! "1 2 3 4"
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
 @ref{UNPACK}
 @end table
@@ -7451,14 +7517,13 @@ end program prec_and_range
 
 
 @node PRESENT
-@section @code{PRESENT} --- Determine whether an optional argument is specified
+@section @code{PRESENT} --- Determine whether an optional dummy argument is specified
 @cindex @code{PRESENT} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
+Determines whether an optional dummy argument is present.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -7466,10 +7531,30 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
+@code{RESULT = PRESENT(A)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{A} @tab May be of any type and may be a pointer, scalar or array
+value, or a dummy procedure. It shall be the name of an optional dummy argument
+accessible within the current subroutine or function.
+@end multitable
+
 @item @emph{Return value}:
+Returns either @code{TRUE} if the optional argument @var{A} is present, or
+@code{FALSE} otherwise.
+
 @item @emph{Example}:
-@item @emph{See also}:
+@smallexample
+PROGRAM test_present
+  WRITE(*,*) f(), f(42)      ! "F T"
+CONTAINS
+  LOGICAL FUNCTION f(x)
+    INTEGER, INTENT(IN), OPTIONAL :: x
+    f = PRESENT(x)
+  END FUNCTION
+END PROGRAM
+@end smallexample
 @end table
 
 
@@ -7867,10 +7952,10 @@ Subroutine, non-elemental function
 @cindex @code{REPEAT} intrinsic
 @cindex string manipulation
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Concatenates @var{NCOPIES} copies of a string.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -7878,10 +7963,24 @@ F95 and later
 Transformational function
 
 @item @emph{Syntax}:
+@code{RESULT = REPEAT(STRING, NCOPIES)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{STRING}  @tab Shall be scalar and of type @code{CHARACTER(*)}.
+@item @var{NCOPIES} @tab Shall be scalar and of type @code{INTEGER(*)}.
+@end multitable
+
 @item @emph{Return value}:
+A new scalar of type @code{CHARACTER} built up from @var{NCOPIES} copies 
+of @var{STRING}.
+
 @item @emph{Example}:
-@item @emph{See also}:
+@smallexample
+program test_repeat
+  write(*,*) repeat("x", 5)   ! "xxxxx"
+end program
+@end smallexample
 @end table
 
 
@@ -7906,7 +8005,7 @@ Transformational function
 @item @emph{Return value}:
 @item @emph{Example}:
 @item @emph{See also}:
-@ref{SHAPE}
+@ref{SHAPE}, @ref{SIZE}
 @end table
 
 
@@ -8030,10 +8129,17 @@ end program test_scale
 @cindex @code{SCAN} intrinsic
 @cindex string manipulation
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Scans a @var{STRING} for any of the characters in a @var{SET} 
+of characters.
+
+If @var{BACK} is either absent or equals @code{FALSE}, this function
+returns the position of the leftmost character of @var{STRING} that is
+in @var{SET}. If @var{BACK} equals @code{TRUE}, the rightmost position
+is returned. If no character of @var{SET} is found in @var{STRING}, the 
+result is zero.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -8041,10 +8147,30 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{RESULT = SCAN(STRING, SET[, BACK])}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{STRING} @tab Shall be of type @code{CHARACTER(*)}.
+@item @var{SET}    @tab Shall be of type @code{CHARACTER(*)}.
+@item @var{BACK}   @tab (Optional) shall be of type @code{LOGICAL}.
+@end multitable
+
 @item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the default
+integer kind.
+
 @item @emph{Example}:
+@smallexample
+PROGRAM test_scan
+  WRITE(*,*) SCAN("FORTRAN", "AO")          ! 2, found 'O'
+  WRITE(*,*) SCAN("FORTRAN", "AO", .TRUE.)  ! 6, found 'A'
+  WRITE(*,*) SCAN("FORTRAN", "C++")         ! 0, found none
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+@ref{INDEX}, @ref{VERIFY}
 @end table
 
 
@@ -8296,10 +8422,10 @@ end program test_setexp
 @cindex @code{SHAPE} intrinsic
 @cindex array manipulation
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Determines the shape of an array.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -8307,11 +8433,32 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
+@code{RESULT = SHAPE(SOURCE)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{SOURCE} @tab Shall be an array or scalar of any type. 
+If @var{SOURCE} is a pointer it must be associated and allocatable 
+arrays must be allocated.
+@end multitable
+
 @item @emph{Return value}:
+An @code{INTEGER} array of rank one with as many elements as @var{SOURCE} 
+has dimensions. The elements of the resulting array correspond to the extent
+of @var{SOURCE} along the respective dimensions. If @var{SOURCE} is a scalar,
+the result is the rank one array of size zero.
+
 @item @emph{Example}:
+@smallexample
+PROGRAM test_shape
+  INTEGER, DIMENSION(-1:1, -1:2) :: A
+  WRITE(*,*) SHAPE(A)             ! (/ 3, 4 /)
+  WRITE(*,*) SIZE(SHAPE(42))      ! (/ /)
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
-@ref{RESHAPE}
+@ref{RESHAPE}, @ref{SIZE}
 @end table
 
 
@@ -8533,10 +8680,11 @@ end program test_sinh
 @cindex @code{SIZE} intrinsic
 @cindex array manipulation
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Determine the extent of @var{ARRAY} along a specified dimension @var{DIM},
+or the total number of elements in @var{ARRAY} if @var{DIM} is absent.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -8544,10 +8692,30 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
+@code{RESULT = SIZE(ARRAY[, DIM])}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ARRAY} @tab Shall be an array of any type. If @var{ARRAY} is
+a pointer it must be associated and allocatable arrays must be allocated.
+@item @var{DIM}   @tab (Optional) shall be a scalar of type @code{INTEGER} 
+and its value shall be in the range from 1 to n, where n equals the rank 
+of @var{ARRAY}.
+@end multitable
+
 @item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the default
+integer kind.
+
 @item @emph{Example}:
+@smallexample
+PROGRAM test_size
+  WRITE(*,*) SIZE((/ 1, 2 /))    ! 2
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+@ref{SHAPE}, @ref{RESHAPE}
 @end table
 
 
@@ -9218,10 +9386,11 @@ Transformational function
 @cindex @code{TRANSPOSE} intrinsic
 @cindex matrix manipulation
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Transpose an array of rank two. Element (i, j) of the result has the value 
+@code{MATRIX(j, i)}, for all i, j.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -9229,23 +9398,29 @@ F95 and later
 Transformational function
 
 @item @emph{Syntax}:
+@code{RESULT = TRANSPOSE(MATRIX)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{MATRIX} @tab Shall be an array of any type and have a rank of two.
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{See also}:
+The result has the the same type as @var{MATRIX}, and has shape 
+@code{(/ m, n /)} if @var{MATRIX} has shape @code{(/ n, m /)}.
 @end table
 
 
 
 @node TRIM
-@section @code{TRIM} --- Function to remove trailing blank characters of a string
+@section @code{TRIM} --- Remove trailing blank characters of a string
 @cindex @code{TRIM} intrinsic
 @cindex string manipulation
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Removes trailing blank characters of a string.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -9253,10 +9428,27 @@ F95 and later
 Transformational function
 
 @item @emph{Syntax}:
+@code{RESULT = TRIM(STRING)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{STRING} @tab Shall be a scalar of type @code{CHARACTER(*)}.
+@end multitable
+
 @item @emph{Return value}:
+A scalar of type @code{CHARACTER(*)} which length is that of @var{STRING}
+less the number of trailing blanks.
+
 @item @emph{Example}:
+@smallexample
+PROGRAM test_trim
+  CHARACTER(len=10), PARAMETER :: s = "GFORTRAN  "
+  WRITE(*,*) LEN(s), LEN(TRIM(s))  ! "10 8", with/without trailing blanks
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+@ref{ADJUSTL}, @ref{ADJUSTR}
 @end table
 
 
@@ -9446,10 +9638,16 @@ Transformational function
 @cindex @code{VERIFY} intrinsic
 @cindex string manipulation
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Verifies that all the characters in a @var{SET} are present in a @var{STRING}.
+
+If @var{BACK} is either absent or equals @code{FALSE}, this function
+returns the position of the leftmost character of @var{STRING} that is
+not in @var{SET}. If @var{BACK} equals @code{TRUE}, the rightmost position
+is returned. If all characters of @var{SET} are found in @var{STRING}, the 
+result is zero.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -9457,11 +9655,32 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{RESULT = VERFIY(STRING, SET[, BACK])}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{STRING} @tab Shall be of type @code{CHARACTER(*)}.
+@item @var{SET}    @tab Shall be of type @code{CHARACTER(*)}.
+@item @var{BACK}   @tab (Optional) shall be of type @code{LOGICAL}.
+@end multitable
+
 @item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the default
+integer kind.
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_verify
+  WRITE(*,*) VERIFY("FORTRAN", "AO")           ! 1, found 'F'
+  WRITE(*,*) VERIFY("FORTRAN", "FOO")          ! 3, found 'R'
+  WRITE(*,*) VERIFY("FORTRAN", "C++")          ! 1, found 'F'
+  WRITE(*,*) VERIFY("FORTRAN", "C++", .TRUE.)  ! 7, found 'N'
+  WRITE(*,*) VERIFY("FORTRAN", "FORTRAN")      ! 0' found none
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+@ref{SCAN}, @ref{INDEX}
 @end table
 
 
