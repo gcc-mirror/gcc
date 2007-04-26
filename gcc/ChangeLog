@@ -1,3 +1,13 @@
+2007-04-26  Richard Sandiford  <richard@codesourcery.com>
+
+	PR driver/31107
+	* doc/invoke.texi (%:print-asm-header): Document.
+	* gcc.c (asm_options): Use %:print-asm-header() for --target-help
+	and -ftarget-help.
+	(static_spec_functions): Add print-asm-header.
+	(main): Print a banner before the --target-help linker options.
+	(print_asm_header_spec_function): New function.
+
 2007-04-25  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/31403

@@ -361,6 +361,7 @@ static const char *if_exists_else_spec_function (int, const char **);
 static const char *replace_outfile_spec_function (int, const char **);
 static const char *version_compare_spec_function (int, const char **);
 static const char *include_spec_function (int, const char **);
+static const char *print_asm_header_spec_function (int, const char **);
 
 /* The Specs Language
 
@@ -821,7 +822,8 @@ static const char *cc1_options =
  %{coverage:-fprofile-arcs -ftest-coverage}";
 
 static const char *asm_options =
-"%a %Y %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}";
+"%{ftarget-help:%:print-asm-header()} \
+%a %Y %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}";
 
 static const char *invoke_as =
 #ifdef AS_NEEDS_DASH_FOR_PIPED_INPUT
@@ -1617,6 +1619,7 @@ static const struct spec_function static_spec_functions[] =
   { "replace-outfile",		replace_outfile_spec_function },
   { "version-compare",		version_compare_spec_function },
   { "include",			include_spec_function },
+  { "print-asm-header",		print_asm_header_spec_function },
 #ifdef EXTRA_SPEC_FUNCTIONS
   EXTRA_SPEC_FUNCTIONS
 #endif
@@ -6708,6 +6711,13 @@ main (int argc, char **argv)
       putenv_from_prefixes (&exec_prefixes, "COMPILER_PATH", false);
       putenv_from_prefixes (&startfile_prefixes, LIBRARY_PATH_ENV, true);
 
+      if (print_subprocess_help == 1)
+	{
+	  printf (_("\nLinker options\n==============\n\n"));
+	  printf (_("Use \"-Wl,OPTION\" to pass \"OPTION\""
+		    " to the linker.\n\n"));
+	  fflush (stdout);
+	}
       value = do_spec (link_command_spec);
       if (value < 0)
 	error_count = 1;
@@ -7881,5 +7891,18 @@ include_spec_function (int argc, const char **argv)
   file = find_a_file (&startfile_prefixes, argv[0], R_OK, 0);
   read_specs (file ? file : argv[0], FALSE);
 
+  return NULL;
+}
+
+/* %:print-asm-header spec function.  Print a banner to say that the
+   following output is from the assembler.  */
+
+static const char *
+print_asm_header_spec_function (int arg ATTRIBUTE_UNUSED,
+				const char **argv ATTRIBUTE_UNUSED)
+{
+  printf (_("Assember options\n================\n\n"));
+  printf (_("Use \"-Wa,OPTION\" to pass \"OPTION\" to the assembler.\n\n"));
+  fflush (stdout);
   return NULL;
 }
