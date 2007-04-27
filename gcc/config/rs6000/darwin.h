@@ -353,9 +353,6 @@
    ? GENERAL_REGS						\
    : (CLASS))
 
-/* Fix for emit_group_load (): force large constants to be pushed via regs.  */
-#define ALWAYS_PUSH_CONSTS_USING_REGS_P		1
-
 /* Compute field alignment.  This is similar to the version of the
    macro in the Apple version of GCC, except that version supports
    'mac68k' alignment, and that version uses the computed alignment
