@@ -342,6 +342,7 @@ extern void mark_home_live (int);
 /* Scan X and replace any eliminable registers (such as fp) with a
    replacement (such as sp), plus an offset.  */
 extern rtx eliminate_regs (rtx, enum machine_mode, rtx);
+extern bool elimination_target_reg_p (rtx);
 
 /* Deallocate the reload register used by reload number R.  */
 extern void deallocate_reload_reg (int r);

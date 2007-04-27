@@ -4465,7 +4465,8 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
     if (rld[i].when_needed == RELOAD_FOR_INPUT
 	&& GET_CODE (PATTERN (insn)) == SET
 	&& REG_P (SET_DEST (PATTERN (insn)))
-	&& SET_SRC (PATTERN (insn)) == rld[i].in)
+	&& SET_SRC (PATTERN (insn)) == rld[i].in
+	&& !elimination_target_reg_p (SET_DEST (PATTERN (insn))))
       {
 	rtx dest = SET_DEST (PATTERN (insn));
 	unsigned int regno = REGNO (dest);

@@ -3607,6 +3607,20 @@ update_eliminables (HARD_REG_SET *pset)
     SET_HARD_REG_BIT (*pset, HARD_FRAME_POINTER_REGNUM);
 }
 
+/* Return true if X is used as the target register of an elimination.  */
+
+bool
+elimination_target_reg_p (rtx x)
+{
+  struct elim_table *ep;
+
+  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+    if (ep->to_rtx == x && ep->can_eliminate)
+      return true;
+
+  return false;
+}
+
 /* Initialize the table of registers to eliminate.  */
 
 static void
@@ -7873,6 +7887,7 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
       /* If that failed, copy the address register to the reload register.
 	 Then add the constant to the reload register.  */
 
+      gcc_assert (!reg_overlap_mentioned_p (out, op0));
       gen_reload (out, op1, opnum, type);
       insn = emit_insn (gen_add2_insn (out, op0));
       set_unique_reg_note (insn, REG_EQUIV, in);
