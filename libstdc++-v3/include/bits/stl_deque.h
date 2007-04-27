@@ -1221,11 +1221,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       // Internal constructor functions follow.
 
       // called by the range constructor to implement [23.1.1]/9
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 438. Ambiguity in the "do the right thing" clause
       template<typename _Integer>
         void
         _M_initialize_dispatch(_Integer __n, _Integer __x, __true_type)
         {
-	  _M_initialize_map(__n);
+	  _M_initialize_map(static_cast<size_type>(__n));
 	  _M_fill_initialize(__x);
 	}
 
@@ -1285,13 +1288,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       // assignment work for the range versions.
 
       // called by the range assign to implement [23.1.1]/9
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 438. Ambiguity in the "do the right thing" clause
       template<typename _Integer>
         void
         _M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
-        {
-	  _M_fill_assign(static_cast<size_type>(__n),
-			 static_cast<value_type>(__val));
-	}
+        { _M_fill_assign(__n, __val); }
 
       // called by the range assign to implement [23.1.1]/9
       template<typename _InputIterator>
@@ -1364,14 +1367,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       // insertion work when all shortcuts fail.
 
       // called by the range insert to implement [23.1.1]/9
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 438. Ambiguity in the "do the right thing" clause
       template<typename _Integer>
         void
         _M_insert_dispatch(iterator __pos,
 			   _Integer __n, _Integer __x, __true_type)
-        {
-	  _M_fill_insert(__pos, static_cast<size_type>(__n),
-			 static_cast<value_type>(__x));
-	}
+        { _M_fill_insert(__pos, __n, __x); }
 
       // called by the range insert to implement [23.1.1]/9
       template<typename _InputIterator>

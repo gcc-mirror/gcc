@@ -1,6 +1,6 @@
 // Vector implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -778,13 +778,19 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       // Internal constructor functions follow.
 
       // Called by the range constructor to implement [23.1.1]/9
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 438. Ambiguity in the "do the right thing" clause
       template<typename _Integer>
         void
         _M_initialize_dispatch(_Integer __n, _Integer __value, __true_type)
         {
-	  this->_M_impl._M_start = _M_allocate(__n);
-	  this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
-	  std::__uninitialized_fill_n_a(this->_M_impl._M_start, __n, __value,
+	  this->_M_impl._M_start = _M_allocate(static_cast<size_type>(__n));
+	  this->_M_impl._M_end_of_storage =
+	    this->_M_impl._M_start + static_cast<size_type>(__n);
+	  std::__uninitialized_fill_n_a(this->_M_impl._M_start,
+					static_cast<size_type>(__n),
+					__value,
 					_M_get_Tp_allocator());
 	  this->_M_impl._M_finish = this->_M_impl._M_end_of_storage;
 	}
@@ -830,13 +836,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       // assignment work for the range versions.
 
       // Called by the range assign to implement [23.1.1]/9
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 438. Ambiguity in the "do the right thing" clause
       template<typename _Integer>
         void
         _M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
-        {
-	  _M_fill_assign(static_cast<size_type>(__n),
-			 static_cast<value_type>(__val));
-	}
+        { _M_fill_assign(__n, __val); }
 
       // Called by the range assign to implement [23.1.1]/9
       template<typename _InputIterator>
@@ -870,14 +876,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       // Internal insert functions follow.
 
       // Called by the range insert to implement [23.1.1]/9
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 438. Ambiguity in the "do the right thing" clause
       template<typename _Integer>
         void
         _M_insert_dispatch(iterator __pos, _Integer __n, _Integer __val,
 			   __true_type)
-        {
-	  _M_fill_insert(__pos, static_cast<size_type>(__n),
-			 static_cast<value_type>(__val));
-	}
+        { _M_fill_insert(__pos, __n, __val); }
 
       // Called by the range insert to implement [23.1.1]/9
       template<typename _InputIterator>

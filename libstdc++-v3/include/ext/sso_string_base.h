@@ -106,12 +106,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
           _M_construct(__beg, __end, _Tag());
 	}
 
-      template<typename _InIterator>
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 438. Ambiguity in the "do the right thing" clause
+      template<typename _Integer>
         void
-        _M_construct_aux(_InIterator __beg, _InIterator __end, 
-			 std::__true_type)
-	{ _M_construct(static_cast<size_type>(__beg),
-		       static_cast<value_type>(__end)); }
+        _M_construct_aux(_Integer __beg, _Integer __end, std::__true_type)
+	{ _M_construct(static_cast<size_type>(__beg), __end); }
 
       template<typename _InIterator>
         void
