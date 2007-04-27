@@ -5962,6 +5962,8 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 	      unsigned outer_size = GET_MODE_SIZE (GET_MODE (x));
 	      unsigned inner_size = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
 	      int offset;
+	      enum machine_mode orig_mode = GET_MODE (tem);
+	      int reloaded;
 
 	      /* For big-endian paradoxical subregs, SUBREG_BYTE does not
 		 hold the correct (negative) byte offset.  */
@@ -5994,9 +5996,28 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 		    return x;
 		}
 
-	      find_reloads_address (GET_MODE (tem), &tem, XEXP (tem, 0),
-				    &XEXP (tem, 0), opnum, type,
-				    ind_levels, insn);
+	      reloaded = find_reloads_address (GET_MODE (tem), &tem,
+					       XEXP (tem, 0), &XEXP (tem, 0),
+					       opnum, type, ind_levels, insn);
+
+	      /* For some processors an address may be valid in the
+		 original mode but not in a smaller mode.  For
+		 example, ARM accepts a scaled index register in
+		 SImode but not in HImode.  find_reloads_address
+		 assumes that we pass it a valid address, and doesn't
+		 force a reload.  This will probably be fine if
+		 find_reloads_address finds some reloads.  But if it
+		 doesn't find any, then we may have just converted a
+		 valid address into an invalid one.  Check for that
+		 here.  */
+	      if (reloaded != 1
+		  && strict_memory_address_p (orig_mode, XEXP (tem, 0))
+		  && !strict_memory_address_p (GET_MODE (tem),
+					       XEXP (tem, 0)))
+		push_reload (XEXP (tem, 0), NULL_RTX, &XEXP (tem, 0), (rtx*) 0,
+			     MODE_BASE_REG_CLASS (GET_MODE (tem)),
+			     GET_MODE (XEXP (tem, 0)), VOIDmode, 0, 0,
+			     opnum, type);
 
 	      /* If this is not a toplevel operand, find_reloads doesn't see
 		 this substitution.  We have to emit a USE of the pseudo so

@@ -1,3 +1,10 @@
+2007-04-26  Ian Lance Taylor  <iant@google.com>
+
+	PR target/28675
+	* reload.c (find_reloads_subreg_address): If the address was valid
+	in the original mode but not in the new mode, reload the whole
+	address.
+
 2007-04-25  Anatoly Sokolov <aesok@post.ru>
 
 	PR target/18989
