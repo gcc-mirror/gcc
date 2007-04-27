@@ -1,3 +1,8 @@
+2007-04-26  Ian Lance Taylor  <iant@google.com>
+
+	PR target/28675
+	* gcc.c-torture/compile/pr28675.c: New test.
+
 2007-04-26  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/30016
@@ -79,7 +84,7 @@
 
 2007-04-24  Ian Lance Taylor  <iant@google.com>
 
-	PR tree-optimizatoin/31605
+	PR tree-optimization/31605
 	* gcc.c-torture/execute/pr31605.c: New test.
 
 2007-04-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
