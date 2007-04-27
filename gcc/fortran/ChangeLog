@@ -1,5 +1,11 @@
 2007-04-27  Daniel Franke  <franke.daniel@gmail.com>
 
+	* gfortran.texi: Added node and menu entry for an option index.
+	* invoke.texi: Moved command line option related entries of the concept 
+	index to the option index.
+
+2007-04-27  Daniel Franke  <franke.daniel@gmail.com>
+
 	* intrinsic.texi (AND, FPUT, FPUTC, MODULO, OR, SET_EXPONENT,
 	XOR): Fixed examples.
 
