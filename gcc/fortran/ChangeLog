@@ -1,5 +1,9 @@
 2007-04-27  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* intrinsic.texi (Transfer): Improve documentation.
+
+2007-04-27  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* gfortran.texi (Option Index): Add @samp as needed.
 	* invoke.texi: Removed extraneous line.
 	(-fshort-enums): Fixed intexing.

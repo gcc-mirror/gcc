@@ -9526,10 +9526,12 @@ See @code{HUGE} for an example.
 
 @table @asis
 @item @emph{Description}:
-Interprets the bit pattern of @var{SOURCE} as a variable of the 
-same type and type parameters as @var{MOLD}.
+Interprets the bitwise representation of @var{SOURCE} in memory as if it
+is the representation of a variable or array of the same type and type
+parameters as @var{MOLD}.
 
-This is also known as @emph{casting} one type to another.
+This is approximately equivalent to the C concept of @emph{casting} one
+type to another.
 
 @item @emph{Standard}:
 F95 and later
@@ -9544,13 +9546,29 @@ Transformational function
 @multitable @columnfractions .15 .70
 @item @var{SOURCE} @tab Shall be a scalar or an array of any type.
 @item @var{MOLD}   @tab Shall be a scalar or an array of any type.
-@item @var{SIZE}   @tab (Optional) shall be a scalar and of type 
+@item @var{SIZE}   @tab (Optional) shall be a scalar of type 
 @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
-The result has the same type as @var{MOLD} with the bit level 
-representation of @var{SOURCE}.
+The result has the same type as @var{MOLD}, with the bit level
+representation of @var{SOURCE}.  If @var{SIZE} is present, the result is
+a one-dimensional array of length @var{SIZE}.  If @var{SIZE} is absent
+but @var{MOLD} is an array (of any size or shape), the result is a one-
+dimensional array of the minimum length needed to contain the entirety
+of the bitwise representation of @var{SOURCE}.   If @var{SIZE} is absent
+and @var{MOLD} is a scalar, the result is a scalar.
+
+If the bitwise representation of the result is longer than that of
+@var{SOURCE}, then the leading bits of the result correspond to those of
+@var{SOURCE} and any trailing bits are filled arbitrarily.
+
+When the resulting bit representation does not correspond to a valid
+representation of a variable of the same type as @var{MOLD}, the results
+are undefined, and subsequent operations on the result cannot be
+guaranteed to produce sensible behavior.  For example, it is possible to
+create @code{LOGICAL} variables for which @code{@var{VAR}} and
+@code{.NOT.@var{VAR}} both appear to be true.
 
 @item @emph{Example}:
 @smallexample
