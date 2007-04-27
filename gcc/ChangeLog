@@ -1,3 +1,32 @@
+2007-04-27  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/predicates.md (aligned_memory_operand): Mark
+	as define_special_predicate.
+	(unaligned_memory_operand, normal_memory_operand): Likewise.
+	(reg_or_unaligned_mem_operand): Remove.
+	(any_memory_operand): Match the documentation and check for
+	non-renumbered pseudos during reload.
+	* config/alpha/alpha.c (alpha_secondary_reload): Rename from
+	alpha_secondary_reload_class, update to new interface, make static.
+	Handle CQImode like HImode.  Remove FP subreg check.
+	(alpha_expand_mov): Use replace_equiv_address.
+	(alpha_expand_mov_nobwx): Use any_memory_operand.
+	(TARGET_SECONDARY_RELOAD): New.
+	* config/alpha/alpha.h (SECONDARY_INPUT_RELOAD_CLASS): Remove.
+	(SECONDARY_OUTPUT_RELOAD_CLASS): Remove.
+	* config/alpha/sync.md (I12MODE, I48MODE, modesuffix): Move ...
+	* config/alpha/alpha.md: ... here.
+	(RELOAD12, reloadmode): New.
+	(movcqi): New.
+	(reload_in<RELOAD12>): Macro-ize from reload_inqi, reload_inhi.
+	Don't handle the aligned case here.
+	(reload_out<RELOAD12>): Macro-ize from reload_outqi, reload_outhi.
+	(reload_in<I12MODE>_aligned): Macro-ize from reload_inqi_help,
+	reload_inhi_help.  Don't expect a scratch register.
+	(reload_out<I12MODE>_aligned): Macro-ize from reload_outqi_help,
+	reload_outhi_help.
+	* config/alpha/alpha-protos.h (alpha_secondary_reload_class): Remove.
+
 2007-04-27  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (get_prop_dest_stmt): Fix comment typo.
