@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fstrict-overflow -O2 -fdump-tree-final_cleanup" } */
+/* { dg-options "-fstrict-overflow -O2 -fdump-tree-optimized" } */
 
 /* We can only unroll when using strict overflow semantics.  */
 
@@ -14,6 +14,6 @@ int foo (int i)
   return r;
 }
 
-/* { dg-final { scan-tree-dump-times "r = 3" 1 "final_cleanup" } } */
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { scan-tree-dump "return 3" "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */
 

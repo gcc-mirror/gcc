@@ -1,5 +1,14 @@
 2007-04-27  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/30965
+	PR tree-optimization/30978
+	* gcc.dg/tree-ssa/pr30978.c: New testcase.
+	* gcc.dg/tree-ssa/bool-3.c: Remove XFAIL, explain why.
+	* gcc.dg/tree-ssa/ssa-fre-4.c: Use char instead of bool
+	* gcc.dg/strict-overflow-5.c: Adjust tree dump scanning.
+
+2007-04-27  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/31715
 	* gcc.dg/Warray-bounds-4.c: New testcase.
 
