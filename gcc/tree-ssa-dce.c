@@ -607,7 +607,6 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
 	 3. If the post dominator has PHI nodes we may be able to compute
 	    the right PHI args for them.
 
-
 	 In each of these cases we must remove the control statement
 	 as it may reference SSA_NAMEs which are going to be removed and
 	 we remove all but one outgoing edge from the block.  */
@@ -620,6 +619,11 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
 	  /* Redirect the first edge out of BB to reach POST_DOM_BB.  */
 	  redirect_edge_and_branch (EDGE_SUCC (bb, 0), post_dom_bb);
 	  PENDING_STMT (EDGE_SUCC (bb, 0)) = NULL;
+
+	  /* It is not sufficient to set cfg_altered below during edge
+	     removal, in case BB has two successors and one of them
+	     is POST_DOM_BB.  */
+	  cfg_altered = true;
 	}
       EDGE_SUCC (bb, 0)->probability = REG_BR_PROB_BASE;
       EDGE_SUCC (bb, 0)->count = bb->count;
@@ -718,6 +722,7 @@ eliminate_unnecessary_stmts (void)
 	    }
 	}
     }
+
   return something_changed;
 }
 
@@ -837,8 +842,8 @@ perform_tree_ssa_dce (bool aggressive)
   something_changed |= eliminate_unnecessary_stmts ();
   something_changed |= cfg_altered;
 
-  if (aggressive && something_changed)
-    free_dominance_info (CDI_POST_DOMINATORS);
+  /* We do not update postdominators, so free them unconditionally.  */
+  free_dominance_info (CDI_POST_DOMINATORS);
 
   /* If we removed paths in the CFG, then we need to update
      dominators as well.  I haven't investigated the possibility

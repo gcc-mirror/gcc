@@ -1,3 +1,11 @@
+2007-04-27  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-cfgcleanup.c (cleanup_tree_cfg): Verify dominance info
+	if it claims to be available.
+	* tree-ssa-dce.c (remove_dead_stmt): Mark cfg as altered when
+	edge is redirected.
+	(perform_tree_ssa_dce): Always free postdominators.
+
 2007-04-27  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/predicates.md (aligned_memory_operand): Mark
