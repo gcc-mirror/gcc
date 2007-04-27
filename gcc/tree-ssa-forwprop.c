@@ -372,9 +372,11 @@ combine_cond_expr_cond (enum tree_code code, tree type,
 /* Propagate from the ssa name definition statements of COND_EXPR
    in statement STMT into the conditional if that simplifies it.  */
 
-static void
+static bool
 forward_propagate_into_cond (tree cond_expr, tree stmt)
 {
+  bool did_something = false;
+
   do {
     tree tmp = NULL_TREE;
     tree cond = COND_EXPR_COND (cond_expr);
@@ -407,7 +409,7 @@ forward_propagate_into_cond (tree cond_expr, tree stmt)
 	    def_stmt = get_prop_source_stmt (name, false, &single_use_p);
 	    if (def_stmt == NULL_TREE
 	        || !can_propagate_from (def_stmt))
-	      return;
+	      return did_something;
 
 	    rhs = GIMPLE_STMT_OPERAND (def_stmt, 1);
 	    tmp = combine_cond_expr_cond (TREE_CODE (cond), boolean_type_node,
@@ -422,7 +424,7 @@ forward_propagate_into_cond (tree cond_expr, tree stmt)
 	def_stmt = get_prop_source_stmt (name, true, NULL);
 	if (def_stmt == NULL_TREE
 	    || !can_propagate_from (def_stmt))
-	  return;
+	  return did_something;
 
 	rhs = GIMPLE_STMT_OPERAND (def_stmt, 1);
 	tmp = combine_cond_expr_cond (NE_EXPR, boolean_type_node, rhs,
@@ -447,12 +449,16 @@ forward_propagate_into_cond (tree cond_expr, tree stmt)
 	/* Remove defining statements.  */
 	remove_prop_source_from_use (name, NULL);
 
+	did_something = true;
+
 	/* Continue combining.  */
 	continue;
       }
 
     break;
   } while (1);
+
+  return did_something;
 }
 
 /* We've just substituted an ADDR_EXPR into stmt.  Update all the 
@@ -986,7 +992,11 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		}
               else if (TREE_CODE (rhs) == COND_EXPR)
                 {
-                  forward_propagate_into_cond (rhs, stmt);
+		  bool did_something;
+		  fold_defer_overflow_warnings ();
+                  did_something = forward_propagate_into_cond (rhs, stmt);
+		  fold_undefer_overflow_warnings (!TREE_NO_WARNING (rhs)
+		    && did_something, stmt, WARN_STRICT_OVERFLOW_CONDITIONAL);
 		  bsi_next (&bsi);
                 }
 	      else if (COMPARISON_CLASS_P (rhs))
@@ -1010,7 +1020,12 @@ tree_ssa_forward_propagate_single_use_vars (void)
 	    }
 	  else if (TREE_CODE (stmt) == COND_EXPR)
 	    {
-	      forward_propagate_into_cond (stmt, stmt);
+	      bool did_something;
+	      fold_defer_overflow_warnings ();
+	      did_something = forward_propagate_into_cond (stmt, stmt);
+	      fold_undefer_overflow_warnings (!TREE_NO_WARNING (stmt)
+					      && did_something, stmt,
+					      WARN_STRICT_OVERFLOW_CONDITIONAL);
 	      bsi_next (&bsi);
 	    }
 	  else
