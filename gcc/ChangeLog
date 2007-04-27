@@ -1,5 +1,24 @@
 2007-04-27  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/30965
+	PR tree-optimization/30978
+	* Makefile.in (tree-ssa-forwprop.o): Depend on $(FLAGS_H).
+        * tree-ssa-forwprop.c (forward_propagate_into_cond_1): Remove.
+        (find_equivalent_equality_comparison): Likewise.
+        (simplify_cond): Likewise.
+        (get_prop_source_stmt): New helper.
+        (get_prop_dest_stmt): Likewise.
+	(can_propagate_from): Likewise.
+	(remove_prop_source_from_use): Likewise.
+        (combine_cond_expr_cond): Likewise.
+        (forward_propagate_comparison): New function.
+        (forward_propagate_into_cond): Rewrite to use fold for
+        tree combining.
+	(tree_ssa_forward_propagate_single_use_vars): Call
+	forward_propagate_comparison to propagate comparisons.
+
+2007-04-27  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/31715
 	* tree-ssa-ccp.c (maybe_fold_offset_to_array_ref): Make
 	sure to do computation on the offset in an appropriate
