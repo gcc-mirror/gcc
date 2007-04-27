@@ -1,3 +1,10 @@
+2007-04-27  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR middle-end/30761
+	* reload1.c (eliminate_regs_in_insn): In the single_set special
+	case, attempt to re-recognize the insn before falling back to
+	having reload fix it up.
+
 2007-04-26  Ian Lance Taylor  <iant@google.com>
 
 	PR target/28675
