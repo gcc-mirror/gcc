@@ -1,3 +1,8 @@
+2007-04-27  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* error.c (maybe_warn_variadic_templates): Variadic templates are
+       now in C++0x, so only warn about them in C++98 mode.
+	
 2007-04-26  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/30016
