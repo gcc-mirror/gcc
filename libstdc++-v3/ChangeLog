@@ -1,3 +1,70 @@
+2007-04-27  Paolo Carlini  <pcarlini@suse.de>
+
+	DR 438, [DR].
+	* include/bits/basic_string.h (_S_construct_aux(_InIterator,
+	_InIterator, const _Alloc&, __true_type)): Do not cast the
+	second argument.
+	* include/ext/rc_string_base.h (_S_construct_aux(_Integer,
+	_Integer, const _Alloc&, std::__true_type)): Likewise.
+	* include/ext/sso_string_base.h (_M_construct_aux(_InIterator,
+	_InIterator, std::__true_type)): Likewise.
+	* include/bits/stl_deque.h (_M_initialize_dispatch(_Integer,
+	_Integer, __true_type)): Cast the first argument.
+	(_M_assign_dispatch(_Integer, _Integer, __true_type)): Do
+	not cast the arguments.
+	(_M_insert_dispatch(iterator, _Integer, _Integer, __true_type)):
+	Likewise.
+	* include/bits/stl_list.h (_M_initialize_dispatch(_Integer,
+	_Integer, __true_type)): Likewise.
+	(_M_assign_dispatch(_Integer, _Integer, __true_type)): Do
+	not cast both arguments.
+	* include/bits/stl_bvector.h (_M_initialize_dispatch(_Integer,
+	_Integer, __true_type)): Cast the first argument.
+	(_M_assign_dispatch(_Integer, _Integer, __true_type)): Do not
+	cast the arguments.
+	* include/bits/stl_vector.h (_M_initialize_dispatch(_Integer,
+	_Integer, __true_type)): Cast the first argument.
+	(_M_assign_dispatch(_Integer, _Integer, __true_type)): Do not
+	cast the arguments.
+	(_M_insert_dispatch(iterator, _Integer, _Integer, __true_type)):
+	Likewise.
+	* testsuite/21_strings/basic_string/requirements/dr438/
+	constructor.cc: New.
+	* testsuite/ext/vstring/requirements/dr438/constructor.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/deque/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/deque/
+	constructor.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/deque/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/deque/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/deque/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/list/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/list/
+	constructor.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/list/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/list/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/list/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/vector/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/vector/
+	constructor.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/vector/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/vector/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/vector/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/requirements/sequences/dr438/vector/
+	bool/constructor.cc: Likewise.
+	* docs/html/ext/howto.html: Add an entry for DR 438.
+
 2007-04-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_classes.h: Remove redundant inline specifiers.

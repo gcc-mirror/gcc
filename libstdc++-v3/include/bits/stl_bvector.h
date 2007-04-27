@@ -793,11 +793,14 @@ template<typename _Alloc>
     }
 
     // Check whether it's an integral type.  If so, it's not an iterator.
+
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 438. Ambiguity in the "do the right thing" clause
     template<typename _Integer>
       void
       _M_initialize_dispatch(_Integer __n, _Integer __x, __true_type)
       {
-	_M_initialize(__n);
+	_M_initialize(static_cast<size_type>(__n));
 	std::fill(this->_M_impl._M_start._M_p, 
 		  this->_M_impl._M_end_of_storage, __x ? ~0 : 0);
       }
@@ -828,10 +831,12 @@ template<typename _Alloc>
 	std::copy(__first, __last, this->_M_impl._M_start);
       }
 
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 438. Ambiguity in the "do the right thing" clause
     template<typename _Integer>
       void
       _M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
-      { _M_fill_assign((size_t) __n, (bool) __val); }
+      { _M_fill_assign(__n, __val); }
 
     template<class _InputIterator>
       void
@@ -888,6 +893,9 @@ template<typename _Alloc>
       }
 
     // Check whether it's an integral type.  If so, it's not an iterator.
+
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 438. Ambiguity in the "do the right thing" clause
     template<typename _Integer>
       void
       _M_insert_dispatch(iterator __pos, _Integer __n, _Integer __x,
