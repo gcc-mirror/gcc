@@ -1,3 +1,7 @@
+2007-04-27  Mike Stump  <mrs@apple.com>
+
+	* config/rs6000/darwin.h (ALWAYS_PUSH_CONSTS_USING_REGS_P): Remove.
+
 2007-04-27  Ian Lance Taylor  <iant@google.com>
 
 	PR middle-end/31710
