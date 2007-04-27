@@ -8987,7 +8987,7 @@ grokparms (cp_parameter_declarator *first_parm, tree *parms)
       if (DECL_NAME (decl))
         {
           if (pointer_set_contains (unique_decls, DECL_NAME (decl)))
-            error ("multiple parameters named %qD", DECL_NAME (decl));
+            error ("multiple parameters named %qE", DECL_NAME (decl));
           else
             pointer_set_insert (unique_decls, DECL_NAME (decl));
         }

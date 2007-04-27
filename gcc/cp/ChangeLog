@@ -1,3 +1,7 @@
+2007-04-27  Simon Baldwin  <simonb@google.com>
+
+	* decl.c (grokparms): Changed message format from %qD to %qE.
+
 2007-04-27  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* error.c (maybe_warn_variadic_templates): Variadic templates are
