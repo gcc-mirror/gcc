@@ -1,3 +1,8 @@
+2007-04-26  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR C++/30016
+	* g++.dg/ext/vector6.C: New test.
+
 2007-04-26  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.c-torture/execute/ieee/20000320-1.x: New.
