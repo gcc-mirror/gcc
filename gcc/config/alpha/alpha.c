@@ -1533,47 +1533,39 @@ alpha_preferred_reload_class(rtx x, enum reg_class class)
   return class;
 }
 
-/* Loading and storing HImode or QImode values to and from memory
-   usually requires a scratch register.  The exceptions are loading
-   QImode and HImode from an aligned address to a general register
-   unless byte instructions are permitted.
+/* Inform reload about cases where moving X with a mode MODE to a register in
+   CLASS requires an extra scratch or immediate register.  Return the class
+   needed for the immediate register.  */
 
-   We also cannot load an unaligned address or a paradoxical SUBREG
-   into an FP register.
-
-   We also cannot do integral arithmetic into FP regs, as might result
-   from register elimination into a DImode fp register.  */
-
-enum reg_class
-alpha_secondary_reload_class (enum reg_class class, enum machine_mode mode,
-			rtx x, int in)
+static enum reg_class
+alpha_secondary_reload (bool in_p, rtx x, enum reg_class class,
+			enum machine_mode mode, secondary_reload_info *sri)
 {
-  if ((mode == QImode || mode == HImode) && ! TARGET_BWX)
+  /* Loading and storing HImode or QImode values to and from memory
+     usually requires a scratch register.  */
+  if (!TARGET_BWX && (mode == QImode || mode == HImode || mode == CQImode))
     {
-      if (GET_CODE (x) == MEM
-	  || (GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER)
-	  || (GET_CODE (x) == SUBREG
-	      && (GET_CODE (SUBREG_REG (x)) == MEM
-		  || (GET_CODE (SUBREG_REG (x)) == REG
-		      && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER))))
+      if (any_memory_operand (x, mode))
 	{
-	  if (!in || !aligned_memory_operand(x, mode))
-	    return GENERAL_REGS;
+	  if (in_p)
+	    {
+	      if (!aligned_memory_operand (x, mode))
+		sri->icode = reload_in_optab[mode];
+	    }
+	  else
+	    sri->icode = reload_out_optab[mode];
+	  return NO_REGS;
 	}
     }
 
+  /* We also cannot do integral arithmetic into FP regs, as might result
+     from register elimination into a DImode fp register.  */
   if (class == FLOAT_REGS)
     {
-      if (GET_CODE (x) == MEM && GET_CODE (XEXP (x, 0)) == AND)
+      if (MEM_P (x) && GET_CODE (XEXP (x, 0)) == AND)
 	return GENERAL_REGS;
-
-      if (GET_CODE (x) == SUBREG
-	  && (GET_MODE_SIZE (GET_MODE (x))
-	      > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
-	return GENERAL_REGS;
-
-      if (in && INTEGRAL_MODE_P (mode)
-	  && ! (memory_operand (x, mode) || x == const0_rtx))
+      if (in_p && INTEGRAL_MODE_P (mode)
+	  && !MEM_P (x) && !REG_P (x) && !CONST_INT_P (x))
 	return GENERAL_REGS;
     }
 
@@ -2160,8 +2152,7 @@ alpha_expand_mov (enum machine_mode mode, rtx *operands)
   if (reload_in_progress)
     {
       emit_move_insn (operands[0], XEXP (operands[1], 0));
-      operands[1] = copy_rtx (operands[1]);
-      XEXP (operands[1], 0) = operands[0];
+      operands[1] = replace_equiv_address (operands[1], operands[0]);
     }
   else
     operands[1] = validize_mem (operands[1]);
@@ -2174,32 +2165,27 @@ alpha_expand_mov (enum machine_mode mode, rtx *operands)
 bool
 alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
 {
+  rtx seq;
+
   /* If the output is not a register, the input must be.  */
-  if (GET_CODE (operands[0]) == MEM)
+  if (MEM_P (operands[0]))
     operands[1] = force_reg (mode, operands[1]);
 
   /* Handle four memory cases, unaligned and aligned for either the input
      or the output.  The only case where we can be called during reload is
      for aligned loads; all other cases require temporaries.  */
 
-  if (GET_CODE (operands[1]) == MEM
-      || (GET_CODE (operands[1]) == SUBREG
-	  && GET_CODE (SUBREG_REG (operands[1])) == MEM)
-      || (reload_in_progress && GET_CODE (operands[1]) == REG
-	  && REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER)
-      || (reload_in_progress && GET_CODE (operands[1]) == SUBREG
-	  && GET_CODE (SUBREG_REG (operands[1])) == REG
-	  && REGNO (SUBREG_REG (operands[1])) >= FIRST_PSEUDO_REGISTER))
+  if (any_memory_operand (operands[1], mode))
     {
       if (aligned_memory_operand (operands[1], mode))
 	{
 	  if (reload_in_progress)
 	    {
-	      emit_insn ((mode == QImode
-			  ? gen_reload_inqi_help
-			  : gen_reload_inhi_help)
-		         (operands[0], operands[1],
-			  gen_rtx_REG (SImode, REGNO (operands[0]))));
+	      if (mode == QImode)
+		seq = gen_reload_inqi_aligned (operands[0], operands[1]);
+	      else
+		seq = gen_reload_inhi_aligned (operands[0], operands[1]);
+	      emit_insn (seq);
 	    }
 	  else
 	    {
@@ -2216,10 +2202,13 @@ alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
 	      else
 		subtarget = gen_reg_rtx (DImode), copyout = true;
 
-	      emit_insn ((mode == QImode
-			  ? gen_aligned_loadqi
-			  : gen_aligned_loadhi)
-			 (subtarget, aligned_mem, bitnum, scratch));
+	      if (mode == QImode)
+		seq = gen_aligned_loadqi (subtarget, aligned_mem,
+					  bitnum, scratch);
+	      else
+		seq = gen_aligned_loadhi (subtarget, aligned_mem,
+					  bitnum, scratch);
+	      emit_insn (seq);
 
 	      if (copyout)
 		emit_move_insn (operands[0], gen_lowpart (mode, subtarget));
@@ -2231,7 +2220,7 @@ alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
 	     code depend on parameter evaluation order which will cause
 	     bootstrap failures.  */
 
-	  rtx temp1, temp2, seq, subtarget;
+	  rtx temp1, temp2, subtarget, ua;
 	  bool copyout;
 
 	  temp1 = gen_reg_rtx (DImode);
@@ -2243,11 +2232,12 @@ alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
 	  else
 	    subtarget = gen_reg_rtx (DImode), copyout = true;
 
-	  seq = ((mode == QImode
-		  ? gen_unaligned_loadqi
-		  : gen_unaligned_loadhi)
-		 (subtarget, get_unaligned_address (operands[1]),
-		  temp1, temp2));
+	  ua = get_unaligned_address (operands[1]);
+	  if (mode == QImode)
+	    seq = gen_unaligned_loadqi (subtarget, ua, temp1, temp2);
+	  else
+	    seq = gen_unaligned_loadhi (subtarget, ua, temp1, temp2);
+
 	  alpha_set_memflags (seq, operands[1]);
 	  emit_insn (seq);
 
@@ -2257,14 +2247,7 @@ alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
       return true;
     }
 
-  if (GET_CODE (operands[0]) == MEM
-      || (GET_CODE (operands[0]) == SUBREG
-	  && GET_CODE (SUBREG_REG (operands[0])) == MEM)
-      || (reload_in_progress && GET_CODE (operands[0]) == REG
-	  && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER)
-      || (reload_in_progress && GET_CODE (operands[0]) == SUBREG
-	  && GET_CODE (SUBREG_REG (operands[0])) == REG
-	  && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER))
+  if (any_memory_operand (operands[0], mode))
     {
       if (aligned_memory_operand (operands[0], mode))
 	{
@@ -2282,11 +2265,12 @@ alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
 	  rtx temp1 = gen_reg_rtx (DImode);
 	  rtx temp2 = gen_reg_rtx (DImode);
 	  rtx temp3 = gen_reg_rtx (DImode);
-	  rtx seq = ((mode == QImode
-		      ? gen_unaligned_storeqi
-		      : gen_unaligned_storehi)
-		     (get_unaligned_address (operands[0]),
-		      operands[1], temp1, temp2, temp3));
+	  rtx ua = get_unaligned_address (operands[0]);
+
+	  if (mode == QImode)
+	    seq = gen_unaligned_storeqi (ua, operands[1], temp1, temp2, temp3);
+	  else
+	    seq = gen_unaligned_storehi (ua, operands[1], temp1, temp2, temp3);
 
 	  alpha_set_memflags (seq, operands[0]);
 	  emit_insn (seq);
@@ -10702,6 +10686,9 @@ alpha_init_libfuncs (void)
 #define TARGET_GIMPLIFY_VA_ARG_EXPR alpha_gimplify_va_arg
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES alpha_arg_partial_bytes
+
+#undef TARGET_SECONDARY_RELOAD
+#define TARGET_SECONDARY_RELOAD alpha_secondary_reload
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P alpha_scalar_mode_supported_p

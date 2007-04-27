@@ -19,10 +19,6 @@
 ;; the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 ;; Boston, MA 02110-1301, USA.
 
-(define_mode_macro I12MODE [QI HI])
-(define_mode_macro I48MODE [SI DI])
-(define_mode_attr modesuffix [(SI "l") (DI "q")])
-
 (define_code_macro FETCHOP [plus minus ior xor and])
 (define_code_attr fetchop_name
   [(plus "add") (minus "sub") (ior "ior") (xor "xor") (and "and")])

@@ -582,19 +582,6 @@ enum reg_class {
 
 #define PREFERRED_RELOAD_CLASS  alpha_preferred_reload_class
 
-/* Loading and storing HImode or QImode values to and from memory
-   usually requires a scratch register.  The exceptions are loading
-   QImode and HImode from an aligned address to a general register
-   unless byte instructions are permitted.
-   We also cannot load an unaligned address or a paradoxical SUBREG into an
-   FP register.  */
-
-#define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,IN) \
-  alpha_secondary_reload_class((CLASS), (MODE), (IN), 1)
-
-#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,OUT) \
-  alpha_secondary_reload_class((CLASS), (MODE), (OUT), 0)
-
 /* If we are copying between general and FP registers, we need a memory
    location unless the FIX extension is available.  */
 
