@@ -302,7 +302,7 @@ public abstract class CairoGraphics2D extends Graphics2D
    * Allocate the cairographics2d structure and set the cairo_t pointer in it.
    * @param pointer - a cairo_t pointer, casted to a long.
    */
-  private native long init(long pointer);
+  protected native long init(long pointer);
 
   /**
    * These are declared abstract as there may be context-specific issues.
@@ -335,56 +335,56 @@ public abstract class CairoGraphics2D extends Graphics2D
    * @param stride - stride of the array width
    * @param i2u - affine transform array
    */
-  private native void drawPixels(long pointer, int[] pixels, int w, int h,
+  protected native void drawPixels(long pointer, int[] pixels, int w, int h,
                                  int stride, double[] i2u, double alpha,
                                  int interpolation);
 
-  private native void setGradient(long pointer, double x1, double y1,
+  protected native void setGradient(long pointer, double x1, double y1,
                                   double x2, double y2,
                                   int r1, int g1, int b1, int a1, int r2,
                                   int g2, int b2, int a2, boolean cyclic);
   
-  private native void setPaintPixels(long pointer, int[] pixels, int w,
+  protected native void setPaintPixels(long pointer, int[] pixels, int w,
                                        int h, int stride, boolean repeat,
                                        int x, int y);
 
   /**
    * Set the current transform matrix
    */
-  private native void cairoSetMatrix(long pointer, double[] m);
+  protected native void cairoSetMatrix(long pointer, double[] m);
   
   /**
    * Scaling method
    */
-  private native void cairoScale(long pointer, double x, double y);
+  protected native void cairoScale(long pointer, double x, double y);
 
   /**
    * Set the compositing operator
    */
-  private native void cairoSetOperator(long pointer, int cairoOperator);
+  protected native void cairoSetOperator(long pointer, int cairoOperator);
 
   /**
    * Sets the current color in RGBA as a 0.0-1.0 double
    */
-  private native void cairoSetRGBAColor(long pointer, double red, double green,
+  protected native void cairoSetRGBAColor(long pointer, double red, double green,
                                         double blue, double alpha);
 
   /**
    * Sets the current winding rule in Cairo
    */
-  private native void cairoSetFillRule(long pointer, int cairoFillRule);
+  protected native void cairoSetFillRule(long pointer, int cairoFillRule);
 
   /**
    * Set the line style, cap, join and miter limit.
    * Cap and join parameters are in the BasicStroke enumerations.
    */
-  private native void cairoSetLine(long pointer, double width, int cap,
+  protected native void cairoSetLine(long pointer, double width, int cap,
                                    int join, double miterLimit);
 
   /**
    * Set the dash style
    */
-  private native void cairoSetDash(long pointer, double[] dashes, int ndash,
+  protected native void cairoSetDash(long pointer, double[] dashes, int ndash,
                                    double offset);
 
   /*
@@ -397,121 +397,66 @@ public abstract class CairoGraphics2D extends Graphics2D
   /**
    * Set the font in cairo.
    */
-  private native void cairoSetFont(long pointer, GdkFontPeer font);
-
-  private native void cairoRelCurveTo(long pointer, double dx1, double dy1,
-                                      double dx2, double dy2, double dx3,
-                                      double dy3);
+  protected native void cairoSetFont(long pointer, GdkFontPeer font);
 
   /**
    * Appends a rectangle to the current path
    */
-  private native void cairoRectangle(long pointer, double x, double y,
+  protected native void cairoRectangle(long pointer, double x, double y,
                                      double width, double height);
   
   /**
    * Appends an arc to the current path
    */
-  private native void cairoArc(long pointer, double x, double y,
+  protected native void cairoArc(long pointer, double x, double y,
                                double radius, double angle1, double angle2);
 
   /**
    * Save / restore a cairo path
    */
-  private native void cairoSave(long pointer);
-  private native void cairoRestore(long pointer);
+  protected native void cairoSave(long pointer);
+  protected native void cairoRestore(long pointer);
 
   /**
    * New current path
    */
-  private native void cairoNewPath(long pointer);
+  protected native void cairoNewPath(long pointer);
 
   /** 
    * Close current path
    */
-  private native void cairoClosePath(long pointer);
+  protected native void cairoClosePath(long pointer);
 
   /** moveTo */
-  private native void cairoMoveTo(long pointer, double x, double y);
-
-  /** relative moveTo */
-  private native void cairoRelMoveTo(long pointer, double dx, double dy);
+  protected native void cairoMoveTo(long pointer, double x, double y);
 
   /** lineTo */
-  private native void cairoLineTo(long pointer, double x, double y);
-
-  /** relative lineTo */
-  private native void cairoRelLineTo(long pointer, double dx, double dy);
+  protected native void cairoLineTo(long pointer, double x, double y);
 
   /** Cubic curve-to */
-  private native void cairoCurveTo(long pointer, double x1, double y1,
+  protected native void cairoCurveTo(long pointer, double x1, double y1,
                                    double x2, double y2,
                                    double x3, double y3);
 
   /**
    * Stroke current path
    */
-  private native void cairoStroke(long pointer);
+  protected native void cairoStroke(long pointer);
 
   /**
    * Fill current path
    */
-  private native void cairoFill(long pointer, double alpha);
+  protected native void cairoFill(long pointer, double alpha);
 
   /** 
    * Clip current path
    */
-  private native void cairoClip(long pointer);
+  protected native void cairoClip(long pointer);
 
   /** 
    * Save clip
    */
-  private native void cairoPreserveClip(long pointer);
-
-  /** 
-   * Save clip
-   */
-  private native void cairoResetClip(long pointer);
-
-  /**
-   * Draws a line from (x1,y1) to (x2,y2).
-   *
-   * @param pointer the native pointer
-   *
-   * @param x1 the x coordinate of the starting point
-   * @param y1 the y coordinate of the starting point
-   * @param x2 the x coordinate of the end point
-   * @param y2 the y coordinate of the end point
-   */
-  private native void cairoDrawLine(long pointer, double x1, double y1,
-                                    double x2, double y2);
-
-  /**
-   * Draws a rectangle at starting point (x,y) and with the specified width
-   * and height.
-   *
-   * @param pointer the native pointer
-   * @param x the x coordinate of the upper left corner
-   * @param y the y coordinate of the upper left corner
-   * @param w the width of the rectangle
-   * @param h the height of the rectangle
-   */
-  private native void cairoDrawRect(long pointer, double x, double y, double w,
-                                    double h);
-
-  /**
-   * Fills a rectangle at starting point (x,y) and with the specified width
-   * and height.
-   *
-   * @param pointer the native pointer
-   * @param x the x coordinate of the upper left corner
-   * @param y the y coordinate of the upper left corner
-   * @param w the width of the rectangle
-   * @param h the height of the rectangle
-   */
-  private native void cairoFillRect(long pointer, double x, double y, double w,
-                                    double h);
-
+  protected native void cairoResetClip(long pointer);
 
   ///////////////////////// TRANSFORMS ///////////////////////////////////
   /**

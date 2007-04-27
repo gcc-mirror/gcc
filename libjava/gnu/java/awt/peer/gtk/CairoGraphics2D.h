@@ -88,8 +88,8 @@ public:
   virtual void copy(::gnu::java::awt::peer::gtk::CairoGraphics2D *, jlong);
   virtual void finalize();
   virtual void dispose();
-private:
-  jlong init(jlong);
+public: // actually protected
+  virtual jlong init(jlong);
 public:
   virtual ::java::awt::Graphics * create() = 0;
   virtual ::java::awt::GraphicsConfiguration * getDeviceConfiguration() = 0;
@@ -98,41 +98,34 @@ public: // actually protected
   virtual ::java::awt::geom::Rectangle2D * getRealBounds() = 0;
 public:
   virtual void disposeNative(jlong);
-private:
-  void drawPixels(jlong, JArray< jint > *, jint, jint, jint, JArray< jdouble > *, jdouble, jint);
-  void setGradient(jlong, jdouble, jdouble, jdouble, jdouble, jint, jint, jint, jint, jint, jint, jint, jint, jboolean);
-  void setPaintPixels(jlong, JArray< jint > *, jint, jint, jint, jboolean, jint, jint);
-  void cairoSetMatrix(jlong, JArray< jdouble > *);
-  void cairoScale(jlong, jdouble, jdouble);
-  void cairoSetOperator(jlong, jint);
-  void cairoSetRGBAColor(jlong, jdouble, jdouble, jdouble, jdouble);
-  void cairoSetFillRule(jlong, jint);
-  void cairoSetLine(jlong, jdouble, jint, jint, jdouble);
-  void cairoSetDash(jlong, JArray< jdouble > *, jint, jdouble);
+public: // actually protected
+  virtual void drawPixels(jlong, JArray< jint > *, jint, jint, jint, JArray< jdouble > *, jdouble, jint);
+  virtual void setGradient(jlong, jdouble, jdouble, jdouble, jdouble, jint, jint, jint, jint, jint, jint, jint, jint, jboolean);
+  virtual void setPaintPixels(jlong, JArray< jint > *, jint, jint, jint, jboolean, jint, jint);
+  virtual void cairoSetMatrix(jlong, JArray< jdouble > *);
+  virtual void cairoScale(jlong, jdouble, jdouble);
+  virtual void cairoSetOperator(jlong, jint);
+  virtual void cairoSetRGBAColor(jlong, jdouble, jdouble, jdouble, jdouble);
+  virtual void cairoSetFillRule(jlong, jint);
+  virtual void cairoSetLine(jlong, jdouble, jint, jint, jdouble);
+  virtual void cairoSetDash(jlong, JArray< jdouble > *, jint, jdouble);
 public: // actually package-private
   virtual void cairoDrawGlyphVector(jlong, ::gnu::java::awt::peer::gtk::GdkFontPeer *, jfloat, jfloat, jint, JArray< jint > *, JArray< jfloat > *);
-private:
-  void cairoSetFont(jlong, ::gnu::java::awt::peer::gtk::GdkFontPeer *);
-  void cairoRelCurveTo(jlong, jdouble, jdouble, jdouble, jdouble, jdouble, jdouble);
-  void cairoRectangle(jlong, jdouble, jdouble, jdouble, jdouble);
-  void cairoArc(jlong, jdouble, jdouble, jdouble, jdouble, jdouble);
-  void cairoSave(jlong);
-  void cairoRestore(jlong);
-  void cairoNewPath(jlong);
-  void cairoClosePath(jlong);
-  void cairoMoveTo(jlong, jdouble, jdouble);
-  void cairoRelMoveTo(jlong, jdouble, jdouble);
-  void cairoLineTo(jlong, jdouble, jdouble);
-  void cairoRelLineTo(jlong, jdouble, jdouble);
-  void cairoCurveTo(jlong, jdouble, jdouble, jdouble, jdouble, jdouble, jdouble);
-  void cairoStroke(jlong);
-  void cairoFill(jlong, jdouble);
-  void cairoClip(jlong);
-  void cairoPreserveClip(jlong);
-  void cairoResetClip(jlong);
-  void cairoDrawLine(jlong, jdouble, jdouble, jdouble, jdouble);
-  void cairoDrawRect(jlong, jdouble, jdouble, jdouble, jdouble);
-  void cairoFillRect(jlong, jdouble, jdouble, jdouble, jdouble);
+public: // actually protected
+  virtual void cairoSetFont(jlong, ::gnu::java::awt::peer::gtk::GdkFontPeer *);
+  virtual void cairoRectangle(jlong, jdouble, jdouble, jdouble, jdouble);
+  virtual void cairoArc(jlong, jdouble, jdouble, jdouble, jdouble, jdouble);
+  virtual void cairoSave(jlong);
+  virtual void cairoRestore(jlong);
+  virtual void cairoNewPath(jlong);
+  virtual void cairoClosePath(jlong);
+  virtual void cairoMoveTo(jlong, jdouble, jdouble);
+  virtual void cairoLineTo(jlong, jdouble, jdouble);
+  virtual void cairoCurveTo(jlong, jdouble, jdouble, jdouble, jdouble, jdouble, jdouble);
+  virtual void cairoStroke(jlong);
+  virtual void cairoFill(jlong, jdouble);
+  virtual void cairoClip(jlong);
+  virtual void cairoResetClip(jlong);
 public:
   virtual void setTransform(::java::awt::geom::AffineTransform *);
 private:

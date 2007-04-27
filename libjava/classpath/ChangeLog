@@ -1,3 +1,91 @@
+2007-03-16  Francis Kung  <fkung@redhat.com>
+
+	* gnu/java/awt/peer/gtk/CairoGraphics2D.java
+	(cairoArc): Make protected rather than private so it can be over-ridden.
+	(cairoClip): Likewise.
+	(cairoClosePath): Likewise.
+	(cairoCurveTo): Likewise.
+	(cairoDrawGlyphVector): Likewise.
+	(cairoFill): Likewise.
+	(cairoLineTo): Likewise.
+	(cairoMoveTo): Likewise.
+	(cairoNewPath): Likewise.
+	(cairoRectangle): Likewise.
+	(cairoResetClip): Likewise.
+	(cairoRestore): Likewise.
+	(cairoSave): Likewise.
+	(cairoScale): Likewise.
+	(cairoSetAntialias): Likewise.
+	(cairoSetDash): Likewise.
+	(cairoSetFillRule): Likewise.
+	(cairoSetFont): Likewise.
+	(cairoSetLine): Likewise.
+	(cairoSetMatrix): Likewise.
+	(cairoSetOperator): Likewise.
+	(cairoSetRGBAColor): Likewise.
+	(cairoStroke): Likewise.
+	(drawPixels): Likewise.
+	(init): Likewise.
+	(setGradient): Likewise.
+	(setPaintPixels): Likewise.
+	(cairoDrawLine): Removed.
+	(cairoDrawRect): Removed.
+	(cairoFillRect): Removed.
+	(cairoPreserveClip): Removed.
+	(cairoRelCurveTo): Removed.
+	(cairoRelLineTo): Removed.
+	(cairoRelMoveTo): Removed.
+	* gnu/java/awt/peer/gtk/ComponentGraphics.java
+	(cairoArc): New method wrapping superclass method in locks.
+	(cairoClip): Likewise.
+	(cairoClosePath): Likewise.
+	(cairoCurveTo): Likewise.
+	(cairoDrawGlyphVector): Likewise.
+	(cairoFill): Likewise.
+	(cairoLineTo): Likewise.
+	(cairoMoveTo): Likewise.
+	(cairoNewPath): Likewise.
+	(cairoRectangle): Likewise.
+	(cairoResetClip): Likewise.
+	(cairoRestore): Likewise.
+	(cairoSave): Likewise.
+	(cairoScale): Likewise.
+	(cairoSetAntialias): Likewise.
+	(cairoSetDash): Likewise.
+	(cairoSetFillRule): Likewise.
+	(cairoSetFont): Likewise.
+	(cairoSetLine): Likewise.
+	(cairoSetMatrix): Likewise.
+	(cairoSetOperator): Likewise.
+	(cairoSetRGBAColor): Likewise.
+	(cairoStroke): Likewise.
+	(disposeNative): Likewise.
+	(drawPixels): Likewise.
+	(init): Likewise.
+	(setGradient): Likewise.
+	(setPaintPixels): Likewise.
+	(draw): Do not lock, as locking is now done in the wrapped native methods.
+	(drawComposite): Likewise.
+	(drawGlyphVector): Likewise.
+	(drawImage): Likewise.
+	(drawRenderedImage): Likewise.
+	(fill): Likewise.
+	(setClip): Removed.
+	(lock): Added documentation.
+	(unlock): Added documentation.
+	* include/gnu_java_awt_peer_gtk_CairoGraphics2D.h: Regenerated.
+	* include/gnu_java_awt_peer_gtk_ComponentGraphics.h: Regenerated.
+	* lib/gnu/java/awt/peer/gtk/ComponentGraphics.class: Regenerated.
+	* lib/gnu/java/awt/peer/gtk/CairoGraphics2D.class: Regenerated.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_CairoGraphics2D.c
+	(Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoDrawLine): Removed.
+	(Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoDrawRect): Removed.
+	(Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoFillRect): Removed.
+	(Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoPreserveClip): Removed.
+	(Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoRelCurveTo): Removed.
+	(Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoRelLineTo): Removed.
+	(Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoRelMoveTo): Removed.
+
 2007-04-23  Jeroen Frijters  <jeroen@frijters.net>
 
 	PR classpath/31646:

@@ -609,40 +609,6 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoCurveTo
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoRelMoveTo 
-(JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
- jlong pointer, jdouble dx, jdouble dy)
-{
-  struct cairographics2d *gr = JLONG_TO_PTR(struct cairographics2d, pointer);
-  g_assert (gr != NULL);
-
-  cairo_rel_move_to (gr->cr, dx, dy);
-}
-
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoRelLineTo 
-(JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
- jlong pointer, jdouble dx, jdouble dy)
-{
-  struct cairographics2d *gr = JLONG_TO_PTR(struct cairographics2d, pointer);
-  g_assert (gr != NULL);
-
-  cairo_rel_line_to (gr->cr, dx, dy);
-}
-
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoRelCurveTo 
-(JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
- jlong pointer, jdouble dx1, jdouble dy1,
- jdouble dx2, jdouble dy2, jdouble dx3, jdouble dy3)
-{
-  struct cairographics2d *gr = JLONG_TO_PTR(struct cairographics2d, pointer);
-  g_assert (gr != NULL);
-
-  cairo_rel_curve_to (gr->cr, dx1, dy1, dx2, dy2, dx3, dy3);
-}
-
-JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoRectangle 
 (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
  jlong pointer, jdouble x, jdouble y, jdouble width, jdouble height)
@@ -724,57 +690,6 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoResetClip
   g_assert (gr != NULL);
 
   cairo_reset_clip( gr->cr );
-}
-
-JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoPreserveClip 
-(JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
- jlong pointer)
-{
-  struct cairographics2d *gr = JLONG_TO_PTR(struct cairographics2d, pointer);
-  g_assert (gr != NULL);
-
-  cairo_clip_preserve( gr->cr );
-}
-
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoDrawLine
-(JNIEnv *env __attribute__ ((unused)), jobject obj __attribute__ ((unused)),
- jlong pointer, jdouble x1, jdouble y1, jdouble x2, jdouble y2)
-{
-  struct cairographics2d *gr = JLONG_TO_PTR(struct cairographics2d, pointer);
-  g_assert (gr != NULL);
-
-  cairo_new_path(gr->cr);
-  cairo_move_to(gr->cr, x1, y1);
-  cairo_line_to(gr->cr, x2, y2);
-  cairo_stroke(gr->cr);
-}
-
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoDrawRect
-(JNIEnv *env __attribute__ ((unused)), jobject obj __attribute__ ((unused)),
- jlong pointer, jdouble x, jdouble y, jdouble w, jdouble h)
-{
-  struct cairographics2d *gr = JLONG_TO_PTR(struct cairographics2d, pointer);
-  g_assert (gr != NULL);
-
-  cairo_new_path(gr->cr);
-  cairo_rectangle(gr->cr, x, y, w, h);
-  cairo_stroke(gr->cr);
-}
-
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoFillRect
-(JNIEnv *env __attribute__ ((unused)), jobject obj __attribute__ ((unused)),
- jlong pointer, jdouble x, jdouble y, jdouble w, jdouble h)
-{
-  struct cairographics2d *gr = JLONG_TO_PTR(struct cairographics2d, pointer);
-  g_assert (gr != NULL);
-
-  cairo_new_path(gr->cr);
-  cairo_rectangle(gr->cr, x, y, w, h);
-  cairo_fill(gr->cr);
 }
 
 static void 
