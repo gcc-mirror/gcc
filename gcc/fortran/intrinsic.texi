@@ -2369,6 +2369,9 @@ program test_cpu_time
     print '("Time = ",f6.3," seconds.")',finish-start
 end program test_cpu_time
 @end smallexample
+
+@item @emph{See also}:
+@ref{SYSTEM_CLOCK}, @ref{DATE_AND_TIME}
 @end table
 
 
@@ -2548,6 +2551,9 @@ program test_time_and_date
     print '(8i5))', values
 end program test_time_and_date
 @end smallexample
+
+@item @emph{See also}:
+@ref{CPU_TIME}, @ref{SYSTEM_CLOCK}
 @end table
 
 
@@ -7562,12 +7568,13 @@ END PROGRAM
 @node PRODUCT
 @section @code{PRODUCT} --- Product of array elements
 @cindex @code{PRODUCT} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
+@cindex array operation
 
 @table @asis
 @item @emph{Description}:
+Multiplies the elements of @var{ARRAY} along dimension @var{DIM} if
+the corresponding element in @var{MASK} is @code{TRUE}.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -7575,10 +7582,38 @@ F95 and later
 Transformational function
 
 @item @emph{Syntax}:
+@code{RESULT = PRODUCT(ARRAY[, MASK])}
+@code{RESULT = PRODUCT(ARRAY, DIM[, MASK])}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER(*)}, 
+@code{REAL(*)} or @code{COMPLEX(*)}.
+@item @var{DIM}   @tab (Optional) shall be a scalar of type 
+@code{INTEGER} with a value in the range from 1 to n, where n 
+equals the rank of @var{ARRAY}.
+@item @var{MASK}  @tab (Optional) shall be of type @code{LOGICAL} 
+and either be a scalar or an array of the same shape as @var{ARRAY}.
+@end multitable
+
 @item @emph{Return value}:
+The result is of the same type as @var{ARRAY}.
+
+If @var{DIM} is absent, a scalar with the product of all elements in 
+@var{ARRAY} is returned. Otherwise, an array of rank n-1, where n equals 
+the rank of @var{ARRAY}, and a shape similar to that of @var{ARRAY} with 
+dimension @var{DIM} dropped is returned.
+
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_product
+  INTEGER :: x(5) = (/ 1, 2, 3, 4 ,5 /)
+  print *, PRODUCT(x)                    ! all elements, product = 120
+  print *, PRODUCT(x, MASK=MOD(x, 2)==1) ! odd elements, product = 15
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
 @ref{SUM}
 @end table
@@ -7990,10 +8025,12 @@ end program
 @cindex @code{RESHAPE} intrinsic
 @cindex array manipulation
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Reshapes @var{SOURCE} to correspond to @var{SHAPE}. If necessary,
+the new array may be padded with elements from @var{PAD} or permuted
+as defined by @var{ORDER}.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -8001,11 +8038,37 @@ F95 and later
 Transformational function
 
 @item @emph{Syntax}:
+@code{RESULT = RESHAPE(SOURCE, SHAPE[, PAD, ORDER])}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{SOURCE} @tab Shall be an array of any type.
+@item @var{SHAPE}  @tab Shall be of type @code{INTEGER} and an 
+array of rank one. Its values must be positive or zero.
+@item @var{PAD}    @tab (Optional) shall be an array of the same 
+type as @var{SOURCE}.
+@item @var{ORDER}  @tab (Optional) shall be of type @code{INTEGER}
+and an array of the same shape as @var{SHAPE}. Its values shall
+be a permutation of the numbers from 1 to n, where n is the size of 
+@var{SHAPE}. If @var{ORDER} is absent, the natural ordering shall
+be assumed.
+@end multitable
+
 @item @emph{Return value}:
+The result is an array of shape @var{SHAPE} with the same type as 
+@var{SOURCE}. 
+
 @item @emph{Example}:
+@smallexample
+PROGRAM test_reshape
+  INTEGER, DIMENSION(4) :: x
+  WRITE(*,*) SHAPE(x)                       ! prints "4"
+  WRITE(*,*) SHAPE(RESHAPE(x, (/2, 2/)))    ! prints "2 2"
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
-@ref{SHAPE}, @ref{SIZE}
+@ref{SHAPE}
 @end table
 
 
@@ -8038,6 +8101,8 @@ The return value is of the same type and kind as @var{X}.
 The value returned is equal to
 @code{ABS(FRACTION(X)) * FLOAT(RADIX(X))**DIGITS(X)}.
 
+@item @emph{See also}:
+@ref{SPACING}
 @end table
 
 
@@ -8444,7 +8509,7 @@ arrays must be allocated.
 
 @item @emph{Return value}:
 An @code{INTEGER} array of rank one with as many elements as @var{SOURCE} 
-has dimensions. The elements of the resulting array correspond to the extent
+has dimensions. The elements of the resulting array correspond to the extend
 of @var{SOURCE} along the respective dimensions. If @var{SOURCE} is a scalar,
 the result is the rank one array of size zero.
 
@@ -8789,12 +8854,12 @@ The return value is of type default @code{REAL}.
 @node SPACING
 @section @code{SPACING} --- Smallest distance between two numbers of a given type
 @cindex @code{SPACING} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
+Determines the distance between the argument @var{X} and the nearest 
+adjacent number of the same type.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -8802,10 +8867,29 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{RESULT = SPACING(X)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab Shall be of type @code{REAL(*)}.
+@end multitable
+
 @item @emph{Return value}:
+The result is of the same type as the input argument @var{X}.
+
 @item @emph{Example}:
+@smallexample
+PROGRAM test_spacing
+  INTEGER, PARAMETER :: SGL = SELECTED_REAL_KIND(p=6, r=37)
+  INTEGER, PARAMETER :: DBL = SELECTED_REAL_KIND(p=13, r=200)
+
+  WRITE(*,*) spacing(1.0_SGL)      ! "1.1920929E-07"          on i686
+  WRITE(*,*) spacing(1.0_DBL)      ! "2.220446049250313E-016" on i686
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+@ref{RRSPACING}
 @end table
 
 
@@ -8815,10 +8899,11 @@ Elemental function
 @cindex @code{SPREAD} intrinsic
 @cindex array manipulation
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Replicates a @var{SOURCE} array @var{NCOPIES} times along a specified 
+dimension @var{DIM}.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -8826,10 +8911,32 @@ F95 and later
 Transformational function
 
 @item @emph{Syntax}:
+@code{RESULT = SPREAD(SOURCE, DIM, NCOPIES)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{SOURCE}  @tab Shall be a scalar or an array of any type and 
+a rank less than seven.
+@item @var{DIM}     @tab Shall be a scalar of type @code{INTEGER} with a 
+value in the range from 1 to n+1, where n equals the rank of @var{SOURCE}.
+@item @var{NCOPIES} @tab Shall be a scalar of type @code{INTEGER}.
+@end multitable
+
 @item @emph{Return value}:
+The result is an array of the same type as @var{SOURCE} and has rank n+1
+where n equals the rank of @var{SOURCE}.
+
 @item @emph{Example}:
+@smallexample
+PROGRAM test_spread
+  INTEGER :: a = 1, b(2) = (/ 1, 2 /)
+  WRITE(*,*) SPREAD(A, 1, 2)            ! "1 1"
+  WRITE(*,*) SPREAD(B, 1, 2)            ! "1 1 2 2"
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+@ref{UNPACK}
 @end table
 
 
@@ -9019,12 +9126,13 @@ To stat an open file: @ref{FSTAT}, to stat a link: @ref{LSTAT}
 @node SUM
 @section @code{SUM} --- Sum of array elements
 @cindex @code{SUM} intrinsic
-@cindex array manipulation
-
-Intrinsic implemented, documentation pending.
+@cindex array operation
 
 @table @asis
 @item @emph{Description}:
+Adds the elements of @var{ARRAY} along dimension @var{DIM} if
+the corresponding element in @var{MASK} is @code{TRUE}.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -9032,9 +9140,37 @@ F95 and later
 Transformational function
 
 @item @emph{Syntax}:
+@code{RESULT = SUM(ARRAY[, MASK])}
+@code{RESULT = SUM(ARRAY, DIM[, MASK])}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER(*)}, 
+@code{REAL(*)} or @code{COMPLEX(*)}.
+@item @var{DIM}   @tab (Optional) shall be a scalar of type 
+@code{INTEGER} with a value in the range from 1 to n, where n 
+equals the rank of @var{ARRAY}.
+@item @var{MASK}  @tab (Optional) shall be of type @code{LOGICAL} 
+and either be a scalar or an array of the same shape as @var{ARRAY}.
+@end multitable
+
 @item @emph{Return value}:
+The result is of the same type as @var{ARRAY}.
+
+If @var{DIM} is absent, a scalar with the sum of all elements in @var{ARRAY}
+is returned. Otherwise, an array of rank n-1, where n equals the rank of 
+@var{ARRAY},and a shape similar to that of @var{ARRAY} with dimension @var{DIM} 
+dropped is returned.
+
 @item @emph{Example}:
+@smallexample
+PROGRAM test_sum
+  INTEGER :: x(5) = (/ 1, 2, 3, 4 ,5 /)
+  print *, SUM(x)                        ! all elements, sum = 15
+  print *, SUM(x, MASK=MOD(x, 2)==1)     ! odd elements, sum = 9
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
 @ref{PRODUCT}
 @end table
@@ -9129,10 +9265,17 @@ Subroutine, non-elemental function
 @cindex time, current
 @cindex current time
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Determines the @var{COUNT} of milliseconds of wall clock time since 
+the Epoch (00:00:00 UTC, January 1, 1970) modulo @var{COUNT_MAX}, 
+@var{COUNT_RATE} determines the number of clock ticks per second.
+@var{COUNT_RATE} and @var{COUNT_MAX} are constant and specific to 
+@command{gfortran}.
+
+If there is no clock, @var{COUNT} is set to @code{-HUGE(COUNT)}, and
+@var{COUNT_RATE} and @var{COUNT_MAX} are set to zero 
+
 @item @emph{Standard}:
 F95 and later
 
@@ -9140,10 +9283,30 @@ F95 and later
 Subroutine
 
 @item @emph{Syntax}:
+@code{CALL SYSTEM_CLOCK([COUNT, COUNT_RATE, COUNT_MAX])}
+
 @item @emph{Arguments}:
-@item @emph{Return value}:
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{COUNT}      @tab (Optional) shall be a scalar of type default 
+@code{INTEGER} with @code{INTENT(OUT)}.
+@item @var{COUNT_RATE} @tab (Optional) shall be a scalar of type default 
+@code{INTEGER} with @code{INTENT(OUT)}.
+@item @var{COUNT_MAX}  @tab (Optional) shall be a scalar of type default 
+@code{INTEGER} with @code{INTENT(OUT)}.
+@end multitable
+
 @item @emph{Example}:
+@smallexample
+PROGRAM test_system_clock
+  INTEGER :: count, count_rate, count_max
+  CALL SYSTEM_CLOCK(count, count_rate, count_max)
+  WRITE(*,*) count, count_rate, count_max
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+@ref{DATE_AND_TIME}, @ref{CPU_TIME}
 @end table
 
 
@@ -9360,12 +9523,15 @@ See @code{HUGE} for an example.
 @node TRANSFER
 @section @code{TRANSFER} --- Transfer bit patterns
 @cindex @code{TRANSFER} intrinsic
-@cindex bit operations
-
-Intrinsic implemented, documentation pending.
+@cindex type cast
 
 @table @asis
 @item @emph{Description}:
+Interprets the bit pattern of @var{SOURCE} as a variable of the 
+same type and type parameters as @var{MOLD}.
+
+This is also known as @emph{casting} one type to another.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -9373,10 +9539,27 @@ F95 and later
 Transformational function
 
 @item @emph{Syntax}:
+@code{RESULT = TRANSFER(SOURCE, MOLD[, SIZE])}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{SOURCE} @tab Shall be a scalar or an array of any type.
+@item @var{MOLD}   @tab Shall be a scalar or an array of any type.
+@item @var{SIZE}   @tab (Optional) shall be a scalar and of type 
+@code{INTEGER}.
+@end multitable
+
 @item @emph{Return value}:
+The result has the same type as @var{MOLD} with the bit level 
+representation of @var{SOURCE}.
+
 @item @emph{Example}:
-@item @emph{See also}:
+@smallexample
+PROGRAM test_transfer
+  integer :: x = 2143289344
+  print *, transfer(x, 1.0)    ! prints "NaN" on i686
+END PROGRAM
+@end smallexample
 @end table
 
 
@@ -9612,10 +9795,10 @@ Subroutine, non-elemental function
 @cindex @code{UNPACK} intrinsic
 @cindex array manipulation
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Store the elements of @var{VECTOR} in an array of higher rank.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -9623,12 +9806,35 @@ F95 and later
 Transformational function
 
 @item @emph{Syntax}:
+@code{RESULT = UNPACK(VECTOR, MASK, FIELD)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{VECTOR} @tab Shall be an array of any type and rank one. It 
+shall have at least as many elements as @var{MASK} has @code{TRUE} values.
+@item @var{MASK}   @tab Shall be an array of type @code{LOGICAL}.
+@item @var{FIELD}  @tab Shall be of the sam type as @var{VECTOR} and have
+the same shape as @var{MASK}.
+@end multitable
+
 @item @emph{Return value}:
+The resulting array corresponds to @var{FIELD} with @code{TRUE} elements
+of @var{MASK} replaced by values from @var{VECTOR} in array element order.
+
 @item @emph{Example}:
+@smallexample
+PROGRAM test_unpack
+  integer :: vector(2)  = (/1,1/)
+  logical :: mask(2,2)  = (/ .TRUE., .FALSE., .FALSE., .TRUE. /)
+  integer :: field(2,2) = 0, unity(2,2)
+
+  ! result: unity matrix
+  unity = unpack(vector, reshape(mask, (/2,2/), field)
+END PROGRAM
+@end smallexample
 
 @item @emph{See also}:
-@ref{PACK}
+@ref{PACK}, @ref{SPREAD}
 @end table
 
 
