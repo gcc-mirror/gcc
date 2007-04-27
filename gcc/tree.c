@@ -3882,6 +3882,15 @@ build_distinct_type_copy (tree type)
   TYPE_MAIN_VARIANT (t) = t;
   TYPE_NEXT_VARIANT (t) = 0;
   
+  /* VRP assumes that TREE_TYPE (TYPE_MIN_VALUE (type)) == type.  */
+  if (INTEGRAL_TYPE_P (t) || SCALAR_FLOAT_TYPE_P (t))
+    {
+      if (TYPE_MIN_VALUE (t) != NULL_TREE)
+	TYPE_MIN_VALUE (t) = fold_convert (t, TYPE_MIN_VALUE (t));
+      if (TYPE_MAX_VALUE (t) != NULL_TREE)
+	TYPE_MAX_VALUE (t) = fold_convert (t, TYPE_MAX_VALUE (t));
+    }
+
   return t;
 }
 

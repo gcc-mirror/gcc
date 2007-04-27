@@ -1,3 +1,8 @@
+2007-04-27  Ian Lance Taylor  <iant@google.com>
+
+	PR middle-end/31710
+	* gcc.c-torture/compile/pr31710.c: New test.
+
 2007-04-26  Ian Lance Taylor  <iant@google.com>
 
 	PR target/28675
