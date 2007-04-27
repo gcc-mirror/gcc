@@ -1,5 +1,10 @@
 2007-04-27  Daniel Franke  <franke.daniel@gmail.com>
 
+	* intrinsic.texi (AND, FPUT, FPUTC, MODULO, OR, SET_EXPONENT,
+	XOR): Fixed examples.
+
+2007-04-27  Daniel Franke  <franke.daniel@gmail.com>
+
 	* intrinsic.texi (PRODUCT, RESHAPE, SPACING, SPREAD, SUM, 
 	SYSTEM_CLOCK, TRANSFER, UNPACK): New.
 	(DATE_AND_TIME, CPU_TIME, RRSPACING): Added cross references.
