@@ -985,7 +985,7 @@ cross-promotion of the arguments.
 @item @emph{Example}:
 @smallexample
 PROGRAM test_and
-  LOGICAL :: T = .TRUE., F = ..FALSE.
+  LOGICAL :: T = .TRUE., F = .FALSE.
   INTEGER :: a, b
   DATA a / Z'F' /, b / Z'3' /
 
@@ -3767,7 +3767,7 @@ Non-elemental subroutine
 @item @emph{Example}:
 @smallexample
 PROGRAM test_fput
-  CHARACTER(len=*) :: str = "gfortran"
+  CHARACTER(len=10) :: str = "gfortran"
   INTEGER :: i
   DO i = 1, len_trim(str)
     CALL fput(str(i:i))
@@ -3818,7 +3818,7 @@ Non-elemental subroutine
 @item @emph{Example}:
 @smallexample
 PROGRAM test_fputc
-  CHARACTER(len=*) :: str = "gfortran"
+  CHARACTER(len=10) :: str = "gfortran"
   INTEGER :: fd = 42, i
 
   OPEN(UNIT = fd, FILE = "out", ACTION = "WRITE", STATUS="NEW")
@@ -7020,7 +7020,7 @@ program test_modulo
 
   print *, modulo(17,-3)
   print *, modulo(17.5,-5.5)
-end program test_mod
+end program
 @end smallexample
 
 @end table
@@ -7369,7 +7369,7 @@ after cross-promotion of the arguments.
 @item @emph{Example}:
 @smallexample
 PROGRAM test_or
-  LOGICAL :: T = .TRUE., F = ..FALSE.
+  LOGICAL :: T = .TRUE., F = .FALSE.
   INTEGER :: a, b
   DATA a / Z'F' /, b / Z'3' /
 
@@ -8471,11 +8471,11 @@ it is @code{FRACTION(X) * RADIX(X)**I}.
 
 @item @emph{Example}:
 @smallexample
-program test_setexp
-  real :: x = 178.1387e-4
-  integer :: i = 17
-  print *, set_exponent(x), fraction(x) * radix(x)**i
-end program test_setexp
+PROGRAM test_setexp
+  REAL :: x = 178.1387e-4
+  INTEGER :: i = 17
+  PRINT *, SET_EXPONENT(x, i), FRACTION(x) * RADIX(x)**i
+END PROGRAM
 @end smallexample
 
 @end table
@@ -9928,7 +9928,7 @@ after cross-promotion of the arguments.
 PROGRAM test_xor
   LOGICAL :: T = .TRUE., F = .FALSE.
   INTEGER :: a, b
-  DATA a / Z,'F' /, b / Z'3' /
+  DATA a / Z'F' /, b / Z'3' /
 
   WRITE (*,*) XOR(T, T), XOR(T, F), XOR(F, T), XOR(F, F)
   WRITE (*,*) XOR(a, b)
