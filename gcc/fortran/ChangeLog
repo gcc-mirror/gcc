@@ -1,3 +1,22 @@
+2007-04-27  Daniel Franke  <franke.daniel@gmail.com>
+
+	Backport from trunk:
+	* intrinsic.texi (NULL, PACK, PRESENT, REPEAT, SCAN, SHAPE, 
+	SIZE, TRANSPOSE, TRIM, VERIFY): New.
+	(ADJUSTL, ADJUSTR, INDEX): Added cross references.
+	(INT, INT2, INT8, LONG): Enabled section header.
+
+	* intrinsic.texi (PRODUCT, RESHAPE, SPACING, SPREAD, SUM, 
+	SYSTEM_CLOCK, TRANSFER, UNPACK): New.
+	(DATE_AND_TIME, CPU_TIME, RRSPACING): Added cross references.
+
+	* intrinsic.texi (AND, FPUT, FPUTC, MODULO, OR, SET_EXPONENT,
+	XOR): Fixed examples.
+
+	* gfortran.texi: Added node and menu entry for an option index.
+	* invoke.texi: Moved command line option related entries of the concept 
+	index to the option index.
+
 2007-04-12  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/31234

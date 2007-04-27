@@ -191,7 +191,8 @@ Part II: Language Reference
 * GNU Free Documentation License::
 		         How you can copy and share this manual.
 * Funding::              How to help assure continued work for free software.
-* Index::                Index of this documentation.
+* Option Index::         Index of command line options
+* Keyword Index::        Index of concepts
 @end menu
 @end ifnottex
 
@@ -710,7 +711,7 @@ than @code{(/.../)}.
 @item
 @cindex @code{ENUM} statement
 @cindex @code{ENUMERATOR} statement
-@cindex @code{-fshort-enums} option
+@opindex @code{fshort-enums}
 Support for the declaration of enumeration constants via the
 @code{ENUM} and @code{ENUMERATOR} statements.  Interoperability with
 @command{gcc} is guaranteed also for the case where the
@@ -1510,12 +1511,20 @@ Environment variable forcing standard output to be line buffered (unix).
 @include funding.texi
 
 @c ---------------------------------------------------------------------
-@c Index
+@c Indices
 @c ---------------------------------------------------------------------
 
-@node Index
-@unnumbered Index
+@node Option Index
+@unnumbered Index of command line options
+@command{gfortran}'s command line options are indexed here without any 
+initial `-' or `--'. Where an option has both positive and negative forms 
+(such as -foption and -fno-option), relevant entries in the manual are 
+indexed under the most appropriate form; it may sometimes be useful to 
+look up both forms.
+@printindex op
 
+@node Keyword Index
+@unnumbered Index of concepts
 @printindex cp
 
 @bye
