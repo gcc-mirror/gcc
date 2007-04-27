@@ -1244,6 +1244,38 @@ maybe_dump_rtl_for_tree_stmt (tree stmt, rtx since)
     }
 }
 
+/* Returns the label_rtx expression for a label starting basic block BB.  */
+
+static rtx
+label_rtx_for_bb (basic_block bb)
+{
+  tree_stmt_iterator tsi;
+  tree lab, lab_stmt;
+
+  if (bb->flags & BB_RTL)
+    return block_label (bb);
+
+  /* We cannot use tree_block_label, as we no longer have stmt annotations.
+     TODO -- avoid creating the new tree labels.  */
+  for (tsi = tsi_start (bb_stmt_list (bb)); !tsi_end_p (tsi); tsi_next (&tsi))
+    {
+      lab_stmt = tsi_stmt (tsi);
+      if (TREE_CODE (lab_stmt) != LABEL_EXPR)
+	break;
+
+      lab = LABEL_EXPR_LABEL (lab_stmt);
+      if (DECL_NONLOCAL (lab))
+	break;
+
+      return label_rtx (lab);
+    }
+
+  lab = create_artificial_label ();
+  lab_stmt = build1 (LABEL_EXPR, void_type_node, lab);
+  tsi_link_before (&tsi, lab_stmt, TSI_NEW_STMT);
+  return label_rtx (lab);
+}
+
 /* A subroutine of expand_gimple_basic_block.  Expand one COND_EXPR.
    Returns a new basic block if we've terminated the current basic
    block and created a new one.  */
@@ -1256,10 +1288,10 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
   edge true_edge;
   edge false_edge;
   tree pred = COND_EXPR_COND (stmt);
-  tree then_exp = COND_EXPR_THEN (stmt);
-  tree else_exp = COND_EXPR_ELSE (stmt);
   rtx last2, last;
 
+  gcc_assert (COND_EXPR_THEN (stmt) == NULL_TREE);
+  gcc_assert (COND_EXPR_ELSE (stmt) == NULL_TREE);
   last2 = last = get_last_insn ();
 
   extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
@@ -1275,31 +1307,31 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
 
   /* We can either have a pure conditional jump with one fallthru edge or
      two-way jump that needs to be decomposed into two basic blocks.  */
-  if (TREE_CODE (then_exp) == GOTO_EXPR && IS_EMPTY_STMT (else_exp))
+  if (false_edge->dest == bb->next_bb)
     {
-      jumpif (pred, label_rtx (GOTO_DESTINATION (then_exp)));
+      jumpif (pred, label_rtx_for_bb (true_edge->dest));
       add_reg_br_prob_note (last, true_edge->probability);
       maybe_dump_rtl_for_tree_stmt (stmt, last);
-      if (EXPR_LOCUS (then_exp))
-	emit_line_note (*(EXPR_LOCUS (then_exp)));
+      if (true_edge->goto_locus)
+	emit_line_note (*true_edge->goto_locus);
+      false_edge->flags |= EDGE_FALLTHRU;
       return NULL;
     }
-  if (TREE_CODE (else_exp) == GOTO_EXPR && IS_EMPTY_STMT (then_exp))
+  if (true_edge->dest == bb->next_bb)
     {
-      jumpifnot (pred, label_rtx (GOTO_DESTINATION (else_exp)));
+      jumpifnot (pred, label_rtx_for_bb (false_edge->dest));
       add_reg_br_prob_note (last, false_edge->probability);
       maybe_dump_rtl_for_tree_stmt (stmt, last);
-      if (EXPR_LOCUS (else_exp))
-	emit_line_note (*(EXPR_LOCUS (else_exp)));
+      if (false_edge->goto_locus)
+	emit_line_note (*false_edge->goto_locus);
+      true_edge->flags |= EDGE_FALLTHRU;
       return NULL;
     }
-  gcc_assert (TREE_CODE (then_exp) == GOTO_EXPR
-	      && TREE_CODE (else_exp) == GOTO_EXPR);
 
-  jumpif (pred, label_rtx (GOTO_DESTINATION (then_exp)));
+  jumpif (pred, label_rtx_for_bb (true_edge->dest));
   add_reg_br_prob_note (last, true_edge->probability);
   last = get_last_insn ();
-  expand_expr (else_exp, const0_rtx, VOIDmode, 0);
+  emit_jump (label_rtx_for_bb (false_edge->dest));
 
   BB_END (bb) = last;
   if (BARRIER_P (BB_END (bb)))
@@ -1321,8 +1353,8 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
 
   maybe_dump_rtl_for_tree_stmt (stmt, last2);
 
-  if (EXPR_LOCUS (else_exp))
-    emit_line_note (*(EXPR_LOCUS (else_exp)));
+  if (false_edge->goto_locus)
+    emit_line_note (*false_edge->goto_locus);
 
   return new_bb;
 }
@@ -1457,6 +1489,25 @@ expand_gimple_basic_block (basic_block bb)
   init_rtl_bb_info (bb);
   bb->flags |= BB_RTL;
 
+  /* Remove the RETURN_EXPR if we may fall though to the exit
+     instead.  */
+  tsi = tsi_last (stmts);
+  if (!tsi_end_p (tsi)
+      && TREE_CODE (tsi_stmt (tsi)) == RETURN_EXPR)
+    {
+      tree ret_stmt = tsi_stmt (tsi);
+
+      gcc_assert (single_succ_p (bb));
+      gcc_assert (single_succ (bb) == EXIT_BLOCK_PTR);
+
+      if (bb->next_bb == EXIT_BLOCK_PTR
+	  && !TREE_OPERAND (ret_stmt, 0))
+	{
+	  tsi_delink (&tsi);
+	  single_succ_edge (bb)->flags |= EDGE_FALLTHRU;
+	}
+    }
+
   tsi = tsi_start (stmts);
   if (!tsi_end_p (tsi))
     stmt = tsi_stmt (tsi);
@@ -1544,6 +1595,21 @@ expand_gimple_basic_block (basic_block bb)
 	      maybe_dump_rtl_for_tree_stmt (stmt, last);
 	    }
 	}
+    }
+
+  /* Expand implicit goto.  */
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    {
+      if (e->flags & EDGE_FALLTHRU)
+	break;
+    }
+
+  if (e && e->dest != bb->next_bb)
+    {
+      emit_jump (label_rtx_for_bb (e->dest));
+      if (e->goto_locus)
+	emit_line_note (*e->goto_locus);
+      e->flags &= ~EDGE_FALLTHRU;
     }
 
   do_pending_stack_adjust ();

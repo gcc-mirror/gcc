@@ -1,3 +1,43 @@
+2007-04-27  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-ssa-loop-im.c (determine_invariantness_stmt): Attempt to
+	transform only GIMPLE_MODIFY_STMTs.
+	* tree-complex.c (expand_complex_operations_1): Ditto.
+	(expand_complex_div_wide): Do not create gotos in COND_EXPR branches.
+	* tree-ssa-loop-manip.c (build_if_stmt): Removed.
+	(tree_transform_and_unroll_loop): Do not create gotos in COND_EXPR
+	branches.
+	* value-prof.c (tree_divmod_fixed_value, tree_mod_pow2,
+	tree_mod_subtract, tree_ic, tree_stringop_fixed_value): Ditto.
+	* omp-low.c (expand_parallel_call, expand_omp_for_generic,
+	expand_omp_for_static_chunk, expand_omp_for_static_nochunk): Ditto.
+	* tree-vectorizer.c (slpeel_make_loop_iterate_ntimes,
+	slpeel_add_loop_guard): Ditto.
+	* tree-mudflap.c (mf_build_check_statement_for): Ditto.
+	* lambda-code.c (perfect_nestify): Ditto.
+	* tree-iterator.c (tsi_split_statement_list_before): Fix splitting
+	before the first statement.
+	* tree-optimize.c (execute_free_datastructures): Fix comments.
+	(execute_free_cfg_annotations): Do not call disband_implicit_edges.
+	* tree-flow.h (disband_implicit_edges): Declaration removed.
+	* tree-cfg.c (make_cond_expr_edges): Remove gotos from COND_EXPR
+	branches.
+	(cleanup_dead_labels, tree_redirect_edge_and_branch): Handle COND_EXPRs
+	without gotos.
+	(disband_implicit_edges, has_label_p): Removed.
+	(tree_verify_flow_info): Verify that COND_EXPR branches are empty.
+	(tree_lv_add_condition_to_bb): Do not create gotos in COND_EXPR
+	branches.
+	* tree.c (build3_stat): Mark COND_EXPRs used as statements as having
+	side effects.
+	* tree-pretty-print.c (dump_implicit_edges): Dump implicit edges
+	also for COND_EXPRs.
+	* cfgexpand.c (label_rtx_for_bb): New function.
+	(expand_gimple_cond_expr): Do not expect gotos in COND_EXPR branches.
+	Use label_rtx_for_bb to find the labels.
+	(expand_gimple_basic_block): Remove RETURN_EXPR at the end of the
+	last block.  Detect fallthru edges.
+
 2007-04-26  Ian Lance Taylor  <iant@google.com>
 
 	PR target/28675

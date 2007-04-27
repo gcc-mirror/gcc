@@ -767,12 +767,8 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
   block_stmt_iterator loop_cond_bsi;
   block_stmt_iterator incr_bsi;
   bool insert_after;
-  tree begin_label = tree_block_label (loop->latch);
-  tree exit_label = tree_block_label (single_exit (loop)->dest);
   tree init = build_int_cst (TREE_TYPE (niters), 0);
   tree step = build_int_cst (TREE_TYPE (niters), 1);
-  tree then_label;
-  tree else_label;
   LOC loop_loc;
 
   orig_cond = get_loop_exit_condition (loop);
@@ -784,20 +780,12 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
              &incr_bsi, insert_after, &indx_before_incr, &indx_after_incr);
 
   if (exit_edge->flags & EDGE_TRUE_VALUE) /* 'then' edge exits the loop.  */
-    {
-      cond = build2 (GE_EXPR, boolean_type_node, indx_after_incr, niters);
-      then_label = build1 (GOTO_EXPR, void_type_node, exit_label);
-      else_label = build1 (GOTO_EXPR, void_type_node, begin_label);
-    }
+    cond = build2 (GE_EXPR, boolean_type_node, indx_after_incr, niters);
   else /* 'then' edge loops back.  */
-    {
-      cond = build2 (LT_EXPR, boolean_type_node, indx_after_incr, niters);
-      then_label = build1 (GOTO_EXPR, void_type_node, begin_label);
-      else_label = build1 (GOTO_EXPR, void_type_node, exit_label);
-    }
+    cond = build2 (LT_EXPR, boolean_type_node, indx_after_incr, niters);
 
   cond_stmt = build3 (COND_EXPR, TREE_TYPE (orig_cond), cond,
-		     then_label, else_label);
+		      NULL_TREE, NULL_TREE);
   bsi_insert_before (&loop_cond_bsi, cond_stmt, BSI_SAME_STMT);
 
   /* Remove old loop exit test:  */
@@ -935,19 +923,15 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond, basic_block exit_bb,
 {
   block_stmt_iterator bsi;
   edge new_e, enter_e;
-  tree cond_stmt, then_label, else_label;
+  tree cond_stmt;
 
   enter_e = EDGE_SUCC (guard_bb, 0);
   enter_e->flags &= ~EDGE_FALLTHRU;
   enter_e->flags |= EDGE_FALSE_VALUE;
   bsi = bsi_last (guard_bb);
 
-  then_label = build1 (GOTO_EXPR, void_type_node,
-                       tree_block_label (exit_bb));
-  else_label = build1 (GOTO_EXPR, void_type_node,
-                       tree_block_label (enter_e->dest));
   cond_stmt = build3 (COND_EXPR, void_type_node, cond,
-   		     then_label, else_label);
+		      NULL_TREE, NULL_TREE);
   bsi_insert_after (&bsi, cond_stmt, BSI_NEW_STMT);
   /* Add new edge to connect guard block to the merge/loop-exit block.  */
   new_e = make_edge (guard_bb, exit_bb, EDGE_TRUE_VALUE);

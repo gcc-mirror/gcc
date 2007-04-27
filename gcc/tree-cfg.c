@@ -615,6 +615,10 @@ make_cond_expr_edges (basic_block bb)
       e->goto_locus = EXPR_LOCUS (COND_EXPR_ELSE (entry));
 #endif
     }
+
+  /* We do not need the gotos anymore.  */
+  COND_EXPR_THEN (entry) = NULL_TREE;
+  COND_EXPR_ELSE (entry) = NULL_TREE;
 }
 
 
@@ -928,10 +932,12 @@ cleanup_dead_labels (void)
 	    true_branch = COND_EXPR_THEN (stmt);
 	    false_branch = COND_EXPR_ELSE (stmt);
 
-	    GOTO_DESTINATION (true_branch)
-	      = main_block_label (GOTO_DESTINATION (true_branch));
-	    GOTO_DESTINATION (false_branch)
-	      = main_block_label (GOTO_DESTINATION (false_branch));
+	    if (true_branch)
+	      GOTO_DESTINATION (true_branch)
+		      = main_block_label (GOTO_DESTINATION (true_branch));
+	    if (false_branch)
+	      GOTO_DESTINATION (false_branch)
+		      = main_block_label (GOTO_DESTINATION (false_branch));
 
 	    break;
 	  }
@@ -2522,87 +2528,6 @@ stmt_ends_bb_p (tree t)
   return is_ctrl_stmt (t) || is_ctrl_altering_stmt (t);
 }
 
-
-/* Add gotos that used to be represented implicitly in the CFG.  */
-
-void
-disband_implicit_edges (void)
-{
-  basic_block bb;
-  block_stmt_iterator last;
-  edge e;
-  edge_iterator ei;
-  tree stmt, label;
-
-  FOR_EACH_BB (bb)
-    {
-      last = bsi_last (bb);
-      stmt = last_stmt (bb);
-
-      if (stmt && TREE_CODE (stmt) == COND_EXPR)
-	{
-	  /* Remove superfluous gotos from COND_EXPR branches.  Moved
-	     from cfg_remove_useless_stmts here since it violates the
-	     invariants for tree--cfg correspondence and thus fits better
-	     here where we do it anyway.  */
-	  e = find_edge (bb, bb->next_bb);
-	  if (e)
-	    {
-	      if (e->flags & EDGE_TRUE_VALUE)
-		COND_EXPR_THEN (stmt) = build_empty_stmt ();
-	      else if (e->flags & EDGE_FALSE_VALUE)
-		COND_EXPR_ELSE (stmt) = build_empty_stmt ();
-	      else
-		gcc_unreachable ();
-	      e->flags |= EDGE_FALLTHRU;
-	    }
-
-	  continue;
-	}
-
-      if (stmt && TREE_CODE (stmt) == RETURN_EXPR)
-	{
-	  /* Remove the RETURN_EXPR if we may fall though to the exit
-	     instead.  */
-	  gcc_assert (single_succ_p (bb));
-	  gcc_assert (single_succ (bb) == EXIT_BLOCK_PTR);
-
-	  if (bb->next_bb == EXIT_BLOCK_PTR
-	      && !TREE_OPERAND (stmt, 0))
-	    {
-	      bsi_remove (&last, true);
-	      single_succ_edge (bb)->flags |= EDGE_FALLTHRU;
-	    }
-	  continue;
-	}
-
-      /* There can be no fallthru edge if the last statement is a control
-	 one.  */
-      if (stmt && is_ctrl_stmt (stmt))
-	continue;
-
-      /* Find a fallthru edge and emit the goto if necessary.  */
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->flags & EDGE_FALLTHRU)
-	  break;
-
-      if (!e || e->dest == bb->next_bb)
-	continue;
-
-      gcc_assert (e->dest != EXIT_BLOCK_PTR);
-      label = tree_block_label (e->dest);
-
-      stmt = build1 (GOTO_EXPR, void_type_node, label);
-#ifdef USE_MAPPED_LOCATION
-      SET_EXPR_LOCATION (stmt, e->goto_locus);
-#else
-      SET_EXPR_LOCUS (stmt, e->goto_locus);
-#endif
-      bsi_insert_after (&last, stmt, BSI_NEW_STMT);
-      e->flags &= ~EDGE_FALLTHRU;
-    }
-}
-
 /* Remove block annotations and other datastructures.  */
 
 void
@@ -3135,27 +3060,6 @@ tree_split_edge (edge edge_in)
 
   return new_bb;
 }
-
-
-/* Return true when BB has label LABEL in it.  */
-
-static bool
-has_label_p (basic_block bb, tree label)
-{
-  block_stmt_iterator bsi;
-
-  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-    {
-      tree stmt = bsi_stmt (bsi);
-
-      if (TREE_CODE (stmt) != LABEL_EXPR)
-	return false;
-      if (LABEL_EXPR_LABEL (stmt) == label)
-	return true;
-    }
-  return false;
-}
-
 
 /* Callback for walk_tree, check that all elements with address taken are
    properly noticed as such.  The DATA is an int* that is 1 if TP was seen
@@ -3789,10 +3693,12 @@ tree_verify_flow_info (void)
 	  {
 	    edge true_edge;
 	    edge false_edge;
-	    if (TREE_CODE (COND_EXPR_THEN (stmt)) != GOTO_EXPR
-		|| TREE_CODE (COND_EXPR_ELSE (stmt)) != GOTO_EXPR)
+  
+	    if (COND_EXPR_THEN (stmt) != NULL_TREE
+		|| COND_EXPR_ELSE (stmt) != NULL_TREE)
 	      {
-		error ("structured COND_EXPR at the end of bb %d", bb->index);
+		error ("COND_EXPR with code in branches at the end of bb %d",
+		       bb->index);
 		err = 1;
 	      }
 
@@ -3806,22 +3712,6 @@ tree_verify_flow_info (void)
 		|| EDGE_COUNT (bb->succs) >= 3)
 	      {
 		error ("wrong outgoing edge flags at end of bb %d",
-		       bb->index);
-		err = 1;
-	      }
-
-	    if (!has_label_p (true_edge->dest,
-			      GOTO_DESTINATION (COND_EXPR_THEN (stmt))))
-	      {
-		error ("%<then%> label does not match edge at end of bb %d",
-		       bb->index);
-		err = 1;
-	      }
-
-	    if (!has_label_p (false_edge->dest,
-			      GOTO_DESTINATION (COND_EXPR_ELSE (stmt))))
-	      {
-		error ("%<else%> label does not match edge at end of bb %d",
 		       bb->index);
 		err = 1;
 	      }
@@ -4103,10 +3993,7 @@ tree_redirect_edge_and_branch (edge e, basic_block dest)
   switch (stmt ? TREE_CODE (stmt) : ERROR_MARK)
     {
     case COND_EXPR:
-      stmt = (e->flags & EDGE_TRUE_VALUE
-	      ? COND_EXPR_THEN (stmt)
-	      : COND_EXPR_ELSE (stmt));
-      GOTO_DESTINATION (stmt) = label;
+      /* For COND_EXPR, we only need to redirect the edge.  */
       break;
 
     case GOTO_EXPR:
@@ -5676,20 +5563,18 @@ tree_lv_adjust_loop_header_phi (basic_block first, basic_block second,
    SECOND_HEAD is the destination of the THEN and FIRST_HEAD is
    the destination of the ELSE part.  */
 static void
-tree_lv_add_condition_to_bb (basic_block first_head, basic_block second_head,
-                            basic_block cond_bb, void *cond_e)
+tree_lv_add_condition_to_bb (basic_block first_head ATTRIBUTE_UNUSED,
+			     basic_block second_head ATTRIBUTE_UNUSED,
+			     basic_block cond_bb, void *cond_e)
 {
   block_stmt_iterator bsi;
-  tree goto1 = NULL_TREE;
-  tree goto2 = NULL_TREE;
   tree new_cond_expr = NULL_TREE;
   tree cond_expr = (tree) cond_e;
   edge e0;
 
   /* Build new conditional expr */
-  goto1 = build1 (GOTO_EXPR, void_type_node, tree_block_label (first_head));
-  goto2 = build1 (GOTO_EXPR, void_type_node, tree_block_label (second_head));
-  new_cond_expr = build3 (COND_EXPR, void_type_node, cond_expr, goto1, goto2);
+  new_cond_expr = build3 (COND_EXPR, void_type_node, cond_expr,
+			  NULL_TREE, NULL_TREE);
 
   /* Add new cond in cond_bb.  */
   bsi = bsi_start (cond_bb);

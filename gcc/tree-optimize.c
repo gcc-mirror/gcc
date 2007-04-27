@@ -208,13 +208,10 @@ struct tree_opt_pass pass_cleanup_cfg_post_optimizing =
 static unsigned int
 execute_free_datastructures (void)
 {
-  /* ??? This isn't the right place for this.  Worse, it got computed
-     more or less at random in various passes.  */
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
 
-  /* Remove the ssa structures.  Do it here since this includes statement
-     annotations that need to be intact during disband_implicit_edges.  */
+  /* Remove the ssa structures.  */
   if (cfun->gimple_df)
     delete_tree_ssa ();
   return 0;
@@ -241,9 +238,6 @@ struct tree_opt_pass pass_free_datastructures =
 static unsigned int
 execute_free_cfg_annotations (void)
 {
-  /* Emit gotos for implicit jumps.  */
-  disband_implicit_edges ();
-
   /* And get rid of annotations we no longer need.  */
   delete_tree_cfg_annotations ();
 

@@ -1060,11 +1060,6 @@ expand_complex_div_wide (block_stmt_iterator *bsi, tree inner_type,
       bb_true = create_empty_bb (bb_cond);
       bb_false = create_empty_bb (bb_true);
 
-      t1 = build1 (GOTO_EXPR, void_type_node, tree_block_label (bb_true));
-      t2 = build1 (GOTO_EXPR, void_type_node, tree_block_label (bb_false));
-      COND_EXPR_THEN (cond) = t1;
-      COND_EXPR_ELSE (cond) = t2;
-
       /* Wire the blocks together.  */
       e->flags = EDGE_TRUE_VALUE;
       redirect_edge_succ (e, bb_true);
@@ -1377,8 +1372,15 @@ expand_complex_operations_1 (block_stmt_iterator *bsi)
 
     default:
       {
-	tree lhs = GENERIC_TREE_OPERAND (stmt, 0);
-	tree rhs = GENERIC_TREE_OPERAND (stmt, 1);
+	tree lhs, rhs;
+
+	/* COND_EXPR may also fallthru here, but we do not need to do anything
+	   with it.  */
+	if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
+	  return;
+
+	lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+	rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
 	if (TREE_CODE (type) == COMPLEX_TYPE)
 	  expand_complex_move (bsi, stmt, type, lhs, rhs);
