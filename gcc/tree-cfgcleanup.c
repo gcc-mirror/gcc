@@ -615,7 +615,12 @@ cleanup_tree_cfg (void)
       calculate_dominance_info (CDI_DOMINATORS);
     }
   else
-    changed = false;
+    {
+#ifdef ENABLE_CHECKING
+      verify_dominators (CDI_DOMINATORS);
+#endif
+      changed = false;
+    }
 
   changed |= cleanup_tree_cfg_1 ();
 
