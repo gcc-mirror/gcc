@@ -1,3 +1,9 @@
+2007-04-26  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR C++/30016
+	* typeck.c (build_reinterpret_cast_1): Only allow conversion to
+	integeral types from vectors types.
+
 2007-04-17  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/31517
