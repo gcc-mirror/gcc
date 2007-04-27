@@ -1,3 +1,9 @@
+2007-04-27  Ian Lance Taylor  <iant@google.com>
+
+	PR middle-end/31710
+	* tree.c (build_distinct_type_copy): If TYPE_MIN_VALUE or
+	TYPE_MAX_VALUE exist, convert them to the new type.
+
 2007-04-27  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-cfgcleanup.c (cleanup_tree_cfg): Verify dominance info
