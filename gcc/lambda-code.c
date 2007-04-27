@@ -2450,7 +2450,7 @@ perfect_nestify (struct loop *loop,
 {
   basic_block *bbs;
   tree exit_condition;
-  tree then_label, else_label, cond_stmt;
+  tree cond_stmt;
   basic_block preheaderbb, headerbb, bodybb, latchbb, olddest;
   int i;
   block_stmt_iterator bsi, firstbsi;
@@ -2498,13 +2498,11 @@ perfect_nestify (struct loop *loop,
   bodybb = create_empty_bb (EXIT_BLOCK_PTR->prev_bb);
   latchbb = create_empty_bb (EXIT_BLOCK_PTR->prev_bb);
   make_edge (headerbb, bodybb, EDGE_FALLTHRU); 
-  then_label = build1 (GOTO_EXPR, void_type_node, tree_block_label (latchbb));
-  else_label = build1 (GOTO_EXPR, void_type_node, tree_block_label (olddest));
   cond_stmt = build3 (COND_EXPR, void_type_node,
 		      build2 (NE_EXPR, boolean_type_node, 
 			      integer_one_node, 
 			      integer_zero_node), 
-		      then_label, else_label);
+		      NULL_TREE, NULL_TREE);
   bsi = bsi_start (bodybb);
   bsi_insert_after (&bsi, cond_stmt, BSI_NEW_STMT);
   e = make_edge (bodybb, olddest, EDGE_FALSE_VALUE);

@@ -731,29 +731,32 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 	  continue;
 	}
 
-      rhs = GENERIC_TREE_OPERAND (stmt, 1);
+      if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+	{
+	  rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
-      /* If divisor is invariant, convert a/b to a*(1/b), allowing reciprocal
-	 to be hoisted out of loop, saving expensive divide.  */
-      if (pos == MOVE_POSSIBLE
-	  && TREE_CODE (rhs) == RDIV_EXPR
-	  && flag_unsafe_math_optimizations
-	  && !flag_trapping_math
-	  && outermost_invariant_loop_expr (TREE_OPERAND (rhs, 1),
-					    loop_containing_stmt (stmt)) != NULL
-	  && outermost_invariant_loop_expr (rhs,
-					    loop_containing_stmt (stmt)) == NULL)
-	stmt = rewrite_reciprocal (&bsi);
+	  /* If divisor is invariant, convert a/b to a*(1/b), allowing reciprocal
+	     to be hoisted out of loop, saving expensive divide.  */
+	  if (pos == MOVE_POSSIBLE
+	      && TREE_CODE (rhs) == RDIV_EXPR
+	      && flag_unsafe_math_optimizations
+	      && !flag_trapping_math
+	      && outermost_invariant_loop_expr (TREE_OPERAND (rhs, 1),
+						loop_containing_stmt (stmt)) != NULL
+	      && outermost_invariant_loop_expr (rhs,
+						loop_containing_stmt (stmt)) == NULL)
+	    stmt = rewrite_reciprocal (&bsi);
 
-      /* If the shift count is invariant, convert (A >> B) & 1 to
-	 A & (1 << B) allowing the bit mask to be hoisted out of the loop
-	 saving an expensive shift.  */
-      if (pos == MOVE_POSSIBLE
-	  && TREE_CODE (rhs) == BIT_AND_EXPR
-	  && integer_onep (TREE_OPERAND (rhs, 1))
-	  && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME
-	  && has_single_use (TREE_OPERAND (rhs, 0)))
-	stmt = rewrite_bittest (&bsi);
+	  /* If the shift count is invariant, convert (A >> B) & 1 to
+	     A & (1 << B) allowing the bit mask to be hoisted out of the loop
+	     saving an expensive shift.  */
+	  if (pos == MOVE_POSSIBLE
+	      && TREE_CODE (rhs) == BIT_AND_EXPR
+	      && integer_onep (TREE_OPERAND (rhs, 1))
+	      && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME
+	      && has_single_use (TREE_OPERAND (rhs, 0)))
+	    stmt = rewrite_bittest (&bsi);
+	}
 
       stmt_ann (stmt)->common.aux = xcalloc (1, sizeof (struct lim_aux_data));
       LIM_DATA (stmt)->always_executed_in = outermost;

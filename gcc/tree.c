@@ -3128,7 +3128,16 @@ build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
 
-  side_effects = TREE_SIDE_EFFECTS (t);
+  /* As a special exception, if COND_EXPR has NULL branches, we
+     assume that it is a gimple statement and always consider
+     it to have side effects.  */
+  if (code == COND_EXPR
+      && tt == void_type_node
+      && arg1 == NULL_TREE
+      && arg2 == NULL_TREE)
+    side_effects = true;
+  else
+    side_effects = TREE_SIDE_EFFECTS (t);
 
   PROCESS_ARG(0);
   PROCESS_ARG(1);

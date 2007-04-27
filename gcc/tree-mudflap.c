@@ -630,9 +630,7 @@ mf_build_check_statement_for (tree base, tree limit,
 
   /* Build the conditional jump.  'cond' is just a temporary so we can
      simply build a void COND_EXPR.  We do need labels in both arms though.  */
-  t = build3 (COND_EXPR, void_type_node, cond,
-              build1 (GOTO_EXPR, void_type_node, tree_block_label (then_bb)),
-              build1 (GOTO_EXPR, void_type_node, tree_block_label (join_bb)));
+  t = build3 (COND_EXPR, void_type_node, cond, NULL_TREE, NULL_TREE);
   SET_EXPR_LOCUS (t, locus);
   tsi_link_after (&tsi, t, TSI_CONTINUE_LINKING);
 
@@ -685,7 +683,6 @@ mf_build_check_statement_for (tree base, tree limit,
     bsi_insert_after (&bsi, tsi_stmt (tsi), BSI_CONTINUE_LINKING);
 
   *instr_bsi = bsi_start (join_bb);
-  bsi_next (instr_bsi);
 }
 
 
