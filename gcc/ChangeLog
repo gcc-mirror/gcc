@@ -1,5 +1,9 @@
 2007-04-27  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-forwprop.c (get_prop_dest_stmt): Fix comment typo.
+
+2007-04-27  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/30965
 	PR tree-optimization/30978
 	* Makefile.in (tree-ssa-forwprop.o): Depend on $(FLAGS_H).

@@ -156,7 +156,7 @@ static bool forward_propagate_addr_expr (tree name, tree rhs);
 static bool cfg_changed;
 
 
-/* Get the next statement we can propagate NAMEs value into skipping
+/* Get the next statement we can propagate NAME's value into skipping
    trivial copies.  Returns the statement that is suitable as a
    propagation destination or NULL_TREE if there is no such one.
    This only returns destinations in a single-use chain.  FINAL_NAME_P
