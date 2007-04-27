@@ -1550,7 +1550,7 @@ widen_bitfield (tree val, tree field, tree var)
 static tree
 maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type)
 {
-  tree min_idx, idx, elt_offset = integer_zero_node;
+  tree min_idx, idx, idx_type, elt_offset = integer_zero_node;
   tree array_type, elt_type, elt_size;
 
   /* If BASE is an ARRAY_REF, we can pick up another offset (this time
@@ -1578,7 +1578,10 @@ maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type)
   elt_type = TREE_TYPE (array_type);
   if (!lang_hooks.types_compatible_p (orig_type, elt_type))
     return NULL_TREE;
-	
+
+  /* Use signed size type for intermediate computation on the index.  */
+  idx_type = signed_type_for (size_type_node);
+
   /* If OFFSET and ELT_OFFSET are zero, we don't care about the size of the
      element type (so we can use the alignment if it's not constant).
      Otherwise, compute the offset as an index by using a division.  If the
@@ -1589,48 +1592,56 @@ maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type)
       if (TREE_CODE (elt_size) != INTEGER_CST)
 	elt_size = size_int (TYPE_ALIGN (elt_type));
 
-      idx = integer_zero_node;
+      idx = build_int_cst (idx_type, 0);
     }
   else
     {
       unsigned HOST_WIDE_INT lquo, lrem;
       HOST_WIDE_INT hquo, hrem;
+      double_int soffset;
 
+      /* The final array offset should be signed, so we need
+	 to sign-extend the (possibly pointer) offset here
+	 and use signed division.  */
+      soffset = double_int_sext (tree_to_double_int (offset),
+				 TYPE_PRECISION (TREE_TYPE (offset)));
       if (TREE_CODE (elt_size) != INTEGER_CST
-	  || div_and_round_double (TRUNC_DIV_EXPR, 1,
-				   TREE_INT_CST_LOW (offset),
-				   TREE_INT_CST_HIGH (offset),
+	  || div_and_round_double (TRUNC_DIV_EXPR, 0,
+				   soffset.low, soffset.high,
 				   TREE_INT_CST_LOW (elt_size),
 				   TREE_INT_CST_HIGH (elt_size),
 				   &lquo, &hquo, &lrem, &hrem)
 	  || lrem || hrem)
 	return NULL_TREE;
 
-      idx = build_int_cst_wide (TREE_TYPE (offset), lquo, hquo);
+      idx = build_int_cst_wide (idx_type, lquo, hquo);
     }
 
   /* Assume the low bound is zero.  If there is a domain type, get the
      low bound, if any, convert the index into that type, and add the
      low bound.  */
-  min_idx = integer_zero_node;
+  min_idx = build_int_cst (idx_type, 0);
   if (TYPE_DOMAIN (array_type))
     {
-      if (TYPE_MIN_VALUE (TYPE_DOMAIN (array_type)))
-	min_idx = TYPE_MIN_VALUE (TYPE_DOMAIN (array_type));
+      idx_type = TYPE_DOMAIN (array_type);
+      if (TYPE_MIN_VALUE (idx_type))
+	min_idx = TYPE_MIN_VALUE (idx_type);
       else
-	min_idx = fold_convert (TYPE_DOMAIN (array_type), min_idx);
+	min_idx = fold_convert (idx_type, min_idx);
 
       if (TREE_CODE (min_idx) != INTEGER_CST)
 	return NULL_TREE;
 
-      idx = fold_convert (TYPE_DOMAIN (array_type), idx);
-      elt_offset = fold_convert (TYPE_DOMAIN (array_type), elt_offset);
+      elt_offset = fold_convert (idx_type, elt_offset);
     }
 
   if (!integer_zerop (min_idx))
     idx = int_const_binop (PLUS_EXPR, idx, min_idx, 0);
   if (!integer_zerop (elt_offset))
     idx = int_const_binop (PLUS_EXPR, idx, elt_offset, 0);
+
+  /* Make sure to possibly truncate late after offsetting.  */
+  idx = fold_convert (idx_type, idx);
 
   return build4 (ARRAY_REF, orig_type, base, idx, NULL_TREE, NULL_TREE);
 }

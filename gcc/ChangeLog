@@ -1,3 +1,10 @@
+2007-04-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/31715
+	* tree-ssa-ccp.c (maybe_fold_offset_to_array_ref): Make
+	sure to do computation on the offset in an appropriate
+	signed type.
+
 2007-04-27  Richard Sandiford  <richard@codesourcery.com>
 
 	* reload.h (elimination_target_reg_p): Declare.
