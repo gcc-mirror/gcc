@@ -490,7 +490,6 @@ to be issued if a tab is encountered. Note, @option{-Wno-tabs} is active
 for @option{-pedantic}, @option{-std=f95}, @option{-std=f2003}, and
 @option{-Wall}.
 
-
 @item -Wunderflow
 @opindex @code{Wunderflow}
 @cindex warnings, underflow
@@ -839,8 +838,7 @@ significant overhead to the function call, especially  when the passed data
 is noncontiguous.
 
 @item -fshort-enums
-@cindex @code{-fshort-enums} option
-@cindex option, @code{-fshort-enums}
+@opindex @code{fshort-enums}
 This option is provided for interoperability with C code that was
 compiled with the @option{-fshort-enums} option.  It will make
 GNU Fortran choose the smallest @code{INTEGER} kind a given
