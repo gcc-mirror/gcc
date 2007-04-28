@@ -1,3 +1,8 @@
+2007-04-28  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-cfg.c (move_block_to_fn): Release bb from dominance
+	info.  Update last_basic_block correctly.
+
 2007-04-27  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/31701

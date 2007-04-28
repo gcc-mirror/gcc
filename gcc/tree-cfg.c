@@ -4571,6 +4571,9 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
   struct move_stmt_d d;
   unsigned old_len, new_len;
 
+  /* Remove BB from dominance structures.  */
+  delete_from_dominance_info (CDI_DOMINATORS, bb);
+
   /* Link BB to the new linked list.  */
   move_block_after (bb, after);
 
@@ -4589,8 +4592,8 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
   /* Grow DEST_CFUN's basic block array if needed.  */
   cfg = dest_cfun->cfg;
   cfg->x_n_basic_blocks++;
-  if (bb->index > cfg->x_last_basic_block)
-    cfg->x_last_basic_block = bb->index;
+  if (bb->index >= cfg->x_last_basic_block)
+    cfg->x_last_basic_block = bb->index + 1;
 
   old_len = VEC_length (basic_block, cfg->x_basic_block_info);
   if ((unsigned) cfg->x_last_basic_block >= old_len)
