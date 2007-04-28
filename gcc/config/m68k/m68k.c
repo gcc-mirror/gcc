@@ -4112,7 +4112,6 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   /* Pretend to be a post-reload pass while generating rtl.  */
   no_new_pseudos = 1;
   reload_completed = 1;
-  reset_block_changes ();
   allocate_reg_info (FIRST_PSEUDO_REGISTER, true, true);
 
   /* The "this" pointer is stored at 4(%sp).  */
