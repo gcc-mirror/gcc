@@ -678,3 +678,17 @@ close_units (void)
     close_unit_1 (unit_root, 1);
   __gthread_mutex_unlock (&unit_lock);
 }
+
+
+/* update_position()-- Update the flags position for later use by inquire.  */
+
+void
+update_position (gfc_unit *u)
+{
+  if (file_position (u->s) == 0)
+    u->flags.position = POSITION_REWIND;
+  else if (file_length (u->s) == file_position (u->s))
+    u->flags.position = POSITION_APPEND;
+  else
+    u->flags.position = POSITION_ASIS;
+}

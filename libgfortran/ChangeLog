@@ -1,3 +1,16 @@
+2007-04-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/31532
+	* io/file_pos.c (st_backspace): Set flags.position for end of file
+	condition and use new function update_position.
+	(st_endfile): Use new function update_position.
+	* io/io.h: Add prototype for new function.
+	* io/inquire.c (inquire_via_unit): If not direct access, set NEXTREC
+	to zero.
+	* io/unit.c (update_position): New function to update position info
+	used by inquire.
+	* io/transfer.c (next_record): Fix typo and use new function.
+
 2007-04-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/31299
