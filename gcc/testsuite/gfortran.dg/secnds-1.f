@@ -6,7 +6,7 @@ C Contributed by Paul Thomas  <pault@gcc.gnu.org>
 C
       character*20 dum1, dum2, dum3
       real t1, t1a, t2, t2a
-      real dat1, dat2
+      real*8 dat1, dat2
       integer i, j, values(8)
       t1 = secnds (0.0)
       call date_and_time (dum1, dum2, dum3, values)
