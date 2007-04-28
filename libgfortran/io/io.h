@@ -80,6 +80,14 @@ stream;
 
 #define sset(s, c, n) ((s)->set)(s, c, n)
 
+/* Macros for testing what kinds of I/O we are doing.  */
+
+#define is_array_io(dtp) ((dtp)->internal_unit_desc)
+
+#define is_internal_unit(dtp) ((dtp)->u.p.unit_is_internal)
+
+#define is_stream_io(dtp) ((dtp)->u.p.current_unit->flags.access == ACCESS_STREAM)
+
 /* The array_loop_spec contains the variables for the loops over index ranges
    that are encountered.  Since the variables can be negative, ssize_t
    is used.  */
@@ -671,15 +679,6 @@ internal_proto(get_internal_unit);
 
 extern void free_internal_unit (st_parameter_dt *);
 internal_proto(free_internal_unit);
-
-extern int is_internal_unit (st_parameter_dt *);
-internal_proto(is_internal_unit);
-
-extern int is_array_io (st_parameter_dt *);
-internal_proto(is_array_io);
-
-extern int is_stream_io (st_parameter_dt *);
-internal_proto(is_stream_io);
 
 extern gfc_unit *find_unit (int);
 internal_proto(find_unit);

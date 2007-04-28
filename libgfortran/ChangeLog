@@ -1,3 +1,14 @@
+2007-04-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/31501
+	* io/list_read.c (next_char): Fix whitespace.
+	* io/io.h: Remove prototypes and define macros for is_array_io,
+	is_stream_io, and is_internal_unit.
+	* io/unit.c (is_array_io), (is_internal_unit), (is_stream_io): Delete
+	these functions.
+	* io/transfer.c (read_sf): Change handling of internal_unit to make a
+	single call to salloc_r and use memcpy to transfer the data. 
+
 2007-04-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/31532

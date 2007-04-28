@@ -476,33 +476,6 @@ get_unit (st_parameter_dt *dtp, int do_create)
 }
 
 
-/* is_internal_unit()-- Determine if the current unit is internal or not */
-
-int
-is_internal_unit (st_parameter_dt *dtp)
-{
-  return dtp->u.p.unit_is_internal;
-}
-
-
-/* is_array_io ()-- Determine if the I/O is to/from an array */
-
-int
-is_array_io (st_parameter_dt *dtp)
-{
-  return dtp->internal_unit_desc != NULL;
-}
-
-
-/* is_stream_io () -- Determine if I/O is access="stream" mode */
-
-int
-is_stream_io (st_parameter_dt *dtp)
-{
-  return dtp->u.p.current_unit->flags.access == ACCESS_STREAM;
-}
-
-
 /*************************/
 /* Initialize everything */
 
