@@ -2240,8 +2240,11 @@ typedef struct mips_args {
    difference in cost between byte and (aligned) word loads.
 
    On RISC machines, it tends to generate better code to define
-   this as 1, since it avoids making a QI or HI mode register.  */
-#define SLOW_BYTE_ACCESS 1
+   this as 1, since it avoids making a QI or HI mode register.
+
+   But, generating word accesses for -mips16 is generally bad as shifts
+   (often extended) would be needed for byte accesses.  */
+#define SLOW_BYTE_ACCESS (!TARGET_MIPS16)
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits.  */
