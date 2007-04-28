@@ -7172,7 +7172,6 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Pretend to be a post-reload pass while generating rtl.  */
   no_new_pseudos = 1;
   reload_completed = 1;
-  reset_block_changes ();
 
   /* Pick a global pointer.  Use a call-clobbered register if
      TARGET_CALL_SAVED_GP, so that we can use a sibcall.  */
@@ -7258,7 +7257,7 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Run just enough of rest_of_compilation.  This sequence was
      "borrowed" from alpha.c.  */
   insn = get_insns ();
-  insn_locators_initialize ();
+  insn_locators_alloc ();
   split_all_insns_noflow ();
   if (TARGET_MIPS16)
     mips16_lay_out_constants ();
