@@ -1,3 +1,15 @@
+2007-04-27  Keith Seitz  <keiths@redhat.com>
+
+	* classpath/lib/gnu/classpath/jdwp/event/filters/
+	LocationOnlyFilter.class: Regenerated;
+	* classpath/lib/gnu/classpath/jdwp/util/Location.class:
+	Regenerated.
+	* gnu/classpath/jdwp/VMMethod.java
+	* classpath/lib/gnu/classpath/jdwp/VMMethod.class:
+	Regenerated.
+	* gnu/classpath/jdwp/VMMethod.h: Regenerated.
+	* gnu/classpath/jdwp/util/Location.h: Regenerated.
+
 2007-04-27  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/CairoGraphics2D.h: Regenerate.

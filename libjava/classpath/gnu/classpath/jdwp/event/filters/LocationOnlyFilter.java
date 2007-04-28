@@ -1,5 +1,5 @@
 /* LocationOnlyFilter.java -- filter on location
-   Copyright (C) 2005, 2006 Free Software Foundation
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -49,13 +49,6 @@ import gnu.classpath.jdwp.util.Location;
  * May be used with breakpoint, field access, field modification, step,
  * and exception event kinds.
  *
- * This "filter" is not really a filter. It is simply a way to communicate
- * location information for supported events in a generic way to ease 
- * the burden of special casing several things in
- * EventReqeustCommandSet.executeSet.
- * 
- * Consequently, this "filter" always matches any event.
- * 
  * @author Keith Seitz  (keiths@redhat.com)
  */
 public class LocationOnlyFilter
@@ -90,9 +83,12 @@ public class LocationOnlyFilter
    *
    * @param event  the <code>Event</code> to scrutinize
    */
-  public boolean matches (Event event)
+  public boolean matches(Event event)
   {
-    // This filter always matches. See comments in class javadoc.
-    return true;
+    Location loc = (Location) event.getParameter(Event.EVENT_LOCATION);
+    if (loc != null)
+      return (getLocation().equals(loc));
+
+    return false;
   }
 }

@@ -43,6 +43,7 @@ public:
   virtual ::gnu::classpath::jdwp::VMMethod * getMethod();
   virtual jlong getIndex();
   virtual ::java::lang::String * toString();
+  virtual jboolean equals(::java::lang::Object *);
 private:
   ::gnu::classpath::jdwp::VMMethod * __attribute__((aligned(__alignof__( ::java::lang::Object)))) method;
   jlong index;

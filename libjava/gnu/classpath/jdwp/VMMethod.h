@@ -49,6 +49,7 @@ public:
   virtual ::java::lang::String * toString();
   virtual void writeId(::java::io::DataOutputStream *);
   static ::gnu::classpath::jdwp::VMMethod * readId(::java::lang::Class *, ::java::nio::ByteBuffer *);
+  virtual jboolean equals(::java::lang::Object *);
   static const jint SIZE = 8;
 private:
   ::java::lang::Class * __attribute__((aligned(__alignof__( ::java::lang::Object)))) _class;
