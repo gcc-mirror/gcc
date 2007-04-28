@@ -1,3 +1,15 @@
+2007-04-04  Francis Kung  <fkung@redhat.com>
+
+	* gnu/java/awt/peer/gtk/ComponentGraphics.java
+	(cairoDrawGlyphVector): Removed method.
+	(cairoSetFont): Removed method.
+	(disposeNative): Removed method.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_CairoGraphics2D.c
+	(Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoDrawGlyphVector): Added
+	locking.
+	(Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoSetFont): Added locking.
+	(Java_gnu_java_awt_peer_gtk_CairoGraphics2D_disposeNative): Added locking.
+
 2007-04-27  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/event/EventManager.java

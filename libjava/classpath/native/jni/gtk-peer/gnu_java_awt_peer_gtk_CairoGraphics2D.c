@@ -87,7 +87,11 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_disposeNative
     return;
 
   if (gr->cr)
-    cairo_destroy (gr->cr);
+    {
+      gdk_threads_enter();
+      cairo_destroy (gr->cr);
+      gdk_threads_leave();
+    }
 
   if (gr->pattern)
     cairo_pattern_destroy (gr->pattern);
@@ -343,9 +347,11 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoDrawGlyphVector
   (*env)->ReleaseFloatArrayElements (env, java_positions, native_positions, 0);
   (*env)->ReleaseIntArrayElements (env, java_codes, native_codes, 0);
 
+  gdk_threads_enter ();
   pango_fc_font_lock_face( (PangoFcFont *)pfont->font );
   cairo_show_glyphs (gr->cr, glyphs, n);
   pango_fc_font_unlock_face( (PangoFcFont *)pfont->font );
+  gdk_threads_leave ();
 
   g_free(glyphs);
 }
@@ -367,6 +373,7 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoSetFont
   pfont = (struct peerfont *)NSA_GET_FONT_PTR (env, font);
   g_assert (pfont != NULL);
 
+  gdk_threads_enter();
   face = pango_fc_font_lock_face( (PangoFcFont *)pfont->font );
   g_assert (face != NULL);
 
@@ -380,6 +387,7 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoSetFont
                        
   cairo_font_face_destroy (ft);
   pango_fc_font_unlock_face((PangoFcFont *)pfont->font);
+  gdk_threads_leave();
 }
 
 JNIEXPORT void JNICALL
