@@ -1,3 +1,10 @@
+2007-04-27  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/31701
+	* config/sh/sh.c (output_stack_adjust): Avoid using the frame
+	register itself to hold the offset constant.  Tell flow the use
+	of r4 and r5 when they are used.
+
 2007-04-27  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (forward_propagate_into_cond): Keep track
