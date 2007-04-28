@@ -1,5 +1,5 @@
 /* VMMethod.java -- a method in a virtual machine
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -174,5 +174,16 @@ public class VMMethod
     throws JdwpException, IOException
   {
     return VMVirtualMachine.getClassMethod(klass, bb.getLong());
+  }
+
+  public boolean equals(Object obj)
+  {
+    if (obj instanceof VMMethod)
+      {
+	VMMethod m = (VMMethod) obj;
+	return (getId() == m.getId());
+      }
+
+    return false;
   }
 }

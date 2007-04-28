@@ -1,5 +1,5 @@
 /* Location.java -- class to read/write JDWP locations
-   Copyright (C) 2005, 2006 Free Software Foundation
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -152,5 +152,17 @@ public class Location
   public String toString ()
   {
     return method.toString () + "." + index;
+  }
+
+  public boolean equals(Object obj)
+  {
+    if (obj instanceof Location)
+      {
+	Location l = (Location) obj;
+	return (getMethod().equals(l.getMethod())
+		&& getIndex() == l.getIndex());
+      }
+
+    return false;
   }
 }

@@ -1,3 +1,12 @@
+2007-04-27  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/event/filters/LocationOnlyFilter.java
+	(matches): Use Location.equals to determine equality.
+	* gnu/classpath/jdwp/VMMethod.java (equals):
+	New method.
+	* gnu/classpath/jdwp/util/Location.java (equals):
+	New method.
+
 2007-03-16  Francis Kung  <fkung@redhat.com>
 
 	* gnu/java/awt/peer/gtk/CairoGraphics2D.java
