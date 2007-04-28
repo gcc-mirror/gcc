@@ -1,4 +1,9 @@
-2007-04-27  Jerry DeLisle
+2007-04-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/secnds.f: Use real*8.
+	* gfortran.dg/secnds-1.f: Use real*8.
+
+2007-04-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/31532
 	* gfortran.dg/inquire_5.f90: Update test.
