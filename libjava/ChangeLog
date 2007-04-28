@@ -1,5 +1,12 @@
 2007-04-27  Keith Seitz  <keiths@redhat.com>
 
+	* classpath/lib/gnu/classpath/jdwp/Jdwp.class: Regenerated.
+	* classpath/lib/gnu/classpath/jdwp/event/EventManager.class:
+	Regenerated.
+	* gnu/classpath/jdwp/event/EventManager.h: Regenerated.
+
+2007-04-27  Keith Seitz  <keiths@redhat.com>
+
 	* classpath/lib/gnu/classpath/jdwp/event/filters/
 	LocationOnlyFilter.class: Regenerated;
 	* classpath/lib/gnu/classpath/jdwp/util/Location.class:

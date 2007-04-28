@@ -44,6 +44,7 @@ import gnu.classpath.jdwp.VMVirtualMachine;
 import gnu.classpath.jdwp.exception.InvalidEventTypeException;
 import gnu.classpath.jdwp.exception.JdwpException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -146,39 +147,39 @@ public class EventManager
   }
 
   /**
-   * Returns a request for the given event. This method will only
+   * Returns all requests for the given event. This method will only
    * be used if the <code>EventManager</code> is handling event filtering.
    *
    * @param  event  the event
-   * @return request that was interested in this event
+   * @return requests that are interested in this event
    *         or <code>null</code> if none (and event should not be sent)
    * @throws IllegalArgumentException for invalid event kind
    */
-  public EventRequest getEventRequest (Event event)
+  public EventRequest[] getEventRequests(Event event)
   {
-    EventRequest interestedRequest = null;
+    ArrayList interestedEvents = new ArrayList();
     Hashtable requests;
-    Byte kind = new Byte (event.getEventKind ());
-    requests = (Hashtable) _requests.get (kind);
+    Byte kind = new Byte(event.getEventKind());
+    requests = (Hashtable) _requests.get(kind);
     if (requests == null)
       {
 	// Did not get a valid event type
-	throw new IllegalArgumentException ("invalid event kind: " + kind);
+	throw new IllegalArgumentException("invalid event kind: " + kind);
       }
-    boolean match = false;
 
     // Loop through the requests. Must look at ALL requests in order
     // to evaluate all filters (think count filter).
-    // TODO: What if multiple matches? Spec isn't so clear on this.
-    Iterator rIter = requests.values().iterator ();
-    while (rIter.hasNext ())
+    Iterator rIter = requests.values().iterator();
+    while (rIter.hasNext())
       {
-	EventRequest request = (EventRequest) rIter.next ();
-	if (request.matches (event))
-	  interestedRequest = request;
+	EventRequest request = (EventRequest) rIter.next();
+	if (request.matches(event))
+	  interestedEvents.add(request);
       }
 
-    return interestedRequest;
+    EventRequest[] r = new EventRequest[interestedEvents.size()];
+    interestedEvents.toArray(r);
+    return r;
   }
 
   /**

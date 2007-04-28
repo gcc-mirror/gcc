@@ -1,5 +1,5 @@
 /* Jdwp.java -- Virtual machine to JDWP back-end programming interface
-   Copyright (C) 2005, 2006 Free Software Foundation
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -207,23 +207,22 @@ public class Jdwp
    * The event is filtered through the event manager before being
    * sent.
    *
-   * FIXME: Probably need logic to send multiple events
+   * FIXME: Probably need logic to send multiple (different) events
    * @param event the event to report
    */
-  public static void notify (Event event)
+  public static void notify(Event event)
   {
-    Jdwp jdwp = getDefault ();
+    Jdwp jdwp = getDefault();
     if (jdwp != null)
       {
-	EventManager em = EventManager.getDefault ();
-	EventRequest request = em.getEventRequest (event);
-	if (request != null)
+	EventManager em = EventManager.getDefault();
+	EventRequest[] requests = em.getEventRequests(event);
+	for (int i = 0; i < requests.length; ++i)
 	  {
 	    try
 	      {
-		System.out.println ("Jdwp.notify: sending event " + event);
-		sendEvent (request, event);
-		jdwp._enforceSuspendPolicy (request.getSuspendPolicy ());
+		sendEvent(requests[i], event);
+		jdwp._enforceSuspendPolicy(requests[i].getSuspendPolicy());
 	      }
 	    catch (Exception e)
 	      {
