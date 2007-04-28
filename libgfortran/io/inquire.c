@@ -152,7 +152,13 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
     *iqp->strm_pos_out = (u != NULL) ? u->strm_pos : 0;
 
   if ((cf & IOPARM_INQUIRE_HAS_NEXTREC) != 0)
-    *iqp->nextrec = (u != NULL) ? u->last_record + 1 : 0;
+    {
+      /* This only makes sense in the context of DIRECT access.  */
+      if (u != NULL && u->flags.access == ACCESS_DIRECT)
+	*iqp->nextrec = u->last_record + 1;
+      else
+	*iqp->nextrec = 0;
+    }
 
   if ((cf & IOPARM_INQUIRE_HAS_BLANK) != 0)
     {

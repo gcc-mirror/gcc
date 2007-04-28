@@ -2546,8 +2546,10 @@ next_record (st_parameter_dt *dtp, int done)
 
   if (!is_stream_io (dtp))
     {
-      /* keep position up to date for INQUIRE */
-      dtp->u.p.current_unit->flags.position = POSITION_ASIS;
+      /* Keep position up to date for INQUIRE */
+      if (done)
+	update_position (dtp->u.p.current_unit);
+
       dtp->u.p.current_unit->current_record = 0;
       if (dtp->u.p.current_unit->flags.access == ACCESS_DIRECT)
 	{

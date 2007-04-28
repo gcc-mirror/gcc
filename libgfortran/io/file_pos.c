@@ -213,13 +213,17 @@ st_backspace (st_parameter_filepos *fpp)
   if (u->endfile == AFTER_ENDFILE)
     {
       u->endfile = AT_ENDFILE;
+      u->flags.position = POSITION_APPEND;
       flush (u->s);
       struncate (u->s);
     }
   else
     {
       if (file_position (u->s) == 0)
-	goto done;		/* Common special case */
+	{
+	  u->flags.position = POSITION_REWIND;
+	  goto done;		/* Common special case */
+	}
 
       if (u->mode == WRITING)
 	{
@@ -233,6 +237,7 @@ st_backspace (st_parameter_filepos *fpp)
       else
 	unformatted_backspace (fpp, u);
 
+      update_position (u);
       u->endfile = NO_ENDFILE;
       u->current_record = 0;
       u->bytes_left = 0;
@@ -271,6 +276,7 @@ st_endfile (st_parameter_filepos *fpp)
       flush (u->s);
       struncate (u->s);
       u->endfile = AFTER_ENDFILE;
+      update_position (u);
       unlock_unit (u);
     }
 

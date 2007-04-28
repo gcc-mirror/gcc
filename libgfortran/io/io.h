@@ -693,6 +693,9 @@ internal_proto(get_unit);
 extern void unlock_unit (gfc_unit *);
 internal_proto(unlock_unit);
 
+extern void update_position (gfc_unit *);
+internal_proto(update_position);
+
 /* open.c */
 
 extern gfc_unit *new_unit (st_parameter_open *, gfc_unit *, unit_flags *);
