@@ -1,3 +1,8 @@
+2007-04-28  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* options.c (gfc_handle_option): Ensure requested free form line
+	length is not too small.
+
 2007-04-27  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* intrinsic.texi (Transfer): Improve documentation.
