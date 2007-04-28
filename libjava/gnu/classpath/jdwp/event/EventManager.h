@@ -7,6 +7,8 @@
 #pragma interface
 
 #include <java/lang/Object.h>
+#include <gcj/array.h>
+
 extern "Java"
 {
   namespace gnu
@@ -34,7 +36,7 @@ public:
 private:
   EventManager();
 public:
-  virtual ::gnu::classpath::jdwp::event::EventRequest * getEventRequest(::gnu::classpath::jdwp::event::Event *);
+  virtual JArray< ::gnu::classpath::jdwp::event::EventRequest * > * getEventRequests(::gnu::classpath::jdwp::event::Event *);
   virtual void requestEvent(::gnu::classpath::jdwp::event::EventRequest *);
   virtual void deleteRequest(jbyte, jint);
   virtual void clearRequests(jbyte);

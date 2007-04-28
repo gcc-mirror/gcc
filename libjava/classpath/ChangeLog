@@ -1,5 +1,16 @@
 2007-04-27  Keith Seitz  <keiths@redhat.com>
 
+	* gnu/classpath/jdwp/event/EventManager.java
+	(getEventRequest): Rename to...
+	(getEventRequests): ...this.
+	Change return type to array of requests.
+	Construct a list of all matching events and return
+	them all.
+	* gnu/classpath/jdwp/Jdwp.java (notify): Use getEventRequests
+	and send event notifications for all matching requests.
+
+2007-04-27  Keith Seitz  <keiths@redhat.com>
+
 	* gnu/classpath/jdwp/event/filters/LocationOnlyFilter.java
 	(matches): Use Location.equals to determine equality.
 	* gnu/classpath/jdwp/VMMethod.java (equals):
