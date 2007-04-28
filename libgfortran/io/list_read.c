@@ -165,7 +165,7 @@ next_char (st_parameter_dt *dtp)
 
   /* Handle the end-of-record and end-of-file conditions for
      internal array unit.  */
-  if (is_array_io(dtp))
+  if (is_array_io (dtp))
     {
       if (dtp->u.p.at_eof)
 	longjmp (*dtp->u.p.eof_jump, 1);
@@ -201,9 +201,9 @@ next_char (st_parameter_dt *dtp)
   if (is_stream_io (dtp))
     dtp->u.p.current_unit->strm_pos++;
 
-  if (is_internal_unit(dtp))
+  if (is_internal_unit (dtp))
     {
-      if (is_array_io(dtp))
+      if (is_array_io (dtp))
 	{
 	  /* End of record is handled in the next pass through, above.  The
 	     check for NULL here is cautionary.  */
