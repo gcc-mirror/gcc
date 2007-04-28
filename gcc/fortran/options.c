@@ -538,6 +538,8 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_ffree_line_length_:
+      if (value != 0 && value < 4)
+	gfc_fatal_error ("Free line length must be at least three.");
       gfc_option.free_line_length = value;
       break;
 
