@@ -1765,6 +1765,32 @@ df_bb_refs_record (struct dataflow *dflow, basic_block bb)
     }
 }
 
+/* Records the implicit definitions at targets of nonlocal gotos in BLOCKS.  */
+
+static void
+record_nonlocal_goto_receiver_defs (struct dataflow *dflow, bitmap blocks)
+{
+  rtx x;
+  basic_block bb;
+
+  /* See expand_builtin_setjmp_receiver; hard_frame_pointer_rtx is used in
+     the nonlocal goto receiver, and needs to be considered defined
+     implicitly.  */
+  if (!(dflow->flags & DF_HARD_REGS))
+    return;
+
+  for (x = nonlocal_goto_handler_labels; x; x = XEXP (x, 1))
+    {
+      bb = BLOCK_FOR_INSN (XEXP (x, 0));
+      if (!bitmap_bit_p (blocks, bb->index))
+	continue;
+
+      df_ref_record (dflow, hard_frame_pointer_rtx, &hard_frame_pointer_rtx,
+		     bb, NULL,
+		     DF_REF_REG_DEF, DF_REF_ARTIFICIAL | DF_REF_AT_TOP,
+		     false);
+    }
+}
 
 /* Record all the refs in the basic blocks specified by BLOCKS.  */
 
@@ -1785,6 +1811,9 @@ df_refs_record (struct dataflow *dflow, bitmap blocks)
 
   if (bitmap_bit_p (blocks, ENTRY_BLOCK))
     df_record_entry_block_defs (dflow);
+
+  if (current_function_has_nonlocal_label)
+    record_nonlocal_goto_receiver_defs (dflow, blocks);
 }
 
 
