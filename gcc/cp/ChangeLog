@@ -1,3 +1,9 @@
+2007-04-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR C++/30221
+	* decl.c (reshape_init_r): Don't reshape the first element if it
+	is a pointer to member function.
+
 2007-04-26  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/30016
