@@ -1,0 +1,4 @@
+ÿþprint *, "Hello world!"
+ÿþend ! { dg-error "Invalid character" }
+! { dg-do compile }
+! { dg-excess-errors "Unexpected end of file" }

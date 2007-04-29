@@ -1,0 +1,2 @@
+﻿print *, "Hello world!"
+end

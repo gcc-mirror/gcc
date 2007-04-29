@@ -1,3 +1,15 @@
+2007-04-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31645
+	* testsuite/gfortran.dg/bom_error.f90: New test.
+	* testsuite/gfortran.dg/bom_include.f90: New test.
+	* testsuite/gfortran.dg/bom_UTF16-LE.f90: New test.
+	* testsuite/gfortran.dg/bom_UTF16-BE.f90: New test.
+	* testsuite/gfortran.dg/bom_UTF-8.f90: New test.
+	* testsuite/gfortran.dg/bom_UTF-32.f90: New test.
+	* testsuite/gfortran.dg/bom_UTF-8.F90: New test.
+	* testsuite/gfortran.dg/bom_include.inc: New file.
+
 2007-04-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/30221
