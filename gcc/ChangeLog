@@ -1,3 +1,19 @@
+2007-04-29  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* rtl.def (SS_ABS): New code.
+	* config/bfin/bfin.c (print_operand): New modifier 'v'.
+	(enum bfin_builtins): Add BFIN_BUILTIN_SUM_2X16, BFIN_BUILTIN_ABS_1x32,
+	BFIN_BUILTIN_ROUND_1x32, BFIN_BUILTIN_MULT_1x32x32,
+	BFIN_BUILTIN_MULT_1x32x32NS, BFIN_BUILTIN_SSASHIFT_1x32.
+	(bfin_init_builtins): Define them.
+	(bdesc_1arg, bdesc_2arg): Add some of them here, ...
+	(bfin_expand_builtin): ... and handle the others here.
+	* config/bfin/bfin.md (ssabssi2, ssroundsi2, ssashiftsi3,
+	flag_mul_macv2hi_parts_acconly_andcc0): New patterns.
+	(ss_absv2hi2): Renamed from absv2hi; use ss_abs code.
+	(ssashiftv2hi3, ssashifthi3, lshiftv2hi3, lshifthi3): Shift count
+	operand is only HImode.
+
 2007-04-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* regclass.c (scan_one_insn): Remove splitting of
