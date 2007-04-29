@@ -1,6 +1,6 @@
 // basic_ios member functions -*- C++ -*-
 
-// Copyright (C) 1999, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -111,16 +111,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
       return *this;
     }
-
-  template<typename _CharT, typename _Traits>
-    char
-    basic_ios<_CharT, _Traits>::narrow(char_type __c, char __dfault) const
-    { return __check_facet(_M_ctype).narrow(__c, __dfault); }
-
-  template<typename _CharT, typename _Traits>
-    _CharT
-    basic_ios<_CharT, _Traits>::widen(char __c) const
-    { return __check_facet(_M_ctype).widen(__c); }
 
   // Locales:
   template<typename _CharT, typename _Traits>
