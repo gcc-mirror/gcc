@@ -1,5 +1,6 @@
 2007-04-29  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	PR rtl-optimization/31676
 	* df-scan.c (record_nonlocal_goto_receiver_defs): New function.
 	(df_refs_record): Call it.
 
