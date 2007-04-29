@@ -1,3 +1,8 @@
+2007-04-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* regclass.c (scan_one_insn): Remove splitting of
+	two address insns.
+
 2007-04-28  Sandra Loosemore  <sandra@codesourcery.com>
 	    Nigel Stephens  <nigel@mips.com>
 
