@@ -1,3 +1,8 @@
+2007-04-29  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* df-scan.c (record_nonlocal_goto_receiver_defs): New function.
+	(df_refs_record): Call it.
+
 2007-04-29  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* rtl.def (SS_ABS): New code.
