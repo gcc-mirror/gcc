@@ -1,3 +1,10 @@
+2007-04-29 Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31591
+	* simplify.c (simplify_bound_dim): New function.
+	(simplify_bound): Use the above. Perform simplification of LBOUND
+	and UBOUND when DIM argument is not present.
+
 2007-04-29  Daniel Franke  <franke.daniel@gmail.com>
 
 	* gfortran.texi: Cleaned up keyword index.
