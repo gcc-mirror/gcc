@@ -75,7 +75,6 @@ on the non-Fortran-specific aspects of the @command{gcc} command (and,
 therefore, the @command{gfortran} command).
 
 @cindex options, negative forms
-@cindex negative forms of options
 All GCC and GNU Fortran options
 are accepted both by @command{gfortran} and by @command{gcc}
 (as well as any other drivers built at the same time,
@@ -179,11 +178,8 @@ accepted by the compiler:
 @opindex @code{ffree-form}
 @opindex @code{fno-fixed-form}
 @cindex options, fortran dialect
-@cindex source file format
-@cindex free form
-@cindex fixed form
-@cindex Source Form
-@cindex Fortran 90, features
+@cindex file format, free
+@cindex file format, fixed
 Specify the layout used by the source file.  The free form layout
 was introduced in Fortran 90.  Fixed form was traditionally used in
 older Fortran programs.  When neither option is specified, the source
@@ -222,7 +218,7 @@ Do nothing if this is already the default.
 
 @item -fdollar-ok
 @opindex @code{fdollar-ok}
-@cindex dollar sign
+@cindex $
 @cindex symbol names
 @cindex character set
 Allow @samp{$} as a valid character in a symbol name.
@@ -236,12 +232,7 @@ Change the interpretation of backslashes in string literals from
 
 @item -ffixed-line-length-@var{n}
 @opindex @code{ffixed-line-length-}@var{n}
-@cindex source file format
-@cindex lines, length
-@cindex length of source lines
-@cindex limits, lengths of source lines
-@cindex card image
-@cindex extended-source option
+@cindex file format, fixed
 Set column after which characters are ignored in typical fixed-form
 lines in the source file, and through which spaces are assumed (as
 if padded to that length) after the ends of short fixed-form lines.
@@ -257,10 +248,7 @@ to them to fill out the line.
 
 @item -ffree-line-length-@var{n}
 @opindex @code{ffree-line-length-}@var{n}
-@cindex source file format
-@cindex lines, length
-@cindex length of source lines
-@cindex limits, lengths of source lines
+@cindex file format, free
 Set column after which characters are ignored in typical free-form
 lines in the source file. The default value is 132.
 @var{n} may be @samp{none}, meaning that the entire line is meaningful.
@@ -432,7 +420,7 @@ The following example will trigger the warning.
 @item -Wampersand
 @opindex @code{Wampersand}
 @cindex warnings, ampersand
-@cindex ampersand
+@cindex &
 Warn about missing ampersand in continued character constants. The warning is
 given with @option{-Wampersand}, @option{-pedantic}, @option{-std=f95}, and
 @option{-std=f2003}. Note: With no ampersand given in a continued character
@@ -483,7 +471,7 @@ A LOGICAL SELECT construct has three CASE statements.
 @item -Wtabs
 @opindex @code{Wtabs}
 @cindex warnings, tabs
-@cindex tabs
+@cindex tabulators
 By default, tabs are accepted as whitespace, but tabs are not members
 of the Fortran Character Set.  @option{-Wno-tabs} will cause a warning
 to be issued if a tab is encountered. Note, @option{-Wno-tabs} is active
@@ -606,7 +594,7 @@ GCC options.
 
 @node Runtime Options
 @section Influencing runtime behavior
-@cindex runtime, options
+@cindex options, runtime
 
 These options affect the runtime behavior of programs compiled with GNU Fortran.
 @table @gcctabopt
@@ -642,7 +630,7 @@ really useful for use by the gfortran testsuite.
 @section Options for Code Generation Conventions
 @cindex code generation, conventions
 @cindex options, code generation
-@cindex run-time, options
+@cindex options, run-time
 
 These machine-independent options control the interface conventions
 used in code generation.
@@ -656,15 +644,15 @@ it.
 @table @gcctabopt
 @item -fno-automatic
 @opindex @code{fno-automatic}
-@cindex SAVE statement
-@cindex statements, SAVE
+@cindex @code{SAVE} statement
+@cindex statement, @code{SAVE}
 Treat each program unit as if the @code{SAVE} statement was specified for
 every local variable and array referenced in it. Does not affect common
 blocks. (Some Fortran compilers provide this option under the name
 @option{-static}.)
 
 @item -ff2c
-@opindex @code{ff2c}
+@opindex ff2c
 @cindex calling convention
 @cindex @command{f2c} calling convention
 @cindex @command{g77} calling convention
@@ -794,9 +782,9 @@ by use of the @option{-ff2c} option.
 
 @item -fbounds-check
 @opindex @code{fbounds-check}
+@cindex array, bounds checking
 @cindex bounds checking
 @cindex range checking
-@cindex array bounds checking
 @cindex subscript checking
 @cindex checking subscripts
 Enable generation of run-time checks for array subscripts
@@ -856,7 +844,7 @@ shared by @command{gfortran}, @command{gcc}, and other GNU compilers.
 
 @node Environment Variables
 @section Environment Variables Affecting @command{gfortran}
-@cindex environment variables
+@cindex environment variable
 
 @c man begin ENVIRONMENT
 

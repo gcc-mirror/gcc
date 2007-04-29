@@ -388,14 +388,14 @@ Fortran compiler.
 @node GNU Fortran and G77
 @section GNU Fortran and G77
 @cindex Fortran 77
-@cindex G77
+@cindex @command{g77}
 
-The GNU Fortran compiler is the successor to G77, the Fortran 77 front
-end included in GCC prior to version 4.  It is an entirely new program
-that has been designed to provide Fortran 95 support and extensibility
-for future Fortran language standards, as well as providing backwards
-compatibility for Fortran 77 and nearly all of the GNU language 
-extensions supported by G77.
+The GNU Fortran compiler is the successor to @command{g77}, the Fortran 
+77 front end included in GCC prior to version 4.  It is an entirely new 
+program that has been designed to provide Fortran 95 support and 
+extensibility for future Fortran language standards, as well as providing 
+backwards compatibility for Fortran 77 and nearly all of the GNU language 
+extensions supported by @command{g77}.
 
 
 @c ---------------------------------------------------------------------
@@ -499,7 +499,7 @@ ISO/IEC 1539-1:2004 (Fortran 2003).
 
 @node Runtime
 @chapter Runtime:  Influencing runtime behavior with environment variables
-@cindex Runtime
+@cindex environment variable
 
 The behavior of the @command{gfortran} can be influenced by
 environment variables.
@@ -695,13 +695,14 @@ Intrinsics @code{command_argument_count}, @code{get_command},
 @code{move_alloc}.
 
 @item 
-@cindex Array constructors
+@cindex array, constructors
 @cindex @code{[...]}
 Array constructors using square brackets. That is, @code{[...]} rather
 than @code{(/.../)}.
 
 @item
 @cindex @code{FLUSH} statement
+@cindex statement, @code{FLUSH}
 @code{FLUSH} statement.
 
 @item
@@ -711,6 +712,8 @@ than @code{(/.../)}.
 @item
 @cindex @code{ENUM} statement
 @cindex @code{ENUMERATOR} statement
+@cindex statement, @code{ENUM}
+@cindex statement, @code{ENUMERATOR}
 @opindex @code{fshort-enums}
 Support for the declaration of enumeration constants via the
 @code{ENUM} and @code{ENUMERATOR} statements.  Interoperability with
@@ -785,7 +788,7 @@ of extensions, and @option{-std=legacy} allows both without warning.
 
 @node Old-style kind specifications
 @section Old-style kind specifications
-@cindex Kind specifications
+@cindex kind, old-style
 
 GNU Fortran allows old-style kind specifications in declarations. These
 look like:
@@ -809,7 +812,6 @@ where @code{k} is equal to @code{size} for most types, but is equal to
 
 @node Old-style variable initialization
 @section Old-style variable initialization
-@cindex Initialization
 
 GNU Fortran allows old-style initialization of variables of the
 form:
@@ -913,7 +915,6 @@ elements will be given the values 1.00 and 2.00.
 
 @node X format descriptor without count field
 @section @code{X} format descriptor without count field
-@cindex @code{X} format descriptor without count field
 
 To support legacy codes, GNU Fortran permits the count field of the
 @code{X} edit descriptor in @code{FORMAT} statements to be omitted.
@@ -926,7 +927,6 @@ When omitted, the count is implicitly assumed to be one.
 
 @node Commas in FORMAT specifications
 @section Commas in @code{FORMAT} specifications
-@cindex Commas in @code{FORMAT} specifications
 
 To support legacy codes, GNU Fortran allows the comma separator
 to be omitted immediately before and after character string edit
@@ -940,7 +940,6 @@ descriptors in @code{FORMAT} statements.
 
 @node Missing period in FORMAT specifications
 @section Missing period in @code{FORMAT} specifications
-@cindex Missing period in @code{FORMAT} specifications
 
 To support legacy codes, GNU Fortran allows missing periods in format
 specifications if and only if @option{-std=legacy} is given on the
@@ -992,14 +991,14 @@ integers in this manner.
 
 @node Real array indices
 @section Real array indices
-@cindex Real array indices
+@cindex array, indices of type real
 
 As an extension, GNU Fortran allows the use of @code{REAL} expressions
 or variables as array indices.
 
 @node Unary operators
 @section Unary operators
-@cindex Unary operators
+@cindex operators, unary
 
 As an extension, GNU Fortran allows unary plus and unary minus operators
 to appear as the second operand of binary arithmetic operators without
@@ -1011,7 +1010,8 @@ the need for parenthesis.
 
 @node Implicitly convert LOGICAL and INTEGER values
 @section Implicitly convert @code{LOGICAL} and @code{INTEGER} values
-@cindex Implicitly convert @code{LOGICAL} and @code{INTEGER} values
+@cindex conversion, to integer
+@cindex conversion, to logical
 
 As an extension for backwards compatibility with other compilers, GNU
 Fortran allows the implicit conversion of @code{LOGICAL} values to
@@ -1070,7 +1070,7 @@ obtained by using the @code{TRANSFER} statement, as in this example.
 
 @node Cray pointers
 @section Cray pointers
-@cindex Cray pointers
+@cindex pointer, cray
 
 Cray pointers are part of a non-standard extension that provides a
 C-like pointer in Fortran.  This is accomplished through a pair of
@@ -1515,7 +1515,7 @@ Environment variable forcing standard output to be line buffered (unix).
 @c ---------------------------------------------------------------------
 
 @node Option Index
-@unnumbered Index of command line options
+@unnumbered Option Index
 @command{gfortran}'s command line options are indexed here without any
 initial @samp{-} or @samp{--}. Where an option has both positive and
 negative forms (such as -foption and -fno-option), relevant entries in
@@ -1524,7 +1524,7 @@ be useful to look up both forms.
 @printindex op
 
 @node Keyword Index
-@unnumbered Index of concepts
+@unnumbered Keyword Index
 @printindex cp
 
 @bye

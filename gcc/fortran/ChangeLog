@@ -1,3 +1,9 @@
+2007-04-29  Daniel Franke  <franke.daniel@gmail.com>
+
+	* gfortran.texi: Cleaned up keyword index.
+	* invoke.texi: Likewise.
+	* intrinsic.texi: Likewise.
+
 2007-04-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31711

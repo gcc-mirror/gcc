@@ -81,19 +81,19 @@ Some basic guidelines for editing this document:
 * @code{COSH}:          COSH,      Hyperbolic cosine function
 * @code{COUNT}:         COUNT,     Count occurrences of TRUE in an array
 * @code{CPU_TIME}:      CPU_TIME,  CPU time subroutine
-* @code{CSHIFT}:        CSHIFT,    Circular array shift function
+* @code{CSHIFT}:        CSHIFT,    Circular shift elements of an array
 * @code{CTIME}:         CTIME,     Subroutine (or function) to convert a time into a string
 * @code{DATE_AND_TIME}: DATE_AND_TIME, Date and time subroutine
 * @code{DBLE}:          DBLE,      Double precision conversion function
 * @code{DCMPLX}:        DCMPLX,    Double complex conversion function
 * @code{DFLOAT}:        DFLOAT,    Double precision conversion function
 * @code{DIGITS}:        DIGITS,    Significant digits function
-* @code{DIM}:           DIM,       Dim function
+* @code{DIM}:           DIM,       Positive difference
 * @code{DOT_PRODUCT}:   DOT_PRODUCT, Dot product function
 * @code{DPROD}:         DPROD,     Double product function
 * @code{DREAL}:         DREAL,     Double real part function
 * @code{DTIME}:         DTIME,     Execution time subroutine (or function)
-* @code{EOSHIFT}:       EOSHIFT,   End-off shift function
+* @code{EOSHIFT}:       EOSHIFT,   End-off shift elements of an array
 * @code{EPSILON}:       EPSILON,   Epsilon function
 * @code{ERF}:           ERF,       Error function
 * @code{ERFC}:          ERFC,      Complementary error function
@@ -291,9 +291,11 @@ the applicable standard for each intrinsic procedure is noted.
 
 
 @node ABORT
-@section @code{ABORT} --- Abort the program  
-@cindex @code{ABORT} intrinsic
-@cindex abort
+@section @code{ABORT} --- Abort the program
+@fnindex ABORT
+@cindex program termination, with core dump
+@cindex terminate program, with core dump
+@cindex core, dump
 
 @table @asis
 @item @emph{Description}:
@@ -329,13 +331,13 @@ end program test_abort
 
 
 @node ABS
-@section @code{ABS} --- Absolute value  
-@cindex @code{ABS} intrinsic
-@cindex @code{CABS} intrinsic
-@cindex @code{DABS} intrinsic
-@cindex @code{IABS} intrinsic
-@cindex @code{ZABS} intrinsic
-@cindex @code{CDABS} intrinsic
+@section @code{ABS} --- Absolute value
+@fnindex ABS
+@fnindex CABS
+@fnindex DABS
+@fnindex IABS
+@fnindex ZABS
+@fnindex CDABS
 @cindex absolute value
 
 @table @asis
@@ -389,8 +391,8 @@ end program test_abs
 
 @node ACCESS
 @section @code{ACCESS} --- Checks file access modes
-@cindex @code{ACCESS} 
-@cindex file system operations
+@fnindex ACCESS
+@cindex file system, access mode
 
 @table @asis
 @item @emph{Description}:
@@ -447,8 +449,9 @@ end program access_test
 
 @node ACHAR
 @section @code{ACHAR} --- Character in @acronym{ASCII} collating sequence 
-@cindex @code{ACHAR} intrinsic
+@fnindex ACHAR
 @cindex @acronym{ASCII} collating sequence
+@cindex collating sequence, @acronym{ASCII}
 
 @table @asis
 @item @emph{Description}:
@@ -494,9 +497,10 @@ and formatted string representations.
 
 @node ACOS
 @section @code{ACOS} --- Arccosine function 
-@cindex @code{ACOS} intrinsic
-@cindex @code{DACOS} intrinsic
-@cindex trigonometric functions (inverse)
+@fnindex ACOS
+@fnindex DACOS
+@cindex trigonometric function, cosine, inverse
+@cindex cosine, inverse
 
 @table @asis
 @item @emph{Description}:
@@ -545,10 +549,12 @@ Inverse function: @ref{COS}
 
 @node ACOSH
 @section @code{ACOSH} --- Hyperbolic arccosine function
-@cindex @code{ACOSH} intrinsic
-@cindex @code{DACOSH} intrinsic
+@fnindex ACOSH
+@fnindex DACOSH
+@cindex area hyperbolic cosine
 @cindex hyperbolic arccosine
-@cindex hyperbolic cosine (inverse)
+@cindex hyperbolic function, cosine, inverse
+@cindex cosine, hyperbolic, inverse
 
 @table @asis
 @item @emph{Description}:
@@ -596,8 +602,9 @@ Inverse function: @ref{COSH}
 
 @node ADJUSTL
 @section @code{ADJUSTL} --- Left adjust a string 
-@cindex @code{ADJUSTL} intrinsic
-@cindex string manipulation
+@fnindex ADJUSTL
+@cindex string, adjust left
+@cindex adjust string
 
 @table @asis
 @item @emph{Description}:
@@ -640,8 +647,9 @@ end program test_adjustl
 
 @node ADJUSTR
 @section @code{ADJUSTR} --- Right adjust a string 
-@cindex @code{ADJUSTR} intrinsic
-@cindex string manipulation
+@fnindex ADJUSTR
+@cindex string, adjust right
+@cindex adjust string
 
 @table @asis
 @item @emph{Description}:
@@ -684,11 +692,11 @@ end program test_adjustr
 
 @node AIMAG
 @section @code{AIMAG} --- Imaginary part of complex number  
-@cindex @code{AIMAG} intrinsic
-@cindex @code{DIMAG} intrinsic
-@cindex @code{IMAG} intrinsic
-@cindex @code{IMAGPART} intrinsic
-@cindex imaginary part of a complex number
+@fnindex AIMAG
+@fnindex DIMAG
+@fnindex IMAG
+@fnindex IMAGPART
+@cindex complex numbers, imaginary part
 
 @table @asis
 @item @emph{Description}:
@@ -739,9 +747,10 @@ end program test_aimag
 
 @node AINT
 @section @code{AINT} --- Truncate to a whole number
-@cindex @code{AINT} intrinsic
-@cindex @code{DINT} intrinsic
-@cindex whole number
+@fnindex AINT
+@fnindex DINT
+@cindex floor
+@cindex rounding, floor
 
 @table @asis
 @item @emph{Description}:
@@ -796,7 +805,8 @@ end program test_aint
 
 @node ALARM
 @section @code{ALARM} --- Execute a routine after a given delay
-@cindex @code{ALARM} intrinsic
+@fnindex ALARM
+@cindex delayed execution
 
 @table @asis
 @item @emph{Description}:
@@ -846,8 +856,9 @@ after 3 seconds.
 
 @node ALL
 @section @code{ALL} --- All values in @var{MASK} along @var{DIM} are true 
-@cindex @code{ALL} intrinsic
-@cindex true values
+@fnindex ALL
+@cindex array, apply condition
+@cindex array, condition testing
 
 @table @asis
 @item @emph{Description}:
@@ -912,8 +923,8 @@ end program test_all
 
 @node ALLOCATED
 @section @code{ALLOCATED} --- Status of an allocatable entity
-@cindex @code{ALLOCATED} intrinsic
-@cindex allocation status
+@fnindex ALLOCATED
+@cindex allocation, status
 
 @table @asis
 @item @emph{Description}:
@@ -952,8 +963,9 @@ end program test_allocated
 
 @node AND
 @section @code{AND} --- Bitwise logical AND
-@cindex @code{AND} intrinsic
-@cindex bit operations
+@fnindex AND
+@cindex bitwise logical and
+@cindex logical and, bitwise
 
 @table @asis
 @item @emph{Description}:
@@ -1002,9 +1014,10 @@ F95 elemental function: @ref{IAND}
 
 @node ANINT
 @section @code{ANINT} --- Nearest whole number
-@cindex @code{ANINT} intrinsic
-@cindex @code{DNINT} intrinsic
-@cindex whole number
+@fnindex ANINT
+@fnindex DNINT
+@cindex ceiling
+@cindex rounding, ceiling
 
 @table @asis
 @item @emph{Description}:
@@ -1057,8 +1070,9 @@ end program test_anint
 
 @node ANY
 @section @code{ANY} --- Any value in @var{MASK} along @var{DIM} is true 
-@cindex @code{ANY} intrinsic
-@cindex true values
+@fnindex ANY
+@cindex array, apply condition
+@cindex array, condition testing
 
 @table @asis
 @item @emph{Description}:
@@ -1123,9 +1137,10 @@ end program test_any
 
 @node ASIN
 @section @code{ASIN} --- Arcsine function 
-@cindex @code{ASIN} intrinsic
-@cindex @code{DASIN} intrinsic
-@cindex trigonometric functions (inverse)
+@fnindex ASIN
+@fnindex DASIN
+@cindex trigonometric function, sine, inverse
+@cindex sine, inverse
 
 @table @asis
 @item @emph{Description}:
@@ -1174,10 +1189,12 @@ Inverse function: @ref{SIN}
 
 @node ASINH
 @section @code{ASINH} --- Hyperbolic arcsine function
-@cindex @code{ASINH} intrinsic
-@cindex @code{DASINH} intrinsic
+@fnindex ASINH
+@fnindex DASINH
+@cindex area hyperbolic sine
 @cindex hyperbolic arcsine
-@cindex hyperbolic sine (inverse)
+@cindex hyperbolic function, sine, inverse
+@cindex sine, hyperbolic, inverse
 
 @table @asis
 @item @emph{Description}:
@@ -1223,8 +1240,9 @@ Inverse function: @ref{SINH}
 
 @node ASSOCIATED
 @section @code{ASSOCIATED} --- Status of a pointer or pointer/target pair 
-@cindex @code{ASSOCIATED} intrinsic
-@cindex pointer status
+@fnindex ASSOCIATED
+@cindex pointer, status
+@cindex association status
 
 @table @asis
 @item @emph{Description}:
@@ -1298,9 +1316,10 @@ end program test_associated
 
 @node ATAN
 @section @code{ATAN} --- Arctangent function 
-@cindex @code{ATAN} intrinsic
-@cindex @code{DATAN} intrinsic
-@cindex trigonometric functions (inverse)
+@fnindex ATAN
+@fnindex DATAN
+@cindex trigonometric function, tangent, inverse
+@cindex tangent, inverse
 
 @table @asis
 @item @emph{Description}:
@@ -1347,9 +1366,10 @@ Inverse function: @ref{TAN}
 
 @node ATAN2
 @section @code{ATAN2} --- Arctangent function 
-@cindex @code{ATAN2} intrinsic
-@cindex @code{DATAN2} intrinsic
-@cindex trigonometric functions (inverse)
+@fnindex ATAN2
+@fnindex DATAN2
+@cindex trigonometric function, tangent, inverse
+@cindex tangent, inverse
 
 @table @asis
 @item @emph{Description}:
@@ -1400,10 +1420,12 @@ end program test_atan2
 
 @node ATANH
 @section @code{ATANH} --- Hyperbolic arctangent function
-@cindex @code{ASINH} intrinsic
-@cindex @code{DASINH} intrinsic
+@fnindex ASINH
+@fnindex DASINH
+@cindex area hyperbolic tangent
 @cindex hyperbolic arctangent
-@cindex hyperbolic tangent (inverse)
+@cindex hyperbolic function, tangent, inverse
+@cindex tangent, hyperbolic, inverse
 
 @table @asis
 @item @emph{Description}:
@@ -1451,9 +1473,9 @@ Inverse function: @ref{TANH}
 
 @node BESJ0
 @section @code{BESJ0} --- Bessel function of the first kind of order 0
-@cindex @code{BESJ0} intrinsic
-@cindex @code{DBESJ0} intrinsic
-@cindex Bessel
+@fnindex BESJ0
+@fnindex DBESJ0
+@cindex Bessel function, first kind
 
 @table @asis
 @item @emph{Description}:
@@ -1497,9 +1519,9 @@ end program test_besj0
 
 @node BESJ1
 @section @code{BESJ1} --- Bessel function of the first kind of order 1
-@cindex @code{BESJ1} intrinsic
-@cindex @code{DBESJ1} intrinsic
-@cindex Bessel
+@fnindex BESJ1
+@fnindex DBESJ1
+@cindex Bessel function, first kind
 
 @table @asis
 @item @emph{Description}:
@@ -1543,9 +1565,9 @@ end program test_besj1
 
 @node BESJN
 @section @code{BESJN} --- Bessel function of the first kind
-@cindex @code{BESJN} intrinsic
-@cindex @code{DBESJN} intrinsic
-@cindex Bessel
+@fnindex BESJN
+@fnindex DBESJN
+@cindex Bessel function, first kind
 
 @table @asis
 @item @emph{Description}:
@@ -1590,9 +1612,9 @@ end program test_besjn
 
 @node BESY0
 @section @code{BESY0} --- Bessel function of the second kind of order 0
-@cindex @code{BESY0} intrinsic
-@cindex @code{DBESY0} intrinsic
-@cindex Bessel
+@fnindex BESY0
+@fnindex DBESY0
+@cindex Bessel function, second kind
 
 @table @asis
 @item @emph{Description}:
@@ -1635,9 +1657,9 @@ end program test_besy0
 
 @node BESY1
 @section @code{BESY1} --- Bessel function of the second kind of order 1
-@cindex @code{BESY1} intrinsic
-@cindex @code{DBESY1} intrinsic
-@cindex Bessel
+@fnindex BESY1
+@fnindex DBESY1
+@cindex Bessel function, second kind
 
 @table @asis
 @item @emph{Description}:
@@ -1680,9 +1702,9 @@ end program test_besy1
 
 @node BESYN
 @section @code{BESYN} --- Bessel function of the second kind
-@cindex @code{BESYN} intrinsic
-@cindex @code{DBESYN} intrinsic
-@cindex Bessel
+@fnindex BESYN
+@fnindex DBESYN
+@cindex Bessel function, second kind
 
 @table @asis
 @item @emph{Description}:
@@ -1727,8 +1749,8 @@ end program test_besyn
 
 @node BIT_SIZE
 @section @code{BIT_SIZE} --- Bit size inquiry function
-@cindex @code{BIT_SIZE} intrinsic
-@cindex bit size of a variable
+@fnindex BIT_SIZE
+@cindex bits, number of
 @cindex size of a variable, in bits
 
 @table @asis
@@ -1768,8 +1790,8 @@ end program test_bit_size
 
 @node BTEST
 @section @code{BTEST} --- Bit test function
-@cindex @code{BTEST} intrinsic
-@cindex bit operations
+@fnindex BTEST
+@cindex bits, testing
 
 @table @asis
 @item @emph{Description}:
@@ -1812,8 +1834,9 @@ end program test_btest
 
 @node CEILING
 @section @code{CEILING} --- Integer ceiling function
-@cindex @code{CEILING} intrinsic
+@fnindex CEILING
 @cindex ceiling
+@cindex rounding, ceiling
 
 @table @asis
 @item @emph{Description}:
@@ -1858,8 +1881,8 @@ end program test_ceiling
 
 @node CHAR
 @section @code{CHAR} --- Character conversion function
-@cindex @code{CHAR} intrinsic
-@cindex conversion function (character)
+@fnindex CHAR
+@cindex conversion, to character
 
 @table @asis
 @item @emph{Description}:
@@ -1908,8 +1931,8 @@ and formatted string representations.
 
 @node CHDIR
 @section @code{CHDIR} --- Change working directory
-@cindex @code{CHDIR} intrinsic
-@cindex file system operations
+@fnindex CHDIR
+@cindex system, working directory
 
 @table @asis
 @item @emph{Description}:
@@ -1959,8 +1982,8 @@ END PROGRAM
 
 @node CHMOD
 @section @code{CHMOD} --- Change access permissions of files
-@cindex @code{CHMOD} intrinsic
-@cindex file system operations
+@fnindex CHMOD
+@cindex file system, change access mode
 
 @table @asis
 @item @emph{Description}:
@@ -2027,8 +2050,9 @@ end program chmod_test
 
 @node CMPLX
 @section @code{CMPLX} --- Complex conversion function
-@cindex @code{CMPLX} intrinsic
+@fnindex CMPLX
 @cindex complex numbers, conversion to
+@cindex conversion, to complex
 
 @table @asis
 @item @emph{Description}:
@@ -2077,8 +2101,10 @@ end program test_cmplx
 
 @node COMMAND_ARGUMENT_COUNT
 @section @code{COMMAND_ARGUMENT_COUNT} --- Get number of command line arguments
-@cindex @code{COMMAND_ARGUMENT_COUNT} intrinsic
-@cindex command-line arguments, to program
+@fnindex COMMAND_ARGUMENT_COUNT
+@cindex command-line arguments
+@cindex command-line arguments, number of
+@cindex arguments, to program
 
 @table @asis
 @item @emph{Description}:
@@ -2119,9 +2145,10 @@ end program test_command_argument_count
 
 @node CONJG
 @section @code{CONJG} --- Complex conjugate function 
-@cindex @code{CONJG} intrinsic
-@cindex @code{DCONJG} intrinsic
+@fnindex CONJG
+@fnindex DCONJG
 @cindex complex conjugate
+
 @table @asis
 @item @emph{Description}:
 @code{CONJG(Z)} returns the conjugate of @var{Z}.  If @var{Z} is @code{(x, y)}
@@ -2167,12 +2194,13 @@ end program test_conjg
 
 @node COS
 @section @code{COS} --- Cosine function 
-@cindex @code{COS} intrinsic
-@cindex @code{DCOS} intrinsic
-@cindex @code{CCOS} intrinsic
-@cindex @code{ZCOS} intrinsic
-@cindex @code{CDCOS} intrinsic
-@cindex trigonometric functions
+@fnindex COS
+@fnindex DCOS
+@fnindex CCOS
+@fnindex ZCOS
+@fnindex CDCOS
+@cindex trigonometric function, cosine
+@cindex cosine
 
 @table @asis
 @item @emph{Description}:
@@ -2224,9 +2252,11 @@ Inverse function: @ref{ACOS}
 
 @node COSH
 @section @code{COSH} --- Hyperbolic cosine function 
-@cindex @code{COSH} intrinsic
-@cindex @code{DCOSH} intrinsic
+@fnindex COSH
+@fnindex DCOSH
 @cindex hyperbolic cosine
+@cindex hyperbolic function, cosine
+@cindex cosine, hyperbolic
 
 @table @asis
 @item @emph{Description}:
@@ -2273,8 +2303,10 @@ Inverse function: @ref{ACOSH}
 
 @node COUNT
 @section @code{COUNT} --- Count function
-@cindex @code{COUNT} intrinsic
-@cindex count
+@fnindex COUNT
+@cindex array, conditionally count elements
+@cindex array, element counting
+@cindex array, number of elements
 
 @table @asis
 @item @emph{Description}:
@@ -2332,9 +2364,8 @@ end program test_count
 
 @node CPU_TIME
 @section @code{CPU_TIME} --- CPU elapsed time in seconds
-@cindex @code{CPU_TIME} intrinsic
+@fnindex CPU_TIME
 @cindex time, elapsed
-@cindex elapsed time
 
 @table @asis
 @item @emph{Description}:
@@ -2377,9 +2408,11 @@ end program test_cpu_time
 
 
 @node CSHIFT
-@section @code{CSHIFT} --- Circular shift function
-@cindex @code{CSHIFT} intrinsic
-@cindex bit operations
+@section @code{CSHIFT} --- Circular shift elements of an array
+@fnindex CSHIFT
+@cindex array, shift circularly
+@cindex array, permutation
+@cindex array, rotate
 
 @table @asis
 @item @emph{Description}:
@@ -2432,8 +2465,9 @@ end program test_cshift
 
 @node CTIME
 @section @code{CTIME} --- Convert a time into a string
-@cindex @code{CTIME} intrinsic
-@cindex time, conversion function
+@fnindex CTIME
+@cindex time, conversion to string
+@cindex conversion, to string
 
 @table @asis
 @item @emph{Description}:
@@ -2480,14 +2514,13 @@ end program test_ctime
 
 @item @emph{See Also}:
 @ref{GMTIME}, @ref{LTIME}, @ref{TIME}, @ref{TIME8}
-
 @end table
 
 
 
 @node DATE_AND_TIME
 @section @code{DATE_AND_TIME} --- Date and time subroutine
-@cindex @code{DATE_AND_TIME} intrinsic
+@fnindex DATE_AND_TIME
 @cindex date, current
 @cindex current date
 @cindex time, current
@@ -2560,8 +2593,8 @@ end program test_time_and_date
 
 @node DBLE
 @section @code{DBLE} --- Double conversion function 
-@cindex @code{DBLE} intrinsic
-@cindex double conversion
+@fnindex DBLE
+@cindex conversion, to real
 
 @table @asis
 @item @emph{Description}:
@@ -2603,8 +2636,9 @@ end program test_dble
 
 @node DCMPLX
 @section @code{DCMPLX} --- Double complex conversion function
-@cindex @code{DCMPLX} intrinsic
+@fnindex DCMPLX
 @cindex complex numbers, conversion to
+@cindex conversion, to complex
 
 @table @asis
 @item @emph{Description}:
@@ -2652,8 +2686,8 @@ end program test_dcmplx
 
 @node DFLOAT
 @section @code{DFLOAT} --- Double conversion function 
-@cindex @code{DFLOAT} intrinsic
-@cindex double float conversion
+@fnindex DFLOAT
+@cindex conversion, to real
 
 @table @asis
 @item @emph{Description}:
@@ -2692,8 +2726,8 @@ end program test_dfloat
 
 @node DIGITS
 @section @code{DIGITS} --- Significant digits function
-@cindex @code{DIGITS} intrinsic
-@cindex digits, significant
+@fnindex DIGITS
+@cindex model representation, significant digits
 
 @table @asis
 @item @emph{Description}:
@@ -2734,11 +2768,11 @@ end program test_digits
 
 
 @node DIM
-@section @code{DIM} --- Dim function
-@cindex @code{DIM} intrinsic
-@cindex @code{IDIM} intrinsic
-@cindex @code{DDIM} intrinsic
-@cindex dim
+@section @code{DIM} --- Positive difference
+@fnindex DIM
+@fnindex IDIM
+@fnindex DDIM
+@cindex positive difference
 
 @table @asis
 @item @emph{Description}:
@@ -2787,8 +2821,10 @@ end program test_dim
 
 @node DOT_PRODUCT
 @section @code{DOT_PRODUCT} --- Dot product function
-@cindex @code{DOT_PRODUCT} intrinsic
+@fnindex DOT_PRODUCT
 @cindex dot product
+@cindex vector product
+@cindex product, vector
 
 @table @asis
 @item @emph{Description}:
@@ -2838,8 +2874,8 @@ end program test_dot_prod
 
 @node DPROD
 @section @code{DPROD} --- Double product function
-@cindex @code{DPROD} intrinsic
-@cindex double-precision product
+@fnindex DPROD
+@cindex product, double-precision
 
 @table @asis
 @item @emph{Description}:
@@ -2866,7 +2902,6 @@ The return value is of type @code{REAL(8)}.
 @item @emph{Example}:
 @smallexample
 program test_dprod
-    integer :: i
     real :: x = 5.2
     real :: y = 2.3
     real(8) :: d
@@ -2880,8 +2915,8 @@ end program test_dprod
 
 @node DREAL
 @section @code{DREAL} --- Double real part function
-@cindex @code{DREAL} intrinsic
-@cindex double-precision real part
+@fnindex DREAL
+@cindex complex numbers, real part
 
 @table @asis
 @item @emph{Description}:
@@ -2921,7 +2956,7 @@ end program test_dreal
 
 @node DTIME
 @section @code{DTIME} --- Execution time subroutine (or function)
-@cindex @code{DTIME} intrinsic
+@fnindex DTIME
 @cindex time, elapsed
 @cindex elapsed time
 
@@ -2998,9 +3033,9 @@ end program test_dtime
 
 
 @node EOSHIFT
-@section @code{EOSHIFT} --- End-off shift function
-@cindex @code{EOSHIFT} intrinsic
-@cindex bit operations
+@section @code{EOSHIFT} --- End-off shift elements of an array
+@fnindex EOSHIFT
+@cindex array, shift
 
 @table @asis
 @item @emph{Description}:
@@ -3064,8 +3099,8 @@ end program test_eoshift
 
 @node EPSILON
 @section @code{EPSILON} --- Epsilon function
-@cindex @code{EPSILON} intrinsic
-@cindex epsilon, significant
+@fnindex EPSILON
+@cindex model representation, epsilon
 
 @table @asis
 @item @emph{Description}:
@@ -3103,7 +3138,7 @@ end program test_epsilon
 
 @node ERF
 @section @code{ERF} --- Error function 
-@cindex @code{ERF} intrinsic
+@fnindex ERF
 @cindex error function
 
 @table @asis
@@ -3147,8 +3182,8 @@ end program test_erf
 
 @node ERFC
 @section @code{ERFC} --- Error function 
-@cindex @code{ERFC} intrinsic
-@cindex error function
+@fnindex ERFC
+@cindex error function, complementary
 
 @table @asis
 @item @emph{Description}:
@@ -3191,7 +3226,7 @@ end program test_erfc
 
 @node ETIME
 @section @code{ETIME} --- Execution time subroutine (or function)
-@cindex @code{ETIME} intrinsic
+@fnindex ETIME
 @cindex time, elapsed
 
 @table @asis
@@ -3268,8 +3303,9 @@ end program test_etime
 
 @node EXIT
 @section @code{EXIT} --- Exit the program with status. 
-@cindex @code{EXIT} intrinsic
-@cindex exit program
+@fnindex EXIT
+@cindex program termination
+@cindex terminate program
 
 @table @asis
 @item @emph{Description}:
@@ -3311,12 +3347,13 @@ end program test_exit
 
 @node EXP
 @section @code{EXP} --- Exponential function 
-@cindex @code{EXP} intrinsic
-@cindex @code{DEXP} intrinsic
-@cindex @code{CEXP} intrinsic
-@cindex @code{ZEXP} intrinsic
-@cindex @code{CDEXP} intrinsic
-@cindex exponential
+@fnindex EXP
+@fnindex DEXP
+@fnindex CEXP
+@fnindex ZEXP
+@fnindex CDEXP
+@cindex exponential function
+@cindex logarithmic function, inverse
 
 @table @asis
 @item @emph{Description}:
@@ -3362,8 +3399,9 @@ end program test_exp
 
 @node EXPONENT
 @section @code{EXPONENT} --- Exponent function 
-@cindex @code{EXPONENT} intrinsic
-@cindex exponent part of a real number
+@fnindex EXPONENT
+@cindex real number, exponent
+@cindex floating point, exponent
 
 @table @asis
 @item @emph{Description}:
@@ -3403,7 +3441,7 @@ end program test_exponent
 
 @node FDATE
 @section @code{FDATE} --- Get the current time as a string
-@cindex @code{FDATE} intrinsic
+@fnindex FDATE
 @cindex time, current
 @cindex current time
 @cindex date, current
@@ -3459,10 +3497,9 @@ end program test_fdate
 
 
 @node FLOAT
-
 @section @code{FLOAT} --- Convert integer to default real
-@cindex @code{FLOAT} intrinsic
-@cindex conversion function (float)
+@fnindex FLOAT
+@cindex conversion, to real
 
 @table @asis
 @item @emph{Description}:
@@ -3501,9 +3538,10 @@ end program test_float
 
 @node FGET
 @section @code{FGET} --- Read a single character in stream mode from stdin 
-@cindex @code{FGET} intrinsic
-@cindex file operations
-@cindex stream operations
+@fnindex FGET
+@cindex read character, stream mode
+@cindex stream mode, read character
+@cindex file operation, read character
 
 @table @asis
 @item @emph{Description}:
@@ -3558,9 +3596,10 @@ END PROGRAM
 
 @node FGETC
 @section @code{FGETC} --- Read a single character in stream mode
-@cindex @code{FGETC} intrinsic
-@cindex file operations
-@cindex stream operations
+@fnindex FGETC
+@cindex read character, stream mode
+@cindex stream mode, read character
+@cindex file operation, read character
 
 @table @asis
 @item @emph{Description}:
@@ -3614,8 +3653,9 @@ END PROGRAM
 
 @node FLOOR
 @section @code{FLOOR} --- Integer floor function
-@cindex @code{FLOOR} intrinsic
+@fnindex FLOOR
 @cindex floor
+@cindex rounding, floor
 
 @table @asis
 @item @emph{Description}:
@@ -3660,8 +3700,8 @@ end program test_floor
 
 @node FLUSH
 @section @code{FLUSH} --- Flush I/O unit(s)
-@cindex @code{FLUSH} intrinsic
-@cindex flush output files
+@fnindex FLUSH
+@cindex file operation, flush
 
 @table @asis
 @item @emph{Description}:
@@ -3692,8 +3732,8 @@ statement that should be preferred over the @code{FLUSH} intrinsic.
 
 @node FNUM
 @section @code{FNUM} --- File number function
-@cindex @code{FNUM} intrinsic
-@cindex fnum
+@fnindex FNUM
+@cindex file operation, file number
 
 @table @asis
 @item @emph{Description}:
@@ -3733,9 +3773,10 @@ end program test_fnum
 
 @node FPUT
 @section @code{FPUT} --- Write a single character in stream mode to stdout 
-@cindex @code{FPUT} intrinsic
-@cindex file operations
-@cindex stream operations
+@fnindex FPUT
+@cindex write character, stream mode
+@cindex stream mode, write character
+@cindex file operation, write character
 
 @table @asis
 @item @emph{Description}:
@@ -3783,9 +3824,10 @@ END PROGRAM
 
 @node FPUTC
 @section @code{FPUTC} --- Write a single character in stream mode
-@cindex @code{FPUTC} intrinsic
-@cindex file operations
-@cindex stream operations
+@fnindex FPUTC
+@cindex write character, stream mode
+@cindex stream mode, write character
+@cindex file operation, write character
 
 @table @asis
 @item @emph{Description}:
@@ -3837,8 +3879,9 @@ END PROGRAM
 
 @node FRACTION
 @section @code{FRACTION} --- Fractional part of the model representation
-@cindex @code{FRACTION} intrinsic
-@cindex fractional part
+@fnindex FRACTION
+@cindex real number, fraction
+@cindex floating point, fraction
 
 @table @asis
 @item @emph{Description}:
@@ -3879,8 +3922,8 @@ end program test_fraction
 
 @node FREE
 @section @code{FREE} --- Frees memory
-@cindex @code{FREE} intrinsic
-@cindex Cray pointers
+@fnindex FREE
+@cindex pointer, cray
 
 @table @asis
 @item @emph{Description}:
@@ -3919,8 +3962,9 @@ See @code{MALLOC} for an example.
 
 @node FSEEK
 @section @code{FSEEK} --- Low level file positioning subroutine
-@cindex @code{FSEEK} intrinsic
-@cindex file system operations
+@fnindex FSEEK
+@cindex file operation, seek
+@cindex file operation, position
 
 Not yet implemented in GNU Fortran.
 
@@ -3947,8 +3991,8 @@ Subroutine
 
 @node FSTAT
 @section @code{FSTAT} --- Get file status
-@cindex @code{FSTAT} intrinsic
-@cindex file system operations 
+@fnindex FSTAT
+@cindex file system, file status
 
 @table @asis
 @item @emph{Description}:
@@ -3985,7 +4029,8 @@ To stat a link: @ref{LSTAT}, to stat a file: @ref{STAT}
 
 @node FTELL
 @section @code{FTELL} --- Current stream position
-@cindex @code{FTELL} intrinsic
+@fnindex FTELL
+@cindex file operation, position
 
 @table @asis
 @item @emph{Description}:
@@ -4034,7 +4079,8 @@ END PROGRAM
 
 @node GERROR
 @section @code{GERROR} --- Get last system error message
-@cindex @code{GERROR} intrinsic
+@fnindex GERROR
+@cindex system, error handling
 
 @table @asis
 @item @emph{Description}:
@@ -4072,8 +4118,9 @@ END PROGRAM
 
 @node GETARG
 @section @code{GETARG} --- Get command line arguments
-@cindex @code{GETARG} intrinsic
-@cindex command-line arguments, to program
+@fnindex GETARG
+@cindex command-line arguments
+@cindex arguments, to program
 
 @table @asis
 @item @emph{Description}:
@@ -4132,8 +4179,9 @@ F2003 functions and subroutines: @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT},
 
 @node GET_COMMAND
 @section @code{GET_COMMAND} --- Get the entire command line
-@cindex @code{GET_COMMAND} intrinsic
-@cindex command-line arguments, to program
+@fnindex GET_COMMAND
+@cindex command-line arguments
+@cindex arguments, to program
 
 @table @asis
 @item @emph{Description}:
@@ -4174,8 +4222,9 @@ END PROGRAM
 
 @node GET_COMMAND_ARGUMENT
 @section @code{GET_COMMAND_ARGUMENT} --- Get command line arguments
-@cindex @code{GET_COMMAND_ARGUMENT} intrinsic
-@cindex command-line arguments, to program
+@fnindex GET_COMMAND_ARGUMENT
+@cindex command-line arguments
+@cindex arguments, to program
 
 @table @asis
 @item @emph{Description}:
@@ -4230,8 +4279,8 @@ END PROGRAM
 
 @node GETCWD
 @section @code{GETCWD} --- Get current working directory
-@cindex @code{GETCWD} intrinsic
-@cindex file system operations
+@fnindex GETCWD
+@cindex system, working directory
 
 @table @asis
 @item @emph{Description}:
@@ -4270,7 +4319,7 @@ END PROGRAM
 
 @node GETENV
 @section @code{GETENV} --- Get an environmental variable
-@cindex @code{GETENV} intrinsic
+@fnindex GETENV
 @cindex environment variable
 
 @table @asis
@@ -4319,7 +4368,7 @@ END PROGRAM
 
 @node GET_ENVIRONMENT_VARIABLE
 @section @code{GET_ENVIRONMENT_VARIABLE} --- Get an environmental variable
-@cindex @code{GET_ENVIRONMENT_VARIABLE} intrinsic
+@fnindex GET_ENVIRONMENT_VARIABLE
 @cindex environment variable
 
 @table @asis
@@ -4360,8 +4409,8 @@ END PROGRAM
 
 @node GETGID
 @section @code{GETGID} --- Group ID function
-@cindex @code{GETGID} intrinsic
-@cindex file system operations
+@fnindex GETGID
+@cindex system, group id
 
 @table @asis
 @item @emph{Description}:
@@ -4392,7 +4441,9 @@ See @code{GETPID} for an example.
 
 @node GETLOG
 @section @code{GETLOG} --- Get login name
-@cindex @code{GETLOG} intrinsic
+@fnindex GETLOG
+@cindex system, login name
+@cindex login name
 
 @table @asis
 @item @emph{Description}:
@@ -4434,8 +4485,9 @@ END PROGRAM
 
 @node GETPID
 @section @code{GETPID} --- Process ID function
-@cindex @code{GETPID} intrinsic
-@cindex process ID, current
+@fnindex GETPID
+@cindex system, process id
+@cindex process id
 
 @table @asis
 @item @emph{Description}:
@@ -4472,8 +4524,9 @@ end program info
 
 @node GETUID
 @section @code{GETUID} --- User ID function
-@cindex @code{GETUID} intrinsic
-@cindex user ID, current
+@fnindex GETUID
+@cindex system, user id
+@cindex user id
 
 @table @asis
 @item @emph{Description}:
@@ -4504,8 +4557,8 @@ See @code{GETPID} for an example.
 
 @node GMTIME
 @section @code{GMTIME} --- Convert time to GMT info
-@cindex @code{GMTIME} intrinsic
-@cindex time, conversion function
+@fnindex GMTIME
+@cindex time, conversion to GMT info
 
 @table @asis
 @item @emph{Description}:
@@ -4558,7 +4611,8 @@ The elements of @var{TARRAY} are assigned as follows:
 
 @node HOSTNM
 @section @code{HOSTNM} --- Get system host name
-@cindex @code{HOSTNM} intrinsic
+@fnindex HOSTNM
+@cindex system, host name
 
 @table @asis
 @item @emph{Description}:
@@ -4597,8 +4651,9 @@ be obtained, or to a blank string otherwise.
 
 @node HUGE
 @section @code{HUGE} --- Largest number of a kind
-@cindex @code{HUGE} intrinsic
-@cindex huge
+@fnindex HUGE
+@cindex limits, largest number
+@cindex model representation, largest number
 
 @table @asis
 @item @emph{Description}:
@@ -4635,9 +4690,10 @@ end program test_huge_tiny
 
 @node IACHAR
 @section @code{IACHAR} --- Code in @acronym{ASCII} collating sequence 
-@cindex @code{IACHAR} intrinsic
+@fnindex IACHAR
 @cindex @acronym{ASCII} collating sequence
-@cindex conversion function (character)
+@cindex collating sequence, @acronym{ASCII}
+@cindex conversion, to integer
 
 @table @asis
 @item @emph{Description}:
@@ -4683,8 +4739,9 @@ and formatted string representations.
 
 @node IAND
 @section @code{IAND} --- Bitwise logical and
-@cindex @code{IAND} intrinsic
-@cindex bit operations
+@fnindex IAND
+@cindex bitwise logical and
+@cindex logical and, bitwise
 
 @table @asis
 @item @emph{Description}:
@@ -4730,8 +4787,10 @@ END PROGRAM
 
 @node IARGC
 @section @code{IARGC} --- Get the number of command line arguments
-@cindex @code{IARGC} intrinsic
-@cindex command-line arguments, to program
+@fnindex IARGC
+@cindex command-line arguments
+@cindex command-line arguments, number of
+@cindex arguments, to program
 
 @table @asis
 @item @emph{Description}:
@@ -4772,8 +4831,9 @@ F2003 functions and subroutines: @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT},
 
 @node IBCLR
 @section @code{IBCLR} --- Clear bit
-@cindex @code{IBCLR} intrinsic
-@cindex bit operations
+@fnindex IBCLR
+@cindex bits, unset
+@cindex bits, clear
 
 @table @asis
 @item @emph{Description}:
@@ -4808,8 +4868,9 @@ The return value is of type @code{INTEGER(*)} and of the same kind as
 
 @node IBITS
 @section @code{IBITS} --- Bit extraction
-@cindex @code{IBITS} intrinsic
-@cindex bit operations
+@fnindex IBITS
+@cindex bits, get
+@cindex bits, extract
 
 @table @asis
 @item @emph{Description}:
@@ -4847,8 +4908,8 @@ The return value is of type @code{INTEGER(*)} and of the same kind as
 
 @node IBSET
 @section @code{IBSET} --- Set bit
-@cindex @code{IBSET} intrinsic
-@cindex bit operations
+@fnindex IBSET
+@cindex bits, set
 
 @table @asis
 @item @emph{Description}:
@@ -4883,8 +4944,8 @@ The return value is of type @code{INTEGER(*)} and of the same kind as
 
 @node ICHAR
 @section @code{ICHAR} --- Character-to-integer conversion function
-@cindex @code{ICHAR} intrinsic
-@cindex conversion function (character)
+@fnindex ICHAR
+@cindex conversion, to integer
 
 @table @asis
 @item @emph{Description}:
@@ -4951,7 +5012,9 @@ end program read_val
 
 @node IDATE
 @section @code{IDATE} --- Get current local time subroutine (day/month/year) 
-@cindex @code{IDATE} intrinsic
+@fnindex IDATE
+@cindex date, current
+@cindex current date
 
 @table @asis
 @item @emph{Description}:
@@ -4994,8 +5057,9 @@ end program test_idate
 
 @node IEOR
 @section @code{IEOR} --- Bitwise logical exclusive or
-@cindex @code{IEOR} intrinsic
-@cindex bit operations
+@fnindex IEOR
+@cindex bitwise logical exclusive or
+@cindex logical exclusive or, bitwise
 
 @table @asis
 @item @emph{Description}:
@@ -5032,7 +5096,8 @@ the larger argument.)
 
 @node IERRNO
 @section @code{IERRNO} --- Get the last system error number
-@cindex @code{IERRNO} intrinsic
+@fnindex IERRNO
+@cindex system, error handling
 
 @table @asis
 @item @emph{Description}:
@@ -5063,8 +5128,9 @@ kind.
 
 @node INDEX
 @section @code{INDEX} --- Position of a substring within a string
-@cindex @code{INDEX} intrinsic
-@cindex string manipulation
+@fnindex INDEX
+@cindex substring position
+@cindex string, find substring
 
 @table @asis
 @item @emph{Description}:
@@ -5105,10 +5171,10 @@ kind.
 
 @node INT
 @section @code{INT} --- Convert to integer type
-@cindex @code{INT} intrinsic
-@cindex @code{IFIX} intrinsic
-@cindex @code{IDINT} intrinsic
-@cindex conversion function (integer)
+@fnindex INT
+@fnindex IFIX
+@fnindex IDINT
+@cindex conversion, to integer
 
 @table @asis
 @item @emph{Description}:
@@ -5170,9 +5236,9 @@ end program
 
 @node INT2
 @section @code{INT2} --- Convert to 16-bit integer type
-@cindex @code{INT2} intrinsic
-@cindex @code{SHORT} intrinsic
-@cindex conversion function (integer)
+@fnindex INT2
+@fnindex SHORT
+@cindex conversion, to integer
 
 @table @asis
 @item @emph{Description}:
@@ -5208,8 +5274,8 @@ The return value is a @code{INTEGER(2)} variable.
 
 @node INT8
 @section @code{INT8} --- Convert to 64-bit integer type
-@cindex @code{INT8} intrinsic
-@cindex conversion function (integer)
+@fnindex INT8
+@cindex conversion, to integer
 
 @table @asis
 @item @emph{Description}:
@@ -5243,8 +5309,9 @@ The return value is a @code{INTEGER(8)} variable.
 
 @node IOR
 @section @code{IOR} --- Bitwise logical or
-@cindex @code{IOR} intrinsic
-@cindex bit operations
+@fnindex IOR
+@cindex bitwise logical or
+@cindex logical or, bitwise
 
 @table @asis
 @item @emph{Description}:
@@ -5281,8 +5348,8 @@ the larger argument.)
 
 @node IRAND
 @section @code{IRAND} --- Integer pseudo-random number
-@cindex @code{IRAND} intrinsic
-@cindex random numbers
+@fnindex IRAND
+@cindex random number generation
 
 @table @asis
 @item @emph{Description}:
@@ -5327,7 +5394,8 @@ end program test_irand
 
 @node ISATTY
 @section @code{ISATTY} --- Whether a unit is a terminal device.
-@cindex @code{ISATTY} intrinsic
+@fnindex ISATTY
+@cindex system, terminal
 
 @table @asis
 @item @emph{Description}:
@@ -5368,8 +5436,8 @@ END PROGRAM
 
 @node ISHFT
 @section @code{ISHFT} --- Shift bits
-@cindex @code{ISHFT} intrinsic
-@cindex bit operations
+@fnindex ISHFT
+@cindex bits, shift
 
 @table @asis
 @item @emph{Description}:
@@ -5408,8 +5476,8 @@ The return value is of type @code{INTEGER(*)} and of the same kind as
 
 @node ISHFTC
 @section @code{ISHFTC} --- Shift bits circularly
-@cindex @code{ISHFTC} intrinsic
-@cindex bit operations
+@fnindex ISHFTC
+@cindex bits, shift circular
 
 @table @asis
 @item @emph{Description}:
@@ -5452,7 +5520,9 @@ The return value is of type @code{INTEGER(*)} and of the same kind as
 
 @node ITIME
 @section @code{ITIME} --- Get current local time subroutine (hour/minutes/seconds) 
-@cindex @code{ITIME} intrinsic
+@fnindex ITIME
+@cindex time, current
+@cindex current time
 
 @table @asis
 @item @emph{Description}:
@@ -5496,7 +5566,7 @@ end program test_itime
 
 @node KILL
 @section @code{KILL} --- Send a signal to a process
-@cindex @code{KILL} intrinsic
+@fnindex KILL
 
 @table @asis
 @item @emph{Description}:
@@ -5529,7 +5599,8 @@ Subroutine
 
 @node KIND
 @section @code{KIND} --- Kind of an entity
-@cindex @code{KIND} intrinsic
+@fnindex KIND
+@cindex kind
 
 @table @asis
 @item @emph{Description}:
@@ -5571,7 +5642,8 @@ end program test_kind
 
 @node LBOUND
 @section @code{LBOUND} --- Lower dimension bounds of an array
-@cindex @code{LBOUND} intrinsic
+@fnindex LBOUND
+@cindex array, lower bound
 
 @table @asis
 @item @emph{Description}:
@@ -5608,7 +5680,8 @@ dimension, the lower bound is taken to be 1.
 
 @node LEN
 @section @code{LEN} --- Length of a character entity
-@cindex @code{LEN} intrinsic
+@fnindex LEN
+@cindex string, length
 
 @table @asis
 @item @emph{Description}:
@@ -5643,7 +5716,8 @@ The return value is an @code{INTEGER} of the default kind.
 
 @node LEN_TRIM
 @section @code{LEN_TRIM} --- Length of a character entity without trailing blank characters
-@cindex @code{LEN_TRIM} intrinsic
+@fnindex LEN_TRIM
+@cindex string, length, without trailing whitespace
 
 @table @asis
 @item @emph{Description}:
@@ -5675,9 +5749,9 @@ The return value is an @code{INTEGER} of the default kind.
 
 @node LGE
 @section @code{LGE} --- Lexical greater than or equal
-@cindex @code{LGE} intrinsic
-@cindex comparison (lexical)
-@cindex lexical comparison
+@fnindex LGE
+@cindex lexical comparison of strings
+@cindex string, comparison
 
 @table @asis
 @item @emph{Description}:
@@ -5721,9 +5795,9 @@ otherwise, based on the ASCII ordering.
 
 @node LGT
 @section @code{LGT} --- Lexical greater than
-@cindex @code{LGT} intrinsic
-@cindex comparison (lexical)
-@cindex lexical comparison
+@fnindex LGT
+@cindex lexical comparison of strings
+@cindex string, comparison
 
 @table @asis
 @item @emph{Description}:
@@ -5767,8 +5841,9 @@ otherwise, based on the ASCII ordering.
 
 @node LINK
 @section @code{LINK} --- Create a hard link
-@cindex @code{LINK} intrinsic
-@cindex file system operations
+@fnindex LINK
+@cindex file system, create link
+@cindex file system, hard link
 
 @table @asis
 @item @emph{Description}:
@@ -5809,9 +5884,9 @@ Subroutine, non-elemental function
 
 @node LLE
 @section @code{LLE} --- Lexical less than or equal
-@cindex @code{LLE} intrinsic
-@cindex comparison (lexical)
-@cindex lexical comparison
+@fnindex LLE
+@cindex lexical comparison of strings
+@cindex string, comparison
 
 @table @asis
 @item @emph{Description}:
@@ -5855,9 +5930,9 @@ otherwise, based on the ASCII ordering.
 
 @node LLT
 @section @code{LLT} --- Lexical less than
-@cindex @code{LLT} intrinsic
-@cindex comparison (lexical)
-@cindex lexical comparison
+@fnindex LLT
+@cindex lexical comparison of strings
+@cindex string, comparison
 
 @table @asis
 @item @emph{Description}:
@@ -5901,7 +5976,8 @@ otherwise, based on the ASCII ordering.
 
 @node LNBLNK
 @section @code{LNBLNK} --- Index of the last non-blank character in a string
-@cindex @code{LNBLNK} intrinsic
+@fnindex LNBLNK
+@cindex string, find non-blank character
 
 @table @asis
 @item @emph{Description}:
@@ -5935,7 +6011,7 @@ The return value is of @code{INTEGER(kind=4)} type.
 
 @node LOC
 @section @code{LOC} --- Returns the address of a variable
-@cindex @code{LOC} intrinsic
+@fnindex LOC
 @cindex location of a variable in memory
 
 @table @asis
@@ -5976,13 +6052,14 @@ end program test_loc
 
 @node LOG
 @section @code{LOG} --- Logarithm function
-@cindex @code{LOG} intrinsic
-@cindex @code{ALOG} intrinsic
-@cindex @code{DLOG} intrinsic
-@cindex @code{CLOG} intrinsic
-@cindex @code{ZLOG} intrinsic
-@cindex @code{CDLOG} intrinsic
-@cindex logarithm
+@fnindex LOG
+@fnindex ALOG
+@fnindex DLOG
+@fnindex CLOG
+@fnindex ZLOG
+@fnindex CDLOG
+@cindex exponential function, inverse
+@cindex logarithmic function
 
 @table @asis
 @item @emph{Description}:
@@ -6032,10 +6109,11 @@ end program test_log
 
 @node LOG10
 @section @code{LOG10} --- Base 10 logarithm function
-@cindex @code{LOG10} intrinsic
-@cindex @code{ALOG10} intrinsic
-@cindex @code{DLOG10} intrinsic
-@cindex logarithm
+@fnindex LOG10
+@fnindex ALOG10
+@fnindex DLOG10
+@cindex exponential function, inverse
+@cindex logarithmic function
 
 @table @asis
 @item @emph{Description}:
@@ -6080,8 +6158,8 @@ end program test_log10
 
 @node LOGICAL
 @section @code{LOGICAL} --- Convert to logical type
-@cindex @code{LOGICAL} intrinsic
-@cindex conversion function (logical)
+@fnindex LOGICAL
+@cindex conversion, to logical
 
 @table @asis
 @item @emph{Description}:
@@ -6117,8 +6195,8 @@ kind corresponding to @var{KIND}, or of the default logical kind if
 
 @node LONG
 @section @code{LONG} --- Convert to integer type
-@cindex @code{LONG} intrinsic
-@cindex conversion function (integer)
+@fnindex LONG
+@cindex conversion, to integer
 
 @table @asis
 @item @emph{Description}:
@@ -6153,8 +6231,8 @@ The return value is a @code{INTEGER(4)} variable.
 
 @node LSHIFT
 @section @code{LSHIFT} --- Left shift bits
-@cindex @code{LSHIFT} intrinsic
-@cindex bit operations
+@fnindex LSHIFT
+@cindex bits, shift left
 
 @table @asis
 @item @emph{Description}:
@@ -6195,8 +6273,8 @@ The return value is of type @code{INTEGER(*)} and of the same kind as
 
 @node LSTAT
 @section @code{LSTAT} --- Get file status
-@cindex @code{LSTAT} intrinsic
-@cindex file system operations 
+@fnindex LSTAT
+@cindex file system, file status
 
 @table @asis
 @item @emph{Description}:
@@ -6233,8 +6311,8 @@ To stat an open file: @ref{FSTAT}, to stat a file: @ref{STAT}
 
 @node LTIME
 @section @code{LTIME} --- Convert time to local time info
-@cindex @code{LTIME} intrinsic
-@cindex time, conversion function
+@fnindex LTIME
+@cindex time, converstion to local time info
 
 @table @asis
 @item @emph{Description}:
@@ -6286,8 +6364,8 @@ The elements of @var{TARRAY} are assigned as follows:
 
 @node MALLOC
 @section @code{MALLOC} --- Allocate dynamic memory
-@cindex @code{MALLOC} intrinsic
-@cindex Cray pointers
+@fnindex MALLOC
+@cindex pointer, cray
 
 @table @asis
 @item @emph{Description}:
@@ -6352,8 +6430,9 @@ end program test_malloc
 
 @node MATMUL
 @section @code{MATMUL} --- matrix multiplication
-@cindex @code{MATMUL} intrinsic
-@cindex matrix operations
+@fnindex MATMUL
+@cindex matrix multiplication
+@cindex product, matrix
 
 @table @asis
 @item @emph{Description}:
@@ -6396,12 +6475,13 @@ for the @code{*} or @code{.AND.} operators.
 
 @node MAX
 @section @code{MAX} --- Maximum value of an argument list
-@cindex @code{MAX} intrinsic
-@cindex @code{MAX0} intrinsic
-@cindex @code{AMAX0} intrinsic
-@cindex @code{MAX1} intrinsic
-@cindex @code{AMAX1} intrinsic
-@cindex @code{DMAX1} intrinsic
+@fnindex MAX
+@fnindex MAX0
+@fnindex AMAX0
+@fnindex MAX1
+@fnindex AMAX1
+@fnindex DMAX1
+@cindex maximum value
 
 @table @asis
 @item @emph{Description}:
@@ -6449,9 +6529,8 @@ and has the same type and kind as the first argument.
 
 @node MAXEXPONENT
 @section @code{MAXEXPONENT} --- Maximum exponent of a real kind
-@cindex @code{MAXEXPONENT} intrinsic
-@cindex maximum exponent
-@cindex exponent, maximum
+@fnindex MAXEXPONENT
+@cindex model representation, maximum exponent
 
 @table @asis
 @item @emph{Description}:
@@ -6492,7 +6571,8 @@ end program exponents
 
 @node MAXLOC
 @section @code{MAXLOC} --- Location of the maximum value within an array
-@cindex @code{MAXLOC} intrinsic
+@fnindex MAXLOC
+@cindex array, location of maximum element
 
 @table @asis
 @item @emph{Description}:
@@ -6550,7 +6630,9 @@ of one, the result is a scalar.  In all cases, the result is of default
 
 @node MAXVAL
 @section @code{MAXVAL} --- Maximum value of an array
-@cindex @code{MAXVAL} intrinsic
+@fnindex MAXVAL
+@cindex array, maximum value
+@cindex maximum value
 
 @table @asis
 @item @emph{Description}:
@@ -6602,7 +6684,7 @@ cases, the result is of the same type and kind as @var{ARRAY}.
 
 @node MCLOCK
 @section @code{MCLOCK} --- Time function
-@cindex @code{MCLOCK} intrinsic
+@fnindex MCLOCK
 @cindex time, clock ticks
 @cindex clock ticks
 
@@ -6640,9 +6722,9 @@ the system does not support @code{clock(3)}.
 
 @node MCLOCK8
 @section @code{MCLOCK8} --- Time function (64-bit)
-@cindex @code{MCLOCK8} intrinsic
-@cindex time, current
-@cindex current time
+@fnindex MCLOCK8
+@cindex time, clock ticks
+@cindex clock ticks
 
 @table @asis
 @item @emph{Description}:
@@ -6680,7 +6762,9 @@ the system does not support @code{clock(3)}.
 
 @node MERGE
 @section @code{MERGE} --- Merge variables
-@cindex @code{MERGE} intrinsic
+@fnindex MERGE
+@cindex array, merge arrays
+@cindex array, combine arrays
 
 @table @asis
 @item @emph{Description}:
@@ -6714,12 +6798,13 @@ The result is of the same type and type parameters as @var{TSOURCE}.
 
 @node MIN
 @section @code{MIN} --- Minimum value of an argument list
-@cindex @code{MIN} intrinsic
-@cindex @code{MIN0} intrinsic
-@cindex @code{AMIN0} intrinsic
-@cindex @code{MIN1} intrinsic
-@cindex @code{AMIN1} intrinsic
-@cindex @code{DMIN1} intrinsic
+@fnindex MIN
+@fnindex MIN0
+@fnindex AMIN0
+@fnindex MIN1
+@fnindex AMIN1
+@fnindex DMIN1
+@cindex minimum value
 
 @table @asis
 @item @emph{Description}:
@@ -6766,9 +6851,8 @@ and has the same type and kind as the first argument.
 
 @node MINEXPONENT
 @section @code{MINEXPONENT} --- Minimum exponent of a real kind
-@cindex @code{MINEXPONENT} intrinsic
-@cindex minimum exponent
-@cindex exponent, minimum
+@fnindex MINEXPONENT
+@cindex model representation, minimum exponent
 
 @table @asis
 @item @emph{Description}:
@@ -6801,7 +6885,8 @@ See @code{MAXEXPONENT} for an example.
 
 @node MINLOC
 @section @code{MINLOC} --- Location of the minimum value within an array
-@cindex @code{MINLOC} intrinsic
+@fnindex MINLOC
+@cindex array, location of minimum element
 
 @table @asis
 @item @emph{Description}:
@@ -6859,7 +6944,9 @@ of one, the result is a scalar.  In all cases, the result is of default
 
 @node MINVAL
 @section @code{MINVAL} --- Minimum value of an array
-@cindex @code{MINVAL} intrinsic
+@fnindex MINVAL
+@cindex array, minmum value
+@cindex minimum value
 
 @table @asis
 @item @emph{Description}:
@@ -6912,10 +6999,11 @@ cases, the result is of the same type and kind as @var{ARRAY}.
 
 @node MOD
 @section @code{MOD} --- Remainder function
-@cindex @code{MOD} intrinsic
-@cindex @code{AMOD} intrinsic
-@cindex @code{DMOD} intrinsic
+@fnindex MOD
+@fnindex AMOD
+@fnindex DMOD
 @cindex remainder
+@cindex division, remainder
 
 @table @asis
 @item @emph{Description}:
@@ -6974,8 +7062,9 @@ end program test_mod
 
 @node MODULO
 @section @code{MODULO} --- Modulo function
-@cindex @code{MODULO} intrinsic
+@fnindex MODULO
 @cindex modulo
+@cindex division, modulo
 
 @table @asis
 @item @emph{Description}:
@@ -7028,7 +7117,7 @@ end program
 
 @node MOVE_ALLOC
 @section @code{MOVE_ALLOC} --- Move allocation from one object to another
-@cindex @code{MOVE_ALLOC} intrinsic
+@fnindex MOVE_ALLOC
 @cindex moving allocation
 @cindex allocation, moving
 
@@ -7075,8 +7164,8 @@ end program test_move_alloc
 
 @node MVBITS
 @section @code{MVBITS} --- Move bits from one integer to another
-@cindex @code{MVBITS} intrinsic
-@cindex bit operations
+@fnindex MVBITS
+@cindex bits, move
 
 @table @asis
 @item @emph{Description}:
@@ -7119,8 +7208,9 @@ The return value is of type @code{INTEGER(*)} and of the same kind as
 
 @node NEAREST
 @section @code{NEAREST} --- Nearest representable number
-@cindex @code{NEAREST} intrinsic
-@cindex processor-representable number
+@fnindex NEAREST
+@cindex real number, nearest different
+@cindex floating point, nearest different
 
 @table @asis
 @item @emph{Description}:
@@ -7165,8 +7255,9 @@ end program test_nearest
 
 @node NEW_LINE
 @section @code{NEW_LINE} --- New line character
-@cindex @code{NEW_LINE} intrinsic
-@cindex @code{NEW_LINE} intrinsic
+@fnindex NEW_LINE
+@cindex newline
+@cindex output, newline
 
 @table @asis
 @item @emph{Description}:
@@ -7204,9 +7295,9 @@ end program newline
 
 @node NINT
 @section @code{NINT} --- Nearest whole number
-@cindex @code{NINT} intrinsic
-@cindex @code{IDNINT} intrinsic
-@cindex whole number
+@fnindex NINT
+@fnindex IDNINT
+@cindex rounding, nearest whole number
 
 @table @asis
 @item @emph{Description}:
@@ -7257,8 +7348,10 @@ end program test_nint
 
 @node NOT
 @section @code{NOT} --- Logical negation
-@cindex @code{NOT} intrinsic
-@cindex bit operations
+@fnindex NOT
+@cindex bits, negate
+@cindex bitwise logical not
+@cindex logical not, bitwise
 
 @table @asis
 @item @emph{Description}:
@@ -7291,8 +7384,9 @@ argument.
 
 @node NULL
 @section @code{NULL} --- Function that returns an disassociated pointer
-@cindex @code{NULL} intrinsic
-@cindex pointer status
+@fnindex NULL
+@cindex pointer, status
+@cindex pointer, disassociated
 
 @table @asis
 @item @emph{Description}:
@@ -7335,8 +7429,9 @@ REAL, POINTER, DIMENSION(:) :: VEC => NULL ()
 
 @node OR
 @section @code{OR} --- Bitwise logical OR
-@cindex @code{OR} intrinsic
-@cindex bit operations
+@fnindex OR
+@cindex bitwise logical or
+@cindex logical or, bitwise
 
 @table @asis
 @item @emph{Description}:
@@ -7385,8 +7480,10 @@ F95 elemental function: @ref{IOR}
 
 @node PACK
 @section @code{PACK} --- Pack an array into an array of rank one
-@cindex @code{PACK} intrinsic
-@cindex array manipulation
+@fnindex PACK
+@cindex array, packing
+@cindex array, reduce dimension
+@cindex array, gather elements
 
 @table @asis
 @item @emph{Description}:
@@ -7451,7 +7548,8 @@ END PROGRAM
 
 @node PERROR
 @section @code{PERROR} --- Print system error message
-@cindex @code{PERROR} intrinsic
+@fnindex PERROR
+@cindex system, error handling
 
 @table @asis
 @item @emph{Description}:
@@ -7481,8 +7579,8 @@ Subroutine
 
 @node PRECISION
 @section @code{PRECISION} --- Decimal precision of a real kind
-@cindex @code{PRECISION} intrinsic
-@cindex precision of a real variable
+@fnindex PRECISION
+@cindex model representation, precision
 
 @table @asis
 @item @emph{Description}:
@@ -7523,7 +7621,7 @@ end program prec_and_range
 
 @node PRESENT
 @section @code{PRESENT} --- Determine whether an optional dummy argument is specified
-@cindex @code{PRESENT} intrinsic
+@fnindex PRESENT
 
 @table @asis
 @item @emph{Description}:
@@ -7566,8 +7664,11 @@ END PROGRAM
 
 @node PRODUCT
 @section @code{PRODUCT} --- Product of array elements
-@cindex @code{PRODUCT} intrinsic
-@cindex array operation
+@fnindex PRODUCT
+@cindex array, product
+@cindex array, multiply elements
+@cindex array, conditionally multiply elements
+@cindex multiply array elements
 
 @table @asis
 @item @emph{Description}:
@@ -7621,8 +7722,9 @@ END PROGRAM
 
 @node RADIX
 @section @code{RADIX} --- Base of a model number
-@cindex @code{RADIX} intrinsic
-@cindex base
+@fnindex RADIX
+@cindex model representation, base
+@cindex model representation, radix
 
 @table @asis
 @item @emph{Description}:
@@ -7660,8 +7762,8 @@ end program test_radix
 
 @node RAN
 @section @code{RAN} --- Real pseudo-random number
-@cindex @code{RAN} intrinsic
-@cindex random numbers
+@fnindex RAN
+@cindex random number generation
 
 @table @asis
 @item @emph{Description}:
@@ -7683,8 +7785,8 @@ Non-elemental function
 
 @node RAND
 @section @code{RAND} --- Real pseudo-random number
-@cindex @code{RAND} intrinsic
-@cindex random numbers
+@fnindex RAND
+@cindex random number generation
 
 @table @asis
 @item @emph{Description}:
@@ -7731,8 +7833,8 @@ end program test_rand
 
 @node RANDOM_NUMBER
 @section @code{RANDOM_NUMBER} --- Pseudo-random number
-@cindex @code{RANDOM_NUMBER} intrinsic
-@cindex random numbers
+@fnindex RANDOM_NUMBER
+@cindex random number generation
 
 @table @asis
 @item @emph{Description}:
@@ -7779,8 +7881,9 @@ random number generator instead.
 
 @node RANDOM_SEED
 @section @code{RANDOM_SEED} --- Initialize a pseudo-random number sequence
-@cindex @code{RANDOM_SEED} intrinsic
-@cindex random numbers
+@fnindex RANDOM_SEED
+@cindex random number generation, seeding
+@cindex seeding a random number generator
 
 @table @asis
 @item @emph{Description}:
@@ -7841,8 +7944,8 @@ END SUBROUTINE
 
 @node RANGE
 @section @code{RANGE} --- Decimal exponent range of a real kind
-@cindex @code{RANGE} intrinsic
-@cindex range of a real variable
+@fnindex RANGE
+@cindex model representation, range
 
 @table @asis
 @item @emph{Description}:
@@ -7875,9 +7978,10 @@ See @code{PRECISION} for an example.
 
 @node REAL
 @section @code{REAL} --- Convert to real type 
-@cindex @code{REAL} intrinsic
-@cindex @code{REALPART} intrinsic
-@cindex true values
+@fnindex REAL
+@fnindex REALPART
+@cindex conversion, to real
+@cindex complex numbers, real part
 
 @table @asis
 @item @emph{Description}:
@@ -7940,8 +8044,8 @@ end program test_real
 
 @node RENAME
 @section @code{RENAME} --- Rename a file
-@cindex @code{RENAME} intrinsic
-@cindex file system operations
+@fnindex RENAME
+@cindex file system, rename file
 
 @table @asis
 @item @emph{Description}:
@@ -7983,8 +8087,9 @@ Subroutine, non-elemental function
 
 @node REPEAT
 @section @code{REPEAT} --- Repeated string concatenation 
-@cindex @code{REPEAT} intrinsic
-@cindex string manipulation
+@fnindex REPEAT
+@cindex string, repeat
+@cindex string, concatenate
 
 @table @asis
 @item @emph{Description}:
@@ -8021,8 +8126,9 @@ end program
 
 @node RESHAPE
 @section @code{RESHAPE} --- Function to reshape an array
-@cindex @code{RESHAPE} intrinsic
-@cindex array manipulation
+@fnindex RESHAPE
+@cindex array, change dimensions
+@cindex array, transmogrify
 
 @table @asis
 @item @emph{Description}:
@@ -8074,7 +8180,10 @@ END PROGRAM
 
 @node RRSPACING
 @section @code{RRSPACING} --- Reciprocal of the relative spacing
-@cindex @code{RRSPACING} intrinsic
+@fnindex RRSPACING
+@cindex real number, relative spacing
+@cindex floating point, relative spacing
+
 
 @table @asis
 @item @emph{Description}:
@@ -8108,8 +8217,8 @@ The value returned is equal to
 
 @node RSHIFT
 @section @code{RSHIFT} --- Right shift bits
-@cindex @code{RSHIFT} intrinsic
-@cindex bit operations
+@fnindex RSHIFT
+@cindex bits, shift right
 
 @table @asis
 @item @emph{Description}:
@@ -8150,7 +8259,9 @@ The return value is of type @code{INTEGER(*)} and of the same kind as
 
 @node SCALE
 @section @code{SCALE} --- Scale a real value
-@cindex @code{SCALE} intrinsic
+@fnindex SCALE
+@cindex real number, scale
+@cindex floating point, scale
 
 @table @asis
 @item @emph{Description}:
@@ -8190,8 +8301,8 @@ end program test_scale
 
 @node SCAN
 @section @code{SCAN} --- Scan a string for the presence of a set of characters
-@cindex @code{SCAN} intrinsic
-@cindex string manipulation
+@fnindex SCAN
+@cindex string, find subset
 
 @table @asis
 @item @emph{Description}:
@@ -8241,9 +8352,9 @@ END PROGRAM
 
 @node SECNDS
 @section @code{SECNDS} --- Time function
-@cindex @code{SECNDS} intrinsic
-@cindex time, current
-@cindex current time
+@fnindex SECNDS
+@cindex time, elapsed
+@cindex elapsed time
 
 @table @asis
 @item @emph{Description}:
@@ -8273,6 +8384,7 @@ None
 @item @emph{Example}:
 @smallexample
 program test_secnds
+    integer :: i
     real(4) :: t1, t2
     print *, secnds (0.0)   ! seconds since midnight
     t1 = secnds (0.0)       ! reference time
@@ -8288,7 +8400,7 @@ end program test_secnds
 
 @node SECOND
 @section @code{SECOND} --- CPU time function
-@cindex @code{SECOND} intrinsic
+@fnindex SECOND
 @cindex time, elapsed
 @cindex elapsed time
 
@@ -8332,8 +8444,9 @@ seconds.
 
 @node SELECTED_INT_KIND
 @section @code{SELECTED_INT_KIND} --- Choose integer kind
-@cindex @code{SELECTED_INT_KIND} intrinsic
+@fnindex SELECTED_INT_KIND
 @cindex integer kind
+@cindex kind, integer
 
 @table @asis
 @item @emph{Description}:
@@ -8377,8 +8490,9 @@ end program large_integers
 
 @node SELECTED_REAL_KIND
 @section @code{SELECTED_REAL_KIND} --- Choose real kind
-@cindex @code{SELECTED_REAL_KIND} intrinsic
+@fnindex SELECTED_REAL_KIND
 @cindex real kind
+@cindex kind, real
 
 @table @asis
 @item @emph{Description}:
@@ -8439,8 +8553,9 @@ end program real_kinds
 
 @node SET_EXPONENT
 @section @code{SET_EXPONENT} --- Set the exponent of the model
-@cindex @code{SET_EXPONENT} intrinsic
-@cindex exponent part of a real number
+@fnindex SET_EXPONENT
+@cindex real number, set exponent
+@cindex floating point, set exponent
 
 @table @asis
 @item @emph{Description}:
@@ -8483,8 +8598,8 @@ END PROGRAM
 
 @node SHAPE
 @section @code{SHAPE} --- Determine the shape of an array
-@cindex @code{SHAPE} intrinsic
-@cindex array manipulation
+@fnindex SHAPE
+@cindex array, shape
 
 @table @asis
 @item @emph{Description}:
@@ -8529,9 +8644,9 @@ END PROGRAM
 
 @node SIGN
 @section @code{SIGN} --- Sign copying function
-@cindex @code{SIGN} intrinsic
-@cindex @code{ISIGN} intrinsic
-@cindex @code{DSIGN} intrinsic
+@fnindex SIGN
+@fnindex ISIGN
+@fnindex DSIGN
 @cindex sign copying
 
 @table @asis
@@ -8583,8 +8698,8 @@ end program test_sign
 
 @node SIGNAL
 @section @code{SIGNAL} --- Signal handling subroutine (or function)
-@cindex @code{SIGNAL} intrinsic
-@cindex signal handling
+@fnindex SIGNAL
+@cindex system, signal handling
 
 @table @asis
 @item @emph{Description}:
@@ -8640,12 +8755,13 @@ end program test_signal
 
 @node SIN
 @section @code{SIN} --- Sine function 
-@cindex @code{SIN} intrinsic
-@cindex @code{DSIN} intrinsic
-@cindex @code{CSIN} intrinsic
-@cindex @code{ZSIN} intrinsic
-@cindex @code{CDSIN} intrinsic
-@cindex trigonometric functions
+@fnindex SIN
+@fnindex DSIN
+@fnindex CSIN
+@fnindex ZSIN
+@fnindex CDSIN
+@cindex trigonometric function, sine
+@cindex sine
 
 @table @asis
 @item @emph{Description}:
@@ -8694,9 +8810,11 @@ end program test_sin
 
 @node SINH
 @section @code{SINH} --- Hyperbolic sine function 
-@cindex @code{SINH} intrinsic
-@cindex @code{DSINH} intrinsic
+@fnindex SINH
+@fnindex DSINH
 @cindex hyperbolic sine
+@cindex hyperbolic function, sine
+@cindex sine, hyperbolic
 
 @table @asis
 @item @emph{Description}:
@@ -8741,8 +8859,10 @@ end program test_sinh
 
 @node SIZE
 @section @code{SIZE} --- Determine the size of an array
-@cindex @code{SIZE} intrinsic
-@cindex array manipulation
+@fnindex SIZE
+@cindex array, size
+@cindex array, number of elements
+@cindex array, count elements
 
 @table @asis
 @item @emph{Description}:
@@ -8786,7 +8906,8 @@ END PROGRAM
 
 @node SLEEP
 @section @code{SLEEP} --- Sleep for the specified number of seconds
-@cindex @code{SLEEP} intrinsic
+@fnindex SLEEP
+@cindex delayed execution
 
 @table @asis
 @item @emph{Description}:
@@ -8818,8 +8939,8 @@ end
 
 @node SNGL
 @section @code{SNGL} --- Convert double precision real to default real
-@cindex @code{SNGL} intrinsic
-@cindex conversion function (real)
+@fnindex SNGL
+@cindex conversion, to real
 
 @table @asis
 @item @emph{Description}:
@@ -8852,7 +8973,9 @@ The return value is of type default @code{REAL}.
 
 @node SPACING
 @section @code{SPACING} --- Smallest distance between two numbers of a given type
-@cindex @code{SPACING} intrinsic
+@fnindex SPACING
+@cindex real number, relative spacing
+@cindex floating point, relative spacing
 
 @table @asis
 @item @emph{Description}:
@@ -8895,8 +9018,10 @@ END PROGRAM
 
 @node SPREAD
 @section @code{SPREAD} --- Add a dimension to an array
-@cindex @code{SPREAD} intrinsic
-@cindex array manipulation
+@fnindex SPREAD
+@cindex array, increase dimension
+@cindex array, duplicate elementes
+@cindex array, duplicate dimensions
 
 @table @asis
 @item @emph{Description}:
@@ -8942,11 +9067,12 @@ END PROGRAM
 
 @node SQRT
 @section @code{SQRT} --- Square-root function
-@cindex @code{SQRT} intrinsic
-@cindex @code{DSQRT} intrinsic
-@cindex @code{CSQRT} intrinsic
-@cindex @code{ZSQRT} intrinsic
-@cindex @code{CDSQRT} intrinsic
+@fnindex SQRT
+@fnindex DSQRT
+@fnindex CSQRT
+@fnindex ZSQRT
+@fnindex CDSQRT
+@cindex root
 @cindex square-root
 
 @table @asis
@@ -8996,8 +9122,9 @@ end program test_sqrt
 
 @node SRAND
 @section @code{SRAND} --- Reinitialize the random number generator
-@cindex @code{SRAND} intrinsic
-@cindex random numbers
+@fnindex SRAND
+@cindex random number generation, seeding
+@cindex seeding a random number generator
 
 @table @asis
 @item @emph{Description}:
@@ -9043,8 +9170,8 @@ pseudo-random number generators.
 
 @node STAT
 @section @code{STAT} --- Get file status
-@cindex @code{STAT} intrinsic
-@cindex file system operations
+@fnindex STAT
+@cindex file system, file status
 
 @table @asis
 @item @emph{Description}:
@@ -9124,8 +9251,11 @@ To stat an open file: @ref{FSTAT}, to stat a link: @ref{LSTAT}
 
 @node SUM
 @section @code{SUM} --- Sum of array elements
-@cindex @code{SUM} intrinsic
-@cindex array operation
+@fnindex SUM
+@cindex array, sum
+@cindex array, add elements
+@cindex array, conditionally add elements
+@cindex sum array elements
 
 @table @asis
 @item @emph{Description}:
@@ -9178,8 +9308,9 @@ END PROGRAM
 
 @node SYMLNK
 @section @code{SYMLNK} --- Create a symbolic link
-@cindex @code{SYMLNK} intrinsic
-@cindex file system operations
+@fnindex SYMLNK
+@cindex file system, create link
+@cindex file system, soft link
 
 @table @asis
 @item @emph{Description}:
@@ -9222,7 +9353,8 @@ Subroutine, non-elemental function
 
 @node SYSTEM
 @section @code{SYSTEM} --- Execute a shell command
-@cindex @code{SYSTEM} intrinsic
+@fnindex SYSTEM
+@cindex system, system call
 
 @table @asis
 @item @emph{Description}:
@@ -9260,9 +9392,9 @@ Subroutine, non-elemental function
 
 @node SYSTEM_CLOCK
 @section @code{SYSTEM_CLOCK} --- Time function
-@cindex @code{SYSTEM_CLOCK} intrinsic
-@cindex time, current
-@cindex current time
+@fnindex SYSTEM_CLOCK
+@cindex time, clock ticks
+@cindex clock ticks
 
 @table @asis
 @item @emph{Description}:
@@ -9312,9 +9444,10 @@ END PROGRAM
 
 @node TAN
 @section @code{TAN} --- Tangent function
-@cindex @code{TAN} intrinsic
-@cindex @code{DTAN} intrinsic
-@cindex trigonometric functions
+@fnindex TAN
+@fnindex DTAN
+@cindex trigonometric function, tangent
+@cindex tangent
 
 @table @asis
 @item @emph{Description}:
@@ -9360,9 +9493,11 @@ end program test_tan
 
 @node TANH
 @section @code{TANH} --- Hyperbolic tangent function 
-@cindex @code{TANH} intrinsic
-@cindex @code{DTANH} intrinsic
+@fnindex TANH
+@fnindex DTANH
 @cindex hyperbolic tangent
+@cindex hyperbolic function, tangent
+@cindex tangent, hyperbolic
 
 @table @asis
 @item @emph{Description}:
@@ -9408,7 +9543,7 @@ end program test_tanh
 
 @node TIME
 @section @code{TIME} --- Time function
-@cindex @code{TIME} intrinsic
+@fnindex TIME
 @cindex time, current
 @cindex current time
 
@@ -9449,7 +9584,7 @@ The return value is a scalar of type @code{INTEGER(4)}.
 
 @node TIME8
 @section @code{TIME8} --- Time function (64-bit)
-@cindex @code{TIME8} intrinsic
+@fnindex TIME8
 @cindex time, current
 @cindex current time
 
@@ -9488,8 +9623,9 @@ The return value is a scalar of type @code{INTEGER(8)}.
 
 @node TINY
 @section @code{TINY} --- Smallest positive number of a real kind
-@cindex @code{TINY} intrinsic
-@cindex tiny
+@fnindex TINY
+@cindex limits, smallest number
+@cindex model representation, smallest number
 
 @table @asis
 @item @emph{Description}:
@@ -9521,7 +9657,8 @@ See @code{HUGE} for an example.
 
 @node TRANSFER
 @section @code{TRANSFER} --- Transfer bit patterns
-@cindex @code{TRANSFER} intrinsic
+@fnindex TRANSFER
+@cindex bits, move
 @cindex type cast
 
 @table @asis
@@ -9583,8 +9720,10 @@ END PROGRAM
 
 @node TRANSPOSE
 @section @code{TRANSPOSE} --- Transpose an array of rank two
-@cindex @code{TRANSPOSE} intrinsic
-@cindex matrix manipulation
+@fnindex TRANSPOSE
+@cindex array, transpose
+@cindex matrix, transpose
+@cindex transpose
 
 @table @asis
 @item @emph{Description}:
@@ -9614,8 +9753,8 @@ The result has the the same type as @var{MATRIX}, and has shape
 
 @node TRIM
 @section @code{TRIM} --- Remove trailing blank characters of a string
-@cindex @code{TRIM} intrinsic
-@cindex string manipulation
+@fnindex TRIM
+@cindex string, remove trailing whitespace
 
 @table @asis
 @item @emph{Description}:
@@ -9655,7 +9794,8 @@ END PROGRAM
 
 @node TTYNAM
 @section @code{TTYNAM} --- Get the name of a terminal device.
-@cindex @code{TTYNAM} intrinsic
+@fnindex TTYNAM
+@cindex system, terminal
 
 @table @asis
 @item @emph{Description}:
@@ -9701,7 +9841,8 @@ END PROGRAM
 
 @node UBOUND
 @section @code{UBOUND} --- Upper dimension bounds of an array
-@cindex @code{UBOUND} intrinsic
+@fnindex UBOUND
+@cindex array, upper bound
 
 @table @asis
 @item @emph{Description}:
@@ -9739,8 +9880,8 @@ the relevant dimension.
 
 @node UMASK
 @section @code{UMASK} --- Set the file creation mask
-@cindex @code{UMASK} intrinsic
-@cindex file system operations
+@fnindex UMASK
+@cindex file system, file creation mask
 
 @table @asis
 @item @emph{Description}:
@@ -9769,8 +9910,8 @@ Subroutine
 
 @node UNLINK
 @section @code{UNLINK} --- Remove a file from the file system
-@cindex @code{UNLINK} intrinsic
-@cindex file system operations
+@fnindex UNLINK
+@cindex file system, remove file
 
 @table @asis
 @item @emph{Description}:
@@ -9809,8 +9950,10 @@ Subroutine, non-elemental function
 
 @node UNPACK
 @section @code{UNPACK} --- Unpack an array of rank one into an array
-@cindex @code{UNPACK} intrinsic
-@cindex array manipulation
+@fnindex UNPACK
+@cindex array, unpacking
+@cindex array, increase dimension
+@cindex array, scatter elements
 
 @table @asis
 @item @emph{Description}:
@@ -9842,11 +9985,11 @@ of @var{MASK} replaced by values from @var{VECTOR} in array element order.
 @smallexample
 PROGRAM test_unpack
   integer :: vector(2)  = (/1,1/)
-  logical :: mask(2,2)  = (/ .TRUE., .FALSE., .FALSE., .TRUE. /)
+  logical :: mask(4)  = (/ .TRUE., .FALSE., .FALSE., .TRUE. /)
   integer :: field(2,2) = 0, unity(2,2)
 
   ! result: unity matrix
-  unity = unpack(vector, reshape(mask, (/2,2/), field)
+  unity = unpack(vector, reshape(mask, (/2,2/)), field)
 END PROGRAM
 @end smallexample
 
@@ -9858,8 +10001,8 @@ END PROGRAM
 
 @node VERIFY
 @section @code{VERIFY} --- Scan a string for the absence of a set of characters
-@cindex @code{VERIFY} intrinsic
-@cindex string manipulation
+@fnindex VERIFY
+@cindex string, find missing set
 
 @table @asis
 @item @emph{Description}:
@@ -9910,8 +10053,9 @@ END PROGRAM
 
 @node XOR
 @section @code{XOR} --- Bitwise logical exclusive OR
-@cindex @code{XOR} intrinsic
-@cindex bit operations
+@fnindex XOR
+@cindex bitwise logical exclusive or
+@cindex logical exclusive or, bitwise
 
 @table @asis
 @item @emph{Description}:
