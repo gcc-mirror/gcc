@@ -1,3 +1,9 @@
+2007-04-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR C++/30221
+	* g++.dg/init/ptrfn2.C: New test.
+	* g++.dg/init/ptrfn3.C: New test.
+
 2007-04-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31711
