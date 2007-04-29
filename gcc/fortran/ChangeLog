@@ -1,3 +1,9 @@
+2007-04-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31711
+	* trans-array.c (gfc_conv_resolve_dependencies): Create a temp
+	whenever a dependency is found.
+
 2007-04-27  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* intrinsic.texi (Transfer): Improve documentation.

@@ -2826,6 +2826,8 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
 	  rref = ss->expr->ref;
 
 	  nDepend = gfc_dep_resolver (lref, rref);
+	  if (nDepend == 1)
+	    break;
 #if 0
 	  /* TODO : loop shifting.  */
 	  if (nDepend == 1)
