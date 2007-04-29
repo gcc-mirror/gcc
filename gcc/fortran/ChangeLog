@@ -1,3 +1,9 @@
+2007-04-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31645
+	* scanner.c (load_file): Discard the byte order mark if one is
+	found on the first non-preprocessor line of a file.
+
 2007-04-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31711
