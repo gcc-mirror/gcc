@@ -1,6 +1,7 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+// 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -38,12 +39,21 @@
 
 #pragma GCC system_header
 
-#include <bits/streambuf_iterator.h>
 #include <bits/localefwd.h>
 #include <bits/locale_classes.h>
 #include <bits/locale_facets.h>
+#include <bits/streambuf_iterator.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
+
+  template<typename _Facet>
+    inline const _Facet&
+    __check_facet(const _Facet* __f)
+    {
+      if (!__f)
+	__throw_bad_cast();
+      return *__f;
+    }
 
   // 27.4.5  Template class basic_ios
   /**
@@ -255,7 +265,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       explicit
       basic_ios(basic_streambuf<_CharT, _Traits>* __sb)
       : ios_base(), _M_tie(0), _M_fill(), _M_fill_init(false), _M_streambuf(0),
-      _M_ctype(0), _M_num_put(0), _M_num_get(0)
+	_M_ctype(0), _M_num_put(0), _M_num_get(0)
       { this->init(__sb); }
 
       /**
@@ -413,7 +423,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  http://gcc.gnu.org/onlinedocs/libstdc++/22_locale/howto.html
       */
       char
-      narrow(char_type __c, char __dfault) const;
+      narrow(char_type __c, char __dfault) const
+      { return __check_facet(_M_ctype).narrow(__c, __dfault); }
 
       /**
        *  @brief  Widens characters.
@@ -431,7 +442,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  http://gcc.gnu.org/onlinedocs/libstdc++/22_locale/howto.html
       */
       char_type
-      widen(char __c) const;
+      widen(char __c) const
+      { return __check_facet(_M_ctype).widen(__c); }
 
     protected:
       // 27.4.5.1  basic_ios constructors
@@ -443,7 +455,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       */
       basic_ios()
       : ios_base(), _M_tie(0), _M_fill(char_type()), _M_fill_init(false), 
-      _M_streambuf(0), _M_ctype(0), _M_num_put(0), _M_num_get(0)
+	_M_streambuf(0), _M_ctype(0), _M_num_put(0), _M_num_get(0)
       { }
 
       /**
