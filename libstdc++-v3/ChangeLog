@@ -1,3 +1,8 @@
+2007-04-30  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/lib/libstdc++.exp (v3_target_compile_as_c): Correct
+	regexp to filter out -nostdinc++.
+
 2007-04-30  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/30449 (equal)
