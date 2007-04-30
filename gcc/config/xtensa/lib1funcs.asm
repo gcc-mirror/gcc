@@ -654,16 +654,17 @@ __umodsi3:
 	leaf_return
 
 .Lle_one:
-	beqz	a3, .Lerror
-	movi	a2, 0
-	leaf_return
+	bnez	a3, .Lreturn0
 
-.Lerror:
 	/* Divide by zero: Use an illegal instruction to force an exception.
 	   The subsequent "DIV0" string can be recognized by the exception
 	   handler to identify the real cause of the exception.  */
 	ill
 	.ascii	"DIV0"
+
+.Lreturn0:
+	movi	a2, 0
+	leaf_return
 	.size	__umodsi3,.-__umodsi3
 
 #endif /* L_umodsi3 */
@@ -712,16 +713,17 @@ __modsi3:
 	leaf_return
 
 .Lle_one:
-	beqz	a3, .Lerror
-	movi	a2, 0
-	leaf_return
+	bnez	a3, .Lreturn0
 
-.Lerror:
 	/* Divide by zero: Use an illegal instruction to force an exception.
 	   The subsequent "DIV0" string can be recognized by the exception
 	   handler to identify the real cause of the exception.  */
 	ill
 	.ascii	"DIV0"
+
+.Lreturn0:
+	movi	a2, 0
+	leaf_return
 	.size	__modsi3,.-__modsi3
 
 #endif /* L_modsi3 */

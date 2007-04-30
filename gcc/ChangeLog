@@ -1,3 +1,8 @@
+2007-04-30  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/lib1funcs.asm (__umodsi3, __modsi3): Rearrange so that
+	DIV0 exception can fall through to a normal return.
+	
 2007-04-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR middle-end/22156
