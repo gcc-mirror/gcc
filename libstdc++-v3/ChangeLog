@@ -1,3 +1,15 @@
+2007-04-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits (is_pod): Use __is_pod.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_destructor/has_trivial_destructor.cc: Adjust.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_nothrow_constructor/has_nothrow_constructor.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_constructor/has_trivial_constructor.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	is_pod/is_pod.cc: Likewise.
+
 2007-04-29  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/localefwd.h: Remove redundant inline qualifiers.

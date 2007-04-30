@@ -249,9 +249,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   template<typename _Tp>
     struct is_pod
-    : public integral_constant<bool, (is_void<_Tp>::value
-				      || is_scalar<typename
-				      remove_all_extents<_Tp>::type>::value)>
+    : public integral_constant<bool, __is_pod(_Tp) || is_void<_Tp>::value>
     { };
 
   template<typename _Tp>

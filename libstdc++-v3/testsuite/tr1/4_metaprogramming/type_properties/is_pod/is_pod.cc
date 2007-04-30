@@ -1,6 +1,6 @@
 // 2004-12-26  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,9 +45,7 @@ void test01()
   VERIFY( (test_category<is_pod, int(*[][2])(int)>(true)) );
   VERIFY( (test_category<is_pod, int (ClassType::*[2][3])>(true)) );
   VERIFY( (test_category<is_pod, int (ClassType::*[][2][3]) (int)>(true)) );
-
-  // Sanity check.
-  VERIFY( (test_category<is_pod, ClassType>(false)) );
+  VERIFY( (test_category<is_pod, ClassType>(true)) );
 }
 
 int main()
