@@ -1,5 +1,27 @@
 2007-04-30  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/30449 (equal)
+	* include/bits/stl_algobase.h (struct __niter_base): Add.
+	(copy(_II, _II, _OI), copy_backward(_BI1, _BI1, _BI2),
+	fill(_ForwardIterator, _ForwardIterator, const _Tp&),
+	fill_n(_OI, _Size, const _Tp&), equal(_II1, _II1, _II2)):
+	Use it.
+	(struct __copy_normal, __copy_backward_normal,
+	struct __fill_normal, struct __fill_n_normal): Remove.
+	(struct __equal, struct __equal_aux): Add.
+	* include/bits/stl_iterator.h: Add _Iterator_type typedef.
+
+	* include/bits/stl_algobase.h (__fill_aux(wchar_t*,
+	wchar_t*, wchar_t), __fill_n_aux(wchar_t*, _Size, wchar_t)):
+	Remove.
+
+	* testsuite/23_containers/requirements/sequences/dr438/vector/
+	constructor_1_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/requirements/sequences/dr438/vector/
+	constructor_2_neg.cc: Likewise.
+
+2007-04-30  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/type_traits (is_pod): Use __is_pod.
 	* testsuite/tr1/4_metaprogramming/type_properties/
 	has_trivial_destructor/has_trivial_destructor.cc: Adjust.
