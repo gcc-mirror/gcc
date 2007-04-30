@@ -64,92 +64,6 @@ typedef struct
   mpz_t below, up;
 } bounds;
 
-/* Sets RESULT to VAL, taken unsigned if UNS is true and as signed
-   otherwise.  */
-
-static void
-mpz_set_double_int (mpz_t result, double_int val, bool uns)
-{
-  bool negate = false;
-  unsigned HOST_WIDE_INT vp[2];
-
-  if (!uns && double_int_negative_p (val))
-    {
-      negate = true;
-      val = double_int_neg (val);
-    }
-
-  vp[0] = val.low;
-  vp[1] = (unsigned HOST_WIDE_INT) val.high;
-  mpz_import (result, 2, -1, sizeof (HOST_WIDE_INT), 0, 0, vp);
-
-  if (negate)
-    mpz_neg (result, result);
-}
-
-/* Stores bounds of TYPE to MIN and MAX.  */
-
-static void
-get_type_bounds (tree type, mpz_t min, mpz_t max)
-{
-  if (TYPE_UNSIGNED (type))
-    {
-      mpz_set_ui (min, 0);
-      mpz_set_double_int (max, double_int_mask (TYPE_PRECISION (type)), true);
-    }
-  else
-    {
-      double_int mx, mn;
-      
-      mx = double_int_mask (TYPE_PRECISION (type) - 1);
-      mn = double_int_sext (double_int_add (mx, double_int_one),
-			    TYPE_PRECISION (type));
-      mpz_set_double_int (max, mx, true);
-      mpz_set_double_int (min, mn, false);
-    }
-}
-
-/* Returns VAL converted to TYPE.  If VAL does not fit in TYPE,
-   the minimum or maximum value of the type is returned instead.  */
-
-static double_int
-mpz_to_double_int (tree type, mpz_t val)
-{
-  mpz_t min, max;
-  unsigned HOST_WIDE_INT vp[2];
-  bool negate = false;
-  size_t count;
-  double_int res;
-
-  mpz_init (min);
-  mpz_init (max);
-  get_type_bounds (type, min, max);
-
-  if (mpz_cmp (val, min) < 0)
-    mpz_set (val, min);
-  else if (mpz_cmp (val, max) > 0)
-    mpz_set (val, max);
-
-  if (mpz_sgn (val) < 0)
-    negate = true;
-
-  vp[0] = 0;
-  vp[1] = 0;
-  mpz_export (vp, &count, -1, sizeof (HOST_WIDE_INT), 0, 0, val);
-  gcc_assert (count <= 2);
-  
-  mpz_clear (min);
-  mpz_clear (max);
-
-  res.low = vp[0];
-  res.high = (HOST_WIDE_INT) vp[1];
-
-  res = double_int_ext (res, TYPE_PRECISION (type), TYPE_UNSIGNED (type));
-  if (negate)
-    res = double_int_neg (res);
-
-  return res;
-}
 
 /* Splits expression EXPR to a variable part VAR and constant OFFSET.  */
 
@@ -212,7 +126,7 @@ determine_value_range (tree type, tree var, mpz_t off,
 
   /* If the computation may wrap, we know nothing about the value, except for
      the range of the type.  */
-  get_type_bounds (type, min, max);
+  get_type_static_bounds (type, min, max);
   if (!nowrap_type_p (type))
     return;
 
@@ -703,7 +617,7 @@ number_of_iterations_ne (tree type, affine_iv *iv, tree final,
 
   mpz_init (max);
   number_of_iterations_ne_max (max, iv->no_overflow, c, s, bnds);
-  niter->max = mpz_to_double_int (niter_type, max);
+  niter->max = mpz_get_double_int (niter_type, max, false);
   mpz_clear (max);
 
   /* First the trivial cases -- when the step is 1.  */
@@ -1081,7 +995,7 @@ number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
 	niter->may_be_zero = fold_build2 (LT_EXPR, boolean_type_node,
 					  iv1->base, iv0->base);
       niter->niter = delta;
-      niter->max = mpz_to_double_int (niter_type, bnds->up);
+      niter->max = mpz_get_double_int (niter_type, bnds->up, false);
       return true;
     }
 
@@ -1128,7 +1042,7 @@ number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
   mpz_add (tmp, bnds->up, mstep);
   mpz_sub_ui (tmp, tmp, 1);
   mpz_fdiv_q (tmp, tmp, mstep);
-  niter->max = mpz_to_double_int (niter_type, tmp);
+  niter->max = mpz_get_double_int (niter_type, tmp, false);
   mpz_clear (mstep);
   mpz_clear (tmp);
 

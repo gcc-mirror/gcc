@@ -413,3 +413,81 @@ dump_double_int (FILE *file, double_int cst, bool uns)
   for (i = n - 1; i >= 0; i--)
     fprintf (file, "%u", digits[i]);
 }
+
+
+/* Sets RESULT to VAL, taken unsigned if UNS is true and as signed
+   otherwise.  */
+
+void
+mpz_set_double_int (mpz_t result, double_int val, bool uns)
+{
+  bool negate = false;
+  unsigned HOST_WIDE_INT vp[2];
+
+  if (!uns && double_int_negative_p (val))
+    {
+      negate = true;
+      val = double_int_neg (val);
+    }
+
+  vp[0] = val.low;
+  vp[1] = (unsigned HOST_WIDE_INT) val.high;
+  mpz_import (result, 2, -1, sizeof (HOST_WIDE_INT), 0, 0, vp);
+
+  if (negate)
+    mpz_neg (result, result);
+}
+
+/* Returns VAL converted to TYPE.  If WRAP is true, then out-of-range
+   values of VAL will be wrapped; otherwise, they will be set to the
+   appropriate minimum or maximum TYPE bound.  */
+
+double_int
+mpz_get_double_int (tree type, mpz_t val, bool wrap)
+{
+  unsigned HOST_WIDE_INT *vp;
+  size_t count, numb;
+  double_int res;
+
+  if (!wrap)
+    {  
+      mpz_t min, max;
+
+      mpz_init (min);
+      mpz_init (max);
+      get_type_static_bounds (type, min, max);
+
+      if (mpz_cmp (val, min) < 0)
+	mpz_set (val, min);
+      else if (mpz_cmp (val, max) > 0)
+	mpz_set (val, max);
+
+      mpz_clear (min);
+      mpz_clear (max);
+    }
+
+  /* Determine the number of unsigned HOST_WIDE_INT that are required
+     for representing the value.  The code to calculate count is
+     extracted from the GMP manual, section "Integer Import and Export":
+     http://gmplib.org/manual/Integer-Import-and-Export.html  */
+  numb = 8*sizeof(HOST_WIDE_INT);
+  count = (mpz_sizeinbase (val, 2) + numb-1) / numb;
+  if (count < 2)
+    count = 2;
+  vp = (unsigned HOST_WIDE_INT *) alloca (count * sizeof(HOST_WIDE_INT));
+
+  vp[0] = 0;
+  vp[1] = 0;
+  mpz_export (vp, &count, -1, sizeof (HOST_WIDE_INT), 0, 0, val);
+
+  gcc_assert (wrap || count <= 2);
+
+  res.low = vp[0];
+  res.high = (HOST_WIDE_INT) vp[1];
+
+  res = double_int_ext (res, TYPE_PRECISION (type), TYPE_UNSIGNED (type));
+  if (mpz_sgn (val) < 0)
+    res = double_int_neg (res);
+
+  return res;
+}

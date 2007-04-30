@@ -1,3 +1,22 @@
+2007-04-30  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* double-int.c (mpz_set_double_int): Moved from
+	tree-ssa-loop-niter.c.
+	(mpz_get_double_int): Likewise; also, add option to wrap
+	out-of-range integers.
+	* double-int.h: New prototypes for above.
+	* tree.c (get_static_type_bounds): Moved from
+	tree-ssa-loop-niter.c; now returns TYPE_MIN_VALUE and
+	TYPE_MAX_VALUE if they exist..
+	* tree.h: New prototype for above.
+	* tree-ssa-loop-niter.c: Adjust mpz_to_double_int and
+	get_type_bounds calls.
+	(mpz_set_double_int): Move to double-int.c.
+	(get_type_bounds): Move to tree.c, rename to
+	get_static_type_bounds.
+	(mpz_to_double_int): Move to double-int.c, rename to
+	mpz_get_double_int.
+
 2007-04-30  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/lib1funcs.asm (__umodsi3, __modsi3): Rearrange so that
