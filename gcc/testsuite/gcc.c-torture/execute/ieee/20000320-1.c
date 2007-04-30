@@ -1,11 +1,10 @@
 #if defined(__mips__) && defined(__sgi__)
 #include <sys/fpu.h>
 #endif /* defined(__mips__) && defined(__sgi__) */
-#include <limits.h>
-#if UINT_MAX != 4294967295u || (ULONG_LONG_MAX != 18446744073709551615ull && ULONG_MAX != 18446744073709551615ull)
+#if __INT_MAX__ != 2147483647 || (__LONG_LONG_MAX__ != 9223372036854775807ll && __LONG_MAX__ != 9223372036854775807ll)
 int main(void) { exit (0); }
 #else
-#if ULONG_MAX != 18446744073709551615ull
+#if __LONG_MAX__ != 9223372036854775807ll
 typedef unsigned long long ull;
 #else
 typedef unsigned long ull;
