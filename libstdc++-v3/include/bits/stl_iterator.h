@@ -1,6 +1,6 @@
 // Iterators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -646,6 +646,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
                                                              difference_type;
       typedef typename iterator_traits<_Iterator>::reference reference;
       typedef typename iterator_traits<_Iterator>::pointer   pointer;
+
+      typedef _Iterator _Iterator_type;
 
       __normal_iterator() : _M_current(_Iterator()) { }
 
