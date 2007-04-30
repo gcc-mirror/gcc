@@ -21,6 +21,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #ifndef DOUBLE_INT_H
 #define DOUBLE_INT_H
 
+#include <gmp.h>
+#include "coretypes.h"
+
 /* A large integer is currently represented as a pair of HOST_WIDE_INTs.
    It therefore represents a number with precision of
    2 * HOST_BITS_PER_WIDE_INT bits (it is however possible that the
@@ -173,5 +176,11 @@ double_int_equal_p (double_int cst1, double_int cst2)
 {
   return cst1.low == cst2.low && cst1.high == cst2.high;
 }
+
+/* Conversion to and from GMP integer representations.  */
+
+void mpz_set_double_int (mpz_t, double_int, bool);
+double_int mpz_get_double_int (tree, mpz_t, bool);
+
 
 #endif /* DOUBLE_INT_H */
