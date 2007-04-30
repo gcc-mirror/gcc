@@ -234,20 +234,6 @@ you cannot successfully use @samp{$} in identifiers on the RS/6000 due
 to a restriction in the IBM assembler.  GAS supports these
 identifiers.
 
-@cindex VAX calling convention
-@cindex Ultrix calling convention
-@item
-@opindex fcall-saved
-On Ultrix, the Fortran compiler expects registers 2 through 5 to be saved
-by function calls.  However, the C compiler uses conventions compatible
-with BSD Unix: registers 2 through 5 may be clobbered by function calls.
-
-GCC uses the same convention as the Ultrix C compiler.  You can use
-these options to produce code compatible with the Fortran compiler:
-
-@smallexample
--fcall-saved-r2 -fcall-saved-r3 -fcall-saved-r4 -fcall-saved-r5
-@end smallexample
 @end itemize
 
 @node Incompatibilities

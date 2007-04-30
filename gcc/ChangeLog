@@ -1,3 +1,8 @@
+2007-04-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* doc/trouble.texi (Interoperation): Remove note about Ultrix
+	Fortran compiler.
+
 2007-04-29  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR rtl-optimization/31676
