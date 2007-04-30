@@ -1,6 +1,6 @@
 // 2004-12-26  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,9 +48,7 @@ void test01()
 	   int (ClassType::*[2][3])>(true)) );
   VERIFY( (test_category<has_trivial_destructor,
 	   int (ClassType::*[][2][3]) (int)>(true)) );
-
-  // Sanity check.
-  VERIFY( (test_category<has_trivial_destructor, ClassType>(false)) );
+  VERIFY( (test_category<has_trivial_destructor, ClassType>(true)) );
 }
 
 int main()
