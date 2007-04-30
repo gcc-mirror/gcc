@@ -391,7 +391,7 @@ proc v3_target_compile_as_c { source dest type options } {
     set cxxlibglossflags [libgloss_link_flags]
     set cc_final [concat $cc_final $cxxlibglossflags]
     set cc_final [concat $cc_final $includes]
-    regsub -all ".nostdinc.." $cc_final "" cc_final
+    regsub -all {\s[-]nostdinc[+][+]} $cc_final "" cc_final
 
     # This is needed for "C" tests, as this type of test may need the
     # C++ includes. And if we're not testing in the build directory,
