@@ -1,4 +1,9 @@
-2007-04-29 Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
+2007-04-30  Andrew pinski  <andrew_pinski@playstation.sony.com>
+
+	PR C++/31721
+	* g++.dg/ext/vector7.C: New testcase.
+
+2007-04-29  Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31591
 	* gfortran.dg/bound_simplification_1.f90: New test.

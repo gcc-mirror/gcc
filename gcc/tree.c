@@ -7236,11 +7236,18 @@ tree
 reconstruct_complex_type (tree type, tree bottom)
 {
   tree inner, outer;
-
-  if (POINTER_TYPE_P (type))
+  
+  if (TREE_CODE (type) == POINTER_TYPE)
     {
       inner = reconstruct_complex_type (TREE_TYPE (type), bottom);
-      outer = build_pointer_type (inner);
+      outer = build_pointer_type_for_mode (inner, TYPE_MODE (type),
+					   TYPE_REF_CAN_ALIAS_ALL (type));
+    }
+  else if (TREE_CODE (type) == REFERENCE_TYPE)
+    {
+      inner = reconstruct_complex_type (TREE_TYPE (type), bottom);
+      outer = build_reference_type_for_mode (inner, TYPE_MODE (type),
+					     TYPE_REF_CAN_ALIAS_ALL (type));
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {

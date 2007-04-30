@@ -1,3 +1,10 @@
+2007-04-30  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR C++/31721
+	* tree.c (reconstruct_complex_type): Reconstruct a reference
+	correctly.
+	Also use the same mode for the pointer as the old pointer type.
+
 2007-04-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* doc/trouble.texi (Interoperation): Remove note about Ultrix
