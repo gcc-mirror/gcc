@@ -1,3 +1,12 @@
+2007-04-30  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* trans-const.c (gfc_conv_mpz_to_tree): Use mpz_get_double_int.
+	(gfc_conv_tree_to_mpz): New function.
+	(gfc_conv_mpfr_to_tree): Use real_from_mpfr.
+	(gfc_conv_tree_to_mpfr): New function.
+	* trans-const.h: (gfc_conv_tree_to_mpz): New prototype.
+	(gfc_conv_tree_to_mpfr): New prototype.
+
 2007-04-30  Daniel Franke  <franke.daniel@gmail.com>
 
 	* intrinsic.texi (IERRNO): Changed class to non-elemental function.

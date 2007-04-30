@@ -20,11 +20,13 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
-/* Returns an INT_CST.  */
+/* Converts between INT_CST and GMP integer representations.  */
 tree gfc_conv_mpz_to_tree (mpz_t, int);
+void gfc_conv_tree_to_mpz (mpz_t, tree);
 
-/* Returns a REAL_CST.  */
+/* Converts between REAL_CST and MPFR floating-point representations.  */
 tree gfc_conv_mpfr_to_tree (mpfr_t, int);
+void gfc_conv_tree_to_mpfr (mpfr_ptr, tree);
 
 /* Build a tree for a constant.  Must be an EXPR_CONSTANT gfc_expr.
    For CHARACTER literal constants, the caller still has to set the

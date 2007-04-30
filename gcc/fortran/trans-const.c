@@ -29,6 +29,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "ggc.h"
 #include "toplev.h"
 #include "real.h"
+#include "double-int.h"
 #include "gfortran.h"
 #include "trans.h"
 #include "trans-const.h"
@@ -152,127 +153,47 @@ gfc_init_constants (void)
 }
 
 /* Converts a GMP integer into a backend tree node.  */
+
 tree
 gfc_conv_mpz_to_tree (mpz_t i, int kind)
 {
-  HOST_WIDE_INT high;
-  unsigned HOST_WIDE_INT low;
-
-  if (mpz_fits_slong_p (i))
-    {
-      /* Note that HOST_WIDE_INT is never smaller than long.  */
-      low = mpz_get_si (i);
-      high = mpz_sgn (i) < 0 ? -1 : 0;
-    }
-  else
-    {
-      unsigned HOST_WIDE_INT *words;
-      size_t count, numb;
-
-      /* Determine the number of unsigned HOST_WIDE_INT that are required
-         for represent the value.  The code to calculate count is
-	 extracted from the GMP manual, section "Integer Import and Export":
-         http://gmplib.org/manual/Integer-Import-and-Export.html  */
-      numb = 8*sizeof(HOST_WIDE_INT);
-      count = (mpz_sizeinbase (i, 2) + numb-1) / numb;
-      if (count < 2)
-	count = 2;
-      words = (unsigned HOST_WIDE_INT *) alloca (count * sizeof(HOST_WIDE_INT));
-
-      /* Since we know that the value is not zero (mpz_fits_slong_p),
-	 we know that at least one word will be written, but we don't know
-	 about the second.  It's quicker to zero the second word before
-	 than conditionally clear it later.  */
-      words[1] = 0;
-      
-      /* Extract the absolute value into words.  */
-      mpz_export (words, &count, -1, sizeof(HOST_WIDE_INT), 0, 0, i);
-
-      /* We don't assume that all numbers are in range for its type.
-         However, we never create a type larger than 2*HWI, which is the
-	 largest that the middle-end can handle. So, we only take the
-	 first two elements of words, which is equivalent to wrapping the
-	 value if it's larger than the type range.  */
-      low = words[0];
-      high = words[1];
-
-      /* Negate if necessary.  */
-      if (mpz_sgn (i) < 0)
-	{
-	  if (low == 0)
-	    high = -high;
-	  else
-	    low = -low, high = ~high;
-	}
-    }
-
-  return build_int_cst_wide (gfc_get_int_type (kind), low, high);
+  double_int val = mpz_get_double_int (gfc_get_int_type (kind), i, true);
+  return double_int_to_tree (gfc_get_int_type (kind), val);
 }
 
-/* Converts a real constant into backend form.  Uses an intermediate string
-   representation.  */
+/* Converts a backend tree into a GMP integer.  */
+
+void
+gfc_conv_tree_to_mpz (mpz_t i, tree source)
+{
+  double_int val = tree_to_double_int (source);
+  mpz_set_double_int (i, val, TYPE_UNSIGNED (TREE_TYPE (source)));
+}
+
+/* Converts a real constant into backend form.  */
 
 tree
 gfc_conv_mpfr_to_tree (mpfr_t f, int kind)
 {
-  tree res;
   tree type;
-  mp_exp_t exp;
-  char *p, *q;
   int n;
   REAL_VALUE_TYPE real;
 
   n = gfc_validate_kind (BT_REAL, kind, false);
-
   gcc_assert (gfc_real_kinds[n].radix == 2);
 
   type = gfc_get_real_type (kind);
-
-  /* Take care of Infinity and NaN.  */
-  if (mpfr_inf_p (f))
-    {
-      real_inf (&real);
-      if (mpfr_sgn (f) < 0)
-	real = REAL_VALUE_NEGATE(real);
-      res = build_real (type , real);
-      return res;
-    }
-
-  if (mpfr_nan_p (f))
-    {
-      real_nan (&real, "", 0, TYPE_MODE (type));
-      res = build_real (type , real);
-      return res;
-    }
-
-  /* mpfr chooses too small a number of hexadecimal digits if the
-     number of binary digits is not divisible by four, therefore we
-     have to explicitly request a sufficient number of digits here.  */
-  p = mpfr_get_str (NULL, &exp, 16, gfc_real_kinds[n].digits / 4 + 1,
-		    f, GFC_RND_MODE);
-
-  /* REAL_VALUE_ATOF expects the exponent for mantissa * 2**exp,
-     mpfr_get_str returns the exponent for mantissa * 16**exp, adjust
-     for that.  */
-  exp *= 4;
-
-  /* The additional 12 characters add space for the sprintf below.
-     This leaves 6 digits for the exponent which is certainly enough.  */
-  q = (char *) gfc_getmem (strlen (p) + 12);
-
-  if (p[0] == '-')
-    sprintf (q, "-0x.%sp%d", &p[1], (int) exp);
-  else
-    sprintf (q, "0x.%sp%d", p, (int) exp);
-
-  res = build_real (type, REAL_VALUE_ATOF (q, TYPE_MODE (type)));
-
-  gfc_free (q);
-  gfc_free (p);
-
-  return res;
+  real_from_mpfr (&real, f, type, GFC_RND_MODE);
+  return build_real (type, real);
 }
 
+/* Converts a backend tree into a real constant.  */
+
+void
+gfc_conv_tree_to_mpfr (mpfr_ptr f, tree source)
+{
+  mpfr_from_real (f, TREE_REAL_CST_PTR (source), GFC_RND_MODE);
+}
 
 /* Translate any literal constant to a tree.  Constants never have
    pre or post chains.  Character literal constants are special
