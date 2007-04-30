@@ -156,8 +156,7 @@ GNATTOOLS2_FILES = \
 	../../gnatxref$(exeext) \
 	../../gnatfind$(exeext) \
 	../../gnatname$(exeext) \
-	../../gnatclean$(exeext) \
-	../../gprmake$(exeext)
+	../../gnatclean$(exeext)
 
 # Makefile targets
 # ----------------
