@@ -1,3 +1,9 @@
+2007-04-30  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.c-torture/execute/ieee/20000320-1.c: Use
+	__LONG_LONG_MAX__ and its friends instead of those supplied by
+	limits.h.
+
 2007-04-30  Andrew pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/31721
