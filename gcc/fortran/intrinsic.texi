@@ -5108,7 +5108,7 @@ function.
 GNU extension
 
 @item @emph{Class}:
-Elemental function
+Non-elemental function
 
 @item @emph{Syntax}:
 @code{RESULT = IERRNO()}
@@ -6130,8 +6130,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)} or
-@code{COMPLEX(*)}.
+@item @var{X} @tab The type shall be @code{REAL(*)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -7267,7 +7266,7 @@ end program test_nearest
 F2003 and later
 
 @item @emph{Class}:
-Elemental function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{RESULT = NEW_LINE(C)}
@@ -8664,8 +8663,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{A} @tab Shall be a scalar of type @code{INTEGER} or @code{REAL}
-@item @var{B} @tab Shall be a scalar of the same type and kind as @var{A}
+@item @var{A} @tab Shall be of type @code{INTEGER} or @code{REAL}
+@item @var{B} @tab Shall be of the same type and kind as @var{A}
 @end multitable
 
 @item @emph{Return value}:
@@ -8952,7 +8951,7 @@ that is specific to one type for @var{A}.
 GNU extension
 
 @item @emph{Class}:
-function
+Elemental function
 
 @item @emph{Syntax}:
 @code{RESULT = SNGL(A)}

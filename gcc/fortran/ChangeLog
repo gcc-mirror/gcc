@@ -1,3 +1,11 @@
+2007-04-30  Daniel Franke  <franke.daniel@gmail.com>
+
+	* intrinsic.texi (IERRNO): Changed class to non-elemental function.
+	(LOG10): Removed COMPLEX as accepted argument type.
+	(NEW_LINE): Changed class from elemental to inquiry function.
+	(SIGN): Removed requirement of scalar arguments.
+	(SNGL): Changed class to elemental function.
+
 2007-04-29  Daniel Franke  <franke.daniel@gmail.com>
 
 	* gfortran.texi: Cleaned up keyword index.
