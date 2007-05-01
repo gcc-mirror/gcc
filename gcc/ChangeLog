@@ -1,5 +1,12 @@
 2007-05-01  Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
 
+	* config/i386/i386.c (override_options): Accept k8-sse3, opteron-sse3 
+	and athlon64-sse3 as improved versions of k8, opteron and athlon64 
+	with SSE3 instruction set support.
+	* doc/invoke.texi: Likewise.
+	
+2007-05-01  Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
+
 	* config/i386/i386.c (override_options): Tuning 32-byte loop
 	alignment for amdfam10 architecture. Increasing the max loop 
 	alignment to 24 bytes.
