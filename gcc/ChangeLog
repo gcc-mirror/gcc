@@ -1,5 +1,10 @@
 2007-05-01  Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
 
+	* doc/invoke.texi: Fix typo, 'AMD Family 10h core' instead of 
+	'AMD Family 10 core'.
+	
+2007-05-01  Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
+
 	* config/i386/i386.c (override_options): Accept k8-sse3, opteron-sse3 
 	and athlon64-sse3 as improved versions of k8, opteron and athlon64 
 	with SSE3 instruction set support.
