@@ -6968,6 +6968,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case RESULT_DECL:
       decl_rtl = DECL_RTL (exp);
       gcc_assert (decl_rtl);
+      decl_rtl = copy_rtx (decl_rtl);
 
       /* Ensure variable marked as used even if it doesn't go through
 	 a parser.  If it hasn't be used yet, write out an external
