@@ -1240,7 +1240,8 @@ apply_return_prediction (int *heads)
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
     {
       return_stmt = last_stmt (e->src);
-      if (TREE_CODE (return_stmt) == RETURN_EXPR)
+      if (return_stmt
+	  && TREE_CODE (return_stmt) == RETURN_EXPR)
 	break;
     }
   if (!e)

@@ -1174,7 +1174,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
   exit_bb = single_exit (loop)->dest;
   new_phi = create_phi_node (SSA_NAME_VAR (vect_def), exit_bb);
   SET_PHI_ARG_DEF (new_phi, single_exit (loop)->dest_idx, vect_def);
-  exit_bsi = bsi_start (exit_bb);
+  exit_bsi = bsi_after_labels (exit_bb);
 
   /* 2.2 Get the relevant tree-code to use in the epilog for schemes 2,3 
          (i.e. when reduc_code is not available) and in the final adjustment
@@ -1223,7 +1223,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
       epilog_stmt = build_gimple_modify_stmt (vec_dest, tmp);
       new_temp = make_ssa_name (vec_dest, epilog_stmt);
       GIMPLE_STMT_OPERAND (epilog_stmt, 0) = new_temp;
-      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+      bsi_insert_before (&exit_bsi, epilog_stmt, BSI_SAME_STMT);
 
       extract_scalar_result = true;
     }
@@ -1280,13 +1280,13 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
 	      epilog_stmt = build_gimple_modify_stmt (vec_dest, tmp);
 	      new_name = make_ssa_name (vec_dest, epilog_stmt);
 	      GIMPLE_STMT_OPERAND (epilog_stmt, 0) = new_name;
-	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+	      bsi_insert_before (&exit_bsi, epilog_stmt, BSI_SAME_STMT);
 
 	      tmp = build2 (code, vectype, new_name, new_temp);
 	      epilog_stmt = build_gimple_modify_stmt (vec_dest, tmp);
 	      new_temp = make_ssa_name (vec_dest, epilog_stmt);
 	      GIMPLE_STMT_OPERAND (epilog_stmt, 0) = new_temp;
-	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+	      bsi_insert_before (&exit_bsi, epilog_stmt, BSI_SAME_STMT);
 	    }
 
 	  extract_scalar_result = true;
@@ -1316,7 +1316,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
 	  epilog_stmt = build_gimple_modify_stmt (new_scalar_dest, rhs);
 	  new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
 	  GIMPLE_STMT_OPERAND (epilog_stmt, 0) = new_temp;
-	  bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+	  bsi_insert_before (&exit_bsi, epilog_stmt, BSI_SAME_STMT);
 	      
 	  for (bit_offset = element_bitsize;
 	       bit_offset < vec_size_in_bits;
@@ -1331,13 +1331,13 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
 	      epilog_stmt = build_gimple_modify_stmt (new_scalar_dest, rhs);
 	      new_name = make_ssa_name (new_scalar_dest, epilog_stmt);
 	      GIMPLE_STMT_OPERAND (epilog_stmt, 0) = new_name;
-	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+	      bsi_insert_before (&exit_bsi, epilog_stmt, BSI_SAME_STMT);
 
 	      tmp = build2 (code, scalar_type, new_name, new_temp);
 	      epilog_stmt = build_gimple_modify_stmt (new_scalar_dest, tmp);
 	      new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
 	      GIMPLE_STMT_OPERAND (epilog_stmt, 0) = new_temp;
-	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+	      bsi_insert_before (&exit_bsi, epilog_stmt, BSI_SAME_STMT);
 	    }
 
 	  extract_scalar_result = false;
@@ -1366,7 +1366,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
       epilog_stmt = build_gimple_modify_stmt (new_scalar_dest, rhs);
       new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
       GIMPLE_STMT_OPERAND (epilog_stmt, 0) = new_temp; 
-      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+      bsi_insert_before (&exit_bsi, epilog_stmt, BSI_SAME_STMT);
     }
 
   /* 2.4 Adjust the final result by the initial value of the reduction
@@ -1382,7 +1382,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
       epilog_stmt = build_gimple_modify_stmt (new_scalar_dest, tmp);
       new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
       GIMPLE_STMT_OPERAND (epilog_stmt, 0) = new_temp;
-      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+      bsi_insert_before (&exit_bsi, epilog_stmt, BSI_SAME_STMT);
     }
 
   /* 2.6 Replace uses of s_out0 with uses of s_out3  */

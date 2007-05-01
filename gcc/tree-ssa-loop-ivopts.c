@@ -4866,7 +4866,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 {
   tree comp;
   tree op, stmts, tgt, ass;
-  block_stmt_iterator bsi, pbsi;
+  block_stmt_iterator bsi;
 
   /* An important special case -- if we are asked to express value of
      the original iv by itself, just exit; there is no need to
@@ -4937,13 +4937,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
       if (name_info (data, tgt)->preserve_biv)
 	return;
 
-      pbsi = bsi = bsi_start (bb_for_stmt (use->stmt));
-      while (!bsi_end_p (pbsi)
-	     && TREE_CODE (bsi_stmt (pbsi)) == LABEL_EXPR)
-	{
-	  bsi = pbsi;
-	  bsi_next (&pbsi);
-	}
+      bsi = bsi_after_labels (bb_for_stmt (use->stmt));
       break;
 
     case GIMPLE_MODIFY_STMT:
@@ -4956,22 +4950,18 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
     }
 
   op = force_gimple_operand (comp, &stmts, false, SSA_NAME_VAR (tgt));
+  if (stmts)
+    bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);
 
   if (TREE_CODE (use->stmt) == PHI_NODE)
     {
-      if (stmts)
-	bsi_insert_after (&bsi, stmts, BSI_CONTINUE_LINKING);
       ass = build_gimple_modify_stmt (tgt, op);
-      bsi_insert_after (&bsi, ass, BSI_NEW_STMT);
+      bsi_insert_before (&bsi, ass, BSI_SAME_STMT);
       remove_statement (use->stmt, false);
       SSA_NAME_DEF_STMT (tgt) = ass;
     }
   else
-    {
-      if (stmts)
-	bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);
-      GIMPLE_STMT_OPERAND (use->stmt, 1) = op;
-    }
+    GIMPLE_STMT_OPERAND (use->stmt, 1) = op;
 }
 
 /* Replaces ssa name in index IDX by its basic variable.  Callback for

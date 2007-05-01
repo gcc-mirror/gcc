@@ -1244,6 +1244,10 @@ maybe_dump_rtl_for_tree_stmt (tree stmt, rtx since)
     }
 }
 
+/* Maps the blocks that do not contain tree labels to rtx labels.  */
+
+static struct pointer_map_t *lab_rtx_for_bb;
+
 /* Returns the label_rtx expression for a label starting basic block BB.  */
 
 static rtx
@@ -1251,12 +1255,17 @@ label_rtx_for_bb (basic_block bb)
 {
   tree_stmt_iterator tsi;
   tree lab, lab_stmt;
+  void **elt;
 
   if (bb->flags & BB_RTL)
     return block_label (bb);
 
-  /* We cannot use tree_block_label, as we no longer have stmt annotations.
-     TODO -- avoid creating the new tree labels.  */
+  elt = pointer_map_contains (lab_rtx_for_bb, bb);
+  if (elt)
+    return *elt;
+
+  /* Find the tree label if it is present.  */
+     
   for (tsi = tsi_start (bb_stmt_list (bb)); !tsi_end_p (tsi); tsi_next (&tsi))
     {
       lab_stmt = tsi_stmt (tsi);
@@ -1270,10 +1279,9 @@ label_rtx_for_bb (basic_block bb)
       return label_rtx (lab);
     }
 
-  lab = create_artificial_label ();
-  lab_stmt = build1 (LABEL_EXPR, void_type_node, lab);
-  tsi_link_before (&tsi, lab_stmt, TSI_NEW_STMT);
-  return label_rtx (lab);
+  elt = pointer_map_insert (lab_rtx_for_bb, bb);
+  *elt = gen_label_rtx ();
+  return *elt;
 }
 
 /* A subroutine of expand_gimple_basic_block.  Expand one COND_EXPR.
@@ -1477,6 +1485,7 @@ expand_gimple_basic_block (basic_block bb)
   rtx note, last;
   edge e;
   edge_iterator ei;
+  void **elt;
 
   if (dump_file)
     {
@@ -1510,20 +1519,32 @@ expand_gimple_basic_block (basic_block bb)
 
   tsi = tsi_start (stmts);
   if (!tsi_end_p (tsi))
-    stmt = tsi_stmt (tsi);
+    {
+      stmt = tsi_stmt (tsi);
+      if (TREE_CODE (stmt) != LABEL_EXPR)
+	stmt = NULL_TREE;
+    }
 
-  if (stmt && TREE_CODE (stmt) == LABEL_EXPR)
+  elt = pointer_map_contains (lab_rtx_for_bb, bb);
+
+  if (stmt || elt)
     {
       last = get_last_insn ();
 
-      expand_expr_stmt (stmt);
+      if (stmt)
+	{
+	  expand_expr_stmt (stmt);
+	  tsi_next (&tsi);
+	}
+
+      if (elt)
+	emit_label (*elt);
 
       /* Java emits line number notes in the top of labels.
 	 ??? Make this go away once line number notes are obsoleted.  */
       BB_HEAD (bb) = NEXT_INSN (last);
       if (NOTE_P (BB_HEAD (bb)))
 	BB_HEAD (bb) = NEXT_INSN (BB_HEAD (bb));
-      tsi_next (&tsi);
       note = emit_note_after (NOTE_INSN_BASIC_BLOCK, BB_HEAD (bb));
 
       maybe_dump_rtl_for_tree_stmt (stmt, last);
@@ -1896,8 +1917,10 @@ tree_expand_cfg (void)
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
     e->flags &= ~EDGE_EXECUTABLE;
 
+  lab_rtx_for_bb = pointer_map_create ();
   FOR_BB_BETWEEN (bb, init_block->next_bb, EXIT_BLOCK_PTR, next_bb)
     bb = expand_gimple_basic_block (bb);
+  pointer_map_destroy (lab_rtx_for_bb);
 
   construct_exit_block ();
   set_curr_insn_block (DECL_INITIAL (current_function_decl));
