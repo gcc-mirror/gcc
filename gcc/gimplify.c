@@ -1617,6 +1617,7 @@ canonicalize_addr_expr (tree *expr_p)
 static enum gimplify_status
 gimplify_conversion (tree *expr_p)
 {
+  tree tem;
   gcc_assert (TREE_CODE (*expr_p) == NOP_EXPR
 	      || TREE_CODE (*expr_p) == CONVERT_EXPR);
   
@@ -1626,6 +1627,17 @@ gimplify_conversion (tree *expr_p)
   /* And remove the outermost conversion if it's useless.  */
   if (tree_ssa_useless_type_conversion (*expr_p))
     *expr_p = TREE_OPERAND (*expr_p, 0);
+
+  /* Attempt to avoid NOP_EXPR by producing reference to a subtype.
+     For example this fold (subclass *)&A into &A->subclass avoiding
+     a need for statement.  */
+  if (TREE_CODE (*expr_p) == NOP_EXPR
+      && POINTER_TYPE_P (TREE_TYPE (*expr_p))
+      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (*expr_p, 0)))
+      && (tem = maybe_fold_offset_to_reference
+		  (TREE_OPERAND (*expr_p, 0),
+		   integer_zero_node, TREE_TYPE (TREE_TYPE (*expr_p)))))
+    *expr_p = build_fold_addr_expr_with_type (tem, TREE_TYPE (*expr_p));
 
   /* If we still have a conversion at the toplevel,
      then canonicalize some constructs.  */
@@ -5857,6 +5869,21 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  ret = GS_ALL_DONE;
 	  break;
 
+	case PLUS_EXPR:
+          /* Convert ((type *)A)+offset into &A->field_of_type_and_offset.
+	     The second is gimple immediate saving a need for extra statement.
+	   */
+	  if (POINTER_TYPE_P (TREE_TYPE (*expr_p))
+	      && TREE_CODE (TREE_OPERAND (*expr_p, 1)) == INTEGER_CST
+	      && (tmp = maybe_fold_offset_to_reference
+			 (TREE_OPERAND (*expr_p, 0), TREE_OPERAND (*expr_p, 1),
+		   	  TREE_TYPE (TREE_TYPE (*expr_p)))))
+	     {
+               *expr_p = build_fold_addr_expr_with_type (tmp,
+							 TREE_TYPE (*expr_p));
+		break;
+	     }
+          /* FALLTHRU */
 	default:
 	  switch (TREE_CODE_CLASS (TREE_CODE (*expr_p)))
 	    {

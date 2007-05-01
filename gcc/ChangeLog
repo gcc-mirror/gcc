@@ -1,3 +1,20 @@
+2007-05-01  Jan Hubicka  <jh@suse.cz>
+
+	* tree.h (maybe_fold_offset_to_component_ref): Remove.
+	(maybe_fold_offset_to_reference): Declare.
+	* fold-const.c (fold_unary): Do not fold
+	(type *)&A into &A->field_of_type_and_offset_0
+	* tree-ssa-ccp.c (maybe_fold_offset_to_array_ref): When base type
+	size is unknown, give up.
+	(maybe_fold_offset_to_component_ref): Ignore firelds with unknown
+	offsets.
+	(maybe_fold_offset_to_reference): New.
+	(maybe_fold_stmt_indirect): Use it.
+	(fold_stmt_r): Fold (type *)&A+offset into A->field_if_type_and_offset.
+	* gimplify.c (gimplify_conversion): Canonicalize conversions to
+	field references.
+	(gimplify_expr): Likewise for plus_expr.
+
 2007-05-01  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Use
