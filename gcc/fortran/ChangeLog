@@ -1,3 +1,10 @@
+2007-05-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+        PR fortran/31732
+	* dependency.c (gfc_full_array_ref_p):  If the reference is
+	to a single element, check that the array has a single
+	element and that the correct element is referenced.
+
 2007-05-01  Daniel Franke  <franke.daniel@gmail.com>
 
 	* intrinsic.c (add_functions): Fixed ELEMENTAL specifications.
