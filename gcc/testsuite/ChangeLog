@@ -1,3 +1,20 @@
+2007-05-01  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.c-torture/compile/limits-blockid.c: New.
+	* gcc.c-torture/compile/limits-caselabels.c: New.
+	* gcc.c-torture/compile/limits-declparen.c: New.
+	* gcc.c-torture/compile/limits-enumconst.c: New.
+	* gcc.c-torture/compile/limits-exprparen.c: New.
+	* gcc.c-torture/compile/limits-externalid.c: New.
+	* gcc.c-torture/compile/limits-fnargs.c: New.
+	* gcc.c-torture/compile/limits-fndefn.c: New.
+	* gcc.c-torture/compile/limits-idexternal.c: New.
+	* gcc.c-torture/compile/limits-idinternal.c: New.
+	* gcc.c-torture/compile/limits-pointer.c: New.
+	* gcc.c-torture/compile/limits-stringlit.c: New.
+	* gcc.c-torture/compile/limits-structmem.c: New.
+	* gcc.c-torture/compile/limits-structnest.c: New.
+
 2007-04-29  Geoffrey Keating  <geoffk@apple.com>
 
 	* gfortran.dg/bom_UTF-8_F.F90: Rename from bom_UTF-8.F90.
