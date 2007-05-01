@@ -1,5 +1,10 @@
 2007-05-01  Dorit Nuzman  <dorit@il.ibm.com>
 
+	PR testsuite/31615
+	* gfortran.dg/vect/vect-5.f90: Fix dg-final test.
+
+2007-05-01  Dorit Nuzman  <dorit@il.ibm.com>
+
 	PR testsuite/31589
 	* gcc.dg/vect/vect-iv-9.c: Added vect_int_mult target keyword to 
 	dg-final test.
