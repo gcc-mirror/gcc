@@ -1,3 +1,16 @@
+2007-05-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/i386/gmon-sol2.c (size_t): New type.
+	(intptr_t): Likewise.
+	(s_textsize): Declare as size_t.
+	(sbrk): Declare.
+	(monstartup): Use size_t for sizes.
+	(_mcount): Save and restore registers.
+	(internal_mcount): Pass 0 as the first argument to monstartup
+	in 64-bit mode.
+	(moncontrol): Convert pointer to appropriately sized integer
+	before passing to profil.
+
 2007-05-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/darwin-ldouble.c (__gcc_qunord): Define if

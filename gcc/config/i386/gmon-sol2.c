@@ -64,7 +64,13 @@
 static void moncontrol (int);
 extern void monstartup (char *, char *);
 extern void _mcleanup (void);
-extern void internal_mcount (void);
+extern void internal_mcount (
+#ifdef __x86_64__
+			     char *, unsigned short *
+#else
+			     void
+#endif
+			     );
 
 
 struct phdr {
@@ -98,6 +104,9 @@ struct rawarc {
 
 /* char *minbrk; */
 
+typedef __SIZE_TYPE__ size_t;
+typedef __PTRDIFF_TYPE__ intptr_t;
+
     /*
      *	froms is actually a bunch of unsigned shorts indexing tos
      */
@@ -107,7 +116,7 @@ static struct tostruct	*tos = 0;
 static long		tolimit = 0;
 static char		*s_lowpc = 0;
 static char		*s_highpc = 0;
-static unsigned long	s_textsize = 0;
+static size_t		s_textsize = 0;
 
 static int	ssiz;
 static char	*sbuf;
@@ -119,22 +128,24 @@ static int	s_scale;
 
 extern int errno;
 
+extern void *sbrk (intptr_t);
+
 void
 monstartup(char *lowpc, char *highpc)
 {
-    int			monsize;
+    size_t		monsize;
     char		*buffer;
-    register int	o;
+    register size_t	o;
 
 	/*
 	 *	round lowpc and highpc to multiples of the density we're using
 	 *	so the rest of the scaling (here and in gprof) stays in ints.
 	 */
     lowpc = (char *)
-	    ROUNDDOWN((unsigned long)lowpc, HISTFRACTION*sizeof(HISTCOUNTER));
+	    ROUNDDOWN((size_t)lowpc, HISTFRACTION*sizeof(HISTCOUNTER));
     s_lowpc = lowpc;
     highpc = (char *)
-	    ROUNDUP((unsigned long)highpc, HISTFRACTION*sizeof(HISTCOUNTER));
+	    ROUNDUP((size_t)highpc, HISTFRACTION*sizeof(HISTCOUNTER));
     s_highpc = highpc;
     s_textsize = highpc - lowpc;
     monsize = (s_textsize / HISTFRACTION) + sizeof(struct phdr);
@@ -237,21 +248,65 @@ _mcleanup (void)
     close( fd );
 }
 
+#ifdef __x86_64__
+/* See GLIBC for additional information about this technique.  */
+asm(".globl _mcount\n" 
+    "\t.type\t_mcount, @function\n"
+    "_mcount:\n"
+    /* The compiler calls _mcount after the prologue, and does not
+       save any of the registers.  Therefore we must preserve all
+       seven registers which may contain function arguments.  */
+    "\tsubq\t$0x38,%rsp\n"
+    "\tmovq\t%rax,(%rsp)\n"
+    "\tmovq\t%rcx,0x08(%rsp)\n"
+    "\tmovq\t%rdx,0x10(%rsp)\n"
+    "\tmovq\t%rsi,0x18(%rsp)\n"
+    "\tmovq\t%rdi,0x20(%rsp)\n"
+    "\tmovq\t%r8,0x28(%rsp)\n"
+    "\tmovq\t%r9,0x30(%rsp)\n"
+    /* Get SELFPC (pushed by the call to this function) and
+       FROMPCINDEX (via the frame pointer.  */
+    "\tmovq\t0x38(%rsp),%rdi\n"
+    "\tmovq\t0x8(%rbp),%rsi\n"
+    "\tcallq\tinternal_mcount\n"
+    /* Restore the saved registers.  */
+    "\tmovq\t0x30(%rsp),%r9\n"
+    "\tmovq\t0x28(%rsp),%r8\n"
+    "\tmovq\t0x20(%rsp),%rdi\n"
+    "\tmovq\t0x18(%rsp),%rsi\n"
+    "\tmovq\t0x10(%rsp),%rdx\n"
+    "\tmovq\t0x08(%rsp),%rdx\n"
+    "\tmovq\t(%rsp),%rax\n"
+    "\taddq\t$0x38,%rsp\n"
+    "\tretq\n"
+    );
+#else
 /* Solaris 2 libraries use _mcount.  */
 asm(".globl _mcount; _mcount: jmp internal_mcount");
 /* This is for compatibility with old versions of gcc which used mcount.  */
 asm(".globl mcount; mcount: jmp internal_mcount");
+#endif
 
 void
-internal_mcount (void)
+internal_mcount (
+#ifdef __x86_64__
+		 char *selfpc,
+		 unsigned short *frompcindex
+#else
+		 void
+#endif
+		 )
 {
+#ifndef __x86_64__
 	register char			*selfpc;
 	register unsigned short		*frompcindex;
+#endif
 	register struct tostruct	*top;
 	register struct tostruct	*prevtop;
 	register long			toindex;
 	static char already_setup;
 
+#ifndef __x86_64__
 	/*
 	 *	find the return address for mcount,
 	 *	and the return address for mcount's caller.
@@ -263,12 +318,16 @@ internal_mcount (void)
 	/* frompcindex = pc in preceding frame.
 	   This identifies the caller of the function just entered.  */
 	frompcindex = (void *) __builtin_return_address (1);
+#endif
 
 	if(!already_setup) {
           extern char etext[];
 	  already_setup = 1;
-/*	  monstartup(0, etext); */
+#ifdef __x86_64__
+	  monstartup(0, etext);
+#else
 	  monstartup((char*)0x08040000, etext);
+#endif
 #ifdef USE_ONEXIT
 	  on_exit(_mcleanup, 0);
 #else
@@ -389,7 +448,7 @@ moncontrol(int mode)
       /* start */
       profil((unsigned short *)(sbuf + sizeof(struct phdr)),
 	     ssiz - sizeof(struct phdr),
-	     (long)s_lowpc, s_scale);
+	     (size_t)s_lowpc, s_scale);
       
       profiling = 0;
     } else {
