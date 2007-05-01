@@ -1,3 +1,11 @@
+2007-04-30  Keith Seitz  <keiths@redhat.com>
+
+	* interpret-run.cc (NEXT_INSN)[DEBUG]: Advance PC before
+	executing the instruction.
+	* include/java-interp.h (_Jv_InterpFrame::get_pc): Subtract
+	one insn from the frame's PC. _Jv_InterpMethod::run et al
+	will advance the PC before executing the instruction.
+
 2007-04-27  Keith Seitz  <keiths@redhat.com>
 
 	* classpath/lib/gnu/classpath/jdwp/Jdwp.class: Regenerated.

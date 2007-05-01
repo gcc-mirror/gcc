@@ -465,7 +465,7 @@ public:
     else
       pc = *pc_ptr;
     
-    return pc;
+    return pc - 1;
   }
 };
 
