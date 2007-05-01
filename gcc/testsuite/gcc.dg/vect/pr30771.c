@@ -14,5 +14,5 @@ main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_unpack } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

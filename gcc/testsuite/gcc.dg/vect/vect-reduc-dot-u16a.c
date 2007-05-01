@@ -30,7 +30,7 @@ foo1(int len) {
 int main (void)
 {
   unsigned int dot1;
-  int i;
+  unsigned short i;
 
   check_vect ();
 

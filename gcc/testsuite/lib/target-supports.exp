@@ -1665,7 +1665,8 @@ proc check_effective_target_vect_widen_sum_hi_to_si { } {
         verbose "check_effective_target_vect_widen_sum_hi_to_si: using cached result" 2
     } else {
         set et_vect_widen_sum_hi_to_si_saved [check_effective_target_vect_unpack]
-        if { [istarget powerpc*-*-*] } {
+        if { [istarget powerpc*-*-*] 
+	     || [istarget ia64-*-*] } {
             set et_vect_widen_sum_hi_to_si_saved 1
         }
     }
@@ -1687,7 +1688,8 @@ proc check_effective_target_vect_widen_sum_qi_to_hi { } {
         verbose "check_effective_target_vect_widen_sum_qi_to_hi: using cached result" 2
     } else {
         set et_vect_widen_sum_qi_to_hi_saved 0
-	if { [check_effective_target_vect_unpack] } {
+	if { [check_effective_target_vect_unpack] 
+	     || [istarget ia64-*-*] } {
             set et_vect_widen_sum_qi_to_hi_saved 1
 	}
     }

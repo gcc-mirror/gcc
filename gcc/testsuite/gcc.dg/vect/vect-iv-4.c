@@ -40,5 +40,5 @@ int main (void)
   return main1 ();
 } 
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_pack_trunc } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
