@@ -1,5 +1,16 @@
 2007-05-01  Benjamin Kosnik  <bkoz@redhat.com>
 	
+	* 23_containers/requirements/sequences/dr438/deque/*: Move to...
+	* 23_containers/deque/requirements/dr438: ...here.
+	
+	* 23_containers/requirements/sequences/dr438/list/*: Move to...
+	* 23_containers/list/requirements/dr438: ...here.
+	
+	* 23_containers/requirements/sequences/dr438/vector/*: Move to...
+	* 23_containers/vector/requirements/dr438: ...here.
+
+2007-05-01  Benjamin Kosnik  <bkoz@redhat.com>
+	
 	* testsuite/*/explicit_instantiations.cc: Change to...
 	* testsuite/*/explicit_instantiation.cc: ... this.
 
