@@ -4665,7 +4665,7 @@ the model of the type of @code{X}.
 F95 and later
 
 @item @emph{Class}:
-Elemental function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{RESULT = HUGE(X)}
@@ -7180,10 +7180,10 @@ affected by the movement of bits is unchanged. The values of
 F95 and later
 
 @item @emph{Class}:
-Elemental function
+Elemental subroutine
 
 @item @emph{Syntax}:
-@code{RESULT = MVBITS(FROM, FROMPOS, LEN, TO, TOPOS)}
+@code{CALL MVBITS(FROM, FROMPOS, LEN, TO, TOPOS)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7195,13 +7195,8 @@ Elemental function
 @item @var{TOPOS}   @tab The type shall be @code{INTEGER(*)}.
 @end multitable
 
-@item @emph{Return value}:
-The return value is of type @code{INTEGER(*)} and of the same kind as
-@var{FROM}.
-
 @item @emph{See also}:
 @ref{IBCLR}, @ref{IBSET}, @ref{IBITS}, @ref{IAND}, @ref{IOR}, @ref{IEOR}
-
 @end table
 
 
@@ -7845,7 +7840,7 @@ from the uniform distribution over the range @math{ 0 \leq x < 1}.
 F95 and later
 
 @item @emph{Class}:
-Elemental subroutine
+Subroutine
 
 @item @emph{Syntax}:
 @code{RANDOM_NUMBER(HARVEST)}
@@ -9636,7 +9631,7 @@ in the model of the type of @code{X}.
 F95 and later
 
 @item @emph{Class}:
-Elemental function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{RESULT = TINY(X)}
