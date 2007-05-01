@@ -28,7 +28,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// NB: This file is for testing basic_ofstream with NO OTHER INCLUDES.
+// NB: This file is for testing type_traits with NO OTHER INCLUDES.
 
 #include <tr1/type_traits>
 
