@@ -35,7 +35,7 @@ GCC_4.2.0 {
   __gcc_qneg
   __gcc_qeq
   __gcc_qne
-  __gcc_ggt
+  __gcc_qgt
   __gcc_qge
   __gcc_qlt
   __gcc_qle

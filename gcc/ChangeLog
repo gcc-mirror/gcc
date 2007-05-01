@@ -1,3 +1,7 @@
+2007-05-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/libgcc-ppc-glibc.ver (__gcc_qgt): Fix typo.
+
 2007-04-27  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (avr_mcu_types): Add support for ATmega8HVA and 
