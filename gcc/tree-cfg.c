@@ -181,6 +181,7 @@ build_tree_cfg (tree *tp)
 
   /* Create the edges of the flowgraph.  */
   make_edges ();
+  cleanup_dead_labels ();
 
   /* Debugging dumps.  */
 
@@ -830,11 +831,19 @@ make_goto_expr_edges (basic_block bb)
    to do early because it allows us to group case labels before creating
    the edges for the CFG, and it speeds up block statement iterators in
    all passes later on.
-   We only run this pass once, running it more than once is probably not
-   profitable.  */
+   We rerun this pass after CFG is created, to get rid of the labels that
+   are no longer referenced.  After then we do not run it any more, since
+   (almost) no new labels should be created.  */
 
 /* A map from basic block index to the leading label of that block.  */
-static tree *label_for_bb;
+static struct label_record
+{
+  /* The label.  */
+  tree label;
+
+  /* True if the label is referenced from somewhere.  */
+  bool used;
+} *label_for_bb;
 
 /* Callback for for_each_eh_region.  Helper for cleanup_dead_labels.  */
 static void
@@ -852,7 +861,8 @@ update_eh_label (struct eh_region *region)
       if (! bb)
 	return;
 
-      new_label = label_for_bb[bb->index];
+      new_label = label_for_bb[bb->index].label;
+      label_for_bb[bb->index].used = true;
       set_eh_region_tree_label (region, new_label);
     }
 }
@@ -862,11 +872,17 @@ static tree
 main_block_label (tree label)
 {
   basic_block bb = label_to_block (label);
+  tree main_label = label_for_bb[bb->index].label;
 
   /* label_to_block possibly inserted undefined label into the chain.  */
-  if (!label_for_bb[bb->index])
-    label_for_bb[bb->index] = label;
-  return label_for_bb[bb->index];
+  if (!main_label)
+    {
+      label_for_bb[bb->index].label = label;
+      main_label = label;
+    }
+
+  label_for_bb[bb->index].used = true;
+  return main_label;
 }
 
 /* Cleanup redundant labels.  This is a three-step process:
@@ -878,7 +894,7 @@ void
 cleanup_dead_labels (void)
 {
   basic_block bb;
-  label_for_bb = XCNEWVEC (tree, last_basic_block);
+  label_for_bb = XCNEWVEC (struct label_record, last_basic_block);
 
   /* Find a suitable label for each block.  We use the first user-defined
      label if there is one, or otherwise just the first label we see.  */
@@ -897,19 +913,19 @@ cleanup_dead_labels (void)
 
 	  /* If we have not yet seen a label for the current block,
 	     remember this one and see if there are more labels.  */
-	  if (! label_for_bb[bb->index])
+	  if (!label_for_bb[bb->index].label)
 	    {
-	      label_for_bb[bb->index] = label;
+	      label_for_bb[bb->index].label = label;
 	      continue;
 	    }
 
 	  /* If we did see a label for the current block already, but it
 	     is an artificially created label, replace it if the current
 	     label is a user defined label.  */
-	  if (! DECL_ARTIFICIAL (label)
-	      && DECL_ARTIFICIAL (label_for_bb[bb->index]))
+	  if (!DECL_ARTIFICIAL (label)
+	      && DECL_ARTIFICIAL (label_for_bb[bb->index].label))
 	    {
-	      label_for_bb[bb->index] = label;
+	      label_for_bb[bb->index].label = label;
 	      break;
 	    }
 	}
@@ -981,10 +997,14 @@ cleanup_dead_labels (void)
   FOR_EACH_BB (bb)
     {
       block_stmt_iterator i;
-      tree label_for_this_bb = label_for_bb[bb->index];
+      tree label_for_this_bb = label_for_bb[bb->index].label;
 
-      if (! label_for_this_bb)
+      if (!label_for_this_bb)
 	continue;
+
+      /* If the main label of the block is unused, we may still remove it.  */
+      if (!label_for_bb[bb->index].used)
+	label_for_this_bb = NULL;
 
       for (i = bsi_start (bb); !bsi_end_p (i); )
 	{
