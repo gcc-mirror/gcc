@@ -505,7 +505,8 @@ ip_normal_pos (struct loop *loop)
 
   bb = single_pred (loop->latch);
   last = last_stmt (bb);
-  if (TREE_CODE (last) != COND_EXPR)
+  if (!last
+      || TREE_CODE (last) != COND_EXPR)
     return NULL;
 
   exit = EDGE_SUCC (bb, 0);
