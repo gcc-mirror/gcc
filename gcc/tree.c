@@ -3881,15 +3881,10 @@ build_distinct_type_copy (tree type)
   /* Make it its own variant.  */
   TYPE_MAIN_VARIANT (t) = t;
   TYPE_NEXT_VARIANT (t) = 0;
-  
-  /* VRP assumes that TREE_TYPE (TYPE_MIN_VALUE (type)) == type.  */
-  if (INTEGRAL_TYPE_P (t) || SCALAR_FLOAT_TYPE_P (t))
-    {
-      if (TYPE_MIN_VALUE (t) != NULL_TREE)
-	TYPE_MIN_VALUE (t) = fold_convert (t, TYPE_MIN_VALUE (t));
-      if (TYPE_MAX_VALUE (t) != NULL_TREE)
-	TYPE_MAX_VALUE (t) = fold_convert (t, TYPE_MAX_VALUE (t));
-    }
+
+  /* Note that it is now possible for TYPE_MIN_VALUE to be a value
+     whose TREE_TYPE is not t.  This can also happen in the Ada
+     frontend when using subtypes.  */
 
   return t;
 }

@@ -1,3 +1,18 @@
+2007-05-01  Ian Lance Taylor  <iant@google.com>
+
+	PR tree-optimization/31739
+	* tree-vrp.c (vrp_val_is_max): New static function.
+	(vrp_val_is_min): New static function.
+	(set_value_range_to_value): Use TYPE_{MAX,MIN}_VALUE rather than
+	copying the node.
+	(set_value_range): Use vrp_val_is_{max,min}.
+	(extract_range_from_assert): Likewise.
+	(extract_range_from_binary_expr): Likewise.
+	(extract_range_from_unary_expr): Likewise.
+	(dump_value_range, vrp_meet): Likewise.
+	(vrp_visit_phi_node): Likewise.
+	* tree.c (build_distinct_type_copy): Revert change of 2007-04-27.
+
 2007-05-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/libgcc-ppc-glibc.ver (__gcc_qgt): Fix typo.
