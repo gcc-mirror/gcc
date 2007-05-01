@@ -1126,6 +1126,24 @@ gfc_full_array_ref_p (gfc_ref *ref)
 
   for (i = 0; i < ref->u.ar.dimen; i++)
     {
+      /* If we have a single element in the reference, we need to check
+	 that the array has a single element and that we actually reference
+	 the correct element.  */
+      if (ref->u.ar.dimen_type[i] == DIMEN_ELEMENT)
+	{
+	  if (!ref->u.ar.as
+	      || !ref->u.ar.as->lower[i]
+	      || !ref->u.ar.as->upper[i]
+	      || gfc_dep_compare_expr (ref->u.ar.as->lower[i],
+				       ref->u.ar.as->upper[i])
+	      || !ref->u.ar.start[i]
+	      || gfc_dep_compare_expr (ref->u.ar.start[i],
+				       ref->u.ar.as->lower[i]))
+	    return false;
+	  else
+	    continue;
+	}
+
       /* Check the lower bound.  */
       if (ref->u.ar.start[i]
 	  && (!ref->u.ar.as
