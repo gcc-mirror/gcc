@@ -348,15 +348,16 @@ details.  */
 #define NEXT_INSN							\
   do									\
     {									\
+      pc_t insn = pc++;							\
       if (JVMTI_REQUESTED_EVENT (SingleStep))				\
 	{								\
 	  JNIEnv *env = _Jv_GetCurrentJNIEnv ();			\
 	  jmethodID method = meth->self;				\
-	  jlocation loc = meth->insn_index (pc);			\
+	  jlocation loc = meth->insn_index (insn);			\
 	  _Jv_JVMTI_PostEvent (JVMTI_EVENT_SINGLE_STEP, thread,		\
 			       env, method, loc);			\
 	}								\
-      goto *((pc++)->insn);						\
+      goto *(insn->insn);						\
     }									\
   while (0)
 
