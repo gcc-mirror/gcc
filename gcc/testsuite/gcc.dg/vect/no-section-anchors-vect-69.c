@@ -50,7 +50,7 @@ int main1 ()
         abort ();
     }
 
-  /* 2. aligned */
+  /* 2. aligned on 8-bytes */
   for (i = 3; i < N-1; i++)
     {
       tmp1[2].a.n[1][2][i] = 6;
@@ -63,7 +63,7 @@ int main1 ()
         abort ();
     }
 
-  /* 3. aligned */
+  /* 3. aligned on 16-bytes */
   for (i = 0; i < N; i++)
     {
       for (j = 0; j < N; j++)
@@ -113,5 +113,8 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 3 "vect" } } */
+/* Loops 1,2,4 are unaligned on targets that require 16-byte alignment.
+   Loops 1,4 are unaligned on targets that require 8-byte alignment (ia64). */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 3 "vect" { xfail ia64-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { target ia64-*-* } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

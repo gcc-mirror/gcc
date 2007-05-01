@@ -33,5 +33,6 @@ int main (void)
   return 0;
 } 
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { target vect_int_mult } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target {! vect_int_mult } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

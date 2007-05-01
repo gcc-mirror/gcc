@@ -53,6 +53,6 @@ int main (void)
    dot-product of unsigned shorts) and targets that support widening multiplication.  */
 /* The induction loop in main is vectorized.  */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail *-*-* } } } */ 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */ 
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_pack_trunc } } } */ 
 
 /* { dg-final { cleanup-tree-dump "vect" } } */
