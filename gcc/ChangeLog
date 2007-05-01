@@ -1,3 +1,12 @@
+2007-05-01  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/m68k/constraints.md: New.
+	* config/m68k/m68k.h (REG_CLASS_FROM_LETTER,
+	CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P,
+	EXTRA_CONSTRAINT): Remove.
+	* config/m68k/m68k.md: Include constraints.md.
+	* expr.c (expand_expr_real_1): Copy DECL_RTL before using it.
+
 2007-05-01  Ian Lance Taylor  <iant@google.com>
 
 	PR tree-optimization/31739
