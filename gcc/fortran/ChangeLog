@@ -1,3 +1,12 @@
+2007-05-01  Daniel Franke  <franke.daniel@gmail.com>
+
+	* intrinsic.c (add_functions): Fixed ELEMENTAL specifications.
+	(add_subroutines): Replaced magic numbers in function calls by
+	ELEMENTAL and NOT_ELEMENTAL respectively.
+	* intrinsic.texi (MVBITS): Changed class to elemental subroutine.
+	(RANDOM_NUMBER): Changed class to subroutine.
+	(HUGE, TINY): Changed class to inquiry function.
+
 2007-04-30  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* trans-const.c (gfc_conv_mpz_to_tree): Use mpz_get_double_int.
