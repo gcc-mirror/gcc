@@ -225,7 +225,6 @@ int __gcc_qeq (double, double, double, double);
 int __gcc_qne (double, double, double, double);
 int __gcc_qge (double, double, double, double);
 int __gcc_qle (double, double, double, double);
-int __gcc_qunord (double, double, double, double);
 long double __gcc_stoq (float);
 long double __gcc_dtoq (double);
 float __gcc_qtos (double, double);
@@ -238,7 +237,6 @@ long double __gcc_utoq (unsigned int);
 extern int __eqdf2 (double, double);
 extern int __ledf2 (double, double);
 extern int __gedf2 (double, double);
-extern int __unorddf2 (double, double);
 
 /* Negate 'long double' value and return the result.	*/
 long double
@@ -283,15 +281,6 @@ __gcc_qge (double a, double aa, double c, double cc)
 }
 
 strong_alias (__gcc_qge, __gcc_qgt);
-
-/* Compare two 'long double' values for unordered.  */
-int
-__gcc_qunord (double a, double aa, double c, double cc)
-{
-  if (__eqdf2 (a, c) == 0)
-    return __unorddf2 (aa, cc);
-  return __unorddf2 (a, c);
-}
 
 /* Convert single to long double.  */
 long double
@@ -364,6 +353,20 @@ __gcc_utoq (unsigned int a)
 #endif
 
 #ifdef __NO_FPRS__
+
+int __gcc_qunord (double, double, double, double);
+
+extern int __eqdf2 (double, double);
+extern int __unorddf2 (double, double);
+
+/* Compare two 'long double' values for unordered.  */
+int
+__gcc_qunord (double a, double aa, double c, double cc)
+{
+  if (__eqdf2 (a, c) == 0)
+    return __unorddf2 (aa, cc);
+  return __unorddf2 (a, c);
+}
 
 #include "config/soft-fp/soft-fp.h"
 #include "config/soft-fp/double.h"

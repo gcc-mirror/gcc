@@ -1,3 +1,14 @@
+2007-05-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/darwin-ldouble.c (__gcc_qunord): Define if
+	__NO_FPRS__, not just if _SOFT_DOUBLE.
+	* config/rs6000/libgcc-ppc-glibc.ver (__gcc_qunord): Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_libfuncs): Use __gcc_qunord
+	also for E500 double.
+	* config/rs6000/rs6000.md (buneq, bunge, bungt, bunle, bunlt,
+	suneq, sunge, sungt, sunle, sunlt): Disable for (TARGET_HARD_FLOAT
+	&& !TARGET_FPRS).
+
 2007-05-01  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-loop-manip.c (ip_normal_pos): Check if last stmt
