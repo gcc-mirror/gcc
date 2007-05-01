@@ -1644,6 +1644,12 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
       *dt = vect_constant_def;
       return true;
     }
+  if (is_gimple_min_invariant (operand))
+   {
+      *def = operand;
+      *dt = vect_invariant_def;
+      return true;
+   }
     
   if (TREE_CODE (operand) != SSA_NAME)
     {
@@ -1671,7 +1677,7 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
   if (IS_EMPTY_STMT (*def_stmt))
     {
       tree arg = TREE_OPERAND (*def_stmt, 0);
-      if (TREE_CODE (arg) == INTEGER_CST || TREE_CODE (arg) == REAL_CST)
+      if (is_gimple_min_invariant (arg))
         {
           *def = operand;
           *dt = vect_invariant_def;
