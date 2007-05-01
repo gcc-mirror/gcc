@@ -1726,12 +1726,21 @@ override_options (void)
       {"k8", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW | PTA_64BIT
 				      | PTA_3DNOW_A | PTA_SSE | PTA_SSE2
 				      | PTA_NO_SAHF},
+      {"k8-sse3", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW | PTA_64BIT
+                                      | PTA_3DNOW_A | PTA_SSE | PTA_SSE2
+				      | PTA_SSE3 | PTA_NO_SAHF},
       {"opteron", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
 					| PTA_64BIT | PTA_3DNOW_A | PTA_SSE
 					| PTA_SSE2 | PTA_NO_SAHF},
+      {"opteron-sse3", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
+					| PTA_64BIT | PTA_3DNOW_A | PTA_SSE
+					| PTA_SSE2 | PTA_SSE3 | PTA_NO_SAHF},
       {"athlon64", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
 					 | PTA_64BIT | PTA_3DNOW_A | PTA_SSE
 					 | PTA_SSE2 | PTA_NO_SAHF},
+      {"athlon64-sse3", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
+					 | PTA_64BIT | PTA_3DNOW_A | PTA_SSE
+                                         | PTA_SSE2 | PTA_SSE3 | PTA_NO_SAHF},
       {"athlon-fx", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
 					  | PTA_64BIT | PTA_3DNOW_A | PTA_SSE
 					  | PTA_SSE2 | PTA_NO_SAHF},
