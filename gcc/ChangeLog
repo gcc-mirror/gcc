@@ -1,3 +1,21 @@
+2007-05-01  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (set_value_range): Do not allocate equiv bitmap
+	if it is not about to be set.
+	(get_value_range): Do not pre-allocate equiv bitmap.
+	(update_value_range): No need to clear equiv field.
+	(add_equivalence): Change prototype to get bitmap pointer.
+	Allocate bitmap here if it is not already.
+	(extract_range_from_assert): Do not allocate bitmap here.
+	Update callers to add_equivalence.
+	(extract_range_from_ssa_name): Likewise.
+	(get_vr_for_comparison): New static helper.
+	(compare_name_with_value): Handle NULL equiv bitmap by
+	peeling the first iteration of the comparison loop.
+	Use get_vr_for_comparison.
+	(compare_names): Handle NULL equiv bitmaps by using fake
+	ones.  Use get_vr_for_comparison.
+
 2007-04-30  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* double-int.c (mpz_set_double_int): Moved from

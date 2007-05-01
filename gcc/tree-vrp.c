@@ -291,7 +291,8 @@ set_value_range (value_range_t *vr, enum value_range_type t, tree min,
 
   /* Since updating the equivalence set involves deep copying the
      bitmaps, only do it if absolutely necessary.  */
-  if (vr->equiv == NULL)
+  if (vr->equiv == NULL
+      && equiv != NULL)
     vr->equiv = BITMAP_ALLOC (NULL);
 
   if (equiv != vr->equiv)
@@ -436,8 +437,8 @@ get_value_range (tree var)
   /* Create a default value range.  */
   vr_value[ver] = vr = XCNEW (value_range_t);
 
-  /* Allocate an equivalence set.  */
-  vr->equiv = BITMAP_ALLOC (NULL);
+  /* Defer allocating the equivalence set.  */
+  vr->equiv = NULL;
 
   /* If VAR is a default definition, the variable can take any value
      in VAR's type.  */
@@ -510,23 +511,25 @@ update_value_range (tree var, value_range_t *new_vr)
 	             new_vr->equiv);
 
   BITMAP_FREE (new_vr->equiv);
-  new_vr->equiv = NULL;
 
   return is_new;
 }
 
 
-/* Add VAR and VAR's equivalence set to EQUIV.  */
+/* Add VAR and VAR's equivalence set to EQUIV.  This is the central
+   point where equivalence processing can be turned on/off.  */
 
 static void
-add_equivalence (bitmap equiv, tree var)
+add_equivalence (bitmap *equiv, tree var)
 {
   unsigned ver = SSA_NAME_VERSION (var);
   value_range_t *vr = vr_value[ver];
 
-  bitmap_set_bit (equiv, ver);
+  if (*equiv == NULL)
+    *equiv = BITMAP_ALLOC (NULL);
+  bitmap_set_bit (*equiv, ver);
   if (vr && vr->equiv)
-    bitmap_ior_into (equiv, vr->equiv);
+    bitmap_ior_into (*equiv, vr->equiv);
 }
 
 
@@ -1095,8 +1098,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
      predicates, we will need to trim the set of equivalences before
      we are done.  */
   gcc_assert (vr_p->equiv == NULL);
-  vr_p->equiv = BITMAP_ALLOC (NULL);
-  add_equivalence (vr_p->equiv, var);
+  add_equivalence (&vr_p->equiv, var);
 
   /* Extract a new range based on the asserted comparison for VAR and
      LIMIT's value range.  Notice that if LIMIT has an anti-range, we
@@ -1130,7 +1132,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	 SSA name, the new range will also inherit the equivalence set
 	 from LIMIT.  */
       if (TREE_CODE (limit) == SSA_NAME)
-	add_equivalence (vr_p->equiv, limit);
+	add_equivalence (&vr_p->equiv, limit);
     }
   else if (cond_code == NE_EXPR)
     {
@@ -1478,7 +1480,7 @@ extract_range_from_ssa_name (value_range_t *vr, tree var)
   else
     set_value_range (vr, VR_RANGE, var, var, NULL);
 
-  add_equivalence (vr->equiv, var);
+  add_equivalence (&vr->equiv, var);
 }
 
 
@@ -4582,6 +4584,27 @@ vrp_visit_assignment (tree stmt, tree *output_p)
   return SSA_PROP_VARYING;
 }
 
+/* Helper that gets the value range of the SSA_NAME with version I
+   or a symbolic range contaning the SSA_NAME only if the value range
+   is varying or undefined.  */
+
+static inline value_range_t
+get_vr_for_comparison (int i)
+{
+  value_range_t vr = *(vr_value[i]);
+
+  /* If name N_i does not have a valid range, use N_i as its own
+     range.  This allows us to compare against names that may
+     have N_i in their ranges.  */
+  if (vr.type == VR_VARYING || vr.type == VR_UNDEFINED)
+    {
+      vr.type = VR_RANGE;
+      vr.min = ssa_name (i);
+      vr.max = ssa_name (i);
+    }
+
+  return vr;
+}
 
 /* Compare all the value ranges for names equivalent to VAR with VAL
    using comparison code COMP.  Return the same value returned by
@@ -4597,37 +4620,35 @@ compare_name_with_value (enum tree_code comp, tree var, tree val,
   bitmap e;
   tree retval, t;
   int used_strict_overflow;
-  
-  t = retval = NULL_TREE;
+  bool sop;
+  value_range_t equiv_vr;
 
   /* Get the set of equivalences for VAR.  */
   e = get_value_range (var)->equiv;
-
-  /* Add VAR to its own set of equivalences so that VAR's value range
-     is processed by this loop (otherwise, we would have to replicate
-     the body of the loop just to check VAR's value range).  */
-  bitmap_set_bit (e, SSA_NAME_VERSION (var));
 
   /* Start at -1.  Set it to 0 if we do a comparison without relying
      on overflow, or 1 if all comparisons rely on overflow.  */
   used_strict_overflow = -1;
 
+  /* Compare vars' value range with val.  */
+  equiv_vr = get_vr_for_comparison (SSA_NAME_VERSION (var));
+  sop = false;
+  retval = compare_range_with_value (comp, &equiv_vr, val, &sop);
+  if (sop)
+    used_strict_overflow = 1;
+
+  /* If the equiv set is empty we have done all work we need to do.  */
+  if (e == NULL)
+    {
+      if (retval
+	  && used_strict_overflow > 0)
+	*strict_overflow_p = true;
+      return retval;
+    }
+
   EXECUTE_IF_SET_IN_BITMAP (e, 0, i, bi)
     {
-      bool sop;
-
-      value_range_t equiv_vr = *(vr_value[i]);
-
-      /* If name N_i does not have a valid range, use N_i as its own
-	 range.  This allows us to compare against names that may
-	 have N_i in their ranges.  */
-      if (equiv_vr.type == VR_VARYING || equiv_vr.type == VR_UNDEFINED)
-	{
-	  equiv_vr.type = VR_RANGE;
-	  equiv_vr.min = ssa_name (i);
-	  equiv_vr.max = ssa_name (i);
-	}
-
+      equiv_vr = get_vr_for_comparison (i);
       sop = false;
       t = compare_range_with_value (comp, &equiv_vr, val, &sop);
       if (t)
@@ -4651,18 +4672,11 @@ compare_name_with_value (enum tree_code comp, tree var, tree val,
 	}
     }
 
-  /* Remove VAR from its own equivalence set.  */
-  bitmap_clear_bit (e, SSA_NAME_VERSION (var));
+  if (retval
+      && used_strict_overflow > 0)
+    *strict_overflow_p = true;
 
-  if (retval)
-    {
-      if (used_strict_overflow > 0)
-	*strict_overflow_p = true;
-      return retval;
-    }
-
-  /* We couldn't find a non-NULL value for the predicate.  */
-  return NULL_TREE;
+  return retval;
 }
 
 
@@ -4682,11 +4696,26 @@ compare_names (enum tree_code comp, tree n1, tree n2,
   bitmap_iterator bi1, bi2;
   unsigned i1, i2;
   int used_strict_overflow;
+  static bitmap_obstack *s_obstack = NULL;
+  static bitmap s_e1 = NULL, s_e2 = NULL;
 
   /* Compare the ranges of every name equivalent to N1 against the
      ranges of every name equivalent to N2.  */
   e1 = get_value_range (n1)->equiv;
   e2 = get_value_range (n2)->equiv;
+
+  /* Use the fake bitmaps if e1 or e2 are not available.  */
+  if (s_obstack == NULL)
+    {
+      s_obstack = XNEW (bitmap_obstack);
+      bitmap_obstack_initialize (s_obstack);
+      s_e1 = BITMAP_ALLOC (s_obstack);
+      s_e2 = BITMAP_ALLOC (s_obstack);
+    }
+  if (e1 == NULL)
+    e1 = s_e1;
+  if (e2 == NULL)
+    e2 = s_e2;
 
   /* Add N1 and N2 to their own set of equivalences to avoid
      duplicating the body of the loop just to check N1 and N2
@@ -4715,29 +4744,14 @@ compare_names (enum tree_code comp, tree n1, tree n2,
      of the loop just to check N1 and N2 ranges.  */
   EXECUTE_IF_SET_IN_BITMAP (e1, 0, i1, bi1)
     {
-      value_range_t vr1 = *(vr_value[i1]);
-
-      /* If the range is VARYING or UNDEFINED, use the name itself.  */
-      if (vr1.type == VR_VARYING || vr1.type == VR_UNDEFINED)
-	{
-	  vr1.type = VR_RANGE;
-	  vr1.min = ssa_name (i1);
-	  vr1.max = ssa_name (i1);
-	}
+      value_range_t vr1 = get_vr_for_comparison (i1);
 
       t = retval = NULL_TREE;
       EXECUTE_IF_SET_IN_BITMAP (e2, 0, i2, bi2)
 	{
 	  bool sop;
 
-	  value_range_t vr2 = *(vr_value[i2]);
-
-	  if (vr2.type == VR_VARYING || vr2.type == VR_UNDEFINED)
-	    {
-	      vr2.type = VR_RANGE;
-	      vr2.min = ssa_name (i2);
-	      vr2.max = ssa_name (i2);
-	    }
+	  value_range_t vr2 = get_vr_for_comparison (i2);
 
 	  t = compare_ranges (comp, &vr1, &vr2, &sop);
 	  if (t)
