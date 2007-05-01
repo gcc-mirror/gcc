@@ -1651,7 +1651,7 @@ override_options (void)
       {&core2_cost, 0, 0, 16, 7, 16, 7, 16},
       {&generic32_cost, 0, 0, 16, 7, 16, 7, 16},
       {&generic64_cost, 0, 0, 16, 7, 16, 7, 16},
-      {&amdfam10_cost, 0, 0, 32, 7, 32, 7, 32}
+      {&amdfam10_cost, 0, 0, 32, 24, 32, 7, 32}
     };
 
   static const char * const cpu_names[] = TARGET_CPU_DEFAULT_NAMES;
