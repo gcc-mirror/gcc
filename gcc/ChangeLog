@@ -1,3 +1,7 @@
+2007-05-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/libgcc-ppc-glibc.ver (__gcc_qgt): Fix typo.
+
 2007-05-01  Jan Hubicka  <jh@suse.cz>
 
 	* tree-vectorize.c (vect_is_simple_use): gimple_min_invariant is
