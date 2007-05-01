@@ -39,7 +39,6 @@ GCC_4.2.0 {
   __gcc_qge
   __gcc_qlt
   __gcc_qle
-  __gcc_qunord
   __gcc_stoq
   __gcc_dtoq
   __gcc_qtos
@@ -48,5 +47,9 @@ GCC_4.2.0 {
   __gcc_qtou
   __gcc_itoq
   __gcc_utoq
+%endif
+
+%ifdef __NO_FPRS__
+  __gcc_qunord
 %endif
 }
