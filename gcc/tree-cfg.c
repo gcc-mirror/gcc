@@ -4624,7 +4624,7 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
     }
 
   VEC_replace (basic_block, cfg->x_basic_block_info,
-               cfg->x_last_basic_block, bb);
+               bb->index, bb);
 
   /* The statements in BB need to be associated with a new TREE_BLOCK.
      Labels need to be associated with a new label-to-block map.  */
