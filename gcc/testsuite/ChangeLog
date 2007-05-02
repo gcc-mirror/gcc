@@ -1,3 +1,8 @@
+2007-05-02  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/28709:
+	* gcc.dg/cpp/pr28709.c: New file.
+
 2007-05-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/31146

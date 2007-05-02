@@ -432,19 +432,18 @@ static bool
 paste_tokens (cpp_reader *pfile, const cpp_token **plhs, const cpp_token *rhs)
 {
   unsigned char *buf, *end, *lhsend;
-  const cpp_token *lhs;
+  cpp_token *lhs;
   unsigned int len;
 
-  lhs = *plhs;
-  len = cpp_token_len (lhs) + cpp_token_len (rhs) + 1;
+  len = cpp_token_len (*plhs) + cpp_token_len (rhs) + 1;
   buf = (unsigned char *) alloca (len);
-  end = lhsend = cpp_spell_token (pfile, lhs, buf, false);
+  end = lhsend = cpp_spell_token (pfile, *plhs, buf, false);
 
   /* Avoid comment headers, since they are still processed in stage 3.
      It is simpler to insert a space here, rather than modifying the
      lexer to ignore comments in some circumstances.  Simply returning
      false doesn't work, since we want to clear the PASTE_LEFT flag.  */
-  if (lhs->type == CPP_DIV && rhs->type != CPP_EQ)
+  if ((*plhs)->type == CPP_DIV && rhs->type != CPP_EQ)
     *end++ = ' ';
   end = cpp_spell_token (pfile, rhs, end, false);
   *end = '\n';
@@ -454,12 +453,21 @@ paste_tokens (cpp_reader *pfile, const cpp_token **plhs, const cpp_token *rhs)
 
   /* Set pfile->cur_token as required by _cpp_lex_direct.  */
   pfile->cur_token = _cpp_temp_token (pfile);
-  *plhs = _cpp_lex_direct (pfile);
+  lhs = _cpp_lex_direct (pfile);
   if (pfile->buffer->cur != pfile->buffer->rlimit)
     {
+      source_location saved_loc = lhs->src_loc;
+
       _cpp_pop_buffer (pfile);
       _cpp_backup_tokens (pfile, 1);
       *lhsend = '\0';
+
+      /* We have to remove the PASTE_LEFT flag from the old lhs, but
+	 we want to keep the new location.  */
+      *lhs = **plhs;
+      *plhs = lhs;
+      lhs->src_loc = saved_loc;
+      lhs->flags &= ~PASTE_LEFT;
 
       /* Mandatory error for all apart from assembler.  */
       if (CPP_OPTION (pfile, lang) != CLK_ASM)
@@ -469,6 +477,7 @@ paste_tokens (cpp_reader *pfile, const cpp_token **plhs, const cpp_token *rhs)
       return false;
     }
 
+  *plhs = lhs;
   _cpp_pop_buffer (pfile);
   return true;
 }
