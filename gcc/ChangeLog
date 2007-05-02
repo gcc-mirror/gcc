@@ -1,3 +1,12 @@
+2007-05-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/31146
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): New
+	argument, single_use_p.  If we have a single use that is
+	a conversion to the definition rhs type, propagate that rhs.
+	(forward_propagate_addr_expr): Pass single_use_p argument
+	to forward_propagate_addr_expr_1.
+
 2007-05-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_expand_sse_comi): Remove unused
