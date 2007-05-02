@@ -42,11 +42,18 @@
 #ifdef L_aeabi_lcmp
 
 ARM_FUNC_START aeabi_lcmp
-	subs	ip, xxl, yyl
-	sbcs	ip, xxh, yyh
-	do_it	eq
-	COND(sub,s,eq)  ip, xxl, yyl
-	mov	r0, ip
+	cmp	xxh, yyh
+	do_it	lt
+	movlt	r0, #-1
+	do_it	gt
+	movgt	r0, #1
+	do_it	ne
+	RETc(ne)
+	subs	r0, xxl, yyl
+	do_it	lo
+	movlo	r0, #-1
+	do_it	hi
+	movhi	r0, #1
 	RET
 	FUNC_END aeabi_lcmp
 
