@@ -85,11 +85,11 @@ extern long long __eabi_uwrite8 (long long, void *);
     type a1;							\
     type b1;							\
 								\
-    fprintf (stderr, "%d: Test %s == %s\n", __LINE__, #a, #b);	\
     a1 = a;							\
     b1 = b;							\
     if (abs (a1 - b1) > epsilon)				\
     {								\
+      fprintf (stderr, "%d: Test %s == %s\n", __LINE__, #a, #b);	\
       fprintf (stderr, "%d: " format " != " format "\n",	\
 	       __LINE__, a1, b1);				\
       abort ();							\
@@ -103,9 +103,56 @@ extern long long __eabi_uwrite8 (long long, void *);
 #define feq(a, b) eq (a, b, float, fabs, fepsilon, "%f")
 #define deq(a, b) eq (a, b, double, fabs, depsilon, "%g")
 
+#define NUM_CMP_VALUES 6
+
+/* Values picked to cover a range of small, large, positive and negative.  */
+static unsigned int cmp_val[NUM_CMP_VALUES] = 
+{
+  0,
+  1,
+  0x40000000,
+  0x80000000,
+  0xc0000000,
+  0xffffffff
+};
+
+/* All combinations for each of the above values. */
+#define ulcmp(l, s, m) \
+    s, l, l, l, l, l,  m, s, l, l, l, l, \
+    m, m, s, l, l, l,  m, m, m, s, l, l, \
+    m, m, m, m, s, l,  m, m, m, m, m, s
+
+#define lcmp(l, s, m) \
+    s, l, l, m, m, m,  m, s, l, m, m, m, \
+    m, m, s, m, m, m,  l, l, l, s, l, l, \
+    l, l, l, m, s, l,  l, l, l, m, m, s
+
+/* All combinations of the above for high/low words.  */
+static int lcmp_results[] =
+{
+  lcmp(ulcmp(-1, -1, -1), ulcmp(-1, 0, 1), ulcmp(1, 1, 1))
+};
+
+static int ulcmp_results[] =
+{
+  ulcmp(ulcmp(-1, -1, -1), ulcmp(-1, 0, 1), ulcmp(1, 1, 1))
+};
+
+static int signof(int i)
+{
+  if (i < 0)
+    return -1;
+
+  if (i == 0)
+    return 0;
+
+  return 1;
+}
+
 int main () {
   unsigned char bytes[256];
-  int i;
+  int i, j, k, n;
+  int *result;
 
   /* Table 2.  Double-precision floating-point arithmetic.  */
   deq (__aeabi_dadd (dzero, done), done);
@@ -234,12 +281,31 @@ int main () {
   leq (__aeabi_llsl (2LL, 1), 4LL);
   leq (__aeabi_llsr (-1LL, 63), 1);
   leq (__aeabi_lasr (-1LL, 63), -1);
-  ieq (__aeabi_lcmp (0LL, 1LL), -1);
-  ieq (__aeabi_lcmp (0LL, 0LL), 0);
-  ieq (__aeabi_lcmp (1LL, 0LL), 1);
-  ieq (__aeabi_ulcmp (0LL, 1LL), -1);
-  ieq (__aeabi_ulcmp (0LL, 0LL), 0);
-  ieq (__aeabi_ulcmp (1LL, 0LL), 1);
+
+  result = lcmp_results;
+  for (i = 0; i < NUM_CMP_VALUES; i++)
+    for (j = 0; j < NUM_CMP_VALUES; j++)
+      for (k = 0; k < NUM_CMP_VALUES; k++)
+	for (n = 0; n < NUM_CMP_VALUES; n++)
+	  {
+	    ieq (signof (__aeabi_lcmp
+			  (((long long)cmp_val[i] << 32) | cmp_val[k],
+			   ((long long)cmp_val[j] << 32) | cmp_val[n])),
+			   *result);
+	    result++;
+	  }
+  result = ulcmp_results;
+  for (i = 0; i < NUM_CMP_VALUES; i++)
+    for (j = 0; j < NUM_CMP_VALUES; j++)
+      for (k = 0; k < NUM_CMP_VALUES; k++)
+	for (n = 0; n < NUM_CMP_VALUES; n++)
+	  {
+	    ieq (signof (__aeabi_ulcmp
+			  (((long long)cmp_val[i] << 32) | cmp_val[k],
+			   ((long long)cmp_val[j] << 32) | cmp_val[n])),
+			   *result);
+	    result++;
+	  }
 
   ieq (__aeabi_idiv (-550, 11), -50);
   ueq (__aeabi_uidiv (4000000000U, 1000000U), 4000U);

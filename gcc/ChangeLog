@@ -1,3 +1,7 @@
+2007-05-02  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/bpabi.S (aeabi_lcmp): Fix result on overflow.
+
 2007-05-02  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/29715

@@ -1,3 +1,7 @@
+2007-05-02  Paul Brook  <paul@codesourcery.com>
+
+	* gcc.dg/arm-eabi1.c: Move debug output.  Augment lcmp/ulcmp tests.
+
 2007-05-02  Eric Christopher  <echristo@apple.com>
 
 	* gcc.dg/cpp/if-div.c: New file.
