@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -619,6 +619,25 @@ __gnat_get_debuggable_suffix_ptr (int *len, const char **value)
   return;
 }
 
+/* Returns the OS filename and corresponding encoding.  */
+
+void
+__gnat_os_filename (char *filename, char *w_filename,
+		    char *os_name, int *o_length,
+		    char *encoding, int *e_length)
+{
+#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_DIRECTORY_STRUCTURE)
+  WS2SU (os_name, (TCHAR *)w_filename, o_length);
+  *o_length = strlen (os_name);
+  strcpy (encoding, "encoding=utf8");
+  *e_length = strlen (encoding);
+#else
+  strcpy (os_name, filename);
+  *o_length = strlen (filename);
+  *e_length = 0;
+#endif
+}
+
 FILE *
 __gnat_fopen (char *path, char *mode, int encoding)
 {
@@ -991,8 +1010,10 @@ __gnat_readdir (DIR *dirp, char *buffer, int *len)
 #elif defined (HAVE_READDIR_R)
   /* If possible, try to use the thread-safe version.  */
   if (readdir_r (dirp, buffer) != NULL)
-    *len = strlen (((struct dirent*) buffer)->d_name);
-    return ((struct dirent*) buffer)->d_name;
+    {
+      *len = strlen (((struct dirent*) buffer)->d_name);
+      return ((struct dirent*) buffer)->d_name;
+    }
   else
     return NULL;
 
@@ -1513,9 +1534,19 @@ __gnat_stat (char *name, struct stat *statbuf)
 int
 __gnat_file_exists (char *name)
 {
+#ifdef __MINGW32__
+  /*  On Windows do not use __gnat_stat() because a bug in Microsoft
+  _stat() routine. When the system time-zone is set with a negative
+  offset the _stat() routine fails on specific files like CON:  */
+  TCHAR wname [GNAT_MAX_PATH_LEN + 2];
+
+  S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
+  return GetFileAttributes (wname) != INVALID_FILE_ATTRIBUTES;
+#else
   struct stat statbuf;
 
   return !__gnat_stat (name, &statbuf);
+#endif
 }
 
 int

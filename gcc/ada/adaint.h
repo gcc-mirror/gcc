@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -47,10 +47,9 @@ typedef long OS_Time; /* Type corresponding to GNAT.OS_Lib.OS_Time */
 
 extern int    __gnat_max_path_len;
 extern OS_Time __gnat_current_time		   (void);
-extern void   __gnat_to_gm_time			   (OS_Time *, int *,
-						    int *, int *,
-						    int *, int *,
-						    int *);
+extern void   __gnat_to_gm_time			   (OS_Time *, int *, int *,
+				                    int *, int *,
+				                    int *, int *);
 extern int    __gnat_get_maximum_file_name_length  (void);
 extern int    __gnat_get_switches_case_sensitive   (void);
 extern int    __gnat_get_file_names_case_sensitive (void);
@@ -72,7 +71,8 @@ extern int    __gnat_mkdir			   (char *);
 extern int    __gnat_stat			   (char *,
 						    struct stat *);
 extern FILE  *__gnat_fopen			   (char *, char *, int);
-extern FILE  *__gnat_freopen			 (char *, char *, FILE *, int);
+extern FILE  *__gnat_freopen			   (char *, char *, FILE *,
+				                    int);
 extern int    __gnat_open_read                     (char *, int);
 extern int    __gnat_open_rw                       (char *, int);
 extern int    __gnat_open_create                   (char *, int);
@@ -165,6 +165,9 @@ extern int    __gnat_set_close_on_exec		   (int, int);
 extern int    __gnat_dup			   (int);
 extern int    __gnat_dup2			   (int, int);
 
+extern void   __gnat_os_filename                   (char *, char *, char *,
+						    int *, char *, int *);
+
 #ifdef __MINGW32__
 extern void   __gnat_plist_init                    (void);
 #endif
@@ -175,7 +178,7 @@ extern void   __gnat_plist_init                    (void);
 #endif
 
 /* This function returns the version of GCC being used.  Here it's GCC 3.  */
-extern int get_gcc_version		     (void);
+extern int    get_gcc_version                      (void);
 
-extern int __gnat_binder_supports_auto_init (void);
-extern int __gnat_sals_init_using_constructors (void);
+extern int    __gnat_binder_supports_auto_init     (void);
+extern int    __gnat_sals_init_using_constructors  (void);
