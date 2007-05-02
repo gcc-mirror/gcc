@@ -1,3 +1,8 @@
+2007-05-02  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/28709:
+	* macro.c (paste_tokens): Remove PASTE_LEFT from the old lhs.
+
 2007-03-30  Michael Meissner  <michael.meissner@amd.com>
 
 	* directives.c (lex_macro_node_from_str): Fix alloca call to be
