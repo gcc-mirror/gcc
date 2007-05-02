@@ -8649,69 +8649,6 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
 	}
     }
 
-  /* Convert foo++ == CONST into ++foo == CONST + INCR.  */
-  if (TREE_CONSTANT (arg1)
-      && (TREE_CODE (arg0) == POSTINCREMENT_EXPR
-	  || TREE_CODE (arg0) == POSTDECREMENT_EXPR)
-      /* This optimization is invalid for ordered comparisons
-         if CONST+INCR overflows or if foo+incr might overflow.
-	 This optimization is invalid for floating point due to rounding.
-	 For pointer types we assume overflow doesn't happen.  */
-      && (POINTER_TYPE_P (TREE_TYPE (arg0))
-	  || (INTEGRAL_TYPE_P (TREE_TYPE (arg0))
-	      && (code == EQ_EXPR || code == NE_EXPR))))
-    {
-      tree varop, newconst;
-
-      if (TREE_CODE (arg0) == POSTINCREMENT_EXPR)
-	{
-	  newconst = fold_build2 (PLUS_EXPR, TREE_TYPE (arg0),
-				  arg1, TREE_OPERAND (arg0, 1));
-	  varop = build2 (PREINCREMENT_EXPR, TREE_TYPE (arg0),
-			  TREE_OPERAND (arg0, 0),
-			  TREE_OPERAND (arg0, 1));
-	}
-      else
-	{
-	  newconst = fold_build2 (MINUS_EXPR, TREE_TYPE (arg0),
-				  arg1, TREE_OPERAND (arg0, 1));
-	  varop = build2 (PREDECREMENT_EXPR, TREE_TYPE (arg0),
-			  TREE_OPERAND (arg0, 0),
-			  TREE_OPERAND (arg0, 1));
-	}
-
-
-      /* If VAROP is a reference to a bitfield, we must mask
-	 the constant by the width of the field.  */
-      if (TREE_CODE (TREE_OPERAND (varop, 0)) == COMPONENT_REF
-	  && DECL_BIT_FIELD (TREE_OPERAND (TREE_OPERAND (varop, 0), 1))
-	  && host_integerp (DECL_SIZE (TREE_OPERAND
-					 (TREE_OPERAND (varop, 0), 1)), 1))
-	{
-	  tree fielddecl = TREE_OPERAND (TREE_OPERAND (varop, 0), 1);
-	  HOST_WIDE_INT size = tree_low_cst (DECL_SIZE (fielddecl), 1);
-	  tree folded_compare, shift;
-
-	  /* First check whether the comparison would come out
-	     always the same.  If we don't do that we would
-	     change the meaning with the masking.  */
-	  folded_compare = fold_build2 (code, type,
-					TREE_OPERAND (varop, 0), arg1);
-	  if (TREE_CODE (folded_compare) == INTEGER_CST)
-	    return omit_one_operand (type, folded_compare, varop);
-
-	  shift = build_int_cst (NULL_TREE,
-				 TYPE_PRECISION (TREE_TYPE (varop)) - size);
-	  shift = fold_convert (TREE_TYPE (varop), shift);
-	  newconst = fold_build2 (LSHIFT_EXPR, TREE_TYPE (varop),
-				  newconst, shift);
-	  newconst = fold_build2 (RSHIFT_EXPR, TREE_TYPE (varop),
-				  newconst, shift);
-	}
-
-      return fold_build2 (code, type, varop, newconst);
-    }
-
   if (TREE_CODE (TREE_TYPE (arg0)) == INTEGER_TYPE
       && (TREE_CODE (arg0) == NOP_EXPR
 	  || TREE_CODE (arg0) == CONVERT_EXPR))
