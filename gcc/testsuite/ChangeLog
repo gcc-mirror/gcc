@@ -1,3 +1,7 @@
+2007-05-02  Eric Christopher  <echristo@apple.com>
+
+	* gcc.dg/cpp/if-div.c: New file.
+
 2007-05-02  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/28709:
@@ -47,9 +51,9 @@
 2007-05-01  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR testsuite/31589
-	* gcc.dg/vect/vect-iv-9.c: Added vect_int_mult target keyword to 
+	* gcc.dg/vect/vect-iv-9.c: Added vect_int_mult target keyword to
 	dg-final test.
-	* gcc.dg/vect/vect-reduc-dot-u16b.c: Added vect_pack_trunc target 
+	* gcc.dg/vect/vect-reduc-dot-u16b.c: Added vect_pack_trunc target
 	keyword to dg-final test.
 	* gcc.dg/vect/vect-iv-4.c: Likewise.
 	* gcc.dg/vect/vect-widen-mult-u16.c: Likewise.
@@ -58,7 +62,7 @@
 	* gcc.dg/vect/vect-reduc-dot-u16a.c: Change variable type to avoid a
 	cast.
 	* gcc.dg/vect/no-section-anchors-vect-69.c: xfail on is64.
-	* lib/target-supports.exp 
+	* lib/target-supports.exp
 	(check_effective_target_vect_widen_sum_hi_to_si): Added ia64.
 	(check_effective_target_vect_widen_sum_qi_to_hi): Added ia64.
 
@@ -263,7 +267,7 @@
 	    Olga Golovanevsky  <olga@il.ibm.com>
 
 	* g++.dg/other/str_empty.C: New test.
-	
+
 2007-04-24  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/vect/vect.exp: Don't run tests on Alpha.

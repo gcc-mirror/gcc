@@ -1,3 +1,8 @@
+2007-05-02  Eric Christopher  <echristo@apple.com>
+
+	* expr.c (num_div_op): Don't overflow if the result is
+	zero.
+
 2007-05-02  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/28709:
