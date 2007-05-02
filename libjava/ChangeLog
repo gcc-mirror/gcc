@@ -1,3 +1,15 @@
+2007-05-02  Tom Tromey  <tromey@redhat.com>
+
+	https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=238755
+	* java/lang/natCharacter.cc (Character::getType): Handle negative
+	code points.
+	(Character::toLowerCase): Likewise.
+	(Character::toUpperCase): Likewise.
+	(Character::digit): Likewise.
+	(Character::getNumericValue): Likewise.
+	(Character::getDirectionality): Likewise.
+	(Character::toTitleCase): Likewise.
+
 2007-04-30  Keith Seitz  <keiths@redhat.com>
 
 	* interpret-run.cc (NEXT_INSN)[DEBUG]: Advance PC before
