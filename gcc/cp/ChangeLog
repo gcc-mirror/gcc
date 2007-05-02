@@ -1,3 +1,9 @@
+2007-05-02  Seongbae Park  <seongbae.park@gmail.com>
+
+	PR c++/31663
+	* decl2.c (constrain_class_visibility): 
+	Use strip_pointer_or_array_types instead of strip_array_types.
+
 2007-04-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/30221
