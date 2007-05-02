@@ -1124,7 +1124,7 @@
 ;; Returns 1 if OP is either a SYMBOL_REF or a constant.
 
 (define_predicate "symbolic_operand"
-  (match_code "symbol_ref,const_int")
+  (match_code "symbol_ref,const,const_int")
 {
   enum rtx_code c = GET_CODE (op);
 
