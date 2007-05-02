@@ -1,5 +1,5 @@
 /* java.lang.Character -- Wrapper class for char, and Unicode subsets
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -90,7 +90,7 @@ jint
 java::lang::Character::getType(jint codePoint)
 {
   jint plane = codePoint >> 16;
-  if (plane > 2 && plane != 14)
+  if (plane < 0 || (plane > 2 && plane != 14))
     {
       if (plane > 14 && ((codePoint & 0xffff) < 0xfffe))
         return (jint) PRIVATE_TYPE;
@@ -112,7 +112,7 @@ jint
 java::lang::Character::toLowerCase(jint codePoint)
 {
   jint plane = codePoint >> 16;
-  if (plane > 2 && plane != 14)
+  if (plane < 0 || (plane > 2 && plane != 14))
     return codePoint;
   return (lower[plane][readCodePoint(codePoint) >> 7]) + codePoint;
 }
@@ -127,7 +127,7 @@ jint
 java::lang::Character::toUpperCase(jint codePoint)
 {
   jint plane = codePoint >> 16;
-  if (plane > 2 && plane != 14)
+  if (plane < 0 || (plane > 2 && plane != 14))
     return codePoint;
   return (upper[plane][readCodePoint(codePoint) >> 7]) + codePoint;
 }
@@ -147,7 +147,7 @@ java::lang::Character::toTitleCase(jint codePoint)
 {
   // As of Unicode 4.0.0 no characters outside of plane 0 have titlecase
   // mappings that are different from their uppercase mapping.
-  if (codePoint < 0x10000)
+  if (codePoint >= 0 && codePoint < 0x10000)
     return toTitleCase((jchar)codePoint);
   return toUpperCase(codePoint);
 }
@@ -177,7 +177,7 @@ java::lang::Character::digit(jint codePoint, jint radix)
     return (jint) -1;
 
   jint plane = codePoint >> 16;
-  if (plane > 2 && plane != 14)
+  if (plane < 0 || (plane > 2 && plane != 14))
     return UNASSIGNED_DIGIT;
 
   jchar attr = readCodePoint(codePoint);
@@ -207,7 +207,7 @@ jint
 java::lang::Character::getNumericValue(jint codePoint)
 {
   jint plane = codePoint >> 16;
-  if (plane > 2 && plane != 14)
+  if (plane < 0 || (plane > 2 && plane != 14))
     return UNASSIGNED_NUMERIC_VALUE;
   jshort num = numValue[plane][readCodePoint(codePoint) >> 7];
   if (num <= -3)
@@ -225,7 +225,7 @@ jbyte
 java::lang::Character::getDirectionality(jint codePoint)
 {
   jint plane = codePoint >> 16;
-  if (plane > 2 && plane != 14)
+  if (plane < 0 || (plane > 2 && plane != 14))
     {
       if (plane > 14 && ((codePoint & 0xffff) < 0xfffe))
         return (jint) PRIVATE_DIRECTION;
@@ -233,5 +233,3 @@ java::lang::Character::getDirectionality(jint codePoint)
     }
   return direction[plane][readCodePoint(codePoint) >> 7];
 }
-
-
