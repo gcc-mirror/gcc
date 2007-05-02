@@ -3894,6 +3894,15 @@ strip_pointer_operator (tree t)
   return t;
 }
 
+/* Recursively remove pointer or array type from TYPE. */
+tree
+strip_pointer_or_array_types (tree t)
+{
+  while (TREE_CODE (t) == ARRAY_TYPE || POINTER_TYPE_P (t))
+    t = TREE_TYPE (t);
+  return t;
+}
+
 /* Used to compare case labels.  K1 and K2 are actually tree nodes
    representing case labels, or NULL_TREE for a `default' label.
    Returns -1 if K1 is ordered before K2, -1 if K1 is ordered after

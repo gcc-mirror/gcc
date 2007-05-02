@@ -1,0 +1,3 @@
+namespace {
+  struct bad { };
+}
