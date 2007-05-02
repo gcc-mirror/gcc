@@ -1,3 +1,8 @@
+2007-05-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/31146
+	* g++.dg/tree-ssa/pr31146-2.C: New testcase.
+
 2007-05-01  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.c-torture/compile/limits-blockid.c: New.
