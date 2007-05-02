@@ -1,3 +1,7 @@
+2007-05-02  Nick Clifton  <nickc@redhat.com>
+
+	* config/frv/predicates.md (symbolic_operand): Accept CONSTs.
+
 2007-05-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/31146
