@@ -1,3 +1,9 @@
+2007-05-02  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/31777
+	* include/ext/pool_allocator.h (__pool_alloc<>::allocate,
+	__pool_alloc<>::deallocate): Fix _S_force_new check.
+
 2007-05-01  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* 23_containers/requirements/sequences/dr438/deque/*: Move to...

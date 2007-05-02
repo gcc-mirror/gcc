@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -212,7 +212,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    }
 
 	  const size_t __bytes = __n * sizeof(_Tp);	      
-	  if (__bytes > size_t(_S_max_bytes) || _S_force_new == 1)
+	  if (__bytes > size_t(_S_max_bytes) || _S_force_new > 0)
 	    __ret = static_cast<_Tp*>(::operator new(__bytes));
 	  else
 	    {
@@ -241,7 +241,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       if (__builtin_expect(__n != 0 && __p != 0, true))
 	{
 	  const size_t __bytes = __n * sizeof(_Tp);
-	  if (__bytes > static_cast<size_t>(_S_max_bytes) || _S_force_new == 1)
+	  if (__bytes > static_cast<size_t>(_S_max_bytes) || _S_force_new > 0)
 	    ::operator delete(__p);
 	  else
 	    {
