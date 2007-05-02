@@ -1,3 +1,8 @@
+2007-05-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_expand_sse_comi): Remove unused
+	variable.
+
 2007-05-01  Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
 
 	* doc/invoke.texi: Fix typo, 'AMD Family 10h core' instead of 
