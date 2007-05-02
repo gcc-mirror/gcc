@@ -1,3 +1,17 @@
+2007-05-02  Pascal Obry  <obry@adacore.com>
+
+	* gnatchop.adb (Write_Source_Reference_Pragma): Change implementation
+	to use Stream_IO.File_Type. This is needed to make use of the UTF-8
+	encoding support of Stream_IO.
+	(Write_Unit): Idem.
+
+	* adaint.h, adaint.c (__gnat_os_filename): New routine. Returns the
+	filename and corresponding encoding to match the OS requirement.
+	(__gnat_file_exists): Do not call __gnat_stat() on Windows as this
+	routine will fail on specific devices like CON: AUX: ...
+
+	PR ada/29856: Add missing braces
+
 2007-04-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR ada/31660
