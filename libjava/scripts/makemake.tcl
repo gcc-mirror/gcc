@@ -228,6 +228,9 @@ proc scan_directory {basedir subdir} {
 	# We assume there aren't any overrides.
 	lappend properties_files $basedir/$subdir/$file
       }
+    } elseif {[string match *.css $file]} {
+	# Special case for default.css needed by javax.swing.text.html.
+	lappend properties_files $basedir/$subdir/$file
     } elseif {[file isdirectory $file]} {
       lappend subdirs $subdir/$file
     } elseif {$subdir == "META-INF/services"} {

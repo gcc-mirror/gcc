@@ -9005,6 +9005,7 @@ property_files = \
   classpath/resource/gnu/javax/security/auth/callback/MessagesBundle.properties \
   classpath/resource/java/util/iso4217.properties \
   classpath/resource/javax/imageio/plugins/jpeg/MessagesBundle.properties \
+  classpath/resource/javax/swing/text/html/default.css \
   classpath/resource/org/ietf/jgss/MessagesBundle.properties \
   classpath/resource/sun/rmi/rmic/messages.properties \
   classpath/resource/com/sun/tools/javac/messages.properties \
