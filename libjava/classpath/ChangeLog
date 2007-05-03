@@ -1,3 +1,10 @@
+2007-05-03  Andrew Haley  <aph@redhat.com>
+
+	* gnu/javax/management/Server.java (Server): Record the delegate.
+	(registerMBean): Notify the delegate.
+	(unregisterMBean): Likewise.
+	(notify): New method.
+
 2007-04-04  Francis Kung  <fkung@redhat.com>
 
 	* gnu/java/awt/peer/gtk/ComponentGraphics.java
