@@ -128,7 +128,8 @@ ___umulsi3_highpart:
 	A0 = R1.H * R0.H, A1 += R1.L * R0.H (FU);
 	A1 += R0.L * R1.H (FU);
 	A1 = A1 >> 16;
-	R0 = (A0 += A1);
+	A0 += A1;
+	R0 = A0 (FU);
 	RTS;
 #endif
 

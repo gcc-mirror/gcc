@@ -1227,6 +1227,14 @@
 
 ;; Accumulator addition
 
+(define_insn "addpdi3"
+  [(set (match_operand:PDI 0 "register_operand" "=A")
+        (ss_plus:PDI (match_operand:PDI 1 "register_operand" "%0")
+		     (match_operand:PDI 2 "nonmemory_operand" "B")))]
+  ""
+  "A0 += A1%!"
+  [(set_attr "type" "dsp32")])
+
 (define_insn "sum_of_accumulators"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(ss_truncate:SI
@@ -1236,6 +1244,13 @@
 	 (ss_plus:PDI (match_dup 2) (match_dup 3)))]
   ""
   "%0 = (A0 += A1)%!"
+  [(set_attr "type" "dsp32")])
+
+(define_insn "us_truncpdisi2"
+  [(set (match_operand:SI 0 "register_operand" "=D,W")
+	(us_truncate:SI (match_operand:PDI 1 "register_operand" "A,B")))]
+  ""
+  "%0 = %1 (FU)%!"
   [(set_attr "type" "dsp32")])
 
 ;; Bit test instructions
@@ -1501,7 +1516,8 @@
 					       const1_rtx, const0_rtx,
 					       a1reg, const0_rtx, GEN_INT (MACFLAG_FU)));
       emit_insn (gen_lshrpdi3 (a1reg, a1reg, GEN_INT (16)));
-      emit_insn (gen_sum_of_accumulators (operands[0], a0reg, a0reg, a1reg));
+      emit_insn (gen_addpdi3 (a0reg, a0reg, a1reg));
+      emit_insn (gen_us_truncpdisi2 (operands[0], a0reg));
     }
   else
     {

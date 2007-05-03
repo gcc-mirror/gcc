@@ -1,3 +1,10 @@
+2007-05-03  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.md (addpdi3, us_truncpdisi2): New patterns.
+	(umulsi3_highpart): Use them.
+	* config/bfin/lib1funcs.asm (__umulsi3_highpart): Use unsigned move
+	for final accumulator to D regisster tranfser.
+
 2007-05-03  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/31699
