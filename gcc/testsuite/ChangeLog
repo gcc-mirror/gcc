@@ -1,3 +1,8 @@
+2007-05-03  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/30565
+	* gcc.dg/tree-ssa/loop-27.c: New test.
+
 2007-05-03  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* gcc.target/bfin/frmul.c (__v2hi): Use short as base type, not itn.

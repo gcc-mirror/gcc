@@ -1,3 +1,8 @@
+2007-05-03  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/30565
+	* lambda-code.c (perfect_nestify): Fix updating of dominators.
+
 2007-05-03  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (addpdi3, us_truncpdisi2): New patterns.
