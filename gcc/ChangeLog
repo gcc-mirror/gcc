@@ -1,3 +1,8 @@
+2007-05-02  Eric Christopher  <echristo@apple.com>
+
+	* config/darwin.h (TARGET_OPTION_TRANSLATE_TABLE): Translate
+	-shared to -Zdynamiclib.
+
 2007-05-02  Seongbae Park  <seongbae.park@gmail.com>
 
 	PR c++/31663
@@ -39,22 +44,22 @@
 
 2007-05-01  Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
 
-	* doc/invoke.texi: Fix typo, 'AMD Family 10h core' instead of 
+	* doc/invoke.texi: Fix typo, 'AMD Family 10h core' instead of
 	'AMD Family 10 core'.
-	
+
 2007-05-01  Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
 
-	* config/i386/i386.c (override_options): Accept k8-sse3, opteron-sse3 
-	and athlon64-sse3 as improved versions of k8, opteron and athlon64 
+	* config/i386/i386.c (override_options): Accept k8-sse3, opteron-sse3
+	and athlon64-sse3 as improved versions of k8, opteron and athlon64
 	with SSE3 instruction set support.
 	* doc/invoke.texi: Likewise.
-	
+
 2007-05-01  Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
 
 	* config/i386/i386.c (override_options): Tuning 32-byte loop
-	alignment for amdfam10 architecture. Increasing the max loop 
+	alignment for amdfam10 architecture. Increasing the max loop
 	alignment to 24 bytes.
-	
+
 2007-05-01  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/m68k/constraints.md: New.
@@ -191,7 +196,7 @@
 
 	* config/xtensa/lib1funcs.asm (__umodsi3, __modsi3): Rearrange so that
 	DIV0 exception can fall through to a normal return.
-	
+
 2007-04-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR middle-end/22156
@@ -514,7 +519,7 @@
 
 2007-04-26  Anatoly Sokolov <aesok@post.ru>
 
-	* config/avr/avr.c (avr_mcu_types): Add support for ATmega8HVA and 
+	* config/avr/avr.c (avr_mcu_types): Add support for ATmega8HVA and
 	ATmega16HVA devices. Move AT90USB82 device to 'avr5' architecture.
 	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): (Ditto.).
 	* config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
@@ -701,12 +706,12 @@
 2007-04-24  Richard Guenther  <rguenther@suse.de>
 	    Olga Golovanevsky  <olga@il.ibm.com>
 
-	* fold-const.c (multiple_of_p): Check for bottom 
-	to be zero. 
+	* fold-const.c (multiple_of_p): Check for bottom
+	to be zero.
 
 2007-04-24  Richard Henderson  <rth@redhat.com>
 
-	* libgcc2.h (AVOID_FP_TYPE_CONVERSION): Rename from 
+	* libgcc2.h (AVOID_FP_TYPE_CONVERSION): Rename from
 	IS_IBM_EXTENDED.  Also define in terms of WIDEST_HARDWARE_FP_SIZE.
 	* libgcc2.c (__floatdisf): Avoid double-word arithmetic when
 	looking for non-zero bits shifted out.  Avoid a recursive call
