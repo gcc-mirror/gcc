@@ -1,5 +1,10 @@
 2007-05-03  Uros Bizjak  <ubizjak@gmail.com>
 
+	* tree-vect-transform.c (vect_update_inits_of_drs): Use
+	vect_print_dump_info() to output debug information.
+
+2007-05-03  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/31768
 	* config/i386/i386.c (print_operand) ['z']: Output 'w' for
 	operands of size 2 when operand is not MEM_P.

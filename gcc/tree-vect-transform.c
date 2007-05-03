@@ -4916,8 +4916,8 @@ vect_update_init_of_dr (struct data_reference *dr, tree niters)
    NITERS iterations were peeled from the loop represented by LOOP_VINFO.  
    This function updates the information recorded for the data references in 
    the loop to account for the fact that the first NITERS iterations had 
-   already been executed.  Specifically, it updates the initial_condition of the
-   access_function of all the data_references in the loop.  */
+   already been executed.  Specifically, it updates the initial_condition of
+   the access_function of all the data_references in the loop.  */
 
 static void
 vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters)
@@ -4926,7 +4926,7 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters)
   VEC (data_reference_p, heap) *datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   struct data_reference *dr;
 
-  if (vect_dump && (dump_flags & TDF_DETAILS))
+  if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_update_inits_of_dr ===");
 
   for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
