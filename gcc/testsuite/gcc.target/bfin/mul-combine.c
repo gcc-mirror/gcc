@@ -10,7 +10,7 @@
 extern void abort (void);
 extern void exit (int);
 
-typedef int  __v2hi __attribute ((vector_size(4)));
+typedef short  __v2hi __attribute ((vector_size(4)));
 typedef __v2hi fract2x16;
 typedef short fract16;
 
