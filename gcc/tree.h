@@ -27,6 +27,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "input.h"
 #include "statistics.h"
 #include "vec.h"
+#include "double-int.h"
 
 /* Codes of tree nodes */
 

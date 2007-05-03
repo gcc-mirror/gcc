@@ -23,6 +23,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "system.h"
 #include "gengtype.h"
 #include "errors.h"	/* for fatal */
+#include "double-int.h"
 
 /* Data types, macros, etc. used only in this file.  */
 
