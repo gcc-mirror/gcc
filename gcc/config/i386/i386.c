@@ -8372,9 +8372,15 @@ print_operand (FILE *file, rtx x, int code)
 	      return;
 
 	    case 2:
+	      if (MEM_P (x))
+		{
 #ifdef HAVE_GAS_FILDS_FISTS
-	      putc ('s', file);
+		  putc ('s', file);
 #endif
+		  return;
+		}
+	      else
+		putc ('w', file);
 	      return;
 
 	    case 4:
