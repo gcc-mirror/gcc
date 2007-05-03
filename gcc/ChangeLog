@@ -1,3 +1,12 @@
+2007-05-02  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	PR bootstrap/31776
+	* system.h: Remove inclusion of double-int.h
+	* tree.h: Include double-int.h
+	* gengtype.c: Likewise
+	* cfgloop.h: Likewise
+	* Makefile.in: Adjust dependencies on double-int.h
+
 2007-05-02  Eric Christopher  <echristo@apple.com>
 
 	* config/darwin.h (TARGET_OPTION_TRANSLATE_TABLE): Translate

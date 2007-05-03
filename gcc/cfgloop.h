@@ -26,6 +26,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 /* For rtx_code.  */
 #include "rtl.h"
 #include "vecprim.h"
+#include "double-int.h"
 
 /* Structure to hold decision about unrolling/peeling.  */
 enum lpt_dec
