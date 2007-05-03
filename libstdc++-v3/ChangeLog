@@ -1,3 +1,84 @@
+2007-05-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/type_traits (enable_if): New.
+	(conditional): New.
+	(__decay_selector, decay): New.
+	(__cv_selector, __match_cv_qualifiers): New.
+	(__make_unsigned, __make_unsigned_selector, make_unsigned): New.
+	(__make_signed, __make_signed_selector, make_signed): New.
+	(has_trivial_constructor): ... to has_trivial_default_constructor.
+	(has_nothrow_constructor): ... to has_nothrow_default_constructor.
+	(has_trivial_copy): ... to has_trivial_copy_constructor.
+	(has_nothrow_copy): ... to has_nothrow_copy_constructor.
+
+	* include/tr1/type_traits_fwd: Move to...
+	* include/tr1/type_traitsfwd: ... this, consistency with
+	ios/string/locale forward headers.
+	* include/tr1/type_traits: Adjust include.	
+	* include/Makefile.am (tr1_headers): Change type_traits_fwd.h to
+	type_traitsfwd.h.
+	* include/Makefile.in: Regenerate.
+
+	* testsuite/23_containers/tuple: Move...
+	* testsuite/20_util/tuple:... here.
+
+	* testsuite/20_util/conditional: New.
+	* testsuite/20_util/conditional/requirements: Same.
+	* testsuite/20_util/conditional/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/20_util/conditional/requirements/typedefs.cc: Same.
+	* testsuite/20_util/decay: Same.
+	* testsuite/20_util/decay/requirements: Same.
+	* testsuite/20_util/decay/requirements/explicit_instantiation.cc: Same.
+	* testsuite/20_util/decay/requirements/typedefs.cc: Same.
+	* testsuite/20_util/enable_if: Same.
+	* testsuite/20_util/enable_if/requirements: Same.
+	* testsuite/20_util/enable_if/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/20_util/enable_if/requirements/typedefs.cc: Same.
+	* testsuite/20_util/enable_if/requirements/typedefs_neg.cc: Same.
+	* testsuite/20_util/has_nothrow_copy_constructor: Same.
+	* testsuite/20_util/has_nothrow_copy_constructor/requirements: Same.
+	* testsuite/20_util/has_nothrow_copy_constructor/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/20_util/has_nothrow_copy_constructor/requirements/
+	typedefs.cc: Same.
+	* testsuite/20_util/has_nothrow_copy_constructor/value.cc: Same.
+	* testsuite/20_util/has_nothrow_default_constructor: Same.
+	* testsuite/20_util/has_nothrow_default_constructor/requirements: Same.
+	* testsuite/20_util/has_nothrow_default_constructor/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/20_util/has_nothrow_default_constructor/requirements/
+	typedefs.cc: Same.
+	* testsuite/20_util/has_nothrow_default_constructor/value.cc: Same.
+	* testsuite/20_util/has_trivial_copy_constructor: Same.
+	* testsuite/20_util/has_trivial_copy_constructor/requirements: Same.
+	* testsuite/20_util/has_trivial_copy_constructor/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/20_util/has_trivial_copy_constructor/requirements/
+	typedefs.cc: Same.
+	* testsuite/20_util/has_trivial_copy_constructor/value.cc: Same.
+	* testsuite/20_util/has_trivial_default_constructor: Same.
+	* testsuite/20_util/has_trivial_default_constructor/requirements: Same.
+	* testsuite/20_util/has_trivial_default_constructor/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/20_util/has_trivial_default_constructor/requirements/
+	typedefs.cc: Same.
+	* testsuite/20_util/has_trivial_default_constructor/value.cc: Same.
+	* testsuite/20_util/headers/type_traits/types_std_c++0x_neg.cc: Same.
+	* testsuite/20_util/make_signed: Same.
+	* testsuite/20_util/make_signed/requirements: Same.
+	* testsuite/20_util/make_signed/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/20_util/make_signed/requirements/typedefs.cc: Same.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Same.
+	* testsuite/20_util/make_unsigned: Same.
+	* testsuite/20_util/make_unsigned/requirements: Same.
+	* testsuite/20_util/make_unsigned/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/20_util/make_unsigned/requirements/typedefs.cc: Same.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Same.
+	
 2007-05-02  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/31777

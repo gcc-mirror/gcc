@@ -42,5 +42,305 @@
 # include <c++0x_warning.h>
 #endif
 
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  // Define a nested type if some predicate holds.
+  template<bool, typename _Tp = void>
+    struct enable_if 
+    { };
+
+  template<typename _Tp>
+    struct enable_if<true, _Tp>
+    { typedef _Tp type; };
+
+
+  // Like a conditional expression, but for types. If true, first, if
+  // false, second.
+  template<bool _Cond, typename _Iftrue, typename _Iffalse>
+    struct conditional
+    { typedef _Iftrue type; };
+
+  template<typename _Iftrue, typename _Iffalse>
+    struct conditional<false, _Iftrue, _Iffalse>
+    { typedef _Iffalse type; };
+
+
+  // Decay trait for arrays and functions, used for perfect forwarding
+  // in make_pair, make_tuple, etc.
+  template<typename _Up, 
+	   bool _IsArray = is_array<_Up>::value,
+	   bool _IsFunction = is_function<_Up>::value> 
+    struct __decay_selector;
+
+  template<typename _Up> 
+    struct __decay_selector<_Up, false, false>
+    { typedef _Up __type; };
+
+  template<typename _Up> 
+    struct __decay_selector<_Up, true, false>
+    { typedef typename remove_extent<_Up>::type* __type; };
+
+
+  template<typename _Up> 
+    struct __decay_selector<_Up, false, true>
+    { typedef typename add_pointer<_Up>::type __type; };
+
+  template<typename _Tp> 
+  struct decay 
+    { 
+    private:
+      typedef typename remove_reference<_Tp>::type __remove_type;
+
+    public:
+      typedef typename __decay_selector<__remove_type>::__type type;
+    };
+
+
+  // Utility for constructing identically cv-qualified types.
+  template<typename _Unqualified, bool _IsConst, bool _IsVol>
+    struct __cv_selector;
+
+  template<typename _Unqualified>
+    struct __cv_selector<_Unqualified, false, false>
+    { typedef _Unqualified __type; };
+
+  template<typename _Unqualified>
+    struct __cv_selector<_Unqualified, false, true>
+    { typedef volatile _Unqualified __type; };
+
+  template<typename _Unqualified>
+    struct __cv_selector<_Unqualified, true, false>
+    { typedef const _Unqualified __type; };
+
+  template<typename _Unqualified>
+    struct __cv_selector<_Unqualified, true, true>
+    { typedef const volatile _Unqualified __type; };
+
+  template<typename _Qualified, typename _Unqualified,
+	   bool _IsConst = is_const<_Qualified>::value,
+	   bool _IsVol = is_volatile<_Qualified>::value>
+    struct __match_cv_qualifiers
+    {
+    private:
+      typedef __cv_selector<_Unqualified, _IsConst, _IsVol> __match;
+
+    public:
+      typedef typename __match::__type __type; 
+    };
+
+
+  // Utility for finding the unsigned versions of signed integral types.
+  template<typename _Tp>
+    struct __make_unsigned;
+
+  template<>
+    struct __make_unsigned<char>
+    { typedef unsigned char __type; };
+
+  template<>
+    struct __make_unsigned<signed char>
+    { typedef unsigned char __type; };
+
+  template<>
+    struct __make_unsigned<wchar_t>
+    { typedef unsigned wchar_t __type; };
+
+  template<>
+    struct __make_unsigned<short>
+    { typedef unsigned short __type; };
+
+  template<>
+    struct __make_unsigned<int>
+    { typedef unsigned int __type; };
+
+  template<>
+    struct __make_unsigned<long>
+    { typedef unsigned long __type; };
+
+  template<>
+    struct __make_unsigned<long long>
+    { typedef unsigned long long __type; };
+
+
+  // Select between integral and enum: not possible to be both.
+  template<typename _Tp, 
+	   bool _IsInt = is_integral<_Tp>::value,
+	   bool _IsUnsigned = is_unsigned<_Tp>::value,
+	   bool _IsEnum = is_enum<_Tp>::value>
+    struct __make_unsigned_selector;
+  
+  template<typename _Tp>
+    struct __make_unsigned_selector<_Tp, true, true, false>
+    { typedef _Tp __type; };
+
+  template<typename _Tp>
+    struct __make_unsigned_selector<_Tp, true, false, false>
+    {
+    private:
+      typedef __make_unsigned<typename remove_cv<_Tp>::type> __unsignedt;
+      typedef typename __unsignedt::__type __unsigned_type;
+      typedef __match_cv_qualifiers<_Tp, __unsigned_type> __cv_unsigned;
+
+    public:
+      typedef typename __cv_unsigned::__type __type;
+    };
+
+  template<typename _Tp>
+    struct __make_unsigned_selector<_Tp, false, true, false>
+    {
+    private:
+      // GNU floating point types start with sizeof int.
+      static const bool __b1 = sizeof(_Tp) <= sizeof(unsigned int);
+      static const bool __b2 = sizeof(_Tp) <= sizeof(unsigned long);
+      typedef conditional<__b2, unsigned long, unsigned long long> __cond;
+      typedef typename __cond::type __cond_type;
+      typedef unsigned int __ui_type;
+
+    public:
+      typedef typename conditional<__b1, __ui_type, __cond_type>::type __type;
+    };
+
+  template<typename _Tp>
+    struct __make_unsigned_selector<_Tp, false, false, true>
+    {
+    private:
+      // GNU enums start with sizeof int.
+      static const bool __b1 = sizeof(_Tp) <= sizeof(unsigned int);
+      static const bool __b2 = sizeof(_Tp) <= sizeof(unsigned long);
+      typedef conditional<__b2, unsigned long, unsigned long long> __cond;
+      typedef typename __cond::type __cond_type;
+      typedef unsigned int __ui_type;
+
+    public:
+      typedef typename conditional<__b1, __ui_type, __cond_type>::type __type;
+    };
+
+  // Primary class template.
+  // Given an integral/enum type, return the corresponding unsigned
+  // integer type.
+  template<typename _Tp>
+    struct make_unsigned 
+    { typedef typename __make_unsigned_selector<_Tp>::__type type; };
+
+  // Integral, but don't define.
+  template<>
+    struct make_unsigned<bool>;
+
+
+  // Utility for finding the signed versions of unsigned integral types.
+  template<typename _Tp>
+    struct __make_signed;
+
+  template<>
+    struct __make_signed<char>
+    { typedef signed char __type; };
+
+  template<>
+    struct __make_signed<unsigned char>
+    { typedef signed char __type; };
+
+  template<>
+    struct __make_signed<wchar_t>
+    { typedef signed wchar_t __type; };
+
+  template<>
+    struct __make_signed<unsigned short>
+    { typedef signed short __type; };
+
+  template<>
+    struct __make_signed<unsigned int>
+    { typedef signed int __type; };
+
+  template<>
+    struct __make_signed<unsigned long>
+    { typedef signed long __type; };
+
+  template<>
+    struct __make_signed<unsigned long long>
+    { typedef signed long long __type; };
+
+
+  // Select between arithmetic and enum: not possible to be both.
+  template<typename _Tp, 
+	   bool _IsInt = is_integral<_Tp>::value,
+	   bool _IsSigned = is_signed<_Tp>::value,
+	   bool _IsEnum = is_enum<_Tp>::value>
+    struct __make_signed_selector;
+  
+  template<typename _Tp>
+    struct __make_signed_selector<_Tp, true, true, false>
+    { typedef _Tp __type; };
+
+  template<typename _Tp>
+    struct __make_signed_selector<_Tp, true, false, false>
+    {
+    private:
+      typedef __make_signed<typename remove_cv<_Tp>::type> __signedt;
+      typedef typename __signedt::__type __signed_type;
+      typedef __match_cv_qualifiers<_Tp, __signed_type> __cv_signed;
+
+    public:
+      typedef typename __cv_signed::__type __type;
+    };
+
+  template<typename _Tp>
+    struct __make_signed_selector<_Tp, false, true, false>
+    {
+      // GNU floating point types start with sizeof int.
+      static const bool __b1 = sizeof(_Tp) <= sizeof(signed int);
+      static const bool __b2 = sizeof(_Tp) <= sizeof(signed long);
+      typedef conditional<__b2, signed long, signed long long> __cond;
+      typedef typename __cond::type __cond_type;
+      typedef unsigned int __i_type;
+
+    public:
+      typedef typename conditional<__b1, __i_type, __cond_type>::type __type;
+    };
+
+  template<typename _Tp>
+    struct __make_signed_selector<_Tp, false, false, true>
+    {
+    private:
+      // GNU enums start with sizeof int.
+      static const bool __b1 = sizeof(_Tp) <= sizeof(signed int);
+      static const bool __b2 = sizeof(_Tp) <= sizeof(signed long);
+      typedef conditional<__b2, signed long, signed long long> __cond;
+      typedef typename __cond::type __cond_type;
+      typedef int __i_type;
+
+    public:
+      typedef typename conditional<__b1, __i_type, __cond_type>::type __type;
+    };
+
+  // Primary class template.
+  // Given an integral/enum type, return the corresponding signed
+  // integer type.
+  template<typename _Tp>
+    struct make_signed 
+    { typedef typename __make_signed_selector<_Tp>::__type type; };
+
+  // Integral, but don't define.
+  template<>
+    struct make_signed<bool>;
+
+
+  template<typename _Tp>
+    struct has_nothrow_default_constructor
+    : public integral_constant<bool, is_pod<_Tp>::value> { };
+
+  template<typename _Tp>
+    struct has_nothrow_copy_constructor
+    : public integral_constant<bool, is_pod<_Tp>::value> { };
+
+  template<typename _Tp>
+    struct has_trivial_default_constructor
+    : public integral_constant<bool, is_pod<_Tp>::value> { };
+
+  template<typename _Tp>
+    struct has_trivial_copy_constructor
+    : public integral_constant<bool, is_pod<_Tp>::value> { };
+
+_GLIBCXX_END_NAMESPACE
+
 #endif 
 

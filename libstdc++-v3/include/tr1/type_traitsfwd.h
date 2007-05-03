@@ -27,13 +27,13 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file tr1/type_traits_fwd.h
+/** @file tr1/type_traitsfwd.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
 
-#ifndef _TYPE_TRAITS_FWD_H
-#define _TYPE_TRAITS_FWD_H 1
+#ifndef _TYPE_TRAITSFWD_H
+#define _TYPE_TRAIT_FWD_H 1
 
 #include <cstddef>
 
