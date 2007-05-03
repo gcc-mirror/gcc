@@ -1462,7 +1462,7 @@ public class HTMLEditorKit
           }
         catch (IOException ex)
           {
-            // No style available.
+            throw new RuntimeException("No style available.", ex);
           }
       }
     return styleSheet;
