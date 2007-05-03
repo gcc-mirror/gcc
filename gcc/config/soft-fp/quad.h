@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Definitions for IEEE Quad Precision.
-   Copyright (C) 1997,1998,1999,2006 Free Software Foundation, Inc.
+   Copyright (C) 1997,1998,1999,2006,2007 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -176,15 +176,15 @@ union _FP_UNION_Q
   } longs;
   struct {
 #if __BYTE_ORDER == __BIG_ENDIAN
-    unsigned sign  : 1;
-    unsigned exp   : _FP_EXPBITS_Q;
-    unsigned long frac1 : _FP_FRACBITS_Q-(_FP_IMPLBIT_Q != 0)-_FP_W_TYPE_SIZE;
-    unsigned long frac0 : _FP_W_TYPE_SIZE;
+    unsigned sign    : 1;
+    unsigned exp     : _FP_EXPBITS_Q;
+    _FP_W_TYPE frac1 : _FP_FRACBITS_Q - (_FP_IMPLBIT_Q != 0) - _FP_W_TYPE_SIZE;
+    _FP_W_TYPE frac0 : _FP_W_TYPE_SIZE;
 #else
-    unsigned long frac0 : _FP_W_TYPE_SIZE;
-    unsigned long frac1 : _FP_FRACBITS_Q-(_FP_IMPLBIT_Q != 0)-_FP_W_TYPE_SIZE;
-    unsigned exp   : _FP_EXPBITS_Q;
-    unsigned sign  : 1;
+    _FP_W_TYPE frac0 : _FP_W_TYPE_SIZE;
+    _FP_W_TYPE frac1 : _FP_FRACBITS_Q - (_FP_IMPLBIT_Q != 0) - _FP_W_TYPE_SIZE;
+    unsigned exp     : _FP_EXPBITS_Q;
+    unsigned sign    : 1;
 #endif
   } bits;
 };

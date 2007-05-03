@@ -1153,7 +1153,8 @@ do {									 \
   if (_FP_FRACBITS_##dfs < _FP_FRACBITS_##sfs				 \
       || (_FP_EXPMAX_##dfs - _FP_EXPBIAS_##dfs				 \
 	  < _FP_EXPMAX_##sfs - _FP_EXPBIAS_##sfs)			 \
-      || _FP_EXPBIAS_##dfs < _FP_EXPBIAS_##sfs + _FP_FRACBITS_##sfs - 1) \
+      || (_FP_EXPBIAS_##dfs < _FP_EXPBIAS_##sfs + _FP_FRACBITS_##sfs - 1 \
+	  && _FP_EXPBIAS_##dfs != _FP_EXPBIAS_##sfs))			 \
     abort();								 \
   D##_s = S##_s;							 \
   _FP_FRAC_COPY_##dwc##_##swc(D, S);					 \
@@ -1168,6 +1169,14 @@ do {									 \
 	{								 \
 	  if (_FP_FRAC_ZEROP_##swc(S))					 \
 	    D##_e = 0;							 \
+	  else if (_FP_EXPBIAS_##dfs					 \
+		   < _FP_EXPBIAS_##sfs + _FP_FRACBITS_##sfs - 1)	 \
+	    {								 \
+	      FP_SET_EXCEPTION(FP_EX_DENORM);				 \
+	      _FP_FRAC_SLL_##dwc(D, (_FP_FRACBITS_##dfs			 \
+				     - _FP_FRACBITS_##sfs));		 \
+	      D##_e = 0;						 \
+	    }								 \
 	  else								 \
 	    {								 \
 	      int _lz;							 \
@@ -1199,7 +1208,8 @@ do {									 \
 #define FP_TRUNC(dfs,sfs,dwc,swc,D,S)					     \
 do {									     \
   if (_FP_FRACBITS_##sfs < _FP_FRACBITS_##dfs				     \
-      || _FP_EXPBIAS_##sfs < _FP_EXPBIAS_##dfs + _FP_FRACBITS_##dfs - 1)     \
+      || (_FP_EXPBIAS_##sfs < _FP_EXPBIAS_##dfs + _FP_FRACBITS_##dfs - 1     \
+	  && _FP_EXPBIAS_##sfs != _FP_EXPBIAS_##dfs))			     \
     abort();								     \
   D##_s = S##_s;							     \
   if (_FP_EXP_NORMAL(sfs, swc, S))					     \
@@ -1211,8 +1221,11 @@ do {									     \
 	{								     \
 	  if (D##_e <= 0)						     \
 	    {								     \
-	      if (D##_e <= 1 - _FP_FRACBITS_##dfs)			     \
-		_FP_FRAC_SET_##swc(S, _FP_ZEROFRAC_##swc);		     \
+	      if (D##_e < 1 - _FP_FRACBITS_##dfs)			     \
+		{							     \
+		  _FP_FRAC_SET_##swc(S, _FP_ZEROFRAC_##swc);		     \
+		  _FP_FRAC_LOW_##swc(S) |= 1;				     \
+		}							     \
 	      else							     \
 		{							     \
 		  _FP_FRAC_HIGH_##sfs(S) |= _FP_IMPLBIT_SH_##sfs;	     \
@@ -1234,11 +1247,24 @@ do {									     \
       if (S##_e == 0)							     \
 	{								     \
 	  D##_e = 0;							     \
-	  _FP_FRAC_SET_##dwc(D, _FP_ZEROFRAC_##dwc);			     \
-	  if (!_FP_FRAC_ZEROP_##swc(S))					     \
+	  if (_FP_FRAC_ZEROP_##swc(S))					     \
+	    _FP_FRAC_SET_##dwc(D, _FP_ZEROFRAC_##dwc);			     \
+	  else								     \
 	    {								     \
 	      FP_SET_EXCEPTION(FP_EX_DENORM);				     \
-	      FP_SET_EXCEPTION(FP_EX_INEXACT);				     \
+	      if (_FP_EXPBIAS_##sfs					     \
+		  < _FP_EXPBIAS_##dfs + _FP_FRACBITS_##dfs - 1)		     \
+		{							     \
+		  _FP_FRAC_SRS_##swc(S, (_FP_WFRACBITS_##sfs		     \
+					 - _FP_WFRACBITS_##dfs),	     \
+				     _FP_WFRACBITS_##sfs);		     \
+		  _FP_FRAC_COPY_##dwc##_##swc(D, S);			     \
+		}							     \
+	      else							     \
+		{							     \
+		  _FP_FRAC_SET_##dwc(D, _FP_ZEROFRAC_##dwc);		     \
+		  _FP_FRAC_LOW_##dwc(D) |= 1;				     \
+		}							     \
 	    }								     \
 	}								     \
       else								     \
