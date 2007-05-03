@@ -1,3 +1,7 @@
+2007-05-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.c-torture/compile-limits-stringlit.c: Reduce size of string.
+
 2007-05-02  Seongbae Park  <seongbae.park@gmail.com>
 
 	PR C++/31663
