@@ -1,3 +1,12 @@
+2007-05-03  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/31699
+	* tree-vect-analyze.c (vect_update_misalignment_for_peel): Remove wrong
+	code.
+	(vect_enhance_data_refs_alignment): Compute peel amount using 
+	TYPE_VECTOR_SUBPARTS instead of vf.	
+	* tree-vect-transform.c (vect_gen_niters_for_prolog_loop): Likewise.
+
 2007-05-02  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	PR bootstrap/31776
