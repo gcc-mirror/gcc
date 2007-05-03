@@ -592,7 +592,7 @@ tr1_headers = \
 	${tr1_srcdir}/tgmath.h \
 	${tr1_srcdir}/tuple \
 	${tr1_srcdir}/type_traits \
-	${tr1_srcdir}/type_traits_fwd.h \
+	${tr1_srcdir}/type_traitsfwd.h \
 	${tr1_srcdir}/unordered_set \
 	${tr1_srcdir}/unordered_map \
 	${tr1_srcdir}/utility \

@@ -37,7 +37,7 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <tr1/type_traits_fwd.h>
+#include <tr1/type_traitsfwd.h>
 
 // namespace std::tr1
 namespace std
