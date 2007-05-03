@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Definitions for IEEE Extended Precision.
-   Copyright (C) 1999,2006 Free Software Foundation, Inc.
+   Copyright (C) 1999,2006,2007 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek (jj@ultra.linux.cz).
 
@@ -94,12 +94,6 @@ union _FP_UNION_E
     X##_f[1] = _flo.bits.frac1;				\
     X##_e  = _flo.bits.exp;				\
     X##_s  = _flo.bits.sign;				\
-    if (!X##_e && (X##_f[1] || X##_f[0])		\
-        && !(X##_f[1] & _FP_IMPLBIT_E))			\
-      {							\
-        X##_e++;					\
-        FP_SET_EXCEPTION(FP_EX_DENORM);			\
-      }							\
   } while (0)
 
 #define FP_UNPACK_RAW_EP(X, val)			\
@@ -112,12 +106,6 @@ union _FP_UNION_E
     X##_f[1] = _flo->bits.frac1;			\
     X##_e  = _flo->bits.exp;				\
     X##_s  = _flo->bits.sign;				\
-    if (!X##_e && (X##_f[1] || X##_f[0])		\
-        && !(X##_f[1] & _FP_IMPLBIT_E))			\
-      {							\
-        X##_e++;					\
-        FP_SET_EXCEPTION(FP_EX_DENORM);			\
-      }							\
   } while (0)
 
 #define FP_PACK_RAW_E(val, X)				\
@@ -164,13 +152,13 @@ union _FP_UNION_E
 
 #define FP_UNPACK_SEMIRAW_E(X,val)	\
   do {					\
-    _FP_UNPACK_RAW_E(X,val);		\
+    FP_UNPACK_RAW_E(X,val);		\
     _FP_UNPACK_SEMIRAW(E,4,X);		\
   } while (0)
 
 #define FP_UNPACK_SEMIRAW_EP(X,val)	\
   do {					\
-    _FP_UNPACK_RAW_EP(X,val);		\
+    FP_UNPACK_RAW_EP(X,val);		\
     _FP_UNPACK_SEMIRAW(E,4,X);		\
   } while (0)
 
@@ -189,13 +177,13 @@ union _FP_UNION_E
 #define FP_PACK_SEMIRAW_E(val,X)	\
   do {					\
     _FP_PACK_SEMIRAW(E,4,X);		\
-    _FP_PACK_RAW_E(val,X);		\
+    FP_PACK_RAW_E(val,X);		\
   } while (0)
 
 #define FP_PACK_SEMIRAW_EP(val,X)	\
   do {					\
     _FP_PACK_SEMIRAW(E,4,X);		\
-    _FP_PACK_RAW_EP(val,X);		\
+    FP_PACK_RAW_EP(val,X);		\
   } while (0)
 
 #define FP_ISSIGNAN_E(X)	_FP_ISSIGNAN(E,4,X)
@@ -277,14 +265,14 @@ union _FP_UNION_E
   XFtype flt;
   struct {
 #if __BYTE_ORDER == __BIG_ENDIAN
-    unsigned long pad : (_FP_W_TYPE_SIZE - 1 - _FP_EXPBITS_E);
-    unsigned sign  : 1;
-    unsigned exp   : _FP_EXPBITS_E;
-    unsigned long frac : _FP_W_TYPE_SIZE;
+    _FP_W_TYPE pad  : (_FP_W_TYPE_SIZE - 1 - _FP_EXPBITS_E);
+    unsigned sign   : 1;
+    unsigned exp    : _FP_EXPBITS_E;
+    _FP_W_TYPE frac : _FP_W_TYPE_SIZE;
 #else
-    unsigned long frac : _FP_W_TYPE_SIZE;
-    unsigned exp   : _FP_EXPBITS_E;
-    unsigned sign  : 1;
+    _FP_W_TYPE frac : _FP_W_TYPE_SIZE;
+    unsigned exp    : _FP_EXPBITS_E;
+    unsigned sign   : 1;
 #endif
   } bits;
 };
@@ -299,11 +287,6 @@ union _FP_UNION_E
     X##_f1 = 0;							\
     X##_e = _flo.bits.exp;					\
     X##_s = _flo.bits.sign;					\
-    if (!X##_e && X##_f0 && !(X##_f0 & _FP_IMPLBIT_E))		\
-      {								\
-        X##_e++;						\
-        FP_SET_EXCEPTION(FP_EX_DENORM);				\
-      }								\
   } while (0)
 
 #define FP_UNPACK_RAW_EP(X, val)				\
@@ -315,11 +298,6 @@ union _FP_UNION_E
     X##_f1 = 0;							\
     X##_e = _flo->bits.exp;					\
     X##_s = _flo->bits.sign;					\
-    if (!X##_e && X##_f0 && !(X##_f0 & _FP_IMPLBIT_E))		\
-      {								\
-        X##_e++;						\
-        FP_SET_EXCEPTION(FP_EX_DENORM);				\
-      }								\
   } while (0)
 
 #define FP_PACK_RAW_E(val, X)					\
@@ -365,13 +343,13 @@ union _FP_UNION_E
 
 #define FP_UNPACK_SEMIRAW_E(X,val)	\
   do {					\
-    _FP_UNPACK_RAW_E(X,val);		\
+    FP_UNPACK_RAW_E(X,val);		\
     _FP_UNPACK_SEMIRAW(E,2,X);		\
   } while (0)
 
 #define FP_UNPACK_SEMIRAW_EP(X,val)	\
   do {					\
-    _FP_UNPACK_RAW_EP(X,val);		\
+    FP_UNPACK_RAW_EP(X,val);		\
     _FP_UNPACK_SEMIRAW(E,2,X);		\
   } while (0)
 
@@ -390,13 +368,13 @@ union _FP_UNION_E
 #define FP_PACK_SEMIRAW_E(val,X)	\
   do {					\
     _FP_PACK_SEMIRAW(E,2,X);		\
-    _FP_PACK_RAW_E(val,X);		\
+    FP_PACK_RAW_E(val,X);		\
   } while (0)
 
 #define FP_PACK_SEMIRAW_EP(val,X)	\
   do {					\
     _FP_PACK_SEMIRAW(E,2,X);		\
-    _FP_PACK_RAW_EP(val,X);		\
+    FP_PACK_RAW_EP(val,X);		\
   } while (0)
 
 #define FP_ISSIGNAN_E(X)	_FP_ISSIGNAN(E,2,X)

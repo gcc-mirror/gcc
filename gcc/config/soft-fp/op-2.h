@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Basic two-word fraction declaration and manipulation.
-   Copyright (C) 1997,1998,1999,2006 Free Software Foundation, Inc.
+   Copyright (C) 1997,1998,1999,2006,2007 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -613,3 +613,5 @@
 #define _FP_FRAC_COPY_1_2(D, S)		(D##_f = S##_f0)
 
 #define _FP_FRAC_COPY_2_1(D, S)		((D##_f0 = S##_f), (D##_f1 = 0))
+
+#define _FP_FRAC_COPY_2_2(D,S)		_FP_FRAC_COPY_2(D,S)
