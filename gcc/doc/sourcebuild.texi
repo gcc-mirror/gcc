@@ -1026,7 +1026,8 @@ targets.
 @item @{ dg-excess-errors @var{comment} [@{ target/xfail @var{selector} @}] @}
 This DejaGnu directive indicates that the test is expected to fail due
 to compiler messages that are not handled by @samp{dg-error},
-@samp{dg-warning} or @samp{dg-bogus}.
+@samp{dg-warning} or @samp{dg-bogus}.  For this directive @samp{xfail}
+has the same effect as @samp{target}.
 
 @item @{ dg-output @var{regexp} [@{ target/xfail @var{selector} @}] @}
 This DejaGnu directive compares @var{regexp} to the combined output
