@@ -24,8 +24,8 @@
 #include <string.h>
 #endif
 
-#include <ctype.h>
 #include "filenames.h"
+#include "safe-ctype.h"
 
 /*
 
@@ -55,8 +55,8 @@ filename_cmp (const char *s1, const char *s2)
 #else
   for (;;)
     {
-      int c1 = tolower (*s1);
-      int c2 = tolower (*s2);
+      int c1 = TOLOWER (*s1);
+      int c2 = TOLOWER (*s2);
 
       /* On DOS-based file systems, the '/' and the '\' are equivalent.  */
       if (c1 == '/')

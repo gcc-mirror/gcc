@@ -1,3 +1,11 @@
+2007-05-03  Joel Brobecker  <brobecker@adacore.com>
+
+	* filename_cmp.c: Replace include of ctype.h by include of
+	safe-ctype.h.
+	(filename_cmp): Use TOLOWER instead of tolower for conversions
+	that are locale-independent.
+	* Makefile.in (filename_cmp.o): Add dependency on safe-ctype.h.
+
 2007-04-11  Thomas Neumann  tneumann@users.sourceforge.net
 
 	* argv.c: Use ANSI C declarations.

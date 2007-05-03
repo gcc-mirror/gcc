@@ -651,7 +651,8 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/fibheap.c $(OUTPUT_OPTION)
 
-./filename_cmp.o: $(srcdir)/filename_cmp.c $(INCDIR)/filenames.h
+./filename_cmp.o: $(srcdir)/filename_cmp.c $(INCDIR)/filenames.h \
+	$(INCDIR)/safe-ctype.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/filename_cmp.c -o pic/$@; \
 	else true; fi
