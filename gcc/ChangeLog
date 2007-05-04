@@ -1,3 +1,18 @@
+2007-04-18  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.md (<optab>di3): Now a define_expand which expands
+	logical operations piecewise.
+	(<optab>di_zesidi_di, <optab>di_sesidi_di, negdi2, one_cmpldi2,
+	zero_extendsidi2, subdi_di_zesidi, subdi_zesidi_di, subdi_di_sesidi,
+	subdi_sesidi_di): Delete.
+	(add_with_carry): Produce carry in CC instead of a DREG to shorten
+	the generated sequence.  Allow three-reg add in constraints.  Rewrite
+	the rtl expression for carry to avoid zero_extend of a constant.
+	(sub_with_carry): New pattern.
+	(adddi3, subdi3): Change into define_expand.  For subtract, generate a
+	different sequence not involving jumps.
+	(notbi): Now a named pattern.
+
 2007-05-04  Bradley Lucier  <lucier@math.purdue.edu>
 
 	* doc/invoke.texi (i386 and x86-64 Options) [-mpc32, -mpc64, -mpc80]:
