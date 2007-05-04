@@ -668,6 +668,9 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node)
   int depth = 0;
   int n = 0;
 
+  if (optimize_size)
+    return false;
+
   if (DECL_DECLARED_INLINE_P (node->decl))
     {
       limit = PARAM_VALUE (PARAM_MAX_INLINE_INSNS_RECURSIVE);
@@ -913,7 +916,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	    }
 	}
 
-      if (!cgraph_maybe_hot_edge_p (edge) && growth > 0)
+      if ((!cgraph_maybe_hot_edge_p (edge) || optimize_size) && growth > 0)
 	{
           if (!cgraph_recursive_inlining_p (edge->caller, edge->callee,
 				            &edge->inline_failed))
@@ -1444,7 +1447,7 @@ cgraph_early_inlining (void)
   if (sorrycount || errorcount)
     return 0;
   if (cgraph_decide_inlining_incrementally (node,
-					    flag_unit_at_a_time
+					    flag_unit_at_a_time || optimize_size
 					    ? INLINE_SIZE : INLINE_SPEED, 0))
     {
       timevar_push (TV_INTEGRATION);

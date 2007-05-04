@@ -1,3 +1,14 @@
+2007-05-04  Jan Hubicka  <jh@suse.cz>
+	    Richard Guenther  <rguenther@suse.de>
+
+	* opts.c (decode_options): Do not fiddle with inlining
+	parameters in case of optimizing for size.
+	* ipa-inline.c (cgraph_decide_recursive_inlining): When optimizing
+	for size do nothing.
+	(cgraph_decide_inlining_of_small_function): When optimizing for
+	size never inline functions increasing caller size.
+	(cgraph_early_inlining): Inline for size when optimizing for size.
+
 2007-04-18  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (<optab>di3): Now a define_expand which expands
