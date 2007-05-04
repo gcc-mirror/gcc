@@ -877,4 +877,7 @@ extern rtx bb_note (basic_block);
 extern void check_reg_live (bool);
 #endif
 
+/* Functions in sched-rgn.c.  */
+extern void debug_dependencies (rtx, rtx);
+
 #endif /* GCC_SCHED_INT_H */

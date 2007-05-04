@@ -288,7 +288,6 @@ static bool sets_likely_spilled (rtx);
 static void sets_likely_spilled_1 (rtx, rtx, void *);
 static void add_branch_dependences (rtx, rtx);
 static void compute_block_backward_dependences (int);
-void debug_dependencies (void);
 
 static void init_regions (void);
 static void schedule_region (int);
@@ -1946,6 +1945,8 @@ static void check_dead_notes1 (int, sbitmap);
 static int region_head_or_leaf_p (basic_block, int);
 #endif
 
+static void debug_rgn_dependencies (int);
+
 /* Return nonzero if there are more insns that should be scheduled.  */
 
 static int
@@ -1971,7 +1972,7 @@ init_ready_list (void)
 
   /* Print debugging information.  */
   if (sched_verbose >= 5)
-    debug_dependencies ();
+    debug_rgn_dependencies (target_bb);
 
   /* Prepare current target block info.  */
   if (current_nr_blocks > 1)
@@ -2549,73 +2550,84 @@ free_pending_lists (void)
     }
 }
 
-/* Print dependences for debugging, callable from debugger.  */
 
+/* Print dependences for debugging starting from FROM_BB.
+   Callable from debugger.  */
 void
-debug_dependencies (void)
+debug_rgn_dependencies (int from_bb)
 {
   int bb;
 
-  fprintf (sched_dump, ";;   --------------- forward dependences: ------------ \n");
-  for (bb = 0; bb < current_nr_blocks; bb++)
+  fprintf (sched_dump,
+	   ";;   --------------- forward dependences: ------------ \n");
+
+  for (bb = from_bb; bb < current_nr_blocks; bb++)
     {
       rtx head, tail;
-      rtx next_tail;
-      rtx insn;
 
       gcc_assert (EBB_FIRST_BB (bb) == EBB_LAST_BB (bb));
       get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
-      next_tail = NEXT_INSN (tail);
       fprintf (sched_dump, "\n;;   --- Region Dependences --- b %d bb %d \n",
 	       BB_TO_BLOCK (bb), bb);
 
-      fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%14s\n",
-	       "insn", "code", "bb", "dep", "prio", "cost",
-	       "reservation");
-      fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%14s\n",
-	       "----", "----", "--", "---", "----", "----",
-	       "-----------");
-
-      for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
-	{
-	  dep_link_t link;
-
-	  if (! INSN_P (insn))
-	    {
-	      int n;
-	      fprintf (sched_dump, ";;   %6d ", INSN_UID (insn));
-	      if (NOTE_P (insn))
-		{
-		  n = NOTE_LINE_NUMBER (insn);
-		  if (n < 0)
-		    fprintf (sched_dump, "%s\n", GET_NOTE_INSN_NAME (n));
-		}
-	      else
-		fprintf (sched_dump, " {%s}\n", GET_RTX_NAME (GET_CODE (insn)));
-	      continue;
-	    }
-
-	  fprintf (sched_dump,
-		   ";;   %s%5d%6d%6d%6d%6d%6d   ",
-		   (SCHED_GROUP_P (insn) ? "+" : " "),
-		   INSN_UID (insn),
-		   INSN_CODE (insn),
-		   INSN_BB (insn),
-		   INSN_DEP_COUNT (insn),
-		   INSN_PRIORITY (insn),
-		   insn_cost (insn));
-
-	  if (recog_memoized (insn) < 0)
-	    fprintf (sched_dump, "nothing");
-	  else
-	    print_reservation (sched_dump, insn);
-
-	  fprintf (sched_dump, "\t: ");
-	  FOR_EACH_DEP_LINK (link, INSN_FORW_DEPS (insn))
-	    fprintf (sched_dump, "%d ", INSN_UID (DEP_LINK_CON (link)));
-	  fprintf (sched_dump, "\n");
-	}
+      debug_dependencies (head, tail);
     }
+}
+
+/* Print dependencies information for instructions between HEAD and TAIL.
+   ??? This function would probably fit best in haifa-sched.c.  */
+void debug_dependencies (rtx head, rtx tail)
+{
+  rtx insn;
+  rtx next_tail = NEXT_INSN (tail);
+
+  fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%14s\n",
+	   "insn", "code", "bb", "dep", "prio", "cost",
+	   "reservation");
+  fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%14s\n",
+	   "----", "----", "--", "---", "----", "----",
+	   "-----------");
+
+  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
+    {
+      dep_link_t link;
+
+      if (! INSN_P (insn))
+	{
+	  int n;
+	  fprintf (sched_dump, ";;   %6d ", INSN_UID (insn));
+	  if (NOTE_P (insn))
+	    {
+	      n = NOTE_LINE_NUMBER (insn);
+	      if (n < 0)
+		fprintf (sched_dump, "%s\n", GET_NOTE_INSN_NAME (n));
+	    }
+	  else
+	    fprintf (sched_dump, " {%s}\n", GET_RTX_NAME (GET_CODE (insn)));
+	  continue;
+	}
+
+      fprintf (sched_dump,
+	       ";;   %s%5d%6d%6d%6d%6d%6d   ",
+	       (SCHED_GROUP_P (insn) ? "+" : " "),
+	       INSN_UID (insn),
+	       INSN_CODE (insn),
+	       BLOCK_NUM (insn),
+	       INSN_DEP_COUNT (insn),
+	       INSN_PRIORITY (insn),
+	       insn_cost (insn));
+
+      if (recog_memoized (insn) < 0)
+	fprintf (sched_dump, "nothing");
+      else
+	print_reservation (sched_dump, insn);
+
+      fprintf (sched_dump, "\t: ");
+      FOR_EACH_DEP_LINK (link, INSN_FORW_DEPS (insn))
+	fprintf (sched_dump, "%d ", INSN_UID (DEP_LINK_CON (link)));
+      fprintf (sched_dump, "\n");
+    }
+
   fprintf (sched_dump, "\n");
 }
 

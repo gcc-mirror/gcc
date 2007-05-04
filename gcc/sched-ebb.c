@@ -86,6 +86,19 @@ schedule_more_p (void)
   return sched_n_insns < n_insns;
 }
 
+/* Print dependency information about ebb between HEAD and TAIL.  */
+static void
+debug_ebb_dependencies (rtx head, rtx tail)
+{
+  fprintf (sched_dump,
+	   ";;   --------------- forward dependences: ------------ \n");
+
+  fprintf (sched_dump, "\n;;   --- EBB Dependences --- from bb%d to bb%d \n",
+	   BLOCK_NUM (head), BLOCK_NUM (tail));
+
+  debug_dependencies (head, tail);
+}
+
 /* Add all insns that are initially ready to the ready list READY.  Called
    once before scheduling a set of insns.  */
 
@@ -99,11 +112,9 @@ init_ready_list (void)
 
   sched_n_insns = 0;
 
-#if 0
   /* Print debugging information.  */
   if (sched_verbose >= 5)
-    debug_dependencies ();
-#endif
+    debug_ebb_dependencies (NEXT_INSN (prev_head), PREV_INSN (next_tail));
 
   /* Initialize ready list with all 'ready' insns in target block.
      Count number of insns in the target block being scheduled.  */
