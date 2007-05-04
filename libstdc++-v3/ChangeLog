@@ -1,3 +1,15 @@
+2007-05-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_construct.h (_Destroy(_ForwardIterator,
+	_ForwardIterator __last, _Allocator)): Change the last parameter
+	to _Allocator&.
+	* include/bits/stl_uninitialized.h (__uninitialized_copy_a,
+	__uninitialized_fill_a, __uninitialized_fill_n_a,
+	__uninitialized_fill_copy, __uninitialized_copy_fill,
+	__uninitialized_copy_copy): Likewise.
+	* include/ext/rope: Adjust everywhere.
+	* include/ext/ropeimpl.h: Likewise.
+
 2007-05-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/type_traits (enable_if): New.
