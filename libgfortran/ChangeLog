@@ -1,6 +1,6 @@
 2007-05-04  Daniel Franke  <franke.daniel@gmail.com>
 
-	PR fortran/22539
+	PR fortran/22359
 	* io/intrinsics.c (fseek_sub): New.
 	* io/unix.c (fd_fseek): Change logical and physical offsets only
 	if seek succeeds.

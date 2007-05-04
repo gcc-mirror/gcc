@@ -1,10 +1,19 @@
 2007-05-04  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/31760
+	* intrinsic.c (add_functions): Replaced calls to gfc_check_g77_math1
+	by gfc_check_fn_r to avoid checks for scalarity.
+	* check.c (gfc_check_besn): Removed check for scalarity.
+	(gfc_check_g77_math1): Removed.
+	* intrinsic.h (gfc_check_g77_math1): Removed.
+
+2007-05-04  Daniel Franke  <franke.daniel@gmail.com>
+
 	* check.c (gfc_check_fseek_sub): Fixed typo.
 
 2007-05-04  Daniel Franke  <franke.daniel@gmail.com>
 
-	PR fortran/22539
+	PR fortran/22359
 	* intrinsic.c (add_subroutines): Added FSEEK.
 	* intrinsic.h (gfc_resolve_fseek_sub, gfc_check_fseek_sub): New.
 	* iresolve.c (gfc_resolve_fseek_sub): New.

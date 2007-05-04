@@ -1,6 +1,6 @@
 2007-05-04  Daniel Franke  <franke.daniel@gmail.com>
 
-	PR fortran/22539
+	PR fortran/22359
 	* gfortran.dg/fseek.f90: New test.
 
 2007-05-04  Bob Wilson  <bob.wilson@acm.org>
