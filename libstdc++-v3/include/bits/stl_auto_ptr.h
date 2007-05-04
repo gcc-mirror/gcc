@@ -1,4 +1,4 @@
-// Memory implementation -*- C++ -*-
+// auto_ptr implementation -*- C++ -*-
 
 // Copyright (C) 2007 Free Software Foundation, Inc.
 //
@@ -27,84 +27,18 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file stl_memory.h
+/** @file stl_auto_ptr.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
 
-#ifndef _STL_MEMORY_H
-#define _STL_MEMORY_H 1
+#ifndef _STL_AUTO_PTR_H
+#define _STL_AUTO_PTR_H 1
 
-#include <bits/stl_algobase.h>
-#include <bits/allocator.h>
-#include <bits/stl_construct.h>
-#include <bits/stl_uninitialized.h>
-#include <bits/stl_raw_storage_iter.h>
+#include <bits/c++config.h>
 #include <debug/debug.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
-
-  /**
-   *  @if maint
-   *  This is a helper function.  The unused second parameter exists to
-   *  permit the real get_temporary_buffer to use template parameter deduction.
-   *
-   *  XXX This should perhaps use the pool.
-   *  @endif
-   */
-  template<typename _Tp>
-    pair<_Tp*, ptrdiff_t>
-    __get_temporary_buffer(ptrdiff_t __len, _Tp*)
-    {
-      const ptrdiff_t __max =
-	__gnu_cxx::__numeric_traits<ptrdiff_t>::__max / sizeof(_Tp);
-      if (__len > __max)
-	__len = __max;
-      
-      while (__len > 0) 
-	{
-	  _Tp* __tmp = static_cast<_Tp*>(::operator new(__len * sizeof(_Tp), 
-							nothrow));
-	  if (__tmp != 0)
-	    return pair<_Tp*, ptrdiff_t>(__tmp, __len);
-	  __len /= 2;
-	}
-      return pair<_Tp*, ptrdiff_t>(static_cast<_Tp*>(0), 0);
-    }
-
-  /**
-   *  @brief Allocates a temporary buffer.
-   *  @param  len  The number of objects of type Tp.
-   *  @return See full description.
-   *
-   *  Reinventing the wheel, but this time with prettier spokes!
-   *
-   *  This function tries to obtain storage for @c len adjacent Tp
-   *  objects.  The objects themselves are not constructed, of course.
-   *  A pair<> is returned containing "the buffer s address and
-   *  capacity (in the units of sizeof(Tp)), or a pair of 0 values if
-   *  no storage can be obtained."  Note that the capacity obtained
-   *  may be less than that requested if the memory is unavailable;
-   *  you should compare len with the .second return value.
-   *
-   * Provides the nothrow exception guarantee.
-   */
-  template<typename _Tp>
-    inline pair<_Tp*, ptrdiff_t>
-    get_temporary_buffer(ptrdiff_t __len)
-    { return std::__get_temporary_buffer(__len, static_cast<_Tp*>(0)); }
-
-  /**
-   *  @brief The companion to get_temporary_buffer().
-   *  @param  p  A buffer previously allocated by get_temporary_buffer.
-   *  @return   None.
-   *
-   *  Frees the memory pointed to by p.
-   */
-  template<typename _Tp>
-    void
-    return_temporary_buffer(_Tp* __p)
-    { ::operator delete(__p, nothrow); }
 
   /**
    *  A wrapper class to provide auto_ptr with reference semantics.
@@ -364,4 +298,4 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
-#endif /* _STL_MEMORY_H */
+#endif /* _STL_AUTO_PTR_H */

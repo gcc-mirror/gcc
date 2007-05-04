@@ -46,5 +46,5 @@ main()
   test01();
   return 0;
 }
-// { dg-error "candidates" "" { target *-*-* } 207 } 
-// { dg-error "::auto_ptr" "" { target *-*-* } 337 } 
+// { dg-error "candidates" "" { target *-*-* } 141 } 
+// { dg-error "::auto_ptr" "" { target *-*-* } 271 } 
