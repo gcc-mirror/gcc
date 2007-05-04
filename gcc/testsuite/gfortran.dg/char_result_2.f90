@@ -46,7 +46,7 @@ program main
 
   a = 42
   textp => textt
-  ! textp2 => textt(1:50) ! needs fixed PR31803
+  textp2 => textt(1:50)
 
   call test (f1 (textp), 70)
   call test (f2 (textp, textp), 95)
@@ -55,7 +55,7 @@ program main
   call test (f5 (textp), 140)
   call test (f6 (textp), 29)
 
-  ! call indirect (textp2) ! needs fixed PR31803
+  call indirect (textp2)
 contains
   function f3 (string)
     integer, parameter :: l1 = 30
