@@ -1,5 +1,9 @@
 2007-05-04  Daniel Franke  <franke.daniel@gmail.com>
 
+	* check.c (gfc_check_fseek_sub): Fixed typo.
+
+2007-05-04  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/22539
 	* intrinsic.c (add_subroutines): Added FSEEK.
 	* intrinsic.h (gfc_resolve_fseek_sub, gfc_check_fseek_sub): New.
