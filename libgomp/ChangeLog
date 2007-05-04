@@ -1,3 +1,7 @@
+2007-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/proc.c: New file.
+
 2007-04-19  Daniel Franke  <franke.daniel@gmail.com>
 
 	* libgomp.texi (GOMP_CPU_AFFINITY): Updated.
