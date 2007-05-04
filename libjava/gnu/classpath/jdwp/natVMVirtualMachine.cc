@@ -21,6 +21,7 @@ details. */
 #include <java/lang/String.h>
 #include <java/lang/StringBuilder.h>
 #include <java/lang/Thread.h>
+#include <java/lang/Throwable.h>
 #include <java/nio/ByteBuffer.h>
 #include <java/nio/ByteBufferImpl.h>
 #include <java/util/ArrayList.h>
@@ -37,6 +38,7 @@ details. */
 #include <gnu/classpath/jdwp/VMVirtualMachine.h>
 #include <gnu/classpath/jdwp/event/BreakpointEvent.h>
 #include <gnu/classpath/jdwp/event/ClassPrepareEvent.h>
+#include <gnu/classpath/jdwp/event/ExceptionEvent.h>
 #include <gnu/classpath/jdwp/event/EventManager.h>
 #include <gnu/classpath/jdwp/event/EventRequest.h>
 #include <gnu/classpath/jdwp/event/SingleStepEvent.h>
@@ -82,6 +84,9 @@ static void handle_single_step (jvmtiEnv *, struct step_info *, jthread,
 static void JNICALL jdwpBreakpointCB (jvmtiEnv *, JNIEnv *, jthread,
 				      jmethodID, jlocation);
 static void JNICALL jdwpClassPrepareCB (jvmtiEnv *, JNIEnv *, jthread, jclass);
+static void JNICALL jdwpExceptionCB (jvmtiEnv *, JNIEnv *jni_env, jthread,
+				     jmethodID, jlocation, jobject,
+				     jmethodID, jlocation);
 static void JNICALL jdwpSingleStepCB (jvmtiEnv *, JNIEnv *, jthread,
 				      jmethodID, jlocation);
 static void JNICALL jdwpThreadEndCB (jvmtiEnv *, JNIEnv *, jthread);
@@ -933,6 +938,56 @@ jdwpClassPrepareCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
 }
 
 static void JNICALL
+jdwpExceptionCB (jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env, jthread thread,
+		 jmethodID method, jlocation location, jobject exception,
+		 jmethodID catch_method, jlocation catch_location)
+{
+  using namespace gnu::classpath::jdwp;
+  jclass throw_klass;
+  jvmtiError err = env->GetMethodDeclaringClass (method, &throw_klass);
+  if (err != JVMTI_ERROR_NONE)
+    {
+      fprintf (stderr, "libgcj: internal error: could not find class for ");
+      fprintf (stderr, "method throwing exception -- continuing\n");
+      return;
+    }
+
+  VMMethod *vmmethod = new VMMethod (throw_klass,
+				     reinterpret_cast<jlong> (method));
+  Location *throw_loc = new Location (vmmethod, location);  
+  Location *catch_loc = NULL;
+  if (catch_method == 0)
+    catch_loc = Location::getEmptyLocation ();
+  else
+    {
+      jclass catch_klass;
+      err = env->GetMethodDeclaringClass (catch_method, &catch_klass);
+      if (err != JVMTI_ERROR_NONE)
+	{
+	  fprintf (stderr,
+		   "libgcj: internal error: could not find class for ");
+	  fprintf (stderr,
+		   "method catching exception -- ignoring\n");
+	}
+      else
+	{
+	  vmmethod = new VMMethod (catch_klass,
+				   reinterpret_cast<jlong> (catch_method));
+	  catch_loc = new Location (vmmethod, catch_location);
+	}
+    }
+
+  _Jv_InterpFrame *iframe
+    = reinterpret_cast<_Jv_InterpFrame *> (thread->interp_frame);
+  jobject instance = (iframe == NULL) ? NULL : iframe->get_this_ptr ();
+  Throwable *throwable = reinterpret_cast<Throwable *> (exception);
+  event::ExceptionEvent *e = new ExceptionEvent (throwable, thread,
+						 throw_loc, catch_loc,
+						 throw_klass, instance);
+  Jdwp::notify (e);
+}
+
+static void JNICALL
 jdwpSingleStepCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread,
 		  jmethodID method, jlocation location)
 {
@@ -1034,6 +1089,7 @@ jdwpVMInitCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
   jvmtiEventCallbacks callbacks;
   DEFINE_CALLBACK (callbacks, Breakpoint);
   DEFINE_CALLBACK (callbacks, ClassPrepare);
+  DEFINE_CALLBACK (callbacks, Exception);
   DEFINE_CALLBACK (callbacks, SingleStep);
   DEFINE_CALLBACK (callbacks, ThreadEnd);
   DEFINE_CALLBACK (callbacks, ThreadStart);
@@ -1043,6 +1099,7 @@ jdwpVMInitCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
   // Enable callbacks
   ENABLE_EVENT (BREAKPOINT, NULL);
   ENABLE_EVENT (CLASS_PREPARE, NULL);
+  ENABLE_EVENT (EXCEPTION, NULL);
   // SingleStep is enabled only when needed
   ENABLE_EVENT (THREAD_END, NULL);
   ENABLE_EVENT (THREAD_START, NULL);

@@ -377,7 +377,9 @@ details.  */
   }									\
   while (0)
 
-#else
+#undef INTERP_REPORT_EXCEPTION
+#define INTERP_REPORT_EXCEPTION(Jthrowable) REPORT_EXCEPTION (Jthrowable)
+#else // !DEBUG
 #undef NEXT_INSN
 #define NEXT_INSN goto *((pc++)->insn)
 #define REWRITE_INSN(INSN,SLOT,VALUE)		\
@@ -386,7 +388,10 @@ details.  */
     pc[-1].SLOT = VALUE;			\
   }						\
   while (0)
-#endif
+
+#undef INTERP_REPORT_EXCEPTION
+#define INTERP_REPORT_EXCEPTION(Jthrowable) /* not needed when not debugging */
+#endif // !DEBUG
 
 #define INTVAL() ((pc++)->int_val)
 #define AVAL() ((pc++)->datum)
@@ -2355,7 +2360,11 @@ details.  */
 	/* VM spec, section 3.11.5 */
 	if ((klass->getModifiers() & Modifier::ABSTRACT)
 	    || klass->isInterface())
-	  throw new java::lang::InstantiationException;
+	  {
+	    jthrowable t = new java::lang::InstantiationException;
+	    INTERP_REPORT_EXCEPTION (t);
+	    throw t;
+	  }
 	jobject res = _Jv_AllocObject (klass);
 	PUSHA (res);
 
@@ -2422,7 +2431,9 @@ details.  */
     insn_athrow:
       {
 	jobject value = POPA();
-	throw static_cast<jthrowable>(value);
+	jthrowable t = static_cast<jthrowable> (value);
+	INTERP_REPORT_EXCEPTION (t);
+	throw t;
       }
       NEXT_INSN;
 
@@ -2639,10 +2650,6 @@ details.  */
     }
   catch (java::lang::Throwable *ex)
     {
-#ifdef DEBUG
-       // This needs to be done before the pc is changed.
-       jlong throw_loc = meth->insn_index (pc);
-#endif
       // Check if the exception is handled and, if so, set the pc to the start
       // of the appropriate catch block.
       if (meth->check_handler (&pc, meth, ex))
@@ -2650,27 +2657,19 @@ details.  */
           sp = stack;
           sp++->o = ex; // Push exception.
 #ifdef DEBUG
-          if (JVMTI_REQUESTED_EVENT (Exception))
+          if (JVMTI_REQUESTED_EVENT (ExceptionCatch))
             {
               using namespace gnu::gcj::jvmti;
-              jlong throw_meth = reinterpret_cast<jlong> (meth->get_method ());
+              jlong catch_meth = reinterpret_cast<jlong> (meth->get_method ());
               jlong catch_loc = meth->insn_index (pc);
-              ExceptionEvent::postExceptionEvent (thread, throw_meth,
-                                                  throw_loc, ex, throw_meth,
-                                                  catch_loc);
+	      _Jv_JVMTI_PostEvent (JVMTI_EVENT_EXCEPTION_CATCH, thread,
+				   _Jv_GetCurrentJNIEnv (), catch_meth,
+				   catch_loc, ex);
             }
 #endif
           NEXT_INSN;
         }
-#ifdef DEBUG
-      if (JVMTI_REQUESTED_EVENT (Exception))
-        {
-          using namespace gnu::gcj::jvmti;
-          jlong throw_meth = reinterpret_cast<jlong> (meth->get_method ());
-          ExceptionEvent::postExceptionEvent (thread, throw_meth, throw_loc,
-                                              ex, NULL, NULL);
-        }
-#endif
+
       // No handler, so re-throw.
       throw ex;
     }

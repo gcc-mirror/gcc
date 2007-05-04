@@ -23,6 +23,7 @@ details.  */
 #include <jvmpi.h>
 #endif
 #include <jvmti.h>
+#include "jvmti-int.h"
 
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
@@ -456,6 +457,8 @@ _Jv_JNI_PopSystemFrame (JNIEnv *env)
     {
       jthrowable t = env->ex;
       env->ex = NULL;
+      if (JVMTI_REQUESTED_EVENT (Exception))
+	_Jv_ReportJVMTIExceptionThrow (t);
       throw t;
     }
 }
