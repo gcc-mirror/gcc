@@ -1,3 +1,9 @@
+2007-05-04  Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31781
+	* simplify.c (gfc_simplify_repeat): Don't put function call with
+	side effect in a gcc_assert().
+
 2007-05-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/25071
