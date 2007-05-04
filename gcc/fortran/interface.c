@@ -1369,6 +1369,34 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  return 0;
 	}
 
+       if (a->expr->ts.type == BT_CHARACTER
+	   && a->expr->ts.cl && a->expr->ts.cl->length
+	   && a->expr->ts.cl->length->expr_type == EXPR_CONSTANT
+	   && f->sym->ts.cl && f->sym->ts.cl && f->sym->ts.cl->length
+	   && f->sym->ts.cl->length->expr_type == EXPR_CONSTANT)
+	 {
+	   if (mpz_cmp (a->expr->ts.cl->length->value.integer,
+			f->sym->ts.cl->length->value.integer) < 0)
+	     {
+		if (where)
+		  gfc_error ("Character length of actual argument shorter "
+			     "than of dummy argument '%s' at %L",
+			     f->sym->name, &a->expr->where);
+		return 0;
+	     }
+
+	   if ((f->sym->attr.pointer || f->sym->attr.allocatable)
+	       && (mpz_cmp (a->expr->ts.cl->length->value.integer,
+			   f->sym->ts.cl->length->value.integer) != 0))
+	     {
+		if (where)
+		  gfc_error ("Character length mismatch between actual argument "
+			     "and pointer or allocatable dummy argument "
+			     "'%s' at %L", f->sym->name, &a->expr->where);
+		return 0;
+	     }
+	 }
+
       /* Satisfy 12.4.1.2 by ensuring that a procedure actual argument is
 	 provided for a procedure formal argument.  */
       if (a->expr->ts.type != BT_PROCEDURE
