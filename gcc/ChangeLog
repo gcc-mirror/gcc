@@ -1,3 +1,11 @@
+2007-05-04  Ulrich Drepper  <drepper@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* crtstuff.c (HIDDEN_DTOR_LIST_END): New macro.
+	(__do_global_dtors_aux): Use more paranoid loop to run
+	destructors if HIDDEN_DTOR_LIST_END.
+	(__DTOR_END__): Export as a hidden symbol when HIDDEN_DTOR_LIST_END.
+
 2007-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* varasm.c (align_variable): Don't increase alignment for
