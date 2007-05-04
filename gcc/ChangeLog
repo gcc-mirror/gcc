@@ -1,3 +1,9 @@
+2007-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* varasm.c (align_variable): Don't increase alignment for
+	DECL_THREAD_LOCAL_P variables above BITS_PER_WORD through
+	DATA_ALIGNMENT or CONSTANT_ALIGNMENT.
+
 2007-05-04  Josh Conner  <jconner@apple.com>
 
 	* basic-block.h (cdi_direction): Assign values to all enumeration
