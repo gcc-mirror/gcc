@@ -2488,7 +2488,7 @@ gfc_check_fseek_sub (gfc_expr *unit, gfc_expr *offset, gfc_expr *whence, gfc_exp
     return FAILURE;
 
   if (kind_value_check (status, 3, 4) == FAILURE)
-    return FAILURE
+    return FAILURE;
 
   if (scalar_check (status, 3) == FAILURE)
     return FAILURE;
