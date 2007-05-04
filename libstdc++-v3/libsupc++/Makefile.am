@@ -42,6 +42,7 @@ endif
 
 sources = \
 	array_type_info.cc \
+	atexit_arm.cc \
 	bad_cast.cc \
 	bad_typeid.cc \
 	class_type_info.cc \
