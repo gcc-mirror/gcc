@@ -1,3 +1,9 @@
+2007-05-04  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md ("fix_trunc<mode>di2", "fix_trunc<mode>si2"):
+	Expander removed.
+	("fix_trunc<DSF:mode><GPR:mode>2"): Expander added.
+
 2007-05-04  Bob Wilson  <bob.wilson@acm.org>
 	
 	* config/xtensa/xtensa.md (adddi3, adddi_carry): Delete.
