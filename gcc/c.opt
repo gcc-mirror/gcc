@@ -271,7 +271,7 @@ C ObjC C++ ObjC++ Var(warn_long_long) Init(1) Warning
 Do not warn about using \"long long\" when -pedantic
 
 Wmain
-C ObjC Warning
+C ObjC C++ ObjC++ Warning
 Warn about suspicious declarations of \"main\"
 
 Wmissing-braces
@@ -551,7 +551,7 @@ C++ ObjC++
 Scope of for-init-statement variables is local to the loop
 
 ffreestanding
-C ObjC
+C ObjC C++ ObjC++
 Do not assume that standard C libraries and \"main\" exist
 
 fgnu-keywords

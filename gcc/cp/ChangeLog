@@ -1,3 +1,8 @@
+2007-05-04  Dirk Mueller  <dmueller@suse.de>
+
+	* cp-tree.h (DECL_MAIN_P): only if -ffreestanding is
+	not in effect.
+
 2007-05-02  Seongbae Park  <seongbae.park@gmail.com>
 
 	PR c++/31663
