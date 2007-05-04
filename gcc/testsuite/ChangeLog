@@ -1,3 +1,7 @@
+2007-05-04  Bob Wilson  <bob.wilson@acm.org>
+	
+	* g++.old-deja/g++.pt/static11.C: Remove xtensa-*-elf* xfail.
+	
 2007-05-04  Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/31210
