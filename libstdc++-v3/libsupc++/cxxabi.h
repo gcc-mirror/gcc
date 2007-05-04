@@ -136,7 +136,7 @@ namespace __cxxabiv1
 
   // DSO destruction.
   int
-  __cxa_atexit(void (*)(void*), void*, void*);
+  __cxa_atexit(void (*)(void*), void*, void*) throw ();
 
   int
   __cxa_finalize(void*);

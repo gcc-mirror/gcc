@@ -499,14 +499,6 @@ namespace __aeabiv1
 			    2 * sizeof (std::size_t),
 			    /*destructor=*/NULL, dealloc);
   }
-  
-  extern "C" int
-  __aeabi_atexit (void *object, 
-		  void (*destructor) (void *),
-		  void *dso_handle)
-  {
-    return abi::__cxa_atexit(destructor, object, dso_handle);
-  }
 } // namespace __aeabiv1
 
 #endif // defined(__arm__) && defined(__ARM_EABI__)

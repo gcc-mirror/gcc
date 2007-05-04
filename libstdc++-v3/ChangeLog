@@ -1,3 +1,11 @@
+2007-05-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* libsupc++/atexit_arm.cc: New file.
+	* libsupc++/vec.cc (__aeabi_atexit): Remove.
+	* libsupc++/cxxabi.h (__cxa_atexit): Add exception specification.
+	* libsupc++/Makefile.am: Add atexit_arm.cc.
+	* libsupc++/Makefile.in: Regenerated.
+
 2007-05-04  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_construct.h (_Destroy(_ForwardIterator,
