@@ -2553,6 +2553,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
     return SUCCESS;
 
   if (lvalue->ts.type == BT_CHARACTER
+      && lvalue->ts.cl && rvalue->ts.cl
       && lvalue->ts.cl->length && rvalue->ts.cl->length
       && abs (gfc_dep_compare_expr (lvalue->ts.cl->length,
 				    rvalue->ts.cl->length)) == 1)
