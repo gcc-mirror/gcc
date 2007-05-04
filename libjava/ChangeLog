@@ -1,3 +1,8 @@
+2007-05-04  Kyle Galloway  <kgallowa@redhat.com>
+
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc (getClassMethod): Change
+	to use JVMTI.
+
 2007-05-03  Keith Seitz  <keiths@redhat.com>
 
 	* interpret.cc: Don't include ExceptionEvent.h.
