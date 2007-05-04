@@ -885,67 +885,26 @@
 			       (ior "%H1")
 			       (xor "%H1")])
 
-(define_insn "<optab>di3"
+;; Keep this pattern around to avoid generating NO_CONFLICT blocks.
+(define_expand "<optab>di3"
   [(set (match_operand:DI 0 "register_operand" "=d")
         (any_logical:DI (match_operand:DI 1 "register_operand" "0")
-			(match_operand:DI 2 "register_operand" "d")))]
+			(match_operand:DI 2 "general_operand" "d")))]
   ""
-  "%0 = %1 <op> %2;\\n\\t%H0 = %H1 <op> %H2;"
-  [(set_attr "length" "4")
-   (set_attr "seq_insns" "multi")])
-
-(define_insn "*<optab>di_zesidi_di"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-        (any_logical:DI (zero_extend:DI
-			 (match_operand:SI 2 "register_operand" "d"))
-			(match_operand:DI 1 "register_operand" "d")))]
-  ""
-  "%0 = %1 <op>  %2;\\n\\t%H0 = <high_result>;"
-  [(set_attr "length" "4")
-   (set_attr "seq_insns" "multi")])
-
-(define_insn "*<optab>di_sesdi_di"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-        (any_logical:DI (sign_extend:DI
-			 (match_operand:SI 2 "register_operand" "d"))
-			(match_operand:DI 1 "register_operand" "0")))
-   (clobber (match_scratch:SI 3 "=&d"))]
-  ""
-  "%0 = %1 <op> %2;\\n\\t%3 = %2;\\n\\t%3 >>>= 31;\\n\\t%H0 = %H1 <op> %3;"
-  [(set_attr "length" "8")
-   (set_attr "seq_insns" "multi")])
-
-(define_insn "negdi2"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-        (neg:DI (match_operand:DI 1 "register_operand" "d")))
-   (clobber (match_scratch:SI 2 "=&d"))
-   (clobber (reg:CC REG_CC))]
-  ""
-  "%2 = 0; %2 = %2 - %1; cc = ac0; cc = !cc; %2 = cc;\\n\\t%0 = -%1; %H0 = -%H1; %H0 = %H0 - %2;"
-  [(set_attr "length" "16")
-   (set_attr "seq_insns" "multi")])
-
-(define_insn "one_cmpldi2"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-        (not:DI (match_operand:DI 1 "register_operand" "d")))]
-  ""
-  "%0 = ~%1;\\n\\t%H0 = ~%H1;"
-  [(set_attr "length" "4")
-   (set_attr "seq_insns" "multi")])
-
-;; DImode zero and sign extend patterns
-
-(define_insn_and_split "zero_extendsidi2"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-        (zero_extend:DI (match_operand:SI 1 "register_operand" "d")))]
-  ""
-  "#"
-  "reload_completed"
-  [(set (match_dup 3) (const_int 0))]
 {
-  split_di (operands, 1, operands + 2, operands + 3);
-  if (REGNO (operands[0]) != REGNO (operands[1]))
-    emit_move_insn (operands[2], operands[1]);
+  rtx hi_half[3], lo_half[3];
+  enum insn_code icode = CODE_FOR_<optab>si3;
+  if (!reg_overlap_mentioned_p (operands[0], operands[1])
+      && !reg_overlap_mentioned_p (operands[0], operands[2]))
+    emit_insn (gen_rtx_CLOBBER (VOIDmode, operands[0]));
+  split_di (operands, 3, lo_half, hi_half);
+  if (!(*insn_data[icode].operand[2].predicate) (lo_half[2], SImode))
+    lo_half[2] = force_reg (SImode, lo_half[2]);
+  emit_insn (GEN_FCN (icode) (lo_half[0], lo_half[1], lo_half[2]));
+  if (!(*insn_data[icode].operand[2].predicate) (hi_half[2], SImode))
+    hi_half[2] = force_reg (SImode, hi_half[2]);
+  emit_insn (GEN_FCN (icode) (hi_half[0], hi_half[1], hi_half[2]));
+  DONE;
 })
 
 (define_insn "zero_extendqidi2"
@@ -1008,94 +967,94 @@
 
 (define_insn "add_with_carry"
   [(set (match_operand:SI 0 "register_operand" "=d,d")
-        (plus:SI (match_operand:SI 1 "register_operand" "%0,0")
+        (plus:SI (match_operand:SI 1 "register_operand" "%0,d")
                  (match_operand:SI 2 "nonmemory_operand" "Ks7,d")))
-   (set (match_operand:SI 3 "register_operand" "=d,d")
-	(truncate:SI
-	 (lshiftrt:DI (plus:DI (zero_extend:DI (match_dup 1))
-			       (zero_extend:DI (match_dup 2)))
-		      (const_int 32))))
-   (clobber (reg:CC 34))]
+   (set (match_operand:BI 3 "register_operand" "=C,C")
+	(ltu:BI (not:SI (match_dup 1)) (match_dup 2)))]
   ""
   "@
-   %0 += %2; cc = ac0; %3 = cc;
-   %0 = %0 + %2; cc = ac0; %3 = cc;"
+   %0 += %2; cc = ac0;
+   %0 = %1 + %2; cc = ac0;"
   [(set_attr "type" "alu0")
-   (set_attr "length" "6")
+   (set_attr "length" "4")
    (set_attr "seq_insns" "multi")])
 
-(define_insn "adddi3"
-  [(set (match_operand:DI 0 "register_operand" "=&d,&d,&d")
-        (plus:DI (match_operand:DI 1 "register_operand" "%0,0,0")
-                 (match_operand:DI 2 "nonmemory_operand" "Kn7,Ks7,d")))
-   (clobber (match_scratch:SI 3 "=&d,&d,&d"))
-   (clobber (reg:CC 34))]
+(define_insn "sub_with_carry"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+        (minus:SI (match_operand:SI 1 "register_operand" "%d")
+		  (match_operand:SI 2 "nonmemory_operand" "d")))
+   (set (match_operand:BI 3 "register_operand" "=C")
+	(leu:BI (match_dup 2) (match_dup 1)))]
   ""
-  "@
-   %0 += %2; cc = ac0; %3 = cc; %H0 += -1; %H0 = %H0 + %3;
-   %0 += %2; cc = ac0; %3 = cc; %H0 = %H0 + %3;
-   %0 = %0 + %2; cc = ac0; %3 = cc; %H0 = %H0 + %H2; %H0 = %H0 + %3;"
+  "%0 = %1 - %2; cc = ac0;"
   [(set_attr "type" "alu0")
-   (set_attr "length" "10,8,10")
-   (set_attr "seq_insns" "multi,multi,multi")])
-
-(define_insn "subdi3"
-  [(set (match_operand:DI 0 "register_operand" "=&d")
-        (minus:DI (match_operand:DI 1 "register_operand" "0")
-                  (match_operand:DI 2 "register_operand" "d")))
-   (clobber (reg:CC 34))]
-  ""
-  "%0 = %1-%2;\\n\\tcc = ac0;\\n\\t%H0 = %H1-%H2;\\n\\tif cc jump 1f;\\n\\t%H0 += -1;\\n\\t1:"
-  [(set_attr "length" "10")
+   (set_attr "length" "4")
    (set_attr "seq_insns" "multi")])
 
-(define_insn "*subdi_di_zesidi"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-        (minus:DI (match_operand:DI 1 "register_operand" "0")
-                  (zero_extend:DI
-                  (match_operand:SI 2 "register_operand" "d"))))
-   (clobber (match_scratch:SI 3 "=&d"))
+(define_expand "adddi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+        (plus:DI (match_operand:DI 1 "register_operand" "")
+                 (match_operand:DI 2 "nonmemory_operand" "")))
+   (clobber (match_scratch:SI 3 ""))
    (clobber (reg:CC 34))]
   ""
-  "%0 = %1 - %2;\\n\\tcc = ac0;\\n\\tcc = ! cc;\\n\\t%3 = cc;\\n\\t%H0 = %H1 - %3;"
-  [(set_attr "length" "10")
-   (set_attr "seq_insns" "multi")])
+{
+  rtx xops[8];
+  xops[0] = gen_lowpart (SImode, operands[0]);
+  xops[1] = simplify_gen_subreg (SImode, operands[0], DImode, 4);
+  xops[2] = gen_lowpart (SImode, operands[1]);
+  xops[3] = simplify_gen_subreg (SImode, operands[1], DImode, 4);
+  xops[4] = gen_lowpart (SImode, operands[2]);
+  xops[5] = simplify_gen_subreg (SImode, operands[2], DImode, 4);
+  xops[6] = gen_reg_rtx (SImode);
+  xops[7] = gen_rtx_REG (BImode, REG_CC);
+  if (!register_operand (xops[4], SImode)
+      && (GET_CODE (xops[4]) != CONST_INT
+          || !CONST_OK_FOR_K (INTVAL (xops[4]), "Ks7")))
+    xops[4] = force_reg (SImode, xops[4]);
+  if (!reg_overlap_mentioned_p (operands[0], operands[1])
+      && !reg_overlap_mentioned_p (operands[0], operands[2]))
+    emit_insn (gen_rtx_CLOBBER (VOIDmode, operands[0]));
+  emit_insn (gen_add_with_carry (xops[0], xops[2], xops[4], xops[7]));
+  emit_insn (gen_movbisi (xops[6], xops[7]));
+  if (!register_operand (xops[5], SImode)
+      && (GET_CODE (xops[5]) != CONST_INT
+          || !CONST_OK_FOR_K (INTVAL (xops[5]), "Ks7")))
+    xops[5] = force_reg (SImode, xops[5]);
+  if (xops[5] != const0_rtx)
+    emit_insn (gen_addsi3 (xops[1], xops[3], xops[5]));
+  else
+    emit_move_insn (xops[1], xops[3]);
+  emit_insn (gen_addsi3 (xops[1], xops[1], xops[6]));
+  DONE;
+})
 
-(define_insn "*subdi_zesidi_di"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-        (minus:DI (zero_extend:DI
-                  (match_operand:SI 2 "register_operand" "d"))
-                  (match_operand:DI 1 "register_operand" "0")))
-   (clobber (match_scratch:SI 3 "=&d"))
+(define_expand "subdi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+        (minus:DI (match_operand:DI 1 "register_operand" "")
+                  (match_operand:DI 2 "register_operand" "")))
    (clobber (reg:CC 34))]
   ""
-  "%0 = %2 - %1;\\n\\tcc = ac0;\\n\\tcc = ! cc;\\n\\t%3 = cc;\\n\\t%3 = -%3;\\n\\t%H0 = %3 - %H1"
-  [(set_attr "length" "12")
-   (set_attr "seq_insns" "multi")])
-
-(define_insn "*subdi_di_sesidi"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-        (minus:DI (match_operand:DI 1 "register_operand" "0")
-                  (sign_extend:DI
-                  (match_operand:SI 2 "register_operand" "d"))))
-   (clobber (match_scratch:SI 3 "=&d"))
-   (clobber (reg:CC 34))]
-  ""
-  "%0 = %1 - %2;\\n\\tcc = ac0;\\n\\t%3 = %2;\\n\\t%3 >>>= 31;\\n\\t%H0 = %H1 - %3;\\n\\tif cc jump 1f;\\n\\t%H0 += -1;\\n\\t1:"
-  [(set_attr "length" "14")
-   (set_attr "seq_insns" "multi")])
-
-(define_insn "*subdi_sesidi_di"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-        (minus:DI (sign_extend:DI
-                  (match_operand:SI 2 "register_operand" "d"))
-                  (match_operand:DI 1 "register_operand" "0")))
-   (clobber (match_scratch:SI 3 "=&d"))
-   (clobber (reg:CC 34))]
-  ""
-  "%0 = %2 - %1;\\n\\tcc = ac0;\\n\\t%3 = %2;\\n\\t%3 >>>= 31;\\n\\t%H0 = %3 - %H1;\\n\\tif cc jump 1f;\\n\\t%H0 += -1;\\n\\t1:"
-  [(set_attr "length" "14")
-   (set_attr "seq_insns" "multi")])
+{
+  rtx xops[8];
+  xops[0] = gen_lowpart (SImode, operands[0]);
+  xops[1] = simplify_gen_subreg (SImode, operands[0], DImode, 4);
+  xops[2] = gen_lowpart (SImode, operands[1]);
+  xops[3] = simplify_gen_subreg (SImode, operands[1], DImode, 4);
+  xops[4] = gen_lowpart (SImode, operands[2]);
+  xops[5] = simplify_gen_subreg (SImode, operands[2], DImode, 4);
+  xops[6] = gen_reg_rtx (SImode);
+  xops[7] = gen_rtx_REG (BImode, REG_CC);
+  if (!reg_overlap_mentioned_p (operands[0], operands[1])
+      && !reg_overlap_mentioned_p (operands[0], operands[2]))
+    emit_insn (gen_rtx_CLOBBER (VOIDmode, operands[0]));
+  emit_insn (gen_sub_with_carry (xops[0], xops[2], xops[4], xops[7]));
+  emit_insn (gen_notbi (xops[7], xops[7]));
+  emit_insn (gen_movbisi (xops[6], xops[7]));
+  emit_insn (gen_subsi3 (xops[1], xops[3], xops[5]));
+  emit_insn (gen_subsi3 (xops[1], xops[1], xops[6]));
+  DONE;
+})
 
 ;; Combined shift/add instructions
 
@@ -2659,7 +2618,7 @@
   "%0 = CC;"
   [(set_attr "length" "2")])
 
-(define_insn ""
+(define_insn "notbi"
   [(set (match_operand:BI 0 "register_operand" "=C")
 	(eq:BI (match_operand:BI 1 "register_operand" " 0")
 	       (const_int 0)))]
