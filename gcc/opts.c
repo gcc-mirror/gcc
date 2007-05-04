@@ -796,9 +796,8 @@ decode_options (unsigned int argc, const char **argv)
 
   if (optimize_size)
     {
-      /* Inlining of very small functions usually reduces total size.  */
-      set_param_value ("max-inline-insns-single", 5);
-      set_param_value ("max-inline-insns-auto", 5);
+      /* Inlining of functions reducing size is a good idea regardless
+	 of them being declared inline.  */
       flag_inline_functions = 1;
 
       /* We want to crossjump as much as possible.  */
