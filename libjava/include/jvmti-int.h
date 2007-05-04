@@ -89,4 +89,6 @@ extern void _Jv_JVMTI_PostEvent (jvmtiEvent type, jthread event_thread,				 ...)
 // Returns the jvmtiEnv used by the JDWP backend
 extern jvmtiEnv *_Jv_GetJDWP_JVMTIEnv (void);
 
+// Reports JVMTI excpetions
+extern void _Jv_ReportJVMTIExceptionThrow (jthrowable);
 #endif /* __GCJ_JVMTI_INT_H__ */

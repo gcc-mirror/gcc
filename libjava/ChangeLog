@@ -1,3 +1,32 @@
+2007-05-03  Keith Seitz  <keiths@redhat.com>
+
+	* include/jvmti-int.h (_Jv_ReportJVMTIExceptionThrow):
+	Declare.
+	* interpret.cc (_Jv_ReportJVMTIExceptionThrow): New function.
+	(find_catch_location): New function.
+	(REPORT_EXCEPTION): New macro.
+	(throw_internal_error): Use REPORT_EXCEPTION.
+	(throw_incompatible_class_change_error): Likewise.
+	(throw_null_pointer_exception): Likewise.
+	(throw_class_format_error): Likewise.
+	* interpret-run.cc (INTERP_REPORT_EXCEPTION)[DEBUG]: Set
+	to REPORT_EXCEPTION.
+	(INTERP_REPORT_EXCEPTION)[!DEBUG]: Make nop.
+	(insn_new): Use INTERP_REPORT_EXCEPTION.
+	(insn_athrow): Likewise.
+	Remove previous JVMTI exception notifications.
+	Add JVMTI ExceptionCatch notificatin.
+	* jni.cc (_Jv_PopSystemFrame): Notify JVMTI clients of
+	exception throw.
+	* gnu/gcj/jvmti/ExceptionEvent.java: Removed.
+	* gnu/gcj/jvmti/ExceptionEvent.h: Removed. 
+	* classpath/lib/gnu/gcj/jvmti/ExceptionEvent.class: Removed.
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc
+	(jdwpExceptionCB): New function.
+	(jdwpVMInitCB): Set Exception event handler and enable.
+	* sources.am: Regenerated.
+	* Makefile.in: Regenerated.
+
 2007-05-03  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=237304

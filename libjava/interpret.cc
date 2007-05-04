@@ -40,7 +40,6 @@ details.  */
 #include <jvmti.h>
 #include "jvmti-int.h"
 
-#include <gnu/classpath/jdwp/Jdwp.h>
 #include <gnu/gcj/jvmti/Breakpoint.h>
 #include <gnu/gcj/jvmti/BreakpointManager.h>
 #include <gnu/gcj/jvmti/ExceptionEvent.h>
@@ -65,6 +64,16 @@ static void throw_class_format_error (jstring msg)
 	__attribute__ ((__noreturn__));
 static void throw_class_format_error (const char *msg)
 	__attribute__ ((__noreturn__));
+
+static void find_catch_location (jthrowable, jthread, jmethodID *, jlong *);
+
+// A macro to facilitate JVMTI exception reporting
+#define REPORT_EXCEPTION(Jthrowable)			\
+  do {							\
+    if (JVMTI_REQUESTED_EVENT (Exception))		\
+      _Jv_ReportJVMTIExceptionThrow (Jthrowable);	\
+  }							\
+  while (0)
 
 #ifdef DIRECT_THREADED
 // Lock to ensure that methods are not compiled concurrently.
@@ -956,19 +965,25 @@ _Jv_InterpMethod::run_debug (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 static void
 throw_internal_error (const char *msg)
 {
-  throw new java::lang::InternalError (JvNewStringLatin1 (msg));
+  jthrowable t = new java::lang::InternalError (JvNewStringLatin1 (msg));
+  REPORT_EXCEPTION (t);
+  throw t;
 }
 
 static void 
 throw_incompatible_class_change_error (jstring msg)
 {
-  throw new java::lang::IncompatibleClassChangeError (msg);
+  jthrowable t = new java::lang::IncompatibleClassChangeError (msg);
+  REPORT_EXCEPTION (t);
+  throw t;
 }
 
 static void 
 throw_null_pointer_exception ()
 {
-  throw new java::lang::NullPointerException;
+  jthrowable t = new java::lang::NullPointerException;
+  REPORT_EXCEPTION (t);
+  throw t;
 }
 
 /* Look up source code line number for given bytecode (or direct threaded
@@ -1613,15 +1628,81 @@ _Jv_JNIMethod::ncode (jclass klass)
 static void
 throw_class_format_error (jstring msg)
 {
-  throw (msg
+  jthrowable t = (msg
 	 ? new java::lang::ClassFormatError (msg)
 	 : new java::lang::ClassFormatError);
+  REPORT_EXCEPTION (t);
+  throw t;
 }
 
 static void
 throw_class_format_error (const char *msg)
 {
   throw_class_format_error (JvNewStringLatin1 (msg));
+}
+
+/* This function finds the method and location where the exception EXC
+   is caught in the stack frame. On return, it sets CATCH_METHOD and
+   CATCH_LOCATION with the method and location where the catch will
+   occur. If the exception is not caught, these are set to 0.
+
+   This function should only be used with the DEBUG interpreter. */
+static void
+find_catch_location (::java::lang::Throwable *exc, jthread thread,
+		     jmethodID *catch_method, jlong *catch_loc)
+{
+  *catch_method = 0;
+  *catch_loc = 0;
+
+  _Jv_InterpFrame *frame
+    = reinterpret_cast<_Jv_InterpFrame *> (thread->interp_frame);
+  while (frame != NULL)
+    {
+      pc_t pc = frame->get_pc ();
+      _Jv_InterpMethod *imeth
+	= reinterpret_cast<_Jv_InterpMethod *> (frame->self);
+      if (imeth->check_handler (&pc, imeth, exc))
+	{
+	  // This method handles the exception.
+	  *catch_method = imeth->get_method ();
+	  *catch_loc = imeth->insn_index (pc);
+	  return;
+	}
+
+      frame = frame->next_interp;
+    }
+}
+
+/* This method handles JVMTI notifications of thrown exceptions. It
+   calls find_catch_location to figure out where the exception is
+   caught (if it is caught).
+   
+   Like find_catch_location, this should only be called with the
+   DEBUG interpreter. Since a few exceptions occur outside the
+   interpreter proper, it is important to not call this function
+   without checking JVMTI_REQUESTED_EVENT(Exception) first. */
+void
+_Jv_ReportJVMTIExceptionThrow (jthrowable ex)
+{
+  jthread thread = ::java::lang::Thread::currentThread ();
+  _Jv_Frame *frame = reinterpret_cast<_Jv_Frame *> (thread->frame);
+  jmethodID throw_meth = frame->self->get_method ();
+  jlocation throw_loc = -1;
+  if (frame->frame_type == frame_interpreter)
+    {
+      _Jv_InterpFrame * iframe
+	= reinterpret_cast<_Jv_InterpFrame *> (frame);
+      _Jv_InterpMethod *imeth
+	= reinterpret_cast<_Jv_InterpMethod *> (frame->self);
+      throw_loc = imeth->insn_index (iframe->get_pc ());
+    }
+
+  jlong catch_loc;
+  jmethodID catch_method;
+  find_catch_location (ex, thread, &catch_method, &catch_loc);
+  _Jv_JVMTI_PostEvent (JVMTI_EVENT_EXCEPTION, thread,
+		       _Jv_GetCurrentJNIEnv (), throw_meth, throw_loc,
+		       ex, catch_method, catch_loc);
 }
 
 
