@@ -533,6 +533,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       get_allocator() const
       { return *static_cast<const _Alloc*>(this); }
 
+      allocator_type&
+      _M_get_allocator()
+      { return *static_cast<_Alloc*>(this); }
+
+      const allocator_type&
+      _M_get_allocator() const
+      { return *static_cast<const _Alloc*>(this); }
+
       _Rope_rep_base(size_t __size, const allocator_type&)
       : _M_size(__size) { }
 
@@ -572,9 +580,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
         allocator_type;
 
       using _Rope_rep_base<_CharT, _Alloc>::get_allocator;
+      using _Rope_rep_base<_CharT, _Alloc>::_M_get_allocator;
 
       _Rope_RopeRep(__detail::_Tag __t, int __d, bool __b, size_t __size,
-		    allocator_type __a)
+		    const allocator_type& __a)
       : _Rope_rep_base<_CharT, _Alloc>(__size, __a),
 #ifndef __GC
 	_Refcount_Base(1),
@@ -595,7 +604,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #endif
       static void
       _S_free_string(__GC_CONST _CharT*, size_t __len,
-		     allocator_type __a);
+		     allocator_type& __a);
 #define __STL_FREE_STRING(__s, __l, __a) _S_free_string(__s, __l, __a);
                         // Deallocate data section of a leaf.
                         // This shouldn't be a member function.
@@ -689,7 +698,7 @@ protected:
         allocator_type;
 
       _Rope_RopeLeaf(__GC_CONST _CharT* __d, size_t __size,
-		     allocator_type __a)
+		     const allocator_type& __a)
       : _Rope_RopeRep<_CharT, _Alloc>(__detail::_S_leaf, 0, true,
 				      __size, __a), _M_data(__d)
       {
@@ -708,7 +717,7 @@ protected:
         if (_M_data != this->_M_c_string)
 	  this->_M_free_c_string();
 	
-        __STL_FREE_STRING(_M_data, this->_M_size, this->get_allocator());
+        __STL_FREE_STRING(_M_data, this->_M_size, this->_M_get_allocator());
       }
 #endif
 protected:
@@ -731,7 +740,7 @@ protected:
 
       _Rope_RopeConcatenation(_Rope_RopeRep<_CharT, _Alloc>* __l,
 			      _Rope_RopeRep<_CharT, _Alloc>* __r,
-			      allocator_type __a)
+			      const allocator_type& __a)
 	: _Rope_RopeRep<_CharT, _Alloc>(__detail::_S_concat,
 				      std::max(__l->_M_depth,
 					       __r->_M_depth) + 1,
@@ -779,7 +788,7 @@ protected:
       allocator_type;
 
       _Rope_RopeFunction(char_producer<_CharT>* __f, size_t __size,
-                        bool __d, allocator_type __a)
+                        bool __d, const allocator_type& __a)
       : _Rope_RopeRep<_CharT, _Alloc>(__detail::_S_function, 0, true, __size, __a)
 	, _M_fn(__f)
 #ifndef __GC
@@ -856,7 +865,7 @@ protected:
         allocator_type;
 
       _Rope_RopeSubstring(_Rope_RopeRep<_CharT, _Alloc>* __b, size_t __s,
-                          size_t __l, allocator_type __a)
+                          size_t __l, const allocator_type& __a)
       : _Rope_RopeFunction<_CharT, _Alloc>(this, __l, false, __a),
         char_producer<_CharT>(), _M_base(__b), _M_start(__s)
       {
@@ -1444,6 +1453,14 @@ protected:
       get_allocator() const
       { return *static_cast<const _Alloc*>(this); }
 
+      allocator_type&
+      _M_get_allocator()
+      { return *static_cast<_Alloc*>(this); }
+
+      const allocator_type&
+      _M_get_allocator() const
+      { return *static_cast<const _Alloc*>(this); }
+
       typedef _Rope_RopeRep<_CharT, _Alloc> _RopeRep;
       // The one in _Base may not be visible due to template rules.
 
@@ -1504,6 +1521,7 @@ protected:
       typedef typename _Base::allocator_type allocator_type;
       using _Base::_M_tree_ptr;
       using _Base::get_allocator;
+      using _Base::_M_get_allocator;      
       typedef __GC_CONST _CharT* _Cstrptr;
       
       static _CharT _S_empty_c_str[1];
@@ -1614,7 +1632,7 @@ protected:
       // Takes ownership of s instead of copying.
       static _RopeLeaf*
       _S_new_RopeLeaf(__GC_CONST _CharT *__s,
-		      size_t __size, allocator_type __a)
+		      size_t __size, allocator_type& __a)
       {
 	_RopeLeaf* __space = typename _Base::_LAlloc(__a).allocate(1);
 	return new(__space) _RopeLeaf(__s, __size, __a);
@@ -1622,7 +1640,7 @@ protected:
 
       static _RopeConcatenation*
       _S_new_RopeConcatenation(_RopeRep* __left, _RopeRep* __right,
-			       allocator_type __a)
+			       allocator_type& __a)
       {
 	_RopeConcatenation* __space = typename _Base::_CAlloc(__a).allocate(1);
 	return new(__space) _RopeConcatenation(__left, __right, __a);
@@ -1630,7 +1648,7 @@ protected:
 
       static _RopeFunction*
       _S_new_RopeFunction(char_producer<_CharT>* __f,
-			  size_t __size, bool __d, allocator_type __a)
+			  size_t __size, bool __d, allocator_type& __a)
       {
 	_RopeFunction* __space = typename _Base::_FAlloc(__a).allocate(1);
 	return new(__space) _RopeFunction(__f, __size, __d, __a);
@@ -1638,7 +1656,7 @@ protected:
 
       static _RopeSubstring*
       _S_new_RopeSubstring(_Rope_RopeRep<_CharT,_Alloc>* __b, size_t __s,
-			   size_t __l, allocator_type __a)
+			   size_t __l, allocator_type& __a)
       {
 	_RopeSubstring* __space = typename _Base::_SAlloc(__a).allocate(1);
 	return new(__space) _RopeSubstring(__b, __s, __l, __a);
@@ -1646,7 +1664,7 @@ protected:
       
       static _RopeLeaf*
       _S_RopeLeaf_from_unowned_char_ptr(const _CharT *__s,
-					size_t __size, allocator_type __a)
+					size_t __size, allocator_type& __a)
 #define __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __size, __a) \
                 _S_RopeLeaf_from_unowned_char_ptr(__s, __size, __a)
       {
@@ -1768,22 +1786,31 @@ protected:
       { return _S_compare(this->_M_tree_ptr, __y._M_tree_ptr); }
 
       rope(const _CharT* __s, const allocator_type& __a = allocator_type())
-      : _Base(__STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, _S_char_ptr_len(__s),
-					       __a), __a)
-      { }
+      : _Base(__a)
+      {
+	this->_M_tree_ptr =
+	  __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, _S_char_ptr_len(__s),
+					   _M_get_allocator());
+      }
 
       rope(const _CharT* __s, size_t __len,
 	   const allocator_type& __a = allocator_type())
-      : _Base(__STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __len, __a), __a)
-      { }
+      : _Base(__a)
+      {
+	this->_M_tree_ptr =
+	  __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __len, _M_get_allocator());
+      }
 
       // Should perhaps be templatized with respect to the iterator type
       // and use Sequence_buffer.  (It should perhaps use sequence_buffer
       // even now.)
-      rope(const _CharT *__s, const _CharT *__e,
+      rope(const _CharT* __s, const _CharT* __e,
 	   const allocator_type& __a = allocator_type())
-      : _Base(__STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __e - __s, __a), __a)
-      { }
+      : _Base(__a)
+      {
+	this->_M_tree_ptr =
+	  __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __e - __s, _M_get_allocator());
+      }
 
       rope(const const_iterator& __s, const const_iterator& __e,
 	   const allocator_type& __a = allocator_type())
@@ -1802,12 +1829,15 @@ protected:
       {
 	_CharT* __buf = this->_Data_allocate(_S_rounded_up_size(1));
 	
-	get_allocator().construct(__buf, __c);
+	_M_get_allocator().construct(__buf, __c);
 	try
-	  { this->_M_tree_ptr = _S_new_RopeLeaf(__buf, 1, __a); }
+	  {
+	    this->_M_tree_ptr = _S_new_RopeLeaf(__buf, 1,
+						_M_get_allocator());
+	  }
 	catch(...)
 	  {
-	    _RopeRep::__STL_FREE_STRING(__buf, 1, __a);
+	    _RopeRep::__STL_FREE_STRING(__buf, 1, _M_get_allocator());
 	    __throw_exception_again;
 	  }
       }
@@ -1878,7 +1908,7 @@ protected:
       {
 	_RopeRep* __old = this->_M_tree_ptr;
 	_RopeRep* __left =
-	  __STL_ROPE_FROM_UNOWNED_CHAR_PTR(&__x, 1, this->get_allocator());
+	  __STL_ROPE_FROM_UNOWNED_CHAR_PTR(&__x, 1, _M_get_allocator());
 	try
 	  {
 	    this->_M_tree_ptr = _S_concat(__left, this->_M_tree_ptr);
@@ -1916,7 +1946,7 @@ protected:
       void
       copy(_CharT* __buffer) const
       {
-	_Destroy(__buffer, __buffer + size(), get_allocator());
+	_Destroy(__buffer, __buffer + size(), _M_get_allocator());
 	_S_flatten(this->_M_tree_ptr, __buffer);
       }
 
@@ -1931,7 +1961,7 @@ protected:
 	size_t __size = size();
 	size_t __len = (__pos + __n > __size? __size - __pos : __n);
 	
-	_Destroy(__buffer, __buffer + __len, get_allocator());
+	_Destroy(__buffer, __buffer + __len, _M_get_allocator());
 	_S_flatten(this->_M_tree_ptr, __pos, __len, __buffer);
 	return __len;
       }

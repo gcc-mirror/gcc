@@ -1,6 +1,6 @@
 // SGI's rope class implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -347,7 +347,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       if (0 != __cstr)
 	{
 	  size_t __size = this->_M_size + 1;
-	  _Destroy(__cstr, __cstr + __size, get_allocator());
+	  _Destroy(__cstr, __cstr + __size, _M_get_allocator());
 	  this->_Data_deallocate(__cstr, __size);
 	}
     }
@@ -355,7 +355,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   template <class _CharT, class _Alloc>
     inline void
     _Rope_RopeRep<_CharT, _Alloc>::
-    _S_free_string(_CharT* __s, size_t __n, allocator_type __a)
+    _S_free_string(_CharT* __s, size_t __n, allocator_type& __a)
     {
       if (!_S_is_basic_char_type((_CharT*)0))
 	_Destroy(__s, __s + __n, __a);
@@ -442,12 +442,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       try
 	{
 	  __result = _S_new_RopeLeaf(__new_data, __old_len + __len,
-				     __r->get_allocator());
+				     __r->_M_get_allocator());
 	}
       catch(...)
 	{
 	  _RopeRep::__STL_FREE_STRING(__new_data, __old_len + __len,
-				      __r->get_allocator());
+				      __r->_M_get_allocator());
 	  __throw_exception_again;
 	}
       return __result;
@@ -498,7 +498,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     {
       _RopeConcatenation* __result = _S_new_RopeConcatenation(__left, __right,
 							      __left->
-							      get_allocator());
+							      _M_get_allocator());
       size_t __depth = __result->_M_depth;
       
       if (__depth > 20
@@ -540,7 +540,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	}
       if (0 == __r)
 	return __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen,
-						__r->get_allocator());
+						__r->_M_get_allocator());
       if (__r->_M_tag == __detail::_S_leaf
 	  && __r->_M_size + __slen <= size_t(_S_copy_max))
 	{
@@ -570,7 +570,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    }
 	}
       _RopeRep* __nright =
-	__STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen, __r->get_allocator());
+	__STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen, __r->_M_get_allocator());
       try
 	{
 	  __r->_M_ref_nonnil();
@@ -594,7 +594,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       _RopeRep* __result;
       if (0 == __r)
 	return __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen,
-						__r->get_allocator());
+						__r->_M_get_allocator());
       size_t __count = __r->_M_ref_count;
       size_t __orig_size = __r->_M_size;
       if (__count > 1)
@@ -636,7 +636,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    }
 	}
       _RopeRep* __right =
-	__STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen, __r->get_allocator());
+	__STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen, __r->_M_get_allocator());
       __r->_M_ref_nonnil();
       try
 	{ __result = _S_tree_concat(__r, __right); }
@@ -775,14 +775,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #ifdef __GC
 	    const _CharT* __section = __l->_M_data + __start;
 	    __result = _S_new_RopeLeaf(__section, __result_len,
-				       __base->get_allocator());
+				       __base->_M_get_allocator());
 	    __result->_M_c_string = 0;  // Not eos terminated.
 #else
 	    // We should sometimes create substring node instead.
 	    __result = __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__l->_M_data + __start,
 							__result_len,
 							__base->
-							get_allocator());
+							_M_get_allocator());
 #endif
 	    return __result;
 	  }
@@ -800,7 +800,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		  _S_new_RopeSubstring(__old->_M_base,
 				       __start + __old->_M_start,
 				       __adj_endp1 - __start,
-				       __base->get_allocator());
+				       __base->_M_get_allocator());
 		return __result;
 		
 	      } // *** else fall through: ***
@@ -823,19 +823,19 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    catch(...)
 	      {
 		_RopeRep::__STL_FREE_STRING(__section, __result_len,
-					    __base->get_allocator());
+					    __base->_M_get_allocator());
 		__throw_exception_again;
 	      }
 	    _S_cond_store_eos(__section[__result_len]);
 	    return _S_new_RopeLeaf(__section, __result_len,
-				   __base->get_allocator());
+				   __base->_M_get_allocator());
 	  }
 	}
     lazy:
       {
 	// Create substring node.
 	return _S_new_RopeSubstring(__base, __start, __adj_endp1 - __start,
-				    __base->get_allocator());
+				    __base->_M_get_allocator());
       }
     }
 
@@ -1550,13 +1550,15 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	{
 	  __rest_buffer = this->_Data_allocate(_S_rounded_up_size(__rest));
 	  __uninitialized_fill_n_a(__rest_buffer, __rest, __c,
-				   get_allocator());
+				   _M_get_allocator());
 	  _S_cond_store_eos(__rest_buffer[__rest]);
 	  try
-	    { __remainder = _S_new_RopeLeaf(__rest_buffer, __rest, __a); }
+	    { __remainder = _S_new_RopeLeaf(__rest_buffer, __rest,
+					    _M_get_allocator()); }
 	  catch(...)
 	    {
-	      _RopeRep::__STL_FREE_STRING(__rest_buffer, __rest, __a);
+	      _RopeRep::__STL_FREE_STRING(__rest_buffer, __rest,
+					  _M_get_allocator());
 	      __throw_exception_again;
 	    }
 	}
@@ -1568,17 +1570,19 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  _RopeLeaf* __base_leaf;
 	  rope __base_rope;
 	  __uninitialized_fill_n_a(__base_buffer, __exponentiate_threshold, __c,
-				   get_allocator());
+				   _M_get_allocator());
 	  _S_cond_store_eos(__base_buffer[__exponentiate_threshold]);
 	  try
 	    {
 	      __base_leaf = _S_new_RopeLeaf(__base_buffer,
-					    __exponentiate_threshold, __a);
+					    __exponentiate_threshold,
+					    _M_get_allocator());
 	    }
 	  catch(...)
 	    {
 	      _RopeRep::__STL_FREE_STRING(__base_buffer,
-					  __exponentiate_threshold, __a);
+					  __exponentiate_threshold,
+					  _M_get_allocator());
 	      __throw_exception_again;
 	    }
 	  __base_rope._M_tree_ptr = __base_leaf;
@@ -1646,7 +1650,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       __result[__s] = _S_eos((_CharT*)0);
       this->_M_tree_ptr->_M_unref_nonnil();
       this->_M_tree_ptr = _S_new_RopeLeaf(__result, __s,
-					  this->get_allocator());
+					  this->_M_get_allocator());
       return(__result);
     }
 

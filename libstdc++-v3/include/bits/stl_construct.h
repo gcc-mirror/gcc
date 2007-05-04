@@ -137,7 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _ForwardIterator, typename _Allocator>
     void
     _Destroy(_ForwardIterator __first, _ForwardIterator __last,
-	     _Allocator __alloc)
+	     _Allocator& __alloc)
     {
       for (; __first != __last; ++__first)
 	__alloc.destroy(&*__first);
@@ -146,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _ForwardIterator, typename _Tp>
     inline void
     _Destroy(_ForwardIterator __first, _ForwardIterator __last,
-	     allocator<_Tp>)
+	     allocator<_Tp>&)
     {
       _Destroy(__first, __last);
     }
