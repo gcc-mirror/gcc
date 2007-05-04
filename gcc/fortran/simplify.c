@@ -2919,7 +2919,10 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
     return NULL;
 
   if (mpz_sgn (e->ts.cl->length->value.integer) != 0)
-    gcc_assert (gfc_extract_int (n, &ncop) == NULL);
+    {
+      const char *res = gfc_extract_int (n, &ncop);
+      gcc_assert (res == NULL);
+    }
   else
     ncop = 0;
 
