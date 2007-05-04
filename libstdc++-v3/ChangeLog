@@ -1,3 +1,20 @@
+2007-05-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_memory.h: Rename to stl_auto_ptr.h.
+	(__get_temporary_buffer, get_temporary_buffer,
+	return_temporary_buffer): Move...
+	* include/bits/stl_tempbuf.h: ... here.
+	* include/std/memory: Adjust includes.
+	* testsuite/20_util/auto_ptr/assign_neg.cc: Adjust dg-error line
+	numbers.
+	* include/Makefile.am: Adjust.
+	* include/Makefile.in: Regenerate.
+
+	* testsuite/util/testsuite_iterators.h: Do not include the entire
+	<iterator>.
+	* include/bits/stl_iterator_base_types.h: Adjust includes.
+	* testsuite/25_algorithms/unique_copy/2.cc: Include <functional>.
+
 2007-05-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* libsupc++/atexit_arm.cc: New file.

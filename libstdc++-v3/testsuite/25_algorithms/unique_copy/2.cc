@@ -1,4 +1,4 @@
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,6 +19,7 @@
 // 25.2.8 [lib.alg.unique]
 
 #include <algorithm>
+#include <functional>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 

@@ -1,6 +1,7 @@
 // Types used in iterator implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -65,6 +66,9 @@
 #define _ITERATOR_BASE_TYPES_H 1
 
 #pragma GCC system_header
+
+#include <bits/c++config.h>
+#include <cstddef>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
