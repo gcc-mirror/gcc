@@ -27,17 +27,9 @@ m32
 Target RejectNegative Negative(m64) Report InverseMask(64BIT)
 Generate 32bit i386 code
 
-m386
-Target RejectNegative Undocumented
-;; Deprecated
-
 m3dnow
 Target Report Mask(3DNOW)
 Support 3DNow! built-in functions
-
-m486
-Target RejectNegative Undocumented
-;; Deprecated
 
 m64
 Target RejectNegative Negative(m32) Report Mask(64BIT)
@@ -154,14 +146,6 @@ Omit the frame pointer in leaf functions
 mpc
 Target RejectNegative Report Joined Var(ix87_precision_string)
 Set 80387 floating-point precision (-mpc32, -mpc64, -mpc80)
-
-mpentium
-Target RejectNegative Undocumented
-;; Deprecated
-
-mpentiumpro
-Target RejectNegative Undocumented
-;; Deprecated
 
 mpreferred-stack-boundary=
 Target RejectNegative Joined Var(ix86_preferred_stack_boundary_string)

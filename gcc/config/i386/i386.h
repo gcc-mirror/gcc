@@ -426,17 +426,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #ifndef CC1_CPU_SPEC
 #define CC1_CPU_SPEC_1 "\
-%{!mtune*: \
-%{m386:mtune=i386 \
-%n`-m386' is deprecated. Use `-march=i386' or `-mtune=i386' instead.\n} \
-%{m486:-mtune=i486 \
-%n`-m486' is deprecated. Use `-march=i486' or `-mtune=i486' instead.\n} \
-%{mpentium:-mtune=pentium \
-%n`-mpentium' is deprecated. Use `-march=pentium' or `-mtune=pentium' instead.\n} \
-%{mpentiumpro:-mtune=pentiumpro \
-%n`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mtune=pentiumpro' instead.\n} \
 %{mcpu=*:-mtune=%* \
-%n`-mcpu=' is deprecated. Use `-mtune=' or '-march=' instead.\n}} \
+%n`-mcpu=' is deprecated. Use `-mtune=' or '-march=' instead.\n} \
 %<mcpu=* \
 %{mintel-syntax:-masm=intel \
 %n`-mintel-syntax' is deprecated. Use `-masm=intel' instead.\n} \
