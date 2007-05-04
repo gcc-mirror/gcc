@@ -42,7 +42,6 @@ details.  */
 
 #include <gnu/gcj/jvmti/Breakpoint.h>
 #include <gnu/gcj/jvmti/BreakpointManager.h>
-#include <gnu/gcj/jvmti/ExceptionEvent.h>
 
 #ifdef INTERPRETER
 

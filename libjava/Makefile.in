@@ -302,7 +302,6 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc jvmti.cc exception.cc \
 	gnu/gcj/convert/natOutput_SJIS.cc \
 	gnu/gcj/io/natSimpleSHSStream.cc gnu/gcj/io/shs.cc \
 	gnu/gcj/jvmti/natBreakpoint.cc \
-	gnu/gcj/jvmti/natExceptionEvent.cc \
 	gnu/gcj/runtime/natFinalizerThread.cc \
 	gnu/gcj/runtime/natSharedLibLoader.cc \
 	gnu/gcj/runtime/natSystemClassLoader.cc \
@@ -365,7 +364,6 @@ am__objects_2 = gnu/classpath/jdwp/natVMFrame.lo \
 	gnu/gcj/convert/natOutput_SJIS.lo \
 	gnu/gcj/io/natSimpleSHSStream.lo gnu/gcj/io/shs.lo \
 	gnu/gcj/jvmti/natBreakpoint.lo \
-	gnu/gcj/jvmti/natExceptionEvent.lo \
 	gnu/gcj/runtime/natFinalizerThread.lo \
 	gnu/gcj/runtime/natSharedLibLoader.lo \
 	gnu/gcj/runtime/natSystemClassLoader.lo \
@@ -7985,7 +7983,6 @@ gnu/gcj/convert/natOutput_SJIS.cc \
 gnu/gcj/io/natSimpleSHSStream.cc \
 gnu/gcj/io/shs.cc \
 gnu/gcj/jvmti/natBreakpoint.cc \
-gnu/gcj/jvmti/natExceptionEvent.cc \
 gnu/gcj/runtime/natFinalizerThread.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natSystemClassLoader.cc \
@@ -8380,8 +8377,6 @@ gnu/gcj/jvmti/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) gnu/gcj/jvmti/$(DEPDIR)
 	@: > gnu/gcj/jvmti/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/jvmti/natBreakpoint.lo: gnu/gcj/jvmti/$(am__dirstamp) \
-	gnu/gcj/jvmti/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/jvmti/natExceptionEvent.lo: gnu/gcj/jvmti/$(am__dirstamp) \
 	gnu/gcj/jvmti/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/$(am__dirstamp):
 	@$(mkdir_p) gnu/gcj/runtime
@@ -8862,8 +8857,6 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/io/shs.lo
 	-rm -f gnu/gcj/jvmti/natBreakpoint.$(OBJEXT)
 	-rm -f gnu/gcj/jvmti/natBreakpoint.lo
-	-rm -f gnu/gcj/jvmti/natExceptionEvent.$(OBJEXT)
-	-rm -f gnu/gcj/jvmti/natExceptionEvent.lo
 	-rm -f gnu/gcj/natCore.$(OBJEXT)
 	-rm -f gnu/gcj/natCore.lo
 	-rm -f gnu/gcj/runtime/natFinalizerThread.$(OBJEXT)
@@ -9082,7 +9075,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/io/$(DEPDIR)/natSimpleSHSStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/io/$(DEPDIR)/shs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/jvmti/$(DEPDIR)/natBreakpoint.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/jvmti/$(DEPDIR)/natExceptionEvent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natFinalizerThread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natSharedLibLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natStringBuffer.Plo@am__quote@
