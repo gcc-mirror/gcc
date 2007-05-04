@@ -1,3 +1,15 @@
+2007-05-04  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	* sched-ebb.c (debug_ebb_dependencies): New static function.
+	(init_ready_list): Use it.
+
+	* sched-rgn.c (debug_dependencies): Split into 'debug_dependencies ()'
+	with changed signature and 'debug_rgn_dependencies ()'.
+	(debug_rgn_dependencies): New static function.
+	(init_ready_list): Use it.
+	
+	* sched-int.h (debug_dependencies): Declare.
+
 2007-05-04  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* libgcc-std.ver (__ffssi2): Added to GCC_4.3.0 section.
