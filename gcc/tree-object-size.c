@@ -588,7 +588,9 @@ plus_expr_object_size (struct object_size_info *osi, tree var, tree value)
 	  unsigned HOST_WIDE_INT off = tree_low_cst (op1, 1);
 
 	  bytes = compute_builtin_object_size (op0, object_size_type);
-	  if (off > offset_limit)
+	  if (bytes == unknown[object_size_type])
+	    ;
+	  else if (off > offset_limit)
 	    bytes = unknown[object_size_type];
 	  else if (off > bytes)
 	    bytes = 0;

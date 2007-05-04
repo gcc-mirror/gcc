@@ -7814,24 +7814,20 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	    }
 	}
 
-      /* Convert (T1)((T2)X op Y) into (T1)X op Y, for pointer types T1 and
-	 T2 being pointers to types of the same size.  */
-      if (POINTER_TYPE_P (type)
+      /* Convert (T1)(X op Y) into ((T1)X op (T1)Y), for pointer type,
+         when one of the new casts will fold away. Conservatively we assume
+	 that this happens when X or Y is NOP_EXPR or Y is INTEGER_CST.  */
+      if (POINTER_TYPE_P (type) && POINTER_TYPE_P (TREE_TYPE (arg0))
 	  && BINARY_CLASS_P (arg0)
-	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == NOP_EXPR
-	  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (arg0, 0))))
+	  && (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
+	      || TREE_CODE (TREE_OPERAND (arg0, 0)) == NOP_EXPR
+	      || TREE_CODE (TREE_OPERAND (arg0, 1)) == NOP_EXPR))
 	{
 	  tree arg00 = TREE_OPERAND (arg0, 0);
-	  tree t0 = type;
-	  tree t1 = TREE_TYPE (arg00);
-	  tree tt0 = TREE_TYPE (t0);
-	  tree tt1 = TREE_TYPE (t1);
-	  tree s0 = TYPE_SIZE (tt0);
-	  tree s1 = TYPE_SIZE (tt1);
+	  tree arg01 = TREE_OPERAND (arg0, 1);
 
-	  if (s0 && s1 && operand_equal_p (s0, s1, OEP_ONLY_CONST))
-	    return build2 (TREE_CODE (arg0), t0, fold_convert (t0, arg00),
-			   TREE_OPERAND (arg0, 1));
+	  return fold_build2 (TREE_CODE (arg0), type, fold_convert (type, arg00),
+			      fold_convert (type, arg01));
 	}
 
       /* Convert (T1)(~(T2)X) into ~(T1)X if T1 and T2 are integral types
