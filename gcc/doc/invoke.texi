@@ -10129,12 +10129,21 @@ the system libraries and startup modules.
 @opindex mpc80
 
 Set 80387 floating-point precision to 32, 64 or 80 bits.  When @option{-mpc32}
-is specified, the significand of floating-point operations is rounded to 24
-bits (single precision), @option{-mpc64} rounds the significand of
-floating-point operations to 53 bits (double precision) and @option{-mpc80}
-rounds the significand of floating-point operations to 64 bits (extended
-double precision).  Note that a change of default precision control may
-affect the results returned by some of the mathematical functions.
+is specified, the significands of results of floating-point operations are
+rounded to 24 bits (single precision); @option{-mpc64} rounds the the
+significands of results of floating-point operations to 53 bits (double
+precision) and @option{-mpc80} rounds the significands of results of
+floating-point operations to 64 bits (extended double precision), which is
+the default.  When this option is used, floating-point operations in higher
+precisions are not available to the programmer without setting the FPU
+control word explicitly.
+
+Setting the rounding of floating-point operations to less than the default
+80 bits can speed some programs by 2% or more.  Note that some mathematical
+libraries assume that extended precision (80 bit) floating-point operations
+are enabled by default; routines in such libraries could suffer significant
+loss of accuracy, typically through so-called "catastrophic cancellation",
+when this option is used to set the precision to less than extended precision. 
 
 @item -mstackrealign
 @opindex mstackrealign

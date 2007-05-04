@@ -1,3 +1,9 @@
+2007-05-04  Bradley Lucier  <lucier@math.purdue.edu>
+
+	* doc/invoke.texi (i386 and x86-64 Options) [-mpc32, -mpc64, -mpc80]:
+	Add the note about a significant loss of accuracy of some
+	mathematical routines when these options are used.
+
 2007-05-04  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	* haifa-sched.c (rtx_vec_t): New typedef.
