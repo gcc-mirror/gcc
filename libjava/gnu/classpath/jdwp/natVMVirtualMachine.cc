@@ -510,12 +510,25 @@ gnu::classpath::jdwp::VMMethod *
 gnu::classpath::jdwp::VMVirtualMachine::
 getClassMethod (jclass klass, jlong id)
 {
-  jmethodID method = reinterpret_cast<jmethodID> (id);
-  _Jv_MethodBase *bmeth = _Jv_FindInterpreterMethod (klass, method);
-  if (bmeth != NULL)
-    return new gnu::classpath::jdwp::VMMethod (klass, id);
+  jint count;
+  jmethodID *methods;
+  jvmtiError err = _jdwp_jvmtiEnv->GetClassMethods (klass, &count, &methods);
+  if (err != JVMTI_ERROR_NONE)
+    throw_jvmti_error (err);
 
-  throw new gnu::classpath::jdwp::exception::InvalidMethodException (id);
+  jmethodID meth_id = reinterpret_cast<jmethodID> (id);
+
+  using namespace gnu::classpath::jdwp;
+
+  // Check if this method is defined for the given class and if so return a
+  // VMMethod representing it.
+  for (int i = 0; i < count; i++)
+    {
+      if (methods[i] == meth_id)
+        return new VMMethod (klass, reinterpret_cast<jlong> (meth_id));
+    }
+
+  throw new exception::InvalidMethodException (id);
 }
 
 java::util::ArrayList *
