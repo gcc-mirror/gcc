@@ -1,5 +1,12 @@
 2007-05-03  Keith Seitz  <keiths@redhat.com>
 
+	* interpret.cc: Don't include ExceptionEvent.h.
+	* gnu/gcj/jvmti/natExceptionEvent.cc: Remove.
+	* Makefile.am (nat_source_files): Remove natExceptionEvent.cc.
+	* Makefile.in: Regenerated.
+
+2007-05-03  Keith Seitz  <keiths@redhat.com>
+
 	* include/jvmti-int.h (_Jv_ReportJVMTIExceptionThrow):
 	Declare.
 	* interpret.cc (_Jv_ReportJVMTIExceptionThrow): New function.
