@@ -1,5 +1,11 @@
 2007-05-04  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/31760
+	* gfortran.dg/erf.f90: New test.
+	* gfortran.dg/besxy.f90: New test.
+
+2007-05-04  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/22359
 	* gfortran.dg/fseek.f90: New test.
 

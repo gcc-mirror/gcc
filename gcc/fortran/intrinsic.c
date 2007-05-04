@@ -1097,21 +1097,21 @@ add_functions (void)
   
   /* Bessel and Neumann functions for G77 compatibility.  */
   add_sym_1 ("besj0", ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
-	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
 	     x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("dbesj0", ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
-	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
 	     x, BT_REAL, dd, REQUIRED);
 
   make_generic ("besj0", GFC_ISYM_J0, GFC_STD_GNU);
 
   add_sym_1 ("besj1", ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
-	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
 	     x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("dbesj1", ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
-	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
 	     x, BT_REAL, dd, REQUIRED);
 
   make_generic ("besj1", GFC_ISYM_J1, GFC_STD_GNU);
@@ -1127,21 +1127,21 @@ add_functions (void)
   make_generic ("besjn", GFC_ISYM_JN, GFC_STD_GNU);
 
   add_sym_1 ("besy0", ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
-	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
 	     x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("dbesy0", ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
-	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
 	     x, BT_REAL, dd, REQUIRED);
 
   make_generic ("besy0", GFC_ISYM_Y0, GFC_STD_GNU);
 
   add_sym_1 ("besy1", ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
-	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
 	     x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("dbesy1", ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
-	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
 	     x, BT_REAL, dd, REQUIRED);
 
   make_generic ("besy1", GFC_ISYM_Y1, GFC_STD_GNU);
@@ -1340,21 +1340,21 @@ add_functions (void)
 
   /* G77 compatibility for the ERF() and ERFC() functions.  */
   add_sym_1 ("erf", ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
-	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
 	     x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("derf", ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
-	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
 	     x, BT_REAL, dd, REQUIRED);
 
   make_generic ("erf", GFC_ISYM_ERF, GFC_STD_GNU);
 
   add_sym_1 ("erfc", ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
-	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
 	     x, BT_REAL, dr, REQUIRED);
 
   add_sym_1 ("derfc", ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
-	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
 	     x, BT_REAL, dd, REQUIRED);
 
   make_generic ("erfc", GFC_ISYM_ERFC, GFC_STD_GNU);
