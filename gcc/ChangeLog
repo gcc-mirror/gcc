@@ -1,3 +1,7 @@
+2007-05-04  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* libgcc-std.ver (__ffssi2): Added to GCC_4.3.0 section.
+
 2007-05-04  Dirk Mueller  <dmueller@suse.de>
 
 	* c.opt(Wmain,ffreestanding): Enable for C++,ObjC++.
