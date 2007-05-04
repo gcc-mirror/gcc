@@ -1,3 +1,8 @@
+2007-05-04  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/22539
+	* gfortran.dg/fseek.f90: New test.
+
 2007-05-04  Bob Wilson  <bob.wilson@acm.org>
 	
 	* g++.old-deja/g++.pt/static11.C: Remove xtensa-*-elf* xfail.

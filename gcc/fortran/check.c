@@ -2461,6 +2461,44 @@ gfc_check_fgetput (gfc_expr *c)
 
 
 try
+gfc_check_fseek_sub (gfc_expr *unit, gfc_expr *offset, gfc_expr *whence, gfc_expr *status)
+{
+  if (type_check (unit, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (unit, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (offset, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (offset, 1) == FAILURE)
+    return FAILURE;
+
+  if (type_check (whence, 2, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (whence, 2) == FAILURE)
+    return FAILURE;
+
+  if (status == NULL)
+    return SUCCESS;
+
+  if (type_check (status, 3, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (kind_value_check (status, 3, 4) == FAILURE)
+    return FAILURE
+
+  if (scalar_check (status, 3) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+
+try
 gfc_check_fstat (gfc_expr *unit, gfc_expr *array)
 {
   if (type_check (unit, 0, BT_INTEGER) == FAILURE)

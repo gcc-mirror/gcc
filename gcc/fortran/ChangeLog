@@ -1,3 +1,12 @@
+2007-05-04  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/22539
+	* intrinsic.c (add_subroutines): Added FSEEK.
+	* intrinsic.h (gfc_resolve_fseek_sub, gfc_check_fseek_sub): New.
+	* iresolve.c (gfc_resolve_fseek_sub): New.
+	* check.c (gfc_check_fseek_sub): New.
+	* intrinsic.texi (FSEEK): Updated.
+
 2007-05-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/31803

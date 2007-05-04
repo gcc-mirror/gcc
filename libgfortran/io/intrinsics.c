@@ -228,6 +228,34 @@ flush_i8 (GFC_INTEGER_8 *unit)
     }
 }
 
+/* FSEEK intrinsic */
+
+extern void fseek_sub (int *, GFC_IO_INT *, int *, int *);
+export_proto(fseek_sub);
+
+void
+fseek_sub (int * unit, GFC_IO_INT * offset, int * whence, int * status)
+{
+  gfc_unit * u = find_unit (*unit);
+  try result = FAILURE;
+
+  if (u != NULL && is_seekable(u->s))
+    {
+      if (*whence == 0)
+        result = sseek(u->s, *offset);                       /* SEEK_SET */
+      else if (*whence == 1)
+        result = sseek(u->s, file_position(u->s) + *offset); /* SEEK_CUR */
+      else if (*whence == 2)
+        result = sseek(u->s, file_length(u->s) + *offset);   /* SEEK_END */
+
+      unlock_unit (u);
+    }
+
+  if (status)
+    *status = (result == FAILURE ? -1 : 0);
+}
+
+
 
 /* FTELL intrinsic */
 

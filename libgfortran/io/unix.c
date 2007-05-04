@@ -601,10 +601,14 @@ fd_seek (unix_stream * s, gfc_offset offset)
       return SUCCESS;
     }
 
-  s->physical_offset = s->logical_offset = offset;
-  s->active = 0;
+  if (lseek (s->fd, offset, SEEK_SET) >= 0)
+    {
+      s->physical_offset = s->logical_offset = offset;
+      s->active = 0;
+      return SUCCESS;
+    }
 
-  return (lseek (s->fd, offset, SEEK_SET) < 0) ? FAILURE : SUCCESS;
+  return FAILURE;
 }
 
 
