@@ -606,7 +606,7 @@ verify_ssa (bool check_modified_stmt)
   basic_block *definition_block = XCNEWVEC (basic_block, num_ssa_names);
   ssa_op_iter iter;
   tree op;
-  enum dom_state orig_dom_state = dom_computed[CDI_DOMINATORS];
+  enum dom_state orig_dom_state = dom_info_state (CDI_DOMINATORS);
   bitmap names_defined_in_bb = BITMAP_ALLOC (NULL);
 
   gcc_assert (!need_ssa_update_p ());
@@ -747,7 +747,7 @@ verify_ssa (bool check_modified_stmt)
   if (orig_dom_state == DOM_NONE)
     free_dominance_info (CDI_DOMINATORS);
   else
-    dom_computed[CDI_DOMINATORS] = orig_dom_state;
+    set_dom_info_availability (CDI_DOMINATORS, orig_dom_state);
   
   BITMAP_FREE (names_defined_in_bb);
   timevar_pop (TV_TREE_SSA_VERIFY);
