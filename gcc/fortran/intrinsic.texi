@@ -76,6 +76,7 @@ Some basic guidelines for editing this document:
 * @code{CHMOD}:         CHMOD,     Change access permissions of files
 * @code{CMPLX}:         CMPLX,     Complex conversion function
 * @code{COMMAND_ARGUMENT_COUNT}: COMMAND_ARGUMENT_COUNT, Get number of command line arguments
+* @code{COMPLEX}:       COMPLEX,   Complex conversion function
 * @code{CONJG}:         CONJG,     Complex conjugate function
 * @code{COS}:           COS,       Cosine function
 * @code{COSH}:          COSH,      Hyperbolic cosine function
@@ -2083,7 +2084,10 @@ Elemental function
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{COMPLEX(*)}
+The return value is of @code{COMPLEX} type, with a kind equal to
+@var{KIND} if it is specified.  If @var{KIND} is not specified, the
+result is of the default @code{COMPLEX} kind, regardless of the kinds of
+@var{X} and @var{Y}. 
 
 @item @emph{Example}:
 @smallexample
@@ -2095,6 +2099,9 @@ program test_cmplx
     print *, z, cmplx(x)
 end program test_cmplx
 @end smallexample
+
+@item @emph{See also}:
+@ref{COMPLEX}
 @end table
 
 
@@ -2139,6 +2146,57 @@ end program test_command_argument_count
 
 @item @emph{See also}:
 @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT}
+@end table
+
+
+
+@node COMPLEX
+@section @code{COMPLEX} --- Complex conversion function
+@fnindex COMPLEX
+@cindex complex numbers, conversion to
+@cindex conversion, to complex
+
+@table @asis
+@item @emph{Description}:
+@code{COMPLEX(X, Y)} returns a complex number where @var{X} is converted
+to the real component and @var{Y} is converted to the imaginary
+component.
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = COMPLEX(X, Y)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type may be @code{INTEGER(*)} or @code{REAL(*)}.
+@item @var{Y} @tab The type may be @code{INTEGER(*)} or @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+If @var{X} and @var{Y} are both of @code{INTEGER} type, then the return
+value is of default @code{COMPLEX} type.
+
+If @var{X} and @var{Y} are of @code{REAL} type, or one is of @code{REAL}
+type and one is of @code{INTEGER} type, then the return value is of
+@code{COMPLEX} type with a kind equal to that of the @code{REAL}
+argument with the highest precision.  
+
+@item @emph{Example}:
+@smallexample
+program test_complex
+    integer :: i = 42
+    real :: x = 3.14
+    print *, complex(i, x)
+end program test_complex
+@end smallexample
+
+@item @emph{See also}:
+@ref{CMPLX}
 @end table
 
 
