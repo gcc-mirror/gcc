@@ -1,3 +1,13 @@
+2007-05-03  Jan Hubicka  <jh@suse.cz>
+
+	* fold-const.c (fold_unary): Convert (T1)(X op Y) into ((T1)X op (T1)Y),
+	for pointer type in more cases than before.
+
+	* gimplify.c (gimplify_expr): Fold (void *)&a + 4.
+
+	* tree-object-size.c (plus_expr_object_size): When operand size is
+	unknown, return unknown.
+
 2007-05-03  Dirk Mueller  <dmueller@suse.de>
 
 	* doc/invoke.texi (-m386,-m486,-mpentium,-mpentiumpro): Remove.
