@@ -487,6 +487,9 @@ haifa_classify_insn (rtx insn)
   return insn_class;
 }
 
+/* A typedef for rtx vector.  */
+typedef VEC(rtx, heap) *rtx_vec_t;
+
 /* Forward declarations.  */
 
 static int priority (rtx);
@@ -575,9 +578,9 @@ static void init_glat1 (basic_block);
 static void attach_life_info1 (basic_block);
 static void free_glat (void);
 static void sched_remove_insn (rtx);
-static void clear_priorities (rtx);
+static void clear_priorities (rtx, rtx_vec_t *);
+static void calc_priorities (rtx_vec_t);
 static void add_jump_dependencies (rtx, rtx);
-static void calc_priorities (rtx);
 #ifdef ENABLE_CHECKING
 static int has_edge_p (VEC(edge,gc) *, int);
 static void check_cfg (rtx, rtx);
@@ -703,8 +706,30 @@ dep_cost (dep_t link)
   return cost;
 }
 
-/* Compute the priority number for INSN.  */
+/* Return 'true' if DEP should be included in priority calculations.  */
+static bool
+contributes_to_priority_p (dep_t dep)
+{
+  /* Critical path is meaningful in block boundaries only.  */
+  if (!current_sched_info->contributes_to_priority (DEP_CON (dep),
+						    DEP_PRO (dep)))
+    return false;
 
+  /* If flag COUNT_SPEC_IN_CRITICAL_PATH is set,
+     then speculative instructions will less likely be
+     scheduled.  That is because the priority of
+     their producers will increase, and, thus, the
+     producers will more likely be scheduled, thus,
+     resolving the dependence.  */
+  if ((current_sched_info->flags & DO_SPECULATION)
+      && !(spec_info->flags & COUNT_SPEC_IN_CRITICAL_PATH)
+      && (DEP_STATUS (dep) & SPECULATIVE))
+    return false;
+
+  return true;
+}
+
+/* Compute the priority number for INSN.  */
 static int
 priority (rtx insn)
 {
@@ -713,7 +738,10 @@ priority (rtx insn)
   if (! INSN_P (insn))
     return 0;
 
-  if (! INSN_PRIORITY_KNOWN (insn))
+  /* We should not be insterested in priority of an already scheduled insn.  */
+  gcc_assert (QUEUE_INDEX (insn) != QUEUE_SCHEDULED);
+
+  if (!INSN_PRIORITY_KNOWN (insn))
     {
       int this_priority = 0;
 
@@ -760,20 +788,7 @@ priority (rtx insn)
 		    {
 		      int cost;
 
-		      /* Critical path is meaningful in block boundaries
-			 only.  */
-		      if (! (*current_sched_info->contributes_to_priority)
-			  (next, insn)
-			  /* If flag COUNT_SPEC_IN_CRITICAL_PATH is set,
-			     then speculative instructions will less likely be
-			     scheduled.  That is because the priority of
-			     their producers will increase, and, thus, the
-			     producers will more likely be scheduled, thus,
-			     resolving the dependence.  */
-			  || ((current_sched_info->flags & DO_SPECULATION)
-			      && (DEP_STATUS (dep) & SPECULATIVE)
-			      && !(spec_info->flags
-				   & COUNT_SPEC_IN_CRITICAL_PATH)))
+		      if (!contributes_to_priority_p (dep))
 			continue;
 
 		      if (twin == insn)
@@ -799,7 +814,7 @@ priority (rtx insn)
 	  while (twin != prev_first);
 	}
       INSN_PRIORITY (insn) = this_priority;
-      INSN_PRIORITY_KNOWN (insn) = 1;
+      INSN_PRIORITY_STATUS (insn) = 1;
     }
 
   return INSN_PRIORITY (insn);
@@ -831,6 +846,9 @@ rank_for_schedule (const void *x, const void *y)
   /* The insn in a schedule group should be issued the first.  */
   if (SCHED_GROUP_P (tmp) != SCHED_GROUP_P (tmp2))
     return SCHED_GROUP_P (tmp2) ? 1 : -1;
+
+  /* Make sure that priority of TMP and TMP2 are initialized.  */
+  gcc_assert (INSN_PRIORITY_KNOWN (tmp) && INSN_PRIORITY_KNOWN (tmp2));
 
   /* Prefer insn with higher priority.  */
   priority_val = INSN_PRIORITY (tmp2) - INSN_PRIORITY (tmp);
@@ -2541,9 +2559,10 @@ set_priorities (rtx head, rtx tail)
       n_insn++;
       (void) priority (insn);
 
-      if (INSN_PRIORITY_KNOWN (insn))
-	sched_max_insns_priority =
-	  MAX (sched_max_insns_priority, INSN_PRIORITY (insn)); 
+      gcc_assert (INSN_PRIORITY_KNOWN (insn));
+
+      sched_max_insns_priority = MAX (sched_max_insns_priority,
+				      INSN_PRIORITY (insn));
     }
 
   current_sched_info->sched_max_insns_priority = sched_max_insns_priority;
@@ -3224,6 +3243,7 @@ add_to_speculative_block (rtx insn)
   ds_t ts;
   dep_link_t link;
   rtx twins = NULL;
+  rtx_vec_t priorities_roots;
 
   ts = TODO_SPEC (insn);
   gcc_assert (!(ts & ~BE_IN_SPEC));
@@ -3255,7 +3275,8 @@ add_to_speculative_block (rtx insn)
 	link = DEP_LINK_NEXT (link);
     }
 
-  clear_priorities (insn);
+  priorities_roots = NULL;
+  clear_priorities (insn, &priorities_roots);
  
   do
     {
@@ -3342,13 +3363,15 @@ add_to_speculative_block (rtx insn)
       rtx twin;
 
       twin = XEXP (twins, 0);
-      calc_priorities (twin);
       add_back_forw_dep (twin, insn, REG_DEP_OUTPUT, DEP_OUTPUT);
 
       twin = XEXP (twins, 1);
       free_INSN_LIST_node (twins);
       twins = twin;      
     }
+
+  calc_priorities (priorities_roots);
+  VEC_free (rtx, heap, priorities_roots);
 }
 
 /* Extends and fills with zeros (only the new part) array pointed to by P.  */
@@ -3793,8 +3816,11 @@ create_check_block_twin (rtx insn, bool mutate_p)
     /* Fix priorities.  If MUTATE_P is nonzero, this is not necessary,
        because it'll be done later in add_to_speculative_block.  */
     {
-      clear_priorities (twin);
-      calc_priorities (twin);
+      rtx_vec_t priorities_roots = NULL;
+
+      clear_priorities (twin, &priorities_roots);
+      calc_priorities (priorities_roots);
+      VEC_free (rtx, heap, priorities_roots);
     }
 }
 
@@ -4281,42 +4307,50 @@ sched_remove_insn (rtx insn)
   remove_insn (insn);
 }
 
-/* Clear priorities of all instructions, that are
-   forward dependent on INSN.  */
+/* Clear priorities of all instructions, that are forward dependent on INSN.
+   Store in vector pointed to by ROOTS_PTR insns on which priority () should
+   be invoked to initialize all cleared priorities.  */
 static void
-clear_priorities (rtx insn)
+clear_priorities (rtx insn, rtx_vec_t *roots_ptr)
 {
   dep_link_t link;
+  bool insn_is_root_p = true;
+
+  gcc_assert (QUEUE_INDEX (insn) != QUEUE_SCHEDULED);
 
   FOR_EACH_DEP_LINK (link, INSN_BACK_DEPS (insn))
     {
-      rtx pro = DEP_LINK_PRO (link);
+      dep_t dep = DEP_LINK_DEP (link);
+      rtx pro = DEP_PRO (dep);
 
-      if (INSN_PRIORITY_KNOWN (pro))
+      if (INSN_PRIORITY_STATUS (pro) >= 0
+	  && QUEUE_INDEX (insn) != QUEUE_SCHEDULED)
 	{
-	  INSN_PRIORITY_KNOWN (pro) = 0;
-	  clear_priorities (pro);
+	  /* If DEP doesn't contribute to priority then INSN itself should
+	     be added to priority roots.  */
+	  if (contributes_to_priority_p (dep))
+	    insn_is_root_p = false;
+
+	  INSN_PRIORITY_STATUS (pro) = -1;
+	  clear_priorities (pro, roots_ptr);
 	}
     }
+
+  if (insn_is_root_p)
+    VEC_safe_push (rtx, heap, *roots_ptr, insn);
 }
 
 /* Recompute priorities of instructions, whose priorities might have been
-   changed due to changes in INSN.  */
+   changed.  ROOTS is a vector of instructions whose priority computation will
+   trigger initialization of all cleared priorities.  */
 static void
-calc_priorities (rtx insn)
+calc_priorities (rtx_vec_t roots)
 {
-  dep_link_t link;
+  int i;
+  rtx insn;
 
-  FOR_EACH_DEP_LINK (link, INSN_BACK_DEPS (insn))
-    {
-      rtx pro = DEP_LINK_PRO (link);
-
-      if (!INSN_PRIORITY_KNOWN (pro))
-	{
-	  priority (pro);
-	  calc_priorities (pro);
-	}
-    }
+  for (i = 0; VEC_iterate (rtx, roots, i, insn); i++)
+    priority (insn);
 }
 
 

@@ -1,5 +1,21 @@
 2007-05-04  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
+	* haifa-sched.c (rtx_vec_t): New typedef.
+	(contributes_to_priority_p): Extract piece of priority () into new
+	static function.
+	(priority): Use the function.  Add assertion.
+	(rank_for_schedule, set_priorities): Add assertion to check that
+	insn's priority is initialized.
+	(clear_priorities, calc_priorities): Change signature.  Make it update
+	all relevant insns.  Update all callers ('add_to_speculative_block ()'
+	and 'create_block_check_twin ()').
+	* sched-int.h (struct haifa_insn_data): Remove field 'priority_known'.
+	Add new field 'priority_status'.
+	(INSN_PRIORITY_STATUS): New macro.
+	(INSN_PRIORITY_KNOWN): Change to use INSN_PRIORITY_STATUS.
+
+2007-05-04  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
 	* sched-ebb.c (debug_ebb_dependencies): New static function.
 	(init_ready_list): Use it.
 
