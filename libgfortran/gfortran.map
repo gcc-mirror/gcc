@@ -128,6 +128,7 @@ GFORTRAN_1.0 {
     _gfortran_fraction_r4;
     _gfortran_fraction_r8;
     _gfortran_free;
+    _gfortran_fseek_sub;
     _gfortran_fstat_i4;
     _gfortran_fstat_i4_sub;
     _gfortran_fstat_i8;

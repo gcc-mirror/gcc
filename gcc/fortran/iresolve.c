@@ -2965,6 +2965,50 @@ gfc_resolve_fput_sub (gfc_code *c)
 }
 
 
+void 
+gfc_resolve_fseek_sub (gfc_code *c)
+{
+  gfc_expr *unit;
+  gfc_expr *offset;
+  gfc_expr *whence;
+  gfc_expr *status;
+  gfc_typespec ts;
+
+  unit   = c->ext.actual->expr;
+  offset = c->ext.actual->next->expr;
+  whence = c->ext.actual->next->next->expr;
+  status = c->ext.actual->next->next->next->expr;
+
+  if (unit->ts.kind != gfc_c_int_kind)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      ts.derived = NULL;
+      ts.cl = NULL;
+      gfc_convert_type (unit, &ts, 2);
+    }
+
+  if (offset->ts.kind != gfc_intio_kind)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_intio_kind;
+      ts.derived = NULL;
+      ts.cl = NULL;
+      gfc_convert_type (offset, &ts, 2);
+    }
+
+  if (whence->ts.kind != gfc_c_int_kind)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      ts.derived = NULL;
+      ts.cl = NULL;
+      gfc_convert_type (whence, &ts, 2);
+    }
+
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (PREFIX ("fseek_sub"));
+}
+
 void
 gfc_resolve_ftell_sub (gfc_code *c)
 {

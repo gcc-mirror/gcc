@@ -3966,10 +3966,31 @@ See @code{MALLOC} for an example.
 @cindex file operation, seek
 @cindex file operation, position
 
-Not yet implemented in GNU Fortran.
-
 @table @asis
 @item @emph{Description}:
+Moves @var{UNIT} to the specified @var{OFFSET}. If @var{WHENCE} 
+is set to 0, the @var{OFFSET} is taken as an absolute value @code{SEEK_SET},
+if set to 1, @var{OFFSET} is taken to be relative to the current position 
+@code{SEEK_CUR}, and if set to 2 relative to the end of the file @code{SEEK_END}.
+On error, @var{STATUS} is set to a non-zero value. If @var{STATUS} the seek 
+fails silently.
+
+This intrinsic routine is not fully backwards compatible with @command{g77}. 
+In @command{g77}, the @code{FSEEK} takes a statement label instead of a 
+@var{STATUS} variable. If FSEEK is used in old code, change
+@smallexample
+  CALL FSEEK(UNIT, OFFSET, WHENCE, *label)
+@end smallexample 
+to
+@smallexample
+  INTEGER :: status
+  CALL FSEEK(UNIT, OFFSET, WHENCE, status)
+  IF (status /= 0) GOTO label
+@end smallexample 
+
+Please note that GNU Fortran provides the Fortran 2003 Stream facility.
+Programmers should consider the use of new stream IO feature in new code 
+for future portability. See also @ref{Fortran 2003 status}.
 
 @item @emph{Standard}:
 GNU extension
@@ -3978,13 +3999,44 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
-@item @emph{Arguments}:
-@item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
-@item @emph{See also}:
-@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
+@code{CALL FSEEK(UNIT, OFFSET, WHENCE[, STATUS])}
 
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{UNIT}   @tab Shall be a scalar of type @code{INTEGER}.
+@item @var{OFFSET} @tab Shall be a scalar of type @code{INTEGER}.
+@item @var{WHENCE} @tab Shall be a scalar of type @code{INTEGER}.
+Its value shall be either 0, 1 or 2.
+@item @var{STATUS} @tab (Optional) shall be a scalar of type 
+@code{INTEGER(4)}.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+PROGRAM test_fseek
+  INTEGER, PARAMETER :: SEEK_SET = 0, SEEK_CUR = 1, SEEK_END = 2
+  INTEGER :: fd, offset, ierr
+
+  ierr   = 0
+  offset = 5
+  fd     = 10
+
+  OPEN(UNIT=fd, FILE="fseek.test")
+  CALL FSEEK(fd, offset, SEEK_SET, ierr)  ! move to OFFSET
+  print *, FTELL(fd), ierr
+
+  CALL FSEEK(fd, 0, SEEK_END, ierr)       ! move to end
+  print *, FTELL(fd), ierr
+
+  CALL FSEEK(fd, 0, SEEK_SET, ierr)       ! move to beginning
+  print *, FTELL(fd), ierr
+
+  CLOSE(UNIT=fd)
+END PROGRAM
+@end smallexample
+
+@item @emph{See also}:
+@ref{FTELL}
 @end table
 
 

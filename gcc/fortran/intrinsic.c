@@ -2313,7 +2313,8 @@ add_subroutines (void)
     *com = "command", *length = "length", *st = "status",
     *val = "value", *num = "number", *name = "name",
     *trim_name = "trim_name", *ut = "unit", *han = "handler",
-    *sec = "seconds", *res = "result", *of = "offset", *md = "mode";
+    *sec = "seconds", *res = "result", *of = "offset", *md = "mode",
+    *whence = "whence";
 
   int di, dr, dc, dl, ii;
 
@@ -2488,6 +2489,11 @@ add_subroutines (void)
 
   add_sym_1s ("free", NOT_ELEMENTAL,  BT_UNKNOWN, 0, GFC_STD_GNU, gfc_check_free,
 	      NULL, gfc_resolve_free, c, BT_INTEGER, ii, REQUIRED);
+
+  add_sym_4s ("fseek", NOT_ELEMENTAL, BT_UNKNOWN, 0, GFC_STD_GNU,
+              gfc_check_fseek_sub, NULL, gfc_resolve_fseek_sub,
+              ut, BT_INTEGER, di, REQUIRED, of, BT_INTEGER, di, REQUIRED,
+              whence, BT_INTEGER, di, REQUIRED, st, BT_INTEGER, di, OPTIONAL);
 
   add_sym_2s ("ftell", NOT_ELEMENTAL,  BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_ftell_sub, NULL, gfc_resolve_ftell_sub,
