@@ -1,3 +1,7 @@
+2007-05-04  Dirk Mueller  <dmueller@suse.de>
+
+	* c.opt(Wmain,ffreestanding): Enable for C++,ObjC++.
+
 2007-05-03  Jan Hubicka  <jh@suse.cz>
 
 	* fold-const.c (fold_unary): Convert (T1)(X op Y) into ((T1)X op (T1)Y),
