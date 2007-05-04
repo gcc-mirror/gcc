@@ -2932,7 +2932,7 @@ find_if_header (basic_block test_bb, int pass)
       && find_cond_trap (test_bb, then_edge, else_edge))
     goto success;
 
-  if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY
+  if (dom_info_state (CDI_POST_DOMINATORS) >= DOM_NO_FAST_QUERY
       && (! HAVE_conditional_execution || reload_completed))
     {
       if (find_if_case_1 (test_bb, then_edge, else_edge))

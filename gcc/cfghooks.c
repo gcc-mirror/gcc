@@ -486,9 +486,9 @@ delete_basic_block (basic_block bb)
   while (EDGE_COUNT (bb->succs) != 0)
     remove_edge (EDGE_SUCC (bb, 0));
 
-  if (dom_computed[CDI_DOMINATORS])
+  if (dom_info_available_p (CDI_DOMINATORS))
     delete_from_dominance_info (CDI_DOMINATORS, bb);
-  if (dom_computed[CDI_POST_DOMINATORS])
+  if (dom_info_available_p (CDI_POST_DOMINATORS))
     delete_from_dominance_info (CDI_POST_DOMINATORS, bb);
 
   /* Remove the basic block from the array.  */
@@ -527,10 +527,10 @@ split_edge (edge e)
       single_succ_edge (ret)->flags |= EDGE_IRREDUCIBLE_LOOP;
     }
 
-  if (dom_computed[CDI_DOMINATORS])
+  if (dom_info_available_p (CDI_DOMINATORS))
     set_immediate_dominator (CDI_DOMINATORS, ret, single_pred (ret));
 
-  if (dom_computed[CDI_DOMINATORS] >= DOM_NO_FAST_QUERY)
+  if (dom_info_state (CDI_DOMINATORS) >= DOM_NO_FAST_QUERY)
     {
       /* There are two cases:
 
@@ -586,9 +586,9 @@ create_basic_block (void *head, void *end, basic_block after)
 
   ret = cfg_hooks->create_basic_block (head, end, after);
 
-  if (dom_computed[CDI_DOMINATORS])
+  if (dom_info_available_p (CDI_DOMINATORS))
     add_to_dominance_info (CDI_DOMINATORS, ret);
-  if (dom_computed[CDI_POST_DOMINATORS])
+  if (dom_info_available_p (CDI_POST_DOMINATORS))
     add_to_dominance_info (CDI_POST_DOMINATORS, ret);
 
   return ret;
@@ -676,12 +676,12 @@ merge_blocks (basic_block a, basic_block b)
   /* B hasn't quite yet ceased to exist.  Attempt to prevent mishap.  */
   b->preds = b->succs = NULL;
 
-  if (dom_computed[CDI_DOMINATORS])
+  if (dom_info_available_p (CDI_DOMINATORS))
     redirect_immediate_dominators (CDI_DOMINATORS, b, a);
 
-  if (dom_computed[CDI_DOMINATORS])
+  if (dom_info_available_p (CDI_DOMINATORS))
     delete_from_dominance_info (CDI_DOMINATORS, b);
-  if (dom_computed[CDI_POST_DOMINATORS])
+  if (dom_info_available_p (CDI_POST_DOMINATORS))
     delete_from_dominance_info (CDI_POST_DOMINATORS, b);
 
   expunge_block (b);

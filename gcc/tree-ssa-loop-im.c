@@ -794,6 +794,7 @@ determine_invariantness (void)
   struct dom_walk_data walk_data;
 
   memset (&walk_data, 0, sizeof (struct dom_walk_data));
+  walk_data.dom_direction = CDI_DOMINATORS;
   walk_data.before_dom_children_before_stmts = determine_invariantness_stmt;
 
   init_walk_dominator_tree (&walk_data);
@@ -864,6 +865,7 @@ move_computations (void)
   struct dom_walk_data walk_data;
 
   memset (&walk_data, 0, sizeof (struct dom_walk_data));
+  walk_data.dom_direction = CDI_DOMINATORS;
   walk_data.before_dom_children_before_stmts = move_computations_stmt;
 
   init_walk_dominator_tree (&walk_data);

@@ -1,3 +1,51 @@
+2007-05-04  Josh Conner  <jconner@apple.com>
+
+	* basic-block.h (cdi_direction): Assign values to all enumeration
+	constants.
+	(dom_computed): Remove.
+	(dom_info_state): New.
+	(set_dom_info_availability): New.
+	* tree-ssa-loop-im.c (determine_invariantness): Initialize
+	walk_data.dom_direction.
+	* cfghooks.c (delete_basic_block): Use dom_info_available_p()
+	instead of dom_computed[].
+	(split_edge): Likewise.
+	(create_basic_block): Likewise.
+	(merge_blocks): Likewise.
+	* ifcvt.c (find_if_header): Likewise.
+	* tree-cfgcleanup.c (cleanup_tree_cfg): Likewise.
+	* tree-ssa-dce.c (remove_dead_stmt): Likewise.
+	* tree-ssa.c (verify_ssa): Likewise.
+	* tree-cfg.c (tree_verify_flow_info): Likewise.
+	(remove_edge_and_dominated_blocks): Likewise.
+	* dominance.c (dom_computed): Make static.
+	(calc_dfs_tree_nonrec): Change third param to a bool.
+	(calc_dfs_tree): Change second param to a bool.
+	(calc_idioms): Change second param to a bool.  Use
+	dom_convert_dir_to_idx.
+	(init_dom_info): Validate dir before using.
+	(dom_convert_dir_to_idx): New.
+	(calculate_dominance_info): Use dom_convert_dir_to_idx.  New
+	variable 'reverse' used for calling calc_dfs_tree and calc_idoms.
+	(free_dominance_info): Use dom_convert_dir_to_idx.
+	(get_immediate_dominator): Likewise.
+	(set_immediate_dominator): Likewise.
+	(get_dominated_by): Likewise.
+	(redirect_immediate_dominators): Likewise.
+	(nearest_common_denominator): Likewise.
+	(dominated_by_p): Likewise.
+	(bb_dom_dfs_in): Likewise.
+	(bb_dom_dfs_out): Likewise.
+	(recount_dominator): Likewise.
+	(iterate_fix_dominators): Likewise.
+	(add_to_dominance_info): Likewise.
+	(delete_from_dominance_info): Likewise.
+	(first_dom_son): Likewise.
+	(next_dom_son): Likewise.
+	(dom_info_available_p): Likewise.
+	(dom_info_state): New.
+	(set_dom_info_availability): New.
+
 2007-05-04  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("fix_trunc<mode>di2", "fix_trunc<mode>si2"):

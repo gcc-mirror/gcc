@@ -609,7 +609,7 @@ cleanup_tree_cfg (void)
 
      If dominance information is available, there cannot be any unreachable
      blocks.  */
-  if (!dom_computed[CDI_DOMINATORS])
+  if (!dom_info_available_p (CDI_DOMINATORS))
     {
       changed = delete_unreachable_blocks ();
       calculate_dominance_info (CDI_DOMINATORS);
@@ -624,7 +624,7 @@ cleanup_tree_cfg (void)
 
   changed |= cleanup_tree_cfg_1 ();
 
-  gcc_assert (dom_computed[CDI_DOMINATORS]);
+  gcc_assert (dom_info_available_p (CDI_DOMINATORS));
   compact_blocks ();
 
 #ifdef ENABLE_CHECKING

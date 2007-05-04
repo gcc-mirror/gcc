@@ -591,7 +591,7 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
       basic_block post_dom_bb;
 
       /* The post dominance info has to be up-to-date.  */
-      gcc_assert (dom_computed[CDI_POST_DOMINATORS] == DOM_OK);
+      gcc_assert (dom_info_state (CDI_POST_DOMINATORS) == DOM_OK);
       /* Get the immediate post dominator of bb.  */
       post_dom_bb = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
 
