@@ -1,3 +1,10 @@
+2007-05-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/31210
+	* io/transfer.c (transfer_character): Avoid passing a NULL
+	pointer as source to the transfer routines, if the string length
+	is zero.
+
 2007-04-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/31501

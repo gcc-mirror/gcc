@@ -1401,8 +1401,17 @@ transfer_logical (st_parameter_dt *dtp, void *p, int kind)
 void
 transfer_character (st_parameter_dt *dtp, void *p, int len)
 {
+  static char *empty_string[0];
+
   if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
     return;
+
+  /* Strings of zero length can have p == NULL, which confuses the
+     transfer routines into thinking we need more data elements.  To avoid
+     this, we give them a nice pointer.  */
+  if (len == 0 && p == NULL)
+    p = empty_string;
+
   /* Currently we support only 1 byte chars, and the library is a bit
      confused of character kind vs. length, so we kludge it by setting
      kind = length.  */
