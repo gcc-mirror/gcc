@@ -1,6 +1,11 @@
+2007-05-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/25071
+	* interface.c (compare_actual_formal): Check character length.
+
 2007-05-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-        PR fortran/31732
+	PR fortran/31732
 	* dependency.c (gfc_full_array_ref_p):  If the reference is
 	to a single element, check that the array has a single
 	element and that the correct element is referenced.

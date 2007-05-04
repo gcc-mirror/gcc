@@ -1,3 +1,9 @@
+2007-05-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/25071
+	* gfortran.dg/char_length_3.f90: New test.
+	* gfortran.dg/char_result_2.f90: Fix test.
+
 2007-05-03  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/30565
@@ -81,7 +87,7 @@
 
 2007-05-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-        PR fortran/31732
+	PR fortran/31732
 	* gfortran.dg/array_memset_2:  New test case.
 
 2007-05-01  Dorit Nuzman  <dorit@il.ibm.com>
