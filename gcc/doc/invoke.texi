@@ -9928,18 +9928,6 @@ specifying @option{-march=@var{cpu-type}} implies @option{-mtune=@var{cpu-type}}
 @opindex mcpu
 A deprecated synonym for @option{-mtune}.
 
-@item -m386
-@itemx -m486
-@itemx -mpentium
-@itemx -mpentiumpro
-@opindex m386
-@opindex m486
-@opindex mpentium
-@opindex mpentiumpro
-These options are synonyms for @option{-mtune=i386}, @option{-mtune=i486},
-@option{-mtune=pentium}, and @option{-mtune=pentiumpro} respectively.
-These synonyms are deprecated.
-
 @item -mfpmath=@var{unit}
 @opindex march
 Generate floating point arithmetics for selected unit @var{unit}.  The choices
