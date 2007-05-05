@@ -1,3 +1,8 @@
+2007-05-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_raw_storage_iter.h (class raw_storage_iterator):
+	Adjust template parameter name.
+
 2007-05-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* libsupc++/cxxabi.h (__cxa_atexit): Conditionalize exception
