@@ -1,6 +1,7 @@
 // -*- C++ -*-
 
-// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -67,16 +68,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  This iterator class lets algorithms store their results into
    *  uninitialized memory.
   */
-  template <class _ForwardIterator, class _Tp>
+  template <class _OutputIterator, class _Tp>
     class raw_storage_iterator
     : public iterator<output_iterator_tag, void, void, void, void>
     {
     protected:
-      _ForwardIterator _M_iter;
+      _OutputIterator _M_iter;
 
     public:
       explicit
-      raw_storage_iterator(_ForwardIterator __x)
+      raw_storage_iterator(_OutputIterator __x)
       : _M_iter(__x) {}
 
       raw_storage_iterator&
@@ -89,17 +90,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	return *this;
       }
 
-      raw_storage_iterator<_ForwardIterator, _Tp>&
+      raw_storage_iterator<_OutputIterator, _Tp>&
       operator++()
       {
 	++_M_iter;
 	return *this;
       }
 
-      raw_storage_iterator<_ForwardIterator, _Tp>
+      raw_storage_iterator<_OutputIterator, _Tp>
       operator++(int)
       {
-	raw_storage_iterator<_ForwardIterator, _Tp> __tmp = *this;
+	raw_storage_iterator<_OutputIterator, _Tp> __tmp = *this;
 	++_M_iter;
 	return __tmp;
       }
