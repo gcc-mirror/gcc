@@ -1,3 +1,8 @@
+2007-05-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/generic/c_locale.cc: Don't use __builtin_huge_val*
+	when __*_HAS_INFINITY__ is false.
+
 2007-05-04  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_raw_storage_iter.h (class raw_storage_iterator):
