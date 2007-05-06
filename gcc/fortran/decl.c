@@ -1626,11 +1626,20 @@ rparen:
 syntax:
   gfc_error ("Syntax error in CHARACTER declaration at %C");
   m = MATCH_ERROR;
+  gfc_free_expr (len);
+  return m;
 
 done:
-  if (m == MATCH_YES && gfc_validate_kind (BT_CHARACTER, kind, true) < 0)
+  if (gfc_validate_kind (BT_CHARACTER, kind, true) < 0)
     {
       gfc_error ("Kind %d is not a CHARACTER kind at %C", kind);
+      m = MATCH_ERROR;
+    }
+
+  if (seen_length == 1 && len != NULL
+      && len->ts.type != BT_INTEGER && len->ts.type != BT_UNKNOWN)
+    {
+      gfc_error ("Expression at %C must be of INTEGER type");
       m = MATCH_ERROR;
     }
 
