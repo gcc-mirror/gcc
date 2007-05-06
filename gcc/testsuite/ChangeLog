@@ -1,3 +1,10 @@
+2007-05-05  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 31775
+	* g++.dg/other/nested-extern.cc: New.
+	* g++.dg/other/nested-extern-1.C: New.
+	* g++.dg/other/nested-extern-2.C: New.
+
 2007-05-04  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/31760

@@ -1,3 +1,10 @@
+2007-05-05  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 31775
+	* mangle.c (write_mangled_name): Mangle static variable names.
+	(write_unqualified_name): Use local-source-name for
+	namespace-scope static variables.
+
 2007-05-04  Dirk Mueller  <dmueller@suse.de>
 
 	* cp-tree.h (DECL_MAIN_P): only if -ffreestanding is
