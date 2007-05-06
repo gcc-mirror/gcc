@@ -2014,7 +2014,30 @@ expand_var_during_unrolling (struct var_to_expand *ve, rtx insn)
 /* Initialize the variable expansions in loop preheader.  
    Callbacks for htab_traverse.  PLACE_P is the loop-preheader 
    basic block where the initialization of the expansions 
-   should take place.  */
+   should take place.  The expansions are initialized with (-0)
+   when the operation is plus or minus to honor sign zero.
+   This way we can prevent cases where the sign of the final result is
+   effected by the sign of the expansion.
+   Here is an example to demonstrate this:
+   
+   for (i = 0 ; i < n; i++)
+     sum += something;
+
+   ==>
+
+   sum += something
+   ....
+   i = i+1;
+   sum1 += something
+   ....
+   i = i+1
+   sum2 += something;
+   ....
+   
+   When SUM is initialized with -zero and SOMETHING is also -zero; the
+   final result of sum should be -zero thus the expansions sum1 and sum2
+   should be initialized with -zero as well (otherwise we will get +zero
+   as the final result).  */
 
 static int
 insert_var_expansion_initialization (void **slot, void *place_p)
@@ -2023,7 +2046,9 @@ insert_var_expansion_initialization (void **slot, void *place_p)
   basic_block place = (basic_block)place_p;
   rtx seq, var, zero_init, insn;
   unsigned i;
-  
+  enum machine_mode mode = GET_MODE (ve->reg);
+  bool honor_signed_zero_p = HONOR_SIGNED_ZEROS (mode);
+
   if (VEC_length (rtx, ve->var_expansions) == 0)
     return 1;
   
@@ -2031,7 +2056,11 @@ insert_var_expansion_initialization (void **slot, void *place_p)
   if (ve->op == PLUS || ve->op == MINUS) 
     for (i = 0; VEC_iterate (rtx, ve->var_expansions, i, var); i++)
       {
-        zero_init =  CONST0_RTX (GET_MODE (var));
+	if (honor_signed_zero_p)
+	  zero_init = simplify_gen_unary (NEG, mode, CONST0_RTX (mode), mode);
+	else
+	  zero_init = CONST0_RTX (mode);
+       	
         emit_move_insn (var, zero_init);
       }
   else if (ve->op == MULT)

@@ -1,3 +1,8 @@
+2007-06-05  Revital Eres  <eres@il.ibm.com>
+	
+	PR 30957
+	* gcc.dg/pr30957-1.c: New test.
+
 2007-05-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/31251

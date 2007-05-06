@@ -1,3 +1,9 @@
+2007-06-05  Revital Eres  <eres@il.ibm.com>
+
+	PR 30957
+	* loop-unroll.c (insert_var_expansion_initialization):
+	Initialize the expansions with -zero instead of +zero.
+
 2007-05-05  Aurelien Jarno  <aurelien@aurel32.net>
 
 	* config/pa/pa.md: Split tgd_load, tld_load and tie_load
