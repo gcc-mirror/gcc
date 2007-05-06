@@ -138,6 +138,7 @@ GFORTRAN_1.0 {
     _gfortran_ftell_i2_sub;
     _gfortran_ftell_i4_sub;
     _gfortran_ftell_i8_sub;
+    _gfortran_generate_error;
     _gfortran_gerror;
     _gfortran_getarg_i4;
     _gfortran_getarg_i8;
@@ -582,6 +583,7 @@ GFORTRAN_1.0 {
     _gfortran_rrspacing_r4;
     _gfortran_rrspacing_r8;
     _gfortran_runtime_error;
+    _gfortran_runtime_error_at;
     _gfortran_secnds;
     _gfortran_second;
     _gfortran_second_sub;
