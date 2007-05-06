@@ -1,6 +1,7 @@
 // The template and inlines for the -*- C++ -*- complex number classes.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+// 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -1483,6 +1484,27 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   inline
   complex<long double>::complex(const complex<double>& __z)
   : _M_value(__z.__rep()) { }
+
+  // Inhibit implicit instantiations for required instantiations,
+  // which are defined via explicit instantiations elsewhere.
+  // NB:  This syntax is a GNU extension.
+#if _GLIBCXX_EXTERN_TEMPLATE
+  extern template istream& operator>>(istream&, complex<float>&);
+  extern template ostream& operator<<(ostream&, const complex<float>&);
+  extern template istream& operator>>(istream&, complex<double>&);
+  extern template ostream& operator<<(ostream&, const complex<double>&);
+  extern template istream& operator>>(istream&, complex<long double>&);
+  extern template ostream& operator<<(ostream&, const complex<long double>&);
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  extern template wistream& operator>>(wistream&, complex<float>&);
+  extern template wostream& operator<<(wostream&, const complex<float>&);
+  extern template wistream& operator>>(wistream&, complex<double>&);
+  extern template wostream& operator<<(wostream&, const complex<double>&);
+  extern template wistream& operator>>(wistream&, complex<long double>&);
+  extern template wostream& operator<<(wostream&, const complex<long double>&);
+#endif
+#endif
 
 _GLIBCXX_END_NAMESPACE
 

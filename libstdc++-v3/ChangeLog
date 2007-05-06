@@ -1,5 +1,15 @@
 2007-05-06  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/std/complex: Add missing extern template declarations.
+	* testsuite/26_numerics/complex/complex_inserters_extractors.cc:
+	Move...
+	* testsuite/26_numerics/complex/inserters_extractors/char/1.cc:
+	... here.
+	* testsuite/26_numerics/complex/inserters_extractors/wchar_t/1.cc:
+	New.
+
+2007-05-06  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/31834
 	* testsuite/17_intro/headers/c++200x/all.cc: Protect inclusion
 	of C99 headers.
