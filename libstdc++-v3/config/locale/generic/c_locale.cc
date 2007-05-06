@@ -34,6 +34,7 @@
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
+#include <cerrno>  // For errno
 #include <cmath>  // For isinf, finite, finitef, fabs
 #include <cstdlib>  // For strof, strtold
 #include <locale>
@@ -55,6 +56,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       char* __old = strdup(setlocale(LC_ALL, NULL));
       setlocale(LC_ALL, "C");
       char* __sanity;
+
+#if !__FLT_HAS_INFINITY__
+      errno = 0;
+#endif
+
 #if defined(_GLIBCXX_HAVE_STRTOF)
       float __f = strtof(__s, &__sanity);
 #else
@@ -62,23 +68,29 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       float __f = static_cast<float>(__d);
 #ifdef _GLIBCXX_HAVE_FINITEF
       if (!finitef (__f))
-	__f = __builtin_huge_valf();
+	__s = __sanity;
 #elif defined (_GLIBCXX_HAVE_FINITE)
       if (!finite (static_cast<double> (__f)))
-	__f = __builtin_huge_valf();
+	__s = __sanity;
 #elif defined (_GLIBCXX_HAVE_ISINF)
       if (isinf (static_cast<double> (__f)))
-	__f = __builtin_huge_valf();
+	__s = __sanity;
 #else
       if (fabs(__d) > numeric_limits<float>::max())
-	__f = __builtin_huge_valf();
+	__s = __sanity;
 #endif
 #endif
-      if (__sanity != __s && __f != __builtin_huge_valf()
-	  && __f != -__builtin_huge_valf())
+
+      if (__sanity != __s
+#if !__FLT_HAS_INFINITY__
+	  && errno != ERANGE)
+#else
+	  && __f != __builtin_huge_valf() && __f != -__builtin_huge_valf())
+#endif
 	__v = __f;
       else
 	__err |= ios_base::failbit;
+
       setlocale(LC_ALL, __old);
       free(__old);
     }
@@ -92,12 +104,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       char* __old = strdup(setlocale(LC_ALL, NULL));
       setlocale(LC_ALL, "C");
       char* __sanity;
+
+#if !__DBL_HAS_INFINITY__
+      errno = 0;
+#endif
+
       double __d = strtod(__s, &__sanity);
-      if (__sanity != __s && __d != __builtin_huge_val()
-	  && __d != -__builtin_huge_val())
+
+      if (__sanity != __s
+#if !__DBL_HAS_INFINITY__
+          && errno != ERANGE) 
+#else
+	  && __d != __builtin_huge_val() && __d != -__builtin_huge_val())
+#endif
 	__v = __d;
       else
 	__err |= ios_base::failbit;
+
       setlocale(LC_ALL, __old);
       free(__old);
     }
@@ -110,23 +133,40 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // Assumes __s formatted for "C" locale.
       char* __old = strdup(setlocale(LC_ALL, NULL));
       setlocale(LC_ALL, "C");
+
+#if !__LDBL_HAS_INFINITY__
+      errno = 0;
+#endif
+
 #if defined(_GLIBCXX_HAVE_STRTOLD)
       char* __sanity;
       long double __ld = strtold(__s, &__sanity);
-      if (__sanity != __s && __ld != __builtin_huge_vall()
-	  && __ld != -__builtin_huge_vall())
+
+      if (__sanity != __s
+#if !__LDBL_HAS_INFINITY__
+          && errno != ERANGE)
+#else
+	  && __ld != __builtin_huge_vall() && __ld != -__builtin_huge_vall())
+#endif
 	__v = __ld;
+
 #else
       typedef char_traits<char>::int_type int_type;
       long double __ld;
       int __p = sscanf(__s, "%Lf", &__ld);
+
       if (__p && static_cast<int_type>(__p) != char_traits<char>::eof()
-	  && __ld != __builtin_huge_vall()
-	  && __ld != -__builtin_huge_vall())
+#if !__LDBL_HAS_INFINITY__
+          && errno != ERANGE)
+#else
+          && __ld != __builtin_huge_vall() && __ld != -__builtin_huge_vall())
+#endif
 	__v = __ld;
+
 #endif
       else
 	__err |= ios_base::failbit;
+
       setlocale(LC_ALL, __old);
       free(__old);
     }
