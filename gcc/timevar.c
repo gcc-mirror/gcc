@@ -483,10 +483,9 @@ timevar_print (FILE *fp)
   fprintf (fp, "Extra diagnostic checks enabled; compiler may run slowly.\n");
   fprintf (fp, "Configure with --enable-checking=release to disable checks.\n");
 #endif
-#ifndef ASSERT_CHECKING
-  fprintf (fp, "Assert checking was disable; if you do an official compiling\n");
-  fprintf (fp, "time testing please use --enable-checking=release instead of\n");
-  fprintf (fp, "--disable-checking.\n");
+#ifndef ENABLE_ASSERT_CHECKING
+  fprintf (fp, "Internal checks disabled; compiler is not suited for release.\n");
+  fprintf (fp, "Configure with --enable-checking=release to enable checks.\n");
 #endif
 
 #endif /* defined (HAVE_USER_TIME) || defined (HAVE_SYS_TIME)
