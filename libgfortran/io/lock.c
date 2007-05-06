@@ -38,8 +38,8 @@ Boston, MA 02110-1301, USA.  */
 void
 library_start (st_parameter_common *cmp)
 {
-  if ((cmp->flags & IOPARM_HAS_IOSTAT) != 0)
-    *cmp->iostat = ERROR_OK;
+  if ((cmp->flags & IOPARM_LIBRETURN_ERROR) != 0)
+    return;
 
   cmp->flags &= ~IOPARM_LIBRETURN_MASK;
 }

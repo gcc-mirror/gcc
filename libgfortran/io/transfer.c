@@ -1708,6 +1708,9 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   dtp->u.p.ionml = ionml;
   dtp->u.p.mode = read_flag ? READING : WRITING;
 
+  if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
+    return;
+
   if ((cf & IOPARM_DT_HAS_SIZE) != 0)
     dtp->u.p.size_used = 0;  /* Initialize the count.  */
 

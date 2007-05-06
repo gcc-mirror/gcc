@@ -401,7 +401,9 @@ typedef struct
 }
 st_option;
 
-/* Runtime errors.  The EOR and EOF errors are required to be negative.  */
+/* Runtime errors.  The EOR and EOF errors are required to be negative.
+   These codes must be kept sychronized with their equivalents in
+   gcc/fortran/gfortran.h .  */
 
 typedef enum
 {
@@ -534,16 +536,18 @@ st_parameter_common;
 #define IOPARM_OPEN_HAS_PAD             (1 << 16)
 #define IOPARM_OPEN_HAS_CONVERT         (1 << 17)
 
-
-/* main.c */
-
-extern void stupid_function_name_for_static_linking (void);
-internal_proto(stupid_function_name_for_static_linking);
+/* library start function and end macro.  These can be expanded if needed
+   in the future.  cmp is st_parameter_common *cmp  */
 
 extern void library_start (st_parameter_common *);
 internal_proto(library_start);
 
 #define library_end()
+
+/* main.c */
+
+extern void stupid_function_name_for_static_linking (void);
+internal_proto(stupid_function_name_for_static_linking);
 
 extern void set_args (int, char **);
 export_proto(set_args);
@@ -587,6 +591,10 @@ internal_proto(show_locus);
 extern void runtime_error (const char *) __attribute__ ((noreturn));
 iexport_proto(runtime_error);
 
+extern void runtime_error_at (const char *, const char *)
+__attribute__ ((noreturn));
+iexport_proto(runtime_error_at);
+
 extern void internal_error (st_parameter_common *, const char *)
   __attribute__ ((noreturn));
 internal_proto(internal_error);
@@ -602,7 +610,7 @@ extern const char *translate_error (int);
 internal_proto(translate_error);
 
 extern void generate_error (st_parameter_common *, int, const char *);
-internal_proto(generate_error);
+iexport_proto(generate_error);
 
 extern try notify_std (st_parameter_common *, int, const char *);
 internal_proto(notify_std);
