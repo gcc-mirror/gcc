@@ -1,4 +1,9 @@
-2007-06-05  Revital Eres  <eres@il.ibm.com>
+2007-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* timevar.c (timevar_print): Test ENABLE_ASSERT_CHECKING instead
+	of ASSERT_CHECKING.  Tweak message.
+
+2007-05-06  Revital Eres  <eres@il.ibm.com>
 
 	PR 30957
 	* loop-unroll.c (insert_var_expansion_initialization):
