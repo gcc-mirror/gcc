@@ -1100,6 +1100,9 @@ d_name (struct d_info *di)
     case 'Z':
       return d_local_name (di);
 
+    case 'L':
+      return d_unqualified_name (di);
+	
     case 'S':
       {
 	int subst;
@@ -1220,7 +1223,8 @@ d_prefix (struct d_info *di)
       if (IS_DIGIT (peek)
 	  || IS_LOWER (peek)
 	  || peek == 'C'
-	  || peek == 'D')
+	  || peek == 'D'
+	  || peek == 'L')
 	dc = d_unqualified_name (di);
       else if (peek == 'S')
 	dc = d_substitution (di, 1);
@@ -1254,6 +1258,9 @@ d_prefix (struct d_info *di)
 /* <unqualified-name> ::= <operator-name>
                       ::= <ctor-dtor-name>
                       ::= <source-name>
+		      ::= <local-source-name> 
+
+    <local-source-name>	::= L <source-name> <discriminator>
 */
 
 static struct demangle_component *
@@ -1275,6 +1282,19 @@ d_unqualified_name (struct d_info *di)
     }
   else if (peek == 'C' || peek == 'D')
     return d_ctor_dtor_name (di);
+  else if (peek == 'L')
+    {
+      struct demangle_component * ret;
+
+      d_advance (di, 1);
+
+      ret = d_source_name (di);
+      if (ret == NULL)
+	return NULL;
+      if (! d_discriminator (di))
+	return NULL;
+      return ret;
+    }
   else
     return NULL;
 }

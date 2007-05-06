@@ -1,3 +1,9 @@
+2007-05-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* cp-demangle.c (d_name): Detect local-source-name.
+	(d_prefix): Likewise.
+	(d_unqualified_name): Implement local-source-name.
+
 2007-05-03  Joel Brobecker  <brobecker@adacore.com>
 
 	* filename_cmp.c: Replace include of ctype.h by include of
