@@ -1,3 +1,8 @@
+2007-05-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/31251
+	* gfortran.dg/char_type_len_2.f90: New test.
+
 2007-05-05  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 31775
