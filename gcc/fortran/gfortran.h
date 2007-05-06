@@ -472,6 +472,39 @@ enum gfc_generic_isym_id
 };
 typedef enum gfc_generic_isym_id gfc_generic_isym_id;
 
+/* Runtime errors.  The EOR and EOF errors are required to be negative.
+   These codes must be kept synchronized with their equivalents in
+   libgfortran/libgfortran.h .  */
+
+typedef enum
+{
+  IOERROR_FIRST = -3,		/* Marker for the first error.  */
+  IOERROR_EOR = -2,
+  IOERROR_END = -1,
+  IOERROR_OK = 0,			/* Indicates success, must be zero.  */
+  IOERROR_OS = 5000,		/* Operating system error, more info in errno.  */
+  IOERROR_OPTION_CONFLICT,
+  IOERROR_BAD_OPTION,
+  IOERROR_MISSING_OPTION,
+  IOERROR_ALREADY_OPEN,
+  IOERROR_BAD_UNIT,
+  IOERROR_FORMAT,
+  IOERROR_BAD_ACTION,
+  IOERROR_ENDFILE,
+  IOERROR_BAD_US,
+  IOERROR_READ_VALUE,
+  IOERROR_READ_OVERFLOW,
+  IOERROR_INTERNAL,
+  IOERROR_INTERNAL_UNIT,
+  IOERROR_ALLOCATION,
+  IOERROR_DIRECT_EOR,
+  IOERROR_SHORT_RECORD,
+  IOERROR_CORRUPT_FILE,
+  IOERROR_LAST			/* Not a real error, the last error # + 1.  */
+}
+ioerror_codes;
+
+
 /************************* Structures *****************************/
 
 /* Used for keeping things in balanced binary trees.  */

@@ -448,6 +448,7 @@ tree gfc_trans_pointer_assignment (gfc_expr *, gfc_expr *);
 /* Initialize function decls for library functions.  */
 void gfc_build_intrinsic_lib_fndecls (void);
 /* Create function decls for IO library functions.  */
+void gfc_trans_io_runtime_check (tree, tree, int, const char *, stmtblock_t *);
 void gfc_build_io_library_fndecls (void);
 /* Build a function decl for a library function.  */
 tree gfc_build_library_function_decl (tree, tree, int, ...);
@@ -487,6 +488,8 @@ extern GTY(()) tree gfor_fndecl_stop_numeric;
 extern GTY(()) tree gfor_fndecl_stop_string;
 extern GTY(()) tree gfor_fndecl_select_string;
 extern GTY(()) tree gfor_fndecl_runtime_error;
+extern GTY(()) tree gfor_fndecl_runtime_error_at;
+extern GTY(()) tree gfor_fndecl_generate_error;
 extern GTY(()) tree gfor_fndecl_set_fpe;
 extern GTY(()) tree gfor_fndecl_set_std;
 extern GTY(()) tree gfor_fndecl_ttynam;

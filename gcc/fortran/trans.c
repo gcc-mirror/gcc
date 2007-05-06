@@ -318,8 +318,8 @@ gfc_trans_runtime_check (tree cond, const char * msgid, stmtblock_t * pblock,
   stmtblock_t block;
   tree body;
   tree tmp;
-  tree arg;
-  char * message;
+  tree arg, arg2;
+  char *message;
   int line;
 
   if (integer_zerop (cond))
@@ -335,17 +335,21 @@ gfc_trans_runtime_check (tree cond, const char * msgid, stmtblock_t * pblock,
 #else 
       line = where->lb->linenum;
 #endif
-      asprintf (&message, "%s (in file '%s', at line %d)", _(msgid),
-		where->lb->file->filename, line);
+      asprintf (&message, "At line %d of file %s",  line,
+		where->lb->file->filename);
     }
   else
-    asprintf (&message, "%s (in file '%s', around line %d)", _(msgid),
+    asprintf (&message, "In file '%s', around line %d",
 	      gfc_source_file, input_line + 1);
 
   arg = gfc_build_addr_expr (pchar_type_node, gfc_build_cstring_const(message));
   gfc_free(message);
+  
+  asprintf (&message, "%s", _(msgid));
+  arg2 = gfc_build_addr_expr (pchar_type_node, gfc_build_cstring_const(message));
+  gfc_free(message);
 
-  tmp = build_call_expr (gfor_fndecl_runtime_error, 1, arg);
+  tmp = build_call_expr (gfor_fndecl_runtime_error_at, 2, arg, arg2);
   gfc_add_expr_to_block (&block, tmp);
 
   body = gfc_finish_block (&block);
