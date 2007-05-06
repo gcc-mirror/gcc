@@ -1,3 +1,26 @@
+2007-05-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31201
+	* gfortran.h: Add runtime error codes from libgfortran.h. Define
+	MAX_UNIT_NUMBER.
+	* trans.c (gfc_trans_runtime_check): Update the format of runtime error
+	messages to match library runtime errors.  Use call to new library
+	function runtime_error_at().
+	* trans.h: Add prototype for new function gfc_trans_io_runtime_check.
+	Add declaration for library functions runtime_error_at and
+	generate_error.
+	* trans_io.c (gfc_trans_io_runtime_check): New function.
+	(set_parameter_value): Add error checking for UNIT numbers.
+	(set_parameter_ref): Initialize the users variable to zero. 
+	(gfc_trans_open): Move setting of unit number to after setting of common
+	flags so that runtime error trapping can be detected.
+	(gfc_trans_close): Likewise. (build_filepos): Likewise.
+	(gfc_trans_inquire): Likewise. (build_dt): Likewise.
+	* trans-decl.c: Add declarations for runtime_error_at and
+	generate_error. (gfc_build_builtin_function_decls): Build function
+	declarations for runtime_error_at and generate_error.
+
 2007-05-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31540
