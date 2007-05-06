@@ -1,3 +1,8 @@
+2007-05-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31764
+	* gfortran.dg/new_line.f90: Add new checks.
+
 2007-05-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/31201
