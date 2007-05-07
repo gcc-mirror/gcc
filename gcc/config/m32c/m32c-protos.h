@@ -112,6 +112,7 @@ void m32c_function_arg_advance (CUMULATIVE_ARGS *, MM, tree, int);
 tree m32c_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 void m32c_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 bool m32c_promote_function_return (tree);
+int  m32c_special_page_vector_p (tree);
 
 #endif
 
