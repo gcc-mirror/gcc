@@ -793,8 +793,6 @@ CXXABI_1.3 {
     _ZTIN10__cxxabiv119__pointer_type_infoE;
     _ZTIN10__cxxabiv120__si_class_type_infoE;
     _ZTIN10__cxxabiv121__vmi_class_type_infoE;
-    _ZTIN10__cxxabiv115__forced_unwindE;
-    _ZTIN10__cxxabiv119__foreign_exceptionE;
 
     # typeinfo name
     _ZTS[a-fh-z];
@@ -823,3 +821,11 @@ CXXABI_1.3.1 {
     __cxa_get_exception_ptr;
 
 } CXXABI_1.3;
+
+CXXABI_1.3.2 {
+
+    # typeinfo structures
+    _ZTIN10__cxxabiv115__forced_unwindE;
+    _ZTIN10__cxxabiv119__foreign_exceptionE;
+
+} CXXABI_1.3.1;
