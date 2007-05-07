@@ -1,3 +1,9 @@
+2007-05-07  Danny Smith  <dannysmith@users.sourceforge.net>
+	    Nathan Froyd  <froydnj@codesourcery.com
+
+	PR 22133
+	* c-incpath.c (add_path): Strip trailing path separators.
+
 2007-05-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Reset cfg_altered.
