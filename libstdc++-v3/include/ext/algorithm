@@ -1,6 +1,7 @@
 // Algorithm extensions -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -161,7 +162,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   {
     const ptrdiff_t __len1 = __last1 - __first1;
     const ptrdiff_t __len2 = __last2 - __first2;
-    const int __result = std::memcmp(__first1, __first2, min(__len1, __len2));
+    const int __result = __builtin_memcmp(__first1, __first2,
+					  min(__len1, __len2));
     return __result != 0 ? __result
 			 : (__len1 == __len2 ? 0 : (__len1 < __len2 ? -1 : 1));
   }
