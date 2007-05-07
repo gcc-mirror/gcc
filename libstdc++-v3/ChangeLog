@@ -1,3 +1,25 @@
+2007-05-07  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h: Do not include <cstring>.
+	(copy(const _Tp*, const _Tp*, _Tp*), __copy_b(const _Tp*, const _Tp*,
+	_Tp*)): Use __builtin_memmove.
+	(__fill_aux): Use __builtin_memset.
+	(equal(const _Tp*, const _Tp*, const _Tp*),
+	lexicographical_compare(const unsigned char*, const unsigned char*,
+	const unsigned char*, const unsigned char*)): Use __builtin_memcmp.
+	*  include/bits/valarray_array.h: Do not include <cstring>.
+	(_Array_default_ctor<, true>::_S_do_it): Use __builtin_memset.
+	(_Array_copy_ctor<, true>::_S_do_it, _Array_copier<, true>::_S_do_it):
+	Use __builtin_memcpy.
+	* include/ext/algorithm
+	(__lexicographical_compare_3way(const unsigned char*,
+	const unsigned char*, const unsigned char*, const unsigned char*)):
+	Use __builtin_memcmp.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2007-05-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/22_locale/num_put/put/char/14220.cc: XFAIL on Solaris
