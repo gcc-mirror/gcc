@@ -1,7 +1,8 @@
 // The template and inlines for the -*- C++ -*- internal _Array helper class.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2003, 2004, 2005, 2006, 2007
-//  Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+// 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,7 +44,6 @@
 #include <bits/c++config.h>
 #include <bits/cpp_type_traits.h>
 #include <cstdlib>
-#include <cstring>
 #include <new>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
@@ -91,7 +91,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // For fundamental types, it suffices to say 'memset()'
       inline static void
       _S_do_it(_Tp* __restrict__ __b, _Tp* __restrict__ __e)
-      { std::memset(__b, 0, (__e - __b) * sizeof(_Tp)); }
+      { __builtin_memset(__b, 0, (__e - __b) * sizeof(_Tp)); }
     };
 
   template<typename _Tp>
@@ -160,7 +160,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       inline static void
       _S_do_it(const _Tp* __restrict__ __b, const _Tp* __restrict__ __e,
 	       _Tp* __restrict__ __o)
-      { std::memcpy(__o, __b, (__e - __b)*sizeof(_Tp)); }
+      { __builtin_memcpy(__o, __b, (__e - __b) * sizeof(_Tp)); }
     };
 
   template<typename _Tp>
@@ -267,7 +267,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       inline static void
       _S_do_it(const _Tp* __restrict__ __a, size_t __n, _Tp* __restrict__ __b)
-      { std::memcpy (__b, __a, __n * sizeof (_Tp)); }
+      { __builtin_memcpy(__b, __a, __n * sizeof (_Tp)); }
     };
 
   // Copy a plain array __a[<__n>] into a play array __b[<>]
