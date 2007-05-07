@@ -30,8 +30,8 @@ namespace gnu
   using std::has_nothrow_copy;
 }
 
-// { dg-error "has not been declared" "" { target *-*-* } 27 } 
-// { dg-error "has not been declared" "" { target *-*-* } 28 } 
-// { dg-error "has not been declared" "" { target *-*-* } 29 } 
-// { dg-error "has not been declared" "" { target *-*-* } 30 } 
+// { dg-error "has not been declared" "" { xfail *-*-* } 27 } 
+// { dg-error "has not been declared" "" { xfail *-*-* } 28 } 
+// { dg-error "has not been declared" "" { xfail *-*-* } 29 } 
+// { dg-error "has not been declared" "" { xfail *-*-* } 30 } 
 

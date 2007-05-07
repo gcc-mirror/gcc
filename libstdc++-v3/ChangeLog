@@ -1,3 +1,20 @@
+2007-05-07  Benjamin Kosnik  <bkoz@redhat.com>
+            Howard Hinnant  <hhinnant@apple.com>
+
+	* include/std/type_traits: (make_signed, make_unsigned): Adjust
+	for enum sizes.	
+	* testsuite/20_util/make_unsigned/requirements/typedefs.cc: Move to...
+	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc: ...here.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc: Add,
+	compile with -funsigned-char -fshort-enums.
+	* testsuite/20_util/make_signed/requirements/typedefs.cc: Move to...
+	* testsuite/20_util/make_signed/requirements/typedefs-1.cc: ...here.
+	* testsuite/20_util/make_signed/requirements/typedefs-2.cc: Add,
+	compile with -funsigned-char -fshort-enums.
+
+	* testsuite/20_util/headers/type_traits/types_std_c++0x_neg.cc:
+	Add a temporary xfail to this test for all platforms.
+	
 2007-05-06  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/complex: Add missing extern template declarations.

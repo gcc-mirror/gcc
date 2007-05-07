@@ -204,15 +204,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     struct __make_unsigned_selector<_Tp, false, false, true>
     {
     private:
-      // GNU enums start with sizeof int.
-      static const bool __b1 = sizeof(_Tp) <= sizeof(unsigned int);
-      static const bool __b2 = sizeof(_Tp) <= sizeof(unsigned long);
-      typedef conditional<__b2, unsigned long, unsigned long long> __cond;
+      // GNU enums start with sizeof short.
+      typedef unsigned short __smallest;
+      static const bool __b1 = sizeof(_Tp) <= sizeof(__smallest);
+      static const bool __b2 = sizeof(_Tp) <= sizeof(unsigned int);
+      typedef conditional<__b2, unsigned int, unsigned long> __cond;
       typedef typename __cond::type __cond_type;
-      typedef unsigned int __ui_type;
 
     public:
-      typedef typename conditional<__b1, __ui_type, __cond_type>::type __type;
+      typedef typename conditional<__b1, __smallest, __cond_type>::type __type;
     };
 
   // Primary class template.
@@ -301,15 +301,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     struct __make_signed_selector<_Tp, false, false, true>
     {
     private:
-      // GNU enums start with sizeof int.
-      static const bool __b1 = sizeof(_Tp) <= sizeof(signed int);
-      static const bool __b2 = sizeof(_Tp) <= sizeof(signed long);
-      typedef conditional<__b2, signed long, signed long long> __cond;
+      // GNU enums start with sizeof short.
+      typedef signed short __smallest;
+      static const bool __b1 = sizeof(_Tp) <= sizeof(__smallest);
+      static const bool __b2 = sizeof(_Tp) <= sizeof(signed int);
+      typedef conditional<__b2, signed int, signed long> __cond;
       typedef typename __cond::type __cond_type;
-      typedef int __i_type;
 
     public:
-      typedef typename conditional<__b1, __i_type, __cond_type>::type __type;
+      typedef typename conditional<__b1, __smallest, __cond_type>::type __type;
     };
 
   // Primary class template.
