@@ -45,7 +45,7 @@
 #endif
 
 // Don't let win32api windef.h define min and max as macros
-// if included after stl_algobase.h. 
+// if included after c++config.h.
 #undef NOMINMAX
 #define NOMINMAX 1
 
