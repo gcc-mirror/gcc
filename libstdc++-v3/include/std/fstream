@@ -275,7 +275,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  If any operations fail, this function also fails.
       */
       __filebuf_type*
-      close() throw();
+      close();
 
     protected:
       void

@@ -43,6 +43,8 @@
 
 #pragma GCC system_header
 
+#include <cxxabi-internal.h>
+
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _CharT, typename _Traits>
@@ -97,6 +99,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      {
 		const __num_get_type& __ng = __check_facet(this->_M_num_get);
 		__ng.get(*this, 0, *this, __err, __v);
+	      }
+	    catch(__cxxabiv1::__forced_unwind&)
+	      {
+		this->_M_setstate(ios_base::badbit);		
+		__throw_exception_again;
 	      }
 	    catch(...)
 	      { this->_M_setstate(ios_base::badbit); }
@@ -163,6 +170,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      if (__ineof)
 		__err |= ios_base::eofbit;
 	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::failbit);
+	      __throw_exception_again;
+	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::failbit); }
 	}
@@ -193,6 +205,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		_M_gcount = 1;
 	      else
 		__err |= ios_base::eofbit;
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
@@ -225,6 +242,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		}
 	      else
 		__err |= ios_base::eofbit;
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
@@ -263,6 +285,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		}
 	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
@@ -306,6 +333,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		}
 	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
@@ -355,6 +387,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
                     __err |= ios_base::failbit;
                 }
             }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
           catch(...)
             { this->_M_setstate(ios_base::badbit); }
         }
@@ -391,6 +428,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		__err |= ios_base::eofbit;
 	      else
 		_M_gcount = 1;
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
@@ -449,6 +491,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      if (traits_type::eq_int_type(__c, __eof))
                 __err |= ios_base::eofbit;
             }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
           catch(...)
             { this->_M_setstate(ios_base::badbit); }
           if (__err)
@@ -509,6 +556,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		  __sb->sbumpc();
 		}
             }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
           catch(...)
             { this->_M_setstate(ios_base::badbit); }
           if (__err)
@@ -534,6 +586,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      if (traits_type::eq_int_type(__c, traits_type::eof()))
 		__err |= ios_base::eofbit;
 	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
 	  if (__err)
@@ -557,6 +614,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      _M_gcount = this->rdbuf()->sgetn(__s, __n);
 	      if (_M_gcount != __n)
 		__err |= (ios_base::eofbit | ios_base::failbit);
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
@@ -584,6 +646,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		_M_gcount = this->rdbuf()->sgetn(__s, std::min(__num, __n));
 	      else if (__num == -1)
 		__err |= ios_base::eofbit;
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
@@ -613,6 +680,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		  || traits_type::eq_int_type(__sb->sputbackc(__c), __eof))
 		__err |= ios_base::badbit;
 	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
 	  if (__err)
@@ -640,6 +712,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      if (!__sb
 		  || traits_type::eq_int_type(__sb->sungetc(), __eof))
 		__err |= ios_base::badbit;
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
@@ -672,6 +749,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		    __ret = 0;
 		}
 	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
 	  if (__err)
@@ -693,6 +775,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  if (!this->fail())
 	    __ret = this->rdbuf()->pubseekoff(0, ios_base::cur,
 					      ios_base::in);
+	}
+      catch(__cxxabiv1::__forced_unwind&)
+	{
+	  this->_M_setstate(ios_base::badbit);
+	  __throw_exception_again;
 	}
       catch(...)
 	{ this->_M_setstate(ios_base::badbit); }
@@ -719,6 +806,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      if (__p == pos_type(off_type(-1)))
 		__err |= ios_base::failbit;
 	    }
+	}
+      catch(__cxxabiv1::__forced_unwind&)
+	{
+	  this->_M_setstate(ios_base::badbit);
+	  __throw_exception_again;
 	}
       catch(...)
 	{ this->_M_setstate(ios_base::badbit); }
@@ -748,6 +840,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		__err |= ios_base::failbit;
 	    }
 	}
+      catch(__cxxabiv1::__forced_unwind&)
+	{
+	  this->_M_setstate(ios_base::badbit);
+	  __throw_exception_again;
+	}
       catch(...)
 	{ this->_M_setstate(ios_base::badbit); }
       if (__err)
@@ -774,6 +871,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		__c = _Traits::to_char_type(__cb);
 	      else
 		__err |= (ios_base::eofbit | ios_base::failbit);
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      __in._M_setstate(ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    { __in._M_setstate(ios_base::badbit); }
@@ -827,6 +929,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      // 68.  Extractors for char* should store null at end
 	      *__s = char_type();
 	      __in.width(0);
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      __in._M_setstate(ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    { __in._M_setstate(ios_base::badbit); }

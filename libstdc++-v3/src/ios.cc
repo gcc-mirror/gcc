@@ -127,7 +127,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    __newsize = __ix + 1;
 	    try
 	      { __words = new _Words[__newsize]; }
-	    catch (...)
+	    catch(...)
 	      {
 		_M_streambuf_state |= badbit;
 		if (_M_streambuf_state & _M_exception)
@@ -172,7 +172,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       {
 	try 
 	  { (*__p->_M_fn) (__e, *this, __p->_M_index); } 
-	catch (...) 
+	catch(...) 
 	  { }
 	__p = __p->_M_next;
       }

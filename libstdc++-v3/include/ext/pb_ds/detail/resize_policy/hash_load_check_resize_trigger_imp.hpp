@@ -265,7 +265,7 @@ set_loads(std::pair<float, float> load_pair)
       m_load_max = load_pair.second;
       do_resize(static_cast<size_type>(size_base::get_size() / ((m_load_min + m_load_max) / 2)));
     }
-  catch (...)
+  catch(...)
     {
       m_load_min = old_load_min;
       m_load_max = old_load_max;

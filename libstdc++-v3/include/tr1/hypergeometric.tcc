@@ -613,7 +613,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
               __sgn_g1cb = __log_gamma_sign(__c - __b);
               __ln_g1cb = __log_gamma(__c - __b);
             }
-          catch (...)
+          catch(...)
             {
               __ok1 = false;
             }
@@ -628,7 +628,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
               __sgn_g2b = __log_gamma_sign(__b);
               __ln_g2b = __log_gamma(__b);
             }
-          catch (...)
+          catch(...)
             {
               __ok2 = false;
             }

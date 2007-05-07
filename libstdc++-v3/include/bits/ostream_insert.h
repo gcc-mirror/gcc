@@ -38,6 +38,7 @@
 #pragma GCC system_header
 
 #include <iosfwd>
+#include <cxxabi-internal.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -102,6 +103,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      else
 		__ostream_write(__out, __s, __n);
 	      __out.width(0);
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      __out._M_setstate(__ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    { __out._M_setstate(__ios_base::badbit); }

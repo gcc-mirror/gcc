@@ -38,6 +38,8 @@
 
 #pragma GCC system_header
 
+#include <cxxabi-internal.h>
+
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   template<typename _CharT, typename _Traits, typename _Alloc,
@@ -598,6 +600,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		__err |= __ios_base::eofbit;
 	      __in.width(0);
 	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      __in._M_setstate(__ios_base::badbit);
+	      __throw_exception_again;
+	    }
 	  catch(...)
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -668,6 +675,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		}
 	      else
 		__err |= __ios_base::failbit;
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      __in._M_setstate(__ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    {

@@ -114,6 +114,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
 	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
 	  if (__err)
@@ -179,6 +184,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
