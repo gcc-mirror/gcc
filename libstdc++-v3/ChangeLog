@@ -1,3 +1,8 @@
+2007-05-07  Jason Merrill  <jason@redhat.com>
+
+	* config/abi/pre/gnu.ver: Fix symbol versions.
+	* config/abi/pre/gnu-versioned-namespace.ver: Likewise.
+
 2007-05-07  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/os/mingw32/os_defines.h (NOMINMAX): Update comment.
