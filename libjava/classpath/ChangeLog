@@ -1,3 +1,21 @@
+2007-05-07 Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/Jdwp.java (notify): Rewrite to call
+	new array-based method.
+	(notify): New function.
+	(sendEvent): Rewrite to use sendEvents.
+	(sendEvents): New method.
+	* gnu/classpath/jdwp/event/Event.java (toPacket): Make static.
+	Change parameters to use arrays for events and requests.
+	Add suspendPolicy parameter.
+	Move per-event data transformation to...
+	(_toData): ... here.
+	* gnu/classpath/jdwp/transport/JdwpConnection.java
+	(sendEvent): Renamed to ...
+	(sendEvents): ... this.
+	Change parameters to use arrays for events and requests.
+	Add suspendPolicy parameter.
+
 2007-05-03  Andrew Haley  <aph@redhat.com>
 
 	* gnu/javax/management/Server.java (Server): Record the delegate.

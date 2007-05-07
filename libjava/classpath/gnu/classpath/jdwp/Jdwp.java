@@ -51,6 +51,7 @@ import gnu.classpath.jdwp.transport.TransportFactory;
 
 import java.io.IOException;
 import java.security.AccessController;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -207,7 +208,6 @@ public class Jdwp
    * The event is filtered through the event manager before being
    * sent.
    *
-   * FIXME: Probably need logic to send multiple (different) events
    * @param event the event to report
    */
   public static void notify(Event event)
@@ -235,6 +235,62 @@ public class Jdwp
   }
   
   /**
+   * Notify the debugger of "co-located" events. This method should
+   * not be called if debugging is not active (but it would not
+   * cause any harm). Places where event notifications occur
+   * should check isDebugging before doing anything.
+   *
+   * The events are filtered through the event manager before being
+   * sent.
+   *
+   * @param events the events to report
+   */
+  public static void notify(Event[] events)
+  {
+    Jdwp jdwp = getDefault();
+    
+    if (jdwp != null)
+      {
+	byte suspendPolicy = JdwpConstants.SuspendPolicy.NONE;
+	EventManager em = EventManager.getDefault();
+	ArrayList allEvents = new ArrayList ();
+	ArrayList allRequests = new ArrayList ();
+	for (int i = 0; i < events.length; ++i)
+	  {
+	    EventRequest[] r = em.getEventRequests(events[i]);
+	    for (int j = 0; j < r.length; ++j)
+	      {
+		/* This is hacky, but it's not clear whether this
+		   can really happen, and if it does, what should
+		   occur. */
+		allEvents.add (events[i]);
+		allRequests.add (r[j]);
+
+		// Perhaps this is overkill?
+		if (r[j].getSuspendPolicy() > suspendPolicy)
+		  suspendPolicy = r[j].getSuspendPolicy();
+	      }
+	  }
+
+	try
+	  {
+	    Event[] e = new Event[allEvents.size()];
+	    allEvents.toArray(e);
+	    EventRequest[] r = new EventRequest[allRequests.size()];
+	    allRequests.toArray(r);
+	    sendEvents(r, e, suspendPolicy);
+	    jdwp._enforceSuspendPolicy(suspendPolicy);
+	  }
+	catch (Exception e)
+	  {
+	    /* Really not much we can do. For now, just print out
+	       a warning to the user. */
+	    System.out.println ("Jdwp.notify: caught exception: " + e);
+	  }
+      }
+  }
+
+  /**
    * Sends the event to the debugger.
    *
    * This method bypasses the event manager's filtering.
@@ -246,13 +302,30 @@ public class Jdwp
   public static void sendEvent (EventRequest request, Event event)
       throws IOException
   {
-    Jdwp jdwp = getDefault ();
+    sendEvents (new EventRequest[] { request }, new Event[] { event },
+		request.getSuspendPolicy());
+  }
+
+  /**
+   * Sends the events to the debugger.
+   *
+   * This method bypasses the event manager's filtering.
+   *
+   * @param  requests  list of debugger requests for the events
+   * @param  events    the events to send
+   * @param  suspendPolicy the suspendPolicy enforced by the VM
+   * @throws IOException if a communications failure occurs
+   */
+  public static void sendEvents (EventRequest[] requests, Event[] events,
+				 byte suspendPolicy)
+    throws IOException
+  {
+    Jdwp jdwp = getDefault();
     if (jdwp != null)
       {
-	// !! May need to implement send queue?
 	synchronized (jdwp._connection)
 	  {
-	    jdwp._connection.sendEvent (request, event);
+	    jdwp._connection.sendEvents (requests, events, suspendPolicy);
 	  }
       }
   }
