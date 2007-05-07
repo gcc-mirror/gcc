@@ -49,6 +49,9 @@ system_sub (const char *fcmd, GFC_INTEGER_4 *status, gfc_charlen_type cmd_len)
   char cmd[cmd_len + 1];
   int stat;
 
+  /* Flush all I/O units before executing the command.  */
+  flush_all_units();
+
   memcpy (cmd, fcmd, cmd_len);
   cmd[cmd_len] = '\0';
 

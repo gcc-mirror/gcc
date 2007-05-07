@@ -666,6 +666,11 @@ internal_proto(fstrcpy);
 extern void cf_strcpy (char *, int, const char *);
 internal_proto(cf_strcpy);
 
+/* io/intrinsics.c */
+
+extern void flush_all_units (void);
+internal_proto(flush_all_units);
+
 /* io.c */
 
 extern void init_units (void);
