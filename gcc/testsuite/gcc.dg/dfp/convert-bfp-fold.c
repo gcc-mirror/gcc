@@ -62,43 +62,42 @@ main ()
 
   /* Conversions from binary float to decimal float. */
   sf = 30.0f;
-  d32 = sf;
-  if (d32 != 30.0df)
+  d128 = sf;
+  if (d128 != 30.0dl)
     link_error ();
 
   d64 = sf;
   if (d64 != 30.0dd)
     link_error ();
 
+  d32 = sf;
+  if (d32 != 30.0df)
+    link_error ();
+
   df = -2.0;
-  d32 = df;
-  if (d32 != -2.0df)
+  d128 = df;
+  if (d128 != -2.0dl)
     link_error ();
 
   d64 = df;
   if (d64 != -2.0dd)
     link_error ();
 
-  d128 = df;
-  if (d128 != -2.0dl)
-    link_error ();
-  
-  sf = 30.0f;
-  d128 = sf;
-  if (d128 != 30.0dl)
-    link_error ();
+  d32 = df;
+  if (d32 != -2.0df)
+    link_error ();  
 
   tf = -22.0l;
-  d32 = tf;
-  if (d32 != -22.0df)
+  d128 = tf;
+  if (d128 != -22.0dl)
     link_error ();
 
   d64 = tf;
   if (d64 != -22.0dd)
     link_error ();
 
-  d128 = tf;
-  if (d128 != -22.0dl)
+  d32 = tf;
+  if (d32 != -22.0df)
     link_error ();
 
   /* 2**(-11) = 0.00048828125. */
