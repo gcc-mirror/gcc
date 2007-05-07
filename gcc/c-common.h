@@ -254,6 +254,8 @@ extern c_language_kind c_language;
 #define c_dialect_cxx()		(c_language & clk_cxx)
 #define c_dialect_objc()	(c_language & clk_objc)
 
+extern bool lang_fortran;
+
 /* Information about a statement tree.  */
 
 struct stmt_tree_s GTY(()) {
