@@ -1,7 +1,7 @@
 2007-05-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Reset cfg_altered.
-	Free dominance info before purging EH edges as well as after.
+	Free dominance info before purging EH edges.
 	(eliminate_degenerate_phis): Likewise.
 	(propagate_rhs_into_lhs): Set cfg_altered to true instead of 1.
 

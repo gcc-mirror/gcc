@@ -328,8 +328,7 @@ tree_ssa_dominator_optimize (void)
      such edges from the CFG as needed.  */
   if (!bitmap_empty_p (need_eh_cleanup))
     {
-      if (tree_purge_all_dead_eh_edges (need_eh_cleanup))
-	free_dominance_info (CDI_DOMINATORS);
+      tree_purge_all_dead_eh_edges (need_eh_cleanup);
       bitmap_zero (need_eh_cleanup);
     }
 
@@ -2533,8 +2532,7 @@ eliminate_degenerate_phis (void)
      such edges from the CFG as needed.  */
   if (!bitmap_empty_p (need_eh_cleanup))
     {
-      if (tree_purge_all_dead_eh_edges (need_eh_cleanup))
-	free_dominance_info (CDI_DOMINATORS);
+      tree_purge_all_dead_eh_edges (need_eh_cleanup);
       BITMAP_FREE (need_eh_cleanup);
     }
 
