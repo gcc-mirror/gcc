@@ -569,6 +569,9 @@ c_cpp_builtins (cpp_reader *pfile)
   if (flag_openmp)
     cpp_define (pfile, "_OPENMP=200505");
 
+  if (lang_fortran)
+    cpp_define (pfile, "__GFORTRAN__=1");
+
   builtin_define_type_sizeof ("__SIZEOF_INT__", integer_type_node);
   builtin_define_type_sizeof ("__SIZEOF_LONG__", long_integer_type_node);
   builtin_define_type_sizeof ("__SIZEOF_LONG_LONG__",

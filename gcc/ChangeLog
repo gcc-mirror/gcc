@@ -1,3 +1,11 @@
+2007-05-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR driver/31694
+	* c-opts.c (lang_fortran): Make it non static.
+	* c-common.h (lang_fortran): New prototype.
+	* c-cppbuiltin.c (c_cpp_builtins): Create a __GFORTRAN__ if the
+	-lang-fortran option was passed by the driver.
+
 2007-05-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* timevar.c (timevar_print): Test ENABLE_ASSERT_CHECKING instead
