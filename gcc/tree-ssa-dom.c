@@ -275,6 +275,7 @@ tree_ssa_dominator_optimize (void)
   init_walk_dominator_tree (&walk_data);
 
   calculate_dominance_info (CDI_DOMINATORS);
+  cfg_altered = false;
 
   /* We need to know which edges exit loops so that we can
      aggressively thread through loop headers to an exit
@@ -320,16 +321,17 @@ tree_ssa_dominator_optimize (void)
   /* Thread jumps, creating duplicate blocks as needed.  */
   cfg_altered |= thread_through_all_blocks ();
 
+  if (cfg_altered)
+    free_dominance_info (CDI_DOMINATORS);
+
   /* Removal of statements may make some EH edges dead.  Purge
      such edges from the CFG as needed.  */
   if (!bitmap_empty_p (need_eh_cleanup))
     {
-      cfg_altered |= tree_purge_all_dead_eh_edges (need_eh_cleanup);
+      if (tree_purge_all_dead_eh_edges (need_eh_cleanup))
+	free_dominance_info (CDI_DOMINATORS);
       bitmap_zero (need_eh_cleanup);
     }
-
-  if (cfg_altered)
-    free_dominance_info (CDI_DOMINATORS);
 
   /* Finally, remove everything except invariants in SSA_NAME_VALUE.
 
@@ -2336,7 +2338,7 @@ propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
 
 			  te->count += e->count;
 			  remove_edge (e);
-			  cfg_altered = 1;
+			  cfg_altered = true;
 			}
 		      else
 			ei_next (&ei);
@@ -2485,6 +2487,9 @@ eliminate_degenerate_phis (void)
   interesting_names = BITMAP_ALLOC (NULL);
   interesting_names1 = BITMAP_ALLOC (NULL);
 
+  calculate_dominance_info (CDI_DOMINATORS);
+  cfg_altered = false;
+
   /* First phase.  Eliminate degenerate PHIs via a dominator
      walk of the CFG.
 
@@ -2493,7 +2498,6 @@ eliminate_degenerate_phis (void)
      phase in dominator order.  Presumably this is because walking
      in dominator order leaves fewer PHIs for later examination
      by the worklist phase.  */
-  calculate_dominance_info (CDI_DOMINATORS);
   eliminate_degenerate_phis_1 (ENTRY_BLOCK_PTR, interesting_names);
 
   /* Second phase.  Eliminate second order degenerate PHIs as well
@@ -2522,18 +2526,20 @@ eliminate_degenerate_phis (void)
 	}
     }
 
+  if (cfg_altered)
+    free_dominance_info (CDI_DOMINATORS);
+
   /* Propagation of const and copies may make some EH edges dead.  Purge
      such edges from the CFG as needed.  */
   if (!bitmap_empty_p (need_eh_cleanup))
     {
-      cfg_altered |= tree_purge_all_dead_eh_edges (need_eh_cleanup);
+      if (tree_purge_all_dead_eh_edges (need_eh_cleanup))
+	free_dominance_info (CDI_DOMINATORS);
       BITMAP_FREE (need_eh_cleanup);
     }
 
   BITMAP_FREE (interesting_names);
   BITMAP_FREE (interesting_names1);
-  if (cfg_altered)
-    free_dominance_info (CDI_DOMINATORS);
   return 0;
 }
 
