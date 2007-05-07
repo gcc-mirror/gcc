@@ -31,11 +31,15 @@
 
 #include "typeinfo"
 #include "exception"
-#include "unwind-cxx.h"
+#include <cxxabi.h>
 
 std::exception::~exception() throw() { }
 
 std::bad_exception::~bad_exception() throw() { }
+
+abi::__forced_unwind::~__forced_unwind() throw() { }
+
+abi::__foreign_exception::~__foreign_exception() throw() { }
 
 const char* 
 std::exception::what() const throw()

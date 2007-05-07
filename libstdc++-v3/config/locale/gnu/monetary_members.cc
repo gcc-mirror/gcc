@@ -448,7 +448,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		_M_data->_M_curr_symbol = L"";
 	      _M_data->_M_curr_symbol_size = wcslen(_M_data->_M_curr_symbol);
 	    }
-	  catch (...)
+	  catch(...)
 	    {
 	      delete _M_data;
 	      _M_data = 0;
@@ -591,7 +591,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		_M_data->_M_curr_symbol = L"";
               _M_data->_M_curr_symbol_size = wcslen(_M_data->_M_curr_symbol);
 	    }
-          catch (...)
+          catch(...)
 	    {
 	      delete _M_data;
               _M_data = 0;

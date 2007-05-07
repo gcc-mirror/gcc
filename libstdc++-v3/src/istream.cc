@@ -91,6 +91,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      else
 		__err |= ios_base::failbit;
 	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
 	}
@@ -177,6 +182,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		  __sb->sbumpc();
 		}
 	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
 	  if (__err)
@@ -251,6 +261,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      *__s = __char_type();
 	      __in.width(0);
 	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      __in._M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
 	  catch(...)
 	    { __in._M_setstate(ios_base::badbit); }
 	}
@@ -320,6 +335,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      if (__traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
 	      __in.width(0);
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      __in._M_setstate(ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    {
@@ -401,6 +421,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      else
 		__err |= ios_base::failbit;
 	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      __in._M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
 	  catch(...)
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -472,6 +497,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		}
 	      else
 		__err |= ios_base::failbit;
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
@@ -559,6 +589,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		  __sb->sbumpc();
 		}
 	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
 	  if (__err)
@@ -631,6 +666,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		}
 	      else
 		__err |= ios_base::failbit;
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      __in._M_setstate(ios_base::badbit);
+	      __throw_exception_again;
 	    }
 	  catch(...)
 	    {

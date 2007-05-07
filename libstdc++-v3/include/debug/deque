@@ -313,7 +313,7 @@ namespace __debug
 		return iterator(_Base::erase(__first.base(), __last.base()),
 				this);
 	      }
-	    catch (...)
+	    catch(...)
 	      {
 		this->_M_revalidate_singular();
 		__throw_exception_again;

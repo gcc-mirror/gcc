@@ -142,7 +142,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    wclog.flush();    
 #endif
 	  }
-	catch (...)
+	catch(...)
 	  { }
       }
   } 

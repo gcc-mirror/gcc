@@ -409,7 +409,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{
 	  try
 	    { delete this; }
-	  catch (...)
+	  catch(...)
 	    { }
 	}
     }

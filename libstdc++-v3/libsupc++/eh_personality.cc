@@ -30,6 +30,7 @@
 #include <bits/c++config.h>
 #include <cstdlib>
 #include <exception_defines.h>
+#include <cxxabi.h>
 #include "unwind-cxx.h"
 
 using namespace __cxxabiv1;
@@ -541,13 +542,19 @@ PERSONALITY_FUNCTION (int version,
       bool saw_cleanup = false;
       bool saw_handler = false;
 
-      // During forced unwinding, we only run cleanups.  With a foreign
-      // exception class, there's no exception type.
-      // ??? What to do about GNU Java and GNU Ada exceptions.
-
-      if ((actions & _UA_FORCE_UNWIND)
-	  || foreign_exception)
-	throw_type = 0;
+      // During forced unwinding, match a magic exception type.
+      if (actions & _UA_FORCE_UNWIND)
+	{
+	  throw_type = &typeid(abi::__forced_unwind);
+	  thrown_ptr = 0;
+	}
+      // With a foreign exception class, there's no exception type.
+      // ??? What to do about GNU Java and GNU Ada exceptions?
+      else if (foreign_exception)
+	{
+	  throw_type = &typeid(abi::__foreign_exception);
+	  thrown_ptr = 0;
+	}
       else
 #ifdef __ARM_EABI_UNWINDER__
 	throw_type = ue_header;
@@ -590,7 +597,9 @@ PERSONALITY_FUNCTION (int version,
 	      // object to stuff bits in for __cxa_call_unexpected to use.
 	      // Allow them iff the exception spec is non-empty.  I.e.
 	      // a throw() specification results in __unexpected.
-	      if (throw_type
+	      if ((throw_type
+		   && !(actions & _UA_FORCE_UNWIND)
+		   && !foreign_exception)
 		  ? ! check_exception_spec (&info, throw_type, thrown_ptr,
 					    ar_filter)
 		  : empty_exception_spec (&info, ar_filter))

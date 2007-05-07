@@ -1,3 +1,28 @@
+2007-05-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/28145
+	* libsupc++/cxxabi.h (__forced_unwind, __foreign_exception):
+	New classes.
+	* libsupc++/eh_exception.cc: Define their destructors.
+	* config/abi/pre/gnu.ver: Export their type_infos.
+	* config/abi/pre/gnu-versioned-namespace.ver: Likewise.
+	* libsupc++/eh_personality.cc: A handler for abi::__forced_unwind
+	matches a forced unwind, and a handler for abi::__foreign_exception
+	matches a foreign exception.
+	
+	* include/bits/istream.tcc: Rethrow forced unwind.
+	* include/bits/ostream.tcc: Likewise.
+	* include/bits/ostream_insert.h: Likewise.
+	* include/bits/basic_string.tcc (operator>>, getline): Likewise.
+	* include/bits/fstream.tcc (basic_filebuf::close): Likewise.
+	* include/ext/vstring.cc (operator>>, getline): Likewise.
+	* src/istream.cc: Likewise.
+	* src/compatibility.cc (basic_istream::ignore): Likewise.
+	* include/std/bitset (operator>>): Likewise.
+	* include/std/fstream (basic_filebuf::close): Remove throw() spec.
+	* libsupc++/cxxabi-internal.h: Split out from...
+	* libsupc++/cxxabi.h: ...here.
+
 2007-05-07  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algobase.h: Do not include <cstring>.
