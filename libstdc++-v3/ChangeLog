@@ -1,5 +1,9 @@
 2007-05-07  Mark Mitchell  <mark@codesourcery.com>
 
+	* testsuite/22_locale/num_put/put/char/14220.cc: XFAIL on Solaris
+	2.10.
+	* testsuite/22_locale/num_put/put/wchar_t/14220.cc: Likewise.
+
 	* testsuite/lib/libstdc++.exp (v3_target_compile_as_c): In
 	installed-tree testing, use "remote_exec host", not "remote_exec
 	exec".  Trip trailing newlines from output of -dumpversion and

@@ -24,6 +24,12 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 
+// On Solaris 10 x86, this test crashes in libc.  Inside libstdc++, 
+// we call sprintf like so:
+//   sprintf (buffer, "%.*f", 1000, 1.0)
+// which crashes.
+// { dg-do run { xfail { i?86*-*-solaris2.10 } } } 
+
 // libstdc++/14220
 void test01()
 {
