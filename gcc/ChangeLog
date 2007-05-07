@@ -1,3 +1,18 @@
+2007-05-07  Jayant Sonar  <jayants@kpitcummins.com>
+
+	* config/m32c/m32c.c (SYMBOL_FLAG_FUNCVEC_FUNCTION): Define.
+	(TARGET_ENCODE_SECTION_INFO): Re-define.
+	(m32c_encode_section_info): New
+	(function_vector_handler): New
+	(current_function_special_page_vector): New
+	(m32c_special_page_vector_p): New.
+	* config/m32c/m32c-protos.h (m32c_special_page_vector_p): 
+	Prototype.
+	* config/m32c/jump.md: Added instruction JSRS for functions 
+	with attribute "function_vector".
+	* doc/extend.texi (function_vector): Added description 
+	for M16C, M32C targets.
+
 2007-05-07  DJ Delorie  <dj@redhat.com>
 
 	PR 31794

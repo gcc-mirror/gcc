@@ -61,6 +61,7 @@ typedef enum
 } Push_Pop_Type;
 
 static tree interrupt_handler (tree *, tree, tree, int, bool *);
+static tree function_vector_handler (tree *, tree, tree, int, bool *);
 static int interrupt_p (tree node);
 static bool m32c_asm_integer (rtx, unsigned int, int);
 static int m32c_comp_type_attributes (tree, tree);
@@ -75,6 +76,9 @@ static bool m32c_strict_argument_naming (CUMULATIVE_ARGS *);
 static rtx m32c_struct_value_rtx (tree, int);
 static rtx m32c_subreg (enum machine_mode, rtx, enum machine_mode, int);
 static int need_to_save (int);
+int current_function_special_page_vector (rtx);
+
+#define SYMBOL_FLAG_FUNCVEC_FUNCTION    (SYMBOL_FLAG_MACH_DEP << 0)
 
 #define streq(a,b) (strcmp ((a), (b)) == 0)
 
@@ -2721,10 +2725,104 @@ interrupt_handler (tree * node ATTRIBUTE_UNUSED,
   return NULL_TREE;
 }
 
+/* Returns TRUE if given tree has the "function_vector" attribute. */
+int
+m32c_special_page_vector_p (tree func)
+{
+  if (TREE_CODE (func) != FUNCTION_DECL)
+    return 0;
+
+  tree list = M32C_ATTRIBUTES (func);
+  while (list)
+    {
+      if (is_attribute_p ("function_vector", TREE_PURPOSE (list)))
+        return 1;
+      list = TREE_CHAIN (list);
+    }
+  return 0;
+}
+
+static tree
+function_vector_handler (tree * node ATTRIBUTE_UNUSED,
+                         tree name ATTRIBUTE_UNUSED,
+                         tree args ATTRIBUTE_UNUSED,
+                         int flags ATTRIBUTE_UNUSED,
+                         bool * no_add_attrs ATTRIBUTE_UNUSED)
+{
+  if (TARGET_R8C)
+    {
+      /* The attribute is not supported for R8C target.  */
+      warning (OPT_Wattributes,
+                "`%s' attribute is not supported for R8C target",
+                IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      /* The attribute must be applied to functions only.  */
+      warning (OPT_Wattributes,
+                "`%s' attribute applies only to functions",
+                IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else if (TREE_CODE (TREE_VALUE (args)) != INTEGER_CST)
+    {
+      /* The argument must be a constant integer.  */
+      warning (OPT_Wattributes,
+                "`%s' attribute argument not an integer constant",
+                IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else if (TREE_INT_CST_LOW (TREE_VALUE (args)) < 18
+           || TREE_INT_CST_LOW (TREE_VALUE (args)) > 255)
+    {
+      /* The argument value must be between 18 to 255.  */
+      warning (OPT_Wattributes,
+                "`%s' attribute argument should be between 18 to 255",
+                IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  return NULL_TREE;
+}
+
+/* If the function is assigned the attribute 'function_vector', it
+   returns the function vector number, otherwise returns zero.  */
+int
+current_function_special_page_vector (rtx x)
+{
+  int num;
+
+  if ((GET_CODE(x) == SYMBOL_REF)
+      && (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_FUNCVEC_FUNCTION))
+    {
+      tree t = SYMBOL_REF_DECL (x);
+
+      if (TREE_CODE (t) != FUNCTION_DECL)
+        return 0;
+
+      tree list = M32C_ATTRIBUTES (t);
+      while (list)
+        {
+          if (is_attribute_p ("function_vector", TREE_PURPOSE (list)))
+            {
+              num = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (list)));
+              return num;
+            }
+
+          list = TREE_CHAIN (list);
+        }
+
+      return 0;
+    }
+  else
+    return 0;
+}
+
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE m32c_attribute_table
 static const struct attribute_spec m32c_attribute_table[] = {
   {"interrupt", 0, 0, false, false, false, interrupt_handler},
+  {"function_vector", 1, 1, true,  false, false, function_vector_handler},
   {0, 0, 0, 0, 0, 0, 0}
 };
 
@@ -3751,6 +3849,23 @@ m32c_scc_pattern(rtx *operands, RTX_CODE code)
   return buf;
 }
 
+/* Encode symbol attributes of a SYMBOL_REF into its
+   SYMBOL_REF_FLAGS. */
+static void
+m32c_encode_section_info (tree decl, rtx rtl, int first)
+{
+  int extra_flags = 0;
+
+  default_encode_section_info (decl, rtl, first);
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && m32c_special_page_vector_p (decl))
+
+    extra_flags = SYMBOL_FLAG_FUNCVEC_FUNCTION;
+
+  if (extra_flags)
+    SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= extra_flags;
+}
+
 /* Returns TRUE if the current function is a leaf, and thus we can
    determine which registers an interrupt function really needs to
    save.  The logic below is mostly about finding the insn sequence
@@ -4163,6 +4278,9 @@ m32c_output_compare (rtx insn, rtx *operands)
 #endif
   return template + 1;
 }
+
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO m32c_encode_section_info
 
 /* The Global `targetm' Variable. */
 
