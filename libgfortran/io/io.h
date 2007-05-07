@@ -586,9 +586,6 @@ internal_proto(compare_file_filename);
 extern gfc_unit *find_file (const char *file, gfc_charlen_type file_len);
 internal_proto(find_file);
 
-extern void flush_all_units (void);
-internal_proto(flush_all_units);
-
 extern int stream_at_bof (stream *);
 internal_proto(stream_at_bof);
 

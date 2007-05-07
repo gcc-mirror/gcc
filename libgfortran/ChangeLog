@@ -1,3 +1,10 @@
+2007-05-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/31607
+	* intrinsics/system.c (system_sub): Call flush_all_units.
+	* io/io.h (flush_all_units): Move prototype to libgfortran.h.
+	* libgfortran.h (flush_all_units): Add prototype.
+
 2007-05-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/31201
