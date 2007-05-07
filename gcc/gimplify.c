@@ -5887,6 +5887,8 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  if (POINTER_TYPE_P (TREE_TYPE (*expr_p))
 	      && TREE_CODE (TREE_OPERAND (*expr_p, 0)) == NOP_EXPR
 	      && TREE_CODE (TREE_OPERAND (*expr_p, 1)) == INTEGER_CST
+	      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (*expr_p,
+									0),0)))
 	      && (tmp = maybe_fold_offset_to_reference
 			 (TREE_OPERAND (TREE_OPERAND (*expr_p, 0), 0),
 			  TREE_OPERAND (*expr_p, 1),

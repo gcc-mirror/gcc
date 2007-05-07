@@ -1,3 +1,8 @@
+2007-05-07  Jan Hubicka  <jh@suse.cz>
+
+	* gimplify.c (gimplify_expr): Do not crash when folding
+	(void *)(int)&a + 4.
+
 2007-05-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR driver/31694
