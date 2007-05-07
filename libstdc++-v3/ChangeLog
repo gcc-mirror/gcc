@@ -1,3 +1,10 @@
+2007-05-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp (v3_target_compile_as_c): In
+	installed-tree testing, use "remote_exec host", not "remote_exec
+	exec".  Trip trailing newlines from output of -dumpversion and
+	-dumpmachine.
+
 2007-05-07  Benjamin Kosnik  <bkoz@redhat.com>
             Howard Hinnant  <hhinnant@apple.com>
 
