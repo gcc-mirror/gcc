@@ -1,5 +1,10 @@
 2007-05-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/31399
+	* trans-stmt.c (gfc_trans_do): Handle large loop counts.
+
+2007-05-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/31764
 	* simplify.c (gfc_simplify_new_line): NEW_LINE can be simplified
 	even for non constant arguments.
