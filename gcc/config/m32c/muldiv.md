@@ -82,7 +82,7 @@
 (define_insn "mulhisi3_c"
   [(set (match_operand:SI 0 "ra_operand" "=Rsi")
         (mult:SI (sign_extend:SI (match_operand:HI 1 "mra_operand" "%0"))
-                 (match_operand 2 "immediate_operand" "i")))]
+                 (match_operand:HI 2 "immediate_operand" "i")))]
   ""
   "mul.w\t%2,%1"
   [(set_attr "flags" "o")]
@@ -159,7 +159,14 @@
      }"
   )
 
-
+(define_insn "mulsi3"
+  [(set (match_operand:SI 0 "r0123_operand" "=R02,R02")
+        (mult:SI (match_operand:SI 1 "r0123_operand" "%0,0")
+                 (match_operand:SI 2 "mra_operand" "RsiSd,?Rmm")))]
+  "TARGET_M32C"
+  "mul.l\t%2,%1"
+  [(set_attr "flags" "o")]
+)
 
 (define_expand "divmodqi4"
   [(set (match_dup 4)
@@ -260,3 +267,23 @@
   "divu.w\t%2"
   [(set_attr "flags" "o")]
   )
+
+(define_insn "divsi3"
+  [(set (match_operand:SI 0 "r0123_operand" "=R02,R02")
+        (div:SI (match_operand:SI 1 "r0123_operand" "0,0")
+                (match_operand:SI 2 "mra_operand" "RsiSd,?Rmm")))]
+  "TARGET_M32C"
+  "div.l\t%2"
+  [(set_attr "flags" "o")]
+)
+
+(define_insn "udivsi3"
+  [(set (match_operand:SI 0 "r0123_operand" "=R02,R02")
+        (udiv:SI (match_operand:SI 1 "r0123_operand" "0,0")
+                 (match_operand:SI 2 "mra_operand" "RsiSd,?Rmm")))]
+  "TARGET_M32C"
+  "divu.l\t%2"
+  [(set_attr "flags" "o")]
+)
+
+

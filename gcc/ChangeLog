@@ -1,3 +1,11 @@
+2007-05-07   Naveen.H.S  <naveen.hs@kpitcummins.com>
+
+	* config/m32c/muldiv.md (mulhisi3_c): Limit the mode of the 2nd
+	operand to HI mode.
+	(mulsi3): New.
+	(divsi3): New.
+	(udivsi3): New.
+
 2007-05-07  Jayant Sonar  <jayants@kpitcummins.com>
 
 	* config/m32c/m32c.c (SYMBOL_FLAG_FUNCVEC_FUNCTION): Define.
