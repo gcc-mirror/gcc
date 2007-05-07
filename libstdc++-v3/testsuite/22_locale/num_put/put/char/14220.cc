@@ -20,6 +20,12 @@
 
 // 22.2.2.2.1  num_put members
 
+// On Solaris 10 x86, this test crashes in libc.  Inside libstdc++, 
+// we call sprintf like so:
+//   sprintf (buffer, "%.*f", 1000, 1.0)
+// which crashes.
+// { dg-do run { xfail { i?86*-*-solaris2.10 } } } 
+
 #include <locale>
 #include <sstream>
 #include <testsuite_hooks.h>
