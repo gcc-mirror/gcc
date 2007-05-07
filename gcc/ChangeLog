@@ -1,3 +1,9 @@
+2007-05-07  DJ Delorie  <dj@redhat.com>
+
+	PR 31794
+	* config/m32c/shift.md (ashlpsi3_i, ashrpsi3_i, ashlpsi3,
+	ashrpsi3, lshrpsi3): Update shift count constraint.
+
 2007-05-07  Danny Smith  <dannysmith@users.sourceforge.net>
 	    Nathan Froyd  <froydnj@codesourcery.com
 
