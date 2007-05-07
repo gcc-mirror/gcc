@@ -194,7 +194,7 @@
 
 2007-05-03  Ian Lance Taylor  <iant@google.com>
 
-	* config/rs6000/rs6000.c (rs6000_override_options): Don't se
+	* config/rs6000/rs6000.c (rs6000_override_options): Don't set
 	MASK_PPC_GFXOPT for 8540 or 8548.
 
 2007-05-03  Uros Bizjak  <ubizjak@gmail.com>
