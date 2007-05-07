@@ -1,5 +1,7 @@
 2007-05-07  Jason Merrill  <jason@redhat.com>
 
+	* include/bits/ostream.tcc (operator<<(char*)): Add __s.
+
 	* config/abi/pre/gnu.ver: Fix symbol versions.
 	* config/abi/pre/gnu-versioned-namespace.ver: Likewise.
 

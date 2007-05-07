@@ -336,10 +336,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    {
 	      struct __ptr_guard
 	      {
-		_CharT *p;
-		__ptr_guard (_CharT *ip): p(ip) { }
-		~__ptr_guard() { delete[] p; }
-		_CharT* __get() { return p; }
+		_CharT *__p;
+		__ptr_guard (_CharT *__ip): __p(__ip) { }
+		~__ptr_guard() { delete[] __p; }
+		_CharT* __get() { return __p; }
 	      } __pg (new _CharT[__clen]);
 
 	      _CharT *__ws = __pg.__get();
