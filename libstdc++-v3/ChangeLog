@@ -7,7 +7,7 @@
 	(equal(const _Tp*, const _Tp*, const _Tp*),
 	lexicographical_compare(const unsigned char*, const unsigned char*,
 	const unsigned char*, const unsigned char*)): Use __builtin_memcmp.
-	*  include/bits/valarray_array.h: Do not include <cstring>.
+	* include/bits/valarray_array.h: Do not include <cstring>.
 	(_Array_default_ctor<, true>::_S_do_it): Use __builtin_memset.
 	(_Array_copy_ctor<, true>::_S_do_it, _Array_copier<, true>::_S_do_it):
 	Use __builtin_memcpy.
