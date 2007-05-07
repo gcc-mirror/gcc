@@ -48,7 +48,7 @@ private:
 public:
   virtual ::gnu::classpath::jdwp::transport::JdwpPacket * getPacket();
   virtual void sendPacket(::gnu::classpath::jdwp::transport::JdwpPacket *);
-  virtual void sendEvent(::gnu::classpath::jdwp::event::EventRequest *, ::gnu::classpath::jdwp::event::Event *);
+  virtual void sendEvents(JArray< ::gnu::classpath::jdwp::event::EventRequest * > *, JArray< ::gnu::classpath::jdwp::event::Event * > *, jbyte);
   virtual void shutdown();
 private:
   static JArray< jbyte > * _HANDSHAKE;

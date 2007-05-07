@@ -7,6 +7,8 @@
 #pragma interface
 
 #include <java/lang/Thread.h>
+#include <gcj/array.h>
+
 extern "Java"
 {
   namespace gnu
@@ -48,7 +50,9 @@ private:
 public:
   virtual void shutdown();
   static void notify(::gnu::classpath::jdwp::event::Event *);
+  static void notify(JArray< ::gnu::classpath::jdwp::event::Event * > *);
   static void sendEvent(::gnu::classpath::jdwp::event::EventRequest *, ::gnu::classpath::jdwp::event::Event *);
+  static void sendEvents(JArray< ::gnu::classpath::jdwp::event::EventRequest * > *, JArray< ::gnu::classpath::jdwp::event::Event * > *, jbyte);
 private:
   void _enforceSuspendPolicy(jbyte);
 public:

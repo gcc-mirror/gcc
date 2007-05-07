@@ -7,6 +7,8 @@
 #pragma interface
 
 #include <java/lang/Object.h>
+#include <gcj/array.h>
+
 extern "Java"
 {
   namespace gnu
@@ -39,7 +41,10 @@ public: // actually protected
   virtual void _writeData(::java::io::DataOutputStream *) = 0;
 public:
   virtual ::java::lang::Object * getParameter(jint) = 0;
-  virtual ::gnu::classpath::jdwp::transport::JdwpPacket * toPacket(::java::io::DataOutputStream *, ::gnu::classpath::jdwp::event::EventRequest *);
+  static ::gnu::classpath::jdwp::transport::JdwpPacket * toPacket(::java::io::DataOutputStream *, JArray< ::gnu::classpath::jdwp::event::Event * > *, JArray< ::gnu::classpath::jdwp::event::EventRequest * > *, jbyte);
+private:
+  static void _toData(::java::io::DataOutputStream *, ::gnu::classpath::jdwp::event::Event *, ::gnu::classpath::jdwp::event::EventRequest *);
+public:
   static const jint EVENT_CLASS = 1;
   static const jint EVENT_THREAD = 2;
   static const jint EVENT_LOCATION = 3;
