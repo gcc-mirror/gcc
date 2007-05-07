@@ -399,9 +399,10 @@ proc v3_target_compile_as_c { source dest type options } {
     # info.
     if { ![file exists $flags_file] } {
 	set version [remote_exec host ${cc} -dumpversion]
-	set version [lindex $version 1]
-	set machine [remote_exec exec ${cc} -dumpmachine]
-	set machine [lindex $machine 1]
+	# Remove the trailing newline from the output.
+	set version [string trimright [lindex $version 1]]
+	set machine [remote_exec host ${cc} -dumpmachine]
+	set machine [string trimright [lindex $machine 1]]
 	set comp_base_dir [remote_exec host ${cc} --print-prog-name=cc1]
 	set comp_base_dir [lindex $comp_base_dir 1]
 	set comp_base_dir [file dirname [file dirname [file dirname [file dirname [file dirname $comp_base_dir]]]]]
