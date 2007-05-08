@@ -206,6 +206,9 @@ if test x"${DEFAULT_LINKER+set}" = x"set"; then
 	[Define to enable the use of a default linker.])
 fi
 
+gnu_ld=`if test x"$gnu_ld_flag" = x"yes"; then echo 1; else echo 0; fi`
+AC_DEFINE_UNQUOTED(HAVE_GNU_LD, $gnu_ld, [Define if using GNU ld.])
+
 AC_MSG_CHECKING([whether a default linker was specified])
 if test x"${DEFAULT_LINKER+set}" = x"set"; then
   if test x"$gnu_ld_flag" = x"no"; then

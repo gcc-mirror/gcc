@@ -869,6 +869,12 @@
 #endif
 
 
+/* Define if using GNU ld. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GNU_LD
+#endif
+
+
 /* Define if you have the iconv() function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_ICONV

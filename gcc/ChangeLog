@@ -1,3 +1,21 @@
+2007-05-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.c (at_file_supplied): New variable.
+	(main): Set it if we expanded argv.
+	(do_spec_1): Pass an @-file to the linker if we were called with
+	an @-file argument and HAVE_GNU_LD.
+	* collect2.c (at_file_supplied): New variable.
+	(response_file): New variable.
+	(collect_exit): Unlink response_file if necessary.
+	(handler): Likewise.
+	(do_wait): Likewise.
+	(main): Set at_file_supplied if we expanded argv.
+	(collect_execute): Pass an @-file to subprocesses if we were called
+	with an @-file argument.
+	* configure.ac: Add define for HAVE_GNU_LD.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2007-05-07   Naveen.H.S  <naveen.hs@kpitcummins.com>
 
 	* config/m32c/muldiv.md (mulhisi3_c): Limit the mode of the 2nd
@@ -28,7 +46,7 @@
 	ashrpsi3, lshrpsi3): Update shift count constraint.
 
 2007-05-07  Danny Smith  <dannysmith@users.sourceforge.net>
-	    Nathan Froyd  <froydnj@codesourcery.com
+	    Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR 22133
 	* c-incpath.c (add_path): Strip trailing path separators.

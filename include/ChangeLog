@@ -1,3 +1,7 @@
+2007-05-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* libiberty.h (writeargv): Declare.
+
 2007-04-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* demangle.h: Change license to LGPL + exception.

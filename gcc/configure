@@ -1767,6 +1767,13 @@ _ACEOF
 
 fi
 
+gnu_ld=`if test x"$gnu_ld_flag" = x"yes"; then echo 1; else echo 0; fi`
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GNU_LD $gnu_ld
+_ACEOF
+
+
 echo "$as_me:$LINENO: checking whether a default linker was specified" >&5
 echo $ECHO_N "checking whether a default linker was specified... $ECHO_C" >&6
 if test x"${DEFAULT_LINKER+set}" = x"set"; then
@@ -7665,7 +7672,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:7668: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:7675: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[4-9]*)

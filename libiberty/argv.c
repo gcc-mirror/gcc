@@ -290,6 +290,62 @@ char **buildargv (const char *input)
 
 /*
 
+@deftypefn Extension int writeargv (const char **@var{argv}, FILE *@{file})
+
+Write each member of ARGV, handling all necessary quoting, to the file
+named by FILE, separated by whitespace.  Return 0 on success, non-zero
+if an error occurred while writing to FILE.
+
+@end deftypefn
+
+*/
+
+int
+writeargv (char **argv, FILE *f)
+{
+  int status = 0;
+
+  if (f == NULL)
+    return 1;
+
+  while (*argv != NULL)
+    {
+      int ret;
+      const char *arg = *argv;
+
+      while (*arg != EOS)
+        {
+          char c = *arg;
+
+          if (ISSPACE(c) || c == '\\' || c == '\'' || c == '"')
+            if (EOF == fputc ('\\', f))
+              {
+                status = 1;
+                goto done;
+              }
+
+          if (EOF == fputc (c, f))
+            {
+              status = 1;
+              goto done;
+            }
+          arg++;
+        }
+
+      if (EOF == fputc ('\n', f))
+        {
+          status = 1;
+          goto done;
+        }
+      argv++;
+    }
+
+ done:
+  return status;
+}
+
+/*
+
 @deftypefn Extension void expandargv (int *@var{argcp}, char ***@var{argvp})
 
 The @var{argcp} and @code{argvp} arguments are pointers to the usual
