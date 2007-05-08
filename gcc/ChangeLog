@@ -1,3 +1,9 @@
+2007-05-08  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR 31847
+	* tree-dump.c (dump_options): Don't use TDF_DIAGNOSTIC in "*-all" tree
+	dumps.
+
 2007-05-08  Sandra Loosemore  <sandra@codesourcery.com>
             Nigel Stephens  <nigel@mips.com>
 
