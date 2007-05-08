@@ -1,3 +1,9 @@
+2007-05-07  Ian Lance Taylor  <iant@google.com>
+
+	PR java/31842
+	* java/lang/natString.cc (_Jv_FormatInt): Avoid undefined signed
+	overflow.
+
 2007-03-25  David Daney  <ddaney@avtrex.com>
 
 	PR libgcj/31228
