@@ -543,7 +543,7 @@ namespace __cxxabiv1
   class __foreign_exception
   {
     virtual ~__foreign_exception() throw();
-    virtual void __pure() = 0; // prevent catch by value
+    virtual void __pure_virtual() = 0; // prevent catch by value
   };
 
 } // namespace __cxxabiv1
