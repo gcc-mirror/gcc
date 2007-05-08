@@ -1,3 +1,18 @@
+2007-05-08  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/cxxabi-internal.h: Remove, to be replaced by...
+	* libsupc++/cxxabi-forced.h: ...this new file.
+	* include/ext/vstring.tcc: Include cxxabi-forced.h instead.
+	* include/bits/istream.tcc: Likewise.
+	* include/bits/ostream.tcc: Likewise.
+	* include/bits/basic_string.tcc: Likewise.
+	* include/bits/ostream_insert.h: Likewise.
+	* include/bits/fstream.tcc: Likewise.
+	* include/std/bitset: Likewise.
+	* libsupc++/cxxabi.h: Restore previous contents.
+	* Makefile.am (headers): Add cxxabi-forced.h.
+	* Makefile.in: Regenerate.
+
 2007-05-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/util/testsuite_abi.cc: Add CXXABI_1.3.2.

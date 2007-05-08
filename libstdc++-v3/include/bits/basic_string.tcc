@@ -46,7 +46,7 @@
 
 #pragma GCC system_header
 
-#include <cxxabi-internal.h>
+#include <cxxabi-forced.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
