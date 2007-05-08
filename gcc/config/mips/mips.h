@@ -1021,13 +1021,19 @@ extern const struct mips_rtx_cost_data *mips_cost;
 /* For MIPS, width of a floating point register.  */
 #define UNITS_PER_FPREG (TARGET_FLOAT64 ? 8 : 4)
 
-/* If register $f0 holds a floating-point value, $f(0 + FP_INC) is
-   the next available register.  */
-#define FP_INC (TARGET_FLOAT64 || TARGET_SINGLE_FLOAT ? 1 : 2)
+/* The number of consecutive floating-point registers needed to store the
+   largest format supported by the FPU.  */
+#define MAX_FPRS_PER_FMT (TARGET_FLOAT64 || TARGET_SINGLE_FLOAT ? 1 : 2)
+
+/* The number of consecutive floating-point registers needed to store the
+   smallest format supported by the FPU.  */
+#define MIN_FPRS_PER_FMT \
+  (ISA_MIPS32 || ISA_MIPS32R2 || ISA_MIPS64 ? 1 : MAX_FPRS_PER_FMT) 
 
 /* The largest size of value that can be held in floating-point
    registers and moved with a single instruction.  */
-#define UNITS_PER_HWFPVALUE (TARGET_SOFT_FLOAT ? 0 : FP_INC * UNITS_PER_FPREG)
+#define UNITS_PER_HWFPVALUE \
+  (TARGET_SOFT_FLOAT ? 0 : MAX_FPRS_PER_FMT * UNITS_PER_FPREG)
 
 /* The largest size of value that can be held in floating-point
    registers.  */
