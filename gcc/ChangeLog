@@ -1,3 +1,17 @@
+2007-05-08  Sandra Loosemore  <sandra@codesourcery.com>
+            Nigel Stephens  <nigel@mips.com>
+
+	* config/mips/mips.h (MAX_FPRS_PER_FMT): Renamed from FP_INC.
+	Update comments and all uses.
+	(MIN_FPRS_PER_FMT): Define.
+	* config/mips/mips.c (function_arg): Fix to correctly handle
+	the -mips32r2 -mfp64 -mabi=32 case.
+	(override_options): Enable use of odd-numbered registers for
+	SFmode values on MIPS32.
+	(mips_save_reg_p): Save whole floating-point register pair if
+	either half is used.
+	(compute_frame_size): Fix comment.
+
 2007-05-08  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin-protos.h (bfin_expand_epilogue): Add a third
