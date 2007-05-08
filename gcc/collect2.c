@@ -1,7 +1,7 @@
 /* Collect static initialization info into data structures that can be
    traversed by C++ initialization and finalization routines.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@cygnus.com),
    Per Bothner (bothner@cygnus.com), and John Gilmore (gnu@cygnus.com).
@@ -202,6 +202,9 @@ static struct head exports;		/* list of exported symbols */
 #endif
 static struct head frame_tables;	/* list of frame unwind info tables */
 
+static bool at_file_supplied;		/* Whether to use @file arguments */
+static char *response_file;		/* Name of any current response file */
+
 struct obstack temporary_obstack;
 char * temporary_firstobj;
 
@@ -302,6 +305,9 @@ collect_exit (int status)
   if (status != 0 && output_file != 0 && output_file[0])
     maybe_unlink (output_file);
 
+  if (response_file)
+    maybe_unlink (response_file);
+
   exit (status);
 }
 
@@ -392,6 +398,9 @@ handler (int signo)
   if (export_file != 0 && export_file[0])
     maybe_unlink (export_file);
 #endif
+
+  if (response_file)
+    maybe_unlink (response_file);
 
   signal (signo, SIG_DFL);
   raise (signo);
@@ -793,7 +802,15 @@ main (int argc, char **argv)
   char **object_lst;
   const char **object;
   int first_file;
-  int num_c_args	= argc+9;
+  int num_c_args;
+  char **old_argv;
+
+  old_argv = argv;
+  expandargv (&argc, &argv);
+  if (argv != old_argv)
+    at_file_supplied = 1;
+
+  num_c_args = argc + 9;
 
   no_demangle = !! getenv ("COLLECT_NO_DEMANGLE");
 
@@ -1513,6 +1530,12 @@ do_wait (const char *prog, struct pex_obj *pex)
       error ("%s returned %d exit status", prog, ret);
       collect_exit (ret);
     }
+
+  if (response_file)
+    {
+      unlink (response_file);
+      response_file = NULL;
+    }
 }
 
 
@@ -1525,6 +1548,47 @@ collect_execute (const char *prog, char **argv, const char *outname,
   struct pex_obj *pex;
   const char *errmsg;
   int err;
+  char *response_arg = NULL;
+  char *response_argv[3] ATTRIBUTE_UNUSED;
+
+  if (HAVE_GNU_LD && at_file_supplied && argv[0] != NULL)
+    {
+      /* If using @file arguments, create a temporary file and put the
+         contents of argv into it.  Then change argv to an array corresponding
+         to a single argument @FILE, where FILE is the temporary filename.  */
+
+      char **current_argv = argv + 1;
+      char *argv0 = argv[0];
+      int status;
+      FILE *f;
+
+      /* Note: we assume argv contains at least one element; this is
+         checked above.  */
+
+      response_file = make_temp_file ("");
+
+      f = fopen (response_file, "w");
+
+      if (f == NULL)
+        fatal ("could not open response file %s", response_file);
+
+      status = writeargv (current_argv, f);
+
+      if (status)
+        fatal ("could not write to response file %s", response_file);
+
+      status = fclose (f);
+
+      if (EOF == status)
+        fatal ("could not close response file %s", response_file);
+
+      response_arg = concat ("@", response_file, NULL);
+      response_argv[0] = argv0;
+      response_argv[1] = response_arg;
+      response_argv[2] = NULL;
+
+      argv = response_argv;
+    }
 
   if (vflag || debug)
     {
@@ -1567,6 +1631,9 @@ collect_execute (const char *prog, char **argv, const char *outname,
       else
 	fatal (errmsg);
     }
+
+  if (response_arg)
+    free (response_arg);
 
   return pex;
 }

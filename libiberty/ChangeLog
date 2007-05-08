@@ -1,3 +1,7 @@
+2007-05-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* argv.c (writeargv): New function.
+
 2007-05-05  Geoffrey Keating  <geoffk@apple.com>
 
 	* cp-demangle.c (d_name): Detect local-source-name.

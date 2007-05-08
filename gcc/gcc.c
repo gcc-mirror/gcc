@@ -127,6 +127,9 @@ static const char dir_separator_str[] = { DIR_SEPARATOR, 0 };
 /* Flag set by cppspec.c to 1.  */
 int is_cpp_driver;
 
+/* Flag set to non-zero if an @file argument has been supplied to gcc.  */
+static bool at_file_supplied;
+
 /* Flag saying to pass the greatest exit code returned by a sub-process
    to the calling program.  */
 static int pass_exit_codes;
@@ -5009,9 +5012,63 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      int max = n_infiles;
 	      max += lang_specific_extra_outfiles;
 
-	      for (i = 0; i < max; i++)
-		if (outfiles[i])
-		  store_arg (outfiles[i], 0, 0);
+              if (HAVE_GNU_LD && at_file_supplied)
+                {
+                  /* We are going to expand `%o' to `@FILE', where FILE
+                     is a newly-created temporary filename.  The filenames
+                     that would usually be expanded in place of %o will be
+                     written to the temporary file.  */
+
+                  char *temp_file = make_temp_file ("");
+                  char *at_argument;
+                  char **argv;
+                  int n_files, j, status;
+                  FILE *f;
+
+                  at_argument = concat ("@", temp_file, NULL);
+                  store_arg (at_argument, 0, 0);
+
+                  /* Convert OUTFILES into a form suitable for writeargv.  */
+
+                  /* Determine how many are non-NULL.  */
+                  for (n_files = 0, i = 0; i < max; i++)
+                    n_files += outfiles[i] != NULL;
+
+                  argv = alloca (sizeof (char *) * (n_files + 1));
+
+                  /* Copy the strings over.  */
+                  for (i = 0, j = 0; i < max; i++)
+                    if (outfiles[i])
+                      {
+                        argv[j] = (char *) outfiles[i];
+                        j++;
+                      }
+                  argv[j] = NULL;
+
+                  f = fopen (temp_file, "w");
+
+                  if (f == NULL)
+                    fatal ("could not open temporary response file %s",
+                           temp_file);
+
+                  status = writeargv (argv, f);
+
+                  if (status)
+                    fatal ("could not write to temporary response file %s",
+                           temp_file);
+
+                  status = fclose (f);
+
+                  if (EOF == status)
+                    fatal ("could not close temporary response file %s",
+                           temp_file);
+
+                  record_temp_file (temp_file, !save_temps_flag, !save_temps_flag);
+                }
+              else
+                for (i = 0; i < max; i++)
+	          if (outfiles[i])
+		    store_arg (outfiles[i], 0, 0);
 	      break;
 	    }
 
@@ -6093,6 +6150,7 @@ main (int argc, char **argv)
   char *specs_file;
   const char *p;
   struct user_specs *uptr;
+  char **old_argv = argv;
 
   p = argv[0] + strlen (argv[0]);
   while (p != argv[0] && !IS_DIR_SEPARATOR (p[-1]))
@@ -6102,6 +6160,10 @@ main (int argc, char **argv)
   xmalloc_set_program_name (programname);
 
   expandargv (&argc, &argv);
+
+  /* Determine if any expansions were made.  */
+  if (argv != old_argv)
+    at_file_supplied = true;
 
   prune_options (&argc, &argv);
 
