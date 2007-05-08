@@ -1,3 +1,10 @@
+2007-05-08  Kazu Hirata  <kazu@codesourcery.com>
+
+	* emit-rtl.c (unshare_all_rtl_1): Don't copy DECL_RTL.  Don't
+	call unshare_all_decls.
+	(unshare_all_rtl): Adjust the call to unshare_all_rtl_1.
+	(unshare_all_decls): Remove.
+
 2007-05-08  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR 31847

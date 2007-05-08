@@ -167,7 +167,6 @@ static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
 
 static rtx make_call_insn_raw (rtx);
 static rtx change_address_1 (rtx, enum machine_mode, rtx, int);
-static void unshare_all_decls (tree);
 static void reset_used_decls (tree);
 static void mark_label_nuses (rtx);
 static hashval_t const_int_htab_hash (const void *);
@@ -2115,17 +2114,8 @@ set_new_first_and_last_insn (rtx first, rtx last)
    structure.  This routine should only be called once.  */
 
 static void
-unshare_all_rtl_1 (tree fndecl, rtx insn)
+unshare_all_rtl_1 (rtx insn)
 {
-  tree decl;
-
-  /* Make sure that virtual parameters are not shared.  */
-  for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
-    SET_DECL_RTL (decl, copy_rtx_if_shared (DECL_RTL (decl)));
-
-  /* Make sure that virtual stack slots are not shared.  */
-  unshare_all_decls (DECL_INITIAL (fndecl));
-
   /* Unshare just about everything else.  */
   unshare_all_rtl_in_chain (insn);
 
@@ -2166,13 +2156,13 @@ unshare_all_rtl_again (rtx insn)
 
   reset_used_flags (stack_slot_list);
 
-  unshare_all_rtl_1 (cfun->decl, insn);
+  unshare_all_rtl_1 (insn);
 }
 
 unsigned int
 unshare_all_rtl (void)
 {
-  unshare_all_rtl_1 (current_function_decl, get_insns ());
+  unshare_all_rtl_1 (get_insns ());
   return 0;
 }
 
@@ -2356,23 +2346,6 @@ unshare_all_rtl_in_chain (rtx insn)
 	REG_NOTES (insn) = copy_rtx_if_shared (REG_NOTES (insn));
 	LOG_LINKS (insn) = copy_rtx_if_shared (LOG_LINKS (insn));
       }
-}
-
-/* Go through all virtual stack slots of a function and copy any
-   shared structure.  */
-static void
-unshare_all_decls (tree blk)
-{
-  tree t;
-
-  /* Copy shared decls.  */
-  for (t = BLOCK_VARS (blk); t; t = TREE_CHAIN (t))
-    if (DECL_RTL_SET_P (t))
-      SET_DECL_RTL (t, copy_rtx_if_shared (DECL_RTL (t)));
-
-  /* Now process sub-blocks.  */
-  for (t = BLOCK_SUBBLOCKS (blk); t; t = TREE_CHAIN (t))
-    unshare_all_decls (t);
 }
 
 /* Go through all virtual stack slots of a function and mark them as
