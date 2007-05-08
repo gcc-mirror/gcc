@@ -1,3 +1,7 @@
+2007-05-07  Mike Stump  <mrs@apple.com>
+
+	* g++.old-deja/g++.mike/empty.C: Add.
+
 2007-05-07  Eric Christopher  <echristo@apple.com>
 
 	* gcc.dg/invalid-call-1.c: Fix options for 32-bit x86.

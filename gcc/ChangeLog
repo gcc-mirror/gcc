@@ -1,3 +1,8 @@
+2007-05-07  Mike Stump  <mrs@apple.com>
+
+	* doc/invoke.texi (Warning Options): Document that -Wempty-body
+	also checks for and while statements in C++.
+
 2007-05-07  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc.c (at_file_supplied): New variable.
