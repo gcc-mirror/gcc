@@ -1,3 +1,10 @@
+2007-05-08  Chao-ying Fu  <fu@mips.com>
+
+	* gcc.target/mips/msub-1.c, gcc.target/mips/msub-2.c,
+	* gcc.target/mips/msub-3.c, gcc.target/mips/msub-4.c,
+	* gcc.target/mips/msubu-1.c, gcc.target/mips/msubu-2.c,
+	* gcc.target/mips/msubu-3.c, gcc.target/mips/msubu-4.c: New tests.
+
 2007-05-08  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR 31847
