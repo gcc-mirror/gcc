@@ -1,5 +1,11 @@
 2007-05-08  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/31692
+	* trans-array.c (gfc_conv_array_parameter): Convert full array
+	references to the result of the procedure enclusing the call.
+
+2007-05-08  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/29397
 	PR fortran/29400
 	* decl.c (add_init_expr_to_sym): Expand a scalar initializer

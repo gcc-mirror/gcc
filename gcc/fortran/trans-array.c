@@ -4748,14 +4748,25 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
   tree desc;
   tree tmp;
   tree stmt;
+  tree parent = DECL_CONTEXT (current_function_decl);
+  bool full_array_var, this_array_result;
   gfc_symbol *sym;
   stmtblock_t block;
 
+  full_array_var = (expr->expr_type == EXPR_VARIABLE
+		      && expr->ref->u.ar.type == AR_FULL);
+  sym = full_array_var ? expr->symtree->n.sym : NULL;
+
+  /* Is this the result of the enclosing procedure?  */
+  this_array_result = (full_array_var && sym->attr.flavor == FL_PROCEDURE);
+  if (this_array_result
+	&& (sym->backend_decl != current_function_decl)
+	&& (sym->backend_decl != parent))
+    this_array_result = false;
+
   /* Passing address of the array if it is not pointer or assumed-shape.  */
-  if (expr->expr_type == EXPR_VARIABLE
-       && expr->ref->u.ar.type == AR_FULL && g77)
+  if (full_array_var && g77 && !this_array_result)
     {
-      sym = expr->symtree->n.sym;
       tmp = gfc_get_symbol_decl (sym);
 
       if (sym->ts.type == BT_CHARACTER)
@@ -4784,8 +4795,25 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
         }
     }
 
-  se->want_pointer = 1;
-  gfc_conv_expr_descriptor (se, expr, ss);
+  if (this_array_result)
+    {
+      /* Result of the enclosing function.  */
+      gfc_conv_expr_descriptor (se, expr, ss);
+      se->expr = build_fold_addr_expr (se->expr);
+
+      if (g77 && TREE_TYPE (TREE_TYPE (se->expr)) != NULL_TREE
+	      && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (se->expr))))
+	se->expr = gfc_conv_array_data (build_fold_indirect_ref (se->expr));
+
+      return;
+    }
+  else
+    {
+      /* Every other type of array.  */
+      se->want_pointer = 1;
+      gfc_conv_expr_descriptor (se, expr, ss);
+    }
+
 
   /* Deallocate the allocatable components of structures that are
      not variable.  */
