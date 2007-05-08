@@ -59,8 +59,17 @@ extern int target_flags;
 	case BFIN_CPU_BF533:			\
 	  builtin_define ("__ADSPBF533__");	\
 	  break;				\
+	case BFIN_CPU_BF534:			\
+	  builtin_define ("__ADSPBF534__");	\
+	  break;				\
+	case BFIN_CPU_BF536:			\
+	  builtin_define ("__ADSPBF536__");	\
+	  break;				\
 	case BFIN_CPU_BF537:			\
 	  builtin_define ("__ADSPBF537__");	\
+	  break;				\
+	case BFIN_CPU_BF561:			\
+	  builtin_define ("__ADSPBF561__");	\
 	  break;				\
 	}					\
 						\
