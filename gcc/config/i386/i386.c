@@ -2792,7 +2792,8 @@ ix86_function_regparm (tree type, tree decl)
     return 2;
 
   /* Use register calling convention for local functions when possible.  */
-  if (decl && flag_unit_at_a_time && !profile_flag)
+  if (decl && TREE_CODE (decl) == FUNCTION_DECL
+      && flag_unit_at_a_time && !profile_flag)
     {
       struct cgraph_local_info *i = cgraph_local_info (decl);
       if (i && i->local)

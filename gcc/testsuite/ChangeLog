@@ -1,3 +1,8 @@
+2007-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/31854
+	* gcc.target/i386/pr31854.c: New test.
+	
 2007-05-07  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/pch/pch.exp: XFAIL largefile on Solaris 10 x86.
@@ -12,8 +17,8 @@
 
 2007-05-07  Uros Bizjak  <ubizjak@gmail.com>
 
-	* gcc.dg/dfp/convert-bfp-fold.c: Remove extra assignment to
-	sf variable.  Rearrange conversions from binary float to decimal float.
+	* gcc.dg/dfp/convert-bfp-fold.c: Remove extra assignment to 'sf'
+	variable.  Rearrange conversions from binary float to decimal float.
 
 2007-05-07  Mark Mitchell  <mark@codesourcery.com>
 
