@@ -8133,6 +8133,47 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return REDUCE_BIT_FIELD (simplify_gen_binary (PLUS, mode, op0, op1));
 
     case MINUS_EXPR:
+      /* Check if this is a case for multiplication and subtraction.  */
+      if (TREE_CODE (type) == INTEGER_TYPE
+	  && TREE_CODE (TREE_OPERAND (exp, 1)) == MULT_EXPR)
+	{
+	  tree subsubexp0, subsubexp1;
+	  enum tree_code code0, code1;
+
+	  subexp1 = TREE_OPERAND (exp, 1);
+	  subsubexp0 = TREE_OPERAND (subexp1, 0);
+	  subsubexp1 = TREE_OPERAND (subexp1, 1);
+	  code0 = TREE_CODE (subsubexp0);
+	  code1 = TREE_CODE (subsubexp1);
+	  if (code0 == NOP_EXPR && code1 == NOP_EXPR
+	      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (subsubexp0, 0)))
+		  < TYPE_PRECISION (TREE_TYPE (subsubexp0)))
+	      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (subsubexp0, 0)))
+		  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (subsubexp1, 0))))
+	      && (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (subsubexp0, 0)))
+		  == TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (subsubexp1, 0)))))
+	    {
+	      tree op0type = TREE_TYPE (TREE_OPERAND (subsubexp0, 0));
+	      enum machine_mode innermode = TYPE_MODE (op0type);
+	      bool zextend_p = TYPE_UNSIGNED (op0type);
+	      this_optab = zextend_p ? umsub_widen_optab : smsub_widen_optab;
+	      if (mode == GET_MODE_2XWIDER_MODE (innermode)
+		  && (this_optab->handlers[(int) mode].insn_code
+		      != CODE_FOR_nothing))
+		{
+		  expand_operands (TREE_OPERAND (subsubexp0, 0),
+				   TREE_OPERAND (subsubexp1, 0),
+				   NULL_RTX, &op0, &op1, EXPAND_NORMAL);
+		  op2 = expand_expr (TREE_OPERAND (exp, 0), subtarget,
+				     VOIDmode, 0);
+		  temp = expand_ternary_op (mode, this_optab, op0, op1, op2,
+					    target, unsignedp);
+		  gcc_assert (temp);
+		  return REDUCE_BIT_FIELD (temp);
+		}
+	    }
+	}
+
       /* For initializers, we are allowed to return a MINUS of two
 	 symbolic constants.  Here we handle all cases when both operands
 	 are constant.  */

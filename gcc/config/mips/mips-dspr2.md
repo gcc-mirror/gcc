@@ -162,31 +162,13 @@
 	 (match_operand:DI 1 "register_operand")))]
   "TARGET_DSPR2 && !TARGET_64BIT")
 
-(define_insn "mips_msub"
-  [(set (match_operand:DI 0 "register_operand" "=a")
+(define_expand "mips_msub<u>"
+  [(set (match_operand:DI 0 "register_operand")
 	(minus:DI
-	 (match_operand:DI 1 "register_operand" "0")
-	 (mult:DI (sign_extend:DI
-		   (match_operand:SI 2 "register_operand" "d"))
-		  (sign_extend:DI
-		   (match_operand:SI 3 "register_operand" "d")))))]
-  "TARGET_DSPR2 && !TARGET_64BIT"
-  "msub\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
-   (set_attr "mode"	"SI")])
-
-(define_insn "mips_msubu"
-  [(set (match_operand:DI 0 "register_operand" "=a")
-	(minus:DI
-	 (match_operand:DI 1 "register_operand" "0")
-	 (mult:DI (zero_extend:DI
-		   (match_operand:SI 2 "register_operand" "d"))
-		  (zero_extend:DI
-		   (match_operand:SI 3 "register_operand" "d")))))]
-  "TARGET_DSPR2 && !TARGET_64BIT"
-  "msubu\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
-   (set_attr "mode"	"SI")])
+	 (match_operand:DI 1 "register_operand")
+	 (mult:DI (any_extend:DI (match_operand:SI 2 "register_operand"))
+		  (any_extend:DI (match_operand:SI 3 "register_operand")))))]
+  "TARGET_DSPR2 && !TARGET_64BIT")
 
 (define_insn "mulv2hi3"
   [(parallel
