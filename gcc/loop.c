@@ -2561,7 +2561,7 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 			     like this as a result of record_jump_cond.  */
 
 			  if ((temp = find_reg_note (i1, REG_EQUAL, NULL_RTX))
-			      && ! loop_invariant_p (loop, XEXP (temp, 0)))
+			      && loop_invariant_p (loop, XEXP (temp, 0)) != 1)
 			    remove_note (i1, temp);
 			}
 
