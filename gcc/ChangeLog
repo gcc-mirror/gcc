@@ -1,3 +1,22 @@
+2007-05-08  Chao-ying Fu  <fu@mips.com>
+
+	* doc/md.texi (msub@var{m}@var{n}4, usub@var{m}@var{n}4): Document.
+	* optabs.h (OTI_smsub_widen, OTI_umsub_widen): New optab_indexes.
+	(smsub_widen_optab, umsub_widen_optab): Define.
+	* optabs.c (init_optabs): Initialize smsub_widen_optab and
+	umsub_widen_optab.
+	* genopinit.c (optabs): Fill in smsub_widen_optab and
+	umsub_widen_optab.
+	* expr.c (expand_expr_real_1): Try to use smsub_widen_optab
+	and umsub_widen_optab to implement multiply-subtract sequences.
+	* config/mips/mips.md (*msac<u>_di): Rename to...
+	(<u>msubsidi4): ...this.  Extend condition to include
+	GENERATE_MADD_MSUB and TARGET_DSPR2.  Change the constraint
+	of operand 0 to "ka" and use the three-operand form of msub<u>
+	for TARGET_DSPR2.
+	* config/mips/mips-dspr2.md (mips_msub, mips_msubu): Convert
+	to define_expands.
+
 2007-05-08  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR rtl-optimization/28011

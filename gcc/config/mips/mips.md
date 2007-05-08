@@ -1649,16 +1649,18 @@
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")])
 
-(define_insn "*msac<u>_di"
-  [(set (match_operand:DI 0 "register_operand" "=x")
+(define_insn "<u>msubsidi4"
+  [(set (match_operand:DI 0 "register_operand" "=ka")
         (minus:DI
 	   (match_operand:DI 3 "register_operand" "0")
 	   (mult:DI
 	      (any_extend:DI (match_operand:SI 1 "register_operand" "d"))
 	      (any_extend:DI (match_operand:SI 2 "register_operand" "d")))))]
-  "!TARGET_64BIT && ISA_HAS_MSAC"
+  "!TARGET_64BIT && (ISA_HAS_MSAC || GENERATE_MADD_MSUB || TARGET_DSPR2)"
 {
-  if (TARGET_MIPS5500)
+  if (TARGET_DSPR2)
+    return "msub<u>\t%q0,%1,%2";
+  else if (TARGET_MIPS5500 || GENERATE_MADD_MSUB)
     return "msub<u>\t%1,%2";
   else
     return "msac<u>\t$0,%1,%2";
