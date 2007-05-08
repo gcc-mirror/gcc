@@ -39,15 +39,18 @@ void test01()
 
   typedef void (fn_type) ();
   typedef make_signed<fn_type>::type  	test4_type;
+
+  typedef make_signed<float>::type  	test5_type;
 }
 
 // { dg-error "does not name a type" "" { target *-*-* } 34 }
 // { dg-error "instantiated from here" "" { target *-*-* } 36 }
 // { dg-error "instantiated from here" "" { target *-*-* } 38 }
 // { dg-error "instantiated from here" "" { target *-*-* } 41 }
+// { dg-error "instantiated from here" "" { target *-*-* } 43 }
 
-// { dg-error "invalid use of incomplete type" "" { target *-*-* } 320 }
-// { dg-error "declaration of" "" { target *-*-* } 268 }
+// { dg-error "invalid use of incomplete type" "" { target *-*-* } 291 }
+// { dg-error "declaration of" "" { target *-*-* } 253 }
 
 // { dg-excess-errors "At global scope" }
 // { dg-excess-errors "In instantiation of" }
