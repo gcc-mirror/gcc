@@ -1,3 +1,9 @@
+2007-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/31854
+	* config/i386/i386.c (ix86_function_regparm): Process local
+	functions only when TREE_CODE (decl) equals FUNCTION_DECL.
+	
 2007-05-07  Mike Stump  <mrs@apple.com>
 
 	* doc/invoke.texi (Warning Options): Document that -Wempty-body
