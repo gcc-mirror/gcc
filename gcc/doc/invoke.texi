@@ -439,12 +439,13 @@ Objective-C and Objective-C++ Dialects}.
 -mcall-prologues  -mno-tablejump  -mtiny-stack  -mint8}
 
 @emph{Blackfin Options}
-@gccoptlist{-momit-leaf-frame-pointer -mno-omit-leaf-frame-pointer @gol
--mspecld-anomaly -mno-specld-anomaly -mcsync-anomaly -mno-csync-anomaly @gol
--mlow-64k  -mno-low64k  -mstack-check-l1  -mid-shared-library @gol
--mno-id-shared-library -mshared-library-id=@var{n} @gol
--mleaf-id-shared-library  -mno-leaf-id-shared-library @gol
--msep-data  -mno-sep-data  -mlong-calls  -mno-long-calls}
+@gccoptlist{-mcpu=@var{cpu}  -msim  -momit-leaf-frame-pointer @gol
+-mno-omit-leaf-frame-pointer  -mspecld-anomaly  -mno-specld-anomaly @gol
+-mcsync-anomaly  -mno-csync-anomaly  -mlow-64k  -mno-low64k @gol
+-mstack-check-l1  -mid-shared-library  -mno-id-shared-library @gol
+-mshared-library-id=@var{n}  -mleaf-id-shared-library @gol
+-mno-leaf-id-shared-library  -msep-data  -mno-sep-data  -mlong-calls @gol
+-mno-long-calls}
 
 @emph{CRIS Options}
 @gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}  -mtune=@var{cpu} @gol
@@ -8349,6 +8350,23 @@ size.
 @cindex Blackfin Options
 
 @table @gcctabopt
+@item -mcpu=@var{cpu}
+@opindex mcpu=
+Specifies the name of the target Blackfin processor. Currently, @var{cpu}
+can be one of @samp{bf531}, @samp{bf532}, @samp{bf533},
+@samp{bf534}, @samp{bf536}, @samp{bf537}, @samp{bf561}.
+Without this option, @samp{bf532} is used as the processor by default.
+The corresponding predefined processor macros for @var{cpu} is to
+be defined.  For the @samp{bfin-elf} toolchain, this causes the hardware
+BSP provided by libgloss to be linked in if @samp{-msim} is not given.
+Support for @samp{bf561} is incomplete; only the processor macro is defined.
+
+@item -msim
+@opindex msim
+Specifies that the program will be run on the simulator.  This causes
+the simulator BSP provided by libgloss to be linked in.  This option
+has effect only for @samp{bfin-elf} toolchain.
+
 @item -momit-leaf-frame-pointer
 @opindex momit-leaf-frame-pointer
 Don't keep the frame pointer in a register for leaf functions.  This

@@ -15,6 +15,14 @@
 	(sibcall_epilogue): Likewise.
 	(eh_return_internal): Likewise.
 		
+	* config/bfin/bfin-protos.h (enum bfin_cpu): Add
+	BFIN_CPU_BF534, BFIN_CPU_BF536 and BFIN_CPU_BF561.
+	* config/bfin/bfin.c (bfin_handle_option): Handle
+	-mcpu=bf534, -mcpu=bf536 and -mcpu=bf561.
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS):
+	Support bf534, bf536 and bf561.
+	* doc/invoke.texi (Blackfin Options): Document -mcpu and -msim.
+
 2007-05-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/31854
