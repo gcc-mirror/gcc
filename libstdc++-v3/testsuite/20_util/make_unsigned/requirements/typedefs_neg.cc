@@ -39,14 +39,17 @@ void test01()
 
   typedef void (fn_type) ();
   typedef make_unsigned<fn_type>::type  	test4_type;
+
+  typedef make_unsigned<float>::type  		test5_type;
 }
 
 // { dg-error "does not name a type" "" { target *-*-* } 34 }
 // { dg-error "instantiated from here" "" { target *-*-* } 36 }
 // { dg-error "instantiated from here" "" { target *-*-* } 38 }
 // { dg-error "instantiated from here" "" { target *-*-* } 41 }
+// { dg-error "instantiated from here" "" { target *-*-* } 43 }
 
-// { dg-error "invalid use of incomplete type" "" { target *-*-* } 223 }
+// { dg-error "invalid use of incomplete type" "" { target *-*-* } 208 }
 // { dg-error "declaration of" "" { target *-*-* } 170 }
 
 // { dg-excess-errors "At global scope" }

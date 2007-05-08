@@ -50,13 +50,6 @@ void test01()
   typedef make_signed<volatile wchar_t>::type  	test23_type;
   VERIFY( (is_same<test23_type, volatile signed wchar_t>::value) );
 
-#if 0
-  // XXX 
-  // When is_signed works for floating points types this should pass
-  typedef make_signed<volatile float>::type  	test24_type;
-  VERIFY( (is_same<test24_type, volatile int>::value) );
-#endif
-
   typedef make_signed<test_enum>::type  	test25_type;
   VERIFY( (is_same<test25_type, int>::value) );
 }

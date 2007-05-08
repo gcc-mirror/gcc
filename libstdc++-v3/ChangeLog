@@ -1,5 +1,17 @@
 2007-05-08  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/std/type_traits (make_signed): Remove specializations
+	for floating point types.
+	(make_unsigned): Same.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Fix.
+	* testsuite/20_util/make_signed/requirements/typedefs-1.cc: Same.
+	* testsuite/20_util/make_signed/requirements/typedefs-2.cc: Same.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Same.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc: Same.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc: Same.
+	
+2007-05-08  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* testsuite/26_numerics/headers/cmath/types_std_c++0x_neg.cc: New.
 
 2007-05-08  Jason Merrill  <jason@redhat.com>
