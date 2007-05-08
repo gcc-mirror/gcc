@@ -2668,12 +2668,12 @@
 (define_expand "epilogue"
   [(const_int 1)]
   ""
-  "bfin_expand_epilogue (1, 0); DONE;")
+  "bfin_expand_epilogue (1, 0, 0); DONE;")
 
 (define_expand "sibcall_epilogue"
   [(const_int 1)]
   ""
-  "bfin_expand_epilogue (0, 0); DONE;")
+  "bfin_expand_epilogue (0, 0, 1); DONE;")
 
 (define_expand "eh_return"
   [(unspec_volatile [(match_operand:SI 0 "register_operand" "")]
@@ -2693,7 +2693,7 @@
   "#"
   "reload_completed"
   [(const_int 1)]
-  "bfin_expand_epilogue (1, 1); DONE;")
+  "bfin_expand_epilogue (1, 1, 0); DONE;")
 
 (define_insn "link"
   [(set (mem:SI (plus:SI (reg:SI REG_SP) (const_int -4))) (reg:SI REG_RETS))

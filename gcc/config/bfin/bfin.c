@@ -569,12 +569,14 @@ frame_related_constant_load (rtx reg, HOST_WIDE_INT constant, bool related)
     RTX_FRAME_RELATED_P (insn) = 1;
 }
 
-/* Generate efficient code to add a value to a P register.  We can use
-   P1 as a scratch register.  Set RTX_FRAME_RELATED_P on the generated
-   insns if FRAME is nonzero.  */
+/* Generate efficient code to add a value to a P register.
+   Set RTX_FRAME_RELATED_P on the generated insns if FRAME is nonzero.
+   EPILOGUE_P is zero if this function is called for prologue,
+   otherwise it's nonzero. And it's less than zero if this is for
+   sibcall epilogue.  */
 
 static void
-add_to_reg (rtx reg, HOST_WIDE_INT value, int frame)
+add_to_reg (rtx reg, HOST_WIDE_INT value, int frame, int epilogue_p)
 {
   if (value == 0)
     return;
@@ -584,8 +586,40 @@ add_to_reg (rtx reg, HOST_WIDE_INT value, int frame)
      in one instruction.  */
   if (value > 120 || value < -120)
     {
-      rtx tmpreg = gen_rtx_REG (SImode, REG_P1);
+      rtx tmpreg;
+      rtx tmpreg2;
       rtx insn;
+
+      tmpreg2 = NULL_RTX;
+
+      /* For prologue or normal epilogue, P1 can be safely used
+	 as the temporary register. For sibcall epilogue, we try to find
+	 a call used P register, which will be restored in epilogue.
+	 If we cannot find such a P register, we have to use one I register
+	 to help us.  */
+
+      if (epilogue_p >= 0)
+	tmpreg = gen_rtx_REG (SImode, REG_P1);
+      else
+	{
+	  int i;
+	  for (i = REG_P0; i <= REG_P5; i++)
+	    if ((regs_ever_live[i] && ! call_used_regs[i])
+		|| (!TARGET_FDPIC
+		    && i == PIC_OFFSET_TABLE_REGNUM
+		    && (current_function_uses_pic_offset_table
+			|| (TARGET_ID_SHARED_LIBRARY
+			    && ! current_function_is_leaf))))
+	      break;
+	  if (i <= REG_P5)
+	    tmpreg = gen_rtx_REG (SImode, i);
+	  else
+	    {
+	      tmpreg = gen_rtx_REG (SImode, REG_P1);
+	      tmpreg2 = gen_rtx_REG (SImode, REG_I0);
+	      emit_move_insn (tmpreg2, tmpreg);
+	    }
+	}
 
       if (frame)
 	frame_related_constant_load (tmpreg, value, TRUE);
@@ -595,6 +629,9 @@ add_to_reg (rtx reg, HOST_WIDE_INT value, int frame)
       insn = emit_insn (gen_addsi3 (reg, reg, tmpreg));
       if (frame)
 	RTX_FRAME_RELATED_P (insn) = 1;
+
+      if (tmpreg2 != NULL_RTX)
+	emit_move_insn (tmpreg, tmpreg2);
     }
   else
     do
@@ -702,14 +739,17 @@ do_link (rtx spreg, HOST_WIDE_INT frame_size, bool all)
 	  rtx insn = emit_insn (pat);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
-      add_to_reg (spreg, -frame_size, 1);
+      add_to_reg (spreg, -frame_size, 1, 0);
     }
 }
 
-/* Like do_link, but used for epilogues to deallocate the stack frame.  */
+/* Like do_link, but used for epilogues to deallocate the stack frame.
+   EPILOGUE_P is zero if this function is called for prologue,
+   otherwise it's nonzero. And it's less than zero if this is for
+   sibcall epilogue.  */
 
 static void
-do_unlink (rtx spreg, HOST_WIDE_INT frame_size, bool all)
+do_unlink (rtx spreg, HOST_WIDE_INT frame_size, bool all, int epilogue_p)
 {
   frame_size += arg_area_size ();
 
@@ -719,7 +759,7 @@ do_unlink (rtx spreg, HOST_WIDE_INT frame_size, bool all)
     {
       rtx postinc = gen_rtx_MEM (Pmode, gen_rtx_POST_INC (Pmode, spreg));
 
-      add_to_reg (spreg, frame_size, 0);
+      add_to_reg (spreg, frame_size, 0, epilogue_p);
       if (must_save_fp_p ())
 	{
 	  rtx fpreg = gen_rtx_REG (Pmode, REG_FP);
@@ -842,7 +882,7 @@ expand_interrupt_handler_epilogue (rtx spreg, e_funkind fkind)
      insns.  */
   MEM_VOLATILE_P (postinc) = 1;
 
-  do_unlink (spreg, get_frame_size (), all);
+  do_unlink (spreg, get_frame_size (), all, 1);
 
   if (lookup_attribute ("nesting", attrs))
     {
@@ -968,7 +1008,7 @@ bfin_expand_prologue (void)
 	{
 	  if (lim != p2reg)
 	    emit_move_insn (p2reg, lim);
-	  add_to_reg (p2reg, offset, 0);
+	  add_to_reg (p2reg, offset, 0, 0);
 	  lim = p2reg;
 	}
       emit_insn (gen_compare_lt (bfin_cc_rtx, spreg, lim));
@@ -987,13 +1027,15 @@ bfin_expand_prologue (void)
 
 /* Generate RTL for the epilogue of the current function.  NEED_RETURN is zero
    if this is for a sibcall.  EH_RETURN is nonzero if we're expanding an
-   eh_return pattern.  */
+   eh_return pattern. SIBCALL_P is true if this is a sibcall epilogue,
+   false otherwise.  */
 
 void
-bfin_expand_epilogue (int need_return, int eh_return)
+bfin_expand_epilogue (int need_return, int eh_return, bool sibcall_p)
 {
   rtx spreg = gen_rtx_REG (Pmode, REG_SP);
   e_funkind fkind = funkind (TREE_TYPE (current_function_decl));
+  int e = sibcall_p ? -1 : 1;
 
   if (fkind != SUBROUTINE)
     {
@@ -1001,7 +1043,7 @@ bfin_expand_epilogue (int need_return, int eh_return)
       return;
     }
 
-  do_unlink (spreg, get_frame_size (), false);
+  do_unlink (spreg, get_frame_size (), false, e);
 
   expand_epilogue_reg_restore (spreg, false, false);
 

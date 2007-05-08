@@ -1,3 +1,20 @@
+2007-05-08  Jie Zhang  <jie.zhang@analog.com>
+
+	* config/bfin/bfin-protos.h (bfin_expand_epilogue): Add a third
+	argument of type bool.
+	* config/bfin/bfin.c (add_to_reg): Add epilogue_p as a fourth
+	argument. Safely select temporary P register according to it.
+	(do_link): Change call site of add_to_reg accordingly.
+	(do_unlink): Add epilogue_p as a fourth argument and pass it
+	to add_to_reg.
+	(expand_interrupt_handler_epilogue): Change call of do_unlink
+	accordingly.
+	(bfin_expand_prologue): Add a third argument sibcall_p.
+	* config/bfin/bfin.md (epilogue): Change call of
+	bfin_expand_epilogue accordingly.
+	(sibcall_epilogue): Likewise.
+	(eh_return_internal): Likewise.
+		
 2007-05-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/31854
