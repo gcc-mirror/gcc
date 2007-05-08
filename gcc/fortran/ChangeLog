@@ -1,3 +1,13 @@
+2007-05-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29397
+	PR fortran/29400
+	* decl.c (add_init_expr_to_sym): Expand a scalar initializer
+	for a parameter array into an array expression with the right
+	shape.
+	* array.c (spec_dimen_size): Remove static attribute.
+	* gfortran.h : Prototype for spec_dimen_size.
+
 2007-05-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31399
