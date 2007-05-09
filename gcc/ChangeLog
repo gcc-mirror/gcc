@@ -1,3 +1,9 @@
+2007-05-08  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.h (LOCAL_ALIGNMENT): Define.
+	* config/bfin/bfin.c (bfin_local_alignment): New function.
+	* config/bfin/bfin-protos.h (bfin_local_alignment): Declare it.
+
 2007-05-08  Chao-ying Fu  <fu@mips.com>
 
 	* doc/md.texi (msub@var{m}@var{n}4, usub@var{m}@var{n}4): Document.
