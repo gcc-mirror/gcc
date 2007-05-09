@@ -1953,18 +1953,18 @@ xtensa_output_literal (FILE *file, rtx x, enum machine_mode mode, int labelno)
 	{
 	case SFmode:
 	  REAL_VALUE_TO_TARGET_SINGLE (r, value_long[0]);
-#if HOST_BITS_PER_LONG > 32
-	  value_long[0] &= 0xffffffff;
-#endif
+	  if (HOST_BITS_PER_LONG > 32)
+	    value_long[0] &= 0xffffffff;
 	  fprintf (file, "0x%08lx\n", value_long[0]);
 	  break;
 
 	case DFmode:
 	  REAL_VALUE_TO_TARGET_DOUBLE (r, value_long);
-#if HOST_BITS_PER_LONG > 32
-	  value_long[0] &= 0xffffffff;
-	  value_long[1] &= 0xffffffff;
-#endif
+	  if (HOST_BITS_PER_LONG > 32)
+	    {
+	      value_long[0] &= 0xffffffff;
+	      value_long[1] &= 0xffffffff;
+	    }
 	  fprintf (file, "0x%08lx, 0x%08lx\n",
 		   value_long[0], value_long[1]);
 	  break;

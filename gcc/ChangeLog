@@ -1,4 +1,8 @@
 2007-05-09  Bob Wilson  <bob.wilson@acm.org>
+	
+	* config/xtensa/xtensa.c (xtensa_output_literal): Don't use #if.
+	
+2007-05-09  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_output_literal): Mask out high bits
 	for floating-point values if HOST_BITS_PER_LONG > 32.  Use split_double
