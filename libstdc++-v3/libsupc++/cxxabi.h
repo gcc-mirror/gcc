@@ -53,6 +53,12 @@
 #include <cxxabi-forced.h>
  
 #ifdef __cplusplus
+#define _GLIBCXX_NOTHROW throw() 
+#else
+#define _GLIBCXX_NOTHROW __attribute__((nothrow))
+#endif
+
+#ifdef __cplusplus
 namespace __cxxabiv1
 {  
   extern "C" 
@@ -137,11 +143,7 @@ namespace __cxxabiv1
 
   // DSO destruction.
   int
-  __cxa_atexit(void (*)(void*), void*, void*)
-#ifdef __cplusplus
-    throw ()
-#endif
-    ;
+  __cxa_atexit(void (*)(void*), void*, void*) _GLIBCXX_NOTHROW;
 
   int
   __cxa_finalize(void*);
