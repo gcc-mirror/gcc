@@ -1,3 +1,11 @@
+2007-05-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* libstdc++-v3/libsupc++/cxxabi.h (_GLIBCXX_NOTHROW): New macro.
+	(__cxa_atexit): Use it.
+
+	* testsuite/lib/libstdc++.exp (v3_target_compile_as_c): For
+	installed-tree testing, search more include directories.
+
 2007-05-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/type_traits (make_signed): Remove specializations
@@ -94,7 +102,11 @@
 	* testsuite/23_containers/vector/requirements/dr438/
 	constructor_2_neg.cc: Likewise.
 
+>>>>>>> .r124554
 2007-05-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp (v3_target_compile_as_c): For
+	installed-tree testing, search more include directories.
 
 	* testsuite/22_locale/num_put/put/char/14220.cc: XFAIL on Solaris
 	2.10.

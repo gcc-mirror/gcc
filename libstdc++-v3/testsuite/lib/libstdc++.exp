@@ -398,6 +398,9 @@ proc v3_target_compile_as_c { source dest type options } {
     # the includes variable is not likely to include the necessary
     # info.
     if { ![file exists $flags_file] } {
+	# ??? We need a --print-include-dirs option to GCC, so that
+	# we can avoid these hacks.  The heuristics here will not
+	# work with non-standard --with-includedir= options.
 	set version [remote_exec host ${cc} -dumpversion]
 	# Remove the trailing newline from the output.
 	set version [string trimright [lindex $version 1]]
@@ -406,6 +409,13 @@ proc v3_target_compile_as_c { source dest type options } {
 	set comp_base_dir [remote_exec host ${cc} --print-prog-name=cc1]
 	set comp_base_dir [lindex $comp_base_dir 1]
 	set comp_base_dir [file dirname [file dirname [file dirname [file dirname [file dirname $comp_base_dir]]]]]
+	# For a cross compiler, the header files will be located in a
+	# machine-specific subdirectory.
+	set crossbase "${comp_base_dir}/${machine}/include/c++/${version}"
+	set crosstarget "${crossbase}/${machine}"
+	set cc_final [concat $cc_final "-I$crossbase -I$crosstarget"]
+	# For a native compiler, the header files will be located at 
+	# the top level.
 	set includesbase "${comp_base_dir}/include/c++/${version}"
 	set includestarget "${includesbase}/${machine}"
 	set cc_final [concat $cc_final "-I$includesbase -I$includestarget"]
