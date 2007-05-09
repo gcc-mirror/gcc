@@ -102,7 +102,6 @@
 	* testsuite/23_containers/vector/requirements/dr438/
 	constructor_2_neg.cc: Likewise.
 
->>>>>>> .r124554
 2007-05-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp (v3_target_compile_as_c): For
