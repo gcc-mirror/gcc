@@ -4278,41 +4278,6 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 
 	inc = cp_convert (argtype, inc);
 
-	/* Handle incrementing a cast-expression.  */
-
-	switch (TREE_CODE (arg))
-	  {
-	  case NOP_EXPR:
-	  case CONVERT_EXPR:
-	  case FLOAT_EXPR:
-	  case FIX_TRUNC_EXPR:
-	    {
-	      tree incremented, modify, value, compound;
-	      if (! lvalue_p (arg) && pedantic)
-		pedwarn ("cast to non-reference type used as lvalue");
-	      arg = stabilize_reference (arg);
-	      if (code == PREINCREMENT_EXPR || code == PREDECREMENT_EXPR)
-		value = arg;
-	      else
-		value = save_expr (arg);
-	      incremented = build2 (((code == PREINCREMENT_EXPR
-				      || code == POSTINCREMENT_EXPR)
-				     ? PLUS_EXPR : MINUS_EXPR),
-				    argtype, value, inc);
-
-	      modify = build_modify_expr (arg, NOP_EXPR, incremented);
-	      compound = build2 (COMPOUND_EXPR, TREE_TYPE (arg),
-				 modify, value);
-
-	      /* Eliminate warning about unused result of + or -.  */
-	      TREE_NO_WARNING (compound) = 1;
-	      return compound;
-	    }
-
-	  default:
-	    break;
-	  }
-
 	/* Complain about anything else that is not a true lvalue.  */
 	if (!lvalue_or_else (arg, ((code == PREINCREMENT_EXPR
 				    || code == POSTINCREMENT_EXPR)
