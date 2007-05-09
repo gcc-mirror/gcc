@@ -1,3 +1,7 @@
+2007-05-09  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc.dg/20070507-1.c: New testcase.
+
 2007-05-08  Chao-ying Fu  <fu@mips.com>
 
 	* gcc.target/mips/msub-1.c, gcc.target/mips/msub-2.c,
