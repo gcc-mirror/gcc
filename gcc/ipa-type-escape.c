@@ -1662,7 +1662,7 @@ ipa_init (void)
 
 /* Check out the rhs of a static or global initialization VNODE to see
    if any of them contain addressof operations.  Note that some of
-   these variables may  not even be referenced in the code in this
+   these variables may not even be referenced in the code in this
    compilation unit but their right hand sides may contain references
    to variables defined within this unit.  */
 
