@@ -1939,6 +1939,7 @@ xtensa_output_literal (FILE *file, rtx x, enum machine_mode mode, int labelno)
   long value_long[2];
   REAL_VALUE_TYPE r;
   int size;
+  rtx first, second;
 
   fprintf (file, "\t.literal .LC%u, ", (unsigned) labelno);
 
@@ -1952,11 +1953,18 @@ xtensa_output_literal (FILE *file, rtx x, enum machine_mode mode, int labelno)
 	{
 	case SFmode:
 	  REAL_VALUE_TO_TARGET_SINGLE (r, value_long[0]);
+#if HOST_BITS_PER_LONG > 32
+	  value_long[0] &= 0xffffffff;
+#endif
 	  fprintf (file, "0x%08lx\n", value_long[0]);
 	  break;
 
 	case DFmode:
 	  REAL_VALUE_TO_TARGET_DOUBLE (r, value_long);
+#if HOST_BITS_PER_LONG > 32
+	  value_long[0] &= 0xffffffff;
+	  value_long[1] &= 0xffffffff;
+#endif
 	  fprintf (file, "0x%08lx, 0x%08lx\n",
 		   value_long[0], value_long[1]);
 	  break;
@@ -1978,9 +1986,10 @@ xtensa_output_literal (FILE *file, rtx x, enum machine_mode mode, int labelno)
 	  break;
 
 	case 8:
-	  output_addr_const (file, operand_subword (x, 0, 0, DImode));
+	  split_double (x, &first, &second);
+	  output_addr_const (file, first);
 	  fputs (", ", file);
-	  output_addr_const (file, operand_subword (x, 1, 0, DImode));
+	  output_addr_const (file, second);
 	  fputs ("\n", file);
 	  break;
 
