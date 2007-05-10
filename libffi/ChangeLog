@@ -1,5 +1,13 @@
 2007-05-10  Roman Zippel <zippel@linux-m68k.org>
 
+	* src/m68k/ffi.c (ffi_prep_incoming_args_SYSV,
+	ffi_closure_SYSV_inner,ffi_prep_closure): New, add closure support.
+	* src/m68k/sysv.S(ffi_closure_SYSV,ffi_closure_struct_SYSV): Likewise.
+	* src/m68k/ffitarget.h (FFI_TRAMPOLINE_SIZE): Likewise.
+	(FFI_CLOSURES): Enable closure support.
+
+2007-05-10  Roman Zippel <zippel@linux-m68k.org>
+
 	* configure.ac (HAVE_AS_CFI_PSEUDO_OP): New test.
 	* configure: Regenerate.
 	* fficonfig.h.in: Regenerate.
