@@ -12,36 +12,40 @@
 
 	.globl	ffi_call_SYSV
 	.type	ffi_call_SYSV,@function
+	.align	4
 
 ffi_call_SYSV:
 	link	%fp,#0
 	move.l	%d2,-(%sp)
 
 	| Make room for all of the new args.
-	sub.l	16(%fp),%sp
+	sub.l	12(%fp),%sp
 
 	| Call ffi_prep_args
-	move.l	12(%fp),-(%sp)
+	move.l	8(%fp),-(%sp)
 	pea	4(%sp)
-	move.l	8(%fp),%a0
-	jsr	(%a0)
+#if !defined __PIC__
+	jsr	ffi_prep_args
+#else
+	bsr.l	ffi_prep_args@PLTPC
+#endif
 	addq.l	#8,%sp	
 
 	| Pass pointer to struct value, if any
 	move.l	%a0,%a1
 
 	| Call the function
-	move.l	32(%fp),%a0
+	move.l	24(%fp),%a0
 	jsr	(%a0)
 
 	| Remove the space we pushed for the args
-	add.l	16(%fp),%sp
+	add.l	12(%fp),%sp
 
 	| Load the pointer to storage for the return value
-	move.l	28(%fp),%a1
+	move.l	20(%fp),%a1
 
 	| Load the return type code 
-	move.l	20(%fp),%d2
+	move.l	16(%fp),%d2
 
 	| If the return value pointer is NULL, assume no return value.
 	tst.l	%a1
@@ -79,19 +83,24 @@ retlongdouble:
 
 retpointer:
 	btst	#5,%d2
-	jbeq	retstruct
+	jbeq	retstruct1
 	move.l	%a0,(%a1)
 	jbra	epilogue
 
-retstruct:
+retstruct1:
 	btst	#6,%d2
+	jbeq	retstruct2
+	move.b	%d0,(%a1)
+	jbra	epilogue
+
+retstruct2:
+	btst	#7,%d2
 	jbeq	noretval
-	move.l	24(%fp),%d2
-	bfins	%d0,(%a1){#0,%d2}
+	move.w	%d0,(%a1)
 
 noretval:
 epilogue:
 	move.l	(%sp)+,%d2
-	unlk	%a6
+	unlk	%fp
 	rts
 	.size	ffi_call_SYSV,.-ffi_call_SYSV

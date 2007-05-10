@@ -9,10 +9,15 @@
 
 #include <stdlib.h>
 
+void ffi_call_SYSV (extended_cif *,
+		    unsigned, unsigned,
+		    void *, void (*fn) ());
+void *ffi_prep_args (void *stack, extended_cif *ecif);
+
 /* ffi_prep_args is called by the assembly routine once stack space has
    been allocated for the function's arguments.  */
 
-static void *
+void *
 ffi_prep_args (void *stack, extended_cif *ecif)
 {
   unsigned int i;
@@ -24,7 +29,7 @@ ffi_prep_args (void *stack, extended_cif *ecif)
   argp = stack;
 
   if (ecif->cif->rtype->type == FFI_TYPE_STRUCT
-      && ecif->cif->rtype->size > 8)
+      && !ecif->cif->flags)
     struct_value_ptr = ecif->rvalue;
   else
     struct_value_ptr = NULL;
@@ -37,44 +42,47 @@ ffi_prep_args (void *stack, extended_cif *ecif)
     {
       size_t z;
 
-      /* Align if necessary.  */
-      if (((*p_arg)->alignment - 1) & (unsigned) argp)
-	argp = (char *) ALIGN (argp, (*p_arg)->alignment);
-
-	  z = (*p_arg)->size;
-	  if (z < sizeof (int))
+      z = (*p_arg)->size;
+      if (z < sizeof (int))
+	{
+	  switch ((*p_arg)->type)
 	    {
-	      switch ((*p_arg)->type)
-		{
-		case FFI_TYPE_SINT8:
-		  *(signed int *) argp = (signed int) *(SINT8 *) *p_argv;
-		  break;
+	    case FFI_TYPE_SINT8:
+	      *(signed int *) argp = (signed int) *(SINT8 *) *p_argv;
+	      break;
 
-		case FFI_TYPE_UINT8:
-		  *(unsigned int *) argp = (unsigned int) *(UINT8 *) *p_argv;
-		  break;
+	    case FFI_TYPE_UINT8:
+	      *(unsigned int *) argp = (unsigned int) *(UINT8 *) *p_argv;
+	      break;
 
-		case FFI_TYPE_SINT16:
-		  *(signed int *) argp = (signed int) *(SINT16 *) *p_argv;
-		  break;
+	    case FFI_TYPE_SINT16:
+	      *(signed int *) argp = (signed int) *(SINT16 *) *p_argv;
+	      break;
 
-		case FFI_TYPE_UINT16:
-		  *(unsigned int *) argp = (unsigned int) *(UINT16 *) *p_argv;
-		  break;
+	    case FFI_TYPE_UINT16:
+	      *(unsigned int *) argp = (unsigned int) *(UINT16 *) *p_argv;
+	      break;
 
-		case FFI_TYPE_STRUCT:
-		  memcpy (argp + sizeof (int) - z, *p_argv, z);
-		  break;
+	    case FFI_TYPE_STRUCT:
+	      memcpy (argp + sizeof (int) - z, *p_argv, z);
+	      break;
 
-		default:
-		  FFI_ASSERT (0);
-		}
-	      z = sizeof (int);
+	    default:
+	      FFI_ASSERT (0);
 	    }
-	  else
-	    memcpy (argp, *p_argv, z);
-	  p_argv++;
-	  argp += z;
+	  z = sizeof (int);
+	}
+      else
+	{
+	  memcpy (argp, *p_argv, z);
+
+	  /* Align if necessary.  */
+	  if ((sizeof(int) - 1) & z)
+	    z = ALIGN(z, sizeof(int));
+	}
+
+      p_argv++;
+      argp += z;
     }
 
   return struct_value_ptr;
@@ -86,7 +94,8 @@ ffi_prep_args (void *stack, extended_cif *ecif)
 #define CIF_FLAGS_DOUBLE	8
 #define CIF_FLAGS_LDOUBLE	16
 #define CIF_FLAGS_POINTER	32
-#define CIF_FLAGS_STRUCT	64
+#define CIF_FLAGS_STRUCT1	64
+#define CIF_FLAGS_STRUCT2	128
 
 /* Perform machine dependent cif processing */
 ffi_status
@@ -100,12 +109,24 @@ ffi_prep_cif_machdep (ffi_cif *cif)
       break;
 
     case FFI_TYPE_STRUCT:
-      if (cif->rtype->size > 4 && cif->rtype->size <= 8)
-	cif->flags = CIF_FLAGS_DINT;
-      else if (cif->rtype->size <= 4)
-	cif->flags = CIF_FLAGS_STRUCT;
-      else
-	cif->flags = 0;
+      switch (cif->rtype->size)
+	{
+	case 1:
+	  cif->flags = CIF_FLAGS_STRUCT1;
+	  break;
+	case 2:
+	  cif->flags = CIF_FLAGS_STRUCT2;
+	  break;
+	case 4:
+	  cif->flags = CIF_FLAGS_INT;
+	  break;
+	case 8:
+	  cif->flags = CIF_FLAGS_DINT;
+	  break;
+	default:
+	  cif->flags = 0;
+	  break;
+	}
       break;
 
     case FFI_TYPE_FLOAT:
@@ -137,11 +158,6 @@ ffi_prep_cif_machdep (ffi_cif *cif)
   return FFI_OK;
 }
 
-extern void ffi_call_SYSV (void *(*) (void *, extended_cif *), 
-			   extended_cif *, 
-			   unsigned, unsigned, unsigned,
-			   void *, void (*fn) ());
-
 void
 ffi_call (ffi_cif *cif, void (*fn) (), void *rvalue, void **avalue)
 {
@@ -149,7 +165,7 @@ ffi_call (ffi_cif *cif, void (*fn) (), void *rvalue, void **avalue)
 
   ecif.cif = cif;
   ecif.avalue = avalue;
-  
+
   /* If the return value is a struct and we don't have a return value
      address then we need to make one.  */
 
@@ -159,13 +175,11 @@ ffi_call (ffi_cif *cif, void (*fn) (), void *rvalue, void **avalue)
     ecif.rvalue = alloca (cif->rtype->size);
   else
     ecif.rvalue = rvalue;
-    
-  
-  switch (cif->abi) 
+
+  switch (cif->abi)
     {
     case FFI_SYSV:
-      ffi_call_SYSV (ffi_prep_args, &ecif, cif->bytes, 
-		     cif->flags, cif->rtype->size * 8,
+      ffi_call_SYSV (&ecif, cif->bytes, cif->flags,
 		     ecif.rvalue, fn);
       break;
 
