@@ -1,6 +1,7 @@
 2007-05-09  Mike Stump  <mrs@apple.com>
 
 	* g++.dg/other/first-global.C: Add -fpie for darwin.
+	* g++.dg/parse/attr-externally-visible-1.C: Likewise.
 
 2007-05-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 
