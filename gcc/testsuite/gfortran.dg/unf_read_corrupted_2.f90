@@ -14,7 +14,7 @@
          d(i)=i
       end do
 
-      open  (3,file='a',form='unformatted')
+      open  (3,form='unformatted', status="scratch")
       write (3) a,b,c,d,e
       rewind 3
       d = 0
