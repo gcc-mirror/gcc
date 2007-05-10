@@ -1,4 +1,4 @@
-! { dg do-run }
+! { dg-do run }
 ! PR 22144: eoshift1, eoshift3 and cshift1 used to lack memory
 ! allocation, which caused the writes to segfault.
 program main
