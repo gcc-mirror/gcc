@@ -1,3 +1,9 @@
+2007-05-10  Roman Zippel <zippel@linux-m68k.org>
+
+	* src/m68k/ffi.c (ffi_prep_args,ffi_prep_cif_machdep): Fix
+	numerous test suite failures.
+	* src/m68k/sysv.S (ffi_call_SYSV): Likewise.
+
 2007-04-11  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.am (EXTRA_DIST): Bring up to date.
