@@ -1,3 +1,10 @@
+2007-05-10 Dominique d'Humières <dominiq@lps.ens.fr>
+
+	* assumed_dummy_1.f90: Fix dg directive.
+	* char_initialiser_actual.f90: Likewise.
+	* nested_modules_2.f90: Likewise.
+	* shift-alloc.f90: Likewise.
+
 2007-05-10  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.dg/20070507-1.c: Disable for non-pic targets.

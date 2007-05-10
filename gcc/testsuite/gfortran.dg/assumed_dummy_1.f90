@@ -1,4 +1,4 @@
-! { dg do-run}
+! { dg-do run}
 ! Tests the fix for PRs 19358, 19477, 21211 and 21622.
 !
 ! Note that this tests only the valid cases with explicit interfaces.

@@ -1,4 +1,4 @@
-! { dg do-run }
+! { dg-do run }
 ! This tests the patch for PR16861.
 !
 ! Contributed by Paul Thomas <pault@gcc.gnu.org>
