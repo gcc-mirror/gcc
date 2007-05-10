@@ -1,3 +1,8 @@
+2007-05-10  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/31885
+	* gcc.dg/tree-ssa/loop-29.c: New test.
+
 2007-05-10 Dominique d'Humières <dominiq@lps.ens.fr>
 
 	* assumed_dummy_1.f90: Fix dg directive.

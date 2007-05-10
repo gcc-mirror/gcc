@@ -1,3 +1,10 @@
+2007-05-10  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/31885
+	* tree-chrec.c (chrec_contains_undetermined): Do not consider NULL_TREE
+	to be undetermined.
+	(automatically_generated_chrec_p): Return false for NULL.
+
 2007-05-08  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.h (MOVE_RATIO): Define.
