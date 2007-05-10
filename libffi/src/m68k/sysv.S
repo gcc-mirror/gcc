@@ -121,3 +121,89 @@ epilogue:
 	rts
 	CFI_ENDPROC()
 	.size	ffi_call_SYSV,.-ffi_call_SYSV
+
+	.globl	ffi_closure_SYSV
+	.type	ffi_closure_SYSV, @function
+	.align	4
+
+ffi_closure_SYSV:
+	CFI_STARTPROC()
+	link	%fp,#-12
+	CFI_OFFSET(14,-8)
+	CFI_DEF_CFA(14,8)
+	move.l	%sp,-12(%fp)
+	pea	8(%fp)
+	pea	-12(%fp)
+	move.l	%a0,-(%sp)
+#if !defined __PIC__
+	jsr	ffi_closure_SYSV_inner
+#else
+	bsr.l	ffi_closure_SYSV_inner@PLTPC
+#endif
+
+	lsr.l	#1,%d0
+	jne	1f
+	jcc	.Lcls_epilogue
+	move.l	-12(%fp),%d0
+.Lcls_epilogue:
+	unlk	%fp
+	rts
+1:
+	lea	-12(%fp),%a0
+	lsr.l	#2,%d0
+	jne	1f
+	jcs	.Lcls_ret_float
+	move.l	(%a0)+,%d0
+	move.l	(%a0),%d1
+	jra	.Lcls_epilogue
+.Lcls_ret_float:
+	fmove.s	(%a0),%fp0
+	jra	.Lcls_epilogue
+1:
+	lsr.l	#2,%d0
+	jne	1f
+	jcs	.Lcls_ret_ldouble
+	fmove.d	(%a0),%fp0
+	jra	.Lcls_epilogue
+.Lcls_ret_ldouble:
+	fmove.x	(%a0),%fp0
+	jra	.Lcls_epilogue
+1:
+	lsr.l	#2,%d0
+	jne	.Lcls_ret_struct2
+	jcs	.Lcls_ret_struct1
+	move.l	(%a0),%a0
+	move.l	%a0,%d0
+	jra	.Lcls_epilogue
+.Lcls_ret_struct1:
+	move.b	(%a0),%d0
+	jra	.Lcls_epilogue
+.Lcls_ret_struct2:
+	move.w	(%a0),%d0
+	jra	.Lcls_epilogue
+	CFI_ENDPROC()
+
+	.size	ffi_closure_SYSV,.-ffi_closure_SYSV
+
+	.globl	ffi_closure_struct_SYSV
+	.type	ffi_closure_struct_SYSV, @function
+	.align	4
+
+ffi_closure_struct_SYSV:
+	CFI_STARTPROC()
+	link	%fp,#0
+	CFI_OFFSET(14,-8)
+	CFI_DEF_CFA(14,8)
+	move.l	%sp,-12(%fp)
+	pea	8(%fp)
+	move.l	%a1,-(%sp)
+	move.l	%a0,-(%sp)
+#if !defined __PIC__
+	jsr	ffi_closure_SYSV_inner
+#else
+	bsr.l	ffi_closure_SYSV_inner@PLTPC
+#endif
+	unlk	%fp
+	rts
+	CFI_ENDPROC()
+	.size	ffi_closure_struct_SYSV,.-ffi_closure_struct_SYSV

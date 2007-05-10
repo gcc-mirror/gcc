@@ -8,11 +8,18 @@
 #include <ffi_common.h>
 
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <asm/cachectl.h>
 
 void ffi_call_SYSV (extended_cif *,
 		    unsigned, unsigned,
 		    void *, void (*fn) ());
 void *ffi_prep_args (void *stack, extended_cif *ecif);
+void ffi_closure_SYSV (ffi_closure *);
+void ffi_closure_struct_SYSV (ffi_closure *);
+unsigned int ffi_closure_SYSV_inner (ffi_closure *closure,
+				     void *resp, void *args);
 
 /* ffi_prep_args is called by the assembly routine once stack space has
    been allocated for the function's arguments.  */
@@ -188,3 +195,84 @@ ffi_call (ffi_cif *cif, void (*fn) (), void *rvalue, void **avalue)
       break;
     }
 }
+
+static void
+ffi_prep_incoming_args_SYSV (char *stack, void **avalue, ffi_cif *cif)
+{
+  unsigned int i;
+  void **p_argv;
+  char *argp;
+  ffi_type **p_arg;
+
+  argp = stack;
+  p_argv = avalue;
+
+  for (i = cif->nargs, p_arg = cif->arg_types; (i != 0); i--, p_arg++)
+    {
+      size_t z;
+
+      z = (*p_arg)->size;
+      if (z <= 4)
+	{
+	  *p_argv = (void *) (argp + 4 - z);
+
+	  z = 4;
+	}
+      else
+	{
+	  *p_argv = (void *) argp;
+
+	  /* Align if necessary */
+	  if ((sizeof(int) - 1) & z)
+	    z = ALIGN(z, sizeof(int));
+	}
+
+      p_argv++;
+      argp += z;
+    }
+}
+
+unsigned int
+ffi_closure_SYSV_inner (ffi_closure *closure, void *resp, void *args)
+{
+  ffi_cif *cif;
+  void **arg_area;
+
+  cif = closure->cif;
+  arg_area = (void**) alloca (cif->nargs * sizeof (void *));
+
+  ffi_prep_incoming_args_SYSV(args, arg_area, cif);
+
+  (closure->fun) (cif, resp, arg_area, closure->user_data);
+
+  return cif->flags;
+}
+
+ffi_status
+ffi_prep_closure_loc (ffi_closure* closure,
+		      ffi_cif* cif,
+		      void (*fun)(ffi_cif*,void*,void**,void*),
+		      void *user_data,
+		      void *codeloc)
+{
+  FFI_ASSERT (cif->abi == FFI_SYSV);
+
+  *(unsigned short *)closure->tramp = 0x207c;
+  *(void **)(closure->tramp + 2) = codeloc;
+  *(unsigned short *)(closure->tramp + 6) = 0x4ef9;
+  if (cif->rtype->type == FFI_TYPE_STRUCT
+      && !cif->flags)
+    *(void **)(closure->tramp + 8) = ffi_closure_struct_SYSV;
+  else
+    *(void **)(closure->tramp + 8) = ffi_closure_SYSV;
+
+  syscall(SYS_cacheflush, codeloc, FLUSH_SCOPE_LINE,
+	  FLUSH_CACHE_BOTH, FFI_TRAMPOLINE_SIZE);
+
+  closure->cif  = cif;
+  closure->user_data = user_data;
+  closure->fun  = fun;
+
+  return FFI_OK;
+}
+
