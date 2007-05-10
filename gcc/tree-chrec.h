@@ -36,8 +36,7 @@ extern GTY(()) tree chrec_known;
 static inline bool
 automatically_generated_chrec_p (tree chrec)
 {
-  return (chrec == chrec_not_analyzed_yet 
-	  || chrec == chrec_dont_know
+  return (chrec == chrec_dont_know
 	  || chrec == chrec_known);
 }
 

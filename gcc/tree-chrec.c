@@ -888,10 +888,11 @@ chrec_contains_undetermined (tree chrec)
 {
   int i, n;
 
-  if (chrec == chrec_dont_know
-      || chrec == chrec_not_analyzed_yet
-      || chrec == NULL_TREE)
+  if (chrec == chrec_dont_know)
     return true;
+
+  if (chrec == NULL_TREE)
+    return false;
 
   n = TREE_OPERAND_LENGTH (chrec);
   for (i = 0; i < n; i++)
