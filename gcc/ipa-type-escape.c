@@ -196,8 +196,9 @@ compare_type_brand (splay_tree_key sk1, splay_tree_key sk2)
 /* This is a trivial algorithm for removing duplicate types.  This
    would not work for any language that used structural equivalence as
    the basis of its type system.  */
-/* Return either TYPE if this is first time TYPE has been seen an
-   compatible TYPE that has already been processed.  */ 
+/* Return TYPE if no type compatible with TYPE has been seen so far,
+   otherwise return a type compatible with TYPE that has already been
+   processed.  */
 
 static tree
 discover_unique_type (tree type)
