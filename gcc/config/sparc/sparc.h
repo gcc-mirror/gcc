@@ -22,6 +22,8 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
+#include "config/vxworks-dummy.h"
+
 /* Note that some other tm.h files include this one and then override
    whatever definitions are necessary.  */
 
@@ -2409,6 +2411,7 @@ extern int sparc_indent_opcode;
 	  else if (GET_CODE (index) == REG)			\
 	    fprintf (FILE, "+%s", reg_names[REGNO (index)]);	\
 	  else if (GET_CODE (index) == SYMBOL_REF		\
+		   || GET_CODE (index) == LABEL_REF		\
 		   || GET_CODE (index) == CONST)		\
 	    fputc ('+', FILE), output_addr_const (FILE, index);	\
 	  else gcc_unreachable ();				\

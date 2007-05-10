@@ -73,6 +73,7 @@ extern int legitimate_address_p (enum machine_mode, rtx, int);
 extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
 extern rtx legitimize_tls_address (rtx);
 extern rtx legitimize_address (rtx, rtx, enum machine_mode);
+extern void sparc_emit_call_insn (rtx, rtx);
 extern void sparc_defer_case_vector (rtx, rtx, int);
 extern bool sparc_expand_move (enum machine_mode, rtx *);
 extern void sparc_emit_set_const32 (rtx, rtx);
