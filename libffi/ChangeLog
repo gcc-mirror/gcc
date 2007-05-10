@@ -1,5 +1,14 @@
 2007-05-10  Roman Zippel <zippel@linux-m68k.org>
 
+	* configure.ac (HAVE_AS_CFI_PSEUDO_OP): New test.
+	* configure: Regenerate.
+	* fficonfig.h.in: Regenerate.
+	* src/m68k/sysv.S (CFI_STARTPROC,CFI_ENDPROC,
+	CFI_OFFSET,CFI_DEF_CFA): New macros.
+	(ffi_call_SYSV): Add callframe annotation.
+
+2007-05-10  Roman Zippel <zippel@linux-m68k.org>
+
 	* src/m68k/ffi.c (ffi_prep_args,ffi_prep_cif_machdep): Fix
 	numerous test suite failures.
 	* src/m68k/sysv.S (ffi_call_SYSV): Likewise.

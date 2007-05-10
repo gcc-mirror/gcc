@@ -8,6 +8,18 @@
 #include <fficonfig.h>
 #include <ffi.h>
 
+#ifdef HAVE_AS_CFI_PSEUDO_OP
+#define CFI_STARTPROC()		.cfi_startproc
+#define CFI_OFFSET(reg,off)	.cfi_offset	reg,off
+#define CFI_DEF_CFA(reg,off)	.cfi_def_cfa	reg,off
+#define CFI_ENDPROC()		.cfi_endproc
+#else
+#define CFI_STARTPROC()
+#define CFI_OFFSET(reg,off)
+#define CFI_DEF_CFA(reg,off)
+#define CFI_ENDPROC()
+#endif
+
 	.text
 
 	.globl	ffi_call_SYSV
@@ -15,8 +27,12 @@
 	.align	4
 
 ffi_call_SYSV:
+	CFI_STARTPROC()
 	link	%fp,#0
+	CFI_OFFSET(14,-8)
+	CFI_DEF_CFA(14,8)
 	move.l	%d2,-(%sp)
+	CFI_OFFSET(2,-12)
 
 	| Make room for all of the new args.
 	sub.l	12(%fp),%sp
@@ -103,4 +119,5 @@ epilogue:
 	move.l	(%sp)+,%d2
 	unlk	%fp
 	rts
+	CFI_ENDPROC()
 	.size	ffi_call_SYSV,.-ffi_call_SYSV
