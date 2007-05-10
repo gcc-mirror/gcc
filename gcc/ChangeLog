@@ -1,3 +1,24 @@
+2007-05-10  Richard Sandiford  <richard@codesourcery.com>
+
+	* config.gcc (sparc-wrs-vxworks): New target.
+	* config/sparc/vxworks.h, config/sparc/t-vxworks: New files.
+	* config/sparc/sparc-protos.h (sparc_emit_call_insn): Declare.
+	* config/sparc/sparc.h: Include vxworks-dummy.h.
+	(PRINT_OPERAND_ADDRESS): Extend SYMBOL_REF handling to
+	include LABEL_REFs too.
+	* config/sparc/sparc.c (sparc_expand_move): Don't assume that
+	_GLOBAL_OFFSET_TABLE_ - label_ref is a link-time constant on
+	VxWorks.
+	(legitimize_pic_address): Handle LABEL_REFs like SYMBOL_REFs
+	on VxWorks.
+	(load_pic_register): Use gen_vxworks_load_got for VxWorks.
+	(sparc_emit_call_insn): New function.
+	(sparc_function_ok_for_sibcall): Restrict sibcalls to locally-binding
+	functions when generating VxWorks PIC.
+	* config/sparc/sparc.md (vxworks_load_got): New pattern.
+	(call, call_value): Use sparc_emit_call_insn instead of
+	emit_call_insn.
+
 2007-05-09  Bob Wilson  <bob.wilson@acm.org>
 	
 	* config/xtensa/xtensa.c (xtensa_output_literal): Don't use #if.

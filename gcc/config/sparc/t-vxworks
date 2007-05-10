@@ -1,0 +1,5 @@
+# Multilibs for VxWorks.
+
+MULTILIB_OPTIONS = mrtp fPIC
+MULTILIB_MATCHES = fPIC=fpic
+MULTILIB_EXCEPTIONS = fPIC

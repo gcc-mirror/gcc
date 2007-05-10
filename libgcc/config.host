@@ -594,6 +594,8 @@ sparc-*-sysv4*)
 	;;
 sparc64-*-elf*)
 	;;
+sparc-wrs-vxworks)
+	;;
 sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 	;;
 sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux

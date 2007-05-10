@@ -980,17 +980,27 @@ sparc_expand_move (enum machine_mode mode, rtx *operands)
       if (pic_address_needs_scratch (operands[1]))
 	operands[1] = legitimize_pic_address (operands[1], mode, 0);
 
-      if (GET_CODE (operands[1]) == LABEL_REF && mode == SImode)
+      /* VxWorks does not impose a fixed gap between segments; the run-time
+	 gap can be different from the object-file gap.  We therefore can't
+	 assume X - _GLOBAL_OFFSET_TABLE_ is a link-time constant unless we
+	 are absolutely sure that X is in the same segment as the GOT.
+	 Unfortunately, the flexibility of linker scripts means that we
+	 can't be sure of that in general, so assume that _G_O_T_-relative
+	 accesses are never valid on VxWorks.  */
+      if (GET_CODE (operands[1]) == LABEL_REF && !TARGET_VXWORKS_RTP)
 	{
-	  emit_insn (gen_movsi_pic_label_ref (operands[0], operands[1]));
-	  return true;
-	}
+	  if (mode == SImode)
+	    {
+	      emit_insn (gen_movsi_pic_label_ref (operands[0], operands[1]));
+	      return true;
+	    }
 
-      if (GET_CODE (operands[1]) == LABEL_REF && mode == DImode)
-	{
-	  gcc_assert (TARGET_ARCH64);
-	  emit_insn (gen_movdi_pic_label_ref (operands[0], operands[1]));
-	  return true;
+	  if (mode == DImode)
+	    {
+	      gcc_assert (TARGET_ARCH64);
+	      emit_insn (gen_movdi_pic_label_ref (operands[0], operands[1]));
+	      return true;
+	    }
 	}
 
       if (symbolic_operand (operands[1], mode))
@@ -3212,7 +3222,9 @@ rtx
 legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
 			rtx reg)
 {
-  if (GET_CODE (orig) == SYMBOL_REF)
+  if (GET_CODE (orig) == SYMBOL_REF
+      /* See the comment in sparc_expand_move.  */
+      || (TARGET_VXWORKS_RTP && GET_CODE (orig) == LABEL_REF))
     {
       rtx pic_ref, address;
       rtx insn;
@@ -3377,6 +3389,13 @@ load_pic_register (bool delay_pic_helper)
 {
   int orig_flag_pic = flag_pic;
 
+  if (TARGET_VXWORKS_RTP)
+    {
+      emit_insn (gen_vxworks_load_got ());
+      emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
+      return;
+    }
+
   /* If we haven't initialized the special PIC symbols, do so now.  */
   if (!pic_helper_symbol_name[0])
     {
@@ -3404,6 +3423,29 @@ load_pic_register (bool delay_pic_helper)
      ??? In the case where we don't obey regdecls, this is not sufficient
      since we may not fall out the bottom.  */
   emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
+}
+
+/* Emit a call instruction with the pattern given by PAT.  ADDR is the
+   address of the call target.  */
+
+void
+sparc_emit_call_insn (rtx pat, rtx addr)
+{
+  rtx insn;
+
+  insn = emit_call_insn (pat);
+
+  /* The PIC register is live on entry to VxWorks PIC PLT entries.  */
+  if (TARGET_VXWORKS_RTP
+      && flag_pic
+      && GET_CODE (addr) == SYMBOL_REF
+      && (SYMBOL_REF_DECL (addr)
+	  ? !targetm.binds_local_p (SYMBOL_REF_DECL (addr))
+	  : !SYMBOL_REF_LOCAL_P (addr)))
+    {
+      use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
+      current_function_uses_pic_offset_table = 1;
+    }
 }
 
 /* Return 1 if RTX is a MEM which is known to be aligned to at
@@ -7771,13 +7813,19 @@ sparc_elf_asm_named_section (const char *name, unsigned int flags,
    the sibling call right?  Well, in the C++ case we can end up passing
    the pointer to the struct return area to a constructor (which returns
    void) and then nothing else happens.  Such a sibling call would look
-   valid without the added check here.  */
+   valid without the added check here.
+
+   VxWorks PIC PLT entries require the global pointer to be initialized
+   on entry.  We therefore can't emit sibling calls to them.  */
 static bool
 sparc_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 {
   return (decl
 	  && flag_delayed_branch
-	  && (TARGET_ARCH64 || ! current_function_returns_struct));
+	  && (TARGET_ARCH64 || ! current_function_returns_struct)
+	  && !(TARGET_VXWORKS_RTP
+	       && flag_pic
+	       && !targetm.binds_local_p (decl)));
 }
 
 /* libfunc renaming.  */

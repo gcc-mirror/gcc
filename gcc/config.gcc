@@ -2370,6 +2370,10 @@ sparc-*-sysv4*)
 	extra_parts="crtbegin.o crtend.o"
 	use_fixproto=yes
 	;;
+sparc-wrs-vxworks)
+	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h vx-common.h vxworks.h sparc/vxworks.h"
+	tmake_file="${tmake_file} sparc/t-vxworks"
+	;;
 sparc64-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sp64-elf.h"
 	extra_options="${extra_options} sparc/little-endian.opt"
