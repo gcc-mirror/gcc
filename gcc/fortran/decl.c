@@ -671,7 +671,12 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
      space is set to point to the master function, so that the fake
      result mechanism can work.  */
   if (module_fcn_entry)
-    rc = gfc_get_symbol (name, NULL, result);
+    {
+      /* Present if entry is declared to be a module procedure.  */
+      rc = gfc_find_symbol (name, gfc_current_ns->parent, 0, result);
+      if (*result == NULL)
+	rc = gfc_get_symbol (name, NULL, result);
+    }
   else
     rc = gfc_get_symbol (name, gfc_current_ns->parent, result);
 
@@ -712,7 +717,12 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
   /* Module function entries will already have a symtree in
      the current namespace but will need one at module level.  */
   if (module_fcn_entry)
-    st = gfc_new_symtree (&gfc_current_ns->parent->sym_root, name);
+    {
+      /* Present if entry is declared to be a module procedure.  */
+      rc = gfc_find_sym_tree (name, gfc_current_ns->parent, 0, &st);
+      if (st == NULL)
+	st = gfc_new_symtree (&gfc_current_ns->parent->sym_root, name);
+    }
   else
     st = gfc_new_symtree (&gfc_current_ns->sym_root, name);
 
@@ -722,10 +732,11 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
   /* See if the procedure should be a module procedure */
 
   if (((sym->ns->proc_name != NULL
-	&& sym->ns->proc_name->attr.flavor == FL_MODULE
-	&& sym->attr.proc != PROC_MODULE) || module_fcn_entry)
-       && gfc_add_procedure (&sym->attr, PROC_MODULE,
-			     sym->name, NULL) == FAILURE)
+		&& sym->ns->proc_name->attr.flavor == FL_MODULE
+		&& sym->attr.proc != PROC_MODULE)
+	    || (module_fcn_entry && sym->attr.proc != PROC_MODULE))
+	&& gfc_add_procedure (&sym->attr, PROC_MODULE,
+			      sym->name, NULL) == FAILURE)
     rc = 2;
 
   return rc;
