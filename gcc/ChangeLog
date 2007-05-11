@@ -1,3 +1,18 @@
+2007-05-11  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c: Include gt-cgraphunit.h
+	(static_ctors, static_dtors): New static vars.
+	(record_cdtor_fn, build_cdtor, cgraph_build_cdtor_fns): New functions,
+	based on implementation in c-common.c
+	(cgraph_finalize_function): Call record_cdtor_fn.
+	(cgraph_optimize): Call cgraph_build_cdtor_fns.
+	* decl.c (finish_function): Do not call c_record_cdtor_fn.
+	(c_write_global_declarations): Do not call c_build_cdtor_fns.
+	* c-common.c (static_ctors, static_dtors, c_record_cdtor_fn,
+	build_cdtor, c_build_cdtor_fns): Remove.
+	* c-common.h (static_ctors, static_dtors, c_record_cdtor_fn,
+	c_build_cdtor_fns): Remove prototype.
+
 2007-05-11  Paolo Carlini  <pcarlini@suse.de>
 
 	PR other/31852
