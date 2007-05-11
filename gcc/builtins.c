@@ -105,6 +105,7 @@ static rtx expand_builtin_next_arg (void);
 static rtx expand_builtin_va_start (tree);
 static rtx expand_builtin_va_end (tree);
 static rtx expand_builtin_va_copy (tree);
+static rtx expand_builtin_memchr (tree, rtx, enum machine_mode);
 static rtx expand_builtin_memcmp (tree, rtx, enum machine_mode);
 static rtx expand_builtin_strcmp (tree, rtx, enum machine_mode);
 static rtx expand_builtin_strncmp (tree, rtx, enum machine_mode);
@@ -172,6 +173,7 @@ static tree fold_builtin_int_roundingfn (tree, tree);
 static tree fold_builtin_bitop (tree, tree);
 static tree fold_builtin_memory_op (tree, tree, tree, tree, bool, int);
 static tree fold_builtin_strchr (tree, tree, tree);
+static tree fold_builtin_memchr (tree, tree, tree, tree);
 static tree fold_builtin_memcmp (tree, tree, tree);
 static tree fold_builtin_strcmp (tree, tree);
 static tree fold_builtin_strncmp (tree, tree, tree);
@@ -3978,6 +3980,26 @@ expand_builtin_bzero (tree exp)
 				     const0_rtx, VOIDmode, exp);
 }
 
+/* Expand a call to the memchr builtin.  Return NULL_RTX if we failed the
+   caller should emit a normal call, otherwise try to get the result
+   in TARGET, if convenient (and in mode MODE if that's convenient).  */
+
+static rtx
+expand_builtin_memchr (tree exp, rtx target, enum machine_mode mode)
+{
+  if (validate_arglist (exp, POINTER_TYPE, INTEGER_TYPE,
+			INTEGER_TYPE, VOID_TYPE))
+    {
+      tree type = TREE_TYPE (exp);
+      tree result = fold_builtin_memchr (CALL_EXPR_ARG (exp, 0),
+					 CALL_EXPR_ARG (exp, 1),
+					 CALL_EXPR_ARG (exp, 2), type);
+      if (result)
+	return expand_expr (result, target, mode, EXPAND_NORMAL);
+    }
+  return NULL_RTX;
+}
+
 /* Expand expression EXP, which is a call to the memcmp built-in function.
    Return NULL_RTX if we failed and the
    caller should emit a normal call, otherwise try to get the result in
@@ -6345,6 +6367,12 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	return target;
       break;
 
+    case BUILT_IN_MEMCHR:
+      target = expand_builtin_memchr (exp, target, mode);
+      if (target)
+	return target;
+      break;
+
     case BUILT_IN_BCMP:
     case BUILT_IN_MEMCMP:
       target = expand_builtin_memcmp (exp, target, mode);
@@ -8654,6 +8682,48 @@ fold_builtin_strncpy (tree fndecl, tree dest, tree src, tree len, tree slen)
 		       build_call_expr (fn, 3, dest, src, len));
 }
 
+/* Fold function call to builtin memchr.  ARG1, ARG2 and LEN are the
+   arguments to the call, and TYPE is its return type.
+   Return NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_memchr (tree arg1, tree arg2, tree len, tree type)
+{
+  if (!validate_arg (arg1, POINTER_TYPE)
+      || !validate_arg (arg2, INTEGER_TYPE)
+      || !validate_arg (len, INTEGER_TYPE))
+    return NULL_TREE;
+  else
+    {
+      const char *p1;
+
+      if (TREE_CODE (arg2) != INTEGER_CST
+	  || !host_integerp (len, 1))
+	return NULL_TREE;
+
+      p1 = c_getstr (arg1);
+      if (p1 && compare_tree_int (len, strlen (p1) + 1) <= 0)
+	{
+	  char c;
+	  const char *r;
+	  tree tem;
+
+	  if (target_char_cast (arg2, &c))
+	    return NULL_TREE;
+
+	  r = memchr (p1, c, tree_low_cst (len, 1));
+
+	  if (r == NULL)
+	    return build_int_cst (TREE_TYPE (arg1), 0);
+
+	  tem = fold_build2 (PLUS_EXPR, TREE_TYPE (arg1), arg1,
+			     build_int_cst (TREE_TYPE (arg1), r - p1));
+	  return fold_convert (type, tem);
+	}
+      return NULL_TREE;
+    }
+}
+
 /* Fold function call to builtin memcmp with arguments ARG1 and ARG2.
    Return NULL_TREE if no simplification can be made.  */
 
@@ -9982,6 +10052,9 @@ fold_builtin_3 (tree fndecl, tree arg0, tree arg1, tree arg2, bool ignore)
 
     case BUILT_IN_STRNCMP:
       return fold_builtin_strncmp (arg0, arg1, arg2);
+
+    case BUILT_IN_MEMCHR:
+      return fold_builtin_memchr (arg0, arg1, arg2, type);
 
     case BUILT_IN_BCMP:
     case BUILT_IN_MEMCMP:

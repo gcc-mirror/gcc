@@ -5592,6 +5592,7 @@ should be called and the @var{flag} argument passed to it.
 @findex lroundf
 @findex lroundl
 @findex malloc
+@findex memchr
 @findex memcmp
 @findex memcpy
 @findex mempcpy
@@ -5836,14 +5837,14 @@ The ISO C90 functions
 @code{isgraph}, @code{islower}, @code{isprint}, @code{ispunct},
 @code{isspace}, @code{isupper}, @code{isxdigit}, @code{tolower},
 @code{toupper}, @code{labs}, @code{ldexp}, @code{log10}, @code{log},
-@code{malloc}, @code{memcmp}, @code{memcpy}, @code{memset}, @code{modf},
-@code{pow}, @code{printf}, @code{putchar}, @code{puts}, @code{scanf},
-@code{sinh}, @code{sin}, @code{snprintf}, @code{sprintf}, @code{sqrt},
-@code{sscanf}, @code{strcat}, @code{strchr}, @code{strcmp},
-@code{strcpy}, @code{strcspn}, @code{strlen}, @code{strncat},
-@code{strncmp}, @code{strncpy}, @code{strpbrk}, @code{strrchr},
-@code{strspn}, @code{strstr}, @code{tanh}, @code{tan}, @code{vfprintf},
-@code{vprintf} and @code{vsprintf}
+@code{malloc}, @code{memchr}, @code{memcmp}, @code{memcpy},
+@code{memset}, @code{modf}, @code{pow}, @code{printf}, @code{putchar},
+@code{puts}, @code{scanf}, @code{sinh}, @code{sin}, @code{snprintf},
+@code{sprintf}, @code{sqrt}, @code{sscanf}, @code{strcat},
+@code{strchr}, @code{strcmp}, @code{strcpy}, @code{strcspn},
+@code{strlen}, @code{strncat}, @code{strncmp}, @code{strncpy},
+@code{strpbrk}, @code{strrchr}, @code{strspn}, @code{strstr},
+@code{tanh}, @code{tan}, @code{vfprintf}, @code{vprintf} and @code{vsprintf}
 are all recognized as built-in functions unless
 @option{-fno-builtin} is specified (or @option{-fno-builtin-@var{function}}
 is specified for an individual function).  All of these functions have

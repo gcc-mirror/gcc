@@ -1,3 +1,10 @@
+2007-05-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR other/31852
+	* gcc.c-torture/execute/builtins/memchr.c: New.
+	* gcc.c-torture/execute/builtins/memchr-lib.c: New.
+	* gcc.c-torture/execute/builtins/lib/memchr.c: New.
+
 2007-05-11 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/30876
