@@ -248,7 +248,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
 -Wsign-compare  -Wstack-protector @gol
--Wstrict-aliasing -Wstrict-aliasing=2 @gol
+-Wstrict-aliasing -Wstrict-aliasing=n @gol
 -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum @gol
 -Wsystem-headers  -Wtrigraphs  -Wundef  -Wuninitialized @gol
@@ -3008,14 +3008,40 @@ It warns about code which might break the strict aliasing rules that the
 compiler is using for optimization.  The warning does not catch all
 cases, but does attempt to catch the more common pitfalls.  It is
 included in @option{-Wall}.
+It is equivalent to -Wstrict-aliasing=3
 
-@item -Wstrict-aliasing=2
-@opindex Wstrict-aliasing=2
+@item -Wstrict-aliasing=n
+@opindex Wstrict-aliasing=n
 This option is only active when @option{-fstrict-aliasing} is active.
 It warns about code which might break the strict aliasing rules that the
-compiler is using for optimization.  This warning catches more cases than
-@option{-Wstrict-aliasing}, but it will also give a warning for some ambiguous
-cases that are safe.
+compiler is using for optimization.
+Higher levels correspond to higher accuracy (fewer false positives).
+Higher levels also correspond to more effort, similar to the way -O works.
+@option{-Wstrict-aliasing} is equivalent to @option{-Wstrict-aliasing=n},
+with n=3.
+
+Level 1: Most aggressive, quick, least accurate.
+Possibly useful when higher levels
+do not warn but -fstrict-aliasing still breaks the code, as it has very few 
+false negatives.  However, it has many false positives.
+Warns for all pointer conversions between possibly incompatible types, 
+even if never dereferenced.  Runs in the frontend only.
+
+Level 2: Aggressive, quick, not too precise.
+May still have many false positives (not as many as level 1 though),
+and few false negatives (but possibly more than level 1).
+Unlike level 1, it only warns when an address is taken.  Warns about
+incomplete types.  Runs in the frontend only.
+
+Level 3 (default for @option{-Wstrict-aliasing}): 
+Should have very few false positives and few false 
+negatives.  Slightly slower than levels 1 or 2 when optimization is enabled.
+Takes care of the common punn+dereference pattern in the frontend:
+@code{*(int*)&some_float}.
+If optimization is enabled, it also runs in the backend, where it deals 
+with multiple statement cases using flow-sensitive points-to information.
+Only warns when the converted pointer is dereferenced.
+Does not warn about incomplete types.
 
 @item -Wstrict-overflow
 @item -Wstrict-overflow=@var{n}

@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-Wstrict-aliasing -fstrict-aliasing" }
+// { dg-options "-Wstrict-aliasing=2 -fstrict-aliasing" }
 
 // Copyright (C) 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 29 Sep 2002 <nathan@codesourcery.com>

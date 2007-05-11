@@ -1014,35 +1014,67 @@ warn_logical_operator (enum tree_code code, tree arg1, tree
    strict aliasing mode is in effect. OTYPE is the original
    TREE_TYPE of EXPR, and TYPE the type we're casting to. */
 
-void
+bool
 strict_aliasing_warning (tree otype, tree type, tree expr)
 {
-  if (flag_strict_aliasing && warn_strict_aliasing
-      && POINTER_TYPE_P (type) && POINTER_TYPE_P (otype)
-      && TREE_CODE (expr) == ADDR_EXPR
+  if (!(flag_strict_aliasing && POINTER_TYPE_P (type) 
+        && POINTER_TYPE_P (otype) && !VOID_TYPE_P (TREE_TYPE (type))))
+    return false;
+
+  if ((warn_strict_aliasing > 1) && TREE_CODE (expr) == ADDR_EXPR
       && (DECL_P (TREE_OPERAND (expr, 0))
-          || handled_component_p (TREE_OPERAND (expr, 0)))
-      && !VOID_TYPE_P (TREE_TYPE (type)))
+          || handled_component_p (TREE_OPERAND (expr, 0))))
     {
       /* Casting the address of an object to non void pointer. Warn
          if the cast breaks type based aliasing.  */
-      if (!COMPLETE_TYPE_P (TREE_TYPE (type)))
-        warning (OPT_Wstrict_aliasing, "type-punning to incomplete type "
-                 "might break strict-aliasing rules");
+      if (!COMPLETE_TYPE_P (TREE_TYPE (type)) && warn_strict_aliasing == 2)
+	{
+	  warning (OPT_Wstrict_aliasing, "type-punning to incomplete type "
+		   "might break strict-aliasing rules");
+	  return true;
+	}
       else
         {
-          HOST_WIDE_INT set1 = get_alias_set (TREE_TYPE (TREE_OPERAND (expr, 0)));
+          /* warn_strict_aliasing >= 3.   This includes the default (3).  
+             Only warn if the cast is dereferenced immediately.  */
+          HOST_WIDE_INT set1 =
+	    get_alias_set (TREE_TYPE (TREE_OPERAND (expr, 0)));
           HOST_WIDE_INT set2 = get_alias_set (TREE_TYPE (type));
 
           if (!alias_sets_conflict_p (set1, set2))
-            warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
-                     "pointer will break strict-aliasing rules");
-          else if (warn_strict_aliasing > 1
-                  && !alias_sets_might_conflict_p (set1, set2))
-            warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
-                     "pointer might break strict-aliasing rules");
+	    {
+	      warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
+		       "pointer will break strict-aliasing rules");
+	      return true;
+	    }
+          else if (warn_strict_aliasing == 2
+		   && !alias_sets_might_conflict_p (set1, set2))
+	    {
+	      warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
+		       "pointer might break strict-aliasing rules");
+	      return true;
+	    }
         }
     }
+  else
+    if ((warn_strict_aliasing == 1) && !VOID_TYPE_P (TREE_TYPE (otype)))
+      {
+        /* At this level, warn for any conversions, even if an address is
+           not taken in the same statement.  This will likely produce many
+           false positives, but could be useful to pinpoint problems that
+           are not revealed at higher levels.  */
+        HOST_WIDE_INT set1 = get_alias_set (TREE_TYPE (otype));
+        HOST_WIDE_INT set2 = get_alias_set (TREE_TYPE (type));
+        if (!COMPLETE_TYPE_P(type)
+            || !alias_sets_might_conflict_p (set1, set2))
+	  {
+            warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
+                     "pointer might break strict-aliasing rules");
+            return true;
+          }
+      }
+
+  return false;
 }
 
 /* Print a warning about if (); or if () .. else; constructs

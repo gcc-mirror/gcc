@@ -1,3 +1,10 @@
+2007-05-11  Silvius Rus  <rus@google.com>
+
+	* cp/typeck.c (build_indirect_ref): Add call to
+	strict_aliasing_warning.
+	(build_reinterpret_cast_1): Condition call to
+	strict_aliasing_warning. 
+
 2007-05-11  Jan Hubicka  <jh@suse.cz>
 
 	* semantics.c (expand_or_defer_fn): Do not call c_record_cdtor_fn.

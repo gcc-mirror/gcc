@@ -97,6 +97,7 @@ static void set_pt_anything (tree);
 void debug_mp_info (VEC(mem_sym_stats_t,heap) *);
 
 
+
 /* Return memory reference stats for symbol VAR.  Create a new slot in
    cfun->gimple_df->mem_sym_stats if needed.  */
 
@@ -1604,6 +1605,9 @@ compute_may_aliases (void)
       if (dump_flags & TDF_DETAILS)
 	dump_referenced_vars (dump_file);
     }
+
+  /* Report strict aliasing violations.  */
+  strict_aliasing_warning_backend ();
 
   /* Deallocate memory used by aliasing data structures.  */
   delete_alias_info (ai);
@@ -3932,7 +3936,7 @@ create_structure_vars (void)
 	      update_stmt (stmt);
 	  }
       }
-  
+
   return 0;
 }
 

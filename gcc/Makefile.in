@@ -1106,6 +1106,7 @@ OBJS-common = \
 	tree-sra.o \
 	tree-ssa-address.o \
 	tree-ssa-alias.o \
+	tree-ssa-alias-warnings.o \
 	tree-ssa-ccp.o \
 	tree-ssa-coalesce.o \
 	tree-ssa-copy.o \
@@ -2104,6 +2105,11 @@ tree-ssa-loop-im.o : tree-ssa-loop-im.c $(TREE_FLOW_H) $(CONFIG_H) \
 tree-ssa-math-opts.o : tree-ssa-math-opts.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TIMEVAR_H) tree-pass.h $(TM_H) $(FLAGS_H) \
    alloc-pool.h $(BASIC_BLOCK_H) $(TARGET_H)
+tree-ssa-alias-warnings.o : tree-ssa-alias-warnings.c \
+   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(TREE_DUMP_H) \
+   $(TREE_FLOW_H) $(PARAMS_H) $(FUNCTION_H) $(EXPR_H) toplev.h \
+   tree-ssa-structalias.h tree-ssa-propagate.h langhooks.h alloc-pool.h \
+   $(DIAGNOSTIC_H)
 tree-ssa-alias.o : tree-ssa-alias.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) $(GGC_H) $(TREE_INLINE_H) $(FLAGS_H) \
    $(FUNCTION_H) $(TIMEVAR_H) convert.h $(TM_H) coretypes.h langhooks.h \

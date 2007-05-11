@@ -400,7 +400,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       if (c_dialect_cxx ())
 	warn_sign_compare = value;
       warn_switch = value;
-      warn_strict_aliasing = value;
+      set_Wstrict_aliasing (value);
       warn_address = value;
       warn_strict_overflow = value;
       warn_array_bounds = value;
