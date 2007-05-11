@@ -1,3 +1,17 @@
+2007-05-11  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md (GPR0_REGNUM, FPR0_REGNUM, FPR2_REGNUM,
+	PFPO_CONVERT, PFPO_OP_TYPE_SF, PFPO_OP_TYPE_DF, PFPO_OP_TYPE_TF,
+	PFPO_OP_TYPE_SD, PFPO_OP_TYPE_DD, PFPO_OP_TYPE_TD, PFPO_OP0_TYPE_SHIFT,
+	PFPO_OP1_TYPE_SHIFT): Constants added.
+	(DFP_ALL): Mode macro defined.
+	("*trunc<BFP:mode><DFP_ALL:mode>2", "*trunc<DFP_ALL:mode><BFP:mode>2",
+	"*extend<BFP:mode><DFP_ALL:mode>2", "*extend<DFP_ALL:mode><BFP:mode>2"):
+	Insn definitions added.
+	("trunc<BFP:mode><DFP_ALL:mode>2", "trunc<DFP_ALL:mode><BFP:mode>2",
+	"extend<BFP:mode><DFP_ALL:mode>2", "extend<DFP_ALL:mode><BFP:mode>2"):
+	Expanders added.
+
 2007-05-10  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/31885
