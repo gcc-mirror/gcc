@@ -767,7 +767,7 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
 	}
 
       /* In case we split loop latch, update it.  */
-      for (ploop = loop; ploop; ploop = ploop->outer)
+      for (ploop = loop; ploop; ploop = loop_outer (ploop))
 	if (ploop->latch == dummy)
 	  ploop->latch = bb;
     }

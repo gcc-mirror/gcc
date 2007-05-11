@@ -832,7 +832,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, edge e)
     }
 
   /* Generate new loop structure.  */
-  new_loop = duplicate_loop (loop, loop->outer);
+  new_loop = duplicate_loop (loop, loop_outer (loop));
   if (!new_loop)
     {
       free (bbs);
@@ -962,7 +962,7 @@ slpeel_can_duplicate_loop_p (struct loop *loop, edge e)
   if (loop->inner
       /* All loops have an outer scope; the only case loop->outer is NULL is for
          the function itself.  */
-      || !loop->outer
+      || !loop_outer (loop)
       || loop->num_nodes != 2
       || !empty_block_p (loop->latch)
       || !single_exit (loop)

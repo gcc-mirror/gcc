@@ -244,7 +244,7 @@ find_uses_to_rename_use (basic_block bb, tree use, bitmap *use_blocks,
   def_loop = def_bb->loop_father;
 
   /* If the definition is not inside loop, it is not interesting.  */
-  if (!def_loop->outer)
+  if (!loop_outer (def_loop))
     return;
 
   if (!use_blocks[ver])

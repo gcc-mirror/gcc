@@ -4367,7 +4367,7 @@ tree_duplicate_sese_region (edge entry, edge exit,
   if (loop->header == entry->dest)
     {
       copying_header = true;
-      loop->copy = loop->outer;
+      loop->copy = loop_outer (loop);
 
       if (!dominated_by_p (CDI_DOMINATORS, loop->latch, exit->src))
 	return false;

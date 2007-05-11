@@ -117,7 +117,7 @@ gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations,
 
       for (j = 0; j < DDR_NUM_DIST_VECTS (ddr); j++)
 	{
-	  int dist = DDR_DIST_VECT (ddr, j)[loop->depth - first_loop->depth];
+	  int dist = DDR_DIST_VECT (ddr, j)[loop_depth (loop) - loop_depth (first_loop)];
 
 	  if (dist == 0)
 	    (*nb_deps_not_carried_by_loop) += 1;
@@ -200,7 +200,7 @@ try_interchange_loops (lambda_trans_matrix trans,
        loop_j; 
        loop_j = loop_j->inner)
     for (loop_i = first_loop; 
-	 loop_i->depth < loop_j->depth; 
+	 loop_depth (loop_i) < loop_depth (loop_j); 
 	 loop_i = loop_i->inner)
       {
 	gather_interchange_stats (dependence_relations, datarefs,
@@ -230,14 +230,14 @@ try_interchange_loops (lambda_trans_matrix trans,
 	    || double_int_ucmp (access_strides_i, access_strides_j) < 0)
 	  {
 	    lambda_matrix_row_exchange (LTM_MATRIX (trans),
-					loop_i->depth - first_loop->depth,
-					loop_j->depth - first_loop->depth);
+					loop_depth (loop_i) - loop_depth (first_loop),
+					loop_depth (loop_j) - loop_depth (first_loop));
 	    /* Validate the resulting matrix.  When the transformation
 	       is not valid, reverse to the previous transformation.  */
 	    if (!lambda_transform_legal_p (trans, depth, dependence_relations))
 	      lambda_matrix_row_exchange (LTM_MATRIX (trans), 
-					  loop_i->depth - first_loop->depth, 
-					  loop_j->depth - first_loop->depth);
+					  loop_depth (loop_i) - loop_depth (first_loop), 
+					  loop_depth (loop_j) - loop_depth (first_loop));
 	  }
       }
 

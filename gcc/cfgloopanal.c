@@ -276,7 +276,8 @@ mark_irreducible_loops (void)
   int num = current_loops ? number_of_loops () : 1;
   int *queue1 = XNEWVEC (int, last_basic_block + num);
   int *queue2 = XNEWVEC (int, last_basic_block + num);
-  int nq, depth;
+  int nq;
+  unsigned depth;
   struct loop *cloop, *loop;
   loop_iterator li;
 
@@ -321,12 +322,13 @@ mark_irreducible_loops (void)
 
 	    if (!flow_bb_inside_loop_p (act->loop_father, e->dest))
 	      {
-		depth = find_common_loop (act->loop_father,
-					  e->dest->loop_father)->depth + 1;
-		if (depth == act->loop_father->depth)
+		depth = 1 + loop_depth (find_common_loop (act->loop_father,
+						e->dest->loop_father));
+		if (depth == loop_depth (act->loop_father))
 		  cloop = act->loop_father;
 		else
-		  cloop = act->loop_father->pred[depth];
+		  cloop = VEC_index (loop_p, act->loop_father->superloops,
+				     depth);
 
 		src = LOOP_REPR (cloop);
 	      }
@@ -612,7 +614,7 @@ mark_loop_exit_edges (void)
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  if (bb->loop_father->outer
+	  if (loop_outer (bb->loop_father)
 	      && loop_exit_edge_p (bb->loop_father, e))
 	    e->flags |= EDGE_LOOP_EXIT;
 	  else
