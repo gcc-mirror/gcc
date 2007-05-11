@@ -2,10 +2,10 @@
 /* { dg-do compile } */
 /* { dg-options "-Woverflow" } */
 
-wchar_t
+short int
 g (void)
 {
-  wchar_t wc = ((wchar_t)1 << 31) - 1; /* { dg-bogus "overflow .* overflow" } */
+  short int wc = ((short int)1 << 31) - 1; /* { dg-bogus "overflow .* overflow" } */
   /* { dg-warning "overflow" "" { target *-*-* } 8 } */
   return wc;
 }
