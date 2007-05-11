@@ -1187,12 +1187,11 @@ invariant_in_loop_and_outer_loops (struct loop *loop, tree op)
 {
   if (is_gimple_min_invariant (op))
     return true;
-  if (loop->depth == 0)
+  if (loop_depth (loop) == 0)
     return true;
   if (!expr_invariant_in_loop_p (loop, op))
     return false;
-  if (loop->outer 
-      && !invariant_in_loop_and_outer_loops (loop->outer, op))
+  if (!invariant_in_loop_and_outer_loops (loop_outer (loop), op))
     return false;
   return true;
 }

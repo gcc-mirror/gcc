@@ -316,10 +316,10 @@ outermost_invariant_loop (tree def, struct loop *loop)
 
   if (LIM_DATA (def_stmt) && LIM_DATA (def_stmt)->max_loop)
     max_loop = find_common_loop (max_loop,
-				 LIM_DATA (def_stmt)->max_loop->outer);
+				 loop_outer (LIM_DATA (def_stmt)->max_loop));
   if (max_loop == loop)
     return NULL;
-  max_loop = superloop_at_depth (loop, max_loop->depth + 1);
+  max_loop = superloop_at_depth (loop, loop_depth (max_loop) + 1);
 
   return max_loop;
 }
@@ -525,7 +525,7 @@ set_level (tree stmt, struct loop *orig_loop, struct loop *level)
   stmt_loop = find_common_loop (orig_loop, stmt_loop);
   if (LIM_DATA (stmt) && LIM_DATA (stmt)->tgt_loop)
     stmt_loop = find_common_loop (stmt_loop,
-				  LIM_DATA (stmt)->tgt_loop->outer);
+				  loop_outer (LIM_DATA (stmt)->tgt_loop));
   if (flow_loop_nested_p (stmt_loop, level))
     return;
 
@@ -709,12 +709,12 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
   bool maybe_never = ALWAYS_EXECUTED_IN (bb) == NULL;
   struct loop *outermost = ALWAYS_EXECUTED_IN (bb);
 
-  if (!bb->loop_father->outer)
+  if (!loop_outer (bb->loop_father))
     return;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Basic block %d (loop %d -- depth %d):\n\n",
-	     bb->index, bb->loop_father->num, bb->loop_father->depth);
+	     bb->index, bb->loop_father->num, loop_depth (bb->loop_father));
 
   for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
     {
@@ -774,7 +774,7 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 	{
 	  print_generic_stmt_indented (dump_file, stmt, 0, 2);
 	  fprintf (dump_file, "  invariant up to level %d, cost %d.\n\n",
-		   LIM_DATA (stmt)->max_loop->depth,
+		   loop_depth (LIM_DATA (stmt)->max_loop),
 		   LIM_DATA (stmt)->cost);
 	}
 
@@ -815,7 +815,7 @@ move_computations_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
   tree stmt;
   unsigned cost = 0;
 
-  if (!bb->loop_father->outer)
+  if (!loop_outer (bb->loop_father))
     return;
 
   for (bsi = bsi_start (bb); !bsi_end_p (bsi); )

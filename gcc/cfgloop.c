@@ -36,7 +36,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "output.h"
 
 static void flow_loops_cfg_dump (FILE *);
-static void establish_preds (struct loop *);
 
 /* Dump loop related CFG information.  */
 
@@ -65,8 +64,10 @@ flow_loops_cfg_dump (FILE *file)
 bool
 flow_loop_nested_p (const struct loop *outer, const struct loop *loop)
 {
-  return (loop->depth > outer->depth
-	 && loop->pred[outer->depth] == outer);
+  unsigned odepth = loop_depth (outer);
+
+  return (loop_depth (loop) > odepth
+	  && VEC_index (loop_p, loop->superloops, odepth) == outer);
 }
 
 /* Returns the loop such that LOOP is nested DEPTH (indexed from zero)
@@ -75,12 +76,14 @@ flow_loop_nested_p (const struct loop *outer, const struct loop *loop)
 struct loop *
 superloop_at_depth (struct loop *loop, unsigned depth)
 {
-  gcc_assert (depth <= (unsigned) loop->depth);
+  unsigned ldepth = loop_depth (loop);
 
-  if (depth == (unsigned) loop->depth)
+  gcc_assert (depth <= ldepth);
+
+  if (depth == ldepth)
     return loop;
 
-  return loop->pred[depth];
+  return VEC_index (loop_p, loop->superloops, depth);
 }
 
 /* Returns the list of the latch edges of LOOP.  */
@@ -133,7 +136,8 @@ flow_loop_dump (const struct loop *loop, FILE *file,
     }
 
   fprintf (file, ";;  depth %d, outer %ld\n",
-	   loop->depth, (long) (loop->outer ? loop->outer->num : -1));
+	   loop_depth (loop), (long) (loop_outer (loop)
+				      ? loop_outer (loop)->num : -1));
 
   fprintf (file, ";;  nodes:");
   bbs = get_loop_body (loop);
@@ -175,8 +179,7 @@ flow_loop_free (struct loop *loop)
 {
   struct loop_exit *exit, *next;
 
-  if (loop->pred)
-    free (loop->pred);
+  VEC_free (loop_p, heap, loop->superloops);
 
   /* Break the list of the loop exit records.  They will be freed when the
      corresponding edge is rescanned or removed, and this avoids
@@ -226,9 +229,10 @@ flow_loop_nodes_find (basic_block header, struct loop *loop)
   int num_nodes = 1;
   edge latch;
   edge_iterator latch_ei;
+  unsigned depth = loop_depth (loop);
 
   header->loop_father = loop;
-  header->loop_depth = loop->depth;
+  header->loop_depth = depth;
 
   FOR_EACH_EDGE (latch, latch_ei, loop->header->preds)
     {
@@ -239,7 +243,7 @@ flow_loop_nodes_find (basic_block header, struct loop *loop)
       num_nodes++;
       VEC_safe_push (basic_block, heap, stack, latch->src);
       latch->src->loop_father = loop;
-      latch->src->loop_depth = loop->depth;
+      latch->src->loop_depth = depth;
 
       while (!VEC_empty (basic_block, stack))
 	{
@@ -256,7 +260,7 @@ flow_loop_nodes_find (basic_block header, struct loop *loop)
 	      if (ancestor->loop_father != loop)
 		{
 		  ancestor->loop_father = loop;
-		  ancestor->loop_depth = loop->depth;
+		  ancestor->loop_depth = depth;
 		  num_nodes++;
 		  VEC_safe_push (basic_block, heap, stack, ancestor);
 		}
@@ -268,24 +272,27 @@ flow_loop_nodes_find (basic_block header, struct loop *loop)
   return num_nodes;
 }
 
-static void
-establish_preds (struct loop *loop)
-{
-  struct loop *ploop, *father = loop->outer;
+/* Records the vector of superloops of the loop LOOP, whose immediate
+   superloop is FATHER.  */
 
-  loop->depth = father->depth + 1;
+static void
+establish_preds (struct loop *loop, struct loop *father)
+{
+  loop_p ploop;
+  unsigned depth = loop_depth (father) + 1;
+  unsigned i;
 
   /* Remember the current loop depth if it is the largest seen so far.  */
-  cfun->max_loop_depth = MAX (cfun->max_loop_depth, loop->depth);
+  cfun->max_loop_depth = MAX (cfun->max_loop_depth, (int) depth);
 
-  if (loop->pred)
-    free (loop->pred);
-  loop->pred = XNEWVEC (struct loop *, loop->depth);
-  memcpy (loop->pred, father->pred, sizeof (struct loop *) * father->depth);
-  loop->pred[father->depth] = father;
+  VEC_truncate (loop_p, loop->superloops, 0);
+  VEC_reserve (loop_p, heap, loop->superloops, depth);
+  for (i = 0; VEC_iterate (loop_p, father->superloops, i, ploop); i++)
+    VEC_quick_push (loop_p, loop->superloops, ploop);
+  VEC_quick_push (loop_p, loop->superloops, father);
 
   for (ploop = loop->inner; ploop; ploop = ploop->next)
-    establish_preds (ploop);
+    establish_preds (ploop, loop);
 }
 
 /* Add LOOP to the loop hierarchy tree where FATHER is father of the
@@ -297,9 +304,8 @@ flow_loop_tree_node_add (struct loop *father, struct loop *loop)
 {
   loop->next = father->inner;
   father->inner = loop;
-  loop->outer = father;
 
-  establish_preds (loop);
+  establish_preds (loop, father);
 }
 
 /* Remove LOOP from the loop hierarchy tree.  */
@@ -309,21 +315,19 @@ flow_loop_tree_node_remove (struct loop *loop)
 {
   struct loop *prev, *father;
 
-  father = loop->outer;
-  loop->outer = NULL;
+  father = loop_outer (loop);
 
   /* Remove loop from the list of sons.  */
   if (father->inner == loop)
     father->inner = loop->next;
   else
     {
-      for (prev = father->inner; prev->next != loop; prev = prev->next);
+      for (prev = father->inner; prev->next != loop; prev = prev->next)
+	continue;
       prev->next = loop->next;
     }
 
-  loop->depth = -1;
-  free (loop->pred);
-  loop->pred = NULL;
+  VEC_truncate (loop_p, loop->superloops, 0);
 }
 
 /* Allocates and returns new loop structure.  */
@@ -994,7 +998,7 @@ rescan_loop_exit (edge e, bool new_edge, bool removed)
       cloop = find_common_loop (e->src->loop_father, e->dest->loop_father);
       for (aloop = e->src->loop_father;
 	   aloop != cloop;
-	   aloop = aloop->outer)
+	   aloop = loop_outer (aloop))
 	{
 	  exit = XNEW (struct loop_exit);
 	  exit->e = e;
@@ -1161,16 +1165,17 @@ num_loop_branches (const struct loop *loop)
 void
 add_bb_to_loop (basic_block bb, struct loop *loop)
 {
-  int i;
+  unsigned i;
+  loop_p ploop;
   edge_iterator ei;
   edge e;
 
   gcc_assert (bb->loop_father == NULL);
   bb->loop_father = loop;
-  bb->loop_depth = loop->depth;
+  bb->loop_depth = loop_depth (loop);
   loop->num_nodes++;
-  for (i = 0; i < loop->depth; i++)
-    loop->pred[i]->num_nodes++;
+  for (i = 0; VEC_iterate (loop_p, loop->superloops, i, ploop); i++)
+    ploop->num_nodes++;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
@@ -1188,13 +1193,14 @@ remove_bb_from_loops (basic_block bb)
 {
   int i;
   struct loop *loop = bb->loop_father;
+  loop_p ploop;
   edge_iterator ei;
   edge e;
 
   gcc_assert (loop != NULL);
   loop->num_nodes--;
-  for (i = 0; i < loop->depth; i++)
-    loop->pred[i]->num_nodes--;
+  for (i = 0; VEC_iterate (loop_p, loop->superloops, i, ploop); i++)
+    ploop->num_nodes--;
   bb->loop_father = NULL;
   bb->loop_depth = 0;
 
@@ -1212,18 +1218,23 @@ remove_bb_from_loops (basic_block bb)
 struct loop *
 find_common_loop (struct loop *loop_s, struct loop *loop_d)
 {
+  unsigned sdepth, ddepth;
+
   if (!loop_s) return loop_d;
   if (!loop_d) return loop_s;
 
-  if (loop_s->depth < loop_d->depth)
-    loop_d = loop_d->pred[loop_s->depth];
-  else if (loop_s->depth > loop_d->depth)
-    loop_s = loop_s->pred[loop_d->depth];
+  sdepth = loop_depth (loop_s);
+  ddepth = loop_depth (loop_d);
+
+  if (sdepth < ddepth)
+    loop_d = VEC_index (loop_p, loop_d->superloops, sdepth);
+  else if (sdepth > ddepth)
+    loop_s = VEC_index (loop_p, loop_s->superloops, ddepth);
 
   while (loop_s != loop_d)
     {
-      loop_s = loop_s->outer;
-      loop_d = loop_d->outer;
+      loop_s = loop_outer (loop_s);
+      loop_d = loop_outer (loop_d);
     }
   return loop_s;
 }
@@ -1250,13 +1261,14 @@ cancel_loop (struct loop *loop)
 {
   basic_block *bbs;
   unsigned i;
+  struct loop *outer = loop_outer (loop);
 
   gcc_assert (!loop->inner);
 
   /* Move blocks up one level (they should be removed as soon as possible).  */
   bbs = get_loop_body (loop);
   for (i = 0; i < loop->num_nodes; i++)
-    bbs[i]->loop_father = loop->outer;
+    bbs[i]->loop_father = outer;
 
   delete_loop (loop);
 }
@@ -1295,7 +1307,7 @@ verify_loop_structure (void)
   sizes[0] = 2;
 
   FOR_EACH_BB (bb)
-    for (loop = bb->loop_father; loop; loop = loop->outer)
+    for (loop = bb->loop_father; loop; loop = loop_outer (loop))
       sizes[loop->num]++;
 
   FOR_EACH_LOOP (li, loop, LI_INCLUDE_ROOT)
@@ -1494,7 +1506,7 @@ verify_loop_structure (void)
 
 	      for (loop = bb->loop_father;
 		   loop != e->dest->loop_father;
-		   loop = loop->outer)
+		   loop = loop_outer (loop))
 		{
 		  eloops--;
 		  sizes[loop->num]++;

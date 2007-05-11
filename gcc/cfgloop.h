@@ -85,6 +85,10 @@ struct loop_exit
   struct loop_exit *next_e;
 };
 
+typedef struct loop *loop_p;
+DEF_VEC_P (loop_p);
+DEF_VEC_ALLOC_P (loop_p, heap);
+
 /* Structure to hold information for each natural loop.  */
 struct loop
 {
@@ -109,14 +113,8 @@ struct loop
   /* Number of blocks contained within the loop.  */
   unsigned num_nodes;
 
-  /* The loop nesting depth.  */
-  int depth;
-
-  /* Superloops of the loop.  */
-  struct loop **pred;
-
-  /* The outer (parent) loop or NULL if outermost loop.  */
-  struct loop *outer;
+  /* Superloops of the loop, starting with the outermost loop.  */
+  VEC (loop_p, heap) *superloops;
 
   /* The first inner (child) loop or NULL if innermost loop.  */
   struct loop *inner;
@@ -177,10 +175,6 @@ enum
 #define LOOPS_NORMAL (LOOPS_HAVE_PREHEADERS | LOOPS_HAVE_SIMPLE_LATCHES \
 		      | LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
 #define AVOID_CFG_MODIFICATIONS (LOOPS_MAY_HAVE_MULTIPLE_LATCHES)
-
-typedef struct loop *loop_p;
-DEF_VEC_P (loop_p);
-DEF_VEC_ALLOC_P (loop_p, heap);
 
 /* Structure to hold CFG information about natural loops within a function.  */
 struct loops
@@ -410,6 +404,28 @@ get_loop (unsigned num)
   return VEC_index (loop_p, current_loops->larray, num);
 }
 
+/* Returns the number of superloops of LOOP.  */
+
+static inline unsigned
+loop_depth (const struct loop *loop)
+{
+  return VEC_length (loop_p, loop->superloops);
+}
+
+/* Returns the immediate superloop of LOOP, or NULL if LOOP is the outermost
+   loop.  */
+
+static inline struct loop *
+loop_outer (const struct loop *loop)
+{
+  unsigned n = VEC_length (loop_p, loop->superloops);
+
+  if (n == 0)
+    return NULL;
+
+  return VEC_index (loop_p, loop->superloops, n - 1);
+}
+
 /* Returns the list of loops in current_loops.  */
 
 static inline VEC (loop_p, heap) *
@@ -519,10 +535,10 @@ fel_init (loop_iterator *li, loop_p *loop, unsigned flags)
 		   aloop = aloop->inner)
 		continue;
 	    }
-	  else if (!aloop->outer)
+	  else if (!loop_outer (aloop))
 	    break;
 	  else
-	    aloop = aloop->outer;
+	    aloop = loop_outer (aloop);
 	}
     }
   else
@@ -539,7 +555,7 @@ fel_init (loop_iterator *li, loop_p *loop, unsigned flags)
 	  else
 	    {
 	      while (aloop != NULL && aloop->next == NULL)
-		aloop = aloop->outer;
+		aloop = loop_outer (aloop);
 	      if (aloop == NULL)
 		break;
 	      aloop = aloop->next;
