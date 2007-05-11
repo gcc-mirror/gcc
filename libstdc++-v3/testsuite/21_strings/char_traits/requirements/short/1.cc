@@ -1,7 +1,8 @@
 // 1999-06-03 bkoz
 // 2003-07-22 Matt Austern
 
-// Copyright (C) 1999, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,6 +26,7 @@
 // satisfy the requirements of 21.1.1.
 
 #include <string>
+#include <cstring>
 #include <testsuite_hooks.h>
 
 void test02(void)
@@ -139,7 +141,7 @@ void test02(void)
 
   // short* X::assign(short* s, size_t n, short c)
   len = sizeof(array2) / sizeof(short);
-  memset(array2, 0xaf, len * sizeof(short));
+  std::memset(array2, 0xaf, len * sizeof(short));
   VERIFY( array2[0] != 0x15a8 );
 
   pc1 = std::char_traits<short>::assign (array2, len, 0x15a8);

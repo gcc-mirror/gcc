@@ -1,4 +1,4 @@
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,6 +28,7 @@
 // 22.2.1.3.2 ctype<char> members
 
 #include <locale>
+#include <cstring>
 #include <testsuite_hooks.h>
 
 class Ctype1

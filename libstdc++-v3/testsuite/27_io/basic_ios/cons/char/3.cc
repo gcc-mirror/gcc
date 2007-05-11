@@ -32,6 +32,7 @@
 
 #include <sstream>
 #include <typeinfo>
+#include <cstring>
 #include <testsuite_hooks.h>
 
 // char_traits specialization

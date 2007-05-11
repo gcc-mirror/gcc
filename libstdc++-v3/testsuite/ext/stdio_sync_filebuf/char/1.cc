@@ -1,6 +1,6 @@
 // 2003-05-01 Petur Runolfsson <peturr02@ru.is>
 
-// Copyright (C) 2003 Free Software Foundation
+// Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,6 +21,7 @@
 // { dg-require-fileio "" }
 
 #include <ext/stdio_sync_filebuf.h>
+#include <cstring>
 #include <testsuite_hooks.h>
 
 void test01()
