@@ -2,7 +2,7 @@
 
 // 2003-05-01  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <cstdio>
+#include <cstring>
 #include <testsuite_hooks.h>
 
 // Test handling of UTF-8 in wcout

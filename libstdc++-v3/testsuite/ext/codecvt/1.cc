@@ -2,7 +2,7 @@
 // { dg-require-iconv "ISO-8859-15" }
 // 2003-02-06  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2003, 2007 Free Software Foundation
+// Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,6 +23,7 @@
 // 22.2.1.5 - Template class codecvt [lib.locale.codecvt]
 
 #include <locale>
+#include <cstring>
 #include <testsuite_hooks.h>
 #include <ext/codecvt_specializations.h>
 

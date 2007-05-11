@@ -26,6 +26,7 @@
 #include <string>
 #include <fstream>
 #include <cstdlib>
+#include <cstring>
 #include <testsuite_hooks.h>
 
 using namespace std;
