@@ -1,7 +1,6 @@
 // 2001-02-26 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
-// Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,51 +21,8 @@
 // 19.1 Exception classes
 
 #include <string>
-#include <cstring>
 #include <stdexcept>
 #include <testsuite_hooks.h>
-
-// libstdc++/1972
-void test01()
-{
-  bool test __attribute__((unused)) = true;
-  std::string s("lack of sunlight, no water error");
-
-  // 1
-  std::logic_error obj = std::logic_error(s);
-
-  // 2
-  // std::logic_error obj((std::string)strlit);
-
-  VERIFY( std::strcmp(obj.what(), s.data()) == 0 );
-}
-
-void test02()
-{
-  bool test __attribute__((unused)) = true;
-  std::string s("lack of sunlight error");
-  std::domain_error x(s);
-  
-  VERIFY( std::strcmp(x.what(), s.data()) == 0 );
-}
-
-// libstdc++/2089
-class fuzzy_logic : public std::logic_error
-{
-public:
-  fuzzy_logic() : std::logic_error("whoa") { }
-};
-
-void test03()
-{
-  bool test __attribute__((unused)) = true;
-  try
-    { throw fuzzy_logic(); }
-  catch(const fuzzy_logic& obj)
-    { VERIFY( std::strcmp("whoa", obj.what()) == 0 ); }
-  catch(...)
-    { VERIFY( false ); }
-}
 
 // test copy ctors and assignment operators
 // libstdc++/1972
@@ -107,10 +63,6 @@ void test04()
 
 int main(void)
 {
-  test01();
-  test02();
-  test03();
   test04();
-
   return 0;
 }

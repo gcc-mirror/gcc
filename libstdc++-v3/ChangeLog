@@ -1,3 +1,19 @@
+2007-05-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+       * include/std/stdexcept: Remove extra spacing.
+
+        * testsuite/19_diagnostics/stdexceptions.cc: Break into...
+        * testsuite/19_diagnostics/bad_exception: ...this. Populate.
+        * testsuite/19_diagnostics/logic_error: ... this.
+        * testsuite/19_diagnostics/logic_error/what-1.cc: ...this.
+        * testsuite/19_diagnostics/logic_error/what-2.cc: ...this.
+        * testsuite/19_diagnostics/runtime_error: ...this.
+        * testsuite/19_diagnostics/runtime_error/what-1.cc: ...this.
+        * testsuite/19_diagnostics/runtime_error/what-2.cc: ...this.
+        * testsuite/19_diagnostics/runtime_error/what-3.cc: ...this.
+        * testsuite/19_diagnostics/23591_thread-1.c: Move...
+        * testsuite/19_diagnostics/bad_exception/23591_thread-1.c: ...here.
+
 2007-05-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* 27_io/objects/wchar_t/11.cc: Include <cstring>.
