@@ -1,3 +1,8 @@
+2007-05-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/31880
+	* gfortran.dg/unf_read_corrupted_2.f90: New test.
+
 2007-04-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/30221
