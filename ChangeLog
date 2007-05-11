@@ -1,3 +1,7 @@
+2007-05-11  Silvius Rus  <rus@google.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2007-04-23  Tom Tromey  <tromey@redhat.com>
 
 	* MAINTAINERS: Added myself as non-algorithmic libcpp maintainer.
