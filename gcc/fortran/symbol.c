@@ -477,6 +477,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
 
   if (attr->in_namelist
       && attr->flavor != FL_VARIABLE
+      && attr->flavor != FL_PROCEDURE
       && attr->flavor != FL_UNKNOWN)
     {
 

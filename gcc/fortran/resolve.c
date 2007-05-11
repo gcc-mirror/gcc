@@ -6070,16 +6070,21 @@ resolve_fl_namelist (gfc_symbol *sym)
     }
 
   /* 14.1.2 A module or internal procedure represent local entities
-     of the same type as a namelist member and so are not allowed.
-     Note that this is sometimes caught by check_conflict so the
-     same message has been used.  */
+     of the same type as a namelist member and so are not allowed.  */
   for (nl = sym->namelist; nl; nl = nl->next)
     {
       if (nl->sym->ts.kind != 0 && nl->sym->attr.flavor == FL_VARIABLE)
 	continue;
+
+      if (nl->sym->attr.function && nl->sym == nl->sym->result)
+	if ((nl->sym == sym->ns->proc_name)
+	       ||
+	    (sym->ns->parent && nl->sym == sym->ns->parent->proc_name))
+	  continue;
+
       nlsym = NULL;
-      if (sym->ns->parent && nl->sym && nl->sym->name)
-	gfc_find_symbol (nl->sym->name, sym->ns->parent, 0, &nlsym);
+      if (nl->sym && nl->sym->name)
+	gfc_find_symbol (nl->sym->name, sym->ns, 1, &nlsym);
       if (nlsym && nlsym->attr.flavor == FL_PROCEDURE)
 	{
 	  gfc_error ("PROCEDURE attribute conflicts with NAMELIST "
