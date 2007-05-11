@@ -44,11 +44,11 @@
 
 #pragma GCC system_header
 
-#include <cstring>              // get std::strlen
 #include <cstdio>               // get std::vsnprintf or std::vsprintf
 #include <clocale>
 #include <libintl.h> 		// For messages
 #include <cstdarg>
+#include <cstddef>
 
 #define _GLIBCXX_C_LOCALE_GNU 1
 
@@ -80,8 +80,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __c_locale __old = __gnu_cxx::__uselocale(__cloc);
 #else
     char* __old = std::setlocale(LC_ALL, NULL);
-    char* __sav = new char[std::strlen(__old) + 1];
-    std::strcpy(__sav, __old);
+    const size_t __len = __builtin_strlen(__old) + 1;
+    char* __sav = new char[__len];
+    __builtin_memcpy(__sav, __old, __len);
     std::setlocale(LC_ALL, "C");
 #endif
 

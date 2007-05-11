@@ -43,7 +43,6 @@
 
 #pragma GCC system_header
 
-#include <cstring>              // For memmove, memset, memchr
 #include <bits/stl_algobase.h>  // For copy, fill_n
 #include <bits/postypes.h>      // For streampos
 #include <cstdio>               // For EOF
@@ -186,8 +185,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     char_traits<_CharT>::
     move(char_type* __s1, const char_type* __s2, std::size_t __n)
     {
-      return static_cast<_CharT*>(std::memmove(__s1, __s2,
-					       __n * sizeof(char_type)));
+      return static_cast<_CharT*>(__builtin_memmove(__s1, __s2,
+						    __n * sizeof(char_type)));
     }
 
   template<typename _CharT>
@@ -254,27 +253,27 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       static int
       compare(const char_type* __s1, const char_type* __s2, size_t __n)
-      { return memcmp(__s1, __s2, __n); }
+      { return __builtin_memcmp(__s1, __s2, __n); }
 
       static size_t
       length(const char_type* __s)
-      { return strlen(__s); }
+      { return __builtin_strlen(__s); }
 
       static const char_type*
       find(const char_type* __s, size_t __n, const char_type& __a)
-      { return static_cast<const char_type*>(memchr(__s, __a, __n)); }
+      { return static_cast<const char_type*>(__builtin_memchr(__s, __a, __n)); }
 
       static char_type*
       move(char_type* __s1, const char_type* __s2, size_t __n)
-      { return static_cast<char_type*>(memmove(__s1, __s2, __n)); }
+      { return static_cast<char_type*>(__builtin_memmove(__s1, __s2, __n)); }
 
       static char_type*
       copy(char_type* __s1, const char_type* __s2, size_t __n)
-      { return static_cast<char_type*>(memcpy(__s1, __s2, __n)); }
+      { return static_cast<char_type*>(__builtin_memcpy(__s1, __s2, __n)); }
 
       static char_type*
       assign(char_type* __s, size_t __n, char_type __a)
-      { return static_cast<char_type*>(memset(__s, __a, __n)); }
+      { return static_cast<char_type*>(__builtin_memset(__s, __a, __n)); }
 
       static char_type
       to_char_type(const int_type& __c)

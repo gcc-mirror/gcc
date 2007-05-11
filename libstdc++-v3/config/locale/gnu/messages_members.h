@@ -1,6 +1,7 @@
 // std::messages implementation details, GNU version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,9 +53,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 				size_t __refs) 
      : facet(__refs), _M_c_locale_messages(NULL), _M_name_messages(NULL)
      {
-       const size_t __len = std::strlen(__s) + 1;
+       const size_t __len = __builtin_strlen(__s) + 1;
        char* __tmp = new char[__len];
-       std::memcpy(__tmp, __s, __len);
+       __builtin_memcpy(__tmp, __s, __len);
        _M_name_messages = __tmp;
 
        // Last to avoid leaking memory if new throws.
@@ -102,11 +103,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      { 
        if (this->_M_name_messages != locale::facet::_S_get_c_name())
 	 delete [] this->_M_name_messages;
-       char* __tmp = new char[std::strlen(__s) + 1];
-       std::strcpy(__tmp, __s);
+       const size_t __len = __builtin_strlen(__s) + 1;
+       char* __tmp = new char[__len];
+       __builtin_memcpy(__tmp, __s, __len);
        this->_M_name_messages = __tmp;
 
-       if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
+       if (__builtin_strcmp(__s, "C") != 0
+	   && __builtin_strcmp(__s, "POSIX") != 0)
 	 {
 	   this->_S_destroy_c_locale(this->_M_c_locale_messages);
 	   this->_S_create_c_locale(this->_M_c_locale_messages, __s); 

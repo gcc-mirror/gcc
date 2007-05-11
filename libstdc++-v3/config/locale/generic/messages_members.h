@@ -1,6 +1,7 @@
 // std::messages implementation details, generic version -*- C++ -*-
 
-// Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -83,7 +84,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      messages_byname<_CharT>::messages_byname(const char* __s, size_t __refs)
      : messages<_CharT>(__refs) 
      { 
-	if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
+	if (__builtin_strcmp(__s, "C") != 0
+	    && __builtin_strcmp(__s, "POSIX") != 0)
 	  {
 	    this->_S_destroy_c_locale(this->_M_c_locale_messages);
 	    this->_S_create_c_locale(this->_M_c_locale_messages, __s); 

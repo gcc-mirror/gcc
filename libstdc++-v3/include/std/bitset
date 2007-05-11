@@ -51,7 +51,6 @@
 #pragma GCC system_header
 
 #include <cstddef>     // For size_t
-#include <cstring>     // For memset
 #include <string>
 #include <bits/functexcept.h>   // For invalid_argument, out_of_range,
                                 // overflow_error
@@ -165,7 +164,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 
       void
       _M_do_reset()
-      { std::memset(_M_w, 0, _Nw * sizeof(_WordT)); }
+      { __builtin_memset(_M_w, 0, _Nw * sizeof(_WordT)); }
 
       bool
       _M_is_equal(const _Base_bitset<_Nw>& __x) const

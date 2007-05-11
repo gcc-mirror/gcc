@@ -457,7 +457,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       codecvt_byname(const char* __s, size_t __refs = 0)
       : codecvt<_InternT, _ExternT, _StateT>(__refs)
       {
-	if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
+	if (__builtin_strcmp(__s, "C") != 0
+	    && __builtin_strcmp(__s, "POSIX") != 0)
 	  {
 	    this->_S_destroy_c_locale(this->_M_c_locale_codecvt);
 	    this->_S_create_c_locale(this->_M_c_locale_codecvt, __s);

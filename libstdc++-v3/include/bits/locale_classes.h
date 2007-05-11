@@ -44,7 +44,6 @@
 #pragma GCC system_header
 
 #include <bits/localefwd.h>
-#include <cstring>		// For strcmp.
 #include <string>
 #include <ext/atomicity.h>
 
@@ -537,7 +536,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       if (_M_names[1])
 	// We must actually compare all the _M_names: can be all equal!
 	for (size_t __i = 0; __ret && __i < _S_categories_size - 1; ++__i)
-	  __ret = std::strcmp(_M_names[__i], _M_names[__i + 1]) == 0;
+	  __ret = __builtin_strcmp(_M_names[__i], _M_names[__i + 1]) == 0;
       return __ret;
     }
 
@@ -810,7 +809,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       collate_byname(const char* __s, size_t __refs = 0)
       : collate<_CharT>(__refs)
       {
-	if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
+	if (__builtin_strcmp(__s, "C") != 0
+	    && __builtin_strcmp(__s, "POSIX") != 0)
 	  {
 	    this->_S_destroy_c_locale(this->_M_c_locale_collate);
 	    this->_S_create_c_locale(this->_M_c_locale_collate, __s);

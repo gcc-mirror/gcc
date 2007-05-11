@@ -1,18 +1,60 @@
+2007-05-11  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/pod_char_traits.h (char_traits<>::move):
+	Use __builtin_memmove.
+	* include/bits/locale_classes.h (locale::_Impl::_M_check_same_name,
+	collate_byname(const char*, size_t)): Use __builtin_strcmp.
+	* include/bits/locale_facets.h: Use __builtin_mem* and
+	__builtin_str* everywhere.
+	* include/bits/codecvt.h (codecvt_byname(const char*, size_t)):
+	Use __builtin_strcmp.
+	* include/bits/char_traits.h: Use __builtin_mem* everywhere.
+	* include/bits/fstream.tcc (basic_filebuf<>::underflow, imbue):
+	Use __builtin_memcpy and __builtin_memmove.
+	* include/bits/locale_facets_nonio.h (moneypunct_byname(const char*,
+	size_t __refs)): Use __builtin_strcmp.
+	* include/std/bitset (bitset<>::_M_do_reset): Use __builtin_memset.
+	* config/locale/gnu/c_locale.h: Use __builtin_strlen, __builtin_strcmp,
+	and __builtin_memcpy.
+	* config/locale/gnu/messages_members.h: Likewise.
+	* config/locale/gnu/time_members.h: Likewise.
+	* config/locale/generic/c_locale.h: Likewise.
+	* config/locale/generic/messages_members.h: Likewise.
+	* config/locale/generic/time_members.h: Likewise.
+	* config/os/gnu-linux/ctype_noninline.h: Likewise, avoid strdup.
+	* config/os/tpf/ctype_noninline.h: Likewise.
+	* config/locale/generic/codecvt_members.cc: Include <cstring>. 
+	* config/locale/generic/ctype_members.cc: Likewise.
+	* config/locale/generic/collate_members.cc: Likewise.
+	* config/locale/gnu/c++locale_internal.h: Likewise.
+	* config/locale/darwin/ctype_members.cc: Likewise.
+	* src/ctype.cc: Likewise.
+	* testsuite/19_diagnostics/logic_error/what-1.cc: Likewise.
+	* testsuite/19_diagnostics/logic_error/what-2.cc: Likewise.
+	* testsuite/19_diagnostics/runtime_error/what-1.cc: Likewise.
+	* testsuite/19_diagnostics/runtime_error/what-2.cc: Likewise.
+	* testsuite/19_diagnostics/runtime_error/what-3.cc: Likewise.
+	* config/locale/gnu/messages_members.cc: Avoid strdup.
+	* config/locale/gnu/monetary_members.cc: Likewise.
+	* config/locale/gnu/time_members.cc: Likewise.	
+	* config/locale/gnu/time_members.cc: Likewise.
+	* config/locale/generic/c_locale.cc: Likewise.
+
 2007-05-11  Benjamin Kosnik  <bkoz@redhat.com>
 
-       * include/std/stdexcept: Remove extra spacing.
+	* include/std/stdexcept: Remove extra spacing.
 
-        * testsuite/19_diagnostics/stdexceptions.cc: Break into...
-        * testsuite/19_diagnostics/bad_exception: ...this. Populate.
-        * testsuite/19_diagnostics/logic_error: ... this.
-        * testsuite/19_diagnostics/logic_error/what-1.cc: ...this.
-        * testsuite/19_diagnostics/logic_error/what-2.cc: ...this.
-        * testsuite/19_diagnostics/runtime_error: ...this.
-        * testsuite/19_diagnostics/runtime_error/what-1.cc: ...this.
-        * testsuite/19_diagnostics/runtime_error/what-2.cc: ...this.
-        * testsuite/19_diagnostics/runtime_error/what-3.cc: ...this.
-        * testsuite/19_diagnostics/23591_thread-1.c: Move...
-        * testsuite/19_diagnostics/bad_exception/23591_thread-1.c: ...here.
+	* testsuite/19_diagnostics/stdexceptions.cc: Break into...
+	* testsuite/19_diagnostics/bad_exception: ...this. Populate.
+	* testsuite/19_diagnostics/logic_error: ... this.
+	* testsuite/19_diagnostics/logic_error/what-1.cc: ...this.
+	* testsuite/19_diagnostics/logic_error/what-2.cc: ...this.
+	* testsuite/19_diagnostics/runtime_error: ...this.
+	* testsuite/19_diagnostics/runtime_error/what-1.cc: ...this.
+	* testsuite/19_diagnostics/runtime_error/what-2.cc: ...this.
+	* testsuite/19_diagnostics/runtime_error/what-3.cc: ...this.
+	* testsuite/19_diagnostics/23591_thread-1.c: Move...
+	* testsuite/19_diagnostics/bad_exception/23591_thread-1.c: ...here.
 
 2007-05-10  Paolo Carlini  <pcarlini@suse.de>
 

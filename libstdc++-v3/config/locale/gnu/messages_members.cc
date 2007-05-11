@@ -49,11 +49,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __uselocale(__old);
       return string(__msg);
 #else
-      char* __old = strdup(setlocale(LC_ALL, NULL));
+      char* __old = setlocale(LC_ALL, NULL);
+      const size_t __len = strlen(__old) + 1;
+      char* __sav = new char[__len];
+      memcpy(__sav, __old, __len);
       setlocale(LC_ALL, _M_name_messages);
       const char* __msg = gettext(__dfault.c_str());
-      setlocale(LC_ALL, __old);
-      free(__old);
+      setlocale(LC_ALL, __sav);
+      delete [] __sav;
       return string(__msg);
 #endif
     }
@@ -69,11 +72,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __uselocale(__old);
       return _M_convert_from_char(__msg);
 # else
-      char* __old = strdup(setlocale(LC_ALL, NULL));
+      char* __old = setlocale(LC_ALL, NULL);
+      const size_t __len = strlen(__old) + 1;
+      char* __sav = new char[__len];
+      memcpy(__sav, __old, __len);
       setlocale(LC_ALL, _M_name_messages);
       char* __msg = gettext(_M_convert_to_char(__dfault));
-      setlocale(LC_ALL, __old);
-      free(__old);
+      setlocale(LC_ALL, __sav);
+      delete [] __sav;
       return _M_convert_from_char(__msg);
 # endif
     }

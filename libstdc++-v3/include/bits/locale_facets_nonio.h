@@ -1320,7 +1320,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       moneypunct_byname(const char* __s, size_t __refs = 0)
       : moneypunct<_CharT, _Intl>(__refs)
       {
-	if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
+	if (__builtin_strcmp(__s, "C") != 0
+	    && __builtin_strcmp(__s, "POSIX") != 0)
 	  {
 	    __c_locale __tmp;
 	    this->_S_create_c_locale(__tmp, __s);

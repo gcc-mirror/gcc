@@ -37,6 +37,7 @@
 #include <locale>
 #include <bits/c++locale_internal.h>
 #include <cstdlib>
+#include <cstring>
 
 namespace std
 {

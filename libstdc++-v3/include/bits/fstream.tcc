@@ -263,14 +263,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		{
 		  char* __buf = new char[__blen];
 		  if (__remainder)
-		    std::memcpy(__buf, _M_ext_next, __remainder);
+		    __builtin_memcpy(__buf, _M_ext_next, __remainder);
 
 		  delete [] _M_ext_buf;
 		  _M_ext_buf = __buf;
 		  _M_ext_buf_size = __blen;
 		}
 	      else if (__remainder)
-		std::memmove(_M_ext_buf, _M_ext_next, __remainder);
+		__builtin_memmove(_M_ext_buf, _M_ext_next, __remainder);
 
 	      _M_ext_next = _M_ext_buf;
 	      _M_ext_end = _M_ext_buf + __remainder;
@@ -888,7 +888,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 					     this->gptr() - this->eback());
 		      const streamsize __remainder = _M_ext_end - _M_ext_next;
 		      if (__remainder)
-			std::memmove(_M_ext_buf, _M_ext_next, __remainder);
+			__builtin_memmove(_M_ext_buf, _M_ext_next, __remainder);
 
 		      _M_ext_next = _M_ext_buf;
 		      _M_ext_end = _M_ext_buf + __remainder;

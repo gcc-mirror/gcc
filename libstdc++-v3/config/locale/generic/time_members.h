@@ -1,6 +1,7 @@
 // std::time_get, std::time_put implementation, generic version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -62,9 +63,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 				     size_t __refs) 
     : facet(__refs), _M_data(NULL)
     { 
-      const size_t __len = std::strlen(__s) + 1;
+      const size_t __len = __builtin_strlen(__s) + 1;
       char* __tmp = new char[__len];
-      std::memcpy(__tmp, __s, __len);
+      __builtin_memcpy(__tmp, __s, __len);
       _M_name_timepunct = __tmp;
 
       try

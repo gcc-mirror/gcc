@@ -37,8 +37,10 @@
 #include <cerrno>  // For errno
 #include <cmath>  // For isinf, finite, finitef, fabs
 #include <cstdlib>  // For strof, strtold
+#include <cstring>
 #include <locale>
 #include <limits>
+#include <cstddef>
 
 #ifdef _GLIBCXX_HAVE_IEEEFP_H
 #include <ieeefp.h>
@@ -53,7 +55,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		   const __c_locale&) 	      
     {
       // Assumes __s formatted for "C" locale.
-      char* __old = strdup(setlocale(LC_ALL, NULL));
+      char* __old = setlocale(LC_ALL, NULL);
+      const size_t __len = strlen(__old) + 1;
+      char* __sav = new char[__len];
+      memcpy(__sav, __old, __len);
       setlocale(LC_ALL, "C");
       char* __sanity;
 
@@ -91,8 +96,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       else
 	__err |= ios_base::failbit;
 
-      setlocale(LC_ALL, __old);
-      free(__old);
+      setlocale(LC_ALL, __sav);
+      delete [] __sav;
     }
 
   template<>
@@ -101,7 +106,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		   const __c_locale&) 
     {
       // Assumes __s formatted for "C" locale.
-      char* __old = strdup(setlocale(LC_ALL, NULL));
+      char* __old = setlocale(LC_ALL, NULL);
+      const size_t __len = strlen(__old) + 1;
+      char* __sav = new char[__len];
+      memcpy(__sav, __old, __len);
       setlocale(LC_ALL, "C");
       char* __sanity;
 
@@ -121,8 +129,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       else
 	__err |= ios_base::failbit;
 
-      setlocale(LC_ALL, __old);
-      free(__old);
+      setlocale(LC_ALL, __sav);
+      delete [] __sav;
     }
 
   template<>
@@ -131,7 +139,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		   ios_base::iostate& __err, const __c_locale&) 
     {
       // Assumes __s formatted for "C" locale.
-      char* __old = strdup(setlocale(LC_ALL, NULL));
+      char* __old = setlocale(LC_ALL, NULL);
+      const size_t __len = strlen(__old) + 1;
+      char* __sav = new char[__len];
+      memcpy(__sav, __old, __len);
       setlocale(LC_ALL, "C");
 
 #if !__LDBL_HAS_INFINITY__
@@ -167,8 +178,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       else
 	__err |= ios_base::failbit;
 
-      setlocale(LC_ALL, __old);
-      free(__old);
+      setlocale(LC_ALL, __sav);
+      delete [] __sav;
     }
 
   void

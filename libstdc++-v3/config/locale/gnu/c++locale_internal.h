@@ -38,6 +38,8 @@
 #include <bits/c++config.h>
 #include <clocale>
 #include <cstdlib>
+#include <cstring>
+#include <cstddef>
 #include <langinfo.h>
 
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)

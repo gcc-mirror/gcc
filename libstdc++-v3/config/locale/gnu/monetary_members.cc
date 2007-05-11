@@ -383,7 +383,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  __c_locale __old = __uselocale(__cloc);
 #else
 	  // Switch to named locale so that mbsrtowcs will work.
-	  char* __old = strdup(setlocale(LC_ALL, NULL));
+	  char* __old = setlocale(LC_ALL, NULL);
+          const size_t __llen = strlen(__old) + 1;
+          char* __sav = new char[__llen];
+          memcpy(__sav, __old, __llen);
 	  setlocale(LC_ALL, __name);
 #endif
 
@@ -457,8 +460,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
 	      __uselocale(__old);
 #else
-	      setlocale(LC_ALL, __old);
-	      free(__old);
+	      setlocale(LC_ALL, __sav);
+	      delete [] __sav;
 #endif
 	      __throw_exception_again;
 	    } 
@@ -478,8 +481,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
 	  __uselocale(__old);
 #else
-	  setlocale(LC_ALL, __old);
-	  free(__old);
+	  setlocale(LC_ALL, __sav);
+	  delete [] __sav;
 #endif
 	}
     }
@@ -525,7 +528,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  __c_locale __old = __uselocale(__cloc);
 #else
 	  // Switch to named locale so that mbsrtowcs will work.
-	  char* __old = strdup(setlocale(LC_ALL, NULL));
+	  char* __old = setlocale(LC_ALL, NULL);
+          const size_t __llen = strlen(__old) + 1;
+          char* __sav = new char[__llen];
+          memcpy(__sav, __old, __llen);
 	  setlocale(LC_ALL, __name);
 #endif
 
@@ -600,8 +606,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
 	      __uselocale(__old);
 #else
-	      setlocale(LC_ALL, __old);
-	      free(__old);
+	      setlocale(LC_ALL, __sav);
+	      delete [] __sav;
 #endif
               __throw_exception_again;
 	    }
@@ -620,8 +626,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
 	  __uselocale(__old);
 #else
-	  setlocale(LC_ALL, __old);
-	  free(__old);
+	  setlocale(LC_ALL, __sav);
+	  delete [] __sav;
 #endif
 	}
     }
