@@ -1297,6 +1297,13 @@ nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,
     {
       sym->attr.referenced = 1;
       decl = gfc_get_symbol_decl (sym);
+
+      /* If this is the enclosing function declaration, use
+	 the fake result instead.  */
+      if (decl == current_function_decl)
+	decl = gfc_get_fake_result_decl (sym, 0);
+      else if (decl == DECL_CONTEXT (current_function_decl))
+	decl =  gfc_get_fake_result_decl (sym, 1);
     }
   else
     decl = c->backend_decl;

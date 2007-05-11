@@ -1,3 +1,16 @@
+2007-05-11 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/30878
+	* resolve.c (resolve_fl_namelist): It is not an error if the
+	namelist element is the result variable of the enclosing
+	function.  Search for the symbol in current and all parent
+	namespaces for a potential conflict.
+	* symbol.c (check_conflict): Remove the conflict between
+	'in_namelist' and 'FL_PROCEDURE' because the symbol info
+	is not available to exclude function result variables.
+	* trans-io.c (nml_get_addr_expr): Use the fake result decl
+	if the symbol is an implicit result variable.
+
 2007-05-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31474
