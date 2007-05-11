@@ -1,3 +1,8 @@
+2007-05-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/31880
+	* io/unix.c (fd_alloc_r_at): Fix calculation of physical offset.
+
 2007-04-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/31366
