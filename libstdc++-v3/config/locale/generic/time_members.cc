@@ -37,6 +37,7 @@
 
 #include <locale>
 #include <cstdlib>
+#include <cstring>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -46,11 +47,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _M_put(char* __s, size_t __maxlen, const char* __format, 
 	   const tm* __tm) const
     {
-      char* __old = strdup(setlocale(LC_ALL, NULL));
+      char* __old = setlocale(LC_ALL, NULL);
+      const size_t __llen = strlen(__old) + 1;
+      char* __sav = new char[__llen];
+      memcpy(__sav, __old, __llen);
       setlocale(LC_ALL, _M_name_timepunct);
       const size_t __len = strftime(__s, __maxlen, __format, __tm);
-      setlocale(LC_ALL, __old);
-      free(__old);
+      setlocale(LC_ALL, __sav);
+      delete [] __sav;
       // Make sure __s is null terminated.
       if (__len == 0)
 	__s[0] = '\0';
@@ -128,11 +132,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _M_put(wchar_t* __s, size_t __maxlen, const wchar_t* __format, 
 	   const tm* __tm) const
     {
-      char* __old = strdup(setlocale(LC_ALL, NULL));
+      char* __old = setlocale(LC_ALL, NULL);
+      const size_t __llen = strlen(__old) + 1;
+      char* __sav = new char[__llen];
+      memcpy(__sav, __old, __llen);
       setlocale(LC_ALL, _M_name_timepunct);
       const size_t __len = wcsftime(__s, __maxlen, __format, __tm);
-      setlocale(LC_ALL, __old);
-      free(__old);
+      setlocale(LC_ALL, __sav);
+      delete [] __sav;
       // Make sure __s is null terminated.
       if (__len == 0)
 	__s[0] = L'\0';      

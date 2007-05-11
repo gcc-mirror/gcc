@@ -899,7 +899,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       {
 	if (_M_widen_ok == 1)
 	  {
-	    memcpy(__to, __lo, __hi - __lo);
+	    __builtin_memcpy(__to, __lo, __hi - __lo);
 	    return __hi;
 	  }
 	if (!_M_widen_ok)
@@ -964,7 +964,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       {
 	if (__builtin_expect(_M_narrow_ok == 1, true))
 	  {
-	    memcpy(__to, __lo, __hi - __lo);
+	    __builtin_memcpy(__to, __lo, __hi - __lo);
 	    return __hi;
 	  }
 	if (!_M_narrow_ok)
@@ -1101,7 +1101,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       virtual const char*
       do_widen(const char* __lo, const char* __hi, char_type* __dest) const
       {
-	memcpy(__dest, __lo, __hi - __lo);
+	__builtin_memcpy(__dest, __lo, __hi - __lo);
 	return __hi;
       }
 
@@ -1154,7 +1154,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       do_narrow(const char_type* __lo, const char_type* __hi,
 		char, char* __dest) const
       {
-	memcpy(__dest, __lo, __hi - __lo);
+	__builtin_memcpy(__dest, __lo, __hi - __lo);
 	return __hi;
       }
 
@@ -1169,7 +1169,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 	_M_widen_ok = 1;
 	// Set _M_widen_ok to 2 if memcpy can't be used.
-	if (memcmp(__tmp, _M_widen, sizeof(_M_widen)))
+	if (__builtin_memcmp(__tmp, _M_widen, sizeof(_M_widen)))
 	  _M_widen_ok = 2;
       }
 
@@ -1184,7 +1184,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	do_narrow(__tmp, __tmp + sizeof(__tmp), 0, _M_narrow);
 
 	_M_narrow_ok = 1;
-	if (memcmp(__tmp, _M_narrow, sizeof(_M_narrow)))
+	if (__builtin_memcmp(__tmp, _M_narrow, sizeof(_M_narrow)))
 	  _M_narrow_ok = 2;
 	else
 	  {
@@ -1922,7 +1922,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       numpunct_byname(const char* __s, size_t __refs = 0)
       : numpunct<_CharT>(__refs)
       {
-	if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
+	if (__builtin_strcmp(__s, "C") != 0
+	    && __builtin_strcmp(__s, "POSIX") != 0)
 	  {
 	    __c_locale __tmp;
 	    this->_S_create_c_locale(__tmp, __s);

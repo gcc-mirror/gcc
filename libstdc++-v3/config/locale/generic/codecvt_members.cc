@@ -37,6 +37,7 @@
 #include <locale>
 #include <cstdlib>  // For MB_CUR_MAX
 #include <climits>  // For MB_LEN_MAX
+#include <cstring>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 

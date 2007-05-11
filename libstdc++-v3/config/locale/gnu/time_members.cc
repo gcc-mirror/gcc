@@ -1,6 +1,7 @@
 // std::time_get, std::time_put implementation, GNU version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,11 +50,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const size_t __len = __strftime_l(__s, __maxlen, __format, __tm,
 					_M_c_locale_timepunct);
 #else
-      char* __old = strdup(setlocale(LC_ALL, NULL));
+      char* __old = setlocale(LC_ALL, NULL);
+      const size_t __llen = strlen(__old) + 1;  
+      char* __sav = new char[__llen];
+      memcpy(__sav, __old, __llen);
       setlocale(LC_ALL, _M_name_timepunct);
       const size_t __len = strftime(__s, __maxlen, __format, __tm);
-      setlocale(LC_ALL, __old);
-      free(__old);
+      setlocale(LC_ALL, __sav);
+      delete [] __sav;
 #endif
       // Make sure __s is null terminated.
       if (__len == 0)
@@ -202,11 +206,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const size_t __len = __wcsftime_l(__s, __maxlen, __format, __tm,
 					_M_c_locale_timepunct);
 #else
-      char* __old = strdup(setlocale(LC_ALL, NULL));
+      char* __old = setlocale(LC_ALL, NULL);
+      const size_t __llen = strlen(__old) + 1;
+      char* __sav = new char[__llen];
+      memcpy(__sav, __old, __llen);
       setlocale(LC_ALL, _M_name_timepunct);
       const size_t __len = wcsftime(__s, __maxlen, __format, __tm);
-      setlocale(LC_ALL, __old);
-      free(__old);
+      setlocale(LC_ALL, __sav);
+      delete [] __sav;
 #endif
       // Make sure __s is null terminated.
       if (__len == 0)

@@ -29,6 +29,7 @@
 
 #include <locale>
 #include <cstdlib>
+#include <cstring>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 

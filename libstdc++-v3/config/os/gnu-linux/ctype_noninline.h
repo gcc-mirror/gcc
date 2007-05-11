@@ -1,6 +1,7 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+// 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -48,15 +49,18 @@
   ctype<char>::classic_table() throw()
   {
     const ctype_base::mask* __ret;
-    char* __old = strdup(setlocale(LC_CTYPE, NULL));
+    char* __old = setlocale(LC_CTYPE, NULL);
+    const size_t __len = __builtin_strlen(__old) + 1;
+    char* __sav = new char[__len];
+    __builtin_memcpy(__sav, __old, __len);
     setlocale(LC_CTYPE, "C");
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __ret = *__ctype_b_loc();
 #else
     __ret = __ctype_b;
 #endif
-    setlocale(LC_CTYPE, __old);
-    free(__old);
+    setlocale(LC_CTYPE, __sav);
+    delete [] __sav;
     return __ret;
   }
 #endif
@@ -71,8 +75,8 @@
   _M_table(__table ? __table : _M_c_locale_ctype->__ctype_b), 
   _M_widen_ok(0), _M_narrow_ok(0) 
   {
-    memset(_M_widen, 0, sizeof(_M_widen));
-    memset(_M_narrow, 0, sizeof(_M_narrow));
+    __builtin_memset(_M_widen, 0, sizeof(_M_widen));
+    __builtin_memset(_M_narrow, 0, sizeof(_M_narrow));
   }
 #else
   ctype<char>::ctype(__c_locale, const mask* __table, bool __del, 
@@ -80,7 +84,10 @@
   : facet(__refs), _M_c_locale_ctype(_S_get_c_locale()), 
   _M_del(__table != 0 && __del), _M_widen_ok(0), _M_narrow_ok(0)
   {
-    char* __old=strdup(setlocale(LC_CTYPE, NULL));
+    char* __old = setlocale(LC_CTYPE, NULL);
+    const size_t __len = __builtin_strlen(__old) + 1;
+    char* __sav = new char[__len];
+    __builtin_memcpy(__sav, __old, __len);    
     setlocale(LC_CTYPE, "C");
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     _M_toupper = *__ctype_toupper_loc();
@@ -91,10 +98,10 @@
     _M_tolower = __ctype_tolower;
     _M_table = __table ? __table : __ctype_b;
 #endif
-    setlocale(LC_CTYPE, __old);
-    free(__old);
-    memset(_M_widen, 0, sizeof(_M_widen));
-    memset(_M_narrow, 0, sizeof(_M_narrow));
+    setlocale(LC_CTYPE, __sav);
+    delete [] __sav;
+    __builtin_memset(_M_widen, 0, sizeof(_M_widen));
+    __builtin_memset(_M_narrow, 0, sizeof(_M_narrow));
   }
 #endif
 
@@ -107,15 +114,18 @@
   _M_table(__table ? __table : _M_c_locale_ctype->__ctype_b), 
   _M_widen_ok(0), _M_narrow_ok(0) 
   {
-    memset(_M_widen, 0, sizeof(_M_widen));
-    memset(_M_narrow, 0, sizeof(_M_narrow));
+    __builtin_memset(_M_widen, 0, sizeof(_M_widen));
+    __builtin_memset(_M_narrow, 0, sizeof(_M_narrow));
   }
 #else
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs)
   : facet(__refs), _M_c_locale_ctype(_S_get_c_locale()), 
   _M_del(__table != 0 && __del), _M_widen_ok(0), _M_narrow_ok(0)
   {
-    char* __old=strdup(setlocale(LC_CTYPE, NULL));
+    char* __old = setlocale(LC_CTYPE, NULL);
+    const size_t __len = __builtin_strlen(__old) + 1;
+    char* __sav = new char[__len];
+    __builtin_memcpy(__sav, __old, __len);
     setlocale(LC_CTYPE, "C");
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     _M_toupper = *__ctype_toupper_loc();
@@ -126,10 +136,10 @@
     _M_tolower = __ctype_tolower;
     _M_table = __table ? __table : __ctype_b;
 #endif
-    setlocale(LC_CTYPE, __old);
-    free(__old);
-    memset(_M_widen, 0, sizeof(_M_widen));
-    memset(_M_narrow, 0, sizeof(_M_narrow));
+    setlocale(LC_CTYPE, __sav);
+    delete [] __sav;
+    __builtin_memset(_M_widen, 0, sizeof(_M_widen));
+    __builtin_memset(_M_narrow, 0, sizeof(_M_narrow));
   }
 #endif
 
