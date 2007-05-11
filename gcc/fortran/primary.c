@@ -2062,17 +2062,16 @@ gfc_match_rvalue (gfc_expr **result)
       gfc_gobble_whitespace ();
       if (sym->attr.recursive
 	  && gfc_peek_char () == '('
-	  && gfc_current_ns->proc_name == sym)
+	  && gfc_current_ns->proc_name == sym
+	  && !sym->attr.dimension)
 	{
-	  if (!sym->attr.dimension)
-	    goto function0;
-
-	  gfc_error ("'%s' is array valued and directly recursive "
-		     "at %C , so the keyword RESULT must be specified "
-		     "in the FUNCTION statement", sym->name);
+	  gfc_error ("'%s' at %C is the name of a recursive function "
+		     "and so refers to the result variable. Use an "
+		     "explicit RESULT variable for direct recursion "
+		     "(12.5.2.1)", sym->name);
 	  return MATCH_ERROR;
 	}
-	
+
       if (gfc_current_ns->proc_name == sym
 	  || (gfc_current_ns->parent != NULL
 	      && gfc_current_ns->parent->proc_name == sym))
