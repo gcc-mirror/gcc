@@ -6799,10 +6799,6 @@ finish_function (void)
      info for the epilogue.  */
   cfun->function_end_locus = input_location;
 
-  /* Keep track of functions declared with the "constructor" and
-     "destructor" attribute.  */
-  c_record_cdtor_fn (fndecl);
-
   /* Finalize the ELF visibility for the function.  */
   c_determine_visibility (fndecl);
 
@@ -7922,10 +7918,6 @@ c_write_global_declarations (void)
   for (t = all_translation_units; t; t = TREE_CHAIN (t))
     c_write_global_declarations_1 (BLOCK_VARS (DECL_INITIAL (t)));
   c_write_global_declarations_1 (BLOCK_VARS (ext_block));
-
-  /* Call functions declared with the "constructor" or "destructor"
-     attribute.  */
-  c_build_cdtor_fns ();
 
   /* We're done parsing; proceed to optimize and emit assembly.
      FIXME: shouldn't be the front end's responsibility to call this.  */

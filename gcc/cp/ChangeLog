@@ -1,3 +1,9 @@
+2007-05-11  Jan Hubicka  <jh@suse.cz>
+
+	* semantics.c (expand_or_defer_fn): Do not call c_record_cdtor_fn.
+	* decl2.c (start_objects): ctors and dtors are no longer public.
+	(cp_write_global_declarations): Do not call c_build_cdtor_fns.
+	
 2007-05-07  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* typeck.c (build_unary_op): Remove code that used to
