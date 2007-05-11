@@ -1,3 +1,14 @@
+2007-05-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR other/31852
+	* builtin-types.def: Add BT_FN_PTR_CONST_PTR_INT_SIZE.
+	* builtins.def: Add BUILT_IN_MEMCHR, use the latter.
+	* builtins.c (fold_builtin_memchr): New.
+	(expand_builtin_memchr): Call the latter.
+	(expand_builtin, fold_builtin_3): Deal with BUILT_IN_MEMCHR.
+	* doc/extend.texi ([Other built-in functions provided by GCC]):
+	Document memchr.
+
 2007-05-11  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md (GPR0_REGNUM, FPR0_REGNUM, FPR2_REGNUM,
