@@ -347,6 +347,8 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 
   if (short_record)
     {
+      dtp->u.p.current_unit->current_record = 0;
+      next_record (dtp, 0);
       generate_error (&dtp->common, ERROR_SHORT_RECORD, NULL);
       return;
     }
