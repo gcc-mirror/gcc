@@ -1,3 +1,9 @@
+2007-05-11  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/31876
+	* config/sh/sh.md (andsi3): Avoid calling gen_lowpart on
+        a SImode SUBREG of a floating point register.
+
 2007-05-08  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* loop.c (move_movables): Remove REG_EQUAL notes for conditional

@@ -3018,7 +3018,9 @@ label:
   "
 {
   if (TARGET_SH1
-      && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) == 255)
+      && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) == 255
+      && (GET_CODE (operands[1]) != SUBREG
+	  || SCALAR_INT_MODE_P (GET_MODE (XEXP (operands[1], 0)))))
     {
       emit_insn (gen_zero_extendqisi2 (operands[0],
 				       gen_lowpart (QImode, operands[1])));
