@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wstrict-aliasing -O2" } */
+/* { dg-options "-Wstrict-aliasing=2 -O2" } */
 
 int a[2];
 

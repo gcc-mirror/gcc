@@ -1,3 +1,22 @@
+2007-05-11  Silvius Rus  <rus@google.com>
+
+	* gcc.dg/Wstrict-aliasing-bogus-const-ptr-nonconst-ptr.c: New test.
+	* gcc.dg/Wstrict-aliasing-bogus-never-dereferenced.c: New test.
+	* gcc.dg/Wstrict-aliasing-bogus-struct-included.c: New test.
+	* gcc.dg/Wstrict-aliasing-converted-assigned.c: New test.
+	* gcc.dg/Wstrict-aliasing-float-ptr-int-obj.c: New test.
+	* gcc.dg/alias-1.c: Update option: -Wstrict-aliasing=2.
+	* gcc.dg/alias-9.c: Update option: -Wstrict-aliasing=2.
+	* g++.dg/warn/Wstrict-aliasing-7.C: Update option: -Wstrict-aliasing=2.
+	* g++.dg/warn/Wstrict-aliasing-bogus-base-derived.C: New test.
+	* g++.dg/warn/Wstrict-aliasing-bogus-char-1.C: New test.
+	* g++.dg/warn/Wstrict-aliasing-bogus-const.C: New test.
+	* g++.dg/warn/Wstrict-aliasing-bogus-nested-arrays.C: New test.
+	* g++.dg/warn/Wstrict-aliasing-bogus-signed-unsigned.C: New test.
+	* g++.dg/warn/Wstrict-aliasing-bogus-struct-included.C: New test.
+	* g++.dg/warn/Wstrict-aliasing-bogus-union.C: New test.
+	* g++.dg/warn/Wstrict-aliasing-float-ref-int-obj.C: New test. 
+
 2007-05-11  Paolo Carlini  <pcarlini@suse.de>
 
 	PR other/31852

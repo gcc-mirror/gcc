@@ -1352,6 +1352,9 @@ common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_Wstrict_aliasing:
+      set_Wstrict_aliasing (value);
+      break;
+
     case OPT_Wstrict_aliasing_:
       warn_strict_aliasing = value;
       break;
@@ -1713,6 +1716,20 @@ set_Wunused (int setting)
   warn_unused_parameter = (setting && extra_warnings);
   warn_unused_variable = setting;
   warn_unused_value = setting;
+}
+
+/* Used to set the level of strict aliasing warnings, 
+   when no level is specified (i.e., when -Wstrict-aliasing, and not
+   -Wstrict-aliasing=level was given).
+   ONOFF is assumed to take value 1 when -Wstrict-aliasing is specified,
+   and 0 otherwise.  After calling this function, wstrict_aliasing will be
+   set to the default value of -Wstrict_aliasing=level, currently 3.  */
+void
+set_Wstrict_aliasing (int onoff)
+{
+  gcc_assert (onoff == 0 || onoff == 1);
+  if (onoff != 0)
+    warn_strict_aliasing = 3;
 }
 
 /* The following routines are useful in setting all the flags that

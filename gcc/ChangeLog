@@ -1,3 +1,19 @@
+2007-05-11  Silvius Rus  <rus@google.com>
+
+	* Makefile.in (OBJS-common): Add tree-ssa-alias-warnings.o.
+	* c-common.c (strict_aliasing_warning): Modify -Wstrict-aliasing logic.
+	* c-common.h (strict_aliasing_warning): Change return type.
+	* c-opts.c (c_common_handle_option): Add call to set_Wstrict_aliasing.
+	* c-typeck.c (build_indirect_ref): Add call to strict_aliasing_warning.
+	(build_c_cast): Condition call to strict_aliasing_warning.
+	* doc/invoke.texi: Update description of -Wstrict-aliasing[=n].
+	* flags.h (set_Wstrict_aliasing): Declare.
+	* opts.c (set_Wstrict_alising): Define, add call to.
+	* tree-flow.h (strict_aliasing_warning_backend): Declare.
+	* tree-ssa-alias-warnings.c: New file.
+	* tree-ssa-alias.c (compute_may_aliases): Add call to
+	strict_aliasing_warning_backend. 
+
 2007-05-11  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-loop-linear.c (gather_interchange_stats, try_interchange_loops):
