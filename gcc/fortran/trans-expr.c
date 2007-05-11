@@ -2317,7 +2317,17 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   if (byref)
     {
       if (se->direct_byref)
-	retargs = gfc_chainon_list (retargs, se->expr);
+	{
+	  /* Sometimes, too much indirection can be applied; eg. for
+	     function_result = array_valued_recursive_function.  */
+	  if (TREE_TYPE (TREE_TYPE (se->expr))
+		&& TREE_TYPE (TREE_TYPE (TREE_TYPE (se->expr)))
+		&& GFC_DESCRIPTOR_TYPE_P
+			(TREE_TYPE (TREE_TYPE (TREE_TYPE (se->expr)))))
+	    se->expr = build_fold_indirect_ref (se->expr);
+
+	  retargs = gfc_chainon_list (retargs, se->expr);
+	}
       else if (sym->result->attr.dimension)
 	{
 	  gcc_assert (se->loop && info);

@@ -1,5 +1,12 @@
 2007-05-11 Paul Thomas <pault@gcc.gnu.org>
 
+	PR fortran/30876
+	* gfortran.dg/recursive_reference_1.f90: Put error at correct
+	line.
+	* gfortran.dg/recursive_reference_2.f90: New test.
+
+2007-05-11 Paul Thomas <pault@gcc.gnu.org>
+
 	PR fortran/30878
 	* gfortran.dg/namelist_29.f90: New test.
 

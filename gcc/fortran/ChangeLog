@@ -1,5 +1,14 @@
 2007-05-11 Paul Thomas <pault@gcc.gnu.org>
 
+	PR fortran/30876
+	* trans-expr.c (gfc_conv_function_call): Reduce indirection for
+	direct assignments of recursive array valued functions.
+	* primary.c (gfc_match_rvalue): Correct error for recursive
+	function calls such that directly recursive calls of scalar
+	function without an explicit result are disallowed.
+
+2007-05-11 Paul Thomas <pault@gcc.gnu.org>
+
 	PR fortran/30878
 	* resolve.c (resolve_fl_namelist): It is not an error if the
 	namelist element is the result variable of the enclosing

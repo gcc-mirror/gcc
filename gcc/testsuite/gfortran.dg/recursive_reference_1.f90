@@ -1,7 +1,9 @@
 ! { dg-do compile }
 ! Tests the patch for PR27613, in which directly recursive, scalar
 ! functions were generating an "unclassifiable statement" error
-! for the recursive statement(s).
+! for the recursive statement(s).  This was subsequently determined
+! to be wrong code and the error on 'bad_stuff' was removed.
+! See 12.5.2.1 of the standard and PR30876.
 !
 ! Based on PR testcase by Nicolas Bock  <nicolasbock@gmail.com>
 !
@@ -15,7 +17,7 @@ contains
     integer :: n
     original_stuff = 1
     if(n < 5) then
-      original_stuff = original_stuff + original_stuff (n+1)
+      original_stuff = original_stuff + original_stuff (n+1) ! { dg-error "name of a recursive function" }
     endif
   end function original_stuff
 
@@ -42,7 +44,7 @@ contains
     integer :: n(2)
     bad_stuff = 1
     if(maxval (n) < 5) then
-      bad_stuff = bad_stuff + bad_stuff (n+1) ! { dg-error "RESULT must be specified" }
+      bad_stuff = bad_stuff + bad_stuff (n+1)
     endif
   end function bad_stuff
 end program test
