@@ -1,3 +1,8 @@
+2007-05-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/31880
+	* gfortran.dg/unf_read_corrupted_2.f90: New test.
+
 2007-05-10  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.dg/20070507-1.c: Disable for non-pic targets.

@@ -1,3 +1,8 @@
+2007-05-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/31880
+	* io/unix.c (fd_alloc_r_at): Fix calculation of physical offset.
+
 2007-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* io/unix.c (regular_file): For ACTION_UNSPECIFIED retry with
