@@ -1,3 +1,13 @@
+2007-05-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30746
+	* resolve.c (check_host_association): New function that detects
+	incorrect host association and corrects it.
+	(gfc_resolve_expr): Call the new function for variables and
+	functions.
+	* match.h : Remove prototype for gfc_match_rvalue.
+	* gfortran.h : Add prototype for gfc_match_rvalue.
+
 2007-05-11 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/30876

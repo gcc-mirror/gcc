@@ -2160,6 +2160,7 @@ bool gfc_check_access (gfc_access, gfc_access);
 /* primary.c */
 symbol_attribute gfc_variable_attr (gfc_expr *, gfc_typespec *);
 symbol_attribute gfc_expr_attr (gfc_expr *);
+match gfc_match_rvalue (gfc_expr **);
 
 /* trans.c */
 void gfc_generate_code (gfc_namespace *);
