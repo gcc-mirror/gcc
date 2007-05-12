@@ -1,3 +1,14 @@
+2007-05-12  Richard Sandiford  <richard@codesourcery.com>
+
+	* configure.ac (gcc_gxx_include_dir): Use $(libsubdir_to_prefix).
+	(gcc_tooldir): Likewise.
+	* configure: Regenerate.
+	* Makefile.in (libsubdir_to_prefix): New variable, based on the
+	old configure.ac gcc_tooldir setting.
+	(prefix_to_exec_prefix): New variable.
+	(DRIVER_DEFINES): Use $(libsubdir_to_prefix)$(prefix_to_exec_prefix)
+	rather than $(unlibsubdir)/../ to derive TOOLDIR_BASE_PREFIX.
+
 2007-05-11  Silvius Rus  <rus@google.com>
 
 	* Makefile.in (OBJS-common): Add tree-ssa-alias-warnings.o.
