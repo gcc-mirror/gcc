@@ -664,7 +664,6 @@ init_optimization_passes (void)
       NEXT_PASS (pass_cse);
       NEXT_PASS (pass_rtl_fwprop);
       NEXT_PASS (pass_gcse);
-      NEXT_PASS (pass_jump_bypass);
       NEXT_PASS (pass_rtl_ifcvt);
       NEXT_PASS (pass_tracer);
       /* Perform loop optimizations.  It might be better to do them a bit
@@ -682,6 +681,7 @@ init_optimization_passes (void)
 	  *p = NULL;
 	}
       NEXT_PASS (pass_web);
+      NEXT_PASS (pass_jump_bypass);
       NEXT_PASS (pass_cse2);
       NEXT_PASS (pass_rtl_fwprop_addr);
       NEXT_PASS (pass_outof_cfg_layout_mode);
