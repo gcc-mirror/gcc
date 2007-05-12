@@ -141,9 +141,7 @@ if test x${gcc_gxx_include_dir} = x; then
     if test x$host != x$target; then
        libstdcxx_incdir="$target_alias/$libstdcxx_incdir"
     fi
-changequote(<<, >>)dnl
-    gcc_gxx_include_dir="\$(libsubdir)/\$(unlibsubdir)/..\`echo \$(exec_prefix) | sed -e 's|^\$(prefix)||' -e 's|/[^/]*|/..|g'\`/$libstdcxx_incdir"
-changequote([, ])dnl
+    gcc_gxx_include_dir="\$(libsubdir)/\$(libsubdir_to_prefix)$libstdcxx_incdir"
   fi
 fi
 
@@ -3681,42 +3679,7 @@ if test "x$subdirs" != x; then
 fi
 echo "source ${srcdir}/gdbinit.in" >> .gdbinit
 
-# If $(exec_prefix) exists and is not the same as $(prefix), then compute an
-# absolute path for gcc_tooldir based on inserting the number of up-directory
-# movements required to get from $(exec_prefix) to $(prefix) into the basic
-# $(libsubdir)/@(unlibsubdir) based path.
-# Don't set gcc_tooldir to tooldir since that's only passed in by the toplevel
-# make and thus we'd get different behavior depending on where we built the
-# sources.
-if test x$exec_prefix = xNONE -o x$exec_prefix = x$prefix; then
-    gcc_tooldir='$(libsubdir)/$(unlibsubdir)/../$(target_noncanonical)'
-else
-changequote(<<, >>)dnl
-# An explanation of the sed strings:
-#  -e 's|^\$(prefix)||'   matches and eliminates 'prefix' from 'exec_prefix'
-#  -e 's|/$||'            match a trailing forward slash and eliminates it
-#  -e 's|^[^/]|/|'        forces the string to start with a forward slash (*)
-#  -e 's|/[^/]*|../|g'    replaces each occurrence of /<directory> with ../
-#
-# (*) Note this pattern overwrites the first character of the string
-# with a forward slash if one is not already present.  This is not a
-# problem because the exact names of the sub-directories concerned is
-# unimportant, just the number of them matters.
-#
-# The practical upshot of these patterns is like this:
-#
-#  prefix     exec_prefix        result
-#  ------     -----------        ------
-#   /foo        /foo/bar          ../
-#   /foo/       /foo/bar          ../
-#   /foo        /foo/bar/         ../
-#   /foo/       /foo/bar/         ../
-#   /foo        /foo/bar/ugg      ../../
-#
-    dollar='$$'
-    gcc_tooldir="\$(libsubdir)/\$(unlibsubdir)/\`echo \$(exec_prefix) | sed -e 's|^\$(prefix)||' -e 's|/\$(dollar)||' -e 's|^[^/]|/|' -e 's|/[^/]*|../|g'\`\$(target_noncanonical)"
-changequote([, ])dnl
-fi
+gcc_tooldir='$(libsubdir)/$(libsubdir_to_prefix)$(target_noncanonical)'
 AC_SUBST(gcc_tooldir)
 AC_SUBST(dollar)
 
