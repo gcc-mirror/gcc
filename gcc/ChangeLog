@@ -1,3 +1,10 @@
+2007-05-12  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/31848
+	* loop-invariant.c (move_invariant_reg): If we move an insn
+	with a REG_EQUAL note, and that insn is not always executed,
+	remove the REG_EQUAL note.
+
 2007-05-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/31797

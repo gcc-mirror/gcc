@@ -1156,9 +1156,21 @@ move_invariant_reg (struct loop *loop, unsigned invno)
 	 to let emit_move_insn produce a valid instruction stream.  */
       if (REG_P (dest) && !HARD_REGISTER_P (dest))
 	{
+	  rtx note;
+
 	  emit_insn_after (gen_move_insn (dest, reg), inv->insn);
 	  SET_DEST (set) = reg;
 	  reorder_insns (inv->insn, inv->insn, BB_END (preheader));
+
+	  /* If there is a REG_EQUAL note on the insn we just moved, and
+	     insn is in a basic block that is not always executed, the note
+	     may no longer be valid after we move the insn.
+	     Note that uses in REG_EQUAL notes are taken into account in
+	     the computation of invariants.  Hence it is safe to retain the
+	     note even if the note contains register references.  */
+	  if (! inv->always_executed
+	      && (note = find_reg_note (inv->insn, REG_EQUAL, NULL_RTX)))
+	    remove_note (inv->insn, note);
 	}
       else
 	{
