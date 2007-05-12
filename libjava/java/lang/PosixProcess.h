@@ -32,17 +32,16 @@ private:
   void nativeSpawn();
 public: // actually package-private
   PosixProcess(JArray< ::java::lang::String * > *, JArray< ::java::lang::String * > *, ::java::io::File *, jboolean);
-  static jlong access$0(::java::lang::PosixProcess *);
-  static ::java::lang::Object * access$1();
-  static void access$2(::java::lang::PosixProcess$ProcessManager *);
+  static ::java::lang::Object * access$0();
+  static void access$1(::java::lang::PosixProcess$ProcessManager *);
 private:
   JArray< ::java::lang::String * > * __attribute__((aligned(__alignof__( ::java::lang::Process)))) progarray;
   JArray< ::java::lang::String * > * envp;
   ::java::io::File * dir;
   jboolean redirect;
   ::java::lang::Throwable * exception;
-  jlong pid;
 public: // actually package-private
+  jlong pid;
   static const jint STATE_WAITING_TO_START = 0;
   static const jint STATE_RUNNING = 1;
   static const jint STATE_TERMINATED = 2;

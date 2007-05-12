@@ -13,11 +13,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
+import gnu.gcj.RawDataManaged;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -27,7 +26,7 @@ import java.util.Map;
  */
 final class PosixProcess extends Process
 {
-  static class ProcessManager extends Thread
+  static final class ProcessManager extends Thread
   {
     /**
      * A list of {@link PosixProcess PosixProcesses} to be
@@ -35,10 +34,12 @@ final class PosixProcess extends Process
      * for all process related operations. To avoid dead lock
      * ensure queueLock is obtained before PosixProcess.
      */
-    List queue = new LinkedList();
-    private Map pidToProcess = new HashMap();
+    private LinkedList<PosixProcess> queue = new LinkedList<PosixProcess>();
+    private LinkedList<PosixProcess> liveProcesses =
+      new LinkedList<PosixProcess>();
     private boolean ready = false;
-    private long reaperPID;
+
+    static RawDataManaged nativeData;
 
     ProcessManager()
     {
@@ -53,27 +54,14 @@ final class PosixProcess extends Process
     }
 
     /**
-     * Get the PosixProcess object with the given pid and
-     * remove it from the map.  This method is called from the
-     * native code for {@link #reap()).  The mapping is removed so
-     * the PosixProcesses can be GCed after they terminate.
-     *
-     * @param p The pid of the process.
-     */
-    private PosixProcess removeProcessFromMap(long p)
-    {
-      return (PosixProcess) pidToProcess.remove(new Long(p));
-    }
-
-    /**
-     * Put the given PosixProcess in the map using the Long
-     * value of its pid as the key.
+     * Add a process to the list of running processes.  This must only
+     * be called with the queueLock held.
      *
      * @param p The PosixProcess.
      */
-    void addProcessToMap(PosixProcess p)
+    void addToLiveProcesses(PosixProcess p)
     {
-      pidToProcess.put(new Long(p.pid), p);
+      liveProcesses.add(p);
     }
 
     /**
@@ -122,61 +110,66 @@ final class PosixProcess extends Process
       // Now ready to accept requests.
       synchronized (this)
         {
-	  ready = true;
-	  this.notifyAll();
+          ready = true;
+          this.notifyAll();
         }
 
       for (;;)
         {
-	  try
-	    {
-	      synchronized (queueLock)
-	        {
-		  boolean haveMoreChildren = reap();
-		  if (! haveMoreChildren && queue.size() == 0)
-		    {
-		      // This reaper thread could exit, but we
-		      // keep it alive for a while in case
-		      // someone wants to start more Processes.
-		      try
-		        {
-			  queueLock.wait(1000L);
-			  if (queue.size() == 0)
-			    {
-			      processManager = null;
-			      return; // Timed out.
-			    }
-		        }
-		      catch (InterruptedException ie)
-		        {
-			  // Ignore and exit the thread.
-			  return;
-		        }
-		    }
-		  while (queue.size() > 0)
-		    {
-		      PosixProcess p = (PosixProcess) queue.remove(0);
-		      p.spawn(this);
-		    }
-	        }
+          try
+            {
+              synchronized (queueLock)
+                {
+                  Iterator<PosixProcess> processIterator =
+                    liveProcesses.iterator();
+                  while (processIterator.hasNext())
+                    {
+                      boolean reaped = reap(processIterator.next());
+                      if (reaped)
+                        processIterator.remove();
+                    }
+                  if (liveProcesses.size() == 0 && queue.size() == 0)
+                    {
+                      // This reaper thread could exit, but we keep it
+                      // alive for a while in case someone wants to
+                      // start more Processes.
+                      try
+                        {
+                          queueLock.wait(1000L);
+                          if (queue.size() == 0)
+                            {
+                              processManager = null;
+                              return; // Timed out.
+                            }
+                        }
+                      catch (InterruptedException ie)
+                        {
+                          // Ignore and exit the thread.
+                          return;
+                        }
+                    }
+                  while (queue.size() > 0)
+                    {
+                      PosixProcess p = queue.remove(0);
+                      p.spawn(this);
+                    }
+                }
 
-	      // Wait for a SIGCHLD from either an exiting
-	      // process or the startExecuting() method.  This
-	      // is done outside of the synchronized block to
-	      // allow other threads to enter and submit more
-	      // jobs.
-	      waitForSignal();
-	    }
-	  catch (Exception ex)
-	    {
-	      ex.printStackTrace(System.err);
-	    }
+              // Wait for a SIGCHLD from either an exiting process or
+              // the startExecuting() method.  This is done outside of
+              // the synchronized block to allow other threads to
+              // enter and submit more jobs.
+              waitForSignal();
+            }
+          catch (Exception ex)
+            {
+              ex.printStackTrace(System.err);
+            }
         }
     }
 
     /**
      * Setup native signal handlers and other housekeeping things.
-     *
      */
     private native void init();
 
@@ -187,12 +180,14 @@ final class PosixProcess extends Process
     private native void waitForSignal();
 
     /**
-     * Try to reap as many children as possible without blocking.
+     * Try to reap the specified child without blocking.
      *
-     * @return true if more live children exist.
+     * @param p the process to try to reap.
+     *
+     * @return true if the process terminated.
      *
      */
-    private native boolean reap();
+    private native boolean reap(PosixProcess p);
 
     /**
      * Send SIGCHLD to the reaper thread.
@@ -295,7 +290,7 @@ final class PosixProcess extends Process
       returnedErrorStream = EOFInputStream.instance;
     else
       returnedErrorStream = errorStream;
-            
+
     return returnedErrorStream;
   }
 
@@ -308,7 +303,7 @@ final class PosixProcess extends Process
       returnedInputStream = EOFInputStream.instance;
     else
       returnedInputStream = inputStream;
-            
+
     return returnedInputStream;
   }
 
@@ -329,7 +324,7 @@ final class PosixProcess extends Process
 
   /**
    * Start this process running.  This should only be called by the
-   * ProcessManager.
+   * ProcessManager with the queueLock held.
    *
    * @param pm The ProcessManager that made the call.
    */
@@ -342,7 +337,7 @@ final class PosixProcess extends Process
 	// There is no race with reap() in the pidToProcess map
 	// because this is always called from the same thread
 	// doing the reaping.
-	pm.addProcessToMap(this);
+	pm.addToLiveProcesses(this);
 	state = STATE_RUNNING;
 	// Notify anybody waiting on state change.
 	this.notifyAll();
@@ -426,7 +421,7 @@ final class PosixProcess extends Process
   private Throwable exception;
 
   /** The process id.  This is cast to a pid_t on the native side. */
-  private long pid;
+  long pid;
 
   // FIXME: Why doesn't the friend declaration in PosixProcess.h
   // allow PosixProcess$ProcessManager native code access these

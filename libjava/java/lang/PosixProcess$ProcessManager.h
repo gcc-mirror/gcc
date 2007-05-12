@@ -7,31 +7,37 @@
 #pragma interface
 
 #include <java/lang/Thread.h>
+extern "Java"
+{
+  namespace gnu
+  {
+    namespace gcj
+    {
+        class RawDataManaged;
+    }
+  }
+}
 
 class java::lang::PosixProcess$ProcessManager : public ::java::lang::Thread
 {
 
 public: // actually package-private
   PosixProcess$ProcessManager();
-private:
-  ::java::lang::PosixProcess * removeProcessFromMap(jlong);
-public: // actually package-private
-  virtual void addProcessToMap(::java::lang::PosixProcess *);
-  virtual void startExecuting(::java::lang::PosixProcess *);
-  virtual void waitUntilReady();
+  void addToLiveProcesses(::java::lang::PosixProcess *);
+  void startExecuting(::java::lang::PosixProcess *);
+  void waitUntilReady();
 public:
-  virtual void run();
+  void run();
 private:
   void init();
   void waitForSignal();
-  jboolean reap();
+  jboolean reap(::java::lang::PosixProcess *);
   void signalReaper();
-public: // actually package-private
-  ::java::util::List * __attribute__((aligned(__alignof__( ::java::lang::Thread)))) queue;
-private:
-  ::java::util::Map * pidToProcess;
+  ::java::util::LinkedList * __attribute__((aligned(__alignof__( ::java::lang::Thread)))) queue;
+  ::java::util::LinkedList * liveProcesses;
   jboolean ready;
-  jlong reaperPID;
+public: // actually package-private
+  static ::gnu::gcj::RawDataManaged * nativeData;
 public:
   static ::java::lang::Class class$;
 };
