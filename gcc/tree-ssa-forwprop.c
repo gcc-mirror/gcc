@@ -727,7 +727,7 @@ forward_propagate_addr_expr (tree name, tree rhs)
 	  continue;
 	}
 
-     /* If the use is in a deeper loop nest, then we do not want
+      /* If the use is in a deeper loop nest, then we do not want
 	to propagate the ADDR_EXPR into the loop as that is likely
 	adding expression evaluations into the loop.  */
       if (bb_for_stmt (use_stmt)->loop_depth > stmt_loop_depth)
@@ -735,7 +735,14 @@ forward_propagate_addr_expr (tree name, tree rhs)
 	  all = false;
 	  continue;
 	}
-      
+
+      /* If the use_stmt has side-effects, don't propagate into it.  */
+      if (stmt_ann (use_stmt)->has_volatile_ops)
+	{
+	  all = false;
+	  continue;
+	}
+
       push_stmt_changes (&use_stmt);
 
       result = forward_propagate_addr_expr_1 (name, rhs, use_stmt,
