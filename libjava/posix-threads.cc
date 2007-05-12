@@ -14,6 +14,7 @@ details.  */
 #include <config.h>
 
 #include "posix.h"
+#include "posix-threads.h"
 
 // If we're using the Boehm GC, then we need to override some of the
 // thread primitives.  This is fairly gross.
@@ -472,13 +473,24 @@ handle_intr (int)
   // Do nothing.
 }
 
-static void
-block_sigchld()
+void
+_Jv_BlockSigchld()
 {
   sigset_t mask;
   sigemptyset (&mask);
   sigaddset (&mask, SIGCHLD);
   int c = pthread_sigmask (SIG_BLOCK, &mask, NULL);
+  if (c != 0)
+    JvFail (strerror (c));
+}
+
+void
+_Jv_UnBlockSigchld()
+{
+  sigset_t mask;
+  sigemptyset (&mask);
+  sigaddset (&mask, SIGCHLD);
+  int c = pthread_sigmask (SIG_UNBLOCK, &mask, NULL);
   if (c != 0)
     JvFail (strerror (c));
 }
@@ -501,7 +513,7 @@ _Jv_InitThreads (void)
 
   // Block SIGCHLD here to ensure that any non-Java threads inherit the new 
   // signal mask.
-  block_sigchld();
+  _Jv_BlockSigchld();
 
   // Check/set the thread stack size.
   size_t min_ss = 32 * 1024;
@@ -581,7 +593,7 @@ _Jv_ThreadRegister (_Jv_Thread_t *data)
       }
 # endif
   // Block SIGCHLD which is used in natPosixProcess.cc.
-  block_sigchld();
+  _Jv_BlockSigchld();
 }
 
 void
@@ -629,7 +641,7 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,
 
   // Block SIGCHLD which is used in natPosixProcess.cc.
   // The current mask is inherited by the child thread.
-  block_sigchld();
+  _Jv_BlockSigchld();
 
   param.sched_priority = thread->getPriority();
 

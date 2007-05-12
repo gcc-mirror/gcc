@@ -1,3 +1,46 @@
+2007-05-12  David Daney  <ddaney@avtrex.com>
+
+	PR libgcj/29324
+	* include/posix-threads.h (_Jv_BlockSigchld): Declare.
+	(_Jv_UnBlockSigchld): Same.
+	* posix-threads.cc: Include posix-threads.h.
+	(block_sigchld) Rename to...
+	(_Jv_BlockSigchld) ... this.
+	(_Jv_UnBlockSigchld): New function.
+	(_Jv_InitThreads): Call _Jv_BlockSigchld in place of block_sigchld.
+	(_Jv_ThreadStart): Same.
+	* java/lang/PosixProcess$ProcessManager.h: Regenerate.
+	* java/lang/PosixProcess.java: Clean up imports.
+	(ProcessManager): Make final.
+	(ProcessManager.queue): Genericise and make private.
+	(ProcessManager.pidToProcess): Remove.
+	(ProcessManager.liveProcesses): New field.
+	(ProcessManager.reaperPID): Remove.
+	(ProcessManager.nativeData): New field.
+	(ProcessManager.removeProcessFromMap): Remove.
+	(ProcessManager.addProcessToMap):Remove.
+	(ProcessManager.addToLiveProcesses): New method.
+	(ProcessManager.run): Rewritten.
+	(ProcessManager.reap): Change method signature,
+	(getErrorStream): Correct formatting.
+	(getInputStream): Same.
+	(spawn): Add process to liveProcesses list.
+	(pid): Make package private.
+	* java/lang/PosixProcess.h: Regenerate.
+	* java/lang/natPosixProcess.cc: Include posix.h and posix-threads.h.
+	Add useing namespace java::lang.
+	(ProcessManagerInternal): New struct.
+	(sigchld_handler): Rewritten.
+	(init): Rewritten.
+	(waitForSignal): Same.
+	(reap): Same.
+	(signalReaper): Same.
+	(nativeDestroy): Call kill as ::kill.
+	(nativeSpawn): Correct formatting.
+	* classpath/lib/java/lang/PosixProcess$EOFInputStream.class: Regenerate.
+	* classpath/lib/java/lang/PosixProcess.class: Same.
+	* classpath/lib/java/lang/PosixProcess$ProcessManager.class: Same.
+
 2007-05-07  Ian Lance Taylor  <iant@google.com>
 
 	PR java/31842

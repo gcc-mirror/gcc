@@ -92,6 +92,14 @@ _Jv_GetPlatformThreadID(_Jv_Thread_t *t)
 }
 
 //
+// Signal helpers.
+//
+
+void _Jv_BlockSigchld();
+void _Jv_UnBlockSigchld();
+
+
+//
 // Condition variables.
 //
 
