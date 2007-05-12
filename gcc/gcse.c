@@ -789,7 +789,7 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
   alloc_gcse_mem ();
   /* This time, go ahead and allow cprop to alter jumps.  */
   timevar_push (TV_CPROP2);
-  one_cprop_pass (pass + 1, true, false);
+  one_cprop_pass (pass + 1, true, true);
   timevar_pop (TV_CPROP2);
   free_gcse_mem ();
 

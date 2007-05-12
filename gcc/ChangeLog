@@ -1,5 +1,13 @@
 2007-05-12  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* gcse.c (gcse_main): Do jump bypassing in CPROP2.
+	* passes.c (init_optimization_passes): Move pass_jump_bypass
+	after loop2.
+
+	* basic-block.h (bb_has_eh_pred): Fix style issue.
+
+2007-05-12  Steven Bosscher  <steven@gcc.gnu.org>
+
 	PR rtl-optimization/31848
 	* loop-invariant.c (move_invariant_reg): If we move an insn
 	with a REG_EQUAL note, and that insn is not always executed,
