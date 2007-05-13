@@ -1,3 +1,8 @@
+2007-05-13  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/vect/no-section-anchors-vect-69.c: Fix outcome.
+	* gcc.dg/tree-ssa/loop-30.c: New test.
+
 2007-05-13  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/pr17141-1.c: Scan in forwprop2, xfail

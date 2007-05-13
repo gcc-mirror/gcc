@@ -1130,15 +1130,14 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   /* Initialize misalignment to unknown.  */
   DR_MISALIGNMENT (dr) = -1;
 
-  misalign = DR_OFFSET_MISALIGNMENT (dr);
+  misalign = DR_INIT (dr);
   aligned_to = DR_ALIGNED_TO (dr);
   base_addr = DR_BASE_ADDRESS (dr);
   base = build_fold_indirect_ref (base_addr);
   vectype = STMT_VINFO_VECTYPE (stmt_info);
   alignment = ssize_int (TYPE_ALIGN (vectype)/BITS_PER_UNIT);
 
-  if ((aligned_to && tree_int_cst_compare (aligned_to, alignment) < 0)
-      || !misalign)
+  if (tree_int_cst_compare (aligned_to, alignment) < 0)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	{
@@ -2044,7 +2043,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
             }
           return false;
         }
-      if (!DR_MEMTAG (dr))
+      if (!DR_SYMBOL_TAG (dr))
         {
           if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
             {
