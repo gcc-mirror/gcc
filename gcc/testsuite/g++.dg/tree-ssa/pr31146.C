@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-forwprop1" } */
+/* { dg-options "-O -fdump-tree-forwprop" } */
 
 /* We should be able to optimize this to i[j] = 1 during
    early optimizations.  */
@@ -12,5 +12,6 @@ void foo (int j)
   *q = 1;
 }
 
-/* { dg-final { scan-tree-dump "i\\\[j.*\\\] = 1;" "forwprop1" } } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */
+/* { dg-final { scan-tree-dump "i\\\[j.*\\\] = 1;" "forwprop1" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "i\\\[j.*\\\] = 1;" "forwprop2" } } */
+/* { dg-final { cleanup-tree-dump "forwprop?" } } */

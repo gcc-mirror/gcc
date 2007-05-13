@@ -1,3 +1,9 @@
+2007-05-13  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pr17141-1.c: Scan in forwprop2, xfail
+	scanning forwprop1.
+	* g++.dg/tree-ssa/pr31146.C: Likewise.
+
 2007-05-13  Revital Eres  <eres@il.ibm.com>
 
 	* gcc.dg/dse.c: New test.
