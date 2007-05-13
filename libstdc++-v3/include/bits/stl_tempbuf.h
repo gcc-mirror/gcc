@@ -124,9 +124,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  Frees the memory pointed to by p.
    */
   template<typename _Tp>
-    void
+    inline void
     return_temporary_buffer(_Tp* __p)
-    { ::operator delete(__p, nothrow); }
+    { ::operator delete(__p, std::nothrow); }
 
 
   /**
