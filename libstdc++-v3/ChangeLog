@@ -1,5 +1,9 @@
 2007-05-13  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_tempbuf.h (return_temporary_buffer(_Tp*)): Inline.
+
+2007-05-13  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/type_traitsfwd.h: Fix include guard typo.
 
 2007-05-11  Paolo Carlini  <pcarlini@suse.de>
