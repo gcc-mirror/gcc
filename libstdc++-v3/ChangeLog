@@ -1,3 +1,7 @@
+2007-05-13  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traitsfwd.h: Fix include guard typo.
+
 2007-05-11  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/pod_char_traits.h (char_traits<>::move):
