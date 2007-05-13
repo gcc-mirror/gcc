@@ -33,7 +33,7 @@
  */
 
 #ifndef _TYPE_TRAITSFWD_H
-#define _TYPE_TRAIT_FWD_H 1
+#define _TYPE_TRAITSFWD_H 1
 
 #include <cstddef>
 
