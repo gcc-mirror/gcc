@@ -1,3 +1,9 @@
+2007-05-13  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/31911
+	* tree-ssa-pre.c (phi_translate): Make sure to cache results even
+	if they didn't change the expression.
+
 2007-05-13  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-scalar-evolution.c (resolve_mixers): Exported.
