@@ -1,3 +1,47 @@
+2007-05-13  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-scalar-evolution.c (resolve_mixers): Exported.
+	* tree-scalar-evolution.h (resolve_mixers): Declare.
+	* tree-data-ref.c (object_analysis, ptr_decl_may_alias_p,
+	ptr_ptr_may_alias_p, may_alias_p, record_ptr_differ_p,
+	record_record_differ_p, record_array_differ_p, array_ptr_differ_p,
+	base_object_differ_p, base_addr_differ_p, analyze_array_indexes,
+	init_array_ref, init_pointer_ref, analyze_indirect_ref,
+	strip_conversion, analyze_offset_expr, address_analysis,
+	object_analysis, analyze_offset): Removed.
+	(dr_analyze_innermost, dr_analyze_indices, dr_analyze_alias,
+	split_constant_offset, canonicalize_base_object_address,
+	object_address_invariant_in_loop_p, disjoint_objects_p,
+	dr_may_alias_p, dr_address_invariant_p): New functions.
+	(create_data_ref): Use dr_analyze_innermost, dr_analyze_indices
+	and dr_analyze_alias.
+	(initialize_data_dependence_relation): Use dr_may_alias_p
+	and object_address_invariant_in_loop_p.
+	(compute_self_dependence): Handle the case when DDR_ARE_DEPENDENT (ddr)
+	is chrec_dont_know.
+	(find_data_references_in_stmt): Restrict the analysis of data references
+	to the given loop nest.
+	(find_data_references_in_loop): Made static.  Pass loop nest to
+	find_data_references_in_stmt.
+	(compute_data_dependences_for_loop): Use DR_VOPS.
+	(free_data_ref): Free DR_VOPS.
+	* tree-data-ref.h (struct first_location_in_loop): Replaced by ...
+	(struct innermost_loop_behavior): ... new.
+	(struct base_object_info): Replaced by ...
+	(struct indices): ... new.
+	(struct dr_alias): New.
+	(enum data_ref_type): Removed.
+	(struct data_reference): Consist of struct innermost_loop_behavior,
+	struct indices and struct dr_alias.
+	(DR_SET_ACCESS_FNS, DR_FREE_ACCESS_FNS): Removed.
+	(DR_MEMTAG): Renamed to ...
+	(DR_SYMBOL_TAG): ... this.
+	(find_data_references_in_loop): Declaration removed.
+	* tree-vect-analyze.c (vect_compute_data_ref_alignment): Use DR_INIT
+	instead of DR_OFFSET_MISALIGNMENT.  DR_ALIGNED_TO is never NULL.
+	(vect_analyze_data_refs): Use DR_SYMBOL_TAG instead of DR_MEMTAG.
+	* tree-vect-transform.c (vect_create_data_ref_ptr): Ditto.
+
 2007-05-13  Revital Eres  <eres@il.ibm.com>
 
 	* tree-ssa-dse.c (get_use_of_stmt_lhs): New function

@@ -298,7 +298,7 @@ vect_create_data_ref_ptr (tree stmt,
   /** (2) Add aliasing information to the new vector-pointer:
           (The points-to info (DR_PTR_INFO) may be defined later.)  **/
   
-  tag = DR_MEMTAG (dr);
+  tag = DR_SYMBOL_TAG (dr);
   gcc_assert (tag);
 
   /* If tag is a variable (and NOT_A_TAG) than a new symbol memory

@@ -26,48 +26,73 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "omega.h"
 
 /*
-  The first location accessed by data-ref in the loop is the address of data-ref's 
-  base (BASE_ADDRESS) plus the initial offset from the base. We divide the initial offset 
-  into two parts: loop invariant offset (OFFSET) and constant offset (INIT). 
-  STEP is the stride of data-ref in the loop in bytes.
+  innermost_loop_behavior describes the evolution of the address of the memory
+  reference in the innermost enclosing loop.  The address is expressed as
+  BASE + STEP * # of iteration, and base is further decomposed as the base
+  pointer (BASE_ADDRESS),  loop invariant offset (OFFSET) and
+  constant offset (INIT).  Examples, in loop nest 
+  
+  for (i = 0; i < 100; i++)
+    for (j = 3; j < 100; j++)
 
                        Example 1                      Example 2
-      data-ref         a[j].b[i][j]                   a + x + 16B (a is int*)
+      data-ref         a[j].b[i][j]                   *(p + x + 16B + 4B * j)
       
-  First location info:
-      base_address     &a                             a
-      offset           j_0*D_j + i_0*D_i              x
-      init             C_b + C_a                      16
+  innermost_loop_behavior
+      base_address     &a                             p
+      offset           i * D_i			      x
+      init             3 * D_j + offsetof (b)         28
       step             D_j                            4
-      access_fn        NULL                           {16, +, 1}
-
-  Base object info:
-      base_object      a                              NULL
-      access_fn        <access_fns of indexes of b>   NULL
 
   */
-struct first_location_in_loop
+struct innermost_loop_behavior
 {
   tree base_address;
   tree offset;
   tree init;
   tree step;
-  /* Access function related to first location in the loop.  */
-  VEC(tree,heap) *access_fns;
+
+  /* Alignment information.  ALIGNED_TO is set to the largest power of two
+     that divides OFFSET.  */
+  tree aligned_to;
 };
 
-struct base_object_info
+/* Describes the evolutions of indices of the memory reference.  The indices
+   are indices of the ARRAY_REFs and the operands of INDIRECT_REFs.
+   For ARRAY_REFs, BASE_OBJECT is the reference with zeroed indices
+   (note that this reference does not have to be valid, if zero does not
+   belong to the range of the array; hence it is not recommended to use
+   BASE_OBJECT in any code generation).  For INDIRECT_REFs, the address is
+   set to the loop-invariant part of the address of the object, except for
+   the constant offset.  For the examples above,
+
+   base_object:        a[0].b[0][0]                   *(p + x + 4B * j_0)
+   indices:            {j_0, +, 1}_2                  {16, +, 4}_2
+		       {i_0, +, 1}_1
+		       {j_0, +, 1}_2
+*/
+
+struct indices
 {
   /* The object.  */
   tree base_object;
   
-  /* A list of chrecs.  Access functions related to BASE_OBJECT.  */
+  /* A list of chrecs.  Access functions of the indices.  */
   VEC(tree,heap) *access_fns;
 };
 
-enum data_ref_type {
-  ARRAY_REF_TYPE,
-  POINTER_REF_TYPE
+struct dr_alias
+{
+  /* The alias information that should be used for new pointers to this
+     location.  SYMBOL_TAG is either a DECL or a SYMBOL_MEMORY_TAG.  */
+  tree symbol_tag;
+  subvar_t subvars;
+  struct ptr_info_def *ptr_info;
+
+  /* The set of virtual operands corresponding to this memory reference,
+     serving as a description of the alias information for the memory
+     reference.  This could be eliminated if we had alias oracle.  */
+  bitmap vops;
 };
 
 struct data_reference
@@ -75,7 +100,7 @@ struct data_reference
   /* A pointer to the statement that contains this DR.  */
   tree stmt;
   
-  /* A pointer to the ARRAY_REF node.  */
+  /* A pointer to the memory reference.  */
   tree ref;
 
   /* Auxiliary info specific to a pass.  */
@@ -84,58 +109,14 @@ struct data_reference
   /* True when the data reference is in RHS of a stmt.  */
   bool is_read;
 
-  /* First location accessed by the data-ref in the loop.  */
-  struct first_location_in_loop first_location;
+  /* Behavior of the memory reference in the innermost loop.  */
+  struct innermost_loop_behavior innermost;
 
-  /* Base object related info.  */
-  struct base_object_info object_info;
+  /* Decomposition to indices for alias analysis.  */
+  struct indices indices;
 
-  /* Aliasing information.  This field represents the symbol that
-     should be aliased by a pointer holding the address of this data
-     reference.  If the original data reference was a pointer
-     dereference, then this field contains the memory tag that should
-     be used by the new vector-pointer.  */
-  tree memtag;
-  struct ptr_info_def *ptr_info;
-  subvar_t subvars;
-
-  /* Alignment information.  
-     MISALIGNMENT is the offset of the data-reference from its base in bytes.
-     ALIGNED_TO is the maximum data-ref's alignment.  
-
-     Example 1, 
-       for i
-          for (j = 3; j < N; j++)
-            a[j].b[i][j] = 0;
-	 
-     For a[j].b[i][j], the offset from base (calculated in get_inner_reference() 
-     will be 'i * C_i + j * C_j + C'. 
-     We try to substitute the variables of the offset expression
-     with initial_condition of the corresponding access_fn in the loop.
-     'i' cannot be substituted, since its access_fn in the inner loop is i. 'j' 
-     will be substituted with 3. 
-
-     Example 2
-        for (j = 3; j < N; j++)
-          a[j].b[5][j] = 0; 
-
-     Here the offset expression (j * C_j + C) will not contain variables after
-     substitution of j=3 (3*C_j + C).
-
-     Misalignment can be calculated only if all the variables can be 
-     substituted with constants, otherwise, we record maximum possible alignment
-     in ALIGNED_TO. In Example 1, since 'i' cannot be substituted, 
-     MISALIGNMENT will be NULL_TREE, and the biggest divider of C_i (a power of 
-     2) will be recorded in ALIGNED_TO.
-
-     In Example 2, MISALIGNMENT will be the value of 3*C_j + C in bytes, and 
-     ALIGNED_TO will be NULL_TREE.
-  */
-  tree misalignment;
-  tree aligned_to;
-
-  /* The type of the data-ref.  */
-  enum data_ref_type type;
+  /* Alias information for the data reference.  */
+  struct dr_alias alias;
 };
 
 typedef struct data_reference *data_reference_p;
@@ -144,37 +125,20 @@ DEF_VEC_ALLOC_P (data_reference_p, heap);
 
 #define DR_STMT(DR)                (DR)->stmt
 #define DR_REF(DR)                 (DR)->ref
-#define DR_BASE_OBJECT(DR)         (DR)->object_info.base_object
-#define DR_TYPE(DR)                (DR)->type
-#define DR_ACCESS_FNS(DR)\
-  (DR_TYPE(DR) == ARRAY_REF_TYPE ?  \
-   (DR)->object_info.access_fns : (DR)->first_location.access_fns)
+#define DR_BASE_OBJECT(DR)         (DR)->indices.base_object
+#define DR_ACCESS_FNS(DR)	   (DR)->indices.access_fns
 #define DR_ACCESS_FN(DR, I)        VEC_index (tree, DR_ACCESS_FNS (DR), I)
 #define DR_NUM_DIMENSIONS(DR)      VEC_length (tree, DR_ACCESS_FNS (DR))  
 #define DR_IS_READ(DR)             (DR)->is_read
-#define DR_BASE_ADDRESS(DR)        (DR)->first_location.base_address
-#define DR_OFFSET(DR)              (DR)->first_location.offset
-#define DR_INIT(DR)                (DR)->first_location.init
-#define DR_STEP(DR)                (DR)->first_location.step
-#define DR_MEMTAG(DR)              (DR)->memtag
-#define DR_ALIGNED_TO(DR)          (DR)->aligned_to
-#define DR_OFFSET_MISALIGNMENT(DR) (DR)->misalignment
-#define DR_PTR_INFO(DR)            (DR)->ptr_info
-#define DR_SUBVARS(DR)             (DR)->subvars
-#define DR_SET_ACCESS_FNS(DR, ACC_FNS)         \
-{                                              \
-  if (DR_TYPE(DR) == ARRAY_REF_TYPE)           \
-    (DR)->object_info.access_fns = ACC_FNS;    \
-  else                                         \
-    (DR)->first_location.access_fns = ACC_FNS; \
-}
-#define DR_FREE_ACCESS_FNS(DR)                              \
-{                                                           \
-  if (DR_TYPE(DR) == ARRAY_REF_TYPE)                        \
-    VEC_free (tree, heap, (DR)->object_info.access_fns);    \
-  else                                                      \
-    VEC_free (tree, heap, (DR)->first_location.access_fns); \
-}
+#define DR_BASE_ADDRESS(DR)        (DR)->innermost.base_address
+#define DR_OFFSET(DR)              (DR)->innermost.offset
+#define DR_INIT(DR)                (DR)->innermost.init
+#define DR_STEP(DR)                (DR)->innermost.step
+#define DR_SYMBOL_TAG(DR)          (DR)->alias.symbol_tag
+#define DR_PTR_INFO(DR)            (DR)->alias.ptr_info
+#define DR_SUBVARS(DR)             (DR)->alias.subvars
+#define DR_VOPS(DR)		   (DR)->alias.vops
+#define DR_ALIGNED_TO(DR)          (DR)->innermost.aligned_to
 
 enum data_dependence_direction {
   dir_positive, 
@@ -335,8 +299,6 @@ DEF_VEC_O (data_ref_loc);
 DEF_VEC_ALLOC_O (data_ref_loc, heap);
 
 bool get_references_in_stmt (tree, VEC (data_ref_loc, heap) **);
-extern tree find_data_references_in_loop (struct loop *,
-					  VEC (data_reference_p, heap) **);
 extern void compute_data_dependences_for_loop (struct loop *, bool,
 					       VEC (data_reference_p, heap) **,
 					       VEC (ddr_p, heap) **);
