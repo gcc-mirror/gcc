@@ -1,3 +1,9 @@
+2007-05-13  Revital Eres  <eres@il.ibm.com>
+
+	* tree-ssa-dse.c (get_use_of_stmt_lhs): New function
+	which walks virtual def-use chains to find redundant stores.
+	(dse_optimize_stmt): Call it.
+
 2007-05-12  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gcse.c (gcse_main): Do jump bypassing in CPROP2.
