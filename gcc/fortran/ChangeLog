@@ -1,3 +1,13 @@
+2007-05-14  Rafael Avila de Espindola  <espindola@google.com>
+
+	* f95-lang.c (LANG_HOOKS_UNSIGNED_TYPE): Remove.
+	* trans-intrinsic.c (gfc_conv_intrinsic_ishft): Use unsigned_type_for
+	instead of gfc_unsigned_type.
+	* trans-stmt.c (gfc_trans_do): Use unsigned_type_for instead of
+	gfc_unsigned_type.
+	* trans-types.c (gfc_unsigned_type): Remove.
+	* trans-types.h (gfc_unsigned_type): Remove.
+
 2007-05-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30746

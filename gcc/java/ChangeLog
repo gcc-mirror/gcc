@@ -1,3 +1,11 @@
+2007-05-14  Rafael Avila de Espindola  <espindola@google.com>
+
+	* expr.c (build_java_binop): Use unsigned_type_for instead of
+	java_unsigned_type.
+	* java-tree.h (java_unsigned_type): Remove.
+	* lang.c (LANG_HOOKS_UNSIGNED_TYPE): Remove.
+	* typeck.c (java_unsigned_type): Remove.
+
 2007-04-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* java-tree.h (lang_tree_node): Use GENERIC_NEXT

@@ -1839,14 +1839,6 @@ gfc_type_for_mode (enum machine_mode mode, int unsignedp)
   return NULL_TREE;
 }
 
-/* Return an unsigned type the same as TYPE in other respects.  */
-
-tree
-gfc_unsigned_type (tree type)
-{
-  return get_signed_or_unsigned_type (1, type);
-}
-
 /* Return a signed type the same as TYPE in other respects.  */
 
 tree

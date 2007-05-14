@@ -2400,7 +2400,7 @@ gfc_conv_intrinsic_ishft (gfc_se * se, gfc_expr * expr)
   arg2 = TREE_VALUE (TREE_CHAIN (arg));
   arg = TREE_VALUE (arg);
   type = TREE_TYPE (arg);
-  utype = gfc_unsigned_type (type);
+  utype = unsigned_type_for (type);
 
   width = fold_build1 (ABS_EXPR, TREE_TYPE (arg2), arg2);
 

@@ -1,3 +1,9 @@
+2007-05-14  Rafael Avila de Espindola  <espindola@google.com>
+
+	* cp-objcp-common.h (LANG_HOOKS_UNSIGNED_TYPE): Remove.
+	* decl.c (grokdeclarator): Use unsigned_type_for instead of
+	c_common_unsigned_type.
+
 2007-05-11  Silvius Rus  <rus@google.com>
 
 	* cp/typeck.c (build_indirect_ref): Add call to

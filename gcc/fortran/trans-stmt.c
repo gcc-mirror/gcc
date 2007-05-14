@@ -890,7 +890,7 @@ gfc_trans_do (gfc_code * code)
     {
       tree ustep;
 
-      utype = gfc_unsigned_type (type);
+      utype = unsigned_type_for (type);
 
       /* tmp = abs(to - from) / abs(step) */
       ustep = fold_convert (utype, fold_build1 (ABS_EXPR, type, step));
@@ -905,7 +905,7 @@ gfc_trans_do (gfc_code * code)
       /* TODO: We could use the same width as the real type.
 	 This would probably cause more problems that it solves
 	 when we implement "long double" types.  */
-      utype = gfc_unsigned_type (gfc_array_index_type);
+      utype = unsigned_type_for (gfc_array_index_type);
       tmp = fold_build2 (MINUS_EXPR, type, to, from);
       tmp = fold_build2 (RDIV_EXPR, type, tmp, step);
       tmp = fold_build1 (FIX_TRUNC_EXPR, utype, tmp);
