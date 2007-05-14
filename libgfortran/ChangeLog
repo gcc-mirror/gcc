@@ -1,3 +1,18 @@
+2007-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/30723
+	* runtime/memory.c (internal_malloc, internal_malloc64,
+	internal_free): Remove.
+	* runtime/error.c (os_error): Export function.
+	* intrinsics/move_alloc.c: Include stdlib.h.
+	(move_alloc): Call free instead of internal_free.
+	(move_alloc_c): Wrap long lines.
+	* libgfortran.h (os_error): Export prototype.
+	(internal_free): Remove prototype.
+	* gfortran.map (GFORTRAN_1.0): Remove _gfortran_internal_free,
+	_gfortran_internal_malloc and _gfortran_internal_malloc64.
+	Add _gfortran_os_error.
+
 2007-05-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/31880

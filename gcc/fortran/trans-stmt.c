@@ -1712,14 +1712,7 @@ gfc_do_allocate (tree bytesize, tree size, tree * pdata, stmtblock_t * pblock,
       tmpvar = gfc_create_var (build_pointer_type (type), "temp");
       *pdata = convert (pvoid_type_node, tmpvar);
 
-      if (gfc_index_integer_kind == 4)
-	tmp = gfor_fndecl_internal_malloc;
-      else if (gfc_index_integer_kind == 8)
-	tmp = gfor_fndecl_internal_malloc64;
-      else
-	gcc_unreachable ();
-      tmp = build_call_expr (tmp, 1, bytesize);
-      tmp = convert (TREE_TYPE (tmpvar), tmp);
+      tmp = gfc_call_malloc (pblock, TREE_TYPE (tmpvar), bytesize);
       gfc_add_modify_expr (pblock, tmpvar, tmp);
     }
   return tmpvar;
@@ -2230,7 +2223,7 @@ gfc_trans_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
   if (ptemp1)
     {
       /* Free the temporary.  */
-      tmp = build_call_expr (gfor_fndecl_internal_free, 1, ptemp1);
+      tmp = gfc_call_free (ptemp1);
       gfc_add_expr_to_block (block, tmp);
     }
 }
@@ -2388,7 +2381,7 @@ gfc_trans_pointer_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
   /* Free the temporary.  */
   if (ptemp1)
     {
-      tmp = build_call_expr (gfor_fndecl_internal_free, 1, ptemp1);
+      tmp = gfc_call_free (ptemp1);
       gfc_add_expr_to_block (block, tmp);
     }
 }
@@ -2723,7 +2716,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
   if (pmask)
     {
       /* Free the temporary for the mask.  */
-      tmp = build_call_expr (gfor_fndecl_internal_free, 1, pmask);
+      tmp = gfc_call_free (pmask);
       gfc_add_expr_to_block (&block, tmp);
     }
   if (maskindex)
@@ -3320,14 +3313,14 @@ gfc_trans_where_2 (gfc_code * code, tree mask, bool invert,
   /* If we allocated a pending mask array, deallocate it now.  */
   if (ppmask)
     {
-      tmp = build_call_expr (gfor_fndecl_internal_free, 1, ppmask);
+      tmp = gfc_call_free (ppmask);
       gfc_add_expr_to_block (block, tmp);
     }
 
   /* If we allocated a current mask array, deallocate it now.  */
   if (pcmask)
     {
-      tmp = build_call_expr (gfor_fndecl_internal_free, 1, pcmask);
+      tmp = gfc_call_free (pcmask);
       gfc_add_expr_to_block (block, tmp);
     }
 }

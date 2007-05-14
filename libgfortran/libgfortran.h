@@ -583,7 +583,7 @@ extern const char *xtoa (GFC_UINTEGER_LARGEST, char *, size_t);
 internal_proto(xtoa);
 
 extern void os_error (const char *) __attribute__ ((noreturn));
-internal_proto(os_error);
+iexport_proto(os_error);
 
 extern void show_locus (st_parameter_common *);
 internal_proto(show_locus);
@@ -633,9 +633,6 @@ internal_proto(free_mem);
 
 extern void *internal_malloc_size (size_t);
 internal_proto(internal_malloc_size);
-
-extern void internal_free (void *);
-iexport_proto(internal_free);
 
 /* environ.c */
 

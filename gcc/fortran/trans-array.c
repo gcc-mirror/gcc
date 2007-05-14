@@ -533,13 +533,7 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
       else
 	{
 	  /* Allocate memory to hold the data.  */
-	  if (gfc_index_integer_kind == 4)
-	    tmp = gfor_fndecl_internal_malloc;
-	  else if (gfc_index_integer_kind == 8)
-	    tmp = gfor_fndecl_internal_malloc64;
-	  else
-	    gcc_unreachable ();
-	  tmp = build_call_expr (tmp, 1, size);
+	  tmp = gfc_call_malloc (pre, NULL, size);
 	  tmp = gfc_evaluate_now (tmp, pre);
 	  gfc_conv_descriptor_data_set (pre, desc, tmp);
 	}
@@ -555,8 +549,7 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
     {
       /* Free the temporary.  */
       tmp = gfc_conv_descriptor_data_get (desc);
-      tmp = fold_convert (pvoid_type_node, tmp);
-      tmp = build_call_expr (gfor_fndecl_internal_free, 1, tmp);
+      tmp = gfc_call_free (fold_convert (pvoid_type_node, tmp));
       gfc_add_expr_to_block (post, tmp);
     }
 }
@@ -3793,7 +3786,6 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
   stmtblock_t block;
   tree type;
   tree tmp;
-  tree fndecl;
   tree size;
   tree offset;
   bool onstack;
@@ -3857,14 +3849,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
   size = fold_build2 (MULT_EXPR, gfc_array_index_type, size, tmp);
 
   /* Allocate memory to hold the data.  */
-  if (gfc_index_integer_kind == 4)
-    fndecl = gfor_fndecl_internal_malloc;
-  else if (gfc_index_integer_kind == 8)
-    fndecl = gfor_fndecl_internal_malloc64;
-  else
-    gcc_unreachable ();
-  tmp = build_call_expr (fndecl, 1, size);
-  tmp = fold_convert (TREE_TYPE (decl), tmp);
+  tmp = gfc_call_malloc (&block, TREE_TYPE (decl), size);
   gfc_add_modify_expr (&block, decl, tmp);
 
   /* Set offset of the array.  */
@@ -3878,8 +3863,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
   gfc_add_expr_to_block (&block, fnbody);
 
   /* Free the temporary.  */
-  tmp = convert (pvoid_type_node, decl);
-  tmp = build_call_expr (gfor_fndecl_internal_free, 1, tmp);
+  tmp = gfc_call_free (convert (pvoid_type_node, decl));
   gfc_add_expr_to_block (&block, tmp);
 
   return gfc_finish_block (&block);
@@ -4235,7 +4219,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
 	}
 
       /* Free the temporary.  */
-      tmp = build_call_expr (gfor_fndecl_internal_free, 1, tmpdesc);
+      tmp = gfc_call_free (tmpdesc);
       gfc_add_expr_to_block (&cleanup, tmp);
 
       stmt = gfc_finish_block (&cleanup);
@@ -4841,8 +4825,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
       gfc_add_expr_to_block (&block, tmp);
 
       /* Free the temporary.  */
-      tmp = convert (pvoid_type_node, ptr);
-      tmp = build_call_expr (gfor_fndecl_internal_free, 1, tmp);
+      tmp = gfc_call_free (convert (pvoid_type_node, ptr));
       gfc_add_expr_to_block (&block, tmp);
 
       stmt = gfc_finish_block (&block);
@@ -4942,13 +4925,8 @@ gfc_duplicate_allocatable(tree dest, tree src, tree type, int rank)
 		      TYPE_SIZE_UNIT (gfc_get_element_type (type)));
 
   /* Allocate memory to the destination.  */
-  if (gfc_index_integer_kind == 4)
-    tmp = build_call_expr (gfor_fndecl_internal_malloc, 1, size);
-  else if (gfc_index_integer_kind == 8)
-    tmp = build_call_expr (gfor_fndecl_internal_malloc64, 1, size);
-  else
-    gcc_unreachable ();
-  tmp = fold_convert (TREE_TYPE (gfc_conv_descriptor_data_get (src)), tmp);
+  tmp = gfc_call_malloc (&block, TREE_TYPE (gfc_conv_descriptor_data_get (src)),
+			 size);
   gfc_conv_descriptor_data_set (&block, dest, tmp);
 
   /* We know the temporary and the value will be the same length,

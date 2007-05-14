@@ -1,5 +1,33 @@
 2007-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/30723
+	* trans.h (gfor_fndecl_internal_malloc, gfor_fndecl_internal_malloc64,
+	gfor_fndecl_internal_free): Remove prototypes.
+	(gfor_fndecl_os_error, gfc_call_free, gfc_call_malloc): Add prototypes.
+	* trans.c (gfc_call_malloc, gfc_call_free): New functions.
+	* f95-lang.c (gfc_init_builtin_functions): Add __builtin_free
+	and __builtin_malloc builtins.
+	* trans-decl.c (gfor_fndecl_internal_malloc,
+	gfor_fndecl_internal_malloc64, gfor_fndecl_internal_free): Remove.
+	(gfor_fndecl_os_error): Add.
+	(gfc_build_builtin_function_decls): Don't create internal_malloc,
+	internal_malloc64 and internal_free library function declaration.
+	Create os_error library call function declaration.
+	* trans-array.c (gfc_trans_allocate_array_storage,
+	gfc_trans_auto_array_allocation, gfc_trans_dummy_array_bias,
+	gfc_conv_array_parameter, gfc_duplicate_allocatable): Use
+	gfc_call_malloc and gfc_call_free instead of building calls to
+	internal_malloc and internal_free.
+	* trans-expr.c (gfc_conv_string_tmp): Likewise.
+	* trans-stmt.c (gfc_do_allocate, gfc_trans_assign_need_temp,
+	gfc_trans_pointer_assign_need_temp, gfc_trans_forall_1,
+	gfc_trans_where_2: Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_ctime,
+	gfc_conv_intrinsic_fdate, gfc_conv_intrinsic_ttynam,
+	gfc_conv_intrinsic_array_transfer, gfc_conv_intrinsic_trim): Likewise.
+
+2007-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/31725
 	* trans-expr.c (gfc_conv_substring): Evaluate substring bounds
 	only once.
