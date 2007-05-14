@@ -1,4 +1,4 @@
-! { dg-do compile}
+! { dg-do compile }
 ! { dg-options "-fdump-tree-original" }
 ! Tests the fix for PR 30872, in which the array element references bo(1,1) etc.
 ! would be wrong for rank > 1.

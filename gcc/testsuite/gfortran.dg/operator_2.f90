@@ -38,3 +38,4 @@ contains
  end function f3
 
 end
+! { dg-final { cleanup-modules "foo" } }

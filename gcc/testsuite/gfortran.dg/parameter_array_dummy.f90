@@ -1,4 +1,4 @@
-! { dg-do run}
+! { dg-do run }
 ! PR fortran/31188
 program foo_mod
   implicit none
@@ -14,8 +14,8 @@ contains
     write (*,*) i, "a" // letters(ivec)
   end subroutine concat
 end program foo_mod
-! { dg-output "1 aa" }
-! { dg-output "2 ab" }
-! { dg-output "3 aaab" }
-! { dg-output "4 abaa" }
-! { dg-output "5 ababab" }
+! { dg-output " *1 aa(\n|\r\n|\r)" }
+! { dg-output " *2 ab(\n|\r\n|\r)" }
+! { dg-output " *3 aaab(\n|\r\n|\r)" }
+! { dg-output " *4 abaa(\n|\r\n|\r)" }
+! { dg-output " *5 ababab(\n|\r\n|\r)" }

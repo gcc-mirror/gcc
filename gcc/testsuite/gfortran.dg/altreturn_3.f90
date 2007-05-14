@@ -1,4 +1,4 @@
-! { dg-do run}
+! { dg-do run }
 ! Tests the fix for PR30236, which was due to alternate returns
 ! in generic interfaces causing a segfault.  They now work
 ! correctly.

@@ -1,4 +1,4 @@
-! { dg do-run }
+! { dg-do run }
 ! Tests the fix for PR31620, in which zeroing the component a for the array,
 ! would zero all the components of the array.
 !

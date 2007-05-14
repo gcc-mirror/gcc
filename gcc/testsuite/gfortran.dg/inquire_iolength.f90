@@ -1,4 +1,4 @@
-! { dg-do compile}
+! { dg-do compile }
 ! { dg-options "-std=f95" }
 ! PR30014 IOLENGTH does not handle KIND=8.  This patch checks the constraints.
 ! Submitted by Jerry DeLisle  <jvdelisle@gcc.gnu.org>

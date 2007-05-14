@@ -1,4 +1,4 @@
-! { dg-do compile}
+! { dg-do compile }
 ! { dg-options "-fdump-tree-original" }
 ! Tests the fix for PR 31222, in which the type of the arguments of abs
 ! and int below were not detected to be of default numeric type..
@@ -16,3 +16,4 @@ end subroutine
 program testprog
   call mysub1((/1.,2./),(/1.,2.,3./),-2, 3.2)
 end
+! { dg-final { cleanup-tree-dump "original" } }
