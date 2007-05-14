@@ -1,3 +1,24 @@
+2007-05-14  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/m68k/m68k-protos.h: Rename m68k_interrupt_function_p
+	to m68k_get_function_kind.  Update its prototype.
+	* config/m68k/m68k.c (m68k_attribute_table): Add an entry for
+	interrupt_thread.
+	(m68k_interrupt_function_p): Return enum m68k_function_type
+	instead of bool.  Rename to m68k_get_function_kind.
+	(m68k_handle_fndecl_attribute): Reject interrupt_thread if the
+	target is not fido.
+	(m68k_compute_frame_layout): Don't mark any register for save
+	if an interrupt_thread attribute is specified.
+	(m68k_hard_regno_rename_ok): Update a use of
+	m68k_interrupt_function_p.
+	* config/m68k/m68k.h (EPILOGUE_USES): Update a use of
+	m68k_interrupt_function_p.
+	(m68k_function_type): New.
+	* config/m68k/m68k.md (*return): Output a 'sleep' instruction
+	for a function with an interrupt_thread attribute.
+	* doc/extend.texi: Document the interrupt_thread attribute.
+
 2007-05-13  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/31911

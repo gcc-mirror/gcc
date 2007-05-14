@@ -1,3 +1,10 @@
+2007-05-14  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.target/m68k/interrupt_thread-1.c,
+	gcc.target/m68k/interrupt_thread-2.c,
+	gcc.target/m68k/interrupt_thread-3.c: New.
+	* gcc.target/m68k/m68k.exp: Accept fido.
+
 2007-05-13  Dominique d'Humières  <dominiq@lps.ens.fr>
 
 	* alloc_comp_basics_1.f90: Fix dg directive.
