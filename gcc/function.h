@@ -191,7 +191,7 @@ struct function GTY(())
   struct gimple_df *gimple_df;
 
   /* The loops in this function.  */
-  struct loops * GTY((skip)) x_current_loops;
+  struct loops *x_current_loops;
 
   /* Value histograms attached to particular statements.  */
   htab_t GTY((skip)) value_histograms;

@@ -31,6 +31,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-pass.h"
 #include "timevar.h"
 #include "flags.h"
+#include "ggc.h"
 
 
 /* Initialize loop structures.  This is used by the tree and RTL loop
@@ -43,7 +44,7 @@ loop_optimizer_init (unsigned flags)
   struct loops *loops;
 
   gcc_assert (!current_loops);
-  loops = XCNEW (struct loops);
+  loops = GGC_CNEW (struct loops);
 
   /* Find the loops.  */
 
@@ -116,7 +117,7 @@ loop_optimizer_finalize (void)
   if (current_loops->state & LOOPS_HAVE_RECORDED_EXITS)
     release_recorded_exits ();
   flow_loops_free (current_loops);
-  free (current_loops);
+  ggc_free (current_loops);
   current_loops = NULL;
 
   FOR_ALL_BB (bb)

@@ -258,7 +258,7 @@ static tree analyze_scalar_evolution_1 (struct loop *, tree, tree);
 /* The cached information about a ssa name VAR, claiming that inside LOOP,
    the value of VAR can be expressed as CHREC.  */
 
-struct scev_info_str
+struct scev_info_str GTY(())
 {
   tree var;
   tree chrec;
@@ -285,7 +285,7 @@ tree chrec_known;
 
 static bitmap already_instantiated;
 
-static htab_t scalar_evolution_info;
+static GTY ((param_is (struct scev_info_str))) htab_t scalar_evolution_info;
 
 
 /* Constructs a new SCEV_INFO_STR structure.  */
@@ -295,7 +295,7 @@ new_scev_info_str (tree var)
 {
   struct scev_info_str *res;
   
-  res = XNEW (struct scev_info_str);
+  res = GGC_NEW (struct scev_info_str);
   res->var = var;
   res->chrec = chrec_not_analyzed_yet;
   
@@ -326,7 +326,7 @@ eq_scev_info (const void *e1, const void *e2)
 static void
 del_scev_info (void *e)
 {
-  free (e);
+  ggc_free (e);
 }
 
 /* Get the index corresponding to VAR in the current LOOP.  If
@@ -2746,8 +2746,12 @@ scev_initialize (void)
   loop_iterator li;
   struct loop *loop;
 
-  scalar_evolution_info = htab_create (100, hash_scev_info,
-				       eq_scev_info, del_scev_info);
+  scalar_evolution_info = htab_create_alloc (100,
+					     hash_scev_info,
+					     eq_scev_info,
+					     del_scev_info,
+					     ggc_calloc,
+					     ggc_free);
   already_instantiated = BITMAP_ALLOC (NULL);
   
   initialize_scalar_evolutions_analyzer ();
@@ -3008,3 +3012,5 @@ scev_const_prop (void)
     }
   return 0;
 }
+
+#include "gt-tree-scalar-evolution.h"
