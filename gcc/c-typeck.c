@@ -8148,7 +8148,11 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
       int none_complex = (code0 != COMPLEX_TYPE && code1 != COMPLEX_TYPE);
 
       if (shorten || common || short_compare)
-	result_type = c_common_type (type0, type1);
+	{
+	  result_type = c_common_type (type0, type1);
+	  if (result_type == error_mark_node)
+	    return error_mark_node;
+	}
 
       /* For certain operations (which identify themselves by shorten != 0)
 	 if both args were extended from the same smaller type,

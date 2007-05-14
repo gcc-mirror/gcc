@@ -1,6 +1,8 @@
 2007-05-14  Janis Johnson  <janis187@us.ibm.com>
 
-        * expr.c (cpp_classify_number): Warn about dfp constant for -pedantic.
+	* gcc.dg/dfp/usual-arith-conv-bad.c: New test.
+
+	* gcc.dg/fltconst-pedantic-dfp.c: New test.
 
 	PR c/31924
 	* gcc.dg/fltconst-1.c: New test.
