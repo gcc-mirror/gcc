@@ -2,8 +2,8 @@
 ! PR28354 Incorrect rounding of .99999 with f3.0 format specifier
 ! PR30910 ES format not quite right...
 ! Test case derived from PR. Submitted by Jerry DeLisle <jvdelisle@gcc.gnu.org>
-  write(*,50) -0.99999
   write(*,50) 0.99999
+  write(*,50) -0.99999
   write(*,50) -9.0
   write(*,50) -0.99
   write(*,50) -0.999
@@ -46,40 +46,40 @@
  250   format(1pe7.0,"<")
  300   format(1pe6.0,"<")
   end
-! { dg-output "-1.<"
-! { dg-output " 1.<"
-! { dg-output "-9.<"
-! { dg-output "-1.<"
-! { dg-output "-1.<"
-! { dg-output "-1.<"
-! { dg-output "-1.<"
-! { dg-output " 0.<"
-! { dg-output "     38.<"
-! { dg-output "  10345.<"
-! { dg-output "    334.<"
-! { dg-output "    333.<"
-! { dg-output "1.E-01"
-! { dg-output "-1.E+00<"
-! { dg-output " 1.E+00<"
-! { dg-output "-9.E+00<"
-! { dg-output "-1.E+00<"
-! { dg-output "-1.E+00<"
-! { dg-output "-1.E+00<"
-! { dg-output "-6.E-01<"
-! { dg-output "-5.E-01<"
-! { dg-output "  4.E+01<"
-! { dg-output "  1.E+04<"
-! { dg-output "  3.E+02<"
-! { dg-output "  3.E+02<"
-! { dg-output "-1.E+00<"
-! { dg-output " 1.E+00<"
-! { dg-output "-9.E+00<"
-! { dg-output "-1.E+00<"
-! { dg-output "-1.E+00<"
-! { dg-output "-1.E+00<"
-! { dg-output "-6.E-01<"
-! { dg-output "-5.E-01<"
-! { dg-output "4.E+01<"
-! { dg-output "1.E+04<"
-! { dg-output "3.E+02<"
-! { dg-output "3.E+02<"
+! { dg-output " 1\\.<(\n|\r\n|\r)" }
+! { dg-output "-1\\.<(\n|\r\n|\r)" }
+! { dg-output "-9\\.<(\n|\r\n|\r)" }
+! { dg-output "-1\\.<(\n|\r\n|\r)" }
+! { dg-output "-1\\.<(\n|\r\n|\r)" }
+! { dg-output "-1\\.<(\n|\r\n|\r)" }
+! { dg-output "-1\\.<(\n|\r\n|\r)" }
+! { dg-output " 0\\.<(\n|\r\n|\r)" }
+! { dg-output "     38\\.<(\n|\r\n|\r)" }
+! { dg-output "  10345\\.<(\n|\r\n|\r)" }
+! { dg-output "    334\\.<(\n|\r\n|\r)" }
+! { dg-output "    333\\.<(\n|\r\n|\r)" }
+! { dg-output "1\\.E-01(\n|\r\n|\r)" }
+! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
+! { dg-output " 1\\.E\\+00<(\n|\r\n|\r)" }
+! { dg-output "-9\\.E\\+00<(\n|\r\n|\r)" }
+! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
+! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
+! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
+! { dg-output "-6\\.E-01<(\n|\r\n|\r)" }
+! { dg-output "-5\\.E-01<(\n|\r\n|\r)" }
+! { dg-output "  4\\.E\\+01<(\n|\r\n|\r)" }
+! { dg-output "  1\\.E\\+04<(\n|\r\n|\r)" }
+! { dg-output "  3\\.E\\+02<(\n|\r\n|\r)" }
+! { dg-output "  3\\.E\\+02<(\n|\r\n|\r)" }
+! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
+! { dg-output " 1\\.E\\+00<(\n|\r\n|\r)" }
+! { dg-output "-9\\.E\\+00<(\n|\r\n|\r)" }
+! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
+! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
+! { dg-output "-1\\.E\\+00<(\n|\r\n|\r)" }
+! { dg-output "-6\\.E-01<(\n|\r\n|\r)" }
+! { dg-output "-5\\.E-01<(\n|\r\n|\r)" }
+! { dg-output "4\\.E\\+01<(\n|\r\n|\r)" }
+! { dg-output "1\\.E\\+04<(\n|\r\n|\r)" }
+! { dg-output "3\\.E\\+02<(\n|\r\n|\r)" }
+! { dg-output "3\\.E\\+02<(\n|\r\n|\r)" }

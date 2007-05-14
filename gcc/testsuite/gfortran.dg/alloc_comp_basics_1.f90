@@ -1,4 +1,4 @@
-! { dg-do run}
+! { dg-do run }
 ! { dg-options "-O2 -fdump-tree-original" }
 !
 ! Check some basic functionality of allocatable components, including that they
