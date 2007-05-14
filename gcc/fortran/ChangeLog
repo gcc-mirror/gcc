@@ -1,3 +1,7 @@
+2007-05-13  Release Manager
+
+	* GCC 4.2.0 released.
+
 2007-04-30  Daniel Franke  <franke.daniel@gmail.com>
 
 	* intrinsic.texi (IERRNO): Changed class to non-elemental function.
