@@ -273,6 +273,10 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
           return CPP_N_INVALID;
         }
 
+      if ((result & CPP_N_DFLOAT) && CPP_PEDANTIC (pfile))
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "decimal float constants are a GCC extension");
+
       result |= CPP_N_FLOATING;
     }
   else
