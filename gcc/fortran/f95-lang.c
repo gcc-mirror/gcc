@@ -988,6 +988,17 @@ gfc_init_builtin_functions (void)
   gfc_define_builtin ("__builtin_expect", ftype, BUILT_IN_EXPECT,
 		      "__builtin_expect", true);
 
+  tmp = tree_cons (NULL_TREE, pvoid_type_node, void_list_node);
+  ftype = build_function_type (void_type_node, tmp);
+  gfc_define_builtin ("__builtin_free", ftype, BUILT_IN_FREE,
+		      "free", false);
+
+  tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
+  ftype = build_function_type (pvoid_type_node, tmp);
+  gfc_define_builtin ("__builtin_malloc", ftype, BUILT_IN_MALLOC,
+		      "malloc", false);
+  DECL_IS_MALLOC (built_in_decls[BUILT_IN_MALLOC]) = 1;
+
 #define DEF_PRIMITIVE_TYPE(ENUM, VALUE) \
   builtin_types[(int) ENUM] = VALUE;
 #define DEF_FUNCTION_TYPE_0(ENUM, RETURN)		\

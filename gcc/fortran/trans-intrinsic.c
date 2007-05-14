@@ -1275,7 +1275,7 @@ gfc_conv_intrinsic_ctime (gfc_se * se, gfc_expr * expr)
   /* Free the temporary afterwards, if necessary.  */
   cond = build2 (GT_EXPR, boolean_type_node, len,
 		 build_int_cst (TREE_TYPE (len), 0));
-  tmp = build_call_expr (gfor_fndecl_internal_free, 1, var);
+  tmp = gfc_call_free (var);
   tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
   gfc_add_expr_to_block (&se->post, tmp);
 
@@ -1310,7 +1310,7 @@ gfc_conv_intrinsic_fdate (gfc_se * se, gfc_expr * expr)
   /* Free the temporary afterwards, if necessary.  */
   cond = build2 (GT_EXPR, boolean_type_node, len,
 		 build_int_cst (TREE_TYPE (len), 0));
-  tmp = build_call_expr (gfor_fndecl_internal_free, 1, var);
+  tmp = gfc_call_free (var);
   tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
   gfc_add_expr_to_block (&se->post, tmp);
 
@@ -1347,7 +1347,7 @@ gfc_conv_intrinsic_ttynam (gfc_se * se, gfc_expr * expr)
   /* Free the temporary afterwards, if necessary.  */
   cond = build2 (GT_EXPR, boolean_type_node, len,
 		 build_int_cst (TREE_TYPE (len), 0));
-  tmp = build_call_expr (gfor_fndecl_internal_free, 1, var);
+  tmp = gfc_call_free (var);
   tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
   gfc_add_expr_to_block (&se->post, tmp);
 
@@ -2866,8 +2866,7 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
 
 	  /* Free the temporary.  */
 	  gfc_start_block (&block);
-	  tmp = convert (pvoid_type_node, source);
-	  tmp = build_call_expr (gfor_fndecl_internal_free, 1, tmp);
+	  tmp = gfc_call_free (convert (pvoid_type_node, source));
 	  gfc_add_expr_to_block (&block, tmp);
 	  stmt = gfc_finish_block (&block);
 
@@ -3364,7 +3363,7 @@ gfc_conv_intrinsic_trim (gfc_se * se, gfc_expr * expr)
   /* Free the temporary afterwards, if necessary.  */
   cond = build2 (GT_EXPR, boolean_type_node, len,
 		 build_int_cst (TREE_TYPE (len), 0));
-  tmp = build_call_expr (gfor_fndecl_internal_free, 1, var);
+  tmp = gfc_call_free (var);
   tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
   gfc_add_expr_to_block (&se->post, tmp);
 

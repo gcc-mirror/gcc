@@ -77,46 +77,6 @@ internal_malloc_size (size_t size)
   return get_mem (size);
 }
 
-extern void *internal_malloc (GFC_INTEGER_4);
-export_proto(internal_malloc);
-
-void *
-internal_malloc (GFC_INTEGER_4 size)
-{
-#ifdef GFC_CHECK_MEMORY
-  /* Under normal circumstances, this is _never_ going to happen!  */
-  if (size < 0)
-    runtime_error ("Attempt to allocate a negative amount of memory.");
-
-#endif
-  return internal_malloc_size ((size_t) size);
-}
-
-extern void *internal_malloc64 (GFC_INTEGER_8);
-export_proto(internal_malloc64);
-
-void *
-internal_malloc64 (GFC_INTEGER_8 size)
-{
-#ifdef GFC_CHECK_MEMORY
-  /* Under normal circumstances, this is _never_ going to happen!  */
-  if (size < 0)
-    runtime_error ("Attempt to allocate a negative amount of memory.");
-#endif
-  return internal_malloc_size ((size_t) size);
-}
-
-
-/* Free internally allocated memory.  Pointer is NULLified.  Also used to
-   free user allocated memory.  */
-
-void
-internal_free (void *mem)
-{
-  if (mem != NULL)
-    free (mem);
-}
-iexport(internal_free);
 
 /* Reallocate internal memory MEM so it has SIZE bytes of data.
    Allocate a new block if MEM is zero, and free the block if

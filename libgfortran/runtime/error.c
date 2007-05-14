@@ -285,6 +285,7 @@ os_error (const char *message)
   st_printf ("Operating system error: %s\n%s\n", get_oserror (), message);
   sys_exit (1);
 }
+iexport(os_error);
 
 
 /* void runtime_error()-- These are errors associated with an

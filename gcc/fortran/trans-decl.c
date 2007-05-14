@@ -74,11 +74,8 @@ tree gfc_static_ctors;
 
 /* Function declarations for builtin library functions.  */
 
-tree gfor_fndecl_internal_malloc;
-tree gfor_fndecl_internal_malloc64;
 tree gfor_fndecl_internal_realloc;
 tree gfor_fndecl_internal_realloc64;
-tree gfor_fndecl_internal_free;
 tree gfor_fndecl_allocate;
 tree gfor_fndecl_allocate64;
 tree gfor_fndecl_allocate_array;
@@ -91,6 +88,7 @@ tree gfor_fndecl_stop_string;
 tree gfor_fndecl_select_string;
 tree gfor_fndecl_runtime_error;
 tree gfor_fndecl_runtime_error_at;
+tree gfor_fndecl_os_error;
 tree gfor_fndecl_generate_error;
 tree gfor_fndecl_set_fpe;
 tree gfor_fndecl_set_std;
@@ -2247,18 +2245,6 @@ gfc_build_builtin_function_decls (void)
   tree gfc_logical4_type_node = gfc_get_logical_type (4);
   tree gfc_pint4_type_node = build_pointer_type (gfc_int4_type_node);
 
-  /* Treat these two internal malloc wrappers as malloc.  */
-  gfor_fndecl_internal_malloc =
-    gfc_build_library_function_decl (get_identifier (PREFIX("internal_malloc")),
-				     pvoid_type_node, 1, gfc_int4_type_node);
-  DECL_IS_MALLOC (gfor_fndecl_internal_malloc) = 1;
-
-  gfor_fndecl_internal_malloc64 =
-    gfc_build_library_function_decl (get_identifier
-				     (PREFIX("internal_malloc64")),
-				     pvoid_type_node, 1, gfc_int8_type_node);
-  DECL_IS_MALLOC (gfor_fndecl_internal_malloc64) = 1;
-
   gfor_fndecl_internal_realloc =
     gfc_build_library_function_decl (get_identifier
 				     (PREFIX("internal_realloc")),
@@ -2270,10 +2256,6 @@ gfc_build_builtin_function_decls (void)
 				     (PREFIX("internal_realloc64")),
 				     pvoid_type_node, 2, pvoid_type_node,
 				     gfc_int8_type_node);
-
-  gfor_fndecl_internal_free =
-    gfc_build_library_function_decl (get_identifier (PREFIX("internal_free")),
-				     void_type_node, 1, pvoid_type_node);
 
   gfor_fndecl_allocate =
     gfc_build_library_function_decl (get_identifier (PREFIX("allocate")),
@@ -2348,6 +2330,12 @@ gfc_build_builtin_function_decls (void)
     gfc_build_library_function_decl (get_identifier (PREFIX("generate_error")),
 				     void_type_node, 3, pvoid_type_node,
                                      gfc_c_int_type_node, pchar_type_node);
+
+  gfor_fndecl_os_error =
+    gfc_build_library_function_decl (get_identifier (PREFIX("os_error")),
+				     void_type_node, 1, pchar_type_node);
+  /* The runtime_error function does not return.  */
+  TREE_THIS_VOLATILE (gfor_fndecl_os_error) = 1;
 
   gfor_fndecl_set_fpe =
     gfc_build_library_function_decl (get_identifier (PREFIX("set_fpe")),

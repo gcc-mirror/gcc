@@ -935,13 +935,11 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
     {
       /* Allocate a temporary to hold the result.  */
       var = gfc_create_var (type, "pstr");
-      tmp = build_call_expr (gfor_fndecl_internal_malloc, 1, len);
-      tmp = convert (type, tmp);
+      tmp = gfc_call_malloc (&se->pre, type, len);
       gfc_add_modify_expr (&se->pre, var, tmp);
 
       /* Free the temporary afterwards.  */
-      tmp = convert (pvoid_type_node, var);
-      tmp = build_call_expr (gfor_fndecl_internal_free, 1, tmp);
+      tmp = gfc_call_free (convert (pvoid_type_node, var));
       gfc_add_expr_to_block (&se->post, tmp);
     }
 

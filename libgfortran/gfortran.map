@@ -166,9 +166,6 @@ GFORTRAN_1.0 {
     _gfortran_idate_i8;
     _gfortran_ierrno_i4;
     _gfortran_ierrno_i8;
-    _gfortran_internal_free;
-    _gfortran_internal_malloc;
-    _gfortran_internal_malloc64;
     _gfortran_internal_pack;
     _gfortran_internal_realloc;
     _gfortran_internal_realloc64;
@@ -502,6 +499,7 @@ GFORTRAN_1.0 {
     _gfortran_nearest_r16;
     _gfortran_nearest_r4;
     _gfortran_nearest_r8;
+    _gfortran_os_error;
     _gfortran_pack;
     _gfortran_pack_char;
     _gfortran_pack_s;
