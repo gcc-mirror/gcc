@@ -251,7 +251,7 @@ expr_size (tree exp)
       size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, exp);
     }
 
-  return expand_expr (size, NULL_RTX, TYPE_MODE (sizetype), 0);
+  return expand_expr (size, NULL_RTX, TYPE_MODE (sizetype), EXPAND_NORMAL);
 }
 
 /* Return a wide integer for the size in bytes of the value of EXP, or -1
