@@ -46,9 +46,9 @@ extern void abort (void);
 int
 main ()
 {
-  _Decimal32 d32 = 1.23456fd, d32a = 1.2df;
+  _Decimal32 d32 = 1.23456df, d32a = 1.2df;
   _Decimal64 d64 = 23.456789dd, d64a = 2.8dd;
-  _Decimal128 d128 = 345.67890123456789ld, d128a = 4.7dl;
+  _Decimal128 d128 = 345.67890123456789dl, d128a = 4.7dl;
 
   DECIMAL_COMPOUND_ASSIGNMENT(32, d32);
   DECIMAL_COMPOUND_ASSIGNMENT(64, d64);
