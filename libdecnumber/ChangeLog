@@ -1,3 +1,7 @@
+2007-05-13  Release Manager
+
+	* GCC 4.2.0 released.
+
 2007-03-08  Ben Elliston  <bje@au.ibm.com>
 
 	* decContext.c, decContext.h, decDPD.h, decimal128.c,
