@@ -1,5 +1,7 @@
 2007-05-14  Janis Johnson  <janis187@us.ibm.com>
 
+        * expr.c (cpp_classify_number): Warn about dfp constant for -pedantic.
+
 	PR c/31924
 	* expr.c (interpret_float_suffix): Check for invalid suffix.
 
