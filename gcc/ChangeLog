@@ -1,3 +1,7 @@
+2007-05-14  Janis Johnson  <janis187@us.ibm.com>
+
+	* c-typeck.c (build_binary_op): Return early for error.
+
 2007-05-15  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-ssa-loop-niter.c (record_estimate): Use GGC_NEW to allocate
