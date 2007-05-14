@@ -1,3 +1,8 @@
+2007-05-14  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/29928
+	* g++.dg/rtti/typeid5.C: New.
+
 2007-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31725

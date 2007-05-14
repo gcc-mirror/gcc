@@ -238,7 +238,7 @@ get_tinfo_decl_dynamic (tree exp)
   /* Peel off cv qualifiers.  */
   type = TYPE_MAIN_VARIANT (type);
 
-  if (!VOID_TYPE_P (type))
+  if (CLASS_TYPE_P (type))
     type = complete_type_or_else (type, exp);
 
   if (!type)
@@ -431,7 +431,7 @@ get_typeid (tree type)
      that is the operand of typeid are always ignored.  */
   type = TYPE_MAIN_VARIANT (type);
 
-  if (!VOID_TYPE_P (type))
+  if (CLASS_TYPE_P (type))
     type = complete_type_or_else (type, NULL_TREE);
 
   if (!type)

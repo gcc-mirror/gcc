@@ -1,3 +1,9 @@
+2007-05-14  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/29928
+	* rtti.c (get_tinfo_decl_dynamic, get_typeid): Try to complete the
+	type only if is a class type (5.2.8/4).
+
 2007-05-14  Rafael Avila de Espindola  <espindola@google.com>
 
 	* cp-objcp-common.h (LANG_HOOKS_UNSIGNED_TYPE): Remove.
