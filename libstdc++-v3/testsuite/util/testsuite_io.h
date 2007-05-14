@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing streambuf/filebuf/stringbuf for the C++ library testsuite.
 //
-// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,8 +31,7 @@
 #ifndef _GLIBCXX_TESTSUITE_IO_H
 #define _GLIBCXX_TESTSUITE_IO_H
 
-#include <fstream>
-#include <sstream>
+#include <ios>
 
 namespace __gnu_test
 {  

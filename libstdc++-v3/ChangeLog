@@ -1,5 +1,9 @@
 2007-05-14  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/util/testsuite_io.h: Only include <ios>.
+
+2007-05-14  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/allocator.h: Do not include cpp_type_traits.h.
 
 2007-05-14  Paolo Carlini  <pcarlini@suse.de>
