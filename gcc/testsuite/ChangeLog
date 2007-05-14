@@ -1,5 +1,8 @@
 2007-05-14  Janis Johnson  <janis187@us.ibm.com>
 
+	PR c/31924
+	* gcc.dg/fltconst-1.c: New test.
+
 	* gcc.dg/dfp/func-mixed.c: Replace invalid constant suffixes.
 	* gcc.dg/dfp/operator-assignment.c: Ditto.
 
