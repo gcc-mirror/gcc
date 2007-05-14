@@ -1,3 +1,8 @@
+2007-05-14  Janis Johnson  <janis187@us.ibm.com>
+
+	PR c/31924
+	* expr.c (interpret_float_suffix): Check for invalid suffix.
+
 2007-05-02  Eric Christopher  <echristo@apple.com>
 
 	* expr.c (num_div_op): Don't overflow if the result is
