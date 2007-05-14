@@ -1,3 +1,7 @@
+2007-05-14  Dave Korn  <dave.korn@artimi.com>
+
+	* genautomata.c (gen_regexp_el):  Allocate correct size for regexp.
+
 2007-05-14  Rafael Avila de Espindola  <espindola@google.com>
 
 	* c-common.c (warnings_for_convert_and_check): Use unsigned_type_for
