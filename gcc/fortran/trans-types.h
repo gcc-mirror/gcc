@@ -82,7 +82,6 @@ tree gfc_get_function_type (gfc_symbol *);
 
 tree gfc_type_for_size (unsigned, int);
 tree gfc_type_for_mode (enum machine_mode, int);
-tree gfc_unsigned_type (tree);
 tree gfc_signed_type (tree);
 
 tree gfc_get_element_type (tree);

@@ -656,7 +656,7 @@ convert_to_integer (tree type, tree expr)
 			     || !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1)))
 			    && (ex_form == PLUS_EXPR
 				|| ex_form == MINUS_EXPR)))
-		      typex = lang_hooks.types.unsigned_type (typex);
+		      typex = unsigned_type_for (typex);
 		    else
 		      typex = lang_hooks.types.signed_type (typex);
 		    return convert (type,
@@ -678,7 +678,7 @@ convert_to_integer (tree type, tree expr)
 	    /* Don't do unsigned arithmetic where signed was wanted,
 	       or vice versa.  */
 	    if (TYPE_UNSIGNED (TREE_TYPE (expr)))
-	      typex = lang_hooks.types.unsigned_type (type);
+	      typex = unsigned_type_for (type);
 	    else
 	      typex = lang_hooks.types.signed_type (type);
 	    return convert (type,

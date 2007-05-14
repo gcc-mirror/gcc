@@ -7731,14 +7731,22 @@ int_cst_value (tree x)
 }
 
 
+/* Return an unsigned type the same as TYPE in other respects.  */
+
+static tree
+get_unsigned_type (tree type)
+{
+  return get_signed_or_unsigned_type (1, type);
+}
+
 /* Returns unsigned variant of TYPE.  */
 
 tree
 unsigned_type_for (tree type)
 {
   if (POINTER_TYPE_P (type))
-    return lang_hooks.types.unsigned_type (size_type_node);
-  return lang_hooks.types.unsigned_type (type);
+    return get_unsigned_type (size_type_node);
+  return get_unsigned_type (type);
 }
 
 /* Returns signed variant of TYPE.  */

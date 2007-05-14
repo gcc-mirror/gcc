@@ -103,10 +103,6 @@ struct lang_hooks_for_types
      integer type with at least that precision.  */
   tree (*type_for_size) (unsigned, int);
 
-  /* Given an integer type T, return a type like T but unsigned.
-     If T is unsigned, the value is T.  */
-  tree (*unsigned_type) (tree);
-
   /* Given an integer type T, return a type like T but signed.
      If T is signed, the value is T.  */
   tree (*signed_type) (tree);

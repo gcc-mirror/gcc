@@ -7376,7 +7376,7 @@ grokdeclarator (const cp_declarator *declarator,
       else if (type == char_type_node)
 	type = unsigned_char_type_node;
       else if (typedef_decl)
-	type = c_common_unsigned_type (type);
+	type = unsigned_type_for (type);
       else
 	type = unsigned_type_node;
     }

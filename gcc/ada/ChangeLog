@@ -1,3 +1,7 @@
+2007-05-14  Rafael Avila de Espindola  <espindola@google.com>
+
+	* misc.c (LANG_HOOKS_UNSIGNED_TYPE): Remove.
+
 2007-05-02  Pascal Obry  <obry@adacore.com>
 
 	* gnatchop.adb (Write_Source_Reference_Pragma): Change implementation

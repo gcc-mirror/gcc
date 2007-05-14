@@ -1,3 +1,36 @@
+2007-05-14  Rafael Avila de Espindola  <espindola@google.com>
+
+	* c-common.c (warnings_for_convert_and_check): Use unsigned_type_for
+	instead of c_common_unsigned_type.
+	(c_common_unsigned_type): Remove.
+	(shorten_compare): Use c_common_signed_or_unsigned_type instead of
+	c_common_unsigned_type.
+	(c_common_nodes_and_builtins): Use unsigned_type_for instead of
+	c_common_unsigned_type.
+	* c-common.h (c_common_unsigned_type): Remove.
+	* c-decl.c (grokdeclarator): Use unsigned_type_for instead of
+	c_common_unsigned_type.
+	* c-format.c (check_format_types): Use unsigned_type_for instead of
+	c_common_unsigned_type.
+	* c-objc-common.h (LANG_HOOKS_UNSIGNED_TYPE): Remove.
+	* c-typeck.c (convert_for_assignment): Use unsigned_type_for instead of
+	c_common_unsigned_type.
+	* convert.c (convert_to_integer): Use unsigned_type_for instead of
+	lang_hooks.types.unsigned_type.
+	* expmed.c (make_tree): Use unsigned_type_for instead of
+	lang_hooks.types.unsigned_type.
+	* fold-const.c (fold_negate_expr): Use unsigned_type_for instead of
+	lang_hooks.types.unsigned_type.
+	(build_range_check): Likewise.
+	(fold_unary): Likewise.
+	(fold_binary): Likewise.
+	(fold_ternary): Likewise.
+	* langhooks-def.h (LANG_HOOKS_UNSIGNED_TYPE): Remove.
+	* langhooks.h (lang_hooks_for_types): Remove unsigned_type.
+	* tree.c (get_unsigned_type): New.
+	(unsigned_type_for): Use get_unsigned_type instead of
+	lang_hooks.types.unsigned_type.
+
 2007-05-14  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/m68k/m68k-protos.h: Rename m68k_interrupt_function_p
