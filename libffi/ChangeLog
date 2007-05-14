@@ -1,3 +1,7 @@
+2007-05-13  Release Manager
+
+	* GCC 4.2.0 released.
+
 2007-04-20  Richard Henderson  <rth@redhat.com>
 
 	* configure.ac (alpha*-*-*): Define HAVE_LONG_DOUBLE.
