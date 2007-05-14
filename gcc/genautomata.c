@@ -1542,12 +1542,12 @@ gen_regexp_el (const char *str)
     }
   else if (strcmp (str, NOTHING_NAME) == 0)
     {
-      regexp = create_node (sizeof (struct decl));
+      regexp = create_node (sizeof *regexp);
       regexp->mode = rm_nothing;
     }
   else
     {
-      regexp = create_node (sizeof (struct decl));
+      regexp = create_node (sizeof *regexp);
       regexp->mode = rm_unit;
       REGEXP_UNIT (regexp)->name = str;
     }
