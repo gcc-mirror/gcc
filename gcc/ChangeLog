@@ -1,3 +1,47 @@
+2007-05-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* builtins.c (expand_builtin_mathfn): Use EXPAND_NORMAL instead
+	of 0 in the call to expand_expr().
+	(expand_builtin_mathfn_3): Ditto.
+	(expand_builtin_interclass_mathfn): Ditto.
+	(expand_builtin_cexpi): Ditto.
+	(expand_builtin_int_roundingfn): Ditto.
+	(expand_builtin_int_roundingfn_2): Ditto.
+	(expand_builtin_pow): Ditto.
+	(expand_builtin_powi): Ditto.
+	(expand_builtin_bswap): Ditto.
+	(expand_builtin_unop): Ditto.
+	(expand_builtin_fabs): Ditto.
+	(get_builtin_sync_mem): Use NULL_RTX instead of NULL in
+	the call to expand_expr().
+	(expand_builtin_sync_operation): Ditto.
+	(expand_builtin_compare_and_swap): Ditto.
+	(expand_builtin_lock_test_and_set): Ditto.
+	* except.c (expand_builtin_eh_return_data_regno): Use EXPAND_NORMAL
+	instead of 0 in the call to expand_expr().
+	(expand_builtin_extract_return_addr): Ditto.
+	(expand_builtin_eh_return): Ditto.
+	(expand_eh_return): Ditto.
+	* explow.c (expr_size): Ditto.
+	* expr.c (optimize_bitfield_assignment_op): Ditto.
+	(expand_assignement): Ditto.
+	(store_expr): Ditto.
+	(store_field): Ditto.
+	(expand_expr_addr_expr_1): Use NULL_RTX instead of NULL in
+	the call to expand_expr().
+	(expand_expr_real_1) [COMPLEX_CST]: Use EXPAND_NORMAL instead of 0
+	in the call to expand_expr().
+	[CONSTRUCTOR, PLUS_EXPR, MINUS_EXPR, NEGATE_EXPR, ABS_EXPR,
+	BIT_NOT_EXPR, LSHIFT_EXPR, LT_EXPR, TRUTH_NOT_EXPR]: Ditto.
+	[VEC_UNPACK_HI_EXPR, VEC_UNPACK_LO]: Use expand_normal() instead
+	of expand_expr().
+	* optabs.c (expand_vec_shift_expr): Ditto.
+	(expand_vec_cond_expr): Ditto.
+	(vector_compare_rtx): Use EXPAND_STACK_PARM instead of 1 in the
+	call to expand_expr().
+	* stmt.c (expand_return): Use EXPAND_NORMAL instead of 0
+	in the call to expand_expr().
+
 2007-05-14  Dave Korn  <dave.korn@artimi.com>
 
 	* genautomata.c (gen_regexp_el):  Allocate correct size for regexp.

@@ -1884,7 +1884,7 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
 	  exp = build_call_expr (fndecl, 1, arg);
 	}
 
-      op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+      op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
 
       start_sequence ();
 
@@ -2137,7 +2137,7 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
 	  exp = build_call_expr (fndecl, 1, arg);
 	}
 
-      op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+      op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
 
       start_sequence ();
 
@@ -2249,7 +2249,7 @@ expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
 	  exp = build_call_expr (fndecl, 1, arg);
 	}
 
-      op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+      op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
 
       if (mode != GET_MODE (op0))
 	op0 = convert_to_mode (mode, op0, 0);
@@ -2341,7 +2341,7 @@ expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
       op1 = gen_reg_rtx (mode);
       op2 = gen_reg_rtx (mode);
 
-      op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+      op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
 
       /* Compute into op1 and op2.  */
       expand_twoval_unop (sincos_optab, op0, op2, op1, 0);
@@ -2412,14 +2412,14 @@ expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
       /* Make sure not to fold the cexp call again.  */
       call = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
       return expand_expr (build_call_nary (ctype, call, 1, narg), 
-			  target, VOIDmode, 0);
+			  target, VOIDmode, EXPAND_NORMAL);
     }
 
   /* Now build the proper return type.  */
   return expand_expr (build2 (COMPLEX_EXPR, build_complex_type (type),
 			      make_tree (TREE_TYPE (arg), op2),
 			      make_tree (TREE_TYPE (arg), op1)),
-		      target, VOIDmode, 0);
+		      target, VOIDmode, EXPAND_NORMAL);
 }
 
 /* Expand a call to one of the builtin rounding functions gcc defines
@@ -2479,7 +2479,7 @@ expand_builtin_int_roundingfn (tree exp, rtx target, rtx subtarget)
       exp = build_call_expr (fndecl, 1, arg);
     }
 
-  op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+  op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
 
   start_sequence ();
 
@@ -2608,7 +2608,7 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target, rtx subtarget)
       exp = build_call_expr (fndecl, 1, arg);
     }
 
-  op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+  op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
 
   start_sequence ();
 
@@ -2875,7 +2875,7 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
 	      && !optimize_size
 	      && powi_cost (n) <= POWI_MAX_MULTS)))
     {
-      op = expand_expr (arg0, subtarget, VOIDmode, 0);
+      op = expand_expr (arg0, subtarget, VOIDmode, EXPAND_NORMAL);
       if (n != 1)
 	{
 	  op = force_reg (mode, op);
@@ -2904,7 +2904,7 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
 	  op = expand_builtin (call_expr, NULL_RTX, subtarget, mode, 0);
 	  if (n != 1)
 	    {
-	      op2 = expand_expr (narg0, subtarget, VOIDmode, 0);
+	      op2 = expand_expr (narg0, subtarget, VOIDmode, EXPAND_NORMAL);
 	      op2 = force_reg (mode, op2);
 	      op2 = expand_powi (op2, mode, abs (n / 2));
 	      op = expand_simple_binop (mode, MULT, op, op2, NULL_RTX,
@@ -2948,7 +2948,7 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
 				      0, OPTAB_LIB_WIDEN);
 	  if (n != 1)
 	    {
-	      op2 = expand_expr (narg0, subtarget, VOIDmode, 0);
+	      op2 = expand_expr (narg0, subtarget, VOIDmode, EXPAND_NORMAL);
 	      op2 = force_reg (mode, op2);
 	      op2 = expand_powi (op2, mode, abs (n / 3));
 	      op = expand_simple_binop (mode, MULT, op, op2, NULL_RTX,
@@ -3002,7 +3002,7 @@ expand_builtin_powi (tree exp, rtx target, rtx subtarget)
 	      || (! optimize_size
 		  && powi_cost (n) <= POWI_MAX_MULTS)))
 	{
-	  op0 = expand_expr (arg0, subtarget, VOIDmode, 0);
+	  op0 = expand_expr (arg0, subtarget, VOIDmode, EXPAND_NORMAL);
 	  op0 = force_reg (mode, op0);
 	  return expand_powi (op0, mode, n);
 	}
@@ -3016,10 +3016,10 @@ expand_builtin_powi (tree exp, rtx target, rtx subtarget)
   if (target == NULL_RTX)
     target = gen_reg_rtx (mode);
 
-  op0 = expand_expr (arg0, subtarget, mode, 0);
+  op0 = expand_expr (arg0, subtarget, mode, EXPAND_NORMAL);
   if (GET_MODE (op0) != mode)
     op0 = convert_to_mode (mode, op0, 0);
-  op1 = expand_expr (arg1, 0, mode2, 0);
+  op1 = expand_expr (arg1, NULL_RTX, mode2, EXPAND_NORMAL);
   if (GET_MODE (op1) != mode2)
     op1 = convert_to_mode (mode2, op1, 0);
 
@@ -5039,7 +5039,7 @@ expand_builtin_bswap (tree exp, rtx target, rtx subtarget)
 
   arg = CALL_EXPR_ARG (exp, 0);
   mode = TYPE_MODE (TREE_TYPE (arg));
-  op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+  op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
 
   target = expand_unop (mode, bswap_optab, op0, target, 1);
 
@@ -5063,7 +5063,8 @@ expand_builtin_unop (enum machine_mode target_mode, tree exp, rtx target,
     return NULL_RTX;
 
   /* Compute the argument.  */
-  op0 = expand_expr (CALL_EXPR_ARG (exp, 0), subtarget, VOIDmode, 0);
+  op0 = expand_expr (CALL_EXPR_ARG (exp, 0), subtarget,
+		     VOIDmode, EXPAND_NORMAL);
   /* Compute op, into TARGET if possible.
      Set TARGET to wherever the result comes back.  */
   target = expand_unop (TYPE_MODE (TREE_TYPE (CALL_EXPR_ARG (exp, 0))),
@@ -5142,7 +5143,7 @@ expand_builtin_fabs (tree exp, rtx target, rtx subtarget)
 
   arg = CALL_EXPR_ARG (exp, 0);
   mode = TYPE_MODE (TREE_TYPE (arg));
-  op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+  op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
   return expand_abs (mode, op0, target, 0, safe_from_p (target, arg, 1));
 }
 
@@ -5766,7 +5767,7 @@ get_builtin_sync_mem (tree loc, enum machine_mode mode)
 {
   rtx addr, mem;
 
-  addr = expand_expr (loc, NULL, Pmode, EXPAND_SUM);
+  addr = expand_expr (loc, NULL_RTX, Pmode, EXPAND_SUM);
 
   /* Note that we explicitly do not want any alias information for this
      memory, so that we kill all other live memories.  Otherwise we don't
@@ -5799,7 +5800,7 @@ expand_builtin_sync_operation (enum machine_mode mode, tree exp,
   /* Expand the operands.  */
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
 
-  val = expand_expr (CALL_EXPR_ARG (exp, 1), NULL, mode, EXPAND_NORMAL);
+  val = expand_expr (CALL_EXPR_ARG (exp, 1), NULL_RTX, mode, EXPAND_NORMAL);
   /* If VAL is promoted to a wider mode, convert it back to MODE.  Take care
      of CONST_INTs, where we know the old_mode only from the call argument.  */
   old_mode = GET_MODE (val);
@@ -5829,7 +5830,8 @@ expand_builtin_compare_and_swap (enum machine_mode mode, tree exp,
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
 
 
-  old_val = expand_expr (CALL_EXPR_ARG (exp, 1), NULL, mode, EXPAND_NORMAL);
+  old_val = expand_expr (CALL_EXPR_ARG (exp, 1), NULL_RTX,
+			 mode, EXPAND_NORMAL);
   /* If VAL is promoted to a wider mode, convert it back to MODE.  Take care
      of CONST_INTs, where we know the old_mode only from the call argument.  */
   old_mode = GET_MODE (old_val);
@@ -5837,7 +5839,8 @@ expand_builtin_compare_and_swap (enum machine_mode mode, tree exp,
     old_mode = TYPE_MODE (TREE_TYPE (CALL_EXPR_ARG (exp, 1)));
   old_val = convert_modes (mode, old_mode, old_val, 1);
 
-  new_val = expand_expr (CALL_EXPR_ARG (exp, 2), NULL, mode, EXPAND_NORMAL);
+  new_val = expand_expr (CALL_EXPR_ARG (exp, 2), NULL_RTX,
+			 mode, EXPAND_NORMAL);
   /* If VAL is promoted to a wider mode, convert it back to MODE.  Take care
      of CONST_INTs, where we know the old_mode only from the call argument.  */
   old_mode = GET_MODE (new_val);
@@ -5866,7 +5869,7 @@ expand_builtin_lock_test_and_set (enum machine_mode mode, tree exp,
 
   /* Expand the operands.  */
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
-  val = expand_expr (CALL_EXPR_ARG (exp, 1), NULL, mode, EXPAND_NORMAL);
+  val = expand_expr (CALL_EXPR_ARG (exp, 1), NULL_RTX, mode, EXPAND_NORMAL);
   /* If VAL is promoted to a wider mode, convert it back to MODE.  Take care
      of CONST_INTs, where we know the old_mode only from the call argument.  */
   old_mode = GET_MODE (val);

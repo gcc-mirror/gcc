@@ -2898,7 +2898,7 @@ expand_builtin_eh_return_data_regno (tree exp)
 rtx
 expand_builtin_extract_return_addr (tree addr_tree)
 {
-  rtx addr = expand_expr (addr_tree, NULL_RTX, Pmode, 0);
+  rtx addr = expand_expr (addr_tree, NULL_RTX, Pmode, EXPAND_NORMAL);
 
   if (GET_MODE (addr) != Pmode
       && GET_MODE (addr) != VOIDmode)
@@ -2930,7 +2930,7 @@ expand_builtin_extract_return_addr (tree addr_tree)
 rtx
 expand_builtin_frob_return_addr (tree addr_tree)
 {
-  rtx addr = expand_expr (addr_tree, NULL_RTX, ptr_mode, 0);
+  rtx addr = expand_expr (addr_tree, NULL_RTX, ptr_mode, EXPAND_NORMAL);
 
   addr = convert_memory_address (Pmode, addr);
 
@@ -2952,7 +2952,8 @@ expand_builtin_eh_return (tree stackadj_tree ATTRIBUTE_UNUSED,
   rtx tmp;
 
 #ifdef EH_RETURN_STACKADJ_RTX
-  tmp = expand_expr (stackadj_tree, cfun->eh->ehr_stackadj, VOIDmode, 0);
+  tmp = expand_expr (stackadj_tree, cfun->eh->ehr_stackadj,
+		     VOIDmode, EXPAND_NORMAL);
   tmp = convert_memory_address (Pmode, tmp);
   if (!cfun->eh->ehr_stackadj)
     cfun->eh->ehr_stackadj = copy_to_reg (tmp);
@@ -2960,7 +2961,8 @@ expand_builtin_eh_return (tree stackadj_tree ATTRIBUTE_UNUSED,
     emit_move_insn (cfun->eh->ehr_stackadj, tmp);
 #endif
 
-  tmp = expand_expr (handler_tree, cfun->eh->ehr_handler, VOIDmode, 0);
+  tmp = expand_expr (handler_tree, cfun->eh->ehr_handler,
+		     VOIDmode, EXPAND_NORMAL);
   tmp = convert_memory_address (Pmode, tmp);
   if (!cfun->eh->ehr_handler)
     cfun->eh->ehr_handler = copy_to_reg (tmp);
@@ -3018,7 +3020,7 @@ expand_eh_return (void)
 rtx
 expand_builtin_extend_pointer (tree addr_tree)
 {
-  rtx addr = expand_expr (addr_tree, NULL_RTX, ptr_mode, 0);
+  rtx addr = expand_expr (addr_tree, NULL_RTX, ptr_mode, EXPAND_NORMAL);
   int extend;
 
 #ifdef POINTERS_EXTEND_UNSIGNED

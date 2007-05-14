@@ -3995,7 +3995,7 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
 	  && (bitsize != 1 || TREE_CODE (op1) != INTEGER_CST))
 	break;
 
-      value = expand_expr (op1, NULL_RTX, str_mode, 0);
+      value = expand_expr (op1, NULL_RTX, str_mode, EXPAND_NORMAL);
       value = convert_modes (str_mode,
 			     TYPE_MODE (TREE_TYPE (op1)), value,
 			     TYPE_UNSIGNED (TREE_TYPE (op1)));
@@ -4028,7 +4028,7 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
     case BIT_XOR_EXPR:
       if (TREE_CODE (op1) != INTEGER_CST)
 	break;
-      value = expand_expr (op1, NULL_RTX, GET_MODE (str_rtx), 0);
+      value = expand_expr (op1, NULL_RTX, GET_MODE (str_rtx), EXPAND_NORMAL);
       value = convert_modes (GET_MODE (str_rtx),
 			     TYPE_MODE (TREE_TYPE (op1)), value,
 			     TYPE_UNSIGNED (TREE_TYPE (op1)));
@@ -4252,7 +4252,7 @@ expand_assignment (tree to, tree from)
       rtx temp;
 
       push_temp_slots ();
-      temp = expand_expr (from, 0, GET_MODE (to_rtx), 0);
+      temp = expand_expr (from, NULL_RTX, GET_MODE (to_rtx), EXPAND_NORMAL);
 
       if (GET_CODE (to_rtx) == PARALLEL)
 	emit_group_load (to_rtx, temp, TREE_TYPE (from),
@@ -4328,7 +4328,7 @@ store_expr (tree exp, rtx target, int call_param_p)
 	 branch and an rvalue in the other. Here, we resolve attempts to
 	 store the throw expression's nonexistent result.  */
       gcc_assert (!call_param_p);
-      expand_expr (exp, const0_rtx, VOIDmode, 0);
+      expand_expr (exp, const0_rtx, VOIDmode, EXPAND_NORMAL);
       return NULL_RTX;
     }
   if (TREE_CODE (exp) == COMPOUND_EXPR)
@@ -5524,7 +5524,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
   /* If we have nothing to store, do nothing unless the expression has
      side-effects.  */
   if (bitsize == 0)
-    return expand_expr (exp, const0_rtx, VOIDmode, 0);
+    return expand_expr (exp, const0_rtx, VOIDmode, EXPAND_NORMAL);
   else if (bitsize >= 0 && bitsize < HOST_BITS_PER_WIDE_INT)
     width_mask = ((HOST_WIDE_INT) 1 << bitsize) - 1;
 
@@ -6630,7 +6630,7 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
 
       if (modifier != EXPAND_NORMAL)
 	result = force_operand (result, NULL);
-      tmp = expand_expr (offset, NULL, tmode, EXPAND_NORMAL);
+      tmp = expand_expr (offset, NULL_RTX, tmode, EXPAND_NORMAL);
 
       result = convert_memory_address (tmode, result);
       tmp = convert_memory_address (tmode, tmp);
@@ -7111,8 +7111,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  itarg = XEXP (original_target, 1);
 
 	  /* Move the real and imaginary parts separately.  */
-	  op0 = expand_expr (TREE_REALPART (exp), rtarg, mode, 0);
-	  op1 = expand_expr (TREE_IMAGPART (exp), itarg, mode, 0);
+	  op0 = expand_expr (TREE_REALPART (exp), rtarg, mode, EXPAND_NORMAL);
+	  op1 = expand_expr (TREE_IMAGPART (exp), itarg, mode, EXPAND_NORMAL);
 
 	  if (op0 != rtarg)
 	    emit_move_insn (rtarg, op0);
@@ -7182,7 +7182,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  tree value;
 
 	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), idx, value)
-	    expand_expr (value, const0_rtx, VOIDmode, 0);
+	    expand_expr (value, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
 	  return const0_rtx;
 	}
@@ -8010,7 +8010,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 				   TREE_OPERAND (subsubexp1, 0),
 				   NULL_RTX, &op0, &op1, EXPAND_NORMAL);
 		  op2 = expand_expr (TREE_OPERAND (exp, 1), subtarget,
-				     VOIDmode, 0);
+				     VOIDmode, EXPAND_NORMAL);
 		  temp = expand_ternary_op (mode, this_optab, op0, op1, op2,
 					    target, unsignedp);
 		  gcc_assert (temp);
@@ -8165,7 +8165,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 				   TREE_OPERAND (subsubexp1, 0),
 				   NULL_RTX, &op0, &op1, EXPAND_NORMAL);
 		  op2 = expand_expr (TREE_OPERAND (exp, 0), subtarget,
-				     VOIDmode, 0);
+				     VOIDmode, EXPAND_NORMAL);
 		  temp = expand_ternary_op (mode, this_optab, op0, op1, op2,
 					    target, unsignedp);
 		  gcc_assert (temp);
@@ -8410,7 +8410,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return target;
 
     case NEGATE_EXPR:
-      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
+      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget,
+			 VOIDmode, EXPAND_NORMAL);
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
       temp = expand_unop (mode,
@@ -8420,7 +8421,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return REDUCE_BIT_FIELD (temp);
 
     case ABS_EXPR:
-      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
+      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget,
+			 VOIDmode, EXPAND_NORMAL);
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
 
@@ -8552,7 +8554,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return target;
 
     case BIT_NOT_EXPR:
-      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
+      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget,
+			 VOIDmode, EXPAND_NORMAL);
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
       temp = expand_unop (mode, one_cmpl_optab, op0, target, 1);
@@ -8595,7 +8598,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	subtarget = 0;
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
-      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
+      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget,
+			 VOIDmode, EXPAND_NORMAL);
       return expand_shift (code, mode, op0, TREE_OPERAND (exp, 1), target,
 			   unsignedp);
 
@@ -8629,7 +8633,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
 	{
 	  temp = expand_expr (TREE_OPERAND (exp, 0), original_target,
-			      VOIDmode, 0);
+			      VOIDmode, EXPAND_NORMAL);
 
 	  /* If temp is constant, we can just compute the result.  */
 	  if (GET_CODE (temp) == CONST_INT)
@@ -8688,7 +8692,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case TRUTH_NOT_EXPR:
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
-      op0 = expand_expr (TREE_OPERAND (exp, 0), target, VOIDmode, 0);
+      op0 = expand_expr (TREE_OPERAND (exp, 0), target,
+			 VOIDmode, EXPAND_NORMAL);
       /* The parser is careful to generate TRUTH_NOT_EXPR
 	 only with operands that are always zero or one.  */
       temp = expand_binop (mode, xor_optab, op0, const1_rtx,
@@ -8988,7 +8993,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case VEC_UNPACK_HI_EXPR:
     case VEC_UNPACK_LO_EXPR:
       {
-	op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
+	op0 = expand_normal (TREE_OPERAND (exp, 0));
 	this_optab = optab_for_tree_code (code, type);
 	temp = expand_widen_pattern_expr (exp, op0, NULL_RTX, NULL_RTX,
 					  target, unsignedp);

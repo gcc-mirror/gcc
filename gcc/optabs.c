@@ -684,12 +684,12 @@ expand_vec_shift_expr (tree vec_shift_expr, rtx target)
   mode1 = insn_data[icode].operand[1].mode;
   mode2 = insn_data[icode].operand[2].mode;
 
-  rtx_op1 = expand_expr (vec_oprnd, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  rtx_op1 = expand_normal (vec_oprnd);
   if (!(*insn_data[icode].operand[1].predicate) (rtx_op1, mode1)
       && mode1 != VOIDmode)
     rtx_op1 = force_reg (mode1, rtx_op1);
 
-  rtx_op2 = expand_expr (shift_oprnd, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  rtx_op2 = expand_normal (shift_oprnd);
   if (!(*insn_data[icode].operand[2].predicate) (rtx_op2, mode2)
       && mode2 != VOIDmode)
     rtx_op2 = force_reg (mode2, rtx_op2);
@@ -5950,8 +5950,10 @@ vector_compare_rtx (tree cond, bool unsignedp, enum insn_code icode)
   t_op1 = TREE_OPERAND (cond, 1);
 
   /* Expand operands.  */
-  rtx_op0 = expand_expr (t_op0, NULL_RTX, TYPE_MODE (TREE_TYPE (t_op0)), 1);
-  rtx_op1 = expand_expr (t_op1, NULL_RTX, TYPE_MODE (TREE_TYPE (t_op1)), 1);
+  rtx_op0 = expand_expr (t_op0, NULL_RTX, TYPE_MODE (TREE_TYPE (t_op0)),
+			 EXPAND_STACK_PARM);
+  rtx_op1 = expand_expr (t_op1, NULL_RTX, TYPE_MODE (TREE_TYPE (t_op1)),
+			 EXPAND_STACK_PARM);
 
   if (!insn_data[icode].operand[4].predicate (rtx_op0, GET_MODE (rtx_op0))
       && GET_MODE (rtx_op0) != VOIDmode)
@@ -6012,14 +6014,12 @@ expand_vec_cond_expr (tree vec_cond_expr, rtx target)
   cc_op0 = XEXP (comparison, 0);
   cc_op1 = XEXP (comparison, 1);
   /* Expand both operands and force them in reg, if required.  */
-  rtx_op1 = expand_expr (TREE_OPERAND (vec_cond_expr, 1),
-			 NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  rtx_op1 = expand_normal (TREE_OPERAND (vec_cond_expr, 1));
   if (!insn_data[icode].operand[1].predicate (rtx_op1, mode)
       && mode != VOIDmode)
     rtx_op1 = force_reg (mode, rtx_op1);
 
-  rtx_op2 = expand_expr (TREE_OPERAND (vec_cond_expr, 2),
-			 NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  rtx_op2 = expand_normal (TREE_OPERAND (vec_cond_expr, 2));
   if (!insn_data[icode].operand[2].predicate (rtx_op2, mode)
       && mode != VOIDmode)
     rtx_op2 = force_reg (mode, rtx_op2);
