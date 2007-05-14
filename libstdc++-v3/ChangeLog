@@ -1,3 +1,8 @@
+2007-05-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/postypes.h (class fpos<>): Remove redundant forward
+	declaration.
+
 2007-05-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_tempbuf.h (return_temporary_buffer(_Tp*)): Inline.
