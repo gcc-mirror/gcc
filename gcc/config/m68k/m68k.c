@@ -223,6 +223,7 @@ static const struct attribute_spec m68k_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
   { "interrupt_handler", 0, 0, true,  false, false, m68k_handle_fndecl_attribute },
+  { "interrupt_thread", 0, 0, true,  false, false, m68k_handle_fndecl_attribute },
   { NULL,                0, 0, false, false, false, NULL }
 };
 
@@ -633,10 +634,12 @@ m68k_cpp_cpu_family (const char *prefix)
   return concat ("__m", prefix, "_family_", m68k_cpu_entry->family, NULL);
 }
 
-/* Return nonzero if FUNC is an interrupt function as specified by the
-   "interrupt_handler" attribute.  */
-bool
-m68k_interrupt_function_p (tree func)
+/* Return m68k_fk_interrupt_handler if FUNC has an "interrupt_handler"
+   attribute and interrupt_thread if FUNC has an "interrupt_thread"
+   attribute.  Otherwise, return m68k_fk_normal_function.  */
+
+enum m68k_function_kind
+m68k_get_function_kind (tree func)
 {
   tree a;
 
@@ -644,7 +647,14 @@ m68k_interrupt_function_p (tree func)
     return false;
 
   a = lookup_attribute ("interrupt_handler", DECL_ATTRIBUTES (func));
-  return (a != NULL_TREE);
+  if (a != NULL_TREE)
+    return m68k_fk_interrupt_handler;
+
+  a = lookup_attribute ("interrupt_thread", DECL_ATTRIBUTES (func));
+  if (a != NULL_TREE)
+    return m68k_fk_interrupt_thread;
+
+  return m68k_fk_normal_function;
 }
 
 /* Handle an attribute requiring a FUNCTION_DECL; arguments as in
@@ -662,6 +672,19 @@ m68k_handle_fndecl_attribute (tree *node, tree name,
       *no_add_attrs = true;
     }
 
+  if (m68k_get_function_kind (*node) != m68k_fk_normal_function)
+    {
+      error ("multiple interrupt attributes not allowed");
+      *no_add_attrs = true;
+    }
+
+  if (!TARGET_FIDOA
+      && !strcmp (IDENTIFIER_POINTER (name), "interrupt_thread"))
+    {
+      error ("interrupt_thread is available only on fido");
+      *no_add_attrs = true;
+    }
+
   return NULL_TREE;
 }
 
@@ -670,7 +693,10 @@ m68k_compute_frame_layout (void)
 {
   int regno, saved;
   unsigned int mask;
-  bool interrupt_handler = m68k_interrupt_function_p (current_function_decl);
+  enum m68k_function_kind func_kind =
+    m68k_get_function_kind (current_function_decl);
+  bool interrupt_handler = func_kind == m68k_fk_interrupt_handler;
+  bool interrupt_thread = func_kind == m68k_fk_interrupt_thread;
 
   /* Only compute the frame once per function.
      Don't cache information until reload has been completed.  */
@@ -681,12 +707,15 @@ m68k_compute_frame_layout (void)
   current_frame.size = (get_frame_size () + 3) & -4;
 
   mask = saved = 0;
-  for (regno = 0; regno < 16; regno++)
-    if (m68k_save_reg (regno, interrupt_handler))
-      {
-	mask |= 1 << (regno - D0_REG);
-	saved++;
-      }
+
+  /* Interrupt thread does not need to save any register.  */
+  if (!interrupt_thread)
+    for (regno = 0; regno < 16; regno++)
+      if (m68k_save_reg (regno, interrupt_handler))
+	{
+	  mask |= 1 << (regno - D0_REG);
+	  saved++;
+	}
   current_frame.offset = saved * 4;
   current_frame.reg_no = saved;
   current_frame.reg_mask = mask;
@@ -695,12 +724,14 @@ m68k_compute_frame_layout (void)
   mask = saved = 0;
   if (TARGET_HARD_FLOAT)
     {
-      for (regno = 16; regno < 24; regno++)
-	if (m68k_save_reg (regno, interrupt_handler))
-	  {
-	    mask |= 1 << (regno - FP0_REG);
-	    saved++;
-	  }
+      /* Interrupt thread does not need to save any register.  */
+      if (!interrupt_thread)
+	for (regno = 16; regno < 24; regno++)
+	  if (m68k_save_reg (regno, interrupt_handler))
+	    {
+	      mask |= 1 << (regno - FP0_REG);
+	      saved++;
+	    }
       current_frame.foffset = saved * TARGET_FP_REG_SIZE;
       current_frame.offset += current_frame.foffset;
     }
@@ -4211,7 +4242,8 @@ m68k_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
      saved by the prologue, even if they would normally be
      call-clobbered.  */
 
-  if (m68k_interrupt_function_p (current_function_decl)
+  if ((m68k_get_function_kind (current_function_decl)
+       == m68k_fk_interrupt_handler)
       && !regs_ever_live[new_reg])
     return 0;
 

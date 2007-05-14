@@ -2047,6 +2047,14 @@ indicate that the specified function is an interrupt handler.  The compiler
 will generate function entry and exit sequences suitable for use in an
 interrupt handler when this attribute is present.
 
+@item interrupt_thread
+@cindex interrupt thread functions on fido
+Use this attribute on fido, a subarchitecture of the m68k, to indicate
+that the specified function is an interrupt handler that is designed
+to run as a thread.  The compiler omits generate prologue/epilogue
+sequences and replaces the return instruction with a @code{sleep}
+instruction.  This attribute is available only on fido.
+
 @item kspisusp
 @cindex User stack pointer in interrupts on the Blackfin
 When used together with @code{interrupt_handler}, @code{exception_handler}

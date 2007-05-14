@@ -17,7 +17,7 @@
 # GCC testsuite that uses the `dg.exp' driver.
 
 # Exit immediately if this isn't an m68k target.
-if ![istarget m68k*-*-*] then {
+if { ![istarget m68k*-*-*] && ![istarget fido*-*-*] } then {
   return
 }
 

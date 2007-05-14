@@ -21,7 +21,7 @@ Boston, MA 02110-1301, USA.  */
 /* Define functions defined in aux-output.c and used in templates.  */
 
 #ifdef RTX_CODE
-extern bool m68k_interrupt_function_p (tree);
+extern enum m68k_function_kind m68k_get_function_kind (tree);
 extern HOST_WIDE_INT m68k_initial_elimination_offset (int from, int to);
 
 extern void split_di (rtx[], int, rtx[], rtx[]);
