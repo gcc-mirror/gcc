@@ -1,3 +1,7 @@
+2007-05-13  Release Manager
+
+	* GCC 4.2.0 released.
+
 2007-03-18  Andreas Schwab  <schwab@suse.de>
 
 	* acinclude.m4: Adjust regular expression for ld version
