@@ -2364,7 +2364,7 @@ record_estimate (struct loop *loop, tree bound, double_int i_bound,
      list.  */
   if (upper)
     {
-      struct nb_iter_bound *elt = XNEW (struct nb_iter_bound);
+      struct nb_iter_bound *elt = GGC_NEW (struct nb_iter_bound);
 
       elt->bound = i_bound;
       elt->stmt = at_stmt;
@@ -3023,7 +3023,7 @@ free_numbers_of_iterations_estimates_loop (struct loop *loop)
   for (bound = loop->bounds; bound; bound = next)
     {
       next = bound->next;
-      free (bound);
+      ggc_free (bound);
     }
 
   loop->bounds = NULL;

@@ -171,7 +171,8 @@ struct tree_opt_pass pass_tree_unswitch =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_verify_loops,	/* todo_flags_finish */
+  TODO_ggc_collect | TODO_dump_func
+    | TODO_verify_loops,		/* todo_flags_finish */
   0					/* letter */
 };
 
@@ -202,7 +203,8 @@ struct tree_opt_pass pass_vectorize =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   TODO_verify_loops,			/* todo_flags_start */
-  TODO_dump_func | TODO_update_ssa,	/* todo_flags_finish */
+  TODO_dump_func | TODO_update_ssa
+    | TODO_ggc_collect,			/* todo_flags_finish */
   0					/* letter */
 };
 
@@ -237,7 +239,8 @@ struct tree_opt_pass pass_linear_transform =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_verify_loops,	/* todo_flags_finish */
+  TODO_dump_func | TODO_verify_loops
+    | TODO_ggc_collect,			/* todo_flags_finish */
   0				        /* letter */	
 };
 
@@ -361,7 +364,8 @@ struct tree_opt_pass pass_empty_loop =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_verify_loops,	/* todo_flags_finish */
+  TODO_dump_func | TODO_verify_loops 
+    | TODO_ggc_collect,			/* todo_flags_finish */
   0					/* letter */
 };
 
@@ -427,7 +431,8 @@ struct tree_opt_pass pass_complete_unroll =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_verify_loops,	/* todo_flags_finish */
+  TODO_dump_func | TODO_verify_loops
+    | TODO_ggc_collect,			/* todo_flags_finish */
   0					/* letter */
 };
 
@@ -496,9 +501,8 @@ struct tree_opt_pass pass_iv_optimize =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func
-  | TODO_verify_loops
-  | TODO_update_ssa,			/* todo_flags_finish */
+  TODO_dump_func | TODO_verify_loops
+  | TODO_update_ssa | TODO_ggc_collect,	/* todo_flags_finish */
   0					/* letter */
 };
 

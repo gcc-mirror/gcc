@@ -399,7 +399,7 @@ static void
 place_new_loop (struct loop *loop)
 {
   loop->num = number_of_loops ();
-  VEC_safe_push (loop_p, heap, current_loops->larray, loop);
+  VEC_safe_push (loop_p, gc, current_loops->larray, loop);
 }
 
 /* Given LOOP structure with filled header and latch, find the body of the

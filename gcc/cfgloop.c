@@ -34,6 +34,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-flow.h"
 #include "pointer-set.h"
 #include "output.h"
+#include "ggc.h"
 
 static void flow_loops_cfg_dump (FILE *);
 
@@ -174,25 +175,27 @@ flow_loops_dump (FILE *file, void (*loop_dump_aux) (const struct loop *, FILE *,
 }
 
 /* Free data allocated for LOOP.  */
+
 void
 flow_loop_free (struct loop *loop)
 {
   struct loop_exit *exit, *next;
 
-  VEC_free (loop_p, heap, loop->superloops);
+  VEC_free (loop_p, gc, loop->superloops);
 
   /* Break the list of the loop exit records.  They will be freed when the
      corresponding edge is rescanned or removed, and this avoids
      accessing the (already released) head of the list stored in the
      loop structure.  */
-  for (exit = loop->exits.next; exit != &loop->exits; exit = next)
+  for (exit = loop->exits->next; exit != loop->exits; exit = next)
     {
       next = exit->next;
       exit->next = exit;
       exit->prev = exit;
     }
-    
-  free (loop);
+
+  ggc_free (loop->exits);
+  ggc_free (loop);
 }
 
 /* Free all the memory allocated for LOOPS.  */
@@ -214,8 +217,7 @@ flow_loops_free (struct loops *loops)
 	  flow_loop_free (loop);
 	}
 
-      VEC_free (loop_p, heap, loops->larray);
-      loops->larray = NULL;
+      VEC_free (loop_p, gc, loops->larray);
     }
 }
 
@@ -286,7 +288,7 @@ establish_preds (struct loop *loop, struct loop *father)
   cfun->max_loop_depth = MAX (cfun->max_loop_depth, (int) depth);
 
   VEC_truncate (loop_p, loop->superloops, 0);
-  VEC_reserve (loop_p, heap, loop->superloops, depth);
+  VEC_reserve (loop_p, gc, loop->superloops, depth);
   for (i = 0; VEC_iterate (loop_p, father->superloops, i, ploop); i++)
     VEC_quick_push (loop_p, loop->superloops, ploop);
   VEC_quick_push (loop_p, loop->superloops, father);
@@ -335,9 +337,11 @@ flow_loop_tree_node_remove (struct loop *loop)
 struct loop *
 alloc_loop (void)
 {
-  struct loop *loop = XCNEW (struct loop);
+  struct loop *loop = GGC_CNEW (struct loop);
 
-  loop->exits.next = loop->exits.prev = &loop->exits;
+  loop->exits = GGC_CNEW (struct loop_exit);
+  loop->exits->next = loop->exits->prev = loop->exits;
+
   return loop;
 }
 
@@ -417,7 +421,7 @@ flow_loops_find (struct loops *loops)
     }
 
   /* Allocate loop structures.  */
-  loops->larray = VEC_alloc (loop_p, heap, num_loops + 1);
+  loops->larray = VEC_alloc (loop_p, gc, num_loops + 1);
 
   /* Dummy loop containing whole function.  */
   root = alloc_loop ();
@@ -961,7 +965,7 @@ loop_exit_free (void *ex)
       exit->next->prev = exit->prev;
       exit->prev->next = exit->next;
 
-      free (exit);
+      ggc_free (exit);
     }
 }
 
@@ -1000,11 +1004,11 @@ rescan_loop_exit (edge e, bool new_edge, bool removed)
 	   aloop != cloop;
 	   aloop = loop_outer (aloop))
 	{
-	  exit = XNEW (struct loop_exit);
+	  exit = GGC_NEW (struct loop_exit);
 	  exit->e = e;
 
-	  exit->next = aloop->exits.next;
-	  exit->prev = &aloop->exits;
+	  exit->next = aloop->exits->next;
+	  exit->prev = aloop->exits;
 	  exit->next->prev = exit;
 	  exit->prev->next = exit;
 
@@ -1050,10 +1054,11 @@ record_loop_exits (void)
   current_loops->state |= LOOPS_HAVE_RECORDED_EXITS;
 
   gcc_assert (current_loops->exits == NULL);
-  current_loops->exits = htab_create (2 * number_of_loops (),
-				      loop_exit_hash,
-				      loop_exit_eq,
-				      loop_exit_free);
+  current_loops->exits = htab_create_alloc (2 * number_of_loops (),
+					    loop_exit_hash,
+					    loop_exit_eq,
+					    loop_exit_free,
+					    ggc_calloc, ggc_free);
 
   FOR_EACH_BB (bb)
     {
@@ -1123,7 +1128,7 @@ get_loop_exit_edges (const struct loop *loop)
      scan the body of the loop.  */
   if (current_loops->state & LOOPS_HAVE_RECORDED_EXITS)
     {
-      for (exit = loop->exits.next; exit->e; exit = exit->next)
+      for (exit = loop->exits->next; exit->e; exit = exit->next)
 	VEC_safe_push (edge, heap, edges, exit->e);
     }
   else
@@ -1441,7 +1446,7 @@ verify_loop_structure (void)
   /* Check the recorded loop exits.  */
   FOR_EACH_LOOP (li, loop, 0)
     {
-      if (loop->exits.e != NULL)
+      if (!loop->exits || loop->exits->e != NULL)
 	{
 	  error ("corrupted head of the exits list of loop %d",
 		 loop->num);
@@ -1451,7 +1456,7 @@ verify_loop_structure (void)
 	{
 	  /* Check that the list forms a cycle, and all elements except
 	     for the head are nonnull.  */
-	  for (mexit = &loop->exits, exit = mexit->next, i = 0;
+	  for (mexit = loop->exits, exit = mexit->next, i = 0;
 	       exit->e && exit != mexit;
 	       exit = exit->next)
 	    {
@@ -1459,7 +1464,7 @@ verify_loop_structure (void)
 		mexit = mexit->next;
 	    }
 
-	  if (exit != &loop->exits)
+	  if (exit != loop->exits)
 	    {
 	      error ("corrupted exits list of loop %d", loop->num);
 	      err = 1;
@@ -1468,7 +1473,7 @@ verify_loop_structure (void)
 
       if ((current_loops->state & LOOPS_HAVE_RECORDED_EXITS) == 0)
 	{
-	  if (loop->exits.next != &loop->exits)
+	  if (loop->exits->next != loop->exits)
 	    {
 	      error ("nonempty exits list of loop %d, but exits are not recorded",
 		     loop->num);
@@ -1530,7 +1535,7 @@ verify_loop_structure (void)
       FOR_EACH_LOOP (li, loop, 0)
 	{
 	  eloops = 0;
-	  for (exit = loop->exits.next; exit->e; exit = exit->next)
+	  for (exit = loop->exits->next; exit->e; exit = exit->next)
 	    eloops++;
 	  if (eloops != sizes[loop->num])
 	    {
@@ -1585,12 +1590,12 @@ loop_exit_edge_p (const struct loop *loop, edge e)
 edge
 single_exit (const struct loop *loop)
 {
-  struct loop_exit *exit = loop->exits.next;
+  struct loop_exit *exit = loop->exits->next;
 
   if ((current_loops->state & LOOPS_HAVE_RECORDED_EXITS) == 0)
     return NULL;
 
-  if (exit->e && exit->next == &loop->exits)
+  if (exit->e && exit->next == loop->exits)
     return exit->e;
   else
     return NULL;

@@ -1,3 +1,50 @@
+2007-05-15  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-ssa-loop-niter.c (record_estimate): Use GGC_NEW to allocate
+	struct nb_iter_bound.
+	(free_numbers_of_iterations_estimates_loop): Use ggc_free.
+	* gengtype.c (open_base_files): Add cfhloop.h to the list of includes.
+	* cfgloopmanip.c (place_new_loop): Vector larray is gc-allocated.
+	* tree-scalar-evolution.c: Include gt-tree-scalar-evolution.h.
+	(struct scev_info_str, scalar_evolution_info): Add GTY markers.
+	(new_scev_info_str): Use GGC_NEW to allocate struct scev_info_str.
+	(del_scev_info): Use ggc_free.
+	(scev_initialize): Allocate scalar_evolution_info in gc memory.
+	* loop-init.c: Include ggc.h.
+	(loop_optimizer_init): Use GGC_CNEW to allocate struct loops.
+	(loop_optimizer_finalize): Use ggc_free.
+	* tree-ssa-loop.c (pass_tree_unswitch, pass_vectorize,
+	pass_linear_transfom, pass_empty_loop, pass_complete_unroll,
+	pass_iv_optimize): Add TODO_ggc_collect.
+	* function.h (struct function): Remove skip marker from x_current_loops.
+	* cfgloop.c: Include ggc.h.
+	(flow_loops_free, flow_loop_free): Free the loop descriptions in gc
+	memory.
+	(establish_preds): Vector superloops is gc allocated.
+	(alloc_loop): Allocate loop using GGC_CNEW.  Allocate head of
+	loop->exits list.
+	(flow_loops_find): Vector larray is gc allocated.
+	(loop_exit_free): Use ggc_free.
+	(rescan_loop_exit): Use GGC_NEW to allocate struct loop_exit.  Reflect
+	that head of exits list is now not a part of struct loop.
+	(record_loop_exits): Allocate exits table in gc memory.
+	(get_loop_exit_edges, verify_loop_structure, single_exit): Reflect that
+	head of exits list is now not a part of struct loop.
+	* cfgloop.h (struct lpt_decision, struct nb_iter_bound,
+	struct loop_exit): Add GTY marker.
+	(struct loop): Add GTY marker.  Make superloops vector gc allocated.
+	Add skip marker to aux field.  Make head of exits list a separate
+	object.
+	(struct loops): Add GTY marker.  Make larray vector gc allocated.
+	Add param marker to exits table.
+	(get_loops): Type changed.
+	* Makefile.in (tree-scalar-evolution.o): Add gt-tree-scalar-evolution.h
+	dependency.
+	(cfgloop.o, loop-init.o): Add ggc.h dependency.
+	(GTFILES): Add cfgloop.h and tree-scalar-evolution.c.
+	* basic-block.h (struct basic_block_def): Remove skip marker from
+	loop_father field.
+
 2007-05-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* builtins.c (expand_builtin_mathfn): Use EXPAND_NORMAL instead

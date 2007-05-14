@@ -39,7 +39,7 @@ enum lpt_dec
   LPT_UNROLL_STUPID
 };
 
-struct lpt_decision
+struct lpt_decision GTY (())
 {
   enum lpt_dec decision;
   unsigned times;
@@ -47,7 +47,7 @@ struct lpt_decision
 
 /* The structure describing a bound on number of iterations of a loop.  */
 
-struct nb_iter_bound
+struct nb_iter_bound GTY ((chain_next ("%h.next")))
 {
   /* The statement STMT is executed at most ...  */
   tree stmt;
@@ -72,10 +72,10 @@ struct nb_iter_bound
 
 /* Description of the loop exit.  */
 
-struct loop_exit
+struct loop_exit GTY (())
 {
   /* The exit edge.  */
-  edge e;
+  struct edge_def *e;
 
   /* Previous and next exit in the list of the exits of the loop.  */
   struct loop_exit *prev;
@@ -88,18 +88,19 @@ struct loop_exit
 typedef struct loop *loop_p;
 DEF_VEC_P (loop_p);
 DEF_VEC_ALLOC_P (loop_p, heap);
+DEF_VEC_ALLOC_P (loop_p, gc);
 
 /* Structure to hold information for each natural loop.  */
-struct loop
+struct loop GTY ((chain_next ("%h.next")))
 {
   /* Index into loops array.  */
   int num;
 
   /* Basic block of loop header.  */
-  basic_block header;
+  struct basic_block_def *header;
 
   /* Basic block of loop latch.  */
-  basic_block latch;
+  struct basic_block_def *latch;
 
   /* For loop unrolling/peeling decision.  */
   struct lpt_decision lpt_decision;
@@ -114,7 +115,7 @@ struct loop
   unsigned num_nodes;
 
   /* Superloops of the loop, starting with the outermost loop.  */
-  VEC (loop_p, heap) *superloops;
+  VEC (loop_p, gc) *superloops;
 
   /* The first inner (child) loop or NULL if innermost loop.  */
   struct loop *inner;
@@ -126,7 +127,7 @@ struct loop
   struct loop *copy;
 
   /* Auxiliary info specific to a pass.  */
-  void *aux;
+  PTR GTY ((skip (""))) aux;
 
   /* The number of times the latch of the loop is executed.
      This is an INTEGER_CST or an expression containing symbolic
@@ -158,7 +159,7 @@ struct loop
   struct nb_iter_bound *bounds;
 
   /* Head of the cyclic list of the exits of the loop.  */
-  struct loop_exit exits;
+  struct loop_exit *exits;
 };
 
 /* Flags for state of loop structure.  */
@@ -177,18 +178,18 @@ enum
 #define AVOID_CFG_MODIFICATIONS (LOOPS_MAY_HAVE_MULTIPLE_LATCHES)
 
 /* Structure to hold CFG information about natural loops within a function.  */
-struct loops
+struct loops GTY (())
 {
   /* State of loops.  */
   int state;
 
   /* Array of the loops.  */
-  VEC (loop_p, heap) *larray;
+  VEC (loop_p, gc) *larray;
 
   /* Maps edges to the list of their descriptions as loop exits.  Edges
      whose sources or destinations have loop_father == NULL (which may
      happen during the cfg manipulations) should not appear in EXITS.  */
-  htab_t exits;
+  htab_t GTY((param_is (struct loop_exit))) exits;
 
   /* Pointer to root of loop hierarchy tree.  */
   struct loop *tree_root;
@@ -428,7 +429,7 @@ loop_outer (const struct loop *loop)
 
 /* Returns the list of loops in current_loops.  */
 
-static inline VEC (loop_p, heap) *
+static inline VEC (loop_p, gc) *
 get_loops (void)
 {
   if (!current_loops)
