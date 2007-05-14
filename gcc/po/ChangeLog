@@ -1,3 +1,7 @@
+2007-05-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
 2007-04-21  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* sv.po: Update.
