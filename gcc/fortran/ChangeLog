@@ -1,3 +1,7 @@
+2007-05-15  Paul Brook  <paul@codesourcery.com>
+
+	* trans-types.c (gfc_type_for_size): Handle signed TImode.
+
 2007-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/30723
