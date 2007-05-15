@@ -180,60 +180,81 @@ convert (FROM val, TO min, TO max)
 # define LOADD(I)  LOADL(I)
 #endif
 
-#define STOREA(I)               \
-  do {                          \
-    DEBUG_LOCALS_INSN (I, 'o'); \
-    locals[I].o = (--sp)->o;    \
+#define STOREA(I)			\
+  do					\
+    {					\
+      jint __idx = (I);			\
+      DEBUG_LOCALS_INSN (__idx, 'o');	\
+      locals[__idx].o = (--sp)->o;	\
+    }					\
+  while (0)
+#define STOREI(I)		       	\
+  do					\
+    {					\
+      jint __idx = (I);			\
+      DEBUG_LOCALS_INSN (__idx, 'i');	\
+      locals[__idx].i = (--sp)->i;	\
   } while (0)
-#define STOREI(I)               \
-  do {                          \
-    DEBUG_LOCALS_INSN (I, 'i'); \
-    locals[I].i = (--sp)->i;    \
-  } while (0)
-#define STOREF(I)               \
-  do {                          \
-    DEBUG_LOCALS_INSN (I, 'f'); \
-    locals[I].f = (--sp)->f;    \
-  } while (0)
+#define STOREF(I)			\
+  do					\
+    {					\
+      jint __idx = (I);			\
+      DEBUG_LOCALS_INSN (__idx, 'f');	\
+      locals[__idx].f = (--sp)->f;	\
+    }					\
+  while (0)
 #if SIZEOF_VOID_P == 8
-# define STOREL(I)                   \
-  do {                               \
-    DEBUG_LOCALS_INSN (I, 'l');      \
-    DEBUG_LOCALS_INSN (I + 1, 'x');  \
-    (sp -= 2, locals[I].l = sp->l);  \
-  } while (0)
-# define STORED(I)                   \
-  do {                               \
-    DEBUG_LOCALS_INSN (I, 'd');      \
-    DEBUG_LOCALS_INSN (I + 1, 'x');  \
-    (sp -= 2, locals[I].d = sp->d);  \
-  } while (0)
+# define STOREL(I) \
+  do						\
+    {						\
+      jint __idx = (I);				\
+      DEBUG_LOCALS_INSN (__idx, 'l');		\
+      DEBUG_LOCALS_INSN (__idx + 1, 'x');	\
+      (sp -= 2, locals[__idx].l = sp->l);	\
+    }						\
+  while (0)
+# define STORED(I)				\
+  do						\
+    {						\
+      jint __idx = (I);				\
+      DEBUG_LOCALS_INSN (__idx, 'd');		\
+      DEBUG_LOCALS_INSN (__idx + 1, 'x');	\
+      (sp -= 2, locals[__idx].d = sp->d);	\
+    }						\
+  while (0)
 
 #else
-# define STOREL(I)                   \
-  do {                               \
-    DEBUG_LOCALS_INSN (I, 'l');      \
-    DEBUG_LOCALS_INSN (I + 1, 'x');  \
-    jint __idx = (I);                \
-    locals[__idx+1].ia[0] = (--sp)->ia[0];  \
-    locals[__idx].ia[0] = (--sp)->ia[0];    \
-  } while (0)
-# define STORED(I)                   \
-  do {                               \
-    DEBUG_LOCALS_INSN (I, 'd');      \
-    DEBUG_LOCALS_INSN (I + 1, 'x');  \
-    jint __idx = (I);                \
-    locals[__idx+1].ia[0] = (--sp)->ia[0];  \
-    locals[__idx].ia[0] = (--sp)->ia[0];    \
+# define STOREL(I)				\
+  do						\
+    {						\
+      jint __idx = (I);				\
+      DEBUG_LOCALS_INSN (__idx, 'l');		\
+      DEBUG_LOCALS_INSN (__idx + 1, 'x');	\
+      locals[__idx + 1].ia[0] = (--sp)->ia[0];	\
+      locals[__idx].ia[0] = (--sp)->ia[0];	\
+    }						\
+  while (0)
+# define STORED(I)				\
+  do {						\
+    jint __idx = (I);				\
+    DEBUG_LOCALS_INSN (__idx, 'd');		\
+    DEBUG_LOCALS_INSN (__idx + 1, 'x');		\
+    locals[__idx + 1].ia[0] = (--sp)->ia[0];	\
+    locals[__idx].ia[0] = (--sp)->ia[0];	\
   } while (0)
 #endif
 
 #define PEEKI(I)  (locals+(I))->i
 #define PEEKA(I)  (locals+(I))->o
 
-#define POKEI(I,V)				\
-  DEBUG_LOCALS_INSN(I,'i');			\
-  ((locals+(I))->i = (V))
+#define POKEI(I,V)			\
+  do					\
+    {					\
+      jint __idx = (I);			\
+      DEBUG_LOCALS_INSN (__idx, 'i');	\
+      ((locals + __idx)->i = (V));	\
+    }					\
+  while (0)
 
 
 #define BINOPI(OP) { \

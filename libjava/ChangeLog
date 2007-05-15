@@ -1,3 +1,15 @@
+2007-05-15  Keith Seitz  <keiths@redhat.com>
+
+	* interpret.cc (STOREA): Rewrite using temporary variable to
+	avoid double-macro expansion side-effects.
+	(STOREI): Likewise.
+	(STOREF): Likewise.
+	(STOREL)[SIZEOF_VOID_P == 8]: Likewise.
+	(STORED)[SIZEOF_VOID_P == 8]: Likewise.
+	(STOREL)[SIZEOF_VOID_P != 8]: Likewise.
+	(STORED)[SIZEOF_VOID_P != 8]: Likewise.
+	(POKEI): Likewise.
+
 2007-05-12  David Daney  <ddaney@avtrex.com>
 
 	PR libgcj/29324
