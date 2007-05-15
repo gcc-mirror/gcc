@@ -721,12 +721,13 @@ unformatted_read (st_parameter_dt *dtp, bt type,
       p = dest;
       
       /* By now, all complex variables have been split into their
-	 constituent reals.  For types with padding, we only need to
-	 read kind bytes.  We don't care about the contents
-	 of the padding.  If we hit a short record, then sz is
-	 adjusted accordingly, making later reads no-ops.  */
+	 constituent reals.  */
       
-      sz = kind;
+      if (type == BT_REAL || type == BT_COMPLEX)
+	sz = size_from_real_kind (kind);
+      else
+	sz = kind;
+
       for (i=0; i<nelems; i++)
 	{
  	  read_block_direct (dtp, buffer, &sz);
@@ -767,11 +768,13 @@ unformatted_write (st_parameter_dt *dtp, bt type,
       p = source;
 
       /* By now, all complex variables have been split into their
-	 constituent reals.  For types with padding, we only need to
-	 read kind bytes.  We don't care about the contents
-	 of the padding.  */
+	 constituent reals.  */
 
-      sz = kind;
+      if (type == BT_REAL || type == BT_COMPLEX)
+	sz = size_from_real_kind (kind);
+      else
+	sz = kind;
+
       for (i=0; i<nelems; i++)
 	{
 	  reverse_memcpy(buffer, p, size);
