@@ -1,3 +1,8 @@
+2007-05-14  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	17_hyperg/check_nan.cc: Add -mieee for sh.
+
 2007-05-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/util/testsuite_io.h: Only include <ios>.
