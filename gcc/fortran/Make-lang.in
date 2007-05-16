@@ -66,7 +66,7 @@ F95_PARSER_OBJS = fortran/arith.o fortran/array.o fortran/bbt.o \
     fortran/match.o fortran/matchexp.o fortran/misc.o fortran/module.o \
     fortran/openmp.o fortran/options.o fortran/parse.o fortran/primary.o \
     fortran/resolve.o fortran/scanner.o fortran/simplify.o fortran/st.o \
-    fortran/symbol.o
+    fortran/symbol.o fortran/target-memory.o
 
 F95_OBJS = $(F95_PARSER_OBJS) \
     fortran/convert.o fortran/dependency.o fortran/f95-lang.o \
@@ -297,7 +297,7 @@ fortran.stagefeedback: stageprofile-start
 # TODO: Add dependencies on the backend/tree header files
 
 $(F95_PARSER_OBJS): fortran/gfortran.h fortran/intrinsic.h fortran/match.h \
-		fortran/parse.h \
+		fortran/parse.h fortran/arith.h fortran/target-memory.h \
 		$(CONFIG_H) $(SYSTEM_H) $(TM_H) $(TM_P_H) coretypes.h \
 		$(RTL_H) $(TREE_H) $(TREE_DUMP_H) $(GGC_H) $(EXPR_H) \
 		$(FLAGS_H) output.h $(DIAGNOSTIC_H) errors.h $(FUNCTION_H) 
