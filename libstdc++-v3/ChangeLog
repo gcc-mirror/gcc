@@ -5,7 +5,7 @@
 	* configure: Regenerate.
 
 	* testsuite/22_locale/ctype/scan/wchar_t/1.cc: Remove
-	_GLIBCXX_USE_WCHAR_T guards as surpufulous.
+	_GLIBCXX_USE_WCHAR_T guards as superfluous.
 	
 	* testsuite/20_util/make_signed/requirements/typedefs-1.cc: Add
 	_GLIBCXX_USE_WCHAR_T guards.	
