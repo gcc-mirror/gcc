@@ -47,8 +47,10 @@ void test01()
   typedef make_signed<const char>::type  	test22_type;
   VERIFY( (is_same<test22_type, const signed char>::value) );
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   typedef make_signed<volatile wchar_t>::type  	test23_type;
   VERIFY( (is_same<test23_type, volatile signed wchar_t>::value) );
+#endif
 
   typedef make_signed<test_enum>::type  	test25_type;
   VERIFY( (is_same<test25_type, short>::value) );

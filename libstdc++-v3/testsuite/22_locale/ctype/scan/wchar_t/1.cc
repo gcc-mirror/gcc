@@ -1,6 +1,6 @@
 // 2002-05-10 ghazi
 
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,7 +47,6 @@ class gnu_ctype: public std::ctype<char_type> { };
   VERIFY(gctype.scan_not((MASK), (STRING), \
 			 (STRING) + traits_type::length(STRING)) == (EXPECTED))
 
-#ifdef _GLIBCXX_USE_WCHAR_T
 // Sanity check scan_is() and scan_not().
 void test01()
 {
@@ -341,12 +340,9 @@ void test01()
   VERIFY_SCAN_NOT (std::ctype_base::upper, p2, p2);
   VERIFY_SCAN_NOT (std::ctype_base::xdigit, p2, p2);
 }
-#endif
 
 int main() 
 {
-#ifdef _GLIBCXX_USE_WCHAR_T
   test01();
-#endif
   return 0;
 }

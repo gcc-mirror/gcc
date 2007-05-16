@@ -1,7 +1,9 @@
+// dg-do compile
+// dg-options -ansi -pedantic-err
 // 2001-02-11 gdr
 // Origin: Craig Rodrigues <rodrigc@mediaone.net>
 
-// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,10 +27,17 @@
 
 int main()
 {
+  // Check for required typedefs.
+  typedef std::char_traits<char> test_type;
+  typedef test_type::char_type char_type;
+  typedef test_type::int_type int_type;
+  typedef test_type::off_type off_type;
+  typedef test_type::pos_type pos_type;
+  typedef test_type::state_type state_type;
+
   // 21.1.3: char_traits<char>::int_type == int
-  // dg-options -ansi -pedantic-err
-  std::char_traits<char>::int_type* p = 0;
-  int* q __attribute__((unused)) = p;                   // dg-do compile
+  test_type::int_type* p = 0;
+  int* q __attribute__((unused)) = p;                   
 
   return 0;
 }
