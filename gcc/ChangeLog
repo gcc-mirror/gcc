@@ -1,3 +1,8 @@
+2007-05-16  Rafael Avila de Espindola  <espindola@google.com>
+
+	* c-common.c (c_common_signed_or_unsigned_type): Emulate 
+	c_common_unsigned_type behavior.
+
 2007-05-16  Paolo Bonzini  <bonzini@gnu.org>
 
         * config/i386/i386.c (legitimize_tls_address): Mark __tls_get_addr
