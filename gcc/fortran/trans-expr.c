@@ -255,6 +255,10 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind)
     gfc_conv_string_parameter (se);
   else
     {
+      /* Avoid multiple evaluation of substring start.  */
+      if (!CONSTANT_CLASS_P (start.expr) && !DECL_P (start.expr))
+	start.expr = gfc_evaluate_now (start.expr, &se->pre);
+
       /* Change the start of the string.  */
       if (TYPE_STRING_FLAG (TREE_TYPE (se->expr)))
 	tmp = se->expr;
@@ -273,6 +277,10 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind)
       gfc_conv_expr_type (&end, ref->u.ss.end, gfc_charlen_type_node);
       gfc_add_block_to_block (&se->pre, &end.pre);
     }
+
+  if (!CONSTANT_CLASS_P (end.expr) && !DECL_P (end.expr))
+    end.expr = gfc_evaluate_now (end.expr, &se->pre);
+
   tmp = fold_build2 (MINUS_EXPR, gfc_charlen_type_node,
 		     build_int_cst (gfc_charlen_type_node, 1),
 		     start.expr);
