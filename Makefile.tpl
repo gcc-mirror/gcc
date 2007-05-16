@@ -191,7 +191,6 @@ POSTSTAGE1_HOST_EXPORTS = \
 	  $$r/$(HOST_SUBDIR)/prev-gcc/xgcc$(exeext) \
 	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ \
 	  -B$(build_tooldir)/bin/"; export CC_FOR_BUILD; \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
 	LDFLAGS="$(BOOT_LDFLAGS)"; export LDFLAGS;
 
 # Target libraries are put under this directory:
@@ -456,8 +455,6 @@ X11_FLAGS_TO_PASS = \
 POSTSTAGE1_FLAGS_TO_PASS = \
 	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
 	GNATBIND="$$r/$(HOST_SUBDIR)/prev-gcc/gnatbind" \
-	CFLAGS="$(BOOT_CFLAGS)" \
-	LIBCFLAGS="$(BOOT_CFLAGS)" \
 	LDFLAGS="$(BOOT_LDFLAGS)" \
 	"`echo 'ADAFLAGS=$(BOOT_ADAFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"
 
@@ -824,6 +821,8 @@ configure-stage[+id+]-[+prefix+][+module+]:
 	[+ ENDIF check_multilibs +]test ! -f [+subdir+]/[+module+]/Makefile || exit 0; \
 	[+exports+][+ IF prev +] \
 	[+poststage1_exports+][+ ENDIF prev +] \
+	CFLAGS="[+stage_cflags+]"; export CFLAGS; \
+	LIBCFLAGS="[+stage_cflags+]"; export LIBCFLAGS; \
 	echo Configuring stage [+id+] in [+subdir+]/[+module+] ; \
 	$(SHELL) $(srcdir)/mkinstalldirs [+subdir+]/[+module+] ; \
 	cd [+subdir+]/[+module+] || exit 1; \
@@ -880,9 +879,10 @@ all-stage[+id+]-[+prefix+][+module+]: configure-stage[+id+]-[+prefix+][+module+]
 	[+exports+][+ IF prev +] \
 	[+poststage1_exports+][+ ENDIF prev +] \
 	cd [+subdir+]/[+module+] && \
-	$(MAKE) [+args+] [+ IF prev
-		+][+poststage1_args+][+ ENDIF prev
-		+] [+stage_make_flags+] [+extra_make_flags+] \
+	$(MAKE) [+args+] \
+		CFLAGS="[+stage_cflags+]" LIBCFLAGS="[+stage_cflags+]" [+
+		IF prev +][+poststage1_args+][+ ENDIF prev
+		+] [+extra_make_flags+] \
 		$(TARGET-stage[+id+]-[+prefix+][+module+])
 
 maybe-clean-stage[+id+]-[+prefix+][+module+]: clean-stage[+id+]-[+prefix+][+module+]
@@ -897,7 +897,7 @@ clean-stage[+id+]-[+prefix+][+module+]:
 	cd [+subdir+]/[+module+] && \
 	$(MAKE) [+args+] [+ IF prev +] \
 		[+poststage1_args+] [+ ENDIF prev +] \
-		[+stage_make_flags+] [+extra_make_flags+] clean
+		[+extra_make_flags+] clean
 @endif [+prefix+][+module+]-bootstrap
 
 [+ ENDFOR bootstrap_stage +]

@@ -1,3 +1,13 @@
+2007-05-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.def (bootstrap_stage): Replace stage_make_flags with
+	stage_cflags.
+	* Makefile.tpl (POSTSTAGE1_HOST_EXPORTS, POSTSTAGE1_FLAGS_TO_PASS):
+	Remove CFLAGS/LIBCFLAGS.
+	(configure-stage[+id+]-[+prefix+][+module+],
+	all-stage[+id+]-[+prefix+][+module+]): Pass it from [+stage_cflags+].
+	* Makefile.in: Regenerate.
+
 2007-05-15  Diego Novillo  <dnovillo@google.com>
 
 	* MAINTAINERS: Update e-mail address.
