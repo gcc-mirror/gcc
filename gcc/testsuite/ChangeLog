@@ -1,3 +1,9 @@
+2007-05-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/torture/fp-int-convert-float128.c: Do not xfail for i?86-*-*
+	and x86_64-*-* targets.
+	* gcc.dg/torture/fp-int-convert-float128-timode.c: Ditto.
+
 2007-05-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/18769

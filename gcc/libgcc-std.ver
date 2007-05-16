@@ -283,4 +283,6 @@ GCC_4.3.0 {
   __emutls_get_address
   __emutls_register_common
   __ffssi2
+  __extendxftf2
+  __trunctfxf2
 }

@@ -1,3 +1,44 @@
+2007-05-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* soft-fp/README: Update for new files.
+	* soft-fp/floattisf.c: New file.
+	* soft-fp/floattidf.c: New file.
+	* soft-fp/floattitf.c: New file.
+	* soft-fp/floatuntisf.c: New file.
+	* soft-fp/floatuntidf.c: New file.
+	* soft-fp/floatuntitf.c: New file.
+	* soft-fp/fixsfti.c: New file.
+	* soft-fp/fixdfti.c: New file.
+	* soft-fp/fixtfti.c: New file.
+	* soft-fp/fixunssfti.c: New file.
+	* soft-fp/fixunsdfti.c: New file.
+	* soft-fp/fixunstfti.c: New file.
+	* soft-fp/extendxftf.c: New file.
+	* soft-fp/trunctfxf.c: New file.
+
+	* libgcc-std.ver (__extendxftf2): Added to GCC_4.3.0 section.
+	(__trunctfxf2): Ditto.
+
+	* config/i386/libgcc-x86_64-glibc.ver (__addtf3, __divtf3, __eqtf2,
+	__extenddftf2, __extendsftf2, __fixtfdi, __fixtfsi, __fixtfti,
+	__fixunstfdi, __fixunstfsi, __fixunstfti, __floatditf, __floatsitf,
+	__floattitf, __floatunditf, __floatunsitf, __floatuntitf, __getf2,
+	__letf2, __multf3, __negtf2, __subtf3, __trunctfdf2, __trunctfsf2,
+	__unordtf2): Exclude and add to GCC_4.3.0 section for x86_64 targets.
+
+	* config/i386/t-fprules-softfp64: New file.
+	* config/i386/sfp-machine.h: New file.
+	* config.gcc (x86_64-*-linux*, x86_64-*-kfreebsd*-gnu,
+	x86_64-*-knetbsd*-gnu): Add i386/t-fprules-softfp64
+	and soft-fp/t-softfp to tmake_file.
+	(i[34567]86-*-linux*, i[34567]86-*-kfreebsd*-gnu,
+	i[34567]86-*-knetbsd*-gnu): Ditto for --enable-targets=all.
+	
+	* config/i386/t-linux64 (softfp_wrap_start): New.
+	(softfp_wrap_end): New.
+	* config/i386/i386.c (ix86_scalar_mode_supported): TFmode is
+	supported for TARGET_64BIT.
+
 2007-05-16  Rafael Avila de Espindola  <espindola@google.com>
 
 	* c-common.c (c_common_signed_or_unsigned_type): Emulate 
