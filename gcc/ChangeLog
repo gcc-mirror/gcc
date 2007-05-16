@@ -1,3 +1,8 @@
+2007-05-16  Paolo Bonzini  <bonzini@gnu.org>
+
+        * config/i386/i386.c (legitimize_tls_address): Mark __tls_get_addr
+        calls as pure.
+
 2007-05-16  Eric Christopher  <echristo@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_prologue): Move altivec register
