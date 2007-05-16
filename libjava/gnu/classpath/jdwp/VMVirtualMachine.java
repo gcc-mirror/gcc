@@ -83,6 +83,9 @@ public class VMVirtualMachine
   // List of stepping threads: maps Thread -> stepping info
   static Hashtable _stepping_threads;
   
+  // List of co-located JVMTI events
+  static ArrayList _event_list;
+
   public static native void initialize ();
 
   /**
