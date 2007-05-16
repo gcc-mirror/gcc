@@ -1,3 +1,7 @@
+2007-05-15  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* gfortran.dg/unf_io_convert_3.f90: Fix dg directive.
+
 2007-05-14  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/dfp/usual-arith-conv-bad.c: New test.
@@ -29,20 +33,20 @@
 
 2007-05-13  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
-	* alloc_comp_basics_1.f90: Fix dg directive.
-	* altreturn_3.f90: Likewise.
-	* assumed_dummy_1.f90: Likewise.
-	* default_numeric_type_1.f90: Likewise.
-	* inquire_iolength.f90: Likewise.
-	* module_naming_1.f90: Likewise.
-	* oldstyle_2.f90: Likewise.
-	* operator_2.f90: Likewise.
-	* parameter_array_element_1.f90: Likewise.
-	* used_types_11.f90: Likewise.
-	* zero_array_components_1.f90: Likewise.
-	* fmt_zero_precision.f90: Fix dg-output directives.
-	* parameter_array_dummy.f90: Likewise.
-	* real_const_3.f90: Likewise.
+	* gfortran.dg/alloc_comp_basics_1.f90: Fix dg directive.
+	* gfortran.dg/altreturn_3.f90: Likewise.
+	* gfortran.dg/assumed_dummy_1.f90: Likewise.
+	* gfortran.dg/default_numeric_type_1.f90: Likewise.
+	* gfortran.dg/inquire_iolength.f90: Likewise.
+	* gfortran.dg/module_naming_1.f90: Likewise.
+	* gfortran.dg/oldstyle_2.f90: Likewise.
+	* gfortran.dg/operator_2.f90: Likewise.
+	* gfortran.dg/parameter_array_element_1.f90: Likewise.
+	* gfortran.dg/used_types_11.f90: Likewise.
+	* gfortran.dg/zero_array_components_1.f90: Likewise.
+	* gfortran.dg/fmt_zero_precision.f90: Fix dg-output directives.
+	* gfortran.dg/parameter_array_dummy.f90: Likewise.
+	* gfortran.dg/real_const_3.f90: Likewise.
 
 2007-05-13  Zdenek Dvorak  <dvorakz@suse.cz>
 
