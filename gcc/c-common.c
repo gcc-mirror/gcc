@@ -2065,9 +2065,42 @@ c_common_signed_type (tree type)
 tree
 c_common_signed_or_unsigned_type (int unsignedp, tree type)
 {
+  tree type1;
   if (!INTEGRAL_TYPE_P (type)
       || TYPE_UNSIGNED (type) == unsignedp)
     return type;
+
+  /* This block of code emulates the behavior of the old
+     c_common_unsigned_type. In particular, it returns
+     long_unsigned_type_node if passed a long, even when a int would
+     have the same size. This is necessary for warnings to work
+     correctly in archs where sizeof(int) == sizeof(long) */
+
+  type1 = TYPE_MAIN_VARIANT (type);
+  if (type1 == signed_char_type_node || type1 == char_type_node || type1 == unsigned_char_type_node)
+    return unsignedp ? unsigned_char_type_node : signed_char_type_node;
+  if (type1 == integer_type_node || type1 == unsigned_type_node)
+    return unsignedp ? unsigned_type_node : integer_type_node;
+  if (type1 == short_integer_type_node || type1 == short_unsigned_type_node)
+    return unsignedp ? short_unsigned_type_node : short_integer_type_node;
+  if (type1 == long_integer_type_node || type1 == long_unsigned_type_node)
+    return unsignedp ? long_unsigned_type_node : long_integer_type_node;
+  if (type1 == long_long_integer_type_node || type1 == long_long_unsigned_type_node)
+    return unsignedp ? long_long_unsigned_type_node : long_long_integer_type_node;
+  if (type1 == widest_integer_literal_type_node || type1 == widest_unsigned_literal_type_node)
+    return unsignedp ? widest_unsigned_literal_type_node : widest_integer_literal_type_node;
+#if HOST_BITS_PER_WIDE_INT >= 64
+  if (type1 == intTI_type_node || type1 == unsigned_intTI_type_node)
+    return unsignedp ? unsigned_intTI_type_node : intTI_type_node;
+#endif
+  if (type1 == intDI_type_node || type1 == unsigned_intDI_type_node)
+    return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
+  if (type1 == intSI_type_node || type1 == unsigned_intSI_type_node)
+    return unsignedp ? unsigned_intSI_type_node : intSI_type_node;
+  if (type1 == intHI_type_node || type1 == unsigned_intHI_type_node)
+    return unsignedp ? unsigned_intHI_type_node : intHI_type_node;
+  if (type1 == intQI_type_node || type1 == unsigned_intQI_type_node)
+    return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
 
   /* For ENUMERAL_TYPEs in C++, must check the mode of the types, not
      the precision; they have precision set to match their range, but
