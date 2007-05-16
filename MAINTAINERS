@@ -204,7 +204,7 @@ option handling		Neil Booth		neil@daikokuya.co.uk
 testsuite		Janis Johnson		janis187@us.ibm.com
 middle-end		Roger Sayle		roger@eyesopen.com
 middle-end		Ian Lance Taylor	ian@airs.com
-tree-ssa		Diego Novillo		dnovillo@redhat.com
+tree-ssa		Diego Novillo		dnovillo@google.com
 tree-ssa		Andrew MacLeod		amacleod@redhat.com
 PRE			Daniel Berlin		dberlin@dberlin.org
 code sinking		Daniel Berlin		dberlin@dberlin.org
@@ -216,7 +216,7 @@ linear loop transforms	Daniel Berlin		dberlin@dberlin.org
 profile feedback	Jan Hubicka		jh@suse.cz
 type-safe vectors	Nathan Sidwell		nathan@codesourcery.com
 alias analysis		Daniel Berlin		dberlin@dberlin.org
-alias analysis		Diego Novillo		dnovillo@redhat.com
+alias analysis		Diego Novillo		dnovillo@google.com
 reload			Ulrich Weigand		uweigand@de.ibm.com
 dfp.c, related		Ben Elliston		bje@au.ibm.com
 RTL optimizers		Eric Botcazou		ebotcazou@libertysurf.fr
