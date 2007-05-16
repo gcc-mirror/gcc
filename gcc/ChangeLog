@@ -1,3 +1,9 @@
+2007-05-16  Eric Christopher  <echristo@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Move altivec register
+        saving after stack push. Set sp_offset whenever we push.
+        (rs6000_emit_epilogue): Move altivec register restore before stack push.
+
 2007-05-16  Richard Sandiford  <richard@codesourcery.com>
 
 	* configure.ac: Allow sysroots to be relocated under $prefix as
@@ -274,7 +280,7 @@
 	* tree-flow.h (strict_aliasing_warning_backend): Declare.
 	* tree-ssa-alias-warnings.c: New file.
 	* tree-ssa-alias.c (compute_may_aliases): Add call to
-	strict_aliasing_warning_backend. 
+	strict_aliasing_warning_backend.
 
 2007-05-11  Zdenek Dvorak  <dvorakz@suse.cz>
 
@@ -383,9 +389,9 @@
 	emit_call_insn.
 
 2007-05-09  Bob Wilson  <bob.wilson@acm.org>
-	
+
 	* config/xtensa/xtensa.c (xtensa_output_literal): Don't use #if.
-	
+
 2007-05-09  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_output_literal): Mask out high bits
@@ -468,7 +474,7 @@
 	bfin_expand_epilogue accordingly.
 	(sibcall_epilogue): Likewise.
 	(eh_return_internal): Likewise.
-		
+
 	* config/bfin/bfin-protos.h (enum bfin_cpu): Add
 	BFIN_CPU_BF534, BFIN_CPU_BF536 and BFIN_CPU_BF561.
 	* config/bfin/bfin.c (bfin_handle_option): Handle
@@ -482,7 +488,7 @@
 	PR target/31854
 	* config/i386/i386.c (ix86_function_regparm): Process local
 	functions only when TREE_CODE (decl) equals FUNCTION_DECL.
-	
+
 2007-05-07  Mike Stump  <mrs@apple.com>
 
 	* doc/invoke.texi (Warning Options): Document that -Wempty-body
@@ -522,11 +528,11 @@
 	(function_vector_handler): New
 	(current_function_special_page_vector): New
 	(m32c_special_page_vector_p): New.
-	* config/m32c/m32c-protos.h (m32c_special_page_vector_p): 
+	* config/m32c/m32c-protos.h (m32c_special_page_vector_p):
 	Prototype.
-	* config/m32c/jump.md: Added instruction JSRS for functions 
+	* config/m32c/jump.md: Added instruction JSRS for functions
 	with attribute "function_vector".
-	* doc/extend.texi (function_vector): Added description 
+	* doc/extend.texi (function_vector): Added description
 	for M16C, M32C targets.
 
 2007-05-07  DJ Delorie  <dj@redhat.com>
@@ -575,11 +581,11 @@
 2007-05-05  Aurelien Jarno  <aurelien@aurel32.net>
 
 	* config/pa/pa.md: Split tgd_load, tld_load and tie_load
-	into pic and non-pic versions. Mark r19 as used for 
-	tgd_load_pic, tld_load_pic and tie_load_pic. Mark r27 as used 
+	into pic and non-pic versions. Mark r19 as used for
+	tgd_load_pic, tld_load_pic and tie_load_pic. Mark r27 as used
 	for tgd_load, tld_load and tie_load .
 	* config/pa/pa.c (legitimize_tls_address): Emit pic or non-pic
-	version of tgd_load, tld_load and tie_load depending on the 
+	version of tgd_load, tld_load and tie_load depending on the
 	value of flag_pic.
 
 2007-05-04  Ulrich Drepper  <drepper@redhat.com>
@@ -651,10 +657,10 @@
 	("fix_trunc<DSF:mode><GPR:mode>2"): Expander added.
 
 2007-05-04  Bob Wilson  <bob.wilson@acm.org>
-	
+
 	* config/xtensa/xtensa.md (adddi3, adddi_carry): Delete.
 	(subdi3, subdi_carry): Delete.
-	
+
 2007-05-04  Jan Hubicka  <jh@suse.cz>
 	    Richard Guenther  <rguenther@suse.de>
 
@@ -712,7 +718,7 @@
 	with changed signature and 'debug_rgn_dependencies ()'.
 	(debug_rgn_dependencies): New static function.
 	(init_ready_list): Use it.
-	
+
 	* sched-int.h (debug_dependencies): Declare.
 
 2007-05-04  Andreas Krebbel  <krebbel1@de.ibm.com>
@@ -788,8 +794,8 @@
 	PR tree-optimization/31699
 	* tree-vect-analyze.c (vect_update_misalignment_for_peel): Remove wrong
 	code.
-	(vect_enhance_data_refs_alignment): Compute peel amount using 
-	TYPE_VECTOR_SUBPARTS instead of vf.	
+	(vect_enhance_data_refs_alignment): Compute peel amount using
+	TYPE_VECTOR_SUBPARTS instead of vf.
 	* tree-vect-transform.c (vect_gen_niters_for_prolog_loop): Likewise.
 
 2007-05-02  Brooks Moses  <brooks.moses@codesourcery.com>
