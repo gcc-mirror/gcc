@@ -461,36 +461,6 @@ libexecdir = @libexecdir@
 libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(version)
 # Directory in which the compiler finds executables
 libexecsubdir = $(libexecdir)/gcc/$(target_noncanonical)/$(version)
-# $(prefix), expressed as a path relative to $(libsubdir).
-#
-# An explanation of the sed strings:
-#  -e 's|^$(prefix)||'   matches and eliminates 'prefix' from 'exec_prefix'
-#  -e 's|/$$||'          match a trailing forward slash and eliminates it
-#  -e 's|^[^/]|/|'       forces the string to start with a forward slash (*)
-#  -e 's|/[^/]*|../|g'   replaces each occurrence of /<directory> with ../
-#
-# (*) Note this pattern overwrites the first character of the string
-# with a forward slash if one is not already present.  This is not a
-# problem because the exact names of the sub-directories concerned is
-# unimportant, just the number of them matters.
-#
-# The practical upshot of these patterns is like this:
-#
-#  prefix     exec_prefix        result
-#  ------     -----------        ------
-#   /foo        /foo/bar          ../
-#   /foo/       /foo/bar          ../
-#   /foo        /foo/bar/         ../
-#   /foo/       /foo/bar/         ../
-#   /foo        /foo/bar/ugg      ../../
-libsubdir_to_prefix = \
-  $(unlibsubdir)/`echo "$(libdir)" | \
-    sed -e 's|^$(prefix)||' -e 's|/$$||' -e 's|^[^/]|/|' \
-        -e 's|/[^/]*|../|g'`
-# $(exec_prefix), expressed as a path relative to $(prefix).
-prefix_to_exec_prefix = \
-  `echo "$(exec_prefix)" | \
-   sed -e 's|^$(prefix)||' -e 's|^/||' -e '/./s|$$|/|'`
 # Used to produce a relative $(gcc_tooldir) in gcc.o
 unlibsubdir = ../../..
 # Directory in which to find other cross-compilation tools and headers.
@@ -1808,7 +1778,7 @@ DRIVER_DEFINES = \
   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target_noncanonical)\" \
   -DSTANDARD_BINDIR_PREFIX=\"$(bindir)/\" \
-  -DTOOLDIR_BASE_PREFIX=\"$(libsubdir_to_prefix)$(prefix_to_exec_prefix)\" \
+  -DTOOLDIR_BASE_PREFIX=\"$(unlibsubdir)/../\" \
   @TARGET_SYSTEM_ROOT_DEFINE@ \
   $(VALGRIND_DRIVER_DEFINES) \
   `test "X$${SHLIB_LINK}" = "X" || test "@enable_shared@" != "yes" || echo "-DENABLE_SHARED_LIBGCC"` \
