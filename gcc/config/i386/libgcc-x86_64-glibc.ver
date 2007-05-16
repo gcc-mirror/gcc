@@ -23,3 +23,64 @@ GLIBC_2.0 {
   __register_frame_info_table
 }
 %endif
+
+% 128 bit long double support was introduced with GCC 4.3.0.
+% These lines make the symbols to get a @@GCC_4.3.0 attached.
+
+%ifdef __x86_64__
+%exclude {
+  __addtf3
+  __divtf3
+  __eqtf2
+  __extenddftf2
+  __extendsftf2
+  __fixtfdi
+  __fixtfsi
+  __fixtfti
+  __fixunstfdi
+  __fixunstfsi
+  __fixunstfti
+  __floatditf
+  __floatsitf
+  __floattitf
+  __floatunditf
+  __floatunsitf
+  __floatuntitf
+  __getf2
+  __letf2
+  __multf3
+  __negtf2
+  __subtf3
+  __trunctfdf2
+  __trunctfsf2
+  __unordtf2
+}
+
+GCC_4.3.0 {
+  __addtf3
+  __divtf3
+  __eqtf2
+  __extenddftf2
+  __extendsftf2
+  __fixtfdi
+  __fixtfsi
+  __fixtfti
+  __fixunstfdi
+  __fixunstfsi
+  __fixunstfti
+  __floatditf
+  __floatsitf
+  __floattitf
+  __floatunditf
+  __floatunsitf
+  __floatuntitf
+  __getf2
+  __letf2
+  __multf3
+  __negtf2
+  __subtf3
+  __trunctfdf2
+  __trunctfsf2
+  __unordtf2
+}
+%endif

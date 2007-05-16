@@ -21164,6 +21164,8 @@ ix86_scalar_mode_supported_p (enum machine_mode mode)
 {
   if (DECIMAL_FLOAT_MODE_P (mode))
     return true;
+  else if (mode == TFmode)
+    return TARGET_64BIT;
   else
     return default_scalar_mode_supported_p (mode);
 }
