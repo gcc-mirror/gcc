@@ -1,3 +1,8 @@
+2007-05-15  David Daney  <ddaney@avtrex.com>
+
+	* classpath/lib/javax/swing/text/html/HTMLEditorKit.class: Regenerate
+	* gnu/java/awt/peer/gtk/ComponentGraphics.h: Same.
+
 2007-05-15  Keith Seitz  <keiths@redhat.com>
 
 	* interpret.cc (STOREA): Rewrite using temporary variable to
