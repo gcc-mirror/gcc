@@ -1,3 +1,14 @@
+2007-05-16  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-06-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/26998
+	* tree-vrp.c (extract_range_from_unary_expr): For NEGATE_EXPR
+	of signed types, only TYPE_MIN_VALUE is special, but for both,
+	minimum and maximum value.  Likewise VR_ANTI_RANGE is special
+	in this case, as is -fwrapv.
+
 2007-05-11  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/31876
