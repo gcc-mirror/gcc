@@ -1,4 +1,4 @@
-! { dg-do run}
+! { dg-do run }
 ! { dg-require-effective-target fortran_large_real }
 program main
   integer,parameter :: k = selected_real_kind (precision (0.0_8) + 1)
