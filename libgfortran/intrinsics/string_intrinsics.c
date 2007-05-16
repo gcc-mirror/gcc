@@ -171,6 +171,8 @@ string_trim (GFC_INTEGER_4 * len, void ** dest, GFC_INTEGER_4 slen,
       /* copy string if necessary.  */
       memmove (*dest, src, *len);
     }
+  else
+    *dest = NULL;
 }
 
 
