@@ -1,4 +1,4 @@
-2007-05-11  Benjamin Kosnik  <bkoz@redhat.com>
+2007-05-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_COMPILER_FEATURES): Add a function
 	to the test code compiled with -ffunction-sections -fdata-sections.
@@ -21,7 +21,7 @@
 	* testsuite/21_strings/char_traits/typedefs: Remove.
 	* testsuite/21_strings/char_traits/typedefs/char: Remove.
 	
-2007-05-11  Benjamin Kosnik  <bkoz@redhat.com>	
+2007-05-16  Benjamin Kosnik  <bkoz@redhat.com>	
 
 	* docs/html/abi.html: Update for gcc-4.1.2 and gcc-4.2.0.
 	
