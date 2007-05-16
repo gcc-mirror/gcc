@@ -1,3 +1,17 @@
+2007-05-16  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	PR fortran/18769
+	PR fortran/30881
+	PR fortran/31194
+	PR fortran/31216
+	PR fortran/31427
+	* target-memory.c: New file.
+	* target-memory.h: New file.
+	* simplify.c: Add #include "target-memory.h".
+	(gfc_simplify_transfer): Implement constant-
+	folding for TRANSFER intrinsic.
+	* Make-lang.in: Add dependencies on new target-memory.* files.
+
 2007-05-15  Paul Brook  <paul@codesourcery.com>
 
 	* trans-types.c (gfc_type_for_size): Handle signed TImode.
