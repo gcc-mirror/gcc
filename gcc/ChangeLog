@@ -1,5 +1,11 @@
 2007-05-16  Richard Sandiford  <richard@codesourcery.com>
 
+	* configure.ac: Allow sysroots to be relocated under $prefix as
+	well as $exec_prefix.
+	* configure: Regenerate.
+
+2007-05-16  Richard Sandiford  <richard@codesourcery.com>
+
 	Revert:
 
 	2007-05-12  Richard Sandiford  <richard@codesourcery.com>
