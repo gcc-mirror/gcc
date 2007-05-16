@@ -116,6 +116,7 @@ gnu::classpath::jdwp::VMVirtualMachine::initialize ()
 {
   _jdwp_suspend_counts = new ::java::util::Hashtable ();
   _stepping_threads = new ::java::util::Hashtable ();
+  _event_list = new ::java::util::ArrayList ();
 
   JavaVM *vm = _Jv_GetJavaVM ();
   union
@@ -895,7 +896,23 @@ handle_single_step (jvmtiEnv *env, struct step_info *sinfo, jthread thread,
   jobject instance = iframe->get_this_ptr ();
   event::SingleStepEvent *event
     = new event::SingleStepEvent (thread, loc, instance);
-  Jdwp::notify (event);
+
+  // We only want to send the notification (and consequently
+  // suspend) if we are not about to execute a breakpoint.
+  _Jv_InterpMethod *im = reinterpret_cast<_Jv_InterpMethod *> (iframe->self);
+  if (im->breakpoint_at (location))
+    {
+      // Next insn is a breakpoint -- record event and
+      // wait for the JVMTI breakpoint notification to
+      // enforce a suspension policy.
+      VMVirtualMachine::_event_list->add (event);
+    }
+  else
+    {
+      // Next insn is not a breakpoint, so send notification
+      // and enforce the suspend policy.
+      Jdwp::notify (event);
+    }
 }
 
 static void
@@ -925,6 +942,7 @@ jdwpBreakpointCB (jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
   JvAssert (err == JVMTI_ERROR_NONE);
 
   using namespace gnu::classpath::jdwp;
+  using namespace gnu::classpath::jdwp::event;
 
   jlong methodId = reinterpret_cast<jlong> (method);
   VMMethod *meth = VMVirtualMachine::getClassMethod (klass, methodId);
@@ -933,9 +951,16 @@ jdwpBreakpointCB (jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
   _Jv_InterpFrame *iframe
     = reinterpret_cast<_Jv_InterpFrame *> (thread->interp_frame);
   jobject instance = iframe->get_this_ptr ();
-  event::BreakpointEvent *event
-    = new event::BreakpointEvent (thread, loc, instance);
-  Jdwp::notify (event);
+  BreakpointEvent *event = new BreakpointEvent (thread, loc, instance);
+  
+  VMVirtualMachine::_event_list->add (event);
+  JArray<Event *> *events
+    = ((JArray<Event *> *)
+       JvNewObjectArray (VMVirtualMachine::_event_list->size (),
+			 &Event::class$, NULL));
+  VMVirtualMachine::_event_list->toArray ((jobjectArray) events);
+  VMVirtualMachine::_event_list->clear ();
+  Jdwp::notify (events);
 }
 
 static void JNICALL
@@ -1001,7 +1026,7 @@ jdwpExceptionCB (jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env, jthread thread,
 }
 
 static void JNICALL
-jdwpSingleStepCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread,
+jdwpSingleStepCB (jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env, jthread thread,
 		  jmethodID method, jlocation location)
 {
   jobject si =

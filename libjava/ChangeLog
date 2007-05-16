@@ -1,3 +1,23 @@
+2007-05-16  Keith Seitz  <keiths@redhat.com>
+
+	* include/java-interp.h (breakpoint_at): Declare.
+	* interpret.cc (breakpoint_at): New function.
+	* gnu/classpath/jdwp/VMVirtualMachine.java (_event_list):
+	New member.
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc (initialize):
+	Initialize _event_list.
+	(handle_single_step): If there is a breakpoint at the
+	location at which we are stopping, do not send the notification.
+	Instead add the event to a list of events that occur at this
+	location.
+	(jdwpBreakpointCB): If the event list is not empty, send
+	whatever events are in it and the breakpoint event in a single
+	notification.
+	Mark parameter jni_env as MAYBE_UNUSED.
+	* classpath/lib/gnu/classpath/jdwp/VMVirtualMachine.class:
+	Regenerated.
+	* gnu/classpath/jdwp/VMVirtualMachine.h: Regenerated.
+
 2007-05-15  David Daney  <ddaney@avtrex.com>
 
 	* classpath/lib/javax/swing/text/html/HTMLEditorKit.class: Regenerate

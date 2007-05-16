@@ -274,6 +274,9 @@ class _Jv_InterpMethod : public _Jv_MethodBase
      the insn or NULL if index is invalid. */
   pc_t set_insn (jlong index, pc_t insn);
 
+  // Is the given location in this method a breakpoint?
+  bool breakpoint_at (jlong index);
+
 #ifdef DIRECT_THREADED
   friend void _Jv_CompileMethod (_Jv_InterpMethod*);
 #endif

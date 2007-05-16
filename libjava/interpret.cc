@@ -1580,6 +1580,23 @@ _Jv_InterpMethod::set_insn (jlong index, pc_t insn)
   return &code[index];
 }
 
+bool
+_Jv_InterpMethod::breakpoint_at (jlong index)
+{
+  pc_t insn = get_insn (index);
+  if (insn != NULL)
+    {
+#ifdef DIRECT_THREADED
+      return (insn->insn == breakpoint_insn->insn);
+#else
+      pc_t code = reinterpret_cast<pc_t> (bytecode ());
+      return (code[index] == breakpoint_insn);
+#endif
+    }
+
+  return false;
+}
+
 void *
 _Jv_JNIMethod::ncode (jclass klass)
 {
