@@ -1,3 +1,8 @@
+2007-05-17  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/31850
+	* reload.c (subst_reloads): Remove checking.
+
 2007-05-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/31691
