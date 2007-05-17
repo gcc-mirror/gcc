@@ -1,3 +1,16 @@
+2007-05-16  David Daney  <ddaney@avtrex.com>
+
+	* include/java-stack.h (_Jv_FrameInfo): Remove union definition.
+	(_Jv_StackFrame): Remove commented out code.
+	(_Jv_UnwindState): Remove superfluous 'typedef'.
+	* sun/misc/natUnsafe.cc (spinlock): Add white space to quiet
+	compiler warnings.
+	* gnu/java/lang/management/natVMMemoryPoolMXBeanImpl.cc
+	(getCollectionUsage): Don't declare unused parameter n.
+	(getMemoryManagerNames): Same.
+	* gnu/gcj/util/natGCInfo.cc (gc_debug_info): Remove superfluous
+	'typedef'.
+
 2007-05-16  Keith Seitz  <keiths@redhat.com>
 
 	* include/java-interp.h (breakpoint_at): Declare.

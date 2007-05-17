@@ -66,7 +66,7 @@ extern "C" {
 
 static int gc_ok = 1;
 
-typedef struct gc_debug_info
+struct gc_debug_info
 {
   int used;
   int free;

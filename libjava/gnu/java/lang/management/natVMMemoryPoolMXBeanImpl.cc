@@ -20,7 +20,7 @@ details.  */
 #include <java/lang/UnsupportedOperationException.h>
 
 ::java::lang::management::MemoryUsage *
-gnu::java::lang::management::VMMemoryPoolMXBeanImpl::getCollectionUsage(jstring n)
+gnu::java::lang::management::VMMemoryPoolMXBeanImpl::getCollectionUsage(jstring)
 {
   throw new ::java::lang::UnsupportedOperationException (JvNewStringLatin1 ("gnu::java::lang::management::VMMemoryPoolMXBeanImpl::getCollectionUsage (::java::lang::String *) not implemented"));
 }
@@ -41,7 +41,7 @@ gnu::java::lang::management::VMMemoryPoolMXBeanImpl::getCollectionUsageThreshold
 
 
 JArray< ::java::lang::String *> *
-gnu::java::lang::management::VMMemoryPoolMXBeanImpl::getMemoryManagerNames(jstring n)
+gnu::java::lang::management::VMMemoryPoolMXBeanImpl::getMemoryManagerNames(jstring)
 {
   return (JArray<jstring>*)
     JvNewObjectArray(1, &::java::lang::String::class$, JvNewStringLatin1("BoehmGC"));

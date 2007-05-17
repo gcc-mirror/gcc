@@ -49,10 +49,6 @@ struct _Jv_InterpFrameInfo
 };
 #endif
 
-union _Jv_FrameInfo
-{
-};
-
 struct _Jv_StackFrame
 {
   _Jv_FrameType type;   /* Native or interpreted.  */
@@ -69,12 +65,11 @@ struct _Jv_StackFrame
       void *start_ip;
     };
   };
-//  _Jv_FrameInfo info;   /* Frame-type specific data.  */
   jclass klass;
   _Jv_Method *meth;
 };
 
-typedef struct _Jv_UnwindState;
+struct _Jv_UnwindState;
 typedef _Unwind_Reason_Code (*_Jv_TraceFn) (_Jv_UnwindState *);
 
 struct _Jv_UnwindState
