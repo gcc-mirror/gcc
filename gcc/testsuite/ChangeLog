@@ -1,3 +1,8 @@
+2007-05-17  Daniel Franke <franke.daniel@gmail.com>
+
+	PR fortran/31919
+	* gfortran.dg/min_max_conformance.f90: New test.
+
 2007-05-17  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/ssa-dom-thread-2.c: New test.

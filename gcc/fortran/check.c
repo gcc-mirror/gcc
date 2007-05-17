@@ -649,9 +649,6 @@ gfc_check_atan2 (gfc_expr *y, gfc_expr *x)
 try
 gfc_check_besn (gfc_expr *n, gfc_expr *x)
 {
-  if (scalar_check (n, 0) == FAILURE)
-    return FAILURE;
-
   if (type_check (n, 0, BT_INTEGER) == FAILURE)
     return FAILURE;
 
@@ -1491,14 +1488,16 @@ min_max_args (gfc_actual_arglist *arg)
 static try
 check_rest (bt type, int kind, gfc_actual_arglist *arg)
 {
-  gfc_expr *x;
+  gfc_expr *x, *first_arg;
   int n;
+  char buffer[80];
 
   if (min_max_args (arg) == FAILURE)
     return FAILURE;
 
   n = 1;
 
+  first_arg = arg->expr;
   for (; arg; arg = arg->next, n++)
     {
       x = arg->expr;
@@ -1518,6 +1517,12 @@ check_rest (bt type, int kind, gfc_actual_arglist *arg)
 	      return FAILURE;
 	    }
 	}
+
+      snprintf (buffer, 80, "arguments '%s' and '%s' for intrinsic '%s'",
+		gfc_current_intrinsic_arg[0], gfc_current_intrinsic_arg[n-1],
+		gfc_current_intrinsic);
+      if (gfc_check_conformance (buffer, first_arg, x) == FAILURE)
+        return FAILURE;
     }
 
   return SUCCESS;
@@ -1797,24 +1802,10 @@ gfc_check_product_sum (gfc_actual_arglist *ap)
 try
 gfc_check_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
 {
-  char buffer[80];
-
   if (same_type_check (tsource, 0, fsource, 1) == FAILURE)
     return FAILURE;
 
   if (type_check (mask, 2, BT_LOGICAL) == FAILURE)
-    return FAILURE;
-
-  snprintf (buffer, 80, "arguments '%s' and '%s' for intrinsic '%s'",
-	    gfc_current_intrinsic_arg[0], gfc_current_intrinsic_arg[1],
-	    gfc_current_intrinsic);
-  if (gfc_check_conformance (buffer, tsource, fsource) == FAILURE)
-    return FAILURE;
-
-  snprintf (buffer, 80, "arguments '%s' and '%s' for intrinsic '%s'",
-	    gfc_current_intrinsic_arg[0], gfc_current_intrinsic_arg[2],
-	    gfc_current_intrinsic);
-  if (gfc_check_conformance (buffer, tsource, mask) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
