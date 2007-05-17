@@ -33,7 +33,7 @@ class gnu::classpath::jdwp::VMFrame : public ::java::lang::Object
 {
 
 public:
-  VMFrame(::java::lang::Thread *, jlong, ::gnu::classpath::jdwp::util::Location *);
+  VMFrame(::java::lang::Thread *, jlong, ::gnu::classpath::jdwp::util::Location *, ::java::lang::Object *);
   virtual ::gnu::classpath::jdwp::util::Location * getLocation();
   virtual ::gnu::classpath::jdwp::value::Value * getValue(jint, jbyte);
   virtual void setValue(jint, ::gnu::classpath::jdwp::value::Value *);

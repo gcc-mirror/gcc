@@ -618,12 +618,22 @@ getFrame (Thread *thread, jlong frameID)
   VMMethod *meth 
     = getClassMethod (klass, reinterpret_cast<jlong> (info.method));
   
-  if (info.location == -1)
-    loc = new Location (meth, 0);
-  else
-    loc = new Location (meth, info.location);
+  jobject this_obj;
   
-  return new VMFrame (thread, reinterpret_cast<jlong> (vm_frame), loc); 
+  if (info.location == -1)
+    {
+      loc = new Location (meth, 0);
+      this_obj = NULL;
+    }
+  else
+    {
+      loc = new Location (meth, info.location);
+      _Jv_InterpFrame *iframe = reinterpret_cast<_Jv_InterpFrame *> (vm_frame);
+      this_obj = iframe->get_this_ptr ();
+    }
+  
+  return new VMFrame (thread, reinterpret_cast<jlong> (vm_frame), loc,
+                      this_obj); 
 }
 
 jint
