@@ -1,3 +1,25 @@
+2007-05-17  Janis Johnson  <janis187@us.ibm.com>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* gcc.target/powerpc/pr18096-1.c: Change dg-warning to dg-error.
+	* gcc.dg/cpp/include2.c: Ditto.
+	* gcc.dg/cpp/mac-dir-2.c: Ditto.
+	* gcc.dg/cpp/paste5.c: Ditto.
+	* gcc.dg/cpp/paste6.c: Ditto.
+	* gcc.dg/cpp/paste8.c: Ditto.
+	* gcc.dg/cpp/paste11.c: Ditto.
+	* gcc.dg/cpp/paste13.c: Ditto.
+	* gcc.dg/cpp/skipping2.c: Ditto.
+	* gcc.dg/reg-vol-struct-1.c: Ditto.
+	* gcc.dg/Wshadow-1.c: Ditto.
+	* gcc.dg/cpp/trad/comment.c: Ditto.
+	* gcc.dg/cpp/trad/literals-2.c: Change dg-error to dg-warning.
+	* gcc.dg/cpp/if-2.c: Ditto.
+	* gcc.dg/array-5.c: Ditto.
+	* gcc.dg/inline-15.c: Ditto.
+	* gcc.dg/pr27953.c: Ditto.
+	* gcc.dg/Wno-c++-compat.c: Ditto.
+
 2007-05-17  Kazu Hirata  <kazu@codesourcery.com>
 
 	* g++.dg/cpp/_Pragma1.C: Skip on fido-*-* and m68k-*-*.

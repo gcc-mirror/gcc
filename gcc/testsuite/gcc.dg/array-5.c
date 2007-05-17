@@ -24,7 +24,7 @@ void func(int n, int m)
     /* Invalid: not compatible because 4 != 6.  */
     int a[n][6][m];
     int (*p)[4][n+1];
-    p = a;			/* { dg-error "incompatible" } */
+    p = a;			/* { dg-warning "incompatible" } */
   }
   {
     /* Compatible, but defined behavior only if n == 6 and m == n+1.  */

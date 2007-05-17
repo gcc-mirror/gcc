@@ -9,4 +9,4 @@ extern int foo(int x);
 #define bar(x) foo(x)
 #define baz(x) bar(##x)
 
-int quux(int y) { return baz(y); }  /* { dg-warning "valid preprocessing" } */
+int quux(int y) { return baz(y); }  /* { dg-error "valid preprocessing" } */

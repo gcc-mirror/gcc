@@ -18,7 +18,7 @@ extern void B(int);
 
 void foo(void)
 {
-  E(glue(F,*)) dummy;  /* { dg-warning "valid preprocessing token" } */
+  E(glue(F,*)) dummy;  /* { dg-error "valid preprocessing token" } */
 
   E(glue(F,G)) ;
 }

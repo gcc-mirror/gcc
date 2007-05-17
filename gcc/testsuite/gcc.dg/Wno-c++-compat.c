@@ -5,5 +5,5 @@
 /* { dg-do compile }  */
 /* { dg-options "-Wno-c++-compat" } */
 
-extern const int foo = 42;      /* { dg-error "initialized and declared" } */
+extern const int foo = 42;      /* { dg-warning "initialized and declared" } */
 
