@@ -39,6 +39,8 @@
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
+#include <libintl.h>
+
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // Non-virtual member functions.
