@@ -2205,6 +2205,80 @@
 	    (parallel [(const_int 0) (const_int 1)]))))]
   "TARGET_SSE2")
 
+(define_expand "vec_unpacks_float_hi_v8hi"
+  [(match_operand:V4SF 0 "register_operand" "")
+   (match_operand:V8HI 1 "register_operand" "")]
+  "TARGET_SSE2"
+{
+  rtx tmp = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_vec_unpacks_hi_v8hi (tmp, operands[1]));
+  emit_insn (gen_sse2_cvtdq2ps (operands[0], tmp));
+  DONE;
+})
+
+(define_expand "vec_unpacks_float_lo_v8hi"
+  [(match_operand:V4SF 0 "register_operand" "")
+   (match_operand:V8HI 1 "register_operand" "")]
+  "TARGET_SSE2"
+{
+  rtx tmp = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_vec_unpacks_lo_v8hi (tmp, operands[1]));
+  emit_insn (gen_sse2_cvtdq2ps (operands[0], tmp));
+  DONE;
+})
+
+(define_expand "vec_unpacku_float_hi_v8hi"
+  [(match_operand:V4SF 0 "register_operand" "")
+   (match_operand:V8HI 1 "register_operand" "")]
+  "TARGET_SSE2"
+{
+  rtx tmp = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_vec_unpacku_hi_v8hi (tmp, operands[1]));
+  emit_insn (gen_sse2_cvtdq2ps (operands[0], tmp));
+  DONE;
+})
+
+(define_expand "vec_unpacku_float_lo_v8hi"
+  [(match_operand:V4SF 0 "register_operand" "")
+   (match_operand:V8HI 1 "register_operand" "")]
+  "TARGET_SSE2"
+{
+  rtx tmp = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_vec_unpacku_lo_v8hi (tmp, operands[1]));
+  emit_insn (gen_sse2_cvtdq2ps (operands[0], tmp));
+  DONE;
+})
+
+(define_expand "vec_unpacks_float_hi_v4si"
+  [(set (match_dup 2)
+	(vec_select:V4SI
+	  (match_operand:V4SI 1 "nonimmediate_operand" "")
+	  (parallel [(const_int 2)
+		     (const_int 3)
+		     (const_int 2)
+		     (const_int 3)])))
+   (set (match_operand:V2DF 0 "register_operand" "")
+        (float:V2DF
+	  (vec_select:V2SI
+	  (match_dup 2)
+	    (parallel [(const_int 0) (const_int 1)]))))]
+ "TARGET_SSE2"
+{
+ operands[2] = gen_reg_rtx (V4SImode);
+})
+
+(define_expand "vec_unpacks_float_lo_v4si"
+  [(set (match_operand:V2DF 0 "register_operand" "")
+	(float:V2DF
+	  (vec_select:V2SI
+	    (match_operand:V4SI 1 "nonimmediate_operand" "")
+	    (parallel [(const_int 0) (const_int 1)]))))]
+  "TARGET_SSE2")
+
 (define_expand "vec_pack_trunc_v2df"
   [(match_operand:V4SF 0 "register_operand" "")
    (match_operand:V2DF 1 "nonimmediate_operand" "")
@@ -2219,6 +2293,25 @@
   emit_insn (gen_sse2_cvtpd2ps (r1, operands[1]));
   emit_insn (gen_sse2_cvtpd2ps (r2, operands[2]));
   emit_insn (gen_sse_movlhps (operands[0], r1, r2));
+  DONE;
+})
+
+(define_expand "vec_pack_sfix_trunc_v2df"
+  [(match_operand:V4SI 0 "register_operand" "")
+   (match_operand:V2DF 1 "nonimmediate_operand" "")
+   (match_operand:V2DF 2 "nonimmediate_operand" "")]
+  "TARGET_SSE2"
+{
+  rtx r1, r2;
+
+  r1 = gen_reg_rtx (V4SImode);
+  r2 = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_sse2_cvttpd2dq (r1, operands[1]));
+  emit_insn (gen_sse2_cvttpd2dq (r2, operands[2]));
+  emit_insn (gen_sse2_punpcklqdq (gen_lowpart (V2DImode, operands[0]),
+				  gen_lowpart (V2DImode, r1),
+				  gen_lowpart (V2DImode, r2)));
   DONE;
 })
 
@@ -3525,7 +3618,7 @@
   "TARGET_SSE2"
 {
   rtx op1, op2, h1, l1, h2, l2, h3, l3;
-                                                                                
+
   op1 = gen_lowpart (V16QImode, operands[1]);
   op2 = gen_lowpart (V16QImode, operands[2]);
   h1 = gen_reg_rtx (V16QImode);
@@ -3534,7 +3627,7 @@
   l2 = gen_reg_rtx (V16QImode);
   h3 = gen_reg_rtx (V16QImode);
   l3 = gen_reg_rtx (V16QImode);
-                                                                                
+
   emit_insn (gen_vec_interleave_highv16qi (h1, op1, op2));
   emit_insn (gen_vec_interleave_lowv16qi (l1, op1, op2));
   emit_insn (gen_vec_interleave_highv16qi (h2, l1, h1));
@@ -3544,7 +3637,7 @@
   emit_insn (gen_vec_interleave_lowv16qi (operands[0], l3, h3));
   DONE;
 })
-                                                                                
+
 ;; Reduce:
 ;;      op1 = abcdefgh
 ;;      op2 = ijklmnop
@@ -3560,14 +3653,14 @@
   "TARGET_SSE2"
 {
   rtx op1, op2, h1, l1, h2, l2;
-                                                                                
+
   op1 = gen_lowpart (V8HImode, operands[1]);
   op2 = gen_lowpart (V8HImode, operands[2]);
   h1 = gen_reg_rtx (V8HImode);
   l1 = gen_reg_rtx (V8HImode);
   h2 = gen_reg_rtx (V8HImode);
   l2 = gen_reg_rtx (V8HImode);
-                                                                                
+
   emit_insn (gen_vec_interleave_highv8hi (h1, op1, op2));
   emit_insn (gen_vec_interleave_lowv8hi (l1, op1, op2));
   emit_insn (gen_vec_interleave_highv8hi (h2, l1, h1));
@@ -3575,7 +3668,7 @@
   emit_insn (gen_vec_interleave_lowv8hi (operands[0], l2, h2));
   DONE;
 })
-                                                                                
+
 ;; Reduce:
 ;;     op1 = abcd
 ;;     op2 = efgh
@@ -3589,12 +3682,12 @@
   "TARGET_SSE2"
 {
   rtx op1, op2, h1, l1;
-                                                                                
+
   op1 = gen_lowpart (V4SImode, operands[1]);
   op2 = gen_lowpart (V4SImode, operands[2]);
   h1 = gen_reg_rtx (V4SImode);
   l1 = gen_reg_rtx (V4SImode);
-                                                                                
+
   emit_insn (gen_vec_interleave_highv4si (h1, op1, op2));
   emit_insn (gen_vec_interleave_lowv4si (l1, op1, op2));
   emit_insn (gen_vec_interleave_lowv4si (operands[0], l1, h1));

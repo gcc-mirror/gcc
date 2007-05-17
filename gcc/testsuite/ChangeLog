@@ -1,3 +1,16 @@
+2007-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/24659
+	* gcc.dg/vect/vect-floatint-conversion-2.c: New test.
+	* gcc.dg/vect/vect-intfloat-conversion-1.c: Require vect_float,
+	not vect_int target.
+	* gcc.dg/vect/vect-intfloat-conversion-2.c: Require vect_float,
+	not vect_int target.  Loop is vectorized for vect_intfloat_cvt
+	targets.
+	* gcc.dg/vect/vect-intfloat-conversion-3.c: New test.
+	* gcc.dg/vect/vect-intfloat-conversion-4a.c: New test.
+	* gcc.dg/vect/vect-intfloat-conversion-4b.c: New test.
+
 2007-05-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/torture/fp-int-convert-float128.c: Do not xfail for i?86-*-*
@@ -746,7 +759,7 @@
 	* g++.dg/expr/bitfield8.C: New test.
 
 2007-04-17  Joseph Myers  <joseph@codesourcery.com>
-            Richard Sandiford  <richard@codesourcery.com>
+	    Richard Sandiford  <richard@codesourcery.com>
 
 	* lib/target-supports.exp (check_profiling_available): Return 0
 	for uClibc with -p or -pg.

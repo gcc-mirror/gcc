@@ -340,11 +340,25 @@ optab_for_tree_code (enum tree_code code, tree type)
       return TYPE_UNSIGNED (type) ? 
 	vec_unpacku_lo_optab : vec_unpacks_lo_optab;
 
+    case VEC_UNPACK_FLOAT_HI_EXPR:
+      /* The signedness is determined from input operand.  */
+      return TYPE_UNSIGNED (type) ?
+	vec_unpacku_float_hi_optab : vec_unpacks_float_hi_optab;
+
+    case VEC_UNPACK_FLOAT_LO_EXPR:
+      /* The signedness is determined from input operand.  */
+      return TYPE_UNSIGNED (type) ? 
+	vec_unpacku_float_lo_optab : vec_unpacks_float_lo_optab;
+
     case VEC_PACK_TRUNC_EXPR:
       return vec_pack_trunc_optab;
 
     case VEC_PACK_SAT_EXPR:
       return TYPE_UNSIGNED (type) ? vec_pack_usat_optab : vec_pack_ssat_optab;
+
+    case VEC_PACK_FIX_TRUNC_EXPR:
+      return TYPE_UNSIGNED (type) ?
+	vec_pack_ufix_trunc_optab : vec_pack_sfix_trunc_optab;
 
     default:
       break;
@@ -1375,7 +1389,9 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
       if (binoptab == vec_pack_trunc_optab 
 	  || binoptab == vec_pack_usat_optab
-          || binoptab == vec_pack_ssat_optab)
+	  || binoptab == vec_pack_ssat_optab
+	  || binoptab == vec_pack_ufix_trunc_optab
+	  || binoptab == vec_pack_sfix_trunc_optab)
 	{
 	  /* The mode of the result is different then the mode of the
 	     arguments.  */
@@ -5565,9 +5581,15 @@ init_optabs (void)
   vec_unpacks_lo_optab = init_optab (UNKNOWN);
   vec_unpacku_hi_optab = init_optab (UNKNOWN);
   vec_unpacku_lo_optab = init_optab (UNKNOWN);
+  vec_unpacks_float_hi_optab = init_optab (UNKNOWN);
+  vec_unpacks_float_lo_optab = init_optab (UNKNOWN);
+  vec_unpacku_float_hi_optab = init_optab (UNKNOWN);
+  vec_unpacku_float_lo_optab = init_optab (UNKNOWN);
   vec_pack_trunc_optab = init_optab (UNKNOWN);
   vec_pack_usat_optab = init_optab (UNKNOWN);
   vec_pack_ssat_optab = init_optab (UNKNOWN);
+  vec_pack_ufix_trunc_optab = init_optab (UNKNOWN);
+  vec_pack_sfix_trunc_optab = init_optab (UNKNOWN);
 
   powi_optab = init_optab (UNKNOWN);
 

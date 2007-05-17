@@ -1,3 +1,66 @@
+2007-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/24659
+	* optabs.h (enum optab_index): Add OTI_vec_unpacks_float_hi,
+	OTI_vec_unpacks_float_lo, OTI_vec_unpacku_float_hi,
+	OTI_vec_unpacku_float_lo, OTI_vec_pack_sfix_trunc and
+	OTI_vec_pack_ufix_trunc.
+	(vec_unpacks_float_hi_optab): Define new macro.
+	(vec_unpacks_float_lo_optab): Ditto.
+	(vec_unpacku_float_hi_optab): Ditto.
+	(vec_unpacku_float_lo_optab): Ditto.
+	(vec_pack_sfix_trunc_optab): Ditto.
+	(vec_pack_ufix_trunc_optab): Ditto.
+	* genopinit.c (optabs): Implement vec_unpack[s|u]_[hi|lo]_optab
+	and vec_pack_[s|u]fix_trunc_optab using
+	vec_unpack[s|u]_[hi\lo]_* and vec_pack_[u|s]fix_trunc_* patterns
+	* tree-vectorizer.c (supportable_widening_operation): Handle
+	FLOAT_EXPR and CONVERT_EXPR.  Update comment.
+	(supportable_narrowing_operation): New function.
+	* tree-vectorizer.h (supportable_narrowing_operation): Prototype.
+	* tree-vect-transform.c (vectorizable_conversion): Handle
+	(nunits_in == nunits_out / 2) and (nunits_out == nunits_in / 2) cases.
+	(vect_gen_widened_results_half): Move before vectorizable_conversion.
+	(vectorizable_type_demotion): Call supportable_narrowing_operation()
+	to check for target support.
+	* optabs.c (optab_for_tree_code) Return vec_unpack[s|u]_float_hi_optab
+	for VEC_UNPACK_FLOAT_HI_EXPR, vec_unpack[s|u]_float_lo_optab
+	for VEC_UNPACK_FLOAT_LO_EXPR and vec_pack_[u|s]fix_trunc_optab
+	for VEC_PACK_FIX_TRUNC_EXPR.
+	(expand_binop): Special case mode of the result for
+	vec_pack_[u|s]fix_trunc_optab.
+	(init_optabs): Initialize vec_unpack[s|u]_[hi|lo]_optab and
+	vec_pack_[u|s]fix_trunc_optab.
+
+	* tree.def (VEC_UNPACK_FLOAT_HI_EXPR, VEC_UNPACK_FLOAT_LO_EXPR,
+	VEC_PACK_FIX_TRUNC_EXPR): New tree codes.
+	* tree-pretty-print.c (dump_generic_node): Handle
+	VEC_UNPACK_FLOAT_HI_EXPR, VEC_UNPACK_FLOAT_LO_EXPR and
+	VEC_PACK_FIX_TRUNC_EXPR.
+	(op_prio): Ditto.
+	* expr.c (expand_expr_real_1): Ditto.
+	* tree-inline.c (estimate_num_insns_1): Ditto.
+	* tree-vect-generic.c (expand_vector_operations_1): Ditto.
+
+	* config/i386/sse.md (vec_unpacks_float_hi_v8hi): New expander.
+	(vec_unpacks_float_lo_v8hi): Ditto.
+	(vec_unpacku_float_hi_v8hi): Ditto.
+	(vec_unpacku_float_lo_v8hi): Ditto.
+	(vec_unpacks_float_hi_v4si): Ditto.
+	(vec_unpacks_float_lo_v4si): Ditto.
+	(vec_pack_sfix_trunc_v2df): Ditto.
+
+	* doc/c-tree.texi (Expression trees) [VEC_UNPACK_FLOAT_HI_EXPR]:
+	Document.
+	[VEC_UNPACK_FLOAT_LO_EXPR]: Ditto.
+	[VEC_PACK_FIX_TRUNC_EXPR]: Ditto.
+	* doc/md.texi (Standard Names) [vec_pack_sfix_trunc]: Document.
+	[vec_pack_ufix_trunc]: Ditto.
+	[vec_unpacks_float_hi]: Ditto.
+	[vec_unpacks_float_lo]: Ditto.
+	[vec_unpacku_float_hi]: Ditto.
+	[vec_unpacku_float_lo]: Ditto.
+
 2007-05-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* soft-fp/README: Update for new files.
@@ -46,14 +109,15 @@
 
 2007-05-16  Paolo Bonzini  <bonzini@gnu.org>
 
-        * config/i386/i386.c (legitimize_tls_address): Mark __tls_get_addr
-        calls as pure.
+	* config/i386/i386.c (legitimize_tls_address): Mark __tls_get_addr
+	calls as pure.
 
 2007-05-16  Eric Christopher  <echristo@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_prologue): Move altivec register
-        saving after stack push. Set sp_offset whenever we push.
-        (rs6000_emit_epilogue): Move altivec register restore before stack push.
+	saving after stack push. Set sp_offset whenever we push.
+	(rs6000_emit_epilogue): Move altivec register restore before
+	stack push.
 
 2007-05-16  Richard Sandiford  <richard@codesourcery.com>
 
@@ -496,7 +560,7 @@
 	dumps.
 
 2007-05-08  Sandra Loosemore  <sandra@codesourcery.com>
-            Nigel Stephens  <nigel@mips.com>
+	    Nigel Stephens  <nigel@mips.com>
 
 	* config/mips/mips.h (MAX_FPRS_PER_FMT): Renamed from FP_INC.
 	Update comments and all uses.
@@ -563,7 +627,7 @@
 	* configure: Regenerate.
 	* config.in: Regenerate.
 
-2007-05-07   Naveen.H.S  <naveen.hs@kpitcummins.com>
+2007-05-07  Naveen.H.S  <naveen.hs@kpitcummins.com>
 
 	* config/m32c/muldiv.md (mulhisi3_c): Limit the mode of the 2nd
 	operand to HI mode.
@@ -1062,7 +1126,7 @@
 	PR middle-end/22156
 	Temporarily revert:
 	2007-04-06  Andreas Tobler  <a.tobler@schweiz.org>
-        * tree-sra.c (sra_build_elt_assignment): Initialize min/maxshift.
+	* tree-sra.c (sra_build_elt_assignment): Initialize min/maxshift.
 	2007-04-05  Alexandre Oliva  <aoliva@redhat.com>
 	* tree-sra.c (try_instantiate_multiple_fields): Needlessly
 	initialize align to silence bogus warning.
@@ -1274,17 +1338,17 @@
 	PR tree-optimization/30965
 	PR tree-optimization/30978
 	* Makefile.in (tree-ssa-forwprop.o): Depend on $(FLAGS_H).
-        * tree-ssa-forwprop.c (forward_propagate_into_cond_1): Remove.
-        (find_equivalent_equality_comparison): Likewise.
-        (simplify_cond): Likewise.
-        (get_prop_source_stmt): New helper.
-        (get_prop_dest_stmt): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_into_cond_1): Remove.
+	(find_equivalent_equality_comparison): Likewise.
+	(simplify_cond): Likewise.
+	(get_prop_source_stmt): New helper.
+	(get_prop_dest_stmt): Likewise.
 	(can_propagate_from): Likewise.
 	(remove_prop_source_from_use): Likewise.
-        (combine_cond_expr_cond): Likewise.
-        (forward_propagate_comparison): New function.
-        (forward_propagate_into_cond): Rewrite to use fold for
-        tree combining.
+	(combine_cond_expr_cond): Likewise.
+	(forward_propagate_comparison): New function.
+	(forward_propagate_into_cond): Rewrite to use fold for
+	tree combining.
 	(tree_ssa_forward_propagate_single_use_vars): Call
 	forward_propagate_comparison to propagate comparisons.
 

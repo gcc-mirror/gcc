@@ -233,9 +233,15 @@ static const char * const optabs[] =
   "vec_unpacks_lo_optab->handlers[$A].insn_code = CODE_FOR_$(vec_unpacks_lo_$a$)",
   "vec_unpacku_hi_optab->handlers[$A].insn_code = CODE_FOR_$(vec_unpacku_hi_$a$)",
   "vec_unpacku_lo_optab->handlers[$A].insn_code = CODE_FOR_$(vec_unpacku_lo_$a$)",
+  "vec_unpacks_float_hi_optab->handlers[$A].insn_code = CODE_FOR_$(vec_unpacks_float_hi_$a$)",
+  "vec_unpacks_float_lo_optab->handlers[$A].insn_code = CODE_FOR_$(vec_unpacks_float_lo_$a$)",
+  "vec_unpacku_float_hi_optab->handlers[$A].insn_code = CODE_FOR_$(vec_unpacku_float_hi_$a$)",
+  "vec_unpacku_float_lo_optab->handlers[$A].insn_code = CODE_FOR_$(vec_unpacku_float_lo_$a$)",
   "vec_pack_trunc_optab->handlers[$A].insn_code = CODE_FOR_$(vec_pack_trunc_$a$)",
   "vec_pack_ssat_optab->handlers[$A].insn_code = CODE_FOR_$(vec_pack_ssat_$a$)",
-  "vec_pack_usat_optab->handlers[$A].insn_code = CODE_FOR_$(vec_pack_usat_$a$)"
+  "vec_pack_usat_optab->handlers[$A].insn_code = CODE_FOR_$(vec_pack_usat_$a$)",
+  "vec_pack_sfix_trunc_optab->handlers[$A].insn_code = CODE_FOR_$(vec_pack_sfix_trunc_$a$)",
+  "vec_pack_ufix_trunc_optab->handlers[$A].insn_code = CODE_FOR_$(vec_pack_ufix_trunc_$a$)"
 };
 
 static void gen_insn (rtx);
