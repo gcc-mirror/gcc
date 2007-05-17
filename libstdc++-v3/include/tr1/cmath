@@ -943,12 +943,13 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 _GLIBCXX_END_NAMESPACE
 }
 
-  /**
-   * @defgroup tr1_math_spec_func Mathematical Special Functions
-   * A collection of advanced mathematical special functions.
-   * @{
-   */
 
+/**
+ * @defgroup tr1_math_spec_func Mathematical Special Functions
+ * A collection of advanced mathematical special functions.
+ * @{
+ */
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 #include <tr1/gamma.tcc>
 #include <tr1/bessel_function.tcc>
 #include <tr1/beta_function.tcc>
@@ -1408,5 +1409,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
 _GLIBCXX_END_NAMESPACE
 }
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif

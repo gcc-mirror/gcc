@@ -1,3 +1,10 @@
+2007-05-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/tr1/cmath: Guard special math with
+	__GXX_EXPERIMENTAL_CXX0X__.
+	* testsuite/26_numerics/headers/cmath/types_std_c++0x_neg.cc:
+	Remove xfail.
+
 2007-05-17  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (__pad<>::_S_pad): Minor tweaks, avoid
