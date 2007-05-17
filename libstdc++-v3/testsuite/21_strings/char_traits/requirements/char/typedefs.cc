@@ -1,5 +1,5 @@
-// dg-do compile
-// dg-options -ansi -pedantic-err
+// { dg-do compile }
+// { dg-options "-ansi -pedantic-errors" } 
 // 2001-02-11 gdr
 // Origin: Craig Rodrigues <rodrigc@mediaone.net>
 
