@@ -1,3 +1,7 @@
+2007-05-17  Kazu Hirata  <kazu@codesourcery.com>
+
+	* g++.dg/cpp/_Pragma1.C: Skip on fido-*-* and m68k-*-*.
+
 2007-05-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/20070517-1.c: New test.
