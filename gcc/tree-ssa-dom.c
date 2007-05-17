@@ -277,25 +277,17 @@ tree_ssa_dominator_optimize (void)
   calculate_dominance_info (CDI_DOMINATORS);
   cfg_altered = false;
 
-  /* We need to know which edges exit loops so that we can
-     aggressively thread through loop headers to an exit
-     edge.  */
-  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
-  if (current_loops)
-    {
-      mark_loop_exit_edges ();
-      loop_optimizer_finalize ();
-    }
-
-  /* Clean up the CFG so that any forwarder blocks created by loop
-     canonicalization are removed.  */
-  cleanup_tree_cfg ();
-  calculate_dominance_info (CDI_DOMINATORS);
+  /* We need to know loop structures in order to avoid destroying them
+     in jump threading.  Note that we still can e.g. thread through loop
+     headers to an exit edge, or through loop header to the loop body, assuming
+     that we update the loop info.  */
+  loop_optimizer_init (LOOPS_HAVE_SIMPLE_LATCHES);
 
   /* We need accurate information regarding back edges in the CFG
-     for jump threading.  */
+     for jump threading; this may include back edes that are not part of
+     a single loop.  */
   mark_dfs_back_edges ();
-
+      
   /* Recursively walk the dominator tree optimizing statements.  */
   walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
 
@@ -319,7 +311,7 @@ tree_ssa_dominator_optimize (void)
   free_all_edge_infos ();
 
   /* Thread jumps, creating duplicate blocks as needed.  */
-  cfg_altered |= thread_through_all_blocks ();
+  cfg_altered |= thread_through_all_blocks (first_pass_instance);
 
   if (cfg_altered)
     free_dominance_info (CDI_DOMINATORS);
@@ -352,6 +344,8 @@ tree_ssa_dominator_optimize (void)
   /* Debugging dumps.  */
   if (dump_file && (dump_flags & TDF_STATS))
     dump_dominator_optimization_stats (dump_file);
+
+  loop_optimizer_finalize ();
 
   /* Delete our main hashtable.  */
   htab_delete (avail_exprs);

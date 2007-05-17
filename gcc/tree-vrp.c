@@ -5865,13 +5865,7 @@ identify_jump_threads (void)
 static void
 finalize_jump_threads (void)
 {
-  bool cfg_altered = false;
-  cfg_altered = thread_through_all_blocks ();
-
-  /* If we threaded jumps, then we need to recompute the dominance
-     information.  */
-  if (cfg_altered)
-    free_dominance_info (CDI_DOMINATORS);
+  thread_through_all_blocks (false);
   VEC_free (tree, heap, stack);
 }
 
@@ -5990,21 +5984,18 @@ vrp_finalize (void)
 static unsigned int
 execute_vrp (void)
 {
-  insert_range_assertions ();
-
-  loop_optimizer_init (LOOPS_NORMAL);
+  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
   if (current_loops)
-    scev_initialize ();
+    {
+      rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+      scev_initialize ();
+    }
+
+  insert_range_assertions ();
 
   vrp_initialize ();
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
   vrp_finalize ();
-
-  if (current_loops)
-    {
-      scev_finalize ();
-      loop_optimizer_finalize ();
-    }
 
   /* ASSERT_EXPRs must be removed before finalizing jump threads
      as finalizing jump threads calls the CFG cleanup code which
@@ -6019,6 +6010,12 @@ execute_vrp (void)
   update_ssa (TODO_update_ssa);
 
   finalize_jump_threads ();
+  if (current_loops)
+    {
+      scev_finalize ();
+      loop_optimizer_finalize ();
+    }
+
   return 0;
 }
 

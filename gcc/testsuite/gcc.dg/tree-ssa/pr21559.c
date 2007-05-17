@@ -35,11 +35,9 @@ void foo (void)
 /* { dg-final { scan-tree-dump-times "Simplified relational" 1 "vrp1" } } */
 
 /* Second, we should thread the edge out of the loop via the break
-   statement.  */
-/* { dg-final { scan-tree-dump-times "Threaded jump" 1 "vrp1" } } */
-
-/* Now if we were really good, we'd realize that the final bytes == 0
-   test is totally useless.  That's not likely to happen anytime soon.  */
+   statement.  We also realize that the final bytes == 0 test is useless,
+   and thread over it.  */
+/* { dg-final { scan-tree-dump-times "Threaded jump" 2 "vrp1" } } */
 
 /* { dg-final { cleanup-tree-dump "vrp1" } } */
 

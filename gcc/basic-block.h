@@ -1173,4 +1173,8 @@ bb_has_eh_pred (basic_block bb)
   return false;
 }
 
+/* In cfgloopmanip.c.  */
+extern edge mfb_kj_edge;
+bool mfb_keep_just (edge);
+
 #endif /* GCC_BASIC_BLOCK_H */

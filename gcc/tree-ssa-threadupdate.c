@@ -315,6 +315,7 @@ create_edge_and_update_destination_phis (struct redirection_data *rd)
 
   e->probability = REG_BR_PROB_BASE;
   e->count = rd->dup_block->count;
+  e->aux = rd->outgoing_edge->aux;
 
   /* If there are any PHI nodes at the destination of the outgoing edge
      from the duplicate block, then we will need to add a new argument
@@ -385,199 +386,6 @@ fixup_template_block (void **slot, void *data)
   return 1;
 }
 
-/* Not all jump threading requests are useful.  In particular some
-   jump threading requests can create irreducible regions which are
-   undesirable.
-
-   This routine will examine the BB's incoming edges for jump threading
-   requests which, if acted upon, would create irreducible regions.  Any
-   such jump threading requests found will be pruned away.  */
-
-static void
-prune_undesirable_thread_requests (basic_block bb)
-{
-  edge e;
-  edge_iterator ei;
-  bool may_create_irreducible_region = false;
-  unsigned int num_outgoing_edges_into_loop = 0;
-
-  /* For the heuristics below, we need to know if BB has more than
-     one outgoing edge into a loop.  */
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    num_outgoing_edges_into_loop += ((e->flags & EDGE_LOOP_EXIT) == 0);
-
-  if (num_outgoing_edges_into_loop > 1)
-    {
-      edge backedge = NULL;
-
-      /* Consider the effect of threading the edge (0, 1) to 2 on the left
-	 CFG to produce the right CFG:
-    
-
-             0            0
-             |            |
-             1<--+        2<--------+
-            / \  |        |         |
-           2   3 |        4<----+   |
-            \ /  |       / \    |   |
-             4---+      E   1-- | --+
-             |              |   |
-             E              3---+
-
-
- 	Threading the (0, 1) edge to 2 effectively creates two loops
- 	(2, 4, 1) and (4, 1, 3) which are neither disjoint nor nested.
-	This is not good.
-
-	However, we do need to be able to thread  (0, 1) to 2 or 3
-	in the left CFG below (which creates the middle and right
-	CFGs with nested loops).
-
-             0          0             0
-             |          |             |
-             1<--+      2<----+       3<-+<-+
-            /|   |      |     |       |  |  |
-           2 |   |      3<-+  |       1--+  |
-            \|   |      |  |  |       |     |
-             3---+      1--+--+       2-----+
-
-	 
-	 A safe heuristic appears to be to only allow threading if BB
-	 has a single incoming backedge from one of its direct successors.  */
-
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	{
-	  if (e->flags & EDGE_DFS_BACK)
-	    {
-	      if (backedge)
-		{
-		  backedge = NULL;
-		  break;
-		}
-	      else
-		{
-		  backedge = e;
-		}
-	    }
-	}
-
-      if (backedge && find_edge (bb, backedge->src))
-	;
-      else
-        may_create_irreducible_region = true;
-    }
-  else
-    {
-      edge dest = NULL;
-
-      /* If we thread across the loop entry block (BB) into the
-	 loop and BB is still reached from outside the loop, then
-	 we would create an irreducible CFG.  Consider the effect
-	 of threading the edge (1, 4) to 5 on the left CFG to produce
-	 the right CFG
-
-             0               0
-            / \             / \
-           1   2           1   2
-            \ /            |   |
-             4<----+       5<->4
-            / \    |           |
-           E   5---+           E
-
-
-	 Threading the (1, 4) edge to 5 creates two entry points
-	 into the loop (4, 5) (one from block 1, the other from
-	 block 2).  A classic irreducible region. 
-
-	 So look at all of BB's incoming edges which are not
-	 backedges and which are not threaded to the loop exit.
-	 If that subset of incoming edges do not all thread
-	 to the same block, then threading any of them will create
-	 an irreducible region.  */
-
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	{
-	  edge e2;
-
-	  /* We ignore back edges for now.  This may need refinement
-    	     as threading a backedge creates an inner loop which
-	     we would need to verify has a single entry point. 
-
-	     If all backedges thread to new locations, then this
-	     block will no longer have incoming backedges and we
-	     need not worry about creating irreducible regions
-	     by threading through BB.  I don't think this happens
-	     enough in practice to worry about it.  */
-	  if (e->flags & EDGE_DFS_BACK)
-	    continue;
-
-	  /* If the incoming edge threads to the loop exit, then it
-	     is clearly safe.  */
-	  e2 = e->aux;
-	  if (e2 && (e2->flags & EDGE_LOOP_EXIT))
-	    continue;
-
-	  /* E enters the loop header and is not threaded.  We can
-	     not allow any other incoming edges to thread into
-	     the loop as that would create an irreducible region.  */
-	  if (!e2)
-	    {
-	      may_create_irreducible_region = true;
-	      break;
-	    }
-
-	  /* We know that this incoming edge threads to a block inside
-	     the loop.  This edge must thread to the same target in
-	     the loop as any previously seen threaded edges.  Otherwise
-	     we will create an irreducible region.  */
-	  if (!dest)
-	    dest = e2;
-	  else if (e2 != dest)
-	    {
-	      may_create_irreducible_region = true;
-	      break;
-	    }
-	}
-    }
-
-  /* If we might create an irreducible region, then cancel any of
-     the jump threading requests for incoming edges which are
-     not backedges and which do not thread to the exit block.  */
-  if (may_create_irreducible_region)
-    {
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	{
-	  edge e2;
-
-	  /* Ignore back edges.  */
-	  if (e->flags & EDGE_DFS_BACK)
-	    continue;
-
-	  e2 = e->aux;
-
-	  /* If this incoming edge was not threaded, then there is
-	     nothing to do.  */
-	  if (!e2)
-	    continue;
-
-	  /* If this incoming edge threaded to the loop exit,
-	     then it can be ignored as it is safe.  */
-	  if (e2->flags & EDGE_LOOP_EXIT)
-	    continue;
-
-	  if (e2)
-	    {
-	      /* This edge threaded into the loop and the jump thread
-		 request must be cancelled.  */
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file, "  Not threading jump %d --> %d to %d\n",
-			 e->src->index, e->dest->index, e2->dest->index);
-	      e->aux = NULL;
-	    }
-	}
-    }
-}
-
 /* Hash table traversal callback to redirect each incoming edge
    associated with this hash table element to its new destination.  */
 
@@ -620,11 +428,8 @@ redirect_edges (void **slot, void *data)
 	  /* Redirect the incoming edge to the appropriate duplicate
 	     block.  */
 	  e2 = redirect_edge_and_branch (e, rd->dup_block);
+	  gcc_assert (e == e2);
 	  flush_pending_stmts (e2);
-
-	  if ((dump_file && (dump_flags & TDF_DETAILS))
-	      && e->src != e2->src)
-	    fprintf (dump_file, "    basic block %d created\n", e2->src->index);
 	}
       else
 	{
@@ -696,45 +501,22 @@ redirection_block_p (basic_block bb)
    successor of BB.  We then revector the incoming edges into BB to
    the appropriate duplicate of BB.
 
-   BB and its duplicates will have assignments to the same set of
-   SSA_NAMEs.  Right now, we just call into update_ssa to update the
-   SSA graph for those names.
-
-   We are also going to experiment with a true incremental update
-   scheme for the duplicated resources.  One of the interesting
-   properties we can exploit here is that all the resources set
-   in BB will have the same IDFS, so we have one IDFS computation
-   per block with incoming threaded edges, which can lower the
-   cost of the true incremental update algorithm.  */
+   If NOLOOP_ONLY is true, we only perform the threading as long as it
+   does not affect the structure of the loops in a nontrivial way.  */
 
 static bool
-thread_block (basic_block bb)
+thread_block (basic_block bb, bool noloop_only)
 {
   /* E is an incoming edge into BB that we may or may not want to
      redirect to a duplicate of BB.  */
-  edge e;
+  edge e, e2;
   edge_iterator ei;
   struct local_info local_info;
-
-  /* FOUND_BACKEDGE indicates that we found an incoming backedge
-     into BB, in which case we may ignore certain jump threads
-     to avoid creating irreducible regions.  */
-  bool found_backedge = false;
+  struct loop *loop = bb->loop_father;
 
   /* ALL indicates whether or not all incoming edges into BB should
      be threaded to a duplicate of BB.  */
   bool all = true;
-
-  /* If optimizing for size, only thread this block if we don't have
-     to duplicate it or it's an otherwise empty redirection block.  */
-  if (optimize_size
-      && EDGE_COUNT (bb->preds) > 1
-      && !redirection_block_p (bb))
-    {
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	e->aux = NULL;
-      return false;
-    }
 
   /* To avoid scanning a linear array for the element we need we instead
      use a hash table.  For normal code there should be no noticeable
@@ -745,35 +527,45 @@ thread_block (basic_block bb)
 				  redirection_data_eq,
 				  free);
 
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    found_backedge |= ((e->flags & EDGE_DFS_BACK) != 0);
+  /* If we thread the latch of the loop to its exit, the loop ceases to
+     exist.  Make sure we do not restrict ourselves in order to preserve
+     this loop.  */
+  if (current_loops && loop->header == bb)
+    {
+      e = loop_latch_edge (loop);
+      e2 = e->aux;
 
-  /* If BB has incoming backedges, then threading across BB might
-     introduce an irreducible region, which would be undesirable
-     as that inhibits various optimizations later.  Prune away
-     any jump threading requests which we know will result in
-     an irreducible region.  */
-  if (found_backedge)
-    prune_undesirable_thread_requests (bb);
+      if (e2 && loop_exit_edge_p (loop, e2))
+	{
+	  loop->header = NULL;
+	  loop->latch = NULL;
+	}
+    }
 
   /* Record each unique threaded destination into a hash table for
      efficient lookups.  */
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
-      if (!e->aux)
+      e2 = e->aux;
+
+      if (!e2
+	  /* If NOLOOP_ONLY is true, we only allow threading through the
+	     header of a loop to exit edges.  */
+	  || (noloop_only
+	      && current_loops
+	      && bb == bb->loop_father->header
+	      && !loop_exit_edge_p (bb->loop_father, e2)))
 	{
 	  all = false;
+	  continue;
 	}
-      else
-	{
-	  edge e2 = e->aux;
-	  update_bb_profile_for_threading (e->dest, EDGE_FREQUENCY (e),
-					   e->count, e->aux);
 
-	  /* Insert the outgoing edge into the hash table if it is not
-	     already in the hash table.  */
-	  lookup_redirection_data (e2, e, INSERT);
-	}
+      update_bb_profile_for_threading (e->dest, EDGE_FREQUENCY (e),
+				       e->count, e->aux);
+
+      /* Insert the outgoing edge into the hash table if it is not
+	 already in the hash table.  */
+      lookup_redirection_data (e2, e, INSERT);
     }
 
   /* If we are going to thread all incoming edges to an outgoing edge, then
@@ -821,6 +613,339 @@ thread_block (basic_block bb)
   return local_info.jumps_threaded;
 }
 
+/* Threads edge E through E->dest to the edge E->aux.  Returns the copy
+   of E->dest created during threading, or E->dest if it was not necessary
+   to copy it (E is its single predecessor).  */
+
+static basic_block
+thread_single_edge (edge e)
+{
+  basic_block bb = e->dest;
+  edge eto = e->aux;
+  struct redirection_data rd;
+  struct local_info local_info;
+
+  e->aux = NULL;
+
+  thread_stats.num_threaded_edges++;
+
+  if (single_pred_p (bb))
+    {
+      /* If BB has just a single predecessor, we should only remove the
+	 control statements at its end, and successors except for ETO.  */
+      remove_ctrl_stmt_and_useless_edges (bb, eto->dest);
+      return bb;
+    }
+
+  /* Otherwise, we need to create a copy.  */
+  update_bb_profile_for_threading (bb, EDGE_FREQUENCY (e), e->count, eto);
+
+  local_info.bb = bb;
+  rd.outgoing_edge = eto;
+
+  create_block_for_threading (bb, &rd);
+  create_edge_and_update_destination_phis (&rd);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
+	     e->src->index, e->dest->index, rd.dup_block->index);
+
+  rd.dup_block->count = e->count;
+  rd.dup_block->frequency = EDGE_FREQUENCY (e);
+  single_succ_edge (rd.dup_block)->count = e->count;
+  redirect_edge_and_branch (e, rd.dup_block);
+  flush_pending_stmts (e);
+
+  return rd.dup_block;
+}
+
+/* Callback for dfs_enumerate_from.  Returns true if BB is different
+   from STOP and DBDS_CE_STOP.  */
+
+static basic_block dbds_ce_stop;
+static bool
+dbds_continue_enumeration_p (basic_block bb, void *stop)
+{
+  return (bb != (basic_block) stop
+	  && bb != dbds_ce_stop);
+}
+
+/* Evaluates the dominance relationship of latch of the LOOP and BB, and
+   returns the state.  */
+
+enum bb_dom_status
+{
+  /* BB does not dominate latch of the LOOP.  */
+  DOMST_NONDOMINATING,
+  /* The LOOP is broken (there is no path from the header to its latch.  */
+  DOMST_LOOP_BROKEN,
+  /* BB dominates the latch of the LOOP.  */
+  DOMST_DOMINATING
+};
+
+static enum bb_dom_status
+determine_bb_domination_status (struct loop *loop, basic_block bb)
+{
+  basic_block *bblocks;
+  unsigned nblocks, i;
+  bool bb_reachable = false;
+  edge_iterator ei;
+  edge e;
+
+#ifdef ENABLE_CHECKING
+  /* This function assumes BB is a successor of LOOP->header.  */
+    {
+      bool ok = false;
+
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+     	  if (e->src == loop->header)
+	    {
+	      ok = true;
+	      break;
+	    }
+	}
+
+      gcc_assert (ok);
+    }
+#endif
+
+  if (bb == loop->latch)
+    return DOMST_DOMINATING;
+
+  /* Check that BB dominates LOOP->latch, and that it is back-reachable
+     from it.  */
+
+  bblocks = XCNEWVEC (basic_block, loop->num_nodes);
+  dbds_ce_stop = loop->header;
+  nblocks = dfs_enumerate_from (loop->latch, 1, dbds_continue_enumeration_p,
+				bblocks, loop->num_nodes, bb);
+  for (i = 0; i < nblocks; i++)
+    FOR_EACH_EDGE (e, ei, bblocks[i]->preds)
+      {
+	if (e->src == loop->header)
+	  {
+	    free (bblocks);
+	    return DOMST_NONDOMINATING;
+	  }
+	if (e->src == bb)
+	  bb_reachable = true;
+      }
+
+  free (bblocks);
+  return (bb_reachable ? DOMST_DOMINATING : DOMST_LOOP_BROKEN);
+}
+
+/* Thread jumps through the header of LOOP.  Returns true if cfg changes.
+   If MAY_PEEL_LOOP_HEADERS is false, we avoid threading from entry edges
+   to the inside of the loop.  */
+
+static bool
+thread_through_loop_header (struct loop *loop, bool may_peel_loop_headers)
+{
+  basic_block header = loop->header;
+  edge e, tgt_edge, latch = loop_latch_edge (loop);
+  edge_iterator ei;
+  basic_block tgt_bb, atgt_bb;
+  enum bb_dom_status domst;
+
+  /* We have already threaded through headers to exits, so all the threading
+     requests now are to the inside of the loop.  We need to avoid creating
+     irreducible regions (i.e., loops with more than one entry block), and
+     also loop with several latch edges, or new subloops of the loop (although
+     there are cases where it might be appropriate, it is difficult to decide,
+     and doing it wrongly may confuse other optimizers).
+
+     We could handle more general cases here.  However, the intention is to
+     preserve some information about the loop, which is impossible if its
+     structure changes significantly, in a way that is not well understood.
+     Thus we only handle few important special cases, in which also updating
+     of the loop-carried information should be feasible:
+
+     1) Propagation of latch edge to a block that dominates the latch block
+	of a loop.  This aims to handle the following idiom:
+
+	first = 1;
+	while (1)
+	  {
+	    if (first)
+	      initialize;
+	    first = 0;
+	    body;
+	  }
+
+	After threading the latch edge, this becomes
+
+	first = 1;
+	if (first)
+	  initialize;
+	while (1)
+	  {
+	    first = 0;
+	    body;
+	  }
+
+	The original header of the loop is moved out of it, and we may thread
+	the remaining edges through it without further constraints.
+
+     2) All entry edges are propagated to a single basic block that dominates
+	the latch block of the loop.  This aims to handle the following idiom
+	(normally created for "for" loops):
+
+	i = 0;
+	while (1)
+	  {
+	    if (i >= 100)
+	      break;
+	    body;
+	    i++;
+	  }
+
+	This becomes
+
+	i = 0;
+	while (1)
+	  {
+	    body;
+	    i++;
+	    if (i >= 100)
+	      break;
+	  }
+     */
+
+  /* Threading through the header won't improve the code if the header has just
+     one successor.  */
+  if (single_succ_p (header))
+    goto fail;
+
+  if (latch->aux)
+    {
+      tgt_edge = latch->aux;
+      tgt_bb = tgt_edge->dest;
+    }
+  else if (!may_peel_loop_headers
+	   && !redirection_block_p (loop->header))
+    goto fail;
+  else
+    {
+      tgt_bb = NULL;
+      tgt_edge = NULL;
+      FOR_EACH_EDGE (e, ei, header->preds)
+	{
+	  if (!e->aux)
+	    {
+	      if (e == latch)
+		continue;
+
+	      /* If latch is not threaded, and there is a header
+		 edge that is not threaded, we would create loop
+		 with multiple entries.  */
+	      goto fail;
+	    }
+
+	  tgt_edge = e->aux;
+	  atgt_bb = tgt_edge->dest;
+	  if (!tgt_bb)
+	    tgt_bb = atgt_bb;
+	  /* Two targets of threading would make us create loop
+	     with multiple entries.  */
+	  else if (tgt_bb != atgt_bb)
+	    goto fail;
+	}
+
+      if (!tgt_bb)
+	{
+	  /* There are no threading requests.  */
+	  return false;
+	}
+
+      /* Redirecting to empty loop latch is useless.  */
+      if (tgt_bb == loop->latch
+	  && empty_block_p (loop->latch))
+	goto fail;
+    }
+
+  /* The target block must dominate the loop latch, otherwise we would be
+     creating a subloop.  */
+  domst = determine_bb_domination_status (loop, tgt_bb);
+  if (domst == DOMST_NONDOMINATING)
+    goto fail;
+  if (domst == DOMST_LOOP_BROKEN)
+    {
+      /* If the loop ceased to exist, mark it as such, and thread through its
+	 original header.  */
+      loop->header = NULL;
+      loop->latch = NULL;
+      return thread_block (header, false);
+    }
+
+  if (tgt_bb->loop_father->header == tgt_bb)
+    {
+      /* If the target of the threading is a header of a subloop, we need
+	 to create a preheader for it, so that the headers of the two loops
+	 do not merge.  */
+      if (EDGE_COUNT (tgt_bb->preds) > 2)
+	{
+	  tgt_bb = create_preheader (tgt_bb->loop_father, 0);
+	  gcc_assert (tgt_bb != NULL);
+	}
+      else
+	tgt_bb = split_edge (tgt_edge);
+    }
+      
+  if (latch->aux)
+    {
+      /* First handle the case latch edge is redirected.  */
+      loop->latch = thread_single_edge (latch);
+      gcc_assert (single_succ (loop->latch) == tgt_bb);
+      loop->header = tgt_bb;
+
+      /* Thread the remaining edges through the former header.  */
+      thread_block (header, false);
+    }
+  else
+    {
+      basic_block new_preheader;
+
+      /* Now consider the case entry edges are redirected to the new entry
+	 block.  Remember one entry edge, so that we can find the new
+	preheader (its destination after threading).  */
+      FOR_EACH_EDGE (e, ei, header->preds)
+	{
+	  if (e->aux)
+	    break;
+	}
+
+      /* The duplicate of the header is the new preheader of the loop.  Ensure
+	 that it is placed correctly in the loop hierarchy.  */
+      loop->copy = loop_outer (loop);
+
+      thread_block (header, false);
+      loop->copy = NULL;
+      new_preheader = e->dest;
+
+      /* Create the new latch block.  This is always necessary, as the latch
+	 must have only a single successor, but the original header had at
+	 least two successors.  */
+      loop->latch = NULL;
+      mfb_kj_edge = single_succ_edge (new_preheader);
+      loop->header = mfb_kj_edge->dest;
+      latch = make_forwarder_block (tgt_bb, mfb_keep_just, NULL);
+      loop->header = latch->dest;
+      loop->latch = latch->src;
+    }
+  
+  return true;
+
+fail:
+  /* We failed to thread anything.  Cancel the requests.  */
+  FOR_EACH_EDGE (e, ei, header->preds)
+    {
+      e->aux = NULL;
+    }
+  return false;
+}
+
 /* Walk through the registered jump threads and convert them into a
    form convenient for this pass.
 
@@ -838,6 +963,11 @@ static void
 mark_threaded_blocks (bitmap threaded_blocks)
 {
   unsigned int i;
+  bitmap_iterator bi;
+  bitmap tmp = BITMAP_ALLOC (NULL);
+  basic_block bb;
+  edge e;
+  edge_iterator ei;
 
   for (i = 0; i < VEC_length (edge, threaded_edges); i += 2)
     {
@@ -845,8 +975,30 @@ mark_threaded_blocks (bitmap threaded_blocks)
       edge e2 = VEC_index (edge, threaded_edges, i + 1);
 
       e->aux = e2;
-      bitmap_set_bit (threaded_blocks, e->dest->index);
+      bitmap_set_bit (tmp, e->dest->index);
     }
+
+  /* If optimizing for size, only thread through block if we don't have
+     to duplicate it or it's an otherwise empty redirection block.  */
+  if (optimize_size)
+    {
+      EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
+	{
+	  bb = BASIC_BLOCK (i);
+	  if (EDGE_COUNT (bb->preds) > 1
+	      && !redirection_block_p (bb))
+	    {
+	      FOR_EACH_EDGE (e, ei, bb->preds)
+		      e->aux = NULL;
+	    }
+	  else
+	    bitmap_set_bit (threaded_blocks, i);
+	}
+    }
+  else
+    bitmap_copy (threaded_blocks, tmp);
+
+  BITMAP_FREE(tmp);
 }
 
 
@@ -856,15 +1008,20 @@ mark_threaded_blocks (bitmap threaded_blocks)
    It is the caller's responsibility to fix the dominance information
    and rewrite duplicated SSA_NAMEs back into SSA form.
 
+   If MAY_PEEL_LOOP_HEADERS is false, we avoid threading edges through
+   loop headers if it does not simplify the loop.
+
    Returns true if one or more edges were threaded, false otherwise.  */
 
 bool
-thread_through_all_blocks (void)
+thread_through_all_blocks (bool may_peel_loop_headers)
 {
   bool retval = false;
   unsigned int i;
   bitmap_iterator bi;
   bitmap threaded_blocks;
+  struct loop *loop;
+  loop_iterator li;
 
   if (threaded_edges == NULL)
     return false;
@@ -874,13 +1031,37 @@ thread_through_all_blocks (void)
 
   mark_threaded_blocks (threaded_blocks);
 
+  if (current_loops)
+    FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+      loop->copy = NULL;
+
+  /* First perform the threading requests that do not affect
+     loop structure.  */
   EXECUTE_IF_SET_IN_BITMAP (threaded_blocks, 0, i, bi)
     {
       basic_block bb = BASIC_BLOCK (i);
 
       if (EDGE_COUNT (bb->preds) > 0)
-	retval |= thread_block (bb);
+	retval |= thread_block (bb, true);
     }
+
+  /* Then perform the threading through loop headers.  We start with the
+     innermost loop, so that the changes in cfg we perform won't affect
+     further threading.  */
+  if (current_loops)
+    {
+      FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+	{
+	  if (!loop->header
+	      || !bitmap_bit_p (threaded_blocks, loop->header->index))
+	    continue;
+
+	  retval |= thread_through_loop_header (loop, may_peel_loop_headers);
+	}
+    }
+
+  if (retval)
+    free_dominance_info (CDI_DOMINATORS);
 
   if (dump_file && (dump_flags & TDF_STATS))
     fprintf (dump_file, "\nJumps threaded: %lu\n",
@@ -890,6 +1071,7 @@ thread_through_all_blocks (void)
   threaded_blocks = NULL;
   VEC_free (edge, heap, threaded_edges);
   threaded_edges = NULL;
+
   return retval;
 }
 

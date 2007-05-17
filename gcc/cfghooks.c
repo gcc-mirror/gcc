@@ -923,9 +923,15 @@ duplicate_block (basic_block bb, edge e, basic_block after)
   set_bb_original (new_bb, bb);
   set_bb_copy (bb, new_bb);
 
-  /* Add the new block to the prescribed loop.  */
+  /* Add the new block to the copy of the loop of BB, or directly to the loop
+     of BB if the loop is not being copied.  */
   if (current_loops != NULL)
-    add_bb_to_loop (new_bb, bb->loop_father->copy);
+    {
+      struct loop *cloop = bb->loop_father;
+      if (cloop->copy)
+	cloop = cloop->copy;
+      add_bb_to_loop (new_bb, cloop);
+    }
 
   return new_bb;
 }

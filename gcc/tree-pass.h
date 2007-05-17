@@ -218,6 +218,9 @@ struct dump_file_info
    for the passes that are handed to register_dump_files.  */
 #define TODO_set_props			(1 << 15)
 
+/* Internally used for the first instance of a pass.  */
+#define TODO_mark_first_instance	(1 << 16)
+
 #define TODO_update_ssa_any		\
     (TODO_update_ssa			\
      | TODO_update_ssa_no_phi		\
@@ -416,5 +419,14 @@ extern struct tree_opt_pass *all_passes, *all_ipa_passes, *all_lowering_passes;
 
 extern void execute_pass_list (struct tree_opt_pass *);
 extern void execute_ipa_pass_list (struct tree_opt_pass *);
+
+/* Set to true if the pass is called the first time during compilation of the
+   current function.  Note that using this information in the optimization
+   passes is considered not to be clean, and it should be avoided if possible.
+   This flag is currently used to prevent loops from being peeled repeatedly
+   in jump threading; it will be removed once we preserve loop structures
+   throughout the compilation -- we will be able to mark the affected loops
+   directly in jump threading, and avoid peeling them next time.  */
+extern bool first_pass_instance;
 
 #endif /* GCC_TREE_PASS_H */
