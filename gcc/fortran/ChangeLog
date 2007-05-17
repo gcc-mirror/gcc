@@ -1,3 +1,18 @@
+2007-05-15  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/31919
+	PR fortran/31929
+	PR fortran/31930
+	* intrinsic.c (check_specific): Check elemental intrinsics for
+	rank and shape.
+	(add_functions): Fixed dummy argument names of BESJN and BESYN.
+	Fixed elemental status of MCLOCK and MCLOCK8.
+	* check.c (check_rest): Added check for array conformance.
+	(gfc_check_merge): Removed check for array conformance.
+	(gfc_check_besn): Removed check for scalarity.
+	* intrinsic.texi (CSHIFT, EOSHIFT): Fixed typos.
+	(BESJN, BESYN): Clarified documentation.
+
 2007-05-17  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi (GFORTRAN_CONVERT_UNIT): Improve documentation.

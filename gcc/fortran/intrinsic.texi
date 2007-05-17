@@ -1575,6 +1575,8 @@ end program test_besj1
 @code{BESJN(N, X)} computes the Bessel function of the first kind of order
 @var{N} of @var{X}.
 
+If both arguments are arrays, their ranks and shapes shall conform.
+
 @item @emph{Standard}:
 GNU extension
 
@@ -1586,8 +1588,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{N} @tab The type shall be @code{INTEGER(*)}, and it shall be scalar.
-@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
+@item @var{N} @tab Shall be a scalar or an array of type  @code{INTEGER(*)}.
+@item @var{X} @tab Shall be a scalar or an array of type  @code{REAL(*)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -1712,6 +1714,8 @@ end program test_besy1
 @code{BESYN(N, X)} computes the Bessel function of the second kind of order
 @var{N} of @var{X}.
 
+If both arguments are arrays, their ranks and shapes shall conform.
+
 @item @emph{Standard}:
 GNU extension
 
@@ -1723,8 +1727,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{N} @tab The type shall be @code{INTEGER(*)}, and it shall be scalar.
-@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
+@item @var{N} @tab Shall be a scalar or an array of type  @code{INTEGER(*)}.
+@item @var{X} @tab Shall be a scalar or an array of type  @code{REAL(*)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -2487,14 +2491,14 @@ shifted out one end of each rank one section are shifted back in the other end.
 F95 and later
 
 @item @emph{Class}:
-transformational function
+Transformational function
 
 @item @emph{Syntax}:
-@code{RESULT = CSHIFT(A, SHIFT [, DIM])}
+@code{RESULT = CSHIFT(ARRAY, SHIFT [, DIM])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ARRAY}  @tab May be any type, not scaler.
+@item @var{ARRAY}  @tab Shall be an array of any type.
 @item @var{SHIFT}  @tab The type shall be @code{INTEGER}.
 @item @var{DIM}    @tab The type shall be @code{INTEGER}.
 @end multitable
@@ -3120,10 +3124,10 @@ following are copied in depending on the type of @var{ARRAY}.
 F95 and later
 
 @item @emph{Class}:
-transformational function
+Transformational function
 
 @item @emph{Syntax}:
-@code{RESULT = EOSHIFT(A, SHIFT [, BOUNDARY, DIM])}
+@code{RESULT = EOSHIFT(ARRAY, SHIFT [, BOUNDARY, DIM])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
