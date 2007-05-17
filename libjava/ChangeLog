@@ -1,4 +1,9 @@
-2007-05-17  Kyle Galloway <kgallowa@redhat.com>
+2007-05-17  Kyle Galloway  <kgallowa@redhat.com>
+
+	* gnu/classpath/jdwp/natVMMethod.cc (getModifiers): Check for native
+	classes and mark methods as native appropriately.
+
+2007-05-17  Kyle Galloway  <kgallowa@redhat.com>
 
 	* gnu/classpath/jdwp/VMFrame.java (<init>): Add parameter for "this"
 	pointer.

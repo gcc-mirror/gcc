@@ -14,6 +14,7 @@ details.  */
 #include <jvmti.h>
 #include "jvmti-int.h"
 
+#include <java/lang/reflect/Modifier.h>
 #include <gnu/classpath/jdwp/VMMethod.h>
 #include <gnu/classpath/jdwp/exception/AbsentInformationException.h>
 #include <gnu/classpath/jdwp/exception/InvalidMethodException.h>
@@ -65,6 +66,12 @@ gnu::classpath::jdwp::VMMethod::getModifiers ()
   jmethodID method = reinterpret_cast<jmethodID> (_methodId);
   jint flags;
   env->GetMethodModifiers (method, &flags);
+
+  // If this class is compiled, as far as JDWP is concerned, its methods are 
+  // native.  This will set the native flag for these methods.
+  if (!_Jv_IsInterpretedClass (getDeclaringClass ()))
+    flags |= ::java::lang::reflect::Modifier::NATIVE;
+
   return flags;
 }
 
