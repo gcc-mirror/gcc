@@ -74,11 +74,13 @@ public class VMFrame
    * @param frame_id a long, the jframeID of this frame
    * @param frame_loc a Location, the location of this frame
    */
-  public VMFrame(Thread thr, long frame_id, Location frame_loc)
+  public VMFrame(Thread thr, long frame_id, Location frame_loc,
+                 Object frame_obj)
   {
     thread = thr;
     id = frame_id;
     loc = frame_loc;
+    obj = frame_obj;
   }
   
   /**

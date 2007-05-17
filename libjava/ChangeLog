@@ -1,3 +1,12 @@
+2007-05-17  Kyle Galloway <kgallowa@redhat.com>
+
+	* gnu/classpath/jdwp/VMFrame.java (<init>): Add parameter for "this"
+	pointer.
+	* gnu/classpath/jdwp/VMFrame.h: Regenerated.
+	* classpath/lib/gnu/classpath/jdwp/VMFrame.class: Rebuilt.
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc (getFrame): Use new
+	VMFrame constructor.
+
 2007-05-16  David Daney  <ddaney@avtrex.com>
 
 	* include/java-stack.h (_Jv_FrameInfo): Remove union definition.
