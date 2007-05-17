@@ -1,3 +1,9 @@
+2007-05-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/31691
+	* combine.c (simplify_set): Build a new src pattern instead of
+	substituting its operands in the COMPARE case.
+
 2007-05-17  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-vrp.c (finalize_jump_threads): Do not care about dominance info.
