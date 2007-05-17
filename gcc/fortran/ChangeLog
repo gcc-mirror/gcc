@@ -1,3 +1,7 @@
+2007-05-17  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (GFORTRAN_CONVERT_UNIT): Improve documentation.
+
 2007-05-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31725
