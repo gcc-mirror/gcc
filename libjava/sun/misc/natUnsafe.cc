@@ -31,7 +31,8 @@ public:
 
 spinlock ()
   {
-    while (! compare_and_swap (&lock, 0, 1));
+    while (! compare_and_swap (&lock, 0, 1))
+      ;
   }
   ~spinlock ()
   {
