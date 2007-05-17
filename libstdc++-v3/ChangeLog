@@ -1,3 +1,8 @@
+2007-05-17  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h (mismatch): Move...
+	* include/bits/stl_algo.h: ... here.
+
 2007-05-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/tr1/cmath: Guard special math with
