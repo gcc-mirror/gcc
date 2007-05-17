@@ -9,7 +9,7 @@
 
 glue (ident, 12)		/* OK.  */
 glue (ident, 12e3)		/* OK.  */
-glue (ident, 12e+3)		/* { dg-warning "valid preprocessing tok" } */
-glue (ident, 12e-3)		/* { dg-warning "valid preprocessing tok" } */
-glue (ident, 1.2)		/* { dg-warning "valid preprocessing tok" } */
-glue (ident, .12)		/* { dg-warning "valid preprocessing tok" } */
+glue (ident, 12e+3)		/* { dg-error "valid preprocessing tok" } */
+glue (ident, 12e-3)		/* { dg-error "valid preprocessing tok" } */
+glue (ident, 1.2)		/* { dg-error "valid preprocessing tok" } */
+glue (ident, .12)		/* { dg-error "valid preprocessing tok" } */

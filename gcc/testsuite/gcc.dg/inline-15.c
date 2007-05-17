@@ -3,5 +3,5 @@
 /* { dg-do compile } */
 /* { dg-options "-std=c99" } */
 
-extern inline int func1 (void); /* { dg-error "never defined" } */
-inline int func2 (void); /* { dg-error "never defined" } */
+extern inline int func1 (void); /* { dg-warning "never defined" } */
+inline int func2 (void); /* { dg-warning "never defined" } */

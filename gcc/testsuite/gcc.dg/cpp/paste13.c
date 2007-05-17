@@ -6,4 +6,4 @@
    spellings.  Neil Booth, 9 Oct 2002.  */
 
 #define a /##/=
-a			/* { dg-warning "valid preprocessing tok" } */
+a			/* { dg-error "valid preprocessing tok" } */

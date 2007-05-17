@@ -7,9 +7,9 @@ int foo(int, ...);
 a(1)
 a(1, 2, 3)
 #define b(x, y, z...) foo(x, ##y)
-b(1, 2, 3)			/* { dg-warning "valid preprocessing token" } */
+b(1, 2, 3)			/* { dg-error "valid preprocessing token" } */
 #define c(x, y, z...) foo(x, ##z)
 c(1, 2)
 c(1, 2, 3)
 #define d(x) fo(##x)
-d(1)				/* { dg-warning "valid preprocessing token" } */
+d(1)				/* { dg-error "valid preprocessing token" } */

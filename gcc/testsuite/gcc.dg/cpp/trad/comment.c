@@ -2,4 +2,4 @@
 
 /* { dg-do preprocess } */
 
-/* { dg-warning "unterminated comment" }
+/* { dg-error "unterminated comment" }

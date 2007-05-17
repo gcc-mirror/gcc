@@ -11,6 +11,6 @@
 #define f(x) x
 
 f (
-#if 1		/* { dg-warning "not portable" } */
+#if 1		/* { dg-error "not portable" } */
 1)
 #endif

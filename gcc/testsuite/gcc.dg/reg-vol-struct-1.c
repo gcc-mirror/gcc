@@ -13,6 +13,6 @@ f (void)
   register struct S a;
   register struct S b[2];
   register struct S c __asm__("nosuchreg"); /* { dg-error "object with volatile field" "explicit reg name" } */
-  &a; /* { dg-warning "address of register" "explicit address" } */
-  b; /* { dg-warning "address of register" "implicit address" } */
+  &a; /* { dg-error "address of register" "explicit address" } */
+  b; /* { dg-error "address of register" "implicit address" } */
 }
