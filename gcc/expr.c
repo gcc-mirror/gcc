@@ -9001,6 +9001,21 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	return temp;
       }
 
+    case VEC_UNPACK_FLOAT_HI_EXPR:
+    case VEC_UNPACK_FLOAT_LO_EXPR:
+      {
+	op0 = expand_normal (TREE_OPERAND (exp, 0));
+	/* The signedness is determined from input operand.  */
+	this_optab = optab_for_tree_code (code,
+					  TREE_TYPE (TREE_OPERAND (exp, 0)));
+	temp = expand_widen_pattern_expr
+	  (exp, op0, NULL_RTX, NULL_RTX,
+	   target, TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))));
+
+	gcc_assert (temp);
+	return temp;
+      }
+
     case VEC_WIDEN_MULT_HI_EXPR:
     case VEC_WIDEN_MULT_LO_EXPR:
       {
@@ -9016,6 +9031,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
     case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
+    case VEC_PACK_FIX_TRUNC_EXPR:
       {
 	mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
 	goto binop;

@@ -421,8 +421,11 @@ expand_vector_operations_1 (block_stmt_iterator *bsi)
       || code == VEC_WIDEN_MULT_LO_EXPR
       || code == VEC_UNPACK_HI_EXPR
       || code == VEC_UNPACK_LO_EXPR
+      || code == VEC_UNPACK_FLOAT_HI_EXPR
+      || code == VEC_UNPACK_FLOAT_LO_EXPR
       || code == VEC_PACK_TRUNC_EXPR
-      || code == VEC_PACK_SAT_EXPR)
+      || code == VEC_PACK_SAT_EXPR
+      || code == VEC_PACK_FIX_TRUNC_EXPR)
     type = TREE_TYPE (TREE_OPERAND (rhs, 0));
 
   /* Optabs will try converting a negation into a subtraction, so

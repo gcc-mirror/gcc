@@ -1085,12 +1085,19 @@ DEFTREECODE (GIMPLE_MODIFY_STMT, "gimple_modify_stmt", tcc_gimple_stmt, 2)
 DEFTREECODE (VEC_WIDEN_MULT_HI_EXPR, "widen_mult_hi_expr", tcc_binary, 2)
 DEFTREECODE (VEC_WIDEN_MULT_LO_EXPR, "widen_mult_hi_expr", tcc_binary, 2)
 
-/* Unpack (extract and promote/widen) the high/low elements of the input vector
-   into the output vector. The input vector has twice as many elements
-   as the output vector, that are half the size of the elements
+/* Unpack (extract and promote/widen) the high/low elements of the input
+   vector into the output vector.  The input vector has twice as many
+   elements as the output vector, that are half the size of the elements
    of the output vector.  This is used to support type promotion. */
 DEFTREECODE (VEC_UNPACK_HI_EXPR, "vec_unpack_hi_expr", tcc_unary, 1)
 DEFTREECODE (VEC_UNPACK_LO_EXPR, "vec_unpack_lo_expr", tcc_unary, 1)
+
+/* Unpack (extract) the high/low elements of the input vector, convert
+   fixed point values to floating point and widen elements into the
+   output vector.  The input vector has twice as many elements as the output
+   vector, that are half the size of the elements of the output vector.  */
+DEFTREECODE (VEC_UNPACK_FLOAT_HI_EXPR, "vec_unpack_float_hi_expr", tcc_unary, 1)
+DEFTREECODE (VEC_UNPACK_FLOAT_LO_EXPR, "vec_unpack_float_lo_expr", tcc_unary, 1)
 
 /* Pack (demote/narrow and merge) the elements of the two input vectors
    into the output vector using truncation/saturation.
@@ -1098,6 +1105,12 @@ DEFTREECODE (VEC_UNPACK_LO_EXPR, "vec_unpack_lo_expr", tcc_unary, 1)
    output vector.  This is used to support type demotion.  */
 DEFTREECODE (VEC_PACK_TRUNC_EXPR, "vec_pack_trunc_expr", tcc_binary, 2)
 DEFTREECODE (VEC_PACK_SAT_EXPR, "vec_pack_sat_expr", tcc_binary, 2)
+
+/* Convert floating point values of the two input vectors to integer
+   and pack (narrow and merge) the elements into the output vector. The
+   elements of the input vector are twice the size of the elements of
+   the output vector.  */
+DEFTREECODE (VEC_PACK_FIX_TRUNC_EXPR, "vec_pack_fix_trunc_expr", tcc_binary, 2)
 
 /* Extract even/odd fields from vectors.  */
 DEFTREECODE (VEC_EXTRACT_EVEN_EXPR, "vec_extracteven_expr", tcc_binary, 2)

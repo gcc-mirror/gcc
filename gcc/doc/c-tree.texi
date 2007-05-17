@@ -1983,8 +1983,11 @@ This macro returns the attributes on the type @var{type}.
 @tindex VEC_WIDEN_MULT_LO_EXPR
 @tindex VEC_UNPACK_HI_EXPR
 @tindex VEC_UNPACK_LO_EXPR
+@tindex VEC_UNPACK_FLOAT_HI_EXPR
+@tindex VEC_UNPACK_FLOAT_LO_EXPR
 @tindex VEC_PACK_TRUNC_EXPR
 @tindex VEC_PACK_SAT_EXPR
+@tindex VEC_PACK_FIX_TRUNC_EXPR
 @tindex VEC_EXTRACT_EVEN_EXPR 
 @tindex VEC_EXTRACT_ODD_EXPR
 @tindex VEC_INTERLEAVE_HIGH_EXPR
@@ -2846,6 +2849,17 @@ high @code{N/2} elements of the vector are extracted and widened (promoted).
 In the case of @code{VEC_UNPACK_LO_EXPR} the low @code{N/2} elements of the
 vector are extracted and widened (promoted).
 
+@item VEC_UNPACK_FLOAT_HI_EXPR
+@item VEC_UNPACK_FLOAT_LO_EXPR
+These nodes represent unpacking of the high and low parts of the input vector,
+where the values are converted from fixed point to floating point.  The
+single operand is a vector that contains @code{N} elements of the same
+integral type.  The result is a vector that contains half as many elements
+of a floating point type whose size is twice as wide.  In the case of
+@code{VEC_UNPACK_HI_EXPR} the high @code{N/2} elements of the vector are
+extracted, converted and widened.  In the case of @code{VEC_UNPACK_LO_EXPR}
+the low @code{N/2} elements of the vector are extracted, converted and widened.
+
 @item VEC_PACK_TRUNC_EXPR
 This node represents packing of truncated elements of the two input vectors
 into the output vector.  Input operands are vectors that contain the same
@@ -2861,6 +2875,15 @@ the same number of elements of the same integral type.  The result is a
 vector that contains twice as many elements of an integral type whose size
 is half as wide.  The elements of the two vectors are demoted and merged
 (concatenated) to form the output vector.
+
+@item VEC_PACK_FIX_TRUNC_EXPR
+This node represents packing of elements of the two input vectors into the
+output vector, where the values are converted from floating point
+to fixed point.  Input operands are vectors that contain the same number
+of elements of a floating point type.  The result is a vector that contains
+twice as many elements of an integral type whose size is half as wide.  The
+elements of the two vectors are merged (concatenated) to form the output
+vector.
 
 @item VEC_EXTRACT_EVEN_EXPR
 @item VEC_EXTRACT_ODD_EXPR

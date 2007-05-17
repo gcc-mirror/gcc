@@ -1736,10 +1736,10 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
    widening operation that is supported by the target platform in 
    vector form (i.e., when operating on arguments of type VECTYPE).
     
-   The two kinds of widening operations we currently support are
-   NOP and WIDEN_MULT. This function checks if these operations
-   are supported by the target platform either directly (via vector 
-   tree-codes), or via target builtins.
+   Widening operations we currently support are NOP (CONVERT), FLOAT
+   and WIDEN_MULT.  This function checks if these operations are supported
+   by the target platform either directly (via vector tree-codes), or via
+   target builtins.
 
    Output:
    - CODE1 and CODE2 are codes of vector operations to be used when 
@@ -1815,6 +1815,7 @@ supportable_widening_operation (enum tree_code code, tree stmt, tree vectype,
       break;
 
     case NOP_EXPR:
+    case CONVERT_EXPR:
       if (BYTES_BIG_ENDIAN)
         {
           c1 = VEC_UNPACK_HI_EXPR;
@@ -1824,6 +1825,19 @@ supportable_widening_operation (enum tree_code code, tree stmt, tree vectype,
         {
           c2 = VEC_UNPACK_HI_EXPR;
           c1 = VEC_UNPACK_LO_EXPR;
+        }
+      break;
+
+    case FLOAT_EXPR:
+      if (BYTES_BIG_ENDIAN)
+        {
+          c1 = VEC_UNPACK_FLOAT_HI_EXPR;
+          c2 = VEC_UNPACK_FLOAT_LO_EXPR;
+        }
+      else
+        {
+          c2 = VEC_UNPACK_FLOAT_HI_EXPR;
+          c1 = VEC_UNPACK_FLOAT_LO_EXPR;
         }
       break;
 
@@ -1845,6 +1859,63 @@ supportable_widening_operation (enum tree_code code, tree stmt, tree vectype,
       || (icode2 = optab2->handlers[(int) vec_mode].insn_code)
                                                         == CODE_FOR_nothing
       || insn_data[icode2].operand[0].mode != TYPE_MODE (wide_vectype))
+    return false;
+
+  return true;
+}
+
+
+/* Function supportable_narrowing_operation
+
+   Check whether an operation represented by the code CODE is a 
+   narrowing operation that is supported by the target platform in 
+   vector form (i.e., when operating on arguments of type VECTYPE).
+    
+   Narrowing operations we currently support are NOP (CONVERT) and
+   FIX_TRUNC. This function checks if these operations are supported by
+   the target platform directly via vector tree-codes.
+
+   Output:
+   - CODE1 is the code of a vector operation to be used when 
+   vectorizing the operation, if available.  */
+
+bool
+supportable_narrowing_operation (enum tree_code code,
+				 tree stmt, tree vectype,
+				 enum tree_code *code1)
+{
+  enum machine_mode vec_mode;
+  enum insn_code icode1;
+  optab optab1;
+  tree expr = GIMPLE_STMT_OPERAND (stmt, 1);
+  tree type = TREE_TYPE (expr);
+  tree narrow_vectype = get_vectype_for_scalar_type (type);
+  enum tree_code c1;
+
+  switch (code)
+    {
+    case NOP_EXPR:
+    case CONVERT_EXPR:
+      c1 = VEC_PACK_TRUNC_EXPR;
+      break;
+
+    case FIX_TRUNC_EXPR:
+      c1 = VEC_PACK_FIX_TRUNC_EXPR;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  *code1 = c1;
+  optab1 = optab_for_tree_code (c1, vectype);
+
+  if (!optab1)
+    return false;
+
+  vec_mode = TYPE_MODE (vectype);
+  if ((icode1 = optab1->handlers[(int) vec_mode].insn_code) == CODE_FOR_nothing
+      || insn_data[icode1].operand[0].mode != TYPE_MODE (narrow_vectype))
     return false;
 
   return true;
