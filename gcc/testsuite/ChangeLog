@@ -1,3 +1,10 @@
+2007-05-17  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-2.c: New test.
+	* gcc.dg/vect/vect-102.c, gcc.dg/vect/vect-103.c,
+	gcc.dg/vect/vect-104.c: Use more complex construction to prevent vectorizing.
+	* gcc.dg/tree-ssa/pr21559.c: Update outcome.
+
 2007-05-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/24659

@@ -14,6 +14,7 @@ struct extraction
 
 static int a[N] = {1,2,3,4,5,6,7,8,9};
 static int b[N] = {2,3,4,5,6,7,8,9,9};
+volatile int foo;
 
 int main1 (int x, int y) {
   int i;
@@ -23,7 +24,7 @@ int main1 (int x, int y) {
   for (i = 0; i < N; i++)
     {
        p->a[i] = a[i];
-       if (x == 135)
+       if (foo == 135)
 	 abort (); /* to avoid vectorization  */
     }
 
@@ -46,6 +47,7 @@ int main (void)
 { 
   check_vect ();
 
+  foo = 0;
   return main1 (0, N);
 }
 

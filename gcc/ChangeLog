@@ -1,3 +1,35 @@
+2007-05-17  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-vrp.c (finalize_jump_threads): Do not care about dominance info.
+	(execute_vrp): Preserve loops through jump threading.
+	* tree-ssa-threadupdate.c (thread_single_edge,
+	dbds_continue_enumeration_p, determine_bb_domination_status,
+	thread_through_loop_header): New functions.
+	(create_edge_and_update_destination_phis,
+	create_edge_and_update_destination_phis): Set loops for the new blocks.
+	(prune_undesirable_thread_requests): Removed.
+	(redirect_edges): Do not pretend that redirect_edge_and_branch can
+	create new blocks.
+	(thread_block): Do not call prune_undesirable_thread_requests.
+	Update loops.
+	(mark_threaded_blocks): Select edges to thread here.
+	(thread_through_all_blocks): Take may_peel_loop_headers argument.
+	Thread edges through loop headers independently.
+	* cfgloopmanip.c (create_preheader, mfb_keep_just): Export.
+	* tree-pass.h (TODO_mark_first_instance): New.
+	(first_pass_instance): Declare.
+	* cfghooks.c (duplicate_block): Put the block to the original loop
+	if copy is not specified.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Preserve loops through
+	jump threading.  Pass may_peel_loop_headers to
+	thread_through_all_blocks according to first_pass_instance.
+	* cfgloop.h (create_preheader): Declare.
+	* tree-flow.h (thread_through_all_blocks): Declaration changed.
+	* basic-block.h (mfb_keep_just, mfb_kj_edge): Declare.
+	* passes.c (first_pass_instance): New variable.
+	(next_pass_1): Set TODO_mark_first_instance.
+	(execute_todo): Set first_pass_instance.
+
 2007-05-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/24659

@@ -252,6 +252,7 @@ enum
   CP_SIMPLE_PREHEADERS = 1
 };
 
+basic_block create_preheader (struct loop *, int);
 extern void create_preheaders (int);
 extern void force_single_succ_latches (void);
 

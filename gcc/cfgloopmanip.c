@@ -41,7 +41,6 @@ static int find_path (edge, basic_block **);
 static void fix_loop_placements (struct loop *, bool *);
 static bool fix_bb_placement (basic_block);
 static void fix_bb_placements (basic_block, bool *);
-static basic_block create_preheader (struct loop *, int);
 static void unloop (struct loop *, bool *);
 
 #define RDIV(X,Y) (((X) + (Y) / 2) / (Y))
@@ -1085,8 +1084,8 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
    MFB_KJ_EDGE to the entry part.  E is the edge for that we should decide
    whether to redirect it.  */
 
-static edge mfb_kj_edge;
-static bool
+edge mfb_kj_edge;
+bool
 mfb_keep_just (edge e)
 {
   return e != mfb_kj_edge;
@@ -1097,7 +1096,7 @@ mfb_keep_just (edge e)
    entry; otherwise we also force preheader block to have only one successor.
    The function also updates dominators.  */
 
-static basic_block
+basic_block
 create_preheader (struct loop *loop, int flags)
 {
   edge e, fallthru;
