@@ -1,3 +1,8 @@
+2007-05-17  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/31917
+	* runtime/environ.c (mark_range): Fix setting default convert unit.
+
 2007-05-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/31922
