@@ -44,9 +44,7 @@
 
 #pragma GCC system_header
 
-#include <cstdio>               // get std::vsnprintf or std::vsprintf
 #include <clocale>
-#include <libintl.h> 		// For messages
 #include <cstdarg>
 #include <cstddef>
 
@@ -90,9 +88,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     va_start(__args, __fmt);
 
 #ifdef _GLIBCXX_USE_C99
-    const int __ret = std::vsnprintf(__out, __size, __fmt, __args);
+    const int __ret = __builtin_vsnprintf(__out, __size, __fmt, __args);
 #else
-    const int __ret = std::vsprintf(__out, __fmt, __args);
+    const int __ret = __builtin_vsprintf(__out, __fmt, __args);
 #endif
 
     va_end(__args);

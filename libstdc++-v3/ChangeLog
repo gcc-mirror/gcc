@@ -1,3 +1,12 @@
+2007-05-17  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/gnu/c_locale.h: Do not include <libintl.h>.
+	* config/locale/gnu/messages_members.h: Do it here.
+	
+	* config/locale/gnu/c_locale.h: Do not include <cstdio>, use
+	the builtins.
+	* config/locale/generic/c_locale.h: Likewise.
+
 2007-05-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_COMPILER_FEATURES): Add -g to
