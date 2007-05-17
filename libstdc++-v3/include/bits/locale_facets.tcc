@@ -1200,7 +1200,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
       // Padding last.
       if (__adjust == ios_base::left)
 	{
-	  _Traits::copy(__news, const_cast<_CharT*>(__olds), __oldlen);
+	  _Traits::copy(__news, __olds, __oldlen);
 	  _Traits::assign(__news + __oldlen, __plen, __fill);
 	  return;
 	}
@@ -1214,30 +1214,27 @@ _GLIBCXX_END_LDBL_NAMESPACE
           const locale& __loc = __io._M_getloc();
 	  const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
 
-	  const bool __testsign = (__ctype.widen('-') == __olds[0]
-				   || __ctype.widen('+') == __olds[0]);
-	  const bool __testhex = (__ctype.widen('0') == __olds[0]
-				  && __oldlen > 1
-				  && (__ctype.widen('x') == __olds[1]
-				      || __ctype.widen('X') == __olds[1]));
-	  if (__testhex)
+	  if (__ctype.widen('-') == __olds[0]
+	      || __ctype.widen('+') == __olds[0])
+	    {
+	      __news[0] = __olds[0];
+	      __mod = 1;
+	      ++__news;
+	    }
+	  else if (__ctype.widen('0') == __olds[0]
+		   && __oldlen > 1
+		   && (__ctype.widen('x') == __olds[1]
+		       || __ctype.widen('X') == __olds[1]))
 	    {
 	      __news[0] = __olds[0];
 	      __news[1] = __olds[1];
 	      __mod = 2;
 	      __news += 2;
 	    }
-	  else if (__testsign)
-	    {
-	      __news[0] = __olds[0];
-	      __mod = 1;
-	      ++__news;
-	    }
 	  // else Padding first.
 	}
       _Traits::assign(__news, __plen, __fill);
-      _Traits::copy(__news + __plen, const_cast<_CharT*>(__olds + __mod),
-		    __oldlen - __mod);
+      _Traits::copy(__news + __plen, __olds + __mod, __oldlen - __mod);
     }
 
   bool
