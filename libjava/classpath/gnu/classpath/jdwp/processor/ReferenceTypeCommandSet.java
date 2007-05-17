@@ -183,8 +183,7 @@ public class ReferenceTypeCommandSet
   private void executeMethods(ByteBuffer bb, DataOutputStream os)
     throws JdwpException, IOException
   {
-    ClassReferenceTypeId refId
-      = (ClassReferenceTypeId) idMan.readReferenceTypeId(bb);
+    ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
     Class clazz = refId.getType();
 
     VMMethod[] methods = VMVirtualMachine.getAllClassMethods(clazz);

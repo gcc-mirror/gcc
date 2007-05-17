@@ -1,5 +1,12 @@
 2007-05-17  Kyle Galloway  <kgallowa@redhat.com>
 
+	* classpath/gnu/classpath/jdwp/processor/ReferenceTypeCommandSet.java
+	(executeMethods): Remove cast to ClassReferenceTypeId.
+	* classpath/lib/gnu/classpath/jdwp/processor/
+	ReferenceTypeCommandSet.class: Rebuilt.
+
+2007-05-17  Kyle Galloway  <kgallowa@redhat.com>
+
 	* gnu/classpath/jdwp/natVMMethod.cc (getModifiers): Check for native
 	classes and mark methods as native appropriately.
 
