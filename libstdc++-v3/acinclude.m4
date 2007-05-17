@@ -170,8 +170,8 @@ AC_DEFUN([GLIBCXX_CHECK_COMPILER_FEATURES], [
 
   # Check for -ffunction-sections -fdata-sections
   AC_MSG_CHECKING([for g++ that supports -ffunction-sections -fdata-sections])
-  CXXFLAGS='-Werror -ffunction-sections -fdata-sections'
-  AC_TRY_COMPILE(, [int foo; void bar() { };], [ac_fdsections=yes], [ac_fdsections=no])
+  CXXFLAGS='-g -Werror -ffunction-sections -fdata-sections'
+  AC_TRY_COMPILE([int foo; void bar() { };],, [ac_fdsections=yes], [ac_fdsections=no])
   if test "$ac_test_CXXFLAGS" = set; then
     CXXFLAGS="$ac_save_CXXFLAGS"
   else

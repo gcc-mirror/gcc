@@ -8272,18 +8272,18 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # Check for -ffunction-sections -fdata-sections
   echo "$as_me:$LINENO: checking for g++ that supports -ffunction-sections -fdata-sections" >&5
 echo $ECHO_N "checking for g++ that supports -ffunction-sections -fdata-sections... $ECHO_C" >&6
-  CXXFLAGS='-Werror -ffunction-sections -fdata-sections'
+  CXXFLAGS='-g -Werror -ffunction-sections -fdata-sections'
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-
+int foo; void bar() { };
 int
 main ()
 {
-int foo; void bar() { };
+
   ;
   return 0;
 }
@@ -56567,18 +56567,18 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # Check for -ffunction-sections -fdata-sections
   echo "$as_me:$LINENO: checking for g++ that supports -ffunction-sections -fdata-sections" >&5
 echo $ECHO_N "checking for g++ that supports -ffunction-sections -fdata-sections... $ECHO_C" >&6
-  CXXFLAGS='-Werror -ffunction-sections -fdata-sections'
+  CXXFLAGS='-g -Werror -ffunction-sections -fdata-sections'
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-
+int foo; void bar() { };
 int
 main ()
 {
-int foo; void bar() { };
+
   ;
   return 0;
 }
