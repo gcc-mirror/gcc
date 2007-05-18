@@ -1,3 +1,8 @@
+2007-05-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/31628
+	* gcc.target/i386/pr31628.c: New.
+
 2007-05-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/31344
