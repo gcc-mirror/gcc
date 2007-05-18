@@ -1,3 +1,11 @@
+2007-05-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/31989
+	PR target/31681
+	PR target/31666
+	* config/i386/i386.c (init_cumulative_args): Set maybe_vaarg to
+	true if function has no argument.
+
 2007-05-18  DJ Delorie  <dj@redhat.com>
 
 	* config/mips/mips.c (mips_offset_within_alignment_p): New.
