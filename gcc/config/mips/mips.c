@@ -412,6 +412,7 @@ static rtx mips_expand_builtin_bposge (enum mips_builtin_type, rtx);
 static void mips_encode_section_info (tree, rtx, int);
 static void mips_extra_live_on_entry (bitmap);
 static int mips_mode_rep_extended (enum machine_mode, enum machine_mode);
+static bool mips_offset_within_alignment_p (rtx, HOST_WIDE_INT);
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -1350,6 +1351,28 @@ mips_classify_symbol (rtx x)
   return SYMBOL_GENERAL;
 }
 
+/* Returns true if OFFSET is within the range [0, ALIGN), where ALIGN
+   is the alignment (in bytes) of SYMBOL_REF X.  */
+
+static bool
+mips_offset_within_alignment_p (rtx x, HOST_WIDE_INT offset)
+{
+  /* If for some reason we can't get the alignment for the
+     symbol, initializing this to one means we won't accept any
+     offset.  */
+  HOST_WIDE_INT align = 1;
+  tree t;
+
+  /* Get the alignment of the symbol we're referring to.  */
+  t = SYMBOL_REF_DECL (x);
+  if (t)
+    align = DECL_ALIGN_UNIT (t);
+
+  if (offset >= 0 && offset < align)
+    return true;
+  return false;
+}
+
 /* Return true if X is a symbolic constant that can be calculated in
    the same way as a bare symbol.  If it is, store the type of the
    symbol in *SYMBOL_TYPE.  */
@@ -1361,7 +1384,10 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
 
   split_const (x, &x, &offset);
   if (UNSPEC_ADDRESS_P (x))
-    *symbol_type = UNSPEC_ADDRESS_TYPE (x);
+    {
+      *symbol_type = UNSPEC_ADDRESS_TYPE (x);
+      x = UNSPEC_ADDRESS (x);
+    }
   else if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
     {
       *symbol_type = mips_classify_symbol (x);
@@ -1416,14 +1442,18 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
 	 to GOT overflow.  */
       return SMALL_INT (offset);
 
+    case SYMBOL_TPREL:
+    case SYMBOL_DTPREL:
+      /* There is no carry between the HI and LO REL relocations, so the
+	 offset is only valid if we know it won't lead to such a carry.  */
+      return mips_offset_within_alignment_p (x, INTVAL (offset));
+
     case SYMBOL_GOT_DISP:
     case SYMBOL_GOTOFF_DISP:
     case SYMBOL_GOTOFF_CALL:
     case SYMBOL_GOTOFF_LOADGP:
     case SYMBOL_TLSGD:
     case SYMBOL_TLSLDM:
-    case SYMBOL_DTPREL:
-    case SYMBOL_TPREL:
     case SYMBOL_GOTTPREL:
     case SYMBOL_TLS:
     case SYMBOL_HALF:

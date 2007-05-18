@@ -1,3 +1,8 @@
+2007-05-18  DJ Delorie  <dj@redhat.com>
+
+	* config/mips/mips.c (mips_offset_within_alignment_p): New.
+	(mips_symbolic_constant_p): Call it for TPREL and DTPREL symbols.
+
 2007-05-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* longlong.h (__x86_64__): Add definitions for add_ssaaaa,
