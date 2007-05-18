@@ -3051,7 +3051,10 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
     cum->mmx_nregs = MMX_REGPARM_MAX;
   cum->warn_sse = true;
   cum->warn_mmx = true;
-  cum->maybe_vaarg = (fntype ? type_has_variadic_args_p (fntype) : !libname);
+  cum->maybe_vaarg = (fntype
+		      ? (!TYPE_ARG_TYPES (fntype)
+			 || type_has_variadic_args_p (fntype))
+		      : !libname);
 
   if (!TARGET_64BIT)
     {
