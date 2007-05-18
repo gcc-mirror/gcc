@@ -138,7 +138,7 @@ utf8_equal_string (JCF *jcf, int index, const char * value)
   if (flag_print_class_info) \
     fprintf (out, \
              "Magic number: 0x%0lx, minor_version: %ld, major_version: %ld.\n",\
-	     (long) MAGIC, (long) MINOR, (long) MAJOR)
+	     (unsigned long) MAGIC, (long) MINOR, (long) MAJOR)
 
 #define HANDLE_START_CONSTANT_POOL(COUNT) \
   if (flag_print_constant_pool) \
@@ -811,7 +811,7 @@ print_constant (FILE *out, JCF *jcf, int index, int verbosity)
 	  }
 
 	if (verbosity > 1)
-	  fprintf (out, ", bits = 0x%08lx", (long) JPOOL_UINT (jcf, index));
+	  fprintf (out, ", bits = 0x%08lx", (unsigned long) JPOOL_UINT (jcf, index));
 	
 	break;
       }
@@ -860,7 +860,8 @@ print_constant (FILE *out, JCF *jcf, int index, int verbosity)
 	    int32 hi, lo;
 	    hi = JPOOL_UINT (jcf, index);
 	    lo = JPOOL_UINT (jcf, index + 1);
-	    fprintf (out, ", bits = 0x%08lx%08lx", (long) hi, (long) lo);
+	    fprintf (out, ", bits = 0x%08lx%08lx", (unsigned long) hi,
+		     (unsigned long) lo);
 	  }
 	break;
       }
