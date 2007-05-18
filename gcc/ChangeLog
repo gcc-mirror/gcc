@@ -1,6 +1,6 @@
 2007-05-18  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR rtl-optimization/31344
+	PR middle-end/31344
 	* expr.c (emit_move_change_mode): Change mode of push operands here.
 
 2007-05-17  Ian Lance Taylor  <iant@google.com>
