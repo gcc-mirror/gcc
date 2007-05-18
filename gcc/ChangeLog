@@ -1,5 +1,10 @@
 2007-05-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	PR middle-end/31796
+	* builtins.c (do_mpfr_remquo): New.
+	(fold_builtin_2): Handle BUILT_IN_DREM/BUILT_IN_REMAINDER.
+	(fold_builtin_3): Handle BUILT_IN_REMQUO.
+
 	PR middle-end/30251
 	* builtins.c (fold_builtin_1): Handle y0, y1.
 	(fold_builtin_2): Handle yn.

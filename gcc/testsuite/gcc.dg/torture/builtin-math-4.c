@@ -71,8 +71,44 @@ extern void link_error(int);
     link_error(__LINE__); \
   } while (0)
 
+/* Test that remquo(ARG0, ARG1, &ARG_Q) == RES and ARG_Q == RES_Q.
+   Also test remainder/drem (ARG0,ARG1) == RES.  */
+#define TESTIT2_REMQUO(ARG0,ARG1,ARG_Q,RES,RES_Q) do { \
+  ARG_Q = 12345; \
+  if (__builtin_remquof(ARG0##F, ARG1##F, &ARG_Q) != RES##F \
+      || CKSGN_F(__builtin_remquof(ARG0##F, ARG1##F, &ARG_Q),RES##F) \
+      || ARG_Q != RES_Q \
+      || __builtin_remainderf(ARG0##F, ARG1##F) != RES##F \
+      || CKSGN_F(__builtin_remainderf(ARG0##F, ARG1##F),RES##F) \
+      || __builtin_dremf(ARG0##F, ARG1##F) != RES##F \
+      || CKSGN_F(__builtin_dremf(ARG0##F, ARG1##F),RES##F)) \
+    link_error(__LINE__); \
+  ARG_Q = 12345; \
+  if (__builtin_remquo(ARG0, ARG1, &ARG_Q) != RES \
+      || CKSGN(__builtin_remquo(ARG0, ARG1, &ARG_Q),RES) \
+      || ARG_Q != RES_Q \
+      || __builtin_remainder(ARG0, ARG1) != RES \
+      || CKSGN(__builtin_remainder(ARG0, ARG1),RES) \
+      || __builtin_drem(ARG0, ARG1) != RES \
+      || CKSGN(__builtin_drem(ARG0, ARG1),RES)) \
+    link_error(__LINE__); \
+  ARG_Q = 12345; \
+  if (__builtin_remquol(ARG0##L, ARG1##L, &ARG_Q) != RES##L \
+      || CKSGN_L(__builtin_remquol(ARG0##L, ARG1##L, &ARG_Q),RES##L) \
+      || ARG_Q != RES_Q \
+      || __builtin_remainderl(ARG0##L, ARG1##L) != RES##L \
+      || CKSGN_L(__builtin_remainderl(ARG0##L, ARG1##L),RES##L) \
+      || __builtin_dreml(ARG0##L, ARG1##L) != RES##L \
+      || CKSGN_L(__builtin_dreml(ARG0##L, ARG1##L),RES##L)) \
+    link_error(__LINE__); \
+  } while (0)
+
 int main (void)
 {
+#ifdef __OPTIMIZE__
+  int q;
+#endif
+
   TESTIT (j0, 0.0, 1.0); /* j0(0) == 1 */
   TESTIT (j0, -0.0, 1.0); /* j0(-0) == 1 */
   TESTIT_R (j0, 1.0, 0.765, 0.766); /* j0(1) == 0.7651... */
@@ -131,6 +167,89 @@ int main (void)
   TESTIT2_R (yn, 3, 0.89, -8.03, -8.02); /* yn(3,0.89) == -8.020... */
   TESTIT2_R (yn, -3, 8.0, -0.03, -0.02); /* yn(-3,8) == -0.026... */
   TESTIT2_R (yn, -3, 0.99, 5.98, 5.99); /* yn(-3,0.99) == 5.982... */
+
+#ifdef __OPTIMIZE__
+  /* These tests rely on propagating the variable q, which happens
+     only when optimization is turned on.  This macro also tests
+     remainder/drem.  */
+  TESTIT2_REMQUO (0.0, 1.0, q, 0.0, 0); /* remquo(0,1,&q)==0, q==0 */
+  TESTIT2_REMQUO (1.0, 1.0, q, 0.0, 1); /* remquo(1,1,&q)==0, q==1 */
+  TESTIT2_REMQUO (2.0, 1.0, q, 0.0, 2); /* remquo(2,1,&q)==0, q==2 */
+  TESTIT2_REMQUO (-0.0, 1.0, q, -0.0, 0); /* remquo(-0,1,&q)==-0, q==0 */
+  TESTIT2_REMQUO (-1.0, 1.0, q, -0.0, -1); /* remquo(-1,1,&q)==-0, q==-1 */
+  TESTIT2_REMQUO (-2.0, 1.0, q, -0.0, -2); /* remquo(-2,1,&q)==-0, q==-2 */
+
+  TESTIT2_REMQUO (0.0, -1.0, q, 0.0, 0); /* remquo(0,-1,&q)==0, q==0 */
+  TESTIT2_REMQUO (1.0, -1.0, q, 0.0, -1); /* remquo(1,-1,&q)==0, q==-1 */
+  TESTIT2_REMQUO (2.0, -1.0, q, 0.0, -2); /* remquo(2,-1,&q)==0, q==-2 */
+  TESTIT2_REMQUO (-0.0, -1.0, q, -0.0, 0); /* remquo(-0,-1,&q)==-0, q==0 */
+  TESTIT2_REMQUO (-1.0, -1.0, q, -0.0, 1); /* remquo(-1,-1,&q)==-0, q==1 */
+  TESTIT2_REMQUO (-2.0, -1.0, q, -0.0, 2); /* remquo(-2,-1,&q)==-0, q==2 */
+
+  TESTIT2_REMQUO (1.0, 2.0, q, 1.0, 0); /* remquo(1,2,&q)==1, q==0 */
+  TESTIT2_REMQUO (3.0, 2.0, q, -1.0, 2); /* remquo(3,2,&q)==-1, q==2 */
+  TESTIT2_REMQUO (5.0, 2.0, q, 1.0, 2); /* remquo(5,2,&q)==1, q==2 */
+  TESTIT2_REMQUO (-1.0, 2.0, q, -1.0, 0); /* remquo(-1,2,&q)==-1, q==0 */
+  TESTIT2_REMQUO (-3.0, 2.0, q, 1.0, -2); /* remquo(-3,2,&q)==1, q==-2 */
+  TESTIT2_REMQUO (-5.0, 2.0, q, -1.0, -2); /* remquo(-5,2,&q)==-1, q==-2 */
+
+  TESTIT2_REMQUO (1.0, -2.0, q, 1.0, 0); /* remquo(1,-2,&q)==1, q==0 */
+  TESTIT2_REMQUO (3.0, -2.0, q, -1.0, -2); /* remquo(3,-2,&q)==-1, q==-2 */
+  TESTIT2_REMQUO (5.0, -2.0, q, 1.0, -2); /* remquo(5,-2,&q)==1, q==-2 */
+  TESTIT2_REMQUO (-1.0, -2.0, q, -1.0, 0); /* remquo(-1,-2,&q)==-1, q==0 */
+  TESTIT2_REMQUO (-3.0, -2.0, q, 1.0, 2); /* remquo(-3,-2,&q)==1, q==2 */
+  TESTIT2_REMQUO (-5.0, -2.0, q, -1.0, 2); /* remquo(-5,-2,&q)==-1, q==2 */
+
+  /* Test that the maximum possible value can be generated into the
+     int quotient, and check for wrap around (modulo) when that value
+     is exceeded.  We can only check for this when the mantissa has
+     enough bits to hold an INT_MAX value with complete precision.  */
+
+#define MAXIT(FUNC,X,R) do { \
+  q = 12345; \
+  if (__builtin_##FUNC((X), 1, &q) != 0 || q != (R)) \
+    link_error (__LINE__); \
+} while (0)
   
+  if (sizeof(int)*__CHAR_BIT__ <= __FLT_MANT_DIG__)
+  {
+    MAXIT(remquof, __INT_MAX__-1.0F, __INT_MAX__-1);
+    MAXIT(remquof, __INT_MAX__+0.0F, __INT_MAX__);
+    MAXIT(remquof, __INT_MAX__+1.0F, 0);
+    MAXIT(remquof, __INT_MAX__+2.0F, 1);
+
+    MAXIT(remquof, -(__INT_MAX__-1.0F), -(__INT_MAX__-1));
+    MAXIT(remquof, -(__INT_MAX__+0.0F), -__INT_MAX__);
+    MAXIT(remquof, -(__INT_MAX__+1.0F), 0);
+    MAXIT(remquof, -(__INT_MAX__+2.0F), -1);
+  }
+
+  if (sizeof(int)*__CHAR_BIT__ <= __DBL_MANT_DIG__)
+  {
+    MAXIT(remquo, __INT_MAX__-1.0, __INT_MAX__-1);
+    MAXIT(remquo, __INT_MAX__+0.0, __INT_MAX__);
+    MAXIT(remquo, __INT_MAX__+1.0, 0);
+    MAXIT(remquo, __INT_MAX__+2.0, 1);
+
+    MAXIT(remquo, -(__INT_MAX__-1.0), -(__INT_MAX__-1));
+    MAXIT(remquo, -(__INT_MAX__+0.0), -__INT_MAX__);
+    MAXIT(remquo, -(__INT_MAX__+1.0), 0);
+    MAXIT(remquo, -(__INT_MAX__+2.0), -1);
+  }
+
+  if (sizeof(int)*__CHAR_BIT__ <= __LDBL_MANT_DIG__)
+  {
+    MAXIT(remquo, __INT_MAX__-1.0L, __INT_MAX__-1);
+    MAXIT(remquo, __INT_MAX__+0.0L, __INT_MAX__);
+    MAXIT(remquo, __INT_MAX__+1.0L, 0);
+    MAXIT(remquo, __INT_MAX__+2.0L, 1);
+
+    MAXIT(remquol, -(__INT_MAX__-1.0L), -(__INT_MAX__-1));
+    MAXIT(remquol, -(__INT_MAX__+0.0L), -__INT_MAX__);
+    MAXIT(remquol, -(__INT_MAX__+1.0L), 0);
+    MAXIT(remquol, -(__INT_MAX__+2.0L), -1);
+  }
+#endif
+
   return 0;
 }

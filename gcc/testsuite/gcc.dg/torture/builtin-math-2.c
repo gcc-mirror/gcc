@@ -42,6 +42,13 @@ extern void fool (long double);
   fool (__builtin_##FUNC##l (ARG1##L, ARG2)); \
 } while (0)
 
+#define TESTIT_REMQUO(ARG1, ARG2) do { \
+  int quo; \
+  foof (__builtin_remquof (ARG1##F, ARG2##F, &quo)); \
+  foo (__builtin_remquo (ARG1, ARG2, &quo)); \
+  fool (__builtin_remquol (ARG1##L, ARG2##L, &quo)); \
+} while (0)
+
 void bar()
 {
   /* An argument of NaN is not evaluated at compile-time.  */
@@ -252,6 +259,13 @@ void bar()
   TESTIT2_I1 (yn, -3, 0.0);
   TESTIT2_I1 (yn, -3, -0.0);
 
+  /* The second argument of remquo/remainder/drem must not be 0.  */
+  TESTIT_REMQUO (1.0, 0.0);
+  TESTIT_REMQUO (1.0, -0.0);
+  TESTIT2 (remainder, 1.0, 0.0);
+  TESTIT2 (remainder, 1.0, -0.0);
+  TESTIT2 (drem, 1.0, 0.0);
+  TESTIT2 (drem, 1.0, -0.0);
 }
 
 /* { dg-final { scan-tree-dump-times "exp2 " 9 "original" } } */
@@ -317,4 +331,13 @@ void bar()
 /* { dg-final { scan-tree-dump-times "yn " 6 "original" } } */
 /* { dg-final { scan-tree-dump-times "ynf" 6 "original" } } */
 /* { dg-final { scan-tree-dump-times "ynl" 6 "original" } } */
+/* { dg-final { scan-tree-dump-times "remquo " 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "remquof" 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "remquol" 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "remainder " 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "remainderf" 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "remainderl" 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "drem " 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "dremf" 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "dreml" 2 "original" } } */
 /* { dg-final { cleanup-tree-dump "original" } } */

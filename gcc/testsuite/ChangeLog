@@ -1,5 +1,9 @@
 2007-05-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gcc.dg/torture/builtin-math-2.c: Add tests for remquo, remainder
+	and drem.
+	* gcc.dg/torture/builtin-math-4.c: Likewise.
+
 	* gcc.dg/torture/builtin-math-2.c: Test y0, y1, yn.
 	* gcc.dg/torture/builtin-math-4.c: Likewise.
 
