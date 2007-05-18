@@ -73,3 +73,7 @@ Boston, MA 02110-1301, USA.  */
 /* No _mcount profiling on VxWorks.  */
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE,LABELNO) VXWORKS_FUNCTION_PROFILER(FILE,LABELNO)
+
+/* We cannot use PC-relative accesses for VxWorks PIC because there is no
+   fixed gap between segments.  */
+#undef ASM_PREFERRED_EH_DATA_FORMAT

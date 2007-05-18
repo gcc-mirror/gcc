@@ -1,3 +1,7 @@
+2007-05-18  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/i386/vxworks.h (ASM_PREFERRED_EH_DATA_FORMAT): Undefine.
+
 2007-05-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/31344
