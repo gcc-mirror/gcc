@@ -1,3 +1,7 @@
+2007-05-18  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* gcc.dg/tree-ssa/forwprop-1.c: New testcase.
+
 2007-05-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/31628
