@@ -231,6 +231,11 @@ static tree do_mpfr_arg2 (tree, tree, tree,
 static tree do_mpfr_arg3 (tree, tree, tree, tree,
 			  int (*)(mpfr_ptr, mpfr_srcptr, mpfr_srcptr, mpfr_srcptr, mp_rnd_t));
 static tree do_mpfr_sincos (tree, tree, tree);
+#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
+static tree do_mpfr_bessel_n (tree, tree, tree,
+			      int (*)(mpfr_ptr, long, mpfr_srcptr, mp_rnd_t),
+			      const REAL_VALUE_TYPE *, bool);
+#endif
 
 /* Return true if NODE should be considered for inline expansion regardless
    of the optimization level.  This means whenever a function is invoked with
@@ -9766,6 +9771,20 @@ fold_builtin_1 (tree fndecl, tree arg0, bool ignore)
 			     &dconstm1, NULL, false);
     break;
 
+#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
+    CASE_FLT_FN (BUILT_IN_J0):
+      if (validate_arg (arg0, REAL_TYPE))
+	return do_mpfr_arg1 (arg0, type, mpfr_j0,
+			     NULL, NULL, 0);
+    break;
+
+    CASE_FLT_FN (BUILT_IN_J1):
+      if (validate_arg (arg0, REAL_TYPE))
+	return do_mpfr_arg1 (arg0, type, mpfr_j1,
+			     NULL, NULL, 0);
+    break;
+#endif
+
     CASE_FLT_FN (BUILT_IN_NAN):
     case BUILT_IN_NAND32:
     case BUILT_IN_NAND64:
@@ -9876,6 +9895,13 @@ fold_builtin_2 (tree fndecl, tree arg0, tree arg1, bool ignore)
 
   switch (fcode)
     {
+#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
+    CASE_FLT_FN (BUILT_IN_JN):
+      if (validate_arg (arg0, INTEGER_TYPE)
+	  && validate_arg (arg1, REAL_TYPE))
+	return do_mpfr_bessel_n (arg0, arg1, type, mpfr_jn, NULL, 0);
+    break;
+#endif
 
     CASE_FLT_FN (BUILT_IN_ATAN2):
       if (validate_arg (arg0, REAL_TYPE)
@@ -12505,3 +12531,50 @@ do_mpfr_sincos (tree arg, tree arg_sinp, tree arg_cosp)
     }
   return result;
 }
+
+#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
+/* If argument ARG1 is an INTEGER_CST and ARG2 is a REAL_CST, call the
+   two-argument mpfr order N Bessel function FUNC on them and return
+   the resulting value as a tree with type TYPE.  The mpfr precision
+   is set to the precision of TYPE.  We assume that function FUNC
+   returns zero if the result could be calculated exactly within the
+   requested precision.  */
+static tree
+do_mpfr_bessel_n (tree arg1, tree arg2, tree type,
+		  int (*func)(mpfr_ptr, long, mpfr_srcptr, mp_rnd_t),
+		  const REAL_VALUE_TYPE *min, bool inclusive)
+{
+  tree result = NULL_TREE;
+
+  STRIP_NOPS (arg1);
+  STRIP_NOPS (arg2);
+
+  /* To proceed, MPFR must exactly represent the target floating point
+     format, which only happens when the target base equals two.  */
+  if (REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2
+      && host_integerp (arg1, 0)
+      && TREE_CODE (arg2) == REAL_CST && !TREE_OVERFLOW (arg2))
+    {
+      const HOST_WIDE_INT n = tree_low_cst(arg1, 0);
+      const REAL_VALUE_TYPE *const ra = &TREE_REAL_CST (arg2);
+
+      if (n == (long)n
+	  && !real_isnan (ra) && !real_isinf (ra)
+	  && (!min || real_compare (inclusive ? GE_EXPR: GT_EXPR , ra, min)))
+        {
+	  const int prec = REAL_MODE_FORMAT (TYPE_MODE (type))->p;
+	  int inexact;
+	  mpfr_t m;
+
+	  mpfr_init2 (m, prec);
+	  mpfr_from_real (m, ra, GMP_RNDN);
+	  mpfr_clear_flags ();
+	  inexact = func (m, n, m, GMP_RNDN);
+	  result = do_mpfr_ckconv (m, type, inexact);
+	  mpfr_clear (m);
+	}
+    }
+  
+  return result;
+}
+#endif
