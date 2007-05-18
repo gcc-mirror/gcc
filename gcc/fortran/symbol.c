@@ -1156,9 +1156,14 @@ gfc_add_flavor (symbol_attribute * attr, sym_flavor f, const char *name,
       if (where == NULL)
 	where = &gfc_current_locus;
 
-      gfc_error ("%s attribute conflicts with %s attribute at %L",
-		 gfc_code2string (flavors, attr->flavor),
-		 gfc_code2string (flavors, f), where);
+      if (name)
+        gfc_error ("%s attribute of '%s' conflicts with %s attribute at %L",
+		   gfc_code2string (flavors, attr->flavor), name,
+		   gfc_code2string (flavors, f), where);
+      else
+        gfc_error ("%s attribute conflicts with %s attribute at %L",
+		   gfc_code2string (flavors, attr->flavor),
+		   gfc_code2string (flavors, f), where);
 
       return FAILURE;
     }
