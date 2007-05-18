@@ -1653,6 +1653,11 @@ expand_builtin_classify_type (tree exp)
   case BUILT_IN_MATHFN: case BUILT_IN_MATHFN##F: case BUILT_IN_MATHFN##L: \
   fcode = BUILT_IN_MATHFN; fcodef = BUILT_IN_MATHFN##F ; \
   fcodel = BUILT_IN_MATHFN##L ; break;
+/* Similar to above, but appends _R after any F/L suffix.  */
+#define CASE_MATHFN_REENT(BUILT_IN_MATHFN) \
+  case BUILT_IN_MATHFN##_R: case BUILT_IN_MATHFN##F_R: case BUILT_IN_MATHFN##L_R: \
+  fcode = BUILT_IN_MATHFN##_R; fcodef = BUILT_IN_MATHFN##F_R ; \
+  fcodel = BUILT_IN_MATHFN##L_R ; break;
 
 /* Return mathematic function equivalent to FN but operating directly
    on TYPE, if available.  If we can't do the conversion, return zero.  */
@@ -1692,6 +1697,7 @@ mathfn_built_in (tree type, enum built_in_function fn)
       CASE_MATHFN (BUILT_IN_FMOD)
       CASE_MATHFN (BUILT_IN_FREXP)
       CASE_MATHFN (BUILT_IN_GAMMA)
+      CASE_MATHFN_REENT (BUILT_IN_GAMMA) /* GAMMA_R */
       CASE_MATHFN (BUILT_IN_HUGE_VAL)
       CASE_MATHFN (BUILT_IN_HYPOT)
       CASE_MATHFN (BUILT_IN_ILOGB)
@@ -1704,6 +1710,7 @@ mathfn_built_in (tree type, enum built_in_function fn)
       CASE_MATHFN (BUILT_IN_LDEXP)
       CASE_MATHFN (BUILT_IN_LFLOOR)
       CASE_MATHFN (BUILT_IN_LGAMMA)
+      CASE_MATHFN_REENT (BUILT_IN_LGAMMA) /* LGAMMA_R */
       CASE_MATHFN (BUILT_IN_LLCEIL)
       CASE_MATHFN (BUILT_IN_LLFLOOR)
       CASE_MATHFN (BUILT_IN_LLRINT)

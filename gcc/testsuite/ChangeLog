@@ -1,5 +1,7 @@
 2007-05-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gcc.dg/builtins-1.c: Test reentrant gamma functions.
+
 	* gcc.dg/torture/builtin-math-2.c: Add tests for remquo, remainder
 	and drem.
 	* gcc.dg/torture/builtin-math-4.c: Likewise.

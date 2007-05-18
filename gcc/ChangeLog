@@ -1,5 +1,12 @@
 2007-05-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtins.c (CASE_MATHFN_REENT): New macro.
+	(mathfn_built_in): Use it.
+	* builtins.def (BUILT_IN_GAMMA_R, BUILT_IN_GAMMAF_R,
+	BUILT_IN_GAMMAL_R, BUILT_IN_LGAMMA_R, BUILT_IN_LGAMMAF_R,
+	BUILT_IN_LGAMMAL_R): New.
+	* doc/extend.texi: Document new builtins.
+
 	PR middle-end/31796
 	* builtins.c (do_mpfr_remquo): New.
 	(fold_builtin_2): Handle BUILT_IN_DREM/BUILT_IN_REMAINDER.
