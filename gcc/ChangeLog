@@ -1,6 +1,10 @@
 2007-05-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR middle-end/30251
+	* builtins.c (fold_builtin_1): Handle y0, y1.
+	(fold_builtin_2): Handle yn.
+
+	PR middle-end/30251
 	* builtins.c (do_mpfr_bessel_n): New.
 	(fold_builtin_1): Handle BUILT_IN_J0 and BUILT_IN_J1.
 	(fold_builtin_2): Handle BUILT_IN_JN.

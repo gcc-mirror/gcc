@@ -9783,6 +9783,18 @@ fold_builtin_1 (tree fndecl, tree arg0, bool ignore)
 	return do_mpfr_arg1 (arg0, type, mpfr_j1,
 			     NULL, NULL, 0);
     break;
+
+    CASE_FLT_FN (BUILT_IN_Y0):
+      if (validate_arg (arg0, REAL_TYPE))
+	return do_mpfr_arg1 (arg0, type, mpfr_y0,
+			     &dconst0, NULL, false);
+    break;
+
+    CASE_FLT_FN (BUILT_IN_Y1):
+      if (validate_arg (arg0, REAL_TYPE))
+	return do_mpfr_arg1 (arg0, type, mpfr_y1,
+			     &dconst0, NULL, false);
+    break;
 #endif
 
     CASE_FLT_FN (BUILT_IN_NAN):
@@ -9900,6 +9912,13 @@ fold_builtin_2 (tree fndecl, tree arg0, tree arg1, bool ignore)
       if (validate_arg (arg0, INTEGER_TYPE)
 	  && validate_arg (arg1, REAL_TYPE))
 	return do_mpfr_bessel_n (arg0, arg1, type, mpfr_jn, NULL, 0);
+    break;
+
+    CASE_FLT_FN (BUILT_IN_YN):
+      if (validate_arg (arg0, INTEGER_TYPE)
+	  && validate_arg (arg1, REAL_TYPE))
+	return do_mpfr_bessel_n (arg0, arg1, type, mpfr_yn,
+				 &dconst0, false);
     break;
 #endif
 
