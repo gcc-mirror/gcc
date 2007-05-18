@@ -1,3 +1,11 @@
+2007-05-17  Ian Lance Taylor  <iant@google.com>
+
+	PR tree-optimization/31953
+	* tree-vrp.c (set_value_range_to_value): Add equiv parameter.
+	Change all callers.
+	(set_value_range_to_null): Call set_value_range_to_value.
+	(extract_range_from_comparison): Likewise.
+
 2007-05-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/31691
