@@ -430,7 +430,10 @@ print_value (char *buf, rtx x, int verbose)
       if (FLOAT_MODE_P (GET_MODE (x)))
 	real_to_decimal (t, CONST_DOUBLE_REAL_VALUE (x), sizeof (t), 0, 1);
       else
-	sprintf (t, "<0x%lx,0x%lx>", (long) CONST_DOUBLE_LOW (x), (long) CONST_DOUBLE_HIGH (x));
+	sprintf (t,
+		 "<" HOST_WIDE_INT_PRINT_HEX "," HOST_WIDE_INT_PRINT_HEX ">",
+		 (unsigned HOST_WIDE_INT) CONST_DOUBLE_LOW (x),
+		 (unsigned HOST_WIDE_INT) CONST_DOUBLE_HIGH (x));
       cur = safe_concat (buf, cur, t);
       break;
     case CONST_STRING:

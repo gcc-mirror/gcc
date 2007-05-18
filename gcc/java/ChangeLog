@@ -1,3 +1,8 @@
+2007-05-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* jcf-dump.c (HANDLE_MAGIC): Use 'unsigned long' for %lx.
+	(print_constant): Likewise.
+
 2007-05-14  Rafael Avila de Espindola  <espindola@google.com>
 
 	* expr.c (build_java_binop): Use unsigned_type_for instead of

@@ -1340,7 +1340,7 @@ write_real_cst (const tree value)
 
       for (; i != limit; i += dir)
 	{
-	  sprintf (buffer, "%08lx", target_real[i]);
+	  sprintf (buffer, "%08lx", (unsigned long) target_real[i]);
 	  write_chars (buffer, 8);
 	}
     }

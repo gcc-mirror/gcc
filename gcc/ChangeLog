@@ -1,5 +1,11 @@
 2007-05-18  Geoffrey Keating  <geoffk@apple.com>
 
+	* dwarf2out.c (print_die): Use '%ld' not '%lu' to print a 'long'.
+	(output_die): Use 'unsigned long' with %x.
+	* sched-vis.c (print_value): Use 'unsigned HOST_WIDE_INT' and
+	HOST_WIDE_INT_PRINT_HEX to print HOST_WIDE_INT.
+	* tree-dump.c (dump_pointer): Use 'unsigned long' for %lx.
+
 	* unwind-dw2.c (uw_identify_context): Use the CFA, not the IP.
 
 2007-05-18  H.J. Lu  <hongjiu.lu@intel.com>

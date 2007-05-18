@@ -5768,11 +5768,11 @@ print_die (dw_die_ref die, FILE *outfile)
   unsigned ix;
 
   print_spaces (outfile);
-  fprintf (outfile, "DIE %4lu: %s\n",
+  fprintf (outfile, "DIE %4ld: %s\n",
 	   die->die_offset, dwarf_tag_name (die->die_tag));
   print_spaces (outfile);
   fprintf (outfile, "  abbrev id: %lu", die->die_abbrev);
-  fprintf (outfile, " offset: %lu\n", die->die_offset);
+  fprintf (outfile, " offset: %ld\n", die->die_offset);
 
   for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
     {
@@ -5820,7 +5820,7 @@ print_die (dw_die_ref die, FILE *outfile)
 	      if (AT_ref (a)->die_symbol)
 		fprintf (outfile, "die -> label: %s", AT_ref (a)->die_symbol);
 	      else
-		fprintf (outfile, "die -> %lu", AT_ref (a)->die_offset);
+		fprintf (outfile, "die -> %ld", AT_ref (a)->die_offset);
 	    }
 	  else
 	    fprintf (outfile, "die -> <null>");
@@ -7091,7 +7091,8 @@ output_die (dw_die_ref die)
     output_die_symbol (die);
 
   dw2_asm_output_data_uleb128 (die->die_abbrev, "(DIE (0x%lx) %s)",
-			       die->die_offset, dwarf_tag_name (die->die_tag));
+			       (unsigned long)die->die_offset,
+			       dwarf_tag_name (die->die_tag));
 
   for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
     {
@@ -7273,7 +7274,7 @@ output_die (dw_die_ref die)
   /* Add null byte to terminate sibling list.  */
   if (die->die_child != NULL)
     dw2_asm_output_data (1, 0, "end of children of DIE 0x%lx",
-			 die->die_offset);
+			 (unsigned long) die->die_offset);
 }
 
 /* Output the compilation unit that appears at the beginning of the
