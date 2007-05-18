@@ -1,3 +1,7 @@
+2007-05-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* unwind-dw2.c (uw_identify_context): Use the CFA, not the IP.
+
 2007-05-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/31989

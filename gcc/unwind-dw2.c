@@ -1526,7 +1526,7 @@ uw_install_context_1 (struct _Unwind_Context *current,
 static inline _Unwind_Ptr
 uw_identify_context (struct _Unwind_Context *context)
 {
-  return _Unwind_GetIP (context);
+  return _Unwind_GetCFA (context);
 }
 
 
