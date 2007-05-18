@@ -1180,12 +1180,16 @@ print_version (FILE *file, const char *indent)
 {
   static const char fmt1[] =
 #ifdef __GNUC__
-    N_("%s%s%s version %s (%s)\n%s\tcompiled by GNU C version %s.\n")
+    N_("%s%s%s version %s (%s)\n%s\tcompiled by GNU C version %s, ")
 #else
-    N_("%s%s%s version %s (%s) compiled by CC.\n")
+    N_("%s%s%s version %s (%s) compiled by CC, ")
 #endif
     ;
   static const char fmt2[] =
+    N_("GMP version %s, MPFR version %s.\n");
+  static const char fmt3[] =
+    N_("warning: %s header version %s differs from library version %s.\n");
+  static const char fmt4[] =
     N_("%s%sGGC heuristics: --param ggc-min-expand=%d --param ggc-min-heapsize=%d\n");
 #ifndef __VERSION__
 #define __VERSION__ "[?]"
@@ -1195,8 +1199,32 @@ print_version (FILE *file, const char *indent)
 	   indent, *indent != 0 ? " " : "",
 	   lang_hooks.name, version_string, TARGET_NAME,
 	   indent, __VERSION__);
+
+  /* We need to stringify the GMP macro values.  Ugh, gmp_version has
+     two string formats, "i.j.k" and "i.j" when k is zero.  */
+#define GCC_GMP_STRINGIFY_VERSION3(X) #X
+#define GCC_GMP_STRINGIFY_VERSION2(X) GCC_GMP_STRINGIFY_VERSION3(X)
+#if __GNU_MP_VERSION_PATCHLEVEL == 0
+#define GCC_GMP_STRINGIFY_VERSION GCC_GMP_STRINGIFY_VERSION2(__GNU_MP_VERSION) "." \
+  GCC_GMP_STRINGIFY_VERSION2(__GNU_MP_VERSION_MINOR)
+#else
+#define GCC_GMP_STRINGIFY_VERSION GCC_GMP_STRINGIFY_VERSION2(__GNU_MP_VERSION) "." \
+  GCC_GMP_STRINGIFY_VERSION2(__GNU_MP_VERSION_MINOR) "." \
+  GCC_GMP_STRINGIFY_VERSION2(__GNU_MP_VERSION_PATCHLEVEL)
+#endif
   fprintf (file,
 	   file == stderr ? _(fmt2) : fmt2,
+	   GCC_GMP_STRINGIFY_VERSION, MPFR_VERSION_STRING);
+  if (strcmp (GCC_GMP_STRINGIFY_VERSION, gmp_version))
+    fprintf (file,
+	     file == stderr ? _(fmt3) : fmt3,
+	     "GMP", GCC_GMP_STRINGIFY_VERSION, gmp_version);
+  if (strcmp (MPFR_VERSION_STRING, mpfr_get_version ()))
+    fprintf (file,
+	     file == stderr ? _(fmt3) : fmt3,
+	     "MPFR", MPFR_VERSION_STRING, mpfr_get_version ());
+  fprintf (file,
+	   file == stderr ? _(fmt4) : fmt4,
 	   indent, *indent != 0 ? " " : "",
 	   PARAM_VALUE (GGC_MIN_EXPAND), PARAM_VALUE (GGC_MIN_HEAPSIZE));
 }
