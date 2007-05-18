@@ -44,6 +44,14 @@ double test_##FN(double x, TYPE y) { return __builtin_##FN(x, y); } \
 float test_##FN##f(float x, TYPE y) { return __builtin_##FN##f(x, y); } \
 long double test_##FN##l(long double x, TYPE y) { return __builtin_##FN##l(x, y); } 
 
+/* Test FP functions taking two arguments, the second argument is of a
+   supplied type.  The function is named reentrant style, meaning "_r"
+   appears after the possible f/l suffix.  */
+#define FPTEST2ARG2_REENT(FN, TYPE) \
+double test_##FN##_r(double x, TYPE y) { return __builtin_##FN##_r(x, y); } \
+float test_##FN##f_r(float x, TYPE y) { return __builtin_##FN##f_r(x, y); } \
+long double test_##FN##l_r(long double x, TYPE y) { return __builtin_##FN##l_r(x, y); } 
+
 /* Test FP functions taking two arguments, the second argument is a
    FP pointer.  */
 #define FPTEST2FPP2(FN) \
@@ -132,6 +140,7 @@ FPTEST2     (fmin)
 FPTEST2     (fmod)
 FPTEST2ARG2 (frexp, int *)
 FPTEST1     (gamma)
+FPTEST2ARG2_REENT (gamma, int *) /* gamma_r */
 FPTEST0     (huge_val)
 FPTEST2     (hypot)
 FPTEST1     (ilogb)
@@ -141,6 +150,7 @@ FPTEST1     (j1)
 FPTEST2ARG1 (jn, int)
 FPTEST2ARG2 (ldexp, int)
 FPTEST1     (lgamma)
+FPTEST2ARG2_REENT (lgamma, int *) /* lgamma_r */
 FPTEST1RET  (llrint, long long)
 FPTEST1RET  (llround, long long)
 FPTEST1     (log)
