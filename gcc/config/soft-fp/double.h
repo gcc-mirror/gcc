@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Definitions for IEEE Double Precision
-   Copyright (C) 1997,1998,1999,2006 Free Software Foundation, Inc.
+   Copyright (C) 1997,1998,1999,2006,2007 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -168,13 +168,13 @@ union _FP_UNION_D
   DFtype flt;
   struct {
 #if __BYTE_ORDER == __BIG_ENDIAN
-    unsigned sign : 1;
-    unsigned exp  : _FP_EXPBITS_D;
-    unsigned long frac : _FP_FRACBITS_D - (_FP_IMPLBIT_D != 0);
+    unsigned sign   : 1;
+    unsigned exp    : _FP_EXPBITS_D;
+    _FP_W_TYPE frac : _FP_FRACBITS_D - (_FP_IMPLBIT_D != 0);
 #else
-    unsigned long frac : _FP_FRACBITS_D - (_FP_IMPLBIT_D != 0);
-    unsigned exp  : _FP_EXPBITS_D;
-    unsigned sign : 1;
+    _FP_W_TYPE frac : _FP_FRACBITS_D - (_FP_IMPLBIT_D != 0);
+    unsigned exp    : _FP_EXPBITS_D;
+    unsigned sign   : 1;
 #endif
   } bits __attribute__((packed));
 };

@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Convert a 32bit unsigned integer to IEEE double
-   Copyright (C) 1997,1999, 2006 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1999, 2006, 2007 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com) and
 		  Jakub Jelinek (jj@ultra.linux.cz).
@@ -32,8 +32,7 @@
 #include "soft-fp.h"
 #include "double.h"
 
-double
-__floatunsidf(USItype i)
+DFtype __floatunsidf(USItype i)
 {
   FP_DECL_EX;
   FP_DECL_D(A);
