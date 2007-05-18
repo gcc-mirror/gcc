@@ -1,5 +1,7 @@
 2007-05-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* toplev.c (print_version): Output GMP/MPFR version info.
+
 	* builtins.c (CASE_MATHFN_REENT): New macro.
 	(mathfn_built_in): Use it.
 	* builtins.def (BUILT_IN_GAMMA_R, BUILT_IN_GAMMAF_R,
