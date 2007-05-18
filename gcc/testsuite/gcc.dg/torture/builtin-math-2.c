@@ -24,6 +24,12 @@ extern void fool (long double);
   fool (__builtin_##FUNC##l (ARG1##L, ARG2##L)); \
 } while (0)
 
+#define TESTIT2_I1(FUNC, ARG1, ARG2) do { \
+  foof (__builtin_##FUNC##f (ARG1, ARG2##F)); \
+  foo (__builtin_##FUNC (ARG1, ARG2)); \
+  fool (__builtin_##FUNC##l (ARG1, ARG2##L)); \
+} while (0)
+
 #define TESTIT2_I2ALL(FUNC, ARGF, MAXF, ARGD, MAXD, ARGLD, MAXLD) do { \
   foof (__builtin_##FUNC##f (ARGF, MAXF)); \
   foo (__builtin_##FUNC (ARGD, MAXD)); \
@@ -228,6 +234,24 @@ void bar()
   foof (__builtin_ilogbf (-__builtin_nanf("")));
   foo (__builtin_ilogb (-__builtin_nan("")));
   fool (__builtin_ilogbl (-__builtin_nanl("")));
+
+  /* The y* arg must be [0 ... Inf] EXclusive.  */
+  TESTIT (y0, -1.0);
+  TESTIT (y0, 0.0);
+  TESTIT (y0, -0.0);
+
+  TESTIT (y1, -1.0);
+  TESTIT (y1, 0.0);
+  TESTIT (y1, -0.0);
+
+  TESTIT2_I1 (yn, 2, -1.0);
+  TESTIT2_I1 (yn, 2, 0.0);
+  TESTIT2_I1 (yn, 2, -0.0);
+
+  TESTIT2_I1 (yn, -3, -1.0);
+  TESTIT2_I1 (yn, -3, 0.0);
+  TESTIT2_I1 (yn, -3, -0.0);
+
 }
 
 /* { dg-final { scan-tree-dump-times "exp2 " 9 "original" } } */
@@ -284,4 +308,13 @@ void bar()
 /* { dg-final { scan-tree-dump-times "ilogb " 6 "original" } } */
 /* { dg-final { scan-tree-dump-times "ilogbf" 6 "original" } } */
 /* { dg-final { scan-tree-dump-times "ilogbl" 6 "original" } } */
+/* { dg-final { scan-tree-dump-times "y0 " 3 "original" } } */
+/* { dg-final { scan-tree-dump-times "y0f" 3 "original" } } */
+/* { dg-final { scan-tree-dump-times "y0l" 3 "original" } } */
+/* { dg-final { scan-tree-dump-times "y1 " 3 "original" } } */
+/* { dg-final { scan-tree-dump-times "y1f" 3 "original" } } */
+/* { dg-final { scan-tree-dump-times "y1l" 3 "original" } } */
+/* { dg-final { scan-tree-dump-times "yn " 6 "original" } } */
+/* { dg-final { scan-tree-dump-times "ynf" 6 "original" } } */
+/* { dg-final { scan-tree-dump-times "ynl" 6 "original" } } */
 /* { dg-final { cleanup-tree-dump "original" } } */
