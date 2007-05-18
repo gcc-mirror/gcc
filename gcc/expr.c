@@ -2867,7 +2867,12 @@ emit_move_change_mode (enum machine_mode new_mode,
 {
   rtx ret;
 
-  if (MEM_P (x))
+  if (push_operand (x, GET_MODE (x)))
+    {
+      ret = gen_rtx_MEM (new_mode, XEXP (x, 0));
+      MEM_COPY_ATTRIBUTES (ret, x);
+    }
+  else if (MEM_P (x))
     {
       /* We don't have to worry about changing the address since the
 	 size in bytes is supposed to be the same.  */
