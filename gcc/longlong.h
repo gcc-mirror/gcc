@@ -341,18 +341,47 @@ UDItype __umulsidi3 (USItype, USItype);
 	   : "0" ((USItype) (n0)),					\
 	     "1" ((USItype) (n1)),					\
 	     "rm" ((USItype) (dv)))
-#define count_leading_zeros(count, x) \
-  do {									\
-    USItype __cbtmp;							\
-    __asm__ ("bsrl %1,%0"						\
-	     : "=r" (__cbtmp) : "rm" ((USItype) (x)));			\
-    (count) = __cbtmp ^ 31;						\
-  } while (0)
-#define count_trailing_zeros(count, x) \
-  __asm__ ("bsfl %1,%0" : "=r" (count) : "rm" ((USItype)(x)))
+#define count_leading_zeros(count, x)	((count) = __builtin_clz (x))
+#define count_trailing_zeros(count, x)	((count) = __builtin_ctz (x))
 #define UMUL_TIME 40
 #define UDIV_TIME 40
 #endif /* 80x86 */
+
+#if (defined (__x86_64__) || defined (__i386__)) && W_TYPE_SIZE == 64
+#define add_ssaaaa(sh, sl, ah, al, bh, bl) \
+  __asm__ ("addq %5,%1\n\tadcq %3,%0"					\
+	   : "=r" ((UDItype) (sh)),					\
+	     "=&r" ((UDItype) (sl))					\
+	   : "%0" ((UDItype) (ah)),					\
+	     "rme" ((UDItype) (bh)),					\
+	     "%1" ((UDItype) (al)),					\
+	     "rme" ((UDItype) (bl)))
+#define sub_ddmmss(sh, sl, ah, al, bh, bl) \
+  __asm__ ("subq %5,%1\n\tsbbq %3,%0"					\
+	   : "=r" ((UDItype) (sh)),					\
+	     "=&r" ((UDItype) (sl))					\
+	   : "0" ((UDItype) (ah)),					\
+	     "rme" ((UDItype) (bh)),					\
+	     "1" ((UDItype) (al)),					\
+	     "rme" ((UDItype) (bl)))
+#define umul_ppmm(w1, w0, u, v) \
+  __asm__ ("mulq %3"							\
+	   : "=a" ((UDItype) (w0)),					\
+	     "=d" ((UDItype) (w1))					\
+	   : "%0" ((UDItype) (u)),					\
+	     "rm" ((UDItype) (v)))
+#define udiv_qrnnd(q, r, n1, n0, dv) \
+  __asm__ ("divq %4"							\
+	   : "=a" ((UDItype) (q)),					\
+	     "=d" ((UDItype) (r))					\
+	   : "0" ((UDItype) (n0)),					\
+	     "1" ((UDItype) (n1)),					\
+	     "rm" ((UDItype) (dv)))
+#define count_leading_zeros(count, x)	((count) = __builtin_clzl (x))
+#define count_trailing_zeros(count, x)	((count) = __builtin_ctzl (x))
+#define UMUL_TIME 40
+#define UDIV_TIME 40
+#endif /* x86_64 */
 
 #if defined (__i960__) && W_TYPE_SIZE == 32
 #define umul_ppmm(w1, w0, u, v) \

@@ -1,3 +1,11 @@
+2007-05-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* longlong.h (__x86_64__): Add definitions for add_ssaaaa,
+	sub_ddmmss, umul_ppmm, udiv_qrnnd, count_leading_zeros and
+	count_trailing_zeros.
+	(__i386__): Implement count_leading_zeros using __builtin_clz().
+	Implement count_trailing_zeros usign __builtin_ctz().
+
 2007-05-18  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/i386/vxworks.h (ASM_PREFERRED_EH_DATA_FORMAT): Undefine.
