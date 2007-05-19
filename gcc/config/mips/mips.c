@@ -1351,15 +1351,15 @@ mips_classify_symbol (rtx x)
   return SYMBOL_GENERAL;
 }
 
-/* Returns true if OFFSET is within the range [0, ALIGN), where ALIGN
+/* Return true if OFFSET is within the range [0, ALIGN), where ALIGN
    is the alignment (in bytes) of SYMBOL_REF X.  */
 
 static bool
 mips_offset_within_alignment_p (rtx x, HOST_WIDE_INT offset)
 {
   /* If for some reason we can't get the alignment for the
-     symbol, initializing this to one means we won't accept any
-     offset.  */
+     symbol, initializing this to one means we will only accept
+     a zero offset.  */
   HOST_WIDE_INT align = 1;
   tree t;
 
@@ -1368,9 +1368,7 @@ mips_offset_within_alignment_p (rtx x, HOST_WIDE_INT offset)
   if (t)
     align = DECL_ALIGN_UNIT (t);
 
-  if (offset >= 0 && offset < align)
-    return true;
-  return false;
+  return offset >= 0 && offset < align;
 }
 
 /* Return true if X is a symbolic constant that can be calculated in
