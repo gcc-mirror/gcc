@@ -3846,7 +3846,8 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
   /* The size is the number of elements in the array, so multiply by the
      size of an element to get the total size.  */
   tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
-  size = fold_build2 (MULT_EXPR, gfc_array_index_type, size, tmp);
+  size = fold_build2 (MULT_EXPR, gfc_array_index_type, size,
+		      fold_convert (gfc_array_index_type, tmp));
 
   /* Allocate memory to hold the data.  */
   tmp = gfc_call_malloc (&block, TREE_TYPE (decl), size);
