@@ -1,3 +1,15 @@
+2007-05-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-machine.h (FP_EX_INVALID, FP_EX_DENORM,
+	FP_EXP_DIVZERO, FP_EX_OVERFLOW, FP_EX_UNDERFLOW, FP_EX_INEXACT):
+	New constants.
+	(struct fenv): New structure.
+	(FP_HANDLE_EXCEPTIONS): New define.
+	(FP_RND_NEAREST, FP_RND_ZERO, FP_RND_PINF, FP_RND_MINF): New constants.
+	(_FP_DECL_EXP): New define.
+	(FP_INIT_ROUNDMODE): New define.
+	(FP_ROUNDMODE): New define.
+
 2007-05-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (Warning Options): Add -Wconversion-sign.
@@ -13,13 +25,13 @@
 	(convert_and_check): Don't check warnings if the conversion failed.
 
 2007-05-19 Andy Hutchinson <HutchinsonAndy@netscape.net>
-           Anatoly Sokolov <aesok@dol.ru>
+	   Anatoly Sokolov <aesok@dol.ru>
 
 	* config/avr/avr-protos.h (expand_prologue, expand_epilogue, 
 	avr_epilogue_uses) : Add declaration.
 	* config/avr/predicates.md (avr_sp_immediate_operand): New predicate.
 	* config/avr/constraints.md (R): New constraint.
-	config/avr/avr.md (SREG_ADDR,  UNSPEC_SEI, UNSPEC_CLI, 
+	config/avr/avr.md (SREG_ADDR, UNSPEC_SEI, UNSPEC_CLI, 
 	UNSPECV_PROLOGUE_SAVES, UNSPECV_EPILOGUE_RESTORES): New constants.
 	(*pop1, *pop2, *pop3, *pop4, *pop5): Combine into ...
 	(*addhi3_sp_R_pc2, *addhi3_sp_R_pc3): ... these patterns.

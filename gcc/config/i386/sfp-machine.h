@@ -44,6 +44,82 @@ typedef unsigned int UTItype __attribute__((mode(TI)));
     R##_c = FP_CLS_NAN;						\
   } while (0)
 
+#define FP_EX_INVALID		0x01
+#define FP_EX_DENORM		0x02
+#define FP_EX_DIVZERO		0x04
+#define FP_EX_OVERFLOW		0x08
+#define FP_EX_UNDERFLOW		0x10
+#define FP_EX_INEXACT		0x20
+
+struct fenv
+{
+  unsigned short int __control_word;
+  unsigned short int __unused1;
+  unsigned short int __status_word;
+  unsigned short int __unused2;
+  unsigned short int __tags;
+  unsigned short int __unused3;
+  unsigned int __eip;
+  unsigned short int __cs_selector;
+  unsigned int __opcode:11;
+  unsigned int __unused4:5;
+  unsigned int __data_offset;
+  unsigned short int __data_selector;
+  unsigned short int __unused5;
+};
+
+#define FP_HANDLE_EXCEPTIONS						\
+  do {									\
+    if (_fex & FP_EX_INVALID)						\
+      {									\
+	float f = 0.0;							\
+	__asm__ __volatile__ ("divss %0, %0 " : : "x" (f));		\
+      }									\
+    if (_fex & FP_EX_DIVZERO)						\
+      {									\
+	float f = 1.0, g = 0.0;						\
+	__asm__ __volatile__ ("divss %1, %0" : : "x" (f), "x" (g));	\
+      }									\
+    if (_fex & FP_EX_OVERFLOW)						\
+      {									\
+	struct fenv temp;						\
+	__asm__ __volatile__ ("fnstenv %0" : "=m" (temp));		\
+	temp.__status_word |= FP_EX_OVERFLOW;				\
+	__asm__ __volatile__ ("fldenv %0" : : "m" (temp));		\
+	__asm__ __volatile__ ("fwait");					\
+      }									\
+    if (_fex & FP_EX_UNDERFLOW)						\
+      {									\
+	struct fenv temp;						\
+	__asm__ __volatile__ ("fnstenv %0" : "=m" (temp));		\
+	temp.__status_word |= FP_EX_UNDERFLOW;				\
+	__asm__ __volatile__ ("fldenv %0" : : "m" (temp));		\
+	__asm__ __volatile__ ("fwait");					\
+      }									\
+    if (_fex & FP_EX_INEXACT)						\
+      {									\
+	struct fenv temp;						\
+	__asm__ __volatile__ ("fnstenv %0" : "=m" (temp));		\
+	temp.__status_word |= FP_EX_INEXACT;				\
+	__asm__ __volatile__ ("fldenv %0" : : "m" (temp));		\
+	__asm__ __volatile__ ("fwait");					\
+      }									\
+  } while (0)
+
+#define FP_RND_NEAREST		0
+#define FP_RND_ZERO		0xc00
+#define FP_RND_PINF		0x800
+#define FP_RND_MINF		0x400
+
+#define _FP_DECL_EX \
+  unsigned short _fcw __attribute__ ((unused)) = FP_RND_NEAREST
+
+#define FP_INIT_ROUNDMODE			\
+  do {						\
+    __asm__ ("fnstcw %0" : "=m" (_fcw));	\
+  } while (0)
+
+#define FP_ROUNDMODE		(_fcw & 0xc00)
 
 #define	__LITTLE_ENDIAN	1234
 #define	__BIG_ENDIAN	4321
