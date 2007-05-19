@@ -236,6 +236,7 @@ static tree do_mpfr_bessel_n (tree, tree, tree,
 			      int (*)(mpfr_ptr, long, mpfr_srcptr, mp_rnd_t),
 			      const REAL_VALUE_TYPE *, bool);
 static tree do_mpfr_remquo (tree, tree, tree);
+static tree do_mpfr_lgamma_r (tree, tree, tree);
 #endif
 
 /* Return true if NODE should be considered for inline expansion regardless
@@ -9935,6 +9936,13 @@ fold_builtin_2 (tree fndecl, tree arg0, tree arg1, bool ignore)
           && validate_arg(arg1, REAL_TYPE))
         return do_mpfr_arg2 (arg0, arg1, type, mpfr_remainder);
     break;
+
+    CASE_FLT_FN_REENT (BUILT_IN_GAMMA): /* GAMMA_R */
+    CASE_FLT_FN_REENT (BUILT_IN_LGAMMA): /* LGAMMA_R */
+      if (validate_arg (arg0, REAL_TYPE)
+	  && validate_arg(arg1, POINTER_TYPE))
+	return do_mpfr_lgamma_r (arg0, arg1, type);
+    break;
 #endif
 
     CASE_FLT_FN (BUILT_IN_ATAN2):
@@ -12690,6 +12698,69 @@ do_mpfr_remquo (tree arg0, tree arg1, tree arg_quo)
 	    }
 	}
     }
+  return result;
+}
+
+/* If ARG is a REAL_CST, call mpfr_lgamma() on it and return the
+   resulting value as a tree with type TYPE.  The mpfr precision is
+   set to the precision of TYPE.  We assume that this mpfr function
+   returns zero if the result could be calculated exactly within the
+   requested precision.  In addition, the integer pointer represented
+   by ARG_SG will be dereferenced and set to the appropriate signgam
+   (-1,1) value.  */
+
+static tree
+do_mpfr_lgamma_r (tree arg, tree arg_sg, tree type)
+{
+  tree result = NULL_TREE;
+
+  STRIP_NOPS (arg);
+  
+  /* To proceed, MPFR must exactly represent the target floating point
+     format, which only happens when the target base equals two.  Also
+     verify ARG is a constant and that ARG_SG is an int pointer.  */
+  if (REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2
+      && TREE_CODE (arg) == REAL_CST && !TREE_OVERFLOW (arg)
+      && TREE_CODE (TREE_TYPE (arg_sg)) == POINTER_TYPE
+      && TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (arg_sg))) == integer_type_node)
+    {
+      const REAL_VALUE_TYPE *const ra = TREE_REAL_CST_PTR (arg);
+
+      /* In addition to NaN and Inf, the argument cannot be zero or a
+	 negative integer.  */
+      if (!real_isnan (ra) && !real_isinf (ra)
+	  && ra->cl != rvc_zero
+	  && !(real_isneg(ra) && real_isinteger(ra, TYPE_MODE (type))))
+        {
+	  const int prec = REAL_MODE_FORMAT (TYPE_MODE (type))->p;
+	  int inexact, sg;
+	  mpfr_t m;
+	  tree result_lg;
+
+	  mpfr_init2 (m, prec);
+	  mpfr_from_real (m, ra, GMP_RNDN);
+	  mpfr_clear_flags ();
+	  inexact = mpfr_lgamma (m, &sg, m, GMP_RNDN);
+	  result_lg = do_mpfr_ckconv (m, type, inexact);
+	  mpfr_clear (m);
+	  if (result_lg)
+	    {
+	      tree result_sg;
+
+	      /* Dereference the arg_sg pointer argument.  */
+	      arg_sg = build_fold_indirect_ref (arg_sg);
+	      /* Assign the signgam value into *arg_sg. */
+	      result_sg = fold_build2 (MODIFY_EXPR,
+				       TREE_TYPE (arg_sg), arg_sg,
+				       build_int_cst (NULL, sg));
+	      TREE_SIDE_EFFECTS (result_sg) = 1;
+	      /* Combine the signgam assignment with the lgamma result.  */
+	      result = non_lvalue (fold_build2 (COMPOUND_EXPR, type,
+						result_sg, result_lg));
+	    }
+	}
+    }
+
   return result;
 }
 #endif
