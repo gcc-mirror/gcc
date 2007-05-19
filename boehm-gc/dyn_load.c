@@ -1152,7 +1152,7 @@ const static struct {
 };
     
 #ifdef DARWIN_DEBUG
-static const char *GC_dyld_name_for_hdr(struct mach_header *hdr) {
+static const char *GC_dyld_name_for_hdr(const struct GC_MACH_HEADER *hdr) {
     unsigned long i,c;
     c = _dyld_image_count();
     for(i=0;i<c;i++) if(_dyld_get_image_header(i) == hdr)
@@ -1162,12 +1162,17 @@ static const char *GC_dyld_name_for_hdr(struct mach_header *hdr) {
 #endif
         
 /* This should never be called by a thread holding the lock */
-static void GC_dyld_image_add(struct mach_header* hdr, unsigned long slide) {
+static void GC_dyld_image_add(const struct GC_MACH_HEADER *hdr, intptr_t slide)
+{
     unsigned long start,end,i;
-    const struct section *sec;
+    const struct GC_MACH_SECTION *sec;
     if (GC_no_dls) return;
     for(i=0;i<sizeof(GC_dyld_sections)/sizeof(GC_dyld_sections[0]);i++) {
-        sec = getsectbynamefromheader(
+#   if defined (__LP64__)
+      sec = getsectbynamefromheader_64(
+#   else
+      sec = getsectbynamefromheader(
+#   endif
             hdr,GC_dyld_sections[i].seg,GC_dyld_sections[i].sect);
         if(sec == NULL || sec->size == 0) continue;
         start = slide + sec->addr;
@@ -1184,11 +1189,16 @@ static void GC_dyld_image_add(struct mach_header* hdr, unsigned long slide) {
 }
 
 /* This should never be called by a thread holding the lock */
-static void GC_dyld_image_remove(struct mach_header* hdr, unsigned long slide) {
+static void GC_dyld_image_remove(const struct GC_MACH_HEADER *hdr,
+				 intptr_t slide) {
     unsigned long start,end,i;
-    const struct section *sec;
+    const struct GC_MACH_SECTION *sec;
     for(i=0;i<sizeof(GC_dyld_sections)/sizeof(GC_dyld_sections[0]);i++) {
-        sec = getsectbynamefromheader(
+#   if defined (__LP64__)
+      sec = getsectbynamefromheader_64(
+#   else
+      sec = getsectbynamefromheader(
+#   endif
             hdr,GC_dyld_sections[i].seg,GC_dyld_sections[i].sect);
         if(sec == NULL || sec->size == 0) continue;
         start = slide + sec->addr;

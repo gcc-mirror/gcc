@@ -1,3 +1,53 @@
+2007-05-19  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* Backport r120684, 120801, 120853, 120874 and 120977 from main.
+
+	2007-01-19  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* os_dep.c (defined(MPROTECT_VDB) && defined(DARWIN)): Moved recently
+	added defines to include/private/gc_priv.h
+	* darwin_stop_world.c: Removed the above defines.
+	(catch_exception_raise): Added THREAD_FLD in exc_state for POWERPC too.
+	* include/private/gc_priv.h: Moved definitions from darwin_stop_world.c
+	and os_dep.c to here. Fixed THREAD definition fixes for ppc64.
+
+	2007-01-17  Mike Stump  <mrs@apple.com>
+
+	* os_dep.c: Fix i686-apple-darwin9 builds.
+
+	2007-01-17  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* include/gc_config.h.in: Regenerate.
+
+	2007-01-15  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* os_dep.c (defined(MPROTECT_VDB) && defined(DARWIN)): Adjust mail
+	reference.
+	(catch_exception_raise): Fix typo in the I386 exc_state.
+
+	2007-01-11  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* configure.ac: Replaced HAS_I386_THREAD_STATE_* with
+	HAS_X86_THREAD_STATE32_* and HAS_X86_THREAD_STATE64_* respectively.
+	* configure: Regenerated.
+	* include/private/gcconfig.h (DARWIN): Added X86_64 define for Darwin.
+	Added base definitions for the X86_64 Darwin port.
+	* include/private/gc_priv.h: Added definitions for Darwin MACH thread
+	operations. Moved existing THREAD_STATE info from darwin_stop_world.c.
+	* darwin_stop_world.c: Removed THREAD_STATE info. Added
+	HAS_X86_THREAD_STATE64___RAX. And replaced HAS_I386_THREAD_STATE___EAX
+	with HAS_X86_THREAD_STATE32___EAX.
+	(GC_push_all_stacks): Use GC_MACH_THREAD_STATE_COUNT. Add code for
+	X86_64 Darwin.
+	* dyn_load.c (GC_dyld_name_for_hdr): Use GC_MACH_HEADER.
+	(GC_dyld_image_add): Use GC_MACH_HEADER and GC_MACH_SECTION.
+	Distinguish between getsectbynamefromheader_64 and
+	getsectbynamefromheader.
+	(GC_dyld_image_remove): Likewise.
+	* os_dep.c (GC_dirty_init): Use GC_MACH_THREAD_STATE.
+	(catch_exception_raise): Introduce exception information for I386 and
+	X86_64 Darwin. Add X86_64 for exc_state.faultvaddr.
+
 2007-05-13  Release Manager
 
 	* GCC 4.2.0 released.

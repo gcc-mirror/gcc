@@ -54,12 +54,6 @@
 /* support for win32 threads */
 #undef GC_WIN32_THREADS
 
-/* i386_thread_state_t has field eax */
-#undef HAS_I386_THREAD_STATE_EAX
-
-/* i386_thread_state_t has field __eax */
-#undef HAS_I386_THREAD_STATE___EAX
-
 /* ppc_thread_state64_t has field r0 */
 #undef HAS_PPC_THREAD_STATE64_R0
 
@@ -71,6 +65,18 @@
 
 /* ppc_thread_state_t has field __r0 */
 #undef HAS_PPC_THREAD_STATE___R0
+
+/* x86_thread_state32_t has field eax */
+#undef HAS_X86_THREAD_STATE32_EAX
+
+/* x86_thread_state32_t has field __eax */
+#undef HAS_X86_THREAD_STATE32___EAX
+
+/* x86_thread_state64_t has field rax */
+#undef HAS_X86_THREAD_STATE64_RAX
+
+/* x86_thread_state64_t has field __rax */
+#undef HAS_X86_THREAD_STATE64___RAX
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
