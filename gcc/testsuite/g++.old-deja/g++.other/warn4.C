@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "-Wconversion" }
+// { dg-options "-Wsign-conversion" }
 
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 21 Nov 1999 <nathan@acm.org>

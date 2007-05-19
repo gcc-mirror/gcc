@@ -1104,7 +1104,14 @@ c_common_post_options (const char **pfilename)
 	}
       if (flag_inline_functions)
 	flag_inline_trees = 2;
-    }
+    } 
+
+  /* In C, -Wconversion enables -Wsign-conversion (unless disabled
+     through -Wno-sign-conversion). While in C++,
+     -Wsign-conversion needs to be requested explicitly.  */
+  if (warn_sign_conversion == -1)
+    warn_sign_conversion =  (c_dialect_cxx ()) ? 0 : warn_conversion;
+
 
   /* Special format checking options don't work without -Wformat; warn if
      they are used.  */

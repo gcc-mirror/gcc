@@ -164,6 +164,10 @@ Wconversion
 C ObjC C++ ObjC++ Var(warn_conversion) Warning
 Warn for implicit type conversions that may change a value
 
+Wsign-conversion
+C ObjC C++ ObjC++ Var(warn_sign_conversion) Init(-1)
+Warn for implicit type conversions between signed and unsigned integers
+
 Wctor-dtor-privacy
 C++ ObjC++ Var(warn_ctor_dtor_privacy) Warning
 Warn when all constructors and destructors are private

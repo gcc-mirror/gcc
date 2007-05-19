@@ -610,7 +610,7 @@ cp_convert_and_check (tree type, tree expr)
   
   result = cp_convert (type, expr);
 
-  if (!skip_evaluation && !TREE_OVERFLOW_P (expr))
+  if (!skip_evaluation && !TREE_OVERFLOW_P (expr) && result != error_mark_node)
     warnings_for_convert_and_check (type, expr, result);
 
   return result;

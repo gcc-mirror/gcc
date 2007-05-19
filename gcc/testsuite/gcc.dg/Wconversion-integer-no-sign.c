@@ -1,8 +1,8 @@
 /* Test for diagnostics for implicit conversions between integer types
-   C++ equivalent of gcc/testsuite/gcc.dg/Wconversion-integer.c  */
+   These tests come from gcc/testsuite/gcc.dg/overflow-warn-2.c  */
 
-// { dg-do compile } 
-// { dg-options "-fsigned-char -Wconversion" } 
+/* { dg-do compile } */
+/* { dg-options "-std=c99 -fsigned-char -Wconversion -Wno-sign-conversion" } */
 
 #include <limits.h>
 
@@ -92,3 +92,5 @@ void h (int x)
 }
 
 unsigned fui (unsigned a) { return a + -1; } /* Warned by -Wsign-conversion.  */
+
+
