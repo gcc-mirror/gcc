@@ -1,3 +1,22 @@
+2006-05-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/31585
+	* config/i386/pmmintrin.h: Do not include xmmintrin.h
+	* config/i386/xmmintrin.h (_mm_extract_pi16): Implement as always
+	inlined function, not as a macro.
+	(_mm_prefetch): Ditto.
+	(_m_pextrw): Ditto.
+	(_mm_insert_pi16): Ditto.
+	(_m_pinsrw): Ditto.
+	(_mm_shuffle_pi16): Ditto.  Add const to __N argument.
+	(_m_pshufw): Ditto. Add const to __N argument.
+	(_mm_shufle_ps): Ditto.  Add const to __mask argument.
+	* config/i386/emmintrin.h (_mm_slli_epi16): Add const to __B argument.
+	(_mm_slli_epi32): Ditto.
+	(_mm_srli_si128): Implement as always inlined function, not as a macro.
+	Add __inline to function declaration.
+	(_mm_slli_si128): Ditto.
+
 2007-05-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sfp-machine.h (FP_EX_INVALID, FP_EX_DENORM,

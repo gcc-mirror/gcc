@@ -35,7 +35,6 @@
 #else
 
 /* We need definitions from the SSE2 and SSE header files*/
-#include <xmmintrin.h>
 #include <emmintrin.h>
 
 /* Additional bits in the MXCSR.  */
