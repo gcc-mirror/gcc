@@ -78,7 +78,12 @@
 (define_predicate "single_zero_operand"
   (and (match_code "const_int")
        (match_test "exact_log2(~INTVAL (op) & GET_MODE_MASK (mode)) >= 0")))
-      
+
+;;
+(define_predicate "avr_sp_immediate_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) >= -6 && INTVAL (op) <= 5")))
+
 ;; True for EQ & NE
 (define_predicate "eqne_operator"
   (match_code "eq,ne"))

@@ -1,3 +1,38 @@
+2007-05-19 Andy Hutchinson <HutchinsonAndy@netscape.net>
+           Anatoly Sokolov <aesok@dol.ru>
+
+	* config/avr/avr-protos.h (expand_prologue, expand_epilogue, 
+	avr_epilogue_uses) : Add declaration.
+	* config/avr/predicates.md (avr_sp_immediate_operand): New predicate.
+	* config/avr/constraints.md (R): New constraint.
+	config/avr/avr.md (SREG_ADDR,  UNSPEC_SEI, UNSPEC_CLI, 
+	UNSPECV_PROLOGUE_SAVES, UNSPECV_EPILOGUE_RESTORES): New constants.
+	(*pop1, *pop2, *pop3, *pop4, *pop5): Combine into ...
+	(*addhi3_sp_R_pc2, *addhi3_sp_R_pc3): ... these patterns.
+	(*movhi_sp, popqi, pophi, enable_interrupt, disable_interrupt, 
+	call_prologue_saves, epilogue_restores, return_from_epilogue,
+	return_from_main_epilogue, return_from_interrupt_epilogue, 
+	return_from_naked_epilogue, prologue, epilogue): New patterns.
+	(jump): Handle symbol reference.
+	* config/avr/avr.c (out_adj_frame_ptr, out_set_stack_ptr, 
+	avr_output_function_prologue, avr_output_function_epilogue): Remove 
+	functions.
+	(avr_init_machine_status, expand_prologue, expand_epilogue, 
+	avr_asm_function_end_prologue, avr_epilogue_uses, 
+	avr_asm_function_begin_epilogue): New functions.
+	(prologue_size, epilogue_size, jump_tables_size): Remove global 
+	variables.
+	(TARGET_ASM_FUNCTION_PROLOGUE, TARGET_ASM_FUNCTION_EPILOGUE): Remove.
+	(TARGET_ASM_FUNCTION_END_PROLOGUE): Define.
+	(TARGET_ASM_FUNCTION_BEGIN_EPILOGUE): Define.
+	(avr_override_options): Initialise init_machine_status.
+	(output_movhi): Handle all stack pointer loads.
+	(out_movqi_r_mr, out_movqi_mr_r): Handle SREG_ADDR address.
+	(avr_output_addr_vec_elt): Do not use variable jump_tables_size.
+	* config/avr/avr.h (AVR_2_BYTE_PC, AVR_3_BYTE_PC): New.
+	(EPILOGUE_USES) Redefine.
+	(machine_function) Declare.
+
 2007-05-19  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.c (mips_offset_within_alignment_p): Tweak comment.

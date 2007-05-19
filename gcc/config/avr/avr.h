@@ -63,6 +63,9 @@ extern GTY(()) section *progmem_section;
 #define AVR_HAVE_MOVW (avr_have_movw_lpmx_p)
 #define AVR_HAVE_LPMX (avr_have_movw_lpmx_p)
 
+#define AVR_2_BYTE_PC 1
+#define AVR_3_BYTE_PC 0
+
 #define TARGET_VERSION fprintf (stderr, " (GNU assembler syntax)");
 
 #define OVERRIDE_OPTIONS avr_override_options ()
@@ -338,7 +341,7 @@ extern int avr_reg_order[];
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-#define EPILOGUE_USES(REGNO) 0
+#define EPILOGUE_USES(REGNO) avr_epilogue_uses(REGNO)
 
 #define HAVE_POST_INCREMENT 1
 #define HAVE_PRE_DECREMENT 1
@@ -933,3 +936,22 @@ mmcu=*:-mmcu=%*}"
 #define DWARF2_ADDR_SIZE 4
 
 #define OBJECT_FORMAT_ELF
+
+/* A C structure for machine-specific, per-function data.
+   This is added to the cfun structure.  */
+struct machine_function GTY(())
+{
+  /* 'true' - if current function is a 'main' function.  */
+  int is_main;
+
+  /* 'true' - if current function is a naked function.  */
+  int is_naked;
+
+  /* 'true' - if current function is an interrupt function 
+     as specified by the "interrupt" attribute.  */
+  int is_interrupt;
+
+  /* 'true' - if current function is a signal function 
+     as specified by the "signal" attribute.  */
+  int is_signal;
+};

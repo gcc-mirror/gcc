@@ -99,6 +99,11 @@
   (and (match_code "const_double")
        (match_test "op == CONST0_RTX (SFmode)")))
 
+(define_constraint "R"
+  "Integer constant in the range -6 @dots{} 5."
+  (and (match_code "const_int")
+       (match_test "ival >= -6 && ival <= 5")))
+       
 (define_memory_constraint "Q"
   "A memory address based on X or Y pointer with displacement."
   (and (match_code "mem")
