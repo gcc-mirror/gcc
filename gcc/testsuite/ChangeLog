@@ -1,3 +1,24 @@
+2006-05-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/31585
+	* gcc.target/i386/sse-13.c: Use "-mssse3 -msse4a" compile options.
+	(__builtin_ia32_psllwi128): Redefine to test with immediate operand.
+	(__builtin_ia32_psrlqi128): Ditto.
+	(__builtin_ia32_psrlwi128): Ditto.
+	(__builtin_ia32_psrldi128): Ditto.
+	(__builtin_ia32_psrldqi128): Ditto.
+	(__builtin_ia32_pslldqi128): Ditto.
+	(__builtin_ia32_psrawi128): Ditto.
+	(__builtin_ia32_psradi128): Ditto.
+	(__builtin_ia32_psllqi128): Ditto.
+	(__builtin_ia32_pslldi128): Ditto.
+	(__builtin_prefetch): Ditto.
+	(__builtin_ia32_pshufw): Ditto.
+	(__builtin_ia32_vec_set_v4hi): Ditto.
+	(__builtin_ia32_vec_ext_v4hi): Ditto.
+	(__builtin_ia32_shufps): Ditto.
+	* gcc.target/i386/sse-14.c: Same changes as sse-13.c.
+
 2007-05-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31974
