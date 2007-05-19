@@ -103,6 +103,44 @@ extern void link_error(int);
     link_error(__LINE__); \
   } while (0)
 
+/* Test that FUNC(ARG,&SG) == (RES) && SG == RES_SG.  */
+#define TESTIT_LGAMMA_REENT(FUNC,ARG,RES,RES_SG) do { \
+  int sg; \
+  sg = 123; \
+  if (__builtin_##FUNC##f_r(ARG##F,&sg) != RES##F \
+      || sg != RES_SG \
+      || CKSGN_F(__builtin_##FUNC##f_r(ARG##F,&sg),RES##F)) \
+    link_error(__LINE__); \
+  sg = 123; \
+  if (__builtin_##FUNC##_r(ARG,&sg) != RES \
+      || sg != RES_SG \
+      || CKSGN(__builtin_##FUNC##_r(ARG,&sg),RES)) \
+    link_error(__LINE__); \
+  sg = 123; \
+  if (__builtin_##FUNC##l_r(ARG##L,&sg) != RES##L \
+      || sg != RES_SG \
+      || CKSGN_L(__builtin_##FUNC##l_r(ARG##L,&sg),RES##L)) \
+    link_error(__LINE__); \
+  } while (0)
+
+/* Range test, check that (LOW) < FUNC(ARG,&SG) < (HI), and also test
+   that SG == RES_SG.  */
+#define TESTIT_LGAMMA_REENT_R(FUNC,ARG,LOW,HI,RES_SG) do { \
+  int sg; \
+  sg = 123; \
+  if (__builtin_##FUNC##f_r(ARG,&sg) <= (LOW) || __builtin_##FUNC##f_r(ARG,&sg) >= (HI) \
+      || sg != RES_SG) \
+    link_error(__LINE__); \
+  sg = 123; \
+  if (__builtin_##FUNC##_r(ARG,&sg) <= (LOW) || __builtin_##FUNC##_r(ARG,&sg) >= (HI) \
+      || sg != RES_SG) \
+    link_error(__LINE__); \
+  sg = 123; \
+  if (__builtin_##FUNC##l_r(ARG,&sg) <= (LOW) || __builtin_##FUNC##l_r(ARG,&sg) >= (HI) \
+      || sg != RES_SG) \
+    link_error(__LINE__); \
+  } while (0)
+
 int main (void)
 {
 #ifdef __OPTIMIZE__
@@ -249,7 +287,27 @@ int main (void)
     MAXIT(remquol, -(__INT_MAX__+1.0L), 0);
     MAXIT(remquol, -(__INT_MAX__+2.0L), -1);
   }
-#endif
 
+  /* These tests rely on propagating the variable sg which contains
+     signgam.  This happens only when optimization is turned on.  */
+  TESTIT_LGAMMA_REENT_R (lgamma, -2.5, -0.06, -0.05, -1); /* lgamma_r(-2.5) == -0.056... */
+  TESTIT_LGAMMA_REENT_R (lgamma, -1.5, 0.86, 0.87, 1); /* lgamma_r(-1.5) == 0.860... */
+  TESTIT_LGAMMA_REENT_R (lgamma, -0.5, 1.26, 1.27, -1); /* lgamma_r(-0.5) == 1.265... */
+  TESTIT_LGAMMA_REENT_R (lgamma, 0.5, 0.57, 0.58, 1); /* lgamma_r(0.5) == 0.572... */
+  TESTIT_LGAMMA_REENT (lgamma, 1.0, 0.0, 1); /* lgamma_r(1) == 0 */
+  TESTIT_LGAMMA_REENT_R (lgamma, 1.5, -0.13, -0.12, 1); /* lgamma_r(1.5) == -0.120... */
+  TESTIT_LGAMMA_REENT (lgamma, 2.0, 0.0, 1); /* lgamma_r(2) == 0 */
+  TESTIT_LGAMMA_REENT_R (lgamma, 2.5, 0.28, 0.29, 1); /* lgamma_r(2.5) == 0.284... */
+
+  TESTIT_LGAMMA_REENT_R (gamma, -2.5, -0.06, -0.05, -1); /* gamma_r(-2.5) == -0.056... */
+  TESTIT_LGAMMA_REENT_R (gamma, -1.5, 0.86, 0.87, 1); /* gamma_r(-1.5) == 0.860... */
+  TESTIT_LGAMMA_REENT_R (gamma, -0.5, 1.26, 1.27, -1); /* gamma_r(-0.5) == 1.265... */
+  TESTIT_LGAMMA_REENT_R (gamma, 0.5, 0.57, 0.58, 1); /* gamma_r(0.5) == 0.572... */
+  TESTIT_LGAMMA_REENT (gamma, 1.0, 0.0, 1); /* gamma_r(1) == 0 */
+  TESTIT_LGAMMA_REENT_R (gamma, 1.5, -0.13, -0.12, 1); /* gamma_r(1.5) == -0.120... */
+  TESTIT_LGAMMA_REENT (gamma, 2.0, 0.0, 1); /* gamma_r(2) == 0 */
+  TESTIT_LGAMMA_REENT_R (gamma, 2.5, 0.28, 0.29, 1); /* gamma_r(2.5) == 0.284... */
+#endif
+  
   return 0;
 }

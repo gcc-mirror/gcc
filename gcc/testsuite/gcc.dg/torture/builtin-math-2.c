@@ -49,6 +49,13 @@ extern void fool (long double);
   fool (__builtin_remquol (ARG1##L, ARG2##L, &quo)); \
 } while (0)
 
+#define TESTIT_REENT(FUNC,ARG1) do { \
+  int sg; \
+  foof (__builtin_##FUNC##f_r (ARG1##F, &sg)); \
+  foo (__builtin_##FUNC##_r (ARG1, &sg)); \
+  fool (__builtin_##FUNC##l_r (ARG1##L, &sg)); \
+} while (0)
+
 void bar()
 {
   /* An argument of NaN is not evaluated at compile-time.  */
@@ -266,6 +273,21 @@ void bar()
   TESTIT2 (remainder, 1.0, -0.0);
   TESTIT2 (drem, 1.0, 0.0);
   TESTIT2 (drem, 1.0, -0.0);
+
+  /* The argument to lgamma* cannot be zero or a negative integer.  */
+  TESTIT_REENT (lgamma, -4.0); /* lgamma_r */
+  TESTIT_REENT (lgamma, -3.0); /* lgamma_r */
+  TESTIT_REENT (lgamma, -2.0); /* lgamma_r */
+  TESTIT_REENT (lgamma, -1.0); /* lgamma_r */
+  TESTIT_REENT (lgamma, -0.0); /* lgamma_r */
+  TESTIT_REENT (lgamma, 0.0); /* lgamma_r */
+  
+  TESTIT_REENT (gamma, -4.0); /* gamma_r */
+  TESTIT_REENT (gamma, -3.0); /* gamma_r */
+  TESTIT_REENT (gamma, -2.0); /* gamma_r */
+  TESTIT_REENT (gamma, -1.0); /* gamma_r */
+  TESTIT_REENT (gamma, -0.0); /* gamma_r */
+  TESTIT_REENT (gamma, 0.0); /* gamma_r */
 }
 
 /* { dg-final { scan-tree-dump-times "exp2 " 9 "original" } } */
@@ -340,4 +362,10 @@ void bar()
 /* { dg-final { scan-tree-dump-times "drem " 2 "original" } } */
 /* { dg-final { scan-tree-dump-times "dremf" 2 "original" } } */
 /* { dg-final { scan-tree-dump-times "dreml" 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "lgamma_r " 6 "original" } } */
+/* { dg-final { scan-tree-dump-times "lgammaf_r" 6 "original" } } */
+/* { dg-final { scan-tree-dump-times "lgammal_r" 6 "original" } } */
+/* { dg-final { scan-tree-dump-times "_gamma_r " 6 "original" } } */
+/* { dg-final { scan-tree-dump-times "_gammaf_r" 6 "original" } } */
+/* { dg-final { scan-tree-dump-times "_gammal_r" 6 "original" } } */
 /* { dg-final { cleanup-tree-dump "original" } } */

@@ -1,3 +1,10 @@
+2007-05-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/30250
+	* builtins.c (do_mpfr_lgamma_r): New.
+	(fold_builtin_2): Handle builtin gamma_r/lgamma_r.
+	* tree.h (CASE_FLT_FN_REENT): New.
+
 2007-05-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* dwarf2out.c (print_die): Use '%ld' not '%lu' to print a 'long'.
