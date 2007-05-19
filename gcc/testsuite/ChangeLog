@@ -1,3 +1,14 @@
+2007-05-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* gcc.dg/Wconversion-integer.c: Group testcases and add more.
+	* gcc.dg/Wconversion-sign.c: New.
+	* gcc.dg/Wconversion-integer-no-sign.c: New.
+	* g++.dg/warn/Wconversion-integer.C: Move some warnings to
+	Wconversion-sign.C
+	* g++.dg/warn/Wconversion-sign.C: New.
+	* g++.old-deja/g++.other/warn4.C: Update.
+	* g++.dg/warn/Wconversion1.C: Likewise.
+	
 2007-05-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-math-2.c: Add gamma_r/lgamma_r tests.

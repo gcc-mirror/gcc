@@ -1204,6 +1204,9 @@ conversion_warning (tree type, tree expr)
 
   unsigned int formal_prec = TYPE_PRECISION (type);
 
+  if (!warn_conversion && !warn_sign_conversion)
+    return;
+
   if (TREE_CODE (expr) == REAL_CST || TREE_CODE (expr) == INTEGER_CST)
     {
       /* Warn for real constant that is not an exact integer converted
@@ -1220,10 +1223,13 @@ conversion_warning (tree type, tree expr)
                && !int_fits_type_p (expr, type))
         {
           if (TYPE_UNSIGNED (type) && !TYPE_UNSIGNED (TREE_TYPE (expr)))
-            warning (OPT_Wconversion,
-                     "negative integer implicitly converted to unsigned type");
-          else
-            give_warning = true;
+	    warning (OPT_Wsign_conversion,
+		     "negative integer implicitly converted to unsigned type");
+          else if (!TYPE_UNSIGNED (type) && TYPE_UNSIGNED (TREE_TYPE (expr)))
+	    warning (OPT_Wsign_conversion,
+		     "conversion of unsigned constant value to negative integer");
+	  else
+	    give_warning = true;
         }
       else if (TREE_CODE (type) == REAL_TYPE)
         {
@@ -1261,16 +1267,20 @@ conversion_warning (tree type, tree expr)
                && TREE_CODE (type) == INTEGER_TYPE)
         {
           /* Warn for integer types converted to smaller integer types.  */
-          if (formal_prec < TYPE_PRECISION (TREE_TYPE (expr))
-              /* When they are the same width but different signedness,
-                 then the value may change.  */
-              || (formal_prec == TYPE_PRECISION (TREE_TYPE (expr))
-                  && TYPE_UNSIGNED (TREE_TYPE (expr)) != TYPE_UNSIGNED (type))
-              /* Even when converted to a bigger type, if the type is
-                 unsigned but expr is signed, then negative values
-                 will be changed.  */
-              || (TYPE_UNSIGNED (type) && !TYPE_UNSIGNED (TREE_TYPE (expr))))
-            give_warning = true;
+          if (formal_prec < TYPE_PRECISION (TREE_TYPE (expr))) 
+	    give_warning = true;
+
+	  /* When they are the same width but different signedness,
+	     then the value may change.  */
+	  else if ((formal_prec == TYPE_PRECISION (TREE_TYPE (expr))
+		    && TYPE_UNSIGNED (TREE_TYPE (expr)) != TYPE_UNSIGNED (type))
+		   /* Even when converted to a bigger type, if the type is
+		      unsigned but expr is signed, then negative values
+		      will be changed.  */
+		   || (TYPE_UNSIGNED (type) && !TYPE_UNSIGNED (TREE_TYPE (expr))))
+	    warning (OPT_Wsign_conversion,
+		     "conversion to %qT from %qT may change the sign of the result",
+		     type, TREE_TYPE (expr));
         }
 
       /* Warn for integer types converted to real types if and only if
@@ -1327,7 +1337,7 @@ warnings_for_convert_and_check (tree type, tree expr, tree result)
           if (!int_fits_type_p (expr, c_common_signed_type (type)))
             warning (OPT_Woverflow,
                      "large integer implicitly truncated to unsigned type");
-          else if (warn_conversion)
+          else
             conversion_warning (type, expr);
         }
       else if (!int_fits_type_p (expr, unsigned_type_for (type))) 
@@ -1341,13 +1351,13 @@ warnings_for_convert_and_check (tree type, tree expr, tree result)
 	warning (OPT_Woverflow,
 		 "overflow in implicit constant conversion");
 
-      else if (warn_conversion)
+      else
 	conversion_warning (type, expr);
     }
   else if (TREE_CODE (result) == INTEGER_CST && TREE_OVERFLOW (result)) 
     warning (OPT_Woverflow,
              "overflow in implicit constant conversion");
-  else if (warn_conversion)
+  else
     conversion_warning (type, expr);
 }
 
@@ -1366,7 +1376,7 @@ convert_and_check (tree type, tree expr)
   
   result = convert (type, expr);
 
-  if (!skip_evaluation && !TREE_OVERFLOW_P (expr))
+  if (!skip_evaluation && !TREE_OVERFLOW_P (expr) && result != error_mark_node)
     warnings_for_convert_and_check (type, expr, result);
 
   return result;

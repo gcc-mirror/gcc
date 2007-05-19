@@ -227,7 +227,7 @@ Objective-C and Objective-C++ Dialects}.
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return -Warray-bounds @gol
 -Wno-attributes -Wc++-compat -Wc++0x-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment @gol
--Wconversion -Wcoverage-mismatch -Wno-deprecated-declarations @gol
+-Wconversion  -Wcoverage-mismatch  -Wno-deprecated-declarations @gol
 -Wdisabled-optimization  -Wno-div-by-zero  @gol
 -Wempty-body  -Wno-endif-labels @gol
 -Werror  -Werror=* @gol
@@ -247,7 +247,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wparentheses  -Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
--Wsign-compare  -Wstack-protector @gol
+-Wsign-compare  -Wsign-conversion  -Wstack-protector @gol
 -Wstrict-aliasing -Wstrict-aliasing=n @gol
 -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum @gol
@@ -3437,19 +3437,24 @@ Warn for variables that might be changed by @samp{longjmp} or
 
 @item -Wconversion
 @opindex Wconversion
+@opindex Wno-conversion
 Warn for implicit conversions that may alter a value. This includes
 conversions between real and integer, like @code{abs (x)} when
 @code{x} is @code{double}; conversions between signed and unsigned,
 like @code{unsigned ui = -1}; and conversions to smaller types, like
 @code{sqrtf (M_PI)}. Do not warn for explicit casts like @code{abs
 ((int) x)} and @code{ui = (unsigned) -1}, or if the value is not
-changed by the conversion like in @code{abs (2.0)}.
+changed by the conversion like in @code{abs (2.0)}.  Warnings about
+conversions between signed and unsigned integers can be disabled by
+using @option{-Wno-sign-conversion}.
 
 For C++, also warn for conversions between @code{NULL} and non-pointer
 types; confusing overload resolution for user-defined conversions; and
 conversions that will never use a type conversion operator:
 conversions to @code{void}, the same type, a base class or a reference
-to them.
+to them. Warnings about conversions between signed and unsigned
+integers are disabled by default in C++ unless
+@option{-Wsign-conversion} is explicitly enabled.
 
 @item -Wempty-body
 @opindex Wempty-body
@@ -3467,6 +3472,14 @@ Warn when a comparison between signed and unsigned values could produce
 an incorrect result when the signed value is converted to unsigned.
 This warning is also enabled by @option{-Wextra}; to get the other warnings
 of @option{-Wextra} without this warning, use @samp{-Wextra -Wno-sign-compare}.
+
+@item -Wsign-conversion
+@opindex Wsign-conversion
+@opindex Wno-sign-conversion
+Warn for implicit conversions that may change the sign of an integer
+value, like assigning a signed integer expression to an unsigned
+integer variable. An explicit cast silences the warning. In C, this
+option is enabled also by @option{-Wconversion}.
 
 @item -Waddress
 @opindex Waddress

@@ -1,4 +1,4 @@
-// { dg-options "-fsigned-char -Wconversion" }
+// { dg-options "-fsigned-char -Wsign-conversion" }
 
 char c1 = 1024; // { dg-warning "overflow" }
 char c2 = char(1024);

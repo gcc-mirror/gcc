@@ -1,9 +1,9 @@
-/* Test for diagnostics for implicit conversions between integer types
-   These tests come from gcc/testsuite/gcc.dg/overflow-warn-2.c  */
+/* Test for diagnostics for implicit conversions between signed and
+   unsigned integer types.
+   C++ equivalent of gcc/testsuite/gcc.dg/Wsign-conversion.c  */
 
-/* { dg-do compile } */
-/* { dg-options "-std=c99 -fsigned-char -Wconversion" } */
-
+// { dg-do compile } 
+// { dg-options "-fsigned-char -Wsign-conversion" } 
 #include <limits.h>
 
 void fsc (signed char sc);
@@ -18,14 +18,14 @@ void h (int x)
   unsigned char uc = 3;
   signed char   sc = 3;
 
-  uc = ui; /* { dg-warning "conversion" } */
-  uc = si; /* { dg-warning "conversion" } */
-  sc = ui; /* { dg-warning "conversion" } */
-  sc = si; /* { dg-warning "conversion" } */
-  fuc (ui); /* { dg-warning "conversion" } */
-  fuc (si); /* { dg-warning "conversion" } */
-  fsc (ui); /* { dg-warning "conversion" } */
-  fsc (si); /* { dg-warning "conversion" } */
+  uc = ui; 
+  uc = si; 
+  sc = ui; 
+  sc = si; 
+  fuc (ui);
+  fuc (si);
+  fsc (ui);
+  fsc (si);
 
   fsi (si);
   fui (ui);
@@ -40,12 +40,10 @@ void h (int x)
   fuc ('A');
   uc = 'A';
 
-  uc = x ? 1U : -1; /* { dg-warning "conversion" } */
-  /* { dg-warning "negative integer implicitly converted to unsigned type" "" { target *-*-* } 43 } */
-  uc = x ? SCHAR_MIN : 1U; /* { dg-warning "conversion" } */
-  /* { dg-warning "negative integer implicitly converted to unsigned type" "" { target *-*-* } 45 } */
-  uc = x ? 1 : -1; /* { dg-warning "conversion" } */
-  uc = x ? SCHAR_MIN : 1; /* { dg-warning "conversion" } */
+  uc = x ? 1U : -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
+  uc = x ? SCHAR_MIN : 1U;  /* { dg-warning "negative integer implicitly converted to unsigned type" } */
+  uc = x ? 1 : -1; 
+  uc = x ? SCHAR_MIN : 1; 
   ui = x ? 1U : -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
   ui = x ? INT_MIN : 1U; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
   ui = ui ? SCHAR_MIN : 1U; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
@@ -94,5 +92,4 @@ void h (int x)
 }
 
 unsigned fui (unsigned a) { return a + -1; } /* { dg-warning "negative integer implicitly converted to unsigned type" } */
-
 
