@@ -1,3 +1,8 @@
+2007-05-19  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.c (mips_offset_within_alignment_p): Tweak comment.
+	Use a single return statement.
+
 2007-05-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR middle-end/30250
