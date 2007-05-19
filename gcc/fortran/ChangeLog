@@ -1,5 +1,11 @@
 2007-05-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/30820
+	* Make-lang.in: Remove use of -Wno-error for expr.o, resolve.o,
+	simplify.o and trans-common.o.
+
+2007-05-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/31974
 	* trans-array.c (gfc_trans_auto_array_allocation): Avoid
 	multiplication of mismatched types.

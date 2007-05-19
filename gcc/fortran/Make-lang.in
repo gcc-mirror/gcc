@@ -48,13 +48,6 @@ GFORTRAN_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gfortran|sed
 # Use strict warnings for this front end.
 fortran-warn = $(STRICT_WARN)
 
-# These files get warnings from an inline function in GMP saying:
-# "control may reach end of non-void function '__gmpz_get_ui' being inlined"
-fortran/expr.o-warn = -Wno-error
-fortran/resolve.o-warn = -Wno-error
-fortran/simplify.o-warn = -Wno-error
-fortran/trans-common.o-warn = -Wno-error
-
 # These are the groups of object files we have.  The F95_PARSER_OBJS are
 # all the front end files, the F95_OBJS are the files for the translation
 # from the parse tree to GENERIC
