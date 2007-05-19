@@ -87,6 +87,10 @@ extern const char *lshrqi3_out (rtx insn, rtx operands[], int *len);
 extern const char *lshrhi3_out (rtx insn, rtx operands[], int *len);
 extern const char *lshrsi3_out (rtx insn, rtx operands[], int *len);
 
+extern void expand_prologue (void);
+extern void expand_epilogue (void);
+extern int avr_epilogue_uses (int regno);
+
 extern void avr_output_bld (rtx operands[], int bit_nr);
 extern void avr_output_addr_vec_elt (FILE *stream, int value);
 extern const char *avr_out_sbxx_branch (rtx insn, rtx operands[]);
