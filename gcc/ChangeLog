@@ -1,5 +1,12 @@
 2007-05-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	PR target/31022
+	Backport from mainline.
+	* config/sh/sh.c (sh_adjust_cost): Use the result of single_set
+	instead of PATTERN.
+
+2007-05-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	PR target/27405
 	Backport from mainline.
 	* config/sh/sh.md (cmp{eq,gt,gtu}{si,di}_media): Remove.
