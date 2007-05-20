@@ -1,3 +1,9 @@
+2006-05-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/31585
+	* gcc.target/i386/sse-vect-types.c: Do not redefine "static"
+	and "__inline".  Use "-msse" instead of "-msse2".
+
 2006-05-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR middle-end/7651
