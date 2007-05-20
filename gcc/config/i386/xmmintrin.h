@@ -855,7 +855,7 @@ _MM_SET_FLUSH_ZERO_MODE (unsigned int __mode)
 static __inline __m128 __attribute__((__always_inline__))
 _mm_set_ss (float __F)
 {
-  return __extension__ (__m128)(__v4sf){ __F, 0, 0, 0 };
+  return __extension__ (__m128)(__v4sf){ __F, 0.0f, 0.0f, 0.0f };
 }
 
 /* Create a vector with all four elements equal to F.  */

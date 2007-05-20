@@ -1,3 +1,23 @@
+2006-05-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse-vect-types.c: Revert 'Use "-msse"
+	instead of "-msse2".'
+	* gcc.target/i386/sse-12.c: Use "-march=k8 -m3dnow -mssse3 -msse4a"
+	instead of "-msse3".  Include only ammintrin.h, tmmintrin.h
+	and mm3dnow.h.
+	* gcc.target/i386/sse-13.c (__builtin_ia32_extrqi): Redefine
+	to test with immediate operand.
+	(__builtin_ia32_insertqi): Ditto.
+	(__builtin_ia32_palignr128): Ditto.
+	(__builtin_ia32_palignr): Ditto.
+	(__builtin_ia32_pshufhw): Ditto.
+	(__builtin_ia32_pshuflw): Ditto.
+	(__builtin_ia32_pshufd): Ditto.
+	(__builtin_ia32_vec_set_v8hi): Ditto.
+	(__builtin_ia32_vec_ext_v8hi): Ditto.
+	(__builtin_ia32_shufpd): Ditto.
+	* gcc.target/i386/sse-14.c: Same changes as sse-13.c.
+
 2007-05-20  Daniel Franke  <franke.daniel@gmail.org>
 
 	PR fortran/32001

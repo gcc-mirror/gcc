@@ -1,3 +1,23 @@
+2006-05-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/tmmintrin.h (_mm_alignr_epi32): Implement as always
+	inlined function, not as a macro.
+	(_mm_alignr_pi8): Ditto.
+	* config/i386/ammintrin.h (_mm_extracti_si64): Ditto.
+	(_mm_inserti_si64): Ditto.
+	* config/i386/emmintrin.h (_mm_shuffle_pd): Ditto.
+	(_mm_extract_epi16): Ditto.
+	(_mm_insert_epi16): Ditto.
+	(_mm_shufflehi_epi16): Ditto.
+	(_mm_shufflelo_epi16): Ditto.
+	(_mm_shuffle_epi32): Ditto.
+	* config/i386/xmmintrin.h (_mm_set_ss): Use 0.0f for float constant.
+	* config/386/mm3dnow.h: Add __attribute__((__always_inline__)) to
+	all functions.
+	(_m_from_float): Add __extension__ to conversion.  Use 0.0f for
+	float constant.
+	(_m_to_float): Use C89 compatible assignment.
+
 2007-04-20  Martin Michlmayr  <tbm@cyrius.com>
 
 	PR target/32007
