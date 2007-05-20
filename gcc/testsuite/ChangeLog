@@ -13,7 +13,7 @@
 	* g++.dg/warn/Wtype-limits-Wextra.C: New.
 	* g++.dg/warn/Wtype-limits-no.C: New.
 
-2006-05-20  Uros Bizjak  <ubizjak@gmail.com>
+2007-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse-vect-types.c: Revert 'Use "-msse"
 	instead of "-msse2".'
