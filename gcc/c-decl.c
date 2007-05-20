@@ -6788,13 +6788,6 @@ finish_function (void)
       TREE_NO_WARNING (fndecl) = 1;
     }
 
-  /* With just -Wextra, complain only if function returns both with
-     and without a value.  */
-  if (extra_warnings
-      && current_function_returns_value
-      && current_function_returns_null)
-    warning (OPT_Wextra, "this function may return with or without a value");
-
   /* Store the end of the function, so that we get good line number
      info for the epilogue.  */
   cfun->function_end_locus = input_location;

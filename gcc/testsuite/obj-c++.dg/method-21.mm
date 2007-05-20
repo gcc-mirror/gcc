@@ -1,6 +1,6 @@
 /* Test for spurious "may or may not return a value" warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-Wextra" } */
+/* { dg-options "-Wreturn-type -Wextra" } */
 
 #include <objc/Object.h>
 

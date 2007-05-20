@@ -2807,9 +2807,13 @@ This warning is enabled by @option{-Wall} for C and C++.
 
 @item -Wreturn-type
 @opindex Wreturn-type
-Warn whenever a function is defined with a return-type that defaults to
-@code{int}.  Also warn about any @code{return} statement with no
-return-value in a function whose return-type is not @code{void}.
+@opindex Wno-return-type
+Warn whenever a function is defined with a return-type that defaults
+to @code{int}.  Also warn about any @code{return} statement with no
+return-value in a function whose return-type is not @code{void}
+(falling off the end of the function body is considered returning
+without a value), and about a @code{return} statement with a
+expression in a function whose return-type is @code{void}.
 
 Also warn if the return type of a function has a type qualifier
 such as @code{const}.  For ISO C such a type qualifier has no effect,
@@ -3129,22 +3133,6 @@ supported, but the newer name is more descriptive.)  Print extra warning
 messages for these events:
 
 @itemize @bullet
-@item
-A function can return either with or without a value.  (Falling
-off the end of the function body is considered returning without
-a value.)  For example, this function would evoke such a
-warning:
-
-@smallexample
-@group
-foo (a)
-@{
-  if (a > 0)
-    return a;
-@}
-@end group
-@end smallexample
-
 @item
 An unsigned value is compared against zero with @samp{<} or @samp{>=}.
 
