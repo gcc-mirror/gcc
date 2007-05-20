@@ -1,3 +1,8 @@
+2007-04-20  Martin Michlmayr  <tbm@cyrius.com>
+
+	PR target/32007
+	* config/arm/lib1funcs.asm: Define __ARM_ARCH__ on v2/v3 machines.
+
 2006-05-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR middle-end/7651
