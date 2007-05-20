@@ -266,7 +266,7 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
           else
             {
               scount[n]++;
-              sptr += sstride[n] * size;
+              src += sstride[n] * size;
             }
         }
     }

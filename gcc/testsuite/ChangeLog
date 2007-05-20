@@ -1,3 +1,9 @@
+2007-05-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/31196
+	Backport from trunk.
+	* gfortran.dg/reshape_transpose_1.f90:  New test.
+
 2007-05-17  Ian Lance Taylor  <iant@google.com>
 
 	PR tree-optimization/31953

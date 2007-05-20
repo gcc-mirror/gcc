@@ -1,3 +1,10 @@
+2007-05-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/31196
+	Backport from trunk.
+	* intrinsics/reshape_generic.c (reshape_internal):  Increment
+	correct variable.
+
 2007-05-13  Release Manager
 
 	* GCC 4.2.0 released.
