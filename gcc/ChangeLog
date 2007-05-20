@@ -1,5 +1,12 @@
 2007-05-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	PR target/31480
+	Backport from mainline.
+	* config/sh/sh.md (length): Check if prev_nonnote_insn (insn)
+	is null.
+
+2007-05-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	PR target/31022
 	Backport from mainline.
 	* config/sh/sh.c (sh_adjust_cost): Use the result of single_set
