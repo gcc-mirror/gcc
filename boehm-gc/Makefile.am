@@ -33,11 +33,13 @@ mips_sgi_mach_dep.s mips_ultrix_mach_dep.s powerpc_darwin_mach_dep.s \
 rs6000_mach_dep.s sparc_mach_dep.S sparc_netbsd_mach_dep.s \
 sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
 
+extra_ldflags_libgc = @extra_ldflags_libgc@
+
 # Include THREADLIBS here to ensure that the correct versions of
 # linuxthread semaphore functions get linked:
 libgcjgc_la_LIBADD = @addobjs@ $(THREADLIBS) $(UNWINDLIBS)
 libgcjgc_la_DEPENDENCIES = @addobjs@
-libgcjgc_la_LDFLAGS = -version-info 1:2:0 -rpath $(toolexeclibdir)
+libgcjgc_la_LDFLAGS = $(extra_ldflags_libgc) -version-info 1:2:0 -rpath $(toolexeclibdir)
 
 libgcjgc_convenience_la_LIBADD = @addobjs@
 libgcjgc_convenience_la_DEPENDENCIES = @addobjs@

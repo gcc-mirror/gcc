@@ -300,6 +300,14 @@ case "$host" in
     ;;
 esac
 
+# extra LD Flags which are required for targets
+case "${host}" in
+  *-*-darwin*)
+    extra_ldflags_libgc=-Wl,-single_module
+    ;;
+esac
+AC_SUBST(extra_ldflags_libgc)
+
 AC_SUBST(EXTRA_TEST_LIBS)
 
 target_all=libgcjgc.la
