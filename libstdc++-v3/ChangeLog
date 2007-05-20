@@ -1,3 +1,8 @@
+2007-05-20  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algo.h: Shuffle the functions to better match the
+	order in the standard.
+
 2007-05-17  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/gnu/c_locale.h: Do not include <libintl.h>.
