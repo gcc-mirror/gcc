@@ -1,5 +1,13 @@
 2007-05-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	PR target/31701
+	Backport from mainline.
+	* config/sh/sh.c (output_stack_adjust): Avoid using the frame
+	register itself to hold the offset constant.  Tell flow the use
+	of r4 and r5 when they are used.
+
+2007-05-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	PR target/31480
 	Backport from mainline.
 	* config/sh/sh.md (length): Check if prev_nonnote_insn (insn)
