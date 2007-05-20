@@ -69,6 +69,14 @@ Boston, MA 02110-1301, USA.  */
 
 /* Function end macros.  Variants for interworking.  */
 
+#if defined(__ARM_ARCH_2__)
+# define __ARM_ARCH__ 2
+#endif
+
+#if defined(__ARM_ARCH_3__)
+# define __ARM_ARCH__ 3
+#endif
+
 #if defined(__ARM_ARCH_3M__) || defined(__ARM_ARCH_4__) \
 	|| defined(__ARM_ARCH_4T__)
 /* We use __ARM_ARCH__ set to 4 here, but in reality it's any processor with
