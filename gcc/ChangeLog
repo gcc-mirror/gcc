@@ -11,7 +11,7 @@
 	* c-opts.c (c_common_post_options): Enabled by -Wextra.
 	* c-common.c (shorten_compare): Warn with Wtype-limits.
 
-2006-05-20  Uros Bizjak  <ubizjak@gmail.com>
+2007-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/tmmintrin.h (_mm_alignr_epi32): Implement as always
 	inlined function, not as a macro.
@@ -36,14 +36,14 @@
 	PR target/32007
 	* config/arm/lib1funcs.asm: Define __ARM_ARCH__ on v2/v3 machines.
 
-2006-05-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+2007-05-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR middle-end/7651
 	* doc/invoke.texi (Wreturn-type): Complete description.
 	(Wextra): Delete item about return-type warning.
 	* c-decl.c: Delete redundant Wextra warning.
 	
-2006-05-20  Uros Bizjak  <ubizjak@gmail.com>
+2007-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/31585
 	* config/i386/pmmintrin.h: Do not include xmmintrin.h
