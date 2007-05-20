@@ -1,3 +1,18 @@
+2007-05-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR middle-end/7651
+	PR c++/11856
+	PR c/12963
+	PR c/23587
+	PR other/29694
+	* gcc.dg/compare6.c: Replace Wall with Wtype-limits.
+	* gcc.dg/Wtype-limits.c: New.
+	* gcc.dg/Wtype-limits-Wextra.c: New.
+	* gcc.dg/Wtype-limits-no.c: New.
+	* g++.dg/warn/Wtype-limits.C: New.
+	* g++.dg/warn/Wtype-limits-Wextra.C: New.
+	* g++.dg/warn/Wtype-limits-no.C: New.
+
 2006-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse-vect-types.c: Revert 'Use "-msse"

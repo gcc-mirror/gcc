@@ -224,7 +224,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{-fsyntax-only  -pedantic  -pedantic-errors @gol
--w  -Wextra  -Wall  -Waddress  -Waggregate-return -Warray-bounds @gol
+-w  -Wextra  -Wall  -Waddress  -Waggregate-return  -Warray-bounds @gol
 -Wno-attributes -Wc++-compat -Wc++0x-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment @gol
 -Wconversion  -Wcoverage-mismatch  -Wno-deprecated-declarations @gol
@@ -251,7 +251,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wstrict-aliasing -Wstrict-aliasing=n @gol
 -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum @gol
--Wsystem-headers  -Wtrigraphs  -Wundef  -Wuninitialized @gol
+-Wsystem-headers  -Wtrigraphs  -Wtype-limits  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wno-pragmas -Wunreachable-code @gol
 -Wunused  -Wunused-function  -Wunused-label  -Wunused-parameter @gol
 -Wunused-value  -Wunused-variable @gol
@@ -3134,7 +3134,11 @@ messages for these events:
 
 @itemize @bullet
 @item
-An unsigned value is compared against zero with @samp{<} or @samp{>=}.
+Warn if a comparison is always true or always false due to the limited
+range of the data type, but do not warn for constant expressions.  For
+example, warn if an unsigned variable is compared against zero with
+@samp{<} or @samp{>=}.  This warning can be independently controlled
+by @option{-Wtype-limits}.
 
 @item @r{(C only)}
 Storage-class specifiers like @code{static} are not the first things
@@ -3375,6 +3379,15 @@ of @code{void}.  GNU C assigns these types a size of 1, for
 convenience in calculations with @code{void *} pointers and pointers
 to functions.  In C++, warn also when an arithmetic operation involves
 @code{NULL}.  This warning is also enabled by @option{-pedantic}.
+
+@item -Wtype-limits
+@opindex Wtype-limits
+@opindex Wno-type-limits
+Warn if a comparison is always true or always false due to the limited
+range of the data type, but do not warn for constant expressions.  For
+example, warn if an unsigned variable is compared against zero with
+@samp{<} or @samp{>=}.  This warning is also enabled by
+@option{-Wextra}.
 
 @item -Wbad-function-cast @r{(C only)}
 @opindex Wbad-function-cast

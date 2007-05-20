@@ -2517,9 +2517,9 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
       if (TREE_CODE (primop0) != INTEGER_CST)
 	{
 	  if (val == truthvalue_false_node)
-	    warning (0, "comparison is always false due to limited range of data type");
+	    warning (OPT_Wtype_limits, "comparison is always false due to limited range of data type");
 	  if (val == truthvalue_true_node)
-	    warning (0, "comparison is always true due to limited range of data type");
+	    warning (OPT_Wtype_limits, "comparison is always true due to limited range of data type");
 	}
 
       if (val != 0)
@@ -2589,24 +2589,26 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 	  switch (code)
 	    {
 	    case GE_EXPR:
-	      /* All unsigned values are >= 0, so we warn if extra warnings
-		 are requested.  However, if OP0 is a constant that is
-		 >= 0, the signedness of the comparison isn't an issue,
-		 so suppress the warning.  */
-	      if (extra_warnings && !in_system_header
+	      /* All unsigned values are >= 0, so we warn.  However,
+		 if OP0 is a constant that is >= 0, the signedness of
+		 the comparison isn't an issue, so suppress the
+		 warning.  */
+	      if (warn_type_limits && !in_system_header
 		  && !(TREE_CODE (primop0) == INTEGER_CST
 		       && !TREE_OVERFLOW (convert (c_common_signed_type (type),
 						   primop0))))
-		warning (0, "comparison of unsigned expression >= 0 is always true");
+		warning (OPT_Wtype_limits, 
+			 "comparison of unsigned expression >= 0 is always true");
 	      value = truthvalue_true_node;
 	      break;
 
 	    case LT_EXPR:
-	      if (extra_warnings && !in_system_header
+	      if (warn_type_limits && !in_system_header
 		  && !(TREE_CODE (primop0) == INTEGER_CST
 		       && !TREE_OVERFLOW (convert (c_common_signed_type (type),
 						   primop0))))
-		warning (0, "comparison of unsigned expression < 0 is always false");
+		warning (OPT_Wtype_limits, 
+			 "comparison of unsigned expression < 0 is always false");
 	      value = truthvalue_false_node;
 	      break;
 

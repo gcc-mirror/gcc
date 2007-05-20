@@ -1,3 +1,16 @@
+2007-05-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	
+	PR middle-end/7651
+	PR c++/11856
+	PR c/12963
+	PR c/23587
+	PR other/29694
+	* c.opt (Wtype-limits): New.
+	* doc/invoke.texi (Wtype-limits): Document it.
+	(Wextra): Enabled by -Wextra.
+	* c-opts.c (c_common_post_options): Enabled by -Wextra.
+	* c-common.c (shorten_compare): Warn with Wtype-limits.
+
 2006-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/tmmintrin.h (_mm_alignr_epi32): Implement as always
