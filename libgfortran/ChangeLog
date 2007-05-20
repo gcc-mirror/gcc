@@ -1,5 +1,15 @@
 2007-05-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/31618
+	Backport from trunk.
+	* io/transfer.c (read_block_direct):  Instead of calling us_read,
+	set dtp->u.p.current_unit->current_record = 0 so that pre_position
+	will read the record marker.
+	(data_transfer_init):  For different error conditions, call
+	generate_error, then return.
+
+2007-05-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR libfortran/31196
 	Backport from trunk.
 	* intrinsics/reshape_generic.c (reshape_internal):  Increment
