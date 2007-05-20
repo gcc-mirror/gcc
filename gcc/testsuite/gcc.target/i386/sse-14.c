@@ -11,6 +11,14 @@
 
 /* Following intrinsics require immediate arguments. */
 
+/* ammintrin.h */
+#define __builtin_ia32_extrqi(X, I, L)  __builtin_ia32_extrqi(X, 1, 1)
+#define __builtin_ia32_insertqi(X, Y, I, L) __builtin_ia32_insertqi(X, Y, 1, 1)
+
+/* tmmintrin.h */
+#define __builtin_ia32_palignr128(X, Y, N) __builtin_ia32_palignr128(X, Y, 8)
+#define __builtin_ia32_palignr(X, Y, N) __builtin_ia32_palignr(X, Y, 8)
+
 /* emmintrin.h */
 #define __builtin_ia32_psllwi128(A, B) __builtin_ia32_psllwi128(A, 1)
 #define __builtin_ia32_psrlqi128(A, B) __builtin_ia32_psrlqi128(A, 1)
@@ -22,6 +30,13 @@
 #define __builtin_ia32_psradi128(A, B) __builtin_ia32_psradi128(A, 1)
 #define __builtin_ia32_psllqi128(A, B) __builtin_ia32_psllqi128(A, 1)
 #define __builtin_ia32_pslldi128(A, B) __builtin_ia32_pslldi128(A, 1)
+#define __builtin_ia32_pshufhw(A, N) __builtin_ia32_pshufhw(A, 0)
+#define __builtin_ia32_pshuflw(A, N) __builtin_ia32_pshuflw(A, 0)
+#define __builtin_ia32_pshufd(A, N) __builtin_ia32_pshufd(A, 0)
+#define __builtin_ia32_vec_set_v8hi(A, D, N) \
+  __builtin_ia32_vec_set_v8hi(A, D, 0)
+#define __builtin_ia32_vec_ext_v8hi(A, N) __builtin_ia32_vec_ext_v8hi(A, 0)
+#define __builtin_ia32_shufpd(A, B, N) __builtin_ia32_shufpd(A, B, 0)
 
 /* xmmintrin.h */
 #define __builtin_prefetch(P, A, I) __builtin_prefetch(P, A, _MM_HINT_NTA)
@@ -29,7 +44,7 @@
 #define __builtin_ia32_vec_set_v4hi(A, D, N) \
   __builtin_ia32_vec_set_v4hi(A, D, 0)
 #define __builtin_ia32_vec_ext_v4hi(A, N) __builtin_ia32_vec_ext_v4hi(A, 0)
-#define __builtin_ia32_shufps(A, B, C) __builtin_ia32_shufps(A, B, 0)
+#define __builtin_ia32_shufps(A, B, N) __builtin_ia32_shufps(A, B, 0)
 
 #include <ammintrin.h>
 #include <tmmintrin.h>
