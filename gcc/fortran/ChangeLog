@@ -1,3 +1,9 @@
+2007-05-20  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/32001
+	* check.c (check_rest): Improved argument conformance check and 
+	fixed error message generation.
+
 2007-05-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/30820

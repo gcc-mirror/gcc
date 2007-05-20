@@ -1,10 +1,15 @@
-2006-05-20  Uros Bizjak  <ubizjak@gmail.com>
+2007-05-20  Daniel Franke  <franke.daniel@gmail.org>
+
+	PR fortran/32001
+	* gfortran.dg/min_max_conformance.f90: Added more testcases.
+
+2007-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/31585
 	* gcc.target/i386/sse-vect-types.c: Do not redefine "static"
 	and "__inline".  Use "-msse" instead of "-msse2".
 
-2006-05-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+2007-05-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR middle-end/7651
 	* gcc.dg/20030906-1.c: Replace Wextra with Wreturn-type.
@@ -12,7 +17,7 @@
 	* objc.dg/method-17.m: Add -Wreturn-type.
 	* obj-c++.dg/method-21.mm: Likewise.
 	
-2006-05-20  Uros Bizjak  <ubizjak@gmail.com>
+2007-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/31585
 	* gcc.target/i386/sse-13.c: Use "-mssse3 -msse4a" compile options.
