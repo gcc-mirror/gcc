@@ -1,3 +1,13 @@
+2007-05-20  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* configure.ac: Introduce extra_ldflags_libgc. Use it for Darwin.
+	* configure: Regenerate.
+	* Makefile.am (libgc_la_LDFLAGS): Use extra_ldflags_libgc.
+	* Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* include/private/gcconfig.h: Enable MPROTECT_VDB for all Darwin
+	targets. Remove comments. Prepare ppc64 support for Darwin.
+
 2007-04-23  Keith Seitz  <keiths@redhat.com>
 
 	* include/gc.h (GC_is_thread_suspended): Declare.
