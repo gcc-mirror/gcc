@@ -1,3 +1,10 @@
+2006-05-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR middle-end/7651
+	* doc/invoke.texi (Wreturn-type): Complete description.
+	(Wextra): Delete item about return-type warning.
+	* c-decl.c: Delete redundant Wextra warning.
+	
 2006-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/31585

@@ -1,3 +1,11 @@
+2006-05-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR middle-end/7651
+	* gcc.dg/20030906-1.c: Replace Wextra with Wreturn-type.
+	* gcc.dg/20030906-2.c: Likewise.
+	* objc.dg/method-17.m: Add -Wreturn-type.
+	* obj-c++.dg/method-21.mm: Likewise.
+	
 2006-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/31585

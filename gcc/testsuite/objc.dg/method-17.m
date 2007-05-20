@@ -1,7 +1,7 @@
 /* Test for spurious "may or may not return a value" warnings.  */
 
 /* { dg-do compile } */
-/* { dg-options "-Wextra" } */
+/* { dg-options "-Wreturn-type -Wextra" } */
 
 #include <objc/Object.h>
 
@@ -16,11 +16,11 @@ extern int bar;
 - (id) meth1 {
   if (bar)
     return [Object new];
-  return;
-} /* { dg-warning "this function may return with or without a value" } */
+  return; /* { dg-warning "'return' with no value, in function returning non-void" } */
+} 
 - (void) meth2 {
   if (!bar)
     return;
   bar = 0;
-} /* { dg-bogus "this function may return with or without a value" } */
+} /* { dg-bogus "'return' with no value, in function returning non-void" } */
 @end
