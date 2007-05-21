@@ -3437,8 +3437,7 @@ add_insn_after (rtx insn, rtx after)
       if (BB_END (bb) == after
 	  /* Avoid clobbering of structure when creating new BB.  */
 	  && !BARRIER_P (insn)
-	  && (!NOTE_P (insn)
-	      || NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK))
+	  && !NOTE_INSN_BASIC_BLOCK_P (insn))
 	BB_END (bb) = insn;
     }
 
@@ -3503,8 +3502,7 @@ add_insn_before (rtx insn, rtx before)
       gcc_assert (BB_HEAD (bb) != insn
 		  /* Avoid clobbering of structure when creating new BB.  */
 		  || BARRIER_P (insn)
-		  || (NOTE_P (insn)
-		      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK));
+		  || NOTE_INSN_BASIC_BLOCK_P (insn));
     }
 
   PREV_INSN (before) = insn;
@@ -3877,14 +3875,11 @@ emit_label_before (rtx label, rtx before)
 /* Emit a note of subtype SUBTYPE before the insn BEFORE.  */
 
 rtx
-emit_note_before (int subtype, rtx before)
+emit_note_before (enum insn_note subtype, rtx before)
 {
   rtx note = rtx_alloc (NOTE);
   INSN_UID (note) = cur_insn_uid++;
-#ifndef USE_MAPPED_LOCATION
-  NOTE_SOURCE_FILE (note) = 0;
-#endif
-  NOTE_LINE_NUMBER (note) = subtype;
+  NOTE_KIND (note) = subtype;
   BLOCK_FOR_INSN (note) = NULL;
 
   add_insn_before (note, before);
@@ -4077,14 +4072,11 @@ emit_label_after (rtx label, rtx after)
 /* Emit a note of subtype SUBTYPE after the insn AFTER.  */
 
 rtx
-emit_note_after (int subtype, rtx after)
+emit_note_after (enum insn_note subtype, rtx after)
 {
   rtx note = rtx_alloc (NOTE);
   INSN_UID (note) = cur_insn_uid++;
-#ifndef USE_MAPPED_LOCATION
-  NOTE_SOURCE_FILE (note) = 0;
-#endif
-  NOTE_LINE_NUMBER (note) = subtype;
+  NOTE_KIND (note) = subtype;
   BLOCK_FOR_INSN (note) = NULL;
   add_insn_after (note, after);
   return note;
@@ -4444,7 +4436,7 @@ emit_note_copy (rtx orig)
   
   INSN_UID (note) = cur_insn_uid++;
   NOTE_DATA (note) = NOTE_DATA (orig);
-  NOTE_LINE_NUMBER (note) = NOTE_LINE_NUMBER (orig);
+  NOTE_KIND (note) = NOTE_KIND (orig);
   BLOCK_FOR_INSN (note) = NULL;
   add_insn (note);
   
@@ -4455,13 +4447,13 @@ emit_note_copy (rtx orig)
    and add it to the end of the doubly-linked list.  */
 
 rtx
-emit_note (int note_no)
+emit_note (enum insn_note kind)
 {
   rtx note;
 
   note = rtx_alloc (NOTE);
   INSN_UID (note) = cur_insn_uid++;
-  NOTE_LINE_NUMBER (note) = note_no;
+  NOTE_KIND (note) = kind;
   memset (&NOTE_DATA (note), 0, sizeof (NOTE_DATA (note)));
   BLOCK_FOR_INSN (note) = NULL;
   add_insn (note);

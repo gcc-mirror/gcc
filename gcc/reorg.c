@@ -3807,7 +3807,7 @@ dbr_schedule (rtx first)
       if (INSN_UID (insn) > max_uid)
 	max_uid = INSN_UID (insn);
       if (NOTE_P (insn)
-	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
+	  && NOTE_KIND (insn) == NOTE_INSN_EPILOGUE_BEG)
 	epilogue_insn = insn;
     }
 

@@ -2598,9 +2598,8 @@ void debug_dependencies (rtx head, rtx tail)
 	  fprintf (sched_dump, ";;   %6d ", INSN_UID (insn));
 	  if (NOTE_P (insn))
 	    {
-	      n = NOTE_LINE_NUMBER (insn);
-	      if (n < 0)
-		fprintf (sched_dump, "%s\n", GET_NOTE_INSN_NAME (n));
+	      n = NOTE_KIND (insn);
+	      fprintf (sched_dump, "%s\n", GET_NOTE_INSN_NAME (n));
 	    }
 	  else
 	    fprintf (sched_dump, " {%s}\n", GET_RTX_NAME (GET_CODE (insn)));

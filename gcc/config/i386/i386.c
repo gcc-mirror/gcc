@@ -6256,12 +6256,12 @@ ix86_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
     rtx insn = get_last_insn ();
     while (insn
 	   && NOTE_P (insn)
-	   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED_LABEL)
+	   && NOTE_KIND (insn) != NOTE_INSN_DELETED_LABEL)
       insn = PREV_INSN (insn);
     if (insn
 	&& (LABEL_P (insn)
 	    || (NOTE_P (insn)
-		&& NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL)))
+		&& NOTE_KIND (insn) == NOTE_INSN_DELETED_LABEL)))
       fputs ("\tnop\n", file);
   }
 #endif

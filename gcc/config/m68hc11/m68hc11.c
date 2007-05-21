@@ -4247,9 +4247,7 @@ m68hc11_check_z_replacement (rtx insn, struct replace_info *info)
 		  info->must_restore_reg = 0;
 		  info->found_call = 1;
 		  info->can_use_d = 0;
-		  PUT_CODE (insn, NOTE);
-		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		  NOTE_SOURCE_FILE (insn) = 0;
+		  SET_INSN_DELETED (insn);
 		  info->last = NEXT_INSN (insn);
 		  return 0;
 		}
@@ -4330,9 +4328,7 @@ m68hc11_check_z_replacement (rtx insn, struct replace_info *info)
 		  info->must_restore_reg = 0;
 		  info->found_call = 1;
 		  info->can_use_d = 0;
-		  PUT_CODE (insn, NOTE);
-		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		  NOTE_SOURCE_FILE (insn) = 0;
+		  SET_INSN_DELETED (insn);
 		  info->last = NEXT_INSN (insn);
 		  return 0;
 		}
@@ -5098,9 +5094,7 @@ m68hc11_reorg (void)
 	if (GET_CODE (body) == SET
 	    && rtx_equal_p (SET_SRC (body), SET_DEST (body)))
 	  {
-	    PUT_CODE (insn, NOTE);
-	    NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	    NOTE_SOURCE_FILE (insn) = 0;
+	    SET_INSN_DELETED  (insn);
 	    continue;
 	  }
       }

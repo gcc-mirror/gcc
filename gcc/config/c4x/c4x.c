@@ -2443,11 +2443,7 @@ c4x_reorg (void)
 	     with only the 'deleted' bit set.  Transform it into a note
 	     to avoid confusion of subsequent processing.  */
 	  if (INSN_DELETED_P (old))
-	    {
-	      PUT_CODE (old, NOTE);
-	      NOTE_LINE_NUMBER (old) = NOTE_INSN_DELETED;
-	      NOTE_SOURCE_FILE (old) = 0;
-	    }
+	    SET_INSN_DELETED (old);
 	}
     }
 }

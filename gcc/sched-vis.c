@@ -677,16 +677,8 @@ print_insn (char *buf, rtx x, int verbose)
       sprintf (buf, "i%4d: barrier", INSN_UID (x));
       break;
     case NOTE:
-      if (NOTE_LINE_NUMBER (x) > 0)
-	{
-	  expanded_location xloc;
-	  NOTE_EXPANDED_LOCATION (xloc, x);
-	  sprintf (buf, " %4d note \"%s\" %d", INSN_UID (x),
-		   xloc.file, xloc.line);
-	}
-      else
-	sprintf (buf, " %4d %s", INSN_UID (x),
-		 GET_NOTE_INSN_NAME (NOTE_LINE_NUMBER (x)));
+      sprintf (buf, " %4d %s", INSN_UID (x),
+	       GET_NOTE_INSN_NAME (NOTE_KIND (x)));
       break;
     default:
       sprintf (buf, "i%4d  <What %s?>", INSN_UID (x),

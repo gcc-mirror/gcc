@@ -270,7 +270,7 @@ print_rtx (rtx in_rtx)
 #endif
 	else if (i == 4 && NOTE_P (in_rtx))
 	  {
-	    switch (NOTE_LINE_NUMBER (in_rtx))
+	    switch (NOTE_KIND (in_rtx))
 	      {
 	      case NOTE_INSN_EH_REGION_BEG:
 	      case NOTE_INSN_EH_REGION_END:
@@ -330,22 +330,7 @@ print_rtx (rtx in_rtx)
 		break;
 
 	      default:
-		{
-		  const char * const str = X0STR (in_rtx, i);
-
-		  if (NOTE_LINE_NUMBER (in_rtx) < 0)
-		    ;
-		  else if (str == 0)
-		    fputs (dump_for_graph ? " \\\"\\\"" : " \"\"", outfile);
-		  else
-		    {
-		      if (dump_for_graph)
-		        fprintf (outfile, " (\\\"%s\\\")", str);
-		      else
-		        fprintf (outfile, " (\"%s\")", str);
-		    }
-		  break;
-		}
+		break;
 	      }
 	  }
 	break;
@@ -412,7 +397,7 @@ print_rtx (rtx in_rtx)
 	  {
 	    /* This field is only used for NOTE_INSN_DELETED_LABEL, and
 	       other times often contains garbage from INSN->NOTE death.  */
-	    if (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_DELETED_LABEL)
+	    if (NOTE_KIND (in_rtx) == NOTE_INSN_DELETED_LABEL)
 	      fprintf (outfile, " %d",  XINT (in_rtx, i));
 	  }
 	else
@@ -476,11 +461,7 @@ print_rtx (rtx in_rtx)
       /* Print NOTE_INSN names rather than integer codes.  */
 
       case 'n':
-	if (XINT (in_rtx, i) >= (int) NOTE_INSN_BIAS
-	    && XINT (in_rtx, i) < (int) NOTE_INSN_MAX)
-	  fprintf (outfile, " %s", GET_NOTE_INSN_NAME (XINT (in_rtx, i)));
-	else
-	  fprintf (outfile, " %d", XINT (in_rtx, i));
+	fprintf (outfile, " %s", GET_NOTE_INSN_NAME (XINT (in_rtx, i)));
 	sawclose = 0;
 	break;
 
@@ -493,7 +474,7 @@ print_rtx (rtx in_rtx)
 	    if (GET_CODE (in_rtx) == LABEL_REF)
 	      {
 		if (subc == NOTE
-		    && NOTE_LINE_NUMBER (sub) == NOTE_INSN_DELETED_LABEL)
+		    && NOTE_KIND (sub) == NOTE_INSN_DELETED_LABEL)
 		  {
 		    if (flag_dump_unnumbered)
 		      fprintf (outfile, " [# deleted]");
@@ -724,8 +705,6 @@ debug_rtx_find (rtx x, int uid)
 void
 print_rtl (FILE *outf, rtx rtx_first)
 {
-  rtx tmp_rtx;
-
   outfile = outf;
   sawclose = 0;
 
@@ -743,14 +722,6 @@ print_rtl (FILE *outf, rtx rtx_first)
       case NOTE:
       case CODE_LABEL:
       case BARRIER:
-	for (tmp_rtx = rtx_first; tmp_rtx != 0; tmp_rtx = NEXT_INSN (tmp_rtx))
-	  if (! flag_dump_unnumbered
-	      || !NOTE_P (tmp_rtx) || NOTE_LINE_NUMBER (tmp_rtx) < 0)
-	    {
-	      fputs (print_rtx_head, outfile);
-	      print_rtx (tmp_rtx);
-	      fprintf (outfile, "\n");
-	    }
 	break;
 
       default:
@@ -767,8 +738,7 @@ print_rtl_single (FILE *outf, rtx x)
 {
   outfile = outf;
   sawclose = 0;
-  if (! flag_dump_unnumbered
-      || !NOTE_P (x) || NOTE_LINE_NUMBER (x) < 0)
+  if (! flag_dump_unnumbered)
     {
       fputs (print_rtx_head, outfile);
       print_rtx (x);

@@ -6159,8 +6159,7 @@ insert_insn_start_bb (rtx insn, basic_block bb)
   while (before != 0)
     {
       if (! LABEL_P (before)
-	  && (! NOTE_P (before)
-	      || NOTE_LINE_NUMBER (before) != NOTE_INSN_BASIC_BLOCK))
+	  && !NOTE_INSN_BASIC_BLOCK_P (before))
 	break;
       prev = before;
       if (prev == BB_END (bb))

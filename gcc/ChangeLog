@@ -1,3 +1,100 @@
+2007-05-20  Jan Hubicka  <jh@suse.cz>
+
+	* gengtype.c (adjust_field_rtx_def): Use NOTE_KIND instead of
+	NOTE_LINE_NUMBER; use NOTE_INSN_BASIC_BLOCK_P when possible.
+	* ddg.c (create_ddg): LIkewise.
+	* final.c (final): Remove hunk moving line numbernotes around since
+	they are no longer present at this stage.
+	(final_scan_insn): Use NOTE_KIND instead of
+	NOTE_LINE_NUMBER; use NOTE_INSN_BASIC_BLOCK_P when possible.
+	(output_asm_label): Likewise.
+	* reorg.c (dbr_schedule): Likewise.
+	* haifa-sched.c (unlink_other_notes): Likewise.
+	* mode-switching.c (optimize_mode_switching): Likewise.
+	* graph.c (start_bb): Likewise.
+	* rtl.def (NOTE): Update description.
+	* jump.c (squeeze_notes): Delete.
+	(mark_jump_label): Use NOTE_KIND instead of NOTE_LINE_NUMBER; use
+	NOTE_INSN_BASIC_BLOCK_P when possible.
+	* ifcvt.c (dead_or_predicable): Remove call of squeeze_notes.
+	* dwarf2out.c (gen_label_die): Use NOTE_KIND instead of
+        NOTE_LINE_NUMBER; use NOTE_INSN_BASIC_BLOCK_P when possible.
+	(dwarf2out_var_location): Likewise.
+	* cfgbuild.c (make_edges): Likewise.
+	(find_basic_blocks_1): Likewise.
+	* function.c (reorder_blocks_1): Likewise.
+	(epilogue_done): Likewise.
+	(reposition_prologue_and_epilogue_notes): Likewise.
+	* print-rtl.c (print_rtx): Likewise; drop code for printing line number
+	notes.
+	(print_rtl): Likewise.
+	(print_rtl_single): Likewise.
+	* gcse.c (insert_insn_start_bb): Likewise.
+	* alias.c (init_alias_analysis): Likewise.
+	* calls.c (fixup_tail_calls): Likewise.
+	* except.c (sjlj_emit_function_enter): Likewise.
+	* emit-rtl.c (add_insn_after): Likeiwse.
+	(emit_label_before): Likewise.
+	(emit_label_after): Likewise.
+	(emit_note_before, emit_note_after, emit_note): Update
+	parameter to be enum insn_note; do not deal with source
+	files.
+	* cfgcleanup.c (merge_blocks_move_predecessor_nojumps):
+	Use NOTE_KIND instead of NOTE_LINE_NUMBER; use NOTE_INSN_BASIC_BLOCK_P
+	when possible.
+	(merge_blocks_move_successor_nojumps): Simplify now when
+	we don't have BLOCK notes.
+	(try_optimize_cfg): Likewise.
+	* cfglayout.c (skip_insns_after_block): Likewise.
+	(record_effective_endpoints): Likewise.
+	(duplicate_insn_chain): Likewise.
+	* varasm.c (output_constant_pool_1): Likewise.
+	* sched-deps.c (sched_analyze): Likewise.
+	* rtl.c (NOTE_INSN_MAX_isnt_negative_adjust_NOTE_INSN_BIAS):
+	Exterminate.
+	(note_insn_name): Simplify now when NOTE_INSN_BIAS is gone.
+	* rtl.h (NOTE_SOURCE_LOCATION, NOTE_EXPANDED_LOCATION): Exterminate.
+	(SET_INSN_DELETED): Simplify.
+	(NOTE_LINE_NUMBER): Exterminate.
+	(NOTE_LINE_KIND): New.
+	(NOTE_INSN_BASIC_BLOCK_P): Update.
+	(enum insn_note): Simplify.
+	(GET_NOTE_INSN_NAME) Simplify.
+	(emit_note_before, emit_note_after, emit_note): Update prototype.
+	(squeeze_notes): Remove.
+	* sched-int.h (NOTE_NOT_BB_P): Update.
+	* resource.c (mark_target_live_regs): Update.
+	* sched-rgn.c (debug_dependencies): Update.
+	* sched-vis.c (print_insn): Update.
+	* config/alpha/alpha.c (alpha_handle_trap_shadows): Update.
+	* config/i386/i386.c (ix86_output_function_epilogue): Update.
+	* config/sh/sh.c (sh_adjust_unroll_max): Function dead since gcc 4.0.0.
+	(TARGET_ADJUST_UNROLL_MAX): Likewise.
+	(split_branches): Update.
+	(sh_optimize_target_register_callee_saved): Remove hunk dead since gcc
+	4.0.0.
+	(sh_adjust_unroll_max): Exterminate.
+	* config/c4x/c4x.c (c4x_reorg): Use SET_INSN_DELETED.
+	* config/m68hc11/m68hc11.c (m68hc11_check_z_replacement): Likewise.
+	(m68hc11_reorg): Likewise.
+	* config/ia64/ia64.c (emit_insn_group_barriers): Update.
+	(emit_predicate_relation_info): Update.
+	(process_for_unwind_directive): Update.
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Update.
+	(output_call): Update.
+	* config/pa/pa.c (output_lbranch): Update.
+	(output_millicode_call): Update.
+	(output_call): Update.
+	(pa_combine_instructions): Update.
+	* config/mips/mips.c (mips16_gp_pseudo_reg): Update.
+	* config/bfin/bfin.c (gen_one_bundle): Update.
+	* cfgrtl.c (can_delete_note_p): Update.
+	(delete_insn): Update.
+	(rtl_merge_blocks): Update.
+	(commit_one_edge_insertion): Update.
+	(rtl_verify_flow_info): Update.
+	* stmt.c (expand_case): Do not call squeeze_notes.
+
 2007-05-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 	
 	PR middle-end/7651

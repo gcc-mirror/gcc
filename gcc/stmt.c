@@ -2317,7 +2317,7 @@ expand_case (tree exp)
   rtx table_label;
   int ncases;
   rtx *labelvec;
-  int i, fail;
+  int i;
   rtx before_case, end, lab;
 
   tree vec = SWITCH_LABELS (exp);
@@ -2591,8 +2591,6 @@ expand_case (tree exp)
 
       before_case = NEXT_INSN (before_case);
       end = get_last_insn ();
-      fail = squeeze_notes (&before_case, &end);
-      gcc_assert (!fail);
       reorder_insns (before_case, end, start);
     }
 

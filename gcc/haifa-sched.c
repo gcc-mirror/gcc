@@ -1305,8 +1305,8 @@ unlink_other_notes (rtx insn, rtx tail)
         }
 
       /* See sched_analyze to see how these are handled.  */
-      if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_BEG
-	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_END)
+      if (NOTE_KIND (insn) != NOTE_INSN_EH_REGION_BEG
+	  && NOTE_KIND (insn) != NOTE_INSN_EH_REGION_END)
 	{
 	  /* Insert the note at the end of the notes list.  */
 	  PREV_INSN (insn) = note_list;

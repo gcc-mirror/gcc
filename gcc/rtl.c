@@ -119,15 +119,10 @@ const unsigned char rtx_code_size[NUM_RTX_CODE] = {
 #undef DEF_RTL_EXPR
 };
 
-/* Make sure all NOTE_INSN_* values are negative.  */
-extern char NOTE_INSN_MAX_isnt_negative_adjust_NOTE_INSN_BIAS
-[NOTE_INSN_MAX < 0 ? 1 : -1];
-
 /* Names for kinds of NOTEs and REG_NOTEs.  */
 
-const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS] =
+const char * const note_insn_name[NOTE_INSN_MAX] =
 {
-  "",
 #define DEF_INSN_NOTE(NAME) #NAME,
 #include "insn-notes.def"
 #undef DEF_INSN_NOTE

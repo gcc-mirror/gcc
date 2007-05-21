@@ -12234,7 +12234,7 @@ gen_label_die (tree decl, dw_die_ref context_die)
       if (insn
 	  && (LABEL_P (insn)
 	      || ((NOTE_P (insn)
-	           && NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL))))
+	           && NOTE_KIND (insn) == NOTE_INSN_DELETED_LABEL))))
 	{
 	  /* When optimization is enabled (via -O) some parts of the compiler
 	     (e.g. jump.c and cse.c) may try to delete CODE_LABEL insns which
@@ -13850,7 +13850,7 @@ dwarf2out_var_location (rtx loc_note)
   if (last_insn != NULL_RTX
       && last_insn == prev_insn
       && NOTE_P (prev_insn)
-      && NOTE_LINE_NUMBER (prev_insn) == NOTE_INSN_VAR_LOCATION)
+      && NOTE_KIND (prev_insn) == NOTE_INSN_VAR_LOCATION)
     {
       newloc->label = last_label;
     }
