@@ -696,8 +696,7 @@ expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
      need to go on during alloca.  */
   current_function_calls_setjmp = 1;
 
-  /* Set this so all the registers get saved in our frame; we need to be
-     able to copy the saved values for any registers from frames we unwind.  */
+  /* We have a nonlocal label.   */
   current_function_has_nonlocal_label = 1;
 }
 

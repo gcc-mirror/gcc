@@ -622,6 +622,61 @@ replace_pseudos_in (rtx *loc, enum machine_mode mem_mode, rtx usage)
 	replace_pseudos_in (& XVECEXP (x, i, j), mem_mode, usage);
 }
 
+/* Determine if the current function has an exception receiver block
+   that reaches the exit block via non-exceptional edges  */
+
+static bool
+has_nonexceptional_receiver (void)
+{
+  edge e;
+  edge_iterator ei;
+  basic_block *tos, *worklist, bb;
+
+  /* If we're not optimizing, then just err on the safe side.  */
+  if (!optimize)
+    return true;
+  
+  /* First determine which blocks can reach exit via normal paths.  */
+  tos = worklist = xmalloc (sizeof (basic_block) * (n_basic_blocks + 1));
+
+  FOR_EACH_BB (bb)
+    bb->flags &= ~BB_REACHABLE;
+
+  /* Place the exit block on our worklist.  */
+  EXIT_BLOCK_PTR->flags |= BB_REACHABLE;
+  *tos++ = EXIT_BLOCK_PTR;
+  
+  /* Iterate: find everything reachable from what we've already seen.  */
+  while (tos != worklist)
+    {
+      bb = *--tos;
+
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (!(e->flags & EDGE_ABNORMAL))
+	  {
+	    basic_block src = e->src;
+
+	    if (!(src->flags & BB_REACHABLE))
+	      {
+		src->flags |= BB_REACHABLE;
+		*tos++ = src;
+	      }
+	  }
+    }
+  free (worklist);
+
+  /* Now see if there's a reachable block with an exceptional incoming
+     edge.  */
+  FOR_EACH_BB (bb)
+    if (bb->flags & BB_REACHABLE)
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (e->flags & EDGE_ABNORMAL)
+	  return true;
+
+  /* No exceptional block reached exit unexceptionally.  */
+  return false;
+}
+
 
 /* Global variables used by reload and its subroutines.  */
 
@@ -688,9 +743,12 @@ reload (rtx first, int global)
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     mark_home_live (i);
 
-  /* A function that receives a nonlocal goto must save all call-saved
+  /* A function that has a nonlocal label that can reach the exit
+     block via non-exceptional paths must save all call-saved
      registers.  */
-  if (current_function_has_nonlocal_label)
+  if (current_function_calls_unwind_init
+      || (current_function_has_nonlocal_label
+	  && has_nonexceptional_receiver ()))
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
       if (! call_used_regs[i] && ! fixed_regs[i] && ! LOCAL_REGNO (i))
 	regs_ever_live[i] = 1;
