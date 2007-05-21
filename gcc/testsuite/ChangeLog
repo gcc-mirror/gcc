@@ -1,3 +1,9 @@
+2007-05-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/31167
+	Backport from mainline.
+	* gcc.target/i386/pr31167.c: New test.
+
 2007-05-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/31395

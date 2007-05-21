@@ -1,3 +1,21 @@
+2007-05-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/31167
+	Backport from mainline.
+	* config/i386/i386.md (*addti3_1, *addti3_1 splitter): Use
+	x86_64_general_operand as operand[2] predicate.  Remove "iF"
+	from operand constraints and use "e" constraint instead.
+	(*subti3_1, *subti3_1 splitter): Ditto.
+	(*negti2_1, *negti2_1 splitter): Use nonimmediate_operand as
+	operand[1] predicate.
+
+2007-05-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/30041
+	Backport from mainline.
+	* config/i386/sse.md ("*sse3_movddup"): Use operands[0] and
+	operands[1] in insn constraint.  Correct type attribute to sselog1.
+
 2007-05-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/31701
@@ -379,7 +397,8 @@
 2007-04-03  Stuart Hastings  <stuart@apple.com>
 
 	PR 31281
-	* objc/objc-act.c (next_sjlj_build_catch_list): Delete volatile from rethrow decl.
+	* objc/objc-act.c (next_sjlj_build_catch_list): Delete volatile
+	from rethrow decl.
 	* cse.c (record_jump_equiv): Bail out on CCmode comparisons.
 
 2007-04-03  Jakub Jelinek  <jakub@redhat.com>
