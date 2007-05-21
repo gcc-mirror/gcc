@@ -8332,7 +8332,7 @@ emit_predicate_relation_info (void)
       /* We only need such notes at code labels.  */
       if (GET_CODE (head) != CODE_LABEL)
 	continue;
-      if (NOTE_INSN_BASIC_BLOCK_P (NEXT_INSN (head)) == NOTE_INSN_BASIC_BLOCK)
+      if (NOTE_INSN_BASIC_BLOCK_P (NEXT_INSN (head)))
 	head = NEXT_INSN (head);
 
       /* Skip p0, which may be thought to be live due to (reg:DI p0)
@@ -8968,7 +8968,7 @@ process_for_unwind_directive (FILE *asm_out_file, rtx insn)
     {
       rtx pat;
 
-      if (NOTE_INSN_BASIC_BLOCK_P (insn) == NOTE_INSN_BASIC_BLOCK)
+      if (NOTE_INSN_BASIC_BLOCK_P (insn))
 	{
 	  last_block = NOTE_BASIC_BLOCK (insn)->next_bb == EXIT_BLOCK_PTR;
 

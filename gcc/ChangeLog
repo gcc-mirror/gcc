@@ -1,3 +1,9 @@
+2007-05-21  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/ia64.c (emit_predicate_relation_info): Fix use of
+	NOTE_INSN_BASIC_BLOCK_P.
+	(process_for_unwind_directive): Likewise.
+
 2007-05-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* builtins.c (expand_builtin_setjmp_setup): Update comment.
