@@ -1,6 +1,5 @@
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-march=pentium4" } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-options "-msse2" } */
 
 #include <xmmintrin.h>
 #include <stdio.h>

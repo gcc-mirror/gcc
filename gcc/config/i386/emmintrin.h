@@ -880,11 +880,16 @@ _mm_cvtss_sd (__m128d __A, __m128 __B)
   return (__m128d)__builtin_ia32_cvtss2sd ((__v2df) __A, (__v4sf)__B);
 }
 
+#ifdef __OPTIMIZE__
 static __inline __m128d __attribute__((__always_inline__))
 _mm_shuffle_pd(__m128d __A, __m128d __B, const int __mask)
 {
   return (__m128d)__builtin_ia32_shufpd ((__v2df)__A, (__v2df)__B, __mask);
 }
+#else
+#define _mm_shuffle_pd(__A, __B, __C) \
+  ((__m128d)__builtin_ia32_shufpd ((__v2df)__A, (__v2df)__B, (__C)))
+#endif
 
 static __inline __m128d __attribute__((__always_inline__))
 _mm_unpackhi_pd (__m128d __A, __m128d __B)
@@ -1108,6 +1113,7 @@ _mm_mul_epu32 (__m128i __A, __m128i __B)
   return (__m128i)__builtin_ia32_pmuludq128 ((__v4si)__A, (__v4si)__B);
 }
 
+#ifdef __OPTIMIZE__
 static __inline __m128i __attribute__((__always_inline__))
 _mm_slli_epi16 (__m128i __A, const int __B)
 {
@@ -1125,7 +1131,16 @@ _mm_slli_epi64 (__m128i __A, const int __B)
 {
   return (__m128i)__builtin_ia32_psllqi128 ((__v2di)__A, __B);
 }
+#else
+#define _mm_slli_epi16(__A, __B) \
+  ((__m128i)__builtin_ia32_psllwi128 ((__v8hi)(__A), __B))
+#define _mm_slli_epi32(__A, __B) \
+  ((__m128i)__builtin_ia32_pslldi128 ((__v4si)(__A), __B))
+#define _mm_slli_epi64(__A, __B) \
+  ((__m128i)__builtin_ia32_psllqi128 ((__v2di)(__A), __B))
+#endif
 
+#ifdef __OPTIMIZE__
 static __inline __m128i __attribute__((__always_inline__))
 _mm_srai_epi16 (__m128i __A, const int __B)
 {
@@ -1137,7 +1152,14 @@ _mm_srai_epi32 (__m128i __A, const int __B)
 {
   return (__m128i)__builtin_ia32_psradi128 ((__v4si)__A, __B);
 }
+#else
+#define _mm_srai_epi16(__A, __B) \
+  ((__m128i)__builtin_ia32_psrawi128 ((__v8hi)(__A), __B))
+#define _mm_srai_epi32(__A, __B) \
+  ((__m128i)__builtin_ia32_psradi128 ((__v4si)(__A), __B))
+#endif
 
+#ifdef __OPTIMIZE__
 static __inline __m128i __attribute__((__always_inline__))
 _mm_srli_si128 (__m128i __A, const int __B)
 {
@@ -1149,7 +1171,14 @@ _mm_slli_si128 (__m128i __A, const int __B)
 {
   return (__m128i)__builtin_ia32_pslldqi128 (__A, __B * 8);
 }
+#else
+#define _mm_srli_si128(__A, __B) \
+  ((__m128i)__builtin_ia32_psrldqi128 (__A, (__B) * 8))
+#define _mm_slli_si128(__A, __B) \
+  ((__m128i)__builtin_ia32_pslldqi128 (__A, (__B) * 8))
+#endif
 
+#ifdef __OPTIMIZE__
 static __inline __m128i __attribute__((__always_inline__))
 _mm_srli_epi16 (__m128i __A, const int __B)
 {
@@ -1167,6 +1196,14 @@ _mm_srli_epi64 (__m128i __A, const int __B)
 {
   return (__m128i)__builtin_ia32_psrlqi128 ((__v2di)__A, __B);
 }
+#else
+#define _mm_srli_epi16(__A, __B) \
+  ((__m128i)__builtin_ia32_psrlwi128 ((__v8hi)(__A), __B))
+#define _mm_srli_epi32(__A, __B) \
+  ((__m128i)__builtin_ia32_psrldi128 ((__v4si)(__A), __B))
+#define _mm_srli_epi64(__A, __B) \
+  ((__m128i)__builtin_ia32_psrlqi128 ((__v2di)(__A), __B))
+#endif
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_sll_epi16 (__m128i __A, __m128i __B)
@@ -1294,6 +1331,7 @@ _mm_cmpgt_epi32 (__m128i __A, __m128i __B)
   return (__m128i)__builtin_ia32_pcmpgtd128 ((__v4si)__A, (__v4si)__B);
 }
 
+#ifdef __OPTIMIZE__
 static __inline int __attribute__((__always_inline__))
 _mm_extract_epi16 (__m128i const __A, int const __N)
 {
@@ -1305,6 +1343,12 @@ _mm_insert_epi16 (__m128i const __A, int const __D, int const __N)
 {
   return (__m128i) __builtin_ia32_vec_set_v8hi ((__v8hi)__A, __D, __N);
 }
+#else
+#define _mm_extract_epi16(A, N) \
+  ((int) __builtin_ia32_vec_ext_v8hi ((__v8hi)(A), (N)))
+#define _mm_insert_epi16(A, D, N) \
+  ((__m128i) __builtin_ia32_vec_set_v8hi ((__v8hi)(A), (D), (N)))
+#endif
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_max_epi16 (__m128i __A, __m128i __B)
@@ -1342,6 +1386,7 @@ _mm_mulhi_epu16 (__m128i __A, __m128i __B)
   return (__m128i)__builtin_ia32_pmulhuw128 ((__v8hi)__A, (__v8hi)__B);
 }
 
+#ifdef __OPTIMIZE__
 static __inline __m128i __attribute__((__always_inline__))
 _mm_shufflehi_epi16 (__m128i __A, const int __mask)
 {
@@ -1359,6 +1404,14 @@ _mm_shuffle_epi32 (__m128i __A, const int __mask)
 {
   return (__m128i)__builtin_ia32_pshufd ((__v4si)__A, __mask);
 }
+#else
+#define _mm_shufflehi_epi16(__A, __B) \
+  ((__m128i)__builtin_ia32_pshufhw ((__v8hi)__A, __B))
+#define _mm_shufflelo_epi16(__A, __B) \
+  ((__m128i)__builtin_ia32_pshuflw ((__v8hi)__A, __B))
+#define _mm_shuffle_epi32(__A, __B) \
+  ((__m128i)__builtin_ia32_pshufd ((__v4si)__A, __B))
+#endif
 
 static __inline void __attribute__((__always_inline__))
 _mm_maskmoveu_si128 (__m128i __A, __m128i __B, char *__C)
