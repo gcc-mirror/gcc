@@ -251,11 +251,9 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
     # NB: This flag only works reliably after 2.16.1. Configure tests
     # for this are difficult, so hard wire a value that should work.
 
-    # All these tests are for C++, but run with the "C" compiler driver.
-    # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++ -Wl,--gc-sections'
+    CFLAGS='-Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
     AC_MSG_CHECKING([for ld that supports -Wl,--gc-sections])
