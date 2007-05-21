@@ -1,3 +1,11 @@
+2007-05-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse-14.c: Remove all intrinsic redefines.
+	* gcc.target/i386/sse-12: Add -O to compile options.
+	* g++.dg/other/i386-2.C: Use "-march=k8 -m3dnow -mssse3
+	-msse4a" instead of "-msse3".  Include only ammintrin.h, tmmintrin.h
+	and mm3dnow.h.  Add -O to compile options.
+
 2007-05-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31867

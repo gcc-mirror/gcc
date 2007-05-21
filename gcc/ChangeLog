@@ -1,3 +1,35 @@
+2007-05-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/tmmintrin.h (_mm_alignr_epi8): Provide macro
+	implementation if __OPTIMIZE__ is not defined.
+	(_mm_alignr_pi8): Ditto.
+	* config/i386/ammintrin.h (_mm_extracti_si64): Ditto.
+	(_mm_inserti_si64): Ditto.
+	* config/i386/emmintrin.h (_mm_shuffle_pd): Ditto.
+	(_mm_slli_epi16): Ditto.
+	(_mm_slli_epi32): Ditto.
+	(_mm_slli_epi64): Ditto.
+	(_mm_srai_epi16): Ditto.
+	(_mm_srai_epi32): Ditto.
+	(_mm_srli_si128): Ditto.
+	(_mm_slli_si128): Ditto.
+	(_mm_srli_epi16): Ditto.
+	(_mm_srli_epi32): Ditto.
+	(_mm_srli_epi64): Ditto.
+	(_mm_extract_epi16): Ditto.
+	(_mm_insert_epi16): Ditto.
+	(_mm_shufflehi_epi16): Ditto.
+	(_mm_shufflelo_epi16): Ditto.
+	(_mm_shuffle_epi32): Ditto.
+	* config/i386/xmmintrin.h (_mm_extract_pi16): Ditto.
+	(_m_pextrw): Ditto.
+	(_mm_insert_pi16): Ditto.
+	(_m_pinsrw): Ditto.
+	(_mm_shuffle_pi16): Ditto.
+	(_m_pshufw): Ditto.
+	(_mm_shufle_ps): Ditto.
+	(_mm_prefetch): Ditto.
+
 2007-05-21  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* defaults.h (IBM_FLOAT_FORMAT): Macro definition removed.
