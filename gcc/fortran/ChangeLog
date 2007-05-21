@@ -1,3 +1,11 @@
+2007-05-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31867
+	PR fortran/31994
+	* trans-array.c (gfc_conv_expr_descriptor): Obtain the stored
+	offset for non-descriptor, source arrays and correct for stride
+	not equal to one before writing to field of output descriptor.
+
 2007-05-20  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/32001
