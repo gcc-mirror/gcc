@@ -1,5 +1,10 @@
 2007-05-21  Paolo Carlini  <pcarlini@suse.de>
 
+	* config/locale/gnu/c_locale.h: Do not include <cstdarg>, use builtins.
+	* config/locale/generic/c_locale.h: Likewise.
+
+2007-05-21  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/31621
 	* acinclude.m4 ([GLIBCXX_CHECK_LINKER_FEATURES]): Use the C compiler.
 	* configure: Regenerate.
