@@ -1,6 +1,7 @@
 /* Part of CPP library.  File handling.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -26,6 +27,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 #include "cpplib.h"
 #include "internal.h"
 #include "mkdeps.h"
+#include "obstack.h"
 #include "hashtab.h"
 #include "md5.h"
 #include <dirent.h>
@@ -322,6 +324,16 @@ find_file_in_dir (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
 
   if (path)
     {
+      hashval_t hv = htab_hash_string (path);
+      char *copy;
+      void **pp;
+
+      if (htab_find_with_hash (pfile->nonexistent_file_hash, path, hv) != NULL)
+	{
+	  file->err_no = ENOENT;
+	  return false;
+	}
+
       file->path = path;
       if (pch_open_file (pfile, file, invalid_pch))
 	return true;
@@ -335,7 +347,16 @@ find_file_in_dir (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
 	  return true;
 	}
 
+      /* We copy the path name onto an obstack partly so that we don't
+	 leak the memory, but mostly so that we don't fragment the
+	 heap.  */
+      copy = obstack_copy0 (&pfile->nonexistent_file_ob, path,
+			    strlen (path));
       free (path);
+      pp = htab_find_slot_with_hash (pfile->nonexistent_file_hash,
+				     copy, hv, INSERT);
+      *pp = copy;
+
       file->path = file->name;
     }
   else
@@ -396,6 +417,9 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
   struct file_hash_entry *entry, **hash_slot;
   _cpp_file *file;
   bool invalid_pch = false;
+  bool saw_bracket_include = false;
+  bool saw_quote_include = false;
+  struct cpp_dir *found_in_cache = NULL;
 
   /* Ensure we get no confusion between cached files and directories.  */
   if (start_dir == NULL)
@@ -448,13 +472,19 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
       /* Only check the cache for the starting location (done above)
 	 and the quote and bracket chain heads because there are no
 	 other possible starting points for searches.  */
-      if (file->dir != pfile->bracket_include
-	  && file->dir != pfile->quote_include)
+      if (file->dir == pfile->bracket_include)
+	saw_bracket_include = true;
+      else if (file->dir == pfile->quote_include)
+	saw_quote_include = true;
+      else
 	continue;
 
       entry = search_cache (*hash_slot, file->dir);
       if (entry)
-	break;
+	{
+	  found_in_cache = file->dir;
+	  break;
+	}
     }
 
   if (entry)
@@ -477,6 +507,29 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
   entry->start_dir = start_dir;
   entry->u.file = file;
   *hash_slot = entry;
+
+  /* If we passed the quote or bracket chain heads, cache them also.
+     This speeds up processing if there are lots of -I options.  */
+  if (saw_bracket_include
+      && pfile->bracket_include != start_dir
+      && found_in_cache != pfile->bracket_include)
+    {
+      entry = new_file_hash_entry (pfile);
+      entry->next = *hash_slot;
+      entry->start_dir = pfile->bracket_include;
+      entry->u.file = file;
+      *hash_slot = entry;
+    }
+  if (saw_quote_include
+      && pfile->quote_include != start_dir
+      && found_in_cache != pfile->quote_include)
+    {
+      entry = new_file_hash_entry (pfile);
+      entry->next = *hash_slot;
+      entry->start_dir = pfile->quote_include;
+      entry->u.file = file;
+      *hash_slot = entry;
+    }
 
   return file;
 }
@@ -997,6 +1050,14 @@ file_hash_eq (const void *p, const void *q)
   return strcmp (hname, fname) == 0;
 }
 
+/* Compare entries in the nonexistent file hash table.  These are just
+   strings.  */
+static int
+nonexistent_file_hash_eq (const void *p, const void *q)
+{
+  return strcmp (p, q) == 0;
+}
+
 /* Initialize everything in this source file.  */
 void
 _cpp_init_files (cpp_reader *pfile)
@@ -1006,6 +1067,12 @@ _cpp_init_files (cpp_reader *pfile)
   pfile->dir_hash = htab_create_alloc (127, file_hash_hash, file_hash_eq,
 					NULL, xcalloc, free);
   allocate_file_hash_entries (pfile);
+  pfile->nonexistent_file_hash = htab_create_alloc (127, htab_hash_string,
+						    nonexistent_file_hash_eq,
+						    NULL, xcalloc, free);
+  _obstack_begin (&pfile->nonexistent_file_ob, 0, 0,
+		  (void *(*) (long)) xmalloc,
+		  (void (*) (void *)) free);
 }
 
 /* Finalize everything in this source file.  */
@@ -1014,6 +1081,8 @@ _cpp_cleanup_files (cpp_reader *pfile)
 {
   htab_delete (pfile->file_hash);
   htab_delete (pfile->dir_hash);
+  htab_delete (pfile->nonexistent_file_hash);
+  obstack_free (&pfile->nonexistent_file_ob, 0);
 }
 
 /* Enter a file name in the hash for the sake of cpp_included.  */
