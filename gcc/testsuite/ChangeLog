@@ -1,3 +1,17 @@
+2007-05-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/ext/cleanup-1.C: New test.
+	* g++.dg/ext/cleanup-2.C: Likewise.
+	* g++.dg/ext/cleanup-3.C: Likewise.
+	* g++.dg/ext/cleanup-4.C: Likewise.
+	* g++.dg/ext/cleanup-5.C: Likewise.
+	* g++.dg/ext/cleanup-6.C: Likewise.
+	* g++.dg/ext/cleanup-8.C: Likewise.
+	* g++.dg/ext/cleanup-9.C: Likewise.
+	* g++.dg/ext/cleanup-10.C: Likewise.
+	* g++.dg/ext/cleanup-11.C: Likewise.
+	* g++.dg/ext/cleanup-dtor.C: Likewise.
+
 2007-05-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/31995
