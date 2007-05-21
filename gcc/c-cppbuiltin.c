@@ -547,6 +547,33 @@ c_cpp_builtins (cpp_reader *pfile)
   if (c_dialect_cxx () && TYPE_UNSIGNED (wchar_type_node))
     cpp_define (pfile, "__WCHAR_UNSIGNED__");
 
+  /* Tell source code if the compiler makes sync_compare_and_swap
+     builtins available.  */
+#ifdef HAVE_sync_compare_and_swapqi
+  if (HAVE_sync_compare_and_swapqi)
+    cpp_define (pfile, "__GCC_HAVE_SYNC_COMPARE_AND_SWAP_1");
+#endif
+
+#ifdef HAVE_sync_compare_and_swaphi
+  if (HAVE_sync_compare_and_swaphi)
+    cpp_define (pfile, "__GCC_HAVE_SYNC_COMPARE_AND_SWAP_2");
+#endif
+
+#ifdef HAVE_sync_compare_and_swapsi
+  if (HAVE_sync_compare_and_swapsi)
+    cpp_define (pfile, "__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4");
+#endif
+
+#ifdef HAVE_sync_compare_and_swapdi
+  if (HAVE_sync_compare_and_swapdi)
+    cpp_define (pfile, "__GCC_HAVE_SYNC_COMPARE_AND_SWAP_8");
+#endif
+
+#ifdef HAVE_sync_compare_and_swapti
+  if (HAVE_sync_compare_and_swapti)
+    cpp_define (pfile, "__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16");
+#endif
+
   /* Make the choice of ObjC runtime visible to source code.  */
   if (c_dialect_objc () && flag_next_runtime)
     cpp_define (pfile, "__NEXT_RUNTIME__");

@@ -1,3 +1,13 @@
+2007-05-21  Paolo Bonzini  <bonzini@gnu.org>
+            Paolo Carlini  <pcarlini@suse.de>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_1, __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2,
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4, __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8,
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16, if appropriate.
+	* doc/cpp.texi ([Standard Predefined Macros]): Document.
+
 2007-05-21  Mike Stump  <mrs@apple.com>
 
 	* config/darwin.h (LINK_COMMAND_SPEC): Add .cxx for dsymutil

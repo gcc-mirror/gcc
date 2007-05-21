@@ -1,3 +1,14 @@
+2007-05-21  Paolo Bonzini  <bonzini@gnu.org>
+            Paolo Carlini  <pcarlini@suse.de>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/gcc-have-sync-compare-and-swap.c,
+	gcc.target/i386/gcc-have-sync-compare-and-swap-1.c,
+	gcc.target/i386/gcc-have-sync-compare-and-swap-2.c,
+	gcc.target/i386/gcc-have-sync-compare-and-swap-3.c,
+	gcc.target/i386/gcc-have-sync-compare-and-swap-4.c,
+	New testcases.
+
 2005-05-21  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/32002
