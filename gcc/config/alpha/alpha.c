@@ -8593,7 +8593,7 @@ alpha_handle_trap_shadows (void)
     {
       if (GET_CODE (i) == NOTE)
 	{
-	  switch (NOTE_LINE_NUMBER (i))
+	  switch (NOTE_KIND (i))
 	    {
 	    case NOTE_INSN_EH_REGION_BEG:
 	      exception_nesting++;

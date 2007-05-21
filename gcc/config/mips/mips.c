@@ -7955,7 +7955,7 @@ mips16_gp_pseudo_reg (void)
          note, so that it will be integrated.  */
       for (scan = get_insns (); scan != NULL_RTX; scan = NEXT_INSN (scan))
 	if (NOTE_P (scan)
-	    && NOTE_LINE_NUMBER (scan) == NOTE_INSN_FUNCTION_BEG)
+	    && NOTE_KIND (scan) == NOTE_INSN_FUNCTION_BEG)
 	  break;
       if (scan == NULL_RTX)
 	scan = get_insns ();

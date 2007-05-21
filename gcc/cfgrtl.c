@@ -85,8 +85,8 @@ static void rtl_make_forwarder_block (edge);
 static int
 can_delete_note_p (rtx note)
 {
-  return (NOTE_LINE_NUMBER (note) == NOTE_INSN_DELETED
-	  || NOTE_LINE_NUMBER (note) == NOTE_INSN_BASIC_BLOCK);
+  return (NOTE_KIND (note) == NOTE_INSN_DELETED
+	  || NOTE_KIND (note) == NOTE_INSN_BASIC_BLOCK);
 }
 
 /* True if a given label can be deleted.  */
@@ -120,7 +120,7 @@ delete_insn (rtx insn)
 
 	  really_delete = false;
 	  PUT_CODE (insn, NOTE);
-	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED_LABEL;
+	  NOTE_KIND (insn) = NOTE_INSN_DELETED_LABEL;
 	  NOTE_DELETED_LABEL_NAME (insn) = name;
 	}
 
@@ -580,7 +580,7 @@ rtl_merge_blocks (basic_block a, basic_block b)
 
       for (prev = PREV_INSN (a_end); ; prev = PREV_INSN (prev))
 	if (!NOTE_P (prev)
-	    || NOTE_LINE_NUMBER (prev) == NOTE_INSN_BASIC_BLOCK
+	    || NOTE_INSN_BASIC_BLOCK_P (prev)
 	    || prev == BB_HEAD (a))
 	  break;
 
@@ -1408,8 +1408,7 @@ commit_one_edge_insertion (edge e)
 	      bb_note = NULL_RTX;
 	      for (cur_insn = BB_HEAD (bb); cur_insn != NEXT_INSN (BB_END (bb));
 		   cur_insn = NEXT_INSN (cur_insn))
-		if (NOTE_P (cur_insn)
-		    && NOTE_LINE_NUMBER (cur_insn) == NOTE_INSN_BASIC_BLOCK)
+		if (NOTE_INSN_BASIC_BLOCK_P (cur_insn))
 		  {
 		    bb_note = cur_insn;
 		    break;
@@ -1969,8 +1968,7 @@ rtl_verify_flow_info (void)
 	  for (insn = BB_END (bb); !insn || !BARRIER_P (insn);
 	       insn = NEXT_INSN (insn))
 	    if (!insn
-		|| (NOTE_P (insn)
-		    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK))
+		|| NOTE_INSN_BASIC_BLOCK_P (insn))
 		{
 		  error ("missing barrier after block %i", bb->index);
 		  err = 1;

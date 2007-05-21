@@ -227,62 +227,6 @@ mark_all_labels (rtx f)
     }
 }
 
-/* Move all block-beg, block-end and loop-beg notes between START and END out
-   before START.  START and END may be such notes.  Returns the values of the
-   new starting and ending insns, which may be different if the original ones
-   were such notes.  Return true if there were only such notes and no real
-   instructions.  */
-
-bool
-squeeze_notes (rtx* startp, rtx* endp)
-{
-  rtx start = *startp;
-  rtx end = *endp;
-
-  rtx insn;
-  rtx next;
-  rtx last = NULL;
-  rtx past_end = NEXT_INSN (end);
-
-  for (insn = start; insn != past_end; insn = next)
-    {
-      next = NEXT_INSN (insn);
-      if (NOTE_P (insn)
-	  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG))
-	{
-	  /* BLOCK_BEG or BLOCK_END notes only exist in the `final' pass.  */
-	  gcc_assert (NOTE_LINE_NUMBER (insn) != NOTE_INSN_BLOCK_BEG
-		      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BLOCK_END);
-
-	  if (insn == start)
-	    start = next;
-	  else
-	    {
-	      rtx prev = PREV_INSN (insn);
-	      PREV_INSN (insn) = PREV_INSN (start);
-	      NEXT_INSN (insn) = start;
-	      NEXT_INSN (PREV_INSN (insn)) = insn;
-	      PREV_INSN (NEXT_INSN (insn)) = insn;
-	      NEXT_INSN (prev) = next;
-	      PREV_INSN (next) = prev;
-	    }
-	}
-      else
-	last = insn;
-    }
-
-  /* There were no real instructions.  */
-  if (start == past_end)
-    return true;
-
-  end = last;
-
-  *startp = start;
-  *endp = end;
-  return false;
-}
-
 /* Given a comparison (CODE ARG0 ARG1), inside an insn, INSN, return a code
    of reversed comparison if it is possible to do so.  Otherwise return UNKNOWN.
    UNKNOWN may be returned in case we are having CC_MODE compare and we don't
@@ -1014,7 +958,7 @@ mark_jump_label (rtx x, rtx insn, int in_mem)
 	/* Ignore remaining references to unreachable labels that
 	   have been deleted.  */
 	if (NOTE_P (label)
-	    && NOTE_LINE_NUMBER (label) == NOTE_INSN_DELETED_LABEL)
+	    && NOTE_KIND (label) == NOTE_INSN_DELETED_LABEL)
 	  break;
 
 	gcc_assert (LABEL_P (label));

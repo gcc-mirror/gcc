@@ -664,9 +664,7 @@ optimize_mode_switching (void)
 		  if (mode_set != NULL_RTX)
 		    {
 		      emited = true;
-		      if (NOTE_P (ptr->insn_ptr)
-			  && (NOTE_LINE_NUMBER (ptr->insn_ptr)
-			      == NOTE_INSN_BASIC_BLOCK))
+		      if (NOTE_INSN_BASIC_BLOCK_P (ptr->insn_ptr))
 			emit_insn_after (mode_set, ptr->insn_ptr);
 		      else
 			emit_insn_before (mode_set, ptr->insn_ptr);

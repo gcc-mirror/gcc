@@ -15763,12 +15763,12 @@ rs6000_output_function_epilogue (FILE *file,
     rtx insn = get_last_insn ();
     while (insn
 	   && NOTE_P (insn)
-	   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED_LABEL)
+	   && NOTE_KIND (insn) != NOTE_INSN_DELETED_LABEL)
       insn = PREV_INSN (insn);
     if (insn
 	&& (LABEL_P (insn)
 	    || (NOTE_P (insn)
-		&& NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL)))
+		&& NOTE_KIND (insn) == NOTE_INSN_DELETED_LABEL)))
       fputs ("\tnop\n", file);
   }
 #endif
@@ -19215,17 +19215,13 @@ output_call (rtx insn, rtx *operands, int dest_operand_number,
 
       if (no_previous_def (funname))
 	{
-	  int line_number = 0;
 	  rtx label_rtx = gen_label_rtx ();
 	  char *label_buf, temp_buf[256];
 	  ASM_GENERATE_INTERNAL_LABEL (temp_buf, "L",
 				       CODE_LABEL_NUMBER (label_rtx));
 	  label_buf = temp_buf[0] == '*' ? temp_buf + 1 : temp_buf;
 	  labelname = get_identifier (label_buf);
-	  for (; insn && GET_CODE (insn) != NOTE; insn = PREV_INSN (insn));
-	  if (insn)
-	    line_number = NOTE_LINE_NUMBER (insn);
-	  add_compiler_branch_island (labelname, funname, line_number);
+	  add_compiler_branch_island (labelname, funname, insn_line (insn));
 	}
       else
 	labelname = get_prev_label (funname);

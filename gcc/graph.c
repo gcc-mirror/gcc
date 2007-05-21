@@ -146,9 +146,8 @@ darkgrey\n  shape: ellipse" : "white",
   /* Print the RTL.  */
   if (NOTE_P (tmp_rtx))
     {
-      const char *name = "";
-      if (NOTE_LINE_NUMBER (tmp_rtx) < 0)
-	name =  GET_NOTE_INSN_NAME (NOTE_LINE_NUMBER (tmp_rtx));
+      const char *name;
+      name =  GET_NOTE_INSN_NAME (NOTE_KIND (tmp_rtx));
       fprintf (fp, " %s", name);
     }
   else if (INSN_P (tmp_rtx))

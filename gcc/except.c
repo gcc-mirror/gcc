@@ -1898,9 +1898,9 @@ sjlj_emit_function_enter (rtx dispatch_label)
   for (fn_begin = get_insns (); ; fn_begin = NEXT_INSN (fn_begin))
     if (NOTE_P (fn_begin))
       {
-	if (NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_FUNCTION_BEG)
+	if (NOTE_KIND (fn_begin) == NOTE_INSN_FUNCTION_BEG)
 	  break;
-	else if (NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_BASIC_BLOCK)
+	else if (NOTE_INSN_BASIC_BLOCK_P (fn_begin))
 	  fn_begin_outside_block = false;
       }
 

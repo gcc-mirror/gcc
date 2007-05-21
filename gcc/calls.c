@@ -3173,7 +3173,7 @@ fixup_tail_calls (void)
       /* There are never REG_EQUIV notes for the incoming arguments
 	 after the NOTE_INSN_FUNCTION_BEG note, so stop if we see it.  */
       if (NOTE_P (insn)
-	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
+	  && NOTE_KIND (insn) == NOTE_INSN_FUNCTION_BEG)
 	break;
 
       note = find_reg_note (insn, REG_EQUIV, 0);

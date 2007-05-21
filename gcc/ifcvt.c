@@ -3899,9 +3899,6 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       if (end == BB_END (merge_bb))
 	BB_END (merge_bb) = PREV_INSN (head);
 
-      if (squeeze_notes (&head, &end))
-	return TRUE;
-
       /* PR 21767: When moving insns above a conditional branch, REG_EQUAL
 	 notes might become invalid.  */
       insn = head;

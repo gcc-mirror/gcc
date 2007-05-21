@@ -2546,7 +2546,7 @@ init_alias_analysis (void)
 		}
 	    }
 	  else if (NOTE_P (insn)
-		   && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
+		   && NOTE_KIND (insn) == NOTE_INSN_FUNCTION_BEG)
 	    copying_arguments = false;
 	}
 

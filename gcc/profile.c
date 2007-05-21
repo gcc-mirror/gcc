@@ -1005,6 +1005,15 @@ branch_prob (void)
 	      if (EXPR_HAS_LOCATION (stmt))
 		output_location (EXPR_FILENAME (stmt), EXPR_LINENO (stmt),
 				 &offset, bb);
+	      /* Take into account modify statements nested in return
+		 produced by C++ NRV transformation.  */
+	      if (TREE_CODE (stmt) == RETURN_EXPR
+		  && TREE_OPERAND (stmt, 0)
+		  && TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR
+		  && EXPR_HAS_LOCATION (TREE_OPERAND (stmt, 0)))
+		output_location (EXPR_FILENAME (TREE_OPERAND (stmt, 0)),
+				 EXPR_LINENO (TREE_OPERAND (stmt, 0)),
+				 &offset, bb);
 	    }
 
 	  /* Notice GOTO expressions we eliminated while constructing the

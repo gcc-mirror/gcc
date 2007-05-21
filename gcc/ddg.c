@@ -488,7 +488,7 @@ create_ddg (basic_block bb, struct df *df, int closing_branch_deps)
       if (! INSN_P (insn))
 	{
 	  if (! first_note && NOTE_P (insn)
-	      && NOTE_LINE_NUMBER (insn) !=  NOTE_INSN_BASIC_BLOCK)
+	      && NOTE_KIND (insn) !=  NOTE_INSN_BASIC_BLOCK)
 	    first_note = insn;
 	  continue;
 	}

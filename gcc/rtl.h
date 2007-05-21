@@ -834,19 +834,12 @@ extern const char * const reg_note_name[];
 #define NOTE_DATA(INSN)	        RTL_CHECKC1 (INSN, 4, NOTE)
 #define NOTE_DELETED_LABEL_NAME(INSN) XCSTR (INSN, 4, NOTE)
 #ifdef USE_MAPPED_LOCATION
-#define NOTE_SOURCE_LOCATION(INSN) XCUINT (INSN, 5, NOTE)
-#define NOTE_EXPANDED_LOCATION(XLOC, INSN)	\
-  (XLOC) = expand_location (NOTE_SOURCE_LOCATION (INSN))
 #define SET_INSN_DELETED(INSN) \
-  (PUT_CODE (INSN, NOTE), NOTE_LINE_NUMBER (INSN) = NOTE_INSN_DELETED)
+  (PUT_CODE (INSN, NOTE), NOTE_KIND (INSN) = NOTE_INSN_DELETED)
 #else
-#define NOTE_EXPANDED_LOCATION(XLOC, INSN)	\
-  ((XLOC).file = NOTE_SOURCE_FILE (INSN),	\
-   (XLOC).line = NOTE_LINE_NUMBER (INSN))
-#define NOTE_SOURCE_FILE(INSN)	XCSTR (INSN, 4, NOTE)
 #define SET_INSN_DELETED(INSN) \
-  (PUT_CODE (INSN, NOTE),  NOTE_SOURCE_FILE (INSN) = 0, \
-   NOTE_LINE_NUMBER (INSN) = NOTE_INSN_DELETED)
+  (PUT_CODE (INSN, NOTE), \
+   NOTE_KIND (INSN) = NOTE_INSN_DELETED)
 #endif
 #define NOTE_BLOCK(INSN)	XCTREE (INSN, 4, NOTE)
 #define NOTE_EH_HANDLER(INSN)	XCINT (INSN, 4, NOTE)
@@ -855,12 +848,12 @@ extern const char * const reg_note_name[];
 
 /* In a NOTE that is a line number, this is the line number.
    Other kinds of NOTEs are identified by negative numbers here.  */
-#define NOTE_LINE_NUMBER(INSN) XCINT (INSN, 5, NOTE)
+#define NOTE_KIND(INSN) XCINT (INSN, 5, NOTE)
 
 /* Nonzero if INSN is a note marking the beginning of a basic block.  */
 #define NOTE_INSN_BASIC_BLOCK_P(INSN)			\
   (GET_CODE (INSN) == NOTE				\
-   && NOTE_LINE_NUMBER (INSN) == NOTE_INSN_BASIC_BLOCK)
+   && NOTE_KIND (INSN) == NOTE_INSN_BASIC_BLOCK)
 
 /* Variable declaration and the location of a variable.  */
 #define NOTE_VAR_LOCATION_DECL(INSN)	(XCTREE (XCEXP (INSN, 4, NOTE), \
@@ -868,7 +861,7 @@ extern const char * const reg_note_name[];
 #define NOTE_VAR_LOCATION_LOC(INSN)	(XCEXP (XCEXP (INSN, 4, NOTE),  \
 						1, VAR_LOCATION))
 
-/* Codes that appear in the NOTE_LINE_NUMBER field for kinds of notes
+/* Codes that appear in the NOTE_KIND field for kinds of notes
    that are not line numbers.  These codes are all negative.
    
    Notice that we do not try to use zero here for any of
@@ -879,9 +872,6 @@ extern const char * const reg_note_name[];
 
 enum insn_note
 {
-  /* Keep all of these numbers negative.  Adjust as needed.  */
-  NOTE_INSN_BIAS = -100,
-
 #define DEF_INSN_NOTE(NAME) NAME,
 #include "insn-notes.def"
 #undef DEF_INSN_NOTE
@@ -891,9 +881,9 @@ enum insn_note
 
 /* Names for NOTE insn's other than line numbers.  */
 
-extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
+extern const char * const note_insn_name[NOTE_INSN_MAX];
 #define GET_NOTE_INSN_NAME(NOTE_CODE) \
-  (note_insn_name[(NOTE_CODE) - (int) NOTE_INSN_BIAS])
+  (note_insn_name[(NOTE_CODE)])
 
 /* The name of a label, in case it corresponds to an explicit label
    in the input source code.  */
@@ -1542,7 +1532,7 @@ extern rtx emit_call_insn_before_noloc (rtx, rtx);
 extern rtx emit_call_insn_before_setloc (rtx, rtx, int);
 extern rtx emit_barrier_before (rtx);
 extern rtx emit_label_before (rtx, rtx);
-extern rtx emit_note_before (int, rtx);
+extern rtx emit_note_before (enum insn_note, rtx);
 extern rtx emit_insn_after (rtx, rtx);
 extern rtx emit_insn_after_noloc (rtx, rtx);
 extern rtx emit_insn_after_setloc (rtx, rtx, int);
@@ -1554,13 +1544,13 @@ extern rtx emit_call_insn_after_noloc (rtx, rtx);
 extern rtx emit_call_insn_after_setloc (rtx, rtx, int);
 extern rtx emit_barrier_after (rtx);
 extern rtx emit_label_after (rtx, rtx);
-extern rtx emit_note_after (int, rtx);
+extern rtx emit_note_after (enum insn_note, rtx);
 extern rtx emit_insn (rtx);
 extern rtx emit_jump_insn (rtx);
 extern rtx emit_call_insn (rtx);
 extern rtx emit_label (rtx);
 extern rtx emit_barrier (void);
-extern rtx emit_note (int);
+extern rtx emit_note (enum insn_note);
 extern rtx emit_note_copy (rtx);
 extern rtx make_insn_raw (rtx);
 extern rtx make_jump_insn_raw (rtx);
@@ -1598,7 +1588,6 @@ extern void mark_jump_label (rtx, rtx, int);
 extern unsigned int cleanup_barriers (void);
 
 /* In jump.c */
-extern bool squeeze_notes (rtx *, rtx *);
 extern rtx delete_related_insns (rtx);
 
 /* In recog.c  */

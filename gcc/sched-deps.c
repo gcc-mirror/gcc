@@ -1937,8 +1937,8 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
       /* EH_REGION insn notes can not appear until well after we complete
 	 scheduling.  */
       if (NOTE_P (insn))
-	gcc_assert (NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_BEG
-		    && NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_END);
+	gcc_assert (NOTE_KIND (insn) != NOTE_INSN_EH_REGION_BEG
+		    && NOTE_KIND (insn) != NOTE_INSN_EH_REGION_END);
 
       if (current_sched_info->use_cselib)
 	cselib_process_insn (insn);

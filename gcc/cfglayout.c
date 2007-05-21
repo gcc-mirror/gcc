@@ -98,15 +98,11 @@ skip_insns_after_block (basic_block bb)
 	  continue;
 
 	case NOTE:
-	  switch (NOTE_LINE_NUMBER (insn))
+	  switch (NOTE_KIND (insn))
 	    {
 	    case NOTE_INSN_BLOCK_END:
-	      last_insn = insn;
+	      gcc_unreachable ();
 	      continue;
-	    case NOTE_INSN_DELETED:
-	    case NOTE_INSN_DELETED_LABEL:
-	      continue;
-
 	    default:
 	      continue;
 	      break;
@@ -146,9 +142,11 @@ skip_insns_after_block (basic_block bb)
     {
       prev = PREV_INSN (insn);
       if (NOTE_P (insn))
-	switch (NOTE_LINE_NUMBER (insn))
+	switch (NOTE_KIND (insn))
 	  {
 	  case NOTE_INSN_BLOCK_END:
+	    gcc_unreachable ();
+	    break;
 	  case NOTE_INSN_DELETED:
 	  case NOTE_INSN_DELETED_LABEL:
 	    continue;
@@ -191,7 +189,7 @@ record_effective_endpoints (void)
   for (insn = get_insns ();
        insn
        && NOTE_P (insn)
-       && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK;
+       && NOTE_KIND (insn) != NOTE_INSN_BASIC_BLOCK;
        insn = NEXT_INSN (insn))
     continue;
   /* No basic blocks at all?  */
@@ -1033,7 +1031,7 @@ duplicate_insn_chain (rtx from, rtx to)
 	  break;
 
 	case NOTE:
-	  switch (NOTE_LINE_NUMBER (insn))
+	  switch (NOTE_KIND (insn))
 	    {
 	      /* In case prologue is empty and function contain label
 		 in first BB, we may want to copy the block.  */
@@ -1059,11 +1057,7 @@ duplicate_insn_chain (rtx from, rtx to)
 	    default:
 	      /* All other notes should have already been eliminated.
 	       */
-	      gcc_assert (NOTE_LINE_NUMBER (insn) >= 0);
-
-	      /* It is possible that no_line_number is set and the note
-		 won't be emitted.  */
-	      emit_note_copy (insn);
+	      gcc_unreachable ();
 	    }
 	  break;
 	default:
