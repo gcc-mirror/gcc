@@ -1,3 +1,9 @@
+2007-05-21  Mike Stump  <mrs@apple.com>
+
+	* config/darwin.h (LINK_COMMAND_SPEC): Add .cxx for dsymutil
+	handling as well.
+	* config/darwin9.h (LINK_COMMAND_SPEC): Likewise.
+
 2007-05-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/tmmintrin.h (_mm_alignr_epi8): Provide macro
