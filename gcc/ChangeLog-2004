@@ -44028,7 +44028,7 @@
 	copy_value, maybe_mode_change, find_oldest_value_reg,
 	copyprop_hardreg_forward_1):
 	* regs.h (hard_regno_nregs): Declare.
-	* realod.c (reload_inner_reg_of_subreg): Use it.
+	* reload.c (reload_inner_reg_of_subreg): Use it.
 	(push_reload, combine_reloads, find_dummy_reload,
 	hard_reg_set_here_p, operands_match_p, decompose, find_reloads,
 	refers_to_regno_for_reload_p, find_equiv_reg, regno_clobbered_p,
