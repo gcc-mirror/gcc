@@ -374,6 +374,19 @@ struct function GTY(())
 
   /* Collected bit flags.  */
 
+  /* Number of units of general registers that need saving in stdarg
+     function.  What unit is depends on the backend, either it is number
+     of bytes, or it can be number of registers.  */
+  unsigned int va_list_gpr_size : 8;
+
+  /* Number of units of floating point registers that need saving in stdarg
+     function.  */
+  unsigned int va_list_fpr_size : 8;
+
+  /* How commonly executed the function is.  Initialized during branch
+     probabilities pass.  */
+  ENUM_BITFIELD (function_frequency) function_frequency : 2;
+
   /* Nonzero if function being compiled needs to be given an address
      where the value should be stored.  */
   unsigned int returns_struct : 1;
@@ -403,6 +416,9 @@ struct function GTY(())
      from nested functions.  */
   unsigned int has_nonlocal_label : 1;
 
+  /* Nonzero if function calls builtin_unwind_init.  */
+  unsigned int calls_unwind_init : 1;
+  
   /* Nonzero if function being compiled has nonlocal gotos to parent
      function.  */
   unsigned int has_nonlocal_goto : 1;
@@ -459,19 +475,6 @@ struct function GTY(())
   /* Set when the tail call has been produced.  */
   unsigned int tail_call_emit : 1;
 
-  /* How commonly executed the function is.  Initialized during branch
-     probabilities pass.  */
-  ENUM_BITFIELD (function_frequency) function_frequency : 2;
-
-  /* Number of units of general registers that need saving in stdarg
-     function.  What unit is depends on the backend, either it is number
-     of bytes, or it can be number of registers.  */
-  unsigned int va_list_gpr_size : 8;
-
-  /* Number of units of floating point registers that need saving in stdarg
-     function.  */
-  unsigned int va_list_fpr_size : 8;
-
   /* FIXME tuples: This bit is temporarily here to mark when a
      function has been gimplified, so we can make sure we're not
      creating non GIMPLE tuples after gimplification.  */
@@ -520,6 +523,7 @@ extern int trampolines_created;
 #define current_function_uses_const_pool (cfun->uses_const_pool)
 #define current_function_epilogue_delay_list (cfun->epilogue_delay_list)
 #define current_function_has_nonlocal_label (cfun->has_nonlocal_label)
+#define current_function_calls_unwind_init (cfun->calls_unwind_init)
 #define current_function_has_nonlocal_goto (cfun->has_nonlocal_goto)
 
 #define return_label (cfun->x_return_label)

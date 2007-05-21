@@ -1,3 +1,17 @@
+2007-05-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* builtins.c (expand_builtin_setjmp_setup): Update comment.
+	* function.h (struct function): Move va_list_gpr_size,
+	va_list_fpr_size, function_frequency to front of bitfields.  Add
+	calls_unwind_init.
+	(current_function_calls_unwind_init): New.
+	* except.c (expand_builtin_unwind_init): Set
+	current_function_calls_unwind_init not
+	current_function_has_nonlocal_label.
+	* reload1.c (has_nonexceptional_receiver): New.
+	(reload): Use it and current_function_calls_unwind_init to
+	determine whether call-saved regs must be saved.
+
 2007-05-20  Jan Hubicka  <jh@suse.cz>
 
 	* gengtype.c (adjust_field_rtx_def): Use NOTE_KIND instead of
