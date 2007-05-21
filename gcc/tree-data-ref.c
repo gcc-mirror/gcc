@@ -2458,7 +2458,7 @@ analyze_miv_subscript (tree chrec_a,
   
   else if (evolution_function_is_constant_p (difference)
 	   /* For the moment, the following is verified:
-	      evolution_function_is_affine_multivariate_p (chrec_a) */
+	      evolution_function_is_affine_multivariate_p (chrec_a, 0) */
 	   && !gcd_of_steps_may_divide_p (chrec_a, difference))
     {
       /* testsuite/.../ssa-chrec-33.c
@@ -2472,9 +2472,9 @@ analyze_miv_subscript (tree chrec_a,
       dependence_stats.num_miv_independent++;
     }
   
-  else if (evolution_function_is_affine_multivariate_p (chrec_a)
+  else if (evolution_function_is_affine_multivariate_p (chrec_a, 0)
 	   && !chrec_contains_symbols (chrec_a)
-	   && evolution_function_is_affine_multivariate_p (chrec_b)
+	   && evolution_function_is_affine_multivariate_p (chrec_b, 0)
 	   && !chrec_contains_symbols (chrec_b))
     {
       /* testsuite/.../ssa-chrec-35.c
@@ -2563,7 +2563,7 @@ analyze_overlapping_iterations (tree chrec_a,
   /* If they are the same chrec, and are affine, they overlap 
      on every iteration.  */
   else if (eq_evolutions_p (chrec_a, chrec_b)
-	   && evolution_function_is_affine_multivariate_p (chrec_a))
+	   && evolution_function_is_affine_multivariate_p (chrec_a, 0))
     {
       dependence_stats.num_same_subscript_function++;
       *overlap_iterations_a = conflict_fn (1, affine_fn_cst (integer_zero_node));
@@ -2575,8 +2575,8 @@ analyze_overlapping_iterations (tree chrec_a,
      yet. */
   else if ((chrec_contains_symbols (chrec_a) 
 	    || chrec_contains_symbols (chrec_b))
-	   && (!evolution_function_is_affine_multivariate_p (chrec_a)
-	       || !evolution_function_is_affine_multivariate_p (chrec_b)))
+	   && (!evolution_function_is_affine_multivariate_p (chrec_a, 0)
+	       || !evolution_function_is_affine_multivariate_p (chrec_b, 0)))
     {
       dependence_stats.num_subscript_undetermined++;
       *overlap_iterations_a = conflict_fn_not_known ();
@@ -2745,7 +2745,7 @@ build_classic_dist_vector_1 (struct data_dependence_relation *ddr,
 	  init_v[index] = 1;
 	  *init_b = true;
 	}
-      else
+      else if (!operand_equal_p (access_fn_a, access_fn_b, 0))
 	{
 	  /* This can be for example an affine vs. constant dependence
 	     (T[i] vs. T[3]) that is not an affine dependence and is
@@ -3182,7 +3182,7 @@ access_functions_are_affine_or_constant_p (struct data_reference *a)
 
   for (i = 0; VEC_iterate (tree, fns, i, t); i++)
     if (!evolution_function_is_constant_p (t)
-	&& !evolution_function_is_affine_multivariate_p (t))
+	&& !evolution_function_is_affine_multivariate_p (t, 0))
       return false;
   
   return true;

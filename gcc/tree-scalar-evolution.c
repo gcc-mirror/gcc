@@ -2615,7 +2615,7 @@ gather_chrec_stats (tree chrec, struct chrec_stats *stats)
 	    fprintf (dump_file, "  affine_univariate\n");
 	  stats->nb_affine++;
 	}
-      else if (evolution_function_is_affine_multivariate_p (chrec))
+      else if (evolution_function_is_affine_multivariate_p (chrec, 0))
 	{
 	  if (dump_file && (dump_flags & TDF_STATS))
 	    fprintf (dump_file, "  affine_multivariate\n");

@@ -1,3 +1,22 @@
+2007-05-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/31995
+	* tree-chrec.c (evolution_function_is_affine_multivariate_p):
+	Add loopno argument.  Use evolution_function_is_invariant_rec_p
+	instead of evolution_function_is_constant_p.
+	Update calls to evolution_function_is_affine_multivariate_p.
+	* tree-chrec.h  (evolution_function_is_affine_multivariate_p):
+	Add loopno argument.
+	* tree-scalar-evolution.c (gather_chrec_stats): Call
+	evolution_function_is_affine_multivariate_p with a  loop
+	number of 0.
+	* tree-data-ref.c (analyze_miv_subscript): Likewise.
+	(analyze_overlapping_iterations): Likewise.
+	(access_functions_are_affine_or_constant_p):
+	Likewise.
+	(build_classic_dist_vector_1): If the access functions
+	are equal, don't do anything.
+
 2007-05-21  Paolo Bonzini  <bonzini@gnu.org>
             Paolo Carlini  <pcarlini@suse.de>
 	    Uros Bizjak  <ubizjak@gmail.com>

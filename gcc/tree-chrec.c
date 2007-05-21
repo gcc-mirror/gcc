@@ -987,7 +987,7 @@ evolution_function_is_invariant_p (tree chrec, int loopnum)
    evolution.  */
 
 bool 
-evolution_function_is_affine_multivariate_p (tree chrec)
+evolution_function_is_affine_multivariate_p (tree chrec, int loopnum)
 {
   if (chrec == NULL_TREE)
     return false;
@@ -995,9 +995,9 @@ evolution_function_is_affine_multivariate_p (tree chrec)
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
-      if (evolution_function_is_constant_p (CHREC_LEFT (chrec)))
+      if (evolution_function_is_invariant_rec_p (CHREC_LEFT (chrec), loopnum))
 	{
-	  if (evolution_function_is_constant_p (CHREC_RIGHT (chrec)))
+	  if (evolution_function_is_invariant_rec_p (CHREC_RIGHT (chrec), loopnum))
 	    return true;
 	  else
 	    {
@@ -1005,7 +1005,7 @@ evolution_function_is_affine_multivariate_p (tree chrec)
 		  && CHREC_VARIABLE (CHREC_RIGHT (chrec)) 
 		     != CHREC_VARIABLE (chrec)
 		  && evolution_function_is_affine_multivariate_p 
-		  (CHREC_RIGHT (chrec)))
+		  (CHREC_RIGHT (chrec), loopnum))
 		return true;
 	      else
 		return false;
@@ -1013,11 +1013,11 @@ evolution_function_is_affine_multivariate_p (tree chrec)
 	}
       else
 	{
-	  if (evolution_function_is_constant_p (CHREC_RIGHT (chrec))
+	  if (evolution_function_is_invariant_rec_p (CHREC_RIGHT (chrec), loopnum)
 	      && TREE_CODE (CHREC_LEFT (chrec)) == POLYNOMIAL_CHREC
 	      && CHREC_VARIABLE (CHREC_LEFT (chrec)) != CHREC_VARIABLE (chrec)
 	      && evolution_function_is_affine_multivariate_p 
-	      (CHREC_LEFT (chrec)))
+	      (CHREC_LEFT (chrec), loopnum))
 	    return true;
 	  else
 	    return false;

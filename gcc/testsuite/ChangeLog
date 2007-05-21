@@ -1,3 +1,8 @@
+2007-05-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/31995
+	* gcc.dg/vect/vect-102a.c: New test.
+
 2007-05-21  Paolo Bonzini  <bonzini@gnu.org>
             Paolo Carlini  <pcarlini@suse.de>
 	    Uros Bizjak  <ubizjak@gmail.com>
