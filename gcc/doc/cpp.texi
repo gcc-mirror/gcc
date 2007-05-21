@@ -2179,6 +2179,14 @@ If GCC cannot determine the current date, it will emit a warning message
 (once per compilation) and @code{__TIMESTAMP__} will expand to
 @code{@w{"??? ??? ?? ??:??:?? ????"}}.
 
+@item __GCC_HAVE_SYNC_COMPARE_AND_SWAP_1
+@itemx __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
+@itemx __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
+@itemx __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8
+@itemx __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
+These macros are defined when the target processor supports atomic compare
+and swap operations on operands 1, 2, 4, 8 or 16 bytes in length, respectively.
+
 @end table
 
 @node System-specific Predefined Macros
