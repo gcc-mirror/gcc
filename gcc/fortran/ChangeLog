@@ -1,3 +1,9 @@
+2007-05-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32027
+	* trans-stmt.c (gfc_trans_do): Fix the value of loop variable
+	when the loop ends.
+
 2007-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* trans-stmt.c (gfc_trans_do): Fix a typo in comment.

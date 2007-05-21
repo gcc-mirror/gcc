@@ -947,6 +947,10 @@ gfc_trans_do (gfc_code * code)
       gfc_add_expr_to_block (&body, tmp);
     }
 
+  /* Increment the loop variable.  */
+  tmp = build2 (PLUS_EXPR, type, dovar, step);
+  gfc_add_modify_expr (&body, dovar, tmp);
+
   /* End with the loop condition.  Loop until countm1 == 0.  */
   cond = fold_build2 (EQ_EXPR, boolean_type_node, countm1,
 		      build_int_cst (utype, 0));
@@ -954,10 +958,6 @@ gfc_trans_do (gfc_code * code)
   tmp = fold_build3 (COND_EXPR, void_type_node,
 		     cond, tmp, build_empty_stmt ());
   gfc_add_expr_to_block (&body, tmp);
-
-  /* Increment the loop variable.  */
-  tmp = build2 (PLUS_EXPR, type, dovar, step);
-  gfc_add_modify_expr (&body, dovar, tmp);
 
   /* Decrement the loop count.  */
   tmp = build2 (MINUS_EXPR, utype, countm1, build_int_cst (utype, 1));
