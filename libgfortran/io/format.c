@@ -860,10 +860,11 @@ parse_format_list (st_parameter_dt *dtp)
     case FMT_SLASH:
       get_fnode (fmt, &head, &tail, FMT_SLASH);
       tail->repeat = 1;
-
-      /* Fall Through */
+      goto optional_comma;
 
     case FMT_COLON:
+      get_fnode (fmt, &head, &tail, FMT_COLON);
+      tail->repeat = 1;
       goto optional_comma;
 
     case FMT_END:

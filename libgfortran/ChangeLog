@@ -1,3 +1,9 @@
+2007-05-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/31395
+	* io/format.c (parse_format_list): Fix parsing. Regression against g77.
+	Backport from 4.3.
+
 2007-05-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/31618
