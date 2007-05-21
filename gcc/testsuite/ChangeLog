@@ -1,5 +1,9 @@
 2007-05-21  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.c-torture/execute/990127-2.x: New file.
+
+2007-05-21  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/sse-14.c: Remove all intrinsic redefines.
 	* gcc.target/i386/sse-12: Add -O to compile options.
 	* g++.dg/other/i386-2.C: Use "-march=k8 -m3dnow -mssse3
@@ -4315,7 +4319,7 @@
 	* gcc.dg/builtin-bswap-3.c: Likewise.
 	* gcc.dg/builtin-bswap-4.c: Likewise.
 	* lib/target-supports.exp (check_effective_target_stdint_types): New.
-	* cc.c-torture/execute/mode-dependent-address.x: New file.
+	* gcc.c-torture/execute/mode-dependent-address.x: New file.
 
 2006-12-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
