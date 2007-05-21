@@ -126,9 +126,6 @@ struct real_format
   /* The radix of the exponent and digits of the significand.  */
   int b;
 
-  /* log2(b).  */
-  int log2_b;
-
   /* Size of the significand in digits of radix B.  */
   int p;
 
@@ -272,8 +269,6 @@ extern const struct real_format mips_quad_format;
 extern const struct real_format vax_f_format;
 extern const struct real_format vax_d_format;
 extern const struct real_format vax_g_format;
-extern const struct real_format i370_single_format;
-extern const struct real_format i370_double_format;
 extern const struct real_format c4x_single_format;
 extern const struct real_format c4x_extended_format;
 extern const struct real_format real_internal_format;

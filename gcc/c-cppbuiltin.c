@@ -111,7 +111,7 @@ builtin_define_float_constants (const char *name_prefix,
   /* The radix of the exponent representation.  */
   if (type == float_type_node)
     builtin_define_with_int_value ("__FLT_RADIX__", fmt->b);
-  log10_b = log10_2 * fmt->log2_b;
+  log10_b = log10_2;
 
   /* The number of radix digits, p, in the floating-point significand.  */
   sprintf (name, "__%s_MANT_DIG__", name_prefix);
@@ -208,12 +208,12 @@ builtin_define_float_constants (const char *name_prefix,
     char *p;
 
     strcpy (buf, "0x0.");
-    n = fmt->p * fmt->log2_b;
+    n = fmt->p;
     for (i = 0, p = buf + 4; i + 3 < n; i += 4)
       *p++ = 'f';
     if (i < n)
       *p++ = "08ce"[n - i];
-    sprintf (p, "p%d", fmt->emax * fmt->log2_b);
+    sprintf (p, "p%d", fmt->emax);
     if (fmt->pnan < fmt->p)
       {
 	/* This is an IBM extended double format made up of two IEEE
@@ -231,7 +231,7 @@ builtin_define_float_constants (const char *name_prefix,
   /* The minimum normalized positive floating-point number,
      b**(emin-1).  */
   sprintf (name, "__%s_MIN__", name_prefix);
-  sprintf (buf, "0x1p%d", (fmt->emin - 1) * fmt->log2_b);
+  sprintf (buf, "0x1p%d", fmt->emin - 1);
   builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix, fp_cast);
 
   /* The difference between 1 and the least value greater than 1 that is
@@ -240,9 +240,9 @@ builtin_define_float_constants (const char *name_prefix,
   if (fmt->pnan < fmt->p)
     /* This is an IBM extended double format, so 1.0 + any double is
        representable precisely.  */
-      sprintf (buf, "0x1p%d", (fmt->emin - fmt->p) * fmt->log2_b);
+      sprintf (buf, "0x1p%d", fmt->emin - fmt->p);
     else
-      sprintf (buf, "0x1p%d", (1 - fmt->p) * fmt->log2_b);
+      sprintf (buf, "0x1p%d", 1 - fmt->p);
   builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix, fp_cast);
 
   /* For C++ std::numeric_limits<T>::denorm_min.  The minimum denormalized
@@ -251,7 +251,7 @@ builtin_define_float_constants (const char *name_prefix,
   sprintf (name, "__%s_DENORM_MIN__", name_prefix);
   if (fmt->has_denorm)
     {
-      sprintf (buf, "0x1p%d", (fmt->emin - fmt->p) * fmt->log2_b);
+      sprintf (buf, "0x1p%d", fmt->emin - fmt->p);
       builtin_define_with_hex_fp_value (name, type, decimal_dig,
 					buf, fp_suffix, fp_cast);
     }

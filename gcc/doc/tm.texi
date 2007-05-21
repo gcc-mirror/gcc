@@ -1340,9 +1340,6 @@ need to define @code{TARGET_FLOAT_FORMAT} when the format is IEEE@.
 This code indicates the ``F float'' (for @code{float}) and ``D float''
 or ``G float'' formats (for @code{double}) used on the VAX and PDP-11@.
 
-@item IBM_FLOAT_FORMAT
-This code indicates the format used on the IBM System/370.
-
 @item C4X_FLOAT_FORMAT
 This code indicates the format used on the TMS320C3x/C4x.
 @end ftable

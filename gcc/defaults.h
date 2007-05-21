@@ -623,8 +623,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define UNKNOWN_FLOAT_FORMAT 0
 #define IEEE_FLOAT_FORMAT 1
 #define VAX_FLOAT_FORMAT 2
-#define IBM_FLOAT_FORMAT 3
-#define C4X_FLOAT_FORMAT 4
+#define C4X_FLOAT_FORMAT 3
 
 /* Default to IEEE float if not specified.  Nearly all machines use it.  */
 #ifndef TARGET_FLOAT_FORMAT
