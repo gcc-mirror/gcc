@@ -1,3 +1,9 @@
+2007-05-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32027
+	* gfortran.dg/do_3.F90: Add checks for the final value of the
+	loop variable.
+
 2007-05-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.c-torture/execute/990127-2.x: New file.
