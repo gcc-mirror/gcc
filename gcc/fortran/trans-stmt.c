@@ -818,8 +818,8 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
        body;
 cycle_label:
        dovar += step
-       countm1--;
        if (countm1 ==0) goto exit_label;
+       countm1--;
      }
 exit_label:
 

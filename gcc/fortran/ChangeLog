@@ -1,3 +1,7 @@
+2007-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* trans-stmt.c (gfc_trans_do): Fix a typo in comment.
+
 2007-05-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31867
