@@ -1,3 +1,8 @@
+2007-05-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (cxx_maybe_build_cleanup): Handle
+	__attribute__((cleanup)).
+
 2007-05-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* cvt.c (cp_convert_and_check): Don't check warnings if the
