@@ -1,3 +1,8 @@
+2007-05-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/31395
+	* gfortran.dg/fmt_colon.f90: New test.
+
 2007-05-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/31618
