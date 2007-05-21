@@ -1,3 +1,25 @@
+2007-05-21  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* defaults.h (IBM_FLOAT_FORMAT): Macro definition removed.
+	* doc/tm.texi (IBM_FLOAT_FORMAT): Documentation entry removed.
+	* real.c (encode_i370_single, decode_i370_single,
+	encode_i370_double, decode_i370_double): Functions removed.
+	(i370_single_format, i370_double_format): Initializations removed.
+	(real_maxval, round_for_format, exact_real_truncate, significand_size):
+	Consider the log2_b field to always be one.
+	(ieee_single_format, mips_single_format, coldfire_single_format,
+	ieee_double_format, mips_double_format,	coldfire_double_format,
+	ieee_extended_motorola_format, ieee_extended_intel_96_format,
+	ieee_extended_intel_128_format, ieee_extended_intel_96_round_53_format,
+	ibm_extended_format, mips_extended_format, ieee_quad_format,
+	mips_quad_format, vax_f_format, vax_d_format, vax_g_format,
+	decimal_single_format, decimal_double_format, decimal_quad_format,
+	c4x_single_format, c4x_extended_format, real_internal_format): Remove
+	initialization of log2_b.
+	* real.h (i370_single_format, i370_double_format): Declarations removed.
+	* c-cppbuiltin.c (builtin_define_float_constants): Consider the log2_b
+	field to always be one.
+
 2007-05-21  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.c (emit_predicate_relation_info): Fix use of
