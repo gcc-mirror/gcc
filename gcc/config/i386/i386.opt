@@ -187,6 +187,10 @@ mssse3
 Target Report Mask(SSSE3)
 Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation
 
+msse4.1
+Target Report Mask(SSE4_1)
+Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation
+
 msse4a
 Target Report Mask(SSE4A)
 Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation

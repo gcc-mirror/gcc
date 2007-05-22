@@ -1,3 +1,168 @@
+2007-05-22  H.J. Lu  <hongjiu.lu@intel.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* config.gcc (i[34567]86-*-*): Add smmintrin.h to
+	extra_headers.
+	(x86_64-*-*): Likewise.
+
+	* i386/i386-modes.def (V2QI): New.
+
+	* config/i386/i386.c (ix86_handle_option): Handle SSE4.1 and
+	SSE4A.
+	(override_options): Support SSE4.1.
+	(IX86_BUILTIN_BLENDPD): New for SSE4.1.
+	(IX86_BUILTIN_BLENDPS): Likewise.
+	(IX86_BUILTIN_BLENDVPD): Likewise.
+	(IX86_BUILTIN_BLENDVPS): Likewise.
+	(IX86_BUILTIN_PBLENDVB128): Likewise.
+	(IX86_BUILTIN_PBLENDW128): Likewise.
+	(IX86_BUILTIN_DPPD): Likewise.
+	(IX86_BUILTIN_DPPS): Likewise.
+	(IX86_BUILTIN_INSERTPS128): Likewise.
+	(IX86_BUILTIN_MOVNTDQA): Likewise.
+	(IX86_BUILTIN_MPSADBW128): Likewise.
+	(IX86_BUILTIN_PACKUSDW128): Likewise.
+	(IX86_BUILTIN_PCMPEQQ): Likewise.
+	(IX86_BUILTIN_PHMINPOSUW128): Likewise.
+	(IX86_BUILTIN_PMAXSB128): Likewise.
+	(IX86_BUILTIN_PMAXSD128): Likewise.
+	(IX86_BUILTIN_PMAXUD128): Likewise.
+	(IX86_BUILTIN_PMAXUW128): Likewise.
+	(IX86_BUILTIN_PMINSB128): Likewise.
+	(IX86_BUILTIN_PMINSD128): Likewise.
+	(IX86_BUILTIN_PMINUD128): Likewise.
+	(IX86_BUILTIN_PMINUW128): Likewise.
+	(IX86_BUILTIN_PMOVSXBW128): Likewise.
+	(IX86_BUILTIN_PMOVSXBD128): Likewise.
+	(IX86_BUILTIN_PMOVSXBQ128): Likewise.
+	(IX86_BUILTIN_PMOVSXWD128): Likewise.
+	(IX86_BUILTIN_PMOVSXWQ128): Likewise.
+	(IX86_BUILTIN_PMOVSXDQ128): Likewise.
+	(IX86_BUILTIN_PMOVZXBW128): Likewise.
+	(IX86_BUILTIN_PMOVZXBD128): Likewise.
+	(IX86_BUILTIN_PMOVZXBQ128): Likewise.
+	(IX86_BUILTIN_PMOVZXWD128): Likewise.
+	(IX86_BUILTIN_PMOVZXWQ128): Likewise.
+	(IX86_BUILTIN_PMOVZXDQ128): Likewise.
+	(IX86_BUILTIN_PMULDQ128): Likewise.
+	(IX86_BUILTIN_PMULLD128): Likewise.
+	(IX86_BUILTIN_ROUNDPD): Likewise.
+	(IX86_BUILTIN_ROUNDPS): Likewise.
+	(IX86_BUILTIN_ROUNDSD): Likewise.
+	(IX86_BUILTIN_ROUNDSS): Likewise.
+	(IX86_BUILTIN_PTESTZ): Likewise.
+	(IX86_BUILTIN_PTESTC): Likewise.
+	(IX86_BUILTIN_PTESTNZC): Likewise.
+	(IX86_BUILTIN_VEC_EXT_V16QI): Likewise.
+	(IX86_BUILTIN_VEC_SET_V2DI): Likewise.
+	(IX86_BUILTIN_VEC_SET_V4SF): Likewise.
+	(IX86_BUILTIN_VEC_SET_V4SI): Likewise.
+	(IX86_BUILTIN_VEC_SET_V16QI): Likewise.
+	(bdesc_ptest): New.
+	(bdesc_sse_3arg): Likewise.
+	(bdesc_2arg): Likewise.
+	(bdesc_1arg): Likewise.
+	(ix86_init_mmx_sse_builtins): Support SSE4.1.  Handle SSE builtins
+	with 3 args.
+	(ix86_expand_sse_4_operands_builtin): New.
+	(ix86_expand_unop_builtin): Support 2 arg builtins with a constant
+	smaller than 8 bits as the 2nd arg.
+	(ix86_expand_sse_ptest): New.
+	(ix86_expand_builtin): Support SSE4.1. Support 3 arg SSE builtins.
+	(ix86_expand_vector_set): Support SSE4.1.
+	(ix86_expand_vector_extract): Likewise.
+
+	* config/i386/i386.h (TARGET_CPU_CPP_BUILTINS): Define
+	__SSE4_1__ for -msse4.1.
+
+	* config/i386/i386.md (UNSPEC_BLENDV): New for SSE4.1.
+	(UNSPEC_INSERTPS): Likewise.
+	(UNSPEC_DP): Likewise.
+	(UNSPEC_MOVNTDQA): Likewise.
+	(UNSPEC_MPSADBW): Likewise.
+	(UNSPEC_PHMINPOSUW): Likewise.
+	(UNSPEC_PTEST): Likewise.
+	(UNSPEC_ROUNDP): Likewise.
+	(UNSPEC_ROUNDS): Likewise.
+
+	* config/i386/i386.opt (msse4.1): New for SSE4.1.
+
+	* config/i386/predicates.md (const_pow2_1_to_2_operand): New.
+	(const_pow2_1_to_32768_operand): Likewise.
+
+	* config/i386/smmintrin.h: New. The SSE4.1 intrinsic header
+	file.
+
+	* config/i386/sse.md (*vec_setv4sf_sse4_1): New pattern for
+	SSE4.1.
+	(sse4_1_insertps): Likewise.
+	(*sse4_1_extractps): Likewise.
+	(sse4_1_ptest): Likewise.
+	(sse4_1_mulv2siv2di3): Likewise.
+	(*sse4_1_mulv4si3): Likewise.
+	(*sse4_1_smax<mode>3): Likewise.
+	(*sse4_1_umax<mode>3): Likewise.
+	(*sse4_1_smin<mode>3): Likewise.
+	(*sse4_1_umin<mode>3): Likewise.
+	(sse4_1_eqv2di3): Likewise.
+	(*sse4_1_pinsrb): Likewise.
+	(*sse4_1_pinsrd): Likewise.
+	(*sse4_1_pinsrq): Likewise.
+	(*sse4_1_pextrb): Likewise.
+	(*sse4_1_pextrb_memory): Likewise.
+	(*sse4_1_pextrw_memory): Likewise.
+	(*sse4_1_pextrq): Likewise.
+	(sse4_1_blendpd): Likewise.
+	(sse4_1_blendps): Likewise.
+	(sse4_1_blendvpd): Likewise.
+	(sse4_1_blendvps): Likewise.
+	(sse4_1_dppd): Likewise.
+	(sse4_1_dpps): Likewise.
+	(sse4_1_movntdqa): Likewise.
+	(sse4_1_mpsadbw): Likewise.
+	(sse4_1_packusdw): Likewise.
+	(sse4_1_pblendvb): Likewise.
+	(sse4_1_pblendw): Likewise.
+	(sse4_1_phminposuw): Likewise.
+	(sse4_1_extendv8qiv8hi2): Likewise.
+	(*sse4_1_extendv8qiv8hi2): Likewise.
+	(sse4_1_extendv4qiv4si2): Likewise.
+	(*sse4_1_extendv4qiv4si2): Likewise.
+	(sse4_1_extendv2qiv2di2): Likewise.
+	(*sse4_1_extendv2qiv2di2): Likewise.
+	(sse4_1_extendv4hiv4si2): Likewise.
+	(*sse4_1_extendv4hiv4si2): Likewise.
+	(sse4_1_extendv2hiv2di2): Likewise.
+	(*sse4_1_extendv2hiv2di2): Likewise.
+	(sse4_1_extendv2siv2di2): Likewise.
+	(*sse4_1_extendv2siv2di2): Likewise.
+	(sse4_1_zero_extendv8qiv8hi2): Likewise.
+	(*sse4_1_zero_extendv8qiv8hi2): Likewise.
+	(sse4_1_zero_extendv4qiv4si2): Likewise.
+	(*sse4_1_zero_extendv4qiv4si2): Likewise.
+	(sse4_1_zero_extendv2qiv2di2): Likewise.
+	(*sse4_1_zero_extendv2qiv2di2): Likewise.
+	(sse4_1_zero_extendv4hiv4si2): Likewise.
+	(*sse4_1_zero_extendv4hiv4si2): Likewise.
+	(sse4_1_zero_extendv2hiv2di2): Likewise.
+	(*sse4_1_zero_extendv2hiv2di2): Likewise.
+	(sse4_1_zero_extendv2siv2di2): Likewise.
+	(*sse4_1_zero_extendv2siv2di2): Likewise.
+	(sse4_1_roundpd): Likewise.
+	(sse4_1_roundps): Likewise.
+	(sse4_1_roundsd): Likewise.
+	(sse4_1_roundss): Likewise.
+	(mulv4si3): Don't expand for SSE4.1.
+	(smax<mode>3): Likewise.
+	(umaxv4si3): Likewise.
+	(uminv16qi3): Likewise.
+	(umin<mode>3): Likewise.
+	(umaxv8hi3): Rewrite.  Only enabled for SSE4.1.
+
+	* doc/extend.texi: Document SSE4.1 built-in functions.
+
+	* doc/invoke.texi: Document -msse4.1.
+
 2007-05-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/m68k/linux.h (ASM_SPEC): Add asm_pcrel_spec.
