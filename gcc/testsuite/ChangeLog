@@ -1,3 +1,7 @@
+2007-05-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/sse4_1-check.h: Don't include ../auto-host.h.
+
 2007-05-22  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/dfp/func-array.c: Support -DDBG to report individual

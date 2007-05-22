@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../auto-host.h"
-
 #include "../../gcc.dg/i386-cpuid.h"
 
 static void sse4_1_test (void);
