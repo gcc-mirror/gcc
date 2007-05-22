@@ -1,5 +1,34 @@
 2007-05-22  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* g++.dg/other/i386-2.C: Update comments on header files tested.
+	Use -msse4.1 instead of -mssse3.  Include <smmintrin.h> instead
+	of <tmmintrin.h>.
+	* gcc.target/i386/sse-12.c: Likewise.
+	* gcc.target/i386/sse-13.c: Likewise.
+	* gcc.target/i386/sse-14.c: Likewise.
+
+	* gcc.target/i386/sse-13.c (__builtin_ia32_pblendw128): New.
+	Redefined to test with immediate operand.
+	(__builtin_ia32_blendps): Likewise.
+	(__builtin_ia32_blendpd): Likewise.
+	(__builtin_ia32_dpps): Likewise.
+	(__builtin_ia32_dpps): Likewise.
+	(__builtin_ia32_insertps128): Likewise.
+	(__builtin_ia32_vec_ext_v4sf): Likewise.
+	(__builtin_ia32_vec_set_v16qi): Likewise.
+	(__builtin_ia32_vec_set_v4si): Likewise.
+	(__builtin_ia32_vec_set_v2di): Likewise.
+	(__builtin_ia32_vec_ext_v16qi): Likewise.
+	(__builtin_ia32_vec_ext_v4si): Likewise.
+	(__builtin_ia32_vec_ext_v2di): Likewise.
+	(__builtin_ia32_roundpd): Likewise.
+	(__builtin_ia32_roundsd): Likewise.
+	(__builtin_ia32_roundps): Likewise.
+	(__builtin_ia32_roundss): Likewise.
+	(__builtin_ia32_mpsadbw128): Likewise.
+
+2007-05-22  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* gcc.target/i386/sse4_1-check.h: Don't include ../auto-host.h.
 
 2007-05-22  Janis Johnson  <janis187@us.ibm.com>
