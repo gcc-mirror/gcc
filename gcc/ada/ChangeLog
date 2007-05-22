@@ -1,3 +1,7 @@
+2007-05-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* misc.c (enumerate_modes): Consider log2_b to always be one.
+
 2007-05-14  Rafael Avila de Espindola  <espindola@google.com>
 
 	* misc.c (LANG_HOOKS_UNSIGNED_TYPE): Remove.
