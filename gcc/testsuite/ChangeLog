@@ -1,5 +1,10 @@
 2007-05-22  Ollie Wild  <aaw@google.com>
 
+	* g++.dg/lookup/hidden-class10.C: New test.
+	* g++.dg/lookup/hidden-class11.C: New test.
+
+2007-05-22  Ollie Wild  <aaw@google.com>
+
 	* g++.dg/lookup/name-clash5.C: New test.
 	* g++.dg/lookup/name-clash6.C: New test.
 

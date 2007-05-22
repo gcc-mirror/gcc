@@ -1,5 +1,10 @@
 2007-05-22  Ollie Wild  <aaw@google.com>
 
+	* name-lookup.c (ambiguous_decl): Adds check for hidden types.
+	(unqualified_namespace_lookup): Adds check for hidden types.
+
+2007-05-22  Ollie Wild  <aaw@google.com>
+
 	* decl.c (duplicate_decls): Verify namespace names are unique.
 
 2007-05-21  Mark Mitchell  <mark@codesourcery.com>
