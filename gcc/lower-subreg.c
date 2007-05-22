@@ -1128,6 +1128,8 @@ decompose_multiword_subregs (bool update_life)
 			{
 			  changed = true;
 
+			  remove_retval_note (insn);
+
 			  recog_memoized (insn);
 			  extract_insn (insn);
 
@@ -1156,6 +1158,8 @@ decompose_multiword_subregs (bool update_life)
 
 		      i = apply_change_group ();
 		      gcc_assert (i);
+
+		      remove_retval_note (insn);
 
 		      changed = true;
 		    }

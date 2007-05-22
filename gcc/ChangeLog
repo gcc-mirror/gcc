@@ -1,3 +1,8 @@
+2007-05-22  Ian Lance Taylor  <iant@google.com>
+
+	* lower-subreg.c (decompose_multiword_subregs): If we change an
+	insn, call remove_retval_note on it.
+
 2007-05-22  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* regs.h (end_hard_regno): New function.
