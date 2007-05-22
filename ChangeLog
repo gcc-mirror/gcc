@@ -1,3 +1,7 @@
+2007-05-22  Ollie Wild  <aaw@google.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2007-05-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.def (bootstrap_stage): Replace stage_make_flags with
