@@ -1,3 +1,7 @@
+2007-05-22  Ollie Wild  <aaw@google.com>
+
+	* decl.c (duplicate_decls): Verify namespace names are unique.
+
 2007-05-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (cxx_maybe_build_cleanup): Handle

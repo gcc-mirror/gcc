@@ -1,3 +1,8 @@
+2007-05-22  Ollie Wild  <aaw@google.com>
+
+	* g++.dg/lookup/name-clash5.C: New test.
+	* g++.dg/lookup/name-clash6.C: New test.
+
 2007-05-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* g++.dg/other/i386-2.C: Update comments on header files tested.
