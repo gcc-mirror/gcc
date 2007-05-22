@@ -896,7 +896,7 @@ enumerate_modes (void (*f) (int, int, int, int, int, int, unsigned int))
 	{
 	  const struct real_format *fmt = REAL_MODE_FORMAT (inner_mode);
 
-	  mantissa = fmt->p * fmt->log2_b;
+	  mantissa = fmt->p;
 	}
 
       if (!skip_p && j != VOIDmode)
