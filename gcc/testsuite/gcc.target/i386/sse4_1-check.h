@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "../../gcc.dg/i386-cpuid.h"

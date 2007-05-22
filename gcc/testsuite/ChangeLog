@@ -1,3 +1,7 @@
+2007-05-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/sse4_1-check.h: Don't include <stdio.h>.
+
 2007-05-22  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.c-torture/execute/ieee/20000320-1.x,
