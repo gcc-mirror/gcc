@@ -1,7 +1,8 @@
 // -*- C++ -*-
 // Testing allocator for the C++ library testsuite.
 //
-// Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,8 +42,8 @@
 
 namespace 
 {
-  bool new_called = false;
-  bool delete_called = false;
+  bool new_called;
+  bool delete_called;
 };
 
 namespace __gnu_test
@@ -188,6 +189,7 @@ namespace __gnu_test
     check_new(Alloc a = Alloc())
     {
       bool test __attribute__((unused)) = true;
+      new_called = false;
       a.allocate(10);
       test &= ( new_called == uses_global_new );
       return test;
@@ -198,6 +200,7 @@ namespace __gnu_test
     check_delete(Alloc a = Alloc())
     {
       bool test __attribute__((unused)) = true;
+      delete_called = false;
       typename Alloc::pointer p = a.allocate(10);
       a.deallocate(p, 10);
       test &= ( delete_called == uses_global_delete );
