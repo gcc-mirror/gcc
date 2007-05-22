@@ -1,5 +1,85 @@
 2007-05-22  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* regs.h (end_hard_regno): New function.
+	(END_HARD_REGNO, END_REGNO): New macros.
+	(add_to_hard_reg_set): New function.
+	(remove_from_hard_reg_set): Likewise.
+	(in_hard_reg_set_p): Likewise.
+	(overlaps_hard_reg_set_p): Likewise.
+	* bt-load.c (find_btr_reference): Use overlaps_hard_reg_set_p.
+	(note_btr_set): Use END_HARD_REGNO.
+	* caller-save.c (setup_save_areas): Use end_hard_regno.
+	(mark_set_regs): Use END_HARD_REGNO.
+	(add_stored_regs): Use end_hard_regno.
+	(mark_referenced_regs): Use add_to_hard_reg_set.
+	* combine.c (update_table_tick): Use END_REGNO.
+	(record_value_for_reg): Likewise.
+	(record_dead_and_set_regs): Likewise.
+	(get_last_value_validate): Likewise.
+	(use_crosses_set_p): Likewise.
+	(reg_dead_at_p_1): Likewise.
+	(reg_dead_at_p): Likewise.
+	(mark_used_regs_combine): Use add_to_hard_reg_set.
+	(move_deaths): Use END_HARD_REGNO.
+	(reg_bitfield_target_p): Use end_hard_regno.
+	(distribute_notes): Use END_HARD_REGNO.
+	* cse.c (mention_regs): Use END_REGNO.
+	(insert): Use add_to_hard_reg_set.
+	(invalidate): Use END_HARD_REGNO.
+	(invalidate_for_call): Likewise.
+	(exp_equiv_p): Use END_REGNO.
+	(cse_insn): Likewise.
+	* cselib.c (cselib_invalidate_regno): Use end_hard_regno.
+	* df-problems.c (df_urec_mark_reg_change): Use END_HARD_REGNO.
+	* df-scan.c (df_ref_record): Use END_HARD_REGNO.
+	* function.c (keep_stack_depressed): Use end_hard_regno.
+	* global.c (global_alloc): Use end_hard_regno.
+	(global_conflicts): Use add_to_hard_reg_set instead of
+	mark_reg_live_nc.
+	(find_reg): Likewise.
+	(mark_reg_store): Likewise.
+	(mark_reg_conflicts): Likewise.
+	(mark_reg_death): Use remove_from_hard_reg_set.
+	(mark_reg_live_nc): Delete.
+	(set_preference): Use end_hard_regno.
+	* local-alloc.c (mark_life): Use add_to_hard_reg_set and
+	remove_from_hard_reg_set.
+	(post_mark_life): Use add_to_hard_reg_set.
+	* mode-switching.c (reg_dies): Use remove_from_hard_reg_set.
+	(reg_becomes_live): Use add_to_hard_reg_set.
+	* recog.c (reg_fits_class_p): Use in_hard_reg_set_p.
+	(peep2_find_free_register): Use add_to_hard_reg_set.
+	* reg-stack.c (convert_regs_exit): Use END_HARD_REGNO.
+	* regclass.c (record_reg_classes): Use in_hard_reg_set_p.
+	* regrename.c (note_sets): Use add_to_hard_reg_set.
+	(clear_dead_regs): Use remove_from_hard_reg_set.
+	(regrename_optimize): Use add_to_hard_reg_set.
+	(find_oldest_value_reg): Use in_hard_reg_set_p.
+	* reload.c (push_reload): Use in_hard_reg_set_p and end_hard_regno.
+	(hard_reg_set_here_p): Use end_hard_regno.
+	(decompose): Likewise.
+	(reg_overlap_mentioned_for_reload_p): Use END_HARD_REGNO.
+	(find_equiv_reg): Use in_hard_reg_set_p and end_hard_regno.
+	* reload1.c (compute_use_by_pseudos): Use add_to_hard_reg_set.
+	(mark_home_live): Use end_hard_regno.
+	(spill_hard_reg): Likewise.
+	(clear_reload_reg_in_use): Likewise.
+	* reorg.c (delete_prior_computation): Use END_REGNO.
+	* resource.c (update_live_status): Use END_HARD_REGNO.
+	(mark_referenced_resources): Use add_to_hard_reg_set.
+	(mark_set_resources): Likewise.
+	(mark_target_live_regs): Likewise.  Use remove_from_hard_reg_set.
+	* rtlanal.c (refers_to_regno_p): Use END_REGNO.
+	(reg_overlap_mentioned_p): Likewise.
+	(dead_or_set_p): Likewise.  Use an exclusive upper loop bound.
+	(covers_regno_no_parallel_p): Use END_REGNO.
+	(find_regno_note): Likewise.
+	(find_reg_fusage): Use END_HARD_REGNO.
+	* stmt.c (decl_overlaps_hard_reg_set_p): Use overlaps_hard_reg_set_p.
+	* var-tracking.c (emit_note_insn_var_location): Use end_hard_regno.
+
+2007-05-22  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* mode-switching.c (reg_dies): Change type of second argument to
 	"HARD_REG_SET *".
 	(optimize_mode_switching): Update accordingly.

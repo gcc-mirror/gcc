@@ -1045,9 +1045,7 @@ mention_regs (rtx x)
   if (code == REG)
     {
       unsigned int regno = REGNO (x);
-      unsigned int endregno
-	= regno + (regno >= FIRST_PSEUDO_REGISTER ? 1
-		   : hard_regno_nregs[regno][GET_MODE (x)]);
+      unsigned int endregno = END_REGNO (x);
       unsigned int i;
 
       for (i = regno; i < endregno; i++)
@@ -1429,14 +1427,7 @@ insert (rtx x, struct table_elt *classp, unsigned int hash, enum machine_mode mo
 
   /* If X is a hard register, show it is being put in the table.  */
   if (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER)
-    {
-      unsigned int regno = REGNO (x);
-      unsigned int endregno = regno + hard_regno_nregs[regno][GET_MODE (x)];
-      unsigned int i;
-
-      for (i = regno; i < endregno; i++)
-	SET_HARD_REG_BIT (hard_regs_in_table, i);
-    }
+    add_to_hard_reg_set (&hard_regs_in_table, GET_MODE (x), REGNO (x));
 
   /* Put an element for X into the right hash bucket.  */
 
@@ -1739,8 +1730,7 @@ invalidate (rtx x, enum machine_mode full_mode)
 	  {
 	    HOST_WIDE_INT in_table
 	      = TEST_HARD_REG_BIT (hard_regs_in_table, regno);
-	    unsigned int endregno
-	      = regno + hard_regno_nregs[regno][GET_MODE (x)];
+	    unsigned int endregno = END_HARD_REGNO (x);
 	    unsigned int tregno, tendregno, rn;
 	    struct table_elt *p, *next;
 
@@ -1766,8 +1756,7 @@ invalidate (rtx x, enum machine_mode full_mode)
 		      continue;
 
 		    tregno = REGNO (p->exp);
-		    tendregno
-		      = tregno + hard_regno_nregs[tregno][GET_MODE (p->exp)];
+		    tendregno = END_HARD_REGNO (p->exp);
 		    if (tendregno > regno && tregno < endregno)
 		      remove_from_table (p, hash);
 		  }
@@ -1978,7 +1967,7 @@ invalidate_for_call (void)
 	    continue;
 
 	  regno = REGNO (p->exp);
-	  endregno = regno + hard_regno_nregs[regno][GET_MODE (p->exp)];
+	  endregno = END_HARD_REGNO (p->exp);
 
 	  for (i = regno; i < endregno; i++)
 	    if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
@@ -2447,9 +2436,7 @@ exp_equiv_p (rtx x, rtx y, int validate, bool for_gcse)
 	{
 	  unsigned int regno = REGNO (y);
 	  unsigned int i;
-	  unsigned int endregno
-	    = regno + (regno >= FIRST_PSEUDO_REGISTER ? 1
-		       : hard_regno_nregs[regno][GET_MODE (y)]);
+	  unsigned int endregno = END_REGNO (y);
 
 	  /* If the quantities are not the same, the expressions are not
 	     equivalent.  If there are and we are not to validate, they
@@ -5380,9 +5367,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 		 but it knows that reg_tick has been incremented, and
 		 it leaves reg_in_table as -1 .  */
 	      unsigned int regno = REGNO (x);
-	      unsigned int endregno
-		= regno + (regno >= FIRST_PSEUDO_REGISTER ? 1
-			   : hard_regno_nregs[regno][GET_MODE (x)]);
+	      unsigned int endregno = END_REGNO (x);
 	      unsigned int i;
 
 	      for (i = regno; i < endregno; i++)

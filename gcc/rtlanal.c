@@ -1233,10 +1233,7 @@ refers_to_regno_p (unsigned int regno, unsigned int endregno, rtx x,
 	  && regno >= FIRST_VIRTUAL_REGISTER && regno <= LAST_VIRTUAL_REGISTER)
 	return 1;
 
-      return (endregno > x_regno
-	      && regno < x_regno + (x_regno < FIRST_PSEUDO_REGISTER
-				    ? hard_regno_nregs[x_regno][GET_MODE (x)]
-			      : 1));
+      return endregno > x_regno && regno < END_REGNO (x);
 
     case SUBREG:
       /* If this is a SUBREG of a hard reg, we can see exactly which
@@ -1343,8 +1340,7 @@ reg_overlap_mentioned_p (rtx x, rtx in)
 
     case REG:
       regno = REGNO (x);
-      endregno = regno + (regno < FIRST_PSEUDO_REGISTER
-			  ? hard_regno_nregs[regno][GET_MODE (x)] : 1);
+      endregno = END_REGNO (x);
     do_reg:
       return refers_to_regno_p (regno, endregno, in, (rtx*) 0);
 
@@ -1551,7 +1547,7 @@ note_uses (rtx *pbody, void (*fun) (rtx *, void *), void *data)
 int
 dead_or_set_p (rtx insn, rtx x)
 {
-  unsigned int regno, last_regno;
+  unsigned int regno, end_regno;
   unsigned int i;
 
   /* Can't use cc0_rtx below since this file is used by genattrtab.c.  */
@@ -1561,10 +1557,8 @@ dead_or_set_p (rtx insn, rtx x)
   gcc_assert (REG_P (x));
 
   regno = REGNO (x);
-  last_regno = (regno >= FIRST_PSEUDO_REGISTER ? regno
-		: regno + hard_regno_nregs[regno][GET_MODE (x)] - 1);
-
-  for (i = regno; i <= last_regno; i++)
+  end_regno = END_REGNO (x);
+  for (i = regno; i < end_regno; i++)
     if (! dead_or_set_regno_p (insn, i))
       return 0;
 
@@ -1591,8 +1585,7 @@ covers_regno_no_parallel_p (rtx dest, unsigned int test_regno)
     return false;
 
   regno = REGNO (dest);
-  endregno = (regno >= FIRST_PSEUDO_REGISTER ? regno + 1
-	      : regno + hard_regno_nregs[regno][GET_MODE (dest)]);
+  endregno = END_REGNO (dest);
   return (test_regno >= regno && test_regno < endregno);
 }
 
@@ -1713,11 +1706,7 @@ find_regno_note (rtx insn, enum reg_note kind, unsigned int regno)
 	   problem here.  */
 	&& REG_P (XEXP (link, 0))
 	&& REGNO (XEXP (link, 0)) <= regno
-	&& ((REGNO (XEXP (link, 0))
-	     + (REGNO (XEXP (link, 0)) >= FIRST_PSEUDO_REGISTER ? 1
-		: hard_regno_nregs[REGNO (XEXP (link, 0))]
-				  [GET_MODE (XEXP (link, 0))]))
-	    > regno))
+	&& END_REGNO (XEXP (link, 0)) > regno)
       return link;
   return 0;
 }
@@ -1807,8 +1796,7 @@ find_reg_fusage (rtx insn, enum rtx_code code, rtx datum)
 
       if (regno < FIRST_PSEUDO_REGISTER)
 	{
-	  unsigned int end_regno
-	    = regno + hard_regno_nregs[regno][GET_MODE (datum)];
+	  unsigned int end_regno = END_HARD_REGNO (datum);
 	  unsigned int i;
 
 	  for (i = regno; i < end_regno; i++)
@@ -1837,13 +1825,12 @@ find_regno_fusage (rtx insn, enum rtx_code code, unsigned int regno)
 
   for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
     {
-      unsigned int regnote;
       rtx op, reg;
 
       if (GET_CODE (op = XEXP (link, 0)) == code
 	  && REG_P (reg = XEXP (op, 0))
-	  && (regnote = REGNO (reg)) <= regno
-	  && regnote + hard_regno_nregs[regnote][GET_MODE (reg)] > regno)
+	  && REGNO (reg) <= regno
+	  && END_HARD_REGNO (reg) > regno)
 	return 1;
     }
 

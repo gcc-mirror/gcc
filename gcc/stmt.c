@@ -575,14 +575,9 @@ decl_overlaps_hard_reg_set_p (tree *declp, int *walk_subtrees ATTRIBUTE_UNUSED,
 	  && REGNO (DECL_RTL (decl)) < FIRST_PSEUDO_REGISTER)
 	{
 	  rtx reg = DECL_RTL (decl);
-	  unsigned int regno;
 
-	  for (regno = REGNO (reg);
-	       regno < (REGNO (reg)
-			+ hard_regno_nregs[REGNO (reg)][GET_MODE (reg)]);
-	       regno++)
-	    if (TEST_HARD_REG_BIT (*regs, regno))
-	      return decl;
+	  if (overlaps_hard_reg_set_p (*regs, GET_MODE (reg), REGNO (reg)))
+	    return decl;
 	}
       walk_subtrees = 0;
     }

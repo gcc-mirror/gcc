@@ -193,20 +193,17 @@ static int
 find_btr_reference (rtx *px, void *preg)
 {
   rtx x;
-  int regno, i;
 
   if (px == preg)
     return -1;
   x = *px;
   if (!REG_P (x))
     return 0;
-  regno = REGNO (x);
-  for (i = hard_regno_nregs[regno][GET_MODE (x)] - 1; i >= 0; i--)
-    if (TEST_HARD_REG_BIT (all_btrs, regno+i))
-      {
-	btr_reference_found = px;
-	return 1;
-      }
+  if (overlaps_hard_reg_set_p (all_btrs, GET_MODE (x), REGNO (x)))
+    {
+      btr_reference_found = px;
+      return 1;
+    }
   return -1;
 }
 
@@ -433,7 +430,7 @@ note_btr_set (rtx dest, rtx set ATTRIBUTE_UNUSED, void *data)
   if (!REG_P (dest))
     return;
   regno = REGNO (dest);
-  end_regno = regno + hard_regno_nregs[regno][GET_MODE (dest)];
+  end_regno = END_HARD_REGNO (dest);
   for (; regno < end_regno; regno++)
     if (TEST_HARD_REG_BIT (all_btrs, regno))
       {

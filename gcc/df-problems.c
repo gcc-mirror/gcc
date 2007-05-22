@@ -2259,12 +2259,10 @@ df_urec_mark_reg_change (rtx reg, rtx setter, void *data)
   if (!REG_P (reg))
     return;
   
-  
-  endregno = regno = REGNO (reg);
+  regno = REGNO (reg);
   if (regno < FIRST_PSEUDO_REGISTER)
     {
-      endregno +=hard_regno_nregs[regno][GET_MODE (reg)];
-      
+      endregno = END_HARD_REGNO (reg);
       for (i = regno; i < endregno; i++)
 	{
 	  bitmap_set_bit (bb_info->kill, i);

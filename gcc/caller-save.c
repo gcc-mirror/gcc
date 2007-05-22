@@ -296,7 +296,7 @@ setup_save_areas (void)
       {
 	unsigned int regno = reg_renumber[i];
 	unsigned int endregno
-	  = regno + hard_regno_nregs[regno][GET_MODE (regno_reg_rtx[i])];
+	  = end_hard_regno (GET_MODE (regno_reg_rtx[i]), regno);
 
 	for (r = regno; r < endregno; r++)
 	  if (call_used_regs[r])
@@ -496,7 +496,6 @@ static void
 mark_set_regs (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *data)
 {
   int regno, endregno, i;
-  enum machine_mode mode = GET_MODE (reg);
   HARD_REG_SET *this_insn_sets = data;
 
   if (GET_CODE (reg) == SUBREG)
@@ -511,7 +510,7 @@ mark_set_regs (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *data)
 	   && REGNO (reg) < FIRST_PSEUDO_REGISTER)
     {
       regno = REGNO (reg);
-      endregno = regno + hard_regno_nregs[regno][mode];
+      endregno = END_HARD_REGNO (reg);
     }
   else
     return;
@@ -551,7 +550,7 @@ add_stored_regs (rtx reg, rtx setter, void *data)
 	return;
 
       regno = REGNO (reg) + offset;
-      endregno = regno + hard_regno_nregs[regno][mode];
+      endregno = end_hard_regno (mode, regno);
     }
 
   for (i = regno; i < endregno; i++)
@@ -598,11 +597,7 @@ mark_referenced_regs (rtx x)
 		       : reg_renumber[regno]);
 
       if (hardregno >= 0)
-	{
-	  int nregs = hard_regno_nregs[hardregno][GET_MODE (x)];
-	  while (nregs-- > 0)
-	    SET_HARD_REG_BIT (referenced_regs, hardregno + nregs);
-	}
+	add_to_hard_reg_set (&referenced_regs, GET_MODE (x), hardregno);
       /* If this is a pseudo that did not get a hard register, scan its
 	 memory location, since it might involve the use of another
 	 register, which might be saved.  */

@@ -2389,8 +2389,7 @@ emit_note_insn_var_location (void **varp, void *data)
 	  if (REG_P (loc[n_var_parts])
 	      && hard_regno_nregs[REGNO (loc[n_var_parts])][mode] * 2
 		 == hard_regno_nregs[REGNO (loc[n_var_parts])][wider_mode]
-	      && REGNO (loc[n_var_parts])
-		 + hard_regno_nregs[REGNO (loc[n_var_parts])][mode]
+	      && end_hard_regno (mode, REGNO (loc[n_var_parts]))
 		 == REGNO (loc2))
 	    {
 	      if (! WORDS_BIG_ENDIAN && ! BYTES_BIG_ENDIAN)

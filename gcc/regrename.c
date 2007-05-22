@@ -100,21 +100,14 @@ static void
 note_sets (rtx x, rtx set ATTRIBUTE_UNUSED, void *data)
 {
   HARD_REG_SET *pset = (HARD_REG_SET *) data;
-  unsigned int regno;
-  int nregs;
 
   if (GET_CODE (x) == SUBREG)
     x = SUBREG_REG (x);
   if (!REG_P (x))
     return;
-  regno = REGNO (x);
-  nregs = hard_regno_nregs[regno][GET_MODE (x)];
-
   /* There must not be pseudos at this point.  */
-  gcc_assert (regno + nregs <= FIRST_PSEUDO_REGISTER);
-
-  while (nregs-- > 0)
-    SET_HARD_REG_BIT (*pset, regno + nregs);
+  gcc_assert (HARD_REGISTER_P (x));
+  add_to_hard_reg_set (pset, GET_MODE (x), REGNO (x));
 }
 
 /* Clear all registers from *PSET for which a note of kind KIND can be found
@@ -128,14 +121,9 @@ clear_dead_regs (HARD_REG_SET *pset, enum machine_mode kind, rtx notes)
     if (REG_NOTE_KIND (note) == kind && REG_P (XEXP (note, 0)))
       {
 	rtx reg = XEXP (note, 0);
-	unsigned int regno = REGNO (reg);
-	int nregs = hard_regno_nregs[regno][GET_MODE (reg)];
-
 	/* There must not be pseudos at this point.  */
-	gcc_assert (regno + nregs <= FIRST_PSEUDO_REGISTER);
-
-	while (nregs-- > 0)
-	  CLEAR_HARD_REG_BIT (*pset, regno + nregs);
+	gcc_assert (HARD_REGISTER_P (reg));
+	remove_from_hard_reg_set (pset, GET_MODE (reg), REGNO (reg));
       }
 }
 
@@ -218,14 +206,9 @@ regrename_optimize (void)
       /* Don't clobber traceback for noreturn functions.  */
       if (frame_pointer_needed)
 	{
-	  int i;
-
-	  for (i = hard_regno_nregs[FRAME_POINTER_REGNUM][Pmode]; i--;)
-	    SET_HARD_REG_BIT (unavailable, FRAME_POINTER_REGNUM + i);
-
+	  add_to_hard_reg_set (&unavailable, Pmode, FRAME_POINTER_REGNUM);
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-	  for (i = hard_regno_nregs[HARD_FRAME_POINTER_REGNUM][Pmode]; i--;)
-	    SET_HARD_REG_BIT (unavailable, HARD_FRAME_POINTER_REGNUM + i);
+	  add_to_hard_reg_set (&unavailable, Pmode, HARD_FRAME_POINTER_REGNUM);
 #endif
 	}
 
@@ -1388,11 +1371,9 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
     {
       enum machine_mode oldmode = vd->e[i].mode;
       rtx new;
-      unsigned int last;
 
-      for (last = i; last < i + hard_regno_nregs[i][mode]; last++)
-	if (!TEST_HARD_REG_BIT (reg_class_contents[cl], last))
-	  return NULL_RTX;
+      if (!in_hard_reg_set_p (reg_class_contents[cl], mode, i))
+	return NULL_RTX;
 
       new = maybe_mode_change (oldmode, vd->e[regno].mode, mode, i, regno);
       if (new)

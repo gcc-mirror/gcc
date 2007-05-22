@@ -107,8 +107,7 @@ update_live_status (rtx dest, rtx x, void *data ATTRIBUTE_UNUSED)
   else
     {
       first_regno = REGNO (dest);
-      last_regno
-	= first_regno + hard_regno_nregs[first_regno][GET_MODE (dest)];
+      last_regno = END_HARD_REGNO (dest);
     }
 
   if (GET_CODE (x) == CLOBBER)
@@ -244,15 +243,8 @@ mark_referenced_resources (rtx x, struct resources *res,
       return;
 
     case REG:
-	{
-	  unsigned int regno = REGNO (x);
-	  unsigned int last_regno
-	    = regno + hard_regno_nregs[regno][GET_MODE (x)];
-
-	  gcc_assert (last_regno <= FIRST_PSEUDO_REGISTER);
-	  for (r = regno; r < last_regno; r++)
-	    SET_HARD_REG_BIT (res->regs, r);
-	}
+      gcc_assert (HARD_REGISTER_P (x));
+      add_to_hard_reg_set (&res->regs, GET_MODE (x), REGNO (x));
       return;
 
     case MEM:
@@ -780,13 +772,8 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
     case REG:
       if (in_dest)
 	{
-	  unsigned int regno = REGNO (x);
-	  unsigned int last_regno
-	    = regno + hard_regno_nregs[regno][GET_MODE (x)];
-
-	  gcc_assert (last_regno <= FIRST_PSEUDO_REGISTER);
-	  for (r = regno; r < last_regno; r++)
-	    SET_HARD_REG_BIT (res->regs, r);
+	  gcc_assert (HARD_REGISTER_P (x));
+	  add_to_hard_reg_set (&res->regs, GET_MODE (x), REGNO (x));
 	}
       return;
 
@@ -970,8 +957,6 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
   if (b != -1)
     {
       regset regs_live = BASIC_BLOCK (b)->il.rtl->global_live_at_start;
-      unsigned int j;
-      unsigned int regno;
       rtx start_insn, stop_insn;
       reg_set_iterator rsi;
 
@@ -984,13 +969,8 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
       EXECUTE_IF_SET_IN_REG_SET (regs_live, FIRST_PSEUDO_REGISTER, i, rsi)
 	{
 	  if (reg_renumber[i] >= 0)
-	    {
-	      regno = reg_renumber[i];
-	      for (j = regno;
-		   j < regno + hard_regno_nregs[regno][PSEUDO_REGNO_MODE (i)];
-		   j++)
-		SET_HARD_REG_BIT (current_live_regs, j);
-	    }
+	    add_to_hard_reg_set (&current_live_regs, PSEUDO_REGNO_MODE (i),
+				reg_renumber[i]);
 	}
 
       /* Get starting and ending insn, handling the case where each might
@@ -1056,16 +1036,9 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 		if (REG_NOTE_KIND (link) == REG_DEAD
 		    && REG_P (XEXP (link, 0))
 		    && REGNO (XEXP (link, 0)) < FIRST_PSEUDO_REGISTER)
-		  {
-		    unsigned int first_regno = REGNO (XEXP (link, 0));
-		    unsigned int last_regno
-		      = (first_regno
-			 + hard_regno_nregs[first_regno]
-					   [GET_MODE (XEXP (link, 0))]);
-
-		    for (i = first_regno; i < last_regno; i++)
-		      SET_HARD_REG_BIT (pending_dead_regs, i);
-		  }
+		  add_to_hard_reg_set (&pending_dead_regs,
+				      GET_MODE (XEXP (link, 0)),
+				      REGNO (XEXP (link, 0)));
 
 	      note_stores (PATTERN (real_insn), update_live_status, NULL);
 
@@ -1075,16 +1048,9 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 		if (REG_NOTE_KIND (link) == REG_UNUSED
 		    && REG_P (XEXP (link, 0))
 		    && REGNO (XEXP (link, 0)) < FIRST_PSEUDO_REGISTER)
-		  {
-		    unsigned int first_regno = REGNO (XEXP (link, 0));
-		    unsigned int last_regno
-		      = (first_regno
-			 + hard_regno_nregs[first_regno]
-					   [GET_MODE (XEXP (link, 0))]);
-
-		    for (i = first_regno; i < last_regno; i++)
-		      CLEAR_HARD_REG_BIT (current_live_regs, i);
-		  }
+		  remove_from_hard_reg_set (&current_live_regs,
+					   GET_MODE (XEXP (link, 0)),
+					   REGNO (XEXP (link, 0)));
 	    }
 
 	  else if (LABEL_P (real_insn))

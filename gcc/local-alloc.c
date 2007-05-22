@@ -2363,13 +2363,10 @@ find_free_reg (enum reg_class class, enum machine_mode mode, int qtyno,
 static void
 mark_life (int regno, enum machine_mode mode, int life)
 {
-  int j = hard_regno_nregs[regno][mode];
   if (life)
-    while (--j >= 0)
-      SET_HARD_REG_BIT (regs_live, regno + j);
+    add_to_hard_reg_set (&regs_live, mode, regno);
   else
-    while (--j >= 0)
-      CLEAR_HARD_REG_BIT (regs_live, regno + j);
+    remove_from_hard_reg_set (&regs_live, mode, regno);
 }
 
 /* Mark register number REGNO (with machine-mode MODE) as live (if LIFE
@@ -2380,12 +2377,10 @@ static void
 post_mark_life (int regno, enum machine_mode mode, int life, int birth,
 		int death)
 {
-  int j = hard_regno_nregs[regno][mode];
   HARD_REG_SET this_reg;
 
   CLEAR_HARD_REG_SET (this_reg);
-  while (--j >= 0)
-    SET_HARD_REG_BIT (this_reg, regno + j);
+  add_to_hard_reg_set (&this_reg, mode, regno);
 
   if (life)
     while (birth < death)

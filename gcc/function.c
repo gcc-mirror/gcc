@@ -4771,8 +4771,7 @@ keep_stack_depressed (rtx insns)
 		    && !REGNO_REG_SET_P
 		         (EXIT_BLOCK_PTR->il.rtl->global_live_at_start, regno)
 		    && !refers_to_regno_p (regno,
-					   regno + hard_regno_nregs[regno]
-								   [Pmode],
+					   end_hard_regno (Pmode, regno),
 					   info.equiv_reg_src, NULL)
 		    && info.const_equiv[regno] == 0)
 		  break;
