@@ -1,4 +1,5 @@
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-effective-target sse4a } */
 /* { dg-options "-O2 -msse4a" } */
 #include <ammintrin.h>
 #include <stdlib.h>
