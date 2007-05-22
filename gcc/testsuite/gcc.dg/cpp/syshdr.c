@@ -8,5 +8,5 @@
 /* { dg-do preprocess } */
 /* { dg-error "include_next" "good error" { target *-*-* } 4 } */
 
-#include "syshdr1.h"  /* { dg-error "" "In file included from:" } */
+#include "syshdr1.h"  /* { dg-message "" "In file included from:" } */
 #include "syshdr2.h"

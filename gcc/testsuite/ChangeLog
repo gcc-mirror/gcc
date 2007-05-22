@@ -1,3 +1,26 @@
+2007-05-22  Janis Johnson  <janis187@us.ibm.com>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* lib/gcc-dg.exp(process_message): New proc.
+	(dg-message): New test directive.
+	* gcc.dg/always_inline.c: Use dg-message.
+	* gcc.dg/always_inline2.c: Ditto.
+	* gcc.dg/always_inline3.c: Ditto.
+	* gcc.dg/invalid-call-1.c: Ditto.
+	* gcc.dg/pr17506.c: Ditto.
+	* gcc.dg/simd-5.c: Ditto.
+	* gcc.dg/simd-6.c: Ditto.
+	* gcc.dg/va-arg-2.c: Ditto.
+	* gcc.dg/cpp/syshdr.c: Ditto.
+	* gcc.dg/cpp/unc4.c: Ditto.
+	* gcc.dg/cpp/trad/mi1.c: Ditto.
+	* gcc.dg/cpp/trad/mi5.c: Ditto.
+	* gcc.dg/cpp/trad/mi7.c: Ditto.
+	* gcc.test-framework/dg-outexistsnot-exp-P.c: Ditto.
+	* gcc.test-framework/dg-outexists-exp-F.c: Ditto.
+	* gcc.test-framework/test-framework.awk: Special-case outexists
+	tests.
+
 2007-05-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/i386-cpuid.h (bit_SSE4_1): New.

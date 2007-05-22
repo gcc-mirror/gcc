@@ -559,4 +559,40 @@ if { [info procs saved-dg-test] == [list] } {
     }
 }
 
+# Modify the regular expression saved by a DejaGnu message directive to
+# include a prefix and to force the expression to match a single line.
+# MSGPROC is the procedure to call.
+# MSGPREFIX is the prefix to prepend.
+# DGARGS is the original argument list.
+
+proc process-message { msgproc msgprefix dgargs } {
+    upvar dg-messages dg-messages
+
+    # Process the dg- directive, including adding the regular expression
+    # to the new message entry in dg-messages.
+    set msgcnt [llength ${dg-messages}]
+    catch { eval $msgproc $dgargs }
+
+    # If the target expression wasn't satisfied there is no new message.
+    if { [llength ${dg-messages}] == $msgcnt } {
+	return;
+    }
+
+    # Prepend the message prefix to the regular expression and make
+    # it match a single line.
+    set newentry [lindex ${dg-messages} end]
+    set expmsg [lindex $newentry 2]
+    set expmsg "$msgprefix\[^\n]*$expmsg"
+    set newentry [lreplace $newentry 2 2 $expmsg]
+    set dg-messages [lreplace ${dg-messages} end end $newentry]
+    verbose "process-message:\n${dg-messages}" 2
+}
+
+# Look for messages that don't have standard prefixes.
+
+proc dg-message { args } {
+    upvar dg-messages dg-messages
+    process-message dg-warning "" $args
+}
+
 set additional_prunes ""

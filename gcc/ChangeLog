@@ -1,3 +1,7 @@
+2007-05-22  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/sourcebuild.texi (Test Directives) Add dg-message.
+
 2007-05-22  H.J. Lu  <hongjiu.lu@intel.com>
 	    Richard Henderson  <rth@redhat.com>
 

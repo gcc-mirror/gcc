@@ -13,5 +13,5 @@ char* cptr;
 void foo()
 {
   cptr = mar(6);
-  ((char *(*)(void *,int (*)(void *,unsigned char **),char**))((fp)bar))(0,0,(void*)(0)); /* { dg-warning "" "non-compatible type" } */
+  ((char *(*)(void *,int (*)(void *,unsigned char **),char**))((fp)bar))(0,0,(void*)(0)); /* { dg-message "" "non-compatible type" } */
 }

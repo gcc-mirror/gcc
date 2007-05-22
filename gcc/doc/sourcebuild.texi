@@ -1016,6 +1016,12 @@ message is not matched by @var{regexp} then the check fails and
 @var{comment} is included in the @code{FAIL} message.  The check does
 not look for the string @samp{"warning"} unless it is part of @var{regexp}.
 
+@item @{ dg-message @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] @}]] @}
+The line is expected to get a message other than an error or warning.
+If there is no message for that line or if the text of that message is
+not matched by @var{regexp} then the check fails and @var{comment} is
+included in the @code{FAIL} message.
+
 @item @{ dg-bogus @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] @}]] @}
 This DejaGnu directive appears on a source line that should not get a
 message matching @var{regexp}, or else specifies the source line
