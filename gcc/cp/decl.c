@@ -1297,29 +1297,35 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
     }
   else if (TREE_CODE (olddecl) != TREE_CODE (newdecl))
     {
-      if ((TREE_CODE (olddecl) == TYPE_DECL && DECL_ARTIFICIAL (olddecl)
-	   && TREE_CODE (newdecl) != TYPE_DECL
-	   && ! (TREE_CODE (newdecl) == TEMPLATE_DECL
-		 && TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL))
-	  || (TREE_CODE (newdecl) == TYPE_DECL && DECL_ARTIFICIAL (newdecl)
-	      && TREE_CODE (olddecl) != TYPE_DECL
-	      && ! (TREE_CODE (olddecl) == TEMPLATE_DECL
-		    && (TREE_CODE (DECL_TEMPLATE_RESULT (olddecl))
-			== TYPE_DECL))))
+      /* C++ Standard, 3.3, clause 4:
+	 "[Note: a namespace name or a class template name must be unique
+	 in its declarative region (7.3.2, clause 14). ]"  */
+      if (TREE_CODE (olddecl) != NAMESPACE_DECL
+	  && TREE_CODE (newdecl) != NAMESPACE_DECL
+	  && (TREE_CODE (olddecl) != TEMPLATE_DECL
+	      || TREE_CODE (DECL_TEMPLATE_RESULT (olddecl)) != TYPE_DECL)
+	  && (TREE_CODE (newdecl) != TEMPLATE_DECL
+	      || TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) != TYPE_DECL))
 	{
-	  /* We do nothing special here, because C++ does such nasty
-	     things with TYPE_DECLs.  Instead, just let the TYPE_DECL
-	     get shadowed, and know that if we need to find a TYPE_DECL
-	     for a given name, we can look in the IDENTIFIER_TYPE_VALUE
-	     slot of the identifier.  */
-	  return NULL_TREE;
+	  if ((TREE_CODE (olddecl) == TYPE_DECL && DECL_ARTIFICIAL (olddecl)
+	       && TREE_CODE (newdecl) != TYPE_DECL)
+	      || (TREE_CODE (newdecl) == TYPE_DECL && DECL_ARTIFICIAL (newdecl)
+		  && TREE_CODE (olddecl) != TYPE_DECL))
+	    {
+	      /* We do nothing special here, because C++ does such nasty
+		 things with TYPE_DECLs.  Instead, just let the TYPE_DECL
+		 get shadowed, and know that if we need to find a TYPE_DECL
+		 for a given name, we can look in the IDENTIFIER_TYPE_VALUE
+		 slot of the identifier.  */
+	      return NULL_TREE;
+	    }
+	    
+	    if ((TREE_CODE (newdecl) == FUNCTION_DECL
+		 && DECL_FUNCTION_TEMPLATE_P (olddecl))
+		|| (TREE_CODE (olddecl) == FUNCTION_DECL
+		    && DECL_FUNCTION_TEMPLATE_P (newdecl)))
+	      return NULL_TREE;
 	}
-
-      if ((TREE_CODE (newdecl) == FUNCTION_DECL
-	   && DECL_FUNCTION_TEMPLATE_P (olddecl))
-	  || (TREE_CODE (olddecl) == FUNCTION_DECL
-	      && DECL_FUNCTION_TEMPLATE_P (newdecl)))
-	return NULL_TREE;
 
       error ("%q#D redeclared as different kind of symbol", newdecl);
       if (TREE_CODE (olddecl) == TREE_LIST)
