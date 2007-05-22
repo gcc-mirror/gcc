@@ -865,12 +865,8 @@ death_notes_match_p (rtx i1 ATTRIBUTE_UNUSED, rtx i2 ATTRIBUTE_UNUSED,
 	    SET_HARD_REG_BIT (i2_regset, regno);
 	  }
 
-      GO_IF_HARD_REG_EQUAL (i1_regset, i2_regset, done);
-
-      return false;
-
-    done:
-      ;
+      if (!hard_reg_set_equal_p (i1_regset, i2_regset))
+	return false;
     }
 #endif
   return true;

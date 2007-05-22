@@ -2487,7 +2487,7 @@ df_urec_local_compute (struct dataflow *dflow,
   bitmap_iterator bi;
 #ifdef STACK_REGS
   int i;
-  HARD_REG_SET zero, stack_hard_regs, used;
+  HARD_REG_SET stack_hard_regs, used;
   struct df_urec_problem_data *problem_data
     = (struct df_urec_problem_data *) dflow->problem_data;
   
@@ -2498,7 +2498,6 @@ df_urec_local_compute (struct dataflow *dflow,
 
      FIXME: This seems like an incredibly poor idea.  */
 
-  CLEAR_HARD_REG_SET (zero);
   CLEAR_HARD_REG_SET (stack_hard_regs);
   for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
     SET_HARD_REG_BIT (stack_hard_regs, i);
@@ -2508,10 +2507,8 @@ df_urec_local_compute (struct dataflow *dflow,
       COPY_HARD_REG_SET (used, reg_class_contents[reg_preferred_class (i)]);
       IOR_HARD_REG_SET (used, reg_class_contents[reg_alternate_class (i)]);
       AND_HARD_REG_SET (used, stack_hard_regs);
-      GO_IF_HARD_REG_EQUAL (used, zero, skip);
-      bitmap_set_bit (problem_data->stack_regs, i);
-    skip:
-      ;
+      if (!hard_reg_set_empty_p (used))
+	bitmap_set_bit (problem_data->stack_regs, i);
     }
 #endif
 

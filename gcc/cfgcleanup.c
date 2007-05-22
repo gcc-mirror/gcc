@@ -974,12 +974,8 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
 	if (REG_NOTE_KIND (note) == REG_DEAD && STACK_REG_P (XEXP (note, 0)))
 	  SET_HARD_REG_BIT (i2_regset, REGNO (XEXP (note, 0)));
 
-      GO_IF_HARD_REG_EQUAL (i1_regset, i2_regset, done);
-
-      return false;
-
-    done:
-      ;
+      if (!hard_reg_set_equal_p (i1_regset, i2_regset))
+	return false;
     }
 #endif
 

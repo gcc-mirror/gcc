@@ -2485,9 +2485,7 @@ change_stack (rtx insn, stack old, stack new, enum emit_where where)
       /* By now, the only difference should be the order of the stack,
 	 not their depth or liveliness.  */
 
-      GO_IF_HARD_REG_EQUAL (old->reg_set, new->reg_set, win);
-      gcc_unreachable ();
-    win:
+      gcc_assert (hard_reg_set_equal_p (old->reg_set, new->reg_set));
       gcc_assert (old->top == new->top);
 
       /* If the stack is not empty (new->top != -1), loop here emitting
@@ -2955,9 +2953,8 @@ convert_regs_1 (basic_block block)
   /* Something failed if the stack lives don't match.  If we had malformed
      asms, we zapped the instruction itself, but that didn't produce the
      same pattern of register kills as before.  */
-  GO_IF_HARD_REG_EQUAL (regstack.reg_set, bi->out_reg_set, win);
-  gcc_assert (any_malformed_asm);
- win:
+  gcc_assert (hard_reg_set_equal_p (regstack.reg_set, bi->out_reg_set)
+	      || any_malformed_asm);
   bi->stack_out = regstack;
   bi->done = true;
 }

@@ -83,9 +83,12 @@ typedef HARD_REG_ELT_TYPE HARD_REG_SET[HARD_REG_SET_LONGS];
    IOR_COMPL_HARD_REG_SET and AND_COMPL_HARD_REG_SET
    which use the complement of the set FROM.
 
-   Also define GO_IF_HARD_REG_SUBSET (X, Y, TO):
-   if X is a subset of Y, go to TO.
-*/
+   Also define:
+
+   hard_reg_set_subset_p (X, Y), which returns true if X is a subset of Y.
+   hard_reg_set_equal_p (X, Y), which returns true if X and Y are equal.
+   hard_reg_set_intersect_p (X, Y), which returns true if X and Y intersect.
+   hard_reg_set_empty_p (X), which returns true if X is empty.  */
 
 #ifdef HARD_REG_SET
 
@@ -107,9 +110,29 @@ typedef HARD_REG_ELT_TYPE HARD_REG_SET[HARD_REG_SET_LONGS];
 #define AND_HARD_REG_SET(TO, FROM) ((TO) &= (FROM))
 #define AND_COMPL_HARD_REG_SET(TO, FROM) ((TO) &= ~ (FROM))
 
-#define GO_IF_HARD_REG_SUBSET(X,Y,TO) if (HARD_CONST (0) == ((X) & ~(Y))) goto TO
+static inline bool
+hard_reg_set_subset_p (const HARD_REG_SET x, const HARD_REG_SET y)
+{
+  return (x & ~y) == HARD_CONST (0);
+}
 
-#define GO_IF_HARD_REG_EQUAL(X,Y,TO) if ((X) == (Y)) goto TO
+static inline bool
+hard_reg_set_equal_p (const HARD_REG_SET x, const HARD_REG_SET y)
+{
+  return x == y;
+}
+
+static inline bool
+hard_reg_set_intersect_p (const HARD_REG_SET x, const HARD_REG_SET y)
+{
+  return (x & y) != HARD_CONST (0);
+}
+
+static inline bool
+hard_reg_set_empty_p (const HARD_REG_SET x)
+{
+  return x == HARD_CONST (0);
+}
 
 #else
 
@@ -168,17 +191,29 @@ do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
      scan_tp_[0] |= ~ scan_fp_[0];				\
      scan_tp_[1] |= ~ scan_fp_[1]; } while (0)
 
-#define GO_IF_HARD_REG_SUBSET(X,Y,TO)  \
-do { HARD_REG_ELT_TYPE *scan_xp_ = (X), *scan_yp_ = (Y); 	\
-     if ((0 == (scan_xp_[0] & ~ scan_yp_[0]))			\
-	 && (0 == (scan_xp_[1] & ~ scan_yp_[1])))		\
-	goto TO; } while (0)
+static inline bool
+hard_reg_set_subset_p (const HARD_REG_SET x, const HARD_REG_SET y)
+{
+  return (x[0] & ~y[0]) == 0 && (x[1] & ~y[1]) == 0;
+}
 
-#define GO_IF_HARD_REG_EQUAL(X,Y,TO)  \
-do { HARD_REG_ELT_TYPE *scan_xp_ = (X), *scan_yp_ = (Y); 	\
-     if ((scan_xp_[0] == scan_yp_[0])				\
-	 && (scan_xp_[1] == scan_yp_[1]))			\
-	goto TO; } while (0)
+static inline bool
+hard_reg_set_equal_p (const HARD_REG_SET x, const HARD_REG_SET y)
+{
+  return x[0] == y[0] && x[1] == y[1];
+}
+
+static inline bool
+hard_reg_set_intersect_p (const HARD_REG_SET x, const HARD_REG_SET y)
+{
+  return (x[0] & y[0]) != 0 || (x[1] & y[1]) != 0;
+}
+
+static inline bool
+hard_reg_set_empty_p (const HARD_REG_SET x)
+{
+  return x[0] == 0 && x[1] == 0;
+}
 
 #else
 #if FIRST_PSEUDO_REGISTER <= 3*HOST_BITS_PER_WIDEST_FAST_INT
@@ -230,19 +265,33 @@ do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
      scan_tp_[1] |= ~ scan_fp_[1];				\
      scan_tp_[2] |= ~ scan_fp_[2]; } while (0)
 
-#define GO_IF_HARD_REG_SUBSET(X,Y,TO)  \
-do { HARD_REG_ELT_TYPE *scan_xp_ = (X), *scan_yp_ = (Y); 	\
-     if ((0 == (scan_xp_[0] & ~ scan_yp_[0]))			\
-	 && (0 == (scan_xp_[1] & ~ scan_yp_[1]))		\
-	 && (0 == (scan_xp_[2] & ~ scan_yp_[2])))		\
-	goto TO; } while (0)
+static inline bool
+hard_reg_set_subset_p (const HARD_REG_SET x, const HARD_REG_SET y)
+{
+  return ((x[0] & ~y[0]) == 0
+	  && (x[1] & ~y[1]) == 0
+	  && (x[2] & ~y[2]) == 0);
+}
 
-#define GO_IF_HARD_REG_EQUAL(X,Y,TO)  \
-do { HARD_REG_ELT_TYPE *scan_xp_ = (X), *scan_yp_ = (Y); 	\
-     if ((scan_xp_[0] == scan_yp_[0])				\
-	 && (scan_xp_[1] == scan_yp_[1])			\
-	 && (scan_xp_[2] == scan_yp_[2]))			\
-	goto TO; } while (0)
+static inline bool
+hard_reg_set_equal_p (const HARD_REG_SET x, const HARD_REG_SET y)
+{
+  return x[0] == y[0] && x[1] == y[1] && x[2] == y[2];
+}
+
+static inline bool
+hard_reg_set_intersect_p (const HARD_REG_SET x, const HARD_REG_SET y)
+{
+  return ((x[0] & y[0]) != 0
+	  || (x[1] & y[1]) != 0
+	  || (x[2] & y[2]) != 0);
+}
+
+static inline bool
+hard_reg_set_empty_p (const HARD_REG_SET x)
+{
+  return x[0] == 0 && x[1] == 0 && x[2] == 0;
+}
 
 #else
 #if FIRST_PSEUDO_REGISTER <= 4*HOST_BITS_PER_WIDEST_FAST_INT
@@ -302,21 +351,35 @@ do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
      scan_tp_[2] |= ~ scan_fp_[2];				\
      scan_tp_[3] |= ~ scan_fp_[3]; } while (0)
 
-#define GO_IF_HARD_REG_SUBSET(X,Y,TO)  \
-do { HARD_REG_ELT_TYPE *scan_xp_ = (X), *scan_yp_ = (Y); 	\
-     if ((0 == (scan_xp_[0] & ~ scan_yp_[0]))			\
-	 && (0 == (scan_xp_[1] & ~ scan_yp_[1]))		\
-	 && (0 == (scan_xp_[2] & ~ scan_yp_[2]))		\
-	 && (0 == (scan_xp_[3] & ~ scan_yp_[3])))		\
-	goto TO; } while (0)
+static inline bool
+hard_reg_set_subset_p (const HARD_REG_SET x, const HARD_REG_SET y)
+{
+  return ((x[0] & ~y[0]) == 0
+	  && (x[1] & ~y[1]) == 0
+	  && (x[2] & ~y[2]) == 0
+	  && (x[3] & ~y[3]) == 0);
+}
 
-#define GO_IF_HARD_REG_EQUAL(X,Y,TO)  \
-do { HARD_REG_ELT_TYPE *scan_xp_ = (X), *scan_yp_ = (Y); 	\
-     if ((scan_xp_[0] == scan_yp_[0])				\
-	 && (scan_xp_[1] == scan_yp_[1])			\
-	 && (scan_xp_[2] == scan_yp_[2])			\
-	 && (scan_xp_[3] == scan_yp_[3]))			\
-	goto TO; } while (0)
+static inline bool
+hard_reg_set_equal_p (const HARD_REG_SET x, const HARD_REG_SET y)
+{
+  return x[0] == y[0] && x[1] == y[1] && x[2] == y[2] && x[3] == y[3];
+}
+
+static inline bool
+hard_reg_set_intersect_p (const HARD_REG_SET x, const HARD_REG_SET y)
+{
+  return ((x[0] & y[0]) != 0
+	  || (x[1] & y[1]) != 0
+	  || (x[2] & y[2]) != 0
+	  || (x[3] & y[3]) != 0);
+}
+
+static inline bool
+hard_reg_set_empty_p (const HARD_REG_SET x)
+{
+  return x[0] == 0 && x[1] == 0 && x[2] == 0 && x[3] == 0;
+}
 
 #else /* FIRST_PSEUDO_REGISTER > 3*HOST_BITS_PER_WIDEST_FAST_INT */
 
@@ -368,19 +431,49 @@ do { HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); 	\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
        *scan_tp_++ |= ~ *scan_fp_++; } while (0)
 
-#define GO_IF_HARD_REG_SUBSET(X,Y,TO)  \
-do { HARD_REG_ELT_TYPE *scan_xp_ = (X), *scan_yp_ = (Y); 	\
-     int i;							\
-     for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
-       if (0 != (*scan_xp_++ & ~ *scan_yp_++)) break;		\
-     if (i == HARD_REG_SET_LONGS) goto TO; } while (0)
+static inline bool
+hard_reg_set_subset_p (const HARD_REG_SET x, const HARD_REG_SET y)
+{
+  int i;
 
-#define GO_IF_HARD_REG_EQUAL(X,Y,TO)  \
-do { HARD_REG_ELT_TYPE *scan_xp_ = (X), *scan_yp_ = (Y); 	\
-     int i;							\
-     for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
-       if (*scan_xp_++ != *scan_yp_++) break;			\
-     if (i == HARD_REG_SET_LONGS) goto TO; } while (0)
+  for (i = 0; i < HARD_REG_SET_LONGS; i++)
+    if ((x[i] & ~y[i]) != 0)
+      return false;
+  return true;
+}
+
+static inline bool
+hard_reg_set_equal_p (const HARD_REG_SET x, const HARD_REG_SET y)
+{
+  int i;
+
+  for (i = 0; i < HARD_REG_SET_LONGS; i++)
+    if (x[i] != y[i])
+      return false;
+  return true;
+}
+
+static inline bool
+hard_reg_set_intersect_p (const HARD_REG_SET x, const HARD_REG_SET y)
+{
+  int i;
+
+  for (i = 0; i < HARD_REG_SET_LONGS; i++)
+    if ((x[i] & y[i]) != 0)
+      return true;
+  return false;
+}
+
+static inline bool
+hard_reg_set_empty_p (const HARD_REG_SET x)
+{
+  int i;
+
+  for (i = 0; i < HARD_REG_SET_LONGS; i++)
+    if (x[i] != 0)
+      return false;
+  return true;
+}
 
 #endif
 #endif
