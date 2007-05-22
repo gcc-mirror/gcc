@@ -1,3 +1,13 @@
+2007-05-22 Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31627
+	* trans-array.c (gfc_trans_array_bound_check): Take extra argument to
+	indicate whether we should check the upper bound in that dimension.
+	(gfc_conv_array_index_offset): Check only the lower bound of the
+	last dimension for assumed-size arrays.
+	(gfc_conv_array_ref): Likewise.
+	(gfc_conv_ss_startstride): Likewise.
+
 2005-05-21  Jerry DeLisle  <jvdelisle@verizon.net>
 	    Daniel Franke  <franke.daniel@gmail.com>
 
