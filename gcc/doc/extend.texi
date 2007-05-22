@@ -7396,6 +7396,84 @@ v4si __builtin_ia32_pabsd128 (v4si)
 v8hi __builtin_ia32_pabsw128 (v8hi)
 @end smallexample
 
+The following built-in functions are available when @option{-msse4.1} is
+used.  All of them generate the machine instruction that is part of the
+name.
+
+@smallexample
+v2df __builtin_ia32_blendpd (v2df, v2df, const int)
+v4sf __builtin_ia32_blendps (v4sf, v4sf, const int)
+v2df __builtin_ia32_blendvpd (v2df, v2df, v2df)
+v4sf __builtin_ia32_blendvps (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_dppd (__v2df, __v2df, const int)
+v4sf __builtin_ia32_dpps (v4sf, v4sf, const int)
+v4sf __builtin_ia32_insertps128 (v4sf, v4sf, const int)
+v2di __builtin_ia32_movntdqa (v2di *);
+v16qi __builtin_ia32_mpsadbw128 (v16qi, v16qi, const int)
+v8hi __builtin_ia32_packusdw128 (v4si, v4si)
+v16qi __builtin_ia32_pblendvb128 (v16qi, v16qi, v16qi)
+v8hi __builtin_ia32_pblendw128 (v8hi, v8hi, const int)
+v2di __builtin_ia32_pcmpeqq (v2di, v2di)
+v8hi __builtin_ia32_phminposuw128 (v8hi)
+v16qi __builtin_ia32_pmaxsb128 (v16qi, v16qi)
+v4si __builtin_ia32_pmaxsd128 (v4si, v4si)
+v4si __builtin_ia32_pmaxud128 (v4si, v4si)
+v8hi __builtin_ia32_pmaxuw128 (v8hi, v8hi)
+v16qi __builtin_ia32_pminsb128 (v16qi, v16qi)
+v4si __builtin_ia32_pminsd128 (v4si, v4si)
+v4si __builtin_ia32_pminud128 (v4si, v4si)
+v8hi __builtin_ia32_pminuw128 (v8hi, v8hi)
+v4si __builtin_ia32_pmovsxbd128 (v16qi)
+v2di __builtin_ia32_pmovsxbq128 (v16qi)
+v8hi __builtin_ia32_pmovsxbw128 (v16qi)
+v2di __builtin_ia32_pmovsxdq128 (v4si)
+v4si __builtin_ia32_pmovsxwd128 (v8hi)
+v2di __builtin_ia32_pmovsxwq128 (v8hi)
+v4si __builtin_ia32_pmovzxbd128 (v16qi)
+v2di __builtin_ia32_pmovzxbq128 (v16qi)
+v8hi __builtin_ia32_pmovzxbw128 (v16qi)
+v2di __builtin_ia32_pmovzxdq128 (v4si)
+v4si __builtin_ia32_pmovzxwd128 (v8hi)
+v2di __builtin_ia32_pmovzxwq128 (v8hi)
+v2di __builtin_ia32_pmuldq128 (v4si, v4si)
+v4si __builtin_ia32_pmulld128 (v4si, v4si)
+int __builtin_ia32_ptestc128 (v2di, v2di)
+int __builtin_ia32_ptestnzc128 (v2di, v2di)
+int __builtin_ia32_ptestz128 (v2di, v2di)
+v2df __builtin_ia32_roundpd (v2df, const int)
+v4sf __builtin_ia32_roundps (v4sf, const int)
+v2df __builtin_ia32_roundsd (v2df, v2df, const int)
+v4sf __builtin_ia32_roundss (v4sf, v4sf, const int)
+@end smallexample
+
+The following built-in functions are available when @option{-msse4.1} is
+used.
+
+@table @code
+@item v4sf __builtin_ia32_vec_set_v4sf (v4sf, float, const int)
+Generates the @code{insertps} machine instruction.
+@item int __builtin_ia32_vec_ext_v16qi (v16qi, const int)
+Generates the @code{pextrb} machine instruction.
+@item v16qi __builtin_ia32_vec_set_v16qi (v16qi, int, const int)
+Generates the @code{pinsrb} machine instruction.
+@item v4si __builtin_ia32_vec_set_v4si (v4si, int, const int)
+Generates the @code{pinsrd} machine instruction.
+@item v2di __builtin_ia32_vec_set_v2di (v2di, long long, const int)
+Generates the @code{pinsrq} machine instruction in 64bit mode.
+@end table
+
+The following built-in functions are changed to generate new SSE4.1
+instructions when @option{-msse4.1} is used.
+
+@table @code
+@item float __builtin_ia32_vec_ext_v4sf (v4sf, const int)
+Generates the @code{extractps} machine instruction.
+@item int __builtin_ia32_vec_ext_v4si (v4si, const int)
+Generates the @code{pextrd} machine instruction.
+@item long long __builtin_ia32_vec_ext_v2di (v2di, const int)
+Generates the @code{pextrq} machine instruction in 64bit mode.
+@end table
+
 The following built-in functions are available when @option{-msse4a} is used.
 
 @smallexample

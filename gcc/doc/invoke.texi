@@ -547,7 +547,8 @@ Objective-C and Objective-C++ Dialects}.
 -mno-fp-ret-in-387  -msoft-float @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
 -mpreferred-stack-boundary=@var{num} -mcx16 -msahf @gol
--mmmx  -msse  -msse2 -msse3 -mssse3 -msse4a -m3dnow -mpopcnt -mabm @gol
+-mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 @gol
+-msse4a -m3dnow -mpopcnt -mabm @gol
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
 -m96bit-long-double  -mregparm=@var{num}  -msseregparm @gol
@@ -10260,6 +10261,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mno-sse3
 @item -mssse3
 @itemx -mno-ssse3
+@item -msse4.1
+@itemx -mno-sse4.1
 @item -msse4a
 @item -mno-sse4a
 @item -m3dnow
@@ -10275,7 +10278,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @opindex m3dnow
 @opindex mno-3dnow
 These switches enable or disable the use of instructions in the MMX,
-SSE, SSE2, SSE3, SSSE3, SSE4A, ABM or 3DNow! extended instruction sets.
+SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4A, ABM or 3DNow! extended
+instruction sets.
 These extensions are also available as built-in functions: see
 @ref{X86 Built-in Functions}, for details of the functions enabled and
 disabled by these switches.
