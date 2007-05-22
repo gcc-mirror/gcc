@@ -5,6 +5,16 @@
    point types.  */
 
 extern void abort (void);
+static int failcnt;
+
+/* Support compiling the test to report individual failures; default is
+   to abort as soon as a check fails.  */
+#ifdef DBG
+#include <stdio.h>
+#define FAILURE { printf ("failed at line %d\n", __LINE__); failcnt++; }
+#else
+#define FAILURE abort ();
+#endif
 
 struct example
 {
@@ -79,17 +89,20 @@ ptr_dummy2_field (struct example *s)
 int
 main ()
 {
-  if (d32_field (nums) != 3.0df) abort ();
-  if (d64_field (nums) != 2.0dd) abort ();
-  if (d128_field (nums) != 1.0dl) abort ();
-  if (dummy1_field (nums) != 'a') abort ();
-  if (dummy2_field (nums) != 'b') abort ();
+  if (d32_field (nums) != 3.0df) FAILURE
+  if (d64_field (nums) != 2.0dd) FAILURE
+  if (d128_field (nums) != 1.0dl) FAILURE
+  if (dummy1_field (nums) != 'a') FAILURE
+  if (dummy2_field (nums) != 'b') FAILURE
 
-  if (ptr_d32_field (&nums) != 3.0df) abort ();
-  if (ptr_d64_field (&nums) != 2.0dd) abort ();
-  if (ptr_d128_field (&nums) != 1.0dl) abort ();
-  if (ptr_dummy1_field (&nums) != 'a') abort ();
-  if (ptr_dummy2_field (&nums) != 'b') abort ();
+  if (ptr_d32_field (&nums) != 3.0df) FAILURE
+  if (ptr_d64_field (&nums) != 2.0dd) FAILURE
+  if (ptr_d128_field (&nums) != 1.0dl) FAILURE
+  if (ptr_dummy1_field (&nums) != 'a') FAILURE
+  if (ptr_dummy2_field (&nums) != 'b') FAILURE
+
+  if (failcnt != 0)
+    abort ();
 
   return 0;
 }

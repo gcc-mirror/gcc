@@ -7,6 +7,14 @@
    64-bit long long (there's a check for that below).  */
 
 extern void abort (void);
+int failcnt;
+
+#ifdef DBG
+extern int printf (const char *, ...);
+#define FAILURE { printf ("failed at line %d\n", __LINE__); failcnt++; }
+#else
+#define FAILURE abort ();
+#endif
 
 volatile _Decimal32 d32;
 volatile _Decimal64 d64;
@@ -24,112 +32,112 @@ doit ()
   d32 = 2147483.E3DF;
   si = d32;
   if (si != 2147483000)
-    abort ();
+    FAILURE
 
   d32 = -2147483.E3DF;
   si = d32;
   if (si != -2147483000)
-    abort ();
+    FAILURE
 
   /* _Decimal32 to unsigned int.  */
 
   d32 = 4.294967E9DF;
   ui = d32;
   if (ui != 4294967000U)
-    abort ();
+    FAILURE
 
   /* _Decimal32 to long long.  */
 
   d32 = 922.3372E16DF;
   sll = d32;
   if (sll != 9223372000000000000LL)
-    abort ();
+    FAILURE
 
   d32 = -92233.72E14DF;
   sll = d32;
   if (sll != -9223372000000000000LL)
-    abort ();
+    FAILURE
 
   /* _Decimal32 to unsigned long long.  */
 
-  d32 = 0.1844674E20DF;
+  d32 = .1844674E20DF;
   ull = d32;
   if (ull != 18446740000000000000ULL)
-    abort ();
+    FAILURE
 
   /* _Decimal64 to int.  */
 
   d64 = 2.147483647E9DD;
   si = d64;
   if (si != 2147483647)
-    abort ();
+    FAILURE
 
   d64 = -2147483648.DD;
   si = d64;
   if (si != -2147483648)
-    abort ();
+    FAILURE
 
   /* _Decimal64 to unsigned int.  */
 
   d64 = 42949.67295E5DD;
   ui = d64;
   if (ui != 4294967295)
-    abort ();
+    FAILURE
 
   /* _Decimal64 to long long.  */
 
   d64 = 9.223372036854775E18DD;
   sll = d64;
   if (sll != 9223372036854775000LL)
-    abort (); 
+    FAILURE 
 
   d64 = -92233720.36854775E11DD;
   sll = d64;
   if (sll != -9223372036854775000LL)
-    abort ();
+    FAILURE
 
   /* _Decimal64 to unsigned long long.  */
   d64 = 1844674407370955.E4DD;
   ull = d64;
   if (ull != 18446744073709550000ULL)
-    abort ();
+    FAILURE
 
   /* _Decimal128 to int.  */
 
   d128 = 2.147483647E9DL;
   si = d128;
   if (si != 2147483647)
-    abort ();
+    FAILURE
 
   d128 = -2147483648.DL;
   si = d128;
   if (si != -2147483648)
-    abort ();
+    FAILURE
 
   /* _Decimal128 to unsigned int.  */
 
   d128 = 4294.967295E6DL;
   ui = d128;
   if (ui != 4294967295)
-    abort ();
+    FAILURE
 
   /* _Decimal128 to long long.  */
 
   d128 = 9223372036854775807.DL;
   sll = d128;
   if (sll != 9223372036854775807LL)
-    abort (); 
+    FAILURE 
 
   d128 = -9.223372036854775808E19DL;
   sll = d128;
   if (sll != -9223372036854775807LL - 1LL)
-    abort ();
+    FAILURE
 
   /* _Decimal128 to unsigned long long.  */
   d128 = 18446744073709551615.DL;
   ull = d128;
   if (ull != 18446744073709551615ULL)
-    abort ();
+    FAILURE
 }
 
 int
@@ -141,5 +149,8 @@ main ()
     return 0;
 
   doit ();
+
+  if (failcnt != 0)
+    abort ();
   return 0;
 }

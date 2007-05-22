@@ -106,4 +106,5 @@ int main()
 
   if (failcnt != 0)
     abort ();
+  return 0;
 }

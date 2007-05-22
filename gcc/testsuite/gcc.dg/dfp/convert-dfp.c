@@ -13,6 +13,16 @@
 #include <float.h>
 
 extern void abort (void);
+static int failcnt;
+
+/* Support compiling the test to report individual failures; default is
+   to abort as soon as a check fails.  */
+#ifdef DBG
+#include <stdio.h>
+#define FAILURE { printf ("failed at line %d\n", __LINE__); failcnt++; }
+#else
+#define FAILURE abort ();
+#endif
 
 volatile _Decimal32 d32;
 volatile _Decimal64 d64;
@@ -25,29 +35,29 @@ main ()
   d32 = 123.4df;
   d64 = d32;
   if (d64 != 123.4dd)
-    abort ();
+    FAILURE
   d128 = d32;
   if (d128 != 123.4dl)
-    abort ();
+    FAILURE
   d64 = 345.678dd;
   d128 = d64;
   if (d128 != 345.678dl)
-    abort ();
+    FAILURE
 
   /* Conversions to smaller types for which the value fits.  */
   d64 = 3456.789dd;
   d32 = d64;
   if (d32 != 3456.789df)
-    abort ();
+    FAILURE
   d128 = 123.4567dl;
   d32 = d128;
-  if (d32 != 123.4567dl)
-    abort ();
+  if (d32 != 123.4567df)
+    FAILURE
 
   d128 = 1234567890.123456dl;
   d64 = d128;
   if (d64 != 1234567890.123456dd)
-    abort ();
+    FAILURE
 
   /* Test demotion to non-representable decimal floating type. */
 
@@ -59,37 +69,40 @@ main ()
   d64 = 9.99999949E96DD;
   d32 = d64;
   if (d32 != DEC32_MAX)
-    abort();
+    FAILURE
 
   /* Rounds to more than _Decimal32 can handle.  */
   d64 = 9.9999995E96DD;
   d32 = d64;
   if (d32 != __builtin_infd32())
-    abort();
+    FAILURE
 
   /* Rounds to what _Decimal32 can handle.  */
   d128 = 9.99999949E96DD;
   d32 = d128;
   if (d32 != DEC32_MAX)
-    abort();
+    FAILURE
 
   /* Rounds to more than _Decimal32 can handle.  */
   d128= 9.9999995E96DD;
   d32 = d128;
   if (d32 != __builtin_infd32())
-    abort();
+    FAILURE
 
   /* Rounds to what _Decimal64 can handle.  */
   d128 = 9.99999999999999949E384DL;
   d64 = d128;
   if (d64 != DEC64_MAX)
-    abort();
+    FAILURE
 
   /* Rounds to more than _Decimal64 can handle.  */
   d128 = 9.9999999999999995E384DL;
   d64 = d128;
   if (d64 != __builtin_infd64())
-    abort();
+    FAILURE
+
+  if (failcnt != 0)
+    abort ();
 
   return 0;
 }
