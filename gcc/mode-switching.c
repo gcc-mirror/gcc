@@ -92,7 +92,7 @@ static sbitmap *comp;
 
 static struct seginfo * new_seginfo (int, rtx, int, HARD_REG_SET);
 static void add_seginfo (struct bb_info *, struct seginfo *);
-static void reg_dies (rtx, HARD_REG_SET);
+static void reg_dies (rtx, HARD_REG_SET *);
 static void reg_becomes_live (rtx, rtx, void *);
 static void make_preds_opaque (basic_block, int);
 
@@ -160,7 +160,7 @@ make_preds_opaque (basic_block b, int j)
 /* Record in LIVE that register REG died.  */
 
 static void
-reg_dies (rtx reg, HARD_REG_SET live)
+reg_dies (rtx reg, HARD_REG_SET *live)
 {
   int regno, nregs;
 
@@ -171,7 +171,7 @@ reg_dies (rtx reg, HARD_REG_SET live)
   if (regno < FIRST_PSEUDO_REGISTER)
     for (nregs = hard_regno_nregs[regno][GET_MODE (reg)] - 1; nregs >= 0;
 	 nregs--)
-      CLEAR_HARD_REG_BIT (live, regno + nregs);
+      CLEAR_HARD_REG_BIT (*live, regno + nregs);
 }
 
 /* Record in LIVE that register REG became live.
@@ -500,12 +500,12 @@ optimize_mode_switching (void)
 		  /* Update LIVE_NOW.  */
 		  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 		    if (REG_NOTE_KIND (link) == REG_DEAD)
-		      reg_dies (XEXP (link, 0), live_now);
+		      reg_dies (XEXP (link, 0), &live_now);
 
 		  note_stores (PATTERN (insn), reg_becomes_live, &live_now);
 		  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 		    if (REG_NOTE_KIND (link) == REG_UNUSED)
-		      reg_dies (XEXP (link, 0), live_now);
+		      reg_dies (XEXP (link, 0), &live_now);
 		}
 	    }
 
