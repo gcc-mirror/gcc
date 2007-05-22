@@ -25,8 +25,8 @@ Boston, MA 02110-1301, USA.  */
 
 /* Add %(asm_cpu_spec) to the svr4.h definition of ASM_SPEC.  */
 #undef ASM_SPEC
-#define ASM_SPEC \
-  "%(asm_cpu_spec) %{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*}"
+#define ASM_SPEC "%(asm_cpu_spec) %(asm_pcrel_spec) \
+  %{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*}"
 
 /* for 68k machines this only needs to be TRUE for the 68000 */
 

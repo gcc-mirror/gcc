@@ -18,6 +18,3 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
-#undef ASM_SPEC
-#define ASM_SPEC "%(asm_cpu_spec) %{fPIC:--pcrel} %{fpic:--pcrel} \
- %{msep-data:--pcrel} %{mid-shared-library:--pcrel}"
