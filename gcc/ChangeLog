@@ -1,3 +1,9 @@
+2007-05-22  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* mode-switching.c (reg_dies): Change type of second argument to
+	"HARD_REG_SET *".
+	(optimize_mode_switching): Update accordingly.
+
 2007-05-22  Richard Sandiford  <richard@codesourcery.com>
 
 	* hard-reg-set.h (GO_IF_HARD_REG_SUBSET, GO_IF_HARD_REG_EQUAL): Delete
