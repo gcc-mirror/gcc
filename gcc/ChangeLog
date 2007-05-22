@@ -1,3 +1,8 @@
+2007-05-21  David Daney  <ddaney@avtrex.com>
+
+	* doc/install.texi (Building a cross compiler): Add requirements
+	for Java cross compiler.
+
 2007-05-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/31995
