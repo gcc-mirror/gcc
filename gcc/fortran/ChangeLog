@@ -1,3 +1,10 @@
+2007-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/31559
+	Backport from mainline.
+	* primary.c (match_variable): External functions
+	are no variables.
+
 2007-05-17  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi (GFORTRAN_CONVERT_UNIT): Improve documentation.

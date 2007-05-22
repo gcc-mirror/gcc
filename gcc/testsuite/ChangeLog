@@ -1,3 +1,9 @@
+2007-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/31559
+	Backport from mainline.
+	* func_assign.f90: New test.
+
 2007-05-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/31167
