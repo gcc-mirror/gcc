@@ -1,3 +1,29 @@
+2007-05-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/i386.exp (check_effective_target_ssse3): New.
+	(check_effective_target_sse4a): Ditto.
+
+	* gcc.target/i386/ssse3-phsubw.c: Require effective target ssse3.
+	* gcc.target/i386/ssse3-phaddd.c: Require effective target ssse3.
+	* gcc.target/i386/ssse3-pabsb.c: Require effective target ssse3.
+	* gcc.target/i386/ssse3-psignb.c: Require effective target ssse3.
+	* gcc.target/i386/ssse3-phaddsw.c: Require effective target ssse3.
+	* gcc.target/i386/ssse3-pabsd.c: Require effective target ssse3.
+	* gcc.target/i386/ssse3-psignd.c: Require effective target ssse3.
+	* gcc.target/i386/ssse3-pmaddubsw.c: Require effective target ssse3.
+	* gcc.target/i386/ssse3-pmulhrsw.c: Require effective target ssse3.
+	* gcc.target/i386/ssse3-phaddw.c: Require effective target ssse3.
+	* gcc.target/i386/ssse3-phsubd.c: Require effective target ssse3.
+	* gcc.target/i386/ssse3-pabsw.c: Require effective target ssse3.
+	* gcc.target/i386/ssse3-psignw.c: Require effective target ssse3.
+	* gcc.target/i386/ssse3-pshufb.c: Require effective target ssse3.
+	* gcc.target/i386/ssse3-phsubsw.c: Require effective target ssse3.
+	* gcc.target/i386/ssse3-palignr.c: Require effective target ssse3.
+	* gcc.target/i386/sse4a-insert.c: Require effective target sse4a.
+	* gcc.target/i386/sse4a-extract.c: Require effective target sse4a.
+	* gcc.target/i386/sse4a-montss.c: Require effective target sse4a.
+	* gcc.target/i386/sse4a-montsd.c: Require effective target sse4a.
+
 2007-05-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/ext/cleanup-1.C: New test.

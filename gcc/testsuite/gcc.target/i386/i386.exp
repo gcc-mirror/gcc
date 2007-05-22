@@ -24,6 +24,32 @@ if { ![istarget i?86*-*-*] && ![istarget x86_64-*-*] } then {
 # Load support procs.
 load_lib gcc-dg.exp
 
+# Return 1 if ssse3 instructions can be compiled.
+proc check_effective_target_ssse3 { } {
+    return [check_no_compiler_messages ssse3 object {
+	typedef long long __m128i __attribute__ ((__vector_size__ (16)));
+	typedef int __v4si __attribute__ ((__vector_size__ (16)));
+
+	__m128i _mm_abs_epi32 (__m128i __X)
+	{
+	    return (__m128i) __builtin_ia32_pabsd128 ((__v4si)__X);
+	}
+    } "-O2 -mssse3" ]
+}
+
+# Return 1 if sse4a instructions can be compiled.
+proc check_effective_target_sse4a { } {
+    return [check_no_compiler_messages sse4a object {
+	typedef long long __m128i __attribute__ ((__vector_size__ (16)));
+	typedef long long __v2di __attribute__ ((__vector_size__ (16)));
+
+	__m128i _mm_insert_si64 (__m128i __X,__m128i __Y)
+	{
+	    return (__m128i) __builtin_ia32_insertq ((__v2di)__X, (__v2di)__Y);
+	}
+    } "-O2 -msse4a" ]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {

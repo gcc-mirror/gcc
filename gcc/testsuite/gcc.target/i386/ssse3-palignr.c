@@ -1,4 +1,5 @@
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-effective-target ssse3 } */
 /* { dg-options "-O2 -mssse3" } */
 #include <tmmintrin.h>
 #include <string.h>
