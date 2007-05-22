@@ -1,3 +1,10 @@
+2007-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR libfortran/31915
+	Backport from trunk.
+	* io/transfer.c (unformatted_read): Use proper size for real(10).
+	  (unformatted_write): Ditto.
+
 2007-05-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/31395

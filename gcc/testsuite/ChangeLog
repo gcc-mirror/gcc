@@ -1,3 +1,7 @@
+2007-05-22  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* gfortran.dg/unf_io_convert_3.f90: Fix dg directive.
+
 2007-05-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/31559
