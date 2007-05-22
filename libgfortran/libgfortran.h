@@ -685,7 +685,7 @@ internal_proto(st_printf);
 
 /* stop.c */
 
-extern void stop_numeric (GFC_INTEGER_4);
+extern void stop_numeric (GFC_INTEGER_4) __attribute__ ((noreturn));
 iexport_proto(stop_numeric);
 
 /* reshape_packed.c */
