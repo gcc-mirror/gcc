@@ -3543,7 +3543,7 @@ ambiguous_decl (tree name, struct scope_binding *old, cxx_binding *new,
     }
   /* ... and copy the type.  */
   type = new->type;
-  if (LOOKUP_NAMESPACES_ONLY (flags))
+  if (LOOKUP_NAMESPACES_ONLY (flags) || (type && hidden_name_p (type)))
     type = NULL_TREE;
   if (!old->type)
     old->type = type;
@@ -3699,7 +3699,9 @@ unqualified_namespace_lookup (tree name, int flags)
 	  if (b->value
 	      && ((flags & LOOKUP_HIDDEN) || !hidden_name_p (b->value)))
 	    binding.value = b->value;
-	  binding.type = b->type;
+	  if (b->type
+	      && ((flags & LOOKUP_HIDDEN) || !hidden_name_p (b->type)))
+	    binding.type = b->type;
 	}
 
       /* Add all _DECLs seen through local using-directives.  */
