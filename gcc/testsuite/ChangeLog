@@ -1,3 +1,79 @@
+2007-05-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/i386-cpuid.h (bit_SSE4_1): New.
+	(bit_SSE4_2): Likewise.
+	(bit_POPCNT): Likewise.
+
+	* gcc.target/i386/i386.exp (check_effective_target_sse4): New.
+	Check if assembler supports SSE4 instructions.
+
+	* gcc.target/i386/sse4_1-blendpd.c: New file.
+	* gcc.target/i386/sse4_1-blendps.c: Likewise.
+	* gcc.target/i386/sse4_1-blendvpd.c: Likewise.
+	* gcc.target/i386/sse4_1-blendvps.c: Likewise.
+	* gcc.target/i386/sse4_1-check.h: Likewise.
+	* gcc.target/i386/sse4_1-dppd-1.c: Likewise.
+	* gcc.target/i386/sse4_1-dppd-2.c: Likewise.
+	* gcc.target/i386/sse4_1-dpps-1.c: Likewise.
+	* gcc.target/i386/sse4_1-dpps-2.c: Likewise.
+	* gcc.target/i386/sse4_1-extractps.c: Likewise.
+	* gcc.target/i386/sse4_1-insertps-1.c: Likewise.
+	* gcc.target/i386/sse4_1-insertps-2.c: Likewise.
+	* gcc.target/i386/sse4_1-movntdqa.c: Likewise.
+	* gcc.target/i386/sse4_1-mpsadbw.c: Likewise.
+	* gcc.target/i386/sse4_1-packusdw.c: Likewise.
+	* gcc.target/i386/sse4_1-pblendvb.c: Likewise.
+	* gcc.target/i386/sse4_1-pblendw.c: Likewise.
+	* gcc.target/i386/sse4_1-pcmpeqq.c: Likewise.
+	* gcc.target/i386/sse4_1-pextrb.c: Likewise.
+	* gcc.target/i386/sse4_1-pextrd.c: Likewise.
+	* gcc.target/i386/sse4_1-pextrq.c: Likewise.
+	* gcc.target/i386/sse4_1-pextrw.c: Likewise.
+	* gcc.target/i386/sse4_1-phminposuw.c: Likewise.
+	* gcc.target/i386/sse4_1-pinsrb.c: Likewise.
+	* gcc.target/i386/sse4_1-pinsrd.c: Likewise.
+	* gcc.target/i386/sse4_1-pinsrq.c: Likewise.
+	* gcc.target/i386/sse4_1-pmaxsb.c: Likewise.
+	* gcc.target/i386/sse4_1-pmaxsd.c: Likewise.
+	* gcc.target/i386/sse4_1-pmaxud.c: Likewise.
+	* gcc.target/i386/sse4_1-pmaxuw.c: Likewise.
+	* gcc.target/i386/sse4_1-pminsb.c: Likewise.
+	* gcc.target/i386/sse4_1-pminsd.c: Likewise.
+	* gcc.target/i386/sse4_1-pminud.c: Likewise.
+	* gcc.target/i386/sse4_1-pminuw.c: Likewise.
+	* gcc.target/i386/sse4_1-pmovsxbd.c: Likewise.
+	* gcc.target/i386/sse4_1-pmovsxbq.c: Likewise.
+	* gcc.target/i386/sse4_1-pmovsxbw.c: Likewise.
+	* gcc.target/i386/sse4_1-pmovsxdq.c: Likewise.
+	* gcc.target/i386/sse4_1-pmovsxwd.c: Likewise.
+	* gcc.target/i386/sse4_1-pmovsxwq.c: Likewise.
+	* gcc.target/i386/sse4_1-pmovzxbd.c: Likewise.
+	* gcc.target/i386/sse4_1-pmovzxbq.c: Likewise.
+	* gcc.target/i386/sse4_1-pmovzxbw.c: Likewise.
+	* gcc.target/i386/sse4_1-pmovzxdq.c: Likewise.
+	* gcc.target/i386/sse4_1-pmovzxwd.c: Likewise.
+	* gcc.target/i386/sse4_1-pmovzxwq.c: Likewise.
+	* gcc.target/i386/sse4_1-pmuldq.c: Likewise.
+	* gcc.target/i386/sse4_1-pmulld.c: Likewise.
+	* gcc.target/i386/sse4_1-ptest-1.c: Likewise.
+	* gcc.target/i386/sse4_1-ptest-2.c: Likewise.
+	* gcc.target/i386/sse4_1-ptest-3.c: Likewise.
+	* gcc.target/i386/sse4_1-round.h: Likewise.
+	* gcc.target/i386/sse4_1-roundpd-1.c: Likewise.
+	* gcc.target/i386/sse4_1-roundpd-2.c: Likewise.
+	* gcc.target/i386/sse4_1-roundpd-3.c: Likewise.
+	* gcc.target/i386/sse4_1-roundps-1.c: Likewise.
+	* gcc.target/i386/sse4_1-roundps-2.c: Likewise.
+	* gcc.target/i386/sse4_1-roundps-3.c: Likewise.
+	* gcc.target/i386/sse4_1-roundsd-1.c: Likewise.
+	* gcc.target/i386/sse4_1-roundsd-2.c: Likewise.
+	* gcc.target/i386/sse4_1-roundsd-3.c: Likewise.
+	* gcc.target/i386/sse4_1-roundsd-4.c: Likewise.
+	* gcc.target/i386/sse4_1-roundss-1.c: Likewise.
+	* gcc.target/i386/sse4_1-roundss-2.c: Likewise.
+	* gcc.target/i386/sse4_1-roundss-3.c: Likewise.
+	* gcc.target/i386/sse4_1-roundss-4.c: Likewise.
+
 2007-05-22 Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31627

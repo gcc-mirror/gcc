@@ -1,0 +1,65 @@
+/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-effective-target sse4 } */
+/* { dg-options "-O2 -msse4.1" } */
+
+#include "sse4_1-check.h"
+
+#include <smmintrin.h>
+
+#define NUM 64
+
+static unsigned short
+int_to_ushort (int iVal)
+{
+  unsigned short sVal;
+
+  if (iVal < 0)
+    sVal = 0;
+  else if (iVal > 0xffff)
+    sVal = 0xffff;
+  else sVal = iVal;
+
+  return sVal;
+}
+
+static void
+sse4_1_test (void)
+{
+  union
+    {
+      __m128i x[NUM / 4];
+      int i[NUM];
+    } src1, src2;
+  union
+    {
+      __m128i x[NUM / 4];
+      unsigned short s[NUM * 2];
+    } dst;
+  int i, sign = 1;
+
+  for (i = 0; i < NUM; i++)
+    {
+      src1.i[i] = i * i * sign;
+      src2.i[i] = (i + 20) * sign;
+      sign = -sign;
+    }
+
+  for (i = 0; i < NUM; i += 4)
+    dst.x[i / 4] = _mm_packus_epi32 (src1.x [i / 4], src2.x [i / 4]);
+
+  for (i = 0; i < NUM; i ++)
+    {
+      int dstIndex;
+      unsigned short sVal;
+
+      sVal = int_to_ushort (src1.i[i]);
+      dstIndex = (i % 4) + (i / 4) * 8;
+      if (sVal != dst.s[dstIndex])
+	abort ();
+
+      sVal = int_to_ushort (src2.i[i]);
+      dstIndex += 4;
+      if (sVal != dst.s[dstIndex])
+	abort ();
+    }
+}

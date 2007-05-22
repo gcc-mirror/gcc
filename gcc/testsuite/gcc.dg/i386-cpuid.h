@@ -5,6 +5,9 @@
 /* %ecx */
 #define bit_SSE3 (1 << 0)
 #define bit_SSSE3 (1 << 9)
+#define bit_SSE4_1 (1 << 19)
+#define bit_SSE4_2 (1 << 20)
+#define bit_POPCNT (1 << 23)
 
 /* %edx */
 #define bit_CMOV (1 << 15)
