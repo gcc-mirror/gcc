@@ -149,6 +149,7 @@ build_os = @build_os@
 build_vendor = @build_vendor@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
+extra_ldflags_libgc = @extra_ldflags_libgc@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@

@@ -224,6 +224,7 @@ build_os = @build_os@
 build_vendor = @build_vendor@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
+extra_ldflags_libgc = @extra_ldflags_libgc@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -280,7 +281,7 @@ sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
 # linuxthread semaphore functions get linked:
 libgcjgc_la_LIBADD = @addobjs@ $(THREADLIBS) $(UNWINDLIBS)
 libgcjgc_la_DEPENDENCIES = @addobjs@
-libgcjgc_la_LDFLAGS = -version-info 1:2:0 -rpath $(toolexeclibdir)
+libgcjgc_la_LDFLAGS = $(extra_ldflags_libgc) -version-info 1:2:0 -rpath $(toolexeclibdir)
 libgcjgc_convenience_la_LIBADD = @addobjs@
 libgcjgc_convenience_la_DEPENDENCIES = @addobjs@
 AM_CXXFLAGS = @GC_CFLAGS@

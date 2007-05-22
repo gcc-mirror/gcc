@@ -1,3 +1,17 @@
+2007-05-22  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* Backport r124870 from main.
+
+	2007-05-20  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* configure.ac: Introduce extra_ldflags_libgc. Use it for Darwin.
+	* configure: Regenerate.
+	* Makefile.am (libgc_la_LDFLAGS): Use extra_ldflags_libgc.
+	* Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* include/private/gcconfig.h: Enable MPROTECT_VDB for all Darwin
+	targets. Remove comments. Prepare ppc64 support for Darwin.
+
 2007-05-19  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* Backport r120684, 120801, 120853, 120874 and 120977 from main.

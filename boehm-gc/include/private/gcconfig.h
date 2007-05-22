@@ -794,26 +794,29 @@
 #     define DATAEND (_end)
 #   endif
 #   ifdef DARWIN
+#     define OS_TYPE "DARWIN"
+#     define DYNAMIC_LOADING
 #     if defined(__ppc64__)
 #       define ALIGNMENT 8
 #       define CPP_WORDSZ 64
+#       define STACKBOTTOM ((ptr_t) 0x7fff5fc00000)
+#       define CACHE_LINE_SIZE 64
+#       ifndef HBLKSIZE
+#         define HBLKSIZE 4096
+#       endif
 #     else
 #       define ALIGNMENT 4
+#       define STACKBOTTOM ((ptr_t) 0xc0000000)
 #     endif
-#     define OS_TYPE "DARWIN"
-#     define DYNAMIC_LOADING
       /* XXX: see get_end(3), get_etext() and get_end() should not be used.
 	 These aren't used when dyld support is enabled (it is by default) */
 #     define DATASTART ((ptr_t) get_etext())
 #     define DATAEND	((ptr_t) get_end())
-#     define STACKBOTTOM ((ptr_t) 0xc0000000)
 #     define USE_MMAP
 #     define USE_MMAP_ANON
 #     define USE_ASM_PUSH_REGS
-      /* This is potentially buggy. It needs more testing. See the comments in
-	 os_dep.c.  It relies on threads to track writes. */
 #     ifdef GC_DARWIN_THREADS
-/*#       define MPROTECT_VDB -- diabled for now.  May work for some apps. */
+#       define MPROTECT_VDB
 #     endif
 #     include <unistd.h>
 #     define GETPAGESIZE() getpagesize()
@@ -1327,10 +1330,8 @@
 #     define USE_MMAP
 #     define USE_MMAP_ANON
 #     define USE_ASM_PUSH_REGS
-      /* This is potentially buggy. It needs more testing. See the comments in
-	 os_dep.c.  It relies on threads to track writes. */
 #     ifdef GC_DARWIN_THREADS
-/* #       define MPROTECT_VDB -- disabled for now.  May work for some apps. */
+#       define MPROTECT_VDB
 #     endif
 #     include <unistd.h>
 #     define GETPAGESIZE() getpagesize()
@@ -2001,8 +2002,6 @@
 #     define USE_MMAP
 #     define USE_MMAP_ANON
 #     ifdef GC_DARWIN_THREADS
-       /* This is potentially buggy. It needs more testing. See the comments in
-	  os_dep.c.  It relies on threads to track writes. */
 #       define MPROTECT_VDB
 #     endif
 #     include <unistd.h>

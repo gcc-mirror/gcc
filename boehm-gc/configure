@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical mkinstalldirs INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar CC ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXX ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CFLAGS CXXFLAGS CCAS CCASFLAGS AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT GC_CFLAGS LN_S LIBTOOL CXXCPP CPPFLAGS THREADLIBS POWERPC_DARWIN_TRUE POWERPC_DARWIN_FALSE EXTRA_TEST_LIBS target_all CPLUSPLUS_TRUE CPLUSPLUS_FALSE AM_CPPFLAGS addobjs addincludes addlibs addtests CPP EGREP MY_CFLAGS toolexecdir toolexeclibdir LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical mkinstalldirs INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar CC ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXX ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CFLAGS CXXFLAGS CCAS CCASFLAGS AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT GC_CFLAGS LN_S LIBTOOL CXXCPP CPPFLAGS THREADLIBS POWERPC_DARWIN_TRUE POWERPC_DARWIN_FALSE extra_ldflags_libgc EXTRA_TEST_LIBS target_all CPLUSPLUS_TRUE CPLUSPLUS_FALSE AM_CPPFLAGS addobjs addincludes addlibs addtests CPP EGREP MY_CFLAGS toolexecdir toolexeclibdir LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -6620,6 +6620,14 @@ fi
     ;;
 esac
 
+# extra LD Flags which are required for targets
+case "${host}" in
+  *-*-darwin*)
+    extra_ldflags_libgc=-Wl,-single_module
+    ;;
+esac
+
+
 
 
 target_all=libgcjgc.la
@@ -8474,6 +8482,7 @@ s,@CPPFLAGS@,$CPPFLAGS,;t t
 s,@THREADLIBS@,$THREADLIBS,;t t
 s,@POWERPC_DARWIN_TRUE@,$POWERPC_DARWIN_TRUE,;t t
 s,@POWERPC_DARWIN_FALSE@,$POWERPC_DARWIN_FALSE,;t t
+s,@extra_ldflags_libgc@,$extra_ldflags_libgc,;t t
 s,@EXTRA_TEST_LIBS@,$EXTRA_TEST_LIBS,;t t
 s,@target_all@,$target_all,;t t
 s,@CPLUSPLUS_TRUE@,$CPLUSPLUS_TRUE,;t t
