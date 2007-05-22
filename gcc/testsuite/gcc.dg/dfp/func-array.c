@@ -4,6 +4,16 @@
    Test passing array elements involving decimal floating point types. */
 
 extern void abort (void);
+static int failcnt;
+
+/* Support compiling the test to report individual failures; default is
+   to abort as soon as a check fails.  */
+#ifdef DBG
+#include <stdio.h>
+#define FAILURE { printf ("failed at line %d\n", __LINE__); failcnt++; }
+#else
+#define FAILURE abort ();
+#endif
 
 /* A handful of functions that return the Nth _Decimal32 argument of
    an incoming array.  */
@@ -132,28 +142,31 @@ int main()
   _Decimal128 d128[] = { 0.0dl, 1.0dl, 2.0dl, 3.0dl, 4.0dl, 5.0dl };
 
   /* _Decimal32 variants.  */
-  if (arg0_32 (d32) != 0.0df) abort ();
-  if (arg1_32 (d32) != 1.0df) abort ();
-  if (arg2_32 (d32) != 2.0df) abort ();
-  if (arg3_32 (d32) != 3.0df) abort ();
-  if (arg4_32 (d32) != 4.0df) abort ();
-  if (arg5_32 (d32) != 5.0df) abort ();
+  if (arg0_32 (d32) != 0.0df) FAILURE
+  if (arg1_32 (d32) != 1.0df) FAILURE
+  if (arg2_32 (d32) != 2.0df) FAILURE
+  if (arg3_32 (d32) != 3.0df) FAILURE
+  if (arg4_32 (d32) != 4.0df) FAILURE
+  if (arg5_32 (d32) != 5.0df) FAILURE
 
   /* _Decimal64 variants.  */
-  if (arg0_64 (d64) != 0.0dd) abort ();
-  if (arg1_64 (d64) != 1.0dd) abort ();
-  if (arg2_64 (d64) != 2.0dd) abort ();
-  if (arg3_64 (d64) != 3.0dd) abort ();
-  if (arg4_64 (d64) != 4.0dd) abort ();
-  if (arg5_64 (d64) != 5.0dd) abort ();
+  if (arg0_64 (d64) != 0.0dd) FAILURE
+  if (arg1_64 (d64) != 1.0dd) FAILURE
+  if (arg2_64 (d64) != 2.0dd) FAILURE
+  if (arg3_64 (d64) != 3.0dd) FAILURE
+  if (arg4_64 (d64) != 4.0dd) FAILURE
+  if (arg5_64 (d64) != 5.0dd) FAILURE
 
   /* _Decimal128 variants.  */
-  if (arg0_128 (d128) != 0.0dl) abort ();
-  if (arg1_128 (d128) != 1.0dl) abort ();
-  if (arg2_128 (d128) != 2.0dl) abort ();
-  if (arg3_128 (d128) != 3.0dl) abort ();
-  if (arg4_128 (d128) != 4.0dl) abort ();
-  if (arg5_128 (d128) != 5.0dl) abort ();
+  if (arg0_128 (d128) != 0.0dl) FAILURE
+  if (arg1_128 (d128) != 1.0dl) FAILURE
+  if (arg2_128 (d128) != 2.0dl) FAILURE
+  if (arg3_128 (d128) != 3.0dl) FAILURE
+  if (arg4_128 (d128) != 4.0dl) FAILURE
+  if (arg5_128 (d128) != 5.0dl) FAILURE
+
+  if (failcnt != 0)
+    abort ();
 
   return 0;
 }

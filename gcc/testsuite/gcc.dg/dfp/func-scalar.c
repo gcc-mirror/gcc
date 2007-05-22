@@ -5,6 +5,16 @@
    point types.  */
 
 extern void abort (void);
+static int failcnt;
+
+/* Support compiling the test to report individual failures; default is
+   to abort as soon as a check fails.  */
+#ifdef DBG
+#include <stdio.h>
+#define FAILURE { printf ("failed at line %d\n", __LINE__); failcnt++; }
+#else
+#define FAILURE abort ();
+#endif
 
 /* A handful of functions that return their Nth _Decimal32
    argument.  */
@@ -150,44 +160,47 @@ main ()
 {
   /* _Decimal32 variants.  */
   if (arg0_32 (0.0df, 1.0df, 2.0df, 3.0df, 4.0df, 5.0df) != 0.0df)
-    abort ();
+    FAILURE
   if (arg1_32 (0.0df, 1.0df, 2.0df, 3.0df, 4.0df, 5.0df) != 1.0df)
-    abort ();
+    FAILURE
   if (arg2_32 (0.0df, 1.0df, 2.0df, 3.0df, 4.0df, 5.0df) != 2.0df)
-    abort ();
+    FAILURE
   if (arg3_32 (0.0df, 1.0df, 2.0df, 3.0df, 4.0df, 5.0df) != 3.0df)
-    abort ();
+    FAILURE
   if (arg4_32 (0.0df, 1.0df, 2.0df, 3.0df, 4.0df, 5.0df) != 4.0df)
-    abort ();
+    FAILURE
   if (arg5_32 (0.0df, 1.0df, 2.0df, 3.0df, 4.0df, 5.0df) != 5.0df)
-    abort ();
+    FAILURE
 
   /* _Decimal64 variants.  */
   if (arg0_64 (0.0dd, 1.0dd, 2.0dd, 3.0dd, 4.0dd, 5.0dd) != 0.0dd)
-    abort ();
+    FAILURE
   if (arg1_64 (0.0dd, 1.0dd, 2.0dd, 3.0dd, 4.0dd, 5.0dd) != 1.0dd)
-    abort ();
+    FAILURE
   if (arg2_64 (0.0dd, 1.0dd, 2.0dd, 3.0dd, 4.0dd, 5.0dd) != 2.0dd)
-    abort ();
+    FAILURE
   if (arg3_64 (0.0dd, 1.0dd, 2.0dd, 3.0dd, 4.0dd, 5.0dd) != 3.0dd)
-    abort ();
+    FAILURE
   if (arg4_64 (0.0dd, 1.0dd, 2.0dd, 3.0dd, 4.0dd, 5.0dd) != 4.0dd)
-    abort ();
+    FAILURE
   if (arg5_64 (0.0dd, 1.0dd, 2.0dd, 3.0dd, 4.0dd, 5.0dd) != 5.0dd)
-    abort ();
+    FAILURE
 
   /* _Decimal128 variants.  */
   if (arg0_128 (0.0dl, 1.0dl, 2.0dl, 3.0dl, 4.0dl, 5.0dl) != 0.0dl)
-    abort ();
+    FAILURE
   if (arg1_128 (0.0dl, 1.0dl, 2.0dl, 3.0dl, 4.0dl, 5.0dl) != 1.0dl)
-    abort ();
+    FAILURE
   if (arg2_128 (0.0dl, 1.0dl, 2.0dl, 3.0dl, 4.0dl, 5.0dl) != 2.0dl)
-    abort ();
+    FAILURE
   if (arg3_128 (0.0dl, 1.0dl, 2.0dl, 3.0dl, 4.0dl, 5.0dl) != 3.0dl)
-    abort ();
+    FAILURE
   if (arg4_128 (0.0dl, 1.0dl, 2.0dl, 3.0dl, 4.0dl, 5.0dl) != 4.0dl)
-    abort ();
+    FAILURE
   if (arg5_128 (0.0dl, 1.0dl, 2.0dl, 3.0dl, 4.0dl, 5.0dl) != 5.0dl)
+    FAILURE
+
+  if (failcnt != 0)
     abort ();
 
   return 0;

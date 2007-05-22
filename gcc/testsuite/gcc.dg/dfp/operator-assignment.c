@@ -6,10 +6,20 @@
    float types cast to decimal float types.  */
 
 extern void abort (void);
+static int failcnt;
+
+/* Support compiling the test to report individual failures; default is
+   to abort as soon as a check fails.  */
+#ifdef DBG
+#include <stdio.h>
+#define FAILURE { printf ("failed at line %d\n", __LINE__); failcnt++; }
+#else
+#define FAILURE abort ();
+#endif
 
 #define OPERATE(OPRD1,OPRT,OPRD2,RLT)		\
   if (( OPRD1 OPRT OPRD2 )!= RLT)		\
-    abort ();
+    FAILURE
 
 #define DECIMAL_COMPOUND_ASSIGNMENT(TYPE, OPRD)	\
 {						\
@@ -53,6 +63,9 @@ main ()
   DECIMAL_COMPOUND_ASSIGNMENT(32, d32);
   DECIMAL_COMPOUND_ASSIGNMENT(64, d64);
   DECIMAL_COMPOUND_ASSIGNMENT(128, d128);
+
+  if (failcnt != 0)
+    abort ();
 
   return 0;
 }

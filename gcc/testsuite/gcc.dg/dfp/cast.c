@@ -4,6 +4,14 @@
    Test valid casts involving decimal float.  */
 
 extern void abort (void);
+int failcnt;
+                                                                                
+#ifdef DBG
+extern int printf (const char *, ...);
+#define FAILURE { printf ("failed at line %d\n", __LINE__); failcnt++; }
+#else
+#define FAILURE abort ();
+#endif
 
 _Decimal32 d32;
 _Decimal64 d64;
@@ -21,19 +29,19 @@ main (void)
   d128 = 1.2dl;
 
   if (d32 != (_Decimal32) d64)
-    abort ();
+    FAILURE
   if (d32 != (_Decimal32) d128)
-    abort ();
+    FAILURE
 
   if (d64 != (_Decimal64) d32)
-    abort ();
+    FAILURE
   if (d64 != (_Decimal64) d128)
-    abort ();
+    FAILURE
 
   if (d128 != (_Decimal128) d32)
-    abort ();
+    FAILURE
   if (d128 != (_Decimal128) d64)
-    abort ();
+    FAILURE
 
   /* Casts between generic and decimal floating point types.  Use a
      value that we can assume can be represented exactly in all
@@ -45,32 +53,35 @@ main (void)
 
   /* To generic floating types.  */
   if ((float) d32 != 2.0f)
-    abort ();
+    FAILURE
   if ((double) d32 != 2.0l)
-    abort ();
+    FAILURE
   if ((float) d64 != 2.0f)
-    abort ();
+    FAILURE
   if ((double) d64 != 2.0l)
-    abort ();
+    FAILURE
   if ((float) d128 != 2.0f)
-    abort ();
+    FAILURE
   if ((double) d128 != 2.0l)
-    abort ();
+    FAILURE
 
   /* float to decimal floating types.  */
   if (d32 != (_Decimal32) f)
-    abort ();
+    FAILURE
   if (d64 != (_Decimal64) f)
-    abort ();
+    FAILURE
   if (d128 != (_Decimal128) f)
-    abort ();
+    FAILURE
 
   /* double to decimal floating types.  */
   if (d32 != (_Decimal32) d)
-    abort ();
+    FAILURE
   if (d64 != (_Decimal64) d)
-    abort ();
+    FAILURE
   if (d128 != (_Decimal128) d)
+    FAILURE
+
+  if (failcnt != 0)
     abort ();
 
   return 0;

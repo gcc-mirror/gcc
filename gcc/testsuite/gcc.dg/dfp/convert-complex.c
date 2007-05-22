@@ -5,7 +5,7 @@
 
 extern void abort(void);
 static int failcnt;
-                                                                                
+
 /* Support compiling the test to report individual failures; default is
    to abort as soon as a check fails.  */
 #ifdef DBG
@@ -123,6 +123,9 @@ main ()
     FAILURE
   if (d128 != 0.0625DL)
     FAILURE
+
+  if (failcnt != 0)
+    abort ();
 
   return 0;
 }

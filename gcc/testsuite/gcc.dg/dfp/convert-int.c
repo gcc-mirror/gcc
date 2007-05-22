@@ -4,6 +4,14 @@
    C99 6.3.1.4(1a) New.  */
 
 extern void abort (void);
+int failcnt;
+
+#ifdef DBG
+extern int printf (const char *, ...);
+#define FAILURE { printf ("failed at line %d\n", __LINE__); failcnt++; }
+#else
+#define FAILURE abort ();
+#endif
 
 _Decimal32 d32;
 _Decimal64 d64;
@@ -67,33 +75,33 @@ main ()
 
   ui = d32;
   if (ui != 456U)
-    abort ();
+    FAILURE
   ul = d32;
   if (ul != 456UL)
-    abort ();
+    FAILURE
   ull = d32;
   if (ull != 456ULL)
-    abort ();
+    FAILURE
 
   ui = d64;
   if (ui != 23U)
-    abort ();
+    FAILURE
   ul = d64;
   if (ul != 23UL)
-    abort ();
+    FAILURE
   ull = d64;
   if (ull != 23ULL)
-    abort ();
+    FAILURE
 
   ui = d128;
   if (ui != 1234U)
-    abort ();
+    FAILURE
   ul = d128;
   if (ul != 1234UL)
-    abort ();
+    FAILURE
   ull = d128;
   if (ull != 1234ULL)
-    abort ();
+    FAILURE
 
   /* Decimal float to signed integer.  */
 
@@ -102,91 +110,94 @@ main ()
 
   b = d32;
   if (!b)
-    abort ();
+    FAILURE
   b = d64;
   if (!b)
-    abort ();
+    FAILURE
   b = d128;
   if (!b)
-    abort ();
+    FAILURE
 
   /* Unsigned integer to decimal float.  */
   init_unsigned_int ();
 
   d32 = ui;
   if (d32 != 987.0df)
-    abort ();
+    FAILURE
   d32 = ul;
   if (d32 != 345678.0df)
-    abort ();
+    FAILURE
   d32 = ull;
   if (d32 != 1234567.df)
-    abort ();
+    FAILURE
 
   d64 = ui;
   if (d64 != 987.0dd)
-    abort ();
+    FAILURE
   d64 = ul;
   if (d64 != 345678.0dd)
-    abort ();
+    FAILURE
   d64 = ull;
   if (d64 != 1234567.dd)
-    abort ();
+    FAILURE
 
   d128 = ui;
   if (d128 != 987.0dl)
-    abort ();
+    FAILURE
   d128 = ul;
   if (d128 != 345678.0dl)
-    abort ();
+    FAILURE
   d128 = ull;
   if (d128 != 1234567.dl)
-    abort ();
+    FAILURE
 
   /* Signed integer to decimal float.  */
   init_signed_int ();
 
   d32 = si;
   if (d32 != -987.0df)
-    abort ();
+    FAILURE
   d32 = sl;
   if (d32 != -345678.0df)
-    abort ();
+    FAILURE
   d32 = sll;
   if (d32 != -1234567.df)
-    abort ();
+    FAILURE
 
   d64 = si;
   if (d64 != -987.0dd)
-    abort ();
+    FAILURE
   d64 = sl;
   if (d64 != -345678.0dd)
-    abort ();
+    FAILURE
   d64 = sll;
   if (d64 != -1234567.dd)
-    abort ();
+    FAILURE
 
   d128 = si;
   if (d128 != -987.0dl)
-    abort ();
+    FAILURE
   d128 = sl;
   if (d128 != -345678.0dl)
-    abort ();
+    FAILURE
   d128 = sll;
   if (d128 != -1234567.dl)
-    abort ();
+    FAILURE
 
   /* _Bool to decimal float.  */
   init_dfp_3 ();
   
   b = d32;
   if (b)
-    abort ();
+    FAILURE
   b = d64;
   if (b)
-    abort ();
+    FAILURE
   b = d128;
   if (b)
+    FAILURE
+
+  if (failcnt != 0)
     abort ();
 
   return 0;

@@ -1,4 +1,22 @@
 2007-05-22  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/dfp/func-array.c: Support -DDBG to report individual
+	failures.
+	* gcc.dg/dfp/func-struct.c: Ditto.
+	* gcc.dg/dfp/operator-assignment.c: Ditto.
+	* gcc.dg/dfp/convert-bfp.c: Ditto.
+	* gcc.dg/dfp/convert-int.c: Ditto.
+	* gcc.dg/dfp/convert-int-max.c: Ditto.
+	* gcc.dg/dfp/func-scalar.c: Ditto.
+	* gcc.dg/dfp/cast.c: Ditto.
+	* gcc.dg/dfp/func-mixed.c: Support -DDBG to report individual
+	failures, and fix a typo in return type of arg1_128.
+	* gcc.dg/dfp/convert-dfp.c: Support -DDBG to report individual
+	failures, and fix a typo in a constant suffix.
+	* gcc.dg/dfp/func-vararg-dfp.c: Return zero at the end.
+	* gcc.dg/dfp/convert-complex.c: With -DDBG, abort for failures.
+
+2007-05-22  Janis Johnson  <janis187@us.ibm.com>
 	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* lib/gcc-dg.exp(process_message): New proc.
