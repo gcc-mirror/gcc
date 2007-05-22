@@ -1,3 +1,11 @@
+2007-05-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/m68k/linux.h (ASM_SPEC): Add asm_pcrel_spec.
+	* config/m68k/m68k-none.h (ASM_SPEC): Don't override here.
+	* config/m68k/m68k.h (ASM_PCREL_SPEC): New.
+	(ASM_SPEC): Add asm_pcrel_spec.
+	(EXTRA_SPECS): Add asm_pcrel_spec.
+
 2007-05-21  David Daney  <ddaney@avtrex.com>
 
 	* doc/install.texi (Building a cross compiler): Add requirements

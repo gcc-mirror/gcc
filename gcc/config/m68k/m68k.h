@@ -48,11 +48,15 @@ Boston, MA 02110-1301, USA.  */
 %{m68060}%{mcpu32}%{m68332}%{m5200}%{m5206e}%{m528x}%{m5307}%{m5407}%{mcfv4e}\
 %{mcpu=*:-mcpu=%*}%{march=*:-march=%*}\
 "
+#define ASM_PCREL_SPEC "%{fPIC|fpic|mpcrel:--pcrel} \
+ %{msep-data|mid-shared-library:--pcrel} \
+"
 
-#define ASM_SPEC "%(asm_cpu_spec)"
+#define ASM_SPEC "%(asm_cpu_spec) %(asm_pcrel_spec)"
 
 #define EXTRA_SPECS					\
   { "asm_cpu_spec", ASM_CPU_SPEC },			\
+  { "asm_pcrel_spec", ASM_PCREL_SPEC },			\
   SUBTARGET_EXTRA_SPECS
 
 #define SUBTARGET_EXTRA_SPECS
