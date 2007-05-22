@@ -1161,10 +1161,8 @@ find_reg (int num, HARD_REG_SET losers, int alt_regs_p, int accept_call_clobbere
      preferred registers.  */
 
   AND_COMPL_HARD_REG_SET (allocno[num].hard_reg_copy_preferences, used);
-  GO_IF_HARD_REG_SUBSET (allocno[num].hard_reg_copy_preferences,
-			 reg_class_contents[(int) NO_REGS], no_copy_prefs);
-
-  if (best_reg >= 0)
+  if (!hard_reg_set_empty_p (allocno[num].hard_reg_copy_preferences)
+      && best_reg >= 0)
     {
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (TEST_HARD_REG_BIT (allocno[num].hard_reg_copy_preferences, i)
@@ -1197,13 +1195,10 @@ find_reg (int num, HARD_REG_SET losers, int alt_regs_p, int accept_call_clobbere
 		}
 	    }
     }
- no_copy_prefs:
 
   AND_COMPL_HARD_REG_SET (allocno[num].hard_reg_preferences, used);
-  GO_IF_HARD_REG_SUBSET (allocno[num].hard_reg_preferences,
-			 reg_class_contents[(int) NO_REGS], no_prefs);
-
-  if (best_reg >= 0)
+  if (!hard_reg_set_empty_p (allocno[num].hard_reg_preferences)
+      && best_reg >= 0)
     {
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (TEST_HARD_REG_BIT (allocno[num].hard_reg_preferences, i)
@@ -2437,10 +2432,9 @@ modify_reg_pav (void)
   struct bb_info *bb_info;
 #ifdef STACK_REGS
   int i;
-  HARD_REG_SET zero, stack_hard_regs, used;
+  HARD_REG_SET stack_hard_regs, used;
   bitmap stack_regs;
 
-  CLEAR_HARD_REG_SET (zero);
   CLEAR_HARD_REG_SET (stack_hard_regs);
   for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
     SET_HARD_REG_BIT(stack_hard_regs, i);
@@ -2450,10 +2444,8 @@ modify_reg_pav (void)
       COPY_HARD_REG_SET (used, reg_class_contents[reg_preferred_class (i)]);
       IOR_HARD_REG_SET (used, reg_class_contents[reg_alternate_class (i)]);
       AND_HARD_REG_SET (used, stack_hard_regs);
-      GO_IF_HARD_REG_EQUAL(used, zero, skip);
-      bitmap_set_bit (stack_regs, i);
-    skip:
-      ;
+      if (!hard_reg_set_empty_p (used))
+	bitmap_set_bit (stack_regs, i);
     }
 #endif
   FOR_EACH_BB (bb)

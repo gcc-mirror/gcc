@@ -3891,9 +3891,8 @@ finish_spills (int global)
 	  AND_HARD_REG_SET (chain->used_spill_regs, used_spill_regs);
 
 	  /* Make sure we only enlarge the set.  */
-	  GO_IF_HARD_REG_SUBSET (used_by_pseudos2, chain->used_spill_regs, ok);
-	  gcc_unreachable ();
-	ok:;
+	  gcc_assert (hard_reg_set_subset_p (used_by_pseudos2,
+					    chain->used_spill_regs));
 	}
     }
 

@@ -1,3 +1,35 @@
+2007-05-22  Richard Sandiford  <richard@codesourcery.com>
+
+	* hard-reg-set.h (GO_IF_HARD_REG_SUBSET, GO_IF_HARD_REG_EQUAL): Delete
+	in favor of...
+	(hard_reg_subset_p, hard_reg_sets_equal_p, hard_reg_sets_intersect_p)
+	(hard_reg_set_empty_p): ...these new functions.
+	* bt-load.c (choose_btr): Use hard_reg_subset_p instead of
+	GO_IF_HARD_REG_SUBSET.
+	* cfgcleanup.c (old_insns_match_p): Use hard_reg_sets_equal_p
+	instead of GO_IF_HARD_REG_EQUAL.
+	* df-problems.c (df_urec_local_compute): Use hard_reg_set_empty_p
+	instead of GO_IF_HARD_REG_EQUAL.
+	* global.c (find_reg): Use hard_reg_set_empty_p instead of
+	GO_IF_HARD_REG_SUBSET.
+	(modify_reg_pav): Use hard_reg_set_empty_p instead of
+	GO_IF_HARD_REG_EQUAL.
+	* local-alloc.c (find_free_reg): Use hard_reg_subset_p instead
+	of GO_IF_HARD_REG_SUBSET.
+	* reg-stack.c (change_stack, convert_regs_1): Use hard_reg_sets_equal_p
+	instead of GO_IF_HARD_REG_EQUAL.
+	* regclass.c (init_reg_sets_1, reg_scan_mark_refs): Use
+	hard_reg_subset_p instead of GO_IF_HARD_REG_SUBSET.
+	(reg_classes_intersect_p): Use hard_reg_sets_intersect_p instead
+	of GO_IF_HARD_REG_SUBSET,
+	* reload1.c (finish_spills): Use hard_reg_subset_p instead of
+	GO_IF_HARD_REG_SUBSET.
+	* struct-equiv.c (death_notes_match_p): Use hard_reg_sets_equal_p
+	instead of GO_IF_HARD_REG_EQUAL.
+	* config/sh/sh.c (push_regs, calc_live_regs): Use
+	hard_reg_sets_intersect_p instead of hard_regs_intersect_p.
+	(hard_regs_intersect_p): Delete.
+
 2007-05-22  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/sourcebuild.texi (Test Directives) Add dg-message.
