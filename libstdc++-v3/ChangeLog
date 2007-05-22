@@ -1,3 +1,9 @@
+2007-05-22  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/util/testsuite_allocator.h (check_new): Assign false
+	to new_called.
+	(check_delete): Likewise for delete_called.
+
 2007-05-21  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/gnu/c_locale.h: Do not include <cstdarg>, use builtins.
