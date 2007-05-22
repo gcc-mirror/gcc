@@ -1093,11 +1093,10 @@ df_ref_record (struct dataflow *dflow, rtx reg, rtx *loc,
 	{
 	  regno += subreg_regno_offset (regno, GET_MODE (SUBREG_REG (reg)),
 					SUBREG_BYTE (reg), GET_MODE (reg));
-	  endregno = subreg_nregs (reg);
+	  endregno = regno + subreg_nregs (reg);
 	}
       else
-	endregno = hard_regno_nregs[regno][GET_MODE (reg)];
-      endregno += regno;
+	endregno = END_HARD_REGNO (reg);
 
       /*  If this is a multiword hardreg, we create some extra datastructures that 
 	  will enable us to easily build REG_DEAD and REG_UNUSED notes.  */

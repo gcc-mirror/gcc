@@ -1766,7 +1766,6 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	  unsigned int regno = REGNO (ops[!i]);
 	  enum machine_mode mode = GET_MODE (ops[!i]);
 	  int class;
-	  unsigned int nr;
 
 	  if (regno >= FIRST_PSEUDO_REGISTER && reg_pref != 0
 	      && reg_pref[regno].prefclass != NO_REGS)
@@ -1785,18 +1784,9 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		{
 		  if (reg_class_size[class] == 1)
 		    op_costs[i].cost[class] = -1;
-		  else
-		    {
-		      for (nr = 0; nr < (unsigned) hard_regno_nregs[regno][mode]; nr++)
-			{
-			  if (! TEST_HARD_REG_BIT (reg_class_contents[class],
-						   regno + nr))
-			    break;
-			}
-
-		      if (nr == (unsigned) hard_regno_nregs[regno][mode])
-			op_costs[i].cost[class] = -1;
-		    }
+		  else if (in_hard_reg_set_p (reg_class_contents[class],
+					     mode, regno))
+		    op_costs[i].cost[class] = -1;
 		}
 	}
 }

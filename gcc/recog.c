@@ -2713,21 +2713,9 @@ reg_fits_class_p (rtx operand, enum reg_class cl, int offset,
   if (cl == NO_REGS)
     return 0;
 
-  if (regno < FIRST_PSEUDO_REGISTER
-      && TEST_HARD_REG_BIT (reg_class_contents[(int) cl],
-			    regno + offset))
-    {
-      int sr;
-      regno += offset;
-      for (sr = hard_regno_nregs[regno][mode] - 1;
-	   sr > 0; sr--)
-	if (! TEST_HARD_REG_BIT (reg_class_contents[(int) cl],
-				 regno + sr))
-	  break;
-      return sr == 0;
-    }
-
-  return 0;
+  return (regno < FIRST_PSEUDO_REGISTER
+	  && in_hard_reg_set_p (reg_class_contents[(int) cl],
+				mode, regno + offset));
 }
 
 /* Split single instruction.  Helper function for split_all_insns and
@@ -3054,8 +3042,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
 	}
       if (success)
 	{
-	  for (j = hard_regno_nregs[regno][mode] - 1; j >= 0; j--)
-	    SET_HARD_REG_BIT (*reg_set, regno + j);
+	  add_to_hard_reg_set (reg_set, mode, regno);
 
 	  /* Start the next search with the next register.  */
 	  if (++raw_regno >= FIRST_PSEUDO_REGISTER)

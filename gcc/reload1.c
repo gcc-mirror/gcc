@@ -542,7 +542,6 @@ compute_use_by_pseudos (HARD_REG_SET *to, regset from)
   EXECUTE_IF_SET_IN_REG_SET (from, FIRST_PSEUDO_REGISTER, regno, rsi)
     {
       int r = reg_renumber[regno];
-      int nregs;
 
       if (r < 0)
 	{
@@ -553,11 +552,7 @@ compute_use_by_pseudos (HARD_REG_SET *to, regset from)
 	  gcc_assert (reload_completed);
 	}
       else
-	{
-	  nregs = hard_regno_nregs[r][PSEUDO_REGNO_MODE (regno)];
-	  while (nregs-- > 0)
-	    SET_HARD_REG_BIT (*to, r + nregs);
-	}
+	add_to_hard_reg_set (to, PSEUDO_REGNO_MODE (regno), r);
     }
 }
 
@@ -2194,7 +2189,7 @@ mark_home_live (int regno)
   i = reg_renumber[regno];
   if (i < 0)
     return;
-  lim = i + hard_regno_nregs[i][PSEUDO_REGNO_MODE (regno)];
+  lim = end_hard_regno (PSEUDO_REGNO_MODE (regno), i);
   while (i < lim)
     regs_ever_live[i++] = 1;
 }
@@ -3763,10 +3758,7 @@ spill_hard_reg (unsigned int regno, int cant_eliminate)
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     if (reg_renumber[i] >= 0
 	&& (unsigned int) reg_renumber[i] <= regno
-	&& ((unsigned int) reg_renumber[i]
-	    + hard_regno_nregs[(unsigned int) reg_renumber[i]]
-			      [PSEUDO_REGNO_MODE (i)]
-	    > regno))
+	&& end_hard_regno (PSEUDO_REGNO_MODE (i), reg_renumber[i]) > regno)
       SET_REGNO_REG_SET (&spilled_pseudos, i);
 }
 
@@ -4586,8 +4578,7 @@ clear_reload_reg_in_use (unsigned int regno, int opnum,
 	    {
 	      unsigned int conflict_start = true_regnum (rld[i].reg_rtx);
 	      unsigned int conflict_end
-		= (conflict_start
-		   + hard_regno_nregs[conflict_start][rld[i].mode]);
+		= end_hard_regno (rld[i].mode, conflict_start);
 
 	      /* If there is an overlap with the first to-be-freed register,
 		 adjust the interval start.  */

@@ -162,16 +162,14 @@ make_preds_opaque (basic_block b, int j)
 static void
 reg_dies (rtx reg, HARD_REG_SET *live)
 {
-  int regno, nregs;
+  int regno;
 
   if (!REG_P (reg))
     return;
 
   regno = REGNO (reg);
   if (regno < FIRST_PSEUDO_REGISTER)
-    for (nregs = hard_regno_nregs[regno][GET_MODE (reg)] - 1; nregs >= 0;
-	 nregs--)
-      CLEAR_HARD_REG_BIT (*live, regno + nregs);
+    remove_from_hard_reg_set (live, GET_MODE (reg), regno);
 }
 
 /* Record in LIVE that register REG became live.
@@ -180,7 +178,7 @@ reg_dies (rtx reg, HARD_REG_SET *live)
 static void
 reg_becomes_live (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *live)
 {
-  int regno, nregs;
+  int regno;
 
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
@@ -190,9 +188,7 @@ reg_becomes_live (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *live)
 
   regno = REGNO (reg);
   if (regno < FIRST_PSEUDO_REGISTER)
-    for (nregs = hard_regno_nregs[regno][GET_MODE (reg)] - 1; nregs >= 0;
-	 nregs--)
-      SET_HARD_REG_BIT (* (HARD_REG_SET *) live, regno + nregs);
+    add_to_hard_reg_set ((HARD_REG_SET *) live, GET_MODE (reg), regno);
 }
 
 /* Make sure if MODE_ENTRY is defined the MODE_EXIT is defined
