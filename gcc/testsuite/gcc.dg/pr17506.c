@@ -18,7 +18,7 @@ void baz (void);
 void
 bar (void)
 {
-  int j; /* { dg-error "note: 'j' was declared here" } */
+  int j; /* { dg-message "note: 'j' was declared here" } */
   for (; foo (j); ++j)
     baz ();
 }

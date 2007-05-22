@@ -46,6 +46,7 @@ BEGIN			{ skip = 1; passes = 0; fails = 0; }
 # ignore compile step, tests for warnings for output-exists[-not] tests.
 /dg-outexists.*\(test for excess errors)/ { ignore(); next }
 /dg-outexists.*\(test for warnings/ { ignore(); next }
+/dg-outexists.*\(test for errors/ { ignore(); next }
 # The other dox tests pass the compile step; ignore that message.
 /^PASS.*dox.*\(test for excess errors\)/ { ignore(); next }
 # The sf tests pass the compile step; ignore that message.
