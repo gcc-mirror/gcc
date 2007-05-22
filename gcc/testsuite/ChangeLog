@@ -1,3 +1,9 @@
+2007-05-22  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.c-torture/execute/ieee/20000320-1.x,
+	gcc.c-torture/execute/ieee/mul-subnormal-single-1.x: XFAIL on
+	m68k-*-* and check_effective_target_coldfire_fpu.
+
 2007-05-22  Ollie Wild  <aaw@google.com>
 
 	* g++.dg/lookup/hidden-class10.C: New test.
