@@ -75,14 +75,3 @@
   return IMM_IN_RANGE (INTVAL (op), 15, 1);
 })
 
-(define_predicate "const_pow2"
-  (match_code "const_int")
-{
-  return IMM_IS_POW_OF_2 ((unsigned HOST_WIDE_INT) INTVAL (op), 0, 31);
-})
-
-(define_predicate "const_npow2"
-  (match_code "const_int")
-{
-  return IMM_IS_POW_OF_2 (~(unsigned HOST_WIDE_INT) INTVAL (op), 0, 31);
-})
