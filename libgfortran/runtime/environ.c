@@ -861,14 +861,13 @@ mark_range (int unit1, int unit2)
 static int
 do_parse (void)
 {
-  int tok, def;
+  int tok;
   int unit1;
   int continue_ulist;
   char *start;
 
   unit_count = 0;
 
-  def = 0;
   start = p;
 
   /* Parse the string.  First, let's look for a default.  */
@@ -923,6 +922,7 @@ do_parse (void)
       break;
 
     case END:
+      def = endian;
       goto end;
       break;
 
@@ -939,6 +939,18 @@ do_parse (void)
       tok = next_token ();
       switch (tok)
 	{
+	case NATIVE:
+	  if (next_token () != ':')
+	    goto error;
+	  endian = CONVERT_NATIVE;
+	  break;
+
+	case SWAP:
+	  if (next_token () != ':')
+	    goto error;
+	  endian = CONVERT_SWAP;
+	  break;
+
 	case LITTLE:
 	  if (next_token () != ':')
 	    goto error;

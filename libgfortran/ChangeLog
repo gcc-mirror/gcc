@@ -1,3 +1,9 @@
+2007-05-23  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/31917
+	Backport from trunk.
+	* runtime/environ.c (mark_range): Fix setting default convert unit.
+
 2007-05-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/31051
