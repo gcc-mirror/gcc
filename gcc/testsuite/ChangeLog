@@ -1,3 +1,7 @@
+2007-05-23  Ian Lance Taylor  <iant@google.com>
+
+	* g++.dg/other/vrp1.C: New test.
+
 2007-05-23  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR preprocessor/20077
