@@ -1,3 +1,8 @@
+2007-05-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/31051
+	* gfortran.dg/fmt_t_3.f90: New.
+
 2007-05-22  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* gfortran.dg/unf_io_convert_3.f90: Fix dg directive.
