@@ -1,3 +1,39 @@
+2007-05-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/sse3-addsubpd.c: Don't include stdlib.h
+	nor i386-cpuid.h.  Include sse3-check.h.  Remove main ().
+	* gcc.target/i386/sse3-addsubps.c: Likewise.
+	* gcc.target/i386/sse3-haddpd.c: Likewise.
+	* gcc.target/i386/sse3-haddps.c: Likewise.
+	* gcc.target/i386/sse3-hsubpd.c: Likewise.
+	* gcc.target/i386/sse3-hsubps.c: Likewise.
+	* gcc.target/i386/sse3-lddqu.c: Likewise.
+	* gcc.target/i386/sse3-movddup.c: Likewise.
+	* gcc.target/i386/sse3-movshdup.c: Likewise.
+	* gcc.target/i386/sse3-movsldup.c: Likewise.
+
+	* gcc.target/i386/ssse3-pabsb.c: Don't include stdlib.h
+	nor i386-cpuid.h.  Include ssse3-check.h.  Remove main ().
+	* gcc.target/i386/ssse3-pabsd.c: Likewise.
+	* gcc.target/i386/ssse3-pabsw.c: Likewise.
+	* gcc.target/i386/ssse3-palignr.c: Likewise.
+	* gcc.target/i386/ssse3-phaddd.c: Likewise.
+	* gcc.target/i386/ssse3-phaddsw.c: Likewise.
+	* gcc.target/i386/ssse3-phaddw.c: Likewise.
+	* gcc.target/i386/ssse3-phsubd.c: Likewise.
+	* gcc.target/i386/ssse3-phsubsw.c: Likewise.
+	* gcc.target/i386/ssse3-phsubw.c: Likewise.
+	* gcc.target/i386/ssse3-pmaddubsw.c: Likewise.
+	* gcc.target/i386/ssse3-pmulhrsw.c: Likewise.
+	* gcc.target/i386/ssse3-pshufb.c: Likewise.
+	* gcc.target/i386/ssse3-psignb.c: Likewise.
+	* gcc.target/i386/ssse3-psignd.c: Likewise.
+	* gcc.target/i386/ssse3-psignw.c: Likewise.
+	* gcc.target/i386/ssse3-vals.h: Likewise.
+
+	* gcc.target/i386/sse3-check.h: New file.
+	* gcc.target/i386/ssse3-check.h: Likewise.
+
 2007-05-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/31095

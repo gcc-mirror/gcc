@@ -1,27 +1,12 @@
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-require-effective-target ssse3 } */
 /* { dg-options "-O2 -mssse3" } */
-#include <tmmintrin.h>
-#include <string.h>
-#include <stdlib.h>
-#include "../../gcc.dg/i386-cpuid.h"
+
+#include "ssse3-check.h"
 #include "ssse3-vals.h"
 
-static void ssse3_test (void);
-
-int
-main ()
-{
-  unsigned long cpu_facilities;
- 
-  cpu_facilities = i386_cpuid_ecx ();
-
-  /* Run SSSE3 test only if host has SSSE3 support.  */
-  if ((cpu_facilities & bit_SSSE3))
-    ssse3_test ();
-
-  exit (0);
-}
+#include <tmmintrin.h>
+#include <string.h>
 
 /* Test the 64-bit form */
 static void
