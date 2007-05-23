@@ -49,69 +49,204 @@ Boston, MA 02110-1301, USA.  */
 
 #define ENDFN(NAME) .end NAME
 
-/* Single precision math.  */
+/* ARG1
+	The FPR that holds the first floating-point argument.
 
-/* This macro defines a function which loads two single precision
-   values, performs an operation, and returns the single precision
-   result.  */
+   ARG2
+	The FPR that holds the second floating-point argument.
 
-#define SFOP(NAME, OPCODE)	\
+   RET
+	The FPR that holds a floating-point return value.  */
+
+#define RET $f0
+#define ARG1 $f12
+#ifdef __mips64
+#define ARG2 $f13
+#else
+#define ARG2 $f14
+#endif
+
+/* Set 64-bit register GPR so that its high 32 bits contain HIGH_FPR
+   and so that its low 32 bits contain LOW_FPR.  */
+#define MERGE_GPRf(GPR, HIGH_FPR, LOW_FPR)	\
+	.set	noat;				\
+	mfc1	GPR, HIGH_FPR;			\
+	mfc1	$1, LOW_FPR;			\
+	dsll	GPR, GPR, 32;			\
+	or	GPR, GPR, $1;			\
+	.set	at
+
+/* Move the high 32 bits of GPR to HIGH_FPR and the low 32 bits of
+   GPR to LOW_FPR.  */
+#define MERGE_GPRt(GPR, HIGH_FPR, LOW_FPR)	\
+	.set	noat;				\
+	dsrl	$1, GPR, 32;			\
+	mtc1	GPR, LOW_FPR;			\
+	mtc1	$1, HIGH_FPR;			\
+	.set	at
+
+/* Jump to T, and use "OPCODE, OP2" to implement a delayed move.  */
+#define DELAYt(T, OPCODE, OP2)			\
+	.set	noreorder;			\
+	jr	T;				\
+	OPCODE, OP2;				\
+	.set	reorder
+
+/* Use "OPCODE. OP2" and jump to T.  */
+#define DELAYf(T, OPCODE, OP2) OPCODE, OP2; jr T
+
+/* MOVE_SF_BYTE0(D)
+	Move the first single-precision floating-point argument between
+	GPRs and FPRs.
+
+   MOVE_SI_BYTE0(D)
+	Likewise the first single-precision integer argument.
+
+   MOVE_SF_BYTE4(D)
+	Move the second single-precision floating-point argument between
+	GPRs and FPRs, given that the first argument occupies 4 bytes.
+
+   MOVE_SF_BYTE8(D)
+	Move the second single-precision floating-point argument between
+	GPRs and FPRs, given that the first argument occupies 8 bytes.
+
+   MOVE_DF_BYTE0(D)
+	Move the first double-precision floating-point argument between
+	GPRs and FPRs.
+
+   MOVE_DF_BYTE8(D)
+	Likewise the second double-precision floating-point argument.
+
+   MOVE_SF_RET(D, T)
+	Likewise a single-precision floating-point return value,
+	then jump to T.
+
+   MOVE_SC_RET(D, T)
+	Likewise a complex single-precision floating-point return value.
+
+   MOVE_DF_RET(D, T)
+	Likewise a double-precision floating-point return value.
+
+   MOVE_DC_RET(D, T)
+	Likewise a complex double-precision floating-point return value.
+
+   MOVE_SI_RET(D, T)
+	Likewise a single-precision integer return value.
+
+   The D argument is "t" to move to FPRs and "f" to move from FPRs.
+   The return macros may assume that the target of the jump does not
+   use a floating-point register.  */
+
+#define MOVE_SF_RET(D, T) DELAY##D (T, m##D##c1 $2,$f0)
+#define MOVE_SI_RET(D, T) DELAY##D (T, m##D##c1 $2,$f0)
+
+#if defined(__mips64) && defined(__MIPSEB__)
+#define MOVE_SC_RET(D, T) MERGE_GPR##D ($2, $f0, $f1); jr T
+#elif defined(__mips64)
+/* The high 32 bits of $2 correspond to the second word in memory;
+   i.e. the imaginary part.  */
+#define MOVE_SC_RET(D, T) MERGE_GPR##D ($2, $f1, $f0); jr T
+#elif __mips_fpr == 64
+#define MOVE_SC_RET(D, T) m##D##c1 $2,$f0; DELAY##D (T, m##D##c1 $3,$f1)
+#else
+#define MOVE_SC_RET(D, T) m##D##c1 $2,$f0; DELAY##D (T, m##D##c1 $3,$f2)
+#endif
+
+#if defined(__mips64)
+#define MOVE_SF_BYTE0(D) m##D##c1 $4,$f12
+#define MOVE_SF_BYTE4(D) m##D##c1 $5,$f13
+#define MOVE_SF_BYTE8(D) m##D##c1 $5,$f13
+#else
+#define MOVE_SF_BYTE0(D) m##D##c1 $4,$f12
+#define MOVE_SF_BYTE4(D) m##D##c1 $5,$f14
+#define MOVE_SF_BYTE8(D) m##D##c1 $6,$f14
+#endif
+#define MOVE_SI_BYTE0(D) MOVE_SF_BYTE0(D)
+
+#if defined(__mips64)
+#define MOVE_DF_BYTE0(D) dm##D##c1 $4,$f12
+#define MOVE_DF_BYTE8(D) dm##D##c1 $5,$f13
+#define MOVE_DF_RET(D, T) DELAY##D (T, dm##D##c1 $2,$f0)
+#define MOVE_DC_RET(D, T) dm##D##c1 $3,$f1; MOVE_DF_RET (D, T)
+#elif __mips_fpr == 64 && defined(__MIPSEB__)
+#define MOVE_DF_BYTE0(D) m##D##c1 $5,$f12; m##D##hc1 $4,$f12
+#define MOVE_DF_BYTE8(D) m##D##c1 $7,$f14; m##D##hc1 $6,$f14
+#define MOVE_DF_RET(D, T) m##D##c1 $3,$f0; DELAY##D (T, m##D##hc1 $2,$f0)
+#define MOVE_DC_RET(D, T) m##D##c1 $5,$f1; m##D##hc1 $4,$f1; MOVE_DF_RET (D, T)
+#elif __mips_fpr == 64
+#define MOVE_DF_BYTE0(D) m##D##c1 $4,$f12; m##D##hc1 $5,$f12
+#define MOVE_DF_BYTE8(D) m##D##c1 $6,$f14; m##D##hc1 $7,$f14
+#define MOVE_DF_RET(D, T) m##D##c1 $2,$f0; DELAY##D (T, m##D##hc1 $3,$f0)
+#define MOVE_DC_RET(D, T) m##D##c1 $4,$f1; m##D##hc1 $5,$f1; MOVE_DF_RET (D, T)
+#elif defined(__MIPSEB__)
+/* FPRs are little-endian.  */
+#define MOVE_DF_BYTE0(D) m##D##c1 $4,$f13; m##D##c1 $5,$f12
+#define MOVE_DF_BYTE8(D) m##D##c1 $6,$f15; m##D##c1 $7,$f14
+#define MOVE_DF_RET(D, T) m##D##c1 $2,$f1; DELAY##D (T, m##D##c1 $3,$f0)
+#define MOVE_DC_RET(D, T) m##D##c1 $4,$f3; m##D##c1 $5,$f2; MOVE_DF_RET (D, T)
+#else
+#define MOVE_DF_BYTE0(D) m##D##c1 $4,$f12; m##D##c1 $5,$f13
+#define MOVE_DF_BYTE8(D) m##D##c1 $6,$f14; m##D##c1 $7,$f15
+#define MOVE_DF_RET(D, T) m##D##c1 $2,$f0; DELAY##D (T, m##D##c1 $3,$f1)
+#define MOVE_DC_RET(D, T) m##D##c1 $4,$f2; m##D##c1 $5,$f3; MOVE_DF_RET (D, T)
+#endif
+
+/* Single-precision math.  */
+
+/* Define a function NAME that loads two single-precision values,
+   performs FPU operation OPCODE on them, and returns the single-
+   precision result.  */
+
+#define OPSF3(NAME, OPCODE)	\
 STARTFN (NAME);			\
-	.set	noreorder;	\
-	mtc1	$4,$f0;		\
-	mtc1	$5,$f2;		\
-	nop;			\
-	OPCODE	$f0,$f0,$f2;	\
-	mfc1	$2,$f0;		\
-	j	$31;		\
-	nop;			\
-	.set	reorder;	\
+	MOVE_SF_BYTE0 (t);	\
+	MOVE_SF_BYTE4 (t);	\
+	OPCODE	RET,ARG1,ARG2;	\
+	MOVE_SF_RET (f, $31);	\
 	ENDFN (NAME)
 
 #ifdef L_m16addsf3
-SFOP(__mips16_addsf3, add.s)
+OPSF3 (__mips16_addsf3, add.s)
 #endif
 #ifdef L_m16subsf3
-SFOP(__mips16_subsf3, sub.s)
+OPSF3 (__mips16_subsf3, sub.s)
 #endif
 #ifdef L_m16mulsf3
-SFOP(__mips16_mulsf3, mul.s)
+OPSF3 (__mips16_mulsf3, mul.s)
 #endif
 #ifdef L_m16divsf3
-SFOP(__mips16_divsf3, div.s)
+OPSF3 (__mips16_divsf3, div.s)
 #endif
 
-#define SFOP2(NAME, OPCODE)	\
+/* Define a function NAME that loads a single-precision value,
+   performs FPU operation OPCODE on it, and returns the single-
+   precision result.  */
+
+#define OPSF2(NAME, OPCODE)	\
 STARTFN (NAME);			\
-	.set	noreorder;	\
-	mtc1	$4,$f0;		\
-	nop;			\
-	OPCODE	$f0,$f0;	\
-	mfc1	$2,$f0;		\
-	j	$31;		\
-	nop;			\
-	.set	reorder;	\
+	MOVE_SF_BYTE0 (t);	\
+	OPCODE	RET,ARG1;	\
+	MOVE_SF_RET (f, $31);	\
 	ENDFN (NAME)
 
 #ifdef L_m16negsf2
-SFOP2(__mips16_negsf2, neg.s)
+OPSF2 (__mips16_negsf2, neg.s)
 #endif
 #ifdef L_m16abssf2
-SFOP2(__mips16_abssf2, abs.s)
+OPSF2 (__mips16_abssf2, abs.s)
 #endif
 
-/* Single precision comparisons.  */
+/* Single-precision comparisons.  */
 
-/* This macro defines a function which loads two single precision
-   values, performs a floating point comparison, and returns the
-   specified values according to whether the comparison is true or
-   false.  */
+/* Define a function NAME that loads two single-precision values,
+   performs floating point comparison OPCODE, and returns TRUE or
+   FALSE depending on the result.  */
 
-#define SFCMP(NAME, OPCODE, TRUE, FALSE)	\
+#define CMPSF(NAME, OPCODE, TRUE, FALSE)	\
 STARTFN (NAME);					\
-	mtc1	$4,$f0;				\
-	mtc1	$5,$f2;				\
-	OPCODE	$f0,$f2;			\
+	MOVE_SF_BYTE0 (t);			\
+	MOVE_SF_BYTE4 (t);			\
+	OPCODE	ARG1,ARG2;			\
 	li	$2,TRUE;			\
 	bc1t	1f;				\
 	li	$2,FALSE;			\
@@ -119,13 +254,13 @@ STARTFN (NAME);					\
 	j	$31;				\
 	ENDFN (NAME)
 
-/* This macro is like SFCMP, but it reverses the comparison.  */
+/* Like CMPSF, but reverse the comparison operands.  */
 
-#define SFREVCMP(NAME, OPCODE, TRUE, FALSE)	\
+#define REVCMPSF(NAME, OPCODE, TRUE, FALSE)	\
 STARTFN (NAME);					\
-	mtc1	$4,$f0;				\
-	mtc1	$5,$f2;				\
-	OPCODE	$f2,$f0;			\
+	MOVE_SF_BYTE0 (t);			\
+	MOVE_SF_BYTE4 (t);			\
+	OPCODE	ARG2,ARG1;			\
 	li	$2,TRUE;			\
 	bc1t	1f;				\
 	li	$2,FALSE;			\
@@ -134,189 +269,118 @@ STARTFN (NAME);					\
 	ENDFN (NAME)
 
 #ifdef L_m16eqsf2
-SFCMP(__mips16_eqsf2, c.eq.s, 0, 1)
+CMPSF (__mips16_eqsf2, c.eq.s, 0, 1)
 #endif
 #ifdef L_m16nesf2
-SFCMP(__mips16_nesf2, c.eq.s, 0, 1)
+CMPSF (__mips16_nesf2, c.eq.s, 0, 1)
 #endif
 #ifdef L_m16gtsf2
-SFREVCMP(__mips16_gtsf2, c.lt.s, 1, 0)
+REVCMPSF (__mips16_gtsf2, c.lt.s, 1, 0)
 #endif
 #ifdef L_m16gesf2
-SFREVCMP(__mips16_gesf2, c.le.s, 0, -1)
+REVCMPSF (__mips16_gesf2, c.le.s, 0, -1)
 #endif
 #ifdef L_m16lesf2
-SFCMP(__mips16_lesf2, c.le.s, 0, 1)
+CMPSF (__mips16_lesf2, c.le.s, 0, 1)
 #endif
 #ifdef L_m16ltsf2
-SFCMP(__mips16_ltsf2, c.lt.s, -1, 0)
+CMPSF (__mips16_ltsf2, c.lt.s, -1, 0)
 #endif
 
-/* Single precision conversions.  */
+/* Single-precision conversions.  */
 
 #ifdef L_m16fltsisf
 STARTFN (__mips16_floatsisf)
-	.set	noreorder
-	mtc1	$4,$f0
-	nop
-	cvt.s.w	$f0,$f0
-	mfc1	$2,$f0
-	j	$31
-	nop
-	.set	reorder
+	MOVE_SF_BYTE0 (t)
+	cvt.s.w	RET,ARG1
+	MOVE_SF_RET (f, $31)
 	ENDFN (__mips16_floatsisf)
 #endif
 
 #ifdef L_m16fix_truncsfsi
 STARTFN (__mips16_fix_truncsfsi)
-	.set	noreorder
-	mtc1	$4,$f0
-	nop
-	trunc.w.s $f0,$f0,$4
-	mfc1	$2,$f0
-	j	$31
-	nop
-	.set	reorder
+	MOVE_SF_BYTE0 (t)
+	trunc.w.s RET,ARG1,$4
+	MOVE_SI_RET (f, $31)
 	ENDFN (__mips16_fix_truncsfsi)
 #endif
 
 #if !defined(__mips_single_float) && !defined(__SINGLE_FLOAT)
 
-/* The double precision operations.  We need to use different code
-   based on the preprocessor symbol __mips64, because the way in which
-   double precision values will change.  Without __mips64, the value
-   is passed in two 32-bit registers.  With __mips64, the value is
-   passed in a single 64-bit register.  */
+/* Double-precision math.  */
 
-/* Load the first double precision operand.  */
+/* Define a function NAME that loads two double-precision values,
+   performs FPU operation OPCODE on them, and returns the double-
+   precision result.  */
 
-#if defined(__mips64)
-#define LDDBL1 dmtc1 $4,$f12
-#elif defined(__mipsfp64)
-#define LDDBL1 sw $4,0($29); sw $5,4($29); l.d $f12,0($29)
-#elif defined(__MIPSEB__)
-#define LDDBL1 mtc1 $4,$f13; mtc1 $5,$f12
-#else
-#define LDDBL1 mtc1 $4,$f12; mtc1 $5,$f13
-#endif
-
-/* Load the second double precision operand.  */
-
-#if defined(__mips64)
-/* XXX this should be $6 for Algo arg passing model */
-#define LDDBL2 dmtc1 $5,$f14
-#elif defined(__mipsfp64)
-#define LDDBL2 sw $6,8($29); sw $7,12($29); l.d $f14,8($29)
-#elif defined(__MIPSEB__)
-#define LDDBL2 mtc1 $6,$f15; mtc1 $7,$f14
-#else
-#define LDDBL2 mtc1 $6,$f14; mtc1 $7,$f15
-#endif
-
-/* Move the double precision return value to the right place.  */
-
-#if defined(__mips64)
-#define RETDBL dmfc1 $2,$f0
-#elif defined(__mipsfp64)
-#define RETDBL s.d $f0,0($29); lw $2,0($29); lw $3,4($29)
-#elif defined(__MIPSEB__)
-#define RETDBL mfc1 $2,$f1; mfc1 $3,$f0
-#else
-#define RETDBL mfc1 $2,$f0; mfc1 $3,$f1
-#endif
-
-/* Double precision math.  */
-
-/* This macro defines a function which loads two double precision
-   values, performs an operation, and returns the double precision
-   result.  */
-
-#define DFOP(NAME, OPCODE)	\
+#define OPDF3(NAME, OPCODE)	\
 STARTFN (NAME);			\
-	.set	noreorder;	\
-	LDDBL1;			\
-	LDDBL2;			\
-	nop;			\
-	OPCODE	$f0,$f12,$f14;	\
-	RETDBL;			\
-	j	$31;		\
-	nop;			\
-	.set	reorder;	\
+	MOVE_DF_BYTE0 (t);	\
+	MOVE_DF_BYTE8 (t);	\
+	OPCODE RET,ARG1,ARG2;	\
+	MOVE_DF_RET (f, $31);	\
 	ENDFN (NAME)
 
 #ifdef L_m16adddf3
-DFOP(__mips16_adddf3, add.d)
+OPDF3 (__mips16_adddf3, add.d)
 #endif
 #ifdef L_m16subdf3
-DFOP(__mips16_subdf3, sub.d)
+OPDF3 (__mips16_subdf3, sub.d)
 #endif
 #ifdef L_m16muldf3
-DFOP(__mips16_muldf3, mul.d)
+OPDF3 (__mips16_muldf3, mul.d)
 #endif
 #ifdef L_m16divdf3
-DFOP(__mips16_divdf3, div.d)
+OPDF3 (__mips16_divdf3, div.d)
 #endif
 
-#define DFOP2(NAME, OPCODE)	\
+/* Define a function NAME that loads a double-precision value,
+   performs FPU operation OPCODE on it, and returns the double-
+   precision result.  */
+
+#define OPDF2(NAME, OPCODE)	\
 STARTFN (NAME);			\
-	.set	noreorder;	\
-	LDDBL1;			\
-	nop;			\
-	OPCODE	$f0,$f12;	\
-	RETDBL;			\
-	j	$31;		\
-	nop;			\
-	.set	reorder;	\
+	MOVE_DF_BYTE0 (t);	\
+	OPCODE RET,ARG1;	\
+	MOVE_DF_RET (f, $31);	\
 	ENDFN (NAME)
 
 #ifdef L_m16negdf2
-DFOP2(__mips16_negdf2, neg.d)
+OPDF2 (__mips16_negdf2, neg.d)
 #endif
 #ifdef L_m16absdf2
-DFOP2(__mips16_absdf2, abs.d)
+OPDF2 (__mips16_absdf2, abs.d)
 #endif
-
 
 /* Conversions between single and double precision.  */
 
 #ifdef L_m16extsfdf2
 STARTFN (__mips16_extendsfdf2)
-	.set	noreorder
-	mtc1	$4,$f12
-	nop
-	cvt.d.s	$f0,$f12
-	RETDBL
-	j	$31
-	nop
-	.set	reorder
+	MOVE_SF_BYTE0 (t)
+	cvt.d.s	RET,ARG1
+	MOVE_DF_RET (f, $31)
 	ENDFN (__mips16_extendsfdf2)
 #endif
 
 #ifdef L_m16trdfsf2
 STARTFN (__mips16_truncdfsf2)
-	.set	noreorder
-	LDDBL1
-	nop
-	cvt.s.d	$f0,$f12
-	mfc1	$2,$f0
-	j	$31
-	nop
-	.set	reorder
+	MOVE_DF_BYTE0 (t)
+	cvt.s.d	RET,ARG1
+	MOVE_SF_RET (f, $31)
 	ENDFN (__mips16_truncdfsf2)
 #endif
 
-/* Double precision comparisons.  */
+/* Double-precision comparisons.  */
 
-/* This macro defines a function which loads two double precision
-   values, performs a floating point comparison, and returns the
-   specified values according to whether the comparison is true or
-   false.  */
+/* Define a function NAME that loads two double-precision values,
+   performs floating point comparison OPCODE, and returns TRUE or
+   FALSE depending on the result.  */
 
-#define DFCMP(NAME, OPCODE, TRUE, FALSE)	\
+#define CMPDF(NAME, OPCODE, TRUE, FALSE)	\
 STARTFN (NAME);					\
-	LDDBL1;					\
-	LDDBL2;					\
-	OPCODE	$f12,$f14;			\
+	MOVE_DF_BYTE0 (t);			\
+	MOVE_DF_BYTE8 (t);			\
+	OPCODE	ARG1,ARG2;			\
 	li	$2,TRUE;			\
 	bc1t	1f;				\
 	li	$2,FALSE;			\
@@ -324,13 +388,13 @@ STARTFN (NAME);					\
 	j	$31;				\
 	ENDFN (NAME)
 
-/* This macro is like DFCMP, but it reverses the comparison.  */
+/* Like CMPDF, but reverse the comparison operands.  */
 
-#define DFREVCMP(NAME, OPCODE, TRUE, FALSE)	\
+#define REVCMPDF(NAME, OPCODE, TRUE, FALSE)	\
 STARTFN (NAME);					\
-	LDDBL1;					\
-	LDDBL2;					\
-	OPCODE	$f14,$f12;			\
+	MOVE_DF_BYTE0 (t);			\
+	MOVE_DF_BYTE8 (t);			\
+	OPCODE	ARG2,ARG1;			\
 	li	$2,TRUE;			\
 	bc1t	1f;				\
 	li	$2,FALSE;			\
@@ -339,174 +403,125 @@ STARTFN (NAME);					\
 	ENDFN (NAME)
 
 #ifdef L_m16eqdf2
-DFCMP(__mips16_eqdf2, c.eq.d, 0, 1)
+CMPDF (__mips16_eqdf2, c.eq.d, 0, 1)
 #endif
 #ifdef L_m16nedf2
-DFCMP(__mips16_nedf2, c.eq.d, 0, 1)
+CMPDF (__mips16_nedf2, c.eq.d, 0, 1)
 #endif
 #ifdef L_m16gtdf2
-DFREVCMP(__mips16_gtdf2, c.lt.d, 1, 0)
+REVCMPDF (__mips16_gtdf2, c.lt.d, 1, 0)
 #endif
 #ifdef L_m16gedf2
-DFREVCMP(__mips16_gedf2, c.le.d, 0, -1)
+REVCMPDF (__mips16_gedf2, c.le.d, 0, -1)
 #endif
 #ifdef L_m16ledf2
-DFCMP(__mips16_ledf2, c.le.d, 0, 1)
+CMPDF (__mips16_ledf2, c.le.d, 0, 1)
 #endif
 #ifdef L_m16ltdf2
-DFCMP(__mips16_ltdf2, c.lt.d, -1, 0)
+CMPDF (__mips16_ltdf2, c.lt.d, -1, 0)
 #endif
 
-/* Double precision conversions.  */
+/* Double-precision conversions.  */
 
 #ifdef L_m16fltsidf
 STARTFN (__mips16_floatsidf)
-	.set	noreorder
-	mtc1	$4,$f12
-	nop
-	cvt.d.w	$f0,$f12
-	RETDBL
-	j	$31
-	nop
-	.set	reorder
+	MOVE_SI_BYTE0 (t)
+	cvt.d.w	RET,ARG1
+	MOVE_DF_RET (f, $31)
 	ENDFN (__mips16_floatsidf)
 #endif
 
 #ifdef L_m16fix_truncdfsi
 STARTFN (__mips16_fix_truncdfsi)
-	.set	noreorder
-	LDDBL1
-	nop
-	trunc.w.d $f0,$f12,$4
-	mfc1	$2,$f0
-	j	$31
-	nop
-	.set	reorder
+	MOVE_DF_BYTE0 (t)
+	trunc.w.d RET,ARG1,$4
+	MOVE_SI_RET (f, $31)
 	ENDFN (__mips16_fix_truncdfsi)
 #endif
 #endif /* !__mips_single_float */
 
-/* These functions are used to return floating point values from
-   mips16 functions.  In this case we can put mtc1 in a jump delay slot,
-   because we know that the next instruction will not refer to a floating
-   point register.  */
+/* Define a function NAME that moves a return value of mode MODE from
+   FPRs to GPRs.  */
+
+#define RET_FUNCTION(NAME, MODE)	\
+STARTFN (NAME);				\
+	MOVE_##MODE##_RET (t, $31);	\
+	ENDFN (NAME)
 
 #ifdef L_m16retsf
-STARTFN (__mips16_ret_sf)
-	.set	noreorder
-	j	$31
-	mtc1	$2,$f0
-	.set	reorder
-	ENDFN (__mips16_ret_sf)
+RET_FUNCTION (__mips16_ret_sf, SF)
+#endif
+
+#ifdef L_m16retsc
+RET_FUNCTION (__mips16_ret_sc, SC)
 #endif
 
 #if !defined(__mips_single_float) && !defined(__SINGLE_FLOAT)
 #ifdef L_m16retdf
-STARTFN (__mips16_ret_df)
-	.set	noreorder
-#if defined(__mips64)
-	j	$31
-	dmtc1	$2,$f0
-#elif defined(__mipsfp64)
-	sw	$2,0($29)
-	sw	$3,4($29)
-	l.d	$f0,0($29)
-#elif defined(__MIPSEB__)
-	mtc1	$2,$f1
-	j	$31
-	mtc1	$3,$f0
-#else
-	mtc1	$2,$f0
-	j	$31
-	mtc1	$3,$f1
+RET_FUNCTION (__mips16_ret_df, DF)
 #endif
-	.set	reorder
-	ENDFN (__mips16_ret_df)
+
+#ifdef L_m16retdc
+RET_FUNCTION (__mips16_ret_dc, DC)
 #endif
 #endif /* !__mips_single_float */
 
+/* STUB_ARGS_X copies the arguments from GPRs to FPRs for argument
+   code X.  X is calculated as ARG1 + ARG2 * 4, where ARG1 and ARG2
+   classify the first and second arguments as follows:
+
+	1: a single-precision argument
+	2: a double-precision argument
+	0: no argument, or not one of the above.  */
+
+#define STUB_ARGS_0						/* () */
+#define STUB_ARGS_1 MOVE_SF_BYTE0 (t)				/* (sf) */
+#define STUB_ARGS_5 MOVE_SF_BYTE0 (t); MOVE_SF_BYTE4 (t)	/* (sf, sf) */
+#define STUB_ARGS_9 MOVE_SF_BYTE0 (t); MOVE_DF_BYTE8 (t)	/* (sf, df) */
+#define STUB_ARGS_2 MOVE_DF_BYTE0 (t)				/* (df) */
+#define STUB_ARGS_6 MOVE_DF_BYTE0 (t); MOVE_SF_BYTE8 (t)	/* (df, sf) */
+#define STUB_ARGS_10 MOVE_DF_BYTE0 (t); MOVE_DF_BYTE8 (t)	/* (df, df) */
+
 /* These functions are used by 16-bit code when calling via a function
-   pointer.  They must copy the floating point arguments from the gp
-   regs into the fp regs.  The function to call will be in $2.  The
-   exact set of floating point arguments to copy is encoded in the
-   function name; the final number is an fp_code, as described in
-   mips.h in the comment about CUMULATIVE_ARGS.  */
+   pointer.  They must copy the floating point arguments from the GPRs
+   to FPRs and then call function $2.  */
+
+#define CALL_STUB_NO_RET(NAME, CODE)	\
+STARTFN (NAME);				\
+	STUB_ARGS_##CODE;		\
+	jr	$2;			\
+	ENDFN (NAME)
 
 #ifdef L_m16stub1
-/* (float) */
-STARTFN (__mips16_call_stub_1)
-	.set	noreorder
-	mtc1	$4,$f12
-	j	$2
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_1)
+CALL_STUB_NO_RET (__mips16_call_stub_1, 1)
 #endif
 
 #ifdef L_m16stub5
-/* (float, float) */
-STARTFN (__mips16_call_stub_5)
-	.set	noreorder
-	mtc1	$4,$f12
-	mtc1	$5,$f14
-	j	$2
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_5)
+CALL_STUB_NO_RET (__mips16_call_stub_5, 5)
 #endif
 
 #if !defined(__mips_single_float) && !defined(__SINGLE_FLOAT)
 
 #ifdef L_m16stub2
-/* (double) */
-STARTFN (__mips16_call_stub_2)
-	.set	noreorder
-	LDDBL1
-	j	$2
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_2)
+CALL_STUB_NO_RET (__mips16_call_stub_2, 2)
 #endif
 
 #ifdef L_m16stub6
-/* (double, float) */
-STARTFN (__mips16_call_stub_6)
-	.set	noreorder
-	LDDBL1
-	mtc1	$6,$f14
-	j	$2
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_6)
+CALL_STUB_NO_RET (__mips16_call_stub_6, 6)
 #endif
 
 #ifdef L_m16stub9
-/* (float, double) */
-STARTFN (__mips16_call_stub_9)
-	.set	noreorder
-	mtc1	$4,$f12
-	LDDBL2
-	j	$2
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_9)
+CALL_STUB_NO_RET (__mips16_call_stub_9, 9)
 #endif
 
 #ifdef L_m16stub10
-/* (double, double) */
-STARTFN (__mips16_call_stub_10)
-	.set	noreorder
-	LDDBL1
-	LDDBL2
-	j	$2
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_10)
+CALL_STUB_NO_RET (__mips16_call_stub_10, 10)
 #endif
 #endif /* !__mips_single_float */
 
 /* Now we have the same set of functions, except that this time the
-   function being called returns an SFmode value.  The calling
+   function being called returns an SFmode, SCmode, DFmode or DCmode
+   value; we need to instantiate a set for each case.  The calling
    function will arrange to preserve $18, so these functions are free
    to use it to hold the return address.
 
@@ -517,223 +532,143 @@ STARTFN (__mips16_call_stub_10)
    being called is 16 bits, in which case the copy is unnecessary;
    however, it's faster to always do the copy.  */
 
+#define CALL_STUB_RET(NAME, CODE, MODE)	\
+STARTFN (NAME);				\
+	move	$18,$31;		\
+	STUB_ARGS_##CODE;		\
+	jalr	$2;			\
+	MOVE_##MODE##_RET (f, $18);	\
+	ENDFN (NAME)
+
+/* First, instantiate the single-float set.  */
+
 #ifdef L_m16stubsf0
-/* () */
-STARTFN (__mips16_call_stub_sf_0)
-	.set	noreorder
-	move	$18,$31
-	jal	$2
-	nop
-	mfc1	$2,$f0
-	j	$18
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_sf_0)
+CALL_STUB_RET (__mips16_call_stub_sf_0, 0, SF)
 #endif
 
 #ifdef L_m16stubsf1
-/* (float) */
-STARTFN (__mips16_call_stub_sf_1)
-	.set	noreorder
-	mtc1	$4,$f12
-	move	$18,$31
-	jal	$2
-	nop
-	mfc1	$2,$f0
-	j	$18
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_sf_1)
+CALL_STUB_RET (__mips16_call_stub_sf_1, 1, SF)
 #endif
 
 #ifdef L_m16stubsf5
-/* (float, float) */
-STARTFN (__mips16_call_stub_sf_5)
-	.set	noreorder
-	mtc1	$4,$f12
-	mtc1	$5,$f14
-	move	$18,$31
-	jal	$2
-	nop
-	mfc1	$2,$f0
-	j	$18
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_sf_5)
+CALL_STUB_RET (__mips16_call_stub_sf_5, 5, SF)
 #endif
 
 #if !defined(__mips_single_float) && !defined(__SINGLE_FLOAT)
 #ifdef L_m16stubsf2
-/* (double) */
-STARTFN (__mips16_call_stub_sf_2)
-	.set	noreorder
-	LDDBL1
-	move	$18,$31
-	jal	$2
-	nop
-	mfc1	$2,$f0
-	j	$18
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_sf_2)
+CALL_STUB_RET (__mips16_call_stub_sf_2, 2, SF)
 #endif
 
 #ifdef L_m16stubsf6
-/* (double, float) */
-STARTFN (__mips16_call_stub_sf_6)
-	.set	noreorder
-	LDDBL1
-	mtc1	$6,$f14
-	move	$18,$31
-	jal	$2
-	nop
-	mfc1	$2,$f0
-	j	$18
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_sf_6)
+CALL_STUB_RET (__mips16_call_stub_sf_6, 6, SF)
 #endif
 
 #ifdef L_m16stubsf9
-/* (float, double) */
-STARTFN (__mips16_call_stub_sf_9)
-	.set	noreorder
-	mtc1	$4,$f12
-	LDDBL2
-	move	$18,$31
-	jal	$2
-	nop
-	mfc1	$2,$f0
-	j	$18
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_sf_9)
+CALL_STUB_RET (__mips16_call_stub_sf_9, 9, SF)
 #endif
 
 #ifdef L_m16stubsf10
-/* (double, double) */
-STARTFN (__mips16_call_stub_sf_10)
-	.set	noreorder
-	LDDBL1
-	LDDBL2
-	move	$18,$31
-	jal	$2
-	nop
-	mfc1	$2,$f0
-	j	$18
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_sf_10)
+CALL_STUB_RET (__mips16_call_stub_sf_10, 10, SF)
 #endif
+#endif /* !__mips_single_float */
+
 
 /* Now we have the same set of functions again, except that this time
    the function being called returns an DFmode value.  */
 
+#if !defined(__mips_single_float) && !defined(__SINGLE_FLOAT)
 #ifdef L_m16stubdf0
-/* () */
-STARTFN (__mips16_call_stub_df_0)
-	.set	noreorder
-	move	$18,$31
-	jal	$2
-	nop
-	RETDBL
-	j	$18
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_df_0)
+CALL_STUB_RET (__mips16_call_stub_df_0, 0, DF)
 #endif
 
 #ifdef L_m16stubdf1
-/* (float) */
-STARTFN (__mips16_call_stub_df_1)
-	.set	noreorder
-	mtc1	$4,$f12
-	move	$18,$31
-	jal	$2
-	nop
-	RETDBL
-	j	$18
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_df_1)
-#endif
-
-#ifdef L_m16stubdf2
-/* (double) */
-STARTFN (__mips16_call_stub_df_2)
-	.set	noreorder
-	LDDBL1
-	move	$18,$31
-	jal	$2
-	nop
-	RETDBL
-	j	$18
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_df_2)
+CALL_STUB_RET (__mips16_call_stub_df_1, 1, DF)
 #endif
 
 #ifdef L_m16stubdf5
-/* (float, float) */
-STARTFN (__mips16_call_stub_df_5)
-	.set	noreorder
-	mtc1	$4,$f12
-	mtc1	$5,$f14
-	move	$18,$31
-	jal	$2
-	nop
-	RETDBL
-	j	$18
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_df_5)
+CALL_STUB_RET (__mips16_call_stub_df_5, 5, DF)
+#endif
+
+#ifdef L_m16stubdf2
+CALL_STUB_RET (__mips16_call_stub_df_2, 2, DF)
 #endif
 
 #ifdef L_m16stubdf6
-/* (double, float) */
-STARTFN (__mips16_call_stub_df_6)
-	.set	noreorder
-	LDDBL1
-	mtc1	$6,$f14
-	move	$18,$31
-	jal	$2
-	nop
-	RETDBL
-	j	$18
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_df_6)
+CALL_STUB_RET (__mips16_call_stub_df_6, 6, DF)
 #endif
 
 #ifdef L_m16stubdf9
-/* (float, double) */
-STARTFN (__mips16_call_stub_df_9)
-	.set	noreorder
-	mtc1	$4,$f12
-	LDDBL2
-	move	$18,$31
-	jal	$2
-	nop
-	RETDBL
-	j	$18
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_df_9)
+CALL_STUB_RET (__mips16_call_stub_df_9, 9, DF)
 #endif
 
 #ifdef L_m16stubdf10
-/* (double, double) */
-STARTFN (__mips16_call_stub_df_10)
-	.set	noreorder
-	LDDBL1
-	LDDBL2
-	move	$18,$31
-	jal	$2
-	nop
-	RETDBL
-	j	$18
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_df_10)
+CALL_STUB_RET (__mips16_call_stub_df_10, 10, DF)
+#endif
+#endif /* !__mips_single_float */
+
+
+/* Ho hum.  Here we have the same set of functions again, this time
+   for when the function being called returns an SCmode value.  */
+
+#ifdef L_m16stubsc0
+CALL_STUB_RET (__mips16_call_stub_sc_0, 0, SC)
+#endif
+
+#ifdef L_m16stubsc1
+CALL_STUB_RET (__mips16_call_stub_sc_1, 1, SC)
+#endif
+
+#ifdef L_m16stubsc5
+CALL_STUB_RET (__mips16_call_stub_sc_5, 5, SC)
+#endif
+
+#if !defined(__mips_single_float) && !defined(__SINGLE_FLOAT)
+#ifdef L_m16stubsc2
+CALL_STUB_RET (__mips16_call_stub_sc_2, 2, SC)
+#endif
+
+#ifdef L_m16stubsc6
+CALL_STUB_RET (__mips16_call_stub_sc_6, 6, SC)
+#endif
+
+#ifdef L_m16stubsc9
+CALL_STUB_RET (__mips16_call_stub_sc_9, 9, SC)
+#endif
+
+#ifdef L_m16stubsc10
+CALL_STUB_RET (__mips16_call_stub_sc_10, 10, SC)
+#endif
+#endif /* !__mips_single_float */
+
+
+/* Finally, another set of functions for DCmode.  */
+
+#if !defined(__mips_single_float) && !defined(__SINGLE_FLOAT)
+#ifdef L_m16stubdc0
+CALL_STUB_RET (__mips16_call_stub_dc_0, 0, DC)
+#endif
+
+#ifdef L_m16stubdc1
+CALL_STUB_RET (__mips16_call_stub_dc_1, 1, DC)
+#endif
+
+#ifdef L_m16stubdc5
+CALL_STUB_RET (__mips16_call_stub_dc_5, 5, DC)
+#endif
+
+#ifdef L_m16stubdc2
+CALL_STUB_RET (__mips16_call_stub_dc_2, 2, DC)
+#endif
+
+#ifdef L_m16stubdc6
+CALL_STUB_RET (__mips16_call_stub_dc_6, 6, DC)
+#endif
+
+#ifdef L_m16stubdc9
+CALL_STUB_RET (__mips16_call_stub_dc_9, 9, DC)
+#endif
+
+#ifdef L_m16stubdc10
+CALL_STUB_RET (__mips16_call_stub_dc_10, 10, DC)
 #endif
 #endif /* !__mips_single_float */

@@ -1,3 +1,12 @@
+2007-05-23  Sandra Loosemore  <sandra@codesourcery.com>
+	    Nigel Stephens  <nigel@mips.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.target/mips/inter/mips16_stubs_1_main.c: New.
+	* gcc.target/mips/inter/mips16_stubs_1_x.c: New.
+	* gcc.target/mips/inter/mips16_stubs_1_y.c: New.
+	* gcc.target/mips/inter/mips16-inter.exp: New.
+
 2007-05-23  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.dg/bf-spl1.c, gcc.dg/m68k-pic-1.c: Enable on fido-*-*.
