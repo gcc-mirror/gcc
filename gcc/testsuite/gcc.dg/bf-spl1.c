@@ -1,4 +1,4 @@
-/* { dg-do run { target m68k-*-* sparc-*-* } } */
+/* { dg-do run { target m68k-*-* fido-*-* sparc-*-* } } */
 /* { dg-options { -O2 } } */
 
 extern void abort (void);

@@ -1,3 +1,7 @@
+2007-05-23  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.dg/bf-spl1.c, gcc.dg/m68k-pic-1.c: Enable on fido-*-*.
+
 2007-05-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/sse3-addsubpd.c: Don't include stdlib.h
