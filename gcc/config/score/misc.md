@@ -380,38 +380,3 @@
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
-(define_insn "bitclr_c"
-  [(set (match_operand:SI 0 "register_operand" "=e,d")
-        (and:SI (match_operand:SI 1 "register_operand" "0,d")
-                (match_operand:SI 2 "const_npow2")))
-   (clobber (reg:CC CC_REGNUM))]
-  ""
-  "@
-   bitclr!    %0, %F2
-   bitclr.c   %0, %1, %F2"
-  [(set_attr "type" "arith")
-   (set_attr "mode" "SI")])
-
-(define_insn "bitset_c"
-  [(set (match_operand:SI 0 "register_operand" "=e,d")
-        (ior:SI (match_operand:SI 1 "register_operand" "0,d")
-                (match_operand:SI 2 "const_pow2")))
-   (clobber (reg:CC CC_REGNUM))]
-  ""
-  "@
-   bitset!    %0, %E2
-   bitset.c   %0, %1, %E2"
-  [(set_attr "type" "arith")
-   (set_attr "mode" "SI")])
-
-(define_insn "bittgl_c"
-  [(set (match_operand:SI 0 "register_operand" "=e,d")
-        (xor:SI (match_operand:SI 1 "register_operand" "0,d")
-                (match_operand:SI 2 "const_pow2")))
-   (clobber (reg:CC CC_REGNUM))]
-  ""
-  "@
-   bittgl!    %0, %E2
-   bittgl.c   %0, %1, %E2"
-  [(set_attr "type" "arith")
-   (set_attr "mode" "SI")])
