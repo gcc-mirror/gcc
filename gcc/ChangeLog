@@ -1,3 +1,9 @@
+2007-05-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/31095
+	 * builtins.c (expand_builtin_memmove_args): Strip nops that don't
+	change the type before looking for a COMPOUND_EXPR.
+
 2007-05-22  Ian Lance Taylor  <iant@google.com>
 
 	* lower-subreg.c (decompose_multiword_subregs): If we change an
