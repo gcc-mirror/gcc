@@ -2086,7 +2086,7 @@ allocate_temp_for_forall_nest_1 (tree type, tree size, stmtblock_t * block,
   tree unit;
   tree tmp;
 
-  unit = TYPE_SIZE_UNIT (type);
+  unit = fold_convert (gfc_array_index_type, TYPE_SIZE_UNIT (type));
   if (!integer_onep (unit))
     bytesize = fold_build2 (MULT_EXPR, gfc_array_index_type, size, unit);
   else
