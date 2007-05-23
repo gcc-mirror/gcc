@@ -1,3 +1,10 @@
+2007-05-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/31051
+	Backport from trunk.
+	* io/transfer.c (formatted_transfer_scalar): Adjust position for pending
+	spaces when in writing mode.  Clean up some formatting.
+	
 2007-05-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR libfortran/31915
@@ -8,8 +15,8 @@
 2007-05-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/31395
-	* io/format.c (parse_format_list): Fix parsing. Regression against g77.
 	Backport from 4.3.
+	* io/format.c (parse_format_list): Fix parsing. Regression against g77.
 
 2007-05-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
