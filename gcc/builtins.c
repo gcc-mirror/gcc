@@ -3485,6 +3485,7 @@ expand_builtin_memmove_args (tree dest, tree src, tree len,
 
   if (result)
     {
+      STRIP_TYPE_NOPS (result);
       while (TREE_CODE (result) == COMPOUND_EXPR)
 	{
 	  expand_expr (TREE_OPERAND (result, 0), const0_rtx, VOIDmode,

@@ -1,5 +1,10 @@
 2007-05-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	PR middle-end/31095
+	* gcc.c-torture/compile/bcopy-1.c: New testcase.
+
+2007-05-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	PR middle-end/31606
 	* gcc.c-torture/20070522-1.c: New testcase.
 
