@@ -1,3 +1,16 @@
+2007-05-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32046
+	* trans-expr.c (gfc_trans_zero_assign): Convert the result of
+	TYPE_SIZE_UNIT into a signed type.
+	(gfc_trans_array_copy):  Likewise.
+	(gfc_trans_array_constructor_copy): Likewise.
+	* trans-array.c (gfc_trans_create_temp_array): Likewise.
+	(gfc_grow_array): Likewise.
+	(gfc_array_init_size): Likewise.
+	(gfc_duplicate_allocatable): Likewise.
+	* trans-stmt.c (allocate_temp_for_forall_nest_1): Likewise.
+
 2007-05-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/18923

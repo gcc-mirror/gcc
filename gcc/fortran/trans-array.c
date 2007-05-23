@@ -687,7 +687,8 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 
       nelem = size;
       size = fold_build2 (MULT_EXPR, gfc_array_index_type, size,
-			  TYPE_SIZE_UNIT (gfc_get_element_type (type)));
+		fold_convert (gfc_array_index_type,
+			      TYPE_SIZE_UNIT (gfc_get_element_type (type))));
     }
   else
     {
@@ -838,7 +839,8 @@ gfc_grow_array (stmtblock_t * pblock, tree desc, tree extra)
   /* Calculate the new array size.  */
   size = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (desc)));
   tmp = build2 (PLUS_EXPR, gfc_array_index_type, ubound, gfc_index_one_node);
-  arg1 = build2 (MULT_EXPR, gfc_array_index_type, tmp, size);
+  arg1 = build2 (MULT_EXPR, gfc_array_index_type, tmp,
+		 fold_convert (gfc_array_index_type, size));
 
   /* Pick the appropriate realloc function.  */
   if (gfc_index_integer_kind == 4)
@@ -3427,7 +3429,8 @@ gfc_array_init_size (tree descriptor, int rank, tree * poffset,
   /* The stride is the number of elements in the array, so multiply by the
      size of an element to get the total size.  */
   tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
-  size = fold_build2 (MULT_EXPR, gfc_array_index_type, stride, tmp);
+  size = fold_build2 (MULT_EXPR, gfc_array_index_type, stride,
+		      fold_convert (gfc_array_index_type, tmp));
 
   if (poffset != NULL)
     {
@@ -4960,7 +4963,8 @@ gfc_duplicate_allocatable(tree dest, tree src, tree type, int rank)
 
   nelems = get_full_array_size (&block, src, rank);
   size = fold_build2 (MULT_EXPR, gfc_array_index_type, nelems,
-		      TYPE_SIZE_UNIT (gfc_get_element_type (type)));
+		      fold_convert (gfc_array_index_type,
+				    TYPE_SIZE_UNIT (gfc_get_element_type (type))));
 
   /* Allocate memory to the destination.  */
   tmp = gfc_call_malloc (&block, TREE_TYPE (gfc_conv_descriptor_data_get (src)),
