@@ -102,9 +102,10 @@ may @emph{not} be grouped: @option{-dr} is very different from @w{@samp{-d
 @cindex order of options
 @cindex options, order
 You can mix options and other arguments.  For the most part, the order
-you use doesn't matter.  Order does matter when you use several options
-of the same kind; for example, if you specify @option{-L} more than once,
-the directories are searched in the order specified.
+you use doesn't matter.  Order does matter when you use several
+options of the same kind; for example, if you specify @option{-L} more
+than once, the directories are searched in the order specified.  Also,
+the placement of the @option{-l} option is significant.
 
 Many options have long names starting with @samp{-f} or with
 @samp{-W}---for example,
