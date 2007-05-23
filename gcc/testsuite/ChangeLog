@@ -1,3 +1,8 @@
+2007-05-23  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR preprocessor/20077
+	* gcc.dg/cpp/paste15.c: New test.
+
 2007-05-23  Sandra Loosemore  <sandra@codesourcery.com>
 	    Nigel Stephens  <nigel@mips.com>
 	    Richard Sandiford  <richard@codesourcery.com>
