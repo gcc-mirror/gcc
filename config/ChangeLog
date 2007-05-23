@@ -1,3 +1,8 @@
+2007-05-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/32009
+	* mh-ppc-darwin: Temporarily disable.
+
 2007-04-11  Kai Tietz  <kai.tietz@onevision.com>
 
 	* stdint.m4: Make template compatible with older cygwin 
