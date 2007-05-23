@@ -1,3 +1,10 @@
+2007-05-22  Ian Lance Taylor  <iant@google.com>
+
+	* tree-vrp.c (avoid_overflow_infinity): New static function,
+	broken out of set_value_range_to_value.
+	(set_value_range_to_value): Call avoid_overflow_infinity.
+	(extract_range_from_assert): Likewise.
+
 2007-05-23  Chen Liqin  <liqin@sunnorth.com.cn>
 
 	PR target/30987

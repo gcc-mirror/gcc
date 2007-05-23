@@ -195,6 +195,27 @@ is_overflow_infinity (tree val)
 	      || operand_equal_p (val, TYPE_MIN_VALUE (TREE_TYPE (val)), 0)));
 }
 
+/* If VAL is now an overflow infinity, return VAL.  Otherwise, return
+   the same value with TREE_OVERFLOW clear.  This can be used to avoid
+   confusing a regular value with an overflow value.  */
+
+static inline tree
+avoid_overflow_infinity (tree val)
+{
+  if (!is_overflow_infinity (val))
+    return val;
+
+  if (operand_equal_p (val, TYPE_MAX_VALUE (TREE_TYPE (val)), 0))
+    return TYPE_MAX_VALUE (TREE_TYPE (val));
+  else
+    {
+#ifdef ENABLE_CHECKING
+      gcc_assert (operand_equal_p (val, TYPE_MIN_VALUE (TREE_TYPE (val)), 0));
+#endif
+      return TYPE_MIN_VALUE (TREE_TYPE (val));
+    }
+}
+
 
 /* Return whether VAL is equal to the maximum value of its type.  This
    will be true for a positive overflow infinity.  We can't do a
@@ -354,19 +375,7 @@ static inline void
 set_value_range_to_value (value_range_t *vr, tree val, bitmap equiv)
 {
   gcc_assert (is_gimple_min_invariant (val));
-  if (is_overflow_infinity (val))
-    {
-      if (operand_equal_p (val, TYPE_MAX_VALUE (TREE_TYPE (val)), 0))
-	val = TYPE_MAX_VALUE (TREE_TYPE (val));
-      else
-	{
-#ifdef ENABLE_CHECKING
-	  gcc_assert (operand_equal_p (val,
-				       TYPE_MIN_VALUE (TREE_TYPE (val)), 0));
-#endif
-	  val = TYPE_MIN_VALUE (TREE_TYPE (val));
-	}
-    }
+  val = avoid_overflow_infinity (val);
   set_value_range (vr, VR_RANGE, val, val, equiv);
 }
 
@@ -1026,6 +1035,8 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
       limit = TREE_OPERAND (cond, 0);
       cond_code = swap_tree_comparison (TREE_CODE (cond));
     }
+
+  limit = avoid_overflow_infinity (limit);
 
   type = TREE_TYPE (limit);
   gcc_assert (limit != var);
