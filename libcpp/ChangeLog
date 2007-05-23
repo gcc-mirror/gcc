@@ -1,3 +1,10 @@
+2007-05-23  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR preprocessor/20077
+	* macro.c (create_iso_definition): Fixed the method to determine
+	whether the token-pasting operator appears at the beginning or the end
+	of a macro.
+
 2007-05-21  Ian Lance Taylor  <iant@google.com>
 
 	* internal.h (struct cpp_reader): Add new fields:
