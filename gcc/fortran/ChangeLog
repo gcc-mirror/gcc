@@ -1,3 +1,9 @@
+2007-05-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/18923
+	* resolve.c (resolve_function): Don't call resolve_global_procedure if
+	there is no name. Delete duplicated statement in ELSE clause.
+
 2007-05-22 Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31627
@@ -8,7 +14,7 @@
 	(gfc_conv_array_ref): Likewise.
 	(gfc_conv_ss_startstride): Likewise.
 
-2005-05-21  Jerry DeLisle  <jvdelisle@verizon.net>
+2007-05-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/32002
