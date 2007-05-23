@@ -1,3 +1,118 @@
+2007-05-23  Sandra Loosemore  <sandra@codesourcery.com>
+	    Nigel Stephens  <nigel@mips.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	Fix up MIPS16 hard float and add support for complex.
+
+	* config/mips/mips.h (TARGET_HARD_FLOAT_ABI): New.
+	(TARGET_SOFT_FLOAT_ABI): New.
+	(TARGET_CPU_CPP_BUILTINS): Define __mips_hard_float and
+	__mips_soft_float to reflect the ABI in use, not whether the
+	FPU is directly accessible (e.g., in MIPS16 mode).
+	(UNITS_PER_HWFPVALUE): Use TARGET_SOFT_FLOAT_ABI.
+	(UNITS_PER_FPVALUE): Likewise.
+
+	* config/mips/mips.c (mips_expand_call): Remove redundant
+	TARGET_MIPS16 check.
+	(mips_arg_regno): New.
+	(function_arg_advance): When setting bits in cum->fp_code for
+	MIPS16, don't subtract 1 from cum->arg_number, since it is now
+	zero-based.
+	(function_arg): Use mips_arg_regno.
+	(mips_return_mode_in_fpr_p): New.
+	(mips16_call_stub_mode_suffix): New.
+	(mips16_cfun_returns_in_fpr_p): New.
+	(mips_save_reg_p): Use mips16_cfun_returns_in_fpr_p.
+	(mips_output_function_prologue): Test mips16_hard_float, not
+	!TARGET_SOFT_FLOAT, to decide when a function stub is required.
+	(mips_expand_epilogue): Call MIPS16 helper routines to copy
+	return value into a floating-point register.
+	(mips_can_use_return_insn): Use mips16_cfun_returns_in_fpr_p.
+	(mips_function_value): Rewrite to use mips_return_mode_in_fpr_p.
+	(mips16_fp_args): Handle MIPS32r2 ISA which supports
+	TARGET_FLOAT64, and use mfhc1/mthc1 to copy the most significant
+	word of double arguments from or to the high bits of 64-bit
+	floating point registers.
+	(build_mips16_function_stub): Fill in DECL_RESULT for stubdecl.
+	(mips16_fpret_double): New helper function.
+	(build_mips16_call_stub): Use mips16_return_mode_in_fpr_p.  Add
+	support for complex modes.  Fill in DECL_RESULT for stubdecl.
+	(mips_init_libfuncs): Remove redundant TARGET_MIPS16 check.
+
+	* config/mips/mips16.S 
+	(RET, ARG1, ARG2): New.
+	(MERGE_GPRf, MERGE_GPRt): New.
+	(DELAYt, DELAYf): New.
+	(MOVE_SF_BYTE0, MOVE_SI_BYTE0): New.
+	(MOVE_SF_BYTE4, MOVE_SF_BYTE8): New.
+	(MOVE_DF_BYTE0, MOVE_DF_BYTE8): New.
+	(MOVE_SF_RET, MOVE_SC_RET, MOVE_DF_RET, MOVE_DC_RET, MOVE_SI_RET): New.
+	(SFOP): Renamed to...
+	(OPSF3): This, and macro-ified.  Updated all uses.
+	(SFOP2): Renamed to...
+	(OPSF2): This, and macro-ified.  Updated all uses.
+	(SFCMP): Renamed to...
+	(CMPSF): This, and macro-ified.  Updated all uses.
+	(SFREVCMP): Renamed to...
+	(REVCMPSF): This, and macro-ified.  Updated all uses.
+	(__mips16_floatsisf, __mips16_fix_truncsfsi): Macro-ified.
+	(LDDBL1, LDDBL2, RETDBL): Deleted.
+	(DFOP): Renamed to...
+	(OPDF3): This, and macro-ified.  Updated all uses.
+	(DFOP2): Renamed to...
+	(OPDF2): This, and macro-ified.  Updated all uses.
+	(__mips16_extendsfdf2, __mips16_truncdfsf2): Macro-ified.
+	(DFCMP): Renamed to...
+	(CMPDF): This, and macro-ified.  Updated all uses.
+	(DFREVCMP): Renamed to...
+	(REVCMPDF): This, and macro-ified.  Updated all uses.
+	(__mips16_floatsidf, __mips16_fix_truncdfsi): Macro-ified.
+	(RET_FUNCTION): New.
+	(__mips16_ret_sf, __mips16_ret_df): Macro-ified.
+	(__mips16_ret_sc, __mips16_ret_dc): New.
+	(STUB_ARGS_0, STUB_ARGS_1, STUB_ARGS_5, STUB_ARGS_9, STUB_ARGS_2,
+	STUB_ARGS_6, STUB_ARGS_10): New.
+	(CALL_STUB_NO_RET): New.
+	(__mips16_call_stub_1): Macro-ified.
+	(__mips16_call_stub_5): Macro-ified.
+	(__mips16_call_stub_2): Macro-ified.
+	(__mips16_call_stub_6): Macro-ified.
+	(__mips16_call_stub_9): Macro-ified.
+	(__mips16_call_stub_10): Macro-ified.
+	(CALL_STUB_RET): New.
+	(__mips16_call_stub_sf_0): Macro-ified.
+	(__mips16_call_stub_sf_1): Macro-ified.
+	(__mips16_call_stub_sf_5): Macro-ified.
+	(__mips16_call_stub_sf_2): Macro-ified.
+	(__mips16_call_stub_sf_6): Macro-ified.
+	(__mips16_call_stub_sf_9): Macro-ified.
+	(__mips16_call_stub_sf_10): Macro-ified.
+	(__mips16_call_stub_df_0): Macro-ified.
+	(__mips16_call_stub_df_1): Macro-ified.
+	(__mips16_call_stub_df_5): Macro-ified.
+	(__mips16_call_stub_df_2): Macro-ified.
+	(__mips16_call_stub_df_6): Macro-ified.
+	(__mips16_call_stub_df_9): Macro-ified.
+	(__mips16_call_stub_df_10): Macro-ified.
+	(__mips16_call_stub_sc_0): New.
+	(__mips16_call_stub_sc_1): New.
+	(__mips16_call_stub_sc_5): New.
+	(__mips16_call_stub_sc_2): New.
+	(__mips16_call_stub_sc_6): New.
+	(__mips16_call_stub_sc_9): New.
+	(__mips16_call_stub_sc_10): New.
+	(__mips16_call_stub_dc_0): New.
+	(__mips16_call_stub_dc_1): New.
+	(__mips16_call_stub_dc_5): New.
+	(__mips16_call_stub_dc_2): New.
+	(__mips16_call_stub_dc_6): New.
+	(__mips16_call_stub_dc_9): New.
+	(__mips16_call_stub_dc_10): New.
+	
+	* config/mips/t-elf (LIB1ASMFUNCS): Add MIPS16 floating-point stubs.
+	* config/mips/t-isa3264 (LIB1ASMFUNCS): Likewise.
+	* config/mips/t-r2900 (LIB1ASMFUNCS): Likewise.
+
 2007-05-23  Ian Lance Taylor  <iant@google.com>
 
 	* doc/invoke.texi (Invoking GCC): Document that the order of the

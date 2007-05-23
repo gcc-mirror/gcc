@@ -1,0 +1,48 @@
+# Run compatibility tests in which the "alt" compiler tries to force
+# MIPS16 mode.
+
+# We can only guarantee MIPS16 runtime support for certain targets.
+if { ![istarget mipsisa*-*-elf*] && ![istarget mips64vr*-*-elf*] } {
+    return
+}
+
+# Save the old value of CFLAGS_FOR_TARGET, if any.
+global saved_CFLAGS_FOR_TARGET
+if { [info exists CFLAGS_FOR_TARGET] } {
+    set saved_CFLAGS_FOR_TARGET $CFLAGS_FOR_TARGET
+} else {
+    unset -nocomplain saved_CFLAGS_FOR_TARGET
+}
+
+# The "alt" compiler is the normal compiler with an extra "-mips16" argument.
+proc compat-use-alt-compiler { } {
+    global saved_CFLAGS_FOR_TARGET CFLAGS_FOR_TARGET
+
+    if { [info exists saved_CFLAGS_FOR_TARGET] } {
+	set CFLAGS_FOR_TARGET [concat $saved_CFLAGS_FOR_TARGET "-mips16"]
+    } else {
+	set CFLAGS_FOR_TARGET "-mips16"
+    }
+}
+
+# Make the compiler under test the default.
+proc compat-use-tst-compiler { } {
+    global saved_CFLAGS_FOR_TARGET CFLAGS_FOR_TARGET
+
+    if { [info exists saved_CFLAGS_FOR_TARGET] } {
+	set CFLAGS_FOR_TARGET $saved_CFLAGS_FOR_TARGET
+    } else {
+	unset -nocomplain CFLAGS_FOR_TARGET
+    }
+}
+
+load_lib gcc.exp
+load_lib compat.exp
+
+gcc_init
+foreach src [lsort [find $srcdir/$subdir mips16_*_main.c]] {
+    if { [runtest_file_p $runtests $src] } {
+	compat-execute $src "mips16_inter" 1
+    }
+}
+compat-use-tst-compiler
