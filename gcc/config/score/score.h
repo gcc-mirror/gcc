@@ -785,6 +785,7 @@ typedef struct score_args
    output anything and let undefined symbol become external. However
    the assembler uses length information on externals to allocate in
    data/sdata bss/sbss, thereby saving exec time.  */
+#undef ASM_OUTPUT_EXTERNAL
 #define ASM_OUTPUT_EXTERNAL(STREAM, DECL, NAME) \
   score_output_external (STREAM, DECL, NAME)
 

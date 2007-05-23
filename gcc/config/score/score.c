@@ -1168,7 +1168,7 @@ score_print_operand (FILE *file, rtx op, int c)
     {
       gcc_assert (code == CONST_INT);
       fprintf (file, HOST_WIDE_INT_PRINT_HEX,
-               (unsigned HOST_WIDE_INT) INTVAL (op) >> 16);
+               (INTVAL (op) >> 16) & 0xffff);
     }
   else if (c == 'D')
     {
@@ -1176,7 +1176,7 @@ score_print_operand (FILE *file, rtx op, int c)
         {
           rtx temp = gen_lowpart (SImode, op);
           gcc_assert (GET_MODE (op) == SFmode);
-          fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL (temp));
+          fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL (temp) & 0xffffffff);
         }
       else
         output_addr_const (file, op);

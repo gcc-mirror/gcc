@@ -1,3 +1,13 @@
+2007-05-23  Chen Liqin  <liqin@sunnorth.com.cn>
+
+	PR target/30987
+	* config/score/misc.md (bitclr_c, bitset_c, bittgl_c): remove.
+	* config/score/predicate.md (const_pow2, const_npow2): remove.
+	* config/score/score.h (ASM_OUTPUT_EXTERNAL): add ASM_OUTPUT_EXTERNAL undef.
+	PR target/30474
+	* config/score/score.c (score_print_operand): makes sure that only lower 
+        bits are used.
+	
 2007-05-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/31167
