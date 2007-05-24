@@ -8,7 +8,8 @@ program intrinsic_bitops
    i = 2
    j = 3
    k = 12
-
+   a = 5
+   
    if (.not. btest (i, o+1)) call abort
    if (btest (i, o+2)) call abort
    if (iand (i, j) .ne. 2) call abort
@@ -26,4 +27,6 @@ program intrinsic_bitops
    if (ishftc (k, o-30) .ne. 48) call abort
    if (ishftc (k, o+1, o+3) .ne. 9) call abort
    if (not (i) .ne. -3) call abort
+   if (ishftc (a, 1, bit_size(a)) .ne. 10) call abort
+   if (ishftc (1, 1, 32) .ne. 2) call abort
 end program
