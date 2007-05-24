@@ -53,9 +53,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   // the current configuration.
   static const _Lock_policy __default_lock_policy = 
 #ifdef __GTHREADS
-  // NB: This macro doesn't actually exist yet in the compiler, but is
-  // set somewhat haphazardly at configure time.
-#ifdef _GLIBCXX_ATOMIC_BUILTINS
+#if (defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_2) \
+     && defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4))
   _S_atomic;
 #else
   _S_mutex;
@@ -63,7 +62,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #else
   _S_single;
 #endif
-  
+
   // NB: As this is used in libsupc++, need to only depend on
   // exception. No stdexception classes, no use of std::string.
   class __concurrence_lock_error : public std::exception

@@ -1,4 +1,8 @@
-2007-05-23  Steve Ellcey  <sje@cup.hp.com>
+2007-05-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/concurrence.h: Use __GCC_HAVE_SYNC_COMPARE_AND_SWAP_*.
+
+2007-05-24  Steve Ellcey  <sje@cup.hp.com>
 
 	* Makefile.in: Regenerate.
 	* configure: Regenerate.
