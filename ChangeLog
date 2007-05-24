@@ -1,3 +1,15 @@
+2007-05-23  Steve Ellcey  <sje@cup.hp.com>
+
+	* ltmain.sh: Update from ToT Libtool.
+	* libtool.m4: Update from ToT Libtool.
+	* ltsugar.m4: New. Update from ToT Libtool.
+	* ltversion.m4: New. Update from ToT Libtool.
+	* ltoptions.m4: New. Update from ToT Libtool.
+	* ltconfig: Remove.
+	* ltcf-c.sh: Remove.
+	* ltcf-cxx.sh: Remove.
+	* ltcf-gcj.sh: Remove.
+
 2007-05-22  Ollie Wild  <aaw@google.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

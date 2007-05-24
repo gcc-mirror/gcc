@@ -1,3 +1,8 @@
+2007-05-23  Steve Ellcey  <sje@cup.hp.com>
+
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+
 2007-04-21  Andrew Ruder  <andy@aeruder.net>
 
 	* sendmsg.c (__objc_get_forward_imp): Call
