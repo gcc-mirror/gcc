@@ -1,5 +1,10 @@
 2007-05-24  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_handle_option): Handle SSE4.1 for
+	-msse/-msse2/-msse3.
+
+2007-05-24  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Mark
 	__builtin_ia32_vec_set_v2di with MASK_64BIT.
 
