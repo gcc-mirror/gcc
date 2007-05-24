@@ -928,9 +928,8 @@ duplicate_block (basic_block bb, edge e, basic_block after)
   if (current_loops != NULL)
     {
       struct loop *cloop = bb->loop_father;
-      if (cloop->copy)
-	cloop = cloop->copy;
-      add_bb_to_loop (new_bb, cloop);
+      struct loop *copy = get_loop_copy (cloop);
+      add_bb_to_loop (new_bb, copy ? copy : cloop);
     }
 
   return new_bb;

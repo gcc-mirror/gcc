@@ -988,6 +988,9 @@ extern void set_bb_original (basic_block, basic_block);
 extern basic_block get_bb_original (basic_block);
 extern void set_bb_copy (basic_block, basic_block);
 extern basic_block get_bb_copy (basic_block);
+void set_loop_copy (struct loop *, struct loop *);
+struct loop *get_loop_copy (struct loop *);
+
 
 extern rtx insert_insn_end_bb_new (rtx, basic_block);
 

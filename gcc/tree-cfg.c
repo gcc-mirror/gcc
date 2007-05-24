@@ -4360,14 +4360,14 @@ tree_duplicate_sese_region (edge entry, edge exit,
 	return false;
     }
 
-  loop->copy = loop;
+  set_loop_copy (loop, loop);
 
   /* In case the function is used for loop header copying (which is the primary
      use), ensure that EXIT and its copy will be new latch and entry edges.  */
   if (loop->header == entry->dest)
     {
       copying_header = true;
-      loop->copy = loop_outer (loop);
+      set_loop_copy (loop, loop_outer (loop));
 
       if (!dominated_by_p (CDI_DOMINATORS, loop->latch, exit->src))
 	return false;

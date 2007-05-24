@@ -918,10 +918,10 @@ thread_through_loop_header (struct loop *loop, bool may_peel_loop_headers)
 
       /* The duplicate of the header is the new preheader of the loop.  Ensure
 	 that it is placed correctly in the loop hierarchy.  */
-      loop->copy = loop_outer (loop);
+      set_loop_copy (loop, loop_outer (loop));
 
       thread_block (header, false);
-      loop->copy = NULL;
+      set_loop_copy (loop, NULL);
       new_preheader = e->dest;
 
       /* Create the new latch block.  This is always necessary, as the latch
@@ -1031,9 +1031,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 
   mark_threaded_blocks (threaded_blocks);
 
-  if (current_loops)
-    FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
-      loop->copy = NULL;
+  initialize_original_copy_tables ();
 
   /* First perform the threading requests that do not affect
      loop structure.  */
@@ -1066,6 +1064,8 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   if (dump_file && (dump_flags & TDF_STATS))
     fprintf (dump_file, "\nJumps threaded: %lu\n",
 	     thread_stats.num_threaded_edges);
+
+  free_original_copy_tables ();
 
   BITMAP_FREE (threaded_blocks);
   threaded_blocks = NULL;
