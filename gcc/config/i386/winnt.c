@@ -1,7 +1,7 @@
 /* Subroutines for insn-output.c for Windows NT.
    Contributed by Douglas Rupp (drupp@cs.washington.edu)
    Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006  Free Software Foundation, Inc.
+   2005, 2006, 2007  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -75,7 +75,7 @@ ix86_handle_selectany_attribute (tree *node, tree name,
   /* The attribute applies only to objects that are initialized and have
      external linkage.  However, we may not know about initialization
      until the language frontend has processed the decl. We'll check for
-     initialization later in encode_section_info.  */	
+     initialization later in encode_section_info.  */
   if (TREE_CODE (*node) != VAR_DECL || !TREE_PUBLIC (*node))
     {	
       error ("%qs attribute applies only to initialized variables"
@@ -154,22 +154,21 @@ i386_pe_valid_dllimport_attribute_p (tree decl)
    return true;
 }
 
-/* Return string which is the former assembler name modified with a
-   suffix consisting of an atsign (@) followed by the number of bytes of
-   arguments.  If FASTCALL is true, also add the FASTCALL_PREFIX.
+/* Return string which is the function name, identified by ID, modified
+   with a suffix consisting of an atsign (@) followed by the number of
+   bytes of arguments.  If ID is NULL use the DECL_NAME as base. If
+   FASTCALL is true, also add the FASTCALL_PREFIX.
    Return NULL if no change required.  */
 
 static tree
-gen_stdcall_or_fastcall_suffix (tree decl, bool fastcall)
+gen_stdcall_or_fastcall_suffix (tree decl, tree id, bool fastcall)
 {
   HOST_WIDE_INT total = 0;
-  const char *asm_str = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  const char *old_str = IDENTIFIER_POINTER (id != NULL_TREE ? id : DECL_NAME (decl));
   char *new_str, *p;
   tree formal_type;
 
-  /* Do not change the identifier if a verbatim asmspec or already done. */
-  if (*asm_str == '*' || strchr (asm_str, '@'))
-    return NULL_TREE;
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);  
 
   formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
   if (formal_type != NULL_TREE)
@@ -202,14 +201,45 @@ gen_stdcall_or_fastcall_suffix (tree decl, bool fastcall)
 
 	formal_type = TREE_CHAIN (formal_type);
       }
-
   /* Assume max of 8 base 10 digits in the suffix.  */
-  p = new_str = alloca (1 + strlen (asm_str) + 1 + 8 + 1);
+  p = new_str = alloca (1 + strlen (old_str) + 1 + 8 + 1);
   if (fastcall)
     *p++ = FASTCALL_PREFIX;
-  sprintf (p, "%s@" HOST_WIDE_INT_PRINT_DEC, asm_str, total);
+  sprintf (p, "%s@" HOST_WIDE_INT_PRINT_DEC, old_str, total);
 
   return get_identifier (new_str);
+}
+
+/* Maybe decorate and get a new identifier for the DECL of a stdcall or
+   fastcall function. The original identifier is supplied in ID. */
+
+static tree
+i386_pe_maybe_mangle_decl_assembler_name (tree decl, tree id)
+{
+  tree new_id = NULL_TREE;
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    { 
+      tree type_attributes = TYPE_ATTRIBUTES (TREE_TYPE (decl));
+      if (lookup_attribute ("stdcall", type_attributes))
+	new_id = gen_stdcall_or_fastcall_suffix (decl, id, false);
+      else if (lookup_attribute ("fastcall", type_attributes))
+	new_id = gen_stdcall_or_fastcall_suffix (decl, id, true);
+    }
+
+  return new_id;
+}
+
+/* This is used as a target hook to modify the DECL_ASSEMBLER_NAME
+   in the language-independent default hook
+   langhooks,c:lhd_set_decl_assembler_name ()
+   and in cp/mangle,c:mangle_decl ().  */
+tree
+i386_pe_mangle_decl_assembler_name (tree decl, tree id)
+{
+  tree new_id = i386_pe_maybe_mangle_decl_assembler_name (decl, id);   
+
+  return (new_id ? new_id : id);
 }
 
 void
@@ -233,21 +263,24 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
     case FUNCTION_DECL:
       if (first)
 	{
-	  tree type_attributes = TYPE_ATTRIBUTES (TREE_TYPE (decl));
-	  tree newid = NULL_TREE;
-
-	  if (lookup_attribute ("stdcall", type_attributes))
-	    newid = gen_stdcall_or_fastcall_suffix (decl, false);
-	  else if (lookup_attribute ("fastcall", type_attributes))
-	    newid = gen_stdcall_or_fastcall_suffix (decl, true);
-	  if (newid != NULL_TREE) 	
+	  /* FIXME: In Ada, and perhaps other language frontends,
+	     imported stdcall names may not yet have been modified.
+	     Check and do it know.  */
+         tree new_id;
+         tree old_id = DECL_ASSEMBLER_NAME (decl);
+     	  const char* asm_str = IDENTIFIER_POINTER (old_id);
+          /* Do not change the identifier if a verbatim asmspec
+	     or if stdcall suffix already added. */
+      	  if (*asm_str == '*' || strchr (asm_str, '@'))
+            break;
+	  if ((new_id = i386_pe_maybe_mangle_decl_assembler_name (decl, old_id)))
 	    {
-	      XSTR (symbol, 0) = IDENTIFIER_POINTER (newid);
 	      /* These attributes must be present on first declaration,
-	         change_decl_assembler_name will warn if they are added
-	         later and the decl has been referenced, but duplicate_decls
-	         should catch the mismatch before this is called.  */ 
-	      change_decl_assembler_name (decl, newid);
+		 change_decl_assembler_name will warn if they are added
+		 later and the decl has been referenced, but duplicate_decls
+		 should catch the mismatch first.  */
+	      change_decl_assembler_name (decl, new_id);
+	      XSTR (symbol, 0) = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 	    }
 	}
       break;

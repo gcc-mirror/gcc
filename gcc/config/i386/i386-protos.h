@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC for IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -220,6 +220,7 @@ extern void i386_pe_asm_output_aligned_decl_common (FILE *, tree,
 						    HOST_WIDE_INT,
 						    HOST_WIDE_INT);
 extern void i386_pe_file_end (void);
+extern tree i386_pe_mangle_decl_assembler_name (tree, tree);
 
 /* In winnt-cxx.c and winnt-stubs.c  */
 extern void i386_pe_adjust_class_at_definition (tree);
