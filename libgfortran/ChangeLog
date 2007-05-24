@@ -1,3 +1,10 @@
+2007-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/31964
+	Backport from trunk.
+	* intrinsics/ishftc.c (ishftc4, ishftc8, ishftc16): Fix mask to handle
+	shift of bit-size number of bits.
+
 2007-05-23  Tobias Burnus <burnus@net-b.de>
 
 	PR fortran/31917
