@@ -1214,6 +1214,9 @@ regclass (rtx f, int nregs)
 	  int class;
 	  struct costs *p = &costs[i];
 
+	  if (regno_reg_rtx[i] == NULL)
+	    continue;
+
 	  /* In non-optimizing compilation REG_N_REFS is not initialized
 	     yet.  */
 	  if (optimize && !REG_N_REFS (i) && !REG_N_SETS (i))
