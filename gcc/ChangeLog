@@ -1,3 +1,12 @@
+2007-05-24  Jan Hubicka  <jh@suse.cz>
+
+	* doc/invoke.texi (-fdump-unnumbered): Update docs when line number
+	notes are gone.
+	* print-rtl.c (flag_dump_unnumbered): Update comments.
+	(print_rtl): Fix my previous change.
+	* emit-rtl.c (emit_note_before, emit_note_after): Clear out note
+	specific data.
+
 2007-05-24  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR middle-end/32018

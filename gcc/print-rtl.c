@@ -56,8 +56,8 @@ static void print_rtx (rtx);
    the assembly output file.  */
 const char *print_rtx_head = "";
 
-/* Nonzero means suppress output of instruction numbers and line number
-   notes in debugging dumps.
+/* Nonzero means suppress output of instruction numbers
+   in debugging dumps.
    This must be defined here so that programs like gencodes can be linked.  */
 int flag_dump_unnumbered = 0;
 
@@ -705,6 +705,8 @@ debug_rtx_find (rtx x, int uid)
 void
 print_rtl (FILE *outf, rtx rtx_first)
 {
+  rtx tmp_rtx;
+
   outfile = outf;
   sawclose = 0;
 
@@ -722,6 +724,12 @@ print_rtl (FILE *outf, rtx rtx_first)
       case NOTE:
       case CODE_LABEL:
       case BARRIER:
+	for (tmp_rtx = rtx_first; tmp_rtx != 0; tmp_rtx = NEXT_INSN (tmp_rtx))
+	  {
+	    fputs (print_rtx_head, outfile);
+	    print_rtx (tmp_rtx);
+	    fprintf (outfile, "\n");
+	  }
 	break;
 
       default:
