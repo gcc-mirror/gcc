@@ -1,3 +1,8 @@
+2007-05-24  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/27067
+	* mangle.c (mangle_decl): Call targetm.mangle_decl_assembler_name.
+
 2007-05-22  Ollie Wild  <aaw@google.com>
 
 	* name-lookup.c (ambiguous_decl): Adds check for hidden types.

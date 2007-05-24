@@ -6462,6 +6462,16 @@ constants in @code{flag_pic} mode in @code{data_section} and everything
 else in @code{readonly_data_section}.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_MANGLE_DECL_ASSEMBLER_NAME (tree @var{decl}, tree @var{id})
+Define this hook if you need to postprocess the assembler name generated
+by target-independent code.  The @var{id} provided to this hook will be
+the computed name (e.g., the macro @code{DECL_NAME} of the @var{decl} in C,
+or the mangled name of the @var{decl} in C++).  The return value of the
+hook is an @code{IDENTIFIER_NODE} for the appropriate mangled name on
+your target system.  The default implementation of this hook just
+returns the @var{id} provided.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_ENCODE_SECTION_INFO (tree @var{decl}, rtx @var{rtl}, int @var{new_decl_p})
 Define this hook if references to a symbol or a constant must be
 treated differently depending on something about the variable or

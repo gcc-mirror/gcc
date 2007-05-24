@@ -1,3 +1,33 @@
+2007-05-24  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/27067
+	* doc/tm.texi (TARGET_MANGLE_DECL_ASSEMBLER_NAME): Document.
+	* targhooks.h (default_mangle_decl_assembler_name): Declare
+	default hook.
+	* targhooks.c (default_mangle_decl_assembler_name): Define
+	default hook.
+	* target-def.h (TARGET_MANGLE_DECL_ASSEMBLER_NAME) New. Set to
+	default hook.
+	* target.h (struct gcc_target): Add mangle_decl_assembler_name field.
+	* langhooks.c (lhd_set_decl_assembler_name): Call
+	targetm.mangle_decl_assembler_name for names with global scope.
+
+	* config/i386/cygming.h (TARGET_MANGLE_DECL_ASSEMBLER_NAME) Override
+	default.
+	(ASM_OUTPUT_DEF_FROM_DECLS): Simplify to use DECL_ASSEMBLER_NAME.
+	* config/i386/i386-protos.h (i386_pe_mangle_decl_assembler_name):
+	Declare.
+	* config/i386/winnt.c (i386_pe_maybe_mangle_decl_assembler_name):
+	New. Factored out of i386_pe_encode_section_info.
+	(gen_stdcall_or_fastcall_suffix): Get name identifier as argument.
+	Move check for prior decoration of stdcall
+	symbols to i386_pe_encode_section_info.
+	(i386_pe_encode_section_info): Adjust call to
+	gen_stdcall_or_fastcall_suffix.  Use
+	i386_pe_maybe_mangle_decl_assembler_name, if needed.
+	(i386_pe_mangle_decl_assembler_name): New. Wrap
+	i386_pe_maybe_mangle_decl_assembler_name.
+
 2007-05-16  Rafael Avila de Espindola  <espindola@google.com>
 
 	* c-common.c (c_common_signed_or_unsigned_type): Delay the check for

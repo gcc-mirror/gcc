@@ -631,4 +631,11 @@ default_reloc_rw_mask (void)
   return flag_pic ? 3 : 0;
 }
 
+/* By default, do no modification. */
+tree default_mangle_decl_assembler_name (tree decl ATTRIBUTE_UNUSED,
+					 tree id)
+{
+   return id;
+}
+
 #include "gt-targhooks.h"
