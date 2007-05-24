@@ -17870,7 +17870,7 @@ ix86_init_mmx_sse_builtins (void)
   ftype = build_function_type_list (V2DI_type_node, V2DI_type_node,
 				    intDI_type_node,
 				    integer_type_node, NULL_TREE);
-  def_builtin (MASK_SSE4_1, "__builtin_ia32_vec_set_v2di",
+  def_builtin (MASK_SSE4_1 | MASK_64BIT, "__builtin_ia32_vec_set_v2di",
 	       ftype, IX86_BUILTIN_VEC_SET_V2DI);
 
   ftype = build_function_type_list (V4SF_type_node, V4SF_type_node,
