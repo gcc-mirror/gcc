@@ -42,8 +42,8 @@
 
 namespace 
 {
-  bool new_called;
-  bool delete_called;
+  bool new_called = false;
+  bool delete_called = false;
 };
 
 namespace __gnu_test
@@ -189,7 +189,6 @@ namespace __gnu_test
     check_new(Alloc a = Alloc())
     {
       bool test __attribute__((unused)) = true;
-      new_called = false;
       a.allocate(10);
       test &= ( new_called == uses_global_new );
       return test;
@@ -200,7 +199,6 @@ namespace __gnu_test
     check_delete(Alloc a = Alloc())
     {
       bool test __attribute__((unused)) = true;
-      delete_called = false;
       typename Alloc::pointer p = a.allocate(10);
       a.deallocate(p, 10);
       test &= ( delete_called == uses_global_delete );

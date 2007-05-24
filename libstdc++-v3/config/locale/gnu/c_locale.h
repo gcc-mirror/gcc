@@ -76,11 +76,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __old = __gnu_cxx::__uselocale(__cloc);
 #else
-    char* __old = std::setlocale(LC_ALL, NULL);
-    const size_t __len = __builtin_strlen(__old) + 1;
-    char* __sav = new char[__len];
-    __builtin_memcpy(__sav, __old, __len);
-    std::setlocale(LC_ALL, "C");
+    char* __old = std::setlocale(LC_NUMERIC, NULL);
+    char* __sav = NULL;
+    if (__builtin_strcmp(__old, "C"))
+      {
+	const size_t __len = __builtin_strlen(__old) + 1;
+	char* __sav = new char[__len];
+	__builtin_memcpy(__sav, __old, __len);
+	std::setlocale(LC_NUMERIC, "C");
+      }
 #endif
 
     __builtin_va_list __args;
@@ -97,8 +101,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __gnu_cxx::__uselocale(__old);
 #else
-    std::setlocale(LC_ALL, __sav);
-    delete [] __sav;
+    if (__sav)
+      {
+	std::setlocale(LC_NUMERIC, __sav);
+	delete [] __sav;
+      }
 #endif
     return __ret;
   }

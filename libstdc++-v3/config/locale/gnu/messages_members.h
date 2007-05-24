@@ -55,10 +55,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 				size_t __refs) 
      : facet(__refs), _M_c_locale_messages(NULL), _M_name_messages(NULL)
      {
-       const size_t __len = __builtin_strlen(__s) + 1;
-       char* __tmp = new char[__len];
-       __builtin_memcpy(__tmp, __s, __len);
-       _M_name_messages = __tmp;
+       if (__builtin_strcmp(__s, _S_get_c_name()) != 0)
+	 {
+	   const size_t __len = __builtin_strlen(__s) + 1;
+	   char* __tmp = new char[__len];
+	   __builtin_memcpy(__tmp, __s, __len);
+	   _M_name_messages = __tmp;
+	 }
+       else
+	 _M_name_messages = _S_get_c_name();
 
        // Last to avoid leaking memory if new throws.
        _M_c_locale_messages = _S_clone_c_locale(__cloc);
@@ -104,11 +109,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      : messages<_CharT>(__refs) 
      { 
        if (this->_M_name_messages != locale::facet::_S_get_c_name())
-	 delete [] this->_M_name_messages;
-       const size_t __len = __builtin_strlen(__s) + 1;
-       char* __tmp = new char[__len];
-       __builtin_memcpy(__tmp, __s, __len);
-       this->_M_name_messages = __tmp;
+	 {
+	   delete [] this->_M_name_messages;
+	   if (__builtin_strcmp(__s, locale::facet::_S_get_c_name()) != 0)
+	     {
+	       const size_t __len = __builtin_strlen(__s) + 1;
+	       char* __tmp = new char[__len];
+	       __builtin_memcpy(__tmp, __s, __len);
+	       this->_M_name_messages = __tmp;
+	     }
+	   else
+	     this->_M_name_messages = locale::facet::_S_get_c_name();
+	 }
 
        if (__builtin_strcmp(__s, "C") != 0
 	   && __builtin_strcmp(__s, "POSIX") != 0)
