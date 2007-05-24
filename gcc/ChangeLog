@@ -1,3 +1,18 @@
+2007-05-24  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* postreload-gcse.c (reg_changed_after_insn_p): New function.
+	(oprs_unchanged_p): Use it to check all registers in a REG.
+	(record_opr_changes): Look for clobbers in CALL_INSN_FUNCTION_USAGE.
+	(reg_set_between_after_reload_p): Delete.
+	(reg_used_between_after_reload_p): Likewise.
+	(reg_set_or_used_since_bb_start): Likewise.
+	(eliminate_partially_redundant_load): Use reg_changed_after_insn_p
+	and reg_used_between_p instead of reg_set_or_used_since_bb_start.
+	Use reg_set_between_p instead of reg_set_between_after_reload_p.
+	* rtlanal.c (reg_set_p): Check whether REG overlaps
+	regs_invalidated_by_call, rather than just checking the
+	membership of REGNO (REG).
+
 2007-05-24  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* doc/passes.texi: Document predictive commoning.

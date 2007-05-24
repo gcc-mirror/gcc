@@ -825,8 +825,8 @@ reg_set_p (rtx reg, rtx insn)
 	  || (CALL_P (insn)
 	      && ((REG_P (reg)
 		   && REGNO (reg) < FIRST_PSEUDO_REGISTER
-		   && TEST_HARD_REG_BIT (regs_invalidated_by_call,
-					 REGNO (reg)))
+		   && overlaps_hard_reg_set_p (regs_invalidated_by_call,
+					       GET_MODE (reg), REGNO (reg)))
 		  || MEM_P (reg)
 		  || find_reg_fusage (insn, CLOBBER, reg)))))
     return 1;
