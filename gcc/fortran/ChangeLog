@@ -1,3 +1,8 @@
+2007-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/31716
+	* array.c (spec_dimen_size): Test for correct BT_INTEGER type. 
+
 2007-05-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/32046

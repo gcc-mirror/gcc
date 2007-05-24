@@ -1725,7 +1725,9 @@ spec_dimen_size (gfc_array_spec *as, int dimen, mpz_t *result)
 
   if (as->type != AS_EXPLICIT
       || as->lower[dimen]->expr_type != EXPR_CONSTANT
-      || as->upper[dimen]->expr_type != EXPR_CONSTANT)
+      || as->upper[dimen]->expr_type != EXPR_CONSTANT
+      || as->lower[dimen]->ts.type != BT_INTEGER
+      || as->upper[dimen]->ts.type != BT_INTEGER)
     return FAILURE;
 
   mpz_init (*result);
