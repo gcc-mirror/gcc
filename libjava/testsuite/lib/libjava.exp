@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006 Free Software Foundation
+# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006, 2007 Free Software Foundation
 
 proc load_gcc_lib { filename } {
     global srcdir
@@ -494,7 +494,7 @@ proc gcj_invoke {program expectFile ld_library_additions} {
   }
 }
 
-proc exec_gij {jarfile expectFile ld_library_additions} {
+proc exec_gij {jarfile expectFile {ld_library_additions {}} {addl_flags {}}} {
   global env
   global libjava_ld_library_path
   global ld_library_path
@@ -512,9 +512,9 @@ proc exec_gij {jarfile expectFile ld_library_additions} {
   set gij [libjava_find_gij]
   set classname [file rootname [file tail $jarfile]]
   
-  puts "LD_LIBRARY_PATH=. $gij -cp $jarfile $classname"
+  puts "LD_LIBRARY_PATH=. $gij -cp $jarfile $addl_flags $classname"
 	
-  set result [libjava_load $gij "-cp $jarfile $classname"]
+  set result [libjava_load $gij "-cp $jarfile $addl_flags $classname"]
   set status [lindex $result 0]
   set output [lindex $result 1]
 

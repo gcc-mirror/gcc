@@ -466,9 +466,9 @@ public:
     if (pc_ptr == NULL)
       pc = 0;
     else
-      pc = *pc_ptr;
+      pc = *pc_ptr - 1;
     
-    return pc - 1;
+    return pc;
   }
 };
 
