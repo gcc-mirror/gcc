@@ -2076,9 +2076,6 @@ tree
 c_common_signed_or_unsigned_type (int unsignedp, tree type)
 {
   tree type1;
-  if (!INTEGRAL_TYPE_P (type)
-      || TYPE_UNSIGNED (type) == unsignedp)
-    return type;
 
   /* This block of code emulates the behavior of the old
      c_common_unsigned_type. In particular, it returns
@@ -2120,6 +2117,10 @@ c_common_signed_or_unsigned_type (int unsignedp, tree type)
      bit-field types.  C++ does not have these separate bit-field
      types, and producing a signed or unsigned variant of an
      ENUMERAL_TYPE may cause other problems as well.  */
+
+  if (!INTEGRAL_TYPE_P (type)
+      || TYPE_UNSIGNED (type) == unsignedp)
+    return type;
 
 #define TYPE_OK(node)							    \
   (TYPE_MODE (type) == TYPE_MODE (node)					    \

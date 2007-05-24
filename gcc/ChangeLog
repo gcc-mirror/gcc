@@ -1,3 +1,12 @@
+2007-05-16  Rafael Avila de Espindola  <espindola@google.com>
+
+	* c-common.c (c_common_signed_or_unsigned_type): Delay the check for
+	INTEGRAL_TYPE_P and TYPE_UNSIGNED.
+	* langhooks.c (get_signed_or_unsigned_type): Don't check for
+	INTEGRAL_TYPE_P or TYPE_UNSIGNED.
+	(lhd_signed_or_unsigned_type): Check for INTEGRAL_TYPE_P and
+	TYPE_UNSIGNED.
+
 2007-05-23  Sandra Loosemore  <sandra@codesourcery.com>
 	    Nigel Stephens  <nigel@mips.com>
 	    Richard Sandiford  <richard@codesourcery.com>
