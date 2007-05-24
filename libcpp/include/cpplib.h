@@ -555,7 +555,8 @@ enum builtin_type
   BT_TIME,			/* `__TIME__' */
   BT_STDC,			/* `__STDC__' */
   BT_PRAGMA,			/* `_Pragma' operator */
-  BT_TIMESTAMP			/* `__TIMESTAMP__' */
+  BT_TIMESTAMP,			/* `__TIMESTAMP__' */
+  BT_COUNTER			/* `__COUNTER__' */
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))

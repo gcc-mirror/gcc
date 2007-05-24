@@ -1,3 +1,8 @@
+2007-05-24  Ollie Wild  <aaw@google.com>
+
+	* doc/cpp.texi (Common Predefined Macros): Add __COUNTER__
+	description.
+
 2007-05-24  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* postreload-gcse.c (reg_changed_after_insn_p): New function.

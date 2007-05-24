@@ -1,3 +1,13 @@
+2007-05-24  Ollie Wild  <aaw@google.com>
+
+	* gcc.dg/cpp/counter-1.c: New test.
+	* gcc.dg/pch/counter-1.c: New test.
+	* gcc.dg/pch/counter-1.hs: New file.
+	* gcc.dg/pch/counter-2.c: New test.
+	* gcc.dg/pch/counter-2.hs: New file.
+	* gcc.dg/pch/counter-3.c: New test.
+	* gcc.dg/pch/counter-3.hs: New file.
+
 2007-05-24  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/predcom-1.c: New test.
