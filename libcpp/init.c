@@ -310,6 +310,7 @@ static const struct builtin builtin_array[] =
   B("__BASE_FILE__",	 BT_BASE_FILE),
   B("__LINE__",		 BT_SPECLINE),
   B("__INCLUDE_LEVEL__", BT_INCLUDE_LEVEL),
+  B("__COUNTER__",	 BT_COUNTER),
   /* Keep builtins not used for -traditional-cpp at the end, and
      update init_builtins() if any more are added.  */
   B("_Pragma",		 BT_PRAGMA),

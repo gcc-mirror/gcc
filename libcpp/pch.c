@@ -337,6 +337,14 @@ cpp_write_pch_deps (cpp_reader *r, FILE *f)
   /* Free the saved state.  */
   free (ss);
   r->savedstate = NULL;
+
+  /* Save the next value of __COUNTER__. */
+  if (fwrite (&r->counter, sizeof (r->counter), 1, f) != 1)
+    {
+      cpp_errno (r, CPP_DL_ERROR, "while writing precompiled header");
+      return -1;
+    }
+
   return 0;
 }
 
@@ -356,6 +364,15 @@ cpp_write_pch_state (cpp_reader *r, FILE *f)
     }
 
   if (! _cpp_save_file_entries (r, f))
+    {
+      cpp_errno (r, CPP_DL_ERROR, "while writing precompiled header");
+      return -1;
+    }
+
+  /* Save the next __COUNTER__ value.  When we include a precompiled header,
+     we need to start at the offset we would have if the header had been
+     included normally. */
+  if (fwrite (&r->counter, sizeof (r->counter), 1, f) != 1)
     {
       cpp_errno (r, CPP_DL_ERROR, "while writing precompiled header");
       return -1;
@@ -423,6 +440,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
   struct ht_node_list nl = { 0, 0, 0 };
   unsigned char *first, *last;
   unsigned int i;
+  unsigned int counter;
   
   /* Read in the list of identifiers that must be defined
      Check that they are defined in the same way.  */
@@ -524,7 +542,23 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
     }
    
   free(nl.defs);
+  nl.defs = NULL;
   free (undeftab);
+  undeftab = NULL;
+
+  /* Read in the next value of __COUNTER__.
+     Check that (a) __COUNTER__ was not used in the pch or (b) __COUNTER__
+     has not been used in this translation unit. */
+  if (read (fd, &counter, sizeof (counter)) != sizeof (counter))
+    goto error;
+  if (counter && r->counter)
+    {
+      if (CPP_OPTION (r, warn_invalid_pch))
+	cpp_error (r, CPP_DL_WARNING_SYSHDR, 
+		   "%s: not used because `__COUNTER__' is invalid",
+		   name);
+	goto fail;
+    }
 
   /* We win!  */
   return 0;
@@ -631,6 +665,7 @@ cpp_read_state (cpp_reader *r, const char *name, FILE *f,
 {
   size_t i;
   struct lexer_state old_state;
+  unsigned int counter;
 
   /* Restore spec_nodes, which will be full of references to the old 
      hashtable entries and so will now be invalid.  */
@@ -689,6 +724,12 @@ cpp_read_state (cpp_reader *r, const char *name, FILE *f,
 
   if (! _cpp_read_file_entries (r, f))
     goto error;
+
+  if (fread (&counter, sizeof (counter), 1, f) != 1)
+    goto error;
+
+  if (!r->counter)
+    r->counter = counter;
 
   return 0;
   

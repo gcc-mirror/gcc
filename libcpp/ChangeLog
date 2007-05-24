@@ -1,3 +1,14 @@
+2007-05-24  Ollie Wild  <aaw@google.com>
+
+	* macro.c (_cpp_builtin_macro_text): Handle BT_COUNTER.
+	* pch.c (cpp_write_pch_deps): Save __COUNTER__ state.
+	(cpp_write_pch_state): Save __COUNTER__ state.
+	(cpp_valid_state): Check valid __COUNTER__ state.
+	(cpp_read_state): Read new __COUNTER__ state.
+	* include/cpplib.h (enum builtin_type): Add BT_COUNTER enumerator.
+	* init.c (builtin_array): Add __COUNTER__/BT_COUNTER.
+	* internal.h (struct cpp_reader): Add counter member.
+
 2007-05-23  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR preprocessor/20077
