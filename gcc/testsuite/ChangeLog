@@ -1,3 +1,8 @@
+2007-05-24 Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32038
+	* gfortran.dg/pr25603.f: Initialize integer variables.
+
 2007-05-23  Ian Lance Taylor  <iant@google.com>
 
 	* g++.dg/other/vrp1.C: New test.
