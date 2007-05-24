@@ -579,9 +579,6 @@ lhd_builtin_function (tree decl)
 tree
 get_signed_or_unsigned_type (int unsignedp, tree type)
 {
-  if (!INTEGRAL_TYPE_P (type) || TYPE_UNSIGNED (type) == unsignedp)
-    return type;
-
   return lang_hooks.types.signed_or_unsigned_type(unsignedp, type);
 }
 
@@ -590,5 +587,8 @@ get_signed_or_unsigned_type (int unsignedp, tree type)
 tree
 lhd_signed_or_unsigned_type (int unsignedp, tree type)
 {
+  if (!INTEGRAL_TYPE_P (type) || TYPE_UNSIGNED (type) == unsignedp)
+    return type;
+
   return lang_hooks.types.type_for_size (TYPE_PRECISION (type), unsignedp);
 }
