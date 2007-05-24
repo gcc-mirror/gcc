@@ -1,3 +1,8 @@
+2007-05-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* target-def.h (TARGET_MANGLE_DECL_ASSEMBLER_NAME): Correct
+	default hook.
+
 2007-05-24  Jan Hubicka  <jh@suse.cz>
 
 	* doc/invoke.texi (-fdump-unnumbered): Update docs when line number
