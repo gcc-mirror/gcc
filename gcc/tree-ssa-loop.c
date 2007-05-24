@@ -176,6 +176,42 @@ struct tree_opt_pass pass_tree_unswitch =
   0					/* letter */
 };
 
+/* Predictive commoning.  */
+
+static unsigned
+run_tree_predictive_commoning (void)
+{
+  if (!current_loops)
+    return 0;
+
+  tree_predictive_commoning ();
+  return 0;
+}
+
+static bool
+gate_tree_predictive_commoning (void)
+{
+  return flag_predictive_commoning != 0;
+}
+
+struct tree_opt_pass pass_predcom = 
+{
+  "pcom",				/* name */
+  gate_tree_predictive_commoning,	/* gate */
+  run_tree_predictive_commoning,	/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_PREDCOM,				/* tv_id */
+  PROP_cfg,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func | TODO_verify_loops
+    | TODO_update_ssa_only_virtuals,	/* todo_flags_finish */
+  0					/* letter */
+};
+
 /* Loop autovectorization.  */
 
 static unsigned int

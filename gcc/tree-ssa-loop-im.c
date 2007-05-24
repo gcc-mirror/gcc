@@ -1116,14 +1116,23 @@ gen_lsm_tmp_name (tree ref)
 }
 
 /* Determines name for temporary variable that replaces REF.
-   The name is accumulated into the lsm_tmp_name variable.  */
+   The name is accumulated into the lsm_tmp_name variable.
+   N is added to the name of the temporary.  */
 
-static char *
-get_lsm_tmp_name (tree ref)
+char *
+get_lsm_tmp_name (tree ref, unsigned n)
 {
+  char ns[2];
+
   lsm_tmp_name_length = 0;
   gen_lsm_tmp_name (ref);
   lsm_tmp_name_add ("_lsm");
+  if (n < 10)
+    {
+      ns[0] = '0' + n;
+      ns[1] = 0;
+      lsm_tmp_name_add (ns);
+    }
   return lsm_tmp_name;
 }
 
@@ -1153,7 +1162,7 @@ schedule_sm (struct loop *loop, VEC (edge, heap) *exits, tree ref,
     }
 
   tmp_var = make_rename_temp (TREE_TYPE (ref),
-			      get_lsm_tmp_name (ref));
+			      get_lsm_tmp_name (ref, ~0));
 
   fmt_data.loop = loop;
   fmt_data.orig_loop = loop;

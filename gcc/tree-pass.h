@@ -250,6 +250,7 @@ extern struct tree_opt_pass pass_tree_loop;
 extern struct tree_opt_pass pass_tree_loop_init;
 extern struct tree_opt_pass pass_lim;
 extern struct tree_opt_pass pass_tree_unswitch;
+extern struct tree_opt_pass pass_predcom;
 extern struct tree_opt_pass pass_iv_canon;
 extern struct tree_opt_pass pass_scev_cprop;
 extern struct tree_opt_pass pass_empty_loop;

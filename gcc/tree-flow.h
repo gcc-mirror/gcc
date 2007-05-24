@@ -786,6 +786,7 @@ extern bool cleanup_tree_cfg_loop (void);
 
 /* In tree-pretty-print.c.  */
 extern void dump_generic_bb (FILE *, basic_block, int, int);
+extern const char *op_symbol_code (enum tree_code);
 
 /* In tree-dfa.c  */
 extern var_ann_t create_var_ann (tree);
@@ -972,6 +973,7 @@ unsigned int tree_unroll_loops_completely (bool);
 unsigned int tree_ssa_prefetch_arrays (void);
 unsigned int remove_empty_loops (void);
 void tree_ssa_iv_optimize (void);
+void tree_predictive_commoning (void);
 
 bool number_of_iterations_exit (struct loop *, edge,
 				struct tree_niter_desc *niter, bool);
@@ -1017,6 +1019,7 @@ void tree_transform_and_unroll_loop (struct loop *, unsigned,
 				     edge, struct tree_niter_desc *,
 				     transform_callback, void *);
 bool contains_abnormal_ssa_name_p (tree);
+bool stmt_dominates_stmt_p (tree, tree);
 
 /* In tree-ssa-threadedge.c */
 extern bool potentially_threadable_block (basic_block);
@@ -1034,6 +1037,7 @@ enum move_pos
     MOVE_POSSIBLE		/* Unlimited movement.  */
   };
 extern enum move_pos movement_possibility (tree);
+char *get_lsm_tmp_name (tree, unsigned);
 
 /* The reasons a variable may escape a function.  */
 enum escape_type 

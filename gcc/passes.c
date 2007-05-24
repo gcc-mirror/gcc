@@ -590,7 +590,9 @@ init_optimization_passes (void)
 	  struct tree_opt_pass **p = &pass_tree_loop.sub;
 	  NEXT_PASS (pass_tree_loop_init);
 	  NEXT_PASS (pass_copy_prop);
+	  NEXT_PASS (pass_dce_loop);
 	  NEXT_PASS (pass_lim);
+	  NEXT_PASS (pass_predcom);
 	  NEXT_PASS (pass_tree_unswitch);
 	  NEXT_PASS (pass_scev_cprop);
 	  NEXT_PASS (pass_empty_loop);

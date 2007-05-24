@@ -334,7 +334,7 @@ Objective-C and Objective-C++ Dialects}.
 -ffinite-math-only  -fno-signed-zeros @gol
 -fno-toplevel-reorder -fno-trapping-math  -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
--foptimize-sibling-calls  -fprefetch-loop-arrays @gol
+-foptimize-sibling-calls  -fpredictive-commoning -fprefetch-loop-arrays @gol
 -fprofile-generate -fprofile-use @gol
 -fregmove  -frename-registers @gol
 -freorder-blocks  -freorder-blocks-and-partition -freorder-functions @gol
@@ -5001,7 +5001,8 @@ invoking @option{-O2} on programs that use computed gotos.
 @opindex O3
 Optimize yet more.  @option{-O3} turns on all optimizations specified by
 @option{-O2} and also turns on the @option{-finline-functions},
-@option{-funswitch-loops} and @option{-fgcse-after-reload} options.
+@option{-funswitch-loops}, @option{-fpredictive-commoning} and
+@option{-fgcse-after-reload} options.
 
 @item -O0
 @opindex O0
@@ -5711,6 +5712,14 @@ This optimization is enabled by default.
 @opindex fvariable-expansion-in-unroller
 With this option, the compiler will create multiple copies of some
 local variables when unrolling a loop which can result in superior code.
+
+@item -fpredictive-commoning
+@opindex fpredictive-commoning
+Perform predictive commoning optimization, i.e., reusing computations
+(especially memory loads and stores) performed in previous
+iterations of loops.
+
+This option is enabled at level @option{-O3}.
 
 @item -fprefetch-loop-arrays
 @opindex fprefetch-loop-arrays

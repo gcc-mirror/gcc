@@ -573,7 +573,14 @@ split_constant_offset (tree exp, tree *var, tree *off)
 static tree
 canonicalize_base_object_address (tree addr)
 {
+  tree orig = addr;
+
   STRIP_NOPS (addr);
+
+  /* The base address may be obtained by casting from integer, in that case
+     keep the cast.  */
+  if (!POINTER_TYPE_P (TREE_TYPE (addr)))
+    return orig;
 
   if (TREE_CODE (addr) != ADDR_EXPR)
     return addr;
@@ -584,7 +591,7 @@ canonicalize_base_object_address (tree addr)
 /* Analyzes the behavior of the memory reference DR in the innermost loop that
    contains it.  */
 
-static void
+void
 dr_analyze_innermost (struct data_reference *dr)
 {
   tree stmt = DR_STMT (dr);
@@ -802,16 +809,6 @@ create_data_ref (struct loop *nest, tree memref, tree stmt, bool is_read)
       fprintf (dump_file, "\n\tsymbol tag: ");
       print_generic_expr (dump_file, DR_SYMBOL_TAG (dr), TDF_SLIM);
       fprintf (dump_file, "\n");
-    }
-
-  /* FIXME -- data dependence analysis does not work correctly for objects with
-     invariant addresses.  Let us fail here until the problem is fixed.  */
-  if (dr_address_invariant_p (dr))
-    {
-      free_data_ref (dr);
-      dr = NULL;
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "\tFAILED as dr address is invariant\n");
     }
 
   return dr;  
@@ -3965,13 +3962,20 @@ find_data_references_in_stmt (struct loop *nest, tree stmt,
   for (i = 0; VEC_iterate (data_ref_loc, references, i, ref); i++)
     {
       dr = create_data_ref (nest, *ref->pos, stmt, ref->is_read);
-      if (dr)
-	VEC_safe_push (data_reference_p, heap, *datarefs, dr);
-      else
+      gcc_assert (dr != NULL);
+  
+      /* FIXME -- data dependence analysis does not work correctly for objects with
+	 invariant addresses.  Let us fail here until the problem is fixed.  */
+      if (dr_address_invariant_p (dr))
 	{
+	  free_data_ref (dr);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "\tFAILED as dr address is invariant\n");
 	  ret = false;
 	  break;
 	}
+
+      VEC_safe_push (data_reference_p, heap, *datarefs, dr);
     }
   VEC_free (data_ref_loc, heap, references);
   return ret;
@@ -3992,7 +3996,7 @@ find_data_references_in_loop (struct loop *loop,
   unsigned int i;
   block_stmt_iterator bsi;
 
-  bbs = get_loop_body (loop);
+  bbs = get_loop_body_in_dom_order (loop);
 
   for (i = 0; i < loop->num_nodes; i++)
     {

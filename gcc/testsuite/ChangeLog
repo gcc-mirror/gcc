@@ -1,3 +1,12 @@
+2007-05-24  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/predcom-1.c: New test.
+	* gcc.dg/tree-ssa/predcom-2.c: New test.
+	* gcc.dg/tree-ssa/predcom-3.c: New test.
+	* gcc.dg/tree-ssa/predcom-4.c: New test.
+	* gcc.dg/tree-ssa/predcom-5.c: New test.
+	* gcc.dg/vect/dump-tree-dceloop-pr26359.c: Test dceloop2 dumps.
+
 2007-05-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/32062

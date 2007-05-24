@@ -1,3 +1,46 @@
+2007-05-24  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* doc/passes.texi: Document predictive commoning.
+	* doc/invoke.texi (-fpredictive-commoning): Document.
+	* opts.c (decode_options): Enable flag_predictive_commoning on -O3.
+	* tree-ssa-loop-im.c (get_lsm_tmp_name): Export.  Allow
+	adding indices to the generated name.
+	(schedule_sm): Pass 0 to get_lsm_tmp_name.
+	* tree-ssa-loop-niter.c (stmt_dominates_stmt_p): Export.
+	* tree-pretty-print.c (op_symbol_1): Renamed to ...
+	(op_symbol_code): ... and exported.
+	(dump_omp_clause, op_symbol): Use op_symbol_code
+	instead of op_symbol_1.
+	* tree-pass.h (pass_predcom): Declare.
+	* timevar.def (TV_PREDCOM): New timevar.
+	* tree-ssa-loop.c (run_tree_predictive_commoning,
+	gate_tree_predictive_commoning, pass_predcom): New.
+	* tree-data-ref.c (find_data_references_in_loop): Find the
+	references in dominance order.
+	(canonicalize_base_object_address): Ensure that the result has
+	pointer type.
+	(dr_analyze_innermost): Export.
+	(create_data_ref): Code to fail for references with invariant
+	address moved ...
+	(find_data_references_in_stmt): ... here.
+	* tree-data-ref.h (dr_analyze_innermost): Declare.
+	* tree-affine.c: Include tree-gimple.h and hashtab.h.
+	(aff_combination_find_elt, name_expansion_hash,
+	name_expansion_eq, tree_to_aff_combination_expand,
+	double_int_constant_multiple_p, aff_combination_constant_multiple_p):
+	New functions.
+	* tree-affine.h (aff_combination_constant_multiple_p,
+	tree_to_aff_combination_expand): Declare.
+	* tree-predcom.c: New file.
+	* common.opt (fpredictive-commoning): New option.
+	* tree-flow.h (op_symbol_code, tree_predictive_commoning,
+	stmt_dominates_stmt_p, get_lsm_tmp_name): Declare.
+	* Makefile.in (tree-predcom.o): Add.
+	(tree-affine.o): Add TREE_GIMPLE_H dependency.
+	* passes.c (init_optimization_passes):  Add dceloop after
+	copy propagation in loop optimizer.  Add predictive commoning
+	to loop optimizer passes.
+
 2007-05-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* target-def.h (TARGET_MANGLE_DECL_ASSEMBLER_NAME): Correct
