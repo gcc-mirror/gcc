@@ -1,3 +1,10 @@
+2007-05-23  Steve Ellcey  <sje@cup.hp.com>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2007-03-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/libmudflap.cth/pass59-frag.c (main): Fix casting of arg.
