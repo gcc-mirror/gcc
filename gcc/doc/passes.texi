@@ -602,6 +602,17 @@ This pass completely unrolls loops with few iterations.  The pass
 is located in @file{tree-ssa-loop-ivcanon.c} and described by
 @code{pass_complete_unroll}.
 
+@item Predictive commoning
+
+This pass makes the code reuse the computations from the previous
+iterations of the loops, especially loads and stores to memory.
+It does so by storing the values of these computations to a bank
+of temporary variables that are rotated at the end of loop.  To avoid
+the need for this rotation, the loop is then unrolled and the copies
+of the loop body are rewritten to use the appropriate version of
+the temporary variable.  This pass is located in @file{tree-predcom.c}
+and described by @code{pass_predcom}.
+
 @item Array prefetching
 
 This pass issues prefetch instructions for array references inside

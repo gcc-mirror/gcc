@@ -37,7 +37,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 /* Local functions, macros and variables.  */
 static int op_prio (tree);
-static const char *op_symbol_1 (enum tree_code);
 static const char *op_symbol (tree);
 static void pretty_print_string (pretty_printer *, const char*);
 static void print_call_name (pretty_printer *, tree);
@@ -296,7 +295,7 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
 
     case OMP_CLAUSE_REDUCTION:
       pp_string (buffer, "reduction(");
-      pp_string (buffer, op_symbol_1 (OMP_CLAUSE_REDUCTION_CODE (clause)));
+      pp_string (buffer, op_symbol_code (OMP_CLAUSE_REDUCTION_CODE (clause)));
       pp_character (buffer, ':');
       dump_generic_node (buffer, OMP_CLAUSE_DECL (clause),
 	  spc, flags, false);
@@ -2390,10 +2389,10 @@ op_prio (tree op)
 }
 
 
-/* Return the symbol associated with operator OP.  */
+/* Return the symbol associated with operator CODE.  */
 
-static const char *
-op_symbol_1 (enum tree_code code)
+const char *
+op_symbol_code (enum tree_code code)
 {
   switch (code)
     {
@@ -2557,10 +2556,12 @@ op_symbol_1 (enum tree_code code)
     }
 }
 
+/* Return the symbol associated with operator OP.  */
+
 static const char *
 op_symbol (tree op)
 {
-  return op_symbol_1 (TREE_CODE (op));
+  return op_symbol_code (TREE_CODE (op));
 }
 
 /* Prints the name of a CALL_EXPR.  */

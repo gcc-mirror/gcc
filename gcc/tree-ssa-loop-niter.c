@@ -2816,7 +2816,7 @@ estimate_numbers_of_iterations (void)
 
 /* Returns true if statement S1 dominates statement S2.  */
 
-static bool
+bool
 stmt_dominates_stmt_p (tree s1, tree s2)
 {
   basic_block bb1 = bb_for_stmt (s1), bb2 = bb_for_stmt (s2);

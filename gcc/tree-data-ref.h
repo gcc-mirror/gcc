@@ -299,6 +299,7 @@ DEF_VEC_O (data_ref_loc);
 DEF_VEC_ALLOC_O (data_ref_loc, heap);
 
 bool get_references_in_stmt (tree, VEC (data_ref_loc, heap) **);
+void dr_analyze_innermost (struct data_reference *);
 extern void compute_data_dependences_for_loop (struct loop *, bool,
 					       VEC (data_reference_p, heap) **,
 					       VEC (ddr_p, heap) **);
