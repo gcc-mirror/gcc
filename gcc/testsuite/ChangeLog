@@ -306,7 +306,7 @@
 	* gcc.dg/vect/vect-102a.c: New test.
 
 2007-05-21  Paolo Bonzini  <bonzini@gnu.org>
-            Paolo Carlini  <pcarlini@suse.de>
+	    Paolo Carlini  <pcarlini@suse.de>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/gcc-have-sync-compare-and-swap.c,

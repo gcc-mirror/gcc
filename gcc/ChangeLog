@@ -253,12 +253,14 @@
 2007-05-23  Chen Liqin  <liqin@sunnorth.com.cn>
 
 	PR target/30987
-	* config/score/misc.md (bitclr_c, bitset_c, bittgl_c): remove.
-	* config/score/predicate.md (const_pow2, const_npow2): remove.
-	* config/score/score.h (ASM_OUTPUT_EXTERNAL): add ASM_OUTPUT_EXTERNAL undef.
+	* config/score/misc.md (bitclr_c, bitset_c, bittgl_c): Remove.
+	* config/score/predicate.md (const_pow2, const_npow2): Remove.
+	* config/score/score.h (ASM_OUTPUT_EXTERNAL): Add ASM_OUTPUT_EXTERNAL
+	undef.
+
 	PR target/30474
-	* config/score/score.c (score_print_operand): makes sure that only lower 
-        bits are used.
+	* config/score/score.c (score_print_operand): Make sure that only
+	lower bits are used.
 	
 2007-05-22  Ian Lance Taylor  <iant@google.com>
 
@@ -585,20 +587,19 @@
 	Add loopno argument.  Use evolution_function_is_invariant_rec_p
 	instead of evolution_function_is_constant_p.
 	Update calls to evolution_function_is_affine_multivariate_p.
-	* tree-chrec.h  (evolution_function_is_affine_multivariate_p):
+	* tree-chrec.h (evolution_function_is_affine_multivariate_p):
 	Add loopno argument.
 	* tree-scalar-evolution.c (gather_chrec_stats): Call
-	evolution_function_is_affine_multivariate_p with a  loop
+	evolution_function_is_affine_multivariate_p with a loop
 	number of 0.
 	* tree-data-ref.c (analyze_miv_subscript): Likewise.
 	(analyze_overlapping_iterations): Likewise.
-	(access_functions_are_affine_or_constant_p):
-	Likewise.
+	(access_functions_are_affine_or_constant_p): Likewise.
 	(build_classic_dist_vector_1): If the access functions
 	are equal, don't do anything.
 
 2007-05-21  Paolo Bonzini  <bonzini@gnu.org>
-            Paolo Carlini  <pcarlini@suse.de>
+	    Paolo Carlini  <pcarlini@suse.de>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Define
@@ -707,7 +708,7 @@
 	NOTE_INSN_BASIC_BLOCK_P when possible.
 	* ifcvt.c (dead_or_predicable): Remove call of squeeze_notes.
 	* dwarf2out.c (gen_label_die): Use NOTE_KIND instead of
-        NOTE_LINE_NUMBER; use NOTE_INSN_BASIC_BLOCK_P when possible.
+	NOTE_LINE_NUMBER; use NOTE_INSN_BASIC_BLOCK_P when possible.
 	(dwarf2out_var_location): Likewise.
 	* cfgbuild.c (make_edges): Likewise.
 	(find_basic_blocks_1): Likewise.
