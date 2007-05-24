@@ -133,7 +133,8 @@ proc gij_jvmti_test_one {file} {
   libjava_arguments
   
   set jarfile [file join [file dirname $file] $main.jar]
-  if {! [exec_gij $jarfile [file rootname $file].out {}]} {
+  set gij_flags {-agentlib:dummyagent}
+  if {! [exec_gij $jarfile [file rootname $file].out {} $gij_flags]} {
       return 0
   }
 
@@ -151,14 +152,24 @@ proc gij_jvmti_run {} {
 
   # For now we only test JVMTI on native builds.
   if {$build_triplet == $host_triplet} {
-      catch { lsort [glob -nocomplain ${srcdir}/${subdir}/interp/*.jar] \
-             } srcfiles
+
+    # Build our dummy JVMTI agent library
+    if {![gcj_jni_compile_c_to_so [file join $srcdir $subdir dummyagent.c]]} {
+      fail "compiling dummy JVMTI agent"
+    } else {
+      pass "compiling dummy JVMTI agent"
+
+      catch {lsort [glob -nocomplain ${srcdir}/${subdir}/interp/*.jar]} \
+	srcfiles
 
       foreach x $srcfiles {
-        gij_jvmti_test_one $x
+	gij_jvmti_test_one $x
       }
+
+      gcj_cleanup libdummyagent.so
+    }
   } else {
-      verbose "JVMTI tests not run in cross-compilation environment"
+    verbose "JVMTI tests not run in cross-compilation environment"
   }
 }
 

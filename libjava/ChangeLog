@@ -1,3 +1,19 @@
+2007-05-24  Keith Seitz  <keiths@redhat.com>
+
+	* include/java-interp.h (_Jv_InterpFrame::get_pc): Only deduct
+	one when pc_ptr is non-NULL.
+
+	* prims.cc (parse_init_args): Enable JVMTI with agentlib
+	and agentpath options.
+
+	* testsuite/lib/libjava.exp (exec_gij): Add new addl_flags
+	parameter.
+	* testsuite/libjava.jvmti/jvmti-interp.exp (gij_jvmti_test_one):
+	Pass '-agentlib:dummyagent' when executing gij.
+	(gij_jvmti_run): Build dummy JVMTI agent before running tests,
+	and remove it when finished.
+	* testsuite/libjava.jvmti/dummyagent.c: New file.
+
 2007-05-23  Steve Ellcey  <sje@cup.hp.com>
 
 	* Makefile.in: Regenerate.

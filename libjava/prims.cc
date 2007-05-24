@@ -1,6 +1,6 @@
 // prims.cc - Code for core of runtime environment.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -1522,6 +1522,9 @@ parse_init_args (JvVMInitArgs* vm_args)
 	        {
 	          return -1;
 	        }
+
+	      // Mark JVMTI active
+	      JVMTI::enabled = true;
             }
     
           continue;
@@ -1564,6 +1567,8 @@ parse_init_args (JvVMInitArgs* vm_args)
               return -1;
             }
 	
+	  // Mark JVMTI active
+	  JVMTI::enabled = true;
           continue;
 	}
       else if (vm_args->ignoreUnrecognized)
