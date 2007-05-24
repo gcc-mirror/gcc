@@ -1,3 +1,8 @@
+2007-05-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Mark
+	__builtin_ia32_vec_set_v2di with MASK_64BIT.
+
 2007-05-24  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/27067
