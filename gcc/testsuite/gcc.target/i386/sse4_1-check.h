@@ -4,6 +4,8 @@
 
 static void sse4_1_test (void);
 
+#define MASK 0x2
+
 int
 main ()
 {
