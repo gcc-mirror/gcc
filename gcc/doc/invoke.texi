@@ -4495,7 +4495,7 @@ different text / bss / data / heap / stack / dso start locations.
 @item -fdump-unnumbered
 @opindex fdump-unnumbered
 When doing debugging dumps (see @option{-d} option above), suppress instruction
-numbers, line number note and address output.  This makes it more feasible to
+numbers and address output.  This makes it more feasible to
 use diff on debugging dumps for compiler invocations with different
 options, in particular with and without @option{-g}.
 
