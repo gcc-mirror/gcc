@@ -1,3 +1,9 @@
+2007-05-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/ostream.tcc: Do not inhibit implicit instantiation
+	of __ostream_insert here...
+	* include/bits/ostream_insert.h: ... do it here.
+
 2007-05-21  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/31621
