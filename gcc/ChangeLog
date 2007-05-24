@@ -1,3 +1,25 @@
+2007-05-24  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR middle-end/32018
+	* tree-ssa-threadupdate.c (thread_through_loop_header): Use
+	set_loop_copy.
+	(thread_through_all_blocks): Call initialize_original_copy_tables
+	and free_original_copy_tables.
+	* cfgloopmanip.c (duplicate_loop, duplicate_loop_to_header_edge):
+	Use set_loop_copy.
+	* tree-cfg.c (tree_duplicate_sese_region): Ditto.
+	* cfghooks.c (duplicate_block): Use get_loop_copy.
+	* cfg.c: Include cfgloop.h.
+	(loop_copy): New hash table.
+	(initialize_original_copy_tables): Initialize loop_copy table.
+	(free_original_copy_tables): Free loop_copy table.
+	(copy_original_table_clear, copy_original_table_set,
+	set_loop_copy, get_loop_copy): New functions.
+	(set_bb_original, set_bb_copy): Use copy_original_table_set.
+	* cfgloop.h (struct loop): Remove copy field.
+	* Makefile.in (cfg.o): Add CFGLOOP_H dependency.
+	* basic-block.h (set_loop_copy, get_loop_copy): Declare.
+
 2007-05-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_handle_option): Handle SSE4.1 for

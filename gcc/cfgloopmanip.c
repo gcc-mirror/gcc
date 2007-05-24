@@ -653,7 +653,7 @@ duplicate_loop (struct loop *loop, struct loop *target)
   place_new_loop (cloop);
 
   /* Mark the new loop as copy of LOOP.  */
-  loop->copy = cloop;
+  set_loop_copy (loop, cloop);
 
   /* Add it to target.  */
   flow_loop_tree_node_add (target, cloop);
@@ -917,7 +917,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
   for (aloop = loop->inner, i = 0; aloop; aloop = aloop->next, i++)
     orig_loops[i] = aloop;
 
-  loop->copy = target;
+  set_loop_copy (loop, target);
 
   first_active = XNEWVEC (basic_block, n);
   if (is_latch)

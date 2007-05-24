@@ -123,9 +123,6 @@ struct loop GTY ((chain_next ("%h.next")))
   /* Link to the next (sibling) loop.  */
   struct loop *next;
 
-  /* Loop that is copy of this loop.  */
-  struct loop *copy;
-
   /* Auxiliary info specific to a pass.  */
   PTR GTY ((skip (""))) aux;
 
