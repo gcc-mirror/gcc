@@ -465,7 +465,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #endif
 
 #ifndef TARGET_MANGLE_DECL_ASSEMBLER_NAME
-#define TARGET_MANGLE_DECL_ASSEMBLER_NAME mangle_decl_assembler_name
+#define TARGET_MANGLE_DECL_ASSEMBLER_NAME default_mangle_decl_assembler_name
 #endif
 
 #ifndef TARGET_ENCODE_SECTION_INFO
