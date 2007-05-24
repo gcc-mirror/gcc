@@ -44,6 +44,48 @@ C
        call abort
       endif
 
+      LHELPA = 1
+      LHELP = 1
+      LCN = 1
+      LBN = 1
+      LAN = 1
+      LDCDY = 1
+      LDCDX = 1
+      LKM = 1
+      LTM = 1
+      LVG = 1
+      LUG = 1
+      LVM = 1
+      LUM = 1
+      LHVAR = 1
+      LZET = 1
+      LDEP = 1
+      LVDEP = 1
+      LTSTR = 1
+      LUSTR = 1
+      LOBUK = 1
+      LTAVR = 1
+      LSTEPH = 1
+      LHMIX = 1
+      LZ0 = 1
+      LELEVY = 1
+      LELEVX = 1
+      LELEV = 1
+      LDKZH = 1
+      LDKZM = 1
+      LQ = 1
+      LPSTEP = 1
+      LPI = 1
+      LWZ = 1
+      LVSTEP = 1
+      LVY = 1
+      LUSTEP = 1
+      LUX = 1
+      LTSTEP = 1
+      LPOT = 1
+      LCSTEP = 1
+      LC = 1
+
       CALL BAR2(NX,NY,NZ,NT,NTIME,NWINDX,NWINDY,NSINKS,NFILT,XSTART,
      * YSTART,ZSTART,TSTART,DELTAX,DELTAY,DELTAZ,DELTAT,PHI,DL,
      * DX,DY,DZ,IB,IK,ITY,NCOUNT,NPRINT,NGRAPH,NPSTEP,NGSTEP,LAST,
