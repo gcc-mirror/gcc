@@ -50,17 +50,24 @@
   {
     const ctype_base::mask* __ret;
     char* __old = setlocale(LC_CTYPE, NULL);
-    const size_t __len = __builtin_strlen(__old) + 1;
-    char* __sav = new char[__len];
-    __builtin_memcpy(__sav, __old, __len);
-    setlocale(LC_CTYPE, "C");
+    char* __sav = NULL;
+    if (__builtin_strcmp(__old, "C"))
+      {
+	const size_t __len = __builtin_strlen(__old) + 1;
+	__sav = new char[__len];
+	__builtin_memcpy(__sav, __old, __len);
+	setlocale(LC_CTYPE, "C");
+      }
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __ret = *__ctype_b_loc();
 #else
     __ret = __ctype_b;
 #endif
-    setlocale(LC_CTYPE, __sav);
-    delete [] __sav;
+    if (__sav)
+      {
+	setlocale(LC_CTYPE, __sav);
+	delete [] __sav;
+      }
     return __ret;
   }
 #endif
@@ -85,10 +92,14 @@
   _M_del(__table != 0 && __del), _M_widen_ok(0), _M_narrow_ok(0)
   {
     char* __old = setlocale(LC_CTYPE, NULL);
-    const size_t __len = __builtin_strlen(__old) + 1;
-    char* __sav = new char[__len];
-    __builtin_memcpy(__sav, __old, __len);    
-    setlocale(LC_CTYPE, "C");
+    char* __sav = NULL;
+    if (__builtin_strcmp(__old, "C"))
+      {    
+	const size_t __len = __builtin_strlen(__old) + 1;
+	__sav = new char[__len];
+	__builtin_memcpy(__sav, __old, __len);    
+	setlocale(LC_CTYPE, "C");
+      }
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     _M_toupper = *__ctype_toupper_loc();
     _M_tolower = *__ctype_tolower_loc();
@@ -98,8 +109,11 @@
     _M_tolower = __ctype_tolower;
     _M_table = __table ? __table : __ctype_b;
 #endif
-    setlocale(LC_CTYPE, __sav);
-    delete [] __sav;
+    if (__sav)
+      {
+	setlocale(LC_CTYPE, __sav);
+	delete [] __sav;
+      }
     __builtin_memset(_M_widen, 0, sizeof(_M_widen));
     __builtin_memset(_M_narrow, 0, sizeof(_M_narrow));
   }
@@ -123,10 +137,14 @@
   _M_del(__table != 0 && __del), _M_widen_ok(0), _M_narrow_ok(0)
   {
     char* __old = setlocale(LC_CTYPE, NULL);
-    const size_t __len = __builtin_strlen(__old) + 1;
-    char* __sav = new char[__len];
-    __builtin_memcpy(__sav, __old, __len);
-    setlocale(LC_CTYPE, "C");
+    char* __sav = NULL;
+    if (__builtin_strcmp(__old, "C"))
+      {
+	const size_t __len = __builtin_strlen(__old) + 1;
+	__sav = new char[__len];
+	__builtin_memcpy(__sav, __old, __len);
+	setlocale(LC_CTYPE, "C");
+      }
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     _M_toupper = *__ctype_toupper_loc();
     _M_tolower = *__ctype_tolower_loc();
@@ -136,8 +154,11 @@
     _M_tolower = __ctype_tolower;
     _M_table = __table ? __table : __ctype_b;
 #endif
-    setlocale(LC_CTYPE, __sav);
-    delete [] __sav;
+    if (__sav)
+      {
+	setlocale(LC_CTYPE, __sav);
+	delete [] __sav;
+      }
     __builtin_memset(_M_widen, 0, sizeof(_M_widen));
     __builtin_memset(_M_narrow, 0, sizeof(_M_narrow));
   }

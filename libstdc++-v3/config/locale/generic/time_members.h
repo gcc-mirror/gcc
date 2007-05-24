@@ -62,17 +62,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __timepunct<_CharT>::__timepunct(__c_locale __cloc, const char* __s, 
 				     size_t __refs) 
     : facet(__refs), _M_data(NULL)
-    { 
-      const size_t __len = __builtin_strlen(__s) + 1;
-      char* __tmp = new char[__len];
-      __builtin_memcpy(__tmp, __s, __len);
-      _M_name_timepunct = __tmp;
+    {
+      if (__builtin_strcmp(__s, _S_get_c_name()) != 0)
+	{
+	  const size_t __len = __builtin_strlen(__s) + 1;
+	  char* __tmp = new char[__len];
+	  __builtin_memcpy(__tmp, __s, __len);
+	  _M_name_timepunct = __tmp;
+	}
+      else
+	_M_name_timepunct = _S_get_c_name();
 
       try
 	{ _M_initialize_timepunct(__cloc); }
       catch(...)
-	{ 
-	  delete [] _M_name_timepunct;
+	{
+	  if (_M_name_timepunct != _S_get_c_name())
+	    delete [] _M_name_timepunct;
 	  __throw_exception_again;
 	}
     }

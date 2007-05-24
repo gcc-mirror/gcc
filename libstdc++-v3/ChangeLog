@@ -1,3 +1,24 @@
+2007-05-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/gnu/c_locale.h (__convert_from_v): Only switch to the
+	"C" locale if the current one isn't already "C" (for old glibcs).
+	* config/os/gnu-linux/ctype_noninline.h (ctype<char>::classic_table,
+	ctype<char>::ctype(__c_locale, const mask*, bool, size_t),
+	ctype<char>::ctype(const mask*, bool, size_t)): Likewise, for generic
+	locale model.
+	* config/locale/gnu/messages_members.h
+	(messages<>::messages(__c_locale, const char*, size_t),
+	messages_byname<_CharT>::messages_byname(const char*, size_t)):
+	Only dynamically allocate memory if __s != "C".
+	* config/locale/gnu/time_members.h
+	(__timepunct<_CharT>::__timepunct(__c_locale, const char*, size_t)):
+	Likewise.
+	* config/locale/generic/time_members.h
+	(__timepunct<_CharT>::__timepunct(__c_locale, const char*, size_t)):
+	Likewise.
+
+	* testsuite/util/testsuite_allocator.h: Revert last change.
+
 2007-05-22  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/util/testsuite_allocator.h (check_new): Assign false
