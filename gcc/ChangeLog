@@ -5,6 +5,10 @@
 
 2007-05-24  Jan Hubicka  <jh@suse.cz>
 
+	* gengenrtl.c (gendecl, gendef): Output the gens annotated for
+	statistics.
+	(genheader): Include statistics.h.
+
 	* doc/invoke.texi (-fdump-unnumbered): Update docs when line number
 	notes are gone.
 	* print-rtl.c (flag_dump_unnumbered): Update comments.
