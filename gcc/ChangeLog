@@ -1,3 +1,7 @@
+2007-05-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (*vec_extractv2di_1_sse2): Correct shift.
+
 2007-05-25  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/arm/arm-protos.h (arm_encode_call_attribute): Delete.
