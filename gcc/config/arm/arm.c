@@ -104,7 +104,6 @@ static void push_minipool_fix (rtx, HOST_WIDE_INT, rtx *, enum machine_mode,
 			       rtx);
 static void arm_reorg (void);
 static bool note_invalid_constants (rtx, HOST_WIDE_INT, int);
-static int current_file_function_operand (rtx);
 static unsigned long arm_compute_save_reg0_reg12_mask (void);
 static unsigned long arm_compute_save_reg_mask (void);
 static unsigned long arm_isr_value (tree);
@@ -2782,21 +2781,6 @@ arm_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
   pcum->iwmmxt_nregs = 0;
   pcum->can_split = true;
 
-  pcum->call_cookie = CALL_NORMAL;
-
-  if (TARGET_LONG_CALLS)
-    pcum->call_cookie = CALL_LONG;
-
-  /* Check for long call/short call attributes.  The attributes
-     override any command line option.  */
-  if (fntype)
-    {
-      if (lookup_attribute ("short_call", TYPE_ATTRIBUTES (fntype)))
-	pcum->call_cookie = CALL_SHORT;
-      else if (lookup_attribute ("long_call", TYPE_ATTRIBUTES (fntype)))
-	pcum->call_cookie = CALL_LONG;
-    }
-
   /* Varargs vectors are treated the same as long long.
      named_count avoids having to change the way arm handles 'named' */
   pcum->named_count = 0;
@@ -2867,8 +2851,8 @@ arm_function_arg (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
     pcum->nregs++;
 
   if (mode == VOIDmode)
-    /* Compute operand 2 of the call insn.  */
-    return GEN_INT (pcum->call_cookie);
+    /* Pick an arbitrary value for operand 2 of the call insn.  */
+    return const0_rtx;
 
   /* Only allow splitting an arg between regs and memory if all preceding
      args were allocated to regs.  For args passed by reference we only count
@@ -3121,27 +3105,6 @@ arm_comp_type_attributes (tree type1, tree type2)
   return 1;
 }
 
-/*  Encode long_call or short_call attribute by prefixing
-    symbol name in DECL with a special character FLAG.  */
-void
-arm_encode_call_attribute (tree decl, int flag)
-{
-  const char * str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-  int          len = strlen (str);
-  char *       newstr;
-
-  /* Do not allow weak functions to be treated as short call.  */
-  if (DECL_WEAK (decl) && flag == SHORT_CALL_FLAG_CHAR)
-    return;
-
-  newstr = alloca (len + 2);
-  newstr[0] = flag;
-  strcpy (newstr + 1, str);
-
-  newstr = (char *) ggc_alloc_string (newstr, len + 1);
-  XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
-}
-
 /*  Assigns default attributes to newly defined type.  This is used to
     set short_call/long_call attributes for function types of
     functions defined inside corresponding #pragma scopes.  */
@@ -3168,92 +3131,79 @@ arm_set_default_type_attributes (tree type)
     }
 }
 
-/* Return 1 if the operand is a SYMBOL_REF for a function known to be
-   defined within the current compilation unit.  If this cannot be
-   determined, then 0 is returned.  */
-static int
-current_file_function_operand (rtx sym_ref)
+/* Return true if DECL is known to be linked into section SECTION.  */
+
+static bool
+arm_function_in_section_p (tree decl, section *section)
 {
-  /* This is a bit of a fib.  A function will have a short call flag
-     applied to its name if it has the short call attribute, or it has
-     already been defined within the current compilation unit.  */
-  if (ENCODED_SHORT_CALL_ATTR_P (XSTR (sym_ref, 0)))
-    return 1;
+  /* We can only be certain about functions defined in the same
+     compilation unit.  */
+  if (!TREE_STATIC (decl))
+    return false;
 
-  /* The current function is always defined within the current compilation
-     unit.  If it s a weak definition however, then this may not be the real
-     definition of the function, and so we have to say no.  */
-  if (sym_ref == XEXP (DECL_RTL (current_function_decl), 0)
-      && !DECL_WEAK (current_function_decl))
-    return 1;
+  /* Make sure that SYMBOL always binds to the definition in this
+     compilation unit.  */
+  if (!targetm.binds_local_p (decl))
+    return false;
 
-  /* We cannot make the determination - default to returning 0.  */
-  return 0;
+  /* If DECL_SECTION_NAME is set, assume it is trustworthy.  */
+  if (!DECL_SECTION_NAME (decl))
+    {
+      /* Only cater for unit-at-a-time mode, where we know that the user
+	 cannot later specify a section for DECL.  */
+      if (!flag_unit_at_a_time)
+	return false;
+
+      /* Make sure that we will not create a unique section for DECL.  */
+      if (flag_function_sections || DECL_ONE_ONLY (decl))
+	return false;
+    }
+
+  return function_section (decl) == section;
 }
 
 /* Return nonzero if a 32-bit "long_call" should be generated for
-   this call.  We generate a long_call if the function:
+   a call from the current function to DECL.  We generate a long_call
+   if the function:
 
         a.  has an __attribute__((long call))
      or b.  is within the scope of a #pragma long_calls
      or c.  the -mlong-calls command line switch has been specified
-         .  and either:
-                1. -ffunction-sections is in effect
-	     or 2. the current function has __attribute__ ((section))
-	     or 3. the target function has __attribute__ ((section))
 
    However we do not generate a long call if the function:
 
         d.  has an __attribute__ ((short_call))
      or e.  is inside the scope of a #pragma no_long_calls
-     or f.  is defined within the current compilation unit.
+     or f.  is defined in the same section as the current function.  */
 
-   This function will be called by C fragments contained in the machine
-   description file.  SYM_REF and CALL_COOKIE correspond to the matched
-   rtl operands.  CALL_SYMBOL is used to distinguish between
-   two different callers of the function.  It is set to 1 in the
-   "call_symbol" and "call_symbol_value" patterns and to 0 in the "call"
-   and "call_value" patterns.  This is because of the difference in the
-   SYM_REFs passed by these patterns.  */
-int
-arm_is_longcall_p (rtx sym_ref, int call_cookie, int call_symbol)
+bool
+arm_is_long_call_p (tree decl)
 {
-  if (!call_symbol)
-    {
-      if (GET_CODE (sym_ref) != MEM)
-	return 0;
+  tree attrs;
 
-      sym_ref = XEXP (sym_ref, 0);
-    }
+  if (!decl)
+    return TARGET_LONG_CALLS;
 
-  if (GET_CODE (sym_ref) != SYMBOL_REF)
-    return 0;
+  attrs = TYPE_ATTRIBUTES (TREE_TYPE (decl));
+  if (lookup_attribute ("short_call", attrs))
+    return false;
 
-  if (call_cookie & CALL_SHORT)
-    return 0;
+  /* For "f", be conservative, and only cater for cases in which the
+     whole of the current function is placed in the same section.  */
+  if (!flag_reorder_blocks_and_partition
+      && arm_function_in_section_p (decl, current_function_section ()))
+    return false;
 
-  if (TARGET_LONG_CALLS)
-    {
-      if (flag_function_sections
-	  || DECL_SECTION_NAME (current_function_decl))
-	/* c.3 is handled by the definition of the
-	   ARM_DECLARE_FUNCTION_SIZE macro.  */
-	return 1;
-    }
+  if (lookup_attribute ("long_call", attrs))
+    return true;
 
-  if (current_file_function_operand (sym_ref))
-    return 0;
-
-  return (call_cookie & CALL_LONG)
-    || ENCODED_LONG_CALL_ATTR_P (XSTR (sym_ref, 0))
-    || TARGET_LONG_CALLS;
+  return TARGET_LONG_CALLS;
 }
 
 /* Return nonzero if it is ok to make a tail-call to DECL.  */
 static bool
 arm_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 {
-  int call_type = TARGET_LONG_CALLS ? CALL_LONG : CALL_NORMAL;
   unsigned long func_type;
 
   if (cfun->machine->sibcall_blocked)
@@ -3264,16 +3214,9 @@ arm_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
   if (decl == NULL || TARGET_THUMB)
     return false;
 
-  /* Get the calling method.  */
-  if (lookup_attribute ("short_call", TYPE_ATTRIBUTES (TREE_TYPE (decl))))
-    call_type = CALL_SHORT;
-  else if (lookup_attribute ("long_call", TYPE_ATTRIBUTES (TREE_TYPE (decl))))
-    call_type = CALL_LONG;
-
   /* Cannot tail-call to long calls, since these are out of range of
-     a branch instruction.  However, if not compiling PIC, we know
-     we can reach the symbol if it is in this compilation unit.  */
-  if (call_type == CALL_LONG && (flag_pic || !TREE_ASM_WRITTEN (decl)))
+     a branch instruction.  */
+  if (arm_is_long_call_p (decl))
     return false;
 
   /* If we are interworking and the function is not declared static
@@ -15602,17 +15545,6 @@ arm_encode_section_info (tree decl, rtx rtl, int first)
   if (optimize > 0 && TREE_CONSTANT (decl))
     SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
 #endif
-
-  /* If we are referencing a function that is weak then encode a long call
-     flag in the function name, otherwise if the function is static or
-     or known to be defined in this file then encode a short call flag.  */
-  if (first && DECL_P (decl))
-    {
-      if (TREE_CODE (decl) == FUNCTION_DECL && DECL_WEAK (decl))
-        arm_encode_call_attribute (decl, LONG_CALL_FLAG_CHAR);
-      else if (! TREE_PUBLIC (decl))
-        arm_encode_call_attribute (decl, SHORT_CALL_FLAG_CHAR);
-    }
 
   default_encode_section_info (decl, rtl, first);
 }

@@ -1,3 +1,34 @@
+2007-05-25  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/arm/arm-protos.h (arm_encode_call_attribute): Delete.
+	(arm_is_longcall_p): Rename to...
+	(arm_is_long_call_p): ...this.  Take a single tree argument and
+	return a bool.
+	* config/arm/arm.h (CALL_SHORT, CALL_LONG, CALL_NORMAL): Delete.
+	(CUMULATIVE_ARGS): Remove call_cookie.
+	(SHORT_CALL_FLAG_CHAR, LONG_CALL_FLAG_CHAR, ENCODED_SHORT_CALL_ATTR_P)
+	(ENCODED_LONG_CALL_ATTR_P): Delete.
+	(ARM_NAME_ENCODING_LENGTHS): Remove SHORT_CALL_FLAG_CHAR and
+	LONG_CALL_FLAG_CHAR cases.
+	(ARM_DECLARE_FUNCTION_SIZE): Delete.
+	* config/arm/elf.h (ASM_DECLARE_FUNCTION_SIZE): Don't use
+	ARM_DECLARE_FUNCTION_SIZE.
+	* config/arm/arm.c (arm_init_cumulative_args): Don't set call_cookie.
+	(arm_function_arg): Return const0_rtx for VOIDmode arguments.
+	(arm_encode_call_attribute, current_file_function_operand): Delete.
+	(arm_function_in_section_p): New function.
+	(arm_is_longcall_p): Rename to...
+	(arm_is_long_call_p): ...this.  Take the target function as a single
+	argument and return a bool.  Do not rely on call cookies.  Check
+	whether the target symbol is in the same section as the current
+	function, not just the same compilation unit.
+	(arm_function_ok_for_sibcall): Use arm_is_long_call_p.
+	(arm_encode_section_info): Don't encode a call type.
+	* config/arm/arm.md (call, call_value): Update calls to
+	arm_is_long(_)call_p.  Simplify logic.
+	(*call_symbol, *call_value_symbol, *call_insn, *call_value_insn):
+	Update calls to arm_is_long(_)call_p.
+
 2007-05-25  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/31982
