@@ -1653,12 +1653,12 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
       break;
 
     case EXPR_FUNCTION:
-      if (expr->value.function.actual->expr->expr_type == EXPR_VARIABLE
-	    && gfc_apply_interface_mapping_to_expr (mapping,
-			expr->value.function.actual->expr)
-	    && expr->value.function.esym == NULL
+      if (expr->value.function.esym == NULL
 	    && expr->value.function.isym != NULL
-	    && expr->value.function.isym->generic_id == GFC_ISYM_LEN)
+	    && expr->value.function.isym->generic_id == GFC_ISYM_LEN
+	    && expr->value.function.actual->expr->expr_type == EXPR_VARIABLE
+	    && gfc_apply_interface_mapping_to_expr (mapping,
+			expr->value.function.actual->expr))
 	{
 	  gfc_expr *new_expr;
 	  new_expr = gfc_copy_expr (expr->value.function.actual->expr->ts.cl->length);
