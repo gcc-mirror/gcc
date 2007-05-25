@@ -81,7 +81,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     if (__builtin_strcmp(__old, "C"))
       {
 	const size_t __len = __builtin_strlen(__old) + 1;
-	char* __sav = new char[__len];
+	__sav = new char[__len];
 	__builtin_memcpy(__sav, __old, __len);
 	std::setlocale(LC_NUMERIC, "C");
       }
