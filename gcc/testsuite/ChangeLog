@@ -1,3 +1,8 @@
+2007-05-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32047
+	* gfortran.dg/result_in_spec_2.f90: New test.
+
 2007-05-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-math-4.c: Fix dg-xfail-if.
