@@ -1,3 +1,7 @@
+2007-05-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-math-4.c: Fix dg-xfail-if.
+
 2007-05-24  Ollie Wild  <aaw@google.com>
 
 	* gcc.dg/cpp/counter-1.c: New test.
