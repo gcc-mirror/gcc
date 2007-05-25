@@ -695,7 +695,7 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
 
 static void
 unformatted_read (st_parameter_dt *dtp, bt type,
-		  void *dest, int kind,
+		  void *dest, int kind __attribute__((unused)),
 		  size_t size, size_t nelems)
 {
   size_t i, sz;
@@ -723,40 +723,37 @@ unformatted_read (st_parameter_dt *dtp, bt type,
       /* By now, all complex variables have been split into their
 	 constituent reals.  */
       
-      if (type == BT_REAL || type == BT_COMPLEX)
-	sz = size_from_real_kind (kind);
-      else
-	sz = kind;
-
       for (i=0; i<nelems; i++)
 	{
- 	  read_block_direct (dtp, buffer, &sz);
- 	  reverse_memcpy (p, buffer, sz);
+ 	  read_block_direct (dtp, buffer, &size);
+ 	  reverse_memcpy (p, buffer, size);
  	  p += size;
  	}
     }
 }
 
 
-/* Master function for unformatted writes.  */
+/* Master function for unformatted writes.  NOTE: For kind=10 the size is 16
+   bytes on 64 bit machines.  The unused bytes are not initialized and never
+   used, which can show an error with memory checking analyzers like
+   valgrind.  */
 
 static void
 unformatted_write (st_parameter_dt *dtp, bt type,
-		   void *source, int kind,
+		   void *source, int kind __attribute__((unused)),
 		   size_t size, size_t nelems)
 {
   if (dtp->u.p.current_unit->flags.convert == CONVERT_NATIVE ||
       size == 1 || type == BT_CHARACTER)
     {
       size *= nelems;
-
       write_buf (dtp, source, size);
     }
   else
     {
       char buffer[16];
       char *p;
-      size_t i, sz;
+      size_t i;
   
       /* Break up complex into its constituent reals.  */
       if (type == BT_COMPLEX)
@@ -770,16 +767,12 @@ unformatted_write (st_parameter_dt *dtp, bt type,
       /* By now, all complex variables have been split into their
 	 constituent reals.  */
 
-      if (type == BT_REAL || type == BT_COMPLEX)
-	sz = size_from_real_kind (kind);
-      else
-	sz = kind;
 
       for (i=0; i<nelems; i++)
 	{
 	  reverse_memcpy(buffer, p, size);
  	  p+= size;
-	  write_buf (dtp, buffer, sz);
+	  write_buf (dtp, buffer, size);
 	}
     }
 }
