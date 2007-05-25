@@ -2283,6 +2283,11 @@ finish_member_declaration (tree decl)
   /* Mark the DECL as a member of the current class.  */
   DECL_CONTEXT (decl) = current_class_type;
 
+  /* Check for bare parameter packs in the member variable declaration.  */
+  if (TREE_CODE (decl) == FIELD_DECL
+      && !check_for_bare_parameter_packs (TREE_TYPE (decl)))
+    TREE_TYPE (decl) == error_mark_node;
+
   /* [dcl.link]
 
      A C language linkage is ignored for the names of class members

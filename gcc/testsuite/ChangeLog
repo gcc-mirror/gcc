@@ -1,3 +1,27 @@
+2007-05-25  Douglas Gregor <doug.gregor@gmail.com>
+
+	PR c++/31431
+	PR c++/31432
+	PR c++/31434
+	PR c++/31435
+	PR c++/31437
+	PR c++/31438
+	PR c++/31442
+	PR c++/31443
+	PR c++/31444
+	PR c++/31445
+	* g++.dg/cpp0x/pr31431.C: New.
+	* g++.dg/cpp0x/pr31437.C: New.
+	* g++.dg/cpp0x/pr31442.C: New.
+	* g++.dg/cpp0x/pr31444.C: New.
+	* g++.dg/cpp0x/pr31431-2.C: New.
+	* g++.dg/cpp0x/pr31432.C: New.
+	* g++.dg/cpp0x/pr31434.C: New.
+	* g++.dg/cpp0x/pr31438.C: New.
+	* g++.dg/cpp0x/pr31443.C: New.
+	* g++.dg/cpp0x/pr31445.C: New.
+	* g++.dg/cpp0x/variadic-crash1.C: New.
+
 2007-05-25  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.target/arm/long-calls-1.c: New test.

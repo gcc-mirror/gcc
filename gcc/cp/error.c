@@ -395,6 +395,19 @@ dump_type (tree t, int flags)
       pp_cxx_identifier (cxx_pp, "...");
       break;
 
+    case TYPE_ARGUMENT_PACK:
+      {
+        tree args = ARGUMENT_PACK_ARGS (t);
+        int i;
+        for (i = 0; i < TREE_VEC_LENGTH (args); ++i)
+          {
+            if (i)
+              pp_separate_with_comma (cxx_pp);
+            dump_type (TREE_VEC_ELT (args, i), flags);
+          }
+      }
+      break;
+
     default:
       pp_unsupported_tree (cxx_pp, t);
       /* Fall through to error.  */

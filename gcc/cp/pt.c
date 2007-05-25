@@ -2599,15 +2599,18 @@ make_pack_expansion (tree arg)
    where "args" is a parameter pack. check_for_bare_parameter_packs
    should not be called for the subexpressions args, h(args),
    g(h(args)), or f(g(h(args))), because we would produce erroneous
-   error messages.  */
-void 
+   error messages. 
+
+   Returns TRUE if there were no bare parameter packs, returns FALSE
+   (and emits an error) if there were bare parameter packs.*/
+bool 
 check_for_bare_parameter_packs (tree t)
 {
   tree parameter_packs = NULL_TREE;
   struct find_parameter_pack_data ppd;
 
   if (!processing_template_decl || !t || t == error_mark_node)
-    return;
+    return true;
 
   if (TREE_CODE (t) == TYPE_DECL)
     t = TREE_TYPE (t);
@@ -2617,25 +2620,30 @@ check_for_bare_parameter_packs (tree t)
   walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
   pointer_set_destroy (ppd.visited);
 
-  if (parameter_packs) {
-    error ("parameter packs not expanded with `...':");
-    while (parameter_packs)
-      {
-        tree pack = TREE_VALUE (parameter_packs);
-        tree name = NULL_TREE;
+  if (parameter_packs) 
+    {
+      error ("parameter packs not expanded with `...':");
+      while (parameter_packs)
+        {
+          tree pack = TREE_VALUE (parameter_packs);
+          tree name = NULL_TREE;
 
-        if (TREE_CODE (pack) == TEMPLATE_TYPE_PARM
-            || TREE_CODE (pack) == TEMPLATE_TEMPLATE_PARM)
-          name = TYPE_NAME (pack);
-	else if (TREE_CODE (pack) == TEMPLATE_PARM_INDEX)
-	  name = DECL_NAME (TEMPLATE_PARM_DECL (pack));
-        else
-          name = DECL_NAME (pack);
-        inform ("        %qD", name);
+          if (TREE_CODE (pack) == TEMPLATE_TYPE_PARM
+              || TREE_CODE (pack) == TEMPLATE_TEMPLATE_PARM)
+            name = TYPE_NAME (pack);
+          else if (TREE_CODE (pack) == TEMPLATE_PARM_INDEX)
+            name = DECL_NAME (TEMPLATE_PARM_DECL (pack));
+          else
+            name = DECL_NAME (pack);
+          inform ("        %qD", name);
 
-        parameter_packs = TREE_CHAIN (parameter_packs);
-      }
-  }
+          parameter_packs = TREE_CHAIN (parameter_packs);
+        }
+
+      return false;
+    }
+
+  return true;
 }
 
 /* Expand any parameter packs that occur in the template arguments in
@@ -3376,7 +3384,7 @@ process_partial_specialization (tree decl)
 
   DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)
     = tree_cons (specargs, inner_parms,
-		 DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
+                 DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
   TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)) = type;
   return decl;
 }
@@ -3692,7 +3700,38 @@ push_template_decl_real (tree decl, bool is_friend)
 
   /* Ensure that there are no parameter packs in the type of this
      declaration that have not been expanded.  */
-  check_for_bare_parameter_packs (TREE_TYPE (decl));
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      /* Check each of the arguments individually to see if there are
+         any bare parameter packs.  */
+      tree type = TREE_TYPE (decl);
+      tree arg = DECL_ARGUMENTS (decl);
+      tree argtype = TYPE_ARG_TYPES (type);
+
+      while (arg && argtype)
+        {
+          if (!FUNCTION_PARAMETER_PACK_P (arg)
+              && !check_for_bare_parameter_packs (TREE_TYPE (arg)))
+            {
+            /* This is a PARM_DECL that contains unexpanded parameter
+               packs. We have already complained about this in the
+               check_for_bare_parameter_packs call, so just replace
+               these types with ERROR_MARK_NODE.  */
+              TREE_TYPE (arg) = error_mark_node;
+              TREE_VALUE (argtype) = error_mark_node;
+            }
+
+          arg = TREE_CHAIN (arg);
+          argtype = TREE_CHAIN (argtype);
+        }
+
+      /* Check for bare parameter packs in the return type and the
+         exception specifiers.  */
+      check_for_bare_parameter_packs (TREE_TYPE (type));
+      check_for_bare_parameter_packs (TYPE_RAISES_EXCEPTIONS (type));
+    }
+  else
+    check_for_bare_parameter_packs (TREE_TYPE (decl));
 
   if (is_partial)
     return process_partial_specialization (decl);
@@ -4740,6 +4779,121 @@ convert_template_argument (tree parm,
   return val;
 }
 
+/* Coerces the remaining template arguments in INNER_ARGS (from
+   ARG_IDX to the end) into the parameter pack at PARM_IDX in PARMS.
+   Returns the coerced argument pack. PARM_IDX is the position of this
+   parameter in the template parameter list. ARGS is the original
+   template argument list.  */
+static tree
+coerce_template_parameter_pack (tree parms,
+                                int parm_idx,
+                                tree args,
+                                tree inner_args,
+                                int arg_idx,
+                                tree new_args,
+                                int* lost,
+                                tree in_decl,
+                                tsubst_flags_t complain)
+{
+  tree parm = TREE_VEC_ELT (parms, parm_idx);
+  int nargs = inner_args ? NUM_TMPL_ARGS (inner_args) : 0;
+  tree packed_args;
+  tree argument_pack;
+  tree packed_types = NULL_TREE;
+
+  if (arg_idx > nargs)
+    arg_idx = nargs;
+
+  packed_args = make_tree_vec (nargs - arg_idx);
+
+  if (TREE_CODE (TREE_VALUE (parm)) == PARM_DECL
+      && uses_parameter_packs (TREE_TYPE (TREE_VALUE (parm))))
+    {
+      /* When the template parameter is a non-type template
+         parameter pack whose type uses parameter packs, we need
+         to look at each of the template arguments
+         separately. Build a vector of the types for these
+         non-type template parameters in PACKED_TYPES.  */
+      tree expansion 
+        = make_pack_expansion (TREE_TYPE (TREE_VALUE (parm)));
+      packed_types = tsubst_pack_expansion (expansion, args,
+                                            complain, in_decl);
+
+      if (packed_types == error_mark_node)
+        return error_mark_node;
+
+      /* Check that we have the right number of arguments.  */
+      if (arg_idx < nargs
+          && !PACK_EXPANSION_P (TREE_VEC_ELT (inner_args, arg_idx))
+          && nargs - arg_idx != TREE_VEC_LENGTH (packed_types))
+        {
+          int needed_parms 
+            = TREE_VEC_LENGTH (parms) - 1 + TREE_VEC_LENGTH (packed_types);
+          error ("wrong number of template arguments (%d, should be %d)",
+                 nargs, needed_parms);
+          return error_mark_node;
+        }
+
+      /* If we aren't able to check the actual arguments now
+         (because they haven't been expanded yet), we can at least
+         verify that all of the types used for the non-type
+         template parameter pack are, in fact, valid for non-type
+         template parameters.  */
+      if (arg_idx < nargs 
+          && PACK_EXPANSION_P (TREE_VEC_ELT (inner_args, arg_idx)))
+        {
+          int j, len = TREE_VEC_LENGTH (packed_types);
+          for (j = 0; j < len; ++j)
+            {
+              tree t = TREE_VEC_ELT (packed_types, j);
+              if (invalid_nontype_parm_type_p (t, complain))
+                return error_mark_node;
+            }
+        }
+    }
+
+  /* Convert the remaining arguments, which will be a part of the
+     parameter pack "parm".  */
+  for (; arg_idx < nargs; ++arg_idx)
+    {
+      tree arg = TREE_VEC_ELT (inner_args, arg_idx);
+      tree actual_parm = TREE_VALUE (parm);
+
+      if (packed_types && !PACK_EXPANSION_P (arg))
+        {
+          /* When we have a vector of types (corresponding to the
+             non-type template parameter pack that uses parameter
+             packs in its type, as mention above), and the
+             argument is not an expansion (which expands to a
+             currently unknown number of arguments), clone the
+             parm and give it the next type in PACKED_TYPES.  */
+          actual_parm = copy_node (actual_parm);
+          TREE_TYPE (actual_parm) = 
+            TREE_VEC_ELT (packed_types, arg_idx - parm_idx);
+        }
+
+      arg = convert_template_argument (actual_parm, 
+                                       arg, new_args, complain, parm_idx,
+                                       in_decl);
+      if (arg == error_mark_node)
+        (*lost)++;
+      TREE_VEC_ELT (packed_args, arg_idx - parm_idx) = arg; 
+    }
+
+  if (TREE_CODE (TREE_VALUE (parm)) == TYPE_DECL
+      || TREE_CODE (TREE_VALUE (parm)) == TEMPLATE_DECL)
+    argument_pack = make_node (TYPE_ARGUMENT_PACK);
+  else
+    {
+      argument_pack = make_node (NONTYPE_ARGUMENT_PACK);
+      TREE_TYPE (argument_pack) = TREE_TYPE (TREE_VALUE (parm));
+      TREE_CONSTANT (argument_pack) = 1;
+    }
+
+  SET_ARGUMENT_PACK_ARGS (argument_pack, packed_args);
+  return argument_pack;
+}
+
 /* Convert all template arguments to their appropriate types, and
    return a vector containing the innermost resulting template
    arguments.  If any error occurs, return error_mark_node. Error and
@@ -4760,7 +4914,7 @@ coerce_template_parms (tree parms,
 		       bool require_all_args,
 		       bool use_default_args)
 {
-  int nparms, nargs, i, lost = 0;
+  int nparms, nargs, parm_idx, arg_idx, lost = 0;
   tree inner_args;
   tree new_args;
   tree new_inner_args;
@@ -4770,13 +4924,24 @@ coerce_template_parms (tree parms,
      variadic template parameter list. Since it's an int, we can also
      subtract it from nparms to get the number of non-variadic
      parameters.  */
-  int variadic_p = template_parms_variadic_p (parms) ? 1 : 0;
+  int variadic_p = 0;
 
   inner_args 
     = expand_template_argument_pack (INNERMOST_TEMPLATE_ARGS (args));
 
   nargs = inner_args ? NUM_TMPL_ARGS (inner_args) : 0;
   nparms = TREE_VEC_LENGTH (parms);
+
+  /* Determine if there are any parameter packs.  */
+  for (parm_idx = 0; parm_idx < nparms; ++parm_idx)
+    {
+      tree tparm = TREE_VALUE (TREE_VEC_ELT (parms, parm_idx));
+      if (template_parameter_pack_p (tparm))
+        {
+          variadic_p = 1;
+          break;
+        }
+    }
 
   if ((nargs > nparms - variadic_p && !variadic_p)
       || (nargs < nparms - variadic_p
@@ -4810,163 +4975,87 @@ coerce_template_parms (tree parms,
   skip_evaluation = false;
   new_inner_args = make_tree_vec (nparms);
   new_args = add_outermost_template_args (args, new_inner_args);
-  for (i = 0; i < nparms - variadic_p; i++)
+  for (parm_idx = 0, arg_idx = 0; parm_idx < nparms; parm_idx++, arg_idx++)
     {
       tree arg;
       tree parm;
 
       /* Get the Ith template parameter.  */
-      parm = TREE_VEC_ELT (parms, i);
+      parm = TREE_VEC_ELT (parms, parm_idx);
  
       if (parm == error_mark_node)
       {
-        TREE_VEC_ELT (new_inner_args, i) = error_mark_node;
+        TREE_VEC_ELT (new_inner_args, arg_idx) = error_mark_node;
         continue;
       }
 
-      /* Calculate the Ith argument.  */
-      if (i < nargs)
+      /* Calculate the next argument.  */
+      if (template_parameter_pack_p (TREE_VALUE (parm)))
         {
-          arg = TREE_VEC_ELT (inner_args, i);
-        
-          if (PACK_EXPANSION_P (arg))
-            {
-              /* If ARG is a pack expansion, then PARM must be
-                 a template parameter pack. We can't expand into a
-                 fixed-length argument list.  */
-              tree actual_parm = TREE_VALUE (parm);
-              bool parm_is_parameter_pack 
-		= template_parameter_pack_p (actual_parm);
+          /* All remaining arguments will be placed in the
+             template parameter pack PARM.  */
+          arg = coerce_template_parameter_pack (parms, parm_idx, args, 
+                                                inner_args, arg_idx,
+                                                new_args, &lost,
+                                                in_decl, complain);
+          
+          /* Store this argument.  */
+          if (arg == error_mark_node)
+            lost++;
+          TREE_VEC_ELT (new_inner_args, parm_idx) = arg;
 
-              if (!parm_is_parameter_pack)
-                {
-                  if (TREE_CODE (arg) == EXPR_PACK_EXPANSION)
-                    error ("cannot expand %<%E%> into a fixed-length "
-                           "argument list", arg);
-                  else
-                    error ("cannot expand %<%T%> into a fixed-length "
-                           "argument list", arg);
-                }
+          /* We are done with all of the arguments.  */
+          arg_idx = nargs;
+
+          continue;
+        }
+      else if (arg_idx < nargs)
+        {
+          arg = TREE_VEC_ELT (inner_args, arg_idx);
+
+          if (arg && PACK_EXPANSION_P (arg))
+            {
+              /* If ARG is a pack expansion, but PARM is not a
+                 template parameter pack (if it were, we would have
+                 handled it above), we're trying to expand into a
+                 fixed-length argument list.  */
+              if (TREE_CODE (arg) == EXPR_PACK_EXPANSION)
+                error ("cannot expand %<%E%> into a fixed-length "
+                       "argument list", arg);
+              else
+                error ("cannot expand %<%T%> into a fixed-length "
+                       "argument list", arg);
             }
         }
       else if (require_all_args)
-	/* There must be a default arg in this case.  */
-	arg = tsubst_template_arg (TREE_PURPOSE (parm), new_args,
-				   complain, in_decl);
+        /* There must be a default arg in this case.  */
+        arg = tsubst_template_arg (TREE_PURPOSE (parm), new_args,
+                                   complain, in_decl);
       else
 	break;
 
-      gcc_assert (arg);
       if (arg == error_mark_node)
 	{
 	  if (complain & tf_error)
-	    error ("template argument %d is invalid", i + 1);
+	    error ("template argument %d is invalid", arg_idx + 1);
 	}
+      else if (!arg)
+        /* This only occurs if there was an error in the template
+           parameter list itself (which we would already have
+           reported) that we are trying to recover from, e.g., a class
+           template with a parameter list such as
+           template<typename..., typename>.  */
+        return error_mark_node;
       else
 	arg = convert_template_argument (TREE_VALUE (parm),
-					 arg, new_args, complain, i,
-					 in_decl);
+					 arg, new_args, complain, 
+                                         parm_idx, in_decl);
 
       if (arg == error_mark_node)
 	lost++;
-      TREE_VEC_ELT (new_inner_args, i) = arg;
+      TREE_VEC_ELT (new_inner_args, arg_idx) = arg;
     }
   skip_evaluation = saved_skip_evaluation;
-
-  if (variadic_p)
-    {
-      int expected_len = nargs - nparms + 1;
-      tree parm = TREE_VEC_ELT (parms, nparms - 1);
-      tree packed_args;
-      tree argument_pack;
-      tree packed_types = NULL_TREE;
-      
-      packed_args = make_tree_vec (expected_len >= 0 ? expected_len : 0);
-
-      if (TREE_CODE (TREE_VALUE (parm)) == PARM_DECL
-	  && uses_parameter_packs (TREE_TYPE (TREE_VALUE (parm))))
-	{
-	  /* When the template parameter is a non-type template
-	     parameter pack whose type uses parameter packs, we need
-	     to look at each of the template arguments
-	     separately. Build a vector of the types for these
-	     non-type template parameters in PACKED_TYPES.  */
-	  tree expansion 
-	    = make_pack_expansion (TREE_TYPE (TREE_VALUE (parm)));
-	  packed_types = tsubst_pack_expansion (expansion, args,
-						complain, in_decl);
-
-	  if (packed_types == error_mark_node)
-	    return error_mark_node;
-
-	  /* Check that we have the right number of arguments.  */
-	  if (i < nargs
-	      && !PACK_EXPANSION_P (TREE_VEC_ELT (inner_args, i))
-	      && nargs - i != TREE_VEC_LENGTH (packed_types))
-	    {
-	      error ("wrong number of template arguments (%d, should be %d)",
-		     nargs, nparms - 1 + TREE_VEC_LENGTH (packed_types));
-	      return error_mark_node;
-	    }
-
-	  /* If we aren't able to check the actual arguments now
-	     (because they haven't been expanded yet), we can at least
-	     verify that all of the types used for the non-type
-	     template parameter pack are, in fact, valid for non-type
-	     template parameters.  */
-	  if (i < nargs && PACK_EXPANSION_P (TREE_VEC_ELT (inner_args, i)))
-	    {
-	      int j, len = TREE_VEC_LENGTH (packed_types);
-	      for (j = 0; j < len; ++j)
-		{
-		  tree t = TREE_VEC_ELT (packed_types, j);
-		  if (invalid_nontype_parm_type_p (t, complain))
-		    return error_mark_node;
-		}
-	    }
-	}
-
-      /* Convert the remaining arguments, which will be a part of the
-         parameter pack "parm".  */
-      for (; i < nargs; ++i)
-        {
-          tree arg = TREE_VEC_ELT (inner_args, i);
-	  tree actual_parm = TREE_VALUE (parm);
-
-	  if (packed_types && !PACK_EXPANSION_P (arg))
-	    {
-	      /* When we have a vector of types (corresponding to the
-		 non-type template parameter pack that uses parameter
-		 packs in its type, as mention above), and the
-		 argument is not an expansion (which expands to a
-		 currently unknown number of arguments), clone the
-		 parm and give it the next type in PACKED_TYPES.  */
-	      actual_parm = copy_node (actual_parm);
-	      TREE_TYPE (actual_parm) = 
-		TREE_VEC_ELT (packed_types, i - nparms + 1);
-	    }
-
-          arg = convert_template_argument (actual_parm, 
-                                           arg, new_args, complain, i,
-                                           in_decl);
-          if (arg == error_mark_node)
-            lost++;
-          TREE_VEC_ELT (packed_args, i - nparms + 1) = arg; 
-        }
-
-      if (TREE_CODE (TREE_VALUE (parm)) == TYPE_DECL
-          || TREE_CODE (TREE_VALUE (parm)) == TEMPLATE_DECL)
-          argument_pack = make_node (TYPE_ARGUMENT_PACK);
-      else
-        {
-          argument_pack = make_node (NONTYPE_ARGUMENT_PACK);
-          TREE_TYPE (argument_pack) = TREE_TYPE (TREE_VALUE (parm));
-          TREE_CONSTANT (argument_pack) = 1;
-        }
-
-      SET_ARGUMENT_PACK_ARGS (argument_pack, packed_args);
-      TREE_VEC_ELT (new_inner_args, nparms - 1) = argument_pack;
-    }
 
   if (lost)
     return error_mark_node;
@@ -11055,8 +11144,12 @@ fn_type_unification (tree fn,
               /* Mark the argument pack as "incomplete". We could
                  still deduce more arguments during unification.  */
               targ = TMPL_ARG (converted_args, level, idx);
-              ARGUMENT_PACK_INCOMPLETE_P(targ) = 1;
-              ARGUMENT_PACK_EXPLICIT_ARGS (targ) = ARGUMENT_PACK_ARGS (targ);
+              if (targ)
+                {
+                  ARGUMENT_PACK_INCOMPLETE_P(targ) = 1;
+                  ARGUMENT_PACK_EXPLICIT_ARGS (targ) 
+                    = ARGUMENT_PACK_ARGS (targ);
+                }
 
               /* We have some incomplete argument packs.  */
               incomplete_argument_packs_p = true;
@@ -11423,6 +11516,27 @@ type_unification_real (tree tparms,
                   TREE_VEC_ELT (targs, i) = arg;
                   continue;
                 }
+            }
+
+          /* If the type parameter is a parameter pack, then it will
+             be deduced to an empty parameter pack.  */
+          if (template_parameter_pack_p (tparm))
+            {
+              tree arg;
+
+              if (TREE_CODE (tparm) == TEMPLATE_PARM_INDEX)
+                {
+                  arg = make_node (NONTYPE_ARGUMENT_PACK);
+                  TREE_TYPE (arg)  = TREE_TYPE (TEMPLATE_PARM_DECL (tparm));
+                  TREE_CONSTANT (arg) = 1;
+                }
+              else
+                arg = make_node (TYPE_ARGUMENT_PACK);
+
+              SET_ARGUMENT_PACK_ARGS (arg, make_tree_vec (0));
+
+              TREE_VEC_ELT (targs, i) = arg;
+              continue;
             }
 
 	  return 2;
@@ -12889,7 +13003,7 @@ more_specialized_fn (tree pat1, tree pat2, int len)
 
       if (TREE_CODE (arg1) == TYPE_PACK_EXPANSION)
         {
-          int i, len2 = len + 1;
+          int i, len2 = list_length (args2);
           tree parmvec = make_tree_vec (1);
           tree argvec = make_tree_vec (len2);
           tree ta = args2;
@@ -12913,7 +13027,7 @@ more_specialized_fn (tree pat1, tree pat2, int len)
         }
       else if (TREE_CODE (arg2) == TYPE_PACK_EXPANSION)
         {
-          int i, len1 = len + 1;
+          int i, len1 = list_length (args1);
           tree parmvec = make_tree_vec (1);
           tree argvec = make_tree_vec (len1);
           tree ta = args1;
