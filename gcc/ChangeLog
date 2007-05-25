@@ -1,3 +1,8 @@
+2007-05-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/spu/spu.md (smulsi3_highpart): Unshare the rtl chain.
+	(umulsi3_highpart): Likewise.
+
 2007-05-24  Ian Lance Taylor  <iant@google.com>
 
 	PR rtl-optimization/32069
