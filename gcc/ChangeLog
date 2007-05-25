@@ -1,3 +1,11 @@
+2007-05-25  Dirk Mueller  <dmueller@suse.de>
+	    Marcus Meissner <meissner@suse.de>
+
+	* doc/extend.texi (alloc_size): New attribute.
+	* c-common.c (handle_alloc_size_attribute): New.
+	* tree-object-size.c (alloc_object_size): Use alloc_size
+	attribute, if available.
+
 2007-05-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (__builtin_ia32_vec_ext_v2df): Mark it

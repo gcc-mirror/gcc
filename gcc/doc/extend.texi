@@ -1572,13 +1572,14 @@ The keyword @code{__attribute__} allows you to specify special
 attributes when making a declaration.  This keyword is followed by an
 attribute specification inside double parentheses.  The following
 attributes are currently defined for functions on all targets:
-@code{noreturn}, @code{returns_twice}, @code{noinline}, @code{always_inline},
-@code{flatten}, @code{pure}, @code{const}, @code{nothrow}, @code{sentinel},
-@code{format}, @code{format_arg}, @code{no_instrument_function},
-@code{section}, @code{constructor}, @code{destructor}, @code{used},
-@code{unused}, @code{deprecated}, @code{weak}, @code{malloc},
-@code{alias}, @code{warn_unused_result}, @code{nonnull},
-@code{gnu_inline} and @code{externally_visible}, @code{hot}, @code{cold}.
+@code{alloc_size}, @code{noreturn}, @code{returns_twice}, @code{noinline},
+@code{always_inline}, @code{flatten}, @code{pure}, @code{const},
+@code{nothrow}, @code{sentinel}, @code{format}, @code{format_arg},
+@code{no_instrument_function}, @code{section}, @code{constructor},
+@code{destructor}, @code{used}, @code{unused}, @code{deprecated},
+@code{weak}, @code{malloc}, @code{alias}, @code{warn_unused_result},
+@code{nonnull}, @code{gnu_inline} and @code{externally_visible},
+@code{hot}, @code{cold}.
 Several other attributes are defined for functions on particular target
 systems.  Other attributes, including @code{section} are supported for
 variables declarations (@pxref{Variable Attributes}) and for types (@pxref{Type
@@ -1610,6 +1611,30 @@ mangled name for the target must be used.  It is an error if @samp{__f}
 is not defined in the same translation unit.
 
 Not all target machines support this attribute.
+
+@item alloc_size
+@cindex @code{alloc_size} attribute
+The @code{alloc_size} attribute is used to tell the compiler that the
+function return value points to memory, where the size is given by
+one or two of the functions parameters.  GCC uses this 
+information to improve the correctness of @code{__builtin_object_size}.
+
+The function parameter(s) denoting the allocated size are specified by
+one or two integer arguments supplied to the attribute.  The allocated size
+is either the value of the single function argument specified or the product
+of the two function arguments specified.  Argument numbering starts at
+one.
+
+For instance, 
+
+@smallexample
+void* my_calloc(size_t, size_t) __attribute__((alloc_size(1,2)))
+void my_realloc(void* size_t) __attribute__((alloc_size(2)))
+@end smallexample
+
+declares that my_calloc will return memory of the size given by
+the product of parameter 1 and 2 and that my_realloc will return memory
+of the size given by parameter 2.
 
 @item always_inline
 @cindex @code{always_inline} function attribute
