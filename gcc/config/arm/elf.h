@@ -87,7 +87,6 @@
   do								\
     {								\
       ARM_OUTPUT_FN_UNWIND (FILE, FALSE);			\
-      ARM_DECLARE_FUNCTION_SIZE (FILE, FNAME, DECL);		\
       if (!flag_inhibit_size_directive)				\
 	ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);			\
     }								\

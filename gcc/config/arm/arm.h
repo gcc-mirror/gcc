@@ -1368,11 +1368,6 @@ do {									      \
    than a word, or if they contain elements offset from zero in the struct.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-/* Flags for the call/call_value rtl operations set up by function_arg.  */
-#define CALL_NORMAL		0x00000000	/* No special processing.  */
-#define CALL_LONG		0x00000001	/* Always call indirect.  */
-#define CALL_SHORT		0x00000002	/* Never call indirect.  */
-
 /* These bits describe the different types of function supported
    by the ARM backend.  They are exclusive.  i.e. a function cannot be both a
    normal function and an interworked function, for example.  Knowing the
@@ -1471,8 +1466,6 @@ typedef struct
   int iwmmxt_nregs;
   int named_count;
   int nargs;
-  /* One of CALL_NORMAL, CALL_LONG or CALL_SHORT.  */
-  int call_cookie;
   int can_split;
 } CUMULATIVE_ARGS;
 
@@ -1853,18 +1846,6 @@ typedef struct
    && (TARGET_32BIT ? ARM_LEGITIMATE_CONSTANT_P (X)	\
 		    : THUMB_LEGITIMATE_CONSTANT_P (X)))
 
-/* Special characters prefixed to function names
-   in order to encode attribute like information.
-   Note, '@' and '*' have already been taken.  */
-#define SHORT_CALL_FLAG_CHAR	'^'
-#define LONG_CALL_FLAG_CHAR	'#'
-
-#define ENCODED_SHORT_CALL_ATTR_P(SYMBOL_NAME)	\
-  (*(SYMBOL_NAME) == SHORT_CALL_FLAG_CHAR)
-
-#define ENCODED_LONG_CALL_ATTR_P(SYMBOL_NAME)	\
-  (*(SYMBOL_NAME) == LONG_CALL_FLAG_CHAR)
-
 #ifndef SUBTARGET_NAME_ENCODING_LENGTHS
 #define SUBTARGET_NAME_ENCODING_LENGTHS
 #endif
@@ -1874,8 +1855,6 @@ typedef struct
    be stripped from the start of a function's name, if that
    name starts with the indicated character.  */
 #define ARM_NAME_ENCODING_LENGTHS		\
-  case SHORT_CALL_FLAG_CHAR: return 1;		\
-  case LONG_CALL_FLAG_CHAR:  return 1;		\
   case '*':  return 1;				\
   SUBTARGET_NAME_ENCODING_LENGTHS
 
@@ -1941,15 +1920,6 @@ typedef struct
 #ifndef TARGET_ARM_DYNAMIC_VAGUE_LINKAGE_P
 #define TARGET_ARM_DYNAMIC_VAGUE_LINKAGE_P true
 #endif
-
-/* Set the short-call flag for any function compiled in the current
-   compilation unit.  We skip this for functions with the section
-   attribute when long-calls are in effect as this tells the compiler
-   that the section might be placed a long way from the caller.
-   See arm_is_longcall_p() for more information.  */
-#define ARM_DECLARE_FUNCTION_SIZE(STREAM, NAME, DECL)	\
-  if (!TARGET_LONG_CALLS || ! DECL_SECTION_NAME (DECL)) \
-    arm_encode_call_attribute (DECL, SHORT_CALL_FLAG_CHAR)
 
 #define ARM_OUTPUT_FN_UNWIND(F, PROLOGUE) arm_output_fn_unwind (F, PROLOGUE)
 
