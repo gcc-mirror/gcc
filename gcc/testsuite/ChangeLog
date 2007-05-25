@@ -1,3 +1,9 @@
+2007-05-25  Richard Guenther  <rguenther@suse.de>
+	Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-optimization/31982
+	* gcc.dg/tree-ssa/forwprop-2.c: New testcase.
+
 2007-05-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32047
