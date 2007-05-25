@@ -1165,7 +1165,7 @@ phiprop_insert_phi (basic_block bb, tree phi, tree use_stmt,
 	}
 
       if (TREE_CODE (old_arg) == SSA_NAME)
-	/* Reuse a formely created dereference.  */
+	/* Reuse a formerly created dereference.  */
 	new_var = phivn[SSA_NAME_VERSION (old_arg)].value;
       else
 	{

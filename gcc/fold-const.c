@@ -888,7 +888,7 @@ div_if_zero_remainder (enum tree_code code, tree arg1, tree arg2)
 
   int1l = TREE_INT_CST_LOW (arg1);
   int1h = TREE_INT_CST_HIGH (arg1);
-  /* &obj[0] + -128 really should be compiled as &obj[-8] rahter than
+  /* &obj[0] + -128 really should be compiled as &obj[-8] rather than
      &obj[some_exotic_number].  */
   if (POINTER_TYPE_P (type))
     {

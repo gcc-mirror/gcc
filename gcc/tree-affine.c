@@ -637,7 +637,7 @@ free_affine_expand_cache (struct pointer_map_t **cache)
 /* If VAL != CST * DIV for any constant CST, returns false.
    Otherwise, if VAL != 0 (and hence CST != 0), and *MULT_SET is true,
    additionally compares CST and MULT, and if they are different,
-   returns false.  Finally, if neither of these two cases occcur,
+   returns false.  Finally, if neither of these two cases occur,
    true is returned, and if CST != 0, CST is stored to MULT and
    MULT_SET is set to true.  */
 

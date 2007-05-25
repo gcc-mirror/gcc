@@ -4627,7 +4627,7 @@ vrp_visit_assignment (tree stmt, tree *output_p)
 }
 
 /* Helper that gets the value range of the SSA_NAME with version I
-   or a symbolic range contaning the SSA_NAME only if the value range
+   or a symbolic range containing the SSA_NAME only if the value range
    is varying or undefined.  */
 
 static inline value_range_t

@@ -154,7 +154,7 @@
       associate different tags with MEM while building points-to information,
       thus before we get to analyze it.
       XXX: this could be solved by either running with -fno-strict-aliasing
-      or by recording the points-to information before splitting the orignal
+      or by recording the points-to information before splitting the original
       tag based on type.
 
    Example 3.
@@ -316,7 +316,7 @@ struct match_info
   tree object;
   bool is_ptr;
   /* The difference between the number of references to OBJECT
-     and the number of occurences of &OBJECT.  */
+     and the number of occurrences of &OBJECT.  */
   int found;
 };
 
@@ -565,7 +565,7 @@ find_references_in_function (void)
 
 
 /* Find the reference site for OBJECT.
-   If IS_PTR is true, look for derferences of OBJECT instead.
+   If IS_PTR is true, look for dereferences of OBJECT instead.
    XXX: only the first site is returned in the current
    implementation.  If there are no matching sites, return NULL_TREE.  */
 

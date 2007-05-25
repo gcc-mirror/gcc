@@ -237,7 +237,7 @@ int prologue_locator;
 int epilogue_locator;
 
 /* Hold current location information and last location information, so the
-   datastructures are built lazilly only when some instructions in given
+   datastructures are built lazily only when some instructions in given
    place are needed.  */
 location_t curr_location, last_location;
 static tree curr_block, last_block;

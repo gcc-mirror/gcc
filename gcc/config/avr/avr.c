@@ -623,7 +623,7 @@ expand_prologue (void)
       char buffer[40];
       sprintf (buffer, "%s - %d", avr_init_stack, (int) size);
       rtx sym = gen_rtx_SYMBOL_REF (HImode, ggc_strdup (buffer));
-      /*  Initialise stack pointer using frame pointer.  */
+      /* Initialize stack pointer using frame pointer.  */
       insn = emit_move_insn (frame_pointer_rtx, sym);
       RTX_FRAME_RELATED_P (insn) = 1;
       insn = emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
