@@ -1,3 +1,7 @@
+2007-05-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Remove myself.
+
 2007-05-25  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* ltmain.sh: Fix Darwin verstring, remove ${wl}.
