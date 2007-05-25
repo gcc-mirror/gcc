@@ -1,3 +1,8 @@
+2007-05-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/transfer.c (unformatted_read): Use size from front end eliminating
+	use of size_from_real_kind. (unformatted_write): Ditto.
+
 2007-05-23  Steve Ellcey  <sje@cup.hp.com>
 
 	* Makefile.in: Regenerate.
