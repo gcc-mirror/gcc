@@ -9727,6 +9727,7 @@ void
 ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
 {
   rtx op0 = operands[0], op1 = operands[1];
+  unsigned int align = GET_MODE_ALIGNMENT (mode);
 
   /* Force constants other than zero into memory.  We do not know how
      the instructions used to build constants modify the upper 64 bits
@@ -9734,9 +9735,38 @@ ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
      to handle some of them more efficiently.  */
   if ((reload_in_progress | reload_completed) == 0
       && register_operand (op0, mode)
-      && CONSTANT_P (op1)
+      && (CONSTANT_P (op1)
+	  || (GET_CODE (op1) == SUBREG
+	      && CONSTANT_P (SUBREG_REG (op1))))
       && standard_sse_constant_p (op1) <= 0)
     op1 = validize_mem (force_const_mem (mode, op1));
+
+  /* TDmode values are passed as TImode on the stack.  Timode values
+     are moved via xmm registers, and moving them to stack can result in
+     unaligned memory access.  Use ix86_expand_vector_move_misalign()
+     if memory operand is not aligned correctly.  */
+  if (!no_new_pseudos
+      && SSE_REG_MODE_P (mode)
+      && ((MEM_P (op0) && (MEM_ALIGN (op0) < align))
+	  || (MEM_P (op1) && (MEM_ALIGN (op1) < align))))
+    {
+      rtx tmp[2];
+
+      /* ix86_expand_vector_move_misalign() does not like constants ... */
+      if (CONSTANT_P (op1)
+	  || (GET_CODE (op1) == SUBREG
+	      && CONSTANT_P (SUBREG_REG (op1))))
+	op1 = validize_mem (force_const_mem (mode, op1));
+
+      /* ... nor both arguments in memory.  */
+      if (!register_operand (op0, mode)
+	  && !register_operand (op1, mode))
+	op1 = force_reg (mode, op1);
+
+      tmp[0] = op0; tmp[1] = op1;
+      ix86_expand_vector_move_misalign (mode, tmp);
+      return;
+    }
 
   /* Make operand1 a register if it isn't already.  */
   if (!no_new_pseudos

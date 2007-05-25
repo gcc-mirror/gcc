@@ -1,3 +1,10 @@
+2007-05-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/32065
+	* target/i386/i386.c (ix86_expand_vector_move): Force SUBREGs of
+	constants into memory.  Expand unaligned memory references for
+	SSE modes via x86_expand_vector_move_misalign() function.
+
 2007-05-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (*vec_extractv2di_1_sse2): Do not calculate
