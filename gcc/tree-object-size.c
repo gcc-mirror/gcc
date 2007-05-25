@@ -24,6 +24,7 @@ Boston, MA 02110-1301, USA.  */
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "toplev.h"
 #include "diagnostic.h"
 #include "tree-flow.h"
 #include "tree-pass.h"
@@ -229,38 +230,51 @@ static unsigned HOST_WIDE_INT
 alloc_object_size (tree call, int object_size_type)
 {
   tree callee, bytes = NULL_TREE;
+  tree alloc_size;
+  int arg1 = -1, arg2 = -1;
 
   gcc_assert (TREE_CODE (call) == CALL_EXPR);
 
   callee = get_callee_fndecl (call);
-  if (callee
-      && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
+  if (!callee)
+    return unknown[object_size_type];
+
+  alloc_size = lookup_attribute ("alloc_size", TYPE_ATTRIBUTES (TREE_TYPE(callee)));
+  if (alloc_size && TREE_VALUE (alloc_size))
+    {
+      tree p = TREE_VALUE (alloc_size);
+
+      arg1 = TREE_INT_CST_LOW (TREE_VALUE (p))-1;
+      if (TREE_CHAIN (p))
+	  arg2 = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (p)))-1;
+    }
+ 
+  if (DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (callee))
       {
+      case BUILT_IN_CALLOC:
+	arg2 = 1;
+	/* fall through */
       case BUILT_IN_MALLOC:
       case BUILT_IN_ALLOCA:
-	if (call_expr_nargs (call) == 1
-	    && TREE_CODE (CALL_EXPR_ARG (call, 0)) == INTEGER_CST)
-	  bytes = fold_convert (sizetype, CALL_EXPR_ARG (call, 0));
-	break;
-      /*
-      case BUILT_IN_REALLOC:
-	if (call_expr_nargs (call) == 2
-	    && TREE_CODE (CALL_EXPR_ARG (call, 1)) == INTEGER_CST)
-	  bytes = fold_convert (sizetype, CALL_EXPR_ARG (call, 1));
-	break;
-	*/
-      case BUILT_IN_CALLOC:
-	if (call_expr_nargs (call) == 2
-	    && TREE_CODE (CALL_EXPR_ARG (call, 0)) == INTEGER_CST
-	    && TREE_CODE (CALL_EXPR_ARG (call, 1)) == INTEGER_CST)
-	  bytes = size_binop (MULT_EXPR,
-			      fold_convert (sizetype, CALL_EXPR_ARG (call, 0)),
-			      fold_convert (sizetype, CALL_EXPR_ARG (call, 1)));
-	break;
+	arg1 = 0;
       default:
 	break;
       }
+
+  if (arg1 < 0 || arg1 >= call_expr_nargs (call)
+      || TREE_CODE (CALL_EXPR_ARG (call, arg1)) != INTEGER_CST
+      || (arg2 >= 0 
+	  && (arg2 >= call_expr_nargs (call)
+	      || TREE_CODE (CALL_EXPR_ARG (call, arg2)) != INTEGER_CST)))
+    return unknown[object_size_type];	  
+
+  if (arg2 >= 0)
+    bytes = size_binop (MULT_EXPR,
+	fold_convert (sizetype, CALL_EXPR_ARG (call, arg1)),
+	fold_convert (sizetype, CALL_EXPR_ARG (call, arg2)));
+  else if (arg1 >= 0)
+    bytes = fold_convert (sizetype, CALL_EXPR_ARG (call, arg1));
 
   if (bytes && host_integerp (bytes, 1))
     return tree_low_cst (bytes, 1);

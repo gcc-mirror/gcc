@@ -1,3 +1,8 @@
+2007-05-25  Dirk Mueller  <dmueller@suse.de>
+	    Marcus Meissner <meissner@suse.de>
+
+	* testsuite/gcc.dg/attr-alloc_size.c: New.
+
 2007-05-25  Simon Martin  <simartin@users.sourceforge.net>
 	    Lee Millward  <lee.millward@gmail.com>
 
