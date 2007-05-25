@@ -2286,7 +2286,7 @@ finish_member_declaration (tree decl)
   /* Check for bare parameter packs in the member variable declaration.  */
   if (TREE_CODE (decl) == FIELD_DECL
       && !check_for_bare_parameter_packs (TREE_TYPE (decl)))
-    TREE_TYPE (decl) == error_mark_node;
+    TREE_TYPE (decl) = error_mark_node;
 
   /* [dcl.link]
 
