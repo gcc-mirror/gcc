@@ -1,3 +1,14 @@
+2007-05-25  Simon Martin  <simartin@users.sourceforge.net>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/31745
+	* parser.c (cp_parser_skip_to_closing_brace): Return true if the next
+	token is a closing brace, false if there are no tokens left.
+	(cp_parser_namespace_alias_definition): Only consume the next token if
+	it is a closing brace.
+
+	* parser.c (cp_parser_class_specifier): Likewise.
+
 2007-05-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* semantics.c (finish_member_declaration): Fix a typo in the
