@@ -1,3 +1,8 @@
+2007-05-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_extractv2di_1_sse2): Do not calculate
+	"memory" attribute for "sseishft" type insn without operands[2].
+
 2007-05-25  Dirk Mueller  <dmueller@suse.de>
 	    Marcus Meissner <meissner@suse.de>
 
