@@ -1,3 +1,7 @@
+2007-05-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/gnu/c_locale.h (__convert_from_v): Fix typo.
+
 2007-05-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/concurrence.h: Use __GCC_HAVE_SYNC_COMPARE_AND_SWAP_*.
