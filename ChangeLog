@@ -1,3 +1,7 @@
+2007-05-25  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* ltmain.sh: Fix Darwin verstring, remove ${wl}.
+
 2007-05-23  Steve Ellcey  <sje@cup.hp.com>
 
 	* ltmain.sh: Update from ToT Libtool.
