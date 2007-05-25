@@ -6426,7 +6426,7 @@ To stat an open file: @ref{FSTAT}, to stat a file: @ref{STAT}
 @node LTIME
 @section @code{LTIME} --- Convert time to local time info
 @fnindex LTIME
-@cindex time, converstion to local time info
+@cindex time, conversion to local time info
 
 @table @asis
 @item @emph{Description}:
@@ -7059,7 +7059,7 @@ of one, the result is a scalar.  In all cases, the result is of default
 @node MINVAL
 @section @code{MINVAL} --- Minimum value of an array
 @fnindex MINVAL
-@cindex array, minmum value
+@cindex array, minimum value
 @cindex minimum value
 
 @table @asis
@@ -9129,7 +9129,7 @@ END PROGRAM
 @section @code{SPREAD} --- Add a dimension to an array
 @fnindex SPREAD
 @cindex array, increase dimension
-@cindex array, duplicate elementes
+@cindex array, duplicate elements
 @cindex array, duplicate dimensions
 
 @table @asis
