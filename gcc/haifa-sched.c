@@ -738,7 +738,7 @@ priority (rtx insn)
   if (! INSN_P (insn))
     return 0;
 
-  /* We should not be insterested in priority of an already scheduled insn.  */
+  /* We should not be interested in priority of an already scheduled insn.  */
   gcc_assert (QUEUE_INDEX (insn) != QUEUE_SCHEDULED);
 
   if (!INSN_PRIORITY_KNOWN (insn))

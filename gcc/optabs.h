@@ -89,13 +89,13 @@ enum optab_index
   /* Signed multiply and add with the result and addend one machine mode
      wider than the multiplicand and multiplier.  */
   OTI_smadd_widen,
-  /* Unigned multiply and add with the result and addend one machine mode
+  /* Unsigned multiply and add with the result and addend one machine mode
      wider than the multiplicand and multiplier.  */
   OTI_umadd_widen,
   /* Signed multiply and subtract the result and minuend one machine mode
      wider than the multiplicand and multiplier.  */
   OTI_smsub_widen,
-  /* Unigned multiply and subtract the result and minuend one machine mode
+  /* Unsigned multiply and subtract the result and minuend one machine mode
      wider than the multiplicand and multiplier.  */
   OTI_umsub_widen,
 

@@ -793,7 +793,7 @@ end:
 }
 
 /* Returns true if the component COMP satisfies the conditions
-   described in 2) at the begining of this file.  LOOP is the current
+   described in 2) at the beginning of this file.  LOOP is the current
    loop.  */
       
 static bool
@@ -850,7 +850,7 @@ suitable_component_p (struct loop *loop, struct component *comp)
 /* Check the conditions on references inside each of components COMPS,
    and remove the unsuitable components from the list.  The new list
    of components is returned.  The conditions are described in 2) at
-   the begining of this file.  LOOP is the current loop.  */
+   the beginning of this file.  LOOP is the current loop.  */
 
 static struct component *
 filter_suitable_components (struct loop *loop, struct component *comps)
@@ -1752,7 +1752,7 @@ execute_pred_commoning (struct loop *loop, VEC (chain_p, heap) *chains,
   update_ssa (TODO_update_ssa_only_virtuals);
 }
 
-/* For each reference in CHAINS, if its definining statement is
+/* For each reference in CHAINS, if its defining statement is
    ssa name, set it to phi node that defines it.  */
 
 static void
@@ -1771,7 +1771,7 @@ replace_phis_by_defined_names (VEC (chain_p, heap) *chains)
       }
 }
 
-/* For each reference in CHAINS, if its definining statement is
+/* For each reference in CHAINS, if its defining statement is
    phi node, set it to the ssa name that is defined by it.  */
 
 static void
@@ -2018,7 +2018,7 @@ find_associative_operation_root (tree stmt, unsigned *distance)
 
 /* Returns the common statement in that NAME1 and NAME2 have a use.  If there
    is no such statement, returns NULL_TREE.  In case the operation used on
-   NAME1 and NAME2 is associative and comutative, returns the root of the
+   NAME1 and NAME2 is associative and commutative, returns the root of the
    tree formed by this operation instead of the statement that uses NAME1 or
    NAME2.  */
 

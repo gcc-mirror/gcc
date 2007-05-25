@@ -1,3 +1,12 @@
+2007-05-25  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cfglayout.c, cgraphunit.c, config/avr/avr.c, fold-const.c,
+	haifa-sched.c, optabs.h, tree-affine.c, tree-data-ref.c,
+	tree-predcom.c, tree-ssa-alias-warnings.c,
+	tree-ssa-forwprop.c, tree-vect-analyze.c, tree-vrp.c: Fix
+	comment typos.  Follow spelling conventions.
+	* doc/cpp.texi, doc/invoke.texi: Fix typos.
+
 2007-05-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32065

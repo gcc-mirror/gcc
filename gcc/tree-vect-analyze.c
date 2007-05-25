@@ -2210,7 +2210,7 @@ vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo,
    - case 2: If STMT is a reduction phi and DEF_STMT is a reduction stmt, we 
    skip DEF_STMT cause it had already been processed.  
 
-   Return true if everyting is as expected. Return false otherwise.  */
+   Return true if everything is as expected. Return false otherwise.  */
 
 static bool
 process_use (tree stmt, tree use, loop_vec_info loop_vinfo, bool live_p, 

@@ -172,7 +172,7 @@ static GTY (()) tree static_ctors;
 static GTY (()) tree static_dtors;
 
 /* When target does not have ctors and dtors, we call all constructor
-   and destructor by special initialization/destruction functio
+   and destructor by special initialization/destruction function
    recognized by collect2.  
    
    When we are going to build this function, collect all constructors and

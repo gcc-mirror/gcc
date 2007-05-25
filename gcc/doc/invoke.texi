@@ -7727,8 +7727,8 @@ The @code{print-asm-header} function takes no arguments and simply
 prints a banner like:
 
 @smallexample
-Assember options
-================
+Assembler options
+=================
 
 Use "-Wa,OPTION" to pass "OPTION" to the assembler.
 @end smallexample

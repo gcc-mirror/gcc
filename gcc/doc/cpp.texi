@@ -1919,7 +1919,7 @@ underscores.
 
 @item __COUNTER__
 This macro expands to sequential integral values starting from 0.  In
-conjuction with the @code{##} operator, this provides a convenient means to
+conjunction with the @code{##} operator, this provides a convenient means to
 generate unique identifiers.  Care must be taken to ensure that
 @code{__COUNTER__} is not expanded prior to inclusion of precompiled headers
 which use it.  Otherwise, the precompiled headers will not be used.

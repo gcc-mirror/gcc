@@ -660,7 +660,7 @@ dr_analyze_innermost (struct data_reference *dr)
 }
 
 /* Determines the base object and the list of indices of memory reference
-   DR, analysed in loop nest NEST.  */
+   DR, analyzed in loop nest NEST.  */
 
 static void
 dr_analyze_indices (struct data_reference *dr, struct loop *nest)
@@ -1225,7 +1225,7 @@ initialize_data_dependence_relation (struct data_reference *a,
 
   /* If the base of the object is not invariant in the loop nest, we cannot
      analyse it.  TODO -- in fact, it would suffice to record that there may
-     be arbitrary depencences in the loops where the base object varies.  */
+     be arbitrary dependences in the loops where the base object varies.  */
   if (!object_address_invariant_in_loop_p (VEC_index (loop_p, loop_nest, 0),
 					   DR_BASE_OBJECT (a)))
     {
