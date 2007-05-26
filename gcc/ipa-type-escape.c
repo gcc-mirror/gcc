@@ -656,7 +656,7 @@ check_cast_type (tree to_type, tree from_type)
   return CT_SIDEWAYS;
 }     
 
-/* This function returns non-zero if VAR is result of call 
+/* This function returns nonzero if VAR is result of call 
    to malloc function.  */
 
 static bool

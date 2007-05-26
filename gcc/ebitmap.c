@@ -30,7 +30,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 /* The ebitmap data structure is a sparse bitmap structure that works
    by having two pieces:
-   1. An array of all non-zero words in the structures, organized as
+   1. An array of all nonzero words in the structures, organized as
    an array of HOST_WIDE_INT's.
    2. A non-sparse bitmap saying which bitmap words are present in the
    array.

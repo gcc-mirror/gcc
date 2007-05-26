@@ -2153,7 +2153,7 @@ insert_branch_hints (void)
 	  prop = prev;
 
 	/* If this is the JOIN block of a simple IF-THEN then
-	   propogate the hint to the HEADER block. */
+	   propagate the hint to the HEADER block. */
 	else if (prev && prev2
 		 && EDGE_COUNT (bb->preds) == 2
 		 && EDGE_COUNT (prev->preds) == 1

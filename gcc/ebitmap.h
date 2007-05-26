@@ -30,10 +30,10 @@ typedef struct ebitmap_def
 {  
   unsigned int n_elts;		/* number of elements in the array.  */
   sbitmap wordmask;		/* wordmask saying which words are
-				   non-zero.  */
-  unsigned int numwords;	/* number of non-zero words.  */
+				   nonzero.  */
+  unsigned int numwords;	/* number of nonzero words.  */
   unsigned int cacheindex;	/* which word cache is.  */
-  EBITMAP_ELT_TYPE *elts;	/* non-zero element array.  */
+  EBITMAP_ELT_TYPE *elts;	/* nonzero element array.  */
   EBITMAP_ELT_TYPE *cache;	/* last tested element, or NULL.  */
 } *ebitmap;
 

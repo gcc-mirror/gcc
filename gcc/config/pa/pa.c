@@ -4220,7 +4220,7 @@ hppa_profile_hook (int label_no)
 
   emit_move_insn (gen_rtx_REG (word_mode, 26), gen_rtx_REG (word_mode, 2));
 
-  /* The address of the function is loaded into %r25 with a instruction-
+  /* The address of the function is loaded into %r25 with an instruction-
      relative sequence that avoids the use of relocations.  The sequence
      is split so that the load_offset_label_address instruction can
      occupy the delay slot of the call to _mcount.  */

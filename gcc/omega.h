@@ -1,4 +1,4 @@
-/* Source code for an implementation of the Omega test, a integer 
+/* Source code for an implementation of the Omega test, an integer 
    programming algorithm for dependence analysis, by William Pugh, 
    appeared in Supercomputing '91 and CACM Aug 92.
 

@@ -6,6 +6,13 @@
 	follow spelling conventions in various
 	warning/error/diagnostic messages.
 
+	* config/i386/i386.c, config/pa/pa.c, config/spu/spu.c,
+	df-problems.c, df-scan.c, domwalk.c, ebitmap.c, ebitmap.h,
+	fold-const.c, gcc.c, ipa-type-escape.c, omega.c, omega.h,
+	tree-ssa-coalesce.c, tree-ssa-live.c, tree-ssa-structalias.c,
+	tree-vrp.c: Fix comment typos.  Follow spelling conventions.
+	* doc/tm.texi: Follow spelling conventions.
+
 2007-05-25  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/32090

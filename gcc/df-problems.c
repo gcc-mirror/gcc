@@ -2138,7 +2138,7 @@ df_ur_add_problem (struct df *df, int flags)
 
    This is a variant of the UR problem above that has a lot of special
    features just for the register allocation phase.  This problem
-   should go a away if someone would fix the interference graph.
+   should go away if someone would fix the interference graph.
 
    ----------------------------------------------------------------------------*/
 
