@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2005, 2007 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -37,64 +37,77 @@ Boston, MA 02110-1301, USA.  */
    zero if not equal, nonzero if equal.  */
 
 static int
-compare0 (const char *s1, int s1_len, const char *s2)
+compare0 (const char *s1, gfc_charlen_type s1_len, const char *s2)
 {
-  int len;
+  size_t len;
 
   /* Strip trailing blanks from the Fortran string.  */
   len = fstrlen (s1, s1_len);
-  if (len != (int) strlen(s2)) return 0; /* don't match */
+  if (len != strlen(s2)) return 0; /* don't match */
   return strncasecmp (s1, s2, len) == 0;
 }
 
 
 /* Given a fortran string, return its length exclusive of the trailing
    spaces.  */
-int
-fstrlen (const char *string, int len)
+
+gfc_charlen_type
+fstrlen (const char *string, gfc_charlen_type len)
 {
-  for (len--; len >= 0; len--)
-    if (string[len] != ' ')
+  for (; len > 0; len--)
+    if (string[len-1] != ' ')
       break;
 
-  return len + 1;
+  return len;
 }
 
 
-void
-fstrcpy (char *dest, int destlen, const char *src, int srclen)
+/* Copy a Fortran string (not null-terminated, hence length arguments
+   for both source and destination strings. Returns the non-padded
+   length of the destination.  */
+
+gfc_charlen_type
+fstrcpy (char *dest, gfc_charlen_type destlen, 
+	 const char *src, gfc_charlen_type srclen)
 {
   if (srclen >= destlen)
     {
       /* This will truncate if too long.  */
       memcpy (dest, src, destlen);
+      return destlen;
     }
   else
     {
       memcpy (dest, src, srclen);
       /* Pad with spaces.  */
       memset (&dest[srclen], ' ', destlen - srclen);
+      return srclen;
     }
 }
 
 
-void
-cf_strcpy (char *dest, int dest_len, const char *src)
+/* Copy a null-terminated C string to a non-null-terminated Fortran
+   string. Returns the non-padded length of the destination string.  */
+
+gfc_charlen_type
+cf_strcpy (char *dest, gfc_charlen_type dest_len, const char *src)
 {
-  int src_len;
+  size_t src_len;
 
   src_len = strlen (src);
 
-  if (src_len >= dest_len)
+  if (src_len >= (size_t) dest_len)
     {
       /* This will truncate if too long.  */
       memcpy (dest, src, dest_len);
+      return dest_len;
     }
   else
     {
       memcpy (dest, src, src_len);
       /* Pad with spaces.  */
       memset (&dest[src_len], ' ', dest_len - src_len);
+      return src_len;
     }
 }
 
@@ -104,7 +117,7 @@ cf_strcpy (char *dest, int dest_len, const char *src)
    if no default is provided.  */
 
 int
-find_option (st_parameter_common *cmp, const char *s1, int s1_len,
+find_option (st_parameter_common *cmp, const char *s1, gfc_charlen_type s1_len,
 	     const st_option * opts, const char *error_message)
 {
   for (; opts->name; opts++)
