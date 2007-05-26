@@ -1,5 +1,5 @@
 /* { dg-do compile { target dfp } } */
-/* { dg-options "-msse" } */
+/* { dg-options "-msse -std=gnu99" } */
 
 _Decimal128 test (void)
 {

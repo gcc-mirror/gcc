@@ -1,3 +1,10 @@
+2007-05-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/32065
+	* gcc.target/i386/pr32065-1.c: Rename from pr32065.c.  Add -std=gnu99
+	to compile options.
+	* gcc.target/i386/pr32065-2.c: New test.
+
 2007-05-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/31813
@@ -13,7 +20,7 @@
 	PR tree-opt/32090
 	* g++.dg/opt/array2.C: New testcase.
 
-007-05-26  Uros Bizjak  <ubizjak@gmail.com>
+2007-05-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32065
 	* gcc.target/i386/pr32065.c: New test.
