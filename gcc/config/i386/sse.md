@@ -4722,7 +4722,10 @@
    (match_operand:V16QI 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  ix86_expand_sse_unpack (operands, true, true);
+  if (TARGET_SSE4_1)
+    ix86_expand_sse4_unpack (operands, true, true);
+  else
+    ix86_expand_sse_unpack (operands, true, true);
   DONE;
 })
 
@@ -4731,7 +4734,10 @@
    (match_operand:V16QI 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  ix86_expand_sse_unpack (operands, false, true);
+  if (TARGET_SSE4_1)
+    ix86_expand_sse4_unpack (operands, false, true);
+  else
+    ix86_expand_sse_unpack (operands, false, true);
   DONE;
 })
 
@@ -4740,7 +4746,10 @@
    (match_operand:V16QI 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  ix86_expand_sse_unpack (operands, true, false);
+  if (TARGET_SSE4_1)
+    ix86_expand_sse4_unpack (operands, true, false);
+  else
+    ix86_expand_sse_unpack (operands, true, false);
   DONE;
 })
 
@@ -4749,7 +4758,10 @@
    (match_operand:V16QI 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  ix86_expand_sse_unpack (operands, false, false);
+  if (TARGET_SSE4_1)
+    ix86_expand_sse4_unpack (operands, false, false);
+  else
+    ix86_expand_sse_unpack (operands, false, false);
   DONE;
 })
 
@@ -4758,7 +4770,10 @@
    (match_operand:V8HI 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  ix86_expand_sse_unpack (operands, true, true);
+  if (TARGET_SSE4_1)
+    ix86_expand_sse4_unpack (operands, true, true);
+  else
+    ix86_expand_sse_unpack (operands, true, true);
   DONE;
 })
 
@@ -4767,7 +4782,10 @@
    (match_operand:V8HI 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  ix86_expand_sse_unpack (operands, false, true);
+  if (TARGET_SSE4_1)
+    ix86_expand_sse4_unpack (operands, false, true);
+  else
+    ix86_expand_sse_unpack (operands, false, true);
   DONE;
 })
 
@@ -4776,7 +4794,10 @@
    (match_operand:V8HI 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  ix86_expand_sse_unpack (operands, true, false);
+  if (TARGET_SSE4_1)
+    ix86_expand_sse4_unpack (operands, true, false);
+  else
+    ix86_expand_sse_unpack (operands, true, false);
   DONE;
 })
 
@@ -4785,7 +4806,10 @@
    (match_operand:V8HI 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  ix86_expand_sse_unpack (operands, false, false);
+  if (TARGET_SSE4_1)
+    ix86_expand_sse4_unpack (operands, false, false);
+  else
+    ix86_expand_sse_unpack (operands, false, false);
   DONE;
 })
 
@@ -4794,7 +4818,10 @@
    (match_operand:V4SI 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  ix86_expand_sse_unpack (operands, true, true);
+  if (TARGET_SSE4_1)
+    ix86_expand_sse4_unpack (operands, true, true);
+  else
+    ix86_expand_sse_unpack (operands, true, true);
   DONE;
 })
 
@@ -4803,7 +4830,10 @@
    (match_operand:V4SI 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  ix86_expand_sse_unpack (operands, false, true);
+  if (TARGET_SSE4_1)
+    ix86_expand_sse4_unpack (operands, false, true);
+  else
+    ix86_expand_sse_unpack (operands, false, true);
   DONE;
 })
 
@@ -4812,7 +4842,10 @@
    (match_operand:V4SI 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  ix86_expand_sse_unpack (operands, true, false);
+  if (TARGET_SSE4_1)
+    ix86_expand_sse4_unpack (operands, true, false);
+  else
+    ix86_expand_sse_unpack (operands, true, false);
   DONE;
 })
 
@@ -4821,7 +4854,10 @@
    (match_operand:V4SI 1 "register_operand" "")]
   "TARGET_SSE2"
 {
-  ix86_expand_sse_unpack (operands, false, false);
+  if (TARGET_SSE4_1)
+    ix86_expand_sse4_unpack (operands, false, false);
+  else
+    ix86_expand_sse_unpack (operands, false, false);
   DONE;
 })
 

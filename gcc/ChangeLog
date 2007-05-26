@@ -1,3 +1,23 @@
+2007-05-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386-protos.h (ix86_expand_sse4_unpack): New.
+
+	* config/i386/i386.c (ix86_expand_sse4_unpack): New.
+
+	* config/i386/sse.md (vec_unpacku_hi_v16qi): Call
+	ix86_expand_sse4_unpack if SSE4.1 is enabled.
+	(vec_unpacks_hi_v16qi): Likewise.
+	(vec_unpacku_lo_v16qi): Likewise.
+	(vec_unpacks_lo_v16qi): Likewise.
+	(vec_unpacku_hi_v8hi): Likewise.
+	(vec_unpacks_hi_v8hi): Likewise.
+	(vec_unpacku_lo_v8hi): Likewise.
+	(vec_unpacks_lo_v8hi): Likewise.
+	(vec_unpacku_hi_v4si): Likewise.
+	(vec_unpacks_hi_v4si): Likewise.
+	(vec_unpacku_lo_v4si): Likewise.
+	(vec_unpacks_lo_v4si): Likewise.
+
 2007-05-26  Kazu Hirata  <kazu@codesourcery.com>
 
 	* c-typeck.c, config/arm/arm.c, config/darwin.c,
