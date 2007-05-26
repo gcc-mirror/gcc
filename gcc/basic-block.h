@@ -919,7 +919,6 @@ extern void free_aux_for_edges (void);
 extern void find_basic_blocks (rtx);
 extern bool cleanup_cfg (int);
 extern bool delete_unreachable_blocks (void);
-extern bool merge_seq_blocks (void);
 
 extern bool mark_dfs_back_edges (void);
 extern void set_edge_can_fallthru_flag (void);

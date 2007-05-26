@@ -2166,31 +2166,6 @@ delete_unreachable_blocks (void)
     tidy_fallthru_edges ();
   return changed;
 }
-
-/* Merges sequential blocks if possible.  */
-
-bool
-merge_seq_blocks (void)
-{
-  basic_block bb;
-  bool changed = false;
-
-  for (bb = ENTRY_BLOCK_PTR->next_bb; bb != EXIT_BLOCK_PTR; )
-    {
-      if (single_succ_p (bb)
-	  && can_merge_blocks_p (bb, single_succ (bb)))
-	{
-	  /* Merge the blocks and retry.  */
-	  merge_blocks (bb, single_succ (bb));
-	  changed = true;
-	  continue;
-	}
-
-      bb = bb->next_bb;
-    }
-
-  return changed;
-}
 
 /* Tidy the CFG by deleting unreachable code and whatnot.  */
 
