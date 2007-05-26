@@ -3282,38 +3282,6 @@ may_be_aliased (tree var)
   return true;
 }
 
-
-/* Given two symbols return TRUE if one is in the alias set of the
-   other.  */
-
-bool
-is_aliased_with (tree tag, tree sym)
-{
-  bitmap aliases;
-
-  if (MTAG_P (tag))
-    {
-      aliases = MTAG_ALIASES (tag);
-
-      if (aliases == NULL)
-	return false;
-
-      return bitmap_bit_p (aliases, DECL_UID (sym));      
-    }
-  else
-    {
-      gcc_assert (MTAG_P (sym));
-      aliases = MTAG_ALIASES (sym);
-
-      if (aliases == NULL)
-	return false;
-
-      return bitmap_bit_p (aliases, DECL_UID (tag));
-    }
-
-  return false;
-}
-
 /* The following is based on code in add_stmt_operand to ensure that the
    same defs/uses/vdefs/vuses will be found after replacing a reference
    to var (or ARRAY_REF to var) with an INDIRECT_REF to ptr whose value
