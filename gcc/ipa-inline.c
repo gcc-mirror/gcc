@@ -718,7 +718,7 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node)
 	{
           if (dump_file)
 	    fprintf (dump_file, 
-		     "   maxmal depth reached\n");
+		     "   maximal depth reached\n");
 	  continue;
 	}
 

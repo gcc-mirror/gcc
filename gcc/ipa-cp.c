@@ -792,7 +792,7 @@ ipcp_profile_bb_print (FILE * f)
 	    ENTRY_BLOCK_PTR_FOR_FUNCTION (DECL_STRUCT_FUNCTION (node->decl));
 	  fprintf (f, "ENTRY: Count");
 	  fprintf (f, " " HOST_WIDE_INT_PRINT_DEC
-		   " Frquency  %d\n", (HOST_WIDE_INT) bb->count,
+		   " Frequency  %d\n", (HOST_WIDE_INT) bb->count,
 		   bb->frequency);
 
 	  FOR_EACH_BB_FN (bb, DECL_STRUCT_FUNCTION (node->decl))

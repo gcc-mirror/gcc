@@ -1247,7 +1247,7 @@ number_of_iterations_cond (struct loop *loop,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file,
-	       "Analysing # of iterations of loop %d\n", loop->num);
+	       "Analyzing # of iterations of loop %d\n", loop->num);
 
       fprintf (dump_file, "  exit condition ");
       dump_affine_iv (dump_file, iv0);
