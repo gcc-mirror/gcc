@@ -12843,6 +12843,55 @@ ix86_expand_sse_unpack (rtx operands[2], bool unsigned_p, bool high_p)
   emit_insn (unpack (dest, operands[1], se));
 }
 
+/* This function performs the same task as ix86_expand_sse_unpack,
+   but with SSE4.1 instructions.  */
+
+void
+ix86_expand_sse4_unpack (rtx operands[2], bool unsigned_p, bool high_p)
+{
+  enum machine_mode imode = GET_MODE (operands[1]);
+  rtx (*unpack)(rtx, rtx);
+  rtx src, dest;
+
+  switch (imode)
+    {
+    case V16QImode:
+      if (unsigned_p)
+	unpack = gen_sse4_1_zero_extendv8qiv8hi2;
+      else
+	unpack = gen_sse4_1_extendv8qiv8hi2;
+      break;
+    case V8HImode:
+      if (unsigned_p)
+	unpack = gen_sse4_1_zero_extendv4hiv4si2;
+      else
+	unpack = gen_sse4_1_extendv4hiv4si2;
+      break;
+    case V4SImode:
+      if (unsigned_p)
+	unpack = gen_sse4_1_zero_extendv2siv2di2;
+      else
+	unpack = gen_sse4_1_extendv2siv2di2;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  dest = operands[0];
+  if (high_p)
+    {
+      /* Shift higher 8 bytes to lower 8 bytes.  */
+      src = gen_reg_rtx (imode);
+      emit_insn (gen_sse2_lshrti3 (gen_lowpart (TImode, src),
+				   gen_lowpart (TImode, operands[1]),
+				   GEN_INT (64)));
+    }
+  else
+    src = operands[1];
+
+  emit_insn (unpack (dest, src));
+}
+
 /* Expand conditional increment or decrement using adb/sbb instructions.
    The default case using setcc followed by the conditional move can be
    done by generic code.  */
