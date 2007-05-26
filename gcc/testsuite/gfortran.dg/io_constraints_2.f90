@@ -17,7 +17,7 @@ contains
   subroutine foo (i)
     integer :: i
     write (*, 100) i
- 100 format (1h , "i=", i6)                     ! This is OK.
+ 100 format (1h , "i=", i6) ! { dg-warning "H format specifier" }
   end subroutine foo
 
 end module global
