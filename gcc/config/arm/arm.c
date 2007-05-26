@@ -11778,7 +11778,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	 want to do that.  */
       if (x == const_true_rtx)
 	{
-	  output_operand_lossage ("instruction never exectued");
+	  output_operand_lossage ("instruction never executed");
 	  return;
 	}
       if (!COMPARISON_P (x))

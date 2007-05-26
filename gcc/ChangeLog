@@ -1,3 +1,11 @@
+2007-05-26  Kazu Hirata  <kazu@codesourcery.com>
+
+	* c-typeck.c, config/arm/arm.c, config/darwin.c,
+	config/sh/symbian.c, gcc.c, ipa-cp.c, ipa-inline.c, loop-iv.c,
+	omega.c, tree-ssa-loop-niter.c, treestruct.def: Fix typos and
+	follow spelling conventions in various
+	warning/error/diagnostic messages.
+
 2007-05-25  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/32090

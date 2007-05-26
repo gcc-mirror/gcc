@@ -1696,7 +1696,7 @@ normalize_omega_problem (omega_pb pb)
 			if (dump_file && (dump_flags & TDF_DETAILS))
 			  {
 			    fprintf (dump_file,
-				     "Removing Redudant Equation: ");
+				     "Removing Redundant Equation: ");
 			    omega_print_geq (dump_file, pb, &(pb->geqs[e2]));
 			    fprintf (dump_file, "\n");
 			    fprintf (dump_file,
@@ -1714,7 +1714,7 @@ normalize_omega_problem (omega_pb pb)
 		  {
 		    if (dump_file && (dump_flags & TDF_DETAILS))
 		      {
-			fprintf (dump_file, "Removing Redudant Equation: ");
+			fprintf (dump_file, "Removing Redundant Equation: ");
 			omega_print_geq (dump_file, pb, &(pb->geqs[e]));
 			fprintf (dump_file, "\n");
 			fprintf (dump_file, "[b]      Made Redundant by: ");
@@ -1736,7 +1736,7 @@ normalize_omega_problem (omega_pb pb)
 		  {
 		    if (dump_file && (dump_flags & TDF_DETAILS))
 		      {
-			fprintf (dump_file, "Removing Redudant Equation: ");
+			fprintf (dump_file, "Removing Redundant Equation: ");
 			omega_print_geq (dump_file, pb, &(pb->geqs[e2]));
 			fprintf (dump_file, "\n");
 			fprintf (dump_file, "[c]      Made Redundant by: ");
@@ -1750,7 +1750,7 @@ normalize_omega_problem (omega_pb pb)
 		  {
 		    if (dump_file && (dump_flags & TDF_DETAILS))
 		      {
-			fprintf (dump_file, "Removing Redudant Equation: ");
+			fprintf (dump_file, "Removing Redundant Equation: ");
 			omega_print_geq (dump_file, pb, &(pb->geqs[e]));
 			fprintf (dump_file, "\n");
 			fprintf (dump_file, "[d]      Made Redundant by: ");
@@ -2094,7 +2094,7 @@ omega_eliminate_redundant (omega_pb pb, bool expensive)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "in eliminate Redudant:\n");
+      fprintf (dump_file, "in eliminate Redundant:\n");
       omega_print_problem (dump_file, pb);
     }
 
@@ -4663,7 +4663,7 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
-		  fprintf (dump_file, "lower bound coeeficients = ");
+		  fprintf (dump_file, "lower bound coefficients = ");
 
 		  for (j = 0; j < lower_bounds; j++)
 		    fprintf (dump_file, " %d",
@@ -4950,7 +4950,7 @@ omega_problem_has_red_equations (omega_pb pb)
     {
       if (!result)
 	fprintf (dump_file,
-		 "******************** Redudant Red Equations eliminated!!\n");
+		 "******************** Redundant Red Equations eliminated!!\n");
       else
 	fprintf (dump_file,
 		 "******************** Red Equations remain\n");

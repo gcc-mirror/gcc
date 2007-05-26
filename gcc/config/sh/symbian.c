@@ -381,7 +381,7 @@ symbian_add_attribute (tree node, const char *attr_name)
     TYPE_ATTRIBUTES (node) = tree_cons (attr, NULL_TREE, attrs);
 
 #if SYMBIAN_DEBUG
-  fprintf (stderr, "propogate %s attribute", attr_name);
+  fprintf (stderr, "propagate %s attribute", attr_name);
   print_node_brief (stderr, " to", node, 0);
   fprintf (stderr, "\n");
 #endif

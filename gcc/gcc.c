@@ -7963,7 +7963,7 @@ static const char *
 print_asm_header_spec_function (int arg ATTRIBUTE_UNUSED,
 				const char **argv ATTRIBUTE_UNUSED)
 {
-  printf (_("Assember options\n================\n\n"));
+  printf (_("Assembler options\n=================\n\n"));
   printf (_("Use \"-Wa,OPTION\" to pass \"OPTION\" to the assembler.\n\n"));
   fflush (stdout);
   return NULL;
