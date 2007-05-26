@@ -2537,7 +2537,7 @@ gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
       /* Obtain the string length from the function used by
          trans-array.c(gfc_trans_array_constructor).  */
       len = NULL_TREE;
-      get_array_ctor_strlen (arg->value.constructor, &len);
+      get_array_ctor_strlen (&se->pre, arg->value.constructor, &len);
       break;
 
     case EXPR_VARIABLE:
