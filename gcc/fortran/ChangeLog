@@ -1,3 +1,8 @@
+2007-05-26  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi: Document the GFORTRAN_ERROR_DUMPCORE and
+	GFORTRAN_ERROR_BACKTRACE environment variables.
+
 2007-05-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31219
