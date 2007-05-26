@@ -1,3 +1,9 @@
+2007-05-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/32065
+	* config/i386/i386.md (movti): Handle push operands via
+	ix86_expand_push().
+
 2007-05-26  Kazu Hirata  <kazu@codesourcery.com>
 
 	* basic-block.h: Remove the prototype for merge_seq_blocks.
