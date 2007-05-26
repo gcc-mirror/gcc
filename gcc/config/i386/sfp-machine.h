@@ -127,6 +127,13 @@ struct fenv
 #define __BYTE_ORDER __LITTLE_ENDIAN
 
 /* Define ALIASNAME as a strong alias for NAME.  */
+#if defined __MACH__
+/* Mach-O doesn't support aliasing.  If these functions ever return
+   anything but int we need to revisit this... */
+#define strong_alias(name, aliasname) \
+  int aliasname (TFtype a, TFtype b) { return name(a, b); }
+#else
 # define strong_alias(name, aliasname) _strong_alias(name, aliasname)
 # define _strong_alias(name, aliasname) \
   extern __typeof (name) aliasname __attribute__ ((alias (#name)));
+#endif

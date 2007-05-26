@@ -1,3 +1,12 @@
+2007-05-25  Eric Christopher  <echristo@apple.com>
+
+	* config.gcc: Add i386/t-fprules-softfp64 and soft-fp/t-softfp
+	to x86-darwin configurations.
+	* config/i386/t-darwin: Add softfp support.
+	* config/i386/t-darwin64: Ditto.
+	* config/i386/sfp-machine.h: If mach then don't use
+	aliasing, emit a stub to call.
+
 2007-05-25  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cfglayout.c, cgraphunit.c, config/avr/avr.c, fold-const.c,
@@ -283,7 +292,7 @@
 	support for complex modes.  Fill in DECL_RESULT for stubdecl.
 	(mips_init_libfuncs): Remove redundant TARGET_MIPS16 check.
 
-	* config/mips/mips16.S 
+	* config/mips/mips16.S
 	(RET, ARG1, ARG2): New.
 	(MERGE_GPRf, MERGE_GPRt): New.
 	(DELAYt, DELAYf): New.
@@ -352,7 +361,7 @@
 	(__mips16_call_stub_dc_6): New.
 	(__mips16_call_stub_dc_9): New.
 	(__mips16_call_stub_dc_10): New.
-	
+
 	* config/mips/t-elf (LIB1ASMFUNCS): Add MIPS16 floating-point stubs.
 	* config/mips/t-isa3264 (LIB1ASMFUNCS): Likewise.
 	* config/mips/t-r2900 (LIB1ASMFUNCS): Likewise.
@@ -373,7 +382,7 @@
 	PR target/30474
 	* config/score/score.c (score_print_operand): Make sure that only
 	lower bits are used.
-	
+
 2007-05-22  Ian Lance Taylor  <iant@google.com>
 
 	* tree-vrp.c (avoid_overflow_infinity): New static function,
@@ -898,7 +907,7 @@
 	* stmt.c (expand_case): Do not call squeeze_notes.
 
 2007-05-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
-	
+
 	PR middle-end/7651
 	PR c++/11856
 	PR c/12963
@@ -941,7 +950,7 @@
 	* doc/invoke.texi (Wreturn-type): Complete description.
 	(Wextra): Delete item about return-type warning.
 	* c-decl.c: Delete redundant Wextra warning.
-	
+
 2007-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/31585
@@ -990,26 +999,26 @@
 2007-05-19 Andy Hutchinson <HutchinsonAndy@netscape.net>
 	   Anatoly Sokolov <aesok@dol.ru>
 
-	* config/avr/avr-protos.h (expand_prologue, expand_epilogue, 
+	* config/avr/avr-protos.h (expand_prologue, expand_epilogue,
 	avr_epilogue_uses) : Add declaration.
 	* config/avr/predicates.md (avr_sp_immediate_operand): New predicate.
 	* config/avr/constraints.md (R): New constraint.
-	config/avr/avr.md (SREG_ADDR, UNSPEC_SEI, UNSPEC_CLI, 
+	config/avr/avr.md (SREG_ADDR, UNSPEC_SEI, UNSPEC_CLI,
 	UNSPECV_PROLOGUE_SAVES, UNSPECV_EPILOGUE_RESTORES): New constants.
 	(*pop1, *pop2, *pop3, *pop4, *pop5): Combine into ...
 	(*addhi3_sp_R_pc2, *addhi3_sp_R_pc3): ... these patterns.
-	(*movhi_sp, popqi, pophi, enable_interrupt, disable_interrupt, 
+	(*movhi_sp, popqi, pophi, enable_interrupt, disable_interrupt,
 	call_prologue_saves, epilogue_restores, return_from_epilogue,
-	return_from_main_epilogue, return_from_interrupt_epilogue, 
+	return_from_main_epilogue, return_from_interrupt_epilogue,
 	return_from_naked_epilogue, prologue, epilogue): New patterns.
 	(jump): Handle symbol reference.
-	* config/avr/avr.c (out_adj_frame_ptr, out_set_stack_ptr, 
-	avr_output_function_prologue, avr_output_function_epilogue): Remove 
+	* config/avr/avr.c (out_adj_frame_ptr, out_set_stack_ptr,
+	avr_output_function_prologue, avr_output_function_epilogue): Remove
 	functions.
-	(avr_init_machine_status, expand_prologue, expand_epilogue, 
-	avr_asm_function_end_prologue, avr_epilogue_uses, 
+	(avr_init_machine_status, expand_prologue, expand_epilogue,
+	avr_asm_function_end_prologue, avr_epilogue_uses,
 	avr_asm_function_begin_epilogue): New functions.
-	(prologue_size, epilogue_size, jump_tables_size): Remove global 
+	(prologue_size, epilogue_size, jump_tables_size): Remove global
 	variables.
 	(TARGET_ASM_FUNCTION_PROLOGUE, TARGET_ASM_FUNCTION_EPILOGUE): Remove.
 	(TARGET_ASM_FUNCTION_END_PROLOGUE): Define.
@@ -1254,7 +1263,7 @@
 	and soft-fp/t-softfp to tmake_file.
 	(i[34567]86-*-linux*, i[34567]86-*-kfreebsd*-gnu,
 	i[34567]86-*-knetbsd*-gnu): Ditto for --enable-targets=all.
-	
+
 	* config/i386/t-linux64 (softfp_wrap_start): New.
 	(softfp_wrap_end): New.
 	* config/i386/i386.c (ix86_scalar_mode_supported): TFmode is
@@ -1262,7 +1271,7 @@
 
 2007-05-16  Rafael Avila de Espindola  <espindola@google.com>
 
-	* c-common.c (c_common_signed_or_unsigned_type): Emulate 
+	* c-common.c (c_common_signed_or_unsigned_type): Emulate
 	c_common_unsigned_type behavior.
 
 2007-05-16  Paolo Bonzini  <bonzini@gnu.org>
