@@ -565,8 +565,6 @@ format_item_1:
     case FMT_L:
     case FMT_A:
     case FMT_D:
-      goto data_desc;
-
     case FMT_H:
       goto data_desc;
 
@@ -718,19 +716,23 @@ data_desc:
       break;
 
     case FMT_H:
+      if (!(gfc_option.allow_std & GFC_STD_GNU) && !inhibit_warnings)
+	gfc_warning ("The H format specifier at %C is"
+		     " a Fortran 95 deleted feature");
+
       if(mode == MODE_STRING)
-      {
-	format_string += value;
-	format_length -= value;
-      }
+	{
+	  format_string += value;
+	  format_length -= value;
+	}
       else
-      {
-	while (repeat >0)
-	 {
-	  next_char (1);
-	  repeat -- ;
-	 }
-      }
+	{
+	  while (repeat >0)
+	   {
+	     next_char (1);
+	     repeat -- ;
+	   }
+	}
      break;
 
     case FMT_IBOZ:

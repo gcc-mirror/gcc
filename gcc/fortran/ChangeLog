@@ -1,3 +1,8 @@
+2007-05-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/31813
+	* io.c (check_format): Add warning for H specifier in format.
+	
 2007-05-26  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi: Document the GFORTRAN_ERROR_DUMPCORE and
