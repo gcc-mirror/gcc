@@ -1,3 +1,8 @@
+2007-05-25  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/32090
+	* g++.dg/opt/array2.C: New testcase.
+
 007-05-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32065

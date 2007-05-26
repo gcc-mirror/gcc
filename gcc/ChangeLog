@@ -1,3 +1,12 @@
+2007-05-25  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/32090
+	* tree-ssa-forwprop.c
+	(forward_propagate_addr_into_variable_array_index): Remove
+	the lhs argument.  Use the type of def_rhs instead of lhs.
+	(forward_propagate_addr_expr_1): Update use of
+	forward_propagate_addr_into_variable_array_index.
+
 2007-05-25  Sandra Loosemore  <sandra@codesourcery.com>
 	    Nigel Stephens  <nigel@mips.com>
 
