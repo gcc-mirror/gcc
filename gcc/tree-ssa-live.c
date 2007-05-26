@@ -569,7 +569,7 @@ delete_tree_live_info (tree_live_info_p live)
 }
 
 
-/* Visit basic block BB and propogate any required live on entry bits from 
+/* Visit basic block BB and propagate any required live on entry bits from 
    LIVE into the predecessors.  VISITED is the bitmap of visited blocks.  
    TMP is a temporary work bitmap which is passed in to avoid reallocating
    it each time.  */
@@ -625,7 +625,7 @@ live_worklist (tree_live_info_p live)
 
   sbitmap_zero (visited);
 
-  /* Visit all the blocks in reverse order and propogate live on entry values
+  /* Visit all the blocks in reverse order and propagate live on entry values
      into the predecessors blocks.  */
   FOR_EACH_BB_REVERSE (bb)
     loe_visit_block (live, bb, visited, tmp);

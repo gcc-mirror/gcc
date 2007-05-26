@@ -2808,7 +2808,7 @@ do_rhs_deref_structure_copy (const struct constraint_expr lhs,
 }
 
 /* Handle the structure copy case where we have a structure copy
-   between a aggregate on the RHS and a dereference of a pointer on
+   between an aggregate on the RHS and a dereference of a pointer on
    the LHS that is of SIZE (in bits)
 
    For each field of the rhs variable (rhsfield)

@@ -122,7 +122,7 @@ Boston, MA 02110-1301, USA.  */
   which reduces code duplication since the rewriting phase is inherently
   a walk of the dominator tree.
 
-  And (of course), we use the dominator walker to drive a our dominator
+  And (of course), we use the dominator walker to drive our dominator
   optimizer, which is a semi-global optimizer.
 
   TODO:

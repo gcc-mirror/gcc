@@ -1681,7 +1681,7 @@ df_bb_refs_record (struct dataflow *dflow, basic_block bb)
     {
 #ifdef EH_USES
       unsigned int i;
-      /* This code is putting in a artificial ref for the use at the
+      /* This code is putting in an artificial ref for the use at the
 	 TOP of the block that receives the exception.  It is too
 	 cumbersome to actually put the ref on the edge.  We could
 	 either model this at the top of the receiver block or the

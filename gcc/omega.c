@@ -1806,13 +1806,13 @@ cleanout_wildcards (omega_pb pb)
     for (i = n_vars; !omega_safe_var_p (pb, i); i--)
       if (pb->eqs[e].coef[i] != 0)
 	{
-	  /* i is the last non-zero non-safe variable.  */
+	  /* i is the last nonzero non-safe variable.  */
 
 	  for (j = i - 1; !omega_safe_var_p (pb, j); j--)
 	    if (pb->eqs[e].coef[j] != 0)
 	      break;
 
-	  /* j is the next non-zero non-safe variable, or points
+	  /* j is the next nonzero non-safe variable, or points
 	     to a safe variable: it is then a wildcard variable.  */
 
 	  /* Clean it out.  */
@@ -3174,9 +3174,9 @@ omega_solve_eq (omega_pb pb, enum omega_result desired_res)
 	if (eqn->coef[j])
 	  break;
 
-      /* i is the position of last non-zero coefficient,
+      /* i is the position of last nonzero coefficient,
 	 g is the coefficient of i,
-	 j is the position of next non-zero coefficient.  */
+	 j is the position of next nonzero coefficient.  */
 
       if (j == 0)
 	{

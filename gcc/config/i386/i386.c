@@ -16548,7 +16548,7 @@ enum ix86_builtins
 /* Table for the ix86 builtin decls.  */
 static GTY(()) tree ix86_builtins[(int) IX86_BUILTIN_MAX];
 
-/* Add a ix86 target builtin function with CODE, NAME and TYPE.  Do so,
+/* Add an ix86 target builtin function with CODE, NAME and TYPE.  Do so,
  * if the target_flags include one of MASK.  Stores the function decl
  * in the ix86_builtins array.
  * Returns the function decl or NULL_TREE, if the builtin was not added.  */

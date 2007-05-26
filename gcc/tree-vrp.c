@@ -387,7 +387,7 @@ set_value_range_to_value (value_range_t *vr, tree val, bitmap equiv)
 }
 
 /* Set value range VR to a non-negative range of type TYPE.
-   OVERFLOW_INFINITY indicates whether to use a overflow infinity
+   OVERFLOW_INFINITY indicates whether to use an overflow infinity
    rather than TYPE_MAX_VALUE; this should be true if we determine
    that the range is nonnegative based on the assumption that signed
    overflow does not occur.  */
@@ -607,7 +607,7 @@ symbolic_range_p (value_range_t *vr)
           || !is_gimple_min_invariant (vr->max));
 }
 
-/* Return true if value range VR uses a overflow infinity.  */
+/* Return true if value range VR uses an overflow infinity.  */
 
 static inline bool
 overflow_infinity_range_p (value_range_t *vr)

@@ -476,7 +476,7 @@ typedef struct ssa_conflicts_d
 } * ssa_conflicts_p;
 
 
-/* Return a empty new conflict graph for SIZE elements.  */
+/* Return an empty new conflict graph for SIZE elements.  */
 
 static inline ssa_conflicts_p
 ssa_conflicts_new (unsigned size)
