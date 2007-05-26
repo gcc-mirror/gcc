@@ -1366,11 +1366,54 @@ get_array_ctor_var_strlen (gfc_expr * expr, tree * len)
 }
 
 
+/* A catch-all to obtain the string length for anything that is not a
+   constant, array or variable.  */
+static void
+get_array_ctor_all_strlen (stmtblock_t *block, gfc_expr *e, tree *len)
+{
+  gfc_se se;
+  gfc_ss *ss;
+
+  /* Don't bother if we already know the length is a constant.  */
+  if (*len && INTEGER_CST_P (*len))
+    return;
+
+  if (!e->ref && e->ts.cl->length
+	&& e->ts.cl->length->expr_type == EXPR_CONSTANT)
+    {
+      /* This is easy.  */
+      gfc_conv_const_charlen (e->ts.cl);
+      *len = e->ts.cl->backend_decl;
+    }
+  else
+    {
+      /* Otherwise, be brutal even if inefficient.  */
+      ss = gfc_walk_expr (e);
+      gfc_init_se (&se, NULL);
+
+      /* No function call, in case of side effects.  */
+      se.no_function_call = 1;
+      if (ss == gfc_ss_terminator)
+	gfc_conv_expr (&se, e);
+      else
+	gfc_conv_expr_descriptor (&se, e, ss);
+
+      /* Fix the value.  */
+      *len = gfc_evaluate_now (se.string_length, &se.pre);
+
+      gfc_add_block_to_block (block, &se.pre);
+      gfc_add_block_to_block (block, &se.post);
+
+      e->ts.cl->backend_decl = *len;
+    }
+}
+
+
 /* Figure out the string length of a character array constructor.
    Returns TRUE if all elements are character constants.  */
 
 bool
-get_array_ctor_strlen (gfc_constructor * c, tree * len)
+get_array_ctor_strlen (stmtblock_t *block, gfc_constructor * c, tree * len)
 {
   bool is_const;
   
@@ -1386,7 +1429,7 @@ get_array_ctor_strlen (gfc_constructor * c, tree * len)
 	  break;
 
 	case EXPR_ARRAY:
-	  if (!get_array_ctor_strlen (c->expr->value.constructor, len))
+	  if (!get_array_ctor_strlen (block, c->expr->value.constructor, len))
 	    is_const = false;
 	  break;
 
@@ -1397,16 +1440,7 @@ get_array_ctor_strlen (gfc_constructor * c, tree * len)
 
 	default:
 	  is_const = false;
-
-	  /* Hope that whatever we have possesses a constant character
-	     length!  */
-	  if (!(*len && INTEGER_CST_P (*len)) && c->expr->ts.cl)
-	    {
-	      gfc_conv_const_charlen (c->expr->ts.cl);
-	      *len = c->expr->ts.cl->backend_decl;
-	    }
-	  /* TODO: For now we just ignore anything we don't know how to
-	     handle, and hope we can figure it out a different way.  */
+	  get_array_ctor_all_strlen (block, c->expr, len);
 	  break;
 	}
     }
@@ -1597,9 +1631,12 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
   c = ss->expr->value.constructor;
   if (ss->expr->ts.type == BT_CHARACTER)
     {
-      bool const_string = get_array_ctor_strlen (c, &ss->string_length);
+      bool const_string = get_array_ctor_strlen (&loop->pre, c, &ss->string_length);
       if (!ss->string_length)
 	gfc_todo_error ("complex character array constructors");
+
+      ss->expr->ts.cl->backend_decl = ss->string_length;
+
 
       type = gfc_get_character_type_len (ss->expr->ts.kind, ss->string_length);
       if (const_string)
@@ -4781,6 +4818,13 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
   full_array_var = (expr->expr_type == EXPR_VARIABLE
 		      && expr->ref->u.ar.type == AR_FULL);
   sym = full_array_var ? expr->symtree->n.sym : NULL;
+
+  if (expr->expr_type == EXPR_ARRAY && expr->ts.type == BT_CHARACTER)
+    {
+      get_array_ctor_strlen (&se->pre, expr->value.constructor, &tmp);
+      expr->ts.cl->backend_decl = gfc_evaluate_now (tmp, &se->pre);
+      se->string_length = expr->ts.cl->backend_decl;
+    }
 
   /* Is this the result of the enclosing procedure?  */
   this_array_result = (full_array_var && sym->attr.flavor == FL_PROCEDURE);

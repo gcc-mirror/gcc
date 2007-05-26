@@ -72,6 +72,9 @@ typedef struct gfc_se
      are NULL.  Used by intrinsic size.  */
   unsigned data_not_needed:1;
 
+  /* If set, gfc_conv_function_call does not put byref calls into se->pre.  */
+  unsigned no_function_call:1;
+
   /* Scalarization parameters.  */
   struct gfc_se *parent;
   struct gfc_ss *ss;
@@ -434,7 +437,7 @@ extern GTY(()) tree gfc_static_ctors;
 void gfc_generate_constructors (void);
 
 /* Get the string length of an array constructor.  */
-bool get_array_ctor_strlen (gfc_constructor *, tree *);
+bool get_array_ctor_strlen (stmtblock_t *, gfc_constructor *, tree *);
 
 /* Generate a runtime error check.  */
 void gfc_trans_runtime_check (tree, const char *, stmtblock_t *, locus *);
