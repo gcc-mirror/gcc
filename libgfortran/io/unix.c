@@ -97,7 +97,6 @@ typedef struct
   gfc_offset dirty_offset;	/* Start of modified bytes in buffer */
   gfc_offset file_length;	/* Length of the file, -1 if not seekable. */
 
-  char *buffer;
   int len;			/* Physical length of the current buffer */
   int active;			/* Length of valid bytes in the buffer */
 
@@ -106,12 +105,41 @@ typedef struct
 
   int special_file;		/* =1 if the fd refers to a special file */
 
-  unsigned unbuffered:1;
+  int unbuffered;               /* =1 if the stream is not buffered */
 
-  char small_buffer[BUFFER_SIZE];
-
+  char buffer[BUFFER_SIZE];
 }
 unix_stream;
+
+
+/* Stream structure for internal files. Fields must be kept in sync
+   with unix_stream above, except for the buffer. For internal files
+   we point the buffer pointer directly at the destination memory.  */
+
+typedef struct
+{
+  stream st;
+
+  int fd;
+  gfc_offset buffer_offset;	/* File offset of the start of the buffer */
+  gfc_offset physical_offset;	/* Current physical file offset */
+  gfc_offset logical_offset;	/* Current logical file offset */
+  gfc_offset dirty_offset;	/* Start of modified bytes in buffer */
+  gfc_offset file_length;	/* Length of the file, -1 if not seekable. */
+
+  int len;			/* Physical length of the current buffer */
+  int active;			/* Length of valid bytes in the buffer */
+
+  int prot;
+  int ndirty;			/* Dirty bytes starting at dirty_offset */
+
+  int special_file;		/* =1 if the fd refers to a special file */
+
+  int unbuffered;               /* =1 if the stream is not buffered */
+
+  char *buffer;
+}
+int_stream;
 
 extern stream *init_error_stream (unix_stream *);
 internal_proto(init_error_stream);
@@ -409,29 +437,17 @@ static void
 fd_alloc (unix_stream * s, gfc_offset where,
 	  int *len __attribute__ ((unused)))
 {
-  char *new_buffer;
-  int n, read_len;
-
-  if (*len <= BUFFER_SIZE)
-    {
-      new_buffer = s->small_buffer;
-      read_len = BUFFER_SIZE;
-    }
-  else
-    {
-      new_buffer = get_mem (*len);
-      read_len = *len;
-    }
+  int n;
 
   /* Salvage bytes currently within the buffer.  This is important for
    * devices that cannot seek. */
 
-  if (s->buffer != NULL && s->buffer_offset <= where &&
+  if (s->buffer_offset <= where &&
       where <= s->buffer_offset + s->active)
     {
 
       n = s->active - (where - s->buffer_offset);
-      memmove (new_buffer, s->buffer + (where - s->buffer_offset), n);
+      memmove (s->buffer, s->buffer + (where - s->buffer_offset), n);
 
       s->active = n;
     }
@@ -442,13 +458,7 @@ fd_alloc (unix_stream * s, gfc_offset where,
 
   s->buffer_offset = where;
 
-  /* free the old buffer if necessary */
-
-  if (s->buffer != NULL && s->buffer != s->small_buffer)
-    free_mem (s->buffer);
-
-  s->buffer = new_buffer;
-  s->len = read_len;
+  s->len = BUFFER_SIZE;
 }
 
 
@@ -580,8 +590,7 @@ static try
 fd_sfree (unix_stream * s)
 {
   if (s->ndirty != 0 &&
-      (s->buffer != s->small_buffer || options.all_unbuffered ||
-       s->unbuffered))
+      (options.all_unbuffered || s->unbuffered))
     return fd_flush (s);
 
   return SUCCESS;
@@ -782,9 +791,6 @@ fd_close (unix_stream * s)
   if (fd_flush (s) == FAILURE)
     return FAILURE;
 
-  if (s->buffer != NULL && s->buffer != s->small_buffer)
-    free_mem (s->buffer);
-
   if (s->fd != STDOUT_FILENO && s->fd != STDERR_FILENO)
     {
       if (close (s->fd) < 0)
@@ -813,7 +819,6 @@ fd_open (unix_stream * s)
   s->st.write = (void *) fd_write;
   s->st.set = (void *) fd_sset;
 
-  s->buffer = NULL;
 }
 
 
@@ -831,7 +836,7 @@ fd_open (unix_stream * s)
 
 
 static char *
-mem_alloc_r_at (unix_stream * s, int *len, gfc_offset where)
+mem_alloc_r_at (int_stream * s, int *len, gfc_offset where)
 {
   gfc_offset n;
 
@@ -852,7 +857,7 @@ mem_alloc_r_at (unix_stream * s, int *len, gfc_offset where)
 
 
 static char *
-mem_alloc_w_at (unix_stream * s, int *len, gfc_offset where)
+mem_alloc_w_at (int_stream * s, int *len, gfc_offset where)
 {
   gfc_offset m;
 
@@ -880,7 +885,7 @@ mem_alloc_w_at (unix_stream * s, int *len, gfc_offset where)
    routines use mem_alloc_r_at.  */
 
 static int
-mem_read (unix_stream * s, void * buf, size_t * nbytes)
+mem_read (int_stream * s, void * buf, size_t * nbytes)
 {
   void *p;
   int tmp;
@@ -906,7 +911,7 @@ mem_read (unix_stream * s, void * buf, size_t * nbytes)
    routines use mem_alloc_w_at.  */
 
 static int
-mem_write (unix_stream * s, const void * buf, size_t * nbytes)
+mem_write (int_stream * s, const void * buf, size_t * nbytes)
 {
   void *p;
   int tmp;
@@ -930,7 +935,7 @@ mem_write (unix_stream * s, const void * buf, size_t * nbytes)
 
 
 static int
-mem_seek (unix_stream * s, gfc_offset offset)
+mem_seek (int_stream * s, gfc_offset offset)
 {
   if (offset > s->file_length)
     {
@@ -944,7 +949,7 @@ mem_seek (unix_stream * s, gfc_offset offset)
 
 
 static try
-mem_set (unix_stream * s, int c, size_t n)
+mem_set (int_stream * s, int c, size_t n)
 {
   void *p;
   int len;
@@ -963,14 +968,14 @@ mem_set (unix_stream * s, int c, size_t n)
 
 
 static int
-mem_truncate (unix_stream * s __attribute__ ((unused)))
+mem_truncate (int_stream * s __attribute__ ((unused)))
 {
   return SUCCESS;
 }
 
 
 static try
-mem_close (unix_stream * s)
+mem_close (int_stream * s)
 {
   if (s != NULL)
     free_mem (s);
@@ -980,7 +985,7 @@ mem_close (unix_stream * s)
 
 
 static try
-mem_sfree (unix_stream * s __attribute__ ((unused)))
+mem_sfree (int_stream * s __attribute__ ((unused)))
 {
   return SUCCESS;
 }
@@ -997,7 +1002,7 @@ mem_sfree (unix_stream * s __attribute__ ((unused)))
 void
 empty_internal_buffer(stream *strm)
 {
-  unix_stream * s = (unix_stream *) strm;
+  int_stream * s = (int_stream *) strm;
   memset(s->buffer, ' ', s->file_length);
 }
 
@@ -1006,10 +1011,10 @@ empty_internal_buffer(stream *strm)
 stream *
 open_internal (char *base, int length)
 {
-  unix_stream *s;
+  int_stream *s;
 
-  s = get_mem (sizeof (unix_stream));
-  memset (s, '\0', sizeof (unix_stream));
+  s = get_mem (sizeof (int_stream));
+  memset (s, '\0', sizeof (int_stream));
 
   s->buffer = base;
   s->buffer_offset = 0;
@@ -1372,7 +1377,6 @@ init_error_stream (unix_stream *error)
   error->st.sfree = (void *) fd_sfree;
 
   error->unbuffered = 1;
-  error->buffer = error->small_buffer;
 
   return (stream *) error;
 }

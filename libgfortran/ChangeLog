@@ -1,3 +1,22 @@
+2007-05-26  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/unix.c (unix_stream): Rearrange struct members, remove
+	small_buffer.
+	(int_stream): New struct.
+	(fd_alloc): Always use existing buffer, never reallocate.
+	(fd_sfree): Remove check for buffer != small_buffer.
+	(fd_close): Likewise.
+	(mem_alloc_r_at): Change to use int_stream.
+	(mem_alloc_w_at): Likewise.
+	(mem_read): Likewise.
+	(mem_write): Likewise.
+	(mem_set): Likewise.
+	(mem_truncate): Likewise.
+	(mem_close): Likewise.
+	(mem_sfree): Likewise.
+	(empty_internal_buffer): Likewise.
+	(open_internal): Likewise.
+	
 2007-05-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* io/transfer.c (unformatted_read): Use size from front end eliminating
