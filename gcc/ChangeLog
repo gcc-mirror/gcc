@@ -1,3 +1,8 @@
+2007-05-26  Kazu Hirata  <kazu@codesourcery.com>
+
+	* basic-block.h: Remove the prototype for merge_seq_blocks.
+	* cfgcleanup.c (merge_seq_blocks): Remove.
+
 2007-05-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386-protos.h (ix86_expand_sse4_unpack): New.
