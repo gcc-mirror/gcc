@@ -113,10 +113,10 @@
 	       && !DECL_EXTERNAL (SYMBOL_REF_DECL (op))))
 	return false;
 
-      /* If -mlong-calls, force all calls to use register addressing.  Also,
-	 if this function has the long_call attribute, we must use register
-	 addressing.  */
-      return !TARGET_LONG_CALLS && !SYMBOL_REF_LONG_CALL_P (op);
+      /* If -mlong-calls or if this function has an explicit long_call
+	 attribute, we must use register addressing.  The
+	 SYMBOL_FLAG_LONG_CALL bit is set by mips_encode_section_info.  */
+      return !SYMBOL_REF_LONG_CALL_P (op);
 
     case SYMBOL_GOT_DISP:
       /* Without explicit relocs, there is no special syntax for

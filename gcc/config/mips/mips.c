@@ -411,6 +411,7 @@ static rtx mips_expand_builtin_compare (enum mips_builtin_type,
 static rtx mips_expand_builtin_bposge (enum mips_builtin_type, rtx);
 static void mips_encode_section_info (tree, rtx, int);
 static void mips_extra_live_on_entry (bitmap);
+static int mips_comp_type_attributes (tree, tree);
 static int mips_mode_rep_extended (enum machine_mode, enum machine_mode);
 static bool mips_offset_within_alignment_p (rtx, HOST_WIDE_INT);
 
@@ -685,6 +686,8 @@ const enum reg_class mips_regno_to_class[] =
 const struct attribute_spec mips_attribute_table[] =
 {
   { "long_call",   0, 0, false, true,  true,  NULL },
+  { "far",     	   0, 0, false, true,  true,  NULL },
+  { "near",        0, 0, false, true,  true,  NULL },
   { NULL,	   0, 0, false, false, false, NULL }
 };
 
@@ -1249,7 +1252,48 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
 #undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P mips_use_anchors_for_symbol_p
 
+#undef  TARGET_COMP_TYPE_ATTRIBUTES
+#define TARGET_COMP_TYPE_ATTRIBUTES mips_comp_type_attributes
+
 struct gcc_target targetm = TARGET_INITIALIZER;
+
+
+/* Predicates to test for presence of "near" and "far"/"long_call"
+   attributes on the given TYPE.  */
+
+static bool
+mips_near_type_p (tree type)
+{
+  return lookup_attribute ("near", TYPE_ATTRIBUTES (type)) != NULL;
+}
+
+static bool
+mips_far_type_p (tree type)
+{
+  return (lookup_attribute ("long_call", TYPE_ATTRIBUTES (type)) != NULL
+	  || lookup_attribute ("far", TYPE_ATTRIBUTES (type)) != NULL);
+}
+
+
+/* Return 0 if the attributes for two types are incompatible, 1 if they
+   are compatible, and 2 if they are nearly compatible (which causes a
+   warning to be generated).  */
+
+static int
+mips_comp_type_attributes (tree type1, tree type2)
+{
+  /* Check for mismatch of non-default calling convention.  */
+  if (TREE_CODE (type1) != FUNCTION_TYPE)
+    return 1;
+
+  /* Disallow mixed near/far attributes.  */
+  if (mips_far_type_p (type1) && mips_near_type_p (type2))
+    return 0;
+  if (mips_near_type_p (type1) && mips_far_type_p (type2))
+    return 0;
+
+  return 1;
+}
 
 /* Return true if SYMBOL_REF X is associated with a global symbol
    (in the STB_GLOBAL sense).  */
@@ -7332,7 +7376,7 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Jump to the target function.  Use a sibcall if direct jumps are
      allowed, otherwise load the address into a register first.  */
   fnaddr = XEXP (DECL_RTL (function), 0);
-  if (TARGET_MIPS16 || TARGET_USE_GOT || TARGET_LONG_CALLS)
+  if (TARGET_MIPS16 || TARGET_USE_GOT || SYMBOL_REF_LONG_CALL_P (fnaddr))
     {
       /* This is messy.  gas treats "la $25,foo" as part of a call
 	 sequence and may allow a global "foo" to be lazily bound.
@@ -11139,11 +11183,13 @@ mips_encode_section_info (tree decl, rtx rtl, int first)
 {
   default_encode_section_info (decl, rtl, first);
 
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && lookup_attribute ("long_call", TYPE_ATTRIBUTES (TREE_TYPE (decl))))
+  if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       rtx symbol = XEXP (rtl, 0);
-      SYMBOL_REF_FLAGS (symbol) |= SYMBOL_FLAG_LONG_CALL;
+
+      if ((TARGET_LONG_CALLS && !mips_near_type_p (TREE_TYPE (decl)))
+	  || mips_far_type_p (TREE_TYPE (decl)))
+	SYMBOL_REF_FLAGS (symbol) |= SYMBOL_FLAG_LONG_CALL;
     }
 }
 

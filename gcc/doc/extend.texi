@@ -2110,13 +2110,16 @@ PowerPC, the @code{#pragma longcall} setting.
 @xref{RS/6000 and PowerPC Options}, for more information on whether long
 calls are necessary.
 
-@item long_call
+@item long_call/near/far
 @cindex indirect calls on MIPS
-This attribute specifies how a particular function is called on MIPS@.
-The attribute overrides the @option{-mlong-calls} (@pxref{MIPS Options})
-command line switch.  This attribute causes the compiler to always call
+These attributes specify how a particular function is called on MIPS@.
+The attributes override the @option{-mlong-calls} (@pxref{MIPS Options})
+command-line switch.  The @code{long_call} and @code{far} attributes are
+synonyms, and cause the compiler to always call
 the function by first loading its address into a register, and then using
-the contents of that register.
+the contents of that register.  The @code{near} attribute has the opposite
+effect; it specifies that non-PIC calls should be made using the more 
+efficient @code{jal} instruction.
 
 @item malloc
 @cindex @code{malloc} attribute
