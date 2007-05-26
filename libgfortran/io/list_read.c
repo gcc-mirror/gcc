@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist input contributed by Paul Thomas
 
@@ -1859,8 +1859,8 @@ nml_touch_nodes (namelist_info * nl)
   index_type len = strlen (nl->var_name) + 1;
   int dim;
   char * ext_name = (char*)get_mem (len + 1);
-  strcpy (ext_name, nl->var_name);
-  strcat (ext_name, "%");
+  memcpy (ext_name, nl->var_name, len-1);
+  memcpy (ext_name + len - 1, "%", 2);
   for (nl = nl->next; nl; nl = nl->next)
     {
       if (strncmp (nl->var_name, ext_name, len) == 0)
@@ -2133,8 +2133,8 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	  case GFC_DTYPE_DERIVED:
 	    obj_name_len = strlen (nl->var_name) + 1;
 	    obj_name = get_mem (obj_name_len+1);
-	    strcpy (obj_name, nl->var_name);
-	    strcat (obj_name, "%");
+	    memcpy (obj_name, nl->var_name, obj_name_len-1);
+	    memcpy (obj_name + obj_name_len - 1, "%", 2);
 
 	    /* If reading a derived type, disable the expanded read warning
 	       since a single object can have multiple reads.  */

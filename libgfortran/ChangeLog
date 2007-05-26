@@ -1,3 +1,20 @@
+2007-05-27  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* runtime/string.c (compare0): Use gfc_charlen_type instead of
+	int.
+	(fstrlen): Likewise.
+	(find_option): Likewise.
+	(fstrcpy): Use gfc_charlen_type instead of int, return length.
+	(cf_strcpy): Likewise.
+	* libgfortran.h: Change string prototypes to use gfc_charlen_type.
+	* io/open.c (new_unit): Use snprintf if available.
+	* io/list_read.c (nml_touch_nodes): Use memcpy instead of
+	strcpy/strcat.
+	(nml_read_obj): Likewise.
+	* io/transfer.c (st_set_nml_var): Likewise.
+	* io/write.c (output_float): Use snprintf if available.
+	(nml_write_obj) Use memcpy instead of strcpy/strcat.
+
 2007-05-26  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/unix.c (unix_stream): Rearrange struct members, remove

@@ -2852,13 +2852,15 @@ st_set_nml_var (st_parameter_dt *dtp, void * var_addr, char * var_name,
 {
   namelist_info *t1 = NULL;
   namelist_info *nml;
+  size_t var_name_len = strlen (var_name);
 
   nml = (namelist_info*) get_mem (sizeof (namelist_info));
 
   nml->mem_pos = var_addr;
 
-  nml->var_name = (char*) get_mem (strlen (var_name) + 1);
-  strcpy (nml->var_name, var_name);
+  nml->var_name = (char*) get_mem (var_name_len + 1);
+  memcpy (nml->var_name, var_name, var_name_len);
+  nml->var_name[var_name_len] = '\0';
 
   nml->len = (int) len;
   nml->string_length = (index_type) string_length;

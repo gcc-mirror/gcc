@@ -345,7 +345,12 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
 	break;
 
       opp->file = tmpname;
+#ifdef HAVE_SNPRINTF
+      opp->file_len = snprintf(opp->file, sizeof (tmpname), "fort.%d", 
+			       (int) opp->common.unit);
+#else
       opp->file_len = sprintf(opp->file, "fort.%d", (int) opp->common.unit);
+#endif
       break;
 
     default:

@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist output contributed by Paul Thomas
 
@@ -545,8 +545,13 @@ output_float (st_parameter_dt *dtp, const fnode *f, GFC_REAL_LARGEST value)
    *   equal to the precision. The exponent always contains at least two
    *   digits; if the value is zero, the exponent is 00.
    */
+#ifdef HAVE_SNPRINTF
+  snprintf (buffer, sizeof (buffer), "%+-#" STR(MIN_FIELD_WIDTH) ".*"
+	   GFC_REAL_LARGEST_FORMAT "e", ndigits - 1, value);
+#else
   sprintf (buffer, "%+-#" STR(MIN_FIELD_WIDTH) ".*"
 	   GFC_REAL_LARGEST_FORMAT "e", ndigits - 1, value);
+#endif
 
   /* Check the resulting string has punctuation in the correct places.  */
   if (d != 0 && (buffer[2] != '.' || buffer[ndigits + 2] != 'e'))
@@ -1610,6 +1615,9 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
   char rep_buff[NML_DIGITS];
   namelist_info * cmp;
   namelist_info * retval = obj->next;
+  size_t base_name_len;
+  size_t base_var_name_len;
+  size_t tot_len;
 
   /* Write namelist variable names in upper case. If a derived type,
      nothing is output.  If a component, base and base_name are set.  */
@@ -1755,32 +1763,43 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 
 	      /* First ext_name => get length of all possible components  */
 
-	      ext_name = (char*)get_mem ( (base_name ? strlen (base_name) : 0)
-					+ (base ? strlen (base->var_name) : 0)
+	      base_name_len = base_name ? strlen (base_name) : 0;
+	      base_var_name_len = base ? strlen (base->var_name) : 0;
+	      ext_name = (char*)get_mem ( base_name_len
+					+ base_var_name_len
 					+ strlen (obj->var_name)
 					+ obj->var_rank * NML_DIGITS
 					+ 1);
 
-	      strcpy(ext_name, base_name ? base_name : "");
-	      clen = base ? strlen (base->var_name) : 0;
-	      strcat (ext_name, obj->var_name + clen);
-
+	      memcpy (ext_name, base_name, base_name_len);
+	      clen = strlen (obj->var_name + base_var_name_len);
+	      memcpy (ext_name + base_name_len, 
+		      obj->var_name + base_var_name_len, clen);
+	      
 	      /* Append the qualifier.  */
 
+	      tot_len = base_name_len + clen;
 	      for (dim_i = 0; dim_i < obj->var_rank; dim_i++)
 		{
-		  strcat (ext_name, dim_i ? "" : "(");
-		  clen = strlen (ext_name);
-		  st_sprintf (ext_name + clen, "%d", (int) obj->ls[dim_i].idx);
-		  strcat (ext_name, (dim_i == obj->var_rank - 1) ? ")" : ",");
+		  if (!dim_i)
+		    {
+		      ext_name[tot_len] = '(';
+		      tot_len++;
+		    }
+		  st_sprintf (ext_name + tot_len, "%d", (int) obj->ls[dim_i].idx);
+		  tot_len += strlen (ext_name + tot_len);
+		  ext_name[tot_len] = (dim_i == obj->var_rank - 1) ? ')' : ',';
+		  tot_len++;
 		}
+
+	      ext_name[tot_len] = '\0';
 
 	      /* Now obj_name.  */
 
 	      obj_name_len = strlen (obj->var_name) + 1;
 	      obj_name = get_mem (obj_name_len+1);
-	      strcpy (obj_name, obj->var_name);
-	      strcat (obj_name, "%");
+	      memcpy (obj_name, obj->var_name, obj_name_len-1);
+	      memcpy (obj_name + obj_name_len-1, "%", 2);
 
 	      /* Now loop over the components. Update the component pointer
 		 with the return value from nml_write_obj => this loop jumps

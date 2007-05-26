@@ -1,5 +1,5 @@
 /* Common declarations for all of libgfortran.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>, and
    Andy Vaught <andy@xena.eas.asu.edu>
 
@@ -650,17 +650,17 @@ internal_proto(get_unformatted_convert);
 
 /* string.c */
 
-extern int find_option (st_parameter_common *, const char *, int,
+extern int find_option (st_parameter_common *, const char *, gfc_charlen_type,
 			const st_option *, const char *);
 internal_proto(find_option);
 
-extern int fstrlen (const char *, int);
+extern gfc_charlen_type fstrlen (const char *, gfc_charlen_type);
 internal_proto(fstrlen);
 
-extern void fstrcpy (char *, int, const char *, int);
+extern gfc_charlen_type fstrcpy (char *, gfc_charlen_type, const char *, gfc_charlen_type);
 internal_proto(fstrcpy);
 
-extern void cf_strcpy (char *, int, const char *);
+extern gfc_charlen_type cf_strcpy (char *, gfc_charlen_type, const char *);
 internal_proto(cf_strcpy);
 
 /* io/intrinsics.c */
