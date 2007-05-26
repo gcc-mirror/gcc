@@ -1,3 +1,29 @@
+2007-05-25  Sandra Loosemore  <sandra@codesourcery.com>
+	    Nigel Stephens  <nigel@mips.com>
+
+	* config/mips/mips.c (mips_attribute_table): Add "near" and "far"
+	function attributes, "far" being an alias for "long_call".
+	(TARGET_COMP_TYPE_ATTRIBUTES): Define as mips_comp_type_attributes.
+	(mips_near_type_p, mips_far_type_p): New.
+	(mips_comp_type_attributes): New function to check that attributes
+	attached to a function type are compatible.
+	(mips_output_mi_thunk): Test SYMBOL_REF_LONG_CALL_P() rather than
+	TARGET_LONG_CALLS when deciding	whether we can do a direct sibcall
+	to the target function of the thunk.
+	(mips_encode_section_info): Check for "near" and "far" function
+	attributes, and always set the SYMBOL_FLAG_LONG_CALL bit explicitly.
+
+	* config/mips/predicates.md (const_call_insn_operand): Test only
+	SYMBOL_REF_LONG_CALL_P() and not TARGET_LONG_CALLS.
+
+	* doc/extend.texi (Function Attributes): Document MIPS "near" and
+	"far" attributes.
+
+	* testsuite/gcc.target/mips/near-far-1.c:  New test case.
+	* testsuite/gcc.target/mips/near-far-2.c:  New test case.
+	* testsuite/gcc.target/mips/near-far-3.c:  New test case.
+	* testsuite/gcc.target/mips/near-far-4.c:  New test case.
+
 2007-05-25  Eric Christopher  <echristo@apple.com>
 
 	* config.gcc: Add i386/t-fprules-softfp64 and soft-fp/t-softfp
