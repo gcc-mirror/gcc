@@ -271,13 +271,18 @@ gfc_check_function_type (gfc_namespace *ns)
 		== SUCCESS)
 	{
 	  if (proc->result != proc)
-	    proc->ts = proc->result->ts;
+	    {
+	      proc->ts = proc->result->ts;
+	      proc->as = gfc_copy_array_spec (proc->result->as);
+	      proc->attr.dimension = proc->result->attr.dimension;
+	      proc->attr.pointer = proc->result->attr.pointer;
+	      proc->attr.allocatable = proc->result->attr.allocatable;
+	    }
 	}
       else
 	{
-	  gfc_error ("unable to implicitly type the function result "
-		     "'%s' at %L", proc->result->name,
-		     &proc->result->declared_at);
+	  gfc_error ("Function result '%s' at %L has no IMPLICIT type",
+		     proc->result->name, &proc->result->declared_at);
 	  proc->result->attr.untyped = 1;
 	}
     }
