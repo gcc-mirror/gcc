@@ -2007,7 +2007,7 @@ vectorizable_conversion (tree stmt, block_stmt_iterator * bsi,
   tree vec_oprnd0 = NULL_TREE, vec_oprnd1 = NULL_TREE;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  enum tree_code code, code1 = CODE_FOR_nothing, code2 = CODE_FOR_nothing;
+  enum tree_code code, code1 = ERROR_MARK, code2 = ERROR_MARK;
   tree decl1 = NULL_TREE, decl2 = NULL_TREE;
   tree new_temp;
   tree def, def_stmt;
@@ -2694,7 +2694,7 @@ vectorizable_type_demotion (tree stmt, block_stmt_iterator *bsi,
   tree vec_oprnd0=NULL, vec_oprnd1=NULL;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  enum tree_code code, code1 = CODE_FOR_nothing;
+  enum tree_code code, code1 = ERROR_MARK;
   tree new_temp;
   tree def, def_stmt;
   enum vect_def_type dt0;
@@ -2842,7 +2842,7 @@ vectorizable_type_promotion (tree stmt, block_stmt_iterator *bsi,
   tree vec_oprnd0=NULL, vec_oprnd1=NULL;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  enum tree_code code, code1 = CODE_FOR_nothing, code2 = CODE_FOR_nothing;
+  enum tree_code code, code1 = ERROR_MARK, code2 = ERROR_MARK;
   tree decl1 = NULL_TREE, decl2 = NULL_TREE;
   int op_type; 
   tree def, def_stmt;
