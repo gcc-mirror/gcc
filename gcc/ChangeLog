@@ -1,3 +1,10 @@
+2007-05-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* tree-vect-transform.c (vectorizable_conversion): Initialize
+	tree_code variables to ERROR_MARK.
+	(vectorizable_type_demotion): Likewise.
+	(vectorizable_type_promotion): Likewise.
+
 2007-05-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32065
