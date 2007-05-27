@@ -55,6 +55,7 @@
 #define _THROW_ALLOCATOR_H 1
 
 #include <cmath>
+#include <ctime>
 #include <map>
 #include <set>
 #include <string>

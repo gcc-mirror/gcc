@@ -194,7 +194,6 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 	}
     }
 
-#ifdef __GTHREADS
   template<>
     inline void
     _Sp_counted_base<_S_mutex>::
@@ -207,7 +206,6 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 	  __throw_bad_weak_ptr();
 	}
     }
-#endif
 
   template<> 
     inline void
