@@ -653,7 +653,7 @@ next_statement (void)
 
       if (gfc_at_eol ())
 	{
-	  if (gfc_option.warn_line_truncation
+	  if ((gfc_option.warn_line_truncation || gfc_current_form == FORM_FREE)
 	      && gfc_current_locus.lb
 	      && gfc_current_locus.lb->truncated)
 	    gfc_warning_now ("Line truncated at %C");
