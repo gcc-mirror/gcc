@@ -1,3 +1,15 @@
+2007-05-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/boost_shared_ptr.h
+	(_Sp_counted_base<_S_mutex>::_M_add_ref_lock()): Do not wrap in
+	#ifdef __GTHREADS.
+
+2007-05-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/c_global/cwchar: Do not include <ctime>.
+	* include/c_std/cwchar: Likewise.
+	* include/ext/throw_allocator.h: Do it here.
+	
 2007-05-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/gnu/c_locale.h (__convert_from_v): Fix typo.
