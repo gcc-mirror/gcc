@@ -1,3 +1,12 @@
+2007-05-27 Paul Thomas  <pault@gcc.gnu.org>
+	   Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32088
+	* symbol.c (gfc_check_function_type): Copy dimensions of
+	  result variable.
+	* resolve.c (resolve_contained_fntype): Improve symbol output in
+	  the error message.
+
 2007-05-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/31813

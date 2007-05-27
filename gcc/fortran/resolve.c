@@ -289,18 +289,20 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
     return;
 
   /* Try to find out of what the return type is.  */
-  if (sym->result != NULL)
-    sym = sym->result;
-
-  if (sym->ts.type == BT_UNKNOWN)
+  if (sym->result->ts.type == BT_UNKNOWN)
     {
-      t = gfc_set_default_type (sym, 0, ns);
+      t = gfc_set_default_type (sym->result, 0, ns);
 
-      if (t == FAILURE && !sym->attr.untyped)
+      if (t == FAILURE && !sym->result->attr.untyped)
 	{
-	  gfc_error ("Contained function '%s' at %L has no IMPLICIT type",
-		     sym->name, &sym->declared_at); /* FIXME */
-	  sym->attr.untyped = 1;
+	  if (sym->result == sym)
+	    gfc_error ("Contained function '%s' at %L has no IMPLICIT type",
+		       sym->name, &sym->declared_at);
+	  else
+	    gfc_error ("Result '%s' of contained function '%s' at %L has "
+		       "no IMPLICIT type", sym->result->name, sym->name,
+		       &sym->result->declared_at);
+	  sym->result->attr.untyped = 1;
 	}
     }
 
@@ -310,9 +312,9 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
      in external functions.  Internal function results are not on that list;
      ergo, not permitted.  */
 
-  if (sym->ts.type == BT_CHARACTER)
+  if (sym->result->ts.type == BT_CHARACTER)
     {
-      gfc_charlen *cl = sym->ts.cl;
+      gfc_charlen *cl = sym->result->ts.cl;
       if (!cl || !cl->length)
 	gfc_error ("Character-valued internal function '%s' at %L must "
 		   "not be assumed length", sym->name, &sym->declared_at);

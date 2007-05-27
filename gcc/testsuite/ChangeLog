@@ -1,5 +1,10 @@
 2007-05-27  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/32088
+	* gfortran.dg/func_result_3.f90: New.
+
+2007-05-27  Tobias Burnus  <burnus@net-b.de>
+
 	PR middle-end/32083
 	* gfortran.dg/transfer_simplify_3.f90: New.
 
