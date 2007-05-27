@@ -1,3 +1,8 @@
+2007-05-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR middle-end/32083
+	* gfortran.dg/transfer_simplify_3.f90: New.
+
 2007-05-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32065

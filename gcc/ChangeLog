@@ -1,3 +1,8 @@
+2007-05-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR middle-end/32083
+	* real.c (mpfr_from_real): Fix sign of -Inf.
+
 2007-05-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* tree-vect-transform.c (vectorizable_conversion): Initialize

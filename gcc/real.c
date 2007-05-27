@@ -4746,7 +4746,7 @@ mpfr_from_real (mpfr_ptr m, const REAL_VALUE_TYPE *r, mp_rnd_t rndmode)
   /* Take care of Infinity and NaN.  */
   if (r->cl == rvc_inf)
     {
-      mpfr_set_inf (m, r->sign);
+      mpfr_set_inf (m, r->sign == 1 ? -1 : 1);
       return;
     }
   
