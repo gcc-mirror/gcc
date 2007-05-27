@@ -5998,11 +5998,8 @@ static unsigned int
 execute_vrp (void)
 {
   loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
-  if (current_loops)
-    {
-      rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
-      scev_initialize ();
-    }
+  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+  scev_initialize ();
 
   insert_range_assertions ();
 
@@ -6023,11 +6020,8 @@ execute_vrp (void)
   update_ssa (TODO_update_ssa);
 
   finalize_jump_threads ();
-  if (current_loops)
-    {
-      scev_finalize ();
-      loop_optimizer_finalize ();
-    }
+  scev_finalize ();
+  loop_optimizer_finalize ();
 
   return 0;
 }

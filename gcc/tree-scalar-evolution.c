@@ -2863,6 +2863,8 @@ scev_analysis (void)
 void
 scev_finalize (void)
 {
+  if (!scalar_evolution_info)
+    return;
   htab_delete (scalar_evolution_info);
   BITMAP_FREE (already_instantiated);
   scalar_evolution_info = NULL;
@@ -2885,7 +2887,7 @@ scev_const_prop (void)
   unsigned i;
   loop_iterator li;
 
-  if (!current_loops)
+  if (number_of_loops () <= 1)
     return 0;
 
   FOR_EACH_BB (bb)

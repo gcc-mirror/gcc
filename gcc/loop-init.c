@@ -51,14 +51,6 @@ loop_optimizer_init (unsigned flags)
   flow_loops_find (loops);
   current_loops = loops;
 
-  if (number_of_loops () <= 1)
-    {
-      /* No loops (the 1 returned by number_of_loops corresponds to the fake
-	 loop that we put as a root of the loop tree).  */
-      loop_optimizer_finalize ();
-      return;
-    }
-
   if (flags & LOOPS_MAY_HAVE_MULTIPLE_LATCHES)
     {
       /* If the loops may have multiple latches, we cannot canonicalize
@@ -105,8 +97,7 @@ loop_optimizer_finalize (void)
   struct loop *loop;
   basic_block bb;
 
-  if (!current_loops)
-    return;
+  gcc_assert (current_loops != NULL);
 
   FOR_EACH_LOOP (li, loop, 0)
     {
@@ -244,7 +235,7 @@ gate_rtl_move_loop_invariants (void)
 static unsigned int
 rtl_move_loop_invariants (void)
 {
-  if (current_loops)
+  if (number_of_loops () > 1)
     move_loop_invariants ();
   return 0;
 }
@@ -277,7 +268,7 @@ gate_rtl_unswitch (void)
 static unsigned int
 rtl_unswitch (void)
 {
-  if (current_loops)
+  if (number_of_loops () > 1)
     unswitch_loops ();
   return 0;
 }
@@ -310,7 +301,7 @@ gate_rtl_unroll_and_peel_loops (void)
 static unsigned int
 rtl_unroll_and_peel_loops (void)
 {
-  if (current_loops)
+  if (number_of_loops () > 1)
     {
       int flags = 0;
 
@@ -359,7 +350,7 @@ static unsigned int
 rtl_doloop (void)
 {
 #ifdef HAVE_doloop_end
-  if (current_loops)
+  if (number_of_loops () > 1)
     doloop_optimize_loops ();
 #endif
   return 0;

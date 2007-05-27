@@ -133,8 +133,11 @@ copy_loop_headers (void)
 
   loop_optimizer_init (LOOPS_HAVE_PREHEADERS
 		       | LOOPS_HAVE_SIMPLE_LATCHES);
-  if (!current_loops)
-    return 0;
+  if (number_of_loops () <= 1)
+    {
+      loop_optimizer_finalize ();
+      return 0;
+    }
 
 #ifdef ENABLE_CHECKING
   verify_loop_structure ();

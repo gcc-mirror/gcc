@@ -1,3 +1,39 @@
+2007-05-27  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-vrp.c (execute_vrp): Do not check whether current_loops == NULL.
+	* tree-chrec.c (evolution_function_is_invariant_rec_p): Ditto.
+	* ifcvt.c (if_convert): Ditto.
+	* tree-ssa-threadupdate.c (thread_block): Ditto.
+	(thread_through_all_blocks): Ditto.  Assert that loops were analysed.
+	* tree-ssa-loop-manip.c (rewrite_into_loop_closed_ssa,
+	verify_loop_closed_ssa): Check number_of_loops instead of current_loops.
+	* predict.c (tree_estimate_probability): Ditto.
+	* tree-if-conv.c (main_tree_if_conversion): Ditto.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Ditto.
+	* modulo-sched.c (sms_schedule): Ditto.
+	* tree-scalar-evolution.c (scev_const_prop): Ditto.
+	(scev_finalize): Do not do anything if scev analysis was not
+	initialized.
+	* cfgloopanal.c (mark_irreducible_loops): Do not check whether
+	current_loops == NULL.
+	(mark_loop_exit_edges): Check number_of_loops instead of current_loops.
+	* loop-init.c (loop_optimizer_init): Do not free current_loops when
+	there are no loops.
+	(loop_optimizer_finalize): Assert that loops were analyzed.
+	(rtl_move_loop_invariants, rtl_unswitch, rtl_unroll_and_peel_loops,
+	rtl_doloop): Check number_of_loops instead of current_loops.
+	* tree-ssa-loop.c (tree_loop_optimizer_init): Do not check whether
+	current_loops == NULL.
+	(tree_ssa_loop_init, tree_ssa_loop_im, tree_ssa_loop_unswitch,
+	gate_tree_vectorize tree_linear_transform, check_data_deps,
+	tree_ssa_loop_ivcanon, tree_ssa_empty_loop, tree_ssa_loop_bounds,
+	tree_complete_unroll, tree_ssa_loop_prefetch, tree_ssa_loop_ivopts):
+	Check number_of_loops instead of current_loops.
+	(tree_ssa_loop_done): Do not check whether current_loops == NULL.
+	* tree-ssa-pre.c (fini_pre): Do not take do_fre argument.  Always
+	free loops if available.
+	(execute_pre): Do not pass do_fre to fini_pre.
+
 2007-05-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR middle-end/32083

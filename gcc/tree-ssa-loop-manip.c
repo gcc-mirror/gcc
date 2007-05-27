@@ -360,7 +360,8 @@ rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
   unsigned i, old_num_ssa_names;
   bitmap names_to_rename;
 
-  if (!current_loops)
+  current_loops->state |= LOOP_CLOSED_SSA;
+  if (number_of_loops () <= 1)
     return;
 
   loop_exits = get_loops_exits ();
@@ -389,8 +390,6 @@ rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
   /* Fix up all the names found to be used outside their original
      loops.  */
   update_ssa (TODO_update_ssa);
-
-  current_loops->state |= LOOP_CLOSED_SSA;
 }
 
 /* Check invariants of the loop closed ssa form for the USE in BB.  */
@@ -432,7 +431,7 @@ verify_loop_closed_ssa (void)
   tree phi;
   unsigned i;
 
-  if (current_loops == NULL)
+  if (number_of_loops () <= 1)
     return;
 
   verify_ssa (false);

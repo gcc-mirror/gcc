@@ -530,7 +530,7 @@ thread_block (basic_block bb, bool noloop_only)
   /* If we thread the latch of the loop to its exit, the loop ceases to
      exist.  Make sure we do not restrict ourselves in order to preserve
      this loop.  */
-  if (current_loops && loop->header == bb)
+  if (loop->header == bb)
     {
       e = loop_latch_edge (loop);
       e2 = e->aux;
@@ -552,7 +552,6 @@ thread_block (basic_block bb, bool noloop_only)
 	  /* If NOLOOP_ONLY is true, we only allow threading through the
 	     header of a loop to exit edges.  */
 	  || (noloop_only
-	      && current_loops
 	      && bb == bb->loop_father->header
 	      && !loop_exit_edge_p (bb->loop_father, e2)))
 	{
@@ -1023,6 +1022,9 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   struct loop *loop;
   loop_iterator li;
 
+  /* We must know about loops in order to preserve them.  */
+  gcc_assert (current_loops != NULL);
+
   if (threaded_edges == NULL)
     return false;
 
@@ -1046,16 +1048,13 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   /* Then perform the threading through loop headers.  We start with the
      innermost loop, so that the changes in cfg we perform won't affect
      further threading.  */
-  if (current_loops)
+  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
-      FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
-	{
-	  if (!loop->header
-	      || !bitmap_bit_p (threaded_blocks, loop->header->index))
-	    continue;
+      if (!loop->header
+	  || !bitmap_bit_p (threaded_blocks, loop->header->index))
+	continue;
 
-	  retval |= thread_through_loop_header (loop, may_peel_loop_headers);
-	}
+      retval |= thread_through_loop_header (loop, may_peel_loop_headers);
     }
 
   if (retval)
