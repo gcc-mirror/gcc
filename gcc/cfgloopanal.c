@@ -273,13 +273,15 @@ mark_irreducible_loops (void)
   edge_iterator ei;
   int i, src, dest;
   struct graph *g;
-  int num = current_loops ? number_of_loops () : 1;
+  int num = number_of_loops ();
   int *queue1 = XNEWVEC (int, last_basic_block + num);
   int *queue2 = XNEWVEC (int, last_basic_block + num);
   int nq;
   unsigned depth;
   struct loop *cloop, *loop;
   loop_iterator li;
+
+  gcc_assert (current_loops != NULL);
 
   /* Reset the flags.  */
   FOR_BB_BETWEEN (act, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
@@ -302,36 +304,32 @@ mark_irreducible_loops (void)
 	src = BB_REPR (act);
 	dest = BB_REPR (e->dest);
 
-	if (current_loops)
+	/* Ignore latch edges.  */
+	if (e->dest->loop_father->header == e->dest
+	    && e->dest->loop_father->latch == act)
+	  continue;
+
+	/* Edges inside a single loop should be left where they are.  Edges
+	   to subloop headers should lead to representative of the subloop,
+	   but from the same place.
+
+	   Edges exiting loops should lead from representative
+	   of the son of nearest common ancestor of the loops in that
+	   act lays.  */
+
+	if (e->dest->loop_father->header == e->dest)
+	  dest = LOOP_REPR (e->dest->loop_father);
+
+	if (!flow_bb_inside_loop_p (act->loop_father, e->dest))
 	  {
-	    /* Ignore latch edges.  */
-	    if (e->dest->loop_father->header == e->dest
-		&& e->dest->loop_father->latch == act)
-	      continue;
+	    depth = 1 + loop_depth (find_common_loop (act->loop_father,
+						      e->dest->loop_father));
+	    if (depth == loop_depth (act->loop_father))
+	      cloop = act->loop_father;
+	    else
+	      cloop = VEC_index (loop_p, act->loop_father->superloops, depth);
 
-	    /* Edges inside a single loop should be left where they are.  Edges
-	       to subloop headers should lead to representative of the subloop,
-	       but from the same place.
-
-	       Edges exiting loops should lead from representative
-	       of the son of nearest common ancestor of the loops in that
-	       act lays.  */
-
-	    if (e->dest->loop_father->header == e->dest)
-	      dest = LOOP_REPR (e->dest->loop_father);
-
-	    if (!flow_bb_inside_loop_p (act->loop_father, e->dest))
-	      {
-		depth = 1 + loop_depth (find_common_loop (act->loop_father,
-						e->dest->loop_father));
-		if (depth == loop_depth (act->loop_father))
-		  cloop = act->loop_father;
-		else
-		  cloop = VEC_index (loop_p, act->loop_father->superloops,
-				     depth);
-
-		src = LOOP_REPR (cloop);
-	      }
+	    src = LOOP_REPR (cloop);
 	  }
 
 	add_edge (g, src, dest, e);
@@ -347,12 +345,9 @@ mark_irreducible_loops (void)
       queue1[nq++] = BB_REPR (act);
     }
 
-  if (current_loops)
+  FOR_EACH_LOOP (li, loop, 0)
     {
-      FOR_EACH_LOOP (li, loop, 0)
-	{
-	  queue1[nq++] = LOOP_REPR (loop);
-	}
+      queue1[nq++] = LOOP_REPR (loop);
     }
   dfs (g, queue1, nq, queue2, false);
   for (i = 0; i < nq; i++)
@@ -366,8 +361,7 @@ mark_irreducible_loops (void)
   free (queue1);
   free (queue2);
 
-  if (current_loops)
-    current_loops->state |= LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS;
+  current_loops->state |= LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS;
 }
 
 /* Counts number of insns inside LOOP.  */
@@ -605,7 +599,7 @@ mark_loop_exit_edges (void)
   basic_block bb;
   edge e;
 
-  if (!current_loops)
+  if (number_of_loops () <= 1)
     return;
 
   FOR_EACH_BB (bb)

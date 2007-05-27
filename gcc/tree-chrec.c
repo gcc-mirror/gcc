@@ -974,13 +974,7 @@ evolution_function_is_invariant_rec_p (tree chrec, int loopnum)
 bool
 evolution_function_is_invariant_p (tree chrec, int loopnum)
 {
-  if (evolution_function_is_constant_p (chrec))
-    return true;
-  
-  if (current_loops != NULL)
-    return evolution_function_is_invariant_rec_p (chrec, loopnum);
-
-  return false;
+  return evolution_function_is_invariant_rec_p (chrec, loopnum);
 }
 
 /* Determine whether the given tree is an affine multivariate

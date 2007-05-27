@@ -3953,11 +3953,8 @@ if_convert (int x_life_data_ok)
   gcc_assert (! no_new_pseudos || reload_completed);
 
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
-  if (current_loops)
-    {
-      mark_loop_exit_edges ();
-      loop_optimizer_finalize ();
-    }
+  mark_loop_exit_edges ();
+  loop_optimizer_finalize ();
   free_dominance_info (CDI_DOMINATORS);
 
   /* Compute postdominators if we think we'll use them.  */

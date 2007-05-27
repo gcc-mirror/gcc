@@ -1105,7 +1105,7 @@ main_tree_if_conversion (void)
   loop_iterator li;
   struct loop *loop;
 
-  if (!current_loops)
+  if (number_of_loops () <= 1)
     return 0;
 
   FOR_EACH_LOOP (li, loop, 0)

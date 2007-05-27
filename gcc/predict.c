@@ -1353,7 +1353,7 @@ tree_estimate_probability (void)
   basic_block bb;
 
   loop_optimizer_init (0);
-  if (current_loops && dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_DETAILS))
     flow_loops_dump (dump_file, NULL, 0);
 
   add_noreturn_fake_exit_edges ();
@@ -1368,7 +1368,7 @@ tree_estimate_probability (void)
 
   mark_irreducible_loops ();
   record_loop_exits ();
-  if (current_loops)
+  if (number_of_loops () > 1)
     predict_loops ();
 
   FOR_EACH_BB (bb)
@@ -1731,7 +1731,7 @@ estimate_loops (void)
   basic_block bb;
 
   /* Start by estimating the frequencies in the loops.  */
-  if (current_loops)
+  if (number_of_loops () > 1)
     estimate_loops_at_level (current_loops->tree_root->inner);
 
   /* Now propagate the frequencies through all the blocks.  */

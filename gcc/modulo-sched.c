@@ -893,8 +893,11 @@ sms_schedule (void)
 
   loop_optimizer_init (LOOPS_HAVE_PREHEADERS
 		       | LOOPS_HAVE_RECORDED_EXITS);
-  if (!current_loops)
-    return;  /* There are no loops to schedule.  */
+  if (number_of_loops () <= 1)
+    {
+      loop_optimizer_finalize ();
+      return;  /* There are no loops to schedule.  */
+    }
 
   /* Initialize issue_rate.  */
   if (targetm.sched.issue_rate)
