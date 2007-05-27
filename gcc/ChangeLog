@@ -1,3 +1,11 @@
+2007-05-27  Eric Christopher  <echristo@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Update
+	sp_offset depending on stack size. Save r12 depending
+	on registers we're saving later.
+	(rs6000_emit_epilogue): Update sp_offset depending only
+	on stack size.
+
 2007-05-27  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-vrp.c (execute_vrp): Do not check whether current_loops == NULL.
