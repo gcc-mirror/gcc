@@ -33,6 +33,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "debug.h" 
 #include "target.h"
 #include "output.h"
+#include "tree-gimple.h"
+#include "tree-flow.h"
 
 /*  This file contains basic routines manipulating variable pool.
 
@@ -457,6 +459,30 @@ varpool_output_debug_info (void)
 	node->next_needed = 0;
       }
   timevar_pop (TV_SYMOUT);
+}
+
+/* Create a new global variable of type TYPE.  */
+tree
+add_new_static_var (tree type)
+{
+  tree new_decl;
+  struct varpool_node *new_node;
+
+  new_decl = create_tmp_var (type, NULL);
+  DECL_NAME (new_decl) = create_tmp_var_name (NULL);
+  TREE_READONLY (new_decl) = 0;
+  TREE_STATIC (new_decl) = 1;
+  TREE_USED (new_decl) = 1;
+  DECL_CONTEXT (new_decl) = NULL_TREE;
+  DECL_ABSTRACT (new_decl) = 0;
+  lang_hooks.dup_lang_specific_decl (new_decl);
+  create_var_ann (new_decl);
+  new_node = varpool_node (new_decl);
+  varpool_mark_needed_node (new_node);
+  add_referenced_var (new_decl);
+  varpool_finalize_decl (new_decl);
+
+  return new_node->decl;
 }
 
 #include "gt-varpool.h"

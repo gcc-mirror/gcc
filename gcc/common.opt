@@ -584,6 +584,11 @@ fipa-type-escape
 Common Report Var(flag_ipa_type_escape) Init(0) Optimization
 Type based escape and alias analysis
 
+fipa-matrix-reorg
+Common Report Var(flag_ipa_matrix_reorg)
+Perform matrix layout flattening and transposing based
+on profiling information.
+
 fivopts
 Common Report Var(flag_ivopts) Init(1) Optimization
 Optimize induction variables on trees
