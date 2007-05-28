@@ -316,6 +316,7 @@ extern struct tree_opt_pass pass_build_cgraph_edges;
 extern struct tree_opt_pass pass_reset_cc_flags;
 
 /* IPA Passes */
+extern struct tree_opt_pass pass_ipa_matrix_reorg;
 extern struct tree_opt_pass pass_ipa_cp;
 extern struct tree_opt_pass pass_ipa_inline;
 extern struct tree_opt_pass pass_ipa_early_inline;
