@@ -217,15 +217,6 @@ lhd_get_alias_set (tree ARG_UNUSED (t))
   return -1;
 }
 
-/* Provide a hook routine for alias sets that always returns 0.  This is
-   used by languages that haven't deal with alias sets yet.  */
-
-HOST_WIDE_INT
-hook_get_alias_set_0 (tree ARG_UNUSED (t))
-{
-  return 0;
-}
-
 /* This is the default expand_expr function.  */
 
 rtx
