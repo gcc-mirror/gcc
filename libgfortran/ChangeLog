@@ -1,3 +1,9 @@
+2007-05-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32124
+	* runtime/memory.c (allocate_size): Use ERROR_ALLOCATION.
+	(allocate,allocate64): Use stat variable if present.
+
 2007-05-27  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* runtime/string.c (compare0): Use gfc_charlen_type instead of
