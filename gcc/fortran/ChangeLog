@@ -1,4 +1,4 @@
-2007-05-27  Brooks Moses  <brooks.moses@codesourcery.com>
+2007-05-28  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gfortran.h (gfc_expr): Remove from_H, add "representation"
 	struct.
