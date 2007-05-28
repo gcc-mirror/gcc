@@ -1,5 +1,13 @@
 2007-05-28  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	PR 31972/fortran
+	* target-memory.c (gfc_target_expr_size): Add handling
+	for size of BT_HOLLERITH variables.
+	* check.c (gfc_check_transfer): Reject BT_HOLLERITH
+	variables in MOLD argument of TRANSFER.
+
+2007-05-28  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* gfortran.h (gfc_expr): Remove from_H, add "representation"
 	struct.
 	* primary.c (match_hollerith_constant): Store the representation

@@ -102,6 +102,8 @@ gfc_target_expr_size (gfc_expr *e)
       return size_logical (e->ts.kind);
     case BT_CHARACTER:
       return size_character (e->value.character.length);
+    case BT_HOLLERITH:
+      return e->representation.length;
     case BT_DERIVED:
       type = gfc_typenode_for_spec (&e->ts);
       return int_size_in_bytes (type);
