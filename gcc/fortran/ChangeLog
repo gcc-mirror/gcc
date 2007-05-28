@@ -1,6 +1,6 @@
 2007-05-28  Brooks Moses  <brooks.moses@codesourcery.com>
 
-	PR 31972/fortran
+	PR fortran/31972
 	* target-memory.c (gfc_target_expr_size): Add handling
 	for size of BT_HOLLERITH variables.
 	* check.c (gfc_check_transfer): Reject BT_HOLLERITH
