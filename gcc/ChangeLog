@@ -1,3 +1,9 @@
+2007-05-28  Kazu Hirata  <kazu@codesourcery.com>
+
+	* targhooks.c (default_narrow_bitfield): Remove.
+	* targhooks.h: Remove the prototype for
+	default_narrow_bitfield.
+
 2007-05-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/32100
