@@ -1,3 +1,7 @@
+2007-05-28  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* gfortran.dg/transfer_simplify_3.f90: New test.
+
 2007-05-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32088
