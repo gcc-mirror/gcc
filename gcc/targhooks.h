@@ -55,8 +55,6 @@ extern bool default_decimal_float_supported_p (void);
 
 extern const char * default_invalid_within_doloop (rtx);
 
-extern bool default_narrow_bitfield (void);
-
 extern tree default_builtin_vectorized_function (enum built_in_function, tree, tree);
 
 extern tree default_builtin_vectorized_conversion (enum tree_code, tree);
