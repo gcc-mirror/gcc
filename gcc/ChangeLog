@@ -1,4 +1,4 @@
-2007-05-07  Razya Ladelsky  <razya@il.ibm.com>  
+2007-05-28  Razya Ladelsky  <razya@il.ibm.com>  
         
         * matrix-reorg.c: New file. Implement matrix flattening and transposing
 	    optimization.
