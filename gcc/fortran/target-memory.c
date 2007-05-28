@@ -220,6 +220,15 @@ gfc_target_encode_expr (gfc_expr *source, unsigned char *buffer,
   gcc_assert (source->expr_type == EXPR_CONSTANT
 	      || source->expr_type == EXPR_STRUCTURE);
 
+  /* If we already have a target-memory representation, we use that rather 
+     than recreating one.  */
+  if (source->representation.string)
+    {
+      memcpy (buffer, source->representation.string,
+	      source->representation.length);
+      return source->representation.length;
+    }
+
   switch (source->ts.type)
     {
     case BT_INTEGER:
@@ -289,8 +298,8 @@ interpret_array (unsigned char *buffer, size_t buffer_size, gfc_expr *result)
 }
 
 
-static int
-interpret_integer (int kind, unsigned char *buffer, size_t buffer_size,
+int
+gfc_interpret_integer (int kind, unsigned char *buffer, size_t buffer_size,
 		   mpz_t integer)
 {
   mpz_init (integer);
@@ -301,8 +310,8 @@ interpret_integer (int kind, unsigned char *buffer, size_t buffer_size,
 }
 
 
-static int
-interpret_float (int kind, unsigned char *buffer, size_t buffer_size,
+int
+gfc_interpret_float (int kind, unsigned char *buffer, size_t buffer_size,
 		 mpfr_t real)
 {
   mpfr_init (real);
@@ -314,19 +323,19 @@ interpret_float (int kind, unsigned char *buffer, size_t buffer_size,
 }
 
 
-static int
-interpret_complex (int kind, unsigned char *buffer, size_t buffer_size,
+int
+gfc_interpret_complex (int kind, unsigned char *buffer, size_t buffer_size,
 		   mpfr_t real, mpfr_t imaginary)
 {
   int size;
-  size = interpret_float (kind, &buffer[0], buffer_size, real);
-  size += interpret_float (kind, &buffer[size], buffer_size - size, imaginary);
+  size = gfc_interpret_float (kind, &buffer[0], buffer_size, real);
+  size += gfc_interpret_float (kind, &buffer[size], buffer_size - size, imaginary);
   return size;
 }
 
 
-static int
-interpret_logical (int kind, unsigned char *buffer, size_t buffer_size,
+int
+gfc_interpret_logical (int kind, unsigned char *buffer, size_t buffer_size,
 		   int *logical)
 {
   tree t = native_interpret_expr (gfc_get_logical_type (kind), buffer,
@@ -337,8 +346,8 @@ interpret_logical (int kind, unsigned char *buffer, size_t buffer_size,
 }
 
 
-static int
-interpret_character (unsigned char *buffer, size_t buffer_size, gfc_expr *result)
+int
+gfc_interpret_character (unsigned char *buffer, size_t buffer_size, gfc_expr *result)
 {
   if (result->ts.cl && result->ts.cl->length)
     result->value.character.length =
@@ -355,8 +364,8 @@ interpret_character (unsigned char *buffer, size_t buffer_size, gfc_expr *result
 }
 
 
-static int
-interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *result)
+int
+gfc_interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *result)
 {
   gfc_component *cmp;
   gfc_constructor *head = NULL, *tail = NULL;
@@ -428,24 +437,55 @@ gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
   switch (result->ts.type)
     {
     case BT_INTEGER:
-      return interpret_integer (result->ts.kind, buffer, buffer_size,
-				result->value.integer);
+      result->representation.length = 
+        gfc_interpret_integer (result->ts.kind, buffer, buffer_size,
+			       result->value.integer);
+      break;
+
     case BT_REAL:
-      return interpret_float (result->ts.kind, buffer, buffer_size,
-			      result->value.real);
+      result->representation.length = 
+        gfc_interpret_float (result->ts.kind, buffer, buffer_size,
+    			     result->value.real);
+      break;
+
     case BT_COMPLEX:
-      return interpret_complex (result->ts.kind, buffer, buffer_size,
-				result->value.complex.r,
-				result->value.complex.i);
+      result->representation.length = 
+        gfc_interpret_complex (result->ts.kind, buffer, buffer_size,
+			       result->value.complex.r,
+			       result->value.complex.i);
+      break;
+
     case BT_LOGICAL:
-      return interpret_logical (result->ts.kind, buffer, buffer_size,
-				&result->value.logical);
+      result->representation.length = 
+        gfc_interpret_logical (result->ts.kind, buffer, buffer_size,
+			       &result->value.logical);
+      break;
+
     case BT_CHARACTER:
-      return interpret_character (buffer, buffer_size, result);
+      result->representation.length = 
+        gfc_interpret_character (buffer, buffer_size, result);
+      break;
+
     case BT_DERIVED:
-      return interpret_derived (buffer, buffer_size, result);
+      result->representation.length = 
+        gfc_interpret_derived (buffer, buffer_size, result);
+      break;
+
     default:
       gfc_internal_error ("Invalid expression in gfc_target_interpret_expr.");
+      break;
     }
-  return 0;
+
+  if (result->ts.type == BT_CHARACTER)
+    result->representation.string = result->value.character.string;
+  else
+    {
+      result->representation.string =
+        gfc_getmem (result->representation.length + 1);
+      memcpy (result->representation.string, buffer,
+	      result->representation.length);
+      result->representation.string[result->representation.length] = '\0';
+    }
+
+  return result->representation.length;
 }

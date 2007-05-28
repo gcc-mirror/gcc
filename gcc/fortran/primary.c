@@ -236,7 +236,6 @@ match_hollerith_constant (gfc_expr **result)
   locus old_loc;
   gfc_expr *e = NULL;
   const char *msg;
-  char *buffer;
   int num;
   int i;  
 
@@ -270,18 +269,18 @@ match_hollerith_constant (gfc_expr **result)
 	}
       else
 	{
-	  buffer = (char *) gfc_getmem (sizeof(char) * num + 1);
-	  for (i = 0; i < num; i++)
-	    {
-	      buffer[i] = gfc_next_char_literal (1);
-	    }
 	  gfc_free_expr (e);
 	  e = gfc_constant_result (BT_HOLLERITH, gfc_default_character_kind,
 				   &gfc_current_locus);
-	  e->value.character.string = gfc_getmem (num + 1);
-	  memcpy (e->value.character.string, buffer, num);
-	  e->value.character.string[num] = '\0';
-	  e->value.character.length = num;
+
+	  e->representation.string = gfc_getmem (num + 1);
+	  for (i = 0; i < num; i++)
+	    {
+	      e->representation.string[i] = gfc_next_char_literal (1);
+	    }
+	  e->representation.string[num] = '\0';
+	  e->representation.length = num;
+
 	  *result = e;
 	  return MATCH_YES;
 	}

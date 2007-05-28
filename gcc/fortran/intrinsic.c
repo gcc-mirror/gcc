@@ -3065,16 +3065,6 @@ do_simplify (gfc_intrinsic_sym *specific, gfc_expr *e)
   gfc_expr *result, *a1, *a2, *a3, *a4, *a5;
   gfc_actual_arglist *arg;
 
-  /* Check the arguments if there are Hollerith constants. We deal with
-     them at run-time.  */
-  for (arg = e->value.function.actual; arg != NULL; arg = arg->next)
-    {
-      if (arg->expr && arg->expr->from_H)
-	{
-	  result = NULL;
-	  goto finish;
-	}
-    }
   /* Max and min require special handling due to the variable number
      of args.  */
   if (specific->simplify.f1 == gfc_simplify_min)

@@ -209,45 +209,45 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
 {
   gcc_assert (expr->expr_type == EXPR_CONSTANT);
 
-  /* If it is converted from Hollerith constant, we build string constant
-     and VIEW_CONVERT to its type.  */
+  /* If it is has a prescribed memory representation, we build a string
+     constant and VIEW_CONVERT to its type.  */
  
   switch (expr->ts.type)
     {
     case BT_INTEGER:
-      if (expr->from_H)
+      if (expr->representation.string)
 	return build1 (VIEW_CONVERT_EXPR,
 			gfc_get_int_type (expr->ts.kind),
-			gfc_build_string_const (expr->value.character.length,
-				expr->value.character.string));
+			gfc_build_string_const (expr->representation.length,
+				expr->representation.string));
       else
 	return gfc_conv_mpz_to_tree (expr->value.integer, expr->ts.kind);
 
     case BT_REAL:
-      if (expr->from_H)
+      if (expr->representation.string)
 	return build1 (VIEW_CONVERT_EXPR,
 			gfc_get_real_type (expr->ts.kind),
-			gfc_build_string_const (expr->value.character.length,
-				expr->value.character.string));
+			gfc_build_string_const (expr->representation.length,
+				expr->representation.string));
       else
 	return gfc_conv_mpfr_to_tree (expr->value.real, expr->ts.kind);
 
     case BT_LOGICAL:
-      if (expr->from_H)
+      if (expr->representation.string)
 	return build1 (VIEW_CONVERT_EXPR,
 			gfc_get_logical_type (expr->ts.kind),
-			gfc_build_string_const (expr->value.character.length,
-				expr->value.character.string));
+			gfc_build_string_const (expr->representation.length,
+				expr->representation.string));
       else
 	return build_int_cst (gfc_get_logical_type (expr->ts.kind),
 			    expr->value.logical);
 
     case BT_COMPLEX:
-      if (expr->from_H)
+      if (expr->representation.string)
 	return build1 (VIEW_CONVERT_EXPR,
 			gfc_get_complex_type (expr->ts.kind),
-			gfc_build_string_const (expr->value.character.length,
-				expr->value.character.string));
+			gfc_build_string_const (expr->representation.length,
+				expr->representation.string));
       else
 	{
 	  tree real = gfc_conv_mpfr_to_tree (expr->value.complex.r,
@@ -260,9 +260,12 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
 	}
 
     case BT_CHARACTER:
-    case BT_HOLLERITH:
       return gfc_build_string_const (expr->value.character.length,
 				     expr->value.character.string);
+
+    case BT_HOLLERITH:
+      return gfc_build_string_const (expr->representation.length,
+				     expr->representation.string);
 
     default:
       fatal_error ("gfc_conv_constant_to_tree(): invalid type: %s",

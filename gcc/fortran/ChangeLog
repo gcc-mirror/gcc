@@ -1,3 +1,55 @@
+2007-05-27  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* gfortran.h (gfc_expr): Remove from_H, add "representation"
+	struct.
+	* primary.c (match_hollerith_constant): Store the representation
+ 	of the Hollerith in representation, not in value.character.
+	* arith.c: Add dependency on target-memory.h.
+	(eval_intrinsic): Remove check for from_H.
+	(hollerith2representation): New function.
+	(gfc_hollerith2int): Determine value of the new constant.
+	(gfc_hollerith2real): Likewise.
+	(gfc_hollerith2complex): Likewise.
+	(gfc_hollerith2logical): Likewise.
+	(gfc_hollerith2character): Point both representation.string and
+	value.character.string at the value string.
+	* data.c (create_character_initializer): For BT_HOLLERITH
+	rvalues, get the value from the representation rather than
+	value.character.
+	* expr.c (free_expr0): Update handling of BT_HOLLERITH values
+	and values with representation.string.
+	(gfc_copy_expr): Likewise.
+	* intrinsic.c (do_simplify): Remove special treatement of
+	variables resulting from Hollerith constants.
+	* dump-parse-trees.c (gfc_show_expr): Update handling of
+	Holleriths.
+	* trans-const.c (gfc_conv_constant_to_tree): Replace from_H
+	check with check for representation.string; get Hollerith
+	representation from representation.string, not value.character.
+	* trans-expr.c (is_zero_initializer_p): Replace from_H check
+	with check for representation.string.
+	* trans-stmt.c (gfc_trans_integer_select): Use
+	gfc_conv_mpz_to_tree for case values, so as to avoid picking up
+	the memory representation if the case is given by a transfer
+	expression.
+	* target-memory.c (gfc_target_encode_expr): Use the known memory
+	representation rather than the value, if it exists.
+	(gfc_target_interpret_expr): Store the memory representation of
+	the interpreted expression as well as its value.
+	(interpret_integer): Move to gfc_interpret_integer, make
+	non-static.
+	(interpret_float): Move to gfc_interpret_float, make non-static.
+	(interpret_complex): Move to gfc_interpret_complex, make
+	non-static.
+	(interpret_logical): Move to gfc_interpret_logical, make
+	non-static.
+	(interpret_character): Move to gfc_interpret_character, make
+	non-static.
+	(interpret_derived): Move to gfc_interpret_derived, make
+	non-static.
+	* target-memory.h: Add prototypes for newly-exported
+	gfc_interpret_* functions.
+
 2007-05-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/31812
