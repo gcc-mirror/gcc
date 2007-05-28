@@ -1,3 +1,8 @@
+2007-05-28  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Release LHS SSA
+	name when we remove it from a call.
+
 2007-05-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* targhooks.c (default_narrow_bitfield): Remove.

@@ -702,6 +702,7 @@ eliminate_unnecessary_stmts (void)
 			  == SSA_NAME)
 		      && !TEST_BIT (processed, SSA_NAME_VERSION (name)))
 		    {
+		      tree oldlhs = GIMPLE_STMT_OPERAND (t, 0);
 		      something_changed = true;
 		      if (dump_file && (dump_flags & TDF_DETAILS))
 			{
@@ -715,6 +716,7 @@ eliminate_unnecessary_stmts (void)
 		      maybe_clean_or_replace_eh_stmt (t, call);
 		      mark_symbols_for_renaming (call);
 		      pop_stmt_changes (bsi_stmt_ptr (i));
+		      release_ssa_name (oldlhs);
 		    }
 		  notice_special_calls (call);
 		}
