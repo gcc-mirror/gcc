@@ -3567,8 +3567,9 @@ is_zero_initializer_p (gfc_expr * expr)
 {
   if (expr->expr_type != EXPR_CONSTANT)
     return false;
-  /* We ignore Hollerith constants for the time being.  */
-  if (expr->from_H)
+
+  /* We ignore constants with prescribed memory representations for now.  */
+  if (expr->representation.string)
     return false;
 
   switch (expr->ts.type)

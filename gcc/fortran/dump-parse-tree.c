@@ -340,16 +340,6 @@ gfc_show_expr (gfc_expr *p)
       break;
 
     case EXPR_CONSTANT:
-      if (p->from_H || p->ts.type == BT_HOLLERITH)
-	{
-	  gfc_status ("%dH", p->value.character.length);
-	  c = p->value.character.string;
-	  for (i = 0; i < p->value.character.length; i++, c++)
-	    {
-	      gfc_status_char (*c);
-	    }
-	  break;
-	}
       switch (p->ts.type)
 	{
 	case BT_INTEGER:
@@ -405,9 +395,31 @@ gfc_show_expr (gfc_expr *p)
 	  gfc_status (")");
 	  break;
 
+	case BT_HOLLERITH:
+	  gfc_status ("%dH", p->representation.length);
+	  c = p->representation.string;
+	  for (i = 0; i < p->representation.length; i++, c++)
+	    {
+	      gfc_status_char (*c);
+	    }
+	  break;
+
 	default:
 	  gfc_status ("???");
 	  break;
+	}
+
+      if (p->representation.string)
+	{
+	  gfc_status (" {");
+	  c = p->representation.string;
+	  for (i = 0; i < p->representation.length; i++, c++)
+	    {
+	      gfc_status ("%.2x", (unsigned int) *c);
+	      if (i < p->representation.length - 1)
+		gfc_status_char (',');
+	    }
+	  gfc_status_char ('}');
 	}
 
       break;

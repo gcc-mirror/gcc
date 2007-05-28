@@ -1290,17 +1290,28 @@ typedef struct gfc_expr
 
   locus where;
 
-  /* True if it is converted from Hollerith constant.  */
-  unsigned int from_H : 1;
   /* True if the expression is a call to a function that returns an array,
      and if we have decided not to allocate temporary data for that array.  */
   unsigned int inline_noncopying_intrinsic : 1;
-  /* Used to quickly find a given constructor by it's offset.  */
+
+  /* Used to quickly find a given constructor by its offset.  */
   splay_tree con_by_offset;
+
+  /* If an expression comes from a Hollerith constant or compile-time
+     evaluation of a transfer statement, it may have a prescribed target-
+     memory representation, and these cannot always be backformed from
+     the value.  */
+  struct
+  {
+    int length;
+    char *string;
+  }
+  representation;
 
   union
   {
     int logical;
+
     mpz_t integer;
 
     mpfr_t real;

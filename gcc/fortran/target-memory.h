@@ -32,6 +32,13 @@ size_t gfc_target_expr_size (gfc_expr *);
 int gfc_target_encode_expr (gfc_expr *, unsigned char *, size_t);
 
 /* Read a target buffer into a constant expression.  */
+
+int gfc_interpret_integer (int, unsigned char *, size_t, mpz_t);
+int gfc_interpret_float (int, unsigned char *, size_t, mpfr_t);
+int gfc_interpret_complex (int, unsigned char *, size_t, mpfr_t, mpfr_t);
+int gfc_interpret_logical (int, unsigned char *, size_t, int *);
+int gfc_interpret_character (unsigned char *, size_t, gfc_expr *);
+int gfc_interpret_derived (unsigned char *, size_t, gfc_expr *);
 int gfc_target_interpret_expr (unsigned char *, size_t, gfc_expr *);
 
 #endif /* GFC_TARGET_MEMORY_H  */

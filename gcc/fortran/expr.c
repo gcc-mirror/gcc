@@ -140,12 +140,7 @@ free_expr0 (gfc_expr *e)
   switch (e->expr_type)
     {
     case EXPR_CONSTANT:
-      if (e->from_H)
-	{
-	  gfc_free (e->value.character.string);
-	  break;
-	}
-
+      /* Free any parts of the value that need freeing.  */
       switch (e->ts.type)
 	{
 	case BT_INTEGER:
@@ -157,7 +152,6 @@ free_expr0 (gfc_expr *e)
 	  break;
 
 	case BT_CHARACTER:
-	case BT_HOLLERITH:
 	  gfc_free (e->value.character.string);
 	  break;
 
@@ -169,6 +163,11 @@ free_expr0 (gfc_expr *e)
 	default:
 	  break;
 	}
+
+      /* Free the representation, except in character constants where it
+	 is the same as value.character.string and thus already freed.  */
+      if (e->representation.string && e->ts.type != BT_CHARACTER)
+	gfc_free (e->representation.string);
 
       break;
 
@@ -413,14 +412,16 @@ gfc_copy_expr (gfc_expr *p)
       break;
 
     case EXPR_CONSTANT:
-      if (p->from_H)
+      /* Copy target representation, if it exists.  */
+      if (p->representation.string)
 	{
-	  s = gfc_getmem (p->value.character.length + 1);
-	  q->value.character.string = s;
+	  s = gfc_getmem (p->representation.length + 1);
+	  q->representation.string = s;
 
-	  memcpy (s, p->value.character.string, p->value.character.length + 1);
-	  break;
+	  memcpy (s, p->representation.string, p->representation.length + 1);
 	}
+
+      /* Copy the values of any pointer components of p->value.  */
       switch (q->ts.type)
 	{
 	case BT_INTEGER:
@@ -442,13 +443,18 @@ gfc_copy_expr (gfc_expr *p)
 	  break;
 
 	case BT_CHARACTER:
-	case BT_HOLLERITH:
-	  s = gfc_getmem (p->value.character.length + 1);
-	  q->value.character.string = s;
+	  if (p->representation.string)
+	    q->value.character.string = q->representation.string;
+	  else
+	    {
+	      s = gfc_getmem (p->value.character.length + 1);
+	      q->value.character.string = s;
 
-	  memcpy (s, p->value.character.string, p->value.character.length + 1);
+	      memcpy (s, p->value.character.string, p->value.character.length + 1);
+	    }
 	  break;
 
+	case BT_HOLLERITH:
 	case BT_LOGICAL:
 	case BT_DERIVED:
 	  break;		/* Already done */
