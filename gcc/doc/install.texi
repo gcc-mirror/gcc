@@ -324,13 +324,11 @@ Necessary to build libgcj, the GCJ runtime.
 
 @heading Tools/packages necessary for modifying GCC
 @table @asis
-@item autoconf versions 2.13 and 2.59
+@item autoconf version 2.59
 @itemx GNU m4 version 1.4 (or later)
 
 Necessary when modifying @file{configure.ac}, @file{aclocal.m4}, etc.@:
-to regenerate @file{configure} and @file{config.in} files.  Most
-directories require autoconf 2.59 (exactly), but the toplevel
-still requires autoconf 2.13 (exactly).
+to regenerate @file{configure} and @file{config.in} files.
 
 @item automake version 1.9.6
 
