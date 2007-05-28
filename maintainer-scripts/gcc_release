@@ -699,10 +699,10 @@ if [ $SNAPSHOT -eq 0 ]; then
   # and minor release numbers.
   SVNBRANCH="branches/gcc-${RELEASE_MAJOR}_${RELEASE_MINOR}-branch"
 
-  # If this is not a final release, set various parameters acordingly.
+  # If this is not a final release, set various parameters accordingly.
   if [ ${FINAL} -ne 1 ]; then
-    RELEASE="${RELEASE}-${DATE}"
-    FTP_PATH="${FTP_PATH}/prerelease-${RELEASE}/"
+    RELEASE="${RELEASE}-RC-${DATE}"
+    FTP_PATH="${SNAPSHOTS_DIR}/${RELEASE}"
   else
     FTP_PATH="${FTP_PATH}/releases/gcc-${RELEASE}/"
   fi
