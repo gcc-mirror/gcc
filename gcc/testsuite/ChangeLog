@@ -1,6 +1,6 @@
 2007-05-28  Brooks Moses  <brooks.moses@codesourcery.com>
 
-	* gfortran.dg/transfer_simplify_3.f90: New test.
+	* gfortran.dg/transfer_simplify_4.f90: New test.
 
 2007-05-27  Tobias Burnus  <burnus@net-b.de>
 
