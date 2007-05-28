@@ -2601,6 +2601,13 @@ try
 gfc_check_transfer (gfc_expr *source ATTRIBUTE_UNUSED,
 		    gfc_expr *mold ATTRIBUTE_UNUSED, gfc_expr *size)
 {
+  if (mold->ts.type == BT_HOLLERITH)
+    {
+      gfc_error ("'MOLD' argument of 'TRANSFER' intrinsic at %L must not be %s",
+		 &mold->where, gfc_basic_typename (BT_HOLLERITH));
+      return FAILURE;
+    }
+
   if (size != NULL)
     {
       if (type_check (size, 2, BT_INTEGER) == FAILURE)
