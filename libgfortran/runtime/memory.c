@@ -144,7 +144,7 @@ allocate_size (size_t size, GFC_INTEGER_4 * stat)
     {
       if (stat)
 	{
-	  *stat = 1;
+	  *stat = ERROR_ALLOCATION;
 	  return newmem;
 	}
       else
@@ -164,8 +164,16 @@ void *
 allocate (GFC_INTEGER_4 size, GFC_INTEGER_4 * stat)
 {
   if (size < 0)
-    runtime_error ("Attempt to allocate negative amount of memory.  "
-		   "Possible integer overflow");
+    {
+      if (stat)
+	{
+	  *stat = ERROR_ALLOCATION;
+	  return NULL;
+	}
+      else
+	runtime_error ("Attempt to allocate negative amount of memory. "
+		       "Possible integer overflow");
+    }
 
   return allocate_size ((size_t) size, stat);
 }
@@ -177,8 +185,16 @@ void *
 allocate64 (GFC_INTEGER_8 size, GFC_INTEGER_4 * stat)
 {
   if (size < 0)
-    runtime_error ("ALLOCATE64: Attempt to allocate negative amount of "
-		   "memory. Possible integer overflow");
+    {
+      if (stat)
+	{
+	  *stat = ERROR_ALLOCATION;
+	  return NULL;
+	}
+      else
+	runtime_error ("ALLOCATE64: Attempt to allocate negative amount of "
+		       "memory. Possible integer overflow");
+    }
 
   return allocate_size ((size_t) size, stat);
 }
