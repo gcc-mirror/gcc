@@ -1,13 +1,19 @@
+2007-05-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* target/i386/i386.c (ix86_expand_vector_move): Expand unaligned
+	memory access via x86_expand_vector_move_misalign() only for
+	TImode values on 32-bit targets.
+	
 2007-05-28  Razya Ladelsky  <razya@il.ibm.com>  
         
-        * matrix-reorg.c: New file. Implement matrix flattening and transposing
-	    optimization.
-        * tree-pass.h: Add matrix reorg pass.
-        * common.opt: Add fipa-mreorg flag.
-        * Makefile.in: Add matrix-reorg.c.
-        * passes.c: Add matrix reorg pass.
-	  * varpool.c (add_new_static_var): New function.
-	  * cgraph.h (add_new_static_var): Declare.
+	* matrix-reorg.c: New file. Implement matrix flattening and
+	transposing optimization.
+	* tree-pass.h: Add matrix reorg pass.
+	* common.opt: Add fipa-mreorg flag.
+	* Makefile.in: Add matrix-reorg.c.
+	* passes.c: Add matrix reorg pass.
+	* varpool.c (add_new_static_var): New function.
+	* cgraph.h (add_new_static_var): Declare.
 
 
 2007-05-27  Eric Christopher  <echristo@apple.com>
