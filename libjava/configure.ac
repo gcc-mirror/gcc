@@ -450,6 +450,7 @@ AC_PROG_LIBTOOL
 AM_PROG_GCJ
 AM_PROG_CC_C_O
 
+m4_include([../config/confsubdir.m4])
 AC_CONFIG_SUBDIRS(classpath libltdl)
 
 # The -no-testsuite modules omit the test subdir.

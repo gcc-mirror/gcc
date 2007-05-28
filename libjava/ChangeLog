@@ -1,3 +1,9 @@
+2007-05-27  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/32078
+	* configure.ac: Include confsubdir.m4.
+	* configure: Regenerate.
+
 2007-05-24  Keith Seitz  <keiths@redhat.com>
 
 	* include/java-interp.h (_Jv_InterpFrame::get_pc): Only deduct
