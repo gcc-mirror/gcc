@@ -8,6 +8,8 @@
 	hook_get_alias_set_0.
 	* langhooks.c (hook_get_alias_set_0): Remove.
 
+	* global.c (EXECUTE_IF_CONFLICT): Remove.
+
 2007-05-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/32100
