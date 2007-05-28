@@ -9746,7 +9746,7 @@ ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
      unaligned memory access.  Use ix86_expand_vector_move_misalign()
      if memory operand is not aligned correctly.  */
   if (!no_new_pseudos
-      && SSE_REG_MODE_P (mode)
+      && (mode == TImode) && !TARGET_64BIT
       && ((MEM_P (op0) && (MEM_ALIGN (op0) < align))
 	  || (MEM_P (op1) && (MEM_ALIGN (op1) < align))))
     {
