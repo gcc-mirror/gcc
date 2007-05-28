@@ -1,3 +1,8 @@
+2007-05-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Prerequisites): We no longer require Autoconf
+	2.13 for the top-level.
+
 2007-05-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* target/i386/i386.c (ix86_expand_vector_move): Expand unaligned
