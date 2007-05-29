@@ -1,3 +1,7 @@
+2007-05-29  Hui-May Chang  <hm.chang@apple.com>
+
+	* gcc.target/i386/stack-realign.c: New.
+
 2007-05-29  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/prefetch-6.c: New test.
