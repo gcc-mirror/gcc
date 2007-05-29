@@ -1,3 +1,12 @@
+2007-05-28  Andrew Pinski  <Andrew_pinski@playstation.sony.com>
+
+        PR c++/31339
+	* typeck.c (build_unary_op <case PREINCREMENT_EXPR,
+	case POSTINCREMENT_EXPR, case PREDECREMENT_EXPR,
+	case POSTDECREMENT_EXPR>): Return the error_mark_node
+	if either the real or imaginary parts would an
+	error_mark_node.
+	
 2007-05-25  Simon Martin  <simartin@users.sourceforge.net>
 	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 

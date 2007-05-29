@@ -4221,8 +4221,11 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	  arg = stabilize_reference (arg);
 	  real = build_unary_op (REALPART_EXPR, arg, 1);
 	  imag = build_unary_op (IMAGPART_EXPR, arg, 1);
+	  real = build_unary_op (code, real, 1);
+	  if (real == error_mark_node || imag == error_mark_node)
+	    return error_mark_node;
 	  return build2 (COMPLEX_EXPR, TREE_TYPE (arg),
-			 build_unary_op (code, real, 1), imag);
+			 real, imag);
 	}
 
       /* Report invalid types.  */
