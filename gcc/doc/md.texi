@@ -1775,6 +1775,77 @@ Constant that is one of -1, 4, -4, 7, 8, 12, 16, 20, 32, 48
 Floating point constant that is legal for store immediate
 @end table
 
+@item Hewlett-Packard PA-RISC---@file{config/pa/pa.h}
+@table @code
+@item a
+General register 1
+
+@item f
+Floating point register
+
+@item q
+Shift amount register
+
+@item x
+Floating point register (deprecated)
+
+@item y
+Upper floating point register (32-bit), floating point register (64-bit)
+
+@item Z
+Any register
+
+@item I
+Signed 11-bit integer constant
+
+@item J
+Signed 14-bit integer constant
+
+@item K
+Integer constant that can be deposited with a @code{zdepi} instruction
+
+@item L
+Signed 5-bit integer constant
+
+@item M
+Integer constant 0
+
+@item N
+Integer constant that can be loaded with a @code{ldil} instruction
+
+@item O
+Integer constant whose value plus one is a power of 2
+
+@item P
+Integer constant that can be used for @code{and} operations in @code{depi}
+and @code{extru} instructions
+
+@item S
+Integer constant 31
+
+@item U
+Integer constant 63
+
+@item G
+Floating-point constant 0.0
+
+@item A
+A @code{lo_sum} data-linkage-table memory operand
+
+@item Q
+A memory operand that can be used as the destination operand of an
+integer store instruction
+
+@item R
+A scaled or unscaled indexed memory operand
+
+@item T
+A memory operand for floating-point loads and stores
+
+@item W
+A register indirect memory operand
+@end table
+
 @item PowerPC and IBM RS6000---@file{config/rs6000/rs6000.h}
 @table @code
 @item b
