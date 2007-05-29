@@ -1128,7 +1128,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
     fprintf (vect_dump, "vect_compute_data_ref_alignment:");
 
   /* Initialize misalignment to unknown.  */
-  DR_MISALIGNMENT (dr) = -1;
+  SET_DR_MISALIGNMENT (dr, -1);
 
   misalign = DR_INIT (dr);
   aligned_to = DR_ALIGNED_TO (dr);
@@ -1198,7 +1198,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
       return false;
     }
 
-  DR_MISALIGNMENT (dr) = TREE_INT_CST_LOW (misalign);
+  SET_DR_MISALIGNMENT (dr, TREE_INT_CST_LOW (misalign));
 
   if (vect_print_dump_info (REPORT_DETAILS))
     {
@@ -1267,21 +1267,23 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
         continue;
       gcc_assert (DR_MISALIGNMENT (dr) / dr_size ==
                   DR_MISALIGNMENT (dr_peel) / dr_peel_size);
-      DR_MISALIGNMENT (dr) = 0;
+      SET_DR_MISALIGNMENT (dr, 0);
       return;
     }
 
   if (known_alignment_for_access_p (dr)
       && known_alignment_for_access_p (dr_peel))
     {
-      DR_MISALIGNMENT (dr) += npeel * dr_size;
-      DR_MISALIGNMENT (dr) %= UNITS_PER_SIMD_WORD;
+      int misal = DR_MISALIGNMENT (dr);
+      misal += npeel * dr_size;
+      misal %= UNITS_PER_SIMD_WORD;
+      SET_DR_MISALIGNMENT (dr, misal);
       return;
     }
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "Setting misalignment to -1.");
-  DR_MISALIGNMENT (dr) = -1;
+  SET_DR_MISALIGNMENT (dr, -1);
 }
 
 
@@ -1577,7 +1579,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  save_misalignment = DR_MISALIGNMENT (dr);
 	  vect_update_misalignment_for_peel (dr, dr0, npeel);
 	  supportable_dr_alignment = vect_supportable_dr_alignment (dr);
-	  DR_MISALIGNMENT (dr) = save_misalignment;
+	  SET_DR_MISALIGNMENT (dr, save_misalignment);
 	  
 	  if (!supportable_dr_alignment)
 	    {
@@ -1601,7 +1603,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
           LOOP_VINFO_UNALIGNED_DR (loop_vinfo) = dr0;
           LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) = DR_MISALIGNMENT (dr0);
-          DR_MISALIGNMENT (dr0) = 0;
+	  SET_DR_MISALIGNMENT (dr0, 0);
 	  if (vect_print_dump_info (REPORT_ALIGNMENT))
             fprintf (vect_dump, "Alignment of access forced using peeling.");
 
@@ -1702,7 +1704,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
         {
           stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
           dr = STMT_VINFO_DATA_REF (stmt_info);
-          DR_MISALIGNMENT (dr) = 0;
+	  SET_DR_MISALIGNMENT (dr, 0);
 	  if (vect_print_dump_info (REPORT_ALIGNMENT))
             fprintf (vect_dump, "Alignment of access forced using versioning.");
         }

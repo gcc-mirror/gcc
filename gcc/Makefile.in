@@ -2084,7 +2084,7 @@ tree-ssa-loop-prefetch.o: tree-ssa-loop-prefetch.c $(TREE_FLOW_H) $(CONFIG_H) \
    output.h $(DIAGNOSTIC_H) $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
    tree-pass.h $(GGC_H) $(RECOG_H) insn-config.h $(HASHTAB_H) $(SCEV_H) \
    $(CFGLOOP_H) $(PARAMS_H) langhooks.h $(BASIC_BLOCK_H) hard-reg-set.h \
-   tree-chrec.h toplev.h langhooks.h $(TREE_INLINE_H)
+   tree-chrec.h toplev.h langhooks.h $(TREE_INLINE_H) $(TREE_DATA_REF_H)
 tree-predcom.o: tree-predcom.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TM_P_H) \
    $(CFGLOOP_H) $(TREE_FLOW_H) $(GGC_H) $(TREE_DATA_REF_H) $(SCEV_H) \
    $(PARAMS_H) $(DIAGNOSTIC_H) tree-pass.h $(TM_H) coretypes.h tree-affine.h \

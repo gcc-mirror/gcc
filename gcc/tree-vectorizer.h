@@ -339,7 +339,8 @@ is_pattern_stmt_p (stmt_vec_info stmt_info)
 
 /* Reflects actual alignment of first access in the vectorized loop,
    taking into account peeling/versioning if applied.  */
-#define DR_MISALIGNMENT(DR)   (DR)->aux
+#define DR_MISALIGNMENT(DR)   ((int) (size_t) (DR)->aux)
+#define SET_DR_MISALIGNMENT(DR, VAL)   ((DR)->aux = (void *) (size_t) (VAL))
 
 static inline bool
 aligned_access_p (struct data_reference *data_ref_info)

@@ -1,3 +1,7 @@
+2007-05-29  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/prefetch-6.c: New test.
+
 2007-05-29  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* gfortran.dg/sizeof.f90: New.

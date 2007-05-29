@@ -104,7 +104,7 @@ struct data_reference
   tree ref;
 
   /* Auxiliary info specific to a pass.  */
-  int aux;
+  void *aux;
 
   /* True when the data reference is in RHS of a stmt.  */
   bool is_read;
@@ -320,7 +320,10 @@ extern void dump_data_dependence_direction (FILE *,
 extern void free_dependence_relation (struct data_dependence_relation *);
 extern void free_dependence_relations (VEC (ddr_p, heap) *);
 extern void free_data_refs (VEC (data_reference_p, heap) *);
-
+struct data_reference *create_data_ref (struct loop *, tree, tree, bool);
+bool find_loop_nest (struct loop *, VEC (loop_p, heap) **);
+void compute_all_dependences (VEC (data_reference_p, heap) *,
+			      VEC (ddr_p, heap) **, VEC (loop_p, heap) *, bool);
 
 /* Return the index of the variable VAR in the LOOP_NEST array.  */
 
