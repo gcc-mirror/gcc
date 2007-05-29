@@ -49,6 +49,123 @@ Boston, MA 02110-1301, USA.  */
 #include "vecprim.h"
 #include "pointer-set.h"
 
+/* Broad overview of how aliasing works:
+   
+   First we compute points-to sets, which is done in
+   tree-ssa-structalias.c
+      
+   During points-to set constraint finding, a bunch of little bits of
+   information is collected.
+   This is not done because it is necessary for points-to, but because
+   points-to has to walk every statement anyway.  The function performing
+   this collecting is update_alias_info.
+
+   Bits update_alias_info collects include:
+   1. Directly escaping variables and variables whose value escapes
+   (using is_escape_site).  This is the set of variables and values that
+   escape prior to transitive closure of the clobbers.
+   2.  The set of variables dereferenced on the LHS (into
+   dereferenced_ptr_stores) 
+   3. The set of variables dereferenced on the RHS (into
+   dereferenced_ptr_loads) 
+   4. The set of all pointers we saw.
+   5. The number of loads and stores for each variable
+   6. The number of statements touching memory
+   7. The set of address taken variables.
+   
+   
+   #1 is computed by a combination of is_escape_site, and counting the
+   number of uses/deref operators.  This function properly accounts for
+   situations like &ptr->field, which is *not* a dereference.
+   
+   After points-to sets are computed, the sets themselves still
+   contain points-to specific variables, such as a variable that says
+   the pointer points to anything, a variable that says the pointer
+   points to readonly memory, etc.
+
+   These are eliminated in a later phase, as we will see.
+
+   The rest of the phases are located in tree-ssa-alias.c
+
+   The next phase after points-to set computation is called
+   "setup_pointers_and_addressables"
+
+   This pass does 3 main things:
+   
+   1. All variables that can have TREE_ADDRESSABLE removed safely (IE
+   non-globals whose address is not taken), have TREE_ADDRESSABLE
+   removed.
+   2. All variables that may be aliased (which is the set of addressable
+   variables and globals) at all, are marked for renaming, and have
+   symbol memory tags created for them.
+   3. All variables which are stored into have their SMT's added to
+   written vars. 
+
+
+   After this function is run, all variables that will ever have an
+   SMT, have one, though its aliases are not filled in.
+
+   The next phase is to compute flow-insensitive aliasing, which in
+   our case, is a misnomer.  it is really computing aliasing that
+   requires no transitive closure to be correct.  In particular, it
+   uses stack vs non-stack, TBAA, etc, to determine whether two
+   symbols could *ever* alias .  This phase works by going through all
+   the pointers we collected during update_alias_info, and for every
+   addressable variable in the program, seeing if they alias.  If so,
+   the addressable variable is added to the symbol memory tag for the
+   pointer.
+
+   As part of this, we handle symbol memory tags that conflict but
+   have no aliases in common, by forcing them to have a symbol in
+   common (through unioning alias sets or adding one as an alias of
+   the other), or by adding one as an alias of another.  The case of
+   conflicts with no aliases in common occurs mainly due to aliasing
+   we cannot see.  In particular, it generally means we have a load
+   through a pointer whose value came from outside the function.
+   Without an addressable symbol to point to, they would get the wrong
+   answer.
+
+   After flow insensitive aliasing is computed, we compute name tags
+   (called compute_flow_sensitive_info).  We walk each pointer we
+   collected and see if it has a usable points-to set.  If so, we
+   generate a name tag using that pointer, and make an alias bitmap for
+   it.  Name tags are shared between all things with the same alias
+   bitmap.  The alias bitmap will be translated from what points-to
+   computed.  In particular, the "anything" variable in points-to will be
+   transformed into a pruned set of SMT's and their aliases that
+   compute_flow_insensitive_aliasing computed.
+   Note that since 4.3, every pointer that points-to computed a solution for
+   will get a name tag (whereas before 4.3, only those whose set did
+   *not* include the anything variable would).  At the point where name
+   tags are all assigned, symbol memory tags are dead, and could be
+   deleted, *except* on global variables.  Global variables still use
+   symbol memory tags as of right now.
+
+   After name tags are computed, the set of clobbered variables is
+   transitively closed.  In particular, we compute the set of clobbered
+   variables based on the initial set of clobbers, plus the aliases of
+   pointers which either escape, or have their value escape.
+
+   After this, maybe_create_global_var is run, which handles a corner
+   case where we have no call clobbered variables, but have pure and
+   non-pure functions.
+   
+   Staring at this function, I now remember it is a hack for the fact
+   that we do not mark all globals in the program as call clobbered for a
+   function unless they are actually used in that function.  Instead,  we
+   only mark the set that is actually clobbered.  As a result, you can
+   end up with situations where you have no call clobbered vars set.
+   
+   After maybe_create_global_var, we set pointers with the REF_ALL flag
+   to have alias sets that include all clobbered
+   memory tags and variables.
+   
+   After this, memory partitioning is computed (by the function
+   compute_memory_partitions) and alias sets are reworked accordingly.
+
+   Lastly, we delete partitions with no symbols, and clean up after
+   ourselves.  */
+
 /* Structure to map a variable to its alias set.  */
 struct alias_map_d
 {
