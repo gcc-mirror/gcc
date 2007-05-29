@@ -49,7 +49,7 @@ typedef struct gfc_intrinsic_map_t	GTY(())
 {
   /* The explicit enum is required to work around inadequacies in the
      garbage collection/gengtype parsing mechanism.  */
-  enum gfc_generic_isym_id id;
+  enum gfc_isym_id id;
 
   /* Enum value from the "language-independent", aka C-centric, part
      of gcc, or END_BUILTINS of no such value set.  */
@@ -649,9 +649,9 @@ gfc_conv_intrinsic_lib_function (gfc_se * se, gfc_expr * expr)
   gfc_intrinsic_map_t *m;
   tree args;
   tree fndecl;
-  gfc_generic_isym_id id;
+  gfc_isym_id id;
 
-  id = expr->value.function.isym->generic_id;
+  id = expr->value.function.isym->id;
   /* Find the entry for this function.  */
   for (m = gfc_intrinsic_map; m->id != GFC_ISYM_NONE; m++)
     {
@@ -1468,7 +1468,7 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
   /* Calls to libgfortran_matmul need to be appended special arguments,
      to be able to call the BLAS ?gemm functions if required and possible.  */
   append_args = NULL_TREE;
-  if (expr->value.function.isym->generic_id == GFC_ISYM_MATMUL
+  if (expr->value.function.isym->id == GFC_ISYM_MATMUL
       && sym->ts.type != BT_LOGICAL)
     {
       tree cint = gfc_get_int_type (gfc_c_int_kind);
@@ -3634,7 +3634,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 	}
     }
 
-  switch (expr->value.function.isym->generic_id)
+  switch (expr->value.function.isym->id)
     {
     case GFC_ISYM_NONE:
       gcc_unreachable ();
@@ -4035,7 +4035,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 void
 gfc_add_intrinsic_ss_code (gfc_loopinfo * loop ATTRIBUTE_UNUSED, gfc_ss * ss)
 {
-  switch (ss->expr->value.function.isym->generic_id)
+  switch (ss->expr->value.function.isym->id)
     {
     case GFC_ISYM_UBOUND:
     case GFC_ISYM_LBOUND:
@@ -4098,7 +4098,7 @@ gfc_is_intrinsic_libcall (gfc_expr * expr)
   gcc_assert (expr->expr_type == EXPR_FUNCTION && expr->value.function.isym);
   gcc_assert (expr->rank > 0);
 
-  switch (expr->value.function.isym->generic_id)
+  switch (expr->value.function.isym->id)
     {
     case GFC_ISYM_ALL:
     case GFC_ISYM_ANY:
@@ -4146,7 +4146,7 @@ gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
     return gfc_walk_intrinsic_libfunc (ss, expr);
 
   /* Special cases.  */
-  switch (isym->generic_id)
+  switch (isym->id)
     {
     case GFC_ISYM_LBOUND:
     case GFC_ISYM_UBOUND:

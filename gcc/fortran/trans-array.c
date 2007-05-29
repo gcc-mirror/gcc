@@ -2736,7 +2736,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 
 	/* As usual, lbound and ubound are exceptions!.  */
 	case GFC_SS_INTRINSIC:
-	  switch (ss->expr->value.function.isym->generic_id)
+	  switch (ss->expr->value.function.isym->id)
 	    {
 	    case GFC_ISYM_LBOUND:
 	    case GFC_ISYM_UBOUND:
@@ -2772,7 +2772,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	  break;
 
 	case GFC_SS_INTRINSIC:
-	  switch (ss->expr->value.function.isym->generic_id)
+	  switch (ss->expr->value.function.isym->id)
 	    {
 	    /* Fall through to supply start and stride.  */
 	    case GFC_ISYM_LBOUND:

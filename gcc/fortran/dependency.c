@@ -222,7 +222,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
       /* We should list the "constant" intrinsic functions.  Those
 	 without side-effects that provide equal results given equal
 	 argument lists.  */
-      switch (e1->value.function.isym->generic_id)
+      switch (e1->value.function.isym->id)
 	{
 	case GFC_ISYM_CONVERSION:
 	  /* Handle integer extensions specially, as __convert_i4_i8
@@ -373,7 +373,7 @@ gfc_get_noncopying_intrinsic_argument (gfc_expr *expr)
   if (expr->expr_type != EXPR_FUNCTION || !expr->value.function.isym)
     return NULL;
 
-  switch (expr->value.function.isym->generic_id)
+  switch (expr->value.function.isym->id)
     {
     case GFC_ISYM_TRANSPOSE:
       return expr->value.function.actual->expr;

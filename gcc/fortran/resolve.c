@@ -1179,7 +1179,7 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
 	  && formal_optional
 	  && arg->expr->rank
 	  && (set_by_optional || arg->expr->rank != rank)
-	  && !(isym && isym->generic_id == GFC_ISYM_CONVERSION))
+	  && !(isym && isym->id == GFC_ISYM_CONVERSION))
 	{
 	  gfc_warning ("'%s' at %L is an array and OPTIONAL; IF IT IS "
 		       "MISSING, it cannot be the actual argument of an "
@@ -1653,7 +1653,7 @@ resolve_function (gfc_expr *expr)
       t = FAILURE;
     }
 
-#define GENERIC_ID expr->value.function.isym->generic_id
+#define GENERIC_ID expr->value.function.isym->id
   else if (expr->value.function.actual != NULL
 	   && expr->value.function.isym != NULL
 	   && GENERIC_ID != GFC_ISYM_LBOUND
