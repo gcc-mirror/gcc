@@ -2334,6 +2334,13 @@ gfc_check_size (gfc_expr *array, gfc_expr *dim)
 
 
 try
+gfc_check_sizeof (gfc_expr *arg __attribute__((unused)))
+{
+  return SUCCESS;
+}
+
+
+try
 gfc_check_sleep_sub (gfc_expr *seconds)
 {
   if (type_check (seconds, 0, BT_INTEGER) == FAILURE)

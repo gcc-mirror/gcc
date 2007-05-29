@@ -1,3 +1,7 @@
+2007-05-29  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* gfortran.dg/sizeof.f90: New.
+
 2007-05-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR c/31339

@@ -222,6 +222,7 @@ Some basic guidelines for editing this document:
 * @code{SIN}:           SIN,       Sine function
 * @code{SINH}:          SINH,      Hyperbolic sine function
 * @code{SIZE}:          SIZE,      Function to determine the size of an array
+* @code{SIZEOF}:        SIZEOF,    Determine the size in bytes of an expression
 * @code{SLEEP}:         SLEEP,     Sleep for the specified number of seconds
 * @code{SNGL}:          SNGL,      Convert double precision real to default real
 * @code{SPACING}:       SPACING,   Smallest distance between two numbers of a given type
@@ -9012,6 +9013,49 @@ END PROGRAM
 @end table
 
 
+@node SIZEOF
+@section @code{SIZEOF} --- Size in bytes of an expression
+@fnindex SIZEOF
+@cindex expression size
+@cindex size of an expression
+
+@table @asis
+@item @emph{Description}:
+@code{SIZEOF(X)} calculates the number of bytes of storage the
+expression @code{X} occupies.
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Intrinsic function
+
+@item @emph{Syntax}:
+@code{N = SIZEOF(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The argument shall be of any type, rank or shape.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type integer.  Its value is the number of bytes
+occupied by the argument.  If the argument has the @code{POINTER}
+attribute, the number of bytes of the storage area pointed to is
+returned.  If the argument is of a derived type with @code{POINTER} or
+@code{ALLOCATABLE} components, the return value doesn't account for
+the sizes of the data pointed to by these components.
+
+@item @emph{Example}:
+@smallexample
+   integer :: i
+   real :: r, s(5)
+   print *, (sizeof(s)/sizeof(r) == 5)
+   end
+@end smallexample
+The example will print @code{.TRUE.} unless you are using a platform
+where default @code{REAL} variables are unusually padded.
+@end table
 
 @node SLEEP
 @section @code{SLEEP} --- Sleep for the specified number of seconds

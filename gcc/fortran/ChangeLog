@@ -1,3 +1,16 @@
+2007-05-28  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* gfortran.h (gfc_generic_isym_id): Add GFC_ISYM_SIZEOF.
+	* intrinsic.c (add_functions): Add stuff for SIZEOF intrinsic.
+	* intrinsic.h (gfc_check_sizeof): Add prototype of ...
+	* check.c (gfc_check_sizeof): .. new function.
+	* trans-intrinsic.c (gfc_conv_intrinsic_sizeof): New function.
+	(gfc_conv_intrinsic_strcmp): Whitespace fix.
+	(gfc_conv_intrinsic_array_transfer): Remove double initialization,
+	use fold_build. where appropriate.
+	(gfc_conv_intrinsic_function): Add case for SIZEOF.
+	* intrinsic.texi: Add documentation for SIZEOF.
+
 2007-05-28  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* trans-array.c (gfc_conv_expr_descriptor): Edit comment.
