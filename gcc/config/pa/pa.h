@@ -481,45 +481,6 @@ extern struct rtx_def *hppa_pic_save_rtx (void);
       }									\
     } while (0)
 
-/* The letters I, J, K, L and M in a register constraint string
-   can be used to stand for particular ranges of immediate operands.
-   This macro defines what the ranges are.
-   C is the letter, and VALUE is a constant value.
-   Return 1 if VALUE is in the range specified by C.
-
-   `I' is used for the 11-bit constants.
-   `J' is used for the 14-bit constants.
-   `K' is used for values that can be moved with a zdepi insn.
-   `L' is used for the 5-bit constants.
-   `M' is used for 0.
-   `N' is used for values with the least significant 11 bits equal to zero
-	                  and when sign extended from 32 to 64 bits the
-			  value does not change.
-   `O' is used for numbers n such that n+1 is a power of 2.
-   */
-
-#define CONST_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'I' ? VAL_11_BITS_P (VALUE)					\
-   : (C) == 'J' ? VAL_14_BITS_P (VALUE)					\
-   : (C) == 'K' ? zdepi_cint_p (VALUE)					\
-   : (C) == 'L' ? VAL_5_BITS_P (VALUE)					\
-   : (C) == 'M' ? (VALUE) == 0						\
-   : (C) == 'N' ? (((VALUE) & (((HOST_WIDE_INT) -1 << 31) | 0x7ff)) == 0 \
-		   || (((VALUE) & (((HOST_WIDE_INT) -1 << 31) | 0x7ff))	\
-		       == (HOST_WIDE_INT) -1 << 31))			\
-   : (C) == 'O' ? (((VALUE) & ((VALUE) + 1)) == 0)			\
-   : (C) == 'P' ? and_mask_p (VALUE)					\
-   : 0)
-
-/* Similar, but for floating or large integer constants, and defining letters
-   G and H.   Here VALUE is the CONST_DOUBLE rtx itself.
-
-   For PA, `G' is the floating-point constant zero.  `H' is undefined.  */
-
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  			\
-  ((C) == 'G' ? (GET_MODE_CLASS (GET_MODE (VALUE)) == MODE_FLOAT	\
-		 && (VALUE) == CONST0_RTX (GET_MODE (VALUE)))		\
-   : 0)
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS GENERAL_REGS
@@ -1145,15 +1106,7 @@ extern int may_call_alloca;
 #define SYMBOL_REF_REFERENCED_P(RTX) \
   ((SYMBOL_REF_FLAGS (RTX) & SYMBOL_FLAG_REFERENCED) != 0)
 
-/* Subroutines for EXTRA_CONSTRAINT.
-
-   Return 1 iff OP is a pseudo which did not get a hard register and
-   we are running the reload pass.  */
-#define IS_RELOADING_PSEUDO_P(OP) \
-  ((reload_in_progress					\
-    && GET_CODE (OP) == REG				\
-    && REGNO (OP) >= FIRST_PSEUDO_REGISTER		\
-    && reg_renumber [REGNO (OP)] < 0))
+/* Defines for constraints.md.  */
 
 /* Return 1 iff OP is a scaled or unscaled index address.  */
 #define IS_INDEX_ADDR_P(OP) \
@@ -1171,74 +1124,6 @@ extern int may_call_alloca;
    && REG_P (XEXP (OP, 0))				\
    && REG_OK_FOR_BASE_P (XEXP (OP, 0))			\
    && GET_CODE (XEXP (OP, 1)) == UNSPEC)
-
-/* Optional extra constraints for this machine. Borrowed from sparc.h.
-
-   `A' is a LO_SUM DLT memory operand.
-
-   `Q' is any memory operand that isn't a symbolic, indexed or lo_sum
-       memory operand.  Note that an unassigned pseudo register is such a
-       memory operand.  Needed because reload will generate these things
-       and then not re-recognize the insn, causing constrain_operands to
-       fail.
-
-   `R' is a scaled/unscaled indexed memory operand.
-
-   `S' is the constant 31.
-
-   `T' is for floating-point loads and stores.
-
-   `U' is the constant 63.
-
-   `W' is a register indirect memory operand.  We could allow short
-       displacements but GO_IF_LEGITIMATE_ADDRESS can't tell when a
-       long displacement is valid.  This is only used for prefetch
-       instructions with the `sl' completer.  */
-
-#define EXTRA_CONSTRAINT(OP, C) \
-  ((C) == 'Q' ?								\
-   (IS_RELOADING_PSEUDO_P (OP)						\
-    || (GET_CODE (OP) == MEM						\
-	&& (reload_in_progress						\
-	    || memory_address_p (GET_MODE (OP), XEXP (OP, 0)))		\
-	&& !symbolic_memory_operand (OP, VOIDmode)			\
-	&& !IS_LO_SUM_DLT_ADDR_P (XEXP (OP, 0))				\
-	&& !IS_INDEX_ADDR_P (XEXP (OP, 0))))				\
-   : ((C) == 'W' ?							\
-      (GET_CODE (OP) == MEM						\
-       && REG_P (XEXP (OP, 0))						\
-       && REG_OK_FOR_BASE_P (XEXP (OP, 0)))				\
-   : ((C) == 'A' ?							\
-      (GET_CODE (OP) == MEM						\
-       && IS_LO_SUM_DLT_ADDR_P (XEXP (OP, 0)))				\
-   : ((C) == 'R' ?							\
-      (GET_CODE (OP) == MEM						\
-       && IS_INDEX_ADDR_P (XEXP (OP, 0)))				\
-   : ((C) == 'T' ? 							\
-      (GET_CODE (OP) == MEM						\
-       && !IS_LO_SUM_DLT_ADDR_P (XEXP (OP, 0))				\
-       && !IS_INDEX_ADDR_P (XEXP (OP, 0))				\
-       /* Floating-point loads and stores are used to load		\
-	  integer values as well as floating-point values.		\
-	  They don't have the same set of REG+D address modes		\
-	  as integer loads and stores.  PA 1.x supports only		\
-	  short displacements.  PA 2.0 supports long displacements	\
-	  but the base register needs to be aligned.			\
-									\
-	  The checks in GO_IF_LEGITIMATE_ADDRESS for SFmode and		\
-	  DFmode test the validity of an address for use in a		\
-	  floating point load or store.  So, we use SFmode/DFmode	\
-	  to see if the address is valid for a floating-point		\
-	  load/store operation.  */					\
-       && memory_address_p ((GET_MODE_SIZE (GET_MODE (OP)) == 4		\
-			     ? SFmode					\
-			     : DFmode),					\
-			    XEXP (OP, 0)))				\
-   : ((C) == 'S' ?							\
-      (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 31)			\
-   : ((C) == 'U' ?							\
-      (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 63) : 0)))))))
-	
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
