@@ -133,7 +133,8 @@ extern int insn_refs_are_delayed (rtx);
 extern rtx get_deferred_plabel (rtx);
 #endif /* RTX_CODE */
 
-/* Prototype function used in macro CONST_OK_FOR_LETTER_P.  */
+extern int integer_store_memory_operand (rtx, enum machine_mode);
+extern int ldil_cint_p (HOST_WIDE_INT);
 extern int zdepi_cint_p (unsigned HOST_WIDE_INT);
 
 extern void override_options (void);

@@ -1,3 +1,15 @@
+2007-05-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa/constraints.md: New file.
+	* pa.md: Include constraints.md.
+	* pa.c (cint_ok_for_move): Avoid using CONST_OK_FOR_LETTER_P.
+	(integer_store_memory_operand, ldil_cint_p): New functions.
+	* pa-protos.h (integer_store_memory_operand, ldil_cint_p): Declare.
+	* pa.h (CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P,
+	IS_RELOADING_PSEUDO_P, EXTRA_CONSTRAINT): Remove.
+	* pa32-regs.h (REG_CLASS_FROM_LETTER): Remove.
+	* pa64-regs.h (REG_CLASS_FROM_LETTER): Remove.
+
 2007-05-28  Andrew Pinski  <Andrew_pinski@playstation.sony.com>
 
 	PR c/31339
