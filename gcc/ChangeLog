@@ -1,3 +1,7 @@
+2007-05-29  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-alias.c: Add aliasing overview.
+
 2007-05-29  Zuxy Meng  <zuxy.meng@gmail.com>
             Danny Smith  <dannysmith@users.sourceforge.net>
 
