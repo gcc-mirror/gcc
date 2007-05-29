@@ -121,6 +121,7 @@ try gfc_check_shape (gfc_expr *);
 try gfc_check_size (gfc_expr *, gfc_expr *);
 try gfc_check_sign (gfc_expr *, gfc_expr *);
 try gfc_check_signal (gfc_expr *, gfc_expr *);
+try gfc_check_sizeof (gfc_expr *);
 try gfc_check_spread (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_srand (gfc_expr *);
 try gfc_check_stat (gfc_expr *, gfc_expr *);

@@ -2138,6 +2138,12 @@ add_functions (void)
 
   make_generic ("size", GFC_ISYM_SIZE, GFC_STD_F95);
 
+  add_sym_1 ("sizeof", NOT_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di,
+	     GFC_STD_GNU, gfc_check_sizeof, NULL, NULL,
+	     i, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("sizeof", GFC_ISYM_SIZEOF, GFC_STD_GNU);	     
+
   add_sym_1 ("spacing", ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
 	     gfc_check_x, gfc_simplify_spacing, gfc_resolve_spacing,
 	     x, BT_REAL, dr, REQUIRED);
