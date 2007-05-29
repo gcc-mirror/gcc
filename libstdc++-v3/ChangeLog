@@ -1,3 +1,10 @@
+2007-05-29  Paolo Carlini  <pcarlini@suse.de>
+
+	* aclocal.m4: Regenerate.
+
+	* testsuite/17_intro/headers/c++1998/c++_for_c.tar: Remove.
+	* testsuite/17_intro/headers/c++1998/c++.tar: Likewise.
+
 2007-05-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/31717 
