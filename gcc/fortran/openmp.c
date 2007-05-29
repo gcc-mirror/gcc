@@ -942,7 +942,7 @@ is_conversion (gfc_expr *expr, bool widening)
   if (expr->expr_type != EXPR_FUNCTION
       || expr->value.function.isym == NULL
       || expr->value.function.esym != NULL
-      || expr->value.function.isym->generic_id != GFC_ISYM_CONVERSION)
+      || expr->value.function.isym->id != GFC_ISYM_CONVERSION)
     return NULL;
 
   if (widening)
@@ -1130,7 +1130,7 @@ resolve_omp_atomic (gfc_code *code)
     {
       gfc_actual_arglist *arg, *var_arg;
 
-      switch (expr2->value.function.isym->generic_id)
+      switch (expr2->value.function.isym->id)
 	{
 	case GFC_ISYM_MIN:
 	case GFC_ISYM_MAX:

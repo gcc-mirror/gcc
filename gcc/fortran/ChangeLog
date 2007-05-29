@@ -1,3 +1,19 @@
+2007-05-29  Daniel Franke  <franke.daniel@gmail.com>
+
+	* gfortran.h: Renamed 'enum gfc_generic_isym_id' to 'enum gfc_isym_id',
+	added missing GFC_ISYM_* enumerators, ordered alphabetically.
+	(struct gfc_intrinsic_sym): Renamed 'generic_id' to 'id'.
+	(gfc_find_subroutine): New prototype.
+	* intrinsic.c (add_sym, add_sym_*): Added argument 'id' and changed all callers.
+	(find_subroutine): Renamed to 'gfc_find_subroutine', removed static.  
+	* dependency.c: Changed usage of isym->generic_id to isym->id.  
+	* openmp.c: Likewise.  
+	* resolve.c: Likewise.  
+	* trans-array.c: Likewise.  
+	* trans-expr.c: Likewise.  
+	* trans-intrinsic.c: Likewise.  
+	* trans-openmp.c: Likewise.
+
 2007-05-28  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* gfortran.h (gfc_generic_isym_id): Add GFC_ISYM_SIZEOF.
