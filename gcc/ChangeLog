@@ -1,9 +1,37 @@
+2007-05-29  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-vectorizer.h (DR_MISALIGNMENT): Cast aux to integer.
+	(SET_DR_MISALIGNMENT): New.
+	* tree-vect-analyze.c (vect_compute_data_ref_alignment,
+	vect_update_misalignment_for_peel, vect_enhance_data_refs_alignment):
+	Use SET_DR_MISALIGNMENT.
+	* tree-predcom.c (split_data_refs_to_components): Cast dr->aux from
+	pointer.
+	* tree-data-ref.c (create_data_ref, compute_all_dependences,
+	find_loop_nest): Export.
+	* tree-data-ref.h (struct data_reference): Change aux field to pointer.
+	(create_data_ref, compute_all_dependences, find_loop_nest): Declare.
+	* tree-ssa-loop-prefetch.c: Include tree-data-ref.h.
+	(L1_CACHE_SIZE_BYTES, L2_CACHE_SIZE_BYTES, NONTEMPORAL_FRACTION):
+	New macros.
+	(struct mem_ref): Add field reuse_distance.
+	(find_or_create_group, record_ref): Use XNEW instead of xcalloc.
+	Initialize reuse_distance field.
+	(issue_prefetch_ref): Select temporality of prefetch according to
+	reuse_distance.
+	(volume_of_references, volume_of_dist_vector, add_subscript_strides,
+	self_reuse_distance, determine_loop_nest_reuse): New functions.
+	(loop_prefetch_arrays): Call determine_loop_nest_reuse.
+	(tree_ssa_prefetch_arrays): Dump L2 cache size.
+	* Makefile.in (tree-ssa-loop-prefetch.o): Add TREE_DATA_REF_H
+	dependency.
+
 2007-05-29  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-alias.c: Add aliasing overview.
 
 2007-05-29  Zuxy Meng  <zuxy.meng@gmail.com>
-            Danny Smith  <dannysmith@users.sourceforge.net>
+	    Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/29498
 	* config/i386/t-crtfm: Compile crtfastmath.o with

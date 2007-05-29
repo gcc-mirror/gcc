@@ -700,7 +700,7 @@ split_data_refs_to_components (struct loop *loop,
 	     just fail.  */
 	  goto end;
 	}
-      dr->aux = i;
+      dr->aux = (void *) (size_t) i;
       comp_father[i] = i;
       comp_size[i] = 1;
     }
@@ -715,7 +715,7 @@ split_data_refs_to_components (struct loop *loop,
 
       if (!suitable_reference_p (dr, &dummy))
 	{
-	  ia = dr->aux;
+	  ia = (unsigned) (size_t) dr->aux;
 	  merge_comps (comp_father, comp_size, n, ia);
 	}
     }
@@ -729,8 +729,8 @@ split_data_refs_to_components (struct loop *loop,
 
       dra = DDR_A (ddr);
       drb = DDR_B (ddr);
-      ia = component_of (comp_father, dra->aux);
-      ib = component_of (comp_father, drb->aux);
+      ia = component_of (comp_father, (unsigned) (size_t) dra->aux);
+      ib = component_of (comp_father, (unsigned) (size_t) drb->aux);
       if (ia == ib)
 	continue;
 
@@ -749,7 +749,7 @@ split_data_refs_to_components (struct loop *loop,
   bad = component_of (comp_father, n);
   for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
     {
-      ia = dr->aux;
+      ia = (unsigned) (size_t) dr->aux;
       ca = component_of (comp_father, ia);
       if (ca == bad)
 	continue;
