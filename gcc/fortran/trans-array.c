@@ -4314,16 +4314,16 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
    This function is also used for array pointer assignments, and there
    are three cases:
 
-     - want_pointer && !se->direct_byref
+     - se->want_pointer && !se->direct_byref
 	 EXPR is an actual argument.  On exit, se->expr contains a
 	 pointer to the array descriptor.
 
-     - !want_pointer && !se->direct_byref
+     - !se->want_pointer && !se->direct_byref
 	 EXPR is an actual argument to an intrinsic function or the
 	 left-hand side of a pointer assignment.  On exit, se->expr
 	 contains the descriptor for EXPR.
 
-     - !want_pointer && se->direct_byref
+     - !se->want_pointer && se->direct_byref
 	 EXPR is the right-hand side of a pointer assignment and
 	 se->expr is the descriptor for the previously-evaluated
 	 left-hand side.  The function creates an assignment from
