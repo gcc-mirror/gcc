@@ -1,3 +1,12 @@
+2007-05-29  Zuxy Meng  <zuxy.meng@gmail.com>
+            Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/29498
+	* config.host (i[34567]86-*-cygwin* | i[34567]86-*-mingw*) Add
+	crtfastmath.o to extra_parts.  Add i386/t-crtfm to tmake_file.
+	* config/i386/t-crtfm: Compile crtfastmath.o with
+	-minline-all-stringops.
+
 2007-05-10  Richard Sandiford  <richard@codesourcery.com>
 
 	* config.host (sparc-wrs-vxworks): New target.

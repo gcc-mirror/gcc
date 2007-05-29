@@ -40,6 +40,10 @@ Boston, MA 02110-1301, USA.  */
   %{pg:gcrt0%O%s}}}\
 "
 
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
+
 /* Normally, -lgcc is not needed since everything in it is in the DLL, but we
    want to allow things to be added to it when installing new versions of
    GCC without making a new CYGWIN.DLL, so we leave it.  Profiling is handled
