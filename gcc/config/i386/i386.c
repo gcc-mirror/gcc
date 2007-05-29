@@ -2837,7 +2837,8 @@ ix86_function_regparm (tree type, tree decl)
 	  /* We can't use regparm(3) for nested functions as these use
 	     static chain pointer in third argument.  */
 	  if (local_regparm == 3
-	      && decl_function_context (decl)
+	      && (decl_function_context (decl)
+                  || ix86_force_align_arg_pointer)
 	      && !DECL_NO_STATIC_CHAIN (decl))
 	    local_regparm = 2;
 

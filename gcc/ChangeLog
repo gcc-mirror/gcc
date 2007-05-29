@@ -1,3 +1,8 @@
+2007-05-29  Hui-May Chang  <hm.chang@apple.com>
+	* config/i386/i386.c (ix86_function_regparm): Added checking of 
+	ix86_force_align_arg_pointer to determine the number of
+	register parameters.
+
 2007-05-29  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-vectorizer.h (DR_MISALIGNMENT): Cast aux to integer.
