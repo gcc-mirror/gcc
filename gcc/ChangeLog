@@ -1,3 +1,12 @@
+2007-05-29  Zuxy Meng  <zuxy.meng@gmail.com>
+            Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/29498
+	* config/i386/t-crtfm: Compile crtfastmath.o with
+	-minline-all-stringops.
+	* config/i386/cygwin.h (ENDFILE_SPECS): Add crtfastmath.o.
+	* config/i386/mingw32.h (ENDFILE_SPECS): Add crtfastmath.o.
+
 2007-05-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* doc/md.texi: Document constraints on HP PA-RISC.
