@@ -1,3 +1,9 @@
+2007-05-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac: Don't include ../config/confsubdir.m4.
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+
 2007-05-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/32078
