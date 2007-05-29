@@ -1,5 +1,7 @@
 2007-05-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* doc/md.texi: Document constraints on HP PA-RISC.
+
 	* pa/constraints.md: New file.
 	* pa.md: Include constraints.md.
 	* pa.c (cint_ok_for_move): Avoid using CONST_OK_FOR_LETTER_P.
