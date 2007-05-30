@@ -92,7 +92,9 @@ extern void vxworks_override_options (void);
 
 /* VxWorks requires special handling of constructors and destructors.
    All VxWorks configurations must use these functions.  */
+#undef TARGET_ASM_CONSTRUCTOR
 #define TARGET_ASM_CONSTRUCTOR vxworks_asm_out_constructor
+#undef TARGET_ASM_DESTRUCTOR
 #define TARGET_ASM_DESTRUCTOR vxworks_asm_out_destructor
 extern void vxworks_asm_out_constructor (rtx symbol, int priority);
 extern void vxworks_asm_out_destructor (rtx symbol, int priority);

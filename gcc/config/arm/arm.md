@@ -95,6 +95,8 @@
                          ; instruction stream.
    (UNSPEC_STACK_ALIGN 20) ; Doubleword aligned stack pointer.  Used to
 			   ; generate correct unwind information.
+   (UNSPEC_PIC_OFFSET 22) ; A symbolic 12-bit OFFSET that has been treated
+			  ; correctly for PIC usage.
   ]
 )
 
@@ -4919,6 +4921,16 @@
   ""
 )
 
+(define_insn "pic_offset_arm"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "r")
+			 (unspec:SI [(match_operand:SI 2 "" "X")]
+				    UNSPEC_PIC_OFFSET))))]
+  "TARGET_VXWORKS_RTP && TARGET_ARM && flag_pic"
+  "ldr%?\\t%0, [%1,%2]"
+  [(set_attr "type" "load1")]
+)
+
 (define_expand "builtin_setjmp_receiver"
   [(label_ref (match_operand 0 "" ""))]
   "flag_pic"
@@ -8145,7 +8157,7 @@
   "TARGET_EITHER"
   "
   {
-    rtx callee;
+    rtx callee, pat;
     
     /* In an untyped call, we can get NULL for operand 2.  */
     if (operands[2] == NULL_RTX)
@@ -8159,8 +8171,18 @@
 	? arm_is_long_call_p (SYMBOL_REF_DECL (callee))
 	: !REG_P (callee))
       XEXP (operands[0], 0) = force_reg (Pmode, callee);
+
+    pat = gen_call_internal (operands[0], operands[1], operands[2]);
+    arm_emit_call_insn (pat, XEXP (operands[0], 0));
+    DONE;
   }"
 )
+
+(define_expand "call_internal"
+  [(parallel [(call (match_operand 0 "memory_operand" "")
+	            (match_operand 1 "general_operand" ""))
+	      (use (match_operand 2 "" ""))
+	      (clobber (reg:SI LR_REGNUM))])])
 
 (define_insn "*call_reg_armv5"
   [(call (mem:SI (match_operand:SI 0 "s_register_operand" "r"))
@@ -8239,7 +8261,7 @@
   "TARGET_EITHER"
   "
   {
-    rtx callee;
+    rtx pat, callee;
     
     /* In an untyped call, we can get NULL for operand 2.  */
     if (operands[3] == 0)
@@ -8253,8 +8275,20 @@
 	? arm_is_long_call_p (SYMBOL_REF_DECL (callee))
 	: !REG_P (callee))
       XEXP (operands[1], 0) = force_reg (Pmode, callee);
+
+    pat = gen_call_value_internal (operands[0], operands[1],
+				   operands[2], operands[3]);
+    arm_emit_call_insn (pat, XEXP (operands[1], 0));
+    DONE;
   }"
 )
+
+(define_expand "call_value_internal"
+  [(parallel [(set (match_operand       0 "" "")
+	           (call (match_operand 1 "memory_operand" "")
+		         (match_operand 2 "general_operand" "")))
+	      (use (match_operand 3 "" ""))
+	      (clobber (reg:SI LR_REGNUM))])])
 
 (define_insn "*call_value_reg_armv5"
   [(set (match_operand 0 "" "")

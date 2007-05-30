@@ -148,8 +148,8 @@ static int arm_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				  tree, bool);
 
 #ifdef OBJECT_FORMAT_ELF
-static void arm_elf_asm_constructor (rtx, int);
-static void arm_elf_asm_destructor (rtx, int);
+static void arm_elf_asm_constructor (rtx, int) ATTRIBUTE_UNUSED;
+static void arm_elf_asm_destructor (rtx, int) ATTRIBUTE_UNUSED;
 #endif
 #ifndef ARM_PE
 static void arm_encode_section_info (tree, rtx, int);
@@ -1338,10 +1338,23 @@ arm_override_options (void)
 		 ARM_DOUBLEWORD_ALIGN ? "8, 32 or 64": "8 or 32");
     }
 
+  if (!TARGET_ARM && TARGET_VXWORKS_RTP && flag_pic)
+    {
+      error ("RTP PIC is incompatible with Thumb");
+      flag_pic = 0;
+    }
+
   /* If stack checking is disabled, we can use r10 as the PIC register,
      which keeps r9 available.  The EABI specifies r9 as the PIC register.  */
   if (flag_pic && TARGET_SINGLE_PIC_BASE)
-    arm_pic_register = (TARGET_APCS_STACK || TARGET_AAPCS_BASED) ? 9 : 10;
+    {
+      if (TARGET_VXWORKS_RTP)
+	warning (0, "RTP PIC is incompatible with -msingle-pic-base");
+      arm_pic_register = (TARGET_APCS_STACK || TARGET_AAPCS_BASED) ? 9 : 10;
+    }
+
+  if (flag_pic && TARGET_VXWORKS_RTP)
+    arm_pic_register = 9;
 
   if (arm_pic_register_string != NULL)
     {
@@ -1354,7 +1367,9 @@ arm_override_options (void)
       else if (pic_register < 0 || call_used_regs[pic_register]
 	       || pic_register == HARD_FRAME_POINTER_REGNUM
 	       || pic_register == STACK_POINTER_REGNUM
-	       || pic_register >= PC_REGNUM)
+	       || pic_register >= PC_REGNUM
+	       || (TARGET_VXWORKS_RTP
+		   && (unsigned int) pic_register != arm_pic_register))
 	error ("unable to use '%s' for PIC register", arm_pic_register_string);
       else
 	arm_pic_register = pic_register;
@@ -3214,6 +3229,11 @@ arm_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
   if (decl == NULL || TARGET_THUMB)
     return false;
 
+  /* The PIC register is live on entry to VxWorks PLT entries, so we
+     must make the call before restoring the PIC register.  */
+  if (TARGET_VXWORKS_RTP && flag_pic && !targetm.binds_local_p (decl))
+    return false;
+
   /* Cannot tail-call to long calls, since these are out of range of
      a branch instruction.  */
   if (arm_is_long_call_p (decl))
@@ -3255,6 +3275,54 @@ legitimate_pic_operand_p (rtx x)
   return 1;
 }
 
+/* Record that the current function needs a PIC register.  Initialize
+   cfun->machine->pic_reg if we have not already done so.  */
+
+static void
+require_pic_register (void)
+{
+  /* A lot of the logic here is made obscure by the fact that this
+     routine gets called as part of the rtx cost estimation process.
+     We don't want those calls to affect any assumptions about the real
+     function; and further, we can't call entry_of_function() until we
+     start the real expansion process.  */
+  if (!current_function_uses_pic_offset_table)
+    {
+      gcc_assert (!no_new_pseudos);
+      if (arm_pic_register != INVALID_REGNUM)
+	{
+	  cfun->machine->pic_reg = gen_rtx_REG (Pmode, arm_pic_register);
+
+	  /* Play games to avoid marking the function as needing pic
+	     if we are being called as part of the cost-estimation
+	     process.  */
+	  if (current_ir_type () != IR_GIMPLE)
+	    current_function_uses_pic_offset_table = 1;
+	}
+      else
+	{
+	  rtx seq;
+
+	  cfun->machine->pic_reg = gen_reg_rtx (Pmode);
+
+	  /* Play games to avoid marking the function as needing pic
+	     if we are being called as part of the cost-estimation
+	     process.  */
+	  if (current_ir_type () != IR_GIMPLE)
+	    {
+	      current_function_uses_pic_offset_table = 1;
+	      start_sequence ();
+
+	      arm_load_pic_register (0UL);
+
+	      seq = get_insns ();
+	      end_sequence ();
+	      emit_insn_after (seq, entry_of_function ());
+	    }
+	}
+    }
+}
+
 rtx
 legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 {
@@ -3267,48 +3335,8 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
       rtx insn;
       int subregs = 0;
 
-      /* If this function doesn't have a pic register, create one now.
-	 A lot of the logic here is made obscure by the fact that this
-	 routine gets called as part of the rtx cost estimation
-	 process.  We don't want those calls to affect any assumptions
-	 about the real function; and further, we can't call
-	 entry_of_function() until we start the real expansion
-	 process.  */
-      if (!current_function_uses_pic_offset_table)
-	{
-	  gcc_assert (!no_new_pseudos);
-	  if (arm_pic_register != INVALID_REGNUM)
-	    {
-	      cfun->machine->pic_reg = gen_rtx_REG (Pmode, arm_pic_register);
-
-	      /* Play games to avoid marking the function as needing pic
-		 if we are being called as part of the cost-estimation
-		 process.  */
-	      if (current_ir_type () != IR_GIMPLE)
-		current_function_uses_pic_offset_table = 1;
-	    }
-	  else
-	    {
-	      rtx seq;
-
-	      cfun->machine->pic_reg = gen_reg_rtx (Pmode);
-
-	      /* Play games to avoid marking the function as needing pic
-		 if we are being called as part of the cost-estimation
-		 process.  */
-	      if (current_ir_type () != IR_GIMPLE)
-		{
-		  current_function_uses_pic_offset_table = 1;
-		  start_sequence ();
-
-		  arm_load_pic_register (0UL);
-
-		  seq = get_insns ();
-		  end_sequence ();
-		  emit_insn_after (seq, entry_of_function ());
-		}
-	    }
-	}
+      /* If this function doesn't have a pic register, create one now.  */
+      require_pic_register ();
 
       if (reg == 0)
 	{
@@ -3335,10 +3363,17 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
       else /* TARGET_THUMB1 */
 	emit_insn (gen_pic_load_addr_thumb1 (address, orig));
 
+      /* VxWorks does not impose a fixed gap between segments; the run-time
+	 gap can be different from the object-file gap.  We therefore can't
+	 use GOTOFF unless we are absolutely sure that the symbol is in the
+	 same segment as the GOT.  Unfortunately, the flexibility of linker
+	 scripts means that we can't be sure of that in general, so assume
+	 that GOTOFF is never valid on VxWorks.  */
       if ((GET_CODE (orig) == LABEL_REF
 	   || (GET_CODE (orig) == SYMBOL_REF &&
 	       SYMBOL_REF_LOCAL_P (orig)))
-	  && NEED_GOT_RELOC)
+	  && NEED_GOT_RELOC
+	  && !TARGET_VXWORKS_RTP)
 	pic_ref = gen_rtx_PLUS (Pmode, cfun->machine->pic_reg, address);
       else
 	{
@@ -3478,7 +3513,7 @@ void
 arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
 {
 #ifndef AOF_ASSEMBLER
-  rtx l1, labelno, pic_tmp, pic_tmp2, pic_rtx;
+  rtx l1, labelno, pic_tmp, pic_tmp2, pic_rtx, pic_reg;
   rtx global_offset_table;
 
   if (current_function_uses_pic_offset_table == 0 || TARGET_SINGLE_PIC_BASE)
@@ -3486,72 +3521,88 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
 
   gcc_assert (flag_pic);
 
-  /* We use an UNSPEC rather than a LABEL_REF because this label never appears
-     in the code stream.  */
+  pic_reg = cfun->machine->pic_reg;
+  if (TARGET_VXWORKS_RTP)
+    {
+      pic_rtx = gen_rtx_SYMBOL_REF (Pmode, VXWORKS_GOTT_BASE);
+      pic_rtx = gen_rtx_CONST (Pmode, pic_rtx);
+      emit_insn (gen_pic_load_addr_arm (pic_reg, pic_rtx));
 
-  labelno = GEN_INT (pic_labelno++);
-  l1 = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, labelno), UNSPEC_PIC_LABEL);
-  l1 = gen_rtx_CONST (VOIDmode, l1);
+      emit_insn (gen_rtx_SET (Pmode, pic_reg, gen_rtx_MEM (Pmode, pic_reg)));
 
-  global_offset_table = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
-  /* On the ARM the PC register contains 'dot + 8' at the time of the
-     addition, on the Thumb it is 'dot + 4'.  */
-  pic_tmp = plus_constant (l1, TARGET_ARM ? 8 : 4);
-  if (GOT_PCREL)
-    pic_tmp2 = gen_rtx_CONST (VOIDmode,
-			    gen_rtx_PLUS (Pmode, global_offset_table, pc_rtx));
+      pic_tmp = gen_rtx_SYMBOL_REF (Pmode, VXWORKS_GOTT_INDEX);
+      emit_insn (gen_pic_offset_arm (pic_reg, pic_reg, pic_tmp));
+    }
   else
-    pic_tmp2 = gen_rtx_CONST (VOIDmode, global_offset_table);
-
-  pic_rtx = gen_rtx_CONST (Pmode, gen_rtx_MINUS (Pmode, pic_tmp2, pic_tmp));
-
-  if (TARGET_ARM)
     {
-      emit_insn (gen_pic_load_addr_arm (cfun->machine->pic_reg, pic_rtx));
-      emit_insn (gen_pic_add_dot_plus_eight (cfun->machine->pic_reg,
-					     cfun->machine->pic_reg, labelno));
-    }
-  else if (TARGET_THUMB2)
-    {
-      /* Thumb-2 only allows very limited access to the PC.  Calculate the
-	 address in a temporary register.  */
-      if (arm_pic_register != INVALID_REGNUM)
+      /* We use an UNSPEC rather than a LABEL_REF because this label
+	 never appears in the code stream.  */
+
+      labelno = GEN_INT (pic_labelno++);
+      l1 = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, labelno), UNSPEC_PIC_LABEL);
+      l1 = gen_rtx_CONST (VOIDmode, l1);
+
+      global_offset_table
+	= gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
+      /* On the ARM the PC register contains 'dot + 8' at the time of the
+	 addition, on the Thumb it is 'dot + 4'.  */
+      pic_tmp = plus_constant (l1, TARGET_ARM ? 8 : 4);
+      if (GOT_PCREL)
 	{
-	  pic_tmp = gen_rtx_REG (SImode,
-				 thumb_find_work_register (saved_regs));
+	  pic_tmp2 = gen_rtx_PLUS (Pmode, global_offset_table, pc_rtx);
+	  pic_tmp2 = gen_rtx_CONST (VOIDmode, pic_tmp2);
 	}
       else
-	{
-	  gcc_assert (!no_new_pseudos);
-	  pic_tmp = gen_reg_rtx (Pmode);
-	}
+	pic_tmp2 = gen_rtx_CONST (VOIDmode, global_offset_table);
 
-      emit_insn (gen_pic_load_addr_thumb2 (cfun->machine->pic_reg, pic_rtx));
-      emit_insn (gen_pic_load_dot_plus_four (pic_tmp, labelno));
-      emit_insn (gen_addsi3(cfun->machine->pic_reg, cfun->machine->pic_reg,
-			    pic_tmp));
-    }
-  else /* TARGET_THUMB1 */
-    {
-      if (arm_pic_register != INVALID_REGNUM
-	  && REGNO (cfun->machine->pic_reg) > LAST_LO_REGNUM)
+      pic_rtx = gen_rtx_MINUS (Pmode, pic_tmp2, pic_tmp);
+      pic_rtx = gen_rtx_CONST (Pmode, pic_rtx);
+
+      if (TARGET_ARM)
 	{
-	  /* We will have pushed the pic register, so we should always be
-	     able to find a work register.  */
-	  pic_tmp = gen_rtx_REG (SImode,
-				 thumb_find_work_register (saved_regs));
-	  emit_insn (gen_pic_load_addr_thumb1 (pic_tmp, pic_rtx));
-	  emit_insn (gen_movsi (pic_offset_table_rtx, pic_tmp));
+	  emit_insn (gen_pic_load_addr_arm (pic_reg, pic_rtx));
+	  emit_insn (gen_pic_add_dot_plus_eight (pic_reg, pic_reg, labelno));
 	}
-      else
-	emit_insn (gen_pic_load_addr_thumb1 (cfun->machine->pic_reg, pic_rtx));
-      emit_insn (gen_pic_add_dot_plus_four (cfun->machine->pic_reg,
-					    cfun->machine->pic_reg, labelno));
+      else if (TARGET_THUMB2)
+	{
+	  /* Thumb-2 only allows very limited access to the PC.  Calculate the
+	     address in a temporary register.  */
+	  if (arm_pic_register != INVALID_REGNUM)
+	    {
+	      pic_tmp = gen_rtx_REG (SImode,
+				     thumb_find_work_register (saved_regs));
+	    }
+	  else
+	    {
+	      gcc_assert (!no_new_pseudos);
+	      pic_tmp = gen_reg_rtx (Pmode);
+	    }
+
+	  emit_insn (gen_pic_load_addr_thumb2 (pic_reg, pic_rtx));
+	  emit_insn (gen_pic_load_dot_plus_four (pic_tmp, labelno));
+	  emit_insn (gen_addsi3 (pic_reg, pic_reg, pic_tmp));
+	}
+      else /* TARGET_THUMB1 */
+	{
+	  if (arm_pic_register != INVALID_REGNUM
+	      && REGNO (pic_reg) > LAST_LO_REGNUM)
+	    {
+	      /* We will have pushed the pic register, so we should always be
+		 able to find a work register.  */
+	      pic_tmp = gen_rtx_REG (SImode,
+				     thumb_find_work_register (saved_regs));
+	      emit_insn (gen_pic_load_addr_thumb1 (pic_tmp, pic_rtx));
+	      emit_insn (gen_movsi (pic_offset_table_rtx, pic_tmp));
+	    }
+	  else
+	    emit_insn (gen_pic_load_addr_thumb1 (pic_reg, pic_rtx));
+	  emit_insn (gen_pic_add_dot_plus_four (pic_reg, pic_reg, labelno));
+	}
     }
 
   /* Need to emit this whether or not we obey regdecls,
      since setjmp/longjmp can cause life info to screw up.  */
-  emit_insn (gen_rtx_USE (VOIDmode, cfun->machine->pic_reg));
+  emit_insn (gen_rtx_USE (VOIDmode, pic_reg));
 #endif /* AOF_ASSEMBLER */
 }
 
@@ -8862,6 +8913,30 @@ vfp_emit_fstmd (int base_reg, int count)
   return count * 8;
 }
 
+/* Emit a call instruction with pattern PAT.  ADDR is the address of
+   the call target.  */
+
+void
+arm_emit_call_insn (rtx pat, rtx addr)
+{
+  rtx insn;
+
+  insn = emit_call_insn (pat);
+
+  /* The PIC register is live on entry to VxWorks PIC PLT entries.
+     If the call might use such an entry, add a use of the PIC register
+     to the instruction's CALL_INSN_FUNCTION_USAGE.  */
+  if (TARGET_VXWORKS_RTP
+      && flag_pic
+      && GET_CODE (addr) == SYMBOL_REF
+      && (SYMBOL_REF_DECL (addr)
+	  ? !targetm.binds_local_p (SYMBOL_REF_DECL (addr))
+	  : !SYMBOL_REF_LOCAL_P (addr)))
+    {
+      require_pic_register ();
+      use_reg (&CALL_INSN_FUNCTION_USAGE (insn), cfun->machine->pic_reg);
+    }
+}
 
 /* Output a 'call' insn.  */
 const char *
@@ -11947,14 +12022,13 @@ arm_assemble_integer (rtx x, unsigned int size, int aligned_p)
       if (NEED_GOT_RELOC && flag_pic && making_const_table &&
 	  (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF))
 	{
-	  if (GET_CODE (x) == SYMBOL_REF
-	      && (CONSTANT_POOL_ADDRESS_P (x)
-		  || SYMBOL_REF_LOCAL_P (x)))
-	    fputs ("(GOTOFF)", asm_out_file);
-	  else if (GET_CODE (x) == LABEL_REF)
-	    fputs ("(GOTOFF)", asm_out_file);
-	  else
+	  /* See legitimize_pic_address for an explanation of the
+	     TARGET_VXWORKS_RTP check.  */
+	  if (TARGET_VXWORKS_RTP
+	      || (GET_CODE (x) == SYMBOL_REF && !SYMBOL_REF_LOCAL_P (x)))
 	    fputs ("(GOT)", asm_out_file);
+	  else
+	    fputs ("(GOTOFF)", asm_out_file);
 	}
       fputc ('\n', asm_out_file);
       return true;
