@@ -8542,7 +8542,7 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
       return fold_build2 (cmp_code, type, variable1, const2);
     }
 
-  tem = maybe_canonicalize_comparison (code, type, arg0, arg1);
+  tem = maybe_canonicalize_comparison (code, type, op0, op1);
   if (tem)
     return tem;
 

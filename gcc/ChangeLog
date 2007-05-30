@@ -1,3 +1,12 @@
+2007-05-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/32152
+	* gimplify.c (gimplify_omp_atomic_pipeline): Use correct
+	types for comparison.
+	* fold-const.c (fold_comparison): Call maybe_canonicalize_comparison
+	with original typed arguments.
+	* config/i386/i386.c (ix86_gimplify_va_arg): Fix type mismatches.
+
 2007-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/31769
