@@ -1,3 +1,11 @@
+2007-05-30 Uros Bizjak <ubizjak@gmail.com>
+
+	* config/i386/i386.h (MASK_64BIT, MASK_MMX, MASK_3DNOW*, MASK_SSE*):
+	Remove defines.
+	* config/i386/biarch.h (TARGET_64BIT_DEFAULT): Define to
+	OPTION_MASK_ISA_64BIT.
+	* config/i386/i386.c: Rename MASK_* macros to OPTION_MASK_ISA_*.
+
 2007-05-30  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/32152
@@ -82,7 +90,7 @@
 	"target_flags".
 	(TARGET_DEFAULT_TARGET_FLAGS): Do not include TARGET_64BIT_DEFAULT.
 
-2007-05-29  David Daney  <ddaney@avtrex.com
+2007-05-29  David Daney  <ddaney@avtrex.com>
 
 	PR gcc/31975
 	* config/mips/mips.c (mips_output_mi_thunk): Emit

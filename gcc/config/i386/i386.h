@@ -48,19 +48,6 @@ Boston, MA 02110-1301, USA.  */
 #define TARGET_SSE4_1	OPTION_ISA_SSE4_1
 #define TARGET_SSE4A	OPTION_ISA_SSE4A
 
-/* ??? Remove following defines.  */
-
-#define MASK_64BIT	OPTION_MASK_ISA_64BIT
-#define MASK_MMX	OPTION_MASK_ISA_MMX
-#define MASK_3DNOW	OPTION_MASK_ISA_3DNOW
-#define MASK_3DNOW_A	OPTION_MASK_ISA_3DNOW_A
-#define MASK_SSE	OPTION_MASK_ISA_SSE
-#define MASK_SSE2	OPTION_MASK_ISA_SSE2
-#define MASK_SSE3	OPTION_MASK_ISA_SSE3
-#define MASK_SSSE3	OPTION_MASK_ISA_SSSE3
-#define MASK_SSE4_1	OPTION_MASK_ISA_SSE4_1
-#define MASK_SSE4A	OPTION_MASK_ISA_SSE4A
-
 #include "config/vxworks-dummy.h"
 
 /* Algorithm to expand string function with.  */
