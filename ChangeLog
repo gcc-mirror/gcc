@@ -1,3 +1,9 @@
+2007-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/29382
+	* configure.ac: Don't use -fkeep-inline-functions for GCC < 3.3.1.
+	* configure: Rebuilt.
+
 2007-05-28  Roberto Costa  <robsettantasei@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Removed my name.
