@@ -1,3 +1,8 @@
+2007-05-30  Richard Guenther  <rguenther@suse.de>
+
+	* MAINTAINERS (Various Maintainers): Add myself as
+	auto-vectorizer maintainer.
+
 2007-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/29382
