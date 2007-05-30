@@ -1,3 +1,9 @@
+2007-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/31769
+	* except.c (duplicate_eh_regions): Clear prev_try if
+	ERT_MUST_NOT_THROW region is inside of ERT_TRY region.
+
 2007-05-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/32100
