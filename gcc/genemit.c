@@ -621,7 +621,7 @@ gen_split (rtx split)
   else
     {
       printf ("extern rtx gen_split_%d (rtx, rtx *);\n", insn_code_number);
-      printf ("rtx\ngen_split_%d (rtx curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n", 
+      printf ("rtx\ngen_split_%d (rtx curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
 	      insn_code_number, unused);
     }
   printf ("{\n");
@@ -854,9 +854,10 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"resource.h\"\n");
   printf ("#include \"reload.h\"\n");
   printf ("#include \"toplev.h\"\n");
+  printf ("#include \"regs.h\"\n");
   printf ("#include \"tm-constrs.h\"\n");
-  printf ("#include \"ggc.h\"\n\n");
-  printf ("#include \"basic-block.h\"\n\n");
+  printf ("#include \"ggc.h\"\n");
+  printf ("#include \"basic-block.h\"\n");
   printf ("#include \"integrate.h\"\n\n");
   printf ("#define FAIL return (end_sequence (), _val)\n");
   printf ("#define DONE return (_val = get_insns (), end_sequence (), _val)\n\n");
