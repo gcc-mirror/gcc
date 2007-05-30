@@ -332,7 +332,7 @@ tree_gen_ic_func_profiler (void)
 			       tree_uid,
 			       cur_func,
 			       ic_void_ptr_var);
-      bsi_insert_after (&bsi, stmt1, BSI_SAME_STMT);
+      bsi_insert_after (&bsi, stmt1, BSI_NEW_STMT);
     }
 }
 

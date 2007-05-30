@@ -263,11 +263,13 @@ nearest_common_dominator_of_uses (tree stmt)
 
 /* Given a statement (STMT) and the basic block it is currently in (FROMBB), 
    determine the location to sink the statement to, if any.
-   Return the basic block to sink it to, or NULL if we should not sink
-   it.  */
+   Returns true if there is such location; in that case, TOBB is set to the
+   basic block of the location, and TOBSI points to the statement before
+   that STMT should be moved.  */
 
-static tree
-statement_sink_location (tree stmt, basic_block frombb)
+static bool
+statement_sink_location (tree stmt, basic_block frombb, basic_block *tobb,
+			 block_stmt_iterator *tobsi)
 {
   tree use, def;
   use_operand_p one_use = NULL_USE_OPERAND_P;
@@ -291,10 +293,10 @@ statement_sink_location (tree stmt, basic_block frombb)
 
   /* Return if there are no immediate uses of this stmt.  */
   if (one_use == NULL_USE_OPERAND_P)
-    return NULL;
+    return false;
 
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
-    return NULL;
+    return false;
   rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
   /* There are a few classes of things we can't or don't move, some because we
@@ -325,21 +327,21 @@ statement_sink_location (tree stmt, basic_block frombb)
       || is_hidden_global_store (stmt)
       || ann->has_volatile_ops
       || !ZERO_SSA_OPERANDS (stmt, SSA_OP_VUSE))
-    return NULL;
+    return false;
   
   FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_ALL_DEFS)
     {
       tree def = DEF_FROM_PTR (def_p);
       if (is_global_var (SSA_NAME_VAR (def))
 	  || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (def))
-	return NULL;
+	return false;
     }
     
   FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
     {
       tree use = USE_FROM_PTR (use_p);
       if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (use))
-	return NULL;
+	return false;
     }
   
   /* If all the immediate uses are not in the same place, find the nearest
@@ -351,13 +353,13 @@ statement_sink_location (tree stmt, basic_block frombb)
       basic_block commondom = nearest_common_dominator_of_uses (stmt);
      
       if (commondom == frombb)
-	return NULL;
+	return false;
 
       /* Our common dominator has to be dominated by frombb in order to be a
 	 trivially safe place to put this statement, since it has multiple
 	 uses.  */     
       if (!dominated_by_p (CDI_DOMINATORS, commondom, frombb))
-	return NULL;
+	return false;
       
       /* It doesn't make sense to move to a dominator that post-dominates
 	 frombb, because it means we've just moved it into a path that always
@@ -367,17 +369,19 @@ statement_sink_location (tree stmt, basic_block frombb)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "Not moving store, common dominator post-dominates from block.\n");
-	  return NULL;
+	  return false;
 	}
 
       if (commondom == frombb || commondom->loop_depth > frombb->loop_depth)
-	return NULL;
+	return false;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Common dominator of all uses is %d\n",
 		   commondom->index);
 	}
-      return first_stmt (commondom);
+      *tobb = commondom;
+      *tobsi = bsi_after_labels (commondom);
+      return true;
     }
 
   use = USE_STMT (one_use);
@@ -386,8 +390,10 @@ statement_sink_location (tree stmt, basic_block frombb)
       sinkbb = bb_for_stmt (use);
       if (sinkbb == frombb || sinkbb->loop_depth > frombb->loop_depth
 	  || sinkbb->loop_father != frombb->loop_father)
-	return NULL;      
-      return use;
+	return false;
+      *tobb = sinkbb;
+      *tobsi = bsi_for_stmt (use);
+      return true;
     }
 
   /* Note that at this point, all uses must be in the same statement, so it
@@ -395,10 +401,9 @@ statement_sink_location (tree stmt, basic_block frombb)
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
     break;
 
-  
   sinkbb = find_bb_for_arg (use, def);
   if (!sinkbb)
-    return NULL;
+    return false;
 
   /* This will happen when you have
      a_3 = PHI <a_13, a_26>
@@ -409,12 +414,15 @@ statement_sink_location (tree stmt, basic_block frombb)
      we can't sink it.  */
 
   if (bb_for_stmt (use) == frombb)
-    return NULL;
+    return false;
   if (sinkbb == frombb || sinkbb->loop_depth > frombb->loop_depth
       || sinkbb->loop_father != frombb->loop_father)
-    return NULL;
+    return false;
 
-  return first_stmt (sinkbb);
+  *tobb = sinkbb;
+  *tobsi = bsi_after_labels (sinkbb);
+
+  return true;
 }
 
 /* Perform code sinking on BB */
@@ -441,10 +449,9 @@ sink_code_in_bb (basic_block bb)
     {
       tree stmt = bsi_stmt (bsi);	
       block_stmt_iterator tobsi;
-      tree sinkstmt;
-      
-      sinkstmt = statement_sink_location (stmt, bb);
-      if (!sinkstmt)
+      basic_block tobb;
+
+      if (!statement_sink_location (stmt, bb, &tobb, &tobsi))
 	{
 	  if (!bsi_end_p (bsi))
 	    bsi_prev (&bsi);
@@ -455,18 +462,13 @@ sink_code_in_bb (basic_block bb)
 	  fprintf (dump_file, "Sinking ");
 	  print_generic_expr (dump_file, stmt, TDF_VOPS);
 	  fprintf (dump_file, " from bb %d to bb %d\n",
-		   bb->index, bb_for_stmt (sinkstmt)->index);
+		   bb->index, tobb->index);
 	}
-      tobsi = bsi_for_stmt (sinkstmt);
-      /* Find the first non-label.  */
-      while (!bsi_end_p (tobsi)
-             && TREE_CODE (bsi_stmt (tobsi)) == LABEL_EXPR)
-        bsi_next (&tobsi);
       
       /* If this is the end of the basic block, we need to insert at the end
          of the basic block.  */
       if (bsi_end_p (tobsi))
-	bsi_move_to_bb_end (&bsi, bb_for_stmt (sinkstmt));
+	bsi_move_to_bb_end (&bsi, tobb);
       else
 	bsi_move_before (&bsi, &tobsi);
 

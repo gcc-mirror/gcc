@@ -2776,7 +2776,9 @@ bsi_move_after (block_stmt_iterator *from, block_stmt_iterator *to)
 {
   tree stmt = bsi_stmt (*from);
   bsi_remove (from, false);
-  bsi_insert_after (to, stmt, BSI_SAME_STMT);
+  /* We must have BSI_NEW_STMT here, as bsi_move_after is sometimes used to
+     move statements to an empty block.  */
+  bsi_insert_after (to, stmt, BSI_NEW_STMT);
 }
 
 
@@ -2787,6 +2789,9 @@ bsi_move_before (block_stmt_iterator *from, block_stmt_iterator *to)
 {
   tree stmt = bsi_stmt (*from);
   bsi_remove (from, false);
+  /* For consistency with bsi_move_after, it might be better to have
+     BSI_NEW_STMT here; however, that breaks several places that expect
+     that TO does not change.  */
   bsi_insert_before (to, stmt, BSI_SAME_STMT);
 }
 
@@ -3993,7 +3998,7 @@ tree_redirect_edge_and_branch (edge e, basic_block dest)
   basic_block bb = e->src;
   block_stmt_iterator bsi;
   edge ret;
-  tree label, stmt;
+  tree stmt;
 
   if (e->flags & EDGE_ABNORMAL)
     return NULL;
@@ -4004,8 +4009,6 @@ tree_redirect_edge_and_branch (edge e, basic_block dest)
 
   if (e->dest == dest)
     return NULL;
-
-  label = tree_block_label (dest);
 
   bsi = bsi_last (bb);
   stmt = bsi_end_p (bsi) ? NULL : bsi_stmt (bsi);
@@ -4024,6 +4027,7 @@ tree_redirect_edge_and_branch (edge e, basic_block dest)
     case SWITCH_EXPR:
       {
         tree cases = get_cases_for_edge (e, stmt);
+	tree label = tree_block_label (dest);
 
 	/* If we have a list of cases associated with E, then use it
 	   as it's a lot faster than walking the entire case vector.  */

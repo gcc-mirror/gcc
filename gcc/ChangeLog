@@ -1,3 +1,17 @@
+2007-05-30  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-scalar-evolution.c (scev_const_prop): Do not create labels.
+	* tree-ssa-sink.c (statement_sink_location): Return basic block and
+	bsi of the location where statements should be inserted.
+	(sink_code_in_bb): Take bsi from statement_sink_location.
+	* lambda-code.c (lambda_loopnest_to_gcc_loopnest): Use bsi_after_labels
+	instead of bsi_start.
+	* tree-profile.c (tree_gen_ic_func_profiler): Pass BSI_NEW_STMT to
+	bsi_insert_after.
+	* tree-cfg.c (bsi_move_after): Pass BSI_NEW_STMT to bsi_insert_after.
+	(bsi_move_before): Document inconsistency with bsi_move_after.
+	(tree_redirect_edge_and_branch): Do not create labels if not necessary.
+
 2007-05-30 Uros Bizjak <ubizjak@gmail.com>
 
 	* config/i386/i386.h (TARGET_ABM): New define.
