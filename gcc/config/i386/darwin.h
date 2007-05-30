@@ -26,7 +26,7 @@ Boston, MA 02110-1301, USA.  */
 #define TARGET_VERSION fprintf (stderr, " (i686 Darwin)");
 
 #undef  TARGET_64BIT
-#define TARGET_64BIT (target_flags & MASK_64BIT)
+#define TARGET_64BIT OPTION_ISA_64BIT
 
 #ifdef IN_LIBGCC2
 #undef TARGET_64BIT

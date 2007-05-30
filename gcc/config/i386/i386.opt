@@ -23,18 +23,6 @@ m128bit-long-double
 Target RejectNegative Report Mask(128BIT_LONG_DOUBLE)
 sizeof(long double) is 16
 
-m32
-Target RejectNegative Negative(m64) Report InverseMask(64BIT)
-Generate 32bit i386 code
-
-m3dnow
-Target Report Mask(3DNOW)
-Support 3DNow! built-in functions
-
-m64
-Target RejectNegative Negative(m32) Report Mask(64BIT)
-Generate 64bit x86-64 code
-
 m80387
 Target Report Mask(80387)
 Use hardware fp
@@ -119,10 +107,6 @@ mintel-syntax
 Target Undocumented
 ;; Deprecated
 
-mmmx
-Target Report Mask(MMX)
-Support MMX built-in functions
-
 mms-bitfields
 Target Report Mask(MS_BITFIELD_LAYOUT)
 Use native (MS) bitfield layout
@@ -171,50 +155,6 @@ msoft-float
 Target InverseMask(80387)
 Do not use hardware fp
 
-msse
-Target Report Mask(SSE)
-Support MMX and SSE built-in functions and code generation
-
-msse2
-Target Report Mask(SSE2)
-Support MMX, SSE and SSE2 built-in functions and code generation
-
-msse3
-Target Report Mask(SSE3)
-Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation
-
-mssse3
-Target Report Mask(SSSE3)
-Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation
-
-msse4.1
-Target Report Mask(SSE4_1)
-Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation
-
-msse4a
-Target Report Mask(SSE4A)
-Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation
-
-mpopcnt
-Target Report Mask(POPCNT)
-Support code generation of popcnt instruction for popcount built-ins 
-namely __builtin_popcount, __builtin_popcountl and __builtin_popcountll
-
-mabm
-Target Report Mask(ABM)
-Support code generation of Advanced Bit Manipulation (ABM) instructions,
-which include popcnt and lzcnt instructions, for popcount and clz built-ins
-namely __builtin_popcount, __builtin_popcountl, __builtin_popcountll and
-__builtin_clz, __builtin_clzl, __builtin_clzll
-
-mcx16
-Target Report RejectNegative Var(x86_cmpxchg16b)
-Support code generation of cmpxchg16b instruction.
-
-msahf
-Target Report RejectNegative Var(x86_sahf)
-Support code generation of sahf instruction in 64bit x86-64 code
-
 msseregparm
 Target RejectNegative Mask(SSEREGPARM)
 Use SSE register passing conventions for SF and DF mode
@@ -243,5 +183,66 @@ mtune=
 Target RejectNegative Joined Var(ix86_tune_string)
 Schedule code for given CPU
 
-;; Support Athlon 3Dnow builtins
-Mask(3DNOW_A)
+;; ISA support
+
+m32
+Target RejectNegative Negative(m64) Report InverseMask(ISA_64BIT) Var(ix86_isa_flags) VarExists
+Generate 32bit i386 code
+
+m64
+Target RejectNegative Negative(m32) Report Mask(ISA_64BIT) Var(ix86_isa_flags) VarExists
+Generate 64bit x86-64 code
+
+mmmx
+Target Report Mask(ISA_MMX) Var(ix86_isa_flags) VarExists
+Support MMX built-in functions
+
+m3dnow
+Target Report Mask(ISA_3DNOW) Var(ix86_isa_flags) VarExists
+Support 3DNow! built-in functions
+
+m3dnowa
+Target Undocumented Mask(ISA_3DNOW_A) Var(ix86_isa_flags) VarExists
+Support Athlon 3Dnow! built-in functions
+
+msse
+Target Report Mask(ISA_SSE) Var(ix86_isa_flags) VarExists
+Support MMX and SSE built-in functions and code generation
+
+msse2
+Target Report Mask(ISA_SSE2) Var(ix86_isa_flags) VarExists
+Support MMX, SSE and SSE2 built-in functions and code generation
+
+msse3
+Target Report Mask(ISA_SSE3) Var(ix86_isa_flags) VarExists
+Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation
+
+mssse3
+Target Report Mask(ISA_SSSE3) Var(ix86_isa_flags) VarExists
+Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation
+
+msse4.1
+Target Report Mask(ISA_SSE4_1) Var(ix86_isa_flags) VarExists
+Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation
+
+msse4a
+Target Report Mask(ISA_SSE4A) Var(ix86_isa_flags) VarExists
+Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation
+
+;; Instruction support
+
+mabm
+Target Report RejectNegative Var(x86_abm)
+Support code generation of Advanced Bit Manipulation (ABM) instructions.
+
+mcx16
+Target Report RejectNegative Var(x86_cmpxchg16b)
+Support code generation of cmpxchg16b instruction.
+
+mpopcnt
+Target Report RejectNegative Var(x86_popcnt)
+Support code generation of popcnt instruction.
+
+msahf
+Target Report RejectNegative Var(x86_sahf)
+Support code generation of sahf instruction in 64bit x86-64 code.

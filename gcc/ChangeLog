@@ -1,3 +1,58 @@
+2007-05-30 Uros Bizjak <ubizjak@gmail.com>
+
+	* config/i386/i386.h (TARGET_ABM): New define.
+	(TARGET_POPCNT): Ditto.
+	(TARGET_64BIT, TARGET_MMX, TARGET_3DNOW, TARGET_3DNOW_A, TARGET_SSE*):
+	New temporary defines to redefine from OPTION_ISA_* defines.
+	(MASK_64BIT, MASK_MMX, MASK_3DNOW, MASK_3DNOW_A, MASK_SSE*):
+	New temporary defines to redefine from OPTION_MASK_ISA_* defines.
+	(ix86_isa_flags): New extern int declaration.
+	(TARGET_SUBTARGET_DEFAULT): New define.
+	(TARGET_SUBTARGET_ISA_DEFAULT): Ditto.
+	(TARGET_SUBTARGET32_DEFAULT): Ditto.
+	(TARGET_SUBTARGET32_ISA_DEFAULT): Ditto.
+	(TARGET_SUBTARGET64_ISA_DEFAULT): Ditto.
+	* config/i386/unix.h: Undef TARGET_SUBTARGET_DEFAULT before define.
+	* config/i386/darwin.h: Change TARGET_64BIT define to
+	OPTION_ISA_64BIT.
+
+	* config/i386/i386.opt (m3dnowa): Define as undocumented option
+	using existing "ix86_isa_flags" varible.
+	(m32, m64): Use existing "ix86_isa_flags" variable.
+	(mmmx, m3dnow): Ditto.
+	(msse, msse2, msse3, mssse3, msse4.1, msse4a): Ditto.
+	(mabm): Define as non-negative option using "x86_abm" variable.
+	(mpopcnt): Define as non-negative option using "x86_popcnt" variable.
+
+	* config/i386/i386.c (ix86_arch_features) [X86_ARCH_CMOVE]:
+	Rewrite feature test bitmap.
+	(ix86_isa_flags): New initialized global int varible.
+	(ix86_isa_flags_explicit): New static int variable.
+	(ix86_handle_option): Set "ix86_isa_flags_explicit" when mmmx, m3dnow,
+	msse, msse2, msse3, msse4.1 and msse4a option is processed.  Change
+	i86_isa_flags and ix86_isa_flags_explicit, not target_flags and
+	target_flags_explicit.
+	(override_options): Remove "target_enable" and "target_disable" fields
+	from "struct ptt". Update processor_target_table accordingly. Remove
+	PTA_PREFETCH_SSE from processor_alias_table entry if PTE_SSE is
+	defined and rearrange PTA_* bits.  Use "ix86_isa_flags" instead of
+	"target_flags" and "ix86_isa_flags_explicit" instead of
+	"target_flags_explicit" when masked with MASK_64BIT, MASK_MMX,
+	MASK_3DNOW, MASK_3DNOW_A or MASK_SSE*.  Set "x86_abm" to true when
+	PTA_ABM is set in processor_alias_table flags entry.  Set "x86_popcnt"
+	to true when either of PTA_POPCNT or PTA_ABM is set in
+	processor_alias_table flags entry.  Set "x86_prefetch_sse" to true
+	when either of PTA_PREFETCH_SSE or PTA_SSE is set in
+	processor_alias_table flags entry.  Remove handling of
+	"target_enable" and "target_disable" fields of processor_target_table.
+	Mask "target_flags" with TARGET_SUBTARGET32_DEFAULT for 32-bit
+	targets or with TARGET_SUBTARGET64_DEFAULT for 64-bit targets.
+	Mask "ix86_isa_flags" with TARGET_SUBTARGET32_ISA_DEFAULT for 32-bit
+	targets or with TARGET_SUBTARGET64_ISA_DEFAULT for 64-bit targets.
+	(def_builtin): Mask "mask" variable with "ix86_isa_flags", not
+	"target_flags".
+	(TARGET_DEFAULT_TARGET_FLAGS): Do not include TARGET_64BIT_DEFAULT.
+
 2007-05-29  David Daney  <ddaney@avtrex.com
 
 	PR gcc/31975
@@ -119,7 +174,6 @@
 	* varpool.c (add_new_static_var): New function.
 	* cgraph.h (add_new_static_var): Declare.
 
-
 2007-05-27  Eric Christopher  <echristo@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_prologue): Update
@@ -136,7 +190,8 @@
 	* tree-ssa-threadupdate.c (thread_block): Ditto.
 	(thread_through_all_blocks): Ditto.  Assert that loops were analysed.
 	* tree-ssa-loop-manip.c (rewrite_into_loop_closed_ssa,
-	verify_loop_closed_ssa): Check number_of_loops instead of current_loops.
+	verify_loop_closed_ssa): Check number_of_loops instead of
+	current_loops.
 	* predict.c (tree_estimate_probability): Ditto.
 	* tree-if-conv.c (main_tree_if_conversion): Ditto.
 	* tree-ssa-loop-ch.c (copy_loop_headers): Ditto.
