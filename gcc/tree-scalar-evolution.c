@@ -2968,7 +2968,6 @@ scev_const_prop (void)
       /* Ensure that it is possible to insert new statements somewhere.  */
       if (!single_pred_p (exit->dest))
 	split_loop_exit_edge (exit);
-      tree_block_label (exit->dest);
       bsi = bsi_after_labels (exit->dest);
 
       ex_loop = superloop_at_depth (loop,

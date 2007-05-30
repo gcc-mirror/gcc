@@ -1881,8 +1881,8 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       exit = single_exit (temp);
       exitcond = get_loop_exit_condition (temp);
       bb = bb_for_stmt (exitcond);
-      bsi = bsi_start (bb);
-      bsi_insert_after (&bsi, stmts, BSI_NEW_STMT);
+      bsi = bsi_after_labels (bb);
+      bsi_insert_before (&bsi, stmts, BSI_NEW_STMT);
 
       /* Create the new iv.  */
 
