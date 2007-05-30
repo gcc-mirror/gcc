@@ -1,3 +1,9 @@
+2007-05-29  David Daney  <ddaney@avtrex.com
+
+	PR gcc/31975
+	* config/mips/mips.c (mips_output_mi_thunk): Emit
+	NOTE_INSN_PROLOGUE_END at beginning of the thunk.
+
 2007-05-29  Hui-May Chang  <hm.chang@apple.com>
 	* config/i386/i386.c (ix86_function_regparm): Added checking of 
 	ix86_force_align_arg_pointer to determine the number of
