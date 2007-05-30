@@ -36,23 +36,35 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(top_srcdir)/configure \
+DIST_COMMON = README $(am__configure_deps) \
+	$(srcdir)/../../config.guess $(srcdir)/../../config.sub \
+	$(srcdir)/../../install-sh $(srcdir)/../../ltmain.sh \
+	$(srcdir)/../../missing $(srcdir)/../../mkinstalldirs \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(top_srcdir)/configure \
 	$(top_srcdir)/gnu/classpath/Configuration.java.in \
 	$(top_srcdir)/gnu/java/security/Configuration.java.in \
 	$(top_srcdir)/resource/META-INF/services/java.util.prefs.PreferencesFactory.in \
-	AUTHORS COPYING ChangeLog INSTALL NEWS TODO compile \
-	config.guess config.sub depcomp install-sh ltcf-c.sh \
-	ltcf-cxx.sh ltcf-gcj.sh ltconfig ltmain.sh missing \
-	mkinstalldirs
+	../../ABOUT-NLS ../../COPYING ../../COPYING.LIB \
+	../../ChangeLog ../../README ../../compile ../../config.guess \
+	../../config.rpath ../../config.sub ../../depcomp \
+	../../install-sh ../../ltmain.sh ../../missing \
+	../../mkinstalldirs ../../ylwrap AUTHORS COPYING ChangeLog \
+	INSTALL NEWS TODO compile config.guess config.sub depcomp \
+	install-sh ltcf-c.sh ltcf-cxx.sh ltcf-gcj.sh ltconfig \
+	ltmain.sh missing mkinstalldirs
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../config/lead-dot.m4 \
 	$(top_srcdir)/../../config/multi.m4 \
 	$(top_srcdir)/../../config/no-executables.m4 \
-	$(top_srcdir)/../../libtool.m4 $(top_srcdir)/m4/acattribute.m4 \
-	$(top_srcdir)/m4/accross.m4 $(top_srcdir)/m4/acinclude.m4 \
+	$(top_srcdir)/../../libtool.m4 \
+	$(top_srcdir)/../../ltoptions.m4 \
+	$(top_srcdir)/../../ltsugar.m4 \
+	$(top_srcdir)/../../ltversion.m4 \
+	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
+	$(top_srcdir)/m4/acinclude.m4 \
 	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
 	$(top_srcdir)/m4/gcc_attribute.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
@@ -62,7 +74,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/../../mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES = gnu/classpath/Configuration.java \
 	gnu/java/security/Configuration.java \
@@ -98,6 +110,7 @@ ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
+AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -149,6 +162,7 @@ DATE = @DATE@
 DEFAULT_PREFS_PEER = @DEFAULT_PREFS_PEER@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
@@ -161,6 +175,7 @@ ERROR_CFLAGS = @ERROR_CFLAGS@
 EXAMPLESDIR = @EXAMPLESDIR@
 EXEEXT = @EXEEXT@
 FASTJAR = @FASTJAR@
+FGREP = @FGREP@
 FIND = @FIND@
 FOUND_CACAO_FALSE = @FOUND_CACAO_FALSE@
 FOUND_CACAO_TRUE = @FOUND_CACAO_TRUE@
@@ -187,6 +202,7 @@ GENINSRC_TRUE = @GENINSRC_TRUE@
 GJDOC = @GJDOC@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
+GREP = @GREP@
 GTK_CFLAGS = @GTK_CFLAGS@
 GTK_LIBS = @GTK_LIBS@
 INIT_LOAD_LIBRARY = @INIT_LOAD_LIBRARY@
@@ -207,6 +223,7 @@ JIKES = @JIKES@
 JIKESENCODING = @JIKESENCODING@
 JIKESWARNINGS = @JIKESWARNINGS@
 KJC = @KJC@
+LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDEBUG = @LIBDEBUG@
 LIBICONV = @LIBICONV@
@@ -226,6 +243,7 @@ MKDIR = @MKDIR@
 MOC = @MOC@
 MOZILLA_CFLAGS = @MOZILLA_CFLAGS@
 MOZILLA_LIBS = @MOZILLA_LIBS@
+NM = @NM@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -247,6 +265,7 @@ RANLIB = @RANLIB@
 REGEN_PARSERS_FALSE = @REGEN_PARSERS_FALSE@
 REGEN_PARSERS_TRUE = @REGEN_PARSERS_TRUE@
 REMOVE = @REMOVE@
+SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRICT_WARNING_CFLAGS = @STRICT_WARNING_CFLAGS@
@@ -274,8 +293,10 @@ X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 ZIP = @ZIP@
+ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
+ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
@@ -308,6 +329,7 @@ install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
 localstatedir = @localstatedir@
+lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
