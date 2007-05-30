@@ -1,3 +1,25 @@
+2007-05-30  Eric Christopher  <echristo@gmail.com>
+
+	* genrecog.c: Include regs.h in generated file.
+	* genemit.c: Ditto. Fix up formatting.
+	* config/mn10300/constraints.md: New.
+	* config/mn10300/mn10300.md: Include.
+	* config/mn10300/mn10300.c(mn10300_secondary_reload_class):
+	Fix up for removed macro.
+	* config/mn10300/predicates.md (call_address_operand):  Ditto.
+	* config/mn10300/mn10300.h (REG_CLASS_FROM_LETTER): Delete.
+	(CONST_OK_FOR_I): Ditto.
+	(CONST_OK_FOR_J): Ditto.
+	(CONST_OK_FOR_K): Ditto.
+	(CONST_OK_FOR_L): Ditto.
+	(CONST_OK_FOR_M): Ditto.
+	(CONST_OK_FOR_N): Ditto.
+	(CONST_DOUBLE_OK_FOR_LETTER_P): Ditto.
+	(OK_FOR_Q): Ditto.
+	(OK_FOR_R): Ditto.
+	(OK_FOR_T): Ditto.
+	(EXTRA_CONSTRAINT): Ditto.
+
 2007-05-30 Uros Bizjak <ubizjak@gmail.com>
 
 	* config/i386/i386.h (MASK_64BIT, MASK_MMX, MASK_3DNOW*, MASK_SSE*):
@@ -97,7 +119,7 @@
 	NOTE_INSN_PROLOGUE_END at beginning of the thunk.
 
 2007-05-29  Hui-May Chang  <hm.chang@apple.com>
-	* config/i386/i386.c (ix86_function_regparm): Added checking of 
+	* config/i386/i386.c (ix86_function_regparm): Added checking of
 	ix86_force_align_arg_pointer to determine the number of
 	register parameters.
 
@@ -199,9 +221,9 @@
 	* target/i386/i386.c (ix86_expand_vector_move): Expand unaligned
 	memory access via x86_expand_vector_move_misalign() only for
 	TImode values on 32-bit targets.
-	
-2007-05-28  Razya Ladelsky  <razya@il.ibm.com>  
-        
+
+2007-05-28  Razya Ladelsky  <razya@il.ibm.com>
+
 	* matrix-reorg.c: New file. Implement matrix flattening and
 	transposing optimization.
 	* tree-pass.h: Add matrix reorg pass.

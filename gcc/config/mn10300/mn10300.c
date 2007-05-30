@@ -274,7 +274,7 @@ print_operand (FILE *file, rtx x, int code)
 	else
 	  print_operand (file, x, 0);
 	break;
-     
+
       case 'D':
 	switch (GET_CODE (x))
 	  {
@@ -387,7 +387,7 @@ print_operand (FILE *file, rtx x, int code)
 		      gcc_unreachable ();
 		    case VOIDmode:
 		    case DImode:
-		      print_operand_address (file, 
+		      print_operand_address (file,
 					     GEN_INT (CONST_DOUBLE_HIGH (x)));
 		      break;
 		    default:
@@ -882,7 +882,7 @@ expand_prologue (void)
 	default:
 	  gcc_unreachable ();
 	}
-	  
+
       /* Now prepare register a0, if we have decided to use it.  */
       switch (strategy)
 	{
@@ -900,11 +900,11 @@ expand_prologue (void)
 	    emit_insn (gen_addsi3 (reg, reg, GEN_INT (xsize)));
 	  reg = gen_rtx_POST_INC (SImode, reg);
 	  break;
-	  
+
 	default:
 	  gcc_unreachable ();
 	}
-      
+
       /* Now actually save the FP registers.  */
       for (i = FIRST_FP_REGNUM; i <= LAST_FP_REGNUM; ++i)
 	if (regs_ever_live[i] && ! call_used_regs[i])
@@ -924,7 +924,7 @@ expand_prologue (void)
 		  }
 		else
 		  addr = stack_pointer_rtx;
-		
+
 		xsize += 4;
 	      }
 
@@ -1109,7 +1109,7 @@ expand_epilogue (void)
 					      + REG_SAVE_BYTES - 252)));
 	      size = 252 - REG_SAVE_BYTES - 4 * num_regs_to_save;
 	      break;
-	      
+
 	    case restore_a1:
 	      reg = gen_rtx_REG (SImode, FIRST_ADDRESS_REGNUM + 1);
 	      emit_insn (gen_movsi (reg, stack_pointer_rtx));
@@ -1130,7 +1130,7 @@ expand_epilogue (void)
 	if (regs_ever_live[i] && ! call_used_regs[i])
 	  {
 	    rtx addr;
-	    
+
 	    if (reg)
 	      addr = reg;
 	    else if (size)
@@ -1167,7 +1167,7 @@ expand_epilogue (void)
 
      If the stack size + register save area is more than 255 bytes,
      then the stack must be cut back here since the size + register
-     save size is too big for a ret/retf instruction. 
+     save size is too big for a ret/retf instruction.
 
      Else leave it alone, it will be cut back as part of the
      ret/retf instruction, or there wasn't any stack to begin with.
@@ -1333,7 +1333,7 @@ store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 }
 
 /* What (if any) secondary registers are needed to move IN with mode
-   MODE into a register in register class CLASS. 
+   MODE into a register in register class CLASS.
 
    We might be able to simplify this.  */
 enum reg_class
@@ -1380,9 +1380,10 @@ mn10300_secondary_reload_class (enum reg_class class, enum machine_mode mode,
 	return DATA_OR_EXTENDED_REGS;
       return DATA_REGS;
     }
- 
+
   if (TARGET_AM33_2 && class == FP_REGS
-      && GET_CODE (in) == MEM && ! OK_FOR_Q (in))
+      && GET_CODE (in) == MEM
+      && ! (GET_CODE (in) == MEM && !CONSTANT_ADDRESS_P (XEXP (in, 0))))
     {
       if (TARGET_AM33)
 	return DATA_OR_EXTENDED_REGS;
@@ -1426,11 +1427,11 @@ initial_offset (int from, int to)
 	return (get_frame_size () + REG_SAVE_BYTES
 		+ 4 * fp_regs_to_save ()
 		+ (current_function_outgoing_args_size
-		   ? current_function_outgoing_args_size + 4 : 0)); 
+		   ? current_function_outgoing_args_size + 4 : 0));
       else
 	return (get_frame_size ()
 		+ (current_function_outgoing_args_size
-		   ? current_function_outgoing_args_size + 4 : 0)); 
+		   ? current_function_outgoing_args_size + 4 : 0));
     }
 
   /* The difference between the frame pointer and stack pointer is the sum
@@ -1439,7 +1440,7 @@ initial_offset (int from, int to)
   if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     return (get_frame_size ()
 	    + (current_function_outgoing_args_size
-	       ? current_function_outgoing_args_size + 4 : 0)); 
+	       ? current_function_outgoing_args_size + 4 : 0));
 
   gcc_unreachable ();
 }
@@ -1624,7 +1625,7 @@ mn10300_function_value (tree valtype, tree func, int outgoing)
     = gen_rtx_EXPR_LIST (VOIDmode,
 			 gen_rtx_REG (mode, FIRST_ADDRESS_REGNUM),
 			 GEN_INT (0));
-  
+
   XVECEXP (rv, 0, 1)
     = gen_rtx_EXPR_LIST (VOIDmode,
 			 gen_rtx_REG (mode, FIRST_DATA_REGNUM),
@@ -1672,7 +1673,7 @@ output_tst (rtx operand, rtx insn)
 	}
 
       /* Are we setting a data register to zero (this does not win for
-	 address registers)? 
+	 address registers)?
 
 	 If it's a call clobbered register, have we past a call?
 
@@ -1688,7 +1689,7 @@ output_tst (rtx operand, rtx insn)
 	      == REGNO_REG_CLASS (REGNO (operand)))
 	  && REGNO_REG_CLASS (REGNO (SET_DEST (set))) != EXTENDED_REGS
 	  && REGNO (SET_DEST (set)) != REGNO (operand)
-	  && (!past_call 
+	  && (!past_call
 	      || !call_used_regs[REGNO (SET_DEST (set))]))
 	{
 	  rtx xoperands[2];
@@ -1707,7 +1708,7 @@ output_tst (rtx operand, rtx insn)
 	      != REGNO_REG_CLASS (REGNO (operand)))
 	  && REGNO_REG_CLASS (REGNO (SET_DEST (set))) == EXTENDED_REGS
 	  && REGNO (SET_DEST (set)) != REGNO (operand)
-	  && (!past_call 
+	  && (!past_call
 	      || !call_used_regs[REGNO (SET_DEST (set))]))
 	{
 	  rtx xoperands[2];
@@ -2087,7 +2088,7 @@ mn10300_wide_const_load_uses_clr (rtx operands[2])
 	val[1] = INTVAL (high);
       }
       break;
-      
+
     case CONST_DOUBLE:
       if (GET_MODE (operands[1]) == DFmode)
 	{
@@ -2103,7 +2104,7 @@ mn10300_wide_const_load_uses_clr (rtx operands[2])
 	  val[1] = CONST_DOUBLE_HIGH (operands[1]);
 	}
       break;
-      
+
     default:
       return false;
     }

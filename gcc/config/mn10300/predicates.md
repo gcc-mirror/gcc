@@ -44,7 +44,7 @@
   (match_code "symbol_ref,reg,unspec")
 {
   if (flag_pic)
-    return (EXTRA_CONSTRAINT (op, 'S') || GET_CODE (op) == REG);
+    return (satisfies_constraint_S (op) || GET_CODE (op) == REG);
 
   return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == REG);
 })
