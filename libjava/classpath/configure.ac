@@ -9,6 +9,10 @@ dnl define([AC_CACHE_SAVE], )dnl
 AC_INIT([GNU Classpath],[0.94-pre],[classpath@gnu.org],[classpath])
 AC_CONFIG_SRCDIR(java/lang/System.java)
 
+dnl GCJ LOCAL
+AC_CONFIG_AUX_DIR(../..)
+dnl END GCJ LOCAL
+
 AC_CANONICAL_TARGET
 
 dnl GCJ LOCAL

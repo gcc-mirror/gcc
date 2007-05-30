@@ -1,3 +1,11 @@
+2007-05-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libjava/32098
+	* configure.ac: Add AC_CONFIG_AUX_DIR(../..).
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+	* Makefile.in: Likewise.
+
 2007-04-25  Andrew Haley  <aph@redhat.com>
 
 	* java/io/ObjectStreamClass.java (ensureFieldsSet): New method.
