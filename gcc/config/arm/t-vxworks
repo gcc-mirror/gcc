@@ -1,10 +1,27 @@
-# Multilibs for VxWorks.
+LIB1ASMSRC = arm/lib1funcs.asm
+LIB1ASMFUNCS = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls _bb_init_func _call_via_rX _interwork_call_via_rX
+
+# We want fine grained libraries, so use the new code to build the
+# floating point emulation libraries.
+FPBIT = fp-bit.c
+DPBIT = dp-bit.c
+
+fp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#define FLOAT' > fp-bit.c
+	echo '#ifndef __ARMEB__' >> fp-bit.c
+	echo '#define FLOAT_BIT_ORDER_MISMATCH' >> fp-bit.c
+	echo '#endif' >> fp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
+
+dp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#ifndef __ARMEB__' > dp-bit.c
+	echo '#define FLOAT_BIT_ORDER_MISMATCH' >> dp-bit.c
+	echo '#endif' >> dp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> dp-bit.c
 
 MULTILIB_OPTIONS = \
-  t4/t4be/t4t/t4tbe/t5/t5be/t5t/t5tbe/txscale/txscalebe
-
-MULTILIB_DIRNAMES = \
-  ARMARCH4gnu ARMARCH4gnube ARMARCH4_Tgnu ARMARCH4_Tgnube \
-  ARMARCH5gnu ARMARCH5gnube ARMARCH5_Tgnu ARMARCH5_Tgnube \
-  XSCALEgnu XSCALEgnube
-
+  mrtp fPIC \
+  t4/t4be/t4t/t4tbe/t5/t5be/t5t/t5tbe/tstrongarm/txscale/txscalebe
+MULTILIB_MATCHES = fPIC=fpic
+# Don't build -fPIC multilibs for kernel or Thumb code.
+MULTILIB_EXCEPTIONS = fPIC* mrtp/fPIC/*t[45]t*

@@ -63,6 +63,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define WINT_TYPE_SIZE 16
 
 /* Dwarf2 unwind info is not supported.  */
+#undef DWARF2_UNWIND_INFO
 #define DWARF2_UNWIND_INFO 0
 
 /* VxWorks uses DWARF2.  */

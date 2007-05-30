@@ -26,6 +26,8 @@
 #ifndef GCC_ARM_H
 #define GCC_ARM_H
 
+#include "config/vxworks-dummy.h"
+
 /* The architecture define.  */
 extern char arm_arch_name[];
 

@@ -54,6 +54,8 @@ Boston, MA 02110-1301, USA.  */
 #ifdef __ELF__
 #ifdef __thumb__
 #define __PLT__  /* Not supported in Thumb assembler (for now).  */
+#elif defined __vxworks && !defined __PIC__
+#define __PLT__ /* Not supported by the kernel loader.  */
 #else
 #define __PLT__ (PLT)
 #endif

@@ -1,3 +1,53 @@
+2007-05-30  Richard Sandiford  <richard@codesourcery.com>
+
+	* config.gcc (arm-wrs-vxworks): Remove dbxelf.h from tm_file.
+	Add vx-common.h.  Include vxworks.h between vx-common.h and
+	arm/vxworks.h.
+	* config/vx-common.h (DWARF2_UNWIND_INFO): Undefine before
+	redefining.
+	* config/vxworks.h (TARGET_ASM_CONSTRUCTOR): Likewise.
+	(TARGET_ASM_DESTRUCTOR): Likewise.
+	* config/arm/vxworks.h (TARGET_OS_CPP_BUILTINS): Check arm_arch_xscale
+	instead of arm_is_xscale.  Use VXWORKS_OS_CPP_BUILTINS.
+	(OVERRIDE_OPTIONS, SUBTARGET_CPP_SPEC): Define.
+	(CC1_SPEC): Add -tstrongarm.  Line up backslashes.
+	(VXWORKS_ENDIAN_SPEC): Define.
+	(ASM_SPEC): Add VXWORKS_ENDIAN_SPEC.
+	(LIB_SPEC, STARTFILE_SPEC, ENDFILE_SPEC): Redefine to their
+	VXWORKS_* equivalents.
+	(LINK_SPEC): Likewise, but add VXWORKS_ENDIAN_SPEC.
+	(ASM_FILE_START): Delete.
+	(TARGET_VERSION): Reformat.
+	(FPUTYPE_DEFAULT, FUNCTION_PROFILER): Define.
+	(DEFAULT_STRUCTURE_SIZE_BOUNDARY): Define.
+	* config/arm/t-vxworks (LIB1ASMSRC, LIB1ASMFUNCS): Define.
+	(FPBIT, DPBIT): Define.
+	(fp-bit.c, dp-bit.c): New rules.
+	(MULTILIB_OPTIONS): Add strongarm, -mrtp and -mrtp/-fPIC multilibs.
+	(MULTILIB_MATCHES, MULTILIB_EXCEPTIONS): Define.
+	* config/arm/arm-protos.h (arm_emit_call_insn): Declare.
+	* config/arm/arm.h: Include vxworks-dummy.h.
+	* config/arm/arm.c (arm_elf_asm_constructor, arm_elf_asm_destructor):
+	Mark with ATTRIBUTE_UNUSED.
+	(arm_override_options): Do not allow VxWorks RTP PIC to be used
+	for Thumb.  Force r9 to be the PIC register for VxWorks RTPs and
+	make it incompatible with -msingle-pic-base.
+	(arm_function_ok_for_sibcall): Return false for calls that might
+	go through a VxWorks PIC PLT entry.
+	(require_pic_register): New function, split out from...
+	(legitimize_pic_address): ...here.  Do not use GOTOFF accesses
+	for VxWorks RTPs.
+	(arm_load_pic_register): Handle the VxWorks RTP initialization
+	sequence.  Use pic_reg as a shorthand for cfun->machine->pic_reg.
+	(arm_emit_call_insn): New function.
+	(arm_assemble_integer): Do not use GOTOFF accesses for VxWorks RTP.
+	* config/arm/arm.md (UNSPEC_PIC_OFFSET): New unspec number.
+	(pic_offset_arm): New pattern.
+	(call, call_value): Use arm_emit_call_insn.
+	(call_internal, call_value_internal): New expanders.
+	* config/arm/lib1funcs.asm (__PLT__): Define to empty for
+	VxWorks unless __PIC__.
+
 2007-05-30  Eric Christopher  <echristo@gmail.com>
 
 	* genrecog.c: Include regs.h in generated file.
