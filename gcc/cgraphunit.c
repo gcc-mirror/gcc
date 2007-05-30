@@ -761,19 +761,6 @@ cgraph_analyze_function (struct cgraph_node *node)
   push_cfun (DECL_STRUCT_FUNCTION (decl));
   cgraph_lower_function (node);
 
-  node->local.estimated_self_stack_size = estimated_stack_frame_size ();
-  node->global.estimated_stack_size = node->local.estimated_self_stack_size;
-  node->global.stack_frame_offset = 0;
-  node->local.inlinable = tree_inlinable_function_p (decl);
-  if (!flag_unit_at_a_time)
-    node->local.self_insns = estimate_num_insns (decl, &eni_inlining_weights);
-  if (node->local.inlinable)
-    node->local.disregard_inline_limits
-      = lang_hooks.tree_inlining.disregard_inline_limits (decl);
-  if (flag_really_no_inline && !node->local.disregard_inline_limits)
-    node->local.inlinable = 0;
-  /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
-  node->global.insns = node->local.self_insns;
   if (!flag_unit_at_a_time)
     {
       bitmap_obstack_initialize (NULL);
