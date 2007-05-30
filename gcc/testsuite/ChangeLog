@@ -18,6 +18,10 @@
 	PR c++/31339
 	* g++.dg/ext/boolcomplex-1.c: New test.
 
+2007-05-28  Razya Ladelsky  <razya@il.ibm.com>
+
+        * gcc.dg/matrix: New directory.
+
 2007-05-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32124
