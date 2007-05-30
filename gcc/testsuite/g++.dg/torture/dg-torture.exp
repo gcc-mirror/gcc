@@ -1,0 +1,7 @@
+# This harness is for tests that should be run at all optimisation levels.
+
+load_lib g++-dg.exp
+
+dg-init
+gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] ""
+dg-finish
