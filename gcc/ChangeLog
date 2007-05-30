@@ -1,3 +1,7 @@
+2007-05-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* tree-vrp.c (compare_names): Initialize sop.
+
 2007-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/31769
