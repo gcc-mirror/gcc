@@ -1,3 +1,8 @@
+2007-05-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libjava/32098
+	* libtool.m4 (_LT_LANG_GCJ_CONFIG): Use gcc to test gcj features.
+
 2007-05-30  Richard Guenther  <rguenther@suse.de>
 
 	* MAINTAINERS (Various Maintainers): Add myself as

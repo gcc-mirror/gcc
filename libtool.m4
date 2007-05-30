@@ -6757,9 +6757,14 @@ _LT_TAG_COMPILER
 _LT_COMPILER_BOILERPLATE
 _LT_LINKER_BOILERPLATE
 
+# We can't call gcj to test gcj features when building libjava in gcc
+# since gcj may depend on ecj1 which may not be available yet.  We use
+# gcc to test gcj features.
+ac_ext=c
+lt_simple_compile_test_code="int some_variable = 0;"
+lt_simple_link_test_code='int main(){return(0);}'
+
 # Allow CC to be a program name with arguments.
-lt_save_CC="$CC"
-CC=${GCJ-"gcj"}
 compiler=$CC
 _LT_TAGVAR(compiler, $1)=$CC
 _LT_CC_BASENAME([$compiler])
@@ -6786,7 +6791,6 @@ if test -n "$compiler"; then
 fi
 
 AC_LANG_RESTORE
-CC="$lt_save_CC"
 ])# _LT_LANG_GCJ_CONFIG
 
 
