@@ -4912,7 +4912,7 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
       if (needed_intregs)
 	{
 	  /* int_addr = gpr + sav; */
-	  t = fold_convert (ptr_type_node, gpr);
+	  t = fold_convert (ptr_type_node, fold_convert (size_type_node, gpr));
 	  t = build2 (PLUS_EXPR, ptr_type_node, sav, t);
 	  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, int_addr, t);
 	  gimplify_and_add (t, pre_p);
@@ -4920,7 +4920,7 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
       if (needed_sseregs)
 	{
 	  /* sse_addr = fpr + sav; */
-	  t = fold_convert (ptr_type_node, fpr);
+	  t = fold_convert (ptr_type_node, fold_convert (size_type_node, fpr));
 	  t = build2 (PLUS_EXPR, ptr_type_node, sav, t);
 	  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, sse_addr, t);
 	  gimplify_and_add (t, pre_p);
@@ -4958,12 +4958,12 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 		}
 	      src_addr = fold_convert (addr_type, src_addr);
 	      src_addr = fold_build2 (PLUS_EXPR, addr_type, src_addr,
-				      size_int (src_offset));
+				      build_int_cst (addr_type, src_offset));
 	      src = build_va_arg_indirect_ref (src_addr);
 
 	      dest_addr = fold_convert (addr_type, addr);
 	      dest_addr = fold_build2 (PLUS_EXPR, addr_type, dest_addr,
-				       size_int (INTVAL (XEXP (slot, 1))));
+				       build_int_cst (addr_type, INTVAL (XEXP (slot, 1))));
 	      dest = build_va_arg_indirect_ref (dest_addr);
 
 	      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, dest, src);

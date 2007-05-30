@@ -5308,7 +5308,8 @@ gimplify_omp_atomic_pipeline (tree *expr_p, tree *pre_p, tree addr,
      floating point.  This allows the atomic operation to properly 
      succeed even with NaNs and -0.0.  */
   x = build3 (COND_EXPR, void_type_node,
-	      build2 (NE_EXPR, boolean_type_node, oldival, oldival2),
+	      build2 (NE_EXPR, boolean_type_node,
+		      fold_convert (itype, oldival), oldival2),
 	      build1 (GOTO_EXPR, void_type_node, label), NULL);
   gimplify_and_add (x, pre_p);
 
