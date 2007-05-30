@@ -1,4 +1,9 @@
-2007-05-30 Uros Bizjak <ubizjak@gmail.com>
+2007-05-30  Dirk Mueller  <dmueller@suse.de>
+
+	* cgraphunit.c (cgraph_analyze_function): Remove
+	computation of inline parameters.
+
+2007-05-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/darwin.h (TARGET_SUBTARGET_DEFAULT): Undef before define.
 
