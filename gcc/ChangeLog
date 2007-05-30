@@ -1,3 +1,7 @@
+2007-05-30 Uros Bizjak <ubizjak@gmail.com>
+
+	* config/i386/darwin.h (TARGET_SUBTARGET_DEFAULT): Undef before define.
+
 2007-05-30  Richard Sandiford  <richard@codesourcery.com>
 
 	* config.gcc (arm-wrs-vxworks): Remove dbxelf.h from tm_file.
