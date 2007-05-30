@@ -1,3 +1,8 @@
+2007-05-30  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/dg.exp: Prune torture/.
+	* g++.dg/torture/dg-torture.exp: New testsuite.
+
 2007-05-30  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.target/arm/pr27387.C: Move and rename to ...
