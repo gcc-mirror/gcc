@@ -4791,7 +4791,7 @@ compare_names (enum tree_code comp, tree n1, tree n2,
       t = retval = NULL_TREE;
       EXECUTE_IF_SET_IN_BITMAP (e2, 0, i2, bi2)
 	{
-	  bool sop;
+	  bool sop = false;
 
 	  value_range_t vr2 = get_vr_for_comparison (i2);
 

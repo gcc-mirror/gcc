@@ -1,3 +1,7 @@
+2007-05-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* tree-vrp.c (compare_names): Initialize sop.
+
 2007-05-30  Dirk Mueller  <dmueller@suse.de>
 
 	* cgraphunit.c (cgraph_analyze_function): Remove
