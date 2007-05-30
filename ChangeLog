@@ -1,3 +1,9 @@
+2007-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/29382
+	* configure.in: Don't use -fkeep-inline-functions for GCC < 3.3.1.
+	* configure: Rebuilt.
+
 2007-05-13  Release Manager
 
 	* GCC 4.2.0 released.
