@@ -1227,8 +1227,8 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
 
 /* Feature tests against the various architecture variations.  */
 unsigned int ix86_arch_features[X86_ARCH_LAST] = {
-  /* X86_ARCH_CMOVE */
-  m_PPRO | m_GEODE | m_ATHLON_K8_AMDFAM10 | m_PENT4 | m_NOCONA,
+  /* X86_ARCH_CMOVE: Conditional move was added for pentiumpro.  */
+  ~(m_386 | m_486 | m_PENT | m_K6),
 
   /* X86_ARCH_CMPXCHG: Compare and exchange was added for 80486.  */
   ~m_386,
@@ -1544,6 +1544,13 @@ static bool ix86_expand_vector_init_one_nonzero (bool, enum machine_mode,
 #define DEFAULT_PCC_STRUCT_RETURN 1
 #endif
 
+/* Bit flags that specify the ISA we are compiling for.  */
+int ix86_isa_flags = TARGET_64BIT_DEFAULT | TARGET_SUBTARGET_ISA_DEFAULT;
+
+/* A mask of ix86_isa_flags that includes bit X if X
+   was set or cleared on the command line.  */
+static int ix86_isa_flags_explicit;
+
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
@@ -1551,72 +1558,83 @@ ix86_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
 {
   switch (code)
     {
-    case OPT_m3dnow:
+    case OPT_mmmx:
+      ix86_isa_flags_explicit |= MASK_MMX;
       if (!value)
 	{
-	  target_flags &= ~MASK_3DNOW_A;
-	  target_flags_explicit |= MASK_3DNOW_A;
+	  ix86_isa_flags &= ~(MASK_3DNOW | MASK_3DNOW_A);
+	  ix86_isa_flags_explicit |= MASK_3DNOW | MASK_3DNOW_A;
 	}
       return true;
 
-    case OPT_mmmx:
+    case OPT_m3dnow:
+      ix86_isa_flags_explicit |= MASK_3DNOW;
       if (!value)
 	{
-	  target_flags &= ~(MASK_3DNOW | MASK_3DNOW_A);
-	  target_flags_explicit |= MASK_3DNOW | MASK_3DNOW_A;
+	  ix86_isa_flags &= ~MASK_3DNOW_A;
+	  ix86_isa_flags_explicit |= MASK_3DNOW_A;
 	}
       return true;
+
+    case OPT_m3dnowa:
+      return false;
 
     case OPT_msse:
+      ix86_isa_flags_explicit |= MASK_SSE;
       if (!value)
 	{
-	  target_flags &= ~(MASK_SSE2 | MASK_SSE3 | MASK_SSSE3
-			    | MASK_SSE4_1 | MASK_SSE4A);
-	  target_flags_explicit |= (MASK_SSE2 | MASK_SSE3 | MASK_SSSE3
-				    | MASK_SSE4_1 | MASK_SSE4A);
+	  ix86_isa_flags &= ~(MASK_SSE2 | MASK_SSE3 | MASK_SSSE3
+			      | MASK_SSE4_1 | MASK_SSE4A);
+	  ix86_isa_flags_explicit |= (MASK_SSE2 | MASK_SSE3 | MASK_SSSE3
+				      | MASK_SSE4_1 | MASK_SSE4A);
 	}
       return true;
 
     case OPT_msse2:
+      ix86_isa_flags_explicit |= MASK_SSE2;
       if (!value)
 	{
-	  target_flags &= ~(MASK_SSE3 | MASK_SSSE3 | MASK_SSE4_1
-			    | MASK_SSE4A);
-	  target_flags_explicit |= (MASK_SSE3 | MASK_SSSE3
-				    | MASK_SSE4_1 | MASK_SSE4A);
+	  ix86_isa_flags &= ~(MASK_SSE3 | MASK_SSSE3 | MASK_SSE4_1
+			      | MASK_SSE4A);
+	  ix86_isa_flags_explicit |= (MASK_SSE3 | MASK_SSSE3
+				      | MASK_SSE4_1 | MASK_SSE4A);
 	}
       return true;
 
     case OPT_msse3:
+      ix86_isa_flags_explicit |= MASK_SSE3;
       if (!value)
 	{
-	  target_flags &= ~(MASK_SSSE3 | MASK_SSE4_1 | MASK_SSE4A);
-	  target_flags_explicit |= (MASK_SSSE3 | MASK_SSE4_1
-				    | MASK_SSE4A);
+	  ix86_isa_flags &= ~(MASK_SSSE3 | MASK_SSE4_1 | MASK_SSE4A);
+	  ix86_isa_flags_explicit |= (MASK_SSSE3 | MASK_SSE4_1
+				      | MASK_SSE4A);
 	}
       return true;
 
     case OPT_mssse3:
+      ix86_isa_flags_explicit |= MASK_SSSE3;
       if (!value)
 	{
-	  target_flags &= ~(MASK_SSE4_1 | MASK_SSE4A);
-	  target_flags_explicit |= MASK_SSE4_1 | MASK_SSE4A;
+	  ix86_isa_flags &= ~(MASK_SSE4_1 | MASK_SSE4A);
+	  ix86_isa_flags_explicit |= MASK_SSE4_1 | MASK_SSE4A;
 	}
       return true;
 
     case OPT_msse4_1:
+      ix86_isa_flags_explicit |= MASK_SSE4_1;
       if (!value)
 	{
-	  target_flags &= ~MASK_SSE4A;
-	  target_flags_explicit |= MASK_SSE4A;
+	  ix86_isa_flags &= ~MASK_SSE4A;
+	  ix86_isa_flags_explicit |= MASK_SSE4A;
 	}
       return true;
 
     case OPT_msse4a:
+      ix86_isa_flags_explicit |= MASK_SSE4A;
       if (!value)
 	{
-	  target_flags &= ~MASK_SSE4_1;
-	  target_flags_explicit |= MASK_SSE4_1;
+	  ix86_isa_flags &= ~MASK_SSE4_1;
+	  ix86_isa_flags_explicit |= MASK_SSE4_1;
 	}
       return true;
 
@@ -1647,8 +1665,6 @@ override_options (void)
   static struct ptt
     {
       const struct processor_costs *cost;	/* Processor costs */
-      const int target_enable;			/* Target flags to enable.  */
-      const int target_disable;			/* Target flags to disable.  */
       const int align_loop;			/* Default alignments.  */
       const int align_loop_max_skip;
       const int align_jump;
@@ -1657,20 +1673,20 @@ override_options (void)
     }
   const processor_target_table[PROCESSOR_max] =
     {
-      {&i386_cost, 0, 0, 4, 3, 4, 3, 4},
-      {&i486_cost, 0, 0, 16, 15, 16, 15, 16},
-      {&pentium_cost, 0, 0, 16, 7, 16, 7, 16},
-      {&pentiumpro_cost, 0, 0, 16, 15, 16, 7, 16},
-      {&geode_cost, 0, 0, 0, 0, 0, 0, 0},
-      {&k6_cost, 0, 0, 32, 7, 32, 7, 32},
-      {&athlon_cost, 0, 0, 16, 7, 16, 7, 16},
-      {&pentium4_cost, 0, 0, 0, 0, 0, 0, 0},
-      {&k8_cost, 0, 0, 16, 7, 16, 7, 16},
-      {&nocona_cost, 0, 0, 0, 0, 0, 0, 0},
-      {&core2_cost, 0, 0, 16, 7, 16, 7, 16},
-      {&generic32_cost, 0, 0, 16, 7, 16, 7, 16},
-      {&generic64_cost, 0, 0, 16, 7, 16, 7, 16},
-      {&amdfam10_cost, 0, 0, 32, 24, 32, 7, 32}
+      {&i386_cost, 4, 3, 4, 3, 4},
+      {&i486_cost, 16, 15, 16, 15, 16},
+      {&pentium_cost, 16, 7, 16, 7, 16},
+      {&pentiumpro_cost, 16, 15, 16, 7, 16},
+      {&geode_cost, 0, 0, 0, 0, 0},
+      {&k6_cost, 32, 7, 32, 7, 32},
+      {&athlon_cost, 16, 7, 16, 7, 16},
+      {&pentium4_cost, 0, 0, 0, 0, 0},
+      {&k8_cost, 16, 7, 16, 7, 16},
+      {&nocona_cost, 0, 0, 0, 0, 0},
+      {&core2_cost, 16, 7, 16, 7, 16},
+      {&generic32_cost, 16, 7, 16, 7, 16},
+      {&generic64_cost, 16, 7, 16, 7, 16},
+      {&amdfam10_cost, 32, 24, 32, 7, 32}
     };
 
   static const char * const cpu_names[] = TARGET_CPU_DEFAULT_NAMES;
@@ -1707,71 +1723,79 @@ override_options (void)
       {"winchip-c6", PROCESSOR_I486, PTA_MMX},
       {"winchip2", PROCESSOR_I486, PTA_MMX | PTA_3DNOW},
       {"c3", PROCESSOR_I486, PTA_MMX | PTA_3DNOW},
-      {"c3-2", PROCESSOR_PENTIUMPRO, PTA_MMX | PTA_PREFETCH_SSE | PTA_SSE},
+      {"c3-2", PROCESSOR_PENTIUMPRO, PTA_MMX | PTA_SSE},
       {"i686", PROCESSOR_PENTIUMPRO, 0},
       {"pentiumpro", PROCESSOR_PENTIUMPRO, 0},
       {"pentium2", PROCESSOR_PENTIUMPRO, PTA_MMX},
-      {"pentium3", PROCESSOR_PENTIUMPRO, PTA_MMX | PTA_SSE | PTA_PREFETCH_SSE},
-      {"pentium3m", PROCESSOR_PENTIUMPRO, PTA_MMX | PTA_SSE | PTA_PREFETCH_SSE},
-      {"pentium-m", PROCESSOR_PENTIUMPRO, PTA_MMX | PTA_SSE | PTA_PREFETCH_SSE | PTA_SSE2},
-      {"pentium4", PROCESSOR_PENTIUM4, PTA_SSE | PTA_SSE2
-				       | PTA_MMX | PTA_PREFETCH_SSE},
-      {"pentium4m", PROCESSOR_PENTIUM4, PTA_SSE | PTA_SSE2
-				        | PTA_MMX | PTA_PREFETCH_SSE},
-      {"prescott", PROCESSOR_NOCONA, PTA_SSE | PTA_SSE2 | PTA_SSE3
-				        | PTA_MMX | PTA_PREFETCH_SSE},
-      {"nocona", PROCESSOR_NOCONA, PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_64BIT
-					| PTA_MMX | PTA_PREFETCH_SSE
-					| PTA_CX16 | PTA_NO_SAHF},
-      {"core2", PROCESSOR_CORE2, PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3
-                                        | PTA_64BIT | PTA_MMX
-					| PTA_PREFETCH_SSE | PTA_CX16},
-      {"geode", PROCESSOR_GEODE, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
-				   | PTA_3DNOW_A},
+      {"pentium3", PROCESSOR_PENTIUMPRO, PTA_MMX | PTA_SSE},
+      {"pentium3m", PROCESSOR_PENTIUMPRO, PTA_MMX | PTA_SSE},
+      {"pentium-m", PROCESSOR_PENTIUMPRO, PTA_MMX | PTA_SSE | PTA_SSE2},
+      {"pentium4", PROCESSOR_PENTIUM4, PTA_MMX |PTA_SSE | PTA_SSE2},
+      {"pentium4m", PROCESSOR_PENTIUM4, PTA_MMX | PTA_SSE | PTA_SSE2},
+      {"prescott", PROCESSOR_NOCONA, PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3},
+      {"nocona", PROCESSOR_NOCONA, (PTA_64BIT 
+				    | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+				    | PTA_CX16 | PTA_NO_SAHF)},
+      {"core2", PROCESSOR_CORE2, (PTA_64BIT
+				  | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+				  | PTA_SSSE3
+				  | PTA_CX16)},
+      {"geode", PROCESSOR_GEODE, (PTA_MMX | PTA_3DNOW | PTA_3DNOW_A
+				  |PTA_PREFETCH_SSE)},
       {"k6", PROCESSOR_K6, PTA_MMX},
       {"k6-2", PROCESSOR_K6, PTA_MMX | PTA_3DNOW},
       {"k6-3", PROCESSOR_K6, PTA_MMX | PTA_3DNOW},
-      {"athlon", PROCESSOR_ATHLON, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
-				   | PTA_3DNOW_A},
-      {"athlon-tbird", PROCESSOR_ATHLON, PTA_MMX | PTA_PREFETCH_SSE
-					 | PTA_3DNOW | PTA_3DNOW_A},
-      {"athlon-4", PROCESSOR_ATHLON, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
-				    | PTA_3DNOW_A | PTA_SSE},
-      {"athlon-xp", PROCESSOR_ATHLON, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
-				      | PTA_3DNOW_A | PTA_SSE},
-      {"athlon-mp", PROCESSOR_ATHLON, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
-				      | PTA_3DNOW_A | PTA_SSE},
-      {"x86-64", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_64BIT
-			       | PTA_SSE | PTA_SSE2 | PTA_NO_SAHF},
-      {"k8", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW | PTA_64BIT
-				      | PTA_3DNOW_A | PTA_SSE | PTA_SSE2
-				      | PTA_NO_SAHF},
-      {"k8-sse3", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW | PTA_64BIT
-                                      | PTA_3DNOW_A | PTA_SSE | PTA_SSE2
-				      | PTA_SSE3 | PTA_NO_SAHF},
-      {"opteron", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
-					| PTA_64BIT | PTA_3DNOW_A | PTA_SSE
-					| PTA_SSE2 | PTA_NO_SAHF},
-      {"opteron-sse3", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
-					| PTA_64BIT | PTA_3DNOW_A | PTA_SSE
-					| PTA_SSE2 | PTA_SSE3 | PTA_NO_SAHF},
-      {"athlon64", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
-					 | PTA_64BIT | PTA_3DNOW_A | PTA_SSE
-					 | PTA_SSE2 | PTA_NO_SAHF},
-      {"athlon64-sse3", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
-					 | PTA_64BIT | PTA_3DNOW_A | PTA_SSE
-                                         | PTA_SSE2 | PTA_SSE3 | PTA_NO_SAHF},
-      {"athlon-fx", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
-					  | PTA_64BIT | PTA_3DNOW_A | PTA_SSE
-					  | PTA_SSE2 | PTA_NO_SAHF},
-      {"amdfam10", PROCESSOR_AMDFAM10, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
-                                       | PTA_64BIT | PTA_3DNOW_A | PTA_SSE
-                                       | PTA_SSE2 | PTA_SSE3 | PTA_POPCNT
-                                       | PTA_ABM | PTA_SSE4A | PTA_CX16},
-      {"barcelona", PROCESSOR_AMDFAM10, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
-                                       | PTA_64BIT | PTA_3DNOW_A | PTA_SSE
-                                       | PTA_SSE2 | PTA_SSE3 | PTA_POPCNT
-                                       | PTA_ABM | PTA_SSE4A | PTA_CX16},
+      {"athlon", PROCESSOR_ATHLON, (PTA_MMX | PTA_3DNOW | PTA_3DNOW_A
+				    | PTA_PREFETCH_SSE)},
+      {"athlon-tbird", PROCESSOR_ATHLON, (PTA_MMX | PTA_3DNOW | PTA_3DNOW_A
+					  | PTA_PREFETCH_SSE)},
+      {"athlon-4", PROCESSOR_ATHLON, (PTA_MMX | PTA_3DNOW | PTA_3DNOW_A
+				      | PTA_SSE)},
+      {"athlon-xp", PROCESSOR_ATHLON, (PTA_MMX | PTA_3DNOW | PTA_3DNOW_A
+				       | PTA_SSE)},
+      {"athlon-mp", PROCESSOR_ATHLON, (PTA_MMX | PTA_3DNOW | PTA_3DNOW_A
+				       | PTA_SSE)},
+      {"x86-64", PROCESSOR_K8, (PTA_64BIT
+				| PTA_MMX | PTA_SSE | PTA_SSE2
+				| PTA_NO_SAHF)},
+      {"k8", PROCESSOR_K8, (PTA_64BIT
+			    | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A
+			    | PTA_SSE | PTA_SSE2
+			    | PTA_NO_SAHF)},
+      {"k8-sse3", PROCESSOR_K8, (PTA_64BIT
+				 | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A
+				 | PTA_SSE | PTA_SSE2 | PTA_SSE3
+				 | PTA_NO_SAHF)},
+      {"opteron", PROCESSOR_K8, (PTA_64BIT
+				 | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A
+				 | PTA_SSE | PTA_SSE2
+				 | PTA_NO_SAHF)},
+      {"opteron-sse3", PROCESSOR_K8, (PTA_64BIT
+				      | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A
+				      | PTA_SSE | PTA_SSE2 | PTA_SSE3
+				      | PTA_NO_SAHF)},
+      {"athlon64", PROCESSOR_K8, (PTA_64BIT
+				  | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A
+				  | PTA_SSE | PTA_SSE2
+				  | PTA_NO_SAHF)},
+      {"athlon64-sse3", PROCESSOR_K8, (PTA_64BIT
+				       | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A
+				       | PTA_SSE | PTA_SSE2 | PTA_SSE3
+				       | PTA_NO_SAHF)},
+      {"athlon-fx", PROCESSOR_K8, (PTA_64BIT
+				   | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A
+				   | PTA_SSE | PTA_SSE2
+				   | PTA_NO_SAHF)},
+      {"amdfam10", PROCESSOR_AMDFAM10, (PTA_64BIT
+					| PTA_MMX | PTA_3DNOW | PTA_3DNOW_A
+					| PTA_SSE | PTA_SSE2 | PTA_SSE3
+					| PTA_SSE4A
+					| PTA_CX16 | PTA_ABM)},
+      {"barcelona", PROCESSOR_AMDFAM10, (PTA_64BIT
+					 | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A
+					 | PTA_SSE | PTA_SSE2 | PTA_SSE3
+					 | PTA_SSE4A
+					 | PTA_CX16 | PTA_ABM)},
       {"generic32", PROCESSOR_GENERIC32, 0 /* flags are only used for -march switch.  */ },
       {"generic64", PROCESSOR_GENERIC64, PTA_64BIT /* flags are only used for -march switch.  */ },
     };
@@ -1925,9 +1949,9 @@ override_options (void)
   if ((TARGET_64BIT == 0) != (ix86_cmodel == CM_32))
     error ("code model %qs not supported in the %s bit mode",
 	   ix86_cmodel_string, TARGET_64BIT ? "64" : "32");
-  if ((TARGET_64BIT != 0) != ((target_flags & MASK_64BIT) != 0))
+  if ((TARGET_64BIT != 0) != ((ix86_isa_flags & MASK_64BIT) != 0))
     sorry ("%i-bit mode not compiled in",
-	   (target_flags & MASK_64BIT) ? 64 : 32);
+	   (ix86_isa_flags & MASK_64BIT) ? 64 : 32);
 
   for (i = 0; i < pta_size; i++)
     if (! strcmp (ix86_arch_string, processor_alias_table[i].name))
@@ -1935,48 +1959,50 @@ override_options (void)
 	ix86_arch = processor_alias_table[i].processor;
 	/* Default cpu tuning to the architecture.  */
 	ix86_tune = ix86_arch;
-	if (processor_alias_table[i].flags & PTA_MMX
-	    && !(target_flags_explicit & MASK_MMX))
-	  target_flags |= MASK_MMX;
-	if (processor_alias_table[i].flags & PTA_3DNOW
-	    && !(target_flags_explicit & MASK_3DNOW))
-	  target_flags |= MASK_3DNOW;
-	if (processor_alias_table[i].flags & PTA_3DNOW_A
-	    && !(target_flags_explicit & MASK_3DNOW_A))
-	  target_flags |= MASK_3DNOW_A;
-	if (processor_alias_table[i].flags & PTA_SSE
-	    && !(target_flags_explicit & MASK_SSE))
-	  target_flags |= MASK_SSE;
-	if (processor_alias_table[i].flags & PTA_SSE2
-	    && !(target_flags_explicit & MASK_SSE2))
-	  target_flags |= MASK_SSE2;
-	if (processor_alias_table[i].flags & PTA_SSE3
-	    && !(target_flags_explicit & MASK_SSE3))
-	  target_flags |= MASK_SSE3;
-	if (processor_alias_table[i].flags & PTA_SSSE3
-	    && !(target_flags_explicit & MASK_SSSE3))
-	  target_flags |= MASK_SSSE3;
-	if (processor_alias_table[i].flags & PTA_SSE4_1
-	    && !(target_flags_explicit & MASK_SSE4_1))
-	  target_flags |= MASK_SSE4_1;
-	if (processor_alias_table[i].flags & PTA_PREFETCH_SSE)
-	  x86_prefetch_sse = true;
-	if (processor_alias_table[i].flags & PTA_CX16)
-	  x86_cmpxchg16b = true;
-	if (processor_alias_table[i].flags & PTA_POPCNT
-	    && !(target_flags_explicit & MASK_POPCNT))
-	  target_flags |= MASK_POPCNT;
-	if (processor_alias_table[i].flags & PTA_ABM
-	    && !(target_flags_explicit & MASK_ABM))
-	  target_flags |= MASK_ABM;
-	if (processor_alias_table[i].flags & PTA_SSE4A
-	    && !(target_flags_explicit & MASK_SSE4A))
-	  target_flags |= MASK_SSE4A;
-	if (!(TARGET_64BIT && (processor_alias_table[i].flags & PTA_NO_SAHF)))
-	  x86_sahf = true;
+
 	if (TARGET_64BIT && !(processor_alias_table[i].flags & PTA_64BIT))
 	  error ("CPU you selected does not support x86-64 "
 		 "instruction set");
+
+	if (processor_alias_table[i].flags & PTA_MMX
+	    && !(ix86_isa_flags_explicit & MASK_MMX))
+	  ix86_isa_flags |= MASK_MMX;
+	if (processor_alias_table[i].flags & PTA_3DNOW
+	    && !(ix86_isa_flags_explicit & MASK_3DNOW))
+	  ix86_isa_flags |= MASK_3DNOW;
+	if (processor_alias_table[i].flags & PTA_3DNOW_A
+	    && !(ix86_isa_flags_explicit & MASK_3DNOW_A))
+	  ix86_isa_flags |= MASK_3DNOW_A;
+	if (processor_alias_table[i].flags & PTA_SSE
+	    && !(ix86_isa_flags_explicit & MASK_SSE))
+	  ix86_isa_flags |= MASK_SSE;
+	if (processor_alias_table[i].flags & PTA_SSE2
+	    && !(ix86_isa_flags_explicit & MASK_SSE2))
+	  ix86_isa_flags |= MASK_SSE2;
+	if (processor_alias_table[i].flags & PTA_SSE3
+	    && !(ix86_isa_flags_explicit & MASK_SSE3))
+	  ix86_isa_flags |= MASK_SSE3;
+	if (processor_alias_table[i].flags & PTA_SSSE3
+	    && !(ix86_isa_flags_explicit & MASK_SSSE3))
+	  ix86_isa_flags |= MASK_SSSE3;
+	if (processor_alias_table[i].flags & PTA_SSE4_1
+	    && !(ix86_isa_flags_explicit & MASK_SSE4_1))
+	  ix86_isa_flags |= MASK_SSE4_1;
+	if (processor_alias_table[i].flags & PTA_SSE4A
+	    && !(ix86_isa_flags_explicit & MASK_SSE4A))
+	  ix86_isa_flags |= MASK_SSE4A;
+
+	if (processor_alias_table[i].flags & PTA_ABM)
+	  x86_abm = true;
+	if (processor_alias_table[i].flags & PTA_CX16)
+	  x86_cmpxchg16b = true;
+	if (processor_alias_table[i].flags & (PTA_POPCNT | PTA_ABM))
+	  x86_popcnt = true;
+	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
+	  x86_prefetch_sse = true;
+	if ((processor_alias_table[i].flags & PTA_NO_SAHF) && !TARGET_64BIT)
+	  x86_sahf = true;
+
 	break;
       }
 
@@ -2011,7 +2037,8 @@ override_options (void)
 	   -mtune (rather than -march) points us to a processor that has them.
 	   However, the VIA C3 gives a SIGILL, so we only do that for i686 and
 	   higher processors.  */
-	if (TARGET_CMOVE && (processor_alias_table[i].flags & PTA_PREFETCH_SSE))
+	if (TARGET_CMOVE
+	    && (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE)))
 	  x86_prefetch_sse = true;
 	break;
       }
@@ -2026,8 +2053,6 @@ override_options (void)
     ix86_cost = &size_cost;
   else
     ix86_cost = processor_target_table[ix86_tune].cost;
-  target_flags |= processor_target_table[ix86_tune].target_enable;
-  target_flags &= ~processor_target_table[ix86_tune].target_disable;
 
   /* Arrange to set up i386_stack_locals for all functions.  */
   init_machine_status = ix86_init_machine_status;
@@ -2166,53 +2191,60 @@ override_options (void)
 
   /* Turn on SSSE3 builtins for -msse4.1.  */
   if (TARGET_SSE4_1)
-    target_flags |= MASK_SSSE3;
+    ix86_isa_flags |= MASK_SSSE3;
 
   /* Turn on SSE3 builtins for -mssse3.  */
   if (TARGET_SSSE3)
-    target_flags |= MASK_SSE3;
+    ix86_isa_flags |= MASK_SSE3;
 
   /* Turn on SSE3 builtins for -msse4a.  */
   if (TARGET_SSE4A)
-    target_flags |= MASK_SSE3;
+    ix86_isa_flags |= MASK_SSE3;
 
   /* Turn on SSE2 builtins for -msse3.  */
   if (TARGET_SSE3)
-    target_flags |= MASK_SSE2;
+    ix86_isa_flags |= MASK_SSE2;
 
   /* Turn on SSE builtins for -msse2.  */
   if (TARGET_SSE2)
-    target_flags |= MASK_SSE;
+    ix86_isa_flags |= MASK_SSE;
 
   /* Turn on MMX builtins for -msse.  */
   if (TARGET_SSE)
     {
-      target_flags |= MASK_MMX & ~target_flags_explicit;
+      ix86_isa_flags |= MASK_MMX & ~ix86_isa_flags_explicit;
       x86_prefetch_sse = true;
     }
 
   /* Turn on MMX builtins for 3Dnow.  */
   if (TARGET_3DNOW)
-    target_flags |= MASK_MMX;
+    ix86_isa_flags |= MASK_MMX;
 
   /* Turn on POPCNT builtins for -mabm.  */
   if (TARGET_ABM)
-    target_flags |= MASK_POPCNT;
+    x86_popcnt = true;
 
   if (TARGET_64BIT)
     {
-      if (TARGET_RTD)
-	warning (0, "-mrtd is ignored in 64bit mode");
+      target_flags |= TARGET_SUBTARGET64_DEFAULT & ~target_flags_explicit;
 
       /* Enable by default the SSE and MMX builtins.  Do allow the user to
 	 explicitly disable any of these.  In particular, disabling SSE and
 	 MMX for kernel code is extremely useful.  */
-      target_flags
-	|= ((MASK_SSE2 | MASK_SSE | MASK_MMX | TARGET_SUBTARGET64_DEFAULT)
-	    & ~target_flags_explicit);
+      ix86_isa_flags
+	|= ((MASK_SSE2 | MASK_SSE | MASK_MMX | TARGET_SUBTARGET64_ISA_DEFAULT)
+	    & ~ix86_isa_flags_explicit);
+
+      if (TARGET_RTD)
+	warning (0, "-mrtd is ignored in 64bit mode");
     }
   else
     {
+      target_flags |= TARGET_SUBTARGET32_DEFAULT & ~target_flags_explicit;
+
+      ix86_isa_flags
+	|= TARGET_SUBTARGET32_DEFAULT & ~ix86_isa_flags_explicit;
+
       /* i386 ABI does not specify red zone.  It still makes sense to use it
          when programmer takes care to stack from being destroyed.  */
       if (!(target_flags_explicit & MASK_NO_RED_ZONE))
@@ -16608,7 +16640,7 @@ def_builtin (int mask, const char *name, tree type, enum ix86_builtins code)
 {
   tree decl = NULL_TREE;
 
-  if (mask & target_flags
+  if (mask & ix86_isa_flags
       && (!(mask & MASK_64BIT) || TARGET_64BIT))
     {
       decl = add_builtin_function (name, type, code, BUILT_IN_MD,
@@ -22702,7 +22734,6 @@ static const struct attribute_spec ix86_attribute_table[] =
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS	\
   (TARGET_DEFAULT			\
-   | TARGET_64BIT_DEFAULT		\
    | TARGET_SUBTARGET_DEFAULT		\
    | TARGET_TLS_DIRECT_SEG_REFS_DEFAULT)
 

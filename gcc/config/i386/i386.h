@@ -35,6 +35,32 @@ Boston, MA 02110-1301, USA.  */
    ADDR_BEG, ADDR_END, PRINT_IREG, PRINT_SCALE, PRINT_B_I_S, and many
    that start with ASM_ or end in ASM_OP.  */
 
+/* Redefines for option macros.  */
+
+#define TARGET_64BIT	OPTION_ISA_64BIT
+#define TARGET_MMX	OPTION_ISA_MMX
+#define TARGET_3DNOW	OPTION_ISA_3DNOW
+#define TARGET_3DNOW_A	OPTION_ISA_3DNOW_A
+#define TARGET_SSE	OPTION_ISA_SSE
+#define TARGET_SSE2	OPTION_ISA_SSE2
+#define TARGET_SSE3	OPTION_ISA_SSE3
+#define TARGET_SSSE3	OPTION_ISA_SSSE3
+#define TARGET_SSE4_1	OPTION_ISA_SSE4_1
+#define TARGET_SSE4A	OPTION_ISA_SSE4A
+
+/* ??? Remove following defines.  */
+
+#define MASK_64BIT	OPTION_MASK_ISA_64BIT
+#define MASK_MMX	OPTION_MASK_ISA_MMX
+#define MASK_3DNOW	OPTION_MASK_ISA_3DNOW
+#define MASK_3DNOW_A	OPTION_MASK_ISA_3DNOW_A
+#define MASK_SSE	OPTION_MASK_ISA_SSE
+#define MASK_SSE2	OPTION_MASK_ISA_SSE2
+#define MASK_SSE3	OPTION_MASK_ISA_SSE3
+#define MASK_SSSE3	OPTION_MASK_ISA_SSSE3
+#define MASK_SSE4_1	OPTION_MASK_ISA_SSE4_1
+#define MASK_SSE4A	OPTION_MASK_ISA_SSE4A
+
 #include "config/vxworks-dummy.h"
 
 /* Algorithm to expand string function with.  */
@@ -342,13 +368,15 @@ extern unsigned int ix86_arch_features[X86_ARCH_LAST];
 #define TARGET_XADD		ix86_arch_features[X86_ARCH_XADD]
 #define TARGET_BSWAP		ix86_arch_features[X86_ARCH_BSWAP]
 
-#define TARGET_CMPXCHG16B	x86_cmpxchg16b
-#define TARGET_SAHF		x86_sahf
-
 #define TARGET_FISTTP		(TARGET_SSE3 && TARGET_80387)
 
 extern int x86_prefetch_sse;
+
+#define TARGET_ABM		x86_abm
+#define TARGET_CMPXCHG16B	x86_cmpxchg16b
+#define TARGET_POPCNT		x86_popcnt
 #define TARGET_PREFETCH_SSE	x86_prefetch_sse
+#define TARGET_SAHF		x86_sahf
 
 #define ASSEMBLER_DIALECT	(ix86_asm_dialect)
 
@@ -360,6 +388,8 @@ extern int x86_prefetch_sse;
 #define TARGET_GNU2_TLS		(ix86_tls_dialect == TLS_DIALECT_GNU2)
 #define TARGET_ANY_GNU_TLS	(TARGET_GNU_TLS || TARGET_GNU2_TLS)
 #define TARGET_SUN_TLS		(ix86_tls_dialect == TLS_DIALECT_SUN)
+
+extern int ix86_isa_flags;
 
 #ifndef TARGET_64BIT_DEFAULT
 #define TARGET_64BIT_DEFAULT 0
@@ -373,8 +403,17 @@ extern int x86_prefetch_sse;
    the frame pointer in leaf functions.  */
 #define TARGET_DEFAULT 0
 
+/* Extra bits to force.  */
+#define TARGET_SUBTARGET_DEFAULT 0
+#define TARGET_SUBTARGET_ISA_DEFAULT 0
+
+/* Extra bits to force on w/ 32-bit mode.  */
+#define TARGET_SUBTARGET32_DEFAULT 0
+#define TARGET_SUBTARGET32_ISA_DEFAULT 0
+
 /* Extra bits to force on w/ 64-bit mode.  */
 #define TARGET_SUBTARGET64_DEFAULT 0
+#define TARGET_SUBTARGET64_ISA_DEFAULT 0
 
 /* This is not really a target flag, but is done this way so that
    it's analogous to similar code for Mach-O on PowerPC.  darwin.h
