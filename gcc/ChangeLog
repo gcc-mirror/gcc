@@ -1,3 +1,8 @@
+2007-05-31  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.c (main): Don't consider linker options when issuing the
+	warning about a linker input file not being used.
+
 2007-05-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* tree-vrp.c (compare_names): Initialize sop.

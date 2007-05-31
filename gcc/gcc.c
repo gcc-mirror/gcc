@@ -6791,7 +6791,8 @@ main (int argc, char **argv)
 
   if (! linker_was_run && error_count == 0)
     for (i = 0; (int) i < n_infiles; i++)
-      if (explicit_link_files[i])
+      if (explicit_link_files[i]
+	  && !(infiles[i].language && infiles[i].language[0] == '*'))
 	error ("%s: linker input file unused because linking not done",
 	       outfiles[i]);
 
