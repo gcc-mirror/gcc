@@ -1,3 +1,10 @@
+2007-05-31  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/32160
+	* tree-predcom.c (predcom_tmp_var): New function.  Mark created
+	variable as gimple reg.
+	(initialize_root_vars, initialize_root_vars_lm): Use predcom_tmp_var.
+
 2007-05-31  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.c (main): Don't consider linker options when issuing the
