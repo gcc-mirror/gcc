@@ -12,7 +12,7 @@
 #define LIM7(x) LIM6(x##0) LIM6(x##1) LIM6(x##2) LIM6(x##3) LIM6(x##4) \
 		LIM6(x##5) LIM6(x##6) LIM6(x##7) LIM6(x##8) LIM6(x##9)
 
-void q19_func (int i)
+void q19_func (long i)
 {
   switch (i) {
     LIM5 (case 1)

@@ -1,3 +1,8 @@
+2007-05-31  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	* gcc.c-torture/compile/limits-caselabels.c: Fix for targets where
+	int is 16 bits.
+
 007-05-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32156
