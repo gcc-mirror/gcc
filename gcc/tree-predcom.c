@@ -1401,6 +1401,26 @@ mark_virtual_ops_for_renaming_list (tree list)
     mark_virtual_ops_for_renaming (tsi_stmt (tsi));
 }
 
+/* Returns a new temporary variable used for the I-th variable carrying
+   value of REF.  The variable's uid is marked in TMP_VARS.  */
+
+static tree
+predcom_tmp_var (tree ref, unsigned i, bitmap tmp_vars)
+{
+  tree type = TREE_TYPE (ref);
+  tree var = create_tmp_var (type, get_lsm_tmp_name (ref, i));
+
+  /* We never access the components of the temporary variable in predictive
+     commoning.  */
+  if (TREE_CODE (type) == COMPLEX_TYPE
+      || TREE_CODE (type) == VECTOR_TYPE)
+    DECL_GIMPLE_REG_P (var) = 1;
+
+  add_referenced_var (var);
+  bitmap_set_bit (tmp_vars, DECL_UID (var));
+  return var;
+}
+
 /* Creates the variables for CHAIN, as well as phi nodes for them and
    initialization on entry to LOOP.  Uids of the newly created
    temporary variables are marked in TMP_VARS.  */
@@ -1429,9 +1449,7 @@ initialize_root_vars (struct loop *loop, chain_p chain, bitmap tmp_vars)
 
   for (i = 0; i < n + (reuse_first ? 0 : 1); i++)
     {
-      var = create_tmp_var (TREE_TYPE (ref), get_lsm_tmp_name (ref, i));
-      add_referenced_var (var);
-      bitmap_set_bit (tmp_vars, DECL_UID (var));
+      var = predcom_tmp_var (ref, i, tmp_vars);
       VEC_quick_push (tree, chain->vars, var);
     }
   if (reuse_first)
@@ -1499,9 +1517,7 @@ initialize_root_vars_lm (struct loop *loop, dref root, bool written,
   init = VEC_index (tree, inits, 0);
 
   *vars = VEC_alloc (tree, heap, written ? 2 : 1);
-  var = create_tmp_var (TREE_TYPE (ref), get_lsm_tmp_name (ref, 0));
-  add_referenced_var (var);
-  bitmap_set_bit (tmp_vars, DECL_UID (var));
+  var = predcom_tmp_var (ref, 0, tmp_vars);
   VEC_quick_push (tree, *vars, var);
   if (written)
     VEC_quick_push (tree, *vars, VEC_index (tree, *vars, 0));

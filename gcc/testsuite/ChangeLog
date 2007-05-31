@@ -1,3 +1,8 @@
+2007-05-31  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/32160
+	* gfortran.dg/predcom-1.f: New test.
+
 2007-05-31  Richard Guenther  <rguenther@suse.de>
 
 	* g++.dg/other/str_empty.C: Move...
