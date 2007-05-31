@@ -3271,7 +3271,7 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 	  tmp = gfc_conv_descriptor_stride (arg1se.expr,
 					    gfc_rank_cst[arg1->expr->rank - 1]);
 	  nonzero_arraylen = build2 (NE_EXPR, boolean_type_node,
-				 tmp, integer_zero_node);
+				     tmp, build_int_cst (TREE_TYPE (tmp), 0));
 
           /* A pointer to an array, call library function _gfor_associated.  */
           gcc_assert (ss2 != gfc_ss_terminator);

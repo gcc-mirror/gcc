@@ -1,3 +1,17 @@
+2007-05-31  Richard Guenther  <rguenther@suse.de>
+
+	* trans-expr.c (gfc_conv_expr_op): Use zero constant
+	that matches the lse type.
+	(gfc_trans_string_copy): Use sizetype zero constant.
+	* intrinsic.c (add_functions): The sizeof intrinsic has
+	index type result.
+	* trans-types.c (gfc_get_dtype): Convert size to index
+	type before shifting.
+	* trans-array.c (gfc_trans_array_constructor_value): Use
+	index type for offset computation.
+	* trans-intrinsic.c (gfc_conv_associated): Use correct type
+	for zero constant.
+
 2007-05-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32156
