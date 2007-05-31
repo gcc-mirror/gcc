@@ -1,6 +1,6 @@
-// TR1 type_traits -*- C++ -*-
+// TR1 type_traitsfwd.h -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,20 +27,14 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file tr1/type_traitsfwd.h
+/** @file tr1_impl/type_traitsfwd.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
 
-#ifndef _TYPE_TRAITSFWD_H
-#define _TYPE_TRAITSFWD_H 1
-
-#include <cstddef>
-
-// namespace std::tr1
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
+_GLIBCXX_BEGIN_NAMESPACE_TR1
 
   /// @brief  helper classes [4.3].
   template<typename _Tp, _Tp __v>
@@ -112,9 +106,6 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
     struct is_volatile;
 
   template<typename _Tp>
-    struct is_pod;
-  
-  template<typename _Tp>
     struct is_empty;
   
   template<typename _Tp>
@@ -124,35 +115,8 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
     struct is_abstract;
   
   template<typename _Tp>
-    struct has_trivial_constructor;
-  
-  template<typename _Tp>
-    struct has_trivial_copy;
-
-  template<typename _Tp>
-    struct has_trivial_assign;
-  
-  template<typename _Tp>
-    struct has_trivial_destructor;
-  
-  template<typename _Tp>
-    struct has_nothrow_constructor;
-  
-  template<typename _Tp>
-    struct has_nothrow_copy;
-
-  template<typename _Tp>
-    struct has_nothrow_assign;
-  
-  template<typename _Tp>
     struct has_virtual_destructor;
   
-  template<typename _Tp>
-    struct is_signed;
-  
-  template<typename _Tp>
-    struct is_unsigned;
-   
   template<typename _Tp>
     struct alignment_of;
   
@@ -165,12 +129,6 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
   /// @brief  relationships between types [4.6].
   template<typename _Tp, typename _Up>
     struct is_same;
-
-  template<typename _From, typename _To>
-    struct is_convertible;
-
-  template<typename _Base, typename _Derived>
-    struct is_base_of;
 
   /// @brief  const-volatile modifications [4.7.1].
   template<typename _Tp>
@@ -216,7 +174,5 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
   template<std::size_t _Len, std::size_t _Align>
     struct aligned_storage;
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_TR1
 }
-
-#endif

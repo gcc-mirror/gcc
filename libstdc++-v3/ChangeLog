@@ -1,5 +1,177 @@
 2007-05-31  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/31426
+	* include/bits/c++config: Remove namespace association bits
+	from tr1 to std.
+
+	* include/ext/type_traits.h (__promote, __promote2,
+	__promote3, __promote4): Add.
+
+	* include/bits/hashtable.h: New.
+	* include/bits/functional_hash.h: Likewise.
+	* include/tr1/hashtable.h: Likewise.
+
+	* include/tr1_impl/random: New.
+	* include/tr1_impl/cinttypes: Likewise.
+	* include/tr1_impl/cstdlib: Likewise.
+	* include/tr1_impl/unordered_map: Likewise.
+	* include/tr1_impl/cstdio: Likewise.
+	* include/tr1_impl/boost_shared_ptr.h: Likewise.
+	* include/tr1_impl/cctype: Likewise.
+	* include/tr1_impl/random.tcc: Likewise.
+	* include/tr1_impl/tuple: Likewise.
+	* include/tr1_impl/functional_hash.h: Likewise.
+	* include/tr1_impl/hashtable: Likewise.
+	* include/tr1_impl/cmath: Likewise.
+	* include/tr1_impl/type_traitsfwd.h: Likewise.
+	* include/tr1_impl/hashtable_policy.h: Likewise.
+	* include/tr1_impl/cfenv: Likewise.
+	* include/tr1_impl/unordered_set: Likewise.
+	* include/tr1_impl/functional: Likewise.
+	* include/tr1_impl/utility: Likewise.
+	* include/tr1_impl/complex: Likewise.
+	* include/tr1_impl/type_traits: Likewise.
+	* include/tr1_impl/cwchar: Likewise.
+	* include/tr1_impl/cstdint: Likewise.
+	* include/tr1_impl/regex: Likewise.
+	* include/tr1_impl/array: Likewise.
+	* include/tr1_impl/cwctype: Likewise.
+
+	* include/tr1/type_traitsfwd.h: Remove.
+	* include/tr1/boost_shared_ptr.h: Likewise.
+	* include/tr1/common.h: Likewise.
+	* include/tr1/hashtable: Likewise.
+	* include/tr1/hashtable_policy.h: Likewise.
+	* include/tr1/random.tcc: Likewise.
+
+	* include/c_global/cinttypes: Include tr1_impl/cinttypes.
+	* include/c_global/cstdlib: Likewise for cstdlib.
+	* include/c_global/cstdio: Likewise for cstdio.
+	* include/c_global/cctype: Likewise for cctype.
+	* include/c_global/cmath: Likewise for cmath.
+	* include/c_global/cfenv: Likewise for cfenv.
+	* include/c_global/cwchar: Likewise for cwchar.
+	* include/c_global/cstdint: Likewise for cstdint.
+	* include/c_global/cwctype: Likewise for cwctype.
+	* include/tr1/cinttypes: Likewise for cinttypes.
+	* include/tr1/cstdlib: Likewise for cstdlib.
+	* include/tr1/cstdio: Likewise for cstdio.
+	* include/tr1/cctype: Likewise for cctype.
+	* include/tr1/cmath: Likewise for cmath.
+	* include/tr1/cfenv: Likewise for cfenv.
+	* include/tr1/cwchar: Likewise for cwchar.
+	* include/tr1/cstdint: Likewise for cstdint.
+	* include/tr1/cwctype: Likewise for cwctype.
+	* include/tr1/functional_hash.h: Likewise for functional_hash.
+
+	* include/std/tuple: Include tr1_impl/tuple.
+	* include/std/utility: Likewise for utility.
+	* include/std/type_traits: Likewise for type_traits.
+	(is_pod): Just forward to __is_pod.
+	(has_trivial_default_constructor): Just forward to
+	__has_trivial_constructor.
+	(has_trivial_copy_constructor): Just forward to __has_trivial_copy.
+	(has_trivial_assign): Just forward to __has_trivial_assign.
+	(has_trivial_destructor): Just forward to __has_trivial_destructor.
+	(has_nothrow_default_constructor): Just forward to
+	__has_nothrow_constructor.
+	(has_nothrow_copy_constructor): Just forward to __has_nothrow_copy.
+	(has_nothrow_assign): Just forward to __has_nothrow_assign.
+	(is_base_of): Just forward to __is_base_of.
+	(is_signed, is_unsigned): Implement according to the C++0x
+	specifications.
+	* include/std/memory: Likewise for memory.
+	* include/std/regex: Likewise for regex.
+	* include/std/random: Likewise for random.
+	* include/std/unordered_map: Likewise for unordered_map.
+	* include/std/unordered_set: Likewise for unordered_set.
+	* include/std/functional: Likewise for functional.
+	* include/std/complex: Likewise for complex.
+	* include/std/array: Likewise for array.
+	* include/tr1/tuple: Likewise for tuple.
+	* include/tr1/utility: Likewise for utility.
+	* include/tr1/type_traits: Likewise for type_traits
+	* include/tr1/memory: Likewise for memory.
+	* include/tr1/regex: Likewise for regex.
+	* include/tr1/random: Likewise for random.
+	* include/tr1/unordered_map: Likewise for unordered_map.
+	* include/tr1/unordered_set: Likewise for unordered_set.
+	* include/tr1/functional: Likewise for functional.
+	* include/tr1/complex: Likewise for complex.
+	* include/tr1/array: Likewise for array.
+
+	* include/c_global/ctgmath: Tweak.
+	* include/c_global/cstdarg: Likewise.
+	* include/c_global/ctime: Likewise.
+	* include/c_global/climits: Likewise.
+	* include/c_global/cfloat: Likewise.	
+	* include/c_global/ccomplex: Likewise.
+	* include/c_global/cstdbool: Likewise.
+
+	* include/tr1/poly_laguerre.tcc: Tweak, don't use _GLIBCXX_TR1.
+	* include/tr1/riemann_zeta.tcc: Likewise.
+	* include/tr1/beta_function.tcc: Likewise.
+	* include/tr1/exp_integral.tcc: Likewise.
+	* include/tr1/hypergeometric.tcc: Likewise.
+	* include/tr1/modified_bessel_func.tcc: Likewise.
+	* include/tr1/legendre_function.tcc: Likewise.
+	* include/tr1/special_function_util.h: Likewise.
+	* include/tr1/bessel_function.tcc: Likewise.
+	* include/tr1/poly_hermite.tcc: Likewise.
+	* include/tr1/ell_integral.tcc: Likewise.
+	* include/tr1/gamma.tcc: Likewise.
+	* include/tr1/stdlib.h: Likewise.
+	* include/tr1/math.h: Likewise.
+
+	* include/tr1/complex.h: Minor tweaks.
+	* include/tr1/wctype.h: Likewise.
+	* include/tr1/wchar.h: Likewise.
+	* include/tr1/inttypes.h: Likewise.
+	* include/tr1/tgmath.h: Likewise.
+	* include/tr1/cstdbool: Likewise.
+	* include/tr1/cfloat: Likewise.
+	* include/tr1/ccomplex: Likewise.
+	* include/tr1/ctime: Likewise.
+	* include/tr1/climits: Likewise.
+	* include/tr1/ctgmath: Likewise.
+	* include/tr1/cstdarg: Likewise.
+
+	* testsuite/tr1/headers.cc: Move...
+	* testsuite/tr1/headers/all.cc: ... here.
+	* testsuite/tr1/using_namespace_std_tr1.cc: Move...
+	* testsuite/tr1/headers/c++200x/using_namespace_std_tr1.cc: ... here.
+	* testsuite/tr1/headers/using_namespace_std_tr1.cc ... here.
+	* testsuite/tr1/headers/c++200x/using_namespace_std_tr1.cc: New.
+
+	* testsuite/20_util/tuple/requirements/explicit_instantiation.cc:
+	Adjust namespace.
+	* testsuite/20_util/has_nothrow_copy_constructor/value.cc: Adjust to
+	the C++0x requirements.
+	* testsuite/20_util/has_nothrow_default_constructor/value.cc: Likewise.
+	* testsuite/20_util/has_trivial_copy_constructor/value.cc: Likewise.
+	* testsuite/20_util/has_trivial_default_constructor/value.cc: Likewise.
+
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust
+	dg-error lines.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/headers/type_traits/types_std_c++0x_neg.cc:
+	Un-xfail.
+
+	* testsuite/20_util/is_signed/value.cc: New.
+	* testsuite/20_util/is_signed/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_signed/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_unsigned/value.cc: Likewise..
+	* testsuite/20_util/is_unsigned/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_unsigned/requirements/explicit_instantiation.cc:
+	Likewise.
+
+	* include/Makefile.am: Adjust.	
+	* include/Makefile.in: Regenerate.
+
+2007-05-31  Paolo Carlini  <pcarlini@suse.de>
+
 	PR c++/32158 (libstdc++ bits)
 	* include/bits/stl_uninitialized.h (__uninitialized_copy_aux,
 	__uninitialized_fill_aux, __uninitialized_fill_n_aux):

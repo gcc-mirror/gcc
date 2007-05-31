@@ -31,16 +31,33 @@
  *  This is a Standard C++ Library header.
  */
 
-#ifndef _GLIBCXX_ARRAY
-#define _GLIBCXX_ARRAY 1
+#ifndef _GLIBCXX_CXX0X_ARRAY
+#define _GLIBCXX_CXX0X_ARRAY 1
 
 #pragma GCC system_header
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <tr1/array>
-#else
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <c++0x_warning.h>
 #endif
 
-#endif 
+#if defined(_GLIBCXX_INCLUDE_AS_TR1)
+#  error C++0x header cannot be included from TR1 header
+#endif
 
+#include <bits/stl_algobase.h>
+
+#if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
+#  include <tr1_impl/array>
+#else
+#  define _GLIBCXX_INCLUDE_AS_CXX0X
+#  define _GLIBCXX_BEGIN_NAMESPACE_TR1
+#  define _GLIBCXX_END_NAMESPACE_TR1
+#  define _GLIBCXX_TR1
+#  include <tr1_impl/array>
+#  undef _GLIBCXX_TR1
+#  undef _GLIBCXX_END_NAMESPACE_TR1
+#  undef _GLIBCXX_BEGIN_NAMESPACE_TR1
+#  undef _GLIBCXX_INCLUDE_AS_CXX0X
+#endif
+
+#endif // _GLIBCXX_CXX0X_ARRAY

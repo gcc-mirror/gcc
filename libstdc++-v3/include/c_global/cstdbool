@@ -36,10 +36,13 @@
 #ifndef _GLIBCXX_CSTDBOOL
 #define _GLIBCXX_CSTDBOOL 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <tr1/cstdbool>
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#  include <c++0x_warning.h>
 #else
-# include <c++0x_warning.h>
+#  include <bits/c++config.h>
+#  if _GLIBCXX_HAVE_STDBOOL_H
+#    include_next <stdbool.h>
+#  endif
 #endif
 
 #endif 

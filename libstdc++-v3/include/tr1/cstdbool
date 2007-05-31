@@ -31,8 +31,8 @@
  *  This is a TR1 C++ Library header. 
  */
 
-#ifndef _TR1_CSTDBOOL
-#define _TR1_CSTDBOOL 1
+#ifndef _GLIBCXX_TR1_CSTDBOOL
+#define _GLIBCXX_TR1_CSTDBOOL 1
 
 #include <bits/c++config.h>
 
@@ -40,4 +40,4 @@
 #include_next <stdbool.h>
 #endif
 
-#endif
+#endif // _GLIBCXX_TR1_CSTDBOOL

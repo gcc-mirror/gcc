@@ -36,11 +36,36 @@
 
 #pragma GCC system_header
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <tr1/unordered_set>
-#else
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <c++0x_warning.h>
 #endif
 
-#endif 
+#if defined(_GLIBCXX_INCLUDE_AS_TR1)
+#  error C++0x header cannot be included from TR1 header
+#endif
 
+#include <cmath>
+#include <string>
+#include <utility>
+#include <algorithm> // lower_bound
+#include <bits/allocator.h>
+#include <bits/stl_function.h> // equal_to, _Identity, _Select1st
+#include <type_traits>
+#include <bits/functional_hash.h>
+#include <bits/hashtable.h>
+
+#if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
+#  include <tr1_impl/unordered_set>
+#else
+#  define _GLIBCXX_INCLUDE_AS_CXX0X
+#  define _GLIBCXX_BEGIN_NAMESPACE_TR1
+#  define _GLIBCXX_END_NAMESPACE_TR1
+#  define _GLIBCXX_TR1
+#  include <tr1_impl/unordered_set>
+#  undef _GLIBCXX_TR1
+#  undef _GLIBCXX_END_NAMESPACE_TR1
+#  undef _GLIBCXX_BEGIN_NAMESPACE_TR1
+#  undef _GLIBCXX_INCLUDE_AS_CXX0X
+#endif
+
+#endif // _GLIBCXX_UNORDERED_SET

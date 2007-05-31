@@ -45,14 +45,15 @@
 //   (3) Gamma, Exploring Euler's Constant, Julian Havil,
 //       Princeton, 2003.
 
-#ifndef _TR1_RIEMANN_ZETA_TCC
-#define _TR1_RIEMANN_ZETA_TCC 1
+#ifndef _GLIBCXX_TR1_RIEMANN_ZETA_TCC
+#define _GLIBCXX_TR1_RIEMANN_ZETA_TCC 1
 
 #include "special_function_util.h"
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
+namespace tr1
+{
 
   // [5.2] Special functions
 
@@ -175,7 +176,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
       if (__s < _Tp(0))
         {
 #if _GLIBCXX_USE_C99_MATH_TR1
-          if (std::_GLIBCXX_TR1::fmod(__s,_Tp(2)) == _Tp(0))
+          if (std::tr1::fmod(__s,_Tp(2)) == _Tp(0))
             return _Tp(0);
           else
 #endif
@@ -185,7 +186,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
                      * __numeric_constants<_Tp>::__pi(), __s)
                      * std::sin(__numeric_constants<_Tp>::__pi_2() * __s)
 #if _GLIBCXX_USE_C99_MATH_TR1
-                     * std::exp(std::_GLIBCXX_TR1::lgamma(_Tp(1) - __s))
+                     * std::exp(std::tr1::lgamma(_Tp(1) - __s))
 #else
                      * std::exp(__log_gamma(_Tp(1) - __s))
 #endif
@@ -204,9 +205,9 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
           for (unsigned int __j = 0; __j <= __i; ++__j)
             {
 #if _GLIBCXX_USE_C99_MATH_TR1
-              _Tp __bincoeff =  std::_GLIBCXX_TR1::lgamma(_Tp(1 + __i))
-                              - std::_GLIBCXX_TR1::lgamma(_Tp(1 + __j))
-                              - std::_GLIBCXX_TR1::lgamma(_Tp(1 + __i - __j));
+              _Tp __bincoeff =  std::tr1::lgamma(_Tp(1 + __i))
+                              - std::tr1::lgamma(_Tp(1 + __j))
+                              - std::tr1::lgamma(_Tp(1 + __i - __j));
 #else
               _Tp __bincoeff =  __log_gamma(_Tp(1 + __i))
                               - __log_gamma(_Tp(1 + __j))
@@ -309,7 +310,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
           __zeta *= std::pow(_Tp(2) * __numeric_constants<_Tp>::__pi(), __s)
                  * std::sin(__numeric_constants<_Tp>::__pi_2() * __s)
 #if _GLIBCXX_USE_C99_MATH_TR1
-                 * std::exp(std::_GLIBCXX_TR1::lgamma(_Tp(1) - __s))
+                 * std::exp(std::tr1::lgamma(_Tp(1) - __s))
 #else
                  * std::exp(__log_gamma(_Tp(1) - __s))
 #endif
@@ -332,7 +333,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
                                 * __numeric_constants<_Tp>::__pi(), __s)
                          * std::sin(__numeric_constants<_Tp>::__pi_2() * __s)
 #if _GLIBCXX_USE_C99_MATH_TR1
-                             * std::_GLIBCXX_TR1::tgamma(_Tp(1) - __s)
+                             * std::tr1::tgamma(_Tp(1) - __s)
 #else
                              * std::exp(__log_gamma(_Tp(1) - __s))
 #endif
@@ -387,9 +388,9 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
           for (unsigned int __j = 0; __j <= __i; ++__j)
             {
 #if _GLIBCXX_USE_C99_MATH_TR1
-              _Tp __bincoeff =  std::_GLIBCXX_TR1::lgamma(_Tp(1 + __i))
-                              - std::_GLIBCXX_TR1::lgamma(_Tp(1 + __j))
-                              - std::_GLIBCXX_TR1::lgamma(_Tp(1 + __i - __j));
+              _Tp __bincoeff =  std::tr1::lgamma(_Tp(1 + __i))
+                              - std::tr1::lgamma(_Tp(1 + __j))
+                              - std::tr1::lgamma(_Tp(1 + __i - __j));
 #else
               _Tp __bincoeff =  __log_gamma(_Tp(1 + __i))
                               - __log_gamma(_Tp(1 + __j))
@@ -443,7 +444,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   /* @} */ // group tr1_math_spec_func
 
-_GLIBCXX_END_NAMESPACE
+}
 }
 
-#endif // _TR1_RIEMANN_ZETA_TCC
+#endif // _GLIBCXX_TR1_RIEMANN_ZETA_TCC

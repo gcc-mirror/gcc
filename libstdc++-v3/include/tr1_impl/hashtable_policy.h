@@ -1,6 +1,6 @@
 // Internal policy header for TR1 unordered_set and unordered_map -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,21 +27,15 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file tr1/hashtable_policy.h
- *  This is a TR1 C++ Library header. 
+/** @file tr1_impl/hashtable_policy.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
  */
-
-#ifndef _TR1_HASHTABLE_POLICY_H
-#define _TR1_HASHTABLE_POLICY_H 1
-
-#include <algorithm> // lower_bound
-#include <bits/stl_function.h> // equal_to, _Identity, _Select1st
-#include <tr1/utility>
-#include <ext/type_traits.h>
 
 namespace std
 { 
-_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
+_GLIBCXX_BEGIN_NAMESPACE_TR1
+
 namespace __detail
 {
   // Helper function: return distance(first, last) for forward
@@ -897,8 +891,6 @@ namespace __detail
       _H2          _M_h2;
     };
 } // namespace __detail
-_GLIBCXX_END_NAMESPACE
-} // namespace std::tr1
 
-#endif // _TR1_HASHTABLE_POLICY_H
-
+_GLIBCXX_END_NAMESPACE_TR1
+}

@@ -36,11 +36,14 @@
 #ifndef _GLIBCXX_CCOMPLEX
 #define _GLIBCXX_CCOMPLEX 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <tr1/ccomplex>
-#else
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <c++0x_warning.h>
 #endif
 
-#endif 
+#if defined(_GLIBCXX_INCLUDE_AS_TR1)
+#  error C++0x header cannot be included from TR1 header
+#endif
 
+#include <complex>
+
+#endif

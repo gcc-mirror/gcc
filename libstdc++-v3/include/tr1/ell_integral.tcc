@@ -45,12 +45,13 @@
 //        W. T. Vetterling, B. P. Flannery, Cambridge University Press
 //        (1992), pp. 261-269
 
-#ifndef _TR1_ELL_INTEGRAL_TCC
-#define _TR1_ELL_INTEGRAL_TCC 1
+#ifndef _GLIBCXX_TR1_ELL_INTEGRAL_TCC
+#define _GLIBCXX_TR1_ELL_INTEGRAL_TCC 1
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
+namespace tr1
+{
 
   // [5.2] Special functions
 
@@ -755,8 +756,8 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   /* @} */ // group tr1_math_spec_func
 
-_GLIBCXX_END_NAMESPACE
+}
 }
 
-#endif // _TR1_ELL_INTEGRAL_TCC
+#endif // _GLIBCXX_TR1_ELL_INTEGRAL_TCC
 

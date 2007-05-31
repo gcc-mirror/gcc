@@ -47,6 +47,7 @@
 
 #include <bits/c++config.h>
 #include <bits/cpp_type_traits.h>
+#include <ext/type_traits.h>
 #include <cmath>
 #include <sstream>
 
@@ -1508,8 +1509,50 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
+  // See ext/type_traits.h for the primary template.
+  template<typename _Tp, typename _Up>
+    struct __promote_2<std::complex<_Tp>, _Up>
+    {
+    public:
+      typedef std::complex<typename __promote_2<_Tp, _Up>::__type> __type;
+    };
+
+  template<typename _Tp, typename _Up>
+    struct __promote_2<_Tp, std::complex<_Up> >
+    {
+    public:
+      typedef std::complex<typename __promote_2<_Tp, _Up>::__type> __type;
+    };
+  
+  template<typename _Tp, typename _Up>
+    struct __promote_2<std::complex<_Tp>, std::complex<_Up> >
+    {
+    public:
+      typedef std::complex<typename __promote_2<_Tp, _Up>::__type> __type;
+    };
+
+_GLIBCXX_END_NAMESPACE
+
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <tr1/complex>
+#  if defined(_GLIBCXX_INCLUDE_AS_TR1)
+#    error C++0x header cannot be included from TR1 header
+#  endif
+#  include <type_traits>
+#  if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
+#    include <tr1_impl/complex>
+#  else
+#    define _GLIBCXX_INCLUDE_AS_CXX0X
+#    define _GLIBCXX_BEGIN_NAMESPACE_TR1
+#    define _GLIBCXX_END_NAMESPACE_TR1
+#    define _GLIBCXX_TR1
+#    include <tr1_impl/complex>
+#    undef _GLIBCXX_TR1
+#    undef _GLIBCXX_END_NAMESPACE_TR1
+#    undef _GLIBCXX_BEGIN_NAMESPACE_TR1
+#    undef _GLIBCXX_INCLUDE_AS_CXX0X
+#  endif
 #endif
 
 #endif	/* _GLIBCXX_COMPLEX */

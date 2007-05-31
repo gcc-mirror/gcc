@@ -56,7 +56,8 @@
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
+namespace tr1
+{
 
   /**
    * @ingroup tr1_math_spec_func
@@ -295,9 +296,9 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
                       = std::numeric_limits<_Tp>::max_exponent10
                       * std::log(_Tp(10)) - _Tp(1);
 #if _GLIBCXX_USE_C99_MATH_TR1
-      _Tp __coeff =  std::_GLIBCXX_TR1::lgamma(_Tp(1 + __n))
-                  - std::_GLIBCXX_TR1::lgamma(_Tp(1 + __k))
-                  - std::_GLIBCXX_TR1::lgamma(_Tp(1 + __n - __k));
+      _Tp __coeff =  std::tr1::lgamma(_Tp(1 + __n))
+                  - std::tr1::lgamma(_Tp(1 + __k))
+                  - std::tr1::lgamma(_Tp(1 + __n - __k));
 #else
       _Tp __coeff =  __log_gamma(_Tp(1 + __n))
                   - __log_gamma(_Tp(1 + __k))
@@ -464,7 +465,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
         {
           const _Tp __hzeta = __hurwitz_zeta(_Tp(__n + 1), __x);
 #if _GLIBCXX_USE_C99_MATH_TR1
-          const _Tp __ln_nfact = std::_GLIBCXX_TR1::lgamma(_Tp(__n + 1));
+          const _Tp __ln_nfact = std::tr1::lgamma(_Tp(__n + 1));
 #else
           const _Tp __ln_nfact = __log_gamma(_Tp(__n + 1));
 #endif
@@ -479,7 +480,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   /* @} */ // group tr1_math_spec_func
 
-_GLIBCXX_END_NAMESPACE
+}
 }
 
 #endif // _TR1_GAMMA_TCC

@@ -42,12 +42,13 @@
 //       Ed. Milton Abramowitz and Irene A. Stegun,
 //       Dover Publications, Section 22 pp. 773-802
 
-#ifndef _TR1_POLY_HERMITE_TCC
-#define _TR1_POLY_HERMITE_TCC 1
+#ifndef _GLIBCXX_TR1_POLY_HERMITE_TCC
+#define _GLIBCXX_TR1_POLY_HERMITE_TCC 1
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
+namespace tr1
+{
 
   // [5.2] Special functions
 
@@ -132,7 +133,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   /* @} */ // group tr1_math_spec_func
 
-_GLIBCXX_END_NAMESPACE
+}
 }
 
-#endif // _TR1_POLY_HERMITE_TCC
+#endif // _GLIBCXX_TR1_POLY_HERMITE_TCC

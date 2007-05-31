@@ -31,7 +31,7 @@ void test01()
   using std::has_trivial_default_constructor;
   using namespace __gnu_test;
 
-  VERIFY( (test_category<has_trivial_default_constructor, void>(true)) );
+  // Positive tests.
   VERIFY( (test_category<has_trivial_default_constructor, int>(true)) );
   VERIFY( (test_category<has_trivial_default_constructor, float>(true)) );
   VERIFY( (test_category<has_trivial_default_constructor, EnumType>(true)) );
@@ -50,6 +50,9 @@ void test01()
   VERIFY( (test_category<has_trivial_default_constructor,
 	   int (ClassType::*[][2][3]) (int)>(true)) );
   VERIFY( (test_category<has_trivial_default_constructor, ClassType>(true)) );
+
+  // Negative tests.
+  VERIFY( (test_category<has_trivial_default_constructor, void>(false)) );  
 }
 
 int main()

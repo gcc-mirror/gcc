@@ -44,12 +44,13 @@
 //       Section 6, pp. 555-566
 //   (2) The Gnu Scientific Library, http://www.gnu.org/software/gsl
 
-#ifndef _TR1_HYPERGEOMETRIC_TCC
-#define _TR1_HYPERGEOMETRIC_TCC 1
+#ifndef _GLIBCXX_TR1_HYPERGEOMETRIC_TCC
+#define _GLIBCXX_TR1_HYPERGEOMETRIC_TCC 1
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
+namespace tr1
+{
 
   // [5.2] Special functions
 
@@ -233,7 +234,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
     __conf_hyperg(const _Tp __a, const _Tp __c, const _Tp __x)
     {
 #if _GLIBCXX_USE_C99_MATH_TR1
-      const _Tp __c_nint = std::_GLIBCXX_TR1::nearbyint(__c);
+      const _Tp __c_nint = std::tr1::nearbyint(__c);
 #else
       const _Tp __c_nint = static_cast<int>(__c + _Tp(0.5L));
 #endif
@@ -735,9 +736,9 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
     __hyperg(const _Tp __a, const _Tp __b, const _Tp __c, const _Tp __x)
     {
 #if _GLIBCXX_USE_C99_MATH_TR1
-      const _Tp __a_nint = std::_GLIBCXX_TR1::nearbyint(__a);
-      const _Tp __b_nint = std::_GLIBCXX_TR1::nearbyint(__b);
-      const _Tp __c_nint = std::_GLIBCXX_TR1::nearbyint(__c);
+      const _Tp __a_nint = std::tr1::nearbyint(__a);
+      const _Tp __b_nint = std::tr1::nearbyint(__b);
+      const _Tp __c_nint = std::tr1::nearbyint(__c);
 #else
       const _Tp __a_nint = static_cast<int>(__a + _Tp(0.5L));
       const _Tp __b_nint = static_cast<int>(__b + _Tp(0.5L));
@@ -782,7 +783,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   /* @} */ // group tr1_math_spec_func
 
-_GLIBCXX_END_NAMESPACE
+}
 }
 
-#endif // _TR1_HYPERGEOMETRIC_TCC
+#endif // _GLIBCXX_TR1_HYPERGEOMETRIC_TCC

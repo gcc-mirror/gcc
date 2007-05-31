@@ -49,12 +49,13 @@
 //   (4) Gamma, Exploring Euler's Constant, Julian Havil,
 //       Princeton, 2003.
 
-#ifndef _TR1_BETA_FUNCTION_TCC
-#define _TR1_BETA_FUNCTION_TCC 1
+#ifndef _GLIBCXX_TR1_BETA_FUNCTION_TCC
+#define _GLIBCXX_TR1_BETA_FUNCTION_TCC 1
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
+namespace tr1
+{
 
   // [5.2] Special functions
 
@@ -90,15 +91,15 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 #if _GLIBCXX_USE_C99_MATH_TR1
       if (__x > __y)
         {
-          __bet = std::_GLIBCXX_TR1::tgamma(__x)
-                / std::_GLIBCXX_TR1::tgamma(__x + __y);
-          __bet *= std::_GLIBCXX_TR1::tgamma(__y);
+          __bet = std::tr1::tgamma(__x)
+                / std::tr1::tgamma(__x + __y);
+          __bet *= std::tr1::tgamma(__y);
         }
       else
         {
-          __bet = std::_GLIBCXX_TR1::tgamma(__y)
-                / std::_GLIBCXX_TR1::tgamma(__x + __y);
-          __bet *= std::_GLIBCXX_TR1::tgamma(__x);
+          __bet = std::tr1::tgamma(__y)
+                / std::tr1::tgamma(__x + __y);
+          __bet *= std::tr1::tgamma(__x);
         }
 #else
       if (__x > __y)
@@ -134,9 +135,9 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
     __beta_lgamma(_Tp __x, _Tp __y)
     {
 #if _GLIBCXX_USE_C99_MATH_TR1
-      _Tp __bet = std::_GLIBCXX_TR1::lgamma(__x)
-                + std::_GLIBCXX_TR1::lgamma(__y)
-                - std::_GLIBCXX_TR1::lgamma(__x + __y);
+      _Tp __bet = std::tr1::lgamma(__x)
+                + std::tr1::lgamma(__y)
+                - std::tr1::lgamma(__x + __y);
 #else
       _Tp __bet = __log_gamma(__x)
                 + __log_gamma(__y)
@@ -205,7 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   /* @} */ // group tr1_math_spec_func
 
-_GLIBCXX_END_NAMESPACE
+}
 }
 
-#endif // _TR1_BETA_FUNCTION_TCC
+#endif // __GLIBCXX_TR1_BETA_FUNCTION_TCC

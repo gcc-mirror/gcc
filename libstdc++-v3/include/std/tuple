@@ -31,16 +31,33 @@
  *  This is a Standard C++ Library header.
  */
 
-#ifndef _GLIBCXX_TUPLE
-#define _GLIBCXX_TUPLE 1
+#ifndef _GLIBCXX_CXX0X_TUPLE
+#define _GLIBCXX_CXX0X_TUPLE 1
 
 #pragma GCC system_header
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <tr1/tuple>
-#else
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <c++0x_warning.h>
 #endif
 
-#endif 
+#if defined(_GLIBCXX_INCLUDE_AS_TR1)
+#  error C++0x header cannot be included from TR1 header
+#endif
 
+#include <utility>
+
+#if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
+#  include <tr1_impl/tuple>
+#else
+#  define _GLIBCXX_INCLUDE_AS_CXX0X
+#  define _GLIBCXX_BEGIN_NAMESPACE_TR1
+#  define _GLIBCXX_END_NAMESPACE_TR1
+#  define _GLIBCXX_TR1
+#  include <tr1_impl/tuple>
+#  undef _GLIBCXX_TR1
+#  undef _GLIBCXX_END_NAMESPACE_TR1
+#  undef _GLIBCXX_BEGIN_NAMESPACE_TR1
+#  undef _GLIBCXX_INCLUDE_AS_CXX0X
+#endif
+
+#endif // _GLIBCXX_CXX0X_TUPLE

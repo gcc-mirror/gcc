@@ -31,9 +31,9 @@
  *  This is a TR1 C++ Library header. 
  */
 
-#ifndef _TR1_CCOMPLEX
-#define _TR1_CCOMPLEX 1
+#ifndef _GLIBCXX_TR1_CCOMPLEX
+#define _GLIBCXX_TR1_CCOMPLEX 1
 
 #include <tr1/complex>
 
-#endif
+#endif // _GLIBCXX_TR1_CCOMPLEX

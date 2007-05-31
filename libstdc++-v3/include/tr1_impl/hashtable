@@ -1,6 +1,6 @@
 // Internal header for TR1 unordered_set and unordered_map -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,8 +27,9 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file tr1/hashtable
- *  This is a TR1 C++ Library header. 
+/** @file tr1_impl/hashtable
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
  */
 
 // This header file defines std::tr1::hashtable, which is used to
@@ -49,22 +50,11 @@
 // A. Tavori and V. Dreizin, "Policy-Based Data Structures", 2004.
 // http://gcc.gnu.org/onlinedocs/libstdc++/ext/pb_ds/index.html
 
-#ifndef _TR1_HASHTABLE
-#define _TR1_HASHTABLE 1
-
-#include <utility>		// For std::pair
-#include <cstddef>
-#include <cmath>
-#include <bits/stl_iterator_base_types.h>
-#include <bits/stl_iterator_base_funcs.h>
-#include <bits/allocator.h>
-#include <bits/functexcept.h>
-#include <tr1/type_traits>	// For true_type and false_type
-#include <tr1/hashtable_policy.h>
+#include <tr1_impl/hashtable_policy.h>
 
 namespace std
 { 
-_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
+_GLIBCXX_BEGIN_NAMESPACE_TR1
 
   // Class template _Hashtable, class definition.
   
@@ -382,10 +372,10 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 		       typename _Hashtable::_Hash_code_type);
 
       std::pair<iterator, bool>
-      _M_insert(const value_type&, std::_GLIBCXX_TR1::true_type);
+      _M_insert(const value_type&, std::_GLIBCXX_TR1 true_type);
 
       iterator
-      _M_insert(const value_type&, std::_GLIBCXX_TR1::false_type);
+      _M_insert(const value_type&, std::_GLIBCXX_TR1 false_type);
 
       void
       _M_erase_node(_Node*, _Node**);
@@ -394,7 +384,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
       // Insert and erase
       _Insert_Return_Type
       insert(const value_type& __v) 
-      { return _M_insert(__v, std::_GLIBCXX_TR1::integral_constant<bool,
+      { return _M_insert(__v, std::_GLIBCXX_TR1 integral_constant<bool,
 			 __unique_keys>()); }
 
       iterator
@@ -908,7 +898,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 				  __chc, __cit, __uk>::iterator, bool>
     _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
-    _M_insert(const value_type& __v, std::_GLIBCXX_TR1::true_type)
+    _M_insert(const value_type& __v, std::_GLIBCXX_TR1 true_type)
     {
       const key_type& __k = this->_M_extract(__v);
       typename _Hashtable::_Hash_code_type __code = this->_M_hash_code(__k);
@@ -929,7 +919,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 			__chc, __cit, __uk>::iterator
     _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
-    _M_insert(const value_type& __v, std::_GLIBCXX_TR1::false_type)
+    _M_insert(const value_type& __v, std::_GLIBCXX_TR1 false_type)
     {
       std::pair<bool, std::size_t> __do_rehash
 	= _M_rehash_policy._M_need_rehash(_M_bucket_count,
@@ -1196,8 +1186,5 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 	}
     }
 
-_GLIBCXX_END_NAMESPACE
-} // namespace std::tr1
-
-#endif // _TR1_HASHTABLE
-
+_GLIBCXX_END_NAMESPACE_TR1
+}

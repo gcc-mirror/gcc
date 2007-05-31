@@ -159,6 +159,52 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     __is_null_pointer(_Type)
     { return false; }
 
+
+  // For complex and cmath
+  template<typename _Tp, bool = std::__is_integer<_Tp>::__value>
+    struct __promote
+    { typedef double __type; };
+
+  template<typename _Tp>
+    struct __promote<_Tp, false>
+    { typedef _Tp __type; };
+
+  template<typename _Tp, typename _Up>
+    struct __promote_2
+    {
+    private:
+      typedef typename __promote<_Tp>::__type __type1;
+      typedef typename __promote<_Up>::__type __type2;
+
+    public:
+      typedef __typeof__(__type1() + __type2()) __type;
+    };
+
+  template<typename _Tp, typename _Up, typename _Vp>
+    struct __promote_3
+    {
+    private:
+      typedef typename __promote<_Tp>::__type __type1;
+      typedef typename __promote<_Up>::__type __type2;
+      typedef typename __promote<_Vp>::__type __type3;
+
+    public:
+      typedef __typeof__(__type1() + __type2() + __type3()) __type;
+    };
+
+  template<typename _Tp, typename _Up, typename _Vp, typename _Wp>
+    struct __promote_4
+    {
+    private:
+      typedef typename __promote<_Tp>::__type __type1;
+      typedef typename __promote<_Up>::__type __type2;
+      typedef typename __promote<_Vp>::__type __type3;
+      typedef typename __promote<_Wp>::__type __type4;
+
+    public:
+      typedef __typeof__(__type1() + __type2() + __type3() + __type4()) __type;
+    };
+
 _GLIBCXX_END_NAMESPACE
 
 #endif 

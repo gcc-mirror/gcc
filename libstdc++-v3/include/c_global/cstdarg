@@ -61,8 +61,4 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <tr1/cstdarg>
-#endif
-
 #endif
