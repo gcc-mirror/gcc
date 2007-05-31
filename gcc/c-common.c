@@ -2233,10 +2233,10 @@ min_precision (tree value, int unsignedp)
 }
 
 /* Print an error message for invalid operands to arith operation
-   CODE.  */
+   CODE with TYPE0 for operand 0, and TYPE1 for operand 1.  */
 
 void
-binary_op_error (enum tree_code code)
+binary_op_error (enum tree_code code, tree type0, tree type1)
 {
   const char *opname;
 
@@ -2287,7 +2287,8 @@ binary_op_error (enum tree_code code)
     default:
       gcc_unreachable ();
     }
-  error ("invalid operands to binary %s", opname);
+  error ("invalid operands to binary %s (have %qT and %qT)", opname,
+	 type0, type1);
 }
 
 /* Subroutine of build_binary_op, used for comparison operations.
