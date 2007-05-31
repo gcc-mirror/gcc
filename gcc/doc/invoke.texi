@@ -548,7 +548,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-fp-ret-in-387  -msoft-float @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
 -mpreferred-stack-boundary=@var{num} -mcx16 -msahf @gol
--mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 @gol
+-mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 @gol
 -msse4a -m3dnow -mpopcnt -mabm @gol
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
@@ -10273,6 +10273,10 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mno-ssse3
 @item -msse4.1
 @itemx -mno-sse4.1
+@item -msse4.2
+@itemx -mno-sse4.2
+@item -msse4
+@itemx -mno-sse4
 @item -msse4a
 @item -mno-sse4a
 @item -m3dnow

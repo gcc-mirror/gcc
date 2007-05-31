@@ -3633,14 +3633,24 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
+(define_insn "sse4_2_gtv2di3"
+  [(set (match_operand:V2DI 0 "register_operand" "=x")
+	(gt:V2DI
+	  (match_operand:V2DI 1 "nonimmediate_operand" "0")
+	  (match_operand:V2DI 2 "nonimmediate_operand" "xm")))]
+  "TARGET_SSE4_2"
+  "pcmpgtq\t{%2, %0|%0, %2}"
+  [(set_attr "type" "ssecmp")
+   (set_attr "mode" "TI")])
+
 (define_expand "vcond<mode>"
-  [(set (match_operand:SSEMODE124 0 "register_operand" "")
-        (if_then_else:SSEMODE124
+  [(set (match_operand:SSEMODEI 0 "register_operand" "")
+        (if_then_else:SSEMODEI
           (match_operator 3 ""
-            [(match_operand:SSEMODE124 4 "nonimmediate_operand" "")
-             (match_operand:SSEMODE124 5 "nonimmediate_operand" "")])
-          (match_operand:SSEMODE124 1 "general_operand" "")
-          (match_operand:SSEMODE124 2 "general_operand" "")))]
+            [(match_operand:SSEMODEI 4 "nonimmediate_operand" "")
+             (match_operand:SSEMODEI 5 "nonimmediate_operand" "")])
+          (match_operand:SSEMODEI 1 "general_operand" "")
+          (match_operand:SSEMODEI 2 "general_operand" "")))]
   "TARGET_SSE2"
 {
   if (ix86_expand_int_vcond (operands))
@@ -3650,13 +3660,13 @@
 })
 
 (define_expand "vcondu<mode>"
-  [(set (match_operand:SSEMODE124 0 "register_operand" "")
-        (if_then_else:SSEMODE124
+  [(set (match_operand:SSEMODEI 0 "register_operand" "")
+        (if_then_else:SSEMODEI
           (match_operator 3 ""
-            [(match_operand:SSEMODE124 4 "nonimmediate_operand" "")
-             (match_operand:SSEMODE124 5 "nonimmediate_operand" "")])
-          (match_operand:SSEMODE124 1 "general_operand" "")
-          (match_operand:SSEMODE124 2 "general_operand" "")))]
+            [(match_operand:SSEMODEI 4 "nonimmediate_operand" "")
+             (match_operand:SSEMODEI 5 "nonimmediate_operand" "")])
+          (match_operand:SSEMODEI 1 "general_operand" "")
+          (match_operand:SSEMODEI 2 "general_operand" "")))]
   "TARGET_SSE2"
 {
   if (ix86_expand_int_vcond (operands))

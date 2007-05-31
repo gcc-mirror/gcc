@@ -1,3 +1,64 @@
+2007-05-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc (i[34567]86-*-*): Add nmmintrin.h to
+	extra_headers.
+	(x86_64-*-*): Likewise.
+
+	* config/i386/i386.c (OPTION_MASK_ISA_MMX_UNSET): New.
+	(OPTION_MASK_ISA_3DNOW_UNSET): Likewise.
+	(OPTION_MASK_ISA_SSE_UNSET): Likewise.
+	(OPTION_MASK_ISA_SSE2_UNSET): Likewise.
+	(OPTION_MASK_ISA_SSE3_UNSET): Likewise.
+	(OPTION_MASK_ISA_SSSE3_UNSET): Likewise.
+	(OPTION_MASK_ISA_SSE4_1_UNSET): Likewise.
+	(OPTION_MASK_ISA_SSE4_2_UNSET): Likewise.
+	(OPTION_MASK_ISA_SSE4): Likewise.
+	(OPTION_MASK_ISA_SSE4_UNSET): Likewise.
+	(OPTION_MASK_ISA_SSE4A_UNSET): Likewise.
+	(ix86_handle_option): Use OPTION_MASK_ISA_*_UNSET.  Handle
+	SSE4.2.
+	(override_options): Support SSE4.2.
+	(ix86_build_const_vector): Support SImode and DImode.
+	(ix86_build_signbit_mask): Likewise.
+	(ix86_expand_int_vcond): Support V2DImode.
+	(IX86_BUILTIN_CRC32QI): New for SSE4.2.
+	(IX86_BUILTIN_CRC32HI): Likewise.
+	(IX86_BUILTIN_CRC32SI): Likewise.
+	(IX86_BUILTIN_CRC32DI): Likewise.
+	(IX86_BUILTIN_PCMPGTQ): Likewise.
+	(bdesc_crc32): Likewise.
+	(bdesc_sse_3arg): Likewise.
+	(ix86_expand_crc32): Likewise.
+	(ix86_init_mmx_sse_builtins): Support SSE4.2.
+	(ix86_expand_builtin): Likewise.
+
+	* config/i386/i386.h (TARGET_CPU_CPP_BUILTINS): Define
+	__SSE4_2__ for -msse4.2.
+
+	* config/i386/i386.md (UNSPEC_CRC32): New for SSE4.2.
+	(CRC32MODE): Likewise.
+	(crc32modesuffix): Likewise.
+	(crc32modeconstraint): Likewise.
+	(sse4_2_crc32<mode>): Likewise.
+	(sse4_2_crc32di): Likewise.
+
+	* config/i386/i386.opt (msse4.2): New for SSE4.2.
+	(msse4): Likewise.
+
+	* config/i386/nmmintrin.h: New. The dummy SSE4.2 intrinsic header
+	file.
+
+	* config/i386/smmintrin.h: Add SSE4.2 intrinsics.
+
+	* config/i386/sse.md (sse4_2_gtv2di3): New pattern for
+	SSE4.2.
+	(vcond<mode>): Use SSEMODEI instead of SSEMODE124.
+	(vcondu<mode>): Likewise.
+
+	* doc/extend.texi: Document SSE4.2 built-in functions.
+
+	* doc/invoke.texi: Document -msse4.2/-msse4.
+
 2007-05-31  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/32160
