@@ -309,7 +309,7 @@ __mf_set_default_options ()
 #endif
 }
 
-static struct option
+static struct mudoption
 {
   char *name;
   char *description;
@@ -440,7 +440,7 @@ options [] =
 static void
 __mf_usage ()
 {
-  struct option *opt;
+  struct mudoption *opt;
 
   fprintf (stderr,
            "This is a %s%sGCC \"mudflap\" memory-checked binary.\n"
@@ -514,7 +514,7 @@ __mf_set_options (const char *optstr)
 int
 __mfu_set_options (const char *optstr)
 {
-  struct option *opts = 0;
+  struct mudoption *opts = 0;
   char *nxt = 0;
   long tmp = 0;
   int rc = 0;
