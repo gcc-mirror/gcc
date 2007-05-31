@@ -1839,7 +1839,7 @@ stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 tree-ssa-structalias.o: tree-ssa-structalias.c tree-ssa-structalias.h \
    $(SYSTEM_H) $(CONFIG_H) $(GGC_H) $(TREE_H) $(TREE_FLOW_H) \
    $(TM_H) coretypes.h $(CGRAPH_H) tree-pass.h $(TIMEVAR_H) \
-   gt-tree-ssa-structalias.h $(PARAMS_H)
+   gt-tree-ssa-structalias.h $(PARAMS_H) pointer-set.h
 tree-ssa.o : tree-ssa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) output.h $(DIAGNOSTIC_H) \
    toplev.h $(FUNCTION_H) $(TIMEVAR_H) $(TM_H) coretypes.h \
