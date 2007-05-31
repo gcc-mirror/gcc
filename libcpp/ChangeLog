@@ -1,3 +1,8 @@
+2007-05-31  Dave Korn  <dave.korn@artimi.com>
+
+	PR preprocessor/14331
+	* lex.c (_cpp_get_fresh_line):  Don't warn if no newline at EOF.
+
 2007-05-24  Ollie Wild  <aaw@google.com>
 
 	* macro.c (_cpp_builtin_macro_text): Handle BT_COUNTER.
