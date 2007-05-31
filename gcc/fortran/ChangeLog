@@ -1,5 +1,11 @@
 2007-05-31  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/32156
+	* trans-array.c (gfc_trans_array_constructor): Treat the case
+	where the ss expression charlen is missing.
+
+22007-05-31  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/32103
 	* module.c (mio_symtree_ref): If an equivalence group member
 	is not used, give it a hidden symbol and set the pointer_info.
