@@ -1,3 +1,9 @@
+2007-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/31806
+	* decl.c (cp_finish_decl): Also clear was_readonly if a static var
+	needs runtime initialization.
+
 2007-05-31  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/32158
