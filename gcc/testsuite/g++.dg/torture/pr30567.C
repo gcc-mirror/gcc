@@ -1,5 +1,4 @@
 /* { dg-do run } */
-/* { dg-options "-O -finline-functions -fstrict-aliasing" } */
 
 template <typename T>
 struct const_ref
