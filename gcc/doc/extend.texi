@@ -7502,6 +7502,54 @@ Generates the @code{pextrd} machine instruction.
 Generates the @code{pextrq} machine instruction in 64bit mode.
 @end table
 
+The following built-in functions are available when @option{-msse4.2} is
+used.  All of them generate the machine instruction that is part of the
+name.
+
+@smallexample
+v16qi __builtin_ia32_pcmpestrm128 (v16qi, int, v16qi, int, const int)
+int __builtin_ia32_pcmpestri128 (v16qi, int, v16qi, int, const int)
+int __builtin_ia32_pcmpestria128 (v16qi, int, v16qi, int, const int)
+int __builtin_ia32_pcmpestric128 (v16qi, int, v16qi, int, const int)
+int __builtin_ia32_pcmpestrio128 (v16qi, int, v16qi, int, const int)
+int __builtin_ia32_pcmpestris128 (v16qi, int, v16qi, int, const int)
+int __builtin_ia32_pcmpestriz128 (v16qi, int, v16qi, int, const int)
+v16qi __builtin_ia32_pcmpistrm128 (v16qi, v16qi, const int)
+int __builtin_ia32_pcmpistri128 (v16qi, v16qi, const int)
+int __builtin_ia32_pcmpistria128 (v16qi, v16qi, const int)
+int __builtin_ia32_pcmpistric128 (v16qi, v16qi, const int)
+int __builtin_ia32_pcmpistrio128 (v16qi, v16qi, const int)
+int __builtin_ia32_pcmpistris128 (v16qi, v16qi, const int)
+int __builtin_ia32_pcmpistriz128 (v16qi, v16qi, const int)
+__v2di __builtin_ia32_pcmpgtq (__v2di, __v2di)
+@end smallexample
+
+The following built-in functions are available when @option{-msse4.2} is
+used.
+
+@table @code
+unsigned int __builtin_ia32_crc32qi (unsigned int, unsigned char)
+Generates the @code{crc32b} machine instruction.
+unsigned int __builtin_ia32_crc32hi (unsigned int, unsigned short)
+Generates the @code{crc32w} machine instruction.
+unsigned int __builtin_ia32_crc32si (unsigned int, unsigned int)
+Generates the @code{crc32l} machine instruction.
+unsigned long long __builtin_ia32_crc32di (unsigned int, unsigned long long)
+@end table
+
+The following built-in functions are changed to generate new SSE4.2
+instructions when @option{-msse4.2} is used.
+
+@table @code
+int __builtin_popcount (unsigned int)
+Generates the @code{popcntl} machine instruction.
+int __builtin_popcountl (unsigned long)
+Generates the @code{popcntl} or @code{popcntq} machine instruction,
+depending on the size of @code{unsigned long}.
+int __builtin_popcountll (unsigned long long)
+Generates the @code{popcntq} machine instruction.
+@end table
+
 The following built-in functions are available when @option{-msse4a} is used.
 
 @smallexample

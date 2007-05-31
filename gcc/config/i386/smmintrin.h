@@ -573,6 +573,246 @@ _mm_stream_load_si128 (__m128i *__X)
   return (__m128i) __builtin_ia32_movntdqa ((__v2di *) __X);
 }
 
+#ifdef __SSE4_2__
+
+/* These macros specify the source data format.  */
+#define SIDD_UBYTE_OPS			0x00
+#define SIDD_UWORD_OPS			0x01
+#define SIDD_SBYTE_OPS			0x02
+#define SIDD_SWORD_OPS			0x03
+
+/* These macros specify the comparison operation.  */
+#define SIDD_CMP_EQUAL_ANY		0x00
+#define SIDD_CMP_RANGES			0x04
+#define SIDD_CMP_EQUAL_EACH		0x08
+#define SIDD_CMP_EQUAL_ORDERED		0x0c
+
+/* These macros specify the the polarity.  */
+#define SIDD_POSITIVE_POLARITY		0x00
+#define SIDD_NEGATIVE_POLARITY		0x10
+#define SIDD_MASKED_POSITIVE_POLARITY	0x20
+#define SIDD_MASKED_NEGATIVE_POLARITY	0x30
+
+/* These macros specify the output selection in _mm_cmpXstri ().  */
+#define SIDD_LEAST_SIGNIFICANT		0x00
+#define SIDD_MOST_SIGNIFICANT		0x40
+
+/* These macros specify the output selection in _mm_cmpXstrm ().  */
+#define SIDD_BIT_MASK			0x00
+#define SIDD_UNIT_MASK			0x40
+
+/* Intrinsics for text/string processing.  */
+
+#if 0
+static __inline __m128i __attribute__((__always_inline__))
+_mm_cmpistrm (__m128i __X, __m128i __Y, const int __M)
+{
+  return (__m128i) __builtin_ia32_pcmpistrm128 ((__v16qi)__X,
+						(__v16qi)__Y,
+						__M);
+}
+
+static __inline int __attribute__((__always_inline__))
+_mm_cmpistri (__m128i __X, __m128i __Y, const int __M)
+{
+  return __builtin_ia32_pcmpistri128 ((__v16qi)__X,
+				      (__v16qi)__Y,
+				      __M);
+}
+
+static __inline __m128i __attribute__((__always_inline__))
+_mm_cmpestrm (__m128i __X, int __LX, __m128i __Y, int __LY, const int __M)
+{
+  return (__m128i) __builtin_ia32_pcmpestrm128 ((__v16qi)__X, __LX,
+						(__v16qi)__Y, __LY,
+						__M);
+}
+
+static __inline int __attribute__((__always_inline__))
+_mm_cmpestri (__m128i __X, int __LX, __m128i __Y, int __LY, const int __M)
+{
+  return __builtin_ia32_pcmpestri128 ((__v16qi)__X, __LX,
+				      (__v16qi)__Y, __LY,
+				      __M);
+}
+#else
+#define _mm_cmpistrm(X, Y, M) \
+  ((__m128i) __builtin_ia32_pcmpistrm128 ((__v16qi)(X), (__v16qi)(Y), (M)))
+#define _mm_cmpistri(X, Y, M) \
+  __builtin_ia32_pcmpistri128 ((__v16qi)(X), (__v16qi)(Y), (M))
+
+#define _mm_cmpestrm(X, LX, Y, LY, M) \
+  ((__m128i) __builtin_ia32_pcmpestrm128 ((__v16qi)(X), (int)(LX), \
+					  (__v16qi)(Y), (int)(LY), (M)))
+#define _mm_cmpestri(X, LX, Y, LY, M) \
+  __builtin_ia32_pcmpestri128 ((__v16qi)(X), (int)(LX), \
+			       (__v16qi)(Y), (int)(LY), (M))
+#endif
+
+/* Intrinsics for text/string processing and reading values of
+   EFlags.  */
+
+#if 0
+static __inline int __attribute__((__always_inline__))
+_mm_cmpistra (__m128i __X, __m128i __Y, const int __M)
+{
+  return __builtin_ia32_pcmpistria128 ((__v16qi)__X,
+				       (__v16qi)__Y,
+				       __M);
+}
+
+static __inline int __attribute__((__always_inline__))
+_mm_cmpistrc (__m128i __X, __m128i __Y, const int __M)
+{
+  return __builtin_ia32_pcmpistric128 ((__v16qi)__X,
+				       (__v16qi)__Y,
+				       __M);
+}
+
+static __inline int __attribute__((__always_inline__))
+_mm_cmpistro (__m128i __X, __m128i __Y, const int __M)
+{
+  return __builtin_ia32_pcmpistrio128 ((__v16qi)__X,
+				       (__v16qi)__Y,
+				       __M);
+}
+
+static __inline int __attribute__((__always_inline__))
+_mm_cmpistrs (__m128i __X, __m128i __Y, const int __M)
+{
+  return __builtin_ia32_pcmpistris128 ((__v16qi)__X,
+				       (__v16qi)__Y,
+				       __M);
+}
+
+static __inline int __attribute__((__always_inline__))
+_mm_cmpistrz (__m128i __X, __m128i __Y, const int __M)
+{
+  return __builtin_ia32_pcmpistriz128 ((__v16qi)__X,
+				       (__v16qi)__Y,
+				       __M);
+}
+
+static __inline int __attribute__((__always_inline__))
+_mm_cmpestra (__m128i __X, int __LX, __m128i __Y, int __LY, const int __M)
+{
+  return __builtin_ia32_pcmpestria128 ((__v16qi)__X, __LX,
+				       (__v16qi)__Y, __LY,
+				       __M);
+}
+
+static __inline int __attribute__((__always_inline__))
+_mm_cmpestrc (__m128i __X, int __LX, __m128i __Y, int __LY, const int __M)
+{
+  return __builtin_ia32_pcmpestric128 ((__v16qi)__X, __LX,
+				       (__v16qi)__Y, __LY,
+				       __M);
+}
+
+static __inline int __attribute__((__always_inline__))
+_mm_cmpestro (__m128i __X, int __LX, __m128i __Y, int __LY, const int __M)
+{
+  return __builtin_ia32_pcmpestrio128 ((__v16qi)__X, __LX,
+				       (__v16qi)__Y, __LY,
+				       __M);
+}
+
+static __inline int __attribute__((__always_inline__))
+_mm_cmpestrs (__m128i __X, int __LX, __m128i __Y, int __LY, const int __M)
+{
+  return __builtin_ia32_pcmpestris128 ((__v16qi)__X, __LX,
+				       (__v16qi)__Y, __LY,
+				       __M);
+}
+
+static __inline int __attribute__((__always_inline__))
+_mm_cmpestrz (__m128i __X, int __LX, __m128i __Y, int __LY, const int __M)
+{
+  return __builtin_ia32_pcmpestriz128 ((__v16qi)__X, __LX,
+				       (__v16qi)__Y, __LY,
+				       __M);
+}
+#else
+#define _mm_cmpistra(X, Y, M) \
+  __builtin_ia32_pcmpistria128 ((__v16qi)(X), (__v16qi)(Y), (M))
+#define _mm_cmpistrc(X, Y, M) \
+  __builtin_ia32_pcmpistric128 ((__v16qi)(X), (__v16qi)(Y), (M))
+#define _mm_cmpistro(X, Y, M) \
+  __builtin_ia32_pcmpistrio128 ((__v16qi)(X), (__v16qi)(Y), (M))
+#define _mm_cmpistrs(X, Y, M) \
+  __builtin_ia32_pcmpistris128 ((__v16qi)(X), (__v16qi)(Y), (M))
+#define _mm_cmpistrz(X, Y, M) \
+  __builtin_ia32_pcmpistriz128 ((__v16qi)(X), (__v16qi)(Y), (M))
+
+#define _mm_cmpestra(X, LX, Y, LY, M) \
+  __builtin_ia32_pcmpestria128 ((__v16qi)(X), (int)(LX), \
+				(__v16qi)(Y), (int)(LY), (M))
+#define _mm_cmpestrc(X, LX, Y, LY, M) \
+  __builtin_ia32_pcmpestric128 ((__v16qi)(X), (int)(LX), \
+				(__v16qi)(Y), (int)(LY), (M))
+#define _mm_cmpestro(X, LX, Y, LY, M) \
+  __builtin_ia32_pcmpestrio128 ((__v16qi)(X), (int)(LX), \
+				(__v16qi)(Y), (int)(LY), (M))
+#define _mm_cmpestrs(X, LX, Y, LY, M) \
+  __builtin_ia32_pcmpestris128 ((__v16qi)(X), (int)(LX), \
+				(__v16qi)(Y), (int)(LY), (M))
+#define _mm_cmpestrz(X, LX, Y, LY, M) \
+  __builtin_ia32_pcmpestriz128 ((__v16qi)(X), (int)(LX), \
+				(__v16qi)(Y), (int)(LY), (M))
+#endif
+
+/* Packed integer 64-bit comparison, zeroing or filling with ones
+   corresponding parts of result.  */
+static __inline __m128i __attribute__((__always_inline__))
+_mm_cmpgt_epi64 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) __builtin_ia32_pcmpgtq ((__v2di)__X, (__v2di)__Y);
+}
+
+/* Calculate a number of bits set to 1.  */
+static __inline int __attribute__((__always_inline__))
+_mm_popcnt_u32 (unsigned int __X)
+{
+  return __builtin_popcount (__X);
+}
+
+#ifdef __x86_64__
+static __inline long long  __attribute__((__always_inline__))
+_mm_popcnt_u64 (unsigned long long __X)
+{
+  return __builtin_popcountll (__X);
+}
+#endif
+
+/* Accumulate CRC32 (polynomial 0x11EDC6F41) value.  */
+static __inline unsigned int __attribute__((__always_inline__))
+_mm_crc32_u8 (unsigned int __C, unsigned char __V)
+{
+  return __builtin_ia32_crc32qi (__C, __V);
+}
+
+static __inline unsigned int __attribute__((__always_inline__))
+_mm_crc32_u16 (unsigned int __C, unsigned short __V)
+{
+  return __builtin_ia32_crc32hi (__C, __V);
+}
+
+static __inline unsigned int __attribute__((__always_inline__))
+_mm_crc32_u32 (unsigned int __C, unsigned int __V)
+{
+  return __builtin_ia32_crc32si (__C, __V);
+}
+
+#ifdef __x86_64__
+static __inline unsigned long long __attribute__((__always_inline__))
+_mm_crc32_u64 (unsigned long long __C, unsigned long long __V)
+{
+  return __builtin_ia32_crc32di (__C, __V);
+}
+#endif
+
+#endif /* __SSE4_2__ */
+
 #endif /* __SSE4_1__ */
 
 #endif /* _SMMINTRIN_H_INCLUDED */
