@@ -1,5 +1,9 @@
 2007-05-31  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c: Correct coments on -mno-sse4.
+
+2007-05-31  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config.gcc (i[34567]86-*-*): Add nmmintrin.h to
 	extra_headers.
 	(x86_64-*-*): Likewise.
