@@ -1,3 +1,9 @@
+2003-05-31  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR libjava/32098
+	* libtool.m4: Revert previous change.
+	* ltgcc.m4: Put it here.
+
 2003-05-30  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* MAINTAINERS (Various Maintainers): Add myself as

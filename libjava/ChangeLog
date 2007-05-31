@@ -1,3 +1,9 @@
+2007-05-31  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR libjava/32098
+	* configure: Regenerated.
+	* aclocal.m4: Regenerated.
+
 2007-05-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libjava/32098
