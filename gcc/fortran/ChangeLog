@@ -1,9 +1,19 @@
-2007-05-22  Tobias Burnus  <burnus@net-b.de>
+2007-05-31  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/31559
-	Backport from mainline.
-	* primary.c (match_variable): External functions
-	are no variables.
+	PR fortran/31483
+	* trans-expr.c (gfc_conv_function_call): Give a dummy
+	procedure the correct type if it has alternate returns.
+	
+
+	PR fortran/31540
+	* resolve.c (resolve_fl_procedure): Resolve constant character
+	lengths.
+
+	PR fortran/31867
+	PR fortran/31994
+	* trans-array.c (gfc_conv_expr_descriptor): Obtain the stored
+	offset for non-descriptor, source arrays and correct for stride
+	not equal to one before writing to field of output descriptor.
 
 2007-05-17  Tobias Burnus  <burnus@net-b.de>
 

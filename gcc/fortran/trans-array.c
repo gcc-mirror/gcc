@@ -4422,6 +4422,8 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       if (se->direct_byref)
 	base = gfc_index_zero_node;
+      else if (GFC_ARRAY_TYPE_P (TREE_TYPE (desc)))
+	base = gfc_evaluate_now (gfc_conv_array_offset (desc), &loop.pre);
       else
 	base = NULL_TREE;
 
@@ -4489,8 +4491,20 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 				stride, info->stride[dim]);
 
 	  if (se->direct_byref)
-	    base = fold_build2 (MINUS_EXPR, TREE_TYPE (base),
-				base, stride);
+	    {
+	      base = fold_build2 (MINUS_EXPR, TREE_TYPE (base),
+				  base, stride);
+	    }
+	  else if (GFC_ARRAY_TYPE_P (TREE_TYPE (desc)))
+	    {
+	      tmp = gfc_conv_array_lbound (desc, n);
+	      tmp = fold_build2 (MINUS_EXPR, TREE_TYPE (base),
+				 tmp, loop.from[dim]);
+	      tmp = fold_build2 (MULT_EXPR, TREE_TYPE (base),
+				 tmp, gfc_conv_array_stride (desc, n));
+	      base = fold_build2 (PLUS_EXPR, TREE_TYPE (base),
+				  tmp, base);
+	    }
 
 	  /* Store the new stride.  */
 	  tmp = gfc_conv_descriptor_stride (parm, gfc_rank_cst[dim]);
@@ -4511,7 +4525,8 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  gfc_conv_descriptor_data_set (&loop.pre, parm, offset);
 	}
 
-      if (se->direct_byref && !se->data_not_needed)
+      if ((se->direct_byref || GFC_ARRAY_TYPE_P (TREE_TYPE (desc)))
+	     && !se->data_not_needed)
 	{
 	  /* Set the offset.  */
 	  tmp = gfc_conv_descriptor_offset (parm);

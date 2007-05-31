@@ -1,3 +1,24 @@
+2007-05-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31483
+	* gfortran.dg/altreturn_5.f90: New test.
+
+	PR fortran/31540
+	* gfortran.dg/char_result_5.f90: New test.
+
+	PR fortran/31867
+	* gfortran.dg/char_length_5.f90: New test.
+
+	PR fortran/31994
+	* gfortran.dg/array_reference_1.f90: New test.
+
+2007-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/31559
+	Backport from mainline.
+	* primary.c (match_variable): External functions
+	are no variables.
+
 2007-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/31769
