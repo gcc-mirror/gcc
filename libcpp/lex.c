@@ -852,11 +852,8 @@ _cpp_get_fresh_line (cpp_reader *pfile)
 	  && buffer->next_line > buffer->rlimit
 	  && !buffer->from_stage3)
 	{
-	  /* Only warn once.  */
+	  /* Clip to buffer size.  */
 	  buffer->next_line = buffer->rlimit;
-	  cpp_error_with_line (pfile, CPP_DL_PEDWARN, pfile->line_table->highest_line,
-			       CPP_BUF_COLUMN (buffer, buffer->cur),
-			       "no newline at end of file");
 	}
 
       return_at_eof = buffer->return_at_eof;
