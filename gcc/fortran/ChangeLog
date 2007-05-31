@@ -1,4 +1,4 @@
-2007-05-29  Daniel Franke  <franke.daniel@gmail.com>
+2007-05-31  Paul Thomas  <pault@gcc.gnu.org>	PR fortran/32103	* module.c (mio_symtree_ref): If an equivalence group member	is not used, give it a hidden symbol and set the pointer_info.	(load_equiv): Only free the equivalence if none of the members	are used.2007-05-29  Daniel Franke  <franke.daniel@gmail.com>
 
 	* gfortran.h: Renamed 'enum gfc_generic_isym_id' to 'enum gfc_isym_id',
 	added missing GFC_ISYM_* enumerators, ordered alphabetically.

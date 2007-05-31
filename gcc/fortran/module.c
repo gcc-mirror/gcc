@@ -189,7 +189,7 @@ static gfc_use_rename *gfc_rename_list;
 static pointer_info *pi_root;
 static int symbol_number;	/* Counter for assigning symbol numbers */
 
-/* Tells mio_expr_ref not to load unused equivalence members.  */
+/* Tells mio_expr_ref to make symbols for unused equivalence members.  */
 static bool in_load_equiv;
 
 
@@ -2234,9 +2234,25 @@ mio_symtree_ref (gfc_symtree **stp)
       require_atom (ATOM_INTEGER);
       p = get_integer (atom_int);
 
-      /* An unused equivalence member; bail out.  */
+      /* An unused equivalence member; make a symbol and a symtree
+	 for it.  */
       if (in_load_equiv && p->u.rsym.symtree == NULL)
-	return;
+	{
+	  /* Since this is not used, it must have a unique name.  */
+	  p->u.rsym.symtree = get_unique_symtree (gfc_current_ns);
+
+	  /* Make the symbol.  */
+	  if (p->u.rsym.sym == NULL)
+	    {
+	      p->u.rsym.sym = gfc_new_symbol (p->u.rsym.true_name,
+					      gfc_current_ns);
+	      p->u.rsym.sym->module = gfc_get_string (p->u.rsym.module);
+	    }
+
+	  p->u.rsym.symtree->n.sym = p->u.rsym.sym;
+	  p->u.rsym.symtree->n.sym->refs++;
+	  p->u.rsym.referenced = 1;
+	}
       
       if (p->type == P_UNKNOWN)
 	p->type = P_SYMBOL;
@@ -3206,13 +3222,13 @@ load_equiv (void)
 	mio_expr (&tail->expr);
       }
 
-    /* Unused variables have no symtree.  */
-    unused = false;
+    /* Unused equivalence members have a unique name.  */
+    unused = true;
     for (eq = head; eq; eq = eq->eq)
       {
-	if (!eq->expr->symtree)
+	if (!check_unique_name (eq->expr->symtree->name))
 	  {
-	    unused = true;
+	    unused = false;
 	    break;
 	  }
       }
