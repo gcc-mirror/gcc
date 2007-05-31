@@ -64,8 +64,28 @@ lvalue_p_1 (tree ref,
   cp_lvalue_kind op1_lvalue_kind = clk_none;
   cp_lvalue_kind op2_lvalue_kind = clk_none;
 
+  /* Expressions of reference type are sometimes wrapped in
+     INDIRECT_REFs.  INDIRECT_REFs are just internal compiler
+     representation, not part of the language, so we have to look
+     through them.  */
+  if (TREE_CODE (ref) == INDIRECT_REF
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 0)))
+	  == REFERENCE_TYPE)
+    return lvalue_p_1 (TREE_OPERAND (ref, 0),
+                       treat_class_rvalues_as_lvalues);
+
   if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
-    return clk_ordinary;
+    {
+      /* unnamed rvalue references are rvalues */
+      if (TYPE_REF_IS_RVALUE (TREE_TYPE (ref))
+	  && TREE_CODE (ref) != PARM_DECL
+	  && TREE_CODE (ref) != VAR_DECL
+	  && TREE_CODE (ref) != COMPONENT_REF)
+	return clk_none;
+
+      /* lvalue references and named rvalue refences are lvalues */
+      return clk_ordinary;
+    }
 
   if (ref == current_class_ptr)
     return clk_none;
@@ -588,6 +608,53 @@ build_cplus_array_type (tree elt_type, tree index_type)
 
   return t;
 }
+
+/* Return a reference type node referring to TO_TYPE.  If RVAL is
+   true, return an rvalue reference type, otherwise return an lvalue
+   reference type.  If a type node exists, reuse it, otherwise create
+   a new one.  */
+tree
+cp_build_reference_type (tree to_type, bool rval)
+{
+  tree lvalue_ref, t;
+  lvalue_ref = build_reference_type (to_type);
+  if (!rval)
+    return lvalue_ref;
+
+  /* This code to create rvalue reference types is based on and tied
+     to the code creating lvalue reference types in the middle-end
+     functions build_reference_type_for_mode and build_reference_type.
+
+     It works by putting the rvalue reference type nodes after the
+     lvalue reference nodes in the TYPE_NEXT_REF_TO linked list, so
+     they will effectively be ignored by the middle end.  */
+
+  for (t = lvalue_ref; (t = TYPE_NEXT_REF_TO (t)); )
+    if (TYPE_REF_IS_RVALUE (t))
+      return t;
+
+  t = copy_node (lvalue_ref);
+
+  TYPE_REF_IS_RVALUE (t) = true;
+  TYPE_NEXT_REF_TO (t) = TYPE_NEXT_REF_TO (lvalue_ref);
+  TYPE_NEXT_REF_TO (lvalue_ref) = t;
+  TYPE_MAIN_VARIANT (t) = t;
+
+  if (TYPE_STRUCTURAL_EQUALITY_P (to_type))
+    SET_TYPE_STRUCTURAL_EQUALITY (t);
+  else if (TYPE_CANONICAL (to_type) != to_type)
+    TYPE_CANONICAL (t) 
+      = cp_build_reference_type (TYPE_CANONICAL (to_type), rval);
+  else
+    TYPE_CANONICAL (t) = t;
+
+  layout_type (t);
+
+  return t;
+
+}
+
+
 
 /* Make a variant of TYPE, qualified with the TYPE_QUALS.  Handles
    arrays correctly.  In particular, if TYPE is an array of T's, and

@@ -7794,10 +7794,24 @@ grokdeclarator (const cp_declarator *declarator,
 
 	  if (TREE_CODE (type) == REFERENCE_TYPE)
 	    {
-	      error (declarator->kind == cdk_reference
-		     ? "cannot declare reference to %q#T"
-		     : "cannot declare pointer to %q#T", type);
-	      type = TREE_TYPE (type);
+	      if (declarator->kind != cdk_reference)
+		{
+		  error ("cannot declare pointer to %q#T", type);
+		  type = TREE_TYPE (type);
+		}
+
+	      /* In C++0x, we allow reference to reference declarations
+		 that occur indirectly through typedefs [7.1.3/8 dcl.typedef]
+		 and template type arguments [14.3.1/4 temp.arg.type]. The
+		 check for direct reference to reference declarations, which
+		 are still forbidden, occurs below. Reasoning behind the change
+		 can be found in DR106, DR540, and the rvalue reference
+		 proposals. */
+	      else if (!flag_cpp0x)
+		{
+		  error ("cannot declare reference to %q#T", type);
+		  type = TREE_TYPE (type);
+		}
 	    }
 	  else if (VOID_TYPE_P (type))
 	    {
@@ -7823,8 +7837,39 @@ grokdeclarator (const cp_declarator *declarator,
 
 	  if (declarator->kind == cdk_reference)
 	    {
+	      /* In C++0x, the type we are creating a reference to might be
+		 a typedef which is itself a reference type. In that case,
+		 we follow the reference collapsing rules in
+		 [7.1.3/8 dcl.typedef] to create the final reference type:
+
+		 "If a typedef TD names a type that is a reference to a type
+		 T, an attempt to create the type 'lvalue reference to cv TD'
+		 creates the type 'lvalue reference to T,' while an attempt
+		 to create the type "rvalue reference to cv TD' creates the
+		 type TD."
+              */
 	      if (!VOID_TYPE_P (type))
-		type = build_reference_type (type);
+		type = cp_build_reference_type
+		       ((TREE_CODE (type) == REFERENCE_TYPE
+			 ? TREE_TYPE (type) : type),
+			(declarator->u.reference.rvalue_ref
+			 && (TREE_CODE(type) != REFERENCE_TYPE
+			     || TYPE_REF_IS_RVALUE (type))));
+
+	      /* In C++0x, we need this check for direct reference to
+		 reference declarations, which are forbidden by
+		 [8.3.2/5 dcl.ref]. Reference to reference declarations
+		 are only allowed indirectly through typedefs and template
+		 type arguments. Example:
+
+		   void foo(int & &);      // invalid ref-to-ref decl
+
+		   typedef int & int_ref;
+		   void foo(int_ref &);    // valid ref-to-ref decl
+	      */
+	      if (inner_declarator && inner_declarator->kind == cdk_reference)
+		error ("cannot declare reference to %q#T, which is not "
+		       "a typedef or a template type argument", type);
 	    }
 	  else if (TREE_CODE (type) == METHOD_TYPE)
 	    type = build_ptrmemfunc_type (build_pointer_type (type));
@@ -9075,6 +9120,7 @@ copy_fn_p (tree d)
       result = -1;
     }
   else if (TREE_CODE (arg_type) == REFERENCE_TYPE
+	   && !TYPE_REF_IS_RVALUE (arg_type)
 	   && TYPE_MAIN_VARIANT (TREE_TYPE (arg_type)) == DECL_CONTEXT (d))
     {
       if (CP_TYPE_CONST_P (TREE_TYPE (arg_type)))
@@ -9088,6 +9134,57 @@ copy_fn_p (tree d)
   if (args && args != void_list_node && !TREE_PURPOSE (args))
     /* There are more non-optional args.  */
     return 0;
+
+  return result;
+}
+
+/* D is a constructor or overloaded `operator='.
+
+   Let T be the class in which D is declared. Then, this function
+   returns true when D is a move constructor or move assignment
+   operator, false otherwise.  */
+
+bool
+move_fn_p (tree d)
+{
+  tree args;
+  tree arg_type;
+  bool result = false;
+
+  gcc_assert (DECL_FUNCTION_MEMBER_P (d));
+
+  if (!flag_cpp0x)
+    /* There are no move constructors if we aren't in C++0x mode.  */
+    return false;
+
+  if (TREE_CODE (d) == TEMPLATE_DECL
+      || (DECL_TEMPLATE_INFO (d)
+         && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (d))))
+    /* Instantiations of template member functions are never copy
+       functions.  Note that member functions of templated classes are
+       represented as template functions internally, and we must
+       accept those as copy functions.  */
+    return 0;
+
+  args = FUNCTION_FIRST_USER_PARMTYPE (d);
+  if (!args)
+    return 0;
+
+  arg_type = TREE_VALUE (args);
+  if (arg_type == error_mark_node)
+    return 0;
+
+  if (TREE_CODE (arg_type) == REFERENCE_TYPE
+      && TYPE_REF_IS_RVALUE (arg_type)
+      && same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (arg_type)),
+                      DECL_CONTEXT (d)))
+    result = true;
+
+  args = TREE_CHAIN (args);
+
+  if (args && args != void_list_node && !TREE_PURPOSE (args))
+    /* There are more non-optional args.  */
+    return false;
 
   return result;
 }

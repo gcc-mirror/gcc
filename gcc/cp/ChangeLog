@@ -1,3 +1,62 @@
+2007-05-30  Russell Yanofsky <russ@yanofsky.org>
+            Douglas Gregor <doug.gregor@gmail.com>
+            Pedro Lamarao <pedro.lamarao@mndfck.org>
+            Howard Hinnant <howard.hinnant@gmail.com>
+
+	PR c++/7412
+	PR c++/29939
+	* typeck.c (comptypes): Don't consider rvalue and lvalue
+	reference types to be equivalent.
+	(check_return_expr): Move from certain lvalues when returning
+	them.
+	* decl.c (grokdeclarator): Implement reference collapsing.
+	(copy_fn_p): Don't consider constructors taking rvalue references
+	to be copy constructors.
+	(move_fn_p): New.
+        * call.c (conversion): New "rvaluedness_matches_p" member.
+	(convert_class_to_reference): Require reference type as first
+	parameter instead of base type.
+	(reference_binding): Add logic to handle rvalue references.
+	(implicit_conversion): Update inaccurate comment.
+	(convert_like_real): Disable creation of temporaries that are
+	impossible to initialize for types with move constructors.
+	(build_over_call): Elide move constructors when possible.
+	(maybe_handle_implicit_object): Set "rvaluedness_matches_p".
+	(maybe_handle_ref_bind): Return conversion instead of type node.
+	(compare_ics): Add logic to use "rvaluedness_matches_p" values to
+	determine preferred conversion sequences.
+	* cp-tree.h (TYPE_REF_IS_RVALUE): New.
+	(LOOKUP_PREFER_RVALUE): New.
+	(DECL_MOVE_CONSTRUCTOR_P): New.
+	(struct cp_declarator): Add "reference" member for reference
+	types, with new "rvalue_ref" flag.
+	(cp_build_reference_type): Declare.
+	(move_fn_p): Declare.
+	* error.c (dump_type_prefix): Format rvalue reference types
+	correctly in error messages.
+	* except.c (build_throw): Move from certain lvalues when
+	throwing.
+	* mangle.c (write_type): Mangle rvalue references differently
+	than regular references.
+	* parser.c (make_reference_declarator): Add boolean parameter for
+	rvalue references.
+	(cp_parser_make_indirect_declarator): New.
+	(cp_parser_new_declarator_opt): Call
+	cp_parser_make_indirect_declarator. 
+	(cp_parser_conversion_declarator_opt): Ditto.
+	(cp_parser_declarator): Ditto.
+	(cp_parser_ptr_operator): Parse "&&" tokens into rvalue reference
+	declarators.
+	* pt.c (tsubst): Implement reference collapsing.
+	(maybe_adjust_types_for_deduction): Implement special template
+	parameter deduction rule for rvalue references.
+	(type_unification_real): Update calls to
+	maybe_adjust_types_for_deduction.
+	(try_one_overload): Ditto.
+	(unify_pack_expansion): Ditto.
+	* tree.c (lvalue_p_1): Handle rvalue reference types.
+	(cp_build_reference_type): New.
+
 2007-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/31809
