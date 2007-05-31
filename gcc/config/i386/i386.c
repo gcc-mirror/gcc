@@ -1571,7 +1571,7 @@ static int ix86_isa_flags_explicit;
 #define OPTION_MASK_ISA_SSE4_2_UNSET OPTION_MASK_ISA_SSE4A
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
-   as -msse4.1 -msse4.2.  -mno-sse4 should the same as -msse4.1. */
+   as -msse4.1 -msse4.2.  -mno-sse4 should the same as -mno-sse4.1. */
 #define OPTION_MASK_ISA_SSE4 \
   (OPTION_MASK_ISA_SSE4_1 | OPTION_MASK_ISA_SSE4_2)
 #define OPTION_MASK_ISA_SSE4_UNSET OPTION_MASK_ISA_SSE4_1_UNSET
