@@ -1,3 +1,8 @@
+2007-05-31  Dorit Nuzman   <dorit@il.ibm.com>
+
+	* MAINTAINERS (Various Maintainers): Add myself as
+	auto-vectorizer maintainer.
+
 2003-05-31  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR libjava/32098
