@@ -1,6 +1,4 @@
-// 2007-04-27  Paolo Carlini  <pcarlini@suse.de>
-
-// Copyright (C) 2007 Free Software Foundation
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,13 +16,20 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
+// 20.4.4 specialized algorithms
+
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 787 }
-// { dg-excess-errors "" }
 
-#include <vector>
+#include <memory>
+#include <utility>
 
-void f()
+// c++/32158
+
+typedef std::pair<const int, int> MyPair;
+
+void
+Alpha(MyPair* start, MyPair* end)
 {
-  std::vector<std::vector<int> > v(10, 1);
-}
+  MyPair my_pair(1, 2);
+  std::uninitialized_fill(start, end, my_pair);
+};

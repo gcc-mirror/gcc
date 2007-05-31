@@ -1,3 +1,30 @@
+2007-05-31  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/32158 (libstdc++ bits)
+	* include/bits/stl_uninitialized.h (__uninitialized_copy_aux,
+	__uninitialized_fill_aux, __uninitialized_fill_n_aux):
+	Remove.
+	(struct __uninitialized_copy, struct __uninitialized_fill,
+	struct __uninitialized_fill_n): Add.
+	(uninitialized_copy, uninitialized_fill, uninitialized_fill_n):
+	Adjust.
+	* testsuite/20_util/specialized_algorithms/32158.cc: New.
+
+	* include/bits/stl_uninitialized.h (uninitialized_copy(_InputIterator,
+	_InputIterator, _ForwardIterator)): Robustify vs non-POD input.
+
+	* include/bits/stl_vector.h (_M_fill_initialize): New.
+	(vector(size_type, const value_type&, const allocator_type&),
+	_M_initialize_dispatch(_Integer, _Integer, __true_type)): Use it.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2007-05-29  Paolo Carlini  <pcarlini@suse.de>
 
 	* aclocal.m4: Regenerate.
