@@ -1,3 +1,4 @@
+// { dg-options "-std=c++98" }
 // PR c++/12226
 
 class foo {

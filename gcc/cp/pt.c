@@ -114,7 +114,8 @@ static void tsubst_enum	(tree, tree, tree);
 static tree add_to_template_args (tree, tree);
 static tree add_outermost_template_args (tree, tree);
 static bool check_instantiated_args (tree, tree, tsubst_flags_t);
-static int maybe_adjust_types_for_deduction (unification_kind_t, tree*, tree*);
+static int maybe_adjust_types_for_deduction (unification_kind_t, tree*, tree*,
+					     tree);
 static int  type_unification_real (tree, tree, tree, tree,
 				   int, unification_kind_t, int);
 static void note_template_header (int);
@@ -8729,8 +8730,13 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	   -- Attempting to create a pointer to reference type.
 	   -- Attempting to create a reference to a reference type or
-	      a reference to void.  */
-	if (TREE_CODE (type) == REFERENCE_TYPE
+	      a reference to void.
+
+	  Core issue 106 says that creating a reference to a reference
+	  during instantiation is no longer a cause for failure. We
+	  only enforce this check in strict C++98 mode.  */
+	if ((TREE_CODE (type) == REFERENCE_TYPE
+	     && ((!flag_cpp0x && flag_iso) || code != REFERENCE_TYPE))
 	    || (code == REFERENCE_TYPE && TREE_CODE (type) == VOID_TYPE))
 	  {
 	    static location_t last_loc;
@@ -8764,8 +8770,22 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    if (TREE_CODE (type) == METHOD_TYPE)
 	      r = build_ptrmemfunc_type (r);
 	  }
+	else if (TREE_CODE (type) == REFERENCE_TYPE)
+	  /* In C++0x, during template argument substitution, when there is an
+	     attempt to create a reference to a reference type, reference
+	     collapsing is applied as described in [14.3.1/4 temp.arg.type]:
+
+	     "If a template-argument for a template-parameter T names a type
+	     that is a reference to a type A, an attempt to create the type
+	     'lvalue reference to cv T' creates the type 'lvalue reference to
+	     A,' while an attempt to create the type type rvalue reference to
+	     cv T' creates the type T"
+	  */
+	  r = cp_build_reference_type
+	      (TREE_TYPE (type),
+	       TYPE_REF_IS_RVALUE (t) && TYPE_REF_IS_RVALUE (type));
 	else
-	  r = build_reference_type (type);
+	  r = cp_build_reference_type (type, TYPE_REF_IS_RVALUE (t));
 	r = cp_build_qualified_type_real (r, TYPE_QUALS (t), complain);
 
 	if (r != error_mark_node)
@@ -11231,12 +11251,14 @@ fn_type_unification (tree fn,
    sections are symmetric.  PARM is the type of a function parameter
    or the return type of the conversion function.  ARG is the type of
    the argument passed to the call, or the type of the value
-   initialized with the result of the conversion function.  */
+   initialized with the result of the conversion function.
+   ARG_EXPR is the original argument expression, which may be null.  */
 
 static int
 maybe_adjust_types_for_deduction (unification_kind_t strict,
 				  tree* parm,
-				  tree* arg)
+				  tree* arg,
+				  tree arg_expr)
 {
   int result = 0;
 
@@ -11290,6 +11312,16 @@ maybe_adjust_types_for_deduction (unification_kind_t strict,
 	*arg = TYPE_MAIN_VARIANT (*arg);
     }
 
+  /* From C++0x [14.8.2.1/3 temp.deduct.call] (after DR606), "If P is
+     of the form T&&, where T is a template parameter, and the argument
+     is an lvalue, T is deduced as A& */
+  if (TREE_CODE (*parm) == REFERENCE_TYPE
+      && TYPE_REF_IS_RVALUE (*parm)
+      && TREE_CODE (TREE_TYPE (*parm)) == TEMPLATE_TYPE_PARM
+      && cp_type_quals (TREE_TYPE (*parm)) == TYPE_UNQUALIFIED
+      && arg_expr && real_lvalue_p (arg_expr))
+    *arg = build_reference_type (*arg);
+
   /* [temp.deduct.call]
 
      If P is a cv-qualified type, the top level cv-qualifiers
@@ -11326,7 +11358,7 @@ type_unification_real (tree tparms,
 		       unification_kind_t strict,
 		       int flags)
 {
-  tree parm, arg;
+  tree parm, arg, arg_expr;
   int i;
   int ntparms = TREE_VEC_LENGTH (tparms);
   int sub_strict;
@@ -11371,6 +11403,7 @@ type_unification_real (tree tparms,
       parms = TREE_CHAIN (parms);
       arg = TREE_VALUE (args);
       args = TREE_CHAIN (args);
+      arg_expr = NULL;
 
       if (arg == error_mark_node)
 	return 1;
@@ -11419,6 +11452,7 @@ type_unification_real (tree tparms,
 		return 1;
 	      continue;
 	    }
+	  arg_expr = arg;
 	  arg = unlowered_expr_type (arg);
 	  if (arg == error_mark_node)
 	    return 1;
@@ -11428,7 +11462,8 @@ type_unification_real (tree tparms,
 	int arg_strict = sub_strict;
 
 	if (!subr)
-	  arg_strict |= maybe_adjust_types_for_deduction (strict, &parm, &arg);
+	  arg_strict |= maybe_adjust_types_for_deduction (strict, &parm, &arg,
+							  arg_expr);
 
 	if (unify (tparms, targs, parm, arg, arg_strict))
 	  return 1;
@@ -11678,7 +11713,7 @@ try_one_overload (tree tparms,
   else if (addr_p)
     arg = build_pointer_type (arg);
 
-  sub_strict |= maybe_adjust_types_for_deduction (strict, &parm, &arg);
+  sub_strict |= maybe_adjust_types_for_deduction (strict, &parm, &arg, NULL);
 
   /* We don't copy orig_targs for this because if we have already deduced
      some template args from previous args, unify would complain when we
@@ -12014,7 +12049,7 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
 
             if (!subr)
               arg_strict |= 
-                maybe_adjust_types_for_deduction (strict, &parm, &arg);
+                maybe_adjust_types_for_deduction (strict, &parm, &arg, NULL);
           }
 
         if (!skip_arg_p)
