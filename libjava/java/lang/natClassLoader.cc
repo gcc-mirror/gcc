@@ -235,6 +235,15 @@ _Jv_NewClassFromInitializer (const char *class_initializer)
 
   new_class->engine = &_Jv_soleIndirectCompiledEngine;
 
+  /* FIXME:  Way back before the dawn of time, we overloaded the
+     SYNTHETIC class access modifier to mean INTERPRETED.  This was a
+     Bad Thing, but it didn't matter then because classes were never
+     marked synthetic.  However, it is possible to redeem the
+     situation: _Jv_NewClassFromInitializer is only called from
+     compiled classes, so we clear the INTERPRETED flag.  This is a
+     kludge!  */
+  new_class->accflags &= ~java::lang::reflect::Modifier::INTERPRETED;
+
   if (_Jv_CheckABIVersion ((unsigned long) new_class->next_or_version))
     (*_Jv_RegisterClassHook) (new_class);
   
