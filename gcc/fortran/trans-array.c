@@ -1196,7 +1196,8 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	      gfc_add_expr_to_block (&body, tmp);
 
 	      *poffset = fold_build2 (PLUS_EXPR, gfc_array_index_type,
-				      *poffset, build_int_cst (NULL_TREE, n));
+				      *poffset,
+				      build_int_cst (gfc_array_index_type, n));
 	    }
 	  if (!INTEGER_CST_P (*poffset))
             {

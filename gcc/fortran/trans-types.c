@@ -993,7 +993,8 @@ gfc_get_dtype (tree type)
   if (size && !INTEGER_CST_P (size))
     {
       tmp = build_int_cst (gfc_array_index_type, GFC_DTYPE_SIZE_SHIFT);
-      tmp  = fold_build2 (LSHIFT_EXPR, gfc_array_index_type, size, tmp);
+      tmp  = fold_build2 (LSHIFT_EXPR, gfc_array_index_type,
+			  fold_convert (gfc_array_index_type, size), tmp);
       dtype = fold_build2 (PLUS_EXPR, gfc_array_index_type, tmp, dtype);
     }
   /* If we don't know the size we leave it as zero.  This should never happen

@@ -1149,7 +1149,7 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
 
       lse.expr = gfc_build_compare_string (lse.string_length, lse.expr,
 					   rse.string_length, rse.expr);
-      rse.expr = integer_zero_node;
+      rse.expr = build_int_cst (TREE_TYPE (lse.expr), 0);
       gfc_add_block_to_block (&lse.post, &rse.post);
     }
 
@@ -2537,7 +2537,7 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
 
   /* Do nothing if the destination length is zero.  */
   cond = fold_build2 (GT_EXPR, boolean_type_node, dlen,
-		      build_int_cst (gfc_charlen_type_node, 0));
+		      build_int_cst (size_type_node, 0));
 
   /* The following code was previously in _gfortran_copy_string:
 

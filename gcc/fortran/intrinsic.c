@@ -2143,9 +2143,9 @@ add_functions (void)
 
   make_generic ("size", GFC_ISYM_SIZE, GFC_STD_F95);
 
-  add_sym_1 ("sizeof", GFC_ISYM_SIZEOF, NOT_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di,
+  add_sym_1 ("sizeof", GFC_ISYM_SIZEOF, NOT_ELEMENTAL, ACTUAL_NO, BT_INTEGER, ii,
 	     GFC_STD_GNU, gfc_check_sizeof, NULL, NULL,
-	     i, BT_INTEGER, di, REQUIRED);
+	     i, BT_UNKNOWN, 0, REQUIRED);
 
   make_generic ("sizeof", GFC_ISYM_SIZEOF, GFC_STD_GNU);
 
