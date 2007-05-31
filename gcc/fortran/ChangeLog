@@ -1,4 +1,12 @@
-2007-05-31  Paul Thomas  <pault@gcc.gnu.org>	PR fortran/32103	* module.c (mio_symtree_ref): If an equivalence group member	is not used, give it a hidden symbol and set the pointer_info.	(load_equiv): Only free the equivalence if none of the members	are used.2007-05-29  Daniel Franke  <franke.daniel@gmail.com>
+2007-05-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32103
+	* module.c (mio_symtree_ref): If an equivalence group member
+	is not used, give it a hidden symbol and set the pointer_info.
+	(load_equiv): Only free the equivalence if none of the members
+	are used.
+
+2007-05-29  Daniel Franke  <franke.daniel@gmail.com>
 
 	* gfortran.h: Renamed 'enum gfc_generic_isym_id' to 'enum gfc_isym_id',
 	added missing GFC_ISYM_* enumerators, ordered alphabetically.
@@ -14,7 +22,7 @@
 	* trans-intrinsic.c: Likewise.  
 	* trans-openmp.c: Likewise.
 
-2007-05-28  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-05-28  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* gfortran.h (gfc_generic_isym_id): Add GFC_ISYM_SIZEOF.
 	* intrinsic.c (add_functions): Add stuff for SIZEOF intrinsic.
@@ -518,7 +526,7 @@
 	* trans-array.c (gfc_conv_resolve_dependencies): Create a temp
 	whenever a dependency is found.
 
-2007-04-28  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-04-28  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* options.c (gfc_handle_option): Ensure requested free form line
 	length is not too small.
@@ -613,7 +621,7 @@
 	* f95-lang.c (lang_tree_node): Use GENERIC_NEXT
 	instead of checking GIMPLE_STMT_P in chain_next.
 
-2007-04-17  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-04-17  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* trans-types.h (gfc_packed): New enum.
 	(gfc_get_nodesc_array_type): Change prototype to use new enum.
@@ -655,7 +663,7 @@
 	* trans-types.h: Likewise.
 	* types.def: Likewise.
 
-2007-04-17  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-04-17  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/31144
 	* decl.c (gfc_sym_mangled_identifier): Use capital letters in name
@@ -707,7 +715,7 @@
 	* trans-types.c (copy_dt_decls_ifequal): Do not get pointer
 	derived type components.
 
-2007-04-13  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-04-13  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/18937
 	* resolve.c: Include obstack.h and bitmap.h.  New variable
@@ -718,7 +726,7 @@
 	(resolve_code): Call reachable_labels.
 	(resolve_codes): Allocate and free labels_obstack.
 
-2007-04-12  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-04-12  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/31250
 	* decl.c (match_char_spec): Move check for negative CHARACTER
@@ -731,7 +739,7 @@
 	PR fortran/31234
 	* intrinsic.texi (RANDOM_SEED, RANDOM_NUMBER): New.
 
-2007-04-12  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-04-12  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/31266
 	* primary.c (gfc_variable_attr): Don't copy string length if it
@@ -857,19 +865,19 @@
 	* trans-types.h (gfc_signed_or_unsigned_type): Remove.
 	* f95-lang.c (LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): Remove.
 
-2007-03-30  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-03-30  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* symbol.c (gfc_find_gsymbol): Simplify, don't unconditionally
 	descend into all branches.
 
-2007-03-29  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-03-29  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* intrinsic.c (conv_name): Let gfc_get_string handle the format.
 	(find_conv): Compare pointers instead of calling strcmp.
 	(find_sym): Likewise, but ensure that the compared pointer is in
 	the global string table.
 
-2007-03-28  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-03-28  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* gfc-internals.texi: Fix output filename.  Merge type index into
 	concept index.  Start documentation of gfc_code structure.
@@ -954,7 +962,7 @@
 	result is correctly cast for character literals and substrings.
 	Do not use gfc_typenode_for_spec for the final cast.
 
-2007-03-22  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-03-22  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/20897
 	* decl.c (gfc_match_derived_decl): Reliably reject
@@ -1431,7 +1439,7 @@
 	* intrinsic.texi (HOSTNM): Fix typographical error in syntax.
 	(SLEEP): Added section and documentation.
 
-2007-02-11  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-02-11  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/30478
 	* decl.c (add_init_expr_to_sym): Remove ENUM specific code.
