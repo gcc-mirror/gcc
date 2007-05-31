@@ -47,14 +47,15 @@
 //       W. T. Vetterling, B. P. Flannery, Cambridge University Press (1992),
 //       2nd ed, pp. 252-254
 
-#ifndef _TR1_LEGENDRE_FUNCTION_TCC
-#define _TR1_LEGENDRE_FUNCTION_TCC 1
+#ifndef _GLIBCXX_TR1_LEGENDRE_FUNCTION_TCC
+#define _GLIBCXX_TR1_LEGENDRE_FUNCTION_TCC 1
 
 #include "special_function_util.h"
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
+namespace tr1
+{
 
   // [5.2] Special functions
 
@@ -256,14 +257,14 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
           const _Tp __sgn = ( __m % 2 == 1 ? -_Tp(1) : _Tp(1));
           const _Tp __y_mp1m_factor = __x * std::sqrt(_Tp(2 * __m + 3));
 #if _GLIBCXX_USE_C99_MATH_TR1
-          const _Tp __lncirc = std::_GLIBCXX_TR1::log1p(-__x * __x);
+          const _Tp __lncirc = std::tr1::log1p(-__x * __x);
 #else
           const _Tp __lncirc = std::log(_Tp(1) - __x * __x);
 #endif
           //  Gamma(m+1/2) / Gamma(m)
 #if _GLIBCXX_USE_C99_MATH_TR1
-          const _Tp __lnpoch = std::_GLIBCXX_TR1::lgamma(_Tp(__m + _Tp(0.5L)))
-                             - std::_GLIBCXX_TR1::lgamma(_Tp(__m));
+          const _Tp __lnpoch = std::tr1::lgamma(_Tp(__m + _Tp(0.5L)))
+                             - std::tr1::lgamma(_Tp(__m));
 #else
           const _Tp __lnpoch = __log_gamma(_Tp(__m + _Tp(0.5L)))
                              - __log_gamma(_Tp(__m));
@@ -312,7 +313,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   /* @} */ // group tr1_math_spec_func
 
-_GLIBCXX_END_NAMESPACE
+}
 }
 
-#endif // _TR1_LEGENDRE_FUNCTION_TCC
+#endif // _GLIBCXX_TR1_LEGENDRE_FUNCTION_TCC

@@ -1,6 +1,7 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+// 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -49,8 +50,16 @@
 #ifndef _GLIBCXX_CLIMITS
 #define _GLIBCXX_CLIMITS 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <tr1/climits>
+#ifndef LLONG_MIN
+#define LLONG_MIN -__LONG_LONG_MAX__ - 1
+#endif
+
+#ifndef LLONG_MAX
+#define LLONG_MAX __LONG_LONG_MAX__
+#endif
+
+#ifndef ULLONG_MAX
+#define ULLONG_MAX __LONG_LONG_MAX__ * 2ULL + 1
 #endif
 
 #endif

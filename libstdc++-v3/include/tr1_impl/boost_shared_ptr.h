@@ -1,6 +1,6 @@
-// <tr1/boost_shared_ptr.h> -*- C++ -*-
+// <tr1_impl/boost_shared_ptr.h> -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,17 +46,14 @@
 
 // GCC Note:  based on version 1.32.0 of the Boost library.
 
-/** @file tr1/boost_shared_ptr.h
+/** @file tr1_impl/boost_shared_ptr.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
 
-#ifndef _BOOST_SHARED_PTR_H
-#define _BOOST_SHARED_PTR_H 1
-
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
+_GLIBCXX_BEGIN_NAMESPACE_TR1
 
   class bad_weak_ptr : public std::exception
   {
@@ -1141,7 +1138,5 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
       mutable weak_ptr<_Tp>  _M_weak_this;
     };
 
-_GLIBCXX_END_NAMESPACE
-} // namespace std
-
-#endif
+_GLIBCXX_END_NAMESPACE_TR1
+}

@@ -39,13 +39,14 @@
 
 // Written by Edward Smith-Rowland based on numerous mathematics books.
 
-#ifndef _TR1_SPECIAL_FUNCTION_UTIL_H
-#define _TR1_SPECIAL_FUNCTION_UTIL_H 1
+#ifndef _GLIBCXX_TR1_SPECIAL_FUNCTION_UTIL_H
+#define _GLIBCXX_TR1_SPECIAL_FUNCTION_UTIL_H 1
 
 // namespace std::tr1
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
+namespace tr1
+{
 
   namespace __detail
   {
@@ -148,8 +149,8 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   } // namespace __detail
 
-_GLIBCXX_END_NAMESPACE
+}
 }
 
-#endif // _TR1_SPECIAL_FUNCTION_UTIL_H
+#endif // _GLIBCXX_TR1_SPECIAL_FUNCTION_UTIL_H
 

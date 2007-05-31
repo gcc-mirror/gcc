@@ -49,14 +49,15 @@
 //       W. T. Vetterling, B. P. Flannery, Cambridge University Press (1992),
 //       2nd ed, pp. 246-249.
 
-#ifndef _TR1_MODIFIED_BESSEL_FUNC_TCC
-#define _TR1_MODIFIED_BESSEL_FUNC_TCC 1
+#ifndef _GLIBCXX_TR1_MODIFIED_BESSEL_FUNC_TCC
+#define _GLIBCXX_TR1_MODIFIED_BESSEL_FUNC_TCC 1
 
 #include "special_function_util.h"
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
+namespace tr1
+{
 
   // [5.2] Special functions
 
@@ -444,7 +445,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   /* @} */ // group tr1_math_spec_func
 
-_GLIBCXX_END_NAMESPACE
+}
 }
 
-#endif // _TR1_MODIFIED_BESSEL_FUNC_TCC
+#endif // _GLIBCXX_TR1_MODIFIED_BESSEL_FUNC_TCC

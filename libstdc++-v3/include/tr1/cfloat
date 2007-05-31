@@ -1,6 +1,6 @@
 // TR1 cfloat -*- C++ -*-
 
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,8 +31,8 @@
  *  This is a TR1 C++ Library header. 
  */
 
-#ifndef _TR1_CFLOAT
-#define _TR1_CFLOAT 1
+#ifndef _GLIBCXX_TR1_CFLOAT
+#define _GLIBCXX_TR1_CFLOAT 1
 
 #include <cfloat>
 
@@ -44,4 +44,4 @@
 #define FLT_EVAL_METHOD __FLT_EVAL_METHOD__
 #endif
 
-#endif
+#endif //_GLIBCXX_TR1_CFLOAT 

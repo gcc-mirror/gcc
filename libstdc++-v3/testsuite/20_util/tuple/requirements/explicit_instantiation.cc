@@ -30,4 +30,4 @@
 
 #include <tr1/tuple>
 
-template class std::tuple<short, int, double>;
+template class std::tr1::tuple<short, int, double>;

@@ -31,51 +31,23 @@
  *  This is a TR1 C++ Library header. 
  */
 
-#ifndef _TR1_CINTTYPES
-#define _TR1_CINTTYPES 1
+#ifndef _GLIBCXX_TR1_CINTTYPES
+#define _GLIBCXX_TR1_CINTTYPES 1
 
-#include <bits/c++config.h>
 #include <tr1/cstdint>
 
-#if _GLIBCXX_USE_C99_INTTYPES_TR1
-
-// For 8.11.1/1 (see C99, Note 184) 
-#define __STDC_FORMAT_MACROS
-#include_next <inttypes.h>
-
-// namespace std::tr1
-namespace std
-{
-_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
-
-  // types
-  using ::imaxdiv_t;
-
-  // functions
-  using ::imaxabs;
-
-  // May collide with _Longlong abs(_Longlong), and is not described
-  // anywhere outside the synopsis.  Likely, a defect.
-  //
-  // intmax_t abs(intmax_t)
-
-  using ::imaxdiv;
-
-  // Likewise, with lldiv_t div(_Longlong, _Longlong).
-  //
-  // imaxdiv_t div(intmax_t, intmax_t)
-
-  using ::strtoimax;
-  using ::strtoumax;
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-  using ::wcstoimax;
-  using ::wcstoumax;
+#if defined(_GLIBCXX_INCLUDE_AS_TR1)
+#  include <tr1_impl/cinttypes>
+#else
+#  define _GLIBCXX_INCLUDE_AS_TR1
+#  define _GLIBCXX_BEGIN_NAMESPACE_TR1 namespace tr1 {
+#  define _GLIBCXX_END_NAMESPACE_TR1 }
+#  define _GLIBCXX_TR1 tr1::
+#  include <tr1_impl/cinttypes>
+#  undef _GLIBCXX_TR1
+#  undef _GLIBCXX_END_NAMESPACE_TR1
+#  undef _GLIBCXX_BEGIN_NAMESPACE_TR1
+#  undef _GLIBCXX_INCLUDE_AS_TR1
 #endif
 
-_GLIBCXX_END_NAMESPACE
-}
-
-#endif
-
-#endif
+#endif // _GLIBCXX_TR1_CINTTYPES

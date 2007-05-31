@@ -36,11 +36,28 @@
 #ifndef _GLIBCXX_CFENV
 #define _GLIBCXX_CFENV 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <tr1/cfenv>
-#else
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <c++0x_warning.h>
 #endif
 
-#endif 
+#if defined(_GLIBCXX_INCLUDE_AS_TR1)
+#  error C++0x header cannot be included from TR1 header
+#endif
 
+#include <bits/c++config.h>
+
+#if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
+#  include <tr1_impl/cfenv>
+#else
+#  define _GLIBCXX_INCLUDE_AS_CXX0X
+#  define _GLIBCXX_BEGIN_NAMESPACE_TR1
+#  define _GLIBCXX_END_NAMESPACE_TR1
+#  define _GLIBCXX_TR1
+#  include <tr1_impl/cfenv>
+#  undef _GLIBCXX_TR1
+#  undef _GLIBCXX_END_NAMESPACE_TR1
+#  undef _GLIBCXX_BEGIN_NAMESPACE_TR1
+#  undef _GLIBCXX_INCLUDE_AS_CXX0X
+#endif
+
+#endif

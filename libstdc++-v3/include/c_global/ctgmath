@@ -36,10 +36,10 @@
 #ifndef _GLIBCXX_CTGMATH
 #define _GLIBCXX_CTGMATH 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <tr1/ctgmath>
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#  include <c++0x_warning.h>
 #else
-# include <c++0x_warning.h>
+#  include <cmath>
 #endif
 
 #endif 

@@ -60,7 +60,33 @@
 #include <bits/stl_raw_storage_iter.h>
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <tr1/memory>
+#  if defined(_GLIBCXX_INCLUDE_AS_TR1)
+#    error C++0x header cannot be included from TR1 header
+#  endif
+#  include <exception>        	  // std::exception
+#  include <new>              	  // std::bad_alloc
+#  include <typeinfo>         	  // std::type_info in get_deleter
+#  include <bits/stl_algobase.h>  // std::swap
+#  include <iosfwd>           	  // std::basic_ostream
+#  include <ext/atomicity.h>
+#  include <ext/concurrence.h>
+#  include <bits/functexcept.h>
+#  include <bits/stl_function.h>  // std::less
+#  include <debug/debug.h>
+#  include <type_traits>
+#  if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
+#    include <tr1_impl/boost_shared_ptr.h>
+#  else
+#    define _GLIBCXX_INCLUDE_AS_CXX0X
+#    define _GLIBCXX_BEGIN_NAMESPACE_TR1
+#    define _GLIBCXX_END_NAMESPACE_TR1
+#    define _GLIBCXX_TR1
+#    include <tr1_impl/boost_shared_ptr.h>
+#    undef _GLIBCXX_TR1
+#    undef _GLIBCXX_END_NAMESPACE_TR1
+#    undef _GLIBCXX_BEGIN_NAMESPACE_TR1
+#    undef _GLIBCXX_INCLUDE_AS_CXX0X
+#  endif
 #endif
 
 #endif /* _GLIBCXX_MEMORY */

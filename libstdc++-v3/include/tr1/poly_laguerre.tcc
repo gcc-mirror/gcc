@@ -44,12 +44,13 @@
 //       Section 13, pp. 509-510, Section 22 pp. 773-802
 //   (2) The Gnu Scientific Library, http://www.gnu.org/software/gsl
 
-#ifndef _TR1_POLY_LAGUERRE_TCC
-#define _TR1_POLY_LAGUERRE_TCC 1
+#ifndef _GLIBCXX_TR1_POLY_LAGUERRE_TCC
+#define _GLIBCXX_TR1_POLY_LAGUERRE_TCC 1
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
+namespace tr1
+{
 
   // [5.2] Special functions
 
@@ -94,8 +95,8 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
                         * __eta * __eta * __cos2th * __sin2th;
 
 #if _GLIBCXX_USE_C99_MATH_TR1
-      const _Tp __lg_b = std::_GLIBCXX_TR1::lgamma(_Tp(__n) + __b);
-      const _Tp __lnfact = std::_GLIBCXX_TR1::lgamma(_Tp(__n + 1));
+      const _Tp __lg_b = std::tr1::lgamma(_Tp(__n) + __b);
+      const _Tp __lnfact = std::tr1::lgamma(_Tp(__n + 1));
 #else
       const _Tp __lg_b = __log_gamma(_Tp(__n) + __b);
       const _Tp __lnfact = __log_gamma(_Tp(__n + 1));
@@ -337,7 +338,7 @@ _GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   /* @} */ // group tr1_math_spec_func
 
-_GLIBCXX_END_NAMESPACE
+}
 }
 
-#endif // _TR1_POLY_LAGUERRE_TCC
+#endif // _GLIBCXX_TR1_POLY_LAGUERRE_TCC

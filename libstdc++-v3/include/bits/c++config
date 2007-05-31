@@ -71,10 +71,6 @@
 # define _GLIBCXX_NAMESPACE_ASSOCIATION_DEBUG 1
 #endif
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-# define _GLIBCXX_NAMESPACE_ASSOCIATION_CXX0X 1
-#endif
-
 #define _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION 
 
 // Macros for namespace scope.
@@ -153,18 +149,6 @@ namespace __gnu_cxx
 # define _GLIBCXX_STD std
 # define _GLIBCXX_EXT __gnu_cxx
 #endif
-#endif
-
-// Namespace associations for C++0x, TR1 in std.
-#if _GLIBCXX_NAMESPACE_ASSOCIATION_CXX0X
-namespace std
-{ 
-  namespace __cxx200x { }
-  using namespace __cxx200x __attribute__ ((strong)); 
-}
-# define _GLIBCXX_TR1 __cxx200x
-#else
-# define _GLIBCXX_TR1 tr1
 #endif
 
 // Define if compatibility should be provided for -mlong-double-64.
