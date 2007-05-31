@@ -1,3 +1,11 @@
+2007-05-31  Daniel Berlin  <dberlin@dberlin.org>
+
+	* c-typeck.c (build_indirect_ref): Include type in error message.
+	(build_binary_op): Pass types to binary_op_error.
+	* c-common.c (binary_op_error): Take two type arguments, print out
+	types with error.
+	* c-common.h (binary_op_error): Update prototype.
+
 2007-05-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c: Correct coments on -mno-sse4.
@@ -75,6 +83,7 @@
 	* gcc.c (main): Don't consider linker options when issuing the
 	warning about a linker input file not being used.
 
+>>>>>>> .r125234
 2007-05-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* tree-vrp.c (compare_names): Initialize sop.

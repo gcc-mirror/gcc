@@ -1,3 +1,7 @@
+2007-05-31  Daniel Berlin  <dberlin@dberlin.org>
+
+	* typeck.c (build_binary_op): Include types in error.
+
 2007-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/31806
