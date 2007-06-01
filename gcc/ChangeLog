@@ -1,3 +1,9 @@
+2007-06-01  Ian Lance Taylor  <iant@google.com>
+
+	PR rtl-optimization/31455
+	* lower-subreg.c (find_decomposable_subregs): Don't decompose
+	subregs which have a cast between modes which are not tieable.
+
 2007-06-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* expr.c (force_operand) [DIV, MOD, UDIV, UMOD, ASHIFTRT]: Remove
