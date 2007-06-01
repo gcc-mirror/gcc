@@ -17,8 +17,16 @@ int bar(int n)
   __builtin_return(__builtin_apply((void (*)(void))foo, __builtin_apply_args(), 64));
 }
 
+char *g;
+
 int main(void)
 {
+  /* Allocate 64 bytes on the stack to make sure that __builtin_apply
+     can read at least 64 bytes above the return address.  */
+  char dummy[64];
+
+  g = dummy;
+
   if (bar(1) != 2)
     abort();
 
