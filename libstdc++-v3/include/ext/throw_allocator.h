@@ -210,32 +210,35 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       { return std::allocator<value_type>().max_size(); }
 
       pointer
-      allocate(size_type num, std::allocator<void>::const_pointer hint = 0)
+      allocate(size_type __n, std::allocator<void>::const_pointer hint = 0)
       {
+	if (__builtin_expect(__n > this->max_size(), false))
+	  std::__throw_bad_alloc();
+
 	throw_conditionally();
-	value_type* const a = std::allocator<value_type>().allocate(num, hint);
-	insert(a, sizeof(value_type) * num);
+	value_type* const a = std::allocator<value_type>().allocate(__n, hint);
+	insert(a, sizeof(value_type) * __n);
 	return a;
       }
 
       void
-      construct(pointer p, const T& val)
-      { return std::allocator<value_type>().construct(p, val); }
+      construct(pointer __p, const T& val)
+      { return std::allocator<value_type>().construct(__p, val); }
 
       void
-      destroy(pointer p)
-      { std::allocator<value_type>().destroy(p); }
+      destroy(pointer __p)
+      { std::allocator<value_type>().destroy(__p); }
 
       void
-      deallocate(pointer p, size_type num)
+      deallocate(pointer __p, size_type __n)
       {
-	erase(p, sizeof(value_type) * num);
-	std::allocator<value_type>().deallocate(p, num);
+	erase(__p, sizeof(value_type) * __n);
+	std::allocator<value_type>().deallocate(__p, __n);
       }
 
       void
-      check_allocated(pointer p, size_type num)
-      { throw_allocator_base::check_allocated(p, sizeof(value_type) * num); }
+      check_allocated(pointer __p, size_type __n)
+      { throw_allocator_base::check_allocated(__p, sizeof(value_type) * __n); }
 
       void
       check_allocated(size_type label)
