@@ -1439,29 +1439,35 @@ AC_CACHE_VAL([lt_cv_sys_max_cmd_len], [dnl
     fi
     ;;
   *)
-    # Make teststring a little bigger before we do anything with it.
-    # a 1K string should be a reasonable start.
-    for i in 1 2 3 4 5 6 7 8 ; do
-      teststring=$teststring$teststring
-    done
-    SHELL=${SHELL-${CONFIG_SHELL-/bin/sh}}
-    # If test is not a shell built-in, we'll probably end up computing a
-    # maximum length that is only half of the actual maximum length, but
-    # we can't tell.
-    while { test "X"`$SHELL [$]0 --fallback-echo "X$teststring$teststring" 2>/dev/null` \
-	       = "XX$teststring$teststring"; } >/dev/null 2>&1 &&
-	    test $i != 17 # 1/2 MB should be enough
-    do
-      i=`expr $i + 1`
-      teststring=$teststring$teststring
-    done
-    # Only check the string length outside the loop.
-    lt_cv_sys_max_cmd_len=`expr "X$teststring" : ".*" 2>&1`
-    teststring=
-    # Add a significant safety factor because C++ compilers can tack on massive
-    # amounts of additional arguments before passing them to the linker.
-    # It appears as though 1/2 is a usable value.
-    lt_cv_sys_max_cmd_len=`expr $lt_cv_sys_max_cmd_len \/ 2`
+    lt_cv_sys_max_cmd_len=`getconf ARG_MAX 2> /dev/null`
+    if test -n $lt_cv_sys_max_cmd_len; then
+      lt_cv_sys_max_cmd_len=`expr $lt_cv_sys_max_cmd_len \/ 4`
+      lt_cv_sys_max_cmd_len=`expr $lt_cv_sys_max_cmd_len \* 3`
+    else
+      # Make teststring a little bigger before we do anything with it.
+      # a 1K string should be a reasonable start.
+      for i in 1 2 3 4 5 6 7 8 ; do
+        teststring=$teststring$teststring
+      done
+      SHELL=${SHELL-${CONFIG_SHELL-/bin/sh}}
+      # If test is not a shell built-in, we'll probably end up computing a
+      # maximum length that is only half of the actual maximum length, but
+      # we can't tell.
+      while { test "X"`$SHELL [$]0 --fallback-echo "X$teststring$teststring" 2>/dev/null` \
+	         = "XX$teststring$teststring"; } >/dev/null 2>&1 &&
+	      test $i != 17 # 1/2 MB should be enough
+      do
+        i=`expr $i + 1`
+        teststring=$teststring$teststring
+      done
+      # Only check the string length outside the loop.
+      lt_cv_sys_max_cmd_len=`expr "X$teststring" : ".*" 2>&1`
+      teststring=
+      # Add a significant safety factor because C++ compilers can tack on
+      # massive amounts of additional arguments before passing them to the
+      # linker.  It appears as though 1/2 is a usable value.
+      lt_cv_sys_max_cmd_len=`expr $lt_cv_sys_max_cmd_len \/ 2`
+    fi
     ;;
   esac
 ])
