@@ -6001,12 +6001,13 @@ force_operand (rtx value, rtx target)
       && !REG_P (SUBREG_REG (value))
       && !MEM_P (SUBREG_REG (value)))
     {
-      value = simplify_gen_subreg (GET_MODE (value),
-				   force_reg (GET_MODE (SUBREG_REG (value)),
-					      force_operand (SUBREG_REG (value),
-							     NULL_RTX)),
-				   GET_MODE (SUBREG_REG (value)),
-				   SUBREG_BYTE (value));
+      value
+	= simplify_gen_subreg (GET_MODE (value),
+			       force_reg (GET_MODE (SUBREG_REG (value)),
+					  force_operand (SUBREG_REG (value),
+							 NULL_RTX)),
+			       GET_MODE (SUBREG_REG (value)),
+			       SUBREG_BYTE (value));
       code = GET_CODE (value);
     }
 
@@ -6070,23 +6071,18 @@ force_operand (rtx value, rtx target)
 				  FLOAT_MODE_P (GET_MODE (value))
 				  ? RDIV_EXPR : TRUNC_DIV_EXPR,
 				  GET_MODE (value), op1, op2, target, 0);
-	  break;
 	case MOD:
 	  return expand_divmod (1, TRUNC_MOD_EXPR, GET_MODE (value), op1, op2,
 				target, 0);
-	  break;
 	case UDIV:
 	  return expand_divmod (0, TRUNC_DIV_EXPR, GET_MODE (value), op1, op2,
 				target, 1);
-	  break;
 	case UMOD:
 	  return expand_divmod (1, TRUNC_MOD_EXPR, GET_MODE (value), op1, op2,
 				target, 1);
-	  break;
 	case ASHIFTRT:
 	  return expand_simple_binop (GET_MODE (value), code, op1, op2,
 				      target, 0, OPTAB_LIB_WIDEN);
-	  break;
 	default:
 	  return expand_simple_binop (GET_MODE (value), code, op1, op2,
 				      target, 1, OPTAB_LIB_WIDEN);
