@@ -39,6 +39,9 @@
    (UNSPEC_TLSLDBASE	7)
    (UNSPEC_TLSIE	8)
    (UNSPEC_TLSLE 	9)
+   (UNSPEC_TLSGD_PIC   10)
+   (UNSPEC_TLSLDM_PIC  11)
+   (UNSPEC_TLSIE_PIC   12)
   ])
 
 ;; UNSPEC_VOLATILE:
@@ -9890,14 +9893,25 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "tgd_load"
  [(set (match_operand:SI 0 "register_operand" "=r")
        (unspec:SI [(match_operand 1 "tgd_symbolic_operand" "")] UNSPEC_TLSGD))
-  (clobber (reg:SI 1))]
+  (clobber (reg:SI 1))
+  (use (reg:SI 27))]
   ""
   "*
 {
-  if (flag_pic)
-    return \"addil LT'%1-$tls_gdidx$,%%r19\;ldo RT'%1-$tls_gdidx$(%%r1),%0\";
-  else
-    return \"addil LR'%1-$tls_gdidx$,%%r27\;ldo RR'%1-$tls_gdidx$(%%r1),%0\";
+  return \"addil LR'%1-$tls_gdidx$,%%r27\;ldo RR'%1-$tls_gdidx$(%%r1),%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "tgd_load_pic"
+ [(set (match_operand:SI 0 "register_operand" "=r")
+       (unspec:SI [(match_operand 1 "tgd_symbolic_operand" "")] UNSPEC_TLSGD_PIC))
+  (clobber (reg:SI 1))
+  (use (reg:SI 19))]
+  ""
+  "*
+{
+  return \"addil LT'%1-$tls_gdidx$,%%r19\;ldo RT'%1-$tls_gdidx$(%%r1),%0\";
 }"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
@@ -9905,14 +9919,25 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "tld_load"
  [(set (match_operand:SI 0 "register_operand" "=r")
        (unspec:SI [(match_operand 1 "tld_symbolic_operand" "")] UNSPEC_TLSLDM))
-  (clobber (reg:SI 1))]
+  (clobber (reg:SI 1))
+  (use (reg:SI 27))]
   ""
   "*
 {
-  if (flag_pic)
-    return \"addil LT'%1-$tls_ldidx$,%%r19\;ldo RT'%1-$tls_ldidx$(%%r1),%0\";
-  else
-    return \"addil LR'%1-$tls_ldidx$,%%r27\;ldo RR'%1-$tls_ldidx$(%%r1),%0\";
+  return \"addil LR'%1-$tls_ldidx$,%%r27\;ldo RR'%1-$tls_ldidx$(%%r1),%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "tld_load_pic"
+ [(set (match_operand:SI 0 "register_operand" "=r")
+       (unspec:SI [(match_operand 1 "tld_symbolic_operand" "")] UNSPEC_TLSLDM_PIC))
+  (clobber (reg:SI 1))
+  (use (reg:SI 19))]
+  ""
+  "*
+{
+  return \"addil LT'%1-$tls_ldidx$,%%r19\;ldo RT'%1-$tls_ldidx$(%%r1),%0\";
 }"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
@@ -9942,14 +9967,25 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "tie_load"
   [(set (match_operand:SI 0 "register_operand" "=r")
         (unspec:SI [(match_operand 1 "tie_symbolic_operand" "")] UNSPEC_TLSIE))
-   (clobber (reg:SI 1))]
+   (clobber (reg:SI 1))
+   (use (reg:SI 27))]
   ""
   "*
 {
-  if (flag_pic)
-    return \"addil LT'%1-$tls_ieoff$,%%r19\;ldw RT'%1-$tls_ieoff$(%%r1),%0\";
-  else
-    return \"addil LR'%1-$tls_ieoff$,%%r27\;ldw RR'%1-$tls_ieoff$(%%r1),%0\";
+  return \"addil LR'%1-$tls_ieoff$,%%r27\;ldw RR'%1-$tls_ieoff$(%%r1),%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "tie_load_pic"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand 1 "tie_symbolic_operand" "")] UNSPEC_TLSIE_PIC))
+   (clobber (reg:SI 1))
+   (use (reg:SI 19))]
+  ""
+  "*
+{
+  return \"addil LT'%1-$tls_ieoff$,%%r19\;ldw RT'%1-$tls_ieoff$(%%r1),%0\";
 }"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
