@@ -8542,8 +8542,9 @@ fpscr_set_from_mem (int mode, HARD_REG_SET regs_live)
 {
   enum attr_fp_mode fp_mode = mode;
   enum attr_fp_mode norm_mode = ACTUAL_NORMAL_MODE (FP_MODE);
-  rtx addr_reg = get_free_reg (regs_live);
+  rtx addr_reg;
 
+  addr_reg = no_new_pseudos ? get_free_reg (regs_live) : NULL_RTX;
   emit_fpu_switch (addr_reg, fp_mode == norm_mode);
 }
 
