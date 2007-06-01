@@ -32,18 +32,6 @@ void test01()
 
   bad_alloc ba;
   VERIFY( !strcmp(ba.what(), "std::bad_alloc") );
-
-  bad_cast bc;
-  VERIFY( !strcmp(bc.what(), "std::bad_cast") );
-
-  bad_typeid bt;
-  VERIFY( !strcmp(bt.what(), "std::bad_typeid") );
-
-  exception e;
-  VERIFY( !strcmp(e.what(), "std::exception") );
-
-  bad_exception be;
-  VERIFY( !strcmp(be.what(), "std::bad_exception") );
 }
 
 int main()

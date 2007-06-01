@@ -1,6 +1,6 @@
-// 2001-02-26 Benjamin Kosnik  <bkoz@redhat.com>
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -18,8 +18,6 @@
 // with this library; see the file COPYING.  If not, write to the Free
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
-
-// 19.1 Exception classes
 
 #include <string>
 #include <stdexcept>
@@ -43,12 +41,12 @@ void test04()
   const std::string s("CA ISO emergency once again:immediate power down");
   const char* strlit1 = "wish I lived in Palo Alto";
   const char* strlit2 = "...or Santa Barbara";
-  std::runtime_error obj1(s);
+  std::logic_error obj1(s);
   
   // block 01
   {
     const std::string s2(strlit1);
-    std::runtime_error obj2(s2);
+    std::logic_error obj2(s2);
     obj1 = obj2;
   }
   allocate_on_stack();
@@ -57,7 +55,7 @@ void test04()
   // block 02
   {
     const std::string s3(strlit2);
-    std::runtime_error obj3 = std::runtime_error(s3);
+    std::logic_error obj3 = std::logic_error(s3);
     obj1 = obj3;
   }
   allocate_on_stack();     

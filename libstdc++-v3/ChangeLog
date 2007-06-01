@@ -1,4 +1,24 @@
 2007-06-01  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* testsuite/19_diagnostics/logic_error/what-big.cc: New.
+	* testsuite/19_diagnostics/logic_error/what-3.cc: Same.
+	* testsuite/19_diagnostics/runtime_error/what-big.cc: Same.
+	* testsuite/19_diagnostics/runtime_error/what-3.cc: Same.
+
+	* testsuite/18_support/14493.cc: Break into...
+	* testsuite/18_support/exception/what.cc: ...this.
+	* testsuite/18_support/bad_cast/what.cc: ...this.
+	* testsuite/18_support/bad_alloc/what.cc: ...this.
+	* testsuite/18_support/bad_typeid/what.cc: ...this.
+	* testsuite/18_support/bad_exception/what.cc: ...this.
+
+	* testsuite/19_diagnostics/bad_exception/23591_thread-1.c: Move...
+	* testsuite/18_support/bad_exception/23591_thread-1.c: ...here.
+
+	* testsuite/18_support/14026.cc: Move...
+	* testsuite/18_support/uncaught_exception/14026.cc: ...here.
+
+2007-06-01  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/throw_allocator.h (__throw_allocator::allocate):
 	Throw bad_alloc for out of memory conditions.	
