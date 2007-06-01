@@ -1,3 +1,9 @@
+2007-05-31  Eric Christopher  <echristo@apple.com>
+
+	* expr.c (convert_move): Assert that we don't have a BLKmode
+	operand.
+	(store_expr): Handle BLKmode moves by calling emit_block_move.
+
 2007-05-31  Daniel Berlin  <dberlin@dberlin.org>
 
 	* c-typeck.c (build_indirect_ref): Include type in error message.
