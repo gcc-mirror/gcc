@@ -4676,8 +4676,8 @@ compare_name_with_value (enum tree_code comp, tree var, tree val,
   equiv_vr = get_vr_for_comparison (SSA_NAME_VERSION (var));
   sop = false;
   retval = compare_range_with_value (comp, &equiv_vr, val, &sop);
-  if (sop)
-    used_strict_overflow = 1;
+  if (retval)
+    used_strict_overflow = sop ? 1 : 0;
 
   /* If the equiv set is empty we have done all work we need to do.  */
   if (e == NULL)

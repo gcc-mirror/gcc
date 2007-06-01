@@ -1,5 +1,10 @@
 2007-06-01  Ian Lance Taylor  <iant@google.com>
 
+	* tree-vrp.c (compare_name_with_value): Always set
+	used_strict_overflow if we get a result from the variable itself.
+
+2007-06-01  Ian Lance Taylor  <iant@google.com>
+
 	PR rtl-optimization/31455
 	* lower-subreg.c (find_decomposable_subregs): Don't decompose
 	subregs which have a cast between modes which are not tieable.
