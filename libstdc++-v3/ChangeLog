@@ -1,3 +1,14 @@
+2007-05-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/31717 
+	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Re-organize. Sanity check
+	gnu locale model requests to make sure it will work for the requested
+	target. Add checks for strxfrm_l, strerror_l when in gnu locale,
+	and strerror_r everywhere.
+	* aclocal.m4: Regenerated.
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+
 2007-05-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/ostream.tcc: Do not inhibit implicit instantiation

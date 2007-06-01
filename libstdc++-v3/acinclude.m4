@@ -1332,64 +1332,31 @@ dnl
 dnl Default is generic.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
-  AC_MSG_CHECKING([for C locale to use])
   GLIBCXX_ENABLE(clocale,auto,[@<:@=MODEL@:>@],
     [use MODEL for target locale package],
     [permit generic|gnu|ieee_1003.1-2001|yes|no|auto])
+
+  # Deal with gettext issues.  Default to not using it (=no) until we detect
+  # support for it later.  Let the user turn it off via --e/d, but let that
+  # default to on for easier handling.
+  USE_NLS=no
+  AC_ARG_ENABLE(nls,
+    AC_HELP_STRING([--enable-nls],[use Native Language Support (default)]),
+    [],
+    [enable_nls=yes])
   
-  # If they didn't use this option switch, or if they specified --enable
-  # with no specific model, we'll have to look for one.  If they
-  # specified --disable (???), do likewise.
+  # Either a known packaage, or "auto"
   if test $enable_clocale = no || test $enable_clocale = yes; then
      enable_clocale=auto
   fi
-
-  # Either a known package, or "auto"
   enable_clocale_flag=$enable_clocale
 
-  # Probe for locale support if no specific model is specified.
+  # Probe for locale model to use if none specified.
   # Default to "generic".
   if test $enable_clocale_flag = auto; then
     case ${target_os} in
       linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu)
-        AC_EGREP_CPP([_GLIBCXX_ok], [
-        #include <features.h>
-        #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2)
-          _GLIBCXX_ok
-        #endif
-        ], enable_clocale_flag=gnu, enable_clocale_flag=generic)
-
-        # Test for bugs early in glibc-2.2.x series
-          if test $enable_clocale_flag = gnu; then
-          AC_TRY_RUN([
-          #define _GNU_SOURCE 1
-          #include <locale.h>
-          #include <string.h>
-          #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-          extern __typeof(newlocale) __newlocale;
-          extern __typeof(duplocale) __duplocale;
-          extern __typeof(strcoll_l) __strcoll_l;
-          #endif
-          int main()
-          {
-              const char __one[] = "Äuglein Augmen";
-              const char __two[] = "Äuglein";
-              int i;
-              int j;
-              __locale_t        loc;
-               __locale_t        loc_dup;
-              loc = __newlocale(1 << LC_ALL, "de_DE", 0);
-              loc_dup = __duplocale(loc);
-              i = __strcoll_l(__one, __two, loc);
-              j = __strcoll_l(__one, __two, loc_dup);
-              return 0;
-          }
-          ],
-          [enable_clocale_flag=gnu],[enable_clocale_flag=generic],
-          [enable_clocale_flag=generic])
-          fi
-
-        # ... at some point put __strxfrm_l tests in as well.
+        enable_clocale_flag=gnu	
         ;;
       darwin* | freebsd*)
         enable_clocale_flag=darwin
@@ -1400,16 +1367,79 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
     esac
   fi
 
-  # Deal with gettext issues.  Default to not using it (=no) until we detect
-  # support for it later.  Let the user turn it off via --e/d, but let that
-  # default to on for easier handling.
-  USE_NLS=no
-  AC_ARG_ENABLE(nls,
-    AC_HELP_STRING([--enable-nls],[use Native Language Support (default)]),
-    [],
-    [enable_nls=yes])
+  # Sanity check model, and test for special functionality.
+  if test $enable_clocale_flag = gnu; then
+    AC_EGREP_CPP([_GLIBCXX_ok], [
+    #include <features.h>
+    #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2)
+      _GLIBCXX_ok
+    #endif
+    ], enable_clocale_flag=gnu, enable_clocale_flag=generic)
+
+    # Test for bugs early in glibc-2.2.x series
+    AC_TRY_RUN([
+    #define _GNU_SOURCE 1
+    #include <locale.h>
+    #include <string.h>
+    #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+    extern __typeof(newlocale) __newlocale;
+    extern __typeof(duplocale) __duplocale;
+    extern __typeof(strcoll_l) __strcoll_l;
+    #endif
+    int main()
+    {
+        const char __one[] = "Äuglein Augmen";
+        const char __two[] = "Äuglein";
+        int i;
+        int j;
+        __locale_t        loc;
+        __locale_t        loc_dup;
+        loc = __newlocale(1 << LC_ALL, "de_DE", 0);
+        loc_dup = __duplocale(loc);
+        i = __strcoll_l(__one, __two, loc);
+        j = __strcoll_l(__one, __two, loc_dup);
+        return 0;
+    }
+    ],
+    [enable_clocale_flag=gnu],[enable_clocale_flag=generic],
+    [enable_clocale_flag=generic])
+
+    # Set it to scream when it hurts.
+    ac_save_CFLAGS="$CFLAGS"	
+    CFLAGS="-Wimplicit-function-declaration -Werror"
+
+    # Use strxfrm_l if available.
+    AC_TRY_COMPILE([#define _GNU_SOURCE 1
+     		    #include <string.h>
+		    #include <locale.h>],
+	            [char s[128]; __locale_t loc; strxfrm_l(s, "C", 5, loc);], 
+                    AC_DEFINE(HAVE_STRXFRM_L, 1, 
+                    [Define if strxfrm_l is available in <string.h>.]),)
+    
+    # Use strerror_l if available.
+    AC_TRY_COMPILE([#define _GNU_SOURCE 1
+		    #include <string.h>
+		    #include <locale.h>],
+	            [__locale_t loc; strerror_l(5, loc);], 
+                    AC_DEFINE(HAVE_STRERROR_L, 1, 
+                    [Define if strerror_l is available in <string.h>.]),)
+
+    CFLAGS="$ac_save_CFLAGS"
+  fi
+
+  # Perhaps use strerror_r if available, and strerror_l isn't.
+  ac_save_CFLAGS="$CFLAGS"	
+  CFLAGS="-Wimplicit-function-declaration -Werror"
+  AC_TRY_COMPILE([#define _GNU_SOURCE 1
+	     	  #include <string.h>
+		  #include <locale.h>],
+	          [char s[128]; strerror_r(5, s, 128);], 
+                  AC_DEFINE(HAVE_STRERROR_R, 1, 
+                  [Define if strerror_r is available in <string.h>.]),)
+  CFLAGS="$ac_save_CFLAGS"
 
   # Set configure bits for specified locale package
+  AC_MSG_CHECKING([for C locale to use])
   case ${enable_clocale_flag} in
     generic)
       AC_MSG_RESULT(generic)

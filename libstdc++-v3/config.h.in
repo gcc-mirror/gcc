@@ -298,6 +298,12 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
+/* Define if strerror_l is available in <string.h>. */
+#undef HAVE_STRERROR_L
+
+/* Define if strerror_r is available in <string.h>. */
+#undef HAVE_STRERROR_R
+
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
 
@@ -309,6 +315,9 @@
 
 /* Define to 1 if you have the `strtold' function. */
 #undef HAVE_STRTOLD
+
+/* Define if strxfrm_l is available in <string.h>. */
+#undef HAVE_STRXFRM_L
 
 /* Define to 1 if you have the <sys/filio.h> header file. */
 #undef HAVE_SYS_FILIO_H

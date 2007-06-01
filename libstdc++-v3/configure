@@ -5764,8 +5764,6 @@ done
 
 
 
-  echo "$as_me:$LINENO: checking for C locale to use" >&5
-echo $ECHO_N "checking for C locale to use... $ECHO_C" >&6
    # Check whether --enable-clocale or --disable-clocale was given.
 if test "${enable_clocale+set}" = set; then
   enableval="$enable_clocale"
@@ -5782,32 +5780,53 @@ else
 fi;
 
 
-  # If they didn't use this option switch, or if they specified --enable
-  # with no specific model, we'll have to look for one.  If they
-  # specified --disable (???), do likewise.
+  # Deal with gettext issues.  Default to not using it (=no) until we detect
+  # support for it later.  Let the user turn it off via --e/d, but let that
+  # default to on for easier handling.
+  USE_NLS=no
+  # Check whether --enable-nls or --disable-nls was given.
+if test "${enable_nls+set}" = set; then
+  enableval="$enable_nls"
+
+else
+  enable_nls=yes
+fi;
+
+  # Either a known packaage, or "auto"
   if test $enable_clocale = no || test $enable_clocale = yes; then
      enable_clocale=auto
   fi
-
-  # Either a known package, or "auto"
   enable_clocale_flag=$enable_clocale
 
-  # Probe for locale support if no specific model is specified.
+  # Probe for locale model to use if none specified.
   # Default to "generic".
   if test $enable_clocale_flag = auto; then
     case ${target_os} in
       linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu)
-        cat >conftest.$ac_ext <<_ACEOF
+        enable_clocale_flag=gnu
+        ;;
+      darwin* | freebsd*)
+        enable_clocale_flag=darwin
+	;;
+      *)
+        enable_clocale_flag=generic
+        ;;
+    esac
+  fi
+
+  # Sanity check model, and test for special functionality.
+  if test $enable_clocale_flag = gnu; then
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-        #include <features.h>
-        #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2)
-          _GLIBCXX_ok
-        #endif
+    #include <features.h>
+    #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2)
+      _GLIBCXX_ok
+    #endif
 
 _ACEOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
@@ -5819,9 +5838,8 @@ fi
 rm -f conftest*
 
 
-        # Test for bugs early in glibc-2.2.x series
-          if test $enable_clocale_flag = gnu; then
-          if test "$cross_compiling" = yes; then
+    # Test for bugs early in glibc-2.2.x series
+    if test "$cross_compiling" = yes; then
   enable_clocale_flag=generic
 else
   cat >conftest.$ac_ext <<_ACEOF
@@ -5831,28 +5849,28 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-          #define _GNU_SOURCE 1
-          #include <locale.h>
-          #include <string.h>
-          #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-          extern __typeof(newlocale) __newlocale;
-          extern __typeof(duplocale) __duplocale;
-          extern __typeof(strcoll_l) __strcoll_l;
-          #endif
-          int main()
-          {
-              const char __one[] = "Äuglein Augmen";
-              const char __two[] = "Äuglein";
-              int i;
-              int j;
-              __locale_t        loc;
-               __locale_t        loc_dup;
-              loc = __newlocale(1 << LC_ALL, "de_DE", 0);
-              loc_dup = __duplocale(loc);
-              i = __strcoll_l(__one, __two, loc);
-              j = __strcoll_l(__one, __two, loc_dup);
-              return 0;
-          }
+    #define _GNU_SOURCE 1
+    #include <locale.h>
+    #include <string.h>
+    #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+    extern __typeof(newlocale) __newlocale;
+    extern __typeof(duplocale) __duplocale;
+    extern __typeof(strcoll_l) __strcoll_l;
+    #endif
+    int main()
+    {
+        const char __one[] = "Äuglein Augmen";
+        const char __two[] = "Äuglein";
+        int i;
+        int j;
+        __locale_t        loc;
+        __locale_t        loc_dup;
+        loc = __newlocale(1 << LC_ALL, "de_DE", 0);
+        loc_dup = __duplocale(loc);
+        i = __strcoll_l(__one, __two, loc);
+        j = __strcoll_l(__one, __two, loc_dup);
+        return 0;
+    }
 
 _ACEOF
 rm -f conftest$ac_exeext
@@ -5877,32 +5895,176 @@ enable_clocale_flag=generic
 fi
 rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
-          fi
 
-        # ... at some point put __strxfrm_l tests in as well.
-        ;;
-      darwin* | freebsd*)
-        enable_clocale_flag=darwin
-	;;
-      *)
-        enable_clocale_flag=generic
-        ;;
-    esac
-  fi
+    # Set it to scream when it hurts.
+    ac_save_CFLAGS="$CFLAGS"
+    CFLAGS="-Wimplicit-function-declaration -Werror"
 
-  # Deal with gettext issues.  Default to not using it (=no) until we detect
-  # support for it later.  Let the user turn it off via --e/d, but let that
-  # default to on for easier handling.
-  USE_NLS=no
-  # Check whether --enable-nls or --disable-nls was given.
-if test "${enable_nls+set}" = set; then
-  enableval="$enable_nls"
+    # Use strxfrm_l if available.
+    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#define _GNU_SOURCE 1
+     		    #include <string.h>
+		    #include <locale.h>
+int
+main ()
+{
+char s[128]; __locale_t loc; strxfrm_l(s, "C", 5, loc);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_STRXFRM_L 1
+_ACEOF
 
 else
-  enable_nls=yes
-fi;
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+
+    # Use strerror_l if available.
+    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#define _GNU_SOURCE 1
+		    #include <string.h>
+		    #include <locale.h>
+int
+main ()
+{
+__locale_t loc; strerror_l(5, loc);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_STRERROR_L 1
+_ACEOF
+
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+
+    CFLAGS="$ac_save_CFLAGS"
+  fi
+
+  # Perhaps use strerror_r if available, and strerror_l isn't.
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-Wimplicit-function-declaration -Werror"
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#define _GNU_SOURCE 1
+	     	  #include <string.h>
+		  #include <locale.h>
+int
+main ()
+{
+char s[128]; strerror_r(5, s, 128);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_STRERROR_R 1
+_ACEOF
+
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$ac_save_CFLAGS"
 
   # Set configure bits for specified locale package
+  echo "$as_me:$LINENO: checking for C locale to use" >&5
+echo $ECHO_N "checking for C locale to use... $ECHO_C" >&6
   case ${enable_clocale_flag} in
     generic)
       echo "$as_me:$LINENO: result: generic" >&5
@@ -8015,7 +8177,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 8018 "configure"
+#line 8180 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
