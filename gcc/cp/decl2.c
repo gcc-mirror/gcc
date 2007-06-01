@@ -2190,10 +2190,7 @@ build_cleanup (tree decl)
   if (TREE_CODE (type) == ARRAY_TYPE)
     temp = decl;
   else
-    {
-      cxx_mark_addressable (decl);
-      temp = build1 (ADDR_EXPR, build_pointer_type (type), decl);
-    }
+    temp = build_address (decl);
   temp = build_delete (TREE_TYPE (temp), temp,
 		       sfk_complete_destructor,
 		       LOOKUP_NORMAL|LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);

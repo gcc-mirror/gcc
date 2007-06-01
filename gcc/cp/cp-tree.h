@@ -615,6 +615,7 @@ enum cp_tree_index
     CPTI_JCLASS,
     CPTI_TERMINATE,
     CPTI_CALL_UNEXPECTED,
+    CPTI_ATEXIT_FN_PTR_TYPE,
     CPTI_ATEXIT,
     CPTI_DSO_HANDLE,
     CPTI_DCAST,
@@ -703,6 +704,10 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 
 /* The declaration for "__cxa_call_unexpected".  */
 #define call_unexpected_node		cp_global_trees[CPTI_CALL_UNEXPECTED]
+
+/* The type of the function-pointer argument to "__cxa_atexit" (or
+   "std::atexit", if "__cxa_atexit" is not being used).  */
+#define atexit_fn_ptr_type_node         cp_global_trees[CPTI_ATEXIT_FN_PTR_TYPE]
 
 /* A pointer to `std::atexit'.  */
 #define atexit_node			cp_global_trees[CPTI_ATEXIT]

@@ -1,3 +1,14 @@
+2007-05-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (get_atexit_fn_ptr_type): New function.
+	(get_atexit_node): Use it.
+	(start_cleanup_fn): Likewise.
+	(register_dtor_fn): Use the object's destructor, instead of a
+	separate cleanup function, where possible.
+	* cp-tree.h (CPTI_ATEXIT_FN_PTR_TYPE): New enumerator.
+	(atexit_fn_ptr_type_node): New macro.
+	* decl2.c (build_cleanup): Use build_address.
+
 2007-05-31  Daniel Berlin  <dberlin@dberlin.org>
 
 	* typeck.c (build_binary_op): Include types in error.
