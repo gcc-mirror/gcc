@@ -1,3 +1,8 @@
+2007-06-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* expr.c (force_operand) [DIV, MOD, UDIV, UMOD, ASHIFTRT]: Remove
+	breaks after return statements.
+
 2007-06-01  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (fpscr_set_from_mem): Call get_free_reg
@@ -94,7 +99,6 @@
 	* gcc.c (main): Don't consider linker options when issuing the
 	warning about a linker input file not being used.
 
->>>>>>> .r125234
 2007-05-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* tree-vrp.c (compare_names): Initialize sop.
