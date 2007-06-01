@@ -468,7 +468,6 @@
 	install-gcc.
 	* Makefile.in: Regenerate.
 
->>>>>>> .merge-right.r70
 2006-12-04  Richard Guenther  <rguenther@suse.de>
 
 	* MAINTAINERS (Non-Algorithmic Maintainers): New section.
