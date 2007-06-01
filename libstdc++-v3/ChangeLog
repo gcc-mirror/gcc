@@ -1,3 +1,15 @@
+2007-06-01  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/throw_allocator.h (__throw_allocator::allocate):
+	Throw bad_alloc for out of memory conditions.	
+	* testsuite/ext/throw_allocator/deallocate_global.cc: New.
+	* testsuite/ext/throw_allocator/check_delete.cc: Same.
+	* testsuite/ext/throw_allocator/check_allocate_max_size.cc: Same.
+	* testsuite/ext/throw_allocator/check_deallocate_null.cc: Same.
+	* testsuite/ext/throw_allocator/explicit_instantiation.cc: Same.
+	* testsuite/ext/throw_allocator/check_new.cc: Same.
+	* testsuite/ext/throw_allocator/deallocate_local.cc: Same.
+
 2007-05-31  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/31426
