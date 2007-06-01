@@ -1,3 +1,8 @@
+2007-06-01  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.dg/builtin-return-1.c (g): New.
+	(main): Allocate at least 64 bytes on the stack.
+
 2007-05-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/init/cleanup3.C: New test.
