@@ -15539,13 +15539,13 @@ ix86_init_mmx_sse_builtins (void)
   /* Access to the vec_extract patterns.  */
   ftype = build_function_type_list (double_type_node, V2DF_type_node,
 				    integer_type_node, NULL_TREE);
-  def_builtin (MASK_SSE, "__builtin_ia32_vec_ext_v2df",
+  def_builtin (MASK_SSE2, "__builtin_ia32_vec_ext_v2df",
 	       ftype, IX86_BUILTIN_VEC_EXT_V2DF);
 
   ftype = build_function_type_list (long_long_integer_type_node,
 				    V2DI_type_node, integer_type_node,
 				    NULL_TREE);
-  def_builtin (MASK_SSE, "__builtin_ia32_vec_ext_v2di",
+  def_builtin (MASK_SSE2, "__builtin_ia32_vec_ext_v2di",
 	       ftype, IX86_BUILTIN_VEC_EXT_V2DI);
 
   ftype = build_function_type_list (float_type_node, V4SF_type_node,
@@ -15555,12 +15555,12 @@ ix86_init_mmx_sse_builtins (void)
 
   ftype = build_function_type_list (intSI_type_node, V4SI_type_node,
 				    integer_type_node, NULL_TREE);
-  def_builtin (MASK_SSE, "__builtin_ia32_vec_ext_v4si",
+  def_builtin (MASK_SSE2, "__builtin_ia32_vec_ext_v4si",
 	       ftype, IX86_BUILTIN_VEC_EXT_V4SI);
 
   ftype = build_function_type_list (intHI_type_node, V8HI_type_node,
 				    integer_type_node, NULL_TREE);
-  def_builtin (MASK_SSE, "__builtin_ia32_vec_ext_v8hi",
+  def_builtin (MASK_SSE2, "__builtin_ia32_vec_ext_v8hi",
 	       ftype, IX86_BUILTIN_VEC_EXT_V8HI);
 
   ftype = build_function_type_list (intHI_type_node, V4HI_type_node,
@@ -15577,7 +15577,7 @@ ix86_init_mmx_sse_builtins (void)
   ftype = build_function_type_list (V8HI_type_node, V8HI_type_node,
 				    intHI_type_node,
 				    integer_type_node, NULL_TREE);
-  def_builtin (MASK_SSE, "__builtin_ia32_vec_set_v8hi",
+  def_builtin (MASK_SSE2, "__builtin_ia32_vec_set_v8hi",
 	       ftype, IX86_BUILTIN_VEC_SET_V8HI);
 
   ftype = build_function_type_list (V4HI_type_node, V4HI_type_node,

@@ -1,3 +1,15 @@
+2007-05-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2007-05-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (__builtin_ia32_vec_ext_v2df): Mark it
+	with MASK_SSE2.
+	(__builtin_ia32_vec_ext_v2di): Likewise.
+	(__builtin_ia32_vec_ext_v4si): Likewise.
+	(__builtin_ia32_vec_ext_v8hi): Likewise.
+	(__builtin_ia32_vec_set_v8hi): Likewise.
+
 2007-05-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline:

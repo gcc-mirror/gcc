@@ -1,3 +1,16 @@
+2007-05-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2007-05-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/sse2-check.h: New.
+	* gcc.target/i386/sse2-vec-1.c: Likewise.
+	* gcc.target/i386/sse2-vec-2.c: Likewise.
+	* gcc.target/i386/sse2-vec-3.c: Likewise.
+	* gcc.target/i386/sse2-vec-4.c: Likewise.
+	* gcc.target/i386/sse2-vec-5.c: Likewise.
+	* gcc.target/i386/sse2-vec-6.c: Likewise.
+
 2007-05-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31483
