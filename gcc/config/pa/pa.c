@@ -726,7 +726,10 @@ legitimize_tls_address (rtx addr)
     {
       case TLS_MODEL_GLOBAL_DYNAMIC:
 	tmp = gen_reg_rtx (Pmode);
-	emit_insn (gen_tgd_load (tmp, addr));
+	if (flag_pic)
+	  emit_insn (gen_tgd_load_pic (tmp, addr));
+	else
+	  emit_insn (gen_tgd_load (tmp, addr));
 	ret = hppa_tls_call (tmp);
 	break;
 
@@ -734,7 +737,10 @@ legitimize_tls_address (rtx addr)
 	ret = gen_reg_rtx (Pmode);
 	tmp = gen_reg_rtx (Pmode);
 	start_sequence ();
-	emit_insn (gen_tld_load (tmp, addr));
+	if (flag_pic)
+	  emit_insn (gen_tld_load_pic (tmp, addr));
+	else
+	  emit_insn (gen_tld_load (tmp, addr));
 	t1 = hppa_tls_call (tmp);
 	insn = get_insns ();
 	end_sequence ();
@@ -750,7 +756,10 @@ legitimize_tls_address (rtx addr)
 	tmp = gen_reg_rtx (Pmode);
 	ret = gen_reg_rtx (Pmode);
 	emit_insn (gen_tp_load (tp));
-	emit_insn (gen_tie_load (tmp, addr));
+	if (flag_pic)
+	  emit_insn (gen_tie_load_pic (tmp, addr));
+	else
+	  emit_insn (gen_tie_load (tmp, addr));
 	emit_move_insn (ret, gen_rtx_PLUS (Pmode, tp, tmp));
 	break;
 
