@@ -1,3 +1,8 @@
+2007-06-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac: Fix a typo.
+	* configure: Regenerated.
+
 2007-06-02  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure: Regenerate.
