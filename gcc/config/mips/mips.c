@@ -7335,8 +7335,12 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
       = REGNO (pic_offset_table_rtx)
       = TARGET_CALL_SAVED_GP ? 15 : GLOBAL_POINTER_REGNUM;
 
-  /* Set up the global pointer for n32 or n64 abicalls.  */
-  mips_emit_loadgp ();
+  /* Set up the global pointer for n32 or n64 abicalls.  If
+     LOADGP_ABSOLUTE then the thunk does not use the gp and there is
+     no need to load it.*/
+  if (mips_current_loadgp_style () != LOADGP_ABSOLUTE
+      || !targetm.binds_local_p (function))
+    mips_emit_loadgp ();
 
   /* We need two temporary registers in some cases.  */
   temp1 = gen_rtx_REG (Pmode, 2);
