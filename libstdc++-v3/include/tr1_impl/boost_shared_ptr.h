@@ -647,7 +647,11 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
         { __shared_ptr(__p, __d).swap(*this); }
 
       // Allow class instantiation when _Tp is [cv-qual] void.
-      typename add_reference<_Tp>::type
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+      typename std::add_lvalue_reference<_Tp>::type
+#else
+      typename std::tr1::add_reference<_Tp>::type
+#endif
       operator*() const // never throws
       {
 	_GLIBCXX_DEBUG_ASSERT(_M_ptr != 0);

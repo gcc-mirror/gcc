@@ -62,6 +62,77 @@
 
 namespace std
 {
+  // Primary classification traits.
+  template<typename>
+    struct is_lvalue_reference
+    : public false_type { };
+
+  template<typename _Tp>
+    struct is_lvalue_reference<_Tp&>
+    : public true_type { };
+
+  template<typename>
+    struct is_rvalue_reference
+    : public false_type { };
+
+  template<typename _Tp>
+    struct is_rvalue_reference<_Tp&&>
+    : public true_type { };
+
+  // Secondary classification traits.
+  template<typename _Tp>
+    struct is_reference
+    : public integral_constant<bool, (is_lvalue_reference<_Tp>::value
+				      || is_rvalue_reference<_Tp>::value)>
+    { };
+
+  // Reference transformations.
+  template<typename _Tp>
+    struct remove_reference
+    { typedef _Tp   type; };
+
+  template<typename _Tp>
+    struct remove_reference<_Tp&>
+    { typedef _Tp   type; };
+
+  template<typename _Tp>
+    struct remove_reference<_Tp&&>
+    { typedef _Tp   type; };
+
+  template<typename _Tp,
+	   bool = is_object<_Tp>::value || is_function<_Tp>::value,
+	   bool = is_rvalue_reference<_Tp>::value>
+    struct __add_lvalue_reference_helper
+    { typedef _Tp   type; };
+
+  template<typename _Tp>
+    struct __add_lvalue_reference_helper<_Tp, true, false>
+    { typedef _Tp&   type; };
+
+  template<typename _Tp>
+    struct __add_lvalue_reference_helper<_Tp, false, true>
+    { typedef typename remove_reference<_Tp>::type&   type; };
+
+  template<typename _Tp>
+    struct add_lvalue_reference
+    : public __add_lvalue_reference_helper<_Tp>
+    { };
+
+  template<typename _Tp,
+	   bool = is_object<_Tp>::value || is_function<_Tp>::value>
+    struct __add_rvalue_reference_helper
+    { typedef _Tp   type; };
+
+  template<typename _Tp>
+    struct __add_rvalue_reference_helper<_Tp, true>
+    { typedef _Tp&&   type; };
+
+  template<typename _Tp>
+    struct add_rvalue_reference
+    : public __add_rvalue_reference_helper<_Tp>
+    { };
+
+  // Scalar properties and transformations.
   template<typename _Tp,
 	   bool = is_integral<_Tp>::value,
 	   bool = is_floating_point<_Tp>::value>
@@ -88,6 +159,7 @@ namespace std
 				      && !is_signed<_Tp>::value)>
     { };
 
+  // Member introspection.
   template<typename _Tp>
     struct is_pod
     : public integral_constant<bool, __is_pod(_Tp)>
@@ -133,8 +205,7 @@ namespace std
     : public integral_constant<bool, __is_base_of(_Base, _Derived)>
     { };
 
-  // XXX FIXME
-  // The C++0x specifications are different, see N2255.
+  // Relationships between types.
   template<typename _From, typename _To>
     struct __is_convertible_simple
     : public __sfinae_types
@@ -178,6 +249,8 @@ namespace std
 				   || (__is_int_or_cref<_To>::__value
 				       && !is_void<_From>::value)); };
 
+  // XXX FIXME
+  // The C++0x specifications are different, see N2255.
   template<typename _From, typename _To>
     struct is_convertible
     : public integral_constant<bool,

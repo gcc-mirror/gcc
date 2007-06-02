@@ -1,6 +1,7 @@
-// 2004-12-12  Paolo Carlini  <pcarlini@suse.de>
+// { dg-options "-std=gnu++0x" }
+// 2007-06-02  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,25 +19,23 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 4.7.2 Reference modifications
-
-#include <tr1/type_traits>
+#include <type_traits>
 #include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  using std::tr1::add_pointer;
-  using std::tr1::is_same;
+  using std::is_rvalue_reference;
   using namespace __gnu_test;
 
-  VERIFY( (is_same<add_pointer<int>::type, int*>::value) );
-  VERIFY( (is_same<add_pointer<int*>::type, int**>::value) );
-  VERIFY( (is_same<add_pointer<const int>::type, const int*>::value) );
-  VERIFY( (is_same<add_pointer<int&>::type, int*>::value) );
-  VERIFY( (is_same<add_pointer<ClassType*>::type, ClassType**>::value) );
-  VERIFY( (is_same<add_pointer<ClassType>::type, ClassType*>::value) );
+  VERIFY( (test_category<is_rvalue_reference, int&&>(true)) );
+  VERIFY( (test_category<is_rvalue_reference, ClassType&&>(true)) );
+  VERIFY( (test_category<is_rvalue_reference, int(&&)(int)>(true)) );
+
+  // Sanity check.
+  VERIFY( (test_category<is_rvalue_reference, int&>(false)) );
+  VERIFY( (test_category<is_rvalue_reference, ClassType>(false)) );
 }
 
 int main()

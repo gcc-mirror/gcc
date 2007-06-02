@@ -1,6 +1,6 @@
 // 2004-12-16  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,27 +27,26 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  using std::tr1::add_cv;
+  using std::tr1::add_volatile;
   using std::tr1::is_same;
   using namespace __gnu_test;
 
-  VERIFY( (is_same<add_cv<int>::type, const volatile int>::value) );
-  VERIFY( (is_same<add_cv<const int>::type, const volatile int>::value) );
-  VERIFY( (is_same<add_cv<int*>::type, int* const volatile>::value) );
-  VERIFY( (is_same<add_cv<int&>::type, int&>::value) );
-  VERIFY( (is_same<add_cv<int (int)>::type, int (int)>::value) );
-  VERIFY( (is_same<add_cv<const volatile int>::type,
-	   const volatile int>::value) );
-  VERIFY( (is_same<add_cv<ClassType>::type, const volatile ClassType>::value) );
-  VERIFY( (is_same<add_cv<volatile ClassType>::type,
+  VERIFY( (is_same<add_volatile<int>::type, volatile int>::value) );
+  VERIFY( (is_same<add_volatile<const int>::type, const volatile int>::value) );
+  VERIFY( (is_same<add_volatile<int*>::type, int* volatile>::value) );
+  VERIFY( (is_same<add_volatile<int&>::type, int&>::value) );
+  VERIFY( (is_same<add_volatile<int (int)>::type, int (int)>::value) );
+  VERIFY( (is_same<add_volatile<volatile int>::type, volatile int>::value) );
+  VERIFY( (is_same<add_volatile<ClassType>::type, volatile ClassType>::value) );
+  VERIFY( (is_same<add_volatile<const ClassType>::type,
 	   const volatile ClassType>::value) );
-  VERIFY( (is_same<add_cv<ClassType*>::type,
-	   ClassType* const volatile>::value) );
-  VERIFY( (is_same<add_cv<ClassType&>::type, ClassType&>::value) );
-  VERIFY( (is_same<add_cv<ClassType (ClassType)>::type,
+  VERIFY( (is_same<add_volatile<ClassType*>::type,
+	   ClassType* volatile>::value) );
+  VERIFY( (is_same<add_volatile<ClassType&>::type, ClassType&>::value) );
+  VERIFY( (is_same<add_volatile<ClassType (ClassType)>::type,
 	   ClassType (ClassType)>::value) );
-  VERIFY( (is_same<add_cv<const volatile ClassType>::type,
-	   const volatile ClassType>::value) );
+  VERIFY( (is_same<add_volatile<volatile ClassType>::type,
+	   volatile ClassType>::value) );
 }
 
 int main()

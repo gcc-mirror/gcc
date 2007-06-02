@@ -1,6 +1,7 @@
-// 2004-12-08  Paolo Carlini  <pcarlini@suse.de>
+// { dg-options "-std=gnu++0x" }
+// 2007-06-02  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,28 +19,26 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 4.7.2 Reference modifications
-
-#include <tr1/type_traits>
+#include <type_traits>
 #include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  using std::tr1::add_reference;
-  using std::tr1::is_same;
+  using std::add_rvalue_reference;
+  using std::is_same;
   using namespace __gnu_test;
 
-  VERIFY( (is_same<add_reference<int>::type, int&>::value) );
-  VERIFY( (is_same<add_reference<int&>::type, int&>::value) );
-  VERIFY( (is_same<add_reference<const int>::type, const int&>::value) );
-  VERIFY( (is_same<add_reference<int*>::type, int*&>::value) );
-  VERIFY( (is_same<add_reference<ClassType&>::type, ClassType&>::value) );
-  VERIFY( (is_same<add_reference<ClassType>::type, ClassType&>::value) );
-
-  VERIFY( (is_same<add_reference<void>::type, void>::value) );
-  VERIFY( (is_same<add_reference<const void>::type, const void>::value) );  
+  VERIFY( (is_same<add_rvalue_reference<int>::type, int&&>::value) );
+  VERIFY( (is_same<add_rvalue_reference<int&&>::type, int&&>::value) );
+  VERIFY( (is_same<add_rvalue_reference<const int>::type, const int&&>::value) );
+  VERIFY( (is_same<add_rvalue_reference<int*>::type, int*&&>::value) );
+  VERIFY( (is_same<add_rvalue_reference<ClassType&&>::type, ClassType&&>::value) );
+  VERIFY( (is_same<add_rvalue_reference<ClassType>::type, ClassType&&>::value) );
+  VERIFY( (is_same<add_rvalue_reference<int(int)>::type, int(&&)(int)>::value) );
+  VERIFY( (is_same<add_rvalue_reference<void>::type, void>::value) );
+  VERIFY( (is_same<add_rvalue_reference<const void>::type, const void>::value) );  
 }
 
 int main()
