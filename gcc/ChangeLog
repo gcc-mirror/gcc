@@ -1,6 +1,6 @@
 2007-06-02  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.md ("sse4_1_blendvpd"): Require "z" class XMM
+	* config/i386/sse.md ("sse4_1_blendvpd"): Require "z" class XMM
 	register for operand[3].  Adjust asm template.
 	("sse4_1_blendvpd"): Ditto.
 	("sse4_1_pblendvb"): Ditto.
