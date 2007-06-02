@@ -1,12 +1,7 @@
 2007-06-02  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/sse.md ("sse4_1_blendvpd"): Require "z" class XMM
-	register for operand[3].  Adjust asm template.
-	("sse4_1_blendvpd"): Ditto.
-	("sse4_1_pblendvb"): Ditto.
 	* config/i386/i386.c (ix86_expand_sse_4_operands_builtin): Call
-	safe_vector_operand() if input operand is VECTOR_MODE_P operand. Do not
-	force operands[3] into xmm0 register for variable blend instructions.
+	safe_vector_operand() if input operand is VECTOR_MODE_P operand.
 	(ix86_expand_sse_pcmpestr): Do not check operands for
 	"register_operand", when insn operand predicate is "register_operand".
 	(ix86_expand_sse_pcmpistr): Ditto.
