@@ -1278,12 +1278,16 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   NON_Q_REGS,
   /* flags, fpsr, fpcr, frame */
   NO_REGS, NO_REGS, NO_REGS, NON_Q_REGS,
-  SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
+  /* SSE registers */
+  SSE_FIRST_REG, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
   SSE_REGS, SSE_REGS,
+  /* MMX registers */
   MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS,
   MMX_REGS, MMX_REGS,
+  /* REX registers */
   NON_Q_REGS, NON_Q_REGS, NON_Q_REGS, NON_Q_REGS,
   NON_Q_REGS, NON_Q_REGS, NON_Q_REGS, NON_Q_REGS,
+  /* SSE REX registers */
   SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
   SSE_REGS, SSE_REGS,
 };
@@ -8160,10 +8164,50 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, int reverse,
   switch (code)
     {
     case EQ:
-      suffix = "e";
+      switch (mode)
+	{
+	case CCAmode:
+	  suffix = "a";
+	  break;
+
+	case CCCmode:
+	  suffix = "c";
+	  break;
+
+	case CCOmode:
+	  suffix = "o";
+	  break;
+
+	case CCSmode:
+	  suffix = "s";
+	  break;
+
+	default:
+	  suffix = "e";
+	}
       break;
     case NE:
-      suffix = "ne";
+      switch (mode)
+	{
+	case CCAmode:
+	  suffix = "na";
+	  break;
+
+	case CCCmode:
+	  suffix = "nc";
+	  break;
+
+	case CCOmode:
+	  suffix = "no";
+	  break;
+
+	case CCSmode:
+	  suffix = "ns";
+	  break;
+
+	default:
+	  suffix = "ne";
+	}
       break;
     case GT:
       gcc_assert (mode == CCmode || mode == CCNOmode || mode == CCGCmode);
@@ -10991,6 +11035,10 @@ ix86_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
     case CCGCmode:
     case CCGOCmode:
     case CCNOmode:
+    case CCAmode:
+    case CCCmode:
+    case CCOmode:
+    case CCSmode:
     case CCZmode:
       switch (m2)
 	{
@@ -11001,6 +11049,10 @@ ix86_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
 	case CCGCmode:
 	case CCGOCmode:
 	case CCNOmode:
+	case CCAmode:
+	case CCCmode:
+	case CCOmode:
+	case CCSmode:
 	case CCZmode:
 	  return CCmode;
 	}
@@ -16736,6 +16788,21 @@ enum ix86_builtins
   IX86_BUILTIN_CRC32SI,
   IX86_BUILTIN_CRC32DI,
 
+  IX86_BUILTIN_PCMPESTRI128,
+  IX86_BUILTIN_PCMPESTRM128,
+  IX86_BUILTIN_PCMPESTRA128,
+  IX86_BUILTIN_PCMPESTRC128,
+  IX86_BUILTIN_PCMPESTRO128,
+  IX86_BUILTIN_PCMPESTRS128,
+  IX86_BUILTIN_PCMPESTRZ128,
+  IX86_BUILTIN_PCMPISTRI128,
+  IX86_BUILTIN_PCMPISTRM128,
+  IX86_BUILTIN_PCMPISTRA128,
+  IX86_BUILTIN_PCMPISTRC128,
+  IX86_BUILTIN_PCMPISTRO128,
+  IX86_BUILTIN_PCMPISTRS128,
+  IX86_BUILTIN_PCMPISTRZ128,
+
   IX86_BUILTIN_PCMPGTQ,
 
   IX86_BUILTIN_MAX
@@ -16790,7 +16857,7 @@ struct builtin_description
   const char *const name;
   const enum ix86_builtins code;
   const enum rtx_code comparison;
-  const unsigned int flag;
+  const int flag;
 };
 
 static const struct builtin_description bdesc_comi[] =
@@ -16827,6 +16894,30 @@ static const struct builtin_description bdesc_ptest[] =
   { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_ptest, "__builtin_ia32_ptestz128", IX86_BUILTIN_PTESTZ, EQ, 0 },
   { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_ptest, "__builtin_ia32_ptestc128", IX86_BUILTIN_PTESTC, LTU, 0 },
   { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_ptest, "__builtin_ia32_ptestnzc128", IX86_BUILTIN_PTESTNZC, GTU, 0 },
+};
+
+static const struct builtin_description bdesc_pcmpestr[] =
+{
+  /* SSE4.2 */
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpestr, "__builtin_ia32_pcmpestri128", IX86_BUILTIN_PCMPESTRI128, 0, 0 },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpestr, "__builtin_ia32_pcmpestrm128", IX86_BUILTIN_PCMPESTRM128, 0, 0 },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpestr, "__builtin_ia32_pcmpestria128", IX86_BUILTIN_PCMPESTRA128, 0, (int) CCAmode },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpestr, "__builtin_ia32_pcmpestric128", IX86_BUILTIN_PCMPESTRC128, 0, (int) CCCmode },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpestr, "__builtin_ia32_pcmpestrio128", IX86_BUILTIN_PCMPESTRO128, 0, (int) CCOmode },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpestr, "__builtin_ia32_pcmpestris128", IX86_BUILTIN_PCMPESTRS128, 0, (int) CCSmode },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpestr, "__builtin_ia32_pcmpestriz128", IX86_BUILTIN_PCMPESTRZ128, 0, (int) CCZmode },
+};
+
+static const struct builtin_description bdesc_pcmpistr[] =
+{
+  /* SSE4.2 */
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpistr, "__builtin_ia32_pcmpistri128", IX86_BUILTIN_PCMPISTRI128, 0, 0 },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpistr, "__builtin_ia32_pcmpistrm128", IX86_BUILTIN_PCMPISTRM128, 0, 0 },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpistr, "__builtin_ia32_pcmpistria128", IX86_BUILTIN_PCMPISTRA128, 0, (int) CCAmode },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpistr, "__builtin_ia32_pcmpistric128", IX86_BUILTIN_PCMPISTRC128, 0, (int) CCCmode },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpistr, "__builtin_ia32_pcmpistrio128", IX86_BUILTIN_PCMPISTRO128, 0, (int) CCOmode },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpistr, "__builtin_ia32_pcmpistris128", IX86_BUILTIN_PCMPISTRS128, 0, (int) CCSmode },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpistr, "__builtin_ia32_pcmpistriz128", IX86_BUILTIN_PCMPISTRZ128, 0, (int) CCZmode },
 };
 
 static const struct builtin_description bdesc_crc32[] =
@@ -17591,6 +17682,28 @@ ix86_init_mmx_sse_builtins (void)
     = build_function_type_list (integer_type_node,
 				V2DI_type_node, V2DI_type_node,
 				NULL_TREE);
+  tree int_ftype_v16qi_int_v16qi_int_int
+    = build_function_type_list (integer_type_node,
+				V16QI_type_node,
+				integer_type_node,
+				V16QI_type_node,
+				integer_type_node,
+				integer_type_node,
+				NULL_TREE);
+  tree v16qi_ftype_v16qi_int_v16qi_int_int
+    = build_function_type_list (V16QI_type_node,
+				V16QI_type_node,
+				integer_type_node,
+				V16QI_type_node,
+				integer_type_node,
+				integer_type_node,
+				NULL_TREE);
+  tree int_ftype_v16qi_v16qi_int
+    = build_function_type_list (integer_type_node,
+				V16QI_type_node,
+				V16QI_type_node,
+				integer_type_node,
+				NULL_TREE);
 
   tree float80_type;
   tree float128_type;
@@ -17779,6 +17892,30 @@ ix86_init_mmx_sse_builtins (void)
 	}
 
       def_builtin (d->mask, d->name, type, d->code);
+    }
+
+  /* pcmpestr[im] insns.  */
+  for (i = 0, d = bdesc_pcmpestr;
+       i < ARRAY_SIZE (bdesc_pcmpestr);
+       i++, d++)
+    {
+      if (d->code == IX86_BUILTIN_PCMPESTRM128)
+	ftype = v16qi_ftype_v16qi_int_v16qi_int_int;
+      else
+	ftype = int_ftype_v16qi_int_v16qi_int_int;
+      def_builtin (d->mask, d->name, ftype, d->code);
+    }
+
+  /* pcmpistr[im] insns.  */
+  for (i = 0, d = bdesc_pcmpistr;
+       i < ARRAY_SIZE (bdesc_pcmpistr);
+       i++, d++)
+    {
+      if (d->code == IX86_BUILTIN_PCMPISTRM128)
+	ftype = v16qi_ftype_v16qi_v16qi_int;
+      else
+	ftype = int_ftype_v16qi_v16qi_int;
+      def_builtin (d->mask, d->name, ftype, d->code);
     }
 
   /* Add the remaining MMX insns with somewhat more complicated types.  */
@@ -18560,6 +18697,207 @@ ix86_expand_sse_ptest (const struct builtin_description *d, tree exp,
 					  const0_rtx)));
 
   return SUBREG_REG (target);
+}
+
+/* Subroutine of ix86_expand_builtin to take care of pcmpestr[im] insns.  */
+
+static rtx
+ix86_expand_sse_pcmpestr (const struct builtin_description *d,
+			  tree exp, rtx target)
+{
+  rtx pat;
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
+  tree arg2 = CALL_EXPR_ARG (exp, 2);
+  tree arg3 = CALL_EXPR_ARG (exp, 3);
+  tree arg4 = CALL_EXPR_ARG (exp, 4);
+  rtx scratch0, scratch1;
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
+  rtx op2 = expand_normal (arg2);
+  rtx op3 = expand_normal (arg3);
+  rtx op4 = expand_normal (arg4);
+  enum machine_mode tmode0, tmode1, modev2, modei3, modev4, modei5, modeimm;
+
+  tmode0 = insn_data[d->icode].operand[0].mode;
+  tmode1 = insn_data[d->icode].operand[1].mode;
+  modev2 = insn_data[d->icode].operand[2].mode;
+  modei3 = insn_data[d->icode].operand[3].mode;
+  modev4 = insn_data[d->icode].operand[4].mode;
+  modei5 = insn_data[d->icode].operand[5].mode;
+  modeimm = insn_data[d->icode].operand[6].mode;
+
+  if (VECTOR_MODE_P (modev2))
+    op0 = safe_vector_operand (op0, modev2);
+  if (VECTOR_MODE_P (modev4))
+    op2 = safe_vector_operand (op2, modev4);
+
+  if ((optimize && !register_operand (op0, modev2))
+      || !(*insn_data[d->icode].operand[2].predicate) (op0, modev2))
+    op0 = copy_to_mode_reg (modev2, op0);
+  if ((optimize && !register_operand (op1, modei3))
+      || !(*insn_data[d->icode].operand[3].predicate) (op1, modei3))
+    op1 = copy_to_mode_reg (modei3, op1);
+  if ((optimize && !register_operand (op2, modev4))
+      || !(*insn_data[d->icode].operand[4].predicate) (op2, modev4))
+    op2 = copy_to_mode_reg (modev4, op2);
+  if ((optimize && !register_operand (op3, modei5))
+      || !(*insn_data[d->icode].operand[5].predicate) (op3, modei5))
+    op3 = copy_to_mode_reg (modei5, op3);
+
+  if (! (*insn_data[d->icode].operand[6].predicate) (op4, modeimm))
+    {
+      error ("the fifth argument must be a 8-bit immediate");
+      return const0_rtx;
+    }
+
+  if (d->code == IX86_BUILTIN_PCMPESTRI128)
+    {
+      if (optimize || !target
+	  || GET_MODE (target) != tmode0
+	  || ! (*insn_data[d->icode].operand[0].predicate) (target, tmode0))
+	target = gen_reg_rtx (tmode0);
+
+      scratch1 = gen_reg_rtx (tmode1);
+
+      pat = GEN_FCN (d->icode) (target, scratch1, op0, op1, op2, op3, op4);
+    }
+  else if (d->code == IX86_BUILTIN_PCMPESTRM128)
+    {
+      if (optimize || !target
+	  || GET_MODE (target) != tmode1
+	  || ! (*insn_data[d->icode].operand[1].predicate) (target, tmode1))
+	target = gen_reg_rtx (tmode1);
+
+      scratch0 = gen_reg_rtx (tmode0);
+
+      pat = GEN_FCN (d->icode) (scratch0, target, op0, op1, op2, op3, op4);
+    }
+  else
+    {
+      gcc_assert (d->flag);
+
+      scratch0 = gen_reg_rtx (tmode0);
+      scratch1 = gen_reg_rtx (tmode1);
+
+      pat = GEN_FCN (d->icode) (scratch0, scratch1, op0, op1, op2, op3, op4);
+    }
+
+  if (! pat)
+    return 0;
+
+  emit_insn (pat);
+
+  if (d->flag)
+    {
+      target = gen_reg_rtx (SImode);
+      emit_move_insn (target, const0_rtx);
+      target = gen_rtx_SUBREG (QImode, target, 0);
+
+      emit_insn
+	(gen_rtx_SET (VOIDmode, gen_rtx_STRICT_LOW_PART (VOIDmode, target),
+		      gen_rtx_fmt_ee (EQ, QImode,
+				      gen_rtx_REG (d->flag, FLAGS_REG),
+				      const0_rtx)));
+      return SUBREG_REG (target);
+    }
+  else
+    return target;
+}
+
+
+/* Subroutine of ix86_expand_builtin to take care of pcmpistr[im] insns.  */
+
+static rtx
+ix86_expand_sse_pcmpistr (const struct builtin_description *d,
+			  tree exp, rtx target)
+{
+  rtx pat;
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
+  tree arg2 = CALL_EXPR_ARG (exp, 2);
+  rtx scratch0, scratch1;
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
+  rtx op2 = expand_normal (arg2);
+  enum machine_mode tmode0, tmode1, modev2, modev3, modeimm;
+
+  tmode0 = insn_data[d->icode].operand[0].mode;
+  tmode1 = insn_data[d->icode].operand[1].mode;
+  modev2 = insn_data[d->icode].operand[2].mode;
+  modev3 = insn_data[d->icode].operand[3].mode;
+  modeimm = insn_data[d->icode].operand[4].mode;
+
+  if (VECTOR_MODE_P (modev2))
+    op0 = safe_vector_operand (op0, modev2);
+  if (VECTOR_MODE_P (modev3))
+    op1 = safe_vector_operand (op1, modev3);
+
+  if ((optimize && !register_operand (op0, modev2))
+      || !(*insn_data[d->icode].operand[2].predicate) (op0, modev2))
+    op0 = copy_to_mode_reg (modev2, op0);
+  if ((optimize && !register_operand (op1, modev3))
+      || !(*insn_data[d->icode].operand[3].predicate) (op1, modev3))
+    op1 = copy_to_mode_reg (modev3, op1);
+
+  if (! (*insn_data[d->icode].operand[4].predicate) (op2, modeimm))
+    {
+      error ("the third argument must be a 8-bit immediate");
+      return const0_rtx;
+    }
+
+  if (d->code == IX86_BUILTIN_PCMPISTRI128)
+    {
+      if (optimize || !target
+	  || GET_MODE (target) != tmode0
+	  || ! (*insn_data[d->icode].operand[0].predicate) (target, tmode0))
+	target = gen_reg_rtx (tmode0);
+
+      scratch1 = gen_reg_rtx (tmode1);
+
+      pat = GEN_FCN (d->icode) (target, scratch1, op0, op1, op2);
+    }
+  else if (d->code == IX86_BUILTIN_PCMPISTRM128)
+    {
+      if (optimize || !target
+	  || GET_MODE (target) != tmode1
+	  || ! (*insn_data[d->icode].operand[1].predicate) (target, tmode1))
+	target = gen_reg_rtx (tmode1);
+
+      scratch0 = gen_reg_rtx (tmode0);
+
+      pat = GEN_FCN (d->icode) (scratch0, target, op0, op1, op2);
+    }
+  else
+    {
+      gcc_assert (d->flag);
+
+      scratch0 = gen_reg_rtx (tmode0);
+      scratch1 = gen_reg_rtx (tmode1);
+
+      pat = GEN_FCN (d->icode) (scratch0, scratch1, op0, op1, op2);
+    }
+
+  if (! pat)
+    return 0;
+
+  emit_insn (pat);
+
+  if (d->flag)
+    {
+      target = gen_reg_rtx (SImode);
+      emit_move_insn (target, const0_rtx);
+      target = gen_rtx_SUBREG (QImode, target, 0);
+
+      emit_insn
+	(gen_rtx_SET (VOIDmode, gen_rtx_STRICT_LOW_PART (VOIDmode, target),
+		      gen_rtx_fmt_ee (EQ, QImode,
+				      gen_rtx_REG (d->flag, FLAGS_REG),
+				      const0_rtx)));
+      return SUBREG_REG (target);
+    }
+  else
+    return target;
 }
 
 /* Return the integer constant in ARG.  Constrain it to be in the range
@@ -19391,6 +19729,18 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   for (i = 0, d = bdesc_crc32; i < ARRAY_SIZE (bdesc_crc32); i++, d++)
     if (d->code == fcode)
       return ix86_expand_crc32 (d->icode, exp, target);
+
+  for (i = 0, d = bdesc_pcmpestr;
+       i < ARRAY_SIZE (bdesc_pcmpestr);
+       i++, d++)
+    if (d->code == fcode)
+      return ix86_expand_sse_pcmpestr (d, exp, target);
+
+  for (i = 0, d = bdesc_pcmpistr;
+       i < ARRAY_SIZE (bdesc_pcmpistr);
+       i++, d++)
+    if (d->code == fcode)
+      return ix86_expand_sse_pcmpistr (d, exp, target);
 
   gcc_unreachable ();
 }

@@ -603,7 +603,7 @@ _mm_stream_load_si128 (__m128i *__X)
 
 /* Intrinsics for text/string processing.  */
 
-#if 0
+#ifdef __OPTIMIZE__
 static __inline __m128i __attribute__((__always_inline__))
 _mm_cmpistrm (__m128i __X, __m128i __Y, const int __M)
 {
@@ -652,7 +652,7 @@ _mm_cmpestri (__m128i __X, int __LX, __m128i __Y, int __LY, const int __M)
 /* Intrinsics for text/string processing and reading values of
    EFlags.  */
 
-#if 0
+#ifdef __OPTIMIZE__
 static __inline int __attribute__((__always_inline__))
 _mm_cmpistra (__m128i __X, __m128i __Y, const int __M)
 {

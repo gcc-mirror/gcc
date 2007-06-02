@@ -1,3 +1,53 @@
+2007-06-02  H.J. Lu  <hongjiu.lu@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (enum reg_class) [SSE_FIRST_REG]: New.
+	(SSE_CLASS_P): Use reg_class_subset_p between SSE_REGS.
+	(REG_CLASS_NAMES): Add "FIRST_SSE_REG" string.
+	(REG_CLASS_CONTENTS): Add members of FIRST_SSE_REG class.
+	* config/i386/constraints.md ("z"): New register constraint
+	for members of SSE_FIRST_REG class.
+	* config/i386/i386-modes.def (CCA, CCC, CCO, CCS): New compare modes.
+	* config/i386/i386.c (regclass_map): Change class of %xmm0 to
+	SSE_FIRST_REG class.
+	(put_condition_code) [EQ, NE]: Output suffixes for new compare modes.
+	(ix86_cc_modes_compatible): Handle CCA, CCC, CCO and CCS modes.
+	(IX86_BUILTIN_PCMPESTRI128): New for SSE4.2.
+	(IX86_BUILTIN_PCMPESTRM128): Likewise.
+	(IX86_BUILTIN_PCMPESTRA128): Likewise.
+	(IX86_BUILTIN_PCMPESTRC128): Likewise.
+	(IX86_BUILTIN_PCMPESTRO128): Likewise.
+	(IX86_BUILTIN_PCMPESTRS128): Likewise.
+	(IX86_BUILTIN_PCMPESTRZ128): Likewise.
+	(IX86_BUILTIN_PCMPISTRI128): Likewise.
+	(IX86_BUILTIN_PCMPISTRM128): Likewise.
+	(IX86_BUILTIN_PCMPISTRA128): Likewise.
+	(IX86_BUILTIN_PCMPISTRC128): Likewise.
+	(IX86_BUILTIN_PCMPISTRO128): Likewise.
+	(IX86_BUILTIN_PCMPISTRS128): Likewise.
+	(IX86_BUILTIN_PCMPISTRZ128): Likewise.
+	(struct builtin_description): Change "flag" field to unsigned.
+	(bdesc_pcmpestr): New builtin description table.
+	(bdesc_pcmpistr): Likewise.
+	(ix86_init_mmx_sse_builtins): Define int_ftype_v16qi_int_v16qi_int_int,
+	v16qi_ftype_v16qi_int_v16qi_int_int and int_ftype_v16qi_v16qi_int.
+	Initialize pcmp[ei]str[im] insns for SSE4.2.
+	(ix86_expand_sse_pcmpestr): New subroutine of ix86_expand_builtin.
+	(ix86_expand_sse_pcmpistr): Likewise.
+	(ix86_expand_builtin): Expand pcmp[ei]str[im] builtins for SSE4.2.
+	* config/i386/i386.md (UNSPEC_PCMPESTR): New for SSE4.2.
+	(UNSPEC_PCMPISTR): Likewise.
+	* config/i386/sse.md (sse4_2_pcmpestr): New insn patern and splitter.
+	(sse4_2_pcmpestri):New isns pattern.
+	(sse4_2_pcmpestrm): Likewise.
+	(sse4_2_pcmpestr_cconly): Likewise.
+	(sse4_2_pcmpistr): New insn patern and splitter.
+	(sse4_2_pcmpistri):New isns pattern.
+	(sse4_2_pcmpistrm): Likewise.
+	(sse4_2_pcmpistr_cconly): Likewise.
+	* config/i386/smmintrin.h: Enable pcmp[ei]str[im] intrinsics
+	in SSE4.2.
+
 2007-06-01  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/mips.c (mips_output_mi_thunk): Only load gp if not
@@ -48,10 +98,8 @@
 
 2007-05-31  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config.gcc (i[34567]86-*-*): Add nmmintrin.h to
-	extra_headers.
+	* config.gcc (i[34567]86-*-*): Add nmmintrin.h to extra_headers.
 	(x86_64-*-*): Likewise.
-
 	* config/i386/i386.c (OPTION_MASK_ISA_MMX_UNSET): New.
 	(OPTION_MASK_ISA_3DNOW_UNSET): Likewise.
 	(OPTION_MASK_ISA_SSE_UNSET): Likewise.
@@ -63,8 +111,7 @@
 	(OPTION_MASK_ISA_SSE4): Likewise.
 	(OPTION_MASK_ISA_SSE4_UNSET): Likewise.
 	(OPTION_MASK_ISA_SSE4A_UNSET): Likewise.
-	(ix86_handle_option): Use OPTION_MASK_ISA_*_UNSET.  Handle
-	SSE4.2.
+	(ix86_handle_option): Use OPTION_MASK_ISA_*_UNSET.  Handle SSE4.2.
 	(override_options): Support SSE4.2.
 	(ix86_build_const_vector): Support SImode and DImode.
 	(ix86_build_signbit_mask): Likewise.
@@ -79,32 +126,22 @@
 	(ix86_expand_crc32): Likewise.
 	(ix86_init_mmx_sse_builtins): Support SSE4.2.
 	(ix86_expand_builtin): Likewise.
-
 	* config/i386/i386.h (TARGET_CPU_CPP_BUILTINS): Define
 	__SSE4_2__ for -msse4.2.
-
 	* config/i386/i386.md (UNSPEC_CRC32): New for SSE4.2.
 	(CRC32MODE): Likewise.
 	(crc32modesuffix): Likewise.
 	(crc32modeconstraint): Likewise.
 	(sse4_2_crc32<mode>): Likewise.
 	(sse4_2_crc32di): Likewise.
-
 	* config/i386/i386.opt (msse4.2): New for SSE4.2.
 	(msse4): Likewise.
-
-	* config/i386/nmmintrin.h: New. The dummy SSE4.2 intrinsic header
-	file.
-
+	* config/i386/nmmintrin.h: New. The dummy SSE4.2 intrinsic header file.
 	* config/i386/smmintrin.h: Add SSE4.2 intrinsics.
-
-	* config/i386/sse.md (sse4_2_gtv2di3): New pattern for
-	SSE4.2.
+	* config/i386/sse.md (sse4_2_gtv2di3): New pattern for SSE4.2.
 	(vcond<mode>): Use SSEMODEI instead of SSEMODE124.
 	(vcondu<mode>): Likewise.
-
 	* doc/extend.texi: Document SSE4.2 built-in functions.
-
 	* doc/invoke.texi: Document -msse4.2/-msse4.
 
 2007-05-31  Zdenek Dvorak  <dvorakz@suse.cz>
