@@ -1,3 +1,7 @@
+2007-06-02  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure: Regenerate.
+
 2007-05-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32124

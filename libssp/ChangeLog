@@ -1,3 +1,7 @@
+2007-06-02  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure: Regenerate.
+
 2007-05-23  Steve Ellcey  <sje@cup.hp.com>
 
 	* Makefile.in: Regenerate.
