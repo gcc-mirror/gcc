@@ -16929,8 +16929,7 @@ static const struct builtin_description bdesc_crc32[] =
   { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_crc32di, 0, IX86_BUILTIN_CRC32DI, 0, 0 },
 };
 
-/* SSE builtins with 3 arguments and the last argument must be a 8 bit
-   constant or xmm0.  */
+/* SSE builtins with 3 arguments and the last argument must be an immediate or xmm0.  */
 static const struct builtin_description bdesc_sse_3arg[] =
 {
   /* SSE4.1 */
@@ -18279,51 +18278,48 @@ ix86_expand_sse_4_operands_builtin (enum insn_code icode, tree exp,
   rtx op1 = expand_normal (arg1);
   rtx op2 = expand_normal (arg2);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
-  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
-  enum machine_mode mode2;
-  rtx xmm0;
+  enum machine_mode mode1 = insn_data[icode].operand[1].mode;
+  enum machine_mode mode2 = insn_data[icode].operand[2].mode;
+  enum machine_mode mode3 = insn_data[icode].operand[3].mode;
 
-  if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-    op0 = copy_to_mode_reg (mode0, op0);
-  if ((optimize && !register_operand (op1, mode1))
-      || !(*insn_data[icode].operand[2].predicate) (op1, mode1))
-    op1 = copy_to_mode_reg (mode1, op1);
-
-  switch (icode)
-    {
-    case CODE_FOR_sse4_1_blendvpd:
-    case CODE_FOR_sse4_1_blendvps:
-    case CODE_FOR_sse4_1_pblendvb:
-      /* The third argument of variable blends must be xmm0.  */
-      xmm0 = gen_rtx_REG (tmode, FIRST_SSE_REG);
-      emit_move_insn (xmm0, op2);
-      op2 = xmm0;
-      break;
-    default:
-      mode2 = insn_data[icode].operand[2].mode;
-      if (! (*insn_data[icode].operand[3].predicate) (op2, mode2))
-	{
-	  switch (icode)
-	    {
-	    case CODE_FOR_sse4_1_roundsd:
-	    case CODE_FOR_sse4_1_roundss:
-	      error ("the third argument must be a 4-bit immediate");
-	      break;
-	    default:
-	      error ("the third argument must be a 8-bit immediate");
-	      break;
-	    }
-	  return const0_rtx;
-	}
-      break;
-    }
+  if (VECTOR_MODE_P (mode1))
+    op0 = safe_vector_operand (op0, mode1);
+  if (VECTOR_MODE_P (mode2))
+    op1 = safe_vector_operand (op1, mode2);
+  if (VECTOR_MODE_P (mode3))
+    op2 = safe_vector_operand (op2, mode3);
 
   if (optimize
       || target == 0
       || GET_MODE (target) != tmode
       || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
     target = gen_reg_rtx (tmode);
+
+  if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
+    op0 = copy_to_mode_reg (mode1, op0);
+  if ((optimize && !register_operand (op1, mode2))
+      || !(*insn_data[icode].operand[2].predicate) (op1, mode2))
+    op1 = copy_to_mode_reg (mode2, op1);
+
+  if (! (*insn_data[icode].operand[3].predicate) (op2, mode3))
+    switch (icode)
+      {
+      case CODE_FOR_sse4_1_blendvpd:
+      case CODE_FOR_sse4_1_blendvps:
+      case CODE_FOR_sse4_1_pblendvb:
+	op2 = copy_to_mode_reg (mode3, op2);
+	break;
+
+      case CODE_FOR_sse4_1_roundsd:
+      case CODE_FOR_sse4_1_roundss:
+	error ("the third argument must be a 4-bit immediate");
+	return const0_rtx;
+
+      default:
+	error ("the third argument must be an 8-bit immediate");
+	return const0_rtx;
+      }
+
   pat = GEN_FCN (icode) (target, op0, op1, op2);
   if (! pat)
     return 0;
@@ -18732,17 +18728,14 @@ ix86_expand_sse_pcmpestr (const struct builtin_description *d,
   if (VECTOR_MODE_P (modev4))
     op2 = safe_vector_operand (op2, modev4);
 
-  if ((optimize && !register_operand (op0, modev2))
-      || !(*insn_data[d->icode].operand[2].predicate) (op0, modev2))
+  if (! (*insn_data[d->icode].operand[2].predicate) (op0, modev2))
     op0 = copy_to_mode_reg (modev2, op0);
-  if ((optimize && !register_operand (op1, modei3))
-      || !(*insn_data[d->icode].operand[3].predicate) (op1, modei3))
+  if (! (*insn_data[d->icode].operand[3].predicate) (op1, modei3))
     op1 = copy_to_mode_reg (modei3, op1);
   if ((optimize && !register_operand (op2, modev4))
       || !(*insn_data[d->icode].operand[4].predicate) (op2, modev4))
     op2 = copy_to_mode_reg (modev4, op2);
-  if ((optimize && !register_operand (op3, modei5))
-      || !(*insn_data[d->icode].operand[5].predicate) (op3, modei5))
+  if (! (*insn_data[d->icode].operand[5].predicate) (op3, modei5))
     op3 = copy_to_mode_reg (modei5, op3);
 
   if (! (*insn_data[d->icode].operand[6].predicate) (op4, modeimm))
@@ -18833,8 +18826,7 @@ ix86_expand_sse_pcmpistr (const struct builtin_description *d,
   if (VECTOR_MODE_P (modev3))
     op1 = safe_vector_operand (op1, modev3);
 
-  if ((optimize && !register_operand (op0, modev2))
-      || !(*insn_data[d->icode].operand[2].predicate) (op0, modev2))
+  if (! (*insn_data[d->icode].operand[2].predicate) (op0, modev2))
     op0 = copy_to_mode_reg (modev2, op0);
   if ((optimize && !register_operand (op1, modev3))
       || !(*insn_data[d->icode].operand[3].predicate) (op1, modev3))
