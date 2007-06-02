@@ -18280,14 +18280,13 @@ ix86_expand_sse_4_operands_builtin (enum insn_code icode, tree exp,
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode1 = insn_data[icode].operand[1].mode;
   enum machine_mode mode2 = insn_data[icode].operand[2].mode;
-  enum machine_mode mode3 = insn_data[icode].operand[3].mode;
+  enum machine_mode mode3;
+  rtx xmm0;
 
   if (VECTOR_MODE_P (mode1))
     op0 = safe_vector_operand (op0, mode1);
   if (VECTOR_MODE_P (mode2))
     op1 = safe_vector_operand (op1, mode2);
-  if (VECTOR_MODE_P (mode3))
-    op2 = safe_vector_operand (op2, mode3);
 
   if (optimize
       || target == 0
@@ -18301,24 +18300,42 @@ ix86_expand_sse_4_operands_builtin (enum insn_code icode, tree exp,
       || !(*insn_data[icode].operand[2].predicate) (op1, mode2))
     op1 = copy_to_mode_reg (mode2, op1);
 
-  if (! (*insn_data[icode].operand[3].predicate) (op2, mode3))
-    switch (icode)
-      {
-      case CODE_FOR_sse4_1_blendvpd:
-      case CODE_FOR_sse4_1_blendvps:
-      case CODE_FOR_sse4_1_pblendvb:
+  switch (icode)
+    {
+    case CODE_FOR_sse4_1_blendvpd:
+    case CODE_FOR_sse4_1_blendvps:
+    case CODE_FOR_sse4_1_pblendvb:
+      mode3 = tmode;
+      op2 = safe_vector_operand (op2, mode3);
+
+      if (!register_operand (op2, mode3))
 	op2 = copy_to_mode_reg (mode3, op2);
-	break;
 
-      case CODE_FOR_sse4_1_roundsd:
-      case CODE_FOR_sse4_1_roundss:
-	error ("the third argument must be a 4-bit immediate");
-	return const0_rtx;
+      /* ??? The third argument of variable blends must be xmm0.  */
+      xmm0 = gen_rtx_REG (mode3, XMM0_REG);
 
-      default:
-	error ("the third argument must be an 8-bit immediate");
-	return const0_rtx;
-      }
+      emit_move_insn (xmm0, op2);
+      op2 = xmm0;
+      break;
+
+    default:
+      mode3 = insn_data[icode].operand[3].mode;
+      if (! (*insn_data[icode].operand[3].predicate) (op2, mode3))
+	{
+	  switch (icode)
+	    {
+	    case CODE_FOR_sse4_1_roundsd:
+	    case CODE_FOR_sse4_1_roundss:
+	      error ("the third argument must be a 4-bit immediate");
+	      break;
+	    default:
+	      error ("the third argument must be an 8-bit immediate");
+	      break;
+	    }
+	  return const0_rtx;
+	}
+      break;
+    }
 
   pat = GEN_FCN (icode) (target, op0, op1, op2);
   if (! pat)
