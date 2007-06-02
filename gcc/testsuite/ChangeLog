@@ -1,3 +1,25 @@
+2007-06-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/sse4_2-check.h: New.
+	* gcc.target/i386/sse4_2-crc32b.c: Likewise.
+	* gcc.target/i386/sse4_2-crc32.h: Likewise.
+	* gcc.target/i386/sse4_2-crc32l.c: Likewise.
+	* gcc.target/i386/sse4_2-crc32q.c: Likewise.
+	* gcc.target/i386/sse4_2-crc32w.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpestri-1.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpestri-2.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpestrm-1.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpestrm-2.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpgtq.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpistri-1.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpistri-2.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpistrm-1.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpistrm-2.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpstr.h: Likewise.
+	* gcc.target/i386/sse4_2-popcnt.h: Likewise.
+	* gcc.target/i386/sse4_2-popcntl.c: Likewise.
+	* gcc.target/i386/sse4_2-popcntq.c: Likewise.
+
 2007-06-01  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/pie-link.c: New test.
