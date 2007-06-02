@@ -138,7 +138,7 @@ case "${host}" in
     ;;
 esac
 AC_SUBST(includedirname)
-AC_SUBST(libsubfix)
+AC_SUBST(libsuffix)
 
 AC_CONFIG_HEADERS(config.h)
 
