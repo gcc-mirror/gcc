@@ -1,3 +1,12 @@
+2007-06-01  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* Makefile.in: Replace all uses of libext with libsuffix.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
+	Revert:
+	* Makefile.in: Remove all uses of $(libext).
+
 2007-05-23  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* Makefile.in: Remove all uses of $(libext).

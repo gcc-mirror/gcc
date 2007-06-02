@@ -42,6 +42,7 @@ toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 
 includedirname = @includedirname@
+libsuffix = @libsuffix@
 
 extra_ldflags_libobjc = @extra_ldflags_libobjc@
 
@@ -136,7 +137,7 @@ FLAGS_TO_PASS = \
 	"libsubdir=$(libsubdir)" \
 	"tooldir=$(tooldir)"
 
-all: libobjc.la $(OBJC_BOEHM_GC)
+all: libobjc$(libsuffix).la $(OBJC_BOEHM_GC)
 	: $(MAKE) ; exec $(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=all
 
 # User-visible header files.
@@ -273,12 +274,12 @@ doc: info dvi pdf html
 install-html:
 install-pdf:
 
-libobjc.la: $(OBJS)
+libobjc$(libsuffix).la: $(OBJS)
 	$(LIBTOOL_LINK) $(CC) -o $@ $(OBJS) \
 		-rpath $(toolexeclibdir) \
 		-version-info $(LIBOBJC_VERSION) $(extra_ldflags_libobjc)
 
-libobjc_gc.la: $(OBJS_GC)
+libobjc_gc$(libsuffix).la: $(OBJS_GC)
 	$(LIBTOOL_LINK) $(CC) -o $@ $(OBJS_GC) \
 		-rpath $(toolexeclibdir) \
 		-version-info $(LIBOBJC_GC_VERSION) $(extra_ldflags_libobjc)
@@ -333,9 +334,9 @@ install: install-libs install-headers
 
 install-libs: installdirs
 	$(SHELL) $(multi_basedir)/mkinstalldirs $(DESTDIR)$(toolexeclibdir)
-	$(LIBTOOL_INSTALL) $(INSTALL) libobjc.la $(DESTDIR)$(toolexeclibdir);
+	$(LIBTOOL_INSTALL) $(INSTALL) libobjc$(libsuffix).la $(DESTDIR)$(toolexeclibdir);
 	if [ "$(OBJC_BOEHM_GC)" ]; then \
-	  $(LIBTOOL_INSTALL) $(INSTALL) libobjc_gc.la \
+	  $(LIBTOOL_INSTALL) $(INSTALL) libobjc_gc$(libsuffix).la \
 				$(DESTDIR)$(toolexeclibdir);\
 	fi
 	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="$@"
@@ -352,7 +353,7 @@ install-headers:
 check uninstall install-strip dist installcheck installdirs:
 
 mostlyclean:
-	-$(LIBTOOL_CLEAN) rm -f libobjc.la libobjc_gc.la *.lo
+	-$(LIBTOOL_CLEAN) rm -f libobjc$(libsuffix).la libobjc_gc$(libsuffix).la *.lo
 	-rm -f runtime-info.h tmp-runtime.s *.o *.lo libobjc* xforward \
 		fflags *.aux *.cp *.dvi *.pdf *.fn *.info *.ky *.log *.pg \
 		*.toc *.tp *.vr *.html libobj.exp
