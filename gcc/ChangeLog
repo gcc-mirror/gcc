@@ -1,3 +1,8 @@
+2007-06-01  David Daney  <ddaney@avtrex.com>
+
+	* config/mips/mips.c (mips_output_mi_thunk): Only load gp if not
+	LOADGP_ABSOLUTE and not binds_local_p.
+	
 2007-06-01  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.h (LINK_SPEC): Pass -fpie through to the linker.
