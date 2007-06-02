@@ -75,22 +75,12 @@ namespace tr1
   _DEFINE_SPEC_##_Order##_HELPER(_Trait<_Type const volatile>, _Value)
 
   template<typename>
-    struct is_signed
+    struct is_reference
     : public false_type { };
-  _DEFINE_SPEC(0, is_signed, signed char, true)
-  _DEFINE_SPEC(0, is_signed, short, true)
-  _DEFINE_SPEC(0, is_signed, int, true)
-  _DEFINE_SPEC(0, is_signed, long, true)
-  _DEFINE_SPEC(0, is_signed, long long, true)
 
-  template<typename>
-    struct is_unsigned
-    : public false_type { };
-  _DEFINE_SPEC(0, is_unsigned, unsigned char, true)
-  _DEFINE_SPEC(0, is_unsigned, unsigned short, true)
-  _DEFINE_SPEC(0, is_unsigned, unsigned int, true)
-  _DEFINE_SPEC(0, is_unsigned, unsigned long, true)
-  _DEFINE_SPEC(0, is_unsigned, unsigned long long, true)
+  template<typename _Tp>
+    struct is_reference<_Tp&>
+    : public true_type { };
 
   template<typename _Tp>
     struct is_pod
@@ -131,6 +121,24 @@ namespace tr1
     struct has_nothrow_assign
     : public integral_constant<bool, is_pod<_Tp>::value>
     { };
+
+  template<typename>
+    struct is_signed
+    : public false_type { };
+  _DEFINE_SPEC(0, is_signed, signed char, true)
+  _DEFINE_SPEC(0, is_signed, short, true)
+  _DEFINE_SPEC(0, is_signed, int, true)
+  _DEFINE_SPEC(0, is_signed, long, true)
+  _DEFINE_SPEC(0, is_signed, long long, true)
+
+  template<typename>
+    struct is_unsigned
+    : public false_type { };
+  _DEFINE_SPEC(0, is_unsigned, unsigned char, true)
+  _DEFINE_SPEC(0, is_unsigned, unsigned short, true)
+  _DEFINE_SPEC(0, is_unsigned, unsigned int, true)
+  _DEFINE_SPEC(0, is_unsigned, unsigned long, true)
+  _DEFINE_SPEC(0, is_unsigned, unsigned long long, true)
 
   template<typename _Base, typename _Derived>
     struct __is_base_of_helper
@@ -196,6 +204,30 @@ namespace tr1
     struct is_convertible
     : public integral_constant<bool,
 			       __is_convertible_helper<_From, _To>::__value>
+    { };
+
+  /// @brief  reference modifications [4.7.2].
+  template<typename _Tp>
+    struct remove_reference
+    { typedef _Tp     type; };
+
+  template<typename _Tp>
+    struct remove_reference<_Tp&>
+    { typedef _Tp     type; };
+
+  // NB: Careful with reference to void.
+  template<typename _Tp, bool = (is_void<_Tp>::value
+				 || is_reference<_Tp>::value)>
+    struct __add_reference_helper
+    { typedef _Tp&    type; };
+
+  template<typename _Tp>
+    struct __add_reference_helper<_Tp, true>
+    { typedef _Tp     type; };
+
+  template<typename _Tp>
+    struct add_reference
+    : public __add_reference_helper<_Tp>
     { };
 
 #undef _DEFINE_SPEC_0_HELPER

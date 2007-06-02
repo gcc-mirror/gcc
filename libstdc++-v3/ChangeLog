@@ -1,3 +1,56 @@
+2007-06-02  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1_impl/type_traits (is_reference, add_reference,
+	remove_reference): Remove.
+	* include/tr1/type_traits (is_reference, add_reference,
+	remove_reference): Add.
+	* include/std/type_traits (is_lvalue_reference, is_rvalue_reference,
+	is_reference, remove_reference, add_lvalue_reference,
+	add_rvalue_reference): Add.
+	* include/tr1_impl/boost_shared_ptr.h (operator*): Adjust.
+	* testsuite/20_util/add_lvalue_reference/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/add_lvalue_reference/value.cc: Likewise.
+	* testsuite/20_util/add_rvalue_reference/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/add_rvalue_reference/value.cc: Likewise.
+	* testsuite/20_util/is_lvalue_reference/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_lvalue_reference/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_lvalue_reference/value.cc: Likewise.
+	* testsuite/20_util/is_rvalue_reference/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_rvalue_reference/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_rvalue_reference/value.cc: Likewise.
+	* testsuite/20_util/is_reference/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_reference/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_reference/value.cc: Likewise.
+	* testsuite/20_util/remove_reference/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/remove_reference/value.cc: Likewise.
+
+	* testsuite/tr1/4_metaprogramming/add_const/requirements/
+	typedefs.cc: Move...
+	* testsuite/tr1/4_metaprogramming/add_const/value.cc: ... here.
+	* testsuite/tr1/4_metaprogramming/add_cv/requirements/
+	typedefs.cc: Move...
+	* testsuite/tr1/4_metaprogramming/add_cv/value.cc: ... here.
+	* testsuite/tr1/4_metaprogramming/add_pointer/requirements/
+	typedefs.cc: Move...
+	* testsuite/tr1/4_metaprogramming/add_pointer/value.cc: ... here.
+	* testsuite/tr1/4_metaprogramming/add_reference/requirements/
+	typedefs.cc: Move...
+	* testsuite/tr1/4_metaprogramming/add_reference/value.cc: ... here.
+	* testsuite/tr1/4_metaprogramming/add_volatile/requirements/
+	typedefs.cc: Move...
+	* testsuite/tr1/4_metaprogramming/add_volatile/value.cc: ... here.
+	* testsuite/tr1/4_metaprogramming/aligned_storage/requirements/
+	typedefs.cc: Move...
+	* testsuite/tr1/4_metaprogramming/aligned_storage/value.cc: ... here.
+
 2007-06-02  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure: Regenerate.

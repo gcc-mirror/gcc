@@ -133,14 +133,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   _DEFINE_SPEC(1, is_pointer, _Tp*, true)
  
   template<typename>
-    struct is_reference
-    : public false_type { };
-
-  template<typename _Tp>
-    struct is_reference<_Tp&>
-    : public true_type { };
-
-  template<typename>
     struct is_member_object_pointer
     : public false_type { };
   _DEFINE_SPEC(2, is_member_object_pointer, _Tp _Cp::*,
@@ -342,30 +334,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       typedef typename
       add_const<typename add_volatile<_Tp>::type>::type     type;
     };
-
-  /// @brief  reference modifications [4.7.2].
-  template<typename _Tp>
-    struct remove_reference
-    { typedef _Tp     type; };
-
-  template<typename _Tp>
-    struct remove_reference<_Tp&>
-    { typedef _Tp     type; };
-
-  // NB: Careful with reference to void.
-  template<typename _Tp, bool = (is_void<_Tp>::value
-				 || is_reference<_Tp>::value)>
-    struct __add_reference_helper
-    { typedef _Tp&    type; };
-
-  template<typename _Tp>
-    struct __add_reference_helper<_Tp, true>
-    { typedef _Tp     type; };
-
-  template<typename _Tp>
-    struct add_reference
-    : public __add_reference_helper<_Tp>
-    { };
 
   /// @brief  array modifications [4.7.3].
   template<typename _Tp>
