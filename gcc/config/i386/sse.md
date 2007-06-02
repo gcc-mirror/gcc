@@ -6383,3 +6383,246 @@
   [(set_attr "type" "ssecvt")
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "V4SF")])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Intel SSE4.2 string/text processing instructions
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define_insn_and_split "sse4_2_pcmpestr"
+  [(set (match_operand:SI 0 "register_operand" "=c,c")
+	(unspec:SI
+	  [(match_operand:V16QI 2 "register_operand" "x,x")
+	   (match_operand:SI 3 "register_operand" "a,a")
+	   (match_operand:V16QI 4 "nonimmediate_operand" "x,m")
+	   (match_operand:SI 5 "register_operand" "d,d")
+	   (match_operand:SI 6 "const_0_to_255_operand" "n,n")]
+	  UNSPEC_PCMPESTR))
+   (set (match_operand:V16QI 1 "register_operand" "=z,z")
+	(unspec:V16QI
+	  [(match_dup 2)
+	   (match_dup 3)
+	   (match_dup 4)
+	   (match_dup 5)
+	   (match_dup 6)]
+	  UNSPEC_PCMPESTR))
+   (set (reg:CC FLAGS_REG)
+	(unspec:CC
+	  [(match_dup 2)
+	   (match_dup 3)
+	   (match_dup 4)
+	   (match_dup 5)
+	   (match_dup 6)]
+	  UNSPEC_PCMPESTR))]
+  "TARGET_SSE4_2
+   && !(reload_completed || reload_in_progress)"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  int ecx = !find_regno_note (curr_insn, REG_UNUSED, REGNO (operands[0]));
+  int xmm0 = !find_regno_note (curr_insn, REG_UNUSED, REGNO (operands[1]));
+  int flags = !find_regno_note (curr_insn, REG_UNUSED, FLAGS_REG);
+
+  if (ecx)
+    emit_insn (gen_sse4_2_pcmpestri (operands[0], operands[2],
+				     operands[3], operands[4],
+				     operands[5], operands[6]));
+  if (xmm0)
+    emit_insn (gen_sse4_2_pcmpestrm (operands[1], operands[2],
+				     operands[3], operands[4],
+				     operands[5], operands[6]));
+  if (flags && !(ecx || xmm0))
+    emit_insn (gen_sse4_2_pcmpestr_cconly (operands[2], operands[3],
+					   operands[4], operands[5],
+					   operands[6]));
+  DONE;
+}
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "memory" "none,load")
+   (set_attr "mode" "TI")])
+
+(define_insn "sse4_2_pcmpestri"
+  [(set (match_operand:SI 0 "register_operand" "=c,c")
+	(unspec:SI
+	  [(match_operand:V16QI 1 "register_operand" "x,x")
+	   (match_operand:SI 2 "register_operand" "a,a")
+	   (match_operand:V16QI 3 "nonimmediate_operand" "x,m")
+	   (match_operand:SI 4 "register_operand" "d,d")
+	   (match_operand:SI 5 "const_0_to_255_operand" "n,n")]
+	  UNSPEC_PCMPESTR))
+   (set (reg:CC FLAGS_REG)
+	(unspec:CC
+	  [(match_dup 1)
+	   (match_dup 2)
+	   (match_dup 3)
+	   (match_dup 4)
+	   (match_dup 5)]
+	  UNSPEC_PCMPESTR))]
+  "TARGET_SSE4_2"
+  "pcmpestri\t{%5, %3, %1|%1, %3, %5}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "memory" "none,load")
+   (set_attr "mode" "TI")])
+
+(define_insn "sse4_2_pcmpestrm"
+  [(set (match_operand:V16QI 0 "register_operand" "=z,z")
+	(unspec:V16QI
+	  [(match_operand:V16QI 1 "register_operand" "x,x")
+	   (match_operand:SI 2 "register_operand" "a,a")
+	   (match_operand:V16QI 3 "nonimmediate_operand" "x,m")
+	   (match_operand:SI 4 "register_operand" "d,d")
+	   (match_operand:SI 5 "const_0_to_255_operand" "n,n")]
+	  UNSPEC_PCMPESTR))
+   (set (reg:CC FLAGS_REG)
+	(unspec:CC
+	  [(match_dup 1)
+	   (match_dup 2)
+	   (match_dup 3)
+	   (match_dup 4)
+	   (match_dup 5)]
+	  UNSPEC_PCMPESTR))]
+  "TARGET_SSE4_2"
+  "pcmpestrm\t{%5, %3, %1|%1, %3, %5}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "memory" "none,load")
+   (set_attr "mode" "TI")])
+
+(define_insn "sse4_2_pcmpestr_cconly"
+  [(set (reg:CC FLAGS_REG)
+	(unspec:CC
+	  [(match_operand:V16QI 0 "register_operand" "x,x,x,x")
+	   (match_operand:SI 1 "register_operand" "a,a,a,a")
+	   (match_operand:V16QI 2 "nonimmediate_operand" "x,m,x,m")
+	   (match_operand:SI 3 "register_operand" "d,d,d,d")
+	   (match_operand:SI 4 "const_0_to_255_operand" "n,n,n,n")]
+	  UNSPEC_PCMPESTR))
+   (clobber (match_scratch:SI    5 "=c,c,X,X"))
+   (clobber (match_scratch:V16QI 6 "=X,X,z,z"))]
+  "TARGET_SSE4_2"
+  "@
+   pcmpestri\t{%4, %2, %0|%0, %2, %4}
+   pcmpestri\t{%4, %2, %0|%0, %2, %4}
+   pcmpestrm\t{%4, %2, %0|%0, %2, %4}
+   pcmpestrm\t{%4, %2, %0|%0, %2, %4}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "memory" "none,load,none,load")
+   (set_attr "mode" "TI")])
+
+(define_insn_and_split "sse4_2_pcmpistr"
+  [(set (match_operand:SI 0 "register_operand" "=c,c")
+	(unspec:SI
+	  [(match_operand:V16QI 2 "register_operand" "x,x")
+	   (match_operand:V16QI 3 "nonimmediate_operand" "x,m")
+	   (match_operand:SI 4 "const_0_to_255_operand" "n,n")]
+	  UNSPEC_PCMPISTR))
+   (set (match_operand:V16QI 1 "register_operand" "=z,z")
+	(unspec:V16QI
+	  [(match_dup 2)
+	   (match_dup 3)
+	   (match_dup 4)]
+	  UNSPEC_PCMPISTR))
+   (set (reg:CC FLAGS_REG)
+	(unspec:CC
+	  [(match_dup 2)
+	   (match_dup 3)
+	   (match_dup 4)]
+	  UNSPEC_PCMPISTR))]
+  "TARGET_SSE4_2
+   && !(reload_completed || reload_in_progress)"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  int ecx = !find_regno_note (curr_insn, REG_UNUSED, REGNO (operands[0]));
+  int xmm0 = !find_regno_note (curr_insn, REG_UNUSED, REGNO (operands[1]));
+  int flags = !find_regno_note (curr_insn, REG_UNUSED, FLAGS_REG);
+
+  if (ecx)
+    emit_insn (gen_sse4_2_pcmpistri (operands[0], operands[2],
+				     operands[3], operands[4]));
+  if (xmm0)
+    emit_insn (gen_sse4_2_pcmpistrm (operands[1], operands[2],
+				     operands[3], operands[4]));
+  if (flags && !(ecx || xmm0))
+    emit_insn (gen_sse4_2_pcmpistr_cconly (operands[2], operands[3],
+					   operands[4]));
+  DONE;
+}
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "memory" "none,load")
+   (set_attr "mode" "TI")])
+
+(define_insn "sse4_2_pcmpistri"
+  [(set (match_operand:SI 0 "register_operand" "=c,c")
+	(unspec:SI
+	  [(match_operand:V16QI 1 "register_operand" "x,x")
+	   (match_operand:V16QI 2 "nonimmediate_operand" "x,m")
+	   (match_operand:SI 3 "const_0_to_255_operand" "n,n")]
+	  UNSPEC_PCMPISTR))
+   (set (reg:CC FLAGS_REG)
+	(unspec:CC
+	  [(match_dup 1)
+	   (match_dup 2)
+	   (match_dup 3)]
+	  UNSPEC_PCMPISTR))]
+  "TARGET_SSE4_2"
+  "pcmpistri\t{%3, %2, %1|%1, %2, %3}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "memory" "none,load")
+   (set_attr "mode" "TI")])
+
+(define_insn "sse4_2_pcmpistrm"
+  [(set (match_operand:V16QI 0 "register_operand" "=z,z")
+	(unspec:V16QI
+	  [(match_operand:V16QI 1 "register_operand" "x,x")
+	   (match_operand:V16QI 2 "nonimmediate_operand" "x,m")
+	   (match_operand:SI 3 "const_0_to_255_operand" "n,n")]
+	  UNSPEC_PCMPISTR))
+   (set (reg:CC FLAGS_REG)
+	(unspec:CC
+	  [(match_dup 1)
+	   (match_dup 2)
+	   (match_dup 3)]
+	  UNSPEC_PCMPISTR))]
+  "TARGET_SSE4_2"
+  "pcmpistrm\t{%3, %2, %1|%1, %2, %3}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "memory" "none,load")
+   (set_attr "mode" "TI")])
+
+(define_insn "sse4_2_pcmpistr_cconly"
+  [(set (reg:CC FLAGS_REG)
+	(unspec:CC
+	  [(match_operand:V16QI 0 "register_operand" "x,x,x,x")
+	   (match_operand:V16QI 1 "nonimmediate_operand" "x,m,x,m")
+	   (match_operand:SI 2 "const_0_to_255_operand" "n,n,n,n")]
+	  UNSPEC_PCMPISTR))
+   (clobber (match_scratch:SI    3 "=c,c,X,X"))
+   (clobber (match_scratch:V16QI 4 "=X,X,z,z"))]
+  "TARGET_SSE4_2"
+  "@
+   pcmpistri\t{%2, %1, %0|%0, %1, %2}
+   pcmpistri\t{%2, %1, %0|%0, %1, %2}
+   pcmpistrm\t{%2, %1, %0|%0, %1, %2}
+   pcmpistrm\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "memory" "none,load,none,load")
+   (set_attr "mode" "TI")])
