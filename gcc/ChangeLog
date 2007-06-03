@@ -1,3 +1,18 @@
+2007-06-03  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.c (override_options): Don't override
+	REAL_MODE_FORMAT.
+	* config/m68k/m68k-modes.def (SF, DF): Define to use
+	motorola_single_format and motorola_double_format, resp.
+	* real.c (motorola_single_format): Renamed from
+	coldfire_single_format.
+	(motorola_double_format): Renamed from coldfire_double_format.
+	(encode_ieee_extended): Generate a proper canonical NaN image
+	respecting canonical_nan_lsbs_set.
+	(ieee_extended_motorola_format): Set canonical_nan_lsbs_set to
+	true.
+	* real.h: Adjust declarations.
+
 2007-06-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/32163
