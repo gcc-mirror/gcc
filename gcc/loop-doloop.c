@@ -422,13 +422,13 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 	  emit_insn_after (sequence, BB_END (set_zero));
       
 	  set_immediate_dominator (CDI_DOMINATORS, set_zero,
-				   recount_dominator (CDI_DOMINATORS,
-						      set_zero));
+				   recompute_dominator (CDI_DOMINATORS,
+							set_zero));
 	}
 
       set_immediate_dominator (CDI_DOMINATORS, new_preheader,
-			       recount_dominator (CDI_DOMINATORS,
-						  new_preheader));
+			       recompute_dominator (CDI_DOMINATORS,
+						    new_preheader));
     }
 
   /* Some targets (eg, C4x) need to initialize special looping

@@ -735,11 +735,11 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
 
   if (dom_info_available_p (CDI_DOMINATORS))
     {
-      basic_block doms_to_fix[2];
-
-      doms_to_fix[0] = dummy;
-      doms_to_fix[1] = bb;
-      iterate_fix_dominators (CDI_DOMINATORS, doms_to_fix, 2);
+      VEC (basic_block, heap) *doms_to_fix = VEC_alloc (basic_block, heap, 2);
+      VEC_quick_push (basic_block, doms_to_fix, dummy);
+      VEC_quick_push (basic_block, doms_to_fix, bb);
+      iterate_fix_dominators (CDI_DOMINATORS, doms_to_fix, false);
+      VEC_free (basic_block, heap, doms_to_fix);
     }
 
   if (current_loops != NULL)

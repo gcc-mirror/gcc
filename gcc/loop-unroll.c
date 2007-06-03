@@ -953,8 +953,8 @@ unroll_loop_runtime_iterations (struct loop *loop)
 {
   rtx old_niter, niter, init_code, branch_code, tmp;
   unsigned i, j, p;
-  basic_block preheader, *body, *dom_bbs, swtch, ezc_swtch;
-  unsigned n_dom_bbs;
+  basic_block preheader, *body, swtch, ezc_swtch;
+  VEC (basic_block, heap) *dom_bbs;
   sbitmap wont_exit;
   int may_exit_copy;
   unsigned n_peel;
@@ -972,21 +972,20 @@ unroll_loop_runtime_iterations (struct loop *loop)
     opt_info = analyze_insns_in_loop (loop);
   
   /* Remember blocks whose dominators will have to be updated.  */
-  dom_bbs = XCNEWVEC (basic_block, n_basic_blocks);
-  n_dom_bbs = 0;
+  dom_bbs = NULL;
 
   body = get_loop_body (loop);
   for (i = 0; i < loop->num_nodes; i++)
     {
-      unsigned nldom;
-      basic_block *ldom;
+      VEC (basic_block, heap) *ldom;
+      basic_block bb;
 
-      nldom = get_dominated_by (CDI_DOMINATORS, body[i], &ldom);
-      for (j = 0; j < nldom; j++)
-	if (!flow_bb_inside_loop_p (loop, ldom[j]))
-	  dom_bbs[n_dom_bbs++] = ldom[j];
+      ldom = get_dominated_by (CDI_DOMINATORS, body[i]);
+      for (j = 0; VEC_iterate (basic_block, ldom, j, bb); j++)
+	if (!flow_bb_inside_loop_p (loop, bb))
+	  VEC_safe_push (basic_block, heap, dom_bbs, bb);
 
-      free (ldom);
+      VEC_free (basic_block, heap, ldom);
     }
   free (body);
 
@@ -1105,7 +1104,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
     }
 
   /* Recount dominators for outer blocks.  */
-  iterate_fix_dominators (CDI_DOMINATORS, dom_bbs, n_dom_bbs);
+  iterate_fix_dominators (CDI_DOMINATORS, dom_bbs, false);
 
   /* And unroll loop.  */
 
@@ -1177,8 +1176,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
 	     "in runtime, %i insns\n",
 	     max_unroll, num_loop_insns (loop));
 
-  if (dom_bbs)
-    free (dom_bbs);
+  VEC_free (basic_block, heap, dom_bbs);
 }
 
 /* Decide whether to simply peel LOOP and how much.  */

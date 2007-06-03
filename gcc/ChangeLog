@@ -1,3 +1,46 @@
+2007-06-03  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* cfgloopmanip.c (remove_path, loopify, duplicate_loop_to_header_edge):
+	Change dom_bbs to vector.  Add argument to iterate_fix_dominators call.
+	* loop-unroll.c (unroll_loop_runtime_iterations): Ditto.
+	* tree-cfg.c (tree_duplicate_sese_region): Change doms to vector.
+	Add argument to iterate_fix_dominators call.
+	(remove_edge_and_dominated_blocks): Pass vector to bbs_to_fix_dom.
+	* gcse.c (hoist_code): Change domby to vector.
+	* cfghooks.c (make_forwarder_block): Change doms_to_fix to vector.
+	Add argument to iterate_fix_dominators call.
+	* loop-doloop.c (doloop_modify): Changed recount_dominator to
+	recompute_dominator.
+	* lambda-code.c (perfect_nestify): Ditto.
+	* cfgloopanal.c: Include graphds.h.
+	(struct edge, struct vertex, struct graph, dump_graph, new_graph,
+	add_edge, dfs, for_each_edge, free_graph): Moved to graphds.c.
+	(mark_irreducible_loops): Use graphds_scc.  Remove argument from
+	add_edge call.
+	* graphds.c: New file.
+	* graphds.h: New file.
+	* dominance.c: Include vecprim.h, pointer-set.h and graphds.h.
+	(get_dominated_by, get_dominated_by_region): Change return type to
+	vector.
+	(verify_dominators): Recompute all dominators and compare the results.
+	(recount_dominator): Renamed to ...
+	(recompute_dominator): ... this.  Do not check that the block is
+	dominated by entry.
+	(iterate_fix_dominators): Reimplemented.
+	(prune_bbs_to_update_dominators, root_of_dom_tree,
+	determine_dominators_for_sons): New functions.
+	* et-forest.c (et_root): New function.
+	* et-forest.h (et_root): Declare.
+	* Makefile.in (graphds.o): Add.
+	(cfgloopanal.o): Add graphds.h dependency.
+	(dominance.o): Add graphds.h, vecprim.h and pointer-set.h dependency.
+	* basic-block.h (get_dominated_by, get_dominated_by_region,
+	iterate_fix_dominators): Declaration changed.
+	(recount_dominator): Renamed to ...
+	(recompute_dominator): ... this.
+	* tree-ssa-threadupdate.c (thread_block): Free dominance info.
+	(thread_through_all_blocks): Do not free dominance info.
+
 2007-06-03  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.c (override_options): Don't override

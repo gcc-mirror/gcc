@@ -4829,8 +4829,7 @@ static void
 hoist_code (void)
 {
   basic_block bb, dominated;
-  basic_block *domby;
-  unsigned int domby_len;
+  VEC (basic_block, heap) *domby;
   unsigned int i,j;
   struct expr **index_map;
   struct expr *expr;
@@ -4852,7 +4851,7 @@ hoist_code (void)
       int found = 0;
       int insn_inserted_p;
 
-      domby_len = get_dominated_by (CDI_DOMINATORS, bb, &domby);
+      domby = get_dominated_by (CDI_DOMINATORS, bb);
       /* Examine each expression that is very busy at the exit of this
 	 block.  These are the potentially hoistable expressions.  */
       for (i = 0; i < hoist_vbeout[bb->index]->n_bits; i++)
@@ -4865,9 +4864,8 @@ hoist_code (void)
 	      /* We've found a potentially hoistable expression, now
 		 we look at every block BB dominates to see if it
 		 computes the expression.  */
-	      for (j = 0; j < domby_len; j++)
+	      for (j = 0; VEC_iterate (basic_block, domby, j, dominated); j++)
 		{
-		  dominated = domby[j];
 		  /* Ignore self dominance.  */
 		  if (bb == dominated)
 		    continue;
@@ -4906,8 +4904,8 @@ hoist_code (void)
       /* If we found nothing to hoist, then quit now.  */
       if (! found)
         {
-	  free (domby);
-	continue;
+	  VEC_free (basic_block, heap, domby);
+	  continue;
 	}
 
       /* Loop over all the hoistable expressions.  */
@@ -4923,9 +4921,8 @@ hoist_code (void)
 	      /* We've found a potentially hoistable expression, now
 		 we look at every block BB dominates to see if it
 		 computes the expression.  */
-	      for (j = 0; j < domby_len; j++)
+	      for (j = 0; VEC_iterate (basic_block, domby, j, dominated); j++)
 		{
-		  dominated = domby[j];
 		  /* Ignore self dominance.  */
 		  if (bb == dominated)
 		    continue;
@@ -4976,7 +4973,7 @@ hoist_code (void)
 		}
 	    }
 	}
-      free (domby);
+      VEC_free (basic_block, heap, domby);
     }
 
   free (index_map);

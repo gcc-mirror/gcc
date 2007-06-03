@@ -577,6 +577,9 @@ thread_block (basic_block bb, bool noloop_only)
       lookup_redirection_data (e, NULL, NO_INSERT)->do_not_duplicate = true;
     }
 
+  /* We do not update dominance info.  */
+  free_dominance_info (CDI_DOMINATORS);
+
   /* Now create duplicates of BB.
 
      Note that for a block with a high outgoing degree we can waste
@@ -1056,9 +1059,6 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 
       retval |= thread_through_loop_header (loop, may_peel_loop_headers);
     }
-
-  if (retval)
-    free_dominance_info (CDI_DOMINATORS);
 
   if (dump_file && (dump_flags & TDF_STATS))
     fprintf (dump_file, "\nJumps threaded: %lu\n",
