@@ -959,15 +959,17 @@ extern void set_immediate_dominator (enum cdi_direction, basic_block,
 				     basic_block);
 extern basic_block get_immediate_dominator (enum cdi_direction, basic_block);
 extern bool dominated_by_p (enum cdi_direction, basic_block, basic_block);
-extern int get_dominated_by (enum cdi_direction, basic_block, basic_block **);
-extern unsigned get_dominated_by_region (enum cdi_direction, basic_block *,
-					 unsigned, basic_block *);
+extern VEC (basic_block, heap) *get_dominated_by (enum cdi_direction, basic_block);
+extern VEC (basic_block, heap) *get_dominated_by_region (enum cdi_direction,
+							 basic_block *,
+							 unsigned);
 extern void add_to_dominance_info (enum cdi_direction, basic_block);
 extern void delete_from_dominance_info (enum cdi_direction, basic_block);
-basic_block recount_dominator (enum cdi_direction, basic_block);
+basic_block recompute_dominator (enum cdi_direction, basic_block);
 extern void redirect_immediate_dominators (enum cdi_direction, basic_block,
 					   basic_block);
-extern void iterate_fix_dominators (enum cdi_direction, basic_block *, int);
+extern void iterate_fix_dominators (enum cdi_direction,
+				    VEC (basic_block, heap) *, bool);
 extern void verify_dominators (enum cdi_direction);
 extern basic_block first_dom_son (enum cdi_direction, basic_block);
 extern basic_block next_dom_son (enum cdi_direction, basic_block);

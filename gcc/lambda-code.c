@@ -2521,7 +2521,7 @@ perfect_nestify (struct loop *loop,
 			   single_exit (loop)->src);
   set_immediate_dominator (CDI_DOMINATORS, latchbb, bodybb);
   set_immediate_dominator (CDI_DOMINATORS, olddest,
-			   recount_dominator (CDI_DOMINATORS, olddest));
+			   recompute_dominator (CDI_DOMINATORS, olddest));
   /* Create the new iv.  */
   oldivvar = VEC_index (tree, loopivs, 0);
   ivvar = create_tmp_var (TREE_TYPE (oldivvar), "perfectiv");

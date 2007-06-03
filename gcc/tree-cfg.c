@@ -4336,11 +4336,11 @@ tree_duplicate_sese_region (edge entry, edge exit,
 			    basic_block *region, unsigned n_region,
 			    basic_block *region_copy)
 {
-  unsigned i, n_doms;
+  unsigned i;
   bool free_region_copy = false, copying_header = false;
   struct loop *loop = entry->dest->loop_father;
   edge exit_copy;
-  basic_block *doms;
+  VEC (basic_block, heap) *doms;
   edge redirected;
   int total_freq = 0, entry_freq = 0;
   gcov_type total_count = 0, entry_count = 0;
@@ -4392,10 +4392,10 @@ tree_duplicate_sese_region (edge entry, edge exit,
 
   /* Record blocks outside the region that are dominated by something
      inside.  */
-  doms = XNEWVEC (basic_block, n_basic_blocks);
+  doms = NULL;
   initialize_original_copy_tables ();
 
-  n_doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region, doms);
+  doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
 
   if (entry->dest->count)
     {
@@ -4451,8 +4451,8 @@ tree_duplicate_sese_region (edge entry, edge exit,
      region, but was dominated by something inside needs recounting as
      well.  */
   set_immediate_dominator (CDI_DOMINATORS, entry->dest, entry->src);
-  doms[n_doms++] = get_bb_original (entry->dest);
-  iterate_fix_dominators (CDI_DOMINATORS, doms, n_doms);
+  VEC_safe_push (basic_block, heap, doms, get_bb_original (entry->dest));
+  iterate_fix_dominators (CDI_DOMINATORS, doms, false);
   free (doms);
 
   /* Add the other PHI node arguments.  */
@@ -5476,9 +5476,7 @@ remove_edge_and_dominated_blocks (edge e)
 	VEC_safe_push (basic_block, heap, bbs_to_fix_dom, dbb);
     }
 
-  iterate_fix_dominators (CDI_DOMINATORS,
-			  VEC_address (basic_block, bbs_to_fix_dom),
-			  VEC_length (basic_block, bbs_to_fix_dom));
+  iterate_fix_dominators (CDI_DOMINATORS, bbs_to_fix_dom, true);
 
   BITMAP_FREE (df);
   BITMAP_FREE (df_idom);

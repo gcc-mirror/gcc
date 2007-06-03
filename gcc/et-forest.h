@@ -79,6 +79,7 @@ void et_set_father (struct et_node *, struct et_node *);
 void et_split (struct et_node *);
 struct et_node *et_nca (struct et_node *, struct et_node *);
 bool et_below (struct et_node *, struct et_node *);
+struct et_node *et_root (struct et_node *);
 
 #ifdef __cplusplus
 }
