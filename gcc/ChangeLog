@@ -1,3 +1,9 @@
+2007-06-03  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/32163
+	* config/sh/sh.md (symGOT_load): Don't schedule insns when
+	the symbol is generated with the stack protector.
+
 2007-06-03  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/m68k/m68k.c (m68k_attribute_table): Add "interrupt".
