@@ -1,5 +1,11 @@
 2007-06-03  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	PR tree-optimization/32194
+	* tree-predcom.c (determine_offset): Check that both references have
+	the same type.
+
+2007-06-03  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	* cfgloopmanip.c (remove_path, loopify, duplicate_loop_to_header_edge):
 	Change dom_bbs to vector.  Add argument to iterate_fix_dominators call.
 	* loop-unroll.c (unroll_loop_runtime_iterations): Ditto.
