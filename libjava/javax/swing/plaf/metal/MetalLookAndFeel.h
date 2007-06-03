@@ -95,7 +95,6 @@ public:
 private:
   static const jlong serialVersionUID = 6680646159193457980LL;
   static ::javax::swing::plaf::metal::MetalTheme * theme;
-  ::javax::swing::UIDefaults * __attribute__((aligned(__alignof__( ::javax::swing::plaf::basic::BasicLookAndFeel)))) LAF_defaults;
 public:
   static ::java::lang::Class class$;
 };

@@ -33,6 +33,7 @@ public:
   virtual jboolean isWritable();
   virtual ::java::lang::String * toString();
 private:
+  static const jlong serialVersionUID = 8644704819898565848LL;
   ::java::lang::String * __attribute__((aligned(__alignof__( ::javax::management::MBeanFeatureInfo)))) attributeType;
   jboolean isWrite;
   jboolean isRead;

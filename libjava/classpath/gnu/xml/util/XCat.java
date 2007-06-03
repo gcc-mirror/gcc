@@ -274,7 +274,7 @@ public class XCat implements EntityResolver2
 		InputSource	retval;
 		retval = catalogs [i].resolve (usingPublic, publicId, systemId);
 		if (retval != null)
-		    return retval;;
+		    return retval;
 	    }
 	} catch (DoneDelegation x) {
 	    // done!

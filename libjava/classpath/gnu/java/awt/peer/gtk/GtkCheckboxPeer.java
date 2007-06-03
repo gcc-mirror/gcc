@@ -57,7 +57,8 @@ public class GtkCheckboxPeer extends GtkComponentPeer
   private boolean currentState;
 
   // A map from CheckboxGroup to GSList* GTK option group pointer.
-  private static WeakHashMap groupMap = new WeakHashMap();
+  private static WeakHashMap<CheckboxGroup,Long> groupMap
+    = new WeakHashMap<CheckboxGroup,Long>();
 
   public native void createCheckButton ();
   public native void createRadioButton (long groupPointer);
@@ -98,7 +99,7 @@ public class GtkCheckboxPeer extends GtkComponentPeer
         Long groupPointer = null;
         synchronized (groupMap)
         {
-          groupPointer = (Long) groupMap.get(current_group);
+          groupPointer = groupMap.get(current_group);
         }
         
         if (groupPointer == null)
@@ -133,8 +134,8 @@ public class GtkCheckboxPeer extends GtkComponentPeer
   {
     if (currentState != state)
       {
-	currentState = state;
-	gtkToggleButtonSetActive(state);
+        currentState = state;
+        gtkToggleButtonSetActive(state);
       }
   }
 
@@ -158,7 +159,7 @@ public class GtkCheckboxPeer extends GtkComponentPeer
         Long groupPointer = null;
         synchronized (groupMap)
         {
-          groupPointer = (Long) groupMap.get(current_group);
+          groupPointer = groupMap.get(current_group);
         }
         
         if (groupPointer == null)
@@ -203,7 +204,7 @@ public class GtkCheckboxPeer extends GtkComponentPeer
         Long groupPointer = null;
         synchronized (groupMap)
         {
-          groupPointer = (Long) groupMap.get(current_group);
+          groupPointer = groupMap.get(current_group);
         }
         
         if (groupPointer == null)
@@ -230,9 +231,9 @@ public class GtkCheckboxPeer extends GtkComponentPeer
     // Only fire event is state actually changed.
     if (currentState != state)
       {
-	currentState = state;
-	super.postItemEvent(awtComponent,
-			    state ? ItemEvent.SELECTED : ItemEvent.DESELECTED);
+        currentState = state;
+        super.postItemEvent(awtComponent,
+                            state ? ItemEvent.SELECTED : ItemEvent.DESELECTED);
       }
   }
   

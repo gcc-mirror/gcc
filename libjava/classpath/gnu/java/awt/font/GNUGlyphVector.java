@@ -164,7 +164,9 @@ public class GNUGlyphVector
                               renderContext.usesFractionalMetrics(),
                               /* horizontal */ true,
                               advance);
-      pos[p] = x += advance.x;
+      // FIXME: We shouldn't round here, but instead hint the metrics
+      // correctly.
+      pos[p] = x += Math.round(advance.x);
       pos[p + 1] = y += advance.y;
     }
     valid = true;
@@ -284,6 +286,22 @@ public class GNUGlyphVector
     return outline;
   }
 
+  public Shape getOutline(float x, float y, int type)
+  {
+    validate();
+
+    GeneralPath outline = new GeneralPath();
+    int len = glyphs.length;
+    for (int i = 0; i < len; i++)
+      {
+        GeneralPath p = new GeneralPath(getGlyphOutline(i, type));
+        outline.append(p, false);
+      }
+    AffineTransform t = new AffineTransform();
+    t.translate(x, y);
+    outline.transform(t);
+    return outline;
+  }
 
   /**
    * Determines the shape of the specified glyph.
@@ -309,7 +327,8 @@ public class GNUGlyphVector
 
     path = fontDelegate.getGlyphOutline(glyphs[glyphIndex], fontSize, tx,
                                         renderContext.isAntiAliased(),
-                                        renderContext.usesFractionalMetrics());
+                                        renderContext.usesFractionalMetrics(),
+                                        FontDelegate.FLAG_FITTED);
 
     tx = new AffineTransform();
     tx.translate(pos[glyphIndex * 2], pos[glyphIndex * 2 + 1]);
@@ -317,6 +336,32 @@ public class GNUGlyphVector
     return path;
   }
 
+  public Shape getGlyphOutline(int glyphIndex, int type)
+  {
+    AffineTransform tx, glyphTx;
+    GeneralPath path;
+
+    validate();
+
+    if ((transforms != null)
+        && ((glyphTx = transforms[glyphIndex]) != null))
+    {
+      tx =  new AffineTransform(transform);
+      tx.concatenate(glyphTx);
+    }
+    else
+      tx = transform;
+
+    path = fontDelegate.getGlyphOutline(glyphs[glyphIndex], fontSize, tx,
+                                        renderContext.isAntiAliased(),
+                                        renderContext.usesFractionalMetrics(),
+                                        type);
+
+    tx = new AffineTransform();
+    tx.translate(pos[glyphIndex * 2], pos[glyphIndex * 2 + 1]);
+    path.transform(tx);
+    return path;
+  }
 
   /**
    * Determines the position of the specified glyph, or the

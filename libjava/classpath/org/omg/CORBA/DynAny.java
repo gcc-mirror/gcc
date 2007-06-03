@@ -1,5 +1,5 @@
 /* DynAny.java --
-   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,6 +53,8 @@ import java.io.Serializable;
  * data about enumeration, value type and CORBA <code>fixed</code> without
  * knowing the exact type at the run time. The returned members are also
  * wrapped into DynAny objects, allowing them to be the nested structures.
+ *
+ * @deprecated by {@link org.omg.DynamicAny.DynAny}
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */

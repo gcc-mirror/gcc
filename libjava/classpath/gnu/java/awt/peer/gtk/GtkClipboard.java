@@ -71,9 +71,9 @@ public class GtkClipboard extends Clipboard
   // cached by GtkSelection. True if
   // gdk_display_supports_selection_notification.
   static final boolean canCache = initNativeState(clipboard, selection,
-						  stringMimeType,
-						  imageMimeType,
-						  filesMimeType);
+                                                  stringMimeType,
+                                                  imageMimeType,
+                                                  filesMimeType);
 
   /**
    * Creates the clipboard and sets the initial contents to the
@@ -140,8 +140,8 @@ public class GtkClipboard extends Clipboard
 
     if (contents == null)
       {
-	advertiseContent(null, false, false, false);
-	return;
+        advertiseContent(null, false, false, false);
+        return;
       }
 
     // We don't need to do anything for a GtkSelection facade.
@@ -153,46 +153,45 @@ public class GtkClipboard extends Clipboard
     boolean files = false;
 
     if (contents instanceof StringSelection
-	|| contents.isDataFlavorSupported(DataFlavor.stringFlavor)
-	|| contents.isDataFlavorSupported(DataFlavor.plainTextFlavor)
-	|| contents.isDataFlavorSupported(DataFlavor
-					  .getTextPlainUnicodeFlavor()))
+        || contents.isDataFlavorSupported(DataFlavor.stringFlavor)
+        || contents.isDataFlavorSupported(DataFlavor.plainTextFlavor)
+        || contents.isDataFlavorSupported(DataFlavor.getTextPlainUnicodeFlavor()))
       text = true;
 
     DataFlavor[] flavors = contents.getTransferDataFlavors();
     String[] mimeTargets = new String[flavors.length];
     for (int i = 0; i < flavors.length; i++)
       {
-	DataFlavor flavor = flavors[i];
-	String mimeType = flavor.getMimeType();
-	mimeTargets[i] = mimeType;
+        DataFlavor flavor = flavors[i];
+        String mimeType = flavor.getMimeType();
+        mimeTargets[i] = mimeType;
 
-	if (! text)
-	  if ("text".equals(flavor.getPrimaryType())
-	      || flavor.isRepresentationClassReader())
-	    text = true;
+        if (! text)
+          if ("text".equals(flavor.getPrimaryType())
+              || flavor.isRepresentationClassReader())
+            text = true;
 
-	if (! images && flavors[i].equals(DataFlavor.imageFlavor))
-	  {
-	    try
-	      {
-		Object o = contents.getTransferData(DataFlavor.imageFlavor);
-		if (o instanceof Image)
-		  images = true;
-	      }
-	    catch (UnsupportedFlavorException ufe)
-	      {
-	      }
-	    catch (IOException ioe)
-	      {
-	      }
-	    catch (ClassCastException cce)
-	      {
-	      }
-	  }
+        if (! images && flavors[i].equals(DataFlavor.imageFlavor))
+          {
+            try
+              {
+                Object o = contents.getTransferData(DataFlavor.imageFlavor);
+                if (o instanceof Image)
+                  images = true;
+              }
+            catch (UnsupportedFlavorException ufe)
+              {
+              }
+            catch (IOException ioe)
+              {
+              }
+            catch (ClassCastException cce)
+              {
+              }
+          }
 
-	if (flavors[i].equals(DataFlavor.javaFileListFlavor))
-	  files = true;
+        if (flavors[i].equals(DataFlavor.javaFileListFlavor))
+          files = true;
       }
 
     advertiseContent(mimeTargets, text, images, files);
@@ -207,9 +206,9 @@ public class GtkClipboard extends Clipboard
    * selection has explicitly been erased.
    */
   private native void advertiseContent(String[] targets,
-				       boolean text,
-				       boolean images,
-				       boolean files);
+                                       boolean text,
+                                       boolean images,
+                                       boolean files);
   
   /**
    * Called by the gtk+ clipboard when an application has requested
@@ -228,7 +227,7 @@ public class GtkClipboard extends Clipboard
         try
           {
             return (String) contents.getTransferData(DataFlavor.stringFlavor);
-	  }
+          }
         catch (UnsupportedFlavorException ufe)
           {
           }
@@ -244,20 +243,20 @@ public class GtkClipboard extends Clipboard
     // turn the result into a string.
     try
       {
-	DataFlavor plainText = DataFlavor.getTextPlainUnicodeFlavor();
-	Reader r = plainText.getReaderForText(contents);
-	if (r != null)
-	  {
-	    StringBuffer sb = new StringBuffer();
-	    char[] cs = new char[1024];
-	    int l = r.read(cs);
-	    while (l != -1)
-	      {
-		sb.append(cs, 0, l);
-		l = r.read(cs);
-	      }
-	    return sb.toString();
-	  }
+        DataFlavor plainText = DataFlavor.getTextPlainUnicodeFlavor();
+        Reader r = plainText.getReaderForText(contents);
+        if (r != null)
+          {
+            StringBuffer sb = new StringBuffer();
+            char[] cs = new char[1024];
+            int l = r.read(cs);
+            while (l != -1)
+              {
+                sb.append(cs, 0, l);
+                l = r.read(cs);
+              }
+            return sb.toString();
+          }
       }
     catch (IllegalArgumentException iae)
       {
@@ -288,11 +287,11 @@ public class GtkClipboard extends Clipboard
 
     try
       {
-	Object o = contents.getTransferData(DataFlavor.imageFlavor);
-	if( o instanceof GtkImage )
-	  return (GtkImage) o;
-	else
-	  return new GtkImage(((Image)o).getSource());
+        Object o = contents.getTransferData(DataFlavor.imageFlavor);
+        if( o instanceof GtkImage )
+          return (GtkImage) o;
+        else
+          return new GtkImage(((Image)o).getSource());
       }
     catch (UnsupportedFlavorException ufe)
       {
@@ -321,14 +320,13 @@ public class GtkClipboard extends Clipboard
 
     try
       {
-	List list = (List) contents.getTransferData
-	  (DataFlavor.javaFileListFlavor);
-	String[] uris = new String[list.size()];
-	int u = 0;
-	Iterator it = list.iterator();
-	while (it.hasNext())
-	  uris[u++] = ((File) it.next()).toURI().toString();
-	return uris;
+        List list = (List) contents.getTransferData(DataFlavor.javaFileListFlavor);
+        String[] uris = new String[list.size()];
+        int u = 0;
+        Iterator it = list.iterator();
+        while (it.hasNext())
+          uris[u++] = ((File) it.next()).toURI().toString();
+        return uris;
       }
     catch (UnsupportedFlavorException ufe)
       {
@@ -365,34 +363,34 @@ public class GtkClipboard extends Clipboard
     // the other provideXXX() methods.
     try
       {
-	DataFlavor flavor = new DataFlavor(target);
-	Object o = contents.getTransferData(flavor);
+        DataFlavor flavor = new DataFlavor(target);
+        Object o = contents.getTransferData(flavor);
 
-	if (o instanceof byte[])
-	  return (byte[]) o;
+        if (o instanceof byte[])
+          return (byte[]) o;
 
-	if (o instanceof InputStream)
-	  {
-	    InputStream is = (InputStream) o;
-	    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	    byte[] bs = new byte[1024];
-	    int l = is.read(bs);
-	    while (l != -1)
-	      {
-		baos.write(bs, 0, l);
-		l = is.read(bs);
-	      }
-	    return baos.toByteArray();
-	  }
+        if (o instanceof InputStream)
+          {
+            InputStream is = (InputStream) o;
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] bs = new byte[1024];
+            int l = is.read(bs);
+            while (l != -1)
+              {
+                baos.write(bs, 0, l);
+                l = is.read(bs);
+              }
+            return baos.toByteArray();
+          }
 
-	if (o instanceof Serializable)
-	  {
-	    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	    ObjectOutputStream oos = new ObjectOutputStream(baos);
-	    oos.writeObject(o);
-	    oos.close();
-	    return baos.toByteArray();
-	  }
+        if (o instanceof Serializable)
+          {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(o);
+            oos.close();
+            return baos.toByteArray();
+          }
       }
     catch (ClassNotFoundException cnfe)
       {
@@ -416,8 +414,8 @@ public class GtkClipboard extends Clipboard
    * Clipboard can be cached (gdk_display_supports_selection_notification).
    */
   private static native boolean initNativeState(GtkClipboard clipboard,
-						GtkClipboard selection,
-						String stringTarget,
-						String imageTarget,
-						String filesTarget);
+                                                GtkClipboard selection,
+                                                String stringTarget,
+                                                String imageTarget,
+                                                String filesTarget);
 }

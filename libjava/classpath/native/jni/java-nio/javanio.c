@@ -41,11 +41,12 @@ exception statement from your version.  */
  * we include this file in the header, and do not compile it.
  */
 
-#include <sys/types.h>
-#include <sys/fcntl.h>
-#include <sys/socket.h>
-#include <sys/uio.h>
+#include <fcntl.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/select.h>
+#include <sys/uio.h>
 
 CPNIO_EXPORT ssize_t
 cpnio_read (int fd, void *buf, size_t nbytes)
@@ -86,6 +87,25 @@ cpnio_connect (int fd, const struct sockaddr *addr, socklen_t addrlen)
 CPNIO_EXPORT int
 cpnio_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
 {
+  fd_set rset;
+  struct timeval tv;
+  socklen_t tvlen = sizeof(tv);
+  int ret;
+
+  tv.tv_sec = 0;
+  tv.tv_usec = 0;
+  getsockopt (fd, SOL_SOCKET, SO_RCVTIMEO, &tv, &tvlen);
+  if (tv.tv_sec > 0 || tv.tv_usec > 0)
+    {
+      FD_ZERO(&rset);
+      FD_SET(fd,&rset);
+      ret = select (fd+1,&rset,NULL,NULL,&tv);
+      if (ret == 0)
+        {
+          errno = EAGAIN;
+          return -1;
+        }
+    }
   return accept (fd, addr, addrlen);
 }
 

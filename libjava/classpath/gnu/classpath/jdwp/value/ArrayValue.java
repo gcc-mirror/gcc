@@ -1,4 +1,4 @@
-/* ArrayValue.java -- JDWP wrapper class for an Object value
+/* ObjectValue.java -- JDWP wrapper class for an Object value
    Copyright (C) 2007 Free Software Foundation
 
 This file is part of GNU Classpath.

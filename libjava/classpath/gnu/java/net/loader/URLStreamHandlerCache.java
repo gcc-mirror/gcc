@@ -51,7 +51,8 @@ public class URLStreamHandlerCache
    * private protocol handler cache (also a HashMap), so we can avoid
    * creating handlers each time the same protocol comes.
    */
-  private HashMap factoryCache = new HashMap(5);
+  private HashMap<URLStreamHandlerFactory, HashMap<String, URLStreamHandler>> factoryCache
+    = new HashMap<URLStreamHandlerFactory, HashMap<String, URLStreamHandler>>(5);
 
   public URLStreamHandlerCache()
   {
@@ -62,7 +63,7 @@ public class URLStreamHandlerCache
     // Since we only support three protocols so far, 5 is enough
     // for cache initial size.
     if (factory != null && factoryCache.get(factory) == null)
-      factoryCache.put(factory, new HashMap(5));
+      factoryCache.put(factory, new HashMap<String, URLStreamHandler>(5));
   }
 
   public synchronized URLStreamHandler get(URLStreamHandlerFactory factory,
@@ -71,8 +72,8 @@ public class URLStreamHandlerCache
     if (factory == null)
       return null;
     // Check if there're handler for the same protocol in cache.
-    HashMap cache = (HashMap) factoryCache.get(factory);
-    URLStreamHandler handler = (URLStreamHandler) cache.get(protocol);
+    HashMap<String, URLStreamHandler> cache = factoryCache.get(factory);
+    URLStreamHandler handler = cache.get(protocol);
     if (handler == null)
       {
         // Add it to cache.

@@ -29,11 +29,13 @@ extern "Java"
   {
     namespace awt
     {
+        class Desktop;
         class Font;
         class GraphicsDevice;
         class GraphicsEnvironment;
       namespace peer
       {
+          class DesktopPeer;
           class RobotPeer;
       }
     }
@@ -63,6 +65,9 @@ public:
   virtual ::gnu::java::awt::peer::EmbeddedWindowPeer * createEmbeddedWindow(::gnu::java::awt::EmbeddedWindow *) = 0;
   virtual void registerImageIOSpis(::javax::imageio::spi::IIORegistry *);
   virtual jint getMouseNumberOfButtons();
+public: // actually protected
+  virtual ::java::awt::peer::DesktopPeer * createDesktopPeer(::java::awt::Desktop *);
+public:
   static ::java::lang::Class class$;
 };
 

@@ -99,7 +99,7 @@ public final class SSLEngineImpl extends SSLEngine
 
   private Mode mode;
 
-  private enum Mode { SERVER, CLIENT };
+  private enum Mode { SERVER, CLIENT }
   
   SSLEngineImpl (SSLContextImpl contextImpl, String host, int port)
   {

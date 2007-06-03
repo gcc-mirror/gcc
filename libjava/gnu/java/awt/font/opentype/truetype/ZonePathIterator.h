@@ -37,7 +37,7 @@ class gnu::java::awt::font::opentype::truetype::ZonePathIterator : public ::java
 {
 
 public: // actually package-private
-  ZonePathIterator(::gnu::java::awt::font::opentype::truetype::Zone *);
+  ZonePathIterator(::gnu::java::awt::font::opentype::truetype::Zone *, jint);
 public:
   jint getWindingRule();
   jboolean isDone();
@@ -58,6 +58,7 @@ private:
   jint numPoints;
   jint curPoint;
   jint contourStart;
+  jint type;
 public: // actually package-private
   JArray< jfloat > * floats;
 public:

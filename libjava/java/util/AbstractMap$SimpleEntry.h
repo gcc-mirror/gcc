@@ -20,6 +20,8 @@ public:
   virtual jint hashCode();
   virtual ::java::lang::Object * setValue(::java::lang::Object *);
   virtual ::java::lang::String * toString();
+private:
+  static const jlong serialVersionUID = -8499721149061103585LL;
 public: // actually package-private
   ::java::lang::Object * __attribute__((aligned(__alignof__( ::java::lang::Object)))) key;
   ::java::lang::Object * value;

@@ -1,9 +1,51 @@
-New in release 0.94 (UNRELEASED)
+New in release 0.95 (Apr 23, 2007)
 
-* The ASM library is now included.  A separate copy is no longer needed.
-
+* Full merge of 1.5 generics work.
+* Added 1.6 java.util.ServiceLoader support.
+* The ASM library is now included.  A separate copy is no longer
+  needed.  gjavah works out of the box now.
 * The setReadTimeout and getReadTimeout methods have been added to
-  java.net.URLConnection.  They are now fully implemented for http URLs.  
+  java.net.URLConnection.  They are now fully implemented for http URLs.
+* The java.lang.management implementation now includes the new features
+  added in 1.6
+* java.util.TimeZone now reads time zone information from the system
+  zoneinfo files (see also runtime interface changes below).
+* The collection classes have been updated to support all the 1.6
+  additions.
+* java.util.spi 1.6 package has been added and is used in java.text.
+* Bootstrappable with OpenJDK javac compiler
+  (use configure --with-javac).
+* Large speedups (and locking behaviour updated) in Graphics2D cairo
+  and freetype support.
+* Better detection of browser plugin mechanism for mozilla, iceweasel,
+  firefox on various platforms.
+* Inclusion of generic javadoc classes in tools.zip to support more
+  javadoc processing tools.
+* Added documentation for command lines options for the included GNU
+  Classpath Tools gjar, gjavah, gnative2ascii, gorbd, grmid,
+  grmiregistry, gserialver and gtnameserv.
+
+Runtime interface changes:
+
+* gnu.java.lang.management.VMThreadMXBeanImpl has gained three new
+  optional native methods to allow the 1.6 version of the threading
+  bean to be supported.  One (getMonitorInfo) fills in information
+  about object monitor locks held by a thread and is only required
+  if the monitoring of object monitor locks is supported by the VM.
+  The other two (findDeadlockedThreads and getLockInfo) are related
+  to ownable synchronizers (part of the java.util.concurrent suite)
+  and only required if monitoring of locks relating to these is
+  supported by the VM.
+* java.util.VMTimeZone and java.util.TimeZone have been refactored
+  to simplify the reference implementation.  VMTimeZone.readtzFile()
+  and VMTimeZone.skipFully() have been removed, and a new method
+  VMTimeZone.readSysconfigClockFile() has been introduced.
+* VMs need to set the system property "gnu.java.util.zoneinfo.dir"
+  to point to the directory where zoneinfo files live.  In libgcj
+  this is set to the value of the TZDATA environment variable, or
+  "/usr/share/zoneinfo" if this is not set.
+* VMFile has been extended to support new 1.6 methods (canExecute,
+  setReadable, setWritable, setExecutable).
 
 New in release 0.93 (Dec 8, 2006)
 

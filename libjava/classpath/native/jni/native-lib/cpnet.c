@@ -46,22 +46,21 @@ exception statement from your version. */
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <netdb.h>
-#include <sys/ioctl.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 
+#if defined(HAVE_SYS_IOCTL_H)
+#define BSD_COMP /* Get FIONREAD on Solaris2 */
+#include <sys/ioctl.h>
+#endif
+#if defined(HAVE_SYS_FILIO_H) /* Get FIONREAD on Solaris 2.5 */
+#include <sys/filio.h>
+#endif
+
 #include "cpnet.h"
 
 #define SOCKET_DEFAULT_TIMEOUT -1 /* milliseconds */
-
-#if defined (HAVE_MSG_NOSIGNAL)
-#define SOCKET_NOSIGNAL MSG_NOSIGNAL
-#elif defined (HAVE_SO_NOSIGPIPE)
-#define SOCKET_NOSIGNAL SO_NOSIGPIPE
-#else
-#error "No suitable flag found to ommit a SIGPIPE on signal errors with send()."
-#endif
 
 static int socketTimeouts[FD_SETSIZE];
 
@@ -249,6 +248,15 @@ jint cpnet_setBroadcast(JNIEnv *env UNUSED, jint fd, jint flag)
   return 0;
 }
 
+#if defined (HAVE_MSG_NOSIGNAL)
+#elif defined (HAVE_SO_NOSIGPIPE)
+static int setsockopt_NOSIGPIPE (int fd)
+{
+  int setToTrue = 1;
+  return setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &setToTrue, sizeof(setToTrue));
+}
+#endif
+
 jint cpnet_send (JNIEnv *env UNUSED, jint fd, jbyte *data, jint len, jint *bytes_sent)
 {
   ssize_t ret;
@@ -256,7 +264,17 @@ jint cpnet_send (JNIEnv *env UNUSED, jint fd, jbyte *data, jint len, jint *bytes
   if (waitForWritable(fd) < 0)
     return ETIMEDOUT;
 
-  ret = send(fd, data, len, SOCKET_NOSIGNAL);
+#if defined (HAVE_MSG_NOSIGNAL)
+  ret = send(fd, data, len, MSG_NOSIGNAL);
+#elif defined (HAVE_SO_NOSIGPIPE)
+  ret = setsockopt_NOSIGPIPE(fd);
+  if (ret == 0) ret = send(fd, data, len, 0);
+#else
+  /* We want SIGPIPE to be omitted. But this configuration does not have an
+   * option for that.
+   */
+  ret = send(fd, data, len, 0);
+#endif
   if (ret < 0)
     return errno;
 
@@ -272,8 +290,24 @@ jint cpnet_sendTo (JNIEnv *env UNUSED, jint fd, jbyte *data, jint len, cpnet_add
   if (waitForWritable(fd) < 0)
     return ETIMEDOUT;
 
-  ret = sendto(fd, data, len, SOCKET_NOSIGNAL, (struct sockaddr *)addr->data,
+#if defined (HAVE_MSG_NOSIGNAL)
+  ret = sendto(fd, data, len, MSG_NOSIGNAL, (struct sockaddr *)addr->data,
 	       addr->len);
+#elif defined (HAVE_SO_NOSIGPIPE)
+  ret = setsockopt_NOSIGPIPE(fd);
+  if (ret == 0)
+  {
+    ret = sendto(fd, data, len, 0, (struct sockaddr *)addr->data,
+	       addr->len);
+  }
+#else
+  /* We want SIGPIPE to be omitted. But this configuration does not have an
+   * option for that.
+   */
+  ret = sendto(fd, data, len, 0, (struct sockaddr *)addr->data,
+	       addr->len);
+#endif
+
   if (ret < 0)
     return errno;
 
@@ -608,8 +642,17 @@ jint cpnet_getHostByName (JNIEnv *env, const char *hostname, cpnet_address ***ad
   do
     {
       buf = (char *)JCL_malloc(env, buflen);
+
 #ifdef HAVE_GETHOSTBYNAME_R
+# if defined(HAVE_FUNC_GETHOSTBYNAME_R_6)
       ret = gethostbyname_r (hostname, &hret, buf, buflen, &result, &herr);
+# elif defined(HAVE_FUNC_GETHOSTBYNAME_R_5)
+      result = gethostbyname_r(hostname, &hret, buf, buflen, &herr);
+# elif defined(HAVE_FUNC_GETHOSTBYNAME_R_3)
+#  error IMPLEMENT ME!
+# else
+#  error unknown number of arguments for gethostbyname_r
+# endif
 #else
       hret.h_addr_list = NULL;
       hret.h_addrtype = 0;

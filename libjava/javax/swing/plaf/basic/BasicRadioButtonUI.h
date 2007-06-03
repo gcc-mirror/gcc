@@ -49,6 +49,9 @@ public: // actually protected
 public:
   virtual ::javax::swing::Icon * getDefaultIcon();
   virtual void paint(::java::awt::Graphics *, ::javax::swing::JComponent *);
+private:
+  ::javax::swing::Icon * getCurrentIcon(::javax::swing::AbstractButton *);
+public:
   virtual ::java::awt::Dimension * getPreferredSize(::javax::swing::JComponent *);
 public: // actually protected
   virtual void paintFocus(::java::awt::Graphics *, ::java::awt::Rectangle *, ::java::awt::Dimension *);

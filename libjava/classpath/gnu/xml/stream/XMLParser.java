@@ -439,6 +439,7 @@ public class XMLParser
             throw e2;
           }
       }
+    systemId = canonicalize(systemId);
     pushInput(new Input(in, null, null, systemId, null, null, false, true));
   }
 
@@ -513,6 +514,7 @@ public class XMLParser
             throw e2;
           }
       }
+    systemId = canonicalize(systemId);
     pushInput(new Input(null, reader, null, systemId, null, null, false, true));
   }
 
@@ -1540,7 +1542,7 @@ public class XMLParser
   {
     if (!externalEntities)
       return;
-    String url = absolutize(input.systemId, ids.systemId);
+    String url = canonicalize(absolutize(input.systemId, ids.systemId));
     // Check for recursion
     for (Iterator i = inputStack.iterator(); i.hasNext(); )
       {
@@ -1584,6 +1586,20 @@ public class XMLParser
     if (this.input != null)
       input.xml11 = this.input.xml11;
     this.input = input;
+  }
+
+  /**
+   * Returns a canonicalized version of the specified URL.
+   * This is largely to work around a problem with the specification of
+   * file URLs.
+   */
+  static String canonicalize(String url)
+  {
+    if (url == null)
+      return null;
+    if (url.startsWith("file:") && !url.startsWith("file://"))
+      url = "file://" + url.substring(5);
+    return url;
   }
 
   /**

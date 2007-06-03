@@ -80,14 +80,14 @@ public class InitialContext implements Context
    * be appended after the colon to the first possible value. Used in
    * {@link #merge(Hashtable, Hashtable)}
    */
-  static final HashSet colon_list;
+  static final HashSet<String> colon_list;
   static
     {
-      colon_list = new HashSet();
+      colon_list = new HashSet<String>();
       colon_list.add(Context.OBJECT_FACTORIES);
       colon_list.add(Context.URL_PKG_PREFIXES);
       colon_list.add(Context.STATE_FACTORIES);
-    };  
+    }  
     
    /**
     * The properties that are searched in the agreed places in the
@@ -262,7 +262,8 @@ public class InitialContext implements Context
    *          in this table.
    * @param additional the second table, from where additional values are taken
    */  
-  static void merge (Hashtable primary, Hashtable additional)
+  static void merge (Hashtable<Object, Object> primary,
+                     Hashtable<Object, Object> additional)
   {
     Enumeration en = additional.keys();
     

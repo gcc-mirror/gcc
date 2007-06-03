@@ -1,5 +1,5 @@
 /* LinkedList.java -- Linked list implementation of the List interface
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -64,15 +64,17 @@ import java.lang.reflect.Array;
  * @author Original author unknown
  * @author Bryce McKinlay
  * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Tom Tromey (tromey@redhat.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @see List
  * @see ArrayList
  * @see Vector
  * @see Collections#synchronizedList(List)
  * @since 1.2
- * @status missing javadoc, but complete to 1.4
+ * @status Complete to 1.6
  */
 public class LinkedList<T> extends AbstractSequentialList<T>
-  implements List<T>, Queue<T>, Cloneable, Serializable
+  implements List<T>, Deque<T>, Cloneable, Serializable
 {
   /**
    * Compatible with JDK 1.2.
@@ -708,6 +710,10 @@ public class LinkedList<T> extends AbstractSequentialList<T>
   }
 
   /**
+   * Adds the specified element to the end of the list.
+   *
+   * @param value the value to add.
+   * @return true.
    * @since 1.5
    */
   public boolean offer(T value)
@@ -716,6 +722,11 @@ public class LinkedList<T> extends AbstractSequentialList<T>
   }
 
   /**
+   * Returns the first element of the list without removing
+   * it.
+   *
+   * @return the first element of the list.
+   * @throws NoSuchElementException if the list is empty.
    * @since 1.5
    */
   public T element()
@@ -724,6 +735,11 @@ public class LinkedList<T> extends AbstractSequentialList<T>
   }
 
   /**
+   * Returns the first element of the list without removing
+   * it.
+   *
+   * @return the first element of the list, or <code>null</code>
+   *         if the list is empty.
    * @since 1.5
    */
   public T peek()
@@ -734,6 +750,10 @@ public class LinkedList<T> extends AbstractSequentialList<T>
   }
 
   /**
+   * Removes and returns the first element of the list.
+   *
+   * @return the first element of the list, or <code>null</code>
+   *         if the list is empty.
    * @since 1.5
    */
   public T poll()
@@ -744,6 +764,10 @@ public class LinkedList<T> extends AbstractSequentialList<T>
   }
 
   /**
+   * Removes and returns the first element of the list.
+   *
+   * @return the first element of the list.
+   * @throws NoSuchElementException if the list is empty.
    * @since 1.5
    */
   public T remove()
@@ -992,4 +1016,245 @@ public class LinkedList<T> extends AbstractSequentialList<T>
       lastReturned.data = o;
     }
   } // class LinkedListItr
+
+  /**
+   * Obtain an Iterator over this list in reverse sequential order.
+   *
+   * @return an Iterator over the elements of the list in
+   *         reverse order.
+   * @since 1.6
+   */
+  public Iterator<T> descendingIterator()
+  {
+    return new Iterator<T>()
+    {
+      /** Number of modifications we know about. */
+      private int knownMod = modCount;
+
+      /** Entry that will be returned by next(). */
+      private Entry<T> next = last;
+
+      /** Entry that will be affected by remove() or set(). */
+      private Entry<T> lastReturned;
+
+      /** Index of `next'. */
+      private int position = size() - 1;
+
+      // This will get inlined, since it is private.
+      /**
+       * Checks for modifications made to the list from
+       * elsewhere while iteration is in progress.
+       *
+       * @throws ConcurrentModificationException if the
+       *         list has been modified elsewhere.
+       */
+      private void checkMod()
+      {
+        if (knownMod != modCount)
+          throw new ConcurrentModificationException();
+      }
+
+      /**
+       * Tests to see if there are any more objects to
+       * return.
+       *
+       * @return true if the start of the list has not yet been
+       *         reached.
+       */
+      public boolean hasNext()
+      {
+        return next != null;
+      }
+
+      /**
+       * Retrieves the next object from the list.
+       *
+       * @return The next object.
+       * @throws NoSuchElementException if there are
+       *         no more objects to retrieve.
+       * @throws ConcurrentModificationException if the
+       *         list has been modified elsewhere.
+       */
+      public T next()
+      {
+        checkMod();
+        if (next == null)
+          throw new NoSuchElementException();
+        --position;
+	lastReturned = next;
+	next = lastReturned.previous;
+        return lastReturned.data;
+      }
+
+      /**
+       * Removes the last object retrieved by <code>next()</code>
+       * from the list, if the list supports object removal.
+       *
+       * @throws ConcurrentModificationException if the list
+       *         has been modified elsewhere.
+       * @throws IllegalStateException if the iterator is positioned
+       *         before the start of the list or the last object has already
+       *         been removed.
+       */
+      public void remove()
+      {
+        checkMod();
+        if (lastReturned == null)
+          throw new IllegalStateException();
+	removeEntry(lastReturned);
+	lastReturned = null;
+	++knownMod;
+      }
+    };
+  }
+
+  /**
+   * Inserts the specified element at the front of the list.
+   *
+   * @param value the element to insert.
+   * @return true.
+   * @since 1.6
+   */
+  public boolean offerFirst(T value)
+  {
+    addFirst(value);
+    return true;
+  }
+
+  /**
+   * Inserts the specified element at the end of the list.
+   *
+   * @param value the element to insert.
+   * @return true.
+   * @since 1.6
+   */
+  public boolean offerLast(T value)
+  {
+    return add(value);
+  }
+
+  /**
+   * Returns the first element of the list without removing
+   * it.
+   *
+   * @return the first element of the list, or <code>null</code>
+   *         if the list is empty.
+   * @since 1.6
+   */
+  public T peekFirst()
+  {
+    return peek();
+  }
+
+  /**
+   * Returns the last element of the list without removing
+   * it.
+   *
+   * @return the last element of the list, or <code>null</code>
+   *         if the list is empty.
+   * @since 1.6
+   */
+  public T peekLast()
+  {
+    if (size == 0)
+      return null;
+    return getLast();
+  }
+
+  /**
+   * Removes and returns the first element of the list.
+   *
+   * @return the first element of the list, or <code>null</code>
+   *         if the list is empty.
+   * @since 1.6
+   */
+  public T pollFirst()
+  {
+    return poll();
+  }
+
+  /**
+   * Removes and returns the last element of the list.
+   *
+   * @return the last element of the list, or <code>null</code>
+   *         if the list is empty.
+   * @since 1.6
+   */
+  public T pollLast()
+  {
+    if (size == 0)
+      return null;
+    return removeLast();
+  }
+
+  /**
+   * Pops an element from the stack by removing and returning
+   * the first element in the list.  This is equivalent to
+   * calling {@link #removeFirst()}.
+   *
+   * @return the top of the stack, which is the first element
+   *         of the list.
+   * @throws NoSuchElementException if the list is empty.
+   * @since 1.6
+   * @see #removeFirst()
+   */
+  public T pop()
+  {
+    return removeFirst();
+  }
+
+  /**
+   * Pushes an element on to the stack by adding it to the
+   * front of the list.  This is equivalent to calling
+   * {@link #addFirst(T)}.
+   *
+   * @param value the element to push on to the stack.
+   * @throws NoSuchElementException if the list is empty.
+   * @since 1.6
+   * @see #addFirst(T)
+   */
+  public void push(T value)
+  {
+    addFirst(value);
+  }
+  
+  /**
+   * Removes the first occurrence of the specified element
+   * from the list, when traversing the list from head to
+   * tail.  The list is unchanged if the element is not found.
+   * This is equivalent to calling {@link #remove(Object)}.
+   *
+   * @param o the element to remove.
+   * @return true if an instance of the object was removed.
+   * @since 1.6
+   */
+  public boolean removeFirstOccurrence(Object o)
+  {
+    return remove(o);
+  }
+
+  /**
+   * Removes the last occurrence of the specified element
+   * from the list, when traversing the list from head to
+   * tail.  The list is unchanged if the element is not found.
+   *
+   * @param o the element to remove.
+   * @return true if an instance of the object was removed.
+   * @since 1.6
+   */
+  public boolean removeLastOccurrence(Object o)
+  {
+    Entry<T> e = last;
+    while (e != null)
+      {
+	if (equals(o, e.data))
+	  {
+	    removeEntry(e);
+	    return true;
+	  }
+	e = e.previous;
+      }
+    return false;
+  }
+
 }

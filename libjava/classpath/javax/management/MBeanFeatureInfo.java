@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.management;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 /**
@@ -181,6 +183,19 @@ public class MBeanFeatureInfo
 	+ ",desc=" + description 
 	+ "]";
     return string;
+  }
+
+  /**
+   * Serialize the {@link MBeanFeatureInfo}.
+   *
+   * @param out the output stream to write to.
+   * @throws IOException if an I/O error occurs.
+   */
+  private void writeObject(ObjectOutputStream out)
+    throws IOException
+  {
+    out.defaultWriteObject();
+    /* FIXME: Handle extra 1.6 descriptor stuff */
   }
 
 }

@@ -1,4 +1,4 @@
-/* AxisHints.java -- FIXME: briefly describe file purpose
+/* AxisHints.java -- Hints specific to an axis
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -42,4 +42,71 @@ class AxisHints
 {
 
   Segment[] segments;
+  int majorDir;
+  int numSegments;
+  int numEdges;
+  Edge[] edges;
+
+  AxisHints()
+  {
+    segments = new Segment[4];
+    edges = new Edge[4];
+  }
+
+  Segment newSegment()
+  {
+    if (numSegments >= segments.length)
+      {
+        // Grow array.
+        int newMax = segments.length;
+        newMax += (newMax >> 2) + 4; // From FreeType.
+        Segment[] newSegs = new Segment[newMax];
+        System.arraycopy(segments, 0, newSegs, 0, numSegments);
+        segments = newSegs;
+      }
+    Segment seg = new Segment();
+    segments[numSegments] = seg;
+    numSegments++;
+    return seg;
+  }
+
+  public Edge newEdge(int pos)
+  {
+    if (numEdges >= edges.length)
+      {
+        // Grow array.
+        int newMax = edges.length;
+        newMax += (newMax >> 2) + 4; // From FreeType.
+        Edge[] newEdges = new Edge[newMax];
+        System.arraycopy(edges, 0, newEdges, 0, numEdges);
+        edges = newEdges;
+      }
+    int edgeIndex = numEdges;
+    Edge edge = edges[edgeIndex] = new Edge();
+    while (edgeIndex > 0 && edges[edgeIndex - 1].fpos > pos)
+      {
+        edges[edgeIndex] = edges[edgeIndex - 1];
+        edgeIndex--;
+      }
+    edges[edgeIndex] = edge;
+    numEdges++;
+    edge.fpos = pos;
+
+    return edge;
+
+  }
+
+  int getEdgeIndex(Edge edge2)
+  {
+    int idx = -1;
+    for (int i = 0; i < numEdges; i++)
+      {
+        if (edges[i] == edge2)
+          {
+            idx = i;
+            break;
+          }
+      }
+    return idx;
+  }
 }

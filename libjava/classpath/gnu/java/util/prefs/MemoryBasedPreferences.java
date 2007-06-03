@@ -52,7 +52,7 @@ public class MemoryBasedPreferences extends AbstractPreferences {
     private final boolean isUser;
 
     /** Contains all the preference entries of this node. */
-    private HashMap entries = new HashMap();
+    private HashMap<String, String> entries = new HashMap<String, String>();
 
     /**
      * Creates a new preferences node with the given name and parent.
@@ -98,7 +98,7 @@ public class MemoryBasedPreferences extends AbstractPreferences {
      * this node.
      */
     protected String[] keysSpi() throws BackingStoreException {
-        return (String[]) entries.keySet().toArray(new String[entries.size()]);
+        return entries.keySet().toArray(new String[entries.size()]);
     }
 
     /**
@@ -106,7 +106,7 @@ public class MemoryBasedPreferences extends AbstractPreferences {
      * null when the key has not been set.
      */
     protected String getSpi(String key) {
-        return (String) entries.get(key);
+        return entries.get(key);
     }
 
     /**

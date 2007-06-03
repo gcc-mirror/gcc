@@ -37,6 +37,8 @@ public:
   virtual void setUserData(::java::lang::Object *);
   virtual ::java::lang::String * toString();
 private:
+  void writeObject(::java::io::ObjectOutputStream *);
+  static const jlong serialVersionUID = -7516092053498031989LL;
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::util::EventObject)))) message;
   jlong sequenceNumber;
 public: // actually protected

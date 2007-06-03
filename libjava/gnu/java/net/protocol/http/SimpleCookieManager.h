@@ -38,7 +38,7 @@ public:
   virtual void setCookie(::gnu::java::net::protocol::http::Cookie *);
   virtual JArray< ::gnu::java::net::protocol::http::Cookie * > * getCookies(::java::lang::String *, jboolean, ::java::lang::String *);
 private:
-  void addCookies(::java::util::List *, ::java::lang::String *, jboolean, ::java::lang::String *, ::java::util::Date *);
+  void addCookies(::java::util::ArrayList *, ::java::lang::String *, jboolean, ::java::lang::String *, ::java::util::Date *);
 public: // actually protected
   ::java::util::Map * __attribute__((aligned(__alignof__( ::java::lang::Object)))) cookies;
 public:

@@ -81,8 +81,8 @@ public class DefaultContentHandlerFactory implements ContentHandlerFactory
       "image/x-xpixmap"
     };
    
-  private static HashSet imageTypes
-    = new HashSet(Arrays.asList(known_image_types));
+  private static HashSet<String> imageTypes
+    = new HashSet<String>(Arrays.asList(known_image_types));
 
   public ContentHandler createContentHandler(String mimeType)
   {

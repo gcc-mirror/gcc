@@ -1,5 +1,5 @@
 /* CertificatePolicies.java -- certificate policy extension.
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -61,8 +61,8 @@ public class CertificatePolicies extends Extension.Value
 
   public static final OID ID = new OID("2.5.29.32");
 
-  private final List policies;
-  private final Map policyQualifierInfos;
+  private final List<OID> policies;
+  private final Map<OID, List<PolicyQualifierInfo>> policyQualifierInfos;
 
   // Constructor.
   // -------------------------------------------------------------------------
@@ -76,8 +76,9 @@ public class CertificatePolicies extends Extension.Value
       throw new IOException("malformed CertificatePolicies");
 
     int len = 0;
-    LinkedList policyList = new LinkedList();
-    HashMap qualifierMap = new HashMap();
+    LinkedList<OID> policyList = new LinkedList<OID>();
+    HashMap<OID, List<PolicyQualifierInfo>> qualifierMap
+      = new HashMap<OID, List<PolicyQualifierInfo>>();
     while (len < pol.getLength())
       {
         DERValue policyInfo = der.read();
@@ -92,7 +93,7 @@ public class CertificatePolicies extends Extension.Value
           {
             DERValue qual = der.read();
             int len2 = 0;
-            LinkedList quals = new LinkedList();
+            LinkedList<PolicyQualifierInfo> quals = new LinkedList<PolicyQualifierInfo>();
             while (len2 < qual.getLength())
               {
                 val = der.read();
@@ -109,8 +110,8 @@ public class CertificatePolicies extends Extension.Value
     policyQualifierInfos = Collections.unmodifiableMap(qualifierMap);
   }
 
-  public CertificatePolicies (final List policies,
-                              final Map policyQualifierInfos)
+  public CertificatePolicies (final List<OID> policies,
+                              final Map<OID, List<PolicyQualifierInfo>> policyQualifierInfos)
   {
     for (Iterator it = policies.iterator(); it.hasNext(); )
       if (!(it.next() instanceof OID))
@@ -129,54 +130,69 @@ public class CertificatePolicies extends Extension.Value
             throw new IllegalArgumentException
               ("policyQualifierInfos values must be Lists of PolicyQualifierInfos");
       }
-    this.policies = Collections.unmodifiableList (new ArrayList (policies));
+    this.policies = Collections.unmodifiableList (new ArrayList<OID>(policies));
     this.policyQualifierInfos = Collections.unmodifiableMap
-      (new HashMap (policyQualifierInfos));
+      (new HashMap<OID, List<PolicyQualifierInfo>>(policyQualifierInfos));
   }
 
   // Instance methods.
   // -------------------------------------------------------------------------
 
-  public List getPolicies()
+  public List<OID> getPolicies()
   {
     return policies;
   }
-
-  public List getPolicyQualifierInfos(OID oid)
+  
+  /**
+   * Returns the list of policy OIDs, formatted as dotted-decimal strings.
+   *
+   * @return
+   */
+  public List<String> getPolicyStrings()
   {
-    return (List) policyQualifierInfos.get(oid);
+    List<String> l = new ArrayList<String>(policies.size());
+    for (OID oid : policies)
+      {
+        l.add(oid.toString());
+      }
+    return l;
+  }
+
+  public List<PolicyQualifierInfo> getPolicyQualifierInfos(OID oid)
+  {
+    return policyQualifierInfos.get(oid);
   }
 
   public byte[] getEncoded()
   {
     if (encoded == null)
       {
-        List pol = new ArrayList (policies.size());
-        for (Iterator it = policies.iterator(); it.hasNext(); )
+        List<DERValue> pol = new ArrayList<DERValue>(policies.size());
+        for (Iterator<OID> it = policies.iterator(); it.hasNext(); )
           {
-            OID policy = (OID) it.next();
-            List qualifiers = getPolicyQualifierInfos (policy);
-            List l = new ArrayList (qualifiers == null ? 1 : 2);
-            l.add (new DERValue (DER.OBJECT_IDENTIFIER, policy));
+            OID policy = it.next();
+            List<PolicyQualifierInfo> qualifiers = getPolicyQualifierInfos(policy);
+            List<DERValue> l = new ArrayList<DERValue>(qualifiers == null ? 1 : 2);
+            l.add(new DERValue(DER.OBJECT_IDENTIFIER, policy));
             if (qualifiers != null)
               {
-                List ll = new ArrayList (qualifiers.size());
-                for (Iterator it2 = qualifiers.iterator(); it.hasNext(); )
+                List<DERValue> ll = new ArrayList<DERValue>(qualifiers.size());
+                for (Iterator<PolicyQualifierInfo> it2 = qualifiers.iterator(); it.hasNext(); )
                   {
-                    PolicyQualifierInfo info = (PolicyQualifierInfo) it2.next();
+                    PolicyQualifierInfo info = it2.next();
                     try
                       {
-                        ll.add (DERReader.read (info.getEncoded()));
+                        ll.add(DERReader.read(info.getEncoded()));
                       }
                     catch (IOException ioe)
                       {
                       }
                   }
-                l.add (new DERValue (DER.CONSTRUCTED|DER.SEQUENCE, ll));
+                l.add(new DERValue(DER.CONSTRUCTED|DER.SEQUENCE, ll));
               }
-            pol.add (new DERValue (DER.CONSTRUCTED|DER.SEQUENCE, l));
+            pol.add(new DERValue(DER.CONSTRUCTED|DER.SEQUENCE, l));
           }
-        encoded = new DERValue (DER.CONSTRUCTED|DER.SEQUENCE, pol).getEncoded();
+        encoded = new DERValue(DER.CONSTRUCTED|DER.SEQUENCE, pol).getEncoded();
       }
     return (byte[]) encoded.clone();
   }

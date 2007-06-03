@@ -55,19 +55,24 @@ extern "Java"
 class gnu::java::awt::peer::gtk::FreetypeGlyphVector : public ::java::awt::font::GlyphVector
 {
 
+  void dispose(JArray< jlong > *);
+  jlong getNativeFontPointer(jint);
 public:
   FreetypeGlyphVector(::java::awt::Font *, ::java::lang::String *, ::java::awt::font::FontRenderContext *);
   FreetypeGlyphVector(::java::awt::Font *, JArray< jchar > *, jint, jint, ::java::awt::font::FontRenderContext *, jint);
   FreetypeGlyphVector(::java::awt::Font *, JArray< jint > *, ::java::awt::font::FontRenderContext *);
 private:
   FreetypeGlyphVector(::gnu::java::awt::peer::gtk::FreetypeGlyphVector *);
+public:
+  virtual void finalize();
+private:
   void getGlyphs();
 public:
-  virtual JArray< jint > * getGlyphs(JArray< jint > *);
+  virtual void getGlyphs(JArray< jint > *, JArray< jint > *, JArray< jlong > *);
 private:
-  ::java::awt::geom::Point2D * getKerning(jint, jint);
-  JArray< jdouble > * getMetricsNative(jint);
-  ::java::awt::geom::GeneralPath * getGlyphOutlineNative(jint);
+  ::java::awt::geom::Point2D * getKerning(jint, jint, jlong);
+  JArray< jdouble > * getMetricsNative(jint, jlong);
+  ::java::awt::geom::GeneralPath * getGlyphOutlineNative(jint, jlong);
 public:
   virtual ::java::lang::Object * clone();
   virtual jboolean equals(::java::awt::font::GlyphVector *);
@@ -76,6 +81,9 @@ public:
   virtual void performDefaultLayout();
   virtual jint getGlyphCode(jint);
   virtual JArray< jint > * getGlyphCodes(jint, jint, JArray< jint > *);
+public: // actually protected
+  virtual JArray< jlong > * getGlyphFonts(jint, jint, JArray< jlong > *);
+public:
   virtual ::java::awt::Shape * getGlyphLogicalBounds(jint);
   virtual void setupGlyphMetrics();
   virtual ::java::awt::font::GlyphMetrics * getGlyphMetrics(jint);
@@ -101,6 +109,7 @@ private:
   ::java::awt::font::FontRenderContext * frc;
   jint nGlyphs;
   JArray< jint > * glyphCodes;
+  JArray< jlong > * fontSet;
   JArray< ::java::awt::geom::AffineTransform * > * glyphTransforms;
   JArray< ::java::awt::font::GlyphMetrics * > * metricsCache;
 public:

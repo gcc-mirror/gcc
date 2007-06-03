@@ -17,9 +17,8 @@ public: // actually package-private
   Collections$UnmodifiableMap$UnmodifiableEntrySet(::java::util::Set *);
 public:
   ::java::util::Iterator * iterator();
-  JArray< ::java::util::Map$Entry * > * Collections$UnmodifiableMap$UnmodifiableEntrySet$toArray();
-  JArray< ::java::lang::Object * > * toArray(JArray< ::java::lang::Object * > *);
   JArray< ::java::lang::Object * > * toArray();
+  JArray< ::java::lang::Object * > * toArray(JArray< ::java::lang::Object * > *);
 private:
   static const jlong serialVersionUID = 7854390611657943733LL;
 public:

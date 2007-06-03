@@ -1139,7 +1139,7 @@ public class FTPConnection
    * @param pathname the directory pathname, or null
    * @return a list of filenames(strings)
    */
-  public List nameList(String pathname)
+  public List<String> nameList(String pathname)
     throws IOException
   {
     if (dtp == null || transferMode == MODE_STREAM)
@@ -1164,7 +1164,7 @@ public class FTPConnection
         in = new BufferedInputStream(in);
         in = new CRLFInputStream(in);     // TODO ensure that TYPE is correct
         LineInputStream li = new LineInputStream(in);
-        List ret = new ArrayList();
+        ArrayList<String> ret = new ArrayList<String>();
         for (String line = li.readLine();
              line != null;
              line = li.readLine())

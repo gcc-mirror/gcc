@@ -93,7 +93,7 @@ public interface OpenMBeanParameterInfo
    * @return a set of legal values, or <code>null</code> if no such
    *         set exists.
    */
-  Set getLegalValues();
+  Set<?> getLegalValues();
 
   /**
    * Returns the maximum value of this parameter, or <code>null</code>
@@ -101,7 +101,7 @@ public interface OpenMBeanParameterInfo
    *
    * @return the maximum value, or <code>null</code> if none exists.
    */
-  Comparable getMaxValue();
+  Comparable<?> getMaxValue();
 
   /**
    * Returns the minimum value of this parameter, or <code>null</code>
@@ -109,7 +109,7 @@ public interface OpenMBeanParameterInfo
    *
    * @return the minimum value, or <code>null</code> if none exists.
    */
-  Comparable getMinValue();
+  Comparable<?> getMinValue();
 
   /**
    * Returns the name of this parameter.
@@ -124,7 +124,7 @@ public interface OpenMBeanParameterInfo
    *
    * @return the open type of this parameter.
    */
-  OpenType getOpenType();
+  OpenType<?> getOpenType();
 
   /**
    * Returns true if this parameter has a default value.

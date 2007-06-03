@@ -1,5 +1,5 @@
 /* DynUnion.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,6 +45,8 @@ package org.omg.CORBA;
  * {@link DynAny#current_component()}, iterates over the fields of the
  * member, stored in the union. The union always holds only one member;
  * which one, depends from the value of the discriminator.
+ *
+ * @deprecated by {@link org.omg.DynamicAny.DynUnion}
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */

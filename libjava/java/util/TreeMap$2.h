@@ -6,9 +6,9 @@
 
 #pragma interface
 
-#include <java/util/AbstractSet.h>
+#include <java/util/AbstractCollection.h>
 
-class java::util::TreeMap$2 : public ::java::util::AbstractSet
+class java::util::TreeMap$2 : public ::java::util::AbstractCollection
 {
 
 public: // actually package-private
@@ -17,10 +17,8 @@ public:
   jint size();
   ::java::util::Iterator * iterator();
   void clear();
-  jboolean contains(::java::lang::Object *);
-  jboolean remove(::java::lang::Object *);
 public: // actually package-private
-  ::java::util::TreeMap$SubMap * __attribute__((aligned(__alignof__( ::java::util::AbstractSet)))) this$1;
+  ::java::util::TreeMap$SubMap * __attribute__((aligned(__alignof__( ::java::util::AbstractCollection)))) this$1;
 public:
   static ::java::lang::Class class$;
 };

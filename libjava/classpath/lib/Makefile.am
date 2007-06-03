@@ -19,22 +19,18 @@ if FOUND_GCJ
 ## See the compile-classes target.
 ## There's no point in warning, and we always want debug info.
 ## GCJ LOCAL: use srcdir
-JAVAC = $(GCJ) -C -g -w --encoding=UTF-8 -bootclasspath '' --classpath $(compile_classpath) -d $(srcdir) @classes
+JCOMPILER = $(GCJ) -C -g -w --encoding=UTF-8 -bootclasspath '' --classpath $(compile_classpath) -d $(srcdir) @classes
 else
 if FOUND_JIKES
-JAVAC = $(JIKES) $(JIKESWARNINGS) +F $(JIKESENCODING) -bootclasspath '' -extdirs '' -sourcepath '' --classpath $(compile_classpath) -d . @classes
+JCOMPILER = $(JIKES) $(JIKESWARNINGS) +F $(JIKESENCODING) -bootclasspath '' -extdirs '' -sourcepath '' --classpath $(compile_classpath) -d . @classes
 else
 if FOUND_KJC
 ## FIXME: from what I can tell, kjc does not support a -encoding option.
-JAVAC = $(KJC) -classpath .:$(USER_CLASSLIB) -d . @classes
-else
-if FOUND_GCJX
-JAVAC = $(GCJX) -g -encoding UTF-8 -classpath .:$(USER_CLASSLIB) -d . @classes
+JCOMPILER = $(KJC) -classpath .:$(USER_CLASSLIB) -d . @classes
 else
 if FOUND_ECJ
-JAVAC = $(ECJ) -source 1.4 -encoding UTF-8 -warn:-deprecation,serial,unused -proceedOnError -bootclasspath '' -classpath $(compile_classpath) -d . @classes
+JCOMPILER = $(ECJ) -source 1.4 -encoding UTF-8 -warn:-deprecation,serial,unused -proceedOnError -bootclasspath '' -classpath $(compile_classpath) -d . @classes
 endif # FOUND_ECJ
-endif # FOUND_GCJX
 endif # FOUND_KJC
 endif # FOUND_GCJ
 endif # FOUND_JIKES
@@ -46,7 +42,7 @@ COLLECTIONS = collections.jar
 
 collections.jar: mkcollections.pl
 	./mkcollections.pl $(top_srcdir)
-	$(JAVAC) `$(FIND) $(COLLECTIONS_PREFIX) -name '*.java' -type f -print`
+	$(JCOMPILER) `$(FIND) $(COLLECTIONS_PREFIX) -name '*.java' -type f -print`
 	if test "$(FASTJAR)" != ""; then \
 	  $(FASTJAR) cf $@ $(COLLECTIONS_PREFIX); \
 	else \
@@ -155,7 +151,7 @@ $(JAVA_DEPEND): genclasses
 
 # if FOUND_GCJ
 # ## When building with gcj, we do a recursive make.  We split this rule
-# ## out specially, rather than simply defining JAVAC, so that GNU make
+# ## out specially, rather than simply defining JCOMPILER, so that GNU make
 # ## will see the recursive make invocation and still allow parallel
 # ## builds.
 # compile-classes: classes $(JAVA_SRCS) Makefile
@@ -167,7 +163,7 @@ $(JAVA_DEPEND): genclasses
 # else
 compile-classes: classes $(JAVA_SRCS) Makefile
 if JAVA_MAINTAINER_MODE
-	$(JAVAC)
+	$(JCOMPILER)
 endif
 	touch compile-classes
 # endif

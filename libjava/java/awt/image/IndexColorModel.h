@@ -60,6 +60,7 @@ public:
   virtual ::java::awt::image::SampleModel * createCompatibleSampleModel(jint, jint);
 private:
   void setTransparentPixel(jint);
+  JArray< jint > * createColorMap(jint, jint);
   jint __attribute__((aligned(__alignof__( ::java::awt::image::ColorModel)))) map_size;
   jboolean opaque;
   jint trans;

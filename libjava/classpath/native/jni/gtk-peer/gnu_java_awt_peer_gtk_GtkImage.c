@@ -1,5 +1,5 @@
 /* gtkimage.c
-   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -367,6 +367,9 @@ GdkPixbuf *cp_gtk_image_get_pixbuf (JNIEnv *env, jobject obj)
 				 "Lgnu/classpath/Pointer;");
   g_assert (data_fid != 0);
   data = (*env)->GetObjectField (env, obj, data_fid);
+
+  if (data == NULL)
+    return NULL;
 
   return (GdkPixbuf *)JCL_GetRawData (env, data);
 }

@@ -693,7 +693,7 @@ public final class URI
 	    
 	    String portStr = getURIGroup(matcher, AUTHORITY_PORT_GROUP);
 	    
-	    if (portStr != null)
+	    if (portStr != null && ! portStr.isEmpty())
 	      try
 		{
 		  port = Integer.parseInt(portStr);

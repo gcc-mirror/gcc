@@ -128,10 +128,8 @@ public class EventQueue
     if (peekEvent() != null)
       return false;
 
-    Frame[] frames = Frame.getFrames();
-    for (int i = 0; i < frames.length; ++i)
-      if (frames[i].isDisplayable())
-        return false;
+    if (Frame.hasDisplayableFrames())
+      return false;
 
     return true;
   }

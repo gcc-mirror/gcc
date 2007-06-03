@@ -1,5 +1,5 @@
 /* CompositeType.java -- Type descriptor for CompositeData instances.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,7 +51,7 @@ import java.util.TreeMap;
  * @since 1.5
  */
 public class CompositeType
-  extends OpenType
+  extends OpenType<CompositeData>
 {
 
   /**
@@ -62,12 +62,12 @@ public class CompositeType
   /**
    * A map of item names to their descriptions.
    */
-  private TreeMap nameToDescription;
+  private TreeMap<String,String> nameToDescription;
 
   /**
    * A map of item names to their types.
    */
-  private TreeMap nameToType;
+  private TreeMap<String,OpenType<?>> nameToType;
 
   /**
    * The hash code of this instance.
@@ -109,7 +109,7 @@ public class CompositeType
    *                           before comparison.
    */
   public CompositeType(String name, String desc, String[] names,
-		       String[] descs, OpenType[] types)
+		       String[] descs, OpenType<?>[] types)
     throws OpenDataException
   {
     super(CompositeData.class.getName(), name, desc);
@@ -138,7 +138,7 @@ public class CompositeType
 				      "than once.");
 	nameToDescription.put(fieldName, descs[a]);
       }
-    nameToType = new TreeMap();
+    nameToType = new TreeMap<String,OpenType<?>>();
     for (int a = 0; a < names.length; ++a)
       nameToType.put(names[a].trim(), types[a]);
   }
@@ -178,16 +178,14 @@ public class CompositeType
     CompositeType ctype = (CompositeType) obj;
     if (!(ctype.getTypeName().equals(getTypeName())))
       return false;
-    Set keys = keySet();
+    Set<String> keys = keySet();
     if (!(ctype.keySet().equals(keys)))
       return false;
-    Iterator it = keys.iterator();
-    while (it.hasNext())
-      {
-	String key = (String) it.next();
-	if (!(ctype.getType(key).equals(getType(key))))
-	  return false;
-      }
+    for (String key : keys)
+    {
+      if (!(ctype.getType(key).equals(getType(key))))
+	return false;
+    }
     return true;
   }
 
@@ -203,7 +201,7 @@ public class CompositeType
    */
   public String getDescription(String name)
   {
-    return (String) nameToDescription.get(name);
+    return nameToDescription.get(name);
   }
 
   /**
@@ -216,9 +214,9 @@ public class CompositeType
    * @return the type, or <code>null</code> if the
    *         field doesn't exist.
    */
-  public OpenType getType(String name)
+  public OpenType<?> getType(String name)
   {
-    return (OpenType) nameToType.get(name);
+    return nameToType.get(name);
   }
 
   /**
@@ -287,7 +285,7 @@ public class CompositeType
    * @return a unmodifiable set containing the field
    *         name {@link java.lang.String}s.
    */
-  public Set keySet()
+  public Set<String> keySet()
   {
     return Collections.unmodifiableSet(nameToDescription.keySet());
   }

@@ -163,7 +163,7 @@ public final class Character implements Serializable, Comparable<Character>
     private final String canonicalName;
 
     /** Enumeration for the <code>forName()</code> method */
-    private enum NameType { CANONICAL, NO_SPACES, CONSTANT; };
+    private enum NameType { CANONICAL, NO_SPACES, CONSTANT; }
 
     /**
      * Constructor for strictly defined blocks.

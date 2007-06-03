@@ -33,5 +33,6 @@ public class TestOS
     System.out.println("OS Version: " + osBean.getVersion());
     System.out.println("Architecture: " + osBean.getArch());
     System.out.println("Processors: " + osBean.getAvailableProcessors());
+    System.out.println("System Load Average: " + osBean.getSystemLoadAverage());
   }
 }

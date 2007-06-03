@@ -24,6 +24,7 @@ class gnu::classpath::ServiceFactory : public ::java::lang::Object
   ServiceFactory();
 public:
   static ::java::util::Iterator * lookupProviders(::java::lang::Class *, ::java::lang::ClassLoader *);
+  static ::java::util::Iterator * lookupProviders(::java::lang::Class *, ::java::lang::ClassLoader *, jboolean);
   static ::java::util::Iterator * lookupProviders(::java::lang::Class *);
 public: // actually package-private
   static void log(::java::util::logging::Level *, ::java::lang::String *, ::java::lang::Object *, ::java::lang::Throwable *);

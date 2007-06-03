@@ -45,12 +45,12 @@ import java.util.StringTokenizer;
 public class SerialVer
 {
   // List of classes to load.
-  ArrayList classes = new ArrayList();
+  ArrayList<String> classes = new ArrayList<String>();
   // The class path to use.
   String classpath;
 
   // FIXME: taken from ClassLoader, should share it.
-  private static void addFileURL(ArrayList list, String file)
+  private static void addFileURL(ArrayList<URL> list, String file)
   {
     try
       {
@@ -72,7 +72,7 @@ public class SerialVer
       {
         StringTokenizer tok = new StringTokenizer(classpath,
                                                   File.pathSeparator, true);
-        ArrayList list = new ArrayList();
+        ArrayList<URL> list = new ArrayList<URL>();
         while (tok.hasMoreTokens())
           {
             String s = tok.nextToken();

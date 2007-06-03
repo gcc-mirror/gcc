@@ -96,8 +96,8 @@ public class GtkMenuPeer extends GtkMenuItemPeer
     MenuShortcut ms = item.getShortcut ();
     if (ms != null)
       {
-	key = ms.getKey ();
-	shiftModifier = ms.usesShiftModifier ();
+        key = ms.getKey ();
+        shiftModifier = ms.usesShiftModifier ();
       }
 
     addItem ((MenuItemPeer) item.getPeer (), key, shiftModifier);
@@ -110,8 +110,8 @@ public class GtkMenuPeer extends GtkMenuItemPeer
 
     if (ms != null)
       {
-	key = ms.getKey ();
-	shiftModifier = ms.usesShiftModifier ();
+        key = ms.getKey ();
+        shiftModifier = ms.usesShiftModifier ();
       }
 
     addItem (item, key, shiftModifier);

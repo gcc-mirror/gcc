@@ -1,5 +1,6 @@
 /* BreakIterator.java -- Breaks text into elements
-   Copyright (C) 1998, 1999, 2001, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2004, 2005, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,9 +39,19 @@ exception statement from your version. */
 
 package java.text;
 
+import gnu.java.locale.LocaleHelper;
+
+import gnu.java.text.CharacterBreakIterator;
+import gnu.java.text.LineBreakIterator;
+import gnu.java.text.SentenceBreakIterator;
+import gnu.java.text.WordBreakIterator;
+
+import java.text.spi.BreakIteratorProvider;
+
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.ServiceLoader;
 
 /**
  * This class iterates over text elements such as words, lines, sentences,
@@ -179,19 +190,34 @@ public abstract class BreakIterator implements Cloneable
 
   /**
    * This method returns an instance of <code>BreakIterator</code> that will
-   * iterate over characters as defined in the specified locale.  If the
-   * desired locale is not available, the default locale is used.
+   * iterate over characters as defined in the specified locale.
    *
    * @param locale The desired locale.
    *
-   * @return A <code>BreakIterator</code> instance for the default locale.
+   * @return A <code>BreakIterator</code> instance for the specified locale.
    */
   public static BreakIterator getCharacterInstance (Locale locale)
   {
-    BreakIterator r = getInstance ("CharacterIterator", locale);
-    if (r == null)
-      r = new gnu.java.text.CharacterBreakIterator ();
-    return r;
+    BreakIterator r = getInstance("CharacterIterator", locale);
+    if (r != null)
+      return r;
+    for (BreakIteratorProvider p :
+	   ServiceLoader.load(BreakIteratorProvider.class))
+      {
+	for (Locale loc : p.getAvailableLocales())
+	  {
+	    if (loc.equals(locale))
+	      {
+		BreakIterator bi = p.getCharacterInstance(locale);
+		if (bi != null)
+		  return bi;
+		break;
+	      }
+	  }
+      }
+    if (locale.equals(Locale.ROOT))
+      return new CharacterBreakIterator();
+    return getCharacterInstance(LocaleHelper.getFallbackLocale(locale));
   }
 
   /**
@@ -207,8 +233,7 @@ public abstract class BreakIterator implements Cloneable
 
   /**
    * This method returns an instance of <code>BreakIterator</code> that will
-   * iterate over line breaks as defined in the specified locale.  If the
-   * desired locale is not available, the default locale is used.
+   * iterate over line breaks as defined in the specified locale.
    *
    * @param locale The desired locale.
    *
@@ -217,9 +242,25 @@ public abstract class BreakIterator implements Cloneable
   public static BreakIterator getLineInstance (Locale locale)
   {
     BreakIterator r = getInstance ("LineIterator", locale);
-    if (r == null)
-      r = new gnu.java.text.LineBreakIterator ();
-    return r;
+    if (r != null)
+      return r;
+    for (BreakIteratorProvider p :
+	   ServiceLoader.load(BreakIteratorProvider.class))
+      {
+	for (Locale loc : p.getAvailableLocales())
+	  {
+	    if (loc.equals(locale))
+	      {
+		BreakIterator bi = p.getLineInstance(locale);
+		if (bi != null)
+		  return bi;
+		break;
+	      }
+	  }
+      }
+    if (locale.equals(Locale.ROOT))
+      return new LineBreakIterator();
+    return getLineInstance(LocaleHelper.getFallbackLocale(locale));
   }
 
   /**
@@ -235,8 +276,7 @@ public abstract class BreakIterator implements Cloneable
 
   /**
    * This method returns an instance of <code>BreakIterator</code> that will
-   * iterate over sentences as defined in the specified locale.  If the
-   * desired locale is not available, the default locale is used.
+   * iterate over sentences as defined in the specified locale.
    *
    * @param locale The desired locale.
    *
@@ -245,9 +285,25 @@ public abstract class BreakIterator implements Cloneable
   public static BreakIterator getSentenceInstance (Locale locale)
   {
     BreakIterator r = getInstance ("SentenceIterator", locale);
-    if (r == null)
-      r = new gnu.java.text.SentenceBreakIterator ();
-    return r;
+    if (r != null)
+      return r;
+    for (BreakIteratorProvider p :
+	   ServiceLoader.load(BreakIteratorProvider.class))
+      {
+	for (Locale loc : p.getAvailableLocales())
+	  {
+	    if (loc.equals(locale))
+	      {
+		BreakIterator bi = p.getSentenceInstance(locale);
+		if (bi != null)
+		  return bi;
+		break;
+	      }
+	  }
+      }
+    if (locale.equals(Locale.ROOT))
+      return new SentenceBreakIterator();
+    return getSentenceInstance(LocaleHelper.getFallbackLocale(locale));
   }
 
   /**
@@ -271,8 +327,7 @@ public abstract class BreakIterator implements Cloneable
 
   /**
    * This method returns an instance of <code>BreakIterator</code> that will
-   * iterate over words as defined in the specified locale.  If the
-   * desired locale is not available, the default locale is used.
+   * iterate over words as defined in the specified locale.  
    *
    * @param locale The desired locale.
    *
@@ -281,9 +336,25 @@ public abstract class BreakIterator implements Cloneable
   public static BreakIterator getWordInstance (Locale locale)
   {
     BreakIterator r = getInstance ("WordIterator", locale);
-    if (r == null)
-      r = new gnu.java.text.WordBreakIterator ();
-    return r;
+    if (r != null)
+      return r;
+    for (BreakIteratorProvider p :
+	   ServiceLoader.load(BreakIteratorProvider.class))
+      {
+	for (Locale loc : p.getAvailableLocales())
+	  {
+	    if (loc.equals(locale))
+	      {
+		BreakIterator bi = p.getWordInstance(locale);
+		if (bi != null)
+		  return bi;
+		break;
+	      }
+	  }
+      }
+    if (locale.equals(Locale.ROOT))
+      return new WordBreakIterator();
+    return getWordInstance(LocaleHelper.getFallbackLocale(locale));
   }
 
   /**

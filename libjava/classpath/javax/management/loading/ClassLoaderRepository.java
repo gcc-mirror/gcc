@@ -71,7 +71,7 @@ public interface ClassLoaderRepository
    * @throws ClassNotFoundException if all the class loaders fail
    *                                to load the class.
    */
-  Class loadClass(String name)
+  Class<?> loadClass(String name)
     throws ClassNotFoundException;
 
   /**
@@ -102,7 +102,7 @@ public interface ClassLoaderRepository
    * @throws ClassNotFoundException if all the class loaders fail
    *                                to load the class.
    */
-  Class loadClassBefore(ClassLoader stop, String name)
+  Class<?> loadClassBefore(ClassLoader stop, String name)
     throws ClassNotFoundException;
 
   /**
@@ -132,7 +132,7 @@ public interface ClassLoaderRepository
    * @throws ClassNotFoundException if all the class loaders fail
    *                                to load the class.
    */
-  Class loadClassWithout(ClassLoader exclude, String name)
+  Class<?> loadClassWithout(ClassLoader exclude, String name)
     throws ClassNotFoundException;
 
 }

@@ -43,7 +43,6 @@ import gnu.classpath.Configuration;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Vector;
 
 /**
  * This class models a network interface on the host computer.  A network
@@ -58,12 +57,12 @@ import java.util.Vector;
 final class VMNetworkInterface
 {
   String name;
-  Set addresses;
+  Set<InetAddress> addresses;
 
   VMNetworkInterface(String name)
   {
     this.name = name;
-    addresses = new HashSet();
+    addresses = new HashSet<InetAddress>();
   }
   
   /**
@@ -72,7 +71,7 @@ final class VMNetworkInterface
    */
   public VMNetworkInterface()
   {
-    addresses = new HashSet();
+    addresses = new HashSet<InetAddress>();
     try
       {
         addresses.add(InetAddress.getByName("0.0.0.0"));

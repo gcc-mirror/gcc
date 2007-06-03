@@ -43,15 +43,18 @@ java::io::File::_access (jint query)
   char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 1);
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   buf[total] = '\0';
-  JvAssert (query == READ || query == WRITE || query == EXISTS);
+  JvAssert (query == READ || query == WRITE || query == EXISTS
+	    || query == EXEC);
 #ifdef HAVE_ACCESS
   int mode;
   if (query == READ)
     mode = R_OK;
   else if (query == WRITE)
     mode = W_OK;
-  else
+  else if (query == EXISTS)
     mode = F_OK;
+  else
+    mode = X_OK;
   return ::access (buf, mode) == 0;
 #else
   return false;
@@ -338,6 +341,54 @@ java::io::File::performMkdir (void)
 
 #ifdef HAVE_MKDIR
   return ::mkdir (buf, 0755) == 0;
+#else
+  return false;
+#endif
+}
+
+jboolean
+java::io::File::setFilePermissions (jboolean enable,
+				    jboolean ownerOnly,
+				    jint permissions)
+{
+  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 1);
+  jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
+  buf[total] = '\0';
+  JvAssert (permissions == READ || permissions == WRITE || permissions == EXEC);
+#if defined (HAVE_STAT) && defined (HAVE_CHMOD)
+  mode_t mode = 0;
+
+  struct stat sb;
+  if (::stat (buf, &sb))
+    return false;
+
+  if (ownerOnly)
+    {
+      if (permissions == READ)
+        mode |= S_IRUSR;
+      else if (permissions == WRITE)
+        mode |= S_IWUSR;
+      else if (permissions == EXEC)
+        mode |= S_IXUSR;
+    }
+  else
+    {
+      if (permissions == READ)
+        mode |= (S_IRUSR | S_IRGRP | S_IROTH);
+      else if (permissions == WRITE)
+        mode |= (S_IWUSR | S_IWGRP | S_IWOTH);
+      else if (permissions == EXEC)
+        mode |= (S_IXUSR | S_IXGRP | S_IXOTH);
+    }
+  
+  if (enable)
+    mode = sb.st_mode | mode;
+  else
+    mode = sb.st_mode & ~mode;
+  
+  if (::chmod(buf, mode) < 0)
+    return false;
+  return true;
 #else
   return false;
 #endif

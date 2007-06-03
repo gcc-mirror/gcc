@@ -147,7 +147,7 @@ public final class GConfNativePeer
    * @return a java.util.List of keys. If there are no keys in the given node, a
    *         list of size 0 is returned.
    */
-  public List getKeys(String node) throws BackingStoreException
+  public List<String> getKeys(String node) throws BackingStoreException
   {
     return gconf_client_all_keys(node);
   }
@@ -159,7 +159,7 @@ public final class GConfNativePeer
    * @param node the node to get subnodes from. If there are no subnodes in the
    *          given node, a list of size 0 is returned.
    */
-  public List getChildrenNodes(String node) throws BackingStoreException
+  public List<String> getChildrenNodes(String node) throws BackingStoreException
   {
     return gconf_client_all_nodes(node);
   }
@@ -295,7 +295,7 @@ public final class GConfNativePeer
    * @return A list of nodes under the given source node.
    */
   native
-  static final protected List gconf_client_all_nodes(String node)
+  static final protected List<String> gconf_client_all_nodes(String node)
     throws BackingStoreException;
   
   /**
@@ -305,7 +305,7 @@ public final class GConfNativePeer
    * @return A list of all keys stored in the given node.
    */
   native
-  static final protected List gconf_client_all_keys(String node)
+  static final protected List<String> gconf_client_all_keys(String node)
     throws BackingStoreException;
 
   /**

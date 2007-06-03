@@ -72,7 +72,7 @@ public class Indexer
     // Index the files in this jar.
     // The results look a little better if we keep them
     // in insertion order.
-    LinkedHashSet entries = new LinkedHashSet();
+    LinkedHashSet<String> entries = new LinkedHashSet<String>();
     Enumeration e = jf.entries();
     while (e.hasMoreElements())
       {

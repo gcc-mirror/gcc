@@ -130,7 +130,7 @@ public class GtkSelection implements Transferable
    * Set as response to a requestURIs() call. Only valid when
    * urisDelivered is true
    */
-  private List uris;
+  private List<File> uris;
 
   /**
    * Indicates a requestBytes(String) call was made and the
@@ -163,51 +163,51 @@ public class GtkSelection implements Transferable
     DataFlavor[] result;
     synchronized (requestLock)
       {
-	// Did we request already and cache the result?
-	if (mimeTypesDelivered)
-	  result = (DataFlavor[]) dataFlavors.clone();
-	else
-	  {
-	    // Wait till there are no pending requests.
-	    while (requestInProgress)
-	      {
-		try
-		  {
-		    requestLock.wait();
-		  }
-		catch (InterruptedException ie)
-		  {
-		    // ignored
-		  }
-	      }
+        // Did we request already and cache the result?
+        if (mimeTypesDelivered)
+          result = (DataFlavor[]) dataFlavors.clone();
+        else
+          {
+            // Wait till there are no pending requests.
+            while (requestInProgress)
+              {
+                try
+                  {
+                    requestLock.wait();
+                  }
+                catch (InterruptedException ie)
+                  {
+                    // ignored
+                  }
+              }
 
-	    // If nobody else beat us and cached the result we try
-	    // ourselves to get it.
-	    if (! mimeTypesDelivered)
-	      {
-		requestInProgress = true;
-		requestMimeTypes(clipboard);
-		while (! mimeTypesDelivered)
-		  {
-		    try
-		      {
-			requestLock.wait();
-		      }
-		    catch (InterruptedException ie)
-		      {
-			// ignored
-		      }
-		  }
-		requestInProgress = false;
-	      }
-	    result = dataFlavors;
-	    if (! GtkClipboard.canCache)
-	      {
-		dataFlavors = null;
-		mimeTypesDelivered = false;
-	      }
-	    requestLock.notifyAll();
-	  }
+            // If nobody else beat us and cached the result we try
+            // ourselves to get it.
+            if (! mimeTypesDelivered)
+              {
+                requestInProgress = true;
+                requestMimeTypes(clipboard);
+                while (! mimeTypesDelivered)
+                  {
+                    try
+                      {
+                        requestLock.wait();
+                      }
+                    catch (InterruptedException ie)
+                      {
+                        // ignored
+                      }
+                  }
+                requestInProgress = false;
+              }
+            result = dataFlavors;
+            if (! GtkClipboard.canCache)
+              {
+                dataFlavors = null;
+                mimeTypesDelivered = false;
+              }
+            requestLock.notifyAll();
+          }
       }
     return result;
   }
@@ -220,53 +220,55 @@ public class GtkSelection implements Transferable
   {
     synchronized (requestLock)
       {
-	if (mimeTypes == null)
-	  dataFlavors = new DataFlavor[0];
-	else
-	  {
-	    // Most likely the mimeTypes include text in which case we add an
-	    // extra element.
-	    ArrayList flavorsList = new ArrayList(mimeTypes.length + 1);
-	    for (int i = 0; i < mimeTypes.length; i++)
-	      {
-		try
-		  {
-		    if (mimeTypes[i] == GtkClipboard.stringMimeType)
-		      {
-			// XXX - Fix DataFlavor.getTextPlainUnicodeFlavor()
-			// and also add it to the list.
-			flavorsList.add(DataFlavor.stringFlavor);
-			flavorsList.add(DataFlavor.plainTextFlavor);
-		      }
-		    else if (mimeTypes[i] == GtkClipboard.imageMimeType)
-		      flavorsList.add(DataFlavor.imageFlavor);
-		    else if (mimeTypes[i] == GtkClipboard.filesMimeType)
-		      flavorsList.add(DataFlavor.javaFileListFlavor);
-		    else
-		      {
-			// We check the target to prevent duplicates
-			// of the "magic" targets above.
-			DataFlavor target = new DataFlavor(mimeTypes[i]);
-			if (! flavorsList.contains(target))
-			  flavorsList.add(target);
-		      }
-		  }
-		catch (ClassNotFoundException cnfe)
-		  {
-		    cnfe.printStackTrace();
-		  }
-		catch (NullPointerException npe)
-		  {
-		    npe.printStackTrace();
-		  }
-	      }
+        if (mimeTypes == null)
+          dataFlavors = new DataFlavor[0];
+        else
+          {
+            // Most likely the mimeTypes include text in which case we add an
+            // extra element.
+            ArrayList<DataFlavor> flavorsList =
+              new ArrayList<DataFlavor>(mimeTypes.length + 1);
+            
+            for (int i = 0; i < mimeTypes.length; i++)
+              {
+                try
+                  {
+                    if (mimeTypes[i] == GtkClipboard.stringMimeType)
+                      {
+                        // XXX - Fix DataFlavor.getTextPlainUnicodeFlavor()
+                        // and also add it to the list.
+                        flavorsList.add(DataFlavor.stringFlavor);
+                        flavorsList.add(DataFlavor.plainTextFlavor);
+                      }
+                    else if (mimeTypes[i] == GtkClipboard.imageMimeType)
+                      flavorsList.add(DataFlavor.imageFlavor);
+                    else if (mimeTypes[i] == GtkClipboard.filesMimeType)
+                      flavorsList.add(DataFlavor.javaFileListFlavor);
+                    else
+                      {
+                        // We check the target to prevent duplicates
+                        // of the "magic" targets above.
+                        DataFlavor target = new DataFlavor(mimeTypes[i]);
+                        if (! flavorsList.contains(target))
+                          flavorsList.add(target);
+                      }
+                  }
+                catch (ClassNotFoundException cnfe)
+                  {
+                    cnfe.printStackTrace();
+                  }
+                catch (NullPointerException npe)
+                  {
+                    npe.printStackTrace();
+                  }
+              }
 	    
-	    dataFlavors = new DataFlavor[flavorsList.size()];
-	    flavorsList.toArray(dataFlavors);
-	  }
+            dataFlavors = new DataFlavor[flavorsList.size()];
+            flavorsList.toArray(dataFlavors);
+          }
 
-	mimeTypesDelivered = true;
-	requestLock.notifyAll();
+        mimeTypesDelivered = true;
+        requestLock.notifyAll();
       }
   }
 
@@ -279,7 +281,7 @@ public class GtkSelection implements Transferable
     DataFlavor[] dfs = getTransferDataFlavors();
     for (int i = 0; i < dfs.length; i++)
       if (flavor.equals(dfs[i]))
-	return true;
+        return true;
 
     return false;
   }
@@ -294,51 +296,51 @@ public class GtkSelection implements Transferable
     String result;
     synchronized (requestLock)
       {
-	// Did we request already and cache the result?
-	if (textDelivered)
-	  result = text;
-	else
-	  {
-	    // Wait till there are no pending requests.
-	    while (requestInProgress)
-	      {
-		try
-		  {
-		    requestLock.wait();
-		  }
-		catch (InterruptedException ie)
-		  {
-		    // ignored
-		  }
-	      }
+        // Did we request already and cache the result?
+        if (textDelivered)
+          result = text;
+        else
+          {
+            // Wait till there are no pending requests.
+            while (requestInProgress)
+              {
+                try
+                  {
+                    requestLock.wait();
+                  }
+                catch (InterruptedException ie)
+                  {
+                    // ignored
+                  }
+              }
 
-	    // If nobody else beat us we try ourselves to get and
-	    // caching the result.
-	    if (! textDelivered)
-	      {
-		requestInProgress = true;
-		requestText(clipboard);
-		while (! textDelivered)
-		  {
-		    try
-		      {
-			requestLock.wait();
-		      }
-		    catch (InterruptedException ie)
-		      {
-			// ignored
-		      }
-		  }
-		requestInProgress = false;
-	      }
-	    result = text;
-	    if (! GtkClipboard.canCache)
-	      {
-		text = null;
-		textDelivered = false;
-	      }
-	    requestLock.notifyAll();
-	  }
+            // If nobody else beat us we try ourselves to get and
+            // caching the result.
+            if (! textDelivered)
+              {
+                requestInProgress = true;
+                requestText(clipboard);
+                while (! textDelivered)
+                  {
+                    try
+                      {
+                        requestLock.wait();
+                      }
+                    catch (InterruptedException ie)
+                      {
+                        // ignored
+                      }
+                  }
+                requestInProgress = false;
+              }
+            result = text;
+            if (! GtkClipboard.canCache)
+              {
+                text = null;
+                textDelivered = false;
+              }
+            requestLock.notifyAll();
+          }
       }
     return result;
   }
@@ -351,9 +353,9 @@ public class GtkSelection implements Transferable
   {
     synchronized (requestLock)
       {
-	this.text = text;
-	textDelivered = true;
-	requestLock.notifyAll();
+        this.text = text;
+        textDelivered = true;
+        requestLock.notifyAll();
       }
   }
 
@@ -367,54 +369,56 @@ public class GtkSelection implements Transferable
     Image result;
     synchronized (requestLock)
       {
-	// Did we request already and cache the result?
-	if (imageDelivered)
-	  result = image;
-	else
-	  {
-	    // Wait till there are no pending requests.
-	    while (requestInProgress)
-	      {
-		try
-		  {
-		    requestLock.wait();
-		  }
-		catch (InterruptedException ie)
-		  {
-		    // ignored
-		  }
-	      }
+        // Did we request already and cache the result?
+        if (imageDelivered)
+          result = image;
+        else
+          {
+            // Wait till there are no pending requests.
+            while (requestInProgress)
+              {
+                try
+                  {
+                    requestLock.wait();
+                  }
+                catch (InterruptedException ie)
+                  {
+                    // ignored
+                  }
+              }
 
-	    // If nobody else beat us we try ourselves to get and
-	    // caching the result.
-	    if (! imageDelivered)
-	      {
-		requestInProgress = true;
-		requestImage(clipboard);
-		while (! imageDelivered)
-		  {
-		    try
-		      {
-			requestLock.wait();
-		      }
-		    catch (InterruptedException ie)
-		      {
-			// ignored
-		      }
-		  }
-		requestInProgress = false;
-	      }
-	    if (imagePointer != null)
-	      image = new GtkImage(imagePointer);
-	    imagePointer = null;
-	    result = image;
-	    if (! GtkClipboard.canCache)
-	      {
-		image = null;
-		imageDelivered = false;
-	      }
-	    requestLock.notifyAll();
-	  }
+            // If nobody else beat us we try ourselves to get and
+            // caching the result.
+            if (! imageDelivered)
+              {
+                requestInProgress = true;
+                requestImage(clipboard);
+                while (! imageDelivered)
+                  {
+                    try
+                      {
+                        requestLock.wait();
+                      }
+                    catch (InterruptedException ie)
+                      {
+                        // ignored
+                      }
+                  }
+                requestInProgress = false;
+              }
+            
+            if (imagePointer != null)
+              image = new GtkImage(imagePointer);
+            
+            imagePointer = null;
+            result = image;
+            if (! GtkClipboard.canCache)
+              {
+                image = null;
+                imageDelivered = false;
+              }
+            requestLock.notifyAll();
+          }
       }
     return result;
   }
@@ -430,9 +434,9 @@ public class GtkSelection implements Transferable
   {
     synchronized (requestLock)
       {
-	this.imagePointer = pointer;
-	imageDelivered = true;
-	requestLock.notifyAll();
+        this.imagePointer = pointer;
+        imageDelivered = true;
+        requestLock.notifyAll();
       }
   }
 
@@ -441,56 +445,56 @@ public class GtkSelection implements Transferable
    * URIs/Files and if not requests them and waits till they are
    * available.
    */
-  private List getURIs()
+  private List<File> getURIs()
   {
-    List result;
+    List<File> result;
     synchronized (requestLock)
       {
-	// Did we request already and cache the result?
-	if (urisDelivered)
-	  result = uris;
-	else
-	  {
-	    // Wait till there are no pending requests.
-	    while (requestInProgress)
-	      {
-		try
-		  {
-		    requestLock.wait();
-		  }
-		catch (InterruptedException ie)
-		  {
-		    // ignored
-		  }
-	      }
+        // Did we request already and cache the result?
+        if (urisDelivered)
+          result = uris;
+        else
+          {
+            // Wait till there are no pending requests.
+            while (requestInProgress)
+              {
+                try
+                  {
+                    requestLock.wait();
+                  }
+                catch (InterruptedException ie)
+                  {
+                    // ignored
+                  }
+              }
 
-	    // If nobody else beat us we try ourselves to get and
-	    // caching the result.
-	    if (! urisDelivered)
-	      {
-		requestInProgress = true;
-		requestURIs(clipboard);
-		while (! urisDelivered)
-		  {
-		    try
-		      {
-			requestLock.wait();
-		      }
-		    catch (InterruptedException ie)
-		      {
-			// ignored
-		      }
-		  }
-		requestInProgress = false;
-	      }
-	    result = uris;
-	    if (! GtkClipboard.canCache)
-	      {
-		uris = null;
-		urisDelivered = false;
-	      }
-	    requestLock.notifyAll();
-	  }
+            // If nobody else beat us we try ourselves to get and
+            // caching the result.
+            if (! urisDelivered)
+              {
+                requestInProgress = true;
+                requestURIs(clipboard);
+                while (! urisDelivered)
+                  {
+                    try
+                      {
+                        requestLock.wait();
+                      }
+                    catch (InterruptedException ie)
+                      {
+                        // ignored
+                      }
+                  }
+                requestInProgress = false;
+              }
+            result = uris;
+            if (! GtkClipboard.canCache)
+              {
+                uris = null;
+                urisDelivered = false;
+              }
+            requestLock.notifyAll();
+          }
       }
     return result;
   }
@@ -503,26 +507,26 @@ public class GtkSelection implements Transferable
   {
     synchronized (requestLock)
       {
-	if (uris != null && uris.length != 0)
-	  {
-	    ArrayList list = new ArrayList(uris.length);
-	    for (int i = 0; i < uris.length; i++)
-	      {
-		try
-		  {
-		    URI uri = new URI(uris[i]);
-		    if (uri.getScheme().equals("file"))
-		      list.add(new File(uri));
-		  }
-		catch (URISyntaxException use)
-		  {
-		  }
-	      }
-	    this.uris = list;
-	  }
+        if (uris != null && uris.length != 0)
+          {
+            ArrayList<File> list = new ArrayList<File>(uris.length);
+            for (int i = 0; i < uris.length; i++)
+              {
+                try
+                  {
+                    URI uri = new URI(uris[i]);
+                    if (uri.getScheme().equals("file"))
+                      list.add(new File(uri));
+                  }
+                catch (URISyntaxException use)
+                  {
+                  }
+              }
+            this.uris = list;
+          }
 
-	urisDelivered = true;
-	requestLock.notifyAll();
+        urisDelivered = true;
+        requestLock.notifyAll();
       }
   }
 
@@ -537,39 +541,39 @@ public class GtkSelection implements Transferable
     byte[] result;
     synchronized (requestLock)
       {
-	// Wait till there are no pending requests.
-	while (requestInProgress)
-	  {
-	    try
-	      {
-		requestLock.wait();
-	      }
-	    catch (InterruptedException ie)
-	      {
-		// ignored
-	      }
-	  }
+        // Wait till there are no pending requests.
+        while (requestInProgress)
+          {
+            try
+              {
+                requestLock.wait();
+              }
+            catch (InterruptedException ie)
+              {
+                // ignored
+              }
+          }
 
-	// Request bytes and wait till they are available.
-	requestInProgress = true;
-	requestBytes(clipboard, target);
-	while (! bytesDelivered)
-	  {
-	    try
-	      {
-		requestLock.wait();
-	      }
-	    catch (InterruptedException ie)
-	      {
-		// ignored
-	      }
-	  }
-	result = bytes;
-	bytes = null;
-	bytesDelivered = false;
-	requestInProgress = false;
+        // Request bytes and wait till they are available.
+        requestInProgress = true;
+        requestBytes(clipboard, target);
+        while (! bytesDelivered)
+          {
+            try
+              {
+                requestLock.wait();
+              }
+            catch (InterruptedException ie)
+              {
+                // ignored
+              }
+          }
+        result = bytes;
+        bytes = null;
+        bytesDelivered = false;
+        requestInProgress = false;
 	
-	requestLock.notifyAll();
+        requestLock.notifyAll();
       }
     return result;
   }
@@ -583,9 +587,9 @@ public class GtkSelection implements Transferable
   {
     synchronized (requestLock)
       {
-	this.bytes = bytes;
-	bytesDelivered = true;
-	requestLock.notifyAll();
+        this.bytes = bytes;
+        bytesDelivered = true;
+        requestLock.notifyAll();
       }
   }
 
@@ -596,30 +600,30 @@ public class GtkSelection implements Transferable
     // try one more time through getBytes().
     if (flavor.equals(DataFlavor.stringFlavor))
       {
-	String text = getText();
-	if (text != null)
-	  return text;
+        String text = getText();
+        if (text != null)
+          return text;
       }
 
     if (flavor.equals(DataFlavor.plainTextFlavor))
       {
-	String text = getText();
-	if (text != null)
-	  return new StringBufferInputStream(text);
+        String text = getText();
+        if (text != null)
+          return new StringBufferInputStream(text);
       }
 
     if (flavor.equals(DataFlavor.imageFlavor))
       {
-	Image image = getImage();
-	if (image != null)
-	  return image;
+        Image image = getImage();
+        if (image != null)
+          return image;
       }
 
     if (flavor.equals(DataFlavor.javaFileListFlavor))
       {
-	List uris = getURIs();
-	if (uris != null)
-	  return uris;
+        List<File> uris = getURIs();
+        if (uris != null)
+          return uris;
       }
 
     byte[] bytes = getBytes(flavor.getMimeType());
@@ -628,20 +632,20 @@ public class GtkSelection implements Transferable
 
     if (flavor.isMimeTypeSerializedObject())
       {
-	try
-	  {
-	    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-	    ObjectInputStream ois = new ObjectInputStream(bais);
-	    return ois.readObject();
-	  }
-	catch (IOException ioe)
-	  {
-	    ioe.printStackTrace();
-	  }
-	catch (ClassNotFoundException cnfe)
-	  {
-	    cnfe.printStackTrace();
-	  }
+        try
+          {
+            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+            ObjectInputStream ois = new ObjectInputStream(bais);
+            return ois.readObject();
+          }
+        catch (IOException ioe)
+          {
+            ioe.printStackTrace();
+          }
+        catch (ClassNotFoundException cnfe)
+          {
+            cnfe.printStackTrace();
+          }
       }
 
     if (flavor.isRepresentationClassInputStream())

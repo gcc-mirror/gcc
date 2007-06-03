@@ -1,5 +1,5 @@
 /* AlsaMidiSequencerDevice.java -- The ALSA MIDI sequencer device
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,10 +50,6 @@ import javax.sound.midi.Sequence;
 import javax.sound.midi.Sequencer;
 import javax.sound.midi.Track;
 import javax.sound.midi.Transmitter;
-
-// FIXME: These next two imports are only required by gcj it seems.
-import javax.sound.midi.MidiDevice.Info;
-import javax.sound.midi.Sequencer.SyncMode;
 
 /**
  * The ALSA MIDI sequencer device.  This is a singleton device.

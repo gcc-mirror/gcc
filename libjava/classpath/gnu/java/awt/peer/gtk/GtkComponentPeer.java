@@ -109,7 +109,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   native void gtkWidgetGetLocationOnScreen (int[] point);
   native void gtkWidgetSetCursor (int type, GtkImage image, int x, int y);
   native void gtkWidgetSetCursorUnlocked (int type, GtkImage image,
-					  int x, int y);
+                                          int x, int y);
   native void gtkWidgetSetBackground (int red, int green, int blue);
   native void gtkWidgetSetForeground (int red, int green, int blue);
   native void gtkWidgetSetSensitive (boolean sensitive);
@@ -206,7 +206,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   }
 
   public int checkImage (Image image, int width, int height, 
-			 ImageObserver observer) 
+                         ImageObserver observer) 
   {
     return getToolkit().checkImage(image, width, height, observer);
   }
@@ -402,7 +402,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   }
 
   public boolean prepareImage (Image image, int width, int height,
-			       ImageObserver observer) 
+                               ImageObserver observer) 
   {
     return getToolkit().prepareImage(image, width, height, observer);
   }
@@ -539,17 +539,17 @@ public class GtkComponentPeer extends GtkGenericPeer
     int type = cursor.getType();
     if (cursor instanceof GtkCursor)
       {
-	GtkCursor gtkCursor = (GtkCursor) cursor;
-	image = gtkCursor.getGtkImage();
-	Point hotspot = gtkCursor.getHotspot();
-	x = hotspot.x;
-	y = hotspot.y;
+        GtkCursor gtkCursor = (GtkCursor) cursor;
+        image = gtkCursor.getGtkImage();
+        Point hotspot = gtkCursor.getHotspot();
+        x = hotspot.x;
+        y = hotspot.y;
       }
     else
       {
-	image = null;
-	x = 0;
-	y = 0;
+        image = null;
+        x = 0;
+        y = 0;
       }
 
     if (Thread.currentThread() == GtkMainThread.mainThread)
@@ -597,7 +597,7 @@ public class GtkComponentPeer extends GtkGenericPeer
     if (b && ! (awtComponent instanceof Window))
       {
         Rectangle bounds = awtComponent.getBounds();
-	b = (bounds.width > 0) && (bounds.height > 0);
+        b = (bounds.width > 0) && (bounds.height > 0);
       }
 
     if (Thread.currentThread() == GtkMainThread.mainThread)
@@ -617,23 +617,23 @@ public class GtkComponentPeer extends GtkGenericPeer
   }
 
   protected void postMouseEvent(int id, long when, int mods, int x, int y, 
-				int clickCount, boolean popupTrigger) 
+                                int clickCount, boolean popupTrigger) 
   {
     q().postEvent(new MouseEvent(awtComponent, id, when, mods, x, y, 
-			       clickCount, popupTrigger));
+                                 clickCount, popupTrigger));
   }
 
   /**
    * Callback for component_scroll_cb.
    */
   protected void postMouseWheelEvent(int id, long when, int mods,
-				     int x, int y, int clickCount,
-				     boolean popupTrigger,
-				     int type, int amount, int rotation) 
+                                     int x, int y, int clickCount,
+                                     boolean popupTrigger,
+                                     int type, int amount, int rotation) 
   {
     q().postEvent(new MouseWheelEvent(awtComponent, id, when, mods,
-				      x, y, clickCount, popupTrigger,
-				      type, amount, rotation));
+                                      x, y, clickCount, popupTrigger,
+                                      type, amount, rotation));
   }
 
   protected void postExposeEvent (int x, int y, int width, int height)
@@ -659,12 +659,12 @@ public class GtkComponentPeer extends GtkGenericPeer
             && keyCode != KeyEvent.VK_ALT))
       {
         synchronized(q)
-	  {
-	    q.postEvent(keyEvent);
-	    keyEvent = new KeyEvent(awtComponent, KeyEvent.KEY_TYPED, when,
-				    mods, KeyEvent.VK_UNDEFINED, keyChar,
-				    keyLocation);
-	    q.postEvent(keyEvent);
+          {
+            q.postEvent(keyEvent);
+            keyEvent = new KeyEvent(awtComponent, KeyEvent.KEY_TYPED, when,
+                                    mods, KeyEvent.VK_UNDEFINED, keyChar,
+                                    keyLocation);
+            q.postEvent(keyEvent);
           }
       }
     else
@@ -685,8 +685,8 @@ public class GtkComponentPeer extends GtkGenericPeer
   protected void postItemEvent (Object item, int stateChange)
   {
     q().postEvent (new ItemEvent ((ItemSelectable)awtComponent, 
-				ItemEvent.ITEM_STATE_CHANGED,
-				item, stateChange));
+                                  ItemEvent.ITEM_STATE_CHANGED,
+                                  item, stateChange));
   }
 
   protected void postTextEvent ()
@@ -828,8 +828,8 @@ public class GtkComponentPeer extends GtkGenericPeer
     // buffer and one front buffer.
     if (numBuffers == 2)
       backBuffer = new GtkVolatileImage(this, awtComponent.getWidth(),
-					awtComponent.getHeight(),
-					caps.getBackBufferCapabilities());
+                                        awtComponent.getHeight(),
+                                        caps.getBackBufferCapabilities());
     else
       throw new AWTException("GtkComponentPeer.createBuffers:"
 			     + " multi-buffering not supported");
@@ -846,18 +846,18 @@ public class GtkComponentPeer extends GtkGenericPeer
   public void flip (BufferCapabilities.FlipContents contents)
   {
     getGraphics().drawImage(backBuffer,
-			    awtComponent.getWidth(),
-			    awtComponent.getHeight(),
-			    null);
+                            awtComponent.getWidth(),
+                            awtComponent.getHeight(),
+                            null);
 
     // create new back buffer and clear it to the background color.
     if (contents == BufferCapabilities.FlipContents.BACKGROUND)
 	{
 	  backBuffer = createVolatileImage(awtComponent.getWidth(),
-					   awtComponent.getHeight());
+	                                   awtComponent.getHeight());
 	  backBuffer.getGraphics().clearRect(0, 0,
-					     awtComponent.getWidth(),
-					     awtComponent.getHeight());
+	                                     awtComponent.getWidth(),
+	                                     awtComponent.getHeight());
 	}
     // FIXME: support BufferCapabilities.FlipContents.PRIOR
   }

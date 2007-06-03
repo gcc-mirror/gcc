@@ -31,6 +31,8 @@ class gnu::java::lang::management::ThreadMXBeanImpl : public ::gnu::java::lang::
 
 public:
   ThreadMXBeanImpl();
+  JArray< ::java::lang::management::ThreadInfo * > * dumpAllThreads(jboolean, jboolean);
+  JArray< jlong > * findDeadlockedThreads();
   JArray< jlong > * findMonitorDeadlockedThreads();
   JArray< jlong > * getAllThreadIds();
   jlong getCurrentThreadCpuTime();
@@ -43,9 +45,12 @@ public:
   JArray< ::java::lang::management::ThreadInfo * > * getThreadInfo(JArray< jlong > *);
   ::java::lang::management::ThreadInfo * getThreadInfo(jlong, jint);
   JArray< ::java::lang::management::ThreadInfo * > * getThreadInfo(JArray< jlong > *, jint);
+  JArray< ::java::lang::management::ThreadInfo * > * getThreadInfo(JArray< jlong > *, jboolean, jboolean);
   jlong getThreadUserTime(jlong);
   jlong getTotalStartedThreadCount();
   jboolean isCurrentThreadCpuTimeSupported();
+  jboolean isObjectMonitorUsageSupported();
+  jboolean isSynchronizerUsageSupported();
   jboolean isThreadContentionMonitoringEnabled();
   jboolean isThreadContentionMonitoringSupported();
   jboolean isThreadCpuTimeEnabled();
@@ -58,6 +63,8 @@ private:
   static ::java::lang::String * THREAD_TIME_SUPPORT;
   static ::java::lang::String * CONTENTION_SUPPORT;
   static ::java::lang::String * TIME_ENABLED;
+  static ::java::lang::String * MONITOR_SUPPORT;
+  static ::java::lang::String * SYNCHRONIZER_SUPPORT;
   jboolean __attribute__((aligned(__alignof__( ::gnu::java::lang::management::BeanImpl)))) timeEnabled;
   jboolean contentionEnabled;
 public:

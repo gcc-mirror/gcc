@@ -38,36 +38,28 @@ exception statement from your version. */
 
 package gnu.java.awt;
 
-import gnu.java.awt.EmbeddedWindow;
+import gnu.java.awt.peer.ClasspathDesktopPeer;
 import gnu.java.awt.peer.ClasspathFontPeer;
 import gnu.java.awt.peer.EmbeddedWindowPeer;
 import gnu.java.security.action.SetAccessibleAction;
 
 import java.awt.AWTException;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.DisplayMode;
+import java.awt.Desktop;
 import java.awt.Font;
-import java.awt.FontMetrics;
+import java.awt.FontFormatException;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.Point;
+import java.awt.HeadlessException;
 import java.awt.Toolkit;
-import java.awt.font.FontRenderContext;
-import java.awt.image.ColorModel;
-import java.awt.image.ImageProducer;
+import java.awt.font.TextAttribute;
+import java.awt.peer.DesktopPeer;
 import java.awt.peer.RobotPeer;
-import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.AttributedString;
-import java.util.HashMap;
-import java.util.Map;
 import java.security.AccessController;
+import java.util.Map;
 
 import javax.imageio.spi.IIORegistry;
 
@@ -118,7 +110,8 @@ public abstract class ClasspathToolkit
    * this font peer should have, such as size, weight, family name, or
    * transformation.
    */
-  public abstract ClasspathFontPeer getClasspathFontPeer (String name, Map attrs); 
+  public abstract ClasspathFontPeer getClasspathFontPeer (String name,
+                                                          Map<?,?> attrs); 
 
   /** 
    * Creates a {@link Font}, in a platform-specific manner.
@@ -137,9 +130,8 @@ public abstract class ClasspathToolkit
     try
       {
         Constructor fontConstructor = Font.class.getDeclaredConstructor
-          (new Class[] { String.class, Map.class });
-        AccessController.doPrivileged
-          (new SetAccessibleAction(fontConstructor));
+                                      (new Class[] { String.class, Map.class });
+        AccessController.doPrivileged(new SetAccessibleAction(fontConstructor));
         f = (Font) fontConstructor.newInstance(new Object[] { name, attrs });
       }
     catch (IllegalAccessException e)
@@ -224,5 +216,18 @@ public abstract class ClasspathToolkit
    {
      return -1;
    }
+   
+   /* (non-Javadoc)
+    * @see java.awt.Toolkit#createDesktopPeer(java.awt.Desktop)
+    */
+   protected DesktopPeer createDesktopPeer(Desktop target)
+     throws HeadlessException
+   {
+     if (GraphicsEnvironment.isHeadless())
+       throw new HeadlessException();
+     
+     return ClasspathDesktopPeer.getDesktop();
+   }
+
 }
 

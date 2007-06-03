@@ -239,11 +239,12 @@ public class UnicastRemoteObject extends RemoteServer
           (UnicastServerRef) ((RemoteObject) obj).getRef();
         return sref.unexportObject(obj, force);
       }
-    else
+    // FIXME
+    /* else
       {
-        // FIXME
         ;
       }
+    */
     return true;
   }
 

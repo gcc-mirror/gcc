@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.awt.font.autofit;
 
+import gnu.java.awt.font.opentype.OpenTypeFont;
+
 /**
  * Latin specific metrics data.
  */
@@ -48,4 +50,17 @@ class LatinMetrics
   LatinAxis[] axis;
 
   int unitsPerEm;
+
+  LatinMetrics()
+  {
+    super();
+    axis = new LatinAxis[Constants.DIMENSION_MAX];
+    axis[Constants.DIMENSION_HORZ] = new LatinAxis();
+    axis[Constants.DIMENSION_VERT] = new LatinAxis();
+  }
+  LatinMetrics(OpenTypeFont face)
+  {
+    this();
+    unitsPerEm = face.unitsPerEm;
+  }
 }

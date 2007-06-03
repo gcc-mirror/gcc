@@ -75,11 +75,6 @@ public class Canvas
   private static transient long next_canvas_number;
 
   /**
-   * The graphics configuration associated with the canvas.
-   */
-  transient GraphicsConfiguration graphicsConfiguration;
-
-  /**
    * The buffer strategy associated with this canvas.
    */
   transient BufferStrategy bufferStrategy;
@@ -100,14 +95,7 @@ public class Canvas
    */
   public Canvas(GraphicsConfiguration graphicsConfiguration)
   {
-    this.graphicsConfiguration = graphicsConfiguration;
-  }
-
-  GraphicsConfiguration getGraphicsConfigurationImpl()
-  {
-    if (graphicsConfiguration != null)
-      return graphicsConfiguration;
-    return super.getGraphicsConfigurationImpl();
+    this.graphicsConfig = graphicsConfiguration;
   }
 
   /**

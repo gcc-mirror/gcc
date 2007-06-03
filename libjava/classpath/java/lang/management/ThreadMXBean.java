@@ -57,20 +57,30 @@ package java.lang.management;
  * <p>
  * This bean supports some optional behaviour, which all
  * virtual machines may not choose to implement.  Specifically,
- * this includes the monitoring of the CPU time used by a
- * thread, and the monitoring of thread contention.  The former
- * is further subdivided into the monitoring of either just
- * the current thread or all threads.  The methods
+ * this includes the monitoring of:
+ * </p>
+ * <ul>
+ * <li>the CPU time used by a thread</li>
+ * <li>thread contention</li>
+ * <li>object monitor usage</li>
+ * <li>ownable synchronizer usage</li>
+ * </ul>
+ * <p>
+ * The monitoring of CPU time is further subdivided into
+ * the monitoring of either just the current thread or all
+ * threads.  The methods
  * {@link #isThreadCpuTimeSupported()},
- * {@link #isCurrentThreadCpuTimeSupported()} and
- * {@link #isThreadContentionMonitoringSupported()} may be
+ * {@link #isCurrentThreadCpuTimeSupported()}
+ * {@link #isThreadContentionMonitoringSupported()},
+ * {@link #isObjectMonitorUsageSupported()} and
+ * {@link #isSynchronizerUsageSupported()} may be
  * used to determine whether or not this functionality is
  * supported.
  * </p>
  * <p>
- * Furthermore, both these facilities may be disabled.
- * In fact, thread contention monitoring is disabled by
- * default, and must be explictly turned on by calling
+ * Furthermore, both time and contention monitoring may be
+ * disabled.  In fact, thread contention monitoring is disabled
+ * by default, and must be explictly turned on by calling
  * the {@link #setThreadContentionMonitoringEnabled(boolean)}
  * method.
  * </p>
@@ -80,6 +90,70 @@ package java.lang.management;
  */
 public interface ThreadMXBean
 {
+
+  /**
+   * This method returns information on all live threads at the
+   * time of execution (some threads may have terminated by the
+   * time the method completes).  This method is simply a shorthand
+   * for calling {@link #getThreadInfo(long[], boolean,
+   * boolean)} with the return value of {@link #getAllThreadIds()}.
+   *
+   * @param lockedMonitors true if the returned {@link ThreadInfo}
+   *                       objects should contain information on
+   *                       locked monitors.
+   * @param lockedSynchronizers true if the returned {@link ThreadInfo}
+   *                            objects should contain information
+   *                            on locked ownable synchronizers.
+   * @return an array of {@link ThreadInfo} objects for all live threads.
+   * @throws SecurityException if a security manager exists and
+   *                           denies ManagementPermission("monitor").
+   * @throws UnsupportedOperationException if <code>lockedMonitors</code>
+   *                                       is true, but object monitor
+   *                                       usage monitoring is not supported
+   *                                       by the VM, or
+   *                                       <code>lockedSynchronizers</code>
+   *                                       is true, but ownable synchronizer
+   *                                       usage monitoring is not supported
+   *                                       by the VM.
+   * @since 1.6
+   * @see #getThreadInfo(long[], boolean, boolean)
+   * @see #getAllThreadIds()
+   * @see #isObjectMonitorUsageSupported()
+   * @see #isSynchronizerUsageSupported()
+   */
+  ThreadInfo[] dumpAllThreads(boolean lockedMonitors,
+			      boolean lockedSynchronizers);
+  
+  /**
+   * <p>
+   * This method obtains a list of threads which are deadlocked
+   * waiting to obtain monitor or ownable synchronizer ownership.
+   * This is similar to the behaviour described for
+   * {@link #getMonitorDeadlockedThreads()}, except this method also
+   * takes in to account deadlocks involving ownable synchronizers.
+   * </p>
+   * <p>
+   * Note that this method is not designed for controlling
+   * synchronization, but for troubleshooting problems which cause such
+   * deadlocks; it may be prohibitively expensive to use in normal
+   * operation.  If only deadlocks involving monitors are of interest,
+   * then {@link #findMonitorDeadlockedThreads()} should be used in
+   * preference to this method.
+   * </p>
+   * 
+   * @return an array of thread identifiers, corresponding to threads
+   *         which are currently in a deadlocked situation, or
+   *         <code>null</code> if there are no deadlocks.
+   * @throws SecurityException if a security manager exists and
+   *                           denies ManagementPermission("monitor").
+   * @throws UnsupportedOperationException if the VM does not support
+   *                                       the monitoring of ownable
+   *                                       synchronizer usage.
+   * @since 1.6
+   * @see #findMonitorDeadlockedThreads()
+   * @see #isSynchronizerUsageSupported()
+   */
+  long[] findDeadlockedThreads();
 
   /**
    * <p>
@@ -115,13 +189,17 @@ public interface ThreadMXBean
    * of A and B.  Note that this method is not designed for controlling
    * synchronization, but for troubleshooting problems which cause such
    * deadlocks; it may be prohibitively expensive to use in normal
-   * operation.
+   * operation.  This method only returns deadlocks involving monitors;
+   * to include deadlocks involving ownable synchronizers,
+   * {@link #findDeadlockedThreads()} should be used instead.
    * </p>
    * 
    * @return an array of thread identifiers, corresponding to threads
-   *         which are currently in a deadlocked situation.
+   *         which are currently in a deadlocked situation, or
+   *         <code>null</code> if there are no deadlocks.
    * @throws SecurityException if a security manager exists and
    *                           denies ManagementPermission("monitor").
+   * @see #findDeadlockedThreads()
    */
   long[] findMonitorDeadlockedThreads();
 
@@ -285,6 +363,53 @@ public interface ThreadMXBean
   ThreadInfo[] getThreadInfo(long[] ids);
 
   /**
+   * Returns information on the specified threads with full
+   * stack trace information and optional synchronization
+   * information.  If <code>lockedMonitors</code> is false,
+   * or there are no locked monitors for a particular thread,
+   * then the corresponding {@link ThreadInfo} object will have
+   * an empty {@link MonitorInfo} array.  Likewise, if
+   * <code>lockedSynchronizers</code> is false, or there are
+   * no locked ownable synchronizers for a particular thread,
+   * then the corresponding {@link ThreadInfo} object will have
+   * an empty {@link LockInfo} array.  If both
+   * <code>lockedMonitors</code> and <code>lockedSynchronizers</code>
+   * are false, the return value is equivalent to that from
+   * <code>{@link #getThreadInfo}(ids, Integer.MAX_VALUE)</code>.
+   * If an identifier specifies a thread which is either non-existant
+   * or not alive, then the corresponding element in the returned
+   * array is <code>null</code>.
+   * 
+   * @param ids an array of thread identifiers to return information
+   *           on.
+   * @param lockedMonitors true if information on locked monitors
+   *                       should be included.
+   * @param lockedSynchronizers true if information on locked
+   *                            ownable synchronizers should be included. 
+   * @return an array of {@link ThreadInfo} objects matching the
+   *         specified threads.  The corresponding element is 
+   *         <code>null</code> if the identifier specifies
+   *         a thread that doesn't exist or is not alive.
+   * @throws IllegalArgumentException if an identifier in the array is
+   *                                  <= 0.
+   * @throws SecurityException if a security manager exists and
+   *                           denies ManagementPermission("monitor").
+   * @throws UnsupportedOperationException if <code>lockedMonitors</code>
+   *                                       is true, but object monitor
+   *                                       usage monitoring is not supported
+   *                                       by the VM, or
+   *                                       <code>lockedSynchronizers</code>
+   *                                       is true, but ownable synchronizer
+   *                                       usage monitoring is not supported
+   *                                       by the VM.
+   * @since 1.6
+   * @see #isObjectMonitorUsageSupported()
+   * @see #isSynchronizerUsageSupported()
+   */
+  ThreadInfo[] getThreadInfo(long[] ids, boolean lockedMonitors,
+			     boolean lockedSynchronizers);
+
+  /**
    * Returns information on the specified thread with
    * stack trace information to the supplied depth.  If the
    * identifier specifies a thread which is either non-existant
@@ -388,6 +513,26 @@ public interface ThreadMXBean
    * @see #setThreadCpuTimeEnabled(boolean)
    */
   boolean isCurrentThreadCpuTimeSupported();
+
+  /**
+   * Returns true if the virtual machine supports the monitoring
+   * of object monitor usage.
+   *
+   * @return true if the monitoring of object monitor usage
+   *         is supported by the virtual machine.
+   * @since 1.6
+   */
+  boolean isObjectMonitorUsageSupported();
+
+  /**
+   * Returns true if the virtual machine supports the monitoring
+   * of ownable synchronizer usage.
+   *
+   * @return true if the monitoring of ownable synchronizer usage
+   *         is supported by the virtual machine.
+   * @since 1.6
+   */
+  boolean isSynchronizerUsageSupported();
 
   /**
    * Returns true if thread contention monitoring is currently

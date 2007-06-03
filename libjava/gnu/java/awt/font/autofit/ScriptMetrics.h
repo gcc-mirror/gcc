@@ -19,7 +19,7 @@ extern "Java"
         {
           namespace autofit
           {
-              class Scaler;
+              class HintScaler;
               class Script;
               class ScriptMetrics;
           }
@@ -35,7 +35,7 @@ class gnu::java::awt::font::autofit::ScriptMetrics : public ::java::lang::Object
 public: // actually package-private
   ScriptMetrics();
   ::gnu::java::awt::font::autofit::Script * __attribute__((aligned(__alignof__( ::java::lang::Object)))) script;
-  ::gnu::java::awt::font::autofit::Scaler * scaler;
+  ::gnu::java::awt::font::autofit::HintScaler * scaler;
 public:
   static ::java::lang::Class class$;
 };

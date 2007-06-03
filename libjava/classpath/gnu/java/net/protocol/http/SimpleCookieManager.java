@@ -1,5 +1,5 @@
 /* CookieManager.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -59,23 +58,23 @@ public class SimpleCookieManager
    * The cookie cache.
    * This is a dictionary mapping domains to maps of cookies by name.
    */
-  protected Map cookies;
+  protected Map<String, Map<String, Cookie>> cookies;
 
   /**
    * Constructor.
    */
   public SimpleCookieManager()
   {
-    cookies = new HashMap();
+    cookies = new HashMap<String, Map<String, Cookie>>();
   }
 
   public void setCookie(Cookie cookie)
   {
     String domain = cookie.getDomain();
-    Map map =(Map) cookies.get(domain);
+    Map<String, Cookie> map = cookies.get(domain);
     if (map == null)
       {
-        map = new HashMap();
+        map = new HashMap<String, Cookie>();
         cookies.put(domain, map);
       }
     String name = cookie.getName();
@@ -84,7 +83,7 @@ public class SimpleCookieManager
 
   public Cookie[] getCookies(String host, boolean secure, String path)
   {
-    List matches = new ArrayList();
+    ArrayList<Cookie> matches = new ArrayList<Cookie>();
     Date now = new Date();
     if (Character.isLetter(host.charAt(0)))
       {
@@ -102,17 +101,16 @@ public class SimpleCookieManager
     return ret;
   }
 
-  private void addCookies(List matches, String domain, boolean secure,
-                          String path, Date now)
+  private void addCookies(ArrayList<Cookie> matches, String domain,
+                          boolean secure, String path, Date now)
   {
-    Map map = (Map) cookies.get(domain);
+    Map<String, Cookie> map = cookies.get(domain);
     if (map != null)
       {
-        List expired = new ArrayList();
-        for (Iterator i = map.entrySet().iterator(); i.hasNext(); )
+        ArrayList<String> expired = new ArrayList<String>();
+        for (Map.Entry<String, Cookie> entry : map.entrySet())
           {
-            Map.Entry entry = (Map.Entry) i.next();
-            Cookie cookie = (Cookie) entry.getValue();
+            Cookie cookie = entry.getValue();
             Date expires = cookie.getExpiryDate();
             if (expires != null && expires.before(now))
               {
@@ -129,7 +127,7 @@ public class SimpleCookieManager
               }
           }
         // Good housekeeping
-        for (Iterator i = expired.iterator(); i.hasNext(); )
+        for (Iterator<String> i = expired.iterator(); i.hasNext(); )
           {
             map.remove(i.next());
           }

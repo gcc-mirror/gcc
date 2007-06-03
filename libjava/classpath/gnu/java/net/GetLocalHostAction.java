@@ -48,9 +48,9 @@ import java.security.PrivilegedAction;
  * @author Chris Burdess (dog@gnu.org)
  */
 public class GetLocalHostAction
-  implements PrivilegedAction
+  implements PrivilegedAction<InetAddress>
 {
-  public Object run()
+  public InetAddress run()
   {
     try
       {

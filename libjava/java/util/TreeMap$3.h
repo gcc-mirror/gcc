@@ -12,13 +12,14 @@ class java::util::TreeMap$3 : public ::java::util::AbstractCollection
 {
 
 public: // actually package-private
-  TreeMap$3(::java::util::TreeMap$SubMap *);
+  TreeMap$3(::java::util::TreeMap$DescendingMap *);
 public:
   jint size();
   ::java::util::Iterator * iterator();
   void clear();
 public: // actually package-private
-  ::java::util::TreeMap$SubMap * __attribute__((aligned(__alignof__( ::java::util::AbstractCollection)))) this$1;
+  static ::java::util::TreeMap$DescendingMap * access$0(::java::util::TreeMap$3 *);
+  ::java::util::TreeMap$DescendingMap * __attribute__((aligned(__alignof__( ::java::util::AbstractCollection)))) this$1;
 public:
   static ::java::lang::Class class$;
 };

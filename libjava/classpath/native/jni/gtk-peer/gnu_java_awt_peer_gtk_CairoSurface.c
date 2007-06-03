@@ -47,7 +47,7 @@ exception statement from your version. */
  * Field names in CairoSurface.java
  */
 #define SURFACE "surfacePointer"
-#define BUFFER "bufferPointer"
+#define SHARED "sharedBuffer"
 
 /* prototypes */
 static void setNativeObject( JNIEnv *env, jobject obj, void *ptr, const char *pointer );
@@ -56,13 +56,33 @@ static void setNativeObject( JNIEnv *env, jobject obj, void *ptr, const char *po
  * Creates a cairo surface, ARGB32, native ordering, premultiplied alpha.
  */
 JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_CairoSurface_create (JNIEnv *env, jobject obj, jint width, jint height, jint stride)
+Java_gnu_java_awt_peer_gtk_CairoSurface_create
+(JNIEnv *env, jobject obj, jint width, jint height, jint stride,
+ jintArray buf )
 {
   cairo_surface_t* surface;
-  void *data = g_malloc(stride * height * 4);
-  memset(data, 0, stride * height * 4);
-  setNativeObject(env, obj, data, BUFFER);
+  jboolean isCopy;
 
+  /* Retrieve java-created data array */
+  void *data = (*env)->GetIntArrayElements (env, buf, &isCopy);
+  
+  /* Set sharedBuffer variable */
+  jclass cls = (*env)->GetObjectClass (env, obj);
+  jfieldID field = (*env)->GetFieldID (env, cls, SHARED, "Z");
+  g_assert (field != 0);
+  
+  if (isCopy == JNI_TRUE)
+    {
+      (*env)->SetBooleanField (env, obj, field, JNI_FALSE);
+      void* temp = g_malloc(stride * height * 4);
+      memcpy(temp, data, stride * height * 4);
+      (*env)->ReleaseIntArrayElements (env, buf, data, 0);
+      data = temp;
+    }
+  else
+    (*env)->SetBooleanField (env, obj, field, JNI_TRUE);
+
+  /* Create the cairo surface and set the java pointer */  	
   surface = cairo_image_surface_create_for_data
     (data, CAIRO_FORMAT_ARGB32, width, height, stride * 4);
 
@@ -75,107 +95,26 @@ Java_gnu_java_awt_peer_gtk_CairoSurface_create (JNIEnv *env, jobject obj, jint w
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_CairoSurface_destroy
 (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
- jlong surfacePointer, jlong bufferPointer)
+ jlong surfacePointer, jintArray buf)
 {
-  void *buffer;
   cairo_surface_t* surface = JLONG_TO_PTR(void, surfacePointer);
+  void *data = cairo_image_surface_get_data(surface);
   if( surface != NULL )
+  {
+  	/* Release or free the data buffer as appropriate */
+    jclass cls = (*env)->GetObjectClass (env, obj);
+    jfieldID field = (*env)->GetFieldID (env, cls, SHARED, "Z");
+    g_assert (field != 0);
+    jboolean sharedBuffer = (*env)->GetBooleanField (env, obj, field);
+
+    if (sharedBuffer == JNI_TRUE)
+  	  (*env)->ReleaseIntArrayElements (env, buf, data, 0);
+  	else
+  	  g_free(data);
+  	  
+  	/* Destroy the cairo surface itself */
     cairo_surface_destroy(surface);
-
-  buffer = JLONG_TO_PTR(void, bufferPointer);
-  if( buffer != NULL )
-    g_free(buffer);
-}
-
-/**
- * Gets a pixel
- */
-JNIEXPORT jint JNICALL 
-Java_gnu_java_awt_peer_gtk_CairoSurface_nativeGetElem
-(JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
- jlong bufferPointer, jint i)
-{
-  jint *pixeldata = JLONG_TO_PTR(void, bufferPointer);
-
-  if( pixeldata == NULL )
-    return 0;
-
-  return pixeldata[i];
-}
-
-/**
- * Sets a pixel
- */
-JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_CairoSurface_nativeSetElem 
-(JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
- jlong bufferPointer, jint i, jint val)
-{
-  jint *pixeldata = JLONG_TO_PTR(void, bufferPointer);
-
-  if( pixeldata == NULL )
-    return;
-
-  pixeldata[i] = val;
-}
-
-/**
- * Gets all pixels in an array
- */
-JNIEXPORT jintArray JNICALL 
-Java_gnu_java_awt_peer_gtk_CairoSurface_nativeGetPixels
-(JNIEnv *env __attribute((unused)), jobject obj __attribute((unused)),
- jlong bufferPointer, int size)
-{
-  jint *pixeldata, *jpixdata;
-  jintArray jpixels;
-
-  pixeldata = JLONG_TO_PTR(void, bufferPointer);
-  g_assert(pixeldata != NULL);
-
-  jpixels = (*env)->NewIntArray (env, size);
-  jpixdata = (*env)->GetIntArrayElements (env, jpixels, NULL);
-  memcpy (jpixdata, pixeldata, size * sizeof( jint ));
-
-  (*env)->ReleaseIntArrayElements (env, jpixels, jpixdata, 0);
-  return jpixels;
-}
-
-/**
- * Sets all pixels by an array.
- */
-JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_CairoSurface_nativeSetPixels
-(JNIEnv *env, jobject obj, jlong bufferPointer, jintArray jpixels)
-{
-  jint *pixeldata, *jpixdata;
-  int size;
-  int width, height;
-  jclass cls;
-  jfieldID field;
-
-  if( jpixels == NULL )
-    return;
-
-  cls = (*env)->GetObjectClass (env, obj);
-  field = (*env)->GetFieldID (env, cls, "width", "I");
-  g_assert (field != 0);
-  width = (*env)->GetIntField (env, obj, field);
-
-  field = (*env)->GetFieldID (env, cls, "height", "I");
-  g_assert (field != 0);
-  height = (*env)->GetIntField (env, obj, field);
-
-  pixeldata = JLONG_TO_PTR(void, bufferPointer);
-  g_assert(pixeldata != NULL);
-  
-  jpixdata = (*env)->GetIntArrayElements (env, jpixels, NULL);
-  size = (*env)->GetArrayLength( env, jpixels );
-  if( size > width * height ) size = width * height; /* stop overflows. */
-  
-  memcpy (pixeldata, jpixdata, size * sizeof( jint ));
-
-  (*env)->ReleaseIntArrayElements (env, jpixels, jpixdata, 0);
+  }
 }
 
 JNIEXPORT void JNICALL
@@ -243,17 +182,35 @@ Java_gnu_java_awt_peer_gtk_CairoSurface_nativeDrawSurface
 JNIEXPORT jlong JNICALL 
 Java_gnu_java_awt_peer_gtk_CairoSurface_getFlippedBuffer 
 (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
- jlong bufferPointer, jint size)
+ jlong surfacePointer)
 {
+  cairo_surface_t* surface;
+  jint *src;
   jint *dst;
-  jint *src = JLONG_TO_PTR(void, bufferPointer);
-  int i;
-  int t;
+  int i, t, width, height;
+  jclass cls;
+  jfieldID field;
 
+  /* Retrieve pointer to cairo data buffer */  
+  surface = JLONG_TO_PTR(void, surfacePointer);
+  src = (jint*)cairo_image_surface_get_data(surface);
+  
+  /* Retrieve dimensions of surface, from java fields */
+  cls = (*env)->GetObjectClass (env, obj);
+  field = (*env)->GetFieldID (env, cls, "width", "I");
+  g_assert (field != 0);
+  width = (*env)->GetIntField (env, obj, field);
+
+  field = (*env)->GetFieldID (env, cls, "height", "I");
+  g_assert (field != 0);
+  height = (*env)->GetIntField (env, obj, field);
+
+  /* Create destination array */
   g_assert( src != NULL );
-  dst = g_malloc( size * sizeof( jint ) );
+  dst = g_malloc( width * height * sizeof( jint ) );
 
-  for(i = 0; i < size; i++ )
+  /* Copy data into destination array, reversing sample order of each pixel */
+  for(i = 0; i < (height * width); i++ )
     {
       t = (src[i] & 0x0000FF) << 16;
       dst[i] = (src[i] & 0x00FF0000) >> 16;
@@ -287,28 +244,78 @@ Java_gnu_java_awt_peer_gtk_CairoSurface_nativeNewCairoContext
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_CairoSurface_copyAreaNative2
 (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
- jlong bufferPointer,
+ jlong surfacePointer,
  jint x, jint y, jint w, jint h, jint dx, jint dy, jint stride)
 {
   int row;
   int srcOffset, dstOffset;
   jint *temp;
-  jint *pixeldata = JLONG_TO_PTR(jint, bufferPointer);
+  
+  /* Retrieve pointer to cairo data buffer */  
+  cairo_surface_t* surface = JLONG_TO_PTR(void, surfacePointer);
+  jint *pixeldata = (jint*)cairo_image_surface_get_data(surface);
   g_assert( pixeldata != NULL );
 
+  /* Create temporary buffer and calculate offsets */
   temp = g_malloc( h * w * 4 );
   g_assert( temp != NULL );
 
   srcOffset = x + (y * stride);
   dstOffset = (x + dx) + ((y + dy) * stride);
 
+  /* Copy desired region into temporary buffer */
   for( row = 0; row < h; row++ )
     memcpy( temp + (w * row), pixeldata + srcOffset + (stride * row), w * 4 );
 
+  /* Copy out of buffer and to destination */
   for( row = 0; row < h; row++ )
     memcpy( pixeldata + dstOffset + (stride * row), temp + (w * row), w * 4 );
 
   g_free( temp );
+}
+
+/*
+ * Synchronizes the java and native data buffers, copying any changes made in
+ * the java array into the native array.
+ * This method should only be called if (sharedBuffer == false). 
+ */
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_CairoSurface_syncJavaToNative
+(JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
+ jlong surfacePointer, jintArray buffer)
+{
+  /* Get size of java array */
+  int size = (*env)->GetArrayLength(env, buffer);
+  
+  /* Get native data buffer */
+  cairo_surface_t* surface = JLONG_TO_PTR(void, surfacePointer);
+  g_assert(surface != NULL);
+  void* nativeBuffer = cairo_image_surface_get_data(surface);
+  
+  /* Sync buffers */
+  (*env)->GetIntArrayRegion(env, buffer, 0, size, nativeBuffer);
+}
+
+/*
+ * Synchronizes the java and native data buffers, copying any changes made in
+ * the native array into the java array.
+ * This method should only be called if (sharedBuffer == false). 
+ */
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_CairoSurface_syncNativeToJava
+(JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
+ jlong surfacePointer, jintArray buffer)
+{
+  /* Get size of java array */
+  int size = (*env)->GetArrayLength(env, buffer);
+  
+  /* Get native data buffer */
+  cairo_surface_t* surface = JLONG_TO_PTR(void, surfacePointer);
+  g_assert(surface != NULL);
+  void* nativeBuffer = cairo_image_surface_get_data(surface);
+  
+  /* Sync buffers */
+  (*env)->SetIntArrayRegion(env, buffer, 0, size, nativeBuffer);
 }
 
 /*

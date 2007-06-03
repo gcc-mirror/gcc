@@ -25,6 +25,7 @@ public:
   virtual ::java::lang::Object * firstKey();
   virtual ::java::lang::Object * get(::java::lang::Object *);
   virtual ::java::util::SortedMap * headMap(::java::lang::Object *);
+  virtual ::java::util::NavigableMap * headMap(::java::lang::Object *, jboolean);
   virtual ::java::util::Set * keySet();
   virtual ::java::lang::Object * lastKey();
   virtual ::java::lang::Object * put(::java::lang::Object *, ::java::lang::Object *);
@@ -32,7 +33,9 @@ public:
   virtual ::java::lang::Object * remove(::java::lang::Object *);
   virtual jint size();
   virtual ::java::util::SortedMap * subMap(::java::lang::Object *, ::java::lang::Object *);
+  virtual ::java::util::NavigableMap * subMap(::java::lang::Object *, jboolean, ::java::lang::Object *, jboolean);
   virtual ::java::util::SortedMap * tailMap(::java::lang::Object *);
+  virtual ::java::util::NavigableMap * tailMap(::java::lang::Object *, jboolean);
   virtual ::java::util::Collection * values();
 public: // actually package-private
   virtual jint compare(::java::lang::Object *, ::java::lang::Object *);
@@ -43,11 +46,13 @@ public: // actually package-private
   virtual ::java::util::TreeMap$Node * firstNode();
   virtual ::java::util::TreeMap$Node * getNode(::java::lang::Object *);
   virtual ::java::util::TreeMap$Node * highestLessThan(::java::lang::Object *);
+  virtual ::java::util::TreeMap$Node * highestLessThan(::java::lang::Object *, jboolean);
 private:
   void insertFixup(::java::util::TreeMap$Node *);
   ::java::util::TreeMap$Node * lastNode();
 public: // actually package-private
   virtual ::java::util::TreeMap$Node * lowestGreaterThan(::java::lang::Object *, jboolean);
+  virtual ::java::util::TreeMap$Node * lowestGreaterThan(::java::lang::Object *, jboolean, jboolean);
 private:
   ::java::util::TreeMap$Node * predecessor(::java::util::TreeMap$Node *);
 public: // actually package-private
@@ -64,6 +69,23 @@ public: // actually package-private
   virtual ::java::util::TreeMap$Node * successor(::java::util::TreeMap$Node *);
 private:
   void writeObject(::java::io::ObjectOutputStream *);
+public:
+  virtual ::java::util::Map$Entry * ceilingEntry(::java::lang::Object *);
+  virtual ::java::lang::Object * ceilingKey(::java::lang::Object *);
+  virtual ::java::util::NavigableSet * descendingKeySet();
+  virtual ::java::util::NavigableMap * descendingMap();
+  virtual ::java::util::Map$Entry * firstEntry();
+  virtual ::java::util::Map$Entry * floorEntry(::java::lang::Object *);
+  virtual ::java::lang::Object * floorKey(::java::lang::Object *);
+  virtual ::java::util::Map$Entry * higherEntry(::java::lang::Object *);
+  virtual ::java::lang::Object * higherKey(::java::lang::Object *);
+  virtual ::java::util::Map$Entry * lastEntry();
+  virtual ::java::util::Map$Entry * lowerEntry(::java::lang::Object *);
+  virtual ::java::lang::Object * lowerKey(::java::lang::Object *);
+  virtual ::java::util::NavigableSet * navigableKeySet();
+  virtual ::java::util::Map$Entry * pollFirstEntry();
+  virtual ::java::util::Map$Entry * pollLastEntry();
+private:
   static const jlong serialVersionUID = 919286545866124006LL;
 public: // actually package-private
   static const jint RED = -1;
@@ -75,6 +97,8 @@ public: // actually package-private
   jint size__;
 private:
   ::java::util::Set * entries;
+  ::java::util::NavigableMap * descendingMap__;
+  ::java::util::NavigableSet * nKeys;
 public: // actually package-private
   jint modCount;
   ::java::util::Comparator * comparator__;

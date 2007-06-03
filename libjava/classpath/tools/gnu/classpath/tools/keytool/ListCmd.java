@@ -1,5 +1,5 @@
 /* ListCmd.java -- The list command handler of the keytool
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ import gnu.classpath.tools.getopt.Option;
 import gnu.classpath.tools.getopt.OptionException;
 import gnu.classpath.tools.getopt.OptionGroup;
 import gnu.classpath.tools.getopt.Parser;
-import gnu.java.security.util.Base64;
+import gnu.java.util.Base64;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -416,7 +416,7 @@ class ListCmd extends Command
       throws CertificateEncodingException
   {
     byte[] derBytes = certificate.getEncoded();
-    String encoded = Base64.encode(derBytes, 0, derBytes.length, true);
+    String encoded = Base64.encode(derBytes, 72);
     writer.println(Messages.getString("ListCmd.43")); //$NON-NLS-1$
     writer.println(encoded);
     writer.println(Messages.getString("ListCmd.44")); //$NON-NLS-1$

@@ -1,7 +1,7 @@
 \input texinfo @c -*-texinfo-*-
 
 @c %**start of header
-@setfilename vmintegration.info
+@setfilename cp-vmintegration.info
 @settitle GNU Classpath VM Integration Guide
 @c %**end of header
 
@@ -12,7 +12,7 @@ This file contains important information you will need to know if you
 are going to write an interface between GNU Classpath and a Virtual
 Machine.
 
-Copyright (C) 1998-2002, 2004, 2005, 2006 Free Software Foundation, Inc.
+Copyright (C) 1998-2002, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 @ifnotplaintext
 @dircategory GNU Libraries
@@ -1376,6 +1376,12 @@ time used by all threads.
 @item @code{gnu.java.lang.management.ThreadContentionSupport} --
 This property should be present if the VM supports thread contention
 monitoring.
+@item @code{gnu.java.lang.management.MonitorUsageMonitoringSupport} --
+This property should be present if the VM supports the monitoring
+of object monitor usage.
+@item @code{gnu.java.lang.management.OwnableSynchronizerUsageMonitoringSupport} --
+This property should be present if the VM supports the monitoring
+of ownable synchronizer usage.
 @end itemize
 
 In addition, the property
@@ -1386,11 +1392,18 @@ is enabled at startup.
 The methods are as follows:
 
 @itemize @bullet
+@item @code{(findDeadlockedThreads())} -- This should return
+an array of thread identifiers which match threads involved in
+deadlock cycles (where each thread is waiting to obtain a lock
+held by one of the others) on object monitors or ownable
+synchronizers.  This is specified as a native method in the
+reference implementation, and is optional.  It is only called
+when the VM supports ownable synchronizer monitoring.
 @item @code{(findMonitorDeadlockedThreads())} -- This should return
 an array of thread identifiers which match threads involved in
 deadlock cycles (where each thread is waiting to obtain a lock
-held by one of the others).  This is specified as a native method
-in the reference implementation.
+held by one of the others) on object monitors.  This is specified
+as a native method in the reference implementation.
 @item @code{(getAllThreads())} -- This should return an array of
 all live threads and set the @code{filled} variable to the number
 found.  A default implementation is provided.
@@ -1408,6 +1421,16 @@ supporting time monitoring.
 @item @code{(getDaemonThreadCount())} -- This should return the number
 of live daemon threads.  A default implementation is provided, based
 on @code{getAllThreads()}.
+@item @code{(getLockInfo(ThreadInfo))} -- This is an optional native
+method called when the VM supports ownable synchronizer usage monitoring
+and the user has requested information for a particular thread.  The
+supplied @code{ThreadInfo} object should be filled out with an
+array of @code{LockInfo} objects, providing details on each lock. 
+@item @code{(getMonitorInfo(ThreadInfo))} -- This is an optional native
+method called when the VM supports object monitor usage monitoring
+and the user has requested information for a particular thread.  The
+supplied @code{ThreadInfo} object should be filled out with an
+array of @code{MonitorInfo} objects, providing details on each lock. 
 @item @code{(getPeakThreadCount())} -- The VM should maintain a record
 of the peak number of live threads, and return it when this method is
 called.  This is specified as a native method in the reference

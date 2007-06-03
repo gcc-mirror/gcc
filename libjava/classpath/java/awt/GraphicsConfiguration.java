@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package java.awt;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -131,7 +129,8 @@ public abstract class GraphicsConfiguration
                                                      ImageCapabilities caps)
     throws AWTException
   {
-    throw new AWTException("not implemented");
+    // Must be overridden by implementations to check caps.
+    return createCompatibleVolatileImage(w, h);
   }
 
   /**
@@ -148,6 +147,32 @@ public abstract class GraphicsConfiguration
   public abstract VolatileImage createCompatibleVolatileImage(int width,
                                                               int height,
                                                               int transparency);
+
+  /**
+   * Creates a volatile image with the specified capabilities and transparency.
+   * If the backend cannot meet the requested capabilities and transparency,
+   * an AWTException is thrown.
+   *
+   * @param width the width of the image
+   * @param height the height of the image
+   * @param caps the requested capabilities
+   * @param transparency the required transparency
+   *
+   * @return a volatile image with the specified capabilites and transparency
+   *
+   * @throws AWTException if the required capabilities and transparency cannot
+   *         be met
+   *
+   * @since 1.5
+   */
+  public VolatileImage createCompatibleVolatileImage(int width, int height,
+                                                     ImageCapabilities caps,
+                                                     int transparency)
+    throws AWTException
+  {
+    // Must be overridden by implementations to check caps.
+    return createCompatibleVolatileImage(width, height, transparency);
+  }
 
   /**
    * Returns a buffered image optimized to this device, and with the specified

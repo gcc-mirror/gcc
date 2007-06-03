@@ -107,6 +107,7 @@ public:
 private:
   void doVerify(::java::security::Signature *, ::java::security::PublicKey *);
   void parse(::java::io::InputStream *);
+  static const jlong serialVersionUID = -2491127588187038216LL;
   static ::java::util::logging::Logger * logger;
 public: // actually protected
   static ::gnu::java::security::OID * ID_DSA;

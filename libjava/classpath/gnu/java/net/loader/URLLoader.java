@@ -140,7 +140,7 @@ public abstract class URLLoader
    * Return a list of new URLLoader objects representing any
    * class path entries added by this container.
    */
-  public ArrayList getClassPath()
+  public ArrayList<URLLoader> getClassPath()
   {
     return null;
   }

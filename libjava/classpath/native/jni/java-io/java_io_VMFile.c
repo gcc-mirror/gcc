@@ -55,6 +55,18 @@ exception statement from your version. */
 
 #include "java_io_VMFile.h"
 
+/* ***** PRIVATE FUNCTIONS DELCARATION ***** */
+
+/**
+ * Enables of disables the passed permission bit of a file.
+ */
+static jboolean set_file_permissions (JNIEnv *env, jstring name,
+                                      jboolean enable,
+                                      jboolean ownerOnly,
+                                      int permissions);
+
+/* ***** END: PRIVATE FUNCTIONS DELCARATION ***** */
+
 /*************************************************************************/
 
 /*
@@ -189,6 +201,46 @@ Java_java_io_VMFile_canWrite (JNIEnv * env,
 /*************************************************************************/
 
 /*
+ * This method checks to see if we have execute permission on a file.
+ *
+ * Class:     java_io_VMFile
+ * Method:    canExecute
+ * Signature: (Ljava/lang/String;)Z
+ */
+
+JNIEXPORT jboolean JNICALL
+Java_java_io_VMFile_canExecute (JNIEnv * env,
+                                jclass clazz __attribute__ ((__unused__)),
+                                jstring name)
+{
+#ifndef WITHOUT_FILESYSTEM
+  const char *filename;
+  int result;
+
+  /* Don't use the JCL convert function because it throws an exception
+     on failure */
+  filename = (*env)->GetStringUTFChars (env, name, 0);
+  if (filename == NULL)
+    {
+      return JNI_FALSE;
+    }
+
+  result = cpio_checkAccess (filename, CPFILE_FLAG_EXEC);
+  
+  (*env)->ReleaseStringUTFChars (env, name, filename);
+  if (result != CPNATIVE_OK)
+    return JNI_FALSE;
+  
+  return JNI_TRUE;
+#else /* not WITHOUT_FILESYSTEM */
+  return JNI_FALSE;
+#endif /* not WITHOUT_FILESYSTEM */
+}
+
+
+/*************************************************************************/
+
+/*
  * This method makes a file read only.
  *
  * Class:     java_io_VMFile
@@ -222,6 +274,66 @@ Java_java_io_VMFile_setReadOnly (JNIEnv * env,
 #endif /* not WITHOUT_FILESYSTEM */
 }
 
+/*************************************************************************/
+
+/*
+ * This method changes the read permission bit of a file.
+ *
+ * Class:     java_io_VMFile
+ * Method:    setReadable
+ * Signature: (Ljava/lang/String;ZZ)Z
+ */
+JNIEXPORT jboolean JNICALL
+Java_java_io_VMFile_setReadable (JNIEnv *env,
+                                 jclass clazz __attribute__ ((__unused__)),
+                                 jstring name,
+                                 jboolean readable,
+                                 jboolean ownerOnly)
+{
+  return set_file_permissions (env, name, readable, ownerOnly,
+                               CPFILE_FLAG_READ);
+}
+
+
+/*************************************************************************/
+
+/*
+ * This method changes the write permission bit of a file.
+ *
+ * Class:     java_io_VMFile
+ * Method:    setWritable
+ * Signature: (Ljava/lang/String;ZZ)Z
+ */
+JNIEXPORT jboolean JNICALL
+Java_java_io_VMFile_setWritable (JNIEnv *env,
+                                 jclass clazz __attribute__ ((__unused__)),
+                                 jstring name,
+                                 jboolean writable,
+                                 jboolean ownerOnly)
+{
+  return set_file_permissions (env, name, writable, ownerOnly,
+                               CPFILE_FLAG_WRITE);
+}
+
+/*************************************************************************/
+
+/*
+ * This method changes the execute permission bit of a file.
+ *
+ * Class:     java_io_VMFile
+ * Method:    setExecutable
+ * Signature: (Ljava/lang/String;ZZ)Z
+ */
+JNIEXPORT jboolean JNICALL
+Java_java_io_VMFile_setExecutable (JNIEnv *env,
+                                 jclass clazz __attribute__ ((__unused__)),
+                                 jstring name,
+                                 jboolean executable,
+                                 jboolean ownerOnly)
+{
+  return set_file_permissions (env, name, executable, ownerOnly,
+                               CPFILE_FLAG_EXEC);
+}
 /*************************************************************************/
 
 /*
@@ -965,5 +1077,46 @@ Java_java_io_VMFile_toCanonicalForm (JNIEnv *env,
   return jpath;
 #else /* not WITHOUT_FILESYSTEM */
   return NULL;
+#endif /* not WITHOUT_FILESYSTEM */
+}
+
+/*************************************************************************/
+
+/* ***** PRIVATE FUNCTIONS IMPLEMENTATION ***** */
+
+static jboolean set_file_permissions (JNIEnv *env, jstring name,
+                                      jboolean enable,
+                                      jboolean ownerOnly,
+                                      int permissions)
+{
+#ifndef WITHOUT_FILESYSTEM
+  const char *filename;
+  int result = JNI_FALSE;
+  
+  /* Don't use the JCL convert function because it throws an exception
+     on failure */
+  filename = (*env)->GetStringUTFChars (env, name, 0);
+  if (filename == NULL)
+    {
+      return JNI_FALSE;
+    }
+  
+  if (ownerOnly)
+    {
+      permissions |= CPFILE_FLAG_USR; 
+    }
+  
+  if (!enable)
+    {
+      permissions |= CPFILE_FLAG_OFF;
+    }
+  
+  result = cpio_chmod (filename, permissions);
+  (*env)->ReleaseStringUTFChars (env, name, filename);
+  
+  return result == CPNATIVE_OK ? JNI_TRUE : JNI_FALSE;
+  
+#else /* not WITHOUT_FILESYSTEM */
+  return JNI_FALSE;
 #endif /* not WITHOUT_FILESYSTEM */
 }

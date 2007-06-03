@@ -15,21 +15,39 @@ public: // actually package-private
   TreeMap$SubMap(::java::util::TreeMap *, ::java::lang::Object *, ::java::lang::Object *);
   jboolean keyInRange(::java::lang::Object *);
 public:
+  ::java::util::Map$Entry * ceilingEntry(::java::lang::Object *);
+  ::java::lang::Object * ceilingKey(::java::lang::Object *);
+  ::java::util::NavigableSet * descendingKeySet();
+  ::java::util::NavigableMap * descendingMap();
   void clear();
   ::java::util::Comparator * comparator();
   jboolean containsKey(::java::lang::Object *);
   jboolean containsValue(::java::lang::Object *);
   ::java::util::Set * entrySet();
+  ::java::util::Map$Entry * firstEntry();
   ::java::lang::Object * firstKey();
+  ::java::util::Map$Entry * floorEntry(::java::lang::Object *);
+  ::java::lang::Object * floorKey(::java::lang::Object *);
   ::java::lang::Object * get(::java::lang::Object *);
   ::java::util::SortedMap * headMap(::java::lang::Object *);
+  ::java::util::NavigableMap * headMap(::java::lang::Object *, jboolean);
   ::java::util::Set * keySet();
+  ::java::util::Map$Entry * higherEntry(::java::lang::Object *);
+  ::java::lang::Object * higherKey(::java::lang::Object *);
+  ::java::util::Map$Entry * lastEntry();
   ::java::lang::Object * lastKey();
+  ::java::util::Map$Entry * lowerEntry(::java::lang::Object *);
+  ::java::lang::Object * lowerKey(::java::lang::Object *);
+  ::java::util::NavigableSet * navigableKeySet();
+  ::java::util::Map$Entry * pollFirstEntry();
+  ::java::util::Map$Entry * pollLastEntry();
   ::java::lang::Object * put(::java::lang::Object *, ::java::lang::Object *);
   ::java::lang::Object * remove(::java::lang::Object *);
   jint size();
   ::java::util::SortedMap * subMap(::java::lang::Object *, ::java::lang::Object *);
+  ::java::util::NavigableMap * subMap(::java::lang::Object *, jboolean, ::java::lang::Object *, jboolean);
   ::java::util::SortedMap * tailMap(::java::lang::Object *);
+  ::java::util::NavigableMap * tailMap(::java::lang::Object *, jboolean);
   ::java::util::Collection * values();
 public: // actually package-private
   static ::java::util::TreeMap * access$0(::java::util::TreeMap$SubMap *);
@@ -37,6 +55,8 @@ public: // actually package-private
   ::java::lang::Object * maxKey;
 private:
   ::java::util::Set * entries;
+  ::java::util::NavigableMap * descendingMap__;
+  ::java::util::NavigableSet * nKeys;
 public: // actually package-private
   ::java::util::TreeMap * this$0;
 public:

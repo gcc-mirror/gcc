@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package gnu.java.awt.font.opentype.truetype;
 
+import gnu.java.awt.font.opentype.Hinter;
 import gnu.java.awt.font.opentype.Scaler;
 
 import java.awt.FontFormatException;
@@ -191,17 +192,18 @@ public final class TrueTypeScaler
                                 float pointSize,
                                 AffineTransform deviceTransform,
                                 boolean antialias,
-                                boolean fractionalMetrics)
+                                boolean fractionalMetrics, Hinter hinter,
+                                int type)
   {
     glyphLoader.loadGlyph(glyphIndex, pointSize, deviceTransform,
-                          antialias, glyphZone);
-    return glyphZone.getPath();
+                          antialias, glyphZone, hinter);
+    return glyphZone.getPath(type);
   }
 
   public Zone getRawOutline(int glyphIndex, AffineTransform transform)
   {
     Zone zone = new Zone(glyphZone.getCapacity());
-    glyphLoader.loadGlyph(glyphIndex, transform, zone);
+    glyphLoader.loadGlyph(glyphIndex, transform, zone, null);
     return zone;
   }
 

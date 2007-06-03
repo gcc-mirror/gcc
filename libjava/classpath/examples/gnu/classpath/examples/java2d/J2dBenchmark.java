@@ -174,8 +174,8 @@ public class J2dBenchmark
   public String init()
   {
     boolean loadError = false;
-    pngTestImage = loadImage("aicas.png");
-    gifTestImage = loadImage("palme.gif");
+    pngTestImage = loadImage("../icons/aicas.png");
+    gifTestImage = loadImage("../icons/palme.gif");
 
     if (texture != null)
       {

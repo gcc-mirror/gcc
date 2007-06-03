@@ -44,8 +44,6 @@ public:
   virtual jint getPixelStride();
   virtual jint getNumDataElements();
   virtual ::java::lang::Object * getDataElements(jint, jint, ::java::lang::Object *, ::java::awt::image::DataBuffer *);
-  virtual ::java::lang::Object * getDataElements(jint, jint, jint, jint, ::java::lang::Object *, ::java::awt::image::DataBuffer *);
-  virtual void setDataElements(jint, jint, jint, jint, ::java::lang::Object *, ::java::awt::image::DataBuffer *);
   virtual JArray< jint > * getPixel(jint, jint, JArray< jint > *, ::java::awt::image::DataBuffer *);
   virtual JArray< jint > * getPixels(jint, jint, jint, jint, JArray< jint > *, ::java::awt::image::DataBuffer *);
   virtual jint getSample(jint, jint, jint, ::java::awt::image::DataBuffer *);
@@ -61,8 +59,6 @@ public: // actually protected
   jint numBanks;
   jint scanlineStride;
   jint pixelStride;
-private:
-  jboolean tightPixelPacking;
 public:
   static ::java::lang::Class class$;
 };

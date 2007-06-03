@@ -90,11 +90,11 @@ public class GtkLabelPeer extends GtkComponentPeer
     switch (alignment)
       {
       case Label.LEFT:
-	return 0.0f;
+        return 0.0f;
       case Label.CENTER:
-	return 0.5f;
+        return 0.5f;
       case Label.RIGHT:
-	return 1.0f;
+        return 1.0f;
       }
 
     return 0.0f;

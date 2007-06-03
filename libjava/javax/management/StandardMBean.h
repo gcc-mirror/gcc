@@ -66,6 +66,7 @@ public:
   virtual ::javax::management::AttributeList * setAttributes(::javax::management::AttributeList *);
   virtual void setImplementation(::java::lang::Object *);
 private:
+  ::java::lang::reflect::Method * getMutator(::java::lang::String *, ::java::lang::Class *);
   ::java::lang::Class * __attribute__((aligned(__alignof__( ::java::lang::Object)))) iface;
   ::java::lang::Object * impl;
   ::javax::management::MBeanInfo * info;

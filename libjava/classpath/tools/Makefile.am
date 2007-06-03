@@ -10,11 +10,15 @@ if FOUND_GCJ
 JCOMPILER = $(GCJ) -C -encoding UTF-8 -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath $(GLIBJ_CLASSPATH):.
 else
 if FOUND_ECJ
-JCOMPILER = $(ECJ) -1.5 -encoding UTF-8 -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath .:$(GLIBJ_CLASSPATH)
+JCOMPILER = $(ECJ) -1.5 -encoding UTF-8 -warn:-deprecation,serial,typeHiding,unchecked,unused,varargsCast -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath .:$(GLIBJ_CLASSPATH)
+else
+if FOUND_JAVAC
+JCOMPILER = $(JAVAC) -encoding UTF-8 -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath .:$(GLIBJ_CLASSPATH)
 else
 error dunno how to setup the JCOMPILER and compile
-endif
-endif
+endif # FOUND_JAVAC
+endif # FOUND_ECJ
+endif # FOUND_GCJ
 
 if CREATE_WRAPPERS
 bin_SCRIPTS =
@@ -51,12 +55,14 @@ gjar_CFLAGS = \
 gnative2ascii_SOURCES = toolwrapper.c
 gnative2ascii_CFLAGS = \
 	-DTOOLPACKAGE="\"native2ascii\"" \
-	-DTOOLNAME="\"gnative2ascii\""
+	-DTOOLNAME="\"gnative2ascii\"" \
+	-DMAINCLASS="\"Native2ASCII\""
 
 gserialver_SOURCES = toolwrapper.c
 gserialver_CFLAGS = \
 	-DTOOLPACKAGE="\"serialver\"" \
-	-DTOOLNAME="\"gserialver\""
+	-DTOOLNAME="\"gserialver\"" \
+	-DMAINCLASS="\"SerialVer\""
 
 grmiregistry_SOURCES = toolwrapper.c
 grmiregistry_CFLAGS = \
@@ -206,7 +212,7 @@ endif
 
 # Zip file be gone! (and make sure the classes are gone too)
 clean-local:
-	rm -rf $(TOOLS_ZIP) classes asm asm.lst
+	rm -rf $(TOOLS_ZIP) classes classes.lst asm asm.lst all-classes.lst
 
 # FIXME: remove this when GNU Classpath includes a bootstrap VM.
 installcheck-binSCRIPTS:

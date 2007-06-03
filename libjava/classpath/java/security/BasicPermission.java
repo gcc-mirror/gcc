@@ -73,9 +73,8 @@ import java.util.Hashtable;
  * @since 1.1
  * @status updated to 1.4
  */
-public abstract class BasicPermission extends java.security.Permission
+public abstract class BasicPermission extends Permission
   implements Serializable
-  // FIXME extends with fully qualified classname as workaround for gcj 3.3.
 {
   /**
    * Compatible with JDK 1.1+.

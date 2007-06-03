@@ -29,6 +29,8 @@ class java::awt::datatransfer::SystemFlavorMap : public ::java::lang::Object
 {
 
   SystemFlavorMap();
+public: // actually package-private
+  void setupMapping(::java::util::Properties *);
 public:
   ::java::util::Map * getNativesForFlavors(JArray< ::java::awt::datatransfer::DataFlavor * > *);
   ::java::util::Map * getFlavorsForNatives(JArray< ::java::lang::String * > *);

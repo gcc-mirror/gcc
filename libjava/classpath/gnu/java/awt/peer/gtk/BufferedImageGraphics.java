@@ -40,6 +40,7 @@ package gnu.java.awt.peer.gtk;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
@@ -49,7 +50,6 @@ import java.awt.Shape;
 import java.awt.Toolkit;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -75,12 +75,6 @@ public class BufferedImageGraphics extends CairoGraphics2D
   private BufferedImage image, buffer;
   
   /**
-   * Allows us to lock the image from updates (if we want to perform a few
-   * intermediary operations on the cairo surface, then update it all at once)
-   */
-  private boolean locked;
-
-  /**
    * Image size.
    */
   private int imageWidth, imageHeight;
@@ -93,7 +87,8 @@ public class BufferedImageGraphics extends CairoGraphics2D
   /**
    * Cache BufferedImageGraphics surfaces.
    */
-  static WeakHashMap bufferedImages = new WeakHashMap();
+  static WeakHashMap<BufferedImage, CairoSurface> bufferedImages
+    = new WeakHashMap<BufferedImage, CairoSurface>();
 
   /**
    * Its corresponding cairo_t.
@@ -109,30 +104,30 @@ public class BufferedImageGraphics extends CairoGraphics2D
     this.image = bi;
     imageWidth = bi.getWidth();
     imageHeight = bi.getHeight();
-    locked = false;
     
     if (!(image.getSampleModel() instanceof SinglePixelPackedSampleModel))
       hasFastCM = false;
     else if(bi.getColorModel().equals(CairoSurface.cairoCM_opaque))
       {
-	hasFastCM = true;
-	hasAlpha = false;
+        hasFastCM = true;
+        hasAlpha = false;
       }
-    else if(bi.getColorModel().equals(CairoSurface.cairoColorModel))
+    else if(bi.getColorModel().equals(CairoSurface.cairoColorModel)
+        || bi.getColorModel().equals(CairoSurface.cairoCM_pre))
       {
-	hasFastCM = true;
-	hasAlpha = true;
+        hasFastCM = true;
+        hasAlpha = true;
       }
     else
       hasFastCM = false;
 
     // Cache surfaces.
     if( bufferedImages.get( bi ) != null )
-      surface = (CairoSurface)bufferedImages.get( bi );
+      surface = bufferedImages.get( bi );
     else
       {
-	surface = new CairoSurface( imageWidth, imageHeight );
-	bufferedImages.put(bi, surface);
+        surface = new CairoSurface( imageWidth, imageHeight );
+        bufferedImages.put(bi, surface);
       }
 
     cairo_t = surface.newCairoContext();
@@ -148,10 +143,7 @@ public class BufferedImageGraphics extends CairoGraphics2D
         int minY = image.getRaster().getSampleModelTranslateY();
 
         // Pull pixels directly out of data buffer
-        if(raster instanceof CairoSurface)
-          pixels = ((CairoSurface)raster).getPixels(raster.getWidth() * raster.getHeight());
-        else
-          pixels = ((DataBufferInt)raster.getDataBuffer()).getData();
+        pixels = ((DataBufferInt)raster.getDataBuffer()).getData();
 
         // Discard pixels that fall outside of the image's bounds
         // (ie, this image is actually a subimage of a different image)
@@ -161,7 +153,8 @@ public class BufferedImageGraphics extends CairoGraphics2D
             int scanline = sm.getScanlineStride();
             
             for (int i = 0; i < imageHeight; i++)
-              System.arraycopy(pixels, (i - minY) * scanline - minX, pixels2, i * imageWidth, imageWidth);
+              System.arraycopy(pixels, (i - minY) * scanline - minX, pixels2,
+                               i * imageWidth, imageWidth);
             
             pixels = pixels2;
           }
@@ -173,11 +166,13 @@ public class BufferedImageGraphics extends CairoGraphics2D
       }
     else
       {
-        pixels = CairoGraphics2D.findSimpleIntegerArray(image.getColorModel(),image.getData());
+        pixels = CairoGraphics2D.findSimpleIntegerArray(image.getColorModel(),
+                                                        image.getData());
+        if (pixels != null)
+          System.arraycopy(pixels, 0, surface.getData(),
+                           0, pixels.length);
       }
     
-    surface.setPixels( pixels );
-
     setup( cairo_t );
     setClip(0, 0, imageWidth, imageHeight);
   }
@@ -189,7 +184,6 @@ public class BufferedImageGraphics extends CairoGraphics2D
     cairo_t = surface.newCairoContext();
     imageWidth = copyFrom.imageWidth;
     imageHeight = copyFrom.imageHeight;
-    locked = false;
     
     hasFastCM = copyFrom.hasFastCM;
     hasAlpha = copyFrom.hasAlpha;
@@ -202,17 +196,14 @@ public class BufferedImageGraphics extends CairoGraphics2D
    */
   private void updateBufferedImage(int x, int y, int width, int height)
   {  
-    if (locked)
-      return;
-    
-    double[] points = new double[]{x, y, width+x, height+y};
-    transform.transform(points, 0, points, 0, 2);
-    x = (int)points[0];
-    y = (int)points[1];
-    width = (int)Math.ceil(points[2] - points[0]);
-    height = (int)Math.ceil(points[3] - points[1]);
+    Rectangle bounds = new Rectangle(x, y, width, height);
+    bounds = getTransformedBounds(bounds, transform).getBounds();
+    x = bounds.x;
+    y = bounds.y;
+    width = bounds.width;
+    height = bounds.height;
 
-    int[] pixels = surface.getPixels(imageWidth * imageHeight);
+    int[] pixels = surface.getData();
 
     if( x > imageWidth || y > imageHeight )
       return;
@@ -403,14 +394,10 @@ public class BufferedImageGraphics extends CairoGraphics2D
         BufferedImage bImg = (BufferedImage) img;
         
         // Find translated bounds
-        Point2D origin = new Point2D.Double(bImg.getMinX(), bImg.getMinY());
-        Point2D pt = new Point2D.Double(bImg.getWidth() + bImg.getMinX(),
-                                        bImg.getHeight() + bImg.getMinY());
+        Rectangle2D bounds = new Rectangle(bImg.getMinX(), bImg.getMinY(),
+                                           bImg.getWidth(), bImg.getHeight());
         if (xform != null)
-          {
-            origin = xform.transform(origin, origin);
-            pt = xform.transform(pt, pt);
-          }
+          bounds = getTransformedBounds(bounds, xform);
         
         // Create buffer and draw image
         createBuffer();
@@ -420,10 +407,7 @@ public class BufferedImageGraphics extends CairoGraphics2D
         g2d.drawImage(img, xform, obs);
 
         // Perform compositing
-        return drawComposite(new Rectangle2D.Double(origin.getX(),
-                                                    origin.getY(),
-                                                    pt.getX(), pt.getY()),
-                             obs);
+        return drawComposite(bounds, obs);
       }
   }
 
@@ -438,6 +422,11 @@ public class BufferedImageGraphics extends CairoGraphics2D
     if (comp == null || comp instanceof AlphaComposite)
       {
         super.drawGlyphVector(gv, x, y);
+        
+        // this returns an integer-based Rectangle (rather than a
+        // Rectangle2D), which takes care of any necessary rounding for us.
+        bounds = bounds.getBounds();
+        
         updateBufferedImage((int)bounds.getX(), (int)bounds.getY(),
                             (int)bounds.getWidth(), (int)bounds.getHeight());
       }
@@ -468,12 +457,7 @@ public class BufferedImageGraphics extends CairoGraphics2D
   private boolean drawComposite(Rectangle2D bounds, ImageObserver observer)
   {
     // Find bounds in device space
-    double[] points = new double[] {bounds.getX(), bounds.getY(),
-                                    bounds.getMaxX(), bounds.getMaxY()};
-    transform.transform(points, 0, points, 0, 2);
-    bounds = new Rectangle2D.Double(points[0], points[1],
-                                    (points[2] - points[0]),
-                                    (points[3] - points[1]));
+    bounds = getTransformedBounds(bounds, transform);
 
     // Clip bounds by the stored clip, and by the internal buffer
     Rectangle2D devClip = this.getClipInDevSpace();
@@ -482,17 +466,15 @@ public class BufferedImageGraphics extends CairoGraphics2D
                             buffer.getWidth(), buffer.getHeight());
     Rectangle2D.intersect(bounds, devClip, bounds);
     
-    // Round bounds as needed, but be conservative in our rounding
+    // Round bounds as needed, but be careful in our rounding
     // (otherwise it may leave unpainted stripes)
     double x = bounds.getX();
     double y = bounds.getY();
-    double w = bounds.getWidth();
-    double h = bounds.getHeight();
-    if (Math.floor(x) != x)
-      w--;
-    if (Math.floor(y) != y)
-      h--;
-    bounds.setRect(Math.ceil(x), Math.ceil(y), Math.floor(w), Math.floor(h));
+    double maxX = x + bounds.getWidth();
+    double maxY = y + bounds.getHeight();
+    x = Math.round(x);
+    y = Math.round(y);
+    bounds.setRect(x, y, Math.round(maxX - x), Math.round(maxY - y));
     
     // Find subimage of internal buffer for updating
     BufferedImage buffer2 = buffer;
@@ -511,9 +493,10 @@ public class BufferedImageGraphics extends CairoGraphics2D
     compCtx.compose(buffer2.getRaster(), current.getRaster(),
                     current.getRaster());
     
-    // Prevent the clearRect in CairoGraphics2D.drawImage from clearing
-    // our composited image
-    locked = true;
+    // Set cairo's composite to direct SRC, since we've already done our own
+    // compositing   
+    Composite oldcomp = comp;
+    setComposite(AlphaComposite.Src);
     
     // This MUST call directly into the "action" method in CairoGraphics2D,
     // not one of the wrappers, to ensure that the composite isn't processed
@@ -521,8 +504,9 @@ public class BufferedImageGraphics extends CairoGraphics2D
     boolean rv = super.drawImage(current,
                                  AffineTransform.getTranslateInstance(bounds.getX(),
                                                                       bounds.getY()),
-                                 new Color(0,0,0,0), null);
-    locked = false;
+                                 null, null);
+    setComposite(oldcomp);
+    updateColor();
     return rv;
   }
   

@@ -69,6 +69,8 @@ public:
   static ::java::util::Set * checkedSet(::java::util::Set *, ::java::lang::Class *);
   static ::java::util::SortedMap * checkedSortedMap(::java::util::SortedMap *, ::java::lang::Class *, ::java::lang::Class *);
   static ::java::util::SortedSet * checkedSortedSet(::java::util::SortedSet *, ::java::lang::Class *);
+  static ::java::util::Queue * asLifoQueue(::java::util::Deque *);
+  static ::java::util::Set * newSetFromMap(::java::util::Map *);
 private:
   static const jint LARGE_LIST_SIZE = 16;
 public:

@@ -116,6 +116,7 @@ final class ZonePathIterator
   private int contourStart;
 
   
+  private int type;
 
   /**
    * Constructs a ZonePathIterator for the specified zone.
@@ -123,9 +124,10 @@ final class ZonePathIterator
    * @param zone the zone whose segments will be enumerated
    * by this iterator.
    */
-  ZonePathIterator(Zone zone)
+  ZonePathIterator(Zone zone, int t)
   {
     this.zone = zone;
+    type = t;
     numPoints = zone.getSize() - /* four phantom points */ 4;
 
     // The first segment that needs to be emitted is a SEG_MOVETO.
@@ -309,8 +311,8 @@ final class ZonePathIterator
     int curX, curY;
     int succ, succX, succY;
 
-    curX = zone.getX(cur);
-    curY = zone.getY(cur);
+    curX = zone.getX(cur, type);
+    curY = zone.getY(cur, type);
     coords[0] = Fixed.floatValue(curX);
     coords[1] = Fixed.floatValue(curY);
 
@@ -318,8 +320,8 @@ final class ZonePathIterator
       return PathIterator.SEG_LINETO;
 
     succ = getSuccessor(cur);
-    succX = zone.getX(succ);
-    succY = zone.getY(succ);
+    succX = zone.getX(succ, type);
+    succY = zone.getY(succ, type);
 
     if (zone.isOnCurve(succ))
     {
@@ -359,8 +361,8 @@ final class ZonePathIterator
 
     if (zone.isOnCurve(contourStart))
     {
-      x = zone.getX(contourStart);
-      y = zone.getY(contourStart);    
+      x = zone.getX(contourStart, type);
+      y = zone.getY(contourStart, type);    
     }
     else
     {
@@ -374,13 +376,13 @@ final class ZonePathIterator
         /* An example is the 'o' glyph of the Helvetica which comes
          * with Apple MacOS X 10.1.5.
          */
-        x = zone.getX(contourEnd);
-        y = zone.getY(contourEnd);
+        x = zone.getX(contourEnd, type);
+        y = zone.getY(contourEnd, type);
       }
       else
       {
-        x = (zone.getX(contourStart) + zone.getX(contourEnd)) / 2;
-        y = (zone.getY(contourStart) + zone.getY(contourEnd)) / 2;
+        x = (zone.getX(contourStart, type) + zone.getX(contourEnd, type)) / 2;
+        y = (zone.getY(contourStart, type) + zone.getY(contourEnd, type)) / 2;
       }
     }
 

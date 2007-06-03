@@ -1,5 +1,5 @@
 /* TabularDataSupport.java -- Tables of composite data structures.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,7 +55,7 @@ import java.util.Set;
  * @since 1.5
  */
 public class TabularDataSupport
-  implements TabularData, Serializable, Cloneable, Map
+  implements TabularData, Serializable, Cloneable, Map<Object,Object>
 {
 
   /**
@@ -68,7 +68,7 @@ public class TabularDataSupport
    *
    * @serial the map of rows to column values.
    */
-  private Map dataMap;
+  private Map<Object,Object> dataMap;
 
   /**
    * The tabular type which represents this tabular data instance.
@@ -113,7 +113,7 @@ public class TabularDataSupport
     if (type == null)
       throw new IllegalArgumentException("The type may not be null.");
     tabularType = type;
-    dataMap = new HashMap(cap, lf);
+    dataMap = new HashMap<Object,Object>(cap, lf);
   }
    
   /**
@@ -279,7 +279,7 @@ public class TabularDataSupport
    * @return the set view of all mapping entries
    * @see java.util.Map.Entry
    */
-  public Set entrySet()
+  public Set<Map.Entry<Object,Object>> entrySet()
   {
     return dataMap.entrySet();
   }
@@ -413,7 +413,7 @@ public class TabularDataSupport
    *
    * @return the set view of all keys
    */
-  public Set keySet()
+  public Set<Object> keySet()
   {
     return dataMap.keySet();
   }
@@ -535,7 +535,7 @@ public class TabularDataSupport
    *                                   of one of the other
    *                                   specified values.
    */
-  public void putAll(Map m)
+  public void putAll(Map<?,?> m)
   {
     if (m == null || m.size() == 0)
       return;
@@ -643,7 +643,7 @@ public class TabularDataSupport
    *
    * @return the collection view of all values
    */
-  public Collection values()
+  public Collection<Object> values()
   {
     return dataMap.values();
   }

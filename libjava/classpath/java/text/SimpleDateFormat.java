@@ -1101,11 +1101,21 @@ public class SimpleDateFormat extends DateFormat
 	    if (is_numeric)
 	      {
 		numberFormat.setMinimumIntegerDigits(fmt_count);
-		if (limit_digits)
-		  numberFormat.setMaximumIntegerDigits(fmt_count);
 		if (maybe2DigitYear)
 		  index = pos.getIndex();
-		Number n = numberFormat.parse(dateStr, pos);
+		Number n = null;
+		if (limit_digits)
+		  {
+		    // numberFormat.setMaximumIntegerDigits(fmt_count) may
+		    // not work as expected. So we explicitly use substring
+		    // of dateStr.
+		    int origPos = pos.getIndex();
+		    pos.setIndex(0);
+		    n = numberFormat.parse(dateStr.substring(origPos, origPos + fmt_count), pos);
+		    pos.setIndex(origPos + pos.getIndex());
+		  }
+		else
+		  n = numberFormat.parse(dateStr, pos);
 		if (pos == null || ! (n instanceof Long))
 		  return null;
 		value = n.intValue() + offset;

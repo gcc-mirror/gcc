@@ -139,7 +139,9 @@ public class Base64InputStream extends FilterInputStream
     while (count < len)
       {
         int i;
-        while (Character.isWhitespace((char) (i = in.read())));
+        while (Character.isWhitespace((char) (i = in.read())))
+          ;
+
         int pos = BASE_64.indexOf((char) i);
         if (pos >= 0)
           {
@@ -173,11 +175,13 @@ public class Base64InputStream extends FilterInputStream
                 case 1:
                   throw new IOException("malformed Base-64 input");
                 case 2:
-                  while (Character.isWhitespace((char) (i = in.read())));
+                  while (Character.isWhitespace((char) (i = in.read())))
+                    ;
                   if (i != BASE_64_PAD)
                     throw new IOException("malformed Base-64 input");
                 case 3:
-                  while (Character.isWhitespace((char) (i = in.read())));
+                  while (Character.isWhitespace((char) (i = in.read())))
+                    ;
               }
             eof = true;
             break;

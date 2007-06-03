@@ -33,11 +33,15 @@ extern "Java"
     namespace awt
     {
         class Graphics2D;
+        class Point;
+        class Rectangle;
       namespace image
       {
           class BufferedImage;
           class ColorModel;
+          class Raster;
           class SampleModel;
+          class WritableRaster;
       }
     }
   }
@@ -46,25 +50,18 @@ extern "Java"
 class gnu::java::awt::peer::gtk::CairoSurface : public ::java::awt::image::WritableRaster
 {
 
-  void create(jint, jint, jint);
-  void destroy(jlong, jlong);
-  jint nativeGetElem(jlong, jint);
-  void nativeSetElem(jlong, jint, jint);
+  void create(jint, jint, jint, JArray< jint > *);
+  void destroy(jlong, JArray< jint > *);
 public:
   virtual void nativeDrawSurface(jlong, jlong, JArray< jdouble > *, jdouble, jint);
-  virtual void drawSurface(jlong, JArray< jdouble > *, jdouble, jint);
 public: // actually package-private
-  virtual JArray< jint > * nativeGetPixels(jlong, jint);
-public:
-  virtual JArray< jint > * getPixels(jint);
-public: // actually package-private
-  virtual void nativeSetPixels(jlong, JArray< jint > *);
-public:
-  virtual void setPixels(JArray< jint > *);
-public: // actually package-private
-  virtual jlong getFlippedBuffer(jlong, jint);
+  virtual void syncNativeToJava(jlong, JArray< jint > *);
+  virtual void syncJavaToNative(jlong, JArray< jint > *);
+  virtual jlong getFlippedBuffer(jlong);
 public:
   CairoSurface(jint, jint);
+  CairoSurface(jint, jint, jint, jint);
+  CairoSurface(::java::awt::image::SampleModel *, ::gnu::java::awt::peer::gtk::CairoSurface *, ::java::awt::Rectangle *, ::java::awt::Point *);
 public: // actually package-private
   CairoSurface(::gnu::java::awt::peer::gtk::GtkImage *);
 public:
@@ -73,6 +70,7 @@ public: // actually protected
   virtual void finalize();
 public:
   virtual ::gnu::java::awt::peer::gtk::GtkImage * getGtkImage();
+  virtual JArray< jint > * getData();
   static ::java::awt::image::BufferedImage * getBufferedImage(jint, jint);
   static ::java::awt::image::BufferedImage * getBufferedImage(::gnu::java::awt::peer::gtk::GtkImage *);
   static ::java::awt::image::BufferedImage * getBufferedImage(::gnu::java::awt::peer::gtk::CairoSurface *);
@@ -81,19 +79,25 @@ public: // actually package-private
   virtual jlong nativeNewCairoContext(jlong);
 public:
   virtual jlong newCairoContext();
+  virtual void copyAreaNative(jint, jint, jint, jint, jint, jint, jint);
 public: // actually package-private
   virtual void copyAreaNative2(jlong, jint, jint, jint, jint, jint, jint, jint);
-public:
-  virtual void copyAreaNative(jint, jint, jint, jint, jint, jint, jint);
 public: // actually protected
   static ::java::awt::image::SampleModel * createCairoSampleModel(jint, jint);
+public:
+  static jboolean isCompatibleColorModel(::java::awt::image::ColorModel *);
+  static jboolean isCompatibleSampleModel(::java::awt::image::SampleModel *);
+  virtual ::java::awt::image::Raster * createChild(jint, jint, jint, jint, jint, jint, JArray< jint > *);
+  virtual ::java::awt::image::WritableRaster * createCompatibleWritableRaster();
+  virtual ::java::awt::image::WritableRaster * createCompatibleWritableRaster(jint, jint, jint, jint);
+  virtual ::java::awt::image::Raster * createTranslatedChild(jint, jint);
+  virtual ::java::awt::image::WritableRaster * createWritableChild(jint, jint, jint, jint, jint, jint, JArray< jint > *);
+  virtual ::java::awt::image::WritableRaster * createWritableTranslatedChild(jint, jint);
 public: // actually package-private
-  static jint access$0(::gnu::java::awt::peer::gtk::CairoSurface *, jlong, jint);
-  static void access$1(::gnu::java::awt::peer::gtk::CairoSurface *, jlong, jint, jint);
   jint __attribute__((aligned(__alignof__( ::java::awt::image::WritableRaster)))) width;
   jint height;
   jlong surfacePointer;
-  jlong bufferPointer;
+  jboolean sharedBuffer;
   static ::java::awt::image::ColorModel * cairoColorModel;
   static ::java::awt::image::ColorModel * cairoCM_pre;
   static ::java::awt::image::ColorModel * cairoCM_opaque;

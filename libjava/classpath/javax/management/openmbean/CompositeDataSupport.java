@@ -1,5 +1,5 @@
 /* CompositeData.java -- A composite data structure implementation.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -68,7 +68,7 @@ public class CompositeDataSupport
    *
    * @serial the map of field names to values.
    */
-  private SortedMap contents;
+  private SortedMap<String, Object> contents;
 
   /**
    * The composite type which represents this composite data instance.
@@ -106,11 +106,11 @@ public class CompositeDataSupport
    *                             {@link java.lang.String} (thus calling a failure
    *                             in converting the keys to an array of strings).
    */
-  public CompositeDataSupport(CompositeType type, Map items)
+  public CompositeDataSupport(CompositeType type, Map<String, ?> items)
     throws OpenDataException
   {
     this(type, 
-	 (String[]) items.keySet().toArray(new String[items.size()]),
+	 items.keySet().toArray(new String[items.size()]),
 	 items.values().toArray());
   }
 
@@ -158,7 +158,7 @@ public class CompositeDataSupport
     if (typeKeys.size() != names.length)
       throw new OpenDataException("The number of field names does not match " +
 				  "the type description.");
-    contents = new TreeMap();
+    contents = new TreeMap<String, Object>();
     for (int a = 0; a < names.length; ++a)
       {
 	if (names[a] == null)
@@ -340,7 +340,7 @@ public class CompositeDataSupport
    *
    * @return the values of this instance.
    */
-  public Collection values()
+  public Collection<?> values()
   {
     return Collections.unmodifiableCollection(contents.values());
   }

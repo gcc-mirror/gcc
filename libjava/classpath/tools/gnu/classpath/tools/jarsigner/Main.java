@@ -1,5 +1,5 @@
 /* Main.java -- JAR signing and verification tool not unlike jarsigner
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -123,7 +123,7 @@ public class Main
   private CallbackHandler handler;
   /** The command line parser. */
   private ToolParser cmdLineParser;
-  protected ArrayList fileAndAlias = new ArrayList();;
+  protected ArrayList<String> fileAndAlias = new ArrayList<String>();
 
   private Main()
   {
@@ -162,8 +162,6 @@ public class Main
       log.exiting(Main.class.getName(), "main", Integer.valueOf(result)); //$NON-NLS-1$
     System.exit(result);
   }
-
-  // helper methods -----------------------------------------------------------
 
   /**
    * Read the command line arguments setting the tool's parameters in
@@ -568,7 +566,7 @@ public class Main
             alias = "mykey"; //$NON-NLS-1$
           }
         else
-          alias = (String) fileAndAlias.get(1);
+          alias = fileAndAlias.get(1);
     }
 
     public void initializeParser()

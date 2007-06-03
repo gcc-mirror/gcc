@@ -20,12 +20,17 @@ extern "Java"
           namespace autofit
           {
               class GlyphHints;
+              class HintScaler;
               class Script;
               class ScriptMetrics;
           }
           namespace opentype
           {
               class OpenTypeFont;
+            namespace truetype
+            {
+                class Zone;
+            }
           }
         }
       }
@@ -38,10 +43,10 @@ class gnu::java::awt::font::autofit::Script : public ::java::lang::Object
 
 public:
   virtual void initMetrics(::gnu::java::awt::font::autofit::ScriptMetrics *, ::gnu::java::awt::font::opentype::OpenTypeFont *) = 0;
-  virtual void scaleMetrics(::gnu::java::awt::font::autofit::ScriptMetrics *) = 0;
+  virtual void scaleMetrics(::gnu::java::awt::font::autofit::ScriptMetrics *, ::gnu::java::awt::font::autofit::HintScaler *) = 0;
   virtual void doneMetrics(::gnu::java::awt::font::autofit::ScriptMetrics *) = 0;
   virtual void initHints(::gnu::java::awt::font::autofit::GlyphHints *, ::gnu::java::awt::font::autofit::ScriptMetrics *) = 0;
-  virtual void applyHints(::gnu::java::awt::font::autofit::GlyphHints *, ::gnu::java::awt::font::autofit::ScriptMetrics *) = 0;
+  virtual void applyHints(::gnu::java::awt::font::autofit::GlyphHints *, ::gnu::java::awt::font::opentype::truetype::Zone *, ::gnu::java::awt::font::autofit::ScriptMetrics *) = 0;
   static ::java::lang::Class class$;
 } __attribute__ ((java_interface));
 

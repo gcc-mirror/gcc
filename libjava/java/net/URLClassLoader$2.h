@@ -13,6 +13,7 @@ extern "Java"
   {
     namespace net
     {
+        class URLClassLoader;
         class URLClassLoader$2;
     }
   }
@@ -24,6 +25,7 @@ class java::net::URLClassLoader$2 : public ::java::lang::Object
 public: // actually package-private
   URLClassLoader$2(::java::lang::ClassLoader *, ::java::lang::Object *);
 public:
+  ::java::net::URLClassLoader * URLClassLoader$2$run();
   ::java::lang::Object * run();
 private:
   ::java::lang::ClassLoader * __attribute__((aligned(__alignof__( ::java::lang::Object)))) val$parent;

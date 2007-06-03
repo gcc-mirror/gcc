@@ -415,7 +415,7 @@ public class JFormattedTextField extends JTextField
     // to create a new formatter.
     Object oldValue = this.value;
     
-    this.value = formatter.stringToValue(getText());;
+    this.value = formatter.stringToValue(getText());
     editValid = true;
     
     firePropertyChange("value", oldValue, this.value); 

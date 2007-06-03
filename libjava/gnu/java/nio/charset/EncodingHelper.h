@@ -43,6 +43,7 @@ public:
   static ::java::lang::String * getOldCanonical(::java::lang::String *);
   static jboolean isISOLatin1(::java::lang::String *);
   static ::java::nio::charset::Charset * getCharset(::java::lang::String *);
+  static ::java::nio::charset::Charset * getDefaultCharset();
 private:
   static ::java::util::HashMap * canonicalNames;
 public:

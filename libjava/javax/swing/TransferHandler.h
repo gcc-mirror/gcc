@@ -39,6 +39,7 @@ extern "Java"
         class Icon;
         class JComponent;
         class TransferHandler;
+        class TransferHandler$SwingDragGestureRecognizer;
     }
   }
 }
@@ -85,6 +86,7 @@ private:
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) sourceActions;
   ::javax::swing::Icon * visualRepresentation;
   ::java::lang::String * propertyName;
+  ::javax::swing::TransferHandler$SwingDragGestureRecognizer * recognizer;
 public:
   static ::java::lang::Class class$;
 };

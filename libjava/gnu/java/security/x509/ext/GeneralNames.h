@@ -36,15 +36,6 @@ public:
   GeneralNames(JArray< jbyte > *);
   virtual ::java::util::List * getNames();
   virtual ::java::lang::String * toString();
-  static const jint OTHER_NAME = 0;
-  static const jint RFC822_NAME = 1;
-  static const jint DNS_NAME = 2;
-  static const jint X400_ADDRESS = 3;
-  static const jint DIRECTORY_NAME = 4;
-  static const jint EDI_PARTY_NAME = 5;
-  static const jint URI = 6;
-  static const jint IP_ADDRESS = 7;
-  static const jint REGISTERED_ID = 8;
 private:
   ::java::util::List * __attribute__((aligned(__alignof__( ::java::lang::Object)))) names;
 public:

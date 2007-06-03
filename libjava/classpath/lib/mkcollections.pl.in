@@ -55,6 +55,12 @@ my @javautilclasses=qw(AbstractCollection
 		       TreeMap
 		       TreeSet
 		       Vector);
+my @externalclasses=qw(AbstractQueue
+		       ArrayDeque
+		       Deque
+		       NavigableMap
+		       NavigableSet
+		       Queue);
 
 my $destPkg = $destpath;
 $destPkg  =~ s!/!.!g;
@@ -109,6 +115,9 @@ EOF
 	for $clazz (@javautilclasses) {
 	    $_ =~ s/java.util.$clazz/$clazz/g;
 	}
+	for $clazz (@externalclasses) {
+	    $_ =~ s/java.util.$clazz/$clazz/g;
+	}
 
 	$_ =~ s/abstract (interface)/$1/g;
 
@@ -139,3 +148,11 @@ for $file (@javautilclasses) {
     print "$outfile\n";
     convert ($file, $infile, $outfile);
 }
+
+for $file (@externalclasses) {
+    my $infile = "$classpath/external/jsr166/java/util/$file.java";
+    my $outfile = "$destpath/$file.java";
+    print "$outfile\n";
+    convert ($file, $infile, $outfile);
+}
+

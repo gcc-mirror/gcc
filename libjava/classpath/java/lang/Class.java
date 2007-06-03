@@ -45,6 +45,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -1126,15 +1127,7 @@ public final class Class<T>
 	if (!Modifier.isPublic(constructor.getModifiers())
             || !Modifier.isPublic(VMClass.getModifiers(this, true)))
 	  {
-	    final Constructor finalConstructor = constructor;
-	    AccessController.doPrivileged(new PrivilegedAction()
-	      {
-		public Object run()
-	        {
-		  finalConstructor.setAccessible(true);
-		  return null;
-		}
-	      });
+	    setAccessible(constructor);
 	  }
 	synchronized(this)
 	  {
@@ -1397,7 +1390,9 @@ public final class Class<T>
       {
 	try
 	  {
-	    return (T[]) getMethod("values").invoke(null);
+            Method m = getMethod("values");
+            setAccessible(m);
+	    return (T[]) m.invoke(null);
 	  }
 	catch (NoSuchMethodException exception)
 	  {
@@ -1787,5 +1782,18 @@ public final class Class<T>
     return VMClass.isMemberClass(this);
   }
 
-
+  /**
+   * Utility method for use by classes in this package.
+   */
+  static void setAccessible(final AccessibleObject obj)
+  {
+    AccessController.doPrivileged(new PrivilegedAction()
+      {
+        public Object run()
+          {
+            obj.setAccessible(true);
+            return null;
+          }
+      });
+  }
 }

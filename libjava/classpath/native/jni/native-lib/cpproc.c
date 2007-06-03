@@ -114,6 +114,10 @@ int cpproc_forkAndExec (char * const *commandLine, char * const * newEnviron,
       *out_pid = pid;
       return 0;
     }
+
+  /* keep compiler happy */
+
+  return 0;
 }
 
 int cpproc_waitpid (pid_t pid, int *status, pid_t *outpid, int options)

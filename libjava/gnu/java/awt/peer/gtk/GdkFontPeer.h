@@ -109,7 +109,7 @@ public:
   virtual ::java::awt::FontMetrics * getFontMetrics(::java::awt::Font *);
 public: // actually package-private
   virtual ::java::awt::font::GlyphMetrics * getGlyphMetrics(jint);
-  virtual void putGlyphMetrics(jint, ::java::lang::Object *);
+  virtual void putGlyphMetrics(jint, ::java::awt::font::GlyphMetrics *);
   static ::java::awt::font::FontRenderContext * DEFAULT_CTX;
   ::java::util::HashMap * __attribute__((aligned(__alignof__( ::gnu::java::awt::peer::ClasspathFontPeer)))) textLayoutCache;
 private:

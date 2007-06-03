@@ -155,6 +155,7 @@ extern "Java"
       class Character$UnicodeBlock;
       class Character$UnicodeBlock$NameType;
       class Class;
+      class Class$1;
       class ClassCastException;
       class ClassCircularityError;
       class ClassFormatError;
@@ -284,7 +285,9 @@ extern "Java"
         class ClassLoadingMXBean;
         class CompilationMXBean;
         class GarbageCollectorMXBean;
+        class LockInfo;
         class ManagementFactory;
+        class ManagementFactory$ManagementInvocationHandler;
         class ManagementPermission;
         class MemoryMXBean;
         class MemoryManagerMXBean;
@@ -292,6 +295,7 @@ extern "Java"
         class MemoryPoolMXBean;
         class MemoryType;
         class MemoryUsage;
+        class MonitorInfo;
         class OperatingSystemMXBean;
         class RuntimeMXBean;
         class ThreadInfo;
@@ -392,6 +396,8 @@ extern "Java"
       class Collections$EmptyList;
       class Collections$EmptyMap;
       class Collections$EmptySet;
+      class Collections$LIFOQueue;
+      class Collections$MapSet;
       class Collections$ReverseComparator;
       class Collections$SingletonList;
       class Collections$SingletonMap;
@@ -483,6 +489,7 @@ extern "Java"
       class LinkedHashMap$LinkedHashEntry;
       class LinkedHashSet;
       class LinkedList;
+      class LinkedList$1;
       class LinkedList$Entry;
       class LinkedList$LinkedListItr;
       class List;
@@ -511,6 +518,9 @@ extern "Java"
       class ResourceBundle;
       class ResourceBundle$1;
       class ResourceBundle$BundleKey;
+      class ServiceConfigurationError;
+      class ServiceLoader;
+      class ServiceLoader$1;
       class Set;
       class SimpleTimeZone;
       class SortedMap;
@@ -531,8 +541,19 @@ extern "Java"
       class TreeMap$4;
       class TreeMap$5;
       class TreeMap$6;
+      class TreeMap$7;
+      class TreeMap$DescendingMap;
+      class TreeMap$DescendingSet;
+      class TreeMap$EntrySet;
+      class TreeMap$KeySet;
+      class TreeMap$NavigableEntrySet;
+      class TreeMap$NavigableKeySet;
       class TreeMap$Node;
       class TreeMap$SubMap;
+      class TreeMap$SubMap$EntrySet;
+      class TreeMap$SubMap$KeySet;
+      class TreeMap$SubMap$NavigableEntrySet;
+      class TreeMap$SubMap$NavigableKeySet;
       class TreeMap$TreeIterator;
       class TreeSet;
       class UUID;
@@ -787,6 +808,14 @@ extern "Java"
         class Matcher;
         class Pattern;
         class PatternSyntaxException;
+      }
+
+      namespace spi
+      {
+        class CurrencyNameProvider;
+        class LocaleNameProvider;
+        class LocaleServiceProvider;
+        class TimeZoneNameProvider;
       }
 
       namespace zip

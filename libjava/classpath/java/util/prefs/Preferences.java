@@ -183,9 +183,9 @@ public abstract class Preferences {
         // Get the factory
         if (factory == null) {
             // Caller might not have enough permissions
-            factory = (PreferencesFactory) AccessController.doPrivileged(
-                        new PrivilegedAction() {
-                            public Object run() {
+            factory = AccessController.doPrivileged(
+                        new PrivilegedAction<PreferencesFactory>() {
+                            public PreferencesFactory run() {
                                 PreferencesFactory pf = null;
                                 String className = System.getProperty
                                     ("java.util.prefs.PreferencesFactory");

@@ -31,6 +31,7 @@ class java::io::File : public ::java::lang::Object
 public:
   virtual jboolean canRead();
   virtual jboolean canWrite();
+  virtual jboolean canExecute();
 private:
   jboolean performCreate();
 public:
@@ -93,6 +94,15 @@ private:
 public:
   static ::java::io::File * createTempFile(::java::lang::String *, ::java::lang::String *, ::java::io::File *);
 private:
+  jboolean setFilePermissions(jboolean, jboolean, jint);
+public:
+  virtual jboolean setReadable(jboolean);
+  virtual jboolean setReadable(jboolean, jboolean);
+  virtual jboolean setWritable(jboolean);
+  virtual jboolean setWritable(jboolean, jboolean);
+  virtual jboolean setExecutable(jboolean);
+  virtual jboolean setExecutable(jboolean, jboolean);
+private:
   jboolean performSetReadOnly();
 public:
   virtual jboolean setReadOnly();
@@ -114,6 +124,7 @@ public:
 private:
   void checkWrite();
   void checkRead();
+  void checkExec();
 public:
   virtual void deleteOnExit();
 private:
@@ -123,6 +134,7 @@ private:
   static const jint READ = 0;
   static const jint WRITE = 1;
   static const jint EXISTS = 2;
+  static const jint EXEC = 3;
   static const jint DIRECTORY = 0;
   static const jint ISFILE = 1;
   static const jint ISHIDDEN = 2;

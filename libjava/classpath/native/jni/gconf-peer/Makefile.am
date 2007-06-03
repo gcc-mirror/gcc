@@ -5,7 +5,7 @@ libgconfpeer_la_SOURCES = GConfNativePeer.c
 libgconfpeer_la_LIBADD = $(top_builddir)/native/jni/classpath/native_state.lo \
                        $(top_builddir)/native/jni/classpath/jcl.lo
 
-libgconfpeer_la_LDFLAGS = -avoid-version
+libgconfpeer_la_LDFLAGS = $(AM_LDFLAGS) -avoid-version
 
 AM_LDFLAGS = @CLASSPATH_MODULE@ @GCONF_LIBS@ @GDK_LIBS@
 

@@ -49,6 +49,7 @@ public:
   virtual ::java::lang::String * valueToString(::java::lang::Object *);
   virtual ::java::lang::Object * stringToValue(::java::lang::String *);
   virtual JArray< ::java::text::Format$Field * > * getFields(jint);
+  virtual ::java::lang::Object * clone();
 public: // actually protected
   virtual JArray< ::javax::swing::Action * > * getActions();
 private:

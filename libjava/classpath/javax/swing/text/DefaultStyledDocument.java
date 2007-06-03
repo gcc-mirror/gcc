@@ -1126,7 +1126,9 @@ public class DefaultStyledDocument extends AbstractDocument implements
           int p;
           for (p = 0;
                p < data.length && data[p].getType() == ElementSpec.EndTagType;
-               p++);
+               p++)
+            ;
+          
           Edit edit = insertPath[insertPath.length - p - 1];
           edit.index--;
           edit.removed.add(0, edit.e.getElement(edit.index));

@@ -89,6 +89,8 @@ To import a new release:
   scripts/makemake.tcl > sources.am
   automake
 - Build, fix, till everything works.
+  Be sure to build all peers (--enable-java-awt=gtk,xlib,qt
+  --enable-gconf-peer)
   Be sure to update gnu/classpath/Configuration.java to reflect
     the new version
   Possibly update the gcj/javaprims.h file with scripts/classes.pl

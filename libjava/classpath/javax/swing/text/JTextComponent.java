@@ -1821,7 +1821,7 @@ public abstract class JTextComponent extends JComponent
 
   public boolean getScrollableTracksViewportWidth()
   {
-    boolean res = false;;
+    boolean res = false;
     Container c = getParent();
     if (c instanceof JViewport)
       res = ((JViewport) c).getExtentSize().width > getPreferredSize().width;

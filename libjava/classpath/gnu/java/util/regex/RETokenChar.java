@@ -113,7 +113,6 @@ final class RETokenChar extends REToken {
   boolean chain(REToken next) {
     if (next instanceof RETokenChar && ((RETokenChar)next).insens == insens) {
       RETokenChar cnext = (RETokenChar) next;
-      // assume for now that next can only be one character
       int newsize = ch.length + cnext.ch.length;
       
       char[] chTemp = new char [newsize];
@@ -122,7 +121,9 @@ final class RETokenChar extends REToken {
       System.arraycopy(cnext.ch,0,chTemp,ch.length,cnext.ch.length);
       
       ch = chTemp;
-      return false;
+      if (cnext.next == null)
+        return false;
+      return chain(cnext.next);
     } else return super.chain(next);
   }
 

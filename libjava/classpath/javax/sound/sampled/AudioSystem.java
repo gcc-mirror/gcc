@@ -160,7 +160,8 @@ public class AudioSystem
    */
   public static AudioFileFormat.Type[] getAudioFileTypes()
   {
-    HashSet result = new HashSet();
+    HashSet<AudioFileFormat.Type> result
+      = new HashSet<AudioFileFormat.Type>();
     Iterator i = ServiceFactory.lookupProviders(AudioFileWriter.class);
     while (i.hasNext())
       {
@@ -169,7 +170,7 @@ public class AudioSystem
         for (int j = 0; j < types.length; ++j)
           result.add(types[j]);
       }
-    return (AudioFileFormat.Type[]) result.toArray(new AudioFileFormat.Type[result.size()]);
+    return result.toArray(new AudioFileFormat.Type[result.size()]);
   }
 
   /**
@@ -180,7 +181,8 @@ public class AudioSystem
    */
   public static AudioFileFormat.Type[] getAudioFileTypes(AudioInputStream ais)
   {
-    HashSet result = new HashSet();
+    HashSet<AudioFileFormat.Type> result
+      = new HashSet<AudioFileFormat.Type>();
     Iterator i = ServiceFactory.lookupProviders(AudioFileWriter.class);
     while (i.hasNext())
       {
@@ -189,7 +191,7 @@ public class AudioSystem
         for (int j = 0; j < types.length; ++j)
           result.add(types[j]);
       }
-    return (AudioFileFormat.Type[]) result.toArray(new AudioFileFormat.Type[result.size()]);
+    return result.toArray(new AudioFileFormat.Type[result.size()]);
   }
 
   /**
@@ -204,7 +206,6 @@ public class AudioSystem
   public static AudioInputStream getAudioInputStream(AudioFormat.Encoding targ,
 						     AudioInputStream ais)
   {
-    HashSet result = new HashSet();
     Iterator i = ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
       {
@@ -228,7 +229,6 @@ public class AudioSystem
   public static AudioInputStream getAudioInputStream(AudioFormat targ,
 						     AudioInputStream ais)
   {
-    HashSet result = new HashSet();
     Iterator i = ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
       {
@@ -416,7 +416,7 @@ public class AudioSystem
    */
   public static Mixer.Info[] getMixerInfo()
   {
-    HashSet result = new HashSet();
+    HashSet<Mixer.Info> result = new HashSet<Mixer.Info>();
     Iterator i = ServiceFactory.lookupProviders(MixerProvider.class);
     while (i.hasNext())
       {
@@ -425,7 +425,7 @@ public class AudioSystem
         for (int j = 0; j < is.length; ++j)
           result.add(is[j]);
       }
-    return (Mixer.Info[]) result.toArray(new Mixer.Info[result.size()]);
+    return result.toArray(new Mixer.Info[result.size()]);
   }
 
   /**
@@ -474,7 +474,7 @@ public class AudioSystem
    */
   public static Line.Info[] getSourceLineInfo(Line.Info info)
   {
-    HashSet result = new HashSet();
+    HashSet<Line.Info> result = new HashSet<Line.Info>();
     Mixer.Info[] infos = getMixerInfo();
     for (int i = 0; i < infos.length; ++i)
       {
@@ -483,7 +483,7 @@ public class AudioSystem
         for (int j = 0; j < srcs.length; ++j)
           result.add(srcs[j]);
       }
-    return (Line.Info[]) result.toArray(new Line.Info[result.size()]);
+    return result.toArray(new Line.Info[result.size()]);
   }
 
   /**
@@ -534,7 +534,8 @@ public class AudioSystem
    */
   public static AudioFormat.Encoding[] getTargetEncodings(AudioFormat.Encoding source)
   {
-    HashSet result = new HashSet();
+    HashSet<AudioFormat.Encoding> result
+      = new HashSet<AudioFormat.Encoding>();
     Iterator i = ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
       {
@@ -545,7 +546,7 @@ public class AudioSystem
         for (int j = 0; j < es.length; ++j)
           result.add(es[j]);
       }
-    return (AudioFormat.Encoding[]) result.toArray(new AudioFormat.Encoding[result.size()]);
+    return result.toArray(new AudioFormat.Encoding[result.size()]);
   }
 
   /**
@@ -555,7 +556,8 @@ public class AudioSystem
    */
   public static AudioFormat.Encoding[] getTargetEncodings(AudioFormat source)
   {
-    HashSet result = new HashSet();
+    HashSet<AudioFormat.Encoding> result
+      = new HashSet<AudioFormat.Encoding>();
     Iterator i = ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
       {
@@ -564,7 +566,7 @@ public class AudioSystem
         for (int j = 0; j < es.length; ++j)
           result.add(es[j]);
       }
-    return (AudioFormat.Encoding[]) result.toArray(new AudioFormat.Encoding[result.size()]);
+    return result.toArray(new AudioFormat.Encoding[result.size()]);
   }
 
   /**
@@ -576,7 +578,7 @@ public class AudioSystem
   public static AudioFormat[] getTargetFormats(AudioFormat.Encoding encoding,
 					       AudioFormat sourceFmt)
   {
-    HashSet result = new HashSet();
+    HashSet<AudioFormat> result = new HashSet<AudioFormat>();
     Iterator i = ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
       {
@@ -585,7 +587,7 @@ public class AudioSystem
         for (int j = 0; j < es.length; ++j)
           result.add(es[j]);
       }
-    return (AudioFormat[]) result.toArray(new AudioFormat[result.size()]);
+    return result.toArray(new AudioFormat[result.size()]);
   }
 
   /**
@@ -595,7 +597,7 @@ public class AudioSystem
    */
   public static Line.Info[] getTargetLineInfo(Line.Info info)
   {
-    HashSet result = new HashSet();
+    HashSet<Line.Info> result = new HashSet<Line.Info>();
     Mixer.Info[] infos = getMixerInfo();
     for (int i = 0; i < infos.length; ++i)
       {
@@ -604,7 +606,7 @@ public class AudioSystem
         for (int j = 0; j < targs.length; ++j)
           result.add(targs[j]);
       }
-    return (Line.Info[]) result.toArray(new Line.Info[result.size()]);
+    return result.toArray(new Line.Info[result.size()]);
   }
 
   /**

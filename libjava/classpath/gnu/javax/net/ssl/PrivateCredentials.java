@@ -1,5 +1,5 @@
 /* PrivateCredentials.java -- private key/certificate pairs.
-   Copyright (C) 2006  Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
 
@@ -38,8 +38,6 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.InputStream;
 import java.io.IOException;
@@ -80,6 +78,7 @@ import gnu.javax.crypto.pad.WrongPaddingException;
 
 import gnu.java.security.der.DER;
 import gnu.java.security.der.DERReader;
+import gnu.java.util.Base64;
 
 /**
  * An instance of a manager factory parameters for holding a single

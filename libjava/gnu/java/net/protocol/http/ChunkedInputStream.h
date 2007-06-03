@@ -39,9 +39,6 @@ public:
   virtual jint read(JArray< jbyte > *, jint, jint);
   virtual jint available();
   virtual void close();
-private:
-  static const jbyte CR = 13;
-  static const jbyte LF = 10;
 public: // actually package-private
   ::gnu::java::net::protocol::http::Headers * __attribute__((aligned(__alignof__( ::java::io::InputStream)))) headers;
 private:

@@ -34,6 +34,11 @@ public:
   static const jint DIMENSION_HORZ = 0;
   static const jint DIMENSION_VERT = 1;
   static const jint DIMENSION_MAX = 2;
+  static const jint DIR_NONE = 0;
+  static const jint DIR_RIGHT = 1;
+  static const jint DIR_LEFT = -1;
+  static const jint DIR_UP = 2;
+  static const jint DIR_DOWN = -2;
   static ::java::lang::Class class$;
 } __attribute__ ((java_interface));
 

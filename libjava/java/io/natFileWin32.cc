@@ -44,13 +44,17 @@ java::io::File::_access (jint query)
   if (!canon)
     return false;
 
-  JvAssert (query == READ || query == WRITE || query == EXISTS);
+  JvAssert (query == READ || query == WRITE || query == EXISTS
+	    || query == EXEC);
 
   // FIXME: Is it possible to differentiate between existing and reading?
   // If the file exists but cannot be read because of the secuirty attributes
   // on an NTFS disk this wont work (it reports it can be read but cant)
   // Could we use something from the security API?
   DWORD attributes = GetFileAttributes (canon);
+  // FIXME: handle EXEC
+  if (query == EXEC)
+    return false;
   if ((query == EXISTS) || (query == READ))
     return (attributes == 0xffffffff) ? false : true;
   else
@@ -209,6 +213,25 @@ java::io::File::performList (java::io::FilenameFilter *filter,
   jobjectArray ret = JvNewObjectArray (vec->size(), clazz, NULL);
   vec->copyInto (ret);
   return ret;
+}
+
+jboolean
+java::io::File::setFilePermissions (jboolean enable,
+				    jboolean ownerOnly,
+				    jint permissions)
+{
+  JV_TEMP_STRING_WIN32 (canon, getCanonicalPath());
+  if (!canon)
+    return false;
+
+  DWORD attrs = GetFileAttributes (canon);
+  if (attrs != INVALID_FILE_ATTRIBUTES)
+    {
+      // FIXME: implement
+      return false;
+    }
+  else
+    return false;
 }
 
 jboolean

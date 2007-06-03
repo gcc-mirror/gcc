@@ -9,6 +9,16 @@
 #include <java/lang/Object.h>
 extern "Java"
 {
+  namespace gnu
+  {
+    namespace java
+    {
+      namespace net
+      {
+          class PlainSocketImpl;
+      }
+    }
+  }
   namespace java
   {
     namespace net
@@ -35,7 +45,7 @@ class java::net::ServerSocket : public ::java::lang::Object
 {
 
 public: // actually package-private
-  ServerSocket(::java::net::SocketImpl *);
+  ServerSocket(::gnu::java::net::PlainSocketImpl *);
   virtual ::java::net::SocketImpl * getImpl();
 public:
   ServerSocket();

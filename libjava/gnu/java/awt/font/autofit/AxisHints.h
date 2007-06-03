@@ -22,6 +22,7 @@ extern "Java"
           namespace autofit
           {
               class AxisHints;
+              class Edge;
               class Segment;
           }
         }
@@ -35,7 +36,16 @@ class gnu::java::awt::font::autofit::AxisHints : public ::java::lang::Object
 
 public: // actually package-private
   AxisHints();
+  virtual ::gnu::java::awt::font::autofit::Segment * newSegment();
+public:
+  virtual ::gnu::java::awt::font::autofit::Edge * newEdge(jint);
+public: // actually package-private
+  virtual jint getEdgeIndex(::gnu::java::awt::font::autofit::Edge *);
   JArray< ::gnu::java::awt::font::autofit::Segment * > * __attribute__((aligned(__alignof__( ::java::lang::Object)))) segments;
+  jint majorDir;
+  jint numSegments;
+  jint numEdges;
+  JArray< ::gnu::java::awt::font::autofit::Edge * > * edges;
 public:
   static ::java::lang::Class class$;
 };

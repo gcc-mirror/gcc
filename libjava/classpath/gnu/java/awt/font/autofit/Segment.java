@@ -38,10 +38,58 @@ exception statement from your version. */
 
 package gnu.java.awt.font.autofit;
 
+import gnu.java.awt.font.opentype.truetype.Point;
+
 class Segment
 {
 
+  static final int FLAG_EDGE_NORMAL = 0;
+  static final int FLAG_EDGE_ROUND = 1;
+  static final int FLAG_EDGE_SERIF = 2;
+  static final int FLAG_EDGE_DONE = 4;
+  int dir;
+  int flags;
   Segment link;
-  int index;
+  Segment serif;
+  int numLinked;
   int pos;
+  Point first;
+  Point last;
+  Point contour;
+  int minPos;
+  int maxPos;
+  int score;
+  int len;
+  Segment edgeNext;
+  Edge edge;
+
+  public String toString()
+  {
+    StringBuilder s = new StringBuilder();
+    s.append("[Segment] id: ");
+    s.append(hashCode());
+    s.append(", len:");
+    s.append(len);
+    s.append(", round: ");
+    s.append(((flags & FLAG_EDGE_ROUND) != 0));
+    s.append(", dir: ");
+    s.append(dir);
+    s.append(", pos: ");
+    s.append(pos);
+    s.append(", minPos: ");
+    s.append(minPos);
+    s.append(", maxPos: ");
+    s.append(maxPos);
+    s.append(", first: ");
+    s.append(first);
+    s.append(", last: ");
+    s.append(last);
+    s.append(", contour: ");
+    s.append(contour);
+    s.append(", link: ");
+    s.append(link == null ? "null" : link.hashCode());
+    s.append(", serif: ");
+    s.append(serif == null ? "null" : serif.hashCode());
+    return s.toString();
+  }
 }

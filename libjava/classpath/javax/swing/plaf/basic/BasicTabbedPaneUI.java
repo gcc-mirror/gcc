@@ -1364,7 +1364,7 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
 
           calcRect.height -= tabAreaInsets.top + tabAreaInsets.bottom;
           int height = 0;
-          int runHeight = tabAreaInsets.top + insets.top;;
+          int runHeight = tabAreaInsets.top + insets.top;
           int fontHeight = fm.getHeight();
           int left = insets.left + tabAreaInsets.left;
           for (int i = 0; i < tabCount; i++)

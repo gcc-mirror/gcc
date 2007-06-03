@@ -1,5 +1,5 @@
 /* AlsaPortDevice.java -- ALSA MIDI Port Devices
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,9 +42,6 @@ import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.Receiver;
 import javax.sound.midi.Transmitter;
-
-// FIXME: This next import is only rquired for gcj it seems.
-import javax.sound.midi.MidiDevice.Info;
 
 import gnu.javax.sound.midi.alsa.AlsaMidiDeviceProvider.AlsaPortInfo;
 

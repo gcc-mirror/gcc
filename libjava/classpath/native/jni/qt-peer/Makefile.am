@@ -7,7 +7,12 @@ noinst_LTLIBRARIES = libqtpeer.la
 AM_LDFLAGS = @CLASSPATH_MODULE@ @QT_LIBS@
 AM_CPPFLAGS = @CLASSPATH_INCLUDES@
 
-AM_CXXFLAGS = @QT_CFLAGS@
+## GCJ LOCAL: add libstdc++-v3 include directories
+AM_CXXFLAGS = @QT_CFLAGS@ \
+	-I$(top_builddir)/../../libstdc++-v3/include/$(target_alias) \
+	-I$(top_builddir)/../../libstdc++-v3/include \
+	-I$(top_srcdir)/../../libstdc++-v3/include \
+	-I$(top_srcdir)/../../libstdc++-v3/libsupc++
 
 libqtpeer_la_MOC = \
 	slotcallbacks.moc.h
@@ -73,7 +78,7 @@ libqtpeer_la_SOURCES = \
         qtwindowpeer.cpp \
         slotcallbacks.cpp \
         slotcallbacks.h 
-libqtpeer_la_LDFLAGS = -avoid-version
+libqtpeer_la_LDFLAGS = $(AM_LDFLAGS) -avoid-version
 
 BUILT_SOURCES = $(libqtpeer_la_MOC)
 

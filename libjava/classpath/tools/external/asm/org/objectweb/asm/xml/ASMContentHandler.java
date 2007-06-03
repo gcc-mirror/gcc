@@ -134,7 +134,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
                 new AnnotationValueAnnotationRule());
         RULES.add("*/annotationValueEnum", new AnnotationValueEnumRule());
         RULES.add("*/annotationValueArray", new AnnotationValueArrayRule());
-    };
+    }
 
     private static interface OpcodeGroup {
         public static final int INSN = 0;

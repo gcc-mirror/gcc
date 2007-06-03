@@ -40,6 +40,7 @@
 
 #include "gtkpeer.h"
 
+#define PANGO_ENABLE_ENGINE
 #include <pango/pango.h>
 #include <pango/pango-context.h>
 #include <pango/pango-fontmap.h>
@@ -123,6 +124,7 @@ extern struct state_table *cp_gtk_native_text_layout_state_table;
 struct peerfont
 {
   PangoFont *font;
+  PangoFontset *set;
   PangoFontDescription *desc;
   PangoContext *ctx;
   PangoLayout *layout;

@@ -1,5 +1,5 @@
 /* AWTKeyStroke.java -- an immutable key stroke
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation
+   Copyright (C) 2002, 2004, 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -93,9 +93,9 @@ public class AWTKeyStroke implements Serializable
     private static final int MAX_CACHE_SIZE = 2048;
 
     /** Prune stale entries. */
-    protected boolean removeEldestEntry(Map.Entry<AWTKeyStroke,AWTKeyStroke>
+    protected boolean removeEldestEntry(Entry<AWTKeyStroke,AWTKeyStroke>
 					eldest)
-    {	// XXX - FIXME Use Map.Entry, not just Entry  as gcj 3.1 workaround.
+    {
       return size() > MAX_CACHE_SIZE;
     }
   };

@@ -1,5 +1,5 @@
 /* SimpleType.java -- Open type descriptor for the base types.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,6 +40,13 @@ package javax.management.openmbean;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import java.util.Date;
+
+import javax.management.ObjectName;
+
 /**
  * The open type descriptor for data values that are members
  * of one of the simple types (such as an integer or a string).
@@ -53,94 +60,94 @@ import java.io.ObjectStreamException;
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
-public final class SimpleType
-  extends OpenType
+public final class SimpleType<T>
+  extends OpenType<T>
 {
 
   /**
    * The {@link SimpleType} representation of
    * <code>java.math.BigDecimal</code>.
    */
-  public static final SimpleType BIGDECIMAL;
+  public static final SimpleType<BigDecimal> BIGDECIMAL;
 
   /**
    * The {@link SimpleType} representation of
    * <code>java.math.BigInteger</code>.
    */
-  public static final SimpleType BIGINTEGER;
+  public static final SimpleType<BigInteger> BIGINTEGER;
 
   /**
    * The {@link SimpleType} representation of
    * <code>java.lang.Boolean</code>.
    */
-  public static final SimpleType BOOLEAN; 
+  public static final SimpleType<Boolean> BOOLEAN; 
 
   /**
    * The {@link SimpleType} representation of
    * <code>java.lang.Byte</code>.
    */
-  public static final SimpleType BYTE;
+  public static final SimpleType<Byte> BYTE;
 
   /**
    * The {@link SimpleType} representation of
    * <code>java.lang.Character</code>.
    */
-  public static final SimpleType CHARACTER;
+  public static final SimpleType<Character> CHARACTER;
 
   /**
    * The {@link SimpleType} representation of
    * <code>java.util.Date</code>.
    */
-  public static final SimpleType DATE; 
+  public static final SimpleType<Date> DATE; 
 
   /**
    * The {@link SimpleType} representation of
    * <code>java.lang.Double</code>.
    */
-  public static final SimpleType DOUBLE;
+  public static final SimpleType<Double> DOUBLE;
 
   /**
    * The {@link SimpleType} representation of
    * <code>java.lang.Float</code>.
    */
-  public static final SimpleType FLOAT;
+  public static final SimpleType<Float> FLOAT;
 
   /**
    * The {@link SimpleType} representation of
    * <code>java.lang.Integer</code>.
    */
-  public static final SimpleType INTEGER;
+  public static final SimpleType<Integer> INTEGER;
 
   /**
    * The {@link SimpleType} representation of
    * <code>java.lang.Long</code>.
    */
-  public static final SimpleType LONG;
+  public static final SimpleType<Long> LONG;
 
   /**
    * The {@link SimpleType} representation of
    * <code>javax.management.ObjectName</code>.
    */
-  public static final SimpleType OBJECTNAME;
+  public static final SimpleType<ObjectName> OBJECTNAME;
 
 
   /**
    * The {@link SimpleType} representation of
    * <code>java.lang.Short</code>.
    */
-  public static final SimpleType SHORT;
+  public static final SimpleType<Short> SHORT;
 
   /**
    * The {@link SimpleType} representation of
    * <code>java.lang.String</code>.
    */
-  public static final SimpleType STRING;
+  public static final SimpleType<String> STRING;
 
   /**
    * The {@link SimpleType} representation of
    * <code>java.lang.Void</code>.
    */
-  public static final SimpleType VOID;
+  public static final SimpleType<Void> VOID;
 
   /**
    * Compatible with JDK 1.5
@@ -164,27 +171,28 @@ public final class SimpleType
   {
     try
       {
-	BIGDECIMAL = new SimpleType("java.math.BigDecimal");
-	BIGINTEGER = new SimpleType("java.math.BigInteger");
-	BOOLEAN = new SimpleType("java.lang.Boolean");
-	BYTE = new SimpleType("java.lang.Byte");
-	CHARACTER = new SimpleType("java.lang.Character");
-	DATE = new SimpleType("java.util.Date");
-	DOUBLE = new SimpleType("java.lang.Double");
-	FLOAT = new SimpleType("java.lang.Float");
-	INTEGER = new SimpleType("java.lang.Integer");
-	LONG = new SimpleType("java.lang.Long");
-	OBJECTNAME = new SimpleType("javax.management.ObjectName");
-	SHORT = new SimpleType("java.lang.Short");
-	STRING = new SimpleType("java.lang.String");
-	VOID = new SimpleType("java.lang.Void");
+	BIGDECIMAL = new SimpleType<BigDecimal>("java.math.BigDecimal");
+	BIGINTEGER = new SimpleType<BigInteger>("java.math.BigInteger");
+	BOOLEAN = new SimpleType<Boolean>("java.lang.Boolean");
+	BYTE = new SimpleType<Byte>("java.lang.Byte");
+	CHARACTER = new SimpleType<Character>("java.lang.Character");
+	DATE = new SimpleType<Date>("java.util.Date");
+	DOUBLE = new SimpleType<Double>("java.lang.Double");
+	FLOAT = new SimpleType<Float>("java.lang.Float");
+	INTEGER = new SimpleType<Integer>("java.lang.Integer");
+	LONG = new SimpleType<Long>("java.lang.Long");
+	OBJECTNAME = 
+	  new SimpleType<ObjectName>("javax.management.ObjectName");
+	SHORT = new SimpleType<Short>("java.lang.Short");
+	STRING = new SimpleType<String>("java.lang.String");
+	VOID = new SimpleType<Void>("java.lang.Void");
       }
     catch (OpenDataException e)
       {
 	/* In normal circumstances, this shouldn't be possible. */
 	throw new IllegalStateException("A invalid class name " +
 					"was passed to the SimpleType " +
-					"constructor.");
+					"constructor.", e);
       }
   }
 

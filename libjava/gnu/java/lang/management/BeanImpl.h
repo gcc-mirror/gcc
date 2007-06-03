@@ -34,7 +34,6 @@ extern "Java"
       {
           class OpenMBeanInfo;
           class OpenMBeanParameterInfo;
-          class OpenType;
       }
     }
   }
@@ -55,9 +54,7 @@ public: // actually protected
 public:
   virtual ::javax::management::MBeanInfo * getMBeanInfo();
 private:
-  ::javax::management::openmbean::OpenType * getTypeFromClass(::java::lang::Class *);
   JArray< ::javax::management::openmbean::OpenMBeanParameterInfo * > * translateSignature(JArray< ::javax::management::MBeanParameterInfo * > *);
-  ::javax::management::openmbean::OpenMBeanParameterInfo * translate(::java::lang::String *);
   ::javax::management::openmbean::OpenMBeanInfo * __attribute__((aligned(__alignof__( ::javax::management::StandardMBean)))) openInfo;
 public:
   static ::java::lang::Class class$;

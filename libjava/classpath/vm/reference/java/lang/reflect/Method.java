@@ -1,5 +1,5 @@
 /* java.lang.reflect.Method - reflection of Java methods
-   Copyright (C) 1998, 2001, 2002, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002, 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -449,4 +449,17 @@ extends AccessibleObject implements Member, GenericDeclaration
     MethodSignatureParser p = new MethodSignatureParser(this, sig);
     return p.getGenericReturnType();
   }
+
+  /**
+   * If this method is an annotation method, returns the default
+   * value for the method.  If there is no default value, or if the
+   * method is not a member of an annotation type, returns null.
+   * Primitive types are wrapped.
+   *
+   * @throws TypeNotPresentException if the method returns a Class,
+   * and the class cannot be found
+   *
+   * @since 1.5
+   */
+  public native Object getDefaultValue();
 }

@@ -1,5 +1,6 @@
 /* Configuration.java --
-   Copyright (C) 1998, 2001, 2003, 2005, 2006  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2003, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -65,7 +66,7 @@ public final class Configuration
    * It is set according to the value of 'version' in the configure[.in] file
    * and used to set the System property gnu.classpath.version.
    */
-  public static final String CLASSPATH_VERSION = "0.93";
+  public static final String CLASSPATH_VERSION = "0.95";
 
   /**
    * The value of DEBUG is substituted according to whether the

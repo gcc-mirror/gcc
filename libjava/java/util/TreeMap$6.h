@@ -6,19 +6,18 @@
 
 #pragma interface
 
-#include <java/util/AbstractCollection.h>
+#include <java/lang/Object.h>
 
-class java::util::TreeMap$6 : public ::java::util::AbstractCollection
+class java::util::TreeMap$6 : public ::java::lang::Object
 {
 
 public: // actually package-private
-  TreeMap$6(::java::util::TreeMap *);
+  TreeMap$6(::java::util::TreeMap$NavigableEntrySet *);
 public:
-  jint size();
-  ::java::util::Iterator * iterator();
-  void clear();
+  jint TreeMap$6$compare(::java::util::Map$Entry *, ::java::util::Map$Entry *);
+  jint compare(::java::lang::Object *, ::java::lang::Object *);
 public: // actually package-private
-  ::java::util::TreeMap * __attribute__((aligned(__alignof__( ::java::util::AbstractCollection)))) this$0;
+  ::java::util::TreeMap$NavigableEntrySet * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$1;
 public:
   static ::java::lang::Class class$;
 };

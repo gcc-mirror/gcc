@@ -82,70 +82,72 @@ public class MessageFormat extends Format
     // Recompute the locale-based formatter.
     void setLocale (Locale loc)
     {
-      if (type == null)
-        ;
-      else if (type.equals("number"))
+      if (type != null)
         {
-	  formatClass = java.lang.Number.class;
+          if (type.equals("number"))
+            {
+              formatClass = java.lang.Number.class;
 
-	  if (style == null)
-	    format = NumberFormat.getInstance(loc);
-	  else if (style.equals("currency"))
-	    format = NumberFormat.getCurrencyInstance(loc);
-	  else if (style.equals("percent"))
-	    format = NumberFormat.getPercentInstance(loc);
-	  else if (style.equals("integer"))
-	    {
-	      NumberFormat nf = NumberFormat.getNumberInstance(loc);
-	      nf.setMaximumFractionDigits(0);
-	      nf.setGroupingUsed(false);
-	      format = nf;
-	    }
-	  else
-	    {
-	      format = NumberFormat.getNumberInstance(loc);
-	      DecimalFormat df = (DecimalFormat) format;
-	      df.applyPattern(style);
-	    }
-        }
-      else if (type.equals("time") || type.equals("date"))
-        {
-	  formatClass = java.util.Date.class;
+              if (style == null)
+                format = NumberFormat.getInstance(loc);
+              else if (style.equals("currency"))
+                format = NumberFormat.getCurrencyInstance(loc);
+              else if (style.equals("percent"))
+                format = NumberFormat.getPercentInstance(loc);
+              else if (style.equals("integer"))
+                {
+                  NumberFormat nf = NumberFormat.getNumberInstance(loc);
+                  nf.setMaximumFractionDigits(0);
+                  nf.setGroupingUsed(false);
+                  format = nf;
+                }
+              else
+                {
+                  format = NumberFormat.getNumberInstance(loc);
+                  DecimalFormat df = (DecimalFormat) format;
+                  df.applyPattern(style);
+                }
+            }
+          else if (type.equals("time") || type.equals("date"))
+            {
+              formatClass = java.util.Date.class;
 
-	  int val = DateFormat.DEFAULT;
-	  boolean styleIsPattern = false;
-	  if (style == null)
-	    ;
-	  else if (style.equals("short"))
-	    val = DateFormat.SHORT;
-	  else if (style.equals("medium"))
-	    val = DateFormat.MEDIUM;
-	  else if (style.equals("long"))
-	    val = DateFormat.LONG;
-	  else if (style.equals("full"))
-	    val = DateFormat.FULL;
-	  else
-	    styleIsPattern = true;
+              int val = DateFormat.DEFAULT;
+              boolean styleIsPattern = false;
+              if (style != null)
+                {
+                  if (style.equals("short"))
+                    val = DateFormat.SHORT;
+                  else if (style.equals("medium"))
+                    val = DateFormat.MEDIUM;
+                  else if (style.equals("long"))
+                    val = DateFormat.LONG;
+                  else if (style.equals("full"))
+                    val = DateFormat.FULL;
+                  else
+                    styleIsPattern = true;
+                }
+          
+              if (type.equals("time"))
+                format = DateFormat.getTimeInstance(val, loc);
+              else
+                format = DateFormat.getDateInstance(val, loc);
 
-	  if (type.equals("time"))
-	    format = DateFormat.getTimeInstance(val, loc);
-	  else
-	    format = DateFormat.getDateInstance(val, loc);
+              if (styleIsPattern)
+                {
+                  SimpleDateFormat sdf = (SimpleDateFormat) format;
+                  sdf.applyPattern(style);
+                }
+            }
+          else if (type.equals("choice"))
+            {
+              formatClass = java.lang.Number.class;
 
-	  if (styleIsPattern)
-	    {
-	      SimpleDateFormat sdf = (SimpleDateFormat) format;
-	      sdf.applyPattern(style);
-	    }
-        }
-      else if (type.equals("choice"))
-        {
-	  formatClass = java.lang.Number.class;
-
-	  if (style == null)
-	    throw new
-	      IllegalArgumentException ("style required for choice format");
-	  format = new ChoiceFormat (style);
+              if (style == null)
+                throw new
+                IllegalArgumentException ("style required for choice format");
+              format = new ChoiceFormat (style);
+            }
         }
     }
   }

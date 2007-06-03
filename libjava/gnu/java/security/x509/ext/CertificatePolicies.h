@@ -37,6 +37,7 @@ public:
   CertificatePolicies(JArray< jbyte > *);
   CertificatePolicies(::java::util::List *, ::java::util::Map *);
   virtual ::java::util::List * getPolicies();
+  virtual ::java::util::List * getPolicyStrings();
   virtual ::java::util::List * getPolicyQualifierInfos(::gnu::java::security::OID *);
   virtual JArray< jbyte > * getEncoded();
   virtual ::java::lang::String * toString();

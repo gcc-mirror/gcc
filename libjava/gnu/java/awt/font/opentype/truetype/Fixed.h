@@ -36,15 +36,19 @@ class gnu::java::awt::font::opentype::truetype::Fixed : public ::java::lang::Obj
   Fixed();
 public:
   static jint mul(jint, jint);
+  static jint mul16(jint, jint);
   static jint div(jint, jint);
+  static jint div16(jint, jint);
   static jint ceil(jint);
   static jint floor(jint);
   static jint vectorLength(jint, jint);
   static jint intValue(jint);
   static jfloat floatValue(jint);
+  static jfloat floatValue16(jint);
   static jdouble doubleValue(jint);
   static jint valueOf(jfloat);
   static jint valueOf(jdouble);
+  static jint valueOf16(jdouble);
   static ::java::lang::String * toString(jint);
   static ::java::lang::String * toString(jint, jint);
   static const jint ONE = 64;

@@ -38,36 +38,61 @@ exception statement from your version. */
 
 package gnu.java.awt.java2d;
 
+import gnu.java.math.Fixed;
+
 /**
- * An edge in a polygon. This is used by the scanline conversion algorithm
- * implemented in {@link AbstractGraphics2D#rawFillShape}.
+ * An edge in a polygon.
  *
  * @author Roman Kennke (kennke@aicas.com)
  */
-public class PolyEdge
+final class PolyEdge
   implements Comparable
 {
 
   /**
    * The start and end coordinates of the edge. y0 is always smaller or equal
    * than y1.
+   *
+   * These values are stored as fixed-point decimals.
    */
-  public double x0, y0, x1, y1;
+  public int x0, y0, x1, y1;
 
   /**
    * The slope of the edge. This is dx / dy.
+   *
+   * This is a fixed point decimal.
    */
-  double slope;
+  private int slope;
 
   /**
    * The intersection of this edge with the current scanline.
+   *
+   * This is a fixed point decimal.
    */
-  double xIntersection;
+  int xIntersection;
 
   /**
    * Indicates whether this edge is from the clip or from the target shape.
    */
   boolean isClip;
+
+  /**
+   * Implements a linked list for the edge pool.
+   */
+  PolyEdge poolNext;
+
+  /**
+   * Implements a linked list for the scanline edge lists.
+   */
+  PolyEdge scanlineNext;
+
+  /**
+   * Create an uninitialized edge.
+   */
+  PolyEdge()
+  {
+    // Nothing to do here.
+  }
 
   /**
    * Creates a new PolyEdge with the specified coordinates.
@@ -77,7 +102,20 @@ public class PolyEdge
    * @param x1 the end point, x coordinate
    * @param y1 the end point, y coordinate
    */
-  PolyEdge(double x0, double y0, double x1, double y1, boolean clip)
+  PolyEdge(int n, int x0, int y0, int x1, int y1, boolean clip)
+  {
+    init(n, x0, y0, x1, y1, clip);
+  }
+
+  /**
+   * (Re-) Initializes this edge.
+   *
+   * @param x0
+   * @param y0
+   * @param x1
+   * @param y1
+   */
+  void init(int n, int x0, int y0, int x1, int y1, boolean clip)
   {
     isClip = clip;
     if (y0 < y1)
@@ -94,11 +132,7 @@ public class PolyEdge
         this.x1 = x0;
         this.y1 = y0;
       }
-    slope = (this.x1 - this.x0) / (this.y1 - this.y0);
-    if (this.y0 == this.y1) // Horizontal edge.
-      xIntersection = Math.min(this.x0, this.x1);
-    else
-      xIntersection = this.x0 + slope * (Math.ceil(this.y0) - this.y0);
+    slope = Fixed.div(n, this.x1 - this.x0, this.y1 - this.y0);
   }
 
   /**
@@ -113,6 +147,19 @@ public class PolyEdge
     else if (x0 > other.x0)
       comp = 1;
     return comp;
+  }
+
+  /**
+   * Intersects this edge with the scanline at height y. The result is
+   * stored in {@link #xIntersection}.
+   *
+   * @param y the scanline
+   */
+  void intersect(int n, int y)
+  {
+    int dy = y - y0;
+    int dx = Fixed.mul(n, slope, dy);
+    xIntersection = x0 + dx;
   }
 
   public String toString()

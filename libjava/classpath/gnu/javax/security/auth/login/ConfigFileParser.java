@@ -122,7 +122,9 @@ public final class ConfigFileParser
     initParser(r);
 
     while (parseAppOrOtherEntry())
-      ; // do nothing
+      {
+        /* do nothing */
+      }
   }
 
   private void initParser(Reader r) throws IOException
@@ -157,7 +159,9 @@ public final class ConfigFileParser
 
     List lmis = new ArrayList();
     while (parseACE(lmis))
-      ; // do nothing
+      {
+        /* do nothing */
+      }
 
     c = cft.nextToken();
     if (c != '}')

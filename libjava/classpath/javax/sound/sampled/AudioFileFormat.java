@@ -122,7 +122,7 @@ public class AudioFileFormat
   private AudioFormat format;
   private Type type;
   private int frameLength;
-  private Map properties;
+  private Map<String, Object> properties;
 
   /**
    * Create a new AudioFileFormat given the type, the format, and the
@@ -138,7 +138,7 @@ public class AudioFileFormat
     this.format = fmt;
     this.type = type;
     this.frameLength = frameLen;
-    this.properties = Collections.EMPTY_MAP;
+    this.properties = Collections.<String, Object> emptyMap();
   }
 
   /**
@@ -159,7 +159,7 @@ public class AudioFileFormat
     this.format = fmt;
     this.type = type;
     this.frameLength = frameLen;
-    this.properties = Collections.unmodifiableMap(new HashMap(properties));
+    this.properties = Collections.unmodifiableMap(new HashMap<String, Object>(properties));
   }
 
   /**
@@ -177,7 +177,7 @@ public class AudioFileFormat
     this.format = fmt;
     this.type = type;
     this.frameLength = frameLen;
-    this.properties = Collections.EMPTY_MAP;
+    this.properties = Collections.<String, Object> emptyMap();
   }
 
   /**

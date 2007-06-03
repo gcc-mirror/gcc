@@ -57,9 +57,6 @@ public:
   Window(::java::awt::Frame *);
   Window(::java::awt::Window *);
   Window(::java::awt::Window *, ::java::awt::GraphicsConfiguration *);
-public: // actually package-private
-  virtual ::java::awt::GraphicsConfiguration * getGraphicsConfigurationImpl();
-public:
   virtual void addNotify();
   virtual void pack();
   virtual void show();
@@ -133,7 +130,6 @@ private:
   ::java::awt::event::WindowListener * windowListener;
   ::java::awt::event::WindowFocusListener * windowFocusListener;
   ::java::awt::event::WindowStateListener * windowStateListener;
-  ::java::awt::GraphicsConfiguration * graphicsConfiguration;
   jboolean shown;
 public: // actually package-private
   ::java::awt::Component * windowFocusOwner;

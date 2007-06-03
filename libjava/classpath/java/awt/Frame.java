@@ -40,9 +40,10 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.peer.FramePeer;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Vector;
 
 import javax.accessibility.AccessibleContext;
@@ -484,44 +485,72 @@ public class Frame extends Window implements MenuContainer
     return super.paramString () + ",title=" + title + resizable + state;
   }
 
-  private static ArrayList weakFrames = new ArrayList();
+  /**
+   * The list of active frames. GC'ed frames get removed in noteFrame().
+   */
+  private static ArrayList<WeakReference<Frame>> weakFrames =
+    new ArrayList<WeakReference<Frame>>();
+
+  /**
+   * The death queue for all frames.
+   */ 
+  private static ReferenceQueue weakFramesQueue =
+    new ReferenceQueue<Frame>();
 
   private static void noteFrame(Frame f)
   {
     synchronized (weakFrames)
       {
-        weakFrames.add(new WeakReference(f));
+        // Remove GCed frames from the list.
+        Reference ref = weakFramesQueue.poll();
+        while (ref != null)
+          {
+            weakFrames.remove(ref);
+            ref = weakFramesQueue.poll();
+          }
+        // Add new frame.
+        weakFrames.add(new WeakReference<Frame>(f));
       }
+  }
+
+  /**
+   * Returns <code>true</code> when there are any displayable frames,
+   * <code>false</code> otherwise.
+   *
+   * @return <code>true</code> when there are any displayable frames,
+   *         <code>false</code> otherwise
+   */
+  static boolean hasDisplayableFrames()
+  {
+    synchronized (weakFrames)
+      {
+        for (WeakReference<Frame> r : Frame.weakFrames)
+          {
+            Frame f = (Frame) r.get();
+            if (f != null && f.isDisplayable())
+              return true;
+          }
+      }
+    return false;
   }
 
   public static Frame[] getFrames()
   {
-    int n = 0;
     synchronized (weakFrames)
-    {
-      Iterator i = weakFrames.iterator();
-      while (i.hasNext())
-        {
-          WeakReference wr = (WeakReference) i.next();
-          if (wr.get() != null)
-            ++n;
-        }
-      if (n == 0)
-        return new Frame[0];
-      else
-        {
-          Frame[] frames = new Frame[n];
-          n = 0;
-          i = weakFrames.iterator();
-          while (i.hasNext())
-            {
-              WeakReference wr = (WeakReference) i.next();
-              if (wr.get() != null)
-                frames[n++] = (Frame) wr.get();
-            }
-          return frames;
-        }
-    }
+      {
+        ArrayList<Frame> existingFrames = new ArrayList<Frame>();
+        for (WeakReference<Frame> ref : weakFrames)
+          {
+            Frame f = ref.get();
+            if (f != null)
+              {
+                existingFrames.add(f);
+              }
+          }
+        Frame[] frames = new Frame[existingFrames.size()];
+        frames = existingFrames.toArray(frames);
+        return frames;
+      }
   }
 
   public void setState(int state)

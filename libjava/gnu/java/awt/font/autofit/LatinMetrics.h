@@ -24,6 +24,10 @@ extern "Java"
               class LatinAxis;
               class LatinMetrics;
           }
+          namespace opentype
+          {
+              class OpenTypeFont;
+          }
         }
       }
     }
@@ -35,6 +39,7 @@ class gnu::java::awt::font::autofit::LatinMetrics : public ::gnu::java::awt::fon
 
 public: // actually package-private
   LatinMetrics();
+  LatinMetrics(::gnu::java::awt::font::opentype::OpenTypeFont *);
   JArray< ::gnu::java::awt::font::autofit::LatinAxis * > * __attribute__((aligned(__alignof__( ::gnu::java::awt::font::autofit::ScriptMetrics)))) axis;
   jint unitsPerEm;
 public:

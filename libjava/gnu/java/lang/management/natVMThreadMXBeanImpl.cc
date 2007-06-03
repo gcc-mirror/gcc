@@ -5,11 +5,16 @@
 #include <java/lang/UnsupportedOperationException.h>
 
 jlongArray
+gnu::java::lang::management::VMThreadMXBeanImpl::findDeadlockedThreads ()
+{
+  throw new ::java::lang::UnsupportedOperationException (JvNewStringLatin1 ("gnu::java::lang::management::VMThreadMXBeanImpl::findDeadlockedThreads () not implemented"));
+}
+
+jlongArray
 gnu::java::lang::management::VMThreadMXBeanImpl::findMonitorDeadlockedThreads ()
 {
   throw new ::java::lang::UnsupportedOperationException (JvNewStringLatin1 ("gnu::java::lang::management::VMThreadMXBeanImpl::findMonitorDeadlockedThreads () not implemented"));
 }
-
 
 jlong
 gnu::java::lang::management::VMThreadMXBeanImpl::getCurrentThreadCpuTime ()
@@ -24,6 +29,17 @@ gnu::java::lang::management::VMThreadMXBeanImpl::getCurrentThreadUserTime ()
   throw new ::java::lang::UnsupportedOperationException (JvNewStringLatin1 ("gnu::java::lang::management::VMThreadMXBeanImpl::getCurrentThreadUserTime () not implemented"));
 }
 
+void
+gnu::java::lang::management::VMThreadMXBeanImpl::getLockInfo (::java::lang::management::ThreadInfo *)
+{
+  throw new ::java::lang::UnsupportedOperationException (JvNewStringLatin1 ("gnu::java::lang::management::VMThreadMXBeanImpl::getLockInfo () not implemented"));
+}
+
+void
+gnu::java::lang::management::VMThreadMXBeanImpl::getMonitorInfo (::java::lang::management::ThreadInfo *)
+{
+  throw new ::java::lang::UnsupportedOperationException (JvNewStringLatin1 ("gnu::java::lang::management::VMThreadMXBeanImpl::getMonitorInfo () not implemented"));
+}
 
 jint
 gnu::java::lang::management::VMThreadMXBeanImpl::getPeakThreadCount ()

@@ -1382,7 +1382,7 @@ public class Parser
                 if (c == '\r')
                   buffer.append(' '); // CR replaced by space
                 else if (c == '\n')
-                  ; // LF ignored
+                  { /* LF ignored */ }
                 else if (c == '\t')
                   buffer.append(' '); // Tab replaced by space
                 else

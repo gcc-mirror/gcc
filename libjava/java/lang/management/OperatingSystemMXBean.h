@@ -15,6 +15,7 @@ public:
   virtual ::java::lang::String * getArch() = 0;
   virtual jint getAvailableProcessors() = 0;
   virtual ::java::lang::String * getName() = 0;
+  virtual jdouble getSystemLoadAverage() = 0;
   virtual ::java::lang::String * getVersion() = 0;
   static ::java::lang::Class class$;
 } __attribute__ ((java_interface));

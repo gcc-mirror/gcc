@@ -158,7 +158,7 @@ public class RenderingHints
     }
   } // class KeyImpl
 
-  private HashMap hintMap = new HashMap();
+  private HashMap<Object,Object> hintMap = new HashMap<Object,Object>();
 
   /**
    * A key for the 'antialiasing' hint.  Permitted values are:
@@ -711,9 +711,9 @@ public class RenderingHints
     Iterator iterator = m.keySet().iterator();
     while (iterator.hasNext())
       {
-	Key key = (Key) iterator.next();
-	if (!key.isCompatibleValue(m.get(key)))
-	  throw new IllegalArgumentException();
+        Key key = (Key) iterator.next();
+        if (!key.isCompatibleValue(m.get(key)))
+          throw new IllegalArgumentException();
       }
     // map is OK, update
     hintMap.putAll(m);
@@ -783,7 +783,7 @@ public class RenderingHints
     try
       {
         RenderingHints copy = (RenderingHints) super.clone();
-        copy.hintMap = (HashMap) hintMap.clone();
+        copy.hintMap = new HashMap<Object,Object>(hintMap);
         return copy;
       }
     catch (CloneNotSupportedException e)

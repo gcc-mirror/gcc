@@ -238,6 +238,6 @@ public class ActivationSystemImpl extends ActivationSystemTransient implements
       ClassNotFoundException
   {
     // Write no fields.
-  };  
+  }  
   
 }

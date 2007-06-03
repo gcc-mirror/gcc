@@ -31,12 +31,15 @@ class gnu::java::lang::management::VMThreadMXBeanImpl : public ::java::lang::Obj
 
 public: // actually package-private
   VMThreadMXBeanImpl();
+  static JArray< jlong > * findDeadlockedThreads();
   static JArray< jlong > * findMonitorDeadlockedThreads();
   static JArray< ::java::lang::Thread * > * getAllThreads();
   static JArray< jlong > * getAllThreadIds();
   static jlong getCurrentThreadCpuTime();
   static jlong getCurrentThreadUserTime();
   static jint getDaemonThreadCount();
+  static void getLockInfo(::java::lang::management::ThreadInfo *);
+  static void getMonitorInfo(::java::lang::management::ThreadInfo *);
   static jint getPeakThreadCount();
   static jint getThreadCount();
   static jlong getThreadCpuTime(jlong);

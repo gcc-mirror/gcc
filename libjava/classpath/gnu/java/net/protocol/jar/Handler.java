@@ -164,7 +164,7 @@ public class Handler extends URLStreamHandler
     if (jar_path.indexOf("/.") < 0)
       return url_string;
 
-    ArrayList tokens = new ArrayList();
+    ArrayList<String> tokens = new ArrayList<String>();
     StringTokenizer st = new StringTokenizer(jar_path, "/");
     while (st.hasMoreTokens())
       {
@@ -183,7 +183,7 @@ public class Handler extends URLStreamHandler
     StringBuffer path = new StringBuffer(url_string.length());
     path.append(url_string.substring(0, jar_stop + 1));
 
-    Iterator it = tokens.iterator();
+    Iterator<String> it = tokens.iterator();
     while (it.hasNext())
       path.append('/').append(it.next());
 

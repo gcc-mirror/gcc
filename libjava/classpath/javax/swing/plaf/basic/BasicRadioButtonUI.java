@@ -149,57 +149,24 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
 
     g.setFont(f);
 
-    ButtonModel m = b.getModel();
-
     // This is the icon that we use for layout.
     Icon icon = b.getIcon();
     if (icon == null)
       icon = getDefaultIcon();
 
+    // Figure out the correct icon.
+    Icon currentIcon = getCurrentIcon(b);
+
     // Do the layout.
     String text = SwingUtilities.layoutCompoundLabel(c, g.getFontMetrics(f), 
-       b.getText(), icon,
+       b.getText(), currentIcon == null ? getDefaultIcon() : currentIcon,
        b.getVerticalAlignment(), b.getHorizontalAlignment(),
        b.getVerticalTextPosition(), b.getHorizontalTextPosition(),
        viewR, iconR, textR, b.getIconTextGap());
 
-    // Figure out the correct icon.
-    icon = b.getIcon();
-    if (icon == null)
-      icon = getDefaultIcon();
-    else
-      {
-        if (! m.isEnabled())
-          {
-            if (m.isSelected())
-              icon = b.getDisabledSelectedIcon();
-            else
-              icon = b.getDisabledIcon();
-          }
-        else if (m.isArmed() && m.isPressed())
-          {
-            icon = b.getPressedIcon();
-            if (icon == null)
-              icon = b.getSelectedIcon();
-          }
-        else if (m.isSelected())
-          {
-            if (b.isRolloverEnabled() && m.isRollover())
-              {
-                icon = b.getRolloverSelectedIcon();
-                if (icon == null)
-                  icon = b.getSelectedIcon();
-              }
-            else
-              icon = b.getSelectedIcon();
-          }
-        else if (b.isRolloverEnabled() && m.isRollover())
-          icon = b.getRolloverIcon();
-        if (icon == null)
-          icon = b.getIcon();
-      }
     // .. and paint it.
-    icon.paintIcon(c, g, iconR.x, iconR.y);
+    if (currentIcon != null)
+      currentIcon.paintIcon(c, g, iconR.x, iconR.y);
 
     // Paint text and focus indicator.
     if (text != null)
@@ -218,6 +185,58 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
       }
   }
   
+  /**                                                                                  
+   * Determines the icon to be displayed for the specified radio button.               
+   *                                                                                   
+   * @param b the radio button                                                         
+   *                                                                                   
+   * @return the icon                                                                  
+   */
+  private Icon getCurrentIcon(AbstractButton b)
+  {
+    ButtonModel m = b.getModel();
+    Icon currentIcon = b.getIcon();
+
+    if (currentIcon == null)
+      {
+        currentIcon = getDefaultIcon();
+      }
+    else
+      {
+        if (! m.isEnabled())
+          {
+            if (m.isSelected())
+              currentIcon = b.getDisabledSelectedIcon();
+            else
+              currentIcon = b.getDisabledIcon();
+          }
+        else if (m.isPressed() && m.isArmed())
+          {
+            currentIcon = b.getPressedIcon();
+            if (currentIcon == null)
+              currentIcon = b.getSelectedIcon();
+          }
+        else if (m.isSelected())
+          {
+            if (b.isRolloverEnabled() && m.isRollover())
+              {
+                currentIcon = b.getRolloverSelectedIcon();
+                if (currentIcon == null)
+                  currentIcon = b.getSelectedIcon();
+              }
+            else
+              currentIcon = b.getSelectedIcon();
+          }
+        else if (b.isRolloverEnabled() && m.isRollover())
+          {
+            currentIcon = b.getRolloverIcon();
+          }
+        if (currentIcon == null)
+          currentIcon = b.getIcon();
+      }
+    return currentIcon;
+  }
+
   public Dimension getPreferredSize(JComponent c)
   {
     // This is basically the same code as in

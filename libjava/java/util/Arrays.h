@@ -16,14 +16,23 @@ class java::util::Arrays : public ::java::lang::Object
   Arrays();
 public:
   static jint binarySearch(JArray< jbyte > *, jbyte);
+  static jint binarySearch(JArray< jbyte > *, jint, jint, jbyte);
   static jint binarySearch(JArray< jchar > *, jchar);
+  static jint binarySearch(JArray< jchar > *, jint, jint, jchar);
   static jint binarySearch(JArray< jshort > *, jshort);
+  static jint binarySearch(JArray< jshort > *, jint, jint, jshort);
   static jint binarySearch(JArray< jint > *, jint);
+  static jint binarySearch(JArray< jint > *, jint, jint, jint);
   static jint binarySearch(JArray< jlong > *, jlong);
+  static jint binarySearch(JArray< jlong > *, jint, jint, jlong);
   static jint binarySearch(JArray< jfloat > *, jfloat);
+  static jint binarySearch(JArray< jfloat > *, jint, jint, jfloat);
   static jint binarySearch(JArray< jdouble > *, jdouble);
+  static jint binarySearch(JArray< jdouble > *, jint, jint, jdouble);
   static jint binarySearch(JArray< ::java::lang::Object * > *, ::java::lang::Object *);
+  static jint binarySearch(JArray< ::java::lang::Object * > *, jint, jint, ::java::lang::Object *);
   static jint binarySearch(JArray< ::java::lang::Object * > *, ::java::lang::Object *, ::java::util::Comparator *);
+  static jint binarySearch(JArray< ::java::lang::Object * > *, jint, jint, ::java::lang::Object *, ::java::util::Comparator *);
   static jboolean equals(JArray< jboolean > *, JArray< jboolean > *);
   static jboolean equals(JArray< jbyte > *, JArray< jbyte > *);
   static jboolean equals(JArray< jchar > *, JArray< jchar > *);
@@ -138,6 +147,26 @@ private:
   static void deepToString(JArray< ::java::lang::Object * > *, ::java::lang::StringBuilder *, ::java::util::HashSet *);
 public:
   static ::java::lang::String * deepToString(JArray< ::java::lang::Object * > *);
+  static JArray< jboolean > * copyOf(JArray< jboolean > *, jint);
+  static JArray< jboolean > * copyOfRange(JArray< jboolean > *, jint, jint);
+  static JArray< jbyte > * copyOf(JArray< jbyte > *, jint);
+  static JArray< jbyte > * copyOfRange(JArray< jbyte > *, jint, jint);
+  static JArray< jchar > * copyOf(JArray< jchar > *, jint);
+  static JArray< jchar > * copyOfRange(JArray< jchar > *, jint, jint);
+  static JArray< jdouble > * copyOf(JArray< jdouble > *, jint);
+  static JArray< jdouble > * copyOfRange(JArray< jdouble > *, jint, jint);
+  static JArray< jfloat > * copyOf(JArray< jfloat > *, jint);
+  static JArray< jfloat > * copyOfRange(JArray< jfloat > *, jint, jint);
+  static JArray< jint > * copyOf(JArray< jint > *, jint);
+  static JArray< jint > * copyOfRange(JArray< jint > *, jint, jint);
+  static JArray< jlong > * copyOf(JArray< jlong > *, jint);
+  static JArray< jlong > * copyOfRange(JArray< jlong > *, jint, jint);
+  static JArray< jshort > * copyOf(JArray< jshort > *, jint);
+  static JArray< jshort > * copyOfRange(JArray< jshort > *, jint, jint);
+  static JArray< ::java::lang::Object * > * copyOf(JArray< ::java::lang::Object * > *, jint);
+  static JArray< ::java::lang::Object * > * copyOfRange(JArray< ::java::lang::Object * > *, jint, jint);
+  static JArray< ::java::lang::Object * > * copyOf(JArray< ::java::lang::Object * > *, jint, ::java::lang::Class *);
+  static JArray< ::java::lang::Object * > * copyOfRange(JArray< ::java::lang::Object * > *, jint, jint, ::java::lang::Class *);
   static ::java::lang::Class class$;
 };
 

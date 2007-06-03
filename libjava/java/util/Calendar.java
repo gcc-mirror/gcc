@@ -43,8 +43,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+
+import java.text.DateFormatSymbols;
 
 /**
  * This class is an abstract base class for Calendars, which can be
@@ -99,6 +102,20 @@ day_of_week + week_of_year</pre>
  * specific field by one, propagating overflows), or
  * <code>add</code>ing/substracting a fixed amount to a field.
  *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Jochen Hoenicke (Jochen.Hoenicke@Informatik.Uni-Oldenburg.de)
+ * @author Warren Levy (warrenl@cygnus.com)
+ * @author Jeff Sturm (jsturm@one-point.com)
+ * @author Tom Tromey (tromey@redhat.com)
+ * @author Bryce McKinlay (mckinlay@redhat.com)
+ * @author Ingo Proetel (proetel@aicas.com)
+ * @author Jerry Quinn (jlquinn@optonline.net)
+ * @author Jeroen Frijters (jeroen@frijters.net)
+ * @author Noa Resare (noa@resare.com)
+ * @author Sven de Marothy (sven@physto.se)
+ * @author David Gilbert (david.gilbert@object-refinery.com)
+ * @author Olivier Jolly (olivier.jolly@pcedev.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @see Date
  * @see GregorianCalendar
  * @see TimeZone
@@ -326,6 +343,34 @@ public abstract class Calendar
   public static final int PM = 1;
 
   /**
+   * A style specifier for {@link #getDisplayNames(int,int,Locale)}
+   * stating that names should be returned in both long and short variants.
+   *
+   * @since 1.6
+   * @see #SHORT
+   * @see #LONG
+   */
+  public static final int ALL_STYLES = 0;
+
+  /**
+   * A style specifier for {@link #getDisplayName(int,int,Locale)}
+   * and {@link #getDisplayNames(int,int,Locale)} stating that names
+   * should be returned in their short variant if applicable.
+   *
+   * @since 1.6
+   */
+  public static final int SHORT = 1;
+
+  /**
+   * A style specifier for {@link #getDisplayName(int,int,Locale)}
+   * and {@link #getDisplayNames(int,int,Locale)} stating that names
+   * should be returned in their long variant if applicable.
+   *
+   * @since 1.6
+   */
+  public static final int LONG = 2;
+
+  /**
    * The time fields.  The array is indexed by the constants YEAR to
    * DST_OFFSET.
    * @serial
@@ -504,7 +549,7 @@ public abstract class Calendar
    * Cache of locale->calendar-class mappings. This avoids having to do a ResourceBundle
    * lookup for every getInstance call.
    */
-  private static HashMap cache = new HashMap();
+  private static HashMap<Locale,Class> cache = new HashMap<Locale,Class>();
 
   /** Preset argument types for calendar-class constructor lookup.  */
   private static Class[] ctorArgTypes = new Class[]
@@ -526,7 +571,7 @@ public abstract class Calendar
    */
   public static synchronized Calendar getInstance(TimeZone zone, Locale locale)
   {
-    Class calendarClass = (Class) cache.get(locale);
+    Class calendarClass = cache.get(locale);
     Throwable exception = null;
 
     try
@@ -1326,4 +1371,205 @@ public abstract class Calendar
 	areFieldsSet = false;
       }
   }
+
+  /**
+   * Returns a localised textual representation of the current value
+   * of the given field using the specified style.  If there is no
+   * applicable textual representation (e.g. the field has a numeric
+   * value), then <code>null</code> is returned.  If one does exist,
+   * then the value is obtained from {@link #get(int)} and converted
+   * appropriately.  For example, if the <code>MONTH</code> field is
+   * requested, then <code>get(MONTH)</code> is called.  This is then
+   * converted to a textual representation based on its value and
+   * the style requested; if the <code>LONG</code> style is requested
+   * and the returned value is <code>11</code> from a
+   * {@link GregorianCalendar} implementation, then <code>"December"</code>
+   * is returned.  By default, a textual representation is available
+   * for all fields which have an applicable value obtainable from
+   * {@link java.text.DateFormatSymbols}.
+   *
+   * @param field the calendar field whose textual representation should
+   *              be obtained.
+   * @param style the style to use; either {@link #LONG} or {@link #SHORT}.
+   * @param locale the locale to use for translation.
+   * @return the textual representation of the given field in the specified
+   *         style, or <code>null</code> if none is applicable.
+   * @throws IllegalArgumentException if <code>field</code> or <code>style</code>
+   *                                  or invalid, or the calendar is non-lenient
+   *                                  and has invalid values.
+   * @throws NullPointerException if <code>locale</code> is <code>null</code>.
+   * @since 1.6
+   */
+  public String getDisplayName(int field, int style, Locale locale)
+  {
+    if (field < 0 || field >= FIELD_COUNT)
+      throw new IllegalArgumentException("The field value, " + field +
+					 ", is invalid.");
+    if (style != SHORT && style != LONG)
+      throw new IllegalArgumentException("The style must be either " +
+					 "short or long.");
+    if (field == YEAR || field == WEEK_OF_YEAR ||
+	field == WEEK_OF_MONTH || field == DAY_OF_MONTH ||
+	field == DAY_OF_YEAR || field == DAY_OF_WEEK_IN_MONTH ||
+	field == HOUR || field == HOUR_OF_DAY || field == MINUTE ||
+	field == SECOND || field == MILLISECOND)
+      return null;
+
+    int value = get(field);
+    DateFormatSymbols syms = DateFormatSymbols.getInstance(locale);
+    if (field == ERA)
+      return syms.getEras()[value];
+    if (field == MONTH)
+      if (style == LONG)
+	return syms.getMonths()[value];
+      else 
+	return syms.getShortMonths()[value];
+    if (field == DAY_OF_WEEK)
+      if (style == LONG)
+	return syms.getWeekdays()[value];
+      else
+	return syms.getShortWeekdays()[value];
+    if (field == AM_PM)
+      return syms.getAmPmStrings()[value];
+    if (field == ZONE_OFFSET)
+      if (style == LONG)
+	return syms.getZoneStrings()[value][1];
+      else
+	return syms.getZoneStrings()[value][2];
+    if (field == DST_OFFSET)
+      if (style == LONG)
+	return syms.getZoneStrings()[value][3];
+      else
+	return syms.getZoneStrings()[value][4];
+
+    throw new InternalError("Failed to resolve field " + field +
+			    " with style " + style + " for locale " +
+			    locale);
+  }
+
+  /**
+   * Returns a map linking all specified textual representations
+   * of the given field to their numerical values.  The textual
+   * representations included are determined by the specified
+   * style and locale.  For example, if the style <code>LONG</code>
+   * is specified and the German locale, then the map will
+   * contain "Montag" to {@link #MONDAY}, "Dienstag" to
+   * {@link #TUESDAY}, "Mittwoch" to {@link #WEDNESDAY} and
+   * so on.  The default implementation uses the values returned
+   * by {@link DateFormatSymbols} so, for example, the style
+   * {@link #ALL_STYLES} and the field {@link #MONTH} will return
+   * a map filled with the values returned from
+   * {@link DateFormatSymbols#getMonths()} and
+   * {@link DateFormatSymbols#getShortMonths()}.  If there are
+   * no textual representations for a given field (usually because
+   * it is purely numeric, such as the year in the
+   * {@link GregorianCalendar}), <code>null</code> is returned.
+   *
+   * @param field the calendar field whose textual representation should
+   *              be obtained.
+   * @param style the style to use; either {@link #LONG}, {@link #SHORT}
+   *              or {@link ALL_STYLES}.
+   * @param locale the locale to use for translation.
+   * @return a map of the textual representations of the given field in the
+   *         specified style to their numeric values, or <code>null</code>
+   *         if none is applicable.
+   * @throws IllegalArgumentException if <code>field</code> or <code>style</code>
+   *                                  or invalid, or the calendar is non-lenient
+   *                                  and has invalid values.
+   * @throws NullPointerException if <code>locale</code> is <code>null</code>.
+   * @since 1.6
+   */
+  public Map<String,Integer> getDisplayNames(int field, int style, Locale locale)
+  {
+    if (field < 0 || field >= FIELD_COUNT)
+      throw new IllegalArgumentException("The field value, " + field +
+					 ", is invalid.");
+    if (style != SHORT && style != LONG && style != ALL_STYLES)
+      throw new IllegalArgumentException("The style must be either " +
+					 "short, long or all styles.");
+    if (field == YEAR || field == WEEK_OF_YEAR ||
+	field == WEEK_OF_MONTH || field == DAY_OF_MONTH ||
+	field == DAY_OF_YEAR || field == DAY_OF_WEEK_IN_MONTH ||
+	field == HOUR || field == HOUR_OF_DAY || field == MINUTE ||
+	field == SECOND || field == MILLISECOND)
+      return null;
+
+    DateFormatSymbols syms = DateFormatSymbols.getInstance(locale);
+    Map<String,Integer> map = new HashMap<String,Integer>();
+    if (field == ERA)
+      {
+	String[] eras = syms.getEras();
+	for (int a = 0; a < eras.length; ++a)
+	  map.put(eras[a], a);
+	return map;
+      }
+    if (field == MONTH)
+      {
+	if (style == LONG || style == ALL_STYLES)
+	  {
+	    String[] months = syms.getMonths();
+	    for (int a = 0; a < months.length; ++a)
+	      map.put(months[a], a);
+	  }
+	if (style == SHORT || style == ALL_STYLES)
+	  {
+	    String[] months = syms.getShortMonths();
+	    for (int a = 0; a < months.length; ++a)
+	      map.put(months[a], a);
+	  }
+	return map;
+      }
+    if (field == DAY_OF_WEEK)
+      {
+	if (style == LONG || style == ALL_STYLES)
+	  {
+	    String[] weekdays = syms.getWeekdays();
+	    for (int a = SUNDAY; a < weekdays.length; ++a)
+	      map.put(weekdays[a], a);
+	  }
+	if (style == SHORT || style == ALL_STYLES)
+	  {
+	    String[] weekdays = syms.getShortWeekdays();
+	    for (int a = SUNDAY; a < weekdays.length; ++a)
+	      map.put(weekdays[a], a);
+	  }
+	return map;
+      }
+    if (field == AM_PM)
+      {
+	String[] ampms = syms.getAmPmStrings();
+	for (int a = 0; a < ampms.length; ++a)
+	  map.put(ampms[a], a);
+	return map;
+      }
+    if (field == ZONE_OFFSET)
+      {
+	String[][] zones = syms.getZoneStrings();
+	for (int a = 0; a < zones.length; ++a)
+	  {
+	    if (style == LONG || style == ALL_STYLES) 
+	      map.put(zones[a][1], a);
+	    if (style == SHORT || style == ALL_STYLES)
+	      map.put(zones[a][2], a);
+	  }
+	return map;
+      }
+    if (field == DST_OFFSET)
+      {
+	String[][] zones = syms.getZoneStrings();
+	for (int a = 0; a < zones.length; ++a)
+	  {
+	    if (style == LONG || style == ALL_STYLES) 
+	      map.put(zones[a][3], a);
+	    if (style == SHORT || style == ALL_STYLES)
+	      map.put(zones[a][4], a);
+	  }
+	return map;
+      }
+    
+    throw new InternalError("Failed to resolve field " + field +
+			    " with style " + style + " for locale " +
+			    locale);
+  }
+
 }

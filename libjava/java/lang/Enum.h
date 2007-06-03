@@ -25,6 +25,9 @@ public:
   virtual ::java::lang::String * name();
   virtual jint ordinal();
   virtual ::java::lang::Class * getDeclaringClass();
+public: // actually protected
+  virtual void finalize();
+public:
   virtual jint compareTo(::java::lang::Object *);
 private:
   static const jlong serialVersionUID = -4300926546619394005LL;

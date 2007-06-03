@@ -172,7 +172,6 @@ public class gnuDynValue extends RecordAny implements DynValue,
     else
       return super.current_member_kind();
   }
-  ;
 
   /** @inheritDoc */
   public String current_member_name() throws TypeMismatch, InvalidValue
@@ -182,7 +181,6 @@ public class gnuDynValue extends RecordAny implements DynValue,
     else
       return super.current_member_name();
   }
-  ;
 
   /** @inheritDoc */
   public NameDynAnyPair[] get_members_as_dyn_any() throws InvalidValue
@@ -191,7 +189,6 @@ public class gnuDynValue extends RecordAny implements DynValue,
       throw new InvalidValue(ISNULL);
     return super.gnu_get_members_as_dyn_any();
   }
-  ;
 
   /** @inheritDoc */
   public NameValuePair[] get_members() throws InvalidValue
@@ -201,7 +198,6 @@ public class gnuDynValue extends RecordAny implements DynValue,
     else
       return super.gnu_get_members();
   }
-  ;
 
   /** @inheritDoc */
   public void set_members_as_dyn_any(NameDynAnyPair[] value)
@@ -210,7 +206,6 @@ public class gnuDynValue extends RecordAny implements DynValue,
     super.set_members_as_dyn_any(value);
     isNull = false;
   }
-  ;
 
   /** @inheritDoc */
   public void set_members(NameValuePair[] value)
@@ -219,7 +214,6 @@ public class gnuDynValue extends RecordAny implements DynValue,
     super.set_members(value);
     isNull = false;
   }
-  ;
 
   /** @inheritDoc */
   public boolean is_null()

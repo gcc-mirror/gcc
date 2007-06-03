@@ -19,6 +19,13 @@ extern "Java"
       }
     }
   }
+  namespace java
+  {
+    namespace net
+    {
+        class InetAddress;
+    }
+  }
 }
 
 class gnu::java::net::GetLocalHostAction : public ::java::lang::Object
@@ -26,6 +33,7 @@ class gnu::java::net::GetLocalHostAction : public ::java::lang::Object
 
 public:
   GetLocalHostAction();
+  virtual ::java::net::InetAddress * GetLocalHostAction$run();
   virtual ::java::lang::Object * run();
   static ::java::lang::Class class$;
 };

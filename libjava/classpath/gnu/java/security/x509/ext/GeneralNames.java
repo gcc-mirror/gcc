@@ -38,20 +38,13 @@ exception statement from your version. */
 
 package gnu.java.security.x509.ext;
 
-import gnu.java.security.OID;
-import gnu.java.security.der.DER;
 import gnu.java.security.der.DERReader;
 import gnu.java.security.der.DERValue;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.security.auth.x500.X500Principal;
 
 public class GeneralNames
 {
@@ -59,85 +52,24 @@ public class GeneralNames
   // Instance methods.
   // -------------------------------------------------------------------------
 
-  public static final int OTHER_NAME     = 0;
-  public static final int RFC822_NAME    = 1;
-  public static final int DNS_NAME       = 2;
-  public static final int X400_ADDRESS   = 3;
-  public static final int DIRECTORY_NAME = 4;
-  public static final int EDI_PARTY_NAME = 5;
-  public static final int URI            = 6;
-  public static final int IP_ADDRESS     = 7;
-  public static final int REGISTERED_ID  = 8;
-
-  private List names;
+  private List<GeneralName> names;
 
   // Constructor.
   // -------------------------------------------------------------------------
 
   public GeneralNames(final byte[] encoded) throws IOException
   {
-    names = new LinkedList();
+    names = new LinkedList<GeneralName>();
     DERReader der = new DERReader(encoded);
     DERValue nameList = der.read();
     if (!nameList.isConstructed())
       throw new IOException("malformed GeneralNames");
     int len = 0;
-    int i = 0;
     while (len < nameList.getLength())
       {
         DERValue name = der.read();
-        List namePair = new ArrayList(2);
-        int tagClass = name.getTagClass();
-        if (tagClass != DER.CONTEXT)
-          throw new IOException("malformed GeneralName: Tag class is " + tagClass);
-        namePair.add(Integer.valueOf(name.getTag()));
-        DERValue val = null;
-        switch (name.getTag())
-          {
-          case RFC822_NAME:
-          case DNS_NAME:
-          case X400_ADDRESS:
-          case URI:
-            namePair.add(new String((byte[]) name.getValue()));
-            break;
-
-          case OTHER_NAME:
-            // MUST return the encoded bytes of the OID/OctetString sequence
-            byte[] anotherName = name.getEncoded();
-            anotherName[0] = (byte) (DER.CONSTRUCTED|DER.SEQUENCE);
-            namePair.add(anotherName);
-            // DERReader goes back on Constructed things so we need to skip over them
-            DERValue skip = der.read(); // skip OID
-            skip = der.read(); // skip Octet String
-            break;
-            
-          case EDI_PARTY_NAME:
-            namePair.add(name.getValue());
-            break;
-
-          case DIRECTORY_NAME:
-            byte[] b = name.getEncoded();
-            b[0] = (byte) (DER.CONSTRUCTED|DER.SEQUENCE);
-            DERReader r = new DERReader (b);
-            r.read ();
-            namePair.add(new X500Principal(r.read ().getEncoded ()).toString());
-            break;
-
-          case IP_ADDRESS:
-            namePair.add(InetAddress.getByAddress((byte[]) name.getValue())
-                         .getHostAddress());
-            break;
-
-          case REGISTERED_ID:
-            byte[] bb = name.getEncoded();
-            bb[0] = (byte) DER.OBJECT_IDENTIFIER;
-            namePair.add(new OID(bb).toString());
-            break;
-
-          default:
-            throw new IOException("unknown tag " + name.getTag());
-          }
-        names.add(namePair);
+        GeneralName generalName = new GeneralName(name.getEncoded());
+        names.add(generalName);
         len += name.getEncodedLength();
       }
   }
@@ -145,21 +77,9 @@ public class GeneralNames
   // Instance methods.
   // -------------------------------------------------------------------------
 
-  public List getNames()
+  public List<GeneralName> getNames()
   {
-    List l = new ArrayList(names.size());
-    for (Iterator it = names.iterator(); it.hasNext(); )
-      {
-        List ll = (List) it.next();
-        List pair = new ArrayList(2);
-        pair.add(ll.get(0));
-        if (ll.get(1) instanceof byte[])
-          pair.add(((byte[]) ll.get(1)).clone());
-        else
-          pair.add(ll.get(1));
-        l.add(Collections.unmodifiableList(pair));
-      }
-    return Collections.unmodifiableList(l);
+    return Collections.unmodifiableList(names);
   }
 
   public String toString()

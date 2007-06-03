@@ -574,8 +574,12 @@ public class JViewport extends JComponent implements Accessible
     Component view = getView();
     if (view == null)
       return;    
-      
+
     Point pos = getViewPosition();
+    // We get the contentRect in the viewport coordinates. But we want to
+    // calculate with view coordinates.
+    int contentX = contentRect.x + pos.x;
+    int contentY = contentRect.y + pos.y;
     Rectangle viewBounds = getView().getBounds();
     Rectangle portBounds = getBounds();
     
@@ -584,20 +588,20 @@ public class JViewport extends JComponent implements Accessible
 
     // If the bottom boundary of contentRect is below the port
     // boundaries, scroll up as necessary.
-    if (contentRect.y + contentRect.height + viewBounds.y > portBounds.height)
-      pos.y = contentRect.y + contentRect.height - portBounds.height;
-    // If contentRect.y is above the port boundaries, scroll down to
-    // contentRect.y.
-    if (contentRect.y + viewBounds.y < 0)
-      pos.y = contentRect.y;
+    if (contentY + contentRect.height + viewBounds.y > portBounds.height)
+      pos.y = contentY + contentRect.height - portBounds.height;
+    // If contentY is above the port boundaries, scroll down to
+    // contentY.
+    if (contentY + viewBounds.y < 0)
+      pos.y = contentY;
     // If the right boundary of contentRect is right from the port
     // boundaries, scroll left as necessary.
-    if (contentRect.x + contentRect.width + viewBounds.x > portBounds.width)
-      pos.x = contentRect.x + contentRect.width - portBounds.width;
-    // If contentRect.x is left from the port boundaries, scroll right to
+    if (contentX + contentRect.width + viewBounds.x > portBounds.width)
+      pos.x = contentX + contentRect.width - portBounds.width;
+    // If contentX is left from the port boundaries, scroll right to
     // contentRect.x.
-    if (contentRect.x + viewBounds.x < 0)
-      pos.x = contentRect.x;
+    if (contentX + viewBounds.x < 0)
+      pos.x = contentX;
     setViewPosition(pos);
   }
 
@@ -834,7 +838,7 @@ public class JViewport extends JComponent implements Accessible
         int dy = viewPosition.y - lastPaintPosition.y;
         boolean canBlit = computeBlit(dx, dy, cachedBlitFrom, cachedBlitTo,
                                       cachedBlitSize, cachedBlitPaint);
-        if (canBlit)
+        if (canBlit && isPaintRoot)
           {
             // Copy the part that remains visible during scrolling.
             if (cachedBlitSize.width > 0 && cachedBlitSize.height > 0)

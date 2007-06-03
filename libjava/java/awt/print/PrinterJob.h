@@ -29,6 +29,7 @@ extern "Java"
     namespace print
     {
         class PrintService;
+        class StreamPrintServiceFactory;
       namespace attribute
       {
           class PrintRequestAttributeSet;
@@ -63,6 +64,7 @@ public:
   virtual void setPrintable(::java::awt::print::Printable *, ::java::awt::print::PageFormat *) = 0;
   virtual ::java::awt::print::PageFormat * validatePage(::java::awt::print::PageFormat *) = 0;
   static JArray< ::javax::print::PrintService * > * lookupPrintServices();
+  static JArray< ::javax::print::StreamPrintServiceFactory * > * lookupStreamPrintServices(::java::lang::String *);
   virtual ::javax::print::PrintService * getPrintService();
   virtual void setPrintService(::javax::print::PrintService *);
 private:

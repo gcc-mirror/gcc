@@ -99,7 +99,7 @@ public class SecureClassLoader extends ClassLoader
    *
    * @since 1.5
    */
-  protected final Class defineClass(String name, ByteBuffer b, CodeSource cs)
+  protected final Class<?> defineClass(String name, ByteBuffer b, CodeSource cs)
   {
     return super.defineClass(name, b, getProtectionDomain(cs));
   }

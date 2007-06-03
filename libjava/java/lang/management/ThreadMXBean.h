@@ -14,6 +14,8 @@ class java::lang::management::ThreadMXBean : public ::java::lang::Object
 {
 
 public:
+  virtual JArray< ::java::lang::management::ThreadInfo * > * dumpAllThreads(jboolean, jboolean) = 0;
+  virtual JArray< jlong > * findDeadlockedThreads() = 0;
   virtual JArray< jlong > * findMonitorDeadlockedThreads() = 0;
   virtual JArray< jlong > * getAllThreadIds() = 0;
   virtual jlong getCurrentThreadCpuTime() = 0;
@@ -24,11 +26,14 @@ public:
   virtual jlong getThreadCpuTime(jlong) = 0;
   virtual ::java::lang::management::ThreadInfo * getThreadInfo(jlong) = 0;
   virtual JArray< ::java::lang::management::ThreadInfo * > * getThreadInfo(JArray< jlong > *) = 0;
+  virtual JArray< ::java::lang::management::ThreadInfo * > * getThreadInfo(JArray< jlong > *, jboolean, jboolean) = 0;
   virtual ::java::lang::management::ThreadInfo * getThreadInfo(jlong, jint) = 0;
   virtual JArray< ::java::lang::management::ThreadInfo * > * getThreadInfo(JArray< jlong > *, jint) = 0;
   virtual jlong getThreadUserTime(jlong) = 0;
   virtual jlong getTotalStartedThreadCount() = 0;
   virtual jboolean isCurrentThreadCpuTimeSupported() = 0;
+  virtual jboolean isObjectMonitorUsageSupported() = 0;
+  virtual jboolean isSynchronizerUsageSupported() = 0;
   virtual jboolean isThreadContentionMonitoringEnabled() = 0;
   virtual jboolean isThreadContentionMonitoringSupported() = 0;
   virtual jboolean isThreadCpuTimeEnabled() = 0;

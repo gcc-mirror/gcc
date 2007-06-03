@@ -1,5 +1,5 @@
 /* OpenMBeanAttributeInfoSupport.java -- Open typed info about an attribute.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -62,7 +62,7 @@ public class OpenMBeanAttributeInfoSupport
   /**
    * The open type of the attribute.
    */
-  private OpenType openType;
+  private OpenType<?> openType;
 
   /**
    * The default value of the attribute (may be <code>null</code>).
@@ -72,17 +72,17 @@ public class OpenMBeanAttributeInfoSupport
   /**
    * The possible legal values of the attribute (may be <code>null</code>).
    */
-  private Set legalValues;
+  private Set<?> legalValues;
 
   /**
    * The minimum value of the attribute (may be <code>null</code>).
    */
-  private Comparable minValue;
+  private Comparable<Object> minValue;
 
   /**
    * The maximum value of the attribute (may be <code>null</code>).
    */
-  private Comparable maxValue;
+  private Comparable<Object> maxValue;
 
   /**
    * The hash code of this instance.
@@ -112,7 +112,7 @@ public class OpenMBeanAttributeInfoSupport
    *                                  or the name or description are
    *                                  the empty string.
    */
-  public OpenMBeanAttributeInfoSupport(String name, String desc, OpenType type,
+  public OpenMBeanAttributeInfoSupport(String name, String desc, OpenType<?> type,
 				       boolean isReadable, boolean isWritable,
 				       boolean isIs)
   {
@@ -157,9 +157,9 @@ public class OpenMBeanAttributeInfoSupport
    *                           open type or the open type is an instance
    *                           of {@link ArrayType} or {@link TabularType}.
    */
-  public OpenMBeanAttributeInfoSupport(String name, String desc, OpenType type,
-				       boolean isReadable, boolean isWritable,
-				       boolean isIs, Object defaultValue)
+  public <T> OpenMBeanAttributeInfoSupport(String name, String desc, OpenType<T> type,
+					   boolean isReadable, boolean isWritable,
+					   boolean isIs, T defaultValue)
     throws OpenDataException
   {
     this(name, desc, type, isReadable, isWritable, isIs, defaultValue, null);
@@ -203,11 +203,11 @@ public class OpenMBeanAttributeInfoSupport
    *                                  the empty string.
    * @throws OpenDataException if any condition in the list above is broken.
    */
-  public OpenMBeanAttributeInfoSupport(String name, String desc, OpenType type,
-				       boolean isReadable, boolean isWritable,
-				       boolean isIs, Object defaultValue,
-				       Comparable minimumValue,
-				       Comparable maximumValue)
+  public <T> OpenMBeanAttributeInfoSupport(String name, String desc, OpenType<T> type,
+					   boolean isReadable, boolean isWritable,
+					   boolean isIs, T defaultValue,
+					   Comparable<T> minimumValue,
+					   Comparable<T> maximumValue)
     throws OpenDataException
   {
     this(name, desc, type, isReadable, isWritable, isIs);
@@ -239,8 +239,8 @@ public class OpenMBeanAttributeInfoSupport
     
     openType = type;
     this.defaultValue = defaultValue;
-    minValue = minimumValue;
-    maxValue = maximumValue;
+    minValue = (Comparable<Object>) minimumValue;
+    maxValue = (Comparable<Object>) maximumValue;
   }
 
   /**
@@ -280,10 +280,10 @@ public class OpenMBeanAttributeInfoSupport
    *                                  the empty string.
    * @throws OpenDataException if any condition in the list above is broken.
    */
-  public OpenMBeanAttributeInfoSupport(String name, String desc, OpenType type,
-				       boolean isReadable, boolean isWritable,
-				       boolean isIs, Object defaultValue,
-				       Object[] legalValues)
+  public <T> OpenMBeanAttributeInfoSupport(String name, String desc, OpenType<T> type,
+					   boolean isReadable, boolean isWritable,
+					   boolean isIs, T defaultValue,
+					   T[] legalValues)
     throws OpenDataException
   {
     this(name, desc, type, isReadable, isWritable, isIs);
@@ -379,7 +379,7 @@ public class OpenMBeanAttributeInfoSupport
    * @return a set of legal values, or <code>null</code> if no such
    *         set exists.
    */
-  public Set getLegalValues()
+  public Set<?> getLegalValues()
   {
     return legalValues;
   }
@@ -390,7 +390,7 @@ public class OpenMBeanAttributeInfoSupport
    *
    * @return the maximum value, or <code>null</code> if none exists.
    */
-  public Comparable getMaxValue()
+  public Comparable<?> getMaxValue()
   {
     return maxValue;
   }
@@ -401,7 +401,7 @@ public class OpenMBeanAttributeInfoSupport
    *
    * @return the minimum value, or <code>null</code> if none exists.
    */
-  public Comparable getMinValue()
+  public Comparable<?> getMinValue()
   {
     return minValue;
   }
@@ -412,7 +412,7 @@ public class OpenMBeanAttributeInfoSupport
    *
    * @return the open type of this attribute.
    */
-  public OpenType getOpenType()
+  public OpenType<?> getOpenType()
   {
     return openType;
   }

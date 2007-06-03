@@ -726,7 +726,23 @@ public abstract class Component
    */
   public GraphicsConfiguration getGraphicsConfiguration()
   {
-    return getGraphicsConfigurationImpl();
+    GraphicsConfiguration conf = null;
+    synchronized (getTreeLock())
+      {
+        if (graphicsConfig != null)
+          {
+            conf = graphicsConfig;
+          }
+        else
+          {
+            Component par = getParent();
+            if (par != null)
+              {
+                conf = parent.getGraphicsConfiguration();
+              }
+          }
+      }
+    return conf;
   }
 
   /**
@@ -823,7 +839,8 @@ public abstract class Component
    */
   public boolean isShowing()
   {
-    return visible && peer != null && (parent == null || parent.isShowing());
+    Component par = parent;
+    return visible && peer != null && (par == null || par.isShowing());
   }
 
   /**
@@ -1179,19 +1196,12 @@ public abstract class Component
    */
   public Font getFont()
   {
-    Font f;
-    synchronized (getTreeLock())
-      {
-        f = getFontImpl();
-      }
-    return f;
+    return getFontImpl();
   }
 
   /**
    * Implementation of getFont(). This is pulled out of getFont() to prevent
-   * client programs from overriding this. This method is executed within
-   * a tree lock, so we can assume that the hierarchy doesn't change in
-   * between.
+   * client programs from overriding this.
    *
    * @return the font of this component
    */
@@ -1204,7 +1214,12 @@ public abstract class Component
         if (p != null)
           f = p.getFontImpl();
         else
-          f = new Font("Dialog", Font.PLAIN, 12);
+          {
+            // It is important to return null here and not some kind of default
+            // font, otherwise the Swing UI would not install its fonts because
+            // it keeps non-UIResource fonts.
+            f = null;
+          }
       }
     return f;
   }
@@ -5432,27 +5447,6 @@ p   * <li>the set of backward traversal keys
   final void setPeer(ComponentPeer peer)
   {
     this.peer = peer;
-  }
-
-  /**
-   * Implementation method that allows classes such as Canvas and Window to
-   * override the graphics configuration without violating the published API.
-   *
-   * @return the graphics configuration
-   */
-  GraphicsConfiguration getGraphicsConfigurationImpl()
-  {
-    if (peer != null)
-      {
-        GraphicsConfiguration config = peer.getGraphicsConfiguration();
-        if (config != null)
-          return config;
-      }
-
-    if (parent != null)
-      return parent.getGraphicsConfiguration();
-
-    return null;
   }
 
   /**

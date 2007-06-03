@@ -365,7 +365,7 @@ public class DomConsumer implements EventConsumer
 	throws SAXException
 	{
 	    SAXParseException	e;
-	    ErrorHandler	errHandler = consumer.getErrorHandler ();;
+	    ErrorHandler	errHandler = consumer.getErrorHandler ();
 
 	    if (locator == null)
 		e = new SAXParseException (message, null, null, -1, -1, x);

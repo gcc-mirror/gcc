@@ -29,6 +29,7 @@ public:
   virtual jint hashCode();
   virtual ::java::lang::String * toString();
 private:
+  void writeObject(::java::io::ObjectOutputStream *);
   static const jlong serialVersionUID = 3952882688968447265LL;
 public: // actually protected
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) description;

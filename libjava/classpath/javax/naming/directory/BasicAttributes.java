@@ -63,7 +63,7 @@ public class BasicAttributes implements Attributes
   public BasicAttributes (boolean ignoreCase)
   {
     this.ignoreCase = ignoreCase;
-    this.attributes = new Vector ();
+    this.attributes = new Vector<Attribute>();
   }
 
   public BasicAttributes (String attrID, Object val)
@@ -74,7 +74,7 @@ public class BasicAttributes implements Attributes
   public BasicAttributes (String attrID, Object val, boolean ignoreCase)
   {
     this.ignoreCase = ignoreCase;
-    attributes = new Vector ();
+    attributes = new Vector<Attribute>();
     attributes.add (new BasicAttribute (attrID, val));
   }
 
@@ -82,7 +82,7 @@ public class BasicAttributes implements Attributes
   {
     // Slightly inefficient as we make a garbage Vector here.
     BasicAttributes ba = new BasicAttributes (ignoreCase);
-    ba.attributes = (Vector) attributes.clone ();
+    ba.attributes = (Vector<Attribute>) attributes.clone ();
     return ba;
   }
 
@@ -117,7 +117,7 @@ public class BasicAttributes implements Attributes
   {
     for (int i = 0; i < attributes.size (); ++i)
       {
-	Attribute at = (Attribute) attributes.get (i);
+	Attribute at = attributes.get (i);
 	if ((ignoreCase && attrID.equalsIgnoreCase (at.getID ()))
 	    || (! ignoreCase && attrID.equals (at.getID ())))
 	  return at;
@@ -128,12 +128,38 @@ public class BasicAttributes implements Attributes
 
   public NamingEnumeration<Attribute> getAll ()
   {
-    return new BasicAttributesEnumeration (false);
+    return new BasicAttributesEnumeration();
   }
 
   public NamingEnumeration<String> getIDs ()
   {
-    return new BasicAttributesEnumeration (true);
+    final NamingEnumeration<Attribute> attrs = getAll();
+    return new NamingEnumeration<String>() {
+      public boolean hasMore() throws NamingException
+      {
+        return attrs.hasMore();
+      }
+      
+      public boolean hasMoreElements()
+      {
+        return attrs.hasMoreElements();
+      }
+
+      public String next() throws NamingException
+      {
+        return attrs.next().getID();
+      }
+
+      public String nextElement()
+      {
+        return attrs.nextElement().getID();
+      }
+
+      public void close() throws NamingException
+      {
+        attrs.close();
+      }
+    };
   }
 
   public int hashCode ()
@@ -197,16 +223,16 @@ public class BasicAttributes implements Attributes
   // This is set by the serialization spec.
   private boolean ignoreCase;
   // Package-private to avoid a trampoline.
-  transient Vector attributes;
+  transient Vector<Attribute> attributes;
 
   private void readObject(ObjectInputStream s) throws IOException,
       ClassNotFoundException
   {
     s.defaultReadObject();
     int size = s.readInt();
-    attributes = new Vector(size);    
+    attributes = new Vector<Attribute>(size);    
     for (int i = 0; i < size; i++)
-      attributes.add(s.readObject());
+      attributes.add((Attribute) s.readObject());
   }
 
   private void writeObject(ObjectOutputStream s) throws IOException
@@ -218,14 +244,13 @@ public class BasicAttributes implements Attributes
   }
 
   // Used when enumerating.
-  private class BasicAttributesEnumeration implements NamingEnumeration
+  private class BasicAttributesEnumeration
+    implements NamingEnumeration<Attribute>
   {
     int where = 0;
-    boolean id;
 
-    public BasicAttributesEnumeration (boolean id)
+    public BasicAttributesEnumeration ()
     {
-      this.id = id;
     }
 
     public void close () throws NamingException
@@ -237,7 +262,7 @@ public class BasicAttributes implements Attributes
       return hasMoreElements ();
     }
 
-    public Object next () throws NamingException
+    public Attribute next () throws NamingException
     {
       return nextElement ();
     }
@@ -247,13 +272,13 @@ public class BasicAttributes implements Attributes
       return where < attributes.size ();
     }
 
-    public Object nextElement () throws NoSuchElementException
+    public Attribute nextElement () throws NoSuchElementException
     {
       if (where >= attributes.size ())
 	throw new NoSuchElementException ("no more elements");
-      Attribute at = (Attribute) attributes.get (where);
+      Attribute at = attributes.get (where);
       ++where;
-      return id ? (Object) at.getID () : (Object) at;
+      return at;
     }
   }
 }

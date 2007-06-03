@@ -1,5 +1,5 @@
 /* Native2ASCII.java - native2ascii program
- Copyright (C) 2003 Free Software Foundation, Inc.
+ Copyright (C) 2003, 2007 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -143,7 +143,7 @@ public class Native2ASCII
               {
                 char c = s.charAt(i);
                 if (reversed
-                    && i + 6 < s.length()
+                    && i + 6 <= s.length()
                     && s.charAt(i) == '\\'
                     && s.charAt(i + 1) == 'u')
                   {
@@ -180,6 +180,5 @@ public class Native2ASCII
   public static void main(String[] args)
   {
     new Native2ASCII().run(args);
-    String encoding = System.getProperty("file.encoding"); //$NON-NLS-1$
   }
 }

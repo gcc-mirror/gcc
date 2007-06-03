@@ -75,9 +75,6 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   /** The current theme. */
   private static MetalTheme theme;
   
-  /** The look and feel defaults. */
-  private UIDefaults LAF_defaults;
-
   /**
    * Creates a new instance of the Metal look and feel.
    */
@@ -151,17 +148,10 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   public UIDefaults getDefaults()
   {
     createDefaultTheme();
-    if (LAF_defaults == null)
-      {
-        LAF_defaults = super.getDefaults();
+    UIDefaults def = super.getDefaults();
 
-        // add custom theme entries to the table
-        if (theme != null)
-          theme.addCustomEntriesToTable(LAF_defaults);
-      }
-    
-    // Returns the default values for this look and feel. 
-    return LAF_defaults;
+    theme.addCustomEntriesToTable(def);
+    return def;
   }
 
   /**

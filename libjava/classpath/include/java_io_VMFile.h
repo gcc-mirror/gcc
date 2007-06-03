@@ -20,9 +20,13 @@ JNIEXPORT jboolean JNICALL Java_java_io_VMFile_exists (JNIEnv *env, jclass, jstr
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_delete (JNIEnv *env, jclass, jstring);
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_setLastModified (JNIEnv *env, jclass, jstring, jlong);
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_mkdir (JNIEnv *env, jclass, jstring);
+JNIEXPORT jboolean JNICALL Java_java_io_VMFile_setReadable (JNIEnv *env, jclass, jstring, jboolean, jboolean);
+JNIEXPORT jboolean JNICALL Java_java_io_VMFile_setWritable (JNIEnv *env, jclass, jstring, jboolean, jboolean);
+JNIEXPORT jboolean JNICALL Java_java_io_VMFile_setExecutable (JNIEnv *env, jclass, jstring, jboolean, jboolean);
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_isFile (JNIEnv *env, jclass, jstring);
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_canWrite (JNIEnv *env, jclass, jstring);
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_canRead (JNIEnv *env, jclass, jstring);
+JNIEXPORT jboolean JNICALL Java_java_io_VMFile_canExecute (JNIEnv *env, jclass, jstring);
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_isDirectory (JNIEnv *env, jclass, jstring);
 JNIEXPORT jstring JNICALL Java_java_io_VMFile_toCanonicalForm (JNIEnv *env, jclass, jstring);
 #undef java_io_VMFile_IS_CASE_SENSITIVE

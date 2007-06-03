@@ -40,7 +40,6 @@ package gnu.java.awt.peer.gtk;
 
 import java.awt.Dialog;
 import java.awt.FileDialog;
-import java.awt.Graphics;
 import java.awt.event.PaintEvent;
 import java.awt.peer.FileDialogPeer;
 import java.io.File;
@@ -160,7 +159,8 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
      in turn call the filter's accept() method and give back the return
      value. */
   // called back by native side: filename_filter_cb
-  boolean filenameFilterCallback (String fullname) {
+  boolean filenameFilterCallback (String fullname)
+  {
     String filename = fullname.substring(fullname.lastIndexOf(FS) + 1);
     String dirname = fullname.substring(0, fullname.lastIndexOf(FS));
     File dir = new File(dirname);
@@ -205,19 +205,19 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
     if (sepIndex < 0)
       {
         /* This should never happen on Unix (all paths start with '/') */
-	currentFile = fileName;
+        currentFile = fileName;
       }
     else
       {
         if (fileName.length() > (sepIndex + 1))
-	  {
-	    String fn = fileName.substring (sepIndex + 1);
-	    currentFile = fn;
-	  }
-	else
-	  {
+          {
+            String fn = fileName.substring (sepIndex + 1);
+            currentFile = fn;
+          }
+        else
+          {
             currentFile = null;
-	  }
+          }
 
         String dn = fileName.substring (0, sepIndex + 1);
         currentDirectory = dn;

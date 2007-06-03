@@ -53,7 +53,7 @@ public class EventDispatcher extends Thread
   // This is a queue of events to dispatch.  This thread waits on
   // the queue and when notified will remove events until the queue
   // is empty.
-  private static final ArrayList queue = new ArrayList();
+  private static final ArrayList<Runnable> queue = new ArrayList<Runnable>();
 
   // FIXME: this thread probably ought to go in some classpath-internal
   // ThreadGroup.  But we don't have that yet.
@@ -81,7 +81,7 @@ public class EventDispatcher extends Thread
                     // Ignore.
                   }
               }
-            r = (Runnable) queue.remove(0);
+            r = queue.remove(0);
           }
         // Invoke outside the synchronization, so that 
         // we aren't blocking other threads from posting events.

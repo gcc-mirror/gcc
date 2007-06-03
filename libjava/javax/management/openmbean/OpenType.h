@@ -44,6 +44,7 @@ private:
   ::java::lang::String * description;
 public:
   static JArray< ::java::lang::String * > * ALLOWED_CLASSNAMES;
+  static ::java::util::List * ALLOWED_CLASSNAMES_LIST;
   static ::java::lang::Class class$;
 };
 

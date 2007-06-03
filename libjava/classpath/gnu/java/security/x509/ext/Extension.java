@@ -1,5 +1,5 @@
 /* Extension.java -- an X.509 certificate or CRL extension.
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -171,6 +171,10 @@ public class Extension
       {
         value = new ReasonCode(encval);
       }
+    else if (oid.equals(NameConstraints.ID))
+      {
+        value = new NameConstraints(encval);
+      }
     else
       {
         value = new Value(encval);
@@ -226,11 +230,11 @@ public class Extension
 
   public DERValue getDerValue()
   {
-    List ext = new ArrayList (3);
-    ext.add (new DERValue (DER.OBJECT_IDENTIFIER, oid));
-    ext.add (new DERValue (DER.BOOLEAN, Boolean.valueOf (critical)));
-    ext.add (new DERValue (DER.OCTET_STRING, value.getEncoded()));
-    return new DERValue (DER.CONSTRUCTED|DER.SEQUENCE, ext);
+    List<DERValue> ext = new ArrayList<DERValue>(3);
+    ext.add(new DERValue(DER.OBJECT_IDENTIFIER, oid));
+    ext.add(new DERValue(DER.BOOLEAN, Boolean.valueOf(critical)));
+    ext.add(new DERValue(DER.OCTET_STRING, value.getEncoded()));
+    return new DERValue(DER.CONSTRUCTED|DER.SEQUENCE, ext);
   }
 
   // Own methods.

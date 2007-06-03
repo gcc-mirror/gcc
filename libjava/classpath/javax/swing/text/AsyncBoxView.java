@@ -307,7 +307,7 @@ public class AsyncBoxView
     private int updateChildOffsets(float targetOffset)
     {
       int n = getViewCount();
-      int targetIndex = n - 1;;
+      int targetIndex = n - 1;
       int pos = lastValidOffset.getChildView().getStartOffset();
       int startIndex = getViewIndexAtPosition(pos, Position.Bias.Forward);
       float start = lastValidOffset.getMajorOffset();

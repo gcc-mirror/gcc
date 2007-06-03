@@ -37,6 +37,7 @@ extern "Java"
         class Component;
         class Container;
         class Cursor;
+        class Desktop;
         class Dialog;
         class Dimension;
         class EventQueue;
@@ -101,6 +102,7 @@ extern "Java"
           class CheckboxMenuItemPeer;
           class CheckboxPeer;
           class ChoicePeer;
+          class DesktopPeer;
           class DialogPeer;
           class FileDialogPeer;
           class FontPeer;
@@ -139,6 +141,7 @@ class java::awt::Toolkit : public ::java::lang::Object
 public:
   Toolkit();
 public: // actually protected
+  virtual ::java::awt::peer::DesktopPeer * createDesktopPeer(::java::awt::Desktop *) = 0;
   virtual ::java::awt::peer::ButtonPeer * createButton(::java::awt::Button *) = 0;
   virtual ::java::awt::peer::TextFieldPeer * createTextField(::java::awt::TextField *) = 0;
   virtual ::java::awt::peer::LabelPeer * createLabel(::java::awt::Label *) = 0;

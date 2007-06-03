@@ -1,5 +1,5 @@
 /* ExportCmd.java -- The export command handler of the keytool
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ import gnu.classpath.tools.getopt.Option;
 import gnu.classpath.tools.getopt.OptionException;
 import gnu.classpath.tools.getopt.OptionGroup;
 import gnu.classpath.tools.getopt.Parser;
-import gnu.java.security.util.Base64;
+import gnu.java.util.Base64;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -226,7 +226,7 @@ class ExportCmd extends Command
     byte[] derBytes = certificate.getEncoded();
     if (rfc)
       {
-        String encoded = Base64.encode(derBytes, 0, derBytes.length, true);
+        String encoded = Base64.encode(derBytes, 72);
         PrintWriter pw = new PrintWriter(outStream, true);
         pw.println("-----BEGIN CERTIFICATE-----"); //$NON-NLS-1$
         pw.println(encoded);

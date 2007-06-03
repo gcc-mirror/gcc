@@ -90,7 +90,8 @@ public abstract class Scaler
                                          float pointSize,
                                          AffineTransform transform,
                                          boolean antialias,
-                                         boolean fractionalMetrics);
+                                         boolean fractionalMetrics,
+                                         Hinter hinter, int type);
 
 
   /**

@@ -15,6 +15,7 @@ extern "Java"
     {
       namespace directory
       {
+          class Attribute;
           class BasicAttributes;
           class BasicAttributes$BasicAttributesEnumeration;
       }
@@ -26,15 +27,16 @@ class javax::naming::directory::BasicAttributes$BasicAttributesEnumeration : pub
 {
 
 public:
-  BasicAttributes$BasicAttributesEnumeration(::javax::naming::directory::BasicAttributes *, jboolean);
+  BasicAttributes$BasicAttributesEnumeration(::javax::naming::directory::BasicAttributes *);
   virtual void close();
   virtual jboolean hasMore();
-  virtual ::java::lang::Object * next();
+  virtual ::javax::naming::directory::Attribute * BasicAttributes$BasicAttributesEnumeration$next();
   virtual jboolean hasMoreElements();
+  virtual ::javax::naming::directory::Attribute * BasicAttributes$BasicAttributesEnumeration$nextElement();
+  virtual ::java::lang::Object * next();
   virtual ::java::lang::Object * nextElement();
 public: // actually package-private
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) where;
-  jboolean id;
   ::javax::naming::directory::BasicAttributes * this$0;
 public:
   static ::java::lang::Class class$;

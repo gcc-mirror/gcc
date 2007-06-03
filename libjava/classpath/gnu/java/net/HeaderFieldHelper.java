@@ -49,8 +49,8 @@ import java.util.Vector;
  */
 public class HeaderFieldHelper
 {
-  private Vector headerFieldKeys;
-  private Vector headerFieldValues;
+  private Vector<String> headerFieldKeys;
+  private Vector<String> headerFieldValues;
 
   public HeaderFieldHelper()
   {
@@ -59,8 +59,8 @@ public class HeaderFieldHelper
 
   public HeaderFieldHelper (int size)
   {
-    headerFieldKeys = new Vector (size);
-    headerFieldValues = new Vector (size);
+    headerFieldKeys = new Vector<String> (size);
+    headerFieldValues = new Vector<String> (size);
   }
 
   public void addHeaderField (String key, String value)
@@ -75,7 +75,7 @@ public class HeaderFieldHelper
 
     try
       {
-        key = (String) headerFieldKeys.elementAt (index);
+        key = headerFieldKeys.elementAt (index);
       }
     catch (ArrayIndexOutOfBoundsException e)
       {
@@ -90,7 +90,7 @@ public class HeaderFieldHelper
 
     try
       {
-        value = (String) headerFieldValues.elementAt (index);
+        value = headerFieldValues.elementAt (index);
       }
     catch (ArrayIndexOutOfBoundsException e)
       {
@@ -105,8 +105,7 @@ public class HeaderFieldHelper
 
     try
       {
-	value = (String) headerFieldValues.elementAt
-			   (headerFieldKeys.indexOf(key));
+	value = headerFieldValues.elementAt(headerFieldKeys.indexOf(key));
       }
     catch (ArrayIndexOutOfBoundsException e)
       {
@@ -115,9 +114,9 @@ public class HeaderFieldHelper
     return value;
   }
 
-  public Map getHeaderFields()
+  public Map<String, String> getHeaderFields()
   {
-    HashMap headers = new HashMap();
+    HashMap<String, String> headers = new HashMap<String, String>();
     int max = headerFieldKeys.size();
 
     for (int index = 0; index < max; index++)

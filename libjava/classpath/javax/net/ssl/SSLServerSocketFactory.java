@@ -38,6 +38,9 @@ exception statement from your version. */
 
 package javax.net.ssl;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.security.KeyStore;
 import java.security.Security;
 
@@ -138,8 +141,9 @@ public abstract class SSLServerSocketFactory extends ServerSocketFactory
           }
         catch (Exception ex)
           {
-            throw new RuntimeException("error instantiating default server socket factory: "
-                                       + ex.toString());
+            return new ErrorServerSocketFactory(new RuntimeException(
+                "error instantiating default server socket factory: "
+                                       + ex.toString(), ex));
           }
       }
     try
@@ -149,7 +153,52 @@ public abstract class SSLServerSocketFactory extends ServerSocketFactory
     catch (Exception e)
       {
       }
-    throw new RuntimeException("no SSLSocketFactory implementation available");
+    return new ErrorServerSocketFactory(new RuntimeException(
+        "no SSLSocketFactory implementation available"));
+  }
+
+  private static final class ErrorServerSocketFactory
+    extends SSLServerSocketFactory
+  {
+    private RuntimeException x;
+
+    ErrorServerSocketFactory(RuntimeException x)
+    {
+      this.x = x;
+    }
+
+    public ServerSocket createServerSocket() throws IOException
+    {
+      throw (IOException) new IOException().initCause(x);
+    }
+
+    public ServerSocket createServerSocket(int port) throws IOException
+    {
+      throw (IOException) new IOException().initCause(x);
+    }
+
+    public ServerSocket createServerSocket(int port, int backlog)
+      throws IOException
+    {
+      throw (IOException) new IOException().initCause(x);
+    }
+
+    public ServerSocket createServerSocket(int port, int backlog,
+                                           InetAddress ifAddress)
+      throws IOException
+    {
+      throw (IOException) new IOException().initCause(x);
+    }
+
+    public String[] getDefaultCipherSuites()
+    {
+      throw new RuntimeException(x);
+    }
+
+    public String[] getSupportedCipherSuites()
+    {
+      throw new RuntimeException(x);
+    }
   }
 
   // Abstract methods.

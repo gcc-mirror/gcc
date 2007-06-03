@@ -1,7 +1,7 @@
 \input texinfo @c -*-texinfo-*-
 
 @c %**start of header
-@setfilename hacking.info
+@setfilename cp-hacking.info
 @settitle GNU Classpath Hacker's Guide
 @c %**end of header
 
@@ -11,7 +11,7 @@
 This file contains important information you will need to know if you
 are going to hack on the GNU Classpath project code.
 
-Copyright (C) 1998,1999,2000,2001,2002,2003,2004, 2005 Free Software Foundation, Inc.
+Copyright (C) 1998,1999,2000,2001,2002,2003,2004,2005,2007 Free Software Foundation, Inc.
 
 @ifnotplaintext
 @dircategory GNU Libraries
@@ -65,6 +65,9 @@ and compilers for the java programming language.
 * Volunteering::                So you want to help out
 * Project Goals::               Goals of the GNU Classpath project
 * Needed Tools and Libraries::  A list of programs and libraries you will need
+* Installation::                Installation instructions
+* Building and running with the X AWT peers:: Building and running with the X AWT peers
+* Misc. Notes::                 Miscellaneous notes
 * Programming Standards::       Standards to use when writing code
 * Hacking Code::                Working on code, Working with others
 * Programming Goals::           What to consider when writing code
@@ -324,7 +327,7 @@ that way.  But finishing, polishing up, documenting, testing and
 debugging current functionality is of higher priority then adding new
 functionality.
 
-@node Needed Tools and Libraries, Programming Standards, Project Goals, Top
+@node Needed Tools and Libraries, Installation, Project Goals, Top
 @comment node-name, next, previous, up
 @chapter Needed Tools and Libraries
 
@@ -338,15 +341,19 @@ needed when working directly on the CVS version.
 
 @itemize @bullet
 @item
-GCC 3.3+
+GNU make 3.80+
+@item
+GCC 2.95+
+@item
+Eclipse Compiler for Java 3.1+
 @item
 CVS 1.11+
 @item
-automake 1.7+
+automake 1.9+
 @item
 autoconf 2.59+
 @item
-libtool 1.4.2+
+libtool 1.5+
 @item
 GNU m4 1.4
 @item
@@ -356,35 +363,50 @@ texinfo 4.2+
 All of these tools are available from
 @uref{ftp://gnudist.gnu.org/pub/gnu/,gnudist.gnu.org} via anonymous
 ftp, except CVS which is available from
-@uref{http://www.cvshome.org/,www.cvshome.org}.  They are fully
-documented with texinfo manuals.  Texinfo can be browsed with the
-Emacs editor, or with the text editor of your choice, or transformed
-into nicely printable Postscript.
+@uref{http://www.cvshome.org/,www.cvshome.org} and the Eclipse 
+Compiler for Java, which is available from 
+@uref{http://www.eclipse.org/jdt/core,www.eclipse.org/jdt/core}.
+
+Except for the Eclipse Compiler for Java, they are fully documented 
+with texinfo manuals.  Texinfo can be browsed with the Emacs editor, 
+or with the text editor of your choice, or transformed into nicely 
+printable Postscript.
 
 Here is a brief description of the purpose of those tools.
 
 @table @b
 
+@item make
+GNU make ("gmake") is required for building Classpath.
+
 @item GCC
 The GNU Compiler Collection. This contains a C compiler (gcc) for
 compiling the native C code and a compiler for the java programming
-language (gcj).  You will need at least gcj version 3.3 or higher.  If
-that version is not available for your platform you can try the
-@uref{http://www.jikes.org/, jikes compiler}.  We try to keep all code
-compilable with both gcj and jikes at all times.
+language (gcj).  You will need at least gcc version 2.95 or higher
+in order to compile the native code. There is currently no 
+released version of gcj that can compile the Java 1.5 programming 
+language used by GNU Classpath.
+
+@item ecj
+The Eclipse Compiler for Java. This is a compiler for the Java 1.5
+programming language. It translates source code to bytecode. The
+Eclipse Foundation makes ``ecj.jar'' available as the JDT Core Batch
+Compiler download.
 
 @item CVS  
 A version control system that maintains a centralized Internet
 repository of all code in the Classpath system.
 
 @item automake  
-This tool automatically creates Makefile.in files from Makefile.am
-files.  The Makefile.in is turned into a Makefile by autoconf.  Why
-use this?  Because it automatically generates every makefile target
-you would ever want (clean, install, dist, etc) in full compliance
-with the GNU coding standards.  It also simplifies Makefile creation
-in a number of ways that cannot be described here.  Read the docs for
-more info.
+This tool automatically creates @file{Makefile.in} files from 
+@file{Makefile.am} files.  The @file{Makefile.in} is turned into a 
+@file{Makefile} by @command{autoconf}.  
+
+Why use this?  Because it automatically generates every makefile 
+target you would ever want (@option{clean}, @option{install}, 
+@option{dist}, etc) in full compliance with the GNU coding standards.  
+It also simplifies Makefile creation in a number of ways that cannot 
+be described here.  Read the docs for more info.
 
 @item autoconf  
 Automatically configures a package for the platform on which it is
@@ -414,12 +436,29 @@ is revised, you need revise only that one document.
 
 @end table
 
+For any build environment involving native libraries, recent 
+versions of @command{autoconf}, @command{automake}, and @command{libtool}
+are required if changes are made that require rebuilding @file{configure}, 
+@file{Makefile.in}, @file{aclocal.m4}, or @file{config.h.in}.
+
+When working from CVS you can run those tools by executing
+@command{autogen.sh} in the source directory.
+
+For building the Java bytecode (.class files), you can select 
+which compiler should be employed using @option{--with-javac} or 
+@option{--with-ecj} as argument to @command{configure}; 
+the present default is @command{ecj}.
+
+Instead of @command{ecj}, you can also use @command{javac}, which is 
+available at 
+@uref{https://openjdk.dev.java.net/compiler, openjdk.dev.java.net/compiler}.
 
 For compiling the native AWT libraries you need to have the following
-libraries installed:
+libraries installed (unless @option{--disable-gtk-peer} is used as an argument 
+to @command{configure}):
 
 @table @b
-@item GTK+ 2.2.x
+@item GTK+ 2.8.x
 @uref{http://www.gtk.org/,GTK+} is a multi-platform toolkit for
 creating graphical user interfaces.  It is used as the basis of the
 GNU desktop project GNOME.
@@ -427,8 +466,125 @@ GNU desktop project GNOME.
 @item gdk-pixbuf
 @uref{http://www.gnome.org/start/,gdk-pixbuf} is a GNOME library for
 representing images.
+
+@item XTest 
+@uref{http://www.x.org,www.x.org} hosts the XTest Extension (libXtst).
+It is necessary for GdkRobot support in java.awt.
+
 @end table
 
+There is a bug in earlier versions of at-spi, atk, and gail, which are
+used for GNOME accessibility.  Prior to version 1.18.0 of these packages,
+gtk graphical applications should be run without accessibility (clear the
+GTK_MODULES environment variable).
+
+For building the Qt AWT peer JNI native libraries you have to
+specify @option{--enable-qt-peer} and need the following library:
+
+@table @b
+@item Qt
+@uref{http://www.trolltech.com/products/qt,Qt} version 4.0.1 or higher.
+The Qt library is a cros-platform graphics toolkit.
+
+@end table
+
+Please note that at the moment most operating systems do not
+ship Qt version 4.0.1 by default. We recommend using GNU Classpath' Qt
+support only for its developers and bug reporters. See
+@uref{http://developer.classpath.org/mediation/ClasspathShowcase, the wiki}
+for details on how to get it to work.
+
+For building the X AWT peers you have to specify where to find the
+Escher library on your system using the @option{--with-escher=ABS.PATH} option. 
+You will need the following library:
+
+@table @b
+@item Escher
+@uref{http://escher.sourceforge.net,Escher} version 0.2.3 or higher.
+The Escher library is an implementation of X protocol and associated
+libraries written in the Java programming language.
+
+@end table
+
+For building the ALSA midi provider code you will need
+the following library:
+
+
+@table @b
+@item ALSA
+@uref{http://www.alsa-project.org,ALSA} libraries.
+
+The ALSA project provides sound device drivers and associated 
+libraries for the Linux kernel.
+
+@end table
+
+Building the ALSA midi provider code can be disabled by passing
+@option{--disable-alsa} to @command{configure}.
+
+For building the DSSI midi synthesizer provider code you will
+need the following libraries:
+
+@table @b
+@item DSSI
+@uref{http://dssi.sourceforge.net,DSSI} library for audio
+processing plugins.
+
+@item liblo
+@uref{http://plugin.org.uk/liblo/,liblo}, the Lightweight OSC 
+implementation.
+
+@item LADSPA
+@uref{http://www.ladspa.org,LADSPA}, the Linux Audio Developer's 
+Simple Plugin API.
+    
+@item JACK
+@uref{http://jackit.sourceforge.net,JACK}, a low latency audio 
+server.
+    
+@item libsndfile
+@uref{http://www.mega-nerd.com/libsndfile/,libsndfile}, an audio 
+file I/O library.
+    
+@item fluidsynth
+@uref{http://www.fluidsynth.org/,fluidsynth}, a real-time SoundFont 
+2 based soft-synth.
+
+@end table    
+
+The GConf-based backend for java.util.prefs needs the following
+library headers:
+
+@table @b
+@item GConf
+@uref{http://www.gnome.org/projects/gconf/,GConf} version 2.11.2
+(or higher). GConf is used for storing dektop and application
+configuration settings in GNOME.
+
+@end table
+
+For building @command{gcjwebplugin} you'll need the Mozilla plugin
+support headers and libraries, which are available at 
+@uref{http://www.mozilla.org,www.mozilla.org}.
+
+For enabling the com.sun.tools.javac support in tools.zip you
+will a need jar file containing the Eclipse Java Compiler.
+Otherwise com.sun.tools.javac will not be included in @file{tools.zip}.
+
+For building the xmlj JAXP implementation (disabled by default, 
+use @command{configure --enable-xmlj}) you need the following libraries:
+
+@table @b
+@item libxml2
+@uref{http://www.xmlsoft.org/,libxml2} version 2.6.8 or higher.
+
+The libxml2 library is the XML C library for the Gnome desktop.
+
+@item libxslt
+@uref{http://www.xmlsoft.org/XSLT/,libxslt} version 1.1.11 or higher.
+
+The libxslt library if the XSLT C library for the Gnome desktop.
+@end table
 
 GNU Classpath comes with a couple of libraries included in the source
 that are not part of GNU Classpath proper, but that have been included
@@ -457,8 +613,167 @@ java.lang.StrictMath.
 
 @end table
 
+@node Installation, Building and running with the X AWT peers, Needed Tools and Libraries, Top
+@comment node-name, next, previous, up
+@chapter Installation instructions
 
-@node Programming Standards, Hacking Code, Needed Tools and Libraries, Top
+This package was designed to use the GNU standard for configuration
+and makefiles.  To build and install do the following:
+
+@enumerate
+@item Configuration
+
+Run the @command{configure} script to configure the package.  There are
+various options you might want to pass to @command{configure} to control how the
+package is built.  Consider the following options, @command{configure --help}
+gives a complete list.  
+
+@table @option
+@item --enable-java       
+
+compile Java source (default=@option{yes}).
+
+@item --enable-jni
+
+compile JNI source (default=@option{yes}).
+
+@item --enable-gtk-peer
+
+compile GTK native peers (default=@option{yes}).
+
+@item --enable-qt-peer
+
+compile Qt4 native peers (default=@option{no}).
+
+@item --enable-default-toolkit
+
+fully qualified class name of default AWT toolkit (default=@option{no}).
+
+@item --enable-xmlj
+
+compile native libxml/xslt library (default=@option{no}).
+
+@item --enable-load-library
+
+enable to use JNI native methods (default=@option{yes}).
+
+@item --enable-local-sockets
+
+enable build of local Unix sockets.
+
+@item --with-glibj
+define what to install @option{(zip|flat|both|none)} (default=@option{zip}).
+
+@item --with-escher=/path/to/escher
+
+enable build of the X/Escher peers, with
+the escher library at @file{/path/to/escher}, either
+in the form of a JAR file, or a directory
+containing the .class files of Escher.
+
+@item --enable-Werror
+
+whether to compile C code with @option{-Werror} which turns
+any compiler warning into a compilation failure
+(default=@option{no}).
+
+@item --with-gjdoc
+
+generate documentation using @command{gjdoc} (default=@option{no}).
+
+@item --with-jay
+
+Regenerate the parsers with @command{jay}, must be given the
+path to the @command{jay} executable
+
+@item --with-glibj-zip=ABS.PATH
+
+use prebuilt glibj.zip class library
+
+@item --with-ecj-jar=ABS.PATH 
+
+specify jar file containing the Eclipse Java Compiler
+
+@end table
+
+For more flags run @command{configure --help}.
+
+@item Building
+
+Type @command{gmake} to build the package.  There is no longer a
+dependency problem and we aim to keep it that way.
+
+@item Installation
+
+Type @command{gmake install} to install everything.  This may require
+being the superuser. The default install path is /usr/local/classpath
+you may change it by giving @command{configure} the 
+@option{--prefix=<path>} option.
+
+@end enumerate
+
+Report bugs to @email{classpath@@gnu.org} or much better to the 
+GNU Classpath bug tracker at 
+@uref{http://savannah.gnu.org/support/?func=addsupport&group=classpath,Savannah}.
+
+Happy Hacking!
+
+Once installed, GNU Classpath is ready to be used by any VM that supports
+using the official version of GNU Classpath.  Simply ensure that
+@file{/usr/local/classpath/share/classpath} is in your @env{CLASSPATH} environment
+variable.  You'll also have to set your @env{LD_LIBRARY_PATH}
+variable (or similar system configuration) to include the Classpath
+native libraries in @file{/usr/local/classpath/lib/classpath}.
+
+*NOTE* All example paths assume the default prefix is used with @command{configure}.
+If you don't know what this means then the examples are correct.
+
+@example
+LD_LIBRARY_PATH=/usr/local/classpath/lib/classpath
+CLASSPATH=/usr/local/classpath/share/classpath/glibj.zip:.
+export LD_LIBRARY_PATH CLASSPATH
+@end example
+
+More information about the VMs that use GNU Classpath can be found in the
+@file{README} file.
+
+@node Building and running with the X AWT peers, Misc. Notes, Installation, Top
+@comment node-name, next, previous, up
+@chapter Building and running with the X AWT peers
+
+In order build the X peers you need the Escher library version 0.2.3
+from @uref{http://escher.sourceforge.net,escher.sourceforge.net}. 
+Unpack (and optionally build) the
+Escher library following the instructions in the downloaded
+package. Enable the build of the X peers by passing
+@option{--with-escher=/path/to/escher} to @command{configure} where @file{/path/to/escher}
+either points to a directory structure or JAR file containing the
+Escher classes. For Unix systems it is preferable to also build local
+socket support by passing @option{--enable-local-sockets}, which accelerates
+the network communication to the X server significantly.
+
+In this release you have to enable the X peers at runtime by
+setting the system property awt.toolkit=gnu.java.awt.peer.x.XToolkit
+by passing @option{-Dawt.toolkit=gnu.java.awt.peer.x.XToolkit} to the @command{java}
+command when running an application.
+
+@node Misc. Notes, Programming Standards, Building and running with the X AWT peers, Top
+@comment node-name, next, previous, up
+@chapter Misc. Notes
+
+Compilation is accomplished using a compiler's @@file syntax.  For our
+part, we avoid placing make style dependencies as rules upon the
+compilation of a particular class file and leave this up to the Java
+compiler instead.
+
+The @option{--enable-maintainer-mode} option to @command{configure} currently does very 
+little and shouldn't be used by ordinary developers or users anyway.
+
+On Windows machines, the native libraries do not currently build, but
+the Java bytecode library will.  Gcj trunk is beginning to work under
+Cygwin.
+
+@node Programming Standards, Hacking Code, Misc. Notes, Top
 @comment node-name, next, previous, up
 @chapter Programming Standards
 

@@ -1,5 +1,5 @@
 /* AbstractDocument.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -2093,7 +2093,7 @@ public abstract class AbstractDocument implements Document, Serializable
     /**
      * The child elements of this BranchElement.
      */
-    private Element[] children;;
+    private Element[] children;
 
     /**
      * The number of children in the branch element.
@@ -2450,8 +2450,6 @@ public abstract class AbstractDocument implements Document, Serializable
      */
     public boolean addEdit(UndoableEdit edit)
     {
-      // XXX - Fully qualify ElementChange to work around gcj bug #2499.
-
       // Start using Hashtable when we pass a certain threshold. This
       // gives a good memory/performance compromise.
       if (changes == null && edits.size() > THRESHOLD)
@@ -2461,19 +2459,17 @@ public abstract class AbstractDocument implements Document, Serializable
           for (int i = 0; i < count; i++)
             {
               Object o = edits.elementAt(i);
-              if (o instanceof DocumentEvent.ElementChange)
+              if (o instanceof ElementChange)
                 {
-                  DocumentEvent.ElementChange ec =
-                    (DocumentEvent.ElementChange) o;
+                  ElementChange ec = (ElementChange) o;
                   changes.put(ec.getElement(), ec);
                 }
             }
         }
 
-      if (changes != null && edit instanceof DocumentEvent.ElementChange)
+      if (changes != null && edit instanceof ElementChange)
         {
-          DocumentEvent.ElementChange elEdit =
-            (DocumentEvent.ElementChange) edit;
+          ElementChange elEdit = (ElementChange) edit;
           changes.put(elEdit.getElement(), elEdit);
         }
       return super.addEdit(edit);
@@ -2527,13 +2523,12 @@ public abstract class AbstractDocument implements Document, Serializable
      * @return the changes for <code>elem</code> or <code>null</code> if
      *         <code>elem</code> has not been changed
      */
-    public DocumentEvent.ElementChange getChange(Element elem)
+    public ElementChange getChange(Element elem)
     {
-      // XXX - Fully qualify ElementChange to work around gcj bug #2499.
-      DocumentEvent.ElementChange change = null;
+      ElementChange change = null;
       if (changes != null)
         {
-          change = (DocumentEvent.ElementChange) changes.get(elem);
+          change = (ElementChange) changes.get(elem);
         }
       else
         {
@@ -2541,10 +2536,9 @@ public abstract class AbstractDocument implements Document, Serializable
           for (int i = 0; i < count && change == null; i++)
             {
               Object o = edits.get(i);
-              if (o instanceof DocumentEvent.ElementChange)
+              if (o instanceof ElementChange)
                 {
-                  DocumentEvent.ElementChange ec =
-                    (DocumentEvent.ElementChange) o;
+                  ElementChange ec = (ElementChange) o;
                   if (elem.equals(ec.getElement()))
                     change = ec;
                 }

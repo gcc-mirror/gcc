@@ -1,5 +1,5 @@
 /* ExtendedKeyUsage.java -- the extended key usage extension.
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -56,7 +56,7 @@ public class ExtendedKeyUsage extends Extension.Value
 
   public static final OID ID = new OID("2.5.29.37");
 
-  private final List purposeIds;
+  private final List<OID> purposeIds;
 
   // Constructor.
   // -------------------------------------------------------------------------
@@ -69,13 +69,13 @@ public class ExtendedKeyUsage extends Extension.Value
     if (!usageList.isConstructed())
       throw new IOException("malformed ExtKeyUsageSyntax");
     int len = 0;
-    purposeIds = new LinkedList();
+    purposeIds = new LinkedList<OID>();
     while (len < usageList.getLength())
       {
         DERValue val = der.read();
         if (val.getTag() != DER.OBJECT_IDENTIFIER)
           throw new IOException("malformed KeyPurposeId");
-        purposeIds.add(val.getValue());
+        purposeIds.add((OID) val.getValue());
         len += val.getEncodedLength();
       }
   }
@@ -83,7 +83,7 @@ public class ExtendedKeyUsage extends Extension.Value
   // Instance method.
   // -------------------------------------------------------------------------
 
-  public List getPurposeIds()
+  public List<OID> getPurposeIds()
   {
     return Collections.unmodifiableList(purposeIds);
   }

@@ -1,5 +1,5 @@
 /* DateFormatSymbols.java -- Format over a range of numbers
-   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,14 +38,26 @@ exception statement from your version. */
 
 package java.text;
 
+import gnu.java.locale.LocaleHelper;
+
+import java.text.spi.DateFormatSymbolsProvider;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.ServiceLoader;
+import java.util.TimeZone;
+
+import java.util.spi.TimeZoneNameProvider;
 
 /**
  * This class acts as container for locale specific date/time formatting
  * information such as the days of the week and the months of the year.
+ *
  * @author Per Bothner (bothner@cygnus.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @date October 24, 1998.
  */
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3.
@@ -60,6 +72,15 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
   String[] shortMonths;
   String[] shortWeekdays;
   String[] weekdays;
+
+  /**
+   * The timezone strings supplied by the runtime.
+   */
+  private String[][] runtimeZoneStrings;
+
+  /**
+   * Custom timezone strings supplied by {@link #setZoneStrings()}.
+   */
   private String[][] zoneStrings;
 
   private static final long serialVersionUID = -5987973545549424702L;
@@ -83,22 +104,52 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
     return res.getString(name).split("\u00ae");
   }
 
-  private String[][] getZoneStrings(ResourceBundle res)
+  private String[][] getZoneStrings(ResourceBundle res, Locale locale)
   {
+    List<String[]> allZones = new ArrayList<String[]>();
     try
       {
         int index = 0;
         String data = res.getString("zoneStrings");
 	String[] zones = data.split("\u00a9");
-	String[][] array = new String[zones.length][];
 	for (int a = 0; a < zones.length; ++a)
-	  array[a] = zones[a].split("\u00ae");
-	return array;
+	  allZones.add(zones[a].split("\u00ae"));
       }
     catch (MissingResourceException e)
       {
-	return new String[0][];
+	/* This means runtime support for the locale
+	 * is not available, so we just include providers. */
       }
+    for (TimeZoneNameProvider p :
+	   ServiceLoader.load(TimeZoneNameProvider.class))
+      {
+	for (Locale loc : p.getAvailableLocales())
+	  {
+	    if (loc.equals(locale))
+	      {
+		for (String id : TimeZone.getAvailableIDs())
+		  {
+		    String[] z = new String[5];
+		    z[0] = id;
+		    z[1] = p.getDisplayName(id, false,
+					    TimeZone.LONG,
+					    locale);
+		    z[2] = p.getDisplayName(id, false,
+					    TimeZone.SHORT,
+					    locale);
+		    z[3] = p.getDisplayName(id, true,
+					    TimeZone.LONG,
+					    locale);
+		    z[4] = p.getDisplayName(id, true,
+					    TimeZone.SHORT,
+					    locale);
+		    allZones.add(z);
+		  }
+		break;
+	      }
+	  }
+      }
+    return allZones.toArray(new String[allZones.size()][]);
   }
   
   private String[] formatsForKey(ResourceBundle res, String key) 
@@ -114,11 +165,18 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
   /**
    * This method initializes a new instance of <code>DateFormatSymbols</code>
    * by loading the date format information for the specified locale.
+   * This constructor only obtains instances using the runtime's resources;
+   * to also include {@link java.text.spi.DateFormatSymbolsProvider} instances,
+   * call {@link #getInstance(java.util.Locale)} instead.
    *
    * @param locale The locale for which date formatting symbols should
    *               be loaded. 
+   * @throws MissingResourceException if the resources for the specified
+   *                                  locale could not be found or loaded.
+   * @see #getInstance(java.util.Locale)
    */
-  public DateFormatSymbols (Locale locale) throws MissingResourceException
+  public DateFormatSymbols (Locale locale)
+    throws MissingResourceException
   {
     ResourceBundle res
       = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation", locale,
@@ -131,16 +189,23 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
     shortMonths = getStringArray(res, "shortMonths");
     shortWeekdays = getStringArray(res, "shortWeekdays");
     weekdays = getStringArray(res, "weekdays");
-    zoneStrings = getZoneStrings(res);
+    runtimeZoneStrings = getZoneStrings(res, locale);
     dateFormats = formatsForKey(res, "DateFormat");
     timeFormats = formatsForKey(res, "TimeFormat");
   }
 
   /**
    * This method loads the format symbol information for the default
-   * locale.
+   * locale. This constructor only obtains instances using the runtime's resources;
+   * to also include {@link java.text.spi.DateFormatSymbolsProvider} instances,
+   * call {@link #getInstance()} instead.
+   *
+   * @throws MissingResourceException if the resources for the default
+   *                                  locale could not be found or loaded.
+   * @see #getInstance()
    */
-  public DateFormatSymbols () throws MissingResourceException
+  public DateFormatSymbols() 
+    throws MissingResourceException
   {
     this (Locale.getDefault());
   }
@@ -274,12 +339,21 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
    * <li>3 - The long name of the time zone (daylight savings time).</li>
    * <li>4 - the short name of the time zone (daylight savings time).</li>
    * </ul>
+   * <p>
+   * If {@link #setZoneStrings(String[][])} has been called, then the value
+   * passed to this will be returned.  Otherwise the returned array contains
+   * zone names provided by the runtime environment and any
+   * {@link java.util.spi.TimeZoneProvider} instances.
+   * </p>
    *
    * @return The list of time zone display strings.
+   * @see #setZoneStrings(String[][])
    */
-  public String[] [] getZoneStrings ()
+  public String[][] getZoneStrings()
   {
-    return zoneStrings;
+    if (zoneStrings != null)
+      return zoneStrings;
+    return runtimeZoneStrings;
   }
 
   /**
@@ -537,4 +611,65 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
 	    ^ hashCode(weekdays)
 	    ^ hashCode(zoneStrings));
   }
+
+  /**
+   * Returns a {@link DateFormatSymbols} instance for the
+   * default locale obtained from either the runtime itself
+   * or one of the installed
+   * {@link java.text.spi.DateFormatSymbolsProvider} instances.
+   * This is equivalent to calling
+   * <code>getInstance(Locale.getDefault())</code>.
+   * 
+   * @return a {@link DateFormatSymbols} instance for the default
+   *         locale.
+   * @since 1.6
+   */
+  public static final DateFormatSymbols getInstance()
+  {
+    return getInstance(Locale.getDefault());
+  }
+
+  /**
+   * Returns a {@link DateFormatSymbols} instance for the
+   * specified locale obtained from either the runtime itself
+   * or one of the installed
+   * {@link java.text.spi.DateFormatSymbolsProvider} instances.
+   * 
+   * @param locale the locale for which an instance should be
+   *               returned.
+   * @return a {@link DateFormatSymbols} instance for the specified
+   *         locale.
+   * @throws NullPointerException if <code>locale</code> is
+   *                              <code>null</code>.
+   * @since 1.6
+   */
+  public static final DateFormatSymbols getInstance(Locale locale)
+  {
+    try
+      {
+	DateFormatSymbols syms = new DateFormatSymbols(locale);
+	return syms;
+      }
+    catch (MissingResourceException e)
+      {
+	/* This means runtime support for the locale
+	 * is not available, so we check providers. */
+      }
+    for (DateFormatSymbolsProvider p :
+	   ServiceLoader.load(DateFormatSymbolsProvider.class))
+      {
+	for (Locale loc : p.getAvailableLocales())
+	  {
+	    if (loc.equals(locale))
+	      {
+		DateFormatSymbols syms = p.getInstance(locale);
+		if (syms != null)
+		  return syms;
+		break;
+	      }
+	  }
+      }
+    return getInstance(LocaleHelper.getFallbackLocale(locale));
+  }
+
 }
