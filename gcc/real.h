@@ -1,6 +1,6 @@
 /* Definitions of floating-point access for GNU compiler.
    Copyright (C) 1989, 1991, 1994, 1996, 1997, 1998, 1999,
-   2000, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2000, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -254,10 +254,10 @@ extern unsigned int real_hash (const REAL_VALUE_TYPE *);
 /* Target formats defined in real.c.  */
 extern const struct real_format ieee_single_format;
 extern const struct real_format mips_single_format;
-extern const struct real_format coldfire_single_format;
+extern const struct real_format motorola_single_format;
 extern const struct real_format ieee_double_format;
 extern const struct real_format mips_double_format;
-extern const struct real_format coldfire_double_format;
+extern const struct real_format motorola_double_format;
 extern const struct real_format ieee_extended_motorola_format;
 extern const struct real_format ieee_extended_intel_96_format;
 extern const struct real_format ieee_extended_intel_96_round_53_format;

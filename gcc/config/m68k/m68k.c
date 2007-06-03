@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
    Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2003, 2004, 2005, 2006
+   2001, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -540,12 +540,6 @@ override_options (void)
   m68k_fpu = (!TARGET_HARD_FLOAT ? FPUTYPE_NONE
 	      : (m68k_cpu_flags & FL_COLDFIRE) != 0 ? FPUTYPE_COLDFIRE
 	      : FPUTYPE_68881);
-
-  if (TARGET_COLDFIRE_FPU)
-    {
-      REAL_MODE_FORMAT (SFmode) = &coldfire_single_format;
-      REAL_MODE_FORMAT (DFmode) = &coldfire_double_format;
-    }
 
   /* Sanity check to ensure that msep-data and mid-sahred-library are not
    * both specified together.  Doing so simply doesn't make sense.

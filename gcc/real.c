@@ -1,6 +1,6 @@
 /* real.c - software floating point emulation.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2000, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
    Contributed by Stephen L. Moshier (moshier@world.std.com).
    Re-written by Richard Henderson <rth@redhat.com>
 
@@ -2774,7 +2774,7 @@ const struct real_format mips_single_format =
     true
   };
 
-const struct real_format coldfire_single_format =
+const struct real_format motorola_single_format =
   {
     encode_ieee_single,
     decode_ieee_single,
@@ -3019,7 +3019,7 @@ const struct real_format mips_double_format =
     true
   };
 
-const struct real_format coldfire_double_format =
+const struct real_format motorola_double_format =
   {
     encode_ieee_double,
     decode_ieee_double,
@@ -3082,7 +3082,15 @@ encode_ieee_extended (const struct real_format *fmt, long *buf,
       if (fmt->has_nans)
 	{
 	  image_hi |= 32767;
-	  if (HOST_BITS_PER_LONG == 32)
+	  if (r->canonical)
+	    {
+	      if (fmt->canonical_nan_lsbs_set)
+		{
+		  sig_hi = (1 << 30) - 1;
+		  sig_lo = 0xffffffff;
+		}
+	    }
+	  else if (HOST_BITS_PER_LONG == 32)
 	    {
 	      sig_hi = r->sig[SIGSZ-1];
 	      sig_lo = r->sig[SIGSZ-2];
@@ -3364,7 +3372,7 @@ const struct real_format ieee_extended_motorola_format =
     true,
     true,
     true,
-    false
+    true
   };
 
 const struct real_format ieee_extended_intel_96_format =
