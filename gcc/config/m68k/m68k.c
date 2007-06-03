@@ -222,6 +222,7 @@ int m68k_last_compare_had_fp_operands;
 static const struct attribute_spec m68k_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "interrupt", 0, 0, true,  false, false, m68k_handle_fndecl_attribute },
   { "interrupt_handler", 0, 0, true,  false, false, m68k_handle_fndecl_attribute },
   { "interrupt_thread", 0, 0, true,  false, false, m68k_handle_fndecl_attribute },
   { NULL,                0, 0, false, false, false, NULL }
@@ -634,9 +635,10 @@ m68k_cpp_cpu_family (const char *prefix)
   return concat ("__m", prefix, "_family_", m68k_cpu_entry->family, NULL);
 }
 
-/* Return m68k_fk_interrupt_handler if FUNC has an "interrupt_handler"
-   attribute and interrupt_thread if FUNC has an "interrupt_thread"
-   attribute.  Otherwise, return m68k_fk_normal_function.  */
+/* Return m68k_fk_interrupt_handler if FUNC has an "interrupt" or
+   "interrupt_handler" attribute and interrupt_thread if FUNC has an
+   "interrupt_thread" attribute.  Otherwise, return
+   m68k_fk_normal_function.  */
 
 enum m68k_function_kind
 m68k_get_function_kind (tree func)
@@ -645,6 +647,10 @@ m68k_get_function_kind (tree func)
 
   if (TREE_CODE (func) != FUNCTION_DECL)
     return false;
+
+  a = lookup_attribute ("interrupt", DECL_ATTRIBUTES (func));
+  if (a != NULL_TREE)
+    return m68k_fk_interrupt_handler;
 
   a = lookup_attribute ("interrupt_handler", DECL_ATTRIBUTES (func));
   if (a != NULL_TREE)
