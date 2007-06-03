@@ -55,12 +55,12 @@ public class GtkChoicePeer extends GtkComponentPeer
     int count = c.getItemCount ();
     if (count > 0)
       {
-	for (int i = 0; i < count; i++)
-	  add( c.getItem(i), i );
+        for (int i = 0; i < count; i++)
+          add(c.getItem(i), i);
 
-	selected = c.getSelectedIndex();
-	if( selected >= 0 )
-	  select( selected );
+        selected = c.getSelectedIndex();
+        if (selected >= 0)
+          select( selected );
       }
     else
       selected = -1;
@@ -121,9 +121,9 @@ public class GtkChoicePeer extends GtkComponentPeer
   {
     if( selected != index )
       {
-	selected = index;
-	postItemEvent (((Choice) awtComponent).getItem( selected ), 
-		       ItemEvent.SELECTED);
+        selected = index;
+        postItemEvent (((Choice) awtComponent).getItem( selected ), 
+                       ItemEvent.SELECTED);
       }
   }
 
@@ -133,11 +133,11 @@ public class GtkChoicePeer extends GtkComponentPeer
    */
   public void handleEvent (AWTEvent event)
   {
-    super.handleEvent( event );
-    if( event instanceof ItemEvent )
-      if( ((ItemEvent)event).getItemSelectable() == awtComponent &&
-	  ((ItemEvent)event).getStateChange() == ItemEvent.SELECTED )
-	((Choice)awtComponent).select( selected );
+    super.handleEvent (event);
+    if (event instanceof ItemEvent)
+      if (((ItemEvent)event).getItemSelectable() == awtComponent
+           && ((ItemEvent)event).getStateChange() == ItemEvent.SELECTED)
+        ((Choice)awtComponent).select( selected );
   }
 }
 

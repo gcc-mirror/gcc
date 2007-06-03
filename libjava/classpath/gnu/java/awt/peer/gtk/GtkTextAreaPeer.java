@@ -100,8 +100,8 @@ public class GtkTextAreaPeer extends GtkComponentPeer
     // GtkComponent.create.
     if (f == null)
       {
-	f = new Font ("Dialog", Font.PLAIN, 12);
-	awtComponent.setFont (f);
+        f = new Font ("Dialog", Font.PLAIN, 12);
+        awtComponent.setFont (f);
       }
 
     FontMetrics fm = getFontMetrics (f);
@@ -154,11 +154,11 @@ public class GtkTextAreaPeer extends GtkComponentPeer
     int width = 0;
 
     if (ta.getScrollbarVisibility () == TextArea.SCROLLBARS_BOTH
-	|| ta.getScrollbarVisibility () == TextArea.SCROLLBARS_HORIZONTAL_ONLY)
+        || ta.getScrollbarVisibility () == TextArea.SCROLLBARS_HORIZONTAL_ONLY)
       height = getHScrollbarHeight ();
 
     if (ta.getScrollbarVisibility () == TextArea.SCROLLBARS_BOTH
-	|| ta.getScrollbarVisibility () == TextArea.SCROLLBARS_VERTICAL_ONLY)
+        || ta.getScrollbarVisibility () == TextArea.SCROLLBARS_VERTICAL_ONLY)
       width = getVScrollbarWidth ();
 
     Font f = awtComponent.getFont ();
@@ -183,11 +183,11 @@ public class GtkTextAreaPeer extends GtkComponentPeer
     int width = 0;
 
     if (ta.getScrollbarVisibility () == TextArea.SCROLLBARS_BOTH
-	|| ta.getScrollbarVisibility () == TextArea.SCROLLBARS_HORIZONTAL_ONLY)
+        || ta.getScrollbarVisibility () == TextArea.SCROLLBARS_HORIZONTAL_ONLY)
       height = getHScrollbarHeight ();
 
     if (ta.getScrollbarVisibility () == TextArea.SCROLLBARS_BOTH
-	|| ta.getScrollbarVisibility () == TextArea.SCROLLBARS_VERTICAL_ONLY)
+        || ta.getScrollbarVisibility () == TextArea.SCROLLBARS_VERTICAL_ONLY)
       width = getVScrollbarWidth ();
 
     Font f = awtComponent.getFont ();

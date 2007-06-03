@@ -42,7 +42,6 @@ public:
   virtual jint getScanlineStride();
   virtual ::java::awt::image::SampleModel * createSubsetSampleModel(JArray< jint > *);
   virtual ::java::lang::Object * getDataElements(jint, jint, ::java::lang::Object *, ::java::awt::image::DataBuffer *);
-  virtual ::java::lang::Object * getDataElements(jint, jint, jint, jint, ::java::lang::Object *, ::java::awt::image::DataBuffer *);
   virtual JArray< jint > * getPixel(jint, jint, JArray< jint > *, ::java::awt::image::DataBuffer *);
   virtual JArray< jint > * getPixels(jint, jint, jint, jint, JArray< jint > *, ::java::awt::image::DataBuffer *);
   virtual jint getSample(jint, jint, jint, ::java::awt::image::DataBuffer *);

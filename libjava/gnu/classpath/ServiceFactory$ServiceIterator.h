@@ -33,7 +33,7 @@ class gnu::classpath::ServiceFactory$ServiceIterator : public ::java::lang::Obje
 {
 
 public: // actually package-private
-  ServiceFactory$ServiceIterator(::java::lang::Class *, ::java::util::Enumeration *, ::java::lang::ClassLoader *, ::java::security::AccessControlContext *);
+  ServiceFactory$ServiceIterator(::java::lang::Class *, ::java::util::Enumeration *, ::java::lang::ClassLoader *, jboolean, ::java::security::AccessControlContext *);
 public:
   ::java::lang::Object * next();
   jboolean hasNext();
@@ -48,6 +48,7 @@ private:
   ::java::io::BufferedReader * reader;
   ::java::net::URL * currentURL;
   ::java::lang::Object * nextProvider;
+  jboolean error;
 public:
   static ::java::lang::Class class$;
 };

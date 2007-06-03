@@ -49,19 +49,35 @@ import gnu.java.lang.management.MemoryPoolMXBeanImpl;
 import gnu.java.lang.management.RuntimeMXBeanImpl;
 import gnu.java.lang.management.ThreadMXBeanImpl;
 
+import java.io.IOException;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import java.util.logging.LogManager;
 
+import javax.management.Attribute;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
 import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
+import javax.management.NotificationEmitter;
+import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
+
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.TabularData;
 
 /**
  * <p>
@@ -549,4 +565,253 @@ public class ManagementFactory
     return platformServer;
   }
 
+  /**
+   * <p>
+   * Returns a proxy for the specified platform bean.  A proxy object is created
+   * using <code>Proxy.newProxyInstance(mxbeanInterface.getClassLoader(),
+   * new Class[] { mxbeanInterface }, handler)</code>.  The
+   * {@link javax.management.NotificationEmitter} class is also added to the
+   * array if the bean provides notifications.  <code>handler</code> refers
+   * to the invocation handler which forwards calls to the connection, and
+   * also provides translation between the Java data types used in the
+   * bean interfaces and the open data types, as specified in the description
+   * of this class.  It is this translation that makes the
+   * usual {@link javax.management.MBeanServerInvocationHandler} inappropriate
+   * for providing such a proxy.
+   * </p>
+   * <p>
+   * <strong>Note</strong>: use of the proxy may result in
+   * {@link java.io.IOException}s from the underlying {@link MBeanServerConnection}
+   * and a {@link java.io.InvalidObjectException} if enum constants
+   * used on the client and the server don't match.
+   * </p>
+   *
+   * @param connection the server connection to use to access the bean.
+   * @param mxbeanName the {@link javax.management.ObjectName} of the
+   *                   bean to provide a proxy for.
+   * @param mxbeanInterface the interface for the bean being proxied.
+   * @return a proxy for the specified bean.
+   * @throws IllegalArgumentException if <code>mxbeanName</code> is not a valid
+   *                                  {@link javax.management.ObjectName},
+   *                                  the interface and name do not match the
+   *                                  same bean, the name does not refer to a
+   *                                  platform bean or the bean is not registered
+   *                                  with the server accessed by <code>connection</code>.
+   * @throws IOException if the connection throws one.
+   */
+  public static <T> T newPlatformMXBeanProxy(MBeanServerConnection connection,
+					     String mxbeanName,
+					     Class<T> mxbeanInterface)
+    throws IOException
+  {
+    if (!(mxbeanName.equals(CLASS_LOADING_MXBEAN_NAME) ||
+	  mxbeanName.equals(COMPILATION_MXBEAN_NAME) ||
+	  mxbeanName.startsWith(GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE) ||
+	  mxbeanName.startsWith(MEMORY_MANAGER_MXBEAN_DOMAIN_TYPE) ||
+	  mxbeanName.equals(MEMORY_MXBEAN_NAME) ||
+	  mxbeanName.startsWith(MEMORY_POOL_MXBEAN_DOMAIN_TYPE) ||
+	  mxbeanName.equals(OPERATING_SYSTEM_MXBEAN_NAME) ||
+	  mxbeanName.equals(RUNTIME_MXBEAN_NAME) ||
+	  mxbeanName.equals(THREAD_MXBEAN_NAME)))
+      {
+	throw new IllegalArgumentException("The named bean, " + mxbeanName +
+					   ", is not a platform name.");
+      }
+    if ((mxbeanName.equals(CLASS_LOADING_MXBEAN_NAME) &&
+	 mxbeanInterface != ClassLoadingMXBean.class) ||
+	(mxbeanName.equals(COMPILATION_MXBEAN_NAME) &&
+	 mxbeanInterface != CompilationMXBean.class) ||
+	(mxbeanName.startsWith(GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE) &&
+	 mxbeanInterface != GarbageCollectorMXBean.class) ||
+	(mxbeanName.startsWith(MEMORY_MANAGER_MXBEAN_DOMAIN_TYPE) &&
+	 mxbeanInterface != MemoryManagerMXBean.class) ||
+	(mxbeanName.equals(MEMORY_MXBEAN_NAME) &&
+	 mxbeanInterface != MemoryMXBean.class) ||
+	(mxbeanName.startsWith(MEMORY_POOL_MXBEAN_DOMAIN_TYPE) &&
+	 mxbeanInterface != MemoryPoolMXBean.class) ||
+	(mxbeanName.equals(OPERATING_SYSTEM_MXBEAN_NAME) &&
+	 mxbeanInterface != OperatingSystemMXBean.class) ||
+	(mxbeanName.equals(RUNTIME_MXBEAN_NAME) &&
+	 mxbeanInterface != RuntimeMXBean.class) ||
+	(mxbeanName.equals(THREAD_MXBEAN_NAME) &&
+	 mxbeanInterface != ThreadMXBean.class))
+      throw new IllegalArgumentException("The interface, " + mxbeanInterface +
+					 ", does not match the bean, " + mxbeanName);
+    ObjectName bean;
+    try
+      {
+	bean = new ObjectName(mxbeanName);
+      }
+    catch (MalformedObjectNameException e)
+      {
+	throw new IllegalArgumentException("The named bean is invalid.");
+      }
+    if (!(connection.isRegistered(bean)))
+      throw new IllegalArgumentException("The bean is not registered on this connection.");
+    Class[] interfaces;
+    if (mxbeanName.equals(MEMORY_MXBEAN_NAME))
+      interfaces = new Class[] { mxbeanInterface, NotificationEmitter.class };
+    else
+      interfaces = new Class[] { mxbeanInterface };
+    return (T) Proxy.newProxyInstance(mxbeanInterface.getClassLoader(),
+				      interfaces,
+				      new ManagementInvocationHandler(connection, bean));
+  }
+
+  /**
+   * This invocation handler provides method calls for a platform bean
+   * by forwarding them to a {@link MBeanServerConnection}.  Translation from
+   * Java data types to open data types is performed as specified above.
+   *
+   * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
+   * @since 1.5
+   */
+  private static class ManagementInvocationHandler
+    implements InvocationHandler
+  {
+
+    /**
+     * The encapsulated connection.
+     */
+    private MBeanServerConnection conn;
+
+    /**
+     * The bean being proxied.
+     */
+    private ObjectName bean;
+
+    /**
+     * Constructs a new {@link InvocationHandler} which proxies
+     * for the specified bean using the supplied connection.
+     *
+     * @param conn the connection on which to forward method calls.
+     * @param bean the bean to proxy.
+     */
+    public ManagementInvocationHandler(MBeanServerConnection conn,
+				       ObjectName bean)
+      throws IOException
+    {
+      this.conn = conn;
+      this.bean = bean;
+    }
+
+    /**
+     * Called by the proxy class whenever a method is called.  The method
+     * is emulated by retrieving an attribute from, setting an attribute on
+     * or invoking a method on the server connection as required.  Translation
+     * between the Java data types supplied as arguments to the open types used
+     * by the bean is provided, as well as translation of the return value back
+     * in to the appropriate Java type.
+     *
+     * @param proxy the proxy on which the method was called.
+     * @param method the method which was called.
+     * @param args the arguments supplied to the method.
+     * @return the return value from the method.
+     * @throws Throwable if an exception is thrown in performing the
+     *                   method emulation.
+     */
+    public Object invoke(Object proxy, Method method, Object[] args)
+      throws Throwable
+    {
+      String name = method.getName();
+      if (name.equals("toString"))
+	return "Proxy for " + bean + " using " + conn;
+      if (name.equals("addNotificationListener"))
+	{
+	  conn.addNotificationListener(bean,
+				       (NotificationListener) args[0],
+				       (NotificationFilter) args[1],
+				       args[2]);
+	  return null;
+	}
+      if (name.equals("getNotificationInfo"))
+	return conn.getMBeanInfo(bean).getNotifications();
+      if (name.equals("removeNotificationListener"))
+	{
+	  if (args.length == 1)
+	    conn.removeNotificationListener(bean, 
+					    (NotificationListener)
+					    args[0]);
+	  else
+	    conn.removeNotificationListener(bean, 
+					    (NotificationListener)
+					    args[0],
+					    (NotificationFilter)
+					    args[1], args[2]);
+	  return null;
+	}
+      String attrib = null;
+      if (name.startsWith("get"))
+	attrib = name.substring(3);
+      else if (name.startsWith("is"))
+	attrib = name.substring(2);
+      if (attrib != null)
+	return translate(conn.getAttribute(bean, attrib), method);
+      else if (name.startsWith("set"))
+	{
+	  conn.setAttribute(bean, new Attribute(name.substring(3),
+						args[0]));
+	  return null;
+	}
+      else
+	return translate(conn.invoke(bean, name, args, null), method);
+    }
+
+    /**
+     * Translates the returned open data type to the value
+     * required by the interface.
+     *
+     * @param otype the open type returned by the method call.
+     * @param method the method that was called.
+     * @return the equivalent return type required by the interface.
+     * @throws Throwable if an exception is thrown in performing the
+     *                   conversion.
+     */
+    private final Object translate(Object otype, Method method)
+      throws Throwable
+    {
+      Class<?> returnType = method.getReturnType();
+      if (returnType.isEnum())
+	{
+	  String ename = (String) otype;
+	  Enum[] constants = (Enum[]) returnType.getEnumConstants();
+	  for (Enum c : constants)
+	    if (c.name().equals(ename))
+	      return c;
+	}
+      if (List.class.isAssignableFrom(returnType))
+	{
+	  Object[] elems = (Object[]) otype;
+	  List l = new ArrayList(elems.length);
+	  for (Object elem : elems)
+	    l.add(elem);
+	  return l;
+	}
+      if (Map.class.isAssignableFrom(returnType))
+	{
+	  TabularData data = (TabularData) otype;
+	  Map m = new HashMap(data.size());
+	  for (Object val : data.values())
+	    {
+	      CompositeData vals = (CompositeData) val;
+	      m.put(vals.get("key"), vals.get("value"));
+	    }
+	  return m;
+	}
+      try
+	{
+	  Method m = returnType.getMethod("from",
+					  new Class[]
+	    { CompositeData.class });
+	  return m.invoke(null, (CompositeData) otype);
+	}
+      catch (NoSuchMethodException e)
+	{
+	  /* Ignored; we expect this if this
+	     isn't a from(CompositeData) class */
+	}
+      return otype;
+    }
+
+  }
 }

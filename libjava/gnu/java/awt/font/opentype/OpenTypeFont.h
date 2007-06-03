@@ -23,6 +23,7 @@ extern "Java"
           {
               class CharGlyphMap;
               class GlyphNamer;
+              class Hinter;
               class OpenTypeFont;
               class Scaler;
             namespace truetype
@@ -88,13 +89,16 @@ public:
   jint getGlyph(jint);
   ::java::awt::font::GlyphVector * createGlyphVector(::java::awt::Font *, ::java::awt::font::FontRenderContext *, ::java::text::CharacterIterator *);
   void getAdvance(jint, jfloat, ::java::awt::geom::AffineTransform *, jboolean, jboolean, jboolean, ::java::awt::geom::Point2D *);
-  ::java::awt::geom::GeneralPath * getGlyphOutline(jint, jfloat, ::java::awt::geom::AffineTransform *, jboolean, jboolean);
+  ::java::awt::geom::GeneralPath * getGlyphOutline(jint, jfloat, ::java::awt::geom::AffineTransform *, jboolean, jboolean, jint);
   ::gnu::java::awt::font::opentype::truetype::Zone * getRawGlyphOutline(jint, ::java::awt::geom::AffineTransform *);
   ::java::lang::String * getGlyphName(jint);
   jfloat getAscent(jfloat, ::java::awt::geom::AffineTransform *, jboolean, jboolean, jboolean);
   jfloat getDescent(jfloat, ::java::awt::geom::AffineTransform *, jboolean, jboolean, jboolean);
 public: // actually package-private
   static ::java::lang::String * tagToString(jint);
+private:
+  void checkHinter(jint);
+public: // actually package-private
   static const jint TAG_OTTO = 1330926671;
   static const jint TAG_SFNT = 1936092788;
   static const jint TAG_TRUE = 1953658213;
@@ -114,6 +118,7 @@ private:
   ::gnu::java::awt::font::opentype::Scaler * scaler;
   ::gnu::java::awt::font::opentype::CharGlyphMap * cmap;
   ::gnu::java::awt::font::opentype::GlyphNamer * glyphNamer;
+  ::gnu::java::awt::font::opentype::Hinter * hinter;
   ::java::nio::ByteBuffer * nameTable;
 public:
   static ::java::lang::Class class$;

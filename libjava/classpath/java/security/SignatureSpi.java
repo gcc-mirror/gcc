@@ -136,16 +136,23 @@ public abstract class SignatureSpi
    * bytes of the given buffer.
    * 
    * @param input The input buffer.
-   * @throws SignatureException
+   * @throws IllegalStateException if the engine is not properly initialized.
    */
-  protected void engineUpdate(ByteBuffer input) throws SignatureException
+  protected void engineUpdate(ByteBuffer input)
   {
     byte[] buf = new byte[4096];
     while (input.hasRemaining())
       {
         int l = Math.min(input.remaining(), buf.length);
         input.get(buf, 0, l);
-        engineUpdate(buf, 0, l);
+        try
+          {
+            engineUpdate(buf, 0, l);
+          }
+        catch (SignatureException se)
+          {
+            throw new IllegalStateException(se);
+          }
       }
   }
   

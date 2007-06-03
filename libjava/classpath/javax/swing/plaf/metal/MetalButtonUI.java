@@ -174,9 +174,8 @@ public class MetalButtonUI
   { 
     if (b.isContentAreaFilled())
     {
-      Rectangle area = b.getVisibleRect();
       g.setColor(getSelectColor());
-      g.fillRect(area.x, area.y, area.width, area.height);
+      g.fillRect(0, 0, b.getWidth(), b.getHeight());
     }
   }
     

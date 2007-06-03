@@ -1,5 +1,5 @@
 /* InternationalFormatter.java --
-Copyright (C) 2005  Free Software Foundation, Inc.
+Copyright (C) 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -329,7 +329,7 @@ public class InternationalFormatter
    *
    * @throws CloneNotSupportedException not thrown here, since cloning is
    *     supported
-   * XXX - FIXME - Whole method disabled as workaround for gcj bug #22060.
+   */
   public Object clone()
     throws CloneNotSupportedException
   {
@@ -338,7 +338,6 @@ public class InternationalFormatter
     Object clone = super.clone();
     return clone;
   }
-   */
 
   /**
    * Returns the Actions that are supported by this Formatter.

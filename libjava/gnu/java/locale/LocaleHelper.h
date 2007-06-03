@@ -28,7 +28,7 @@ class gnu::java::locale::LocaleHelper : public ::java::lang::Object
 
 public:
   LocaleHelper();
-  static ::java::lang::String * getLocalizedString(::java::util::Locale *, ::java::lang::String *, ::java::lang::String *, jboolean, jboolean);
+  static ::java::util::Locale * getFallbackLocale(::java::util::Locale *);
   static JArray< ::java::util::Locale * > * getCollatorLocales();
   static jint getLocaleCount();
   static ::java::lang::String * getLocaleName(jint);

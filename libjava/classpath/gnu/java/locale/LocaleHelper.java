@@ -55,105 +55,44 @@ import java.util.ResourceBundle;
 public class LocaleHelper
 {
   /**
-   * This method is used by the localized name lookup methods to retrieve
-   * the localized name of a particular piece of locale data.    
-   * If the display name can not be localized to the supplied
-   * locale, it will fall back on other output in the following order:
-   *
-   * <ul>
-   * <li>the localized name in the default locale</li>
-   * <li>the localized name in English (optional)</li>
-   * <li>the localized name in the root locale bundle (optional)</li>
-   * <li>the localized input string</li>
-   * </ul>
    * <p>
-   * If the supplied key is merely the empty string, then the empty string is
-   * returned.
+   * This method is used by the localized name lookup methods to
+   * retrieve the next locale to try.  The next locale is derived
+   * from the supplied locale by applying the first applicable
+   * rule from the following:
+   * </p>
+   * <ol>
+   * <li>If the variant contains a <code>'_'</code>, then
+   * this and everything following it is trimmed.</li>
+   * <li>If the variant is non-empty, it is converted to
+   * an empty string.</li>
+   * <li>If the country is non-empty, it is converted to
+   * an empty string.</li>
+   * <li>If the language is non-empty, it is converted to
+   * an empty string (forming {@link java.util.Locale#ROOT})</li>
+   * </ol>
+   * <p>
+   * The base fallback locale is {@link java.util.Locale#ROOT}.
    * </p>
    *
-   * @param inLocale the locale to use for formatting the display string.
-   * @param key the locale data used as a key to the localized lookup tables.
-   * @param name the name of the hashtable containing the localized data.
-   * @param checkEnglish true if the method should fall back on data
-   *        from the English locale.
-   * @param checkRoot true if the method should fall back on data from the
-   *        unlocalized root locale.
-   * @return a <code>String</code>, hopefully containing the localized
-   *         variant of the input data.
-   * @throws NullPointerException if <code>inLocale</code> is null. 
+   * @param locale the locale for which a localized piece of
+   *               data could not be obtained.
+   * @return the next fallback locale to try.
    */
-  public static String getLocalizedString(Locale inLocale, String key,
-					  String name, boolean checkEnglish,
-					  boolean checkRoot)
+  public static Locale getFallbackLocale(Locale locale)
   {
-    String localizedString;
-    String property;
-
-    if (key.equals(""))
-      return "";
-    property = name + "." + key;
-    /* Localize to inLocale */
-    try
-      {
-        localizedString =
-	  ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-				   inLocale).getString(property);
-      }
-    catch (MissingResourceException exception)
-      {
-	localizedString = null;
-      }
-    /* Localize to default locale */
-    if (localizedString == null)
-      {
-	try 
-	  {
-	    ResourceBundle bundle;
-	    
-	    bundle = 
-	      ResourceBundle.getBundle("gnu.java.locale.LocaleInformation");
-	    localizedString = bundle.getString(property);
-	  }
-	catch (MissingResourceException exception)
-	  {
-	    localizedString = null;
-	  }
-      }
-    /* Localize to English */
-    if (localizedString == null && checkEnglish)
-      {
-	try
-	  {
-	    localizedString = 
-	      ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-				       Locale.ENGLISH).getString(property);
-	  }
-	catch (MissingResourceException exception)
-	  {
-	    localizedString = null;
-	  }
-      }
-    /* Return unlocalized version */
-    if (localizedString == null && checkRoot)
-      {
-	try
-	  {
-	    localizedString = 
-	      ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-				       new Locale("","","")
-				       ).getString(property);
-	  }
-	catch (MissingResourceException exception)
-	  {
-	    localizedString = null;
-	  }
-      }
-    /* Return original input string */
-    if (localizedString == null)
-      {
-	localizedString = key;
-      }
-    return localizedString;
+    String language = locale.getLanguage();
+    String country = locale.getCountry();
+    String variant = locale.getVariant();
+    int uscore = variant.indexOf('_');
+    if (uscore != -1)
+      return new Locale(language, country,
+			variant.substring(0, uscore));
+    if (!variant.isEmpty())
+      return new Locale(language, country, "");
+    if (!country.isEmpty())
+      return new Locale(language, "", "");
+    return Locale.ROOT;
   }
 
   /**

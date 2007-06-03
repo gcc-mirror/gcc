@@ -79,22 +79,17 @@ import java.awt.Shape;
  */
 public final class GeneralPath implements Shape, Cloneable
 {
-  // WORKAROUND for gcj 4.0.x (x < 3)
-  // fully qualify PathIterator constants.
-
   /** Same constant as {@link PathIterator#WIND_EVEN_ODD}. */
-  public static final int WIND_EVEN_ODD
-    = java.awt.geom.PathIterator.WIND_EVEN_ODD;
+  public static final int WIND_EVEN_ODD = PathIterator.WIND_EVEN_ODD;
 
   /** Same constant as {@link PathIterator#WIND_NON_ZERO}. */
-  public static final int WIND_NON_ZERO
-    = java.awt.geom.PathIterator.WIND_NON_ZERO;
+  public static final int WIND_NON_ZERO = PathIterator.WIND_NON_ZERO;
 
   /** Initial size if not specified. */
   private static final int INIT_SIZE = 10;
 
   /** A big number, but not so big it can't survive a few float operations */
-  private static final double BIG_VALUE = java.lang.Double.MAX_VALUE / 10.0;
+  private static final double BIG_VALUE = Double.MAX_VALUE / 10.0;
 
   /** The winding rule.
    * This is package-private to avoid an accessor method.

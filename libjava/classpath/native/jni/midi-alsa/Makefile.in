@@ -44,16 +44,21 @@ am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../config/lead-dot.m4 \
 	$(top_srcdir)/../../config/multi.m4 \
 	$(top_srcdir)/../../config/no-executables.m4 \
-	$(top_srcdir)/../../libtool.m4 $(top_srcdir)/m4/acattribute.m4 \
-	$(top_srcdir)/m4/accross.m4 $(top_srcdir)/m4/acinclude.m4 \
+	$(top_srcdir)/../../libtool.m4 \
+	$(top_srcdir)/../../ltoptions.m4 \
+	$(top_srcdir)/../../ltsugar.m4 \
+	$(top_srcdir)/../../ltversion.m4 \
+	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
+	$(top_srcdir)/m4/acinclude.m4 \
 	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
+	$(top_srcdir)/m4/ax_func_which_gethostbyname_r.m4 \
 	$(top_srcdir)/m4/gcc_attribute.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
 	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/../../mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -72,15 +77,15 @@ am_libgjsmalsa_la_OBJECTS =  \
 	gnu_javax_sound_midi_alsa_AlsaMidiDeviceProvider.lo
 libgjsmalsa_la_OBJECTS = $(am_libgjsmalsa_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/../../depcomp
 am__depfiles_maybe = depfiles
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) \
+LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) \
 	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
 	$(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
-LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(libgjsmalsa_la_SOURCES)
 DIST_SOURCES = $(libgjsmalsa_la_SOURCES)
@@ -91,12 +96,15 @@ ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
+AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 BUILD_CLASS_FILES_FALSE = @BUILD_CLASS_FILES_FALSE@
 BUILD_CLASS_FILES_TRUE = @BUILD_CLASS_FILES_TRUE@
+CAIRO_CFLAGS = @CAIRO_CFLAGS@
+CAIRO_LIBS = @CAIRO_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -142,6 +150,7 @@ DATE = @DATE@
 DEFAULT_PREFS_PEER = @DEFAULT_PREFS_PEER@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
@@ -154,15 +163,16 @@ ERROR_CFLAGS = @ERROR_CFLAGS@
 EXAMPLESDIR = @EXAMPLESDIR@
 EXEEXT = @EXEEXT@
 FASTJAR = @FASTJAR@
+FGREP = @FGREP@
 FIND = @FIND@
 FOUND_CACAO_FALSE = @FOUND_CACAO_FALSE@
 FOUND_CACAO_TRUE = @FOUND_CACAO_TRUE@
 FOUND_ECJ_FALSE = @FOUND_ECJ_FALSE@
 FOUND_ECJ_TRUE = @FOUND_ECJ_TRUE@
-FOUND_GCJX_FALSE = @FOUND_GCJX_FALSE@
-FOUND_GCJX_TRUE = @FOUND_GCJX_TRUE@
 FOUND_GCJ_FALSE = @FOUND_GCJ_FALSE@
 FOUND_GCJ_TRUE = @FOUND_GCJ_TRUE@
+FOUND_JAVAC_FALSE = @FOUND_JAVAC_FALSE@
+FOUND_JAVAC_TRUE = @FOUND_JAVAC_TRUE@
 FOUND_JIKES_FALSE = @FOUND_JIKES_FALSE@
 FOUND_JIKES_TRUE = @FOUND_JIKES_TRUE@
 FOUND_KJC_FALSE = @FOUND_KJC_FALSE@
@@ -170,7 +180,6 @@ FOUND_KJC_TRUE = @FOUND_KJC_TRUE@
 FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@
 FREETYPE2_LIBS = @FREETYPE2_LIBS@
 GCJ = @GCJ@
-GCJX = @GCJX@
 GCONF_CFLAGS = @GCONF_CFLAGS@
 GCONF_LIBS = @GCONF_LIBS@
 GDK_CFLAGS = @GDK_CFLAGS@
@@ -180,6 +189,7 @@ GENINSRC_TRUE = @GENINSRC_TRUE@
 GJDOC = @GJDOC@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
+GREP = @GREP@
 GTK_CFLAGS = @GTK_CFLAGS@
 GTK_LIBS = @GTK_LIBS@
 INIT_LOAD_LIBRARY = @INIT_LOAD_LIBRARY@
@@ -191,6 +201,7 @@ INSTALL_GLIBJ_ZIP_TRUE = @INSTALL_GLIBJ_ZIP_TRUE@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+JAVAC = @JAVAC@
 JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION = @JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION@
 JAVA_MAINTAINER_MODE_FALSE = @JAVA_MAINTAINER_MODE_FALSE@
 JAVA_MAINTAINER_MODE_TRUE = @JAVA_MAINTAINER_MODE_TRUE@
@@ -200,6 +211,7 @@ JIKES = @JIKES@
 JIKESENCODING = @JIKESENCODING@
 JIKESWARNINGS = @JIKESWARNINGS@
 KJC = @KJC@
+LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDEBUG = @LIBDEBUG@
 LIBICONV = @LIBICONV@
@@ -219,6 +231,7 @@ MKDIR = @MKDIR@
 MOC = @MOC@
 MOZILLA_CFLAGS = @MOZILLA_CFLAGS@
 MOZILLA_LIBS = @MOZILLA_LIBS@
+NM = @NM@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -240,6 +253,7 @@ RANLIB = @RANLIB@
 REGEN_PARSERS_FALSE = @REGEN_PARSERS_FALSE@
 REGEN_PARSERS_TRUE = @REGEN_PARSERS_TRUE@
 REMOVE = @REMOVE@
+SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRICT_WARNING_CFLAGS = @STRICT_WARNING_CFLAGS@
@@ -267,8 +281,10 @@ X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 ZIP = @ZIP@
+ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
+ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
@@ -301,6 +317,7 @@ install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
 localstatedir = @localstatedir@
+lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
@@ -324,7 +341,7 @@ gnu_javax_sound_midi_alsa_AlsaPortDevice.c \
 gnu_javax_sound_midi_alsa_AlsaMidiDeviceProvider.c
 
 libgjsmalsa_la_LIBADD = -lasound
-libgjsmalsa_la_LDFLAGS = -avoid-version
+libgjsmalsa_la_LDFLAGS = $(AM_LDFLAGS) -avoid-version
 AM_LDFLAGS = @CLASSPATH_MODULE@
 AM_CPPFLAGS = @CLASSPATH_INCLUDES@ `pkg-config  --cflags-only-I alsa`
 AM_CFLAGS = @WARNING_CFLAGS@ @STRICT_WARNING_CFLAGS@ @ERROR_CFLAGS@ `pkg-config --cflags-only-other alsa`

@@ -1,5 +1,5 @@
 /* TabularType.java -- Type descriptor for TabularData instances.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,7 +50,7 @@ import java.util.List;
  * @since 1.5
  */
 public class TabularType
-  extends OpenType
+  extends OpenType<TabularData>
 {
 
   /**
@@ -68,7 +68,7 @@ public class TabularType
    * They are retained in the order given by the user, and is
    * unmodifiable.
    */
-  private List indexNames;
+  private List<String> indexNames;
 
   /**
    * The hash code of this instance.
@@ -167,7 +167,7 @@ public class TabularType
    * @return an unmodifiable list of the index names used by this
    *         tabular data structure.
    */
-  public List getIndexNames()
+  public List<String> getIndexNames()
   {
     return indexNames;
   }

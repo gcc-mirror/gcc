@@ -36,11 +36,7 @@ exception statement from your version. */
 
 package java.awt.image;
 
-import gnu.java.awt.Buffers;
-
 import java.util.Arrays;
-
-/* FIXME: This class does not yet support data type TYPE_SHORT */
 
 /**
  * ComponentSampleModel supports a flexible organization of pixel samples in
@@ -88,9 +84,7 @@ public class ComponentSampleModel extends SampleModel
    * corresponding sample for the next pixel in the same row.
    */
   protected int pixelStride;
-  
-  private boolean tightPixelPacking = false;
-  
+
   /**
    * Creates a new sample model that assumes that all bands are stored in a 
    * single bank of the {@link DataBuffer}.
@@ -203,22 +197,6 @@ public class ComponentSampleModel extends SampleModel
     this.scanlineStride = scanlineStride;
     this.pixelStride = pixelStride;
 
-    // See if we can use some speedups
-
-    /* FIXME: May these checks should be reserved for the
-       PixelInterleavedSampleModel? */
-        
-    if (pixelStride == numBands)
-      {
-        tightPixelPacking = true;
-        for (int b = 0; b < numBands; b++) {
-          if ((bandOffsets[b] != b) || (bankIndices[b] != 0))
-            {
-              tightPixelPacking = false;
-              break;
-            }
-        }
-      }
   }             
 
   /**
@@ -275,8 +253,30 @@ public class ComponentSampleModel extends SampleModel
       highestOffset = Math.max(highestOffset, bandOffsets[b]);    
     int size = pixelStride * (width - 1) + scanlineStride * (height - 1) 
         + highestOffset + 1;
-    
-    return Buffers.createBuffer(getDataType(), size, numBanks);
+
+    DataBuffer buffer = null;
+    switch (getTransferType())
+      {
+      case DataBuffer.TYPE_BYTE:
+        buffer = new DataBufferByte(size, numBanks);
+        break;
+      case DataBuffer.TYPE_SHORT:
+        buffer = new DataBufferShort(size, numBanks);
+        break;
+      case DataBuffer.TYPE_USHORT:
+        buffer = new DataBufferUShort(size, numBanks);
+        break;
+      case DataBuffer.TYPE_INT:
+        buffer = new DataBufferInt(size, numBanks);
+        break;
+      case DataBuffer.TYPE_FLOAT:
+        buffer = new DataBufferFloat(size, numBanks);
+        break;
+      case DataBuffer.TYPE_DOUBLE:
+        buffer = new DataBufferDouble(size, numBanks);
+        break;
+      }
+    return buffer;
   }
 
   /**
@@ -424,239 +424,80 @@ public class ComponentSampleModel extends SampleModel
    */
   public Object getDataElements(int x, int y, Object obj, DataBuffer data)
   {
-    int xyOffset = pixelStride * x + scanlineStride * y;
-    
-    int[] totalBandDataOffsets = new int[numBands];
-    
-    /* Notice that band and bank offsets are different. Band offsets
-       are managed by the sample model, and bank offsets are managed
-       by the data buffer. Both must be accounted for. */
-    
-    /* FIXME: For single pixels, it is probably easier to simple
-       call getElem instead of calculating the bank offset ourself.
-       
-       On the other hand, then we need to push the value through
-       the int type returned by the getElem method.  */
-    
-    int[] bankOffsets = data.getOffsets();
-    
-    for (int b = 0; b < numBands; b++)
+    int type = getTransferType();
+    int numDataEls = getNumDataElements();
+    int offset = y * scanlineStride + x * pixelStride;
+    switch (type)
       {
-        totalBandDataOffsets[b] = bandOffsets[b] + bankOffsets[bankIndices[b]] 
-                                  + xyOffset;
-      }
-        
-    try
-      {
-        switch (getTransferType())
+      case DataBuffer.TYPE_BYTE:
+        byte[] bData;
+        if (obj == null)
+          bData = new byte[numDataEls];
+        else
+          bData = (byte[]) obj;
+        for (int i = 0; i < numDataEls; i++)
           {
-          case DataBuffer.TYPE_BYTE:
-            DataBufferByte inByte = (DataBufferByte) data;
-            byte[] outByte = (byte[]) obj;
-            if (outByte == null) 
-              outByte = new byte[numBands];
-                
-            for (int b = 0; b < numBands; b++)
-              {
-                int dOffset = totalBandDataOffsets[b];
-                outByte[b] = inByte.getData(bankIndices[b])[dOffset];
-              }
-            return outByte;
-                
-          case DataBuffer.TYPE_USHORT:
-            DataBufferUShort inUShort = (DataBufferUShort) data;
-            short[] outUShort = (short[]) obj;
-            if (outUShort == null) 
-              outUShort = new short[numBands];
-                
-            for (int b = 0; b < numBands; b++)
-              {
-                int dOffset = totalBandDataOffsets[b];
-                outUShort[b] = inUShort.getData(bankIndices[b])[dOffset];
-              }
-            return outUShort;
-
-          case DataBuffer.TYPE_SHORT:
-            DataBufferShort inShort = (DataBufferShort) data;
-            short[] outShort = (short[]) obj;
-            if (outShort == null) 
-              outShort = new short[numBands];
-                
-            for (int b = 0; b < numBands; b++)
-              {
-                int dOffset = totalBandDataOffsets[b];
-                outShort[b] = inShort.getData(bankIndices[b])[dOffset];
-              }
-            return outShort;
-
-          case DataBuffer.TYPE_INT:
-            DataBufferInt inInt = (DataBufferInt) data;
-            int[] outInt = (int[]) obj;
-            if (outInt == null) 
-              outInt = new int[numBands];
-                
-            for (int b = 0; b < numBands; b++)
-              {
-                int dOffset = totalBandDataOffsets[b];
-                outInt[b] = inInt.getData(bankIndices[b])[dOffset];
-              }
-            return outInt;
-
-          case DataBuffer.TYPE_FLOAT:
-            DataBufferFloat inFloat = (DataBufferFloat) data;
-            float[] outFloat = (float[]) obj;
-            if (outFloat == null) 
-              outFloat = new float[numBands];
-
-            for (int b = 0; b < numBands; b++)
-              {
-                int dOffset = totalBandDataOffsets[b];
-                outFloat[b] = inFloat.getData(bankIndices[b])[dOffset];
-              }
-            return outFloat;
-            
-          case DataBuffer.TYPE_DOUBLE:
-            DataBufferDouble inDouble = (DataBufferDouble) data;
-            double[] outDouble = (double[]) obj;
-            if (outDouble == null) 
-              outDouble = new double[numBands];
-
-            for (int b = 0; b < numBands; b++)
-              {
-                int dOffset = totalBandDataOffsets[b];
-                outDouble[b] = inDouble.getData(bankIndices[b])[dOffset];
-              }
-            return outDouble;
-            
-          default:
-              throw new IllegalStateException("unknown transfer type " 
-                                              + getTransferType());
+            bData[i] = (byte) data.getElem(bankIndices[i],
+                                           offset + bandOffsets[i]);
           }
-      }
-    catch (ArrayIndexOutOfBoundsException aioobe)
-      {
-        String msg = "While reading data elements, " +
-          "x=" + x + ", y=" + y +", " + ", xyOffset=" + xyOffset +
-          ", data.getSize()=" + data.getSize() + ": " + aioobe;
-        throw new ArrayIndexOutOfBoundsException(msg);
-      }
-  }
-
-  /**
-   * Returns the samples for the pixels in the region defined by 
-   * <code>(x, y, w, h)</code> in a primitive array (the array type is 
-   * determined by the data type for this model).  The <code>obj</code> 
-   * argument provides an option to supply an existing array to hold the 
-   * result, if this is <code>null</code> a new array will be allocated.
-   * 
-   * @param x  the x-coordinate.
-   * @param y  the y-coordinate.
-   * @param w  the width.
-   * @param h  the height.
-   * @param obj  a primitive array that, if not <code>null</code>, will be 
-   *   used to store and return the sample values.
-   * @param data  the data buffer (<code>null</code> not permitted).
-   * 
-   * @return An array of sample values for the specified pixels.
-   * 
-   * @see #setDataElements(int, int, int, int, Object, DataBuffer)
-   */
-  public Object getDataElements(int x, int y, int w, int h, Object obj,
-                                DataBuffer data)
-  {
-    if (!tightPixelPacking)
-      {
-        return super.getDataElements(x, y, w, h, obj, data);
-      }
-
-    // using get speedup
-    
-    // We can copy whole rows
-    int rowSize = w * numBands;
-    int dataSize = rowSize * h;
-    
-    DataBuffer transferBuffer = Buffers.createBuffer(getTransferType(), obj, 
-                                                     dataSize);
-    obj = Buffers.getData(transferBuffer);
-
-    int inOffset = pixelStride * x + scanlineStride * y + data.getOffset(); 
-                                           // Assumes only one band is used
-
-    /* We don't add band offsets since we assume that bands have
-       offsets 0, 1, 2, ... */
-
-    // See if we can copy everything in one go
-    if (scanlineStride == rowSize)
-      {
-        // Collapse scan lines:
-        rowSize *= h;
-        // We ignore scanlineStride since it won't be of any use
-        h = 1;
-      }
-
-    int outOffset = 0;
-    Object inArray = Buffers.getData(data);
-    for (int yd = 0; yd < h; yd++)
-      {
-        System.arraycopy(inArray, inOffset, obj, outOffset, rowSize);
-        inOffset  += scanlineStride;
-        outOffset += rowSize;
+        obj = bData;
+        break;
+      case DataBuffer.TYPE_SHORT:
+      case DataBuffer.TYPE_USHORT:
+        short[] sData;
+        if (obj == null)
+          sData = new short[numDataEls];
+        else
+          sData = (short[]) obj;
+        for (int i = 0; i < numDataEls; i++)
+          {
+            sData[i] = (short) data.getElem(bankIndices[i],
+                                            offset + bandOffsets[i]);
+          }
+        obj = sData;
+        break;
+      case DataBuffer.TYPE_INT:
+        int[] iData;
+        if (obj == null)
+          iData = new int[numDataEls];
+        else
+          iData = (int[]) obj;
+        for (int i = 0; i < numDataEls; i++)
+          {
+            iData[i] = data.getElem(bankIndices[i], offset + bandOffsets[i]);
+          }
+        obj = iData;
+        break;
+      case DataBuffer.TYPE_FLOAT:
+        float[] fData;
+        if (obj == null)
+          fData = new float[numDataEls];
+        else
+          fData = (float[]) obj;
+        for (int i = 0; i < numDataEls; i++)
+          {
+            fData[i] = data.getElemFloat(bankIndices[i],
+                                         offset + bandOffsets[i]);
+          }
+        obj = fData;
+        break;
+      case DataBuffer.TYPE_DOUBLE:
+        double[] dData;
+        if (obj == null)
+          dData = new double[numDataEls];
+        else
+          dData = (double[]) obj;
+        for (int i = 0; i < numDataEls; i++)
+          {
+            dData[i] = data.getElemDouble(bankIndices[i],
+                                          offset + bandOffsets[i]);
+          }
+        obj = dData;
+        break;
       }
     return obj;
   }
 
-  /**
-   * Sets the samples for the pixels in the region defined by 
-   * <code>(x, y, w, h)</code> from a supplied primitive array (the array type 
-   * must be consistent with the data type for this model).  
-   * 
-   * @param x  the x-coordinate.
-   * @param y  the y-coordinate.
-   * @param w  the width.
-   * @param h  the height.
-   * @param obj  a primitive array containing the sample values.
-   * @param data  the data buffer (<code>null</code> not permitted).
-   * 
-   * @see #getDataElements(int, int, int, int, Object, DataBuffer)
-   */
-  public void setDataElements(int x, int y, int w, int h,
-                              Object obj, DataBuffer data)
-  {
-    if (!tightPixelPacking)
-      {
-        super.setDataElements(x, y, w, h, obj, data);
-        return;
-      }
-
-    // using set speedup, we can copy whole rows
-    int rowSize = w * numBands;
-    int dataSize = rowSize * h;
-    
-    DataBuffer transferBuffer 
-        = Buffers.createBufferFromData(getTransferType(), obj, dataSize);
-
-    int[] bankOffsets = data.getOffsets();
-
-    int outOffset = pixelStride * x + scanlineStride * y + bankOffsets[0]; 
-                                                // same assumptions as in get...
-
-    // See if we can copy everything in one go
-    if (scanlineStride == rowSize)
-      {
-        // Collapse scan lines:
-        rowSize *= h;
-        h = 1;
-      }
-
-    int inOffset = 0;
-    Object outArray = Buffers.getData(data);
-    for (int yd = 0; yd < h; yd++)
-      {
-        System.arraycopy(obj, inOffset, outArray, outOffset, rowSize);
-        outOffset += scanlineStride;
-        inOffset += rowSize;
-      }
-  }
 
   /**
    * Returns all the samples for the pixel at location <code>(x, y)</code>
@@ -764,78 +605,51 @@ public class ComponentSampleModel extends SampleModel
    */
   public void setDataElements(int x, int y, Object obj, DataBuffer data)
   {
-    int offset = pixelStride * x + scanlineStride * y;
-    int[] totalBandDataOffsets = new int[numBands];
-    int[] bankOffsets = data.getOffsets();
-    for (int b = 0; b < numBands; b++)
-      totalBandDataOffsets[b] = bandOffsets[b] + bankOffsets[bankIndices[b]] 
-                                + offset;
-
-    switch (getTransferType())
+    int type = getTransferType();
+    int numDataEls = getNumDataElements();
+    int offset = y * scanlineStride + x * pixelStride;
+    switch (type)
       {
       case DataBuffer.TYPE_BYTE:
-        {
-          DataBufferByte out = (DataBufferByte) data;
-          byte[] in = (byte[]) obj;
-          
-          for (int b = 0; b < numBands; b++)
-            out.getData(bankIndices[b])[totalBandDataOffsets[b]] = in[b];
-          
-          return;
-        }
-      case DataBuffer.TYPE_USHORT:
-        {
-          DataBufferUShort out = (DataBufferUShort) data;
-          short[] in = (short[]) obj;
-          
-          for (int b = 0; b < numBands; b++)
-            out.getData(bankIndices[b])[totalBandDataOffsets[b]] = in[b];
-          
-          return;
-        }
+        byte[] bData = (byte[]) obj;
+        for (int i = 0; i < numDataEls; i++)
+          {
+            data.setElem(bankIndices[i], offset + bandOffsets[i],
+                         ((int) bData[i]) & 0xFF);
+          }
+        break;
       case DataBuffer.TYPE_SHORT:
-        {
-          DataBufferShort out = (DataBufferShort) data;
-          short[] in = (short[]) obj;
-          
-          for (int b = 0; b < numBands; b++)
-            out.getData(bankIndices[b])[totalBandDataOffsets[b]] = in[b];
-          
-          return;
-        }
+      case DataBuffer.TYPE_USHORT:
+        short[] sData = (short[]) obj;
+        for (int i = 0; i < numDataEls; i++)
+          {
+            data.setElem(bankIndices[i], offset + bandOffsets[i],
+                         ((int) sData[i]) & 0xFFFF);
+          }
+        break;
       case DataBuffer.TYPE_INT:
-        {
-          DataBufferInt out = (DataBufferInt) data;
-          int[] in = (int[]) obj;
-          
-          for (int b = 0; b < numBands; b++)
-            out.getData(bankIndices[b])[totalBandDataOffsets[b]] = in[b];
-          
-          return;
-        }
+        int[] iData = (int[]) obj;
+        for (int i = 0; i < numDataEls; i++)
+          {
+            data.setElem(bankIndices[i], offset + bandOffsets[i], iData[i]);
+          }
+        break;
       case DataBuffer.TYPE_FLOAT:
-        {
-          DataBufferFloat out = (DataBufferFloat) data;
-          float[] in = (float[]) obj;
-          
-          for (int b = 0; b < numBands; b++)
-            out.getData(bankIndices[b])[totalBandDataOffsets[b]] = in[b];
-          
-          return;
-        }
+        float[] fData = (float[]) obj;
+        for (int i = 0; i < numDataEls; i++)
+          {
+            data.setElemFloat(bankIndices[i], offset + bandOffsets[i],
+                              fData[i]);
+          }
+        break;
       case DataBuffer.TYPE_DOUBLE:
-        {
-          DataBufferDouble out = (DataBufferDouble) data;
-          double[] in = (double[]) obj;
-          
-          for (int b = 0; b < numBands; b++)
-            out.getData(bankIndices[b])[totalBandDataOffsets[b]] = in[b];
-          
-          return;
-        }
-      default:
-        throw new UnsupportedOperationException("transfer type not " +
-                                                "implemented");
+        double[] dData = (double[]) obj;
+        for (int i = 0; i < numDataEls; i++)
+          {
+            data.setElemDouble(bankIndices[i], offset + bandOffsets[i],
+                               dData[i]);
+          }
+        break;
       }
   }
   

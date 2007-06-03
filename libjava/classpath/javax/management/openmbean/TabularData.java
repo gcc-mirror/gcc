@@ -1,5 +1,5 @@
 /* TabularData.java -- Tables of composite data structures.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -165,7 +165,7 @@ public interface TabularData
    *
    * @return a set containing the keys of this instance.
    */
-  Set keySet();
+  Set<?> keySet();
 
   /**
    * Adds the specified {@link CompositeData} value to the
@@ -253,7 +253,7 @@ public interface TabularData
    *
    * @return the values of this instance.
    */
-  Collection values();
+  Collection<?> values();
 
 }
 

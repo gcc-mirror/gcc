@@ -57,6 +57,8 @@ public: // actually protected
   virtual ::java::lang::String * paramString();
 private:
   static void noteFrame(::java::awt::Frame *);
+public: // actually package-private
+  static jboolean hasDisplayableFrames();
 public:
   static JArray< ::java::awt::Frame * > * getFrames();
   virtual void setState(jint);
@@ -110,6 +112,7 @@ private:
   jboolean undecorated;
   static jlong next_frame_number;
   static ::java::util::ArrayList * weakFrames;
+  static ::java::lang::ref::ReferenceQueue * weakFramesQueue;
 public:
   static ::java::lang::Class class$;
 };

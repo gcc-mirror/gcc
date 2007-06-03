@@ -116,6 +116,27 @@ final class VMFile
    */
   static native boolean mkdir(String dirpath);
 
+  /**
+   * Set the read permission of the file.
+   */
+  public static synchronized native boolean setReadable(String path,
+                                           		boolean readable,
+                                           		boolean ownerOnly);
+  
+  /**
+   * Set the write permission of the file.
+   */
+  public static synchronized native boolean setWritable(String path,
+                                                        boolean writable,
+                                                        boolean ownerOnly);
+  
+  /**
+   * Set the execute permission of the file.
+   */
+  public static synchronized native boolean setExecutable(String path,
+                                                          boolean executable,
+                                                          boolean ownerOnly);
+  
   /*
    * This native method does the actual check of whether or not a file
    * is a plain file or not.  It also handles the existence check to
@@ -127,7 +148,7 @@ final class VMFile
    * This native method checks file permissions for writing
    */
   static synchronized native boolean canWrite(String path);
-
+  
   /**
    * This methods checks if a directory can be written to.
    */
@@ -150,6 +171,11 @@ final class VMFile
    */
   static synchronized native boolean canRead(String path);
 
+  /**
+   * This native method checks file permissions for execution
+   */
+  static synchronized native boolean canExecute(String path);
+  
   /*
    * This method does the actual check of whether or not a file is a
    * directory or not.  It also handle the existence check to eliminate

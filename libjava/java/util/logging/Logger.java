@@ -1,5 +1,5 @@
 /* Logger.java -- a class for logging messages
-   Copyright (C) 2002, 2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -276,8 +276,8 @@ public class Logger
     LogManager lm = LogManager.getLogManager();
     Logger     result;
 
-    /* Throw NullPointerException if name is null. */
-    name.getClass();
+    if (name == null)
+      throw new NullPointerException();
 
     /* Without synchronized(lm), it could happen that another thread
      * would create a logger between our calls to getLogger and
@@ -1013,8 +1013,8 @@ public class Logger
   public synchronized void addHandler(Handler handler)
     throws SecurityException
   {
-    /* Throw a new NullPointerException if handler is null. */
-    handler.getClass();
+    if (handler == null)
+      throw new NullPointerException();
 
     /* An application is allowed to control an anonymous logger
      * without having the permission to control the logging
@@ -1057,8 +1057,8 @@ public class Logger
     if (!anonymous)
       LogManager.getLogManager().checkAccess();
 
-    /* Throw a new NullPointerException if handler is null. */
-    handler.getClass();
+    if (handler == null)
+      throw new NullPointerException();
 
     handlerList.remove(handler);
     handlers = getHandlers();
@@ -1166,8 +1166,8 @@ public class Logger
    */
   public synchronized void setParent(Logger parent)
   {
-    /* Throw a new NullPointerException if parent is null. */
-    parent.getClass();
+    if (parent == null)
+      throw new NullPointerException();
 
     if (this == root)
         throw new IllegalArgumentException(

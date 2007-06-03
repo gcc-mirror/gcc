@@ -371,7 +371,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   public int getUnitIncrement(int direction)
   {
-    return direction * unitIncrement;
+    return unitIncrement;
   }
 
   /**
@@ -401,7 +401,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   public int getBlockIncrement(int direction)
   {
-    return direction * blockIncrement;
+    return blockIncrement;
   }
 
   /**

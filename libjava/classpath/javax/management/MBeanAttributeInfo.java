@@ -55,6 +55,11 @@ public class MBeanAttributeInfo
 {
 
   /**
+   * Compatible with JDK 1.6
+   */
+  private static final long serialVersionUID = 8644704819898565848L;
+
+  /**
    * The type of the attribute.
    *
    * @serial the attribute type.

@@ -330,6 +330,7 @@ public class StreamTokenizer
 	{
 	  while ((ch = in.read()) != '\n' && ch != '\r' && ch != TT_EOF)
 	    ;
+          
 	  if (ch != TT_EOF)
 	    in.unread(ch);
 	  return nextToken(); // Recursive, but not too deep in normal cases
@@ -431,6 +432,7 @@ public class StreamTokenizer
       {
 	while ((ch = in.read()) != '\n' && ch != '\r' && ch != TT_EOF)
 	  ;
+        
 	if (ch != TT_EOF)
 	  in.unread(ch);
 	return nextToken();	// Recursive, but not too deep in normal cases.

@@ -30,8 +30,10 @@ extern "Java"
 class gnu::java::awt::font::autofit::Width : public ::java::lang::Object
 {
 
+public: // actually package-private
+  Width(jint);
 public:
-  Width();
+  virtual ::java::lang::String * toString();
 public: // actually package-private
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) org;
   jint cur;

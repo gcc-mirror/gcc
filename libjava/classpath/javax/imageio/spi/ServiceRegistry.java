@@ -957,6 +957,6 @@ public class ServiceRegistry
      * criteria; <code>false</code> if it does not match.
      */
     boolean filter(Object provider);
-  };
+  }
 }
 

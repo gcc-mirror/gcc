@@ -308,7 +308,9 @@ public class CSSParser
   {
     // FIXME: Handle block and ATKEYWORD.
     boolean success = parseAny(s);
-    while (parseAny(s));
+    while (parseAny(s))
+      ;
+
     return success;
   }
 
@@ -329,7 +331,8 @@ public class CSSParser
     boolean ret = parseAny(sel);
     if (ret)
       {
-        while (parseAny(sel));
+        while (parseAny(sel))
+          ;
       }
     return ret;
   }

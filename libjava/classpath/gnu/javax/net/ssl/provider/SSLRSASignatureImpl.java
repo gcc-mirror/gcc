@@ -188,7 +188,8 @@ public class SSLRSASignatureImpl extends SignatureSpi
     final byte[] eb = EB.toByteArray();
     if (eb[0] == 0x00)
       {
-        for (i = 0; i < eb.length && eb[i] == 0x00; i++);
+        for (i = 0; i < eb.length && eb[i] == 0x00; i++)
+          ;
       }
     else if (eb[0] == 0x01)
       {

@@ -39,12 +39,17 @@ exception statement from your version. */
 
 package java.text;
 
+import gnu.java.locale.LocaleHelper;
+
+import java.text.spi.DateFormatProvider;
+
 import java.io.InvalidObjectException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.ServiceLoader;
 import java.util.TimeZone;
 
 /**
@@ -550,17 +555,14 @@ public abstract class DateFormat extends Format implements Cloneable
   private static DateFormat computeInstance (int dateStyle, int timeStyle,
                                              Locale loc, boolean use_date,
                                              boolean use_time)
+    throws MissingResourceException
   {
-    ResourceBundle res;
-    try
-      {
-	res = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-				       loc, ClassLoader.getSystemClassLoader());
-      }
-    catch (MissingResourceException x)
-      {
-	res = null;
-      }
+    if (loc.equals(Locale.ROOT))
+      return computeDefault(dateStyle,timeStyle,use_date,use_time);
+
+    ResourceBundle res =
+      ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
+			       loc, ClassLoader.getSystemClassLoader());
 
     String pattern = null;
     if (use_date)
@@ -642,6 +644,59 @@ public abstract class DateFormat extends Format implements Cloneable
     return new SimpleDateFormat (pattern, loc);
   }
 
+  private static DateFormat computeDefault (int dateStyle, int timeStyle,
+					    boolean use_date, boolean use_time)
+  {
+    String pattern = null;
+    if (use_date)
+      {
+	switch (dateStyle)
+	  {
+	  case FULL:
+	    pattern = "EEEE MMMM d, yyyy G";
+	    break;
+	  case LONG:
+	    pattern = "MMMM d, yyyy";
+	    break;
+	  case MEDIUM:
+	    pattern = "d-MMM-yy";
+	    break;
+	  case SHORT:
+	    pattern = "M/d/yy";
+	  default:
+	    throw new IllegalArgumentException ();
+	  }
+      }
+    
+    if (use_time)
+      {
+	if (pattern == null)
+	  pattern = "";
+	else
+	  pattern += " ";
+
+	switch (timeStyle)
+	  {
+	  case FULL:
+	    pattern += "h:mm:ss;S 'o''clock' a z";
+	    break;
+	  case LONG:
+	    pattern += "h:mm:ss a z";
+	    break;
+	  case MEDIUM:
+	    pattern += "h:mm:ss a";
+	    break;
+	  case SHORT:
+	    pattern += "h:mm a";
+	    break;
+	  default:
+	    throw new IllegalArgumentException ();
+	  }
+      }
+
+    return new SimpleDateFormat (pattern, Locale.ROOT);
+  }
+
  /**
    * This method returns an instance of <code>DateFormat</code> that will
    * format using the default formatting style for dates.
@@ -678,7 +733,29 @@ public abstract class DateFormat extends Format implements Cloneable
    */
   public static final DateFormat getDateInstance (int style, Locale loc)
   {
-    return computeInstance (style, loc, true, false);
+    try
+      {
+	return computeInstance (style, loc, true, false);
+      }
+    catch (MissingResourceException e)
+      {
+	for (DateFormatProvider p :
+	       ServiceLoader.load(DateFormatProvider.class))
+	  {
+	    for (Locale l : p.getAvailableLocales())
+	      {
+		if (l.equals(loc))
+		  {
+		    DateFormat df = p.getDateInstance(style, loc);
+		    if (df != null)
+		      return df;
+		    break;
+		  }
+	      }
+	  }
+	return getDateInstance(style,
+			       LocaleHelper.getFallbackLocale(loc));
+      }
   }
 
   /**
@@ -717,7 +794,30 @@ public abstract class DateFormat extends Format implements Cloneable
 						      int timeStyle, 
 						      Locale loc)
   {
-    return computeInstance (dateStyle, timeStyle, loc, true, true);
+    try
+      {
+	return computeInstance (dateStyle, timeStyle, loc, true, true);
+      }
+    catch (MissingResourceException e)
+      {
+	for (DateFormatProvider p :
+	       ServiceLoader.load(DateFormatProvider.class))
+	  {
+	    for (Locale l : p.getAvailableLocales())
+	      {
+		if (l.equals(loc))
+		  {
+		    DateFormat df = p.getDateTimeInstance(dateStyle,
+							  timeStyle, loc);
+		    if (df != null)
+		      return df;
+		    break;
+		  }
+	      }
+	  }
+	return getDateTimeInstance(dateStyle, timeStyle,
+				   LocaleHelper.getFallbackLocale(loc));
+      }
   }
 
   /**
@@ -779,7 +879,29 @@ public abstract class DateFormat extends Format implements Cloneable
    */
   public static final DateFormat getTimeInstance (int style, Locale loc)
   {
-    return computeInstance (style, loc, false, true);
+    try
+      {
+	return computeInstance (style, loc, false, true);
+      }
+    catch (MissingResourceException e)
+      {
+	for (DateFormatProvider p :
+	       ServiceLoader.load(DateFormatProvider.class))
+	  {
+	    for (Locale l : p.getAvailableLocales())
+	      {
+		if (l.equals(loc))
+		  {
+		    DateFormat df = p.getTimeInstance(style, loc);
+		    if (df != null)
+		      return df;
+		    break;
+		  }
+	      }
+	  }
+	return getTimeInstance(style,
+			       LocaleHelper.getFallbackLocale(loc));
+      }
   }
 
   /**

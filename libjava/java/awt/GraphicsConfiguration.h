@@ -43,6 +43,7 @@ public:
   virtual ::java::awt::image::VolatileImage * createCompatibleVolatileImage(jint, jint) = 0;
   virtual ::java::awt::image::VolatileImage * createCompatibleVolatileImage(jint, jint, ::java::awt::ImageCapabilities *);
   virtual ::java::awt::image::VolatileImage * createCompatibleVolatileImage(jint, jint, jint) = 0;
+  virtual ::java::awt::image::VolatileImage * createCompatibleVolatileImage(jint, jint, ::java::awt::ImageCapabilities *, jint);
   virtual ::java::awt::image::BufferedImage * createCompatibleImage(jint, jint, jint) = 0;
   virtual ::java::awt::image::ColorModel * getColorModel() = 0;
   virtual ::java::awt::image::ColorModel * getColorModel(jint) = 0;

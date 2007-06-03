@@ -1,5 +1,5 @@
 /* AWTUtilities.java -- Common utility methods for AWT and Swing.
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,6 +47,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.AbstractSequentialList;
 import java.util.List;
@@ -693,5 +694,205 @@ public class AWTUtilities
   public static boolean isEventDispatchThread()
   {
     return java.awt.EventQueue.isDispatchThread();
+  }
+
+  /**
+   * Returns whether the specified key code is valid.
+   */
+  public static boolean isValidKey(int keyCode)
+  {
+    switch (keyCode)
+      {
+      case KeyEvent.VK_ENTER:
+      case KeyEvent.VK_BACK_SPACE:
+      case KeyEvent.VK_TAB:
+      case KeyEvent.VK_CANCEL:
+      case KeyEvent.VK_CLEAR:
+      case KeyEvent.VK_SHIFT:
+      case KeyEvent.VK_CONTROL:
+      case KeyEvent.VK_ALT:
+      case KeyEvent.VK_PAUSE:
+      case KeyEvent.VK_CAPS_LOCK:
+      case KeyEvent.VK_ESCAPE:
+      case KeyEvent.VK_SPACE:
+      case KeyEvent.VK_PAGE_UP:
+      case KeyEvent.VK_PAGE_DOWN:
+      case KeyEvent.VK_END:
+      case KeyEvent.VK_HOME:
+      case KeyEvent.VK_LEFT:
+      case KeyEvent.VK_UP:
+      case KeyEvent.VK_RIGHT:
+      case KeyEvent.VK_DOWN:
+      case KeyEvent.VK_COMMA:
+      case KeyEvent.VK_MINUS:
+      case KeyEvent.VK_PERIOD:
+      case KeyEvent.VK_SLASH:
+      case KeyEvent.VK_0:
+      case KeyEvent.VK_1:
+      case KeyEvent.VK_2:
+      case KeyEvent.VK_3:
+      case KeyEvent.VK_4:
+      case KeyEvent.VK_5:
+      case KeyEvent.VK_6:
+      case KeyEvent.VK_7:
+      case KeyEvent.VK_8:
+      case KeyEvent.VK_9:
+      case KeyEvent.VK_SEMICOLON:
+      case KeyEvent.VK_EQUALS:
+      case KeyEvent.VK_A:
+      case KeyEvent.VK_B:
+      case KeyEvent.VK_C:
+      case KeyEvent.VK_D:
+      case KeyEvent.VK_E:
+      case KeyEvent.VK_F:
+      case KeyEvent.VK_G:
+      case KeyEvent.VK_H:
+      case KeyEvent.VK_I:
+      case KeyEvent.VK_J:
+      case KeyEvent.VK_K:
+      case KeyEvent.VK_L:
+      case KeyEvent.VK_M:
+      case KeyEvent.VK_N:
+      case KeyEvent.VK_O:
+      case KeyEvent.VK_P:
+      case KeyEvent.VK_Q:
+      case KeyEvent.VK_R:
+      case KeyEvent.VK_S:
+      case KeyEvent.VK_T:
+      case KeyEvent.VK_U:
+      case KeyEvent.VK_V:
+      case KeyEvent.VK_W:
+      case KeyEvent.VK_X:
+      case KeyEvent.VK_Y:
+      case KeyEvent.VK_Z:
+      case KeyEvent.VK_OPEN_BRACKET:
+      case KeyEvent.VK_BACK_SLASH:
+      case KeyEvent.VK_CLOSE_BRACKET:
+      case KeyEvent.VK_NUMPAD0:
+      case KeyEvent.VK_NUMPAD1:
+      case KeyEvent.VK_NUMPAD2:
+      case KeyEvent.VK_NUMPAD3:
+      case KeyEvent.VK_NUMPAD4:
+      case KeyEvent.VK_NUMPAD5:
+      case KeyEvent.VK_NUMPAD6:
+      case KeyEvent.VK_NUMPAD7:
+      case KeyEvent.VK_NUMPAD8:
+      case KeyEvent.VK_NUMPAD9:
+      case KeyEvent.VK_MULTIPLY:
+      case KeyEvent.VK_ADD:
+      case KeyEvent.VK_SEPARATOR:
+      case KeyEvent.VK_SUBTRACT:
+      case KeyEvent.VK_DECIMAL:
+      case KeyEvent.VK_DIVIDE:
+      case KeyEvent.VK_DELETE:
+      case KeyEvent.VK_NUM_LOCK:
+      case KeyEvent.VK_SCROLL_LOCK:
+      case KeyEvent.VK_F1:
+      case KeyEvent.VK_F2:
+      case KeyEvent.VK_F3:
+      case KeyEvent.VK_F4:
+      case KeyEvent.VK_F5:
+      case KeyEvent.VK_F6:
+      case KeyEvent.VK_F7:
+      case KeyEvent.VK_F8:
+      case KeyEvent.VK_F9:
+      case KeyEvent.VK_F10:
+      case KeyEvent.VK_F11:
+      case KeyEvent.VK_F12:
+      case KeyEvent.VK_F13:
+      case KeyEvent.VK_F14:
+      case KeyEvent.VK_F15:
+      case KeyEvent.VK_F16:
+      case KeyEvent.VK_F17:
+      case KeyEvent.VK_F18:
+      case KeyEvent.VK_F19:
+      case KeyEvent.VK_F20:
+      case KeyEvent.VK_F21:
+      case KeyEvent.VK_F22:
+      case KeyEvent.VK_F23:
+      case KeyEvent.VK_F24:
+      case KeyEvent.VK_PRINTSCREEN:
+      case KeyEvent.VK_INSERT:
+      case KeyEvent.VK_HELP:
+      case KeyEvent.VK_META:
+      case KeyEvent.VK_BACK_QUOTE:
+      case KeyEvent.VK_QUOTE:
+      case KeyEvent.VK_KP_UP:
+      case KeyEvent.VK_KP_DOWN:
+      case KeyEvent.VK_KP_LEFT:
+      case KeyEvent.VK_KP_RIGHT:
+      case KeyEvent.VK_DEAD_GRAVE:
+      case KeyEvent.VK_DEAD_ACUTE:
+      case KeyEvent.VK_DEAD_CIRCUMFLEX:
+      case KeyEvent.VK_DEAD_TILDE:
+      case KeyEvent.VK_DEAD_MACRON:
+      case KeyEvent.VK_DEAD_BREVE:
+      case KeyEvent.VK_DEAD_ABOVEDOT:
+      case KeyEvent.VK_DEAD_DIAERESIS:
+      case KeyEvent.VK_DEAD_ABOVERING:
+      case KeyEvent.VK_DEAD_DOUBLEACUTE:
+      case KeyEvent.VK_DEAD_CARON:
+      case KeyEvent.VK_DEAD_CEDILLA:
+      case KeyEvent.VK_DEAD_OGONEK:
+      case KeyEvent.VK_DEAD_IOTA:
+      case KeyEvent.VK_DEAD_VOICED_SOUND:
+      case KeyEvent.VK_DEAD_SEMIVOICED_SOUND:
+      case KeyEvent.VK_AMPERSAND:
+      case KeyEvent.VK_ASTERISK:
+      case KeyEvent.VK_QUOTEDBL:
+      case KeyEvent.VK_LESS:
+      case KeyEvent.VK_GREATER:
+      case KeyEvent.VK_BRACELEFT:
+      case KeyEvent.VK_BRACERIGHT:
+      case KeyEvent.VK_AT:
+      case KeyEvent.VK_COLON:
+      case KeyEvent.VK_CIRCUMFLEX:
+      case KeyEvent.VK_DOLLAR:
+      case KeyEvent.VK_EURO_SIGN:
+      case KeyEvent.VK_EXCLAMATION_MARK:
+      case KeyEvent.VK_INVERTED_EXCLAMATION_MARK:
+      case KeyEvent.VK_LEFT_PARENTHESIS:
+      case KeyEvent.VK_NUMBER_SIGN:
+      case KeyEvent.VK_PLUS:
+      case KeyEvent.VK_RIGHT_PARENTHESIS:
+      case KeyEvent.VK_UNDERSCORE:
+      case KeyEvent.VK_FINAL:
+      case KeyEvent.VK_CONVERT:
+      case KeyEvent.VK_NONCONVERT:
+      case KeyEvent.VK_ACCEPT:
+      case KeyEvent.VK_MODECHANGE:
+      case KeyEvent.VK_KANA:
+      case KeyEvent.VK_KANJI:
+      case KeyEvent.VK_ALPHANUMERIC:
+      case KeyEvent.VK_KATAKANA:
+      case KeyEvent.VK_HIRAGANA:
+      case KeyEvent.VK_FULL_WIDTH:
+      case KeyEvent.VK_HALF_WIDTH:
+      case KeyEvent.VK_ROMAN_CHARACTERS:
+      case KeyEvent.VK_ALL_CANDIDATES:
+      case KeyEvent.VK_PREVIOUS_CANDIDATE:
+      case KeyEvent.VK_CODE_INPUT:
+      case KeyEvent.VK_JAPANESE_KATAKANA:
+      case KeyEvent.VK_JAPANESE_HIRAGANA:
+      case KeyEvent.VK_JAPANESE_ROMAN:
+      case KeyEvent.VK_KANA_LOCK:
+      case KeyEvent.VK_INPUT_METHOD_ON_OFF:
+      case KeyEvent.VK_CUT:
+      case KeyEvent.VK_COPY:
+      case KeyEvent.VK_PASTE:
+      case KeyEvent.VK_UNDO:
+      case KeyEvent.VK_AGAIN:
+      case KeyEvent.VK_FIND:
+      case KeyEvent.VK_PROPS:
+      case KeyEvent.VK_STOP:
+      case KeyEvent.VK_COMPOSE:
+      case KeyEvent.VK_ALT_GRAPH:
+      case KeyEvent.VK_BEGIN:
+      case KeyEvent.VK_CONTEXT_MENU:
+      case KeyEvent.VK_WINDOWS:
+        return true;
+      default:
+        return false;
+      }
   }
 }

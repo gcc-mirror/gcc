@@ -38,12 +38,21 @@ exception statement from your version. */
 
 package java.awt.datatransfer;
 
-import gnu.classpath.NotImplementedException;
-
+import java.awt.Toolkit;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.WeakHashMap;
 
 /**
@@ -72,19 +81,102 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
    * This map maps native <code>String</code>s to lists of 
    * <code>DataFlavor</code>s
    */
-  private HashMap nativeToFlavorMap = new HashMap();
+  private HashMap<String,List<DataFlavor>> nativeToFlavorMap =
+    new HashMap<String,List<DataFlavor>>();
   
   /**
    * This map maps <code>DataFlavor</code>s to lists of native 
    * <code>String</code>s
    */
-  private HashMap flavorToNativeMap = new HashMap();
+  private HashMap<DataFlavor, List<String>> flavorToNativeMap =
+    new HashMap<DataFlavor, List<String>>();
   
   /**
    * Private constructor.
    */
   private SystemFlavorMap ()
   {
+    AccessController.doPrivileged
+    (new PrivilegedAction<Object>()
+     {
+       public Object run()
+       {
+         try
+           {
+             // Load installed flavormap.properties first.
+             String sep = File.separator;
+             File propsFile =
+               new File(System.getProperty("gnu.classpath.home.url")
+                        + sep + "accessibility.properties");
+             InputStream in = new FileInputStream(propsFile);
+             Properties props = new Properties();
+             props.load(in);
+             in.close();
+
+             String augmented = Toolkit.getProperty("AWT.DnD.flavorMapFileURL",
+                                                    null);
+             if (augmented != null)
+               {
+                 URL url = new URL(augmented);
+                 in = url.openStream();
+                 props.load(in);
+               }
+             setupMapping(props);
+           }
+         catch (IOException ex)
+           {
+             // Can't do anything about it.
+           }
+         return null;
+       }
+     });
+  }
+
+  /**
+   * Sets up the mapping from native to mime types and vice versa as specified
+   * in the flavormap.properties file.
+   *
+   * This is package private to avoid an accessor method.
+   *
+   * @param props the properties file
+   */
+  void setupMapping(Properties props)
+  {
+    Enumeration propNames = props.propertyNames();
+    while (propNames.hasMoreElements())
+      {
+        try
+          {
+            String nat = (String) propNames.nextElement();
+            String mime = (String) props.getProperty(nat);
+            // Check valid mime type.
+            MimeType type = new MimeType(mime);
+            DataFlavor flav = new DataFlavor(mime);
+            
+            List<DataFlavor> flavs = nativeToFlavorMap.get(nat);
+            if (flavs == null)
+              {
+                flavs = new ArrayList<DataFlavor>();
+                nativeToFlavorMap.put(nat, flavs);
+              }
+            List<String> nats = flavorToNativeMap.get(flav);
+            if (nats == null)
+              {
+                nats = new ArrayList<String>();
+                flavorToNativeMap.put(flav, nats);
+              }
+            flavs.add(flav);
+            nats.add(nat);
+          }
+        catch (ClassNotFoundException ex)
+          {
+            // Skip.
+          }
+        catch (MimeTypeParseException ex)
+          {
+            // Skip.
+          }
+      }
   }
 
   /**
@@ -263,16 +355,52 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
    * specified native and a DataFlavor whose MIME type is a decoded 
    * version of the native.
    */ 
-  public List<DataFlavor> getFlavorsForNative (String nat)
-    throws NotImplementedException
+  public List<DataFlavor> getFlavorsForNative(String nat)
   {
-    throw new Error ("Not implemented");
+    List<DataFlavor> ret = new ArrayList<DataFlavor>();
+    if (nat == null)
+      {
+        Collection<List<DataFlavor>> all = nativeToFlavorMap.values();
+        for (List<DataFlavor> list : all)
+          {
+            for (DataFlavor flav : list)
+              {
+                if (! ret.contains(flav))
+                  ret.add(flav);
+              }
+          }
+      }
+    else
+      {
+        List<DataFlavor> list = nativeToFlavorMap.get(nat);
+        if (list != null)
+          ret.addAll(list);
+      }
+    return ret;
   }
 
   public List<String> getNativesForFlavor (DataFlavor flav)
-    throws NotImplementedException
   {
-    throw new Error ("Not implemented");
+    List<String> ret = new ArrayList<String>();
+    if (flav == null)
+      {
+        Collection<List<String>> all = flavorToNativeMap.values();
+        for (List<String> list : all)
+          {
+            for (String nat : list)
+              {
+                if (! ret.contains(nat))
+                  ret.add(nat);
+              }
+          }
+      }
+    else
+      {
+        List<String> list = flavorToNativeMap.get(flav);
+        if (list != null)
+          ret.addAll(list);
+      }
+    return ret;
   }
   
   /**
@@ -298,10 +426,10 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
   {
     if ((nativeStr == null) || (flavor == null))
       throw new NullPointerException();
-    List flavors = (List) nativeToFlavorMap.get(nativeStr);
+    List<DataFlavor> flavors = nativeToFlavorMap.get(nativeStr);
     if (flavors == null) 
       {
-        flavors = new ArrayList();
+        flavors = new ArrayList<DataFlavor>();
         nativeToFlavorMap.put(nativeStr, flavors);
       }
     else
@@ -336,10 +464,10 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
   {
     if ((nativeStr == null) || (flavor == null))
       throw new NullPointerException();
-    List natives = (List) flavorToNativeMap.get(flavor);
+    List<String> natives = flavorToNativeMap.get(flavor);
     if (natives == null) 
       {
-        natives = new ArrayList();
+        natives = new ArrayList<String>();
         flavorToNativeMap.put(flavor, natives);
       }
     else

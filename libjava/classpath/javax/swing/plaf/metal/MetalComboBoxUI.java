@@ -48,7 +48,6 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.CellRendererPane;
 import javax.swing.ComboBoxEditor;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -217,7 +216,7 @@ public class MetalComboBoxUI extends BasicComboBoxUI
    */
   protected ComboPopup createPopup()
   {
-    return new MetalComboPopup(comboBox);
+    return super.createPopup();
   }
   
   /**
@@ -228,7 +227,7 @@ public class MetalComboBoxUI extends BasicComboBoxUI
   protected JButton createArrowButton()
   {
     JButton button = new MetalComboBoxButton(comboBox, new MetalComboBoxIcon(), 
-            new CellRendererPane(), listBox);  
+            currentValuePane, listBox);  
     button.setMargin(new Insets(0, 1, 1, 3));
     return button;
   }
@@ -305,7 +304,6 @@ public class MetalComboBoxUI extends BasicComboBoxUI
       {
         MetalComboBoxButton b = (MetalComboBoxButton) arrowButton;
         d = getDisplaySize();
-        Insets insets = b.getInsets();
         Insets arrowInsets = b.getInsets();
         Insets comboInsets = comboBox.getInsets();
         Icon icon = b.getComboIcon();

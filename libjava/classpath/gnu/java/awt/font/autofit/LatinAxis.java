@@ -49,5 +49,14 @@ class LatinAxis
 
   int widthCount;
   Width[] widths;
-  float edgeDistanceTreshold;
+  int edgeDistanceTreshold;
+  LatinBlue[] blues;
+  int blueCount;
+  int orgDelta;
+  int orgScale;
+  LatinAxis()
+  {
+    widths = new Width[Latin.MAX_WIDTHS];
+    blues = new LatinBlue[Latin.BLUE_MAX];
+  }
 }

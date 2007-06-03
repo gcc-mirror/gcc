@@ -109,7 +109,7 @@ public interface OpenMBeanOperationInfo
    *
    * @return the open type of the return value.
    */
-  OpenType getReturnOpenType();
+  OpenType<?> getReturnOpenType();
 
   /**
    * Returns the return type of the operation, as the class

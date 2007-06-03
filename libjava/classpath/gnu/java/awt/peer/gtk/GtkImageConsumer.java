@@ -55,7 +55,7 @@ public class GtkImageConsumer implements ImageConsumer
 {
   private GtkImage target;
   private int width, height;
-  private Hashtable properties;
+  private Hashtable<?,?> properties;
   private int[] pixelCache = null;
   private ImageProducer source;
 
@@ -97,55 +97,55 @@ public class GtkImageConsumer implements ImageConsumer
   }
 
   public synchronized void setPixels (int x, int y, int width, int height, 
-				      ColorModel cm, byte[] pixels,
-				      int offset, int scansize)
+                                      ColorModel cm, byte[] pixels,
+                                      int offset, int scansize)
   {
     setPixels (x, y, width, height, cm, convertPixels (pixels), offset,
                scansize);
   }
 
   public synchronized void setPixels (int x, int y, int width, int height,
-				      ColorModel cm, int[] pixels,
-				      int offset, int scansize)
+                                      ColorModel cm, int[] pixels,
+                                      int offset, int scansize)
   {
     if (pixelCache == null)
       return; // Not sure this should ever happen.
 
     if (cm.equals(GtkImage.nativeModel))
       for (int i = 0; i < height; i++)
-	System.arraycopy (pixels, offset + (i * scansize),
-			  pixelCache, (y + i) * this.width + x,
-			  width);
+        System.arraycopy (pixels, offset + (i * scansize),
+                          pixelCache, (y + i) * this.width + x,
+                          width);
     else
       {
-	if (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN)
-	  {
-	    for (int i = 0; i < height; i++)
-	      for (int j = 0; j < width; j++)
-		{
-		  // get in RRGGBBAA and convert to AARRGGBB
-		  int pix = cm.getRGB(pixels[offset + (i * scansize) + x + j]);
-		  int a = ((pix & 0xFF000000) >> 24) & 0xFF;
-		  int rgb = (pix & 0x00FFFFFF) << 8;
-		  pix = rgb | a;
-		  pixelCache[(y + i) * this.width + x + j] = pix;
-		}
-	  }
-	else
-	  {
-	    for (int i = 0; i < height; i++)
-	      for (int j = 0; j < width; j++)
-		{
-		  // get in AARRGGBB and convert to AABBGGRR
-		  int pix = cm.getRGB(pixels[offset + (i * scansize) + x + j]);
-		  byte b = (byte)(pix & 0xFF);
-		  byte r = (byte)(((pix & 0x00FF0000) >> 16) & 0xFF);
-		  pix &= 0xFF00FF00;
-		  pix |= ((b & 0xFF) << 16);
-		  pix |= (r & 0xFF);
-		  pixelCache[(y + i) * this.width + x + j] = pix;
-		}
-	  }
+        if (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN)
+          {
+            for (int i = 0; i < height; i++)
+              for (int j = 0; j < width; j++)
+                {
+                  // get in RRGGBBAA and convert to AARRGGBB
+                  int pix = cm.getRGB(pixels[offset + (i * scansize) + x + j]);
+                  int a = ((pix & 0xFF000000) >> 24) & 0xFF;
+                  int rgb = (pix & 0x00FFFFFF) << 8;
+                  pix = rgb | a;
+                  pixelCache[(y + i) * this.width + x + j] = pix;
+                }
+          }
+        else
+          {
+            for (int i = 0; i < height; i++)
+              for (int j = 0; j < width; j++)
+                {
+                  // get in AARRGGBB and convert to AABBGGRR
+                  int pix = cm.getRGB(pixels[offset + (i * scansize) + x + j]);
+                  byte b = (byte)(pix & 0xFF);
+                  byte r = (byte)(((pix & 0x00FF0000) >> 16) & 0xFF);
+                  pix &= 0xFF00FF00;
+                  pix |= ((b & 0xFF) << 16);
+                  pix |= (r & 0xFF);
+                  pixelCache[(y + i) * this.width + x + j] = pix;
+                }
+          }
       }
   }
 
@@ -162,7 +162,7 @@ public class GtkImageConsumer implements ImageConsumer
     return ret;
   }
 
-  public synchronized void setProperties (Hashtable props)
+  public synchronized void setProperties (Hashtable<?,?> props)
   {
     this.properties = props;
   }

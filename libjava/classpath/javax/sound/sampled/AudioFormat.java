@@ -133,7 +133,7 @@ public class AudioFormat
    */
   protected int sampleSizeInBits;
 
-  private Map properties;
+  private Map<String, Object> properties;
 
   /**
    * Create a new audio format, given various attributes of it.
@@ -158,7 +158,7 @@ public class AudioFormat
     this.frameSize = frameSize;
     this.frameRate = frameRate;
     this.bigEndian = bigEndian;
-    this.properties = Collections.EMPTY_MAP;
+    this.properties = Collections.<String, Object> emptyMap();
   }
 
   /**
@@ -186,7 +186,7 @@ public class AudioFormat
     this.frameSize = frameSize;
     this.frameRate = frameRate;
     this.bigEndian = bigEndian;
-    this.properties = Collections.unmodifiableMap(new HashMap(properties));
+    this.properties = Collections.unmodifiableMap(new HashMap<String, Object>(properties));
   }
 
   /**
@@ -218,7 +218,7 @@ public class AudioFormat
       this.frameSize = (sampleSizeInBits + 7) / 8 * channels;
     this.frameRate = sampleRate;
     this.bigEndian = bigEndian;
-    this.properties = Collections.EMPTY_MAP;
+    this.properties = Collections.<String, Object> emptyMap();
   }
 
   /**

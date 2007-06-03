@@ -215,6 +215,8 @@ public class BasicComboBoxUI extends ComboBoxUI
         isMinimumSizeDirty = true;
         comboBox = (JComboBox) c;
         installDefaults();
+        popup = createPopup();
+        listBox = popup.getList();
 
         // Set editor and renderer for the combo box. Editor is used
         // only if combo box becomes editable, otherwise renderer is used
@@ -229,14 +231,9 @@ public class BasicComboBoxUI extends ComboBoxUI
             currentEditor = createEditor();
             comboBox.setEditor(currentEditor);
           } 
-        editor = currentEditor.getEditorComponent();
 
         installComponents();
         installListeners();
-        if (arrowButton != null)
-          configureArrowButton();
-        if (editor != null)
-          configureEditor();
         comboBox.setLayout(createLayoutManager());
         comboBox.setFocusable(true);
         installKeyboardActions();
@@ -473,13 +470,11 @@ public class BasicComboBoxUI extends ComboBoxUI
    */
   protected void installComponents()
   {
-    // create drop down list of items
-    popup = createPopup();
-    listBox = popup.getList();
-
     // create and install arrow button
     arrowButton = createArrowButton();
     comboBox.add(arrowButton);
+    if (arrowButton != null)
+      configureArrowButton();
 
     if (comboBox.isEditable())
       addEditor();
@@ -494,24 +489,20 @@ public class BasicComboBoxUI extends ComboBoxUI
    */
   protected void uninstallComponents()
   {
-    // uninstall arrow button
-    unconfigureArrowButton();
-    comboBox.remove(arrowButton);
-    arrowButton = null;
-
-    popup = null;
-
-    if (comboBox.getRenderer() instanceof UIResource)
-      comboBox.setRenderer(null);
-
-    // if the editor is not an instanceof UIResource, it was not set by the
-    // UI delegate, so don't clear it...
-    ComboBoxEditor currentEditor = comboBox.getEditor();
-    if (currentEditor instanceof UIResource)
+    // Unconfigure arrow button.
+    if (arrowButton != null)
       {
-        comboBox.setEditor(null);
-        editor = null;
+        unconfigureArrowButton();
       }
+
+    // Unconfigure editor.
+    if (editor != null)
+      {
+        unconfigureEditor();
+      }
+
+    comboBox.removeAll();
+    arrowButton = null;
   }
 
   /**
@@ -521,7 +512,11 @@ public class BasicComboBoxUI extends ComboBoxUI
   {
     removeEditor();
     editor = comboBox.getEditor().getEditorComponent();
-    comboBox.add(editor);
+    if (editor != null)
+      {
+        configureEditor();
+        comboBox.add(editor);
+      }
   }
 
   /**
@@ -572,10 +567,8 @@ public class BasicComboBoxUI extends ComboBoxUI
       {
         arrowButton.setEnabled(comboBox.isEnabled());
         arrowButton.setFocusable(false);
-        if (popupMouseListener != null)
-          arrowButton.addMouseListener(popupMouseListener);
-        if (popupMouseMotionListener != null)
-          arrowButton.addMouseMotionListener(popupMouseMotionListener);
+        arrowButton.addMouseListener(popup.getMouseListener());
+        arrowButton.addMouseMotionListener(popup.getMouseMotionListener());
         
         // Mark the button as not closing the popup, we handle this ourselves.
         arrowButton.putClientProperty(BasicLookAndFeel.DONT_CANCEL_POPUP,
@@ -855,9 +848,6 @@ public class BasicComboBoxUI extends ComboBoxUI
    */
   public void paintCurrentValue(Graphics g, Rectangle bounds, boolean hasFocus)
   {
-    Object currentValue = comboBox.getSelectedItem();
-    boolean isPressed = arrowButton.getModel().isPressed();
-
     /* Gets the component to be drawn for the current value.
      * If there is currently no selected item we will take an empty
      * String as replacement.
@@ -1109,7 +1099,6 @@ public class BasicComboBoxUI extends ComboBoxUI
       // editable
       Insets i = getInsets();
       int arrowSize = comboBox.getHeight() - (i.top + i.bottom);
-      int editorWidth = comboBox.getBounds().width - arrowSize;
 
       if (arrowButton != null)
         arrowButton.setBounds(comboBox.getWidth() - (i.right + arrowSize),
@@ -1345,52 +1334,76 @@ public class BasicComboBoxUI extends ComboBoxUI
     public void propertyChange(PropertyChangeEvent e)
     {
       // Lets assume every change invalidates the minimumsize.
-      isMinimumSizeDirty = true;
-
-      if (e.getPropertyName().equals("enabled"))
+      String propName = e.getPropertyName();
+      if (propName.equals("enabled"))
         {
-          arrowButton.setEnabled(comboBox.isEnabled());
+          boolean enabled = comboBox.isEnabled();
+          if (editor != null)
+            editor.setEnabled(enabled);
+          if (arrowButton != null)
+            arrowButton.setEnabled(enabled);
 
-          if (comboBox.isEditable())
-            comboBox.getEditor().getEditorComponent().setEnabled(
-                comboBox.isEnabled());
+          comboBox.repaint();
+        }
+      else if (propName.equals("editor") && comboBox.isEditable())
+        {
+          addEditor();
+          comboBox.revalidate();
         }
       else if (e.getPropertyName().equals("editable"))
         {
           if (comboBox.isEditable())
             {
-              configureEditor();
               addEditor();
             }
           else
             {
-              unconfigureEditor();
               removeEditor();
             }
 
           comboBox.revalidate();
-          comboBox.repaint();
         }
-      else if (e.getPropertyName().equals("dataModel"))
+      else if (propName.equals("model"))
         {
           // remove ListDataListener from old model and add it to new model
           ComboBoxModel oldModel = (ComboBoxModel) e.getOldValue();
-          if (oldModel != null)
+          if (oldModel != null && listDataListener != null)
             oldModel.removeListDataListener(listDataListener);
 
-          if ((ComboBoxModel) e.getNewValue() != null)
+          ComboBoxModel newModel = (ComboBoxModel) e.getNewValue();
+          if (newModel != null && listDataListener != null)
             comboBox.getModel().addListDataListener(listDataListener);
-        }
-      else if (e.getPropertyName().equals("font"))
-        {
-          Font font = (Font) e.getNewValue();
-          editor.setFont(font);
-          listBox.setFont(font);
-          arrowButton.setFont(font);
+
+          if (editor != null)
+            {
+              comboBox.configureEditor(comboBox.getEditor(),
+                                       comboBox.getSelectedItem());
+            }
+          isMinimumSizeDirty = true;
           comboBox.revalidate();
           comboBox.repaint();
         }
-
+      else if (propName.equals("font"))
+        {
+          Font font = (Font) e.getNewValue();
+          if (editor != null)
+            {
+              editor.setFont(font);
+            }
+          listBox.setFont(font);
+          isMinimumSizeDirty = true;
+          comboBox.revalidate();
+        }
+      else if (propName.equals("prototypeDisplayValue"))
+        {
+          isMinimumSizeDirty = true;
+          comboBox.revalidate();
+        }
+      else if (propName.equals("renderer"))
+        {
+          isMinimumSizeDirty = true;
+          comboBox.revalidate();
+        }
       // FIXME: Need to handle changes in other bound properties.       
     }
   }

@@ -181,7 +181,7 @@ public class JToolTip extends JComponent implements Accessible
   {
     StringBuffer sb = new StringBuffer(super.paramString());
     sb.append(",tiptext=");
-    if (text != null);
+    if (text != null)
       sb.append(text);
     return sb.toString();
   }

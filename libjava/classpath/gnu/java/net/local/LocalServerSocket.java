@@ -44,7 +44,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.net.SocketException;
 
 public final class LocalServerSocket extends ServerSocket
 {

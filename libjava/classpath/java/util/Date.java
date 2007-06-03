@@ -856,7 +856,7 @@ public class Date
 		  hour += 12;
 	      }
 	    else if (parseDayOfWeek(tok))
-	      ; // Ignore it; throw the token away.
+	      { /* Ignore it; throw the token away. */ }
 	    else if (tok.equals("UT") || tok.equals("UTC") || tok.equals("GMT"))
 	      localTimezone = false;
 	    else if (tok.startsWith("UT") || tok.startsWith("GMT"))

@@ -73,6 +73,8 @@ private:
   void writeObject(::java::io::ObjectOutputStream *);
   void readObject(::java::io::ObjectInputStream *);
 public:
+  virtual ::java::lang::String * getDisplayName(jint, jint, ::java::util::Locale *);
+  virtual ::java::util::Map * getDisplayNames(jint, jint, ::java::util::Locale *);
   virtual jint compareTo(::java::lang::Object *);
   static const jint ERA = 0;
   static const jint YEAR = 1;
@@ -115,6 +117,9 @@ public:
   static const jint UNDECIMBER = 12;
   static const jint AM = 0;
   static const jint PM = 1;
+  static const jint ALL_STYLES = 0;
+  static const jint SHORT = 1;
+  static const jint LONG = 2;
 public: // actually protected
   JArray< jint > * __attribute__((aligned(__alignof__( ::java::lang::Object)))) fields;
   JArray< jboolean > * isSet__;

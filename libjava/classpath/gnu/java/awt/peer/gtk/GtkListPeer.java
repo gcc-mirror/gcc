@@ -148,33 +148,33 @@ public class GtkListPeer extends GtkComponentPeer
       {
         // Only generate the ActionEvent on the second click of a
         // multiple click.
-	MouseEvent me = (MouseEvent) e;
-	if (!me.isConsumed ()
-	    && (me.getModifiersEx () & MouseEvent.BUTTON1_DOWN_MASK) != 0
-	    && me.getClickCount() == 2)
-	  {
+        MouseEvent me = (MouseEvent) e;
+        if (!me.isConsumed ()
+            && (me.getModifiersEx () & MouseEvent.BUTTON1_DOWN_MASK) != 0
+            && me.getClickCount() == 2)
+          {
             String selectedItem = ((List) awtComponent).getSelectedItem ();
 
             // Double-click only generates an Action event if
             // something is selected.
             if (selectedItem != null)
-	      postActionEvent (((List) awtComponent).getSelectedItem (), 
-			       me.getModifiersEx ());
-	  }
+              postActionEvent (((List) awtComponent).getSelectedItem (), 
+                               me.getModifiersEx ());
+          }
       }
 
     if (e.getID () == KeyEvent.KEY_PRESSED)
       {
-	KeyEvent ke = (KeyEvent) e;
-	if (!ke.isConsumed () && ke.getKeyCode () == KeyEvent.VK_ENTER)
-	  {
+        KeyEvent ke = (KeyEvent) e;
+        if (!ke.isConsumed () && ke.getKeyCode () == KeyEvent.VK_ENTER)
+          {
             String selectedItem = ((List) awtComponent).getSelectedItem ();
 
             // Enter only generates an Action event if something is
             // selected.
             if (selectedItem != null)
-	      postActionEvent (selectedItem, ke.getModifiersEx ());
-	  }
+              postActionEvent (selectedItem, ke.getModifiersEx ());
+          }
       }
 
     super.handleEvent (e);

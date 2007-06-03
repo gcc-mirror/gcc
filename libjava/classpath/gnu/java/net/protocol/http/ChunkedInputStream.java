@@ -58,10 +58,6 @@ import java.net.ProtocolException;
 public class ChunkedInputStream
   extends InputStream
 {
-
-  private static final byte CR = 0x0d;
-  private static final byte LF = 0x0a;
-
   Headers headers;
 
   /** The underlying stream. */

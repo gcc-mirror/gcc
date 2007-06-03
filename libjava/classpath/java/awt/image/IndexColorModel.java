@@ -134,7 +134,7 @@ public class IndexColorModel extends ColorModel
     if (size < 1)
       throw new IllegalArgumentException("size < 1");
     map_size = size;
-    rgb = new int[size];
+    rgb = createColorMap(bits, size);
     for (int i = 0; i < size; i++)
       {
         rgb[i] = (0xff000000
@@ -187,7 +187,7 @@ public class IndexColorModel extends ColorModel
     map_size = size;
     opaque = (alphas == null);
 
-    rgb = new int[size];
+    rgb = createColorMap(bits, size);
     if (alphas == null)
       {
         for (int i = 0; i < size; i++)
@@ -275,7 +275,7 @@ public class IndexColorModel extends ColorModel
     map_size = size;
     opaque = !hasAlpha;
 
-    rgb = new int[size];
+    rgb = createColorMap(bits, size);
     if (hasAlpha)
     {
       int alpha;
@@ -360,7 +360,7 @@ public class IndexColorModel extends ColorModel
       throw new IllegalArgumentException("size < 1");
     map_size = size;
     opaque = !hasAlpha;
-    rgb = new int[size];
+    rgb = createColorMap(bits, size);
     if (!hasAlpha)
       for (int i = 0; i < size; i++)
 	rgb[i] = cmap[i + start] | 0xff000000;
@@ -419,7 +419,7 @@ public class IndexColorModel extends ColorModel
     this.trans = -1;
     this.validBits = validBits;
 
-    rgb = new int[size];
+    rgb = createColorMap(bits, size);
     if (!hasAlpha)
       for (int i = 0; i < size; i++)
 	rgb[i] = cmap[i + start] | 0xff000000;
@@ -725,5 +725,12 @@ public class IndexColorModel extends ColorModel
             hasAlpha = true;
           }
       }
+  }
+
+  private int[] createColorMap(int bits, int size)
+  {
+    // According to a Mauve test, the RI allocates at least 256 entries here.
+    int realSize = Math.max(256, Math.max(1 << bits, size));
+    return new int[realSize];
   }
 }

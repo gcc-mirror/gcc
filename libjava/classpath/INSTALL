@@ -50,6 +50,11 @@ Suggested Software
         - gdk-pixbuf
 
 	- XTest Extension (libXtst) for GdkRobot support in java.awt.
+	
+	- There is a bug in earlier versions of at-spi, atk, and gail, which are
+	used for GNOME accessibility.  Prior to version 1.18.0 of these packages,
+	gtk graphical applications should be run without accessibility (clear the
+	GTK_MODULES environment variable).
 
 	For building gcjwebplugin you'll need the Mozilla plugin
 	support headers and libraries.

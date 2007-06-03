@@ -248,7 +248,7 @@ public class XMLEncoder extends Encoder
     
     scanEngine.writeObject(o);
     
-    if (get(o) == null);
+    if (get(o) == null)
       super.writeObject(o);
       
     accessCounter--;

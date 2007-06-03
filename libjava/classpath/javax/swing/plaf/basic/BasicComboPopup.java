@@ -271,9 +271,17 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    */
   public void uninstallingUI()
   {
+    if (propertyChangeListener != null)
+      {
+        comboBox.removePropertyChangeListener(propertyChangeListener);
+      }
+    if (itemListener != null)
+      {
+        comboBox.removeItemListener(itemListener);
+      }
     uninstallComboBoxModelListeners(comboBox.getModel());
-    uninstallListeners();
     uninstallKeyboardActions();
+    uninstallListListeners();
   }
 
   /**
@@ -466,7 +474,6 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
     list.setBorder(null);
     list.setCellRenderer(comboBox.getRenderer());
     list.setFocusable(false);
-    syncListSelection();
     list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
     installListListeners();
   }
@@ -1010,15 +1017,6 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
   // ------ private helper methods --------------------
 
   /**
-   * This method uninstalls listeners installed by the UI
-   */
-  private void uninstallListeners()
-  {
-    uninstallComboBoxListeners();
-    uninstallComboBoxModelListeners(comboBox.getModel());
-  }
-
-  /**
    * This method uninstalls Listeners registered with combo boxes list of
    * items
    */
@@ -1029,19 +1027,6 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
 
     list.removeMouseMotionListener(listMouseMotionListener);
     listMouseMotionListener = null;
-  }
-
-  /**
-   * This method uninstalls listeners listening to combo box  associated with
-   * this popup menu
-   */
-  private void uninstallComboBoxListeners()
-  {
-    comboBox.removeItemListener(itemListener);
-    itemListener = null;
-
-    comboBox.removePropertyChangeListener(propertyChangeListener);
-    propertyChangeListener = null;
   }
 
   void syncListSelection()

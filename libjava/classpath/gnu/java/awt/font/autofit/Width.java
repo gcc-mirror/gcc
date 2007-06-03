@@ -43,4 +43,20 @@ public class Width
   int org;
   int cur;
   int fit;
+  Width(int dist)
+  {
+    org = dist;
+  }
+
+  public String toString()
+  {
+    StringBuilder s = new StringBuilder();
+    s.append("[Width] org: ");
+    s.append(org);
+    s.append(", cur: ");
+    s.append(cur);
+    s.append(", fit: ");
+    s.append(fit);
+    return s.toString();
+  }
 }

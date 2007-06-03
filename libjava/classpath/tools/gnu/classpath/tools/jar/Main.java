@@ -80,7 +80,7 @@ public class Main
   File manifestFile;
 
   /** A list of Entry objects, each describing a file to write.  */
-  ArrayList entries = new ArrayList();
+  ArrayList<Entry> entries = new ArrayList<Entry>();
 
   /** Used only while parsing, holds the first argument for -C.  */
   String changedDirectory;

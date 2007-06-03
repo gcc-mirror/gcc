@@ -74,7 +74,7 @@ public class CharacterAttributeTranslator
     colorMap.put("teal" , "#008080");
     colorMap.put("white" , "#FFFFFF");
     colorMap.put("yellow" , "#FFFF00");
-  };
+  }
   
   /**
    * Convert the color string represenation into java.awt.Color. The valid

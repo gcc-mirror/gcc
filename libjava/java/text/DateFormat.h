@@ -39,6 +39,7 @@ public:
 private:
   static ::java::text::DateFormat * computeInstance(jint, ::java::util::Locale *, jboolean, jboolean);
   static ::java::text::DateFormat * computeInstance(jint, jint, ::java::util::Locale *, jboolean, jboolean);
+  static ::java::text::DateFormat * computeDefault(jint, jint, jboolean, jboolean);
 public:
   static ::java::text::DateFormat * getDateInstance();
   static ::java::text::DateFormat * getDateInstance(jint);

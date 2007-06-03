@@ -147,6 +147,8 @@ public class CipherOutputStream extends FilterOutputStream
    */
   public void write(byte[] buf, int off, int len) throws IOException
   {
-    out.write(cipher.update(buf, off, len));
+    byte[] b = cipher.update(buf, off, len);
+    if (b != null)
+      out.write(b);
   }
 }

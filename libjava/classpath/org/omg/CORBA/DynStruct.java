@@ -1,5 +1,5 @@
 /* DynStruct.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,6 +45,8 @@ import org.omg.CORBA.DynAnyPackage.InvalidSeq;
  * with the named fields). The internal reference, described in
  * {@link DynAny#current_component()}, iterates over the fields of the
  * structure.
+ *
+ * @deprecated by {@link org.omg.DynamicAny.DynStruct}
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */

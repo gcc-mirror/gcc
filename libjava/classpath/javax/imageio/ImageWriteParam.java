@@ -278,7 +278,7 @@ public class ImageWriteParam extends IIOParam
   public String[] getCompressionQualityDescriptions()
   {
     checkNotExplicitCompression();
-    checkCompressionTypesSet();;
+    checkCompressionTypesSet();
     
     return null;
   }
@@ -286,7 +286,7 @@ public class ImageWriteParam extends IIOParam
   public float[] getCompressionQualityValues()
   {
     checkNotExplicitCompression();
-    checkCompressionTypesSet();;
+    checkCompressionTypesSet();
     
     return null;
   }

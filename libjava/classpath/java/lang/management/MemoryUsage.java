@@ -180,14 +180,14 @@ public class MemoryUsage
     if (data == null)
       return null;
     CompositeType type = data.getCompositeType();
-    ThreadInfo.checkAttribute(type, "init", SimpleType.LONG);
-    ThreadInfo.checkAttribute(type, "used", SimpleType.LONG);
-    ThreadInfo.checkAttribute(type, "committed", SimpleType.LONG);
-    ThreadInfo.checkAttribute(type, "max", SimpleType.LONG);
-    return new MemoryUsage(((Long) data.get("init")).longValue(),
-			   ((Long) data.get("used")).longValue(),
-			   ((Long) data.get("committed")).longValue(),
-			   ((Long) data.get("max")).longValue());
+    ThreadInfo.checkAttribute(type, "Init", SimpleType.LONG);
+    ThreadInfo.checkAttribute(type, "Used", SimpleType.LONG);
+    ThreadInfo.checkAttribute(type, "Committed", SimpleType.LONG);
+    ThreadInfo.checkAttribute(type, "Max", SimpleType.LONG);
+    return new MemoryUsage(((Long) data.get("Init")).longValue(),
+			   ((Long) data.get("Used")).longValue(),
+			   ((Long) data.get("Committed")).longValue(),
+			   ((Long) data.get("Max")).longValue());
   }
 
   /**

@@ -43,6 +43,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Set;
 import java.util.jar.JarFile;
 
 /**
@@ -70,7 +71,8 @@ public class IndexListParser
   double versionNumber;
   // Map each jar to the prefixes defined for the jar.
   // This is intentionally kept in insertion order.
-  LinkedHashMap prefixes = new LinkedHashMap();
+  LinkedHashMap<URL, Set<String>> prefixes
+    = new LinkedHashMap<URL, Set<String>>();
   
   /**
    * Parses the given jarfile's INDEX.LIST file if it exists.
@@ -107,7 +109,7 @@ public class IndexListParser
         while ((line = br.readLine()) != null)
           {
             URL jarURL = new URL(baseURL, line);
-            HashSet values = new HashSet();
+            HashSet<String> values = new HashSet<String>();
             
             // Read the names in the section.
             while ((line = br.readLine()) != null)
@@ -174,7 +176,7 @@ public class IndexListParser
    * 
    * @return an map of all the headers, or null if no INDEX.LIST was found
    */
-  public LinkedHashMap getHeaders()
+  public LinkedHashMap<URL, Set<String>> getHeaders()
   {
     return prefixes;
   }

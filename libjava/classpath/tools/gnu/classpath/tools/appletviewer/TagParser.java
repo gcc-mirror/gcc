@@ -130,7 +130,7 @@ public class TagParser
   {    
     ArrayList allTags = new ArrayList();
     if (document == null)
-      return null;;
+      return null;
     
     recurseDocument(document.getChildNodes());
 

@@ -74,10 +74,8 @@ public class GtkScrollPanePeer extends GtkContainerPeer
     // If the child is in this range, GTK adds both scrollbars, but
     // the AWT doesn't.  So set the peer's scroll policy to
     // GTK_POLICY_NEVER.
-    if ((width > dim[0] - getVScrollbarWidth ()
-	 && width <= dim[0])
-	&& (height > dim[1] - getHScrollbarHeight ()
-	    && height <= dim[1]))
+    if ((width > dim[0] - getVScrollbarWidth () && width <= dim[0])
+        && (height > dim[1] - getHScrollbarHeight () && height <= dim[1]))
       setPolicy (ScrollPane.SCROLLBARS_NEVER);
     else
       setPolicy (((ScrollPane) awtComponent).getScrollbarDisplayPolicy ());

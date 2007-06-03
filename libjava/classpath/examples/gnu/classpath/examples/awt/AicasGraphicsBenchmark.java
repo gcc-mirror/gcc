@@ -100,8 +100,8 @@ public class AicasGraphicsBenchmark extends Panel
 
   public AicasGraphicsBenchmark()
   {
-    pngTestImage = loadImage("aicas.png");
-    gifTestImage = loadImage("palme.gif");
+    pngTestImage = loadImage("../icons/aicas.png");
+    gifTestImage = loadImage("../icons/palme.gif");
 
     setLayout(new BorderLayout());
     testLabel = new Label();

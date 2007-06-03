@@ -85,9 +85,7 @@ public class ServerSocket
    * This constructor is only used by java.nio.
    */
 
-  // FIXME: Workaround a bug in gcj.
-  //ServerSocket (PlainSocketImpl impl) throws IOException
-  ServerSocket(SocketImpl impl) throws IOException
+  ServerSocket(PlainSocketImpl impl) throws IOException
   {
     if (impl == null)
       throw new NullPointerException("impl may not be null");
@@ -101,8 +99,6 @@ public class ServerSocket
    * This method is only used by java.nio.
    */
 
-  // FIXME: Workaround a bug in gcj.
-  //PlainSocketImpl getImpl()
   SocketImpl getImpl()
   {
     return impl;
@@ -390,6 +386,7 @@ public class ServerSocket
 
     impl.accept(socket.impl);
     socket.bound = true;
+    socket.implCreated = true;
 
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)

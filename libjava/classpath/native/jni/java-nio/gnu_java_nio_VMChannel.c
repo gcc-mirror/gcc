@@ -1,5 +1,5 @@
 /* gnu_java_nio_VMChannel.c -
-   Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,6 @@ exception statement from your version. */
 #include <config-int.h>
 
 #include <sys/types.h>
-#include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -66,6 +65,14 @@ exception statement from your version. */
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #endif /* HAVE_FCNTL_H */
+
+#if defined(HAVE_SYS_IOCTL_H)
+#define BSD_COMP /* Get FIONREAD on Solaris2 */
+#include <sys/ioctl.h>
+#endif
+#if defined(HAVE_SYS_FILIO_H) /* Get FIONREAD on Solaris 2.5 */
+#include <sys/filio.h>
+#endif
 
 #define CONNECT_EXCEPTION "java/net/ConnectException"
 #define IO_EXCEPTION "java/io/IOException"
@@ -1501,6 +1508,10 @@ Java_gnu_java_nio_VMChannel_accept (JNIEnv *env,
           case EWOULDBLOCK:
 #endif
           case EAGAIN:
+            if (!is_non_blocking_fd(fd))
+              {
+                JCL_ThrowException(env, SOCKET_TIMEOUT_EXCEPTION, "Accept timed out");
+              }
             /* Socket in non-blocking mode and no pending connection. */
             return -1;
           default:
@@ -1605,8 +1616,6 @@ Java_gnu_java_nio_VMChannel_open (JNIEnv *env,
   int nmode = 0;
   int ret;
   const char *npath;
-  mode_t mask = umask (0);
-  umask (mask);
 
   if ((mode & CPNIO_READ) && (mode & CPNIO_WRITE))
     nmode = O_RDWR;
@@ -1626,7 +1635,7 @@ Java_gnu_java_nio_VMChannel_open (JNIEnv *env,
 
 /*   NIODBG("path: %s; mode: %x", npath, nmode); */
 
-  ret = open (npath, nmode, 0777 & ~mask);
+  ret = open (npath, nmode, 0666);
 
 /*   NIODBG("ret: %d\n", ret); */
 

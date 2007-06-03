@@ -626,7 +626,7 @@ old_postuninstall_cmds=
 
 if test -n "$RANLIB"; then
   old_archive_cmds="$old_archive_cmds~\$RANLIB \$oldlib"
-  old_postinstall_cmds="\$RANLIB \$oldlib~$old_postinstall_cmds"
+  old_postinstall_cmds="~$old_postinstall_cmds~\$RANLIB \$oldlib"
 fi
 
 # Source the script associated with the $tagname tag configuration.
@@ -1133,7 +1133,7 @@ freebsd1*)
   ;;
 
 freebsd*)
-  objformat=`test -x /usr/bin/objformat && /usr/bin/objformat || echo aout`
+  objformat=`test -x /usr/bin/objformat && /usr/bin/objformat || echo elf`
   version_type=freebsd-$objformat
   case $version_type in
     freebsd-elf*)

@@ -39,9 +39,7 @@ class gnu::java::net::protocol::http::Headers : public ::java::lang::Object
 
 public:
   Headers();
-public: // actually package-private
   virtual ::java::util::Iterator * iterator();
-public:
   virtual ::java::lang::String * getValue(::java::lang::String *);
   virtual jint getIntValue(::java::lang::String *);
   virtual jlong getLongValue(::java::lang::String *);

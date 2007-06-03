@@ -390,7 +390,6 @@ public class gnuDTD
             allowed.add(allowed_values [ i ]);
           }
       }
-    ;
 
     AttributeList attr =
       new AttributeList(name, type, modifier, default_value, allowed, null);

@@ -22,6 +22,7 @@ extern "Java"
           namespace autofit
           {
               class LatinAxis;
+              class LatinBlue;
               class Width;
           }
         }
@@ -39,7 +40,11 @@ public: // actually package-private
   jint delta;
   jint widthCount;
   JArray< ::gnu::java::awt::font::autofit::Width * > * widths;
-  jfloat edgeDistanceTreshold;
+  jint edgeDistanceTreshold;
+  JArray< ::gnu::java::awt::font::autofit::LatinBlue * > * blues;
+  jint blueCount;
+  jint orgDelta;
+  jint orgScale;
 public:
   static ::java::lang::Class class$;
 };

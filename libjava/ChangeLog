@@ -1,3 +1,91 @@
+2007-06-03  Matthias Klose  <doko@ubuntu.com>
+
+	* java/io/natFileWin32.cc (setFilePermissions): New (stub only).
+	_access: Handle EXEC query, stub only.
+
+2007-06-03  Matthias Klose  <doko@ubuntu.com>
+
+	Merged from classpath:
+	* gnu/java/nio/SelectorProviderImpl.java: Whitespace merge.
+	* java/lang/System.java(inheritedChannel): New.
+	* java/lang/Character.java: Remove stray`;'.
+	* java/net/MulticastSocket.java: Merged.
+	* java/text/DateFormatSymbols.java(getInstance): New, comment updates.
+	* java/text/Collator.java(getInstance): Merged.
+	* java/util/Calendar.java: New attributes ALL_STYLES, SHORT, LONG.
+	getDisplayName, getDisplayNames: New.
+	* java/util/logging/Logger.java: Merged.
+	* Regenerate .class and .h files.
+
+2007-06-03  Matthias Klose  <doko@ubuntu.com>
+
+	* java/io/File.java: Merge with classpath-0.95, new method
+	setFilePermissions, new attribute EXEC.
+	* java/io/natFilePosix.cc (setFilePermissions): New.
+	_access: Handle EXEC query.
+	* classpath/lib/java/io/File.class, java/io/File.h: Regenerate.
+
+2007-06-03  Matthias Klose  <doko@ubuntu.com>
+
+	Imported GNU Classpath 0.95.
+
+	* classpath/Makefile.in,
+	classpath/native/jni/midi-dssi/Makefile.in,
+	classpath/native/jni/classpath/Makefile.in,
+	classpath/native/jni/Makefile.in,
+	classpath/native/jni/gconf-peer/Makefile.in,
+	classpath/native/jni/java-io/Makefile.in,
+	classpath/native/jni/native-lib/Makefile.in,
+	classpath/native/jni/java-util/Makefile.in,
+	classpath/native/jni/midi-alsa/Makefile.in,
+	classpath/native/jni/java-lang/Makefile.in,
+	classpath/native/jni/java-nio/Makefile.in,
+	classpath/native/jni/java-net/Makefile.in,
+	classpath/native/jni/xmlj/Makefile.in,
+	classpath/native/jni/qt-peer/Makefile.in,
+	classpath/native/jni/gtk-peer/Makefile.in,
+	classpath/native/Makefile.in, classpath/native/jawt/Makefile.in,
+	classpath/native/fdlibm/Makefile.in,
+	classpath/native/plugin/Makefile.in,
+	classpath/resource/Makefile.in, classpath/scripts/Makefile.in,
+	classpath/tools/Makefile.in, classpath/doc/Makefile.in,
+	classpath/doc/api/Makefile.in, classpath/lib/Makefile.in,
+	classpath/external/Makefile.in,	classpath/external/jsr166/Makefile.in,
+	classpath/external/sax/Makefile.in,
+	classpath/external/w3c_dom/Makefile.in,
+	classpath/external/relaxngDatatype/Makefile.in,
+	classpath/include/Makefile.in,
+	classpath/examples/Makefile.in: Regenerate.
+	* classpath/config.guess, classpath/config.sub,
+	classpath/ltmain.sh : Update.
+	* classpath/configure, classpath/depcomp, classpath/missing,
+	classpath/aclocal.m4, classpath/install-sh: Regenerate.
+
+	* gnu/classpath/Configuration.java (CLASSPATH_VERSION): Now 0.95.
+	* sources.am: Regenerate.
+	* Makefile.in: Regenerate.
+
+	* Update the .class files and generated CNI header files, add new
+	.class and generated CNI header files.
+	* Remove generated files for removed java source files:
+	classpath/gnu/java/net/BASE64.java,
+	classpath/gnu/java/security/util/Base64.java,
+	classpath/gnu/java/awt/peer/gtk/GThreadMutex.java,
+	classpath/gnu/java/awt/peer/gtk/GThreadNativeMethodRunner.java,
+	classpath/gnu/java/awt/font/autofit/Scaler.java,
+	classpath/gnu/classpath/jdwp/util/Value.java,
+	classpath/gnu/javax/net/ssl/Base64.java.
+	* Remove empty directories.
+
+	* Makefile.am(nat_source_files): Add natVMOperatingSystemMXBeanImpl.cc.
+	* java/lang/Class.java(setAccessible): Merge from classpath.
+	* java/util/Locale.java: Remove.
+	* gnu/java/lang/management/VMOperatingSystemMXBeanImpl.java,
+	gnu/java/lang/management/natVMOperatingSystemMXBeanImpl.cc: New.
+	* gcj/javaprims.h: Update class declarations.
+	* scripts/classes.pl: Update usage.
+	* HACKING: Mention to build all peers.
+
 2007-06-02  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure: Regenerate.

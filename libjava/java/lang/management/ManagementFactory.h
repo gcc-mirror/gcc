@@ -14,6 +14,7 @@ extern "Java"
     namespace management
     {
         class MBeanServer;
+        class MBeanServerConnection;
     }
   }
 }
@@ -33,6 +34,7 @@ public:
   static ::java::util::List * getMemoryManagerMXBeans();
   static ::java::util::List * getGarbageCollectorMXBeans();
   static ::javax::management::MBeanServer * getPlatformMBeanServer();
+  static ::java::lang::Object * newPlatformMXBeanProxy(::javax::management::MBeanServerConnection *, ::java::lang::String *, ::java::lang::Class *);
   static ::java::lang::String * CLASS_LOADING_MXBEAN_NAME;
   static ::java::lang::String * COMPILATION_MXBEAN_NAME;
   static ::java::lang::String * GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE;

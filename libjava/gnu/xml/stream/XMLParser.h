@@ -128,6 +128,8 @@ private:
   void pushInput(::java::lang::String *, ::java::lang::String *, jboolean, jboolean);
   void pushInput(::java::lang::String *, ::gnu::xml::stream::XMLParser$ExternalIds *, jboolean, jboolean);
   void pushInput(::gnu::xml::stream::XMLParser$Input *);
+public: // actually package-private
+  static ::java::lang::String * canonicalize(::java::lang::String *);
 public:
   static ::java::lang::String * absolutize(::java::lang::String *, ::java::lang::String *);
 private:

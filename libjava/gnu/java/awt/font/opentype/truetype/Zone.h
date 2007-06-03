@@ -23,6 +23,7 @@ extern "Java"
           {
             namespace truetype
             {
+                class Point;
                 class Zone;
             }
           }
@@ -52,9 +53,11 @@ public:
   jint getCapacity();
   jint getSize();
   jint getX(jint);
+  jint getX(jint, jint);
   void setX(jint, jint, jboolean);
   void setY(jint, jint, jboolean);
   jint getY(jint);
+  jint getY(jint, jint);
   jint getOriginalX(jint);
   jint getOriginalY(jint);
   void setOriginalX(jint, jint);
@@ -70,18 +73,19 @@ public: // actually package-private
 private:
   void dump();
 public:
-  ::java::awt::geom::PathIterator * getPathIterator();
-  ::java::awt::geom::GeneralPath * getPath();
+  ::java::awt::geom::PathIterator * getPathIterator(jint);
+  ::java::awt::geom::GeneralPath * getPath(jint);
+  jint getNumContours();
+  jint getContourEnd(jint);
+  JArray< ::gnu::java::awt::font::opentype::truetype::Point * > * getPoints();
 private:
-  JArray< jint > * __attribute__((aligned(__alignof__( ::java::lang::Object)))) pos;
-  JArray< jint > * origPos;
-  JArray< jbyte > * flags;
+  JArray< ::gnu::java::awt::font::opentype::truetype::Point * > * __attribute__((aligned(__alignof__( ::java::lang::Object)))) points;
   jint numPoints;
-  static const jint FLAG_TOUCHED_X = 1;
-  static const jint FLAG_TOUCHED_Y = 2;
-  static const jint FLAG_ON_CURVE = 4;
-  static const jint FLAG_CONTOUR_END = 8;
 public:
+  jdouble scaleX;
+  jdouble scaleY;
+  jdouble shearX;
+  jdouble shearY;
   static ::java::lang::Class class$;
 };
 

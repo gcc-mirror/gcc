@@ -10,10 +10,12 @@ extern "C"
 {
 #endif
 
-JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getGlyphs (JNIEnv *env, jobject, jintArray);
-JNIEXPORT jobject JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getKerning (JNIEnv *env, jobject, jint, jint);
-JNIEXPORT jdoubleArray JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getMetricsNative (JNIEnv *env, jobject, jint);
-JNIEXPORT jobject JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getGlyphOutlineNative (JNIEnv *env, jobject, jint);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getGlyphs (JNIEnv *env, jobject, jintArray, jintArray, jlongArray);
+JNIEXPORT jobject JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getKerning (JNIEnv *env, jobject, jint, jint, jlong);
+JNIEXPORT jdoubleArray JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getMetricsNative (JNIEnv *env, jobject, jint, jlong);
+JNIEXPORT jobject JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getGlyphOutlineNative (JNIEnv *env, jobject, jint, jlong);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_dispose (JNIEnv *env, jobject, jlongArray);
+JNIEXPORT jlong JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getNativeFontPointer (JNIEnv *env, jobject, jint);
 
 #ifdef __cplusplus
 }

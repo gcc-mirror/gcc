@@ -44,16 +44,21 @@ am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../config/lead-dot.m4 \
 	$(top_srcdir)/../../config/multi.m4 \
 	$(top_srcdir)/../../config/no-executables.m4 \
-	$(top_srcdir)/../../libtool.m4 $(top_srcdir)/m4/acattribute.m4 \
-	$(top_srcdir)/m4/accross.m4 $(top_srcdir)/m4/acinclude.m4 \
+	$(top_srcdir)/../../libtool.m4 \
+	$(top_srcdir)/../../ltoptions.m4 \
+	$(top_srcdir)/../../ltsugar.m4 \
+	$(top_srcdir)/../../ltversion.m4 \
+	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
+	$(top_srcdir)/m4/acinclude.m4 \
 	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
+	$(top_srcdir)/m4/ax_func_which_gethostbyname_r.m4 \
 	$(top_srcdir)/m4/gcc_attribute.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
 	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/../../mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 SOURCES =
@@ -63,12 +68,15 @@ ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
+AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 BUILD_CLASS_FILES_FALSE = @BUILD_CLASS_FILES_FALSE@
 BUILD_CLASS_FILES_TRUE = @BUILD_CLASS_FILES_TRUE@
+CAIRO_CFLAGS = @CAIRO_CFLAGS@
+CAIRO_LIBS = @CAIRO_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -114,6 +122,7 @@ DATE = @DATE@
 DEFAULT_PREFS_PEER = @DEFAULT_PREFS_PEER@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
@@ -126,15 +135,16 @@ ERROR_CFLAGS = @ERROR_CFLAGS@
 EXAMPLESDIR = @EXAMPLESDIR@
 EXEEXT = @EXEEXT@
 FASTJAR = @FASTJAR@
+FGREP = @FGREP@
 FIND = @FIND@
 FOUND_CACAO_FALSE = @FOUND_CACAO_FALSE@
 FOUND_CACAO_TRUE = @FOUND_CACAO_TRUE@
 FOUND_ECJ_FALSE = @FOUND_ECJ_FALSE@
 FOUND_ECJ_TRUE = @FOUND_ECJ_TRUE@
-FOUND_GCJX_FALSE = @FOUND_GCJX_FALSE@
-FOUND_GCJX_TRUE = @FOUND_GCJX_TRUE@
 FOUND_GCJ_FALSE = @FOUND_GCJ_FALSE@
 FOUND_GCJ_TRUE = @FOUND_GCJ_TRUE@
+FOUND_JAVAC_FALSE = @FOUND_JAVAC_FALSE@
+FOUND_JAVAC_TRUE = @FOUND_JAVAC_TRUE@
 FOUND_JIKES_FALSE = @FOUND_JIKES_FALSE@
 FOUND_JIKES_TRUE = @FOUND_JIKES_TRUE@
 FOUND_KJC_FALSE = @FOUND_KJC_FALSE@
@@ -142,7 +152,6 @@ FOUND_KJC_TRUE = @FOUND_KJC_TRUE@
 FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@
 FREETYPE2_LIBS = @FREETYPE2_LIBS@
 GCJ = @GCJ@
-GCJX = @GCJX@
 GCONF_CFLAGS = @GCONF_CFLAGS@
 GCONF_LIBS = @GCONF_LIBS@
 GDK_CFLAGS = @GDK_CFLAGS@
@@ -152,6 +161,7 @@ GENINSRC_TRUE = @GENINSRC_TRUE@
 GJDOC = @GJDOC@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
+GREP = @GREP@
 GTK_CFLAGS = @GTK_CFLAGS@
 GTK_LIBS = @GTK_LIBS@
 INIT_LOAD_LIBRARY = @INIT_LOAD_LIBRARY@
@@ -163,6 +173,7 @@ INSTALL_GLIBJ_ZIP_TRUE = @INSTALL_GLIBJ_ZIP_TRUE@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+JAVAC = @JAVAC@
 JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION = @JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION@
 JAVA_MAINTAINER_MODE_FALSE = @JAVA_MAINTAINER_MODE_FALSE@
 JAVA_MAINTAINER_MODE_TRUE = @JAVA_MAINTAINER_MODE_TRUE@
@@ -172,6 +183,7 @@ JIKES = @JIKES@
 JIKESENCODING = @JIKESENCODING@
 JIKESWARNINGS = @JIKESWARNINGS@
 KJC = @KJC@
+LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDEBUG = @LIBDEBUG@
 LIBICONV = @LIBICONV@
@@ -191,6 +203,7 @@ MKDIR = @MKDIR@
 MOC = @MOC@
 MOZILLA_CFLAGS = @MOZILLA_CFLAGS@
 MOZILLA_LIBS = @MOZILLA_LIBS@
+NM = @NM@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -212,6 +225,7 @@ RANLIB = @RANLIB@
 REGEN_PARSERS_FALSE = @REGEN_PARSERS_FALSE@
 REGEN_PARSERS_TRUE = @REGEN_PARSERS_TRUE@
 REMOVE = @REMOVE@
+SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRICT_WARNING_CFLAGS = @STRICT_WARNING_CFLAGS@
@@ -239,8 +253,10 @@ X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 ZIP = @ZIP@
+ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
+ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
@@ -273,6 +289,7 @@ install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
 localstatedir = @localstatedir@
+lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
@@ -363,7 +380,6 @@ $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkTextFieldPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkToolkit.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkWindowPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkVolatileImage.h \
-$(top_srcdir)/include/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.h \
 $(top_srcdir)/include/GtkDragSourceContextPeer.h
 
 QTPEER_H_FILES = \
@@ -423,6 +439,7 @@ $(top_srcdir)/include/gnu_java_nio_VMPipe.h \
 $(top_srcdir)/include/gnu_java_nio_VMSelector.h \
 $(top_srcdir)/include/gnu_java_nio_charset_iconv_IconvEncoder.h \
 $(top_srcdir)/include/gnu_java_nio_charset_iconv_IconvDecoder.h \
+$(top_srcdir)/include/gnu_java_lang_management_VMOperatingSystemMXBeanImpl.h \
 $(top_srcdir)/include/java_io_VMFile.h \
 $(top_srcdir)/include/java_io_VMObjectInputStream.h \
 $(top_srcdir)/include/java_io_VMObjectStreamClass.h \
@@ -657,6 +674,8 @@ uninstall-am: uninstall-info-am
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.java.nio.VMPipe
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_nio_VMSelector.h: $(top_srcdir)/vm/reference/gnu/java/nio/VMSelector.java
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.java.nio.VMSelector
+@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_lang_management_VMOperatingSystemMXBeanImpl.h: $(top_srcdir)/vm/reference/gnu/java/lang/management/VMOperatingSystemMXBeanImpl.java
+@CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.java.lang.management.VMOperatingSystemMXBeanImpl
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/java_io_VMFile.h: $(top_srcdir)/vm/reference/java/io/VMFile.java
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ java.io.VMFile
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/java_io_VMObjectInputStream.h: $(top_srcdir)/vm/reference/java/io/VMObjectInputStream.java

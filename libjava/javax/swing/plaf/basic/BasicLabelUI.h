@@ -16,6 +16,7 @@ extern "Java"
         class Dimension;
         class FontMetrics;
         class Graphics;
+        class Insets;
         class Rectangle;
     }
     namespace beans
@@ -70,12 +71,15 @@ public: // actually protected
   virtual void uninstallListeners(::javax::swing::JLabel *);
 public:
   virtual void propertyChange(::java::beans::PropertyChangeEvent *);
+private:
+  ::java::awt::FontMetrics * getFontMetrics(::javax::swing::JLabel *);
 public: // actually protected
   static ::javax::swing::plaf::basic::BasicLabelUI * labelUI;
 private:
   ::java::awt::Rectangle * __attribute__((aligned(__alignof__( ::javax::swing::plaf::LabelUI)))) vr;
   ::java::awt::Rectangle * ir;
   ::java::awt::Rectangle * tr;
+  ::java::awt::Insets * cachedInsets;
 public:
   static ::java::lang::Class class$;
 };

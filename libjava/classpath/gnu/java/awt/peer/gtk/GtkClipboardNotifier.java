@@ -74,11 +74,11 @@ class GtkClipboardNotifier extends Thread
   {
     synchronized (notifier)
       {
-	if (clipboard == GtkClipboard.clipboard)
-	  announceClipboardChange = true;
-	else
-	  announcePrimaryChange = true;
-	notifier.notifyAll();
+        if (clipboard == GtkClipboard.clipboard)
+          announceClipboardChange = true;
+        else
+          announcePrimaryChange = true;
+        notifier.notifyAll();
       }
   }
 
@@ -87,44 +87,43 @@ class GtkClipboardNotifier extends Thread
     GtkClipboard clipboard;
     while (true)
       {
-	synchronized (this)
-	  {
-	    while (! announceClipboardChange && ! announcePrimaryChange)
-	      {
-		try
-		  {
-		    this.wait();
-		  }
-		catch (InterruptedException ie)
-		  {
-		    // ignore
-		  }
-	      }
+        synchronized (this)
+          {
+            while (! announceClipboardChange && ! announcePrimaryChange)
+              {
+                try
+                  {
+                    this.wait();
+                  }
+                catch (InterruptedException ie)
+                  {
+                    // ignore
+                  }
+              }
 
-	    if (announceClipboardChange)
-	      {
-		clipboard = GtkClipboard.clipboard;
-		announceClipboardChange = false;
-	      }
-	    else
-	      {
-		clipboard = GtkClipboard.selection;
-		announcePrimaryChange = false;
-	      }
-	  }
+            if (announceClipboardChange)
+              {
+                clipboard = GtkClipboard.clipboard;
+                announceClipboardChange = false;
+              }
+            else
+              {
+                clipboard = GtkClipboard.selection;
+                announcePrimaryChange = false;
+              }
+          }
 
-	// Do the actual announcement without the lock held.  We will
-	// notice a new change after this notification has finished.
-	try
-	  {
-	    clipboard.setContents(new GtkSelection(clipboard), null);
-	  }
-	catch (Throwable t)
-	  {
-	    // should never happen, but might if we have some faulty
-	    // listener.
-	    t.printStackTrace();
-	  }
+        // Do the actual announcement without the lock held.  We will
+        // notice a new change after this notification has finished.
+        try
+          {
+            clipboard.setContents(new GtkSelection(clipboard), null);
+          }
+        catch (Throwable t)
+          {
+            // should never happen, but might if we have some faulty listener.
+            t.printStackTrace();
+          }
       }
   }
 }

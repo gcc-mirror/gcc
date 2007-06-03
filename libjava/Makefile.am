@@ -864,6 +864,7 @@ gnu/java/lang/management/natVMGarbageCollectorMXBeanImpl.cc \
 gnu/java/lang/management/natVMMemoryMXBeanImpl.cc \
 gnu/java/lang/management/natVMMemoryManagerMXBeanImpl.cc \
 gnu/java/lang/management/natVMMemoryPoolMXBeanImpl.cc \
+gnu/java/lang/management/natVMOperatingSystemMXBeanImpl.cc \
 gnu/java/lang/management/natVMRuntimeMXBeanImpl.cc \
 gnu/java/lang/management/natVMThreadMXBeanImpl.cc \
 gnu/java/net/natPlainDatagramSocketImpl.cc \

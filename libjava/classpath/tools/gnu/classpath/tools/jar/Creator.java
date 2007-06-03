@@ -60,7 +60,7 @@ public class Creator
     extends Action
 {
   JarOutputStream outputStream;
-  HashSet writtenItems = new HashSet();
+  HashSet<String> writtenItems = new HashSet<String>();
   // The manifest to use, or null if we don't want a manifest.
   Manifest manifest;
 
@@ -150,13 +150,13 @@ public class Creator
       }
     else
       {
-	InputStream inputStream = new FileInputStream(file);
-	writeFile(isDirectory, inputStream, filename, verbose);
-	inputStream.close();
+        InputStream inputStream = new FileInputStream(file);
+        writeFile(isDirectory, inputStream, filename, verbose);
+        inputStream.close();
       }
   }
 
-  private void addEntries(ArrayList result, Entry entry)
+  private void addEntries(ArrayList<Entry> result, Entry entry)
   {
     if (entry.file.isDirectory())
       {
@@ -176,10 +176,10 @@ public class Creator
       result.add(entry);
   }
 
-  private ArrayList getAllEntries(Main parameters)
+  private ArrayList<Entry> getAllEntries(Main parameters)
   {
     Iterator it = parameters.entries.iterator();
-    ArrayList allEntries = new ArrayList();
+    ArrayList<Entry> allEntries = new ArrayList<Entry>();
     while (it.hasNext())
       {
         Entry entry = (Entry) it.next();

@@ -181,13 +181,15 @@ public class StringTokenizer implements Enumeration<Object>
       {
         if (retDelims)
           return str.substring(pos, ++pos);
-        while (++pos < len && delim.indexOf(str.charAt(pos)) >= 0);
+        while (++pos < len && delim.indexOf(str.charAt(pos)) >= 0)
+          ;
       }
     if (pos < len)
       {
         int start = pos;
-        while (++pos < len && delim.indexOf(str.charAt(pos)) < 0);
-
+        while (++pos < len && delim.indexOf(str.charAt(pos)) < 0)
+          ;
+        
         return str.substring(start, pos);
       }
     throw new NoSuchElementException();

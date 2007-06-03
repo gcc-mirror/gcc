@@ -72,7 +72,6 @@ public abstract class BooleanControl extends Control
     }
   }
 
-  private Type type;
   private boolean value;
   private String trueLabel;
   private String falseLabel;

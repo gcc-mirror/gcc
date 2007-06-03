@@ -38,9 +38,6 @@ class java::awt::Canvas : public ::java::awt::Component
 public:
   Canvas();
   Canvas(::java::awt::GraphicsConfiguration *);
-public: // actually package-private
-  virtual ::java::awt::GraphicsConfiguration * getGraphicsConfigurationImpl();
-public:
   virtual void addNotify();
   virtual void paint(::java::awt::Graphics *);
   virtual ::javax::accessibility::AccessibleContext * getAccessibleContext();
@@ -55,8 +52,7 @@ private:
   static const jlong serialVersionUID = -2284879212465893870LL;
   static jlong next_canvas_number;
 public: // actually package-private
-  ::java::awt::GraphicsConfiguration * __attribute__((aligned(__alignof__( ::java::awt::Component)))) graphicsConfiguration;
-  ::java::awt::image::BufferStrategy * bufferStrategy;
+  ::java::awt::image::BufferStrategy * __attribute__((aligned(__alignof__( ::java::awt::Component)))) bufferStrategy;
 public:
   static ::java::lang::Class class$;
 };

@@ -26,6 +26,9 @@ public:
   static JArray< ::java::util::Locale * > * getAvailableLocales();
   static JArray< ::java::lang::String * > * getISOCountries();
   static JArray< ::java::lang::String * > * getISOLanguages();
+private:
+  static JArray< ::java::lang::String * > * getISOStrings(::java::lang::String *);
+public:
   ::java::lang::String * getLanguage();
   ::java::lang::String * getCountry();
   ::java::lang::String * getVariant();
@@ -68,13 +71,18 @@ public:
   static ::java::util::Locale * US;
   static ::java::util::Locale * CANADA;
   static ::java::util::Locale * CANADA_FRENCH;
+  static ::java::util::Locale * ROOT;
 private:
   static const jlong serialVersionUID = 9149081749638150636LL;
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) language;
   ::java::lang::String * country;
   ::java::lang::String * variant;
   jint hashcode;
+  static JArray< ::java::util::Locale * > * availableLocales;
+  static ::java::util::HashMap * localeMap;
   static ::java::util::Locale * defaultLocale;
+  static JArray< ::java::lang::String * > * languageCache;
+  static JArray< ::java::lang::String * > * countryCache;
 public:
   static ::java::lang::Class class$;
 };

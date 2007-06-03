@@ -1,5 +1,5 @@
 /* QtToolkit.java --
-   Copyright (C)  2005, 2006  Free Software Foundation, Inc.
+   Copyright (C)  2005, 2006, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.qt;
 
+import gnu.java.awt.ClasspathToolkit;
 import gnu.java.awt.EmbeddedWindow;
 import gnu.java.awt.peer.ClasspathFontPeer;
 import gnu.java.awt.peer.EmbeddedWindowPeer;
@@ -50,64 +51,62 @@ import java.awt.Choice;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Frame;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Label;
 import java.awt.List;
-import java.awt.MenuBar;
 import java.awt.Menu;
+import java.awt.MenuBar;
 import java.awt.MenuItem;
 import java.awt.Panel;
-import java.awt.TextArea;
-import java.awt.TextField;
-import java.awt.FileDialog;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.PopupMenu;
 import java.awt.PrintJob;
-import java.awt.Scrollbar;
 import java.awt.ScrollPane;
+import java.awt.Scrollbar;
+import java.awt.TextArea;
+import java.awt.TextField;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.peer.DragSourceContextPeer;
 import java.awt.event.AWTEventListener;
+import java.awt.im.InputMethodHighlight;
 import java.awt.image.ColorModel;
 import java.awt.image.DirectColorModel;
 import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
-import java.awt.im.InputMethodHighlight;
 import java.awt.peer.ButtonPeer;
-import java.awt.peer.FontPeer;
-import java.awt.peer.PanelPeer;
 import java.awt.peer.CanvasPeer;
-import java.awt.peer.FramePeer;
-import java.awt.peer.PopupMenuPeer;
 import java.awt.peer.CheckboxMenuItemPeer;
-import java.awt.peer.LabelPeer;
-import java.awt.peer.RobotPeer;
 import java.awt.peer.CheckboxPeer;
-import java.awt.peer.ScrollPanePeer;
 import java.awt.peer.ChoicePeer;
-import java.awt.peer.ListPeer;
-import java.awt.peer.ScrollbarPeer;
-import java.awt.peer.MenuBarPeer;
-import java.awt.peer.TextAreaPeer;
 import java.awt.peer.DialogPeer;
-import java.awt.peer.MenuItemPeer;
-import java.awt.peer.TextFieldPeer;
 import java.awt.peer.FileDialogPeer;
+import java.awt.peer.FontPeer;
+import java.awt.peer.FramePeer;
+import java.awt.peer.LabelPeer;
+import java.awt.peer.ListPeer;
+import java.awt.peer.MenuBarPeer;
+import java.awt.peer.MenuItemPeer;
 import java.awt.peer.MenuPeer;
+import java.awt.peer.PanelPeer;
+import java.awt.peer.PopupMenuPeer;
+import java.awt.peer.RobotPeer;
+import java.awt.peer.ScrollPanePeer;
+import java.awt.peer.ScrollbarPeer;
+import java.awt.peer.TextAreaPeer;
+import java.awt.peer.TextFieldPeer;
 import java.awt.peer.WindowPeer;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
-import gnu.java.awt.ClasspathToolkit;
 
 public class QtToolkit extends ClasspathToolkit
 {
@@ -163,7 +162,9 @@ public class QtToolkit extends ClasspathToolkit
     if( guiThread == null )
       initToolkit();
 
-    while (!guiThread.isRunning()); // make sure the GUI thread has started.
+    // make sure the GUI thread has started.
+    while (!guiThread.isRunning())
+      ;
 
     if( graphicsEnv == null )
       graphicsEnv = new QtGraphicsEnvironment( this );

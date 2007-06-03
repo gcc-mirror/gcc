@@ -1,5 +1,6 @@
 /* NumberFormat.java -- Formats and parses numbers
-   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,14 +39,20 @@ exception statement from your version. */
 
 package java.text;
 
+import gnu.java.locale.LocaleHelper;
+
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+
+import java.text.spi.NumberFormatProvider;
+
 import java.util.Currency;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.ServiceLoader;
 
 /**
  * This is the abstract superclass of all classes which format and 
@@ -309,17 +316,13 @@ public abstract class NumberFormat extends Format implements Cloneable
 
   private static NumberFormat computeInstance(Locale loc, String resource,
                                               String def)
+    throws MissingResourceException
   {
-    ResourceBundle res;
-    try
-      {
-	res = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-		loc, ClassLoader.getSystemClassLoader());
-      }
-    catch (MissingResourceException x)
-      {
-	res = null;
-      }
+    if (loc.equals(Locale.ROOT))
+      return new DecimalFormat(def, DecimalFormatSymbols.getInstance(loc)); 
+    ResourceBundle res =
+      ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
+			       loc, ClassLoader.getSystemClassLoader());
     String fmt;
     try
       {
@@ -329,7 +332,7 @@ public abstract class NumberFormat extends Format implements Cloneable
       {
 	fmt = def;
       }
-    DecimalFormatSymbols dfs = new DecimalFormatSymbols (loc);
+    DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance(loc);
     return new DecimalFormat (fmt, dfs);
   }
 
@@ -352,11 +355,33 @@ public abstract class NumberFormat extends Format implements Cloneable
    */
   public static NumberFormat getCurrencyInstance (Locale loc)
   {
-    NumberFormat format;
-    
-    format = computeInstance (loc, "currencyFormat", "\u00A4#,##0.00;(\u00A4#,##0.00)");
-    format.setMaximumFractionDigits(format.getCurrency().getDefaultFractionDigits());  
-    return format;
+    try
+      {
+	NumberFormat format;
+	
+	format = computeInstance (loc, "currencyFormat",
+				  "\u00A4#,##0.00;(\u00A4#,##0.00)");
+	format.setMaximumFractionDigits(format.getCurrency().getDefaultFractionDigits());  
+	return format;
+      }
+    catch (MissingResourceException e)
+      {
+	for (NumberFormatProvider p :
+	       ServiceLoader.load(NumberFormatProvider.class))
+	  {
+	    for (Locale l : p.getAvailableLocales())
+	      {
+		if (l.equals(loc))
+		  {
+		    NumberFormat nf = p.getCurrencyInstance(loc);
+		    if (nf != null)
+		      return nf;
+		    break;
+		  }
+	      }
+	  }
+	return getCurrencyInstance(LocaleHelper.getFallbackLocale(loc));
+      }
   }
 
   /**
@@ -456,7 +481,28 @@ public abstract class NumberFormat extends Format implements Cloneable
    */
   public static NumberFormat getNumberInstance (Locale loc)
   {
-    return computeInstance (loc, "numberFormat", "#,##0.###");
+    try
+      {
+	return computeInstance (loc, "numberFormat", "#,##0.###");
+      }
+    catch (MissingResourceException e)
+      {
+	for (NumberFormatProvider p :
+	       ServiceLoader.load(NumberFormatProvider.class))
+	  {
+	    for (Locale l : p.getAvailableLocales())
+	      {
+		if (l.equals(loc))
+		  {
+		    NumberFormat nf = p.getNumberInstance(loc);
+		    if (nf != null)
+		      return nf;
+		    break;
+		  }
+	      }
+	  }
+	return getNumberInstance(LocaleHelper.getFallbackLocale(loc));
+      }
   }
 
   /**
@@ -484,10 +530,32 @@ public abstract class NumberFormat extends Format implements Cloneable
    */
   public static NumberFormat getIntegerInstance(Locale locale)
   {
-    NumberFormat format = computeInstance (locale, "integerFormat", "#,##0");
-    format.setMaximumFractionDigits(0);
-    format.setParseIntegerOnly (true);
-    return format;
+    try
+      {
+	NumberFormat format = computeInstance (locale,
+					       "integerFormat", "#,##0");
+	format.setMaximumFractionDigits(0);
+	format.setParseIntegerOnly (true);
+	return format;
+      }
+    catch (MissingResourceException e)
+      {
+	for (NumberFormatProvider p :
+	       ServiceLoader.load(NumberFormatProvider.class))
+	  {
+	    for (Locale l : p.getAvailableLocales())
+	      {
+		if (l.equals(locale))
+		  {
+		    NumberFormat nf = p.getIntegerInstance(locale);
+		    if (nf != null)
+		      return nf;
+		    break;
+		  }
+	      }
+	  }
+	return getIntegerInstance(LocaleHelper.getFallbackLocale(locale));
+      }
   }
 
   /**
@@ -511,7 +579,28 @@ public abstract class NumberFormat extends Format implements Cloneable
    */
   public static NumberFormat getPercentInstance (Locale loc)
   {
-    return computeInstance (loc, "percentFormat", "#,##0%");
+    try
+      {
+	return computeInstance (loc, "percentFormat", "#,##0%");
+      }
+    catch (MissingResourceException e)
+      {
+	for (NumberFormatProvider p :
+	       ServiceLoader.load(NumberFormatProvider.class))
+	  {
+	    for (Locale l : p.getAvailableLocales())
+	      {
+		if (l.equals(loc))
+		  {
+		    NumberFormat nf = p.getPercentInstance(loc);
+		    if (nf != null)
+		      return nf;
+		    break;
+		  }
+	      }
+	  }
+	return getPercentInstance(LocaleHelper.getFallbackLocale(loc));
+      }
   }
 
   /**

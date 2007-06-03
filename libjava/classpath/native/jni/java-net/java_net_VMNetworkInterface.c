@@ -96,6 +96,7 @@ struct netif_entry
   struct netif_entry *next;
 };
 
+#if defined (HAVE_IFADDRS_H) && defined (HAVE_GETIFADDRS)
 static void
 free_netif_list (JNIEnv *env, struct netif_entry *list)
 {
@@ -106,12 +107,14 @@ free_netif_list (JNIEnv *env, struct netif_entry *list)
       list = e;
     }
 }
+#endif
 
 /*
  * Returns all local network interfaces as an array.
  */
 JNIEXPORT jobjectArray JNICALL
-Java_java_net_VMNetworkInterface_getVMInterfaces (JNIEnv * env, jclass clazz)
+Java_java_net_VMNetworkInterface_getVMInterfaces (JNIEnv * env,
+                                                  jclass clazz UNUSED)
 {
 #if defined (HAVE_IFADDRS_H) && defined (HAVE_GETIFADDRS)
   struct ifaddrs *ifaddrs, *i;
@@ -245,7 +248,7 @@ Java_java_net_VMNetworkInterface_getVMInterfaces (JNIEnv * env, jclass clazz)
 #else
   JCL_ThrowException (env, "java/net/SocketException", "getifaddrs not supported");
   return NULL;
-#endif /* HAVE_GETIFADDRS */
+#endif /* HAVE_IFADDRS_H && HAVE_GETIFADDRS */
 }
 
 /* end of file */

@@ -1592,8 +1592,10 @@ public final class String
       if (begin == limit)
         return "";
     while (value[begin++] <= '\u0020');
+    
     int end = limit;
-    while (value[--end] <= '\u0020');
+    while (value[--end] <= '\u0020')
+      ;
     return substring(begin - offset - 1, end - offset + 1);
   }
 
@@ -1988,4 +1990,17 @@ public final class String
     return Character.offsetByCodePoints(value, offset, count, offset + index,
                                         codePointOffset);
   }
+
+  /**
+   * Returns true if, and only if, {@link #length()}
+   * is <code>0</code>.
+   *
+   * @return true if the length of the string is zero.
+   * @since 1.6
+   */
+  public boolean isEmpty()
+  {
+    return count == 0;
+  }
+
 }

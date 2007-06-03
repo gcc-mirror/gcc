@@ -28,18 +28,26 @@ class gnu::java::awt::java2d::PolyEdge : public ::java::lang::Object
 {
 
 public: // actually package-private
-  PolyEdge(jdouble, jdouble, jdouble, jdouble, jboolean);
+  PolyEdge();
+  PolyEdge(jint, jint, jint, jint, jint, jboolean);
+  void init(jint, jint, jint, jint, jint, jboolean);
 public:
-  virtual jint compareTo(::java::lang::Object *);
-  virtual ::java::lang::String * toString();
-  jdouble __attribute__((aligned(__alignof__( ::java::lang::Object)))) x0;
-  jdouble y0;
-  jdouble x1;
-  jdouble y1;
+  jint compareTo(::java::lang::Object *);
 public: // actually package-private
-  jdouble slope;
-  jdouble xIntersection;
+  void intersect(jint, jint);
+public:
+  ::java::lang::String * toString();
+  jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) x0;
+  jint y0;
+  jint x1;
+  jint y1;
+private:
+  jint slope;
+public: // actually package-private
+  jint xIntersection;
   jboolean isClip;
+  ::gnu::java::awt::java2d::PolyEdge * poolNext;
+  ::gnu::java::awt::java2d::PolyEdge * scanlineNext;
 public:
   static ::java::lang::Class class$;
 };

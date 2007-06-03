@@ -1,5 +1,5 @@
 /* DomDocumentBuilder.java -- 
-   Copyright (C) 2004,2006 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006,2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,6 +48,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSException;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSParser;
 import org.xml.sax.EntityResolver;
@@ -122,7 +123,18 @@ class DomDocumentBuilder
   {
     LSInput input = ls.createLSInput();
     input.setByteStream(in);
-    return parser.parse(input);
+    try
+      {
+        return parser.parse(input);
+      }
+    catch (LSException e)
+      {
+        Throwable e2 = e.getCause();
+        if (e2 instanceof IOException)
+          throw (IOException) e2;
+        else
+          throw e;
+      }
   }
 
   public Document parse(InputStream in, String systemId)
@@ -131,13 +143,35 @@ class DomDocumentBuilder
     LSInput input = ls.createLSInput();
     input.setByteStream(in);
     input.setSystemId(systemId);
-    return parser.parse(input);
+    try
+      {
+        return parser.parse(input);
+      }
+    catch (LSException e)
+      {
+        Throwable e2 = e.getCause();
+        if (e2 instanceof IOException)
+          throw (IOException) e2;
+        else
+          throw e;
+      }
   }
 
   public Document parse(String systemId)
     throws SAXException, IOException
   {
-    return parser.parseURI(systemId);
+    try
+      {
+        return parser.parseURI(systemId);
+      }
+    catch (LSException e)
+      {
+        Throwable e2 = e.getCause();
+        if (e2 instanceof IOException)
+          throw (IOException) e2;
+        else
+          throw e;
+      }
   }
 
   public Document parse(InputSource is)
@@ -176,7 +210,18 @@ class DomDocumentBuilder
     input.setPublicId(is.getPublicId());
     input.setSystemId(systemId);
     input.setEncoding(is.getEncoding());
-    return parser.parse(input);
+    try
+      {
+        return parser.parse(input);
+      }
+    catch (LSException e)
+      {
+        Throwable e2 = e.getCause();
+        if (e2 instanceof IOException)
+          throw (IOException) e2;
+        else
+          throw e;
+      }
   }
 
 }

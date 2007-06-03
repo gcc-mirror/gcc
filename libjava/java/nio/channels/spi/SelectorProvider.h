@@ -15,6 +15,7 @@ extern "Java"
     {
       namespace channels
       {
+          class Channel;
           class DatagramChannel;
           class Pipe;
           class ServerSocketChannel;
@@ -40,6 +41,7 @@ public:
   virtual ::java::nio::channels::spi::AbstractSelector * openSelector() = 0;
   virtual ::java::nio::channels::ServerSocketChannel * openServerSocketChannel() = 0;
   virtual ::java::nio::channels::SocketChannel * openSocketChannel() = 0;
+  virtual ::java::nio::channels::Channel * inheritedChannel();
   static ::java::nio::channels::spi::SelectorProvider * provider();
 private:
   static ::java::nio::channels::spi::SelectorProvider * systemDefaultProvider;

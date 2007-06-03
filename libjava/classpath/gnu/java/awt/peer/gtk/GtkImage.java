@@ -71,7 +71,7 @@ public class GtkImage extends Image
   /**
    * Properties.
    */
-  Hashtable props;
+  Hashtable<?,?> props;
 
   /**
    * Loaded or not flag, for asynchronous compatibility.
@@ -87,7 +87,7 @@ public class GtkImage extends Image
   /**
    * Observer queue.
    */
-  Vector observers;
+  Vector<ImageObserver> observers;
 
   /**
    * Error flag for loading.
@@ -103,10 +103,10 @@ public class GtkImage extends Image
    * The 32-bit AABBGGRR format the GDK uses.
    */
   static ColorModel nativeModel = new DirectColorModel(32, 
-						       0x000000FF,
-						       0x0000FF00,
-						       0x00FF0000,
-						       0xFF000000);
+                                                       0x000000FF,
+                                                       0x0000FF00,
+                                                       0x00FF0000,
+                                                       0xFF000000);
 
   /**
    * The singleton GtkImage that is returned on errors by GtkToolkit.
@@ -178,7 +178,7 @@ public class GtkImage extends Image
   public GtkImage (ImageProducer producer)
   {
     isLoaded = false;
-    observers = new Vector();
+    observers = new Vector<ImageObserver>();
     source = producer;
     errorLoading = false;
     source.startProduction(new GtkImageConsumer(this, source));
@@ -194,7 +194,7 @@ public class GtkImage extends Image
   {
     isLoaded = true;
     observers = null;
-    props = new Hashtable();
+    props = new Hashtable<String,Object>();
     errorLoading = false;
   }
 
@@ -208,26 +208,26 @@ public class GtkImage extends Image
     File f = new File(filename);
     try
       {
-	String path = f.getCanonicalPath();
-	synchronized(pixbufLock)
-	  {
-	    if (loadPixbuf(f.getCanonicalPath()) != true)
-	      throw new IllegalArgumentException("Couldn't load image: "
-						 + filename);
-	  }
+        String path = f.getCanonicalPath();
+        synchronized(pixbufLock)
+          {
+            if (loadPixbuf(f.getCanonicalPath()) != true)
+              throw new IllegalArgumentException("Couldn't load image: "
+                                                 + filename);
+          }
       } 
     catch(IOException e)
       {
-	IllegalArgumentException iae;
-	iae = new IllegalArgumentException("Couldn't load image: "
-					   + filename);
-	iae.initCause(e);
-	throw iae;
+        IllegalArgumentException iae;
+        iae = new IllegalArgumentException("Couldn't load image: "
+                                           + filename);
+        iae.initCause(e);
+        throw iae;
       }
 
     isLoaded = true;
     observers = null;
-    props = new Hashtable();
+    props = new Hashtable<String,Object>();
   }
 
   /**
@@ -240,13 +240,13 @@ public class GtkImage extends Image
   {
     synchronized(pixbufLock)
       {
-	if (loadImageFromData (data) != true)
-	  throw new IllegalArgumentException ("Couldn't load image.");
+        if (loadImageFromData (data) != true)
+          throw new IllegalArgumentException ("Couldn't load image.");
       }
 
     isLoaded = true;
     observers = null;
-    props = new Hashtable();
+    props = new Hashtable<String,Object>();
     errorLoading = false;
   }
 
@@ -256,7 +256,7 @@ public class GtkImage extends Image
   public GtkImage (URL url)
   {
     isLoaded = false;
-    observers = new Vector();
+    observers = new Vector<ImageObserver>();
     errorLoading = false;
     if( url == null)
       return;
@@ -269,23 +269,23 @@ public class GtkImage extends Image
         int n = 0;
 
         while ((n = bis.read(buf)) != -1)
-	  baos.write(buf, 0, n); 
+          baos.write(buf, 0, n); 
         bis.close();
       }
     catch(IOException e)
       {
-	throw new IllegalArgumentException ("Couldn't load image.");
+        throw new IllegalArgumentException ("Couldn't load image.");
       }
     byte[] array = baos.toByteArray();
     synchronized(pixbufLock)
       {
-	if (loadImageFromData(array) != true)
-	  throw new IllegalArgumentException ("Couldn't load image.");
+        if (loadImageFromData(array) != true)
+          throw new IllegalArgumentException ("Couldn't load image.");
       }
 
     isLoaded = true;
     observers = null;
-    props = new Hashtable();
+    props = new Hashtable<String,Object>();
   }
 
   /**
@@ -295,14 +295,14 @@ public class GtkImage extends Image
   {
     this.width = width;
     this.height = height;
-    props = new Hashtable();
+    props = new Hashtable<String,Object>();
     isLoaded = true;
     observers = null;
 
     // Use the GDK scaling method.
     synchronized(pixbufLock)
       {
-	createScaledPixbuf(src, hints);
+        createScaledPixbuf(src, hints);
       }
   }
 
@@ -315,11 +315,11 @@ public class GtkImage extends Image
     this.pixbuf = pixbuf;
     synchronized(pixbufLock)
       {
-	createFromPixbuf();
+        createFromPixbuf();
       }
     isLoaded = true;
     observers = null;
-    props = new Hashtable();
+    props = new Hashtable<String,Object>();
   }
 
   /**
@@ -331,7 +331,7 @@ public class GtkImage extends Image
   {
     this.width = width;
     this.height = height;
-    props = new Hashtable();
+    props = new Hashtable<String,Object>();
     isLoaded = true;
     observers = null;
     initFromBuffer( bufferPointer );
@@ -346,8 +346,8 @@ public class GtkImage extends Image
   {
     if (errorImage == null)
       {
-	errorImage = new GtkImage();
-	errorImage.errorLoading = true;
+        errorImage = new GtkImage();
+        errorImage.errorLoading = true;
       }
     return errorImage;
   }
@@ -362,25 +362,25 @@ public class GtkImage extends Image
    * Callback from the image consumer.
    */
   public void setImage(int width, int height, 
-		       int[] pixels, Hashtable properties)
+		       int[] pixels, Hashtable<?,?> properties)
   {
     this.width = width;
     this.height = height;
-    props = (properties != null) ? properties : new Hashtable();
+    props = (properties != null) ? properties : new Hashtable<String,Object>();
 
     if (width <= 0 || height <= 0 || pixels == null)
       {
-	errorLoading = true;
-	return;
+        errorLoading = true;
+        return;
       }
 
-    isLoaded = true;
-    deliver();
     synchronized(pixbufLock)
       {
-	createPixbuf();
-	setPixels(pixels);
+        createPixbuf();
+        setPixels(pixels);
       }
+    isLoaded = true;
+    deliver();
   }
 
   // java.awt.Image methods ////////////////////////////////////////////////
@@ -427,7 +427,7 @@ public class GtkImage extends Image
           return null;
       }
     return new MemoryImageSource(width, height, nativeModel, pixels, 
-				 0, width);
+                                 0, width);
   }
 
   /**
@@ -436,19 +436,19 @@ public class GtkImage extends Image
   public Graphics getGraphics ()
   {
     throw new IllegalAccessError("This method only works for off-screen"
-				 +" Images.");
+                                 +" Images.");
   }
   
   /**
    * Returns a scaled instance of this pixbuf.
    */
   public Image getScaledInstance(int width,
-				 int height,
-				 int hints)
+                                 int height,
+                                 int hints)
   {
     if (width <= 0 || height <= 0)
-      throw new IllegalArgumentException("Width and height of scaled bitmap"+
-					 "must be >= 0");
+      throw new IllegalArgumentException("Width and height of scaled bitmap"
+                                         + "must be >= 0");
 
     return new GtkImage(this, width, height, hints);
   }
@@ -465,13 +465,13 @@ public class GtkImage extends Image
   {
     if (isLoaded && source != null)
       {
-	observers = new Vector();
-	isLoaded = false;
-	synchronized(pixbufLock)
+        observers = new Vector<ImageObserver>();
+        isLoaded = false;
+        synchronized(pixbufLock)
 	  {
 	    freePixbuf();
 	  }
-	source.startProduction(new GtkImageConsumer(this, source));
+        source.startProduction(new GtkImageConsumer(this, source));
       }
   }
 
@@ -479,10 +479,10 @@ public class GtkImage extends Image
   {
     if (isLoaded)
       {
-	synchronized(pixbufLock)
-	  {
-	    freePixbuf();
-	  }
+        synchronized(pixbufLock)
+          {
+            freePixbuf();
+          }
       }
   }
 
@@ -493,10 +493,10 @@ public class GtkImage extends Image
   {
     if (addObserver(observer))
       {
-	if (errorLoading == true)
-	  return ImageObserver.ERROR;
-	else
-	  return 0;
+        if (errorLoading == true)
+          return ImageObserver.ERROR;
+        else
+          return 0;
       }
 
     return ImageObserver.ALLBITS | ImageObserver.WIDTH | ImageObserver.HEIGHT;
@@ -517,8 +517,8 @@ public class GtkImage extends Image
 
     if (observers != null)
       for(int i=0; i < observers.size(); i++)
-	((ImageObserver)observers.elementAt(i)).
-	  imageUpdate(this, flags, 0, 0, width, height);
+        ((ImageObserver)observers.elementAt(i)).imageUpdate(this, flags, 0, 0,
+                                                            width, height);
 
     observers = null;
   }
@@ -531,10 +531,10 @@ public class GtkImage extends Image
   {
     if (!isLoaded)
       {
-	if(observer != null)
-	  if (!observers.contains (observer))
-	    observers.addElement (observer);
-	return true;
+        if(observer != null)
+          if (!observers.contains (observer))
+            observers.addElement (observer);
+        return true;
       }
     return false;
   }

@@ -1,5 +1,5 @@
 /* JarVerifier.java -- The verification handler of the gjarsigner tool
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,13 +55,12 @@ import gnu.java.util.jar.JarUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.PublicKey;
-import java.security.cert.Certificate;
 import java.security.cert.CRLException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,7 +83,7 @@ public class JarVerifier
   /** The JAR file to verify. */
   private JarFile jarFile;
   /** Map of jar entry names to their hash. */
-  private Map entryHashes = new HashMap();
+  private Map<String, String> entryHashes = new HashMap<String, String>();
 
   JarVerifier(Main main)
   {
@@ -101,7 +100,7 @@ public class JarVerifier
     jarFile = new JarFile(jarFileName);
 
     // 1. find all signature (.SF) files
-    List sfFiles = new ArrayList();
+    List<String> sfFiles = new ArrayList<String>();
     for (Enumeration e = jarFile.entries(); e.hasMoreElements(); )
       {
         JarEntry je = (JarEntry) e.nextElement();
@@ -127,13 +126,10 @@ public class JarVerifier
       {
         int limit = sfFiles.size();
         int count = 0;
-        for (Iterator it = sfFiles.iterator(); it.hasNext(); )
-          {
-            String alias = (String) it.next();
-            if (verifySF(alias))
-              if (verifySFEntries(alias))
-                count++;
-          }
+        for (String alias : sfFiles)
+          if (verifySF(alias))
+            if (verifySFEntries(alias))
+              count++;
 
         if (count == 0)
           System.out.println(Messages.getString("JarVerifier.3")); //$NON-NLS-1$
@@ -264,7 +260,7 @@ public class JarVerifier
                                             + JarUtils.SF_SUFFIX);
     InputStream in = jarFile.getInputStream(jarEntry);
     Attributes attr = new Attributes();
-    Map entries = new HashMap();
+    Map<String, Attributes> entries = new HashMap<String, Attributes>();
     JarUtils.readSFManifest(attr, entries, in);
 
     // 2. The .SF file by default includes a header containing a hash of the
@@ -287,11 +283,10 @@ public class JarVerifier
     // with the digest for this file in the manifest section. The digests
     // should be the same, or verification fails.
     if (! result)
-      for (Iterator it = entries.keySet().iterator(); it.hasNext();)
+      for (Entry<String, Attributes> me : entries.entrySet())
         {
-          Entry me = (Entry) it.next();
-          String name = (String) me.getKey();
-          attr = (Attributes) me.getValue();
+          String name = me.getKey();
+          attr = me.getValue();
           hash = attr.getValue(Main.DIGEST_ATTR);
           result = verifySFEntry(name, hash);
           if (! result)

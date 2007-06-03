@@ -181,7 +181,20 @@ public abstract class Permission implements Guard, Serializable
    */
   public String toString()
   {
-    return '(' + getClass().getName() + ' ' + getName() + ' '
-      + getActions() + ')';
+    StringBuffer string = new StringBuffer(); 
+    
+    string = string.append('(');
+    string = string.append(getClass().getName());
+    string = string.append(' ');
+    string = string.append(getName());
+    
+    if (!(getActions().equals("")))
+      {
+        string = string.append(' ');
+        string = string.append(getActions());
+      }
+   
+    string = string.append(')');
+    return string.toString();     
   }
 } // class Permission

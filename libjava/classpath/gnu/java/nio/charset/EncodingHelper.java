@@ -148,6 +148,17 @@ public class EncodingHelper
        throw new UnsupportedEncodingException("Charset "+name+" not found.");
      }
    }
+
+  /**
+   * Returns the default charset without throwing any exceptions. The default
+   * charset is UTF8.
+   *
+   * @return the default charset
+   */
+  public static Charset getDefaultCharset()
+  {
+    return new UTF_8();
+  }
 }
 
 

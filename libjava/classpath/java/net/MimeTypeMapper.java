@@ -232,7 +232,8 @@ class MimeTypeMapper implements FileNameMap
   /**
    * The MIME types above are put into this Hashtable for faster lookup.
    */
-  private Hashtable mime_types = new Hashtable(150);
+  private Hashtable<String, String> mime_types
+    = new Hashtable<String, String>(150);
 
   /**
    * Create a new <code>MimeTypeMapper</code> object.
@@ -257,7 +258,7 @@ class MimeTypeMapper implements FileNameMap
       }
   }
 
-  public static void fillFromFile (Map table, String fname) 
+  public static void fillFromFile (Map<String, String> table, String fname) 
     throws IOException
   {
     LineNumberReader reader = 
@@ -325,17 +326,17 @@ class MimeTypeMapper implements FileNameMap
    */
   public static void main(String[] args) throws IOException
   {
-    TreeMap map = new TreeMap();
+    TreeMap<String, String> map = new TreeMap<String, String>();
     // It is fine to hard-code the name here.  This is only ever
     // used by maintainers, who can hack it if they need to re-run
     // it.
     fillFromFile(map, "/etc/mime.types");
-    Iterator it = map.keySet().iterator();
+    Iterator<String> it = map.keySet().iterator();
     boolean first = true;
     while (it.hasNext())
       {
-        String key = (String) it.next();
-        String value = (String) map.get(key);
+        String key = it.next();
+        String value = map.get(key);
         // Put the "," first since it is easier to make correct syntax this way.
         System.out.println("      " + (first ? "  " : ", ") 
                            + "{ \"" + key + "\", \"" + value + "\" }");

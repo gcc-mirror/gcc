@@ -7,6 +7,19 @@
 #pragma interface
 
 #include <java/lang/Object.h>
+extern "Java"
+{
+  namespace java
+  {
+    namespace nio
+    {
+      namespace channels
+      {
+          class Channel;
+      }
+    }
+  }
+}
 
 class java::lang::System : public ::java::lang::Object
 {
@@ -44,6 +57,7 @@ private:
 public: // actually package-private
   static ::java::lang::String * getenv0(::java::lang::String *);
 public:
+  static ::java::nio::channels::Channel * inheritedChannel();
   static ::java::io::InputStream * in;
   static ::java::io::PrintStream * out;
   static ::java::io::PrintStream * err;

@@ -1,5 +1,5 @@
 /* java.util.VMTimeZone
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,6 +40,9 @@ exception statement from your version. */
 package java.util;
 
 import gnu.classpath.Configuration;
+import gnu.classpath.SystemProperties;
+import gnu.java.util.ZoneInfo;
+import java.util.TimeZone;
 
 import java.io.*;
 
@@ -75,9 +78,10 @@ final class VMTimeZone
    * The reference implementation which is made for GNU/Posix like
    * systems calls <code>System.getenv("TZ")</code>,
    * <code>readTimeZoneFile("/etc/timezone")</code>,
-   * <code>readtzFile("/etc/localtime")</code> and finally
-   * <code>getSystemTimeZoneId()</code> till a supported TimeZone is
-   * found through <code>TimeZone.getDefaultTimeZone(String)</code>.
+   * <code>ZoneInfo.readTZFile((String)null, "/etc/localtime")</code>
+   * and finally <code>getSystemTimeZoneId()</code> till a supported
+   * TimeZone is found through
+   * <code>TimeZone.getDefaultTimeZone(String)</code>.
    * If every method fails <code>null</code> is returned (which means
    * the TimeZone code will fall back on GMT as default time zone).
    * <p>
@@ -108,9 +112,51 @@ final class VMTimeZone
     // Try to parse /etc/localtime
     if (zone == null)
       {
-	tzid = readtzFile("/etc/localtime");
-	if (tzid != null && !tzid.equals(""))
-	  zone = TimeZone.getDefaultTimeZone(tzid);
+	zone = ZoneInfo.readTZFile((String) null, "/etc/localtime");
+	if (zone != null)
+	  {
+	    // Try to find a more suitable ID for the /etc/localtime
+	    // timezone.
+	    // Sometimes /etc/localtime is a symlink to some
+	    // /usr/share/zoneinfo/ file.
+	    String id = null;
+	    try
+	      {
+		id = new File("/etc/localtime").getCanonicalPath();
+		if (id != null)
+		  {
+		    String zoneinfo_dir
+		      = SystemProperties.getProperty("gnu.java.util.zoneinfo.dir");
+		    if (zoneinfo_dir != null)
+		      zoneinfo_dir
+			= new File(zoneinfo_dir
+				   + File.separatorChar).getCanonicalPath();
+		    if (zoneinfo_dir != null && id.startsWith(zoneinfo_dir))
+		      {
+			int pos = zoneinfo_dir.length();
+			while (pos < id.length()
+			       && id.charAt(pos) == File.separatorChar)
+			  pos++;
+			if (pos < id.length())
+			  id = id.substring(pos);
+			else
+			  id = null;
+		      }
+		    else
+		      id = null;
+		  }
+	      }
+	    catch (IOException ioe)
+	      {
+		id = null;
+	      }
+
+	    if (id == null)
+	      id = readSysconfigClockFile("/etc/sysconfig/clock");
+
+	    if (id != null)
+	      zone.setID(id);
+	  }
       }
 
     // Try some system specific way
@@ -186,121 +232,46 @@ final class VMTimeZone
   }
 
   /**
-   * Tries to read a file as a "standard" tzfile and return a time
-   * zone id string as expected by <code>getDefaultTimeZone(String)</code>.
-   * If the file doesn't exist, an IOException occurs or it isn't a tzfile
-   * that can be parsed null is returned.
+   * Tries to read the time zone name from a file.
+   * If the file cannot be read or an IOException occurs null is returned.
    * <p>
-   * The tzfile structure (as also used by glibc) is described in the Olson
-   * tz database archive as can be found at
-   * <code>ftp://elsie.nci.nih.gov/pub/</code>.
-   * <p>
-   * At least the following platforms support the tzdata file format
-   * and /etc/localtime (GNU/Linux, Darwin, Solaris and FreeBSD at
-   * least). Some systems (like Darwin) don't start the file with the
-   * required magic bytes 'TZif', this implementation can handle
-   * that).
+   * The /etc/sysconfig/clock file is not standard, but a lot of systems
+   * have it. The file is included by shell scripts and the timezone
+   * name is defined in ZONE variable.
+   * This routine should grok it with or without quotes:
+   * ZONE=America/New_York
+   * or
+   * ZONE="Europe/London"
    */
-  private static String readtzFile(String file)
+  private static String readSysconfigClockFile(String file)
   {
-    File f = new File(file);
-    if (!f.exists())
-      return null;
-    
-    DataInputStream dis = null;
+    BufferedReader br = null;
     try
       {
-        FileInputStream fis = new FileInputStream(f);
-        BufferedInputStream bis = new BufferedInputStream(fis);
-        dis = new DataInputStream(bis);
-	
-        // Make sure we are reading a tzfile.
-        byte[] tzif = new byte[4];
-        dis.readFully(tzif);
-        if (tzif[0] == 'T' && tzif[1] == 'Z'
-            && tzif[2] == 'i' && tzif[3] == 'f')
-	  // Reserved bytes, ttisgmtcnt, ttisstdcnt and leapcnt
-	  skipFully(dis, 16 + 3 * 4);
-	else
-	  // Darwin has tzdata files that don't start with the TZif marker
-	  skipFully(dis, 16 + 3 * 4 - 4);
-	
-	int timecnt = dis.readInt();
-	int typecnt = dis.readInt();
-	if (typecnt > 0)
+	FileInputStream fis = new FileInputStream(file);
+	BufferedInputStream bis = new BufferedInputStream(fis);
+	br = new BufferedReader(new InputStreamReader(bis));
+
+	for (String line = br.readLine(); line != null; line = br.readLine())
 	  {
-	    int charcnt = dis.readInt();
-	    // Transition times plus indexed transition times.
-	    skipFully(dis, timecnt * (4 + 1));
-	    
-	    // Get last gmt_offset and dst/non-dst time zone names.
-	    int abbrind = -1;
-	    int dst_abbrind = -1;
-	    int gmt_offset = 0;
-	    while (typecnt-- > 0)
+	    line = line.trim();
+	    if (line.length() < 8 || !line.startsWith("ZONE="))
+	      continue;
+	    int posstart = 6;
+	    int posend;
+	    if (line.charAt(5) == '"')
+	      posend = line.indexOf('"', 6);
+	    else if (line.charAt(5) == '\'')
+	      posend = line.indexOf('\'', 6);
+	    else
 	      {
-		// gmtoff
-		int offset = dis.readInt();
-		int dst = dis.readByte();
-		if (dst == 0)
-		  {
-		    abbrind = dis.readByte();
-		    gmt_offset = offset;
-		  }
-		else
-		  dst_abbrind = dis.readByte();
+		posstart = 5;
+		posend = line.length();
 	      }
-	    
-	    // gmt_offset is the offset you must add to UTC/GMT to
-	    // get the local time, we need the offset to add to
-	    // the local time to get UTC/GMT.
-	    gmt_offset *= -1;
-	    
-	    // Turn into hours if possible.
-	    if (gmt_offset % 3600 == 0)
-	      gmt_offset /= 3600;
-	    
-	    if (abbrind >= 0)
-	      {
-		byte[] names = new byte[charcnt];
-		dis.readFully(names);
-		int j = abbrind;
-		while (j < charcnt && names[j] != 0)
-		  j++;
-		
-		String zonename = new String(names, abbrind, j - abbrind,
-					     "ASCII");
-		
-		String dst_zonename;
-		if (dst_abbrind >= 0)
-		  {
-		    j = dst_abbrind;
-		    while (j < charcnt && names[j] != 0)
-		      j++;
-		    dst_zonename = new String(names, dst_abbrind,
-					      j - dst_abbrind, "ASCII");
-		  }
-		else
-		  dst_zonename = "";
-		
-		// Only use gmt offset when necessary.
-		// Also special case GMT+/- timezones.
-		String offset_string;
-		if ("".equals(dst_zonename)
-		    && (gmt_offset == 0
-			|| zonename.startsWith("GMT+")
-			|| zonename.startsWith("GMT-")))
-		  offset_string = "";
-		else
-		  offset_string = Integer.toString(gmt_offset);
-		
-		String id = zonename + offset_string + dst_zonename;
-		
-		return id;
-	      }
+	    if (posend < 0)
+	      return null;
+	    return line.substring(posstart, posend);
 	  }
-	
-	// Something didn't match while reading the file.
 	return null;
       }
     catch (IOException ioe)
@@ -312,29 +283,13 @@ final class VMTimeZone
       {
 	try
 	  {
-	    if (dis != null)
-	      dis.close();
+	    if (br != null)
+	      br.close();
 	  }
-	catch(IOException ioe)
+	catch (IOException ioe)
 	  {
 	    // Error while close, nothing we can do.
 	  }
-      }
-  }
-  
-  /**
-   * Skips the requested number of bytes in the given InputStream.
-   * Throws EOFException if not enough bytes could be skipped.
-   * Negative numbers of bytes to skip are ignored.
-   */
-  private static void skipFully(InputStream is, long l) throws IOException
-  {
-    while (l > 0)
-      {
-        long k = is.skip(l);
-        if (k <= 0)
-          throw new EOFException();
-        l -= k;
       }
   }
 

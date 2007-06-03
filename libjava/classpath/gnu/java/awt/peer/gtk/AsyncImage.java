@@ -61,11 +61,11 @@ public class AsyncImage
   private class NullImageSource
     implements ImageProducer
   {
-    private ArrayList consumers;
+    private ArrayList<ImageConsumer> consumers;
 
     NullImageSource()
     {
-      consumers = new ArrayList();
+      consumers = new ArrayList<ImageConsumer>();
     }
 
     public void addConsumer(ImageConsumer ic)
@@ -145,14 +145,14 @@ public class AsyncImage
    *
    * This is package private to avoid accessor methods.
    */
-  HashSet observers;
+  HashSet<ImageObserver> observers;
 
   /**
    * Creates a new AsyncImage that loads from the specified URL.
    */
   AsyncImage(URL url)
   {
-    observers = new HashSet();
+    observers = new HashSet<ImageObserver>();
     Loader l = new Loader(url);
     Thread t = new Thread(l);
     t.start();
@@ -221,7 +221,7 @@ public class AsyncImage
           {
             // This field gets null when image loading is complete and we don't
             // need to store any more observers.
-            HashSet observs = observers;
+            HashSet<ImageObserver> observs = observers;
             if (observs != null)
               {
                 observs.add(obs);

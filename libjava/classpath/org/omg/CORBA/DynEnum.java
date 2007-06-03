@@ -1,5 +1,5 @@
 /* DynEnum.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,6 +43,8 @@ package org.omg.CORBA;
  * Represents the dynamic enumeration, allowing to get/set the value by
  * name or by position in the enumeration list. The CORBA enumeration
  * can obtain one of the named values from the specified enumeration list.
+ *
+ * @deprecated by {@link org.omg.DynamicAny.DynEnum}
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */

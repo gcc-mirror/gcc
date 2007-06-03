@@ -32,7 +32,7 @@ public final class JarURLLoader extends URLLoader
   // Base jar: url for all resources loaded from jar.
   final URL baseJarURL;
   // The "Class-Path" attribute of this Jar's manifest.
-  ArrayList classPath;
+  ArrayList<URLLoader> classPath;
   // If not null, a mapping from INDEX.LIST for this jar only.
   // This is a set of all prefixes and top-level files that
   // ought to be available in this jar.
@@ -90,20 +90,20 @@ public final class JarURLLoader extends URLLoader
 
         IndexListParser parser = new IndexListParser(jarfile, baseJarURL,
                                                      baseURL);
-        LinkedHashMap indexMap = parser.getHeaders();
+        LinkedHashMap<URL, Set<String>> indexMap = parser.getHeaders();
         if (indexMap != null)
           {
             // Note that the index also computes
             // the resulting Class-Path -- there are jars out there
             // where the index lists some required jars which do
             // not appear in the Class-Path attribute in the manifest.
-            this.classPath = new ArrayList();
-            Iterator it = indexMap.entrySet().iterator();
+            this.classPath = new ArrayList<URLLoader>();
+            Iterator<Map.Entry<URL, Set<String>>> it = indexMap.entrySet().iterator();
             while (it.hasNext())
               {
-                Map.Entry entry = (Map.Entry) it.next();
-                URL subURL = (URL) entry.getKey();
-                Set prefixes = (Set) entry.getValue();
+                Map.Entry<URL, Set<String>> entry = it.next();
+                URL subURL = entry.getKey();
+                Set<String> prefixes = entry.getValue();
                 if (subURL.equals(baseURL))
                   this.indexSet = prefixes;
                 else
@@ -127,7 +127,7 @@ public final class JarURLLoader extends URLLoader
                       = attributes.getValue(Attributes.Name.CLASS_PATH)) 
                      != null))
           {
-            this.classPath = new ArrayList();
+            this.classPath = new ArrayList<URLLoader>();
             StringTokenizer st = new StringTokenizer(classPathString, " ");
             while (st.hasMoreElements ()) 
               {
@@ -144,7 +144,7 @@ public final class JarURLLoader extends URLLoader
                                                               cache, factory,
                                                               subURL, subURL);
                     this.classPath.add(subLoader);
-                    ArrayList extra = subLoader.getClassPath();
+                    ArrayList<URLLoader> extra = subLoader.getClassPath();
                     if (extra != null)
                       this.classPath.addAll(extra);
                   }
@@ -208,7 +208,7 @@ public final class JarURLLoader extends URLLoader
       }
   }
 
-  public ArrayList getClassPath()
+  public ArrayList<URLLoader> getClassPath()
   {
     return classPath;
   }

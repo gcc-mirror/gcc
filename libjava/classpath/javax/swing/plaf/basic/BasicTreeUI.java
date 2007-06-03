@@ -116,7 +116,7 @@ import javax.swing.tree.VariableHeightLayoutCache;
  * @author Audrius Meskauskas (audriusa@bioinformatics.org)
  */
 public class BasicTreeUI
-    extends TreeUI
+  extends TreeUI
 {
   /**
    * The tree cell editing may be started by the single mouse click on the
@@ -656,7 +656,18 @@ public class BasicTreeUI
    */
   public Rectangle getPathBounds(JTree tree, TreePath path)
   {
-    return treeState.getBounds(path, new Rectangle());
+    Rectangle bounds = null;
+    if (tree != null && treeState != null)
+      {
+        bounds = treeState.getBounds(path, null);
+        Insets i = tree.getInsets();
+        if (bounds != null && i != null)
+          {
+            bounds.x += i.left;
+            bounds.y += i.top;
+          }
+      }
+    return bounds;
   }
 
   /**
@@ -1561,7 +1572,6 @@ public class BasicTreeUI
         int startIndex = tree.getClosestRowForLocation(clip.x, clip.y);
         int endIndex = tree.getClosestRowForLocation(clip.x + clip.width,
                                                      clip.y + clip.height);
-
         // Also paint dashes to the invisible nodes below.
         // These should be painted first, otherwise they may cover
         // the control icons.

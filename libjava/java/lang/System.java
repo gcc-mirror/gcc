@@ -46,8 +46,11 @@ import java.io.BufferedOutputStream;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.nio.channels.Channel;
+import java.nio.channels.spi.SelectorProvider;
 import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -649,6 +652,25 @@ public final class System
    */
   static native String getenv0(String name);
 
+  /**
+   * Returns the inherited channel of the VM.
+   *
+   * This wraps the inheritedChannel() call of the system's default
+   * {@link SelectorProvider}.
+   *
+   * @return the inherited channel of the VM
+   *
+   * @throws IOException If an I/O error occurs
+   * @throws SecurityException If an installed security manager denies access
+   *         to RuntimePermission("inheritedChannel")
+   *
+   * @since 1.5
+   */
+  public static Channel inheritedChannel()
+    throws IOException
+  {
+    return SelectorProvider.provider().inheritedChannel();
+  }
 
   /**
    * This is a specialised <code>Collection</code>, providing

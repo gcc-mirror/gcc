@@ -83,7 +83,7 @@ public class Reference implements Cloneable, Serializable
   public Reference (String className)
   {
     this.className = className;
-    addrs = new Vector ();
+    addrs = new Vector<RefAddr> ();
   }
   
   /**
@@ -93,7 +93,7 @@ public class Reference implements Cloneable, Serializable
   public Reference (String className, RefAddr addr)
   {
     this.className = className;
-    addrs = new Vector ();
+    addrs = new Vector<RefAddr> ();
     addrs.add (addr);
   }
    
@@ -112,7 +112,7 @@ public class Reference implements Cloneable, Serializable
     this.className = className;
     this.classFactory = factoryClassName;
     this.classFactoryLocation = factoryLocation;
-    addrs = new Vector ();
+    addrs = new Vector<RefAddr> ();
   }
 
   /**
@@ -131,7 +131,7 @@ public class Reference implements Cloneable, Serializable
     this.className = className;
     this.classFactory = factoryClassName;
     this.classFactoryLocation = factoryLocation;
-    addrs = new Vector ();
+    addrs = new Vector<RefAddr> ();
     addrs.add (addr);
   }
 
@@ -164,7 +164,7 @@ public class Reference implements Cloneable, Serializable
   {
     Reference r = new Reference (className, classFactory,
 				 classFactoryLocation);
-    r.addrs = (Vector) addrs.clone ();
+    r.addrs = (Vector<RefAddr>) addrs.clone ();
     return r;
   }
 
@@ -193,7 +193,7 @@ public class Reference implements Cloneable, Serializable
    */
   public RefAddr get (int posn)
   {
-    return (RefAddr) addrs.get (posn);
+    return addrs.get (posn);
   }
   
   /**
@@ -208,7 +208,7 @@ public class Reference implements Cloneable, Serializable
   {
     for (int i = 0; i < addrs.size (); ++i)
       {
-	RefAddr r = (RefAddr) addrs.get (i);
+	RefAddr r = addrs.get (i);
 	if (addrType.equals (r.getType ()))
 	  return r;
       }

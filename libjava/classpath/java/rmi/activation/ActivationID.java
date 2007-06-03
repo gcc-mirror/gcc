@@ -174,7 +174,7 @@ public class ActivationID
   {
     out.writeObject(uid);
     out.writeObject(activator);
-  };
+  }
   
   /**
    * Compare by .equals if both a and b are not null, compare directly if at

@@ -1,5 +1,5 @@
 /* OpenMBeanOperationInfoSupport.java -- Open typed info about an operation.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -61,7 +61,7 @@ public class OpenMBeanOperationInfoSupport
   /**
    * The open type representing the return value.
    */
-  private OpenType returnOpenType;
+  private OpenType<?> returnOpenType;
 
   /**
    * The hash code of this instance.
@@ -108,7 +108,7 @@ public class OpenMBeanOperationInfoSupport
    */
   public OpenMBeanOperationInfoSupport(String name, String desc,
 				       OpenMBeanParameterInfo[] sig,
-				       OpenType type, int impact)
+				       OpenType<?> type, int impact)
   {
     super(name, desc, (MBeanParameterInfo[]) sig,
 	  type == null ? null : type.getClassName(), impact);
@@ -159,7 +159,7 @@ public class OpenMBeanOperationInfoSupport
    *
    * @return the open type of the return value.
    */
-  public OpenType getReturnOpenType()
+  public OpenType<?> getReturnOpenType()
   {
     return returnOpenType;
   }

@@ -1,5 +1,5 @@
 /* Socket.java -- Client socket implementation
-   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2006
+   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -81,6 +81,12 @@ public class Socket
    */
   // package-private because ServerSocket.implAccept() needs to access it.
   SocketImpl impl;
+
+  /**
+   * True if impl.create() has been called.
+   */
+  // package-private because ServerSocket.implAccept() needs to access it.
+  boolean implCreated;
 
   /**
    * True if the socket is bound.
@@ -326,11 +332,23 @@ public class Socket
 
   private SocketImpl getImpl() throws SocketException
   {
+    if (! implCreated)
+      {
+        try
+          {
+            impl.create(true);
+          }
+        catch (IOException x)
+          {
+            throw (SocketException) new SocketException().initCause(x);
+          }
+        implCreated = true;
+      }
     return impl;
   }
 
   /**
-   * Binds the socket to the givent local address/port
+   * Binds the socket to the given local address/port
    *
    * @param bindpoint The address/port to bind to
    *
@@ -359,7 +377,6 @@ public class Socket
     // bind to address/port
     try
       {
-	getImpl().create(true);
 	getImpl().bind(tmp.getAddress(), tmp.getPort());
 	bound = true;
       }

@@ -264,15 +264,12 @@ public abstract class PrinterJob
    * @return Array of stream print services, could be empty.
    * @since 1.4
    */
-  // FIXME:
-  // Enable when StreamPrintServiceFactory has lookupStreamServiceFactories
-//  public static StreamPrintServiceFactory[] lookupStreamPrintServices(String mimeType)
-//  {
-//    return StreamPrintServiceFactory.lookupStreamServiceFactories(
-//      new DocFlavor("application/x-java-jvm-local-objectref",
-//      "java.awt.print.Pageable"),
-//    	mimeType);
-//  }
+  public static StreamPrintServiceFactory[]
+    lookupStreamPrintServices(String mimeType)
+  {
+    return StreamPrintServiceFactory.lookupStreamPrintServiceFactories(
+      DocFlavor.SERVICE_FORMATTED.PAGEABLE, mimeType);
+  }
 
   /**
    * Return the printer for this job.  If print services aren't supported by

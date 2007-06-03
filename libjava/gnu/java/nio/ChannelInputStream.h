@@ -7,6 +7,8 @@
 #pragma interface
 
 #include <java/io/InputStream.h>
+#include <gcj/array.h>
+
 extern "Java"
 {
   namespace gnu
@@ -36,6 +38,7 @@ class gnu::java::nio::ChannelInputStream : public ::java::io::InputStream
 
 public:
   ChannelInputStream(::java::nio::channels::ReadableByteChannel *);
+  jint read(JArray< jbyte > *, jint, jint);
   jint read();
 private:
   ::java::nio::channels::ReadableByteChannel * __attribute__((aligned(__alignof__( ::java::io::InputStream)))) ch;

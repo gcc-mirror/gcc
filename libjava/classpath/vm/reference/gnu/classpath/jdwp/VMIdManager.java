@@ -337,6 +337,10 @@ public class VMIdManager
    */
   public ObjectId getObjectId (Object theObject)
   {
+    // Special case: null
+    if (theObject == null)
+      return new NullObjectId ();
+    
     ReferenceKey ref = new ReferenceKey (theObject, _refQueue);
     ObjectId id = (ObjectId) _oidTable.get (ref);
     if (id == null)
@@ -364,6 +368,10 @@ public class VMIdManager
   public ObjectId get (long id)
     throws InvalidObjectException
   {
+    // Special case: null
+    if (id == 0)
+      return new NullObjectId ();
+    
     ObjectId oid = (ObjectId) _idTable.get (new Long (id));
     if (oid == null)
       throw new InvalidObjectException (id);

@@ -34,8 +34,7 @@ public:
   virtual void setValue(jboolean);
   virtual ::java::lang::String * toString();
 private:
-  ::javax::sound::sampled::BooleanControl$Type * __attribute__((aligned(__alignof__( ::javax::sound::sampled::Control)))) type;
-  jboolean value;
+  jboolean __attribute__((aligned(__alignof__( ::javax::sound::sampled::Control)))) value;
   ::java::lang::String * trueLabel;
   ::java::lang::String * falseLabel;
 public:

@@ -82,7 +82,7 @@ public class MetalMenuBarUI extends BasicMenuBarUI
         && c.getBackground() instanceof UIResource
         && height > 2)
       {
-        MetalUtils.paintGradient(g, 0, 0, c.getWidth(), height - 2,
+        MetalUtils.paintGradient(g, 0, 0, c.getWidth(), height,
                                  SwingConstants.VERTICAL, "MenuBar.gradient");
         
         paint(g, c);

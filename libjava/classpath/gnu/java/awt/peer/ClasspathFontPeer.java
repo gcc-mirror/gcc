@@ -54,6 +54,7 @@ import java.awt.peer.FontPeer;
 import java.text.AttributedCharacterIterator;
 import java.text.CharacterIterator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -119,6 +120,23 @@ public abstract class ClasspathFontPeer
    * The affine transformation the font is currently subject to.
    */
   protected AffineTransform transform;
+
+  static class LRUCache<K,V> extends LinkedHashMap<K,V>
+  {
+    int max_entries;
+    public LRUCache(int max)
+    {
+      super(max, 0.75f, true);
+      max_entries = max;
+    }
+    protected boolean removeEldestEntry(Map.Entry eldest)
+    {
+      return size() > max_entries;
+    }
+  }
+
+  private static LRUCache<AffineTransform,TransformAttribute> transCache =
+    new LRUCache<AffineTransform,TransformAttribute>(50);
 
   protected static ClasspathToolkit tk()
   {
@@ -200,7 +218,19 @@ public abstract class ClasspathFontPeer
   protected static void copyTransformToAttrs (AffineTransform trans, Map attrs)
   {
     if (trans != null)
-      attrs.put(TextAttribute.TRANSFORM, new TransformAttribute (trans));
+      {
+	TransformAttribute ta;
+        synchronized(transCache)
+          {
+	    ta = transCache.get(trans);
+	    if (ta == null)
+	      {
+		ta = new TransformAttribute(trans);
+		transCache.put(trans, ta);
+	      }
+	  }
+	attrs.put(TextAttribute.TRANSFORM, ta);
+      }
   }
 
 

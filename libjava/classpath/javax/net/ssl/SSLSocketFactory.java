@@ -39,6 +39,7 @@ exception statement from your version. */
 package javax.net.ssl;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.security.KeyStore;
 import java.security.Security;
@@ -141,8 +142,9 @@ public abstract class SSLSocketFactory extends SocketFactory
           }
         catch (Exception ex)
           {
-            throw new RuntimeException("error instantiating default socket factory: "
-                                       + ex.toString(), ex);
+            return new ErrorSocketFactory(new RuntimeException(
+                "error instantiating default socket factory: " + ex.toString(),
+                ex));
           }
       }
     try
@@ -152,7 +154,65 @@ public abstract class SSLSocketFactory extends SocketFactory
     catch (Exception e)
       {
       }
-    throw new RuntimeException("no SSLSocketFactory implementation available");
+    return new ErrorSocketFactory(new RuntimeException(
+        "no SSLSocketFactory implementation available"));
+  }
+
+  private static final class ErrorSocketFactory extends SSLSocketFactory
+  {
+    private RuntimeException x;
+
+    ErrorSocketFactory(RuntimeException x)
+    {
+      this.x = x;
+    }
+
+    public Socket createSocket() throws IOException
+    {
+      throw (IOException) new IOException().initCause(x);
+    }
+
+    public Socket createSocket(String host, int port)
+      throws IOException
+    {
+      throw (IOException) new IOException().initCause(x);
+    }
+
+    public Socket createSocket(String host, int port, InetAddress localHost,
+                               int localPort)
+      throws IOException
+    {
+      throw (IOException) new IOException().initCause(x);
+    }
+
+    public Socket createSocket(InetAddress host, int port) throws IOException
+    {
+      throw (IOException) new IOException().initCause(x);
+    }
+
+    public Socket createSocket(InetAddress hast, int port, InetAddress localHost,
+                               int localPort)
+      throws IOException
+    {
+      throw (IOException) new IOException().initCause(x);
+    }
+
+    public String[] getDefaultCipherSuites()
+    {
+      throw new RuntimeException(x);
+    }
+
+    public String[] getSupportedCipherSuites()
+    {
+      throw new RuntimeException(x);
+    }
+
+    public Socket createSocket(Socket s, String host, int port,
+                               boolean autoClose)
+      throws IOException
+    {
+      throw new RuntimeException(x);
+    }
   }
 
   // Abstract methods.

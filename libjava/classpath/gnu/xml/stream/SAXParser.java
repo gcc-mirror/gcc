@@ -1,5 +1,5 @@
 /* SAXParser.java -- 
-   Copyright (C) 2005, 2006  Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -187,6 +187,8 @@ public class SAXParser
       lexicalHandler = (LexicalHandler) value;
     else if ((GNU_FEATURES + "xml-base").equals(name))
       baseAware = Boolean.TRUE.equals(value);
+    else if ((GNU_FEATURES + "coalescing").equals(name))
+      coalescing = Boolean.TRUE.equals(value);
     else
       throw new SAXNotSupportedException(name);
   }

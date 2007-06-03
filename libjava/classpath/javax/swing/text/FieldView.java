@@ -91,7 +91,7 @@ public class FieldView extends PlainView
         horizontalVisibility.addChangeListener(new ChangeListener(){
           public void stateChanged(ChangeEvent event) {
             getContainer().repaint();
-          };
+          }
         });
 
         // It turned out that the span calculated at this point is wrong

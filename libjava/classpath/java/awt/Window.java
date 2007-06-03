@@ -87,7 +87,6 @@ public class Window extends Container implements Accessible
   private transient WindowListener windowListener;
   private transient WindowFocusListener windowFocusListener;
   private transient WindowStateListener windowStateListener;
-  private transient GraphicsConfiguration graphicsConfiguration;
 
   private transient boolean shown;
 
@@ -132,13 +131,13 @@ public class Window extends Container implements Accessible
     setLayout(new BorderLayout());
     
     GraphicsEnvironment g = GraphicsEnvironment.getLocalGraphicsEnvironment();
-    graphicsConfiguration = g.getDefaultScreenDevice().getDefaultConfiguration();
+    graphicsConfig = g.getDefaultScreenDevice().getDefaultConfiguration();
   }
 
   Window(GraphicsConfiguration gc)
   {
     this();
-    graphicsConfiguration = gc;
+    graphicsConfig = gc;
   }
 
   /**
@@ -204,19 +203,11 @@ public class Window extends Container implements Accessible
       throw new IllegalArgumentException ("gc must be from a screen device");
 
     if (gc == null)
-      graphicsConfiguration = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                                                 .getDefaultScreenDevice()
-                                                 .getDefaultConfiguration();
+      graphicsConfig = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                                          .getDefaultScreenDevice()
+                                          .getDefaultConfiguration();
     else
-      graphicsConfiguration = gc;
-  }
-
-  GraphicsConfiguration getGraphicsConfigurationImpl()
-  {
-    if (graphicsConfiguration != null)
-	return graphicsConfiguration;
-
-    return super.getGraphicsConfigurationImpl();
+      graphicsConfig = gc;
   }
 
   /**
@@ -1073,9 +1064,14 @@ public class Window extends Container implements Accessible
    */
   public GraphicsConfiguration getGraphicsConfiguration()
   {
-    if (graphicsConfiguration != null) return graphicsConfiguration;
-    if (peer != null) return peer.getGraphicsConfiguration();
-    return null;
+    GraphicsConfiguration conf = graphicsConfig;
+    if (conf == null)
+      {
+        conf = GraphicsEnvironment.getLocalGraphicsEnvironment()
+        .getDefaultScreenDevice().getDefaultConfiguration();
+        graphicsConfig = conf;
+      }
+    return conf;
   }
 
   protected void processWindowFocusEvent(WindowEvent event)

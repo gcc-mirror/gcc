@@ -1,5 +1,5 @@
 /* DynFixed.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,6 +53,8 @@ import org.omg.CORBA.DynAnyPackage.InvalidValue;
  * decimal point is not stored.
  *
  * @see gnu.CORBA.BigDecimalHelper
+ *
+ * @deprecated by {@link org.omg.DynamicAny.DynFixed}
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */

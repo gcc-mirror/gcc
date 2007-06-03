@@ -141,7 +141,7 @@ class gnu::java::awt::peer::gtk::GtkToolkit : public ::gnu::java::awt::Classpath
 {
 
 public: // actually package-private
-  static void gtkInit(jint);
+  static void gtkInit(jint, ::java::lang::Object *);
   static void gtkMain();
   static void gtkQuit();
 public:
@@ -215,6 +215,10 @@ public:
   virtual ::java::awt::GraphicsEnvironment * getLocalGraphicsEnvironment();
   virtual ::java::awt::Font * createFont(jint, ::java::io::InputStream *);
   virtual ::java::awt::peer::RobotPeer * createRobot(::java::awt::GraphicsDevice *);
+  virtual jboolean getLockingKeyState(jint);
+public: // actually protected
+  virtual jint getLockState(jint);
+public:
   virtual void registerImageIOSpis(::javax::imageio::spi::IIORegistry *);
 public: // actually protected
   virtual ::java::awt::peer::MouseInfoPeer * getMouseInfoPeer();
@@ -224,6 +228,8 @@ private:
   void checkHeadless();
 public:
   virtual jint getMouseNumberOfButtons();
+public: // actually package-private
+  static ::java::lang::Object * GTK_LOCK;
 private:
   static ::java::awt::EventQueue * q;
   ::gnu::java::awt::peer::gtk::GtkToolkit$LRUCache * __attribute__((aligned(__alignof__( ::gnu::java::awt::ClasspathToolkit)))) fontCache;

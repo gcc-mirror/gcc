@@ -58,4 +58,29 @@ interface Constants
    * The number of dimensions.
    */
   static final int DIMENSION_MAX = 2;
+
+  /**
+   * Indicates a vector with no specific direction.
+   */
+  static final int DIR_NONE = 0;
+
+  /**
+   * Right direction.
+   */
+  static final int DIR_RIGHT = 1;
+
+  /**
+   * Left direction.
+   */
+  static final int DIR_LEFT = -1;
+
+  /**
+   * Up direction.
+   */
+  static final int DIR_UP = 2;
+
+  /**
+   * Down direction.
+   */
+  static final int DIR_DOWN = -2;
 }

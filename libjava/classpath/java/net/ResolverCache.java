@@ -97,12 +97,12 @@ class ResolverCache
   /**
    * The cache itself.
    */
-  private static HashMap cache = new HashMap();
+  private static HashMap<Object, Entry> cache = new HashMap<Object, Entry>();
 
   /**
    * List of entries which may expire.
    */
-  private static LinkedList killqueue = new LinkedList();
+  private static LinkedList<Entry> killqueue = new LinkedList<Entry>();
 
   /**
    * Return the hostname for the specified IP address.

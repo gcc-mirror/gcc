@@ -706,14 +706,16 @@ public class Collections
 	      {
 		if (!forward)
 		  itr.next(); // Changing direction first.
-		for ( ; i != pos; i++, o = itr.next());
+		for ( ; i != pos; i++, o = itr.next())
+                  ;
 		forward = true;
 	      }
             else
 	      {
 		if (forward)
 		  itr.previous(); // Changing direction first.
-		for ( ; i != pos; i--, o = itr.previous());
+		for ( ; i != pos; i--, o = itr.previous())
+                  ;
 		forward = false;
 	      }
 	    final int d = compare(o, key, c);
@@ -1460,8 +1462,10 @@ public class Collections
   public static int frequency (Collection<?> c, Object o)
   {
     int result = 0;
-    for (Object v : c)
+    final Iterator<?> it = c.iterator();
+    while (it.hasNext())
       {
+	Object v = it.next();
 	if (AbstractCollection.equals(o, v))
 	  ++result;
       }
@@ -1522,8 +1526,9 @@ public class Collections
   public static boolean disjoint(Collection<?> c1, Collection<?> c2)
   {
     Collection<Object> oc1 = (Collection<Object>) c1;
-    for (Object o : oc1)
-      if (c2.contains(o))
+    final Iterator<Object> it = oc1.iterator();
+    while (it.hasNext())
+      if (c2.contains(it.next()))
 	return false;
     return true;
   }
@@ -5113,7 +5118,7 @@ public class Collections
 
       // The array returned is an array of UnmodifiableMapEntry instead of
       // Map.Entry
-      public Map.Entry<K,V>[] toArray()
+      public Object[] toArray()
       {
         Object[] mapEntryResult = super.toArray();
         UnmodifiableMapEntry<K,V> result[] = null;
@@ -5127,7 +5132,7 @@ public class Collections
 	  }
         return result;
       }
-  
+
       // The array returned is an array of UnmodifiableMapEntry instead of
       // Map.Entry
       public <S> S[] toArray(S[] array)
@@ -5825,8 +5830,10 @@ public class Collections
     public boolean addAll(Collection<? extends E> coll)
     {
       Collection<E> typedColl = (Collection<E>) c;
-      for (E element : typedColl)
+      final Iterator<E> it = typedColl.iterator();
+      while (it.hasNext())
 	{
+	  final E element = it.next();
 	  if (!type.isInstance(element))
 	    throw new ClassCastException("A member of the collection is not of the correct type.");
 	}
@@ -6167,9 +6174,10 @@ public class Collections
     public boolean addAll(int index, Collection<? extends E> coll)
     {
       Collection<E> typedColl = (Collection<E>) coll;
-      for (E element : typedColl)
+      final Iterator<E> it = typedColl.iterator();
+      while (it.hasNext())
 	{
-	  if (!type.isInstance(element))
+	  if (!type.isInstance(it.next()))
 	    throw new ClassCastException("A member of the collection is not of the correct type.");
 	}
       return list.addAll(index, coll);
@@ -6870,8 +6878,10 @@ public class Collections
     public void putAll(Map<? extends K, ? extends V> map)
     {
       Map<K,V> typedMap = (Map<K,V>) map;
-      for (Map.Entry<K,V> entry : typedMap.entrySet())
+      final Iterator<Map.Entry<K,V>> it = typedMap.entrySet().iterator();
+      while (it.hasNext())
 	{
+	  final Map.Entry<K,V> entry = it.next();
 	  if (!keyType.isInstance(entry.getKey()))
 	    throw new ClassCastException("A key is of the wrong type.");
 	  if (!valueType.isInstance(entry.getValue()))
@@ -7423,4 +7433,189 @@ public class Collections
     }
   } // class CheckedSortedSet
 
+  /**
+   * Returns a view of a {@link Deque} as a stack or LIFO (Last-In-First-Out)
+   * {@link Queue}.  Each call to the LIFO queue corresponds to one
+   * equivalent method call to the underlying deque, with the exception
+   * of {@link Collection#addAll(Collection)}, which is emulated by a series
+   * of {@link Deque#push(E)} calls.
+   *
+   * @param deque the deque to convert to a LIFO queue.
+   * @return a LIFO queue.
+   * @since 1.6
+   */
+  public static <T> Queue<T> asLifoQueue(Deque<T> deque)
+  {
+    return new LIFOQueue<T>(deque);
+  }
+
+  /**
+   * Returns a set backed by the supplied map.  The resulting set
+   * has the same performance, concurrency and ordering characteristics
+   * as the original map.  The supplied map must be empty and should not
+   * be used after the set is created.  Each call to the set corresponds
+   * to one equivalent method call to the underlying map, with the exception
+   * of {@link Set#addAll(Collection)} which is emulated by a series of
+   * calls to <code>put</code>.
+   *
+   * @param map the map to convert to a set.
+   * @return a set backed by the supplied map.
+   * @throws IllegalArgumentException if the map is not empty.
+   * @since 1.6
+   */
+  public static <E> Set<E> newSetFromMap(Map<E,Boolean> map)
+  {
+    return new MapSet<E>(map);
+  }
+
+  /**
+   * The implementation of {@link #asLIFOQueue(Deque)}. 
+   *
+   * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
+   * @since 1.6
+   */
+  private static class LIFOQueue<T>
+    extends AbstractQueue<T>
+  {
+    
+    /**
+     * The backing deque.
+     */
+    private Deque<T> deque;
+
+    /**
+     * Constructs a new {@link LIFOQueue} with the specified
+     * backing {@link Deque}.
+     *
+     * @param deque the backing deque.
+     */
+    public LIFOQueue(Deque<T> deque)
+    {
+      this.deque = deque;
+    }
+
+    public boolean add(T e)
+    {
+      return deque.offerFirst(e);
+    }
+    
+    public boolean addAll(Collection<? extends T> c)
+    {
+      boolean result = false;
+      final Iterator<? extends T> it = c.iterator();
+      while (it.hasNext())
+	result |= deque.offerFirst(it.next());
+      return result;
+    }
+    
+    public void clear()
+    {
+      deque.clear();
+    }
+    
+    public boolean isEmpty()
+    {
+      return deque.isEmpty();
+    }
+    
+    public Iterator<T> iterator()
+    {
+      return deque.iterator();
+    }
+    
+    public boolean offer(T e)
+    {
+      return deque.offerFirst(e);
+    }
+    
+    public T peek()
+    {
+      return deque.peek();
+    }
+
+    public T poll()
+    {
+      return deque.poll();
+    }
+    
+    public int size()
+    {
+      return deque.size();
+    }
+  } // class LIFOQueue
+
+  /**
+   * The implementation of {@link #newSetFromMap(Map)}. 
+   *
+   * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
+   * @since 1.6
+   */
+  private static class MapSet<E>
+    extends AbstractSet<E>
+  {
+    
+    /**
+     * The backing map.
+     */
+    private Map<E,Boolean> map;
+
+    /**
+     * Constructs a new {@link MapSet} using the specified
+     * backing {@link Map}.
+     *
+     * @param map the backing map.
+     * @throws IllegalArgumentException if the map is not empty.
+     */
+    public MapSet(Map<E,Boolean> map)
+    {
+      if (!map.isEmpty())
+	throw new IllegalArgumentException("The map must be empty.");
+      this.map = map;
+    }
+
+    public boolean add(E e)
+    {
+      return map.put(e, true) == null;
+    }
+    
+    public boolean addAll(Collection<? extends E> c)
+    {
+      boolean result = false;
+      final Iterator<? extends E> it = c.iterator();
+      while (it.hasNext())
+	result |= (map.put(it.next(), true) == null);
+      return result;
+    }
+    
+    public void clear()
+    {
+      map.clear();
+    }
+    
+    public boolean contains(Object o)
+    {
+      return map.containsKey(o);
+    }
+    
+    public boolean isEmpty()
+    {
+      return map.isEmpty();
+    }
+    
+    public Iterator<E> iterator()
+    {
+      return map.keySet().iterator();
+    }
+    
+    public boolean remove(Object o)
+    {
+      return map.remove(o) != null;
+    }
+    
+    public int size()
+    {
+      return map.size();
+    }
+  } // class MapSet
+  
 } // class Collections

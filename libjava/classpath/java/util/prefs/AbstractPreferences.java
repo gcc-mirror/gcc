@@ -45,6 +45,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -97,17 +98,18 @@ public abstract class AbstractPreferences extends Preferences {
      * accessed by earlier <code>getChild()</code> or <code>childSpi()</code>
      * invocations and that have not been removed.
      */
-    private HashMap childCache = new HashMap();
+    private HashMap<String, AbstractPreferences> childCache
+      = new HashMap<String, AbstractPreferences>();
 
     /**
      * A list of all the registered NodeChangeListener objects.
      */
-    private ArrayList nodeListeners;
+    private ArrayList<NodeChangeListener> nodeListeners;
 
     /**
      * A list of all the registered PreferenceChangeListener objects.
      */
-    private ArrayList preferenceListeners;
+    private ArrayList<PreferenceChangeListener> preferenceListeners;
 
     // constructor
 
@@ -202,7 +204,8 @@ public abstract class AbstractPreferences extends Preferences {
      */
     protected final AbstractPreferences[] cachedChildren()
     {
-      return (AbstractPreferences[]) childCache.values().toArray();
+      Collection<AbstractPreferences> vals = childCache.values();
+      return vals.toArray(new AbstractPreferences[vals.size()]);
     }
 
     /**
@@ -228,7 +231,7 @@ public abstract class AbstractPreferences extends Preferences {
             if (isRemoved())
                 throw new IllegalStateException("Node removed");
 
-            TreeSet childrenNames = new TreeSet();
+            TreeSet<String> childrenNames = new TreeSet<String>();
 
             // First get all cached node names
             childrenNames.addAll(childCache.keySet());
@@ -1165,7 +1168,7 @@ public abstract class AbstractPreferences extends Preferences {
           if (listener == null)
             throw new NullPointerException("listener is null");
           if (nodeListeners == null)
-            nodeListeners = new ArrayList();
+            nodeListeners = new ArrayList<NodeChangeListener>();
           nodeListeners.add(listener);
         }
     }
@@ -1184,7 +1187,7 @@ public abstract class AbstractPreferences extends Preferences {
           if (listener == null)
             throw new NullPointerException("listener is null");
           if (preferenceListeners == null)
-            preferenceListeners = new ArrayList();
+            preferenceListeners = new ArrayList<PreferenceChangeListener>();
           preferenceListeners.add(listener);
         }
     }

@@ -573,7 +573,7 @@ public class BigInteger extends Number implements Comparable<BigInteger>
     long y_ext = y.words[i - 1] < 0 ? 0xffffffffL : 0;
     for (; i < x.ival;  i++)
       {
-	carry += ((long) x.words[i] & 0xffffffffL) + y_ext;;
+	carry += ((long) x.words[i] & 0xffffffffL) + y_ext;
 	result.words[i] = (int) carry;
 	carry >>>= 32;
       }
@@ -1912,8 +1912,7 @@ public class BigInteger extends Number implements Comparable<BigInteger>
   private static void setBitOp(BigInteger result, int op,
 			       BigInteger x, BigInteger y)
   {
-    if (y.words == null) ;
-    else if (x.words == null || x.ival < y.ival)
+    if ((y.words != null) && (x.words == null || x.ival < y.ival))
       {
 	BigInteger temp = x;  x = y;  y = temp;
 	op = swappedOp(op);

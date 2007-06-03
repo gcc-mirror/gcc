@@ -95,7 +95,6 @@ public: // actually protected
 public:
   virtual void firePropertyChange(::java::lang::String *, jint, jint);
   virtual void firePropertyChange(::java::lang::String *, jboolean, jboolean);
-  virtual void firePropertyChange(::java::lang::String *, jchar, jchar);
   virtual ::javax::accessibility::AccessibleContext * getAccessibleContext();
   virtual jfloat getAlignmentX();
   virtual jfloat getAlignmentY();

@@ -1,5 +1,5 @@
 /* CertReqCmd.java -- The certreq command handler of the keytool
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,7 +50,7 @@ import gnu.java.security.der.DER;
 import gnu.java.security.der.DERReader;
 import gnu.java.security.der.DERValue;
 import gnu.java.security.der.DERWriter;
-import gnu.java.security.util.Base64;
+import gnu.java.util.Base64;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -293,7 +293,7 @@ class CertReqCmd extends Command
     byte[] derBytes = getCSR(aliasName, publicKey, (PrivateKey) privateKey);
 
     // 4. encode it in base-64 and write it to outStream
-    String encoded = Base64.encode(derBytes, 0, derBytes.length, true);
+    String encoded = Base64.encode(derBytes, 72);
     PrintWriter writer = new PrintWriter(outStream, true);
     writer.println("-----BEGIN NEW CERTIFICATE REQUEST-----"); //$NON-NLS-1$
     writer.println(encoded);

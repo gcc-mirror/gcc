@@ -1348,7 +1348,6 @@ public class gnuPOA
   {
     return name;
   }
-  ;
 
   /**
    * Return the parent of this POA.

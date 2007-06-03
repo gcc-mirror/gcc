@@ -44,13 +44,13 @@ import java.util.Iterator;
 
 public class WorkSet
 {
-  private HashSet allItems;
+  private HashSet<String> allItems;
 
   private void initSet(ArrayList entries)
   {
     if (entries == null || entries.isEmpty())
       return;
-    allItems = new HashSet();
+    allItems = new HashSet<String>();
     Iterator it = entries.iterator();
     while (it.hasNext())
       {

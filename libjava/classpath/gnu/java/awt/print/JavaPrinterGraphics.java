@@ -135,7 +135,8 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
 	  {
 	    int index = 0;
 	    while(spoolPage(out, printable, pageFormat, index++) ==
-		  Printable.PAGE_EXISTS);
+		  Printable.PAGE_EXISTS)
+              ;
 	  }
 	 out.println("%%Trailer");
 	 out.println("%%EOF");

@@ -37,6 +37,9 @@ exception statement from your version. */
 
 package javax.management;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+
 import java.util.Date;
 import java.util.EventObject;
 
@@ -64,6 +67,11 @@ import java.util.EventObject;
 public class Notification
   extends EventObject
 {
+
+  /**
+   * Compatible with JDK 1.6
+   */
+  private static final long serialVersionUID = -7516092053498031989L;
 
   /**
    * The notification message.
@@ -141,7 +149,7 @@ public class Notification
   public Notification(String type, Object source, long sequenceNumber,
 		      long timeStamp)
   {
-    this(type, source, sequenceNumber, timeStamp, null);
+    this(type, source, sequenceNumber, timeStamp, "");
   }
 
   /**
@@ -159,6 +167,7 @@ public class Notification
   {
     super(source);
     this.type = type;
+    this.source = source;
     this.sequenceNumber = sequenceNumber;
     this.timeStamp = timeStamp;
     this.message = message;
@@ -308,6 +317,18 @@ public class Notification
       + ", type=" + type
       + ", userData=" + userData
       + "]";
+  }
+
+  /**
+   * Serialize the {@link Notification}.
+   *
+   * @param out the output stream to write to.
+   * @throws IOException if an I/O error occurs.
+   */
+  private void writeObject(ObjectOutputStream out)
+    throws IOException
+  {
+    out.defaultWriteObject();
   }
 
 }

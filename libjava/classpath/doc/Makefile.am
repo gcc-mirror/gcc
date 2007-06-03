@@ -1,21 +1,19 @@
 SUBDIRS = api
 
-EXTRA_DIST = README.jaxp $(man_MANS)
+EXTRA_DIST = README.jaxp texi2pod.pl $(man_MANS)
 
 ## GCJ LOCAL: we don't want to install all of Classpath's info files.
 ## info_TEXINFOS = cp-hacking.texinfo cp-vmintegration.texinfo cp-tools.texinfo
 TEXINFO_TEX = ../../gcc/doc/include/texinfo.tex
 info_TEXINFOS = cp-tools.texinfo
-cp_tools_TEXINFOS = gcc-vers.texi
 
-%.dvi : %.texinfo
+.texinfo.dvi:
 	texi2dvi $<
 
-%.ps : %.dvi
+.dvi.ps:
 	dvips -o $@ $<
 
-docs: cp-hacking.ps cp-vmintegration.ps cp-tools.ps
-install-data-local: install-info
+docs: cp-hacking.ps cp-vmintegration.ps cp-tools.ps $(TOOLS_MANFILES)
 
 man_MANS = $(TOOLS_MANFILES)
 TOOLS_MANFILES = \
@@ -32,23 +30,11 @@ TOOLS_MANFILES = \
 	gserialver.1 \
 	gtnameserv.1
 
-BASEVER = $(top_srcdir)/../../gcc/BASE-VER
-DEVPHASE = $(top_srcdir)/../../gcc/DEV-PHASE
-
-POD2MAN = pod2man --center="GNU" --release="gcc-$(shell cat $(BASEVER))"
-TEXI2POD = perl $(top_srcdir)/../../contrib/texi2pod.pl
+POD2MAN = pod2man --center="GNU" --release="$(VERSION)"
+TEXI2POD = perl $(srcdir)/texi2pod.pl
 STAMP = echo timestamp >
 
-# gcc-vers.texi is generated from the version files.
-gcc-vers.texi: $(BASEVER) $(DEVPHASE)
-	(echo "@set version-GCC $(shell cat $(BASEVER))"; \
-	 if [ "$(shell cat $(DEVPHASE))" = "experimental" ]; \
-	 then echo "@set DEVELOPMENT"; \
-	 else echo "@clear DEVELOPMENT"; \
-	 fi) > $@T
-	mv -f $@T $@
-
-%.1: %.pod
+.pod.1:
 	$(STAMP) $@
 	-($(POD2MAN) --section=1 $< > $(@).T$$$$ && \
 		mv -f $(@).T$$$$ $@) || \

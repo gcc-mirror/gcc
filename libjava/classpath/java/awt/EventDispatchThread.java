@@ -73,6 +73,9 @@ class EventDispatchThread extends Thread
         // Ignore and use default.
       }
     setPriority(priority);
+
+    // Make sure that an event dispatch thread is never a daemon thread.
+    setDaemon(false);
   }
 
   public void run()

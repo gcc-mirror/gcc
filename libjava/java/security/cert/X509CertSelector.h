@@ -18,6 +18,13 @@ extern "Java"
       namespace security
       {
           class OID;
+        namespace x509
+        {
+          namespace ext
+          {
+              class GeneralName;
+          }
+        }
       }
     }
   }
@@ -60,51 +67,61 @@ extern "Java"
 class java::security::cert::X509CertSelector : public ::java::lang::Object
 {
 
+  static jboolean checkOid(JArray< jint > *);
+  static ::gnu::java::security::x509::ext::GeneralName * makeName(jint, ::java::lang::String *);
 public:
   X509CertSelector();
-  virtual ::java::security::cert::X509Certificate * getCertificate();
-  virtual void setCertificate(::java::security::cert::X509Certificate *);
-  virtual ::java::math::BigInteger * getSerialNumber();
-  virtual void setSerialNumber(::java::math::BigInteger *);
-  virtual ::java::lang::String * getIssuerAsString();
-  virtual JArray< jbyte > * getIssuerAsBytes();
-  virtual void setIssuer(::java::lang::String *);
-  virtual void setIssuer(JArray< jbyte > *);
-  virtual ::java::lang::String * getSubjectAsString();
-  virtual JArray< jbyte > * getSubjectAsBytes();
-  virtual void setSubject(::java::lang::String *);
-  virtual void setSubject(JArray< jbyte > *);
-  virtual JArray< jbyte > * getSubjectKeyIdentifier();
-  virtual void setSubjectKeyIdentifier(JArray< jbyte > *);
-  virtual JArray< jbyte > * getAuthorityKeyIdentifier();
-  virtual void setAuthorityKeyIdentifier(JArray< jbyte > *);
-  virtual ::java::util::Date * getCertificateValid();
-  virtual void setCertificateValid(::java::util::Date *);
-  virtual ::java::util::Date * getPrivateKeyValid();
-  virtual void setPrivateKeyValid(::java::util::Date *);
-  virtual ::java::lang::String * getSubjectPublicKeyAlgID();
-  virtual void setSubjectPublicKeyAlgID(::java::lang::String *);
-  virtual ::java::security::PublicKey * getSubjectPublicKey();
-  virtual void setSubjectPublicKey(::java::security::PublicKey *);
-  virtual void setSubjectPublicKey(JArray< jbyte > *);
-  virtual JArray< jboolean > * getKeyUsage();
-  virtual void setKeyUsage(JArray< jboolean > *);
-  virtual ::java::util::Set * getExtendedKeyUsage();
-  virtual void setExtendedKeyUsage(::java::util::Set *);
-  virtual jboolean getMatchAllSubjectAltNames();
-  virtual void setMatchAllSubjectAltNames(jboolean);
-  virtual void setSubjectAlternativeNames(::java::util::Collection *);
-  virtual void addSubjectAlternativeName(jint, ::java::lang::String *);
+  virtual void addPathToName(jint, JArray< jbyte > *);
+  virtual void addPathToName(jint, ::java::lang::String *);
   virtual void addSubjectAlternativeName(jint, JArray< jbyte > *);
-  virtual JArray< jbyte > * getNameConstraints();
-  virtual void setNameConstraints(JArray< jbyte > *);
-  virtual jint getBasicConstraints();
-  virtual void setBasicConstraints(jint);
-  virtual jboolean match(::java::security::cert::Certificate *);
-  virtual ::java::lang::String * toString();
+  virtual void addSubjectAlternativeName(jint, ::java::lang::String *);
   virtual ::java::lang::Object * clone();
+  virtual JArray< jbyte > * getAuthorityKeyIdentifier();
+  virtual jint getBasicConstraints();
+  virtual ::java::security::cert::X509Certificate * getCertificate();
+  virtual ::java::util::Date * getCertificateValid();
+  virtual ::java::util::Set * getExtendedKeyUsage();
+  virtual JArray< jbyte > * getIssuerAsBytes();
+  virtual ::java::lang::String * getIssuerAsString();
+  virtual JArray< jboolean > * getKeyUsage();
+  virtual jboolean getMatchAllSubjectAltNames();
+  virtual JArray< jbyte > * getNameConstraints();
+  virtual ::java::util::Collection * getPathToNames();
+  virtual ::java::util::Set * getPolicy();
+  virtual ::java::util::Date * getPrivateKeyValid();
+  virtual ::java::math::BigInteger * getSerialNumber();
+  virtual ::java::util::Collection * getSubjectAlternativeNames();
+  virtual JArray< jbyte > * getSubjectAsBytes();
+  virtual ::java::lang::String * getSubjectAsString();
+  virtual JArray< jbyte > * getSubjectKeyIdentifier();
+  virtual ::java::security::PublicKey * getSubjectPublicKey();
+  virtual ::java::lang::String * getSubjectPublicKeyAlgID();
+  virtual jboolean match(::java::security::cert::Certificate *);
+  virtual void setAuthorityKeyIdentifier(JArray< jbyte > *);
+  virtual void setBasicConstraints(jint);
+  virtual void setCertificate(::java::security::cert::X509Certificate *);
+  virtual void setCertificateValid(::java::util::Date *);
+  virtual void setExtendedKeyUsage(::java::util::Set *);
+  virtual void setIssuer(JArray< jbyte > *);
+  virtual void setIssuer(::java::lang::String *);
+  virtual void setKeyUsage(JArray< jboolean > *);
+  virtual void setMatchAllSubjectAltNames(jboolean);
+  virtual void setNameConstraints(JArray< jbyte > *);
+  virtual void setPathToNames(::java::util::Collection *);
+  virtual void setPolicy(::java::util::Set *);
+  virtual void setPrivateKeyValid(::java::util::Date *);
+  virtual void setSerialNumber(::java::math::BigInteger *);
+  virtual void setSubject(JArray< jbyte > *);
+  virtual void setSubject(::java::lang::String *);
+  virtual void setSubjectAlternativeNames(::java::util::Collection *);
+  virtual void setSubjectKeyIdentifier(JArray< jbyte > *);
+  virtual void setSubjectPublicKey(JArray< jbyte > *);
+  virtual void setSubjectPublicKey(::java::security::PublicKey *);
+  virtual void setSubjectPublicKeyAlgID(::java::lang::String *);
+  virtual ::java::lang::String * toString();
+public: // actually package-private
+  static JArray< jint > * $SWITCH_TABLE$gnu$java$security$x509$ext$GeneralName$Kind();
 private:
-  static jboolean checkOid(JArray< jint > *);
   static ::java::lang::String * AUTH_KEY_ID;
   static ::java::lang::String * SUBJECT_KEY_ID;
   static ::java::lang::String * NAME_CONSTRAINTS_ID;
@@ -125,6 +142,8 @@ private:
   jboolean matchAllNames;
   JArray< jbyte > * nameConstraints;
   ::java::util::Set * policy;
+  ::java::util::List * pathToNames;
+  static JArray< jint > * $SWITCH_TABLE$gnu$java$security$x509$ext$GeneralName$Kind__;
 public:
   static ::java::lang::Class class$;
 };

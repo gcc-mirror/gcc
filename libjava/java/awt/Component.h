@@ -350,7 +350,6 @@ public:
 public: // actually package-private
   virtual ::java::lang::String * generateName();
   virtual void setPeer(::java::awt::peer::ComponentPeer *);
-  virtual ::java::awt::GraphicsConfiguration * getGraphicsConfigurationImpl();
   static ::java::awt::Event * translateEvent(::java::awt::AWTEvent *);
   virtual void dispatchEventImpl(::java::awt::AWTEvent *);
   virtual jboolean eventTypeEnabled(jint);

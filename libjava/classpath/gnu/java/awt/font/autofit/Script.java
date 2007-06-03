@@ -39,6 +39,7 @@ exception statement from your version. */
 package gnu.java.awt.font.autofit;
 
 import gnu.java.awt.font.opentype.OpenTypeFont;
+import gnu.java.awt.font.opentype.truetype.Zone;
 
 /**
  * Defines script specific methods for the auto fitter.
@@ -51,12 +52,11 @@ interface Script
    */
   void initMetrics(ScriptMetrics metrics, OpenTypeFont face);
 
-  void scaleMetrics(ScriptMetrics metrics/* , scaler, map this */);
+  void scaleMetrics(ScriptMetrics metrics , HintScaler scaler);
 
   void doneMetrics(ScriptMetrics metrics);
 
   void initHints(GlyphHints hints, ScriptMetrics metrics);
 
-  void applyHints(GlyphHints hints, /* some outline object, */
-                  ScriptMetrics metrics);
+  void applyHints(GlyphHints hints, Zone outline, ScriptMetrics metrics);
 }

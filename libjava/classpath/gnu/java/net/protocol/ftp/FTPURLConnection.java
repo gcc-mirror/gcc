@@ -50,7 +50,9 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.AccessController;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -112,7 +114,7 @@ public class FTPURLConnection
       {
         username = "anonymous";
         GetLocalHostAction a = new GetLocalHostAction();
-        InetAddress localhost =(InetAddress) AccessController.doPrivileged(a);
+        InetAddress localhost = AccessController.doPrivileged(a);
         password = SystemProperties.getProperty("user.name") + "@" +
           ((localhost == null) ? "localhost" : localhost.getHostName());
       }
@@ -232,9 +234,9 @@ public class FTPURLConnection
     return null;
   }
 
-  public Map getRequestProperties()
+  public Map<String, List<String>> getRequestProperties()
   {
-    Map map = new HashMap();
+    Map<String, List<String>> map = new HashMap<String, List<String>>();
     addRequestPropertyValue(map, "passive");
     addRequestPropertyValue(map, "representationType");
     addRequestPropertyValue(map, "fileStructure");
@@ -242,10 +244,13 @@ public class FTPURLConnection
     return map;
   }
 
-  private void addRequestPropertyValue(Map map, String key)
+  private void addRequestPropertyValue(Map<String, List<String>> map,
+                                       String key)
   {
     String value = getRequestProperty(key);
-    map.put(key, value);
+    ArrayList<String> l = new ArrayList<String>();
+    l.add(value);
+    map.put(key, l);
   }
   
   public void setRequestProperty(String key, String value)

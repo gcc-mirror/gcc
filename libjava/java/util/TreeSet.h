@@ -17,7 +17,7 @@ public:
   TreeSet(::java::util::Collection *);
   TreeSet(::java::util::SortedSet *);
 private:
-  TreeSet(::java::util::SortedMap *);
+  TreeSet(::java::util::NavigableMap *);
 public:
   virtual jboolean add(::java::lang::Object *);
   virtual jboolean addAll(::java::util::Collection *);
@@ -27,18 +27,31 @@ public:
   virtual jboolean contains(::java::lang::Object *);
   virtual ::java::lang::Object * first();
   virtual ::java::util::SortedSet * headSet(::java::lang::Object *);
+  virtual ::java::util::NavigableSet * headSet(::java::lang::Object *, jboolean);
   virtual jboolean isEmpty();
   virtual ::java::util::Iterator * iterator();
   virtual ::java::lang::Object * last();
   virtual jboolean remove(::java::lang::Object *);
   virtual jint size();
   virtual ::java::util::SortedSet * subSet(::java::lang::Object *, ::java::lang::Object *);
+  virtual ::java::util::NavigableSet * subSet(::java::lang::Object *, jboolean, ::java::lang::Object *, jboolean);
   virtual ::java::util::SortedSet * tailSet(::java::lang::Object *);
+  virtual ::java::util::NavigableSet * tailSet(::java::lang::Object *, jboolean);
 private:
   void writeObject(::java::io::ObjectOutputStream *);
   void readObject(::java::io::ObjectInputStream *);
+public:
+  virtual ::java::lang::Object * ceiling(::java::lang::Object *);
+  virtual ::java::util::Iterator * descendingIterator();
+  virtual ::java::util::NavigableSet * descendingSet();
+  virtual ::java::lang::Object * floor(::java::lang::Object *);
+  virtual ::java::lang::Object * higher(::java::lang::Object *);
+  virtual ::java::lang::Object * lower(::java::lang::Object *);
+  virtual ::java::lang::Object * pollFirst();
+  virtual ::java::lang::Object * pollLast();
+private:
   static const jlong serialVersionUID = -2479143000061671589LL;
-  ::java::util::SortedMap * __attribute__((aligned(__alignof__( ::java::util::AbstractSet)))) map;
+  ::java::util::NavigableMap * __attribute__((aligned(__alignof__( ::java::util::AbstractSet)))) map;
 public:
   static ::java::lang::Class class$;
 };

@@ -38,17 +38,14 @@ have_autoconf=false
 if autoconf --version < /dev/null > /dev/null 2>&1 ; then
 	autoconf_version=`autoconf --version | sed 's/^[^0-9]*\([0-9.][0-9.]*\).*/\1/'`
 	case $autoconf_version in
-	    2.59*)
-		have_autoconf=true
-		;;
-	    2.60*)
+	    2.59* | 2.6[0-9]* )
 		have_autoconf=true
 		;;
 	esac
 fi
 if $have_autoconf ; then : ; else
 	echo
-	echo "You must have autoconf 2.59 or 2.60 installed for $PROJECT."
+	echo "You must have autoconf 2.59 or later installed for $PROJECT."
 	echo "Install the appropriate package for your distribution,"
 	echo "or get the source tarball at http://ftp.gnu.org/gnu/autoconf/"
 	DIE=1
@@ -65,14 +62,14 @@ elif automake --version < /dev/null > /dev/null 2>&1 ; then
 	ACLOCAL=aclocal
 	automake_version=`automake --version | sed 's/^[^0-9]*\([0-9.][0-9.]*\).*/\1/'`
 	case $automake_version in
-	    1.9*)
+	    1.9* | 1.10*)
 		have_automake=true
 		;;
 	esac
 fi
 if $have_automake ; then : ; else
 	echo
-	echo "You must have automake 1.9 installed to compile $PROJECT."
+	echo "You must have automake 1.9 or 1.10 installed to compile $PROJECT."
 	echo "Install the appropriate package for your distribution,"
 	echo "or get the source tarball at http://ftp.gnu.org/gnu/automake/"
 	DIE=1

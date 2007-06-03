@@ -190,7 +190,8 @@ public final class URL implements Serializable
    * This a table where we cache protocol handlers to avoid the overhead
    * of looking them up each time.
    */
-  private static HashMap ph_cache = new HashMap();
+  private static HashMap<String, URLStreamHandler> ph_cache
+    = new HashMap<String, URLStreamHandler>();
 
   /**
    * Whether or not to cache protocol handlers.
@@ -901,7 +902,7 @@ public final class URL implements Serializable
     // First, see if a protocol handler is in our cache.
     if (cache_handlers)
       {
-	if ((ph = (URLStreamHandler) ph_cache.get(protocol)) != null)
+	if ((ph = ph_cache.get(protocol)) != null)
 	  return ph;
       }
 
@@ -934,9 +935,9 @@ public final class URL implements Serializable
 	// Cache the systemClassLoader
 	if (systemClassLoader == null)
 	  {
-	    systemClassLoader = (ClassLoader) AccessController.doPrivileged
-	      (new PrivilegedAction() {
-		  public Object run()
+	    systemClassLoader = AccessController.doPrivileged
+	      (new PrivilegedAction<ClassLoader>() {
+		  public ClassLoader run()
 	          {
 		    return ClassLoader.getSystemClassLoader();
 		  }

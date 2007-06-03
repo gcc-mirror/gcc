@@ -36,6 +36,9 @@ class java::io::ObjectOutputStream : public ::java::io::OutputStream
 public:
   ObjectOutputStream(::java::io::OutputStream *);
   virtual void writeObject(::java::lang::Object *);
+  virtual void writeUnshared(::java::lang::Object *);
+private:
+  void writeObject(::java::lang::Object *, jboolean);
 public: // actually protected
   virtual void writeClassDescriptor(::java::io::ObjectStreamClass *);
 public:

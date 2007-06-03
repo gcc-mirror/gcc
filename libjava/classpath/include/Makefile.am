@@ -76,7 +76,6 @@ $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkTextFieldPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkToolkit.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkWindowPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkVolatileImage.h \
-$(top_srcdir)/include/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.h \
 $(top_srcdir)/include/GtkDragSourceContextPeer.h
 
 QTPEER_H_FILES = \
@@ -136,6 +135,7 @@ $(top_srcdir)/include/gnu_java_nio_VMPipe.h \
 $(top_srcdir)/include/gnu_java_nio_VMSelector.h \
 $(top_srcdir)/include/gnu_java_nio_charset_iconv_IconvEncoder.h \
 $(top_srcdir)/include/gnu_java_nio_charset_iconv_IconvDecoder.h \
+$(top_srcdir)/include/gnu_java_lang_management_VMOperatingSystemMXBeanImpl.h \
 $(top_srcdir)/include/java_io_VMFile.h \
 $(top_srcdir)/include/java_io_VMObjectInputStream.h \
 $(top_srcdir)/include/java_io_VMObjectStreamClass.h \
@@ -190,6 +190,8 @@ $(top_srcdir)/include/gnu_java_nio_VMPipe.h: $(top_srcdir)/vm/reference/gnu/java
 	$(JAVAH) -o $@ gnu.java.nio.VMPipe
 $(top_srcdir)/include/gnu_java_nio_VMSelector.h: $(top_srcdir)/vm/reference/gnu/java/nio/VMSelector.java
 	$(JAVAH) -o $@ gnu.java.nio.VMSelector
+$(top_srcdir)/include/gnu_java_lang_management_VMOperatingSystemMXBeanImpl.h: $(top_srcdir)/vm/reference/gnu/java/lang/management/VMOperatingSystemMXBeanImpl.java
+	$(JAVAH) -o $@ gnu.java.lang.management.VMOperatingSystemMXBeanImpl
 $(top_srcdir)/include/java_io_VMFile.h: $(top_srcdir)/vm/reference/java/io/VMFile.java
 	$(JAVAH) -o $@ java.io.VMFile
 $(top_srcdir)/include/java_io_VMObjectInputStream.h: $(top_srcdir)/vm/reference/java/io/VMObjectInputStream.java

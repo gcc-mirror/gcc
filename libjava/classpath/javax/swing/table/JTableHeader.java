@@ -570,7 +570,7 @@ public class JTableHeader extends JComponent
         if (comp != null)
           comp.setVisible(b);
       }
-    };
+    }
     
     public AccessibleRole getAccessibleRole()
     {

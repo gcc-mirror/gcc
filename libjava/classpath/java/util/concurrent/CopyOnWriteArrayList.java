@@ -349,7 +349,8 @@ public class CopyOnWriteArrayList<E> extends AbstractList<E> implements
   {
     E[] data = this.data;
     E[] newData = (E[]) new Object[data.length - 1];
-    System.arraycopy(data, 0, newData, 0, index - 1);
+    if (index > 0)
+      System.arraycopy(data, 0, newData, 0, index - 1);
     System.arraycopy(data, index + 1, newData, index,
                      data.length - index - 1);
     E r = data[index];

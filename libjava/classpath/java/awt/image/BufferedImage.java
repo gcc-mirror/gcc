@@ -39,7 +39,9 @@ exception statement from your version. */
 package java.awt.image;
 
 import gnu.java.awt.Buffers;
+import gnu.java.awt.ClasspathGraphicsEnvironment;
 import gnu.java.awt.ComponentDataBlitOp;
+import gnu.java.awt.peer.gtk.CairoSurface;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -83,7 +85,7 @@ public class BufferedImage extends Image
   /**
    * Vector of TileObservers (or null)
    */
-  Vector tileObservers;
+  Vector<TileObserver> tileObservers;
   
   /**
    * The image's WritableRaster
@@ -143,39 +145,39 @@ public class BufferedImage extends Image
   {
     SampleModel sm = null;
     ColorModel cm = null;
-    boolean premultiplied = (type == BufferedImage.TYPE_INT_ARGB_PRE || 
-			     type == BufferedImage.TYPE_4BYTE_ABGR_PRE);
+    boolean premultiplied = (type == BufferedImage.TYPE_INT_ARGB_PRE
+                            || type == BufferedImage.TYPE_4BYTE_ABGR_PRE);
 
     switch( type )
       {
       case BufferedImage.TYPE_INT_RGB:
-	sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_INT, 
-					       width, height,
-					       new int[]{ 0x00FF0000, 
-							  0x0000FF00, 
-							  0x000000FF } ) ;
-	cm = new DirectColorModel( 24, 0xff0000, 0xff00, 0xff );
-	break;
+        sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_INT, 
+                                               width, height,
+                                               new int[]{ 0x00FF0000, 
+                                                          0x0000FF00, 
+                                                          0x000000FF } ) ;
+        cm = new DirectColorModel( 24, 0xff0000, 0xff00, 0xff );
+        break;
 	
       case BufferedImage.TYPE_3BYTE_BGR:
-	sm = new PixelInterleavedSampleModel( DataBuffer.TYPE_BYTE,
-					      width, height,
-					      3, width * 3, 
-					      new int[]{ 2, 1, 0 } );
-	cm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
-                                  false, false,
-                                  BufferedImage.OPAQUE,
-                                  DataBuffer.TYPE_BYTE);
+        sm = new PixelInterleavedSampleModel( DataBuffer.TYPE_BYTE,
+                                              width, height,
+                                              3, width * 3, 
+                                              new int[]{ 2, 1, 0 } );
+        cm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
+                                     false, false,
+                                     BufferedImage.OPAQUE,
+                                     DataBuffer.TYPE_BYTE);
         break;
 
       case BufferedImage.TYPE_INT_ARGB:
       case BufferedImage.TYPE_INT_ARGB_PRE:
-	sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_INT, 
-					       width, height,
-					       new int[]{ 0x00FF0000, 
-							  0x0000FF00, 
-							  0x000000FF, 
-							  0xFF000000 } );
+        sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_INT, 
+                                               width, height,
+                                               new int[]{ 0x00FF0000, 
+                                                          0x0000FF00, 
+                                                          0x000000FF, 
+                                                          0xFF000000 } );
         if (premultiplied)
           cm = new DirectColorModel( ColorSpace.getInstance(ColorSpace.CS_sRGB),
                                      32, 0xff0000, 0xff00, 0xff, 0xff000000,
@@ -183,7 +185,8 @@ public class BufferedImage extends Image
                                      Buffers.smallestAppropriateTransferType(32));
         else
           cm = new DirectColorModel( 32, 0xff0000, 0xff00, 0xff, 0xff000000 );
-	break;
+        
+        break;
 
       case BufferedImage.TYPE_4BYTE_ABGR:
       case BufferedImage.TYPE_4BYTE_ABGR_PRE:
@@ -195,57 +198,58 @@ public class BufferedImage extends Image
                                      true, premultiplied,
                                      BufferedImage.TRANSLUCENT,
                                      DataBuffer.TYPE_BYTE);
-	break;
+        break;
 
       case BufferedImage.TYPE_INT_BGR:
-	sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_INT, 
-					       width, height,
-					       new int[]{ 0x000000FF, 
-							  0x0000FF00, 
-							  0x00FF0000 } ) ;
-	cm = new DirectColorModel( 24, 0xff, 0xff00, 0xff0000 );
+        sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_INT, 
+                                               width, height,
+                                               new int[]{ 0x000000FF, 
+                                                          0x0000FF00, 
+                                                          0x00FF0000 } ) ;
+        cm = new DirectColorModel( 24, 0xff, 0xff00, 0xff0000 );
         break;
 
       case BufferedImage.TYPE_USHORT_565_RGB:
-	sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_USHORT,
-					       width, height,
-					       new int[]{ 0xF800, 
-							  0x7E0, 
-							  0x1F } ) ;
-	cm = new DirectColorModel( 16, 0xF800, 0x7E0, 0x1F );
-	break;
+        sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_USHORT,
+                                               width, height,
+                                               new int[]{ 0xF800, 
+                                                          0x7E0, 
+                                                          0x1F } ) ;
+        cm = new DirectColorModel( 16, 0xF800, 0x7E0, 0x1F );
+        break;
+        
       case BufferedImage.TYPE_USHORT_555_RGB:
-	sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_USHORT,
-					       width, height,
-					       new int[]{ 0x7C00, 
-							  0x3E0, 
-							  0x1F } ) ;
-	cm = new DirectColorModel( 15, 0x7C00, 0x3E0, 0x1F );
-	break;
+        sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_USHORT,
+                                               width, height,
+                                               new int[]{ 0x7C00, 
+                                                          0x3E0, 
+                                                          0x1F } ) ;
+        cm = new DirectColorModel( 15, 0x7C00, 0x3E0, 0x1F );
+        break;
 
       case BufferedImage.TYPE_BYTE_INDEXED:
-	cm = createDefaultIndexedColorModel( false );
+        cm = createDefaultIndexedColorModel( false );
 
       case BufferedImage.TYPE_BYTE_GRAY:
-	sm = new PixelInterleavedSampleModel( DataBuffer.TYPE_BYTE,
-					      width, height,
-					      1, width, new int[]{ 0 } );
-	break;
+        sm = new PixelInterleavedSampleModel( DataBuffer.TYPE_BYTE,
+                                              width, height,
+                                              1, width, new int[]{ 0 } );
+        break;
 
       case BufferedImage.TYPE_USHORT_GRAY:
-	sm = new PixelInterleavedSampleModel( DataBuffer.TYPE_USHORT,
-					      width, height,
-					      1, width, new int[]{ 0 } );
-	break;
+        sm = new PixelInterleavedSampleModel( DataBuffer.TYPE_USHORT,
+                                              width, height,
+                                              1, width, new int[]{ 0 } );
+        break;
 
       case BufferedImage.TYPE_BYTE_BINARY:
-	cm = createDefaultIndexedColorModel( true );
-	sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE, 
-					     width, height, 1);
-	break;
+        cm = createDefaultIndexedColorModel( true );
+        sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE, 
+                                             width, height, 1);
+        break;
 
       default:
-	sm = null;
+        sm = null;
       }
 
     if( sm == null )
@@ -253,33 +257,41 @@ public class BufferedImage extends Image
     
     if( cm == null ) // only for the grayscale types 
       {
-	int buftype;
-	int[] bits = new int[1];
-	if( type == BufferedImage.TYPE_BYTE_GRAY )
-	  {
-	    buftype = DataBuffer.TYPE_BYTE;
-	    bits[0] = 8;
-	  }
-	else
-	  {
-	    buftype = DataBuffer.TYPE_USHORT;
-	    bits[0] = 16;
-	  }
-	ColorSpace graySpace = ColorSpace.getInstance( ColorSpace.CS_GRAY );
-
-	cm = new ComponentColorModel( graySpace, bits, false, false, 
-				      Transparency.OPAQUE, buftype );
+        int buftype;
+        int[] bits = new int[1];
+        if( type == BufferedImage.TYPE_BYTE_GRAY )
+          {
+            buftype = DataBuffer.TYPE_BYTE;
+            bits[0] = 8;
+          }
+        else
+          {
+            buftype = DataBuffer.TYPE_USHORT;
+            bits[0] = 16;
+          }
+        ColorSpace graySpace = ColorSpace.getInstance( ColorSpace.CS_GRAY );
+        
+        cm = new ComponentColorModel( graySpace, bits, false, false, 
+                                      Transparency.OPAQUE, buftype );
       }
 
-    init( cm,
-	  Raster.createWritableRaster(sm, new Point( 0, 0 ) ),
-	  premultiplied,
-	  null, // no properties
-	  type );
+    WritableRaster rst = null;
+    
+    // Attempt to create an accelerated backend for this image
+    GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+    if (env instanceof ClasspathGraphicsEnvironment)
+      rst = ((ClasspathGraphicsEnvironment)env).createRaster(cm, sm);
+    
+    // Default to a standard Java raster & databuffer if needed
+    if (rst == null)
+      rst = Raster.createWritableRaster(sm, new Point( 0, 0 ) );
+    
+    init(cm, rst, premultiplied,
+         null, // no properties
+         type );
   }
 
-  public BufferedImage(int w, int h, int type,
-		       IndexColorModel indexcolormodel)
+  public BufferedImage(int w, int h, int type, IndexColorModel indexcolormodel)
   {
     if ((type != TYPE_BYTE_BINARY) && (type != TYPE_BYTE_INDEXED))
       throw new IllegalArgumentException("Type must be TYPE_BYTE_BINARY or TYPE_BYTE_INDEXED");
@@ -289,27 +301,21 @@ public class BufferedImage extends Image
       throw new IllegalArgumentException("Byte type cannot have a larger than 256-color palette.");
 
     init( indexcolormodel,
-	  indexcolormodel.createCompatibleWritableRaster(w, h),
-	  indexcolormodel.isAlphaPremultiplied(),
-	  null, // no properties
-	  type );
+          indexcolormodel.createCompatibleWritableRaster(w, h),
+          indexcolormodel.isAlphaPremultiplied(),
+          null, // no properties
+          type );
   }
 
-  public BufferedImage(ColorModel colormodel, 
-		       WritableRaster writableraster,
-		       boolean premultiplied,
-		       Hashtable<?,?> properties)
+  public BufferedImage(ColorModel colormodel, WritableRaster writableraster,
+		       boolean premultiplied, Hashtable<?,?> properties)
   {
-    init(colormodel, writableraster, premultiplied, properties,
-	 TYPE_CUSTOM);
+    init(colormodel, writableraster, premultiplied, properties, TYPE_CUSTOM);
   }
  
 
-  private void init(ColorModel cm,
-		    WritableRaster writableraster,
-		    boolean premultiplied,
-		    Hashtable properties,
-		    int type)
+  private void init(ColorModel cm, WritableRaster writableraster, 
+                    boolean premultiplied, Hashtable properties, int type)
   {
     raster = writableraster;
     colorModel = cm;
@@ -329,29 +335,32 @@ public class BufferedImage extends Image
   {
     if( binary )
       {
-	byte[] t = new byte[]{ 0, (byte)255 };
-	return new IndexColorModel( 1, 2, t, t, t );
+        byte[] t = new byte[]{ 0, (byte)255 };
+        return new IndexColorModel( 1, 2, t, t, t );
       }
 
     byte[] r = new byte[256];
     byte[] g = new byte[256];
     byte[] b = new byte[256];
+    
     int index = 0;
     for( int i = 0; i < 6; i++ )
       for( int j = 0; j < 6; j++ )
-	for( int k = 0; k < 6; k++ )
-	  {
-	    r[ index ] = (byte)(i * 51);
-	    g[ index ] = (byte)(j * 51);
-	    b[ index ] = (byte)(k * 51);
-	    index++;
-	  }
+        for( int k = 0; k < 6; k++ )
+          {
+            r[ index ] = (byte)(i * 51);
+            g[ index ] = (byte)(j * 51);
+            b[ index ] = (byte)(k * 51);
+            index++;
+          }
+    
     while( index < 256 )
       {
-	r[ index ] = g[ index ] = b[ index ] = 
-	  (byte)(18 + (index - 216) * 6);
-	index++;
+        r[ index ] = g[ index ] = b[ index ] = 
+          (byte)(18 + (index - 216) * 6);
+        index++;
       }
+    
     return new IndexColorModel( 8, 256, r, g, b );
   }
   
@@ -375,12 +384,13 @@ public class BufferedImage extends Image
     // create a src child that has the right bounds...
     WritableRaster src =
       raster.createWritableChild(x, y, w, h, x, y,
-				 null  // same bands
-				 );
+                                 null);  // same bands
+    
     if (src.getSampleModel () instanceof ComponentSampleModel
         && dest.getSampleModel () instanceof ComponentSampleModel)
       // Refer to ComponentDataBlitOp for optimized data blitting:
       ComponentDataBlitOp.INSTANCE.filter(src, dest);
+    
     else
       {
         // slower path
@@ -397,7 +407,8 @@ public class BufferedImage extends Image
     return env.createGraphics (this);
   }
 
-  public void flush() {
+  public void flush()
+  {
   }
   
   public WritableRaster getAlphaRaster()
@@ -512,26 +523,24 @@ public class BufferedImage extends Image
 
   public int getRGB(int x, int y)
   {
-    Object rgbElem = raster.getDataElements(x, y,
-					    null // create as needed
-					    );
+    Object rgbElem = raster.getDataElements(x, y, null);
     return colorModel.getRGB(rgbElem);
   }
     
-  public int[] getRGB(int startX, int startY, int w, int h,
-		      int[] rgbArray,
-		      int offset, int scanlineStride)
+  public int[] getRGB(int startX, int startY, int w, int h, int[] rgbArray,
+                      int offset, int scanlineStride)
   {
     if (rgbArray == null)
-    {
-      /*
-	000000000000000000
-	00000[#######-----   [ = start
-	-----########-----   ] = end
-	-----#######]00000
-	000000000000000000  */
-      int size = (h-1)*scanlineStride + w;
-      rgbArray = new int[size];
+      {
+        /*
+	      000000000000000000
+	      00000[#######-----   [ = start
+	      -----########-----   ] = end
+	      -----#######]00000
+	      000000000000000000 
+        */
+        int size = (h-1)*scanlineStride + w;
+        rgbArray = new int[size];
     }
 	
     int endX = startX + w;
@@ -547,15 +556,15 @@ public class BufferedImage extends Image
     Object rgbElem = null;
     for (int y=startY; y<endY; y++)
       {
-	int xoffset = offset;
-	for (int x=startX; x<endX; x++)
-	  {
-	    int rgb;
-	    rgbElem = raster.getDataElements(x, y, rgbElem);
-	    rgb = colorModel.getRGB(rgbElem);
-	    rgbArray[xoffset++] = rgb;
-	  }
-	offset += scanlineStride;
+        int xoffset = offset;
+        for (int x=startX; x<endX; x++)
+          {
+            int rgb;
+            rgbElem = raster.getDataElements(x, y, rgbElem);
+            rgb = colorModel.getRGB(rgbElem);
+            rgbArray[xoffset++] = rgb;
+          }
+        offset += scanlineStride;
       }
     return rgbArray;
   }
@@ -572,14 +581,14 @@ public class BufferedImage extends Image
     
   public ImageProducer getSource()
   {
-    return new ImageProducer() {
-        
-	Vector consumers = new Vector();
+    return new ImageProducer()
+      {
+        Vector<ImageConsumer> consumers = new Vector<ImageConsumer>();
 
         public void addConsumer(ImageConsumer ic)
         {
-	  if(!consumers.contains(ic))
-	    consumers.add(ic);
+          if(!consumers.contains(ic))
+            consumers.add(ic);
         }
 
         public boolean isConsumer(ImageConsumer ic)
@@ -589,7 +598,7 @@ public class BufferedImage extends Image
 
         public void removeConsumer(ImageConsumer ic)
         {
-	  consumers.remove(ic);
+          consumers.remove(ic);
         }
 
         public void startProduction(ImageConsumer ic)
@@ -610,9 +619,9 @@ public class BufferedImage extends Image
 
           consumers.add(ic);
 
-	  for(int i=0;i<consumers.size();i++)
+          for(int i = 0; i < consumers.size(); i++)
             {
-              ImageConsumer c = (ImageConsumer) consumers.elementAt(i);
+              ImageConsumer c = consumers.elementAt(i);
               c.setHints(ImageConsumer.SINGLEPASS);
               c.setDimensions(getWidth(), getHeight());
               c.setPixels(x, y, width, height, model, pixels, offset, stride);
@@ -638,10 +647,8 @@ public class BufferedImage extends Image
     WritableRaster subRaster = 
       getRaster().createWritableChild(x, y, w, h, 0, 0, null);
     
-    return new BufferedImage(getColorModel(),
-			     subRaster,
-			     isPremultiplied,
-			     properties);
+    return new BufferedImage(getColorModel(), subRaster, isPremultiplied,
+                             properties);
   }
 
   public Raster getTile(int tileX, int tileY)
@@ -730,9 +737,7 @@ public class BufferedImage extends Image
     
     // create a dest child that has the right bounds...
     WritableRaster dest =
-      raster.createWritableChild(x, y, w, h, x, y,
-				 null  // same bands
-				 );
+      raster.createWritableChild(x, y, w, h, x, y, null);
 
     if (src.getSampleModel () instanceof ComponentSampleModel
         && dest.getSampleModel () instanceof ComponentSampleModel)
@@ -762,14 +767,14 @@ public class BufferedImage extends Image
     Object rgbElem = null;
     for (int y=startY; y<endY; y++)
       {
-	int xoffset = offset;
-	for (int x=startX; x<endX; x++)
-	  {
-	    int argb = argbArray[xoffset++];
-	    rgbElem = colorModel.getDataElements(argb, rgbElem);
-	    raster.setDataElements(x, y, rgbElem);
-	  }
-	offset += scanlineStride;    
+        int xoffset = offset;
+        for (int x=startX; x<endX; x++)
+          {
+            int argb = argbArray[xoffset++];
+            rgbElem = colorModel.getDataElements(argb, rgbElem);
+            raster.setDataElements(x, y, rgbElem);
+          }
+        offset += scanlineStride;    
       }
   }
     
@@ -800,7 +805,7 @@ public class BufferedImage extends Image
   public void addTileObserver (TileObserver to)
   {
     if (tileObservers == null)
-      tileObservers = new Vector ();
+      tileObservers = new Vector<TileObserver>();
 	
     tileObservers.add (to);
   }

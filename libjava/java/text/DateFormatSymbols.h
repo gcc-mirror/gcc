@@ -50,6 +50,8 @@ public:
   virtual jboolean equals(::java::lang::Object *);
   virtual ::java::lang::Object * clone();
   virtual jint hashCode();
+  static ::java::text::DateFormatSymbols * getInstance();
+  static ::java::text::DateFormatSymbols * getInstance(::java::util::Locale *);
 public: // actually package-private
   JArray< ::java::lang::String * > * __attribute__((aligned(__alignof__( ::java::lang::Object)))) ampms;
   JArray< ::java::lang::String * > * eras;
@@ -61,6 +63,7 @@ public: // actually package-private
   JArray< ::java::lang::String * > * shortWeekdays;
   JArray< ::java::lang::String * > * weekdays;
 private:
+  JArray< JArray< ::java::lang::String * > * > * runtimeZoneStrings;
   JArray< JArray< ::java::lang::String * > * > * zoneStrings;
   static const jlong serialVersionUID = -5987973545549424702LL;
   static JArray< ::java::lang::String * > * formatPrefixes;

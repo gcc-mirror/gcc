@@ -6,7 +6,6 @@ libgtkpeer_la_SOURCES = gnu_java_awt_peer_gtk_CairoSurface.c \
 			gnu_java_awt_peer_gtk_ComponentGraphics.c \
 			gnu_java_awt_peer_gtk_ComponentGraphicsCopy.c \
 			gnu_java_awt_peer_gtk_FreetypeGlyphVector.c \
-			gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.c \
 			gnu_java_awt_peer_gtk_GdkFontPeer.c \
 			gnu_java_awt_peer_gtk_GdkGraphicsEnvironment.c \
 			gnu_java_awt_peer_gtk_GdkPixbufDecoder.c \
@@ -42,16 +41,14 @@ libgtkpeer_la_SOURCES = gnu_java_awt_peer_gtk_CairoSurface.c \
 			gnu_java_awt_peer_gtk_GtkVolatileImage.c \
 			GtkDragSourceContextPeer.c \
 			cairographics2d.h \
-			gthread-jni.c \
 			gdkdisplay.h \
 			gdkfont.h \
-			gthread-jni.h \
 			gtk_jawt.c \
 			gtkpeer.h
 
 libgtkpeer_la_LIBADD = $(top_builddir)/native/jni/classpath/native_state.lo \
 		       $(top_builddir)/native/jni/classpath/jcl.lo
-libgtkpeer_la_LDFLAGS = -avoid-version
+libgtkpeer_la_LDFLAGS = $(AM_LDFLAGS) -avoid-version
 
 AM_LDFLAGS = @CLASSPATH_MODULE@ @GTK_LIBS@ @FREETYPE2_LIBS@ \
              @PANGOFT2_LIBS@ @X_PRE_LIBS@ @X_LIBS@ @X_EXTRA_LIBS@ @XTEST_LIBS@

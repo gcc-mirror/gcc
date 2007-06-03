@@ -1,5 +1,5 @@
 /* Pattern.java -- Compiled regular expression ready to be applied.
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -246,7 +246,7 @@ public final class Pattern implements Serializable
       {
 	String t = input.subSequence(start, input.length()).toString();
 	if ("".equals(t) && limit == 0)
-	  ; // Don't add.
+	  { /* Don't add. */ }
 	else
 	  list.add(t);
       }
@@ -257,6 +257,16 @@ public final class Pattern implements Serializable
   }
   
   public String pattern ()
+  {
+    return regex;
+  }
+
+  /**
+   * Return the regular expression used to construct this object.
+   * @specnote Prior to JDK 1.5 this method had a different behavior
+   * @since 1.5
+   */
+  public String toString()
   {
     return regex;
   }

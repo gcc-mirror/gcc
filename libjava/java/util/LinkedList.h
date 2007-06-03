@@ -56,6 +56,19 @@ public:
 private:
   void writeObject(::java::io::ObjectOutputStream *);
   void readObject(::java::io::ObjectInputStream *);
+public:
+  virtual ::java::util::Iterator * descendingIterator();
+  virtual jboolean offerFirst(::java::lang::Object *);
+  virtual jboolean offerLast(::java::lang::Object *);
+  virtual ::java::lang::Object * peekFirst();
+  virtual ::java::lang::Object * peekLast();
+  virtual ::java::lang::Object * pollFirst();
+  virtual ::java::lang::Object * pollLast();
+  virtual ::java::lang::Object * pop();
+  virtual void push(::java::lang::Object *);
+  virtual jboolean removeFirstOccurrence(::java::lang::Object *);
+  virtual jboolean removeLastOccurrence(::java::lang::Object *);
+private:
   static const jlong serialVersionUID = 876323262645176354LL;
 public: // actually package-private
   ::java::util::LinkedList$Entry * __attribute__((aligned(__alignof__( ::java::util::AbstractSequentialList)))) first;

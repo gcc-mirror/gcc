@@ -17,6 +17,8 @@ public:
   virtual ::java::lang::Object * getKey();
   virtual ::java::lang::Object * getValue();
   virtual ::java::lang::Object * setValue(::java::lang::Object *);
+private:
+  static const jlong serialVersionUID = 7138329143949025153LL;
 public: // actually package-private
   ::java::lang::Object * __attribute__((aligned(__alignof__( ::java::lang::Object)))) key;
   ::java::lang::Object * value;

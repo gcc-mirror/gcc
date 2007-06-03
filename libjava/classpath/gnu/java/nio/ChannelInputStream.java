@@ -59,6 +59,16 @@ public final class ChannelInputStream extends InputStream
     this.ch = ch;
   }
 
+  public int read(byte[] buf, int off, int len) throws IOException
+  {
+    if (ch instanceof SelectableChannel
+        && (! ((SelectableChannel) ch).isBlocking()))
+      throw new IllegalBlockingModeException();
+
+    ByteBuffer b = ByteBuffer.wrap(buf, off, len);
+    return ch.read(b);
+  }
+
   public int read() throws IOException
   {
     if (ch instanceof SelectableChannel
@@ -74,6 +84,6 @@ public final class ChannelInputStream extends InputStream
     if (result == 0)
       throw new IOException("Could not read from channel");
 
-     return buffer.get(0);
+    return buffer.get(0) & 0xff;
   }
 }

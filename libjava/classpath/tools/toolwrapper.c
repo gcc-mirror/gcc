@@ -46,6 +46,10 @@ exception statement from your version. */
 # error JNI version 1.2 or greater required
 #endif
 
+#ifndef MAINCLASS
+#define MAINCLASS "Main"
+#endif
+
 union env_union
 {
   void *void_env;
@@ -216,7 +220,9 @@ main (int argc, const char** argv)
       (*env)->SetObjectArrayElement (env, args_array, i, str);
     }
 
-  class_id = (*env)->FindClass (env, "gnu/classpath/tools/" TOOLPACKAGE "/Main");
+  class_id
+    = (*env)->FindClass (env,
+			 "gnu/classpath/tools/" TOOLPACKAGE "/" MAINCLASS);
   if (class_id == NULL)
     {
       fprintf (stderr, TOOLNAME ": FindClass failed.\n");

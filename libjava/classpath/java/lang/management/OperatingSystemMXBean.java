@@ -87,6 +87,22 @@ public interface OperatingSystemMXBean
   String getName();
 
   /**
+   * Returns the system load average for the last minute, or -1
+   * if this is unavailable.  The availability and calculation
+   * of the load average is system-dependent, but is usually 
+   * a damped time-dependent average obtained by monitoring the
+   * number of queued and running processes.  It is expected
+   * that this method will be called frequently to monitor the
+   * average over time, so it may not be implemented on systems
+   * where such a call is expensive.
+   *
+   * @return the system load average for the last minute, or -1
+   *         if this is unavailable.
+   * @since 1.6
+   */
+  double getSystemLoadAverage();
+
+  /**
    * Returns the version of the underlying operating system.  This
    * is equivalent to obtaining the <code>os.version</code> property
    * via {@link System#getProperty(String)}.

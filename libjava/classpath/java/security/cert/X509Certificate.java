@@ -1,5 +1,5 @@
 /* X509Certificate.java --- X.509 Certificate class
-   Copyright (C) 1999,2003 Free Software Foundation, Inc.
+   Copyright (C) 1999,2003, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -137,7 +137,7 @@ import java.util.List;
  * @author Casey Marshall (rsdio@metastatic.org)
  */
 public abstract class X509Certificate
-  extends java.security.cert.Certificate  // XXX workaround for gcj bug #17845
+  extends Certificate
   implements X509Extension
 {
   private static final long serialVersionUID = -2491127588187038216L;

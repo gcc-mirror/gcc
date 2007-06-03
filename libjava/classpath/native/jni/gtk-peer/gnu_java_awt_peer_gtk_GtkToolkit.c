@@ -1,5 +1,6 @@
+
 /* gtktoolkit.c -- Native portion of GtkToolkit
-   Copyright (C) 1998, 1999, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2005, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +39,6 @@ exception statement from your version. */
 
 #include "gtkpeer.h"
 #include "gnu_java_awt_peer_gtk_GtkToolkit.h"
-#include "gthread-jni.h"
 #include "jcl.h"
 #include <gdk/gdkx.h>
 
@@ -73,6 +73,12 @@ exception statement from your version. */
 #define AWT_INFO_TEXT               25
 #define AWT_NUM_COLORS              26
 
+#define VK_SHIFT 16
+#define VK_CONTROL 17
+#define VK_ALT 18
+#define VK_CAPS_LOCK 20
+#define VK_META 157
+
 struct state_table *cp_gtk_native_state_table;
 struct state_table *cp_gtk_native_global_ref_table;
 
@@ -81,6 +87,11 @@ static jclass gtktoolkit;
 static JavaVM *java_vm;
 static jmethodID printCurrentThreadID;
 static jmethodID setRunningID;
+
+/**
+ * The global AWT lock object.
+ */
+static jobject global_lock;
 
 union env_union
 {
@@ -100,7 +111,9 @@ cp_gtk_gdk_env()
 GtkWindowGroup *cp_gtk_global_window_group;
 double cp_gtk_dpi_conversion_factor;
 
-static void init_glib_threads(JNIEnv *, jint);
+static void jni_lock_cb();
+static void jni_unlock_cb();
+static void init_glib_threads(JNIEnv*, jint, jobject);
 static gboolean post_set_running_flag (gpointer);
 static gboolean set_running_flag (gpointer);
 static gboolean clear_running_flag (gpointer);
@@ -131,7 +144,8 @@ static void glog_func (const gchar *log_domain,
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit (JNIEnv *env, 
 					       jclass clazz __attribute__((unused)),
-					       jint portableNativeSync)
+					       jint portableNativeSync,
+                                               jobject lock)
 {
   int argc = 1;
   char **argv;
@@ -154,8 +168,8 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit (JNIEnv *env,
   argv[0] = (char *) g_malloc(1);
   argv[0][0] = '\0';
   argv[1] = NULL;
-
-  init_glib_threads(env, portableNativeSync);
+  
+  init_glib_threads(env, portableNativeSync, lock);
 
   /* From GDK 2.0 onwards we have to explicitly call gdk_threads_init */
   gdk_threads_init();
@@ -209,6 +223,32 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit (JNIEnv *env,
                                             "setRunning", "(Z)V");
 }
 
+/**
+ * A callback function that implements gdk_threads_enter(). This is
+ * implemented to wrap the JNI MonitorEnter() function.
+ */
+static void jni_lock_cb()
+{
+  JNIEnv * env = cp_gtk_gdk_env();
+  if ((*env)->MonitorEnter(env, global_lock) != JNI_OK)
+    {
+      printf("failure while entering GTK monitor\n");
+    }
+}
+
+/**
+ * A callback function that implements gdk_threads_leave(). This is
+ * implemented to wrap the JNI MonitorExit() function.
+ */
+static void jni_unlock_cb()
+{
+
+  JNIEnv * env = cp_gtk_gdk_env();
+  if ((*env)->MonitorExit(env, global_lock))
+    {
+      printf("failure while exiting GTK monitor\n");
+    }
+}
 
 /** Initialize GLIB's threads properly, based on the value of the
     gnu.classpath.awt.gtk.portable.native.sync Java system property.  If
@@ -216,7 +256,7 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit (JNIEnv *env,
     In some release following 0.10, that config.h macro will go away.)
     */ 
 static void 
-init_glib_threads(JNIEnv *env, jint portableNativeSync)
+init_glib_threads(JNIEnv *env, jint portableNativeSync, jobject lock)
 {
   if (portableNativeSync < 0)
     {
@@ -228,13 +268,14 @@ init_glib_threads(JNIEnv *env, jint portableNativeSync)
 #endif
     }
   
-  (*env)->GetJavaVM( env, &cp_gtk_the_vm );
   if (!g_thread_supported ())
     {
       if (portableNativeSync)
-        g_thread_init ( &cp_gtk_portable_native_sync_jni_functions );
-      else
-        g_thread_init ( NULL );
+        {
+          global_lock = (*env)->NewGlobalRef(env, lock);
+          gdk_threads_set_lock_functions(&jni_lock_cb, &jni_unlock_cb);
+        }
+      g_thread_init(NULL);
     }
   else
     {
@@ -330,14 +371,14 @@ JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkMain
 (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)))
 {
-  gdk_threads_enter ();
+  gdk_threads_enter();
 
   gtk_init_add (post_set_running_flag, NULL);
   gtk_quit_add (gtk_main_level (), clear_running_flag, NULL);
 
   gtk_main ();
 
-  gdk_threads_leave ();
+  gdk_threads_leave();
 }
 
 JNIEXPORT void JNICALL
@@ -514,6 +555,53 @@ gdk_color_to_java_color (GdkColor gdk_color)
   return (jint) (0xff000000 | (red << 16) | (green << 8) | blue);
 }
 
+JNIEXPORT jint JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkToolkit_getLockState
+  (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
+   jint key)
+{
+  gint coord;
+  GdkModifierType state, mask;
+  GdkWindow *root_window;
+
+  gdk_threads_enter ();
+
+  root_window = gdk_get_default_root_window ();
+  gdk_window_get_pointer (root_window, &coord, &coord, &state);
+
+  switch (key)
+    {
+    case VK_SHIFT:
+      mask = GDK_SHIFT_MASK;
+      break;
+    case VK_CONTROL:
+      mask = GDK_CONTROL_MASK;
+      break;
+    case VK_ALT:
+      /* This is dubious, since MOD1 could have been mapped to something
+         other than ALT. */
+      mask = GDK_MOD1_MASK;
+      break;
+#if GTK_CHECK_VERSION(2, 10, 0)
+    case VK_META:
+      mask = GDK_META_MASK;
+      break;
+#endif
+    case VK_CAPS_LOCK:
+      mask = GDK_LOCK_MASK;
+      break;
+    default:
+      mask = 0;
+    }
+
+  gdk_threads_leave ();
+
+  if (mask == 0)
+    return -1;
+
+  return state & mask ? 1 : 0;
+}
+
 static gboolean
 post_set_running_flag (gpointer data __attribute__((unused)))
 {
@@ -538,3 +626,4 @@ clear_running_flag (gpointer data __attribute__((unused)))
                                               setRunningID, FALSE);
   return FALSE;
 }
+

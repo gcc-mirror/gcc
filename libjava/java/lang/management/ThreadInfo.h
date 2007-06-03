@@ -29,13 +29,19 @@ class java::lang::management::ThreadInfo : public ::java::lang::Object
 {
 
   ThreadInfo(::java::lang::Thread *, jlong, jlong, ::java::lang::Object *, ::java::lang::Thread *, jlong, jlong, jboolean, jboolean, JArray< ::java::lang::StackTraceElement * > *);
+  ThreadInfo(::java::lang::Thread *, jlong, jlong, ::java::lang::Object *, ::java::lang::Thread *, jlong, jlong, jboolean, jboolean, JArray< ::java::lang::StackTraceElement * > *, JArray< ::java::lang::management::MonitorInfo * > *, JArray< ::java::lang::management::LockInfo * > *);
   ThreadInfo(jlong, ::java::lang::String *, ::java::lang::Thread$State *, jlong, jlong, ::java::lang::String *, jlong, ::java::lang::String *, jlong, jlong, jboolean, jboolean, JArray< ::java::lang::StackTraceElement * > *);
+  ThreadInfo(jlong, ::java::lang::String *, ::java::lang::Thread$State *, jlong, jlong, ::java::lang::String *, jlong, ::java::lang::String *, jlong, jlong, jboolean, jboolean, JArray< ::java::lang::StackTraceElement * > *, JArray< ::java::lang::management::MonitorInfo * > *, JArray< ::java::lang::management::LockInfo * > *);
 public: // actually package-private
   static void checkAttribute(::javax::management::openmbean::CompositeType *, ::java::lang::String *, ::javax::management::openmbean::OpenType *);
+  static ::javax::management::openmbean::CompositeType * getStackTraceType();
 public:
   static ::java::lang::management::ThreadInfo * from(::javax::management::openmbean::CompositeData *);
   virtual jlong getBlockedCount();
   virtual jlong getBlockedTime();
+  virtual JArray< ::java::lang::management::MonitorInfo * > * getLockedMonitors();
+  virtual JArray< ::java::lang::management::LockInfo * > * getLockedSynchronizers();
+  virtual ::java::lang::management::LockInfo * getLockInfo();
   virtual ::java::lang::String * getLockName();
   virtual jlong getLockOwnerId();
   virtual ::java::lang::String * getLockOwnerName();
@@ -49,6 +55,7 @@ public:
   virtual jboolean isSuspended();
   virtual ::java::lang::String * toString();
 private:
+  jboolean isThreadBlocked();
   jlong __attribute__((aligned(__alignof__( ::java::lang::Object)))) threadId;
   ::java::lang::String * threadName;
   ::java::lang::Thread$State * threadState;
@@ -62,7 +69,10 @@ private:
   jboolean isInNative__;
   jboolean isSuspended__;
   JArray< ::java::lang::StackTraceElement * > * trace;
+  JArray< ::java::lang::management::MonitorInfo * > * lockedMonitors;
+  JArray< ::java::lang::management::LockInfo * > * lockedSynchronizers;
   static ::java::lang::management::ThreadMXBean * bean;
+  static ::javax::management::openmbean::CompositeType * seType;
 public:
   static ::java::lang::Class class$;
 };

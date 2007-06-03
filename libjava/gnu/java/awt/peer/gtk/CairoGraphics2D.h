@@ -22,6 +22,7 @@ extern "Java"
           namespace gtk
           {
               class CairoGraphics2D;
+              class CairoSurface;
               class GdkFontPeer;
           }
         }
@@ -109,9 +110,7 @@ public: // actually protected
   virtual void cairoSetFillRule(jlong, jint);
   virtual void cairoSetLine(jlong, jdouble, jint, jint, jdouble);
   virtual void cairoSetDash(jlong, JArray< jdouble > *, jint, jdouble);
-public: // actually package-private
-  virtual void cairoDrawGlyphVector(jlong, ::gnu::java::awt::peer::gtk::GdkFontPeer *, jfloat, jfloat, jint, JArray< jint > *, JArray< jfloat > *);
-public: // actually protected
+  virtual void cairoDrawGlyphVector(jlong, ::gnu::java::awt::peer::gtk::GdkFontPeer *, jfloat, jfloat, jint, JArray< jint > *, JArray< jfloat > *, JArray< jlong > *);
   virtual void cairoSetFont(jlong, ::gnu::java::awt::peer::gtk::GdkFontPeer *);
   virtual void cairoRectangle(jlong, jdouble, jdouble, jdouble, jdouble);
   virtual void cairoArc(jlong, jdouble, jdouble, jdouble, jdouble, jdouble);
@@ -126,6 +125,7 @@ public: // actually protected
   virtual void cairoFill(jlong, jdouble);
   virtual void cairoClip(jlong);
   virtual void cairoResetClip(jlong);
+  virtual void cairoSetAntialias(jlong, jboolean);
 public:
   virtual void setTransform(::java::awt::geom::AffineTransform *);
 private:
@@ -200,6 +200,7 @@ public:
   virtual ::java::awt::RenderingHints * getRenderingHints();
 private:
   jint getInterpolation();
+  void setAntialias(jboolean);
 public: // actually protected
   virtual jboolean drawImage(::java::awt::Image *, ::java::awt::geom::AffineTransform *, ::java::awt::Color *, ::java::awt::image::ImageObserver *);
 public:
@@ -213,6 +214,9 @@ public:
   virtual jboolean drawImage(::java::awt::Image *, jint, jint, jint, jint, ::java::awt::image::ImageObserver *);
   virtual jboolean drawImage(::java::awt::Image *, jint, jint, jint, jint, jint, jint, jint, jint, ::java::awt::Color *, ::java::awt::image::ImageObserver *);
   virtual jboolean drawImage(::java::awt::Image *, jint, jint, jint, jint, jint, jint, jint, jint, ::java::awt::image::ImageObserver *);
+public: // actually protected
+  virtual void drawCairoSurface(::gnu::java::awt::peer::gtk::CairoSurface *, ::java::awt::geom::AffineTransform *, jdouble, jint);
+public:
   virtual void drawString(::java::lang::String *, jfloat, jfloat);
   virtual void drawString(::java::lang::String *, jint, jint);
   virtual void drawString(::java::text::AttributedCharacterIterator *, jint, jint);
@@ -237,6 +241,7 @@ private:
   void updateClip(::java::awt::geom::AffineTransform *);
   static ::java::awt::Rectangle * computeIntersection(jint, jint, jint, jint, ::java::awt::Rectangle *);
 public: // actually package-private
+  static ::java::awt::geom::Rectangle2D * getTransformedBounds(::java::awt::geom::Rectangle2D *, ::java::awt::geom::AffineTransform *);
   jlong __attribute__((aligned(__alignof__( ::java::awt::Graphics2D)))) nativePointer;
   ::java::awt::Paint * paint;
   jboolean customPaint;
@@ -250,6 +255,8 @@ public: // actually package-private
   ::java::awt::CompositeContext * compCtx;
 private:
   ::java::awt::RenderingHints * hints;
+  jboolean antialias;
+  jboolean ignoreAA;
 public: // actually protected
   jboolean shiftDrawCalls;
 private:

@@ -439,8 +439,8 @@ public class DecimalFormat extends NumberFormat
         FieldPosition pos = (FieldPosition) attributes.get(i);
         Format.Field attribute = pos.getFieldAttribute();
         
-        as.addAttribute(attribute, attribute, pos.getBeginIndex(), pos
-                        .getEndIndex());
+        as.addAttribute(attribute, attribute, pos.getBeginIndex(),
+                        pos.getEndIndex());
       }
     
     // return the CharacterIterator from AttributedString
@@ -659,6 +659,7 @@ public class DecimalFormat extends NumberFormat
     // correct the size of the end parsing flag
     int len = str.length();
     if (len < stop) stop = len;
+    char groupingSeparator = symbols.getGroupingSeparator();
     
     int i = start;
     while (i < stop)
@@ -672,6 +673,7 @@ public class DecimalFormat extends NumberFormat
           }
         else if (this.parseIntegerOnly)
           {
+            i--;
             break;
           }
         else if (ch == decimalSeparator)
@@ -688,8 +690,19 @@ public class DecimalFormat extends NumberFormat
             if (inExponent)
               number.append(ch);
             else
-              break;
+	      {
+		i--;
+        	break;
+	      }
           }
+	else
+	  {
+	    if (!groupingUsed || ch != groupingSeparator)
+	      {
+	        i--;
+	        break;
+	      }
+	  }
       }
 
     // 2nd special case: infinity
@@ -723,25 +736,25 @@ public class DecimalFormat extends NumberFormat
 
     // now we have to check the suffix, done here after number parsing
     // or the index will not be updated correctly...
-    boolean isNegativeSuffix = str.endsWith(this.negativeSuffix);
-    boolean isPositiveSuffix = str.endsWith(this.positiveSuffix);
+    boolean hasNegativeSuffix = str.endsWith(this.negativeSuffix);
+    boolean hasPositiveSuffix = str.endsWith(this.positiveSuffix);
     boolean positiveEqualsNegative = negativeSuffix.equals(positiveSuffix);
 
     positiveLen = positiveSuffix.length();
     negativeLen = negativeSuffix.length();
     
-    if (isNegative && !isNegativeSuffix)
+    if (isNegative && !hasNegativeSuffix)
       {
         pos.setErrorIndex(i);
         return null;
       }
-    else if (isNegativeSuffix &&
+    else if (hasNegativeSuffix &&
              !positiveEqualsNegative &&
              (negativeLen > positiveLen))
       {
         isNegative = true;
       }
-    else if (!isPositiveSuffix)
+    else if (!hasPositiveSuffix)
       {
         pos.setErrorIndex(i);
         return null;
@@ -749,7 +762,7 @@ public class DecimalFormat extends NumberFormat
     
     if (isNegative) number.insert(0, '-');
    
-    pos.setIndex(i - 1);
+    pos.setIndex(i);
     
     // now we handle the return type
     BigDecimal bigDecimal = new BigDecimal(number.toString());

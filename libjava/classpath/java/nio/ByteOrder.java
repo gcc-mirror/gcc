@@ -61,7 +61,9 @@ public final class ByteOrder
    */
   public static ByteOrder nativeOrder()
   {
-    return (System.getProperty ("gnu.cpu.endian").equals("big")
+    // Let this fail with an NPE when the property is not set correctly.
+    // Otherwise we risk that NIO is silently working wrong.
+    return (System.getProperty("gnu.cpu.endian").equals("big")
             ? BIG_ENDIAN : LITTLE_ENDIAN);
   }
 

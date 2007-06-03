@@ -1,5 +1,5 @@
 /* java.util.GregorianCalendar
-   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004
+   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004, 2007
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -223,7 +223,6 @@ public class GregorianCalendar extends Calendar
   {
     this(zone, locale, false);
     setTimeInMillis(System.currentTimeMillis());
-    complete();
   }
 
   /**
@@ -842,13 +841,24 @@ public class GregorianCalendar extends Calendar
     // which day of the week are we (0..6), relative to getFirstDayOfWeek
     int relativeWeekday = (7 + fields[DAY_OF_WEEK] - getFirstDayOfWeek()) % 7;
 
-    fields[WEEK_OF_MONTH] = (fields[DAY_OF_MONTH] - relativeWeekday + 12) / 7;
+    // which day of the week is the first of this month?
+    // nb 35 is the smallest multiple of 7 that ensures that
+    // the left hand side of the modulo operator is positive.
+    int relativeWeekdayOfFirst = (relativeWeekday - fields[DAY_OF_MONTH]
+				  + 1 + 35) % 7;
+
+    // which week of the month is the first of this month in?
+    int minDays = getMinimalDaysInFirstWeek();
+    int weekOfFirst = ((7 - relativeWeekdayOfFirst) >= minDays) ? 1 : 0;
+
+    // which week of the month is this day in?
+    fields[WEEK_OF_MONTH] = (fields[DAY_OF_MONTH]
+			     + relativeWeekdayOfFirst - 1) / 7 + weekOfFirst;
 
     int weekOfYear = (fields[DAY_OF_YEAR] - relativeWeekday + 6) / 7;
 
     // Do the Correction: getMinimalDaysInFirstWeek() is always in the 
     // first week.
-    int minDays = getMinimalDaysInFirstWeek();
     int firstWeekday = (7 + getWeekDay(fields[YEAR], minDays)
                        - getFirstDayOfWeek()) % 7;
     if (minDays - firstWeekday < 1)

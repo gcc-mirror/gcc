@@ -6,21 +6,22 @@
 
 #pragma interface
 
-#include <java/util/AbstractSet.h>
+#include <java/lang/Object.h>
 
-class java::util::TreeMap$4 : public ::java::util::AbstractSet
+class java::util::TreeMap$4 : public ::java::lang::Object
 {
 
 public: // actually package-private
-  TreeMap$4(::java::util::TreeMap *);
+  TreeMap$4(::java::util::TreeMap$3 *);
 public:
-  jint size();
-  ::java::util::Iterator * iterator();
-  void clear();
-  jboolean contains(::java::lang::Object *);
-  jboolean remove(::java::lang::Object *);
+  jboolean hasNext();
+  ::java::lang::Object * next();
+  void remove();
+private:
+  ::java::util::Map$Entry * __attribute__((aligned(__alignof__( ::java::lang::Object)))) last;
+  ::java::util::Map$Entry * next__;
 public: // actually package-private
-  ::java::util::TreeMap * __attribute__((aligned(__alignof__( ::java::util::AbstractSet)))) this$0;
+  ::java::util::TreeMap$3 * this$2;
 public:
   static ::java::lang::Class class$;
 };

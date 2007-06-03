@@ -42,7 +42,9 @@ exception statement from your version. */
 #include <jcl.h>
 #include <string.h>
 
+#include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in_systm.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 

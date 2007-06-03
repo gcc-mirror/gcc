@@ -48,11 +48,14 @@ exception statement from your version. */
 
 #include "gnu_java_nio_charset_iconv_IconvEncoder.h"
 
+
+#if defined(HAVE_ICONV)
 static void createRawData (JNIEnv * env, jobject obj, void *ptr);
 static void *getData (JNIEnv * env, jobject obj);
 
 static jfieldID infid = NULL;
 static jfieldID outfid = NULL;
+#endif
 
 /* Union used for type punning. */
 union char_union
@@ -63,9 +66,9 @@ union char_union
 };
 
 JNIEXPORT void JNICALL
-Java_gnu_java_nio_charset_iconv_IconvEncoder_openIconv (JNIEnv * env,
-							jobject obj,
-							jstring jname)
+Java_gnu_java_nio_charset_iconv_IconvEncoder_openIconv (JNIEnv * env UNUSED,
+							jobject obj UNUSED,
+							jstring jname UNUSED)
 {
 #if defined(HAVE_ICONV)
   iconv_t iconv_object;
@@ -107,12 +110,14 @@ Java_gnu_java_nio_charset_iconv_IconvEncoder_openIconv (JNIEnv * env,
 }
 
 JNIEXPORT jint JNICALL
-Java_gnu_java_nio_charset_iconv_IconvEncoder_encode (JNIEnv * env,
-						     jobject obj,
-						     jcharArray inArr,
-						     jbyteArray outArr,
-						     jint posIn, jint remIn,
-						     jint posOut, jint remOut)
+Java_gnu_java_nio_charset_iconv_IconvEncoder_encode (JNIEnv * env UNUSED,
+						     jobject obj UNUSED,
+						     jcharArray inArr UNUSED,
+						     jbyteArray outArr UNUSED,
+						     jint posIn UNUSED,
+                                                     jint remIn UNUSED,
+						     jint posOut UNUSED,
+                                                     jint remOut UNUSED)
 {
 #if defined(HAVE_ICONV)
   iconv_t iconv_object = getData (env, obj);
@@ -158,8 +163,8 @@ Java_gnu_java_nio_charset_iconv_IconvEncoder_encode (JNIEnv * env,
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_nio_charset_iconv_IconvEncoder_closeIconv (JNIEnv * env,
-							 jobject obj)
+Java_gnu_java_nio_charset_iconv_IconvEncoder_closeIconv (JNIEnv * env UNUSED,
+							 jobject obj UNUSED)
 {
 #if defined(HAVE_ICONV)
   iconv_t iconv_object;
@@ -169,6 +174,7 @@ Java_gnu_java_nio_charset_iconv_IconvEncoder_closeIconv (JNIEnv * env,
 }
 
 
+#if defined(HAVE_ICONV)
 static void
 createRawData (JNIEnv * env, jobject obj, void *ptr)
 {
@@ -199,3 +205,4 @@ getData (JNIEnv * env, jobject obj)
 
   return JCL_GetRawData(env, data);
 }
+#endif

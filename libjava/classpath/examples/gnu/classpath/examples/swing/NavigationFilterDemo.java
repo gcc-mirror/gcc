@@ -183,7 +183,7 @@ public class NavigationFilterDemo
             return pos;
         case SwingConstants.WEST:
           // Calculate the next word start.
-          newpos = Utilities.getWordStart(text, newpos);;
+          newpos = Utilities.getWordStart(text, newpos);
           
           // If that means that the caret will not move, return
           // the start of the previous word.

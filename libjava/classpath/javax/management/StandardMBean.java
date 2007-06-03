@@ -106,10 +106,19 @@ public class StandardMBean
 	  }
 	catch (ClassNotFoundException e)
 	  {
-	    throw (NotCompliantMBeanException) 
-	      (new NotCompliantMBeanException("An interface, " + className +
-					      "MBean, for the class " + className +
-					      " was not found.").initCause(e));
+	    for (Class<?> nextIface : getClass().getInterfaces())
+	    {
+	      if (JMX.isMXBeanInterface(nextIface))
+		{
+		  iface = nextIface;
+		  break;
+		}
+	    }
+	    if (iface == null)  
+	      throw (NotCompliantMBeanException) 
+		(new NotCompliantMBeanException("An interface for the class " 
+						+ className +
+						" was not found.").initCause(e));
 	  }
       }
     if (!(iface.isInstance(this)))
@@ -140,18 +149,28 @@ public class StandardMBean
       throw new IllegalArgumentException("The specified implementation is null.");
     if (iface == null)
       {
-	String className = impl.getClass().getName();
+	Class<?> implClass = impl.getClass();
+	String className = implClass.getName();
 	try
 	  {
 	    this.iface = Class.forName(className + "MBean", true,
-				       impl.getClass().getClassLoader());
+				       implClass.getClassLoader());
 	  }
 	catch (ClassNotFoundException e)
 	  {
-	    throw (NotCompliantMBeanException) 
-	      (new NotCompliantMBeanException("An interface, " + className +
-					      "MBean, for the class " + className +
-					      " was not found.").initCause(e));
+	    for (Class<?> nextIface : implClass.getInterfaces())
+	    {
+	      if (JMX.isMXBeanInterface(nextIface))
+		{
+		  this.iface = nextIface;
+		  break;
+		}
+	    }
+	    if (this.iface == null)  
+	      throw (NotCompliantMBeanException) 
+		(new NotCompliantMBeanException("An interface for the class " +
+						className +
+						" was not found.").initCause(e));
 	  }
       }
     else
@@ -753,19 +772,30 @@ public class StandardMBean
   public Object invoke(String name, Object[] params, String[] signature)
     throws MBeanException, ReflectionException
   {
-    Class[] sigTypes = new Class[signature.length];
+    if (name.startsWith("get") || name.startsWith("is") ||
+	name.startsWith("set"))
+      throw new ReflectionException(new NoSuchMethodException(),
+				    "Invocation of an attribute " +
+				    "method is disallowed.");
     ClassLoader loader = getClass().getClassLoader();
-    for (int a = 0; a < signature.length; ++a)
-      try 
-	{
-	  sigTypes[a] = Class.forName(signature[a], true, loader);
-	}
-      catch (ClassNotFoundException e)
-	{
-	  throw new ReflectionException(e, "The class, " + signature[a] + 
-					", in the method signature " +
-					"could not be loaded.");
-	}
+    Class[] sigTypes;
+    if (signature != null)
+      {
+	sigTypes = new Class[signature.length];
+	for (int a = 0; a < signature.length; ++a)
+	  try 
+	    {
+	      sigTypes[a] = Class.forName(signature[a], true, loader);
+	    }
+	  catch (ClassNotFoundException e)
+	    {
+	      throw new ReflectionException(e, "The class, " + signature[a] + 
+					    ", in the method signature " +
+					    "could not be loaded.");
+	    }
+      }
+    else
+      sigTypes = null;
     Method method;
     try
       {
@@ -824,23 +854,12 @@ public class StandardMBean
     throws AttributeNotFoundException, InvalidAttributeValueException,
 	   MBeanException, ReflectionException
   {
-    Method setter;
     String name = attribute.getName();
-    try 
-      {
-	setter = iface.getMethod("set" +
-				 name.substring(0, 1).toUpperCase() +
-				 name.substring(1), null);
-      }
-    catch (NoSuchMethodException e)
-      {
-	throw ((AttributeNotFoundException) 
-	       new AttributeNotFoundException("The attribute, " + name +
-					      ", was not found.").initCause(e));
-      }
+    String attName = name.substring(0, 1).toUpperCase() + name.substring(1);
+    Object val = attribute.getValue();   
     try
       {
-	setter.invoke(impl, new Object[] { attribute.getValue() });
+	getMutator(attName, val.getClass()).invoke(impl, new Object[] { val });
       }
     catch (IllegalAccessException e)
       {
@@ -855,8 +874,8 @@ public class StandardMBean
       }
     catch (InvocationTargetException e)
       {
-	throw new MBeanException((Exception) e.getCause(), "The getter of "
-				 + name + " threw an exception");
+	throw new MBeanException(e, "The getter of " + name +
+				 " threw an exception");
       }
   }
 
@@ -923,6 +942,144 @@ public class StandardMBean
       throw new NotCompliantMBeanException("The instance, " + impl + 
 					   ", is not an instance of " + iface);
     this.impl = impl;
+  }
+
+  /**
+   * Returns the mutator method for a particular attribute name
+   * with a parameter type matching that of the given value.
+   *
+   * @param name the name of the attribute.
+   * @param type the type of the parameter.
+   * @return the appropriate mutator method.
+   * @throws AttributeNotFoundException if a method can't be found.
+   */
+  private Method getMutator(String name, Class<?> type)
+    throws AttributeNotFoundException
+  {
+    String mutator = "set" + name;
+    Exception ex = null;
+    try 
+      {
+	return iface.getMethod(mutator, type);
+      }
+    catch (NoSuchMethodException e)
+      {
+	/* Ignored; we'll try harder instead */
+	ex = e;
+      }
+    /* Special cases */
+    if (type == Boolean.class)
+      try
+	{
+	  return iface.getMethod(mutator, Boolean.TYPE);
+	}
+      catch (NoSuchMethodException e)
+	{
+	  throw ((AttributeNotFoundException) 
+		 new AttributeNotFoundException("The attribute, " + name +
+						", was not found.").initCause(e));
+	}
+    if (type == Byte.class)
+      try
+	{
+	  return iface.getMethod(mutator, Byte.TYPE);
+	}
+      catch (NoSuchMethodException e)
+	{
+	  throw ((AttributeNotFoundException) 
+		 new AttributeNotFoundException("The attribute, " + name +
+						", was not found.").initCause(e));
+	}
+    if (type == Character.class)
+      try
+	{
+	  return iface.getMethod(mutator, Character.TYPE);
+	}
+      catch (NoSuchMethodException e)
+	{
+	  throw ((AttributeNotFoundException) 
+		 new AttributeNotFoundException("The attribute, " + name +
+						", was not found.").initCause(e));
+	}
+    if (type == Double.class)
+      try
+	{
+	  return iface.getMethod(mutator, Double.TYPE);
+	}
+      catch (NoSuchMethodException e)
+	{
+	  throw ((AttributeNotFoundException) 
+		 new AttributeNotFoundException("The attribute, " + name +
+						", was not found.").initCause(e));
+	}
+    if (type == Float.class)
+      try
+	{
+	  return iface.getMethod(mutator, Float.TYPE);
+	}
+      catch (NoSuchMethodException e)
+	{
+	  throw ((AttributeNotFoundException) 
+		 new AttributeNotFoundException("The attribute, " + name +
+						", was not found.").initCause(e));
+	}
+    if (type == Integer.class)
+      try
+	{
+	  return iface.getMethod(mutator, Integer.TYPE);
+	}
+      catch (NoSuchMethodException e)
+	{
+	  throw ((AttributeNotFoundException) 
+		 new AttributeNotFoundException("The attribute, " + name +
+						", was not found.").initCause(e));
+	}
+    if (type == Long.class)
+      try
+	{
+	  return iface.getMethod(mutator, Long.TYPE);
+	}
+      catch (NoSuchMethodException e)
+	{
+	  throw ((AttributeNotFoundException) 
+		 new AttributeNotFoundException("The attribute, " + name +
+						", was not found.").initCause(e));
+	}
+    if (type == Short.class)
+      try
+	{
+	  return iface.getMethod(mutator, Short.TYPE);
+	}
+      catch (NoSuchMethodException e)
+	{
+	  throw ((AttributeNotFoundException) 
+		 new AttributeNotFoundException("The attribute, " + name +
+						", was not found.").initCause(e));
+	}
+    /* Superclasses and interfaces */
+    for (Class<?> i : type.getInterfaces())
+      try
+	{
+	  return getMutator(name, i);
+	}
+      catch (AttributeNotFoundException e)
+	{
+	  ex = e;
+	}
+    Class<?> sclass = type.getSuperclass();
+    if (sclass != null && sclass != Object.class)
+      try
+	{
+	  return getMutator(name, sclass);
+	}
+      catch (AttributeNotFoundException e)
+	{
+	  ex = e;
+	}
+    /* If we get this far, give up */
+    throw ((AttributeNotFoundException) 
+	   new AttributeNotFoundException("The attribute, " + name +
+					  ", was not found.").initCause(ex)); 
   }
 
 }

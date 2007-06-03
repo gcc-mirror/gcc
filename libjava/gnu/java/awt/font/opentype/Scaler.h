@@ -19,6 +19,7 @@ extern "Java"
         {
           namespace opentype
           {
+              class Hinter;
               class Scaler;
             namespace truetype
             {
@@ -48,7 +49,7 @@ class gnu::java::awt::font::opentype::Scaler : public ::java::lang::Object
 
 public:
   Scaler();
-  virtual ::java::awt::geom::GeneralPath * getOutline(jint, jfloat, ::java::awt::geom::AffineTransform *, jboolean, jboolean) = 0;
+  virtual ::java::awt::geom::GeneralPath * getOutline(jint, jfloat, ::java::awt::geom::AffineTransform *, jboolean, jboolean, ::gnu::java::awt::font::opentype::Hinter *, jint) = 0;
   virtual void getAdvance(jint, jfloat, ::java::awt::geom::AffineTransform *, jboolean, jboolean, jboolean, ::java::awt::geom::Point2D *) = 0;
   virtual jfloat getAscent(jfloat, ::java::awt::geom::AffineTransform *, jboolean, jboolean, jboolean) = 0;
   virtual jfloat getDescent(jfloat, ::java::awt::geom::AffineTransform *, jboolean, jboolean, jboolean) = 0;

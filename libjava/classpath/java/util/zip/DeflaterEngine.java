@@ -377,7 +377,8 @@ class DeflaterEngine implements DeflaterConstants
 	     && window[++scan] == window[++match]
 	     && window[++scan] == window[++match]
 	     && window[++scan] == window[++match]
-	     && scan < strend);
+	     && scan < strend)
+        ;
 
       if (scan > best_end) {
 //  	if (DeflaterConstants.DEBUGGING && ins_h == 0)

@@ -87,7 +87,6 @@ public: // actually protected
 private:
   ::java::awt::image::BufferedImage * __attribute__((aligned(__alignof__( ::gnu::java::awt::peer::gtk::CairoGraphics2D)))) image;
   ::java::awt::image::BufferedImage * buffer;
-  jboolean locked;
   jint imageWidth;
   jint imageHeight;
 public: // actually package-private

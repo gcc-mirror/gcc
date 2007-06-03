@@ -32,6 +32,7 @@ public:
   ::java::lang::String * getArch();
   jint getAvailableProcessors();
   ::java::lang::String * getName();
+  jdouble getSystemLoadAverage();
   ::java::lang::String * getVersion();
   static ::java::lang::Class class$;
 };

@@ -14,6 +14,7 @@ class java::util::prefs::Preferences$1 : public ::java::lang::Object
 public: // actually package-private
   Preferences$1();
 public:
+  ::java::util::prefs::PreferencesFactory * Preferences$1$run();
   ::java::lang::Object * run();
   static ::java::lang::Class class$;
 };

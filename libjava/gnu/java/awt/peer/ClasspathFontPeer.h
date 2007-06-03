@@ -21,6 +21,7 @@ extern "Java"
         namespace peer
         {
             class ClasspathFontPeer;
+            class ClasspathFontPeer$LRUCache;
         }
       }
     }
@@ -116,6 +117,8 @@ public: // actually protected
   jint style;
   jfloat size;
   ::java::awt::geom::AffineTransform * transform;
+private:
+  static ::gnu::java::awt::peer::ClasspathFontPeer$LRUCache * transCache;
 public:
   static ::java::lang::Class class$;
 };

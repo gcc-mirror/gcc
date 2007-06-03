@@ -1,5 +1,5 @@
 /* OpenType.java -- Superclass of all open types.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,9 @@ package javax.management.openmbean;
 
 import java.io.Serializable;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * The superclass of all open types, which describe the
  * applicable data values for open MBeans.  An open type
@@ -48,7 +51,7 @@ import java.io.Serializable;
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
-public abstract class OpenType
+public abstract class OpenType<T>
   implements Serializable
 {
 
@@ -76,7 +79,10 @@ public abstract class OpenType
    * An array which defines the set of Java types which can be
    * used as open types.  Note that each type is also available
    * in array form, possibly with multiple dimensions.
+   *
+   * @deprecated Use {@link ALLOWED_CLASSNAMES_LIST} instead.
    */
+  @Deprecated
   public static final String[] ALLOWED_CLASSNAMES = {
     "java.lang.Void",
     "java.lang.Boolean",
@@ -95,6 +101,14 @@ public abstract class OpenType
     CompositeData.class.getName(),
     TabularData.class.getName() 
   };
+
+  /**
+   * A list which defines the set of Java types that may be
+   * used as open types.  Note that each type is also available
+   * in array form, possibly with multiple dimensions.
+   */
+  public static final List<String> ALLOWED_CLASSNAMES_LIST = 
+    Arrays.asList(ALLOWED_CLASSNAMES); 
 
   /**
    * Constructs a new {@link OpenType} for the specified class
@@ -126,17 +140,20 @@ public abstract class OpenType
     if (desc == null || desc.equals(""))
       throw new IllegalArgumentException("The description can not " +
 					 "be null or the empty string.");
-    String testString;
-    if (className.startsWith("["))
-      testString = className.substring(className.indexOf("L") + 1);
-    else
-      testString = className;
-    boolean openTypeFound = false;
-    for (int a = 0; a < ALLOWED_CLASSNAMES.length; ++a)
-      if (ALLOWED_CLASSNAMES[a].equals(testString))
-	openTypeFound = true;
-    if (!openTypeFound)
-      throw new OpenDataException("The class name, " + testString + 
+    Class<?> type;
+    try
+      {
+	type = Class.forName(className);
+      }
+    catch (ClassNotFoundException e)
+      {
+	throw (OpenDataException) new OpenDataException("The class name, " + className +
+							", is unavailable.").initCause(e);
+      }
+    while (type.isArray())
+      type = type.getComponentType();
+    if (!(type.isPrimitive() || ALLOWED_CLASSNAMES_LIST.contains(type.getName())))
+      throw new OpenDataException("The class name, " + className + 
 				  ", does not specify a valid open type.");
     this.className = className;
     typeName = name;

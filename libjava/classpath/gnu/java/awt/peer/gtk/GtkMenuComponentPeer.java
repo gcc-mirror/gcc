@@ -64,9 +64,9 @@ public abstract class GtkMenuComponentPeer extends GtkGenericPeer
     if (f == null)
       {
         MenuContainer parent = mc.getParent ();
-	// Submenus inherit the font of their containing Menu(Bar).
-	if (parent instanceof MenuComponent)
-	  f = parent.getFont ();
+        // Submenus inherit the font of their containing Menu(Bar).
+        if (parent instanceof MenuComponent)
+          f = parent.getFont ();
       }
 
     setFont(f);

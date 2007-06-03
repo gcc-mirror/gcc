@@ -778,7 +778,6 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
     if (locked == HLOCKED)
       {
 	slider.setMaximum(359);
-	;
 	slider.setValue(((Number) hSpinner.getValue()).intValue());
 	slider.setInverted(true);
       }

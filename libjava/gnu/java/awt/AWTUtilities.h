@@ -62,6 +62,7 @@ public:
   static void invokeLater(::java::lang::Runnable *);
   static void invokeAndWait(::java::lang::Runnable *);
   static jboolean isEventDispatchThread();
+  static jboolean isValidKey(jint);
 public: // actually package-private
   static ::java::util::WeakHashMap * visibleChildrenCache;
 public:

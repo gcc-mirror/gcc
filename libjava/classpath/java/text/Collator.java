@@ -40,10 +40,13 @@ package java.text;
 
 import gnu.java.locale.LocaleHelper;
 
+import java.text.spi.CollatorProvider;
+
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.ServiceLoader;
 
 /**
  * This class is the abstract superclass of classes which perform 
@@ -285,7 +288,8 @@ public abstract class Collator implements Comparator<Object>, Cloneable
   /**
    * This method returns an instance of <code>Collator</code> for the
    * specified locale.  If no <code>Collator</code> exists for the desired
-   * locale, a <code>Collator</code> for the default locale will be returned.
+   * locale, the fallback procedure described in
+   * {@link java.util.spi.LocaleServiceProvider} is invoked.
    *
    * @param loc The desired locale to load a <code>Collator</code> for.
    *
@@ -293,27 +297,51 @@ public abstract class Collator implements Comparator<Object>, Cloneable
    */
   public static Collator getInstance (Locale loc)
   {
-    ResourceBundle res;
     String pattern;
     try
       {
-	res = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-				       loc, ClassLoader.getSystemClassLoader());
-	pattern = res.getString("collation_rules");
+	ResourceBundle res =
+	  ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
+				   loc, ClassLoader.getSystemClassLoader());
+	return new RuleBasedCollator(res.getString("collation_rules"));
       }
     catch (MissingResourceException x)
       {
-	pattern = "<0<1<2<3<4<5<6<7<8<9<A,a<b,B<c,C<d,D<e,E<f,F<g,G<h,H<i,I<j,J<k,K" +
-		"<l,L<m,M<n,N<o,O<p,P<q,Q<r,R<s,S<t,T<u,U<v,V<w,W<x,X<y,Y<z,Z";
-      }
-    try
-      {
-	return new RuleBasedCollator (pattern);
+	/* This means runtime support for the locale
+	 * is not available, so we check providers. */
       }
     catch (ParseException x)
       {
 	throw (InternalError)new InternalError().initCause(x);
       }
+    for (CollatorProvider p : ServiceLoader.load(CollatorProvider.class))
+      {
+	for (Locale l : p.getAvailableLocales())
+	  {
+	    if (l.equals(loc))
+	      {
+		Collator c = p.getInstance(loc);
+		if (c != null)
+		  return c;
+		break;
+	      }
+	  }
+      }
+    if (loc.equals(Locale.ROOT))
+      {
+	try
+	  {
+	    return new RuleBasedCollator("<0<1<2<3<4<5<6<7<8<9<A,a<b,B<c," +
+					 "C<d,D<e,E<f,F<g,G<h,H<i,I<j,J<k,K" +
+					 "<l,L<m,M<n,N<o,O<p,P<q,Q<r,R<s,S<t,"+
+					 "T<u,U<v,V<w,W<x,X<y,Y<z,Z");
+	  }
+	catch (ParseException x)
+	  {
+	    throw (InternalError)new InternalError().initCause(x);
+	  }
+      }
+    return getInstance(LocaleHelper.getFallbackLocale(loc));
   }
 
   /**

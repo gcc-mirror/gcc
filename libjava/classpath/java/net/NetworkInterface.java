@@ -40,12 +40,8 @@ package java.net;
 
 import gnu.classpath.SystemProperties;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -100,7 +96,8 @@ public final class NetworkInterface
   public Enumeration<InetAddress> getInetAddresses()
   {
     SecurityManager s = System.getSecurityManager();
-    Vector inetAddresses = new Vector(netif.addresses);
+    Vector<InetAddress> inetAddresses
+      = new Vector<InetAddress>(netif.addresses);
 
     if (s == null)
       return inetAddresses.elements();

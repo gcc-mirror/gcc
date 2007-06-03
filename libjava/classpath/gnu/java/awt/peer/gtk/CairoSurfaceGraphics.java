@@ -40,6 +40,7 @@ package gnu.java.awt.peer.gtk;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
@@ -50,7 +51,6 @@ import java.awt.Shape;
 import java.awt.Toolkit;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -116,6 +116,18 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
    */
   public void draw(Shape s)
   {
+    if (!surface.sharedBuffer)
+      surface.syncJavaToNative(surface.surfacePointer, surface.getData());
+    
+    // Find total bounds of shape
+    Rectangle r = findStrokedBounds(s);
+    if (shiftDrawCalls)
+      {
+        r.width++;
+        r.height++;
+      }
+    
+    // Do the drawing
     if (comp == null || comp instanceof AlphaComposite)
       super.draw(s);
     
@@ -126,14 +138,21 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
         Graphics2D g2d = (Graphics2D)buffer.getGraphics();
         g2d.setStroke(this.getStroke());
         g2d.setColor(this.getColor());
+        g2d.setTransform(transform);
         g2d.draw(s);
         
-        drawComposite(s.getBounds2D(), null);
+        drawComposite(r.getBounds2D(), null);
       }
+    
+    if (!surface.sharedBuffer)
+      surface.syncNativeToJava(surface.surfacePointer, surface.getData());
   }
 
   public void fill(Shape s)
   {
+    if (!surface.sharedBuffer)
+      surface.syncJavaToNative(surface.surfacePointer, surface.getData());
+    
     if (comp == null || comp instanceof AlphaComposite)
       super.fill(s);
     
@@ -144,14 +163,21 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
         Graphics2D g2d = (Graphics2D)buffer.getGraphics();
         g2d.setPaint(this.getPaint());
         g2d.setColor(this.getColor());
+        g2d.setTransform(transform);
         g2d.fill(s);
         
         drawComposite(s.getBounds2D(), null);
       }
+    
+    if (!surface.sharedBuffer)
+      surface.syncNativeToJava(surface.surfacePointer, surface.getData());
   }
 
   public void drawRenderedImage(RenderedImage image, AffineTransform xform)
   {
+    if (!surface.sharedBuffer)
+      surface.syncJavaToNative(surface.surfacePointer, surface.getData());
+    
     if (comp == null || comp instanceof AlphaComposite)
       super.drawRenderedImage(image, xform);
     
@@ -161,18 +187,25 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
 
         Graphics2D g2d = (Graphics2D)buffer.getGraphics();
         g2d.setRenderingHints(this.getRenderingHints());
+        g2d.setTransform(transform);
         g2d.drawRenderedImage(image, xform);
         
         drawComposite(buffer.getRaster().getBounds(), null);
       }
-
+    
+    if (!surface.sharedBuffer)
+      surface.syncNativeToJava(surface.surfacePointer, surface.getData());
   }
 
   protected boolean drawImage(Image img, AffineTransform xform,
                               Color bgcolor, ImageObserver obs)
   {
+    if (!surface.sharedBuffer)
+      surface.syncJavaToNative(surface.surfacePointer, surface.getData());
+
+    boolean ret;
     if (comp == null || comp instanceof AlphaComposite)
-      return super.drawImage(img, xform, bgcolor, obs);
+      ret = super.drawImage(img, xform, bgcolor, obs);
     
     else
       {
@@ -187,14 +220,10 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
         BufferedImage bImg = (BufferedImage) img;
         
         // Find translated bounds
-        Point2D origin = new Point2D.Double(bImg.getMinX(), bImg.getMinY());
-        Point2D pt = new Point2D.Double(bImg.getWidth() + bImg.getMinX(),
-                                        bImg.getHeight() + bImg.getMinY());
+        Rectangle2D bounds = new Rectangle(bImg.getMinX(), bImg.getMinY(),
+                                           bImg.getWidth(), bImg.getHeight());
         if (xform != null)
-          {
-            origin = xform.transform(origin, origin);
-            pt = xform.transform(pt, pt);
-          }
+          bounds = getTransformedBounds(bounds, xform);
         
         // Create buffer and draw image
         createBuffer();
@@ -204,15 +233,20 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
         g2d.drawImage(img, xform, obs);
 
         // Perform compositing
-        return drawComposite(new Rectangle2D.Double(origin.getX(),
-                                                    origin.getY(),
-                                                    pt.getX(), pt.getY()),
-                             obs);
+        ret = drawComposite(bounds, obs);
       }
+    
+    if (!surface.sharedBuffer)
+      surface.syncNativeToJava(surface.surfacePointer, surface.getData());
+    
+    return ret;
   }
 
   public void drawGlyphVector(GlyphVector gv, float x, float y)
   {
+    if (!surface.sharedBuffer)
+      surface.syncJavaToNative(surface.surfacePointer, surface.getData());
+    
     if (comp == null || comp instanceof AlphaComposite)
       super.drawGlyphVector(gv, x, y);
     
@@ -230,43 +264,54 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
                                         bounds.getWidth(), bounds.getHeight());
         drawComposite(bounds, null);
       }
+    
+    if (!surface.sharedBuffer)
+      surface.syncNativeToJava(surface.surfacePointer, surface.getData());
   }
   
   private boolean drawComposite(Rectangle2D bounds, ImageObserver observer)
   {
-    // Clip source to visible areas that need updating
-    Rectangle2D clip = this.getClipBounds();
-    Rectangle2D.intersect(bounds, clip, bounds);
-    clip = new Rectangle(buffer.getMinX(), buffer.getMinY(),
-                         buffer.getWidth(), buffer.getHeight());
-    Rectangle2D.intersect(bounds, clip, bounds);
+    // Find bounds in device space
+    bounds = getTransformedBounds(bounds, transform);
+
+    // Clip bounds by the stored clip, and by the internal buffer
+    Rectangle2D devClip = this.getClipInDevSpace();
+    Rectangle2D.intersect(bounds, devClip, bounds);
+    devClip = new Rectangle(buffer.getMinX(), buffer.getMinY(),
+                            buffer.getWidth(), buffer.getHeight());
+    Rectangle2D.intersect(bounds, devClip, bounds);
     
+    // Round bounds as needed, but be careful in our rounding
+    // (otherwise it may leave unpainted stripes)
+    double x = bounds.getX();
+    double y = bounds.getY();
+    double maxX = x + bounds.getWidth();
+    double maxY = y + bounds.getHeight();
+    x = Math.round(x);
+    y = Math.round(y);
+    bounds.setRect(x, y, Math.round(maxX - x), Math.round(maxY - y));
+    
+    // Find subimage of internal buffer for updating
     BufferedImage buffer2 = buffer;
     if (!bounds.equals(buffer2.getRaster().getBounds()))
       buffer2 = buffer2.getSubimage((int)bounds.getX(), (int)bounds.getY(),
                                     (int)bounds.getWidth(),
                                     (int)bounds.getHeight());
-    
-    // Get destination clip to bounds
-    double[] points = new double[] {bounds.getX(), bounds.getY(),
-                                    bounds.getMaxX(), bounds.getMaxY()};
-    transform.transform(points, 0, points, 0, 2);
-    
-    Rectangle2D deviceBounds = new Rectangle2D.Double(points[0], points[1],
-                                                       points[2] - points[0],
-                                                       points[3] - points[1]);
-    
-    Rectangle2D.intersect(deviceBounds, this.getClipInDevSpace(), deviceBounds);
-    
+
+    // Find subimage of main image for updating
     BufferedImage current = CairoSurface.getBufferedImage(surface);
-    current = current.getSubimage((int)deviceBounds.getX(),
-                                  (int)deviceBounds.getY(),
-                                  (int)deviceBounds.getWidth(),
-                                  (int)deviceBounds.getHeight());
+    current = current.getSubimage((int)bounds.getX(), (int)bounds.getY(),
+                                  (int)bounds.getWidth(),
+                                  (int)bounds.getHeight());
 
     // Perform actual composite operation
     compCtx.compose(buffer2.getRaster(), current.getRaster(),
                     buffer2.getRaster());
+    
+    // Set cairo's composite to direct SRC, since we've already done our own
+    // compositing   
+    Composite oldcomp = comp;
+    setComposite(AlphaComposite.Src);
     
     // This MUST call directly into the "action" method in CairoGraphics2D,
     // not one of the wrappers, to ensure that the composite isn't processed
@@ -274,7 +319,9 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
     boolean rv = super.drawImage(buffer2,
                                  AffineTransform.getTranslateInstance(bounds.getX(),
                                                                       bounds.getY()),
-                                 new Color(0,0,0,0), null);
+                                 null, null);
+    setComposite(oldcomp);
+    updateColor();
     return rv;
   }
   

@@ -76,7 +76,8 @@ public final class Connection extends JarURLConnection
   
   public static class JarFileCache
   {
-    private static Hashtable cache = new Hashtable();
+    private static Hashtable<URL, JarFile> cache
+      = new Hashtable<URL, JarFile>();
     private static final int READBUFSIZE = 4*1024;
     
     public static synchronized JarFile get (URL url, boolean useCaches)
@@ -85,7 +86,7 @@ public final class Connection extends JarURLConnection
       JarFile jf;
       if (useCaches)
         {
-          jf = (JarFile) cache.get (url);
+          jf = cache.get (url);
           if (jf != null)
             return jf;
         }

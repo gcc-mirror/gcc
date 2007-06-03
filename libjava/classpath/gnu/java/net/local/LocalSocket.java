@@ -46,7 +46,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.net.SocketImpl;
 
 import java.nio.channels.IllegalBlockingModeException;
 import java.nio.channels.SocketChannel;

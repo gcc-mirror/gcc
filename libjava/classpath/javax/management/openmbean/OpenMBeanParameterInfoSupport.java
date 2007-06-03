@@ -1,5 +1,5 @@
 /* OpenMBeanParameterInfoSupport.java -- Open typed info about a parameter.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -63,7 +63,7 @@ public class OpenMBeanParameterInfoSupport
   /**
    * The open type of the parameter.
    */
-  private OpenType openType;
+  private OpenType<?> openType;
 
   /**
    * The default value of the parameter (may be <code>null</code>).
@@ -73,17 +73,17 @@ public class OpenMBeanParameterInfoSupport
   /**
    * The possible legal values of the parameter (may be <code>null</code>).
    */
-  private Set legalValues;
+  private Set<?> legalValues;
 
   /**
    * The minimum value of the parameter (may be <code>null</code>).
    */
-  private Comparable minValue;
+  private Comparable<Object> minValue;
 
   /**
    * The maximum value of the parameter (may be <code>null</code>).
    */
-  private Comparable maxValue;
+  private Comparable<Object> maxValue;
 
   /**
    * The hash code of this instance.
@@ -109,7 +109,7 @@ public class OpenMBeanParameterInfoSupport
    *                                  or the name or description are
    *                                  the empty string.
    */
-  public OpenMBeanParameterInfoSupport(String name, String desc, OpenType type)
+  public OpenMBeanParameterInfoSupport(String name, String desc, OpenType<?> type)
   {
     super(name, type == null ? null : type.getClassName(), desc);
     if (name == null)
@@ -149,8 +149,8 @@ public class OpenMBeanParameterInfoSupport
    *                           open type or the open type is an instance
    *                           of {@link ArrayType} or {@link TabularType}.
    */
-  public OpenMBeanParameterInfoSupport(String name, String desc, OpenType type,
-				       Object defaultValue)
+  public <T> OpenMBeanParameterInfoSupport(String name, String desc, OpenType<T> type,
+					   T defaultValue)
     throws OpenDataException
   {
     this(name, desc, type, defaultValue, null);
@@ -190,9 +190,9 @@ public class OpenMBeanParameterInfoSupport
    *                                  the empty string.
    * @throws OpenDataException if any condition in the list above is broken.
    */
-  public OpenMBeanParameterInfoSupport(String name, String desc, OpenType type,
-				       Object defaultValue, Comparable minimumValue,
-				       Comparable maximumValue)
+  public <T> OpenMBeanParameterInfoSupport(String name, String desc, OpenType<T> type,
+					   T defaultValue, Comparable<T> minimumValue,
+					   Comparable<T> maximumValue)
     throws OpenDataException
   {
     this(name, desc, type);
@@ -223,8 +223,8 @@ public class OpenMBeanParameterInfoSupport
 				  "maximum.");
     
     this.defaultValue = defaultValue;
-    minValue = minimumValue;
-    maxValue = maximumValue;
+    minValue = (Comparable<Object>) minimumValue;
+    maxValue = (Comparable<Object>) maximumValue;
   }
 
   /**
@@ -261,8 +261,8 @@ public class OpenMBeanParameterInfoSupport
    *                                  the empty string.
    * @throws OpenDataException if any condition in the list above is broken.
    */
-  public OpenMBeanParameterInfoSupport(String name, String desc, OpenType type,
-				       Object defaultValue, Object[] legalValues)
+  public <T> OpenMBeanParameterInfoSupport(String name, String desc, OpenType<T> type,
+					   T defaultValue, T[] legalValues)
     throws OpenDataException
   {
     this(name, desc, type);
@@ -351,7 +351,7 @@ public class OpenMBeanParameterInfoSupport
    * @return a set of legal values, or <code>null</code> if no such
    *         set exists.
    */
-  public Set getLegalValues()
+  public Set<?> getLegalValues()
   {
     return legalValues;
   }
@@ -362,7 +362,7 @@ public class OpenMBeanParameterInfoSupport
    *
    * @return the maximum value, or <code>null</code> if none exists.
    */
-  public Comparable getMaxValue()
+  public Comparable<?> getMaxValue()
   {
     return maxValue;
   }
@@ -373,7 +373,7 @@ public class OpenMBeanParameterInfoSupport
    *
    * @return the minimum value, or <code>null</code> if none exists.
    */
-  public Comparable getMinValue()
+  public Comparable<?> getMinValue()
   {
     return minValue;
   }
@@ -384,7 +384,7 @@ public class OpenMBeanParameterInfoSupport
    *
    * @return the open type of this parameter.
    */
-  public OpenType getOpenType()
+  public OpenType<?> getOpenType()
   {
     return openType;
   }

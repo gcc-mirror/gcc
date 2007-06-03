@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import gnu.java.awt.ClasspathToolkit;
 import gnu.javax.imageio.bmp.BMPImageReaderSpi;
 import gnu.javax.imageio.bmp.BMPImageWriterSpi;
 import gnu.javax.imageio.gif.GIFImageReaderSpi;
@@ -91,6 +92,8 @@ public final class IIORegistry extends ServiceRegistry
     registerServiceProvider(new BMPImageWriterSpi());
 
     Toolkit toolkit = Toolkit.getDefaultToolkit();
+    if (toolkit instanceof ClasspathToolkit)
+      ((ClasspathToolkit)toolkit).registerImageIOSpis(this);
     
     registerApplicationClasspathSpis();
   }

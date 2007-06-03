@@ -67,6 +67,10 @@ public:
   void setZeroDigit(jchar);
 private:
   void readObject(::java::io::ObjectInputStream *);
+public:
+  static ::java::text::DecimalFormatSymbols * getInstance();
+  static ::java::text::DecimalFormatSymbols * getInstance(::java::util::Locale *);
+private:
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) currencySymbol;
   jchar decimalSeparator;
   jchar digit;

@@ -505,12 +505,11 @@ public class Hashtable<K, V> extends Dictionary<K, V>
    */
   public synchronized void putAll(Map<? extends K, ? extends V> m)
   {
-    Map<K,V> addMap;
-    
-    addMap = (Map<K,V>) m;
-
-    for (Map.Entry<K,V> e : addMap.entrySet())
+    final Map<K,V> addMap = (Map<K,V>) m;
+    final Iterator<Map.Entry<K,V>> it = addMap.entrySet().iterator();
+    while (it.hasNext())
       {
+	final Map.Entry<K,V> e = it.next();
         // Optimize in case the Entry is one of our own.
         if (e instanceof AbstractMap.SimpleEntry)
           {
@@ -857,13 +856,12 @@ public class Hashtable<K, V> extends Dictionary<K, V>
    */
   void putAllInternal(Map<? extends K, ? extends V> m)
   {
-    Map<K,V> addMap;
-
-    addMap = (Map<K,V>) m;
+    final Map<K,V> addMap = (Map<K,V>) m;
+    final Iterator<Map.Entry<K,V>> it = addMap.entrySet().iterator();
     size = 0;
-
-    for (Map.Entry<K,V> e : addMap.entrySet())
+    while (it.hasNext())
       {
+	final Map.Entry<K,V> e = it.next();
         size++;
 	K key = e.getKey();
 	int idx = hash(key);

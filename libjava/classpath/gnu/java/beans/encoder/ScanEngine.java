@@ -153,7 +153,7 @@ public class ScanEngine
     writer = new StAXWriter(os);
     root = new Root();
 
-    final ScannerState start = current = new GenericScannerState(root);;
+    final ScannerState start = current = new GenericScannerState(root);
     ScannerState conf;
 
     // Use the ReportingScannerState to debug serialization issues.

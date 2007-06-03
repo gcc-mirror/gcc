@@ -38,15 +38,23 @@ exception statement from your version. */
 
 package javax.swing;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragGestureRecognizer;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.DragSourceContext;
+import java.awt.dnd.DragSourceDragEvent;
+import java.awt.dnd.DragSourceDropEvent;
+import java.awt.dnd.DragSourceEvent;
+import java.awt.dnd.DragSourceListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -210,7 +218,101 @@ public class TransferHandler implements Serializable
 	}
     }
   }
-  
+
+  private static class SwingDragGestureRecognizer extends DragGestureRecognizer
+  {
+
+    protected SwingDragGestureRecognizer(DragGestureListener dgl)
+    {
+      super(DragSource.getDefaultDragSource(), null, NONE, dgl);
+    }
+
+    void gesture(JComponent c, MouseEvent e, int src, int drag)
+    {
+      setComponent(c);
+      setSourceActions(src);
+      appendEvent(e);
+      fireDragGestureRecognized(drag, e.getPoint());
+    }
+
+    protected void registerListeners()
+    {
+      // Nothing to do here.
+    }
+
+    protected void unregisterListeners()
+    {
+      // Nothing to do here.
+    }
+    
+  }
+
+  private static class SwingDragHandler
+    implements DragGestureListener, DragSourceListener
+  {
+
+    private boolean autoscrolls;
+
+    public void dragGestureRecognized(DragGestureEvent e)
+    {
+      JComponent c = (JComponent) e.getComponent();
+      TransferHandler th = c.getTransferHandler();
+      Transferable t = th.createTransferable(c);
+      if (t != null)
+        {
+          autoscrolls = c.getAutoscrolls();
+          c.setAutoscrolls(false);
+          try
+            {
+              e.startDrag(null, t, this);
+              return;
+            }
+          finally
+            {
+              c.setAutoscrolls(autoscrolls);
+            }
+        }
+      th.exportDone(c, t, NONE);
+    }
+
+    public void dragDropEnd(DragSourceDropEvent e)
+    {
+      DragSourceContext ctx = e.getDragSourceContext();
+      JComponent c = (JComponent) ctx.getComponent();
+      TransferHandler th = c.getTransferHandler();
+      if (e.getDropSuccess())
+        {
+          th.exportDone(c, ctx.getTransferable(), e.getDropAction());
+        }
+      else
+        {
+          th.exportDone(c, ctx.getTransferable(), e.getDropAction());
+        }
+      c.setAutoscrolls(autoscrolls);
+    }
+
+    public void dragEnter(DragSourceDragEvent e)
+    {
+      // Nothing to do here.
+    }
+
+    public void dragExit(DragSourceEvent e)
+    {
+      // Nothing to do here.
+    }
+
+    public void dragOver(DragSourceDragEvent e)
+    {
+      // Nothing to do here.
+    }
+
+    public void dropActionChanged(DragSourceDragEvent e)
+    {
+      // Nothing to do here.
+    }
+    
+  }
+
   private static final long serialVersionUID = -967749805571669910L;
 
   private static final String COMMAND_COPY = "copy";
@@ -234,6 +336,11 @@ public class TransferHandler implements Serializable
    * imports/exports. 
    */
   private String propertyName;
+
+  /**
+   * The DragGestureRecognizer for Swing.
+   */
+  private SwingDragGestureRecognizer recognizer;
 
   public static Action getCopyAction()
   {
@@ -331,10 +438,27 @@ public class TransferHandler implements Serializable
     return transferable;
   }
 
-  public void exportAsDrag(JComponent c, InputEvent e, int action) 
-    throws NotImplementedException
+  public void exportAsDrag(JComponent c, InputEvent e, int action)
   {
-    // TODO: Implement this properly
+    int src = getSourceActions(c);
+    int drag = src & action;
+    if (! (e instanceof MouseEvent))
+      {
+        drag = NONE;
+      }
+    if (drag != NONE)
+      {
+        if (recognizer == null)
+          {
+            SwingDragHandler ds = new SwingDragHandler();
+            recognizer = new SwingDragGestureRecognizer(ds);
+          }
+        recognizer.gesture(c, (MouseEvent) e, src, drag);
+      }
+    else
+      {
+        exportDone(c, null, NONE);
+      }
   }
 
   /**

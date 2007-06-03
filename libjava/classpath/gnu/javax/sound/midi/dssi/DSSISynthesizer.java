@@ -1,5 +1,5 @@
 /* DSSISynthesizer.java -- DSSI Synthesizer Provider
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,9 +54,6 @@ import javax.sound.midi.SoundbankResource;
 import javax.sound.midi.Synthesizer;
 import javax.sound.midi.Transmitter;
 import javax.sound.midi.VoiceStatus;
-
-// FIXME: This import in only required for gcj it seems.
-import javax.sound.midi.MidiDevice.Info;
 
 /**
  * DSSI soft-synth support.

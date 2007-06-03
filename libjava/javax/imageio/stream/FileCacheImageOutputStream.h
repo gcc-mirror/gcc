@@ -29,9 +29,6 @@ class javax::imageio::stream::FileCacheImageOutputStream : public ::javax::image
 public:
   FileCacheImageOutputStream(::java::io::OutputStream *, ::java::io::File *);
   virtual void close();
-private:
-  void checkStreamClosed();
-public:
   virtual jboolean isCached();
   virtual jboolean isCachedFile();
   virtual jboolean isCachedMemory();
@@ -39,9 +36,14 @@ public:
   virtual jint read(JArray< jbyte > *, jint, jint);
   virtual void write(JArray< jbyte > *, jint, jint);
   virtual void write(jint);
+  virtual jlong length();
+  virtual void seek(jlong);
+  virtual void flushBefore(jlong);
 private:
   ::java::io::OutputStream * __attribute__((aligned(__alignof__( ::javax::imageio::stream::ImageOutputStreamImpl)))) stream;
-  ::java::io::File * cacheDir;
+  ::java::io::File * cacheFile;
+  ::java::io::RandomAccessFile * cache;
+  jlong maxPos;
 public:
   static ::java::lang::Class class$;
 };

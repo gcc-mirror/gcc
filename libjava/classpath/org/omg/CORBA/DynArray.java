@@ -1,5 +1,5 @@
 /* DynArray.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,6 +43,8 @@ import org.omg.CORBA.DynAnyPackage.InvalidSeq;
 
 /**
  * Represents the {@link DynAny}, holding an array.
+ *
+ * @deprecated by {@link org.omg.DynamicAny.DynArray}
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */

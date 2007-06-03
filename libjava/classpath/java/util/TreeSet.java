@@ -79,10 +79,10 @@ import java.io.Serializable;
  * @see Collections#synchronizedSortedSet(SortedSet)
  * @see TreeMap
  * @since 1.2
- * @status updated to 1.4
+ * @status updated to 1.6
  */
 public class TreeSet<T> extends AbstractSet<T>
-  implements SortedSet<T>, Cloneable, Serializable
+  implements NavigableSet<T>, Cloneable, Serializable
 {
   /**
    * Compatible with JDK 1.2.
@@ -90,11 +90,11 @@ public class TreeSet<T> extends AbstractSet<T>
   private static final long serialVersionUID = -2479143000061671589L;
 
   /**
-   * The SortedMap which backs this Set.
+   * The NavigableMap which backs this Set.
    */
   // Not final because of readObject. This will always be one of TreeMap or
   // TreeMap.SubMap, which both extend AbstractMap.
-  private transient SortedMap<T, String> map;
+  private transient NavigableMap<T, String> map;
 
   /**
    * Construct a new TreeSet whose backing TreeMap using the "natural"
@@ -163,7 +163,7 @@ public class TreeSet<T> extends AbstractSet<T>
    *
    * @param backingMap the submap
    */
-  private TreeSet(SortedMap<T,String> backingMap)
+  private TreeSet(NavigableMap<T,String> backingMap)
   {
     map = backingMap;
   }
@@ -220,7 +220,7 @@ public class TreeSet<T> extends AbstractSet<T>
       {
         copy = (TreeSet<T>) super.clone();
         // Map may be either TreeMap or TreeMap.SubMap, hence the ugly casts.
-        copy.map = (SortedMap<T, String>) ((AbstractMap<T, String>) map).clone();
+        copy.map = (NavigableMap<T, String>) ((AbstractMap<T, String>) map).clone();
       }
     catch (CloneNotSupportedException x)
       {
@@ -269,7 +269,9 @@ public class TreeSet<T> extends AbstractSet<T>
    * in one appear in the other. The subset will throw an
    * {@link IllegalArgumentException} for any attempt to access or add an
    * element beyond the specified cutoff. The returned set does not include
-   * the endpoint; if you want inclusion, pass the successor element.
+   * the endpoint; if you want inclusion, pass the successor element or
+   * call {@link #headSet(T,boolean)}.  This call is equivalent to
+   * <code>headSet(to, false)</code>.
    *
    * @param to the (exclusive) cutoff point
    * @return a view of the set less than the cutoff
@@ -280,7 +282,28 @@ public class TreeSet<T> extends AbstractSet<T>
    */
   public SortedSet<T> headSet(T to)
   {
-    return new TreeSet<T>(map.headMap(to));
+    return headSet(to, false);
+  }
+
+  /**
+   * Returns a view of this Set including all elements less than
+   * (or equal to, if <code>inclusive</code> is true) <code>to</code>.
+   * The returned set is backed by the original, so changes
+   * in one appear in the other. The subset will throw an
+   * {@link IllegalArgumentException} for any attempt to access or add an
+   * element beyond the specified cutoff. 
+   *
+   * @param to the cutoff point
+   * @param inclusive true if <code>to</code> should be included.
+   * @return a view of the set for the specified range.
+   * @throws ClassCastException if <code>to</code> is not compatible with
+   *         the comparator (or is not Comparable, for natural ordering)
+   * @throws NullPointerException if to is null, but the comparator does not
+   *         tolerate null elements
+   */
+  public NavigableSet<T> headSet(T to, boolean inclusive)
+  {
+    return new TreeSet<T>(map.headMap(to, inclusive));
   }
 
   /**
@@ -345,7 +368,9 @@ public class TreeSet<T> extends AbstractSet<T>
    * the other. The subset will throw an {@link IllegalArgumentException}
    * for any attempt to access or add an element beyond the specified cutoffs.
    * The returned set includes the low endpoint but not the high; if you want
-   * to reverse this behavior on either end, pass in the successor element.
+   * to reverse this behavior on either end, pass in the successor element
+   * or call {@link #subSet(T,boolean,T,boolean)}.  This is equivalent to
+   * calling <code>subSet(from,true,to,false)</code>.
    *
    * @param from the (inclusive) low cutoff point
    * @param to the (exclusive) high cutoff point
@@ -358,7 +383,33 @@ public class TreeSet<T> extends AbstractSet<T>
    */
   public SortedSet<T> subSet(T from, T to)
   {
-    return new TreeSet<T>(map.subMap(from, to));
+    return subSet(from, true, to, false);
+  }
+
+  /**
+   * Returns a view of this Set including all elements greater than (or equal to,
+   * if <code>fromInclusive</code> is true</code> <code>from</code> and less than
+   * (or equal to, if <code>toInclusive</code> is true) <code>to</code>.
+   * The returned set is backed by the original, so changes in one appear in
+   * the other. The subset will throw an {@link IllegalArgumentException}
+   * for any attempt to access or add an element beyond the specified cutoffs.
+   *
+   * @param from the low cutoff point
+   * @param fromInclusive true if <code>from</code> should be included.
+   * @param to the high cutoff point
+   * @param toInclusive true if <code>to</code> should be included.
+   * @return a view of the set for the specified range.
+   * @throws ClassCastException if either cutoff is not compatible with
+   *         the comparator (or is not Comparable, for natural ordering)
+   * @throws NullPointerException if from or to is null, but the comparator
+   *         does not tolerate null elements
+   * @throws IllegalArgumentException if from is greater than to
+   */
+  public NavigableSet<T> subSet(T from, boolean fromInclusive,
+				T to, boolean toInclusive)
+  {
+    return new TreeSet<T>(map.subMap(from, fromInclusive,
+				     to, toInclusive));
   }
 
   /**
@@ -367,7 +418,9 @@ public class TreeSet<T> extends AbstractSet<T>
    * changes in one appear in the other. The subset will throw an
    * {@link IllegalArgumentException} for any attempt to access or add an
    * element beyond the specified cutoff. The returned set includes the
-   * endpoint; if you want to exclude it, pass in the successor element.
+   * endpoint; if you want to exclude it, pass in the successor element
+   * or call {@link #tailSet(T,boolean)}.  This is equivalent to calling
+   * <code>tailSet(from, true)</code>.
    *
    * @param from the (inclusive) low cutoff point
    * @return a view of the set above the cutoff
@@ -378,7 +431,27 @@ public class TreeSet<T> extends AbstractSet<T>
    */
   public SortedSet<T> tailSet(T from)
   {
-    return new TreeSet<T>(map.tailMap(from));
+    return tailSet(from, true);
+  }
+
+  /**
+   * Returns a view of this Set including all elements greater (or equal to,
+   * if <code>inclusive</code> is true) <code>from</code>. The returned set
+   * is backed by the original, so changes in one appear in the other. The
+   * subset will throw an {@link IllegalArgumentException} for any attempt
+   * to access or add an element beyond the specified cutoff.
+   *
+   * @param from the low cutoff point.
+   * @param inclusive true if <code>from</code> should be included.
+   * @return a view of the set for the specified range.
+   * @throws ClassCastException if <code>from</code> is not compatible with
+   *         the comparator (or is not Comparable, for natural ordering)
+   * @throws NullPointerException if from is null, but the comparator
+   *         does not tolerate null elements
+   */
+  public NavigableSet<T> tailSet(T from, boolean inclusive)
+  {
+    return new TreeSet<T>(map.tailMap(from, inclusive));
   }
 
   /**
@@ -418,4 +491,151 @@ public class TreeSet<T> extends AbstractSet<T>
     map = new TreeMap<T, String>(comparator);
     ((TreeMap<T, String>) map).putFromObjStream(s, size, false);
   }
+
+  /**
+   * Returns the least or lowest element in the set greater than or
+   * equal to the given element, or <code>null</code> if there is
+   * no such element.
+   *
+   * @param e the element relative to the returned element.
+   * @return the least element greater than or equal
+   *         to the given element, or <code>null</code> if there is
+   *         no such element.
+   * @throws ClassCastException if the specified element can not
+   *                            be compared with those in the map.
+   * @throws NullPointerException if the element is <code>null</code>
+   *                              and this set either uses natural
+   *                              ordering or a comparator that does
+   *                              not permit null elements.
+   * @since 1.6
+   */
+  public T ceiling(T e)
+  {
+    return map.ceilingKey(e);
+  }
+
+  /**
+   * Returns an iterator over the elements of this set in descending
+   * order.  This is equivalent to calling
+   * <code>descendingSet().iterator()</code>.
+   *
+   * @return an iterator over the elements in descending order.
+   * @since 1.6
+   */
+  public Iterator<T> descendingIterator()
+  {
+    return descendingSet().iterator();
+  }
+
+  /**
+   * Returns a view of the set in reverse order.  The descending set
+   * is backed by the original set, so that changes affect both sets.
+   * Any changes occurring to either set while an iteration is taking
+   * place (with the exception of a {@link Iterator#remove()} operation)
+   * result in undefined behaviour from the iteration.  The ordering
+   * of the descending set is the same as for a set with a
+   * {@link Comparator} given by {@link Collections#reverseOrder()},
+   * and calling {@link #descendingSet()} on the descending set itself
+   * results in a view equivalent to the original set.
+   *
+   * @return a reverse order view of the set.
+   * @since 1.6
+   */
+  public NavigableSet<T> descendingSet()
+  {
+    return map.descendingKeySet();
+  }
+
+  /**
+   * Returns the greatest or highest element in the set less than or
+   * equal to the given element, or <code>null</code> if there is
+   * no such element.
+   *
+   * @param e the element relative to the returned element.
+   * @return the greatest element less than or equal
+   *         to the given element, or <code>null</code> if there is
+   *         no such element.
+   * @throws ClassCastException if the specified element can not
+   *                            be compared with those in the map.
+   * @throws NullPointerException if the element is <code>null</code>
+   *                              and this set either uses natural
+   *                              ordering or a comparator that does
+   *                              not permit null elements.
+   * @since 1.6
+   */
+  public T floor(T e)
+  {
+    return map.floorKey(e);
+  }
+
+  /**
+   * Returns the least or lowest element in the set strictly greater
+   * than the given element, or <code>null</code> if there is
+   * no such element.
+   *
+   * @param e the element relative to the returned element.
+   * @return the least element greater than 
+   *         the given element, or <code>null</code> if there is
+   *         no such element.
+   * @throws ClassCastException if the specified element can not
+   *                            be compared with those in the map.
+   * @throws NullPointerException if the element is <code>null</code>
+   *                              and this set either uses natural
+   *                              ordering or a comparator that does
+   *                              not permit null elements.
+   * @since 1.6
+   */
+  public T higher(T e)
+  {
+    return map.higherKey(e);
+  }
+
+  /**
+   * Returns the greatest or highest element in the set strictly less
+   * than the given element, or <code>null</code> if there is
+   * no such element.
+   *
+   * @param e the element relative to the returned element.
+   * @return the greatest element less than 
+   *         the given element, or <code>null</code> if there is
+   *         no such element.
+   * @throws ClassCastException if the specified element can not
+   *                            be compared with those in the map.
+   * @throws NullPointerException if the element is <code>null</code>
+   *                              and this set either uses natural
+   *                              ordering or a comparator that does
+   *                              not permit null elements.
+   * @since 1.6
+   */
+  public T lower(T e)
+  {
+    return map.lowerKey(e);
+  }
+
+  /**
+   * Removes and returns the least or lowest element in the set,
+   * or <code>null</code> if the map is empty.
+   *
+   * @return the removed first element, or <code>null</code> if the
+   *         map is empty.
+   * @since 1.6
+   */
+  public T pollFirst()
+  {
+    return map.pollFirstEntry().getKey();
+  }
+
+  /**
+   * Removes and returns the greatest or highest element in the set,
+   * or <code>null</code> if the map is empty.
+   *
+   * @return the removed last element, or <code>null</code> if the
+   *         map is empty.
+   * @since 1.6
+   */
+  public T pollLast()
+  {
+    return map.pollLastEntry().getKey();
+  }
+
 }

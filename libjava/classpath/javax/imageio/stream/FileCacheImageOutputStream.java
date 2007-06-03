@@ -38,11 +38,10 @@ exception statement from your version. */
 
 package javax.imageio.stream;
 
-import gnu.classpath.NotImplementedException;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 
 /**
  * @author Michael Koch (konqueror@gmx.de)
@@ -50,32 +49,30 @@ import java.io.OutputStream;
 public class FileCacheImageOutputStream extends ImageOutputStreamImpl
 {
   private OutputStream stream;
-  private File cacheDir;
-  
-  public FileCacheImageOutputStream(OutputStream stream, File cacheDir)
+  private File cacheFile;
+  private RandomAccessFile cache;
+  private long maxPos;
+
+  public FileCacheImageOutputStream(OutputStream s, File cacheDir)
     throws IOException
   {
-    super();
-    this.stream = stream;
-    // FIXME: We do not support caching yet.
-    this.cacheDir = cacheDir;
+    stream = s;
+    cacheFile = File.createTempFile("imageio", ".tmp", cacheDir);
+    cache = new RandomAccessFile(cacheFile, "rw");
+    maxPos = 0;
   }
 
   public void close()
     throws IOException
   {
-    if (stream != null)
-      {
-	stream.close();
-	stream = null;
-      }
-  }
-
-  private void checkStreamClosed()
-    throws IOException
-  {
-    if (stream == null)
-      throw new IOException("stream closed");
+    maxPos = cache.length();
+    seek(maxPos);
+    flushBefore(maxPos);
+    super.close();
+    cache.close();
+    cacheFile.delete();
+    stream.flush();
+    stream = null;
   }
 
   public boolean isCached()
@@ -94,32 +91,88 @@ public class FileCacheImageOutputStream extends ImageOutputStreamImpl
   }
   
   public int read()
-    throws IOException, NotImplementedException
+    throws IOException
   {
-    // FIXME: Implement me.
-    throw new Error("not implemented");
+    bitOffset = 0;
+    int val = cache.read();
+    if (val != -1)
+      streamPos++;
+    return val;
   }
 
   public int read(byte[] data, int offset, int len)
-    throws IOException, NotImplementedException
+    throws IOException
   {
-    // FIXME: Implement me.
-    throw new Error("not implemented");
+    bitOffset = 0;
+    int num = cache.read(data, offset, len);
+    if (num != -1)
+      streamPos += num;
+    return num;
   }
 
   public void write(byte[] data, int offset, int len)
     throws IOException
   {
-    checkStreamClosed();
-    // FIXME: Flush pending bits.
-    stream.write(data, offset, len);
+    flushBits();
+    cache.write(data, offset, len);
+    streamPos += len;
+    maxPos = Math.max(streamPos, maxPos);
   }
 
   public void write(int value)
     throws IOException
   {
-    checkStreamClosed();
-    // FIXME: Flush pending bits.
-    stream.write(value);
+    flushBits();
+    cache.write(value);
+    streamPos++;
+    maxPos = Math.max(streamPos, maxPos);
+  }
+
+  public long length()
+  {
+    long l;
+    try
+      {
+        l = cache.length();
+      }
+    catch (IOException ex)
+      {
+        l = -1;
+      }
+    return l;
+  }
+
+  public void seek(long pos)
+    throws IOException
+  {
+    checkClosed();
+    if (pos < flushedPos)
+      throw new IndexOutOfBoundsException();
+    cache.seek(pos);
+    streamPos = cache.getFilePointer();
+    maxPos = Math.max(streamPos, maxPos);
+    bitOffset = 0;
+  }
+
+  public void flushBefore(long pos)
+    throws IOException
+  {
+    long oldPos = flushedPos;
+    super.flushBefore(pos);
+    long flushed = flushedPos - oldPos;
+    if (flushed > 0)
+      {
+        int len = 512;
+        byte[] buf = new byte[len];
+        cache.seek(oldPos);
+        while (flushed > 0)
+          {
+            int l = (int) Math.min(flushed, len);
+            cache.readFully(buf, 0, l);
+            stream.write(buf, 0, l);
+            flushed -= l;
+          }
+        stream.flush();
+      }
   }
 }

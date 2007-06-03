@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package javax.imageio.stream;
 
-import gnu.classpath.NotImplementedException;
-
 import java.io.IOException;
 import java.io.UTFDataFormatException;
 import java.nio.ByteOrder;
@@ -56,10 +54,25 @@ public abstract class ImageOutputStreamImpl extends ImageInputStreamImpl
   }
 
   protected final void flushBits()
-    throws IOException, NotImplementedException
+    throws IOException
   {
-    // FIXME: Implement me.
-    throw new Error("not implemented");
+    checkClosed();
+    if (bitOffset != 0)
+      {
+        int offset = bitOffset;
+        int partial = read();
+        if (partial < 0)
+          {
+            partial = 0;
+            bitOffset = 0;
+          }
+        else
+          {
+            seek(getStreamPosition() - 1);
+            partial &= -1 << (8 - offset);
+          }
+        write(partial);
+      }
   }
 
   public void write(byte[] data)
@@ -75,17 +88,82 @@ public abstract class ImageOutputStreamImpl extends ImageInputStreamImpl
     throws IOException;
 
   public void writeBit(int bit)
-    throws IOException, NotImplementedException
+    throws IOException
   {
-    // FIXME: Implement me.
-    throw new Error("not implemented");
+    writeBits(1L & bit, 1);
   }
 
   public void writeBits(long bits, int numBits)
-    throws IOException, NotImplementedException
+    throws IOException
   {
-    // FIXME: Implement me.
-    throw new Error("not implemented");
+    checkClosed();
+    // Append chunk of bits to any preexisting bits, if any.
+    if (getStreamPosition() > 0 || bitOffset > 0)
+      {
+        int offs = bitOffset;
+        int partial = read();
+        if (partial != -1)
+          seek(getStreamPosition() - 1);
+        else
+          partial = 0;
+        if (numBits + offs < 8)
+          {
+            // Append complete bits to partial byte.
+            int shift = 8 - (offs + numBits);
+            int mask = -1 >>> (32 - numBits);
+            partial &= ~(mask << shift);
+            partial |= (bits & mask) << shift;
+            write(partial);
+            seek(getStreamPosition() - 1);
+            bitOffset = offs + numBits;
+            numBits = 0;
+          }
+        else
+          {
+            // Append bits and decrease numBits accordingly.
+            int num = 8 - offs;
+            int mask = -1 >>> (32 - num);
+            partial &= ~mask;
+            partial |= (bits >> (numBits - num)) & mask;
+            write(partial);
+            numBits -= num;
+          }
+      }
+
+    // Write out whole chunks, if any.
+    if (numBits > 7)
+      {
+        int remaining = numBits % 8;
+        for (int numBytes = numBits / 8; numBytes > 0; numBytes--)
+          {
+            int shift = (numBytes - 1) * 8 + remaining;
+            int value = (int) ((shift == 0) ? bits & 0xff
+                                            : (bits >> shift) & 0xff);
+            write(value);
+          }
+        numBits = remaining;
+      }
+
+    // Write remaing partial bytes.
+    if (numBits != 0)
+      {
+        int partial = read();
+        if (partial == -1)
+          {
+            seek(getStreamPosition() - 1);
+          }
+        else
+          {
+            partial = 0;
+          }
+        int shift = 8 - numBits;
+        int mask = -1 >>> (32 - numBits);
+        partial &= ~(mask << shift);
+        partial |= (bits & mask) << shift;
+        write(partial);
+        seek(getStreamPosition() - 1);
+        bitOffset = numBits;
+      }
   }
 
   public void writeBoolean(boolean value)

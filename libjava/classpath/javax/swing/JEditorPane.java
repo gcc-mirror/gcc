@@ -712,7 +712,7 @@ public class JEditorPane extends JTextComponent
   public JEditorPane(URL url) throws IOException
   {
     init();
-    setEditorKit(createEditorKitForContentType("text/html"));;
+    setEditorKit(createEditorKitForContentType("text/html"));
     setPage(url);
   }
   

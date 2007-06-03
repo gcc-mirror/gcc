@@ -1,5 +1,5 @@
 /* SFHelper -- A .SF file helper
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -90,9 +90,6 @@ import java.security.cert.X509Certificate;
  */
 public class SFHelper
 {
-  // Constants and fields
-  // --------------------------------------------------------------------------
-
   private static final Logger log = Logger.getLogger(SFHelper.class.getName());
   private static final int READY = 0;
   private static final int STARTED = 1;
@@ -106,12 +103,9 @@ public class SFHelper
   private JarFile jar;
   private Manifest manifest;
   private Attributes sfMainAttributes;
-  private Map sfEntries;
+  private Map<String, Attributes> sfEntries;
   private byte[] sfBytes;
   private HashUtils util;
-
-  // Constructor(s)
-  // --------------------------------------------------------------------------
 
   /**
    * @param jar the JAR archive the .SF file belongs to.
@@ -123,12 +117,6 @@ public class SFHelper
     this.jar = jar;
     this.state = READY;
   }
-
-  // Class methods
-  // --------------------------------------------------------------------------
-
-  // Instance methods
-  // --------------------------------------------------------------------------
 
   /**
    * Writes the contents of the <code>.SF</code> file to the designated JAR
@@ -250,8 +238,8 @@ public class SFHelper
     if (Configuration.DEBUG)
       log.fine("\n" + Util.dumpString(signedSFBytes, "+++ signedSFBytes ")); //$NON-NLS-1$ //$NON-NLS-2$
 
-    Set digestAlgorithms = new HashSet();
-    List digestAlgorithm = new ArrayList(2);
+    Set<DERValue> digestAlgorithms = new HashSet<DERValue>();
+    List<DERValue> digestAlgorithm = new ArrayList<DERValue>(2);
     DERValue derDigestAlgorithmOID = new DERValue(DER.OBJECT_IDENTIFIER,
                                                   hashAlgorithmIdentifierSHA1);
     DERValue derDigestAlgorithmParams = new DERValue(DER.NULL, null);
@@ -266,7 +254,7 @@ public class SFHelper
 
     X509CRL[] crls = null;
 
-    Set signerInfos = new HashSet();
+    Set<SignerInfo> signerInfos = new HashSet<SignerInfo>();
     X509Certificate cert = (X509Certificate) certificates[0];
     try
       {
@@ -322,8 +310,6 @@ public class SFHelper
     return this.manifest;
   }
 
-  // own methods --------------------------------------------------------------
-
   void startSigning() throws IOException
   {
     if (this.state != READY)
@@ -333,7 +319,7 @@ public class SFHelper
     this.manifest = oldManifest == null ? new Manifest()
                                         : new Manifest(oldManifest);
     this.sfMainAttributes = new Attributes();
-    this.sfEntries = new HashMap();
+    this.sfEntries = new HashMap<String, Attributes>();
     util = new HashUtils();
 
     this.state = STARTED;
@@ -368,7 +354,7 @@ public class SFHelper
     // hash the newly added 2-header block and add it as an attribute to .SF
 
     String sfHash = util.hashManifestEntry(name, hash);
-    Attributes sfAttributes = (Attributes) sfEntries.get(name);
+    Attributes sfAttributes = sfEntries.get(name);
     if (sfAttributes == null)
       {
         sfAttributes = new Attributes();

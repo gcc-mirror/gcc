@@ -29,6 +29,7 @@ extern "Java"
           {
             namespace truetype
             {
+                class Point;
                 class Zone;
             }
           }
@@ -45,13 +46,42 @@ public: // actually package-private
   GlyphHints();
   virtual void rescale(::gnu::java::awt::font::autofit::ScriptMetrics *);
   virtual void reload(::gnu::java::awt::font::opentype::truetype::Zone *);
-  virtual void computeSegments(jint);
-  virtual void linkSegments(jint);
+private:
+  void setWeakPoint(::gnu::java::awt::font::opentype::truetype::Point *);
+  void computeInflectionPoints();
+public: // actually package-private
+  virtual jboolean doHorizontal();
+  virtual jboolean doVertical();
+  virtual void alignWeakPoints(jint);
+private:
+  void iupShift(jint, jint, jint);
+  void iupInterp(jint, jint, jint, jint);
+public: // actually package-private
+  virtual void alignStrongPoints(jint);
+private:
+  void storePoint(::gnu::java::awt::font::opentype::truetype::Point *, jint, jint, jshort);
+public: // actually package-private
+  virtual void alignEdgePoints(jint);
+private:
+  jint getPointIndex(::gnu::java::awt::font::opentype::truetype::Point *);
+public:
+  virtual jboolean doAlignEdgePoints();
+  virtual jboolean doAlignStrongPoints();
+  virtual jboolean doAlignWeakPoints();
+public: // actually package-private
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) xScale;
   jint xDelta;
   jint yScale;
   jint yDelta;
   JArray< ::gnu::java::awt::font::autofit::AxisHints * > * axis;
+  JArray< ::gnu::java::awt::font::opentype::truetype::Point * > * points;
+  jint numPoints;
+  jint maxPoints;
+  JArray< ::gnu::java::awt::font::opentype::truetype::Point * > * contours;
+  jint numContours;
+  jint maxContours;
+  ::gnu::java::awt::font::autofit::ScriptMetrics * metrics;
+  jint flags;
 public:
   static ::java::lang::Class class$;
 };

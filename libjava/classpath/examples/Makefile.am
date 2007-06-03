@@ -8,16 +8,16 @@ GLIBJ_CLASSPATH='$(top_builddir)/lib':'$(top_builddir)/lib/glibj.zip':'$(top_bui
 #if FOUND_JIKES
 #JCOMPILER = $(JIKES) -bootclasspath '' -extdirs '' -sourcepath '' --classpath $(top_builddir)/lib:.
 #else
-if FOUND_GCJX
-JCOMPILER = $(GCJX) -encoding UTF-8 -bootclasspath '' -sourcepath '' -classpath $(GLIBJ_CLASSPATH):.
-else
 if FOUND_ECJ
-JCOMPILER = $(ECJ) -1.5 -encoding UTF-8 -bootclasspath $(GLIBJ_CLASSPATH) -classpath .
+JCOMPILER = $(ECJ) -1.5 -encoding UTF-8 -warn:-deprecation,serial,typeHiding,unchecked,unused,varargsCast -bootclasspath $(GLIBJ_CLASSPATH) -classpath .
+else
+if FOUND_JAVAC
+JCOMPILER = $(JAVAC) -encoding UTF-8 -bootclasspath $(GLIBJ_CLASSPATH) -classpath .
 else
 error dunno how to setup the JCOMPILER and compile
+#endif
+#endif
 endif
-#endif
-#endif
 endif
 
 # All our example java source files
@@ -35,6 +35,7 @@ BUILT_SOURCES = $(EXAMPLE_ZIP)
 
 # the png icons we use in some of the examples.
 EXAMPLE_ICONS = $(srcdir)/gnu/classpath/examples/icons/*.png
+EXAMPLE_ICONS += $(srcdir)/gnu/classpath/examples/icons/*.gif
 
 # the html pages we use in the swing demo example.
 EXAMPLE_HTML = $(srcdir)/gnu/classpath/examples/swing/*.html

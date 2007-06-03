@@ -21,6 +21,7 @@ extern "Java"
         {
           namespace opentype
           {
+              class Hinter;
             namespace truetype
             {
                 class GlyphLoader;
@@ -56,12 +57,12 @@ class gnu::java::awt::font::opentype::truetype::GlyphLoader : public ::java::lan
 public: // actually package-private
   GlyphLoader(::gnu::java::awt::font::opentype::truetype::GlyphLocator *, ::gnu::java::awt::font::opentype::truetype::VirtualMachine *, jint, jint, jint, ::gnu::java::awt::font::opentype::truetype::GlyphMeasurer *);
 public:
-  void loadGlyph(jint, jdouble, ::java::awt::geom::AffineTransform *, jboolean, ::gnu::java::awt::font::opentype::truetype::Zone *);
-  void loadGlyph(jint, ::java::awt::geom::AffineTransform *, ::gnu::java::awt::font::opentype::truetype::Zone *);
+  void loadGlyph(jint, jdouble, ::java::awt::geom::AffineTransform *, jboolean, ::gnu::java::awt::font::opentype::truetype::Zone *, ::gnu::java::awt::font::opentype::Hinter *);
+  void loadGlyph(jint, ::java::awt::geom::AffineTransform *, ::gnu::java::awt::font::opentype::truetype::Zone *, ::gnu::java::awt::font::opentype::Hinter *);
 private:
-  void loadSubGlyph(jint, jdouble, ::java::awt::geom::AffineTransform *, jboolean, ::gnu::java::awt::font::opentype::truetype::Zone *, jint, jint);
-  void loadSimpleGlyph(jint, jdouble, ::java::awt::geom::AffineTransform *, jboolean, jint, ::java::nio::ByteBuffer *, ::gnu::java::awt::font::opentype::truetype::Zone *, jint, jint);
-  void loadCompoundGlyph(jint, jdouble, ::java::awt::geom::AffineTransform *, jboolean, ::java::nio::ByteBuffer *, ::gnu::java::awt::font::opentype::truetype::Zone *, jint, jint);
+  void loadSubGlyph(jint, jdouble, ::java::awt::geom::AffineTransform *, jboolean, ::gnu::java::awt::font::opentype::truetype::Zone *, jint, jint, ::gnu::java::awt::font::opentype::Hinter *);
+  void loadSimpleGlyph(jint, jdouble, ::java::awt::geom::AffineTransform *, jboolean, jint, ::java::nio::ByteBuffer *, ::gnu::java::awt::font::opentype::truetype::Zone *, jint, jint, ::gnu::java::awt::font::opentype::Hinter *);
+  void loadCompoundGlyph(jint, jdouble, ::java::awt::geom::AffineTransform *, jboolean, ::java::nio::ByteBuffer *, ::gnu::java::awt::font::opentype::truetype::Zone *, jint, jint, ::gnu::java::awt::font::opentype::Hinter *);
   jdouble getDouble214(::java::nio::ByteBuffer *);
   void loadFlags(jint, ::java::nio::ByteBuffer *);
   void loadCoordinates(jint, ::java::nio::ByteBuffer *, ::gnu::java::awt::font::opentype::truetype::Zone *);

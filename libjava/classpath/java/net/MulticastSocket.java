@@ -1,5 +1,5 @@
 /* MulticastSocket.java -- Class for using multicast sockets
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2007
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -337,7 +337,7 @@ public class MulticastSocket extends DatagramSocket
 
   /**
    * Sets the "Time to Live" value for a socket.  The value must be between
-   * 1 and 255.
+   * 0 and 255, inclusive.
    *
    * @param ttl The new TTL value
    *
@@ -350,7 +350,7 @@ public class MulticastSocket extends DatagramSocket
     if (isClosed())
       throw new SocketException("socket is closed");
 
-    if (ttl <= 0 || ttl > 255)
+    if (ttl < 0 || ttl > 255)
       throw new IllegalArgumentException("Invalid ttl: " + ttl);
 
     getImpl().setTimeToLive(ttl);

@@ -103,9 +103,7 @@ public: // actually protected
   virtual ::java::awt::Rectangle * computePopupBounds(jint, jint, jint, jint);
   virtual void updateListBoxSelectionForEvent(::java::awt::event::MouseEvent *, jboolean);
 private:
-  void uninstallListeners();
   void uninstallListListeners();
-  void uninstallComboBoxListeners();
 public: // actually package-private
   virtual void syncListSelection();
 public: // actually protected
