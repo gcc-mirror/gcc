@@ -1,3 +1,8 @@
+2007-05-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32124
+	* gfortran.dg/allocate_stat_1.f90: Remove.
+
 2007-06-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/sse4_2-check.h: New.
@@ -155,7 +160,7 @@
 
 2007-05-28  Razya Ladelsky  <razya@il.ibm.com>
 
-        * gcc.dg/matrix: New directory.
+	* gcc.dg/matrix: New directory.
 
 2007-05-28  Tobias Burnus  <burnus@net-b.de>
 
