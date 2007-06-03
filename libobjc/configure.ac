@@ -134,7 +134,7 @@ case "${host}" in
   *-darwin*)
     # Darwin is the only target so far that needs a different include directory.
     includedirname=include-gnu-runtime
-    libsubfix=-gnu
+    libsuffix=-gnu
     ;;
 esac
 AC_SUBST(includedirname)
