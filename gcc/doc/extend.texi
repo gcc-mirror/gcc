@@ -2043,12 +2043,13 @@ This attribute is ignored for R8C target.
 
 @item interrupt
 @cindex interrupt handler functions
-Use this attribute on the ARM, AVR, C4x, CRX, M32C, M32R/D, MS1, and Xstormy16
-ports to indicate that the specified function is an interrupt handler.
-The compiler will generate function entry and exit sequences suitable
-for use in an interrupt handler when this attribute is present.
+Use this attribute on the ARM, AVR, C4x, CRX, M32C, M32R/D, m68k, MS1,
+and Xstormy16 ports to indicate that the specified function is an
+interrupt handler.  The compiler will generate function entry and exit
+sequences suitable for use in an interrupt handler when this attribute
+is present.
 
-Note, interrupt handlers for the Blackfin, m68k, H8/300, H8/300H, H8S, and
+Note, interrupt handlers for the Blackfin, H8/300, H8/300H, H8S, and
 SH processors can be specified via the @code{interrupt_handler} attribute.
 
 Note, on the AVR, interrupts will be enabled inside the function.
