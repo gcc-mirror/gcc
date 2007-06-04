@@ -1,3 +1,9 @@
+2007-05-31  Jan Hubicka  <jh@suse.cz>
+
+	* tree-predcom.c (replace_ref_with, initialize_root_vars_lm,
+	reassociate_to_the_same_stmt): Call build_gimple_modify_stmt
+	instead of _stat version.
+
 2007-06-03  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/32194
