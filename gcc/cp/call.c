@@ -4358,22 +4358,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       {
 	struct z_candidate *cand = convs->cand;
 	tree convfn = cand->fn;
-	tree args;
 
-	if (DECL_CONSTRUCTOR_P (convfn))
-	  {
-	    tree t = build_int_cst (build_pointer_type (DECL_CONTEXT (convfn)),
-				    0);
-
-	    args = build_tree_list (NULL_TREE, expr);
-	    /* We should never try to call the abstract or base constructor
-	       from here.  */
-	    gcc_assert (!DECL_HAS_IN_CHARGE_PARM_P (convfn)
-			&& !DECL_HAS_VTT_PARM_P (convfn));
-	    args = tree_cons (NULL_TREE, t, args);
-	  }
-	else
-	  args = build_this (expr);
 	expr = build_over_call (cand, LOOKUP_NORMAL);
 
 	/* If this is a constructor or a function returning an aggr type,
