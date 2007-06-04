@@ -1,3 +1,7 @@
+2007-06-04  Tom Tromey  <tromey@redhat.com>
+
+	* c-common.c (c_common_get_alias_set): Fix indentation.
+
 2007-06-04  Ian Lance Taylor  <iant@google.com>
 
 	* tree-vrp.c (adjust_range_with_scev): When loop is not expected

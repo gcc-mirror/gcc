@@ -3165,16 +3165,16 @@ c_common_get_alias_set (tree t)
       tree t2;
       /* Find bottom type under any nested POINTERs.  */
       for (t2 = TREE_TYPE (t);
-     TREE_CODE (t2) == POINTER_TYPE;
-     t2 = TREE_TYPE (t2))
-  ;
+	   TREE_CODE (t2) == POINTER_TYPE;
+	   t2 = TREE_TYPE (t2))
+	;
       if (TREE_CODE (t2) != RECORD_TYPE
-    && TREE_CODE (t2) != ENUMERAL_TYPE
-    && TREE_CODE (t2) != QUAL_UNION_TYPE
-    && TREE_CODE (t2) != UNION_TYPE)
-  return -1;
+	  && TREE_CODE (t2) != ENUMERAL_TYPE
+	  && TREE_CODE (t2) != QUAL_UNION_TYPE
+	  && TREE_CODE (t2) != UNION_TYPE)
+	return -1;
       if (TYPE_SIZE (t2) == 0)
-  return -1;
+	return -1;
     }
   /* These are the only cases that need special handling.  */
   if (TREE_CODE (t) != RECORD_TYPE
