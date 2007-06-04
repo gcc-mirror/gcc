@@ -1,3 +1,9 @@
+2007-06-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR c/32191
+	* gcc/c-common.c (c_define_builtins): Call targetm.init_builtins ()
+	before build_common_builtin_nodes ().
+
 2007-06-04  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/31733
