@@ -1,3 +1,7 @@
+2007-06-04  Kazu Hirata  <kazu@codesourcery.com>
+
+	* stor-layout.c (layout_type): Remove duplicate code.
+
 2007-06-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR c/32191
