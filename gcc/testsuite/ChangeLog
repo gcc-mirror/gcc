@@ -1,3 +1,8 @@
+2007-06-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR c/32191
+	* gcc.dg/pr32191.c: New test.
+
 2007-05-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32124
