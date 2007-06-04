@@ -1,3 +1,8 @@
+2007-06-04  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/31733
+	* cfgrtl.c (rtl_verify_flow_info): Skip notes when looking for barrier.
+
 2007-05-31  Jan Hubicka  <jh@suse.cz>
 
 	* tree-predcom.c (replace_ref_with, initialize_root_vars_lm,
