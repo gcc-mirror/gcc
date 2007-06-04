@@ -1232,7 +1232,7 @@ replace_ref_with (tree stmt, tree new, bool set, bool in_lhs)
       remove_phi_node (stmt, NULL_TREE, false);
 
       /* Turn the phi node into GIMPLE_MODIFY_STMT.  */
-      new_stmt = build_gimple_modify_stmt_stat (val, new);
+      new_stmt = build_gimple_modify_stmt (val, new);
       SSA_NAME_DEF_STMT (val) = new_stmt;
       bsi_insert_before (&bsi, new_stmt, BSI_NEW_STMT);
       return;
@@ -1278,7 +1278,7 @@ replace_ref_with (tree stmt, tree new, bool set, bool in_lhs)
 	 NEW = VAL  */
     }
 
-  new_stmt = build_gimple_modify_stmt_stat (new, unshare_expr (val));
+  new_stmt = build_gimple_modify_stmt (new, unshare_expr (val));
   bsi_insert_after (&bsi, new_stmt, BSI_NEW_STMT);
   SSA_NAME_DEF_STMT (new) = new_stmt;
 }
@@ -1551,7 +1551,7 @@ initialize_root_vars_lm (struct loop *loop, dref root, bool written,
     }
   else
     {
-      init = build_gimple_modify_stmt_stat (var, init);
+      init = build_gimple_modify_stmt (var, init);
       SSA_NAME_DEF_STMT (var) = init;
       mark_virtual_ops_for_renaming (init);
       bsi_insert_on_edge_immediate (entry, init);
@@ -2192,14 +2192,14 @@ reassociate_to_the_same_stmt (tree name1, tree name2)
   var = create_tmp_var (type, "predreastmp");
   add_referenced_var (var);
   new_name = make_ssa_name (var, NULL_TREE);
-  new_stmt = build_gimple_modify_stmt_stat (new_name,
+  new_stmt = build_gimple_modify_stmt (new_name,
 			    fold_build2 (code, type, name1, name2));
   SSA_NAME_DEF_STMT (new_name) = new_stmt;
 
   var = create_tmp_var (type, "predreastmp");
   add_referenced_var (var);
   tmp_name = make_ssa_name (var, NULL_TREE);
-  tmp_stmt = build_gimple_modify_stmt_stat (tmp_name,
+  tmp_stmt = build_gimple_modify_stmt (tmp_name,
 					    GIMPLE_STMT_OPERAND (s1, 1));
   SSA_NAME_DEF_STMT (tmp_name) = tmp_stmt;
 
