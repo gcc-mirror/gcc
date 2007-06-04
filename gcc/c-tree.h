@@ -1,6 +1,6 @@
 /* Definitions for C parsing and type checking.
    Copyright (C) 1987, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -425,6 +425,17 @@ struct c_label_context_vm
   struct c_label_context_vm *next;
 };
 
+/* Used when parsing an enum.  Initialized by start_enum.  */
+struct c_enum_contents
+{
+  /* While defining an enum type, this is 1 plus the last enumerator
+     constant value.  */
+  tree enum_next_value;
+
+  /* Nonzero means that there was overflow computing enum_next_value.  */
+  int enum_overflow;
+};
+
 
 /* in c-parser.c */
 extern void c_parse_init (void);
@@ -448,7 +459,7 @@ extern void c_print_identifier (FILE *, tree, int);
 extern int quals_from_declspecs (const struct c_declspecs *);
 extern struct c_declarator *build_array_declarator (tree, struct c_declspecs *,
 						    bool, bool);
-extern tree build_enumerator (tree, tree);
+extern tree build_enumerator (struct c_enum_contents *, tree, tree);
 extern tree check_for_loop_decls (void);
 extern void mark_forward_parm_decls (void);
 extern void declare_parm_level (void);
@@ -476,7 +487,7 @@ extern struct c_declarator *set_array_declarator_inner (struct c_declarator *,
 extern tree c_builtin_function (tree);
 extern void shadow_tag (const struct c_declspecs *);
 extern void shadow_tag_warned (const struct c_declspecs *, int);
-extern tree start_enum (tree);
+extern tree start_enum (struct c_enum_contents *, tree);
 extern int  start_function (struct c_declspecs *, struct c_declarator *, tree);
 extern tree start_decl (struct c_declarator *, struct c_declspecs *, bool,
 			tree);

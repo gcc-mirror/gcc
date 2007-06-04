@@ -1,5 +1,15 @@
 2007-06-04  Tom Tromey  <tromey@redhat.com>
 
+	* c-tree.h (start_enum): Update.
+	(build_enumerator): Likewise.
+	* c-decl.c (enum_next_value): Removed.
+	(enum_overflow): Likewise.
+	(start_enum): Add c_enum_contents argument.  Don't use globals.
+	(build_enumerator): Likewise.
+	* c-tree.h (struct c_enum_contents): New struct.
+
+2007-06-04  Tom Tromey  <tromey@redhat.com>
+
 	* c-common.c (c_common_get_alias_set): Fix indentation.
 
 2007-06-04  Ian Lance Taylor  <iant@google.com>
