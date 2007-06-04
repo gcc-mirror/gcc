@@ -81,18 +81,6 @@ location_t pending_invalid_xref_location;
 /* True means we've initialized exception handling.  */
 bool c_eh_initialized_p;
 
-/* While defining an enum type, this is 1 plus the last enumerator
-   constant value.  Note that will do not have to save this or `enum_overflow'
-   around nested function definition since such a definition could only
-   occur in an enum value expression and we don't use these variables in
-   that case.  */
-
-static tree enum_next_value;
-
-/* Nonzero means that there was overflow computing enum_next_value.  */
-
-static int enum_overflow;
-
 /* The file and line that the prototype came from if this is an
    old-style definition; used for diagnostics in
    store_parm_decls_oldstyle.  */
@@ -5801,7 +5789,7 @@ layout_array_type (tree t)
    may be used to declare the individual values as they are read.  */
 
 tree
-start_enum (tree name)
+start_enum (struct c_enum_contents *the_enum, tree name)
 {
   tree enumtype = 0;
 
@@ -5833,8 +5821,8 @@ start_enum (tree name)
       TYPE_VALUES (enumtype) = 0;
     }
 
-  enum_next_value = integer_zero_node;
-  enum_overflow = 0;
+  the_enum->enum_next_value = integer_zero_node;
+  the_enum->enum_overflow = 0;
 
   if (flag_short_enums)
     TYPE_PACKED (enumtype) = 1;
@@ -5987,7 +5975,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
    Assignment of sequential values by default is handled here.  */
 
 tree
-build_enumerator (tree name, tree value)
+build_enumerator (struct c_enum_contents *the_enum, tree name, tree value)
 {
   tree decl, type;
 
@@ -6017,8 +6005,8 @@ build_enumerator (tree name, tree value)
      in the default.  */
   if (value == 0)
     {
-      value = enum_next_value;
-      if (enum_overflow)
+      value = the_enum->enum_next_value;
+      if (the_enum->enum_overflow)
 	error ("overflow in enumeration values");
     }
 
@@ -6031,8 +6019,9 @@ build_enumerator (tree name, tree value)
     }
 
   /* Set basis for default for next value.  */
-  enum_next_value = build_binary_op (PLUS_EXPR, value, integer_one_node, 0);
-  enum_overflow = tree_int_cst_lt (enum_next_value, value);
+  the_enum->enum_next_value = build_binary_op (PLUS_EXPR, value,
+					       integer_one_node, 0);
+  the_enum->enum_overflow = tree_int_cst_lt (the_enum->enum_next_value, value);
 
   /* Now create a declaration for the enum value name.  */
 

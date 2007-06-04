@@ -1,6 +1,6 @@
 /* Parser for C and Objective-C.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
 
    Parser actions based on the old Bison parser; structure somewhat
    influenced by and fragments based on the C++ parser.
@@ -1698,7 +1698,8 @@ c_parser_enum_specifier (c_parser *parser)
   if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
     {
       /* Parse an enum definition.  */
-      tree type = start_enum (ident);
+      struct c_enum_contents the_enum;
+      tree type = start_enum (&the_enum, ident);
       tree postfix_attrs;
       /* We chain the enumerators in reverse order, then put them in
 	 forward order at the end.  */
@@ -1726,7 +1727,7 @@ c_parser_enum_specifier (c_parser *parser)
 	    }
 	  else
 	    enum_value = NULL_TREE;
-	  enum_decl = build_enumerator (enum_id, enum_value);
+	  enum_decl = build_enumerator (&the_enum, enum_id, enum_value);
 	  TREE_CHAIN (enum_decl) = values;
 	  values = enum_decl;
 	  seen_comma = false;
