@@ -4819,7 +4819,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
 {
   tree ptr;
   tree desc;
-  tree tmp;
+  tree tmp = NULL_TREE;
   tree stmt;
   tree parent = DECL_CONTEXT (current_function_decl);
   bool full_array_var, this_array_result;
