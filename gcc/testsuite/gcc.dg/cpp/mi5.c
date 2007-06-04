@@ -7,7 +7,7 @@
 
 /* { dg-do preprocess }
    { dg-options "-H -C" }
-   { dg-error "mi1c\.h" "redundant include check with -C" { target *-*-* } 0 } */
+   { dg-message "mi1c\.h" "redundant include check with -C" { target *-*-* } 0 } */
 
 #include "mi1c.h"
 #include "mi1c.h"

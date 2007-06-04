@@ -11,7 +11,7 @@
 
 /* { dg-do preprocess }
    { dg-options "-H" }
-   { dg-error "mi7a\.h\n\[^\n\]*mi7a\.h\n\[^\n\]*mi7b\.h\n\[^\n\]*mi7b\.h" "redundant include check" { target *-*-* } 0 } */
+   { dg-message "mi7a\.h\n\[^\n\]*mi7a\.h\n\[^\n\]*mi7b\.h\n\[^\n\]*mi7b\.h" "redundant include check" { target *-*-* } 0 } */
 
 #include "mi7a.h"
 #include "mi7a.h"
