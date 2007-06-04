@@ -1,3 +1,10 @@
+2007-06-04  Ian Lance Taylor  <iant@google.com>
+
+	* tree-vrp.c (adjust_range_with_scev): When loop is not expected
+	to overflow, reduce overflow infinity to regular infinity.
+	(vrp_var_may_overflow): New static function.
+	(vrp_visit_phi_node): Check vrp_var_may_overflow.
+
 2007-05-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:

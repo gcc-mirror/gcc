@@ -2558,6 +2558,13 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
 	      if (compare_values (min, max) == 1)
 		return;
 	    }
+
+	  /* According to the loop information, the variable does not
+	     overflow.  If we think it does, probably because of an
+	     overflow due to arithmetic on a different INF value,
+	     reset now.  */
+	  if (is_negative_overflow_infinity (min))
+	    min = tmin;
 	}
       else
 	{
@@ -2570,10 +2577,59 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
 	      if (compare_values (min, max) == 1)
 		return;
 	    }
+
+	  if (is_positive_overflow_infinity (max))
+	    max = tmax;
 	}
 
       set_value_range (vr, VR_RANGE, min, max, vr->equiv);
     }
+}
+
+/* Return true if VAR may overflow at STMT.  This checks any available
+   loop information to see if we can determine that VAR does not
+   overflow.  */
+
+static bool
+vrp_var_may_overflow (tree var, tree stmt)
+{
+  struct loop *l;
+  tree chrec, init, step;
+
+  if (current_loops == NULL)
+    return true;
+
+  l = loop_containing_stmt (stmt);
+  if (l == NULL)
+    return true;
+
+  chrec = instantiate_parameters (l, analyze_scalar_evolution (l, var));
+  if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
+    return true;
+
+  init = initial_condition_in_loop_num (chrec, l->num);
+  step = evolution_part_in_loop_num (chrec, l->num);
+
+  if (step == NULL_TREE
+      || !is_gimple_min_invariant (step)
+      || !valid_value_p (init))
+    return true;
+
+  /* If we get here, we know something useful about VAR based on the
+     loop information.  If it wraps, it may overflow.  */
+
+  if (scev_probably_wraps_p (init, step, stmt,
+			     current_loops->parray[CHREC_VARIABLE (chrec)],
+			     true))
+    return true;
+
+  if (dump_file && (dump_flags & TDF_DETAILS) != 0)
+    {
+      print_generic_expr (dump_file, var, 0);
+      fprintf (dump_file, ": loop information indicates does not overflow\n");
+    }
+
+  return false;
 }
 
 
@@ -4786,7 +4842,8 @@ vrp_visit_phi_node (tree phi)
 	      if (vrp_val_is_max (vr_result.max))
 		goto varying;
 
-	      if (!needs_overflow_infinity (TREE_TYPE (vr_result.min)))
+	      if (!needs_overflow_infinity (TREE_TYPE (vr_result.min))
+		  || !vrp_var_may_overflow (lhs, phi))
 		vr_result.min = TYPE_MIN_VALUE (TREE_TYPE (vr_result.min));
 	      else if (supports_overflow_infinity (TREE_TYPE (vr_result.min)))
 		vr_result.min =
@@ -4804,7 +4861,8 @@ vrp_visit_phi_node (tree phi)
 	      if (vrp_val_is_min (vr_result.min))
 		goto varying;
 
-	      if (!needs_overflow_infinity (TREE_TYPE (vr_result.max)))
+	      if (!needs_overflow_infinity (TREE_TYPE (vr_result.max))
+		  || !vrp_var_may_overflow (lhs, phi))
 		vr_result.max = TYPE_MAX_VALUE (TREE_TYPE (vr_result.max));
 	      else if (supports_overflow_infinity (TREE_TYPE (vr_result.max)))
 		vr_result.max =
