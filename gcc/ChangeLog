@@ -7,7 +7,7 @@
 	(copy_original_table_clear): Cast according to the coding conventions.
 	(copy_original_table_set): Likewise.
 	* cfgexpand (label_rtx_for_bb): Likewise.
-	(expand_gimüle_basic_block): Likewise.
+	(expand_gimple_basic_block): Likewise.
 	* cfghooks.c (dump_bb): Likewise.
 	(lv_adjust_loop_header_phi): Avoid using C++ keywords as variable names.
 	(lv_add_condition_to_bb): Likewise.
@@ -20,7 +20,7 @@
 	(dump_recorded_exit): Likewise.
 	* cfgloop.h (enum loop_estimation): Move out of struct scope...
 	(struct loop): ... from here.
-	* cfgloopmanip (rpe_enum_p): Cast according to the coding conventions.
+	* cfgloopmanip.c (rpe_enum_p): Cast according to the coding conventions.
 	* cfgrtl.c (rtl_create_basic_block): Likewise.
 	(rtl_split_block): Likewise.
 	(rtl_dump_bb): Likewise.
