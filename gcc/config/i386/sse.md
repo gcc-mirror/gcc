@@ -5844,7 +5844,7 @@
   [(set (match_operand:V2DF 0 "reg_not_xmm0_operand" "=x")
 	(unspec:V2DF [(match_operand:V2DF 1 "reg_not_xmm0_operand"  "0")
 		      (match_operand:V2DF 2 "nonimm_not_xmm0_operand" "xm")
-		      (match_operand:V2DF 3 "register_operand" "z")]
+		      (match_operand:V2DF 3 "register_operand" "Y0")]
 		     UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
   "blendvpd\t{%3, %2, %0|%0, %2, %3}"
@@ -5856,7 +5856,7 @@
   [(set (match_operand:V4SF 0 "reg_not_xmm0_operand" "=x")
 	(unspec:V4SF [(match_operand:V4SF 1 "reg_not_xmm0_operand" "0")
 		      (match_operand:V4SF 2 "nonimm_not_xmm0_operand" "xm")
-		      (match_operand:V4SF 3 "register_operand" "z")]
+		      (match_operand:V4SF 3 "register_operand" "Y0")]
 		     UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
   "blendvps\t{%3, %2, %0|%0, %2, %3}"
@@ -5927,7 +5927,7 @@
   [(set (match_operand:V16QI 0 "reg_not_xmm0_operand" "=x")
 	(unspec:V16QI [(match_operand:V16QI 1 "reg_not_xmm0_operand"  "0")
 		       (match_operand:V16QI 2 "nonimm_not_xmm0_operand" "xm")
-		       (match_operand:V16QI 3 "register_operand" "z")]
+		       (match_operand:V16QI 3 "register_operand" "Y0")]
 		      UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
   "pblendvb\t{%3, %2, %0|%0, %2, %3}"
@@ -6399,7 +6399,7 @@
 	   (match_operand:SI 5 "register_operand" "d,d")
 	   (match_operand:SI 6 "const_0_to_255_operand" "n,n")]
 	  UNSPEC_PCMPESTR))
-   (set (match_operand:V16QI 1 "register_operand" "=z,z")
+   (set (match_operand:V16QI 1 "register_operand" "=Y0,Y0")
 	(unspec:V16QI
 	  [(match_dup 2)
 	   (match_dup 3)
@@ -6471,7 +6471,7 @@
    (set_attr "mode" "TI")])
 
 (define_insn "sse4_2_pcmpestrm"
-  [(set (match_operand:V16QI 0 "register_operand" "=z,z")
+  [(set (match_operand:V16QI 0 "register_operand" "=Y0,Y0")
 	(unspec:V16QI
 	  [(match_operand:V16QI 1 "register_operand" "x,x")
 	   (match_operand:SI 2 "register_operand" "a,a")
@@ -6505,7 +6505,7 @@
 	   (match_operand:SI 4 "const_0_to_255_operand" "n,n,n,n")]
 	  UNSPEC_PCMPESTR))
    (clobber (match_scratch:SI    5 "=c,c,X,X"))
-   (clobber (match_scratch:V16QI 6 "=X,X,z,z"))]
+   (clobber (match_scratch:V16QI 6 "=X,X,Y0,Y0"))]
   "TARGET_SSE4_2"
   "@
    pcmpestri\t{%4, %2, %0|%0, %2, %4}
@@ -6525,7 +6525,7 @@
 	   (match_operand:V16QI 3 "nonimmediate_operand" "x,m")
 	   (match_operand:SI 4 "const_0_to_255_operand" "n,n")]
 	  UNSPEC_PCMPISTR))
-   (set (match_operand:V16QI 1 "register_operand" "=z,z")
+   (set (match_operand:V16QI 1 "register_operand" "=Y0,Y0")
 	(unspec:V16QI
 	  [(match_dup 2)
 	   (match_dup 3)
@@ -6586,7 +6586,7 @@
    (set_attr "mode" "TI")])
 
 (define_insn "sse4_2_pcmpistrm"
-  [(set (match_operand:V16QI 0 "register_operand" "=z,z")
+  [(set (match_operand:V16QI 0 "register_operand" "=Y0,Y0")
 	(unspec:V16QI
 	  [(match_operand:V16QI 1 "register_operand" "x,x")
 	   (match_operand:V16QI 2 "nonimmediate_operand" "x,m")
@@ -6614,7 +6614,7 @@
 	   (match_operand:SI 2 "const_0_to_255_operand" "n,n,n,n")]
 	  UNSPEC_PCMPISTR))
    (clobber (match_scratch:SI    3 "=c,c,X,X"))
-   (clobber (match_scratch:V16QI 4 "=X,X,z,z"))]
+   (clobber (match_scratch:V16QI 4 "=X,X,Y0,Y0"))]
   "TARGET_SSE4_2"
   "@
    pcmpistri\t{%2, %1, %0|%0, %1, %2}

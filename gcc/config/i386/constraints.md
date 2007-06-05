@@ -19,8 +19,8 @@
 ;; Boston, MA 02110-1301, USA.
 
 ;;; Unused letters:
-;;;     B     H           TU W
-;;;           h jk          vw
+;;;     B     H           TU W   
+;;;           h jk          vw  z
 
 ;; Integer register constraints.
 ;; It is not necessary to define 'r' here.
@@ -83,13 +83,14 @@
 (define_register_constraint "x" "TARGET_SSE ? SSE_REGS : NO_REGS"
  "Any SSE register.")
 
-(define_register_constraint "z" "TARGET_SSE ? SSE_FIRST_REG : NO_REGS"
- "First SSE register (@code{%xmm0}).")
-
 ;; We use the Y prefix to denote any number of conditional register sets:
+;;  0	First SSE register.
 ;;  2	SSE2 enabled
 ;;  i	SSE2 inter-unit moves enabled
 ;;  m	MMX inter-unit moves enabled
+
+(define_register_constraint "Y0" "TARGET_SSE ? SSE_FIRST_REG : NO_REGS"
+ "First SSE register (@code{%xmm0}).")
 
 (define_register_constraint "Y2" "TARGET_SSE2 ? SSE_REGS : NO_REGS"
  "@internal Any SSE register, when SSE2 is enabled.")
