@@ -1,3 +1,16 @@
+2007-06-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates/md (reg_not_xmm0_operand): New predicate.
+	(nonimm_not_xmm0_operand): Ditto.
+	* config/i386/sse.md ("sse4_1_blendvpd"): Use "reg_not_xmm0_operand"
+	as operand[0] and operand[1] predicate.  Use "nonimm_not_xmm0_operand"
+	as operand[2] predicate.  Require "z" class XMM register for
+	operand[3].  Adjust asm template.
+	("sse4_1_blendvpd"): Ditto.
+	("sse4_1_pblendvb"): Ditto.
+ 	* config/i386/i386.c (ix86_expand_sse_4_operands_builtin): Do not
+	force op2 into xmm0 register for variable blend instructions.
+
 2007-06-04  Tom Tromey  <tromey@redhat.com>
 
 	* c-tree.h (start_enum): Update.

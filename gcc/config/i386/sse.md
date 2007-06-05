@@ -5841,25 +5841,25 @@
    (set_attr "mode" "V4SF")])
 
 (define_insn "sse4_1_blendvpd"
-  [(set (match_operand:V2DF 0 "register_operand" "=x")
-	(unspec:V2DF [(match_operand:V2DF 1 "register_operand"  "0")
-		      (match_operand:V2DF 2 "nonimmediate_operand" "xm")
-		      (reg:V2DF XMM0_REG)]
+  [(set (match_operand:V2DF 0 "reg_not_xmm0_operand" "=x")
+	(unspec:V2DF [(match_operand:V2DF 1 "reg_not_xmm0_operand"  "0")
+		      (match_operand:V2DF 2 "nonimm_not_xmm0_operand" "xm")
+		      (match_operand:V2DF 3 "register_operand" "z")]
 		     UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
-  "blendvpd\t{%%xmm0, %2, %0|%0, %2, %%xmm0}"
+  "blendvpd\t{%3, %2, %0|%0, %2, %3}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "V2DF")])
 
 (define_insn "sse4_1_blendvps"
-  [(set (match_operand:V4SF 0 "register_operand" "=x")
-	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "0")
-		      (match_operand:V4SF 2 "nonimmediate_operand" "xm")
-		      (reg:V4SF XMM0_REG)]
+  [(set (match_operand:V4SF 0 "reg_not_xmm0_operand" "=x")
+	(unspec:V4SF [(match_operand:V4SF 1 "reg_not_xmm0_operand" "0")
+		      (match_operand:V4SF 2 "nonimm_not_xmm0_operand" "xm")
+		      (match_operand:V4SF 3 "register_operand" "z")]
 		     UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
-  "blendvps\t{%%xmm0, %2, %0|%0, %2, %%xmm0}"
+  "blendvps\t{%3, %2, %0|%0, %2, %3}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "V4SF")])
@@ -5924,13 +5924,13 @@
    (set_attr "mode" "TI")])
 
 (define_insn "sse4_1_pblendvb"
-  [(set (match_operand:V16QI 0 "register_operand" "=x")
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand"  "0")
-		       (match_operand:V16QI 2 "nonimmediate_operand" "xm")
-		       (reg:V16QI XMM0_REG)]
+  [(set (match_operand:V16QI 0 "reg_not_xmm0_operand" "=x")
+	(unspec:V16QI [(match_operand:V16QI 1 "reg_not_xmm0_operand"  "0")
+		       (match_operand:V16QI 2 "nonimm_not_xmm0_operand" "xm")
+		       (match_operand:V16QI 3 "register_operand" "z")]
 		      UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
-  "pblendvb\t{%%xmm0, %2, %0|%0, %2, %%xmm0}"
+  "pblendvb\t{%3, %2, %0|%0, %2, %3}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
