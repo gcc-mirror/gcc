@@ -7224,19 +7224,19 @@ grokdeclarator (const cp_declarator *declarator,
 		gcc_unreachable ();
 	      }
 	    break;
-
-	  case cdk_array:
-	  case cdk_pointer:
-	  case cdk_reference:
-	  case cdk_ptrmem:
-	    break;
-
-	  case cdk_error:
-	    return error_mark_node;
-
-	  default:
-	    gcc_unreachable ();
 	  }
+
+	case cdk_array:
+	case cdk_pointer:
+	case cdk_reference:
+	case cdk_ptrmem:
+	  break;
+
+	case cdk_error:
+	  return error_mark_node;
+
+	default:
+	  gcc_unreachable ();
 	}
       if (id_declarator->kind == cdk_id)
 	break;
