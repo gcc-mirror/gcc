@@ -1,3 +1,24 @@
+2007-06-06  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/rs6000.h (FIXED_SCRATCH): Use r0 as a scratch
+	register on SPE targets.  Change documentation to reflect
+	reality.
+	* config/rs6000/rs6000.c (rs6000_conditional_register_usage):
+	Change FIXED_SCRATCH to 14 and document why we're keeping r14
+	out of the register allocation pool.
+	(rs6000_reg_live_or_pic_offset_p): New function.
+	(rs6000_emit_prologue): Move the actual saving of LR up to free
+	r0 for holding r11.  Split saving of SPE 64-bit registers into
+	its own case.  Ensure that offsets will always be in-range for
+	'evstdd' by using r11 as a scratch register to point at the start
+	of the SPE save area.  Save r11 if necessary, as it is the static
+	chain register.
+	(rs6000_emit_epilogue): Split restoring of SPE 64-bit registers
+	into its own case.  Ensure that offsets will always be in-range
+	for 'evldd' by using r11 as a scratch register to point at the
+	start of the SPE save area.  Also adjust r11 when restoring
+	the stack pointer to compensate for pre-loading r11.
+
 2007-06-05  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	* cfg.c (init_flow): Use type safe memory macros.

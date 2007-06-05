@@ -648,6 +648,7 @@ static void rs6000_eliminate_indexed_memrefs (rtx operands[2]);
 static const char *rs6000_mangle_fundamental_type (tree);
 extern const struct attribute_spec rs6000_attribute_table[];
 static void rs6000_set_default_type_attributes (tree);
+static bool rs6000_reg_live_or_pic_offset_p (int);
 static void rs6000_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void rs6000_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void rs6000_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT,
@@ -3991,9 +3992,15 @@ rs6000_conditional_register_usage (void)
   if (TARGET_SPE)
     {
       global_regs[SPEFSCR_REGNO] = 1;
-      fixed_regs[FIXED_SCRATCH]
-	= call_used_regs[FIXED_SCRATCH]
-	= call_really_used_regs[FIXED_SCRATCH] = 1;
+      /* We used to use r14 as FIXED_SCRATCH to address SPE 64-bit
+         registers in prologues and epilogues.  We no longer use r14
+         for FIXED_SCRATCH, but we're keeping r14 out of the allocation
+         pool for link-compatibility with older versions of GCC.  Once
+         "old" code has died out, we can return r14 to the allocation
+         pool.  */
+      fixed_regs[14]
+	= call_used_regs[14]
+	= call_really_used_regs[14] = 1;
     }
 
   if (! TARGET_ALTIVEC)
@@ -14629,6 +14636,20 @@ no_global_regs_above (int first_greg)
 #define TARGET_FIX_AND_CONTINUE 0
 #endif
 
+/* Determine whether the gp REG is really used.  */
+
+static bool
+rs6000_reg_live_or_pic_offset_p (int reg)
+{
+  return ((regs_ever_live[reg]
+           && (!call_used_regs[reg]
+               || (reg == RS6000_PIC_OFFSET_TABLE_REGNUM
+                   && TARGET_TOC && TARGET_MINIMAL_TOC)))
+          || (reg == RS6000_PIC_OFFSET_TABLE_REGNUM
+              && ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
+                  || (DEFAULT_ABI == ABI_DARWIN && flag_pic))));
+}
+
 /* Emit function prologue as insns.  */
 
 void
@@ -14815,9 +14836,22 @@ rs6000_emit_prologue (void)
   /* If we use the link register, get it into r0.  */
   if (!WORLD_SAVE_P (info) && info->lr_save_p)
     {
+      rtx addr, reg, mem;
+
       insn = emit_move_insn (gen_rtx_REG (Pmode, 0),
 			     gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
       RTX_FRAME_RELATED_P (insn) = 1;
+
+      addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
+			       GEN_INT (info->lr_save_offset + sp_offset));
+      reg = gen_rtx_REG (Pmode, 0);
+      mem = gen_rtx_MEM (Pmode, addr);
+      /* This should not be of rs6000_sr_alias_set, because of
+	 __builtin_return_address.  */
+
+      insn = emit_move_insn (mem, reg);
+      rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
+			    NULL_RTX, NULL_RTX);
     }
 
   /* If we need to save CR, put it into r12.  */
@@ -14910,59 +14944,99 @@ rs6000_emit_prologue (void)
       rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
 			    NULL_RTX, NULL_RTX);
     }
+   else if (!WORLD_SAVE_P (info)
+            && TARGET_SPE_ABI
+            && info->spe_64bit_regs_used != 0
+            && info->first_gp_reg_save != 32)
+     {
+       int i;
+       rtx spe_save_area_ptr;
+       int using_static_chain_p = (cfun->static_chain_decl != NULL_TREE
+                                   && regs_ever_live[STATIC_CHAIN_REGNUM]
+                                   && !call_used_regs[STATIC_CHAIN_REGNUM]);
+ 
+       /* Determine whether we can address all of the registers that need
+          to be saved with an offset from the stack pointer that fits in
+          the small const field for SPE memory instructions.  */
+       int spe_regs_addressable_via_sp
+         = SPE_CONST_OFFSET_OK(info->spe_gp_save_offset + sp_offset
+                               + (32 - info->first_gp_reg_save - 1) * reg_size);
+       int spe_offset;
+ 
+       if (spe_regs_addressable_via_sp)
+         {
+           spe_save_area_ptr = sp_reg_rtx;
+           spe_offset = info->spe_gp_save_offset + sp_offset;
+         }
+       else
+         {
+           /* Make r11 point to the start of the SPE save area.  We need
+              to be careful here if r11 is holding the static chain.  If
+              it is, then temporarily save it in r0.  We would use r0 as
+              our base register here, but using r0 as a base register in
+              loads and stores means something different from what we
+              would like.  */
+           if (using_static_chain_p)
+             {
+               rtx r0 = gen_rtx_REG (Pmode, 0);
+ 
+               gcc_assert (info->first_gp_reg_save > 11);
+ 
+               emit_move_insn (r0, gen_rtx_REG (Pmode, 11));
+             }
+ 
+           spe_save_area_ptr = gen_rtx_REG (Pmode, 11);
+           emit_insn (gen_addsi3 (spe_save_area_ptr, sp_reg_rtx,
+                                  GEN_INT (info->spe_gp_save_offset + sp_offset)));
+ 
+           spe_offset = 0;
+         }
+ 
+       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
+         if (rs6000_reg_live_or_pic_offset_p (info->first_gp_reg_save + i))
+           {
+             rtx reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
+             rtx offset, addr, mem;
+ 
+             /* We're doing all this to ensure that the offset fits into
+                the immediate offset of 'evstdd'.  */
+             gcc_assert (SPE_CONST_OFFSET_OK (reg_size * i + spe_offset));
+ 
+             offset = GEN_INT (reg_size * i + spe_offset);
+             addr = gen_rtx_PLUS (Pmode, spe_save_area_ptr, offset);
+             mem = gen_rtx_MEM (V2SImode, addr);
+ 
+             insn = emit_move_insn (mem, reg);
+           
+             rs6000_frame_related (insn, spe_save_area_ptr,
+                                   info->spe_gp_save_offset
+                                   + sp_offset + reg_size * i,
+                                   offset, const0_rtx);
+           }
+ 
+       /* Move the static chain pointer back.  */
+       if (using_static_chain_p && !spe_regs_addressable_via_sp)
+         emit_move_insn (gen_rtx_REG (Pmode, 11), gen_rtx_REG (Pmode, 0));
+     }
   else if (!WORLD_SAVE_P (info))
     {
       int i;
       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
-	if ((regs_ever_live[info->first_gp_reg_save + i]
-	     && (!call_used_regs[info->first_gp_reg_save + i]
-		 || (i + info->first_gp_reg_save
-		     == RS6000_PIC_OFFSET_TABLE_REGNUM
-		     && TARGET_TOC && TARGET_MINIMAL_TOC)))
-	    || (i + info->first_gp_reg_save == RS6000_PIC_OFFSET_TABLE_REGNUM
-		&& ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
-		    || (DEFAULT_ABI == ABI_DARWIN && flag_pic))))
-	  {
-	    rtx addr, reg, mem;
-	    reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
+	if (rs6000_reg_live_or_pic_offset_p (info->first_gp_reg_save + i))
+          {
+            rtx addr, reg, mem;
+            reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
 
-	    if (TARGET_SPE_ABI && info->spe_64bit_regs_used != 0)
-	      {
-		int offset = info->spe_gp_save_offset + sp_offset + 8 * i;
-		rtx b;
+            addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
+                                 GEN_INT (info->gp_save_offset
+                                          + sp_offset
+                                          + reg_size * i));
+            mem = gen_frame_mem (reg_mode, addr);
 
-		if (!SPE_CONST_OFFSET_OK (offset))
-		  {
-		    b = gen_rtx_REG (Pmode, FIXED_SCRATCH);
-		    emit_move_insn (b, GEN_INT (offset));
-		  }
-		else
-		  b = GEN_INT (offset);
-
-		addr = gen_rtx_PLUS (Pmode, frame_reg_rtx, b);
-		mem = gen_frame_mem (V2SImode, addr);
-		insn = emit_move_insn (mem, reg);
-
-		if (GET_CODE (b) == CONST_INT)
-		  rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
-					NULL_RTX, NULL_RTX);
-		else
-		  rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
-					b, GEN_INT (offset));
-	      }
-	    else
-	      {
-		addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-				     GEN_INT (info->gp_save_offset
-					      + sp_offset
-					      + reg_size * i));
-		mem = gen_frame_mem (reg_mode, addr);
-
-		insn = emit_move_insn (mem, reg);
-		rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
-				      NULL_RTX, NULL_RTX);
-	      }
-	  }
+            insn = emit_move_insn (mem, reg);
+            rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
+                                  NULL_RTX, NULL_RTX);
+          }
     }
 
   /* ??? There's no need to emit actual instructions here, but it's the
@@ -14998,21 +15072,6 @@ rs6000_emit_prologue (void)
 			   + reg_size * (int) i,
 			   info->total_size);
 	}
-    }
-
-  /* Save lr if we used it.  */
-  if (!WORLD_SAVE_P (info) && info->lr_save_p)
-    {
-      rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-			       GEN_INT (info->lr_save_offset + sp_offset));
-      rtx reg = gen_rtx_REG (Pmode, 0);
-      rtx mem = gen_rtx_MEM (Pmode, addr);
-      /* This should not be of frame_alias_set, because of
-	 __builtin_return_address.  */
-
-      insn = emit_move_insn (mem, reg);
-      rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
-			    NULL_RTX, NULL_RTX);
     }
 
   /* Save CR if we use any that must be preserved.  */
@@ -15548,39 +15607,64 @@ rs6000_emit_epilogue (int sibcall)
 	}
       emit_insn (gen_rtx_PARALLEL (VOIDmode, p));
     }
+  else if (TARGET_SPE_ABI
+           && info->spe_64bit_regs_used != 0
+           && info->first_gp_reg_save != 32)
+    {
+      rtx spe_save_area_ptr;
+      /* Determine whether we can address all of the registers that need
+         to be saved with an offset from the stack pointer that fits in
+         the small const field for SPE memory instructions.  */
+      int spe_regs_addressable_via_sp
+        = SPE_CONST_OFFSET_OK(info->spe_gp_save_offset + sp_offset
+                              + (32 - info->first_gp_reg_save - 1) * reg_size);
+      int spe_offset;
+
+      if (spe_regs_addressable_via_sp)
+        {
+          spe_save_area_ptr = frame_reg_rtx;
+          spe_offset = info->spe_gp_save_offset + sp_offset;
+        }
+      else
+        {
+          /* Make r11 point to the start of the SPE save area.  We worried about
+             not clobbering it when we were saving registers in the prolgoue.
+             There's no need to worry here because the static chain is passed
+             anew to every function.  */
+          spe_save_area_ptr = gen_rtx_REG (Pmode, 11);
+
+          emit_insn (gen_addsi3 (spe_save_area_ptr, frame_reg_rtx,
+                                 GEN_INT (info->spe_gp_save_offset + sp_offset)));
+
+          spe_offset = 0;
+        }
+
+      for (i = 0; i < 32 - info->first_gp_reg_save; i++)
+        if (rs6000_reg_live_or_pic_offset_p (info->first_gp_reg_save + i))
+          {
+            rtx offset, addr, mem;
+
+            /* We're doing all this to ensure that the immediate offset
+               fits into the immediate field of 'evldd'.  */
+            gcc_assert (SPE_CONST_OFFSET_OK (spe_offset + reg_size * i));
+
+            offset = GEN_INT (spe_offset + reg_size * i);
+            addr = gen_rtx_PLUS (Pmode, spe_save_area_ptr, offset);
+            mem = gen_rtx_MEM (V2SImode, addr);
+
+            emit_move_insn (gen_rtx_REG (reg_mode, info->first_gp_reg_save + i),
+                            mem);
+          }
+    }
   else
     for (i = 0; i < 32 - info->first_gp_reg_save; i++)
-      if ((regs_ever_live[info->first_gp_reg_save + i]
-	   && (!call_used_regs[info->first_gp_reg_save + i]
-	       || (i + info->first_gp_reg_save == RS6000_PIC_OFFSET_TABLE_REGNUM
-		   && TARGET_TOC && TARGET_MINIMAL_TOC)))
-	  || (i + info->first_gp_reg_save == RS6000_PIC_OFFSET_TABLE_REGNUM
-	      && ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
-		  || (DEFAULT_ABI == ABI_DARWIN && flag_pic))))
+      if (rs6000_reg_live_or_pic_offset_p (info->first_gp_reg_save + i))
 	{
 	  rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
 				   GEN_INT (info->gp_save_offset
 					    + sp_offset
 					    + reg_size * i));
 	  rtx mem = gen_frame_mem (reg_mode, addr);
-
-	  /* Restore 64-bit quantities for SPE.  */
-	  if (TARGET_SPE_ABI && info->spe_64bit_regs_used != 0)
-	    {
-	      int offset = info->spe_gp_save_offset + sp_offset + 8 * i;
-	      rtx b;
-
-	      if (!SPE_CONST_OFFSET_OK (offset))
-		{
-		  b = gen_rtx_REG (Pmode, FIXED_SCRATCH);
-		  emit_move_insn (b, GEN_INT (offset));
-		}
-	      else
-		b = GEN_INT (offset);
-
-	      addr = gen_rtx_PLUS (Pmode, frame_reg_rtx, b);
-	      mem = gen_frame_mem (V2SImode, addr);
-	    }
 
 	  emit_move_insn (gen_rtx_REG (reg_mode,
 				       info->first_gp_reg_save + i), mem);
@@ -15657,7 +15741,13 @@ rs6000_emit_epilogue (int sibcall)
       /* This blockage is needed so that sched doesn't decide to move
 	 the sp change before the register restores.  */
       rs6000_emit_stack_tie ();
-      emit_move_insn (sp_reg_rtx, frame_reg_rtx);
+      if (TARGET_SPE_ABI
+          && info->spe_64bit_regs_used != 0
+          && info->first_gp_reg_save != 32)
+        emit_insn (gen_addsi3 (sp_reg_rtx, gen_rtx_REG (Pmode, 11),
+                               GEN_INT (-(info->spe_gp_save_offset + sp_offset))));
+      else
+        emit_move_insn (sp_reg_rtx, frame_reg_rtx);
     }
   else if (sp_offset != 0)
     emit_insn (TARGET_32BIT
