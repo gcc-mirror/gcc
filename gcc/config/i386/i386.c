@@ -2299,7 +2299,7 @@ override_options (void)
       target_flags |= TARGET_SUBTARGET32_DEFAULT & ~target_flags_explicit;
 
       ix86_isa_flags
-	|= TARGET_SUBTARGET32_DEFAULT & ~ix86_isa_flags_explicit;
+	|= TARGET_SUBTARGET32_ISA_DEFAULT & ~ix86_isa_flags_explicit;
 
       /* i386 ABI does not specify red zone.  It still makes sense to use it
          when programmer takes care to stack from being destroyed.  */
