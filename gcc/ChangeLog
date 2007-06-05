@@ -1,3 +1,37 @@
+2007-06-05  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	* cfg.c (init_flow): Use type safe memory macros.
+	(alloc_block): Likewise.
+	(unchecked_make_edge): Likewise.
+	(dump_flow_info): Avoid using C++ keywords as variable names.
+	(copy_original_table_clear): Cast according to the coding conventions.
+	(copy_original_table_set): Likewise.
+	* cfgexpand (label_rtx_for_bb): Likewise.
+	(expand_gimÃ¼le_basic_block): Likewise.
+	* cfghooks.c (dump_bb): Likewise.
+	(lv_adjust_loop_header_phi): Avoid using C++ keywords as variable names.
+	(lv_add_condition_to_bb): Likewise.
+	* cfglayout (relink_block_chain): Cast according to the coding
+	conventions.
+	(fixup_reorder_chain): Likewise.
+	(fixup_fallthru_exit_predecessor): Likewise.
+	* cfgloop.c (glb_enum_p): Likewise.
+	(get_exit_description): Likewise.
+	(dump_recorded_exit): Likewise.
+	* cfgloop.h (enum loop_estimation): Move out of struct scope...
+	(struct loop): ... from here.
+	* cfgloopmanip (rpe_enum_p): Cast according to the coding conventions.
+	* cfgrtl.c (rtl_create_basic_block): Likewise.
+	(rtl_split_block): Likewise.
+	(rtl_dump_bb): Likewise.
+	(cfg_layout_split_block): Likewise.
+	(init_rtl_bb_info): Use typesafe memory macros.
+
+	* graphds.h (struct graph_edge): Renamed edge to graph_edge.
+	* graphds.h: Updated all usages of edge to graph_edge.
+	* graphds.c: Likewise.
+	* cfgloopanal.c: Likewise.
+
 2007-06-05  Ian Lance Taylor  <iant@google.com>
 
 	* tree-vrp.c (compare_values_warnv): Check TREE_NO_WARNING on a
@@ -7216,7 +7250,7 @@
 
 	* c-common.c (warn_logical_operator): Fix condition.
 
-2007-03-10  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-03-10  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	* config/i386/darwin.h (DARWIN_MINVERSION_SPEC): Add missing
 	quotation mark.

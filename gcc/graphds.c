@@ -34,7 +34,7 @@ void
 dump_graph (FILE *f, struct graph *g)
 {
   int i;
-  struct edge *e;
+  struct graph_edge *e;
 
   for (i = 0; i < g->n_vertices; i++)
     {
@@ -69,10 +69,10 @@ new_graph (int n_vertices)
 
 /* Adds an edge from F to T to graph G.  The new edge is returned.  */
 
-struct edge *
+struct graph_edge *
 add_edge (struct graph *g, int f, int t)
 {
-  struct edge *e = XNEW (struct edge);
+  struct graph_edge *e = XNEW (struct graph_edge);
   struct vertex *vf = &g->vertices[f], *vt = &g->vertices[t];
 
 
@@ -95,7 +95,7 @@ identify_vertices (struct graph *g, int v, int u)
 {
   struct vertex *vv = &g->vertices[v];
   struct vertex *uu = &g->vertices[u];
-  struct edge *e, *next;
+  struct graph_edge *e, *next;
 
   for (e = uu->succ; e; e = next)
     {
@@ -122,7 +122,7 @@ identify_vertices (struct graph *g, int v, int u)
    direction given by FORWARD.  */
 
 static inline int
-dfs_edge_src (struct edge *e, bool forward)
+dfs_edge_src (struct graph_edge *e, bool forward)
 {
   return forward ? e->src : e->dest;
 }
@@ -131,7 +131,7 @@ dfs_edge_src (struct edge *e, bool forward)
    the direction given by FORWARD.  */
 
 static inline int
-dfs_edge_dest (struct edge *e, bool forward)
+dfs_edge_dest (struct graph_edge *e, bool forward)
 {
   return forward ? e->dest : e->src;
 }
@@ -139,8 +139,8 @@ dfs_edge_dest (struct edge *e, bool forward)
 /* Helper function for graphds_dfs.  Returns the first edge after E (including
    E), in the graph direction given by FORWARD, that belongs to SUBGRAPH.  */
 
-static inline struct edge *
-foll_in_subgraph (struct edge *e, bool forward, bitmap subgraph)
+static inline struct graph_edge *
+foll_in_subgraph (struct graph_edge *e, bool forward, bitmap subgraph)
 {
   int d;
 
@@ -162,10 +162,10 @@ foll_in_subgraph (struct edge *e, bool forward, bitmap subgraph)
 /* Helper function for graphds_dfs.  Select the first edge from V in G, in the
    direction given by FORWARD, that belongs to SUBGRAPH.  */
 
-static inline struct edge *
+static inline struct graph_edge *
 dfs_fst_edge (struct graph *g, int v, bool forward, bitmap subgraph)
 {
-  struct edge *e;
+  struct graph_edge *e;
 
   e = (forward ? g->vertices[v].succ : g->vertices[v].pred);
   return foll_in_subgraph (e, forward, subgraph);
@@ -174,8 +174,8 @@ dfs_fst_edge (struct graph *g, int v, bool forward, bitmap subgraph)
 /* Helper function for graphds_dfs.  Returns the next edge after E, in the
    graph direction given by FORWARD, that belongs to SUBGRAPH.  */
 
-static inline struct edge *
-dfs_next_edge (struct edge *e, bool forward, bitmap subgraph)
+static inline struct graph_edge *
+dfs_next_edge (struct graph_edge *e, bool forward, bitmap subgraph)
 {
   return foll_in_subgraph (forward ? e->succ_next : e->pred_next,
 			   forward, subgraph);
@@ -192,8 +192,8 @@ graphds_dfs (struct graph *g, int *qs, int nq, VEC (int, heap) **qt,
 	     bool forward, bitmap subgraph)
 {
   int i, tick = 0, v, comp = 0, top;
-  struct edge *e;
-  struct edge **stack = XNEWVEC (struct edge *, g->n_vertices);
+  struct graph_edge *e;
+  struct graph_edge **stack = XNEWVEC (struct graph_edge *, g->n_vertices);
   bitmap_iterator bi;
   unsigned av;
 
@@ -314,7 +314,7 @@ graphds_scc (struct graph *g, bitmap subgraph)
 void
 for_each_edge (struct graph *g, graphds_edge_callback callback)
 {
-  struct edge *e;
+  struct graph_edge *e;
   int i;
 
   for (i = 0; i < g->n_vertices; i++)
@@ -327,7 +327,7 @@ for_each_edge (struct graph *g, graphds_edge_callback callback)
 void
 free_graph (struct graph *g)
 {
-  struct edge *e, *n;
+  struct graph_edge *e, *n;
   struct vertex *v;
   int i;
 
@@ -406,7 +406,7 @@ graphds_domtree (struct graph *g, int entry,
   int *marks = XCNEWVEC (int, g->n_vertices);
   int mark = 1, i, v, idom;
   bool changed = true;
-  struct edge *e;
+  struct graph_edge *e;
 
   /* We use a slight modification of the standard iterative algorithm, as
      described in

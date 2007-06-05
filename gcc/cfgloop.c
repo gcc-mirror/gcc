@@ -776,7 +776,7 @@ flow_bb_inside_loop_p (const struct loop *loop, const basic_block bb)
 static bool
 glb_enum_p (basic_block bb, void *glb_loop)
 {
-  struct loop *loop = glb_loop;
+  struct loop *loop = (struct loop *) glb_loop;
   return (bb != loop->header
 	  && dominated_by_p (CDI_DOMINATORS, bb, loop->header));
 }
@@ -974,8 +974,8 @@ loop_exit_free (void *ex)
 static struct loop_exit *
 get_exit_descriptions (edge e)
 {
-  return htab_find_with_hash (current_loops->exits, e,
-			      htab_hash_pointer (e));
+  return (struct loop_exit *) htab_find_with_hash (current_loops->exits, e,
+			                           htab_hash_pointer (e));
 }
 
 /* Updates the lists of loop exits in that E appears.
@@ -1075,14 +1075,14 @@ record_loop_exits (void)
 static int
 dump_recorded_exit (void **slot, void *file)
 {
-  struct loop_exit *exit = *slot;
+  struct loop_exit *exit = (struct loop_exit *) *slot;
   unsigned n = 0;
   edge e = exit->e;
 
   for (; exit != NULL; exit = exit->next_e)
     n++;
 
-  fprintf (file, "Edge %d->%d exits %u loops\n",
+  fprintf ((FILE*) file, "Edge %d->%d exits %u loops\n",
 	   e->src->index, e->dest->index, n);
 
   return 1;

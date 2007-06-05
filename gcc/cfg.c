@@ -83,11 +83,11 @@ void
 init_flow (void)
 {
   if (!cfun->cfg)
-    cfun->cfg = ggc_alloc_cleared (sizeof (struct control_flow_graph));
+    cfun->cfg = GGC_CNEW (struct control_flow_graph);
   n_edges = 0;
-  ENTRY_BLOCK_PTR = ggc_alloc_cleared (sizeof (struct basic_block_def));
+  ENTRY_BLOCK_PTR = GGC_CNEW (struct basic_block_def);
   ENTRY_BLOCK_PTR->index = ENTRY_BLOCK;
-  EXIT_BLOCK_PTR = ggc_alloc_cleared (sizeof (struct basic_block_def));
+  EXIT_BLOCK_PTR = GGC_CNEW (struct basic_block_def);
   EXIT_BLOCK_PTR->index = EXIT_BLOCK;
   ENTRY_BLOCK_PTR->next_bb = EXIT_BLOCK_PTR;
   EXIT_BLOCK_PTR->prev_bb = ENTRY_BLOCK_PTR;
@@ -134,7 +134,7 @@ basic_block
 alloc_block (void)
 {
   basic_block bb;
-  bb = ggc_alloc_cleared (sizeof (*bb));
+  bb = GGC_CNEW (struct basic_block_def);
   return bb;
 }
 
@@ -264,7 +264,7 @@ edge
 unchecked_make_edge (basic_block src, basic_block dst, int flags)
 {
   edge e;
-  e = ggc_alloc_cleared (sizeof (*e));
+  e = GGC_CNEW (struct edge_def);
   n_edges++;
 
   e->src = src;
@@ -542,7 +542,7 @@ dump_flow_info (FILE *file, int flags)
       for (i = FIRST_PSEUDO_REGISTER; i < max; i++)
 	if (REG_N_REFS (i))
 	  {
-	    enum reg_class class, altclass;
+	    enum reg_class prefclass, altclass;
 
 	    fprintf (file, "\nRegister %d used %d times across %d insns",
 		     i, REG_N_REFS (i), REG_LIVE_LENGTH (i));
@@ -563,17 +563,17 @@ dump_flow_info (FILE *file, int flags)
 		&& PSEUDO_REGNO_BYTES (i) != UNITS_PER_WORD)
 	      fprintf (file, "; %d bytes", PSEUDO_REGNO_BYTES (i));
 
-	    class = reg_preferred_class (i);
+	    prefclass = reg_preferred_class (i);
 	    altclass = reg_alternate_class (i);
-	    if (class != GENERAL_REGS || altclass != ALL_REGS)
+	    if (prefclass != GENERAL_REGS || altclass != ALL_REGS)
 	      {
-		if (altclass == ALL_REGS || class == ALL_REGS)
-		  fprintf (file, "; pref %s", reg_class_names[(int) class]);
+		if (altclass == ALL_REGS || prefclass == ALL_REGS)
+		  fprintf (file, "; pref %s", reg_class_names[(int) prefclass]);
 		else if (altclass == NO_REGS)
-		  fprintf (file, "; %s or none", reg_class_names[(int) class]);
+		  fprintf (file, "; %s or none", reg_class_names[(int) prefclass]);
 		else
 		  fprintf (file, "; pref %s, else %s",
-			   reg_class_names[(int) class],
+			   reg_class_names[(int) prefclass],
 			   reg_class_names[(int) altclass]);
 	      }
 
@@ -1107,7 +1107,7 @@ copy_original_table_clear (htab_t tab, unsigned obj)
   if (!slot)
     return;
 
-  elt = *slot;
+  elt = (struct htab_bb_copy_original_entry *) *slot;
   htab_clear_slot (tab, slot);
   pool_free (original_copy_bb_pool, elt);
 }
@@ -1129,7 +1129,8 @@ copy_original_table_set (htab_t tab, unsigned obj, unsigned val)
 		htab_find_slot (tab, &key, INSERT);
   if (!*slot)
     {
-      *slot = pool_alloc (original_copy_bb_pool);
+      *slot = (struct htab_bb_copy_original_entry *)
+		pool_alloc (original_copy_bb_pool);
       (*slot)->index1 = obj;
     }
   (*slot)->index2 = val;

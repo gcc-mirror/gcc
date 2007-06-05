@@ -90,6 +90,16 @@ DEF_VEC_P (loop_p);
 DEF_VEC_ALLOC_P (loop_p, heap);
 DEF_VEC_ALLOC_P (loop_p, gc);
 
+/* An integer estimation of the number of iterations.  Estimate_state
+   describes what is the state of the estimation.  */
+enum loop_estimation
+{
+  /* Estimate was not computed yet.  */
+  EST_NOT_COMPUTED,
+  /* Estimate is ready.  */
+  EST_AVAILABLE
+};
+
 /* Structure to hold information for each natural loop.  */
 struct loop GTY ((chain_next ("%h.next")))
 {
@@ -135,13 +145,7 @@ struct loop GTY ((chain_next ("%h.next")))
 
   /* An integer estimation of the number of iterations.  Estimate_state
      describes what is the state of the estimation.  */
-  enum
-    {
-      /* Estimate was not computed yet.  */
-      EST_NOT_COMPUTED,
-      /* Estimate is ready.  */
-      EST_AVAILABLE
-    } estimate_state;
+  enum loop_estimation estimate_state;
 
   /* An integer guaranteed to bound the number of iterations of the loop
      from above.  */
