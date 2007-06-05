@@ -1,3 +1,9 @@
+2007-06-05  Razya Ladelsky  <razya@il.ibm.com>
+
+        * matrix-reorg.c (transform_access_sites): Fix computation.
+        (transform_allocation_sites): Same.
+        * testsuite/gcc.dg/matrix/matrix-6.c: Remove conversion.
+
 2007-06-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (override_options): Use
