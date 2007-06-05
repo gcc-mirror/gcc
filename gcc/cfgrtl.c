@@ -321,7 +321,7 @@ create_basic_block_structure (rtx head, rtx end, rtx bb_note, basic_block after)
 static basic_block
 rtl_create_basic_block (void *headp, void *endp, basic_block after)
 {
-  rtx head = headp, end = endp;
+  rtx head = (rtx) headp, end = (rtx) endp;
   basic_block bb;
 
   /* Grow the basic block array if needed.  */
@@ -474,7 +474,7 @@ static basic_block
 rtl_split_block (basic_block bb, void *insnp)
 {
   basic_block new_bb;
-  rtx insn = insnp;
+  rtx insn = (rtx) insnp;
   edge e;
   edge_iterator ei;
 
@@ -1519,7 +1519,7 @@ rtl_dump_bb (basic_block bb, FILE *outf, int indent)
   rtx last;
   char *s_indent;
 
-  s_indent = alloca ((size_t) indent + 1);
+  s_indent = (char *) alloca ((size_t) indent + 1);
   memset (s_indent, ' ', (size_t) indent);
   s_indent[indent] = '\0';
 
@@ -2300,7 +2300,7 @@ purge_all_dead_edges (void)
 static basic_block
 cfg_layout_split_block (basic_block bb, void *insnp)
 {
-  rtx insn = insnp;
+  rtx insn = (rtx) insnp;
   basic_block new_bb = rtl_split_block (bb, insn);
 
   new_bb->il.rtl->footer = bb->il.rtl->footer;
@@ -2879,7 +2879,7 @@ void
 init_rtl_bb_info (basic_block bb)
 {
   gcc_assert (!bb->il.rtl);
-  bb->il.rtl = ggc_alloc_cleared (sizeof (struct rtl_bb_info));
+  bb->il.rtl = GGC_CNEW (struct rtl_bb_info);
 }
 
 

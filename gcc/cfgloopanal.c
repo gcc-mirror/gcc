@@ -55,9 +55,9 @@ just_once_each_iteration_p (const struct loop *loop, basic_block bb)
    same scc.  */
 
 static void
-check_irred (struct graph *g, struct edge *e)
+check_irred (struct graph *g, struct graph_edge *e)
 {
-  edge real = e->data;
+  edge real = (edge) e->data;
 
   /* All edges should lead from a component with higher number to the
      one with lower one.  */

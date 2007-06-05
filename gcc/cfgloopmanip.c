@@ -49,7 +49,7 @@ static void unloop (struct loop *, bool *);
 static bool
 rpe_enum_p (basic_block bb, void *data)
 {
-  return dominated_by_p (CDI_DOMINATORS, bb, data);
+  return dominated_by_p (CDI_DOMINATORS, bb, (basic_block) data);
 }
 
 /* Remove basic blocks BBS.  NBBS is the number of the basic blocks.  */

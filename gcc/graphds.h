@@ -21,10 +21,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 /* Structure representing edge of a graph.  */
 
-struct edge
+struct graph_edge
 {
   int src, dest;	/* Source and destination.  */
-  struct edge *pred_next, *succ_next;
+  struct graph_edge *pred_next, *succ_next;
 			/* Next edge in predecessor and successor lists.  */
   void *data;		/* Data attached to the edge.  */
 };
@@ -33,7 +33,7 @@ struct edge
 
 struct vertex
 {
-  struct edge *pred, *succ;
+  struct graph_edge *pred, *succ;
 			/* Lists of predecessors and successors.  */
   int component;	/* Number of dfs restarts before reaching the
 			   vertex.  */
@@ -52,12 +52,12 @@ struct graph
 
 struct graph *new_graph (int);
 void dump_graph (FILE *, struct graph *);
-struct edge *add_edge (struct graph *, int, int);
+struct graph_edge *add_edge (struct graph *, int, int);
 void identify_vertices (struct graph *, int, int);
 int graphds_dfs (struct graph *, int *, int,
 		 VEC (int, heap) **, bool, bitmap);
 int graphds_scc (struct graph *, bitmap);
 void graphds_domtree (struct graph *, int, int *, int *, int *);
-typedef void (*graphds_edge_callback) (struct graph *, struct edge *);
+typedef void (*graphds_edge_callback) (struct graph *, struct graph_edge *);
 void for_each_edge (struct graph *, graphds_edge_callback);
 void free_graph (struct graph *g);

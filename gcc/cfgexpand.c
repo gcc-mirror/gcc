@@ -1262,7 +1262,7 @@ label_rtx_for_bb (basic_block bb)
 
   elt = pointer_map_contains (lab_rtx_for_bb, bb);
   if (elt)
-    return *elt;
+    return (rtx) *elt;
 
   /* Find the tree label if it is present.  */
      
@@ -1281,7 +1281,7 @@ label_rtx_for_bb (basic_block bb)
 
   elt = pointer_map_insert (lab_rtx_for_bb, bb);
   *elt = gen_label_rtx ();
-  return *elt;
+  return (rtx) *elt;
 }
 
 /* A subroutine of expand_gimple_basic_block.  Expand one COND_EXPR.
@@ -1538,7 +1538,7 @@ expand_gimple_basic_block (basic_block bb)
 	}
 
       if (elt)
-	emit_label (*elt);
+	emit_label ((rtx) *elt);
 
       /* Java emits line number notes in the top of labels.
 	 ??? Make this go away once line number notes are obsoleted.  */
