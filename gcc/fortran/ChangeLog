@@ -1,3 +1,11 @@
+2007-06-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/18923
+	* parse.c (decode_statement): Don't call gfc_undo_symbols on MATCH_ERROR
+	for ST_FUNCTION since it is called in reject_statement.
+	(parse_contained): If error, loop back after reject_statement and try
+	again.  Free the namespace if an error occured.
+
 2007-06-04 Lee Millward <lee.millward@codesourcery.com>
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_function_args): Adjust

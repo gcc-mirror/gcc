@@ -117,8 +117,8 @@ decode_statement (void)
 	return ST_FUNCTION;
       else if (m == MATCH_ERROR)
 	reject_statement ();
-
-      gfc_undo_symbols ();
+      else 
+	gfc_undo_symbols ();
       gfc_current_locus = old_locus;
     }
 
@@ -2775,12 +2775,13 @@ gfc_fixup_sibling_symbols (gfc_symbol *sym, gfc_namespace *siblings)
 static void
 parse_contained (int module)
 {
-  gfc_namespace *ns, *parent_ns;
+  gfc_namespace *ns, *parent_ns, *tmp;
   gfc_state_data s1, s2;
   gfc_statement st;
   gfc_symbol *sym;
   gfc_entry_list *el;
   int contains_statements = 0;
+  int seen_error = 0;
 
   push_state (&s1, COMP_CONTAINS, NULL);
   parent_ns = gfc_current_ns;
@@ -2792,6 +2793,9 @@ parse_contained (int module)
       gfc_current_ns->sibling = parent_ns->contained;
       parent_ns->contained = gfc_current_ns;
 
+ next:
+      /* Process the next available statement.  We come here if we got an error
+	 and rejected the last statement.  */
       st = next_statement ();
 
       switch (st)
@@ -2867,6 +2871,8 @@ parse_contained (int module)
 	  gfc_error ("Unexpected %s statement in CONTAINS section at %C",
 		     gfc_ascii_statement (st));
 	  reject_statement ();
+	  seen_error = 1;
+	  goto next;
 	  break;
 	}
     }
@@ -2875,8 +2881,10 @@ parse_contained (int module)
 
   /* The first namespace in the list is guaranteed to not have
      anything (worthwhile) in it.  */
-
+  tmp = gfc_current_ns;
   gfc_current_ns = parent_ns;
+  if (seen_error && tmp->refs > 1)
+    gfc_free_namespace (tmp);
 
   ns = gfc_current_ns->contained;
   gfc_current_ns->contained = ns->sibling;
