@@ -1,3 +1,9 @@
+2007-06-05  Joerg Wunsch  <j.gnu@uriah.heep.sax.de>
+
+	PR preprocessor/23479
+	* doc/extend.texi: Document the 0b-prefixed binary integer
+	constant extension.
+	
 2007-06-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/32215

@@ -1,3 +1,12 @@
+2007-06-05  Joerg Wunsch  <j.gnu@uriah.heep.sax.de>
+
+	PR preprocessor/23479
+	* expr.c (cpp_classify_number): Implement 0b-prefixed binary
+	integer constants.
+	(append_digit): Likewise.
+	* include/cpplib.h: Add CPP_N_BINARY, to be used for 0b-prefixed
+	binary integer constants.
+
 2007-05-31  Dave Korn  <dave.korn@artimi.com>
 
 	PR preprocessor/14331

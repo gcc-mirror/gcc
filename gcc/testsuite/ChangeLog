@@ -1,3 +1,12 @@
+2007-06-05  Joerg Wunsch  <j.gnu@uriah.heep.sax.de>
+
+	PR preprocessor/23479
+	* testsuite/gcc.dg/binary-constants-1.c: Add test suites for
+	the 0b-prefixed binary integer constants.
+	* testsuite/gcc.dg/binary-constants-2.c: Ditto.
+	* testsuite/gcc.dg/binary-constants-3.c: Ditto.
+	* testsuite/gcc.dg/binary-constants-4.c: Ditto.
+	
 2007-06-05  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/Wstrict-overflow-19.c: New test.
