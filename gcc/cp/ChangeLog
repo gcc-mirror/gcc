@@ -1,3 +1,8 @@
+2007-06-04  Simon Baldwin  <simonb@google.com>
+
+	* decl.c (grokdeclarator): Readability change.  Moved case labels
+	into direct switch statement scope.
+
 2007-06-04  Paolo Carlini  <pcarlini@suse.de>
 
 	* call.c (convert_like_real): Remove pointless code.
