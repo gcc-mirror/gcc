@@ -1,8 +1,21 @@
+2007-06-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/constraints.md ("z"): Replaced by ...
+	("Y0"): This.
+	* config/i386/sse.md (sse4_1_blendvpd): Likewise.
+	(sse4_1_blendvps): Likewise.
+	(sse4_1_pblendvb): Likewise.
+	(sse4_2_pcmpestr): Likewise.
+	(sse4_2_pcmpestrm): Likewise.
+	(sse4_2_pcmpestr_cconly): Likewise.
+	(sse4_2_pcmpistr): Likewise.
+	(sse4_2_pcmpistrm): Likewise.
+	(sse4_2_pcmpistr_cconly): Likewise.
+
 2007-06-05  Razya Ladelsky  <razya@il.ibm.com>
 
-        * matrix-reorg.c (transform_access_sites): Fix computation.
-        (transform_allocation_sites): Same.
-        * testsuite/gcc.dg/matrix/matrix-6.c: Remove conversion.
+	* matrix-reorg.c (transform_access_sites): Fix computation.
+	(transform_allocation_sites): Same.
 
 2007-06-05  Uros Bizjak  <ubizjak@gmail.com>
 
