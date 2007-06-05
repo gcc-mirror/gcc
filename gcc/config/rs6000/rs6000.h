@@ -913,18 +913,12 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 
 #define LOGICAL_OP_NON_SHORT_CIRCUIT 0
 
-/* A fixed register used at prologue and epilogue generation to fix
-   addressing modes.  The SPE needs heavy addressing fixes at the last
-   minute, and it's best to save a register for it.
+/* A fixed register used at epilogue generation to address SPE registers
+   with negative offsets.  The 64-bit load/store instructions on the SPE
+   only take positive offsets (and small ones at that), so we need to
+   reserve a register for consing up negative offsets.  */
 
-   AltiVec also needs fixes, but we've gotten around using r11, which
-   is actually wrong because when use_backchain_to_restore_sp is true,
-   we end up clobbering r11.
-
-   The AltiVec case needs to be fixed.  Dunno if we should break ABI
-   compatibility and reserve a register for it as well..  */
-
-#define FIXED_SCRATCH (TARGET_SPE ? 14 : 11)
+#define FIXED_SCRATCH 0
 
 /* Define this macro to change register usage conditional on target
    flags.  */
