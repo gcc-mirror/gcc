@@ -1,3 +1,10 @@
+2007-06-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/32215
+	* tree-vectorizer.c (supportable_widening_operation): Return false
+	for unsupported FIX_TRUNC_EXPR tree code.
+	(supportable_narrowing_operation): Ditto for FLOAT_EXPR tree code.
+
 2007-06-06  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/rs6000/rs6000.h (FIXED_SCRATCH): Use r0 as a scratch

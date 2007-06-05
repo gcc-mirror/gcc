@@ -1841,6 +1841,12 @@ supportable_widening_operation (enum tree_code code, tree stmt, tree vectype,
         }
       break;
 
+    case FIX_TRUNC_EXPR:
+      /* ??? Not yet implemented due to missing VEC_UNPACK_FIX_TRUNC_HI_EXPR/
+	 VEC_UNPACK_FIX_TRUNC_LO_EXPR tree codes and optabs used for
+	 computing the operation.  */
+      return false;
+
     default:
       gcc_unreachable ();
     }
@@ -1902,6 +1908,11 @@ supportable_narrowing_operation (enum tree_code code,
     case FIX_TRUNC_EXPR:
       c1 = VEC_PACK_FIX_TRUNC_EXPR;
       break;
+
+    case FLOAT_EXPR:
+      /* ??? Not yet implemented due to missing VEC_PACK_FLOAT_EXPR
+	 tree code and optabs used for computing the operation.  */
+      return false;
 
     default:
       gcc_unreachable ();
