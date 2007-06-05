@@ -3,4 +3,4 @@
 /* { dg-do link { target *-*-linux* } } */
 /* { dg-options "-muclibc -mglibc" } */
 
-/* { dg-error "-mglibc and -muclibc used together" "" { target *-*-* } 0 } */
+/* { dg-message "-mglibc and -muclibc used together" "" { target *-*-* } 0 } */

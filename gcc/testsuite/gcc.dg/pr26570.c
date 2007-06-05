@@ -4,6 +4,6 @@
 unsigned test (unsigned a, unsigned b)
 {
   return a / b;
-} /* { dg-warning "execution counts estimated" } */
+} /* { dg-message "note: \[^\n\]*execution counts estimated" } */
 
 /* { dg-final { cleanup-coverage-files } } */

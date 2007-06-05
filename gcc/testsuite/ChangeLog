@@ -1,3 +1,16 @@
+2007-06-05  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR testsuite/25241
+	* gcc.dg/invalid-call-1.c: Use dg-warning to match the warning and
+	dg-message to match de note.
+	* gcc.dg/pr26570.c: Use dg-message for a note.
+	* gcc.dg/pr29254.c: Use dg-message for generic output and use
+	dg-error instead of dg-warning because of -Werror.
+	* gcc.dg/glibc-uclibc-1.c: Use dg-message for output that is
+	neither an error, nor a warning.
+	* gcc.dg/glibc-uclibc-2.c: Likewise
+	* gcc.dg/cpp/19940712-1.c: Likewise.
+
 2007-06-05  Joerg Wunsch  <j.gnu@uriah.heep.sax.de>
 
 	PR preprocessor/23479
