@@ -1654,6 +1654,42 @@ record_all_accesses_in_func (void)
   sbitmap_free (visited_stmts_1);
 }
 
+/* Used when we want to convert the expression: RESULT =  something * ORIG to RESULT = something * NEW. If ORIG and NEW are power of 2, shift operations can be done, else division and multiplication.  */
+static tree
+compute_offset (HOST_WIDE_INT orig, HOST_WIDE_INT new, tree result)
+{
+
+  int x, y;
+  tree result1, ratio, log, orig_tree, new_tree;
+
+  x = exact_log2 (orig);
+  y = exact_log2 (new);
+
+  if (x != -1 && y != -1)
+    {
+      if (x == y)
+        return result;
+      else if (x > y)
+        {
+          log = build_int_cst (TREE_TYPE (result), x - y);
+          result1 =
+            fold_build2 (LSHIFT_EXPR, TREE_TYPE (result), result, log);
+          return result1;
+        }
+      log = build_int_cst (TREE_TYPE (result), y - x);
+      result1 = fold_build2 (RSHIFT_EXPR, TREE_TYPE (result), result, log);
+
+      return result1;
+    }
+  orig_tree = build_int_cst (TREE_TYPE (result), orig);
+  new_tree = build_int_cst (TREE_TYPE (result), new);
+  ratio = fold_build2 (TRUNC_DIV_EXPR, TREE_TYPE (result), result, orig_tree);
+  result1 = fold_build2 (MULT_EXPR, TREE_TYPE (result), ratio, new_tree);
+
+  return result1;
+}
+
+
 /* We know that we are allowed to perform matrix flattening (according to the
    escape analysis), so we traverse the use-def chains of the SSA vars
    defined by the global variables pointing to the matrices of our interest.
@@ -1783,8 +1819,6 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 		tmp1 = offset;
 	      else
 		{
-		  int x, y;
-		  tree ratio;
 		  tree new_offset;
 		  tree d_type_size, d_type_size_k;
 
@@ -1793,29 +1827,11 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 				   mi->dimension_type_size[min_escape_l]);
 		  d_type_size_k =
 		    build_int_cst (type, mi->dimension_type_size[k + 1]);
-		  x = exact_log2 (mi->dimension_type_size[min_escape_l]);
-		  y = exact_log2 (mi->dimension_type_size[k + 1]);
 
-		  if (x != -1 && y != -1)
-		    {
-		      if (x - y == 0)
-			new_offset = offset;
-		      else
-			{
-			  tree log = build_int_cst (type, x - y);
-			  new_offset =
-			    fold_build2 (LSHIFT_EXPR, TREE_TYPE (offset),
-					 offset, log);
-			}
-		    }
-		  else
-		    {
-		      ratio =
-			fold_build2 (TRUNC_DIV_EXPR, type, d_type_size,
-				     d_type_size_k);
-		      new_offset =
-			fold_build2 (MULT_EXPR, type, offset, ratio);
-		    }
+		  new_offset =
+		    compute_offset (mi->dimension_type_size[min_escape_l],
+				    mi->dimension_type_size[k + 1], offset);
+
 		  total_elements = new_offset;
 		  if (new_offset != offset)
 		    {
@@ -1915,7 +1931,6 @@ sort_dim_hot_level (gcov_type * a, int *dim_map, int n)
 	}
     }
 }
-
 
 /* Replace multiple mallocs (one for each dimension) to one malloc
    with the size of DIM1*DIM2*...*DIMN*size_of_element
@@ -2065,14 +2080,14 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 	add_new_static_var (TREE_TYPE
 			    (mi->dimension_size_orig[mi->dim_map[i]]));
       type = TREE_TYPE (mi->dimension_size_orig[mi->dim_map[i]]);
-      d_type_size =
-	build_int_cst (type, mi->dimension_type_size[mi->dim_map[i] + 1]);
 
       /* DIM_SIZE = MALLOC_SIZE_PARAM / TYPE_SIZE.  */
       /* Find which dim ID becomes dim I.  */
       for (id = 0; id < mi->min_indirect_level_escape; id++)
 	if (mi->dim_map[id] == i)
 	  break;
+       d_type_size =
+        build_int_cst (type, mi->dimension_type_size[id + 1]);
       if (!prev_dim_size)
 	prev_dim_size = build_int_cst (type, element_size);
       if (!check_transpose_p && i == mi->min_indirect_level_escape - 1)
