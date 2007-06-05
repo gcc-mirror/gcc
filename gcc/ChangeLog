@@ -1,5 +1,13 @@
 2007-06-05  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/constraints.md ("Y2"): Replaced by ...
+	("Yt"): This.
+	* config/i386/i386.md: Likewise.
+	* config/i386/mmx.md: Likewise.
+	* config/i386/sse.md: Likewise.
+
+2007-06-05  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/constraints.md ("z"): Replaced by ...
 	("Y0"): This.
 	* config/i386/sse.md (sse4_1_blendvpd): Likewise.
