@@ -1,3 +1,11 @@
+2007-06-05  Ian Lance Taylor  <iant@google.com>
+
+	* tree-vrp.c (compare_values_warnv): Check TREE_NO_WARNING on a
+	PLUS_EXPR or MINUS_EXPR node before setting *strict_overflow_p.
+	(extract_range_from_assert): Set TREE_NO_WARNING when creating an
+	expression.
+	(test_for_singularity): Likewise.
+
 2007-06-04  Ian Lance Taylor  <iant@google.com>
 
 	* tree-vrp.c (adjust_range_with_scev): When loop is not expected

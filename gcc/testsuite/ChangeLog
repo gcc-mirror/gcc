@@ -1,3 +1,7 @@
+2007-06-05  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wstrict-overflow-19.c: New test.
+
 2007-06-04  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/Wstrict-overflow-18.c: New test.
