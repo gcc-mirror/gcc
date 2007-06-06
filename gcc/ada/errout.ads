@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,10 @@
 
 with Err_Vars;
 with Erroutc;
+with Namet;    use Namet;
 with Table;
-with Types; use Types;
-with Uintp; use Uintp;
+with Types;    use Types;
+with Uintp;    use Uintp;
 
 with System;
 
@@ -147,7 +148,15 @@ package Errout is
    --      message, similarly replaced by the names which are specified by the
    --      Name_Id values stored in Error_Msg_Name_2 and Error_Msg_Name_3. The
    --      names are decoded and cased according to the current identifier
-   --      casing mode.
+   --      casing mode. Note: if a unit name ending with %b or %s is passed
+   --      for this kind of insertion, this suffix is simply stripped. Use a
+   --      unit name insertion ($) to process the suffix.
+
+   --    Insertion character %% (Double percent: insert literal name)
+   --      The character sequence %% acts as described above for %, except
+   --      that the name is simply obtained with Get_Name_String and is not
+   --      decoded or cased, it is inserted literally from the names table.
+   --      A trailing %b or %s is not treated specially.
 
    --    Insertion character $ (Dollar: insert unit name from Names table)
    --      The character $ is treated similarly to %, except that the name is
@@ -157,11 +166,13 @@ package Errout is
    --      strings. If this postfix is not required, use the normal %
    --      insertion for the unit name.
 
-   --    Insertion character { (Left brace: insert literally from names table)
-   --      The character { is treated similarly to %, except that the name is
-   --      output literally as stored in the names table without adjusting the
-   --      casing. This can be used for file names and in other situations
-   --      where the name string is to be output unchanged.
+   --    Insertion character { (Left brace: insert file name from names table)
+   --      The character { is treated similarly to %, except that the input
+   --      value is a File_Name_Type value stored in Error_Msg_File_1 or
+   --      Error_Msg_File_2 or Error_Msg_File_3. The value is output literally,
+   --      enclosed in quotes as for %, but the case is not modified, the
+   --      insertion is the exact string stored in the names table without
+   --      adjusting the casing.
 
    --    Insertion character * (Asterisk, insert reserved word name)
    --      The insertion character * is treated exactly like % except that the
@@ -384,9 +395,14 @@ package Errout is
    Error_Msg_Name_3 : Name_Id renames Err_Vars.Error_Msg_Name_3;
    --  Name_Id values for % insertion characters in message
 
-   Error_Msg_Unit_1 : Name_Id renames Err_Vars.Error_Msg_Unit_1;
-   Error_Msg_Unit_2 : Name_Id renames Err_Vars.Error_Msg_Unit_2;
-   --  Name_Id values for $ insertion characters in message
+   Error_Msg_File_1 : File_Name_Type renames Err_Vars.Error_Msg_File_1;
+   Error_Msg_File_2 : File_Name_Type renames Err_Vars.Error_Msg_File_2;
+   Error_Msg_File_3 : File_Name_Type renames Err_Vars.Error_Msg_File_3;
+   --  File_Name_Type values for { insertion characters in message
+
+   Error_Msg_Unit_1 : Unit_Name_Type renames Err_Vars.Error_Msg_Unit_1;
+   Error_Msg_Unit_2 : Unit_Name_Type renames Err_Vars.Error_Msg_Unit_2;
+   --  Unit_Name_Type values for $ insertion characters in message
 
    Error_Msg_Node_1 : Node_Id renames Err_Vars.Error_Msg_Node_1;
    Error_Msg_Node_2 : Node_Id renames Err_Vars.Error_Msg_Node_2;
@@ -545,8 +561,21 @@ package Errout is
    --  source file before using any of the other routines in the package.
 
    procedure Finalize;
-   --  Finalize processing of error messages for one file and output message
-   --  indicating the number of detected errors.
+   --  Finalize processing of error message list. Includes processing for
+   --  duplicated error messages, and other similar final adjustment of the
+   --  list of error messages. Note that this procedure must be called before
+   --  calling Compilation_Errors to determine if there were any errors. It
+   --  is perfectly fine to call Finalize more than once. Indeed this can
+   --  make good sense. For example, do some processing that may generate
+   --  messages. Call Finalize to eliminate duplicates and remove deleted
+   --  warnings. Test for compilation errors using Compilation_Errors, then
+   --  generate some more errors/warnings, call Finalize again to make sure
+   --  that all duplicates in these new messages are dealt with, then finally
+   --  call Output_Messages to output the final list of messages.
+
+   procedure Output_Messages;
+   --  Output list of messages, including messages giving number of detected
+   --  errors and warnings.
 
    procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr);
    --  Output a message at specified location. Can be called from the parser
@@ -687,10 +716,10 @@ package Errout is
    --  the pragma. Err is set to True on return to report the error of no
    --  matching Warnings Off pragma preceding this one.
 
-   function Compilation_Errors return Boolean
-     renames Erroutc.Compilation_Errors;
+   function Compilation_Errors return Boolean;
    --  Returns true if errors have been detected, or warnings in -gnatwe
-   --  (treat warnings as errors) mode.
+   --  (treat warnings as errors) mode. Note that it is mandatory to call
+   --  Finalize before calling this routine.
 
    procedure Error_Msg_CRT (Feature : String; N : Node_Id);
    --  Posts a non-fatal message on node N saying that the feature identified

@@ -121,6 +121,7 @@ package body Comperr is
 
       if Serious_Errors_Detected /= 0 and then not Debug_Flag_K then
          Errout.Finalize;
+         Errout.Output_Messages;
 
          Set_Standard_Error;
          Write_Str ("compilation abandoned due to previous error");
