@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,6 +27,7 @@
 --  This package contains utility routines used for the generation of the
 --  stubs relevant to the distribution annex.
 
+with Namet; use Namet;
 with Types; use Types;
 
 package Exp_Dist is
@@ -109,5 +110,13 @@ package Exp_Dist is
    --  one). In the case where a body is present, the subprogram bodies must
    --  not be generated in the package spec because this would cause an
    --  incorrect attempt to freeze Taft amendment types declared in the spec.
+
+   function Make_Transportable_Check
+     (Loc  : Source_Ptr;
+      Expr : Node_Id) return Node_Id;
+   --  Generate a check that the given expression (an actual in a remote
+   --  subprogram call, or the return value of a function in the context of
+   --  a remote call) satisfies the requirements for being transportable
+   --  across partitions, raising Program_Error if it does not.
 
 end Exp_Dist;

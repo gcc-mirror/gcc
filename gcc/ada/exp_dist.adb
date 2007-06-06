@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,11 +27,11 @@
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
+with Exp_Atag; use Exp_Atag;
 with Exp_Strm; use Exp_Strm;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
-with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
@@ -162,12 +162,12 @@ package body Exp_Dist is
       Vis_Decl           : Node_Id;
       All_Calls_Remote_E : Entity_Id;
       Proxy_Object_Addr  : out Entity_Id);
-   --  Add the proxy type necessary to call the subprogram declared
-   --  by Vis_Decl through a remote access to subprogram type.
-   --  All_Calls_Remote_E must be Standard_True if a pragma All_Calls_Remote
-   --  applies, Standard_False otherwise. The new proxy type is appended
-   --  to Decls. Proxy_Object_Addr is a constant of type System.Address that
-   --  designates an instance of the proxy object.
+   --  Add the proxy type required, on the receiving (server) side, to handle
+   --  calls to the subprogram declared by Vis_Decl through a remote access
+   --  to subprogram type. All_Calls_Remote_E must be Standard_True if a pragma
+   --  All_Calls_Remote applies, Standard_False otherwise. The new proxy type
+   --  is appended to Decls. Proxy_Object_Addr is a constant of type
+   --  System.Address that designates an instance of the proxy object.
 
    function Build_Remote_Subprogram_Proxy_Type
      (Loc            : Source_Ptr;
@@ -1270,7 +1270,12 @@ package body Exp_Dist is
 
             if Chars (Current_Primitive) /= Name_uSize
               and then Chars (Current_Primitive) /= Name_uAlignment
-              and then not Is_TSS (Current_Primitive, TSS_Deep_Finalize)
+              and then not
+                (Is_TSS (Current_Primitive, TSS_Deep_Finalize) or else
+                 Is_TSS (Current_Primitive, TSS_Stream_Input)  or else
+                 Is_TSS (Current_Primitive, TSS_Stream_Output) or else
+                 Is_TSS (Current_Primitive, TSS_Stream_Read)   or else
+                 Is_TSS (Current_Primitive, TSS_Stream_Write))
             then
                --  The first thing to do is build an up-to-date copy of the
                --  spec with all the formals referencing Designated_Type
@@ -2705,14 +2710,14 @@ package body Exp_Dist is
 
             begin
                if Ekind (Scop) = E_Package_Body then
-                  New_Scope (Spec_Entity (Scop));
+                  Push_Scope (Spec_Entity (Scop));
 
                elsif Ekind (Scop) = E_Subprogram_Body then
-                  New_Scope
+                  Push_Scope
                      (Corresponding_Spec (Unit_Declaration_Node (Scop)));
 
                else
-                  New_Scope (Scop);
+                  Push_Scope (Scop);
                end if;
 
                Analyze (RCI_Locator);
@@ -2750,7 +2755,7 @@ package body Exp_Dist is
       Spec  : constant Node_Id := Specification (Unit_Node);
       Decls : constant List_Id := Visible_Declarations (Spec);
    begin
-      New_Scope (Scope_Of_Spec (Spec));
+      Push_Scope (Scope_Of_Spec (Spec));
       Add_Calling_Stubs_To_Declarations
         (Specification (Unit_Node), Decls);
       Pop_Scope;
@@ -2774,7 +2779,7 @@ package body Exp_Dist is
             Decls := Visible_Declarations (Spec);
          end if;
 
-         New_Scope (Scope_Of_Spec (Spec));
+         Push_Scope (Scope_Of_Spec (Spec));
          Specific_Add_Receiving_Stubs_To_Declarations
            (Spec, Decls, Decls);
       else
@@ -2782,7 +2787,7 @@ package body Exp_Dist is
            Package_Specification_Of_Scope (Corresponding_Spec (Unit_Node));
          Decls := Declarations (Unit_Node);
 
-         New_Scope (Scope_Of_Spec (Unit_Node));
+         Push_Scope (Scope_Of_Spec (Unit_Node));
          Temp := New_List;
          Specific_Add_Receiving_Stubs_To_Declarations
            (Spec, Temp, Statements (Handled_Statement_Sequence (Unit_Node)));
@@ -3645,17 +3650,17 @@ package body Exp_Dist is
 
          --    - a package RPC receiver must be built. This subprogram
          --      will get a Subprogram_Id from the incoming stream
-         --      and will dispatch the call to the right subprogram
+         --      and will dispatch the call to the right subprogram;
 
-         --    - a receiving stub for any subprogram visible in the package
+         --    - a receiving stub for each subprogram visible in the package
          --      spec. This stub will read all the parameters from the stream,
          --      and put the result as well as the exception occurrence in the
-         --      output stream
+         --      output stream;
 
          --    - a dummy package with an empty spec and a body made of an
          --      elaboration part, whose job is to register the receiving
          --      part of this RCI package on the name server. This is done
-         --      by calling System.Partition_Interface.Register_Receiving_Stub
+         --      by calling System.Partition_Interface.Register_Receiving_Stub.
 
          Build_RPC_Receiver_Body (
            RPC_Receiver => Pkg_RPC_Receiver,
@@ -3861,75 +3866,120 @@ package body Exp_Dist is
                          High_Bound =>
                            Make_Integer_Literal (Loc,
                              First_RCI_Subprogram_Id
-                             + List_Length (Subp_Info_List) - 1))))),
-             Expression          =>
-               Make_Aggregate (Loc,
-                 Component_Associations => Subp_Info_List)));
+                             + List_Length (Subp_Info_List) - 1)))))));
+
+         --  For a degenerate RCI with no visible subprograms, Subp_Info_List
+         --  has zero length, and the declaration is for an empty array, in
+         --  which case no initialization aggregate must be generated.
+
+         if Present (First (Subp_Info_List)) then
+            Set_Expression (Last (Decls),
+              Make_Aggregate (Loc,
+                Component_Associations => Subp_Info_List));
+
+         --  No initialization provided: remove CONSTANT so that the
+         --  declaration is not an incomplete deferred constant.
+
+         else
+            Set_Constant_Present (Last (Decls), False);
+         end if;
+
          Analyze (Last (Decls));
 
-         Append_To (Decls,
-           Make_Subprogram_Body (Loc,
-             Specification =>
-               Copy_Specification (Loc, Parent (Lookup_RAS_Info)),
-             Declarations =>
-               No_List,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => New_List (
-                   Make_Return_Statement (Loc,
-                     Expression => OK_Convert_To (RTE (RE_Unsigned_64),
-                       Make_Selected_Component (Loc,
-                         Prefix =>
-                           Make_Indexed_Component (Loc,
-                             Prefix =>
-                               New_Occurrence_Of (Subp_Info_Array, Loc),
-                             Expressions => New_List (
-                               Convert_To (Standard_Integer,
-                                 Make_Identifier (Loc, Name_Subp_Id)))),
-                         Selector_Name =>
-                           Make_Identifier (Loc, Name_Addr))))))));
+         declare
+            Subp_Info_Addr : Node_Id;
+            --  Return statement for Lookup_RAS_Info: address of the subprogram
+            --  information record for the requested subprogram id.
+
+         begin
+            if Present (First (Subp_Info_List)) then
+               Subp_Info_Addr :=
+                 Make_Selected_Component (Loc,
+                   Prefix =>
+                     Make_Indexed_Component (Loc,
+                       Prefix =>
+                         New_Occurrence_Of (Subp_Info_Array, Loc),
+                       Expressions => New_List (
+                         Convert_To (Standard_Integer,
+                           Make_Identifier (Loc, Name_Subp_Id)))),
+                   Selector_Name =>
+                     Make_Identifier (Loc, Name_Addr));
+
+            --  Case of no visible subprogram: just raise Constraint_Error, we
+            --  know for sure we got junk from a remote partition.
+
+            else
+               Subp_Info_Addr :=
+                 Make_Raise_Constraint_Error (Loc,
+                    Reason => CE_Range_Check_Failed);
+               Set_Etype (Subp_Info_Addr, RTE (RE_Unsigned_64));
+            end if;
+
+            Append_To (Decls,
+              Make_Subprogram_Body (Loc,
+                Specification =>
+                  Copy_Specification (Loc, Parent (Lookup_RAS_Info)),
+                Declarations =>
+                  No_List,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (
+                      Make_Return_Statement (Loc,
+                        Expression =>
+                          OK_Convert_To (RTE (RE_Unsigned_64),
+                                         Subp_Info_Addr))))));
+         end;
+
          Analyze (Last (Decls));
 
          Append_To (Decls, Pkg_RPC_Receiver_Body);
          Analyze (Last (Decls));
 
          Get_Library_Unit_Name_String (Pkg_Spec);
+
+         --  Name
+
          Append_To (Register_Pkg_Actuals,
-            --  Name
            Make_String_Literal (Loc,
              Strval => String_From_Name_Buffer));
 
+         --  Receiver
+
          Append_To (Register_Pkg_Actuals,
-            --  Receiver
            Make_Attribute_Reference (Loc,
              Prefix         =>
                New_Occurrence_Of (Pkg_RPC_Receiver, Loc),
              Attribute_Name =>
                Name_Unrestricted_Access));
 
+         --  Version
+
          Append_To (Register_Pkg_Actuals,
-            --  Version
            Make_Attribute_Reference (Loc,
              Prefix         =>
                New_Occurrence_Of (Defining_Entity (Pkg_Spec), Loc),
              Attribute_Name =>
                Name_Version));
 
+         --  Subp_Info
+
          Append_To (Register_Pkg_Actuals,
-            --  Subp_Info
            Make_Attribute_Reference (Loc,
              Prefix         =>
                New_Occurrence_Of (Subp_Info_Array, Loc),
              Attribute_Name =>
                Name_Address));
 
+         --  Subp_Info_Len
+
          Append_To (Register_Pkg_Actuals,
-            --  Subp_Info_Len
            Make_Attribute_Reference (Loc,
              Prefix         =>
                New_Occurrence_Of (Subp_Info_Array, Loc),
              Attribute_Name =>
                Name_Length));
+
+         --  Generate the call
 
          Append_To (Stmts,
            Make_Procedure_Call_Statement (Loc,
@@ -4932,6 +4982,18 @@ package body Exp_Dist is
                        Name                   => Called_Subprogram,
                        Parameter_Associations => Parameter_List)));
 
+               if Is_Class_Wide_Type (Etyp) then
+
+                  --  For a remote call to a function with a class-wide type,
+                  --  check that the returned value satisfies the requirements
+                  --  of E.4(18).
+
+                  Append_To (Inner_Decls,
+                    Make_Transportable_Check (Loc,
+                      New_Occurrence_Of (Result, Loc)));
+
+               end if;
+
                Append_To (After_Statements,
                  Make_Attribute_Reference (Loc,
                    Prefix         => New_Occurrence_Of (Etyp, Loc),
@@ -5194,6 +5256,25 @@ package body Exp_Dist is
                and then Etype (Subtype_Mark (Typ)) = Stub_Type)
         or else Etype (Typ) = Stub_Type;
    end Is_RACW_Controlling_Formal;
+
+   ------------------------------
+   -- Make_Transportable_Check --
+   ------------------------------
+
+   function Make_Transportable_Check
+     (Loc  : Source_Ptr;
+      Expr : Node_Id) return Node_Id is
+   begin
+      return
+        Make_Raise_Program_Error (Loc,
+          Condition       =>
+            Make_Op_Not (Loc,
+              Build_Get_Transportable (Loc,
+                Make_Selected_Component (Loc,
+                  Prefix        => Expr,
+                  Selector_Name => Make_Identifier (Loc, Name_uTag)))),
+          Reason => PE_Non_Transportable_Actual);
+   end Make_Transportable_Check;
 
    -----------------------------
    -- Make_Selected_Component --
@@ -6873,17 +6954,17 @@ package body Exp_Dist is
 
          --    - a package RPC receiver must be built. This subprogram
          --      will get a Subprogram_Id from the incoming stream
-         --      and will dispatch the call to the right subprogram
+         --      and will dispatch the call to the right subprogram;
 
-         --    - a receiving stub for any subprogram visible in the package
+         --    - a receiving stub for each subprogram visible in the package
          --      spec. This stub will read all the parameters from the stream,
          --      and put the result as well as the exception occurrence in the
-         --      output stream
+         --      output stream;
 
          --    - a dummy package with an empty spec and a body made of an
          --      elaboration part, whose job is to register the receiving
          --      part of this RCI package on the name server. This is done
-         --      by calling System.Partition_Interface.Register_Receiving_Stub
+         --      by calling System.Partition_Interface.Register_Receiving_Stub.
 
          Build_RPC_Receiver_Body (
            RPC_Receiver => Pkg_RPC_Receiver,
@@ -6921,41 +7002,6 @@ package body Exp_Dist is
                  Selector_Name => Name_Target),
                New_Occurrence_Of (Is_Local, Loc),
                New_Occurrence_Of (Local_Address, Loc))));
-
-         --  Determine whether the reference that was used to make
-         --  the call was the base RCI reference (in which case
-         --  Local_Address is 0, and the method identifier from the
-         --  request must be used to determine which subprogram is
-         --  called) or a reference identifying one particular subprogram
-         --  (in which case Local_Address is the address of that
-         --  subprogram, and the method name from the request is
-         --  ignored).
-         --  In each case, cascaded elsifs are used to determine the
-         --  proper subprogram index. Using hash tables might be
-         --  more efficient.
-
-         Append_To (Pkg_RPC_Receiver_Statements,
-           Make_Implicit_If_Statement (Pkg_Spec,
-             Condition =>
-               Make_Op_Ne (Loc,
-                 Left_Opnd  => New_Occurrence_Of (Local_Address, Loc),
-                 Right_Opnd => New_Occurrence_Of (RTE (RE_Null_Address), Loc)),
-             Then_Statements => New_List (
-               Make_Implicit_If_Statement (Pkg_Spec,
-                 Condition =>
-                   New_Occurrence_Of (Standard_False, Loc),
-                 Then_Statements => New_List (
-                   Make_Null_Statement (Loc)),
-                 Elsif_Parts =>
-                   Dispatch_On_Address)),
-             Else_Statements => New_List (
-               Make_Implicit_If_Statement (Pkg_Spec,
-                 Condition =>
-                   New_Occurrence_Of (Standard_False, Loc),
-                 Then_Statements => New_List (
-                   Make_Null_Statement (Loc)),
-                 Elsif_Parts =>
-                   Dispatch_On_Name))));
 
          --  For each subprogram, the receiving stub will be built and a
          --  case statement will be made on the Subprogram_Id to dispatch
@@ -7076,6 +7122,88 @@ package body Exp_Dist is
             Next (Current_Declaration);
          end loop;
 
+         Append_To (Decls,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Subp_Info_Array,
+             Constant_Present    => True,
+             Aliased_Present     => True,
+             Object_Definition   =>
+               Make_Subtype_Indication (Loc,
+                 Subtype_Mark =>
+                   New_Occurrence_Of (RTE (RE_RCI_Subp_Info_Array), Loc),
+                 Constraint =>
+                   Make_Index_Or_Discriminant_Constraint (Loc,
+                     New_List (
+                       Make_Range (Loc,
+                         Low_Bound  => Make_Integer_Literal (Loc,
+                           First_RCI_Subprogram_Id),
+                         High_Bound =>
+                           Make_Integer_Literal (Loc,
+                             First_RCI_Subprogram_Id
+                             + List_Length (Subp_Info_List) - 1)))))));
+
+         if Present (First (Subp_Info_List)) then
+            Set_Expression (Last (Decls),
+              Make_Aggregate (Loc,
+                Component_Associations => Subp_Info_List));
+
+            --  Generate the dispatch statement to determine the subprogram id
+            --  of the called subprogram.
+
+            --  We first test whether the reference that was used to make the
+            --  call was the base RCI reference (in which case Local_Address is
+            --  zero, and the method identifier from the request must be used
+            --  to determine which subprogram is called) or a reference
+            --  identifying one particular subprogram (in which case
+            --  Local_Address is the address of that subprogram, and the
+            --  method name from the request is ignored). The latter occurs
+            --  for the case of a call through a remote access-to-subprogram.
+
+            --  In each case, cascaded elsifs are used to determine the proper
+            --  subprogram index. Using hash tables might be more efficient.
+
+            Append_To (Pkg_RPC_Receiver_Statements,
+              Make_Implicit_If_Statement (Pkg_Spec,
+                Condition =>
+                  Make_Op_Ne (Loc,
+                    Left_Opnd  => New_Occurrence_Of
+                                    (Local_Address, Loc),
+                    Right_Opnd => New_Occurrence_Of
+                                    (RTE (RE_Null_Address), Loc)),
+                Then_Statements => New_List (
+                  Make_Implicit_If_Statement (Pkg_Spec,
+                    Condition =>
+                      New_Occurrence_Of (Standard_False, Loc),
+                    Then_Statements => New_List (
+                      Make_Null_Statement (Loc)),
+                    Elsif_Parts =>
+                      Dispatch_On_Address)),
+
+                Else_Statements => New_List (
+                  Make_Implicit_If_Statement (Pkg_Spec,
+                    Condition =>
+                      New_Occurrence_Of (Standard_False, Loc),
+                    Then_Statements => New_List (
+                      Make_Null_Statement (Loc)),
+                    Elsif_Parts =>
+                      Dispatch_On_Name))));
+
+         else
+            --  For a degenerate RCI with no visible subprograms,
+            --  Subp_Info_List has zero length, and the declaration is for an
+            --  empty array, in which case no initialization aggregate must be
+            --  generated. We do not generate a Dispatch_Statement either.
+
+            --  No initialization provided: remove CONSTANT so that the
+            --  declaration is not an incomplete deferred constant.
+
+            Set_Constant_Present (Last (Decls), False);
+         end if;
+
+         --  Analyze Subp_Info_Array declaration
+
+         Analyze (Last (Decls));
+
          --  If we receive an invalid Subprogram_Id, it is best to do nothing
          --  rather than raising an exception since we do not want someone
          --  to crash a remote partition by sending invalid subprogram ids.
@@ -7097,29 +7225,8 @@ package body Exp_Dist is
                New_Occurrence_Of (Subp_Index, Loc),
              Alternatives => Pkg_RPC_Receiver_Cases));
 
-         Append_To (Decls,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Subp_Info_Array,
-             Constant_Present    => True,
-             Aliased_Present     => True,
-             Object_Definition   =>
-               Make_Subtype_Indication (Loc,
-                 Subtype_Mark =>
-                   New_Occurrence_Of (RTE (RE_RCI_Subp_Info_Array), Loc),
-                 Constraint =>
-                   Make_Index_Or_Discriminant_Constraint (Loc,
-                     New_List (
-                       Make_Range (Loc,
-                         Low_Bound  => Make_Integer_Literal (Loc,
-                           First_RCI_Subprogram_Id),
-                         High_Bound =>
-                           Make_Integer_Literal (Loc,
-                             First_RCI_Subprogram_Id
-                             + List_Length (Subp_Info_List) - 1))))),
-             Expression          =>
-               Make_Aggregate (Loc,
-                 Component_Associations => Subp_Info_List)));
-         Analyze (Last (Decls));
+         --  Pkg_RPC_Receiver body is now complete: insert it into the tree and
+         --  analyze it.
 
          Append_To (Decls, Pkg_RPC_Receiver_Body);
          Analyze (Last (Decls));
@@ -8182,6 +8289,18 @@ package body Exp_Dist is
                      Make_Function_Call (Loc,
                        Name                   => Called_Subprogram,
                        Parameter_Associations => Parameter_List)));
+
+               if Is_Class_Wide_Type (Etyp) then
+
+                  --  For a remote call to a function with a class-wide type,
+                  --  check that the returned value satisfies the requirements
+                  --  of E.4(18).
+
+                  Append_To (Inner_Decls,
+                    Make_Transportable_Check (Loc,
+                      New_Occurrence_Of (Result, Loc)));
+
+               end if;
 
                Set_Etype (Result, Etyp);
                Append_To (After_Statements,
