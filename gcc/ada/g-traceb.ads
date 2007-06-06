@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2005, AdaCore                     --
+--                     Copyright (C) 1999-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,14 +59,22 @@
 
 --  This capability is currently supported on the following targets:
 
---     All x86 ports
 --     AiX PowerPC
 --     HP-UX
---     Irix
+--     GNU/Linux x86
+--     Irix MIPS
+--     LynxOS x86
+--     Solaris x86
 --     Solaris sparc
---     Tru64
+--     Tru64 alpha
+--     OpenVMS/Alpha
+--     OpenVMS/ia64
 --     VxWorks PowerPC
---     VxWorks Alpha
+--     VxWorks x86
+--     Windows NT/XP
+
+--  Note: see also GNAT.Traceback.Symbolic, a child unit in file g-trasym.ads
+--  providing symbolic trace back capability for a subset of the above targets.
 
 with System;
 with Ada.Exceptions.Traceback;
