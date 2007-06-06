@@ -32,7 +32,8 @@ hanneke ()
   e = (typeof (e)) a;
 
   /* Different signed SIMD assignment.  */
-  f = a; /* { dg-error "use -flax-vector-conversions to permit conversions between vectors with differing element types or numbers of subparts.*35: error: incompatible types in assignment" } */
+  f = a; /* { dg-message "note: use -flax-vector-conversions to permit conversions between vectors with differing element types or numbers of subparts" } */
+  /* { dg-error "incompatible types in assignment" "" { target *-*-* } 35 } */
 
   /* Casted different signed SIMD assignment.  */
   f = (uv4si) a;

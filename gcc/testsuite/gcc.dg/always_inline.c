@@ -3,7 +3,7 @@
 #include <stdarg.h>
 inline __attribute__ ((always_inline)) void
 e(int t, ...)
-{				/* { dg-message "variable argument" "" } */
+{				/* { dg-message "sorry\[^\n\]*variable argument" "" } */
   va_list q;
   va_start (q, t);
 }
