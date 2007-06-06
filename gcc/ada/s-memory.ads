@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,8 +75,7 @@ package System.Memory is
 
    function Realloc
      (Ptr  : System.Address;
-      Size : size_t)
-      return System.Address;
+      Size : size_t) return System.Address;
    --  This is the low level reallocation routine. It takes an existing
    --  block address returned by a previous call to Alloc or Realloc,
    --  and reallocates the block. The size can either be increased or

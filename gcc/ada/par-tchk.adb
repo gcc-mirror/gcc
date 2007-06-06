@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -417,26 +417,25 @@ package body Tchk is
          return;
 
       --  An interesting little kludge here. If the previous token is a
-      --  semicolon, then there is no way that we can legitimately need
-      --  another semicolon. This could only arise in an error situation
-      --  where an error has already been signalled. By simply ignoring
-      --  the request for a semicolon in this case, we avoid some spurious
-      --  missing semicolon messages.
+      --  semicolon, then there is no way that we can legitimately need another
+      --  semicolon. This could only arise in an error situation where an error
+      --  has already been signalled. By simply ignoring the request for a
+      --  semicolon in this case, we avoid some spurious missing semicolon
+      --  messages.
 
       elsif Prev_Token = Tok_Semicolon then
          return;
 
-      --  If the current token is | then this is a reasonable
-      --  place to suggest the possibility of a "C" confusion :-)
+      --  If the current token is | then this is a reasonable place to suggest
+      --  the possibility of a "C" confusion.
 
       elsif Token = Tok_Vertical_Bar then
          Error_Msg_SC ("unexpected occurrence of ""'|"", did you mean OR'?");
          Resync_Past_Semicolon;
          return;
 
-      --  Deal with pragma. If pragma is not at start of line, it is
-      --  considered misplaced otherwise we treat it as a normal
-      --  missing semicolong case.
+      --  Deal with pragma. If pragma is not at start of line, it is considered
+      --  misplaced otherwise we treat it as a normal missing semicolong case.
 
       elsif Token = Tok_Pragma
         and then not Token_Is_At_Start_Of_Line

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -130,7 +130,7 @@ begin
      and then (B1 = 'a' or else B1 = 'g' or else B1 = 'i' or else B1 = 's')
      and then Len <= Maxlen
    then
-      --  When VMS is the host, it is always also the target.
+      --  When VMS is the host, it is always also the target
 
       if Hostparm.OpenVMS or else VMS_On_Target then
          Len := Len + 1;

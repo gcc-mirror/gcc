@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -100,6 +100,7 @@ package body MDLL.Utl is
       Bas_Opt    : aliased String := "--base-file";
       Bas_V      : aliased String := Base_File;
       No_Suf_Opt : aliased String := "-k";
+
    begin
       Arguments (1 .. 4) := (1 => Def_Opt'Unchecked_Access,
                              2 => Def_V'Unchecked_Access,
@@ -141,7 +142,6 @@ package body MDLL.Utl is
          Exceptions.Raise_Exception
            (Tools_Error'Identity, Dlltool_Name & " execution error.");
       end if;
-
    end Dlltool;
 
    ---------
@@ -286,7 +286,7 @@ package body MDLL.Utl is
          --  Delete binder files
          declare
             Base_Name : constant String :=
-              Directory_Operations.Base_Name (Ali, ".ali");
+                          Directory_Operations.Base_Name (Ali, ".ali");
          begin
             OS_Lib.Delete_File ("b~" & Base_Name & ".ads", Success);
             OS_Lib.Delete_File ("b~" & Base_Name & ".adb", Success);

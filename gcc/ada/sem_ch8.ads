@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -122,7 +122,7 @@ package Sem_Ch8 is
    --  S is the entity of a scope. This function determines if this scope
    --  is currently open (i.e. it appears somewhere in the scope stack).
 
-   procedure New_Scope (S : Entity_Id);
+   procedure Push_Scope (S : Entity_Id);
    --  Make new scope stack entry, pushing S, the entity for a scope
    --  onto the top of the scope table. The current setting of the scope
    --  suppress flags is saved for restoration on exit.

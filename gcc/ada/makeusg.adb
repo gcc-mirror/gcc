@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -203,17 +203,17 @@ begin
 
    --  Line for -we
 
-   Write_Str ("  -we      treat all Warnings as Errors");
+   Write_Str ("  -we      Treat all warnings as errors");
    Write_Eol;
 
    --  Line for -wn
 
-   Write_Str ("  -wn      Normal Warning mode (cancels -we/-ws)");
+   Write_Str ("  -wn      Normal warning mode (cancels -we/-ws)");
    Write_Eol;
 
    --  Line for -ws
 
-   Write_Str ("  -ws      Suppress all Warnings");
+   Write_Str ("  -ws      Suppress all warnings");
    Write_Eol;
 
    --  Line for -x
@@ -246,7 +246,12 @@ begin
 
    --  Source and Library search path switches
 
-   Write_Str ("Source and Library search path switches:");
+   Write_Str ("Project, Source and Library search path switches:");
+   Write_Eol;
+
+   --  Line for -aP
+
+   Write_Str ("  -aPdir    Add directory dir to project search path");
    Write_Eol;
 
    --  Line for -aL
