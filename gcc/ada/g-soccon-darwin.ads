@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@
 --  by the GNAT.Sockets package (g-socket.ads). This package should not be
 --  directly with'ed by an applications program.
 
---  This is the version for powerpc-apple-darwin7.4.1
+--  This is the version for powerpc-apple-darwin8.8.0
 --  This file is generated automatically, do not modify it by hand! Instead,
 --  make changes to gen-soccon.c and re-run it on each target.
 
@@ -167,7 +167,7 @@ package GNAT.Sockets.Constants is
    -- System limits --
    -------------------
 
-   IOV_MAX            : constant :=  2147483647; --  Maximum writev iovcnt
+   IOV_MAX            : constant :=        1024; --  Maximum writev iovcnt
 
    ----------------------
    -- Type definitions --
@@ -177,5 +177,18 @@ package GNAT.Sockets.Constants is
 
    SIZEOF_tv_sec      : constant :=           4; --  tv_sec
    SIZEOF_tv_usec     : constant :=           4; --  tv_usec
+
+   ----------------------------------------
+   -- Properties of supported interfaces --
+   ----------------------------------------
+
+   Need_Netdb_Buffer  : constant :=           1; --  Need buffer for Netdb ops
+
+   ----------------------
+   -- Additional flags --
+   ----------------------
+
+   Thread_Blocking_IO : constant Boolean := True;
+   --  Set False for contexts where socket i/o are process blocking
 
 end GNAT.Sockets.Constants;
