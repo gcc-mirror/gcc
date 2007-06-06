@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,9 +91,10 @@ package Osint.C is
    --  procedures in appropriate variables in Repinfo, so that they can
    --  be called indirectly without creating a dependence.
 
-   procedure Create_Repinfo_File (Src : File_Name_Type);
+   procedure Create_Repinfo_File (Src : String);
    --  Given the simple name of a source file, this routine creates the
-   --  corresponding file to hold representation information
+   --  corresponding file to hold representation information. Note that the
+   --  call destroys the contents of Name_Buffer and Name_Len.
 
    procedure Write_Repinfo_Line (Info : String);
    --  Writes contents of given string as next line of the current debug
