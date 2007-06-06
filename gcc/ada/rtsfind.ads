@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -184,6 +184,7 @@ package Rtsfind is
 
       --  Children of System
 
+      System_Address_Image,
       System_Arith_64,
       System_AST_Handling,
       System_Assertions,
@@ -201,6 +202,7 @@ package Rtsfind is
       System_Compare_Array_Unsigned_8,
       System_DSA_Services,
       System_Exception_Table,
+      System_Exceptions,
       System_Exn_Int,
       System_Exn_LLF,
       System_Exn_LLI,
@@ -399,7 +401,7 @@ package Rtsfind is
    --  Range of values for children of Interfaces
 
    subtype System_Child is RTU_Id
-     range System_Arith_64 .. System_Tasking_Stages;
+     range System_Address_Image .. System_Tasking_Stages;
    --  Range of values for children or grandchildren of System
 
    subtype System_Tasking_Child is System_Child
@@ -456,11 +458,11 @@ package Rtsfind is
      RE_Exception_Message,               -- Ada.Exceptions
      RE_Exception_Name_Simple,           -- Ada.Exceptions
      RE_Exception_Occurrence,            -- Ada.Exceptions
-     RE_Local_Raise,                     -- Ada.Exceptions
      RE_Null_Occurrence,                 -- Ada.Exceptions
      RE_Poll,                            -- Ada.Exceptions
      RE_Raise_Exception,                 -- Ada.Exceptions
      RE_Raise_Exception_Always,          -- Ada.Exceptions
+     RE_Raise_From_Controlled_Operation, -- Ada.Exceptions
      RE_Reraise_Occurrence,              -- Ada.Exceptions
      RE_Reraise_Occurrence_Always,       -- Ada.Exceptions
      RE_Reraise_Occurrence_No_Defer,     -- Ada.Exceptions
@@ -485,42 +487,45 @@ package Rtsfind is
 
      RE_Stream_Access,                   -- Ada.Streams.Stream_IO
 
-     RE_Abstract_Interface,              -- Ada.Tags
      RE_Access_Level,                    -- Ada.Tags
+     RE_Address_Array,                   -- Ada.Tags
      RE_Addr_Ptr,                        -- Ada.Tags
      RE_Base_Address,                    -- Ada.Tags
      RE_Cstring_Ptr,                     -- Ada.Tags
      RE_Default_Prim_Op_Count,           -- Ada.Tags
      RE_Descendant_Tag,                  -- Ada.Tags
      RE_Dispatch_Table,                  -- Ada.Tags
+     RE_Dispatch_Table_Wrapper,          -- Ada.Tags
      RE_Displace,                        -- Ada.Tags
-     RE_DT_Entry_Size,                   -- Ada.Tags
-     RE_DT_Min_Prologue_Size,            -- Ada.Tags
-     RE_DT_Prologue_Size,                -- Ada.Tags
+     RE_DT,                              -- Ada.Tags
+     RE_DT_Predef_Prims_Offset,          -- Ada.Tags
      RE_DT_Typeinfo_Ptr_Size,            -- Ada.Tags
      RE_Expanded_Name,                   -- Ada.Tags
      RE_External_Tag,                    -- Ada.Tags
+     RE_HT_Link,                         -- Ada.Tags
      RO_TA_External_Tag,                 -- Ada.Tags
      RE_Get_Access_Level,                -- Ada.Tags
      RE_Get_Entry_Index,                 -- Ada.Tags
      RE_Get_Offset_Index,                -- Ada.Tags
-     RE_Get_Predefined_Prim_Op_Address,  -- Ada.Tags
-     RE_Get_Prim_Op_Address,             -- Ada.Tags
      RE_Get_Prim_Op_Kind,                -- Ada.Tags
-     RE_Get_RC_Offset,                   -- Ada.Tags
-     RE_Get_Remotely_Callable,           -- Ada.Tags
      RE_Get_Tagged_Kind,                 -- Ada.Tags
      RE_Idepth,                          -- Ada.Tags
+     RE_Iface_Tag,                       -- Ada.Tags
      RE_Ifaces_Table,                    -- Ada.Tags
-     RE_Ifaces_Table_Ptr,                -- Ada.Tags
+     RE_Interfaces_Table,                -- Ada.Tags
      RE_Interface_Data,                  -- Ada.Tags
-     RE_Interface_Data_Ptr,              -- Ada.Tags
      RE_Interface_Tag,                   -- Ada.Tags
      RE_IW_Membership,                   -- Ada.Tags
      RE_Nb_Ifaces,                       -- Ada.Tags
+     RE_No_Dispatch_Table_Wrapper,       -- Ada.Tags
+     RE_NDT_Prims_Ptr,                   -- Ada.Tags
+     RE_NDT_TSD,                         -- Ada.Tags
+     RE_Num_Prims,                       -- Ada.Tags
      RE_Object_Specific_Data,            -- Ada.Tags
      RE_Offset_To_Top,                   -- Ada.Tags
-     RE_Type_Specific_Data,              -- Ada.Tags
+     RE_Offset_To_Top_Function_Ptr,      -- Ada.Tags
+     RE_OSD_Table,                       -- Ada.Tags
+     RE_OSD_Num_Prims,                   -- Ada.Tags
      RE_POK_Function,                    -- Ada.Tags
      RE_POK_Procedure,                   -- Ada.Tags
      RE_POK_Protected_Entry,             -- Ada.Tags
@@ -529,34 +534,29 @@ package Rtsfind is
      RE_POK_Task_Entry,                  -- Ada.Tags
      RE_POK_Task_Function,               -- Ada.Tags
      RE_POK_Task_Procedure,              -- Ada.Tags
+     RE_Predef_Prims,                    -- Ada.Tags
+     RE_Predef_Prims_Table_Ptr,          -- Ada.Tags
      RE_Prim_Op_Kind,                    -- Ada.Tags
-     RE_Primary_DT,                      -- Ada.Tags
      RE_Prims_Ptr,                       -- Ada.Tags
-     RE_Register_Interface_Tag,          -- Ada.Tags
+     RE_Primary_DT,                      -- Ada.Tags
+     RE_Signature,                       -- Ada.Tags
+     RE_SSD,                             -- Ada.Tags
+     RE_TSD,                             -- Ada.Tags
+     RE_Type_Specific_Data,              -- Ada.Tags
      RE_Register_Tag,                    -- Ada.Tags
-     RE_Remotely_Callable,               -- Ada.Tags
+     RE_Transportable,                   -- Ada.Tags
      RE_RC_Offset,                       -- Ada.Tags
      RE_Secondary_DT,                    -- Ada.Tags
      RE_Select_Specific_Data,            -- Ada.Tags
-     RE_Set_Access_Level,                -- Ada.Tags
      RE_Set_Entry_Index,                 -- Ada.Tags
-     RE_Set_Expanded_Name,               -- Ada.Tags
-     RE_Set_Num_Prim_Ops,                -- Ada.Tags
-     RE_Set_Offset_Index,                -- Ada.Tags
      RE_Set_Offset_To_Top,               -- Ada.Tags
-     RE_Set_OSD,                         -- Ada.Tags
-     RE_Set_Predefined_Prim_Op_Address,  -- Ada.Tags
-     RE_Set_Prim_Op_Address,             -- Ada.Tags
      RE_Set_Prim_Op_Kind,                -- Ada.Tags
-     RE_Set_RC_Offset,                   -- Ada.Tags
-     RE_Set_Remotely_Callable,           -- Ada.Tags
-     RE_Set_SSD,                         -- Ada.Tags
-     RE_Set_Signature,                   -- Ada.Tags
-     RE_Set_Tagged_Kind,                 -- Ada.Tags
-     RE_Set_TSD,                         -- Ada.Tags
+     RE_Static_Offset_To_Top,            -- Ada.Tags
      RE_Tag,                             -- Ada.Tags
      RE_Tag_Error,                       -- Ada.Tags
+     RE_Tag_Kind,                        -- Ada.Tags
      RE_Tag_Ptr,                         -- Ada.Tags
+     RE_Tag_Table,                       -- Ada.Tags
      RE_Tags_Table,                      -- Ada.Tags
      RE_Tagged_Kind,                     -- Ada.Tags
      RE_Type_Specific_Data_Ptr,          -- Ada.Tags
@@ -599,6 +599,8 @@ package Rtsfind is
      RE_Null_Address,                    -- System
      RE_Priority,                        -- System
 
+     RE_Address_Image,                   -- System.Address_Image
+
      RE_Add_With_Ovflo_Check,            -- System.Arith_64
      RE_Double_Divide,                   -- System.Arith_64
      RE_Multiply_With_Ovflo_Check,       -- System.Arith_64
@@ -607,6 +609,7 @@ package Rtsfind is
 
      RE_Create_AST_Handler,              -- System.AST_Handling
 
+     RE_Assert_Failure,                  -- System.Assertions
      RE_Raise_Assert_Failure,            -- System.Assertions
 
      RE_AST_Handler,                     -- System.Aux_DEC
@@ -662,6 +665,8 @@ package Rtsfind is
      RE_Get_Passive_Partition_Id,        -- System.DSA_Services
 
      RE_Register_Exception,              -- System.Exception_Table
+
+     RE_Local_Raise,                     -- System.Exceptions
 
      RE_Exn_Integer,                     -- System.Exn_Int
 
@@ -1231,6 +1236,7 @@ package Rtsfind is
      RE_Storage_Offset,                  -- System.Storage_Elements
      RE_Storage_Array,                   -- System.Storage_Elements
      RE_To_Address,                      -- System.Storage_Elements
+     RE_Dummy_Communication_Block,       -- System.Storage_Elements
 
      RE_Root_Storage_Pool,               -- System.Storage_Pools
      RE_Allocate_Any,                    -- System_Storage_Pools,
@@ -1332,11 +1338,6 @@ package Rtsfind is
      RE_Get_Current_Excep,               -- System.Soft_Links
      RE_Get_GNAT_Exception,              -- System.Soft_Links
      RE_Update_Exception,                -- System.Soft_Links
-
-     RE_ATSD,                            -- System.Threads
-     RE_Thread_Body_Enter,               -- System.Threads
-     RE_Thread_Body_Exceptional_Exit,    -- System.Threads
-     RE_Thread_Body_Leave,               -- System.Threads
 
      RE_Bits_1,                          -- System.Unsigned_Types
      RE_Bits_2,                          -- System.Unsigned_Types
@@ -1563,11 +1564,11 @@ package Rtsfind is
      RE_Exception_Message                => Ada_Exceptions,
      RE_Exception_Name_Simple            => Ada_Exceptions,
      RE_Exception_Occurrence             => Ada_Exceptions,
-     RE_Local_Raise                      => Ada_Exceptions,
      RE_Null_Occurrence                  => Ada_Exceptions,
      RE_Poll                             => Ada_Exceptions,
      RE_Raise_Exception                  => Ada_Exceptions,
      RE_Raise_Exception_Always           => Ada_Exceptions,
+     RE_Raise_From_Controlled_Operation  => Ada_Exceptions,
      RE_Reraise_Occurrence               => Ada_Exceptions,
      RE_Reraise_Occurrence_Always        => Ada_Exceptions,
      RE_Reraise_Occurrence_No_Defer      => Ada_Exceptions,
@@ -1592,42 +1593,45 @@ package Rtsfind is
 
      RE_Stream_Access                    => Ada_Streams_Stream_IO,
 
-     RE_Abstract_Interface               => Ada_Tags,
      RE_Access_Level                     => Ada_Tags,
+     RE_Address_Array                    => Ada_Tags,
      RE_Addr_Ptr                         => Ada_Tags,
      RE_Base_Address                     => Ada_Tags,
      RE_Cstring_Ptr                      => Ada_Tags,
      RE_Default_Prim_Op_Count            => Ada_Tags,
      RE_Descendant_Tag                   => Ada_Tags,
      RE_Dispatch_Table                   => Ada_Tags,
+     RE_Dispatch_Table_Wrapper           => Ada_Tags,
      RE_Displace                         => Ada_Tags,
-     RE_DT_Entry_Size                    => Ada_Tags,
-     RE_DT_Min_Prologue_Size             => Ada_Tags,
-     RE_DT_Prologue_Size                 => Ada_Tags,
+     RE_DT                               => Ada_Tags,
+     RE_DT_Predef_Prims_Offset           => Ada_Tags,
      RE_DT_Typeinfo_Ptr_Size             => Ada_Tags,
      RE_Expanded_Name                    => Ada_Tags,
      RE_External_Tag                     => Ada_Tags,
+     RE_HT_Link                          => Ada_Tags,
      RO_TA_External_Tag                  => Ada_Tags,
      RE_Get_Access_Level                 => Ada_Tags,
      RE_Get_Entry_Index                  => Ada_Tags,
      RE_Get_Offset_Index                 => Ada_Tags,
-     RE_Get_Predefined_Prim_Op_Address   => Ada_Tags,
-     RE_Get_Prim_Op_Address              => Ada_Tags,
      RE_Get_Prim_Op_Kind                 => Ada_Tags,
-     RE_Get_RC_Offset                    => Ada_Tags,
-     RE_Get_Remotely_Callable            => Ada_Tags,
      RE_Get_Tagged_Kind                  => Ada_Tags,
      RE_Idepth                           => Ada_Tags,
+     RE_Iface_Tag                        => Ada_Tags,
      RE_Ifaces_Table                     => Ada_Tags,
-     RE_Ifaces_Table_Ptr                 => Ada_Tags,
+     RE_Interfaces_Table                 => Ada_Tags,
      RE_Interface_Data                   => Ada_Tags,
-     RE_Interface_Data_Ptr               => Ada_Tags,
      RE_Interface_Tag                    => Ada_Tags,
      RE_IW_Membership                    => Ada_Tags,
      RE_Nb_Ifaces                        => Ada_Tags,
+     RE_No_Dispatch_Table_Wrapper        => Ada_Tags,
+     RE_NDT_Prims_Ptr                    => Ada_Tags,
+     RE_NDT_TSD                          => Ada_Tags,
+     RE_Num_Prims                        => Ada_Tags,
      RE_Object_Specific_Data             => Ada_Tags,
      RE_Offset_To_Top                    => Ada_Tags,
-     RE_Type_Specific_Data               => Ada_Tags,
+     RE_Offset_To_Top_Function_Ptr       => Ada_Tags,
+     RE_OSD_Table                        => Ada_Tags,
+     RE_OSD_Num_Prims                    => Ada_Tags,
      RE_POK_Function                     => Ada_Tags,
      RE_POK_Procedure                    => Ada_Tags,
      RE_POK_Protected_Entry              => Ada_Tags,
@@ -1636,34 +1640,29 @@ package Rtsfind is
      RE_POK_Task_Entry                   => Ada_Tags,
      RE_POK_Task_Function                => Ada_Tags,
      RE_POK_Task_Procedure               => Ada_Tags,
+     RE_Predef_Prims                     => Ada_Tags,
+     RE_Predef_Prims_Table_Ptr           => Ada_Tags,
      RE_Prim_Op_Kind                     => Ada_Tags,
-     RE_Primary_DT                       => Ada_Tags,
      RE_Prims_Ptr                        => Ada_Tags,
-     RE_Register_Interface_Tag           => Ada_Tags,
+     RE_Primary_DT                       => Ada_Tags,
+     RE_Signature                        => Ada_Tags,
+     RE_SSD                              => Ada_Tags,
+     RE_TSD                              => Ada_Tags,
+     RE_Type_Specific_Data               => Ada_Tags,
      RE_Register_Tag                     => Ada_Tags,
-     RE_Remotely_Callable                => Ada_Tags,
+     RE_Transportable                    => Ada_Tags,
      RE_RC_Offset                        => Ada_Tags,
      RE_Secondary_DT                     => Ada_Tags,
      RE_Select_Specific_Data             => Ada_Tags,
-     RE_Set_Access_Level                 => Ada_Tags,
      RE_Set_Entry_Index                  => Ada_Tags,
-     RE_Set_Expanded_Name                => Ada_Tags,
-     RE_Set_Num_Prim_Ops                 => Ada_Tags,
-     RE_Set_Offset_Index                 => Ada_Tags,
      RE_Set_Offset_To_Top                => Ada_Tags,
-     RE_Set_OSD                          => Ada_Tags,
-     RE_Set_Predefined_Prim_Op_Address   => Ada_Tags,
-     RE_Set_Prim_Op_Address              => Ada_Tags,
      RE_Set_Prim_Op_Kind                 => Ada_Tags,
-     RE_Set_RC_Offset                    => Ada_Tags,
-     RE_Set_Remotely_Callable            => Ada_Tags,
-     RE_Set_SSD                          => Ada_Tags,
-     RE_Set_Signature                    => Ada_Tags,
-     RE_Set_Tagged_Kind                  => Ada_Tags,
-     RE_Set_TSD                          => Ada_Tags,
+     RE_Static_Offset_To_Top             => Ada_Tags,
      RE_Tag                              => Ada_Tags,
      RE_Tag_Error                        => Ada_Tags,
+     RE_Tag_Kind                         => Ada_Tags,
      RE_Tag_Ptr                          => Ada_Tags,
+     RE_Tag_Table                        => Ada_Tags,
      RE_Tags_Table                       => Ada_Tags,
      RE_Tagged_Kind                      => Ada_Tags,
      RE_Type_Specific_Data_Ptr           => Ada_Tags,
@@ -1704,6 +1703,8 @@ package Rtsfind is
      RE_Null_Address                     => System,
      RE_Priority                         => System,
 
+     RE_Address_Image                    => System_Address_Image,
+
      RE_Add_With_Ovflo_Check             => System_Arith_64,
      RE_Double_Divide                    => System_Arith_64,
      RE_Multiply_With_Ovflo_Check        => System_Arith_64,
@@ -1712,6 +1713,7 @@ package Rtsfind is
 
      RE_Create_AST_Handler               => System_AST_Handling,
 
+     RE_Assert_Failure                   => System_Assertions,
      RE_Raise_Assert_Failure             => System_Assertions,
 
      RE_AST_Handler                      => System_Aux_DEC,
@@ -1767,6 +1769,8 @@ package Rtsfind is
      RE_Get_Passive_Partition_Id         => System_DSA_Services,
 
      RE_Register_Exception               => System_Exception_Table,
+
+     RE_Local_Raise                      => System_Exceptions,
 
      RE_Exn_Integer                      => System_Exn_Int,
 
@@ -2336,6 +2340,7 @@ package Rtsfind is
      RE_Storage_Offset                   => System_Storage_Elements,
      RE_Storage_Array                    => System_Storage_Elements,
      RE_To_Address                       => System_Storage_Elements,
+     RE_Dummy_Communication_Block        => System_Storage_Elements,
 
      RE_Root_Storage_Pool                => System_Storage_Pools,
      RE_Allocate_Any                     => System_Storage_Pools,
@@ -2437,11 +2442,6 @@ package Rtsfind is
      RE_Get_Current_Excep                => System_Soft_Links,
      RE_Get_GNAT_Exception               => System_Soft_Links,
      RE_Update_Exception                 => System_Soft_Links,
-
-     RE_ATSD                             => System_Threads,
-     RE_Thread_Body_Enter                => System_Threads,
-     RE_Thread_Body_Exceptional_Exit     => System_Threads,
-     RE_Thread_Body_Leave                => System_Threads,
 
      RE_Bits_1                           => System_Unsigned_Types,
      RE_Bits_2                           => System_Unsigned_Types,
@@ -2808,9 +2808,9 @@ package Rtsfind is
    --  construct.
 
    function RTE_Available (E : RE_Id) return Boolean;
-   --  Returns true if a call to RTE will succeed without raising an
-   --  exception and without generating an error message, i.e. if the
-   --  call will obtain the desired entity without any problems.
+   --  Returns true if a call to RTE will succeed without raising an exception
+   --  and without generating an error message, i.e. if the call will obtain
+   --  the desired entity without any problems.
 
    function RTE_Record_Component (E : RE_Id) return Entity_Id;
    --  Given the entity defined in the above tables, as identified by the

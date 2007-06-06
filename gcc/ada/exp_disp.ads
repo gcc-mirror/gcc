@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,7 +111,7 @@ package Exp_Disp is
    --      interfaces, not generated for the rest of the cases. See Expand_N_
    --      Timed_Entry_Call for more information.
 
-   --  Lifecycle of predefined primitive operations
+   --  Life cycle of predefined primitive operations
 
    --      The specifications and bodies of the PPOs are created by
    --      Make_Predefined_Primitive_Specs and Predefined_Primitive_Bodies
@@ -122,16 +122,14 @@ package Exp_Disp is
    --      PPOs are collected and added to the Primitive_Operations list of
    --      a type by the regular analysis mechanism.
 
-   --      PPOs are frozen in Predefined_Primitive_Freeze in Exp_Ch3.
+   --      PPOs are frozen by Exp_Ch3.Predefined_Primitive_Freeze.
 
-   --      Thunks for PPOs are created in Freeze_Subprogram in Exp_Ch6, by a
-   --      call to Register_Predefined_DT_Entry, also in Exp_Ch6.
+   --      Thunks for PPOs are created by Make_DT.
 
-   --      Dispatch table positions of PPOs are set in Set_All_DT_Position in
-   --      Exp_Disp.
+   --      Dispatch table positions of PPOs are set by Set_All_DT_Position.
 
-   --      Calls to PPOs procede as regular dispatching calls. If the PPO
-   --      has a thunk, a call procedes as a regular dispatching call with
+   --      Calls to PPOs proceed as regular dispatching calls. If the PPO
+   --      has a thunk, a call proceeds as a regular dispatching call with
    --      a thunk.
 
    --  Guidelines for addition of new predefined primitive operations
@@ -167,21 +165,6 @@ package Exp_Disp is
    --    Exp_Disp.Default_Prim_Op_Position - indirect use
    --    Exp_Disp.Set_All_DT_Position      - direct   use
 
-   type DT_Access_Action is
-      (IW_Membership,
-       Get_Entry_Index,
-       Get_Prim_Op_Kind,
-       Get_Tagged_Kind,
-       Register_Interface_Tag,
-       Register_Tag,
-       Set_Entry_Index,
-       Set_Offset_Index,
-       Set_OSD,
-       Set_Prim_Op_Kind,
-       Set_Signature,
-       Set_SSD,
-       Set_Tagged_Kind);
-
    procedure Expand_Dispatching_Call (Call_Node : Node_Id);
    --  Expand the call to the operation through the dispatch table and perform
    --  the required tag checks when appropriate. For CPP types tag checks are
@@ -198,41 +181,22 @@ package Exp_Disp is
    --  the object to give access to the interface tag associated with the
    --  secondary dispatch table.
 
-   function Expand_Interface_Thunk
+   procedure Expand_Interface_Thunk
      (N           : Node_Id;
       Thunk_Alias : Node_Id;
-      Thunk_Id    : Entity_Id) return Node_Id;
+      Thunk_Id    : out Entity_Id;
+      Thunk_Code  : out Node_Id);
    --  Ada 2005 (AI-251): When a tagged type implements abstract interfaces we
    --  generate additional subprograms (thunks) to have a layout compatible
    --  with the C++ ABI. The thunk modifies the value of the first actual of
    --  the call (that is, the pointer to the object) before transferring
    --  control to the target function.
-
-   function Fill_DT_Entry
-     (Loc          : Source_Ptr;
-      Prim         : Entity_Id) return Node_Id;
-   --  Generate the code necessary to fill the appropriate entry of the
-   --  dispatch table of Prim's controlling type with Prim's address.
-
-   function Fill_Secondary_DT_Entry
-     (Loc          : Source_Ptr;
-      Prim         : Entity_Id;
-      Thunk_Id     : Entity_Id;
-      Iface_DT_Ptr : Entity_Id) return Node_Id;
-   --  (Ada 2005): Generate the code necessary to fill the appropriate entry of
-   --  the secondary dispatch table of Prim's controlling type with Thunk_Id's
-   --  address.
-
-   function Make_DT_Access_Action
-     (Typ    : Entity_Id;
-      Action : DT_Access_Action;
-      Args   : List_Id) return Node_Id;
-   --  Generate a call to one of the Dispatch Table Access Subprograms defined
-   --  in Ada.Tags or in Interfaces.Cpp
+   --
+   --  Required in 3.4 case, why ??? giant comment needed for any gcc
+   --  specific code ???
 
    function Make_DT (Typ : Entity_Id) return List_Id;
-   --  Expand the declarations for the Dispatch Table (or the Vtable in
-   --  the case of type whose ancestor is a CPP_Class)
+   --  Expand the declarations for the Dispatch Table.
 
    function Make_Disp_Asynchronous_Select_Body
      (Typ : Entity_Id) return Node_Id;
@@ -284,8 +248,8 @@ package Exp_Disp is
    function Make_Disp_Timed_Select_Body
      (Typ : Entity_Id) return Node_Id;
    --  Ada 2005 (AI-345): Generate the body of the primitive operation of type
-   --  Typ used for dispatching in timed selects. Generate a null body if Nul
-   --  is an interface type.
+   --  Typ used for dispatching in timed selects. Generates a body containing
+   --  a single null-statement if Typ is an interface type.
 
    function Make_Disp_Timed_Select_Spec
      (Typ : Entity_Id) return Node_Id;
@@ -299,20 +263,19 @@ package Exp_Disp is
    --  selects. Generate code to set the primitive operation kinds and entry
    --  indices of primitive operations and primitive wrappers.
 
-   procedure Make_Secondary_DT
-     (Typ             : Entity_Id;
-      Ancestor_Typ    : Entity_Id;
-      Suffix_Index    : Nat;
-      Iface           : Entity_Id;
-      AI_Tag          : Entity_Id;
-      Acc_Disp_Tables : in out Elist_Id;
-      Result          : out List_Id);
-   --  Ada 2005 (AI-251): Expand the declarations for the Secondary Dispatch
-   --  Table of Typ associated with Iface (each abstract interface implemented
-   --  by Typ has a secondary dispatch table). The arguments Typ, Ancestor_Typ
-   --  and Suffix_Index are used to generate an unique external name which
-   --  is added at the end of Acc_Disp_Tables; this external name will be
-   --  used later by the subprogram Exp_Ch3.Build_Init_Procedure.
+   procedure Register_Primitive
+     (Loc     : Source_Ptr;
+      Prim    : Entity_Id;
+      Ins_Nod : Node_Id);
+   --  Register Prim in the corresponding primary or secondary dispatch table.
+   --  If Prim is associated with a secondary dispatch table then generate also
+   --  its thunk and register it in the associated secondary dispatch table.
+   --  In general the dispatch tables are always generated by Make_DT and
+   --  Make_Secondary_DT; this routine is only used in two corner cases:
+   --    1) To construct the dispatch table of a tagged type whose parent
+   --       is a CPP_Class (see Build_Init_Procedure).
+   --    2) To handle late overriding of dispatching operations (see
+   --       Check_Dispatching_Operation).
 
    procedure Set_All_DT_Position (Typ : Entity_Id);
    --  Set the DT_Position field for each primitive operation. In the CPP
@@ -323,6 +286,12 @@ package Exp_Disp is
    --  Typ is a CPP_Class type. Create the Init procedure of that type to
    --  be the default constructor (i.e. the function returning this type,
    --  having a pragma CPP_Constructor and no parameter)
+
+   procedure Set_DTC_Entity_Value
+     (Tagged_Type : Entity_Id;
+      Prim        : Entity_Id);
+   --  Set the definite value of the DTC_Entity value associated with a given
+   --  primitive of a tagged type.
 
    procedure Write_DT (Typ : Entity_Id);
    pragma Export (Ada, Write_DT);
