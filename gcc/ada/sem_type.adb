@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -167,9 +167,9 @@ package body Sem_Type is
    --  multiple interpretations. Interpretations can be added to only one
    --  node at a time.
 
-   function Specific_Type (T1, T2 : Entity_Id) return Entity_Id;
-   --  If T1 and T2 are compatible, return  the one that is not
-   --  universal or is not a "class" type (any_character,  etc).
+   function Specific_Type (Typ_1, Typ_2 : Entity_Id) return Entity_Id;
+   --  If Typ_1 and Typ_2 are compatible, return the one that is not universal
+   --  or is not a "class" type (any_character, etc).
 
    --------------------
    -- Add_One_Interp --
@@ -344,6 +344,7 @@ package body Sem_Type is
            or else Nkind (N) = N_Expanded_Name
            or else (Nkind (N) in N_Op and then E = Entity (N))
            or else In_Instance
+           or else Ekind (Vis_Type) = E_Anonymous_Access_Type
          then
             null;
 
@@ -1332,9 +1333,9 @@ package body Sem_Type is
                   elsif Present (Act2)
                     and then Nkind (Act2) in N_Op
                     and then Is_Overloaded (Act2)
-                    and then (Nkind (Right_Opnd (Act1)) = N_Integer_Literal
+                    and then (Nkind (Right_Opnd (Act2)) = N_Integer_Literal
                                 or else
-                              Nkind (Right_Opnd (Act1)) = N_Real_Literal)
+                              Nkind (Right_Opnd (Act2)) = N_Real_Literal)
                     and then Has_Compatible_Type (Act2, Standard_Boolean)
                   then
                      --  The preference rule on the first actual is not
@@ -1449,6 +1450,19 @@ package body Sem_Type is
          elsif Is_Ada_2005_Only (Nam2) then
             return It1;
          end if;
+      end if;
+
+      --  Check for overloaded CIL convention stuff because the CIL libraries
+      --  do sick things like Console.WriteLine where it matches
+      --  two different overloads, so just pick the first ???
+
+      if Convention (Nam1) = Convention_CIL
+        and then Convention (Nam2) = Convention_CIL
+        and then Ekind (Nam1) = Ekind (Nam2)
+        and then (Ekind (Nam1) = E_Procedure
+                   or else Ekind (Nam1) = E_Function)
+      then
+         return It2;
       end if;
 
       --  If the context is universal, the predefined operator is preferred.
@@ -1869,14 +1883,19 @@ package body Sem_Type is
       --  is no rule in 4.6 that allows "access Integer" to be converted to P.
 
       elsif Ada_Version >= Ada_05
-        and then Ekind (Etype (L)) = E_Anonymous_Access_Type
+        and then
+          (Ekind (Etype (L)) = E_Anonymous_Access_Type
+             or else
+           Ekind (Etype (L)) = E_Anonymous_Access_Subprogram_Type)
         and then Is_Access_Type (Etype (R))
         and then Ekind (Etype (R)) /= E_Access_Type
       then
          return Etype (L);
 
       elsif Ada_Version >= Ada_05
-        and then Ekind (Etype (R)) = E_Anonymous_Access_Type
+        and then
+          (Ekind (Etype (R)) = E_Anonymous_Access_Type
+            or else Ekind (Etype (R)) = E_Anonymous_Access_Subprogram_Type)
         and then Is_Access_Type (Etype (L))
         and then Ekind (Etype (L)) /= E_Access_Type
       then
@@ -2058,9 +2077,14 @@ package body Sem_Type is
       Iface : Entity_Id) return Boolean
    is
       Target_Typ : Entity_Id;
+      Iface_Typ  : Entity_Id;
 
       function Iface_Present_In_Ancestor (Typ : Entity_Id) return Boolean;
       --  Returns True if Typ or some ancestor of Typ implements Iface
+
+      -------------------------------
+      -- Iface_Present_In_Ancestor --
+      -------------------------------
 
       function Iface_Present_In_Ancestor (Typ : Entity_Id) return Boolean is
          E    : Entity_Id;
@@ -2068,7 +2092,7 @@ package body Sem_Type is
          Elmt : Elmt_Id;
 
       begin
-         if Typ = Iface then
+         if Typ = Iface_Typ then
             return True;
          end if;
 
@@ -2091,7 +2115,7 @@ package body Sem_Type is
                while Present (Elmt) loop
                   AI := Node (Elmt);
 
-                  if AI = Iface or else Is_Ancestor (Iface, AI) then
+                  if AI = Iface_Typ or else Is_Ancestor (Iface_Typ, AI) then
                      return True;
                   end if;
 
@@ -2109,7 +2133,7 @@ package body Sem_Type is
             --  Check if the current type is a direct derivation of the
             --  interface
 
-            if Etype (E) = Iface then
+            if Etype (E) = Iface_Typ then
                return True;
             end if;
 
@@ -2128,6 +2152,16 @@ package body Sem_Type is
    --  Start of processing for Interface_Present_In_Ancestor
 
    begin
+      if Is_Class_Wide_Type (Iface) then
+         Iface_Typ := Etype (Iface);
+      else
+         Iface_Typ := Iface;
+      end if;
+
+      --  Handle subtypes
+
+      Iface_Typ := Base_Type (Iface_Typ);
+
       if Is_Access_Type (Typ) then
          Target_Typ := Etype (Directly_Designated_Type (Typ));
       else
@@ -2138,20 +2172,22 @@ package body Sem_Type is
          Target_Typ := Corresponding_Concurrent_Type (Target_Typ);
       end if;
 
+      Target_Typ := Base_Type (Target_Typ);
+
       --  In case of concurrent types we can't use the Corresponding Record_Typ
       --  to look for the interface because it is built by the expander (and
       --  hence it is not always available). For this reason we traverse the
       --  list of interfaces (available in the parent of the concurrent type)
 
       if Is_Concurrent_Type (Target_Typ) then
-         if Present (Interface_List (Parent (Base_Type (Target_Typ)))) then
+         if Present (Interface_List (Parent (Target_Typ))) then
             declare
                AI : Node_Id;
 
             begin
-               AI := First (Interface_List (Parent (Base_Type (Target_Typ))));
+               AI := First (Interface_List (Parent (Target_Typ)));
                while Present (AI) loop
-                  if Etype (AI) = Iface then
+                  if Etype (AI) = Iface_Typ then
                      return True;
 
                   elsif Present (Abstract_Interfaces (Etype (AI)))
@@ -2674,7 +2710,9 @@ package body Sem_Type is
    -- Specific_Type --
    -------------------
 
-   function Specific_Type (T1, T2 : Entity_Id) return Entity_Id is
+   function Specific_Type (Typ_1, Typ_2 : Entity_Id) return Entity_Id is
+      T1 : constant Entity_Id := Available_View (Typ_1);
+      T2 : constant Entity_Id := Available_View (Typ_2);
       B1 : constant Entity_Id := Base_Type (T1);
       B2 : constant Entity_Id := Base_Type (T2);
 
