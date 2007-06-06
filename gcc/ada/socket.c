@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 2003-2006, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2003-2007, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -52,6 +52,7 @@ extern void __gnat_disable_all_sigpipes (void);
 extern int  __gnat_create_signalling_fds (int *fds);
 extern int  __gnat_read_signalling_fd (int rsig);
 extern int  __gnat_write_signalling_fd (int wsig);
+extern void  __gnat_close_signalling_fd (int sig);
 extern void __gnat_free_socket_set (fd_set *);
 extern void __gnat_last_socket_in_set (fd_set *, int *);
 extern void __gnat_get_socket_from_set (fd_set *, int *, int *);
@@ -114,6 +115,150 @@ int
 __gnat_write_signalling_fd (int wsig) {
   char c = 0;
   return write (wsig, &c, 1);
+}
+
+/*
+ * Close one end of a pair of signalling fds
+ */
+void
+__gnat_close_signalling_fd (int sig) {
+  (void) close (sig);
+}
+#endif
+
+/*
+ * GetXXXbyYYY wrappers
+ * These functions are used by the default implementation of g-socthi,
+ * and also by the Windows version.
+ *
+ * They can be used for any platform that either provides an intrinsically
+ * task safe implementation of getXXXbyYYY, or a reentrant variant
+ * getXXXbyYYY_r. Otherwise, a task safe wrapper, including proper mutual
+ * exclusion if appropriate, must be implemented in the target specific
+ * version of g-socthi.
+ */
+
+#ifdef HAVE_THREAD_SAFE_GETxxxBYyyy
+int
+__gnat_safe_gethostbyname (const char *name,
+  struct hostent *ret, char *buf, size_t buflen,
+  int *h_errnop)
+{
+  struct hostent *rh;
+  rh = gethostbyname (name);
+  if (rh == NULL) {
+    *h_errnop = h_errno;
+    return -1;
+  }
+  *ret = *rh;
+  *h_errnop = 0;
+  return 0;
+}
+
+int
+__gnat_safe_gethostbyaddr (const char *addr, int len, int type,
+  struct hostent *ret, char *buf, size_t buflen,
+  int *h_errnop)
+{
+  struct hostent *rh;
+  rh = gethostbyaddr (addr, len, type);
+  if (rh == NULL) {
+    *h_errnop = h_errno;
+    return -1;
+  }
+  *ret = *rh;
+  *h_errnop = 0;
+  return 0;
+}
+
+int
+__gnat_safe_getservbyname (const char *name, const char *proto,
+  struct servent *ret, char *buf, size_t buflen)
+{
+  struct servent *rh;
+  rh = getservbyname (name, proto);
+  if (rh == NULL)
+    return -1;
+  *ret = *rh;
+  return 0;
+}
+
+int
+__gnat_safe_getservbyport (int port, const char *proto,
+  struct servent *ret, char *buf, size_t buflen)
+{
+  struct servent *rh;
+  rh = getservbyport (port, proto);
+  if (rh == NULL)
+    return -1;
+  *ret = *rh;
+  return 0;
+}
+#elif HAVE_GETxxxBYyyy_R
+int
+__gnat_safe_gethostbyname (const char *name,
+  struct hostent *ret, char *buf, size_t buflen,
+  int *h_errnop)
+{
+  struct hostent *rh;
+  int ri;
+
+#ifdef __linux__
+  (void) gethostbyname_r (name, ret, buf, buflen, &rh, h_errnop);
+#else
+  rh = gethostbyname_r (name, ret, buf, buflen, h_errnop);
+#endif
+  ri = (rh == NULL) ? -1 : 0;
+  return ri;
+}
+
+int
+__gnat_safe_gethostbyaddr (const char *addr, int len, int type,
+  struct hostent *ret, char *buf, size_t buflen,
+  int *h_errnop)
+{
+  struct hostent *rh;
+  int ri;
+
+#ifdef __linux__
+  (void) gethostbyaddr_r (addr, len, type, ret, buf, buflen, &rh, h_errnop);
+#else
+  rh = gethostbyaddr_r (addr, len, type, ret, buf, buflen, h_errnop);
+#endif
+  ri = (rh == NULL) ? -1 : 0;
+  return ri;
+}
+
+int
+__gnat_safe_getservbyname (const char *name, const char *proto,
+  struct servent *ret, char *buf, size_t buflen)
+{
+  struct servent *rh;
+  int ri;
+
+#ifdef __linux__
+  (void) getservbyname_r (name, proto, ret, buf, buflen, &rh);
+#else
+  rh = getservbyname_r (name, proto, ret, buf, buflen);
+#endif
+  ri = (rh == NULL) ? -1 : 0;
+  return ri;
+}
+
+int
+__gnat_safe_getservbyport (int port, const char *proto,
+  struct servent *ret, char *buf, size_t buflen)
+{
+  struct servent *rh;
+  int ri;
+
+#ifdef __linux__
+  (void) getservbyport_r (port, proto, ret, buf, buflen, &rh);
+#else
+  rh = getservbyport_r (port, proto, ret, buf, buflen);
+#endif
+  ri = (rh == NULL) ? -1 : 0;
+  return ri;
 }
 #endif
 
@@ -241,15 +386,24 @@ __gnat_get_h_errno (void) {
     default:
       return -1;
   }
-#elif defined(VMS)
-  return errno;
-#elif defined(__rtems__)
+
+#elif defined (VMS)
+  /* h_errno is defined as follows in OpenVMS' version of <netdb.h>.
+   * However this header file is not available when building the GNAT
+   * runtime library using GCC, so we are hardcoding the definition
+   * directly. Note that the returned address is thread-specific.
+   */
+  extern int *decc$h_errno_get_addr ();
+  return *decc$h_errno_get_addr ();
+
+#elif defined (__rtems__)
   /* At this stage in the tool build, no networking .h files are available.
-     Newlib does not provide networking .h files and RTEMS is not built yet.
-     So we need to explicitly extern h_errno to access it.
+   * Newlib does not provide networking .h files and RTEMS is not built yet.
+   * So we need to explicitly extern h_errno to access it.
    */
   extern int h_errno;
   return h_errno;
+
 #else
   return h_errno;
 #endif
