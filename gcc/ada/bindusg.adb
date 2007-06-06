@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,6 +52,11 @@ package body Bindusg is
       Write_Char (' ');
       Write_Str ("switches lfile");
       Write_Eol;
+      Write_Eol;
+
+      --  Line for @response_file
+
+      Write_Line ("  @<resp_file> Get arguments from response file");
       Write_Eol;
 
       --  Line for -aO switch
@@ -176,6 +181,11 @@ package body Bindusg is
       Write_Line ("  -r        List restrictions that could be applied " &
                   "to this partition");
 
+      --  Line for -R switch
+
+      Write_Line
+        ("  -R        List sources referenced in closure (implies -c)");
+
       --  Line for -s switch
 
       Write_Line ("  -s        Require all source files to be present");
@@ -230,6 +240,13 @@ package body Bindusg is
       --  Line for -z switch
 
       Write_Line ("  -z        No main subprogram (zero main)");
+
+      --  Line for --RTS
+
+      --  Line for -Z switch
+
+      Write_Line ("  -Z        " &
+                  "Zero formatting in auxiliary outputs (-e, -K, -l, -R)");
 
       --  Line for --RTS
 
