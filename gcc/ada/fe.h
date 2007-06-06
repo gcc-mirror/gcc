@@ -100,6 +100,14 @@ extern Entity_Id             Error_Msg_Node_2;
 extern Uint                  Error_Msg_Uint_1;
 extern Uint                  Error_Msg_Uint_2;
 
+/* exp_ch11:  */
+
+#define Get_Local_Raise_Call_Entity exp_ch11__get_local_raise_call_entity
+#define Get_RT_Exception_Entity exp_ch11__get_rt_exception_entity
+
+extern Entity_Id Get_Local_Raise_Call_Entity (void);
+extern Entity_Id Get_RT_Exception_Entity (int);
+
 /* exp_code:  */
 
 #define Asm_Input_Constraint exp_code__asm_input_constraint

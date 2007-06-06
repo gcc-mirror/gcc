@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2006 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -161,6 +161,9 @@ struct lang_type GTY(()) {tree t; };
    padding or alignment.  */
 #define TYPE_IS_PADDING_P(NODE) TYPE_LANG_FLAG_5 (RECORD_TYPE_CHECK (NODE))
 
+/* True if TYPE can alias any other types.  */
+#define TYPE_UNIVERSAL_ALIASING_P(NODE) TYPE_LANG_FLAG_6 (NODE)
+
 /* This field is only defined for FUNCTION_TYPE nodes. If the Ada
    subprogram contains no parameters passed by copy in/copy out then this
    field is 0. Otherwise it points to a list of nodes used to specify the
@@ -287,6 +290,13 @@ struct lang_type GTY(()) {tree t; };
   GET_DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))
 #define SET_DECL_RENAMED_OBJECT(NODE, X) \
   SET_DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE), X)
+
+/* In a FUNCTION_DECL, points to the stub associated with the function
+   if any, otherwise 0.  */
+#define DECL_FUNCTION_STUB(NODE) \
+  GET_DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))
+#define SET_DECL_FUNCTION_STUB(NODE, X) \
+  SET_DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE), X)
 
 /* In a FIELD_DECL corresponding to a discriminant, contains the
    discriminant number.  */

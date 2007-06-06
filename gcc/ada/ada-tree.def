@@ -80,6 +80,3 @@ DEFTREECODE (REGION_STMT, "region_stmt", tcc_statement, 3)
    handler itself, and HANDLER_STMT_BLOCK is the BLOCK node for this
    binding. */
 DEFTREECODE (HANDLER_STMT, "handler_stmt", tcc_statement, 3)
-
-/* A statement that emits a USE for its single operand.  */
-DEFTREECODE (USE_STMT, "use_expr", tcc_statement, 1)

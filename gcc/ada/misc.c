@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -302,6 +302,14 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
       gnat_argc++;
       break;
 
+    case OPT_feliminate_unused_debug_types:
+      /* We arrange for post_option to be able to only set the corresponding
+         flag to 1 when explicitely requested by the user.  We expect the
+         default flag value to be either 0 or positive, and expose a positive
+         -f as a negative value to post_option.  */
+      flag_eliminate_unused_debug_types = -value;
+      break;
+
     case OPT_fRTS_:
       gnat_argv[gnat_argc] = xstrdup ("-fRTS");
       gnat_argc++;
@@ -361,6 +369,14 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
     flag_no_inline = 1;
   if (flag_inline_functions)
     flag_inline_trees = 2;
+
+  /* Force eliminate_unused_debug_types to 0 unless an explicit positive
+     -f has been passed.  This forces the default to 0 for Ada, which might
+     differ from the common default.  */
+  if (flag_eliminate_unused_debug_types < 0)
+    flag_eliminate_unused_debug_types = 1;
+  else
+    flag_eliminate_unused_debug_types = 0;
 
   /* The structural alias analysis machinery essentially assumes that
      everything is addressable (modulo bit-fields) by disregarding
@@ -484,6 +500,11 @@ gnat_compute_largest_alignment (void)
 void
 gnat_init_gcc_eh (void)
 {
+#ifdef DWARF2_UNWIND_INFO
+  /* lang_dependent_init already called dwarf2out_frame_init if true.  */
+  int dwarf2out_frame_initialized = dwarf2out_do_frame ();
+#endif
+
   /* We shouldn't do anything if the No_Exceptions_Handler pragma is set,
      though. This could for instance lead to the emission of tables with
      references to symbols (such as the Ada eh personality routine) within
@@ -517,7 +538,7 @@ gnat_init_gcc_eh (void)
 
   init_eh ();
 #ifdef DWARF2_UNWIND_INFO
-  if (dwarf2out_do_frame ())
+  if (!dwarf2out_frame_initialized && dwarf2out_do_frame ())
     dwarf2out_frame_init ();
 #endif
 }
@@ -633,13 +654,6 @@ gnat_expand_expr (tree exp, rtx target, enum machine_mode tmode,
   tree type = TREE_TYPE (exp);
   tree new;
 
-  /* If this is a statement, call the expansion routine for statements.  */
-  if (IS_STMT (exp))
-    {
-      gnat_expand_stmt (exp);
-      return const0_rtx;
-    }
-
   /* Update EXP to be the new expression to expand.  */
   switch (TREE_CODE (exp))
     {
@@ -746,6 +760,10 @@ gnat_get_alias_set (tree type)
     return
       get_alias_set (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (type)))));
 
+  /* If the type can alias any other types, return the alias set 0.  */
+  else if (TYPE_P (type)
+	   && TYPE_UNIVERSAL_ALIASING_P (TYPE_MAIN_VARIANT (type)))
+    return 0;
 
   return -1;
 }
