@@ -1,8 +1,18 @@
+2007-06-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/32216
+	* tree-vectorizer.c (supportable_widening_operation): Determine
+	signedness of FIX_TRUNC_EXPR from output operand.
+	(supportable_narrowing_operation): Ditto.
+	* tree-vect-generic.c (expand_vector_operations_1): Determine
+	signedness of VEC_UNPACK_FLOAT_HI_EXPR and VEC_UNPACK_FLOAT_LO_EXPR
+	from input operand.
+
 2007-06-06  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	* config/i386/i386.c (enum pta_flags): Move out of struct scope...
-	(struct pta): ...from here. Change flags to unsigned to avoid excessive
-	casting (as it is used as a bit mask).
+	(struct pta): ...from here. Change flags to unsigned to avoid
+	excessive casting (as it is used as a bit mask).
 	(override_options): Add casts according to the coding convenventions.
 	(x86_64_elf_unique_section): Likewise.
 	(examine_argument): Avoid using C++ keywords as variable names.

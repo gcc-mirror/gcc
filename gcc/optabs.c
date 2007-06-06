@@ -357,6 +357,7 @@ optab_for_tree_code (enum tree_code code, tree type)
       return TYPE_UNSIGNED (type) ? vec_pack_usat_optab : vec_pack_ssat_optab;
 
     case VEC_PACK_FIX_TRUNC_EXPR:
+      /* The signedness is determined from output operand.  */
       return TYPE_UNSIGNED (type) ?
 	vec_pack_ufix_trunc_optab : vec_pack_sfix_trunc_optab;
 
