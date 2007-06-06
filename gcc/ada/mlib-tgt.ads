@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2005, AdaCore                     --
+--                     Copyright (C) 2001-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 --  In the default version, libraries are not supported, so function
 --  Support_For_Libraries return None.
 
-with Prj;         use Prj;
+with Prj; use Prj;
 
 package MLib.Tgt is
 
@@ -59,6 +59,10 @@ package MLib.Tgt is
    function Archive_Builder_Options return String_List_Access;
    --  A list of options to invoke the Archive_Builder, usually "cr" for "ar"
 
+   function Archive_Builder_Append_Options return String_List_Access;
+   --  A list of options to use with the archive builder to append object
+   --  files ("q", for example).
+
    function Archive_Indexer return String;
    --  Returns the name of the program, if any, that generates an index to the
    --  contents of an archive, usually "ranlib". If there is no archive indexer
@@ -79,7 +83,7 @@ package MLib.Tgt is
    --  For Unix and Windows, return "a".
 
    function Object_Ext return String;
-   --  System dependent object extension, without leadien dot.
+   --  System dependent object extension, without leading dot.
    --  On Unix, returns "o".
 
    function DLL_Prefix return String;
@@ -103,6 +107,10 @@ package MLib.Tgt is
    function Is_Archive_Ext (Ext : String) return Boolean;
    --  Returns True iff Ext is an extension for a library
 
+   function Default_Symbol_File_Name return String;
+   --  Returns the name of the symbol file when Library_Symbol_File is not
+   --  specified. Return the empty string when symbol files are not supported.
+
    procedure Build_Dynamic_Library
      (Ofiles       : Argument_List;
       Foreign      : Argument_List;
@@ -113,9 +121,9 @@ package MLib.Tgt is
       Lib_Filename : String;
       Lib_Dir      : String;
       Symbol_Data  : Symbol_Record;
-      Driver_Name  : Name_Id := No_Name;
-      Lib_Version  : String  := "";
-      Auto_Init    : Boolean := False);
+      Driver_Name  : Name_Id  := No_Name;
+      Lib_Version  : String   := "";
+      Auto_Init    : Boolean  := False);
    --  Build a dynamic/relocatable library
    --
    --  Ofiles is the list of all object files in the library
@@ -158,8 +166,114 @@ package MLib.Tgt is
 
    function Library_File_Name_For
      (Project : Project_Id;
-      In_Tree : Project_Tree_Ref) return Name_Id;
+      In_Tree : Project_Tree_Ref) return File_Name_Type;
    --  Returns the file name of the library file of a library project.
    --  This function can only be called for library projects.
 
+private
+   --  Access to subprogram types for indirection
+
+   type String_Function is access function return String;
+   type Is_Ext_Function is access function (Ext : String) return Boolean;
+   type String_List_Access_Function is access function
+     return String_List_Access;
+   type Build_Dynamic_Library_Function is access procedure
+     (Ofiles       : Argument_List;
+      Foreign      : Argument_List;
+      Afiles       : Argument_List;
+      Options      : Argument_List;
+      Options_2    : Argument_List;
+      Interfaces   : Argument_List;
+      Lib_Filename : String;
+      Lib_Dir      : String;
+      Symbol_Data  : Symbol_Record;
+      Driver_Name  : Name_Id := No_Name;
+      Lib_Version  : String  := "";
+      Auto_Init    : Boolean := False);
+
+   type Library_Exists_For_Function is access function
+     (Project : Project_Id; In_Tree : Project_Tree_Ref) return Boolean;
+
+   type Library_File_Name_For_Function is access function
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref) return File_Name_Type;
+
+   type Boolean_Function is access function return Boolean;
+
+   type Library_Support_Function is access function return Library_Support;
+
+   function Archive_Builder_Default return String;
+   Archive_Builder_Ptr : String_Function := Archive_Builder_Default'Access;
+
+   function Archive_Builder_Options_Default return String_List_Access;
+   Archive_Builder_Options_Ptr : String_List_Access_Function :=
+                                   Archive_Builder_Options_Default'Access;
+
+   function Archive_Builder_Append_Options_Default return String_List_Access;
+
+   Archive_Builder_Append_Options_Ptr :
+     String_List_Access_Function :=
+       Archive_Builder_Append_Options_Default'Access;
+
+   function Archive_Ext_Default return String;
+   Archive_Ext_Ptr : String_Function := Archive_Ext_Default'Access;
+
+   function Archive_Indexer_Default return String;
+   Archive_Indexer_Ptr : String_Function := Archive_Indexer_Default'Access;
+
+   function Archive_Indexer_Options_Default return String_List_Access;
+   Archive_Indexer_Options_Ptr : String_List_Access_Function :=
+                                   Archive_Indexer_Options_Default'Access;
+
+   function Default_Symbol_File_Name_Default return String;
+   Default_Symbol_File_Name_Ptr : String_Function :=
+                                    Default_Symbol_File_Name_Default'Access;
+
+   Build_Dynamic_Library_Ptr : Build_Dynamic_Library_Function;
+
+   function DLL_Ext_Default return String;
+   DLL_Ext_Ptr : String_Function := DLL_Ext_Default'Access;
+
+   function DLL_Prefix_Default return String;
+   DLL_Prefix_Ptr : String_Function := DLL_Prefix_Default'Access;
+
+   function Dynamic_Option_Default return String;
+   Dynamic_Option_Ptr : String_Function := Dynamic_Option_Default'Access;
+
+   function Is_Object_Ext_Default (Ext : String) return Boolean;
+   Is_Object_Ext_Ptr : Is_Ext_Function := Is_Object_Ext_Default'Access;
+
+   function Is_C_Ext_Default (Ext : String) return Boolean;
+   Is_C_Ext_Ptr : Is_Ext_Function := Is_C_Ext_Default'Access;
+
+   function Is_Archive_Ext_Default (Ext : String) return Boolean;
+   Is_Archive_Ext_Ptr : Is_Ext_Function := Is_Archive_Ext_Default'Access;
+
+   function Libgnat_Default return String;
+   Libgnat_Ptr : String_Function := Libgnat_Default'Access;
+
+   function Library_Exists_For_Default
+     (Project : Project_Id; In_Tree : Project_Tree_Ref) return Boolean;
+   Library_Exists_For_Ptr : Library_Exists_For_Function :=
+                              Library_Exists_For_Default'Access;
+
+   function Library_File_Name_For_Default
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref) return File_Name_Type;
+   Library_File_Name_For_Ptr : Library_File_Name_For_Function :=
+                                 Library_File_Name_For_Default'Access;
+
+   function Object_Ext_Default return String;
+   Object_Ext_Ptr : String_Function := Object_Ext_Default'Access;
+
+   function PIC_Option_Default return String;
+   PIC_Option_Ptr : String_Function := PIC_Option_Default'Access;
+
+   function Standalone_Library_Auto_Init_Is_Supported_Default return Boolean;
+   Standalone_Library_Auto_Init_Is_Supported_Ptr : Boolean_Function :=
+            Standalone_Library_Auto_Init_Is_Supported_Default'Access;
+
+   function Support_For_Libraries_Default return Library_Support;
+   Support_For_Libraries_Ptr : Library_Support_Function :=
+                                 Support_For_Libraries_Default'Access;
 end MLib.Tgt;

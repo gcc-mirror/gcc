@@ -2,12 +2,12 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             M L I B . T G T                              --
+--                    M L I B . T G T . S P E C I F I C                     --
 --                         (Integrity VMS Version)                          --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2004-2005 Free Software Foundation, Inc.        --
+--            Copyright (C) 2004-2007, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,29 +29,48 @@
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 
-with GNAT.Directory_Operations; use GNAT.Directory_Operations;
-
 with MLib.Fil;
 with MLib.Utl;
-with Namet;    use Namet;
-with Opt;      use Opt;
-with Output;   use Output;
-with Prj.Com;
+
+with MLib.Tgt.VMS;
+pragma Warnings (Off, MLib.Tgt.VMS);
+--  MLib.Tgt.VMS is with'ed only for elaboration purposes
+
+with Opt;    use Opt;
+with Output; use Output;
+
+with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
 with System;           use System;
 with System.Case_Util; use System.Case_Util;
 with System.CRTL;      use System.CRTL;
 
-package body MLib.Tgt is
+package body MLib.Tgt.Specific is
 
-   use GNAT;
+   --  Non default subprogram. See comment in mlib-tgt.ads
+
+   procedure Build_Dynamic_Library
+     (Ofiles       : Argument_List;
+      Foreign      : Argument_List;
+      Afiles       : Argument_List;
+      Options      : Argument_List;
+      Options_2    : Argument_List;
+      Interfaces   : Argument_List;
+      Lib_Filename : String;
+      Lib_Dir      : String;
+      Symbol_Data  : Symbol_Record;
+      Driver_Name  : Name_Id := No_Name;
+      Lib_Version  : String  := "";
+      Auto_Init    : Boolean := False);
+
+   --  Local variables
 
    Empty_Argument_List : aliased Argument_List := (1 .. 0 => null);
    Additional_Objects  : Argument_List_Access := Empty_Argument_List'Access;
    --  Used to add the generated auto-init object files for auto-initializing
    --  stand-alone libraries.
 
-   Macro_Name   : constant String := "mcr gnu:[bin]gcc -c -x assembler";
+   Macro_Name : constant String := "mcr gnu:[bin]gcc -c -x assembler";
    --  The name of the command to invoke the macro-assembler
 
    VMS_Options : Argument_List := (1 .. 1 => null);
@@ -60,63 +79,15 @@ package body MLib.Tgt is
 
    Gnatsym_Path : String_Access;
 
-   Arguments : Argument_List_Access := null;
+   Arguments     : Argument_List_Access := null;
    Last_Argument : Natural := 0;
 
    Success : Boolean := False;
 
    Shared_Libgcc : aliased String := "-shared-libgcc";
 
-   No_Shared_Libgcc_Switch : aliased Argument_List := (1 .. 0 => null);
-   Shared_Libgcc_Switch    : aliased Argument_List :=
-                               (1 => Shared_Libgcc'Access);
-   Link_With_Shared_Libgcc : Argument_List_Access :=
-                               No_Shared_Libgcc_Switch'Access;
-
-   ---------------------
-   -- Archive_Builder --
-   ---------------------
-
-   function Archive_Builder return String is
-   begin
-      return "ar";
-   end Archive_Builder;
-
-   -----------------------------
-   -- Archive_Builder_Options --
-   -----------------------------
-
-   function Archive_Builder_Options return String_List_Access is
-   begin
-      return new String_List'(1 => new String'("cr"));
-   end Archive_Builder_Options;
-
-   -----------------
-   -- Archive_Ext --
-   -----------------
-
-   function Archive_Ext return String is
-   begin
-      return "olb";
-   end Archive_Ext;
-
-   ---------------------
-   -- Archive_Indexer --
-   ---------------------
-
-   function Archive_Indexer return String is
-   begin
-      return "ranlib";
-   end Archive_Indexer;
-
-   -----------------------------
-   -- Archive_Indexer_Options --
-   -----------------------------
-
-   function Archive_Indexer_Options return String_List_Access is
-   begin
-      return new String_List (1 .. 0);
-   end Archive_Indexer_Options;
+   Shared_Libgcc_Switch : constant Argument_List :=
+                            (1 => Shared_Libgcc'Access);
 
    ---------------------------
    -- Build_Dynamic_Library --
@@ -160,9 +131,9 @@ package body MLib.Tgt is
 
       function Version_String return String;
       --  Returns Lib_Version if not empty and if Symbol_Data.Symbol_Policy is
-      --  not Autonomous, otherwise returns "".
-      --  When Symbol_Data.Symbol_Policy is Autonomous, fails gnatmake if
-      --  Lib_Version is not the image of a positive number.
+      --  not Autonomous, otherwise returns "". When Symbol_Data.Symbol_Policy
+      --  is Autonomous, fails gnatmake if Lib_Version is not the image of a
+      --  positive number.
 
       ------------------
       -- Is_Interface --
@@ -240,6 +211,10 @@ package body MLib.Tgt is
          end if;
       end Version_String;
 
+      ---------------------
+      -- Local Variables --
+      ---------------------
+
       Opt_File_Name  : constant String := Option_File_Name;
       Version        : constant String := Version_String;
       For_Linker_Opt : String_Access;
@@ -247,14 +222,6 @@ package body MLib.Tgt is
    --  Start of processing for Build_Dynamic_Library
 
    begin
-      --  Invoke gcc with -shared-libgcc, but only for GCC 3 or higher
-
-      if GCC_Version >= 3 then
-         Link_With_Shared_Libgcc := Shared_Libgcc_Switch'Access;
-      else
-         Link_With_Shared_Libgcc := No_Shared_Libgcc_Switch'Access;
-      end if;
-
       --  Option file must end with ".opt"
 
       if Opt_File_Name'Length > 4
@@ -275,7 +242,7 @@ package body MLib.Tgt is
       --  "gnatsym" is necessary for building the option file
 
       if Gnatsym_Path = null then
-         Gnatsym_Path := OS_Lib.Locate_Exec_On_Path (Gnatsym_Name);
+         Gnatsym_Path := Locate_Exec_On_Path (Gnatsym_Name);
 
          if Gnatsym_Path = null then
             Fail (Gnatsym_Name, " not found in path");
@@ -295,13 +262,15 @@ package body MLib.Tgt is
             Len             : Natural;
             OK              : Boolean := True;
 
-            command  : constant String :=
-                         Macro_Name & " " & Macro_File_Name & ASCII.NUL;
+            command : constant String :=
+                        Macro_Name & " " & Macro_File_Name & ASCII.NUL;
             --  The command to invoke the assembler on the generated auto-init
             --  assembly file.
+            --  Why odd lower case name ???
 
             mode : constant String := "r" & ASCII.NUL;
             --  The mode for the invocation of Popen
+            --  Why odd lower case name ???
 
          begin
             To_Upper (Init_Proc);
@@ -315,26 +284,26 @@ package body MLib.Tgt is
             --  Create and write the auto-init assembly file
 
             declare
-               First_Line : constant String :=
-                 ASCII.HT &
-                 ".type " & Init_Proc & "#, @function" &
-                 ASCII.LF;
+               First_Line  : constant String :=
+                               ASCII.HT
+                               & ".type " & Init_Proc & "#, @function"
+                               & ASCII.LF;
                Second_Line : constant String :=
-                 ASCII.HT &
-                 ".global " & Init_Proc & "#" &
-                 ASCII.LF;
-               Third_Line : constant String :=
-                 ASCII.HT &
-                 ".global LIB$INITIALIZE#" &
-                 ASCII.LF;
+                               ASCII.HT
+                               & ".global " & Init_Proc & "#"
+                               & ASCII.LF;
+               Third_Line  : constant String :=
+                               ASCII.HT
+                               & ".global LIB$INITIALIZE#"
+                               & ASCII.LF;
                Fourth_Line : constant String :=
-                 ASCII.HT &
-                 ".section LIB$INITIALIZE#,""a"",@progbits" &
-                 ASCII.LF;
-               Fifth_Line : constant String :=
-                 ASCII.HT &
-                 "data4 @fptr(" & Init_Proc & "#)" &
-                  ASCII.LF;
+                               ASCII.HT
+                               & ".section LIB$INITIALIZE#,""a"",@progbits"
+                               & ASCII.LF;
+               Fifth_Line  : constant String :=
+                               ASCII.HT
+                               & "data4 @fptr(" & Init_Proc & "#)"
+                               & ASCII.LF;
 
             begin
                Macro_File := Create_File (Macro_File_Name, Text);
@@ -476,6 +445,10 @@ package body MLib.Tgt is
          when Restricted =>
             Last_Argument := Last_Argument + 1;
             Arguments (Last_Argument) := new String'("-R");
+
+         when Direct =>
+            Last_Argument := Last_Argument + 1;
+            Arguments (Last_Argument) := new String'("-D");
       end case;
 
       --  Add each relevant object file
@@ -535,7 +508,7 @@ package body MLib.Tgt is
         (Output_File => Lib_File,
          Objects     => Ofiles & Additional_Objects.all,
          Options     => VMS_Options,
-         Options_2   => Link_With_Shared_Libgcc.all &
+         Options_2   => Shared_Libgcc_Switch &
                         Opts (Opts'First .. Last_Opt) &
                         Opts2 (Opts2'First .. Last_Opt2) & Options_2,
          Driver_Name => Driver_Name);
@@ -549,7 +522,9 @@ package body MLib.Tgt is
          declare
             Auto_Init_Object_File_Name : constant String :=
                                            Lib_Filename & "__init.obj";
+
             Disregard : Boolean;
+            pragma Warnings (Off, Disregard);
 
          begin
             if Verbose_Mode then
@@ -563,190 +538,8 @@ package body MLib.Tgt is
       end if;
    end Build_Dynamic_Library;
 
-   -------------
-   -- DLL_Ext --
-   -------------
+--  Package initialization
 
-   function DLL_Ext return String is
-   begin
-      return "exe";
-   end DLL_Ext;
-
-   ----------------
-   -- DLL_Prefix --
-   ----------------
-
-   function DLL_Prefix return String is
-   begin
-      return "lib";
-   end DLL_Prefix;
-
-   --------------------
-   -- Dynamic_Option --
-   --------------------
-
-   function Dynamic_Option return String is
-   begin
-      return "-shared";
-   end Dynamic_Option;
-
-   -------------------
-   -- Is_Object_Ext --
-   -------------------
-
-   function Is_Object_Ext (Ext : String) return Boolean is
-   begin
-      return Ext = ".obj";
-   end Is_Object_Ext;
-
-   --------------
-   -- Is_C_Ext --
-   --------------
-
-   function Is_C_Ext (Ext : String) return Boolean is
-   begin
-      return Ext = ".c";
-   end Is_C_Ext;
-
-   --------------------
-   -- Is_Archive_Ext --
-   --------------------
-
-   function Is_Archive_Ext (Ext : String) return Boolean is
-   begin
-      return Ext = ".olb" or else Ext = ".exe";
-   end Is_Archive_Ext;
-
-   -------------
-   -- Libgnat --
-   -------------
-
-   function Libgnat return String is
-      Libgnat_A : constant String := "libgnat.a";
-      Libgnat_Olb : constant String := "libgnat.olb";
-
-   begin
-      Name_Len := Libgnat_A'Length;
-      Name_Buffer (1 .. Name_Len) := Libgnat_A;
-
-      if Osint.Find_File (Name_Enter, Osint.Library) /= No_File then
-         return Libgnat_A;
-
-      else
-         return Libgnat_Olb;
-      end if;
-   end Libgnat;
-
-   ------------------------
-   -- Library_Exists_For --
-   ------------------------
-
-   function Library_Exists_For
-     (Project : Project_Id; In_Tree : Project_Tree_Ref) return Boolean
-   is
-   begin
-      if not In_Tree.Projects.Table (Project).Library then
-         Fail ("INTERNAL ERROR: Library_Exists_For called " &
-               "for non library project");
-         return False;
-
-      else
-         declare
-            Lib_Dir : constant String :=
-              Get_Name_String
-                (In_Tree.Projects.Table (Project).Library_Dir);
-            Lib_Name : constant String :=
-              Get_Name_String
-                (In_Tree.Projects.Table (Project).Library_Name);
-
-         begin
-            if In_Tree.Projects.Table (Project).Library_Kind =
-              Static
-            then
-               return Is_Regular_File
-                 (Lib_Dir & Directory_Separator & "lib" &
-                  Fil.Ext_To (Lib_Name, Archive_Ext));
-
-            else
-               return Is_Regular_File
-                 (Lib_Dir & Directory_Separator & "lib" &
-                  Fil.Ext_To (Lib_Name, DLL_Ext));
-            end if;
-         end;
-      end if;
-   end Library_Exists_For;
-
-   ---------------------------
-   -- Library_File_Name_For --
-   ---------------------------
-
-   function Library_File_Name_For
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref) return Name_Id
-   is
-   begin
-      if not In_Tree.Projects.Table (Project).Library then
-         Prj.Com.Fail ("INTERNAL ERROR: Library_File_Name_For called " &
-                       "for non library project");
-         return No_Name;
-
-      else
-         declare
-            Lib_Name : constant String :=
-              Get_Name_String
-                (In_Tree.Projects.Table (Project).Library_Name);
-
-         begin
-            Name_Len := 3;
-            Name_Buffer (1 .. Name_Len) := "lib";
-
-            if In_Tree.Projects.Table (Project).Library_Kind =
-              Static then
-               Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, Archive_Ext));
-
-            else
-               Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, DLL_Ext));
-            end if;
-
-            return Name_Find;
-         end;
-      end if;
-   end Library_File_Name_For;
-
-   ----------------
-   -- Object_Ext --
-   ----------------
-
-   function Object_Ext return String is
-   begin
-      return "obj";
-   end Object_Ext;
-
-   ----------------
-   -- PIC_Option --
-   ----------------
-
-   function PIC_Option return String is
-   begin
-      return "";
-   end PIC_Option;
-
-   -----------------------------------------------
-   -- Standalone_Library_Auto_Init_Is_Supported --
-   -----------------------------------------------
-
-   function Standalone_Library_Auto_Init_Is_Supported return Boolean is
-   begin
-      return True;
-   end Standalone_Library_Auto_Init_Is_Supported;
-
-   ---------------------------
-   -- Support_For_Libraries --
-   ---------------------------
-
-   function Support_For_Libraries return Library_Support is
-   begin
-      return Full;
-   end Support_For_Libraries;
-
-end MLib.Tgt;
+begin
+   Build_Dynamic_Library_Ptr    := Build_Dynamic_Library'Access;
+end MLib.Tgt.Specific;

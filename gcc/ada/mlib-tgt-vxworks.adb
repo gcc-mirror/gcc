@@ -2,12 +2,12 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             M L I B . T G T                              --
+--                    M L I B . T G T . S P E C I F I C                     --
 --                            (VxWorks Version)                             --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2003-2006 Free Software Foundation, Inc.         --
+--           Copyright (C) 2003-2007, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,17 +25,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides a set of target dependent routines to build
---  static libraries.
-
 --  This is the VxWorks version of the body
 
-with MLib.Fil;
-with Namet;  use Namet;
-with Prj.Com;
 with Sdefault;
+with Types;    use Types;
 
-package body MLib.Tgt is
+package body MLib.Tgt.Specific is
 
    -----------------------
    -- Local Subprograms --
@@ -44,6 +39,36 @@ package body MLib.Tgt is
    function Get_Target_Suffix return String;
    --  Returns the required suffix for some utilities
    --  (such as ar and ranlib) that depend on the real target.
+
+   --  Non default subprograms
+
+   function Archive_Builder return String;
+
+   function Archive_Indexer return String;
+
+   procedure Build_Dynamic_Library
+     (Ofiles       : Argument_List;
+      Foreign      : Argument_List;
+      Afiles       : Argument_List;
+      Options      : Argument_List;
+      Options_2    : Argument_List;
+      Interfaces   : Argument_List;
+      Lib_Filename : String;
+      Lib_Dir      : String;
+      Symbol_Data  : Symbol_Record;
+      Driver_Name  : Name_Id := No_Name;
+      Lib_Version  : String  := "";
+      Auto_Init    : Boolean := False);
+
+   function DLL_Ext return String;
+
+   function Dynamic_Option return String;
+
+   function PIC_Option return String;
+
+   function Standalone_Library_Auto_Init_Is_Supported return Boolean;
+
+   function Support_For_Libraries return Library_Support;
 
    ---------------------
    -- Archive_Builder --
@@ -54,24 +79,6 @@ package body MLib.Tgt is
       return "ar" & Get_Target_Suffix;
    end Archive_Builder;
 
-   -----------------------------
-   -- Archive_Builder_Options --
-   -----------------------------
-
-   function Archive_Builder_Options return String_List_Access is
-   begin
-      return new String_List'(1 => new String'("cr"));
-   end Archive_Builder_Options;
-
-   -----------------
-   -- Archive_Ext --
-   -----------------
-
-   function Archive_Ext return String is
-   begin
-      return "a";
-   end Archive_Ext;
-
    ---------------------
    -- Archive_Indexer --
    ---------------------
@@ -80,15 +87,6 @@ package body MLib.Tgt is
    begin
       return "ranlib" & Get_Target_Suffix;
    end Archive_Indexer;
-
-   -----------------------------
-   -- Archive_Indexer_Options --
-   -----------------------------
-
-   function Archive_Indexer_Options return String_List_Access is
-   begin
-      return new String_List (1 .. 0);
-   end Archive_Indexer_Options;
 
    ---------------------------
    -- Build_Dynamic_Library --
@@ -134,15 +132,6 @@ package body MLib.Tgt is
       return "";
    end DLL_Ext;
 
-   ----------------
-   -- DLL_Prefix --
-   ----------------
-
-   function DLL_Prefix return String is
-   begin
-      return "lib";
-   end DLL_Prefix;
-
    --------------------
    -- Dynamic_Option --
    --------------------
@@ -186,126 +175,6 @@ package body MLib.Tgt is
       end if;
    end Get_Target_Suffix;
 
-   -------------------
-   -- Is_Object_Ext --
-   -------------------
-
-   function Is_Object_Ext (Ext : String) return Boolean is
-   begin
-      return Ext = ".o";
-   end Is_Object_Ext;
-
-   --------------
-   -- Is_C_Ext --
-   --------------
-
-   function Is_C_Ext (Ext : String) return Boolean is
-   begin
-      return Ext = ".c";
-   end Is_C_Ext;
-
-   --------------------
-   -- Is_Archive_Ext --
-   --------------------
-
-   function Is_Archive_Ext (Ext : String) return Boolean is
-   begin
-      return Ext = ".a";
-   end Is_Archive_Ext;
-
-   -------------
-   -- Libgnat --
-   -------------
-
-   function Libgnat return String is
-   begin
-      return "libgnat.a";
-   end Libgnat;
-
-   ------------------------
-   -- Library_Exists_For --
-   ------------------------
-
-   function Library_Exists_For
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref) return Boolean
-   is
-   begin
-      if not In_Tree.Projects.Table (Project).Library then
-         Prj.Com.Fail ("INTERNAL ERROR: Library_Exists_For called " &
-                       "for non library project");
-         return False;
-
-      else
-         declare
-            Lib_Dir  : constant String :=
-                         Get_Name_String
-                           (In_Tree.Projects.Table (Project).Library_Dir);
-            Lib_Name : constant String :=
-                         Get_Name_String
-                           (In_Tree.Projects.Table (Project).Library_Name);
-
-         begin
-            if In_Tree.Projects.Table (Project).Library_Kind = Static then
-               return Is_Regular_File
-                 (Lib_Dir & Directory_Separator & "lib" &
-                  Fil.Append_To (Lib_Name, Archive_Ext));
-
-            else
-               return Is_Regular_File
-                 (Lib_Dir & Directory_Separator & "lib" &
-                  Fil.Append_To (Lib_Name, DLL_Ext));
-            end if;
-         end;
-      end if;
-   end Library_Exists_For;
-
-   ---------------------------
-   -- Library_File_Name_For --
-   ---------------------------
-
-   function Library_File_Name_For
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref) return Name_Id
-   is
-   begin
-      if not In_Tree.Projects.Table (Project).Library then
-         Prj.Com.Fail ("INTERNAL ERROR: Library_File_Name_For called " &
-                       "for non library project");
-         return No_Name;
-
-      else
-         declare
-            Lib_Name : constant String :=
-                         Get_Name_String
-                           (In_Tree.Projects.Table (Project).Library_Name);
-
-         begin
-            Name_Len := 3;
-            Name_Buffer (1 .. Name_Len) := "lib";
-
-            if In_Tree.Projects.Table (Project).Library_Kind =
-              Static
-            then
-               Add_Str_To_Name_Buffer (Fil.Append_To (Lib_Name, Archive_Ext));
-            else
-               Add_Str_To_Name_Buffer (Fil.Append_To (Lib_Name, DLL_Ext));
-            end if;
-
-            return Name_Find;
-         end;
-      end if;
-   end Library_File_Name_For;
-
-   ----------------
-   -- Object_Ext --
-   ----------------
-
-   function Object_Ext return String is
-   begin
-      return "o";
-   end Object_Ext;
-
    ----------------
    -- PIC_Option --
    ----------------
@@ -333,4 +202,14 @@ package body MLib.Tgt is
       return Static_Only;
    end Support_For_Libraries;
 
-end MLib.Tgt;
+begin
+   Archive_Builder_Ptr := Archive_Builder'Access;
+   Archive_Indexer_Ptr := Archive_Indexer'Access;
+   Build_Dynamic_Library_Ptr := Build_Dynamic_Library'Access;
+   DLL_Ext_Ptr := DLL_Ext'Access;
+   Dynamic_Option_Ptr := Dynamic_Option'Access;
+   PIC_Option_Ptr := PIC_Option'Access;
+   Standalone_Library_Auto_Init_Is_Supported_Ptr :=
+     Standalone_Library_Auto_Init_Is_Supported'Access;
+   Support_For_Libraries_Ptr := Support_For_Libraries'Access;
+end MLib.Tgt.Specific;
