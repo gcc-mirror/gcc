@@ -338,7 +338,7 @@ package body Ch12 is
          if Ada_Version < Ada_05 then
             Error_Msg_SP
               ("partial parametrization of formal packages" &
-                "  is an Ada 2005 extension");
+                " is an Ada 2005 extension");
             Error_Msg_SP
               ("\unit must be compiled with -gnat05 switch");
          end if;
@@ -357,7 +357,9 @@ package body Ch12 is
             Scan;  --  past box
          end if;
 
-         return New_Node (N_Others_Choice, Token_Ptr);
+         --  Source position of the others choice is beginning of construct
+
+         return New_Node (N_Others_Choice, Sloc (Generic_Assoc_Node));
       end if;
 
       if Token in Token_Class_Desig then
@@ -678,6 +680,18 @@ package body Ch12 is
 
          when Tok_New =>
             return P_Formal_Derived_Type_Definition;
+
+         when Tok_Not =>
+            if P_Null_Exclusion then
+               Typedef_Node :=  P_Access_Type_Definition;
+               Set_Null_Exclusion_Present (Typedef_Node);
+               return Typedef_Node;
+
+            else
+               Error_Msg_SC ("expect valid formal access definition!");
+               Resync_Past_Semicolon;
+               return Error;
+            end if;
 
          when Tok_Private |
               Tok_Tagged  =>
