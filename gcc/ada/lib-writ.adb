@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,6 @@ with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Lib.Util; use Lib.Util;
 with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Gnatvsn;  use Gnatvsn;
 with Opt;      use Opt;
@@ -45,6 +44,7 @@ with Rident;   use Rident;
 with Scn;      use Scn;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
+with Snames;   use Snames;
 with Stringt;  use Stringt;
 with Tbuild;   use Tbuild;
 with Uname;    use Uname;
@@ -71,8 +71,8 @@ package body Lib.Writ is
       Units.Increment_Last;
       Units.Table (Units.Last) :=
         (Unit_File_Name  => File_Name (S),
-         Unit_Name       => No_Name,
-         Expected_Unit   => No_Name,
+         Unit_Name       => No_Unit_Name,
+         Expected_Unit   => No_Unit_Name,
          Source_Index    => S,
          Cunit           => Empty,
          Cunit_Entity    => Empty,
@@ -427,7 +427,16 @@ package body Lib.Writ is
                              (Declaration_Node
                                (Body_Entity (Uent))))))
          then
-            Write_Info_Str (" EE");
+            if Convention (Uent) = Convention_CIL then
+
+               --  Special case for generic CIL packages which never have
+               --  elaboration code
+
+               Write_Info_Str (" NE");
+
+            else
+               Write_Info_Str (" EE");
+            end if;
          end if;
 
          if Has_No_Elaboration_Code (Unode) then
@@ -672,7 +681,7 @@ package body Lib.Writ is
             --  For preproc. data and def. files, there is no Unit_Name,
             --  check for that first.
 
-            if Unit_Name (J) /= No_Name
+            if Unit_Name (J) /= No_Unit_Name
               and then (With_Flags (J) or else Unit_Name (J) = Pname)
             then
                Num_Withs := Num_Withs + 1;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,7 +25,6 @@
 ------------------------------------------------------------------------------
 
 with Csets;    use Csets;
-with Namet;    use Namet;
 with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
@@ -44,13 +43,14 @@ package body Targparm is
       BDC,  --   Backend_Divide_Checks
       BOC,  --   Backend_Overflow_Checks
       CLA,  --   Command_Line_Args
+      CLI,  --   CLI (.NET)
       CRT,  --   Configurable_Run_Times
-      CSV,  --   Compiler_System_Version
       D32,  --   Duration_32_Bits
       DEN,  --   Denorm
       EXS,  --   Exit_Status_Supported
       FEL,  --   Frontend_Layout
       FFO,  --   Fractional_Fixed_Ops
+      JVM,  --   JVM
       MOV,  --   Machine_Overflows
       MRN,  --   Machine_Rounds
       PAS,  --   Preallocated_Stacks
@@ -68,9 +68,6 @@ package body Targparm is
       ZCD,  --   ZCX_By_Default
       ZCG); --   GCC_ZCX_Support
 
-   subtype Targparm_Tags_OK is Targparm_Tags range AAM .. ZCG;
-   --  Range excluding obsolete entries
-
    Targparm_Flags : array (Targparm_Tags) of Boolean := (others => False);
    --  Flag is set True if corresponding parameter is scanned
 
@@ -80,13 +77,14 @@ package body Targparm is
    BDC_Str : aliased constant Source_Buffer := "Backend_Divide_Checks";
    BOC_Str : aliased constant Source_Buffer := "Backend_Overflow_Checks";
    CLA_Str : aliased constant Source_Buffer := "Command_Line_Args";
+   CLI_Str : aliased constant Source_Buffer := "CLI";
    CRT_Str : aliased constant Source_Buffer := "Configurable_Run_Time";
-   CSV_Str : aliased constant Source_Buffer := "Compiler_System_Version";
    D32_Str : aliased constant Source_Buffer := "Duration_32_Bits";
    DEN_Str : aliased constant Source_Buffer := "Denorm";
    EXS_Str : aliased constant Source_Buffer := "Exit_Status_Supported";
    FEL_Str : aliased constant Source_Buffer := "Frontend_Layout";
    FFO_Str : aliased constant Source_Buffer := "Fractional_Fixed_Ops";
+   JVM_Str : aliased constant Source_Buffer := "JVM";
    MOV_Str : aliased constant Source_Buffer := "Machine_Overflows";
    MRN_Str : aliased constant Source_Buffer := "Machine_Rounds";
    PAS_Str : aliased constant Source_Buffer := "Preallocated_Stacks";
@@ -113,13 +111,14 @@ package body Targparm is
       BDC_Str'Access,
       BOC_Str'Access,
       CLA_Str'Access,
+      CLI_Str'Access,
       CRT_Str'Access,
-      CSV_Str'Access,
       D32_Str'Access,
       DEN_Str'Access,
       EXS_Str'Access,
       FEL_Str'Access,
       FFO_Str'Access,
+      JVM_Str'Access,
       MOV_Str'Access,
       MRN_Str'Access,
       PAS_Str'Access,
@@ -549,13 +548,22 @@ package body Targparm is
                      when BDC => Backend_Divide_Checks_On_Target     := Result;
                      when BOC => Backend_Overflow_Checks_On_Target   := Result;
                      when CLA => Command_Line_Args_On_Target         := Result;
+                     when CLI =>
+                        if Result then
+                           VM_Target := CLI_Target;
+                        end if;
+
                      when CRT => Configurable_Run_Time_On_Target     := Result;
-                     when CSV => Compiler_System_Version             := Result;
                      when D32 => Duration_32_Bits_On_Target          := Result;
                      when DEN => Denorm_On_Target                    := Result;
                      when EXS => Exit_Status_Supported_On_Target     := Result;
                      when FEL => Frontend_Layout_On_Target           := Result;
                      when FFO => Fractional_Fixed_Ops_On_Target      := Result;
+                     when JVM =>
+                        if Result then
+                           VM_Target := JVM_Target;
+                        end if;
+
                      when MOV => Machine_Overflows_On_Target         := Result;
                      when MRN => Machine_Rounds_On_Target            := Result;
                      when PAS => Preallocated_Stacks_On_Target       := Result;
@@ -612,27 +620,6 @@ package body Targparm is
 
       if OpenVMS_On_Target then
          Multi_Unit_Index_Character := '$';
-      end if;
-
-      --  Check no missing target parameter settings (skip for compiler vsn)
-
-      if not Compiler_System_Version then
-         for K in Targparm_Tags_OK loop
-            if not Targparm_Flags (K) then
-               Set_Standard_Error;
-               Write_Line
-                 ("fatal error: system.ads is incorrectly formatted");
-               Write_Str ("missing line for parameter: ");
-
-               for J in Targparm_Str (K)'Range loop
-                  Write_Char (Targparm_Str (K).all (J));
-               end loop;
-
-               Write_Eol;
-               Set_Standard_Output;
-               Fatal := True;
-            end if;
-         end loop;
       end if;
 
       if Fatal then
