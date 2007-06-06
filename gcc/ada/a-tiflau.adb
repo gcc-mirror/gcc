@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -138,6 +138,7 @@ package body Ada.Text_IO.Float_Aux is
 
             if Loaded then
                Load_Extended_Digits (File, Buf, Ptr);
+               Load (File, Buf, Ptr, '#', ':');
 
             --  Case of nnn#xxx.[xxx]# or nnn#xxx#
 
@@ -158,6 +159,13 @@ package body Ada.Text_IO.Float_Aux is
          --  Case of nnn.[nnn] or nnn
 
          else
+            --  Prevent the potential processing of '.' in cases where the
+            --  initial digits have a trailing underscore.
+
+            if Buf (Ptr) = '_' then
+               return;
+            end if;
+
             Load (File, Buf, Ptr, '.', Loaded);
 
             if Loaded then
