@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,6 +27,7 @@
 --  Package containing utility procedures used throughout the semantics
 
 with Einfo;  use Einfo;
+with Namet;  use Namet;
 with Types;  use Types;
 with Uintp;  use Uintp;
 with Urealp; use Urealp;
@@ -40,6 +41,14 @@ package Sem_Util is
    procedure Add_Access_Type_To_Process (E : Entity_Id; A : Entity_Id);
    --  Add A to the list of access types to process when expanding the
    --  freeze node of E.
+
+   procedure Add_Global_Declaration (N : Node_Id);
+   --  These procedures adds a declaration N at the library level, to be
+   --  elaborated before any other code in the unit. It is used for example
+   --  for the entity that marks whether a unit has been elaborated. The
+   --  declaration is added to the Declarations list of the Aux_Decls_Node
+   --  for the current unit. The declarations are added in the current scope,
+   --  so the caller should push a new scope as required before the call.
 
    function Alignment_In_Bits (E : Entity_Id) return Uint;
    --  If the alignment of the type or object E is currently known to the
@@ -120,6 +129,11 @@ package Sem_Util is
    --  place error message on node N. Used in  object declarations, type
    --  conversions, qualified expressions.
 
+   procedure Check_Nested_Access (Ent : Entity_Id);
+   --  Check whether Ent denotes an entity declared in an uplevel scope, which
+   --  is accessed inside a nested procedure, and set Has_Up_Level_Access flag
+   --  accordingly. This is currently only enabled for VM_Target /= No_VM.
+
    procedure Check_Potentially_Blocking_Operation (N : Node_Id);
    --  N is one of the statement forms that is a potentially blocking
    --  operation. If it appears within a protected action, emit warning.
@@ -137,6 +151,12 @@ package Sem_Util is
    --  Ada 2005 (AI-251): Collect whole list of abstract interfaces that are
    --  directly or indirectly implemented by T. Exclude_Parent_Interfaces is
    --  used to avoid addition of inherited interfaces to the generated list.
+
+   procedure Collect_Interface_Components
+     (Tagged_Type     : Entity_Id;
+      Components_List : out Elist_Id);
+   --  Ada 2005 (AI-251): Collect all the tag components associated with the
+   --  secondary dispatch tables of a tagged type.
 
    function Collect_Primitive_Operations (T : Entity_Id) return Elist_Id;
    --  Called upon type derivation and extension. We scan the declarative
@@ -258,6 +278,18 @@ package Sem_Util is
    --  denotes when analyzed. Subsequent uses of this id on a different
    --  type denote the discriminant at the same position in this new type.
 
+   function Find_Overridden_Synchronized_Primitive
+     (Def_Id      : Entity_Id;
+      First_Hom   : Entity_Id;
+      Ifaces_List : Elist_Id;
+      In_Scope    : Boolean := True) return Entity_Id;
+   --  Determine whether entry or subprogram Def_Id overrides a primitive
+   --  operation that belongs to one of the interfaces in Ifaces_List. A
+   --  specific homonym chain can be specified by setting First_Hom. Flag
+   --  In_Scope is used to designate whether the entry or subprogram was
+   --  declared inside the scope of the synchronized type or after. Return
+   --  the overridden entity or Empty.
+
    function First_Actual (Node : Node_Id) return Node_Id;
    --  Node is an N_Function_Call or N_Procedure_Call_Statement node. The
    --  result returned is the first actual parameter in declaration order
@@ -370,6 +402,12 @@ package Sem_Util is
    --  Get_Name_Entity_Id function fetches the Entity_Id of this entity,
    --  which is the innermost visible entity with the given name. See the
    --  body of Sem_Ch8 for further details on handling of entity visibility.
+
+   function Get_Renamed_Entity (E : Entity_Id) return Entity_Id;
+   --  Given an entity for an exception, package, subprogram or generic unit,
+   --  returns the ultimately renamed entity if this is a renaming. If this is
+   --  not a renamed entity, returns its argument. It is an error to call this
+   --  with any any other kind of entity.
 
    function Get_Subprogram_Entity (Nod : Node_Id) return Entity_Id;
    --  Nod is either a procedure call statement, or a function call, or
@@ -524,6 +562,10 @@ package Sem_Util is
    --  Determines if the given node denotes an atomic object in the sense
    --  of the legality checks described in RM C.6(12).
 
+   function Is_Coextension_Root (N : Node_Id) return Boolean;
+   --  Determine whether node N is an allocator which acts as a coextension
+   --  root.
+
    function Is_Controlling_Limited_Procedure
      (Proc_Nam : Entity_Id) return Boolean;
    --  Ada 2005 (AI-345): Determine whether Proc_Nam is a primitive procedure
@@ -657,6 +699,12 @@ package Sem_Util is
    --  Boolean operand (i.e. is either 0 for False, or 1 for True). This
    --  function simply tests if it is True (i.e. non-zero)
 
+   function Is_Value_Type (T : Entity_Id) return Boolean;
+   --  Returns true if type T represents a value type. This is only relevant to
+   --  CIL, will always return false for other targets.
+   --  What is a "value type", since this is not an Ada term, it should be
+   --  defined here ???
+
    function Is_Variable (N : Node_Id) return Boolean;
    --  Determines if the tree referenced by N represents a variable, i.e.
    --  can appear on the left side of an assignment. There is one situation,
@@ -704,6 +752,11 @@ package Sem_Util is
    --  so. This differs from May_Be_Lvalue in that it defaults in the other
    --  direction. Cases which may possibly be assignments but are not known to
    --  be may return True from May_Be_Lvalue, but False from this function.
+
+   procedure Mark_Static_Coextensions (Root_Node : Node_Id);
+   --  Perform a tree traversal starting from Root_Node while marking every
+   --  allocator as a static coextension. Cleanup for this action is performed
+   --  in Resolve_Allocator.
 
    function May_Be_Lvalue (N : Node_Id) return Boolean;
    --  Determines if N could be an lvalue (e.g. an assignment left hand side).
@@ -782,18 +835,6 @@ package Sem_Util is
    --  Return the accessibility level of the view of the object Obj.
    --  For convenience, qualified expressions applied to object names
    --  are also allowed as actuals for this function.
-
-   function Overrides_Synchronized_Primitive
-     (Def_Id      : Entity_Id;
-      First_Hom   : Entity_Id;
-      Ifaces_List : Elist_Id;
-      In_Scope    : Boolean := True) return Entity_Id;
-   --  Determine whether entry or subprogram Def_Id overrides a primitive
-   --  operation that belongs to one of the interfaces in Ifaces_List. A
-   --  specific homonym chain can be specified by setting First_Hom. Flag
-   --  In_Scope is used to designate whether the entry or subprogram was
-   --  declared inside the scope of the synchronized type or after. Return
-   --  the overriden entity or Empty.
 
    function Private_Component (Type_Id : Entity_Id) return Entity_Id;
    --  Returns some private component (if any) of the given Type_Id.
