@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2005, AdaCore                     --
+--                     Copyright (C) 1995-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,8 +39,7 @@
 --  See also GNAT.Heap_Sort, a version that works with subprogram access
 --  parameters, allowing code sharing. The generic version is slightly more
 --  efficient but does not allow code sharing and has an interface that is
---  more awkward to use. The generic version is also Pure, while the access
---  subprogram version can only be Preelaborate.
+--  more awkward to use.
 
 --  There is also GNAT.Heap_Sort_A, which is now considered obsolete, but
 --  was an older version working with subprogram parameters. This version
