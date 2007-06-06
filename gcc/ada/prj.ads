@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,13 +31,14 @@
 --  See in particular Prj.Pars and Prj.Env.
 
 with Casing; use Casing;
+with Namet;  use Namet;
 with Scans;  use Scans;
 with Table;
 with Types;  use Types;
 
 with GNAT.Dynamic_HTables; use GNAT.Dynamic_HTables;
 with GNAT.Dynamic_Tables;
-with GNAT.OS_Lib;           use GNAT.OS_Lib;
+with GNAT.OS_Lib;          use GNAT.OS_Lib;
 
 with System.HTable;
 
@@ -54,17 +55,17 @@ package Prj is
 
    No_Project_Tree : constant Project_Tree_Ref;
 
-   function Default_Ada_Spec_Suffix return Name_Id;
+   function Default_Ada_Spec_Suffix return File_Name_Type;
    pragma Inline (Default_Ada_Spec_Suffix);
    --  The Name_Id for the standard GNAT suffix for Ada spec source file
    --  name ".ads". Initialized by Prj.Initialize.
 
-   function Default_Ada_Body_Suffix return Name_Id;
+   function Default_Ada_Body_Suffix return File_Name_Type;
    pragma Inline (Default_Ada_Body_Suffix);
    --  The Name_Id for the standard GNAT suffix for Ada body source file
    --  name ".adb". Initialized by Prj.Initialize.
 
-   function Slash return Name_Id;
+   function Slash return File_Name_Type;
    pragma Inline (Slash);
    --  "/", used as the path of locally removed files
 
@@ -81,6 +82,9 @@ package Prj is
    --    - Silent:  no action
    --    - Warning: issue a warning, does not cause the tool to fail
    --    - Error:   issue an error, causes the tool to fail
+
+   type Yes_No_Unknown is (Yes, No, Unknown);
+   --  Tri-state to decide if -lgnarl is needed when linking
 
    -----------------------------------------------------
    -- Multi-language Stuff That Will be Modified Soon --
@@ -110,7 +114,8 @@ package Prj is
 
    function Hash is new System.HTable.Hash (Header_Num => Header_Num);
 
-   function Hash (Name : Name_Id) return Header_Num;
+   function Hash (Name : Name_Id)        return Header_Num;
+   function Hash (Name : File_Name_Type) return Header_Num;
 
    package Language_Indexes is new System.HTable.Simple_HTable
      (Header_Num => Header_Num,
@@ -158,16 +163,16 @@ package Prj is
    --  The table for the presence of languages with an index that is outside
    --  of First_Language_Indexes.
 
-   type Impl_Suffix_Array is array (First_Language_Indexes) of Name_Id;
+   type Impl_Suffix_Array is array (First_Language_Indexes) of File_Name_Type;
    --  Suffixes for the non spec sources of the different supported languages
    --  in a project.
 
-   No_Impl_Suffixes : constant Impl_Suffix_Array := (others => No_Name);
+   No_Impl_Suffixes : constant Impl_Suffix_Array := (others => No_File);
    --  A default value for the non spec source suffixes
 
    type Supp_Suffix is record
-      Index   : Language_Index := No_Language_Index;
-      Suffix  : Name_Id := No_Name;
+      Index   : Language_Index      := No_Language_Index;
+      Suffix  : File_Name_Type      := No_File;
       Next    : Supp_Language_Index := No_Supp_Language_Index;
    end record;
 
@@ -247,14 +252,14 @@ package Prj is
 
    type Other_Source is record
       Language         : Language_Index;       --  language of the source
-      File_Name        : Name_Id;              --  source file simple name
-      Path_Name        : Name_Id;              --  source full path name
+      File_Name        : File_Name_Type;       --  source file simple name
+      Path_Name        : Path_Name_Type;       --  source full path name
       Source_TS        : Time_Stamp_Type;      --  source file time stamp
-      Object_Name      : Name_Id;              --  object file simple name
-      Object_Path      : Name_Id;              --  object full path name
+      Object_Name      : File_Name_Type;       --  object file simple name
+      Object_Path      : Path_Name_Type;       --  object full path name
       Object_TS        : Time_Stamp_Type;      --  object file time stamp
-      Dep_Name         : Name_Id;              --  dependency file simple name
-      Dep_Path         : Name_Id;              --  dependency full path name
+      Dep_Name         : File_Name_Type;       --  dependency file simple name
+      Dep_Path         : Path_Name_Type;       --  dependency full path name
       Dep_TS           : Time_Stamp_Type;      --  dependency file time stamp
       Naming_Exception : Boolean := False;     --  True if a naming exception
       Next             : Other_Source_Id := No_Other_Source;
@@ -283,13 +288,14 @@ package Prj is
    --  The current value of the verbosity the project files are parsed with
 
    type Lib_Kind is (Static, Dynamic, Relocatable);
-   type Policy is (Autonomous, Compliant, Controlled, Restricted);
+   type Policy is (Autonomous, Compliant, Controlled, Restricted, Direct);
    --  Type to specify the symbol policy, when symbol control is supported.
    --  See full explanation about this type in package Symbols.
    --    Autonomous: Create a symbol file without considering any reference
    --    Compliant:  Try to be as compatible as possible with an existing ref
    --    Controlled: Fail if symbols are not the same as those in the reference
    --    Restricted: Restrict the symbols to those in the symbol file
+   --    Direct:     The symbol file is used as is
 
    type Symbol_Record is record
       Symbol_File   : Name_Id := No_Name;
@@ -322,7 +328,7 @@ package Prj is
       Next          : String_List_Id := Nil_String;
    end record;
    --  To hold values for string list variables and array elements.
-   --  Component Flag may be used for various purposes. For source
+   --  The component Flag may be used for various purposes. For source
    --  directories, it indicates if the directory contains Ada source(s).
 
    package String_Element_Table is new GNAT.Dynamic_Tables
@@ -464,7 +470,7 @@ package Prj is
 
    type Naming_Data is record
 
-      Dot_Replacement : Name_Id := No_Name;
+      Dot_Replacement : File_Name_Type := No_File;
       --  The string to replace '.' in the source file name (for Ada)
 
       Dot_Repl_Loc : Source_Ptr := No_Location;
@@ -479,7 +485,7 @@ package Prj is
       --  source file name of a spec.
       --  Indexed by the programming language.
 
-      Ada_Spec_Suffix : Name_Id := No_Name;
+      Ada_Spec_Suffix : File_Name_Type := No_File;
       --  The suffix of the Ada spec sources
 
       Spec_Suffix_Loc : Source_Ptr := No_Location;
@@ -495,14 +501,14 @@ package Prj is
       --  source file name of a body.
       --  Indexed by the programming language.
 
-      Ada_Body_Suffix : Name_Id := No_Name;
+      Ada_Body_Suffix : File_Name_Type := No_File;
       --  The suffix of the Ada body sources
 
       Body_Suffix_Loc : Source_Ptr := No_Location;
       --  The position in the project file source where
       --  Ada_Body_Suffix is defined.
 
-      Separate_Suffix : Name_Id := No_Name;
+      Separate_Suffix : File_Name_Type := No_File;
       --  String to append to unit name for source file name of an Ada subunit
 
       Sep_Suffix_Loc : Source_Ptr := No_Location;
@@ -577,10 +583,10 @@ package Prj is
       --  The name of the project with the spelling of its declaration.
       --  Set by Prj.Proc.Process.
 
-      Path_Name : Name_Id := No_Name;
+      Path_Name : Path_Name_Type := No_Path;
       --  The path name of the project file. Set by Prj.Proc.Process
 
-      Display_Path_Name : Name_Id := No_Name;
+      Display_Path_Name : Path_Name_Type := No_Path;
       --  The path name used for display purposes. May be different from
       --  Path_Name for platforms where the file names are case-insensitive.
 
@@ -594,11 +600,12 @@ package Prj is
       Mains : String_List_Id := Nil_String;
       --  List of mains specified by attribute Main. Set by Prj.Nmsc.Check
 
-      Directory : Name_Id := No_Name;
+      Directory : Path_Name_Type := No_Path;
       --  Directory where the project file resides. Set by Prj.Proc.Process
 
-      Display_Directory : Name_Id := No_Name;
-      --  comment ???
+      Display_Directory : Path_Name_Type := No_Path;
+      --  Project directory path name for display purposes. May be different
+      --  from Directory for platforms where file names are case-insensitive.
 
       Dir_Path : String_Access;
       --  Same as Directory, but as an access to String. Set by
@@ -608,11 +615,11 @@ package Prj is
       --  True if this is a library project. Set by
       --  Prj.Nmsc.Language_Independent_Check.
 
-      Library_Dir : Name_Id := No_Name;
-      --  If a library project, directory where resides the library Set by
+      Library_Dir : Path_Name_Type := No_Path;
+      --  If a library project, directory where the library Set by
       --  Prj.Nmsc.Language_Independent_Check.
 
-      Display_Library_Dir : Name_Id := No_Name;
+      Display_Library_Dir : Path_Name_Type := No_Path;
       --  The name of the library directory, for display purposes. May be
       --  different from Library_Dir for platforms where the file names are
       --  case-insensitive.
@@ -621,28 +628,28 @@ package Prj is
       --  The timestamp of a library file in a library project.
       --  Set by MLib.Prj.Check_Library.
 
-      Library_Src_Dir : Name_Id := No_Name;
+      Library_Src_Dir : Path_Name_Type := No_Path;
       --  If a Stand-Alone Library project, directory where the sources
       --  of the interfaces of the library are copied. By default, if
       --  attribute Library_Src_Dir is not specified, sources of the interfaces
       --  are not copied anywhere. Set by Prj.Nmsc.Check_Stand_Alone_Library.
 
-      Display_Library_Src_Dir : Name_Id := No_Name;
+      Display_Library_Src_Dir : Path_Name_Type := No_Path;
       --  The name of the library source directory, for display purposes.
       --  May be different from Library_Src_Dir for platforms where the file
       --  names are case-insensitive.
 
-      Library_ALI_Dir : Name_Id := No_Name;
+      Library_ALI_Dir : Path_Name_Type := No_Path;
       --  In a library project, directory where the ALI files are copied.
       --  If attribute Library_ALI_Dir is not specified, ALI files are
       --  copied in the Library_Dir. Set by Prj.Nmsc.Check_Library_Attributes.
 
-      Display_Library_ALI_Dir : Name_Id := No_Name;
+      Display_Library_ALI_Dir : Path_Name_Type := No_Path;
       --  The name of the library ALI directory, for display purposes. May be
       --  different from Library_ALI_Dir for platforms where the file names are
       --  case-insensitive.
 
-      Library_Name : Name_Id := No_Name;
+      Library_Name : File_Name_Type := No_File;
       --  If a library project, name of the library
       --  Set by Prj.Nmsc.Language_Independent_Check.
 
@@ -650,7 +657,7 @@ package Prj is
       --  If a library project, kind of library
       --  Set by Prj.Nmsc.Language_Independent_Check.
 
-      Lib_Internal_Name : Name_Id := No_Name;
+      Lib_Internal_Name : File_Name_Type := No_File;
       --  If a library project, internal name store inside the library Set by
       --  Prj.Nmsc.Language_Independent_Check.
 
@@ -665,6 +672,9 @@ package Prj is
       Lib_Auto_Init : Boolean := False;
       --  For non static Standalone Library Project Files, indicate if
       --  the library initialisation should be automatic.
+
+      Libgnarl_Needed : Yes_No_Unknown := Unknown;
+      --  Set to True when libgnarl is needed to link
 
       Symbol_Data : Symbol_Record := No_Symbols;
       --  Symbol file name, reference symbol file name, symbol policy
@@ -707,20 +717,20 @@ package Prj is
       --  the ordering of the source subdirs depend on the OS. If True,
       --  duplicate file names in the same project file are allowed.
 
-      Object_Directory : Name_Id := No_Name;
+      Object_Directory : Path_Name_Type := No_Path;
       --  The object directory of this project file.
       --  Set by Prj.Nmsc.Language_Independent_Check.
 
-      Display_Object_Dir : Name_Id := No_Name;
+      Display_Object_Dir : Path_Name_Type := No_Path;
       --  The name of the object directory, for display purposes.
       --  May be different from Object_Directory for platforms where the file
       --  names are case-insensitive.
 
-      Exec_Directory : Name_Id := No_Name;
+      Exec_Directory : Path_Name_Type := No_Path;
       --  The exec directory of this project file. Default is equal to
       --  Object_Directory. Set by Prj.Nmsc.Language_Independent_Check.
 
-      Display_Exec_Dir : Name_Id := No_Name;
+      Display_Exec_Dir : Path_Name_Type := No_Path;
       --  The name of the exec directory, for display purposes. May be
       --  different from Exec_Directory for platforms where the file names are
       --  case-insensitive.
@@ -744,8 +754,8 @@ package Prj is
       Supp_Language_Processing : Supp_Language_Index := No_Supp_Language_Index;
       --  Comment needed
 
-      Default_Linker      : Name_Id := No_Name;
-      Default_Linker_Path : Name_Id := No_Name;
+      Default_Linker      : File_Name_Type := No_File;
+      Default_Linker_Path : Path_Name_Type := No_Path;
 
       Decl : Declarations := No_Declarations;
       --  The declarations (variables, attributes and packages) of this
@@ -769,19 +779,19 @@ package Prj is
       --  use this field directly outside of the compiler, use
       --  Prj.Env.Ada_Objects_Path instead. Set by Prj.Env.Ada_Objects_Path
 
-      Include_Path_File : Name_Id := No_Name;
+      Include_Path_File : Path_Name_Type := No_Path;
       --  The cached value of the source path temp file for this project file.
       --  Set by gnatmake (Prj.Env.Set_Ada_Paths).
 
-      Objects_Path_File_With_Libs : Name_Id := No_Name;
+      Objects_Path_File_With_Libs : Path_Name_Type := No_Path;
       --  The cached value of the object path temp file (including library
       --  dirs) for this project file. Set by gnatmake (Prj.Env.Set_Ada_Paths).
 
-      Objects_Path_File_Without_Libs : Name_Id := No_Name;
+      Objects_Path_File_Without_Libs : Path_Name_Type := No_Path;
       --  The cached value of the object path temp file (excluding library
       --  dirs) for this project file. Set by gnatmake (Prj.Env.Set_Ada_Paths).
 
-      Config_File_Name : Name_Id := No_Name;
+      Config_File_Name : Path_Name_Type := No_Path;
       --  The name of the configuration pragmas file, if any.
       --  Set by gnatmake (Prj.Env.Create_Config_Pragmas_File).
 
@@ -818,7 +828,6 @@ package Prj is
       Unkept_Comments : Boolean := False;
       --  True if there are comments in the project sources that cannot
       --  be kept in the project tree.
-
    end record;
 
    function Empty_Project (Tree : Project_Tree_Ref) return Project_Data;
@@ -840,13 +849,13 @@ package Prj is
      (Specification, Body_Part);
 
    type File_Name_Data is record
-      Name         : Name_Id    := No_Name;
-      Index        : Int        := 0;
-      Display_Name : Name_Id    := No_Name;
-      Path         : Name_Id    := No_Name;
-      Display_Path : Name_Id    := No_Name;
-      Project      : Project_Id := No_Project;
-      Needs_Pragma : Boolean    := False;
+      Name         : File_Name_Type := No_File;
+      Index        : Int            := 0;
+      Display_Name : File_Name_Type := No_File;
+      Path         : File_Name_Type := No_File;
+      Display_Path : File_Name_Type := No_File;
+      Project      : Project_Id     := No_Project;
+      Needs_Pragma : Boolean        := False;
    end record;
    --  File and Path name of a spec or body
 
@@ -889,7 +898,7 @@ package Prj is
      (Header_Num => Header_Num,
       Element    => Unit_Project,
       No_Element => No_Unit_Project,
-      Key        => Name_Id,
+      Key        => File_Name_Type,
       Hash       => Hash,
       Equal      => "=");
    --  Mapping of file names to indexes in the Units table
@@ -938,8 +947,8 @@ package Prj is
 
    procedure Register_Default_Naming_Scheme
      (Language            : Name_Id;
-      Default_Spec_Suffix : Name_Id;
-      Default_Body_Suffix : Name_Id;
+      Default_Spec_Suffix : File_Name_Type;
+      Default_Body_Suffix : File_Name_Type;
       In_Tree             : Project_Tree_Ref);
    --  Register the default suffixes for a given language. These extensions
    --  will be ignored if the user has specified a new naming scheme in a
@@ -1003,12 +1012,12 @@ package Prj is
    function Suffix_Of
      (Language   : Language_Index;
       In_Project : Project_Data;
-      In_Tree    : Project_Tree_Ref) return Name_Id;
+      In_Tree    : Project_Tree_Ref) return File_Name_Type;
    --  Return the suffix for language Language in project In_Project. Return
    --  No_Name when no suffix is defined for the language.
 
    procedure Set
-     (Suffix       : Name_Id;
+     (Suffix       : File_Name_Type;
       For_Language : Language_Index;
       In_Project   : in out Project_Data;
       In_Tree      : Project_Tree_Ref);
@@ -1053,7 +1062,7 @@ private
    --  Comment ???
 
    package Path_File_Table is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Name_Id,
+     (Table_Component_Type => Path_Name_Type,
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 1,
       Table_Initial        => 50,
@@ -1062,7 +1071,7 @@ private
    --  Used by Delete_All_Path_Files.
 
    package Source_Path_Table is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Name_Id,
+     (Table_Component_Type => File_Name_Type,
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 1,
       Table_Initial        => 50,
@@ -1070,7 +1079,7 @@ private
    --  A table to store the source dirs before creating the source path file
 
    package Object_Path_Table is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Name_Id,
+     (Table_Component_Type => Path_Name_Type,
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 1,
       Table_Initial        => 50,
