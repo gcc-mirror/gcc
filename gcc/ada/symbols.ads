@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,8 @@
 --  several implementations of the body.
 
 with GNAT.Dynamic_Tables;
-with GNAT.OS_Lib;         use GNAT.OS_Lib;
+
+with System.OS_Lib; use System.OS_Lib;
 
 package Symbols is
 
@@ -47,9 +48,12 @@ package Symbols is
       Controlled,
       --  Fail if symbols are not the same as those in the reference file
 
-      Restricted);
+      Restricted,
       --  Restrict the symbols to those in the symbol file. Fail if some
       --  symbols in the symbol file are not exported from the object files.
+
+      Direct);
+      --  The reference symbol file is copied to the symbol file
 
    type Symbol_Kind is (Data, Proc);
    --  To distinguish between the different kinds of symbols

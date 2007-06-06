@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,9 @@
 --    - (optional) the policy to create the symbol file
 --    - (optional) the name of the reference symbol file
 --    - the names of one or more object files where the symbols are found
+
+with Ada.Exceptions; use Ada.Exceptions;
+with Ada.Text_IO;    use Ada.Text_IO;
 
 with GNAT.Command_Line; use GNAT.Command_Line;
 with GNAT.OS_Lib;       use GNAT.OS_Lib;
@@ -125,7 +128,7 @@ procedure Gnatsym is
    procedure Parse_Cmd_Line is
    begin
       loop
-         case GNAT.Command_Line.Getopt ("c C q r: R s: v V:") is
+         case GNAT.Command_Line.Getopt ("c C D q r: R s: v V:") is
             when ASCII.NUL =>
                exit;
 
@@ -134,6 +137,9 @@ procedure Gnatsym is
 
             when 'C' =>
                Symbol_Policy := Controlled;
+
+            when 'D' =>
+               Symbol_Policy := Direct;
 
             when 'q' =>
                Quiet := True;
@@ -221,6 +227,56 @@ begin
    if Symbol_File_Name = null or else Object_Files.Last = 0 then
       Usage;
       OS_Exit (1);
+
+   --  When symbol policy is direct, simply copy the reference symbol file to
+   --  the symbol file.
+
+   elsif Symbol_Policy = Direct then
+      declare
+         File_In  : Ada.Text_IO.File_Type;
+         File_Out : Ada.Text_IO.File_Type;
+         Line     : String (1 .. 1_000);
+         Last     : Natural;
+
+      begin
+         begin
+            Open (File_In, In_File, Reference_Symbol_File_Name.all);
+
+         exception
+            when X : others =>
+               if not Quiet then
+                  Put_Line
+                    ("could not open """ &
+                     Reference_Symbol_File_Name.all
+                     & """");
+                  Put_Line (Exception_Message (X));
+               end if;
+
+               OS_Exit (1);
+         end;
+
+         begin
+            Create (File_Out, Out_File, Symbol_File_Name.all);
+
+         exception
+            when X : others =>
+               if not Quiet then
+                  Put_Line
+                    ("could not create """ & Symbol_File_Name.all & """");
+                  Put_Line (Exception_Message (X));
+               end if;
+
+               OS_Exit (1);
+         end;
+
+         while not End_Of_File (File_In) loop
+            Get_Line (File_In, Line, Last);
+            Put_Line (File_Out, Line (1 .. Last));
+         end loop;
+
+         Close (File_In);
+         Close (File_Out);
+      end;
 
    else
       if Verbose then
