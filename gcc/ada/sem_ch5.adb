@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,6 @@
 
 with Atree;    use Atree;
 with Checks;   use Checks;
-with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Expander; use Expander;
@@ -34,6 +33,7 @@ with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
+with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
@@ -60,15 +60,15 @@ package body Sem_Ch5 is
 
    Unblocked_Exit_Count : Nat := 0;
    --  This variable is used when processing if statements, case statements,
-   --  and block statements. It counts the number of exit points that are
-   --  not blocked by unconditional transfer instructions: for IF and CASE,
-   --  these are the branches of the conditional; for a block, they are the
-   --  statement sequence of the block, and the statement sequences of any
-   --  exception handlers that are part of the block. When processing is
-   --  complete, if this count is zero, it means that control cannot fall
-   --  through the IF, CASE or block statement. This is used for the
-   --  generation of warning messages. This variable is recursively saved
-   --  on entry to processing the construct, and restored on exit.
+   --  and block statements. It counts the number of exit points that are not
+   --  blocked by unconditional transfer instructions: for IF and CASE, these
+   --  are the branches of the conditional; for a block, they are the statement
+   --  sequence of the block, and the statement sequences of any exception
+   --  handlers that are part of the block. When processing is complete, if
+   --  this count is zero, it means that control cannot fall through the IF,
+   --  CASE or block statement. This is used for the generation of warning
+   --  messages. This variable is recursively saved on entry to processing the
+   --  construct, and restored on exit.
 
    -----------------------
    -- Local Subprograms --
@@ -111,7 +111,7 @@ package body Sem_Ch5 is
       procedure Diagnose_Non_Variable_Lhs (N : Node_Id) is
       begin
          --  Not worth posting another error if left hand side already
-         --  flagged as being illegal in some respect
+         --  flagged as being illegal in some respect.
 
          if Error_Posted (N) then
             return;
@@ -250,6 +250,7 @@ package body Sem_Ch5 is
    --  Start of processing for Analyze_Assignment
 
    begin
+      Mark_Static_Coextensions (Rhs);
       Analyze (Rhs);
       Analyze (Lhs);
 
@@ -340,7 +341,12 @@ package body Sem_Ch5 is
          end if;
       end if;
 
+      --  The resulting assignment type is T1, so now we will resolve the
+      --  left hand side of the assignment using this determined type.
+
       Resolve (Lhs, T1);
+
+      --  Cases where Lhs is not a variable
 
       if not Is_Variable (Lhs) then
 
@@ -414,9 +420,13 @@ package body Sem_Ch5 is
          Diagnose_Non_Variable_Lhs (Lhs);
          return;
 
+      --  Error of assigning to limited type. We do however allow this in
+      --  certain cases where the front end generates the assignments.
+
       elsif Is_Limited_Type (T1)
         and then not Assignment_OK (Lhs)
         and then not Assignment_OK (Original_Node (Lhs))
+        and then not Is_Value_Type (T1)
       then
          Error_Msg_N
            ("left hand of assignment must not be limited type", Lhs);
@@ -453,9 +463,13 @@ package body Sem_Ch5 is
          return;
       end if;
 
-      Set_Assignment_Type (Lhs, T1);
+      --  Now we can complete the resolution of the right hand side
 
+      Set_Assignment_Type (Lhs, T1);
       Resolve (Rhs, T1);
+
+      --  This is the point at which we check for an unset reference
+
       Check_Unset_Reference (Rhs);
 
       --  Remaining steps are skipped if Rhs was syntactically in error
@@ -501,7 +515,15 @@ package body Sem_Ch5 is
          return;
       end if;
 
-      if (Is_Class_Wide_Type (T2) or else Is_Dynamically_Tagged (Rhs))
+      --  If the rhs is class-wide or dynamically tagged, then require the lhs
+      --  to be class-wide. The case where the rhs is a dynamically tagged call
+      --  to a dispatching operation with a controlling access result is
+      --  excluded from this check, since the target has an access type (and
+      --  no tag propagation occurs in that case).
+
+      if (Is_Class_Wide_Type (T2)
+           or else (Is_Dynamically_Tagged (Rhs)
+                     and then not Is_Access_Type (T1)))
         and then not Is_Class_Wide_Type (T1)
       then
          Error_Msg_N ("dynamically tagged expression not allowed!", Rhs);
@@ -800,7 +822,7 @@ package body Sem_Ch5 is
 
          Set_Etype (Ent, Standard_Void_Type);
          Set_Block_Node (Ent, Identifier (N));
-         New_Scope (Ent);
+         Push_Scope (Ent);
 
          if Present (Decls) then
             Analyze_Declarations (Decls);
@@ -1418,6 +1440,7 @@ package body Sem_Ch5 is
                return Original_Bound;
 
             elsif Nkind (Analyzed_Bound) = N_Integer_Literal
+              or else Nkind (Analyzed_Bound) = N_Character_Literal
               or else Is_Entity_Name (Analyzed_Bound)
             then
                Analyze_And_Resolve (Original_Bound, Typ);
@@ -1834,8 +1857,10 @@ package body Sem_Ch5 is
    ----------------------------
 
    procedure Analyze_Loop_Statement (N : Node_Id) is
-      Id   : constant Node_Id := Identifier (N);
-      Iter : constant Node_Id := Iteration_Scheme (N);
+      Loop_Statement : constant Node_Id := N;
+
+      Id   : constant Node_Id := Identifier (Loop_Statement);
+      Iter : constant Node_Id := Iteration_Scheme (Loop_Statement);
       Ent  : Entity_Id;
 
    begin
@@ -1846,7 +1871,7 @@ package body Sem_Ch5 is
 
          Analyze (Id);
          Ent := Entity (Id);
-         Generate_Reference  (Ent, N, ' ');
+         Generate_Reference  (Ent, Loop_Statement, ' ');
          Generate_Definition (Ent);
 
          --  If we found a label, mark its type. If not, ignore it, since it
@@ -1859,16 +1884,18 @@ package body Sem_Ch5 is
             Set_Ekind (Ent, E_Loop);
 
             if Nkind (Parent (Ent)) = N_Implicit_Label_Declaration then
-               Set_Label_Construct (Parent (Ent), N);
+               Set_Label_Construct (Parent (Ent), Loop_Statement);
             end if;
          end if;
 
       --  Case of no identifier present
 
       else
-         Ent := New_Internal_Entity (E_Loop, Current_Scope, Sloc (N), 'L');
+         Ent :=
+           New_Internal_Entity
+             (E_Loop, Current_Scope, Sloc (Loop_Statement), 'L');
          Set_Etype (Ent,  Standard_Void_Type);
-         Set_Parent (Ent, N);
+         Set_Parent (Ent, Loop_Statement);
       end if;
 
       --  Kill current values on entry to loop, since statements in body
@@ -1877,265 +1904,13 @@ package body Sem_Ch5 is
       --  that the body of the loop was executed.
 
       Kill_Current_Values;
-      New_Scope (Ent);
+      Push_Scope (Ent);
       Analyze_Iteration_Scheme (Iter);
-      Analyze_Statements (Statements (N));
-      Process_End_Label (N, 'e', Ent);
+      Analyze_Statements (Statements (Loop_Statement));
+      Process_End_Label (Loop_Statement, 'e', Ent);
       End_Scope;
       Kill_Current_Values;
-
-      --  Check for possible infinite loop which we can diagnose successfully.
-      --  The case we look for is a while loop which tests a local variable,
-      --  where there is no obvious direct or indirect update of the variable
-      --  within the body of the loop.
-
-      --  Note: we don't try to give a warning if condition actions are
-      --  present, since the loop structure can be very complex in this case.
-
-      if No (Iter)
-        or else No (Condition (Iter))
-        or else Present (Condition_Actions (Iter))
-        or else Debug_Flag_Dot_W
-      then
-         return;
-      end if;
-
-      --  Initial conditions met, see if condition is of right form
-
-      declare
-         Loc  : Node_Id := Empty;
-         Var  : Entity_Id := Empty;
-
-         function Has_Indirection (T : Entity_Id) return Boolean;
-         --  If the controlling variable is an access type, or is a record type
-         --  with access components, assume that it is changed indirectly and
-         --  suppress the warning. As a concession to low-level programming, in
-         --  particular within Declib, we also suppress warnings on a record
-         --  type that contains components of type Address or Short_Address.
-
-         procedure Find_Var (N : Node_Id);
-         --  Find whether the condition in a while-loop can be reduced to
-         --  a test on a single variable. Recurse if condition is negation.
-
-         ---------------------
-         -- Has_Indirection --
-         ---------------------
-
-         function Has_Indirection (T : Entity_Id) return Boolean is
-            Comp : Entity_Id;
-            Rec  : Entity_Id;
-
-         begin
-            if Is_Access_Type (T) then
-               return True;
-
-            elsif Is_Private_Type (T)
-              and then Present (Full_View (T))
-              and then Is_Access_Type (Full_View (T))
-            then
-               return True;
-
-            elsif Is_Record_Type (T) then
-               Rec := T;
-
-            elsif Is_Private_Type (T)
-              and then Present (Full_View (T))
-              and then Is_Record_Type (Full_View (T))
-            then
-               Rec := Full_View (T);
-            else
-               return False;
-            end if;
-
-            Comp := First_Component (Rec);
-            while Present (Comp) loop
-               if Is_Access_Type (Etype (Comp))
-                 or else Is_Descendent_Of_Address (Etype (Comp))
-               then
-                  return True;
-               end if;
-
-               Next_Component (Comp);
-            end loop;
-
-            return False;
-         end Has_Indirection;
-
-         --------------
-         -- Find_Var --
-         --------------
-
-         procedure Find_Var (N : Node_Id) is
-         begin
-            --  Condition is a direct variable reference
-
-            if Is_Entity_Name (N)
-              and then not Is_Library_Level_Entity (Entity (N))
-            then
-               Loc := N;
-
-            --  Case of condition is a comparison with compile time known value
-
-            elsif Nkind (N) in N_Op_Compare then
-               if Is_Entity_Name (Left_Opnd (N))
-                 and then Compile_Time_Known_Value (Right_Opnd (N))
-               then
-                  Loc := Left_Opnd (N);
-
-               elsif Is_Entity_Name (Right_Opnd (N))
-                 and then Compile_Time_Known_Value (Left_Opnd (N))
-               then
-                  Loc :=  Right_Opnd (N);
-
-               else
-                  return;
-               end if;
-
-            --  If condition is a negation, check whether the operand has the
-            --  proper form.
-
-            elsif Nkind (N) = N_Op_Not then
-               Find_Var (Right_Opnd (N));
-
-            --  Case of condition is function call with one parameter
-
-            elsif Nkind (N) = N_Function_Call then
-               declare
-                  PA : constant List_Id := Parameter_Associations (N);
-               begin
-                  if Present (PA)
-                    and then List_Length (PA) = 1
-                    and then Is_Entity_Name (First (PA))
-                  then
-                     Loc := First (PA);
-                  else
-                     return;
-                  end if;
-               end;
-
-            else
-               return;
-            end if;
-         end Find_Var;
-
-      begin
-         Find_Var (Condition (Iter));
-
-         if Present (Loc) then
-            Var := Entity (Loc);
-         end if;
-
-         if Present (Var)
-           and then Ekind (Var) = E_Variable
-           and then not Is_Library_Level_Entity (Var)
-           and then Comes_From_Source (Var)
-         then
-            if Has_Indirection (Etype (Var)) then
-
-               --  Assume that the designated object is modified in some
-               --  other way, to avoid false positives.
-
-               return;
-
-            elsif Is_Volatile (Var) then
-
-               --  If the variable is marked as volatile, we assume that
-               --  the condition may be affected by other tasks.
-
-               return;
-
-            elsif Nkind (Original_Node (First (Statements (N))))
-                 = N_Delay_Relative_Statement
-              or else Nkind (Original_Node (First (Statements (N))))
-                 = N_Delay_Until_Statement
-            then
-
-               --  Assume that this is a multitasking program, and the
-               --  condition is affected by other threads.
-
-               return;
-
-            end if;
-
-         --  There no identifiable single variable in the condition
-
-         else
-            return;
-         end if;
-
-         --  Search for reference to variable in loop
-
-         Ref_Search : declare
-            function Test_Ref (N : Node_Id) return Traverse_Result;
-            --  Test for reference to variable in question. Returns Abandon
-            --  if matching reference found.
-
-            function Find_Ref is new Traverse_Func (Test_Ref);
-            --  Function to traverse body of procedure. Returns Abandon if
-            --  matching reference found.
-
-            --------------
-            -- Test_Ref --
-            --------------
-
-            function Test_Ref (N : Node_Id) return Traverse_Result is
-            begin
-               --  Waste of time to look at iteration scheme
-
-               if N = Iter then
-                  return Skip;
-
-               --  Direct reference to variable in question
-
-               elsif Is_Entity_Name (N)
-                 and then Present (Entity (N))
-                 and then Entity (N) = Var
-                 and then May_Be_Lvalue (N)
-               then
-                  return Abandon;
-
-                  --  Reference to variable renaming variable in question
-
-               elsif Is_Entity_Name (N)
-                 and then Present (Entity (N))
-                 and then Ekind (Entity (N)) = E_Variable
-                 and then Present (Renamed_Object (Entity (N)))
-                 and then Is_Entity_Name (Renamed_Object (Entity (N)))
-                 and then Entity (Renamed_Object (Entity (N))) = Var
-                 and then May_Be_Lvalue (N)
-               then
-                  return Abandon;
-
-               --  Calls to subprograms are OK, unless the subprogram is
-               --  within the scope of the entity in question and could
-               --  therefore possibly modify it
-
-               elsif Nkind (N) = N_Procedure_Call_Statement
-                 or else Nkind (N) = N_Function_Call
-               then
-                  if not Is_Entity_Name (Name (N))
-                    or else Scope_Within (Entity (Name (N)), Scope (Var))
-                  then
-                     return Abandon;
-                  end if;
-               end if;
-
-               --  All OK, continue scan
-
-               return OK;
-            end Test_Ref;
-
-         --  Start of processing for Ref_Search
-
-         begin
-            if Find_Ref (N) = OK then
-               Error_Msg_NE
-                 ("variable& is not modified in loop body?", Loc, Var);
-               Error_Msg_N
-                 ("\possible infinite loop", Loc);
-            end if;
-         end Ref_Search;
-      end;
+      Check_Infinite_Loop_Warning (N);
    end Analyze_Loop_Statement;
 
    ----------------------------
@@ -2265,7 +2040,7 @@ package body Sem_Ch5 is
                   --  The rather strange shenanigans with the warning message
                   --  here reflects the fact that Kill_Dead_Code is very good
                   --  at removing warnings in deleted code, and this is one
-                  --  warning we would prefer NOT to have removed :-)
+                  --  warning we would prefer NOT to have removed.
 
                   Error_Loc := Sloc (Nxt);
 
