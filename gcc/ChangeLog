@@ -1,3 +1,8 @@
+2007-06-06  Paolo Bonzini  <bonzini@gnu.org>
+
+	* genmodes.c (tagged_printf, emit_insn_modes_h): Don't
+	use %n on printf.
+
 2007-06-06  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* haifa-sched.c (restore_bb_notes): Clear bb field of the notes
