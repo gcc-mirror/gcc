@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -336,6 +336,13 @@ package body Switch.B is
             Ptr := Ptr + 1;
             List_Restrictions := True;
 
+         --  Processing for R switch
+
+         when 'R' =>
+            Ptr := Ptr + 1;
+            Check_Only   := True;
+            List_Closure := True;
+
          --  Processing for s switch
 
          when 's' =>
@@ -455,6 +462,12 @@ package body Switch.B is
          when 'z' =>
             Ptr := Ptr + 1;
             No_Main_Subprogram := True;
+
+         --  Processing for Z switch
+
+         when 'Z' =>
+            Ptr := Ptr + 1;
+            Zero_Formatting := True;
 
          --  Processing for --RTS
 
