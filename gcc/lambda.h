@@ -434,5 +434,32 @@ lambda_vector_lexico_pos (lambda_vector v,
   return true;
 }
 
+/* Given a vector of induction variables IVS, and a vector of
+   coefficients COEFS, build a tree that is a linear combination of
+   the induction variables.  */
+
+static inline tree
+build_linear_expr (tree type, lambda_vector coefs, VEC (tree, heap) *ivs)
+{
+  unsigned i;
+  tree iv;
+  tree expr = fold_convert (type, integer_zero_node);
+
+  for (i = 0; VEC_iterate (tree, ivs, i, iv); i++)
+    {
+      int k = coefs[i];
+
+      if (k == 1)
+	expr = fold_build2 (PLUS_EXPR, type, expr, iv);
+
+      else if (k != 0)
+	expr = fold_build2 (PLUS_EXPR, type, expr,
+			    fold_build2 (MULT_EXPR, type, iv,
+					 build_int_cst (type, k)));
+    }
+
+  return expr;
+}
+
 #endif /* LAMBDA_H  */
 
