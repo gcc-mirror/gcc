@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -152,6 +152,15 @@ package Lib.Load is
    --  From_Limited_With is True if we are loading a unit X found in a
    --  limited-with clause, or some unit in the context of X. It is used to
    --  avoid the check on circular dependency (Ada 2005, AI-50217)
+
+   procedure Change_Main_Unit_To_Spec;
+   --  This procedure is called if the main unit file contains a No_Body pragma
+   --  and no other tokens. The effect is, if possible, to change the main unit
+   --  from the body it references now, to the corresponding spec. This has the
+   --  effect of ignoring the body, which is what we want. If it is impossible
+   --  to successfully make the change, then the call has no effect, and the
+   --  file is unchanged (this will lead to an error complaining about the
+   --  inappropriate No_Body spec).
 
    function Create_Dummy_Package_Unit
      (With_Node : Node_Id;

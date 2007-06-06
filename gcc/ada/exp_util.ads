@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,6 +27,7 @@
 --  Package containing utility procedures used throughout the expander
 
 with Exp_Tss; use Exp_Tss;
+with Namet;   use Namet;
 with Rtsfind; use Rtsfind;
 with Sinfo;   use Sinfo;
 with Types;   use Types;
@@ -393,7 +394,7 @@ package Exp_Util is
    --  or not known at all. In the first two cases, Get_Current_Condition will
    --  return with Op set to the appropriate conditional operator (inverted if
    --  the condition is known false), and Val set to the constant value. If the
-   --  condition is not known, then Cond and Val are set for the empty case
+   --  condition is not known, then Op and Val are set for the empty case
    --  (N_Empty and Empty).
    --
    --  The check for whether the condition is true/false unknown depends
@@ -410,6 +411,10 @@ package Exp_Util is
    --  The caller can use this result to determine the value (for the case of
    --  N_Op_Eq), or to determine the result of some other test in other cases
    --  (e.g. no access check required if N_Op_Ne Null).
+
+   function Has_Controlled_Coextensions (Typ : Entity_Id) return Boolean;
+   --  Determine whether a record type has anonymous access discriminants with
+   --  a controlled designated type.
 
    function Homonym_Number (Subp : Entity_Id) return Nat;
    --  Here subp is the entity for a subprogram. This routine returns the
@@ -520,6 +525,11 @@ package Exp_Util is
    --  caller has to check whether stack checking is actually enabled in order
    --  to guide the expansion (typically of a function call).
 
+   function Non_Limited_Designated_Type (T : Entity_Id) return Entity_Id;
+   --  An anonymous access type may designate a limited view. Check whether
+   --  non-limited view is available during expansion, to examine components
+   --  or other characteristics of the full type.
+
    function OK_To_Do_Constant_Replacement (E : Entity_Id) return Boolean;
    --  This function is used when testing whether or not to replace a reference
    --  to entity E by a known constant value. Such replacement must be done
@@ -531,6 +541,14 @@ package Exp_Util is
    --  also inhibit replacement of Volatile or aliased objects since their
    --  address might be captured in a way we do not detect. A value of True is
    --  returned only if the replacement is safe.
+
+   function Possible_Bit_Aligned_Component (N : Node_Id) return Boolean;
+   --  This function is used in processing the assignment of a record or
+   --  indexed component. The argument N is either the left hand or right
+   --  hand side of an assignment, and this function determines if there
+   --  is a record component reference where the record may be bit aligned
+   --  in a manner that causes trouble for the back end (see description
+   --  of Exp_Util.Component_May_Be_Bit_Aligned for further details).
 
    procedure Remove_Side_Effects
      (Exp          : Node_Id;
