@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 
 --  This package deals with the implementation of the Restrictions pragma
 
+with Namet;  use Namet;
 with Rident; use Rident;
 with Table;
 with Types;  use Types;
@@ -231,7 +232,11 @@ package Restrict is
    function No_Exception_Handlers_Set return Boolean;
    --  Test to see if current restrictions settings specify that no exception
    --  handlers are present. This function is called by Gigi when it needs to
-   --  expand an AT END clean up identifier with no exception handler.
+   --  expand an AT END clean up identifier with no exception handler. True
+   --  will be returned if the configurable run-time is activated, and either
+   --  of the restrictions No_Exception_Handlers or No_Exception_Propagation is
+   --  set. In the latter case, the source may contain handlers but they either
+   --  get converted using the local goto transformation or deleted.
 
    function Process_Restriction_Synonyms (N : Node_Id) return Name_Id;
    --  Id is a node whose Chars field contains the name of a restriction.
