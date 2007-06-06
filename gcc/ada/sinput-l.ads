@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,6 +64,11 @@ package Sinput.L is
    procedure Complete_Source_File_Entry;
    --  Called on completing the parsing of a source file. This call completes
    --  the source file table entry for the current source file.
+
+   function Source_File_Is_No_Body (X : Source_File_Index) return Boolean;
+   --  Returns true if the designated source file contains pragma No_Body;
+   --  and no other tokens. If the source file contains anything other than
+   --  this sequence of three tokens, then False is returned.
 
    function Source_File_Is_Subunit (X : Source_File_Index) return Boolean;
    --  This function determines if a source file represents a subunit. It
