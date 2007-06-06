@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2004-2006, Free Software Foundation, Inc.          --
+--         Copyright (C) 2004-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,24 +39,42 @@ package body System.Stack_Usage is
    use System.Storage_Elements;
    use System;
    use System.IO;
+   use Interfaces;
 
-   procedure Output_Result (Result_Id : Natural; Result : Task_Result);
+   Index_Str               : constant String  := "Index";
+   Task_Name_Str           : constant String  := "Task Name";
+   Stack_Size_Str          : constant String  := "Stack Size";
+   Actual_Size_Str         : constant String  := "Stack usage [min - max]";
+   Pattern_Array_Elem_Size : constant Natural :=
+                               (Unsigned_32_Size / Byte_Size);
 
-   function Report_Result (Analyzer : Stack_Analyzer) return Natural;
+   function Get_Usage_Range (Result : Task_Result) return String;
+   --  Return string representing the range of possible result of stack usage
 
-   function Inner_Than
+   procedure Output_Result
+     (Result_Id          : Natural;
+      Result             : Task_Result;
+      Max_Stack_Size_Len : Natural;
+      Max_Actual_Use_Len : Natural);
+   --  Prints the result on the standard output. Result Id is the number of
+   --  the result in the array, and Result the contents of the actual result.
+   --  Max_Stack_Size_Len and Max_Actual_Use_Len are used for displaying the
+   --  proper layout. They hold the maximum length of the string representing
+   --  the Stack_Size and Actual_Use values.
+
+   function Closer_To_Bottom
      (A1 : Stack_Address;
       A2 : Stack_Address) return Boolean;
-   pragma Inline (Inner_Than);
+   pragma Inline (Closer_To_Bottom);
    --  Return True if, according to the direction of the stack growth, A1 is
-   --  inner than A2. Inlined to reduce the size of the stack used by the
-   --  instrumentation code.
+   --  closer to the bottom than A2. Inlined to reduce the size of the stack
+   --  used by the instrumentation code.
 
-   ----------------
-   -- Inner_Than --
-   ----------------
+   ----------------------
+   -- Closer_To_Bottom --
+   ----------------------
 
-   function Inner_Than
+   function Closer_To_Bottom
      (A1 : Stack_Address;
       A2 : Stack_Address) return Boolean
    is
@@ -66,27 +84,29 @@ package body System.Stack_Usage is
       else
          return A2 > A1;
       end if;
-   end Inner_Than;
+   end Closer_To_Bottom;
 
    ----------------
    -- Initialize --
    ----------------
 
-   --  Add comments to this procedure ???
-   --  Other subprograms also need more comment in code???
-
    procedure Initialize (Buffer_Size : Natural) is
-      Bottom_Of_Stack : aliased Integer;
-
+      Bottom_Of_Stack  : aliased Integer;
       Stack_Size_Chars : System.Address;
+
    begin
+      --  Initialize the buffered result array
+
       Result_Array := new Result_Array_Type (1 .. Buffer_Size);
       Result_Array.all :=
         (others =>
-           (Task_Name =>
-              (others => ASCII.NUL),
-            Measure => 0,
-            Max_Size => 0));
+           (Task_Name      => (others => ASCII.NUL),
+            Measure        => 0,
+            Max_Size       => 0,
+            Overflow_Guard => 0));
+
+      --  Set the Is_Enabled flag to true, so that the task wrapper knows that
+      --  it has to handle dynamic stack analysis
 
       Is_Enabled := True;
 
@@ -104,11 +124,12 @@ package body System.Stack_Usage is
          begin
             Stack_Size := System.CRTL.atoi (Stack_Size_Chars) * 1024;
 
-            Initialize_Analyzer (Environment_Task_Analyzer,
-                                 "ENVIRONMENT TASK",
-                                 Stack_Size,
-                                 System.Storage_Elements.To_Integer
-                                   (Bottom_Of_Stack'Address));
+            Initialize_Analyzer
+              (Environment_Task_Analyzer,
+               "ENVIRONMENT TASK",
+               Stack_Size,
+               0,
+               System.Storage_Elements.To_Integer (Bottom_Of_Stack'Address));
 
             Fill_Stack (Environment_Task_Analyzer);
 
@@ -133,43 +154,48 @@ package body System.Stack_Usage is
       --  big, the more an "instrumentation threshold at writing" error is
       --  likely to happen.
 
-      type Word_32_Arr is
-        array (1 .. Analyzer.Size / (Word_32_Size / Byte_Size)) of Word_32;
-      pragma Pack (Word_32_Arr);
+      type Unsigned_32_Arr is
+        array (1 .. Analyzer.Size / Pattern_Array_Elem_Size) of Unsigned_32;
+      for Unsigned_32_Arr'Component_Size use 32;
 
       package Arr_Addr is
-        new System.Address_To_Access_Conversions (Word_32_Arr);
+        new System.Address_To_Access_Conversions (Unsigned_32_Arr);
 
-      Arr : aliased Word_32_Arr;
+      Arr : aliased Unsigned_32_Arr;
 
    begin
-      for J in Word_32_Arr'Range loop
+      --  Fill the stack with the pattern
+
+      for J in Unsigned_32_Arr'Range loop
          Arr (J) := Analyzer.Pattern;
       end loop;
-      Analyzer.Array_Address := Arr_Addr.To_Address (Arr'Access);
-      Analyzer.Inner_Pattern_Mark := To_Stack_Address (Arr (1)'Address);
-      Analyzer.Outer_Pattern_Mark :=
-        To_Stack_Address (Arr (Word_32_Arr'Last)'Address);
 
-      if Inner_Than (Analyzer.Outer_Pattern_Mark,
-                     Analyzer.Inner_Pattern_Mark) then
-         Analyzer.Inner_Pattern_Mark := Analyzer.Outer_Pattern_Mark;
-         Analyzer.Outer_Pattern_Mark := To_Stack_Address (Arr (1)'Address);
-         Analyzer.First_Is_Outermost := True;
+      --  Initialize the analyzer value
+
+      Analyzer.Array_Address := Arr_Addr.To_Address (Arr'Access);
+      Analyzer.Bottom_Pattern_Mark := To_Stack_Address (Arr (1)'Address);
+      Analyzer.Top_Pattern_Mark :=
+        To_Stack_Address (Arr (Unsigned_32_Arr'Last)'Address);
+
+      if
+        Closer_To_Bottom
+          (Analyzer.Top_Pattern_Mark, Analyzer.Bottom_Pattern_Mark)
+      then
+         Analyzer.Bottom_Pattern_Mark := Analyzer.Top_Pattern_Mark;
+         Analyzer.Top_Pattern_Mark := To_Stack_Address (Arr (1)'Address);
+         Analyzer.First_Is_Topmost := True;
       else
-         Analyzer.First_Is_Outermost := False;
+         Analyzer.First_Is_Topmost := False;
       end if;
 
       --  If Arr has been packed, the following assertion must be true (we add
       --  the size of the element whose address is:
-      --
       --    Min (Analyzer.Inner_Pattern_Mark, Analyzer.Outer_Pattern_Mark)):
 
       pragma Assert
         (Analyzer.Size =
            Stack_Size
-             (Analyzer.Outer_Pattern_Mark, Analyzer.Inner_Pattern_Mark) +
-           Word_32_Size / Byte_Size);
+             (Analyzer.Top_Pattern_Mark, Analyzer.Bottom_Pattern_Mark));
    end Fill_Stack;
 
    -------------------------
@@ -177,19 +203,25 @@ package body System.Stack_Usage is
    -------------------------
 
    procedure Initialize_Analyzer
-     (Analyzer  : in out Stack_Analyzer;
-      Task_Name : String;
-      Size      : Natural;
-      Bottom    : Stack_Address;
-      Pattern   : Word_32 := 16#DEAD_BEEF#)
+     (Analyzer       : in out Stack_Analyzer;
+      Task_Name      : String;
+      Size           : Natural;
+      Overflow_Guard : Natural;
+      Bottom         : Stack_Address;
+      Pattern        : Unsigned_32 := 16#DEAD_BEEF#)
    is
    begin
+      --  Initialize the analyzer fields
+
       Analyzer.Bottom_Of_Stack := Bottom;
       Analyzer.Size := Size;
       Analyzer.Pattern := Pattern;
       Analyzer.Result_Id := Next_Id;
 
       Analyzer.Task_Name := (others => ' ');
+
+      --  Compute the task name, and truncate it if it's bigger than
+      --  Task_Name_Length
 
       if Task_Name'Length <= Task_Name_Length then
          Analyzer.Task_Name (1 .. Task_Name'Length) := Task_Name;
@@ -199,11 +231,8 @@ package body System.Stack_Usage is
                         Task_Name'First + Task_Name_Length - 1);
       end if;
 
-      if Next_Id in Result_Array'Range then
-         Result_Array (Analyzer.Result_Id).Task_Name := Analyzer.Task_Name;
-      end if;
+      Analyzer.Overflow_Guard := Overflow_Guard;
 
-      Result_Array (Analyzer.Result_Id).Max_Size := Size;
       Next_Id := Next_Id + 1;
    end Initialize_Analyzer;
 
@@ -234,25 +263,29 @@ package body System.Stack_Usage is
       --  is, the more an "instrumentation threshold at reading" error is
       --  likely to happen.
 
-      type Word_32_Arr is
-        array (1 .. Analyzer.Size / (Word_32_Size / Byte_Size)) of Word_32;
-      pragma Pack (Word_32_Arr);
+      type Unsigned_32_Arr is
+        array (1 .. Analyzer.Size / Pattern_Array_Elem_Size) of Unsigned_32;
+      for Unsigned_32_Arr'Component_Size use 32;
 
       package Arr_Addr is
-        new System.Address_To_Access_Conversions (Word_32_Arr);
+        new System.Address_To_Access_Conversions (Unsigned_32_Arr);
 
       Arr_Access : Arr_Addr.Object_Pointer;
 
    begin
       Arr_Access := Arr_Addr.To_Pointer (Analyzer.Array_Address);
-      Analyzer.Outermost_Touched_Mark := Analyzer.Inner_Pattern_Mark;
+      Analyzer.Topmost_Touched_Mark := Analyzer.Bottom_Pattern_Mark;
 
-      for J in Word_32_Arr'Range loop
+      --  Look backward from the end of the stack to the beginning. The first
+      --  index not equals to the patterns marks the beginning of the used
+      --  stack.
+
+      for J in Unsigned_32_Arr'Range loop
          if Arr_Access (J) /= Analyzer.Pattern then
-            Analyzer.Outermost_Touched_Mark :=
+            Analyzer.Topmost_Touched_Mark :=
               To_Stack_Address (Arr_Access (J)'Address);
 
-            if Analyzer.First_Is_Outermost then
+            if Analyzer.First_Is_Topmost then
                exit;
             end if;
          end if;
@@ -260,19 +293,51 @@ package body System.Stack_Usage is
    end Compute_Result;
 
    ---------------------
+   -- Get_Usage_Range --
+   ---------------------
+
+   function Get_Usage_Range (Result : Task_Result) return String is
+      Min_Used_Str : constant String :=
+                       Natural'Image (Result.Measure);
+      Max_Used_Str : constant String :=
+                       Natural'Image (Result.Measure + Result.Overflow_Guard);
+   begin
+      return "[" & Min_Used_Str (2 .. Min_Used_Str'Last) & " -"
+        & Max_Used_Str & "]";
+   end Get_Usage_Range;
+
+   ---------------------
    --  Output_Result --
    ---------------------
 
-   procedure Output_Result (Result_Id : Natural; Result : Task_Result) is
+   procedure Output_Result
+     (Result_Id          : Natural;
+      Result             : Task_Result;
+      Max_Stack_Size_Len : Natural;
+      Max_Actual_Use_Len : Natural)
+   is
+      Result_Id_Str  : constant String := Natural'Image (Result_Id);
+      Stack_Size_Str : constant String := Natural'Image (Result.Max_Size);
+      Actual_Use_Str : constant String := Get_Usage_Range (Result);
+
+      Result_Id_Blanks  : constant
+        String (1 .. Index_Str'Length - Result_Id_Str'Length)    :=
+          (others => ' ');
+      Stack_Size_Blanks : constant
+        String (1 .. Max_Stack_Size_Len - Stack_Size_Str'Length) :=
+          (others => ' ');
+      Actual_Use_Blanks : constant
+        String (1 .. Max_Actual_Use_Len - Actual_Use_Str'Length) :=
+          (others => ' ');
    begin
       Set_Output (Standard_Error);
-      Put (Natural'Image (Result_Id));
+      Put (Result_Id_Blanks & Natural'Image (Result_Id));
       Put (" | ");
       Put (Result.Task_Name);
       Put (" | ");
-      Put (Natural'Image (Result.Max_Size));
+      Put (Stack_Size_Blanks & Stack_Size_Str);
       Put (" | ");
-      Put (Natural'Image (Result.Measure));
+      Put (Actual_Use_Blanks & Actual_Use_Str);
       New_Line;
    end Output_Result;
 
@@ -281,21 +346,87 @@ package body System.Stack_Usage is
    ---------------------
 
    procedure Output_Results is
+      Max_Stack_Size                         : Natural := 0;
+      Max_Actual_Use_Result_Id               : Natural := Result_Array'First;
+      Max_Stack_Size_Len, Max_Actual_Use_Len : Natural := 0;
+
+      Task_Name_Blanks :
+        constant String (1 .. Task_Name_Length - Task_Name_Str'Length) :=
+          (others => ' ');
    begin
+      Set_Output (Standard_Error);
+
       if Compute_Environment_Task then
          Compute_Result (Environment_Task_Analyzer);
          Report_Result (Environment_Task_Analyzer);
       end if;
 
-      Set_Output (Standard_Error);
-      Put ("Index | Task Name | Stack Size | Actual Use");
-      New_Line;
+      if Result_Array'Length > 0 then
+         --  Computes the size of the largest strings that will get displayed,
+         --  in order to do correct column alignment.
 
-      for J in Result_Array'Range loop
-         exit when J >= Next_Id;
+         for J in Result_Array'Range loop
+            exit when J >= Next_Id;
 
-         Output_Result (J, Result_Array (J));
-      end loop;
+            if Result_Array (J).Measure
+              > Result_Array (Max_Actual_Use_Result_Id).Measure
+            then
+               Max_Actual_Use_Result_Id := J;
+            end if;
+
+            if Result_Array (J).Max_Size > Max_Stack_Size then
+               Max_Stack_Size := Result_Array (J).Max_Size;
+            end if;
+         end loop;
+
+         Max_Stack_Size_Len := Natural'Image (Max_Stack_Size)'Length;
+
+         Max_Actual_Use_Len :=
+           Get_Usage_Range (Result_Array (Max_Actual_Use_Result_Id))'Length;
+
+         --  Display the output header. Blanks will be added in front of the
+         --  labels if needed.
+
+         declare
+            Stack_Size_Blanks  : constant
+              String (1 .. Max_Stack_Size_Len - Stack_Size_Str'Length) :=
+              (others => ' ');
+            Stack_Usage_Blanks : constant
+              String (1 .. Max_Actual_Use_Len - Actual_Size_Str'Length) :=
+              (others => ' ');
+
+         begin
+            if Stack_Size_Str'Length > Max_Stack_Size_Len then
+               Max_Stack_Size_Len := Stack_Size_Str'Length;
+            end if;
+
+            if Actual_Size_Str'Length > Max_Actual_Use_Len then
+               Max_Actual_Use_Len := Actual_Size_Str'Length;
+            end if;
+
+            Put
+              (Index_Str & " | " & Task_Name_Str & Task_Name_Blanks & " | "
+               & Stack_Size_Str & Stack_Size_Blanks & " | "
+               & Stack_Usage_Blanks & Actual_Size_Str);
+         end;
+
+         New_Line;
+
+         --  Now display the individual results
+
+         for J in Result_Array'Range loop
+            exit when J >= Next_Id;
+            Output_Result
+              (J, Result_Array (J), Max_Stack_Size_Len, Max_Actual_Use_Len);
+         end loop;
+      else
+         --  If there are no result stored, we'll still display the labels
+
+         Put
+           (Index_Str & " | " & Task_Name_Str & Task_Name_Blanks & " | "
+            & Stack_Size_Str & " | " & Actual_Size_Str);
+         New_Line;
+      end if;
    end Output_Results;
 
    -------------------
@@ -303,27 +434,60 @@ package body System.Stack_Usage is
    -------------------
 
    procedure Report_Result (Analyzer : Stack_Analyzer) is
+      Result : constant Task_Result :=
+        (Task_Name      => Analyzer.Task_Name,
+         Max_Size       => Analyzer.Size + Analyzer.Overflow_Guard,
+         Measure        => Stack_Size
+                             (Analyzer.Topmost_Touched_Mark,
+                              Analyzer.Bottom_Of_Stack),
+         Overflow_Guard => Analyzer.Overflow_Guard -
+                             Natural (Analyzer.Bottom_Of_Stack -
+                               Analyzer.Bottom_Pattern_Mark));
    begin
       if Analyzer.Result_Id in Result_Array'Range then
-         Result_Array (Analyzer.Result_Id).Measure := Report_Result (Analyzer);
-      else
-         Output_Result
-           (Analyzer.Result_Id,
-            (Task_Name => Analyzer.Task_Name,
-             Max_Size  => Analyzer.Size,
-             Measure   => Report_Result (Analyzer)));
-      end if;
-   end Report_Result;
 
-   function Report_Result (Analyzer : Stack_Analyzer) return Natural is
-   begin
-      if Analyzer.Outermost_Touched_Mark = Analyzer.Inner_Pattern_Mark then
-         return Stack_Size (Analyzer.Inner_Pattern_Mark,
-                            Analyzer.Bottom_Of_Stack);
+         --  If the result can be stored, then store it in Result_Array
+
+         Result_Array (Analyzer.Result_Id) := Result;
 
       else
-         return Stack_Size (Analyzer.Outermost_Touched_Mark,
-                            Analyzer.Bottom_Of_Stack);
+
+         --  If the result cannot be stored, then we display it right away
+
+         declare
+            Result_Str_Len : constant Natural :=
+                               Get_Usage_Range (Result)'Length;
+            Size_Str_Len   : constant Natural :=
+                               Natural'Image (Analyzer.Size)'Length;
+
+            Max_Stack_Size_Len : Natural;
+            Max_Actual_Use_Len : Natural;
+
+         begin
+            --  Take either the label size or the number image size for the
+            --  size of the column "Stack Size".
+
+            if Size_Str_Len > Stack_Size_Str'Length then
+               Max_Stack_Size_Len := Size_Str_Len;
+            else
+               Max_Stack_Size_Len := Stack_Size_Str'Length;
+            end if;
+
+            --  Take either the label size or the number image size for the
+            --  size of the column "Stack Usage"
+
+            if Result_Str_Len > Actual_Size_Str'Length then
+               Max_Actual_Use_Len := Result_Str_Len;
+            else
+               Max_Actual_Use_Len := Actual_Size_Str'Length;
+            end if;
+
+            Output_Result
+              (Analyzer.Result_Id,
+               Result,
+               Max_Stack_Size_Len,
+               Max_Actual_Use_Len);
+         end;
       end if;
    end Report_Result;
 
