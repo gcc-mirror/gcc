@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,7 @@ with Prj.Util; use Prj.Util;
 with Sinput.P;
 with Snames;   use Snames;
 with Table;
+with Tempdir;
 with Types;    use Types;
 with Hostparm; use Hostparm;
 --  Used to determine if we are in VMS or not for error message purposes
@@ -65,16 +66,18 @@ procedure GNATCmd is
    --  Prefix of binder generated file, changed to b__ for VMS
 
    Old_Project_File_Used : Boolean := False;
-   --  This flag indicates a switch -p (for gnatxref and gnatfind) for
-   --  an old fashioned project file. -p cannot be used in conjonction
-   --  with -P.
+   --  This flag indicates a switch -p (for gnatxref and gnatfind) for an old
+   --  fashioned project file. -p cannot be used in conjonction with -P.
 
    Max_Files_On_The_Command_Line : constant := 30; --  Arbitrary
 
    Temp_File_Name : String_Access := null;
    --  The name of the temporary text file to put a list of source/object
-   --  files to pass to a tool, when there are more than
-   --  Max_Files_On_The_Command_Line files.
+   --  files to pass to a tool, when the number of files exceeds the value of
+   --  Max_Files_On_The_Command_Line.
+
+   ASIS_Main : String_Access := null;
+   --  Main for commands Check, Metric and Pretty, when -U is used
 
    package First_Switches is new Table.Table
      (Table_Component_Type => String_Access,
@@ -225,6 +228,10 @@ procedure GNATCmd is
 
    procedure Delete_Temp_Config_Files;
    --  Delete all temporary config files
+
+   procedure Get_Closure;
+   --  Get the sources in the closure of the ASIS_Main and add them to the
+   --  list of arguments.
 
    function Index (Char : Character; Str : String) return Natural;
    --  Returns first occurrence of Char in Str, returns 0 if Char not in Str
@@ -386,17 +393,17 @@ procedure GNATCmd is
 
                if The_Command = List then
                   if
-                    Unit_Data.File_Names (Body_Part).Name /= No_Name
+                    Unit_Data.File_Names (Body_Part).Name /= No_File
                   then
                      --  There is a body, check if it is for this project
 
-                     if Unit_Data.File_Names (Body_Part).Project =
-                       Project
+                     if All_Projects or else
+                        Unit_Data.File_Names (Body_Part).Project =  Project
                      then
                         Subunit := False;
 
                         if Unit_Data.File_Names (Specification).Name =
-                          No_Name
+                          No_File
                         then
                            --  We have a body with no spec: we need to check if
                            --  this is a subunit, because gnatls will complain
@@ -428,13 +435,13 @@ procedure GNATCmd is
                      end if;
 
                   elsif
-                    Unit_Data.File_Names (Specification).Name /= No_Name
+                    Unit_Data.File_Names (Specification).Name /= No_File
                   then
                      --  We have a spec with no body; check if it is for this
                      --  project.
 
-                     if Unit_Data.File_Names (Specification).Project =
-                       Project
+                     if All_Projects or else
+                        Unit_Data.File_Names (Specification).Project = Project
                      then
                         Last_Switches.Increment_Last;
                         Last_Switches.Table (Last_Switches.Last) :=
@@ -452,7 +459,7 @@ procedure GNATCmd is
 
                elsif The_Command = Stack then
                   if
-                    Unit_Data.File_Names (Body_Part).Name /= No_Name
+                    Unit_Data.File_Names (Body_Part).Name /= No_File
                   then
                      --  There is a body. Check if .ci files for this project
                      --  must be added.
@@ -464,7 +471,7 @@ procedure GNATCmd is
                         Subunit := False;
 
                         if
-                          Unit_Data.File_Names (Specification).Name = No_Name
+                          Unit_Data.File_Names (Specification).Name = No_File
                         then
                            --  We have a body with no spec: we need to check
                            --  if this is a subunit, because .ci files are not
@@ -502,7 +509,7 @@ procedure GNATCmd is
                      end if;
 
                   elsif
-                    Unit_Data.File_Names (Specification).Name /= No_Name
+                    Unit_Data.File_Names (Specification).Name /= No_File
                   then
                      --  We have a spec with no body. Check if it is for this
                      --  project.
@@ -684,7 +691,7 @@ procedure GNATCmd is
    begin
       Prj.Env.Create_Config_Pragmas_File
         (Project, Project, Project_Tree, Include_Config_Files => False);
-      return Project_Tree.Projects.Table (Project).Config_File_Name;
+      return Name_Id (Project_Tree.Projects.Table (Project).Config_File_Name);
    end Configuration_Pragmas_File;
 
    ------------------------------
@@ -729,6 +736,147 @@ procedure GNATCmd is
          end if;
       end if;
    end Delete_Temp_Config_Files;
+
+   -----------------
+   -- Get_Closure --
+   -----------------
+
+   procedure Get_Closure is
+      Args : constant Argument_List :=
+               (1 => new String'("-q"),
+                2 => new String'("-b"),
+                3 => new String'("-P"),
+                4 => Project_File,
+                5 => ASIS_Main,
+                6 => new String'("-bargs"),
+                7 => new String'("-R"),
+                8 => new String'("-Z"));
+      --  Arguments of the invocation of gnatmake to get the list of
+
+      FD : File_Descriptor;
+      --  File descriptor for the temp file that will get the output of the
+      --  invocation of gnatmake.
+
+      Name : Path_Name_Type;
+      --  Path of the file FD
+
+      GN_Name : constant String := Program_Name ("gnatmake").all;
+      --  Name for gnatmake
+
+      GN_Path : constant String_Access := Locate_Exec_On_Path (GN_Name);
+      --  Path of gnatmake
+
+      Return_Code : Integer;
+
+      Unused : Boolean;
+      pragma Warnings (Off, Unused);
+
+      File : Ada.Text_IO.File_Type;
+      Line : String (1 .. 250);
+      Last : Natural;
+
+      Udata : Unit_Data;
+      Path  : File_Name_Type;
+
+   begin
+      if GN_Path = null then
+         Put_Line (Standard_Error, "could not locate " & GN_Name);
+         raise Error_Exit;
+      end if;
+
+      --  Create the temp file
+
+      Tempdir.Create_Temp_File (FD, Name);
+
+      --  And close it, because on VMS Spawn with a file descriptor created
+      --  with Create_Temp_File does not redirect output.
+
+      Close (FD);
+
+      --  Spawn "gnatmake -q -b -P <project> <main> -bargs -R -Z"
+
+      Spawn
+        (Program_Name => GN_Path.all,
+         Args         => Args,
+         Output_File  => Get_Name_String (Name),
+         Success      => Unused,
+         Return_Code  => Return_Code,
+         Err_To_Out   => True);
+
+      Close (FD);
+
+      --  Read the output of the invocation of gnatmake
+
+      Open (File, In_File, Get_Name_String (Name));
+
+      --  If it was unsuccessful, display the first line in the file and exit
+      --  with error.
+
+      if Return_Code /= 0 then
+         Get_Line (File, Line, Last);
+
+         if not Keep_Temporary_Files then
+            Delete (File);
+         else
+            Close (File);
+         end if;
+
+         Put_Line (Standard_Error, Line (1 .. Last));
+         Put_Line
+           (Standard_Error, "could not get closure of " & ASIS_Main.all);
+         raise Error_Exit;
+
+      else
+         --  Get each file name in the file, find its path and add it the the
+         --  list of arguments.
+
+         while not End_Of_File (File) loop
+            Get_Line (File, Line, Last);
+            Path := No_File;
+
+            for Unit in Unit_Table.First ..
+                        Unit_Table.Last (Project_Tree.Units)
+            loop
+               Udata := Project_Tree.Units.Table (Unit);
+
+               if Udata.File_Names (Specification).Name /= No_File
+                 and then
+                   Get_Name_String (Udata.File_Names (Specification).Name) =
+                      Line (1 .. Last)
+               then
+                  Path := Udata.File_Names (Specification).Path;
+                  exit;
+
+               elsif Udata.File_Names (Body_Part).Name /= No_File
+                 and then
+                   Get_Name_String (Udata.File_Names (Body_Part).Name) =
+                     Line (1 .. Last)
+               then
+                  Path := Udata.File_Names (Body_Part).Path;
+                  exit;
+               end if;
+            end loop;
+
+            Last_Switches.Increment_Last;
+
+            if Path /= No_File then
+               Last_Switches.Table (Last_Switches.Last) :=
+                  new String'(Get_Name_String (Path));
+
+            else
+               Last_Switches.Table (Last_Switches.Last) :=
+                 new String'(Line (1 .. Last));
+            end if;
+         end loop;
+
+         if not Keep_Temporary_Files then
+            Delete (File);
+
+         else
+            Close (File);
+         end if;
+      end if;
+   end Get_Closure;
 
    -----------
    -- Index --
@@ -1493,9 +1641,19 @@ begin
                      end if;
                   end if;
 
+                  --  -aPdir  Add dir to the project search path
+
+                  if Argv'Length > 3
+                    and then Argv (Argv'First + 1 .. Argv'First + 2) = "aP"
+                  then
+                     Add_Search_Project_Directory
+                       (Argv (Argv'First + 3 .. Argv'Last));
+
+                     Remove_Switch (Arg_Num);
+
                   --  -vPx  Specify verbosity while parsing project files
 
-                  if Argv'Length = 4
+                  elsif Argv'Length = 4
                     and then Argv (Argv'First + 1 .. Argv'First + 2) = "vP"
                   then
                      case Argv (Argv'Last) is
@@ -1591,7 +1749,8 @@ begin
                     (The_Command = Check  or else
                      The_Command = Pretty or else
                      The_Command = Metric or else
-                     The_Command = Stack)
+                     The_Command = Stack  or else
+                     The_Command = List)
                     and then Argv'Length = 2
                     and then Argv (2) = 'U'
                   then
@@ -1600,6 +1759,19 @@ begin
 
                   else
                      Arg_Num := Arg_Num + 1;
+                  end if;
+
+               elsif ((The_Command = Check and then Argv (Argv'First) /= '+')
+                        or else The_Command = Metric
+                        or else The_Command = Pretty)
+                 and then Project_File /= null
+                 and then All_Projects
+               then
+                  if ASIS_Main /= null then
+                     Fail ("cannot specify more than one main after -U");
+                  else
+                     ASIS_Main := Argv;
+                     Remove_Switch (Arg_Num);
                   end if;
 
                else
@@ -2040,11 +2212,17 @@ begin
             end;
          end if;
 
+         --  For gnat check, metric or pretty with -U + a main, get the list
+         --  of sources from the closure and add them to the arguments.
+
+         if ASIS_Main /= null then
+            Get_Closure;
+
          --  For gnat check, gnat pretty, gnat metric, gnat list, and gnat
          --  stack, if no file has been put on the command line, call tool
          --  with all the sources of the main project.
 
-         if The_Command = Check  or else
+         elsif The_Command = Check  or else
             The_Command = Pretty or else
             The_Command = Metric or else
             The_Command = List   or else
