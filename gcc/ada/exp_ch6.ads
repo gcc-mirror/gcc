@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,10 +61,10 @@ package Exp_Ch6 is
    --  enumeration literals matches the order in which the formals are
    --  declared. See Sem_Ch6.Create_Extra_Formals.
      (BIP_Alloc_Form,
-      --  Present if result subtype is unconstrained. Indicates whether the
-      --  return object is allocated by the caller or callee, and if the
-      --  callee, whether to use the secondary stack or the heap. See
-      --  Create_Extra_Formals.
+      --  Present if result subtype is unconstrained, or if the result type
+      --  is tagged. Indicates whether the return object is allocated by the
+      --  caller or callee, and if the callee, whether to use the secondary
+      --  stack or the heap. See Create_Extra_Formals.
       BIP_Final_List,
       --  Present if result type has controlled parts. Pointer to caller's
       --  finalization list.
@@ -161,11 +161,5 @@ package Exp_Ch6 is
    --  function call. Function_Call must denote either an N_Function_Call node
    --  for which Is_Build_In_Place_Call is True, or an N_Qualified_Expression
    --  node applied to such a function call.
-
-   procedure Register_Interface_DT_Entry
-     (Related_Nod : Node_Id;
-      Prim        : Entity_Id);
-   --  Ada 2005 (AI-251): Register a primitive in a secondary dispatch table.
-   --  Related_Nod is the node after which the expanded code will be inserted.
 
 end Exp_Ch6;
