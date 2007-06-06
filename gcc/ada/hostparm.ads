@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,15 +39,6 @@ with Types;
 
 package Hostparm is
 
-   -----------------------
-   -- TARGET Parameters --
-   -----------------------
-
-   --  ??? The following should really be moved to a Target package
-
-   Java_VM : constant Boolean := False;
-   --  Set true when compiling the JGNAT tool chain (compiler, gnatmake, etc)
-
    ---------------------
    -- HOST Parameters --
    ---------------------
@@ -57,10 +48,12 @@ package Hostparm is
 
    OpenVMS : Boolean := Gnat_VMSp /= 0;
    --  Set True for OpenVMS host. See also OpenVMS target boolean in
-   --  5vsystem.ads and OpenVMS_On_Target boolean in Targparm. This is
-   --  not a constant, because it can be modified by -gnatdm.
+   --  system-vms.ads and system-vms_64.ads and OpenVMS_On_Target boolean in
+   --  Targparm. This is not a constant, because it can be modified by -gnatdm.
 
-   Normalized_CWD : constant String := "./";
+   Direct_Separator : constant Character;
+   pragma Import (C, Direct_Separator, "__gnat_dir_separator");
+   Normalized_CWD : constant String := "." & Direct_Separator;
    --  Normalized string to access current directory
 
    Max_Line_Length : constant := Types.Column_Number'Pred
