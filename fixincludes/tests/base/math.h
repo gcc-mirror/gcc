@@ -48,6 +48,22 @@ extern int matherr();
 #endif  /* HPUX11_CPP_POW_INLINE_CHECK */
 
 
+#if defined( HPPA_HPUX_FP_MACROS_CHECK )
+#endif /* _INCLUDE_HPUX_SOURCE */
+
+#if defined(_INCLUDE_HPUX_SOURCE) || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
+#  define FP_NORMAL     0
+#  define FP_ZERO       1
+#  define FP_INFINITE   2
+#  define FP_SUBNORMAL  3
+#  define FP_NAN        4
+#endif
+
+#ifdef _INCLUDE_HPUX_SOURCE
+
+#endif  /* HPPA_HPUX_FP_MACROS_CHECK */
+
+
 #if defined( HPUX11_FABSF_CHECK )
 #ifdef _PA_RISC
 #ifndef __cplusplus
