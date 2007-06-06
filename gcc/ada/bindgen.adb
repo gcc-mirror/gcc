@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,8 @@ with Table;    use Table;
 with Targparm; use Targparm;
 with Types;    use Types;
 
-with GNAT.OS_Lib;      use GNAT.OS_Lib;
+with System.OS_Lib;    use System.OS_Lib;
+
 with GNAT.Heap_Sort_A; use GNAT.Heap_Sort_A;
 
 package body Bindgen is
@@ -61,6 +62,14 @@ package body Bindgen is
 
    Num_Elab_Calls : Nat := 0;
    --  Number of generated calls to elaboration routines
+
+   System_Restrictions_Used : Boolean;
+   --  Flag indicating whether the unit System.Restrictions is in the closure
+   --  of the partition. This is set by Check_System_Restrictions_Used, and
+   --  is used to determine whether or not to initialize the restrictions
+   --  information in the body of the binder generated file (we do not want
+   --  to do this unconditionally, since it drags in the System.Restrictions
+   --  unit unconditionally, which is unpleasand, especially for ZFP etc.)
 
    ----------------------------------
    -- Interface_State Pragma Table --
@@ -206,6 +215,10 @@ package body Bindgen is
    procedure WBI (Info : String) renames Osint.B.Write_Binder_Info;
    --  Convenient shorthand used throughout
 
+   procedure Check_System_Restrictions_Used;
+   --  Sets flag System_Restrictions_Used (Set to True if and only if the unit
+   --  System.Restrictions is present in the partition, otherwise False).
+
    procedure Gen_Adainit_Ada;
    --  Generates the Adainit procedure (Ada code case)
 
@@ -341,6 +354,22 @@ package body Bindgen is
    --  First writes its argument (using Set_String (S)), then writes out the
    --  contents of statement buffer up to Last, and reset Last to 0
 
+   ------------------------------------
+   -- Check_System_Restrictions_Used --
+   ------------------------------------
+
+   procedure Check_System_Restrictions_Used is
+   begin
+      for J in Units.First .. Units.Last loop
+         if Get_Name_String (Units.Table (J).Sfile) = "s-restri.ads" then
+            System_Restrictions_Used := True;
+            return;
+         end if;
+      end loop;
+
+      System_Restrictions_Used := False;
+   end Check_System_Restrictions_Used;
+
    ----------------------
    -- Gen_Adafinal_Ada --
    ----------------------
@@ -354,7 +383,7 @@ package body Bindgen is
       --  If compiling for the JVM, we directly call Adafinal because
       --  we don't import it via Do_Finalize (see Gen_Output_File_Ada).
 
-      if Hostparm.Java_VM then
+      if VM_Target /= No_VM then
          WBI ("      System.Standard_Library.Adafinal;");
 
       --  If there is no finalization, there is nothing to do
@@ -416,7 +445,14 @@ package body Bindgen is
                Set_String ("      ");
                Set_String ("E");
                Set_Unit_Number (Unum);
-               Set_String (" : Boolean; pragma Import (Ada, ");
+
+               case VM_Target is
+                  when No_VM | JVM_Target =>
+                     Set_String (" : Boolean; pragma Import (Ada, ");
+                  when CLI_Target =>
+                     Set_String (" : Boolean; pragma Import (CIL, ");
+               end case;
+
                Set_String ("E");
                Set_Unit_Number (Unum);
                Set_String (", """);
@@ -426,16 +462,22 @@ package body Bindgen is
                --  that includes the class name (using '$' separators
                --  in the case of a child unit name).
 
-               if Hostparm.Java_VM then
+               if VM_Target /= No_VM then
                   for J in 1 .. Name_Len - 2 loop
-                     if Name_Buffer (J) /= '.' then
+                     if VM_Target = CLI_Target
+                       or else Name_Buffer (J) /= '.'
+                     then
                         Set_Char (Name_Buffer (J));
                      else
                         Set_String ("$");
                      end if;
                   end loop;
 
-                  Set_String (".");
+                  if VM_Target /= CLI_Target or else U.Unit_Kind = 's' then
+                     Set_String (".");
+                  else
+                     Set_String ("_pkg.");
+                  end if;
 
                   --  If the unit name is very long, then split the
                   --  Import link name across lines using "&" (occurs
@@ -828,8 +870,6 @@ package body Bindgen is
          Set_String ("';");
          Write_Statement_Buffer;
 
-         --  Generate definition for restrictions string
-
          Gen_Restrictions_C;
 
          WBI ("   extern const void *__gl_interrupt_states;");
@@ -1007,13 +1047,29 @@ package body Bindgen is
                Set_String ("      ");
                Get_Decoded_Name_String_With_Brackets (U.Uname);
 
-               if Name_Buffer (Name_Len) = 's' then
-                  Name_Buffer (Name_Len - 1 .. Name_Len + 8) := "'elab_spec";
+               if VM_Target = CLI_Target and then U.Unit_Kind /= 's' then
+                  if Name_Buffer (Name_Len) = 's' then
+                     Name_Buffer (Name_Len - 1 .. Name_Len + 12) :=
+                       "_pkg'elab_spec";
+                  else
+                     Name_Buffer (Name_Len - 1 .. Name_Len + 12) :=
+                       "_pkg'elab_body";
+                  end if;
+
+                  Name_Len := Name_Len + 12;
+
                else
-                  Name_Buffer (Name_Len - 1 .. Name_Len + 8) := "'elab_body";
+                  if Name_Buffer (Name_Len) = 's' then
+                     Name_Buffer (Name_Len - 1 .. Name_Len + 8) :=
+                       "'elab_spec";
+                  else
+                     Name_Buffer (Name_Len - 1 .. Name_Len + 8) :=
+                       "'elab_body";
+                  end if;
+
+                  Name_Len := Name_Len + 8;
                end if;
 
-               Name_Len := Name_Len + 8;
                Set_Casing (U.Icasing);
                Set_Name_Buffer;
                Set_Char (';');
@@ -1395,7 +1451,6 @@ package body Bindgen is
       end if;
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
-
          if not No_Main_Subprogram
            and then Bind_Main_Program
            and then not Suppress_Standard_Library_On_Target
@@ -1425,10 +1480,10 @@ package body Bindgen is
          --  If compiling for the JVM, we directly call Adafinal because
          --  we don't import it via Do_Finalize (see Gen_Output_File_Ada).
 
-         if Hostparm.Java_VM then
-            WBI ("      System.Standard_Library.Adafinal;");
-         else
+         if VM_Target = No_VM then
             WBI ("      Do_Finalize;");
+         else
+            WBI ("      System.Standard_Library.Adafinal;");
          end if;
       end if;
 
@@ -1666,6 +1721,9 @@ package body Bindgen is
       --  in the Linker_Options table of where the first entry from an
       --  internal file appears.
 
+      Linker_Option_List_Started : Boolean := False;
+      --  Set to True when "LINKER OPTION LIST" is displayed
+
       procedure Write_Linker_Option;
       --  Write binder info linker option
 
@@ -1694,12 +1752,24 @@ package body Bindgen is
             --  Process section if non-null
 
             if Stop > Start then
-                  if Output_Linker_Option_List then
-                     Write_Str (Name_Buffer (Start .. Stop - 1));
-                     Write_Eol;
+               if Output_Linker_Option_List then
+                  if not Zero_Formatting then
+                     if not Linker_Option_List_Started then
+                        Linker_Option_List_Started := True;
+                        Write_Eol;
+                        Write_Str ("     LINKER OPTION LIST");
+                        Write_Eol;
+                        Write_Eol;
+                     end if;
+
+                     Write_Str ("   ");
                   end if;
-                  Write_Info_Ada_C
-                    ("   --   ", "", Name_Buffer (Start .. Stop - 1));
+
+                  Write_Str (Name_Buffer (Start .. Stop - 1));
+                  Write_Eol;
+               end if;
+               Write_Info_Ada_C
+                 ("   --   ", "", Name_Buffer (Start .. Stop - 1));
             end if;
 
             Start := Stop + 1;
@@ -1728,7 +1798,8 @@ package body Bindgen is
             --  exists, then use it.
 
             if not Hostparm.Exclude_Missing_Objects
-              or else GNAT.OS_Lib.Is_Regular_File (Name_Buffer (1 .. Name_Len))
+              or else
+                System.OS_Lib.Is_Regular_File (Name_Buffer (1 .. Name_Len))
             then
                Write_Info_Ada_C ("   --   ", "", Name_Buffer (1 .. Name_Len));
 
@@ -1887,6 +1958,10 @@ package body Bindgen is
          Write_Linker_Option;
       end loop;
 
+      if Output_Linker_Option_List and then not Zero_Formatting then
+         Write_Eol;
+      end if;
+
       if Ada_Bind_File then
          WBI ("--  END Object file/option list   ");
       else
@@ -1908,11 +1983,11 @@ package body Bindgen is
 
       Set_PSD_Pragma_Table;
 
-      --  Override Ada_Bind_File and Bind_Main_Program for Java since
+      --  Override Ada_Bind_File and Bind_Main_Program for VMs since
       --  JGNAT only supports Ada code, and the main program is already
       --  generated by the compiler.
 
-      if Hostparm.Java_VM then
+      if VM_Target /= No_VM then
          Ada_Bind_File := True;
          Bind_Main_Program := False;
       end if;
@@ -1935,12 +2010,13 @@ package body Bindgen is
 
       --  Generate output file in appropriate language
 
+      Check_System_Restrictions_Used;
+
       if Ada_Bind_File then
          Gen_Output_File_Ada (Filename);
       else
          Gen_Output_File_C (Filename);
       end if;
-
    end Gen_Output_File;
 
    -------------------------
@@ -1978,6 +2054,18 @@ package body Bindgen is
          WBI ("pragma Restrictions (No_Exception_Handlers);");
       end if;
 
+      --  Same processing for Restrictions (No_Exception_Propagation)
+
+      if Cumulative_Restrictions.Set (No_Exception_Propagation) then
+         WBI ("pragma Restrictions (No_Exception_Propagation);");
+      end if;
+
+      --  Same processing for pragma No_Run_Time
+
+      if No_Run_Time_Mode then
+         WBI ("pragma No_Run_Time;");
+      end if;
+
       --  Generate with of System so we can reference System.Address
 
       WBI ("with System;");
@@ -2001,7 +2089,7 @@ package body Bindgen is
          --  Import C doesn't have the same semantics for JGNAT, we use
          --  standard Ada.
 
-         if Hostparm.Java_VM then
+         if VM_Target /= No_VM then
             WBI ("with System.Standard_Library;");
          end if;
       end if;
@@ -2079,15 +2167,17 @@ package body Bindgen is
       WBI ("   procedure " & Ada_Final_Name.all & ";");
       WBI ("   pragma Export (C, " & Ada_Final_Name.all & ", """ &
            Ada_Final_Name.all & """);");
-
-      if Use_Pragma_Linker_Constructor then
-         WBI ("   pragma Linker_Destructor (" & Ada_Final_Name.all & ");");
-      end if;
-
       WBI ("");
       WBI ("   procedure " & Ada_Init_Name.all & ";");
       WBI ("   pragma Export (C, " & Ada_Init_Name.all & ", """ &
            Ada_Init_Name.all & """);");
+
+      --  If -a has been specified use pragma Linker_Constructor for the init
+      --  procedure. No need to use a similar pragma for the final procedure as
+      --  global finalization will occur when the executable finishes execution
+      --  and for plugins (shared stand-alone libraries that can be
+      --  "unloaded"), finalization should not occur automatically, otherwise
+      --  the main executable may not continue to work properly.
 
       if Use_Pragma_Linker_Constructor then
          WBI ("   pragma Linker_Constructor (" & Ada_Init_Name.all & ");");
@@ -2191,7 +2281,9 @@ package body Bindgen is
       --  Generate with of System.Restrictions to initialize
       --  Run_Time_Restrictions.
 
-      if not Suppress_Standard_Library_On_Target then
+      if System_Restrictions_Used
+        and not Suppress_Standard_Library_On_Target
+      then
          WBI ("");
          WBI ("with System.Restrictions;");
       end if;
@@ -2207,7 +2299,7 @@ package body Bindgen is
          --  In the Java case, pragma Import C cannot be used, so the
          --  standard Ada constructs will be used instead.
 
-         if not Hostparm.Java_VM then
+         if VM_Target = No_VM then
             WBI ("");
             WBI ("   procedure Do_Finalize;");
             WBI
@@ -2288,14 +2380,20 @@ package body Bindgen is
 
       Resolve_Binder_Options;
 
+      WBI ("extern void " & Ada_Final_Name.all & " (void);");
+
+      --  If -a has been specified use __attribute__((constructor)) for the
+      --  init procedure. No need to use a similar featute for the final
+      --  procedure as global finalization will occur when the executable
+      --  finishes execution and for plugins (shared stand-alone libraries that
+      --  can be "unloaded"), finalization should not occur automatically,
+      --  otherwise the main executable may not continue to work properly.
+
       if Use_Pragma_Linker_Constructor then
-         WBI ("extern void " & Ada_Final_Name.all &
-              " (void) __attribute__((destructor));");
          WBI ("extern void " & Ada_Init_Name.all &
               " (void) __attribute__((constructor));");
 
       else
-         WBI ("extern void " & Ada_Final_Name.all & " (void);");
          WBI ("extern void " & Ada_Init_Name.all & " (void);");
       end if;
 
@@ -2470,8 +2568,11 @@ package body Bindgen is
 
    procedure Gen_Restrictions_Ada is
       Count : Integer;
+
    begin
-      if Suppress_Standard_Library_On_Target then
+      if Suppress_Standard_Library_On_Target
+        or not System_Restrictions_Used
+      then
          return;
       end if;
 
@@ -2569,7 +2670,9 @@ package body Bindgen is
 
    procedure Gen_Restrictions_C is
    begin
-      if Suppress_Standard_Library_On_Target then
+      if Suppress_Standard_Library_On_Target
+        or not System_Restrictions_Used
+      then
          return;
       end if;
 
@@ -2827,7 +2930,8 @@ package body Bindgen is
       --  The main program generated by JGNAT expects a package called
       --  ada_<main procedure>.
 
-      if Hostparm.Java_VM then
+      if VM_Target /= No_VM then
+
          --  Get main program name
 
          Get_Name_String (Units.Table (First_Unit_Entry).Uname);
