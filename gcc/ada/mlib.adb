@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2006, AdaCore                     --
+--                     Copyright (C) 1999-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,6 @@ with Interfaces.C.Strings;
 with Hostparm;
 with Opt;
 with Output; use Output;
-with Namet;  use Namet;
 
 with MLib.Utl; use MLib.Utl;
 
@@ -59,7 +58,8 @@ package body MLib is
          Write_Line (Output_File);
       end if;
 
-      Ar (Output_Dir & "/lib" & Output_File & ".a", Objects => Ofiles);
+      Ar (Output_Dir & Directory_Separator &
+          "lib" & Output_File & ".a", Objects => Ofiles);
    end Build_Library;
 
    ------------------------
@@ -97,7 +97,7 @@ package body MLib is
 
    procedure Copy_ALI_Files
      (Files      : Argument_List;
-      To         : Name_Id;
+      To         : Path_Name_Type;
       Interfaces : String_List)
    is
       Success      : Boolean := False;
@@ -130,6 +130,10 @@ package body MLib is
 
          for Index in Files'Range loop
             Verbose_Copy (Index);
+            Set_Writable
+              (To_Dir &
+               Directory_Separator &
+               Base_Name (Files (Index).all));
             Copy_File
               (Files (Index).all,
                To_Dir,
@@ -169,15 +173,19 @@ package body MLib is
                if Is_Interface then
                   Success := False;
                   Verbose_Copy (Index);
+                  Set_Writable
+                    (To_Dir &
+                     Directory_Separator &
+                     Base_Name (Files (Index).all));
 
                   declare
-                     FD         : File_Descriptor;
-                     Len        : Integer;
-                     Actual_Len : Integer;
-                     S          : String_Access;
-                     Curr       : Natural;
+                     FD           : File_Descriptor;
+                     Len          : Integer;
+                     Actual_Len   : Integer;
+                     S            : String_Access;
+                     Curr         : Natural;
                      P_Line_Found : Boolean;
-                     Status     : Boolean;
+                     Status       : Boolean;
 
                   begin
                      --  Open the file
