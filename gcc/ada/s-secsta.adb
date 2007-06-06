@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,8 +33,8 @@
 
 with System.Soft_Links;
 with System.Parameters;
-with Unchecked_Conversion;
-with Unchecked_Deallocation;
+with Ada.Unchecked_Conversion;
+with Ada.Unchecked_Deallocation;
 
 package body System.Secondary_Stack is
 
@@ -116,13 +116,13 @@ package body System.Secondary_Stack is
    --  Pointer to record used to represent a dynamically allocated secondary
    --  stack descriptor for a secondary stack chunk.
 
-   procedure Free is new Unchecked_Deallocation (Chunk_Id, Chunk_Ptr);
+   procedure Free is new Ada.Unchecked_Deallocation (Chunk_Id, Chunk_Ptr);
    --  Free a dynamically allocated chunk
 
    function To_Stack_Ptr is new
-     Unchecked_Conversion (Address, Stack_Ptr);
+     Ada.Unchecked_Conversion (Address, Stack_Ptr);
    function To_Addr is new
-     Unchecked_Conversion (Stack_Ptr, Address);
+     Ada.Unchecked_Conversion (Stack_Ptr, Address);
    --  Convert to and from address stored in task data structures
 
    --------------------------------------------------------------
@@ -166,7 +166,7 @@ package body System.Secondary_Stack is
    --  Pointer to record used to describe statically allocated sec stack
 
    function To_Fixed_Stack_Ptr is new
-     Unchecked_Conversion (Address, Fixed_Stack_Ptr);
+     Ada.Unchecked_Conversion (Address, Fixed_Stack_Ptr);
    --  Convert from address stored in task data structures
 
    --------------
@@ -302,7 +302,8 @@ package body System.Secondary_Stack is
             Stack : Stack_Ptr := To_Stack_Ptr (Stk);
             Chunk : Chunk_Ptr;
 
-            procedure Free is new Unchecked_Deallocation (Stack_Id, Stack_Ptr);
+            procedure Free is
+              new Ada.Unchecked_Deallocation (Stack_Id, Stack_Ptr);
 
          begin
             Chunk := Stack.Current_Chunk;
@@ -492,21 +493,47 @@ package body System.Secondary_Stack is
    Stack : aliased Stack_Id;
    for Stack'Alignment use Standard'Maximum_Alignment;
 
-   Chunk : aliased Chunk_Id (1, SS_Ptr (Default_Secondary_Stack_Size));
-   for Chunk'Alignment use Standard'Maximum_Alignment;
+   Static_Secondary_Stack_Size : constant := 10 * 1024;
+   --  Static_Secondary_Stack_Size must be static so that Chunk is allocated
+   --  statically, and not via dynamic memory allocation.
 
-   Chunk_Address : Address;
+   Chunk : aliased Chunk_Id (1, Static_Secondary_Stack_Size);
+   for Chunk'Alignment use Standard'Maximum_Alignment;
+   --  Default chunk used, unless gnatbind -D is specified with a value
+   --  greater than Static_Secondary_Stack_Size
 
 begin
-   if SS_Ratio_Dynamic then
-      Stack.Top           := 1;
-      Stack.Current_Chunk := Chunk'Access;
-      Stack.Default_Size  := SSE.Storage_Offset (Default_Secondary_Stack_Size);
-      System.Soft_Links.Set_Sec_Stack_Addr_NT (Stack'Address);
+   declare
+      Chunk_Address : Address;
+      Chunk_Access  : Chunk_Ptr;
 
-   else
-      Chunk_Address := Chunk'Address;
-      SS_Init (Chunk_Address, Default_Secondary_Stack_Size);
-      System.Soft_Links.Set_Sec_Stack_Addr_NT (Chunk_Address);
-   end if;
+   begin
+      if Default_Secondary_Stack_Size <= Static_Secondary_Stack_Size then
+
+         --  Normally we allocate the secondary stack for the main program
+         --  statically, using the default secondary stack size.
+
+         Chunk_Access := Chunk'Access;
+
+      else
+         --  Default_Secondary_Stack_Size was increased via gnatbind -D, so we
+         --  need to allocate a chunk dynamically.
+
+         Chunk_Access :=
+           new Chunk_Id (1, SS_Ptr (Default_Secondary_Stack_Size));
+      end if;
+
+      if SS_Ratio_Dynamic then
+         Stack.Top           := 1;
+         Stack.Current_Chunk := Chunk_Access;
+         Stack.Default_Size  :=
+           SSE.Storage_Offset (Default_Secondary_Stack_Size);
+         System.Soft_Links.Set_Sec_Stack_Addr_NT (Stack'Address);
+
+      else
+         Chunk_Address := Chunk_Access.all'Address;
+         SS_Init (Chunk_Address, Default_Secondary_Stack_Size);
+         System.Soft_Links.Set_Sec_Stack_Addr_NT (Chunk_Address);
+      end if;
+   end;
 end System.Secondary_Stack;
