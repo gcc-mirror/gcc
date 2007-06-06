@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,8 +37,8 @@ with Interfaces.C_Streams; use Interfaces.C_Streams;
 with System.File_IO;
 with System.CRTL;
 
-with Unchecked_Conversion;
-with Unchecked_Deallocation;
+with Ada.Unchecked_Conversion;
+with Ada.Unchecked_Deallocation;
 
 pragma Elaborate_All (System.File_IO);
 --  Needed because of calls to Chain_File in package body elaboration
@@ -49,8 +49,8 @@ package body Ada.Text_IO is
 
    subtype AP is FCB.AFCB_Ptr;
 
-   function To_FCB is new Unchecked_Conversion (File_Mode, FCB.File_Mode);
-   function To_TIO is new Unchecked_Conversion (FCB.File_Mode, File_Mode);
+   function To_FCB is new Ada.Unchecked_Conversion (File_Mode, FCB.File_Mode);
+   function To_TIO is new Ada.Unchecked_Conversion (FCB.File_Mode, File_Mode);
    use type FCB.File_Mode;
 
    use type System.CRTL.size_t;
@@ -95,7 +95,7 @@ package body Ada.Text_IO is
       type FCB_Ptr is access all Text_AFCB;
       FT : FCB_Ptr := FCB_Ptr (File);
 
-      procedure Free is new Unchecked_Deallocation (Text_AFCB, FCB_Ptr);
+      procedure Free is new Ada.Unchecked_Deallocation (Text_AFCB, FCB_Ptr);
 
    begin
       Free (FT);
@@ -1577,7 +1577,12 @@ package body Ada.Text_IO is
       for L in 1 .. Spacing loop
          if File.Before_LM then
             File.Before_LM := False;
-            File.Before_LM_PM := False;
+
+            --  Note that if File.Before_LM_PM is currently set, we also have
+            --  to reset it (because it makes sense for Before_LM_PM to be set
+            --  only when Before_LM is also set). This is done later on in this
+            --  subprogram, as soon as Before_LM_PM has been taken into account
+            --  for the purpose of page and line counts.
 
          else
             ch := Getc (File);
@@ -1805,13 +1810,13 @@ package body Ada.Text_IO is
      (File : in out Text_AFCB;
       Item : Stream_Element_Array)
    is
-
       function Has_Translated_Characters return Boolean;
       --  return True if Item array contains a character which will be
       --  translated under the text file mode. There is only one such
       --  character under DOS based systems which is character 10.
 
       text_translation_required : Boolean;
+      for text_translation_required'Size use Character'Size;
       pragma Import (C, text_translation_required,
                      "__gnat_text_translation_required");
 
