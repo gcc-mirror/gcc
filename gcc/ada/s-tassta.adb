@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,7 +66,6 @@ with System.Tasking.Initialization;
 --  Used for Remove_From_All_Tasks_List
 --           Defer_Abort
 --           Undefer_Abort
---           Initialization.Poll_Base_Priority_Change
 --           Finalize_Attributes_Link
 --           Initialize_Attributes_Link
 
@@ -102,7 +101,7 @@ with System.Standard_Library;
 with System.Traces.Tasking;
 --  Used for Send_Trace_Info
 
-with Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation;
 --  To recover from failure of ATCB initialization
 
 with System.Stack_Usage;
@@ -129,7 +128,7 @@ package body System.Tasking.Stages is
    -----------------------
 
    procedure Free is new
-     Unchecked_Deallocation (Ada_Task_Control_Block, Task_Id);
+     Ada.Unchecked_Deallocation (Ada_Task_Control_Block, Task_Id);
 
    procedure Trace_Unhandled_Exception_In_Task (Self_Id : Task_Id);
    --  This procedure outputs the task specific message for exception
@@ -179,7 +178,7 @@ package body System.Tasking.Stages is
    --  For tasks created by an allocator that fails, due to an exception,
    --  it is called from Expunge_Unactivated_Tasks.
    --
-   --  It is also called from Unchecked_Deallocation, for objects that
+   --  It is also called from Ada.Unchecked_Deallocation, for objects that
    --  are or contain tasks.
    --
    --  Different code is used at master completion, in Terminate_Dependents,
@@ -387,7 +386,7 @@ package body System.Tasking.Stages is
       Write_Lock (Self_ID);
       Self_ID.Common.State := Activator_Sleep;
 
-      C :=  Chain_Access.T_ID;
+      C := Chain_Access.T_ID;
       while C /= null loop
          Write_Lock (C);
 
@@ -411,7 +410,6 @@ package body System.Tasking.Stages is
       --  unsafe to abort any of these tasks until the count goes to zero.
 
       loop
-         Initialization.Poll_Base_Priority_Change (Self_ID);
          exit when Self_ID.Common.Wait_Count = 0;
          Sleep (Self_ID, Activator_Sleep);
       end loop;
@@ -472,7 +470,9 @@ package body System.Tasking.Stages is
    procedure Complete_Master is
       Self_ID : constant Task_Id := STPO.Self;
    begin
-      pragma Assert (Self_ID.Deferral_Level > 0);
+      pragma Assert
+        (Self_ID.Deferral_Level > 0
+          or else not System.Restrictions.Abort_Allowed);
       Vulnerable_Complete_Master (Self_ID);
    end Complete_Master;
 
@@ -486,7 +486,9 @@ package body System.Tasking.Stages is
       Self_ID  : constant Task_Id := STPO.Self;
 
    begin
-      pragma Assert (Self_ID.Deferral_Level > 0);
+      pragma Assert
+        (Self_ID.Deferral_Level > 0
+          or else not System.Restrictions.Abort_Allowed);
 
       Vulnerable_Complete_Task (Self_ID);
 
@@ -953,9 +955,7 @@ package body System.Tasking.Stages is
           Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size *
           SSE.Storage_Offset (Parameters.Sec_Stack_Ratio) / 100;
 
-      Secondary_Stack :
-        aliased SSE.Storage_Array
-           (1 .. Secondary_Stack_Size);
+      Secondary_Stack : aliased SSE.Storage_Array (1 .. Secondary_Stack_Size);
 
       pragma Warnings (Off);
       Secondary_Stack_Address : System.Address := Secondary_Stack'Address;
@@ -968,6 +968,9 @@ package body System.Tasking.Stages is
 
       Size :
         Natural := Natural (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size);
+
+      Overflow_Guard : Natural;
+      --  Size of the overflow guard, used by dynamic stack usage analysis
 
       pragma Warnings (On);
       --  Address of secondary stack. In the fixed secondary stack case, this
@@ -1004,6 +1007,10 @@ package body System.Tasking.Stages is
       --  master relationship. If the handler is found, its pointer is stored
       --  in TH.
 
+      ------------------------------
+      -- Search_Fall_Back_Handler --
+      ------------------------------
+
       procedure Search_Fall_Back_Handler (ID : Task_Id) is
       begin
          --  If there is a fall back handler, store its pointer for later
@@ -1030,10 +1037,12 @@ package body System.Tasking.Stages is
       --  Assume a size of the stack taken at this stage
 
       if Size < Small_Stack_Limit then
-         Size := Size - Small_Overflow_Guard;
+         Overflow_Guard := Small_Overflow_Guard;
       else
-         Size := Size - Big_Overflow_Guard;
+         Overflow_Guard := Big_Overflow_Guard;
       end if;
+
+      Size := Size - Overflow_Guard;
 
       if not Parameters.Sec_Stack_Dynamic then
          Self_ID.Common.Compiler_Data.Sec_Stack_Addr :=
@@ -1048,6 +1057,7 @@ package body System.Tasking.Stages is
                               Self_ID.Common.Task_Image
                                 (1 .. Self_ID.Common.Task_Image_Len),
                               Size,
+                              Overflow_Guard,
                               SSE.To_Integer (Bottom_Of_Stack'Address));
          STPO.Unlock_RTS;
          Fill_Stack (Self_ID.Common.Analyzer);
@@ -1225,7 +1235,7 @@ package body System.Tasking.Stages is
    --  since the operation Task_Unlock continued to access the ATCB after
    --  unlocking, after which the parent was observed to race ahead, deallocate
    --  the ATCB, and then reallocate it to another task. The call to
-   --  Undefer_Abortion in Task_Unlock by the "terminated" task was overwriting
+   --  Undefer_Abort in Task_Unlock by the "terminated" task was overwriting
    --  the data of the new task that reused the ATCB! To solve this problem, we
    --  introduced the new operation Final_Task_Unlock.
 
@@ -1334,7 +1344,7 @@ package body System.Tasking.Stages is
       use System.Standard_Library;
 
       function To_Address is new
-        Unchecked_Conversion (Task_Id, System.Address);
+        Ada.Unchecked_Conversion (Task_Id, System.Address);
 
       function Tailored_Exception_Information
         (E : Exception_Occurrence) return String;
@@ -1492,7 +1502,9 @@ package body System.Tasking.Stages is
         (Debug.Trace (Self_ID, "V_Complete_Master", 'C'));
 
       pragma Assert (Self_ID.Common.Wait_Count = 0);
-      pragma Assert (Self_ID.Deferral_Level > 0);
+      pragma Assert
+        (Self_ID.Deferral_Level > 0
+          or else not System.Restrictions.Abort_Allowed);
 
       --  Count how many active dependent tasks this master currently
       --  has, and record this in Wait_Count.
@@ -1559,7 +1571,6 @@ package body System.Tasking.Stages is
       Write_Lock (Self_ID);
 
       loop
-         Initialization.Poll_Base_Priority_Change (Self_ID);
          exit when Self_ID.Common.Wait_Count = 0;
 
          --  Here is a difference as compared to Complete_Master
@@ -1659,7 +1670,6 @@ package body System.Tasking.Stages is
          Write_Lock (Self_ID);
 
          loop
-            Initialization.Poll_Base_Priority_Change (Self_ID);
             exit when Self_ID.Common.Wait_Count = 0;
             Sleep (Self_ID, Master_Phase_2_Sleep);
          end loop;
@@ -1813,7 +1823,9 @@ package body System.Tasking.Stages is
 
    procedure Vulnerable_Complete_Task (Self_ID : Task_Id) is
    begin
-      pragma Assert (Self_ID.Deferral_Level > 0);
+      pragma Assert
+        (Self_ID.Deferral_Level > 0
+          or else not System.Restrictions.Abort_Allowed);
       pragma Assert (Self_ID = Self);
       pragma Assert (Self_ID.Master_Within = Self_ID.Master_of_Task + 1
                        or else
@@ -1869,7 +1881,7 @@ package body System.Tasking.Stages is
 
    --  For tasks created by elaboration of task object declarations it
    --  is called from the finalization code of the Task_Wrapper procedure.
-   --  It is also called from Unchecked_Deallocation, for objects that
+   --  It is also called from Ada.Unchecked_Deallocation, for objects that
    --  are or contain tasks.
 
    procedure Vulnerable_Free_Task (T : Task_Id) is

@@ -7,7 +7,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2006, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -562,7 +562,7 @@ package body System.Tasking.Protected_Objects.Operations is
       Mode                : Call_Modes;
       Block               : out Communication_Block)
    is
-      Self_ID             : constant Task_Id  := STPO.Self;
+      Self_ID             : constant Task_Id := STPO.Self;
       Entry_Call          : Entry_Call_Link;
       Initially_Abortable : Boolean;
       Ceiling_Violation   : Boolean;
@@ -591,14 +591,17 @@ package body System.Tasking.Protected_Objects.Operations is
            (Program_Error'Identity, "potentially blocking operation");
       end if;
 
-      Initialization.Defer_Abort (Self_ID);
+      --  Self_ID.Deferral_Level should be 0, except when called from Finalize,
+      --  where abort is already deferred.
+
+      Initialization.Defer_Abort_Nestable (Self_ID);
       Lock_Entries (Object, Ceiling_Violation);
 
       if Ceiling_Violation then
 
          --  Failed ceiling check
 
-         Initialization.Undefer_Abort (Self_ID);
+         Initialization.Undefer_Abort_Nestable (Self_ID);
          raise Program_Error;
       end if;
 
@@ -651,7 +654,7 @@ package body System.Tasking.Protected_Objects.Operations is
 
          Block.Enqueued := False;
          Block.Cancelled := Entry_Call.State = Cancelled;
-         Initialization.Undefer_Abort (Self_ID);
+         Initialization.Undefer_Abort_Nestable (Self_ID);
          Entry_Calls.Check_Exception (Self_ID, Entry_Call);
          return;
 
@@ -698,7 +701,7 @@ package body System.Tasking.Protected_Objects.Operations is
          null;
       end if;
 
-      Initialization.Undefer_Abort (Self_ID);
+      Initialization.Undefer_Abort_Nestable (Self_ID);
       Entry_Calls.Check_Exception (Self_ID, Entry_Call);
    end Protected_Entry_Call;
 

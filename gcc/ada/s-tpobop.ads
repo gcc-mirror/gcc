@@ -7,7 +7,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,9 +88,9 @@ package System.Tasking.Protected_Objects.Operations is
       Timeout               : Duration;
       Mode                  : Delay_Modes;
       Entry_Call_Successful : out Boolean);
-      --  Same as the Protected_Entry_Call but with time-out specified.
-      --  This routines is used when we do not use ATC mechanism to implement
-      --  timed entry calls.
+   --  Same as the Protected_Entry_Call but with time-out specified.
+   --  This routines is used when we do not use ATC mechanism to implement
+   --  timed entry calls.
 
    procedure Service_Entries (Object : Entries.Protection_Entries_Access);
    pragma Inline (Service_Entries);

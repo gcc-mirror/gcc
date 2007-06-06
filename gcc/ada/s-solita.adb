@@ -85,9 +85,6 @@ package body System.Soft_Links.Tasking is
    procedure Set_Sec_Stack_Addr (Addr : Address);
    --  Get/Set location of current task's secondary stack
 
-   function Get_Current_Excep return SSL.EOA;
-   --  Task-safe version of SSL.Get_Current_Excep
-
    procedure Timed_Delay_T (Time : Duration; Mode : Integer);
    --  Task-safe version of SSL.Timed_Delay
 
@@ -97,11 +94,6 @@ package body System.Soft_Links.Tasking is
    --------------------------
    -- Soft-Link Get Bodies --
    --------------------------
-
-   function Get_Current_Excep return SSL.EOA is
-   begin
-      return STPO.Self.Common.Compiler_Data.Current_Excep'Access;
-   end Get_Current_Excep;
 
    function Get_Jmpbuf_Address return  Address is
    begin
@@ -217,7 +209,6 @@ package body System.Soft_Links.Tasking is
          SSL.Set_Jmpbuf_Address       := Set_Jmpbuf_Address'Access;
          SSL.Get_Sec_Stack_Addr       := Get_Sec_Stack_Addr'Access;
          SSL.Set_Sec_Stack_Addr       := Set_Sec_Stack_Addr'Access;
-         SSL.Get_Current_Excep        := Get_Current_Excep'Access;
          SSL.Timed_Delay              := Timed_Delay_T'Access;
          SSL.Task_Termination_Handler := Task_Termination_Handler_T'Access;
 
