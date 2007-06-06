@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,25 +34,48 @@
 with Ada.Calendar;               use Ada.Calendar;
 with Ada.Calendar.Formatting;    use Ada.Calendar.Formatting;
 with Ada.Directories.Validity;   use Ada.Directories.Validity;
+with Ada.Strings.Maps;
+with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;      use Ada.Strings.Unbounded;
+with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 
-with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
-with GNAT.OS_Lib;                use GNAT.OS_Lib;
-with GNAT.Regexp;                use GNAT.Regexp;
---  ??? Ada units should not depend on GNAT units
+with System.CRTL;                use System.CRTL;
+with System.OS_Lib;              use System.OS_Lib;
+with System.Regexp;              use System.Regexp;
 
 with System;
 
 package body Ada.Directories is
+
+   Filename_Max : constant Integer := 1024;
+   --  1024 is the value of FILENAME_MAX in stdio.h
+
+   type Dir_Type_Value is new System.Address;
+   --  This is the low-level address directory structure as returned by the C
+   --  opendir routine.
+
+   No_Dir : constant Dir_Type_Value := Dir_Type_Value (System.Null_Address);
+
+   Dir_Separator : constant Character;
+   pragma Import (C, Dir_Separator, "__gnat_dir_separator");
+   --  Running system default directory separator
+
+   Dir_Seps : constant Ada.Strings.Maps.Character_Set :=
+                Ada.Strings.Maps.To_Set ("/\");
+   --  UNIX and DOS style directory separators
+
+   Max_Path : Integer;
+   pragma Import (C, Max_Path, "__gnat_max_path_len");
+   --  The maximum length of a path
 
    type Search_Data is record
       Is_Valid      : Boolean := False;
       Name          : Ada.Strings.Unbounded.Unbounded_String;
       Pattern       : Regexp;
       Filter        : Filter_Type;
-      Dir           : Dir_Type;
+      Dir           : Dir_Type_Value := No_Dir;
       Entry_Fetched : Boolean := False;
       Dir_Entry     : Directory_Entry_Type;
    end record;
@@ -62,6 +85,8 @@ package body Ada.Directories is
    --  Empty string, returned by function Extension when there is no extension
 
    procedure Free is new Ada.Unchecked_Deallocation (Search_Data, Search_Ptr);
+
+   procedure Close (Dir : Dir_Type_Value);
 
    function File_Exists (Name : String) return Boolean;
    --  Returns True if the named file exists
@@ -99,6 +124,21 @@ package body Ada.Directories is
       return Simple;
    end Base_Name;
 
+   -----------
+   -- Close --
+   -----------
+
+   procedure Close (Dir : Dir_Type_Value) is
+      Discard : Integer;
+      pragma Warnings (Off, Discard);
+
+      function closedir (directory : DIRs) return Integer;
+      pragma Import (C, closedir, "__gnat_closedir");
+
+   begin
+      Discard := closedir (DIRs (Dir));
+   end Close;
+
    -------------
    -- Compose --
    -------------
@@ -123,12 +163,12 @@ package body Ada.Directories is
       then
          raise Name_Error;
 
-      elsif Extension'Length /= 0 and then
-        (not Is_Valid_Simple_Name (Name & '.' & Extension))
+      elsif Extension'Length /= 0
+        and then not Is_Valid_Simple_Name (Name & '.' & Extension)
       then
          raise Name_Error;
 
-         --  This is not an invalid case so build the path name
+      --  This is not an invalid case so build the path name
 
       else
          Last := Containing_Directory'Length;
@@ -172,31 +212,81 @@ package body Ada.Directories is
          raise Name_Error;
 
       else
-         --  Get the directory name using GNAT.Directory_Operations.Dir_Name
-
          declare
-            Value : constant String := Dir_Name (Path => Name);
-            Result : String (1 .. Value'Length);
-            Last : Natural := Result'Last;
+            Norm    : constant String := Normalize_Pathname (Name);
+            Last_DS : constant Natural :=
+                        Strings.Fixed.Index
+                          (Name, Dir_Seps, Going => Strings.Backward);
 
          begin
-            Result := Value;
+            if Last_DS = 0 then
 
-            --  Remove any trailing directory separator, except as the first
-            --  character.
+               --  There is no directory separator, returns current working
+               --  directory.
 
-            while Last > 1 and then Result (Last) = Dir_Separator loop
-               Last := Last - 1;
-            end loop;
+               return Current_Directory;
 
-            --  Special case of current directory, identified by "."
+            --  If Name indicates a root directory, raise Use_Error, because
+            --  it has no containing directory.
 
-            if Last = 1 and then Result (1) = '.' then
-               return Get_Current_Dir;
+            elsif Norm = "/"
+              or else
+                (Windows
+                 and then
+                   (Norm = "\"
+                    or else
+                      (Norm'Length = 3
+                        and then Norm (Norm'Last - 1 .. Norm'Last) = ":\"
+                        and then (Norm (Norm'First) in 'a' .. 'z'
+                                   or else Norm (Norm'First) in 'A' .. 'Z'))))
+            then
+               raise Use_Error;
 
             else
-               To_Lower_If_Case_Insensitive (Result (1 .. Last));
-               return Result (1 .. Last);
+               declare
+                  Last   : Positive := Last_DS - Name'First + 1;
+                  Result : String (1 .. Last);
+
+               begin
+                  Result := Name (Name'First .. Last_DS);
+
+                  --  Remove any trailing directory separator, except as the
+                  --  first character or the first character following a drive
+                  --  number on Windows.
+
+                  while Last > 1 loop
+                     exit when
+                       Result (Last) /= '/'
+                         and then
+                       Result (Last) /= Directory_Separator;
+
+                     exit when Windows
+                       and then Last = 3
+                       and then Result (2) = ':'
+                       and then
+                         (Result (1) in 'A' .. 'Z'
+                           or else
+                          Result (1) in 'a' .. 'z');
+
+                     Last := Last - 1;
+                  end loop;
+
+                  --  Special case of current directory, identified by "."
+
+                  if Last = 1 and then Result (1) = '.' then
+                     return Current_Directory;
+
+                  --  Special case of "..": the current directory may be a root
+                  --  directory.
+
+                  elsif Last = 2 and then Result (1 .. 2) = ".." then
+                     return Containing_Directory (Current_Directory);
+
+                  else
+                     To_Lower_If_Case_Insensitive (Result (1 .. Last));
+                     return Result (1 .. Last);
+                  end if;
+               end;
             end if;
          end;
       end if;
@@ -207,9 +297,9 @@ package body Ada.Directories is
    ---------------
 
    procedure Copy_File
-     (Source_Name   : String;
-      Target_Name   : String;
-      Form          : String := "")
+     (Source_Name : String;
+      Target_Name : String;
+      Form        : String := "")
    is
       pragma Unreferenced (Form);
       Success : Boolean;
@@ -227,11 +317,10 @@ package body Ada.Directories is
          raise Use_Error;
 
       else
-         --  The implementation uses GNAT.OS_Lib.Copy_File, with parameters
+         --  The implementation uses System.OS_Lib.Copy_File, with parameters
          --  suitable for all platforms.
 
-         Copy_File
-           (Source_Name, Target_Name, Success, Overwrite, None);
+         Copy_File (Source_Name, Target_Name, Success, Overwrite, None);
 
          if not Success then
             raise Use_Error;
@@ -249,6 +338,11 @@ package body Ada.Directories is
    is
       pragma Unreferenced (Form);
 
+      C_Dir_Name : constant String := New_Directory & ASCII.NUL;
+
+      function mkdir (Dir_Name : String) return Integer;
+      pragma Import (C, mkdir, "__gnat_mkdir");
+
    begin
       --  First, the invalid case
 
@@ -256,15 +350,9 @@ package body Ada.Directories is
          raise Name_Error;
 
       else
-         --  The implementation uses GNAT.Directory_Operations.Make_Dir
-
-         begin
-            Make_Dir (Dir_Name => New_Directory);
-
-         exception
-            when Directory_Error =>
-               raise Use_Error;
-         end;
+         if mkdir (C_Dir_Name) /= 0 then
+            raise Use_Error;
+         end if;
       end if;
    end Create_Directory;
 
@@ -319,16 +407,7 @@ package body Ada.Directories is
                   raise Use_Error;
 
                else
-                  --  The implementation uses
-                  --  GNAT.Directory_Operations.Make_Dir.
-
-                  begin
-                     Make_Dir (Dir_Name => New_Dir (1 .. Last));
-
-                  exception
-                     when Directory_Error =>
-                        raise Use_Error;
-                  end;
+                  Create_Directory (New_Directory => New_Dir (1 .. Last));
                end if;
             end if;
          end loop;
@@ -340,19 +419,29 @@ package body Ada.Directories is
    -----------------------
 
    function Current_Directory return String is
+      Path_Len : Natural := Max_Path;
+      Buffer   : String (1 .. 1 + Max_Path + 1);
 
-      --  The implementation uses GNAT.Directory_Operations.Get_Current_Dir
-
-      Cur : String := Normalize_Pathname (Get_Current_Dir);
+      procedure Local_Get_Current_Dir
+        (Dir    : System.Address;
+         Length : System.Address);
+      pragma Import (C, Local_Get_Current_Dir, "__gnat_get_current_dir");
 
    begin
-      To_Lower_If_Case_Insensitive (Cur);
+      Local_Get_Current_Dir (Buffer'Address, Path_Len'Address);
 
-      if Cur'Length > 1 and then Cur (Cur'Last) = Dir_Separator then
-         return Cur (1 .. Cur'Last - 1);
-      else
-         return Cur;
-      end if;
+      declare
+         Cur : String := Normalize_Pathname (Buffer (1 .. Path_Len));
+
+      begin
+         To_Lower_If_Case_Insensitive (Cur);
+
+         if Cur'Length > 1 and then Cur (Cur'Last) = Dir_Separator then
+            return Cur (1 .. Cur'Last - 1);
+         else
+            return Cur;
+         end if;
+      end;
    end Current_Directory;
 
    ----------------------
@@ -370,14 +459,14 @@ package body Ada.Directories is
          raise Name_Error;
 
       else
-         --  The implementation uses GNAT.Directory_Operations.Remove_Dir
-
+         declare
+            C_Dir_Name : constant String := Directory & ASCII.NUL;
          begin
-            Remove_Dir (Dir_Name => Directory, Recursive => False);
+            rmdir (C_Dir_Name);
 
-         exception
-            when Directory_Error =>
+            if System.OS_Lib.Is_Directory (Directory) then
                raise Use_Error;
+            end if;
          end;
       end if;
    end Delete_Directory;
@@ -399,7 +488,7 @@ package body Ada.Directories is
          raise Name_Error;
 
       else
-         --  The implementation uses GNAT.OS_Lib.Delete_File
+         --  The implementation uses System.OS_Lib.Delete_File
 
          Delete_File (Name, Success);
 
@@ -414,6 +503,9 @@ package body Ada.Directories is
    -----------------
 
    procedure Delete_Tree (Directory : String) is
+      Current_Dir : constant String := Current_Directory;
+      Search      : Search_Type;
+      Dir_Ent     : Directory_Entry_Type;
    begin
       --  First, the invalid cases
 
@@ -424,14 +516,39 @@ package body Ada.Directories is
          raise Name_Error;
 
       else
-         --  The implementation uses GNAT.Directory_Operations.Remove_Dir
+         Set_Directory (Directory);
+         Start_Search (Search, Directory => ".", Pattern => "");
+
+         while More_Entries (Search) loop
+            Get_Next_Entry (Search, Dir_Ent);
+
+            declare
+               File_Name : constant String := Simple_Name (Dir_Ent);
+
+            begin
+               if System.OS_Lib.Is_Directory (File_Name) then
+                  if File_Name /= "." and then File_Name /= ".." then
+                     Delete_Tree (File_Name);
+                  end if;
+
+               else
+                  Delete_File (File_Name);
+               end if;
+            end;
+         end loop;
+
+         Set_Directory (Current_Dir);
+         End_Search (Search);
+
+         declare
+            C_Dir_Name : constant String := Directory & ASCII.NUL;
 
          begin
-            Remove_Dir (Directory, Recursive => True);
+            rmdir (C_Dir_Name);
 
-         exception
-            when Directory_Error =>
+            if System.OS_Lib.Is_Directory (Directory) then
                raise Use_Error;
+            end if;
          end;
       end if;
    end Delete_Tree;
@@ -470,8 +587,8 @@ package body Ada.Directories is
 
          for Pos in reverse Name'Range loop
 
-            --  If a directory separator is found before a dot, there
-            --  is no extension.
+            --  If a directory separator is found before a dot, there is no
+            --  extension.
 
             if Name (Pos) = Dir_Separator then
                return Empty_String;
@@ -481,12 +598,9 @@ package body Ada.Directories is
                --  We found a dot, build the return value with lower bound 1
 
                declare
-                  Result : String (1 .. Name'Last - Pos);
+                  subtype Result_Type is String (1 .. Name'Last - Pos);
                begin
-                  Result := Name (Pos + 1 .. Name'Last);
-                  return Result;
-                  --  This should be done with a subtype conversion, avoiding
-                  --  the unnecessary junk copy ???
+                  return Result_Type (Name (Pos + 1 .. Name'Last));
                end;
             end if;
          end loop;
@@ -508,18 +622,54 @@ package body Ada.Directories is
       Kind : File_Kind := Ordinary_File;
       --  Initialized to avoid a compilation warning
 
+      Filename_Addr : System.Address;
+      Filename_Len  : aliased Integer;
+
+      Buffer : array (0 .. Filename_Max + 12) of Character;
+      --  12 is the size of the dirent structure (see dirent.h), without the
+      --  field for the filename.
+
+      function readdir_gnat
+        (Directory : System.Address;
+         Buffer    : System.Address;
+         Last      : not null access Integer) return System.Address;
+      pragma Import (C, readdir_gnat, "__gnat_readdir");
+
+      use System;
+
    begin
       --  Search.Value.Is_Valid is always True when Fetch_Next_Entry is called
 
       loop
-         Read (Search.Value.Dir, Name, Last);
+         Filename_Addr :=
+           readdir_gnat
+             (System.Address (Search.Value.Dir),
+              Buffer'Address,
+              Filename_Len'Access);
 
          --  If no matching entry is found, set Is_Valid to False
 
-         if Last = 0 then
+         if Filename_Addr = System.Null_Address then
             Search.Value.Is_Valid := False;
             exit;
          end if;
+
+         declare
+            subtype Path_String is String (1 .. Filename_Len);
+            type    Path_String_Access is access Path_String;
+
+            function Address_To_Access is new
+              Ada.Unchecked_Conversion
+                (Source => Address,
+                 Target => Path_String_Access);
+
+            Path_Access : constant Path_String_Access :=
+                            Address_To_Access (Filename_Addr);
+
+         begin
+            Last := Filename_Len;
+            Name (1 .. Last) := Path_Access.all;
+         end;
 
          --  Check if the entry matches the pattern
 
@@ -596,7 +746,7 @@ package body Ada.Directories is
 
          --  Close the directory, if one is open
 
-         if Is_Open (Search.Value.Dir) then
+         if Search.Value.Dir /= No_Dir then
             Close (Search.Value.Dir);
          end if;
 
@@ -618,7 +768,7 @@ package body Ada.Directories is
       else
          --  Build the return value with lower bound 1
 
-         --  Use GNAT.OS_Lib.Normalize_Pathname
+         --  Use System.OS_Lib.Normalize_Pathname
 
          declare
             Value : String := Normalize_Pathname (Name);
@@ -823,7 +973,7 @@ package body Ada.Directories is
          raise Use_Error;
 
       else
-         --  The implementation uses GNAT.OS_Lib.Rename_File
+         --  The implementation uses System.OS_Lib.Rename_File
 
          Rename_File (Old_Name, New_Name, Success);
 
@@ -844,8 +994,9 @@ package body Ada.Directories is
       Process   : not null access procedure
                                     (Directory_Entry : Directory_Entry_Type))
    is
-      Srch : Search_Type;
+      Srch            : Search_Type;
       Directory_Entry : Directory_Entry_Type;
+
    begin
       Start_Search (Srch, Directory, Pattern, Filter);
 
@@ -862,14 +1013,15 @@ package body Ada.Directories is
    -------------------
 
    procedure Set_Directory (Directory : String) is
+      C_Dir_Name : constant String := Directory & ASCII.NUL;
+
+      function chdir (Dir_Name : String) return Integer;
+      pragma Import (C, chdir, "chdir");
+
    begin
-      --  The implementation uses GNAT.Directory_Operations.Change_Dir
-
-      Change_Dir (Dir_Name => Directory);
-
-   exception
-      when Directory_Error =>
+      if chdir (C_Dir_Name) /= 0 then
          raise Name_Error;
+      end if;
    end Set_Directory;
 
    -----------------
@@ -877,6 +1029,70 @@ package body Ada.Directories is
    -----------------
 
    function Simple_Name (Name : String) return String is
+
+      function Simple_Name_CI (Path : String) return String;
+      --  This function does the job. The difference between Simple_Name_CI
+      --  and Simple_Name (the parent function) is that the former is case
+      --  sensitive, while the latter is not. Path and Suffix are adjusted
+      --  appropriately before calling Simple_Name_CI under platforms where
+      --  the file system is not case sensitive.
+
+      --------------------
+      -- Simple_Name_CI --
+      --------------------
+
+      function Simple_Name_CI (Path : String) return String is
+         Cut_Start : Natural :=
+                       Strings.Fixed.Index
+                         (Path, Dir_Seps, Going => Strings.Backward);
+         Cut_End   : Natural;
+
+      begin
+         --  Cut_Start point to the first simple name character
+
+         if Cut_Start = 0 then
+            Cut_Start := Path'First;
+
+         else
+            Cut_Start := Cut_Start + 1;
+         end if;
+
+         --  Cut_End point to the last simple name character
+
+         Cut_End := Path'Last;
+
+         Check_For_Standard_Dirs : declare
+            Offset : constant Integer := Path'First - Name'First;
+            BN     : constant String  :=
+                       Name (Cut_Start - Offset .. Cut_End - Offset);
+            --  Here we use Simple_Name.Name to keep the original casing
+
+            Has_Drive_Letter : constant Boolean :=
+                                 System.OS_Lib.Path_Separator /= ':';
+            --  If Path separator is not ':' then we are on a DOS based OS
+            --  where this character is used as a drive letter separator.
+
+         begin
+            if BN = "." or else BN = ".." then
+               return "";
+
+            elsif Has_Drive_Letter
+              and then BN'Length > 2
+              and then Characters.Handling.Is_Letter (BN (BN'First))
+              and then BN (BN'First + 1) = ':'
+            then
+               --  We have a DOS drive letter prefix, remove it
+
+               return BN (BN'First + 2 .. BN'Last);
+
+            else
+               return BN;
+            end if;
+         end Check_For_Standard_Dirs;
+      end Simple_Name_CI;
+
+   --  Start of processing for Simple_Name
+
    begin
       --  First, the invalid case
 
@@ -886,15 +1102,23 @@ package body Ada.Directories is
       else
          --  Build the value to return with lower bound 1
 
-         --  The implementation uses GNAT.Directory_Operations.Base_Name
+         if Is_Path_Name_Case_Sensitive then
+            declare
+               Value : constant String := Simple_Name_CI (Name);
+               subtype Result is String (1 .. Value'Length);
+            begin
+               return Result (Value);
+            end;
 
-         declare
-            Value  : String := GNAT.Directory_Operations.Base_Name (Name);
-            subtype Result is String (1 .. Value'Length);
-         begin
-            To_Lower_If_Case_Insensitive (Value);
-            return Result (Value);
-         end;
+         else
+            declare
+               Value : constant String :=
+                         Simple_Name_CI (Characters.Handling.To_Lower (Name));
+               subtype Result is String (1 .. Value'Length);
+            begin
+               return Result (Value);
+            end;
+         end if;
       end if;
    end Simple_Name;
 
@@ -961,6 +1185,11 @@ package body Ada.Directories is
       Pattern   : String;
       Filter    : Filter_Type := (others => True))
    is
+      function opendir (file_name : String) return DIRs;
+      pragma Import (C, opendir, "__gnat_opendir");
+
+      C_File_Name : constant String := Directory & ASCII.NUL;
+
    begin
       --  First, the invalid case
 
@@ -991,7 +1220,7 @@ package body Ada.Directories is
 
       Search.Value.Filter := Filter;
       Search.Value.Name := To_Unbounded_String (Full_Name (Directory));
-      Open (Search.Value.Dir, Directory);
+      Search.Value.Dir := Dir_Type_Value (opendir (C_File_Name));
       Search.Value.Is_Valid := True;
    end Start_Search;
 
