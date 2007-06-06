@@ -1,5 +1,11 @@
 2007-06-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR testsuite/18923
+	* gfortran.dg/invalid_contains_1.f90: New test.
+	* gfortran.dg/invalid_contains_2.f90: New test.
+
+2007-06-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR testsuite/32057
 	* gfortran.dg/secnds.f: Update test to avoid roundoff errors and
 	midnight issues.
