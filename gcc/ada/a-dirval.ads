@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,5 +47,8 @@ private package Ada.Directories.Validity is
 
    function OpenVMS return Boolean;
    --  Return True when OS is OpenVMS
+
+   function Windows return Boolean;
+   --  Return True when OS is Windows
 
 end Ada.Directories.Validity;
