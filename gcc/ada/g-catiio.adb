@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2006, AdaCore                     --
+--                     Copyright (C) 1999-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -202,19 +202,32 @@ package body GNAT.Calendar.Time_IO is
       Second     : Second_Number;
       Sub_Second : Second_Duration;
 
-      P : Positive := Picture'First;
+      P : Positive;
 
    begin
+      --  Get current time in split format
+
       Split (Date, Year, Month, Day, Hour, Minute, Second, Sub_Second);
 
-      loop
+      --  Null picture string is error
+
+      if Picture = "" then
+         raise Picture_Error with "null picture string";
+      end if;
+
+      --  Loop through characters of picture string, building result
+
+      Result := Null_Unbounded_String;
+      P := Picture'First;
+      while P <= Picture'Last loop
+
          --  A directive has the following format "%[-_]."
 
          if Picture (P) = '%' then
             Padding := Zero;
 
             if P = Picture'Last then
-               raise Picture_Error;
+               raise Picture_Error with "picture string ends with '%";
             end if;
 
             --  Check for GNU extension to change the padding
@@ -222,13 +235,14 @@ package body GNAT.Calendar.Time_IO is
             if Picture (P + 1) = '-' then
                Padding := None;
                P := P + 1;
+
             elsif Picture (P + 1) = '_' then
                Padding := Space;
                P := P + 1;
             end if;
 
             if P = Picture'Last then
-               raise Picture_Error;
+               raise Picture_Error with "picture string ends with '- or '_";
             end if;
 
             case Picture (P + 1) is
@@ -462,18 +476,21 @@ package body GNAT.Calendar.Time_IO is
                   Result := Result & Image (Year, None, 4);
 
                when others =>
-                  raise Picture_Error;
+                  raise Picture_Error with
+                    "unknown format character in picture string";
+
             end case;
 
+            --  Skip past % and format character
+
             P := P + 2;
+
+         --  Character other than % is copied into the result
 
          else
             Result := Result & Picture (P);
             P := P + 1;
          end if;
-
-         exit when P > Picture'Last;
-
       end loop;
 
       return To_String (Result);
