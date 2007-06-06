@@ -1052,12 +1052,10 @@ i[34567]86-*-darwin*)
 	# config.guess deciding that the configuration is i386-*-darwin* and
 	# then this file using that to set --with-cpu=i386 which has no -m64
 	# support.
-	with_arch=${with_arch:-nocona}
 	with_cpu=${with_cpu:-generic}
 	tmake_file="${tmake_file} i386/t-fprules-softfp64 soft-fp/t-softfp"
 	;;
 x86_64-*-darwin*)
-	with_arch=${with_arch:-nocona}
 	with_cpu=${with_cpu:-generic}
 	tmake_file="t-darwin ${cpu_type}/t-darwin64 t-slibgcc-darwin i386/t-fprules-softfp64 soft-fp/t-softfp"
 	tm_file="${tm_file} ${cpu_type}/darwin64.h"

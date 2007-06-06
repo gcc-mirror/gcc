@@ -1,3 +1,10 @@
+2007-06-06  Eric Christopher  <echristo@apple.com>
+
+	* config.gcc (i?86-*-darwin*): Remove arch parameter.
+	(x86_64-*-darwin*): Ditto.
+	* config/i386/darwin.h (TARGET_SUBTARGET32_ISA_DEFAULT): Define.
+	(TARGET_SUBTARGET64_ISA_DEFAULT): Ditto.
+
 2007-06-06  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	* tree-ssa-alias-warnings.c (maybe_add_match): Cast according to the
