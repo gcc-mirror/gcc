@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,11 +24,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Hostparm;
-with Namet;          use Namet;
-with Opt;            use Opt;
-with Osint;          use Osint;
-with Output;         use Output;
+with Targparm; use Targparm;
+with Namet;    use Namet;
+with Opt;      use Opt;
+with Osint;    use Osint;
+with Output;   use Output;
+
 with System.WCh_Con; use System.WCh_Con;
 
 procedure Usage is
@@ -39,6 +40,10 @@ procedure Usage is
    --  enough blanks to tab to column 13, i.e. assuming Sw is not longer
    --  than 5 characters, the maximum allowed, Write_Switch_Char will
    --  always output exactly 12 characters.
+
+   -----------------------
+   -- Write_Switch_Char --
+   -----------------------
 
    procedure Write_Switch_Char (Sw : String; Prefix : String := "gnat") is
    begin
@@ -84,9 +89,9 @@ begin
 
    Write_Eol;
 
-   --  Common GCC switches not available in JGNAT
+   --  Common GCC switches not available in JGNAT/MGNAT
 
-   if not Hostparm.Java_VM then
+   if VM_Target = No_VM then
       Write_Switch_Char ("fstack-check ", "");
       Write_Line ("Generate stack checking code");
 
@@ -361,6 +366,8 @@ begin
                                                   "(not multiple of small)");
    Write_Line ("        c    turn on warnings for constant conditional");
    Write_Line ("        C*   turn off warnings for constant conditional");
+   Write_Line ("        .c   turn on warnings for unrepped components");
+   Write_Line ("        .C*  turn off warnings for unrepped components");
    Write_Line ("        d    turn on warnings for implicit dereference");
    Write_Line ("        D*   turn off warnings for implicit dereference");
    Write_Line ("        e    treat all warnings as errors");
@@ -389,14 +396,18 @@ begin
    Write_Line ("        n*   normal warning mode (cancels -gnatws/-gnatwe)");
    Write_Line ("        o*   turn on warnings for address clause overlay");
    Write_Line ("        O    turn off warnings for address clause overlay");
-   Write_Line ("        p    turn on warnings for ineffective pragma Inline");
-   Write_Line ("        P*   turn off warnings for ineffective pragma Inline");
+   Write_Line ("        p    turn on warnings for ineffective pragma " &
+                                             "Inline in frontend");
+   Write_Line ("        P*   turn off warnings for ineffective pragma " &
+                                             "Inline in frontend");
    Write_Line ("        q*   turn on warnings for questionable " &
                                                   "missing parentheses");
    Write_Line ("        Q    turn off warnings for questionable " &
                                                   "missing parentheses");
    Write_Line ("        r    turn on warnings for redundant construct");
    Write_Line ("        R*   turn off warnings for redundant construct");
+   Write_Line ("        .r   turn on warnings for object renaming function");
+   Write_Line ("        .R*  turn off warnings for object renaming function");
    Write_Line ("        s    suppress all warnings");
    Write_Line ("        t    turn on warnings for tracking deleted code");
    Write_Line ("        T*   turn off warnings for tracking deleted code");
@@ -460,6 +471,7 @@ begin
    Write_Line ("        d    check no DOS line terminators");
    Write_Line ("        e    check end/exit labels present");
    Write_Line ("        f    check no form feeds/vertical tabs in source");
+   Write_Line ("        g    check standard GNAT style rules");
    Write_Line ("        h    check no horizontal tabs in source");
    Write_Line ("        i    check if-then layout");
    Write_Line ("        I    check mode in");
