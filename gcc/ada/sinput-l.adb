@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,6 @@ with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
-with Namet;    use Namet;
 with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
@@ -38,6 +37,7 @@ with Prepcomp; use Prepcomp;
 with Scans;    use Scans;
 with Scn;      use Scn;
 with Sinfo;    use Sinfo;
+with Snames;   use Snames;
 with System;   use System;
 
 with Unchecked_Conversion;
@@ -640,6 +640,37 @@ package body Sinput.L is
       Prep_Buffer_Last := Prep_Buffer_Last + 1;
       Prep_Buffer (Prep_Buffer_Last) := C;
    end Put_Char_In_Prep_Buffer;
+
+   -----------------------------------
+   -- Source_File_Is_Pragma_No_Body --
+   -----------------------------------
+
+   function Source_File_Is_No_Body (X : Source_File_Index) return Boolean is
+   begin
+      Initialize_Scanner (No_Unit, X);
+
+      if Token /= Tok_Pragma then
+         return False;
+      end if;
+
+      Scan; -- past pragma
+
+      if Token /= Tok_Identifier
+        or else Chars (Token_Node) /= Name_No_Body
+      then
+         return False;
+      end if;
+
+      Scan; -- past No_Body
+
+      if Token /= Tok_Semicolon then
+         return False;
+      end if;
+
+      Scan; -- past semicolon
+
+      return Token = Tok_EOF;
+   end Source_File_Is_No_Body;
 
    ----------------------------
    -- Source_File_Is_Subunit --
