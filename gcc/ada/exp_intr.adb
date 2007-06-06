@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,6 @@ with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Code; use Exp_Code;
-with Exp_Disp; use Exp_Disp;
 with Exp_Fixd; use Exp_Fixd;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
@@ -155,6 +154,14 @@ package body Exp_Intr is
       Act_Constr := Entity (Name (Act_Rename));
       Result_Typ := Class_Wide_Type (Etype (Act_Constr));
 
+      --  Ada 2005 (AI-251): If the result is an interface type, the function
+      --  returns a class-wide interface type (otherwise the resulting object
+      --  would be abstract!)
+
+      if Is_Interface (Etype (Act_Constr)) then
+         Set_Etype (Act_Constr, Result_Typ);
+      end if;
+
       --  Create the call to the actual Constructor function
 
       Cnstr_Call :=
@@ -215,9 +222,9 @@ package body Exp_Intr is
            Make_Implicit_If_Statement (N,
              Condition =>
                Make_Op_Not (Loc,
-                 Make_DT_Access_Action (Result_Typ,
-                    Action => IW_Membership,
-                    Args   => New_List (
+                 Make_Function_Call (Loc,
+                    Name => New_Occurrence_Of (RTE (RE_IW_Membership), Loc),
+                    Parameter_Associations => New_List (
                       Make_Attribute_Reference (Loc,
                         Prefix => Duplicate_Subexpr (Tag_Arg),
                         Attribute_Name => Name_Address),
@@ -984,7 +991,27 @@ package body Exp_Intr is
          end if;
       end if;
 
-      Set_Expression (Free_Node, Free_Arg);
+      --  Ada 2005 (AI-251): In case of abstract interface type we must
+      --  displace the pointer to reference the base of the object to
+      --  deallocate its memory.
+
+      --  Generate:
+      --    free (Base_Address (Obj_Ptr))
+
+      if Is_Interface (Directly_Designated_Type (Typ)) then
+         Set_Expression (Free_Node,
+           Unchecked_Convert_To (Typ,
+             Make_Function_Call (Loc,
+               Name => New_Reference_To (RTE (RE_Base_Address), Loc),
+               Parameter_Associations => New_List (
+                 Unchecked_Convert_To (RTE (RE_Address), Free_Arg)))));
+
+      --  Generate:
+      --    free (Obj_Ptr)
+
+      else
+         Set_Expression (Free_Node, Free_Arg);
+      end if;
 
       --  Only remaining step is to set result to null, or generate a
       --  raise of constraint error if the target object is "not null".
