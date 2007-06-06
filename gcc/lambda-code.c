@@ -1528,71 +1528,18 @@ lbv_to_gcc_expression (lambda_body_vector lbv,
 		       tree type, VEC(tree,heap) *induction_vars, 
 		       tree *stmts_to_insert)
 {
-  tree stmts, stmt, resvar, name;
-  tree iv;
-  size_t i;
-  tree_stmt_iterator tsi;
+  int k;
+  tree resvar;
+  tree expr = build_linear_expr (type, LBV_COEFFICIENTS (lbv), induction_vars);
 
-  /* Create a statement list and a linear expression temporary.  */
-  stmts = alloc_stmt_list ();
+  k = LBV_DENOMINATOR (lbv);
+  gcc_assert (k != 0);
+  if (k != 1)
+    expr = fold_build2 (CEIL_DIV_EXPR, type, expr, build_int_cst (type, k));
+
   resvar = create_tmp_var (type, "lbvtmp");
   add_referenced_var (resvar);
-
-  /* Start at 0.  */
-  stmt = build_gimple_modify_stmt (resvar,
-				   fold_convert (type, integer_zero_node));
-  name = make_ssa_name (resvar, stmt);
-  GIMPLE_STMT_OPERAND (stmt, 0) = name;
-  tsi = tsi_last (stmts);
-  tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
-
-  for (i = 0; VEC_iterate (tree, induction_vars, i, iv); i++)
-    {
-      if (LBV_COEFFICIENTS (lbv)[i] != 0)
-	{
-	  tree newname;
-	  tree coeffmult;
-	  
-	  /* newname = coefficient * induction_variable */
-	  coeffmult = build_int_cst (type, LBV_COEFFICIENTS (lbv)[i]);
-	  stmt = build_gimple_modify_stmt (resvar,
-					   fold_build2 (MULT_EXPR, type,
-							iv, coeffmult));
-
-	  newname = make_ssa_name (resvar, stmt);
-	  GIMPLE_STMT_OPERAND (stmt, 0) = newname;
-	  fold_stmt (&stmt);
-	  tsi = tsi_last (stmts);
-	  tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
-
-	  /* name = name + newname */
-	  stmt = build_gimple_modify_stmt (resvar,
-					   build2 (PLUS_EXPR, type,
-						   name, newname));
-	  name = make_ssa_name (resvar, stmt);
-	  GIMPLE_STMT_OPERAND (stmt, 0) = name;
-	  fold_stmt (&stmt);
-	  tsi = tsi_last (stmts);
-	  tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
-
-	}
-    }
-
-  /* Handle any denominator that occurs.  */
-  if (LBV_DENOMINATOR (lbv) != 1)
-    {
-      tree denominator = build_int_cst (type, LBV_DENOMINATOR (lbv));
-      stmt = build_gimple_modify_stmt (resvar,
-				       build2 (CEIL_DIV_EXPR, type,
-					       name, denominator));
-      name = make_ssa_name (resvar, stmt);
-      GIMPLE_STMT_OPERAND (stmt, 0) = name;
-      fold_stmt (&stmt);
-      tsi = tsi_last (stmts);
-      tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
-    }
-  *stmts_to_insert = stmts;
-  return name;
+  return force_gimple_operand (fold (expr), stmts_to_insert, true, resvar);
 }
 
 /* Convert a linear expression from coefficient and constant form to a
@@ -1616,182 +1563,57 @@ lle_to_gcc_expression (lambda_linear_expression lle,
 		       VEC(tree,heap) *invariants,
 		       enum tree_code wrap, tree *stmts_to_insert)
 {
-  tree stmts, stmt, resvar, name;
-  size_t i;
-  tree_stmt_iterator tsi;
-  tree iv, invar;
+  int k;
+  tree resvar;
+  tree expr = NULL_TREE;
   VEC(tree,heap) *results = NULL;
 
   gcc_assert (wrap == MAX_EXPR || wrap == MIN_EXPR);
-  name = NULL_TREE;
-  /* Create a statement list and a linear expression temporary.  */
-  stmts = alloc_stmt_list ();
-  resvar = create_tmp_var (type, "lletmp");
-  add_referenced_var (resvar);
 
-  /* Build up the linear expressions, and put the variable representing the
-     result in the results array.  */
+  /* Build up the linear expressions.  */
   for (; lle != NULL; lle = LLE_NEXT (lle))
     {
-      /* Start at name = 0.  */
-      stmt = build_gimple_modify_stmt (resvar,
-				       fold_convert (type, integer_zero_node));
-      name = make_ssa_name (resvar, stmt);
-      GIMPLE_STMT_OPERAND (stmt, 0) = name;
-      fold_stmt (&stmt);
-      tsi = tsi_last (stmts);
-      tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
+      expr = build_linear_expr (type, LLE_COEFFICIENTS (lle), induction_vars);
+      expr = fold_build2 (PLUS_EXPR, type, expr,
+			  build_linear_expr (type, 
+					     LLE_INVARIANT_COEFFICIENTS (lle),
+					     invariants));
 
-      /* First do the induction variables.  
-         at the end, name = name + all the induction variables added
-         together.  */
-      for (i = 0; VEC_iterate (tree, induction_vars, i, iv); i++)
-	{
-	  if (LLE_COEFFICIENTS (lle)[i] != 0)
-	    {
-	      tree newname;
-	      tree mult;
-	      tree coeff;
+      k = LLE_CONSTANT (lle);
+      if (k)
+	expr = fold_build2 (PLUS_EXPR, type, expr, build_int_cst (type, k));
 
-	      /* mult = induction variable * coefficient.  */
-	      if (LLE_COEFFICIENTS (lle)[i] == 1)
-		{
-		  mult = VEC_index (tree, induction_vars, i);
-		}
-	      else
-		{
-		  coeff = build_int_cst (type,
-					 LLE_COEFFICIENTS (lle)[i]);
-		  mult = fold_build2 (MULT_EXPR, type, iv, coeff);
-		}
+      k = LLE_CONSTANT (offset);
+      if (k)
+	expr = fold_build2 (PLUS_EXPR, type, expr, build_int_cst (type, k));
 
-	      /* newname = mult */
-	      stmt = build_gimple_modify_stmt (resvar, mult);
-	      newname = make_ssa_name (resvar, stmt);
-	      GIMPLE_STMT_OPERAND (stmt, 0) = newname;
-	      fold_stmt (&stmt);
-	      tsi = tsi_last (stmts);
-	      tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
+      k = LLE_DENOMINATOR (lle);
+      if (k != 1)
+	expr = fold_build2 (wrap == MAX_EXPR ? CEIL_DIV_EXPR : FLOOR_DIV_EXPR,
+			    type, expr, build_int_cst (type, k));
 
-	      /* name = name + newname */
-	      stmt = build_gimple_modify_stmt (resvar,
-					       build2 (PLUS_EXPR, type,
-						       name, newname));
-	      name = make_ssa_name (resvar, stmt);
-	      GIMPLE_STMT_OPERAND (stmt, 0) = name;
-	      fold_stmt (&stmt);
-	      tsi = tsi_last (stmts);
-	      tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
-	    }
-	}
-
-      /* Handle our invariants.
-         At the end, we have name = name + result of adding all multiplied
-         invariants.  */
-      for (i = 0; VEC_iterate (tree, invariants, i, invar); i++)
-	{
-	  if (LLE_INVARIANT_COEFFICIENTS (lle)[i] != 0)
-	    {
-	      tree newname;
-	      tree mult;
-	      tree coeff;
-	      int invcoeff = LLE_INVARIANT_COEFFICIENTS (lle)[i];
-	      /* mult = invariant * coefficient  */
-	      if (invcoeff == 1)
-		{
-		  mult = invar;
-		}
-	      else
-		{
-		  coeff = build_int_cst (type, invcoeff);
-		  mult = fold_build2 (MULT_EXPR, type, invar, coeff);
-		}
-
-	      /* newname = mult */
-	      stmt = build_gimple_modify_stmt (resvar, mult);
-	      newname = make_ssa_name (resvar, stmt);
-	      GIMPLE_STMT_OPERAND (stmt, 0) = newname;
-	      fold_stmt (&stmt);
-	      tsi = tsi_last (stmts);
-	      tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
-
-	      /* name = name + newname */
-	      stmt = build_gimple_modify_stmt (resvar,
-					       build2 (PLUS_EXPR, type,
-						       name, newname));
-	      name = make_ssa_name (resvar, stmt);
-	      GIMPLE_STMT_OPERAND (stmt, 0) = name;
-	      fold_stmt (&stmt);
-	      tsi = tsi_last (stmts);
-	      tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
-	    }
-	}
-
-      /* Now handle the constant.
-         name = name + constant.  */
-      if (LLE_CONSTANT (lle) != 0)
-	{
-	  tree incr = build_int_cst (type, LLE_CONSTANT (lle));
-	  stmt = build_gimple_modify_stmt (resvar, build2 (PLUS_EXPR, type,
-							   name, incr));
-	  name = make_ssa_name (resvar, stmt);
-	  GIMPLE_STMT_OPERAND (stmt, 0) = name;
-	  fold_stmt (&stmt);
-	  tsi = tsi_last (stmts);
-	  tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
-	}
-
-      /* Now handle the offset.
-         name = name + linear offset.  */
-      if (LLE_CONSTANT (offset) != 0)
-	{
-	  tree incr = build_int_cst (type, LLE_CONSTANT (offset));
-	  stmt = build_gimple_modify_stmt (resvar, build2 (PLUS_EXPR, type,
-							   name, incr));
-	  name = make_ssa_name (resvar, stmt);
-	  GIMPLE_STMT_OPERAND (stmt, 0) = name;
-	  fold_stmt (&stmt);
-	  tsi = tsi_last (stmts);
-	  tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
-	}
-
-      /* Handle any denominator that occurs.  */
-      if (LLE_DENOMINATOR (lle) != 1)
-	{
-	  stmt = build_int_cst (type, LLE_DENOMINATOR (lle));
-	  stmt = build2 (wrap == MAX_EXPR ? CEIL_DIV_EXPR : FLOOR_DIV_EXPR,
-			 type, name, stmt);
-	  stmt = build_gimple_modify_stmt (resvar, stmt);
-
-	  /* name = {ceil, floor}(name/denominator) */
-	  name = make_ssa_name (resvar, stmt);
-	  GIMPLE_STMT_OPERAND (stmt, 0) = name;
-	  tsi = tsi_last (stmts);
-	  tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
-	}
-      VEC_safe_push (tree, heap, results, name);
+      expr = fold (expr);
+      VEC_safe_push (tree, heap, results, expr);
     }
 
-  /* Again, out of laziness, we don't handle this case yet.  It's not
-     hard, it just hasn't occurred.  */
-  gcc_assert (VEC_length (tree, results) <= 2);
-  
+  gcc_assert (expr);
+
   /* We may need to wrap the results in a MAX_EXPR or MIN_EXPR.  */
   if (VEC_length (tree, results) > 1)
     {
-      tree op1 = VEC_index (tree, results, 0);
-      tree op2 = VEC_index (tree, results, 1);
-      stmt = build_gimple_modify_stmt (resvar, build2 (wrap, type, op1, op2));
-      name = make_ssa_name (resvar, stmt);
-      GIMPLE_STMT_OPERAND (stmt, 0) = name;
-      tsi = tsi_last (stmts);
-      tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
+      size_t i;
+      tree op;
+
+      expr = VEC_index (tree, results, 0);
+      for (i = 1; VEC_iterate (tree, results, i, op); i++)
+	expr = fold_build2 (wrap, type, expr, op);
     }
 
   VEC_free (tree, heap, results);
-  
-  *stmts_to_insert = stmts;
-  return name;
+
+  resvar = create_tmp_var (type, "lletmp");
+  add_referenced_var (resvar);
+  return force_gimple_operand (fold (expr), stmts_to_insert, true, resvar);
 }
 
 /* Transform a lambda loopnest NEW_LOOPNEST, which had TRANSFORM applied to
@@ -1869,8 +1691,12 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 					     type,
 					     new_ivs,
 					     invariants, MAX_EXPR, &stmts);
-      bsi_insert_on_edge (loop_preheader_edge (temp), stmts);
-      bsi_commit_edge_inserts ();
+
+      if (stmts)
+	{
+	  bsi_insert_on_edge (loop_preheader_edge (temp), stmts);
+	  bsi_commit_edge_inserts ();
+	}
       /* Build the new upper bound and insert its statements in the
          basic block of the exit condition */
       newupperbound = lle_to_gcc_expression (LL_UPPER_BOUND (newloop),
@@ -1882,7 +1708,8 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       exitcond = get_loop_exit_condition (temp);
       bb = bb_for_stmt (exitcond);
       bsi = bsi_after_labels (bb);
-      bsi_insert_before (&bsi, stmts, BSI_NEW_STMT);
+      if (stmts)
+	bsi_insert_before (&bsi, stmts, BSI_NEW_STMT);
 
       /* Create the new iv.  */
 
@@ -1960,10 +1787,11 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 
 	  newiv = lbv_to_gcc_expression (newlbv, TREE_TYPE (oldiv),
 					 new_ivs, &stmts);
-	  bsi = bsi_for_stmt (stmt);
-	  /* Insert the statements to build that
-	     expression.  */
-	  bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);
+	  if (stmts)
+	    {
+	      bsi = bsi_for_stmt (stmt);
+	      bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);
+	    }
 
 	  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
 	    propagate_value (use_p, newiv);

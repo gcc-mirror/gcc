@@ -1,3 +1,13 @@
+2007-06-06  Jan Sjodin  <jan.sjodin@amd.com>
+	    Sebastian Pop  <sebpop@gmail.com>
+
+	* lambda.h (build_linear_expr): New.
+	* lambda-code.c (lbv_to_gcc_expression, lle_to_gcc_expression): 
+	Use build_linear_expr, call fold and force_gimple_operand.
+	(lambda_loopnest_to_gcc_loopnest): Check that there is
+	something to insert.
+	* testsuite/gcc.dg/tree-ssa/ltrans-6.c: New.
+
 2007-06-05  Joerg Wunsch  <j.gnu@uriah.heep.sax.de>
 
 	PR preprocessor/23479
