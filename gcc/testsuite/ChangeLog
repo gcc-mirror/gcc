@@ -1,3 +1,9 @@
+2007-06-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR testsuite/32057
+	* gfortran.dg/secnds.f: Update test to avoid roundoff errors and
+	midnight issues.
+
 2007-06-05  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR testsuite/25241
