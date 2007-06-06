@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1997-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,14 +41,14 @@
 
 with System.CRTL;
 with System.Task_Primitives.Operations;
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.Tasking.Debug is
 
    package STPO renames System.Task_Primitives.Operations;
 
    function To_Integer is new
-     Unchecked_Conversion (Task_Id, System.Address);
+     Ada.Unchecked_Conversion (Task_Id, System.Address);
 
    type Trace_Flag_Set is array (Character) of Boolean;
 

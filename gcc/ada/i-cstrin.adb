@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@
 with System; use System;
 with System.Storage_Elements; use System.Storage_Elements;
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body Interfaces.C.Strings is
 
@@ -44,10 +44,10 @@ package body Interfaces.C.Strings is
    --  this type will in fact be used for aliasing values of other types.
 
    function To_chars_ptr is
-      new Unchecked_Conversion (Address, chars_ptr);
+      new Ada.Unchecked_Conversion (Address, chars_ptr);
 
    function To_Address is
-      new Unchecked_Conversion (chars_ptr, Address);
+      new Ada.Unchecked_Conversion (chars_ptr, Address);
 
    -----------------------
    -- Local Subprograms --

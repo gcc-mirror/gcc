@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Version for Alpha/VMS)                          --
 --                                                                          --
---                     Copyright (C) 2001-2006, AdaCore                     --
+--                     Copyright (C) 2001-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,7 @@
 
 with System.Memory;
 with System.Aux_DEC; use System.Aux_DEC;
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.Machine_State_Operations is
 
@@ -131,10 +131,10 @@ package body System.Machine_State_Operations is
 
    function Fetch is new Fetch_From_Address (Code_Loc);
 
-   function To_Invo_Handle_Access is new Unchecked_Conversion
+   function To_Invo_Handle_Access is new Ada.Unchecked_Conversion
      (Machine_State, Invo_Handle_Access_Type);
 
-   function To_Machine_State is new Unchecked_Conversion
+   function To_Machine_State is new Ada.Unchecked_Conversion
      (System.Address, Machine_State);
 
    ----------------------------

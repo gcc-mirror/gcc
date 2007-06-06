@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1995-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,31 +31,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body GNAT.Strings is
+--  This package does not require a body, since it is a package renaming. We
+--  provide a dummy file containing a No_Body pragma so that previous versions
+--  of the body (which did exist) will not intefere.
 
-   ----------
-   -- Free --
-   ----------
-
-   procedure Free (Arg : in out String_List_Access) is
-      X : String_Access;
-
-      procedure Free_Array is new Unchecked_Deallocation
-        (Object => String_List, Name => String_List_Access);
-
-   begin
-      --  First free all the String_Access components if any
-
-      if Arg /= null then
-         for J in Arg'Range loop
-            X := Arg (J);
-            Free (X);
-         end loop;
-      end if;
-
-      --  Now free the allocated array
-
-      Free_Array (Arg);
-   end Free;
-
-end GNAT.Strings;
+pragma No_Body;

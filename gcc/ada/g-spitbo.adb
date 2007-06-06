@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2006, AdaCore                     --
+--                     Copyright (C) 1998-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,7 @@ with Ada.Strings.Unbounded.Aux; use Ada.Strings.Unbounded.Aux;
 with GNAT.Debug_Utilities;      use GNAT.Debug_Utilities;
 with GNAT.IO;                   use GNAT.IO;
 
-with Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation;
 
 package body GNAT.Spitbol is
 
@@ -320,7 +320,7 @@ package body GNAT.Spitbol is
    package body Table is
 
       procedure Free is new
-        Unchecked_Deallocation (Hash_Element, Hash_Element_Ptr);
+        Ada.Unchecked_Deallocation (Hash_Element, Hash_Element_Ptr);
 
       -----------------------
       -- Local Subprograms --

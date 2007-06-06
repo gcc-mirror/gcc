@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation;
 
 package body Ada.Strings.Wide_Maps is
 
@@ -363,7 +363,7 @@ package body Ada.Strings.Wide_Maps is
 
    procedure Finalize (Object : in out Wide_Character_Mapping) is
 
-      procedure Free is new Unchecked_Deallocation
+      procedure Free is new Ada.Unchecked_Deallocation
         (Wide_Character_Mapping_Values,
          Wide_Character_Mapping_Values_Access);
 
@@ -375,7 +375,7 @@ package body Ada.Strings.Wide_Maps is
 
    procedure Finalize (Object : in out Wide_Character_Set) is
 
-      procedure Free is new Unchecked_Deallocation
+      procedure Free is new Ada.Unchecked_Deallocation
         (Wide_Character_Ranges,
          Wide_Character_Ranges_Access);
 

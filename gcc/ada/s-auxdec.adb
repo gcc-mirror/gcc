@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/Or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,8 +51,8 @@ package body System.Aux_DEC is
    type LIU is mod 2 ** Largest_Integer'Size;
    --  Unsigned type of same length as Largest_Integer
 
-   function To_LI   is new Unchecked_Conversion (LIU, Largest_Integer);
-   function From_LI is new Unchecked_Conversion (Largest_Integer, LIU);
+   function To_LI   is new Ada.Unchecked_Conversion (LIU, Largest_Integer);
+   function From_LI is new Ada.Unchecked_Conversion (Largest_Integer, LIU);
 
    function "not" (Left : Largest_Integer) return Largest_Integer is
    begin
@@ -86,8 +86,8 @@ package body System.Aux_DEC is
    type SA is range -(2 ** Asiz) .. 2 ** Asiz - 1;
    --  Signed type of same size as Address
 
-   function To_A   is new Unchecked_Conversion (SA, Address);
-   function From_A is new Unchecked_Conversion (Address, SA);
+   function To_A   is new Ada.Unchecked_Conversion (SA, Address);
+   function From_A is new Ada.Unchecked_Conversion (Address, SA);
 
    function "+" (Left : Address; Right : Integer) return Address is
    begin
@@ -117,7 +117,7 @@ package body System.Aux_DEC is
 
    function Fetch_From_Address (A : Address) return Target is
       type T_Ptr is access all Target;
-      function To_T_Ptr is new Unchecked_Conversion (Address, T_Ptr);
+      function To_T_Ptr is new Ada.Unchecked_Conversion (Address, T_Ptr);
       Ptr : constant T_Ptr := To_T_Ptr (A);
    begin
       return Ptr.all;
@@ -129,7 +129,7 @@ package body System.Aux_DEC is
 
    procedure Assign_To_Address (A : Address; T : Target) is
       type T_Ptr is access all Target;
-      function To_T_Ptr is new Unchecked_Conversion (Address, T_Ptr);
+      function To_T_Ptr is new Ada.Unchecked_Conversion (Address, T_Ptr);
       Ptr : constant T_Ptr := To_T_Ptr (A);
    begin
       Ptr.all := T;
@@ -145,8 +145,8 @@ package body System.Aux_DEC is
    type BU is mod 2 ** Unsigned_Byte'Size;
    --  Unsigned type of same length as Unsigned_Byte
 
-   function To_B   is new Unchecked_Conversion (BU, Unsigned_Byte);
-   function From_B is new Unchecked_Conversion (Unsigned_Byte, BU);
+   function To_B   is new Ada.Unchecked_Conversion (BU, Unsigned_Byte);
+   function From_B is new Ada.Unchecked_Conversion (Unsigned_Byte, BU);
 
    function "not" (Left : Unsigned_Byte) return Unsigned_Byte is
    begin
@@ -178,8 +178,8 @@ package body System.Aux_DEC is
    type WU is mod 2 ** Unsigned_Word'Size;
    --  Unsigned type of same length as Unsigned_Word
 
-   function To_W   is new Unchecked_Conversion (WU, Unsigned_Word);
-   function From_W is new Unchecked_Conversion (Unsigned_Word, WU);
+   function To_W   is new Ada.Unchecked_Conversion (WU, Unsigned_Word);
+   function From_W is new Ada.Unchecked_Conversion (Unsigned_Word, WU);
 
    function "not" (Left : Unsigned_Word) return Unsigned_Word is
    begin
@@ -211,8 +211,8 @@ package body System.Aux_DEC is
    type LWU is mod 2 ** Unsigned_Longword'Size;
    --  Unsigned type of same length as Unsigned_Longword
 
-   function To_LW   is new Unchecked_Conversion (LWU, Unsigned_Longword);
-   function From_LW is new Unchecked_Conversion (Unsigned_Longword, LWU);
+   function To_LW   is new Ada.Unchecked_Conversion (LWU, Unsigned_Longword);
+   function From_LW is new Ada.Unchecked_Conversion (Unsigned_Longword, LWU);
 
    function "not" (Left : Unsigned_Longword) return Unsigned_Longword is
    begin
@@ -244,8 +244,8 @@ package body System.Aux_DEC is
    type U32 is mod 2 ** Unsigned_32'Size;
    --  Unsigned type of same length as Unsigned_32
 
-   function To_U32   is new Unchecked_Conversion (U32, Unsigned_32);
-   function From_U32 is new Unchecked_Conversion (Unsigned_32, U32);
+   function To_U32   is new Ada.Unchecked_Conversion (U32, Unsigned_32);
+   function From_U32 is new Ada.Unchecked_Conversion (Unsigned_32, U32);
 
    function "not" (Left : Unsigned_32) return Unsigned_32 is
    begin
@@ -277,8 +277,8 @@ package body System.Aux_DEC is
    type QWU is mod 2 ** 64;  -- 64 = Unsigned_Quadword'Size
    --  Unsigned type of same length as Unsigned_Quadword
 
-   function To_QW   is new Unchecked_Conversion (QWU, Unsigned_Quadword);
-   function From_QW is new Unchecked_Conversion (Unsigned_Quadword, QWU);
+   function To_QW   is new Ada.Unchecked_Conversion (QWU, Unsigned_Quadword);
+   function From_QW is new Ada.Unchecked_Conversion (Unsigned_Quadword, QWU);
 
    function "not" (Left : Unsigned_Quadword) return Unsigned_Quadword is
    begin
@@ -451,11 +451,11 @@ package body System.Aux_DEC is
    type IU is mod 2 ** Integer'Size;
    type LU is mod 2 ** Long_Integer'Size;
 
-   function To_IU   is new Unchecked_Conversion (Integer, IU);
-   function From_IU is new Unchecked_Conversion (IU, Integer);
+   function To_IU   is new Ada.Unchecked_Conversion (Integer, IU);
+   function From_IU is new Ada.Unchecked_Conversion (IU, Integer);
 
-   function To_LU   is new Unchecked_Conversion (Long_Integer, LU);
-   function From_LU is new Unchecked_Conversion (LU, Long_Integer);
+   function To_LU   is new Ada.Unchecked_Conversion (Long_Integer, LU);
+   function From_LU is new Ada.Unchecked_Conversion (LU, Long_Integer);
 
    procedure And_Atomic
      (To   : in out Aligned_Integer;
@@ -582,8 +582,8 @@ package body System.Aux_DEC is
       Backward : QR_Ptr;
    end record;
 
-   function To_QR_Ptr   is new Unchecked_Conversion (Address, QR_Ptr);
-   function From_QR_Ptr is new Unchecked_Conversion (QR_Ptr, Address);
+   function To_QR_Ptr   is new Ada.Unchecked_Conversion (Address, QR_Ptr);
+   function From_QR_Ptr is new Ada.Unchecked_Conversion (QR_Ptr, Address);
 
    ------------
    -- Insqhi --

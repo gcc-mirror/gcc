@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,8 +38,8 @@ with System.File_IO;
 with System.Soft_Links;
 with System.CRTL;
 
-with Unchecked_Conversion;
-with Unchecked_Deallocation;
+with Ada.Unchecked_Conversion;
+with Ada.Unchecked_Deallocation;
 
 package body Ada.Streams.Stream_IO is
 
@@ -48,8 +48,8 @@ package body Ada.Streams.Stream_IO is
 
    subtype AP is FCB.AFCB_Ptr;
 
-   function To_FCB is new Unchecked_Conversion (File_Mode, FCB.File_Mode);
-   function To_SIO is new Unchecked_Conversion (FCB.File_Mode, File_Mode);
+   function To_FCB is new Ada.Unchecked_Conversion (File_Mode, FCB.File_Mode);
+   function To_SIO is new Ada.Unchecked_Conversion (FCB.File_Mode, File_Mode);
    use type FCB.File_Mode;
    use type FCB.Shared_Status_Type;
 
@@ -90,7 +90,7 @@ package body Ada.Streams.Stream_IO is
       type FCB_Ptr is access all Stream_AFCB;
       FT : FCB_Ptr := FCB_Ptr (File);
 
-      procedure Free is new Unchecked_Deallocation (Stream_AFCB, FCB_Ptr);
+      procedure Free is new Ada.Unchecked_Deallocation (Stream_AFCB, FCB_Ptr);
 
    begin
       Free (FT);

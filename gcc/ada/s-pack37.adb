@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,7 @@
 
 with System.Storage_Elements;
 with System.Unsigned_Types;
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.Pack_37 is
 
@@ -71,7 +71,7 @@ package body System.Pack_37 is
    type Cluster_Ref is access Cluster;
 
    function To_Ref is new
-     Unchecked_Conversion (System.Address, Cluster_Ref);
+     Ada.Unchecked_Conversion (System.Address, Cluster_Ref);
 
    ------------
    -- Get_37 --

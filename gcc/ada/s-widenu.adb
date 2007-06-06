@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.Wid_Enum is
 
@@ -54,7 +54,7 @@ package body System.Wid_Enum is
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is
-        new Unchecked_Conversion (System.Address, Index_Table_Ptr);
+        new Ada.Unchecked_Conversion (System.Address, Index_Table_Ptr);
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
@@ -87,7 +87,7 @@ package body System.Wid_Enum is
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is
-        new Unchecked_Conversion (System.Address, Index_Table_Ptr);
+        new Ada.Unchecked_Conversion (System.Address, Index_Table_Ptr);
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
@@ -120,7 +120,7 @@ package body System.Wid_Enum is
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is
-        new Unchecked_Conversion (System.Address, Index_Table_Ptr);
+        new Ada.Unchecked_Conversion (System.Address, Index_Table_Ptr);
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 

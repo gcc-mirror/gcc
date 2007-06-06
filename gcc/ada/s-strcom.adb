@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.String_Compare is
 
@@ -50,10 +50,10 @@ package body System.String_Compare is
    --  Array type used to access by bytes
 
    function To_Big_Words is new
-     Unchecked_Conversion (System.Address, Big_Words_Ptr);
+     Ada.Unchecked_Conversion (System.Address, Big_Words_Ptr);
 
    function To_Big_Bytes is new
-     Unchecked_Conversion (System.Address, Big_Bytes_Ptr);
+     Ada.Unchecked_Conversion (System.Address, Big_Bytes_Ptr);
 
    -----------------
    -- Str_Compare --

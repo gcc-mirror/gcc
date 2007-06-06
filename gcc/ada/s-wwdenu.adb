@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@
 with System.WCh_StW; use System.WCh_StW;
 with System.WCh_Con; use System.WCh_Con;
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.WWd_Enum is
 
@@ -55,7 +55,7 @@ package body System.WWd_Enum is
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is
-        new Unchecked_Conversion (System.Address, Index_Table_Ptr);
+        new Ada.Unchecked_Conversion (System.Address, Index_Table_Ptr);
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
@@ -92,7 +92,7 @@ package body System.WWd_Enum is
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is
-        new Unchecked_Conversion (System.Address, Index_Table_Ptr);
+        new Ada.Unchecked_Conversion (System.Address, Index_Table_Ptr);
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
@@ -129,7 +129,7 @@ package body System.WWd_Enum is
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is
-        new Unchecked_Conversion (System.Address, Index_Table_Ptr);
+        new Ada.Unchecked_Conversion (System.Address, Index_Table_Ptr);
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
@@ -166,7 +166,7 @@ package body System.WWd_Enum is
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is
-        new Unchecked_Conversion (System.Address, Index_Table_Ptr);
+        new Ada.Unchecked_Conversion (System.Address, Index_Table_Ptr);
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
@@ -203,7 +203,7 @@ package body System.WWd_Enum is
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is
-        new Unchecked_Conversion (System.Address, Index_Table_Ptr);
+        new Ada.Unchecked_Conversion (System.Address, Index_Table_Ptr);
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
@@ -240,7 +240,7 @@ package body System.WWd_Enum is
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is
-        new Unchecked_Conversion (System.Address, Index_Table_Ptr);
+        new Ada.Unchecked_Conversion (System.Address, Index_Table_Ptr);
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 

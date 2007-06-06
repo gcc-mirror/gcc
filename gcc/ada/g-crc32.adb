@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2005, AdaCore                     --
+--                     Copyright (C) 2001-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body GNAT.CRC32 is
 
@@ -47,7 +47,7 @@ package body GNAT.CRC32 is
    end Update;
 
    procedure Update (C : in out CRC32; Value : Ada.Streams.Stream_Element) is
-      function To_Char is new Unchecked_Conversion
+      function To_Char is new Ada.Unchecked_Conversion
         (Ada.Streams.Stream_Element, Character);
       V : constant Character := To_Char (Value);
    begin
@@ -70,7 +70,7 @@ package body GNAT.CRC32 is
 
    procedure Wide_Update (C : in out CRC32; Value : Wide_Character) is
       subtype S2 is String (1 .. 2);
-      function To_S2 is new Unchecked_Conversion (Wide_Character, S2);
+      function To_S2 is new Ada.Unchecked_Conversion (Wide_Character, S2);
       VS : constant S2 := To_S2 (Value);
    begin
       Update (C, VS (1));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,7 @@
 
 with System.Address_Operations; use System.Address_Operations;
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.Compare_Array_Unsigned_32 is
 
@@ -51,8 +51,8 @@ package body System.Compare_Array_Unsigned_32 is
    type WP is access Word;
    type UP is access Uword;
 
-   function W is new Unchecked_Conversion (Address, WP);
-   function U is new Unchecked_Conversion (Address, UP);
+   function W is new Ada.Unchecked_Conversion (Address, WP);
+   function U is new Ada.Unchecked_Conversion (Address, UP);
 
    -----------------------
    -- Compare_Array_U32 --

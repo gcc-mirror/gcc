@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.Scalar_Values is
 
@@ -74,7 +74,7 @@ package body System.Scalar_Values is
       --  values that are then converted to ByteLF.
 
       pragma Warnings (Off);
-      function To_ByteLF is new Unchecked_Conversion (Byte8, ByteLF);
+      function To_ByteLF is new Ada.Unchecked_Conversion (Byte8, ByteLF);
       pragma Warnings (On);
 
       type ByteLLF is
@@ -320,8 +320,9 @@ package body System.Scalar_Values is
 
       if not EFloat then
          declare
-            pragma Warnings (Off);
-            function To_ByteLLF is new Unchecked_Conversion (ByteLF, ByteLLF);
+            pragma Warnings (Off);  -- why???
+            function To_ByteLLF is
+              new Ada.Unchecked_Conversion (ByteLF, ByteLLF);
             pragma Warnings (On);
          begin
             IV_Ill := To_ByteLLF (IV_Ilf);

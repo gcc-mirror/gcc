@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2005-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2005-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,7 @@ with System.Soft_Links;
 --  use for Abort_Defer
 --          Abort_Undefer
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body Ada.Task_Termination is
 
@@ -63,13 +63,13 @@ package body Ada.Task_Termination is
    -- Local subprograms --
    -----------------------
 
-   function To_TT is new Unchecked_Conversion
+   function To_TT is new Ada.Unchecked_Conversion
      (System.Tasking.Termination_Handler, Termination_Handler);
 
-   function To_ST is new Unchecked_Conversion
+   function To_ST is new Ada.Unchecked_Conversion
      (Termination_Handler, System.Tasking.Termination_Handler);
 
-   function To_Task_Id is new Unchecked_Conversion
+   function To_Task_Id is new Ada.Unchecked_Conversion
      (Ada.Task_Identification.Task_Id, System.Tasking.Task_Id);
 
    -----------------------------------

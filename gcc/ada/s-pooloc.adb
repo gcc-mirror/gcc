@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,7 @@
 
 with System.Memory;
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.Pool_Local is
 
@@ -44,7 +44,8 @@ package body System.Pool_Local is
    Pointers_Size : constant SSE.Storage_Offset := 2 * Pointer_Size;
 
    type Acc_Address is access all Address;
-   function To_Acc_Address is new Unchecked_Conversion (Address, Acc_Address);
+   function To_Acc_Address is
+     new Ada.Unchecked_Conversion (Address, Acc_Address);
 
    -----------------------
    -- Local Subprograms --

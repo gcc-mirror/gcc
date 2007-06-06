@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2006, AdaCore                     --
+--                     Copyright (C) 2000-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@ with GNAT.Heap_Sort_G;
 with System;        use System;
 with System.Memory; use System.Memory;
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body GNAT.Dynamic_Tables is
 
@@ -55,8 +55,8 @@ package body GNAT.Dynamic_Tables is
    --  These unchecked conversions are in fact safe, since they never
    --  generate improperly aliased pointer values.
 
-   function To_Address is new Unchecked_Conversion (Table_Ptr, Address);
-   function To_Pointer is new Unchecked_Conversion (Address, Table_Ptr);
+   function To_Address is new Ada.Unchecked_Conversion (Table_Ptr, Address);
+   function To_Pointer is new Ada.Unchecked_Conversion (Address, Table_Ptr);
 
    pragma Warnings (On);
 
@@ -269,7 +269,7 @@ package body GNAT.Dynamic_Tables is
       --  Local subprograms
 
       function Index_Of (Idx : Natural) return Table_Index_Type;
-      --  Apply Natural to indexs of the table
+      --  Return index of Idx'th element of table
 
       function Lower_Than (Op1, Op2 : Natural) return Boolean;
       --  Compare two components

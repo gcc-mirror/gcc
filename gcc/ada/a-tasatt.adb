@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2006, AdaCore                     --
+--                     Copyright (C) 1995-2007, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,8 +102,8 @@
 
 --  In the first approach the objects on the attribute list are all derived
 --  from one controlled type, say T, and are linked using an access type to
---  T'Class. The runtime system has an Unchecked_Deallocation for T'Class with
---  access type T'Class, and uses this to deallocate and finalize all the
+--  T'Class. The runtime system has an Ada.Unchecked_Deallocation for T'Class
+--  with access type T'Class, and uses this to deallocate and finalize all the
 --  items in the list. The limitation of this approach is that each
 --  instantiation of the package Ada.Task_Attributes derives a new record
 --  extension of T, and since T is controlled (RM 3.9.1 (3)), instantiation is
@@ -239,8 +239,8 @@ with System.Tasking;
 --           Direct_Index
 
 with System.Tasking.Initialization;
---  Used for Defer_Abortion
---           Undefer_Abortion
+--  Used for Defer_Abort
+--           Undefer_Abort
 --           Initialize_Attributes_Link
 --           Finalize_Attributes_Link
 
@@ -255,8 +255,8 @@ with System.Tasking.Task_Attributes;
 with Ada.Exceptions;
 --  Used for Raise_Exception
 
-with Unchecked_Conversion;
-with Unchecked_Deallocation;
+with Ada.Unchecked_Conversion;
+with Ada.Unchecked_Deallocation;
 
 pragma Elaborate_All (System.Tasking.Task_Attributes);
 --  To ensure the initialization of object Local (below) will work
@@ -290,16 +290,16 @@ package body Ada.Task_Attributes is
    --  the compiler will generate warnings for the occurrences in the large
    --  attribute case, even though they will not actually be used.
 
-   function To_Attribute_Handle is new Unchecked_Conversion
+   function To_Attribute_Handle is new Ada.Unchecked_Conversion
      (System.Address, Attribute_Handle);
-   function To_Direct_Attribute_Element is new Unchecked_Conversion
+   function To_Direct_Attribute_Element is new Ada.Unchecked_Conversion
      (System.Address, Direct_Attribute_Element);
    --  For reference to directly addressed task attributes
 
    type Access_Integer_Address is access all
      System.Storage_Elements.Integer_Address;
 
-   function To_Attribute_Handle is new Unchecked_Conversion
+   function To_Attribute_Handle is new Ada.Unchecked_Conversion
      (Access_Integer_Address, Attribute_Handle);
    --  For reference to directly addressed task attributes
 
@@ -307,12 +307,12 @@ package body Ada.Task_Attributes is
    --  End of warnings off region for directly addressed
    --  attribute conversion functions.
 
-   function To_Access_Address is new Unchecked_Conversion
+   function To_Access_Address is new Ada.Unchecked_Conversion
      (Access_Node, Access_Address);
    --  To store pointer to list of indirect attributes
 
    pragma Warnings (Off);
-   function To_Access_Wrapper is new Unchecked_Conversion
+   function To_Access_Wrapper is new Ada.Unchecked_Conversion
      (Access_Dummy_Wrapper, Access_Wrapper);
    pragma Warnings (On);
    --  To fetch pointer to actual wrapper of attribute node. We turn off
@@ -321,17 +321,17 @@ package body Ada.Task_Attributes is
    --  real wrapper type (we never actually allocate objects of type
    --  Dummy_Wrapper).
 
-   function To_Access_Dummy_Wrapper is new Unchecked_Conversion
+   function To_Access_Dummy_Wrapper is new Ada.Unchecked_Conversion
      (Access_Wrapper, Access_Dummy_Wrapper);
    --  To store pointer to actual wrapper of attribute node
 
-   function To_Task_Id is new Unchecked_Conversion
+   function To_Task_Id is new Ada.Unchecked_Conversion
      (Task_Identification.Task_Id, Task_Id);
    --  To access TCB of identified task
 
    type Local_Deallocator is access procedure (P : in out Access_Node);
 
-   function To_Lib_Level_Deallocator is new Unchecked_Conversion
+   function To_Lib_Level_Deallocator is new Ada.Unchecked_Conversion
      (Local_Deallocator, Deallocator);
    --  To defeat accessibility check
 
@@ -366,7 +366,7 @@ package body Ada.Task_Attributes is
    for Wrapper'Alignment use Standard'Maximum_Alignment;
 
    procedure Free is
-      new Unchecked_Deallocation (Wrapper, Access_Wrapper);
+      new Ada.Unchecked_Deallocation (Wrapper, Access_Wrapper);
 
    procedure Deallocate (P : in out Access_Node) is
       T : Access_Wrapper := To_Access_Wrapper (P.Wrapper);

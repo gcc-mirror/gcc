@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2006, Free Software Foundation, Inc.      --
+--             Copyright (C) 1995-2007, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,7 +41,7 @@
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
 with Interfaces.C;
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -301,7 +301,7 @@ package System.OS_Interface is
      function (arg : System.Address) return System.Address;
 
    function Thread_Body_Access is new
-     Unchecked_Conversion (System.Address, Thread_Body);
+     Ada.Unchecked_Conversion (System.Address, Thread_Body);
 
    THR_DETACHED  : constant := 64;
    THR_BOUND     : constant := 1;
@@ -312,7 +312,7 @@ package System.OS_Interface is
    subtype Thread_Id is thread_t;
    --  These types should be commented ???
 
-   function To_thread_t is new Unchecked_Conversion (Integer, thread_t);
+   function To_thread_t is new Ada.Unchecked_Conversion (Integer, thread_t);
 
    type mutex_t is limited private;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,7 @@
 
 --  This is the Alpha/VMS version
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 package body Interfaces.C_Streams is
 
    use type System.CRTL.size_t;
@@ -81,7 +81,7 @@ package body Interfaces.C_Streams is
       type Buffer_Type is array (size_t range 1 .. count,
                                  size_t range 1 .. size) of Character;
       type Buffer_Access is access Buffer_Type;
-      function To_BA is new Unchecked_Conversion (voids, Buffer_Access);
+      function To_BA is new Ada.Unchecked_Conversion (voids, Buffer_Access);
 
       BA : constant Buffer_Access := To_BA (buffer);
       Ch : int;
@@ -119,7 +119,7 @@ package body Interfaces.C_Streams is
       type Buffer_Type is array (size_t range 1 .. count,
                                  size_t range 1 .. size) of Character;
       type Buffer_Access is access Buffer_Type;
-      function To_BA is new Unchecked_Conversion (voids, Buffer_Access);
+      function To_BA is new Ada.Unchecked_Conversion (voids, Buffer_Access);
 
       BA : constant Buffer_Access := To_BA (buffer);
       Ch : int;
@@ -181,7 +181,7 @@ package body Interfaces.C_Streams is
       type Buffer_Type is array (size_t range 1 .. count,
                                  size_t range 1 .. size) of Character;
       type Buffer_Access is access Buffer_Type;
-      function To_BA is new Unchecked_Conversion (voids, Buffer_Access);
+      function To_BA is new Ada.Unchecked_Conversion (voids, Buffer_Access);
 
       BA : constant Buffer_Access := To_BA (buffer);
 

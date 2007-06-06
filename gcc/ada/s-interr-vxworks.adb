@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,7 +65,7 @@
 --  This is the VxWorks version of this package, supporting vectored hardware
 --  interrupts.
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 with System.OS_Interface; use System.OS_Interface;
 
@@ -107,10 +107,10 @@ package body System.Interrupts is
 
    package POP renames System.Task_Primitives.Operations;
 
-   function To_Ada is new Unchecked_Conversion
+   function To_Ada is new Ada.Unchecked_Conversion
      (System.Tasking.Task_Id, Ada.Task_Identification.Task_Id);
 
-   function To_System is new Unchecked_Conversion
+   function To_System is new Ada.Unchecked_Conversion
      (Ada.Task_Identification.Task_Id, Task_Id);
 
    -----------------
@@ -598,7 +598,7 @@ package body System.Interrupts is
          Handler_Addr : System.Address;
       end record;
 
-      function To_Fat_Ptr is new Unchecked_Conversion
+      function To_Fat_Ptr is new Ada.Unchecked_Conversion
         (Parameterless_Handler, Fat_Ptr);
 
       Ptr : R_Link;
