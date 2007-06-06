@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc          --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@ package Prj.Env is
    procedure Create_Mapping_File
      (Project : Project_Id;
       In_Tree : Project_Tree_Ref;
-      Name    : out Name_Id);
+      Name    : out Path_Name_Type);
    --  Create a temporary mapping file for project Project. For each unit
    --  in the closure of immediate sources of Project, put the mapping of
    --  its spec and or body to its file name and path name in this file.
@@ -135,7 +135,7 @@ package Prj.Env is
      (Source_File_Name : String;
       In_Tree          : Project_Tree_Ref;
       Project          : out Project_Id;
-      Path             : out Name_Id);
+      Path             : out File_Name_Type);
    --  Returns the project of a source and its path in displayable form
 
    generic
