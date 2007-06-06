@@ -1,3 +1,30 @@
+2007-06-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (sse4_2_pcmpestr_cconly): Prefer pcmpestrm
+	as flags setting insn.
+	(sse4_2_pcmpistr_cconly): Prefer pcmpistrm as flags setting insn.
+
+2007-06-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (UNSPEC_ROUNDP, UNSPEC_ROUNDS): Remove.
+	(UNSPEC_ROUND): New.
+	("sse4_1_round<mode>2"): New insn pattern.
+	("rint<mode>2"): Expand using "sse4_1_round<mode>2" pattern for
+	SSE4.1 targets.
+	("floor<mode>2"): Rename from floordf2 and floorsf2.  Macroize
+	expander using SSEMODEF mode macro.  Expand using
+	"sse4_1_round<mode>2" pattern for SSE4.1 targets.
+	("ceil<mode>2"): Rename from ceildf2 and ceilsf2.  Macroize
+	expander using SSEMODEF mode macro.  Expand using
+	"sse4_1_round<mode>2" pattern for SSE4.1 targets.
+	("btrunc<mode>2"): Rename from btruncdf2 and btruncsf2.  Macroize
+	expander using SSEMODEF mode macro.  Expand using
+	"sse4_1_round<mode>2" pattern for SSE4.1 targets.
+	* config/i386/sse.md ("sse4_1_roundpd", "sse4_1_roundps"): Use
+	UNSPEC_ROUND instead of UNSPEC_ROUNDP.
+	("sse4_1_roundsd", "sse4_1_roundss"): Use UNSPEC_ROUND instead of
+	UNSPEC_ROUNDS.
+
 2007-06-06  Jan Sjodin  <jan.sjodin@amd.com>
 	    Sebastian Pop  <sebpop@gmail.com>
 
@@ -53,7 +80,8 @@
 	* cfgexpand (label_rtx_for_bb): Likewise.
 	(expand_gimple_basic_block): Likewise.
 	* cfghooks.c (dump_bb): Likewise.
-	(lv_adjust_loop_header_phi): Avoid using C++ keywords as variable names.
+	(lv_adjust_loop_header_phi): Avoid using C++ keywords as
+	variable names.
 	(lv_add_condition_to_bb): Likewise.
 	* cfglayout (relink_block_chain): Cast according to the coding
 	conventions.
@@ -64,7 +92,8 @@
 	(dump_recorded_exit): Likewise.
 	* cfgloop.h (enum loop_estimation): Move out of struct scope...
 	(struct loop): ... from here.
-	* cfgloopmanip.c (rpe_enum_p): Cast according to the coding conventions.
+	* cfgloopmanip.c (rpe_enum_p): Cast according to the coding
+	conventions.
 	* cfgrtl.c (rtl_create_basic_block): Likewise.
 	(rtl_split_block): Likewise.
 	(rtl_dump_bb): Likewise.
