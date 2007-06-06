@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1996-2005 Free Software Foundation, Inc.           --
+--         Copyright (C) 1996-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,10 +32,9 @@
 ------------------------------------------------------------------------------
 
 with System;                 use System;
-with System.Pure_Exceptions; use System.Pure_Exceptions;
 with System.Unsigned_Types;  use System.Unsigned_Types;
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.Bit_Ops is
 
@@ -51,7 +50,7 @@ package body System.Bit_Ops is
    type Bits is access Bits_Array;
    --  This is the actual type into which address values are converted
 
-   function To_Bits is new Unchecked_Conversion (Address, Bits);
+   function To_Bits is new Ada.Unchecked_Conversion (Address, Bits);
 
    LE : constant := Standard'Default_Bit_Order;
    --  Static constant set to 0 for big-endian, 1 for little-endian
@@ -212,7 +211,7 @@ package body System.Bit_Ops is
 
    procedure Raise_Error is
    begin
-      Raise_Exception (CE, "unequal lengths in logical operation");
+      raise Constraint_Error with "unequal lengths in logical operation";
    end Raise_Error;
 
 end System.Bit_Ops;
