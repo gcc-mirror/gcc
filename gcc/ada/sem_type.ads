@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -207,8 +207,9 @@ package Sem_Type is
      (Typ   : Entity_Id;
       Iface : Entity_Id) return Boolean;
    --  Ada 2005 (AI-251): Typ must be a tagged record type/subtype and Iface
-   --  must be an abstract interface type. This function is used to check if
-   --  Typ or some ancestor of Typ implements Iface.
+   --  must be an abstract interface type (or a class-wide abstract interface).
+   --  This function is used to check if Typ or some ancestor of Typ implements
+   --  Iface (returning True only if so).
 
    function Intersect_Types (L, R : Node_Id) return Entity_Id;
    --  Find the common interpretation to two analyzed nodes. If one of the
