@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,6 @@ with Ada.Tags;
 
 with System.Soft_Links;
 
-with Unchecked_Conversion;
 with System.Restrictions;
 
 package body System.Finalization_Implementation is
@@ -55,17 +54,17 @@ package body System.Finalization_Implementation is
    type RC_Ptr is access all Record_Controller;
 
    function To_RC_Ptr is
-     new Unchecked_Conversion (Address, RC_Ptr);
+     new Ada.Unchecked_Conversion (Address, RC_Ptr);
 
-   procedure Raise_Exception_No_Defer
-     (E       : Exception_Id;
-      Message : String := "");
-   pragma Import (Ada, Raise_Exception_No_Defer,
-     "ada__exceptions__raise_exception_no_defer");
-   pragma No_Return (Raise_Exception_No_Defer);
-   --  Raise an exception without deferring abort. Note that we have to
-   --  use this rather kludgy Ada Import interface, since this subprogram
-   --  is not available in the visible spec of Ada.Exceptions.
+   procedure Raise_From_Controlled_Operation (X : Exception_Occurrence);
+   pragma Import
+     (Ada, Raise_From_Controlled_Operation,
+      "ada__exceptions__raise_from_controlled_operation");
+   pragma No_Return (Raise_From_Controlled_Operation);
+   --  Raise Program_Error from an exception that occurred during an Adjust or
+   --  Finalize operation. We use this rather kludgy Ada Import interface
+   --  because this procedure is not available in the visible part of the
+   --  Ada.Exceptions spec.
 
    procedure Raise_From_Finalize
      (L          : Finalizable_Ptr;
@@ -335,7 +334,7 @@ package body System.Finalization_Implementation is
       type Ptr is access all Fake_Exception_Occurence;
 
       function To_Ptr is new
-        Unchecked_Conversion (Exception_Occurrence_Access, Ptr);
+        Ada.Unchecked_Conversion (Exception_Occurrence_Access, Ptr);
 
       X :  Exception_Id := Null_Id;
 
@@ -437,7 +436,7 @@ package body System.Finalization_Implementation is
 
             type Obj_Ptr is access all Faked_Type_Of_Obj;
             function To_Obj_Ptr is
-              new Unchecked_Conversion (Address, Obj_Ptr);
+              new Ada.Unchecked_Conversion (Address, Obj_Ptr);
 
          begin
             return To_RC_Ptr (To_Obj_Ptr (Obj).Controller'Address);
@@ -497,7 +496,6 @@ package body System.Finalization_Implementation is
       From_Abort : Boolean;
       E_Occ      : Exception_Occurrence)
    is
-      Msg : constant String := Exception_Message (E_Occ);
       P   : Finalizable_Ptr := L;
       Q   : Finalizable_Ptr;
 
@@ -517,24 +515,15 @@ package body System.Finalization_Implementation is
          P := Q;
       end loop;
 
-      --  If finalization from an Abort, then nothing to do
-
       if From_Abort then
+         --  If finalization from an Abort, then nothing to do
+
          null;
 
-      --  If no message, then add our own message saying what happened
-
-      elsif Msg = "" then
-         Raise_Exception_No_Defer
-           (E       => Program_Error'Identity,
-            Message => "exception " &
-                       Exception_Name (E_Occ) &
-                       " raised during finalization");
-
-      --  If there was a message, pass it on
-
       else
-         Raise_Exception_No_Defer (Program_Error'Identity, Msg);
+         --  Else raise Program_Error with an appropriate message
+
+         Raise_From_Controlled_Operation (E_Occ);
       end if;
    end Raise_From_Finalize;
 
