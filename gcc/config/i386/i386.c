@@ -2219,6 +2219,33 @@ override_options (void)
 	error ("pc%d is not valid precision setting (32, 64 or 80)", i);
     }
 
+  if (TARGET_64BIT)
+    {
+      target_flags |= TARGET_SUBTARGET64_DEFAULT & ~target_flags_explicit;
+
+      /* Enable by default the SSE and MMX builtins.  Do allow the user to
+	 explicitly disable any of these.  In particular, disabling SSE and
+	 MMX for kernel code is extremely useful.  */
+      ix86_isa_flags
+	|= ((OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX
+	     | TARGET_SUBTARGET64_ISA_DEFAULT) & ~ix86_isa_flags_explicit);
+
+      if (TARGET_RTD)
+	warning (0, "-mrtd is ignored in 64bit mode");
+    }
+  else
+    {
+      target_flags |= TARGET_SUBTARGET32_DEFAULT & ~target_flags_explicit;
+
+      ix86_isa_flags
+	|= TARGET_SUBTARGET32_ISA_DEFAULT & ~ix86_isa_flags_explicit;
+
+      /* i386 ABI does not specify red zone.  It still makes sense to use it
+         when programmer takes care to stack from being destroyed.  */
+      if (!(target_flags_explicit & MASK_NO_RED_ZONE))
+        target_flags |= MASK_NO_RED_ZONE;
+    }
+
   /* Keep nonleaf frame pointers.  */
   if (flag_omit_frame_pointer)
     target_flags &= ~MASK_OMIT_LEAF_FRAME_POINTER;
@@ -2281,33 +2308,6 @@ override_options (void)
   /* Turn on POPCNT builtins for -mabm.  */
   if (TARGET_ABM)
     x86_popcnt = true;
-
-  if (TARGET_64BIT)
-    {
-      target_flags |= TARGET_SUBTARGET64_DEFAULT & ~target_flags_explicit;
-
-      /* Enable by default the SSE and MMX builtins.  Do allow the user to
-	 explicitly disable any of these.  In particular, disabling SSE and
-	 MMX for kernel code is extremely useful.  */
-      ix86_isa_flags
-	|= ((OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_MMX
-	     | TARGET_SUBTARGET64_ISA_DEFAULT) & ~ix86_isa_flags_explicit);
-
-      if (TARGET_RTD)
-	warning (0, "-mrtd is ignored in 64bit mode");
-    }
-  else
-    {
-      target_flags |= TARGET_SUBTARGET32_DEFAULT & ~target_flags_explicit;
-
-      ix86_isa_flags
-	|= TARGET_SUBTARGET32_ISA_DEFAULT & ~ix86_isa_flags_explicit;
-
-      /* i386 ABI does not specify red zone.  It still makes sense to use it
-         when programmer takes care to stack from being destroyed.  */
-      if (!(target_flags_explicit & MASK_NO_RED_ZONE))
-        target_flags |= MASK_NO_RED_ZONE;
-    }
 
   /* Validate -mpreferred-stack-boundary= value, or provide default.
      The default of 128 bits is for Pentium III's SSE __m128.  We can't
