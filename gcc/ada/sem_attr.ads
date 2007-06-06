@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@
 --  This spec also documents all GNAT implementation defined pragmas
 
 with Exp_Tss; use Exp_Tss;
+with Namet;   use Namet;
 with Snames;  use Snames;
 with Types;   use Types;
 
@@ -540,6 +541,19 @@ package Sem_Attr is
    --  parser has already checked that type returning attributes appear only
    --  in appropriate contexts (i.e. in subtype marks, or as prefixes for
    --  other attributes).
+
+   function Name_Modifies_Prefix (Nam : Name_Id) return Boolean;
+   --  Determine whether the name of an attribute reference modifies the
+   --  contents of its prefix. "Read" is such an attribute.
+
+   function Requires_Simple_Name_Prefix (Nam : Name_Id) return Boolean;
+   --  Determine whether the name of an attribute reference requires a simple
+   --  name rather than a value as its prefix. Such prefixes do not need to be
+   --  optimized. For instance in the following example:
+   --     I : constant Integer := 5;
+   --     S : constant Integer := I'Size;
+   --  "Size" requires a simple name prefix since "5'Size" does not make
+   --  sense.
 
    procedure Resolve_Attribute (N : Node_Id; Typ : Entity_Id);
    --  Performs type resolution of attribute. If the attribute yields a
