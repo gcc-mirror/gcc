@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,12 +41,16 @@
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
 with Interfaces.C;
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package System.OS_Interface is
    pragma Preelaborate;
 
-   pragma Linker_Options ("-lpthreads");
+   pragma Linker_Options ("-pthread");
+   --  This implies -lpthreads + other things depending on the GCC
+   --  configuration, such as the selection of a proper libgcc variant
+   --  for table-based exception handling when it is available.
+
    pragma Linker_Options ("-lc_r");
 
    subtype int            is Interfaces.C.int;
@@ -131,9 +135,11 @@ package System.OS_Interface is
    SIGSOUND    : constant := 62; -- sound control has completed
    SIGSAK      : constant := 63; -- secure attention key
 
-   SIGADAABORT : constant := SIGTERM;
+   SIGADAABORT : constant := SIGEMT;
    --  Note: on other targets, we usually use SIGABRT, but on AIX, it appears
-   --  that SIGABRT can't be used in sigwait(), so we use SIGTERM.
+   --  that SIGABRT can't be used in sigwait(), so we use SIGEMT.
+   --  SIGEMT is "Emulator Trap Instruction" from the PDP-11, and does not
+   --  have a standardized usage.
 
    type Signal_Set is array (Natural range <>) of Signal;
 
@@ -186,8 +192,8 @@ package System.OS_Interface is
    -- Time --
    ----------
 
-   Time_Slice_Supported : constant Boolean := False;
-   --  Indicates wether time slicing is supported
+   Time_Slice_Supported : constant Boolean := True;
+   --  Indicates whether time slicing is supported
 
    type timespec is private;
 
@@ -262,7 +268,7 @@ package System.OS_Interface is
      function (arg : System.Address) return System.Address;
 
    function Thread_Body_Access is new
-     Unchecked_Conversion (System.Address, Thread_Body);
+     Ada.Unchecked_Conversion (System.Address, Thread_Body);
 
    type pthread_t           is private;
    subtype Thread_Id        is pthread_t;
