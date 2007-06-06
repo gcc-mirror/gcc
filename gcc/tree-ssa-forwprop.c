@@ -370,12 +370,14 @@ combine_cond_expr_cond (enum tree_code code, tree type,
 }
 
 /* Propagate from the ssa name definition statements of COND_EXPR
-   in statement STMT into the conditional if that simplifies it.  */
+   in statement STMT into the conditional if that simplifies it.
+   Returns zero if no statement was changed, one if there were
+   changes and two if cfg_cleanup needs to run.  */
 
-static bool
+static int
 forward_propagate_into_cond (tree cond_expr, tree stmt)
 {
-  bool did_something = false;
+  int did_something = 0;
 
   do {
     tree tmp = NULL_TREE;
@@ -449,7 +451,10 @@ forward_propagate_into_cond (tree cond_expr, tree stmt)
 	/* Remove defining statements.  */
 	remove_prop_source_from_use (name, NULL);
 
-	did_something = true;
+	if (is_gimple_min_invariant (tmp))
+	  did_something = 2;
+	else if (did_something == 0)
+	  did_something = 1;
 
 	/* Continue combining.  */
 	continue;
@@ -1014,9 +1019,11 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		}
               else if (TREE_CODE (rhs) == COND_EXPR)
                 {
-		  bool did_something;
+		  int did_something;
 		  fold_defer_overflow_warnings ();
                   did_something = forward_propagate_into_cond (rhs, stmt);
+		  if (did_something == 2)
+		    cfg_changed = true;
 		  fold_undefer_overflow_warnings (!TREE_NO_WARNING (rhs)
 		    && did_something, stmt, WARN_STRICT_OVERFLOW_CONDITIONAL);
 		  bsi_next (&bsi);
@@ -1042,9 +1049,11 @@ tree_ssa_forward_propagate_single_use_vars (void)
 	    }
 	  else if (TREE_CODE (stmt) == COND_EXPR)
 	    {
-	      bool did_something;
+	      int did_something;
 	      fold_defer_overflow_warnings ();
 	      did_something = forward_propagate_into_cond (stmt, stmt);
+	      if (did_something == 2)
+		cfg_changed = true;
 	      fold_undefer_overflow_warnings (!TREE_NO_WARNING (stmt)
 					      && did_something, stmt,
 					      WARN_STRICT_OVERFLOW_CONDITIONAL);
