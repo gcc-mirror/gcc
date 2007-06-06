@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2006, AdaCore                     --
+--                     Copyright (C) 2002-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,7 +41,6 @@ with GNAT.OS_Lib;  use GNAT.OS_Lib;
 with GNAT.Task_Lock;
 
 with Interfaces.C; use Interfaces.C;
-with Unchecked_Conversion;
 
 package body GNAT.Sockets.Thin is
 
@@ -57,31 +56,12 @@ package body GNAT.Sockets.Thin is
    --  been set in non-blocking mode by the user.
 
    Quantum : constant Duration := 0.2;
-   --  When Thread_Blocking_IO is False, we set sockets in
+   --  When Constants.Thread_Blocking_IO is False, we set sockets in
    --  non-blocking mode and we spend a period of time Quantum between
    --  two attempts on a blocking operation.
 
-   Thread_Blocking_IO : Boolean := True;
-
    Unknown_System_Error : constant C.Strings.chars_ptr :=
                             C.Strings.New_String ("Unknown system error");
-
-   --  The following types and variables are required to create a Hostent
-   --  record "by hand".
-
-   type In_Addr_Access_Array_Access is access In_Addr_Access_Array;
-
-   Alias_Access : constant Chars_Ptr_Pointers.Pointer :=
-                    new C.Strings.chars_ptr'(C.Strings.Null_Ptr);
-
-   In_Addr_Access_Array_A : constant In_Addr_Access_Array_Access :=
-                              new In_Addr_Access_Array'(new In_Addr, null);
-
-   In_Addr_Access_Ptr : constant In_Addr_Access_Pointers.Pointer :=
-                          In_Addr_Access_Array_A
-                            (In_Addr_Access_Array_A'First)'Access;
-
-   Local_Hostent : constant Hostent_Access := new Hostent;
 
    -----------------------
    -- Local Subprograms --
@@ -166,14 +146,14 @@ package body GNAT.Sockets.Thin is
    begin
       loop
          R := Syscall_Accept (S, Addr, Addrlen);
-         exit when Thread_Blocking_IO
+         exit when Constants.Thread_Blocking_IO
            or else R /= Failure
            or else Non_Blocking_Socket (S)
            or else Errno /= Constants.EWOULDBLOCK;
          delay Quantum;
       end loop;
 
-      if not Thread_Blocking_IO
+      if not Constants.Thread_Blocking_IO
         and then R /= Failure
       then
          --  A socket inherits the properties ot its server especially
@@ -202,7 +182,7 @@ package body GNAT.Sockets.Thin is
    begin
       Res := Syscall_Connect (S, Name, Namelen);
 
-      if Thread_Blocking_IO
+      if Constants.Thread_Blocking_IO
         or else Res /= Failure
         or else Non_Blocking_Socket (S)
         or else Errno /= Constants.EINPROGRESS
@@ -251,97 +231,6 @@ package body GNAT.Sockets.Thin is
       end if;
    end C_Connect;
 
-   ---------------------
-   -- C_Gethostbyaddr --
-   ---------------------
-
-   function C_Gethostbyaddr
-     (Addr : System.Address;
-      Len  : C.int;
-      Typ  : C.int) return Hostent_Access
-   is
-      pragma Warnings (Off, Len);
-      pragma Warnings (Off, Typ);
-
-      type int_Access is access int;
-      function To_Pointer is
-        new Unchecked_Conversion (System.Address, int_Access);
-
-      function VxWorks_hostGetByAddr
-        (Addr : C.int; Buf : System.Address) return C.int;
-      pragma Import (C, VxWorks_hostGetByAddr, "hostGetByAddr");
-
-      Host_Name : aliased C.char_array (1 .. Max_Name_Length);
-
-   begin
-      if VxWorks_hostGetByAddr (To_Pointer (Addr).all,
-                                Host_Name (Host_Name'First)'Address)
-           /= Constants.OK
-      then
-         return null;
-      end if;
-
-      In_Addr_Access_Ptr.all.all := To_In_Addr (To_Pointer (Addr).all);
-      Local_Hostent.all.H_Name := C.Strings.New_Char_Array (Host_Name);
-
-      return Local_Hostent;
-   end C_Gethostbyaddr;
-
-   ---------------------
-   -- C_Gethostbyname --
-   ---------------------
-
-   function C_Gethostbyname
-     (Name : C.char_array) return Hostent_Access
-   is
-      function VxWorks_hostGetByName
-        (Name : C.char_array) return C.int;
-      pragma Import (C, VxWorks_hostGetByName, "hostGetByName");
-
-      Addr : C.int;
-
-   begin
-      Addr := VxWorks_hostGetByName (Name);
-      if Addr = Constants.ERROR then
-         return null;
-      end if;
-
-      In_Addr_Access_Ptr.all.all := To_In_Addr (Addr);
-      Local_Hostent.all.H_Name := C.Strings.New_Char_Array (To_C (Host_Name));
-
-      return Local_Hostent;
-   end C_Gethostbyname;
-
-   ---------------------
-   -- C_Getservbyname --
-   ---------------------
-
-   function C_Getservbyname
-     (Name  : C.char_array;
-      Proto : C.char_array) return Servent_Access
-   is
-      pragma Warnings (Off, Name);
-      pragma Warnings (Off, Proto);
-
-   begin
-      return null;
-   end C_Getservbyname;
-
-   ---------------------
-   -- C_Getservbyport --
-   ---------------------
-
-   function C_Getservbyport
-     (Port  : C.int;
-      Proto : C.char_array) return Servent_Access
-   is
-      pragma Warnings (Off, Port);
-      pragma Warnings (Off, Proto);
-
-   begin
-      return null;
-   end C_Getservbyport;
-
    -------------
    -- C_Ioctl --
    -------------
@@ -352,7 +241,7 @@ package body GNAT.Sockets.Thin is
       Arg  : Int_Access) return C.int
    is
    begin
-      if not Thread_Blocking_IO
+      if not Constants.Thread_Blocking_IO
         and then Req = Constants.FIONBIO
       then
          if Arg.all /= 0 then
@@ -378,7 +267,7 @@ package body GNAT.Sockets.Thin is
    begin
       loop
          Res := Syscall_Recv (S, Msg, Len, Flags);
-         exit when Thread_Blocking_IO
+         exit when Constants.Thread_Blocking_IO
            or else Res /= Failure
            or else Non_Blocking_Socket (S)
            or else Errno /= Constants.EWOULDBLOCK;
@@ -405,7 +294,7 @@ package body GNAT.Sockets.Thin is
    begin
       loop
          Res := Syscall_Recvfrom (S, Msg, Len, Flags, From, Fromlen);
-         exit when Thread_Blocking_IO
+         exit when Constants.Thread_Blocking_IO
            or else Res /= Failure
            or else Non_Blocking_Socket (S)
            or else Errno /= Constants.EWOULDBLOCK;
@@ -430,7 +319,7 @@ package body GNAT.Sockets.Thin is
    begin
       loop
          Res := Syscall_Send (S, Msg, Len, Flags);
-         exit when Thread_Blocking_IO
+         exit when Constants.Thread_Blocking_IO
            or else Res /= Failure
            or else Non_Blocking_Socket (S)
            or else Errno /= Constants.EWOULDBLOCK;
@@ -457,7 +346,7 @@ package body GNAT.Sockets.Thin is
    begin
       loop
          Res := Syscall_Sendto (S, Msg, Len, Flags, To, Tolen);
-         exit when Thread_Blocking_IO
+         exit when Constants.Thread_Blocking_IO
            or else Res /= Failure
            or else Non_Blocking_Socket (S)
            or else Errno /= Constants.EWOULDBLOCK;
@@ -485,7 +374,7 @@ package body GNAT.Sockets.Thin is
    begin
       R := Syscall_Socket (Domain, Typ, Protocol);
 
-      if not Thread_Blocking_IO
+      if not Constants.Thread_Blocking_IO
         and then R /= Failure
       then
          --  Do not use C_Ioctl as this subprogram tracks sockets set
@@ -508,13 +397,19 @@ package body GNAT.Sockets.Thin is
       null;
    end Finalize;
 
+   -------------------------
+   -- Host_Error_Messages --
+   -------------------------
+
+   package body Host_Error_Messages is separate;
+
    ----------------
    -- Initialize --
    ----------------
 
-   procedure Initialize (Process_Blocking_IO : Boolean) is
+   procedure Initialize is
    begin
-      Thread_Blocking_IO := not Process_Blocking_IO;
+      null;
    end Initialize;
 
    -------------------------
@@ -539,7 +434,7 @@ package body GNAT.Sockets.Thin is
       Address : In_Addr)
    is
    begin
-      Sin.Sin_Addr   := Address;
+      Sin.Sin_Addr := Address;
    end Set_Address;
 
    ----------------
@@ -621,17 +516,5 @@ package body GNAT.Sockets.Thin is
          return C_Msg;
       end if;
    end Socket_Error_Message;
-
---  Package elaboration
-
-begin
-   Local_Hostent.all.H_Aliases   := Alias_Access;
-
-   --  VxWorks currently only supports AF_INET
-
-   Local_Hostent.all.H_Addrtype  := Constants.AF_INET;
-
-   Local_Hostent.all.H_Length    := 1;
-   Local_Hostent.all.H_Addr_List := In_Addr_Access_Ptr;
 
 end GNAT.Sockets.Thin;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2002-2006, AdaCore                     --
+--                     Copyright (C) 2002-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,8 +40,8 @@
 with Interfaces.C.Pointers;
 with Interfaces.C.Strings;
 
-with GNAT.Sockets.Constants;
 with GNAT.OS_Lib;
+with GNAT.Sockets.Constants;
 
 with System;
 
@@ -65,11 +65,20 @@ package GNAT.Sockets.Thin is
 
    function Socket_Error_Message (Errno : Integer) return C.Strings.chars_ptr;
    --  Returns the error message string for the error number Errno. If Errno is
-   --  not known it returns "Unknown system error".
+   --  not known, returns "Unknown system error".
 
    function Host_Errno return Integer;
    pragma Import (C, Host_Errno, "__gnat_get_h_errno");
    --  Returns last host error number
+
+   package Host_Error_Messages is
+
+      function Host_Error_Message
+        (H_Errno : Integer) return C.Strings.chars_ptr;
+      --  Returns the error message string for the host error number H_Errno.
+      --  If H_Errno is not known, returns "Unknown system error".
+
+   end Host_Error_Messages;
 
    subtype Fd_Set_Access is System.Address;
    No_Fd_Set : constant Fd_Set_Access := System.Null_Address;
@@ -112,8 +121,11 @@ package GNAT.Sockets.Thin is
    type In_Addr is record
       S_B1, S_B2, S_B3, S_B4 : C.unsigned_char;
    end record;
+   for In_Addr'Alignment use C.int'Alignment;
    pragma Convention (C, In_Addr);
-   --  Internet address
+   --  IPv4 address, represented as a network-order C.int. Note that the
+   --  underlying operating system may assume that values of this type have
+   --  C.int alignment, so we need to provide a suitable alignment clause here.
 
    type In_Addr_Access is access all In_Addr;
    pragma Convention (C, In_Addr_Access);
@@ -220,6 +232,10 @@ package GNAT.Sockets.Thin is
    --  Indices into an Fd_Pair value providing access to each of the connected
    --  file descriptors.
 
+   --------------------------------
+   -- Standard library functions --
+   --------------------------------
+
    function C_Accept
      (S       : C.int;
       Addr    : System.Address;
@@ -238,14 +254,6 @@ package GNAT.Sockets.Thin is
       Name    : System.Address;
       Namelen : C.int) return C.int;
 
-   function C_Gethostbyaddr
-     (Addr : System.Address;
-      Len  : C.int;
-      Typ  : C.int) return Hostent_Access;
-
-   function C_Gethostbyname
-     (Name : C.char_array) return Hostent_Access;
-
    function C_Gethostname
      (Name    : System.Address;
       Namelen : C.int) return C.int;
@@ -254,14 +262,6 @@ package GNAT.Sockets.Thin is
      (S       : C.int;
       Name    : System.Address;
       Namelen : not null access C.int) return C.int;
-
-   function C_Getservbyname
-     (Name  : C.char_array;
-      Proto : C.char_array) return Servent_Access;
-
-   function C_Getservbyport
-     (Port  : C.int;
-      Proto : C.char_array) return Servent_Access;
 
    function C_Getsockname
      (S       : C.int;
@@ -354,6 +354,10 @@ package GNAT.Sockets.Thin is
       Iov    : System.Address;
       Iovcnt : C.int) return C.int;
 
+   -------------------------------------------------------
+   -- Signalling file descriptors for selector abortion --
+   -------------------------------------------------------
+
    package Signalling_Fds is
 
       function Create (Fds : not null access Fd_Pair) return C.int;
@@ -371,7 +375,15 @@ package GNAT.Sockets.Thin is
       --  Write one byte of data to wsig, the write end of a pair of signalling
       --  fds created by Create_Signalling_Fds.
 
+      procedure Close (Sig : C.int);
+      pragma Convention (C, Close);
+      --  Close one end of a pair of signalling fds (ignoring any error)
+
    end Signalling_Fds;
+
+   ----------------------------
+   -- Socket sets management --
+   ----------------------------
 
    procedure Free_Socket_Set
      (Set : Fd_Set_Access);
@@ -381,11 +393,11 @@ package GNAT.Sockets.Thin is
      (Set    : Fd_Set_Access;
       Socket : Int_Access;
       Last   : Int_Access);
-   --  Get last socket in Socket and remove it from the socket
-   --  set. The parameter Last is a maximum value of the largest
-   --  socket. This hint is used to avoid scanning very large socket
-   --  sets. After a call to Get_Socket_From_Set, Last is set back to
-   --  the real largest socket in the socket set.
+   --  Get last socket in Socket and remove it from the socket set. The
+   --  parameter Last is a maximum value of the largest socket. This hint is
+   --  used to avoid scanning very large socket sets. After a call to
+   --  Get_Socket_From_Set, Last is set back to the real largest socket in the
+   --  socket set.
 
    procedure Insert_Socket_In_Set
      (Set    : Fd_Set_Access;
@@ -418,19 +430,35 @@ package GNAT.Sockets.Thin is
       Socket : C.int);
    --  Remove socket from the socket set
 
+   -------------------------------------------
+   -- Nonreentrant network databases access --
+   -------------------------------------------
+
+   function Nonreentrant_Gethostbyname
+     (Name : C.char_array) return Hostent_Access;
+
+   function Nonreentrant_Gethostbyaddr
+     (Addr      : System.Address;
+      Addr_Len  : C.int;
+      Addr_Type : C.int) return Hostent_Access;
+
+   function Nonreentrant_Getservbyname
+     (Name  : C.char_array;
+      Proto : C.char_array) return Servent_Access;
+
+   function Nonreentrant_Getservbyport
+     (Port  : C.int;
+      Proto : C.char_array) return Servent_Access;
+
+   procedure Initialize;
    procedure Finalize;
-   procedure Initialize (Process_Blocking_IO : Boolean);
 
 private
 
    pragma Import (C, C_Bind,          "DECC$BIND");
    pragma Import (C, C_Close,         "DECC$CLOSE");
-   pragma Import (C, C_Gethostbyaddr, "DECC$GETHOSTBYADDR");
-   pragma Import (C, C_Gethostbyname, "DECC$GETHOSTBYNAME");
    pragma Import (C, C_Gethostname,   "DECC$GETHOSTNAME");
    pragma Import (C, C_Getpeername,   "DECC$GETPEERNAME");
-   pragma Import (C, C_Getservbyname, "DECC$GETSERVBYNAME");
-   pragma Import (C, C_Getservbyport, "DECC$GETSERVBYPORT");
    pragma Import (C, C_Getsockname,   "DECC$GETSOCKNAME");
    pragma Import (C, C_Getsockopt,    "DECC$GETSOCKOPT");
    pragma Import (C, C_Inet_Addr,     "DECC$INET_ADDR");
@@ -448,5 +476,10 @@ private
    pragma Import (C, New_Socket_Set, "__gnat_new_socket_set");
    pragma Import (C, Insert_Socket_In_Set, "__gnat_insert_socket_in_set");
    pragma Import (C, Remove_Socket_From_Set, "__gnat_remove_socket_from_set");
+
+   pragma Import (C, Nonreentrant_Gethostbyname, "DECC$GETHOSTBYNAME");
+   pragma Import (C, Nonreentrant_Gethostbyaddr, "DECC$GETHOSTBYADDR");
+   pragma Import (C, Nonreentrant_Getservbyname, "DECC$GETSERVBYNAME");
+   pragma Import (C, Nonreentrant_Getservbyport, "DECC$GETSERVBYPORT");
 
 end GNAT.Sockets.Thin;

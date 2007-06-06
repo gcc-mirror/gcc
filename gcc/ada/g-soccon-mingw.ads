@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -177,5 +177,30 @@ package GNAT.Sockets.Constants is
 
    SIZEOF_tv_sec      : constant :=           4; --  tv_sec
    SIZEOF_tv_usec     : constant :=           4; --  tv_usec
+
+   ----------------------------------------
+   -- Properties of supported interfaces --
+   ----------------------------------------
+
+   Need_Netdb_Buffer  : constant :=           0; --  Need buffer for Netdb ops
+
+   ----------------------
+   -- Additional flags --
+   ----------------------
+
+   Thread_Blocking_IO : constant Boolean := True;
+   --  Set False for contexts where socket i/o are process blocking
+
+   ------------------------------
+   -- MinGW-specific constants --
+   ------------------------------
+
+   --  These constants may be used only within the MinGW version of
+   --  GNAT.Sockets.Thin.
+
+   WSASYSNOTREADY     : constant :=       10091; --  System not ready
+   WSAVERNOTSUPPORTED : constant :=       10092; --  Version not supported
+   WSANOTINITIALISED  : constant :=       10093; --  Winsock not intialized
+   WSAEDISCON         : constant :=       10101; --  Disconnected
 
 end GNAT.Sockets.Constants;
