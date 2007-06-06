@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,6 +56,16 @@ package Exp_Ch11 is
    --  is also called to expand the special exception handler built for
    --  accept bodies (see Exp_Ch9.Build_Accept_Body).
 
+   function Find_Local_Handler
+     (Ename : Entity_Id;
+      Nod   : Node_Id) return Node_Id;
+   --  This function searches for a local exception handler that will handle
+   --  the exception named by Ename. If such a local hander exists, then the
+   --  corresponding N_Exception_Handler is returned. If no such handler is
+   --  found then Empty is returned. In order to match and return True, the
+   --  handler may not have a choice parameter specification. Nod is the raise
+   --  node that references the handler.
+
    function Get_Local_Raise_Call_Entity return Entity_Id;
    --  This function is provided for use by the back end in conjunction with
    --  generation of Local_Raise calls when an exception raise is converted to
@@ -73,5 +83,13 @@ package Exp_Ch11 is
    --  This function is provided for Gigi use. It returns True if operating on
    --  VMS, and the argument E is the entity for System.Aux_Dec.Non_Ada_Error.
    --  This is used to generate the special matching code for this exception.
+
+   procedure Possible_Local_Raise (N : Node_Id; E : Entity_Id);
+   --  This procedure is called whenever node N might cause the back end
+   --  to generate a local raise for a local Constraint/Program/Storage_Error
+   --  exception. It deals with generating a warning if there is no local
+   --  handler (and restriction No_Exception_Propagation is set), or if there
+   --  is a local handler marking that it has a local raise. E is the entity
+   --  of the corresponding exception.
 
 end Exp_Ch11;
