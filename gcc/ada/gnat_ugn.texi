@@ -1,13 +1,12 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
-
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 @c                                                                            o
 @c                            GNAT DOCUMENTATION                              o
 @c                                                                            o
 @c                             G N A T _ U G N                                o
 @c                                                                            o
-@c                     Copyright (C) 1992-2006, AdaCore                       o
+@c                     Copyright (C) 1992-2007, AdaCore                       o
 @c                                                                            o
 @c  GNAT is free software;  you can  redistribute it  and/or modify it under  o
 @c  terms of the  GNU General Public License as published  by the Free Soft-  o
@@ -77,16 +76,23 @@
 @c
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
-@ifset vms
-@setfilename gnat_ugn_vms.info
-@end ifset
+@setfilename gnat_ugn.info
+
+@set NOW January 2007
+@c This flag is used where the text refers to conditions that exist when the
+@c text was entered into the document but which may change over time.
+@c Update the setting for the flag, and (if necessary) the text surrounding,
+@c the references to the flag, on future doc revisions:
+@c search for @value{NOW}.
+
+@set FSFEDITION
+@set EDITION GNAT
+@set DEFAULTLANGUAGEVERSION Ada 2005
+@set NONDEFAULTLANGUAGEVERSION Ada 95
 
 @ifset unw
 @setfilename gnat_ugn_unw.info
 @end ifset
-
-@set FSFEDITION
-@set EDITION GNAT
 
 @ifset unw
 @set PLATFORM
@@ -132,9 +138,13 @@ A copy of the license is included in the section entitled
 @titlefont{@i{@value{PLATFORM}}}
 @end flushright
 @end ifset
-@subtitle GNAT, The GNU Ada 95 Compiler
+
+@sp 2
+
+@subtitle GNAT, The GNU Ada Compiler
 @versionsubtitle
-@author Ada Core Technologies, Inc.
+@author AdaCore
+
 @page
 @vskip 0pt plus 1filll
 
@@ -150,7 +160,7 @@ A copy of the license is included in the section entitled
 @value{EDITION} User's Guide @value{PLATFORM}
 
 @noindent
-GNAT, The GNU Ada 95 Compiler@*
+GNAT, The GNU Ada Compiler@*
 GCC version @value{version-GCC}@*
 
 @noindent
@@ -185,7 +195,7 @@ AdaCore@*
 @end ifclear
 * Memory Management Issues::
 * Stack Related Facilities::
-* Verifying properties using gnatcheck::
+* Verifying Properties Using gnatcheck::
 * Creating Sample Bodies Using gnatstub::
 * Other Utility Programs::
 * Running and Debugging Ada Programs::
@@ -223,7 +233,6 @@ Getting Started with GNAT
 @end ifset
 @ifclear vms
 * Introduction to GPS::
-* Introduction to Glide and GVD::
 @end ifclear
 
 The GNAT Compilation Model
@@ -478,14 +487,16 @@ The gnatmem Tool
 * Example of gnatmem Usage::
 @end ifclear
 
-Verifying properties using gnatcheck
+Verifying Properties Using gnatcheck
 
 * Format of the Report File::
 * General gnatcheck Switches::
 * gnatcheck Rule Options::
-* Add the Results of Compiler Checks to gnatcheck Output::
+* Adding the Results of Compiler Checks to gnatcheck Output::
+* Project-Wide Checks::
+* Predefined Rules::
 
- Sample Bodies Using gnatstub
+Sample Bodies Using gnatstub
 
 * Running gnatstub::
 * Switches for gnatstub::
@@ -494,9 +505,6 @@ Other Utility Programs
 
 * Using Other Utility Programs with GNAT::
 * The External Symbol Naming Scheme of GNAT::
-@ifclear vms
-* Ada Mode for Glide::
-@end ifclear
 * Converting Ada Files to html with gnathtml::
 
 Running and Debugging Ada Programs
@@ -522,7 +530,7 @@ Running and Debugging Ada Programs
 @ifset vms
 Compatibility with HP Ada
 
-* Ada 95 Compatibility::
+* Ada Language Compatibility::
 * Differences in the Definition of Package System::
 * Language-Related Features::
 * The Package STANDARD::
@@ -588,9 +596,9 @@ Example of Binder Output File
 
 Elaboration Order Handling in GNAT
 
-* Elaboration Code in Ada 95::
-* Checking the Elaboration Order in Ada 95::
-* Controlling the Elaboration Order in Ada 95::
+* Elaboration Code::
+* Checking the Elaboration Order::
+* Controlling the Elaboration Order::
 * Controlling Elaboration in GNAT - Internal Calls::
 * Controlling Elaboration in GNAT - External Calls::
 * Default Behavior in GNAT - Ensuring Safety::
@@ -614,13 +622,14 @@ Inline Assembler
 Compatibility and Porting Guide
 
 * Compatibility with Ada 83::
+* Compatibility between Ada 95 and Ada 2005::
 * Implementation-dependent characteristics::
 @ifclear vms
 @c This brief section is only in the non-VMS version
 @c The complete chapter on HP Ada issues is in the VMS version
 * Compatibility with HP Ada 83::
 @end ifclear
-* Compatibility with Other Ada 95 Systems::
+* Compatibility with Other Ada Systems::
 * Representation Clauses::
 @ifset vms
 * Transitioning to 64-Bit GNAT for OpenVMS::
@@ -653,22 +662,35 @@ Microsoft Windows Topics
 @noindent
 @ifset vms
 This guide describes the use of @value{EDITION},
-a full language compiler for the Ada
-95 programming language, implemented on OpenVMS for HP's Alpha and
+a compiler and software development toolset for the full Ada
+programming language, implemented on OpenVMS for HP's Alpha and
 Integrity server (I64) platforms.
 @end ifset
 @ifclear vms
 This guide describes the use of @value{EDITION},
 a compiler and software development
-toolset for the full Ada 95 programming language.
+toolset for the full Ada programming language.
 @end ifclear
-It describes the features of the compiler and tools, and details
-how to use them to build Ada 95 applications.
+It documents the features of the compiler and tools, and explains
+how to use them to build Ada applications.
 
-@ifset PROEDITION
-For ease of exposition, ``GNAT Pro'' will be referred to simply as
+@value{EDITION} implements Ada 95 and Ada 2005, and it may also be invoked in
+Ada 83 compatibility mode.
+By default, @value{EDITION} assumes @value{DEFAULTLANGUAGEVERSION},
+but you can override with a compiler switch
+(@pxref{Compiling Different Versions of Ada})
+to explicitly specify the language version.
+Throughout this manual, references to ``Ada'' without a year suffix
+apply to both the Ada 95 and Ada 2005 versions of the language.
+
+
+@ifclear FSFEDITION
+For ease of exposition, ``@value{EDITION}'' will be referred to simply as
 ``GNAT'' in the remainder of this document.
-@end ifset
+@end ifclear
+
+
+
 
 @menu
 * What This Guide Contains::
@@ -806,7 +828,7 @@ allocation and deallocation and helps detect ``memory leaks''.
 stack checking and analysis.
 
 @item
-@ref{Verifying properties using gnatcheck}, discusses @code{gnatcheck},
+@ref{Verifying Properties Using gnatcheck}, discusses @code{gnatcheck},
 a utility that checks Ada code against a set of rules.
 
 @item
@@ -852,9 +874,9 @@ you deal with elaboration order issues.
 in an Ada program.
 
 @item
-@ref{Compatibility and Porting Guide}, includes sections on compatibility
-of GNAT with other Ada 83 and Ada 95 compilation systems, to assist
-in porting code from other environments.
+@ref{Compatibility and Porting Guide}, contains sections on compatibility
+of GNAT with other Ada development environments (including Ada 83 systems),
+to assist in porting code from those environments.
 
 @ifset unw
 @item
@@ -869,10 +891,16 @@ Microsoft Windows platform.
 @unnumberedsec What You Should Know before Reading This Guide
 
 @cindex Ada 95 Language Reference Manual
+@cindex Ada 2005 Language Reference Manual
 @noindent
-This user's guide assumes that you are familiar with Ada 95 language, as
+This guide assumes a basic familiarity with the Ada 95 language, as
 described in the International Standard ANSI/ISO/IEC-8652:1995, January
 1995.
+It does not require knowledge of the new features introduced by Ada 2005,
+(officially known as ISO/IEC 8652:1995 with Technical Corrigendum 1
+and Amendment 1).
+Both reference manuals are included in the GNAT documentation
+package.
 
 @node Related Information
 @unnumberedsec Related Information
@@ -884,21 +912,25 @@ documents:
 @itemize @bullet
 @item
 @cite{GNAT Reference Manual}, which contains all reference
-material for the GNAT implementation of Ada 95.
+material for the GNAT implementation of Ada.
 
 @ifset unw
 @item
-@cite{Using the GNAT Programming System}, which describes the GPS
-integrated development environment.
+@cite{Using the GNAT Programming Studio}, which describes the GPS
+Integrated Development Environment.
 
 @item
-@cite{GNAT Programming System Tutorial}, which introduces the
+@cite{GNAT Programming Studio Tutorial}, which introduces the
 main GPS features through examples.
 @end ifset
 
 @item
-@cite{Ada 95 Language Reference Manual}, which contains all reference
+@cite{Ada 95 Reference Manual}, which contains reference
 material for the Ada 95 programming language.
+
+@item
+@cite{Ada 2005 Reference Manual}, which contains reference
+material for the Ada 2005 programming language.
 
 @item
 @cite{Debugging with GDB}
@@ -979,15 +1011,14 @@ executable Ada programs.
 @ifset unw
 @ref{Running GNAT}, through @ref{Using the gnatmake Utility},
 show how to use the command line environment.
-@ref{Introduction to Glide and GVD}, provides a brief
-introduction to the visually-oriented IDE for GNAT.
-Supplementing Glide on some platforms is GPS, the
-GNAT Programming System, which offers a richer graphical
-``look and feel'', enhanced configurability, support for
-development in other programming language, comprehensive
-browsing features, and many other capabilities.
+@ref{Introduction to GPS}, provides a brief
+introduction to the GNAT Programming Studio, a visually-oriented
+Integrated Development Environment for GNAT.
+GPS offers a graphical ``look and feel'', support for development in
+other programming languages, comprehensive browsing features, and
+many other capabilities.
 For information on GPS please refer to
-@cite{Using the GNAT Programming System}.
+@cite{Using the GNAT Programming Studio}.
 @end ifset
 
 @menu
@@ -1000,7 +1031,6 @@ For information on GPS please refer to
 @end ifset
 @ifclear vms
 * Introduction to GPS::
-* Introduction to Glide and GVD::
 @end ifclear
 @end menu
 
@@ -1030,12 +1060,10 @@ performs the necessary compilation, binding and linking steps.
 
 @noindent
 Any text editor may be used to prepare an Ada program.
-@ifclear vms
-If @code{Glide} is
-used, the optional Ada mode may be helpful in laying out the program.
-@end ifclear
+(If @code{Emacs} is
+used, the optional Ada mode may be helpful in laying out the program.)
 The
-program text is a normal text file. We will suppose in our initial
+program text is a normal text file. We will assume in our initial
 example that you have used your editor to prepare the following
 standard format text file:
 
@@ -1075,7 +1103,7 @@ $ gcc -c hello.adb
 
 @noindent
 @command{gcc} is the command used to run the compiler. This compiler is
-capable of compiling programs in several languages, including Ada 95 and
+capable of compiling programs in several languages, including Ada and
 C. It assumes that you have given it an Ada program if the file extension is
 either @file{.ads} or @file{.adb}, and it will then call
 the GNAT compiler to compile the specified file.
@@ -1282,7 +1310,7 @@ can be extremely helpful to use @command{gnatmake}, because working out by hand
 what needs to be recompiled can be difficult.
 
 Note that @command{gnatmake}
-takes into account all the Ada 95 rules that
+takes into account all the Ada rules that
 establish dependencies among units. These include dependencies that result
 from inlining subprogram bodies, and from
 generic instantiation. Unlike some other
@@ -1323,14 +1351,14 @@ environment and shell for the sophisticated user.
 @ifclear vms
 @node Introduction to GPS
 @section Introduction to GPS
-@cindex GPS (GNAT Programming System)
-@cindex GNAT Programming System (GPS)
+@cindex GPS (GNAT Programming Studio)
+@cindex GNAT Programming Studio (GPS)
 @noindent
 Although the command line interface (@command{gnatmake}, etc.) alone
 is sufficient, a graphical Interactive Development
 Environment can make it easier for you to compose, navigate, and debug
 programs.  This section describes the main features of GPS
-(``GNAT Programming System''), the GNAT graphical IDE.
+(``GNAT Programming Studio''), the GNAT graphical IDE.
 You will see how to use GPS to build and debug an executable, and
 you will also learn some of the basics of the GNAT ``project'' facility.
 
@@ -1629,261 +1657,6 @@ The value of @code{N} will be 0, and the program will terminate.
 The console window will disappear.
 @end enumerate
 @end enumerate
-
-@node Introduction to Glide and GVD
-@section Introduction to Glide and GVD
-@cindex Glide
-@cindex GVD
-@noindent
-This section describes the main features of Glide,
-a GNAT graphical IDE, and also shows how to use the basic commands in GVD,
-the GNU Visual Debugger.
-These tools may be present in addition to, or in place of, GPS on some
-platforms.
-Additional information on Glide and GVD may be found
-in the on-line help for these tools.
-
-@menu
-* Building a New Program with Glide::
-* Simple Debugging with GVD::
-* Other Glide Features::
-@end menu
-
-@node Building a New Program with Glide
-@subsection Building a New Program with Glide
-@noindent
-The simplest way to invoke Glide is to enter @command{glide}
-at the command prompt.  It will generally be useful to issue this
-as a background command, thus allowing you to continue using
-your command window for other purposes while Glide is running:
-
-@smallexample
-$ glide&
-@end smallexample
-
-@noindent
-Glide will start up with an initial screen displaying the top-level menu items
-as well as some other information.  The menu selections are as follows
-@itemize @bullet
-@item @code{Buffers}
-@item @code{Files}
-@item @code{Tools}
-@item @code{Edit}
-@item @code{Search}
-@item @code{Mule}
-@item @code{Glide}
-@item @code{Help}
-@end itemize
-
-@noindent
-For this introductory example, you will need to create a new Ada source file.
-First, select the @code{Files} menu.  This will pop open a menu with around
-a dozen or so items.  To create a file, select the @code{Open file...} choice.
-Depending on the platform, you may see a pop-up window where you can browse
-to an appropriate directory and then enter the file name, or else simply
-see a line at the bottom of the Glide window where you can likewise enter
-the file name.  Note that in Glide, when you attempt to open a non-existent
-file, the effect is to create a file with that name.  For this example enter
-@file{hello.adb} as the name of the file.
-
-A new buffer will now appear, occupying the entire Glide window,
-with the file name at the top.  The menu selections are slightly different
-from the ones you saw on the opening screen; there is an @code{Entities} item,
-and in place of @code{Glide} there is now an @code{Ada} item.  Glide uses
-the file extension to identify the source language, so @file{adb} indicates
-an Ada source file.
-
-You will enter some of the source program lines explicitly,
-and use the syntax-oriented template mechanism to enter other lines.
-First, type the following text:
-@smallexample
-with Ada.Text_IO; use Ada.Text_IO;
-procedure Hello is
-begin
-@end smallexample
-
-@noindent
-Observe that Glide uses different colors to distinguish reserved words from
-identifiers.  Also, after the @code{procedure Hello is} line, the cursor is
-automatically indented in anticipation of declarations.  When you enter
-@code{begin}, Glide recognizes that there are no declarations and thus places
-@code{begin} flush left.  But after the @code{begin} line the cursor is again
-indented, where the statement(s) will be placed.
-
-The main part of the program will be a @code{for} loop.  Instead of entering
-the text explicitly, however, use a statement template.  Select the @code{Ada}
-item on the top menu bar, move the mouse to the @code{Statements} item,
-and you will see a large selection of alternatives.  Choose @code{for loop}.
-You will be prompted (at the bottom of the buffer) for a loop name;
-simply press the @key{Enter} key since a loop name is not needed.
-You should see the beginning of a @code{for} loop appear in the source
-program window.  You will now be prompted for the name of the loop variable;
-enter a line with the identifier @code{ind} (lower case).  Note that,
-by default, Glide capitalizes the name (you can override such behavior
-if you wish, although this is outside the scope of this introduction).
-Next, Glide prompts you for the loop range; enter a line containing
-@code{1..5} and you will see this also appear in the source program,
-together with the remaining elements of the @code{for} loop syntax.
-
-Next enter the statement (with an intentional error, a missing semicolon)
-that will form the body of the loop:
-@smallexample
-Put_Line("Hello, World" & Integer'Image(I))
-@end smallexample
-
-@noindent
-Finally, type @code{end Hello;} as the last line in the program.
-Now save the file: choose the @code{File} menu item, and then the
-@code{Save buffer} selection.  You will see a message at the bottom
-of the buffer confirming that the file has been saved.
-
-You are now ready to attempt to build the program.  Select the @code{Ada}
-item from the top menu bar.  Although we could choose simply to compile
-the file, we will instead attempt to do a build (which invokes
-@command{gnatmake}) since, if the compile is successful, we want to build
-an executable.  Thus select @code{Ada build}.  This will fail because of the
-compilation error, and you will notice that the Glide window has been split:
-the top window contains the source file, and the bottom window contains the
-output from the GNAT tools. Glide allows you to navigate from a compilation
-error to the source file position corresponding to the error: click the
-middle mouse button (or simultaneously press the left and right buttons,
-on a two-button mouse) on the diagnostic line in the tool window.  The
-focus will shift to the source window, and the cursor will be positioned
-on the character at which the error was detected.
-
-Correct the error: type in a semicolon to terminate the statement.
-Although you can again save the file explicitly, you can also simply invoke
-@code{Ada} @result{} @code{Build} and you will be prompted to save the file.
-This time the build will succeed; the tool output window shows you the
-options that are supplied by default.  The GNAT tools' output (e.g.
-object and ALI files, executable) will go in the directory from which
-Glide was launched.
-
-To execute the program, choose @code{Ada} and then @code{Run}.
-You should see the program's output displayed in the bottom window:
-
-@smallexample
-Hello, world 1
-Hello, world 2
-Hello, world 3
-Hello, world 4
-Hello, world 5
-@end smallexample
-
-@node Simple Debugging with GVD
-@subsection Simple Debugging with GVD
-
-@noindent
-This section describes how to set breakpoints, examine/modify variables,
-and step through execution.
-
-In order to enable debugging, you need to pass the @option{-g} switch
-to both the compiler and to @command{gnatlink}.  If you are using
-the command line, passing @option{-g} to @command{gnatmake} will have
-this effect.  You can then launch GVD, e.g. on the @code{hello} program,
-by issuing the command:
-
-@smallexample
-$ gvd hello
-@end smallexample
-
-@noindent
-If you are using Glide, then @option{-g} is passed to the relevant tools
-by default when you do a build.  Start the debugger by selecting the
-@code{Ada} menu item, and then @code{Debug}.
-
-GVD comes up in a multi-part window.  One pane shows the names of files
-comprising your executable; another pane shows the source code of the current
-unit (initially your main subprogram), another pane shows the debugger output
-and user interactions, and the fourth pane (the data canvas at the top
-of the window) displays data objects that you have selected.
-
-To the left of the source file pane, you will notice green dots adjacent
-to some lines.  These are lines for which object code exists and where
-breakpoints can thus be set.  You set/reset a breakpoint by clicking
-the green dot.  When a breakpoint is set, the dot is replaced by an @code{X}
-in a red circle.  Clicking the circle toggles the breakpoint off,
-and the red circle is replaced by the green dot.
-
-For this example, set a breakpoint at the statement where @code{Put_Line}
-is invoked.
-
-Start program execution by selecting the @code{Run} button on the top menu bar.
-(The @code{Start} button will also start your program, but it will
-cause program execution to break at the entry to your main subprogram.)
-Evidence of reaching the breakpoint will appear: the source file line will be
-highlighted, and the debugger interactions pane will display
-a relevant message.
-
-You can examine the values of variables in several ways.  Move the mouse
-over an occurrence of @code{Ind} in the @code{for} loop, and you will see
-the value (now @code{1}) displayed.  Alternatively, right-click on @code{Ind}
-and select @code{Display Ind}; a box showing the variable's name and value
-will appear in the data canvas.
-
-Although a loop index is a constant with respect to Ada semantics,
-you can change its value in the debugger.  Right-click in the box
-for @code{Ind}, and select the @code{Set Value of Ind} item.
-Enter @code{2} as the new value, and press @command{OK}.
-The box for @code{Ind} shows the update.
-
-Press the @code{Step} button on the top menu bar; this will step through
-one line of program text (the invocation of @code{Put_Line}), and you can
-observe the effect of having modified @code{Ind} since the value displayed
-is @code{2}.
-
-Remove the breakpoint, and resume execution by selecting the @code{Cont}
-button.  You will see the remaining output lines displayed in the debugger
-interaction window, along with a message confirming normal program
-termination.
-
-@node Other Glide Features
-@subsection Other Glide Features
-
-@noindent
-You may have observed that some of the menu selections contain abbreviations;
-e.g., @code{(C-x C-f)} for @code{Open file...} in the @code{Files} menu.
-These are @emph{shortcut keys} that you can use instead of selecting
-menu items.  The @key{C} stands for @key{Ctrl}; thus @code{(C-x C-f)} means
-@key{Ctrl-x} followed by @key{Ctrl-f}, and this sequence can be used instead
-of selecting @code{Files} and then @code{Open file...}.
-
-To abort a Glide command, type @key{Ctrl-g}.
-
-If you want Glide to start with an existing source file, you can either
-launch Glide as above and then open the file via @code{Files} @result{}
-@code{Open file...}, or else simply pass the name of the source file
-on the command line:
-
-@smallexample
-$ glide hello.adb&
-@end smallexample
-
-@noindent
-While you are using Glide, a number of @emph{buffers} exist.
-You create some explicitly; e.g., when you open/create a file.
-Others arise as an effect of the commands that you issue; e.g., the buffer
-containing the output of the tools invoked during a build.  If a buffer
-is hidden, you can bring it into a visible window by first opening
-the @code{Buffers} menu and then selecting the desired entry.
-
-If a buffer occupies only part of the Glide screen and you want to expand it
-to fill the entire screen, then click in the buffer and then select
-@code{Files} @result{} @code{One Window}.
-
-If a window is occupied by one buffer and you want to split the window
-to bring up a second buffer, perform the following steps:
-@itemize @bullet
-@item Select @code{Files} @result{} @code{Split Window};
-this will produce two windows each of which holds the original buffer
-(these are not copies, but rather different views of the same buffer contents)
-
-@item With the focus in one of the windows,
-select the desired buffer from the @code{Buffers} menu
-@end itemize
-
-@noindent
-To exit from Glide, choose @code{Files} @result{} @code{Exit}.
 @end ifclear
 
 @node The GNAT Compilation Model
@@ -1985,7 +1758,7 @@ you will place each subunit or child unit in a separate file.
 @section Foreign Language Representation
 
 @noindent
-GNAT supports the standard character sets defined in Ada 95 as well as
+GNAT supports the standard character sets defined in Ada as well as
 several other non-standard character sets for use in localized versions
 of the compiler (@pxref{Character Set Control}).
 @menu
@@ -2184,7 +1957,7 @@ ACVC (Ada Compiler Validation Capability) test suite distributions.
 
 @noindent
 Note: Some of these coding schemes do not permit the full use of the
-Ada 95 character set. For example, neither Shift JIS, nor EUC allow the
+Ada character set. For example, neither Shift JIS, nor EUC allow the
 use of the upper half of the Latin-1 set.
 
 @node File Naming Rules
@@ -2580,10 +2353,10 @@ Note that
 to specify both options.
 
 @item
-If an object file O  depends on the proper body of a subunit through inlining
-or instantiation, it depends on the parent unit of the subunit. This means that
-any modification of the parent unit or one of its subunits affects the
-compilation of O.
+If an object file @file{O} depends on the proper body of a subunit through
+inlining or instantiation, it depends on the parent unit of the subunit.
+This means that any modification of the parent unit or one of its subunits
+affects the compilation of @file{O}.
 
 @item
 The object file for a parent unit depends on all its subunit body files.
@@ -2599,9 +2372,10 @@ unit @code{B}, whose elaboration calls an inlined procedure in package
 @code{C}, in file @file{c.adb}.
 
 The set of dependent files described by these rules includes all the
-files on which the unit is semantically dependent, as described in the
-Ada 95 Language Reference Manual. However, it is a superset of what the
-ARM describes, because it includes generic, inline, and subunit dependencies.
+files on which the unit is semantically dependent, as dictated by the
+Ada language standard. However, it is a superset of what the
+standard describes, because it includes generic, inline, and subunit
+dependencies.
 
 An object file must be recreated by recompiling the corresponding source
 file if any of the source files on which it depends are modified. For
@@ -2731,9 +2505,9 @@ specifically one that comprises units in both Ada and C.
 Interfacing Ada with a foreign language such as C involves using
 compiler directives to import and/or export entity definitions in each
 language---using @code{extern} statements in C, for instance, and the
-@code{Import}, @code{Export}, and @code{Convention} pragmas in Ada.  For
-a full treatment of these topics, read Appendix B, section 1 of the Ada
-95 Language Reference Manual.
+@code{Import}, @code{Export}, and @code{Convention} pragmas in Ada.
+A full treatment of these topics is provided in Appendix B, section 1
+of the Ada Reference Manual.
 
 There are two ways to build a program using GNAT that contains some Ada
 sources and some foreign language sources, depending on whether or not
@@ -2984,14 +2758,14 @@ Equivalent to Assembler.
 @findex COBOL
 @item COBOL
 Data will be passed according to the conventions described
-in section B.4 of the Ada 95 Reference Manual.
+in section B.4 of the Ada Reference Manual.
 
 @findex C
 @cindex Interfacing to C
 @cindex Convention C
 @item C
 Data will be passed according to the conventions described
-in section B.3 of the Ada 95 Reference Manual.
+in section B.3 of the Ada Reference Manual.
 
 A note on interfacing to a C ``varargs'' function:
 @findex C varargs function
@@ -3045,10 +2819,10 @@ C++ interfacing for further details.
 @cindex Convention Fortran
 @item Fortran
 Data will be passed according to the conventions described
-in section B.5 of the Ada 95 Reference Manual.
+in section B.5 of the Ada Reference Manual.
 
 @item Intrinsic
-This applies to an intrinsic operation, as defined in the Ada 95
+This applies to an intrinsic operation, as defined in the Ada
 Reference Manual. If a pragma Import (Intrinsic) applies to a subprogram,
 this means that the body of the subprogram is provided by the compiler itself,
 usually by means of an efficient code sequence, and that the user does not
@@ -3092,7 +2866,7 @@ implemented as a single machine instruction.
 @findex Stdcall
 @cindex Convention Stdcall
 @item Stdcall
-This is relevant only to Windows XP/2000/NT/95 implementations of GNAT,
+This is relevant only to Windows XP/2000/NT implementations of GNAT,
 and specifies that the @code{Stdcall} calling sequence will be used,
 as defined by the NT API. Nevertheless, to ease building
 cross-platform bindings this convention will be handled as a @code{C} calling
@@ -3139,14 +2913,13 @@ meaning as Fortran.
 @noindent
 A programmer inexperienced with mixed-language development may find that
 building an application containing both Ada and C++ code can be a
-challenge. As a matter of fact, interfacing with C++ has not been
-standardized in the Ada 95 Reference Manual due to the immaturity of --
-and lack of standards for -- C++ at the time. This section gives a few
+challenge.  This section gives a few
 hints that should make this task easier. The first section addresses
-the differences regarding interfacing with C. The second section
+the differences between interfacing with C and interfacing with C++.
+The second section
 looks into the delicate problem of linking the complete application from
 its Ada and C++ parts. The last section gives some hints on how the GNAT
-run time can be adapted in order to allow inter-language dispatching
+run-time library can be adapted in order to allow inter-language dispatching
 with a new C++ compiler.
 
 @menu
@@ -3371,35 +3144,37 @@ A::A(void)
    a_value = 1010;
   printf ("in A::A, a_value = %d \n",a_value);
 @}
+@end smallexample
 
+@smallexample @c ada
 -- Ada sources
-@b{package} @b{body} Simple_Cpp_Interface @b{is}
+package body Simple_Cpp_Interface is
 
-   @b{procedure} Ada_Method2 (This : @b{in} @b{out} A; V : Integer) @b{is}
-   @b{begin}
+   procedure Ada_Method2 (This : in out A; V : Integer) is
+   begin
       Method1 (This);
       This.A_Value := V;
-   @b{end} Ada_Method2;
+   end Ada_Method2;
 
-@b{end} Simple_Cpp_Interface;
+end Simple_Cpp_Interface;
 
-@b{with} System;
-@b{package} Simple_Cpp_Interface @b{is}
-   @b{type} A @b{is} @b{limited}
-      @b{record}
+with System;
+package Simple_Cpp_Interface is
+   type A is limited
+      record
          Vptr    : System.Address;
          O_Value : Integer;
          A_Value : Integer;
-      @b{end} @b{record};
-   @b{pragma} Convention (C, A);
+      end record;
+   pragma Convention (C, A);
 
-   @b{procedure} Method1 (This : @b{in} @b{out} A);
-   @b{pragma} Import (C, Method1);
+   procedure Method1 (This : in out A);
+   pragma Import (C, Method1);
 
-   @b{procedure} Ada_Method2 (This : @b{in} @b{out} A; V : Integer);
-   @b{pragma} Export (C, Ada_Method2);
+   procedure Ada_Method2 (This : in out A; V : Integer);
+   pragma Export (C, Ada_Method2);
 
-@b{end} Simple_Cpp_Interface;
+end Simple_Cpp_Interface;
 @end smallexample
 
 @node Interfacing with C++ at the Class Level
@@ -3465,47 +3240,47 @@ In the following examples we will assume that the previous declarations are
 located in a file named @code{animals.h}. The following package demonstrates
 how to import these C++ declarations from the Ada side:
 
-@smallexample
-@b{with} Interfaces.C.Strings; @b{use} Interfaces.C.Strings;
-@b{package} Animals @b{is}
-  @b{type} Carnivore @b{is interface};
-  @b{pragma} Convention (C_Plus_Plus, Carnivore);
-  @b{function} Number_Of_Teeth (X : Carnivore)
-     @b{return} Natural @b{is abstract};
+@smallexample @c ada
+with Interfaces.C.Strings; use Interfaces.C.Strings;
+package Animals is
+  type Carnivore is interface;
+  pragma Convention (C_Plus_Plus, Carnivore);
+  function Number_Of_Teeth (X : Carnivore)
+     return Natural is abstract;
 
-  @b{type} Domestic @b{is interface};
-  @b{pragma} Convention (C_Plus_Plus, Set_Owner);
-  @b{procedure} Set_Owner
-    (X    : @b{in out} Domestic;
-     Name : Chars_Ptr) @b{is abstract};
+  type Domestic is interface;
+  pragma Convention (C_Plus_Plus, Set_Owner);
+  procedure Set_Owner
+    (X    : in out Domestic;
+     Name : Chars_Ptr) is abstract;
 
-  @b{type} Animal @b{is tagged record}
+  type Animal is tagged record
     Age : Natural := 0;
-  @b{end record};
-  @b{pragma} Import (C_Plus_Plus, Animal);
+  end record;
+  pragma Import (C_Plus_Plus, Animal);
 
-  @b{procedure} Set_Age (X : @b{in out} Animal; Age : Integer);
-  @b{pragma} Import (C_Plus_Plus, Set_Age);
+  procedure Set_Age (X : in out Animal; Age : Integer);
+  pragma Import (C_Plus_Plus, Set_Age);
 
-  @b{function} Age (X : Animal) @b{return} Integer;
-  @b{pragma} Import (C_Plus_Plus, Age);
+  function Age (X : Animal) return Integer;
+  pragma Import (C_Plus_Plus, Age);
 
-  @b{type} Dog @b{is new} Animal @b{and} Carnivore @b{and} Domestic @b{with record}
+  type Dog is new Animal and Carnivore and Domestic with record
     Tooth_Count : Natural;
     Owner       : String (1 .. 30);
-  @b{end record};
-  @b{pragma} Import (C_Plus_Plus, Dog);
+  end record;
+  pragma Import (C_Plus_Plus, Dog);
 
-  @b{function} Number_Of_Teeth (A : Dog) @b{return} Integer;
-  @b{pragma} Import (C_Plus_Plus, Number_Of_Teeth);
+  function Number_Of_Teeth (A : Dog) return Integer;
+  pragma Import (C_Plus_Plus, Number_Of_Teeth);
 
-  @b{procedure} Set_Owner (A : @b{in out} Dog; Name : Chars_Ptr);
-  @b{pragma} Import (C_Plus_Plus, Set_Owner);
+  procedure Set_Owner (A : in out Dog; Name : Chars_Ptr);
+  pragma Import (C_Plus_Plus, Set_Owner);
 
-  @b{function} New_Dog @b{return} Dog'Class;
-  @b{pragma} CPP_Constructor (New_Dog);
-  @b{pragma} Import (CPP, New_Dog, "_ZN3DogC2Ev");
-@b{end} Animals;
+  function New_Dog return Dog'Class;
+  pragma CPP_Constructor (New_Dog);
+  pragma Import (CPP, New_Dog, "_ZN3DogC2Ev");
+end Animals;
 @end smallexample
 
 Thanks to the compatibility between GNAT run-time structures and the C++ ABI,
@@ -3551,47 +3326,47 @@ layout or the dispatch table entry associated with each dispatching operation.
 Now let us define all the types and constructors on the Ada side and export
 them to C++, using the same hierarchy of our previous example:
 
-@smallexample
-@b{with} Interfaces.C.Strings;
-@b{use} Interfaces.C.Strings;
-@b{package} Animals @b{is}
-  @b{type} Carnivore @b{is interface};
-  @b{pragma} Convention (C_Plus_Plus, Carnivore);
-  @b{function} Number_Of_Teeth (X : Carnivore)
-     @b{return} Natural @b{is abstract};
+@smallexample @c ada
+with Interfaces.C.Strings;
+use Interfaces.C.Strings;
+package Animals is
+  type Carnivore is interface;
+  pragma Convention (C_Plus_Plus, Carnivore);
+  function Number_Of_Teeth (X : Carnivore)
+     return Natural is abstract;
 
-  @b{type} Domestic @b{is interface};
-  @b{pragma} Convention (C_Plus_Plus, Set_Owner);
-  @b{procedure} Set_Owner
-    (X    : @b{in out} Domestic;
-     Name : Chars_Ptr) @b{is abstract};
+  type Domestic is interface;
+  pragma Convention (C_Plus_Plus, Set_Owner);
+  procedure Set_Owner
+    (X    : in out Domestic;
+     Name : Chars_Ptr) is abstract;
 
-  @b{type} Animal @b{is tagged record}
+  type Animal is tagged record
     Age : Natural := 0;
-  @b{end record};
-  @b{pragma} Convention (C_Plus_Plus, Animal);
+  end record;
+  pragma Convention (C_Plus_Plus, Animal);
 
-  @b{procedure} Set_Age (X : @b{in out} Animal; Age : Integer);
-  @b{pragma} Export (C_Plus_Plus, Set_Age);
+  procedure Set_Age (X : in out Animal; Age : Integer);
+  pragma Export (C_Plus_Plus, Set_Age);
 
-  @b{function} Age (X : Animal) @b{return} Integer;
-  @b{pragma} Export (C_Plus_Plus, Age);
+  function Age (X : Animal) return Integer;
+  pragma Export (C_Plus_Plus, Age);
 
-  @b{type} Dog @b{is new} Animal @b{and} Carnivore @b{and} Domestic @b{with record}
+  type Dog is new Animal and Carnivore and Domestic with record
     Tooth_Count : Natural;
     Owner       : String (1 .. 30);
-  @b{end record};
-  @b{pragma} Convention (C_Plus_Plus, Dog);
+  end record;
+  pragma Convention (C_Plus_Plus, Dog);
 
-  @b{function} Number_Of_Teeth (A : Dog) @b{return} Integer;
-  @b{pragma} Export (C_Plus_Plus, Number_Of_Teeth);
+  function Number_Of_Teeth (A : Dog) return Integer;
+  pragma Export (C_Plus_Plus, Number_Of_Teeth);
 
-  @b{procedure} Set_Owner (A : @b{in out} Dog; Name : Chars_Ptr);
-  @b{pragma} Export (C_Plus_Plus, Set_Owner);
+  procedure Set_Owner (A : in out Dog; Name : Chars_Ptr);
+  pragma Export (C_Plus_Plus, Set_Owner);
 
-  @b{function} New_Dog @b{return} Dog'Class;
-  @b{pragma} Export (C_Plus_Plus, New_Dog);
-@b{end} Animals;
+  function New_Dog return Dog'Class;
+  pragma Export (C_Plus_Plus, New_Dog);
+end Animals;
 @end smallexample
 
 Compared with our previous example the only difference is the use of
@@ -3676,7 +3451,7 @@ malfunctioned at run time.
 @noindent
 This section is intended for Ada programmers who have
 used an Ada compiler implementing the traditional Ada library
-model, as described in the Ada 95 Language Reference Manual.
+model, as described in the Ada Reference Manual.
 
 @cindex GNAT library
 In GNAT, there is no ``library'' in the normal sense. Instead, the set of
@@ -4093,15 +3868,16 @@ attempt to suppress cascaded errors.
 @cindex @option{-gnatF} (@command{gcc})
 Externals names are folded to all uppercase.
 
-@item -gnatg
-@cindex @option{-gnatg} (@command{gcc})
+@item ^-gnatg^/GNAT_INTERNAL^
+@cindex @option{^-gnatg^/GNAT_INTERNAL^} (@command{gcc})
 Internal GNAT implementation mode. This should not be used for
 applications programs, it is intended only for use by the compiler
 and its run-time library. For documentation, see the GNAT sources.
-Note that @option{-gnatg} implies @option{-gnatwae} so that all
-standard warnings are turned on, and @option{-gnaty} so that all
-standard style options are turned on. All warnings and style error
-messages are treated as errors.
+Note that @option{^-gnatg^/GNAT_INTERNAL^} implies
+@option{^-gnatwae^/WARNINGS=ALL,ERRORS^} and
+@option{^-gnatyg^/STYLE_CHECKS=GNAT^}
+so that all standard warnings and all standard style options are turned on.
+All warnings and style error messages are treated as errors.
 
 @item -gnatG
 @cindex @option{-gnatG} (@command{gcc})
@@ -4327,14 +4103,23 @@ time.
 Extensive optimization, may improve execution time, possibly at the cost of
 substantially increased compilation time.
 
+@item n = 3
+Same as @option{-O2}, and also includes inline expansion for small subprograms
+in the same unit.
+
+@item n = s
+Optimize space usage
 @end table
+
+@noindent
+See also @ref{Optimization Levels}.
 @end ifclear
 
 @ifset vms
 @item  /NOOPTIMIZE
 @cindex @option{/NOOPTIMIZE} (@code{GNAT COMPILE})
 Equivalent to @option{/OPTIMIZE=NONE}.
-This is the default behavior in the absence of an @option{/OPTMIZE}
+This is the default behavior in the absence of an @option{/OPTIMIZE}
 qualifier.
 
 @item /OPTIMIZE[=(keyword[,...])]
@@ -4345,7 +4130,7 @@ keywords are as follows:
 @item   ALL
 Perform most optimizations, including those that
 are expensive.
-This is the default if the @option{/OPTMIZE} qualifier is supplied
+This is the default if the @option{/OPTIMIZE} qualifier is supplied
 without keyword options.
 
 @item   NONE
@@ -4357,11 +4142,21 @@ Perform some optimizations, but omit ones that are costly.
 @item   DEVELOPMENT
 Same as @code{SOME}.
 
+@item INLINING
+Full optimization as in @option{/OPTIMIZE=ALL}, and also attempts
+automatic inlining of small subprograms within a unit
+
 @item   UNROLL_LOOPS
 Try to unroll loops. This keyword may be specified together with
 any keyword above other than @code{NONE}. Loop unrolling
 usually, but not always, improves the performance of programs.
+
+@item SPACE
+Optimize space usage
 @end table
+
+@noindent
+See also @ref{Optimization Levels}.
 @end ifset
 
 @ifclear vms
@@ -4488,8 +4283,10 @@ e.adb:4:20: ";" should be "is"
 @noindent
 The first integer after the file name is the line number in the file,
 and the second integer is the column number within the line.
-@code{glide} can parse the error messages
+@ifclear vms
+@code{GPS} can parse the error messages
 and point to the referenced character.
+@end ifclear
 The following switches provide control over the error message
 format:
 
@@ -4732,7 +4529,7 @@ since ALI files are never generated if @option{-gnats} is set.
 @cindex Warning messages
 @noindent
 In addition to error messages, which correspond to illegalities as defined
-in the Ada 95 Reference Manual, the compiler detects two kinds of warning
+in the Ada Reference Manual, the compiler detects two kinds of warning
 situations.
 
 First, the compiler considers some constructs suspicious and generates a
@@ -4968,6 +4765,23 @@ This warning can also be turned on using @option{-gnatwa}.
 This switch suppresses warnings for conditional expressions used in
 tests that are known to be True or False at compile time.
 
+@item -gnatw.c
+@emph{Activate warnings on missing component clauses.}
+@cindex @option{-gnatw.c} (@command{gcc})
+@cindex Component clause, missing
+This switch activates warnings for record components where a record
+representation clause is present and has component clauses for the
+majority, but not all, of the components. A warning is given for each
+component for which no component clause is present.
+
+This warning can also be turned on using @option{-gnatwa}.
+
+@item -gnatw.C
+@emph{Suppress warnings on missing component clauses.}
+@cindex @option{-gnatwC} (@command{gcc})
+This switch suppresses warnings for record components that are
+missing a component clause in the situation described above.
+
 @item -gnatwd
 @emph{Activate warnings on implicit dereferencing.}
 @cindex @option{-gnatwd} (@command{gcc})
@@ -5185,6 +4999,8 @@ many reasons for not being able to inline a call, including most
 commonly that the call is too complex to inline. The default is
 that such warnings are not given.
 This warning can also be turned on using @option{-gnatwa}.
+Warnings on ineffective inlining by the gcc back-end can be activated
+separately, using the gcc switch -Winline.
 
 @item -gnatwP
 @emph{Suppress warnings on ineffective pragma Inlines.}
@@ -5316,6 +5132,17 @@ This warning can also be turned on using @option{-gnatwa}.
 @cindex @option{-gnatwV} (@command{gcc})
 This switch suppresses warnings for access to variables which
 may not be properly initialized.
+For variables of a composite type, the warning can also be suppressed in
+Ada 2005 by using a default initialization with a box. For example, if
+Table is an array of records whose components are only partially uninitialized,
+then the following code:
+
+@smallexample @c ada
+   Tab : Table := (others => <>);
+@end smallexample
+
+will suppress warnings on subsequent statements that access components
+of variable Tab.
 
 @item -gnatww
 @emph{Activate warnings on wrong low bound assumption.}
@@ -5360,6 +5187,20 @@ This switch suppresses warnings on Export/Import pragmas.
 The sense of this is that you are telling the compiler that
 you know what you are doing in writing the pragma, and it
 should not complain at you.
+
+@item -gnatw.x
+@emph{Activate warnings for No_Exception_Propagation mode.}
+@cindex @option{-gnatwm} (@command{gcc})
+This switch activates warnings for exception usage when pragma Restrictions
+(No_Exception_Propagation) is in effect. Warnings are given for implicit or
+explicit exception raises which are not covered by a local handler, and for
+exception handlers which do not cover a local raise. The default is that these
+warnings are given.
+
+@item -gnatw.X
+@emph{Disable warnings for No_Exception_Propagation mode.}
+This switch disables warnings for exception usage when pragma Restrictions
+(No_Exception_Propagation) is in effect.
 
 @item -gnatwy
 @emph{Activate warnings for Ada 2005 compatibility issues.}
@@ -5523,7 +5364,7 @@ file. Note that this doesn't include traceback information.
 @findex Validity Checking
 
 @noindent
-The Ada 95 Reference Manual has specific requirements for checking
+The Ada Reference Manual has specific requirements for checking
 for invalid values. In particular, RM 13.9.1 requires that the
 evaluation of invalid values (for example from unchecked conversions),
 not result in erroneous execution. In GNAT, the result of such an
@@ -5854,6 +5695,13 @@ If the ^letter f^word VTABS^ appears in the string after @option{-gnaty} then
 neither form feeds nor vertical tab characters are permitted
 in the source text.
 
+@item ^g^GNAT^
+@emph{GNAT style mode}
+If the ^letter g^word GNAT^ appears in the string after @option{-gnaty} then
+the set of style check switches is set to match that used by the GNAT sources.
+This may be useful when developing code that is eventually intended to be
+incorporated into GNAT. For further details, see GNAT sources.
+
 @item ^h^HTABS^
 @emph{No horizontal tabs.}
 If the ^letter h^word HTABS^ appears in the string after @option{-gnaty} then
@@ -6148,7 +5996,7 @@ checks into the compiled code, including code that performs range
 checking against constraints, but not arithmetic overflow checking for
 integer operations (including division by zero), checks for access
 before elaboration on subprogram calls, or stack overflow checking. All
-other run-time checks, as required by the Ada 95 Reference Manual, are
+other run-time checks, as required by the Ada Reference Manual, are
 generated by default. The following @command{gcc} switches refine this
 default behavior:
 
@@ -6341,7 +6189,7 @@ The @code{c} stands for ``check''.
 @end ifclear
 Causes the compiler to operate in semantic check mode,
 with full checking for all illegalities specified in the
-Ada 95 Reference Manual, but without generation of any object code
+Ada Reference Manual, but without generation of any object code
 (no object file is generated).
 
 Because dependent files must be accessed, you must follow the GNAT
@@ -6364,7 +6212,7 @@ generated. An @file{ALI} file is generated for use in the context of
 cross-reference tools, but this file is marked as not being suitable
 for binding (since no object file is generated).
 The checking corresponds exactly to the notion of
-legality in the Ada 95 Reference Manual.
+legality in the Ada Reference Manual.
 
 Any unit can be compiled in semantics-checking-only mode, including
 units that would not normally be compiled (subunits,
@@ -6373,86 +6221,83 @@ and specifications where a separate body is present).
 
 @node Compiling Different Versions of Ada
 @subsection Compiling Different Versions of Ada
+
+@noindent
+The switches described in this section allow you to explicitly specify
+the version of the Ada language that your programs are written in.
+By default @value{EDITION} assumes @value{DEFAULTLANGUAGEVERSION},
+but you can also specify @value{NONDEFAULTLANGUAGEVERSION} or
+indicate Ada 83 compatibility mode.
+
 @table @option
 @cindex Compatibility with Ada 83
-@cindex Ada 83 mode
-@cindex Ada 95 mode
-@cindex Ada 2005 mode
-
-GNAT is primarily an Ada 95 compiler, but the switches described in
-this section allow operation in Ada 83 compatibility mode, and also
-allow the use of a preliminary implementation of many of the expected
-new features in Ada 2005, the forthcoming new version of the standard.
 
 @item -gnat83 (Ada 83 Compatibility Mode)
 @cindex @option{-gnat83} (@command{gcc})
 @cindex ACVC, Ada 83 tests
+@cindex Ada 83 mode
 
 @noindent
-Although GNAT is primarily an Ada 95 compiler, it accepts this switch to
-specify that an Ada 83 program is to be compiled in Ada 83 mode. If you specify
-this switch, GNAT rejects most Ada 95 extensions and applies Ada 83 semantics
-where this can be done easily.
+Although GNAT is primarily an Ada 95 / Ada 2005 compiler, this switch
+specifies that the program is to be compiled in Ada 83 mode. With
+@option{-gnat83}, GNAT rejects most post-Ada 83 extensions and applies Ada 83
+semantics where this can be done easily.
 It is not possible to guarantee this switch does a perfect
-job; for example, some subtle tests, such as are
+job; some subtle tests, such as are
 found in earlier ACVC tests (and that have been removed from the ACATS suite
 for Ada 95), might not compile correctly.
 Nevertheless, this switch may be useful in some circumstances, for example
-where, due to contractual reasons, legacy code needs to be maintained
+where, due to contractual reasons, existing code needs to be maintained
 using only Ada 83 features.
 
 With few exceptions (most notably the need to use @code{<>} on
 @cindex Generic formal parameters
-unconstrained generic formal parameters, the use of the new Ada 95
+unconstrained generic formal parameters, the use of the new Ada 95 / Ada 2005
 reserved words, and the use of packages
-with optional bodies), it is not necessary to use the
+with optional bodies), it is not necessary to specify the
 @option{-gnat83} switch when compiling Ada 83 programs, because, with rare
-exceptions, Ada 95 is upwardly compatible with Ada 83. This
-means that a correct Ada 83 program is usually also a correct Ada 95
-program.
+exceptions, Ada 95 and Ada 2005 are upwardly compatible with Ada 83. Thus
+a correct Ada 83 program is usually also a correct program
+in these later versions of the language standard.
 For further information, please refer to @ref{Compatibility and Porting Guide}.
 
 @item -gnat95 (Ada 95 mode)
 @cindex @option{-gnat95} (@command{gcc})
+@cindex Ada 95 mode
 
 @noindent
-GNAT is primarily an Ada 95 compiler, and all current releases of GNAT Pro
-compile in Ada 95 mode by default. Typically, Ada 95 is sufficiently upwards
-compatible with Ada 83, that legacy Ada 83 programs may be compiled using
-this default Ada95 mode without problems (see section above describing the
-use of @option{-gnat83} to run in Ada 83 mode).
+This switch directs the compiler to implement the Ada 95 version of the
+language.
+Since Ada 95 is almost completely upwards
+compatible with Ada 83, Ada 83 programs may generally be compiled using
+this switch (see the description of the @option{-gnat83} switch for further
+information about Ada 83 mode).
+If an Ada 2005 program is compiled in Ada 95 mode,
+uses of the new Ada 2005 features will cause error
+messages or warnings.
 
-In Ada 95 mode, the use of Ada 2005 features will in general cause error
-messages or warnings. Some specialized releases of GNAT (notably the GPL
-edition) operate in Ada 2005 mode by default (see section below
-describing the use of @option{-gnat05} to run in Ada 2005 mode). For such
-versions the @option{-gnat95} switch may be used to enforce Ada 95 mode.
-This option also can be used to cancel the effect of a previous
+This switch also can be used to cancel the effect of a previous
 @option{-gnat83} or @option{-gnat05} switch earlier in the command line.
 
 @item -gnat05 (Ada 2005 mode)
 @cindex @option{-gnat05} (@command{gcc})
+@cindex Ada 2005 mode
 
 @noindent
-Although GNAT is primarily an Ada 95 compiler, it can be set to operate
-in Ada 2005 mode using this option. Although the new standard has not
-yet been issued (as of early 2005), many features have been discussed and
-approved in ``Ada Issues'' (AI's). For the text of these AI's, see
-@url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/AIs}. Included with GNAT
-releases is a file @file{features-ada0y} that describes the current set
-of implemented Ada 2005 features.
+This switch directs the compiler to implement the Ada 2005 version of the
+language.
+Since Ada 2005 is almost completely upwards
+compatible with Ada 95 (and thus also with Ada 83), Ada 83 and Ada 95 programs
+may generally be compiled using this switch (see the description of the
+@option{-gnat83} and @option{-gnat95} switches for further
+information).
 
-If these features are used in Ada 95 mode (which is the normal default),
-then error messages or warnings may be
-generated, reflecting the fact that these new features are otherwise
-unauthorized extensions to Ada 95. The use of the @option{-gnat05}
-switch (or an equivalent pragma) causes these messages to be suppressed.
-
-Note that some specialized releases of GNAT (notably the GPL edition)
-have Ada 2005 mode on by default, and in such environments,
-the Ada 2005 features can be used freely without the use of switches.
-
+For information about the approved ``Ada Issues'' that have been incorporated
+into Ada 2005, see @url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/AIs}.
+Included with GNAT releases is a file @file{features-ada0y} that describes
+the set of implemented Ada 2005 features.
 @end table
+
 
 @node Character Set Control
 @subsection Character Set Control
@@ -6462,7 +6307,7 @@ the Ada 2005 features can be used freely without the use of switches.
 
 @noindent
 Normally GNAT recognizes the Latin-1 character set in source program
-identifiers, as described in the Ada 95 Reference Manual.
+identifiers, as described in the Ada Reference Manual.
 This switch causes
 GNAT to recognize alternate character sets in identifiers. @var{c} is a
 single character ^^or word^ indicating the character set, as follows:
@@ -6834,6 +6679,12 @@ file is the name of the corresponding source file.
 Note that it is possible for record components to have zero size. In
 this case, the component clause uses an obvious extension of permitted
 Ada syntax, for example @code{at 0 range 0 .. -1}.
+
+Representation information requires that code be generated (since it is the
+code generator that lays out complex data structures). If an attempt is made
+to output representation information when no code is generated, for example
+when a subunit is compiled on its own, then no information can be generated
+and the compiler outputs a message to this effect.
 
 @item -gnatS
 @cindex @option{-gnatS} (@command{gcc})
@@ -7212,11 +7063,11 @@ DEFINE ADA_INCLUDE_PATH ANOTHER_PATH,FOO:[BAM],FOO:[BAR]
 @end smallexample
 
 By default, the path includes GNU:[LIB.OPENVMS7_x.2_8_x.DECLIB]
-first, followed by the standard Ada 95
+first, followed by the standard Ada
 libraries in GNU:[LIB.OPENVMS7_x.2_8_x.ADAINCLUDE].
 If this is not redefined, the user will obtain the HP Ada 83 IO packages
 (Text_IO, Sequential_IO, etc)
-instead of the Ada95 packages. Thus, in order to get the Ada 95
+instead of the standard Ada packages. Thus, in order to get the standard Ada
 packages by default, ADA_INCLUDE_PATH must be redefined.
 @end ifset
 
@@ -7347,20 +7198,24 @@ mode.
 
 @noindent
 This chapter describes the GNAT binder, @code{gnatbind}, which is used
-to bind compiled GNAT objects. The @code{gnatbind} program performs
-four separate functions:
+to bind compiled GNAT objects.
+
+Note: to invoke @code{gnatbind} with a project file, use the @code{gnat}
+driver (see @ref{The GNAT Driver and Project Files}).
+
+The @code{gnatbind} program performs four separate functions:
 
 @enumerate
 @item
 Checks that a program is consistent, in accordance with the rules in
-Chapter 10 of the Ada 95 Reference Manual. In particular, error
+Chapter 10 of the Ada Reference Manual. In particular, error
 messages are generated if a program uses inconsistent versions of a
 given unit.
 
 @item
 Checks that an acceptable order of elaboration exists for the program
 and issues an error message if it cannot find an order of elaboration
-that satisfies the rules in Chapter 10 of the Ada 95 Language Manual.
+that satisfies the rules in Chapter 10 of the Ada Language Manual.
 
 @item
 Generates a main program incorporating the given elaboration order.
@@ -7487,6 +7342,14 @@ be presented in subsequent sections.
 
 @table @option
 @c !sort!
+
+@item -a
+@cindex @option{-a} @command{gnatbind}
+Indicates that, if supported by the platform, the adainit procedure should
+be treated as an initialisation routine by the linker (a constructor). This
+is intended to be used by the Project Manager to automatically initialize
+shared Stand-Alone Libraries.
+
 @item ^-aO^/OBJECT_SEARCH^
 @cindex @option{^-aO^/OBJECT_SEARCH^} (@command{gnatbind})
 Specify directory to be searched for ALI files.
@@ -7656,6 +7519,10 @@ Output object list.
 @item ^-p^/PESSIMISTIC_ELABORATION^
 @cindex @option{^-p^/PESSIMISTIC_ELABORATION^} (@command{gnatbind})
 Pessimistic (worst-case) elaboration order
+
+@item ^-R^-R^
+@cindex @option{^-R^-R^} (@command{gnatbind})
+Output closure source list.
 
 @item ^-s^/READ_SOURCES=ALL^
 @cindex @option{^-s^/READ_SOURCES=ALL^} (@command{gnatbind})
@@ -8170,11 +8037,11 @@ DEFINE ADA_OBJECTS_PATH ANOTHER_PATH,FOO:[BAM],FOO:[BAR]
 @end smallexample
 
 By default, the path includes GNU:[LIB.OPENVMS7_x.2_8_x.DECLIB]
-first, followed by the standard Ada 95
+first, followed by the standard Ada
 libraries in GNU:[LIB.OPENVMS7_x.2_8_x.ADALIB].
 If this is not redefined, the user will obtain the HP Ada 83 IO packages
 (Text_IO, Sequential_IO, etc)
-instead of the Ada95 packages. Thus, in order to get the Ada 95
+instead of the standard Ada packages. Thus, in order to get the standard Ada
 packages by default, ADA_OBJECTS_PATH must be redefined.
 @end ifset
 
@@ -8297,6 +8164,9 @@ with a correct list of object files and library references.
 @command{gnatlink} automatically determines the list of files and
 references for the Ada part of a program. It uses the binder file
 generated by the @command{gnatbind} to determine this list.
+
+Note: to invoke @code{gnatlink} with a project file, use the @code{gnat}
+driver (see @ref{The GNAT Driver and Project Files}).
 
 @menu
 * Running gnatlink::
@@ -8762,6 +8632,11 @@ parsing and verbose mode is not in effect (no use of switch
 ^-v^/VERBOSE^), then error lines start with the full path name of the project
 file, rather than its simple file name.
 
+@item ^-g^/DEBUG^
+@cindex @option{^-g^/DEBUG^} (@command{gnatmake})
+Enable debugging. This switch is simply passed to the compiler and to the
+linker.
+
 @item ^-i^/IN_PLACE^
 @cindex @option{^-i^/IN_PLACE^} (@command{gnatmake})
 In normal mode, @command{gnatmake} compiles all object files and ALI files
@@ -8952,11 +8827,6 @@ No main subprogram. Bind and link the program even if the unit name
 given on the command line is a package name. The resulting executable
 will execute the elaboration routines of the package and its closure,
 then the finalization routines.
-
-@item ^-g^/DEBUG^
-@cindex @option{^-g^/DEBUG^} (@command{gnatmake})
-Enable debugging. This switch is simply passed to the compiler and to the
-linker.
 
 @end table
 
@@ -9268,6 +9138,9 @@ and some of the techniques for making your program run faster.
 It then documents the @command{gnatelim} tool and unused subprogram/data
 elimination feature, which can reduce the size of program executables.
 
+Note: to invoke @command{gnatelim} with a project file, use the @code{gnat}
+driver (see @ref{The GNAT Driver and Project Files}).
+
 @ifnottex
 @menu
 * Performance Considerations::
@@ -9422,7 +9295,8 @@ times, but GNAT makes absolutely no attempt to optimize, and the
 generated programs are considerably larger and slower than when
 optimization is enabled. You can use the
 @ifclear vms
-@option{-O@var{n}} switch, where @var{n} is an integer from 0 to 3,
+@option{-O} switch (the permitted forms are @option{-O0}, @option{-O1}
+@option{-O2}, @option{-O3}, and @option{-Os})
 @end ifclear
 @ifset vms
 @code{OPTIMIZE} qualifier
@@ -9460,6 +9334,9 @@ the slowest compilation time.
 Full optimization as in @option{-O2},
 and also attempts automatic inlining of small
 subprograms within a unit (@pxref{Inlining of Subprograms}).
+
+@item ^-Os^/OPTIMIZE=SPACE^
+Optimize space usage of resulting program.
 @end table
 
 @noindent
@@ -9469,6 +9346,10 @@ faster and more compact code. The price in compilation time, and the
 resulting improvement in execution time,
 both depend on the particular application and the hardware environment.
 You should experiment to find the best level for your application.
+
+The @option{^-Os^/OPTIMIZE=SPACE^} switch is independent of the time
+optimizations, so you can specify both @option{^-Os^/OPTIMIZE=SPACE^}
+and a time optimization on the same compile command.
 
 Since the precise set of optimizations done at each level will vary from
 release to release (and sometime from target to target), it is best to think
@@ -10644,7 +10525,7 @@ useful application of @code{gnatchop} is in sending sets of sources
 around, for example in email messages. The required sources are simply
 concatenated (for example, using a ^Unix @code{cat}^VMS @code{APPEND/NEW}^
 command), and then
-@code{gnatchop} is used at the other end to reconstitute the original
+@command{gnatchop} is used at the other end to reconstitute the original
 file names.
 
 @item gnatchop file1 file2 file3 direc
@@ -10664,15 +10545,15 @@ unit will be skipped.
 @cindex Pragmas, configuration
 
 @noindent
-In Ada 95, configuration pragmas include those pragmas described as
-such in the Ada 95 Reference Manual, as well as
+Configuration pragmas include those pragmas described as
+such in the Ada Reference Manual, as well as
 implementation-dependent pragmas that are configuration pragmas. See the
-individual descriptions of pragmas in the GNAT Reference Manual for
+individual descriptions of pragmas in the @cite{GNAT Reference Manual} for
 details on these additional GNAT-specific configuration pragmas. Most
 notably, the pragma @code{Source_File_Name}, which allows
 specifying non-default names for source files, is a configuration
 pragma. The following is a complete list of configuration pragmas
-recognized by @code{GNAT}:
+recognized by GNAT:
 
 @smallexample
    Ada_83
@@ -10754,15 +10635,15 @@ configuration pragmas, or more conveniently  by
 direct editing of the @file{gnat.adc} file, which is a standard format
 source file.
 
-In addition to @file{gnat.adc}, one additional file containing configuration
+In addition to @file{gnat.adc}, additional files containing configuration
 pragmas may be applied to the current compilation using the switch
 @option{-gnatec}@var{path}. @var{path} must designate an existing file that
 contains only configuration pragmas. These configuration pragmas are
 in addition to those found in @file{gnat.adc} (provided @file{gnat.adc}
 is present and switch @option{-gnatA} is not used).
 
-It is allowed to specify several switches @option{-gnatec}, however only
-the last one on the command line will be taken into account.
+It is allowed to specify several switches @option{-gnatec}, all of which
+will be taken into account.
 
 If you are using project file, a separate mechanism is provided using
 project attributes, see @ref{Specifying Configuration Pragmas} for more
@@ -12430,9 +12311,10 @@ case variable.
 An @code{others} alternative, if present, must occur last.
 
 After each @code{=>}, there are zero or more constructions.  The only
-constructions allowed in a case construction are other case constructions and
-attribute declarations. String type declarations, variable declarations and
-package declarations are not allowed.
+constructions allowed in a case construction are other case constructions,
+attribute declarations and variable declarations. String type declarations and
+package declarations are not allowed. Variable declarations are restricted to
+variables that have already been declared before the case construction.
 
 The value of the case variable is often given by an external reference
 (@pxref{External References in Project Files}).
@@ -13024,7 +12906,7 @@ a project.
 @group
      package Builder is
         for ^Default_Switches^Default_Switches^ ("Ada")
-            use Imported.Builder.Ada_^Switches^Switches^ &
+            use Imported.Builder'Ada_^Switches^Switches^ &
                 "^-gnatg^-gnatg^" &
                 "^-v^-v^";
      end Builder;
@@ -13033,7 +12915,7 @@ a project.
 @group
      package Compiler is
         for ^Default_Switches^Default_Switches^ ("Ada")
-            use Base.Compiler.Ada_^Switches^Switches^;
+            use Base.Compiler'Ada_^Switches^Switches^;
      end Compiler;
   end Main;
 @end group
@@ -13257,7 +13139,7 @@ to indicate what kind of library should be build.
 
 The @code{Library_ALI_Dir} attribute may be specified to indicate the
 directory where the ALI files of the library will be copied. When it is
-not specified, the ALI files are copied ti the directory specified in
+not specified, the ALI files are copied to the directory specified in
 attribute @code{Library_Dir}. The directory specified by @code{Library_ALI_Dir}
 must be writable and different from the project's object directory and from
 any source directory in the project tree.
@@ -13511,9 +13393,6 @@ only the last one is used.
 @menu
 * gnatmake and Project Files::
 * The GNAT Driver and Project Files::
-@ifclear vms
-* Glide and Project Files::
-@end ifclear
 @end menu
 
 @node gnatmake and Project Files
@@ -13918,25 +13797,27 @@ to @command{gnatmake} that the binder generated file should be compiled
 
 @noindent
 A number of GNAT tools, other than @command{^gnatmake^gnatmake^}
-are project-aware:
+can benefit from project files:
 @command{^gnatbind^gnatbind^},
+@command{^gnatcheck^gnatcheck^}),
+@command{^gnatclean^gnatclean^}),
+@command{^gnatelim^gnatelim^},
 @command{^gnatfind^gnatfind^},
 @command{^gnatlink^gnatlink^},
 @command{^gnatls^gnatls^},
-@command{^gnatelim^gnatelim^},
-@command{^gnatpp^gnatpp^},
 @command{^gnatmetric^gnatmetric^},
+@command{^gnatpp^gnatpp^},
 @command{^gnatstub^gnatstub^},
 and @command{^gnatxref^gnatxref^}. However, none of these tools can be invoked
 directly with a project file switch (@option{^-P^/PROJECT_FILE=^}).
 They must be invoked through the @command{gnat} driver.
 
-The @command{gnat} driver is a front-end that accepts a number of commands and
-call the corresponding tool. It has been designed initially for VMS to convert
-VMS style qualifiers to Unix style switches, but it is now available to all
-the GNAT supported platforms.
+The @command{gnat} driver is a wrapper that accepts a number of commands and
+calls the corresponding tool. It was designed initially for VMS platforms (to
+convert VMS qualifiers to Unix-style switches), but it is now available on all
+GNAT platforms.
 
-On non VMS platforms, the @command{gnat} driver accepts the following commands
+On non-VMS platforms, the @command{gnat} driver accepts the following commands
 (case insensitive):
 
 @itemize @bullet
@@ -14049,17 +13930,29 @@ package in the main project.
 package @code{Binder} for command BIND (invoking @code{^gnatbind^gnatbind^})
 
 @item
+package @code{Check} for command CHECK (invoking
+@code{^gnatcheck^gnatcheck^})
+
+@item
 package @code{Compiler} for command COMP or COMPILE (invoking the compiler)
 
 @item
-package @code{Finder} for command FIND (invoking @code{^gnatfind^gnatfind^})
+package @code{Cross_Reference} for command XREF (invoking
+@code{^gnatxref^gnatxref^})
 
 @item
 package @code{Eliminate} for command ELIM (invoking
 @code{^gnatelim^gnatelim^})
 
 @item
+package @code{Finder} for command FIND (invoking @code{^gnatfind^gnatfind^})
+
+@item
 package @code{Gnatls} for command LS or LIST (invoking @code{^gnatls^gnatls^})
+
+@item
+package @code{Gnatstub} for command STUB
+(invoking @code{^gnatstub^gnatstub^})
 
 @item
 package @code{Linker} for command LINK (invoking @code{^gnatlink^gnatlink^})
@@ -14071,14 +13964,6 @@ package @code{Metrics} for command METRIC
 @item
 package @code{Pretty_Printer} for command PP or PRETTY
 (invoking @code{^gnatpp^gnatpp^})
-
-@item
-package @code{Gnatstub} for command STUB
-(invoking @code{^gnatstub^gnatstub^})
-
-@item
-package @code{Cross_Reference} for command XREF (invoking
-@code{^gnatxref^gnatxref^})
 
 @end itemize
 
@@ -14104,7 +13989,7 @@ All other packages have two attribute @code{^Switches^Switches^} and
 @code{^Default_Switches^Default_Switches^}.
 
 @noindent
-@code{^Switches^Switches^} is an associated array attribute, indexed by the
+@code{^Switches^Switches^} is an associative array attribute, indexed by the
 source file name, that has a string list value: the ^switches^switches^ to be
 used when the tool corresponding to the package is invoked for the specific
 source file.
@@ -14194,23 +14079,29 @@ found in the package corresponding to the tool:
 @code{^Default_Switches^Default_Switches^ ("Ada")} for all tools,
 except @code{^Switches^Switches^ ("main.adb")}
 for @code{^gnatlink^gnatlink^}.
-
-@ifclear vms
-@node Glide and Project Files
-@subsection Glide and Project Files
-
-@noindent
-Glide will automatically recognize the @file{.gpr} extension for
-project files, and will
-convert them to its own internal format automatically. However, it
-doesn't provide a syntax-oriented editor for modifying these
-files.
-The project file will be loaded as text when you select the menu item
-@code{Ada} @result{} @code{Project} @result{} @code{Edit}.
-You can edit this text and save the @file{gpr} file;
-when you next select this project file in Glide it
-will be automatically reloaded.
-@end ifclear
+It is also possible to invoke some of the tools,
+@code{^gnatcheck^gnatcheck^}),
+@code{^gnatmetric^gnatmetric^}),
+and @code{^gnatpp^gnatpp^})
+on a set of project units thanks to the combination of the switches
+@code{-P}, @code{-U} and possibly the main unit when one is interested
+in its closure. For instance,
+@smallexample
+gnat metric -Pproj
+@end smallexample
+will compute the metrics for all the immediate units of project
+@code{proj}.
+@smallexample
+gnat metric -Pproj -U
+@end smallexample
+will compute the metrics for all the units of the closure of projects
+rooted at @code{proj}.
+@smallexample
+gnat metric -Pproj -U main_unit
+@end smallexample
+will compute the metrics for the closure of units rooted at
+@code{main_unit}. This last possibility relies implicitly
+on @command{gnatbind}'s option @option{-R}.
 
 @c **********************
 @node An Extended Example
@@ -14519,6 +14410,9 @@ To use these tools, you must not compile your application using the
 (@pxref{The GNAT Make Program gnatmake}). Otherwise, cross-referencing
 information will not be generated.
 
+Note: to invoke @code{gnatxref} or @code{gnatfind} with a project file,
+use the @code{gnat} driver (see @ref{The GNAT Driver and Project Files}).
+
 @menu
 * gnatxref Switches::
 * gnatfind Switches::
@@ -14616,8 +14510,8 @@ Equivalent to @samp{-aODIR -aIDIR}.
 
 @item -pFILE
 @cindex @option{-pFILE} (@command{gnatxref})
-Specify a project file to use @xref{Project Files}. These project files are
-the @file{.adp} files used by Glide. If you need to use the @file{.gpr}
+Specify a project file to use @xref{Project Files}.
+If you need to use the @file{.gpr}
 project files, you should use gnatxref through the GNAT driver
 (@command{gnat xref -Pproject}).
 
@@ -14827,7 +14721,7 @@ you specify @code{*} at the end of the command line.
 Project files allow a programmer to specify how to compile its
 application, where to find sources, etc.  These files are used
 @ifclear vms
-primarily by the Glide Ada mode, but they can also be used
+primarily by GPS, but they can also be used
 @end ifclear
 by the two tools
 @code{gnatxref} and @code{gnatfind}.
@@ -15660,6 +15554,33 @@ the same as @option{^crlf^CRLF^}
 the same as @option{^unix^UNIX^}
 @end itemize
 
+@item ^-W^/RESULT_ENCODING=^@var{e}
+@cindex @option{^-W^/RESULT_ENCODING=^} (@command{gnatpp})
+Specify the wide character encoding method used to write the code in the
+result file
+@var{e} is one of the following:
+
+@itemize @bullet
+
+@item ^h^HEX^
+Hex encoding
+
+@item ^u^UPPER^
+Upper half encoding
+
+@item ^s^SHIFT_JIS^
+Shift/JIS encoding
+
+@item ^e^EUC^
+EUC encoding
+
+@item ^8^UTF8^
+UTF-8 encoding
+
+@item ^b^BRACKETS^
+Brackets encoding (default value)
+@end itemize
+
 @end table
 
 @noindent
@@ -15669,6 +15590,8 @@ Options @option{^-pipe^/STANDARD_OUTPUT^},
 contains only one file to reformat.
 Option
 @option{^--eol^/END_OF_LINE^}
+and
+@option{^-W^/RESULT_ENCODING^}
 cannot be used together
 with @option{^-pipe^/STANDARD_OUTPUT^} option.
 
@@ -16299,6 +16222,7 @@ The following subsections describe the various switches accepted by
 * Syntax Metrics Control::
 * Complexity Metrics Control::
 * Other gnatmetric Switches::
+* Generate project-wide metrics::
 @end menu
 
 @node Output Files Control
@@ -16489,7 +16413,7 @@ The total number of declarations and the total number of statements
 
 @item Maximal static nesting level of inner program units
 According to
-@cite{Ada 95 Language Reference Manual}, 10.1(1), ``A program unit is either a
+@cite{Ada Reference Manual}, 10.1(1), ``A program unit is either a
 package, a task unit, a protected unit, a
 protected entry, a generic unit, or an explicitly declared subprogram other
 than an enumeration literal.''
@@ -16702,6 +16626,28 @@ happens during the metrics computation
 @cindex @option{^-q^/QUIET^} (@code{gnatmetric})
 Quiet mode.
 @end table
+
+@node Generate project-wide metrics
+@subsection Generate project-wide metrics
+
+In order to compute metrics on all units of a given project, one can use
+the @command{gnat} driver along with the @option{-P} option:
+@smallexample
+   gnat metric -Pproj
+@end smallexample
+If the project @code{proj} depends upon other projects, one can compute
+the metrics on the project closure using the @option{-U} option:
+@smallexample
+   gnat metric -Pproj -U
+@end smallexample
+Finally, if not all the units are relevant to a particular main
+program in the project closure, one can generate metrics for the set
+of units needed to create a given main program (unit closure) using
+the @option{-U} option followed by the name of the main unit:
+@smallexample
+   gnat metric -Pproj -U main
+@end smallexample
+
 
 @c ***********************************
 @node File Name Krunching Using gnatkr
@@ -17138,8 +17084,11 @@ it is an error to reference an undefined symbol. It is also an error to
 reference a symbol that is defined with a value other than @code{True}
 or @code{False}.
 
-The use of the @code{not} operator inverts the sense of this logical test, so
-that the lines are included only if the symbol is not defined.
+The use of the @code{not} operator inverts the sense of this logical test.
+The @code{not} operator cannot be combined with the @code{or} or @code{and}
+operators, without parentheses. For example, "if not X or Y then" is not
+allowed, but "if (not X) or Y then" and "if not (X or Y) then" are.
+
 The @code{then} keyword is optional as shown
 
 The @code{#} must be the first non-blank character on a line, but
@@ -17268,6 +17217,9 @@ GNAT LIBRARY rebuilds the run-time library in directory [.VAXFLOAT]
 units. It gives the relationship between objects, unit names and source
 files. It can also be used to check the source dependencies of a unit
 as well as various characteristics.
+
+Note: to invoke @code{gnatls} with a project file, use the @code{gnat}
+driver (see @ref{The GNAT Driver and Project Files}).
 
 @menu
 * Running gnatls::
@@ -17410,13 +17362,13 @@ characteristics such as:
 
 @table @code
 @item  Preelaborable
-The unit is preelaborable in the Ada 95 sense.
+The unit is preelaborable in the Ada sense.
 
 @item No_Elab_Code
 No elaboration code has been produced by the compiler for this unit.
 
 @item Pure
-The unit is pure in the Ada 95 sense.
+The unit is pure in the Ada sense.
 
 @item Elaborate_Body
 The unit contains a pragma Elaborate_Body.
@@ -17975,6 +17927,7 @@ third-party library @file{liba.a}:
 @group
 project Liba is
    for Externally_Built use "true";
+   for Source_Files use ();
    for Library_Dir use "lib";
    for Library_Name use "a";
    for Library_Kind use "static";
@@ -18871,8 +18824,8 @@ leak.
 allocation and deallocation routines that record call information. This
 allows to obtain accurate dynamic memory usage history at a minimal cost to
 the execution speed. Note however, that @code{gnatmem} is not supported on
-all platforms (currently, it is supported on AIX, HP-UX, GNU/Linux x86,
-32-bit Solaris (sparc and x86) and Windows NT/2000/XP (x86).
+all platforms (currently, it is supported on AIX, HP-UX, GNU/Linux,
+Solaris and Windows NT/2000/XP (x86).
 
 @noindent
 The @code{gnatmem} command has the form
@@ -19323,7 +19276,7 @@ output this info at program termination. Results are displayed in four
 columns:
 
 @noindent
-Index | Task Name | Stack Size | Actual Use
+Index | Task Name | Stack Size | Actual Use [min - max]
 
 @noindent
 where:
@@ -19336,12 +19289,13 @@ is a number associated with each task.
 is the name of the task analyzed.
 
 @item Stack Size
-is the maximum size for the stack. In order to prevent overflow,
-the real stack limit  is slightly larger than the Stack Size in order to allow
-proper recovery.
+is the maximum size for the stack.
 
 @item Actual Use
-is the measure done by the stack analyzer.
+is the measure done by the stack analyzer. In order to prevent overflow,
+the stack is not entirely analyzed, and it's not possible to know exactly how
+much has actually been used. The real amount of stack used is between the min
+and max values.
 
 @end table
 
@@ -19349,14 +19303,19 @@ is the measure done by the stack analyzer.
 The environment task stack, e.g. the stack that contains the main unit, is
 only processed when the environment variable GNAT_STACK_LIMIT is set.
 
+
 @c *********************************
-@node Verifying properties using gnatcheck
-@chapter Verifying properties using @command{gnatcheck}
+@c *            GNATCHECK          *
+@c *********************************
+@node Verifying Properties Using gnatcheck
+@chapter Verifying Properties Using @command{gnatcheck}
 @findex gnatcheck
+@cindex @command{gnatcheck}
 
 @noindent
 The @command{gnatcheck} tool is an ASIS-based utility that checks properties
 of Ada source files according to a given set of semantic rules.
+@cindex ASIS
 
 In order to check compliance with a given rule, @command{gnatcheck} has to
 semantically analyze the Ada sources.
@@ -19366,22 +19325,21 @@ outside the current directory, the source search path has to be provided when
 calling @command{gnatcheck}, either through a specified project file or
 through @command{gnatcheck} switches as described below.
 
-The project support for @command{gnatcheck} is provided by the @command{gnat}
-driver.
+A number of rules are predefined in @command{gnatcheck} and are described
+later in this chapter.
+You can also add new rules, by modifying the @command{gnatcheck} code and
+rebuilding the tool. In order to add a simple rule making some local checks,
+a small amount of straightforward ASIS-based programming is usually needed.
 
-Several rules are already implemented in @command{gnatcheck}. The list of such
-rules can be obtained with option @option{^-h^/HELP^} as described in the next
-section. A user can add new rules by modifying the @command{gnatcheck} code and
-rebuilding the tool. For adding a simple rule making some local checks, a small
-amount of straightforward ASIS-based programming is usually needed.
+Project support for @command{gnatcheck} is provided by the GNAT
+driver (see @ref{The GNAT Driver and Project Files}).
 
-@noindent
-@command{gnatcheck} has the command-line interface of the form
+Invoking @command{gnatcheck} on the command line has the form:
 
 @smallexample
 $ gnatcheck [@i{switches}]  @{@i{filename}@}
-      [@i{^-files^/FILES^=@{arg_list_filename@}}]
-      [@i{-cargs gcc_switches}] [@i{-rules rule_options}]
+      [^-files^/FILES^=@{@i{arg_list_filename}@}]
+      [-cargs @i{gcc_switches}] [-rules @i{rule_options}]
 @end smallexample
 
 @noindent
@@ -19401,29 +19359,32 @@ file containing the names of the source files to process, separated by spaces
 or line breaks.
 
 @item
-@i{-cargs gcc_switches} is a list of switches for
+@i{gcc_switches} is a list of switches for
 @command{gcc}. They will be passed on to all compiler invocations made by
 @command{gnatcheck} to generate the ASIS trees. Here you can provide
 @option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
 and use the @option{-gnatec} switch to set the configuration file.
 
 @item
-@i{-rules rule_options} is a list of options for controlling a set of
-rules to be checked by @command{gnatcheck} (@pxref{gnatcheck Rule Options})
+@i{rule_options} is a list of options for controlling a set of
+rules to be checked by @command{gnatcheck} (@pxref{gnatcheck Rule Options}).
 @end itemize
 
 @noindent
-Either a @i{filename} or an @i{arg_list_filename} needs to be supplied.
+Either a @i{filename} or an @i{arg_list_filename} must be supplied.
 
 @menu
 * Format of the Report File::
 * General gnatcheck Switches::
 * gnatcheck Rule Options::
-* Add the Results of Compiler Checks to gnatcheck Output::
+* Adding the Results of Compiler Checks to gnatcheck Output::
+* Project-Wide Checks::
+* Predefined Rules::
 @end menu
 
 @node Format of the Report File
 @section Format of the Report File
+@cindex Report file (for @code{gnatcheck})
 
 @noindent
 The @command{gnatcheck} tool outputs on @file{stdout} all messages concerning
@@ -19449,15 +19410,28 @@ Section 3 contains messages ordered by source files.
 The following switches control the general @command{gnatcheck} behavior
 
 @table @option
+@c !sort!
 @cindex @option{^-a^/ALL^} (@command{gnatcheck})
 @item ^-a^/ALL^
 Process all units including those with read-only ALI files such as
 those from GNAT Run-Time library.
 
+@ifclear vms
+@ignore
+@cindex @option{-d} (@command{gnatcheck})
+@item -d
+Debug mode
+@end ignore
+
+@cindex @option{-dd} (@command{gnatcheck})
+@item -dd
+Progress indicator mode (for use in GPS)
+@end ifclear
+
 @cindex @option{^-h^/HELP^} (@command{gnatcheck})
 @item ^-h^/HELP^
-Print out the list of the currently implemented rules. For more details see
-the README file in the @command{gnatcheck} sources.
+List the predefined and user-defined rules. For more details see
+@ref{Predefined Rules}.
 
 @cindex @option{^-l^/LOCS^} (@command{gnatcheck})
 @item ^-l^/LOCS^
@@ -19497,11 +19471,11 @@ a trace of sources being processed.
 @end table
 
 @noindent
-Note, that if either of the options @option{^-s1^/COMPILER_STYLE^},
+Note that if any of the options @option{^-s1^/COMPILER_STYLE^},
 @option{^-s2^/BY_RULES^} or
 @option{^-s3^/BY_FILES_BY_RULES^} is specified,
-then the  @command{gnatcheck} report file will contain only sections
-explicitly stated by these options.
+then the  @command{gnatcheck} report file will only contain sections
+explicitly denoted by these options.
 
 @node gnatcheck Rule Options
 @section @command{gnatcheck} Rule Options
@@ -19513,25 +19487,25 @@ The following options control the processing performed by
 @table @option
 @cindex @option{+ALL} (@command{gnatcheck})
 @item +ALL
-Turn all the rule checks ON
+Turn all the rule checks ON.
 
 @cindex @option{-ALL} (@command{gnatcheck})
 @item -ALL
-Turn all the rule checks OFF
+Turn all the rule checks OFF.
 
 @cindex @option{+R} (@command{gnatcheck})
 @item +R@i{rule_id[:param]}
 Turn on the check for a specified rule with the specified parameter, if any.
-@i{rule_id} should be the identifier of one of the currently implemented rules
+@i{rule_id} must be the identifier of one of the currently implemented rules
 (use @option{^-h^/HELP^} for the list of implemented rules). Rule identifiers
-are not case-sensitive. The @i{:param} item should
+are not case-sensitive. The @i{param} item must
 be a string representing a valid parameter(s) for the specified rule.
 If it contains any space characters then this string must be enclosed in
 quotation marks.
 
 @cindex @option{-R} (@command{gnatcheck})
-@item -R@i{rule_id}
-Turn off the check for a specified rule
+@item -R@i{rule_id[:param]}
+Turn off the check for a specified rule with the specified parameter, if any.
 
 @cindex @option{-from} (@command{gnatcheck})
 @item -from=@i{rule_option_filename}
@@ -19541,21 +19515,30 @@ Read the rule options from the text file @i{rule_option_filename}, referred as
 @end table
 
 @noindent
-A rule file is supposed to be a text file containing an arbitrary set of
-rule options. The file may contain empty lines and Ada-style comments (comment
-lines and end-of-line comments). The rule file have free format, that is,
-you do not have to start a new rule option from the new line.
+The default behavior is that all the rule checks are enabled, except for
+the checks performed by the compiler.
+@ignore
+and the checks associated with the
+global rules.
+@end ignore
 
-A rule file may contain another @option{-from=@i{rule_option_filename}}
-options, each of such options is replaced with the content of the
-corresponding rule file during the rule files processing. In case if a
-cycling is detected (that is, @i{rule_file_1} reads rule options from
+A rule file is a text file containing a set of rule options.
+@cindex Rule file (for @code{gnatcheck})
+The file may contain empty lines and Ada-style comments (comment
+lines and end-of-line comments). The rule file has free format; that is,
+you do not have to start a new rule option on a new line.
+
+A rule file may contain other @option{-from=@i{rule_option_filename}}
+options, each such option being replaced with the content of the
+corresponding rule file during the rule files processing. In case a
+cycle is detected (that is, @i{rule_file_1} reads rule options from
 @i{rule_file_2}, and  @i{rule_file_2} reads (directly or indirectly)
-rule options from @i{rule_file_1}), the process of macro-expansions
+rule options from @i{rule_file_1}), the processing
 of rule files is interrupted and a part of their content is ignored.
 
-@node Add the Results of Compiler Checks to gnatcheck Output
-@section Add the Results of Compiler Checks to @command{gnatcheck} Output
+
+@node Adding the Results of Compiler Checks to gnatcheck Output
+@section Adding the Results of Compiler Checks to @command{gnatcheck} Output
 
 @noindent
 The @command{gnatcheck} tool can include in the generated diagnostic messages
@@ -19569,22 +19552,1498 @@ the following rule identifiers and parameters:
 To record restrictions violations (that are performed by the compiler if the
 pragma @code{Restrictions} or @code{Restriction_Warnings} are given),
 use the rule named
-@i{Restrictions} with the same parameters as pragma
-@code{Restrictions} or @code{Restriction_Warnings}
+@code{Restrictions} with the same parameters as pragma
+@code{Restrictions} or @code{Restriction_Warnings}.
 
 @item Style_Checks
 To record compiler style checks, use the rule named
-@i{Style_Checks}. A parameter of this rule can be either @i{All_Checks}, that
-turns ON all the style checks, or a string that has exactly the same structure
-and semantics as @code{string_LITERAL} parameter of GNAT pragma
-@code{Style_Checks}.
+@code{Style_Checks}. A parameter of this rule can be either @code{All_Checks},
+which enables all the style checks, or a string that has exactly the same
+structure and semantics as the @code{string_LITERAL} parameter of GNAT pragma
+@code{Style_Checks} (for further information about this pragma, please
+refer to the @cite{@value{EDITION} Reference Manual}).
 
 @item Warnings
 To record compiler warnings (@pxref{Warning Message Control}), use the rule
-named @i{Warnings} with a parameter that is a valid
-@code{static_string_expression} argument of GNAT pragma @code{Warnings}.
+named @code{Warnings} with a parameter that is a valid
+@i{static_string_expression} argument of GNAT pragma @code{Warnings}
+(for further information about this pragma, please
+refer to the @cite{@value{EDITION} Reference Manual}).
 
 @end table
+
+@node Project-Wide Checks
+@section Project-Wide Checks
+@cindex Project-wide checks (for @command{gnatcheck})
+
+@noindent
+In order to perform checks on all units of a given project, you can use
+the GNAT driver along with the @option{-P} option:
+@smallexample
+   gnat check -Pproj -rules -from=my_rules
+@end smallexample
+
+@noindent
+If the project @code{proj} depends upon other projects, you can perform
+checks on the project closure using the @option{-U} option:
+@smallexample
+   gnat check -Pproj -U -rules -from=my_rules
+@end smallexample
+
+@noindent
+Finally, if not all the units are relevant to a particular main
+program in the project closure, you can perform checks for the set
+of units needed to create a given main program (unit closure) using
+the @option{-U} option followed by the name of the main unit:
+@smallexample
+   gnat check -Pproj -U main -rules -from=my_rules
+@end smallexample
+
+
+@node Predefined Rules
+@section Predefined Rules
+@cindex Predefined rules (for @command{gnatcheck})
+
+@ignore
+@c (Jan 2007) Since the global rules are still under development and are not
+@c documented, there is no point in explaining the difference between
+@c global and local rules
+@noindent
+A rule in @command{gnatcheck} is either local or global.
+A @emph{local rule} is a rule that applies to a well-defined section
+of a program and that can be checked by analyzing only this section.
+A @emph{global rule} requires analysis of some global properties of the
+whole program (mostly related to the program call graph).
+As of @value{NOW}, the implementation of global rules should be
+considered to be at a preliminary stage. You can use the
+@option{+GLOBAL} option to enable all the global rules, and the
+@option{-GLOBAL} rule option to disable all the global rules.
+
+All the global rules in the list below are
+so indicated by marking them ``GLOBAL''.
+This +GLOBAL and -GLOBAL options are not
+included in the list of gnatcheck options above, because at the moment they
+are considered as a temporary debug options.
+
+@command{gnatcheck} performs rule checks for generic
+instances only for global rules.  This limitation may be relaxed in a later
+release.
+@end ignore
+
+@noindent
+The following subsections document the rules implemented in
+@command{gnatcheck}.
+The subsection title is the same as the rule identifier, which may be
+used as a parameter of the @option{+R} or @option{-R} options.
+
+
+@menu
+* Abstract_Type_Declarations::
+* Anonymous_Arrays::
+* Anonymous_Subtypes::
+* Blocks::
+* Boolean_Relational_Operators::
+@ignore
+* Ceiling_Violations::
+@end ignore
+* Controlled_Type_Declarations::
+* Declarations_In_Blocks::
+* Default_Parameters::
+* Discriminated_Records::
+* Enumeration_Ranges_In_CASE_Statements::
+* Exceptions_As_Control_Flow::
+* EXIT_Statements_With_No_Loop_Name::
+* Expanded_Loop_Exit_Names::
+* Explicit_Full_Discrete_Ranges::
+* Float_Equality_Checks::
+* Forbidden_Pragmas::
+* Function_Style_Procedures::
+* Generics_In_Subprograms::
+* GOTO_Statements::
+* Implicit_IN_Mode_Parameters::
+* Implicit_SMALL_For_Fixed_Point_Types::
+* Improperly_Located_Instantiations::
+* Improper_Returns::
+* Library_Level_Subprograms::
+* Local_Packages::
+@ignore
+* Improperly_Called_Protected_Entries::
+@end ignore
+* Misnamed_Identifiers::
+* Multiple_Entries_In_Protected_Definitions::
+* Name_Clashes::
+* Non_Qualified_Aggregates::
+* Non_Short_Circuit_Operators::
+* Non_SPARK_Attributes::
+* Non_Tagged_Derived_Types::
+* Non_Visible_Exceptions::
+* Numeric_Literals::
+* OTHERS_In_Aggregates::
+* OTHERS_In_CASE_Statements::
+* OTHERS_In_Exception_Handlers::
+* Outer_Loop_Exits::
+* Overloaded_Operators::
+* Overly_Nested_Control_Structures::
+* Parameters_Out_Of_Order::
+* Positional_Actuals_For_Defaulted_Generic_Parameters::
+* Positional_Actuals_For_Defaulted_Parameters::
+* Positional_Components::
+* Positional_Generic_Parameters::
+* Positional_Parameters::
+* Predefined_Numeric_Types::
+* Raising_External_Exceptions::
+* Raising_Predefined_Exceptions::
+@ignore
+* Recursion::
+* Side_Effect_Functions::
+@end ignore
+* Slices::
+* Unassigned_OUT_Parameters::
+* Uncommented_BEGIN_In_Package_Bodies::
+* Unconstrained_Array_Returns::
+* Universal_Ranges::
+* Unnamed_Blocks_And_Loops::
+@ignore
+* Unused_Subprograms::
+@end ignore
+* USE_PACKAGE_Clauses::
+* Volatile_Objects_Without_Address_Clauses::
+@end menu
+
+
+@node Abstract_Type_Declarations
+@subsection @code{Abstract_Type_Declarations}
+@cindex @code{Abstract_Type_Declarations} rule (for @command{gnatcheck})
+
+@noindent
+Flag all declarations of abstract types. For an abstract private
+type, both the private and full type declarations are flagged.
+
+This rule has no parameters.
+
+
+@node Anonymous_Arrays
+@subsection @code{Anonymous_Arrays}
+@cindex @code{Anonymous_Arrays} rule (for @command{gnatcheck})
+
+@noindent
+Flag all anonymous array type definitions (by Ada semantics these can only
+occur in object declarations).
+
+This rule has no parameters.
+
+@node Anonymous_Subtypes
+@subsection @code{Anonymous_Subtypes}
+@cindex @code{Anonymous_Subtypes} rule (for @command{gnatcheck})
+
+@noindent
+Flag all uses of anonymous subtypes. A use of an anonymous subtype is
+any instance of a subtype indication with a constraint, other than one
+that occurs immediately within a subtype declaration. Any use of a range
+other than as a constraint used immediately within a subtype declaration
+is considered as an anonymous subtype.
+
+An effect of this rule is that @code{for} loops such as the following are
+flagged (since @code{1..N} is formally a ``range''):
+
+@smallexample @c ada
+for I in 1 .. N loop
+   ...
+end loop;
+@end smallexample
+
+@noindent
+Declaring an explicit subtype solves the problem:
+
+@smallexample @c ada
+subtype S is Integer range 1..N;
+...
+for I in S loop
+   ...
+end loop;
+@end smallexample
+
+@noindent
+This rule has no parameters.
+
+@node Blocks
+@subsection @code{Blocks}
+@cindex @code{Blocks} rule (for @command{gnatcheck})
+
+@noindent
+Flag each block statement.
+
+This rule has no parameters.
+
+@node Boolean_Relational_Operators
+@subsection @code{Boolean_Relational_Operators}
+@cindex @code{Boolean_Relational_Operators} rule (for @command{gnatcheck})
+
+@noindent
+Flag each call to a predefined relational operator (``<'', ``>'', ``<='',
+``>='', ``='' and ``/='') for the predefined @code{Boolean} type.
+(This rule is useful in enforcing the SPARK language restrictions.)
+
+Calls to predefined relational operators of any type derived from
+@code{Standard.Boolean} are not detected.  Calls to user-defined functions
+with these designators, and uses of operators that are renamings
+of the predefined relational operators for @code{Standard.Boolean},
+are likewise not detected.
+
+This rule has no parameters.
+
+@ignore
+@node Ceiling_Violations
+@subsection @code{Ceiling_Violations} (under construction, GLOBAL)
+@cindex @code{Ceiling_Violations} rule (for @command{gnatcheck})
+
+@noindent
+Flag invocations of a protected operation by a task whose priority exceeds
+the protected object's ceiling.
+
+As of @value{NOW}, this rule has the following limitations:
+
+@itemize @bullet
+
+@item
+ We consider only pragmas Priority and Interrupt_Priority as means to define
+  a task/protected operation priority. We do not consider the effect of using
+  Ada.Dynamic_Priorities.Set_Priority procedure;
+
+@item
+ We consider only base task priorities, and no priority inheritance. That is,
+  we do not make a difference between calls issued during task activation and
+  execution of the sequence of statements from task body;
+
+@item
+ Any situation when the priority of protected operation caller is set by a
+  dynamic expression (that is, the corresponding Priority or
+  Interrupt_Priority pragma has a non-static expression as an argument) we
+  treat as a priority inconsistency (and, therefore, detect this situation).
+@end itemize
+
+@noindent
+At the moment the notion of the main subprogram is not implemented in
+gnatcheck, so any pragma Priority in a library level subprogram body (in case
+if this subprogram can be a main subprogram of a partition) changes the
+priority of an environment task. So if we have more then one such pragma in
+the set of processed sources, the pragma that is processed last, defines the
+priority of an environment task.
+
+This rule has no parameters.
+@end ignore
+
+@node Controlled_Type_Declarations
+@subsection @code{Controlled_Type_Declarations}
+@cindex @code{Controlled_Type_Declarations} rule (for @command{gnatcheck})
+
+@noindent
+Flag all declarations of controlled types. A declaration of a private type
+is flagged if its full declaration declares a controlled type. A declaration
+of a derived type is flagged if its ancestor type is controlled. Subtype
+declarations are not checked. A declaration of a type that itself is not a
+descendant of a type declared in @code{Ada.Finalization} but has a controlled
+component is not checked.
+
+This rule has no parameters.
+
+
+
+@node Declarations_In_Blocks
+@subsection @code{Declarations_In_Blocks}
+@cindex @code{Declarations_In_Blocks} rule (for @command{gnatcheck})
+
+@noindent
+Flag all block statements containing local declarations. A @code{declare}
+block with an empty @i{declarative_part} or with a @i{declarative part}
+containing only pragmas and/or @code{use} clauses is not flagged.
+
+This rule has no parameters.
+
+
+@node Default_Parameters
+@subsection @code{Default_Parameters}
+@cindex @code{Default_Parameters} rule (for @command{gnatcheck})
+
+@noindent
+Flag all default expressions for subprogram parameters. Parameter
+declarations of formal and generic subprograms are also checked.
+
+This rule has no parameters.
+
+
+@node Discriminated_Records
+@subsection @code{Discriminated_Records}
+@cindex @code{Discriminated_Records} rule (for @command{gnatcheck})
+
+@noindent
+Flag all declarations of record types with discriminants. Only the
+declarations of record and record extension types are checked. Incomplete,
+formal, private, derived and private extension type declarations are not
+checked. Task and protected type declarations also are not checked.
+
+This rule has no parameters.
+
+
+@node Enumeration_Ranges_In_CASE_Statements
+@subsection @code{Enumeration_Ranges_In_CASE_Statements}
+@cindex @code{Enumeration_Ranges_In_CASE_Statements} (for @command{gnatcheck})
+
+@noindent
+Flag each use of a range of enumeration literals as a choice in a
+@code{case} statement.
+All forms for specifying a range (explicit ranges
+such as @code{A .. B}, subtype marks and @code{'Range} attributes) are flagged.
+An enumeration range is
+flagged even if contains exactly one enumeration value or no values at all. A
+type derived fom an enumeration type is considered as an enumeration type.
+
+This rule helps prevent maintenance problems arising from adding an
+enumeration value to a type and having it implicitly handled by an existing
+@code{case} statement with an enumeration range that includes the new literal.
+
+This rule has no parameters.
+
+
+@node Exceptions_As_Control_Flow
+@subsection @code{Exceptions_As_Control_Flow}
+@cindex @code{Exceptions_As_Control_Flow} (for @command{gnatcheck})
+
+@noindent
+Flag each place where an exception is explictly raised and handled in the
+same subprogram body. A @code{raise} statement in an exception handler,
+package body, task body or entry body is not flagged.
+
+The rule has no parameters.
+
+@node EXIT_Statements_With_No_Loop_Name
+@subsection @code{EXIT_Statements_With_No_Loop_Name}
+@cindex @code{EXIT_Statements_With_No_Loop_Name} (for @command{gnatcheck})
+
+@noindent
+Flag each @code{exit} statement that does not specify the name of the loop
+being exited.
+
+The rule has no parameters.
+
+
+@node Expanded_Loop_Exit_Names
+@subsection @code{Expanded_Loop_Exit_Names}
+@cindex @code{Expanded_Loop_Exit_Names} rule (for @command{gnatcheck})
+
+@noindent
+Flag all expanded loop names in @code{exit} statements.
+
+This rule has no parameters.
+
+@node Explicit_Full_Discrete_Ranges
+@subsection @code{Explicit_Full_Discrete_Ranges}
+@cindex @code{Explicit_Full_Discrete_Ranges} rule (for @command{gnatcheck})
+
+@noindent
+Flag each discrete range that has the form @code{A'First .. A'Last}.
+
+This rule has no parameters.
+
+@node Float_Equality_Checks
+@subsection @code{Float_Equality_Checks}
+@cindex @code{Float_Equality_Checks} rule (for @command{gnatcheck})
+
+@noindent
+Flag all calls to the predefined equality operations for floating-point types.
+Both ``@code{=}'' and ``@code{/=}'' operations are checked.
+User-defined equality operations are not flagged, nor are ``@code{=}''
+and ``@code{/=}'' operations for fixed-point types.
+
+This rule has no parameters.
+
+
+@node Forbidden_Pragmas
+@subsection @code{Forbidden_Pragmas}
+@cindex @code{Forbidden_Pragmas} rule (for @command{gnatcheck})
+
+@noindent
+Flag each use of the specified pragmas.  The pragmas to be detected
+are named in the rule's  parameters.
+
+This rule has the following parameters:
+
+@itemize @bullet
+@item For the @option{+R} option
+
+@table @asis
+@item @emph{Pragma_Name}
+Adds the specified pragma to the set of pragmas to be
+checked and sets the checks for all the specified pragmas
+ON. @emph{Pragma_Name} is treated as a name of a pragma. If it
+does not correspond to any pragma name defined in the Ada
+standard or to the name of a GNAT-specific pragma defined
+in the GNAT Reference Manual, it is treated as the name of
+unknown pragma.
+
+@item @code{GNAT}
+All the GNAT-specific pragmas are detected; this sets
+the checks for all the specified pragmas ON.
+
+@item @code{ALL}
+All pragmas are detected; this sets the rule ON.
+@end table
+
+@item For the @option{-R} option
+@table @asis
+@item @emph{Pragma_Name}
+Removes the specified pragma from the set of pragmas to be
+checked without affecting checks for
+other pragmas. @emph{Pragma_Name} is treated as a name
+of a pragma. If it does not correspond to any pragma
+defined in the Ada standard or to any name defined in the
+GNAT Reference Manual,
+this option is treated as turning OFF detection of all
+unknown pragmas.
+
+@item GNAT
+Turn OFF detection of all GNAT-specific pragmas
+
+@item ALL
+Clear the list of the pragmas to be detected and
+turn the rule OFF.
+@end table
+@end itemize
+
+@noindent
+Parameters are not case sensitive. If @emph{Pragma_Name} does not have
+the syntax of an Ada identifier and therefore can not be considered
+as a pragma name, a diagnostic message is generated and the corresponding
+parameter is ignored.
+
+When more then one parameter is given in the same rule option, the parameters
+must be separated by a comma.
+
+If more then one option for this rule is specified for the @command{gnatcheck}
+call, a new option overrides the previous one(s).
+
+The @option{+R} option with no parameters turns the rule ON with the set of
+pragmas to be detected defined by the previous rule options.
+(By default this set is empty, so if the only option specified for the rule is
+@option{+RForbidden_Pragmas} (with
+no parameter), then the rule is enabled, but it does not detect anything).
+The @option{-R} option with no parameter turns the rule OFF, but it does not
+affect the set of pragmas to be detected.
+
+
+
+
+@node Function_Style_Procedures
+@subsection @code{Function_Style_Procedures}
+@cindex @code{Function_Style_Procedures} rule (for @command{gnatcheck})
+
+@noindent
+Flag each procedure that can be rewritten as a function. A procedure can be
+converted into a function if it has exactly one parameter of mode @code{out}
+and no parameters of mode @code{in out}. Procedure declarations,
+formal procedure declarations. and generic procedure declarations are always
+checked. Procedure
+bodies and body stubs are flagged only if they do not have corresponding
+separate declarations. Procedure renamings and procedure instantiations are
+not flagged.
+
+If a procedure can be rewritten as a fucntion, but its @code{out} parameter is
+of a limited type, it is not flagged.
+
+Protected procedures are not flagged. Null procedures also are not flagged.
+
+This rule has no parameters.
+
+
+@node Generics_In_Subprograms
+@subsection @code{Generics_In_Subprograms}
+@cindex @code{Generics_In_Subprograms} rule (for @command{gnatcheck})
+
+@noindent
+Flag each declaration of a generic unit in a supbrogram. Generic
+declarations in the bodies of generic subprograms are also flagged.
+A generic unit nested in another generic unit is not flagged.
+If a generic unit is
+declared in a local package that is declared in a subprogram body, the
+generic unit is flagged.
+
+This rule has no parameters.
+
+
+@node GOTO_Statements
+@subsection @code{GOTO_Statements}
+@cindex @code{GOTO_Statements} rule (for @command{gnatcheck})
+
+@noindent
+Flag each occurrence of a @code{goto} statement.
+
+This rule has no parameters.
+
+
+@node Implicit_IN_Mode_Parameters
+@subsection @code{Implicit_IN_Mode_Parameters}
+@cindex @code{Implicit_IN_Mode_Parameters} rule (for @command{gnatcheck})
+
+@noindent
+Flag each occurrence of a formal parameter with an implicit @code{in} mode.
+Note that @code{access} parameters, although they technically behave
+like @code{in} parameters, are not flagged.
+
+This rule has no parameters.
+
+
+@node Implicit_SMALL_For_Fixed_Point_Types
+@subsection @code{Implicit_SMALL_For_Fixed_Point_Types}
+@cindex @code{Implicit_SMALL_For_Fixed_Point_Types} rule (for @command{gnatcheck})
+
+@noindent
+Flag each fixed point type declaration that lacks an explicit
+representation  clause to define its @code{'Small} value.
+Since @code{'Small} can be  defined only for ordinary fixed point types,
+decimal fixed point type declarations are not checked.
+
+This rule has no parameters.
+
+
+@node Improperly_Located_Instantiations
+@subsection @code{Improperly_Located_Instantiations}
+@cindex @code{Improperly_Located_Instantiations} rule (for @command{gnatcheck})
+
+@noindent
+Flag all generic instantiations in library-level package specifications
+(including library generic packages) and in all subprogram bodies.
+
+Instantiations in task and entry bodies are not flagged. Instantiations in the
+bodies of protected subprograms are flagged.
+
+This rule has no parameters.
+
+
+
+@node Improper_Returns
+@subsection @code{Improper_Returns}
+@cindex @code{Improper_Returns} rule (for @command{gnatcheck})
+
+@noindent
+Flag each explicit @code{return} statement in procedures, and
+multiple @code{return} statements in functions.
+Diagnostic messages are generated for all @code{return} statements
+in a procedure (thus each procedure must be written so that it
+returns implicitly at the end of its statement part),
+and for all @code{return} statements in a function after the first one.
+This rule supports the stylistic convention that each subprogram
+should have no more than one point of normal return.
+
+This rule has no parameters.
+
+
+@node Library_Level_Subprograms
+@subsection @code{Library_Level_Subprograms}
+@cindex @code{Library_Level_Subprograms} rule (for @command{gnatcheck})
+
+@noindent
+Flag all library-level subprograms (including generic subprogram instantiations).
+
+This rule has no parameters.
+
+
+@node Local_Packages
+@subsection @code{Local_Packages}
+@cindex @code{Local_Packages} rule (for @command{gnatcheck})
+
+@noindent
+Flag all local packages declared in package and generic package
+specifications.
+Local packages in bodies are not flagged.
+
+This rule has no parameters.
+
+@ignore
+@node Improperly_Called_Protected_Entries
+@subsection @code{Improperly_Called_Protected_Entries} (under construction, GLOBAL)
+@cindex @code{Improperly_Called_Protected_Entries} rule (for @command{gnatcheck})
+
+@noindent
+Flag each protected entry that can be called from more than one task.
+
+This rule has no parameters.
+@end ignore
+
+
+@node Misnamed_Identifiers
+@subsection @code{Misnamed_Identifiers}
+@cindex @code{Misnamed_Identifiers} rule (for @command{gnatcheck})
+
+@noindent
+Flag the declaration of each identifier that does not have a suffix
+corresponding to the kind of entity being declared.
+The following declarations are checked:
+
+@itemize @bullet
+@item
+ type declarations
+
+@item
+ constant declarations (but not number declarations)
+
+@item
+ package renaming declarations (but not generic package renaming
+    declarations)
+@end itemize
+
+@noindent
+This rule may have parameters. When used without parameters, the rule enforces
+the following checks:
+
+@itemize @bullet
+@item
+   type-defining names end with @code{_T}, unless the type is an access type,
+    in which case the suffix must be @code{_A}
+@item
+   constant names end with @code{_C}
+@item
+   names defining package renamings end with @code{_R}
+@end itemize
+
+@noindent
+For a private or incomplete type declaration the following checks are
+made for the defining name suffix:
+
+@itemize @bullet
+@item
+ For an incomplete type declaration: if the corresponding full type
+  declaration is available, the defining identifier from the full type
+  declaration is checked, but the defining identifier from the incomplete type
+  declaration is not; otherwise the defining identifier from the incomplete
+  type declaration is checked against the suffix specified for type
+  declarations.
+
+@item
+ For a private type declaration (including private extensions),  the defining
+  identifier from the private type declaration is checked against the type
+  suffix (even if the corresponding full declaration is an access type
+  declaration), and the defining identifier from the corresponding full type
+  declaration is not checked.
+@end itemize
+
+@noindent
+For a deferred constant, the defining name in the corresponding full constant
+declaration is not checked.
+
+Defining names of formal types are not checked.
+
+The rule may have the following parameters:
+
+@itemize @bullet
+@item
+For the @option{+R} option:
+@table @code
+@item Default
+Sets the default listed above for all the names to be checked.
+
+@item Type_Suffix=@emph{string}
+Specifies the suffix for a type name.
+
+@item Access_Suffix=@emph{string}
+Specifies the suffix for an access type name. If
+this parameter is set, it overrides for access
+types the suffix set by the @code{Type_Suffix} parameter.
+
+@item Constant_Suffix=@emph{string}
+Specifies the suffix for a constant name.
+
+@item Renaming_Suffix=@emph{string}
+Specifies the suffix for a package renaming name.
+@end table
+
+@item
+For the @option{-R} option:
+@table @code
+@item All_Suffixes
+Remove all the suffixes specified for the
+identifier suffix checks, whether by default or
+as specified by other rule parameters. All the
+checks for this rule are disabled as a result.
+
+@item Type_Suffix
+Removes the suffix specified for types. This
+disables checks for types but does not disable
+any other checks for this rule (including the
+check for access type names if @code{Access_Suffix} is
+set).
+
+@item Access_Suffix
+Removes the suffix specified for access types.
+This disables checks for access type names but
+does not disable any other checks for this rule.
+If @code{Type_Suffix} is set, access type names are
+checked as ordinary type names.
+
+@item Constant_Suffix
+Removes the suffix specified for constants. This
+disables checks for constant names but does not
+disable any other checks for this rule.
+
+@item Renaming_Suffix
+Removes the suffix specified for package
+renamings. This disables checks for package
+renamings but does not disable any other checks
+for this rule.
+@end table
+@end itemize
+
+@noindent
+If more than one parameter is used, parameters must be separated by commas.
+
+If more than one  option is specified for the @command{gnatcheck} invocation,
+a new option overrides the previous one(s).
+
+The @option{+RMisnamed_Identifiers} option (with no parameter) enables
+checks for all the
+name suffixes specified by previous options used for this rule.
+
+The @option{-RMisnamed_Identifiers} option (with no parameter) disables
+all the checks but keeps
+all the suffixes specified by previous options used for this rule.
+
+The @emph{string} value must be a valid suffix for an Ada identifier (after
+trimming all the leading and trailing space characters, if any).
+Parameters are not case sensitive, except the @emph{string} part.
+
+If any error is detected in a rule parameter, the parameter is ignored.
+In such a case the options that are set for the rule are not
+specified.
+
+
+
+@node Multiple_Entries_In_Protected_Definitions
+@subsection @code{Multiple_Entries_In_Protected_Definitions}
+@cindex @code{Multiple_Entries_In_Protected_Definitions} rule (for @command{gnatcheck})
+
+@noindent
+Flag each protected definition (i.e., each protected object/type declaration)
+that defines more than one entry.
+Diagnostic messages are generated for all the entry declarations
+except the first one. An entry family is counted as one entry. Entries from
+the private part of the protected definition are also checked.
+
+This rule has no parameters.
+
+@node Name_Clashes
+@subsection @code{Name_Clashes}
+@cindex @code{Name_Clashes} rule (for @command{gnatcheck})
+
+@noindent
+Check that certain names are not used as defining identifiers. To activate
+this rule, you need to supply a reference to the dictionary file(s) as a rule
+parameter(s) (more then one dictionary file can be specified). If no
+dictionary file is set, this rule will not cause anything to be flagged.
+Only defining occurrences, not references, are checked.
+The check is not case-sensitive.
+
+This rule is enabled by default, but without setting any corresponding
+dictionary file(s); thus the default effect is to do no checks.
+
+A dictionary file is a plain text file. The maximum line length for this file
+is 1024 characters.  If the line is longer then this limit, extra characters
+are ignored.
+
+Each line can be either an empty line, a comment line, or a line containing
+a list of identifiers separated by space or HT characters.
+A comment is an Ada-style comment (from @code{--} to end-of-line).
+Identifiers must follow the Ada syntax for identifiers.
+A line containing one or more identifiers may end with a comment.
+
+@node Non_Qualified_Aggregates
+@subsection @code{Non_Qualified_Aggregates}
+@cindex @code{Non_Qualified_Aggregates} rule (for @command{gnatcheck})
+
+@noindent
+Flag each non-qualified aggregate.
+A non-qualified aggregate is an
+aggregate that is not the expression of a qualified expression. A
+string literal is not considered an aggregate, but an array
+aggregate of a string type is considered as a normal aggregate.
+
+This rule has no parameters.
+
+
+@node Non_Short_Circuit_Operators
+@subsection @code{Non_Short_Circuit_Operators}
+@cindex @code{Non_Short_Circuit_Operators} rule (for @command{gnatcheck})
+
+@noindent
+Flag all calls to predefined @code{and} and @code{or} operators for
+any boolean type. Calls to
+user-defined @code{and} and @code{or} and to operators defined by renaming
+declarations are not flagged. Calls to predefined @code{and} and @code{or}
+operators for modular types or boolean array types are not flagged.
+
+This rule has no parameters.
+
+
+
+@node Non_SPARK_Attributes
+@subsection @code{Non_SPARK_Attributes}
+@cindex @code{Non_SPARK_Attributes} rule (for @command{gnatcheck})
+
+@noindent
+The SPARK language defines the following subset of Ada 95 attribute
+designators as those that can be used in SPARK programs. The use of
+any other attribute is flagged.
+
+@itemize @bullet
+@item @code{'Adjacent}
+@item @code{'Aft}
+@item @code{'Base}
+@item @code{'Ceiling}
+@item @code{'Component_Size}
+@item @code{'Compose}
+@item @code{'Copy_Sign}
+@item @code{'Delta}
+@item @code{'Denorm}
+@item @code{'Digits}
+@item @code{'Exponent}
+@item @code{'First}
+@item @code{'Floor}
+@item @code{'Fore}
+@item @code{'Fraction}
+@item @code{'Last}
+@item @code{'Leading_Part}
+@item @code{'Length}
+@item @code{'Machine}
+@item @code{'Machine_Emax}
+@item @code{'Machine_Emin}
+@item @code{'Machine_Mantissa}
+@item @code{'Machine_Overflows}
+@item @code{'Machine_Radix}
+@item @code{'Machine_Rounds}
+@item @code{'Max}
+@item @code{'Min}
+@item @code{'Model}
+@item @code{'Model_Emin}
+@item @code{'Model_Epsilon}
+@item @code{'Model_Mantissa}
+@item @code{'Model_Small}
+@item @code{'Modulus}
+@item @code{'Pos}
+@item @code{'Pred}
+@item @code{'Range}
+@item @code{'Remainder}
+@item @code{'Rounding}
+@item @code{'Safe_First}
+@item @code{'Safe_Last}
+@item @code{'Scaling}
+@item @code{'Signed_Zeros}
+@item @code{'Size}
+@item @code{'Small}
+@item @code{'Succ}
+@item @code{'Truncation}
+@item @code{'Unbiased_Rounding}
+@item @code{'Val}
+@item @code{'Valid}
+@end itemize
+
+@noindent
+This rule has no parameters.
+
+
+@node Non_Tagged_Derived_Types
+@subsection @code{Non_Tagged_Derived_Types}
+@cindex @code{Non_Tagged_Derived_Types} rule (for @command{gnatcheck})
+
+@noindent
+Flag all derived type declarations that do not have a record extension part.
+
+This rule has no parameters.
+
+
+
+@node Non_Visible_Exceptions
+@subsection @code{Non_Visible_Exceptions}
+@cindex @code{Non_Visible_Exceptions} rule (for @command{gnatcheck})
+
+@noindent
+Flag constructs leading to the possibility of propagating an exception
+out of the scope in which the exception is declared.
+Two cases are detected:
+
+@itemize @bullet
+@item
+An exception declaration in a subprogram body, task body or block
+statement is flagged if the body or statement does not contain a handler for
+that exception or a handler with an @code{others} choice.
+
+@item
+A @code{raise} statement in an exception handler of a subprogram body,
+task body or block statement is flagged if it (re)raises a locally
+declared exception.  This may occur under the following circumstances:
+@itemize @minus
+@item
+it explicitly raises a locally declared exception, or
+@item
+it does not specify an exception name (i.e., it is simply @code{raise;})
+and the enclosing handler contains a locally declared exception in its
+exception choices.
+@end itemize
+@end itemize
+
+@noindent
+Renamings of local exceptions are not flagged.
+
+This rule has no parameters.
+
+
+@node Numeric_Literals
+@subsection @code{Numeric_Literals}
+@cindex @code{Numeric_Literals} rule (for @command{gnatcheck})
+
+@noindent
+Flag each use of a numeric literal in an index expression, and in any
+circumstance except for the following:
+
+@itemize @bullet
+@item
+a literal occurring in the initialization expression for a constant
+declaration or a named number declaration, or
+
+@item
+an integer literal that is less than or equal to a value
+specified by the @option{N} rule parameter.
+@end itemize
+
+@noindent
+This rule may have the following parameters for the @option{+R} option:
+
+@table @asis
+@item @emph{N}
+@emph{N} is an integer literal used as the maximal value that is not flagged
+(i.e., integer literals not exceeding this value are allowed)
+
+@item @code{ALL}
+All integer literals are flagged
+@end table
+
+@noindent
+If no parameters are set, the maximum unflagged value is 1.
+
+The last specified check limit (or the fact that there is no limit at
+all) is used when multiple @option{+R} options appear.
+
+The @option{-R} option for this rule has no parameters.
+It disables the rule but retains the last specified maximum unflagged value.
+If the @option{+R} option subsequently appears, this value is used as the
+threshold for the check.
+
+
+@node OTHERS_In_Aggregates
+@subsection @code{OTHERS_In_Aggregates}
+@cindex @code{OTHERS_In_Aggregates} rule (for @command{gnatcheck})
+
+@noindent
+Flag each use of an @code{others} choice in extension aggregates.
+In record and array aggregates, an @code{others} choice is flagged unless
+it is used to refer to all components, or to all but one component.
+
+If, in case of a named array aggregate, there are two associations, one
+with an @code{others} choice and another with a discrete range, the
+@code{others} choice is flagged even if the discrete range specifies
+exactly one component; for example, @code{(1..1 => 0, others => 1)}.
+
+This rule has no parameters.
+
+@node OTHERS_In_CASE_Statements
+@subsection @code{OTHERS_In_CASE_Statements}
+@cindex @code{OTHERS_In_CASE_Statements} rule (for @command{gnatcheck})
+
+@noindent
+Flag any use of an @code{others} choice in a @code{case} statement.
+
+This rule has no parameters.
+
+@node OTHERS_In_Exception_Handlers
+@subsection @code{OTHERS_In_Exception_Handlers}
+@cindex @code{OTHERS_In_Exception_Handlers} rule (for @command{gnatcheck})
+
+@noindent
+Flag any use of an @code{others} choice in an exception handler.
+
+This rule has no parameters.
+
+
+@node Outer_Loop_Exits
+@subsection @code{Outer_Loop_Exits}
+@cindex @code{Outer_Loop_Exits} rule (for @command{gnatcheck})
+
+@noindent
+Flag each @code{exit} statement containing a loop name that is not the name
+of the immediately enclosing @code{loop} statement.
+
+This rule has no parameters.
+
+
+@node Overloaded_Operators
+@subsection @code{Overloaded_Operators}
+@cindex @code{Overloaded_Operators} rule (for @command{gnatcheck})
+
+@noindent
+Flag each function declaration that overloads an operator symbol.
+A function body is checked only if the body does not have a
+separate spec. Formal functions are also checked. For a
+renaming declaration, only renaming-as-declaration is checked
+
+This rule has no parameters.
+
+
+@node Overly_Nested_Control_Structures
+@subsection @code{Overly_Nested_Control_Structures}
+@cindex @code{Overly_Nested_Control_Structures} rule (for @command{gnatcheck})
+
+@noindent
+Flag each control structure whose nesting level exceeds the value provided
+in the rule parameter.
+
+The control structures checked are the following:
+
+@itemize @bullet
+@item    @code{if} statement
+@item    @code{case} statement
+@item    @code{loop} statement
+@item    Selective accept statement
+@item    Timed entry call statement
+@item    Conditional entry call
+@item    Asynchronous select statement
+@end itemize
+
+@noindent
+The rule may have the following parameter for the @option{+R} option:
+
+@table @emph
+@item N
+Positive integer specifying the maximal control structure nesting
+level that is not flagged
+@end table
+
+@noindent
+If the parameter for the @option{+R} option is not a positive integer,
+the parameter is ignored and the rule is turned ON with the most recently
+specified maximal non-flagged nesting level.
+
+If more then one  option is specified for the gnatcheck call, the later option and
+new parameter override the previous one(s).
+
+A @option{+R} option with no parameter turns the rule ON using the maximal
+non-flagged nesting level specified by the most recent @option{+R} option with
+a parameter, or the value 4 if there is no such previous @option{+R} option.
+
+
+
+@node Parameters_Out_Of_Order
+@subsection @code{Parameters_Out_Of_Order}
+@cindex @code{Parameters_Out_Of_Order} rule (for @command{gnatcheck})
+
+@noindent
+Flag each subprogram and entry declaration whose formal parameters are not
+ordered according to the following scheme:
+
+@itemize @bullet
+
+@item @code{in} and @code{access} parameters first,
+then @code{in out} parameters,
+and then @code{out} parameters;
+
+@item for @code{in} mode, parameters with default initialization expressions
+occur last
+@end itemize
+
+@noindent
+Only the first violation of the described order is flagged.
+
+The following constructs are checked:
+
+@itemize @bullet
+@item   subprogram declarations (including null procedures);
+@item   generic subprogram declarations;
+@item   formal subprogram declarations;
+@item   entry declarations;
+@item   subprogram bodies and subprogram body stubs that do not
+have separate specifications
+@end itemize
+
+@noindent
+Subprogram renamings are not checked.
+
+This rule has no parameters.
+
+
+@node Positional_Actuals_For_Defaulted_Generic_Parameters
+@subsection @code{Positional_Actuals_For_Defaulted_Generic_Parameters}
+@cindex @code{Positional_Actuals_For_Defaulted_Generic_Parameters} rule (for @command{gnatcheck})
+
+@noindent
+Flag each generic actual parameter corresponding to a generic formal
+parameter with a default initialization, if positional notation is used.
+
+This rule has no parameters.
+
+@node Positional_Actuals_For_Defaulted_Parameters
+@subsection @code{Positional_Actuals_For_Defaulted_Parameters}
+@cindex @code{Positional_Actuals_For_Defaulted_Parameters} rule (for @command{gnatcheck})
+
+@noindent
+Flag each actual parameter to a subprogram or entry call where the
+corresponding formal parameter has a default expression, if positional
+notation is used.
+
+This rule has no parameters.
+
+@node Positional_Components
+@subsection @code{Positional_Components}
+@cindex @code{Positional_Components} rule (for @command{gnatcheck})
+
+@noindent
+Flag each array, record and extension aggregate that includes positional
+notation.
+
+This rule has no parameters.
+
+
+@node Positional_Generic_Parameters
+@subsection @code{Positional_Generic_Parameters}
+@cindex @code{Positional_Generic_Parameters} rule (for @command{gnatcheck})
+
+@noindent
+Flag each instantiation using positional parameter notation.
+
+This rule has no parameters.
+
+
+@node Positional_Parameters
+@subsection @code{Positional_Parameters}
+@cindex @code{Positional_Parameters} rule (for @command{gnatcheck})
+
+@noindent
+Flag each subprogram or entry call using positional parameter notation,
+except for the following:
+
+@itemize @bullet
+@item
+Invocations of prefix or infix operators are not flagged
+@item
+If the called subprogram or entry has only one formal parameter,
+the call is not flagged;
+@item
+If a subprogram call uses the @emph{Object.Operation} notation, then
+@itemize @minus
+@item
+the first parameter (that is, @emph{Object}) is not flagged;
+@item
+if the called subprogram has only two parameters, the second parameter
+of the call is not flagged;
+@end itemize
+@end itemize
+
+@noindent
+This rule has no parameters.
+
+
+
+
+@node Predefined_Numeric_Types
+@subsection @code{Predefined_Numeric_Types}
+@cindex @code{Predefined_Numeric_Types} rule (for @command{gnatcheck})
+
+@noindent
+Flag each explicit use of the name of any numeric type or subtype defined
+in package @code{Standard}.
+
+The rationale for this rule is to detect when the
+program may depend on platform-specific characteristics of the implementation
+of the predefined numeric types. Note that this rule is over-pessimistic;
+for example, a program that uses @code{String} indexing
+likely needs a variable of type @code{Integer}.
+Another example is the flagging of predefined numeric types with explicit
+constraints:
+
+@smallexample @c ada
+    subtype My_Integer is Integer range Left .. Right;
+    Vy_Var : My_Integer;
+@end smallexample
+
+@noindent
+This rule detects only numeric types and subtypes defined in
+@code{Standard}. The use of numeric types and subtypes defined in other
+predefined packages (such as @code{System.Any_Priority} or
+@code{Ada.Text_IO.Count}) is not flagged
+
+This rule has no parameters.
+
+
+
+@node Raising_External_Exceptions
+@subsection @code{Raising_External_Exceptions}
+@cindex @code{Raising_External_Exceptions} rule (for @command{gnatcheck})
+
+@noindent
+Flag any @code{raise} statement, in a program unit declared in a library
+package or in a generic library package, for an exception that is
+neither a predefined exception nor an exception that is also declared (or
+renamed) in the visible part of the package.
+
+This rule has no parameters.
+
+
+
+@node Raising_Predefined_Exceptions
+@subsection @code{Raising_Predefined_Exceptions}
+@cindex @code{Raising_Predefined_Exceptions} rule (for @command{gnatcheck})
+
+@noindent
+Flag each @code{raise} statement that raises a predefined exception
+(i.e., one of the exceptions @code{Constraint_Error}, @code{Numeric_Error},
+@code{Program_Error}, @code{Storage_Error}, or @code{Tasking_Error}).
+
+This rule has no parameters.
+
+
+@ignore
+@node Recursion
+@subsection @code{Recursion} (under construction, GLOBAL)
+@cindex @code{Recursion} rule (for @command{gnatcheck})
+
+@noindent
+Flag recursive subprograms (cycles in the call graph). Declarations, and not
+calls, of recursive subprograms are detected.
+
+This rule has no parameters.
+@end ignore
+
+@ignore
+@node Side_Effect_Functions
+@subsection @code{Side_Effect_Functions} (under construction, GLOBAL)
+@cindex @code{Side_Effect_Functions} rule (for @command{gnatcheck})
+
+@noindent
+Flag functions with side effects.
+
+We define a side effect as changing any data object that is not local for the
+body of this function.
+
+At the moment, we do NOT consider a side effect any input-output operations
+(changing a state or a content of any file).
+
+We do not consider protected functions for this rule (???)
+
+There are the following sources of side effect:
+
+@enumerate
+@item Explicit (or direct) side-effect:
+
+@itemize @bullet
+@item
+direct assignment to a non-local variable;
+
+@item
+direct call to an entity that is known to change some data object that is
+     not local for the body of this function (Note, that if F1 calls F2 and F2
+     does have a side effect, this does not automatically mean that F1 also
+     have a side effect, because it may be the case that F2 is declared in
+     F1's body and it changes some data object that is global for F2, but
+     local for F1);
+@end itemize
+
+@item Indirect side-effect:
+@itemize @bullet
+@item
+Subprogram calls implicitly issued by:
+@itemize @bullet
+@item
+computing initialization expressions from type declarations as a part
+         of object elaboration or allocator evaluation;
+@item
+computing implicit parameters of subprogram or entry calls or generic
+         instantiations;
+@end itemize
+
+@item
+activation of a task that change some non-local data object (directly or
+     indirectly);
+
+@item
+elaboration code of a package that is a result of a package instantiation;
+
+@item
+controlled objects;
+@end itemize
+
+@item Situations when we can suspect a side-effect, but the full static check
+is either impossible or too hard:
+@itemize @bullet
+@item
+assignment to access variables or to the objects pointed by access
+     variables;
+
+@item
+call to a subprogram pointed by access-to-subprogram value
+
+@item
+dispatching calls;
+@end itemize
+@end enumerate
+
+@noindent
+This rule has no parameters.
+@end ignore
+
+@node Slices
+@subsection @code{Slices}
+@cindex @code{Slices} rule (for @command{gnatcheck})
+
+@noindent
+Flag all uses of array slicing
+
+This rule has no parameters.
+
+
+@node Unassigned_OUT_Parameters
+@subsection @code{Unassigned_OUT_Parameters}
+@cindex @code{Unassigned_OUT_Parameters} rule (for @command{gnatcheck})
+
+@noindent
+Flags procedures' @code{out} parameters that are not assigned, and
+identifies the contexts in which the assignments are missing.
+
+An @code{out} parameter is flagged in the statements in the procedure
+body's handled sequence of statements (before the procedure body's
+@code{exception} part, if any) if this sequence of statements contains
+no assignments to the parameter.
+
+An @code{out} parameter is flagged in an exception handler in the exception
+part of the procedure body's handled sequence of statements if the handler
+contains no assignment to the parameter.
+
+Bodies of generic procedures are also considered.
+
+The following are treated as assignments to an @code{out} parameter:
+
+@itemize @bullet
+@item
+an assignment statement, with the parameter or some component as the target;
+
+@item
+passing the parameter (or one of its components) as an @code{out} or
+@code{in out} parameter.
+@end itemize
+
+@noindent
+This rule does not have any parameters.
+
+
+
+@node Uncommented_BEGIN_In_Package_Bodies
+@subsection @code{Uncommented_BEGIN_In_Package_Bodies}
+@cindex @code{Uncommented_BEGIN_In_Package_Bodies} rule (for @command{gnatcheck})
+
+@noindent
+Flags each package body with declarations and a statement part that does not
+include a trailing comment on the line containing the @code{begin} keyword;
+this trailing comment needs to specify the package name and nothing else.
+The @code{begin} is not flagged if the package body does not
+contain any declarations.
+
+If the @code{begin} keyword is placed on the
+same line as the last declaration or the first statement, it is flagged
+independently of whether the line contains a trailing comment. The
+diagnostic message is attached to the line containing the first statement.
+
+This rule has no parameters.
+
+
+@node Unconstrained_Array_Returns
+@subsection @code{Unconstrained_Array_Returns}
+@cindex @code{Unconstrained_Array_Returns} rule (for @command{gnatcheck})
+
+@noindent
+Flag each function returning an unconstrained array. Function declarations,
+function bodies (and body stubs) having no separate specifications,
+and generic function instantiations are checked.
+Generic function declarations, function calls and function renamings are
+not checked.
+
+This rule has no parameters.
+
+@node Universal_Ranges
+@subsection @code{Universal_Ranges}
+@cindex @code{Universal_Ranges} rule (for @command{gnatcheck})
+
+@noindent
+Flag discrete ranges that are a part of an index constraint, constrained
+array definition, or @code{for}-loop parameter specification, and whose bounds
+are both of type @i{universal_integer}. Ranges that have at least one
+bound of a specific type (such as @code{1 .. N}, where @code{N} is a variable
+or an expression of non-universal type) are not flagged.
+
+This rule has no parameters.
+
+
+@node Unnamed_Blocks_And_Loops
+@subsection @code{Unnamed_Blocks_And_Loops}
+@cindex @code{Unnamed_Blocks_And_Loops} rule (for @command{gnatcheck})
+
+@noindent
+Flag each unnamed block statement and loop statement.
+
+The rule has no parameters.
+
+
+
+@ignore
+@node Unused_Subprograms
+@subsection @code{Unused_Subprograms} (under construction, GLOBAL)
+@cindex @code{Unused_Subprograms} rule (for @command{gnatcheck})
+
+@noindent
+Flag all unused subprograms.
+
+This rule has no parameters.
+@end ignore
+
+
+
+
+@node USE_PACKAGE_Clauses
+@subsection @code{USE_PACKAGE_Clauses}
+@cindex @code{USE_PACKAGE_Clauses} rule (for @command{gnatcheck})
+
+@noindent
+Flag all @code{use} clauses for packages; @code{use type} clauses are
+not flagged.
+
+This rule has no parameters.
+
+
+
+@node Volatile_Objects_Without_Address_Clauses
+@subsection @code{Volatile_Objects_Without_Address_Clauses}
+@cindex @code{Volatile_Objects_Without_Address_Clauses} rule (for @command{gnatcheck})
+
+@noindent
+Flag each volatile object that does not have an address clause.
+
+The following check is made: if the pragma @code{Volatile} is applied to a
+data object or to its type, then an address clause must
+be supplied for this object.
+
+This rule does not check the components of data objects,
+array components that are volatile as a result of the pragma
+@code{Volatile_Components}, or objects that are volatile because
+they are atomic as a result of pragmas @code{Atomic} or
+@code{Atomic_Components}.
+
+Only variable declarations, and not constant declarations, are checked.
+
+This rule has no parameters.
+
 
 @c *********************************
 @node Creating Sample Bodies Using gnatstub
@@ -19594,6 +21053,9 @@ named @i{Warnings} with a parameter that is a valid
 @noindent
 @command{gnatstub} creates body stubs, that is, empty but compilable bodies
 for library unit declarations.
+
+Note: to invoke @code{gnatstub} with a project file, use the @code{gnat}
+driver (see @ref{The GNAT Driver and Project Files}).
 
 To create a body stub, @command{gnatstub} has to compile the library
 unit declaration. Therefore, bodies can be created only for legal
@@ -19773,9 +21235,6 @@ environment.
 @menu
 * Using Other Utility Programs with GNAT::
 * The External Symbol Naming Scheme of GNAT::
-@ifclear vms
-* Ada Mode for Glide::
-@end ifclear
 * Converting Ada Files to html with gnathtml::
 * Installing gnathtml::
 @ifset vms
@@ -19871,91 +21330,6 @@ procedure Hello (S : String);
 @noindent
 the external name of this procedure will be @var{_ada_hello}.
 
-@ifclear vms
-@node Ada Mode for Glide
-@section Ada Mode for @code{Glide}
-@cindex Ada mode (for Glide)
-
-@noindent
-The Glide mode for programming in Ada (both Ada83 and Ada95) helps the
-user to understand and navigate existing code, and facilitates writing
-new code. It furthermore provides some utility functions for easier
-integration of standard Emacs features when programming in Ada.
-
-Its general features include:
-
-@itemize @bullet
-@item
-An Integrated Development Environment with functionality such as the
-following
-
-@itemize @bullet
-@item
-``Project files'' for configuration-specific aspects
-(e.g. directories and compilation options)
-
-@item
-Compiling and stepping through error messages.
-
-@item
-Running and debugging an applications within Glide.
-@end itemize
-
-@item
-Pull-down menus
-
-@item
-User configurability
-@end itemize
-
-Some of the specific Ada mode features are:
-
-@itemize @bullet
-@item
-Functions for easy and quick stepping through Ada code
-
-@item
-Getting cross reference information for identifiers (e.g., finding a
-defining occurrence)
-
-@item
-Displaying an index menu of types and subprograms, allowing
-direct selection for browsing
-
-@item
-Automatic color highlighting of the various Ada entities
-@end itemize
-
-Glide directly supports writing Ada code, via several facilities:
-
-@itemize @bullet
-@item
-Switching between spec and body files with possible
-autogeneration of body files
-
-@item
-Automatic formating of subprogram parameter lists
-
-@item
-Automatic indentation according to Ada syntax
-
-@item
-Automatic completion of identifiers
-
-@item
-Automatic (and configurable) casing of identifiers, keywords, and attributes
-
-@item
-Insertion of syntactic templates
-
-@item
-Block commenting / uncommenting
-@end itemize
-
-@noindent
-For more information, please refer to the online documentation
-available in the @code{Glide} @result{} @code{Help} menu.
-@end ifclear
 
 @node Converting Ada Files to html with gnathtml
 @section Converting Ada Files to HTML with @code{gnathtml}
@@ -19986,8 +21360,7 @@ The available ^switches^options^ are the following ones :
 @table @option
 @item -83
 @cindex @option{-83} (@code{gnathtml})
-Only the subset on the Ada 83 keywords will be highlighted, not the full
-Ada 95 keywords set.
+Only the Ada 83 subset of keywords will be highlighted.
 
 @item -cc @var{color}
 @cindex @option{-cc} (@code{gnathtml})
@@ -20117,8 +21490,9 @@ $ RUN/DEBUG <PROGRAM_NAME>
 @noindent
 This chapter discusses how to debug Ada programs.
 @ifset vms
-It applies to the Alpha OpenVMS platform;
-the debugger for I64 OpenVMS is scheduled for a subsequent release.
+It applies to GNAT on the Alpha OpenVMS platform;
+for I64 OpenVMS please refer to the @cite{OpenVMS Debugger Manual},
+since HP has implemented Ada support in the OpenVMS debugger on I64.
 @end ifset
 
 An incorrect Ada program may be handled in three ways by the GNAT compiler:
@@ -20224,26 +21598,22 @@ variables, and more generally to report on the state of execution.
 @section Running GDB
 
 @noindent
-The debugger can be launched directly and simply from @code{glide} or
-through its graphical interface: @code{gvd}. It can also be used
-directly in text mode. Here is described the basic use of @code{GDB}
-in text mode. All the commands described below can be used in the
-@code{gvd} console window even though there is usually other more
-graphical ways to achieve the same goals.
+This section describes how to initiate the debugger.
+@c The above sentence is really just filler, but it was otherwise
+@c clumsy to get the first paragraph nonindented given the conditional
+@c nature of the description
 
 @ifclear vms
-@noindent
-The command to run the graphical interface of the debugger is
-@smallexample
-$ gvd program
-@end smallexample
+The debugger can be launched from a @code{GPS} menu or
+directly from the command line. The description below covers the latter use.
+All the commands shown can be used in the @code{GPS} debug console window,
+but there are usually more GUI-based ways to achieve the same effect.
 @end ifclear
 
-@noindent
-The command to run @code{GDB} in text mode is
+The command to run @code{GDB} is
 
 @smallexample
-$ ^gdb program^$ GDB PROGRAM^
+$ ^gdb program^GDB PROGRAM^
 @end smallexample
 
 @noindent
@@ -20261,7 +21631,7 @@ describes some of the additional commands that can be given to @code{GDB}.
 @code{GDB} contains a large repertoire of commands. The manual
 @cite{Debugging with GDB}
 @ifset vms
-, located in the GNU:[DOCS] directory,
+(located in the GNU:[DOCS] directory)
 @end ifset
 includes extensive documentation on the use
 of these commands, together with examples of their use. Furthermore,
@@ -20353,6 +21723,7 @@ of the current breakpoint, that is to say the top of the call stack.
 
 @end table
 
+@noindent
 The above list is a very short introduction to the commands that
 @code{GDB} provides. Important additional capabilities, including conditional
 breakpoints, the ability to execute command sequences on a breakpoint,
@@ -20384,6 +21755,7 @@ are not particularly important to the @code{GDB} user.
 That brevity is important to the @code{GDB} user.
 @end itemize
 
+@noindent
 Thus, for brevity, the debugger acts as if there were
 implicit @code{with} and @code{use} clauses in effect for all user-written
 packages, thus making it unnecessary to fully qualify most names with
@@ -20679,7 +22051,7 @@ Files with prefix @file{^sc^SC^} contain the lexical scanner.
 
 @item
 All files prefixed with @file{^par^PAR^} are components of the parser. The
-numbers correspond to chapters of the Ada 95 Reference Manual. For example,
+numbers correspond to chapters of the Ada Reference Manual. For example,
 parsing of select statements can be found in @file{par-ch9.adb}.
 
 @item
@@ -20941,7 +22313,7 @@ of calls with the same program compiled with debug information.
 Non-symbolic tracebacks are obtained by using the @option{-E} binder argument.
 The stack traceback is attached to the exception information string, and can
 be retrieved in an exception handler within the Ada program, by means of the
-Ada95 facilities defined in @code{Ada.Exceptions}. Here is a simple example:
+Ada facilities defined in @code{Ada.Exceptions}. Here is a simple example:
 
 @smallexample @c ada
 with Ada.Text_IO;
@@ -21214,7 +22586,7 @@ be implemented.  The description of pragmas in the
 to non-VMS systems.
 
 @menu
-* Ada 95 Compatibility::
+* Ada Language Compatibility::
 * Differences in the Definition of Package System::
 * Language-Related Features::
 * The Package STANDARD::
@@ -21232,16 +22604,16 @@ to non-VMS systems.
 * Tools and Utilities::
 @end menu
 
-@node Ada 95 Compatibility
-@section Ada 95 Compatibility
+@node Ada Language Compatibility
+@section Ada Language Compatibility
 
 @noindent
-GNAT is an Ada 95 compiler, and HP Ada is an Ada 83
-compiler. Ada 95 is almost completely upwards compatible
+GNAT handles Ada 95 and Ada 2005 as well as Ada 83, whereas HP Ada is only
+for Ada 83. Ada 95 and Ada 2005 are almost completely upwards compatible
 with Ada 83, and therefore Ada 83 programs will compile
 and run under GNAT with
-no changes or only minor changes. The Ada 95 Reference
-Manual provides details on specific incompatibilities.
+no changes or only minor changes. The @cite{Annotated Ada Reference Manual}
+provides details on specific incompatibilities.
 
 GNAT provides the switch @option{/83} on the @command{GNAT COMPILE} command,
 as well as the pragma @code{ADA_83}, to force the compiler to
@@ -21249,7 +22621,7 @@ operate in Ada 83 mode. This mode does not guarantee complete
 conformance to Ada 83, but in practice is sufficient to
 eliminate most sources of incompatibilities.
 In particular, it eliminates the recognition of the
-additional Ada 95 keywords, so that their use as identifiers
+additional Ada 95 and Ada 2005 keywords, so that their use as identifiers
 in Ada 83 programs is legal, and handles the cases of packages
 with optional bodies, and generics that instantiate unconstrained
 types without the use of @code{(<>)}.
@@ -21258,11 +22630,12 @@ types without the use of @code{(<>)}.
 @section Differences in the Definition of Package @code{System}
 
 @noindent
-Both Ada 95 and Ada 83 permit a compiler to add
+An Ada compiler is allowed to add
 implementation-dependent declarations to package @code{System}.
 In normal mode,
 GNAT does not take advantage of this permission, and the version of
-@code{System} provided by GNAT exactly matches that in Ada 95.
+@code{System} provided by GNAT exactly matches that defined in the Ada
+Reference Manual.
 
 However, HP Ada adds an extensive set of declarations to package
 @code{System},
@@ -21366,7 +22739,7 @@ following additional integer types in package @code{System}:
 
 @noindent
 In GNAT, the first four of these types may be obtained from the
-standard Ada 95 package @code{Interfaces}.
+standard Ada package @code{Interfaces}.
 Alternatively, by use of the pragma @code{Extend_System}, identical
 declarations can be referenced directly in package @code{System}.
 On both GNAT and HP Ada, the maximum integer size is 64 bits.
@@ -21488,7 +22861,7 @@ Therefore, @code{+0.5} rounds to @code{1},
 and @code{-0.5} rounds to @code{-1}.
 
 On GNAT the results of operations
-on fixed-point types are in accordance with the Ada 95
+on fixed-point types are in accordance with the Ada
 rules. In particular, results of operations on decimal
 fixed-point types are truncated.
 
@@ -21515,7 +22888,7 @@ objects and imported subprograms.
 The predefined type @code{System.Address} is a private type
 in both compilers on Alpha OpenVMS, with the same representation
 (it is simply a machine pointer). Addition, subtraction, and comparison
-operations are available in the standard Ada 95 package
+operations are available in the standard Ada package
 @code{System.Storage_Elements}, or in package @code{System}
 if it is extended to include @code{System.Aux_DEC} using a
 pragma @code{Extend_System} as previously described.
@@ -21523,7 +22896,7 @@ pragma @code{Extend_System} as previously described.
 Note that code that @code{with}'s both this extended package @code{System}
 and the package @code{System.Storage_Elements} should not @code{use}
 both packages, or ambiguities will result. In general it is better
-not to mix these two sets of facilities. The Ada 95 package was
+not to mix these two sets of facilities. The Ada package was
 designed specifically to provide the kind of features that HP Ada
 adds directly to package @code{System}.
 
@@ -21536,7 +22909,7 @@ clauses, except for some limitations in
 the form of address clauses for composite objects with
 initialization. Such address clauses are easily replaced
 by the use of an explicitly-defined constant as described
-in the Ada 95 Reference Manual (13.1(22)). For example, the sequence
+in the Ada Reference Manual (13.1(22)). For example, the sequence
 of declarations:
 
 @smallexample @c ada
@@ -21565,7 +22938,7 @@ for Q'Address use Q_Address;
 @end smallexample
 
 @noindent
-which will be accepted by GNAT (and other Ada 95 compilers), and is also
+which will be accepted by GNAT (and other Ada compilers), and is also
 compatible with Ada 83. A fuller description of the restrictions
 on address specifications is found in the @cite{GNAT Reference Manual}.
 
@@ -21583,10 +22956,9 @@ including @code{COMPONENT_SIZE} and @code{SIZE} clauses for objects.
 
 @noindent
 The package @code{STANDARD}, as implemented by HP Ada, is fully
-described in the Ada 95 Reference Manual and in the HP Ada
-Language Reference Manual. As implemented by GNAT, the
-package @code{STANDARD} is described in the Ada 95 Reference
-Manual.
+described in the @cite{Ada Reference Manual} and in the
+@cite{HP Ada Language Reference Manual}. As implemented by GNAT, the
+package @code{STANDARD} is described in the @cite{Ada Reference Manual}.
 
 In addition, HP Ada supports the Latin-1 character set in
 the type @code{CHARACTER}. GNAT supports the Latin-1 character set
@@ -21625,7 +22997,7 @@ functions:
 
 @noindent
 By default, GNAT supplies a version of @code{SYSTEM} that matches
-the definition given in the Ada 95 Reference Manual.
+the definition given in the @cite{Ada Reference Manual}.
 This
 is a subset of the HP system definitions, which is as
 close as possible to the original definitions. The only difference
@@ -21639,7 +23011,7 @@ System_Name : constant Name := SYSTEM_NAME_GNAT;
 @end smallexample
 
 @noindent
-Also, GNAT adds the new Ada 95 declarations for
+Also, GNAT adds the Ada declarations for
 @code{BIT_ORDER} and @code{DEFAULT_BIT_ORDER}.
 
 However, the use of the following pragma causes GNAT
@@ -21849,7 +23221,7 @@ information on using the pragmas to control HP Ada task
 scheduling.
 
 GNAT follows the scheduling rules of Annex D (Real-Time
-Annex) of the Ada 95 Reference Manual. In general, this
+Annex) of the @cite{Ada Reference Manual}. In general, this
 scheduling strategy is fully compatible with HP Ada
 although it provides some additional constraints (as
 fully documented in Annex D).
@@ -21874,7 +23246,7 @@ management purposes. On OpenVMS Alpha systems, at least
 one page is allocated.
 
 GNAT handles task stacks in a similar manner. In accordance with
-the Ada 95 rules, it provides the pragma @code{STORAGE_SIZE} as
+the Ada rules, it provides the pragma @code{STORAGE_SIZE} as
 an alternative method for controlling the task stack size.
 The specification of the attribute @code{T'STORAGE_SIZE} is also
 supported in a manner compatible with HP Ada.
@@ -21892,7 +23264,7 @@ GNAT is compatible with HP Ada in its handling of external interrupts.
 @noindent
 Both HP Ada and GNAT supply all language-defined pragmas
 as specified by the Ada 83 standard. GNAT also supplies all
-language-defined pragmas specified in the Ada 95 Reference Manual.
+language-defined pragmas introduced by Ada 95 and Ada 2005.
 In addition, GNAT implements the implementation-defined pragmas
 from HP Ada 83.
 
@@ -21955,7 +23327,7 @@ These pragmas are all fully implemented, with the exception of @code{TITLE},
 @code{PASSIVE}, and @code{SHARE_GENERIC}, which are
 recognized, but which have no
 effect in GNAT. The effect of @code{PASSIVE} may be obtained by the
-use of protected objects in Ada 95. In GNAT, all generics are inlined.
+use of Ada protected objects. In GNAT, all generics are inlined.
 
 Unlike HP Ada, the GNAT ``@code{EXPORT_}@i{subprogram}'' pragmas require
 a separate subprogram specification which must appear before the
@@ -22118,7 +23490,7 @@ assembler code.
 The GNAT versions of the HP Ada Run-Time Library (@code{ADA$PREDEFINED:})
 units are taken from the OpenVMS Alpha version, not the OpenVMS VAX
 version.
-The HP Ada Predefined Library units are modified to remove Ada 95
+The HP Ada Predefined Library units are modified to remove post-Ada 83
 incompatibilities and to make them interoperable with GNAT
 (@pxref{Changes to DECLIB}, for details).
 The units are located in the @file{DECLIB} directory.
@@ -22137,12 +23509,12 @@ to @code{ADALIB} units with the same name (@code{TEXT_IO},
 @subsection Changes to @code{DECLIB}
 
 @noindent
-The changes made to the HP Ada predefined library for GNAT and Ada 95
+The changes made to the HP Ada predefined library for GNAT and post-Ada 83
 compatibility are minor and include the following:
 
 @itemize @bullet
 @item  Adjusting the location of pragmas and record representation
-clauses to obey Ada 95 rules
+clauses to obey Ada 95 (and thus Ada 2005) rules
 
 @item  Adding the proper notation to generic formal parameters
 that take unconstrained types in instantiation
@@ -22202,7 +23574,7 @@ On OpenVMS Alpha, HP Ada provides the following strongly-typed bindings:
 
 @noindent
 GNAT provides implementations of these HP bindings in the @code{DECLIB}
-directory.
+directory, on both the Alpha and I64 OpenVMS platforms.
 
 The X/Motif bindings used to build @code{DECLIB} are whatever versions are
 in the
@@ -22258,7 +23630,7 @@ provides the following Ada types and operations:
 @noindent
 Interfacing to C with GNAT, you can use the above approach
 described for HP Ada or the facilities of Annex B of
-the Ada 95 Reference Manual (packages @code{INTERFACES.C},
+the @cite{Ada Reference Manual} (packages @code{INTERFACES.C},
 @code{INTERFACES.C.STRINGS} and @code{INTERFACES.C.POINTERS}). For more
 information, see the section ``Interfacing to C'' in the
 @cite{GNAT Reference Manual}.
@@ -22612,7 +23984,7 @@ standard HP Ada versions of all I/O packages, operating
 in a manner compatible with HP Ada. In particular, the
 following packages are by default the HP Ada (Ada 83)
 versions of these packages rather than the renamings
-suggested in Annex J of the Ada 95 Reference Manual:
+suggested in Annex J of the Ada Reference Manual:
 @itemize @bullet
 @item  @code{TEXT_IO}
 
@@ -22622,13 +23994,13 @@ suggested in Annex J of the Ada 95 Reference Manual:
 @end itemize
 
 @noindent
-The use of the standard Ada 95 syntax for child packages (for
-example, @code{ADA.TEXT_IO}) retrieves the Ada 95 versions of these
-packages, as defined in the Ada 95 Reference Manual.
+The use of the standard child package syntax (for
+example, @code{ADA.TEXT_IO}) retrieves the post-Ada 83 versions of these
+packages.
 GNAT provides HP-compatible predefined instantiations
 of the @code{TEXT_IO} packages, and also
 provides the standard predefined instantiations required
-by the Ada 95 Reference Manual.
+by the @cite{Ada Reference Manual}.
 
 For further information on how GNAT interfaces to the file
 system or how I/O is implemented in programs written in
@@ -22680,12 +24052,12 @@ and GNAT systems.
 
 @item  Maximum identifier length (number of characters)
 @tab   255
-@tab   255
+@tab   32766
 @sp 1
 
 @item  Maximum number of characters in a source line
 @tab   255
-@tab   255
+@tab   32766
 @sp 1
 
 @item  Maximum collection size   (number of bytes)
@@ -22984,13 +24356,6 @@ information about several specific platforms.
 @item @code{@ @ @ @ }Tasking    @tab native Solaris threads library
 @item @code{@ @ @ @ }Exceptions @tab ZCX
 @*
-@item @code{@ @ }@i{rts-m64}
-@item @code{@ @ @ @ }Tasking     @tab native Solaris threads library
-@item @code{@ @ @ @ }Exceptions  @tab ZCX
-@item @code{@ @ @ @ }Constraints @tab Use only when compiling in 64-bit mode;
-@item    @tab Use only on Solaris 8 or later.
-@item    @tab @xref{Building and Debugging 64-bit Applications}, for details.
-@*
 @item @code{@ @ }@i{rts-pthread}
 @item @code{@ @ @ @ }Tasking    @tab pthread library
 @item @code{@ @ @ @ }Exceptions @tab ZCX
@@ -22998,6 +24363,11 @@ information about several specific platforms.
 @item @code{@ @ }@i{rts-sjlj}
 @item @code{@ @ @ @ }Tasking    @tab native Solaris threads library
 @item @code{@ @ @ @ }Exceptions @tab SJLJ
+@*
+@item @b{sparc64-solaris}  @tab
+@item @code{@ @ }@i{rts-native (default)}
+@item @code{@ @ @ @ }Tasking    @tab native Solaris threads library
+@item @code{@ @ @ @ }Exceptions @tab ZCX
 @*
 @item @b{x86-linux}
 @item @code{@ @ }@i{rts-native (default)}
@@ -23011,6 +24381,11 @@ information about several specific platforms.
 @item @b{x86-lynx}
 @item @code{@ @ }@i{rts-native (default)}
 @item @code{@ @ @ @ }Tasking    @tab native LynxOS threads
+@item @code{@ @ @ @ }Exceptions @tab SJLJ
+@*
+@item @b{x86-solaris}
+@item @code{@ @ }@i{rts-native (default)}
+@item @code{@ @ @ @ }Tasking    @tab native Solaris threads
 @item @code{@ @ @ @ }Exceptions @tab SJLJ
 @*
 @item @b{x86-windows}
@@ -23043,7 +24418,7 @@ run-time library, and the @file{adalib} subdirectory containing the
 in the gcc target-dependent area:
 
 @smallexample
-target=$prefix/lib/gcc-lib/gcc-@i{dumpmachine}/gcc-@i{dumpversion}/
+target=$prefix/lib/gcc/gcc-@i{dumpmachine}/gcc-@i{dumpversion}/
 @end smallexample
 
 @noindent
@@ -23096,27 +24471,8 @@ Alternatively, you can specify @file{rts-sjlj/adainclude} in the file
 @file{$target/ada_object_path}.
 
 Selecting another run-time library temporarily can be
-achieved by the regular mechanism for GNAT object or source path selection:
-
-@itemize @bullet
-@item
-Set the environment variables:
-
-@smallexample
-$ ADA_INCLUDE_PATH=$target/rts-sjlj/adainclude:$ADA_INCLUDE_PATH
-$ ADA_OBJECTS_PATH=$target/rts-sjlj/adalib:$ADA_OBJECTS_PATH
-$ export ADA_INCLUDE_PATH ADA_OBJECTS_PATH
-@end smallexample
-
-@item
-Use @option{-aI$target/rts-sjlj/adainclude}
-and @option{-aO$target/rts-sjlj/adalib}
-on the @command{gnatmake} command line
-
-@item
-Use the switch @option{--RTS}; e.g., @option{--RTS=sjlj}
+achieved by using the @option{--RTS} switch, e.g., @option{--RTS=sjlj}
 @cindex @option{--RTS} option
-@end itemize
 
 @node Choosing the Scheduling Policy
 @section Choosing the Scheduling Policy
@@ -23162,20 +24518,18 @@ binder option.
 
 @noindent
 This section addresses some topics related to the various threads libraries
-on Sparc Solaris and then provides some information on building and
-debugging 64-bit applications.
+on Sparc Solaris.
 
 @menu
 * Solaris Threads Issues::
-* Building and Debugging 64-bit Applications::
 @end menu
 
 @node Solaris Threads Issues
 @subsection Solaris Threads Issues
 
 @noindent
-GNAT under Solaris comes with an alternate tasking run-time library
-based on POSIX threads --- @emph{rts-pthread}.
+GNAT under Solaris/Sparc 32 bits comes with an alternate tasking run-time
+library based on POSIX threads --- @emph{rts-pthread}.
 @cindex rts-pthread threads library
 This run-time library has the advantage of being mostly shared across all
 POSIX-compliant thread implementations, and it also provides under
@@ -23220,27 +24574,6 @@ Run the program on the specified processor.
 (where @code{_SC_NPROCESSORS_CONF} is a system variable).
 @end table
 
-@node Building and Debugging 64-bit Applications
-@subsection Building and Debugging 64-bit Applications
-
-@noindent
-In a 64-bit application, all the sources involved must be compiled with the
-@option{-m64} command-line option, and a specific GNAT library (compiled with
-this option) is required.
-The easiest way to build a 64bit application is to add
-@option{-m64 --RTS=m64} to the @command{gnatmake} flags.
-
-To debug these applications, a special version of gdb called @command{gdb64}
-needs to be used.
-
-To summarize, building and debugging a ``Hello World'' program in 64-bit mode
-amounts to:
-
-@smallexample
-     $ gnatmake -m64 -g --RTS=m64 hello.adb
-     $ gdb64 hello
-@end smallexample
-
 @node Linux-Specific Considerations
 @section Linux-Specific Considerations
 @cindex Linux threads libraries
@@ -23259,7 +24592,7 @@ threads, e.g. by using @code{killpg()}.
 On AIX, the resolver library initializes some internal structure on
 the first call to @code{get*by*} functions, which are used to implement
 @code{GNAT.Sockets.Get_Host_By_Name} and
-@code{GNAT.Sockets.Get_Host_By_Addrss}.
+@code{GNAT.Sockets.Get_Host_By_Address}.
 If such initialization occurs within an Ada task, and the stack size for
 the task is the default size, a stack overflow may occur.
 
@@ -23316,7 +24649,7 @@ package ada_main is
    pragma Import (C, gnat_exit_status);
 
    GNAT_Version : constant String :=
-                    "GNAT Version: 3.15w (20010315)";
+                    "GNAT Version: 6.0.0w (20061115)";
    pragma Export (C, GNAT_Version, "__gnat_version");
 
    --  This is the generated adafinal routine that performs
@@ -24000,9 +25333,9 @@ elaboration code in your own application).
 @cindex Elaboration control
 
 @menu
-* Elaboration Code in Ada 95::
-* Checking the Elaboration Order in Ada 95::
-* Controlling the Elaboration Order in Ada 95::
+* Elaboration Code::
+* Checking the Elaboration Order::
+* Controlling the Elaboration Order::
 * Controlling Elaboration in GNAT - Internal Calls::
 * Controlling Elaboration in GNAT - External Calls::
 * Default Behavior in GNAT - Ensuring Safety::
@@ -24016,16 +25349,16 @@ elaboration code in your own application).
 @end menu
 
 @noindent
-This chapter describes the handling of elaboration code in Ada 95 and
+This chapter describes the handling of elaboration code in Ada and
 in GNAT, and discusses how the order of elaboration of program units can
 be controlled in GNAT, either automatically or with explicit programming
 features.
 
-@node Elaboration Code in Ada 95
-@section Elaboration Code in Ada 95
+@node Elaboration Code
+@section Elaboration Code
 
 @noindent
-Ada 95 provides rather general mechanisms for executing code at elaboration
+Ada provides rather general mechanisms for executing code at elaboration
 time, that is to say before the main program starts executing. Such code arises
 in three contexts:
 
@@ -24191,8 +25524,8 @@ the time of day, we can make it impossible for the compiler or binder
 to figure out which of these expressions will be true, and hence it
 is impossible to guarantee a safe order of elaboration at run time.
 
-@node Checking the Elaboration Order in Ada 95
-@section Checking the Elaboration Order in Ada 95
+@node Checking the Elaboration Order
+@section Checking the Elaboration Order
 
 @noindent
 In some languages that involve the same kind of elaboration problems,
@@ -24201,7 +25534,7 @@ ordering problems himself, and it is common to
 write a program in which an incorrect elaboration order  gives
 surprising results, because it references variables before they
 are initialized.
-Ada 95 is designed to be a safe language, and a programmer-beware approach is
+Ada is designed to be a safe language, and a programmer-beware approach is
 clearly not sufficient. Consequently, the language provides three lines
 of defense:
 
@@ -24229,7 +25562,7 @@ Let's look at these facilities in more detail. First, the rules for
 dynamic checking. One possible rule would be simply to say that the
 exception is raised if you access a variable which has not yet been
 elaborated. The trouble with this approach is that it could require
-expensive checks on every variable reference. Instead Ada 95 has two
+expensive checks on every variable reference. Instead Ada has two
 rules which are a little more restrictive, but easier to check, and
 easier to state:
 
@@ -24274,15 +25607,15 @@ some of the Boolean variables as unnecessary, and @code{GNAT} indeed
 does such optimizations, but still the easiest conceptual model is to
 think of there being one variable per subprogram.
 
-@node Controlling the Elaboration Order in Ada 95
-@section Controlling the Elaboration Order in Ada 95
+@node Controlling the Elaboration Order
+@section Controlling the Elaboration Order
 
 @noindent
-In the previous section we discussed the rules in Ada 95 which ensure
+In the previous section we discussed the rules in Ada which ensure
 that @code{Program_Error} is raised if an incorrect elaboration order is
 chosen. This prevents erroneous executions, but we need mechanisms to
 specify a correct execution and avoid the exception altogether.
-To achieve this, Ada 95 provides a number of features for controlling
+To achieve this, Ada provides a number of features for controlling
 the order of elaboration. We discuss these features in this section.
 
 First, there are several ways of indicating to the compiler that a given
@@ -24290,8 +25623,9 @@ unit has no elaboration problems:
 
 @table @asis
 @item packages that do not require a body
-In Ada 95, a library package that does not require a body does not permit
-a body. This means that if we have a such a package, as in:
+A library package that does not require a body does not permit
+a body (this rule was introduced in Ada 95).
+Thus if we have a such a package, as in:
 
 @smallexample @c ada
 @group
@@ -24385,8 +25719,8 @@ we marked both of them as having pragma @code{Elaborate_Body}, then
 clearly there would be no possible elaboration order.
 
 The above pragmas allow a server to guarantee safe use by clients, and
-clearly this is the preferable approach. Consequently a good rule in
-Ada 95 is to mark units as @code{Pure} or @code{Preelaborate} if possible,
+clearly this is the preferable approach. Consequently a good rule
+is to mark units as @code{Pure} or @code{Preelaborate} if possible,
 and if this is not possible,
 mark them as @code{Elaborate_Body} if possible.
 As we have seen, there are situations where neither of these
@@ -24435,7 +25769,7 @@ body of @code{C}, because @code{B} @code{with}'s @code{C}.
 @end table
 
 @noindent
-We are now in a position to give a usage rule in Ada 95 for avoiding
+We are now in a position to give a usage rule in Ada for avoiding
 elaboration problems, at least if dynamic dispatching and access to
 subprogram values are not used. We will handle these cases separately
 later.
@@ -24463,7 +25797,7 @@ states:
 No order of elaboration exists which follows the rules, taking into
 account any @code{Elaborate}, @code{Elaborate_All},
 or @code{Elaborate_Body} pragmas. In
-this case, an Ada 95 compiler must diagnose the situation at bind
+this case, an Ada compiler must diagnose the situation at bind
 time, and refuse to build an executable program.
 
 @item One or more orders exist, all incorrect
@@ -24559,13 +25893,13 @@ generate a warning that the call will raise @code{Program_Error}:
 @noindent
 Note that in this particular case, it is likely that the call is safe, because
 the function @code{One} does not access any global variables.
-Nevertheless in Ada 95, we do not want the validity of the check to depend on
+Nevertheless in Ada, we do not want the validity of the check to depend on
 the contents of the body (think about the separate compilation case), so this
 is still wrong, as we discussed in the previous sections.
 
 The error is easily corrected by rearranging the declarations so that the
-body of One appears before the declaration containing the call
-(note that in Ada 95,
+body of @code{One} appears before the declaration containing the call
+(note that in Ada 95 and Ada 2005,
 declarations can appear in any order, so there is no restriction that
 would prevent this reordering, and if we write:
 
@@ -24967,8 +26301,8 @@ pragma Elaborate statements from the source.
 
 @noindent
 The use of @code{pragma Elaborate}
-should generally be avoided in Ada 95 programs.
-The reason for this is that there is no guarantee that transitive calls
+should generally be avoided in Ada 95 and Ada 2005 programs,
+since there is no guarantee that transitive calls
 will be properly handled. Indeed at one point, this pragma was placed
 in Annex J (Obsolescent Features), on the grounds that it is never useful.
 
@@ -25234,7 +26568,7 @@ A significant part of the problem arises because of the use of the
 single task declaration form. This means that the elaboration of
 the task type, and the elaboration of the task itself (i.e. the
 creation of the task) happen at the same time. A good rule
-of style in Ada 95 is to always create explicit task types. By
+of style in Ada is to always create explicit task types. By
 following the additional step of placing task objects in separate
 packages from the task type declaration, many elaboration problems
 are avoided. Here is another modified example of the example program:
@@ -25476,7 +26810,8 @@ If the compilations are done using the
 manner. Dynamic checks are generated for all calls that could possibly result
 in raising an exception. With this switch, the compiler does not generate
 implicit @code{Elaborate} or @code{Elaborate_All} pragmas. The behavior then is
-exactly as specified in the Ada 95 Reference Manual. The binder will generate
+exactly as specified in the @cite{Ada Reference Manual}.
+The binder will generate
 an executable program that may or may not raise @code{Program_Error}, and then
 it is the programmer's job to ensure that it does not raise an exception. Note
 that it is important to compile all units with the switch, it cannot be used
@@ -25670,7 +27005,7 @@ not a factor in running the ACVC tests.)
 @cindex Access-to-subprogram
 
 @noindent
-The introduction of access-to-subprogram types in Ada 95 complicates
+Access-to-subprogram types (introduced in Ada 95) complicate
 the handling of elaboration. The trouble is that it becomes
 impossible to tell at compile time which procedure
 is being called. This means that it is not possible for the binder
@@ -25878,7 +27213,7 @@ If you need to write low-level software that interacts directly
 with the hardware, Ada provides two ways to incorporate assembly
 language code into your program.  First, you can import and invoke
 external routines written in assembly language, an Ada feature fully
-supported by GNAT.  However, for small sections of code it may be simpler
+supported by GNAT@.  However, for small sections of code it may be simpler
 or more efficient to include assembly language statements directly
 in your Ada source program, using the facilities of the implementation-defined
 package @code{System.Machine_Code}, which incorporates the gcc
@@ -26592,14 +27927,15 @@ problems.
 
 @noindent
 This chapter describes the compatibility issues that may arise between
-GNAT and other Ada 83 and Ada 95 compilation systems, and shows how GNAT
-can expedite porting
+GNAT and other Ada compilation systems (including those for Ada 83),
+and shows how GNAT can expedite porting
 applications developed in other Ada environments.
 
 @menu
 * Compatibility with Ada 83::
+* Compatibility between Ada 95 and Ada 2005::
 * Implementation-dependent characteristics::
-* Compatibility with Other Ada 95 Systems::
+* Compatibility with Other Ada Systems::
 * Representation Clauses::
 @ifclear vms
 @c Brief section is only in non-VMS version
@@ -26613,12 +27949,12 @@ applications developed in other Ada environments.
 
 @node Compatibility with Ada 83
 @section Compatibility with Ada 83
-@cindex Compatibility (between Ada 83 and Ada 95)
+@cindex Compatibility (between Ada 83 and Ada 95 / Ada 2005)
 
 @noindent
-Ada 95 is designed to be highly upwards compatible with Ada 83.  In
-particular, the design intention is that the difficulties associated
-with moving from Ada 83 to Ada 95 should be no greater than those
+Ada 95 and Ada 2005 are highly upwards compatible with Ada 83.  In
+particular, the design intention was that the difficulties associated
+with moving from Ada 83 to Ada 95 or Ada 2005 should be no greater than those
 that occur when moving from one Ada 83 system to another.
 
 However, there are a number of points at which there are minor
@@ -26638,7 +27974,10 @@ following subsections treat the most likely issues to be encountered.
 @node Legal Ada 83 programs that are illegal in Ada 95
 @subsection Legal Ada 83 programs that are illegal in Ada 95
 
-@table @asis
+Some legal Ada 83 programs are illegal (i.e. they will fail to compile) in
+Ada 95 and thus also in Ada 2005:
+
+@table @emph
 @item Character literals
 Some uses of character literals are ambiguous.  Since Ada 95 has introduced
 @code{Wide_Character} as a new predefined character type, some uses of
@@ -26647,6 +27986,7 @@ For example:
 @smallexample @c ada
    for Char in 'A' .. 'Z' loop ... end loop;
 @end smallexample
+
 @noindent
 The problem is that @code{'A'} and @code{'Z'} could be from either
 @code{Character} or @code{Wide_Character}.  The simplest correction
@@ -26722,7 +28062,7 @@ the fix is usually simply to add the @code{(<>)} to the generic declaration.
 @node More deterministic semantics
 @subsection More deterministic semantics
 
-@table @asis
+@table @emph
 @item Conversions
 Conversions from real types to integer types round away from 0.  In Ada 83
 the conversion Integer(2.5) could deliver either 2 or 3 as its value.  This
@@ -26749,8 +28089,8 @@ possible in Ada 83.  Fortunately this is extremely rare, but the one
 situation that you should be alert to is the change in the predefined type
 @code{Character} from 7-bit ASCII to 8-bit Latin-1.
 
-@table @asis
-@item range of @code{Character}
+@table @emph
+@item Range of type @code{Character}
 The range of @code{Standard.Character} is now the full 256 characters
 of Latin-1, whereas in most Ada 83 implementations it was restricted
 to 128 characters. Although some of the effects of
@@ -26774,26 +28114,84 @@ covers only the restricted range.
 
 @node Other language compatibility issues
 @subsection Other language compatibility issues
-@table @asis
-@item @option{-gnat83 switch}
+
+@table @emph
+@item @option{-gnat83} switch
 All implementations of GNAT provide a switch that causes GNAT to operate
 in Ada 83 mode.  In this mode, some but not all compatibility problems
 of the type described above are handled automatically.  For example, the
-new Ada 95 reserved words are treated simply as identifiers as in Ada 83.
+new reserved words introduced in Ada 95 and Ada 2005 are treated simply
+as identifiers as in Ada 83.
 However,
 in practice, it is usually advisable to make the necessary modifications
 to the program to remove the need for using this switch.
 See @ref{Compiling Different Versions of Ada}.
 
 @item Support for removed Ada 83 pragmas and attributes
-A number of pragmas and attributes from Ada 83 have been removed from Ada 95,
-generally because they have been replaced by other mechanisms.  Ada 95
+A number of pragmas and attributes from Ada 83 were removed from Ada 95,
+generally because they were replaced by other mechanisms.  Ada 95 and Ada 2005
 compilers are allowed, but not required, to implement these missing
-elements.  In contrast with some other Ada 95 compilers, GNAT implements all
+elements.  In contrast with some other compilers, GNAT implements all
 such pragmas and attributes, eliminating this compatibility concern.  These
 include @code{pragma Interface} and the floating point type attributes
 (@code{Emax}, @code{Mantissa}, etc.), among other items.
 @end table
+
+
+@node Compatibility between Ada 95 and Ada 2005
+@section Compatibility between Ada 95 and Ada 2005
+@cindex Compatibility between Ada 95 and Ada 2005
+
+@noindent
+Although Ada 2005 was designed to be upwards compatible with Ada 95, there are
+a number of incompatibilities. Several are enumerated below;
+for a complete description please see the
+Annotated Ada 2005 Reference Manual, or section 9.1.1 in
+@cite{Rationale for Ada 2005}.
+
+@table @emph
+@item New reserved words.
+The words @code{interface}, @code{overriding} and @code{synchronized} are
+reserved in Ada 2005.
+A pre-Ada 2005 program that uses any of these as an identifier will be
+illegal.
+
+@item New declarations in predefined packages.
+A number of packages in the predefined environment contain new declarations:
+@code{Ada.Exceptions}, @code{Ada.Real_Time}, @code{Ada.Strings},
+@code{Ada.Strings.Fixed}, @code{Ada.Strings.Bounded},
+@code{Ada.Strings.Unbounded}, @code{Ada.Strings.Wide_Fixed},
+@code{Ada.Strings.Wide_Bounded}, @code{Ada.Strings.Wide_Unbounded},
+@code{Ada.Tags}, @code{Ada.Text_IO}, and @code{Interfaces.C}.
+If an Ada 95 program does a @code{with} and @code{use} of any of these
+packages, the new declarations may cause name clashes.
+
+@item Access parameters.
+A nondispatching subprogram with an access parameter cannot be renamed
+as a dispatching operation.  This was permitted in Ada 95.
+
+@item Access types, discriminants, and constraints.
+Rule changes in this area have led to some incompatibilities; for example,
+constrained subtypes of some access types are not permitted in Ada 2005.
+
+@item Aggregates for limited types.
+The allowance of aggregates for limited types in Ada 2005 raises the
+possibility of ambiguities in legal Ada 95 programs, since additional types
+now need to be considered in expression resolution.
+
+@item Fixed-point multiplication and division.
+Certain expressions involving ``*'' or ``/'' for a fixed-point type, which
+were legal in Ada 95 and invoked the predefined versions of these operations,
+are now ambiguous.
+The ambiguity may be resolved either by applying a type conversion to the
+expression, or by explicitly invoking the operation from package
+@code{Standard}.
+
+@item Return-by-reference types.
+The Ada 95 return-by-reference mechanism has been removed.  Instead, the user
+can declare a function returning a value from an anonymous access type.
+@end table
+
 
 @node Implementation-dependent characteristics
 @section Implementation-dependent characteristics
@@ -26853,7 +28251,7 @@ Ada 83, GNAT supplies the attributes @code{Bit}, @code{Machine_Size} and
 @noindent
 Vendors may supply libraries to supplement the standard Ada API.  If Ada 83
 code uses vendor-specific libraries then there are several ways to manage
-this in Ada 95:
+this in Ada 95 or Ada 2005:
 @enumerate
 @item
 If the source code for the libraries (specifications and bodies) are
@@ -26863,7 +28261,7 @@ application.
 If the source code for the specifications but not the bodies are
 available, then you can reimplement the bodies.
 @item
-Some new Ada 95 features obviate the need for library support.  For
+Some features introduced by Ada 95 obviate the need for library support.  For
 example most Ada 83 vendors supplied a package for unsigned integers.  The
 Ada 95 modular type feature is the preferred way to handle this need, so
 instead of migrating or reimplementing the unsigned integer package it may
@@ -26908,23 +28306,27 @@ representations, interfacing with assembler code, and similar issues.  If
 such an Ada 83 application is being ported to different target hardware (for
 example where the byte endianness has changed) then you will need to
 carefully examine the program logic; the porting effort will heavily depend
-on the robustness of the original design.  Moreover, Ada 95 is sometimes
+on the robustness of the original design.  Moreover, Ada 95 (and thus
+Ada 2005) are sometimes
 incompatible with typical Ada 83 compiler practices regarding implicit
 packing, the meaning of the Size attribute, and the size of access values.
 GNAT's approach to these issues is described in @ref{Representation Clauses}.
 
-@node Compatibility with Other Ada 95 Systems
-@section Compatibility with Other Ada 95 Systems
+@node Compatibility with Other Ada Systems
+@section Compatibility with Other Ada Systems
 
 @noindent
-Providing that programs avoid the use of implementation dependent and
-implementation defined features of Ada 95, as documented in the Ada 95
-reference manual, there should be a high degree of portability between
-GNAT and other Ada 95 systems.  The following are specific items which
-have proved troublesome in moving GNAT programs to other Ada 95
+If programs avoid the use of implementation dependent and
+implementation defined features, as documented in the @cite{Ada
+Reference Manual}, there should be a high degree of portability between
+GNAT and other Ada systems.  The following are specific items which
+have proved troublesome in moving Ada 95 programs from GNAT to other Ada 95
 compilers, but do not affect porting code to GNAT@.
+(As of @value{NOW}, GNAT is the only compiler available for Ada 2005;
+the following issues may or may not arise for Ada 2005 programs
+when other compilers appear.)
 
-@table @asis
+@table @emph
 @item Ada 83 Pragmas and Attributes
 Ada 95 compilers are allowed, but not required, to implement the missing
 Ada 83 pragmas and attributes that are no longer defined in Ada 95.
@@ -26932,7 +28334,7 @@ GNAT implements all such pragmas and attributes, eliminating this as
 a compatibility concern, but some other Ada 95 compilers reject these
 pragmas and attributes.
 
-@item Special-needs Annexes
+@item Specialized Needs Annexes
 GNAT implements the full set of special needs annexes.  At the
 current time, it is the only Ada 95 compiler to do so.  This means that
 programs making use of these features may not be portable to other Ada
@@ -26950,21 +28352,21 @@ far beyond this minimal set, as described in the next section.
 @noindent
 The Ada 83 reference manual was quite vague in describing both the minimal
 required implementation of representation clauses, and also their precise
-effects.  The Ada 95 reference manual is much more explicit, but the minimal
-set of capabilities required in Ada 95 is quite limited.
+effects.  Ada 95 (and thus also Ada 2005) are much more explicit, but the
+minimal set of capabilities required is still quite limited.
 
-GNAT implements the full required set of capabilities described in the
-Ada 95 reference manual, but also goes much beyond this, and in particular
+GNAT implements the full required set of capabilities in
+Ada 95 and Ada 2005, but also goes much further, and in particular
 an effort has been made to be compatible with existing Ada 83 usage to the
 greatest extent possible.
 
 A few cases exist in which Ada 83 compiler behavior is incompatible with
-requirements in the Ada 95 reference manual.  These are instances of
+the requirements in Ada 95 (and thus also Ada 2005).  These are instances of
 intentional or accidental dependence on specific implementation dependent
 characteristics of these Ada 83 compilers.  The following is a list of
-the cases most likely to arise in existing legacy Ada 83 code.
+the cases most likely to arise in existing Ada 83 code.
 
-@table @asis
+@table @emph
 @item Implicit Packing
 Some Ada 83 compilers allowed a Size specification to cause implicit
 packing of an array or record.  This could cause expensive implicit
@@ -26972,17 +28374,17 @@ conversions for change of representation in the presence of derived
 types, and the Ada design intends to avoid this possibility.
 Subsequent AI's were issued to make it clear that such implicit
 change of representation in response to a Size clause is inadvisable,
-and this recommendation is represented explicitly in the Ada 95 RM
-as implementation advice that is followed by GNAT@.
+and this recommendation is represented explicitly in the Ada 95 (and Ada 2005)
+Reference Manuals as implementation advice that is followed by GNAT@.
 The problem will show up as an error
 message rejecting the size clause.  The fix is simply to provide
 the explicit pragma @code{Pack}, or for more fine tuned control, provide
 a Component_Size clause.
 
 @item Meaning of Size Attribute
-The Size attribute in Ada 95 for discrete types is defined as being the
-minimal number of bits required to hold values of the type.  For example,
-on a 32-bit machine, the size of Natural will typically be 31 and not
+The Size attribute in Ada 95 (and Ada 2005) for discrete types is defined as
+the minimal number of bits required to hold values of the type.  For example,
+on a 32-bit machine, the size of @code{Natural} will typically be 31 and not
 32 (since no sign bit is required).  Some Ada 83 compilers gave 31, and
 some 32 in this situation.  This problem will usually show up as a compile
 time error, but not always.  It is a good idea to check all uses of the
@@ -27040,7 +28442,7 @@ existing HP Ada 83 code to GNAT in VMS systems should be easier than
 most other porting efforts.  The following are some of the most
 significant differences between GNAT and HP Ada 83.
 
-@table @asis
+@table @emph
 @item Default floating-point representation
 In GNAT, the default floating-point format is IEEE, whereas in HP Ada 83,
 it is VMS format.  GNAT does implement the necessary pragmas
@@ -27062,11 +28464,11 @@ HP Ada provides the following declarations:
 @smallexample @c ada
 TO_ADDRESS (INTEGER)
 TO_ADDRESS (UNSIGNED_LONGWORD)
-TO_ADDRESS (universal_integer)
+TO_ADDRESS (@i{universal_integer})
 @end smallexample
 
 @noindent
-The version of TO_ADDRESS taking a universal integer argument is in fact
+The version of TO_ADDRESS taking a @i{universal integer} argument is in fact
 an extension to Ada 83 not strictly compatible with the reference manual.
 In GNAT, we are constrained to be exactly compatible with the standard,
 and this means we cannot provide this capability.  In HP Ada 83, the
@@ -27080,10 +28482,10 @@ TO_ADDRESS (16#12777#);
 Normally, according to the Ada 83 standard, one would expect this to be
 ambiguous, since it matches both the INTEGER and UNSIGNED_LONGWORD forms
 of TO_ADDRESS@.  However, in HP Ada 83, there is no ambiguity, since the
-definition using universal_integer takes precedence.
+definition using @i{universal_integer} takes precedence.
 
-In GNAT, since the version with universal_integer cannot be supplied, it is
-not possible to be 100% compatible.  Since there are many programs using
+In GNAT, since the version with @i{universal_integer} cannot be supplied, it
+is not possible to be 100% compatible.  Since there are many programs using
 numeric constants for the argument to TO_ADDRESS, the decision in GNAT was
 to change the name of the function in the UNSIGNED_LONGWORD case, so the
 declarations provided in the GNAT version of AUX_Dec are:
@@ -27107,6 +28509,7 @@ does not provide a specified value for the Task_Id of the environment task,
 which in GNAT is treated like any other declared task.
 @end table
 
+@noindent
 For full details on these and other less significant compatibility issues,
 see appendix E of the HP publication entitled @cite{HP Ada, Technical
 Overview and Comparison on HP Platforms}.
@@ -27144,7 +28547,7 @@ three main goals:
 
 @enumerate
 @item
-Providing a full conforming implementation of the Ada 95 language
+Providing a full conforming implementation of Ada 95 and Ada 2005
 
 @item
 Allowing maximum backward compatibility, thus easing migration of existing
@@ -27510,8 +28913,8 @@ visible (i.e., non-private) integer type.
 Standard operations on the type, such as the binary operators ``+'', ``-'',
 etc., that take @code{Address} operands and return an @code{Address} result,
 have been hidden by declaring these
-@code{abstract}, an Ada 95 feature that helps avoid the potential ambiguities
-that would otherwise result from overloading.
+@code{abstract}, a feature introduced in Ada 95 that helps avoid the potential
+ambiguities that would otherwise result from overloading.
 (Note that, although @code{Address} is a visible integer type,
 good programming practice dictates against exploiting the type's
 integer properties such as literals, since this will compromise
@@ -29374,12 +30777,12 @@ approach to debug a program as described in
 It is possible to specify the program stack size at link time. On modern
 versions of Windows, starting with XP, this is mostly useful to set the size of
 the main stack (environment task). The other task stacks are set with pragma
-Storage_Size or with gnatbind -d.
+Storage_Size or with the @command{gnatbind -d} command.
 
-Older versions of Windows (2000, NT4, etc.) do
-not provide any means of setting the reserve size of individual tasks, thus the
-link-time stack size applies to all tasks and pragma Storage_Size has no effect.
-It means, in particular, that Stack Overflow checks are made against this
+Since older versions of Windows (2000, NT4, etc.) do not allow setting the
+reserve size of individual tasks, the link-time stack size applies to all
+tasks, and pragma Storage_Size has no effect.
+In particular, Stack Overflow checks are made against this
 link-time specified size.
 
 This setting can be done with
