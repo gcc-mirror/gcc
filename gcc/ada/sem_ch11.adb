@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@ with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
+with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
@@ -203,7 +204,7 @@ package body Sem_Ch11 is
                      (E_Block, Current_Scope, Sloc (Choice), 'E');
                end if;
 
-               New_Scope (H_Scope);
+               Push_Scope (H_Scope);
                Set_Etype (H_Scope, Standard_Void_Type);
 
                --  Set the Finalization Chain entity to Error means that it
@@ -217,7 +218,11 @@ package body Sem_Ch11 is
 
                Enter_Name (Choice);
                Set_Ekind (Choice, E_Variable);
-               Set_Etype (Choice, RTE (RE_Exception_Occurrence));
+
+               if RTE_Available (RE_Exception_Occurrence) then
+                  Set_Etype (Choice, RTE (RE_Exception_Occurrence));
+               end if;
+
                Generate_Definition (Choice);
 
                --  Set source assigned flag, since in effect this field is
