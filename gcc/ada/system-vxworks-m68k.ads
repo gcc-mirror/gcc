@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                          (VxWorks version M68K)                          --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -51,7 +51,7 @@ package System is
    Max_Int               : constant := Long_Long_Integer'Last;
 
    Max_Binary_Modulus    : constant := 2 ** Long_Long_Integer'Size;
-   Max_Nonbinary_Modulus : constant := Integer'Last;
+   Max_Nonbinary_Modulus : constant := 2 ** Integer'Size - 1;
 
    Max_Base_Digits       : constant := Long_Long_Float'Digits;
    Max_Digits            : constant := Long_Long_Float'Digits;
@@ -64,6 +64,7 @@ package System is
    --  Storage-related Declarations
 
    type Address is private;
+   pragma Preelaborable_Initialization (Address);
    Null_Address : constant Address;
 
    Storage_Unit : constant := 8;
@@ -91,6 +92,11 @@ package System is
    pragma Warnings (Off, Default_Bit_Order); -- kill constant condition warning
 
    --  Priority-related Declarations (RM D.1)
+
+   --  Ada priorities are mapped to VxWorks priorities using the following
+   --  transformation: 255 - Ada Priority
+
+   --  Ada priorities are used as follows:
 
    --  256        is reserved for the VxWorks kernel
    --  248 - 255  correspond to hardware interrupt levels 0 .. 7
@@ -124,11 +130,9 @@ private
    --  whose source should be consulted for more detailed descriptions
    --  of the individual switch values.
 
-   AAMP                      : constant Boolean := False;
    Backend_Divide_Checks     : constant Boolean := False;
    Backend_Overflow_Checks   : constant Boolean := False;
    Command_Line_Args         : constant Boolean := False;
-   Compiler_System_Version   : constant Boolean := False;
    Configurable_Run_Time     : constant Boolean := False;
    Denorm                    : constant Boolean := True;
    Duration_32_Bits          : constant Boolean := False;
@@ -137,7 +141,6 @@ private
    Frontend_Layout           : constant Boolean := False;
    Machine_Overflows         : constant Boolean := False;
    Machine_Rounds            : constant Boolean := True;
-   OpenVMS                   : constant Boolean := False;
    Preallocated_Stacks       : constant Boolean := False;
    Signed_Zeros              : constant Boolean := False;
    Stack_Check_Default       : constant Boolean := False;
@@ -151,11 +154,5 @@ private
    Use_Ada_Main_Program_Name : constant Boolean := True;
    ZCX_By_Default            : constant Boolean := False;
    GCC_ZCX_Support           : constant Boolean := False;
-   Front_End_ZCX_Support     : constant Boolean := False;
-
-   --  Obsolete entries, to be removed eventually (bootstrap issues!)
-
-   High_Integrity_Mode       : constant Boolean := False;
-   Long_Shifts_Inlined       : constant Boolean := False;
 
 end System;
