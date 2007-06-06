@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,7 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Fname;    use Fname;
 with Lib;      use Lib;
+with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Sem;      use Sem;
@@ -120,9 +121,13 @@ package body Sem_Cat is
    is
       N : constant Node_Id := Info_Node;
 
-      --  Here we define an enumeration type to represent categorization
-      --  types, ordered so that a unit with a given categorization can
-      --  only WITH units with lower or equal categorization type.
+      --  Here we define an enumeration type to represent categorization types,
+      --  ordered so that a unit with a given categorization can only WITH
+      --  units with lower or equal categorization type.
+
+      --  Note that we take advantage of E.2(14) to define a category
+      --  Preelaborated and treat pragma Preelaborate as a categorization
+      --  pragma that defines that category.
 
       type Categorization is
         (Pure,
@@ -132,12 +137,9 @@ package body Sem_Cat is
          Preelaborated,
          Normal);
 
-      Unit_Category : Categorization;
-      With_Category : Categorization;
-
       function Get_Categorization (E : Entity_Id) return Categorization;
       --  Check categorization flags from entity, and return in the form
-      --  of a corresponding enumeration value.
+      --  of the lowest value of the Categorization type that applies to E.
 
       ------------------------
       -- Get_Categorization --
@@ -145,12 +147,16 @@ package body Sem_Cat is
 
       function Get_Categorization (E : Entity_Id) return Categorization is
       begin
-         if Is_Preelaborated (E) then
-            return Preelaborated;
+         --  Get the lowest categorization that corresponds to E. Note that
+         --  nothing prevents several (different) categorization pragmas
+         --  to apply to the same library unit, in which case the unit has
+         --  all associated categories, so we need to be careful here to
+         --  check pragmas in proper Categorization order in order to
+         --  return the lowest appplicable value.
 
-            --  Ignore Pure specification if set by pragma Pure_Function
+         --  Ignore Pure specification if set by pragma Pure_Function
 
-         elsif Is_Pure (E)
+         if Is_Pure (E)
            and then not
              (Has_Pragma_Pure_Function (E) and not Has_Pragma_Pure (E))
          then
@@ -165,10 +171,16 @@ package body Sem_Cat is
          elsif Is_Remote_Call_Interface (E) then
             return Remote_Call_Interface;
 
+         elsif Is_Preelaborated (E) then
+            return Preelaborated;
+
          else
             return Normal;
          end if;
       end Get_Categorization;
+
+      Unit_Category : Categorization;
+      With_Category : Categorization;
 
    --  Start of processing for Check_Categorization_Dependencies
 
@@ -1049,8 +1061,20 @@ package body Sem_Cat is
          --  Check for default initialized variable case. Note that in
          --  accordance with (RM B.1(24)) imported objects are not
          --  subject to default initialization.
+         --  If the initialization does not come from source and is an
+         --  aggregate, it is a static initialization that replaces an
+         --  implicit call, and must be treated as such.
 
-         if No (E) and then not Is_Imported (Id) then
+         if Present (E)
+           and then
+            (Comes_From_Source (E) or else Nkind (E) /= N_Aggregate)
+         then
+            null;
+
+         elsif Is_Imported (Id) then
+            null;
+
+         else
             declare
                Ent : Entity_Id := T;
 
@@ -1129,23 +1153,30 @@ package body Sem_Cat is
                           ("private object not allowed in preelaborated unit",
                            N);
 
-                        --  If we are in Ada 2005 mode, add a message if pragma
+                        --  Add a message if it would help to provide a pragma
                         --  Preelaborable_Initialization on the type of the
-                        --  object would help.
+                        --  object (which would make it legal in Ada 2005).
 
                         --  If the type has no full view (generic type, or
                         --  previous error), the warning does not apply.
 
-                        if Ada_Version >= Ada_05
-                          and then Is_Private_Type (Ent)
+                        if Is_Private_Type (Ent)
                           and then Present (Full_View (Ent))
                           and then
                             Has_Preelaborable_Initialization (Full_View (Ent))
                         then
                            Error_Msg_Sloc := Sloc (Ent);
-                           Error_Msg_NE
-                             ("\would be legal if pragma Preelaborable_" &
-                              "Initialization given for & #", N, Ent);
+
+                           if Ada_Version >= Ada_05 then
+                              Error_Msg_NE
+                                ("\would be legal if pragma Preelaborable_" &
+                                 "Initialization given for & #", N, Ent);
+                           else
+                              Error_Msg_NE
+                                ("\would be legal in Ada 2005 if pragma " &
+                                 "Preelaborable_Initialization given for & #",
+                                 N, Ent);
+                           end if;
                         end if;
                      end if;
                   end if;
