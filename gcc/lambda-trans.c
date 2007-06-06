@@ -35,7 +35,7 @@ lambda_trans_matrix_new (int colsize, int rowsize)
 {
   lambda_trans_matrix ret;
   
-  ret = ggc_alloc (sizeof (*ret));
+  ret = GGC_NEW (struct lambda_trans_matrix_s);
   LTM_MATRIX (ret) = lambda_matrix_new (rowsize, colsize);
   LTM_ROWSIZE (ret) = rowsize;
   LTM_COLSIZE (ret) = colsize;
