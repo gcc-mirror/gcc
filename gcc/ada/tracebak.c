@@ -34,6 +34,7 @@
    functions.
    It has been tested on the following configurations:
    PowerPC/AiX
+   PowerPC/Darwin
    PowerPC/VxWorks
    SPARC/Solaris
    i386/GNU/Linux
@@ -115,7 +116,7 @@ extern void (*Unlock_Task) (void);
    we store in the tracebacks array. The latter allows us to loop over the
    successive frames in the chain.
 
-   To initiate the process, we retrieve an initial frame pointer using the
+   To initiate the process, we retrieve an initial frame address using the
    appropriate GCC builtin (__builtin_frame_address).
 
    This scheme is unfortunately not applicable on every target because the
@@ -125,8 +126,8 @@ extern void (*Unlock_Task) (void);
    o struct layout, describing the expected stack data layout relevant to the
      information we are interested in,
 
-   o FRAME_OFFSET, the offset, from a given frame pointer, at which this
-     layout will be found,
+   o FRAME_OFFSET, the offset, from a given frame address or frame pointer
+     value, at which this layout will be found,
 
    o FRAME_LEVEL, controls how many frames up we get at to start with,
      from the initial frame pointer we compute by way of the GCC builtin,
@@ -205,7 +206,7 @@ struct layout
   void *return_address;
 };
 
-#define FRAME_OFFSET 0
+#define FRAME_OFFSET(FP) 0
 #define PC_ADJUST -4
 #define STOP_FRAME(CURRENT, TOP_STACK) ((void *) (CURRENT) < (TOP_STACK))
 
@@ -237,7 +238,7 @@ struct layout
 #define FRAME_LEVEL 1
 /* See the PPC AIX case for an explanation of these values.  */
 
-#define FRAME_OFFSET 0
+#define FRAME_OFFSET(FP) 0
 #define PC_ADJUST -4
 #define STOP_FRAME(CURRENT, TOP_STACK) ((CURRENT)->next == 0)
 
@@ -265,13 +266,13 @@ struct layout
 #endif
 
 #define FRAME_LEVEL 0
-#define FRAME_OFFSET (14 * sizeof (void*) + STACK_BIAS)
+#define FRAME_OFFSET(FP) (14 * sizeof (void*) + (FP ? STACK_BIAS : 0))
 #define PC_ADJUST 0
 #define STOP_FRAME(CURRENT, TOP_STACK) \
   ((CURRENT)->return_address == 0|| (CURRENT)->next == 0 \
    || (void *) (CURRENT) < (TOP_STACK))
 
-/* The sparc register windows need to be flushed before we may access them
+/* The SPARC register windows need to be flushed before we may access them
    from the stack. This is achieved by way of builtin_frame_address only
    when the "count" argument is positive, so force at least one such call.  */
 #define FETCH_UP_FRAME_ADDRESS
@@ -306,7 +307,7 @@ struct layout
    return the soft stack pointer, which does not designate a location where a
    backchain and a return address might be found.  */
 
-#define FRAME_OFFSET 0
+#define FRAME_OFFSET(FP) 0
 #define PC_ADJUST -2
 #define STOP_FRAME(CURRENT, TOP_STACK) \
   (IS_BAD_PTR((long)(CURRENT)->return_address) \
@@ -432,7 +433,7 @@ __gnat_backtrace (void **array,
     forced_callee ();
 
   /* Force a call to builtin_frame_address with a positive argument
-     if required. This is necessary e.g. on sparc to have the register
+     if required. This is necessary e.g. on SPARC to have the register
      windows flushed before we attempt to access them on the stack.  */
 #if defined (FETCH_UP_FRAME_ADDRESS) && (FRAME_LEVEL == 0)
   __builtin_frame_address (1);
@@ -440,7 +441,7 @@ __gnat_backtrace (void **array,
 
   top_frame = __builtin_frame_address (FRAME_LEVEL);
   top_stack = CURRENT_STACK_FRAME;
-  current = (struct layout *) ((size_t) top_frame + FRAME_OFFSET);
+  current = (struct layout *) ((size_t) top_frame + FRAME_OFFSET (0));
 
   /* Skip the number of calls we have been requested to skip, accounting for
      the BASE_SKIP parameter.
@@ -453,7 +454,7 @@ __gnat_backtrace (void **array,
 
   while (cnt < skip_frames)
     {
-      current = (struct layout *) ((size_t) current->next + FRAME_OFFSET);
+      current = (struct layout *) ((size_t) current->next + FRAME_OFFSET (1));
       cnt++;
     }
 
@@ -468,7 +469,7 @@ __gnat_backtrace (void **array,
 	  || current->return_address > exclude_max)
         array[cnt++] = current->return_address + PC_ADJUST;
 
-      current = (struct layout *) ((size_t) current->next + FRAME_OFFSET);
+      current = (struct layout *) ((size_t) current->next + FRAME_OFFSET (1));
     }
 
   return cnt;
