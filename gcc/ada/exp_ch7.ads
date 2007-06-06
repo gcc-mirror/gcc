@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,6 +24,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Namet; use Namet;
 with Types; use Types;
 
 package Exp_Ch7 is
@@ -162,6 +163,10 @@ package Exp_Ch7 is
    --  Expand a call to a function returning a controlled value. That is to
    --  say attach the result of the call to the current finalization list,
    --  which is the one of the transient scope created for such constructs.
+
+   function Make_Handler_For_Ctrl_Operation (Loc : Source_Ptr) return Node_Id;
+   --  Generate an implicit exception handler with an 'others' choice,
+   --  converting any occurrence to a raise of Program_Error.
 
    --------------------------------------------
    -- Task and Protected Object finalization --
