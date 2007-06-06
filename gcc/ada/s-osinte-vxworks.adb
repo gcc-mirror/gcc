@@ -143,7 +143,7 @@ package body System.OS_Interface is
    -- To_VxWorks_Priority --
    -------------------------
 
-   function To_VxWorks_Priority (Priority : in int) return int is
+   function To_VxWorks_Priority (Priority : int) return int is
    begin
       return Low_Priority - Priority;
    end To_VxWorks_Priority;

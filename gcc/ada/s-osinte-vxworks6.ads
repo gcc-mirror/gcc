@@ -7,7 +7,7 @@
 --                                   S p e c                                --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2006, Free Software Foundation, Inc.      --
+--             Copyright (C) 1995-2007, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the VxWorks version of this package
+--  This is the VxWorks 6.x version of this package
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.
@@ -46,12 +46,14 @@ with System.VxWorks;
 package System.OS_Interface is
    pragma Preelaborate;
 
-   subtype int        is Interfaces.C.int;
-   subtype short      is Short_Integer;
-   type unsigned_int  is mod 2 ** int'Size;
-   type long          is new Long_Integer;
-   type unsigned_long is mod 2 ** long'Size;
-   type size_t        is mod 2 ** Standard'Address_Size;
+   subtype int             is Interfaces.C.int;
+   subtype short           is Short_Integer;
+   type unsigned_int       is mod 2 ** int'Size;
+   type long               is new Long_Integer;
+   type unsigned_long      is mod 2 ** long'Size;
+   type long_long          is new Long_Long_Integer;
+   type unsigned_long_long is mod 2 ** long_long'Size;
+   type size_t             is mod 2 ** Standard'Address_Size;
 
    -----------
    -- Errno --
@@ -72,7 +74,7 @@ package System.OS_Interface is
    -- Signals and Interrupts --
    ----------------------------
 
-   NSIG : constant := 32;
+   NSIG : constant := 64;
    --  Number of signals on the target OS
    type Signal is new int range 0 .. Interfaces.C."-" (NSIG, 1);
 
@@ -81,11 +83,53 @@ package System.OS_Interface is
 
    Max_Interrupt : constant := Max_HW_Interrupt;
 
-   SIGILL  : constant :=  4; --  illegal instruction (not reset)
-   SIGABRT : constant :=  6; --  used by abort, replace SIGIOT in the future
-   SIGFPE  : constant :=  8; --  floating point exception
-   SIGBUS  : constant := 10; --  bus error
-   SIGSEGV : constant := 11; --  segmentation violation
+   SIGHUP    : constant :=  1; --  hangup
+   SIGINT    : constant :=  2; --  interrupt
+   SIGQUIT   : constant :=  3; --  quit
+   SIGILL    : constant :=  4; --  illegal instruction (not reset when caught)
+   SIGTRAP   : constant :=  5; --  trace trap (not reset when caught)
+   SIGABRT   : constant :=  6; --  used by abort, replace SIGIOT in the future
+   SIGEMT    : constant :=  7; --  EMT instruction
+   SIGFPE    : constant :=  8; --  floating point exception
+   SIGKILL   : constant :=  9; --  kill
+   SIGBUS    : constant := 10; --  bus error
+   SIGSEGV   : constant := 11; --  segmentation violation
+   SIGFMT    : constant := 12; --  STACK FORMAT ERROR (not posix)
+   SIGPIPE   : constant := 13; --  write on a pipe with no one to read it
+   SIGALRM   : constant := 14; --  alarm clock
+   SIGTERM   : constant := 15; --  software termination signal from kill
+   SIGCNCL   : constant := 16; --  pthreads cancellation signal
+   SIGSTOP   : constant := 17; --  sendable stop signal not from tty
+   SIGTSTP   : constant := 18; --  stop signal from tty
+   SIGCONT   : constant := 19; --  continue a stopped process
+   SIGCHLD   : constant := 20; --  to parent on child stop or exit
+   SIGTTIN   : constant := 21; --  to readers pgrp upon background tty read
+   SIGTTOU   : constant := 22; --  like TTIN for output
+
+   SIGRES1   : constant := 23; --  reserved signal number (Not POSIX)
+   SIGRES2   : constant := 24; --  reserved signal number (Not POSIX)
+   SIGRES3   : constant := 25; --  reserved signal number (Not POSIX)
+   SIGRES4   : constant := 26; --  reserved signal number (Not POSIX)
+   SIGRES5   : constant := 27; --  reserved signal number (Not POSIX)
+   SIGRES6   : constant := 28; --  reserved signal number (Not POSIX)
+   SIGRES7   : constant := 29; --  reserved signal number (Not POSIX)
+
+   SIGUSR1   : constant := 30; --  user defined signal 1
+   SIGUSR2   : constant := 31; --  user defined signal 2
+
+   SIGPOLL   : constant := 32; --  pollable event
+   SIGPROF   : constant := 33; --  profiling timer expired
+   SIGSYS    : constant := 34; --  bad system call
+   SIGURG    : constant := 35; --  high bandwidth data is available at socket
+   SIGVTALRM : constant := 36; --  virtual timer expired
+   SIGXCPU   : constant := 37; --  CPU time limit exceeded
+   SIGXFSZ   : constant := 38; --  file size time limit exceeded
+
+   SIGEVTS   : constant := 39; --  signal event thread send
+   SIGEVTD   : constant := 40; --  signal event thread delete
+
+   SIGRTMIN  : constant := 48; --  Realtime signal min
+   SIGRTMAX  : constant := 63; --  Realtime signal max
 
    -----------------------------------
    -- Signal processing definitions --
@@ -367,7 +411,7 @@ package System.OS_Interface is
    --  Release all threads blocked on the semaphore
 
 private
-   type sigset_t is new long;
+   type sigset_t is new unsigned_long_long;
 
    type pid_t is new int;
 

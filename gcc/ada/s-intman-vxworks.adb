@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2006 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -135,7 +135,7 @@ package body System.Interrupt_Management is
       --  Change this if you want to use another signal for task abort.
       --  SIGTERM might be a good one.
 
-      Abort_Task_Signal := SIGABRT;
+      Abort_Task_Interrupt := SIGABRT;
 
       Exception_Action.sa_handler := Notify_Exception'Address;
       Exception_Action.sa_flags := SA_ONSTACK;
@@ -169,7 +169,7 @@ package body System.Interrupt_Management is
 
       --  The abort signal must also be unmasked
 
-      Keep_Unmasked (Abort_Task_Signal) := True;
+      Keep_Unmasked (Abort_Task_Interrupt) := True;
    end Initialize;
 
 end System.Interrupt_Management;
