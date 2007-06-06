@@ -1267,7 +1267,7 @@ stage[+id+]-end:: [+ FOR host_modules +][+ IF bootstrap +]
 	fi
 	rm -f stage_current
 
-# Bubble a bugfix through all the stages up to stage [+id+].  They are
+# Bubble a bug fix through all the stages up to stage [+id+].  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
 # reconfigured as well.
 .PHONY: stage[+id+]-bubble
