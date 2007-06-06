@@ -1,5 +1,9 @@
 2007-06-07  Ben Elliston  <bje@au.ibm.com>
 
+	* config.sub, config.guess: Update from upstream sources.
+
+2007-06-07  Ben Elliston  <bje@au.ibm.com>
+
 	* Makefile.tpl: Fix spelling error.
 	* Makefile.in: Regenerate.
 
