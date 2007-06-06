@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -328,6 +328,10 @@ typedef Int Mechanism_Type;
 #define By_Descriptor_SB   (-8)
 #define By_Descriptor_A    (-9)
 #define By_Descriptor_NCA  (-10)
+#define By_Descriptor_Last (-10)
+
+/* Internal to Gigi.  */
+#define By_Copy_Return     (-128)
 
 /* Definitions of Reason codes for Raise_xxx_Error nodes */
 #define CE_Access_Check_Failed              0
@@ -359,7 +363,7 @@ typedef Int Mechanism_Type;
 #define PE_Potentially_Blocking_Operation  25
 #define PE_Stubbed_Subprogram_Called       26
 #define PE_Unchecked_Union_Restriction     27
-#define PE_Illegal_RACW_E_4_18             28
+#define PE_Non_Transportable_Actual        28
 
 #define SE_Empty_Storage_Pool              29
 #define SE_Explicit_Raise                  30
