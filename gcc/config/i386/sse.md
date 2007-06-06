@@ -6338,7 +6338,7 @@
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(unspec:V2DF [(match_operand:V2DF 1 "nonimmediate_operand" "xm")
 		      (match_operand:SI 2 "const_0_to_15_operand" "n")]
-		     UNSPEC_ROUNDP))]
+		     UNSPEC_ROUND))]
   "TARGET_SSE4_1"
   "roundpd\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "ssecvt")
@@ -6349,7 +6349,7 @@
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(unspec:V4SF [(match_operand:V4SF 1 "nonimmediate_operand" "xm")
 		      (match_operand:SI 2 "const_0_to_15_operand" "n")]
-		     UNSPEC_ROUNDP))]
+		     UNSPEC_ROUND))]
   "TARGET_SSE4_1"
   "roundps\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "ssecvt")
@@ -6361,7 +6361,7 @@
 	(vec_merge:V2DF
 	  (unspec:V2DF [(match_operand:V2DF 2 "register_operand" "x")
 			(match_operand:SI 3 "const_0_to_15_operand" "n")]
-		       UNSPEC_ROUNDS)
+		       UNSPEC_ROUND)
 	  (match_operand:V2DF 1 "register_operand" "0")
 	  (const_int 1)))]
   "TARGET_SSE4_1"
@@ -6375,7 +6375,7 @@
 	(vec_merge:V4SF
 	  (unspec:V4SF [(match_operand:V4SF 2 "register_operand" "x")
 			(match_operand:SI 3 "const_0_to_15_operand" "n")]
-		       UNSPEC_ROUNDS)
+		       UNSPEC_ROUND)
 	  (match_operand:V4SF 1 "register_operand" "0")
 	  (const_int 1)))]
   "TARGET_SSE4_1"
@@ -6504,14 +6504,14 @@
 	   (match_operand:SI 3 "register_operand" "d,d,d,d")
 	   (match_operand:SI 4 "const_0_to_255_operand" "n,n,n,n")]
 	  UNSPEC_PCMPESTR))
-   (clobber (match_scratch:SI    5 "=c,c,X,X"))
-   (clobber (match_scratch:V16QI 6 "=X,X,Y0,Y0"))]
+   (clobber (match_scratch:V16QI 5 "=Y0,Y0,X,X"))
+   (clobber (match_scratch:SI    6 "= X, X,c,c"))]
   "TARGET_SSE4_2"
   "@
-   pcmpestri\t{%4, %2, %0|%0, %2, %4}
-   pcmpestri\t{%4, %2, %0|%0, %2, %4}
    pcmpestrm\t{%4, %2, %0|%0, %2, %4}
-   pcmpestrm\t{%4, %2, %0|%0, %2, %4}"
+   pcmpestrm\t{%4, %2, %0|%0, %2, %4}
+   pcmpestri\t{%4, %2, %0|%0, %2, %4}
+   pcmpestri\t{%4, %2, %0|%0, %2, %4}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_data16" "1")
    (set_attr "prefix_extra" "1")
@@ -6613,14 +6613,14 @@
 	   (match_operand:V16QI 1 "nonimmediate_operand" "x,m,x,m")
 	   (match_operand:SI 2 "const_0_to_255_operand" "n,n,n,n")]
 	  UNSPEC_PCMPISTR))
-   (clobber (match_scratch:SI    3 "=c,c,X,X"))
-   (clobber (match_scratch:V16QI 4 "=X,X,Y0,Y0"))]
+   (clobber (match_scratch:V16QI 3 "=Y0,Y0,X,X"))
+   (clobber (match_scratch:SI    4 "= X, X,c,c"))]
   "TARGET_SSE4_2"
   "@
-   pcmpistri\t{%2, %1, %0|%0, %1, %2}
-   pcmpistri\t{%2, %1, %0|%0, %1, %2}
    pcmpistrm\t{%2, %1, %0|%0, %1, %2}
-   pcmpistrm\t{%2, %1, %0|%0, %1, %2}"
+   pcmpistrm\t{%2, %1, %0|%0, %1, %2}
+   pcmpistri\t{%2, %1, %0|%0, %1, %2}
+   pcmpistri\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_data16" "1")
    (set_attr "prefix_extra" "1")
