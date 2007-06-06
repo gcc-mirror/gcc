@@ -264,6 +264,10 @@ package Stylesw is
    --  This procedure is called to set the default style checking options
    --  in response to a -gnaty switch with no suboptions.
 
+   procedure Set_GNAT_Style_Check_Options;
+   --  This procedure is called to set the default style checking options
+   --  for GNAT units (as set by -gnatg or -gnatyg).
+
    Style_Msg_Buf : String (1 .. 80);
    Style_Msg_Len : Natural;
    --  Used to return
