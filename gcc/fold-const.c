@@ -4450,13 +4450,24 @@ merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
 	{
 	  low = range_successor (high1);
 	  high = high0;
-	  in_p = (low != 0);
+	  in_p = 1;
+	  if (low == 0)
+	    {
+	      /* We are in the weird situation where high0 > high1 but
+		 high1 has no successor.  Punt.  */
+	      return 0;
+	    }
 	}
       else if (! subset || highequal)
 	{
 	  low = low0;
 	  high = range_predecessor (low1);
-	  in_p = (high != 0);
+	  in_p = 1;
+	  if (high == 0)
+	    {
+	      /* low0 < low1 but low1 has no predecessor.  Punt.  */
+	      return 0;
+	    }
 	}
       else
 	return 0;
@@ -4476,7 +4487,12 @@ merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
 	{
 	  low = range_successor (high0);
 	  high = high1;
-	  in_p = (low != 0);
+	  in_p = 1;
+	  if (low == 0)
+	    {
+	      /* high1 > high0 but high0 has no successor.  Punt.  */
+	      return 0;
+	    }
 	}
     }
 
