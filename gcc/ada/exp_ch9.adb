@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,6 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Hostparm;
-with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
@@ -124,14 +123,6 @@ package body Exp_Ch9 is
       Loc    : Source_Ptr) return Node_Id;
    --  Build a specification for a function implementing
    --  the protected entry barrier of the specified entry body.
-
-   function Build_Corresponding_Record
-     (N    : Node_Id;
-      Ctyp : Node_Id;
-      Loc  : Source_Ptr) return Node_Id;
-   --  Common to tasks and protected types. Copy discriminant specifications,
-   --  build record declaration. N is the type declaration, Ctyp is the
-   --  concurrent entity (task type or protected type).
 
    function Build_Entry_Count_Expression
      (Concurrent_Type : Node_Id;
@@ -280,6 +271,14 @@ package body Exp_Ch9 is
       Conctyp      : Entity_Id);
    --  For each entry family in a concurrent type, create an anonymous array
    --  type of the right size, and add a component to the corresponding_record.
+
+   function Copy_Result_Type (Res : Node_Id) return Node_Id;
+   --  Copy the result type of a function specification, when building the
+   --  internal operation corresponding to a protected function, or when
+   --  expanding an access to protected function. If the result is an anonymous
+   --  access to subprogram itself, we need to create a new signature with the
+   --  same parameter names and the same resolved types, but with new entities
+   --  for the formals.
 
    function Family_Offset
      (Loc  : Source_Ptr;
@@ -699,6 +698,16 @@ package body Exp_Ch9 is
          while Present (P) loop
             if Nkind (P) = N_Component_Declaration then
                Pdef := Defining_Identifier (P);
+
+               --  The privals are declared before the current body is
+               --  analyzed. for visibility reasons. Set their Sloc so
+               --  that it is consistent with their renaming declaration,
+               --  to prevent anomalies in gdb.
+
+               --  This kludgy model for privals should be redesigned ???
+
+               Set_Sloc (Prival (Pdef), Loc);
+
                Decl :=
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Prival (Pdef),
@@ -754,6 +763,10 @@ package body Exp_Ch9 is
          else
             Protection_Type := RE_Protection;
          end if;
+
+         --  Adjust Sloc, as for the other privals
+
+         Set_Sloc (Object_Ref (Body_Ent), Loc);
 
          Decl :=
            Make_Object_Renaming_Declaration (Loc,
@@ -899,14 +912,13 @@ package body Exp_Ch9 is
       then
          Chain := Make_Defining_Identifier (Sloc (N), Name_uChain);
 
-         --  An extended return statement is not really a task activator, but
-         --  it does have an activation chain on which to store the tasks
+         --  Note: An extended return statement is not really a task activator,
+         --  but it does have an activation chain on which to store the tasks
          --  temporarily. On successful return, the tasks on this chain are
-         --  moved to the chain passed in by the
-         --  caller. N_Extended_Return_Statement does not have an
-         --  Activation_Chain_Entity, because we do not want to build a call
-         --  to Activate_Tasks; task activation is the responsibility of the
-         --  caller.
+         --  moved to the chain passed in by the caller. We do not build an
+         --  Activatation_Chain_Entity for an N_Extended_Return_Statement,
+         --  because we do not want to build a call to Activate_Tasks. Task
+         --  activation is the responsibility of the caller.
 
          if Nkind (P) /= N_Extended_Return_Statement then
             Set_Activation_Chain_Entity (P, Chain);
@@ -1459,7 +1471,31 @@ package body Exp_Ch9 is
             Proc_Param_Specs    : List_Id) return Boolean
          is
             Prim_Op_Param : Node_Id;
+            Prim_Op_Typ   : Entity_Id;
             Proc_Param    : Node_Id;
+            Proc_Typ      : Entity_Id;
+
+            function Find_Parameter_Type (Param : Node_Id) return Entity_Id;
+            --  Return the controlling type denoted by a formal parameter
+
+            -------------------------
+            -- Find_Parameter_Type --
+            -------------------------
+
+            function Find_Parameter_Type (Param : Node_Id) return Entity_Id is
+            begin
+               if Nkind (Param) /= N_Parameter_Specification then
+                  return Empty;
+
+               elsif Nkind (Parameter_Type (Param)) = N_Access_Definition then
+                  return Etype (Subtype_Mark (Parameter_Type (Param)));
+
+               else
+                  return Etype (Parameter_Type (Param));
+               end if;
+            end Find_Parameter_Type;
+
+         --  Start of processing for Type_Conformant_Parameters
 
          begin
             --  Skip the first parameter of the primitive operation
@@ -1469,12 +1505,13 @@ package body Exp_Ch9 is
             while Present (Prim_Op_Param)
               and then Present (Proc_Param)
             loop
+               Prim_Op_Typ := Find_Parameter_Type (Prim_Op_Param);
+               Proc_Typ    := Find_Parameter_Type (Proc_Param);
+
                --  The two parameters must be mode conformant
 
-               if not Conforming_Types (
-                 Etype (Parameter_Type (Prim_Op_Param)),
-                 Etype (Parameter_Type (Proc_Param)),
-                 Mode_Conformant)
+               if not Conforming_Types
+                        (Prim_Op_Typ, Proc_Typ, Mode_Conformant)
                then
                   return False;
                end if;
@@ -2022,7 +2059,17 @@ package body Exp_Ch9 is
       Ent : Entity_Id;
       Pid : Node_Id) return Node_Id
    is
-      Loc      : constant Source_Ptr := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (N);
+
+      End_Lab : constant Node_Id :=
+                  End_Label (Handled_Statement_Sequence (N));
+      End_Loc : constant Source_Ptr :=
+                  Sloc (Last (Statements (Handled_Statement_Sequence (N))));
+      --  Used for the generated call to Complete_Entry_Body
+
+      Han_Loc : Source_Ptr;
+      --  Used for the exception handler, inserted at end of the body
+
       Op_Decls : constant List_Id    := New_List;
       Edef     : Entity_Id;
       Espec    : Node_Id;
@@ -2031,6 +2078,15 @@ package body Exp_Ch9 is
       Complete : Node_Id;
 
    begin
+      --  Set the source location on the exception handler only when debugging
+      --  the expanded code (see Make_Implicit_Exception_Handler).
+
+      if Debug_Generated_Code then
+         Han_Loc := End_Loc;
+      else
+         Han_Loc := No_Location;
+      end if;
+
       Edef :=
         Make_Defining_Identifier (Loc,
           Chars => Chars (Protected_Body_Subprogram (Ent)));
@@ -2065,26 +2121,31 @@ package body Exp_Ch9 is
            Handled_Statement_Sequence =>
              Handled_Statement_Sequence (N)),
 
-         Make_Procedure_Call_Statement (Loc,
+         Make_Procedure_Call_Statement (End_Loc,
            Name => Complete,
            Parameter_Associations => New_List (
-             Make_Attribute_Reference (Loc,
+             Make_Attribute_Reference (End_Loc,
                Prefix =>
-                 Make_Selected_Component (Loc,
+                 Make_Selected_Component (End_Loc,
                    Prefix =>
-                     Make_Identifier (Loc, Name_uObject),
+                     Make_Identifier (End_Loc, Name_uObject),
 
                    Selector_Name =>
-                     Make_Identifier (Loc, Name_uObject)),
-                 Attribute_Name => Name_Unchecked_Access))));
+                     Make_Identifier (End_Loc, Name_uObject)),
+              Attribute_Name => Name_Unchecked_Access))));
 
-      if Restriction_Active (No_Exception_Handlers) then
+      --  When exceptions can not be propagated, we never need to call
+      --  Exception_Complete_Entry_Body
+
+      if No_Exception_Handlers_Set then
          return
            Make_Subprogram_Body (Loc,
              Specification => Espec,
              Declarations => Op_Decls,
              Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc, Op_Stats));
+               Make_Handled_Sequence_Of_Statements (Loc,
+               Op_Stats,
+               End_Label => End_Lab));
 
       else
          Ohandle := Make_Others_Choice (Loc);
@@ -2113,24 +2174,25 @@ package body Exp_Ch9 is
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => Op_Stats,
+                 End_Label  => End_Lab,
                  Exception_Handlers => New_List (
-                   Make_Implicit_Exception_Handler (Loc,
+                   Make_Implicit_Exception_Handler (Han_Loc,
                      Exception_Choices => New_List (Ohandle),
 
                      Statements =>  New_List (
-                       Make_Procedure_Call_Statement (Loc,
+                       Make_Procedure_Call_Statement (Han_Loc,
                          Name => Complete,
                          Parameter_Associations => New_List (
-                           Make_Attribute_Reference (Loc,
+                           Make_Attribute_Reference (Han_Loc,
                              Prefix =>
-                               Make_Selected_Component (Loc,
+                               Make_Selected_Component (Han_Loc,
                                  Prefix =>
-                                   Make_Identifier (Loc, Name_uObject),
+                                   Make_Identifier (Han_Loc, Name_uObject),
                                  Selector_Name =>
-                                   Make_Identifier (Loc, Name_uObject)),
+                                   Make_Identifier (Han_Loc, Name_uObject)),
                                Attribute_Name => Name_Unchecked_Access),
 
-                           Make_Function_Call (Loc,
+                           Make_Function_Call (Han_Loc,
                              Name => New_Reference_To (
                                RTE (RE_Get_GNAT_Exception), Loc)))))))));
       end if;
@@ -2286,12 +2348,16 @@ package body Exp_Ch9 is
              Parameter_Specifications => New_Plist);
 
       else
+         --  We need to create a new specification for the anonymous
+         --  subprogram type.
+
          New_Spec :=
            Make_Function_Specification (Loc,
              Defining_Unit_Name => New_Id,
              Parameter_Specifications => New_Plist,
              Result_Definition =>
-               New_Copy (Result_Definition (Specification (Decl))));
+               Copy_Result_Type (Result_Definition (Specification (Decl))));
+
          Set_Return_Present (Defining_Unit_Name (New_Spec));
          return New_Spec;
       end if;
@@ -3144,11 +3210,11 @@ package body Exp_Ch9 is
    --------------------------------
 
    procedure Build_Task_Activation_Call (N : Node_Id) is
-      Loc        : constant Source_Ptr := Sloc (N);
-      Chain      : Entity_Id;
-      Call       : Node_Id;
-      Name       : Node_Id;
-      P          : Node_Id;
+      Loc   : constant Source_Ptr := Sloc (N);
+      Chain : Entity_Id;
+      Call  : Node_Id;
+      Name  : Node_Id;
+      P     : Node_Id;
 
    begin
       --  Get the activation chain entity. Except in the case of a package
@@ -3157,7 +3223,6 @@ package body Exp_Ch9 is
 
       if Nkind (N) = N_Package_Body then
          P := Corresponding_Spec (N);
-
          loop
             P := Parent (P);
             exit when Nkind (P) = N_Package_Declaration;
@@ -3198,7 +3263,7 @@ package body Exp_Ch9 is
          else
             if Present (Handled_Statement_Sequence (N)) then
 
-               --  The call goes at the start of the statement sequence, but
+               --  The call goes at the start of the statement sequence
                --  after the start of exception range label if one is present.
 
                declare
@@ -3207,9 +3272,32 @@ package body Exp_Ch9 is
                begin
                   Stm := First (Statements (Handled_Statement_Sequence (N)));
 
+                  --  A special case, skip exception range label if one is
+                  --  present (from front end zcx processing).
+
                   if Nkind (Stm) = N_Label and then Exception_Junk (Stm) then
                      Next (Stm);
                   end if;
+
+                  --  Another special case, if the first statement is a block
+                  --  from optimization of a local raise to a goto, then the
+                  --  call goes inside this block.
+
+                  if Nkind (Stm) = N_Block_Statement
+                    and then Exception_Junk (Stm)
+                  then
+                     Stm :=
+                       First (Statements (Handled_Statement_Sequence (Stm)));
+                  end if;
+
+                  --  Insertion point is after any exception label pushes,
+                  --  since we want it covered by any local handlers.
+
+                  while Nkind (Stm) in N_Push_xxx_Label loop
+                     Next (Stm);
+                  end loop;
+
+                  --  Now we have the proper insertion point
 
                   Insert_Before (Stm, Call);
                end;
@@ -3516,6 +3604,33 @@ package body Exp_Ch9 is
          Next_Entity (Efam);
       end loop;
    end Collect_Entry_Families;
+
+   ----------------------
+   -- Copy_Result_Type --
+   ----------------------
+
+   function Copy_Result_Type (Res : Node_Id) return Node_Id is
+      New_Res  : constant Node_Id := New_Copy_Tree (Res);
+      Par_Spec : Node_Id;
+      Formal   : Entity_Id;
+
+   begin
+      if Nkind (New_Res) = N_Access_Definition then
+
+         --  Provide new entities for the formals
+
+         Par_Spec := First (Parameter_Specifications
+                              (Access_To_Subprogram_Definition (New_Res)));
+         while Present (Par_Spec) loop
+            Formal := Defining_Identifier (Par_Spec);
+            Set_Defining_Identifier (Par_Spec,
+              Make_Defining_Identifier (Sloc (Formal), Chars (Formal)));
+            Next (Par_Spec);
+         end loop;
+      end if;
+
+      return New_Res;
+   end Copy_Result_Type;
 
    --------------------
    -- Concurrent_Ref --
@@ -4043,7 +4158,7 @@ package body Exp_Ch9 is
                New_F  : Entity_Id;
 
             begin
-               New_Scope (Ent);
+               Push_Scope (Ent);
                Formal := First_Formal (Ent);
 
                while Present (Formal) loop
@@ -4121,8 +4236,8 @@ package body Exp_Ch9 is
          Def1 :=
            Make_Access_Function_Definition (Loc,
              Parameter_Specifications => P_List,
-             Result_Definition =>
-               New_Copy (Result_Definition (Type_Definition (N))));
+             Result_Definition        =>
+               Copy_Result_Type (Result_Definition (Type_Definition (N))));
 
       else
          Def1 :=
@@ -4322,7 +4437,7 @@ package body Exp_Ch9 is
 
          if Ada_Version >= Ada_05
            and then Ekind (Etype (Tasknm)) = E_Class_Wide_Type
-           and then Is_Interface      (Etype (Tasknm))
+           and then Is_Interface (Etype (Tasknm))
            and then Is_Task_Interface (Etype (Tasknm))
          then
             Append_To (Component_Associations (Aggr),
@@ -4331,13 +4446,17 @@ package body Exp_Ch9 is
                   Make_Integer_Literal (Loc, Count)),
                 Expression =>
 
-                  --  Tasknm._disp_get_task_id
+                  --  Task_Id (Tasknm._disp_get_task_id)
 
-                    Make_Selected_Component (Loc,
-                      Prefix =>
-                        New_Copy_Tree (Tasknm),
-                      Selector_Name =>
-                        Make_Identifier (Loc, Name_uDisp_Get_Task_Id))));
+                  Make_Unchecked_Type_Conversion (Loc,
+                    Subtype_Mark =>
+                      New_Reference_To (RTE (RO_ST_Task_Id), Loc),
+                    Expression =>
+                      Make_Selected_Component (Loc,
+                        Prefix =>
+                          New_Copy_Tree (Tasknm),
+                        Selector_Name =>
+                          Make_Identifier (Loc, Name_uDisp_Get_Task_Id)))));
 
          else
             Append_To (Component_Associations (Aggr),
@@ -4566,7 +4685,7 @@ package body Exp_Ch9 is
 
          Analyze (Call);
 
-         New_Scope (Blkent);
+         Push_Scope (Blkent);
 
          declare
             D      : Node_Id;
@@ -4755,6 +4874,7 @@ package body Exp_Ch9 is
    --       B   : Boolean := False;
    --       Bnn : Communication_Block;
    --       C   : Ada.Tags.Prim_Op_Kind;
+   --       D   : Dummy_Communication_Block;
    --       K   : Ada.Tags.Tagged_Kind :=
    --               Ada.Tags.Get_Tagged_Kind (Ada.Tags.Tag (<object>));
    --       P   : Parameters := (Param1 .. ParamN);
@@ -4784,7 +4904,8 @@ package body Exp_Ch9 is
    --             begin
    --                begin
    --                   _Disp_Asynchronous_Select
-   --                     (<object>, S, P'address, Bnn, B);
+   --                     (<object>, S, P'address, D, B);
+   --                   Bnn := Communication_Block (D);
 
    --                   Param1 := P.Param1;
    --                   ...
@@ -4815,7 +4936,8 @@ package body Exp_Ch9 is
    --                Abort_Defer;
 
    --                _Disp_Asynchronous_Select
-   --                  (<object>, S, P'address, Bnn, B);
+   --                  (<object>, S, P'address, D, B);
+   --                Bnn := Communication_Bloc (D);
 
    --                Param1 := P.Param1;
    --                ...
@@ -4970,6 +5092,17 @@ package body Exp_Ch9 is
             --    K : Ada.Tags.Tagged_Kind :=
             --          Ada.Tags.Get_Tagged_Kind (Ada.Tags.Tag (<object>));
 
+            --  Dummy communication block, generate:
+            --    D : Dummy_Communication_Block;
+
+            Append_To (Decls,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc, Name_uD),
+                Object_Definition =>
+                  New_Reference_To (
+                    RTE (RE_Dummy_Communication_Block), Loc)));
+
             K := Build_K (Loc, Decls, Obj);
 
             --  Parameter block processing
@@ -5006,7 +5139,21 @@ package body Exp_Ch9 is
             Cleanup_Stmts := Parameter_Block_Unpack (Loc, P, Actuals, Formals);
 
             --  Generate:
-            --    _Disp_Asynchronous_Select (<object>, S, P'address, Bnn, B);
+            --    Bnn := Communication_Block (D);
+
+            Prepend_To (Cleanup_Stmts,
+              Make_Assignment_Statement (Loc,
+                Name =>
+                  New_Reference_To (Bnn, Loc),
+                Expression =>
+                  Make_Unchecked_Type_Conversion (Loc,
+                    Subtype_Mark =>
+                      New_Reference_To (RTE (RE_Communication_Block), Loc),
+                    Expression =>
+                      Make_Identifier (Loc, Name_uD))));
+
+            --  Generate:
+            --    _Disp_Asynchronous_Select (<object>, S, P'address, D, B);
 
             Prepend_To (Cleanup_Stmts,
               Make_Procedure_Call_Statement (Loc,
@@ -5022,7 +5169,7 @@ package body Exp_Ch9 is
                     Make_Attribute_Reference (Loc,
                       Prefix => New_Reference_To (P, Loc),
                       Attribute_Name => Name_Address),
-                    New_Reference_To (Bnn, Loc),
+                    Make_Identifier (Loc, Name_uD),
                     New_Reference_To (B, Loc))));
 
             --  Generate:
@@ -5117,7 +5264,21 @@ package body Exp_Ch9 is
             TaskE_Stmts := Parameter_Block_Unpack (Loc, P, Actuals, Formals);
 
             --  Generate:
-            --    _Disp_Asynchronous_Select (<object>, S, P'address, Bnn, B);
+            --    Bnn := Communication_Block (D);
+
+            Append_To (TaskE_Stmts,
+              Make_Assignment_Statement (Loc,
+                Name =>
+                  New_Reference_To (Bnn, Loc),
+                Expression =>
+                  Make_Unchecked_Type_Conversion (Loc,
+                    Subtype_Mark =>
+                      New_Reference_To (RTE (RE_Communication_Block), Loc),
+                    Expression =>
+                      Make_Identifier (Loc, Name_uD))));
+
+            --  Generate:
+            --    _Disp_Asynchronous_Select (<object>, S, P'address, D, B);
 
             Prepend_To (TaskE_Stmts,
               Make_Procedure_Call_Statement (Loc,
@@ -5133,7 +5294,7 @@ package body Exp_Ch9 is
                     Make_Attribute_Reference (Loc,
                       Prefix => New_Reference_To (P, Loc),
                       Attribute_Name => Name_Address),
-                    New_Reference_To (Bnn, Loc),
+                    Make_Identifier (Loc, Name_uD),
                     New_Reference_To (B, Loc))));
 
             --  Generate:
@@ -5511,17 +5672,17 @@ package body Exp_Ch9 is
              Has_Created_Identifier => True,
              Is_Asynchronous_Call_Block => True);
 
-         --  For the JVM call Update_Exception instead of Abort_Undefer.
+         --  For the VM call Update_Exception instead of Abort_Undefer.
          --  See 4jexcept.ads for an explanation.
 
-         if Hostparm.Java_VM then
+         if VM_Target = No_VM then
+            Target_Undefer := RE_Abort_Undefer;
+         else
             Target_Undefer := RE_Update_Exception;
             Undefer_Args :=
               New_List (Make_Function_Call (Loc,
                           Name => New_Occurrence_Of
                                     (RTE (RE_Current_Target_Exception), Loc)));
-         else
-            Target_Undefer := RE_Abort_Undefer;
          end if;
 
          Stmts := New_List (
@@ -6965,9 +7126,9 @@ package body Exp_Ch9 is
          return;
       else
          Rec_Decl := Build_Corresponding_Record (N, Prottyp, Loc);
-         Cdecls   := Component_Items
-                      (Component_List (Type_Definition (Rec_Decl)));
       end if;
+
+      Cdecls := Component_Items (Component_List (Type_Definition (Rec_Decl)));
 
       --  Ada 2005 (AI-345): Propagate the attribute that contains the list
       --  of implemented interfaces.
@@ -10163,13 +10324,24 @@ package body Exp_Ch9 is
       Subp : constant Entity_Id := Protected_Body_Subprogram (E);
 
    begin
-      --  The internal and external subprograms follow each other on the
-      --  entity chain. Note that previously private operations had no
-      --  separate external subprogram. We now create one in all cases,
-      --  because a private operation may actually appear in an external
-      --  call, through a 'Access reference used for a callback.
+      --  The internal and external subprograms follow each other on the entity
+      --  chain. Note that previously private operations had no separate
+      --  external subprogram. We now create one in all cases, because a
+      --  private operation may actually appear in an external call, through
+      --  a 'Access reference used for a callback.
 
-      return Next_Entity (Subp);
+      --  If the operation is a function that returns an anonymous access type,
+      --  the corresponding itype appears before the operation, and must be
+      --  skipped.
+
+      --  This mechanism is fragile, there should be a real link between the
+      --  two versions of the operation, but there is no place to put it ???
+
+      if Is_Access_Type (Next_Entity (Subp)) then
+         return Next_Entity (Next_Entity (Subp));
+      else
+         return Next_Entity (Subp);
+      end if;
    end External_Subprogram;
 
    ------------------------------
