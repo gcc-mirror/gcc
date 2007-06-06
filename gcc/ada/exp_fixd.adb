@@ -183,13 +183,17 @@ package body Exp_Fixd is
    --  The expression returned is neither analyzed and resolved. The Etype
    --  of the result is properly set (to Universal_Real).
 
-   function Integer_Literal (N : Node_Id; V : Uint) return Node_Id;
+   function Integer_Literal
+     (N        : Node_Id;
+      V        : Uint;
+      Negative : Boolean := False) return Node_Id;
    --  Given a non-negative universal integer value, build a typed integer
    --  literal node, using the smallest applicable standard integer type. If
-   --  the value exceeds 2**63-1, the largest value allowed for perfect result
-   --  set scaling factors (see RM G.2.3(22)), then Empty is returned. The
-   --  node N provides the Sloc value for the constructed literal. The Etype
-   --  of the resulting literal is correctly set, and it is marked as analyzed.
+   --  and only if Negative is true a negative literal is built. If V exceeds
+   --  2**63-1, the largest value allowed for perfect result set scaling
+   --  factors (see RM G.2.3(22)), then Empty is returned. The node N provides
+   --  the Sloc value for the constructed literal. The Etype of the resulting
+   --  literal is correctly set, and it is marked as analyzed.
 
    function Real_Literal (N : Node_Id; V : Ureal) return Node_Id;
    --  Build a real literal node from the given value, the Etype of the
@@ -202,14 +206,14 @@ package body Exp_Fixd is
 
    procedure Set_Result (N : Node_Id; Expr : Node_Id; Rchk : Boolean := False);
    --  N is the node for the current conversion, division or multiplication
-   --  operation, and Expr is an expression representing the result. Expr
-   --  may be of floating-point or integer type. If the operation result
-   --  is fixed-point, then the value of Expr is in units of small of the
-   --  result type (i.e. small's have already been dealt with). The result
-   --  of the call is to replace N by an appropriate conversion to the
-   --  result type, dealing with rounding for the decimal types case. The
-   --  node is then analyzed and resolved using the result type. If Rchk
-   --  is True, then Do_Range_Check is set in the resulting conversion.
+   --  operation, and Expr is an expression representing the result. Expr may
+   --  be of floating-point or integer type. If the operation result is fixed-
+   --  point, then the value of Expr is in units of small of the result type
+   --  (i.e. small's have already been dealt with). The result of the call is
+   --  to replace N by an appropriate conversion to the result type, dealing
+   --  with rounding for the decimal types case. The node is then analyzed and
+   --  resolved using the result type. If Rchk is True, then Do_Range_Check is
+   --  set in the resulting conversion.
 
    ----------------------
    -- Build_Conversion --
@@ -1019,7 +1023,7 @@ package body Exp_Fixd is
       --  would lose precision).
 
       if Frac_Den = 1 then
-         Lit_Int := Integer_Literal (N, Frac_Num);
+         Lit_Int := Integer_Literal (N, Frac_Num); -- always positive
 
          if Present (Lit_Int) then
             Set_Result (N, Build_Scaled_Divide (N, Left, Lit_Int, Right));
@@ -1035,7 +1039,7 @@ package body Exp_Fixd is
       --  divisions), and we don't get inaccuracies from double rounding.
 
       elsif Frac_Num = 1 then
-         Lit_Int := Integer_Literal (N, Frac_Den);
+         Lit_Int := Integer_Literal (N, Frac_Den); -- always positive
 
          if Present (Lit_Int) then
             Set_Result (N, Build_Double_Divide (N, Left, Right, Lit_Int));
@@ -1128,7 +1132,7 @@ package body Exp_Fixd is
       --  where the result can be obtained by dividing by this integer value.
 
       if Frac_Num = 1 then
-         Lit_Int := Integer_Literal (N, Frac_Den);
+         Lit_Int := Integer_Literal (N, Frac_Den, UR_Is_Negative (Frac));
 
          if Present (Lit_Int) then
             Set_Result (N, Build_Divide (N, Left, Lit_Int));
@@ -1143,8 +1147,8 @@ package body Exp_Fixd is
       --  would lose precision).
 
       else
-         Lit_Int := Integer_Literal (N, Frac_Num);
-         Lit_K   := Integer_Literal (N, Frac_Den);
+         Lit_Int := Integer_Literal (N, Frac_Num, UR_Is_Negative (Frac));
+         Lit_K   := Integer_Literal (N, Frac_Den, False);
 
          if Present (Lit_Int) and then Present (Lit_K) then
             Set_Result (N, Build_Scaled_Divide (N, Left, Lit_Int, Lit_K));
@@ -1246,7 +1250,7 @@ package body Exp_Fixd is
       --  can be obtained by dividing this integer by the right operand.
 
       if Frac_Den = 1 then
-         Lit_Int := Integer_Literal (N, Frac_Num);
+         Lit_Int := Integer_Literal (N, Frac_Num, UR_Is_Negative (Frac));
 
          if Present (Lit_Int) then
             Set_Result (N, Build_Divide (N, Lit_Int, Right));
@@ -1261,8 +1265,8 @@ package body Exp_Fixd is
       --  is important (if we divided first, we would lose precision).
 
       else
-         Lit_Int := Integer_Literal (N, Frac_Den);
-         Lit_K   := Integer_Literal (N, Frac_Num);
+         Lit_Int := Integer_Literal (N, Frac_Den, UR_Is_Negative (Frac));
+         Lit_K   := Integer_Literal (N, Frac_Num, False);
 
          if Present (Lit_Int) and then Present (Lit_K) then
             Set_Result (N, Build_Double_Divide (N, Lit_K, Right, Lit_Int));
@@ -1337,7 +1341,7 @@ package body Exp_Fixd is
       --  the operands, and then multiplying the result by the integer value.
 
       if Frac_Den = 1 then
-         Lit_Int := Integer_Literal (N, Frac_Num);
+         Lit_Int := Integer_Literal (N, Frac_Num); -- always positive
 
          if Present (Lit_Int) then
             Set_Result (N,
@@ -1352,7 +1356,7 @@ package body Exp_Fixd is
       --  divided first, we would lose precision.
 
       elsif Frac_Num = 1 then
-         Lit_Int := Integer_Literal (N, Frac_Den);
+         Lit_Int := Integer_Literal (N, Frac_Den); -- always positive
 
          if Present (Lit_Int) then
             Set_Result (N, Build_Scaled_Divide (N, Left, Right, Lit_Int));
@@ -1448,7 +1452,7 @@ package body Exp_Fixd is
       --  be obtained by multiplying by this integer value.
 
       if Frac_Den = 1 then
-         Lit_Int := Integer_Literal (N, Frac_Num);
+         Lit_Int := Integer_Literal (N, Frac_Num, UR_Is_Negative (Frac));
 
          if Present (Lit_Int) then
             Set_Result (N, Build_Multiply (N, Left, Lit_Int));
@@ -1462,7 +1466,7 @@ package body Exp_Fixd is
       --  dividing by the integer value.
 
       else
-         Lit_Int := Integer_Literal (N, Frac_Den);
+         Lit_Int := Integer_Literal (N, Frac_Den, UR_Is_Negative (Frac));
          Lit_K   := Integer_Literal (N, Frac_Num);
 
          if Present (Lit_Int) and then Present (Lit_K) then
@@ -2265,7 +2269,11 @@ package body Exp_Fixd is
    -- Integer_Literal --
    ---------------------
 
-   function Integer_Literal (N : Node_Id; V : Uint) return Node_Id is
+   function Integer_Literal
+     (N        : Node_Id;
+      V        : Uint;
+      Negative : Boolean := False) return Node_Id
+   is
       T : Entity_Id;
       L : Node_Id;
 
@@ -2286,7 +2294,11 @@ package body Exp_Fixd is
          return Empty;
       end if;
 
-      L := Make_Integer_Literal (Sloc (N), V);
+      if Negative then
+         L := Make_Integer_Literal (Sloc (N), UI_Negate (V));
+      else
+         L := Make_Integer_Literal (Sloc (N), V);
+      end if;
 
       --  Set type of result in case used elsewhere (see note at start)
 
