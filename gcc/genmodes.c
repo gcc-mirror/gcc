@@ -786,8 +786,7 @@ calc_wider_mode (void)
 /* Output routines.  */
 
 #define tagged_printf(FMT, ARG, TAG) do {		\
-  int count_;						\
-  printf ("  " FMT ",%n", ARG, &count_);		\
+  int count_ = printf ("  " FMT ",", ARG);		\
   printf ("%*s/* %s */\n", 27 - count_, "", TAG);	\
 } while (0)
 
@@ -821,8 +820,7 @@ enum machine_mode\n{");
   for (c = 0; c < MAX_MODE_CLASS; c++)
     for (m = modes[c]; m; m = m->next)
       {
-	int count_;
-	printf ("  %smode,%n", m->name, &count_);
+	int count_ = printf ("  %smode,", m->name);
 	printf ("%*s/* %s:%d */\n", 27 - count_, "",
 		 trim_filename (m->file), m->line);
       }
