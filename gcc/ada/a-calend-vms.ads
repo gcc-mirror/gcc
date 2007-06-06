@@ -113,7 +113,7 @@ private
    --  system base date and time 1858-11-17 0.0 (the Smithsonian base date and
    --  time for the astronomic calendar).
 
-   --  The time value stored is typically a GMT value, as provided in standard
+   --  The time value stored is typically a UTC value, as provided in standard
    --  Unix environments. If this is the case then Split and Time_Of perform
    --  required conversions to and from local times.
 
@@ -122,11 +122,6 @@ private
    --  but this declaration makes for easier conversion.
 
    type Time is new OSP.OS_Time;
-
-   --  The range of Ada time expressed as milis since the VMS Epoch
-
-   Ada_Low  : constant Time :=  (10 * 366 +  32 * 365 + 45) * Milis_In_Day;
-   Ada_High : constant Time := (131 * 366 + 410 * 365 + 45) * Milis_In_Day;
 
    Days_In_Month : constant array (Month_Number) of Day_Number :=
                      (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
@@ -145,7 +140,7 @@ private
 
    package Arithmetic_Operations is
       function Add (Date : Time; Days : Long_Integer) return Time;
-      --  Add X number of days to a time value
+      --  Add a certain number of days to a time value
 
       procedure Difference
         (Left         : Time;
@@ -159,7 +154,7 @@ private
       --  values are positive, negative otherwise.
 
       function Subtract (Date : Time; Days : Long_Integer) return Time;
-      --  Subtract X number of days from a time value
+      --  Subtract a certain number of days from a time value
    end Arithmetic_Operations;
 
    package Formatting_Operations is
@@ -168,18 +163,21 @@ private
       --  within the range of 0 .. 6 (Monday .. Sunday).
 
       procedure Split
-        (Date       : Time;
-         Year       : out Year_Number;
-         Month      : out Month_Number;
-         Day        : out Day_Number;
-         Day_Secs   : out Day_Duration;
-         Hour       : out Integer;
-         Minute     : out Integer;
-         Second     : out Integer;
-         Sub_Sec    : out Duration;
-         Leap_Sec   : out Boolean;
-         Time_Zone  : Long_Integer);
-      --  Split a time value into its components
+        (Date      : Time;
+         Year      : out Year_Number;
+         Month     : out Month_Number;
+         Day       : out Day_Number;
+         Day_Secs  : out Day_Duration;
+         Hour      : out Integer;
+         Minute    : out Integer;
+         Second    : out Integer;
+         Sub_Sec   : out Duration;
+         Leap_Sec  : out Boolean;
+         Is_Ada_05 : Boolean;
+         Time_Zone : Long_Integer);
+      --  Split a time value into its components. Set Is_Ada_05 to use the
+      --  local time zone (the value in Time_Zone is ignored) when splitting
+      --  a time value.
 
       function Time_Of
         (Year         : Year_Number;
@@ -191,18 +189,20 @@ private
          Second       : Integer;
          Sub_Sec      : Duration;
          Leap_Sec     : Boolean;
-         Leap_Checks  : Boolean;
          Use_Day_Secs : Boolean;
+         Is_Ada_05    : Boolean;
          Time_Zone    : Long_Integer) return Time;
       --  Given all the components of a date, return the corresponding time
       --  value. Set Use_Day_Secs to use the value in Day_Secs, otherwise the
       --  day duration will be calculated from Hour, Minute, Second and Sub_
-      --  Sec. Set flag Leap_Checks to verify the validity of a leap second.
+      --  Sec. Set Is_Ada_05 to use the local time zone (the value in formal
+      --  Time_Zone is ignored) when building a time value and to verify the
+      --  validity of a requested leap second.
    end Formatting_Operations;
 
    package Time_Zones_Operations is
       function UTC_Time_Offset (Date : Time) return Long_Integer;
-      --  Return the offset in seconds from GMT
+      --  Return the offset in seconds from UTC
    end Time_Zones_Operations;
 
 end Ada.Calendar;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,12 +46,40 @@ package body Ada.Calendar is
    --  Variables of type Ada.Calendar.Time have suffix _S or _M to denote
    --  units of seconds or milis.
 
+   --  Because time is measured in different units and from different origins
+   --  on various targets, a system independent model is incorporated into
+   --  Ada.Calendar. The idea behing the design is to encapsulate all target
+   --  dependent machinery in a single package, thus providing a uniform
+   --  interface to all existing and any potential children.
+
+   --     package Ada.Calendar
+   --        procedure Split (5 parameters) -------+
+   --                                              | Call from local routine
+   --     private                                  |
+   --        package Formatting_Operations         |
+   --           procedure Split (11 parameters) <--+
+   --        end Formatting_Operations             |
+   --     end Ada.Calendar                         |
+   --                                              |
+   --     package Ada.Calendar.Formatting          | Call from child routine
+   --        procedure Split (9 or 10 parameters) -+
+   --     end Ada.Calendar.Formatting
+
+   --  The behaviour of the interfacing routines is controlled via various
+   --  flags. All new Ada 2005 types from children of Ada.Calendar are
+   --  emulated by a similar type. For instance, type Day_Number is replaced
+   --  by Integer in various routines. One ramification of this model is that
+   --  the caller site must perform validity checks on returned results.
+   --  The end result of this model is the lack of target specific files per
+   --  child of Ada.Calendar (a-calfor, a-calfor-vms, a-calfor-vxwors, etc).
+
    -----------------------
    -- Local Subprograms --
    -----------------------
 
-   function All_Leap_Seconds return Natural;
-   --  Return the number of all leap seconds allocated so far
+   procedure Check_Within_Time_Bounds (T : Time);
+   --  Ensure that a time representation value falls withing the bounds of Ada
+   --  time. Leap seconds support is taken into account.
 
    procedure Cumulative_Leap_Seconds
      (Start_Date    : Time;
@@ -60,10 +88,10 @@ package body Ada.Calendar is
       Next_Leap_Sec : out Time);
    --  Elapsed_Leaps is the sum of the leap seconds that have occured on or
    --  after Start_Date and before (strictly before) End_Date. Next_Leap_Sec
-   --  represents the next leap second occurence on or after End_Date. If there
-   --  are no leaps seconds after End_Date, After_Last_Leap is returned.
-   --  After_Last_Leap can be used as End_Date to count all the leap seconds
-   --  that have occured on or after Start_Date.
+   --  represents the next leap second occurence on or after End_Date. If
+   --  there are no leaps seconds after End_Date, End_Of_Time is returned.
+   --  End_Of_Time can be used as End_Date to count all the leap seconds that
+   --  have occured on or after Start_Date.
    --
    --  Note: Any sub seconds of Start_Date and End_Date are discarded before
    --  the calculations are done. For instance: if 113 seconds is a leap
@@ -88,14 +116,36 @@ package body Ada.Calendar is
    -- Local Constants --
    ---------------------
 
-   After_Last_Leap : constant Time := Time'Last;
-   N_Leap_Seconds  : constant Natural := 23;
+   --  Currently none of the GNAT targets support leap seconds. At some point
+   --  it might be necessary to query a C function to determine if the target
+   --  supports leap seconds, but for now this is deemed unnecessary.
+
+   Leap_Support       : constant Boolean := False;
+   Leap_Seconds_Count : constant Natural := 23;
+
+   --  The range of Ada time expressed as milis since the VMS Epoch
+
+   Ada_Low  : constant Time :=  (10 * 366 +  32 * 365 + 45) * Milis_In_Day;
+   Ada_High : constant Time := (131 * 366 + 410 * 365 + 45) * Milis_In_Day;
+
+   --  Even though the upper bound of time is 2399-12-31 23:59:59.9999999
+   --  UTC, it must be increased to include all leap seconds.
+
+   Ada_High_And_Leaps : constant Time :=
+                          Ada_High + Time (Leap_Seconds_Count) * Mili;
+
+   --  Two constants used in the calculations of elapsed leap seconds.
+   --  End_Of_Time is later than Ada_High in time zone -28. Start_Of_Time
+   --  is earlier than Ada_Low in time zone +28.
+
+   End_Of_Time   : constant Time := Ada_High + Time (3) * Milis_In_Day;
+   Start_Of_Time : constant Time := Ada_Low  - Time (3) * Milis_In_Day;
 
    Cumulative_Days_Before_Month :
      constant array (Month_Number) of Natural :=
        (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334);
 
-   Leap_Second_Times : array (1 .. N_Leap_Seconds) of Time;
+   Leap_Second_Times : array (1 .. Leap_Seconds_Count) of Time;
    --  Each value represents a time value which is one second before a leap
    --  second occurence. This table is populated during the elaboration of
    --  Ada.Calendar.
@@ -107,18 +157,21 @@ package body Ada.Calendar is
    function "+" (Left : Time; Right : Duration) return Time is
       pragma Unsuppress (Overflow_Check);
 
-      Ada_High_And_Leaps : constant Time :=
-                             Ada_High + Time (All_Leap_Seconds) * Mili;
-      Result             : constant Time := Left + To_Relative_Time (Right);
+      Res_M : Time;
 
    begin
-      if Result < Ada_Low
-        or else Result >= Ada_High_And_Leaps
-      then
-         raise Time_Error;
+      --  Trivial case
+
+      if Right = Duration (0.0) then
+         return Left;
       end if;
 
-      return Result;
+      Res_M := Left + To_Relative_Time (Right);
+
+      Check_Within_Time_Bounds (Res_M);
+
+      return Res_M;
+
    exception
       when Constraint_Error =>
          raise Time_Error;
@@ -140,18 +193,20 @@ package body Ada.Calendar is
    function "-" (Left : Time; Right : Duration) return Time is
       pragma Unsuppress (Overflow_Check);
 
-      Ada_High_And_Leaps : constant Time :=
-                             Ada_High + Time (All_Leap_Seconds) * Mili;
-      Result             : constant Time := Left - To_Relative_Time (Right);
+      Res_M : Time;
 
    begin
-      if Result < Ada_Low
-        or else Result >= Ada_High_And_Leaps
-      then
-         raise Time_Error;
+      --  Trivial case
+
+      if Right = Duration (0.0) then
+         return Left;
       end if;
 
-      return Result;
+      Res_M := Left - To_Relative_Time (Right);
+
+      Check_Within_Time_Bounds (Res_M);
+
+      return Res_M;
 
    exception
       when Constraint_Error =>
@@ -161,19 +216,25 @@ package body Ada.Calendar is
    function "-" (Left : Time; Right : Time) return Duration is
       pragma Unsuppress (Overflow_Check);
 
-      Diff     : constant Time := Left - Right;
-      Dur_High : constant Time := Time (Duration'Last) * 100;
-      Dur_Low  : constant Time := Time (Duration'First) * 100;
+      --  The bound of type Duration expressed as time
+
+      Dur_High : constant Time := To_Relative_Time (Duration'Last);
+      Dur_Low  : constant Time := To_Relative_Time (Duration'First);
+
+      Res_M : Time;
 
    begin
-      if Diff < Dur_Low
-        or else Diff > Dur_High
+      Res_M := Left - Right;
+
+      --  The result does not fit in a duration value
+
+      if Res_M < Dur_Low
+        or else Res_M >= Dur_High
       then
          raise Time_Error;
       end if;
 
-      return To_Duration (Diff);
-
+      return To_Duration (Res_M);
    exception
       when Constraint_Error =>
          raise Time_Error;
@@ -215,14 +276,22 @@ package body Ada.Calendar is
       return Long_Integer (Left) >= Long_Integer (Right);
    end ">=";
 
-   ----------------------
-   -- All_Leap_Seconds --
-   ----------------------
+   ------------------------------
+   -- Check_Within_Time_Bounds --
+   ------------------------------
 
-   function All_Leap_Seconds return Natural is
+   procedure Check_Within_Time_Bounds (T : Time) is
    begin
-      return N_Leap_Seconds;
-   end All_Leap_Seconds;
+      if Leap_Support then
+         if T < Ada_Low or else T > Ada_High_And_Leaps then
+            raise Time_Error;
+         end if;
+      else
+         if T < Ada_Low or else T > Ada_High then
+            raise Time_Error;
+         end if;
+      end if;
+   end Check_Within_Time_Bounds;
 
    -----------
    -- Clock --
@@ -230,9 +299,8 @@ package body Ada.Calendar is
 
    function Clock return Time is
       Elapsed_Leaps : Natural;
-      Next_Leap     : Time;
-      Now           : constant Time := Time (OSP.OS_Clock);
-      Rounded_Now   : constant Time := Now - (Now mod Mili);
+      Next_Leap_M   : Time;
+      Res_M         : constant Time := Time (OSP.OS_Clock);
 
    begin
       --  Note that on other targets a soft-link is used to get a different
@@ -240,17 +308,26 @@ package body Ada.Calendar is
       --  needed since all clock calls end up using SYS$GETTIM, so call the
       --  OS_Primitives version for efficiency.
 
-      --  Determine the number of leap seconds elapsed until this moment
+      --  If the target supports leap seconds, determine the number of leap
+      --  seconds elapsed until this moment.
 
-      Cumulative_Leap_Seconds (Ada_Low, Now, Elapsed_Leaps, Next_Leap);
+      if Leap_Support then
+         Cumulative_Leap_Seconds
+           (Start_Of_Time, Res_M, Elapsed_Leaps, Next_Leap_M);
 
-      --  It is possible that OS_Clock falls exactly on a leap second
+         --  The system clock may fall exactly on a leap second
 
-      if Rounded_Now = Next_Leap then
-         return Now + Time (Elapsed_Leaps + 1) * Mili;
+         if Res_M >= Next_Leap_M then
+            Elapsed_Leaps := Elapsed_Leaps + 1;
+         end if;
+
+      --  The target does not support leap seconds
+
       else
-         return Now + Time (Elapsed_Leaps) * Mili;
+         Elapsed_Leaps := 0;
       end if;
+
+      return Res_M + Time (Elapsed_Leaps) * Mili;
    end Clock;
 
    -----------------------------
@@ -269,9 +346,9 @@ package body Ada.Calendar is
       Start_T     : Time := Start_Date;
 
    begin
-      pragma Assert (Start_Date >= End_Date);
+      pragma Assert (Leap_Support and then End_Date >= Start_Date);
 
-      Next_Leap_Sec := After_Last_Leap;
+      Next_Leap_Sec := End_Of_Time;
 
       --  Make sure that the end date does not excede the upper bound
       --  of Ada time.
@@ -285,23 +362,26 @@ package body Ada.Calendar is
       Start_T := Start_T - (Start_T mod Mili);
       End_T   := End_T   - (End_T   mod Mili);
 
-      --  Some trivial cases
+      --  Some trivial cases:
+      --                     Leap 1 . . . Leap N
+      --  ---+========+------+############+-------+========+-----
+      --     Start_T  End_T                       Start_T  End_T
 
       if End_T < Leap_Second_Times (1) then
          Elapsed_Leaps := 0;
          Next_Leap_Sec := Leap_Second_Times (1);
          return;
 
-      elsif Start_T > Leap_Second_Times (N_Leap_Seconds) then
+      elsif Start_T > Leap_Second_Times (Leap_Seconds_Count) then
          Elapsed_Leaps := 0;
-         Next_Leap_Sec := After_Last_Leap;
+         Next_Leap_Sec := End_Of_Time;
          return;
       end if;
 
       --  Perform the calculations only if the start date is within the leap
       --  second occurences table.
 
-      if Start_T <= Leap_Second_Times (N_Leap_Seconds) then
+      if Start_T <= Leap_Second_Times (Leap_Seconds_Count) then
 
          --    1    2                  N - 1   N
          --  +----+----+--  . . .  --+-------+---+
@@ -313,8 +393,8 @@ package body Ada.Calendar is
          --             Leaps_Between
 
          --  The idea behind the algorithm is to iterate and find two closest
-         --  dates which are after Start_T and End_T. Their corresponding index
-         --  difference denotes the number of leap seconds elapsed.
+         --  dates which are after Start_T and End_T. Their corresponding
+         --  index difference denotes the number of leap seconds elapsed.
 
          Start_Index := 1;
          loop
@@ -324,12 +404,12 @@ package body Ada.Calendar is
 
          End_Index := Start_Index;
          loop
-            exit when End_Index > N_Leap_Seconds
+            exit when End_Index > Leap_Seconds_Count
               or else Leap_Second_Times (End_Index) >= End_T;
             End_Index := End_Index + 1;
          end loop;
 
-         if End_Index <= N_Leap_Seconds then
+         if End_Index <= Leap_Seconds_Count then
             Next_Leap_Sec := Leap_Second_Times (End_Index);
          end if;
 
@@ -423,8 +503,22 @@ package body Ada.Calendar is
       Le : Boolean;
 
    begin
+      --  Use UTC as the local time zone on VMS, the status of flag Is_Ada_05
+      --  is irrelevant in this case.
+
       Formatting_Operations.Split
-        (Date, Year, Month, Day, Seconds, H, M, Se, Ss, Le, 0);
+        (Date      => Date,
+         Year      => Year,
+         Month     => Month,
+         Day       => Day,
+         Day_Secs  => Seconds,
+         Hour      => H,
+         Minute    => M,
+         Second    => Se,
+         Sub_Sec   => Ss,
+         Leap_Sec  => Le,
+         Is_Ada_05 => False,
+         Time_Zone => 0);
 
       --  Validity checks
 
@@ -465,12 +559,22 @@ package body Ada.Calendar is
          raise Time_Error;
       end if;
 
+      --  Use UTC as the local time zone on VMS, the status of flag Is_Ada_05
+      --  is irrelevant in this case.
+
       return
         Formatting_Operations.Time_Of
-          (Year, Month, Day, Seconds, H, M, Se, Ss,
+          (Year         => Year,
+           Month        => Month,
+           Day          => Day,
+           Day_Secs     => Seconds,
+           Hour         => H,
+           Minute       => M,
+           Second       => Se,
+           Sub_Sec      => Ss,
            Leap_Sec     => False,
-           Leap_Checks  => False,
            Use_Day_Secs => True,
+           Is_Ada_05    => False,
            Time_Zone    => 0);
    end Time_Of;
 
@@ -524,29 +628,22 @@ package body Ada.Calendar is
       ---------
 
       function Add (Date : Time; Days : Long_Integer) return Time is
-         Ada_High_And_Leaps : constant Time :=
-                                Ada_High + Time (All_Leap_Seconds) * Mili;
+         pragma Unsuppress (Overflow_Check);
+
+         Res_M : Time;
+
       begin
+         --  Trivial case
+
          if Days = 0 then
             return Date;
-
-         elsif Days < 0 then
-            return Subtract (Date, abs (Days));
-
-         else
-            declare
-               Result : constant Time := Date + Time (Days) * Milis_In_Day;
-
-            begin
-               --  The result excedes the upper bound of Ada time
-
-               if Result >= Ada_High_And_Leaps then
-                  raise Time_Error;
-               end if;
-
-               return Result;
-            end;
          end if;
+
+         Res_M := Date + Time (Days) * Milis_In_Day;
+
+         Check_Within_Time_Bounds (Res_M);
+
+         return Res_M;
 
       exception
          when Constraint_Error =>
@@ -571,7 +668,7 @@ package body Ada.Calendar is
          Earlier       : Time;
          Elapsed_Leaps : Natural;
          Later         : Time;
-         Negate        : Boolean;
+         Negate        : Boolean := False;
          Next_Leap     : Time;
          Sub_Seconds   : Duration;
 
@@ -582,19 +679,26 @@ package body Ada.Calendar is
          if Left >= Right then
             Later   := Left;
             Earlier := Right;
-            Negate  := False;
          else
             Later   := Right;
             Earlier := Left;
             Negate  := True;
          end if;
 
-         --  First process the leap seconds
+         --  If the target supports leap seconds, process them
 
-         Cumulative_Leap_Seconds (Earlier, Later, Elapsed_Leaps, Next_Leap);
+         if Leap_Support then
+            Cumulative_Leap_Seconds
+              (Earlier, Later, Elapsed_Leaps, Next_Leap);
 
-         if Later >= Next_Leap then
-            Elapsed_Leaps := Elapsed_Leaps + 1;
+            if Later >= Next_Leap then
+               Elapsed_Leaps := Elapsed_Leaps + 1;
+            end if;
+
+         --  The target does not support leap seconds
+
+         else
+            Elapsed_Leaps := 0;
          end if;
 
          Diff_M := Later - Earlier - Time (Elapsed_Leaps) * Mili;
@@ -613,9 +717,12 @@ package body Ada.Calendar is
          Leap_Seconds := Integer (Elapsed_Leaps);
 
          if Negate then
-            Days         := -Days;
-            Seconds      := -Seconds;
-            Leap_Seconds := -Leap_Seconds;
+            Days    := -Days;
+            Seconds := -Seconds;
+
+            if Leap_Seconds /= 0 then
+               Leap_Seconds := -Leap_Seconds;
+            end if;
          end if;
       end Difference;
 
@@ -624,32 +731,22 @@ package body Ada.Calendar is
       --------------
 
       function Subtract (Date : Time; Days : Long_Integer) return Time is
+         pragma Unsuppress (Overflow_Check);
+
+         Res_M : Time;
+
       begin
+         --  Trivial case
+
          if Days = 0 then
             return Date;
-
-         elsif Days < 0 then
-            return Add (Date, abs (Days));
-
-         else
-            declare
-               Days_T : constant Time := Time (Days) * Milis_In_Day;
-               Result : constant Time := Date - Days_T;
-
-            begin
-               --  Subtracting a larger number of days from a smaller time
-               --  value will cause wrap around since time is a modular type.
-               --  Also the result may be lower than the start of Ada time.
-
-               if Date < Days_T
-                 or Result < Ada_Low
-               then
-                  raise Time_Error;
-               end if;
-
-               return Date - Days_T;
-            end;
          end if;
+
+         Res_M := Date - Time (Days) * Milis_In_Day;
+
+         Check_Within_Time_Bounds (Res_M);
+
+         return Res_M;
       exception
          when Constraint_Error =>
             raise Time_Error;
@@ -696,18 +793,23 @@ package body Ada.Calendar is
       -----------
 
       procedure Split
-        (Date         : Time;
-         Year         : out Year_Number;
-         Month        : out Month_Number;
-         Day          : out Day_Number;
-         Day_Secs     : out Day_Duration;
-         Hour         : out Integer;
-         Minute       : out Integer;
-         Second       : out Integer;
-         Sub_Sec      : out Duration;
-         Leap_Sec     : out Boolean;
-         Time_Zone    : Long_Integer)
+        (Date      : Time;
+         Year      : out Year_Number;
+         Month     : out Month_Number;
+         Day       : out Day_Number;
+         Day_Secs  : out Day_Duration;
+         Hour      : out Integer;
+         Minute    : out Integer;
+         Second    : out Integer;
+         Sub_Sec   : out Duration;
+         Leap_Sec  : out Boolean;
+         Is_Ada_05 : Boolean;
+         Time_Zone : Long_Integer)
       is
+         --  The flag Is_Ada_05 is present for interfacing purposes
+
+         pragma Unreferenced (Is_Ada_05);
+
          procedure Numtim
            (Status : out Unsigned_Longword;
             Timbuf : out Unsigned_Word_Array;
@@ -727,59 +829,60 @@ package body Ada.Calendar is
          Ada_Max_Year : constant := 2399;
          Mili_F       : constant Duration := 10_000_000.0;
 
-         Abs_Time_Zone   : Time;
-         Elapsed_Leaps   : Natural;
-         Modified_Date_M : Time;
-         Next_Leap_M     : Time;
-         Rounded_Date_M  : Time;
+         Date_M        : Time;
+         Elapsed_Leaps : Natural;
+         Next_Leap_M   : Time;
 
       begin
-         Modified_Date_M := Date;
+         Date_M := Date;
 
          --  Step 1: Leap seconds processing
 
-         Cumulative_Leap_Seconds (Ada_Low, Date, Elapsed_Leaps, Next_Leap_M);
+         if Leap_Support then
+            Cumulative_Leap_Seconds
+              (Start_Of_Time, Date, Elapsed_Leaps, Next_Leap_M);
 
-         Rounded_Date_M  := Modified_Date_M - (Modified_Date_M mod Mili);
-         Leap_Sec        := Rounded_Date_M = Next_Leap_M;
-         Modified_Date_M := Modified_Date_M - Time (Elapsed_Leaps) * Mili;
+            Leap_Sec := Date_M >= Next_Leap_M;
 
-         if Leap_Sec then
-            Modified_Date_M := Modified_Date_M - Time (1) * Mili;
+            if Leap_Sec then
+               Elapsed_Leaps := Elapsed_Leaps + 1;
+            end if;
+
+         --  The target does not support leap seconds
+
+         else
+            Elapsed_Leaps := 0;
+            Leap_Sec      := False;
          end if;
+
+         Date_M := Date_M - Time (Elapsed_Leaps) * Mili;
 
          --  Step 2: Time zone processing
 
          if Time_Zone /= 0 then
-            Abs_Time_Zone := Time (abs (Time_Zone)) * 60 * Mili;
-
-            if Time_Zone < 0 then
-               Modified_Date_M := Modified_Date_M - Abs_Time_Zone;
-            else
-               Modified_Date_M := Modified_Date_M + Abs_Time_Zone;
-            end if;
+            Date_M := Date_M + Time (Time_Zone) * 60 * Mili;
          end if;
 
          --  After the leap seconds and time zone have been accounted for,
          --  the date should be within the bounds of Ada time.
 
-         if Modified_Date_M < Ada_Low
-           or else Modified_Date_M >= Ada_High
+         if Date_M < Ada_Low
+           or else Date_M > Ada_High
          then
             raise Time_Error;
          end if;
 
          --  Step 3: Sub second processing
 
-         Sub_Sec := Duration (Modified_Date_M mod Mili) / Mili_F;
+         Sub_Sec := Duration (Date_M mod Mili) / Mili_F;
 
          --  Drop the sub seconds
 
-         Modified_Date_M := Modified_Date_M - (Modified_Date_M mod Mili);
+         Date_M := Date_M - (Date_M mod Mili);
 
          --  Step 4: VMS system call
 
-         Numtim (Status, Timbuf, Modified_Date_M);
+         Numtim (Status, Timbuf, Date_M);
 
          if Status mod 2 /= 1
            or else Timbuf (1) not in Ada_Min_Year .. Ada_Max_Year
@@ -816,8 +919,8 @@ package body Ada.Calendar is
          Second       : Integer;
          Sub_Sec      : Duration;
          Leap_Sec     : Boolean;
-         Leap_Checks  : Boolean;
          Use_Day_Secs : Boolean;
+         Is_Ada_05    : Boolean;
          Time_Zone    : Long_Integer) return Time
       is
          procedure Cvt_Vectim
@@ -837,21 +940,19 @@ package body Ada.Calendar is
 
          Mili_F : constant := 10_000_000.0;
 
-         Ada_High_And_Leaps : constant Time :=
-                                Ada_High + Time (All_Leap_Seconds) * Mili;
+         Y  : Year_Number  := Year;
+         Mo : Month_Number := Month;
+         D  : Day_Number   := Day;
+         H  : Integer      := Hour;
+         Mi : Integer      := Minute;
+         Se : Integer      := Second;
+         Su : Duration     := Sub_Sec;
 
-         H  : Integer  := Hour;
-         Mi : Integer  := Minute;
-         Se : Integer  := Second;
-         Su : Duration := Sub_Sec;
-
-         Abs_Time_Zone    : Time;
-         Adjust_Day       : Boolean := False;
-         Elapsed_Leaps    : Natural;
-         Int_Day_Secs     : Integer;
-         Next_Leap_M      : Time;
-         Result_M         : Time;
-         Rounded_Result_M : Time;
+         Elapsed_Leaps : Natural;
+         Int_Day_Secs  : Integer;
+         Next_Leap_M   : Time;
+         Res_M         : Time;
+         Rounded_Res_M : Time;
 
       begin
          --  No validity checks are performed on the input values since it is
@@ -861,15 +962,47 @@ package body Ada.Calendar is
 
          if Use_Day_Secs then
 
-            --  A day seconds value of 86_400 designates a new day. The time
-            --  components are reset to zero, but an additional day will be
-            --  added after the system call.
+            --  A day seconds value of 86_400 designates a new day
 
             if Day_Secs = 86_400.0 then
-               Adjust_Day := True;
-               H  := 0;
-               Mi := 0;
-               Se := 0;
+               declare
+                  Adj_Year  : Year_Number := Year;
+                  Adj_Month : Month_Number := Month;
+                  Adj_Day   : Day_Number   := Day;
+
+               begin
+                  if Day < Days_In_Month (Month)
+                    or else (Month = 2
+                               and then Is_Leap (Year))
+                  then
+                     Adj_Day := Day + 1;
+
+                  --  The day adjustment moves the date to a new month
+
+                  else
+                     Adj_Day := 1;
+
+                     if Month < 12 then
+                        Adj_Month := Month + 1;
+
+                     --  The month adjustment moves the date to a new year
+
+                     else
+                        Adj_Month := 1;
+                        Adj_Year  := Year + 1;
+                     end if;
+                  end if;
+
+                  Y  := Adj_Year;
+                  Mo := Adj_Month;
+                  D  := Adj_Day;
+                  H  := 0;
+                  Mi := 0;
+                  Se := 0;
+                  Su := 0.0;
+               end;
+
+            --  Normal case (not exactly one day)
 
             else
                --  Sub second extraction
@@ -889,81 +1022,64 @@ package body Ada.Calendar is
 
          --  Step 2: System call to VMS
 
-         Timbuf (1) := Unsigned_Word (Year);
-         Timbuf (2) := Unsigned_Word (Month);
-         Timbuf (3) := Unsigned_Word (Day);
+         Timbuf (1) := Unsigned_Word (Y);
+         Timbuf (2) := Unsigned_Word (Mo);
+         Timbuf (3) := Unsigned_Word (D);
          Timbuf (4) := Unsigned_Word (H);
          Timbuf (5) := Unsigned_Word (Mi);
          Timbuf (6) := Unsigned_Word (Se);
          Timbuf (7) := 0;
 
-         Cvt_Vectim (Status, Timbuf, Result_M);
+         Cvt_Vectim (Status, Timbuf, Res_M);
 
          if Status mod 2 /= 1 then
             raise Time_Error;
          end if;
 
-         --  Step 3: Potential day adjustment
+         --  Step 3: Sub second adjustment
 
-         if Use_Day_Secs
-           and then Adjust_Day
-         then
-            Result_M := Result_M + Milis_In_Day;
-         end if;
+         Res_M := Res_M + Time (Su * Mili_F);
 
-         --  Step 4: Sub second adjustment
+         --  Step 4: Bounds check
 
-         Result_M := Result_M + Time (Su * Mili_F);
+         Check_Within_Time_Bounds (Res_M);
 
          --  Step 5: Time zone processing
 
          if Time_Zone /= 0 then
-            Abs_Time_Zone := Time (abs (Time_Zone)) * 60 * Mili;
-
-            if Time_Zone < 0 then
-               Result_M := Result_M + Abs_Time_Zone;
-            else
-               Result_M := Result_M - Abs_Time_Zone;
-            end if;
+            Res_M := Res_M - Time (Time_Zone) * 60 * Mili;
          end if;
 
          --  Step 6: Leap seconds processing
 
-         Cumulative_Leap_Seconds
-           (Ada_Low, Result_M, Elapsed_Leaps, Next_Leap_M);
+         if Leap_Support then
+            Cumulative_Leap_Seconds
+              (Start_Of_Time, Res_M, Elapsed_Leaps, Next_Leap_M);
 
-         Result_M := Result_M + Time (Elapsed_Leaps) * Mili;
+            Res_M := Res_M + Time (Elapsed_Leaps) * Mili;
 
-         --  An Ada 2005 caller requesting an explicit leap second or an Ada
-         --  95 caller accounting for an invisible leap second.
+            --  An Ada 2005 caller requesting an explicit leap second or an
+            --  Ada 95 caller accounting for an invisible leap second.
 
-         Rounded_Result_M := Result_M - (Result_M mod Mili);
+            if Leap_Sec
+              or else Res_M >= Next_Leap_M
+            then
+               Res_M := Res_M + Time (1) * Mili;
+            end if;
 
-         if Leap_Sec
-           or else Rounded_Result_M = Next_Leap_M
-         then
-            Result_M := Result_M + Time (1) * Mili;
-            Rounded_Result_M := Rounded_Result_M + Time (1) * Mili;
+            --  Leap second validity check
+
+            Rounded_Res_M := Res_M - (Res_M mod Mili);
+
+            if Is_Ada_05
+              and then Leap_Sec
+              and then Rounded_Res_M /= Next_Leap_M
+            then
+               raise Time_Error;
+            end if;
          end if;
 
-         --  Leap second validity check
-
-         if Leap_Checks
-           and then Leap_Sec
-           and then Rounded_Result_M /= Next_Leap_M
-         then
-            raise Time_Error;
-         end if;
-
-         --  Bounds check
-
-         if Result_M < Ada_Low
-           or else Result_M >= Ada_High_And_Leaps
-         then
-            raise Time_Error;
-         end if;
-
-         return Result_M;
+         return Res_M;
       end Time_Of;
    end Formatting_Operations;
 
@@ -1000,71 +1116,73 @@ package body Ada.Calendar is
 begin
    --  Population of the leap seconds table
 
-   declare
-      type Leap_Second_Date is record
-         Year  : Year_Number;
-         Month : Month_Number;
-         Day   : Day_Number;
-      end record;
+   if Leap_Support then
+      declare
+         type Leap_Second_Date is record
+            Year  : Year_Number;
+            Month : Month_Number;
+            Day   : Day_Number;
+         end record;
 
-      Leap_Second_Dates :
-        constant array (1 .. N_Leap_Seconds) of Leap_Second_Date :=
-          ((1972,  6, 30), (1972, 12, 31), (1973, 12, 31), (1974, 12, 31),
-           (1975, 12, 31), (1976, 12, 31), (1977, 12, 31), (1978, 12, 31),
-           (1979, 12, 31), (1981,  6, 30), (1982,  6, 30), (1983,  6, 30),
-           (1985,  6, 30), (1987, 12, 31), (1989, 12, 31), (1990, 12, 31),
-           (1992,  6, 30), (1993,  6, 30), (1994,  6, 30), (1995, 12, 31),
-           (1997,  6, 30), (1998, 12, 31), (2005, 12, 31));
+         Leap_Second_Dates :
+           constant array (1 .. Leap_Seconds_Count) of Leap_Second_Date :=
+             ((1972,  6, 30), (1972, 12, 31), (1973, 12, 31), (1974, 12, 31),
+              (1975, 12, 31), (1976, 12, 31), (1977, 12, 31), (1978, 12, 31),
+              (1979, 12, 31), (1981,  6, 30), (1982,  6, 30), (1983,  6, 30),
+              (1985,  6, 30), (1987, 12, 31), (1989, 12, 31), (1990, 12, 31),
+              (1992,  6, 30), (1993,  6, 30), (1994,  6, 30), (1995, 12, 31),
+              (1997,  6, 30), (1998, 12, 31), (2005, 12, 31));
 
-      Ada_Min_Year       : constant Year_Number := Year_Number'First;
-      Days_In_Four_Years : constant := 365 * 3 + 366;
-      VMS_Days           : constant := 10 * 366 + 32 * 365 + 45;
+         Ada_Min_Year       : constant Year_Number := Year_Number'First;
+         Days_In_Four_Years : constant := 365 * 3 + 366;
+         VMS_Days           : constant := 10 * 366 + 32 * 365 + 45;
 
-      Days  : Natural;
-      Leap  : Leap_Second_Date;
-      Years : Natural;
+         Days  : Natural;
+         Leap  : Leap_Second_Date;
+         Years : Natural;
 
-   begin
-      for Index in 1 .. N_Leap_Seconds loop
-         Leap := Leap_Second_Dates (Index);
+      begin
+         for Index in 1 .. Leap_Seconds_Count loop
+            Leap := Leap_Second_Dates (Index);
 
-         --  Calculate the number of days from the start of Ada time until
-         --  the current leap second occurence. Non-leap centenial years
-         --  are not accounted for in these calculations since there are
-         --  no leap seconds after 2100 yet.
+            --  Calculate the number of days from the start of Ada time until
+            --  the current leap second occurence. Non-leap centenial years
+            --  are not accounted for in these calculations since there are
+            --  no leap seconds after 2100 yet.
 
-         Years := Leap.Year - Ada_Min_Year;
-         Days  := (Years / 4) * Days_In_Four_Years;
-         Years := Years mod 4;
+            Years := Leap.Year - Ada_Min_Year;
+            Days  := (Years / 4) * Days_In_Four_Years;
+            Years := Years mod 4;
 
-         if Years = 1 then
-            Days := Days + 365;
+            if Years = 1 then
+               Days := Days + 365;
 
-         elsif Years = 2 then
-            Days := Days + 365 * 2;
+            elsif Years = 2 then
+               Days := Days + 365 * 2;
 
-         elsif Years = 3 then
-            Days := Days + 365 * 3;
-         end if;
+            elsif Years = 3 then
+               Days := Days + 365 * 3;
+            end if;
 
-         Days := Days + Cumulative_Days_Before_Month (Leap.Month);
+            Days := Days + Cumulative_Days_Before_Month (Leap.Month);
 
-         if Is_Leap (Leap.Year)
-           and then Leap.Month > 2
-         then
-            Days := Days + 1;
-         end if;
+            if Is_Leap (Leap.Year)
+              and then Leap.Month > 2
+            then
+               Days := Days + 1;
+            end if;
 
-         --  Add the number of days since the start of VMS time till the
-         --  start of Ada time.
+            --  Add the number of days since the start of VMS time till the
+            --  start of Ada time.
 
-         Days := Days + Leap.Day + VMS_Days;
+            Days := Days + Leap.Day + VMS_Days;
 
-         --  Index - 1 previous leap seconds are added to Time (Index)
+            --  Index - 1 previous leap seconds are added to Time (Index)
 
-         Leap_Second_Times (Index) :=
-           (Time (Days) * Secs_In_Day + Time (Index - 1)) * Mili;
-      end loop;
-   end;
+            Leap_Second_Times (Index) :=
+              (Time (Days) * Secs_In_Day + Time (Index - 1)) * Mili;
+         end loop;
+      end;
+   end if;
 
 end Ada.Calendar;

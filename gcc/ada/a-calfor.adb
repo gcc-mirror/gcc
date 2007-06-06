@@ -457,7 +457,18 @@ package body Ada.Calendar.Formatting is
 
    begin
       Formatting_Operations.Split
-        (Date, Year, Month, Day, Seconds, H, M, Se, Su, Leap_Second, Tz);
+        (Date      => Date,
+         Year      => Year,
+         Month     => Month,
+         Day       => Day,
+         Day_Secs  => Seconds,
+         Hour      => H,
+         Minute    => M,
+         Second    => Se,
+         Sub_Sec   => Su,
+         Leap_Sec  => Leap_Second,
+         Time_Zone => Tz,
+         Is_Ada_05 => True);
 
       --  Validity checks
 
@@ -491,8 +502,18 @@ package body Ada.Calendar.Formatting is
 
    begin
       Formatting_Operations.Split
-        (Date, Year, Month, Day, Dd,
-         Hour, Minute, Second, Sub_Second, Le, Tz);
+        (Date      => Date,
+         Year      => Year,
+         Month     => Month,
+         Day       => Day,
+         Day_Secs  => Dd,
+         Hour      => Hour,
+         Minute    => Minute,
+         Second    => Second,
+         Sub_Sec   => Sub_Second,
+         Leap_Sec  => Le,
+         Time_Zone => Tz,
+         Is_Ada_05 => True);
 
       --  Validity checks
 
@@ -529,8 +550,18 @@ package body Ada.Calendar.Formatting is
 
    begin
       Formatting_Operations.Split
-       (Date, Year, Month, Day, Dd,
-        Hour, Minute, Second, Sub_Second, Leap_Second, Tz);
+       (Date      => Date,
+        Year      => Year,
+        Month     => Month,
+        Day       => Day,
+        Day_Secs  => Dd,
+        Hour      => Hour,
+        Minute    => Minute,
+        Second    => Second,
+        Sub_Sec   => Sub_Second,
+        Leap_Sec  => Leap_Second,
+        Time_Zone => Tz,
+        Is_Ada_05 => True);
 
       --  Validity checks
 
@@ -621,10 +652,17 @@ package body Ada.Calendar.Formatting is
 
       return
         Formatting_Operations.Time_Of
-          (Adj_Year, Adj_Month, Adj_Day, Seconds, H, M, Se, Ss,
+          (Year         => Adj_Year,
+           Month        => Adj_Month,
+           Day          => Adj_Day,
+           Day_Secs     => Seconds,
+           Hour         => H,
+           Minute       => M,
+           Second       => Se,
+           Sub_Sec      => Ss,
            Leap_Sec     => Leap_Second,
-           Leap_Checks  => True,
            Use_Day_Secs => True,
+           Is_Ada_05    => True,
            Time_Zone    => Tz);
    end Time_Of;
 
@@ -663,10 +701,17 @@ package body Ada.Calendar.Formatting is
 
       return
         Formatting_Operations.Time_Of
-          (Year, Month, Day, Dd, Hour, Minute, Second, Sub_Second,
+          (Year         => Year,
+           Month        => Month,
+           Day          => Day,
+           Day_Secs     => Dd,
+           Hour         => Hour,
+           Minute       => Minute,
+           Second       => Second,
+           Sub_Sec      => Sub_Second,
            Leap_Sec     => Leap_Second,
-           Leap_Checks  => True,
            Use_Day_Secs => False,
+           Is_Ada_05    => True,
            Time_Zone    => Tz);
    end Time_Of;
 
