@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with GNAT.Strings; use GNAT.Strings;
+with System.Strings; use System.Strings;
 
 with Atree;    use Atree;
 with Checks;
@@ -34,7 +34,6 @@ with Elists;
 with Exp_Dbug;
 with Fmap;
 with Fname.UF;
-with Hostparm; use Hostparm;
 with Inline;   use Inline;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
@@ -56,6 +55,7 @@ with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Sinput.L; use Sinput.L;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Types;    use Types;
 
@@ -106,6 +106,12 @@ begin
    --  load the main source (this is no longer done by Lib.Load.Initalize).
 
    Lib.Load.Load_Main_Source;
+
+   --  Return immediately if the main source could not be parsed
+
+   if Sinput.Main_Source_File = No_Source_File then
+      return;
+   end if;
 
    --  Read and process configuration pragma files if present
 
@@ -207,6 +213,12 @@ begin
    --  of the configuration switches (see Opt for further details).
 
    Opt.Register_Opt_Config_Switches;
+
+   --  Check for file which contains No_Body pragma
+
+   if Source_File_Is_No_Body (Source_Index (Main_Unit)) then
+      Change_Main_Unit_To_Spec;
+   end if;
 
    --  Initialize the scanner. Note that we do this after the call to
    --  Create_Standard, which uses the scanner in its processing of
@@ -318,11 +330,11 @@ begin
    end if;
 
    --  Qualify all entity names in inner packages, package bodies, etc.,
-   --  except when compiling for the JVM back end, which depends on
+   --  except when compiling for the VM back-ends, which depend on
    --  having unqualified names in certain cases and handles the
    --  generation of qualified names when needed.
 
-   if not Java_VM then
+   if VM_Target = No_VM then
       Exp_Dbug.Qualify_All_Entity_Names;
    end if;
 
