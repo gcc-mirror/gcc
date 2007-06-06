@@ -345,8 +345,6 @@ private
 
    for Vector'Read use Read;
 
-   Empty_Vector : constant Vector := (Controlled with null, No_Index, 0, 0);
-
    type Vector_Access is access constant Vector;
    for Vector_Access'Storage_Size use 0;
 
@@ -366,6 +364,8 @@ private
       Position : out Cursor);
 
    for Cursor'Read use Read;
+
+   Empty_Vector : constant Vector := (Controlled with null, No_Index, 0, 0);
 
    No_Element : constant Cursor := Cursor'(null, Index_Type'First);
 
