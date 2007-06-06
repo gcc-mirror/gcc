@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2005, AdaCore                     --
+--                     Copyright (C) 1999-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -322,7 +322,6 @@ private
       Maximum_Depth : Depth := 1;
       --  The maximum depth of directories, reflecting the number of directory
       --  separators in the pattern.
-
    end record;
 
 end GNAT.Command_Line;

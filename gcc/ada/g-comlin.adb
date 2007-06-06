@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Command_Line;
-with GNAT.OS_Lib; use GNAT.OS_Lib;
+with GNAT.OS_Lib;      use GNAT.OS_Lib;
 
 package body GNAT.Command_Line is
 
@@ -142,9 +142,9 @@ package body GNAT.Command_Line is
       use GNAT.Directory_Operations;
       type Pointer is access all Expansion_Iterator;
 
+      It   : constant Pointer := Iterator'Unrestricted_Access;
       S    : String (1 .. 1024);
       Last : Natural;
-      It   : constant Pointer := Iterator'Unrestricted_Access;
 
       Current : Depth := It.Current_Depth;
       NL      : Positive;
@@ -304,8 +304,8 @@ package body GNAT.Command_Line is
 
       if Do_Expansion then
          declare
-            Arg       : String renames CL.Argument (Current_Argument - 1);
-            Index     : Positive := Arg'First;
+            Arg   : constant String := CL.Argument (Current_Argument - 1);
+            Index : Positive := Arg'First;
 
          begin
             while Index <= Arg'Last loop
@@ -381,7 +381,7 @@ package body GNAT.Command_Line is
       end if;
 
       declare
-         Arg            : String renames CL.Argument (Current_Argument);
+         Arg            : constant String := CL.Argument (Current_Argument);
          Index_Switches : Natural := 0;
          Max_Length     : Natural := 0;
          Index          : Natural;
@@ -780,9 +780,9 @@ package body GNAT.Command_Line is
    is
       Directory_Separator : Character;
       pragma Import (C, Directory_Separator, "__gnat_dir_separator");
-      First : Positive := Pattern'First;
 
-      Pat : String := Pattern;
+      First : Positive := Pattern'First;
+      Pat   : String := Pattern;
 
    begin
       Canonical_Case_File_Name (Pat);
@@ -838,7 +838,6 @@ package body GNAT.Command_Line is
             exit when Iterator.Maximum_Depth = Max_Depth;
          end if;
       end loop;
-
    end Start_Expansion;
 
 begin

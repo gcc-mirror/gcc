@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,9 @@ with System;  use System;
 with Tree_IO; use Tree_IO;
 
 package body Opt is
+
+   SU : constant := Storage_Unit;
+   --  Shorthand for System.Storage_Unit
 
    ----------------------------------
    -- Register_Opt_Config_Switches --
@@ -169,10 +172,10 @@ package body Opt is
       Tree_Read_Char (Identifier_Character_Set);
       Tree_Read_Int  (Maximum_File_Name_Length);
       Tree_Read_Data (Suppress_Options'Address,
-                      Suppress_Array'Object_Size / Storage_Unit);
+                      (Suppress_Options'Size + SU - 1) / SU);
       Tree_Read_Bool (Verbose_Mode);
       Tree_Read_Data (Warning_Mode'Address,
-                      Warning_Mode_Type'Object_Size / Storage_Unit);
+                      (Warning_Mode'Size + SU - 1) / SU);
       Tree_Read_Int  (Ada_Version_Config_Val);
       Tree_Read_Int  (Ada_Version_Explicit_Config_Val);
       Tree_Read_Int  (Assertions_Enabled_Config_Val);
@@ -198,23 +201,23 @@ package body Opt is
       begin
          Tree_Read_Data
            (Tmp'Address, Tree_Version_String_Len);
-         GNAT.Strings.Free (Tree_Version_String);
+         System.Strings.Free (Tree_Version_String);
          Free (Tree_Version_String);
          Tree_Version_String := new String'(Tmp);
       end;
 
       Tree_Read_Data (Distribution_Stub_Mode'Address,
-                      Distribution_Stub_Mode_Type'Object_Size / Storage_Unit);
+                      (Distribution_Stub_Mode'Size + SU - 1) / Storage_Unit);
       Tree_Read_Bool (Inline_Active);
       Tree_Read_Bool (Inline_Processing_Required);
       Tree_Read_Bool (List_Units);
       Tree_Read_Bool (Configurable_Run_Time_Mode);
       Tree_Read_Data (Operating_Mode'Address,
-                      Operating_Mode_Type'Object_Size / Storage_Unit);
+                      (Operating_Mode'Size + SU - 1) / Storage_Unit);
       Tree_Read_Bool (Suppress_Checks);
       Tree_Read_Bool (Try_Semantics);
       Tree_Read_Data (Wide_Character_Encoding_Method'Address,
-                      WC_Encoding_Method'Object_Size / Storage_Unit);
+                      (Wide_Character_Encoding_Method'Size + SU - 1) / SU);
       Tree_Read_Bool (Upper_Half_Encoding);
       Tree_Read_Bool (Force_ALI_Tree_File);
    end Tree_Read;
@@ -233,10 +236,10 @@ package body Opt is
       Tree_Write_Char (Identifier_Character_Set);
       Tree_Write_Int  (Maximum_File_Name_Length);
       Tree_Write_Data (Suppress_Options'Address,
-                       Suppress_Array'Object_Size / Storage_Unit);
+                       (Suppress_Options'Size + SU - 1) / SU);
       Tree_Write_Bool (Verbose_Mode);
       Tree_Write_Data (Warning_Mode'Address,
-                       Warning_Mode_Type'Object_Size / Storage_Unit);
+                       (Warning_Mode'Size + SU - 1) / Storage_Unit);
       Tree_Write_Int  (Ada_Version_Type'Pos (Ada_Version_Config));
       Tree_Write_Int  (Ada_Version_Type'Pos (Ada_Version_Explicit_Config));
       Tree_Write_Int  (Boolean'Pos (Assertions_Enabled_Config));
@@ -246,20 +249,19 @@ package body Opt is
       Tree_Write_Bool (Enable_Overflow_Checks);
       Tree_Write_Bool (Full_List);
       Tree_Write_Int  (Int (Version_String'Length));
-      Tree_Write_Data (Version_String'Address,
-                       Version_String'Length);
+      Tree_Write_Data (Version_String'Address, Version_String'Length);
       Tree_Write_Data (Distribution_Stub_Mode'Address,
-                       Distribution_Stub_Mode_Type'Object_Size / Storage_Unit);
+                       (Distribution_Stub_Mode'Size + SU - 1) / SU);
       Tree_Write_Bool (Inline_Active);
       Tree_Write_Bool (Inline_Processing_Required);
       Tree_Write_Bool (List_Units);
       Tree_Write_Bool (Configurable_Run_Time_Mode);
       Tree_Write_Data (Operating_Mode'Address,
-                       Operating_Mode_Type'Object_Size / Storage_Unit);
+                       (Operating_Mode'Size + SU - 1) / SU);
       Tree_Write_Bool (Suppress_Checks);
       Tree_Write_Bool (Try_Semantics);
       Tree_Write_Data (Wide_Character_Encoding_Method'Address,
-                       WC_Encoding_Method'Object_Size / Storage_Unit);
+                       (Wide_Character_Encoding_Method'Size + SU - 1) / SU);
       Tree_Write_Bool (Upper_Half_Encoding);
       Tree_Write_Bool (Force_ALI_Tree_File);
    end Tree_Write;
