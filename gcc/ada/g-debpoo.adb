@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -223,21 +223,27 @@ package body GNAT.Debug_Pools is
    --  including, an address between Ignored_Frame_Start .. Ignored_Frame_End
    --  are ignored.
 
+   function Output_File (Pool : Debug_Pool) return File_Type;
+   pragma Inline (Output_File);
+   --  Returns file_type on which error messages have to be generated for Pool
+
    procedure Put_Line
-     (Depth               : Natural;
+     (File                : File_Type;
+      Depth               : Natural;
       Traceback           : Tracebacks_Array_Access;
       Ignored_Frame_Start : System.Address := System.Null_Address;
       Ignored_Frame_End   : System.Address := System.Null_Address);
-   --  Print Traceback to Standard_Output. If Traceback is null, print the
-   --  call_chain at the current location, up to Depth levels, ignoring all
-   --  addresses up to the first one in the range
-   --  Ignored_Frame_Start .. Ignored_Frame_End
+   --  Print Traceback to File. If Traceback is null, print the call_chain
+   --  at the current location, up to Depth levels, ignoring all addresses
+   --  up to the first one in the range:
+   --    Ignored_Frame_Start .. Ignored_Frame_End
 
    package Validity is
       function Is_Valid (Storage : System.Address) return Boolean;
       pragma Inline (Is_Valid);
-      --  Return True if Storage is an address that the debug pool has under
-      --  its control.
+      --  Return True if Storage is the address of a block that the debug pool
+      --  has under its control, in which case Header_Of may be used to access
+      --  the associated allocation header.
 
       procedure Set_Valid (Storage : System.Address; Value : Boolean);
       pragma Inline (Set_Valid);
@@ -356,12 +362,26 @@ package body GNAT.Debug_Pools is
       return Header (1 + Result mod Integer_Address (Header'Last));
    end Hash;
 
+   -----------------
+   -- Output_File --
+   -----------------
+
+   function Output_File (Pool : Debug_Pool) return File_Type is
+   begin
+      if Pool.Errors_To_Stdout then
+         return Standard_Output;
+      else
+         return Standard_Error;
+      end if;
+   end Output_File;
+
    --------------
    -- Put_Line --
    --------------
 
    procedure Put_Line
-     (Depth               : Natural;
+     (File                : File_Type;
+      Depth               : Natural;
       Traceback           : Tracebacks_Array_Access;
       Ignored_Frame_Start : System.Address := System.Null_Address;
       Ignored_Frame_End   : System.Address := System.Null_Address)
@@ -376,9 +396,9 @@ package body GNAT.Debug_Pools is
       procedure Print (Tr : Tracebacks_Array) is
       begin
          for J in Tr'Range loop
-            Put ("0x" & Address_Image (PC_For (Tr (J))) & ' ');
+            Put (File, "0x" & Address_Image (PC_For (Tr (J))) & ' ');
          end loop;
-         Put (ASCII.LF);
+         Put (File, ASCII.LF);
       end Print;
 
    --  Start of processing for Put_Line
@@ -555,21 +575,35 @@ package body GNAT.Debug_Pools is
 
       function Is_Valid (Storage : System.Address) return Boolean is
          Int_Storage  : constant Integer_Address := To_Integer (Storage);
-         Block_Number : constant Integer_Address :=
-                          Int_Storage /  Memory_Chunk_Size;
-         Ptr          : constant Validity_Bits_Ref :=
-                          Validy_Htable.Get (Block_Number);
-         Offset       : constant Integer_Address :=
-                          (Int_Storage - (Block_Number * Memory_Chunk_Size)) /
-                             Default_Alignment;
-         Bit          : constant Byte :=
-                          2 ** Natural (Offset mod System.Storage_Unit);
+
       begin
-         if Ptr = No_Validity_Bits then
+         --  The pool only returns addresses aligned on Default_Alignment so
+         --  anything off cannot be a valid block address and we can return
+         --  early in this case. We actually have to since our datastructures
+         --  map validity bits for such aligned addresses only.
+
+         if Int_Storage mod Default_Alignment /= 0 then
             return False;
-         else
-            return (Ptr (Offset / System.Storage_Unit) and Bit) /= 0;
          end if;
+
+         declare
+            Block_Number : constant Integer_Address :=
+                             Int_Storage /  Memory_Chunk_Size;
+            Ptr          : constant Validity_Bits_Ref :=
+                             Validy_Htable.Get (Block_Number);
+            Offset       : constant Integer_Address :=
+                             (Int_Storage -
+                               (Block_Number * Memory_Chunk_Size)) /
+                                  Default_Alignment;
+            Bit          : constant Byte :=
+                             2 ** Natural (Offset mod System.Storage_Unit);
+         begin
+            if Ptr = No_Validity_Bits then
+               return False;
+            else
+               return (Ptr (Offset / System.Storage_Unit) and Bit) /= 0;
+            end if;
+         end;
       end Is_Valid;
 
       ---------------
@@ -673,10 +707,13 @@ package body GNAT.Debug_Pools is
       end;
 
       Storage_Address :=
-        System.Null_Address + Default_Alignment
-          * (((P.all'Address + Default_Alignment - 1) - System.Null_Address)
-             / Default_Alignment)
-        + Header_Offset;
+        To_Address
+          (Default_Alignment *
+             ((To_Integer (P.all'Address) + Default_Alignment - 1)
+               / Default_Alignment)
+           + Integer_Address (Header_Offset));
+      --  Computation is done in Integer_Address, not Storage_Offset, because
+      --  the range of Storage_Offset may not be large enough.
 
       pragma Assert ((Storage_Address - System.Null_Address)
                      mod Default_Alignment = 0);
@@ -720,6 +757,20 @@ package body GNAT.Debug_Pools is
       --  Mark the new address as valid
 
       Set_Valid (Storage_Address, True);
+
+      if Pool.Low_Level_Traces then
+         Put (Output_File (Pool),
+              "info: Allocated"
+                & Storage_Count'Image (Size_In_Storage_Elements)
+                & " bytes at 0x" & Address_Image (Storage_Address)
+                & " (physically:"
+                & Storage_Count'Image (Local_Storage_Array'Length)
+                & " bytes at 0x" & Address_Image (P.all'Address)
+                & "), at ");
+         Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
+                   Allocate_Label'Address,
+                   Code_Address_For_Deallocate_End);
+      end if;
 
       --  Update internal data
 
@@ -894,6 +945,17 @@ package body GNAT.Debug_Pools is
                end;
 
                Next := Header.Next;
+
+               if Pool.Low_Level_Traces then
+                  Put_Line
+                    (Output_File (Pool),
+                     "info: Freeing physical memory "
+                       & Storage_Count'Image
+                       ((abs Header.Block_Size) + Minimum_Allocation)
+                       & " bytes at 0x"
+                       & Address_Image (Header.Allocation_Address));
+               end if;
+
                System.Memory.Free (Header.Allocation_Address);
                Set_Valid (Tmp, False);
 
@@ -1065,8 +1127,9 @@ package body GNAT.Debug_Pools is
          if Pool.Raise_Exceptions then
             raise Freeing_Not_Allocated_Storage;
          else
-            Put ("error: Freeing not allocated storage, at ");
-            Put_Line (Pool.Stack_Trace_Depth, null,
+            Put (Output_File (Pool),
+                 "error: Freeing not allocated storage, at ");
+            Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
                       Deallocate_Label'Address,
                       Code_Address_For_Deallocate_End);
          end if;
@@ -1076,21 +1139,53 @@ package body GNAT.Debug_Pools is
          if Pool.Raise_Exceptions then
             raise Freeing_Deallocated_Storage;
          else
-            Put ("error: Freeing already deallocated storage, at ");
-            Put_Line (Pool.Stack_Trace_Depth, null,
+            Put (Output_File (Pool),
+                 "error: Freeing already deallocated storage, at ");
+            Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
                       Deallocate_Label'Address,
                       Code_Address_For_Deallocate_End);
-            Put ("   Memory already deallocated at ");
-            Put_Line (0, To_Traceback (Header.Dealloc_Traceback).Traceback);
-            Put ("   Memory was allocated at ");
-            Put_Line (0, Header.Alloc_Traceback.Traceback);
+            Put (Output_File (Pool), "   Memory already deallocated at ");
+            Put_Line
+               (Output_File (Pool), 0,
+                To_Traceback (Header.Dealloc_Traceback).Traceback);
+            Put (Output_File (Pool), "   Memory was allocated at ");
+            Put_Line (Output_File (Pool), 0, Header.Alloc_Traceback.Traceback);
          end if;
 
       else
+         --  Some sort of codegen problem or heap corruption caused the
+         --  Size_In_Storage_Elements to be wrongly computed.
+         --  The code below is all based on the assumption that Header.all
+         --  is not corrupted, such that the error is non-fatal.
+
+         if Header.Block_Size /= Size_In_Storage_Elements then
+            Put_Line (Output_File (Pool),
+                      "error: Deallocate size "
+                        & Storage_Count'Image (Size_In_Storage_Elements)
+                        & " does not match allocate size "
+                        & Storage_Count'Image (Header.Block_Size));
+         end if;
+
+         if Pool.Low_Level_Traces then
+            Put (Output_File (Pool),
+                 "info: Deallocated"
+                 & Storage_Count'Image (Size_In_Storage_Elements)
+                 & " bytes at 0x" & Address_Image (Storage_Address)
+                 & " (physically"
+                 & Storage_Count'Image (Header.Block_Size + Minimum_Allocation)
+                 & " bytes at 0x" & Address_Image (Header.Allocation_Address)
+                 & "), at ");
+            Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
+                      Deallocate_Label'Address,
+                      Code_Address_For_Deallocate_End);
+            Put (Output_File (Pool), "   Memory was allocated at ");
+            Put_Line (Output_File (Pool), 0, Header.Alloc_Traceback.Traceback);
+         end if;
+
          --  Remove this block from the list of used blocks
 
          Previous :=
-           To_Address (Header_Of (Storage_Address).Dealloc_Traceback);
+           To_Address (Header.Dealloc_Traceback);
 
          if Previous = System.Null_Address then
             Pool.First_Used_Block := Header_Of (Pool.First_Used_Block).Next;
@@ -1101,12 +1196,11 @@ package body GNAT.Debug_Pools is
             end if;
 
          else
-            Header_Of (Previous).Next := Header_Of (Storage_Address).Next;
+            Header_Of (Previous).Next := Header.Next;
 
-            if Header_Of (Storage_Address).Next /= System.Null_Address then
+            if Header.Next /= System.Null_Address then
                Header_Of
-                 (Header_Of (Storage_Address).Next).Dealloc_Traceback :=
-                    To_Address (Previous);
+                 (Header.Next).Dealloc_Traceback := To_Address (Previous);
             end if;
          end if;
 
@@ -1122,15 +1216,14 @@ package body GNAT.Debug_Pools is
                                         Deallocate_Label'Address,
                                         Code_Address_For_Deallocate_End)),
             Next               => System.Null_Address,
-            Block_Size         => -Size_In_Storage_Elements);
+            Block_Size         => -Header.Block_Size);
 
          if Pool.Reset_Content_On_Free then
-            Set_Dead_Beef (Storage_Address, Size_In_Storage_Elements);
+            Set_Dead_Beef (Storage_Address, -Header.Block_Size);
          end if;
 
          Pool.Logically_Deallocated :=
-           Pool.Logically_Deallocated +
-             Byte_Count (Size_In_Storage_Elements);
+           Pool.Logically_Deallocated + Byte_Count (-Header.Block_Size);
 
          --  Link this free block with the others (at the end of the list, so
          --  that we can start releasing the older blocks first later on).
@@ -1201,8 +1294,9 @@ package body GNAT.Debug_Pools is
          if Pool.Raise_Exceptions then
             raise Accessing_Not_Allocated_Storage;
          else
-            Put ("error: Accessing not allocated storage, at ");
-            Put_Line (Pool.Stack_Trace_Depth, null,
+            Put (Output_File (Pool),
+                 "error: Accessing not allocated storage, at ");
+            Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
                       Dereference_Label'Address,
                       Code_Address_For_Dereference_End);
          end if;
@@ -1214,15 +1308,20 @@ package body GNAT.Debug_Pools is
             if Pool.Raise_Exceptions then
                raise Accessing_Deallocated_Storage;
             else
-               Put ("error: Accessing deallocated storage, at ");
+               Put (Output_File (Pool),
+                    "error: Accessing deallocated storage, at ");
                Put_Line
-                 (Pool.Stack_Trace_Depth, null,
+                 (Output_File (Pool), Pool.Stack_Trace_Depth, null,
                   Dereference_Label'Address,
                   Code_Address_For_Dereference_End);
-               Put ("  First deallocation at ");
-               Put_Line (0, To_Traceback (Header.Dealloc_Traceback).Traceback);
-               Put ("  Initial allocation at ");
-               Put_Line (0, Header.Alloc_Traceback.Traceback);
+               Put (Output_File (Pool), "  First deallocation at ");
+               Put_Line
+                 (Output_File (Pool),
+                  0, To_Traceback (Header.Dealloc_Traceback).Traceback);
+               Put (Output_File (Pool), "  Initial allocation at ");
+               Put_Line
+                 (Output_File (Pool),
+                  0, Header.Alloc_Traceback.Traceback);
             end if;
          end if;
       end if;
@@ -1441,7 +1540,9 @@ package body GNAT.Debug_Pools is
       Minimum_To_Free                : SSC     := Default_Min_Freed;
       Reset_Content_On_Free          : Boolean := Default_Reset_Content;
       Raise_Exceptions               : Boolean := Default_Raise_Exceptions;
-      Advanced_Scanning              : Boolean := Default_Advanced_Scanning)
+      Advanced_Scanning              : Boolean := Default_Advanced_Scanning;
+      Errors_To_Stdout               : Boolean := Default_Errors_To_Stdout;
+      Low_Level_Traces               : Boolean := Default_Low_Level_Traces)
    is
    begin
       Pool.Stack_Trace_Depth              := Stack_Trace_Depth;
@@ -1450,6 +1551,8 @@ package body GNAT.Debug_Pools is
       Pool.Raise_Exceptions               := Raise_Exceptions;
       Pool.Minimum_To_Free                := Minimum_To_Free;
       Pool.Advanced_Scanning              := Advanced_Scanning;
+      Pool.Errors_To_Stdout               := Errors_To_Stdout;
+      Pool.Low_Level_Traces               := Low_Level_Traces;
    end Configure;
 
    ----------------
@@ -1467,23 +1570,27 @@ package body GNAT.Debug_Pools is
       --  instead of passing the value of my_var
 
       if A = System.Null_Address then
-         Put_Line ("Memory not under control of the storage pool");
+         Put_Line
+            (Standard_Output, "Memory not under control of the storage pool");
          return;
       end if;
 
       if not Valid then
-         Put_Line ("Memory not under control of the storage pool");
+         Put_Line
+            (Standard_Output, "Memory not under control of the storage pool");
 
       else
          Header := Header_Of (Storage);
-         Put_Line ("0x" & Address_Image (A)
+         Put_Line (Standard_Output, "0x" & Address_Image (A)
                      & " allocated at:");
-         Put_Line (0, Header.Alloc_Traceback.Traceback);
+         Put_Line (Standard_Output, 0, Header.Alloc_Traceback.Traceback);
 
          if To_Traceback (Header.Dealloc_Traceback) /= null then
-            Put_Line ("0x" & Address_Image (A)
+            Put_Line (Standard_Output, "0x" & Address_Image (A)
                       & " logically freed memory, deallocated at:");
-            Put_Line (0, To_Traceback (Header.Dealloc_Traceback).Traceback);
+            Put_Line
+               (Standard_Output, 0,
+                To_Traceback (Header.Dealloc_Traceback).Traceback);
          end if;
       end if;
    end Print_Pool;
@@ -1498,9 +1605,35 @@ package body GNAT.Debug_Pools is
       Display_Slots : Boolean := False;
       Display_Leaks : Boolean := False)
    is
+      procedure Stdout_Put      (S : String);
+      procedure Stdout_Put_Line (S : String);
+      --  Wrappers for Put and Put_Line that ensure we always write to stdout
+      --  instead of the current output file defined in GNAT.IO.
+
       procedure Internal is new Print_Info
-        (Put_Line => GNAT.IO.Put_Line,
-         Put      => GNAT.IO.Put);
+        (Put_Line => Stdout_Put_Line,
+         Put      => Stdout_Put);
+
+      ----------------
+      -- Stdout_Put --
+      ----------------
+
+      procedure Stdout_Put (S : String) is
+      begin
+         Put_Line (Standard_Output, S);
+      end Stdout_Put;
+
+      ---------------------
+      -- Stdout_Put_Line --
+      ---------------------
+
+      procedure Stdout_Put_Line (S : String) is
+      begin
+         Put_Line (Standard_Output, S);
+      end Stdout_Put_Line;
+
+   --  Start of processing for Print_Info_Stdout
+
    begin
       Internal (Pool, Cumulate, Display_Slots, Display_Leaks);
    end Print_Info_Stdout;
