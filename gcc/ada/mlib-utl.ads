@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2006, AdaCore                     --
+--                     Copyright (C) 2001-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,8 +30,8 @@
 package MLib.Utl is
 
    procedure Delete_File (Filename : String);
-   --  Delete the file Filename
-   --  Why is this different from the standard OS_Lib routine???
+   --  Delete the file Filename and output the name of the deleted file in
+   --  verbose mode.
 
    procedure Gcc
      (Output_File : String;

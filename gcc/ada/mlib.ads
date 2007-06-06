@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2005, AdaCore                     --
+--                     Copyright (C) 1999-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,9 +27,10 @@
 --  This package provides the core high level routines used by GNATMLIB
 --  and GNATMAKE to build libraries
 
+with Namet; use Namet;
+with Osint; use Osint;
+
 with GNAT.OS_Lib; use GNAT.OS_Lib;
-with Osint;       use Osint;
-with Types;       use Types;
 
 package MLib is
 
@@ -60,7 +61,7 @@ package MLib is
 
    procedure Copy_ALI_Files
      (Files      : Argument_List;
-      To         : Name_Id;
+      To         : Path_Name_Type;
       Interfaces : String_List);
    --  Copy all ALI files Files to directory To.
    --  Mark Interfaces ALI files as interfaces, if any.
