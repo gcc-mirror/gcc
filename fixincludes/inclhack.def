@@ -1558,6 +1558,27 @@ fix = {
 };
 
 
+fix = {
+     hackname  = hppa_hpux_fp_macros;
+     mach      = hppa*-hp-hpux11*;
+     files     = math.h;
+     select    = "#[ \t]*define[ \t]*FP_NORMAL.*\n"
+		 "#[ \t]*define[ \t]*FP_ZERO.*\n"
+		 "#[ \t]*define[ \t]*FP_INFINITE.*\n"
+		 "#[ \t]*define[ \t]*FP_SUBNORMAL.*\n"
+		 "#[ \t]*define[ \t]*FP_NAN.*\n";
+     c_fix     = format;
+     c_fix_arg = "#endif /* _INCLUDE_HPUX_SOURCE */\n\n#if defined(_INCLUDE_HPUX_SOURCE) || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))\n%0#endif\n\n#ifdef _INCLUDE_HPUX_SOURCE\n";
+
+     test_text =
+            "#  define FP_NORMAL     0\n"
+            "#  define FP_ZERO       1\n"
+            "#  define FP_INFINITE   2\n"
+            "#  define FP_SUBNORMAL  3\n"
+            "#  define FP_NAN        4\n";
+};
+
+
 /*
  *  Fix hpux 10.X missing ctype declarations 1
  */

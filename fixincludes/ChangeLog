@@ -1,3 +1,10 @@
+2007-06-06  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/31828
+	* inclhack.def (hppa_hpux_fp_macros): New.
+	* fixincl.x: Regenerate.
+	* tests/base/math.h: Update.
+
 2007-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* inclhack.def (glibc_c99_inline_1): Define __USE_EXTERN_INLINES
