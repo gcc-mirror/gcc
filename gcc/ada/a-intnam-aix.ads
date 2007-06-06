@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1991-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@
 
 --  The following signals are reserved by the run time (native threads):
 
---  SIGFPE, SIGILL, SIGSEGV, SIGBUS, SIGABRT, SIGTRAP, SIGINT, SIGTERM,
+--  SIGFPE, SIGILL, SIGSEGV, SIGBUS, SIGABRT, SIGTRAP, SIGINT, SIGEMT
 --  SIGSTOP, SIGKILL
 
 --  The following signals are reserved by the run time (FSU threads):
