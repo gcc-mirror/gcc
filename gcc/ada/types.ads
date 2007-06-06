@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,17 +35,17 @@
 --  in more than one unit in the compiler. They are gathered here for easy
 --  reference, though in some cases the full description is found in the
 --  relevant module which implements the definition. The main reason that
---  they are not in their "natural" specs is that this would cause a lot of
---  inter-spec dependencies, and in particular some awkward circular
+--  they are not in their "natural" specs is that this would cause a lot
+--  of inter-spec dependencies, and in particular some awkward circular
 --  dependencies would have to be dealt with.
 
---  WARNING: There is a C version of this package. Any changes to this
---  source file must be properly reflected in the C header file types.h
+--  WARNING: There is a C version of this package. Any changes to this source
+--  file must be properly reflected in the C header file types.h declarations.
 
---  Note: the declarations in this package reflect an expectation that the
---  host machine has an efficient integer base type with a range at least
---  32 bits 2s-complement. If there are any machines for which this is not
---  a correct assumption, a significant number of changes will be required!
+--  Note: the declarations in this package reflect an expectation that the host
+--  machine has an efficient integer base type with a range at least 32 bits
+--  2s-complement. If there are any machines for which this is not a correct
+--  assumption, a significant number of changes will be required!
 
 with Unchecked_Deallocation;
 
@@ -209,7 +209,10 @@ package Types is
    --  Value used to indicate no source position set in a node. A test for
    --  a Source_Ptr value being > No_Location is the approved way to test
    --  for a standard value that does not include No_Location or any of the
-   --  following special definitions.
+   --  following special definitions. One important use of No_Location is to
+   --  label generated nodes that we don't want the debugger to see in normal
+   --  mode (very often we conditionalize so that we set No_Location in normal
+   --  mode and the corresponding source line in -gnatD mode).
 
    Standard_Location : constant Source_Ptr := -2;
    --  Used for all nodes in the representation of package Standard other
@@ -357,37 +360,6 @@ package Types is
 
    subtype Ureal_Range     is Union_Id
      range Ureal_Low_Bound    .. Ureal_High_Bound;
-
-   -----------------------------
-   -- Types for Namet Package --
-   -----------------------------
-
-   --  Name_Id values are used to identify entries in the names table. Except
-   --  for the special values No_Name, and Error_Name, they are subscript
-   --  values for the Names table defined in package Namet.
-
-   --  Note that with only a few exceptions, which are clearly documented, the
-   --  type Name_Id should be regarded as a private type. In particular it is
-   --  never appropriate to perform arithmetic operations using this type.
-
-   type Name_Id is range Names_Low_Bound .. Names_High_Bound;
-   for Name_Id'Size use 32;
-   --  Type used to identify entries in the names table
-
-   No_Name : constant Name_Id := Names_Low_Bound;
-   --  The special Name_Id value No_Name is used in the parser to indicate
-   --  a situation where no name is present (e.g. on a loop or block).
-
-   Error_Name : constant Name_Id := Names_Low_Bound +  1;
-   --  The special Name_Id value Error_Name is used in the parser to
-   --  indicate that some kind of error was encountered in scanning out
-   --  the relevant name, so it does not have a representable label.
-
-   subtype Error_Name_Or_No_Name is Name_Id range No_Name .. Error_Name;
-   --  Used to test for either error name or no name
-
-   First_Name_Id : constant Name_Id := Names_Low_Bound + 2;
-   --  Subscript of first entry in names table
 
    ----------------------------
    -- Types for Atree Package --
@@ -590,18 +562,6 @@ package Types is
 
    No_Source_File : constant Source_File_Index := 0;
    --  Value used to indicate no source file present
-
-   subtype File_Name_Type is Name_Id;
-   --  File names are stored in the names table and this synonym is used to
-   --  indicate that a Name_Id value is being used to hold a simple file
-   --  name (which does not include any directory information).
-
-   No_File : constant File_Name_Type := File_Name_Type (No_Name);
-   --  Constant used to indicate no file found
-
-   subtype Unit_Name_Type is Name_Id;
-   --  Unit names are stored in the names table and this synonym is used to
-   --  indicate that a Name_Id value is being used to hold a unit name.
 
    -----------------------------------
    -- Representation of Time Stamps --
@@ -818,7 +778,7 @@ package Types is
       PE_Potentially_Blocking_Operation, -- 25
       PE_Stubbed_Subprogram_Called,      -- 26
       PE_Unchecked_Union_Restriction,    -- 27
-      PE_Illegal_RACW_E_4_18,            -- 28
+      PE_Non_Transportable_Actual,       -- 28
 
       SE_Empty_Storage_Pool,             -- 29
       SE_Explicit_Raise,                 -- 30
@@ -831,7 +791,7 @@ package Types is
 
    subtype RT_PE_Exceptions is RT_Exception_Code range
      PE_Access_Before_Elaboration ..
-     PE_Illegal_RACW_E_4_18;
+     PE_Non_Transportable_Actual;
 
    subtype RT_SE_Exceptions is RT_Exception_Code range
      SE_Empty_Storage_Pool ..
