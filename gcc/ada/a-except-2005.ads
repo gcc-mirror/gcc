@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -209,15 +209,6 @@ private
    --  private barrier, so we can place this function in the private part
    --  where the compiler can find it, but the spec is unchanged.)
 
-   procedure Local_Raise (Excep : Exception_Id);
-   pragma Export (Ada, Local_Raise);
-   --  This is a dummy routine, used only by the debugger for the purpose of
-   --  logging local raise statements that were transformed into a direct goto
-   --  to the handler code. The compiler in this case generates:
-   --
-   --    Local_Raise (exception_id);
-   --    goto Handler
-
    procedure Raise_Exception_Always (E : Exception_Id; Message : String := "");
    pragma No_Return (Raise_Exception_Always);
    pragma Export (Ada, Raise_Exception_Always, "__gnat_raise_exception");
@@ -244,6 +235,12 @@ private
    --  systems where the right way to get out of signal handler is to alter the
    --  PC value in the machine state or in some other way ask the operating
    --  system to return here rather than to the original location.
+
+   procedure Raise_From_Controlled_Operation
+     (X : Ada.Exceptions.Exception_Occurrence);
+   pragma No_Return (Raise_From_Controlled_Operation);
+   --  Raise Program_Error, proviving information about X (an exception
+   --  raised during a controlled operation) in the exception message.
 
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence);
    pragma No_Return (Reraise_Occurrence_Always);

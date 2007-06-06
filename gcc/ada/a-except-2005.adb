@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,7 @@ pragma Polling (Off);
 --  elaboration circularities with System.Exception_Tables.
 
 with System;                  use System;
+with System.Exceptions;       use System.Exceptions;
 with System.Standard_Library; use System.Standard_Library;
 with System.Soft_Links;       use System.Soft_Links;
 with System.WCh_Con;          use System.WCh_Con;
@@ -570,8 +571,8 @@ package body Ada.Exceptions is
    Rmsg_25 : constant String := "potentially blocking operation"   & NUL;
    Rmsg_26 : constant String := "stubbed subprogram called"        & NUL;
    Rmsg_27 : constant String := "unchecked union restriction"      & NUL;
-   Rmsg_28 : constant String := "illegal use of remote access-to-" &
-                                "class-wide type, see RM E.4(18)"  & NUL;
+   Rmsg_28 : constant String := "actual/returned class-wide value "
+                                & "not transportable"              & NUL;
    Rmsg_29 : constant String := "empty storage pool"               & NUL;
    Rmsg_30 : constant String := "explicit raise"                   & NUL;
    Rmsg_31 : constant String := "infinite recursion"               & NUL;
@@ -760,16 +761,6 @@ package body Ada.Exceptions is
    --  in case we do not want any exception tracing support. This is
    --  why this package is separated.
 
-   -----------------
-   -- Local_Raise --
-   -----------------
-
-   procedure Local_Raise (Excep : Exception_Id) is
-      pragma Warnings (Off, Excep);
-   begin
-      return;
-   end Local_Raise;
-
    -----------------------
    -- Stream Attributes --
    -----------------------
@@ -815,19 +806,28 @@ package body Ada.Exceptions is
       --  This is so the debugger can reliably inspect the parameter when
       --  inserting a breakpoint at the start of this procedure.
 
-      Id : Exception_Id := E;
+      --  To provide support for breakpoints on unhandled exceptions, the
+      --  debugger will also need to be able to inspect the value of E from
+      --  inner frames so we need to make sure that its value is also spilled
+      --  on stack.  We take the address and dereference using volatile local
+      --  objects for this purpose.
+
+      --  The pragma Warnings (Off) are needed because the compiler knows that
+      --  these locals are not referenced and that this use of pragma Volatile
+      --  is peculiar!
+
+      type EID_Access is access Exception_Id;
+
+      Access_To_E : EID_Access := E'Unrestricted_Access;
+      pragma Volatile (Access_To_E);
+      pragma Warnings (Off, Access_To_E);
+
+      Id : Exception_Id := Access_To_E.all;
       pragma Volatile (Id);
       pragma Warnings (Off, Id);
-      --  In order to provide support for breakpoints on unhandled exceptions,
-      --  the debugger will also need to be able to inspect the value of E from
-      --  another (inner) frame. So we need to make sure that if E is passed in
-      --  a register, its value is also spilled on stack. For this, we store
-      --  the parameter value in a local variable, and add a pragma Volatile to
-      --  make sure it is spilled. The pragma Warnings (Off) is needed because
-      --  the compiler knows that Id is not referenced and that this use of
-      --  pragma Volatile is peculiar!
 
    begin
+      Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E));
       Exception_Propagation.Propagate_Exception
         (E => E, From_Signal_Handler => False);
    end Raise_Current_Excep;
@@ -869,6 +869,46 @@ package body Ada.Exceptions is
       Abort_Defer.all;
       Raise_Current_Excep (E);
    end Raise_Exception_Always;
+
+   -------------------------------------
+   -- Raise_From_Controlled_Operation --
+   -------------------------------------
+
+   procedure Raise_From_Controlled_Operation
+     (X : Ada.Exceptions.Exception_Occurrence)
+   is
+      Prefix   : constant String := "adjust/finalize raised ";
+      Orig_Msg : constant String := Exception_Message (X);
+      New_Msg  : constant String := Prefix & Exception_Name (X);
+
+   begin
+      if Orig_Msg'Length >= Prefix'Length
+        and then
+          Orig_Msg (Orig_Msg'First .. Orig_Msg'First + Prefix'Length - 1) =
+                                                                     Prefix
+      then
+         --  Message already has proper prefix, just re-reraise PROGRAM_ERROR
+
+         Raise_Exception_No_Defer
+           (E       => Program_Error'Identity,
+            Message => Orig_Msg);
+
+      elsif Orig_Msg = "" then
+
+         --  No message present: just provide our own
+
+         Raise_Exception_No_Defer
+           (E       => Program_Error'Identity,
+            Message => New_Msg);
+
+      else
+         --  Message present, add informational prefix
+
+         Raise_Exception_No_Defer
+           (E       => Program_Error'Identity,
+            Message => New_Msg & ": " & Orig_Msg);
+      end if;
+   end Raise_From_Controlled_Operation;
 
    -------------------------------
    -- Raise_From_Signal_Handler --
