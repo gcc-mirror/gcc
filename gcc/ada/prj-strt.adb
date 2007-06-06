@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,7 +25,6 @@
 ------------------------------------------------------------------------------
 
 with Err_Vars; use Err_Vars;
-with Namet;    use Namet;
 with Prj.Attr; use Prj.Attr;
 with Prj.Err;  use Prj.Err;
 with Snames;
@@ -58,21 +57,23 @@ package body Prj.Strt is
      Choice_Node_Low_Bound;
 
    package Choices is
-      new Table.Table (Table_Component_Type => Choice_String,
-                       Table_Index_Type     => Choice_Node_Id,
-                       Table_Low_Bound      => First_Choice_Node_Id,
-                       Table_Initial        => Choices_Initial,
-                       Table_Increment      => Choices_Increment,
-                       Table_Name           => "Prj.Strt.Choices");
+     new Table.Table
+       (Table_Component_Type => Choice_String,
+        Table_Index_Type     => Choice_Node_Id'Base,
+        Table_Low_Bound      => First_Choice_Node_Id,
+        Table_Initial        => Choices_Initial,
+        Table_Increment      => Choices_Increment,
+        Table_Name           => "Prj.Strt.Choices");
    --  Used to store the case labels and check that there is no duplicate
 
    package Choice_Lasts is
-      new Table.Table (Table_Component_Type => Choice_Node_Id,
-                       Table_Index_Type     => Nat,
-                       Table_Low_Bound      => 1,
-                       Table_Initial        => 10,
-                       Table_Increment      => 100,
-                       Table_Name           => "Prj.Strt.Choice_Lasts");
+     new Table.Table
+       (Table_Component_Type => Choice_Node_Id,
+        Table_Index_Type     => Nat,
+        Table_Low_Bound      => 1,
+        Table_Initial        => 10,
+        Table_Increment      => 100,
+        Table_Name           => "Prj.Strt.Choice_Lasts");
    --  Used to store the indices of the choices in table Choices,
    --  to distinguish nested case constructions.
 
@@ -87,12 +88,13 @@ package body Prj.Strt is
    --  Store the identifier and the location of a simple name
 
    package Names is
-      new Table.Table (Table_Component_Type => Name_Location,
-                       Table_Index_Type     => Nat,
-                       Table_Low_Bound      => 1,
-                       Table_Initial        => 10,
-                       Table_Increment      => 100,
-                       Table_Name           => "Prj.Strt.Names");
+     new Table.Table
+       (Table_Component_Type => Name_Location,
+        Table_Index_Type     => Nat,
+        Table_Low_Bound      => 1,
+        Table_Initial        => 10,
+        Table_Increment      => 100,
+        Table_Name           => "Prj.Strt.Names");
    --  Used to accumulate the single names of a name
 
    procedure Add (This_String : Name_Id);
@@ -193,7 +195,7 @@ package body Prj.Strt is
 
          if Current_Attribute = Empty_Attribute then
             Error_Msg_Name_1 := Token_Name;
-            Error_Msg ("unknown attribute %", Token_Ptr);
+            Error_Msg ("unknown attribute %%", Token_Ptr);
             Reference := Empty_Node;
 
             --  Scan past the attribute name
@@ -293,7 +295,7 @@ package body Prj.Strt is
 
          if Non_Used = 1 then
             Error_Msg_Name_1 := Choices.Table (First_Non_Used).The_String;
-            Error_Msg ("?value { is not used as label", Case_Location);
+            Error_Msg ("?value %% is not used as label", Case_Location);
 
          --  If several are not used, report a warning for each one of them
 
@@ -305,7 +307,7 @@ package body Prj.Strt is
             for Choice in First_Non_Used .. Choices.Last loop
                if not Choices.Table (Choice).Already_Used then
                   Error_Msg_Name_1 := Choices.Table (Choice).The_String;
-                  Error_Msg ("\?{", Case_Location);
+                  Error_Msg ("\?%%", Case_Location);
                end if;
             end loop;
          end if;
@@ -484,7 +486,7 @@ package body Prj.Strt is
                   --  case construction; report an error.
 
                   Error_Msg_Name_1 := Choice_String;
-                  Error_Msg ("duplicate case label {", Token_Ptr);
+                  Error_Msg ("duplicate case label %%", Token_Ptr);
                else
                   Choices.Table (Choice).Already_Used := True;
                end if;
@@ -497,7 +499,7 @@ package body Prj.Strt is
 
          if not Found then
             Error_Msg_Name_1 := Choice_String;
-            Error_Msg ("illegal case label {", Token_Ptr);
+            Error_Msg ("illegal case label %%", Token_Ptr);
          end if;
 
          --  Scan past the label
@@ -607,7 +609,7 @@ package body Prj.Strt is
                   --  This is a repetition, report an error
 
                   Error_Msg_Name_1 := String_Value;
-                  Error_Msg ("duplicate value { in type", Token_Ptr);
+                  Error_Msg ("duplicate value %% in type", Token_Ptr);
                   exit;
                end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,8 +35,9 @@
 --  information. It contains the routine to load subsidiary units.
 
 with Alloc;
+with Namet; use Namet;
 with Table;
-with Types;  use Types;
+with Types; use Types;
 
 package Lib is
 
@@ -562,6 +563,9 @@ package Lib is
    procedure Lock;
    --  Lock internal tables before calling back end
 
+   procedure Unlock;
+   --  Unlock internal tables, in cases where the back end needs to modify them
+
    procedure Tree_Read;
    --  Initializes internal tables from current tree file using the relevant
    --  Table.Tree_Read routines.
@@ -658,17 +662,45 @@ private
       Cunit            : Node_Id;
       Cunit_Entity     : Entity_Id;
       Dependency_Num   : Int;
-      Fatal_Error      : Boolean;
-      Generate_Code    : Boolean;
-      Has_RACW         : Boolean;
       Ident_String     : Node_Id;
-      Loading          : Boolean;
       Main_Priority    : Int;
       Serial_Number    : Nat;
       Version          : Word;
-      Dynamic_Elab     : Boolean;
       Error_Location   : Source_Ptr;
+      Fatal_Error      : Boolean;
+      Generate_Code    : Boolean;
+      Has_RACW         : Boolean;
+      Dynamic_Elab     : Boolean;
+      Loading          : Boolean;
    end record;
+
+   --  The following representation clause ensures that the above record
+   --  has no holes. We do this so that when instances of this record are
+   --  written by Tree_Gen, we do not write uninitialized values to the file.
+
+   for Unit_Record use record
+      Unit_File_Name   at  0 range 0 .. 31;
+      Unit_Name        at  4 range 0 .. 31;
+      Munit_Index      at  8 range 0 .. 31;
+      Expected_Unit    at 12 range 0 .. 31;
+      Source_Index     at 16 range 0 .. 31;
+      Cunit            at 20 range 0 .. 31;
+      Cunit_Entity     at 24 range 0 .. 31;
+      Dependency_Num   at 28 range 0 .. 31;
+      Ident_String     at 32 range 0 .. 31;
+      Main_Priority    at 36 range 0 .. 31;
+      Serial_Number    at 40 range 0 .. 31;
+      Version          at 44 range 0 .. 31;
+      Error_Location   at 48 range 0 .. 31;
+      Fatal_Error      at 52 range 0 ..  7;
+      Generate_Code    at 53 range 0 ..  7;
+      Has_RACW         at 54 range 0 ..  7;
+      Dynamic_Elab     at 55 range 0 ..  7;
+      Loading          at 56 range 0 .. 31;
+   end record;
+
+   for Unit_Record'Size use 60 * 8;
+   --  This ensures that we did not leave out any fields
 
    package Units is new Table.Table (
      Table_Component_Type => Unit_Record,
@@ -740,7 +772,7 @@ private
 
    package Load_Stack is new Table.Table (
      Table_Component_Type => Load_Stack_Entry,
-     Table_Index_Type     => Nat,
+     Table_Index_Type     => Int,
      Table_Low_Bound      => 0,
      Table_Initial        => Alloc.Load_Stack_Initial,
      Table_Increment      => Alloc.Load_Stack_Increment,

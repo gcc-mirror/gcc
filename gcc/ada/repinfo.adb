@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,9 +63,8 @@ package body Repinfo is
    -- Representation of gcc Expressions --
    ---------------------------------------
 
-   --    This table is used only if Frontend_Layout_On_Target is False, so that
-   --    gigi lays out dynamic size/offset fields using encoded gcc
-   --    expressions.
+   --    This table is used only if Frontend_Layout_On_Target is False, so gigi
+   --    lays out dynamic size/offset fields using encoded gcc expressions.
 
    --    A table internal to this unit is used to hold the values of back
    --    annotated expressions. This table is written out by -gnatt and read
@@ -80,6 +79,20 @@ package body Repinfo is
       Op2  : Node_Ref_Or_Val;
       Op3  : Node_Ref_Or_Val;
    end record;
+
+   --  The following representation clause ensures that the above record
+   --  has no holes. We do this so that when instances of this record are
+   --  written by Tree_Gen, we do not write uninitialized values to the file.
+
+   for Exp_Node use record
+      Expr at  0 range 0 .. 31;
+      Op1  at  4 range 0 .. 31;
+      Op2  at  8 range 0 .. 31;
+      Op3  at 12 range 0 .. 31;
+   end record;
+
+   for Exp_Node'Size use 16 * 8;
+   --  This ensures that we did not leave out any fields
 
    package Rep_Table is new Table.Table (
       Table_Component_Type => Exp_Node,
@@ -672,6 +685,7 @@ package body Repinfo is
          when Convention_Protected => Write_Line ("Protected");
          when Convention_Assembler => Write_Line ("Assembler");
          when Convention_C         => Write_Line ("C");
+         when Convention_CIL       => Write_Line ("CIL");
          when Convention_COBOL     => Write_Line ("COBOL");
          when Convention_CPP       => Write_Line ("C++");
          when Convention_Fortran   => Write_Line ("Fortran");
@@ -782,7 +796,7 @@ package body Repinfo is
       --  length, for the purpose of lining things up nicely.
 
       Max_Name_Length := 0;
-      Max_Suni_Length   := 0;
+      Max_Suni_Length := 0;
 
       Comp := First_Component_Or_Discriminant (Ent);
       while Present (Comp) loop
@@ -983,7 +997,7 @@ package body Repinfo is
 
                else
                   Create_Repinfo_File_Access.all
-                    (File_Name (Source_Index (U)));
+                    (Get_Name_String (File_Name (Source_Index (U))));
                   Set_Special_Output (Write_Info_Line'Access);
                   List_Entities (Cunit_Entity (U));
                   Set_Special_Output (null);

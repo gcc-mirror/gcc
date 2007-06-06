@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,6 @@ pragma Style_Checks (All_Checks);
 --  Subprograms not all in alpha order
 
 with Debug;    use Debug;
-with Namet;    use Namet;
 with Opt;      use Opt;
 with Output;   use Output;
 with Tree_IO;  use Tree_IO;
@@ -575,8 +574,8 @@ package body Sinput is
    --------------------------------
 
    procedure Register_Source_Ref_Pragma
-     (File_Name          : Name_Id;
-      Stripped_File_Name : Name_Id;
+     (File_Name          : File_Name_Type;
+      Stripped_File_Name : File_Name_Type;
       Mapped_Line        : Nat;
       Line_After_Pragma  : Physical_Line_Number)
    is
@@ -587,7 +586,7 @@ package body Sinput is
       ML : Logical_Line_Number;
 
    begin
-      if File_Name /= No_Name then
+      if File_Name /= No_File then
          SFR.Reference_Name := Stripped_File_Name;
          SFR.Full_Ref_Name  := File_Name;
 
@@ -1201,6 +1200,16 @@ package body Sinput is
             (Max * (Lines_Table_Type'Component_Size / System.Storage_Unit))));
       Source_File.Table (S).Lines_Table_Max := Physical_Line_Number (Max);
    end Trim_Lines_Table;
+
+   ------------
+   -- Unlock --
+   ------------
+
+   procedure Unlock is
+   begin
+      Source_File.Locked := False;
+      Source_File.Release;
+   end Unlock;
 
    --------
    -- wl --

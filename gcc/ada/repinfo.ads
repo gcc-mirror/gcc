@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -182,10 +182,10 @@ package Repinfo is
       Op1  : Node_Ref_Or_Val;
       Op2  : Node_Ref_Or_Val := No_Uint;
       Op3  : Node_Ref_Or_Val := No_Uint) return Node_Ref;
-   --  Creates a node with using the tree code defined by Expr and from
-   --  1-3 operands as required (unused operands set as shown to No_Uint)
-   --  Note that this call can be used to create a discriminant reference
-   --  by using (Expr => Discrim_Val, Op1 => discriminant_number).
+   --  Creates a node using the tree code defined by Expr and from one to three
+   --  operands as required (unused operands set as shown to No_Uint) Note that
+   --  this call can be used to create a discriminant reference by using (Expr
+   --  => Discrim_Val, Op1 => discriminant_number).
 
    function Create_Discrim_Ref (Discr : Entity_Id) return Node_Ref;
    --  Creates a refrerence to the discriminant whose entity is Discr
