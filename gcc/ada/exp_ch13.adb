@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,12 +27,12 @@
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
-with Exp_Atag; use Exp_Atag;
 with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Imgv; use Exp_Imgv;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
+with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Rtsfind;  use Rtsfind;
@@ -44,16 +44,10 @@ with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
-with Stringt;  use Stringt;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
 package body Exp_Ch13 is
-
-   procedure Expand_External_Tag_Definition (N : Node_Id);
-   --  The code to assign and register an external tag must be elaborated
-   --  after the dispatch table has been created, so the expansion of the
-   --  attribute definition node is delayed until after the type is frozen.
 
    ------------------------------------------
    -- Expand_N_Attribute_Definition_Clause --
@@ -89,17 +83,33 @@ package body Exp_Ch13 is
             --  inappropriate for variable to which an address clause is
             --  applied. The expression may itself have been rewritten if the
             --  type is packed array, so we need to examine whether the
-            --  original node is in the source.
+            --  original node is in the source. An exception though is the case
+            --  of an access variable which is default initialized to null, and
+            --  such initialization is retained.
+            --  Furthermore, if the initialization is the  equivalent aggregate
+            --  of the type initialization procedure, it replaces an implicit
+            --  call to the init proc, and must be respected. Note that for
+            --  packed types we do not build equivalent aggregates.
 
             declare
                Decl : constant Node_Id := Declaration_Node (Ent);
+               Typ  : constant Entity_Id := Etype (Ent);
+
             begin
                if Nkind (Decl) = N_Object_Declaration
                   and then Present (Expression (Decl))
+                  and then Nkind (Expression (Decl)) /= N_Null
                   and then
                    not Comes_From_Source (Original_Node (Expression (Decl)))
                then
-                  Set_Expression (Decl, Empty);
+                  if Present (Base_Init_Proc (Typ))
+                    and then
+                      Present (Static_Initialization (Base_Init_Proc (Typ)))
+                  then
+                     null;
+                  else
+                     Set_Expression (Decl, Empty);
+                  end if;
                end if;
             end;
 
@@ -159,77 +169,7 @@ package body Exp_Ch13 is
             null;
 
       end case;
-
    end Expand_N_Attribute_Definition_Clause;
-
-   -------------------------------------
-   -- Expand_External_Tag_Definition --
-   -------------------------------------
-
-   procedure Expand_External_Tag_Definition (N : Node_Id) is
-      Loc     : constant Source_Ptr := Sloc (N);
-      Ent     : constant Entity_Id  := Entity (Name (N));
-      Old_Val : constant String_Id  := Strval (Expr_Value_S (Expression (N)));
-      New_Val : String_Id;
-      E       : Entity_Id;
-
-   begin
-      --  For the rep clause "for x'external_tag use y" generate:
-
-      --     xV : constant string := y;
-      --     Set_External_Tag (x'tag, xV'Address);
-      --     Register_Tag (x'tag);
-
-      --  note that register_tag has been delayed up to now because
-      --  the external_tag must be set before registering.
-
-      --  Create a new nul terminated string if it is not already
-
-      if String_Length (Old_Val) > 0
-        and then Get_String_Char (Old_Val, String_Length (Old_Val)) = 0
-      then
-         New_Val := Old_Val;
-      else
-         Start_String (Old_Val);
-         Store_String_Char (Get_Char_Code (ASCII.NUL));
-         New_Val := End_String;
-      end if;
-
-      E :=
-        Make_Defining_Identifier (Loc,
-          New_External_Name (Chars (Ent), 'A'));
-
-      --  The generated actions must be elaborated at the subsequent
-      --  freeze point, not at the point of the attribute definition.
-
-      Append_Freeze_Action (Ent,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => E,
-          Constant_Present    => True,
-          Object_Definition   =>
-            New_Reference_To (Standard_String, Loc),
-          Expression          =>
-            Make_String_Literal (Loc, Strval => New_Val)));
-
-      Append_Freeze_Actions (Ent, New_List (
-
-        Build_Set_External_Tag (Loc,
-          Tag_Node =>
-            Make_Attribute_Reference (Loc,
-              Attribute_Name => Name_Tag,
-              Prefix         => New_Occurrence_Of (Ent, Loc)),
-          Value_Node =>
-            Make_Attribute_Reference (Loc,
-              Attribute_Name => Name_Address,
-              Prefix         => New_Occurrence_Of (E, Loc))),
-
-        Make_Procedure_Call_Statement (Loc,
-          Name => New_Reference_To (RTE (RE_Register_Tag), Loc),
-          Parameter_Associations => New_List (
-            Make_Attribute_Reference (Loc,
-              Attribute_Name => Name_Tag,
-              Prefix         => New_Occurrence_Of (Ent, Loc))))));
-   end Expand_External_Tag_Definition;
 
    ----------------------------
    -- Expand_N_Freeze_Entity --
@@ -295,7 +235,7 @@ package body Exp_Ch13 is
       --  visibility before freezing the entity and related subprograms.
 
       if In_Other_Scope then
-         New_Scope (E_Scope);
+         Push_Scope (E_Scope);
          Install_Visible_Declarations (E_Scope);
 
          if Ekind (E_Scope) = E_Package         or else
@@ -312,7 +252,7 @@ package body Exp_Ch13 is
       --  can properly override any corresponding inherited operations.
 
       elsif In_Outer_Scope then
-         New_Scope (E_Scope);
+         Push_Scope (E_Scope);
       end if;
 
       --  If type, freeze the type
@@ -324,25 +264,6 @@ package body Exp_Ch13 is
 
          if Is_Enumeration_Type (E) then
             Build_Enumeration_Image_Tables (E, N);
-
-         elsif Is_Tagged_Type (E)
-           and then Is_First_Subtype (E)
-         then
-            --  Check for a definition of External_Tag, whose expansion must
-            --  be delayed until the dispatch table is built. The clause
-            --  is considered only if it applies to this specific tagged
-            --  type, as opposed to one of its ancestors.
-
-            declare
-               Def : constant Node_Id :=
-                       Get_Attribute_Definition_Clause
-                         (E, Attribute_External_Tag);
-
-            begin
-               if Present (Def) and then Entity (Name (Def)) = E then
-                  Expand_External_Tag_Definition (Def);
-               end if;
-            end;
          end if;
 
       --  If subprogram, freeze the subprogram
@@ -384,7 +305,7 @@ package body Exp_Ch13 is
               and then Present (Corresponding_Spec (Decl))
               and then Scope (Corresponding_Spec (Decl)) /= Current_Scope
             then
-               New_Scope (Scope (Corresponding_Spec (Decl)));
+               Push_Scope (Scope (Corresponding_Spec (Decl)));
                Analyze (Decl, Suppress => All_Checks);
                Pop_Scope;
 
