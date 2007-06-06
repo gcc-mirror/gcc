@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,7 @@ with Validsw;  use Validsw;
 with Sem_Warn; use Sem_Warn;
 with Stylesw;  use Stylesw;
 
-with GNAT.OS_Lib; use GNAT.OS_Lib;
+with System.OS_Lib; use System.OS_Lib;
 
 with System.WCh_Con; use System.WCh_Con;
 
@@ -110,11 +110,13 @@ package body Switch.C is
                Add_Src_Search_Dir (Switch_Chars (Ptr .. Max));
             end if;
 
-         --  Processing of the --RTS switch. --RTS has been modified by
-         --  gcc and is now of the form -fRTS.
+         --  Processing of the --RTS switch. --RTS may have been modified by
+         --  gcc into -fRTS (for GCC targets).
 
          elsif Ptr + 3 <= Max
-           and then Switch_Chars (Ptr .. Ptr + 3) = "fRTS"
+           and then (Switch_Chars (Ptr .. Ptr + 3) = "fRTS"
+                       or else
+                     Switch_Chars (Ptr .. Ptr + 3) = "-RTS")
          then
             Ptr := Ptr + 1;
 
@@ -127,8 +129,7 @@ package body Switch.C is
                --  it is not the first time, the same path has been specified.
 
                if RTS_Specified = null then
-                  RTS_Specified :=
-                    new String'(Switch_Chars (Ptr + 4 .. Max));
+                  RTS_Specified := new String'(Switch_Chars (Ptr + 4 .. Max));
 
                elsif
                  RTS_Specified.all /= Switch_Chars (Ptr + 4 .. Max)
@@ -469,7 +470,7 @@ package body Switch.C is
                Ada_Version := Ada_05;
                Ada_Version_Explicit := Ada_Version;
 
-               --  Set default warnings for -gnatg (same set as -gnatwa)
+               --  Set default warnings for -gnatg
 
                Check_Unreferenced           := True;
                Check_Unreferenced_Formals   := True;
@@ -483,12 +484,13 @@ package body Switch.C is
                Warn_On_Export_Import        := True;
                Warn_On_Modified_Unread      := True;
                Warn_On_No_Value_Assigned    := True;
+               Warn_On_Non_Local_Exception  := False;
                Warn_On_Obsolescent_Feature  := True;
                Warn_On_Redundant_Constructs := True;
                Warn_On_Unchecked_Conversion := True;
                Warn_On_Unrecognized_Pragma  := True;
 
-               Set_Style_Check_Options ("3aAbcdefhiklmnprstux");
+               Set_GNAT_Style_Check_Options;
 
             --  Processing for G switch
 

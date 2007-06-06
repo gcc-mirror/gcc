@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -160,6 +160,16 @@ package body Stylesw is
       Set_Style_Check_Options ("3aAbcefhiklmnprst");
    end Set_Default_Style_Check_Options;
 
+   ----------------------------------
+   -- Set_GNAT_Style_Check_Options --
+   ----------------------------------
+
+   procedure Set_GNAT_Style_Check_Options is
+   begin
+      Reset_Style_Check_Options;
+      Set_Style_Check_Options ("3aAbcdefhiklmnprstux");
+   end Set_GNAT_Style_Check_Options;
+
    -----------------------------
    -- Set_Style_Check_Options --
    -----------------------------
@@ -249,6 +259,9 @@ package body Stylesw is
 
             when 'f' =>
                Style_Check_Form_Feeds            := True;
+
+            when 'g' =>
+               Set_GNAT_Style_Check_Options;
 
             when 'h' =>
                Style_Check_Horizontal_Tabs       := True;
@@ -360,8 +373,8 @@ package body Stylesw is
 
             when others =>
                Err_Col := Err_Col - 1;
-               Style_Msg_Buf (1 .. 21) := "invalid style switch:";
-               Style_Msg_Len := 22;
+               Style_Msg_Buf (1 .. 22) := "invalid style switch: ";
+               Style_Msg_Len := 23;
                Style_Msg_Buf (Style_Msg_Len) := C;
                OK := False;
                return;
