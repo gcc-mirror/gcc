@@ -243,8 +243,6 @@ private
 
    for List'Write use Write;
 
-   Empty_List : constant List := (Controlled with null, null, 0, 0, 0);
-
    type List_Access is access constant List;
    for List_Access'Storage_Size use 0;
 
@@ -265,6 +263,8 @@ private
       Item   : Cursor);
 
    for Cursor'Write use Write;
+
+   Empty_List : constant List := (Controlled with null, null, 0, 0, 0);
 
    No_Element : constant Cursor := Cursor'(null, null);
 
