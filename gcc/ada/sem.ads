@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -210,11 +210,6 @@ package Sem is
    -- Semantic Analysis Flags --
    -----------------------------
 
-   Explicit_Overriding : Boolean := False;
-   --  Switch to indicate whether checking mechanism described in AI-218
-   --  is enforced: subprograms that override inherited operations must be
-   --  be marked explicitly, to prevent accidental or omitted overriding.
-
    Full_Analysis : Boolean := True;
    --  Switch to indicate whether we are doing a full analysis or a
    --  pre-analysis. In normal analysis mode (Analysis-Expansion for
@@ -395,7 +390,7 @@ package Sem is
    --  There are two kinds of suppress checks: scope based suppress checks,
    --  and entity based suppress checks.
 
-   --  Scope based suppress chems (from initial command line arguments,
+   --  Scope based suppress checks (from initial command line arguments,
    --  or from Suppress pragmas not including an entity name) are recorded
    --  in the Sem.Supress variable, and all that is necessary is to save the
    --  state of this variable on scope entry, and restore it on scope exit.

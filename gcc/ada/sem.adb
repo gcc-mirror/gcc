@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -539,9 +539,6 @@ package body Sem is
          when N_With_Clause =>
             Analyze_With_Clause (N);
 
-         when N_With_Type_Clause =>
-            Analyze_With_Type_Clause (N);
-
          --  A call to analyze the Empty node is an error, but most likely
          --  it is an error caused by an attempt to analyze a malformed
          --  piece of tree caused by some other error, so if there have
@@ -556,6 +553,13 @@ package body Sem is
          --  causing cascaded errors (happens of course only in error cases)
 
          when N_Error =>
+            null;
+
+         --  Push/Pop nodes normally don't come through an analyze call. An
+         --  exception is the dummy ones bracketing a subprogram body. In any
+         --  case there is nothing to be done to analyze such nodes.
+
+         when N_Push_Pop_xxx_Label =>
             null;
 
          --  For the remaining node types, we generate compiler abort, because
@@ -610,12 +614,6 @@ package body Sem is
            N_Mod_Clause                             |
            N_Modular_Type_Definition                |
            N_Ordinary_Fixed_Point_Definition        |
-           N_Pop_Constraint_Error_Label             |
-           N_Pop_Program_Error_Label                |
-           N_Pop_Storage_Error_Label                |
-           N_Push_Constraint_Error_Label            |
-           N_Push_Program_Error_Label               |
-           N_Push_Storage_Error_Label               |
            N_Parameter_Specification                |
            N_Pragma_Argument_Association            |
            N_Procedure_Specification                |
@@ -1220,6 +1218,7 @@ package body Sem is
       S_Outer_Gen_Scope  : constant Entity_Id        := Outer_Generic_Scope;
       S_Sem_Unit         : constant Unit_Number_Type := Current_Sem_Unit;
       S_GNAT_Mode        : constant Boolean          := GNAT_Mode;
+      S_Discard_Names    : constant Boolean          := Global_Discard_Names;
       Generic_Main       : constant Boolean :=
                              Nkind (Unit (Cunit (Main_Unit)))
                                in N_Generic_Declaration;
@@ -1242,7 +1241,7 @@ package body Sem is
       procedure Do_Analyze is
       begin
          Save_Scope_Stack;
-         New_Scope (Standard_Standard);
+         Push_Scope (Standard_Standard);
          Scope_Suppress := Suppress_Options;
          Scope_Stack.Table
            (Scope_Stack.Last).Component_Alignment_Default := Calign_Default;
@@ -1333,6 +1332,7 @@ package body Sem is
       New_Nodes_OK           := S_New_Nodes_OK;
       Outer_Generic_Scope    := S_Outer_Gen_Scope;
       GNAT_Mode              := S_GNAT_Mode;
+      Global_Discard_Names   := S_Discard_Names;
 
       Restore_Opt_Config_Switches (Save_Config_Switches);
       Expander_Mode_Restore;
