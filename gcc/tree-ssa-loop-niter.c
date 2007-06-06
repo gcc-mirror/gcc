@@ -44,7 +44,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-inline.h"
 #include "gmp.h"
 
-#define SWAP(X, Y) do { void *tmp = (X); (X) = (Y); (Y) = tmp; } while (0)
+#define SWAP(X, Y) do { affine_iv *tmp = (X); (X) = (Y); (Y) = tmp; } while (0)
 
 /* The maximum number of dominator BBs we search for conditions
    of loop header copies we use for simplifying a conditional
@@ -1324,7 +1324,7 @@ number_of_iterations_cond (struct loop *loop,
 /* Substitute NEW for OLD in EXPR and fold the result.  */
 
 static tree
-simplify_replace_tree (tree expr, tree old, tree new)
+simplify_replace_tree (tree expr, tree old, tree new_tree)
 {
   unsigned i, n;
   tree ret = NULL_TREE, e, se;
@@ -1334,7 +1334,7 @@ simplify_replace_tree (tree expr, tree old, tree new)
 
   if (expr == old
       || operand_equal_p (expr, old, 0))
-    return unshare_expr (new);
+    return unshare_expr (new_tree);
 
   if (!EXPR_P (expr) && !GIMPLE_STMT_P (expr))
     return expr;
@@ -1343,7 +1343,7 @@ simplify_replace_tree (tree expr, tree old, tree new)
   for (i = 0; i < n; i++)
     {
       e = TREE_OPERAND (expr, i);
-      se = simplify_replace_tree (e, old, new);
+      se = simplify_replace_tree (e, old, new_tree);
       if (e == se)
 	continue;
 
@@ -2509,7 +2509,7 @@ struct ilb_data
 static bool
 idx_infer_loop_bounds (tree base, tree *idx, void *dta)
 {
-  struct ilb_data *data = dta;
+  struct ilb_data *data = (struct ilb_data *) dta;
   tree ev, init, step;
   tree low, high, type, next;
   bool sign, upper = data->reliable, at_end = false;

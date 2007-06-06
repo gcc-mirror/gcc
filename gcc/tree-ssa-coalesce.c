@@ -260,7 +260,7 @@ find_coalesce_pair (coalesce_list_p cl, int p1, int p2, bool create)
   if (create && !pair)
     {
       gcc_assert (cl->sorted == NULL);
-      pair = xmalloc (sizeof (struct coalesce_pair));
+      pair = XNEW (struct coalesce_pair);
       pair->first_element = p.first_element;
       pair->second_element = p.second_element;
       pair->cost = 0;
@@ -276,7 +276,7 @@ add_cost_one_coalesce (coalesce_list_p cl, int p1, int p2)
 {
   cost_one_pair_p pair;
 
-  pair = xmalloc (sizeof (struct cost_one_pair_d));
+  pair = XNEW (struct cost_one_pair_d);
   pair->first_element = p1;
   pair->second_element = p2;
   pair->next = cl->cost_one_list;

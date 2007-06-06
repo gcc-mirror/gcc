@@ -151,7 +151,7 @@ occ_new (basic_block bb, struct occurrence *children)
 {
   struct occurrence *occ;
 
-  occ = bb->aux = pool_alloc (occ_pool);
+  bb->aux = occ = (struct occurrence *) pool_alloc (occ_pool);
   memset (occ, 0, sizeof (struct occurrence));
 
   occ->bb = bb;

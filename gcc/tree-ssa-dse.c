@@ -168,7 +168,8 @@ dse_initialize_block_local_data (struct dom_walk_data *walk_data,
 				 bool recycled)
 {
   struct dse_block_local_data *bd
-    = VEC_last (void_p, walk_data->block_data_stack);
+    = (struct dse_block_local_data *)
+	VEC_last (void_p, walk_data->block_data_stack);
 
   /* If we are given a recycled block local data structure, ensure any
      bitmap associated with the block is cleared.  */
@@ -190,7 +191,7 @@ static tree
 memory_ssa_name_same (tree *expr_p, int *walk_subtrees ATTRIBUTE_UNUSED,
 		      void *data)
 {
-  struct address_walk_data *walk_data = data;
+  struct address_walk_data *walk_data = (struct address_walk_data *) data;
   tree expr = *expr_p;
   tree def_stmt;
   basic_block def_bb;
@@ -615,8 +616,10 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 		   block_stmt_iterator bsi)
 {
   struct dse_block_local_data *bd
-    = VEC_last (void_p, walk_data->block_data_stack);
-  struct dse_global_data *dse_gd = walk_data->global_data;
+    = (struct dse_block_local_data *)
+	VEC_last (void_p, walk_data->block_data_stack);
+  struct dse_global_data *dse_gd
+    = (struct dse_global_data *) walk_data->global_data;
   tree stmt = bsi_stmt (bsi);
   stmt_ann_t ann = stmt_ann (stmt);
 
@@ -722,8 +725,10 @@ static void
 dse_record_phis (struct dom_walk_data *walk_data, basic_block bb)
 {
   struct dse_block_local_data *bd
-    = VEC_last (void_p, walk_data->block_data_stack);
-  struct dse_global_data *dse_gd = walk_data->global_data;
+    = (struct dse_block_local_data *)
+	VEC_last (void_p, walk_data->block_data_stack);
+  struct dse_global_data *dse_gd
+    = (struct dse_global_data *) walk_data->global_data;
   tree phi;
 
   for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
@@ -738,8 +743,10 @@ dse_finalize_block (struct dom_walk_data *walk_data,
 		    basic_block bb ATTRIBUTE_UNUSED)
 {
   struct dse_block_local_data *bd
-    = VEC_last (void_p, walk_data->block_data_stack);
-  struct dse_global_data *dse_gd = walk_data->global_data;
+    = (struct dse_block_local_data *)
+	VEC_last (void_p, walk_data->block_data_stack);
+  struct dse_global_data *dse_gd
+    = (struct dse_global_data *) walk_data->global_data;
   bitmap stores = dse_gd->stores;
   unsigned int i;
   bitmap_iterator bi;

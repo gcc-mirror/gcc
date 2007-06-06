@@ -328,7 +328,8 @@ heapvar_lookup (tree from)
   struct tree_map *h, in;
   in.base.from = from;
 
-  h = htab_find_with_hash (heapvar_for_stmt, &in, htab_hash_pointer (from));
+  h = (struct tree_map *) htab_find_with_hash (heapvar_for_stmt, &in,
+					       htab_hash_pointer (from));
   if (h)
     return h->to;
   return NULL_TREE;
@@ -343,7 +344,7 @@ heapvar_insert (tree from, tree to)
   struct tree_map *h;
   void **loc;
 
-  h = ggc_alloc (sizeof (struct tree_map));
+  h = GGC_NEW (struct tree_map);
   h->hash = htab_hash_pointer (from);
   h->base.from = from;
   h->to = to;
@@ -357,7 +358,7 @@ heapvar_insert (tree from, tree to)
 static varinfo_t
 new_var_info (tree t, unsigned int id, const char *name)
 {
-  varinfo_t ret = pool_alloc (variable_info_pool);
+  varinfo_t ret = (varinfo_t) pool_alloc (variable_info_pool);
 
   ret->id = id;
   ret->name = name;
@@ -513,7 +514,7 @@ static constraint_t
 new_constraint (const struct constraint_expr lhs,
 		const struct constraint_expr rhs)
 {
-  constraint_t ret = pool_alloc (constraint_pool);
+  constraint_t ret = (constraint_t) pool_alloc (constraint_pool);
   ret->lhs = lhs;
   ret->rhs = rhs;
   return ret;
@@ -4762,7 +4763,7 @@ remove_preds_and_fake_succs (constraint_graph_t graph)
   /* Now reallocate the size of the successor list as, and blow away
      the predecessor bitmaps.  */
   graph->size = VEC_length (varinfo_t, varmap);
-  graph->succs = xrealloc (graph->succs, graph->size * sizeof (bitmap));
+  graph->succs = XRESIZEVEC (bitmap, graph->succs, graph->size);
 
   free (graph->implicit_preds);
   graph->implicit_preds = NULL;

@@ -799,7 +799,7 @@ var_ann_hash (const void *item)
 void
 init_tree_ssa (void)
 {
-  cfun->gimple_df = ggc_alloc_cleared (sizeof (struct gimple_df));
+  cfun->gimple_df = GGC_CNEW (struct gimple_df);
   cfun->gimple_df->referenced_vars = htab_create_ggc (20, int_tree_map_hash, 
 				     		      int_tree_map_eq, NULL);
   cfun->gimple_df->default_defs = htab_create_ggc (20, int_tree_map_hash, 

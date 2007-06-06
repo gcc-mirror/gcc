@@ -330,7 +330,7 @@ outermost_invariant_loop (tree def, struct loop *loop)
 static struct loop *
 outermost_invariant_loop_expr (tree expr, struct loop *loop)
 {
-  enum tree_code_class class = TREE_CODE_CLASS (TREE_CODE (expr));
+  enum tree_code_class codeclass = TREE_CODE_CLASS (TREE_CODE (expr));
   unsigned i, nops;
   struct loop *max_loop = superloop_at_depth (loop, 1), *aloop;
 
@@ -339,11 +339,11 @@ outermost_invariant_loop_expr (tree expr, struct loop *loop)
       || is_gimple_min_invariant (expr))
     return outermost_invariant_loop (expr, loop);
 
-  if (class != tcc_unary
-      && class != tcc_binary
-      && class != tcc_expression
-      && class != tcc_vl_exp
-      && class != tcc_comparison)
+  if (codeclass != tcc_unary
+      && codeclass != tcc_binary
+      && codeclass != tcc_expression
+      && codeclass != tcc_vl_exp
+      && codeclass != tcc_comparison)
     return NULL;
 
   nops = TREE_OPERAND_LENGTH (expr);
@@ -883,7 +883,7 @@ move_computations (void)
 static bool
 may_move_till (tree ref, tree *index, void *data)
 {
-  struct loop *loop = data, *max_loop;
+  struct loop *loop = (struct loop*) data, *max_loop;
 
   /* If REF is an array reference, check also that the step and the lower
      bound is invariant in LOOP.  */
@@ -914,7 +914,7 @@ may_move_till (tree ref, tree *index, void *data)
 static void
 force_move_till_expr (tree expr, struct loop *orig_loop, struct loop *loop)
 {
-  enum tree_code_class class = TREE_CODE_CLASS (TREE_CODE (expr));
+  enum tree_code_class codeclass = TREE_CODE_CLASS (TREE_CODE (expr));
   unsigned i, nops;
 
   if (TREE_CODE (expr) == SSA_NAME)
@@ -927,11 +927,11 @@ force_move_till_expr (tree expr, struct loop *orig_loop, struct loop *loop)
       return;
     }
 
-  if (class != tcc_unary
-      && class != tcc_binary
-      && class != tcc_expression
-      && class != tcc_vl_exp
-      && class != tcc_comparison)
+  if (codeclass != tcc_unary
+      && codeclass != tcc_binary
+      && codeclass != tcc_expression
+      && codeclass != tcc_vl_exp
+      && codeclass != tcc_comparison)
     return;
 
   nops = TREE_OPERAND_LENGTH (expr);
@@ -953,7 +953,7 @@ static bool
 force_move_till (tree ref, tree *index, void *data)
 {
   tree stmt;
-  struct fmt_data *fmt_data = data;
+  struct fmt_data *fmt_data = (struct fmt_data *) data;
 
   if (TREE_CODE (ref) == ARRAY_REF)
     {
@@ -1285,9 +1285,7 @@ loop_suitable_for_sm (struct loop *loop ATTRIBUTE_UNUSED,
 static hashval_t
 memref_hash (const void *obj)
 {
-  const struct mem_ref *mem = obj;
-
-  return mem->hash;
+  return ((const struct mem_ref *) obj)->hash;
 }
 
 /* An equality function for struct mem_ref object OBJ1 with
@@ -1296,7 +1294,7 @@ memref_hash (const void *obj)
 static int
 memref_eq (const void *obj1, const void *obj2)
 {
-  const struct mem_ref *mem1 = obj1;
+  const struct mem_ref *mem1 = (const struct mem_ref *) obj1;
 
   return operand_equal_p (mem1->mem, (tree) obj2, 0);
 }
@@ -1359,7 +1357,7 @@ gather_mem_refs_stmt (struct loop *loop, htab_t mem_refs,
   slot = htab_find_slot_with_hash (mem_refs, *mem, hash, INSERT);
 
   if (*slot)
-    ref = *slot;
+    ref = (struct mem_ref *) *slot;
   else
     {
       ref = XNEW (struct mem_ref);

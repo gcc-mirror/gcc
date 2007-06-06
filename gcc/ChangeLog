@@ -1,3 +1,76 @@
+2007-06-06  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	* tree-ssa-alias-warnings.c (maybe_add_match): Cast according to the
+	coding conventions.
+	(add_key): Likewise.
+	* tree-ssa.c (init_tree_ssa): Use type safe memory macros.
+	* tree-ssa-ccp.c (ccp_fold_builtin): Avoid using C++ keywords as
+	variable names.
+	* tree-ssa-coalesce.c (find_coalesce_pair): Use type safe memory macros.
+	(add_cost_one_coalesce): Likewise.
+	* tree-ssa-copy.c (merge_alias_info): Avoid using C++ keywords as
+	variable names. Rename orig to orig_name for consistency.
+	* tree-ssa-dom.c (dom_thread_across_edge): Cast according to the coding
+	conventions.
+	(cprop_into_successor_phis): Avoid using C++ keywords as variable names.
+	(record_equivalences_from_stmt): Likewise.
+	* tree-ssa-dse.c (dse_initialize_block_local_data): Cast according to
+	the coding conventions.
+	(memory_ssa_name_same): Likewise.
+	(dse_optimize_stmt): Likewise.
+	(dse_record_phis): Likewise.
+	(dse_finalize_block): Likewise.
+	* tree-ssa-loop-im.c (outermost_invariant_loop_expr): Avoid using C++
+	keywords as variable names.
+	(may_move_till): Cast according to the coding conventions.
+	(force_move_till_expr): Avoid using C++ keywords as variable names.
+	(force_move_till): Cast according to the coding conventions.
+	(memref_hash): Likewise.
+	(memref_eq): Likewise.
+	(gather_mem_refs_stmt): Likewise.
+	* tree-ssa-loop-ivopts.c (contains_abnormal_ssa_name_p): Avoid using C++
+	keywords as variable names.
+	(idx_find_step): Cast according to the coding conventions.
+	(idx_record_use): Likewise.
+	(find_depends): Likewise.
+	(prepare_decl_rtl): Likewise.
+	(mbc_entry_hash): Likewise.
+	(mbc_entry_eq): Likewise.
+	* tree-ssa-loop-niter.c (SWAP): Use the correct the type for tmp.
+	(simplify_replace_tree): Avoid using C++ keywords as variable names.
+	(idx_infer_loop_bounds): Cast according to the coding conventions.
+	* tree-ssa-loop-prefetch.c (idx_analyze_ref): Likewise.
+	* tree-ssa-math-opts.c (occ_new ): Likwise.
+	* tree-ssanames.c (duplicate_ssa_name_ptr_info): Use type safe memory
+	macros.
+	* tree-ssa-operands.c (add_def_op): Avoid using C++ keywords as variable
+	names.
+	(add_use_op): Likewise.
+	(add_vop): Likewise.
+	(add_vuse_op): Likewise.
+	(add_vdef_op): Likewise.
+	(get_expr_operands): Likewise.
+	(push_stmt_changes): Use type safe memory macros.
+	* tree-ssa-phiopt.c (replace_phi_edge_with_variable): Avoid using C++
+	keywords as variable names.
+	(conditional_replacement): Likewise.
+	(minmax_replacement): Likewise.
+	(abs_replacement): Likewise.
+	* tree-ssa-pre.c (create_expression_by_pieces): Cast according to the
+	coding conventions.
+	(insert_fake_stores): Avoid using C++ keywords as variable names.
+	* tree-ssa-reassoc.c (add_to_ops_vec): Cast according to the coding
+	conventions.
+	* tree-ssa-structalias.c (heapvar_lookup): Likewise.
+	(heapvar_insert): Use type safe memory macros.
+	(new_var_info): Cast according to the coding conventions.
+	(new_constraint): Likewise.
+	(remove_preds_and_fake_succs): Use type safe memory macros.
+	* tree-ssa-threadupdate.c (thread_block): Cast according to the coding
+	conventions.
+	(thread_single_edge): Likewise.
+	(thread_through_loop_header): Likewise.
+
 2007-06-06  Eric Christopher  <echristo@apple.com>
 
 	* config/i386/i386.c (override_options): Move handling

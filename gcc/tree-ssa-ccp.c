@@ -2395,14 +2395,14 @@ ccp_fold_builtin (tree stmt, tree fn)
     case BUILT_IN_STRLEN:
       if (val[0])
 	{
-	  tree new = fold_convert (TREE_TYPE (fn), val[0]);
+	  tree new_val = fold_convert (TREE_TYPE (fn), val[0]);
 
 	  /* If the result is not a valid gimple value, or not a cast
 	     of a valid gimple value, then we can not use the result.  */
-	  if (is_gimple_val (new)
-	      || (is_gimple_cast (new)
-		  && is_gimple_val (TREE_OPERAND (new, 0))))
-	    return new;
+	  if (is_gimple_val (new_val)
+	      || (is_gimple_cast (new_val)
+		  && is_gimple_val (TREE_OPERAND (new_val, 0))))
+	    return new_val;
 	}
       break;
 
