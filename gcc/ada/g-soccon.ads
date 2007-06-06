@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,9 @@
 --  The values below were computed from a i686-pc-linux-gnu environment,
 --  but are for illustration purposes only. As noted above, part of a port
 --  to a new target is to replace this file appropriately.
+
+--  This file is generated automatically, do not modify it by hand! Instead,
+--  make changes to gen-soccon.c and re-run it on each target.
 
 package GNAT.Sockets.Constants is
 
@@ -181,5 +184,18 @@ package GNAT.Sockets.Constants is
 
    SIZEOF_tv_sec      : constant :=            4; --  tv_sec
    SIZEOF_tv_usec     : constant :=            4; --  tv_usec
+
+   ----------------------------------------
+   -- Properties of supported interfaces --
+   ----------------------------------------
+
+   Need_Netdb_Buffer  : constant :=            1; --  Need buffer for Netdb ops
+
+   ----------------------
+   -- Additional flags --
+   ----------------------
+
+   Thread_Blocking_IO : constant Boolean := True;
+   --  Set False for contexts where socket i/o are process blocking
 
 end GNAT.Sockets.Constants;
