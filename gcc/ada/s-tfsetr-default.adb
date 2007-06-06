@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,8 +34,8 @@
 --  This version is for all targets, provided that System.IO.Put_Line is
 --  functional. It prints debug information to Standard Output
 
-with System.IO;   use System.IO;
-with GNAT.Regpat; use GNAT.Regpat;
+with System.IO;     use System.IO;
+with System.Regpat; use System.Regpat;
 
 ----------------
 -- Send_Trace --

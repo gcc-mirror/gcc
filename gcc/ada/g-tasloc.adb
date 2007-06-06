@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1997-2005, AdaCore                     --
+--                     Copyright (C) 1997-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,27 +31,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Soft_Links;
---  used for Lock_Task, Unlock_Task
+--  This package does not require a body, since it is a package renaming. We
+--  provide a dummy file containing a No_Body pragma so that previous versions
+--  of the body (which did exist) will not intefere.
 
-package body GNAT.Task_Lock is
-
-   ----------
-   -- Lock --
-   ----------
-
-   procedure Lock is
-   begin
-      System.Soft_Links.Lock_Task.all;
-   end Lock;
-
-   ------------
-   -- Unlock --
-   ------------
-
-   procedure Unlock is
-   begin
-      System.Soft_Links.Unlock_Task.all;
-   end Unlock;
-
-end GNAT.Task_Lock;
+pragma No_Body;

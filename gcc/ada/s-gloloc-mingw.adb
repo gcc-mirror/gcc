@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2006, AdaCore                     --
+--                     Copyright (C) 1999-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,14 +33,14 @@
 
 --  This implementation is specific to NT
 
-with GNAT.Task_Lock;
+with System.Task_Lock;
 
 with Interfaces.C.Strings;
 with System.OS_Interface;
 
 package body System.Global_Locks is
 
-   package TSL renames GNAT.Task_Lock;
+   package TSL renames System.Task_Lock;
    package OSI renames System.OS_Interface;
    package ICS renames Interfaces.C.Strings;
 

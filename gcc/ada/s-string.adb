@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              T R E E _ I N                               --
+--                       S Y S T E M . S T R I N G S                        --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,14 +31,31 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This procedure is used to read in a tree if the option is set. Note that
---  it is not part of the compiler proper, but rather the interface from
---  tools that need to read the tree to the tree reading routines, and is
---  thus bound as part of such tools.
+package body System.Strings is
 
-with System.OS_Lib; use System.OS_Lib;
+   ----------
+   -- Free --
+   ----------
 
-procedure Tree_In (Desc : File_Descriptor);
---  Desc is the file descriptor for the file containing the tree, as written
---  by the compiler in a previous compilation using Tree_Gen. On return the
---  global data structures are appropriately initialized.
+   procedure Free (Arg : in out String_List_Access) is
+      X : String_Access;
+
+      procedure Free_Array is new Ada.Unchecked_Deallocation
+        (Object => String_List, Name => String_List_Access);
+
+   begin
+      --  First free all the String_Access components if any
+
+      if Arg /= null then
+         for J in Arg'Range loop
+            X := Arg (J);
+            Free (X);
+         end loop;
+      end if;
+
+      --  Now free the allocated array
+
+      Free_Array (Arg);
+   end Free;
+
+end System.Strings;

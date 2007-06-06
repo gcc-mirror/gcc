@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              T R E E _ I N                               --
+--                       S Y S T E M . S T R I N G S                        --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,14 +31,33 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This procedure is used to read in a tree if the option is set. Note that
---  it is not part of the compiler proper, but rather the interface from
---  tools that need to read the tree to the tree reading routines, and is
---  thus bound as part of such tools.
+--  Common String access types and related subprograms
 
-with System.OS_Lib; use System.OS_Lib;
+--  Note: this package is in the System hierarchy so that it can be directly
+--  be used by other predefined packages. User access to this package is via
+--  a renaming of this package in GNAT.String (file g-string.ads).
 
-procedure Tree_In (Desc : File_Descriptor);
---  Desc is the file descriptor for the file containing the tree, as written
---  by the compiler in a previous compilation using Tree_Gen. On return the
---  global data structures are appropriately initialized.
+with Ada.Unchecked_Deallocation;
+
+package System.Strings is
+   pragma Preelaborate;
+
+   type String_Access is access all String;
+   --  General purpose string access type. Note that the caller is
+   --  responsible for freeing allocated strings to avoid memory leaks.
+
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Object => String, Name => String_Access);
+   --  This procedure is provided for freeing allocated values of type
+   --  String_Access.
+
+   type String_List is array (Positive range <>) of String_Access;
+   type String_List_Access is access all String_List;
+   --  General purpose array and pointer for list of string accesses
+
+   procedure Free (Arg : in out String_List_Access);
+   --  Frees the given array and all strings that its elements reference,
+   --  and then sets the argument to null. Provided for freeing allocated
+   --  values of this type.
+
+end System.Strings;
