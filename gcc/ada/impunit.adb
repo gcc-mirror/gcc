@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2006, Free Software Foundation, Inc.        --
+--           Copyright (C) 2000-2007, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -145,6 +145,7 @@ package body Impunit is
    -----------------------------------
 
      "a-chlat9",    -- Ada.Characters.Latin_9
+     "a-clrefi",    -- Ada.Command_Line.Response_File
      "a-colien",    -- Ada.Command_Line.Environment
      "a-colire",    -- Ada.Command_Line.Remove
      "a-cwila1",    -- Ada.Characters.Wide_Latin_1
@@ -288,17 +289,8 @@ package body Impunit is
      "i-cexten",    -- Interfaces.C.Extensions
      "i-cpp   ",    -- Interfaces.CPP
      "i-cstrea",    -- Interfaces.C.Streams
-     "i-jalaob",    -- Interfaces.Java.Lang.Object
-     "i-jalasy",    -- Interfaces.Java.Lang.System
-     "i-jalath",    -- Interfaces.Java.Lang.Thread
      "i-java  ",    -- Interfaces.Java
-     "i-javlan",    -- Interfaces.Java.Lang
-     "i-os2err",    -- Interfaces.Os2lib.Errors
-     "i-os2lib",    -- Interfaces.Os2lib
-     "i-os2syn",    -- Interfaces.Os2lib.Synchronization
-     "i-os2thr",    -- Interfaces.Os2lib.Threads
      "i-pacdec",    -- Interfaces.Packed_Decimal
-     "i-vthrea",    -- Interfaces.Vthreads
      "i-vxwoio",    -- Interfaces.VxWorks.IO
      "i-vxwork",    -- Interfaces.VxWorks
 
@@ -319,6 +311,7 @@ package body Impunit is
      "s-addima",    -- System.Address_Image
      "s-assert",    -- System.Assertions
      "s-memory",    -- System.Memory
+     "s-os_lib",    -- System.Os_Lib
      "s-parint",    -- System.Partition_Interface
      "s-pooglo",    -- System.Pool_Global
      "s-pooloc",    -- System.Pool_Local
@@ -364,6 +357,8 @@ package body Impunit is
      "a-diroro",    -- Ada.Dispatching.Round_Robin
      "a-dispat",    -- Ada.Dispatching
      "a-envvar",    -- Ada.Environment_Variables
+     "a-exetim",    -- Ada.Execution_Time
+     "a-extiti",    -- Ada.Execution_Time.Timers
      "a-rttiev",    -- Ada.Real_Time.Timing_Events
      "a-ngcoar",    -- Ada.Numerics.Generic_Complex_Arrays
      "a-ngrear",    -- Ada.Numerics.Generic_Real_Arrays
