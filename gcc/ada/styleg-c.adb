@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -227,7 +227,7 @@ package body Styleg.C is
                   Set_Casing (Cas);
                   Error_Msg_Name_1 := Name_Enter;
                   Error_Msg_N
-                    ("(style) bad casing of { declared in Standard", Ref);
+                    ("(style) bad casing of %% declared in Standard", Ref);
                end if;
             end if;
          end if;

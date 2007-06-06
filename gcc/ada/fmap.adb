@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2001-2006, Free Software Foundation, Inc.       --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,12 +24,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with GNAT.OS_Lib; use GNAT.OS_Lib;
-with Namet;       use Namet;
-with Opt;         use Opt;
-with Osint;       use Osint;
-with Output;      use Output;
+with Opt;    use Opt;
+with Osint;  use Osint;
+with Output; use Output;
 with Table;
+with Types;  use Types;
+
+with System.OS_Lib; use System.OS_Lib;
 
 with Unchecked_Conversion;
 
@@ -91,6 +92,9 @@ package body Fmap is
    --  Hash table to map unit names to file names. Used in conjunction with
    --  table File_Mapping above.
 
+   function Hash (F : File_Name_Type) return Header_Num;
+   --  Function used to compute hash of file name
+
    package File_Hash_Table is new GNAT.HTable.Simple_HTable (
      Header_Num => Header_Num,
      Element    => Int,
@@ -115,7 +119,7 @@ package body Fmap is
    -- Add_Forbidden_File_Name --
    -----------------------------
 
-   procedure Add_Forbidden_File_Name (Name : Name_Id) is
+   procedure Add_Forbidden_File_Name (Name : File_Name_Type) is
    begin
       Forbidden_Names.Set (Name, True);
    end Add_Forbidden_File_Name;
@@ -144,6 +148,11 @@ package body Fmap is
    -- Hash --
    ----------
 
+   function Hash (F : File_Name_Type) return Header_Num is
+   begin
+      return Header_Num (Int (F) rem Header_Num'Range_Length);
+   end Hash;
+
    function Hash (F : Unit_Name_Type) return Header_Num is
    begin
       return Header_Num (Int (F) rem Header_Num'Range_Length);
@@ -163,16 +172,20 @@ package body Fmap is
       Last  : Natural  := 0;
 
       Uname : Unit_Name_Type;
-      Fname : Name_Id;
-      Pname : Name_Id;
+      Fname : File_Name_Type;
+      Pname : File_Name_Type;
 
-      The_Mapping : Mapping;
-
-      procedure Empty_Tables (Warning : Boolean := True);
+      procedure Empty_Tables;
       --  Remove all entries in case of incorrect mapping file
 
-      function Find_Name return Name_Id;
-      --  Return Error_Name for "/", otherwise call Name_Find
+      function Find_File_Name return File_Name_Type;
+      --  Return Error_File_Name for "/", otherwise call Name_Find
+      --  What is this about, explanation required ???
+
+      function Find_Unit_Name return Unit_Name_Type;
+      --  Return Error_Unit_Name for "/", otherwise call Name_Find
+      --  Even more mysterious??? function appeared when Find_Name was split
+      --  for the two types, but this routine is definitely called!
 
       procedure Get_Line;
       --  Get a line from the mapping file
@@ -185,14 +198,8 @@ package body Fmap is
       -- Empty_Tables --
       ------------------
 
-      procedure Empty_Tables (Warning : Boolean := True) is
+      procedure Empty_Tables is
       begin
-         if Warning then
-            Write_Str ("mapping file """);
-            Write_Str (File_Name);
-            Write_Line (""" is not taken into account");
-         end if;
-
          Unit_Hash_Table.Reset;
          File_Hash_Table.Reset;
          Path_Mapping.Set_Last (0);
@@ -200,19 +207,30 @@ package body Fmap is
          Last_In_Table := 0;
       end Empty_Tables;
 
-      ---------------
-      -- Find_Name --
-      ---------------
+      --------------------
+      -- Find_File_Name --
+      --------------------
 
-      function Find_Name return Name_Id is
+      --  Why is only / illegal, why not \ on windows ???
+
+      function Find_File_Name return File_Name_Type is
       begin
          if Name_Buffer (1 .. Name_Len) = "/" then
-            return Error_Name;
-
+            return Error_File_Name;
          else
             return Name_Find;
          end if;
-      end Find_Name;
+      end Find_File_Name;
+
+      --------------------
+      -- Find_Unit_Name --
+      --------------------
+
+      function Find_Unit_Name return Unit_Name_Type is
+      begin
+         return Unit_Name_Type (Find_File_Name);
+         --  very odd ???
+      end Find_Unit_Name;
 
       --------------
       -- Get_Line --
@@ -261,10 +279,10 @@ package body Fmap is
          Write_Line (""" is truncated");
       end Report_Truncated;
 
-   --  Start of procedure Initialize
+   --  Start of processing for Initialize
 
    begin
-      Empty_Tables (Warning => False);
+      Empty_Tables;
       Name_Len := File_Name'Length;
       Name_Buffer (1 .. Name_Len) := File_Name;
       Read_Source_File (Name_Enter, 0, Hi, Src, Config);
@@ -299,7 +317,7 @@ package body Fmap is
 
             Name_Len := Last - First + 1;
             Name_Buffer (1 .. Name_Len) := SP (First .. Last);
-            Uname := Find_Name;
+            Uname := Find_Unit_Name;
 
             --  Get the file name
 
@@ -316,7 +334,7 @@ package body Fmap is
             Name_Len := Last - First + 1;
             Name_Buffer (1 .. Name_Len) := SP (First .. Last);
             Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
-            Fname := Find_Name;
+            Fname := Find_File_Name;
 
             --  Get the path name
 
@@ -332,32 +350,16 @@ package body Fmap is
 
             Name_Len := Last - First + 1;
             Name_Buffer (1 .. Name_Len) := SP (First .. Last);
-            Pname := Find_Name;
+            Pname := Find_File_Name;
 
             --  Check for duplicate entries
 
             if Unit_Hash_Table.Get (Uname) /= No_Entry then
-               Write_Str ("warning: duplicate entry """);
-               Write_Str (Get_Name_String (Uname));
-               Write_Str (""" in mapping file """);
-               Write_Str (File_Name);
-               Write_Line ("""");
-               The_Mapping := File_Mapping.Table (Unit_Hash_Table.Get (Uname));
-               Write_Line (Get_Name_String (The_Mapping.Uname));
-               Write_Line (Get_Name_String (The_Mapping.Fname));
                Empty_Tables;
                return;
             end if;
 
             if File_Hash_Table.Get (Fname) /= No_Entry then
-               Write_Str ("warning: duplicate entry """);
-               Write_Str (Get_Name_String (Fname));
-               Write_Str (""" in mapping file """);
-               Write_Str (File_Name);
-               Write_Line ("""");
-               The_Mapping := Path_Mapping.Table (File_Hash_Table.Get (Fname));
-               Write_Line (Get_Name_String (The_Mapping.Uname));
-               Write_Line (Get_Name_String (The_Mapping.Fname));
                Empty_Tables;
                return;
             end if;
@@ -371,7 +373,6 @@ package body Fmap is
       --  Record the length of the two mapping tables
 
       Last_In_Table := File_Mapping.Last;
-
    end Initialize;
 
    ----------------------
@@ -398,7 +399,7 @@ package body Fmap is
 
    begin
       if Forbidden_Names.Get (File) then
-         return Error_Name;
+         return Error_File_Name;
       end if;
 
       Index := File_Hash_Table.Get (File);
@@ -414,7 +415,7 @@ package body Fmap is
    -- Remove_Forbidden_File_Name --
    --------------------------------
 
-   procedure Remove_Forbidden_File_Name (Name : Name_Id) is
+   procedure Remove_Forbidden_File_Name (Name : File_Name_Type) is
    begin
       Forbidden_Names.Set (Name, False);
    end Remove_Forbidden_File_Name;
@@ -506,9 +507,9 @@ package body Fmap is
             end if;
 
             for Unit in Last_In_Table + 1 .. File_Mapping.Last loop
-               Put_Line (File_Mapping.Table (Unit).Uname);
-               Put_Line (File_Mapping.Table (Unit).Fname);
-               Put_Line (Path_Mapping.Table (Unit).Fname);
+               Put_Line (Name_Id (File_Mapping.Table (Unit).Uname));
+               Put_Line (Name_Id (File_Mapping.Table (Unit).Fname));
+               Put_Line (Name_Id (Path_Mapping.Table (Unit).Fname));
             end loop;
 
             --  Before closing the file, write the buffer to the file.

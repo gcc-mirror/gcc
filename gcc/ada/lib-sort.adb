@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,10 +58,10 @@ procedure Sort (Tbl : in out Unit_Ref_Table) is
       --  at the bottom of the list. They are recognized because they are
       --  the only ones without a Unit_Name.
 
-      if Units.Table (T (C1)).Unit_Name = No_Name then
+      if Units.Table (T (C1)).Unit_Name = No_Unit_Name then
          return False;
 
-      elsif Units.Table (T (C2)).Unit_Name = No_Name then
+      elsif Units.Table (T (C2)).Unit_Name = No_Unit_Name then
          return True;
 
       else

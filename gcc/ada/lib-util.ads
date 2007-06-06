@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,7 +54,11 @@ package Lib.Util is
    --  Adds image of N to Info_Buffer with no leading or trailing blanks
 
    procedure Write_Info_Name (Name : Name_Id);
-   --  Adds characters of Name to Info_Buffer
+   procedure Write_Info_Name (Name : File_Name_Type);
+   procedure Write_Info_Name (Name : Unit_Name_Type);
+   --  Adds characters of Name to Info_Buffer. Note that in all cases, the
+   --  name is written literally from the names table entry without modifying
+   --  the case, using simply Get_Name_String.
 
    procedure Write_Info_Str (Val : String);
    --  Adds characters of Val to Info_Buffer surrounded by quotes

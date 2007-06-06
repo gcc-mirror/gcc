@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,6 @@
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
-with Namet;  use Namet;
 with Opt;    use Opt;
 with Output; use Output;
 
@@ -38,9 +37,13 @@ package body Tempdir is
    No_Dir   : aliased String  := "";
    Temp_Dir : String_Access   := No_Dir'Access;
 
+   ----------------------
+   -- Create_Temp_File --
+   ----------------------
+
    procedure Create_Temp_File
      (FD   : out File_Descriptor;
-      Name : out Name_Id)
+      Name : out Path_Name_Type)
    is
       File_Name : String_Access;
       Current_Dir : constant String := Get_Current_Dir;
@@ -90,13 +93,13 @@ package body Tempdir is
       end if;
 
       if FD = Invalid_FD then
-         Name := No_Name;
+         Name := No_Path;
 
       else
          declare
             Path_Name : constant String :=
-              Normalize_Pathname
-                (Directory & Directory_Separator & File_Name.all);
+                          Normalize_Pathname
+                            (Directory & Directory_Separator & File_Name.all);
 
          begin
             Name_Len := Path_Name'Length;

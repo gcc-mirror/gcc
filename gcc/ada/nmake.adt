@@ -6,7 +6,7 @@
 --                                                                          --
 --                             T e m p l a t e                              --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ pragma Style_Checks (All_Checks);
 --  generated automatically in order.
 
 with Atree;  use Atree;       --  body only
+with Namet;  use Namet;       --  spec only
 with Nlists; use Nlists;      --  spec only
 with Sinfo;  use Sinfo;       --  body only
 with Snames; use Snames;      --  body only

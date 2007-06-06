@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,6 +27,7 @@
 --  This package contains the routines to output error messages for the binder
 --  and also the routines for handling fatal error conditions in the binder.
 
+with Namet; use Namet;
 with Types; use Types;
 
 package Binderr is
@@ -51,19 +52,19 @@ package Binderr is
    --  appear which cause the error message circuit to modify the given
    --  string as follows:
 
-   --    Insertion character % (Percent: insert file name from Names table)
-   --      The character % is replaced by the text for the file name specified
-   --      by the Name_Id value stored in Error_Msg_Name_1. The name is always
-   --      enclosed in quotes. A second % may appear in a single message in
-   --      which case it is similarly replaced by the name which is specified
-   --      by the Name_Id value stored in Error_Msg_Name_2.
+   --    Insertion character { (Left brace: insert file name from Names table)
+   --      The character { is replaced by the text for the file name specified
+   --      by the File_Name_Type value stored in Error_Msg_File_1. The name is
+   --      always enclosed in quotes. A second % may appear in a single message
+   --      in which case it is similarly replaced by the name which is
+   --      specified by the File_Name_Type value stored in Error_Msg_File_2.
 
-   --    Insertion character & (Ampersand: insert unit name from Names table)
+   --    Insertion character $ (Dollar: insert unit name from Names table)
    --      The character & is replaced by the text for the unit name specified
-   --      by the Name_Id value stored in Error_Msg_Name_1. The name is always
+   --      by the Name_Id value stored in Error_Msg_Unit_1. The name is always
    --      enclosed in quotes. A second & may appear in a single message in
    --      which case it is similarly replaced by the name which is specified
-   --      by the Name_Id value stored in Error_Msg_Name_2.
+   --      by the Name_Id value stored in Error_Msg_Unit_2.
 
    --    Insertion character # (Pound: insert non-negative number in decimal)
    --      The character # is replaced by the contents of Error_Msg_Nat_1
@@ -83,11 +84,18 @@ package Binderr is
    --  passed to the error message routine for insertion sequences described
    --  above. The reason these are passed globally is that the insertion
    --  mechanism is essentially an untyped one in which the appropriate
-   --  variables are set dependingon the specific insertion characters used.
+   --  variables are set depending on the specific insertion characters used.
 
    Error_Msg_Name_1 : Name_Id;
-   Error_Msg_Name_2 : Name_Id;
-   --  Name_Id values for % insertion characters in message
+   --  Name_Id value for % insertion characters in message
+
+   Error_Msg_File_1 : File_Name_Type;
+   Error_Msg_File_2 : File_Name_Type;
+   --  Name_Id values for { insertion characters in message
+
+   Error_Msg_Unit_1 : Unit_Name_Type;
+   Error_Msg_Unit_2 : Unit_Name_Type;
+   --  Name_Id values for $ insertion characters in message
 
    Error_Msg_Nat_1 : Nat;
    Error_Msg_Nat_2 : Nat;

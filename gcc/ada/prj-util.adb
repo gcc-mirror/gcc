@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,9 +26,8 @@
 
 with Ada.Unchecked_Deallocation;
 
-with GNAT.Case_Util; use GNAT.Case_Util;
+with System.Case_Util; use System.Case_Util;
 
-with Namet;    use Namet;
 with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Com;
@@ -77,9 +76,9 @@ package body Prj.Util is
    function Executable_Of
      (Project  : Project_Id;
       In_Tree  : Project_Tree_Ref;
-      Main     : Name_Id;
+      Main     : File_Name_Type;
       Index    : Int;
-      Ada_Main : Boolean := True) return Name_Id
+      Ada_Main : Boolean := True) return File_Name_Type
    is
       pragma Assert (Project /= No_Project);
 
@@ -94,7 +93,7 @@ package body Prj.Util is
 
       Executable : Variable_Value :=
                      Prj.Util.Value_Of
-                       (Name                    => Main,
+                       (Name                    => Name_Id (Main),
                         Index                   => Index,
                         Attribute_Or_Array_Name => Name_Executable,
                         In_Package              => Builder_Package,
@@ -184,7 +183,7 @@ package body Prj.Util is
 
             declare
                Saved_EEOT : constant Name_Id := Executable_Extension_On_Target;
-               Result     : Name_Id;
+               Result     : File_Name_Type;
 
             begin
                if Executable_Suffix /= Nil_Variable_Value
@@ -193,7 +192,7 @@ package body Prj.Util is
                   Executable_Extension_On_Target := Executable_Suffix.Value;
                end if;
 
-               Result := Executable_Name (Executable.Value);
+               Result := Executable_Name (File_Name_Type (Executable.Value));
                Executable_Extension_On_Target := Saved_EEOT;
                return Result;
             end;
@@ -348,7 +347,7 @@ package body Prj.Util is
       File_Name (1 .. Name'Length) := Name;
       File_Name (File_Name'Last) := ASCII.NUL;
       FD := Open_Read (Name => File_Name'Address,
-                            Fmode => GNAT.OS_Lib.Text);
+                       Fmode => GNAT.OS_Lib.Text);
       if FD = Invalid_FD then
          File := null;
       else

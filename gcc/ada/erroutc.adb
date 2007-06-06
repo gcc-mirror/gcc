@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -673,32 +673,32 @@ package body Erroutc is
 
    procedure Set_Msg_Insertion_File_Name is
    begin
-      if Error_Msg_Name_1 = No_Name then
+      if Error_Msg_File_1 = No_File then
          null;
 
-      elsif Error_Msg_Name_1 = Error_Name then
+      elsif Error_Msg_File_1 = Error_File_Name then
          Set_Msg_Blank;
          Set_Msg_Str ("<error>");
 
       else
          Set_Msg_Blank;
-         Get_Name_String (Error_Msg_Name_1);
+         Get_Name_String (Error_Msg_File_1);
          Set_Msg_Quote;
          Set_Msg_Name_Buffer;
          Set_Msg_Quote;
       end if;
 
-      --  The following assignments ensure that the second and third percent
-      --  insertion characters will correspond to the Error_Msg_Name_2 and
-      --  Error_Msg_Name_3 as required. We suppress possible validity checks in
-      --  case operating in -gnatVa mode, and Error_Msg_Name_2/3 is not needed
-      --  and has not been set.
+      --  The following assignments ensure that the second and third {
+      --  insertion characters will correspond to the Error_Msg_File_2 and
+      --  Error_Msg_File_3 values and We suppress possible validity checks in
+      --  case operating in -gnatVa mode, and Error_Msg_File_2 or
+      --  Error_Msg_File_3 is not needed and has not been set.
 
       declare
          pragma Suppress (Range_Check);
       begin
-         Error_Msg_Name_1 := Error_Msg_Name_2;
-         Error_Msg_Name_2 := Error_Msg_Name_3;
+         Error_Msg_File_1 := Error_Msg_File_2;
+         Error_Msg_File_2 := Error_Msg_File_3;
       end;
    end Set_Msg_Insertion_File_Name;
 
@@ -856,6 +856,41 @@ package body Erroutc is
          Error_Msg_Name_2 := Error_Msg_Name_3;
       end;
    end Set_Msg_Insertion_Name;
+
+   ------------------------------------
+   -- Set_Msg_Insertion_Name_Literal --
+   ------------------------------------
+
+   procedure Set_Msg_Insertion_Name_Literal is
+   begin
+      if Error_Msg_Name_1 = No_Name then
+         null;
+
+      elsif Error_Msg_Name_1 = Error_Name then
+         Set_Msg_Blank;
+         Set_Msg_Str ("<error>");
+
+      else
+         Set_Msg_Blank;
+         Get_Name_String (Error_Msg_Name_1);
+         Set_Msg_Quote;
+         Set_Msg_Name_Buffer;
+         Set_Msg_Quote;
+      end if;
+
+      --  The following assignments ensure that the second and third % or %%
+      --  insertion characters will correspond to the Error_Msg_Name_2 and
+      --  Error_Msg_Name_3 values and We suppress possible validity checks in
+      --  case operating in -gnatVa mode, and Error_Msg_Name_2 or
+      --  Error_Msg_Name_3 is not needed and has not been set.
+
+      declare
+         pragma Suppress (Range_Check);
+      begin
+         Error_Msg_Name_1 := Error_Msg_Name_2;
+         Error_Msg_Name_2 := Error_Msg_Name_3;
+      end;
+   end Set_Msg_Insertion_Name_Literal;
 
    -------------------------------------
    -- Set_Msg_Insertion_Reserved_Name --

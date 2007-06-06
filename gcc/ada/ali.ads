@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@
 
 with Casing;  use Casing;
 with Gnatvsn; use Gnatvsn;
+with Namet;   use Namet;
 with Rident;  use Rident;
 with Table;
 with Types;   use Types;
@@ -90,7 +91,7 @@ package ALI is
       Afile : File_Name_Type;
       --  Name of ALI file
 
-      Ofile_Full_Name : Name_Id;
+      Ofile_Full_Name : File_Name_Type;
       --  Full name of object file corresponding to the ALI file
 
       Sfile : File_Name_Type;
@@ -741,7 +742,7 @@ package ALI is
       File_Num : Sdep_Id;
       --  Dependency number for file (entry in Sdep.Table)
 
-      File_Name : Name_Id;
+      File_Name : File_Name_Type;
       --  Name of file
 
       First_Entity : Nat;

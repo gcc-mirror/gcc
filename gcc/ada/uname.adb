@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,6 @@ with Casing;   use Casing;
 with Einfo;    use Einfo;
 with Hostparm;
 with Lib;      use Lib;
-with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Output;   use Output;
 with Sinfo;    use Sinfo;
@@ -138,7 +137,7 @@ package body Uname is
 
       while Name_Buffer (Name_Len) /= '.' loop
          if Name_Len = 1 then
-            return No_Name; -- not a child or subunit name
+            return No_Unit_Name;
          else
             Name_Len := Name_Len - 1;
          end if;
@@ -425,7 +424,10 @@ package body Uname is
    -- Get_Unit_Name_String --
    --------------------------
 
-   procedure Get_Unit_Name_String (N : Unit_Name_Type) is
+   procedure Get_Unit_Name_String
+     (N      : Unit_Name_Type;
+      Suffix : Boolean := True)
+   is
       Unit_Is_Body : Boolean;
 
    begin
@@ -447,10 +449,12 @@ package body Uname is
 
       --  Now adjust the %s or %b to (spec) or (body)
 
-      if Unit_Is_Body then
-         Name_Buffer (Name_Len - 1 .. Name_Len + 5) := " (body)";
-      else
-         Name_Buffer (Name_Len - 1 .. Name_Len + 5) := " (spec)";
+      if Suffix then
+         if Unit_Is_Body then
+            Name_Buffer (Name_Len - 1 .. Name_Len + 5) := " (body)";
+         else
+            Name_Buffer (Name_Len - 1 .. Name_Len + 5) := " (spec)";
+         end if;
       end if;
 
       for J in 1 .. Name_Len loop
@@ -459,7 +463,13 @@ package body Uname is
          end if;
       end loop;
 
-      Name_Len := Name_Len + (7 - 2);
+      --  Adjust Name_Len
+
+      if Suffix then
+         Name_Len := Name_Len + (7 - 2);
+      else
+         Name_Len := Name_Len - 2;
+      end if;
    end Get_Unit_Name_String;
 
    ------------------

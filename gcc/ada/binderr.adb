@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,10 +24,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Butil;   use Butil;
-with Namet;   use Namet;
-with Opt;     use Opt;
-with Output;  use Output;
+with Butil;  use Butil;
+with Opt;    use Opt;
+with Output; use Output;
 
 package body Binderr is
 
@@ -95,8 +94,10 @@ package body Binderr is
    ----------------------
 
    procedure Error_Msg_Output (Msg : String; Info : Boolean) is
-      Use_Second_Name : Boolean := False;
+      Use_Second_File : Boolean := False;
+      Use_Second_Unit : Boolean := False;
       Use_Second_Nat  : Boolean := False;
+      Warning         : Boolean := False;
 
    begin
       if Warnings_Detected + Errors_Detected > Maximum_Errors then
@@ -105,7 +106,16 @@ package body Binderr is
          return;
       end if;
 
-      if Msg (Msg'First) = '?' then
+      --  First, check for warnings
+
+      for J in Msg'Range loop
+         if Msg (J) = '?' then
+            Warning := True;
+            exit;
+         end if;
+      end loop;
+
+      if Warning then
          Write_Str ("warning: ");
       elsif Info then
          if not Info_Prefix_Suppress then
@@ -117,26 +127,31 @@ package body Binderr is
 
       for J in Msg'Range loop
          if Msg (J) = '%' then
+            Get_Name_String (Error_Msg_Name_1);
+            Write_Char ('"');
+            Write_Str (Name_Buffer (1 .. Name_Len));
+            Write_Char ('"');
 
-            if Use_Second_Name then
-               Get_Name_String (Error_Msg_Name_2);
+         elsif Msg (J) = '{' then
+            if Use_Second_File then
+               Get_Name_String (Error_Msg_File_2);
             else
-               Use_Second_Name := True;
-               Get_Name_String (Error_Msg_Name_1);
+               Use_Second_File := True;
+               Get_Name_String (Error_Msg_File_1);
             end if;
 
             Write_Char ('"');
             Write_Str (Name_Buffer (1 .. Name_Len));
             Write_Char ('"');
 
-         elsif Msg (J) = '&' then
+         elsif Msg (J) = '$' then
             Write_Char ('"');
 
-            if Use_Second_Name then
-               Write_Unit_Name (Error_Msg_Name_2);
+            if Use_Second_Unit then
+               Write_Unit_Name (Error_Msg_Unit_2);
             else
-               Use_Second_Name := True;
-               Write_Unit_Name (Error_Msg_Name_1);
+               Use_Second_Unit := True;
+               Write_Unit_Name (Error_Msg_Unit_1);
             end if;
 
             Write_Char ('"');

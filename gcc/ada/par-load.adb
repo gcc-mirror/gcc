@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -147,7 +147,7 @@ begin
    --  If we have no unit name, things are seriously messed up by previous
    --  errors, and we should not try to continue compilation.
 
-   if Unit_Name (Cur_Unum) = No_Name then
+   if Unit_Name (Cur_Unum) = No_Unit_Name then
       raise Unrecoverable_Error;
    end if;
 
@@ -170,7 +170,7 @@ begin
                 or not Same_File_Name_Except_For_Case
                          (File_Name, Unit_File_Name (Cur_Unum)))
    then
-      Error_Msg_Name_1 := File_Name;
+      Error_Msg_File_1 := File_Name;
       Error_Msg
         ("?file name does not match unit name, should be{", Sloc (Curunit));
    end if;
@@ -184,8 +184,8 @@ begin
      and then Expected_Unit (Cur_Unum) /= Unit_Name (Cur_Unum)
    then
       Loc := Error_Location (Cur_Unum);
-      Error_Msg_Name_1 := Unit_File_Name (Cur_Unum);
-      Get_Name_String (Error_Msg_Name_1);
+      Error_Msg_File_1 := Unit_File_Name (Cur_Unum);
+      Get_Name_String (Error_Msg_File_1);
 
       --  Check for predefined file case
 
@@ -200,12 +200,12 @@ begin
                   Name_Buffer (1) = 'g')
       then
          declare
-            Expect_Name : constant Name_Id := Expected_Unit (Cur_Unum);
-            Actual_Name : constant Name_Id := Unit_Name (Cur_Unum);
+            Expect_Name : constant Unit_Name_Type := Expected_Unit (Cur_Unum);
+            Actual_Name : constant Unit_Name_Type := Unit_Name (Cur_Unum);
 
          begin
-            Error_Msg_Name_1 := Expect_Name;
-            Error_Msg ("% is not a predefined library unit!", Loc);
+            Error_Msg_Unit_1 := Expect_Name;
+            Error_Msg ("$$ is not a predefined library unit!", Loc);
 
             --  In the predefined file case, we know the user did not
             --  construct their own package, but we got the wrong one.
@@ -222,15 +222,15 @@ begin
             --  of misspelling of predefined unit names without needing
             --  a full list of them.
 
-            --  Before actually issinying the message, we will check that the
+            --  Before actually issuing the message, we will check that the
             --  unit name is indeed a plausible misspelling of the one we got.
 
             if Is_Bad_Spelling_Of
               (Found  => Get_Name_String (Expect_Name),
                Expect => Get_Name_String (Actual_Name))
             then
-               Error_Msg_Name_1 := Actual_Name;
-               Error_Msg ("possible misspelling of %!", Loc);
+               Error_Msg_Unit_1 := Actual_Name;
+               Error_Msg ("possible misspelling of $$!", Loc);
             end if;
          end;
 
@@ -319,7 +319,7 @@ begin
 
       Spec_Name := Get_Parent_Spec_Name (Unit_Name (Cur_Unum));
 
-      if Spec_Name /= No_Name then
+      if Spec_Name /= No_Unit_Name then
          Unum :=
            Load_Unit
              (Load_Name         => Spec_Name,

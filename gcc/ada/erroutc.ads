@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -380,6 +380,8 @@ package Erroutc is
    --  Handle line number insertion (# insertion character). Loc is the
    --  location to be referenced, and Flag is the location at which the
    --  flag is posted (used to determine whether to add "in file xxx")
+
+   procedure Set_Msg_Insertion_Name_Literal;
 
    procedure Set_Msg_Insertion_Name;
    --  Handle name insertion (% insertion character)

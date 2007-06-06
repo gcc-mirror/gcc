@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,6 @@
 
 with Ada.Command_Line; use Ada.Command_Line;
 
-with Namet;    use Namet;
 with Osint;    use Osint;
 with Prj.Ext;
 with Prj.Util;
@@ -223,7 +222,7 @@ package body Makeutl is
       end loop;
 
       if Equal_Pos = Start
-        or else Equal_Pos >= Finish
+        or else Equal_Pos > Finish
       then
          return False;
       else

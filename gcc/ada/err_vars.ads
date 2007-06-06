@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,6 +27,7 @@
 --  This package contains variables common to error reporting packages
 --  including Errout and Prj.Err.
 
+with Namet; use Namet;
 with Types; use Types;
 with Uintp; use Uintp;
 
@@ -120,9 +121,14 @@ package Err_Vars is
    Error_Msg_Name_3 : Name_Id;
    --  Name_Id values for % insertion characters in message
 
-   Error_Msg_Unit_1 : Name_Id;
-   Error_Msg_Unit_2 : Name_Id;
-   --  Name_Id values for $ insertion characters in message
+   Error_Msg_File_1 : File_Name_Type;
+   Error_Msg_File_2 : File_Name_Type;
+   Error_Msg_File_3 : File_Name_Type;
+   --  File_Name_Type values for { insertion characters in message
+
+   Error_Msg_Unit_1 : Unit_Name_Type;
+   Error_Msg_Unit_2 : Unit_Name_Type;
+   --  Unit_Name_Type values for $ insertion characters in message
 
    Error_Msg_Node_1 : Node_Id;
    Error_Msg_Node_2 : Node_Id;

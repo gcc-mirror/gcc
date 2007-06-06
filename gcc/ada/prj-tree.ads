@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -266,7 +266,7 @@ package Prj.Tree is
 
    function Directory_Of
      (Node    : Project_Node_Id;
-      In_Tree : Project_Node_Tree_Ref) return Name_Id;
+      In_Tree : Project_Node_Tree_Ref) return Path_Name_Type;
    pragma Inline (Directory_Of);
    --  Only valid for N_Project nodes
 
@@ -310,7 +310,7 @@ package Prj.Tree is
 
    function Path_Name_Of
      (Node    : Project_Node_Id;
-      In_Tree : Project_Node_Tree_Ref) return Name_Id;
+      In_Tree : Project_Node_Tree_Ref) return Path_Name_Type;
    pragma Inline (Path_Name_Of);
    --  Only valid for N_Project and N_With_Clause nodes
 
@@ -354,7 +354,7 @@ package Prj.Tree is
 
    function Extended_Project_Path_Of
      (Node    : Project_Node_Id;
-      In_Tree : Project_Node_Tree_Ref) return Name_Id;
+      In_Tree : Project_Node_Tree_Ref) return Path_Name_Type;
    pragma Inline (Extended_Project_Path_Of);
    --  Only valid for N_With_Clause nodes
 
@@ -629,7 +629,7 @@ package Prj.Tree is
    procedure Set_Directory_Of
      (Node    : Project_Node_Id;
       In_Tree : Project_Node_Tree_Ref;
-      To      : Name_Id);
+      To      : Path_Name_Type);
    pragma Inline (Set_Directory_Of);
 
    procedure Set_Expression_Kind_Of
@@ -669,7 +669,7 @@ package Prj.Tree is
    procedure Set_Path_Name_Of
      (Node    : Project_Node_Id;
       In_Tree : Project_Node_Tree_Ref;
-      To      : Name_Id);
+      To      : Path_Name_Type);
    pragma Inline (Set_Path_Name_Of);
 
    procedure Set_String_Value_Of
@@ -705,7 +705,7 @@ package Prj.Tree is
    procedure Set_Extended_Project_Path_Of
      (Node    : Project_Node_Id;
       In_Tree : Project_Node_Tree_Ref;
-      To      : Name_Id);
+      To      : Path_Name_Type);
    pragma Inline (Set_Extended_Project_Path_Of);
 
    procedure Set_Project_Node_Of
@@ -900,8 +900,9 @@ package Prj.Tree is
 
    package Tree_Private_Part is
 
-      --  This is conceptually in the private part.
-      --  However, for efficiency, some packages are accessing it directly.
+      --  This is conceptually in the private part
+
+      --  However, for efficiency, some packages are accessing it directly
 
       type Project_Node_Record is record
 
@@ -909,7 +910,7 @@ package Prj.Tree is
 
          Location : Source_Ptr := No_Location;
 
-         Directory : Name_Id       := No_Name;
+         Directory : Path_Name_Type := No_Path;
          --  Only for N_Project
 
          Expr_Kind : Variable_Kind := Undefined;
@@ -938,7 +939,7 @@ package Prj.Tree is
          --  Index of a unit in a multi-unit source.
          --  Onli for some N_Attribute_Declaration and N_Literal_String.
 
-         Path_Name : Name_Id := No_Name;
+         Path_Name : Path_Name_Type := No_Path;
          --  See below for what Project_Node_Kind it is used
 
          Value : Name_Id := No_Name;
@@ -1204,7 +1205,7 @@ package Prj.Tree is
          Node : Project_Node_Id;
          --  Node of the project in table Project_Nodes
 
-         Canonical_Path : Name_Id;
+         Canonical_Path : Path_Name_Type;
          --  Resolved and canonical path of the project file
 
          Extended : Boolean;
@@ -1214,7 +1215,7 @@ package Prj.Tree is
       No_Project_Name_And_Node : constant Project_Name_And_Node :=
         (Name           => No_Name,
          Node           => Empty_Node,
-         Canonical_Path => No_Name,
+         Canonical_Path => No_Path,
          Extended       => True);
 
       package Projects_Htable is new GNAT.Dynamic_HTables.Simple_HTable
@@ -1226,9 +1227,8 @@ package Prj.Tree is
          Equal      => "=");
       --  This hash table contains a mapping of project names to project nodes.
       --  Note that this hash table contains only the nodes whose Kind is
-      --  N_Project. It is used to find the node of a project from its
-      --  name, and to verify if a project has already been parsed, knowing
-      --  its name.
+      --  N_Project. It is used to find the node of a project from its name,
+      --  and to verify if a project has already been parsed, knowing its name.
 
    end Tree_Private_Part;
 
