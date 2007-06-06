@@ -477,7 +477,7 @@ procedure Xgnatugn is
                   Non_Word_Character : constant Natural :=
                                          Index (Source,
                                                 Word_Characters or
-                                                  To_Set (" "),
+                                                  To_Set (" ."),
                                                 Outside);
 
                begin
