@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,7 +120,11 @@ package Sem_Warn is
    ----------------------------
 
    procedure Check_Code_Statement (N : Node_Id);
-   --  Peform warning checks on a code statement node
+   --  Perform warning checks on a code statement node
+
+   procedure Check_Infinite_Loop_Warning (Loop_Statement : Node_Id);
+   --  N is the node for a loop statement. This procedure checks if a warning
+   --  should be given for a possible infinite loop, and if so issues it.
 
    procedure Warn_On_Known_Condition (C : Node_Id);
    --  C is a node for a boolean expression resluting from a relational

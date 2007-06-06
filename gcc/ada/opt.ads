@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,8 +39,8 @@
 with Hostparm; use Hostparm;
 with Types;    use Types;
 
+with System.Strings; use System.Strings;
 with System.WCh_Con; use System.WCh_Con;
-with GNAT.Strings;   use GNAT.Strings;
 
 package Opt is
 
@@ -386,6 +386,11 @@ package Opt is
    --  Set to True if -gnato (enable overflow checks) switch is set,
    --  but not -gnatp.
 
+   Overflow_Checks_Unsuppressed : Boolean := False;
+   --  GNAT
+   --  Set to True if at least one pragma Unsuppress
+   --  (All_Checks|Overflow_Checks) has been processed.
+
    Error_Msg_Line_Length : Nat := 0;
    --  GNAT
    --  Records the error message line length limit. If this is set to zero,
@@ -510,16 +515,15 @@ package Opt is
    --  the name is of the form .xxx, then to name.xxx where name is the source
    --  file name with extension stripped.
 
-   function get_gcc_version return Int;
-   pragma Import (C, get_gcc_version, "get_gcc_version");
-
-   GCC_Version : constant Nat := get_gcc_version;
-   --  GNATMAKE
-   --  Indicates which version of gcc is in use (2 = 2.8.1, 3 = 3.x)
+   Generating_Code : Boolean := False;
+   --  GNAT
+   --  True if the frontend finished its work and has called the backend to
+   --  processs the tree and generate the object file.
 
    Global_Discard_Names : Boolean := False;
    --  GNAT, GNATBIND
-   --  Set true if a pragma Discard_Names applies to the current unit
+   --  True if a pragma Discard_Names appeared as a configuration pragma for
+   --  the current compilation unit.
 
    GNAT_Mode : Boolean := False;
    --  GNAT
@@ -633,6 +637,10 @@ package Opt is
    --  GNAT
    --  List units in the active library for a compilation (-gnatu switch)
 
+   List_Closure : Boolean := False;
+   --  GNATBIND
+   --  List all sources in the closure of a main (-R gnatbind switch)
+
    List_Dependencies : Boolean := False;
    --  GNATMAKE
    --  When True gnatmake verifies that the objects are up to date and
@@ -668,7 +676,7 @@ package Opt is
    --  before preprocessing occurs. Set to True by switch -s of gnatprep
    --  or -s in preprocessing data file for the compiler.
 
-   type Create_Repinfo_File_Proc is access procedure (Src : File_Name_Type);
+   type Create_Repinfo_File_Proc is access procedure (Src  : String);
    type Write_Repinfo_Line_Proc  is access procedure (Info : String);
    type Close_Repinfo_File_Proc  is access procedure;
    --  Types used for procedure addresses below
@@ -752,6 +760,12 @@ package Opt is
    Minimal_Recompilation : Boolean := False;
    --  GNATMAKE
    --  Set to True if minimal recompilation mode requested
+
+   Special_Exception_Package_Used : Boolean := False;
+   --  GNAT
+   --  Set to True if either of the unit GNAT.Most_Recent_Exception or
+   --  GNAT.Exception_Traces is with'ed. Used to inhibit transformation of
+   --  local raise statements into gotos in the presence of either package.
 
    Multiple_Unit_Index : Int;
    --  GNAT
@@ -1186,6 +1200,11 @@ package Opt is
    --  Set to True to generate warnings for redundant constructs (e.g. useless
    --  assignments/conversions). The default is that this warning is disabled.
 
+   Warn_On_Object_Renames_Function : Boolean := False;
+   --  GNAT
+   --  Set to True to generate warnings when a function result is renamed as
+   --  an object. The default is that this warning is disabled.
+
    Warn_On_Reverse_Bit_Order : Boolean := True;
    --  GNAT
    --  Set to True to generate warning (informational) messages for component
@@ -1202,6 +1221,12 @@ package Opt is
    --  GNAT
    --  Set to True to generate warnings for unrecognized pragmas. The default
    --  is that this warning is enabled.
+
+   Warn_On_Unrepped_Components : Boolean := False;
+   --  GNAT
+   --  Set to True to generate warnings for the case of components of record
+   --  which have a record representation clause but this component does not
+   --  have a component clause. The default is that this warning is disabled.
 
    type Warning_Mode_Type is (Suppress, Normal, Treat_As_Error);
    Warning_Mode : Warning_Mode_Type := Normal;
@@ -1225,6 +1250,11 @@ package Opt is
    Xref_Active : Boolean := True;
    --  GNAT
    --  Set if cross-referencing is enabled (i.e. xref info in ALI files)
+
+   Zero_Formatting : Boolean := False;
+   --  GNATBIND
+   --  Do no formatting (no title, no leading spaces, no empty lines) in
+   --  auxiliary outputs (-e, -K, -l, -R).
 
    ----------------------------
    -- Configuration Settings --
@@ -1362,6 +1392,15 @@ package Opt is
    -- Other Global Flags --
    ------------------------
 
+   Static_Dispatch_Tables : constant Boolean;
+   --  This flag indicates if the backend supports generation of statically
+   --  allocated dispatch tables. If it is True, then the front end will
+   --  generate static aggregates for dispatch tables that contain forward
+   --  references to addresses of subprograms not seen yet, and the back end
+   --  must be prepared to handle this case. If it is False, then the front
+   --  end generates assignments to initialize the dispatch table, and there
+   --  are no such forward references.
+
    Expander_Active : Boolean := False;
    --  A flag that indicates if expansion is active (True) or deactivated
    --  (False). When expansion is deactivated all calls to expander routines
@@ -1430,5 +1469,21 @@ private
       Polling_Required               : Boolean;
       Use_VADS_Size                  : Boolean;
    end record;
+
+   --  The following declarations are for GCC version dependent flags. We do
+   --  not let client code in the compiler test GCC_Version directly, but
+   --  instead use deferred constants for relevant feature tags.
+
+   function get_gcc_version return Int;
+   pragma Import (C, get_gcc_version, "get_gcc_version");
+
+   GCC_Version : constant Nat := get_gcc_version;
+   --  GNATMAKE
+   --  Indicates which version of gcc is in use (3 = 3.x, 4 = 4.x). Note that
+   --  gcc 2.8.1 (which used to be a value of 2) is no longer supported.
+
+   Static_Dispatch_Tables : constant Boolean := GCC_Version >= 4;
+   --  GCC version 4 can handle the static dispatch tables, but not version 3.
+   --  Also we need -funit-at-a-time, which should also be tested here ???
 
 end Opt;

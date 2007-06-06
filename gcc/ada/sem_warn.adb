@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 
 with Alloc;
 with Atree;    use Atree;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Exp_Code; use Exp_Code;
@@ -118,6 +119,377 @@ package body Sem_Warn is
            ("\?(suggest using template with multiple instructions)", N);
       end if;
    end Check_Code_Statement;
+
+   ---------------------------------
+   -- Check_Infinite_Loop_Warning --
+   ---------------------------------
+
+   --  The case we look for is a while loop which tests a local variable, where
+   --  there is no obvious direct or possible indirect update of the variable
+   --  within the body of the loop.
+
+   procedure Check_Infinite_Loop_Warning (Loop_Statement : Node_Id) is
+      Iter : constant Node_Id := Iteration_Scheme (Loop_Statement);
+
+      Ref : Node_Id   := Empty;
+      --  Reference in iteration scheme to variable that may not be modified
+      --  in loop, indicating a possible infinite loop.
+
+      Var : Entity_Id := Empty;
+      --  Corresponding entity (entity of Ref)
+
+      procedure Find_Var (N : Node_Id);
+      --  Inspect condition to see if it depends on a single entity
+      --  reference. If so, Ref is set to point to the reference node,
+      --  and Var is set to the referenced Entity.
+
+      function Has_Indirection (T : Entity_Id) return Boolean;
+      --  If the controlling variable is an access type, or is a record type
+      --  with access components, assume that it is changed indirectly and
+      --  suppress the warning. As a concession to low-level programming, in
+      --  particular within Declib, we also suppress warnings on a record
+      --  type that contains components of type Address or Short_Address.
+
+      function Is_Suspicious_Function_Name (E : Entity_Id) return Boolean;
+      --  Given an entity name, see if the name appears to have something to
+      --  do with I/O or network stuff, and if so, return True. Used to kill
+      --  some false positives on a heuristic basis that such functions will
+      --  likely have some strange side effect dependencies. A rather funny
+      --  kludge, but warning messages are in the heuristics business.
+
+      function Test_Ref (N : Node_Id) return Traverse_Result;
+      --  Test for reference to variable in question. Returns Abandon if
+      --  matching reference found.
+
+      function Find_Ref is new Traverse_Func (Test_Ref);
+      --  Function to traverse body of procedure. Returns Abandon if matching
+      --  reference found.
+
+      --------------
+      -- Find_Var --
+      --------------
+
+      procedure Find_Var (N : Node_Id) is
+      begin
+         --  Condition is a direct variable reference
+
+         if Is_Entity_Name (N) then
+            Ref := N;
+            Var := Entity (Ref);
+
+            --  Case of condition is a comparison with compile time known value
+
+         elsif Nkind (N) in N_Op_Compare then
+            if Compile_Time_Known_Value (Right_Opnd (N)) then
+               Find_Var (Left_Opnd (N));
+
+            elsif Compile_Time_Known_Value (Left_Opnd (N)) then
+               Find_Var (Right_Opnd (N));
+
+            --  Ignore any other comparison
+
+            else
+               return;
+            end if;
+
+            --  If condition is a negation, check its operand
+
+         elsif Nkind (N) = N_Op_Not then
+            Find_Var (Right_Opnd (N));
+
+            --  Case of condition is function call
+
+         elsif Nkind (N) = N_Function_Call then
+
+            --  Forget it if function name is not entity, who knows what
+            --  we might be calling?
+
+            if not Is_Entity_Name (Name (N)) then
+               return;
+
+               --  Forget it if warnings are suppressed on function entity
+
+            elsif Warnings_Off (Entity (Name (N))) then
+               return;
+
+               --  Forget it if function name is suspicious. A strange test
+               --  but warning generation is in the heuristics business!
+
+            elsif Is_Suspicious_Function_Name (Entity (Name (N))) then
+               return;
+            end if;
+
+            --  OK, see if we have one argument
+
+            declare
+               PA : constant List_Id := Parameter_Associations (N);
+
+            begin
+               --  One argument, so check the argument
+
+               if Present (PA)
+                 and then List_Length (PA) = 1
+               then
+                  if Nkind (First (PA)) = N_Parameter_Association then
+                     Find_Var (Explicit_Actual_Parameter (First (PA)));
+                  else
+                     Find_Var (First (PA));
+                  end if;
+
+                  --  Not one argument
+
+               else
+                  return;
+               end if;
+            end;
+
+            --  Any other kind of node is not something we warn for
+
+         else
+            return;
+         end if;
+      end Find_Var;
+
+      ---------------------
+      -- Has_Indirection --
+      ---------------------
+
+      function Has_Indirection (T : Entity_Id) return Boolean is
+         Comp : Entity_Id;
+         Rec  : Entity_Id;
+
+      begin
+         if Is_Access_Type (T) then
+            return True;
+
+         elsif Is_Private_Type (T)
+           and then Present (Full_View (T))
+           and then Is_Access_Type (Full_View (T))
+         then
+            return True;
+
+         elsif Is_Record_Type (T) then
+            Rec := T;
+
+         elsif Is_Private_Type (T)
+           and then Present (Full_View (T))
+           and then Is_Record_Type (Full_View (T))
+         then
+            Rec := Full_View (T);
+         else
+            return False;
+         end if;
+
+         Comp := First_Component (Rec);
+         while Present (Comp) loop
+            if Is_Access_Type (Etype (Comp))
+              or else Is_Descendent_Of_Address (Etype (Comp))
+            then
+               return True;
+            end if;
+
+            Next_Component (Comp);
+         end loop;
+
+         return False;
+      end Has_Indirection;
+
+      ---------------------------------
+      -- Is_Suspicious_Function_Name --
+      ---------------------------------
+
+      function Is_Suspicious_Function_Name (E : Entity_Id) return Boolean is
+         S : Entity_Id;
+
+         function Substring_Present (S : String) return Boolean;
+         --  Returns True if name buffer has given string delimited by non-
+         --  alphabetic characters or by end of string. S is lower case.
+
+         -----------------------
+         -- Substring_Present --
+         -----------------------
+
+         function Substring_Present (S : String) return Boolean is
+            Len : constant Natural := S'Length;
+
+         begin
+            for J in 1 .. Name_Len - (Len - 1) loop
+               if Name_Buffer (J .. J + (Len - 1)) = S
+                 and then
+                   (J = 1
+                     or else Name_Buffer (J - 1) not in 'a' .. 'z')
+                 and then
+                   (J + Len > Name_Len
+                     or else Name_Buffer (J + Len) not in 'a' .. 'z')
+               then
+                  return True;
+               end if;
+            end loop;
+
+            return False;
+         end Substring_Present;
+
+         --  Start of processing for Is_Suspicious_Function_Name
+
+      begin
+         S := E;
+         while Present (S) and then S /= Standard_Standard loop
+            Get_Name_String (Chars (S));
+
+            if Substring_Present ("io")
+              or else Substring_Present ("file")
+              or else Substring_Present ("network")
+            then
+               return True;
+            else
+               S := Scope (S);
+            end if;
+         end loop;
+
+         return False;
+      end Is_Suspicious_Function_Name;
+
+      --------------
+      -- Test_Ref --
+      --------------
+
+      function Test_Ref (N : Node_Id) return Traverse_Result is
+      begin
+         --  Waste of time to look at iteration scheme
+
+         if N = Iter then
+            return Skip;
+
+            --  Direct reference to variable in question
+
+         elsif Is_Entity_Name (N)
+           and then Present (Entity (N))
+           and then Entity (N) = Var
+         then
+            --  If this is an Lvalue, then definitely abandon, since
+            --  this could be a direct modification of the variable.
+
+            if May_Be_Lvalue (N) then
+               return Abandon;
+            end if;
+
+            --  If we appear in the context of a procedure call, then also
+            --  abandon, since there may be issues of non-visible side
+            --  effects going on in the call.
+
+            declare
+               P : Node_Id;
+            begin
+               P := N;
+               loop
+                  P := Parent (P);
+                  exit when P = Loop_Statement;
+
+                  if Nkind (P) = N_Procedure_Call_Statement then
+                     return Abandon;
+                  end if;
+               end loop;
+            end;
+
+            --  Reference to variable renaming variable in question
+
+         elsif Is_Entity_Name (N)
+           and then Present (Entity (N))
+           and then Ekind (Entity (N)) = E_Variable
+           and then Present (Renamed_Object (Entity (N)))
+           and then Is_Entity_Name (Renamed_Object (Entity (N)))
+           and then Entity (Renamed_Object (Entity (N))) = Var
+           and then May_Be_Lvalue (N)
+         then
+            return Abandon;
+
+            --  Call to subprogram
+
+         elsif Nkind (N) = N_Procedure_Call_Statement
+           or else Nkind (N) = N_Function_Call
+         then
+            --  If subprogram is within the scope of the entity we are
+            --  dealing with as the loop variable, then it could modify
+            --  this parameter, so we abandon in this case. In the case
+            --  of a subprogram that is not an entity we also abandon.
+
+            if not Is_Entity_Name (Name (N))
+              or else Scope_Within (Entity (Name (N)), Scope (Var))
+            then
+               return Abandon;
+            end if;
+         end if;
+
+         --  All OK, continue scan
+
+         return OK;
+      end Test_Ref;
+
+   --  Start of processing for Check_Infinite_Loop_Warning
+
+   begin
+      --  We need a while iteration with no condition actions. Conditions
+      --  actions just make things too complicated to get the warning right.
+
+      if No (Iter)
+        or else No (Condition (Iter))
+        or else Present (Condition_Actions (Iter))
+        or else Debug_Flag_Dot_W
+      then
+         return;
+      end if;
+
+      --  Initial conditions met, see if condition is of right form
+
+      Find_Var (Condition (Iter));
+
+      --  Nothing to do if local variable from source not found
+
+      if No (Var)
+        or else Ekind (Var) /= E_Variable
+        or else Is_Library_Level_Entity (Var)
+        or else not Comes_From_Source (Var)
+      then
+         return;
+
+      --  Nothing to do if there is some indirection involved (assume that the
+      --  designated variable might be modified in some way we don't see).
+
+      elsif Has_Indirection (Etype (Var)) then
+         return;
+
+      --  Same sort of thing for volatile variable, might be modified by
+      --  some other task or by the operating system in some way.
+
+      elsif Is_Volatile (Var) then
+         return;
+      end if;
+
+      --  Filter out case of original statement sequence starting with delay.
+      --  We assume this is a multi-tasking program and that the condition
+      --  is affected by other threads (some kind of busy wait).
+
+      declare
+         Fstm : constant Node_Id :=
+                  Original_Node (First (Statements (Loop_Statement)));
+      begin
+         if Nkind (Fstm) = N_Delay_Relative_Statement
+           or else Nkind (Fstm) = N_Delay_Until_Statement
+         then
+            return;
+         end if;
+      end;
+
+      --  We have a variable reference of the right form, now we scan the loop
+      --  body to see if it looks like it might not be modified
+
+      if Find_Ref (Loop_Statement) = OK then
+         Error_Msg_NE
+           ("variable& is not modified in loop body?", Ref, Var);
+         Error_Msg_N
+           ("\possible infinite loop", Ref);
+      end if;
+   end Check_Infinite_Loop_Warning;
 
    ----------------------
    -- Check_References --
@@ -334,10 +706,14 @@ package body Sem_Warn is
       E1 := First_Entity (E);
       while Present (E1) loop
 
-         --  We only look at source entities with warning flag on
+         --  We only look at source entities with warning flag on. We also
+         --  ignore objects whose type or base type has warnings suppressed.
 
-         if Comes_From_Source (E1) and then not Warnings_Off (E1) then
-
+         if Comes_From_Source (E1)
+           and then not Warnings_Off (E1)
+           and then not Warnings_Off (Etype (E1))
+           and then not Warnings_Off (Base_Type (Etype (E1)))
+         then
             --  We are interested in variables and out parameters, but we
             --  exclude protected types, too complicated to worry about.
 
@@ -629,6 +1005,14 @@ package body Sem_Warn is
                and then (Nkind (Unit (Cunit (Main_Unit))) /= N_Subunit
                            or else
                          Get_Source_Unit (E1) = Main_Unit)
+
+               --  No warning on a return object, because these are often
+               --  created with a single expression and an implicit return.
+               --  If the object is a variable there will be a warning
+               --  indicating that it could be declared constant.
+
+               and then not
+                 (Ekind (E1) = E_Constant and then Is_Return_Object (E1))
             then
                --  Suppress warnings in internal units if not in -gnatg mode
                --  (these would be junk warnings for an applications program,
@@ -870,7 +1254,7 @@ package body Sem_Warn is
                               return;
                            end if;
 
-                           --  We are only interested in deferences
+                           --  We are only interested in dereferences
 
                            if not Is_Dereferenced (N) then
                               return;
@@ -1741,6 +2125,18 @@ package body Sem_Warn is
    function Set_Dot_Warning_Switch (C : Character) return Boolean is
    begin
       case C is
+         when 'c' =>
+            Warn_On_Unrepped_Components         := True;
+
+         when 'C' =>
+            Warn_On_Unrepped_Components         := False;
+
+         when 'r' =>
+            Warn_On_Object_Renames_Function     := True;
+
+         when 'R' =>
+            Warn_On_Object_Renames_Function     := False;
+
          when 'x' =>
             Warn_On_Non_Local_Exception         := True;
 
@@ -1779,8 +2175,10 @@ package body Sem_Warn is
             Warn_On_Obsolescent_Feature         := True;
             Warn_On_Questionable_Missing_Parens := True;
             Warn_On_Redundant_Constructs        := True;
+            Warn_On_Object_Renames_Function     := True;
             Warn_On_Unchecked_Conversion        := True;
             Warn_On_Unrecognized_Pragma         := True;
+            Warn_On_Unrepped_Components         := True;
 
          when 'A' =>
             Check_Unreferenced                  := False;
@@ -1803,8 +2201,10 @@ package body Sem_Warn is
             Warn_On_Obsolescent_Feature         := False;
             Warn_On_Questionable_Missing_Parens := False;
             Warn_On_Redundant_Constructs        := False;
+            Warn_On_Object_Renames_Function     := False;
             Warn_On_Unchecked_Conversion        := False;
             Warn_On_Unrecognized_Pragma         := False;
+            Warn_On_Unrepped_Components         := False;
 
          when 'b' =>
             Warn_On_Bad_Fixed_Value             := True;
