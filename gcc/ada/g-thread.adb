@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2006 AdaCore                      --
+--                    Copyright (C) 1998-2007, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,7 @@ with System.Tasking;
 with System.Tasking.Stages;   use System.Tasking.Stages;
 with System.OS_Interface;     use System.OS_Interface;
 with System.Soft_Links;       use System.Soft_Links;
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body GNAT.Threads is
 
@@ -51,12 +51,12 @@ package body GNAT.Threads is
    --  The following unchecked conversions are aliasing safe, since they
    --  are never used to create pointers to improperly aliased data.
 
-   function To_Addr is new Unchecked_Conversion (Task_Id, Address);
-   function To_Id   is new Unchecked_Conversion (Address, Task_Id);
-   function To_Id   is new Unchecked_Conversion (Address, Tasking.Task_Id);
-   function To_Tid  is new Unchecked_Conversion
+   function To_Addr is new Ada.Unchecked_Conversion (Task_Id, Address);
+   function To_Id   is new Ada.Unchecked_Conversion (Address, Task_Id);
+   function To_Id   is new Ada.Unchecked_Conversion (Address, Tasking.Task_Id);
+   function To_Tid  is new Ada.Unchecked_Conversion
      (Address, Ada.Task_Identification.Task_Id);
-   function To_Thread is new Unchecked_Conversion (Address, Thread_Id_Ptr);
+   function To_Thread is new Ada.Unchecked_Conversion (Address, Thread_Id_Ptr);
 
    pragma Warnings (On);
 
@@ -91,7 +91,7 @@ package body GNAT.Threads is
    is
       TP : Tptr;
 
-      function To_CP is new Unchecked_Conversion (Address, Code_Proc);
+      function To_CP is new Ada.Unchecked_Conversion (Address, Code_Proc);
 
    begin
       TP := new Thread (Size, Prio, Parm, To_CP (Code));
@@ -174,7 +174,7 @@ package body GNAT.Threads is
    ----------------
 
    function To_Task_Id
-     (Id   : System.Address) return Ada.Task_Identification.Task_Id
+     (Id : System.Address) return Ada.Task_Identification.Task_Id
    is
    begin
       return To_Tid (Id);

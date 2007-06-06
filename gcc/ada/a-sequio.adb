@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@ with System.CRTL;
 with System.File_Control_Block;
 with System.File_IO;
 with System.Storage_Elements;
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body Ada.Sequential_IO is
 
@@ -56,8 +56,8 @@ package body Ada.Sequential_IO is
    subtype AP is FCB.AFCB_Ptr;
    subtype FP is SIO.File_Type;
 
-   function To_FCB is new Unchecked_Conversion (File_Mode, FCB.File_Mode);
-   function To_SIO is new Unchecked_Conversion (FCB.File_Mode, File_Mode);
+   function To_FCB is new Ada.Unchecked_Conversion (File_Mode, FCB.File_Mode);
+   function To_SIO is new Ada.Unchecked_Conversion (FCB.File_Mode, File_Mode);
 
    use type System.CRTL.size_t;
 
@@ -202,7 +202,7 @@ package body Ada.Sequential_IO is
                --  which can't possibly come this way, and for which the
                --  size of the access types differs.
 
-               function To_ItemP is new Unchecked_Conversion (SAP, ItemP);
+               function To_ItemP is new Ada.Unchecked_Conversion (SAP, ItemP);
 
                pragma Warnings (On);
 

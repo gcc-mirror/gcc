@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2005, AdaCore                     --
+--                     Copyright (C) 1998-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@
 with System;        use System;
 with System.Memory; use System.Memory;
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body GNAT.Table is
 
@@ -65,8 +65,8 @@ package body GNAT.Table is
    --  internally in this package, and cannot never result in any instances
    --  of improperly aliased pointers for the client of the package.
 
-   function To_Address is new Unchecked_Conversion (Table_Ptr, Address);
-   function To_Pointer is new Unchecked_Conversion (Address, Table_Ptr);
+   function To_Address is new Ada.Unchecked_Conversion (Table_Ptr, Address);
+   function To_Pointer is new Ada.Unchecked_Conversion (Address, Table_Ptr);
 
    pragma Warnings (On);
 

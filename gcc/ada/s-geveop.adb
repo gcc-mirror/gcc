@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@ with System;                    use System;
 with System.Address_Operations; use System.Address_Operations;
 with System.Storage_Elements;   use System.Storage_Elements;
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.Generic_Vector_Operations is
 
@@ -65,8 +65,8 @@ package body System.Generic_Vector_Operations is
       type Vector_Ptr is access all Vectors.Vector;
       type Element_Ptr is access all Element;
 
-      function VP is new Unchecked_Conversion (Address, Vector_Ptr);
-      function EP is new Unchecked_Conversion (Address, Element_Ptr);
+      function VP is new Ada.Unchecked_Conversion (Address, Vector_Ptr);
+      function EP is new Ada.Unchecked_Conversion (Address, Element_Ptr);
 
       SA : constant Address :=
              AddA (XA, To_Address
@@ -110,8 +110,8 @@ package body System.Generic_Vector_Operations is
       type Vector_Ptr is access all Vectors.Vector;
       type Element_Ptr is access all Element;
 
-      function VP is new Unchecked_Conversion (Address, Vector_Ptr);
-      function EP is new Unchecked_Conversion (Address, Element_Ptr);
+      function VP is new Ada.Unchecked_Conversion (Address, Vector_Ptr);
+      function EP is new Ada.Unchecked_Conversion (Address, Element_Ptr);
 
       SA : constant Address :=
              AddA (XA, To_Address

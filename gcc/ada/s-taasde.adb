@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2006, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,7 +74,7 @@ with System.Parameters;
 with System.Traces.Tasking;
 --  used for Send_Trace_Info
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.Tasking.Async_Delays is
 
@@ -88,7 +88,7 @@ package body System.Tasking.Async_Delays is
    use System.Traces;
    use System.Traces.Tasking;
 
-   function To_System is new Unchecked_Conversion
+   function To_System is new Ada.Unchecked_Conversion
      (Ada.Task_Identification.Task_Id, Task_Id);
 
    Timer_Server_ID : ST.Task_Id;

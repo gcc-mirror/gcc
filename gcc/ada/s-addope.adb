@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2006 Free Software Foundation, Inc.          --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,15 +31,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.Address_Operations is
 
    type IA is mod 2 ** Address'Size;
    --  The type used to provide the actual desired operations
 
-   function I is new Unchecked_Conversion (Address, IA);
-   function A is new Unchecked_Conversion (IA, Address);
+   function I is new Ada.Unchecked_Conversion (Address, IA);
+   function A is new Ada.Unchecked_Conversion (IA, Address);
    --  The operations are implemented by unchecked conversion to type IA,
    --  followed by doing the intrinsic operation on the IA values, followed
    --  by converting the result back to type Address.

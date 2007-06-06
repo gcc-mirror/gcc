@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@ with System.OS_Interface;
 --           cond_t
 --           thread_t
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package System.Task_Primitives is
    pragma Preelaborate;
@@ -59,7 +59,8 @@ package System.Task_Primitives is
    --  and the RTS_Lock is that the later one serves only as a semaphore so
    --  that do not check for ceiling violations.
 
-   function To_Lock_Ptr is new Unchecked_Conversion (RTS_Lock_Ptr, Lock_Ptr);
+   function To_Lock_Ptr is
+     new Ada.Unchecked_Conversion (RTS_Lock_Ptr, Lock_Ptr);
 
    type Suspension_Object is limited private;
    --  Should be used for the implementation of Ada.Synchronous_Task_Control
@@ -86,7 +87,7 @@ private
    type Owner_ID is access all Owner_Int;
 
    function To_Owner_ID is
-     new Unchecked_Conversion (System.Address, Owner_ID);
+     new Ada.Unchecked_Conversion (System.Address, Owner_ID);
 
    type Lock is record
       L              : aliased Base_Lock;

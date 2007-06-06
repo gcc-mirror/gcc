@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2003-2005, AdaCore                     --
+--                     Copyright (C) 2003-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,7 @@ with System.Storage_Elements; use System.Storage_Elements;
 with GNAT.IO;              use GNAT.IO;
 with GNAT.Debug_Utilities; use GNAT.Debug_Utilities;
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body GNAT.Memory_Dump is
 
@@ -70,7 +70,7 @@ package body GNAT.Memory_Dump is
 
       type Char_Ptr is access all Character;
 
-      function To_Char_Ptr is new Unchecked_Conversion (Address, Char_Ptr);
+      function To_Char_Ptr is new Ada.Unchecked_Conversion (Address, Char_Ptr);
 
    begin
       while Ctr /= 0 loop

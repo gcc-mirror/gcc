@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@
 --  Note: the reason that we provide for specialization here is that on
 --  some systems, notably VMS, we may need to worry about buffering.
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body Interfaces.C_Streams is
 
@@ -94,7 +94,7 @@ package body Interfaces.C_Streams is
 
    type Acc_Bytes is access all Byte_Buffer;
 
-   function To_Acc_Bytes is new Unchecked_Conversion (voids, Acc_Bytes);
+   function To_Acc_Bytes is new Ada.Unchecked_Conversion (voids, Acc_Bytes);
 
    function fread
      (buffer : voids;

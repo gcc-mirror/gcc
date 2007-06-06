@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---   Copyright (C) 1992,1993,1994,1995,1996 Free Software Foundation, Inc.  --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 function System.Address_Image (A : Address) return String is
 
@@ -46,7 +46,7 @@ function System.Address_Image (A : Address) return String is
    type Bytes is array (1 .. Address'Size / Storage_Unit) of Byte;
    for Bytes'Size use Address'Size;
 
-   function To_Bytes is new Unchecked_Conversion (Address, Bytes);
+   function To_Bytes is new Ada.Unchecked_Conversion (Address, Bytes);
 
    Byte_Sequence : constant Bytes := To_Bytes (A);
 

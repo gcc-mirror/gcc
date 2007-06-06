@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2006, AdaCore                     --
+--                     Copyright (C) 1995-2007, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,16 +32,16 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body Ada.Interrupts is
 
    package SI renames System.Interrupts;
 
-   function To_System is new Unchecked_Conversion
+   function To_System is new Ada.Unchecked_Conversion
      (Parameterless_Handler, SI.Parameterless_Handler);
 
-   function To_Ada is new Unchecked_Conversion
+   function To_Ada is new Ada.Unchecked_Conversion
      (SI.Parameterless_Handler, Parameterless_Handler);
 
    --------------------

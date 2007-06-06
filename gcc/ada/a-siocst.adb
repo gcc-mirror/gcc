@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@ with Interfaces.C_Streams; use Interfaces.C_Streams;
 with System.File_IO;
 with System.File_Control_Block;
 with System.Sequential_IO;
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body Ada.Sequential_IO.C_Streams is
 
@@ -45,7 +45,7 @@ package body Ada.Sequential_IO.C_Streams is
 
    subtype AP is FCB.AFCB_Ptr;
 
-   function To_FCB is new Unchecked_Conversion (File_Mode, FCB.File_Mode);
+   function To_FCB is new Ada.Unchecked_Conversion (File_Mode, FCB.File_Mode);
 
    --------------
    -- C_Stream --

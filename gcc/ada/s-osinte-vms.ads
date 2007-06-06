@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2006, Free Software Foundation, Inc.      --
+--             Copyright (C) 1995-2007, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,7 +41,7 @@
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
 with Interfaces.C;
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -123,9 +123,9 @@ package System.OS_Interface is
      (Status : out Cond_Value_Type;
       Devnam : String;
       Chan   : out unsigned_short;
-      Acmode : in unsigned_short := 0;
+      Acmode : unsigned_short := 0;
       Mbxnam : String := String'Null_Parameter;
-      Flags  : in unsigned_long := 0);
+      Flags  : unsigned_long := 0);
    pragma Interface (External, Sys_Assign);
    pragma Import_Valued_Procedure
      (Sys_Assign, "SYS$ASSIGN",
@@ -148,7 +148,7 @@ package System.OS_Interface is
    procedure Sys_Cantim
      (Status : out Cond_Value_Type;
       Reqidt : Address;
-      Acmode : in unsigned);
+      Acmode : unsigned);
    pragma Interface (External, Sys_Cantim);
    pragma Import_Valued_Procedure
      (Sys_Cantim, "SYS$CANTIM",
@@ -175,12 +175,12 @@ package System.OS_Interface is
      (Status : out Cond_Value_Type;
       Prmflg : Boolean;
       Chan   : out unsigned_short;
-      Maxmsg : in unsigned_long := 0;
-      Bufquo : in unsigned_long := 0;
-      Promsk : in unsigned_short := 0;
-      Acmode : in unsigned_short := 0;
+      Maxmsg : unsigned_long := 0;
+      Bufquo : unsigned_long := 0;
+      Promsk : unsigned_short := 0;
+      Acmode : unsigned_short := 0;
       Lognam : String;
-      Flags  : in unsigned_long := 0);
+      Flags  : unsigned_long := 0);
    pragma Interface (External, Sys_Crembx);
    pragma Import_Valued_Procedure
      (Sys_Crembx, "SYS$CREMBX",
@@ -208,33 +208,33 @@ package System.OS_Interface is
 
    procedure Sys_QIO
      (Status : out Cond_Value_Type;
-      EFN    : in unsigned_long := 0;
-      Chan   : in unsigned_short;
-      Func   : in unsigned_long := 0;
+      EFN    : unsigned_long := 0;
+      Chan   : unsigned_short;
+      Func   : unsigned_long := 0;
       Iosb   : out IO_Status_Block_Type;
       Astadr : AST_Handler := No_AST_Handler;
       Astprm : Address := Null_Address;
-      P1     : in  unsigned_long := 0;
-      P2     : in  unsigned_long := 0;
-      P3     : in  unsigned_long := 0;
-      P4     : in  unsigned_long := 0;
-      P5     : in  unsigned_long := 0;
-      P6     : in  unsigned_long := 0);
+      P1     : unsigned_long := 0;
+      P2     : unsigned_long := 0;
+      P3     : unsigned_long := 0;
+      P4     : unsigned_long := 0;
+      P5     : unsigned_long := 0;
+      P6     : unsigned_long := 0);
 
    procedure Sys_QIO
      (Status : out Cond_Value_Type;
-      EFN    : in unsigned_long := 0;
-      Chan   : in unsigned_short;
-      Func   : in unsigned_long := 0;
+      EFN    : unsigned_long := 0;
+      Chan   : unsigned_short;
+      Func   : unsigned_long := 0;
       Iosb   : Address := Null_Address;
       Astadr : AST_Handler := No_AST_Handler;
       Astprm : Address := Null_Address;
-      P1     : in  unsigned_long := 0;
-      P2     : in  unsigned_long := 0;
-      P3     : in  unsigned_long := 0;
-      P4     : in  unsigned_long := 0;
-      P5     : in  unsigned_long := 0;
-      P6     : in  unsigned_long := 0);
+      P1     : unsigned_long := 0;
+      P2     : unsigned_long := 0;
+      P3     : unsigned_long := 0;
+      P4     : unsigned_long := 0;
+      P5     : unsigned_long := 0;
+      P6     : unsigned_long := 0);
 
    pragma Interface (External, Sys_QIO);
    pragma Import_Valued_Procedure
@@ -274,11 +274,11 @@ package System.OS_Interface is
    --
    procedure Sys_Setimr
      (Status : out Cond_Value_Type;
-      EFN    : in unsigned_long;
+      EFN    : unsigned_long;
       Tim    : Long_Integer;
       AST    : AST_Handler;
       Reqidt : Address;
-      Flags  : in unsigned_long);
+      Flags  : unsigned_long);
    pragma Interface (External, Sys_Setimr);
    pragma Import_Valued_Procedure
      (Sys_Setimr, "SYS$SETIMR",
@@ -362,7 +362,7 @@ package System.OS_Interface is
      function (arg : System.Address) return System.Address;
 
    function Thread_Body_Access is new
-     Unchecked_Conversion (System.Address, Thread_Body);
+     Ada.Unchecked_Conversion (System.Address, Thread_Body);
 
    type pthread_t           is private;
    subtype Thread_Id        is pthread_t;

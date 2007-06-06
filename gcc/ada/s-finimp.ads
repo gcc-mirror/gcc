@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -133,7 +133,7 @@ package System.Finalization_Implementation is
    end record;
 
    procedure Initialize (Object : in out Limited_Record_Controller);
-   --  Does nothing currently.
+   --  Does nothing currently
 
    procedure Finalize (Object : in out Limited_Record_Controller);
    --  Finalize the controlled components of the enclosing record by following

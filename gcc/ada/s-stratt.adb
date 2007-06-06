@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,7 @@
 
 with Ada.IO_Exceptions;
 with Ada.Streams; use Ada.Streams;
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.Stream_Attributes is
 
@@ -47,7 +47,7 @@ package body System.Stream_Attributes is
    subtype SEA is Ada.Streams.Stream_Element_Array;
    subtype SEO is Ada.Streams.Stream_Element_Offset;
 
-   generic function UC renames Unchecked_Conversion;
+   generic function UC renames Ada.Unchecked_Conversion;
 
    --  Subtypes used to define Stream_Element_Array values that map
    --  into the elementary types, using unchecked conversion.

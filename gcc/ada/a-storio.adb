@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,14 +31,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body Ada.Storage_IO is
 
    type Buffer_Ptr is access all Buffer_Type;
    type Elmt_Ptr   is access all Element_Type;
 
-   function To_Buffer_Ptr is new Unchecked_Conversion (Elmt_Ptr, Buffer_Ptr);
+   function To_Buffer_Ptr is
+     new Ada.Unchecked_Conversion (Elmt_Ptr, Buffer_Ptr);
 
    ----------
    -- Read --

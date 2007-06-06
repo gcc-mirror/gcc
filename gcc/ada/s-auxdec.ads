@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,7 @@
 --  These definitions can be used directly by withing this package, or merged
 --  with System using pragma Extend_System (Aux_DEC)
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package System.Aux_DEC is
    pragma Preelaborate;
@@ -485,61 +485,61 @@ private
    --  detectable by a program)
 
    function To_Unsigned_Byte_A is new
-     Unchecked_Conversion (Bit_Array_8, Unsigned_Byte);
+     Ada.Unchecked_Conversion (Bit_Array_8, Unsigned_Byte);
 
    function To_Unsigned_Byte (X : Bit_Array_8) return Unsigned_Byte
      renames To_Unsigned_Byte_A;
 
    function To_Bit_Array_8_A is new
-     Unchecked_Conversion (Unsigned_Byte, Bit_Array_8);
+     Ada.Unchecked_Conversion (Unsigned_Byte, Bit_Array_8);
 
    function To_Bit_Array_8 (X : Unsigned_Byte) return Bit_Array_8
      renames To_Bit_Array_8_A;
 
    function To_Unsigned_Word_A is new
-     Unchecked_Conversion (Bit_Array_16, Unsigned_Word);
+     Ada.Unchecked_Conversion (Bit_Array_16, Unsigned_Word);
 
    function To_Unsigned_Word (X : Bit_Array_16) return Unsigned_Word
      renames To_Unsigned_Word_A;
 
    function To_Bit_Array_16_A is new
-     Unchecked_Conversion (Unsigned_Word, Bit_Array_16);
+     Ada.Unchecked_Conversion (Unsigned_Word, Bit_Array_16);
 
    function To_Bit_Array_16 (X : Unsigned_Word) return Bit_Array_16
      renames To_Bit_Array_16_A;
 
    function To_Unsigned_Longword_A is new
-     Unchecked_Conversion (Bit_Array_32, Unsigned_Longword);
+     Ada.Unchecked_Conversion (Bit_Array_32, Unsigned_Longword);
 
    function To_Unsigned_Longword (X : Bit_Array_32) return Unsigned_Longword
      renames To_Unsigned_Longword_A;
 
    function To_Bit_Array_32_A is new
-     Unchecked_Conversion (Unsigned_Longword, Bit_Array_32);
+     Ada.Unchecked_Conversion (Unsigned_Longword, Bit_Array_32);
 
    function To_Bit_Array_32 (X : Unsigned_Longword) return Bit_Array_32
      renames To_Bit_Array_32_A;
 
    function To_Unsigned_32_A is new
-     Unchecked_Conversion (Bit_Array_32, Unsigned_32);
+     Ada.Unchecked_Conversion (Bit_Array_32, Unsigned_32);
 
    function To_Unsigned_32 (X : Bit_Array_32) return Unsigned_32
      renames To_Unsigned_32_A;
 
    function To_Bit_Array_32_A is new
-     Unchecked_Conversion (Unsigned_32, Bit_Array_32);
+     Ada.Unchecked_Conversion (Unsigned_32, Bit_Array_32);
 
    function To_Bit_Array_32 (X : Unsigned_32) return Bit_Array_32
      renames To_Bit_Array_32_A;
 
    function To_Unsigned_Quadword_A is new
-     Unchecked_Conversion (Bit_Array_64, Unsigned_Quadword);
+     Ada.Unchecked_Conversion (Bit_Array_64, Unsigned_Quadword);
 
    function To_Unsigned_Quadword (X : Bit_Array_64) return Unsigned_Quadword
      renames To_Unsigned_Quadword_A;
 
    function To_Bit_Array_64_A is new
-     Unchecked_Conversion (Unsigned_Quadword, Bit_Array_64);
+     Ada.Unchecked_Conversion (Unsigned_Quadword, Bit_Array_64);
 
    function To_Bit_Array_64 (X : Unsigned_Quadword) return Bit_Array_64
      renames To_Bit_Array_64_A;
@@ -550,7 +550,7 @@ private
    --  want warnings when we compile on such systems.
 
    function To_Address_A is new
-     Unchecked_Conversion (Integer, Address);
+     Ada.Unchecked_Conversion (Integer, Address);
    pragma Pure_Function (To_Address_A);
 
    function To_Address (X : Integer) return Address
@@ -558,7 +558,7 @@ private
    pragma Pure_Function (To_Address);
 
    function To_Address_Long_A is new
-     Unchecked_Conversion (Unsigned_Longword, Address);
+     Ada.Unchecked_Conversion (Unsigned_Longword, Address);
    pragma Pure_Function (To_Address_Long_A);
 
    function To_Address_Long (X : Unsigned_Longword) return Address
@@ -566,19 +566,19 @@ private
    pragma Pure_Function (To_Address_Long);
 
    function To_Integer_A is new
-     Unchecked_Conversion (Address, Integer);
+     Ada.Unchecked_Conversion (Address, Integer);
 
    function To_Integer (X : Address) return Integer
      renames To_Integer_A;
 
    function To_Unsigned_Longword_A is new
-     Unchecked_Conversion (Address, Unsigned_Longword);
+     Ada.Unchecked_Conversion (Address, Unsigned_Longword);
 
    function To_Unsigned_Longword (X : Address) return Unsigned_Longword
      renames To_Unsigned_Longword_A;
 
    function To_Unsigned_Longword_A is new
-     Unchecked_Conversion (AST_Handler, Unsigned_Longword);
+     Ada.Unchecked_Conversion (AST_Handler, Unsigned_Longword);
 
    function To_Unsigned_Longword (X : AST_Handler) return Unsigned_Longword
      renames To_Unsigned_Longword_A;

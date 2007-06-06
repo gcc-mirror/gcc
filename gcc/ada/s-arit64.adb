@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,10 +31,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Pure_Exceptions; use System.Pure_Exceptions;
-
 with Interfaces; use Interfaces;
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.Arith_64 is
 
@@ -42,8 +40,8 @@ package body System.Arith_64 is
    pragma Suppress (Range_Check);
 
    subtype Uns64 is Unsigned_64;
-   function To_Uns is new Unchecked_Conversion (Int64, Uns64);
-   function To_Int is new Unchecked_Conversion (Uns64, Int64);
+   function To_Uns is new Ada.Unchecked_Conversion (Int64, Uns64);
+   function To_Int is new Ada.Unchecked_Conversion (Uns64, Int64);
 
    subtype Uns32 is Unsigned_32;
 
@@ -379,7 +377,7 @@ package body System.Arith_64 is
 
    procedure Raise_Error is
    begin
-      Raise_Exception (CE, "64-bit arithmetic overflow");
+      raise Constraint_Error with "64-bit arithmetic overflow";
    end Raise_Error;
 
    -------------------

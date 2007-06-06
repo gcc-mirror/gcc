@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2006, AdaCore                     --
+--                     Copyright (C) 1998-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,8 +34,8 @@
 with Ada.Characters.Handling;
 with Ada.Strings.Fixed;
 
-with Unchecked_Deallocation;
-with Unchecked_Conversion;
+with Ada.Unchecked_Deallocation;
+with Ada.Unchecked_Conversion;
 
 with System;      use System;
 with System.CRTL; use System.CRTL;
@@ -54,7 +54,7 @@ package body GNAT.Directory_Operations is
    --  1024 is the value of FILENAME_MAX in stdio.h
 
    procedure Free is new
-     Unchecked_Deallocation (Dir_Type_Value, Dir_Type);
+     Ada.Unchecked_Deallocation (Dir_Type_Value, Dir_Type);
 
    ---------------
    -- Base_Name --
@@ -689,7 +689,7 @@ package body GNAT.Directory_Operations is
          type    Path_String_Access is access Path_String;
 
          function Address_To_Access is new
-           Unchecked_Conversion
+           Ada.Unchecked_Conversion
              (Source => Address,
               Target => Path_String_Access);
 

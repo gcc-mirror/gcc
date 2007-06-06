@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --            (Version for IBM Mainframe Packed Decimal Format)             --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,8 +32,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System;                  use System;
-with Unchecked_Conversion;
+with System; use System;
+
+with Ada.Unchecked_Conversion;
 
 package body Interfaces.Packed_Decimal is
 
@@ -41,7 +42,8 @@ package body Interfaces.Packed_Decimal is
    --  The type used internally to represent packed decimal
 
    type Packed_Ptr is access Packed;
-   function To_Packed_Ptr is new Unchecked_Conversion (Address, Packed_Ptr);
+   function To_Packed_Ptr is
+     new Ada.Unchecked_Conversion (Address, Packed_Ptr);
 
    --  The following array is used to convert a value in the range 0-99 to
    --  a packed decimal format with two hexadecimal nibbles. It is worth

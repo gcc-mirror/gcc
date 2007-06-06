@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2006, AdaCore                     --
+--                     Copyright (C) 1998-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,8 +43,8 @@ with GNAT.Debug_Utilities;      use GNAT.Debug_Utilities;
 
 with System;                    use System;
 
-with Unchecked_Conversion;
-with Unchecked_Deallocation;
+with Ada.Unchecked_Conversion;
+with Ada.Unchecked_Deallocation;
 
 package body GNAT.Spitbol.Patterns is
 
@@ -75,7 +75,7 @@ package body GNAT.Spitbol.Patterns is
    subtype String_Ptr is Ada.Strings.Unbounded.String_Access;
    subtype File_Ptr   is Ada.Text_IO.File_Access;
 
-   function To_Address is new Unchecked_Conversion (PE_Ptr, Address);
+   function To_Address is new Ada.Unchecked_Conversion (PE_Ptr, Address);
    --  Used only for debugging output purposes
 
    subtype AFC is Ada.Finalization.Controlled;
@@ -2324,8 +2324,8 @@ package body GNAT.Spitbol.Patterns is
 
    procedure Finalize (Object : in out Pattern) is
 
-      procedure Free is new Unchecked_Deallocation (PE, PE_Ptr);
-      procedure Free is new Unchecked_Deallocation (String, String_Ptr);
+      procedure Free is new Ada.Unchecked_Deallocation (PE, PE_Ptr);
+      procedure Free is new Ada.Unchecked_Deallocation (String, String_Ptr);
 
    begin
       --  Nothing to do if already freed
@@ -3544,7 +3544,7 @@ package body GNAT.Spitbol.Patterns is
    ------------
 
    function Str_BF (A : Boolean_Func) return String is
-      function To_A is new Unchecked_Conversion (Boolean_Func, Address);
+      function To_A is new Ada.Unchecked_Conversion (Boolean_Func, Address);
    begin
       return "BF(" & Image (To_A (A)) & ')';
    end Str_BF;
@@ -3563,7 +3563,7 @@ package body GNAT.Spitbol.Patterns is
    ------------
 
    function Str_NF (A : Natural_Func) return String is
-      function To_A is new Unchecked_Conversion (Natural_Func, Address);
+      function To_A is new Ada.Unchecked_Conversion (Natural_Func, Address);
    begin
       return "NF(" & Image (To_A (A)) & ')';
    end Str_NF;
@@ -3591,7 +3591,7 @@ package body GNAT.Spitbol.Patterns is
    ------------
 
    function Str_VF (A : VString_Func) return String is
-      function To_A is new Unchecked_Conversion (VString_Func, Address);
+      function To_A is new Ada.Unchecked_Conversion (VString_Func, Address);
    begin
       return "VF(" & Image (To_A (A)) & ')';
    end Str_VF;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,8 +43,8 @@ with System.File_Control_Block;
 with System.File_IO;
 with System.HTable;
 
-with Unchecked_Deallocation;
-with Unchecked_Conversion;
+with Ada.Unchecked_Deallocation;
+with Ada.Unchecked_Conversion;
 
 package body System.Shared_Storage is
 
@@ -57,7 +57,7 @@ package body System.Shared_Storage is
    package SFI renames System.File_IO;
 
    type String_Access is access String;
-   procedure Free is new Unchecked_Deallocation
+   procedure Free is new Ada.Unchecked_Deallocation
      (Object => String, Name => String_Access);
 
    Dir : String_Access;
@@ -106,16 +106,16 @@ package body System.Shared_Storage is
       --  Links for LRU chain
    end record;
 
-   procedure Free is new Unchecked_Deallocation
+   procedure Free is new Ada.Unchecked_Deallocation
      (Object => Shared_Var_File_Entry,
       Name   => Shared_Var_File_Entry_Ptr);
 
-   procedure Free is new Unchecked_Deallocation
+   procedure Free is new Ada.Unchecked_Deallocation
      (Object => File_Stream_Type'Class,
       Name   => File_Stream_Access);
 
    function To_AFCB_Ptr is
-     new Unchecked_Conversion (SIO.File_Type, FCB.AFCB_Ptr);
+     new Ada.Unchecked_Conversion (SIO.File_Type, FCB.AFCB_Ptr);
 
    LRU_Head : Shared_Var_File_Entry_Ptr;
    LRU_Tail : Shared_Var_File_Entry_Ptr;
