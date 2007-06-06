@@ -353,7 +353,7 @@ private
       --  the Self field of the corresponding file.
 
       Before_LM : Boolean := False;
-      --  This flag is used to deal with the anomolies introduced by the
+      --  This flag is used to deal with the anomalies introduced by the
       --  peculiar definition of End_Of_File and End_Of_Page in Ada. These
       --  functions require looking ahead more than one character. Since
       --  there is no convenient way of backing up more than one character,
