@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,7 @@ with Errout;   use Errout;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
+with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
@@ -1052,7 +1053,13 @@ package body Sem_Ch13 is
                  ("static string required for tag name!", Nam);
             end if;
 
-            Set_Has_External_Tag_Rep_Clause (U_Ent);
+            if VM_Target = No_VM then
+               Set_Has_External_Tag_Rep_Clause (U_Ent);
+            else
+               Error_Msg_Name_1 := Attr;
+               Error_Msg_N
+                 ("% attribute unsupported in this configuration", Nam);
+            end if;
          end External_Tag;
 
          -----------
@@ -1362,8 +1369,10 @@ package body Sem_Ch13 is
             --    type Q is access Float;
             --    for Q'Storage_Size use T'Storage_Size; -- incorrect
 
-            if Base_Type (T) = RTE (RE_Stack_Bounded_Pool) then
-               Error_Msg_N ("non-sharable internal Pool", Expr);
+            if RTE_Available (RE_Stack_Bounded_Pool)
+              and then Base_Type (T) = RTE (RE_Stack_Bounded_Pool)
+            then
+               Error_Msg_N ("non-shareable internal Pool", Expr);
                return;
             end if;
 
@@ -1502,6 +1511,10 @@ package body Sem_Ch13 is
             Size : constant Uint := Static_Integer (Expr);
 
          begin
+            if Ada_Version <= Ada_95 then
+               Check_Restriction (No_Implementation_Attributes, N);
+            end if;
+
             if Has_Stream_Size_Clause (U_Ent) then
                Error_Msg_N ("Stream_Size already given for &", Nam);
 
@@ -2076,6 +2089,9 @@ package body Sem_Ch13 is
             --  that the back-end can compute and back-annotate properly the
             --  size and alignment of types that may include this record.
 
+            --  This seems dubious, this destroys the source tree in a manner
+            --  not detectable by ASIS ???
+
             if Operating_Mode = Check_Semantics
               and then ASIS_Mode
             then
@@ -2116,9 +2132,9 @@ package body Sem_Ch13 is
          return;
       end if;
 
-      --  If a tag is present, then create a component clause that places
-      --  it at the start of the record (otherwise gigi may place it after
-      --  other fields that have rep clauses).
+      --  If a tag is present, then create a component clause that places it
+      --  at the start of the record (otherwise gigi may place it after other
+      --  fields that have rep clauses).
 
       Fent := First_Entity (Rectype);
 
@@ -2570,6 +2586,51 @@ package body Sem_Ch13 is
 
             Next_Component_Or_Discriminant (Comp);
          end loop;
+
+         --  If no Complete_Representation pragma, warn if missing components
+
+      elsif Warn_On_Unrepped_Components
+        and then not Warnings_Off (Rectype)
+      then
+         declare
+            Num_Repped_Components   : Nat := 0;
+            Num_Unrepped_Components : Nat := 0;
+
+         begin
+            --  First count number of repped and unrepped components
+
+            Comp := First_Component_Or_Discriminant (Rectype);
+            while Present (Comp) loop
+               if Present (Component_Clause (Comp)) then
+                  Num_Repped_Components := Num_Repped_Components + 1;
+               else
+                  Num_Unrepped_Components := Num_Unrepped_Components + 1;
+               end if;
+
+               Next_Component_Or_Discriminant (Comp);
+            end loop;
+
+            --  We are only interested in the case where there is at least one
+            --  unrepped component, and at least half the components have rep
+            --  clauses. We figure that if less than half have them, then the
+            --  partial rep clause is really intentional.
+
+            if Num_Unrepped_Components > 0
+              and then Num_Unrepped_Components < Num_Repped_Components
+            then
+               Comp := First_Component_Or_Discriminant (Rectype);
+               while Present (Comp) loop
+                  if No (Component_Clause (Comp)) then
+                     Error_Msg_Sloc := Sloc (Comp);
+                     Error_Msg_NE
+                       ("?no component clause given for & declared #",
+                        N, Comp);
+                  end if;
+
+                  Next_Component_Or_Discriminant (Comp);
+               end loop;
+            end if;
+         end;
       end if;
    end Analyze_Record_Representation_Clause;
 
@@ -3472,7 +3533,7 @@ package body Sem_Ch13 is
              Specification => Build_Spec);
 
       --  For a tagged type, there is always a visible declaration for each
-      --  stream TSS (it is a predefined primitive operation), and the for the
+      --  stream TSS (it is a predefined primitive operation), and the
       --  completion of this declaration occurs at the freeze point, which is
       --  not always visible at places where the attribute definition clause is
       --  visible. So, we create a dummy entity here for the purpose of
