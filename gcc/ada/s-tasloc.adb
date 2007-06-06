@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                              T R E E _ I N                               --
+--                     S Y S T E M . T A S K _ L O C K                      --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--                     Copyright (C) 1997-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,14 +31,27 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This procedure is used to read in a tree if the option is set. Note that
---  it is not part of the compiler proper, but rather the interface from
---  tools that need to read the tree to the tree reading routines, and is
---  thus bound as part of such tools.
+with System.Soft_Links;
+--  used for Lock_Task, Unlock_Task
 
-with System.OS_Lib; use System.OS_Lib;
+package body System.Task_Lock is
 
-procedure Tree_In (Desc : File_Descriptor);
---  Desc is the file descriptor for the file containing the tree, as written
---  by the compiler in a previous compilation using Tree_Gen. On return the
---  global data structures are appropriately initialized.
+   ----------
+   -- Lock --
+   ----------
+
+   procedure Lock is
+   begin
+      System.Soft_Links.Lock_Task.all;
+   end Lock;
+
+   ------------
+   -- Unlock --
+   ------------
+
+   procedure Unlock is
+   begin
+      System.Soft_Links.Unlock_Task.all;
+   end Unlock;
+
+end System.Task_Lock;

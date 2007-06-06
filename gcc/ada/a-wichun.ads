@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2005, Free Software Foundation, Inc.            --
+--          Copyright (C) 2005-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@
 --  Ada 2005 unit), but we make it available in Ada 95 mode, since it
 --  only deals with wide characters.
 
-with GNAT.UTF_32;
+with System.UTF_32;
 
 package Ada.Wide_Characters.Unicode is
 
@@ -44,7 +44,7 @@ package Ada.Wide_Characters.Unicode is
    --  The one addition we make is Fe, which represents the characters FFFE
    --  and FFFF in any of the planes.
 
-   type Category is new GNAT.UTF_32.Category;
+   type Category is new System.UTF_32.Category;
    --  Cc   Other, Control
    --  Cf   Other, Format
    --  Cn   Other, Not Assigned
