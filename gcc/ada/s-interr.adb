@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,7 +120,7 @@ with System.Tasking.Initialization;
 with System.Parameters;
 --  used for Single_Lock
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.Interrupts is
 
@@ -133,7 +133,7 @@ package body System.Interrupts is
    package IMNG renames System.Interrupt_Management;
    package IMOP renames System.Interrupt_Management.Operations;
 
-   function To_System is new Unchecked_Conversion
+   function To_System is new Ada.Unchecked_Conversion
      (Ada.Task_Identification.Task_Id, Task_Id);
 
    -----------------
@@ -220,16 +220,16 @@ package body System.Interrupts is
    --  Holds the task and entry index (if any) for each interrupt
 
    Blocked : array (Interrupt_ID'Range) of Boolean := (others => False);
-   pragma Volatile_Components (Blocked);
+   pragma Atomic_Components (Blocked);
    --  True iff the corresponding interrupt is blocked in the process level
 
    Ignored : array (Interrupt_ID'Range) of Boolean := (others => False);
-   pragma Volatile_Components (Ignored);
+   pragma Atomic_Components (Ignored);
    --  True iff the corresponding interrupt is blocked in the process level
 
    Last_Unblocker :
      array (Interrupt_ID'Range) of Task_Id := (others => Null_Task);
-   pragma Volatile_Components (Last_Unblocker);
+   pragma Atomic_Components (Last_Unblocker);
    --  Holds the ID of the last Task which Unblocked this Interrupt.
    --  It contains Null_Task if no tasks have ever requested the
    --  Unblocking operation or the Interrupt is currently Blocked.
@@ -567,7 +567,7 @@ package body System.Interrupts is
          Handler_Addr : System.Address;
       end record;
 
-      function To_Fat_Ptr is new Unchecked_Conversion
+      function To_Fat_Ptr is new Ada.Unchecked_Conversion
         (Parameterless_Handler, Fat_Ptr);
 
       Ptr : R_Link;
@@ -762,25 +762,41 @@ package body System.Interrupts is
       --------------------
 
       procedure Unbind_Handler (Interrupt : Interrupt_ID) is
+         Server : System.Tasking.Task_Id;
       begin
          if not Blocked (Interrupt) then
-
             --  Currently, there is a Handler or an Entry attached and
             --  corresponding Server_Task is waiting on "sigwait."
             --  We have to wake up the Server_Task and make it
             --  wait on condition variable by sending an
             --  Abort_Task_Interrupt
 
-            POP.Abort_Task (Server_ID (Interrupt));
+            Server := Server_ID (Interrupt);
 
-            --  Make sure corresponding Server_Task is out of its own
-            --  sigwait state.
+            case Server.Common.State is
+               when Interrupt_Server_Idle_Sleep |
+                    Interrupt_Server_Blocked_Interrupt_Sleep
+               =>
+                  POP.Wakeup (Server, Server.Common.State);
 
-            Ret_Interrupt :=
-              Interrupt_ID (IMOP.Interrupt_Wait (Intwait_Mask'Access));
+               when Interrupt_Server_Blocked_On_Event_Flag =>
+                  POP.Abort_Task (Server);
 
-            pragma Assert
-              (Ret_Interrupt = Interrupt_ID (IMNG.Abort_Task_Interrupt));
+                  --  Make sure corresponding Server_Task is out of its
+                  --  own sigwait state.
+
+                  Ret_Interrupt :=
+                    Interrupt_ID (IMOP.Interrupt_Wait (Intwait_Mask'Access));
+                  pragma Assert
+                    (Ret_Interrupt = Interrupt_ID (IMNG.Abort_Task_Interrupt));
+
+               when Runnable =>
+                  null;
+
+               when others =>
+                  pragma Assert (False);
+                  null;
+            end case;
 
             IMOP.Install_Default_Action (IMNG.Interrupt_ID (Interrupt));
 
@@ -1120,7 +1136,7 @@ package body System.Interrupts is
                   IMOP.Thread_Block_Interrupt (IMNG.Interrupt_ID (Interrupt));
 
                   if User_Handler (Interrupt).H /= null
-                    or else  User_Entry (Interrupt).T /= Null_Task
+                    or else User_Entry (Interrupt).T /= Null_Task
                   then
                      --  This is the case where the Server_Task is waiting
                      --  on "sigwait." Wake it up by sending an
@@ -1325,14 +1341,23 @@ package body System.Interrupts is
             --  from status change (Unblocked -> Blocked). If that is not
             --  the case, we should exceute the attached Procedure or Entry.
 
+            Self_ID.Common.State := Interrupt_Server_Blocked_On_Event_Flag;
             POP.Unlock (Self_ID);
 
             if Single_Lock then
                POP.Unlock_RTS;
             end if;
 
+            --  Avoid race condition when terminating application and
+            --  System.Parameters.No_Abort is True.
+
+            if Parameters.No_Abort and then Self_ID.Pending_Action then
+               Initialization.Do_Pending_Action (Self_ID);
+            end if;
+
             Ret_Interrupt :=
               Interrupt_ID (IMOP.Interrupt_Wait (Intwait_Mask'Access));
+            Self_ID.Common.State := Runnable;
 
             if Ret_Interrupt = Interrupt_ID (IMNG.Abort_Task_Interrupt) then
 
@@ -1458,7 +1483,7 @@ begin
    --  process during the RTS start up. (See processing in s-inmaop.adb). Pass
    --  the Interrupt_Mask of the environment task to the Interrupt_Manager.
 
-   --  Note : At this point we know that all tasks are masked for non-reserved
+   --  Note: At this point we know that all tasks are masked for non-reserved
    --  signals. Only the Interrupt_Manager will have masks set up differently
    --  inheriting the original environment task's mask.
 

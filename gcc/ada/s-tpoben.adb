@@ -7,7 +7,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2006, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,6 +54,7 @@ with System.Task_Primitives.Operations;
 --           Unlock
 --           Get_Priority
 --           Wakeup
+--           Set_Ceiling
 
 with System.Tasking.Initialization;
 --  Used for Defer_Abort,
@@ -63,6 +64,9 @@ with System.Tasking.Initialization;
 pragma Elaborate_All (System.Tasking.Initialization);
 --  This insures that tasking is initialized if any protected objects are
 --  created.
+
+with System.Restrictions;
+--  Used for Abort_Allowed
 
 with System.Parameters;
 --  Used for Single_Lock
@@ -216,13 +220,15 @@ package body System.Tasking.Protected_Objects.Entries is
       Initialization.Defer_Abort (Self_ID);
       Initialize_Lock (Init_Priority, Object.L'Access);
       Initialization.Undefer_Abort (Self_ID);
-      Object.Ceiling := System.Any_Priority (Init_Priority);
-      Object.Owner := Null_Task;
-      Object.Compiler_Info := Compiler_Info;
-      Object.Pending_Action := False;
+
+      Object.Ceiling          := System.Any_Priority (Init_Priority);
+      Object.New_Ceiling      := System.Any_Priority (Init_Priority);
+      Object.Owner            := Null_Task;
+      Object.Compiler_Info    := Compiler_Info;
+      Object.Pending_Action   := False;
       Object.Call_In_Progress := null;
-      Object.Entry_Bodies := Entry_Bodies;
-      Object.Find_Body_Index :=  Find_Body_Index;
+      Object.Entry_Bodies     := Entry_Bodies;
+      Object.Find_Body_Index  := Find_Body_Index;
 
       for E in Object.Entry_Queues'Range loop
          Object.Entry_Queues (E).Head := null;
@@ -235,7 +241,8 @@ package body System.Tasking.Protected_Objects.Entries is
    ------------------
 
    procedure Lock_Entries
-     (Object : Protection_Entries_Access; Ceiling_Violation : out Boolean)
+     (Object            : Protection_Entries_Access;
+      Ceiling_Violation : out Boolean)
    is
    begin
       if Object.Finalized then
@@ -264,7 +271,10 @@ package body System.Tasking.Protected_Objects.Entries is
       --  generated calls must be protected with cleanup handlers to ensure
       --  that abort is undeferred in all cases.
 
-      pragma Assert (STPO.Self.Deferral_Level > 0);
+      pragma Assert
+        (STPO.Self.Deferral_Level > 0
+          or else not Restrictions.Abort_Allowed);
+
       Write_Lock (Object.L'Access, Ceiling_Violation);
 
       --  We are entering in a protected action, so that we increase the
@@ -399,6 +409,18 @@ package body System.Tasking.Protected_Objects.Entries is
             Self_Id.Common.Protected_Action_Nesting :=
               Self_Id.Common.Protected_Action_Nesting - 1;
          end;
+      end if;
+
+      --  Before releasing the mutex we must actually update its ceiling
+      --  priority if it has been changed.
+
+      if Object.New_Ceiling /= Object.Ceiling then
+         if Locking_Policy = 'C' then
+            System.Task_Primitives.Operations.Set_Ceiling
+              (Object.L'Access, Object.New_Ceiling);
+         end if;
+
+         Object.Ceiling := Object.New_Ceiling;
       end if;
 
       Unlock (Object.L'Access);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -209,7 +209,7 @@ package System.Interrupts is
      (Handler_Addr : System.Address);
    --  This routine should be called by the compiler to allow the handler be
    --  used as an Interrupt Handler. That means call this procedure for each
-   --  pragma Interrup_Handler providing the address of the handler (not
+   --  pragma Interrupt_Handler providing the address of the handler (not
    --  including the pointer to the actual PO, this way this routine is called
    --  only once for each type definition of PO).
 

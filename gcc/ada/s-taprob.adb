@@ -40,6 +40,7 @@ with System.Task_Primitives.Operations;
 --  used for Write_Lock
 --           Unlock
 --           Self
+--           Set_Ceiling
 
 with System.Parameters;
 --  used for Runtime_Traces
@@ -54,6 +55,13 @@ package body System.Tasking.Protected_Objects is
 
    use System.Task_Primitives.Operations;
    use System.Traces;
+
+   ----------------
+   -- Local Data --
+   ----------------
+
+   Locking_Policy : Character;
+   pragma Import (C, Locking_Policy, "__gl_locking_policy");
 
    -------------------------
    -- Finalize_Protection --
@@ -253,6 +261,18 @@ package body System.Tasking.Protected_Objects is
             Self_Id.Common.Protected_Action_Nesting :=
               Self_Id.Common.Protected_Action_Nesting - 1;
          end;
+      end if;
+
+      --  Before releasing the mutex we must actually update its ceiling
+      --  priority if it has been changed.
+
+      if Object.New_Ceiling /= Object.Ceiling then
+         if Locking_Policy = 'C' then
+            System.Task_Primitives.Operations.Set_Ceiling
+              (Object.L'Access, Object.New_Ceiling);
+         end if;
+
+         Object.Ceiling := Object.New_Ceiling;
       end if;
 
       Unlock (Object.L'Access);
