@@ -1,3 +1,41 @@
+2007-06-06  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	* config/i386/i386.c (enum pta_flags): Move out of struct scope...
+	(struct pta): ...from here. Change flags to unsigned to avoid excessive
+	casting (as it is used as a bit mask).
+	(override_options): Add casts according to the coding convenventions.
+	(x86_64_elf_unique_section): Likewise.
+	(examine_argument): Avoid using C++ keywords as variable names.
+	(construct_container): Likewise.
+	(legitimize_pic_address): Likewise.
+	(get_dllimport_decl): Cast according to the coding conventions. Use
+	type safe memory macros.
+	(legitimize_address): Cast according to the coding conventions.
+	(emit_i387_cw_initialization): Corrected the type of slot to enum
+	ix86_stack_slot.
+	(ix86_init_machine_status): Use type safe memory macros.
+	(bdesc_pcmpestr): Use UNKNOWN instead of integer 0.
+	(bdesc_pcmpistr): Likewise.
+	(bdesc_crc32): Likewise.
+	(bdesc_sse_3arg): Likewise.
+	(bdesc_2arg): Likewise.
+	(bdesc_1arg): Likewise.
+	(ix86_expand_sse_pcmpestr): Cast according to the coding conventions.
+	(ix86_expand_sse_pcmpistr): Likewise.
+	(ix86_expand_vec_set_builtin): Use EXPAND_NORMAL instead of integer 0.
+	(ix86_builtin_vectorized_function): Change the type of fn to unsigned
+	int to match the langhook definition.
+	(ix86_builtin_conversion): Change the type of code to unsigned init to
+	match the langhook definition.
+	(ix86_preferred_reload_class): Avoid using C++ keywords as variable
+	names.
+	(ix86_preferred_output_reload_class): Likewise.
+	(ix86_cannot_change_mode_class): Likewise.
+	(ix86_memory_move_cost): Likewise.
+	(ix86_rtx_costs): Cast the outer_code parameter to enum rtx_code to
+	avoid excessive casting later on.
+	(x86_output_mi_thunk): Avoid using C++ keywords as variable names.
+
 2007-06-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (sse4_2_pcmpestr_cconly): Prefer pcmpestrm
