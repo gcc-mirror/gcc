@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,7 +62,7 @@ package System.Exception_Table is
    --  does not exist yet, null is returned.
 
    function Registered_Exceptions_Count return Natural;
-   --  Return the number of currently registered exceptions.
+   --  Return the number of currently registered exceptions
 
    type Exception_Data_Array is array (Natural range <>)
      of SSL.Exception_Data_Ptr;
@@ -70,6 +70,6 @@ package System.Exception_Table is
    procedure Get_Registered_Exceptions
      (List : out Exception_Data_Array;
       Last : out Integer);
-   --  Return the list of registered exceptions.
+   --  Return the list of registered exceptions
 
 end System.Exception_Table;

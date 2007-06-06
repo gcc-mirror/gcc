@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -310,7 +310,7 @@ package body Exp_Ch8 is
                Aux : constant Node_Id := Aux_Decls_Node (Parent (N));
 
             begin
-               New_Scope (Standard_Standard);
+               Push_Scope (Standard_Standard);
 
                if No (Actions (Aux)) then
                   Set_Actions (Aux, New_List (Decl));

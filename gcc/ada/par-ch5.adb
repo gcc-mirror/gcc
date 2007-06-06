@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -602,8 +602,8 @@ package body Ch5 is
                         Statement_Required := False;
 
                      --  A slash following an identifier or a selected
-                     --  component in this situation is most likely a
-                     --  period (have a look at the keyboard :-)
+                     --  component in this situation is most likely a period
+                     --  (see location of keys on keyboard).
 
                      elsif Token = Tok_Slash
                        and then (Nkind (Name_Node) = N_Identifier

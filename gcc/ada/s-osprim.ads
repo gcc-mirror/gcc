@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1998-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,7 +47,7 @@ package System.OS_Primitives is
                                         Duration'Last);
    --  Max of half a year delay, needed to prevent exceptions for large delay
    --  values. It seems unlikely that any test will notice this restriction,
-   --  except in the case of applications setting the clock at at run time (see
+   --  except in the case of applications setting the clock at run time (see
    --  s-tastim.adb). Also note that a larger value might cause problems (e.g
    --  overflow, or more likely OS limitation in the primitives used). In the
    --  case where half a year is too long (which occurs in high integrity mode

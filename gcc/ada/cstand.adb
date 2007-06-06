@@ -430,7 +430,7 @@ package body CStand is
       --    range False .. True
 
       --  where the occurrences of the literals must point to the
-      --  corresponding  definition.
+      --  corresponding definition.
 
       R_Node := New_Node (N_Range, Stloc);
       B_Node := New_Node (N_Identifier, Stloc);

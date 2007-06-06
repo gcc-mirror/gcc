@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -184,7 +184,7 @@ is
    --   of such a nested region. Again, like case 2, this causes us to miss
    --   some nested cases, but it doesn't seen worth the effort to stack and
    --   unstack the SIS information. Maybe we will reconsider this if we ever
-   --   get a complaint about a missed case :-)
+   --   get a complaint about a missed case.
 
    --   4. We encounter a valid pragma INTERFACE or IMPORT that effectively
    --   supplies the missing body. In this case we reset the entry.

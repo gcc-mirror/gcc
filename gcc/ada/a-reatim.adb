@@ -241,6 +241,11 @@ package body Ada.Real_Time is
 
    function To_Time_Span (D : Duration) return Time_Span is
    begin
+      --  Note regarding AI-00432 requiring range checking on this conversion.
+      --  In almost all versions of GNAT (and all to which this version of the
+      --  Ada.Real_Time package apply), the range of Time_Span and Duration are
+      --  the same, so there is no issue of overflow.
+
       return Time_Span (D);
    end To_Time_Span;
 

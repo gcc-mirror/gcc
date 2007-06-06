@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.        --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,9 +28,9 @@ with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Lib;      use Lib;
-with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
+with Opt;      use Opt;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Sinfo;    use Sinfo;
@@ -209,10 +209,32 @@ package body Tbuild is
       Exception_Choices : List_Id;
       Statements        : List_Id) return Node_Id
    is
-      Handler : constant Node_Id :=
-                  Make_Exception_Handler
-                    (Sloc, Choice_Parameter, Exception_Choices, Statements);
+      Handler : Node_Id;
+      Loc     : Source_Ptr;
+
    begin
+      --  Set the source location only when debugging the expanded code
+
+      --  When debugging the source code directly, we do not want the compiler
+      --  to associate this implicit exception handler with any specific source
+      --  line, because it can potentially confuse the debugger. The most
+      --  damaging situation would arise when the debugger tries to insert a
+      --  breakpoint at a certain line. If the code of the associated implicit
+      --  exception handler is generated before the code of that line, then the
+      --  debugger will end up inserting the breakpoint inside the exception
+      --  handler, rather than the code the user intended to break on. As a
+      --  result, it is likely that the program will not hit the breakpoint
+      --  as expected.
+
+      if Debug_Generated_Code then
+         Loc := Sloc;
+      else
+         Loc := No_Location;
+      end if;
+
+      Handler :=
+        Make_Exception_Handler
+          (Loc, Choice_Parameter, Exception_Choices, Statements);
       Set_Local_Raise_Statements (Handler, No_Elist);
       return Handler;
    end Make_Implicit_Exception_Handler;

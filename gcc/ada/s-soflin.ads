@@ -52,8 +52,7 @@ package System.Soft_Links is
 
    function Current_Target_Exception return EO;
    pragma Import
-     (Ada, Current_Target_Exception,
-      "__gnat_current_target_exception");
+     (Ada, Current_Target_Exception, "__gnat_current_target_exception");
    --  Import this subprogram from the private part of Ada.Exceptions
 
    --  First we have the access subprogram types used to establish the links.

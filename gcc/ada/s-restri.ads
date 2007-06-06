@@ -44,6 +44,7 @@ with System.Rident;
 
 package System.Restrictions is
    pragma Preelaborate;
+
    pragma Discard_Names;
    package Rident is new System.Rident;
 

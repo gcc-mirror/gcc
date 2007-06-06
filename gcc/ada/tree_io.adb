@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -447,6 +447,10 @@ package body Tree_IO is
 
       procedure Write_Non_Compressed_Sequence;
       --  Output currently collected sequence of non-compressible data
+
+      -----------------------------------
+      -- Write_Non_Compressed_Sequence --
+      -----------------------------------
 
       procedure Write_Non_Compressed_Sequence is
       begin

@@ -31,8 +31,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Pure_Exceptions; use System.Pure_Exceptions;
-
 package body System.WCh_JIS is
 
    type Byte is mod 256;
@@ -86,7 +84,7 @@ package body System.WCh_JIS is
          --  bit is set in both bytes.
 
          if JIS2 < 16#80# then
-            Raise_Exception (CE, "invalid small Katakana character");
+            raise Constraint_Error;
          end if;
 
          EUC1 := Character'Val (EUC_Hankaku_Kana);
@@ -96,7 +94,7 @@ package body System.WCh_JIS is
       --  a valid character for representation in EUC form.
 
       elsif JIS1 > 16#7F# or else JIS2 > 16#7F# then
-         Raise_Exception (CE, "wide character value out of EUC range");
+         raise Constraint_Error;
 
       --  Result is just the two characters with upper bits set
 

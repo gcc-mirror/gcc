@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -178,10 +178,6 @@ package Debug is
    Debug_Flag_Dot_7 : Boolean := False;
    Debug_Flag_Dot_8 : Boolean := False;
    Debug_Flag_Dot_9 : Boolean := False;
-
-   function Get_Debug_Flag_K return Boolean;
-   --  This function is called from C code to get the setting of the K flag
-   --  (it does not work to try to access a constant object directly).
 
    procedure Set_Debug_Flag (C : Character; Val : Boolean := True);
    --  Where C is 0-9, A-Z, or a-z, sets the corresponding debug flag to
