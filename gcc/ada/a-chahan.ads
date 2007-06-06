@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -92,48 +92,37 @@ package Ada.Characters.Handling is
    ------------------------------------------------------
 
    --  Ada 2005 AI 395: these functions are moved to Ada.Characters.Conversions
-   --  and are considered obsolete in Ada.Characters.Handling. We deal with
-   --  this by using the special Ada_05 form of pragma Obsolescent which is
-   --  only active in Ada_05 mode.
+   --  and are considered obsolete in Ada.Characters.Handling. However we do
+   --  not complain about this obsolescence, since in practice it is necessary
+   --  to use these routines when creating code that is intended ro run in
+   --  either Ada 95 or Ada 2005 mode.
 
    function Is_Character (Item : Wide_Character) return Boolean;
-   pragma Obsolescent
-     ("(Ada 2005) use Ada.Characters.Conversions.Is_Character", Ada_05);
-
-   function Is_String (Item : Wide_String) return Boolean;
-   pragma Obsolescent
-     ("(Ada 2005) use Ada.Characters.Conversions.Is_String", Ada_05);
+   function Is_String    (Item : Wide_String)    return Boolean;
 
    ------------------------------------------------------
    -- Conversions between Wide_Character and Character --
    ------------------------------------------------------
 
    --  Ada 2005 AI 395: these functions are moved to Ada.Characters.Conversions
-   --  and are considered obsolete in Ada.Characters.Handling. We deal with
-   --  this by using the special Ada_05 form of pragma Obsolescent which is
-   --  only active in Ada_05 mode.
+   --  and are considered obsolete in Ada.Characters.Handling. However we do
+   --  not complain about this obsolescence, since in practice it is necessary
+   --  to use these routines when creating code that is intended ro run in
+   --  either Ada 95 or Ada 2005 mode.
 
    function To_Character
      (Item       : Wide_Character;
       Substitute : Character := ' ') return Character;
-   pragma Obsolescent
-     ("(Ada 2005) use Ada.Characters.Conversions.To_Character", Ada_05);
 
    function To_String
      (Item       : Wide_String;
       Substitute : Character := ' ') return String;
-   pragma Obsolescent
-     ("(Ada 2005) use Ada.Characters.Conversions.To_String", Ada_05);
 
    function To_Wide_Character
      (Item : Character) return Wide_Character;
-   pragma Obsolescent
-     ("(Ada 2005) use Ada.Characters.Conversions.To_Wide_Character", Ada_05);
 
    function To_Wide_String
-     (Item : String)return Wide_String;
-   pragma Obsolescent
-     ("(Ada 2005) use Ada.Characters.Conversions.To_Wide_String", Ada_05);
+     (Item : String) return Wide_String;
 
 private
    pragma Inline (Is_Control);
