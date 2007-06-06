@@ -1,3 +1,17 @@
+2007-06-06  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	* lambda-code.c (struct lambda_lattice_s): Add a name to the struct.
+	(lambda_body_vector_new): Use type safe memory macros.
+	(lambda_linear_expression_new): Likewise.
+	(lambda_loopnest_new): Likewise.
+	(lambda_lattice_new): Likewise.
+	(replace_uses_equiv_to_x_with_y): Cast according to the coding
+	conventions. Use type safe memory macros.
+	* lambda.h (struct lambda_trans_matrix_s): Add a name to the struct.
+	(lambda_body_vector_s): Likewise.
+	* lambda-mat.c (lambda_matrix_new): Use type safe memory macros.
+	* lambda-trans.c (lambda_trans_matrix_new): Likewise.
+
 2007-06-06  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (forward_propagate_into_cond): Return 2

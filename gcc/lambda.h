@@ -40,7 +40,7 @@ typedef lambda_vector *lambda_matrix;
 /* A transformation matrix, which is a self-contained ROWSIZE x COLSIZE
    matrix.  Rather than use floats, we simply keep a single DENOMINATOR that
    represents the denominator for every element in the matrix.  */
-typedef struct
+typedef struct lambda_trans_matrix_s
 {
   lambda_matrix matrix;
   int rowsize;
@@ -61,7 +61,7 @@ typedef struct
    This structure is used during code generation in order to rewrite the old
    induction variable uses in a statement in terms of the newly created
    induction variables.  */
-typedef struct
+typedef struct lambda_body_vector_s
 {
   lambda_vector coefficients;
   int size;
@@ -127,7 +127,7 @@ typedef struct lambda_loop_s
    and an integer representing the number of INVARIANTS in the loop.  Both of
    these integers are used to size the associated coefficient vectors in the
    linear expression structures.  */
-typedef struct
+typedef struct lambda_loopnest_s
 {
   lambda_loop *loops;
   int depth;

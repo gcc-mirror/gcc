@@ -120,7 +120,7 @@ static bool perfect_nestify (struct loop *, VEC(tree,heap) *,
 			     VEC(tree,heap) *);
 /* Lattice stuff that is internal to the code generation algorithm.  */
 
-typedef struct
+typedef struct lambda_lattice_s
 {
   /* Lattice base matrix.  */
   lambda_matrix base;
@@ -155,7 +155,7 @@ lambda_body_vector_new (int size)
 {
   lambda_body_vector ret;
 
-  ret = ggc_alloc (sizeof (*ret));
+  ret = GGC_NEW (struct lambda_body_vector_s);
   LBV_COEFFICIENTS (ret) = lambda_vector_new (size);
   LBV_SIZE (ret) = size;
   LBV_DENOMINATOR (ret) = 1;
@@ -227,7 +227,7 @@ lambda_linear_expression_new (int dim, int invariants)
 {
   lambda_linear_expression ret;
 
-  ret = ggc_alloc_cleared (sizeof (*ret));
+  ret = GGC_CNEW (struct lambda_linear_expression_s);
 
   LLE_COEFFICIENTS (ret) = lambda_vector_new (dim);
   LLE_CONSTANT (ret) = 0;
@@ -328,9 +328,9 @@ lambda_loopnest
 lambda_loopnest_new (int depth, int invariants)
 {
   lambda_loopnest ret;
-  ret = ggc_alloc (sizeof (*ret));
+  ret = GGC_NEW (struct lambda_loopnest_s);
 
-  LN_LOOPS (ret) = ggc_alloc_cleared (depth * sizeof (lambda_loop));
+  LN_LOOPS (ret) = GGC_CNEWVEC (lambda_loop, depth);
   LN_DEPTH (ret) = depth;
   LN_INVARIANTS (ret) = invariants;
 
@@ -360,7 +360,7 @@ static lambda_lattice
 lambda_lattice_new (int depth, int invariants)
 {
   lambda_lattice ret;
-  ret = ggc_alloc (sizeof (*ret));
+  ret = GGC_NEW (struct lambda_lattice_s);
   LATTICE_BASE (ret) = lambda_matrix_new (depth, depth);
   LATTICE_ORIGIN (ret) = lambda_vector_new (depth);
   LATTICE_ORIGIN_INVARIANTS (ret) = lambda_matrix_new (depth, invariants);
@@ -1981,7 +1981,7 @@ replace_uses_equiv_to_x_with_y (struct loop *loop, tree stmt, tree x,
 	 temporaries.  */
       in.hash = htab_hash_pointer (use);
       in.base.from = use;
-      h = htab_find_with_hash (replacements, &in, in.hash);
+      h = (struct tree_map *) htab_find_with_hash (replacements, &in, in.hash);
       if (h != NULL)
 	{
 	  SET_USE (use_p, h->to);
@@ -2023,7 +2023,7 @@ replace_uses_equiv_to_x_with_y (struct loop *loop, tree stmt, tree x,
       bsi_insert_before (firstbsi, setstmt, BSI_SAME_STMT);
       update_stmt (setstmt);
       SET_USE (use_p, var);
-      h = ggc_alloc (sizeof (struct tree_map));
+      h = GGC_NEW (struct tree_map);
       h->hash = in.hash;
       h->base.from = use;
       h->to = var;
