@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -518,7 +518,7 @@ private
 
    package Uints is new Table.Table (
      Table_Component_Type => Uint_Entry,
-     Table_Index_Type     => Uint,
+     Table_Index_Type     => Uint'Base,
      Table_Low_Bound      => Uint_First_Entry,
      Table_Initial        => Alloc.Uints_Initial,
      Table_Increment      => Alloc.Uints_Increment,

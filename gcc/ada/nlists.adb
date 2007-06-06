@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,7 +68,7 @@ package body Nlists is
 
    package Lists is new Table.Table (
      Table_Component_Type => List_Header,
-     Table_Index_Type     => List_Id,
+     Table_Index_Type     => List_Id'Base,
      Table_Low_Bound      => First_List_Id,
      Table_Initial        => Alloc.Lists_Initial,
      Table_Increment      => Alloc.Lists_Increment,
@@ -88,7 +88,7 @@ package body Nlists is
 
    package Next_Node is new Table.Table (
       Table_Component_Type => Node_Id,
-      Table_Index_Type     => Node_Id,
+      Table_Index_Type     => Node_Id'Base,
       Table_Low_Bound      => First_Node_Id,
       Table_Initial        => Alloc.Orig_Nodes_Initial,
       Table_Increment      => Alloc.Orig_Nodes_Increment,
@@ -96,7 +96,7 @@ package body Nlists is
 
    package Prev_Node is new Table.Table (
       Table_Component_Type => Node_Id,
-      Table_Index_Type     => Node_Id,
+      Table_Index_Type     => Node_Id'Base,
       Table_Low_Bound      => First_Node_Id,
       Table_Initial        => Alloc.Orig_Nodes_Initial,
       Table_Increment      => Alloc.Orig_Nodes_Increment,
@@ -131,9 +131,20 @@ package body Nlists is
    --------------------------
 
    procedure Allocate_List_Tables (N : Node_Id) is
+      Old_Last : constant Node_Id'Base := Next_Node.Last;
+
    begin
+      pragma Assert (N >= Old_Last);
       Next_Node.Set_Last (N);
       Prev_Node.Set_Last (N);
+
+      --  Make sure we have no uninitialized junk in any new entires added.
+      --  This ensures that Tree_Gen will not write out any unitialized junk.
+
+      for J in Old_Last + 1 .. N loop
+         Next_Node.Table (J) := Empty;
+         Prev_Node.Table (J) := Empty;
+      end loop;
    end Allocate_List_Tables;
 
    ------------
@@ -1378,5 +1389,16 @@ package body Nlists is
       Next_Node.Tree_Write;
       Prev_Node.Tree_Write;
    end Tree_Write;
+
+   ------------
+   -- Unlock --
+   ------------
+
+   procedure Unlock is
+   begin
+      Lists.Locked := False;
+      Prev_Node.Locked := False;
+      Next_Node.Locked := False;
+   end Unlock;
 
 end Nlists;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,6 +61,9 @@ package Elists is
 
    procedure Lock;
    --  Lock tables used for element lists before calling backend
+
+   procedure Unlock;
+   --  Unlock list tables, in cases where the back end needs to modify them
 
    procedure Tree_Read;
    --  Initializes internal tables from current tree file using the relevant

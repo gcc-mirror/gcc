@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -218,7 +218,7 @@ package body Sem_Elim is
 
    package Elim_Entities is new Table.Table (
      Table_Component_Type => Elim_Entity_Entry,
-     Table_Index_Type     => Name_Id,
+     Table_Index_Type     => Name_Id'Base,
      Table_Low_Bound      => First_Name_Id,
      Table_Initial        => 50,
      Table_Increment      => 200,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,7 +90,7 @@ package body Elists is
 
    package Elists is new Table.Table (
      Table_Component_Type => Elist_Header,
-     Table_Index_Type     => Elist_Id,
+     Table_Index_Type     => Elist_Id'Base,
      Table_Low_Bound      => First_Elist_Id,
      Table_Initial        => Alloc.Elists_Initial,
      Table_Increment      => Alloc.Elists_Increment,
@@ -103,7 +103,7 @@ package body Elists is
 
    package Elmts is new Table.Table (
      Table_Component_Type => Elmt_Item,
-     Table_Index_Type     => Elmt_Id,
+     Table_Index_Type     => Elmt_Id'Base,
      Table_Low_Bound      => First_Elmt_Id,
      Table_Initial        => Alloc.Elmts_Initial,
      Table_Increment      => Alloc.Elmts_Increment,
@@ -481,5 +481,15 @@ package body Elists is
       Elists.Tree_Write;
       Elmts.Tree_Write;
    end Tree_Write;
+
+   ------------
+   -- Unlock --
+   ------------
+
+   procedure Unlock is
+   begin
+      Elists.Locked := False;
+      Elmts.Locked := False;
+   end Unlock;
 
 end Elists;

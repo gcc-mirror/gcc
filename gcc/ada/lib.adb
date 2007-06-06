@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,6 @@ pragma Style_Checks (All_Checks);
 with Atree;   use Atree;
 with Einfo;   use Einfo;
 with Fname;   use Fname;
-with Namet;   use Namet;
 with Output;  use Output;
 with Sinfo;   use Sinfo;
 with Sinput;  use Sinput;
@@ -1026,6 +1025,17 @@ package body Lib is
          Tree_Write_Str (Compilation_Switches.Table (J));
       end loop;
    end Tree_Write;
+
+   ------------
+   -- Unlock --
+   ------------
+
+   procedure Unlock is
+   begin
+      Linker_Option_Lines.Locked := False;
+      Load_Stack.Locked := False;
+      Units.Locked := False;
+   end Unlock;
 
    -----------------
    -- Version_Get --
