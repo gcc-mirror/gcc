@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,6 +59,7 @@ with Stand;    use Stand;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Style;
+with Uintp;    use Uintp;
 
 package body Sem_Ch7 is
 
@@ -311,7 +312,7 @@ package body Sem_Ch7 is
       Set_Has_Completion (Spec_Id);
       Last_Spec_Entity := Last_Entity (Spec_Id);
 
-      New_Scope (Spec_Id);
+      Push_Scope (Spec_Id);
 
       Set_Categorization_From_Pragmas (N);
 
@@ -676,7 +677,7 @@ package body Sem_Ch7 is
       Set_Ekind (Id, E_Package);
       Set_Etype (Id, Standard_Void_Type);
 
-      New_Scope (Id);
+      Push_Scope (Id);
 
       PF := Is_Pure (Enclosing_Lib_Unit_Entity);
       Set_Is_Pure (Id, PF);
@@ -1039,7 +1040,7 @@ package body Sem_Ch7 is
         and then Nkind (Orig_Decl) = N_Generic_Package_Declaration
       then
          declare
-            Orig_Spec : constant Node_Id    := Specification (Orig_Decl);
+            Orig_Spec : constant Node_Id := Specification (Orig_Decl);
             Save_Priv : constant List_Id := Private_Declarations (Orig_Spec);
 
          begin
@@ -1292,10 +1293,10 @@ package body Sem_Ch7 is
             Set_Itype (IR, E);
 
             if No (Declarations (P_Body)) then
-               Set_Declarations (P_Body, New_List);
+               Set_Declarations (P_Body, New_List (IR));
+            else
+               Prepend (IR, Declarations (P_Body));
             end if;
-
-            Insert_Before (First (Declarations (P_Body)), IR);
          end if;
 
          Next_Entity (E);
@@ -1307,15 +1308,6 @@ package body Sem_Ch7 is
    -------------------------------------------
 
    procedure Declare_Inherited_Private_Subprograms (Id : Entity_Id) is
-      E              : Entity_Id;
-      Op_List        : Elist_Id;
-      Op_Elmt        : Elmt_Id;
-      Op_Elmt_2      : Elmt_Id;
-      Prim_Op        : Entity_Id;
-      New_Op         : Entity_Id := Empty;
-      Parent_Subp    : Entity_Id;
-      Found_Explicit : Boolean;
-      Decl_Privates  : Boolean;
 
       function Is_Primitive_Of (T : Entity_Id; S : Entity_Id) return Boolean;
       --  Check whether an inherited subprogram is an operation of an
@@ -1346,6 +1338,17 @@ package body Sem_Ch7 is
          end if;
       end Is_Primitive_Of;
 
+      --  Local variables
+
+      E           : Entity_Id;
+      Op_List     : Elist_Id;
+      Op_Elmt     : Elmt_Id;
+      Op_Elmt_2   : Elmt_Id;
+      Prim_Op     : Entity_Id;
+      New_Op      : Entity_Id := Empty;
+      Parent_Subp : Entity_Id;
+      Tag         : Entity_Id;
+
    --  Start of processing for Declare_Inherited_Private_Subprograms
 
    begin
@@ -1365,19 +1368,16 @@ package body Sem_Ch7 is
            and then E = Base_Type (E)
          then
             if Is_Tagged_Type (E) then
-               Op_List       := Primitive_Operations (E);
-               New_Op        := Empty;
-               Decl_Privates := False;
+               Op_List := Primitive_Operations (E);
+               New_Op  := Empty;
+               Tag     := First_Tag_Component (E);
 
                Op_Elmt := First_Elmt (Op_List);
                while Present (Op_Elmt) loop
                   Prim_Op := Node (Op_Elmt);
 
-                  --  If the primitive operation is an implicit operation
-                  --  with an internal name whose parent operation has
-                  --  a normal name, then we now need to either declare the
-                  --  operation (i.e., make it visible), or replace it
-                  --  by an overriding operation if one exists.
+                  --  Search primitives that are implicit operations with an
+                  --  internal name whose parent operation has a normal name.
 
                   if Present (Alias (Prim_Op))
                     and then Find_Dispatching_Type (Alias (Prim_Op)) /= E
@@ -1387,72 +1387,85 @@ package body Sem_Ch7 is
                   then
                      Parent_Subp := Alias (Prim_Op);
 
-                     Found_Explicit := False;
+                     --  Case 1: Check if the type has also an explicit
+                     --  overriding for this primitive.
+
                      Op_Elmt_2 := Next_Elmt (Op_Elmt);
                      while Present (Op_Elmt_2) loop
                         if Chars (Node (Op_Elmt_2)) = Chars (Parent_Subp)
                           and then Type_Conformant (Prim_Op, Node (Op_Elmt_2))
                         then
                            --  The private inherited operation has been
-                           --  overridden by an explicit subprogram, so
-                           --  change the private op's list element to
-                           --  designate the explicit so the explicit
-                           --  one will get the right dispatching slot.
+                           --  overridden by an explicit subprogram: replace
+                           --  the former by the latter.
 
                            New_Op := Node (Op_Elmt_2);
                            Replace_Elmt (Op_Elmt, New_Op);
-                           Remove_Elmt (Op_List, Op_Elmt_2);
-                           Found_Explicit := True;
+                           Remove_Elmt  (Op_List, Op_Elmt_2);
                            Set_Is_Overriding_Operation (New_Op);
-                           Decl_Privates  := True;
 
-                           exit;
+                           --  We don't need to inherit its dispatching slot.
+                           --  Set_All_DT_Position has previously ensured that
+                           --  the same slot was assigned to the two primitives
+
+                           if Present (Tag)
+                             and then Present (DTC_Entity (New_Op))
+                             and then Present (DTC_Entity (Prim_Op))
+                           then
+                              pragma Assert (DT_Position (New_Op)
+                                              = DT_Position (Prim_Op));
+                              null;
+                           end if;
+
+                           goto Next_Primitive;
                         end if;
 
                         Next_Elmt (Op_Elmt_2);
                      end loop;
 
-                     if not Found_Explicit then
-                        Derive_Subprogram
-                          (New_Op, Alias (Prim_Op), E, Etype (E));
+                     --   Case 2: We have not found any explicit overriding and
+                     --   hence we need to declare the operation (i.e., make it
+                     --   visible).
 
-                        pragma Assert
-                          (Is_Dispatching_Operation (New_Op)
-                            and then Node (Last_Elmt (Op_List)) = New_Op);
+                     Derive_Subprogram (New_Op, Alias (Prim_Op), E, Etype (E));
 
-                        --  Substitute the new operation for the old one
-                        --  in the type's primitive operations list. Since
-                        --  the new operation was also just added to the end
-                        --  of list, the last element must be removed.
+                     --  Inherit the dispatching slot if E is already frozen
 
-                        --  (Question: is there a simpler way of declaring
-                        --  the operation, say by just replacing the name
-                        --  of the earlier operation, reentering it in the
-                        --  in the symbol table (how?), and marking it as
-                        --  private???)
-
-                        Replace_Elmt (Op_Elmt, New_Op);
-                        Remove_Last_Elmt (Op_List);
-                        Decl_Privates := True;
+                     if Is_Frozen (E)
+                       and then Present (DTC_Entity (Alias (Prim_Op)))
+                     then
+                        Set_DTC_Entity_Value (E, New_Op);
+                        Set_DT_Position (New_Op,
+                          DT_Position (Alias (Prim_Op)));
                      end if;
+
+                     pragma Assert
+                       (Is_Dispatching_Operation (New_Op)
+                         and then Node (Last_Elmt (Op_List)) = New_Op);
+
+                     --  Substitute the new operation for the old one
+                     --  in the type's primitive operations list. Since
+                     --  the new operation was also just added to the end
+                     --  of list, the last element must be removed.
+
+                     --  (Question: is there a simpler way of declaring
+                     --  the operation, say by just replacing the name
+                     --  of the earlier operation, reentering it in the
+                     --  in the symbol table (how?), and marking it as
+                     --  private???)
+
+                     Replace_Elmt (Op_Elmt, New_Op);
+                     Remove_Last_Elmt (Op_List);
                   end if;
 
+                  <<Next_Primitive>>
                   Next_Elmt (Op_Elmt);
                end loop;
 
-               --  The type's DT attributes need to be recalculated
-               --  in the case where private dispatching operations
-               --  have been added or overridden. Normally this action
-               --  occurs during type freezing, but we force it here
-               --  since the type may already have been frozen (e.g.,
-               --  if the type's package has an empty private part).
-               --  This can only be done if expansion is active, otherwise
-               --  Tag may not be present.
+               --  Generate listing showing the contents of the dispatch table
 
-               if Decl_Privates
-                 and then Expander_Active
-               then
-                  Set_All_DT_Position (E);
+               if Debug_Flag_ZZ then
+                  Write_DT (E);
                end if;
 
             else
@@ -1825,7 +1838,7 @@ package body Sem_Ch7 is
       Set_Stored_Constraint (Id, No_Elist);
 
       if Present (Discriminant_Specifications (N)) then
-         New_Scope (Id);
+         Push_Scope (Id);
          Process_Discriminants (N);
          End_Scope;
 
