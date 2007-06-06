@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,6 @@
 with Ada.Unchecked_Deallocation;
 
 with Errout;   use Errout;
-with Namet;    use Namet;
 with Lib.Writ; use Lib.Writ;
 with Opt;      use Opt;
 with Osint;    use Osint;
@@ -37,6 +36,7 @@ with Scn;      use Scn;
 with Sinput.L; use Sinput.L;
 with Stringt;  use Stringt;
 with Table;
+with Types;    use Types;
 
 package body Prepcomp is
 
@@ -69,20 +69,20 @@ package body Prepcomp is
 
    type Preproc_Data is record
       Mapping      : Symbol_Table.Instance;
-      File_Name    : Name_Id   := No_Name;
-      Deffile      : String_Id := No_String;
-      Undef_False  : Boolean   := False;
-      Always_Blank : Boolean   := False;
-      Comments     : Boolean   := False;
-      List_Symbols : Boolean   := False;
-      Processed    : Boolean   := False;
+      File_Name    : File_Name_Type := No_File;
+      Deffile      : String_Id      := No_String;
+      Undef_False  : Boolean        := False;
+      Always_Blank : Boolean        := False;
+      Comments     : Boolean        := False;
+      List_Symbols : Boolean        := False;
+      Processed    : Boolean        := False;
    end record;
    --  Structure to keep the preprocessing data for a file name or for the
    --  default (when Name_Id = No_Name).
 
    No_Preproc_Data : constant Preproc_Data :=
      (Mapping      => No_Mapping,
-      File_Name    => No_Name,
+      File_Name    => No_File,
       Deffile      => No_String,
       Undef_False  => False,
       Always_Blank => False,
@@ -295,7 +295,7 @@ package body Prepcomp is
                   if Current_Data.File_Name =
                        Preproc_Data_Table.Table (Index).File_Name
                   then
-                     Error_Msg_Name_1 := Current_Data.File_Name;
+                     Error_Msg_File_1 := Current_Data.File_Name;
                      Error_Msg
                        ("multiple preprocessing data for{", Token_Ptr);
                      OK := False;
@@ -544,7 +544,7 @@ package body Prepcomp is
 
          --  Record Current_Data
 
-         if Current_Data.File_Name = No_Name then
+         if Current_Data.File_Name = No_File then
             Default_Data := Current_Data;
 
          else
@@ -561,6 +561,7 @@ package body Prepcomp is
 
       if Total_Errors_Detected > T then
          Errout.Finalize;
+         Errout.Output_Messages;
          Fail ("errors found in preprocessing data file """,
                Get_Name_String (N),
                """");
@@ -648,10 +649,11 @@ package body Prepcomp is
          String_To_Name_Buffer (Current_Data.Deffile);
 
          declare
-            N : constant Name_Id := Name_Find;
-            Deffile : constant Source_File_Index :=  Load_Definition_File (N);
-            Add_Deffile : Boolean := True;
-            T : constant Nat := Total_Errors_Detected;
+            N           : constant File_Name_Type    := Name_Find;
+            Deffile     : constant Source_File_Index :=
+                            Load_Definition_File (N);
+            Add_Deffile : Boolean                    := True;
+            T           : constant Nat               := Total_Errors_Detected;
 
          begin
             if Deffile = No_Source_File then
@@ -686,6 +688,7 @@ package body Prepcomp is
 
             if T /= Total_Errors_Detected then
                Errout.Finalize;
+               Errout.Output_Messages;
                Fail ("errors found in definition file """,
                      Get_Name_String (N),
                      """");
