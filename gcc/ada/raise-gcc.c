@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 1992-2005, Free Software Foundation, Inc.      *
+ *             Copyright (C) 1992-2007, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1004,20 +1004,77 @@ extern void __gnat_notify_unhandled_exception (void);
 /* Below is the eh personality routine per se. We currently assume that only
    GNU-Ada exceptions are met.  */
 
+/* Major tweak for ia64-vms : the CHF propagation phase calls this personality
+   routine with sigargs/mechargs arguments and has very specific expectations
+   on possible return values.
+
+   We handle this with a number of specific tricks:
+
+   1. We tweak the personality routine prototype to have the "version" and
+      "phases" two first arguments be void * instead of int and _Unwind_Action
+      as nominally expected in the GCC context.
+
+      This allows us to access the full range of bits passed in every case and
+      has no impact on the callers side since each argument remains assigned
+      the same single 64bit slot.
+
+   2. We retrieve the corresponding int and _Unwind_Action values within the
+      routine for regular use with truncating conversions. This is a noop when
+      called from the libgcc unwinder.
+
+   3. We assume we're called by the VMS CHF when unexpected bits are set in
+      both those values. The incoming arguments are then real sigargs and
+      mechargs pointers, which we then redirect to __gnat_handle_vms_condition
+      for proper processing.
+*/
+#if defined (VMS) && defined (__IA64)
+typedef void * version_arg_t;
+typedef void * phases_arg_t;
+#else
+typedef int version_arg_t;
+typedef _Unwind_Action phases_arg_t;
+#endif
+
 _Unwind_Reason_Code
-__gnat_eh_personality (int uw_version,
-                       _Unwind_Action uw_phases,
+__gnat_eh_personality (version_arg_t version_arg,
+                       phases_arg_t phases_arg,
                        _Unwind_Exception_Class uw_exception_class,
                        _Unwind_Exception *uw_exception,
                        _Unwind_Context *uw_context)
 {
+  /* Fetch the version and phases args with their nominal ABI types for later
+     use. This is a noop everywhere except on ia64-vms when called from the
+     Condition Handling Facility.  */
+  int uw_version = (int) version_arg;
+  _Unwind_Action uw_phases = (_Unwind_Action) phases_arg;
+
   _GNAT_Exception * gnat_exception = (_GNAT_Exception *) uw_exception;
 
   region_descriptor region;
   action_descriptor action;
 
+  /* Check that we're called from the ABI context we expect, with a major
+     possible variation on VMS for IA64.  */
   if (uw_version != 1)
-    return _URC_FATAL_PHASE1_ERROR;
+    {
+      #if defined (VMS) && defined (__IA64)
+
+      /* Assume we're called with sigargs/mechargs arguments if really
+	 unexpected bits are set in our first two formals.  Redirect to the
+	 GNAT condition handling code in this case.  */
+
+      extern long __gnat_handle_vms_condition (void *, void *);
+
+      unsigned int version_unexpected_bits_mask = 0xffffff00U;
+      unsigned int phases_unexpected_bits_mask  = 0xffffff00U;
+
+      if ((unsigned int)uw_version & version_unexpected_bits_mask
+	  && (unsigned int)uw_phases & phases_unexpected_bits_mask)
+	return __gnat_handle_vms_condition (version_arg, phases_arg);
+      #endif
+
+      return _URC_FATAL_PHASE1_ERROR;
+    }
 
   db_indent (DB_INDENT_RESET);
   db_phases (uw_phases);
