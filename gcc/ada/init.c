@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -254,10 +254,26 @@ nanosleep (struct timestruc_t *Rqtp, struct timestruc_t *Rmtp)
 
 #endif /* _AIXVERSION_430 */
 
-static void __gnat_error_handler (int);
+static void __gnat_error_handler (int sig, siginfo_t * si, void * uc);
+
+/* __gnat_adjust_context_for_raise - see comments along with the default
+   version later in this file.  */
+
+void
+__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
+{
+  /* We need to adjust the "Instruction Address Register" value, part of a
+     'struct mstsave' wrapped as a jumpbuf in the mcontext field designated by
+     the signal data pointer we get.  See sys/context.h + sys/mstsave.h  */
+
+  mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
+  mcontext->jmp_context.iar++;
+}
+
+#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
 
 static void
-__gnat_error_handler (int sig)
+__gnat_error_handler (int sig, siginfo_t * si, void * uc)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -285,6 +301,7 @@ __gnat_error_handler (int sig)
       msg = "unhandled signal";
     }
 
+  __gnat_adjust_context_for_raise (sig, uc);
   Raise_From_Signal_Handler (exception, msg);
 }
 
@@ -297,8 +314,8 @@ __gnat_install_handler (void)
      exceptions.  Make sure that the handler isn't interrupted by another
      signal that might cause a scheduling event! */
 
-  act.sa_handler = __gnat_error_handler;
-  act.sa_flags = SA_NODEFER | SA_RESTART;
+  act.sa_flags = SA_NODEFER | SA_RESTART | SA_SIGINFO;
+  act.sa_sigaction = __gnat_error_handler;
   sigemptyset (&act.sa_mask);
 
   /* Do not install handlers if interrupt state is "System" */
@@ -1384,6 +1401,12 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
       /* The full name really should be get sys$getmsg returns. ??? */
       exception->Full_Name = "IMPORTED_EXCEPTION";
       exception->Import_Code = base_code;
+
+#ifdef __IA64
+      /* Do not adjust the program counter as already points to the next
+	 instruction (just after the call to LIB$STOP).  */
+      Raise_From_Signal_Handler (exception, msg);
+#endif
     }
 #endif
 
