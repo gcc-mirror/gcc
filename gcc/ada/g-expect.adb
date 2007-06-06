@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2006, AdaCore                     --
+--                     Copyright (C) 2000-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@ with GNAT.IO;
 with GNAT.OS_Lib;  use GNAT.OS_Lib;
 with GNAT.Regpat;  use GNAT.Regpat;
 
-with Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation;
 
 package body GNAT.Expect is
 
@@ -66,10 +66,10 @@ package body GNAT.Expect is
    --  Reinitialize the internal buffer.
    --  The buffer is deleted up to the end of the last match.
 
-   procedure Free is new Unchecked_Deallocation
+   procedure Free is new Ada.Unchecked_Deallocation
      (Pattern_Matcher, Pattern_Matcher_Access);
 
-   procedure Free is new Unchecked_Deallocation
+   procedure Free is new Ada.Unchecked_Deallocation
      (Filter_List_Elem, Filter_List);
 
    procedure Call_Filters
@@ -100,8 +100,7 @@ package body GNAT.Expect is
      (Fds     : System.Address;
       Num_Fds : Integer;
       Timeout : Integer;
-      Is_Set  : System.Address)
-      return    Integer;
+      Is_Set  : System.Address) return Integer;
    pragma Import (C, Poll, "__gnat_expect_poll");
    --  Check whether there is any data waiting on the file descriptor
    --  Out_fd, and wait if there is none, at most Timeout milliseconds
@@ -128,8 +127,7 @@ package body GNAT.Expect is
    ---------
 
    function "+"
-     (P    : GNAT.Regpat.Pattern_Matcher)
-      return Pattern_Matcher_Access
+     (P : GNAT.Regpat.Pattern_Matcher) return Pattern_Matcher_Access
    is
    begin
       return new GNAT.Regpat.Pattern_Matcher'(P);
@@ -222,7 +220,9 @@ package body GNAT.Expect is
 
       --  ??? Should have timeouts for different signals
 
-      Kill (Descriptor.Pid, 9, 0);
+      if Descriptor.Pid > 0 then  --  see comment in Send_Signal
+         Kill (Descriptor.Pid, Sig_Num => 9, Close => 0);
+      end if;
 
       GNAT.OS_Lib.Free (Descriptor.Buffer);
       Descriptor.Buffer_Size := 0;
@@ -236,7 +236,14 @@ package body GNAT.Expect is
       end loop;
 
       Descriptor.Filters := null;
-      Status := Waitpid (Descriptor.Pid);
+
+      --  Check process id (see comment in Send_Signal)
+
+      if Descriptor.Pid > 0 then
+         Status := Waitpid (Descriptor.Pid);
+      else
+         raise Invalid_Process;
+      end if;
    end Close;
 
    procedure Close (Descriptor : in out Process_Descriptor) is
@@ -863,7 +870,8 @@ package body GNAT.Expect is
    ------------------
 
    function Get_Error_Fd
-     (Descriptor : Process_Descriptor) return GNAT.OS_Lib.File_Descriptor is
+     (Descriptor : Process_Descriptor) return GNAT.OS_Lib.File_Descriptor
+   is
    begin
       return Descriptor.Error_Fd;
    end Get_Error_Fd;
@@ -873,7 +881,8 @@ package body GNAT.Expect is
    ------------------
 
    function Get_Input_Fd
-     (Descriptor : Process_Descriptor) return GNAT.OS_Lib.File_Descriptor is
+     (Descriptor : Process_Descriptor) return GNAT.OS_Lib.File_Descriptor
+   is
    begin
       return Descriptor.Input_Fd;
    end Get_Input_Fd;
@@ -883,7 +892,8 @@ package body GNAT.Expect is
    -------------------
 
    function Get_Output_Fd
-     (Descriptor : Process_Descriptor) return GNAT.OS_Lib.File_Descriptor is
+     (Descriptor : Process_Descriptor) return GNAT.OS_Lib.File_Descriptor
+   is
    begin
       return Descriptor.Output_Fd;
    end Get_Output_Fd;
@@ -893,7 +903,8 @@ package body GNAT.Expect is
    -------------
 
    function Get_Pid
-     (Descriptor : Process_Descriptor) return Process_Id is
+     (Descriptor : Process_Descriptor) return Process_Id
+   is
    begin
       return Descriptor.Pid;
    end Get_Pid;
@@ -904,7 +915,6 @@ package body GNAT.Expect is
 
    procedure Interrupt (Descriptor : in out Process_Descriptor) is
       SIGINT : constant := 2;
-
    begin
       Send_Signal (Descriptor, SIGINT);
    end Interrupt;
@@ -1106,8 +1116,7 @@ package body GNAT.Expect is
       Add_LF       : Boolean := True;
       Empty_Buffer : Boolean := False)
    is
-      Full_Str    : constant String := Str & ASCII.LF;
-      Last        : Natural;
+      Line_Feed   : aliased constant String := (1 .. 1 => ASCII.LF);
       Result      : Expect_Match;
       Descriptors : Array_Of_Pd := (1 => Descriptor'Unrestricted_Access);
 
@@ -1119,8 +1128,8 @@ package body GNAT.Expect is
 
          --  Force a read on the process if there is anything waiting
 
-         Expect_Internal (Descriptors, Result,
-                          Timeout => 0, Full_Buffer => False);
+         Expect_Internal
+           (Descriptors, Result, Timeout => 0, Full_Buffer => False);
          Descriptor.Last_Match_End := Descriptor.Buffer_Index;
 
          --  Empty the buffer
@@ -1128,18 +1137,15 @@ package body GNAT.Expect is
          Reinitialize_Buffer (Descriptor);
       end if;
 
-      if Add_LF then
-         Last := Full_Str'Last;
-      else
-         Last := Full_Str'Last - 1;
-      end if;
-
-      Call_Filters (Descriptor, Full_Str (Full_Str'First .. Last), Input);
-
+      Call_Filters (Descriptor, Str, Input);
       Discard :=
-        Write (Descriptor.Input_Fd,
-               Full_Str'Address,
-               Last - Full_Str'First + 1);
+        Write (Descriptor.Input_Fd, Str'Address, Str'Last - Str'First + 1);
+
+      if Add_LF then
+         Call_Filters (Descriptor, Line_Feed, Input);
+         Discard :=
+           Write (Descriptor.Input_Fd, Line_Feed'Address, 1);
+      end if;
    end Send;
 
    -----------------
@@ -1151,8 +1157,19 @@ package body GNAT.Expect is
       Signal     : Integer)
    is
    begin
-      Kill (Descriptor.Pid, Signal, 1);
-      --  ??? Need to check process status here
+      --  A nonpositive process id passed to kill has special meanings. For
+      --  example, -1 means kill all processes in sight, including self, in
+      --  POSIX and Windows (and something slightly different in Linux). See
+      --  man pages for details. In any case, we don't want to do that. Note
+      --  that Descriptor.Pid will be -1 if the process was not successfully
+      --  started; we don't want to kill ourself in that case.
+
+      if Descriptor.Pid > 0 then
+         Kill (Descriptor.Pid, Signal, Close => 1);
+         --  ??? Need to check process status here
+      else
+         raise Invalid_Process;
+      end if;
    end Send_Signal;
 
    ---------------------------------
@@ -1258,8 +1275,7 @@ package body GNAT.Expect is
          end if;
       end if;
 
-      --  As above, we record the proper fd for the child's
-      --  standard error stream.
+      --  As above, record the proper fd for the child's standard error stream
 
       Pid.Error_Fd := Pipe3.Input;
       Set_Close_On_Exec (Pipe3.Input, True, Status);
@@ -1293,7 +1309,6 @@ package body GNAT.Expect is
    is
       pragma Warnings (Off, Descriptor);
       pragma Warnings (Off, User_Data);
-
    begin
       GNAT.IO.Put (Str);
    end Trace_Filter;
