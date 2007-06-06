@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,6 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Exp_VFpt; use Exp_VFpt;
 with Gnatvsn;  use Gnatvsn;
-with Hostparm; use Hostparm;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nmake;    use Nmake;
@@ -57,6 +56,7 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
@@ -186,7 +186,7 @@ package body Exp_Attr is
         and then not In_Open_Scopes (Scop)
         and then Ekind (Scop) = E_Package
       then
-         New_Scope (Scop);
+         Push_Scope (Scop);
          Install_Visible_Declarations (Scop);
          Install_Private_Declarations (Scop);
          Installed := True;
@@ -196,7 +196,7 @@ package body Exp_Attr is
          --  enclosing stream function) so that itypes all have their proper
          --  scopes.
 
-         New_Scope (Curr);
+         Push_Scope (Curr);
       end if;
 
       if Check then
@@ -810,7 +810,9 @@ package body Exp_Attr is
          --  address of the object.
 
          elsif Is_Class_Wide_Type (Etype (Pref))
-            and then Is_Interface (Etype (Pref))
+           and then Is_Interface (Etype (Pref))
+           and then not (Nkind (Pref) in N_Has_Entity
+                          and then Is_Subprogram (Entity (Pref)))
          then
             Rewrite (N,
               Make_Function_Call (Loc,
@@ -1119,11 +1121,11 @@ package body Exp_Attr is
          --  We have an object of a task interface class-wide type as a prefix
          --  to Callable. Generate:
 
-         --    callable (Pref._disp_get_task_id);
+         --    callable (Task_Id (Pref._disp_get_task_id));
 
          if Ada_Version >= Ada_05
            and then Ekind (Etype (Pref)) = E_Class_Wide_Type
-           and then Is_Interface      (Etype (Pref))
+           and then Is_Interface (Etype (Pref))
            and then Is_Task_Interface (Etype (Pref))
          then
             Rewrite (N,
@@ -1131,11 +1133,16 @@ package body Exp_Attr is
                 Name =>
                   New_Reference_To (RTE (RE_Callable), Loc),
                 Parameter_Associations => New_List (
-                  Make_Selected_Component (Loc,
-                    Prefix =>
-                      New_Copy_Tree (Pref),
-                    Selector_Name =>
-                      Make_Identifier (Loc, Name_uDisp_Get_Task_Id)))));
+                  Make_Unchecked_Type_Conversion (Loc,
+                    Subtype_Mark =>
+                      New_Reference_To (RTE (RO_ST_Task_Id), Loc),
+                    Expression =>
+                      Make_Selected_Component (Loc,
+                        Prefix =>
+                          New_Copy_Tree (Pref),
+                        Selector_Name =>
+                          Make_Identifier (Loc, Name_uDisp_Get_Task_Id))))));
+
          else
             Rewrite (N,
               Build_Call_With_Task (Pref, RTE (RE_Callable)));
@@ -1534,12 +1541,15 @@ package body Exp_Attr is
                if Nkind (Nod) = N_Selected_Component then
                   Make_Elab_String (Prefix (Nod));
 
-                  if Java_VM then
-                     Store_String_Char ('$');
-                  else
-                     Store_String_Char ('_');
-                     Store_String_Char ('_');
-                  end if;
+                  case VM_Target is
+                     when JVM_Target =>
+                        Store_String_Char ('$');
+                     when CLI_Target =>
+                        Store_String_Char ('.');
+                     when No_VM =>
+                        Store_String_Char ('_');
+                        Store_String_Char ('_');
+                  end case;
 
                   Get_Name_String (Chars (Selector_Name (Nod)));
 
@@ -1560,12 +1570,12 @@ package body Exp_Attr is
             Start_String;
             Make_Elab_String (Pref);
 
-            if Java_VM then
-               Store_String_Chars ("._elab");
-               Lang := Make_Identifier (Loc, Name_Ada);
-            else
+            if VM_Target = No_VM then
                Store_String_Chars ("___elab");
                Lang := Make_Identifier (Loc, Name_C);
+            else
+               Store_String_Chars ("._elab");
+               Lang := Make_Identifier (Loc, Name_Ada);
             end if;
 
             if Id = Attribute_Elab_Body then
@@ -2717,7 +2727,7 @@ package body Exp_Attr is
                      Make_Function_Call (Loc,
                        Name => New_Occurrence_Of (Wfunc, Loc),
                        Parameter_Associations => New_List (
-                         Convert_To (Etype (First_Formal (Wfunc)),
+                         OK_Convert_To (Etype (First_Formal (Wfunc)),
                            Relocate_Node (Next (First (Exprs)))))))));
 
                Analyze (N);
@@ -2770,19 +2780,24 @@ package body Exp_Attr is
                   Item : constant Node_Id := Next (Strm);
 
                begin
-                  --  The code is:
+                  --  Ada 2005 (AI-344): Check that the accessibility level
+                  --  of the type of the output object is not deeper than
+                  --  that of the attribute's prefix type.
+
                   --  if Get_Access_Level (Item'Tag)
                   --       /= Get_Access_Level (P_Type'Tag)
                   --  then
                   --     raise Tag_Error;
                   --  end if;
+
                   --  String'Output (Strm, External_Tag (Item'Tag));
 
-                  --  Ada 2005 (AI-344): Check that the accessibility level
-                  --  of the type of the output object is not deeper than
-                  --  that of the attribute's prefix type.
+                  --  We cannot figure out a practical way to implement this
+                  --  accessibility check on virtual machines, so we omit it.
 
-                  if Ada_Version >= Ada_05 then
+                  if Ada_Version >= Ada_05
+                    and then VM_Target = No_VM
+                  then
                      Insert_Action (N,
                        Make_Implicit_If_Statement (N,
                          Condition =>
@@ -3232,7 +3247,7 @@ package body Exp_Attr is
                Rfunc := Entity (Expression (Arg2));
                Lhs := Relocate_Node (Next (First (Exprs)));
                Rhs :=
-                 Convert_To (B_Type,
+                 OK_Convert_To (B_Type,
                    Make_Function_Call (Loc,
                      Name => New_Occurrence_Of (Rfunc, Loc),
                      Parameter_Associations => New_List (
@@ -3532,7 +3547,35 @@ package body Exp_Attr is
 
             Rewrite (N, New_Node);
             Analyze_And_Resolve (N, Typ);
-            return;
+               return;
+
+         --  Case of known RM_Size of a type
+
+         elsif (Id = Attribute_Size or else Id = Attribute_Value_Size)
+           and then Is_Entity_Name (Pref)
+           and then Is_Type (Entity (Pref))
+           and then Known_Static_RM_Size (Entity (Pref))
+         then
+            Siz := RM_Size (Entity (Pref));
+
+         --  Case of known Esize of a type
+
+         elsif Id = Attribute_Object_Size
+           and then Is_Entity_Name (Pref)
+           and then Is_Type (Entity (Pref))
+           and then Known_Static_Esize (Entity (Pref))
+         then
+            Siz := Esize (Entity (Pref));
+
+         --  Case of known size of object
+
+         elsif Id = Attribute_Size
+           and then Is_Entity_Name (Pref)
+           and then Is_Object (Entity (Pref))
+           and then Known_Esize (Entity (Pref))
+           and then Known_Static_Esize (Entity (Pref))
+         then
+            Siz := Esize (Entity (Pref));
 
          --  For an array component, we can do Size in the front end
          --  if the component_size of the array is set.
@@ -3583,10 +3626,9 @@ package body Exp_Attr is
                Analyze_And_Resolve (N, Typ);
             end if;
 
-            --  If Size is applied to a dereference of an access to
-            --  unconstrained packed array, GIGI needs to see its
-            --  unconstrained nominal type, but also a hint to the actual
-            --  constrained type.
+            --  If Size applies to a dereference of an access to unconstrained
+            --  packed array, GIGI needs to see its unconstrained nominal type,
+            --  but also a hint to the actual constrained type.
 
             if Nkind (Pref) = N_Explicit_Dereference
               and then Is_Array_Type (Etype (Pref))
@@ -3602,7 +3644,7 @@ package body Exp_Attr is
 
          --  Common processing for record and array component case
 
-         if Siz /= 0 then
+         if Siz /= No_Uint and then Siz /= 0 then
             Rewrite (N, Make_Integer_Literal (Loc, Siz));
 
             Analyze_And_Resolve (N, Typ);
@@ -3896,16 +3938,39 @@ package body Exp_Attr is
 
          if Prefix_Is_Type then
 
-            --  For JGNAT we leave the type attribute unexpanded because
+            --  For VMs we leave the type attribute unexpanded because
             --  there's not a dispatching table to reference.
 
-            if not Java_VM then
+            if VM_Target = No_VM then
                Rewrite (N,
                  Unchecked_Convert_To (RTE (RE_Tag),
                    New_Reference_To
                      (Node (First_Elmt (Access_Disp_Table (Ttyp))), Loc)));
                Analyze_And_Resolve (N, RTE (RE_Tag));
             end if;
+
+         --  (Ada 2005 (AI-251): The use of 'Tag in the sources always
+         --  references the primary tag of the actual object. If 'Tag is
+         --  applied to class-wide interface objects we generate code that
+         --  displaces "this" to reference the base of the object.
+
+         elsif Comes_From_Source (N)
+            and then Is_Class_Wide_Type (Etype (Prefix (N)))
+            and then Is_Interface (Etype (Prefix (N)))
+         then
+            --  Generate:
+            --    (To_Tag_Ptr (Prefix'Address)).all
+
+            --  Note that Prefix'Address is recursively expanded into a call
+            --  to Base_Address (Obj.Tag)
+
+            Rewrite (N,
+              Make_Explicit_Dereference (Loc,
+                Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                  Make_Attribute_Reference (Loc,
+                    Prefix => Relocate_Node (Pref),
+                    Attribute_Name => Name_Address))));
+            Analyze_And_Resolve (N, RTE (RE_Tag));
 
          else
             Rewrite (N,
@@ -3928,11 +3993,11 @@ package body Exp_Attr is
          --  The prefix of Terminated is of a task interface class-wide type.
          --  Generate:
 
-         --    terminated (Pref._disp_get_task_id);
+         --    terminated (Task_Id (Pref._disp_get_task_id));
 
          if Ada_Version >= Ada_05
            and then Ekind (Etype (Pref)) = E_Class_Wide_Type
-           and then Is_Interface      (Etype (Pref))
+           and then Is_Interface (Etype (Pref))
            and then Is_Task_Interface (Etype (Pref))
          then
             Rewrite (N,
@@ -3940,11 +4005,15 @@ package body Exp_Attr is
                 Name =>
                   New_Reference_To (RTE (RE_Terminated), Loc),
                 Parameter_Associations => New_List (
-                  Make_Selected_Component (Loc,
-                    Prefix =>
-                      New_Copy_Tree (Pref),
-                    Selector_Name =>
-                      Make_Identifier (Loc, Name_uDisp_Get_Task_Id)))));
+                  Make_Unchecked_Type_Conversion (Loc,
+                    Subtype_Mark =>
+                      New_Reference_To (RTE (RO_ST_Task_Id), Loc),
+                    Expression =>
+                      Make_Selected_Component (Loc,
+                        Prefix =>
+                          New_Copy_Tree (Pref),
+                        Selector_Name =>
+                          Make_Identifier (Loc, Name_uDisp_Get_Task_Id))))));
 
          elsif Restricted_Profile then
             Rewrite (N,
@@ -4257,7 +4326,6 @@ package body Exp_Attr is
                   --  obj'Address (see Unaligned_Valid routine in Fat_Gen).
 
                   if Is_Possibly_Unaligned_Object (Pref) then
-                     Set_Attribute_Name (N, Name_Unaligned_Valid);
                      Expand_Fpt_Attribute
                        (N, Pkg, Name_Unaligned_Valid,
                         New_List (
@@ -4702,7 +4770,7 @@ package body Exp_Attr is
                      Make_Function_Call (Loc,
                        Name => New_Occurrence_Of (Wfunc, Loc),
                        Parameter_Associations => New_List (
-                         Convert_To (Etype (First_Formal (Wfunc)),
+                         OK_Convert_To (Etype (First_Formal (Wfunc)),
                            Relocate_Node (Next (First (Exprs)))))))));
 
                Analyze (N);
