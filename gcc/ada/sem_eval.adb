@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ with Errout;   use Errout;
 with Eval_Fat; use Eval_Fat;
 with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
+with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
@@ -2262,11 +2263,13 @@ package body Sem_Eval is
       --  then we can replace the entire result by False. We only
       --  do this for one dimensional arrays, because the case of
       --  multi-dimensional arrays is rare and too much trouble!
+      --  If one of the operands is an illegal aggregate, its type
+      --  might still be an arbitrary composite type, so nothing to do.
 
       if Is_Array_Type (Typ)
+        and then Typ /= Any_Composite
         and then Number_Dimensions (Typ) = 1
-        and then (Nkind (N) = N_Op_Eq
-                    or else Nkind (N) = N_Op_Ne)
+        and then (Nkind (N) = N_Op_Eq or else Nkind (N) = N_Op_Ne)
       then
          if Raises_Constraint_Error (Left)
            or else Raises_Constraint_Error (Right)
@@ -2276,9 +2279,9 @@ package body Sem_Eval is
 
          declare
             procedure Get_Static_Length (Op : Node_Id; Len : out Uint);
-            --  If Op is an expression for a constrained array with a
-            --  known at compile time length, then Len is set to this
-            --  (non-negative length). Otherwise Len is set to minus 1.
+            --  If Op is an expression for a constrained array with a known
+            --  at compile time length, then Len is set to this (non-negative
+            --  length). Otherwise Len is set to minus 1.
 
             -----------------------
             -- Get_Static_Length --
@@ -2963,9 +2966,9 @@ package body Sem_Eval is
       Val    : Uint;
 
    begin
-      --  If already in cache, then we know it's compile time known and
-      --  we can return the value that was previously stored in the cache
-      --  since compile time known values cannot change :-)
+      --  If already in cache, then we know it's compile time known and we can
+      --  return the value that was previously stored in the cache since
+      --  compile time known values cannot change.
 
       if CV_Ent.N = N then
          return CV_Ent.V;
@@ -4092,45 +4095,53 @@ package body Sem_Eval is
             DL1 : constant Elist_Id := Discriminant_Constraint (T1);
             DL2 : constant Elist_Id := Discriminant_Constraint (T2);
 
-            DA1 : Elmt_Id := First_Elmt (DL1);
-            DA2 : Elmt_Id := First_Elmt (DL2);
+            DA1 : Elmt_Id;
+            DA2 : Elmt_Id;
 
          begin
             if DL1 = DL2 then
                return True;
-
             elsif Is_Constrained (T1) /= Is_Constrained (T2) then
                return False;
             end if;
 
-            while Present (DA1) loop
-               declare
-                  Expr1 : constant Node_Id := Node (DA1);
-                  Expr2 : constant Node_Id := Node (DA2);
+            --  Now loop through the discriminant constraints
 
-               begin
-                  if not Is_Static_Expression (Expr1)
-                    or else not Is_Static_Expression (Expr2)
-                  then
-                     return False;
+            --  Note: the guard here seems necessary, since it is possible at
+            --  least for DL1 to be No_Elist. Not clear this is reasonable ???
 
-                  --  If either expression raised a constraint error,
-                  --  consider the expressions as matching, since this
-                  --  helps to prevent cascading errors.
+            if Present (DL1) and then Present (DL2) then
+               DA1 := First_Elmt (DL1);
+               DA2 := First_Elmt (DL2);
+               while Present (DA1) loop
+                  declare
+                     Expr1 : constant Node_Id := Node (DA1);
+                     Expr2 : constant Node_Id := Node (DA2);
 
-                  elsif Raises_Constraint_Error (Expr1)
-                    or else Raises_Constraint_Error (Expr2)
-                  then
-                     null;
+                  begin
+                     if not Is_Static_Expression (Expr1)
+                       or else not Is_Static_Expression (Expr2)
+                     then
+                        return False;
 
-                  elsif Expr_Value (Expr1) /= Expr_Value (Expr2) then
-                     return False;
-                  end if;
-               end;
+                        --  If either expression raised a constraint error,
+                        --  consider the expressions as matching, since this
+                        --  helps to prevent cascading errors.
 
-               Next_Elmt (DA1);
-               Next_Elmt (DA2);
-            end loop;
+                     elsif Raises_Constraint_Error (Expr1)
+                       or else Raises_Constraint_Error (Expr2)
+                     then
+                        null;
+
+                     elsif Expr_Value (Expr1) /= Expr_Value (Expr2) then
+                        return False;
+                     end if;
+                  end;
+
+                  Next_Elmt (DA1);
+                  Next_Elmt (DA2);
+               end loop;
+            end if;
          end;
 
          return True;
