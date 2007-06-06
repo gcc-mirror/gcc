@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -190,9 +190,24 @@ package body Ch4 is
       Attr_Name : Name_Id := No_Name; -- kill junk warning
 
    begin
+      --  Case of not a name
+
       if Token not in Token_Class_Name then
-         Error_Msg_AP ("name expected");
-         raise Error_Resync;
+
+         --  If it looks like start of expression, complain and scan expression
+
+         if Token in Token_Class_Literal
+           or else Token = Tok_Left_Paren
+         then
+            Error_Msg_SC ("name expected");
+            return P_Expression;
+
+         --  Otherwise some other junk, not much we can do
+
+         else
+            Error_Msg_AP ("name expected");
+            raise Error_Resync;
+         end if;
       end if;
 
       --  Loop through designators in qualified name
@@ -1555,7 +1570,6 @@ package body Ch4 is
       else
          return Node1;
       end if;
-
    end P_Expression;
 
    --  This function is identical to the normal P_Expression, except that it
