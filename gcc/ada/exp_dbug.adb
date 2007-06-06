@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,7 +28,6 @@ with Alloc;    use Alloc;
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
-with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
@@ -492,12 +491,22 @@ package body Exp_Dbug is
       Has_Suffix : Boolean;
 
    begin
-      --  If not generating code, there is no need to create encoded
-      --  names, and problems when the back-end is called to annotate
-      --  types without full code generation. See comments at beginning
-      --  of Get_External_Name_With_Suffix for additional details.
+      --  If not generating code, there is no need to create encoded names, and
+      --  problems when the back-end is called to annotate types without full
+      --  code generation. See comments in Get_External_Name_With_Suffix for
+      --  additional details.
 
-      if Operating_Mode /= Generate_Code then
+      --  However we do create encoded names if the back end is active, even
+      --  if Operating_Mode got reset. Otherwise any serious error reported
+      --  by the backend calling Error_Msg changes the Compilation_Mode to
+      --  Check_Semantics, which disables the functionality of this routine,
+      --  causing the generation of spurious additional errors.
+
+      --  Couldn't we just test Original_Operating_Mode here? ???
+
+      if Operating_Mode /= Generate_Code
+        and then not Generating_Code
+      then
          return;
       end if;
 
