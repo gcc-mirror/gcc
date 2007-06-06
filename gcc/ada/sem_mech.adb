@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,13 +27,14 @@
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
-with Targparm; use Targparm;
+with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Sem;      use Sem;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
+with Targparm; use Targparm;
 
 package body Sem_Mech is
 
@@ -274,6 +275,7 @@ package body Sem_Mech is
 
                when Convention_Assembler |
                     Convention_C         |
+                    Convention_CIL       |
                     Convention_CPP       |
                     Convention_Java      |
                     Convention_Stdcall   =>
