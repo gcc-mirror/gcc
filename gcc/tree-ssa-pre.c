@@ -2290,7 +2290,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 	genfn = find_or_generate_expression (block, fn, stmts);
 
 	nargs = call_expr_nargs (expr);
-	buffer = alloca (nargs * sizeof (tree));
+	buffer = (tree*) alloca (nargs * sizeof (tree));
 
 	for (i = 0; i < nargs; i++)
 	  {
@@ -3196,7 +3196,7 @@ insert_fake_stores (void)
 	      def_operand_p defp;
 	      tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
 	      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
-	      tree new;
+	      tree new_tree;
 	      bool notokay = false;
 
 	      FOR_EACH_SSA_DEF_OPERAND (defp, stmt, iter, SSA_OP_VIRTUAL_DEFS)
@@ -3220,16 +3220,16 @@ insert_fake_stores (void)
 		  get_var_ann (storetemp);
 		}
 
-	      new = poolify_modify_stmt (storetemp, lhs);
+	      new_tree = poolify_modify_stmt (storetemp, lhs);
 
-	      lhs = make_ssa_name (storetemp, new);
-	      GIMPLE_STMT_OPERAND (new, 0) = lhs;
-	      create_ssa_artificial_load_stmt (new, stmt);
+	      lhs = make_ssa_name (storetemp, new_tree);
+	      GIMPLE_STMT_OPERAND (new_tree, 0) = lhs;
+	      create_ssa_artificial_load_stmt (new_tree, stmt);
 
-	      NECESSARY (new) = 0;
-	      VEC_safe_push (tree, heap, inserted_exprs, new);
-	      VEC_safe_push (tree, heap, need_creation, new);
-	      bsi_insert_after (&bsi, new, BSI_NEW_STMT);
+	      NECESSARY (new_tree) = 0;
+	      VEC_safe_push (tree, heap, inserted_exprs, new_tree);
+	      VEC_safe_push (tree, heap, need_creation, new_tree);
+	      bsi_insert_after (&bsi, new_tree, BSI_NEW_STMT);
 	    }
 	}
     }

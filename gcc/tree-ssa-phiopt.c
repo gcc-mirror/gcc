@@ -322,14 +322,14 @@ empty_block_p (basic_block bb)
 
 static void
 replace_phi_edge_with_variable (basic_block cond_block,
-				edge e, tree phi, tree new)
+				edge e, tree phi, tree new_tree)
 {
   basic_block bb = bb_for_stmt (phi);
   basic_block block_to_remove;
   block_stmt_iterator bsi;
 
   /* Change the PHI argument to new.  */
-  SET_USE (PHI_ARG_DEF_PTR (phi, e->dest_idx), new);
+  SET_USE (PHI_ARG_DEF_PTR (phi, e->dest_idx), new_tree);
 
   /* Remove the empty basic block.  */
   if (EDGE_SUCC (cond_block, 0)->dest == bb)
@@ -377,7 +377,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
 {
   tree result;
   tree old_result = NULL;
-  tree new, cond;
+  tree new_stmt, cond;
   block_stmt_iterator bsi;
   edge true_edge, false_edge;
   tree new_var = NULL;
@@ -470,7 +470,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
       || (e1 == true_edge && integer_onep (arg1))
       || (e1 == false_edge && integer_zerop (arg1)))
     {
-      new = build_gimple_modify_stmt (new_var1, cond);
+      new_stmt = build_gimple_modify_stmt (new_var1, cond);
     }
   else
     {
@@ -514,19 +514,19 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
 	  tmp = create_tmp_var (TREE_TYPE (op0), NULL);
 	  add_referenced_var (tmp);
 	  cond_tmp = make_ssa_name (tmp, NULL);
-	  new = build_gimple_modify_stmt (cond_tmp, op0);
-	  SSA_NAME_DEF_STMT (cond_tmp) = new;
+	  new_stmt = build_gimple_modify_stmt (cond_tmp, op0);
+	  SSA_NAME_DEF_STMT (cond_tmp) = new_stmt;
 
-	  bsi_insert_after (&bsi, new, BSI_NEW_STMT);
+	  bsi_insert_after (&bsi, new_stmt, BSI_NEW_STMT);
 	  cond = fold_convert (TREE_TYPE (result), cond_tmp);
 	}
 
-      new = build_gimple_modify_stmt (new_var1, cond);
+      new_stmt = build_gimple_modify_stmt (new_var1, cond);
     }
 
-  bsi_insert_after (&bsi, new, BSI_NEW_STMT);
+  bsi_insert_after (&bsi, new_stmt, BSI_NEW_STMT);
 
-  SSA_NAME_DEF_STMT (new_var1) = new;
+  SSA_NAME_DEF_STMT (new_var1) = new_stmt;
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, new_var1);
 
@@ -624,7 +624,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 		    tree arg0, tree arg1)
 {
   tree result, type;
-  tree cond, new;
+  tree cond, new_stmt;
   edge true_edge, false_edge;
   enum tree_code cmp, minmax, ass_code;
   tree smaller, larger, arg_true, arg_false;
@@ -853,10 +853,10 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
   /* Emit the statement to compute min/max.  */
   result = duplicate_ssa_name (PHI_RESULT (phi), NULL);
-  new = build_gimple_modify_stmt (result, build2 (minmax, type, arg0, arg1));
-  SSA_NAME_DEF_STMT (result) = new;
+  new_stmt = build_gimple_modify_stmt (result, build2 (minmax, type, arg0, arg1));
+  SSA_NAME_DEF_STMT (result) = new_stmt;
   bsi = bsi_last (cond_bb);
-  bsi_insert_before (&bsi, new, BSI_NEW_STMT);
+  bsi_insert_before (&bsi, new_stmt, BSI_NEW_STMT);
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result);
   return true;
@@ -874,7 +874,7 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
 		 tree phi, tree arg0, tree arg1)
 {
   tree result;
-  tree new, cond;
+  tree new_stmt, cond;
   block_stmt_iterator bsi;
   edge true_edge, false_edge;
   tree assign;
@@ -965,24 +965,24 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
     lhs = result;
 
   /* Build the modify expression with abs expression.  */
-  new = build_gimple_modify_stmt (lhs,
-				  build1 (ABS_EXPR, TREE_TYPE (lhs), rhs));
-  SSA_NAME_DEF_STMT (lhs) = new;
+  new_stmt = build_gimple_modify_stmt (lhs,
+				       build1 (ABS_EXPR, TREE_TYPE (lhs), rhs));
+  SSA_NAME_DEF_STMT (lhs) = new_stmt;
 
   bsi = bsi_last (cond_bb);
-  bsi_insert_before (&bsi, new, BSI_NEW_STMT);
+  bsi_insert_before (&bsi, new_stmt, BSI_NEW_STMT);
 
   if (negate)
     {
       /* Get the right BSI.  We want to insert after the recently
 	 added ABS_EXPR statement (which we know is the first statement
 	 in the block.  */
-      new = build_gimple_modify_stmt (result,
-				      build1 (NEGATE_EXPR, TREE_TYPE (lhs),
-					      lhs));
-      SSA_NAME_DEF_STMT (result) = new;
+      new_stmt = build_gimple_modify_stmt (result,
+				           build1 (NEGATE_EXPR, TREE_TYPE (lhs),
+					           lhs));
+      SSA_NAME_DEF_STMT (result) = new_stmt;
 
-      bsi_insert_after (&bsi, new, BSI_NEW_STMT);
+      bsi_insert_after (&bsi, new_stmt, BSI_NEW_STMT);
     }
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result);

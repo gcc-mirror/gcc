@@ -199,31 +199,31 @@ may_propagate_copy_into_asm (tree dest)
    they both share the same memory tags.  */
 
 void
-merge_alias_info (tree orig, tree new)
+merge_alias_info (tree orig_name, tree new_name)
 {
-  tree new_sym = SSA_NAME_VAR (new);
-  tree orig_sym = SSA_NAME_VAR (orig);
+  tree new_sym = SSA_NAME_VAR (new_name);
+  tree orig_sym = SSA_NAME_VAR (orig_name);
   var_ann_t new_ann = var_ann (new_sym);
   var_ann_t orig_ann = var_ann (orig_sym);
 
   /* No merging necessary when memory partitions are involved.  */
-  if (factoring_name_p (new))
+  if (factoring_name_p (new_name))
     {
       gcc_assert (!is_gimple_reg (orig_sym));
       return;
     }
-  else if (factoring_name_p (orig))
+  else if (factoring_name_p (orig_name))
     {
       gcc_assert (!is_gimple_reg (new_sym));
       return;
     }
 
-  gcc_assert (POINTER_TYPE_P (TREE_TYPE (orig)));
-  gcc_assert (POINTER_TYPE_P (TREE_TYPE (new)));
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (orig_name)));
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (new_name)));
 
 #if defined ENABLE_CHECKING
-  gcc_assert (lang_hooks.types_compatible_p (TREE_TYPE (orig),
-					     TREE_TYPE (new)));
+  gcc_assert (lang_hooks.types_compatible_p (TREE_TYPE (orig_name),
+					     TREE_TYPE (new_name)));
 
   /* If the pointed-to alias sets are different, these two pointers
      would never have the same memory tag.  In this case, NEW should
@@ -259,10 +259,10 @@ merge_alias_info (tree orig, tree new)
      Since we cannot distinguish one case from another in this
      function, we can only make sure that if P_i and Q_j have
      flow-sensitive information, they should be compatible.  */
-  if (SSA_NAME_PTR_INFO (orig) && SSA_NAME_PTR_INFO (new))
+  if (SSA_NAME_PTR_INFO (orig_name) && SSA_NAME_PTR_INFO (new_name))
     {
-      struct ptr_info_def *orig_ptr_info = SSA_NAME_PTR_INFO (orig);
-      struct ptr_info_def *new_ptr_info = SSA_NAME_PTR_INFO (new);
+      struct ptr_info_def *orig_ptr_info = SSA_NAME_PTR_INFO (orig_name);
+      struct ptr_info_def *new_ptr_info = SSA_NAME_PTR_INFO (new_name);
 
       /* Note that pointer NEW and ORIG may actually have different
 	 pointed-to variables (e.g., PR 18291 represented in

@@ -592,13 +592,13 @@ set_virtual_use_link (use_operand_p ptr, tree stmt)
 static inline def_optype_p 
 add_def_op (tree *op, def_optype_p last)
 {
-  def_optype_p new;
+  def_optype_p new_def;
 
-  new = alloc_def ();
-  DEF_OP_PTR (new) = op;
-  last->next = new;
-  new->next = NULL;
-  return new;
+  new_def = alloc_def ();
+  DEF_OP_PTR (new_def) = op;
+  last->next = new_def;
+  new_def->next = NULL;
+  return new_def;
 }
 
 
@@ -607,14 +607,14 @@ add_def_op (tree *op, def_optype_p last)
 static inline use_optype_p
 add_use_op (tree stmt, tree *op, use_optype_p last)
 {
-  use_optype_p new;
+  use_optype_p new_use;
 
-  new = alloc_use ();
-  USE_OP_PTR (new)->use = op;
-  link_imm_use_stmt (USE_OP_PTR (new), *op, stmt);
-  last->next = new;
-  new->next = NULL;
-  return new;
+  new_use = alloc_use ();
+  USE_OP_PTR (new_use)->use = op;
+  link_imm_use_stmt (USE_OP_PTR (new_use), *op, stmt);
+  last->next = new_use;
+  new_use->next = NULL;
+  return new_use;
 }
 
 
@@ -625,22 +625,23 @@ add_use_op (tree stmt, tree *op, use_optype_p last)
 static inline voptype_p
 add_vop (tree stmt, tree op, int num, voptype_p prev)
 {
-  voptype_p new;
+  voptype_p new_vop;
   int x;
 
-  new = alloc_vop (num);
+  new_vop = alloc_vop (num);
   for (x = 0; x < num; x++)
     {
-      VUSE_OP_PTR (new, x)->prev = NULL;
-      SET_VUSE_OP (new, x, op);
-      VUSE_OP_PTR (new, x)->use = &new->usev.uses[x].use_var;
-      link_imm_use_stmt (VUSE_OP_PTR (new, x), new->usev.uses[x].use_var, stmt);
+      VUSE_OP_PTR (new_vop, x)->prev = NULL;
+      SET_VUSE_OP (new_vop, x, op);
+      VUSE_OP_PTR (new_vop, x)->use = &new_vop->usev.uses[x].use_var;
+      link_imm_use_stmt (VUSE_OP_PTR (new_vop, x),
+			 new_vop->usev.uses[x].use_var, stmt);
     }
 
   if (prev)
-    prev->next = new;
-  new->next = NULL;
-  return new;
+    prev->next = new_vop;
+  new_vop->next = NULL;
+  return new_vop;
 }
 
 
@@ -650,9 +651,9 @@ add_vop (tree stmt, tree op, int num, voptype_p prev)
 static inline voptype_p
 add_vuse_op (tree stmt, tree op, int num, voptype_p last)
 {
-  voptype_p new = add_vop (stmt, op, num, last);
-  VDEF_RESULT (new) = NULL_TREE;
-  return new;
+  voptype_p new_vop = add_vop (stmt, op, num, last);
+  VDEF_RESULT (new_vop) = NULL_TREE;
+  return new_vop;
 }
 
 
@@ -662,9 +663,9 @@ add_vuse_op (tree stmt, tree op, int num, voptype_p last)
 static inline voptype_p
 add_vdef_op (tree stmt, tree op, int num, voptype_p last)
 {
-  voptype_p new = add_vop (stmt, op, num, last);
-  VDEF_RESULT (new) = op;
-  return new;
+  voptype_p new_vop = add_vop (stmt, op, num, last);
+  VDEF_RESULT (new_vop) = op;
+  return new_vop;
 }
   
 
@@ -2059,7 +2060,7 @@ static void
 get_expr_operands (tree stmt, tree *expr_p, int flags)
 {
   enum tree_code code;
-  enum tree_code_class class;
+  enum tree_code_class codeclass;
   tree expr = *expr_p;
   stmt_ann_t s_ann = stmt_ann (stmt);
 
@@ -2067,7 +2068,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
     return;
 
   code = TREE_CODE (expr);
-  class = TREE_CODE_CLASS (code);
+  codeclass = TREE_CODE_CLASS (code);
 
   switch (code)
     {
@@ -2284,11 +2285,11 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
       return;
 
     default:
-      if (class == tcc_unary)
+      if (codeclass == tcc_unary)
 	goto do_unary;
-      if (class == tcc_binary || class == tcc_comparison)
+      if (codeclass == tcc_binary || codeclass == tcc_comparison)
 	goto do_binary;
-      if (class == tcc_constant || class == tcc_type)
+      if (codeclass == tcc_constant || codeclass == tcc_type)
 	return;
     }
 
@@ -2794,7 +2795,7 @@ push_stmt_changes (tree *stmt_p)
   if (TREE_CODE (stmt) == PHI_NODE)
     return;
 
-  buf = xmalloc (sizeof *buf);
+  buf = XNEW (struct scb_d);
   memset (buf, 0, sizeof *buf);
 
   buf->stmt_p = stmt_p;

@@ -379,7 +379,7 @@ match (htab_t ref_map, tree key)
 static inline void
 maybe_add_match (htab_t ref_map, struct tree_map *key)
 {
-  struct tree_map *found = htab_find (ref_map, key);
+  struct tree_map *found = (struct tree_map *) htab_find (ref_map, key);
 
   if (found && !found->to)
     found->to = key->to;
@@ -392,7 +392,7 @@ static void
 add_key (htab_t ht, tree t, alloc_pool references_pool)
 {
   void **slot;
-  struct tree_map *tp = pool_alloc (references_pool);
+  struct tree_map *tp = (struct tree_map *) pool_alloc (references_pool);
 
   tp->base.from = t;
   tp->to = NULL_TREE;

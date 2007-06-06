@@ -343,7 +343,7 @@ struct ar_data
 static bool
 idx_analyze_ref (tree base, tree *index, void *data)
 {
-  struct ar_data *ar_data = data;
+  struct ar_data *ar_data = (struct ar_data *) data;
   tree ibase, step, stepsize;
   HOST_WIDE_INT istep, idelta = 0, imult = 1;
   affine_iv iv;
