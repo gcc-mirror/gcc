@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,6 +47,16 @@ package Exp_Aggr is
    --  assignment in the newly allocated object.
 
    procedure Convert_Aggr_In_Assignment (N : Node_Id);
-   --  ??? documentation needed
+   --  If the right-hand side of an assignment is an aggregate, expand the
+   --  statement into a series of individual component assignments. This is
+   --  done if there are non-static values involved in either the bounds or
+   --  the components, and the aggregate cannot be handled as a whole by the
+   --  backend.
 
+   function Static_Array_Aggregate (N : Node_Id) return Boolean;
+   --  N is an array aggregate that may have a component association with
+   --  an others clause and a range. If bounds are static and the expressions
+   --  are compile-time known constants, rewrite N as a purely positional
+   --  aggregate, to be use to initialize variables and components of the type
+   --  without generating elaboration code.
 end Exp_Aggr;
