@@ -706,7 +706,7 @@ package body Ada.Strings.Wide_Unbounded is
          raise Index_Error;
       end if;
 
-      Realloc_For_Chunk (Source, New_Item'Size);
+      Realloc_For_Chunk (Source, New_Item'Length);
 
       Source.Reference
         (Before +  New_Item'Length .. Source.Last + New_Item'Length) :=
