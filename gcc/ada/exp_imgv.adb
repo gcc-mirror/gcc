@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,7 @@ with Casing;   use Casing;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Exp_Util; use Exp_Util;
+with Lib;      use Lib;
 with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
@@ -633,11 +634,31 @@ package body Exp_Imgv is
       --  and decimal types, with Vid set to the Id of the entity for the
       --  Value routine and Args set to the list of parameters for the call.
 
-      Rewrite (N,
-        Convert_To (Btyp,
-          Make_Function_Call (Loc,
-            Name => New_Reference_To (RTE (Vid), Loc),
-            Parameter_Associations => Args)));
+      --  Compiling package Ada.Tags under No_Run_Time_Mode we disable the
+      --  expansion of the attribute into the function call statement to avoid
+      --  generating spurious errors caused by the use of Integer_Address'Value
+      --  in our implementation of Ada.Tags.Internal_Tag
+
+      --  Seems like a bit of a kludge, there should be a better way ???
+
+      --  There is a better way, you should also test RTE_Available ???
+
+      if No_Run_Time_Mode
+        and then Rtyp = RTE (RE_Integer_Address)
+        and then RTU_Loaded (Ada_Tags)
+        and then Cunit_Entity (Current_Sem_Unit)
+                   = Body_Entity (RTU_Entity (Ada_Tags))
+      then
+         Rewrite (N,
+           Unchecked_Convert_To (Rtyp,
+             Make_Integer_Literal (Loc, Uint_0)));
+      else
+         Rewrite (N,
+           Convert_To (Btyp,
+             Make_Function_Call (Loc,
+               Name => New_Reference_To (RTE (Vid), Loc),
+               Parameter_Associations => Args)));
+      end if;
 
       Analyze_And_Resolve (N, Btyp);
    end Expand_Value_Attribute;
