@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,7 @@ with Output;   use Output;
 with Prepcomp;
 with Repinfo;  use Repinfo;
 with Restrict;
+with Rtsfind;
 with Sem;
 with Sem_Ch8;
 with Sem_Ch12;
@@ -61,7 +62,7 @@ with Sinput.L; use Sinput.L;
 with Snames;
 with Sprint;   use Sprint;
 with Stringt;
-with Targparm;
+with Targparm; use Targparm;
 with Tree_Gen;
 with Treepr;   use Treepr;
 with Ttypes;
@@ -83,6 +84,174 @@ procedure Gnat1drv is
    Back_End_Mode : Back_End.Back_End_Mode_Type;
    --  Record back end mode
 
+   procedure Check_Bad_Body;
+   --  Called to check if the unit we are compiling has a bad body
+
+   procedure Check_Rep_Info;
+   --  Called when we are not generating code, to check if -gnatR was requested
+   --  and if so, explain that we will not be honoring the request.
+
+   --------------------
+   -- Check_Bad_Body --
+   --------------------
+
+   procedure Check_Bad_Body is
+      Sname   : Unit_Name_Type;
+      Src_Ind : Source_File_Index;
+      Fname   : File_Name_Type;
+
+      procedure Bad_Body_Error (Msg : String);
+      --  Issue message for bad body found
+
+      --------------------
+      -- Bad_Body_Error --
+      --------------------
+
+      procedure Bad_Body_Error (Msg : String) is
+      begin
+         Error_Msg_N (Msg, Main_Unit_Node);
+         Error_Msg_File_1 := Fname;
+         Error_Msg_N ("remove incorrect body in file{!", Main_Unit_Node);
+      end Bad_Body_Error;
+
+      --  Start of processing for Check_Bad_Body
+
+   begin
+      --  Nothing to do if we are only checking syntax, because we don't know
+      --  enough to know if we require or forbid a body in this case.
+
+      if Operating_Mode = Check_Syntax then
+         return;
+      end if;
+
+      --  Check for body not allowed
+
+      if (Main_Kind = N_Package_Declaration
+           and then not Body_Required (Main_Unit_Node))
+        or else (Main_Kind = N_Generic_Package_Declaration
+                  and then not Body_Required (Main_Unit_Node))
+        or else Main_Kind = N_Package_Renaming_Declaration
+        or else Main_Kind = N_Subprogram_Renaming_Declaration
+        or else Nkind (Original_Node (Unit (Main_Unit_Node)))
+                         in N_Generic_Instantiation
+      then
+         Sname := Unit_Name (Main_Unit);
+
+         --  If we do not already have a body name, then get the body name
+         --  (but how can we have a body name here ???)
+
+         if not Is_Body_Name (Sname) then
+            Sname := Get_Body_Name (Sname);
+         end if;
+
+         Fname := Get_File_Name (Sname, Subunit => False);
+         Src_Ind := Load_Source_File (Fname);
+
+         --  Case where body is present and it is not a subunit. Exclude
+         --  the subunit case, because it has nothing to do with the
+         --  package we are compiling. It is illegal for a child unit and a
+         --  subunit with the same expanded name (RM 10.2(9)) to appear
+         --  together in a partition, but there is nothing to stop a
+         --  compilation environment from having both, and the test here
+         --  simply allows that. If there is an attempt to include both in
+         --  a partition, this is diagnosed at bind time. In Ada 83 mode
+         --  this is not a warning case.
+
+         --  Note: if weird file names are being used, we can have
+         --  situation where the file name that supposedly contains body,
+         --  in fact contains a spec, or we can't tell what it contains.
+         --  Skip the error message in these cases.
+
+         --  Also ignore body that is nothing but pragma No_Body; (that's the
+         --  whole point of this pragma, to be used this way and to cause the
+         --  body file to be ignored in this context).
+
+         if Src_Ind /= No_Source_File
+           and then Get_Expected_Unit_Type (Fname) = Expect_Body
+           and then not Source_File_Is_Subunit (Src_Ind)
+           and then not Source_File_Is_No_Body (Src_Ind)
+         then
+            Errout.Finalize;
+
+            Error_Msg_Unit_1 := Sname;
+
+            --  Ada 83 case of a package body being ignored. This is not an
+            --  error as far as the Ada 83 RM is concerned, but it is almost
+            --  certainly not what is wanted so output a warning. Give this
+            --  message only if there were no errors, since otherwise it may
+            --  be incorrect (we may have misinterpreted a junk spec as not
+            --  needing a body when it really does).
+
+            if Main_Kind = N_Package_Declaration
+              and then Ada_Version = Ada_83
+              and then Operating_Mode = Generate_Code
+              and then Distribution_Stub_Mode /= Generate_Caller_Stub_Body
+              and then not Compilation_Errors
+            then
+               Error_Msg_N
+                 ("package $$ does not require a body?", Main_Unit_Node);
+               Error_Msg_File_1 := Fname;
+               Error_Msg_N ("body in file{? will be ignored", Main_Unit_Node);
+
+               --  Ada 95 cases of a body file present when no body is
+               --  permitted. This we consider to be an error.
+
+            else
+               --  For generic instantiations, we never allow a body
+
+               if Nkind (Original_Node (Unit (Main_Unit_Node)))
+               in N_Generic_Instantiation
+               then
+                  Bad_Body_Error
+                    ("generic instantiation for $$ does not allow a body");
+
+                  --  A library unit that is a renaming never allows a body
+
+               elsif Main_Kind in N_Renaming_Declaration then
+                  Bad_Body_Error
+                    ("renaming declaration for $$ does not allow a body!");
+
+                  --  Remaining cases are packages and generic packages. Here
+                  --  we only do the test if there are no previous errors,
+                  --  because if there are errors, they may lead us to
+                  --  incorrectly believe that a package does not allow a body
+                  --  when in fact it does.
+
+               elsif not Compilation_Errors then
+                  if Main_Kind = N_Package_Declaration then
+                     Bad_Body_Error
+                       ("package $$ does not allow a body!");
+
+                  elsif Main_Kind = N_Generic_Package_Declaration then
+                     Bad_Body_Error
+                       ("generic package $$ does not allow a body!");
+                  end if;
+               end if;
+
+            end if;
+         end if;
+      end if;
+   end Check_Bad_Body;
+
+   --------------------
+   -- Check_Rep_Info --
+   --------------------
+
+   procedure Check_Rep_Info is
+   begin
+      if List_Representation_Info /= 0
+        or else List_Representation_Info_Mechanisms
+      then
+         Write_Eol;
+         Write_Str
+           ("cannot generate representation information, no code generated");
+         Write_Eol;
+         Write_Eol;
+      end if;
+   end Check_Rep_Info;
+
+--  Start of processing for Gnat1drv
+
 begin
    --  This inner block is set up to catch assertion errors and constraint
    --  errors. Since the code for handling these errors can cause another
@@ -91,8 +260,7 @@ begin
 
    begin
       --  Lib.Initialize need to be called before Scan_Compiler_Arguments,
-      --  because it initialize a table that is filled by
-      --  Scan_Compiler_Arguments.
+      --  because it initializes a table filled by Scan_Compiler_Arguments.
 
       Osint.Initialize;
       Fmap.Reset_Tables;
@@ -125,7 +293,7 @@ begin
          use Sinput;
 
          S : Source_File_Index;
-         N : Name_Id;
+         N : File_Name_Type;
 
       begin
          Name_Buffer (1 .. 10) := "system.ads";
@@ -147,9 +315,9 @@ begin
          end if;
 
          Targparm.Get_Target_Parameters
-           (System_Text  => Source_Text (S),
+           (System_Text  => Source_Text  (S),
             Source_First => Source_First (S),
-            Source_Last  => Source_Last (S));
+            Source_Last  => Source_Last  (S));
 
          --  Acquire configuration pragma information from Targparm
 
@@ -173,7 +341,7 @@ begin
       --  Output copyright notice if full list mode unless we have a list
       --  file, in which case we defer this so that it is output in the file
 
-      if (Verbose_Mode or else (Full_List and Full_List_File_Name = null))
+      if (Verbose_Mode or else (Full_List and then Full_List_File_Name = null))
         and then not Debug_Flag_7
       then
          Write_Eol;
@@ -230,9 +398,9 @@ begin
          Suppress_Options (Overflow_Check) := True;
       end if;
 
-      --  Check we have exactly one source file, this happens only in the case
-      --  where the driver is called directly, it cannot happen when gnat1 is
-      --  invoked from gcc in the normal case.
+      --  Check we do not have more than one source file, this happens only in
+      --  the case where the driver is called directly, it cannot happen when
+      --  gnat1 is invoked from gcc in the normal case.
 
       if Osint.Number_Of_Files /= 1 then
          Usage;
@@ -245,145 +413,27 @@ begin
 
       Original_Operating_Mode := Operating_Mode;
       Frontend;
-      Main_Unit_Node := Cunit (Main_Unit);
-      Main_Kind := Nkind (Unit (Main_Unit_Node));
 
-      --  Check for suspicious or incorrect body present if we are doing
-      --  semantic checking. We omit this check in syntax only mode, because
-      --  in that case we do not know if we need a body or not.
+      --  Exit with errors if the main source could not be parsed
 
-      if Operating_Mode /= Check_Syntax
-        and then
-          ((Main_Kind = N_Package_Declaration
-             and then not Body_Required (Main_Unit_Node))
-           or else (Main_Kind = N_Generic_Package_Declaration
-                     and then not Body_Required (Main_Unit_Node))
-           or else Main_Kind = N_Package_Renaming_Declaration
-           or else Main_Kind = N_Subprogram_Renaming_Declaration
-           or else Nkind (Original_Node (Unit (Main_Unit_Node)))
-                           in N_Generic_Instantiation)
-      then
-         Bad_Body : declare
-            Sname   : Unit_Name_Type := Unit_Name (Main_Unit);
-            Src_Ind : Source_File_Index;
-            Fname   : File_Name_Type;
-
-            procedure Bad_Body_Error (Msg : String);
-            --  Issue message for bad body found
-
-            --------------------
-            -- Bad_Body_Error --
-            --------------------
-
-            procedure Bad_Body_Error (Msg : String) is
-            begin
-               Error_Msg_N (Msg, Main_Unit_Node);
-               Error_Msg_Name_1 := Fname;
-               Error_Msg_N
-                 ("remove incorrect body in file{!", Main_Unit_Node);
-            end Bad_Body_Error;
-
-         --  Start of processing for Bad_Body
-
-         begin
-            Sname := Unit_Name (Main_Unit);
-
-            --  If we do not already have a body name, then get the body name
-            --  (but how can we have a body name here ???)
-
-            if not Is_Body_Name (Sname) then
-               Sname := Get_Body_Name (Sname);
-            end if;
-
-            Fname := Get_File_Name (Sname, Subunit => False);
-            Src_Ind := Load_Source_File (Fname);
-
-            --  Case where body is present and it is not a subunit. Exclude
-            --  the subunit case, because it has nothing to do with the
-            --  package we are compiling. It is illegal for a child unit and a
-            --  subunit with the same expanded name (RM 10.2(9)) to appear
-            --  together in a partition, but there is nothing to stop a
-            --  compilation environment from having both, and the test here
-            --  simply allows that. If there is an attempt to include both in
-            --  a partition, this is diagnosed at bind time. In Ada 83 mode
-            --  this is not a warning case.
-
-            --  Note: if weird file names are being used, we can have
-            --  situation where the file name that supposedly contains body,
-            --  in fact contains a spec, or we can't tell what it contains.
-            --  Skip the error message in these cases.
-
-            if Src_Ind /= No_Source_File
-              and then Get_Expected_Unit_Type (Fname) = Expect_Body
-              and then not Source_File_Is_Subunit (Src_Ind)
-            then
-               Error_Msg_Name_1 := Sname;
-
-               --  Ada 83 case of a package body being ignored. This is not an
-               --  error as far as the Ada 83 RM is concerned, but it is
-               --  almost certainly not what is wanted so output a warning.
-               --  Give this message only if there were no errors, since
-               --  otherwise it may be incorrect (we may have misinterpreted a
-               --  junk spec as not needing a body when it really does).
-
-               if Main_Kind = N_Package_Declaration
-                 and then Ada_Version = Ada_83
-                 and then Operating_Mode = Generate_Code
-                 and then Distribution_Stub_Mode /= Generate_Caller_Stub_Body
-                 and then not Compilation_Errors
-               then
-                  Error_Msg_N
-                    ("package % does not require a body?", Main_Unit_Node);
-                  Error_Msg_Name_1 := Fname;
-                  Error_Msg_N
-                    ("body in file{? will be ignored", Main_Unit_Node);
-
-               --  Ada 95 cases of a body file present when no body is
-               --  permitted. This we consider to be an error.
-
-               else
-                  --  For generic instantiations, we never allow a body
-
-                  if Nkind (Original_Node (Unit (Main_Unit_Node)))
-                      in N_Generic_Instantiation
-                  then
-                     Bad_Body_Error
-                       ("generic instantiation for % does not allow a body");
-
-                  --  A library unit that is a renaming never allows a body
-
-                  elsif Main_Kind in N_Renaming_Declaration then
-                     Bad_Body_Error
-                       ("renaming declaration for % does not allow a body!");
-
-                  --  Remaining cases are packages and generic packages. Here
-                  --  we only do the test if there are no previous errors,
-                  --  because if there are errors, they may lead us to
-                  --  incorrectly believe that a package does not allow a body
-                  --  when in fact it does.
-
-                  elsif not Compilation_Errors then
-                     if Main_Kind = N_Package_Declaration then
-                        Bad_Body_Error
-                          ("package % does not allow a body!");
-
-                     elsif Main_Kind = N_Generic_Package_Declaration then
-                        Bad_Body_Error
-                          ("generic package % does not allow a body!");
-                     end if;
-                  end if;
-
-               end if;
-            end if;
-         end Bad_Body;
+      if Sinput.Main_Source_File = No_Source_File then
+         Errout.Finalize;
+         Errout.Output_Messages;
+         Exit_Program (E_Errors);
       end if;
 
+      Main_Unit_Node := Cunit (Main_Unit);
+      Main_Kind := Nkind (Unit (Main_Unit_Node));
+      Check_Bad_Body;
+
       --  Exit if compilation errors detected
+
+      Errout.Finalize;
 
       if Compilation_Errors then
          Treepr.Tree_Dump;
          Sem_Ch13.Validate_Unchecked_Conversions;
-         Errout.Finalize;
+         Errout.Output_Messages;
          Namet.Finalize;
 
          --  Generate ALI file if specially requested
@@ -417,8 +467,10 @@ begin
       if Original_Operating_Mode = Check_Syntax then
          Treepr.Tree_Dump;
          Errout.Finalize;
+         Errout.Output_Messages;
          Tree_Gen;
          Namet.Finalize;
+         Check_Rep_Info;
 
          --  Use a goto instead of calling Exit_Program so that finalization
          --  occurs normally.
@@ -561,10 +613,12 @@ begin
 
          Sem_Ch13.Validate_Unchecked_Conversions;
          Errout.Finalize;
+         Errout.Output_Messages;
          Treepr.Tree_Dump;
          Tree_Gen;
          Write_ALI (Object => False);
          Namet.Finalize;
+         Check_Rep_Info;
 
          --  Exit program with error indication, to kill object file
 
@@ -581,20 +635,22 @@ begin
       --  enabled, because the front end determines representations.
 
       --  Annotation is also suppressed in the case of compiling for
-      --  the Java VM, since representations are largely symbolic there.
+      --  a VM, since representations are largely symbolic there.
 
       if Back_End_Mode = Declarations_Only
         and then (not Back_Annotate_Rep_Info
-                    or else Main_Kind = N_Subunit
-                    or else Targparm.Frontend_Layout_On_Target
-                    or else Hostparm.Java_VM)
+                   or else Main_Kind = N_Subunit
+                   or else Targparm.Frontend_Layout_On_Target
+                   or else Targparm.VM_Target /= No_VM)
       then
          Sem_Ch13.Validate_Unchecked_Conversions;
          Errout.Finalize;
+         Errout.Output_Messages;
          Write_ALI (Object => False);
          Tree_Dump;
          Tree_Gen;
          Namet.Finalize;
+         Check_Rep_Info;
          return;
       end if;
 
@@ -624,6 +680,7 @@ begin
 
       --  Here we call the back end to generate the output code
 
+      Generating_Code := True;
       Back_End.Call_Back_End (Back_End_Mode);
 
       --  Once the backend is complete, we unlock the names table. This call
@@ -644,6 +701,7 @@ begin
       --  representation information for List_Rep_Info.
 
       Errout.Finalize;
+      Errout.Output_Messages;
       List_Rep_Info;
 
       --  Only write the library if the backend did not generate any error
@@ -673,6 +731,9 @@ begin
    exception
       --  Handle fatal internal compiler errors
 
+      when Rtsfind.RE_Not_Available =>
+         Comperr.Compiler_Abort ("RE_Not_Available");
+
       when System.Assertions.Assert_Failure =>
          Comperr.Compiler_Abort ("Assert_Failure");
 
@@ -698,6 +759,7 @@ begin
 exception
    when Unrecoverable_Error =>
       Errout.Finalize;
+      Errout.Output_Messages;
 
       Set_Standard_Error;
       Write_Str ("compilation abandoned");
