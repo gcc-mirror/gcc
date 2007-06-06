@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -518,7 +518,7 @@ begin
             Expr  : Node_Id;
             Index : Nat;
 
-            function Get_Fname (Arg : Node_Id) return Name_Id;
+            function Get_Fname (Arg : Node_Id) return File_Name_Type;
             --  Process file name from unit name form of pragma
 
             function Get_String_Argument (Arg : Node_Id) return String_Ptr;
@@ -534,7 +534,7 @@ begin
             -- Get_Fname --
             ---------------
 
-            function Get_Fname (Arg : Node_Id) return Name_Id is
+            function Get_Fname (Arg : Node_Id) return File_Name_Type is
             begin
                String_To_Name_Buffer (Strval (Expression (Arg)));
 
@@ -803,7 +803,7 @@ begin
       --  turn off semantic checking anyway if any parse errors are found.
 
       when Pragma_Source_Reference => Source_Reference : declare
-         Fname : Name_Id;
+         Fname : File_Name_Type;
 
       begin
          if Arg_Count /= 1 then
@@ -833,7 +833,7 @@ begin
                   Pragma_Sloc);
                raise Error_Resync;
             else
-               Fname := No_Name;
+               Fname := No_File;
             end if;
 
          --  File name present
@@ -1054,6 +1054,7 @@ begin
            Pragma_Atomic                        |
            Pragma_Atomic_Components             |
            Pragma_Attach_Handler                |
+           Pragma_CIL_Constructor               |
            Pragma_Compile_Time_Error            |
            Pragma_Compile_Time_Warning          |
            Pragma_Convention_Identifier         |
@@ -1077,7 +1078,6 @@ begin
            Pragma_Elaborate_All                 |
            Pragma_Elaborate_Body                |
            Pragma_Elaboration_Checks            |
-           Pragma_Explicit_Overriding           |
            Pragma_Export                        |
            Pragma_Export_Exception              |
            Pragma_Export_Function               |
@@ -1123,13 +1123,13 @@ begin
            Pragma_Main                          |
            Pragma_Main_Storage                  |
            Pragma_Memory_Size                   |
+           Pragma_No_Body                       |
            Pragma_No_Return                     |
            Pragma_Obsolescent                   |
            Pragma_No_Run_Time                   |
            Pragma_No_Strict_Aliasing            |
            Pragma_Normalize_Scalars             |
            Pragma_Optimize                      |
-           Pragma_Optional_Overriding           |
            Pragma_Pack                          |
            Pragma_Passive                       |
            Pragma_Preelaborable_Initialization  |
@@ -1157,6 +1157,7 @@ begin
            Pragma_Shared_Passive                |
            Pragma_Storage_Size                  |
            Pragma_Storage_Unit                  |
+           Pragma_Static_Elaboration_Desired    |
            Pragma_Stream_Convert                |
            Pragma_Subtitle                      |
            Pragma_Suppress                      |
@@ -1169,11 +1170,11 @@ begin
            Pragma_Task_Info                     |
            Pragma_Task_Name                     |
            Pragma_Task_Storage                  |
-           Pragma_Thread_Body                   |
            Pragma_Time_Slice                    |
            Pragma_Title                         |
            Pragma_Unchecked_Union               |
            Pragma_Unimplemented_Unit            |
+           Pragma_Universal_Aliasing            |
            Pragma_Universal_Data                |
            Pragma_Unreferenced                  |
            Pragma_Unreferenced_Objects          |

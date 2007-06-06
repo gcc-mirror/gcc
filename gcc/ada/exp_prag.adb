@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 
 with Atree;    use Atree;
 with Casing;   use Casing;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Exp_Ch11; use Exp_Ch11;
@@ -36,6 +37,8 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Eval; use Sem_Eval;
@@ -239,7 +242,7 @@ package body Exp_Prag is
 
       --  Since assertions are on, we rewrite the pragma with its
       --  corresponding if statement, and then analyze the statement
-      --  The expansion transforms:
+      --  The normal case expansion transforms:
 
       --    pragma Assert (condition [,message]);
 
@@ -252,30 +255,70 @@ package body Exp_Prag is
       --  where Str is the message if one is present, or the default of
       --  file:line if no message is given.
 
-      --  First, we need to prepare the character literal
+      --  An alternative expansion is used when the No_Exception_Propagation
+      --  restriction is active and there is a local Assert_Failure handler.
+      --  This is not a common combination of circumstances, but it occurs in
+      --  the context of Aunit and the zero footprint profile. In this case we
+      --  generate:
 
-      if Present (Arg2 (N)) then
-         Msg := Strval (Expr_Value_S (Arg2 (N)));
-      else
-         Build_Location_String (Loc);
-         Msg := String_From_Name_Buffer;
-      end if;
+      --    if not condition then
+      --       raise Assert_Failure;
+      --    end if;
 
-      --  Now generate the if statement. Note that we consider this to be
-      --  an explicit conditional in the source, not an implicit if, so we
+      --  This will then be transformed into a goto, and the local handler will
+      --  be able to handle the assert error (which would not be the case if a
+      --  call is made to the Raise_Assert_Failure procedure).
+
+      --  Note that the reason we do not always generate a direct raise is that
+      --  the form in which the procedure is called allows for more efficient
+      --  breakpointing of assertion errors.
+
+      --  Generate the appropriate if statement. Note that we consider this to
+      --  be an explicit conditional in the source, not an implicit if, so we
       --  do not call Make_Implicit_If_Statement.
 
-      Rewrite (N,
-        Make_If_Statement (Loc,
-          Condition =>
-            Make_Op_Not (Loc,
-              Right_Opnd => Cond),
-          Then_Statements => New_List (
-            Make_Procedure_Call_Statement (Loc,
-              Name =>
-                New_Reference_To (RTE (RE_Raise_Assert_Failure), Loc),
-              Parameter_Associations => New_List (
-                Make_String_Literal (Loc, Msg))))));
+      --  Case where we generate a direct raise
+
+      if (Debug_Flag_Dot_G
+          or else Restriction_Active (No_Exception_Propagation))
+        and then Present (Find_Local_Handler (RTE (RE_Assert_Failure), N))
+      then
+         Rewrite (N,
+           Make_If_Statement (Loc,
+             Condition =>
+               Make_Op_Not (Loc,
+                 Right_Opnd => Cond),
+             Then_Statements => New_List (
+               Make_Raise_Statement (Loc,
+                 Name =>
+                   New_Reference_To (RTE (RE_Assert_Failure), Loc)))));
+
+      --  Case where we call the procedure
+
+      else
+         --  First, we need to prepare the string literal
+
+         if Present (Arg2 (N)) then
+            Msg := Strval (Expr_Value_S (Arg2 (N)));
+         else
+            Build_Location_String (Loc);
+            Msg := String_From_Name_Buffer;
+         end if;
+
+         --  Now rewrite as an if statement
+
+         Rewrite (N,
+           Make_If_Statement (Loc,
+             Condition =>
+               Make_Op_Not (Loc,
+                 Right_Opnd => Cond),
+             Then_Statements => New_List (
+               Make_Procedure_Call_Statement (Loc,
+                 Name =>
+                   New_Reference_To (RTE (RE_Raise_Assert_Failure), Loc),
+                 Parameter_Associations => New_List (
+                   Make_String_Literal (Loc, Msg))))));
+      end if;
 
       Analyze (N);
 
@@ -284,9 +327,8 @@ package body Exp_Prag is
       if Nkind (N) = N_Procedure_Call_Statement
         and then Is_RTE (Entity (Name (N)), RE_Raise_Assert_Failure)
       then
-         --  If original condition was a Standard.False, we assume
-         --  that this is indeed intented to raise assert error
-         --  and no warning is required.
+         --  If original condition was a Standard.False, we assume that this is
+         --  indeed intented to raise assert error and no warning is required.
 
          if Is_Entity_Name (Original_Node (Cond))
            and then Entity (Original_Node (Cond)) = Standard_False
@@ -389,7 +431,8 @@ package body Exp_Prag is
       if Ekind (Def_Id) = E_Variable then
          Typ  := Etype (Def_Id);
 
-         --  Loop to ???
+         --  Iterate from declaration of object to import pragma, to find
+         --  generated initialization call for object, if any.
 
          Init_Call := Next (Parent (Def_Id));
          while Present (Init_Call) and then Init_Call /= N loop
@@ -411,7 +454,7 @@ package body Exp_Prag is
          --  have explicit initialization, so the expression must have
          --  been generated by the compiler.
 
-         if No (Init_Call)
+         if Init_Call = N
            and then Present (Expression (Parent (Def_Id)))
          then
             Set_Expression (Parent (Def_Id), Empty);

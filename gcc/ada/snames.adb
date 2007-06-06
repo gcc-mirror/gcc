@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Namet; use Namet;
 with Opt;   use Opt;
 with Table;
 
@@ -118,9 +117,11 @@ package body Snames is
      "put#" &
      "put_line#" &
      "to#" &
+     "exception_traces#" &
      "finalization#" &
      "finalization_root#" &
      "interfaces#" &
+     "most_recent_exception#" &
      "standard#" &
      "system#" &
      "text_io#" &
@@ -187,7 +188,6 @@ package body Snames is
      "discard_names#" &
      "elaboration_checks#" &
      "eliminate#" &
-     "explicit_overriding#" &
      "extend_system#" &
      "extensions_allowed#" &
      "external_name_casing#" &
@@ -232,6 +232,7 @@ package body Snames is
      "atomic#" &
      "atomic_components#" &
      "attach_handler#" &
+     "cil_constructor#" &
      "comment#" &
      "common_object#" &
      "complete_representation#" &
@@ -283,10 +284,10 @@ package body Snames is
      "main#" &
      "main_storage#" &
      "memory_size#" &
+     "no_body#" &
      "no_return#" &
      "obsolescent#" &
      "optimize#" &
-     "optional_overriding#" &
      "pack#" &
      "page#" &
      "passive#" &
@@ -303,6 +304,7 @@ package body Snames is
      "shared#" &
      "shared_passive#" &
      "source_reference#" &
+     "static_elaboration_desired#" &
      "stream_convert#" &
      "subtitle#" &
      "suppress_all#" &
@@ -312,11 +314,11 @@ package body Snames is
      "task_info#" &
      "task_name#" &
      "task_storage#" &
-     "thread_body#" &
      "time_slice#" &
      "title#" &
      "unchecked_union#" &
      "unimplemented_unit#" &
+     "universal_aliasing#" &
      "unreferenced#" &
      "unreferenced_objects#" &
      "unreserve_all_interrupts#" &
@@ -325,6 +327,7 @@ package body Snames is
      "weak_external#" &
      "ada#" &
      "assembler#" &
+     "cil#" &
      "cobol#" &
      "cpp#" &
      "fortran#" &
@@ -670,13 +673,13 @@ package body Snames is
      "archive_suffix#" &
      "binder#" &
      "binder_driver#" &
+     "binder_prefix#" &
      "body_suffix#" &
      "builder#" &
      "builder_switches#" &
      "compiler#" &
      "compiler_driver#" &
      "compiler_kind#" &
-     "compiler_minimum_options#" &
      "compiler_pic_option#" &
      "compute_dependency#" &
      "config_body_file_name#" &
@@ -690,6 +693,7 @@ package body Snames is
      "default_global_compiler_switches#" &
      "default_language#" &
      "default_linker#" &
+     "default_minimum_linker_options#" &
      "default_switches#" &
      "dependency_file_kind#" &
      "dependency_option#" &
@@ -724,6 +728,7 @@ package body Snames is
      "library_name#" &
      "library_major_minor_id_supported#" &
      "library_options#" &
+     "library_partial_linker#" &
      "library_reference_symbol_file#" &
      "library_src_dir#" &
      "library_support#" &
@@ -743,6 +748,8 @@ package body Snames is
      "mapping_body_suffix#" &
      "metrics#" &
      "minimum_binder_options#" &
+     "minimum_compiler_options#" &
+     "minimum_linker_options#" &
      "naming#" &
      "objects_path#" &
      "objects_path_file#" &
@@ -767,6 +774,7 @@ package body Snames is
      "stack#" &
      "switches#" &
      "symbolic_link_supported#" &
+     "toolchain_description#" &
      "toolchain_version#" &
      "unaligned_valid#" &
      "interface#" &
@@ -864,6 +872,7 @@ package body Snames is
          when Name_Ada        => return Convention_Ada;
          when Name_Assembler  => return Convention_Assembler;
          when Name_C          => return Convention_C;
+         when Name_CIL        => return Convention_CIL;
          when Name_COBOL      => return Convention_COBOL;
          when Name_CPP        => return Convention_CPP;
          when Name_Fortran    => return Convention_Fortran;
@@ -896,6 +905,7 @@ package body Snames is
          when Convention_Ada       => return Name_Ada;
          when Convention_Assembler => return Name_Assembler;
          when Convention_C         => return Name_C;
+         when Convention_CIL       => return Name_CIL;
          when Convention_COBOL     => return Name_COBOL;
          when Convention_CPP       => return Name_CPP;
          when Convention_Entry     => return Name_Entry;
