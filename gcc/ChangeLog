@@ -1,3 +1,8 @@
+2007-06-06  Eric Christopher  <echristo@apple.com>
+
+	* config/i386/i386.c (override_options): Move handling
+	of TARGET_SUBTARGET* earlier.
+
 2007-06-06  Paolo Bonzini  <bonzini@gnu.org>
 
 	* genmodes.c (tagged_printf, emit_insn_modes_h): Don't
@@ -14,7 +19,7 @@
 	non-removed insns.
 	(rtl_delete_block, rtl_merge_blocks): Pass true to delete_insn_chain.
 	(delete_insn_chain_and_edges, try_redirect_by_replacing_jump,
-	rtl_tidy_fallthru_edge, cfg_layout_merge_blocks): Pass false 
+	rtl_tidy_fallthru_edge, cfg_layout_merge_blocks): Pass false
 	to delete_insn_chain.
 	(rtl_verify_flow_info_1): Verify that the insns in header and footer
 	do not have bb field set.
@@ -127,7 +132,7 @@
 	    Sebastian Pop  <sebpop@gmail.com>
 
 	* lambda.h (build_linear_expr): New.
-	* lambda-code.c (lbv_to_gcc_expression, lle_to_gcc_expression): 
+	* lambda-code.c (lbv_to_gcc_expression, lle_to_gcc_expression):
 	Use build_linear_expr, call fold and force_gimple_operand.
 	(lambda_loopnest_to_gcc_loopnest): Check that there is
 	something to insert.
@@ -138,7 +143,7 @@
 	PR preprocessor/23479
 	* doc/extend.texi: Document the 0b-prefixed binary integer
 	constant extension.
-	
+
 2007-06-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/32215
@@ -437,7 +442,7 @@
 
 	* config/mips/mips.c (mips_output_mi_thunk): Only load gp if not
 	LOADGP_ABSOLUTE and not binds_local_p.
-	
+
 2007-06-01  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.h (LINK_SPEC): Pass -fpie through to the linker.
