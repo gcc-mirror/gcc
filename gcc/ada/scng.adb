@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,9 +39,8 @@ with Urealp;   use Urealp;
 with Widechar; use Widechar;
 
 with System.CRC32;
+with System.UTF_32;  use System.UTF_32;
 with System.WCh_Con; use System.WCh_Con;
-
-with GNAT.UTF_32; use GNAT.UTF_32;
 
 package body Scng is
 
@@ -265,6 +264,46 @@ package body Scng is
 
          elsif Len > Max_Line_Length then
             Error_Long_Line;
+         end if;
+
+         --  Now one more checking circuit. Normally we are only enforcing a
+         --  limit of physical characters, with tabs counting as one character.
+         --  But if after tab expansion we would have a total line length that
+         --  exceeded 32766, that would really cause trouble, because column
+         --  positions would exceed the maximum we allow for a column count.
+         --  Note: the limit is 32766 rather than 32767, since we use a value
+         --  of 32767 for special purposes (see Sinput). Now we really do not
+         --  want to go messing with tabs in the normal case, so what we do is
+         --  to check for a line that has more than 4096 physical characters.
+         --  Any shorter line could not be a problem, even if it was all tabs.
+
+         if Len >= 4096 then
+            declare
+               Col : Natural;
+               Ptr : Source_Ptr;
+
+            begin
+               Col := 1;
+               Ptr := Current_Line_Start;
+               loop
+                  exit when Ptr = Scan_Ptr;
+
+                  if Source (Ptr) = ASCII.HT then
+                     Col := (Col - 1 + 8) / 8 * 8 + 1;
+                  else
+                     Col := Col + 1;
+                  end if;
+
+                  if Col > 32766 then
+                     Error_Msg
+                       ("this line is longer than 32766 characters",
+                        Current_Line_Start);
+                     raise Unrecoverable_Error;
+                  end if;
+
+                  Ptr := Ptr + 1;
+               end loop;
+            end;
          end if;
 
          --  Reset wide character byte count for next line
@@ -2441,6 +2480,14 @@ package body Scng is
       end loop Tabs_Loop;
 
       return Start_Column;
+
+   --  A constraint error can happen only if we have a compiler with checks on
+   --  and a line with a ludicrous number of tabs or spaces at the start. In
+   --  such a case, we really don't care if Start_Column is right or not.
+
+   exception
+      when Constraint_Error =>
+         return Start_Column;
    end Set_Start_Column;
 
 end Scng;
