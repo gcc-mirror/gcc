@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -274,12 +274,13 @@ private
    --  Data for an attribute
 
    package Attrs is
-      new Table.Table (Table_Component_Type => Attribute_Record,
-                       Table_Index_Type     => Attr_Node_Id,
-                       Table_Low_Bound      => First_Attribute,
-                       Table_Initial        => Attributes_Initial,
-                       Table_Increment      => Attributes_Increment,
-                       Table_Name           => "Prj.Attr.Attrs");
+     new Table.Table
+       (Table_Component_Type => Attribute_Record,
+        Table_Index_Type     => Attr_Node_Id,
+        Table_Low_Bound      => First_Attribute,
+        Table_Initial        => Attributes_Initial,
+        Table_Increment      => Attributes_Increment,
+        Table_Name           => "Prj.Attr.Attrs");
    --  The table of the attributes
 
    --------------
@@ -294,12 +295,13 @@ private
    --  Data for a package
 
    package Package_Attributes is
-      new Table.Table (Table_Component_Type => Package_Record,
-                       Table_Index_Type     => Pkg_Node_Id,
-                       Table_Low_Bound      => First_Package,
-                       Table_Initial        => Packages_Initial,
-                       Table_Increment      => Packages_Increment,
-                       Table_Name           => "Prj.Attr.Packages");
+     new Table.Table
+       (Table_Component_Type => Package_Record,
+        Table_Index_Type     => Pkg_Node_Id,
+        Table_Low_Bound      => First_Package,
+        Table_Initial        => Packages_Initial,
+        Table_Increment      => Packages_Increment,
+        Table_Name           => "Prj.Attr.Packages");
    --  The table of the packages
 
 end Prj.Attr;

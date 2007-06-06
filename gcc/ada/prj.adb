@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,6 @@
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 
-with Namet;    use Namet;
 with Output;   use Output;
 with Osint;    use Osint;
 with Prj.Attr;
@@ -46,9 +45,9 @@ package body Prj is
 
    Name_C_Plus_Plus : Name_Id;
 
-   Default_Ada_Spec_Suffix_Id : Name_Id;
-   Default_Ada_Body_Suffix_Id : Name_Id;
-   Slash_Id                   : Name_Id;
+   Default_Ada_Spec_Suffix_Id : File_Name_Type;
+   Default_Ada_Body_Suffix_Id : File_Name_Type;
+   Slash_Id                   : File_Name_Type;
    --  Initialized in Prj.Initialized, then never modified
 
    subtype Known_Casing is Casing_Type range All_Upper_Case .. Mixed_Case;
@@ -60,22 +59,23 @@ package body Prj is
 
    Initialized : Boolean := False;
 
-   Standard_Dot_Replacement      : constant Name_Id :=
-     First_Name_Id + Character'Pos ('-');
+   Standard_Dot_Replacement : constant File_Name_Type :=
+                                File_Name_Type
+                                  (First_Name_Id + Character'Pos ('-'));
 
    Std_Naming_Data : Naming_Data :=
      (Dot_Replacement           => Standard_Dot_Replacement,
       Dot_Repl_Loc              => No_Location,
       Casing                    => All_Lower_Case,
       Spec_Suffix               => No_Array_Element,
-      Ada_Spec_Suffix           => No_Name,
+      Ada_Spec_Suffix           => No_File,
       Spec_Suffix_Loc           => No_Location,
       Impl_Suffixes             => No_Impl_Suffixes,
       Supp_Suffixes             => No_Supp_Language_Index,
       Body_Suffix               => No_Array_Element,
-      Ada_Body_Suffix           => No_Name,
+      Ada_Body_Suffix           => No_File,
       Body_Suffix_Loc           => No_Location,
-      Separate_Suffix           => No_Name,
+      Separate_Suffix           => No_File,
       Sep_Suffix_Loc            => No_Location,
       Specs                     => No_Array_Element,
       Bodies                    => No_Array_Element,
@@ -89,27 +89,28 @@ package body Prj is
       First_Referred_By              => No_Project,
       Name                           => No_Name,
       Display_Name                   => No_Name,
-      Path_Name                      => No_Name,
-      Display_Path_Name              => No_Name,
+      Path_Name                      => No_Path,
+      Display_Path_Name              => No_Path,
       Virtual                        => False,
       Location                       => No_Location,
       Mains                          => Nil_String,
-      Directory                      => No_Name,
-      Display_Directory              => No_Name,
+      Directory                      => No_Path,
+      Display_Directory              => No_Path,
       Dir_Path                       => null,
       Library                        => False,
-      Library_Dir                    => No_Name,
-      Display_Library_Dir            => No_Name,
-      Library_Src_Dir                => No_Name,
-      Display_Library_Src_Dir        => No_Name,
-      Library_ALI_Dir                => No_Name,
-      Display_Library_ALI_Dir        => No_Name,
-      Library_Name                   => No_Name,
+      Library_Dir                    => No_Path,
+      Display_Library_Dir            => No_Path,
+      Library_Src_Dir                => No_Path,
+      Display_Library_Src_Dir        => No_Path,
+      Library_ALI_Dir                => No_Path,
+      Display_Library_ALI_Dir        => No_Path,
+      Library_Name                   => No_File,
       Library_Kind                   => Static,
-      Lib_Internal_Name              => No_Name,
+      Lib_Internal_Name              => No_File,
       Standalone_Library             => False,
       Lib_Interface_ALIs             => Nil_String,
       Lib_Auto_Init                  => False,
+      Libgnarl_Needed                => Unknown,
       Symbol_Data                    => No_Symbols,
       Ada_Sources_Present            => True,
       Other_Sources_Present          => True,
@@ -121,27 +122,27 @@ package body Prj is
       Include_Data_Set               => False,
       Source_Dirs                    => Nil_String,
       Known_Order_Of_Source_Dirs     => True,
-      Object_Directory               => No_Name,
-      Display_Object_Dir             => No_Name,
+      Object_Directory               => No_Path,
+      Display_Object_Dir             => No_Path,
       Library_TS                     => Empty_Time_Stamp,
-      Exec_Directory                 => No_Name,
-      Display_Exec_Dir               => No_Name,
+      Exec_Directory                 => No_Path,
+      Display_Exec_Dir               => No_Path,
       Extends                        => No_Project,
       Extended_By                    => No_Project,
       Naming                         => Std_Naming_Data,
       First_Language_Processing      => Default_First_Language_Processing_Data,
       Supp_Language_Processing       => No_Supp_Language_Index,
-      Default_Linker                 => No_Name,
-      Default_Linker_Path            => No_Name,
+      Default_Linker                 => No_File,
+      Default_Linker_Path            => No_Path,
       Decl                           => No_Declarations,
       Imported_Projects              => Empty_Project_List,
       All_Imported_Projects          => Empty_Project_List,
       Ada_Include_Path               => null,
       Ada_Objects_Path               => null,
-      Include_Path_File              => No_Name,
-      Objects_Path_File_With_Libs    => No_Name,
-      Objects_Path_File_Without_Libs => No_Name,
-      Config_File_Name               => No_Name,
+      Include_Path_File              => No_Path,
+      Objects_Path_File_With_Libs    => No_Path,
+      Objects_Path_File_Without_Libs => No_Path,
+      Config_File_Name               => No_Path,
       Config_File_Temp               => False,
       Config_Checked                 => False,
       Language_Independent_Checked   => False,
@@ -182,8 +183,7 @@ package body Prj is
 
       while Last + S'Length > To'Last loop
          declare
-            New_Buffer : constant  String_Access :=
-                           new String (1 .. 2 * Last);
+            New_Buffer : constant  String_Access := new String (1 .. 2 * Last);
 
          begin
             New_Buffer (1 .. Last) := To (1 .. Last);
@@ -200,7 +200,7 @@ package body Prj is
    -- Default_Ada_Body_Suffix --
    -----------------------------
 
-   function Default_Ada_Body_Suffix return Name_Id is
+   function Default_Ada_Body_Suffix return File_Name_Type is
    begin
       return Default_Ada_Body_Suffix_Id;
    end Default_Ada_Body_Suffix;
@@ -209,7 +209,7 @@ package body Prj is
    -- Default_Ada_Spec_Suffix --
    -----------------------------
 
-   function Default_Ada_Spec_Suffix return Name_Id is
+   function Default_Ada_Spec_Suffix return File_Name_Type is
    begin
       return Default_Ada_Spec_Suffix_Id;
    end Default_Ada_Spec_Suffix;
@@ -310,6 +310,11 @@ package body Prj is
    ----------
 
    function Hash (Name : Name_Id) return Header_Num is
+   begin
+      return Hash (Get_Name_String (Name));
+   end Hash;
+
+   function Hash (Name : File_Name_Type) return Header_Num is
    begin
       return Hash (Get_Name_String (Name));
    end Hash;
@@ -454,13 +459,13 @@ package body Prj is
 
    procedure Register_Default_Naming_Scheme
      (Language            : Name_Id;
-      Default_Spec_Suffix : Name_Id;
-      Default_Body_Suffix : Name_Id;
+      Default_Spec_Suffix : File_Name_Type;
+      Default_Body_Suffix : File_Name_Type;
       In_Tree             : Project_Tree_Ref)
    is
-      Lang : Name_Id;
-      Suffix : Array_Element_Id;
-      Found : Boolean := False;
+      Lang    : Name_Id;
+      Suffix  : Array_Element_Id;
+      Found   : Boolean := False;
       Element : Array_Element;
 
    begin
@@ -481,7 +486,7 @@ package body Prj is
 
          if Element.Index = Lang then
             Found := True;
-            Element.Value.Value := Default_Spec_Suffix;
+            Element.Value.Value := Name_Id (Default_Spec_Suffix);
             In_Tree.Array_Elements.Table (Suffix) := Element;
 
          else
@@ -500,13 +505,15 @@ package body Prj is
                       Kind     => Single,
                       Location => No_Location,
                       Default  => False,
-                      Value    => Default_Spec_Suffix,
+                      Value    => Name_Id (Default_Spec_Suffix),
                       Index    => 0),
             Next  => In_Tree.Private_Part.Default_Naming.Spec_Suffix);
+
          Array_Element_Table.Increment_Last (In_Tree.Array_Elements);
+
          In_Tree.Array_Elements.Table
-           (Array_Element_Table.Last (In_Tree.Array_Elements)) :=
-            Element;
+           (Array_Element_Table.Last (In_Tree.Array_Elements)) := Element;
+
          In_Tree.Private_Part.Default_Naming.Spec_Suffix :=
            Array_Element_Table.Last (In_Tree.Array_Elements);
       end if;
@@ -522,7 +529,7 @@ package body Prj is
 
          if Element.Index = Lang then
             Found := True;
-            Element.Value.Value := Default_Body_Suffix;
+            Element.Value.Value := Name_Id (Default_Body_Suffix);
             In_Tree.Array_Elements.Table (Suffix) := Element;
 
          else
@@ -541,7 +548,7 @@ package body Prj is
                       Kind     => Single,
                       Location => No_Location,
                       Default  => False,
-                      Value    => Default_Body_Suffix,
+                      Value    => Name_Id (Default_Body_Suffix),
                       Index    => 0),
             Next  => In_Tree.Private_Part.Default_Naming.Body_Suffix);
          Array_Element_Table.Increment_Last
@@ -703,7 +710,7 @@ package body Prj is
    end Set;
 
    procedure Set
-     (Suffix       : Name_Id;
+     (Suffix       : File_Name_Type;
       For_Language : Language_Index;
       In_Project   : in out Project_Data;
       In_Tree      : Project_Tree_Ref)
@@ -752,7 +759,7 @@ package body Prj is
    -- Slash --
    -----------
 
-   function Slash return Name_Id is
+   function Slash return File_Name_Type is
    begin
       return Slash_Id;
    end Slash;
@@ -781,12 +788,12 @@ package body Prj is
    function Suffix_Of
      (Language   : Language_Index;
       In_Project : Project_Data;
-      In_Tree    : Project_Tree_Ref) return Name_Id
+      In_Tree    : Project_Tree_Ref) return File_Name_Type
    is
    begin
       case Language is
          when No_Language_Index =>
-            return No_Name;
+            return No_File;
 
          when First_Language_Indexes =>
             return In_Project.Naming.Impl_Suffixes (Language);
@@ -808,7 +815,7 @@ package body Prj is
                   Supp_Index := Supp.Next;
                end loop;
 
-               return No_Name;
+               return No_File;
             end;
       end case;
    end  Suffix_Of;

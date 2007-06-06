@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,12 @@
 --  External functions in project files.
 
 package Prj.Ext is
+
+   procedure Add_Search_Project_Directory (Path : String);
+   --  Add a directory to the project path. Directories added with this
+   --  procedure are added in order after the current directory and before
+   --  the path given by the environment variable GPR_PROJECT_PATH. A value
+   --  of "-" will remove the default project directory from the project path.
 
    function Project_Path return String;
    --  Return the current value of the project path, either the value set
