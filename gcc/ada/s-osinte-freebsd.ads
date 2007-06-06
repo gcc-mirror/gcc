@@ -7,7 +7,7 @@
 --                                   S p e c                                --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2006, Free Software Foundation, Inc.      --
+--             Copyright (C) 1995-2007, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
 with Interfaces.C;
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -221,20 +221,6 @@ package System.OS_Interface is
       tz_dsttime     : int;
    end record;
    pragma Convention (C, struct_timezone);
-   type struct_timeval is private;
-   --  This is needed on systems that do not have clock_gettime()
-   --  but do have gettimeofday().
-
-   function To_Duration (TV : struct_timeval) return Duration;
-   pragma Inline (To_Duration);
-
-   function To_Timeval (D : Duration) return struct_timeval;
-   pragma Inline (To_Timeval);
-
-   function gettimeofday
-     (tv : access struct_timeval;
-      tz : System.Address) return int;
-   pragma Import (C, gettimeofday, "gettimeofday");
 
    procedure usleep (useconds : unsigned_long);
    pragma Import (C, usleep, "usleep");
@@ -283,7 +269,7 @@ package System.OS_Interface is
      function (arg : System.Address) return System.Address;
 
    function Thread_Body_Access is new
-     Unchecked_Conversion (System.Address, Thread_Body);
+     Ada.Unchecked_Conversion (System.Address, Thread_Body);
 
    type pthread_t           is private;
    subtype Thread_Id        is pthread_t;
@@ -634,12 +620,6 @@ private
 
    type clockid_t is new int;
    CLOCK_REALTIME : constant clockid_t := 0;
-
-   type struct_timeval is record
-      tv_sec  : long;
-      tv_usec : long;
-   end record;
-   pragma Convention (C, struct_timeval);
 
    type pthread_t           is new System.Address;
    type pthread_attr_t      is new System.Address;

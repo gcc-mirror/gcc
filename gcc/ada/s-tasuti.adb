@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,6 @@ with System.Tasking.Debug;
 
 with System.Task_Primitives.Operations;
 --  used for Write_Lock
---           Set_Priority
 --           Wakeup
 --           Unlock
 --           Sleep
@@ -382,7 +381,7 @@ package body System.Tasking.Utilities is
             --  Our parent should wait in Phase 1 of Complete_Master.
 
             Master_Completion_Phase := 1;
-            pragma Assert (Self_ID.Awake_Count = 1);
+            pragma Assert (Self_ID.Awake_Count >= 1);
          end if;
 
       --  We are accepting with a terminate alternative
@@ -454,8 +453,6 @@ package body System.Tasking.Utilities is
             Write_Lock (C);
          end loop;
 
-         pragma Assert (P.Awake_Count /= 0);
-
          if P.Common.State = Master_Phase_2_Sleep
            and then C.Master_of_Task = P.Master_Within
          then
@@ -478,7 +475,6 @@ package body System.Tasking.Utilities is
       C.Awake_Count := C.Awake_Count - 1;
 
       if Task_Completed then
-         pragma Assert (Self_ID.Awake_Count = 0);
          C.Alive_Count := C.Alive_Count - 1;
       end if;
 
@@ -499,7 +495,9 @@ package body System.Tasking.Utilities is
       loop
          --  Notify P that C has gone passive
 
-         P.Awake_Count := P.Awake_Count - 1;
+         if P.Awake_Count > 0 then
+            P.Awake_Count := P.Awake_Count - 1;
+         end if;
 
          if Task_Completed and then C.Alive_Count = 0 then
             P.Alive_Count := P.Alive_Count - 1;

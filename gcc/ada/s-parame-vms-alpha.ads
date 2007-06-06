@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -169,18 +169,6 @@ package System.Parameters is
    --  pragma Restrictions (No_Abort_Statements);
    --  pragma Restrictions (Max_Asynchronous_Select_Nesting => 0);
 
-   ----------------------
-   -- Dynamic Priority --
-   ----------------------
-
-   Dynamic_Priority_Support : constant Boolean := True;
-   --  This constant indicates whether dynamic changes of task priorities
-   --  are allowed (True means normal RM mode in which such changes are
-   --  allowed). In particular, if this is False, then we do not need to
-   --  poll for pending base priority changes at every abort completion
-   --  point. A value of False for Dynamic_Priority_Support corresponds
-   --  to pragma Restrictions (No_Dynamic_Priorities);
-
    ---------------------
    -- Task Attributes --
    ---------------------
@@ -197,6 +185,13 @@ package System.Parameters is
    --  This constant indicates whether the runtime outputs traces to a
    --  predefined output or not (True means that traces are output).
    --  See System.Traces for more details.
+
+   -----------------------
+   -- Task Image Length --
+   -----------------------
+
+   Max_Task_Image_Length : constant := 256;
+   --  This constant specifies the maximum length of a task's image.
 
    ------------------------------
    -- Exception Message Length --

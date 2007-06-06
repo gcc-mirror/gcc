@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2006 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -125,11 +125,12 @@ package body System.OS_Primitives is
      (Time : Duration;
       Mode : Integer)
    is
-      Request : aliased timespec;
-      Remaind : aliased timespec;
-      Rel_Time : Duration;
-      Abs_Time : Duration;
-      Check_Time : Duration := Clock;
+      Request    : aliased timespec;
+      Remaind    : aliased timespec;
+      Rel_Time   : Duration;
+      Abs_Time   : Duration;
+      Base_Time  : constant Duration := Clock;
+      Check_Time : Duration := Base_Time;
 
       Result : Integer;
       pragma Unreferenced (Result);
@@ -149,7 +150,7 @@ package body System.OS_Primitives is
             Result := nanosleep (Request'Access, Remaind'Access);
             Check_Time := Clock;
 
-            exit when Abs_Time <= Check_Time;
+            exit when Abs_Time <= Check_Time or else Check_Time < Base_Time;
 
             Rel_Time := Abs_Time - Check_Time;
          end loop;
