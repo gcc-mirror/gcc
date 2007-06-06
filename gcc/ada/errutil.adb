@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1991-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -681,7 +681,12 @@ package body Errutil is
          --  Check for insertion character
 
          if C = '%' then
-            Set_Msg_Insertion_Name;
+            if P <= Text'Last and then Text (P) = '%' then
+               P := P + 1;
+               Set_Msg_Insertion_Name_Literal;
+            else
+               Set_Msg_Insertion_Name;
+            end if;
 
          elsif C = '$' then
 

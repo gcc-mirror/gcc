@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,6 @@
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 
-with Namet;    use Namet;
 with Output;   use Output;
 with Snames;
 
@@ -94,6 +93,7 @@ package body Prj.PP is
       --  Outputs the indentation at the beginning of the line
 
       procedure Output_String (S : Name_Id);
+      procedure Output_String (S : Path_Name_Type);
       --  Outputs a string using the default output procedures
 
       procedure Write_Empty_Line (Always : Boolean := False);
@@ -229,6 +229,11 @@ package body Prj.PP is
          Column := Column + 1;
       end Output_String;
 
+      procedure Output_String (S : Path_Name_Type) is
+      begin
+         Output_String (Name_Id (S));
+      end Output_String;
+
       ----------------
       -- Start_Line --
       ----------------
@@ -335,7 +340,7 @@ package body Prj.PP is
 
                   --  Check if this project extends another project
 
-                  if Extended_Project_Path_Of (Node, In_Tree) /= No_Name then
+                  if Extended_Project_Path_Of (Node, In_Tree) /= No_Path then
                      Write_String (" extends ");
 
                      if Is_Extending_All (Node, In_Tree) then

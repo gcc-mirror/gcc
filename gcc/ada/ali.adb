@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,6 @@
 with Butil;  use Butil;
 with Debug;  use Debug;
 with Fname;  use Fname;
-with Namet;  use Namet;
 with Opt;    use Opt;
 with Osint;  use Osint;
 with Output; use Output;
@@ -179,19 +178,37 @@ package body ALI is
       function Getc return Character;
       --  Get next character, bumping P past the character obtained
 
+      function Get_File_Name (Lower : Boolean := False) return File_Name_Type;
+      --  Skip blanks, then scan out a file name (name is left in Name_Buffer
+      --  with length in Name_Len, as well as returning a File_Name_Type value.
+      --  If lower is false, the case is unchanged, if Lower is True then the
+      --  result is forced to all lower case for systems where file names are
+      --  not case sensitive. This ensures that gnatbind works correctly
+      --  regardless of the case of the file name on all systems. The scan
+      --  is terminated by a end of line, space or horizontal tab. Any other
+      --  special characters are included in the returned name.
+
       function Get_Name
-        (Lower         : Boolean := False;
-         Ignore_Spaces : Boolean := False) return Name_Id;
+        (Ignore_Spaces  : Boolean := False;
+         Ignore_Special : Boolean := False)return Name_Id;
       --  Skip blanks, then scan out a name (name is left in Name_Buffer with
       --  length in Name_Len, as well as being returned in Name_Id form).
       --  If Lower is set to True then the Name_Buffer will be converted to
       --  all lower case, for systems where file names are not case sensitive.
       --  This ensures that gnatbind works correctly regardless of the case
-      --  of the file name on all systems. The name is terminated by a either
-      --  white space (when Ignore_Spaces is False) or a typeref bracket or
-      --  an equal sign except for the special case of an operator name
-      --  starting with a double quite which is terminated by another double
-      --  quote. This function handles wide characters properly.
+      --  of the file name on all systems. The termination condition depends
+      --  on the settings of Ignore_Spaces and Ignore_Special:
+      --
+      --    If Ignore_Spaces is False (normal case), then scan is terminated
+      --    by the normal end of field condition (EOL, space, horizontal tab)
+      --
+      --    If Ignore_Special is False (normal case), the scan is terminated by
+      --    a typeref bracket or an equal sign except for the special case of
+      --    an operator name starting with a double quite which is terminated
+      --    by another double quote.
+      --
+      --  It is an error to set both Ignore_Spaces and Ignore_Special to True.
+      --  This function handles wide characters properly.
 
       function Get_Nat return Nat;
       --  Skip blanks, then scan out an unsigned integer value in Nat range
@@ -199,6 +216,11 @@ package body ALI is
 
       function Get_Stamp return Time_Stamp_Type;
       --  Skip blanks, then scan out a time stamp
+
+      function Get_Unit_Name return Unit_Name_Type;
+      --  Skip blanks, then scan out a file name (name is left in Name_Buffer
+      --  with length in Name_Len, as well as returning a Unit_Name_Type value.
+      --  The case is unchanged and terminated by a normal end of field.
 
       function Nextc return Character;
       --  Return current character without modifying pointer P
@@ -341,8 +363,14 @@ package body ALI is
          Write_Name (F);
          Write_Str (" is incorrectly formatted");
          Write_Eol;
-         Write_Str
-           ("make sure you are using consistent versions of gcc/gnatbind");
+
+         Write_Str ("make sure you are using consistent versions " &
+
+         --  Split the following line so that it can easily be transformed for
+         --  e.g. JVM/.NET back-ends where the compiler has a different name.
+
+                    "of gcc/gnatbind");
+
          Write_Eol;
 
          --  Find start of line
@@ -409,13 +437,37 @@ package body ALI is
          end if;
       end Fatal_Error_Ignore;
 
+      -------------------
+      -- Get_File_Name --
+      -------------------
+
+      function Get_File_Name
+        (Lower : Boolean := False) return File_Name_Type
+      is
+         F : Name_Id;
+
+      begin
+         F := Get_Name (Ignore_Special => True);
+
+         --  Convert file name to all lower case if file names are not case
+         --  sensitive. This ensures that we handle names in the canonical
+         --  lower case format, regardless of the actual case.
+
+         if Lower and not File_Names_Case_Sensitive then
+            Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+            return Name_Find;
+         else
+            return File_Name_Type (F);
+         end if;
+      end Get_File_Name;
+
       --------------
       -- Get_Name --
       --------------
 
       function Get_Name
-        (Lower         : Boolean := False;
-         Ignore_Spaces : Boolean := False) return Name_Id
+        (Ignore_Spaces  : Boolean := False;
+         Ignore_Special : Boolean := False) return Name_Id
       is
       begin
          Name_Len := 0;
@@ -435,38 +487,41 @@ package body ALI is
 
             exit when At_End_Of_Field and not Ignore_Spaces;
 
-            if Name_Buffer (1) = '"' then
-               exit when Name_Len > 1 and then Name_Buffer (Name_Len) = '"';
+            if not Ignore_Special then
+               if Name_Buffer (1) = '"' then
+                  exit when Name_Len > 1 and then Name_Buffer (Name_Len) = '"';
 
-            else
-               --  Terminate on parens or angle brackets or equal sign
+               else
+                  --  Terminate on parens or angle brackets or equal sign
 
-               exit when Nextc = '(' or else Nextc = ')'
-                 or else Nextc = '{' or else Nextc = '}'
-                 or else Nextc = '<' or else Nextc = '>'
-                 or else Nextc = '=';
+                  exit when Nextc = '(' or else Nextc = ')'
+                    or else Nextc = '{' or else Nextc = '}'
+                    or else Nextc = '<' or else Nextc = '>'
+                    or else Nextc = '=';
 
-               --  Terminate if left bracket not part of wide char sequence
-               --  Note that we only recognize brackets notation so far ???
+                  --  Terminate if left bracket not part of wide char sequence
+                  --  Note that we only recognize brackets notation so far ???
 
-               exit when Nextc = '[' and then T (P + 1) /= '"';
+                  exit when Nextc = '[' and then T (P + 1) /= '"';
 
-               --  Terminate if right bracket not part of wide char sequence
+                  --  Terminate if right bracket not part of wide char sequence
 
-               exit when Nextc = ']' and then T (P - 1) /= '"';
+                  exit when Nextc = ']' and then T (P - 1) /= '"';
+               end if;
             end if;
          end loop;
 
-         --  Convert file name to all lower case if file names are not case
-         --  sensitive. This ensures that we handle names in the canonical
-         --  lower case format, regardless of the actual case.
-
-         if Lower and not File_Names_Case_Sensitive then
-            Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
-         end if;
-
          return Name_Find;
       end Get_Name;
+
+      -------------------
+      -- Get_Unit_Name --
+      -------------------
+
+      function Get_Unit_Name return Unit_Name_Type is
+      begin
+         return Unit_Name_Type (Get_Name);
+      end Get_Unit_Name;
 
       -------------
       -- Get_Nat --
@@ -767,7 +822,7 @@ package body ALI is
         Queuing_Policy             => ' ',
         Restrictions               => No_Restrictions,
         SAL_Interface              => False,
-        Sfile                      => No_Name,
+        Sfile                      => No_File,
         Task_Dispatching_Policy    => ' ',
         Time_Slice_Value           => -1,
         WC_Encoding                => '8',
@@ -1328,11 +1383,11 @@ package body ALI is
             UL : Unit_Record renames Units.Table (Units.Last);
 
          begin
-            UL.Uname                    := Get_Name;
+            UL.Uname                    := Get_Unit_Name;
             UL.Predefined               := Is_Predefined_Unit;
             UL.Internal                 := Is_Internal_Unit;
             UL.My_ALI                   := Id;
-            UL.Sfile                    := Get_Name (Lower => True);
+            UL.Sfile                    := Get_File_Name (Lower => True);
             UL.Pure                     := False;
             UL.Preelab                  := False;
             UL.No_Elab                  := False;
@@ -1617,7 +1672,7 @@ package body ALI is
                Checkc (' ');
                Skip_Space;
                Withs.Increment_Last;
-               Withs.Table (Withs.Last).Uname              := Get_Name;
+               Withs.Table (Withs.Last).Uname              := Get_Unit_Name;
                Withs.Table (Withs.Last).Elaborate          := False;
                Withs.Table (Withs.Last).Elaborate_All      := False;
                Withs.Table (Withs.Last).Elab_Desirable     := False;
@@ -1633,8 +1688,10 @@ package body ALI is
                --  Normal case
 
                else
-                  Withs.Table (Withs.Last).Sfile := Get_Name (Lower => True);
-                  Withs.Table (Withs.Last).Afile := Get_Name;
+                  Withs.Table (Withs.Last).Sfile := Get_File_Name
+                                                      (Lower => True);
+                  Withs.Table (Withs.Last).Afile := Get_File_Name
+                                                      (Lower => True);
 
                   --  Scan out possible E, EA, ED, and AD parameters
 
@@ -1675,6 +1732,9 @@ package body ALI is
                                 True;
                            end if;
                         end if;
+
+                     else
+                        Fatal_Error;
                      end if;
                   end loop;
                end if;
@@ -1852,7 +1912,12 @@ package body ALI is
             Checkc (' ');
             Skip_Space;
             Sdep.Increment_Last;
-            Sdep.Table (Sdep.Last).Sfile := Get_Name (Lower => True);
+
+            --  In the following call, Lower is not set to True, this is either
+            --  a bug, or it deserves a special comment as to why this is so???
+
+            Sdep.Table (Sdep.Last).Sfile := Get_File_Name;
+
             Sdep.Table (Sdep.Last).Stamp := Get_Stamp;
             Sdep.Table (Sdep.Last).Dummy_Entry :=
               (Sdep.Table (Sdep.Last).Stamp = Dummy_Time_Stamp);
@@ -1982,7 +2047,7 @@ package body ALI is
 
          begin
             XS.File_Num     := Sdep_Id (Get_Nat + Nat (First_Sdep_Entry) - 1);
-            XS.File_Name    := Get_Name;
+            XS.File_Name    := Get_File_Name;
             XS.First_Entity := Xref_Entity.Last + 1;
 
             Current_File_Num := XS.File_Num;

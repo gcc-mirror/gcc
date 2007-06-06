@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,7 +25,6 @@
 ------------------------------------------------------------------------------
 
 with Csets;
-with Namet;    use Namet;
 with Opt;
 with Output;
 with Osint;    use Osint;
@@ -40,10 +39,10 @@ with Table;    use Table;
 
 with Ada.Characters.Handling;   use Ada.Characters.Handling;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
-with GNAT.Regexp;               use GNAT.Regexp;
 
 with System.Case_Util;          use System.Case_Util;
 with System.CRTL;
+with System.Regexp;             use System.Regexp;
 
 package body Prj.Makr is
 

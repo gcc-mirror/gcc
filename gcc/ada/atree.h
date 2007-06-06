@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -256,6 +256,46 @@ struct Flag_Word4
   Boolean      flag215	    :  1;
 };
 
+/* Structure used for extra flags in fifth component overlaying Field12 */
+struct Flag_Word5
+{
+  Boolean      flag216	    :  1;
+  Boolean      flag217	    :  1;
+  Boolean      flag218	    :  1;
+  Boolean      flag219	    :  1;
+  Boolean      flag220	    :  1;
+  Boolean      flag221	    :  1;
+  Boolean      flag222	    :  1;
+  Boolean      flag223	    :  1;
+
+  Boolean      flag224	    :  1;
+  Boolean      flag225	    :  1;
+  Boolean      flag226	    :  1;
+  Boolean      flag227	    :  1;
+  Boolean      flag228	    :  1;
+  Boolean      flag229	    :  1;
+  Boolean      flag230	    :  1;
+  Boolean      flag231	    :  1;
+
+  Boolean      flag232	    :  1;
+  Boolean      flag233	    :  1;
+  Boolean      flag234	    :  1;
+  Boolean      flag235	    :  1;
+  Boolean      flag236	    :  1;
+  Boolean      flag237	    :  1;
+  Boolean      flag238	    :  1;
+  Boolean      flag239	    :  1;
+
+  Boolean      flag240      :  1;
+  Boolean      flag241	    :  1;
+  Boolean      flag242	    :  1;
+  Boolean      flag243	    :  1;
+  Boolean      flag244	    :  1;
+  Boolean      flag245	    :  1;
+  Boolean      flag246	    :  1;
+  Boolean      flag247	    :  1;
+};
+
 struct Non_Extended
 {
   Source_Ptr   sloc;
@@ -287,6 +327,7 @@ struct Extended
       Int      field12;
       struct   Flag_Word fw;
       struct   Flag_Word2 fw2;
+      struct   Flag_Word5 fw5;
     } U;
 };
 
@@ -686,3 +727,18 @@ extern Node_Id Current_Error_Node;
 #define Flag213(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag213)
 #define Flag214(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag214)
 #define Flag215(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag215)
+#define Flag216(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag216)
+#define Flag217(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag217)
+#define Flag218(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag218)
+#define Flag219(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag219)
+#define Flag220(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag220)
+#define Flag221(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag221)
+#define Flag222(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag222)
+#define Flag223(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag223)
+#define Flag224(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag224)
+#define Flag225(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag225)
+#define Flag226(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag226)
+#define Flag227(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag227)
+#define Flag228(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag228)
+#define Flag229(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag229)
+#define Flag230(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag230)

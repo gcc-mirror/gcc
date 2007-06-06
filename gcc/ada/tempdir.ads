@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003 Free Software Foundation, Inc.               --
+--          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,14 +29,15 @@
 --  designates an absolute path, temporary files are create in this directory.
 --  Otherwise, temporary files are created in the current working directory.
 
-with GNAT.OS_Lib; use GNAT.OS_Lib;
-with Types;       use Types;
+with Namet; use Namet;
+
+with System.OS_Lib; use System.OS_Lib;
 
 package Tempdir is
 
    procedure Create_Temp_File
      (FD   : out File_Descriptor;
-      Name : out Name_Id);
+      Name : out Path_Name_Type);
    --  Create a temporary text file and return its file descriptor and
    --  its path name as a Name_Id. If environment variable TMPDIR is defined
    --  and its value is an absolute path, the temp file is created in the

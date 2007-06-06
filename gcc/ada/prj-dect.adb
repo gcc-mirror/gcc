@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2006, Free Software Foundation, Inc          --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,7 +25,6 @@
 ------------------------------------------------------------------------------
 
 with Err_Vars;    use Err_Vars;
-with Namet;       use Namet;
 with Opt;         use Opt;
 with Prj.Err;     use Prj.Err;
 with Prj.Strt;    use Prj.Strt;
@@ -209,7 +208,7 @@ package body Prj.Dect is
 
                if not Ignore then
                   Error_Msg_Name_1 := Token_Name;
-                  Error_Msg ("undefined attribute {", Token_Ptr);
+                  Error_Msg ("undefined attribute %%", Token_Ptr);
                end if;
             end if;
 
@@ -1131,7 +1130,7 @@ package body Prj.Dect is
            and then Token_Name /= Name_Of (Package_Declaration, In_Tree)
          then
             Error_Msg_Name_1 := Name_Of (Package_Declaration, In_Tree);
-            Error_Msg ("expected {", Token_Ptr);
+            Error_Msg ("expected %", Token_Ptr);
          end if;
 
          if Token /= Tok_Semicolon then
@@ -1252,13 +1251,13 @@ package body Prj.Dect is
       Current_Package : Project_Node_Id)
    is
       Expression_Location      : Source_Ptr;
-      String_Type_Name         : Name_Id := No_Name;
-      Project_String_Type_Name : Name_Id := No_Name;
-      Type_Location            : Source_Ptr := No_Location;
-      Project_Location         : Source_Ptr := No_Location;
-      Expression               : Project_Node_Id := Empty_Node;
+      String_Type_Name         : Name_Id          := No_Name;
+      Project_String_Type_Name : Name_Id          := No_Name;
+      Type_Location            : Source_Ptr       := No_Location;
+      Project_Location         : Source_Ptr       := No_Location;
+      Expression               : Project_Node_Id  := Empty_Node;
       Variable_Name            : constant Name_Id := Token_Name;
-      OK                       : Boolean := True;
+      OK                       : Boolean          := True;
 
    begin
       Variable :=

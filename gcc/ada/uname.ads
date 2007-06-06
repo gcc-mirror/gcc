@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Namet; use Namet;
 with Types; use Types;
+
 package Uname is
 
    ---------------------------
@@ -116,11 +118,14 @@ package Uname is
    --    N_Protected_Body_Stub
    --    N_Subunit
 
-   procedure Get_Unit_Name_String (N : Unit_Name_Type);
-   --  Places the display name of the unit in Name_Buffer and sets Name_Len
-   --  to the length of the stored name, i.e. it uses the same interface as
-   --  the Get_Name_String routine in the Namet package. The name contains
-   --  an indication of spec or body, and is decoded.
+   procedure Get_Unit_Name_String
+     (N      : Unit_Name_Type;
+      Suffix : Boolean := True);
+   --  Places the display name of the unit in Name_Buffer and sets Name_Len to
+   --  the length of the stored name, i.e. it uses the same interface as the
+   --  Get_Name_String routine in the Namet package. The name is decoded and
+   --  contains an indication of spec or body if Boolean parameter Suffix is
+   --  True.
 
    function Is_Body_Name (N : Unit_Name_Type) return Boolean;
    --  Returns True iff the given name is the unit name of a body (i.e. if

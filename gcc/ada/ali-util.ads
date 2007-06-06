@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,15 +109,14 @@ package ALI.Util is
    --  be read, scanned, and processed recursively.
 
    procedure Set_Source_Table (A : ALI_Id);
-   --  Build source table entry corresponding to the ALI file whose id is A.
+   --  Build source table entry corresponding to the ALI file whose id is A
 
    procedure Set_Source_Table;
-   --  Build the entire source table.
+   --  Build the entire source table
 
    function Time_Stamp_Mismatch
      (A         : ALI_Id;
-      Read_Only : Boolean := False)
-      return      File_Name_Type;
+      Read_Only : Boolean := False) return File_Name_Type;
    --  Looks in the Source_Table and checks time stamp mismatches between
    --  the sources there and the sources in the Sdep section of ali file whose
    --  id is A. If no time stamp mismatches are found No_File is returned.
@@ -139,7 +138,7 @@ package ALI.Util is
    --  in a false negative, but that is never harmful, it just means
    --  that in unusual cases an unnecessary recompilation occurs.
 
-   function Get_File_Checksum (Fname : Name_Id) return Word;
+   function Get_File_Checksum (Fname : File_Name_Type) return Word;
    --  Compute checksum for the given file. As far as possible, this circuit
    --  computes exactly the same value computed by the compiler, but it does
    --  not matter if it gets it wrong in marginal cases, since the only result

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,11 +27,13 @@
 --  This package contains the low level, operating system routines used in the
 --  compiler and binder for command line processing and file input output.
 
-with GNAT.OS_Lib; use GNAT.OS_Lib;
-with System;      use System;
-with Types;       use Types;
+with Namet; use Namet;
+with Types; use Types;
 
-pragma Elaborate_All (GNAT.OS_Lib);
+with System.OS_Lib; use System.OS_Lib;
+with System;        use System;
+
+pragma Elaborate_All (System.OS_Lib);
 --  For the call to function Get_Target_Object_Suffix in the private part
 
 package Osint is
@@ -150,10 +152,13 @@ package Osint is
    --  Same as above, with String parameters
 
    function File_Stamp (Name : File_Name_Type) return Time_Stamp_Type;
-   --  Returns the time stamp of file Name. Name should include relative
-   --  path information in order to locate it. If the source file cannot be
-   --  opened, or Name = No_File, and all blank time stamp is returned (this is
-   --  not an error situation).
+   --  Returns the time stamp of file Name. Name should include relative path
+   --  information in order to locate it. If the source file cannot be opened,
+   --  or Name = No_File, and all blank time stamp is returned (this is not an
+   --  error situation).
+
+   function File_Stamp (Name : Path_Name_Type) return Time_Stamp_Type;
+   --  Same as above for a path name
 
    type String_Access_List is array (Positive range <>) of String_Access;
    --  Deferenced type used to return a list of file specs in
@@ -376,8 +381,8 @@ package Osint is
 
    function Full_Source_Name (N : File_Name_Type) return File_Name_Type;
    function Source_File_Stamp (N : File_Name_Type) return Time_Stamp_Type;
-   --  Returns the full name/time stamp of the source file whose simple name is
-   --  N which should not include path information. Note that if the file
+   --  Returns the full name/time stamp of the source file whose simple name
+   --  is N which should not include path information. Note that if the file
    --  cannot be located No_File is returned for the first routine and an all
    --  blank time stamp is returned for the second (this is not an error
    --  situation). The full name includes appropriate directory information.
@@ -491,13 +496,12 @@ package Osint is
 
    function Full_Lib_File_Name (N : File_Name_Type) return File_Name_Type;
    function Library_File_Stamp (N : File_Name_Type) return Time_Stamp_Type;
-   --  Returns the full name/time stamp of library file N. N should not
-   --  include path information. Note that if the file cannot be located
-   --  No_File is returned for the first routine and an all blank time stamp
-   --  is returned for the second (this is not an error situation). The
-   --  full name includes the appropriate directory information. The library
-   --  file directory lookup penalty is incurred every single time this
-   --  routine is called.
+   --  Returns the full name/time stamp of library file N. N should not include
+   --  path information. Note that if the file cannot be located No_File is
+   --  returned for the first routine and an all blank time stamp is returned
+   --  for the second (this is not an error situation). The full name includes
+   --  the appropriate directory information. The library file directory lookup
+   --  penalty is incurred every single time this routine is called.
 
    function Lib_File_Name
      (Source_File : File_Name_Type;
@@ -601,7 +605,7 @@ private
    --  length in Name_Len), and place the resulting descriptor in Fdesc. Issue
    --  message and exit with fatal error if file cannot be created. The Fmode
    --  parameter is set to either Text or Binary (for details see description
-   --  of GNAT.OS_Lib.Create_File).
+   --  of System.OS_Lib.Create_File).
 
    type Program_Type is (Compiler, Binder, Make, Gnatls, Unspecified);
    --  Program currently running

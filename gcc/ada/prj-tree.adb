@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,13 +111,13 @@ package body Prj.Tree is
            (Kind             => N_Comment_Zones,
             Expr_Kind        => Undefined,
             Location         => No_Location,
-            Directory        => No_Name,
+            Directory        => No_Path,
             Variables        => Empty_Node,
             Packages         => Empty_Node,
             Pkg_Id           => Empty_Package,
             Name             => No_Name,
             Src_Index        => 0,
-            Path_Name        => No_Name,
+            Path_Name        => No_Path,
             Value            => No_Name,
             Field1           => Empty_Node,
             Field2           => Empty_Node,
@@ -159,13 +159,13 @@ package body Prj.Tree is
                Flag2            =>
                  Comments.Table (J).Is_Followed_By_Empty_Line,
                Location         => No_Location,
-               Directory        => No_Name,
+               Directory        => No_Path,
                Variables        => Empty_Node,
                Packages         => Empty_Node,
                Pkg_Id           => Empty_Package,
                Name             => No_Name,
                Src_Index        => 0,
-               Path_Name        => No_Name,
+               Path_Name        => No_Path,
                Value            => Comments.Table (J).Value,
                Field1           => Empty_Node,
                Field2           => Empty_Node,
@@ -323,14 +323,14 @@ package body Prj.Tree is
          In_Tree.Project_Nodes.Table (Zone) :=
         (Kind             => N_Comment_Zones,
          Location         => No_Location,
-         Directory        => No_Name,
+         Directory        => No_Path,
          Expr_Kind        => Undefined,
          Variables        => Empty_Node,
          Packages         => Empty_Node,
          Pkg_Id           => Empty_Package,
          Name             => No_Name,
          Src_Index        => 0,
-         Path_Name        => No_Name,
+         Path_Name        => No_Path,
          Value            => No_Name,
          Field1           => Empty_Node,
          Field2           => Empty_Node,
@@ -397,14 +397,14 @@ package body Prj.Tree is
         (Project_Node_Table.Last (In_Tree.Project_Nodes)) :=
         (Kind             => Of_Kind,
          Location         => No_Location,
-         Directory        => No_Name,
+         Directory        => No_Path,
          Expr_Kind        => And_Expr_Kind,
          Variables        => Empty_Node,
          Packages         => Empty_Node,
          Pkg_Id           => Empty_Package,
          Name             => No_Name,
          Src_Index        => 0,
-         Path_Name        => No_Name,
+         Path_Name        => No_Path,
          Value            => No_Name,
          Field1           => Empty_Node,
          Field2           => Empty_Node,
@@ -432,13 +432,13 @@ package body Prj.Tree is
               (Kind             => N_Comment_Zones,
                Expr_Kind        => Undefined,
                Location         => No_Location,
-               Directory        => No_Name,
+               Directory        => No_Path,
                Variables        => Empty_Node,
                Packages         => Empty_Node,
                Pkg_Id           => Empty_Package,
                Name             => No_Name,
                Src_Index        => 0,
-               Path_Name        => No_Name,
+               Path_Name        => No_Path,
                Value            => No_Name,
                Field1           => Empty_Node,
                Field2           => Empty_Node,
@@ -464,13 +464,13 @@ package body Prj.Tree is
                   Flag2            =>
                     Comments.Table (J).Is_Followed_By_Empty_Line,
                   Location         => No_Location,
-                  Directory        => No_Name,
+                  Directory        => No_Path,
                   Variables        => Empty_Node,
                   Packages         => Empty_Node,
                   Pkg_Id           => Empty_Package,
                   Name             => No_Name,
                   Src_Index        => 0,
-                  Path_Name        => No_Name,
+                  Path_Name        => No_Path,
                   Value            => Comments.Table (J).Value,
                   Field1           => Empty_Node,
                   Field2           => Empty_Node,
@@ -510,7 +510,7 @@ package body Prj.Tree is
 
    function Directory_Of
      (Node    : Project_Node_Id;
-      In_Tree : Project_Node_Tree_Ref) return Name_Id is
+      In_Tree : Project_Node_Tree_Ref) return Path_Name_Type is
    begin
       pragma Assert
         (Node /= Empty_Node
@@ -619,14 +619,14 @@ package body Prj.Tree is
 
    function Extended_Project_Path_Of
      (Node    : Project_Node_Id;
-      In_Tree : Project_Node_Tree_Ref) return Name_Id
+      In_Tree : Project_Node_Tree_Ref) return Path_Name_Type
    is
    begin
       pragma Assert
         (Node /= Empty_Node
           and then
             In_Tree.Project_Nodes.Table (Node).Kind = N_Project);
-      return In_Tree.Project_Nodes.Table (Node).Value;
+      return Path_Name_Type (In_Tree.Project_Nodes.Table (Node).Value);
    end Extended_Project_Path_Of;
 
    --------------------------
@@ -1325,7 +1325,7 @@ package body Prj.Tree is
 
    function Path_Name_Of
      (Node    : Project_Node_Id;
-      In_Tree : Project_Node_Tree_Ref) return Name_Id
+      In_Tree : Project_Node_Tree_Ref) return Path_Name_Type
    is
    begin
       pragma Assert
@@ -1716,7 +1716,7 @@ package body Prj.Tree is
    procedure Set_Directory_Of
      (Node    : Project_Node_Id;
       In_Tree : Project_Node_Tree_Ref;
-      To      : Name_Id)
+      To      : Path_Name_Type)
    is
    begin
       pragma Assert
@@ -2187,14 +2187,14 @@ package body Prj.Tree is
    procedure Set_Extended_Project_Path_Of
      (Node    : Project_Node_Id;
       In_Tree : Project_Node_Tree_Ref;
-      To      : Name_Id)
+      To      : Path_Name_Type)
    is
    begin
       pragma Assert
         (Node /= Empty_Node
           and then
             In_Tree.Project_Nodes.Table (Node).Kind = N_Project);
-      In_Tree.Project_Nodes.Table (Node).Value := To;
+      In_Tree.Project_Nodes.Table (Node).Value := Name_Id (To);
    end Set_Extended_Project_Path_Of;
 
    ------------------------------
@@ -2422,7 +2422,7 @@ package body Prj.Tree is
    procedure Set_Path_Name_Of
      (Node    : Project_Node_Id;
       In_Tree : Project_Node_Tree_Ref;
-      To      : Name_Id)
+      To      : Path_Name_Type)
    is
    begin
       pragma Assert
