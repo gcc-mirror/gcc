@@ -1,3 +1,7 @@
+2007-06-06  Steve Ellcey  <sje@cup.hp.com>
+
+	* gfortran.dg/integer_exponentiation_3.F90: Use approx. check.
+
 2007-06-06  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR testsuite/25241
