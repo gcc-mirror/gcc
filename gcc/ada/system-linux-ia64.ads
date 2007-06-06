@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                        (GNU-Linux/ia64 Version)                          --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -51,7 +51,7 @@ package System is
    Max_Int               : constant := Long_Long_Integer'Last;
 
    Max_Binary_Modulus    : constant := 2 ** Long_Long_Integer'Size;
-   Max_Nonbinary_Modulus : constant := Integer'Last;
+   Max_Nonbinary_Modulus : constant := 2 ** Integer'Size - 1;
 
    Max_Base_Digits       : constant := Long_Long_Float'Digits;
    Max_Digits            : constant := Long_Long_Float'Digits;
@@ -64,6 +64,7 @@ package System is
    --  Storage-related Declarations
 
    type Address is private;
+   pragma Preelaborable_Initialization (Address);
    Null_Address : constant Address;
 
    Storage_Unit : constant := 8;
@@ -92,6 +93,14 @@ package System is
 
    --  Priority-related Declarations (RM D.1)
 
+   --  0 .. 98 corresponds to the system priority range 1 .. 99.
+   --
+   --  If the scheduling policy is SCHED_FIFO or SCHED_RR the runtime makes use
+   --  of the entire range provided by the system.
+   --
+   --  If the scheduling policy is SCHED_OTHER the only valid system priority
+   --  is 1 and other values are simply ignored.
+
    Max_Priority           : constant Positive := 97;
    Max_Interrupt_Priority : constant Positive := 98;
 
@@ -116,11 +125,9 @@ private
    --  whose source should be consulted for more detailed descriptions
    --  of the individual switch values.
 
-   AAMP                      : constant Boolean := False;
    Backend_Divide_Checks     : constant Boolean := False;
    Backend_Overflow_Checks   : constant Boolean := False;
    Command_Line_Args         : constant Boolean := True;
-   Compiler_System_Version   : constant Boolean := False;
    Configurable_Run_Time     : constant Boolean := False;
    Denorm                    : constant Boolean := True;
    Duration_32_Bits          : constant Boolean := False;
@@ -129,7 +136,6 @@ private
    Frontend_Layout           : constant Boolean := False;
    Machine_Overflows         : constant Boolean := False;
    Machine_Rounds            : constant Boolean := True;
-   OpenVMS                   : constant Boolean := False;
    Preallocated_Stacks       : constant Boolean := False;
    Signed_Zeros              : constant Boolean := True;
    Stack_Check_Default       : constant Boolean := False;
@@ -143,11 +149,5 @@ private
    Use_Ada_Main_Program_Name : constant Boolean := False;
    ZCX_By_Default            : constant Boolean := True;
    GCC_ZCX_Support           : constant Boolean := True;
-   Front_End_ZCX_Support     : constant Boolean := False;
-
-   --  Obsolete entries, to be removed eventually (bootstrap issues!)
-
-   High_Integrity_Mode       : constant Boolean := False;
-   Long_Shifts_Inlined       : constant Boolean := True;
 
 end System;

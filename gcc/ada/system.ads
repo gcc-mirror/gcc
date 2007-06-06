@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                            (Compiler Version)                            --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -56,7 +56,7 @@ package System is
    Max_Int               : constant := Long_Long_Integer'Last;
 
    Max_Binary_Modulus    : constant := 2 ** Long_Long_Integer'Size;
-   Max_Nonbinary_Modulus : constant := Integer'Last;
+   Max_Nonbinary_Modulus : constant := 2 ** Integer'Size - 1;
 
    Max_Base_Digits       : constant := Long_Long_Float'Digits;
    Max_Digits            : constant := Long_Long_Float'Digits;
@@ -69,6 +69,10 @@ package System is
    --  Storage-related Declarations
 
    type Address is private;
+   --  Note that we do NOT add pragma Preelaborable_Initialization in this
+   --  version of System, since it is used for the compiler only, and typical
+   --  earlier bootstrap compilers don't support this pragma. We don't need
+   --  it in this context, so there is no problem in omitting it.
    Null_Address : constant Address;
 
    Storage_Unit : constant := Standard'Storage_Unit;
@@ -155,10 +159,10 @@ private
    Use_Ada_Main_Program_Name : constant Boolean := False;
    ZCX_By_Default            : constant Boolean := False;
    GCC_ZCX_Support           : constant Boolean := False;
-   Front_End_ZCX_Support     : constant Boolean := False;
 
    --  Obsolete entries, to be removed eventually (bootstrap issues!)
 
+   Front_End_ZCX_Support     : constant Boolean := False;
    High_Integrity_Mode       : constant Boolean := False;
    Long_Shifts_Inlined       : constant Boolean := True;
    Functions_Return_By_DSP   : constant Boolean := False;

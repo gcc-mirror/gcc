@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -161,11 +161,10 @@ package Ttypes is
    System_Address_Size : constant Pos := Get_Pointer_Size;
    --  System.Address'Size (also size of all thin pointers)
 
-   System_Max_Binary_Modulus_Power    : constant Pos :=
-                                          Standard_Long_Long_Integer_Size;
+   System_Max_Binary_Modulus_Power : constant Pos :=
+                                       Standard_Long_Long_Integer_Size;
 
-   System_Max_Nonbinary_Modulus_Power : constant Pos :=
-                                          Standard_Integer_Size - 1;
+   System_Max_Nonbinary_Modulus_Power : constant Pos := Standard_Integer_Size;
 
    System_Storage_Unit : constant Pos := Get_Bits_Per_Unit;
    System_Word_Size    : constant Pos := Get_Bits_Per_Word;
