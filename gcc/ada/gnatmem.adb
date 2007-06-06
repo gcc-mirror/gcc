@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1997-2005, AdaCore                     --
+--                     Copyright (C) 1997-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,23 +53,24 @@
 --   execution generating memory allocation where data is collected (such as
 --   number of allocations, amount of memory allocated, high water mark, etc.)
 
-with Gnatvsn; use Gnatvsn;
-
-with Ada.Text_IO;             use Ada.Text_IO;
 with Ada.Float_Text_IO;
 with Ada.Integer_Text_IO;
+with Ada.Text_IO;             use Ada.Text_IO;
+
+with System;                  use System;
+with System.Storage_Elements; use System.Storage_Elements;
 
 with GNAT.Command_Line;       use GNAT.Command_Line;
 with GNAT.Heap_Sort_G;
 with GNAT.OS_Lib;             use GNAT.OS_Lib;
 with GNAT.HTable;             use GNAT.HTable;
 
-with System;                  use System;
-with System.Storage_Elements; use System.Storage_Elements;
-
+with Gnatvsn; use Gnatvsn;
 with Memroot; use Memroot;
 
 procedure Gnatmem is
+
+   package Int_IO renames Ada.Integer_Text_IO;
 
    ------------------------
    -- Other Declarations --
@@ -80,13 +81,24 @@ procedure Gnatmem is
       --  *  = End of log file
       --  A  = found a ALLOC mark in the log
       --  D  = found a DEALL mark in the log
+
       Address : Integer_Address;
       Size    : Storage_Count;
+      Timestamp : Duration;
    end record;
-   --  This needs a comment ???
+   --  This type is used to read heap operations from the log file.
+   --  Elmt contains the type of the operation, which can be either
+   --  allocation, deallocation, or a special mark indicating the
+   --  end of the log file. Address is used to store address on the
+   --  heap where a chunk was allocated/deallocated, size is only
+   --  for A event and contains size of the allocation, and Timestamp
+   --  is the clock value at the moment of allocation
 
-   Log_Name, Program_Name : String_Access;
-   --  These need comments, and should be on separate lines ???
+   Log_Name : String_Access;
+   --  Holds the name of the heap operations log file
+
+   Program_Name : String_Access;
+   --  Holds the name of the user executable
 
    function Read_Next return Storage_Elmt;
    --  Reads next dynamic storage operation from the log file
@@ -133,18 +145,37 @@ procedure Gnatmem is
 
    BT_Depth   : Integer := 1;
 
-   --  The following need comments ???
+   --  Some global statistics
 
-   Global_Alloc_Size      : Storage_Count  := 0;
-   Global_High_Water_Mark : Storage_Count  := 0;
-   Global_Nb_Alloc        : Integer        := 0;
-   Global_Nb_Dealloc      : Integer        := 0;
-   Nb_Root                : Integer        := 0;
-   Nb_Wrong_Deall         : Integer        := 0;
-   Minimum_NB_Leaks       : Integer        := 1;
+   Global_Alloc_Size : Storage_Count := 0;
+   --  Total number of bytes allocated during the lifetime of a program
 
-   Tmp_Alloc   : Allocation;
-   Quiet_Mode  : Boolean := False;
+   Global_High_Water_Mark : Storage_Count := 0;
+   --  Largest amount of storage ever in use during the lifetime
+
+   Global_Nb_Alloc : Integer := 0;
+   --  Total number of allocations
+
+   Global_Nb_Dealloc : Integer := 0;
+   --  Total number of deallocations
+
+   Nb_Root : Integer := 0;
+   --  Total number of allocation roots
+
+   Nb_Wrong_Deall : Integer := 0;
+   --  Total number of wrong deallocations (i.e. without matching alloc)
+
+   Minimum_Nb_Leaks : Integer := 1;
+   --  How many unfreed allocs should be in a root for it to count as leak
+
+   T0 : Duration := 0.0;
+   --  The moment at which memory allocation routines initialized (should
+   --  be pretty close to the moment the program started since there are
+   --  always some allocations at RTL elaboration
+
+   Tmp_Alloc     : Allocation;
+   Dump_Log_Mode : Boolean := False;
+   Quiet_Mode    : Boolean := False;
 
    ------------------------------
    -- Allocation Roots Sorting --
@@ -160,15 +191,24 @@ procedure Gnatmem is
    -- GMEM functionality binding --
    --------------------------------
 
+   ---------------------
+   -- Gmem_Initialize --
+   ---------------------
+
    function Gmem_Initialize (Dumpname : String) return Boolean is
-      function Initialize (Dumpname : System.Address) return Boolean;
+      function Initialize (Dumpname : System.Address) return Duration;
       pragma Import (C, Initialize, "__gnat_gmem_initialize");
 
       S : aliased String := Dumpname & ASCII.NUL;
 
    begin
-      return Initialize (S'Address);
+      T0 := Initialize (S'Address);
+      return T0 > 0.0;
    end Gmem_Initialize;
+
+   -------------------------
+   -- Gmem_A2l_Initialize --
+   -------------------------
 
    procedure Gmem_A2l_Initialize (Exename : String) is
       procedure A2l_Initialize (Exename : System.Address);
@@ -179,6 +219,10 @@ procedure Gnatmem is
    begin
       A2l_Initialize (S'Address);
    end Gmem_A2l_Initialize;
+
+   ---------------
+   -- Read_Next --
+   ---------------
 
    function Read_Next return Storage_Elmt is
       procedure Read_Next (buf : System.Address);
@@ -205,9 +249,9 @@ procedure Gnatmem is
    ---------------
 
    function Mem_Image (X : Storage_Count) return String is
-      Ks    : constant Storage_Count := X / 1024;
-      Megs  : constant Storage_Count := Ks / 1024;
-      Buff  : String (1 .. 7);
+      Ks   : constant Storage_Count := X / 1024;
+      Megs : constant Storage_Count := Ks / 1024;
+      Buff : String (1 .. 7);
 
    begin
       if Megs /= 0 then
@@ -233,7 +277,7 @@ procedure Gnatmem is
       New_Line;
       Put ("GNATMEM ");
       Put_Line (Gnat_Version_String);
-      Put_Line ("Copyright 1997-2005, Free Software Foundation, Inc.");
+      Put_Line ("Copyright 1997-2007, Free Software Foundation, Inc.");
       New_Line;
 
       Put_Line ("Usage: gnatmem switches [depth] exename");
@@ -263,7 +307,7 @@ procedure Gnatmem is
       --  Parse the options first
 
       loop
-         case Getopt ("b: m: i: q s:") is
+         case Getopt ("b: dd m: i: q s:") is
             when ASCII.Nul => exit;
 
             when 'b' =>
@@ -274,9 +318,12 @@ procedure Gnatmem is
                      Usage;
                end;
 
+            when 'd' =>
+               Dump_Log_Mode := True;
+
             when 'm' =>
                begin
-                  Minimum_NB_Leaks := Natural'Value (Parameter);
+                  Minimum_Nb_Leaks := Natural'Value (Parameter);
                exception
                   when Constraint_Error =>
                      Usage;
@@ -291,7 +338,6 @@ procedure Gnatmem is
             when 's' =>
                declare
                   S : constant String (Sort_Order'Range) := Parameter;
-
                begin
                   for J in Sort_Order'Range loop
                      if S (J) = 'n' or else
@@ -399,12 +445,35 @@ procedure Gnatmem is
          Usage;
    end Process_Arguments;
 
+   --  Local variables
+
    Cur_Elmt : Storage_Elmt;
+   Buff     : String (1 .. 16);
 
 --  Start of processing for Gnatmem
 
 begin
    Process_Arguments;
+
+   if Dump_Log_Mode then
+      Put_Line ("Full dump of dynamic memory operations history");
+      Put_Line ("----------------------------------------------");
+
+      declare
+         function CTime (Clock : Address) return Address;
+         pragma Import (C, CTime, "ctime");
+
+         Int_T0     : Integer := Integer (T0);
+         CTime_Addr : constant Address := CTime (Int_T0'Address);
+
+         Buffer : String (1 .. 30);
+         for Buffer'Address use CTime_Addr;
+
+      begin
+         Put_Line ("Log started at T0 =" & Duration'Image (T0) & " ("
+                   & Buffer (1 .. 24) & ")");
+      end;
+   end if;
 
    --  Main loop analysing the data generated by the instrumented routines.
    --  For each allocation, the backtrace is kept and stored in a htable
@@ -420,10 +489,11 @@ begin
 
          when 'A' =>
 
-            --  Update global counters if the allocated size is meaningful
+            --  Read the corresponding back trace
+
+            Tmp_Alloc.Root := Read_BT (BT_Depth);
 
             if Quiet_Mode then
-               Tmp_Alloc.Root := Read_BT (BT_Depth);
 
                if Nb_Alloc (Tmp_Alloc.Root) = 0 then
                   Nb_Root := Nb_Root + 1;
@@ -434,16 +504,14 @@ begin
 
             elsif Cur_Elmt.Size > 0 then
 
+               --  Update global counters if the allocated size is meaningful
+
                Global_Alloc_Size := Global_Alloc_Size + Cur_Elmt.Size;
                Global_Nb_Alloc   := Global_Nb_Alloc + 1;
 
                if Global_High_Water_Mark < Global_Alloc_Size then
                   Global_High_Water_Mark := Global_Alloc_Size;
                end if;
-
-               --  Read the corresponding back trace
-
-               Tmp_Alloc.Root := Read_BT (BT_Depth);
 
                --  Update the number of allocation root if this is a new one
 
@@ -470,10 +538,6 @@ begin
                Tmp_Alloc.Size := Cur_Elmt.Size;
                Address_HTable.Set (Cur_Elmt.Address, Tmp_Alloc);
 
-            --  non meaningful output, just consumes the backtrace
-
-            else
-               Tmp_Alloc.Root := Read_BT (BT_Depth);
             end if;
 
          when 'D' =>
@@ -485,7 +549,7 @@ begin
             if Tmp_Alloc.Root = No_Root_Id then
 
                --  There was no prior allocation at this address, something is
-               --  very wrong. Mark this allocation root as problematic
+               --  very wrong. Mark this allocation root as problematic.
 
                Tmp_Alloc.Root := Read_BT (BT_Depth);
 
@@ -512,14 +576,14 @@ begin
 
                Set_Nb_Alloc (Tmp_Alloc.Root, Nb_Alloc (Tmp_Alloc.Root) - 1);
 
-               --  update the number of allocation root if this one disappear
+               --  Update the number of allocation root if this one disappears
 
                if Nb_Alloc (Tmp_Alloc.Root) = 0
-                 and then Minimum_NB_Leaks > 0 then
+                 and then Minimum_Nb_Leaks > 0 then
                   Nb_Root := Nb_Root - 1;
                end if;
 
-               --  De-associate the deallocated address
+               --  Deassociate the deallocated address
 
                Address_HTable.Remove (Cur_Elmt.Address);
             end if;
@@ -527,6 +591,30 @@ begin
          when others =>
             raise Program_Error;
       end case;
+
+      if Dump_Log_Mode then
+         case Cur_Elmt.Elmt is
+            when 'A' =>
+               Put ("ALLOC");
+               Int_IO.Put (Buff (1 .. 16), Integer (Cur_Elmt.Address), 16);
+               Put (Buff);
+               Int_IO.Put (Buff (1 .. 8), Integer (Cur_Elmt.Size));
+               Put (Buff (1 .. 8) & " bytes at moment T0 +");
+               Put_Line (Duration'Image (Cur_Elmt.Timestamp - T0));
+
+            when 'D' =>
+               Put ("DEALL");
+               Int_IO.Put (Buff (1 .. 16), Integer (Cur_Elmt.Address), 16);
+               Put (Buff);
+               Put_Line (" at moment T0 +"
+                         & Duration'Image (Cur_Elmt.Timestamp - T0));
+            when others =>
+               raise Program_Error;
+         end case;
+
+         Print_BT (Tmp_Alloc.Root);
+      end if;
+
    end loop Main;
 
    --  Print out general information about overall allocation
@@ -551,33 +639,51 @@ begin
    end if;
 
    --  Print out the back traces corresponding to potential leaks in order
-   --  greatest number of non-deallocated allocations
+   --  greatest number of non-deallocated allocations.
 
    Print_Back_Traces : declare
       type Root_Array is array (Natural range <>) of Root_Id;
-      Leaks   : Root_Array (0 .. Nb_Root);
+      type Access_Root_Array is access Root_Array;
+
+      Leaks        : constant Access_Root_Array :=
+                       new Root_Array (0 .. Nb_Root);
       Leak_Index   : Natural := 0;
 
-      Bogus_Dealls : Root_Array (1 .. Nb_Wrong_Deall);
+      Bogus_Dealls : constant Access_Root_Array :=
+                       new Root_Array (1 .. Nb_Wrong_Deall);
       Deall_Index  : Natural := 0;
       Nb_Alloc_J   : Natural := 0;
 
       procedure Move (From : Natural; To : Natural);
-      function  Lt (Op1, Op2 : Natural) return Boolean;
-      package   Root_Sort is new GNAT.Heap_Sort_G (Move, Lt);
+      function Lt (Op1, Op2 : Natural) return Boolean;
+      package Root_Sort is new GNAT.Heap_Sort_G (Move, Lt);
+
+      ----------
+      -- Move --
+      ----------
 
       procedure Move (From : Natural; To : Natural) is
       begin
          Leaks (To) := Leaks (From);
       end Move;
 
+      --------
+      -- Lt --
+      --------
+
       function Lt (Op1, Op2 : Natural) return Boolean is
+
          function Apply_Sort_Criterion (S : Character) return Integer;
          --  Applies a specific sort criterion; returns -1, 0 or 1 if Op1 is
-         --  smaller than, equal, or greater than Op2 according to criterion
+         --  smaller than, equal, or greater than Op2 according to criterion.
+
+         --------------------------
+         -- Apply_Sort_Criterion --
+         --------------------------
 
          function Apply_Sort_Criterion (S : Character) return Integer is
             LOp1, LOp2 : Integer;
+
          begin
             case S is
                when 'n' =>
@@ -603,10 +709,13 @@ begin
             else
                return 0;
             end if;
+
          exception
             when Constraint_Error =>
                return 0;
          end Apply_Sort_Criterion;
+
+         --  Local Variables
 
          Result : Integer;
 
@@ -627,12 +736,11 @@ begin
    --  Start of processing for Print_Back_Traces
 
    begin
-      --  Transfer all the relevant Roots in the Leaks and a
-      --  Bogus_Deall arrays
+      --  Transfer all the relevant Roots in the Leaks and a Bogus_Deall arrays
 
       Tmp_Alloc.Root := Get_First;
       while Tmp_Alloc.Root /= No_Root_Id loop
-         if Nb_Alloc (Tmp_Alloc.Root) = 0 and then Minimum_NB_Leaks > 0 then
+         if Nb_Alloc (Tmp_Alloc.Root) = 0 and then Minimum_Nb_Leaks > 0 then
             null;
 
          elsif Nb_Alloc (Tmp_Alloc.Root) < 0  then
@@ -663,15 +771,16 @@ begin
 
       --  Print out all allocation Leaks
 
-      if Nb_Root > 0 then
+      if Leak_Index > 0 then
 
          --  Sort the Leaks so that potentially important leaks appear first
 
-         Root_Sort.Sort (Nb_Root);
+         Root_Sort.Sort (Leak_Index);
 
-         for J in  1 .. Leaks'Last loop
+         for J in  1 .. Leak_Index loop
             Nb_Alloc_J := Nb_Alloc (Leaks (J));
-            if Nb_Alloc_J >= Minimum_NB_Leaks then
+
+            if Nb_Alloc_J >= Minimum_Nb_Leaks then
                if Quiet_Mode then
                   if Nb_Alloc_J = 1 then
                      Put_Line (" 1 leak at :");

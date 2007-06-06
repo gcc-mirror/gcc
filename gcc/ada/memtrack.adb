@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,6 +64,12 @@
 --    Irix
 --    Solaris
 --    Tru64
+--    Alpha OpenVMS
+
+--  NOTE FOR FUTURE PLATFORMS SUPPORT: It is assumed that type Duration is
+--  64 bit. If the need arises to support architectures where this assumption
+--  is incorrect, it will require changing the way timestamps of allocation
+--  events are recorded.
 
 pragma Source_File_Name (System.Memory, Body_File_Name => "memtrack.adb");
 
@@ -72,6 +78,7 @@ with System.Soft_Links;
 with System.Traceback;
 with System.Traceback_Entries;
 with GNAT.IO;
+with System.OS_Primitives;
 
 package body System.Memory is
 
@@ -140,6 +147,9 @@ package body System.Memory is
    Gmemfile : File_Ptr;
    --  Global C file pointer to the allocation log
 
+   Needs_Init : Boolean := True;
+   --  Reset after first call to Gmem_Initialize
+
    procedure Gmem_Initialize;
    --  Initialization routine; opens the file and writes a header string. This
    --  header string is used as a magic-tag to know if the .out file is to be
@@ -157,6 +167,7 @@ package body System.Memory is
    function Alloc (Size : size_t) return System.Address is
       Result      : aliased System.Address;
       Actual_Size : aliased size_t := Size;
+      Timestamp   : aliased Duration;
 
    begin
       if Size = size_t'Last then
@@ -184,12 +195,18 @@ package body System.Memory is
 
          First_Call := False;
 
-         Gmem_Initialize;
+         if Needs_Init then
+            Gmem_Initialize;
+         end if;
+
+         Timestamp := System.OS_Primitives.Clock;
          Call_Chain (Tracebk'Address, Max_Call_Stack, Num_Calls,
                      Skip_Frames => 2);
          fputc (Character'Pos ('A'), Gmemfile);
          fwrite (Result'Address, Address_Size, 1, Gmemfile);
          fwrite (Actual_Size'Address, size_t'Max_Size_In_Storage_Elements, 1,
+                 Gmemfile);
+         fwrite (Timestamp'Address, Duration'Max_Size_In_Storage_Elements, 1,
                  Gmemfile);
          fwrite (Num_Calls'Address, Integer'Max_Size_In_Storage_Elements, 1,
                  Gmemfile);
@@ -219,9 +236,6 @@ package body System.Memory is
    -- Finalize --
    --------------
 
-   Needs_Init : Boolean := True;
-   --  Reset after first call to Gmem_Initialize
-
    procedure Finalize is
    begin
       if not Needs_Init then
@@ -234,7 +248,8 @@ package body System.Memory is
    ----------
 
    procedure Free (Ptr : System.Address) is
-      Addr : aliased constant System.Address := Ptr;
+      Addr      : aliased constant System.Address := Ptr;
+      Timestamp : aliased Duration;
 
    begin
       Lock_Task.all;
@@ -247,11 +262,17 @@ package body System.Memory is
 
          First_Call := False;
 
-         Gmem_Initialize;
+         if Needs_Init then
+            Gmem_Initialize;
+         end if;
+
          Call_Chain (Tracebk'Address, Max_Call_Stack, Num_Calls,
                      Skip_Frames => 2);
+         Timestamp := System.OS_Primitives.Clock;
          fputc (Character'Pos ('D'), Gmemfile);
          fwrite (Addr'Address, Address_Size, 1, Gmemfile);
+         fwrite (Timestamp'Address, Duration'Max_Size_In_Storage_Elements, 1,
+                 Gmemfile);
          fwrite (Num_Calls'Address, Integer'Max_Size_In_Storage_Elements, 1,
                  Gmemfile);
 
@@ -276,9 +297,13 @@ package body System.Memory is
    ---------------------
 
    procedure Gmem_Initialize is
+      Timestamp : aliased Duration;
+
    begin
       if Needs_Init then
          Needs_Init := False;
+         System.OS_Primitives.Initialize;
+         Timestamp := System.OS_Primitives.Clock;
          Gmemfile := fopen (Gmemfname, "wb" & ASCII.NUL);
 
          if Gmemfile = System.Null_Address then
@@ -287,6 +312,8 @@ package body System.Memory is
          end if;
 
          fwrite ("GMEM DUMP" & ASCII.LF, 10, 1, Gmemfile);
+         fwrite (Timestamp'Address, Duration'Max_Size_In_Storage_Elements, 1,
+                 Gmemfile);
       end if;
    end Gmem_Initialize;
 
@@ -295,10 +322,12 @@ package body System.Memory is
    -------------
 
    function Realloc
-     (Ptr : System.Address; Size : size_t) return System.Address
+     (Ptr  : System.Address;
+      Size : size_t) return System.Address
    is
-      Addr : aliased constant System.Address := Ptr;
-      Result : aliased System.Address;
+      Addr      : aliased constant System.Address := Ptr;
+      Result    : aliased System.Address;
+      Timestamp : aliased Duration;
 
    begin
       --  For the purposes of allocations logging, we treat realloc as a free
@@ -317,11 +346,16 @@ package body System.Memory is
 
          --  We first log deallocation call
 
-         Gmem_Initialize;
+         if Needs_Init then
+            Gmem_Initialize;
+         end if;
          Call_Chain (Tracebk'Address, Max_Call_Stack, Num_Calls,
                      Skip_Frames => 2);
+         Timestamp := System.OS_Primitives.Clock;
          fputc (Character'Pos ('D'), Gmemfile);
          fwrite (Addr'Address, Address_Size, 1, Gmemfile);
+         fwrite (Timestamp'Address, Duration'Max_Size_In_Storage_Elements, 1,
+                 Gmemfile);
          fwrite (Num_Calls'Address, Integer'Max_Size_In_Storage_Elements, 1,
                  Gmemfile);
 
@@ -342,6 +376,8 @@ package body System.Memory is
          fputc (Character'Pos ('A'), Gmemfile);
          fwrite (Result'Address, Address_Size, 1, Gmemfile);
          fwrite (Size'Address, size_t'Max_Size_In_Storage_Elements, 1,
+                 Gmemfile);
+         fwrite (Timestamp'Address, Duration'Max_Size_In_Storage_Elements, 1,
                  Gmemfile);
          fwrite (Num_Calls'Address, Integer'Max_Size_In_Storage_Elements, 1,
                  Gmemfile);
