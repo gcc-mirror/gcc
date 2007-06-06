@@ -225,10 +225,10 @@ package Ada.Strings.Wide_Fixed is
       Pad    : Wide_Character := Ada.Strings.Wide_Space) return Wide_String;
 
    procedure Tail
-     (Source : in out Wide_String;
-      Count  : Natural;
+     (Source  : in out Wide_String;
+      Count   : Natural;
       Justify : Alignment := Left;
-      Pad    : Wide_Character := Ada.Strings.Wide_Space);
+      Pad     : Wide_Character := Ada.Strings.Wide_Space);
 
    ---------------------------------------
    -- Wide_String Constructor Functions --
