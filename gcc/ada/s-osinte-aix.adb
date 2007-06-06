@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1997-2006, Free Software Fundation, Inc.          --
+--          Copyright (C) 1997-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,8 +34,8 @@
 --  This is a AIX (Native) version of this package
 
 pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during
---  tasking operations. It causes infinite loops and other problems.
+--  Turn off polling, we do not want ATC polling to take place during tasking
+--  operations. It causes infinite loops and other problems.
 
 package body System.OS_Interface is
 
@@ -62,11 +62,20 @@ package body System.OS_Interface is
    function To_Target_Priority
      (Prio : System.Any_Priority) return Interfaces.C.int
    is
-   begin
-      --  Priorities on AIX are defined in the range 1 .. 127, so we
-      --  map 0 .. 126 to 1 .. 127.
+      Dispatching_Policy : Character;
+      pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
 
-      return Interfaces.C.int (Prio) + 1;
+   begin
+      --  For the case SCHED_OTHER the only valid priority across all supported
+      --  versions of AIX is 1. Otherwise, for SCHED_RR and SCHED_FIFO, the
+      --  system defines priorities in the range 1 .. 127. This means that we
+      --  must map System.Any_Priority in the range 0 .. 126 to 1 .. 127.
+
+      if Dispatching_Policy = ' ' then
+         return 1;
+      else
+         return Interfaces.C.int (Prio) + 1;
+      end if;
    end To_Target_Priority;
 
    -----------------
@@ -81,8 +90,7 @@ package body System.OS_Interface is
       S := time_t (Long_Long_Integer (D));
       F := D - Duration (S);
 
-      --  If F has negative value due to a round-up, adjust for positive F
-      --  value.
+      --  If F is negative due to a round-up, adjust for positive F value
 
       if F < 0.0 then
          S := S - 1;
@@ -105,8 +113,7 @@ package body System.OS_Interface is
       S := long (Long_Long_Integer (D));
       F := D - Duration (S);
 
-      --  If F has negative value due to a round-up, adjust for positive F
-      --  value.
+      --  If F is negative due to a round-up, adjust for positive F value
 
       if F < 0.0 then
          S := S - 1;
