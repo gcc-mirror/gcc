@@ -872,28 +872,30 @@ __gnat_get_task_options (void)
 #endif
 }
 
-#endif
-
-#ifdef __Lynx__
-
-/*
-   The following code works around a problem in LynxOS version 4.2. As
-   of that version, the symbol pthread_mutex_lock has been removed
-   from libc and replaced with an inline C function in a system
-   header.
-
-   LynuxWorks has indicated that this is a bug and that they intend to
-   put that symbol back in libc in a future patch level, following
-   which this patch can be removed. However, for the time being we use
-   a wrapper which can be imported from the runtime.
-*/
-
-#include <pthread.h>
-
-int
-__gnat_pthread_mutex_lock (pthread_mutex_t *mutex)
+typedef struct
 {
-  return pthread_mutex_lock (mutex);
+  int  size;
+  char *base;
+  char *end;
+} stack_info;
+
+/* __gnat_get_stack_info is used by s-stchop.adb only for VxWorks. This
+   procedure fills the stack information associated to the currently
+   executing task. */
+extern void __gnat_get_stack_info (stack_info *vxworks_stack_info);
+
+void
+__gnat_get_stack_info (stack_info *vxworks_stack_info)
+{
+  TASK_DESC descriptor;
+
+  /* Ask the VxWorks kernel about stack values */
+  taskInfoGet (taskIdSelf (), &descriptor);
+
+  /* Fill the stack data with the information provided by the kernel */
+  vxworks_stack_info->size = descriptor.td_stackSize;
+  vxworks_stack_info->base = descriptor.td_pStackBase;
+  vxworks_stack_info->end  = descriptor.td_pStackEnd;
 }
 
-#endif /* __Lynx__ */
+#endif

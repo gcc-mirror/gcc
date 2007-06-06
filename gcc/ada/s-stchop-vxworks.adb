@@ -45,7 +45,6 @@ with System.Storage_Elements; use System.Storage_Elements;
 with System.Parameters; use System.Parameters;
 with System.Soft_Links;
 with Interfaces.C;
-with System.OS_Interface;
 
 package body System.Stack_Checking.Operations is
 
@@ -79,10 +78,9 @@ package body System.Stack_Checking.Operations is
 
    --  Note: This function must be compiled with Polling turned off
 
-   --  Note: on systems like VxWorks and OS/2 with real thread-local storage,
+   --  Note: on systems like VxWorks and Linux with real thread-local storage,
    --        Set_Stack_Info should return an access value for such local
    --        storage. In those cases the cache will always be up-to-date.
-   --        Fix examples??? Linux???
 
    --  The following constants should be imported from some system-specific
    --  constants package. The constants must be static for performance reasons.
@@ -104,41 +102,22 @@ package body System.Stack_Checking.Operations is
    function Set_Stack_Info
      (Stack : not null access Stack_Access) return Stack_Access
    is
-      --  Task descriptor that is handled internally by the VxWorks kernel
-
-      type Td_Events_Storage is array (1 .. 4) of Interfaces.C.int;
-      pragma Convention (C, Td_Events_Storage);
-
-      type Task_Descriptor is record
-         T_Id            : Interfaces.C.int; -- task identifier
-         Td_Name         : System.Address; -- task name
-         Td_Priority     : Interfaces.C.int; -- task priority
-         Td_Status       : Interfaces.C.int; -- task status
-         Td_Options      : Interfaces.C.int; -- task option bits (see below)
-         Td_Entry        : System.Address; -- original entry point of task
-         Td_Sp           : System.Address; -- saved stack pointer
-         Td_PStackBase   : System.Address; -- the bottom of the stack
-         Td_PStackLimit  : System.Address; -- the effective end of the stack
-         Td_PStackEnd    : System.Address; -- the actual end of the stack
-         Td_StackSize    : Interfaces.C.int; -- size of stack in bytes
-         Td_StackCurrent : Interfaces.C.int; -- current stack usage in bytes
-         Td_StackHigh    : Interfaces.C.int; -- maximum stack usage in bytes
-         Td_StackMargin  : Interfaces.C.int; -- current stack margin in bytes
-         Td_ErrorStatus  : Interfaces.C.int; -- most recent task error status
-         Td_Delay        : Interfaces.C.int; -- delay/timeout ticks
-         Td_Events       : Td_Events_Storage; -- task events, post t2.0
+      type OS_Stack_Info is record
+         Size  : Interfaces.C.int;
+         Base  : System.Address;
+         Limit : System.Address;
       end record;
-      pragma Convention (C, Task_Descriptor);
+      pragma Convention (C, OS_Stack_Info);
+      --  Type representing the information that we want to extract from the
+      --  underlying kernel.
 
-      --  This VxWorks procedure fills in a specified task descriptor
-      --  for a specified task.
-      procedure TaskInfoGet
-        (T_Id      : System.OS_Interface.t_id;
-         Task_Desc : not null access Task_Descriptor);
-      pragma Import (C, TaskInfoGet, "taskInfoGet");
+      procedure Get_Stack_Info (Stack : not null access OS_Stack_Info);
+      pragma Import (C, Get_Stack_Info, "__gnat_get_stack_info");
+      --  Procedure that fills the stack information associated to the
+      --  currently executing task.
 
       My_Stack  : Stack_Access;
-      Task_Desc : aliased Task_Descriptor;
+      Task_Info : aliased OS_Stack_Info;
 
    begin
       --  The order of steps 1 .. 3 is important, see specification.
@@ -151,12 +130,11 @@ package body System.Stack_Checking.Operations is
 
          --  First invocation. Ask the VxWorks kernel about stack values
 
-         TaskInfoGet (System.OS_Interface.taskIdSelf, Task_Desc'Access);
+         Get_Stack_Info (Task_Info'Access);
 
-         My_Stack.Size :=
-           System.Storage_Elements.Storage_Offset (Task_Desc.Td_StackSize);
-         My_Stack.Base := Task_Desc.Td_PStackBase;
-         My_Stack.Limit := Task_Desc.Td_PStackLimit;
+         My_Stack.Size  := Storage_Elements.Storage_Offset (Task_Info.Size);
+         My_Stack.Base  := Task_Info.Base;
+         My_Stack.Limit := Task_Info.Limit;
 
       end if;
 
