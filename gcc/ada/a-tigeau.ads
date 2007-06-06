@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -164,7 +164,7 @@ private package Ada.Text_IO.Generic_Aux is
    procedure Store_Char
      (File : File_Type;
       ch   : Integer;
-      Buf  : out String;
+      Buf  : in out String;
       Ptr  : in out Integer);
    --  Store a single character in buffer, checking for overflow and
    --  adjusting the column number in the file to reflect the fact
