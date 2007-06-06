@@ -1,3 +1,23 @@
+2007-06-06  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* haifa-sched.c (restore_bb_notes): Clear bb field of the notes
+	emited outside of basic block.
+	* cfgbuild.c (find_bb_boundaries): Clear bb field for insns between
+	the created blocks.
+	* rtl.h (delete_insn_chain): Declaration changed.
+	* cfgrtl.c (delete_insn_chain): Add option to clear bb field for
+	non-removed insns.
+	(rtl_delete_block, rtl_merge_blocks): Pass true to delete_insn_chain.
+	(delete_insn_chain_and_edges, try_redirect_by_replacing_jump,
+	rtl_tidy_fallthru_edge, cfg_layout_merge_blocks): Pass false 
+	to delete_insn_chain.
+	(rtl_verify_flow_info_1): Verify that the insns in header and footer
+	do not have bb field set.
+	(rtl_verify_flow_info): Verify that insns between basic blocks do not
+	have bb field set.
+	* recog.c (peephole2_optimize): Add argument to delete_insn_chain call.
+	* cfgcleanup.c (try_optimize_cfg): Ditto.
+
 2007-06-06  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	* lambda-code.c (struct lambda_lattice_s): Add a name to the struct.

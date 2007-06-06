@@ -4080,8 +4080,9 @@ extend_bb (void)
 	  /* Don't emit a NOTE if it would end up before a BARRIER.  */
 	  && !BARRIER_P (NEXT_INSN (insn))))
     {
-      emit_note_after (NOTE_INSN_DELETED, insn);
-      /* Make insn to appear outside BB.  */
+      rtx note = emit_note_after (NOTE_INSN_DELETED, insn);
+      /* Make insn appear outside BB.  */
+      set_block_for_insn (note, NULL);
       BB_END (EXIT_BLOCK_PTR->prev_bb) = insn;
     }
 }
