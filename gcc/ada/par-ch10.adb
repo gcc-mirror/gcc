@@ -869,22 +869,17 @@ package body Ch10 is
 
             if Token = Tok_Type then
 
-               --  WITH TYPE is an GNAT specific extension
+               --  WITH TYPE is an obsolete GNAT specific extension
 
-               if not Extensions_Allowed then
-                  Error_Msg_SP ("`WITH TYPE` is a 'G'N'A'T extension");
-                  Error_Msg_SP ("\unit must be compiled with -gnatX switch");
-               end if;
+               Error_Msg_SP
+                 ("`WITH TYPE` is an obsolete 'G'N'A'T extension");
+               Error_Msg_SP ("\use Ada 2005 `LIMITED WITH` clause instead");
 
                Scan;  -- past TYPE
-               With_Node := New_Node (N_With_Type_Clause, Token_Ptr);
-               Append (With_Node, Item_List);
-               Set_Name (With_Node, P_Qualified_Simple_Name);
 
                T_Is;
 
                if Token = Tok_Tagged then
-                  Set_Tagged_Present (With_Node);
                   Scan;
 
                elsif Token = Tok_Access then

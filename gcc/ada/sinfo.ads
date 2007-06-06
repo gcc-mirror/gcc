@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,6 +48,7 @@
 --  WARNING: Several files are automatically generated from this package.
 --  See below for details.
 
+with Namet;  use Namet;
 with Types;  use Types;
 with Uintp;  use Uintp;
 with Urealp; use Urealp;
@@ -462,10 +463,6 @@ package Sinfo is
    --    already been analyzed, both for efficiency and functional correctness
    --    reasons.
 
-   --  Coextensions (Elist4-Sem)
-   --    Present in allocators nodes. Points to list of allocators for the
-   --    access discriminants of the allocated object,
-
    --  Comes_From_Source (Flag2)
    --    This flag is on for any nodes built by the scanner or parser from the
    --    source program, and off for any nodes built by the analyzer or
@@ -485,7 +482,9 @@ package Sinfo is
    --    points to a list of raise nodes, which are calls to a routine to raise
    --    an exception. These are raise nodes which can be optimized into gotos
    --    if the handler turns out to meet the conditions which permit this
-   --    transformation.
+   --    transformation. Note that this does NOT include instances of the
+   --    N_Raise_xxx_Error nodes since the transformation of these nodes is
+   --    handled by the back end (using the N_Push/N_Pop mechanism).
 
    --  Has_Dynamic_Length_Check (Flag10-Sem)
    --    This flag is present on all nodes. It is set to indicate that one of
@@ -498,6 +497,13 @@ package Sinfo is
    --    the routines in unit Checks has generated a range check action which
    --    has been inserted at the flagged node. This is used to avoid the
    --    generation of duplicate checks.
+
+   --  Has_Local_Raise (Flag8-Sem)
+   --    Present in exception handler nodes. Set if the handler can be entered
+   --    via a local raise that gets transformed to a goto statement. This will
+   --    always be set if Local_Raise_Statements is non-empty, but can also be
+   --    set as a result of generation of N_Raise_xxx nodes, or flags set in
+   --    nodes requiring generation of back end checks.
 
    ------------------------------------
    -- Description of Semantic Fields --
@@ -660,6 +666,10 @@ package Sinfo is
    --    attribute definition clause is given, rather than testing this at the
    --    freeze point.
 
+   --  Coextensions (Elist4-Sem)
+   --    Present in allocators nodes. Points to list of allocators for the
+   --    access discriminants of the allocated object.
+
    --  Comes_From_Extended_Return_Statement (Flag18-Sem)
    --    Present in N_Return_Statement nodes. True if this node was
    --    constructed as part of the expansion of an
@@ -766,14 +776,6 @@ package Sinfo is
    --    simply contains a copy of the Expression field (both point to the tree
    --    for the default expression). Default_Expression is used for
    --    conformance checking.
-
-   --  Delay_Finalize_Attach (Flag14-Sem)
-   --    This flag is present in an N_Object_Declaration node. If it is set,
-   --    then in the case of a controlled type being declared and initialized,
-   --    the normal code for attaching the result to the appropriate local
-   --    finalization list is suppressed. This is used for functions that
-   --    return controlled types without using the secondary stack, where it is
-   --    the caller who must do the attachment.
 
    --  Discr_Check_Funcs_Built (Flag11-Sem)
    --    This flag is present in N_Full_Type_Declaration nodes. It is set when
@@ -950,7 +952,7 @@ package Sinfo is
    --    points to an essentially arbitrary choice from the possible set of
    --    types.
 
-   --  Exception_Junk (Flag7-Sem)
+   --  Exception_Junk (Flag8-Sem)
    --    This flag is set in a various nodes appearing in a statement sequence
    --    to indicate that the corresponding node is an artifact of the
    --    generated code for exception handling, and should be ignored when
@@ -1210,6 +1212,10 @@ package Sinfo is
    --    implemenation of a protected subprogram. Such a body needs cleanup
    --    handler to make sure that the associated protected object is unlocked
    --    when the subprogram completes.
+
+   --  Is_Static_Coextension (Flag14-Sem)
+   --    Present in N_Allocator nodes. Set if the allocator is a coextension
+   --    of an object allocated on the stack rather than the heap.
 
    --  Is_Static_Expression (Flag6-Sem)
    --    Indicates that an expression is a static expression (RM 4.9). See spec
@@ -1481,6 +1487,14 @@ package Sinfo is
    --    type clause (identifiers, expanded names, attribute references). Set
    --    to indicate that a use is redundant (and therefore need not be undone
    --    on scope exit).
+
+   --  Renaming_Exception (Node2-Sem)
+   --    Present in N_Exception_Declaration node. Used to point back to the
+   --    exception renaming for an exception declared within a subprogram.
+   --    What happens is that an exception declared in a subprogram is moved
+   --    to the library level with a unique name, and the original exception
+   --    becomes a renaming. This link from the library level exception to the
+   --    renaming declaration allows registering of the proper exception name.
 
    --  Return_Statement_Entity (Node5-Sem)
    --    Present in N_Return_Statement and N_Extended_Return_Statement.
@@ -1967,7 +1981,7 @@ package Sinfo is
       --  Null_Exclusion_Present (Flag11)
       --  Subtype_Indication (Node5)
       --  Generic_Parent_Type (Node4-Sem) (set for an actual derived type).
-      --  Exception_Junk (Flag7-Sem)
+      --  Exception_Junk (Flag8-Sem)
 
       -------------------------------
       -- 3.2.2  Subtype Indication --
@@ -2055,6 +2069,13 @@ package Sinfo is
       --  Prev_Ids flags to preserve the original source form as described
       --  in the section on "Handling of Defining Identifier Lists".
 
+      --  The flag Has_Init_Expression is set if an initializing expression
+      --  is present. Normally it is set if and only if Expression contains
+      --  a non-empty value, but there is an exception to this. When the
+      --  initializing expression is an aggregate which requires explicit
+      --  assignments, the Expression field gets set to Empty, but this flag
+      --  is still set, so we don't forget we had an initializing expression.
+
       --  Note: if a range check is required for the initialization
       --  expression then the Do_Range_Check flag is set in the Expression,
       --  with the check being done against the type given by the object
@@ -2091,9 +2112,9 @@ package Sinfo is
       --  Prev_Ids (Flag6) (set to False if no previous identifiers in list)
       --  No_Initialization (Flag13-Sem)
       --  Assignment_OK (Flag15-Sem)
-      --  Exception_Junk (Flag7-Sem)
-      --  Delay_Finalize_Attach (Flag14-Sem)
+      --  Exception_Junk (Flag8-Sem)
       --  Is_Subprogram_Descriptor (Flag16-Sem)
+      --  Has_Init_Expression (Flag14)
 
       -------------------------------------
       -- 3.3.1  Defining Identifier List --
@@ -3643,6 +3664,7 @@ package Sinfo is
       --  Procedure_To_Call (Node2-Sem)
       --  Coextensions (Elist4-Sem)
       --  No_Initialization (Flag13-Sem)
+      --  Is_Static_Coextension (Flag14-Sem)
       --  Do_Storage_Check (Flag17-Sem)
       --  Is_Coextension (Flag18-Sem)
       --  plus fields for expression
@@ -3718,7 +3740,7 @@ package Sinfo is
       --  N_Label
       --  Sloc points to <<
       --  Identifier (Node1) direct name of statement identifier
-      --  Exception_Junk (Flag7-Sem)
+      --  Exception_Junk (Flag8-Sem)
 
       -------------------------------
       -- 5.1  Statement Identifier --
@@ -3921,9 +3943,12 @@ package Sinfo is
       --  True. Blocks constructed by the expander usually have no identifier,
       --  and no corresponding entity.
 
-      --  Note well: the block statement created for an extended return
-      --  statement has an entity, and this entity is an E_Return_Statement,
-      --  rather than the usual E_Block.
+      --  Note: the block statement created for an extended return statement
+      --  has an entity, and this entity is an E_Return_Statement, rather than
+      --  the usual E_Block.
+
+      --  Note: Exception_Junk is set for the wrapping blocks created during
+      --  local raise optimization (Exp_Ch11.Expand_Local_Exception_Handlers).
 
       --  N_Block_Statement
       --  Sloc points to DECLARE or BEGIN
@@ -3935,6 +3960,7 @@ package Sinfo is
       --  Has_Created_Identifier (Flag15)
       --  Is_Task_Allocation_Block (Flag6)
       --  Is_Asynchronous_Call_Block (Flag7)
+      --  Exception_Junk (Flag8-Sem)
 
       -------------------------
       -- 5.7  Exit Statement --
@@ -3960,7 +3986,7 @@ package Sinfo is
       --  N_Goto_Statement
       --  Sloc points to GOTO
       --  Name (Node2)
-      --  Exception_Junk (Flag7-Sem)
+      --  Exception_Junk (Flag8-Sem)
 
       ---------------------------------
       -- 6.1  Subprogram Declaration --
@@ -5374,14 +5400,8 @@ package Sinfo is
 
       --  This is a GNAT extension, used to implement mutually recursive
       --  types declared in different packages.
-
-      --  WITH_TYPE_CLAUSE ::=
-      --    with type type_NAME is access | with type type_NAME is tagged
-
-      --  N_With_Type_Clause
-      --  Sloc points to first token of type name
-      --  Name (Node2)
-      --  Tagged_Present (Flag15)
+      --  Note: this is now obsolete. The functionality of this construct
+      --  is now implemented by the Ada 2005 Limited_with_Clause.
 
       ---------------------
       -- 10.2  Body stub --
@@ -5475,6 +5495,7 @@ package Sinfo is
       --  Sloc points to EXCEPTION
       --  Defining_Identifier (Node1)
       --  Expression (Node3-Sem)
+      --  Renaming_Exception (Node2-Sem)
       --  More_Ids (Flag5) (set to False if no more identifiers in list)
       --  Prev_Ids (Flag6) (set to False if no previous identifiers in list)
 
@@ -5565,6 +5586,7 @@ package Sinfo is
       --  Zero_Cost_Handling (Flag5-Sem)
       --  Local_Raise_Statements (Elist1-Sem) (set to No_Elist if not present)
       --  Local_Raise_Not_OK (Flag7-Sem)
+      --  Has_Local_Raise (Flag8-Sem)
 
       ------------------------------------------
       -- 11.2  Choice parameter specification --
@@ -7093,13 +7115,13 @@ package Sinfo is
       N_Formal_Abstract_Subprogram_Declaration,
       N_Formal_Concrete_Subprogram_Declaration,
 
-      --  N_Push_xxx_Label
+      --  N_Push_xxx_Label, N_Push_Pop_xxx_Label
 
       N_Push_Constraint_Error_Label,
       N_Push_Program_Error_Label,
       N_Push_Storage_Error_Label,
 
-      --  N_Pop_xxx_Label
+      --  N_Pop_xxx_Label, N_Push_Pop_xxx_Label
 
       N_Pop_Constraint_Error_Label,
       N_Pop_Program_Error_Label,
@@ -7168,7 +7190,6 @@ package Sinfo is
       N_Variant,
       N_Variant_Part,
       N_With_Clause,
-      N_With_Type_Clause,
       N_Unused_At_End);
 
    for Node_Kind'Size use 8;
@@ -7294,6 +7315,10 @@ package Sinfo is
 
    subtype N_Pop_xxx_Label is Node_Kind range
      N_Pop_Constraint_Error_Label ..
+     N_Pop_Storage_Error_Label;
+
+   subtype N_Push_Pop_xxx_Label is Node_Kind range
+     N_Push_Constraint_Error_Label ..
      N_Pop_Storage_Error_Label;
 
    subtype N_Raise_xxx_Error is Node_Kind range
@@ -7561,9 +7586,6 @@ package Sinfo is
    function Delay_Alternative
      (N : Node_Id) return Node_Id;    -- Node4
 
-   function Delay_Finalize_Attach
-     (N : Node_Id) return Boolean;    -- Flag14
-
    function Delay_Statement
      (N : Node_Id) return Node_Id;    -- Node2
 
@@ -7685,7 +7707,7 @@ package Sinfo is
      (N : Node_Id) return List_Id;    -- List5
 
    function Exception_Junk
-     (N : Node_Id) return Boolean;    -- Flag7
+     (N : Node_Id) return Boolean;    -- Flag8
 
    function Exception_Label
      (N : Node_Id) return Node_Id;    -- Node5
@@ -7764,6 +7786,12 @@ package Sinfo is
 
    function Has_Dynamic_Range_Check
      (N : Node_Id) return Boolean;    -- Flag12
+
+   function Has_Init_Expression
+     (N : Node_Id) return Boolean;    -- Flag14
+
+   function Has_Local_Raise
+     (N : Node_Id) return Boolean;    -- Flag8
 
    function Has_No_Elaboration_Code
      (N : Node_Id) return Boolean;    -- Flag17
@@ -7854,6 +7882,9 @@ package Sinfo is
 
    function Is_Protected_Subprogram_Body
      (N : Node_Id) return Boolean;    -- Flag7
+
+   function Is_Static_Coextension
+     (N : Node_Id) return Boolean;    -- Flag14
 
    function Is_Static_Expression
      (N : Node_Id) return Boolean;    -- Flag6
@@ -8070,6 +8101,9 @@ package Sinfo is
 
    function Redundant_Use
      (N : Node_Id) return Boolean;    -- Flag13
+
+   function Renaming_Exception
+     (N : Node_Id) return Node_Id;    -- Node2
 
    function Result_Definition
      (N : Node_Id) return Node_Id;    -- Node4
@@ -8410,9 +8444,6 @@ package Sinfo is
    procedure Set_Delay_Alternative
      (N : Node_Id; Val : Node_Id);            -- Node4
 
-   procedure Set_Delay_Finalize_Attach
-     (N : Node_Id; Val : Boolean := True);    -- Flag14
-
    procedure Set_Delay_Statement
      (N : Node_Id; Val : Node_Id);            -- Node2
 
@@ -8531,7 +8562,7 @@ package Sinfo is
      (N : Node_Id; Val : List_Id);            -- List5
 
    procedure Set_Exception_Junk
-     (N : Node_Id; Val : Boolean := True);    -- Flag7
+     (N : Node_Id; Val : Boolean := True);    -- Flag8
 
    procedure Set_Exception_Label
      (N : Node_Id; Val : Node_Id);            -- Node5
@@ -8610,6 +8641,12 @@ package Sinfo is
 
    procedure Set_Has_Dynamic_Range_Check
      (N : Node_Id; Val : Boolean := True);    -- Flag12
+
+   procedure Set_Has_Init_Expression
+     (N : Node_Id; Val : Boolean := True);    -- Flag14
+
+   procedure Set_Has_Local_Raise
+     (N : Node_Id; Val : Boolean := True);    -- Flag8
 
    procedure Set_Has_No_Elaboration_Code
      (N : Node_Id; Val : Boolean := True);    -- Flag17
@@ -8700,6 +8737,9 @@ package Sinfo is
 
    procedure Set_Is_Protected_Subprogram_Body
      (N : Node_Id; Val : Boolean := True);    -- Flag7
+
+   procedure Set_Is_Static_Coextension
+     (N : Node_Id; Val : Boolean := True);    -- Flag14
 
    procedure Set_Is_Static_Expression
      (N : Node_Id; Val : Boolean := True);    -- Flag6
@@ -8916,6 +8956,9 @@ package Sinfo is
 
    procedure Set_Redundant_Use
      (N : Node_Id; Val : Boolean := True);    -- Flag13
+
+   procedure Set_Renaming_Exception
+     (N : Node_Id; Val : Node_Id);            -- Node2
 
    procedure Set_Result_Definition
      (N : Node_Id; Val : Node_Id);            -- Node4
@@ -10142,13 +10185,6 @@ package Sinfo is
         4 => False,   --  Library_Unit (Node4-Sem)
         5 => False),  --  Corresponding_Spec (Node5-Sem)
 
-     N_With_Type_Clause =>
-       (1 => False,   --  unused
-        2 => True,    --  Name (Node2)
-        3 => False,   --  unused
-        4 => False,   --  unused
-        5 => False),  --  unused
-
      N_Subprogram_Body_Stub =>
        (1 => True,    --  Specification (Node1)
         2 => False,   --  unused
@@ -10683,7 +10719,6 @@ package Sinfo is
    pragma Inline (Defining_Identifier);
    pragma Inline (Defining_Unit_Name);
    pragma Inline (Delay_Alternative);
-   pragma Inline (Delay_Finalize_Attach);
    pragma Inline (Delay_Statement);
    pragma Inline (Delta_Expression);
    pragma Inline (Digits_Expression);
@@ -10751,6 +10786,8 @@ package Sinfo is
    pragma Inline (Has_Created_Identifier);
    pragma Inline (Has_Dynamic_Length_Check);
    pragma Inline (Has_Dynamic_Range_Check);
+   pragma Inline (Has_Init_Expression);
+   pragma Inline (Has_Local_Raise);
    pragma Inline (Has_Self_Reference);
    pragma Inline (Has_No_Elaboration_Code);
    pragma Inline (Has_Priority_Pragma);
@@ -10781,6 +10818,7 @@ package Sinfo is
    pragma Inline (Is_Overloaded);
    pragma Inline (Is_Power_Of_2_For_Shift);
    pragma Inline (Is_Protected_Subprogram_Body);
+   pragma Inline (Is_Static_Coextension);
    pragma Inline (Is_Static_Expression);
    pragma Inline (Is_Subprogram_Descriptor);
    pragma Inline (Is_Task_Allocation_Block);
@@ -10853,6 +10891,7 @@ package Sinfo is
    pragma Inline (Reason);
    pragma Inline (Record_Extension_Part);
    pragma Inline (Redundant_Use);
+   pragma Inline (Renaming_Exception);
    pragma Inline (Result_Definition);
    pragma Inline (Return_Object_Declarations);
    pragma Inline (Return_Statement_Entity);
@@ -10963,7 +11002,6 @@ package Sinfo is
    pragma Inline (Set_Defining_Identifier);
    pragma Inline (Set_Defining_Unit_Name);
    pragma Inline (Set_Delay_Alternative);
-   pragma Inline (Set_Delay_Finalize_Attach);
    pragma Inline (Set_Delay_Statement);
    pragma Inline (Set_Delta_Expression);
    pragma Inline (Set_Digits_Expression);
@@ -11029,6 +11067,8 @@ package Sinfo is
    pragma Inline (Set_Handler_List_Entry);
    pragma Inline (Set_Has_Created_Identifier);
    pragma Inline (Set_Has_Dynamic_Length_Check);
+   pragma Inline (Set_Has_Init_Expression);
+   pragma Inline (Set_Has_Local_Raise);
    pragma Inline (Set_Has_Dynamic_Range_Check);
    pragma Inline (Set_Has_No_Elaboration_Code);
    pragma Inline (Set_Has_Priority_Pragma);
@@ -11060,6 +11100,7 @@ package Sinfo is
    pragma Inline (Set_Is_Power_Of_2_For_Shift);
    pragma Inline (Set_Is_Protected_Subprogram_Body);
    pragma Inline (Set_Has_Self_Reference);
+   pragma Inline (Set_Is_Static_Coextension);
    pragma Inline (Set_Is_Static_Expression);
    pragma Inline (Set_Is_Subprogram_Descriptor);
    pragma Inline (Set_Is_Task_Allocation_Block);
@@ -11131,6 +11172,7 @@ package Sinfo is
    pragma Inline (Set_Reason);
    pragma Inline (Set_Record_Extension_Part);
    pragma Inline (Set_Redundant_Use);
+   pragma Inline (Set_Renaming_Exception);
    pragma Inline (Set_Result_Definition);
    pragma Inline (Set_Return_Object_Declarations);
    pragma Inline (Set_Reverse_Present);

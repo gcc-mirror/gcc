@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,6 @@ with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
-with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
@@ -70,6 +69,69 @@ package body Lib.Load is
    procedure Write_Dependency_Chain;
    --  This procedure is used to generate error message info lines that
    --  trace the current dependency chain when a load error occurs.
+
+   ------------------------------
+   -- Change_Main_Unit_To_Spec --
+   ------------------------------
+
+   procedure Change_Main_Unit_To_Spec is
+      U : Unit_Record renames Units.Table (Main_Unit);
+      N : File_Name_Type;
+      X : Source_File_Index;
+
+   begin
+      --  Get name of unit body
+
+      Get_Name_String (U.Unit_File_Name);
+
+      --  Note: for the following we should really generalize and consult the
+      --  file name pattern data, but for now we just deal with the common
+      --  naming cases, which is probably good enough in practice ???
+
+      --  Change .adb to .ads
+
+      if Name_Len >= 5
+        and then Name_Buffer (Name_Len - 3 .. Name_Len) = ".adb"
+      then
+         Name_Buffer (Name_Len) := 's';
+
+      --  Change .2.ada to .1.ada (Rational convention)
+
+      elsif Name_Len >= 7
+        and then Name_Buffer (Name_Len - 5 .. Name_Len) = ".2.ada"
+      then
+         Name_Buffer (Name_Len - 4) := '1';
+
+      --  Change .ada to _.ada (DEC convention)
+
+      elsif Name_Len >= 5
+        and then Name_Buffer (Name_Len - 3 .. Name_Len) = ".ada"
+      then
+         Name_Buffer (Name_Len - 3 .. Name_Len + 1) := "_.ada";
+         Name_Len := Name_Len + 1;
+
+      --  No match, don't make the change
+
+      else
+         return;
+      end if;
+
+      --  Try loading the spec
+
+      N := Name_Find;
+      X := Load_Source_File (N);
+
+      --  No change if we did not find the spec
+
+      if X = No_Source_File then
+         return;
+      end if;
+
+      --  Otherwise modify Main_Unit entry to point to spec
+
+      U.Unit_File_Name := N;
+      U.Source_Index := X;
+   end Change_Main_Unit_To_Spec;
 
    -------------------------------
    -- Create_Dummy_Package_Unit --
@@ -218,7 +280,8 @@ package body Lib.Load is
    ----------------------
 
    procedure Load_Main_Source is
-      Fname : File_Name_Type;
+      Fname   : File_Name_Type;
+      Version : Word := 0;
 
    begin
       Load_Stack.Increment_Last;
@@ -239,13 +302,17 @@ package body Lib.Load is
          Main_Source_File := Load_Source_File (Fname);
          Current_Error_Source_File := Main_Source_File;
 
+         if Main_Source_File /= No_Source_File then
+            Version := Source_Checksum (Main_Source_File);
+         end if;
+
          Units.Table (Main_Unit) := (
            Cunit           => Empty,
            Cunit_Entity    => Empty,
            Dependency_Num  => 0,
            Dynamic_Elab    => False,
            Error_Location  => No_Location,
-           Expected_Unit   => No_Name,
+           Expected_Unit   => No_Unit_Name,
            Fatal_Error     => False,
            Generate_Code   => False,
            Has_RACW        => False,
@@ -256,8 +323,8 @@ package body Lib.Load is
            Serial_Number   => 0,
            Source_Index    => Main_Source_File,
            Unit_File_Name  => Fname,
-           Unit_Name       => No_Name,
-           Version         => Source_Checksum (Main_Source_File));
+           Unit_Name       => No_Unit_Name,
+           Version         => Version);
       end if;
    end Load_Main_Source;
 
@@ -303,13 +370,10 @@ package body Lib.Load is
          --  If parent is a renaming, then we use the renamed package as
          --  the actual parent for the subsequent load operation.
 
-         if Nkind (Parent (Cunit_Entity (Unump))) =
-           N_Package_Renaming_Declaration
-         then
+         if Nkind (Unit (Cunit (Unump))) = N_Package_Renaming_Declaration then
             Uname_Actual :=
               New_Child
-                (Load_Name,
-                 Get_Unit_Name (Name (Parent (Cunit_Entity (Unump)))));
+                (Load_Name, Get_Unit_Name (Name (Unit (Cunit (Unump)))));
 
             --  Save the renaming entity, to establish its visibility when
             --  installing the context. The implicit with is on this entity,
@@ -382,7 +446,7 @@ package body Lib.Load is
       --  Note: Unit_Name (Main_Unit) is not set if we are parsing gnat.adc.
 
       if Present (Error_Node)
-        and then Unit_Name (Main_Unit) /= No_Name
+        and then Unit_Name (Main_Unit) /= No_Unit_Name
       then
          --  It seems like In_Extended_Main_Source_Unit (Error_Node) would
          --  do the trick here, but that's wrong, it is much too early to
@@ -407,9 +471,6 @@ package body Lib.Load is
 
             --  If the load is called from a with_type clause, the error
             --  node is correct.
-
-            elsif Nkind (Parent (Error_Node)) = N_With_Type_Clause then
-               Load_Msg_Sloc := Sloc (Error_Node);
 
             --  Otherwise, check for the subunit case, and if so, consider
             --  we have a match if one name is a prefix of the other name.
@@ -474,14 +535,13 @@ package body Lib.Load is
 
                if Present (Error_Node) then
                   if Is_Predefined_File_Name (Fname) then
-                     Error_Msg_Name_1 := Uname_Actual;
-                     Error_Msg
-                       ("% is not a language defined unit", Load_Msg_Sloc);
-                  else
-                     Error_Msg_Name_1 := Fname;
                      Error_Msg_Unit_1 := Uname_Actual;
                      Error_Msg
-                       ("File{ does not contain unit$", Load_Msg_Sloc);
+                       ("$$ is not a language defined unit", Load_Msg_Sloc);
+                  else
+                     Error_Msg_File_1 := Fname;
+                     Error_Msg_Unit_1 := Uname_Actual;
+                     Error_Msg ("File{ does not contain unit$", Load_Msg_Sloc);
                   end if;
 
                   Write_Dependency_Chain;
@@ -604,11 +664,10 @@ package body Lib.Load is
             if Corr_Body /= No_Unit
               and then Spec_Is_Irrelevant (Unum, Corr_Body)
             then
-               Error_Msg_Name_1 := Unit_File_Name (Corr_Body);
+               Error_Msg_File_1 := Unit_File_Name (Corr_Body);
                Error_Msg
-                 ("cannot compile subprogram in file {!",
-                  Load_Msg_Sloc);
-               Error_Msg_Name_1 := Unit_File_Name (Unum);
+                 ("cannot compile subprogram in file {!", Load_Msg_Sloc);
+               Error_Msg_File_1 := Unit_File_Name (Unum);
                Error_Msg
                  ("\incorrect spec in file { must be removed first!",
                   Load_Msg_Sloc);
@@ -655,12 +714,12 @@ package body Lib.Load is
 
                   Check_Restricted_Unit (Load_Name, Error_Node);
 
-                  Error_Msg_Name_1 := Uname_Actual;
+                  Error_Msg_Unit_1 := Uname_Actual;
                   Error_Msg
-                    ("% is not a predefined library unit", Load_Msg_Sloc);
+                    ("$$ is not a predefined library unit", Load_Msg_Sloc);
 
                else
-                  Error_Msg_Name_1 := Fname;
+                  Error_Msg_File_1 := Fname;
                   Error_Msg ("file{ not found", Load_Msg_Sloc);
                end if;
 
