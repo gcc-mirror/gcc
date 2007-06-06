@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2006, AdaCore                     --
+--                     Copyright (C) 2000-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -188,41 +188,39 @@ package GNAT.Expect is
    procedure Close (Descriptor : in out Process_Descriptor);
    --  Terminate the process and close the pipes to it. It implicitly
    --  does the 'wait' command required to clean up the process table.
-   --  This also frees the buffer associated with the process id.
+   --  This also frees the buffer associated with the process id. Raise
+   --  Invalid_Process if the process id is invalid.
 
    procedure Close
      (Descriptor : in out Process_Descriptor;
       Status     : out Integer);
-   --  Same as above, but also returns the exit status of the process,
-   --  as set for example by the procedure GNAT.OS_Lib.OS_Exit.
+   --  Same as above, but also returns the exit status of the process, as set
+   --  for example by the procedure GNAT.OS_Lib.OS_Exit.
 
    procedure Send_Signal
      (Descriptor : Process_Descriptor;
       Signal     : Integer);
-   --  Send a given signal to the process
+   --  Send a given signal to the process. Raise Invalid_Process if the process
+   --  id is invalid.
 
    procedure Interrupt (Descriptor : in out Process_Descriptor);
    --  Interrupt the process (the equivalent of Ctrl-C on unix and windows)
    --  and call close if the process dies.
 
    function Get_Input_Fd
-     (Descriptor : Process_Descriptor)
-      return       GNAT.OS_Lib.File_Descriptor;
+     (Descriptor : Process_Descriptor) return GNAT.OS_Lib.File_Descriptor;
    --  Return the input file descriptor associated with Descriptor
 
    function Get_Output_Fd
-     (Descriptor : Process_Descriptor)
-      return       GNAT.OS_Lib.File_Descriptor;
+     (Descriptor : Process_Descriptor) return GNAT.OS_Lib.File_Descriptor;
    --  Return the output file descriptor associated with Descriptor
 
    function Get_Error_Fd
-     (Descriptor : Process_Descriptor)
-      return       GNAT.OS_Lib.File_Descriptor;
+     (Descriptor : Process_Descriptor) return GNAT.OS_Lib.File_Descriptor;
    --  Return the error output file descriptor associated with Descriptor
 
    function Get_Pid
-     (Descriptor : Process_Descriptor)
-      return       Process_Id;
+     (Descriptor : Process_Descriptor) return Process_Id;
    --  Return the process id assocated with a given process descriptor
 
    function Get_Command_Output
@@ -403,7 +401,7 @@ package GNAT.Expect is
 
    type Regexp_Array is array (Positive range <>) of GNAT.OS_Lib.String_Access;
 
-   type Pattern_Matcher_Access is access GNAT.Regpat.Pattern_Matcher;
+   type Pattern_Matcher_Access is access all GNAT.Regpat.Pattern_Matcher;
    type Compiled_Regexp_Array is array (Positive range <>)
      of Pattern_Matcher_Access;
 
