@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2005 AdaCore                      --
+--                     Copyright (C) 1998-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -133,7 +133,7 @@ package GNAT.Threads is
    --  extern void __gnat_get_thread (void *id, pthread_t *thread);
 
    function To_Task_Id
-     (Id   : System.Address)
+     (Id : System.Address)
       return Ada.Task_Identification.Task_Id;
    --  Ada interface only.
    --  Given a low level Id, as returned by Create_Thread, return a Task_Id,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2006, AdaCore                     --
+--                     Copyright (C) 2001-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,11 +62,20 @@ package GNAT.Sockets.Thin is
 
    function Socket_Error_Message (Errno : Integer) return C.Strings.chars_ptr;
    --  Returns the error message string for the error number Errno. If Errno is
-   --  not known it returns "Unknown system error".
+   --  not known, returns "Unknown system error".
 
    function Host_Errno return Integer;
    pragma Import (C, Host_Errno, "__gnat_get_h_errno");
    --  Returns last host error number
+
+   package Host_Error_Messages is
+
+      function Host_Error_Message
+        (H_Errno : Integer) return C.Strings.chars_ptr;
+      --  Returns the error message string for the host error number H_Errno.
+      --  If H_Errno is not known, returns "Unknown system error".
+
+   end Host_Error_Messages;
 
    subtype Fd_Set_Access is System.Address;
    No_Fd_Set : constant Fd_Set_Access := System.Null_Address;
@@ -109,8 +118,11 @@ package GNAT.Sockets.Thin is
    type In_Addr is record
       S_B1, S_B2, S_B3, S_B4 : C.unsigned_char;
    end record;
+   for In_Addr'Alignment use C.int'Alignment;
    pragma Convention (C, In_Addr);
-   --  Internet address
+   --  IPv4 address, represented as a network-order C.int. Note that the
+   --  underlying operating system may assume that values of this type have
+   --  C.int alignment, so we need to provide a suitable alignment clause here.
 
    type In_Addr_Access is access all In_Addr;
    pragma Convention (C, In_Addr_Access);
@@ -217,6 +229,10 @@ package GNAT.Sockets.Thin is
    --  Indices into an Fd_Pair value providing access to each of the connected
    --  file descriptors.
 
+   --------------------------------
+   -- Standard library functions --
+   --------------------------------
+
    function C_Accept
      (S       : C.int;
       Addr    : System.Address;
@@ -235,14 +251,6 @@ package GNAT.Sockets.Thin is
       Name    : System.Address;
       Namelen : C.int) return C.int;
 
-   function C_Gethostbyaddr
-     (Addr : System.Address;
-      Len  : C.int;
-      Typ  : C.int) return Hostent_Access;
-
-   function C_Gethostbyname
-     (Name : C.char_array) return Hostent_Access;
-
    function C_Gethostname
      (Name    : System.Address;
       Namelen : C.int) return C.int;
@@ -251,14 +259,6 @@ package GNAT.Sockets.Thin is
      (S       : C.int;
       Name    : System.Address;
       Namelen : not null access C.int) return C.int;
-
-   function C_Getservbyname
-     (Name  : C.char_array;
-      Proto : C.char_array) return Servent_Access;
-
-   function C_Getservbyport
-     (Port  : C.int;
-      Proto : C.char_array) return Servent_Access;
 
    function C_Getsockname
      (S       : C.int;
@@ -355,6 +355,10 @@ package GNAT.Sockets.Thin is
      (WS_Version     : Interfaces.C.int;
       WSADataAddress : System.Address) return Interfaces.C.int;
 
+   -------------------------------------------------------
+   -- Signalling file descriptors for selector abortion --
+   -------------------------------------------------------
+
    package Signalling_Fds is
 
       function Create (Fds : not null access Fd_Pair) return C.int;
@@ -372,7 +376,15 @@ package GNAT.Sockets.Thin is
       --  Write one byte of data to wsig, the write end of a pair of signalling
       --  fds created by Create_Signalling_Fds.
 
+      procedure Close (Sig : C.int);
+      pragma Convention (C, Close);
+      --  Close one end of a pair of signalling fds (ignoring any error)
+
    end Signalling_Fds;
+
+   ----------------------------
+   -- Socket sets management --
+   ----------------------------
 
    procedure Free_Socket_Set
      (Set : Fd_Set_Access);
@@ -382,11 +394,11 @@ package GNAT.Sockets.Thin is
      (Set    : Fd_Set_Access;
       Socket : Int_Access;
       Last   : Int_Access);
-   --  Get last socket in Socket and remove it from the socket
-   --  set. The parameter Last is a maximum value of the largest
-   --  socket. This hint is used to avoid scanning very large socket
-   --  sets. After a call to Get_Socket_From_Set, Last is set back to
-   --  the real largest socket in the socket set.
+   --  Get last socket in Socket and remove it from the socket set. The
+   --  parameter Last is a maximum value of the largest socket. This hint is
+   --  used to avoid scanning very large socket sets. After a call to
+   --  Get_Socket_From_Set, Last is set back to the real largest socket in the
+   --  socket set.
 
    procedure Insert_Socket_In_Set
      (Set    : Fd_Set_Access;
@@ -421,21 +433,18 @@ package GNAT.Sockets.Thin is
 
    procedure WSACleanup;
 
+   procedure Initialize;
    procedure Finalize;
-   procedure Initialize (Process_Blocking_IO : Boolean);
 
 private
    pragma Import (Stdcall, C_Accept, "accept");
    pragma Import (Stdcall, C_Bind, "bind");
    pragma Import (Stdcall, C_Close, "closesocket");
-   pragma Import (Stdcall, C_Gethostbyaddr, "gethostbyaddr");
-   pragma Import (Stdcall, C_Gethostbyname, "gethostbyname");
    pragma Import (Stdcall, C_Gethostname, "gethostname");
    pragma Import (Stdcall, C_Getpeername, "getpeername");
-   pragma Import (Stdcall, C_Getservbyname, "getservbyname");
-   pragma Import (Stdcall, C_Getservbyport, "getservbyport");
    pragma Import (Stdcall, C_Getsockname, "getsockname");
    pragma Import (Stdcall, C_Getsockopt, "getsockopt");
+   pragma Import (Stdcall, C_Inet_Addr, "inet_addr");
    pragma Import (Stdcall, C_Ioctl, "ioctlsocket");
    pragma Import (Stdcall, C_Listen, "listen");
    pragma Import (Stdcall, C_Recv, "recv");
