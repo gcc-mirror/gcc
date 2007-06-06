@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -51,6 +51,11 @@ extern bool must_pass_by_ref (tree gnu_type);
 /* Initialize DUMMY_NODE_TABLE.  */
 extern void init_dummy_type (void);
 
+/* Given GNAT_ENTITY, an entity in the incoming GNAT tree, return a
+   GCC type corresponding to that entity.  GNAT_ENTITY is assumed to
+   refer to an Ada type.  */
+extern tree gnat_to_gnu_type (Entity_Id gnat_entity);
+
 /* Given GNAT_ENTITY, a GNAT defining identifier node, which denotes some Ada
    entity, this routine returns the equivalent GCC tree for that entity
    (an ..._DECL node) and associates the ..._DECL node with the input GNAT
@@ -73,10 +78,11 @@ extern tree gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr,
    FIELD_DECL.  */
 extern tree gnat_to_gnu_field_decl (Entity_Id gnat_entity);
 
-/* Given GNAT_ENTITY, an entity in the incoming GNAT tree, return a
-   GCC type corresponding to that entity.  GNAT_ENTITY is assumed to
-   refer to an Ada type.  */
-extern tree gnat_to_gnu_type (Entity_Id gnat_entity);
+/* Wrap up compilation of T, a TYPE_DECL, possibly deferring it.  */
+extern void rest_of_type_decl_compilation (tree t);
+
+/* Start a new statement group chained to the previous group.  */
+extern void start_stmt_group (void);
 
 /* Add GNU_STMT to the current BLOCK_STMT node.  */
 extern void add_stmt (tree gnu_stmt);
@@ -84,12 +90,29 @@ extern void add_stmt (tree gnu_stmt);
 /* Similar, but set the location of GNU_STMT to that of GNAT_NODE.  */
 extern void add_stmt_with_node (tree gnu_stmt, Node_Id gnat_node);
 
+/* Return code corresponding to the current code group.  It is normally
+   a STATEMENT_LIST, but may also be a BIND_EXPR or TRY_FINALLY_EXPR if
+   BLOCK or cleanups were set.  */
+extern tree end_stmt_group (void);
+
 /* Set the BLOCK node corresponding to the current code group to GNU_BLOCK.  */
 extern void set_block_for_group (tree);
 
 /* Add a declaration statement for GNU_DECL to the current BLOCK_STMT node.
    Get SLOC from GNAT_ENTITY.  */
 extern void add_decl_expr (tree gnu_decl, Entity_Id gnat_entity);
+
+/* Finalize any From_With_Type incomplete types.  We do this after processing
+   our compilation unit and after processing its spec, if this is a body.  */
+extern void finalize_from_with_types (void);
+
+/* Return the equivalent type to be used for GNAT_ENTITY, if it's a
+   kind of type (such E_Task_Type) that has a different type which Gigi
+   uses for its representation.  If the type does not have a special type
+   for its representation, return GNAT_ENTITY.  If a type is supposed to
+   exist, but does not, abort unless annotating types, in which case
+   return Empty.   If GNAT_ENTITY is Empty, return Empty.  */
+extern Entity_Id Gigi_Equivalent_Type (Entity_Id);
 
 /* Given GNAT_ENTITY, elaborate all expressions that are required to
    be elaborated at the point of its definition, but do nothing else.  */
@@ -108,9 +131,12 @@ extern tree get_unpadded_type (Entity_Id gnat_entity);
 /* Called when we need to protect a variable object using a save_expr.  */
 extern tree maybe_variable (tree gnu_operand);
 
-/* Create a record type that contains a field of TYPE with a starting bit
-   position so that it is aligned to ALIGN bits and is SIZE bytes long.  */
-extern tree make_aligning_type (tree type, int align, tree size);
+/* Create a record type that contains a SIZE bytes long field of TYPE with a
+    starting bit position so that it is aligned to ALIGN bits, and leaving at
+    least ROOM bytes free before the field.  BASE_ALIGN is the alignment the
+    record is guaranteed to get.  */
+extern tree make_aligning_type (tree type, unsigned int align, tree size,
+				unsigned int base_align, int room);
 
 /* Ensure that TYPE has SIZE and ALIGN.  Make and return a new padded type
    if needed.  We have already verified that SIZE and TYPE are large enough.
@@ -244,26 +270,19 @@ extern tree protect_multiple_eval (tree exp);
    binary and unary operations.  */
 extern void init_code_table (void);
 
+/* Return a label to branch to for the exception type in KIND or NULL_TREE
+   if none.  */
+extern tree get_exception_label (char);
+
 /* Current node being treated, in case gigi_abort or Check_Elaboration_Code
    called.  */
 extern Node_Id error_gnat_node;
 
-/* This is equivalent to stabilize_reference in GCC's tree.c, but we know how
-   to handle our new nodes and we take extra arguments.
-
-   FORCE says whether to force evaluation of everything,
-
-   SUCCESS we set to true unless we walk through something we don't
-   know how to stabilize, or through something which is not an lvalue
-   and LVALUES_ONLY is true, in which cases we set to false.  */
-extern tree maybe_stabilize_reference (tree ref, bool force, bool lvalues_only,
-				       bool *success);
-
-/* Wrapper around maybe_stabilize_reference, for common uses without
-   lvalue restrictions and without need to examine the success
-   indication.  */
-
-extern tree gnat_stabilize_reference (tree ref, bool force);
+/* This is equivalent to stabilize_reference in tree.c, but we know how to
+   handle our own nodes and we take extra arguments.  FORCE says whether to
+   force evaluation of everything.  We set SUCCESS to true unless we walk
+   through something we don't know how to stabilize.  */
+extern tree maybe_stabilize_reference (tree ref, bool force, bool *success);
 
 /* Highest number in the front-end node table.  */
 extern int max_gnat_nodes;
@@ -483,17 +502,23 @@ extern bool present_gnu_tree (Entity_Id gnat_entity);
 /* Initialize tables for above routines.  */
 extern void init_gnat_to_gnu (void);
 
-/* Given a record type (RECORD_TYPE) and a chain of FIELD_DECL
-   nodes (FIELDLIST), finish constructing the record or union type.
-   If HAS_REP is true, this record has a rep clause; don't call
-   layout_type but merely set the size and alignment ourselves.
-   If DEFER_DEBUG is true, do not call the debugging routines
-   on this type; it will be done later. */
+/* Given a record type RECORD_TYPE and a chain of FIELD_DECL nodes FIELDLIST,
+   finish constructing the record or union type.  If REP_LEVEL is zero, this
+   record has no representation clause and so will be entirely laid out here.
+   If REP_LEVEL is one, this record has a representation clause and has been
+   laid out already; only set the sizes and alignment.  If REP_LEVEL is two,
+   this record is derived from a parent record and thus inherits its layout;
+   only make a pass on the fields to finalize them.  If DO_NOT_FINALIZE is
+   true, the record type is expected to be modified afterwards so it will
+   not be sent to the back-end for finalization.  */
 extern void finish_record_type (tree record_type, tree fieldlist,
-                                bool has_rep, bool defer_debug);
+                                int rep_level, bool do_not_finalize);
 
-/*  Output the debug information associated to a record type.  */
-extern void write_record_type_debug_info (tree);
+/* Wrap up compilation of RECORD_TYPE, i.e. most notably output all
+   the debug information associated with it.  It need not be invoked
+   directly in most cases since finish_record_type takes care of doing
+   so, unless explicitly requested not to through DO_NOT_FINALIZE.  */
+extern void rest_of_record_type_compilation (tree record_type);
 
 /* Returns a FUNCTION_TYPE node. RETURN_TYPE is the type returned by the
    subprogram. If it is void_type_node, then we are dealing with a procedure,
@@ -515,8 +540,10 @@ extern tree create_subprog_type (tree return_type, tree param_decl_list,
 extern tree copy_type (tree type);
 
 /* Return an INTEGER_TYPE of SIZETYPE with range MIN to MAX and whose
-   TYPE_INDEX_TYPE is INDEX.  */
-extern tree create_index_type (tree min, tree max, tree index);
+   TYPE_INDEX_TYPE is INDEX.  GNAT_NODE is used for the position of
+   the decl.  */
+extern tree create_index_type (tree min, tree max, tree index,
+			       Node_Id gnat_node);
 
 /* Return a TYPE_DECL node. TYPE_NAME gives the name of the type (a character
    string) and TYPE is a ..._TYPE node giving its data type.
@@ -623,9 +650,12 @@ extern tree build_template (tree template_type, tree array_type, tree expr);
    a constructor is made for the type.  GNAT_ENTITY is a gnat node used
    to print out an error message if the mechanism cannot be applied to
    an object of that type and also for the name.  */
-
 extern tree build_vms_descriptor (tree type, Mechanism_Type mech,
                                   Entity_Id gnat_entity);
+
+/* Build a stub for the subprogram specified by the GCC tree GNU_SUBPROG
+   and the GNAT node GNAT_SUBPROG.  */
+extern void build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog);
 
 /* Build a type to be used to represent an aliased object whose nominal
    type is an unconstrained array.  This consists of a RECORD_TYPE containing
@@ -640,6 +670,10 @@ extern tree build_unc_object_type (tree template_type, tree object_type,
    instead of the template type. */
 extern tree build_unc_object_type_from_ptr (tree thin_fat_ptr_type,
 					    tree object_type, tree name);
+
+/* Shift the component offsets within an unconstrained object TYPE to make it
+   suitable for use as a designated type for thin pointers.  */
+extern void shift_unc_components_for_thin_pointers (tree type);
 
 /* Update anything previously pointing to OLD_TYPE to point to NEW_TYPE.  In
    the normal case this is just two adjustments, but we have more to do
@@ -731,8 +765,11 @@ extern tree build_call_0_expr (tree fundecl);
 
    GNAT_NODE is the gnat node conveying the source location for which the
    error should be signaled, or Empty in which case the error is signaled on
-   the current ref_file_name/input_line.  */
-extern tree build_call_raise (int msg, Node_Id gnat_node);
+   the current ref_file_name/input_line.
+
+   KIND says which kind of exception this is for
+    (N_Raise_{Constraint,Storage,Program}_Error).  */
+extern tree build_call_raise (int msg, Node_Id gnat_node, char kind);
 
 /* Return a CONSTRUCTOR of TYPE whose list is LIST.  This is not the
    same as build_constructor in the language-independent tree.c.  */
