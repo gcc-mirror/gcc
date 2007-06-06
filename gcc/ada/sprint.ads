@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,6 +44,8 @@ package Sprint is
    --  purely for the purposes of this printout (they are not recognized by the
    --  parser)
 
+   --  Could use more documentation for all of these ???
+
    --    Allocator                           new xxx [storage_pool = xxx]
    --    Cleanup action                      at end procedure name;
    --    Conditional expression              (if expr then expr else expr)
@@ -75,6 +77,7 @@ package Sprint is
    --    Rem wi Treat_Fixed_As_Integer       x #rem y
    --    Reference                           expression'reference
    --    Shift nodes                         shift_name!(expr, count)
+   --    Static declaration                  name : static xxx
    --    Subprogram_Info                     subprog'Subprogram_Info
    --    Unchecked conversion                target_type!(source_expression)
    --    Unchecked expression                `(expression)
@@ -136,19 +139,20 @@ package Sprint is
    --  Same as normal Sprint_Node procedure, except that one leading
    --  blank is output before the node if it is non-empty.
 
-   procedure pg (Node : Node_Id);
+   procedure pg (Arg : Union_Id);
    pragma Export (Ada, pg);
-   --  Print generated source for node N (like -gnatdg output). This is
-   --  intended only for use from gdb for debugging purposes.
+   --  Print generated source for argument N (like -gnatdg output). Intended
+   --  only for use from gdb for debugging purposes. Currently, Arg may be a
+   --  List_Id or a Node_Id (anything else outputs a blank line).
 
-   procedure po (Node : Node_Id);
+   procedure po (Arg : Union_Id);
    pragma Export (Ada, po);
-   --  Print original source for node N (like -gnatdo output). This is
-   --  intended only for use from gdb for debugging purposes.
+   --  Like pg, but prints original source for the argument (like -gnatdo
+   --  output). Intended only for use from gdb for debugging purposes.
 
-   procedure ps (Node : Node_Id);
+   procedure ps (Arg : Union_Id);
    pragma Export (Ada, ps);
-   --  Print generated and original source for node N (like -gnatds output).
-   --  This is intended only for use from gdb for debugging purposes.
+   --  Like pg, but prints generated and original source for the argument (like
+   --  -gnatds output). Intended only for use from gdb for debugging purposes.
 
 end Sprint;
