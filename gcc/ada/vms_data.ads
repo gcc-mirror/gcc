@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1412,6 +1412,19 @@ package VMS_Data is
    --   /VERBOSE), then error lines start with the full path name of the
    --   project file, rather than its simple file name.
 
+   S_GCC_GNAT    : aliased constant S := "/GNAT_INTERNAL "                 &
+                                            "-gnatg";
+   --        /NOGNAT_INTERNAL (D)
+   --        /GNAT_INTERNAL
+   --
+   --        Internal GNAT implementation mode. This should not be used for
+   --        applications programs, it is intended only for use by the compiler
+   --        and its run-time library. For documentation, see the GNAT sources.
+   --        Note that it implies /WARNINGS=ALL,ERRORS and /STYLE_CHECKS=GNAT
+   --        so that all standard warnings and all standard style options are
+   --        turned on. All warnings and style error messages are treated as
+   --        errors.
+
    S_GCC_Help    : aliased constant S := "/HELP "                          &
                                             "-gnath";
    --        /NOHELP (D)
@@ -1733,6 +1746,8 @@ package VMS_Data is
                                                "-O0,!-O1,!-O2,!-O3 "       &
                                             "SOME "                        &
                                                "-O1,!-O0,!-O2,!-O3 "       &
+                                            "SPACE "                       &
+                                               "-Os,!-O0,!-O1,!-O2,!-O3 "  &
                                             "DEVELOPMENT "                 &
                                                "-O1,!-O0,!-O2,!-O3 "       &
                                             "UNROLL_LOOPS "                &
@@ -1754,6 +1769,8 @@ package VMS_Data is
    --
    --      SOME          Perform some optimizations, but omit ones that
    --                    are costly in compilation time.
+   --
+   --      SPACE         Optimize space usage
    --
    --      DEVELOPMENT   Same as SOME.
    --
@@ -1974,7 +1991,7 @@ package VMS_Data is
                                             "VTABS "                       &
                                                "-gnatyf "                  &
                                             "GNAT "                        &
-                                               "-gnatg "                   &
+                                               "-gnatyg "                  &
                                             "HTABS "                       &
                                                "-gnatyh "                  &
                                             "IF_THEN "                     &
@@ -2103,20 +2120,10 @@ package VMS_Data is
    --                           named loops, are required to be present.
    --
    --      GNAT                 Enforces a set of style conventions that
-   --                           correspond to the style used in the GNAT
-   --                           source code.  All compiler units are always
-   --                           compile with this keyword specified.
-   --
-   --                           You can find the full documentation for the
-   --                           style conventions imposed by this keyword
-   --                           in the body of the package "Style" in the
-   --                           compiler sources.
-   --
-   --                           You should not normally use this keyword.
-   --                           However, you MUST use it for compiling any
-   --                           language-defined unit, or for adding children
-   --                           to any language-defined unit other than
-   --                           "Standard".
+   --                           match the style used in the GNAT source code.
+   --                           This maybe useful when developing code that
+   --                           is eventually intended to be incorporated into
+   --                           GNAT. For further details, see GNAT sources.
    --
    --      HTABS                No horizontal tabs.
    --                           Horizontal tab characters are not permitted in
@@ -2547,6 +2554,10 @@ package VMS_Data is
                                                "-gnatwc "                  &
                                             "NOCONDITIONALS "              &
                                                "-gnatwC "                  &
+                                            "MISSING_COMPONENT_CLAUSES "   &
+                                               "-gnatw.c "                 &
+                                            "NOMISSING_COMPONENT_CLAUSES " &
+                                               "-gnatw.C "                 &
                                             "CONSTANT_VARIABLES "          &
                                                "-gnatwk "                  &
                                             "NOCONSTANT_VARIABLES "        &
@@ -2631,6 +2642,10 @@ package VMS_Data is
                                                "-gnatwx "                  &
                                             "NOIMPORT_EXPORT_PRAGMAS "     &
                                                "-gnatwX "                  &
+                                            "LOCAL_RAISE_HANDLING "        &
+                                               "-gnatw.x "                 &
+                                            "NOLOCAL_RAISE_HANDLING "      &
+                                               "-gnatw.X "                 &
                                             "ADA_2005_COMPATIBILITY "      &
                                                "-gnatwy "                  &
                                             "NOADA_2005_COMPATIBILITY "    &
@@ -2752,6 +2767,15 @@ package VMS_Data is
    --                           Inlines. If the inlining mechanism cannot
    --                           inline a call, it will simply ignore the
    --                           request silently.
+   --
+   --   MISSING_COMPONENT_CLAUSES
+   --                           Activate warnings for cases when there are
+   --                           component clauses for a record type, but not
+   --                           for every component of the record.
+   --
+   --   NOMISSING_COMPONENT_CLAUSES
+   --                           Suppress warnings for cases when there are
+   --                           missing component clauses for a record type.
    --
    --   MISSING_PARENS
    --                           Activate warnings for cases where parentheses
@@ -3057,6 +3081,7 @@ package VMS_Data is
       S_GCC_File    'Access,
       S_GCC_Force   'Access,
       S_GCC_Full    'Access,
+      S_GCC_GNAT    'Access,
       S_GCC_Help    'Access,
       S_GCC_Ident   'Access,
       S_GCC_IdentX  'Access,
@@ -3660,6 +3685,15 @@ package VMS_Data is
    --   Consider all units, including those of the predefined Ada library.
    --   Especially useful with /DEPENDENCIES.
 
+   S_List_Allproj : aliased constant S := "/ALL_PROJECTS "                 &
+                                            "-U";
+   --        /NOALL_PROJECTS (D)
+   --        /ALL_PROJECTS
+   --
+   --   When used with a project file and no file specified, indicate
+   --   that gnatls should be called for all sources of all projects in
+   --   the project tree.
+
    S_List_Current : aliased constant S := "/CURRENT_DIRECTORY "            &
                                             "!-I-";
    --        /CURRENT_DIRECTORY (D)
@@ -3776,6 +3810,7 @@ package VMS_Data is
 
    List_Switches : aliased constant Switches :=
      (S_List_All     'Access,
+      S_List_Allproj 'Access,
       S_List_Current 'Access,
       S_List_Depend  'Access,
       S_List_Ext     'Access,
@@ -5013,32 +5048,36 @@ package VMS_Data is
    S_Pretty_Encoding  : aliased constant S := "/RESULT_ENCODING="          &
                                               "BRACKETS "                  &
                                                  "-Wb "                    &
-                                              "HEX_ESC "                   &
+                                              "HEX "                       &
                                                  "-Wh "                    &
-                                              "UPPER_HALF "                &
+                                              "UPPER "                     &
                                                  "-Wu "                    &
                                               "SHIFT_JIS "                 &
                                                  "-Ws "                    &
                                               "EUC "                       &
                                                  "-We "                    &
-                                              "UTF_8 "                     &
+                                              "UTF8 "                      &
                                                  "-W8";
-   --        /RESULT_ENCODING[=encoding-option]
+   --        /RESULT_ENCODING[=encoding-type]
    --
-   --   Specify the wide character encoding of the result file.
-   --   '=encoding-option' may be one of:
+   --   Specify the wide character encoding method used when writtimg the
+   --   reformatted code in the result file. 'encoding-type' is one of the
+   --   following:
    --
    --      BRACKETS (D)      Brackets encoding.
    --
-   --      HEX_ESC           Hex ESC encoding.
+   --      HEX               Hex ESC encoding.
    --
-   --      UPPER_HALF        Upper half encoding.
+   --      UPPER             Upper half encoding.
    --
    --      SHIFT_JIS         Shift-JIS encoding.
    --
    --      EUC               EUC Encoding.
    --
-   --      UTF_8             UTF-8 encoding.
+   --      UTF8              UTF-8 encoding.
+   --
+   --   See 'HELP GNAT COMPILE /WIDE_CHARACTER_ENCODING' for an explanation
+   --   about the different character encoding methods.
 
    S_Pretty_Files     : aliased constant S := "/FILES=@"                   &
                                                  "-files=@";

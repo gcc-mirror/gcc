@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1474,9 +1474,9 @@ package body VMS_Conv is
             then
                Opt.Keep_Temporary_Files := True;
 
-            --  Copy -switch unchanged
+            --  Copy -switch unchanged, as well as +rule
 
-            elsif Arg (Arg'First) = '-' then
+            elsif Arg (Arg'First) = '-' or else Arg (Arg'First) = '+' then
                Place (' ');
                Place (Arg.all);
 
