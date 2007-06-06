@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,7 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Itypes;   use Itypes;
+with Lib;      use Lib;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Namet;    use Namet;
@@ -46,309 +47,26 @@ with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
+with Sem_Ch6;  use Sem_Ch6;
+with Sem_Ch8;  use Sem_Ch8;
 with Sem_Disp; use Sem_Disp;
+with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
+with Stringt;  use Stringt;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
 package body Exp_Disp is
 
-   --------------------------------
-   -- Select_Expansion_Utilities --
-   --------------------------------
-
-   --  The following package contains helper routines used in the expansion of
-   --  dispatching asynchronous, conditional and timed selects.
-
-   package Select_Expansion_Utilities is
-      procedure Build_B
-        (Loc    : Source_Ptr;
-         Params : List_Id);
-      --  Generate:
-      --    B : out Communication_Block
-
-      procedure Build_C
-        (Loc    : Source_Ptr;
-         Params : List_Id);
-      --  Generate:
-      --    C : out Prim_Op_Kind
-
-      procedure Build_Common_Dispatching_Select_Statements
-        (Loc    : Source_Ptr;
-         Typ    : Entity_Id;
-         DT_Ptr : Entity_Id;
-         Stmts  : List_Id);
-      --  Ada 2005 (AI-345): Generate statements that are common between
-      --  asynchronous, conditional and timed select expansion.
-
-      procedure Build_F
-        (Loc    : Source_Ptr;
-         Params : List_Id);
-      --  Generate:
-      --    F : out Boolean
-
-      procedure Build_P
-        (Loc    : Source_Ptr;
-         Params : List_Id);
-      --  Generate:
-      --    P : Address
-
-      procedure Build_S
-        (Loc    : Source_Ptr;
-         Params : List_Id);
-      --  Generate:
-      --    S : Integer
-
-      procedure Build_T
-        (Loc    : Source_Ptr;
-         Typ    : Entity_Id;
-         Params : List_Id);
-      --  Generate:
-      --    T : in out Typ
-   end Select_Expansion_Utilities;
-
-   package body Select_Expansion_Utilities is
-
-      -------------
-      -- Build_B --
-      -------------
-
-      procedure Build_B
-        (Loc    : Source_Ptr;
-         Params : List_Id)
-      is
-      begin
-         Append_To (Params,
-           Make_Parameter_Specification (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Name_uB),
-             Parameter_Type =>
-               New_Reference_To (RTE (RE_Communication_Block), Loc),
-             Out_Present => True));
-      end Build_B;
-
-      -------------
-      -- Build_C --
-      -------------
-
-      procedure Build_C
-        (Loc    : Source_Ptr;
-         Params : List_Id)
-      is
-      begin
-         Append_To (Params,
-           Make_Parameter_Specification (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Name_uC),
-             Parameter_Type =>
-               New_Reference_To (RTE (RE_Prim_Op_Kind), Loc),
-             Out_Present => True));
-      end Build_C;
-
-      ------------------------------------------------
-      -- Build_Common_Dispatching_Select_Statements --
-      ------------------------------------------------
-
-      procedure Build_Common_Dispatching_Select_Statements
-        (Loc    : Source_Ptr;
-         Typ    : Entity_Id;
-         DT_Ptr : Entity_Id;
-         Stmts  : List_Id)
-      is
-      begin
-         --  Generate:
-         --    C := get_prim_op_kind (tag! (<type>VP), S);
-
-         --  where C is the out parameter capturing the call kind and S is the
-         --  dispatch table slot number.
-
-         Append_To (Stmts,
-           Make_Assignment_Statement (Loc,
-             Name =>
-               Make_Identifier (Loc, Name_uC),
-             Expression =>
-               Make_DT_Access_Action (Typ,
-                 Action =>
-                   Get_Prim_Op_Kind,
-                 Args =>
-                   New_List (
-                     Unchecked_Convert_To (RTE (RE_Tag),
-                       New_Reference_To (DT_Ptr, Loc)),
-                     Make_Identifier (Loc, Name_uS)))));
-
-         --  Generate:
-
-         --    if C = POK_Procedure
-         --      or else C = POK_Protected_Procedure
-         --      or else C = POK_Task_Procedure;
-         --    then
-         --       F := True;
-         --       return;
-
-         --  where F is the out parameter capturing the status of a potential
-         --  entry call.
-
-         Append_To (Stmts,
-           Make_If_Statement (Loc,
-
-             Condition =>
-               Make_Or_Else (Loc,
-                 Left_Opnd =>
-                   Make_Op_Eq (Loc,
-                     Left_Opnd =>
-                       Make_Identifier (Loc, Name_uC),
-                     Right_Opnd =>
-                       New_Reference_To (RTE (RE_POK_Procedure), Loc)),
-                 Right_Opnd =>
-                   Make_Or_Else (Loc,
-                     Left_Opnd =>
-                       Make_Op_Eq (Loc,
-                         Left_Opnd =>
-                           Make_Identifier (Loc, Name_uC),
-                         Right_Opnd =>
-                           New_Reference_To (RTE (
-                             RE_POK_Protected_Procedure), Loc)),
-                     Right_Opnd =>
-                       Make_Op_Eq (Loc,
-                         Left_Opnd =>
-                           Make_Identifier (Loc, Name_uC),
-                         Right_Opnd =>
-                           New_Reference_To (RTE (
-                             RE_POK_Task_Procedure), Loc)))),
-
-             Then_Statements =>
-               New_List (
-                 Make_Assignment_Statement (Loc,
-                   Name       => Make_Identifier (Loc, Name_uF),
-                   Expression => New_Reference_To (Standard_True, Loc)),
-
-                 Make_Return_Statement (Loc))));
-      end Build_Common_Dispatching_Select_Statements;
-
-      -------------
-      -- Build_F --
-      -------------
-
-      procedure Build_F
-        (Loc    : Source_Ptr;
-         Params : List_Id)
-      is
-      begin
-         Append_To (Params,
-           Make_Parameter_Specification (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Name_uF),
-             Parameter_Type =>
-               New_Reference_To (Standard_Boolean, Loc),
-             Out_Present => True));
-      end Build_F;
-
-      -------------
-      -- Build_P --
-      -------------
-
-      procedure Build_P
-        (Loc    : Source_Ptr;
-         Params : List_Id)
-      is
-      begin
-         Append_To (Params,
-           Make_Parameter_Specification (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Name_uP),
-             Parameter_Type =>
-               New_Reference_To (RTE (RE_Address), Loc)));
-      end Build_P;
-
-      -------------
-      -- Build_S --
-      -------------
-
-      procedure Build_S
-        (Loc    : Source_Ptr;
-         Params : List_Id)
-      is
-      begin
-         Append_To (Params,
-           Make_Parameter_Specification (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Name_uS),
-             Parameter_Type =>
-               New_Reference_To (Standard_Integer, Loc)));
-      end Build_S;
-
-      -------------
-      -- Build_T --
-      -------------
-
-      procedure Build_T
-        (Loc    : Source_Ptr;
-         Typ    : Entity_Id;
-         Params : List_Id)
-      is
-      begin
-         Append_To (Params,
-           Make_Parameter_Specification (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Name_uT),
-             Parameter_Type =>
-               New_Reference_To (Typ, Loc),
-             In_Present  => True,
-             Out_Present => True));
-      end Build_T;
-   end Select_Expansion_Utilities;
-
-   package SEU renames Select_Expansion_Utilities;
-
-   Ada_Actions : constant array (DT_Access_Action) of RE_Id :=
-      (IW_Membership                  => RE_IW_Membership,
-       Get_Entry_Index                => RE_Get_Entry_Index,
-       Get_Prim_Op_Kind               => RE_Get_Prim_Op_Kind,
-       Get_Tagged_Kind                => RE_Get_Tagged_Kind,
-       Register_Interface_Tag         => RE_Register_Interface_Tag,
-       Register_Tag                   => RE_Register_Tag,
-       Set_Entry_Index                => RE_Set_Entry_Index,
-       Set_Offset_Index               => RE_Set_Offset_Index,
-       Set_OSD                        => RE_Set_OSD,
-       Set_Prim_Op_Kind               => RE_Set_Prim_Op_Kind,
-       Set_Signature                  => RE_Set_Signature,
-       Set_SSD                        => RE_Set_SSD,
-       Set_Tagged_Kind                => RE_Set_Tagged_Kind);
-
-   Action_Is_Proc : constant array (DT_Access_Action) of Boolean :=
-      (IW_Membership                  => False,
-       Get_Entry_Index                => False,
-       Get_Prim_Op_Kind               => False,
-       Get_Tagged_Kind                => False,
-       Register_Interface_Tag         => True,
-       Register_Tag                   => True,
-       Set_Entry_Index                => True,
-       Set_Offset_Index               => True,
-       Set_OSD                        => True,
-       Set_Prim_Op_Kind               => True,
-       Set_Signature                  => True,
-       Set_SSD                        => True,
-       Set_Tagged_Kind                => True);
-
-   Action_Nb_Arg : constant array (DT_Access_Action) of Int :=
-      (IW_Membership                  => 2,
-       Get_Entry_Index                => 2,
-       Get_Prim_Op_Kind               => 2,
-       Get_Tagged_Kind                => 1,
-       Register_Interface_Tag         => 3,
-       Register_Tag                   => 1,
-       Set_Entry_Index                => 3,
-       Set_Offset_Index               => 3,
-       Set_OSD                        => 2,
-       Set_Prim_Op_Kind               => 3,
-       Set_Signature                  => 2,
-       Set_SSD                        => 2,
-       Set_Tagged_Kind                => 2);
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
 
    function Default_Prim_Op_Position (E : Entity_Id) return Uint;
    --  Ada 2005 (AI-251): Returns the fixed position in the dispatch table
@@ -485,6 +203,11 @@ package body Exp_Disp is
    --  Start of processing for Expand_Dispatching_Call
 
    begin
+      if No_Run_Time_Mode then
+         Error_Msg_CRT ("tagged types", Call_Node);
+         return;
+      end if;
+
       --  Expand_Dispatching_Call is called directly from the semantics,
       --  so we need a check to see whether expansion is active before
       --  proceeding. In addition, there is no need to expand the call
@@ -527,11 +250,16 @@ package body Exp_Disp is
       then
          CW_Typ := Class_Wide_Type (Find_Dispatching_Type (Subp));
 
+      --  Class_Wide_Type is applied to the expressions used to initialize
+      --  CW_Typ, to ensure that CW_Typ always denotes a class-wide type, since
+      --  there are cases where the controlling type is resolved to a specific
+      --  type (such as for designated types of arguments such as CW'Access).
+
       elsif Is_Access_Type (Etype (Ctrl_Arg)) then
-         CW_Typ := Designated_Type (Etype (Ctrl_Arg));
+         CW_Typ := Class_Wide_Type (Designated_Type (Etype (Ctrl_Arg)));
 
       else
-         CW_Typ := Etype (Ctrl_Arg);
+         CW_Typ := Class_Wide_Type (Etype (Ctrl_Arg));
       end if;
 
       Typ := Root_Type (CW_Typ);
@@ -665,7 +393,7 @@ package body Exp_Disp is
       declare
          Old_Formal : Entity_Id := First_Formal (Subp);
          New_Formal : Entity_Id;
-         Extra      : Entity_Id;
+         Extra      : Entity_Id := Empty;
 
       begin
          if Present (Old_Formal) then
@@ -707,27 +435,16 @@ package body Exp_Disp is
 
             Set_Next_Entity (New_Formal, Empty);
             Set_Last_Entity (Subp_Typ, Extra);
-
-            --  Copy extra formals
-
-            New_Formal := First_Entity (Subp_Typ);
-            while Present (New_Formal) loop
-               if Present (Extra_Constrained (New_Formal)) then
-                  Set_Extra_Formal (Extra,
-                    New_Copy (Extra_Constrained (New_Formal)));
-                  Extra := Extra_Formal (Extra);
-                  Set_Extra_Constrained (New_Formal, Extra);
-
-               elsif Present (Extra_Accessibility (New_Formal)) then
-                  Set_Extra_Formal (Extra,
-                    New_Copy (Extra_Accessibility (New_Formal)));
-                  Extra := Extra_Formal (Extra);
-                  Set_Extra_Accessibility (New_Formal, Extra);
-               end if;
-
-               Next_Formal (New_Formal);
-            end loop;
          end if;
+
+         --  Now that the explicit formals have been duplicated, any extra
+         --  formals needed by the subprogram must be created.
+
+         if Present (Extra) then
+            Set_Extra_Formal (Extra, Empty);
+         end if;
+
+         Create_Extra_Formals (Subp_Typ);
       end;
 
       Set_Etype (Subp_Ptr_Typ, Subp_Ptr_Typ);
@@ -782,8 +499,7 @@ package body Exp_Disp is
            Unchecked_Convert_To (Subp_Ptr_Typ,
              Build_Get_Predefined_Prim_Op_Address (Loc,
                Tag_Node => Controlling_Tag,
-               Position_Node => Make_Integer_Literal (Loc,
-                                  DT_Position (Subp))));
+               Position => DT_Position (Subp)));
 
       --  Handle dispatching calls to user-defined primitives
 
@@ -791,70 +507,43 @@ package body Exp_Disp is
          New_Call_Name :=
            Unchecked_Convert_To (Subp_Ptr_Typ,
              Build_Get_Prim_Op_Address (Loc,
-               Tag_Node      => Controlling_Tag,
-               Position_Node => Make_Integer_Literal (Loc,
-                                  DT_Position (Subp))));
+               Typ      => Find_Dispatching_Type (Subp),
+               Tag_Node => Controlling_Tag,
+               Position => DT_Position (Subp)));
       end if;
 
       if Nkind (Call_Node) = N_Function_Call then
 
-         --  Ada 2005 (AI-251): A dispatching "=" with an abstract interface
-         --  just requires the comparison of the tags.
+         New_Call :=
+           Make_Function_Call (Loc,
+             Name => New_Call_Name,
+             Parameter_Associations => New_Params);
 
-         if Ekind (Etype (Ctrl_Arg)) = E_Class_Wide_Type
-           and then Is_Interface (Etype (Ctrl_Arg))
-           and then Subp = Eq_Prim_Op
-         then
+         --  If this is a dispatching "=", we must first compare the tags so
+         --  we generate: x.tag = y.tag and then x = y
+
+         if Subp = Eq_Prim_Op then
             Param := First_Actual (Call_Node);
-
             New_Call :=
-                Make_Op_Eq (Loc,
-                   Left_Opnd =>
-                     Make_Selected_Component (Loc,
-                       Prefix => New_Value (Param),
-                       Selector_Name =>
-                         New_Reference_To (First_Tag_Component (Typ), Loc)),
+              Make_And_Then (Loc,
+                Left_Opnd =>
+                     Make_Op_Eq (Loc,
+                       Left_Opnd =>
+                         Make_Selected_Component (Loc,
+                           Prefix => New_Value (Param),
+                           Selector_Name =>
+                             New_Reference_To (First_Tag_Component (Typ),
+                                               Loc)),
 
-                   Right_Opnd =>
-                     Make_Selected_Component (Loc,
-                       Prefix =>
-                         Unchecked_Convert_To (Typ,
-                           New_Value (Next_Actual (Param))),
-                       Selector_Name =>
-                         New_Reference_To (First_Tag_Component (Typ), Loc)));
-
-         else
-            New_Call :=
-              Make_Function_Call (Loc,
-                Name => New_Call_Name,
-                Parameter_Associations => New_Params);
-
-            --  If this is a dispatching "=", we must first compare the tags so
-            --  we generate: x.tag = y.tag and then x = y
-
-            if Subp = Eq_Prim_Op then
-               Param := First_Actual (Call_Node);
-               New_Call :=
-                 Make_And_Then (Loc,
-                   Left_Opnd =>
-                        Make_Op_Eq (Loc,
-                          Left_Opnd =>
-                            Make_Selected_Component (Loc,
-                              Prefix => New_Value (Param),
-                              Selector_Name =>
-                                New_Reference_To (First_Tag_Component (Typ),
-                                                  Loc)),
-
-                          Right_Opnd =>
-                            Make_Selected_Component (Loc,
-                              Prefix =>
-                                Unchecked_Convert_To (Typ,
-                                  New_Value (Next_Actual (Param))),
-                              Selector_Name =>
-                                New_Reference_To (First_Tag_Component (Typ),
-                                                  Loc))),
-                   Right_Opnd => New_Call);
-            end if;
+                       Right_Opnd =>
+                         Make_Selected_Component (Loc,
+                           Prefix =>
+                             Unchecked_Convert_To (Typ,
+                               New_Value (Next_Actual (Param))),
+                           Selector_Name =>
+                             New_Reference_To (First_Tag_Component (Typ),
+                                               Loc))),
+                Right_Opnd => New_Call);
          end if;
 
       else
@@ -865,7 +554,11 @@ package body Exp_Disp is
       end if;
 
       Rewrite (Call_Node, New_Call);
-      Analyze_And_Resolve (Call_Node, Call_Typ);
+
+      --  Suppress all checks during the analysis of the expanded code
+      --  to avoid the generation of spureous warnings under ZFP run-time.
+
+      Analyze_And_Resolve (Call_Node, Call_Typ, Suppress => All_Checks);
    end Expand_Dispatching_Call;
 
    ---------------------------------
@@ -885,10 +578,9 @@ package body Exp_Disp is
       Iface_Typ   : Entity_Id           := Etype (N);
       Iface_Tag   : Entity_Id;
       New_Itype   : Entity_Id;
+      Stats       : List_Id;
 
    begin
-      pragma Assert (Nkind (Operand) /= N_Attribute_Reference);
-
       --  Ada 2005 (AI-345): Handle synchronized interface type derivations
 
       if Is_Concurrent_Type (Operand_Typ) then
@@ -905,12 +597,21 @@ package body Exp_Disp is
       --  explicitly in the source code. Example: I'Class (Obj)
 
       if Is_Class_Wide_Type (Iface_Typ) then
-         Iface_Typ := Etype (Iface_Typ);
+         Iface_Typ := Root_Type (Iface_Typ);
       end if;
 
       pragma Assert (not Is_Static
         or else (not Is_Class_Wide_Type (Iface_Typ)
                   and then Is_Interface (Iface_Typ)));
+
+      if VM_Target /= No_VM then
+
+         --  For VM, just do a conversion ???
+
+         Rewrite (N, Unchecked_Convert_To (Etype (N), N));
+         Analyze (N);
+         return;
+      end if;
 
       if not Is_Static then
 
@@ -921,9 +622,9 @@ package body Exp_Disp is
             return;
          end if;
 
-         --  Handle conversion of access to class-wide interface types. The
-         --  target can be an access to object or an access to another class
-         --  wide interfac (see -1- and -2- in the following example):
+         --  Handle conversion of access-to-class-wide interface types. Target
+         --  can be an access to an object or an access to another class-wide
+         --  interface (see -1- and -2- in the following example):
 
          --     type Iface1_Ref is access all Iface1'Class;
          --     type Iface2_Ref is access all Iface1'Class;
@@ -934,9 +635,7 @@ package body Exp_Disp is
 
          if Is_Access_Type (Operand_Typ) then
             pragma Assert
-              (Is_Class_Wide_Type (Directly_Designated_Type (Operand_Typ))
-                 and then
-               Is_Interface (Directly_Designated_Type (Operand_Typ)));
+              (Is_Interface (Directly_Designated_Type (Operand_Typ)));
 
             Rewrite (N,
               Unchecked_Convert_To (Etype (N),
@@ -1019,7 +718,6 @@ package body Exp_Disp is
          --     end Func;
 
          Fent := Make_Defining_Identifier (Loc, New_Internal_Name ('F'));
-         Set_Is_Internal (Fent);
 
          declare
             Desig_Typ : Entity_Id;
@@ -1036,6 +734,36 @@ package body Exp_Disp is
             Init_Size_Align (New_Itype);
             Set_Directly_Designated_Type (New_Itype, Desig_Typ);
          end;
+
+         Stats := New_List (
+           Make_Return_Statement (Loc,
+             Unchecked_Convert_To (Etype (N),
+               Make_Attribute_Reference (Loc,
+                 Prefix =>
+                   Make_Selected_Component (Loc,
+                     Prefix => Unchecked_Convert_To (New_Itype,
+                                 Make_Identifier (Loc, Name_uO)),
+                     Selector_Name =>
+                       New_Occurrence_Of (Iface_Tag, Loc)),
+                 Attribute_Name => Name_Address))));
+
+         --  If the type is null-excluding, no need for the null branch.
+         --  Otherwise we need to check for it and return null.
+
+         if not Can_Never_Be_Null (Etype (N)) then
+            Stats := New_List (
+              Make_If_Statement (Loc,
+               Condition       =>
+                 Make_Op_Eq (Loc,
+                    Left_Opnd  => Make_Identifier (Loc, Name_uO),
+                    Right_Opnd => New_Reference_To
+                                    (RTE (RE_Null_Address), Loc)),
+
+              Then_Statements => New_List (
+                Make_Return_Statement (Loc,
+                  Make_Null (Loc))),
+              Else_Statements => Stats));
+         end if;
 
          Func :=
            Make_Subprogram_Body (Loc,
@@ -1056,36 +784,16 @@ package body Exp_Disp is
              Declarations => Empty_List,
 
              Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => New_List (
-                   Make_If_Statement (Loc,
-                     Condition       =>
-                       Make_Op_Eq (Loc,
-                          Left_Opnd  => Make_Identifier (Loc, Name_uO),
-                          Right_Opnd => New_Reference_To
-                                          (RTE (RE_Null_Address), Loc)),
+               Make_Handled_Sequence_Of_Statements (Loc, Stats));
 
-                     Then_Statements => New_List (
-                       Make_Return_Statement (Loc,
-                         Make_Null (Loc))),
+         --  Place function body before the expression containing the
+         --  conversion. We suppress all checks because the body of the
+         --  internally generated function already takes care of the case
+         --  in which the actual is null; therefore there is no need to
+         --  double check that the pointer is not null when the program
+         --  executes the alternative that performs the type conversion).
 
-                     Else_Statements => New_List (
-                       Make_Return_Statement (Loc,
-                         Unchecked_Convert_To (Etype (N),
-                           Make_Attribute_Reference (Loc,
-                             Prefix =>
-                               Make_Selected_Component (Loc,
-                                 Prefix => Unchecked_Convert_To (New_Itype,
-                                             Make_Identifier (Loc, Name_uO)),
-                                 Selector_Name =>
-                                   New_Occurrence_Of (Iface_Tag, Loc)),
-                             Attribute_Name => Name_Address))))))));
-
-         --  Place function body before the expression containing
-         --  the conversion
-
-         Insert_Action (N, Func);
-         Analyze (Func);
+         Insert_Action (N, Func, Suppress => All_Checks);
 
          if Is_Access_Type (Etype (Expression (N))) then
 
@@ -1155,14 +863,13 @@ package body Exp_Disp is
          Subp := Entity (Name (Call_Node));
       end if;
 
+      --  Ada 2005 (AI-251): Look for interface type formals to force "this"
+      --  displacement
+
       Formal := First_Formal (Subp);
       Actual := First_Actual (Call_Node);
       while Present (Formal) loop
-
-         --  Ada 2005 (AI-251): Conversion to interface to force "this"
-         --  displacement.
-
-         Formal_Typ := Etype (Etype (Formal));
+         Formal_Typ := Etype (Formal);
 
          if Ekind (Formal_Typ) = E_Record_Type_With_Private then
             Formal_Typ := Full_View (Formal_Typ);
@@ -1178,49 +885,42 @@ package body Exp_Disp is
             Actual_DDT := Directly_Designated_Type (Actual_Typ);
          end if;
 
-         if Is_Interface (Formal_Typ) then
-
+         if Is_Interface (Formal_Typ)
+           and then Is_Class_Wide_Type (Formal_Typ)
+         then
             --  No need to displace the pointer if the type of the actual
-            --  is class-wide of the formal-type interface; in this case the
-            --  displacement of the pointer was already done at the point of
-            --  the call to the enclosing subprogram. This case corresponds
-            --  with the call to P (Obj) in the following example:
+            --  coindices with the type of the formal.
 
-            --     type I is interface;
-            --     procedure P (X : I) is abstract;
-
-            --     procedure General_Op (Obj : I'Class) is
-            --     begin
-            --        P (Obj);
-            --     end General_Op;
-
-            if Is_Class_Wide_Type (Actual_Typ)
-              and then Etype (Actual_Typ) = Formal_Typ
-            then
+            if Actual_Typ = Formal_Typ then
                null;
 
-            --  No need to displace the pointer if the type of the actual is a
-            --  derivation of the formal-type interface because in this case
-            --  the interface primitives are located in the primary dispatch
-            --  table.
+            --  No need to displace the pointer if the interface type is
+            --  a parent of the type of the actual because in this case the
+            --  interface primitives are located in the primary dispatch table.
 
             elsif Is_Parent (Formal_Typ, Actual_Typ) then
                null;
 
+            --  Implicit conversion to the class-wide formal type to force
+            --  the displacement of the pointer.
+
             else
                Conversion := Convert_To (Formal_Typ, Relocate_Node (Actual));
-               Rewrite             (Actual, Conversion);
+               Rewrite (Actual, Conversion);
                Analyze_And_Resolve (Actual, Formal_Typ);
             end if;
 
-         --  Anonymous access type
+         --  Access to class-wide interface type
 
          elsif Is_Access_Type (Formal_Typ)
-           and then Is_Interface (Etype (Formal_DDT))
+           and then Is_Interface (Formal_DDT)
+           and then Is_Class_Wide_Type (Formal_DDT)
            and then Interface_Present_In_Ancestor
                       (Typ   => Actual_DDT,
                        Iface => Etype (Formal_DDT))
          then
+            --  Handle attributes 'Access and 'Unchecked_Access
+
             if Nkind (Actual) = N_Attribute_Reference
               and then
                (Attribute_Name (Actual) = Name_Access
@@ -1228,33 +928,26 @@ package body Exp_Disp is
             then
                Nam := Attribute_Name (Actual);
 
-               Conversion := Convert_To (Etype (Formal_DDT), Prefix (Actual));
-
+               Conversion := Convert_To (Formal_DDT, Prefix (Actual));
                Rewrite (Actual, Conversion);
-               Analyze_And_Resolve (Actual, Etype (Formal_DDT));
+               Analyze_And_Resolve (Actual, Formal_DDT);
 
                Rewrite (Actual,
                  Unchecked_Convert_To (Formal_Typ,
                    Make_Attribute_Reference (Loc,
                      Prefix => Relocate_Node (Actual),
                      Attribute_Name => Nam)));
-
                Analyze_And_Resolve (Actual, Formal_Typ);
 
-            --  No need to displace the pointer if the actual is a class-wide
-            --  type of the formal-type interface because in this case the
-            --  displacement of the pointer was already done at the point of
-            --  the call to the enclosing subprogram (this case is similar
-            --  to the example described above for the non access-type case)
+            --  No need to displace the pointer if the type of the actual
+            --  coincides with the type of the formal.
 
-            elsif Is_Class_Wide_Type (Actual_DDT)
-              and then Etype (Actual_DDT) = Formal_DDT
-            then
+            elsif Actual_DDT = Formal_DDT then
                null;
 
-            --  No need to displace the pointer if the type of the actual is a
-            --  derivation of the interface (because in this case the interface
-            --  primitives are located in the primary dispatch table)
+            --  No need to displace the pointer if the interface type is
+            --  a parent of the type of the actual because in this case the
+            --  interface primitives are located in the primary dispatch table.
 
             elsif Is_Parent (Formal_DDT, Actual_DDT) then
                null;
@@ -1320,24 +1013,35 @@ package body Exp_Disp is
    -- Expand_Interface_Thunk --
    ----------------------------
 
-   function Expand_Interface_Thunk
+   procedure Expand_Interface_Thunk
      (N           : Node_Id;
       Thunk_Alias : Entity_Id;
-      Thunk_Id    : Entity_Id) return Node_Id
+      Thunk_Id    : out Entity_Id;
+      Thunk_Code  : out Node_Id)
    is
-      Loc         : constant Source_Ptr := Sloc (N);
-      Actuals     : constant List_Id    := New_List;
-      Decl        : constant List_Id    := New_List;
-      Formals     : constant List_Id    := New_List;
-      Target      : Entity_Id;
-      New_Code    : Node_Id;
-      Formal      : Node_Id;
-      New_Formal  : Node_Id;
-      Decl_1      : Node_Id;
-      Decl_2      : Node_Id;
-      E           : Entity_Id;
+      Loc             : constant Source_Ptr := Sloc (N);
+      Actuals         : constant List_Id    := New_List;
+      Decl            : constant List_Id    := New_List;
+      Formals         : constant List_Id    := New_List;
+
+      Controlling_Typ : Entity_Id;
+      Decl_1          : Node_Id;
+      Decl_2          : Node_Id;
+      Formal          : Node_Id;
+      Target          : Entity_Id;
+      Target_Formal   : Entity_Id;
 
    begin
+      Thunk_Id   := Empty;
+      Thunk_Code := Empty;
+
+      --  Give message if configurable run-time and Offset_To_Top unavailable
+
+      if not RTE_Available (RE_Offset_To_Top) then
+         Error_Msg_CRT ("abstract interface types", N);
+         return;
+      end if;
+
       --  Traverse the list of alias to find the final target
 
       Target := Thunk_Alias;
@@ -1345,167 +1049,182 @@ package body Exp_Disp is
          Target := Alias (Target);
       end loop;
 
+      --  In case of primitives that are functions without formals and
+      --  a controlling result there is no need to build the thunk.
+
+      if not Present (First_Formal (Target)) then
+         pragma Assert (Ekind (Target) = E_Function
+           and then Has_Controlling_Result (Target));
+         return;
+      end if;
+
       --  Duplicate the formals
 
       Formal := First_Formal (Target);
-      E      := First_Formal (N);
       while Present (Formal) loop
-         New_Formal := Copy_Separate_Tree (Parent (Formal));
-
-         --  Propagate the parameter type to the copy. This is required to
-         --  properly handle the case in which the subprogram covering the
-         --  interface has been inherited:
-
-         --  Example:
-         --     type I is interface;
-         --     procedure P (X : I) is abstract;
-
-         --     type T is tagged null record;
-         --     procedure P (X : T);
-
-         --     type DT is new T and I with ...
-
-         Set_Parameter_Type (New_Formal, New_Reference_To (Etype (E), Loc));
-         Append_To (Formals, New_Formal);
+         Append_To (Formals,
+           Make_Parameter_Specification (Loc,
+             Defining_Identifier =>
+               Make_Defining_Identifier (Sloc (Formal),
+                 Chars => Chars (Formal)),
+             In_Present => In_Present (Parent (Formal)),
+             Out_Present => Out_Present (Parent (Formal)),
+             Parameter_Type =>
+               New_Reference_To (Etype (Formal), Loc),
+             Expression => New_Copy_Tree (Expression (Parent (Formal)))));
 
          Next_Formal (Formal);
-         Next_Formal (E);
       end loop;
-
-      --  Give message if configurable run-time and Offset_To_Top unavailable
-
-      if not RTE_Available (RE_Offset_To_Top) then
-         Error_Msg_CRT ("abstract interface types", N);
-         return Empty;
-      end if;
 
       if Ekind (First_Formal (Target)) = E_In_Parameter
         and then Ekind (Etype (First_Formal (Target)))
                   = E_Anonymous_Access_Type
       then
-         --  Generate:
-
-         --     type T is access all <<type of the first formal>>
-         --     S1 := Storage_Offset!(First_formal)
-         --           - Offset_To_Top (First_Formal.Tag)
-
-         --  ... and the first actual of the call is generated as T!(S1)
-
-         Decl_2 :=
-           Make_Full_Type_Declaration (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc,
-                 New_Internal_Name ('T')),
-             Type_Definition =>
-               Make_Access_To_Object_Definition (Loc,
-                 All_Present            => True,
-                 Null_Exclusion_Present => False,
-                 Constant_Present       => False,
-                 Subtype_Indication     =>
-                   New_Reference_To
-                     (Directly_Designated_Type
-                        (Etype (First_Formal (Target))), Loc)));
-
-         Decl_1 :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc,
-                 New_Internal_Name ('S')),
-             Constant_Present    => True,
-             Object_Definition   =>
-               New_Reference_To (RTE (RE_Storage_Offset), Loc),
-             Expression          =>
-               Make_Op_Subtract (Loc,
-                 Left_Opnd  =>
-                   Unchecked_Convert_To
-                     (RTE (RE_Storage_Offset),
-                      New_Reference_To
-                        (Defining_Identifier (First (Formals)), Loc)),
-                  Right_Opnd =>
-                    Make_Function_Call (Loc,
-                      Name => New_Reference_To (RTE (RE_Offset_To_Top), Loc),
-                      Parameter_Associations => New_List (
-                        Unchecked_Convert_To
-                          (RTE (RE_Address),
-                           New_Reference_To
-                             (Defining_Identifier (First (Formals)), Loc))))));
-
-         Append_To (Decl, Decl_2);
-         Append_To (Decl, Decl_1);
-
-         --  Reference the new first actual
-
-         Append_To (Actuals,
-           Unchecked_Convert_To
-             (Defining_Identifier (Decl_2),
-              New_Reference_To (Defining_Identifier (Decl_1), Loc)));
-
+         Controlling_Typ :=
+           Directly_Designated_Type (Etype (First_Formal (Target)));
       else
-         --  Generate:
-
-         --     S1 := Storage_Offset!(First_formal'Address)
-         --           - Offset_To_Top (First_Formal.Tag)
-         --     S2 := Tag_Ptr!(S3)
-
-         Decl_1 :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, New_Internal_Name ('S')),
-             Constant_Present    => True,
-             Object_Definition   =>
-               New_Reference_To (RTE (RE_Storage_Offset), Loc),
-             Expression          =>
-               Make_Op_Subtract (Loc,
-                 Left_Opnd =>
-                   Unchecked_Convert_To
-                     (RTE (RE_Storage_Offset),
-                      Make_Attribute_Reference (Loc,
-                        Prefix =>
-                          New_Reference_To
-                            (Defining_Identifier (First (Formals)), Loc),
-                        Attribute_Name => Name_Address)),
-                 Right_Opnd =>
-                    Make_Function_Call (Loc,
-                      Name => New_Reference_To (RTE (RE_Offset_To_Top), Loc),
-                      Parameter_Associations => New_List (
-                        Make_Attribute_Reference (Loc,
-                          Prefix => New_Reference_To
-                                      (Defining_Identifier (First (Formals)),
-                                       Loc),
-                          Attribute_Name => Name_Address)))));
-
-         Decl_2 :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, New_Internal_Name ('S')),
-             Constant_Present    => True,
-             Object_Definition   => New_Reference_To (RTE (RE_Addr_Ptr), Loc),
-             Expression          =>
-               Unchecked_Convert_To
-                 (RTE (RE_Addr_Ptr),
-                  New_Reference_To (Defining_Identifier (Decl_1), Loc)));
-
-         Append_To (Decl, Decl_1);
-         Append_To (Decl, Decl_2);
-
-         --  Reference the new first actual
-
-         Append_To (Actuals,
-           Unchecked_Convert_To
-             (Etype (First_Entity (Target)),
-              Make_Explicit_Dereference (Loc,
-                New_Reference_To (Defining_Identifier (Decl_2), Loc))));
+         Controlling_Typ := Etype (First_Formal (Target));
       end if;
 
-      Formal := Next (First (Formals));
+      Target_Formal := First_Formal (Target);
+      Formal        := First (Formals);
       while Present (Formal) loop
-         Append_To (Actuals,
-            New_Reference_To (Defining_Identifier (Formal), Loc));
+         if Ekind (Target_Formal) = E_In_Parameter
+           and then Ekind (Etype (Target_Formal)) = E_Anonymous_Access_Type
+           and then Directly_Designated_Type (Etype (Target_Formal))
+                     = Controlling_Typ
+         then
+            --  Generate:
+
+            --     type T is access all <<type of the first formal>>
+            --     S1 := Storage_Offset!(formal)
+            --           - Offset_To_Top (Formal.Tag)
+
+            --  ... and the first actual of the call is generated as T!(S1)
+
+            Decl_2 :=
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc,
+                    New_Internal_Name ('T')),
+                Type_Definition =>
+                  Make_Access_To_Object_Definition (Loc,
+                    All_Present            => True,
+                    Null_Exclusion_Present => False,
+                    Constant_Present       => False,
+                    Subtype_Indication     =>
+                      New_Reference_To
+                        (Directly_Designated_Type
+                          (Etype (Target_Formal)), Loc)));
+
+            Decl_1 :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc,
+                    New_Internal_Name ('S')),
+                Constant_Present    => True,
+                Object_Definition   =>
+                  New_Reference_To (RTE (RE_Storage_Offset), Loc),
+                Expression          =>
+                  Make_Op_Subtract (Loc,
+                    Left_Opnd  =>
+                      Unchecked_Convert_To
+                        (RTE (RE_Storage_Offset),
+                         New_Reference_To (Defining_Identifier (Formal), Loc)),
+                     Right_Opnd =>
+                       Make_Function_Call (Loc,
+                         Name =>
+                           New_Reference_To (RTE (RE_Offset_To_Top), Loc),
+                         Parameter_Associations => New_List (
+                           Unchecked_Convert_To
+                             (RTE (RE_Address),
+                              New_Reference_To
+                                (Defining_Identifier (Formal), Loc))))));
+
+            Append_To (Decl, Decl_2);
+            Append_To (Decl, Decl_1);
+
+            --  Reference the new first actual
+
+            Append_To (Actuals,
+              Unchecked_Convert_To
+                (Defining_Identifier (Decl_2),
+                 New_Reference_To (Defining_Identifier (Decl_1), Loc)));
+
+         elsif Etype (Target_Formal) = Controlling_Typ then
+            --  Generate:
+
+            --     S1 := Storage_Offset!(Formal'Address)
+            --           - Offset_To_Top (Formal.Tag)
+            --     S2 := Tag_Ptr!(S3)
+
+            Decl_1 :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc, New_Internal_Name ('S')),
+                Constant_Present    => True,
+                Object_Definition   =>
+                  New_Reference_To (RTE (RE_Storage_Offset), Loc),
+                Expression          =>
+                  Make_Op_Subtract (Loc,
+                    Left_Opnd =>
+                      Unchecked_Convert_To
+                        (RTE (RE_Storage_Offset),
+                         Make_Attribute_Reference (Loc,
+                           Prefix =>
+                             New_Reference_To
+                               (Defining_Identifier (Formal), Loc),
+                           Attribute_Name => Name_Address)),
+                    Right_Opnd =>
+                       Make_Function_Call (Loc,
+                         Name =>
+                           New_Reference_To (RTE (RE_Offset_To_Top), Loc),
+                         Parameter_Associations => New_List (
+                           Make_Attribute_Reference (Loc,
+                             Prefix =>
+                               New_Reference_To
+                                 (Defining_Identifier (Formal), Loc),
+                             Attribute_Name => Name_Address)))));
+
+            Decl_2 :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc, New_Internal_Name ('S')),
+                Constant_Present  => True,
+                Object_Definition => New_Reference_To (RTE (RE_Addr_Ptr), Loc),
+                Expression        =>
+                  Unchecked_Convert_To
+                    (RTE (RE_Addr_Ptr),
+                     New_Reference_To (Defining_Identifier (Decl_1), Loc)));
+
+            Append_To (Decl, Decl_1);
+            Append_To (Decl, Decl_2);
+
+            --  Reference the new first actual
+
+            Append_To (Actuals,
+              Unchecked_Convert_To
+                (Etype (First_Entity (Target)),
+                 Make_Explicit_Dereference (Loc,
+                   New_Reference_To (Defining_Identifier (Decl_2), Loc))));
+
+         --  No special management required for this actual
+
+         else
+            Append_To (Actuals,
+               New_Reference_To (Defining_Identifier (Formal), Loc));
+         end if;
+
+         Next_Formal (Target_Formal);
          Next (Formal);
       end loop;
 
+      Thunk_Id :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_Internal_Name ('T'));
+
       if Ekind (Target) = E_Procedure then
-         New_Code :=
+         Thunk_Code :=
            Make_Subprogram_Body (Loc,
               Specification =>
                 Make_Procedure_Specification (Loc,
@@ -1516,12 +1235,12 @@ package body Exp_Disp is
                 Make_Handled_Sequence_Of_Statements (Loc,
                   Statements => New_List (
                     Make_Procedure_Call_Statement (Loc,
-                       Name => New_Occurrence_Of (Target, Loc),
-                       Parameter_Associations => Actuals))));
+                      Name => New_Occurrence_Of (Target, Loc),
+                      Parameter_Associations => Actuals))));
 
       else pragma Assert (Ekind (Target) = E_Function);
 
-         New_Code :=
+         Thunk_Code :=
            Make_Subprogram_Body (Loc,
               Specification =>
                 Make_Function_Specification (Loc,
@@ -1538,97 +1257,7 @@ package body Exp_Disp is
                         Name => New_Occurrence_Of (Target, Loc),
                         Parameter_Associations => Actuals)))));
       end if;
-
-      --  Analyze the code of the thunk with checks suppressed because we are
-      --  in the middle of building the dispatch information itself and some
-      --  characteristics of the type may not be fully available.
-
-      Analyze (New_Code, Suppress => All_Checks);
-      return New_Code;
    end Expand_Interface_Thunk;
-
-   -------------------
-   -- Fill_DT_Entry --
-   -------------------
-
-   function Fill_DT_Entry
-     (Loc     : Source_Ptr;
-      Prim    : Entity_Id) return Node_Id
-   is
-      Typ     : constant Entity_Id := Scope (DTC_Entity (Prim));
-      DT_Ptr  : constant Entity_Id :=
-                  Node (First_Elmt (Access_Disp_Table (Typ)));
-      Pos     : constant Uint      := DT_Position (Prim);
-      Tag     : constant Entity_Id := First_Tag_Component (Typ);
-
-   begin
-      pragma Assert (not Restriction_Active (No_Dispatching_Calls));
-
-      if Is_Predefined_Dispatching_Operation (Prim)
-        or else Is_Predefined_Dispatching_Alias (Prim)
-      then
-         return
-           Build_Set_Predefined_Prim_Op_Address (Loc,
-             Tag_Node      => New_Reference_To (DT_Ptr, Loc),
-             Position_Node => Make_Integer_Literal (Loc, Pos),
-             Address_Node  => Make_Attribute_Reference (Loc,
-                                Prefix => New_Reference_To (Prim, Loc),
-                                Attribute_Name => Name_Address));
-
-      else
-         pragma Assert (Pos /= Uint_0 and then Pos <= DT_Entry_Count (Tag));
-
-         return
-           Build_Set_Prim_Op_Address (Loc,
-             Tag_Node      => New_Reference_To (DT_Ptr, Loc),
-             Position_Node => Make_Integer_Literal (Loc, Pos),
-             Address_Node  => Make_Attribute_Reference (Loc,
-                                Prefix => New_Reference_To (Prim, Loc),
-                                Attribute_Name => Name_Address));
-      end if;
-   end Fill_DT_Entry;
-
-   -----------------------------
-   -- Fill_Secondary_DT_Entry --
-   -----------------------------
-
-   function Fill_Secondary_DT_Entry
-     (Loc          : Source_Ptr;
-      Prim         : Entity_Id;
-      Thunk_Id     : Entity_Id;
-      Iface_DT_Ptr : Entity_Id) return Node_Id
-   is
-      Iface_Prim : constant Entity_Id := Abstract_Interface_Alias (Prim);
-      Pos        : constant Uint      := DT_Position (Iface_Prim);
-      Tag        : constant Entity_Id :=
-                     First_Tag_Component (Scope (DTC_Entity (Iface_Prim)));
-
-   begin
-      if Is_Predefined_Dispatching_Operation (Prim)
-        or else Is_Predefined_Dispatching_Alias (Prim)
-      then
-         return
-           Build_Set_Predefined_Prim_Op_Address (Loc,
-             Tag_Node =>
-               New_Reference_To (Iface_DT_Ptr, Loc),
-             Position_Node =>
-               Make_Integer_Literal (Loc, Pos),
-             Address_Node =>
-               Make_Attribute_Reference (Loc,
-                 Prefix          => New_Reference_To (Thunk_Id, Loc),
-                 Attribute_Name  => Name_Address));
-      else
-         pragma Assert (Pos /= Uint_0 and then Pos <= DT_Entry_Count (Tag));
-
-         return
-           Build_Set_Prim_Op_Address (Loc,
-             Tag_Node      => New_Reference_To (Iface_DT_Ptr, Loc),
-             Position_Node => Make_Integer_Literal (Loc, Pos),
-             Address_Node  => Make_Attribute_Reference (Loc,
-                                Prefix => New_Reference_To (Thunk_Id, Loc),
-                                Attribute_Name => Name_Address));
-      end if;
-   end Fill_Secondary_DT_Entry;
 
    -------------------------------------
    -- Is_Predefined_Dispatching_Alias --
@@ -1662,11 +1291,12 @@ package body Exp_Disp is
    function Make_Disp_Asynchronous_Select_Body
      (Typ : Entity_Id) return Node_Id
    is
-      Conc_Typ : Entity_Id           := Empty;
-      Decls    : constant List_Id    := New_List;
-      DT_Ptr   : Entity_Id;
-      Loc      : constant Source_Ptr := Sloc (Typ);
-      Stmts    : constant List_Id    := New_List;
+      Com_Block : Entity_Id;
+      Conc_Typ  : Entity_Id           := Empty;
+      Decls     : constant List_Id    := New_List;
+      DT_Ptr    : Entity_Id;
+      Loc       : constant Source_Ptr := Sloc (Typ);
+      Stmts     : constant List_Id    := New_List;
 
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
@@ -1703,16 +1333,27 @@ package body Exp_Disp is
              Object_Definition =>
                New_Reference_To (Standard_Integer, Loc),
              Expression =>
-               Make_DT_Access_Action (Typ,
-                 Action =>
-                   Get_Entry_Index,
-                 Args =>
-                   New_List (
-                     Unchecked_Convert_To (RTE (RE_Tag),
-                       New_Reference_To (DT_Ptr, Loc)),
-                     Make_Identifier (Loc, Name_uS)))));
+               Make_Function_Call (Loc,
+                 Name => New_Reference_To (RTE (RE_Get_Entry_Index), Loc),
+                 Parameter_Associations => New_List (
+                   Unchecked_Convert_To (RTE (RE_Tag),
+                     New_Reference_To (DT_Ptr, Loc)),
+                   Make_Identifier (Loc, Name_uS)))));
 
          if Ekind (Conc_Typ) = E_Protected_Type then
+
+            --  Generate:
+            --    Com_Block : Communication_Block;
+
+            Com_Block :=
+              Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
+
+            Append_To (Decls,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier =>
+                  Com_Block,
+                Object_Definition =>
+                  New_Reference_To (RTE (RE_Communication_Block), Loc)));
 
             --  Generate:
             --    Protected_Entry_Call (
@@ -1720,7 +1361,7 @@ package body Exp_Disp is
             --      protected_entry_index! (I),
             --      P,
             --      Asynchronous_Call,
-            --      B);
+            --      Com_Block);
 
             --  where T is the protected object, I is the entry index, P are
             --  the wrapped parameters and B is the name of the communication
@@ -1752,7 +1393,24 @@ package body Exp_Disp is
                     Make_Identifier (Loc, Name_uP),       --  parameter block
                     New_Reference_To (                    --  Asynchronous_Call
                       RTE (RE_Asynchronous_Call), Loc),
-                    Make_Identifier (Loc, Name_uB))));    --  comm block
+
+                    New_Reference_To (Com_Block, Loc)))); -- comm block
+
+            --  Generate:
+            --    B := Dummy_Communication_Bloc (Com_Block);
+
+            Append_To (Stmts,
+              Make_Assignment_Statement (Loc,
+                Name =>
+                  Make_Identifier (Loc, Name_uB),
+                Expression =>
+                  Make_Unchecked_Type_Conversion (Loc,
+                    Subtype_Mark =>
+                      New_Reference_To (
+                        RTE (RE_Dummy_Communication_Block), Loc),
+                    Expression =>
+                      New_Reference_To (Com_Block, Loc))));
+
          else
             pragma Assert (Ekind (Conc_Typ) = E_Task_Type);
 
@@ -1819,24 +1477,52 @@ package body Exp_Disp is
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
 
-      --  "T" - Object parameter
-      --  "S" - Primitive operation slot
-      --  "P" - Wrapped parameters
-      --  "B" - Communication block
-      --  "F" - Status flag
+      --  T : in out Typ;                     --  Object parameter
+      --  S : Integer;                        --  Primitive operation slot
+      --  P : Address;                        --  Wrapped parameters
+      --  B : out Dummy_Communication_Block;  --  Communication block dummy
+      --  F : out Boolean;                    --  Status flag
 
-      SEU.Build_T (Loc, Typ, Params);
-      SEU.Build_S (Loc, Params);
-      SEU.Build_P (Loc, Params);
-      SEU.Build_B (Loc, Params);
-      SEU.Build_F (Loc, Params);
+      Append_List_To (Params, New_List (
 
-      Set_Is_Internal (Def_Id);
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uT),
+          Parameter_Type =>
+            New_Reference_To (Typ, Loc),
+          In_Present  => True,
+          Out_Present => True),
+
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uS),
+          Parameter_Type =>
+            New_Reference_To (Standard_Integer, Loc)),
+
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uP),
+          Parameter_Type =>
+            New_Reference_To (RTE (RE_Address), Loc)),
+
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uB),
+          Parameter_Type =>
+            New_Reference_To (RTE (RE_Dummy_Communication_Block), Loc),
+          Out_Present => True),
+
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uF),
+          Parameter_Type =>
+            New_Reference_To (Standard_Boolean, Loc),
+          Out_Present => True)));
 
       return
-         Make_Procedure_Specification (Loc,
-           Defining_Unit_Name       => Def_Id,
-           Parameter_Specifications => Params);
+        Make_Procedure_Specification (Loc,
+          Defining_Unit_Name       => Def_Id,
+          Parameter_Specifications => Params);
    end Make_Disp_Asynchronous_Select_Spec;
 
    ---------------------------------------
@@ -1899,8 +1585,7 @@ package body Exp_Disp is
          --       return;
          --    end if;
 
-         SEU.Build_Common_Dispatching_Select_Statements
-          (Loc, Typ, DT_Ptr, Stmts);
+         Build_Common_Dispatching_Select_Statements (Loc, DT_Ptr, Stmts);
 
          --  Generate:
          --    Bnn : Communication_Block;
@@ -1927,14 +1612,12 @@ package body Exp_Disp is
              Name =>
                Make_Identifier (Loc, Name_uI),
              Expression =>
-               Make_DT_Access_Action (Typ,
-                 Action =>
-                   Get_Entry_Index,
-                 Args =>
-                   New_List (
-                     Unchecked_Convert_To (RTE (RE_Tag),
-                       New_Reference_To (DT_Ptr, Loc)),
-                     Make_Identifier (Loc, Name_uS)))));
+               Make_Function_Call (Loc,
+                 Name => New_Reference_To (RTE (RE_Get_Entry_Index), Loc),
+                 Parameter_Associations => New_List (
+                   Unchecked_Convert_To (RTE (RE_Tag),
+                     New_Reference_To (DT_Ptr, Loc)),
+                   Make_Identifier (Loc, Name_uS)))));
 
          if Ekind (Conc_Typ) = E_Protected_Type then
 
@@ -2064,19 +1747,47 @@ package body Exp_Disp is
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
 
-      --  "T" - Object parameter
-      --  "S" - Primitive operation slot
-      --  "P" - Wrapped parameters
-      --  "C" - Call kind
-      --  "F" - Status flag
+      --  T : in out Typ;        --  Object parameter
+      --  S : Integer;           --  Primitive operation slot
+      --  P : Address;           --  Wrapped parameters
+      --  C : out Prim_Op_Kind;  --  Call kind
+      --  F : out Boolean;       --  Status flag
 
-      SEU.Build_T (Loc, Typ, Params);
-      SEU.Build_S (Loc, Params);
-      SEU.Build_P (Loc, Params);
-      SEU.Build_C (Loc, Params);
-      SEU.Build_F (Loc, Params);
+      Append_List_To (Params, New_List (
 
-      Set_Is_Internal (Def_Id);
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uT),
+          Parameter_Type =>
+            New_Reference_To (Typ, Loc),
+          In_Present  => True,
+          Out_Present => True),
+
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uS),
+          Parameter_Type =>
+            New_Reference_To (Standard_Integer, Loc)),
+
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uP),
+          Parameter_Type =>
+            New_Reference_To (RTE (RE_Address), Loc)),
+
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uC),
+          Parameter_Type =>
+            New_Reference_To (RTE (RE_Prim_Op_Kind), Loc),
+          Out_Present => True),
+
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uF),
+          Parameter_Type =>
+            New_Reference_To (Standard_Boolean, Loc),
+          Out_Present => True)));
 
       return
         Make_Procedure_Specification (Loc,
@@ -2130,14 +1841,13 @@ package body Exp_Disp is
                   Name =>
                     Make_Identifier (Loc, Name_uC),
                   Expression =>
-                    Make_DT_Access_Action (Typ,
-                      Action =>
-                        Get_Prim_Op_Kind,
-                      Args =>
-                        New_List (
-                          Unchecked_Convert_To (RTE (RE_Tag),
-                            New_Reference_To (DT_Ptr, Loc)),
-                            Make_Identifier (Loc, Name_uS)))))));
+                    Make_Function_Call (Loc,
+                      Name =>
+                        New_Reference_To (RTE (RE_Get_Prim_Op_Kind), Loc),
+                      Parameter_Associations => New_List (
+                        Unchecked_Convert_To (RTE (RE_Tag),
+                          New_Reference_To (DT_Ptr, Loc)),
+                          Make_Identifier (Loc, Name_uS)))))));
    end Make_Disp_Get_Prim_Op_Kind_Body;
 
    -------------------------------------
@@ -2156,15 +1866,32 @@ package body Exp_Disp is
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
 
-      --  "T" - Object parameter
-      --  "S" - Primitive operation slot
-      --  "C" - Call kind
+      --  T : in out Typ;       --  Object parameter
+      --  S : Integer;          --  Primitive operation slot
+      --  C : out Prim_Op_Kind; --  Call kind
 
-      SEU.Build_T (Loc, Typ, Params);
-      SEU.Build_S (Loc, Params);
-      SEU.Build_C (Loc, Params);
+      Append_List_To (Params, New_List (
 
-      Set_Is_Internal (Def_Id);
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uT),
+          Parameter_Type =>
+            New_Reference_To (Typ, Loc),
+          In_Present  => True,
+          Out_Present => True),
+
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uS),
+          Parameter_Type =>
+            New_Reference_To (Standard_Integer, Loc)),
+
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uC),
+          Parameter_Type =>
+            New_Reference_To (RTE (RE_Prim_Op_Kind), Loc),
+          Out_Present => True)));
 
       return
         Make_Procedure_Specification (Loc,
@@ -2188,22 +1915,32 @@ package body Exp_Disp is
       if Is_Concurrent_Record_Type (Typ)
         and then Ekind (Corresponding_Concurrent_Type (Typ)) = E_Task_Type
       then
+         --  Generate:
+         --    return To_Address (_T._task_id);
+
          Ret :=
            Make_Return_Statement (Loc,
              Expression =>
-               Make_Selected_Component (Loc,
-                 Prefix =>
-                   Make_Identifier (Loc, Name_uT),
-                 Selector_Name =>
-                   Make_Identifier (Loc, Name_uTask_Id)));
+               Make_Unchecked_Type_Conversion (Loc,
+                 Subtype_Mark =>
+                   New_Reference_To (RTE (RE_Address), Loc),
+                 Expression =>
+                   Make_Selected_Component (Loc,
+                     Prefix =>
+                       Make_Identifier (Loc, Name_uT),
+                     Selector_Name =>
+                       Make_Identifier (Loc, Name_uTask_Id))));
 
       --  A null body is constructed for non-task types
 
       else
+         --  Generate:
+         --    return Null_Address;
+
          Ret :=
            Make_Return_Statement (Loc,
              Expression =>
-               New_Reference_To (RTE (RO_ST_Null_Task), Loc));
+               New_Reference_To (RTE (RE_Null_Address), Loc));
       end if;
 
       return
@@ -2224,19 +1961,15 @@ package body Exp_Disp is
    function Make_Disp_Get_Task_Id_Spec
      (Typ : Entity_Id) return Node_Id
    is
-      Loc    : constant Source_Ptr := Sloc (Typ);
-      Def_Id : constant Node_Id    :=
-                 Make_Defining_Identifier (Loc,
-                   Name_uDisp_Get_Task_Id);
+      Loc : constant Source_Ptr := Sloc (Typ);
 
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
 
-      Set_Is_Internal (Def_Id);
-
       return
         Make_Function_Specification (Loc,
-          Defining_Unit_Name       => Def_Id,
+          Defining_Unit_Name =>
+            Make_Defining_Identifier (Loc, Name_uDisp_Get_Task_Id),
           Parameter_Specifications => New_List (
             Make_Parameter_Specification (Loc,
               Defining_Identifier =>
@@ -2244,7 +1977,7 @@ package body Exp_Disp is
               Parameter_Type =>
                 New_Reference_To (Typ, Loc))),
           Result_Definition =>
-            New_Reference_To (RTE (RO_ST_Task_Id), Loc));
+            New_Reference_To (RTE (RE_Address), Loc));
    end Make_Disp_Get_Task_Id_Spec;
 
    ---------------------------------
@@ -2306,8 +2039,7 @@ package body Exp_Disp is
          --       return;
          --    end if;
 
-         SEU.Build_Common_Dispatching_Select_Statements
-          (Loc, Typ, DT_Ptr, Stmts);
+         Build_Common_Dispatching_Select_Statements (Loc, DT_Ptr, Stmts);
 
          --  Generate:
          --    I := Get_Entry_Index (tag! (<type>VP), S);
@@ -2319,14 +2051,12 @@ package body Exp_Disp is
              Name =>
                Make_Identifier (Loc, Name_uI),
              Expression =>
-               Make_DT_Access_Action (Typ,
-                 Action =>
-                   Get_Entry_Index,
-                 Args =>
-                   New_List (
-                     Unchecked_Convert_To (RTE (RE_Tag),
-                       New_Reference_To (DT_Ptr, Loc)),
-                     Make_Identifier (Loc, Name_uS)))));
+               Make_Function_Call (Loc,
+                 Name => New_Reference_To (RTE (RE_Get_Entry_Index), Loc),
+                 Parameter_Associations => New_List (
+                   Unchecked_Convert_To (RTE (RE_Tag),
+                     New_Reference_To (DT_Ptr, Loc)),
+                   Make_Identifier (Loc, Name_uS)))));
 
          if Ekind (Conc_Typ) = E_Protected_Type then
 
@@ -2439,36 +2169,62 @@ package body Exp_Disp is
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
 
-      --  "T" - Object parameter
-      --  "S" - Primitive operation slot
-      --  "P" - Wrapped parameters
-      --  "D" - Delay
-      --  "M" - Delay Mode
-      --  "C" - Call kind
-      --  "F" - Status flag
+      --  T : in out Typ;        --  Object parameter
+      --  S : Integer;           --  Primitive operation slot
+      --  P : Address;           --  Wrapped parameters
+      --  D : Duration;          --  Delay
+      --  M : Integer;           --  Delay Mode
+      --  C : out Prim_Op_Kind;  --  Call kind
+      --  F : out Boolean;       --  Status flag
 
-      SEU.Build_T (Loc, Typ, Params);
-      SEU.Build_S (Loc, Params);
-      SEU.Build_P (Loc, Params);
+      Append_List_To (Params, New_List (
 
-      Append_To (Params,
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uT),
+          Parameter_Type =>
+            New_Reference_To (Typ, Loc),
+          In_Present  => True,
+          Out_Present => True),
+
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uS),
+          Parameter_Type =>
+            New_Reference_To (Standard_Integer, Loc)),
+
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uP),
+          Parameter_Type =>
+            New_Reference_To (RTE (RE_Address), Loc)),
+
         Make_Parameter_Specification (Loc,
           Defining_Identifier =>
             Make_Defining_Identifier (Loc, Name_uD),
           Parameter_Type =>
-            New_Reference_To (Standard_Duration, Loc)));
+            New_Reference_To (Standard_Duration, Loc)),
 
-      Append_To (Params,
         Make_Parameter_Specification (Loc,
           Defining_Identifier =>
             Make_Defining_Identifier (Loc, Name_uM),
           Parameter_Type =>
-            New_Reference_To (Standard_Integer, Loc)));
+            New_Reference_To (Standard_Integer, Loc)),
 
-      SEU.Build_C (Loc, Params);
-      SEU.Build_F (Loc, Params);
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uC),
+          Parameter_Type =>
+            New_Reference_To (RTE (RE_Prim_Op_Kind), Loc),
+          Out_Present => True)));
 
-      Set_Is_Internal (Def_Id);
+      Append_To (Params,
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier =>
+            Make_Defining_Identifier (Loc, Name_uF),
+          Parameter_Type =>
+            New_Reference_To (Standard_Boolean, Loc),
+          Out_Present => True));
 
       return
         Make_Procedure_Specification (Loc,
@@ -2480,316 +2236,894 @@ package body Exp_Disp is
    -- Make_DT --
    -------------
 
+   --  The frontend supports two models for expanding dispatch tables
+   --  associated with library-level defined tagged types: statically
+   --  and non-statically allocated dispatch tables. In the former case
+   --  the object containing the dispatch table is constant and it is
+   --  initialized by means of a positional aggregate. In the latter case,
+   --  the object containing the dispatch table is a variable which is
+   --  initialized by means of assignments.
+
+   --  In case of locally defined tagged types, the object containing the
+   --  object containing the dispatch table is always a variable (instead
+   --  of a constant). This is currently required to give support to late
+   --  overriding of primitives. For example:
+
+   --     procedure Example is
+   --        package Pkg is
+   --           type T1 is tagged null record;
+   --           procedure Prim (O : T1);
+   --        end Pkg;
+
+   --        type T2 is new Pkg.T1 with null record;
+   --        procedure Prim (X : T2) is    -- late overriding
+   --        begin
+   --           ...
+   --     ...
+   --     end;
+
    function Make_DT (Typ : Entity_Id) return List_Id is
-      Loc         : constant Source_Ptr := Sloc (Typ);
-      Result      : constant List_Id    := New_List;
-      Elab_Code   : constant List_Id    := New_List;
+      Loc              : constant Source_Ptr := Sloc (Typ);
+      Is_Local_DT      : constant Boolean :=
+                           Ekind (Cunit_Entity (Get_Source_Unit (Typ)))
+                             /= E_Package;
+      Max_Predef_Prims : constant Int :=
+                           UI_To_Int
+                             (Intval
+                               (Expression
+                                 (Parent (RTE (RE_Default_Prim_Op_Count)))));
 
-      Tname       : constant Name_Id := Chars (Typ);
-      Name_DT     : constant Name_Id := New_External_Name (Tname, 'T');
-      Name_DT_Ptr : constant Name_Id := New_External_Name (Tname, 'P');
-      Name_SSD    : constant Name_Id := New_External_Name (Tname, 'S');
-      Name_TSD    : constant Name_Id := New_External_Name (Tname, 'B');
-      Name_Exname : constant Name_Id := New_External_Name (Tname, 'E');
-      Name_No_Reg : constant Name_Id := New_External_Name (Tname, 'F');
+      procedure Make_Secondary_DT
+        (Typ             : Entity_Id;
+         Iface           : Entity_Id;
+         AI_Tag          : Entity_Id;
+         Iface_DT_Ptr    : Entity_Id;
+         Result          : List_Id);
+      --  Ada 2005 (AI-251): Expand the declarations for the Secondary Dispatch
+      --  Table of Typ associated with Iface (each abstract interface of Typ
+      --  has a secondary dispatch table). The arguments Typ, Ancestor_Typ
+      --  and Suffix_Index are used to generate an unique external name which
+      --  is added at the end of Acc_Disp_Tables; this external name will be
+      --  used later by the subprogram Exp_Ch3.Build_Init_Procedure.
 
-      --  The following external name is only generated if Typ has interfaces
-      Name_ITable : Name_Id;
+      -----------------------
+      -- Make_Secondary_DT --
+      -----------------------
 
-      DT     : constant Node_Id := Make_Defining_Identifier (Loc, Name_DT);
-      DT_Ptr : constant Node_Id := Make_Defining_Identifier (Loc, Name_DT_Ptr);
-      SSD    : constant Node_Id := Make_Defining_Identifier (Loc, Name_SSD);
-      TSD    : constant Node_Id := Make_Defining_Identifier (Loc, Name_TSD);
-      Exname : constant Node_Id := Make_Defining_Identifier (Loc, Name_Exname);
-      No_Reg : constant Node_Id := Make_Defining_Identifier (Loc, Name_No_Reg);
+      procedure Make_Secondary_DT
+        (Typ          : Entity_Id;
+         Iface        : Entity_Id;
+         AI_Tag       : Entity_Id;
+         Iface_DT_Ptr : Entity_Id;
+         Result       : List_Id)
+      is
+         Loc                : constant Source_Ptr := Sloc (Typ);
+         Generalized_Tag    : constant Entity_Id := RTE (RE_Interface_Tag);
 
+         Name_DT            : constant Name_Id := New_Internal_Name ('T');
+         Iface_DT           : constant Entity_Id :=
+                                Make_Defining_Identifier (Loc, Name_DT);
+         Name_Predef_Prims  : constant Name_Id := New_Internal_Name ('R');
+         Predef_Prims       : constant Entity_Id :=
+                                Make_Defining_Identifier (Loc,
+                                  Name_Predef_Prims);
+         DT_Constr_List     : List_Id;
+         DT_Aggr_List       : List_Id;
+         Empty_DT           : Boolean := False;
+         Nb_Predef_Prims    : Nat := 0;
+         Nb_Prim            : Nat;
+         New_Node           : Node_Id;
+         OSD                : Entity_Id;
+         OSD_Aggr_List      : List_Id;
+         Pos                : Nat;
+         Prim               : Entity_Id;
+         Prim_Elmt          : Elmt_Id;
+         Prim_Ops_Aggr_List : List_Id;
+
+      begin
+         --  Handle the case where the backend does not support statically
+         --  allocated dispatch tables.
+
+         if not Static_Dispatch_Tables
+           or else Is_Local_DT
+         then
+            Set_Ekind (Predef_Prims, E_Variable);
+            Set_Is_Statically_Allocated (Predef_Prims);
+
+            Set_Ekind (Iface_DT, E_Variable);
+            Set_Is_Statically_Allocated (Iface_DT);
+
+         --  Statically allocated dispatch tables and related entities are
+         --  constants.
+
+         else
+            Set_Ekind (Predef_Prims, E_Constant);
+            Set_Is_Statically_Allocated (Predef_Prims);
+            Set_Is_True_Constant (Predef_Prims);
+
+            Set_Ekind (Iface_DT, E_Constant);
+            Set_Is_Statically_Allocated (Iface_DT);
+            Set_Is_True_Constant (Iface_DT);
+         end if;
+
+         --  Generate code to create the storage for the Dispatch_Table object.
+         --  If the number of primitives of Typ is 0 we reserve a dummy single
+         --  entry for its DT because at run-time the pointer to this dummy
+         --  entry will be used as the tag.
+
+         Nb_Prim := UI_To_Int (DT_Entry_Count (AI_Tag));
+
+         if Nb_Prim = 0 then
+            Empty_DT := True;
+            Nb_Prim  := 1;
+         end if;
+
+         --  Generate:
+
+         --   Predef_Prims : Address_Array (1 .. Default_Prim_Ops_Count) :=
+         --                    (predef-prim-op-thunk-1'address,
+         --                     predef-prim-op-thunk-2'address,
+         --                     ...
+         --                     predef-prim-op-thunk-n'address);
+         --   for Predef_Prims'Alignment use Address'Alignment
+
+         --  Stage 1: Calculate the number of predefined primitives
+
+         if not Static_Dispatch_Tables then
+            Nb_Predef_Prims := Max_Predef_Prims;
+         else
+            Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
+            while Present (Prim_Elmt) loop
+               Prim := Node (Prim_Elmt);
+
+               if Is_Predefined_Dispatching_Operation (Prim)
+                 and then not Is_Abstract_Subprogram (Prim)
+               then
+                  Pos := UI_To_Int (DT_Position (Prim));
+
+                  if Pos > Nb_Predef_Prims then
+                     Nb_Predef_Prims := Pos;
+                  end if;
+               end if;
+
+               Next_Elmt (Prim_Elmt);
+            end loop;
+         end if;
+
+         --  Stage 2: Create the thunks associated with the predefined
+         --  primitives and save their entity to fill the aggregate.
+
+         declare
+            Prim_Table : array (Nat range 1 .. Nb_Predef_Prims) of Entity_Id;
+            Thunk_Id   : Entity_Id;
+            Thunk_Code : Node_Id;
+
+         begin
+            Prim_Ops_Aggr_List := New_List;
+            Prim_Table := (others => Empty);
+
+            Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
+            while Present (Prim_Elmt) loop
+               Prim := Node (Prim_Elmt);
+
+               if Is_Predefined_Dispatching_Operation (Prim)
+                 and then not Is_Abstract_Subprogram (Prim)
+                 and then not Present (Prim_Table
+                                        (UI_To_Int (DT_Position (Prim))))
+               then
+                  while Present (Alias (Prim)) loop
+                     Prim := Alias (Prim);
+                  end loop;
+
+                  Expand_Interface_Thunk
+                    (N           => Prim,
+                     Thunk_Alias => Prim,
+                     Thunk_Id    => Thunk_Id,
+                     Thunk_Code  => Thunk_Code);
+
+                  if Present (Thunk_Id) then
+                     Append_To (Result, Thunk_Code);
+                     Prim_Table (UI_To_Int (DT_Position (Prim))) := Thunk_Id;
+                  end if;
+               end if;
+
+               Next_Elmt (Prim_Elmt);
+            end loop;
+
+            for J in Prim_Table'Range loop
+               if Present (Prim_Table (J)) then
+                  New_Node :=
+                    Make_Attribute_Reference (Loc,
+                      Prefix => New_Reference_To (Prim_Table (J), Loc),
+                      Attribute_Name => Name_Address);
+               else
+                  New_Node :=
+                    New_Reference_To (RTE (RE_Null_Address), Loc);
+               end if;
+
+               Append_To (Prim_Ops_Aggr_List, New_Node);
+            end loop;
+
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Predef_Prims,
+                Constant_Present    => Static_Dispatch_Tables,
+                Aliased_Present     => True,
+                Object_Definition   =>
+                  New_Reference_To (RTE (RE_Address_Array), Loc),
+                Expression => Make_Aggregate (Loc,
+                  Expressions => Prim_Ops_Aggr_List)));
+
+            Append_To (Result,
+              Make_Attribute_Definition_Clause (Loc,
+                Name       => New_Reference_To (Predef_Prims, Loc),
+                Chars      => Name_Alignment,
+                Expression =>
+                  Make_Attribute_Reference (Loc,
+                    Prefix =>
+                      New_Reference_To (RTE (RE_Integer_Address), Loc),
+                    Attribute_Name => Name_Alignment)));
+         end;
+
+         --  Generate
+
+         --   OSD : Ada.Tags.Object_Specific_Data (Nb_Prims) :=
+         --          (OSD_Table => (1 => <value>,
+         --                           ...
+         --                         N => <value>));
+
+         --   Iface_DT : Dispatch_Table (Nb_Prims) :=
+         --               ([ Signature   => <sig-value> ],
+         --                Tag_Kind      => <tag_kind-value>,
+         --                Predef_Prims  => Predef_Prims'Address,
+         --                Offset_To_Top => 0,
+         --                OSD           => OSD'Address,
+         --                Prims_Ptr     => (prim-op-1'address,
+         --                                  prim-op-2'address,
+         --                                  ...
+         --                                  prim-op-n'address));
+
+         --  Stage 3: Initialize the discriminant and the record components
+
+         DT_Constr_List := New_List;
+         DT_Aggr_List   := New_List;
+
+         --  Nb_Prim. If the tagged type has no primitives we add a dummy
+         --  slot whose address will be the tag of this type.
+
+         if Nb_Prim = 0 then
+            New_Node := Make_Integer_Literal (Loc, 1);
+         else
+            New_Node := Make_Integer_Literal (Loc, Nb_Prim);
+         end if;
+
+         Append_To (DT_Constr_List, New_Node);
+         Append_To (DT_Aggr_List, New_Copy (New_Node));
+
+         --  Signature
+
+         if RTE_Record_Component_Available (RE_Signature) then
+            Append_To (DT_Aggr_List,
+              New_Reference_To (RTE (RE_Secondary_DT), Loc));
+         end if;
+
+         --  Tag_Kind
+
+         if RTE_Record_Component_Available (RE_Tag_Kind) then
+            Append_To (DT_Aggr_List, Tagged_Kind (Typ));
+         end if;
+
+         --  Predef_Prims
+
+         Append_To (DT_Aggr_List,
+           Make_Attribute_Reference (Loc,
+             Prefix => New_Reference_To (Predef_Prims, Loc),
+             Attribute_Name => Name_Address));
+
+         --  Note: The correct value of Offset_To_Top will be set by the init
+         --  subprogram
+
+         Append_To (DT_Aggr_List, Make_Integer_Literal (Loc, 0));
+
+         --  Generate the Object Specific Data table required to dispatch calls
+         --  through synchronized interfaces.
+
+         if Empty_DT
+           or else Is_Abstract_Type (Typ)
+           or else Is_Controlled (Typ)
+           or else Restriction_Active (No_Dispatching_Calls)
+           or else not Is_Limited_Type (Typ)
+           or else not Has_Abstract_Interfaces (Typ)
+         then
+            --  No OSD table required
+
+            Append_To (DT_Aggr_List,
+              New_Reference_To (RTE (RE_Null_Address), Loc));
+
+         else
+            OSD_Aggr_List := New_List;
+
+            declare
+               Prim_Table : array (Nat range 1 .. Nb_Prim) of Entity_Id;
+               Prim       : Entity_Id;
+               Prim_Alias : Entity_Id;
+               Prim_Elmt  : Elmt_Id;
+               E          : Entity_Id;
+               Count      : Nat := 0;
+               Pos        : Nat;
+
+            begin
+               Prim_Table := (others => Empty);
+               Prim_Alias := Empty;
+
+               Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
+               while Present (Prim_Elmt) loop
+                  Prim := Node (Prim_Elmt);
+
+                  if Present (Abstract_Interface_Alias (Prim))
+                    and then Find_Dispatching_Type
+                               (Abstract_Interface_Alias (Prim)) = Iface
+                  then
+                     Prim_Alias := Abstract_Interface_Alias (Prim);
+
+                     E := Prim;
+                     while Present (Alias (E)) loop
+                        E := Alias (E);
+                     end loop;
+
+                     Pos := UI_To_Int (DT_Position (Prim_Alias));
+
+                     if Present (Prim_Table (Pos)) then
+                        pragma Assert (Prim_Table (Pos) = E);
+                        null;
+
+                     else
+                        Prim_Table (Pos) := E;
+
+                        Append_To (OSD_Aggr_List,
+                          Make_Component_Association (Loc,
+                            Choices => New_List (
+                              Make_Integer_Literal (Loc,
+                                DT_Position (Prim_Alias))),
+                            Expression =>
+                              Make_Integer_Literal (Loc,
+                                DT_Position (Alias (Prim)))));
+
+                        Count := Count + 1;
+                     end if;
+                  end if;
+
+                  Next_Elmt (Prim_Elmt);
+               end loop;
+               pragma Assert (Count = Nb_Prim);
+            end;
+
+            OSD := Make_Defining_Identifier (Loc, New_Internal_Name ('I'));
+
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => OSD,
+                Object_Definition   =>
+                  Make_Subtype_Indication (Loc,
+                    Subtype_Mark =>
+                      New_Reference_To (RTE (RE_Object_Specific_Data), Loc),
+                    Constraint =>
+                      Make_Index_Or_Discriminant_Constraint (Loc,
+                        Constraints => New_List (
+                          Make_Integer_Literal (Loc, Nb_Prim)))),
+                Expression => Make_Aggregate (Loc,
+                  Component_Associations => New_List (
+                    Make_Component_Association (Loc,
+                      Choices => New_List (
+                        New_Occurrence_Of
+                          (RTE_Record_Component (RE_OSD_Num_Prims), Loc)),
+                      Expression =>
+                        Make_Integer_Literal (Loc, Nb_Prim)),
+
+                    Make_Component_Association (Loc,
+                      Choices => New_List (
+                        New_Occurrence_Of
+                          (RTE_Record_Component (RE_OSD_Table), Loc)),
+                      Expression => Make_Aggregate (Loc,
+                        Component_Associations => OSD_Aggr_List))))));
+
+            --  In secondary dispatch tables the Typeinfo component contains
+            --  the address of the Object Specific Data (see a-tags.ads)
+
+            Append_To (DT_Aggr_List,
+              Make_Attribute_Reference (Loc,
+                Prefix => New_Reference_To (OSD, Loc),
+                Attribute_Name => Name_Address));
+         end if;
+
+         --  Initialize the table of primitive operations
+
+         Prim_Ops_Aggr_List := New_List;
+
+         if Empty_DT then
+            Append_To (Prim_Ops_Aggr_List,
+              New_Reference_To (RTE (RE_Null_Address), Loc));
+
+         elsif Is_Abstract_Type (Typ)
+           or else not Static_Dispatch_Tables
+         then
+            for J in 1 .. Nb_Prim loop
+               Append_To (Prim_Ops_Aggr_List,
+                 New_Reference_To (RTE (RE_Null_Address), Loc));
+            end loop;
+
+         else
+            declare
+               Prim_Table : array (Nat range 1 .. Nb_Prim) of Entity_Id;
+               Pos        : Nat;
+               Thunk_Code : Node_Id;
+               Thunk_Id   : Entity_Id;
+
+            begin
+               Prim_Table := (others => Empty);
+
+               Prim_Elmt  := First_Elmt (Primitive_Operations (Typ));
+               while Present (Prim_Elmt) loop
+                  Prim := Node (Prim_Elmt);
+
+                  if not Is_Predefined_Dispatching_Operation (Prim)
+                    and then Present (Abstract_Interface_Alias (Prim))
+                    and then not Is_Abstract_Subprogram (Alias (Prim))
+                    and then not Is_Imported (Alias (Prim))
+                    and then Find_Dispatching_Type
+                               (Abstract_Interface_Alias (Prim)) = Iface
+
+                     --  Generate the code of the thunk only if the abstract
+                     --  interface type is not an immediate ancestor of
+                     --  Tagged_Type; otherwise the DT associated with the
+                     --  interface is the primary DT.
+
+                    and then not Is_Parent (Iface, Typ)
+                  then
+                     Expand_Interface_Thunk
+                       (N           => Prim,
+                        Thunk_Alias => Alias (Prim),
+                        Thunk_Id    => Thunk_Id,
+                        Thunk_Code  => Thunk_Code);
+
+                     if Present (Thunk_Id) then
+                        Pos :=
+                          UI_To_Int
+                            (DT_Position (Abstract_Interface_Alias (Prim)));
+
+                        Prim_Table (Pos) := Thunk_Id;
+                        Append_To (Result, Thunk_Code);
+                     end if;
+                  end if;
+
+                  Next_Elmt (Prim_Elmt);
+               end loop;
+
+               for J in Prim_Table'Range loop
+                  if Present (Prim_Table (J)) then
+                     New_Node :=
+                       Make_Attribute_Reference (Loc,
+                         Prefix => New_Reference_To (Prim_Table (J), Loc),
+                         Attribute_Name => Name_Address);
+                  else
+                     New_Node :=
+                       New_Reference_To (RTE (RE_Null_Address), Loc);
+                  end if;
+
+                  Append_To (Prim_Ops_Aggr_List, New_Node);
+               end loop;
+            end;
+         end if;
+
+         Append_To (DT_Aggr_List,
+           Make_Aggregate (Loc,
+             Expressions => Prim_Ops_Aggr_List));
+
+         Append_To (Result,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Iface_DT,
+             Aliased_Present     => True,
+             Object_Definition   =>
+               Make_Subtype_Indication (Loc,
+                 Subtype_Mark => New_Reference_To
+                                   (RTE (RE_Dispatch_Table_Wrapper), Loc),
+                 Constraint   => Make_Index_Or_Discriminant_Constraint (Loc,
+                                   Constraints => DT_Constr_List)),
+
+             Expression => Make_Aggregate (Loc,
+               Expressions => DT_Aggr_List)));
+
+         --  Generate code to create the pointer to the dispatch table
+
+         --    Iface_DT_Ptr : Tag := Tag!(DT'Address);
+
+         Append_To (Result,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Iface_DT_Ptr,
+             Constant_Present    => True,
+             Object_Definition =>
+               New_Reference_To (RTE (RE_Interface_Tag), Loc),
+             Expression =>
+               Unchecked_Convert_To (Generalized_Tag,
+                 Make_Attribute_Reference (Loc,
+                   Prefix =>
+                     Make_Selected_Component (Loc,
+                       Prefix => New_Reference_To (Iface_DT, Loc),
+                     Selector_Name =>
+                       New_Occurrence_Of
+                         (RTE_Record_Component (RE_Prims_Ptr), Loc)),
+                   Attribute_Name => Name_Address))));
+
+      end Make_Secondary_DT;
+
+      --  Local variables
+
+      --  Seems a huge list, shouldn't some of these be commented???
+      --  Seems like we are counting too much on guessing from names here???
+
+      Elab_Code          : constant List_Id   := New_List;
       Generalized_Tag    : constant Entity_Id := RTE (RE_Tag);
-      Ancestor_Ifaces    : Elist_Id;
+      Result             : constant List_Id := New_List;
+      Tname              : constant Name_Id := Chars (Typ);
+      Name_DT            : constant Name_Id := New_External_Name (Tname, 'T');
+      Name_Exname        : constant Name_Id := New_External_Name (Tname, 'E');
+      Name_Predef_Prims  : constant Name_Id := New_External_Name (Tname, 'R');
+      Name_SSD           : constant Name_Id := New_External_Name (Tname, 'S');
+      Name_TSD           : constant Name_Id := New_External_Name (Tname, 'B');
+      DT                 : constant Entity_Id :=
+                             Make_Defining_Identifier (Loc, Name_DT);
+      Exname             : constant Entity_Id :=
+                             Make_Defining_Identifier (Loc, Name_Exname);
+      Predef_Prims       : constant Entity_Id :=
+                             Make_Defining_Identifier (Loc, Name_Predef_Prims);
+      SSD                : constant Entity_Id :=
+                             Make_Defining_Identifier (Loc, Name_SSD);
+      TSD                : constant Entity_Id :=
+                             Make_Defining_Identifier (Loc, Name_TSD);
       AI                 : Elmt_Id;
+      AI_Tag_Comp        : Elmt_Id;
+      AI_Ptr_Elmt        : Elmt_Id;
+      DT_Constr_List     : List_Id;
+      DT_Aggr_List       : List_Id;
+      DT_Ptr             : Entity_Id;
       Has_Dispatch_Table : Boolean := True;
-      I_Depth            : Nat := 0;
       ITable             : Node_Id;
+      I_Depth            : Nat := 0;
       Iface_Table_Node   : Node_Id;
+      Name_ITable        : Name_Id;
+      Name_No_Reg        : Name_Id;
+      Nb_Predef_Prims    : Nat := 0;
       Nb_Prim            : Nat := 0;
+      New_Node           : Node_Id;
+      No_Reg             : Node_Id;
       Null_Parent_Tag    : Boolean := False;
       Num_Ifaces         : Nat := 0;
       Old_Tag1           : Node_Id;
       Old_Tag2           : Node_Id;
-      Parent             : Entity_Id;
-      Parent_Num_Ifaces  : Nat := 0;
-      Remotely_Callable  : Entity_Id;
+      Prim               : Entity_Id;
+      Prim_Elmt          : Elmt_Id;
+      Prim_Ops_Aggr_List : List_Id;
+      Transportable      : Entity_Id;
       RC_Offset_Node     : Node_Id;
-      Size_Expr_Node     : Node_Id;
+      Suffix_Index       : Int;
+      Typ_Comps          : Elist_Id;
       Typ_Ifaces         : Elist_Id;
       TSD_Aggr_List      : List_Id;
+      TSD_Tags_List      : List_Id;
+      TSD_Ifaces_List    : List_Id;
+
+   --  Start of processing for Make_DT
 
    begin
-      if not RTE_Available (RE_Tag) then
-         Error_Msg_CRT ("tagged types", Typ);
-         return New_List;
-      end if;
+      --  Fill the contents of Access_Disp_Table
 
-      --  Ensure that the unit System_Storage_Elements is loaded. This is
-      --  required to properly expand the routines of Ada.Tags
-
-      if not RTU_Loaded (System_Storage_Elements)
-        and then not Present (RTE (RE_Storage_Offset))
-      then
-         raise Program_Error;
-      end if;
-
-      if Ada_Version >= Ada_05 then
-
-         --  Count the interface types of the parents
-
-         Parent := Empty;
-
-         if Typ /= Etype (Typ) then
-            Parent := Etype (Typ);
-
-         elsif Is_Concurrent_Record_Type (Typ) then
-            Parent := Etype (First (Abstract_Interface_List (Typ)));
-         end if;
-
-         if Present (Parent) then
-            Collect_Abstract_Interfaces (Parent, Ancestor_Ifaces);
-
-            AI := First_Elmt (Ancestor_Ifaces);
-            while Present (AI) loop
-               Parent_Num_Ifaces := Parent_Num_Ifaces + 1;
-               Next_Elmt (AI);
-            end loop;
-         end if;
-
-         --  Count the additional interfaces implemented by Typ
-
-         Collect_Abstract_Interfaces (Typ, Typ_Ifaces);
-
-         AI := First_Elmt (Typ_Ifaces);
-         while Present (AI) loop
-            Num_Ifaces := Num_Ifaces + 1;
-            Next_Elmt (AI);
-         end loop;
-      end if;
-
-      --  Count ancestors to compute the inheritance depth. For private
-      --  extensions, always go to the full view in order to compute the
-      --  real inheritance depth.
+      --  1) Generate the primary and secondary tag entities
 
       declare
-         Parent_Type : Entity_Id := Typ;
-         P           : Entity_Id;
+         DT_Ptr       : Node_Id;
+         Name_DT_Ptr  : Name_Id;
+         Typ_Name     : Name_Id;
+         Iface_DT_Ptr : Node_Id;
+         Suffix_Index : Int;
+         AI_Tag_Comp  : Elmt_Id;
 
       begin
-         I_Depth := 0;
-         loop
-            P := Etype (Parent_Type);
+         --  Collect the components associated with secondary dispatch tables
 
-            if Is_Private_Type (P) then
-               P := Full_View (Base_Type (P));
-            end if;
+         if Has_Abstract_Interfaces (Typ) then
+            Collect_Interface_Components (Typ, Typ_Comps);
+         end if;
 
-            exit when P = Parent_Type;
+         --  Generate the primary tag entity
 
-            I_Depth := I_Depth + 1;
-            Parent_Type := P;
-         end loop;
+         Name_DT_Ptr := New_External_Name (Tname, 'P');
+         DT_Ptr      := Make_Defining_Identifier (Loc, Name_DT_Ptr);
+         Set_Ekind (DT_Ptr, E_Constant);
+         Set_Is_Statically_Allocated (DT_Ptr);
+         Set_Is_True_Constant (DT_Ptr);
+
+         pragma Assert (No (Access_Disp_Table (Typ)));
+         Set_Access_Disp_Table (Typ, New_Elmt_List);
+         Append_Elmt (DT_Ptr, Access_Disp_Table (Typ));
+
+         --  Generate the secondary tag entities
+
+         if Has_Abstract_Interfaces (Typ) then
+            Suffix_Index := 0;
+
+            --  For each interface type we build an unique external name
+            --  associated with its corresponding secondary dispatch table.
+            --  This external name will be used to declare an object that
+            --  references this secondary dispatch table, value that will be
+            --  used for the elaboration of Typ's objects and also for the
+            --  elaboration of objects of derivations of Typ that do not
+            --  override the primitive operation of this interface type.
+
+            AI_Tag_Comp := First_Elmt (Typ_Comps);
+            while Present (AI_Tag_Comp) loop
+               Get_Secondary_DT_External_Name
+                 (Typ, Related_Interface (Node (AI_Tag_Comp)), Suffix_Index);
+
+               Typ_Name     := Name_Find;
+               Name_DT_Ptr  := New_External_Name (Typ_Name, "P");
+               Iface_DT_Ptr := Make_Defining_Identifier (Loc, Name_DT_Ptr);
+
+               Set_Ekind (Iface_DT_Ptr, E_Constant);
+               Set_Is_Statically_Allocated (Iface_DT_Ptr);
+               Set_Is_True_Constant (Iface_DT_Ptr);
+               Append_Elmt (Iface_DT_Ptr, Access_Disp_Table (Typ));
+
+               Next_Elmt (AI_Tag_Comp);
+            end loop;
+         end if;
       end;
 
-      --  Calculate the number of primitives of the dispatch table and the
-      --  size of the Type_Specific_Data record.
+      --  2) At the end of Access_Disp_Table we add the entity of an access
+      --     type declaration. It is used by Build_Get_Prim_Op_Address to
+      --     expand dispatching calls through the primary dispatch table.
 
-      --  Abstract interfaces don't need the dispatch table. In addition,
-      --  compiling with restriction No_Dispatching_Calls we do not generate
-      --  the dispatch table.
+      --     Generate:
+      --       type Typ_DT is array (1 .. Nb_Prims) of Address;
+      --       type Typ_DT_Acc is access Typ_DT;
+
+      declare
+         Name_DT_Prims     : constant Name_Id :=
+                               New_External_Name (Tname, 'G');
+         Name_DT_Prims_Acc : constant Name_Id :=
+                               New_External_Name (Tname, 'H');
+         DT_Prims          : constant Entity_Id :=
+                               Make_Defining_Identifier (Loc, Name_DT_Prims);
+         DT_Prims_Acc      : constant Entity_Id :=
+                               Make_Defining_Identifier (Loc,
+                                 Name_DT_Prims_Acc);
+      begin
+         Append_To (Result,
+           Make_Full_Type_Declaration (Loc,
+             Defining_Identifier => DT_Prims,
+             Type_Definition =>
+               Make_Constrained_Array_Definition (Loc,
+                 Discrete_Subtype_Definitions => New_List (
+                   Make_Range (Loc,
+                     Low_Bound  => Make_Integer_Literal (Loc, 1),
+                     High_Bound => Make_Integer_Literal (Loc,
+                                    DT_Entry_Count
+                                      (First_Tag_Component (Typ))))),
+                 Component_Definition =>
+                   Make_Component_Definition (Loc,
+                     Subtype_Indication =>
+                       New_Reference_To (RTE (RE_Address), Loc)))));
+
+         Append_To (Result,
+           Make_Full_Type_Declaration (Loc,
+             Defining_Identifier => DT_Prims_Acc,
+             Type_Definition =>
+                Make_Access_To_Object_Definition (Loc,
+                  Subtype_Indication =>
+                    New_Occurrence_Of (DT_Prims, Loc))));
+
+         Append_Elmt (DT_Prims_Acc, Access_Disp_Table (Typ));
+      end;
+
+      if Is_CPP_Class (Typ) then
+         return Result;
+      end if;
+
+      if No_Run_Time_Mode or else not RTE_Available (RE_Tag) then
+         DT_Ptr := Node (First_Elmt (Access_Disp_Table (Typ)));
+
+         Append_To (Result,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => DT_Ptr,
+             Object_Definition   => New_Reference_To (RTE (RE_Tag), Loc),
+             Constant_Present    => True,
+             Expression =>
+               Unchecked_Convert_To (Generalized_Tag,
+                 New_Reference_To (RTE (RE_Null_Address), Loc))));
+
+         Analyze_List (Result, Suppress => All_Checks);
+         Error_Msg_CRT ("tagged types", Typ);
+         return Result;
+      end if;
+
+      if not Static_Dispatch_Tables
+        or else Is_Local_DT
+      then
+         Set_Ekind (DT, E_Variable);
+         Set_Is_Statically_Allocated (DT);
+      else
+         Set_Ekind (DT, E_Constant);
+         Set_Is_Statically_Allocated (DT);
+         Set_Is_True_Constant (DT);
+      end if;
+
+      pragma Assert (Present (Access_Disp_Table (Typ)));
+      DT_Ptr := Node (First_Elmt (Access_Disp_Table (Typ)));
+
+      --  Ada 2005 (AI-251): Build the secondary dispatch tables
+
+      if Has_Abstract_Interfaces (Typ) then
+         Suffix_Index := 0;
+         AI_Ptr_Elmt  := Next_Elmt (First_Elmt (Access_Disp_Table (Typ)));
+
+         AI_Tag_Comp := First_Elmt (Typ_Comps);
+         while Present (AI_Tag_Comp) loop
+            Make_Secondary_DT
+              (Typ          => Typ,
+               Iface        => Base_Type
+                                 (Related_Interface (Node (AI_Tag_Comp))),
+               AI_Tag       => Node (AI_Tag_Comp),
+               Iface_DT_Ptr => Node (AI_Ptr_Elmt),
+               Result       => Result);
+
+            Suffix_Index := Suffix_Index + 1;
+            Next_Elmt (AI_Ptr_Elmt);
+            Next_Elmt (AI_Tag_Comp);
+         end loop;
+      end if;
+
+      --  Evaluate if we generate the dispatch table
 
       Has_Dispatch_Table :=
         not Is_Interface (Typ)
           and then not Restriction_Active (No_Dispatching_Calls);
 
+      --  Calculate the number of primitives of the dispatch table and the
+      --  size of the Type_Specific_Data record.
+
       if Has_Dispatch_Table then
          Nb_Prim := UI_To_Int (DT_Entry_Count (First_Tag_Component (Typ)));
       end if;
 
-      --  Dispatch table and related entities are allocated statically
-
-      Set_Ekind (DT, E_Variable);
-      Set_Is_Statically_Allocated (DT);
-
-      Set_Ekind (DT_Ptr, E_Variable);
-      Set_Is_Statically_Allocated (DT_Ptr);
-
-      if Num_Ifaces > 0 then
-         Name_ITable := New_External_Name (Tname, 'I');
-         ITable      := Make_Defining_Identifier (Loc, Name_ITable);
-
-         Set_Ekind (ITable, E_Variable);
-         Set_Is_Statically_Allocated (ITable);
+      if not Static_Dispatch_Tables then
+         Set_Ekind (Predef_Prims, E_Variable);
+         Set_Is_Statically_Allocated (Predef_Prims);
+      else
+         Set_Ekind (Predef_Prims, E_Constant);
+         Set_Is_Statically_Allocated (Predef_Prims);
+         Set_Is_True_Constant (Predef_Prims);
       end if;
 
-      Set_Ekind (SSD, E_Variable);
+      Set_Ekind (SSD, E_Constant);
       Set_Is_Statically_Allocated (SSD);
+      Set_Is_True_Constant (SSD);
 
-      Set_Ekind (TSD, E_Variable);
+      Set_Ekind (TSD, E_Constant);
       Set_Is_Statically_Allocated (TSD);
+      Set_Is_True_Constant (TSD);
 
-      Set_Ekind (Exname, E_Variable);
+      Set_Ekind (Exname, E_Constant);
       Set_Is_Statically_Allocated (Exname);
-
-      Set_Ekind (No_Reg, E_Variable);
-      Set_Is_Statically_Allocated (No_Reg);
-
-      --  Generate code to create the storage for the Dispatch_Table object:
-
-      --   DT : Storage_Array (1 .. Size_Expr);
-      --   for DT'Alignment use Address'Alignment
-
-      --  Under No_Dispatching_Calls the size of the table is small just
-      --  containing:
-      --   1) the pointer to the TSD
-      --   2) a dummy entry used as the Tag of the type (see a-tags.ads).
-
-      if not Has_Dispatch_Table then
-         Size_Expr_Node :=
-           New_Reference_To (RTE (RE_DT_Min_Prologue_Size), Loc);
-
-      --  If the object has no primitives we ensure that the table will
-      --  have at least a dummy entry which will be used as the Tag.
-
-      --   Size_Expr := DT_Prologue_Size + DT_Entry_Size
-
-      elsif Nb_Prim = 0 then
-         Size_Expr_Node :=
-           Make_Op_Add (Loc,
-             Left_Opnd  =>
-               New_Reference_To (RTE (RE_DT_Prologue_Size), Loc),
-             Right_Opnd =>
-               New_Reference_To (RTE (RE_DT_Entry_Size), Loc));
-
-      --  Common case. The dispatch table has space to save the pointers to
-      --  all the predefined primitives, the C++ ABI header of the DT, and
-      --  the pointers to the primitives of Typ. That is,
-
-      --   Size_Expr := DT_Prologue_Size + nb_prim * DT_Entry_Size
-
-      else
-         Size_Expr_Node :=
-           Make_Op_Add (Loc,
-             Left_Opnd  =>
-               New_Reference_To (RTE (RE_DT_Prologue_Size), Loc),
-             Right_Opnd =>
-               Make_Op_Multiply (Loc,
-                 Left_Opnd  =>
-                   New_Reference_To (RTE (RE_DT_Entry_Size), Loc),
-                 Right_Opnd =>
-                   Make_Integer_Literal (Loc, Nb_Prim)));
-      end if;
-
-      Append_To (Result,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => DT,
-          Aliased_Present     => True,
-          Object_Definition   =>
-            Make_Subtype_Indication (Loc,
-              Subtype_Mark => New_Reference_To
-                                (RTE (RE_Storage_Array), Loc),
-              Constraint   => Make_Index_Or_Discriminant_Constraint (Loc,
-                Constraints => New_List (
-                  Make_Range (Loc,
-                    Low_Bound  => Make_Integer_Literal (Loc, 1),
-                    High_Bound => Size_Expr_Node))))));
-
-      Append_To (Result,
-        Make_Attribute_Definition_Clause (Loc,
-          Name       => New_Reference_To (DT, Loc),
-          Chars      => Name_Alignment,
-          Expression =>
-            Make_Attribute_Reference (Loc,
-              Prefix => New_Reference_To (RTE (RE_Integer_Address), Loc),
-              Attribute_Name => Name_Alignment)));
-
-      --  Generate code to create the pointer to the dispatch table
-
-      --    DT_Ptr : Tag := Tag!(DT'Address);
-
-      --  According to the C++ ABI, the base of the vtable is located after a
-      --  prologue containing Offset_To_Top, and Typeinfo_Ptr. Hence, we move
-      --  down the pointer to the real base of the vtable
-
-      if not Has_Dispatch_Table then
-         Append_To (Result,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => DT_Ptr,
-             Constant_Present    => True,
-             Object_Definition   => New_Reference_To (Generalized_Tag, Loc),
-             Expression          =>
-               Unchecked_Convert_To (Generalized_Tag,
-                 Make_Op_Add (Loc,
-                   Left_Opnd =>
-                     Unchecked_Convert_To (RTE (RE_Storage_Offset),
-                       Make_Attribute_Reference (Loc,
-                         Prefix         => New_Reference_To (DT, Loc),
-                         Attribute_Name => Name_Address)),
-                   Right_Opnd =>
-                     New_Reference_To (RTE (RE_DT_Typeinfo_Ptr_Size), Loc)))));
-
-      else
-         Append_To (Result,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => DT_Ptr,
-             Constant_Present    => True,
-             Object_Definition   => New_Reference_To (Generalized_Tag, Loc),
-             Expression          =>
-               Unchecked_Convert_To (Generalized_Tag,
-                 Make_Op_Add (Loc,
-                   Left_Opnd =>
-                     Unchecked_Convert_To (RTE (RE_Storage_Offset),
-                       Make_Attribute_Reference (Loc,
-                         Prefix         => New_Reference_To (DT, Loc),
-                         Attribute_Name => Name_Address)),
-                   Right_Opnd =>
-                     New_Reference_To (RTE (RE_DT_Prologue_Size), Loc)))));
-      end if;
-
-      --  Save the tag in the Access_Disp_Table attribute
-
-      if No (Access_Disp_Table (Typ)) then
-         Set_Access_Disp_Table (Typ, New_Elmt_List);
-      end if;
-
-      Prepend_Elmt (DT_Ptr, Access_Disp_Table (Typ));
+      Set_Is_True_Constant (Exname);
 
       --  Generate code to define the boolean that controls registration, in
       --  order to avoid multiple registrations for tagged types defined in
       --  multiple-called scopes.
 
-      Append_To (Result,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => No_Reg,
-          Object_Definition   => New_Reference_To (Standard_Boolean, Loc),
-          Expression          => New_Reference_To (Standard_True, Loc)));
+      if not Is_Interface (Typ) then
+         Name_No_Reg := New_External_Name (Tname, 'F');
+         No_Reg      := Make_Defining_Identifier (Loc, Name_No_Reg);
 
-      --  Generate:
-      --    Set_Signature (DT_Ptr, Value);
+         Set_Ekind (No_Reg, E_Variable);
+         Set_Is_Statically_Allocated (No_Reg);
 
-      if Has_Dispatch_Table
-        and then RTE_Available (RE_Set_Signature)
-      then
-         if Is_Interface (Typ) then
-            Append_To (Elab_Code,
-              Make_DT_Access_Action (Typ,
-                Action => Set_Signature,
-                Args   => New_List (
-                  New_Reference_To (DT_Ptr, Loc),
-                  New_Reference_To (RTE (RE_Abstract_Interface), Loc))));
+         Append_To (Result,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => No_Reg,
+             Object_Definition   => New_Reference_To (Standard_Boolean, Loc),
+             Expression          => New_Reference_To (Standard_True, Loc)));
+      end if;
+
+      --  In case of locally defined tagged type we declare the object
+      --  contanining the dispatch table by means of a variable. Its
+      --  initialization is done later by means of an assignment. This is
+      --  required to generate its External_Tag.
+
+      if Is_Local_DT then
+
+         --  Generate:
+         --    DT     : No_Dispatch_Table_Wrapper;
+         --    DT_Ptr : Tag := !Tag (DT.NDT_Prims_Ptr'Address);
+
+         if not Has_Dispatch_Table then
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => DT,
+                Aliased_Present     => True,
+                Constant_Present    => False,
+                Object_Definition   =>
+                  New_Reference_To
+                    (RTE (RE_No_Dispatch_Table_Wrapper), Loc)));
+
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => DT_Ptr,
+                Object_Definition   => New_Reference_To (RTE (RE_Tag), Loc),
+                Constant_Present    => True,
+                Expression =>
+                  Unchecked_Convert_To (Generalized_Tag,
+                    Make_Attribute_Reference (Loc,
+                      Prefix =>
+                        Make_Selected_Component (Loc,
+                          Prefix => New_Reference_To (DT, Loc),
+                        Selector_Name =>
+                          New_Occurrence_Of
+                            (RTE_Record_Component (RE_NDT_Prims_Ptr), Loc)),
+                      Attribute_Name => Name_Address))));
+
+         --  Generate:
+         --    DT : Dispatch_Table_Wrapper (Nb_Prim);
+         --    for DT'Alignment use Address'Alignment;
+         --    DT_Ptr : Tag := !Tag (DT.Prims_Ptr'Address);
 
          else
-            Append_To (Elab_Code,
-              Make_DT_Access_Action (Typ,
-                Action => Set_Signature,
-                Args   => New_List (
-                  New_Reference_To (DT_Ptr, Loc),
-                  New_Reference_To (RTE (RE_Primary_DT), Loc))));
+            --  If the tagged type has no primitives we add a dummy slot
+            --  whose address will be the tag of this type.
+
+            if Nb_Prim = 0 then
+               DT_Constr_List :=
+                 New_List (Make_Integer_Literal (Loc, 1));
+            else
+               DT_Constr_List :=
+                 New_List (Make_Integer_Literal (Loc, Nb_Prim));
+            end if;
+
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => DT,
+                Aliased_Present     => True,
+                Constant_Present    => False,
+                Object_Definition   =>
+                  Make_Subtype_Indication (Loc,
+                    Subtype_Mark =>
+                      New_Reference_To (RTE (RE_Dispatch_Table_Wrapper), Loc),
+                    Constraint => Make_Index_Or_Discriminant_Constraint (Loc,
+                                    Constraints => DT_Constr_List))));
+
+            Append_To (Result,
+              Make_Attribute_Definition_Clause (Loc,
+                Name       => New_Reference_To (DT, Loc),
+                Chars      => Name_Alignment,
+                Expression =>
+                  Make_Attribute_Reference (Loc,
+                    Prefix =>
+                      New_Reference_To (RTE (RE_Integer_Address), Loc),
+                    Attribute_Name => Name_Alignment)));
+
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => DT_Ptr,
+                Object_Definition   => New_Reference_To (RTE (RE_Tag), Loc),
+                Constant_Present    => True,
+                Expression =>
+                  Unchecked_Convert_To (Generalized_Tag,
+                    Make_Attribute_Reference (Loc,
+                      Prefix =>
+                        Make_Selected_Component (Loc,
+                          Prefix => New_Reference_To (DT, Loc),
+                        Selector_Name =>
+                          New_Occurrence_Of
+                            (RTE_Record_Component (RE_Prims_Ptr), Loc)),
+                      Attribute_Name => Name_Address))));
          end if;
       end if;
 
@@ -2806,21 +3140,332 @@ package body Exp_Disp is
             Make_String_Literal (Loc,
               Full_Qualified_Name (First_Subtype (Typ)))));
 
-      --  Calculate the value of the RC_Offset component. These are the
-      --  valid valiues and their meaning:
+      --  Generate code to create the storage for the type specific data object
+      --  with enough space to store the tags of the ancestors plus the tags
+      --  of all the implemented interfaces (as described in a-tags.adb).
+
+      --   TSD : Type_Specific_Data (I_Depth) :=
+      --           (Idepth             => I_Depth,
+      --            Access_Level       => Type_Access_Level (Typ),
+      --            Expanded_Name      => Cstring_Ptr!(Exname'Address))
+      --            External_Tag       => Cstring_Ptr!(Exname'Address))
+      --            HT_Link            => null,
+      --            Transportable      => <<boolean-value>>,
+      --            RC_Offset          => <<integer-value>>,
+      --            [ Interfaces_Table  => <<access-value>> ]
+      --            [  SSD              => SSD_Table'Address ]
+      --            Tags_Table         => (0 => null,
+      --                                   1 => Parent'Tag
+      --                                   ...);
+      --   for TSD'Alignment use Address'Alignment
+
+      TSD_Aggr_List := New_List;
+
+      --  Idepth: Count ancestors to compute the inheritance depth. For private
+      --  extensions, always go to the full view in order to compute the real
+      --  inheritance depth.
+
+      declare
+         Current_Typ : Entity_Id;
+         Parent_Typ  : Entity_Id;
+
+      begin
+         I_Depth     := 0;
+         Current_Typ := Typ;
+         loop
+            Parent_Typ := Etype (Current_Typ);
+
+            if Is_Private_Type (Parent_Typ) then
+               Parent_Typ := Full_View (Base_Type (Parent_Typ));
+            end if;
+
+            exit when Parent_Typ = Current_Typ;
+
+            I_Depth := I_Depth + 1;
+            Current_Typ := Parent_Typ;
+         end loop;
+      end;
+
+      Append_To (TSD_Aggr_List,
+        Make_Component_Association (Loc,
+          Choices => New_List (
+            New_Occurrence_Of (RTE_Record_Component (RE_Idepth), Loc)),
+          Expression =>
+            Make_Integer_Literal (Loc, I_Depth)));
+
+      --  Access_Level
+
+      Append_To (TSD_Aggr_List,
+        Make_Component_Association (Loc,
+          Choices => New_List (
+            New_Occurrence_Of (RTE_Record_Component (RE_Access_Level), Loc)),
+          Expression =>
+            Make_Integer_Literal (Loc, Type_Access_Level (Typ))));
+
+      --  Expanded_Name
+
+      Append_To (TSD_Aggr_List,
+        Make_Component_Association (Loc,
+          Choices => New_List (
+            New_Occurrence_Of (RTE_Record_Component (RE_Expanded_Name), Loc)),
+          Expression =>
+            Unchecked_Convert_To (RTE (RE_Cstring_Ptr),
+              Make_Attribute_Reference (Loc,
+                Prefix => New_Reference_To (Exname, Loc),
+                Attribute_Name => Name_Address))));
+
+      --  External_Tag of a local tagged type
+
+      --     Exname : constant String :=
+      --                "Internal tag at 16#tag-addr#: <full-name-of-typ>";
+
+      --  The reason we generate this strange name is that we do not want to
+      --  enter local tagged types in the global hash table used to compute
+      --  the Internal_Tag attribute for two reasons:
+
+      --    1. It is hard to avoid a tasking race condition for entering the
+      --    entry into the hash table.
+
+      --    2. It would cause a storage leak, unless we rig up considerable
+      --    mechanism to remove the entry from the hash table on exit.
+
+      --  So what we do is to generate the above external tag name, where the
+      --  hex address is the address of the local dispatch table (i.e. exactly
+      --  the value we want if Internal_Tag is computed from this string).
+
+      --  Of course this value will only be valid if the tagged type is still
+      --  in scope, but it clearly must be erroneous to compute the internal
+      --  tag of a tagged type that is out of scope!
+
+      if Is_Local_DT then
+         declare
+            Name_Exname : constant Name_Id := New_External_Name (Tname, 'L');
+            Name_Str1   : constant Name_Id := New_Internal_Name ('I');
+            Name_Str2   : constant Name_Id := New_Internal_Name ('I');
+            Name_Str3   : constant Name_Id := New_Internal_Name ('I');
+            Exname      : constant Entity_Id :=
+                            Make_Defining_Identifier (Loc, Name_Exname);
+            Str1        : constant Entity_Id :=
+                            Make_Defining_Identifier (Loc, Name_Str1);
+            Str2        : constant Entity_Id :=
+                            Make_Defining_Identifier (Loc, Name_Str2);
+            Str3        : constant Entity_Id :=
+                            Make_Defining_Identifier (Loc, Name_Str3);
+            Full_Name   : constant String_Id :=
+                            Full_Qualified_Name (First_Subtype (Typ));
+            Str1_Id     : String_Id;
+            Str2_Id     : String_Id;
+            Str3_Id     : String_Id;
+
+         begin
+            --  Generate:
+            --    Str1 : constant String := "Internal tag at 16#";
+
+            Set_Ekind (Str1, E_Constant);
+            Set_Is_Statically_Allocated (Str1);
+            Set_Is_True_Constant (Str1);
+
+            Start_String;
+            Store_String_Chars ("Internal tag at 16#");
+            Str1_Id := End_String;
+
+            --  Generate:
+            --    Str2 : constant String := "#: ";
+
+            Set_Ekind (Str2, E_Constant);
+            Set_Is_Statically_Allocated (Str2);
+            Set_Is_True_Constant (Str2);
+
+            Start_String;
+            Store_String_Chars ("#: ");
+            Str2_Id := End_String;
+
+            --  Generate:
+            --    Str3 : constant String := <full-name-of-typ>;
+
+            Set_Ekind (Str3, E_Constant);
+            Set_Is_Statically_Allocated (Str3);
+            Set_Is_True_Constant (Str3);
+
+            Start_String;
+            Store_String_Chars (Full_Name);
+            Str3_Id := End_String;
+
+            --  Generate:
+            --    Exname : constant String :=
+            --               Str1 & Address_Image (Tag) & Str2 & Str3;
+
+            if RTE_Available (RE_Address_Image) then
+               Append_To (Result,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Exname,
+                   Constant_Present    => True,
+                   Object_Definition   => New_Reference_To
+                                            (Standard_String, Loc),
+                   Expression =>
+                     Make_Op_Concat (Loc,
+                       Left_Opnd =>
+                         Make_String_Literal (Loc, Str1_Id),
+                       Right_Opnd =>
+                         Make_Op_Concat (Loc,
+                           Left_Opnd =>
+                             Make_Function_Call (Loc,
+                               Name =>
+                                 New_Reference_To
+                                   (RTE (RE_Address_Image), Loc),
+                               Parameter_Associations => New_List (
+                                 Unchecked_Convert_To (RTE (RE_Address),
+                                   New_Reference_To (DT_Ptr, Loc)))),
+                           Right_Opnd =>
+                             Make_Op_Concat (Loc,
+                               Left_Opnd =>
+                                 Make_String_Literal (Loc, Str2_Id),
+                               Right_Opnd =>
+                                 Make_String_Literal (Loc, Str3_Id))))));
+            else
+               Append_To (Result,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Exname,
+                   Constant_Present    => True,
+                   Object_Definition   => New_Reference_To
+                                            (Standard_String, Loc),
+                   Expression =>
+                     Make_Op_Concat (Loc,
+                       Left_Opnd =>
+                         Make_String_Literal (Loc, Str1_Id),
+                       Right_Opnd =>
+                         Make_Op_Concat (Loc,
+                           Left_Opnd =>
+                             Make_String_Literal (Loc, Str2_Id),
+                           Right_Opnd =>
+                             Make_String_Literal (Loc, Str3_Id)))));
+            end if;
+
+            New_Node :=
+              Unchecked_Convert_To (RTE (RE_Cstring_Ptr),
+                Make_Attribute_Reference (Loc,
+                  Prefix => New_Reference_To (Exname, Loc),
+                  Attribute_Name => Name_Address));
+         end;
+
+      --  External tag of a library-level tagged type: Check for a definition
+      --  of External_Tag. The clause is considered only if it applies to this
+      --  specific tagged type, as opposed to one of its ancestors.
+
+      else
+         declare
+            Def : constant Node_Id := Get_Attribute_Definition_Clause (Typ,
+                                        Attribute_External_Tag);
+            Old_Val : String_Id;
+            New_Val : String_Id;
+            E       : Entity_Id;
+
+         begin
+            if not Present (Def)
+              or else Entity (Name (Def)) /= Typ
+            then
+               New_Node :=
+                 Unchecked_Convert_To (RTE (RE_Cstring_Ptr),
+                   Make_Attribute_Reference (Loc,
+                     Prefix => New_Reference_To (Exname, Loc),
+                     Attribute_Name => Name_Address));
+            else
+               Old_Val := Strval (Expr_Value_S (Expression (Def)));
+
+               --  For the rep clause "for x'external_tag use y" generate:
+
+               --     xV : constant string := y;
+               --     Set_External_Tag (x'tag, xV'Address);
+               --     Register_Tag (x'tag);
+
+               --  Create a new nul terminated string if it is not already
+
+               if String_Length (Old_Val) > 0
+                 and then
+                  Get_String_Char (Old_Val, String_Length (Old_Val)) = 0
+               then
+                  New_Val := Old_Val;
+               else
+                  Start_String (Old_Val);
+                  Store_String_Char (Get_Char_Code (ASCII.NUL));
+                  New_Val := End_String;
+               end if;
+
+               E := Make_Defining_Identifier (Loc,
+                      New_External_Name (Chars (Typ), 'A'));
+
+               Append_To (Result,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => E,
+                   Constant_Present    => True,
+                   Object_Definition   =>
+                     New_Reference_To (Standard_String, Loc),
+                   Expression          =>
+                     Make_String_Literal (Loc, New_Val)));
+
+               New_Node :=
+                 Unchecked_Convert_To (RTE (RE_Cstring_Ptr),
+                   Make_Attribute_Reference (Loc,
+                     Prefix => New_Reference_To (E, Loc),
+                     Attribute_Name => Name_Address));
+            end if;
+         end;
+      end if;
+
+      Append_To (TSD_Aggr_List,
+        Make_Component_Association (Loc,
+          Choices => New_List (
+            New_Occurrence_Of
+              (RTE_Record_Component (RE_External_Tag), Loc)),
+          Expression => New_Node));
+
+      --  HT_Link
+
+      Append_To (TSD_Aggr_List,
+        Make_Component_Association (Loc,
+          Choices => New_List (
+            New_Occurrence_Of
+              (RTE_Record_Component (RE_HT_Link), Loc)),
+          Expression =>
+            Unchecked_Convert_To (RTE (RE_Tag),
+              New_Reference_To (RTE (RE_Null_Address), Loc))));
+
+      --  Transportable: Set for types that can be used in remote calls
+      --  with respect to E.4(18) legality rules.
+
+      Transportable :=
+        Boolean_Literals
+          (Is_Pure (Typ)
+             or else Is_Shared_Passive (Typ)
+             or else
+               ((Is_Remote_Types (Typ)
+                   or else Is_Remote_Call_Interface (Typ))
+                and then Original_View_In_Visible_Part (Typ))
+             or else not Comes_From_Source (Typ));
+
+      Append_To (TSD_Aggr_List,
+        Make_Component_Association (Loc,
+          Choices => New_List (
+            New_Occurrence_Of
+             (RTE_Record_Component (RE_Transportable), Loc)),
+          Expression => New_Occurrence_Of (Transportable, Loc)));
+
+      --  RC_Offset: These are the valid values and their meaning:
+
       --   >0: For simple types with controlled components is
       --         type._record_controller'position
+
       --    0: For types with no controlled components
+
       --   -1: For complex types with controlled components where the position
       --       of the record controller is not statically computable but there
       --       are controlled components at this level. The _Controller field
       --       is available right after the _parent.
+
       --   -2: There are no controlled components at this level. We need to
       --       get the position from the parent.
 
-      if Is_Interface (Typ)
-        or else not Has_Controlled_Component (Typ)
-      then
+      if not Has_Controlled_Component (Typ) then
          RC_Offset_Node := Make_Integer_Literal (Loc, 0);
 
       elsif Etype (Typ) /= Typ
@@ -2856,131 +3501,259 @@ package body Exp_Disp is
          Set_Etype (RC_Offset_Node, RTE (RE_Storage_Offset));
       end if;
 
-      --  Set the pointer to the Interfaces_Table (if any). Otherwise the
-      --  corresponding access component is set to null. The table of
-      --  interfaces is required for AI-405
+      Append_To (TSD_Aggr_List,
+        Make_Component_Association (Loc,
+          Choices => New_List (
+            New_Occurrence_Of (RTE_Record_Component (RE_RC_Offset), Loc)),
+          Expression => RC_Offset_Node));
 
-      if RTE_Record_Component_Available (RE_Ifaces_Table_Ptr) then
+      --  Interfaces_Table (required for AI-405)
+
+      if RTE_Record_Component_Available (RE_Interfaces_Table) then
+
+         --  Count the number of interface types implemented by Typ
+
+         Collect_Abstract_Interfaces (Typ, Typ_Ifaces);
+
+         AI := First_Elmt (Typ_Ifaces);
+         while Present (AI) loop
+            Num_Ifaces := Num_Ifaces + 1;
+            Next_Elmt (AI);
+         end loop;
+
          if Num_Ifaces = 0 then
-            Iface_Table_Node :=
-              New_Reference_To (RTE (RE_Null_Address), Loc);
+            Iface_Table_Node := Make_Null (Loc);
 
-         --  Generate the Interface_Table object.
+         --  Generate the Interface_Table object
 
          else
+            TSD_Ifaces_List := New_List;
+
+            declare
+               Pos       : Nat := 1;
+               Aggr_List : List_Id;
+
+            begin
+               AI := First_Elmt (Typ_Ifaces);
+               while Present (AI) loop
+                  Aggr_List := New_List (
+                    Make_Component_Association (Loc,
+                      Choices => New_List (
+                        New_Occurrence_Of
+                          (RTE_Record_Component (RE_Iface_Tag), Loc)),
+                      Expression =>
+                        Unchecked_Convert_To (Generalized_Tag,
+                          New_Reference_To
+                            (Node (First_Elmt (Access_Disp_Table (Node (AI)))),
+                             Loc))),
+
+                    Make_Component_Association (Loc,
+                      Choices => New_List (
+                        New_Occurrence_Of
+                          (RTE_Record_Component (RE_Static_Offset_To_Top),
+                           Loc)),
+                      Expression =>
+                        New_Reference_To (Standard_True, Loc)),
+
+                    Make_Component_Association (Loc,
+                      Choices     => New_List (Make_Others_Choice (Loc)),
+                      Expression  => Empty,
+                      Box_Present => True));
+
+                  Append_To (TSD_Ifaces_List,
+                    Make_Component_Association (Loc,
+                      Choices => New_List (
+                        Make_Integer_Literal (Loc, Pos)),
+                      Expression => Make_Aggregate (Loc,
+                        Component_Associations => Aggr_List)));
+
+                  Pos := Pos + 1;
+                  Next_Elmt (AI);
+               end loop;
+            end;
+
+            Name_ITable := New_External_Name (Tname, 'I');
+            ITable      := Make_Defining_Identifier (Loc, Name_ITable);
+
+            Set_Ekind (ITable, E_Constant);
+            Set_Is_Statically_Allocated (ITable);
+            Set_Is_True_Constant (ITable);
+
             Append_To (Result,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => ITable,
                 Aliased_Present     => True,
                 Object_Definition   =>
                   Make_Subtype_Indication (Loc,
-                    Subtype_Mark => New_Reference_To
-                      (RTE (RE_Interface_Data), Loc),
-                    Constraint   => Make_Index_Or_Discriminant_Constraint (Loc,
+                    Subtype_Mark =>
+                      New_Reference_To (RTE (RE_Interface_Data), Loc),
+                    Constraint => Make_Index_Or_Discriminant_Constraint (Loc,
                       Constraints => New_List (
-                        Make_Integer_Literal (Loc,
-                          Num_Ifaces))))));
+                        Make_Integer_Literal (Loc, Num_Ifaces)))),
+
+                Expression => Make_Aggregate (Loc,
+                  Component_Associations => New_List (
+                    Make_Component_Association (Loc,
+                      Choices => New_List (
+                        New_Occurrence_Of
+                          (RTE_Record_Component (RE_Nb_Ifaces), Loc)),
+                      Expression =>
+                        Make_Integer_Literal (Loc, Num_Ifaces)),
+
+                    Make_Component_Association (Loc,
+                      Choices => New_List (
+                        New_Occurrence_Of
+                          (RTE_Record_Component (RE_Ifaces_Table), Loc)),
+                      Expression => Make_Aggregate (Loc,
+                        Component_Associations => TSD_Ifaces_List))))));
 
             Iface_Table_Node :=
               Make_Attribute_Reference (Loc,
                 Prefix         => New_Reference_To (ITable, Loc),
-                Attribute_Name => Name_Address);
+                Attribute_Name => Name_Unchecked_Access);
          end if;
-      end if;
-
-      --  Generate: Set_Remotely_Callable (DT_Ptr, Status); where Status is
-      --  described in E.4 (18)
-
-      Remotely_Callable :=
-        Boolean_Literals
-          (Is_Pure (Typ)
-             or else Is_Shared_Passive (Typ)
-             or else
-               ((Is_Remote_Types (Typ)
-                   or else Is_Remote_Call_Interface (Typ))
-                and then Original_View_In_Visible_Part (Typ))
-             or else not Comes_From_Source (Typ));
-
-      --  Generate code to create the storage for the type specific data object
-      --  with enough space to store the tags of the ancestors plus the tags
-      --  of all the implemented interfaces (as described in a-tags.adb).
-
-      --   TSD : Type_Specific_Data (I_Depth) :=
-      --           (Idepth        => I_Depth,
-      --            Access_Level  => Type_Access_Level (Typ),
-      --            Expanded_Name => Cstring_Ptr!(Exname'Address))
-      --            [ External_Tag  => Cstring_Ptr!(Exname'Address)) ]
-      --            RC_Offset     => <<integer-value>>,
-      --            Remotely_Callable => <<boolean-value>>
-      --            [ Ifaces_Table_Ptr => <<access-value>> ]
-      --            others => <>);
-      --   for TSD'Alignment use Address'Alignment
-
-      TSD_Aggr_List := New_List (
-        Make_Component_Association (Loc,
-          Choices => New_List (
-            New_Occurrence_Of (RTE_Record_Component (RE_Idepth), Loc)),
-          Expression => Make_Integer_Literal (Loc, I_Depth)),
-
-        Make_Component_Association (Loc,
-          Choices => New_List (
-            New_Occurrence_Of (RTE_Record_Component (RE_Access_Level), Loc)),
-          Expression => Make_Integer_Literal (Loc, Type_Access_Level (Typ))),
-
-        Make_Component_Association (Loc,
-          Choices => New_List (
-            New_Occurrence_Of
-              (RTE_Record_Component (RE_Expanded_Name), Loc)),
-          Expression =>
-            Unchecked_Convert_To (RTE (RE_Cstring_Ptr),
-              Make_Attribute_Reference (Loc,
-                Prefix => New_Reference_To (Exname, Loc),
-                Attribute_Name => Name_Address))));
-
-      if not Has_External_Tag_Rep_Clause (Typ) then
-
-         --  Should be the external name not the qualified name???
 
          Append_To (TSD_Aggr_List,
            Make_Component_Association (Loc,
              Choices => New_List (
                New_Occurrence_Of
-                 (RTE_Record_Component (RE_External_Tag), Loc)),
-             Expression =>
-               Unchecked_Convert_To (RTE (RE_Cstring_Ptr),
-                 Make_Attribute_Reference (Loc,
-                   Prefix => New_Reference_To (Exname, Loc),
-                   Attribute_Name => Name_Address))));
-      end if;
-
-      Append_List_To (TSD_Aggr_List, New_List (
-        Make_Component_Association (Loc,
-          Choices => New_List (
-            New_Occurrence_Of (RTE_Record_Component (RE_RC_Offset), Loc)),
-          Expression => RC_Offset_Node),
-
-        Make_Component_Association (Loc,
-          Choices => New_List (
-            New_Occurrence_Of
-             (RTE_Record_Component (RE_Remotely_Callable), Loc)),
-          Expression => New_Occurrence_Of (Remotely_Callable, Loc))));
-
-      if RTE_Record_Component_Available (RE_Ifaces_Table_Ptr) then
-         Append_To (TSD_Aggr_List,
-           Make_Component_Association (Loc,
-             Choices => New_List (
-               New_Occurrence_Of
-                (RTE_Record_Component (RE_Ifaces_Table_Ptr), Loc)),
+                (RTE_Record_Component (RE_Interfaces_Table), Loc)),
              Expression => Iface_Table_Node));
       end if;
 
-      Append_To (TSD_Aggr_List,
-        Make_Component_Association (Loc,
-          Choices     => New_List (Make_Others_Choice (Loc)),
-          Expression  => Empty,
-          Box_Present => True));
+      --  Generate the Select Specific Data table for synchronized types that
+      --  implement synchronized interfaces. The size of the table is
+      --  constrained by the number of non-predefined primitive operations.
 
-      --  Save the expanded name in the dispatch table
+      if RTE_Record_Component_Available (RE_SSD) then
+         if Ada_Version >= Ada_05
+           and then Has_Dispatch_Table
+           and then Is_Concurrent_Record_Type (Typ)
+           and then Has_Abstract_Interfaces (Typ)
+           and then Nb_Prim > 0
+           and then not Is_Abstract_Type (Typ)
+           and then not Is_Controlled (Typ)
+           and then not Restriction_Active (No_Dispatching_Calls)
+         then
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => SSD,
+                Aliased_Present     => True,
+                Object_Definition   =>
+                  Make_Subtype_Indication (Loc,
+                    Subtype_Mark => New_Reference_To (
+                      RTE (RE_Select_Specific_Data), Loc),
+                    Constraint   =>
+                      Make_Index_Or_Discriminant_Constraint (Loc,
+                        Constraints => New_List (
+                          Make_Integer_Literal (Loc, Nb_Prim))))));
+
+            --  This table is initialized by Make_Select_Specific_Data_Table,
+            --  which calls Set_Entry_Index and Set_Prim_Op_Kind.
+
+            Append_To (TSD_Aggr_List,
+              Make_Component_Association (Loc,
+                Choices => New_List (
+                  New_Occurrence_Of
+                   (RTE_Record_Component (RE_SSD), Loc)),
+                Expression =>
+                  Make_Attribute_Reference (Loc,
+                    Prefix => New_Reference_To (SSD, Loc),
+                    Attribute_Name => Name_Unchecked_Access)));
+         else
+            Append_To (TSD_Aggr_List,
+              Make_Component_Association (Loc,
+                Choices => New_List (
+                  New_Occurrence_Of
+                   (RTE_Record_Component (RE_SSD), Loc)),
+                Expression => Make_Null (Loc)));
+         end if;
+      end if;
+
+      --  Initialize the table of ancestor tags. In case of interface types
+      --  this table is not needed.
+
+      if Is_Interface (Typ) then
+         Append_To (TSD_Aggr_List,
+           Make_Component_Association (Loc,
+             Choices     => New_List (Make_Others_Choice (Loc)),
+             Expression  => Empty,
+             Box_Present => True));
+      else
+         declare
+            Current_Typ : Entity_Id;
+            Parent_Typ  : Entity_Id;
+            Pos         : Nat;
+
+         begin
+            TSD_Tags_List := New_List;
+
+            --  Fill position 0 with null because we still have not generated
+            --  the tag of Typ.
+
+            Append_To (TSD_Tags_List,
+              Make_Component_Association (Loc,
+                Choices => New_List (
+                  Make_Integer_Literal (Loc, 0)),
+                Expression =>
+                  Unchecked_Convert_To (RTE (RE_Tag),
+                    New_Reference_To (RTE (RE_Null_Address), Loc))));
+
+            --  Fill the rest of the table with the tags of the ancestors
+
+            Pos := 1;
+            Current_Typ := Typ;
+
+            loop
+               Parent_Typ := Etype (Current_Typ);
+
+               if Is_Private_Type (Parent_Typ) then
+                  Parent_Typ := Full_View (Base_Type (Parent_Typ));
+               end if;
+
+               exit when Parent_Typ = Current_Typ;
+
+               if Is_CPP_Class (Parent_Typ) then
+
+                  --  The tags defined in the C++ side will be inherited when
+                  --  the object is constructed.
+                  --  (see Exp_Ch3.Build_Init_Procedure)
+
+                  Append_To (TSD_Tags_List,
+                    Make_Component_Association (Loc,
+                      Choices => New_List (
+                        Make_Integer_Literal (Loc, Pos)),
+                      Expression =>
+                        Unchecked_Convert_To (RTE (RE_Tag),
+                          New_Reference_To (RTE (RE_Null_Address), Loc))));
+               else
+                  Append_To (TSD_Tags_List,
+                    Make_Component_Association (Loc,
+                      Choices => New_List (
+                        Make_Integer_Literal (Loc, Pos)),
+                      Expression =>
+                        New_Reference_To
+                         (Node (First_Elmt (Access_Disp_Table (Parent_Typ))),
+                          Loc)));
+               end if;
+
+               Pos := Pos + 1;
+               Current_Typ := Parent_Typ;
+            end loop;
+
+            pragma Assert (Pos = I_Depth + 1);
+         end;
+
+         Append_To (TSD_Aggr_List,
+           Make_Component_Association (Loc,
+             Choices => New_List (
+               New_Occurrence_Of
+                 (RTE_Record_Component (RE_Tags_Table), Loc)),
+             Expression => Make_Aggregate (Loc,
+               Component_Associations => TSD_Tags_List)));
+      end if;
+
+      --  Build the TSD object
 
       Append_To (Result,
         Make_Object_Declaration (Loc,
@@ -2994,6 +3767,7 @@ package body Exp_Disp is
                 Make_Index_Or_Discriminant_Constraint (Loc,
                   Constraints => New_List (
                     Make_Integer_Literal (Loc, I_Depth)))),
+
           Expression => Make_Aggregate (Loc,
             Component_Associations => TSD_Aggr_List)));
 
@@ -3006,77 +3780,402 @@ package body Exp_Disp is
               Prefix => New_Reference_To (RTE (RE_Integer_Address), Loc),
               Attribute_Name => Name_Alignment)));
 
-      --  Generate code to put the Address of the TSD in the dispatch table
+      --  Generate the dummy Dispatch_Table object associated with tagged
+      --  types that have no dispatch table.
 
-      Append_To (Elab_Code,
-        Build_Set_TSD (Loc,
-          Tag_Node => New_Reference_To (DT_Ptr, Loc),
-          Value_Node =>
-            Make_Attribute_Reference (Loc,
-              Prefix          => New_Reference_To (TSD, Loc),
-              Attribute_Name  => Name_Address)));
+      --   DT : No_Dispatch_Table :=
+      --          (NDT_TSD       => TSD'Address;
+      --           NDT_Prims_Ptr => 0);
 
-      --  Generate extra code required for synchronized interfaces
+      if not Has_Dispatch_Table then
+         DT_Constr_List := New_List;
+         DT_Aggr_List   := New_List;
 
-      if RTE_Available (RE_Set_Tagged_Kind) then
-         if Ada_Version >= Ada_05
-           and then not Is_Interface  (Typ)
-           and then not Is_Abstract_Type   (Typ)
-           and then not Is_Controlled (Typ)
-           and then not Restriction_Active (No_Dispatching_Calls)
-         then
-            --  Generate:
-            --    Set_Type_Kind (T'Tag, Type_Kind (Typ));
+         --  Typeinfo
 
-            Append_To (Elab_Code,
-              Make_DT_Access_Action (Typ,
-                Action => Set_Tagged_Kind,
-                Args   => New_List (
-                  New_Reference_To (DT_Ptr, Loc),               -- DTptr
-                  Tagged_Kind (Typ))));                         -- Value
+         New_Node :=
+           Make_Attribute_Reference (Loc,
+             Prefix => New_Reference_To (TSD, Loc),
+             Attribute_Name => Name_Address);
 
-            --  Generate the Select Specific Data table for synchronized
-            --  types that implement a synchronized interface. The size
-            --  of the table is constrained by the number of non-predefined
-            --  primitive operations.
+         Append_To (DT_Constr_List, New_Node);
+         Append_To (DT_Aggr_List,   New_Copy (New_Node));
+         Append_To (DT_Aggr_List,   Make_Integer_Literal (Loc, 0));
 
-            if Has_Dispatch_Table
-              and then Is_Concurrent_Record_Type (Typ)
-              and then Has_Abstract_Interfaces (Typ)
-            then
-               --  No need to generate this code if Nb_Prim = 0 ???
+         --  In case of locally defined tagged types we have already declared
+         --  and uninitialized object for the dispatch table, which is now
+         --  initialized by means of an assignment.
+
+         if Is_Local_DT then
+            Append_To (Result,
+              Make_Assignment_Statement (Loc,
+                Name => New_Reference_To (DT, Loc),
+                Expression => Make_Aggregate (Loc,
+                  Expressions => DT_Aggr_List)));
+
+         --  In case of library level tagged types we declare now the constant
+         --  object containing the dispatch table.
+
+         else
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => DT,
+                Aliased_Present     => True,
+                Constant_Present    => Static_Dispatch_Tables,
+                Object_Definition   =>
+                  New_Reference_To (RTE (RE_No_Dispatch_Table_Wrapper), Loc),
+                Expression => Make_Aggregate (Loc,
+                  Expressions => DT_Aggr_List)));
+
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => DT_Ptr,
+                Object_Definition   => New_Reference_To (RTE (RE_Tag), Loc),
+                Constant_Present    => True,
+                Expression =>
+                  Unchecked_Convert_To (Generalized_Tag,
+                    Make_Attribute_Reference (Loc,
+                      Prefix =>
+                        Make_Selected_Component (Loc,
+                          Prefix => New_Reference_To (DT, Loc),
+                        Selector_Name =>
+                          New_Occurrence_Of
+                            (RTE_Record_Component (RE_NDT_Prims_Ptr), Loc)),
+                      Attribute_Name => Name_Address))));
+         end if;
+
+      --  Common case: Typ has a dispatch table
+
+      --  Generate:
+
+      --   Predef_Prims : Address_Array (1 .. Default_Prim_Ops_Count) :=
+      --                    (predef-prim-op-1'address,
+      --                     predef-prim-op-2'address,
+      --                     ...
+      --                     predef-prim-op-n'address);
+      --   for Predef_Prims'Alignment use Address'Alignment
+
+      --   DT : Dispatch_Table (Nb_Prims) :=
+      --          (Signature => <sig-value>,
+      --           Tag_Kind  => <tag_kind-value>,
+      --           Predef_Prims => Predef_Prims'First'Address,
+      --           Offset_To_Top => 0,
+      --           TSD           => TSD'Address;
+      --           Prims_Ptr     => (prim-op-1'address,
+      --                             prim-op-2'address,
+      --                             ...
+      --                             prim-op-n'address));
+
+      else
+         declare
+            Pos : Nat;
+
+         begin
+            if not Static_Dispatch_Tables then
+               Nb_Predef_Prims := Max_Predef_Prims;
+
+            else
+               Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
+               while Present (Prim_Elmt) loop
+                  Prim := Node (Prim_Elmt);
+
+                  if Is_Predefined_Dispatching_Operation (Prim)
+                    and then not Is_Abstract_Subprogram (Prim)
+                  then
+                     Pos := UI_To_Int (DT_Position (Prim));
+
+                     if Pos > Nb_Predef_Prims then
+                        Nb_Predef_Prims := Pos;
+                     end if;
+                  end if;
+
+                  Next_Elmt (Prim_Elmt);
+               end loop;
+            end if;
+
+            declare
+               Prim_Table : array
+                              (Nat range 1 .. Nb_Predef_Prims) of Entity_Id;
+               E          : Entity_Id;
+
+            begin
+               Prim_Ops_Aggr_List := New_List;
+
+               Prim_Table := (others => Empty);
+               Prim_Elmt  := First_Elmt (Primitive_Operations (Typ));
+               while Present (Prim_Elmt) loop
+                  Prim := Node (Prim_Elmt);
+
+                  if Static_Dispatch_Tables
+                    and then Is_Predefined_Dispatching_Operation (Prim)
+                    and then not Is_Abstract_Subprogram (Prim)
+                    and then not Present (Prim_Table
+                                           (UI_To_Int (DT_Position (Prim))))
+                  then
+                     E := Prim;
+                     while Present (Alias (E)) loop
+                        E := Alias (E);
+                     end loop;
+
+                     pragma Assert (not Is_Abstract_Subprogram (E));
+                     Prim_Table (UI_To_Int (DT_Position (Prim))) := E;
+                  end if;
+
+                  Next_Elmt (Prim_Elmt);
+               end loop;
+
+               for J in Prim_Table'Range loop
+                  if Present (Prim_Table (J)) then
+                     New_Node :=
+                       Make_Attribute_Reference (Loc,
+                         Prefix => New_Reference_To (Prim_Table (J), Loc),
+                         Attribute_Name => Name_Address);
+                  else
+                     New_Node := New_Reference_To (RTE (RE_Null_Address), Loc);
+                  end if;
+
+                  Append_To (Prim_Ops_Aggr_List, New_Node);
+               end loop;
 
                Append_To (Result,
                  Make_Object_Declaration (Loc,
-                   Defining_Identifier => SSD,
+                   Defining_Identifier => Predef_Prims,
                    Aliased_Present     => True,
+                   Constant_Present    => Static_Dispatch_Tables,
                    Object_Definition   =>
-                     Make_Subtype_Indication (Loc,
-                       Subtype_Mark => New_Reference_To (
-                         RTE (RE_Select_Specific_Data), Loc),
-                       Constraint   =>
-                         Make_Index_Or_Discriminant_Constraint (Loc,
-                           Constraints => New_List (
-                             Make_Integer_Literal (Loc, Nb_Prim))))));
+                     New_Reference_To (RTE (RE_Address_Array), Loc),
+                   Expression => Make_Aggregate (Loc,
+                     Expressions => Prim_Ops_Aggr_List)));
 
-               --  Set the pointer to the Select Specific Data table in the TSD
+               Append_To (Result,
+                 Make_Attribute_Definition_Clause (Loc,
+                   Name       => New_Reference_To (Predef_Prims, Loc),
+                   Chars      => Name_Alignment,
+                   Expression =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix =>
+                         New_Reference_To (RTE (RE_Integer_Address), Loc),
+                       Attribute_Name => Name_Alignment)));
+            end;
+         end;
 
-               Append_To (Elab_Code,
-                 Make_DT_Access_Action (Typ,
-                   Action => Set_SSD,
-                   Args   => New_List (
-                     New_Reference_To (DT_Ptr, Loc),            -- DTptr
-                     Make_Attribute_Reference (Loc,             -- Value
-                       Prefix         => New_Reference_To (SSD, Loc),
-                       Attribute_Name => Name_Address))));
-            end if;
+         --  Stage 1: Initialize the discriminant and the record components
+
+         DT_Constr_List := New_List;
+         DT_Aggr_List   := New_List;
+
+         --  Num_Prims. If the tagged type has no primitives we add a dummy
+         --  slot whose address will be the tag of this type.
+
+         if Nb_Prim = 0 then
+            New_Node := Make_Integer_Literal (Loc, 1);
+         else
+            New_Node := Make_Integer_Literal (Loc, Nb_Prim);
+         end if;
+
+         Append_To (DT_Constr_List, New_Node);
+         Append_To (DT_Aggr_List,   New_Copy (New_Node));
+
+         --  Signature
+
+         if RTE_Record_Component_Available (RE_Signature) then
+            Append_To (DT_Aggr_List,
+              New_Reference_To (RTE (RE_Primary_DT), Loc));
+         end if;
+
+         --  Tag_Kind
+
+         if RTE_Record_Component_Available (RE_Tag_Kind) then
+            Append_To (DT_Aggr_List, Tagged_Kind (Typ));
+         end if;
+
+         --  Predef_Prims
+
+         Append_To (DT_Aggr_List,
+           Make_Attribute_Reference (Loc,
+             Prefix => New_Reference_To (Predef_Prims, Loc),
+             Attribute_Name => Name_Address));
+
+         --  Offset_To_Top
+
+         if RTE_Record_Component_Available (RE_Offset_To_Top) then
+            Append_To (DT_Aggr_List, Make_Integer_Literal (Loc, 0));
+         end if;
+
+         --  Typeinfo
+
+         Append_To (DT_Aggr_List,
+           Make_Attribute_Reference (Loc,
+             Prefix => New_Reference_To (TSD, Loc),
+             Attribute_Name => Name_Address));
+
+         --  Stage 2: Initialize the table of primitive operations
+
+         Prim_Ops_Aggr_List := New_List;
+
+         if Nb_Prim = 0 then
+            Append_To (Prim_Ops_Aggr_List,
+              New_Reference_To (RTE (RE_Null_Address), Loc));
+
+         elsif not Static_Dispatch_Tables then
+            for J in 1 .. Nb_Prim loop
+               Append_To (Prim_Ops_Aggr_List,
+                 New_Reference_To (RTE (RE_Null_Address), Loc));
+            end loop;
+
+         else
+            declare
+               Prim_Table : array (Nat range 1 .. Nb_Prim) of Entity_Id;
+               E          : Entity_Id;
+               Prim       : Entity_Id;
+               Prim_Elmt  : Elmt_Id;
+
+            begin
+               Prim_Table := (others => Empty);
+               Prim_Elmt  := First_Elmt (Primitive_Operations (Typ));
+               while Present (Prim_Elmt) loop
+                  Prim := Node (Prim_Elmt);
+
+                  if Is_Imported (Prim)
+                    or else Present (Abstract_Interface_Alias (Prim))
+                    or else Is_Predefined_Dispatching_Operation (Prim)
+                  then
+                     null;
+
+                  else
+                     --  Traverse the list of aliased entities to handle
+                     --  renamings of predefined primitives.
+
+                     E := Prim;
+                     while Present (Alias (E)) loop
+                        E := Alias (E);
+                     end loop;
+
+                     if not Is_Predefined_Dispatching_Operation (E)
+                       and then not Is_Abstract_Subprogram (E)
+                       and then not Present (Abstract_Interface_Alias (E))
+                     then
+                        pragma Assert
+                          (UI_To_Int (DT_Position (Prim)) <= Nb_Prim);
+
+                        Prim_Table (UI_To_Int (DT_Position (Prim))) := E;
+
+                        --  There is no need to set Has_Delayed_Freeze here
+                        --  because the analysis of 'Address and 'Code_Address
+                        --  takes care of it.
+                     end if;
+                  end if;
+
+                  Next_Elmt (Prim_Elmt);
+               end loop;
+
+               for J in Prim_Table'Range loop
+                  if Present (Prim_Table (J)) then
+                     New_Node :=
+                       Make_Attribute_Reference (Loc,
+                         Prefix => New_Reference_To (Prim_Table (J), Loc),
+                         Attribute_Name => Name_Address);
+                  else
+                     New_Node := New_Reference_To (RTE (RE_Null_Address), Loc);
+                  end if;
+
+                  Append_To (Prim_Ops_Aggr_List, New_Node);
+               end loop;
+            end;
+         end if;
+
+         Append_To (DT_Aggr_List,
+           Make_Aggregate (Loc,
+             Expressions => Prim_Ops_Aggr_List));
+
+         --  In case of locally defined tagged types we have already declared
+         --  and uninitialized object for the dispatch table, which is now
+         --  initialized by means of an assignment.
+
+         if Is_Local_DT then
+            Append_To (Result,
+              Make_Assignment_Statement (Loc,
+                Name => New_Reference_To (DT, Loc),
+                Expression => Make_Aggregate (Loc,
+                  Expressions => DT_Aggr_List)));
+
+         --  In case of library level tagged types we declare now the constant
+         --  object containing the dispatch table.
+
+         else
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => DT,
+                Aliased_Present     => True,
+                Constant_Present    => Static_Dispatch_Tables,
+                Object_Definition   =>
+                  Make_Subtype_Indication (Loc,
+                    Subtype_Mark => New_Reference_To
+                                      (RTE (RE_Dispatch_Table_Wrapper), Loc),
+                    Constraint   => Make_Index_Or_Discriminant_Constraint (Loc,
+                                      Constraints => DT_Constr_List)),
+                Expression => Make_Aggregate (Loc,
+                  Expressions => DT_Aggr_List)));
+
+            Append_To (Result,
+              Make_Attribute_Definition_Clause (Loc,
+                Name       => New_Reference_To (DT, Loc),
+                Chars      => Name_Alignment,
+                Expression =>
+                  Make_Attribute_Reference (Loc,
+                    Prefix =>
+                      New_Reference_To (RTE (RE_Integer_Address), Loc),
+                    Attribute_Name => Name_Alignment)));
+
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => DT_Ptr,
+                Object_Definition   => New_Reference_To (RTE (RE_Tag), Loc),
+                Constant_Present    => True,
+                Expression =>
+                  Unchecked_Convert_To (Generalized_Tag,
+                    Make_Attribute_Reference (Loc,
+                      Prefix =>
+                        Make_Selected_Component (Loc,
+                          Prefix => New_Reference_To (DT, Loc),
+                        Selector_Name =>
+                          New_Occurrence_Of
+                            (RTE_Record_Component (RE_Prims_Ptr), Loc)),
+                      Attribute_Name => Name_Address))));
          end if;
       end if;
+
+      --  Initialize the table of ancestor tags
+
+      if not Is_Interface (Typ)
+        and then not Is_CPP_Class (Typ)
+      then
+         Append_To (Result,
+           Make_Assignment_Statement (Loc,
+             Name =>
+               Make_Indexed_Component (Loc,
+                 Prefix =>
+                   Make_Selected_Component (Loc,
+                     Prefix =>
+                       New_Reference_To (TSD, Loc),
+                     Selector_Name =>
+                       New_Reference_To
+                         (RTE_Record_Component (RE_Tags_Table), Loc)),
+                 Expressions =>
+                    New_List (Make_Integer_Literal (Loc, 0))),
+
+             Expression =>
+               New_Reference_To
+                 (Node (First_Elmt (Access_Disp_Table (Typ))), Loc)));
+      end if;
+
+      if Static_Dispatch_Tables then
+         null;
 
       --  If the ancestor is a CPP_Class type we inherit the dispatch tables
       --  in the init proc, and we don't need to fill them in here.
 
-      if Is_CPP_Class (Etype (Typ)) then
+      elsif Is_CPP_Class (Etype (Typ)) then
          null;
 
          --  Otherwise we fill in the dispatch tables here
@@ -3111,39 +4210,32 @@ package body Exp_Disp is
             --  Inherit the dispatch table
 
             if not Is_Interface (Etype (Typ)) then
-               if Restriction_Active (No_Dispatching_Calls) then
-                  null;
+               if not Null_Parent_Tag then
+                  declare
+                     Nb_Prims : constant Int :=
+                                  UI_To_Int (DT_Entry_Count
+                                    (First_Tag_Component (Etype (Typ))));
+                  begin
+                     Append_To (Elab_Code,
+                       Build_Inherit_Predefined_Prims (Loc,
+                         Old_Tag_Node => Old_Tag1,
+                         New_Tag_Node =>
+                           New_Reference_To (DT_Ptr, Loc)));
 
-               else
-                  if not Null_Parent_Tag then
-                     declare
-                        Nb_Prims : constant Int :=
-                                     UI_To_Int (DT_Entry_Count
-                                       (First_Tag_Component (Etype (Typ))));
-                     begin
+                     if Nb_Prims /= 0 then
                         Append_To (Elab_Code,
-                          Build_Inherit_Predefined_Prims (Loc,
-                            Old_Tag_Node => Old_Tag1,
-                            New_Tag_Node =>
-                              New_Reference_To (DT_Ptr, Loc)));
-
-                        if Nb_Prims /= 0 then
-                           Append_To (Elab_Code,
-                             Build_Inherit_Prims (Loc,
-                               Old_Tag_Node => Old_Tag2,
-                               New_Tag_Node => New_Reference_To (DT_Ptr, Loc),
-                               Num_Prims    => Nb_Prims));
-                        end if;
-                     end;
-                  end if;
+                          Build_Inherit_Prims (Loc,
+                            Old_Tag_Node => Old_Tag2,
+                            New_Tag_Node => New_Reference_To (DT_Ptr, Loc),
+                            Num_Prims    => Nb_Prims));
+                     end if;
+                  end;
                end if;
             end if;
 
             --  Inherit the secondary dispatch tables of the ancestor
 
-            if not Restriction_Active (No_Dispatching_Calls)
-              and then not Is_CPP_Class (Etype (Typ))
-            then
+            if not Is_CPP_Class (Etype (Typ)) then
                declare
                   Sec_DT_Ancestor : Elmt_Id :=
                                       Next_Elmt
@@ -3187,6 +4279,7 @@ package body Exp_Disp is
                         E     := First_Entity (Typ);
                         while Present (E)
                           and then Present (Node (Sec_DT_Ancestor))
+                          and then Ekind (Node (Sec_DT_Ancestor)) = E_Constant
                         loop
                            if Is_Tag (E) and then Chars (E) /= Name_uTag then
                               if not Is_Interface (Etype (Typ)) then
@@ -3238,8 +4331,9 @@ package body Exp_Disp is
                   end Copy_Secondary_DTs;
 
                begin
-                  if Present (Node (Sec_DT_Ancestor)) then
-
+                  if Present (Node (Sec_DT_Ancestor))
+                    and then Ekind (Node (Sec_DT_Ancestor)) = E_Constant
+                  then
                      --  Handle private types
 
                      if Present (Full_View (Typ)) then
@@ -3251,50 +4345,6 @@ package body Exp_Disp is
                end;
             end if;
          end if;
-
-         --  Generate:
-         --    Inherit_TSD (parent'tag, DT_Ptr);
-
-         if not Is_Interface (Typ) then
-            if Typ = Etype (Typ)
-              or else Is_CPP_Class (Etype (Typ))
-            then
-               --  New_TSD (DT_Ptr);
-
-               Append_List_To (Elab_Code,
-                 Build_New_TSD (Loc,
-                   New_Tag_Node => New_Reference_To (DT_Ptr, Loc)));
-            else
-               --  Inherit_TSD (parent'tag, DT_Ptr);
-
-               Append_To (Elab_Code,
-                 Build_Inherit_TSD (Loc,
-                   Old_Tag_Node =>
-                     New_Reference_To
-                       (Node (First_Elmt (Access_Disp_Table (Etype (Typ)))),
-                        Loc),
-                   New_Tag_Node      => New_Reference_To (DT_Ptr, Loc),
-                   I_Depth           => I_Depth,
-                   Parent_Num_Ifaces => Parent_Num_Ifaces));
-            end if;
-         end if;
-      end if;
-
-      if not Is_Interface (Typ)
-        and then RTE_Available (RE_Set_Offset_To_Top)
-      then
-         --  Generate:
-         --    Set_Offset_To_Top (0, DT_Ptr, True, 0, null);
-
-         Append_To (Elab_Code,
-           Make_Procedure_Call_Statement (Loc,
-             Name => New_Reference_To (RTE (RE_Set_Offset_To_Top), Loc),
-             Parameter_Associations => New_List (
-               New_Reference_To (RTE (RE_Null_Address), Loc),
-               New_Reference_To (DT_Ptr, Loc),
-               New_Occurrence_Of (Standard_True, Loc),
-               Make_Integer_Literal (Loc, Uint_0),
-               New_Reference_To (RTE (RE_Null_Address), Loc))));
       end if;
 
       --  Generate code to register the Tag in the External_Tag hash table for
@@ -3302,409 +4352,48 @@ package body Exp_Disp is
 
       --        Register_Tag (Dt_Ptr);
 
-      --  Skip this if routine not available, or in No_Run_Time mode or Typ is
-      --  an abstract interface type (because the table to register it is not
-      --  available in the abstract type but in types implementing this
-      --  interface)
-
-      if not Has_External_Tag_Rep_Clause (Typ)
-        and then not No_Run_Time_Mode
-        and then RTE_Available (RE_Register_Tag)
-        and then Is_RTE (RTE (RE_Tag), RE_Tag)
-        and then not Is_Interface (Typ)
-      then
-         Append_To (Elab_Code,
-           Make_Procedure_Call_Statement (Loc,
-             Name => New_Reference_To (RTE (RE_Register_Tag), Loc),
-             Parameter_Associations =>
-               New_List (New_Reference_To (DT_Ptr, Loc))));
-      end if;
+      --  Skip this action in the following cases:
+      --    1) if Register_Tag is not available.
+      --    2) in No_Run_Time mode.
+      --    3) if Typ is an abstract interface type (the secondary tags will
+      --       be registered later in types implementing this interface type).
+      --    4) if Typ is not defined at the library level (this is required
+      --       to avoid adding concurrency control to the hash table used
+      --       by the run-time to register the tags).
 
       --  Generate:
       --     if No_Reg then
-      --        <elab_code>
+      --        [ Elab_Code ]
+      --        [ Register_Tag (Dt_Ptr); ]
       --        No_Reg := False;
       --     end if;
 
-      Append_To (Elab_Code,
-        Make_Assignment_Statement (Loc,
-          Name       => New_Reference_To (No_Reg, Loc),
-          Expression => New_Reference_To (Standard_False, Loc)));
+      if not Is_Interface (Typ) then
+         if not No_Run_Time_Mode
+           and then not Is_Local_DT
+           and then RTE_Available (RE_Register_Tag)
+         then
+            Append_To (Elab_Code,
+              Make_Procedure_Call_Statement (Loc,
+                Name => New_Reference_To (RTE (RE_Register_Tag), Loc),
+                Parameter_Associations =>
+                  New_List (New_Reference_To (DT_Ptr, Loc))));
+         end if;
 
-      Append_To (Result,
-        Make_Implicit_If_Statement (Typ,
-          Condition       => New_Reference_To (No_Reg, Loc),
-          Then_Statements => Elab_Code));
-
-      --  Ada 2005 (AI-251): Register the tag of the interfaces into the table
-      --  of interfaces.
-
-      if Num_Ifaces > 0 then
-         declare
-            Position : Nat;
-
-         begin
-            --  If the parent is an interface we must generate code to register
-            --  all its interfaces; otherwise this code is not needed because
-            --  Inherit_TSD has already inherited such interfaces.
-
-            if Is_Concurrent_Record_Type (Typ)
-              or else (Etype (Typ) /= Typ and then Is_Interface (Etype (Typ)))
-            then
-               Position := 1;
-
-               AI := First_Elmt (Ancestor_Ifaces);
-               while Present (AI) loop
-                  --  Generate:
-                  --    Register_Interface (DT_Ptr, Interface'Tag);
-
-                  Append_To (Result,
-                    Make_DT_Access_Action (Typ,
-                      Action => Register_Interface_Tag,
-                      Args   => New_List (
-                        Node1 => New_Reference_To (DT_Ptr, Loc),
-                        Node2 => New_Reference_To
-                                   (Node
-                                    (First_Elmt
-                                     (Access_Disp_Table (Node (AI)))),
-                                    Loc),
-                        Node3 => Make_Integer_Literal (Loc, Position))));
-
-                  Position := Position + 1;
-                  Next_Elmt (AI);
-               end loop;
-            end if;
-
-            --  Register the interfaces that are not implemented by the
-            --  ancestor
-
-            AI := First_Elmt (Typ_Ifaces);
-
-            --  Skip the interfaces implemented by the ancestor
-
-            for Count in 1 .. Parent_Num_Ifaces loop
-               Next_Elmt (AI);
-            end loop;
-
-            --  Register the additional interfaces
-
-            Position := Parent_Num_Ifaces + 1;
-            while Present (AI) loop
-
-               --  Generate:
-               --    Register_Interface (DT_Ptr, Interface'Tag);
-
-               if not Is_Interface (Typ)
-                 or else Typ /= Node (AI)
-               then
-                  Append_To (Result,
-                    Make_DT_Access_Action (Typ,
-                      Action => Register_Interface_Tag,
-                      Args   => New_List (
-                        Node1 => New_Reference_To (DT_Ptr, Loc),
-                        Node2 => New_Reference_To
-                                   (Node
-                                    (First_Elmt
-                                     (Access_Disp_Table (Node (AI)))),
-                                    Loc),
-                        Node3 => Make_Integer_Literal (Loc, Position))));
-
-                  Position := Position + 1;
-               end if;
-
-               Next_Elmt (AI);
-            end loop;
-
-            pragma Assert (Position = Num_Ifaces + 1);
-         end;
-      end if;
-
-      return Result;
-   end Make_DT;
-
-   ---------------------------
-   -- Make_DT_Access_Action --
-   ---------------------------
-
-   function Make_DT_Access_Action
-     (Typ    : Entity_Id;
-      Action : DT_Access_Action;
-      Args   : List_Id) return Node_Id
-   is
-      Action_Name : constant Entity_Id := RTE (Ada_Actions (Action));
-      Loc         : Source_Ptr;
-
-   begin
-      if No (Args) then
-
-         --  This is a constant
-
-         return New_Reference_To (Action_Name, Sloc (Typ));
-      end if;
-
-      pragma Assert (List_Length (Args) = Action_Nb_Arg (Action));
-
-      Loc := Sloc (First (Args));
-
-      if Action_Is_Proc (Action) then
-         return
-           Make_Procedure_Call_Statement (Loc,
-             Name => New_Reference_To (Action_Name, Loc),
-             Parameter_Associations => Args);
-
-      else
-         return
-           Make_Function_Call (Loc,
-             Name => New_Reference_To (Action_Name, Loc),
-             Parameter_Associations => Args);
-      end if;
-   end Make_DT_Access_Action;
-
-   -----------------------
-   -- Make_Secondary_DT --
-   -----------------------
-
-   procedure Make_Secondary_DT
-     (Typ             : Entity_Id;
-      Ancestor_Typ    : Entity_Id;
-      Suffix_Index    : Nat;
-      Iface           : Entity_Id;
-      AI_Tag          : Entity_Id;
-      Acc_Disp_Tables : in out Elist_Id;
-      Result          : out List_Id)
-   is
-      Loc             : constant Source_Ptr := Sloc (AI_Tag);
-      Generalized_Tag : constant Entity_Id := RTE (RE_Interface_Tag);
-      Name_DT         : constant Name_Id := New_Internal_Name ('T');
-      Empty_DT        : Boolean := False;
-      Iface_DT        : Node_Id;
-      Iface_DT_Ptr    : Node_Id;
-      Name_DT_Ptr     : Name_Id;
-      Nb_Prim         : Nat;
-      OSD             : Entity_Id;
-      Size_Expr_Node  : Node_Id;
-      Tname           : Name_Id;
-
-   begin
-      Result := New_List;
-
-      --  Generate a unique external name associated with the secondary
-      --  dispatch table. This external name will be used to declare an
-      --  access to this secondary dispatch table, value that will be used
-      --  for the elaboration of Typ's objects and also for the elaboration
-      --  of objects of any derivation of Typ that do not override any
-      --  primitive operation of Typ.
-
-      Get_Secondary_DT_External_Name (Typ, Ancestor_Typ, Suffix_Index);
-
-      Tname        := Name_Find;
-      Name_DT_Ptr  := New_External_Name (Tname, "P");
-      Iface_DT     := Make_Defining_Identifier (Loc, Name_DT);
-      Iface_DT_Ptr := Make_Defining_Identifier (Loc, Name_DT_Ptr);
-
-      --  Dispatch table and related entities are allocated statically
-
-      Set_Ekind (Iface_DT, E_Variable);
-      Set_Is_Statically_Allocated (Iface_DT);
-
-      Set_Ekind (Iface_DT_Ptr, E_Variable);
-      Set_Is_Statically_Allocated (Iface_DT_Ptr);
-
-      --  Generate code to create the storage for the Dispatch_Table object.
-      --  If the number of primitives of Typ is 0 we reserve a dummy single
-      --  entry for its DT because at run-time the pointer to this dummy entry
-      --  will be used as the tag.
-
-      Nb_Prim := UI_To_Int (DT_Entry_Count (AI_Tag));
-
-      if Nb_Prim = 0 then
-         Empty_DT := True;
-         Nb_Prim  := 1;
-      end if;
-
-      --    DT : Storage_Array (1..DT_Prologue_Size+nb_prim*DT_Entry_Size);
-      --    for DT'Alignment use Address'Alignment
-
-      Size_Expr_Node :=
-        Make_Op_Add (Loc,
-          Left_Opnd  =>
-            New_Reference_To (RTE (RE_DT_Prologue_Size), Loc),
-          Right_Opnd =>
-            Make_Op_Multiply (Loc,
-              Left_Opnd  =>
-                New_Reference_To (RTE (RE_DT_Entry_Size), Loc),
-              Right_Opnd =>
-                Make_Integer_Literal (Loc, Nb_Prim)));
-
-      Append_To (Result,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Iface_DT,
-          Aliased_Present     => True,
-          Object_Definition   =>
-            Make_Subtype_Indication (Loc,
-              Subtype_Mark => New_Reference_To (RTE (RE_Storage_Array), Loc),
-              Constraint   => Make_Index_Or_Discriminant_Constraint (Loc,
-                Constraints => New_List (
-                  Make_Range (Loc,
-                    Low_Bound  => Make_Integer_Literal (Loc, 1),
-                    High_Bound => Size_Expr_Node))))));
-
-      Append_To (Result,
-        Make_Attribute_Definition_Clause (Loc,
-          Name       => New_Reference_To (Iface_DT, Loc),
-          Chars      => Name_Alignment,
-          Expression =>
-            Make_Attribute_Reference (Loc,
-              Prefix => New_Reference_To (RTE (RE_Integer_Address), Loc),
-              Attribute_Name => Name_Alignment)));
-
-      --  Generate code to create the pointer to the dispatch table
-
-      --    Iface_DT_Ptr : Tag := Tag!(DT'Address);
-
-      --  According to the C++ ABI, the base of the vtable is located
-      --  after the following prologue: Offset_To_Top, and Typeinfo_Ptr.
-      --  Hence, move the pointer down to the real base of the vtable.
-
-      Append_To (Result,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Iface_DT_Ptr,
-          Constant_Present    => True,
-          Object_Definition   => New_Reference_To (Generalized_Tag, Loc),
-          Expression          =>
-            Unchecked_Convert_To (Generalized_Tag,
-              Make_Op_Add (Loc,
-                Left_Opnd =>
-                  Unchecked_Convert_To (RTE (RE_Storage_Offset),
-                    Make_Attribute_Reference (Loc,
-                      Prefix         => New_Reference_To (Iface_DT, Loc),
-                      Attribute_Name => Name_Address)),
-                Right_Opnd =>
-                  New_Reference_To (RTE (RE_DT_Prologue_Size), Loc)))));
-
-      --  Note: Offset_To_Top will be initialized by the init subprogram
-
-      --  Set Access_Disp_Table field to be the dispatch table pointer
-
-      if not (Present (Acc_Disp_Tables)) then
-         Acc_Disp_Tables := New_Elmt_List;
-      end if;
-
-      Append_Elmt (Iface_DT_Ptr, Acc_Disp_Tables);
-
-      --  Step 1: Generate an Object Specific Data (OSD) table
-
-      OSD := Make_Defining_Identifier (Loc, New_Internal_Name ('I'));
-
-      --  Nothing to do if configurable run time does not support the
-      --  Object_Specific_Data entity.
-
-      if not RTE_Available (RE_Object_Specific_Data) then
-         Error_Msg_CRT ("abstract interface types", Typ);
-         return;
-      end if;
-
-      --  Generate:
-      --    OSD : Ada.Tags.Object_Specific_Data (Nb_Prims);
-      --  where the constraint is used to allocate space for the
-      --  non-predefined primitive operations only.
-
-      Append_To (Result,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => OSD,
-          Object_Definition   =>
-            Make_Subtype_Indication (Loc,
-              Subtype_Mark => New_Reference_To (
-                RTE (RE_Object_Specific_Data), Loc),
-              Constraint =>
-                Make_Index_Or_Discriminant_Constraint (Loc,
-                  Constraints => New_List (
-                    Make_Integer_Literal (Loc, Nb_Prim))))));
-
-      Append_To (Result,
-        Make_DT_Access_Action (Typ,
-          Action => Set_Signature,
-          Args   => New_List (
-            Unchecked_Convert_To (RTE (RE_Tag),
-              New_Reference_To (Iface_DT_Ptr, Loc)),
-            New_Reference_To (RTE (RE_Secondary_DT), Loc))));
-
-      --  Generate:
-      --    Ada.Tags.Set_OSD (Iface_DT_Ptr, OSD);
-
-      Append_To (Result,
-        Make_DT_Access_Action (Typ,
-          Action => Set_OSD,
-          Args   => New_List (
-            Unchecked_Convert_To (RTE (RE_Tag),
-              New_Reference_To (Iface_DT_Ptr, Loc)),
-            Make_Attribute_Reference (Loc,
-              Prefix         => New_Reference_To (OSD, Loc),
-              Attribute_Name => Name_Address))));
-
-      if Ada_Version >= Ada_05
-        and then not Is_Interface (Typ)
-        and then not Is_Abstract_Type (Typ)
-        and then not Is_Controlled (Typ)
-        and then RTE_Available (RE_Set_Tagged_Kind)
-        and then not Restriction_Active (No_Dispatching_Calls)
-      then
-         --  Generate:
-         --    Set_Tagged_Kind (Iface'Tag, Tagged_Kind (Iface));
+         Append_To (Elab_Code,
+           Make_Assignment_Statement (Loc,
+             Name       => New_Reference_To (No_Reg, Loc),
+             Expression => New_Reference_To (Standard_False, Loc)));
 
          Append_To (Result,
-           Make_DT_Access_Action (Typ,
-             Action => Set_Tagged_Kind,
-             Args   => New_List (
-               Unchecked_Convert_To (RTE (RE_Tag),              -- DTptr
-                 New_Reference_To (Iface_DT_Ptr, Loc)),
-               Tagged_Kind (Typ))));                            -- Value
-
-         if not Empty_DT
-           and then Is_Concurrent_Record_Type (Typ)
-           and then Has_Abstract_Interfaces (Typ)
-         then
-            declare
-               Prim       : Entity_Id;
-               Prim_Alias : Entity_Id;
-               Prim_Elmt  : Elmt_Id;
-
-            begin
-               --  Step 2: Populate the OSD table
-
-               Prim_Alias := Empty;
-               Prim_Elmt  := First_Elmt (Primitive_Operations (Typ));
-               while Present (Prim_Elmt) loop
-                  Prim := Node (Prim_Elmt);
-
-                  if Present (Abstract_Interface_Alias (Prim))
-                    and then Find_Dispatching_Type
-                               (Abstract_Interface_Alias (Prim)) = Iface
-                  then
-                     Prim_Alias := Abstract_Interface_Alias (Prim);
-
-                     --  Generate:
-                     --    Ada.Tags.Set_Offset_Index (Tag (Iface_DT_Ptr),
-                     --      Secondary_DT_Pos, Primary_DT_pos);
-
-                     Append_To (Result,
-                       Make_DT_Access_Action (Iface,
-                         Action => Set_Offset_Index,
-                         Args   => New_List (
-                           Unchecked_Convert_To (RTE (RE_Tag),
-                             New_Reference_To (Iface_DT_Ptr, Loc)),
-                           Make_Integer_Literal (Loc,
-                             DT_Position (Prim_Alias)),
-                           Make_Integer_Literal (Loc,
-                             DT_Position (Alias (Prim))))));
-                  end if;
-
-                  Next_Elmt (Prim_Elmt);
-               end loop;
-            end;
-         end if;
+           Make_Implicit_If_Statement (Typ,
+             Condition       => New_Reference_To (No_Reg, Loc),
+             Then_Statements => Elab_Code));
       end if;
-   end Make_Secondary_DT;
+
+      Analyze_List (Result, Suppress => All_Checks);
+      return Result;
+   end Make_DT;
 
    -------------------------------------
    -- Make_Select_Specific_Data_Table --
@@ -3817,12 +4506,12 @@ package body Exp_Disp is
                --    Ada.Tags.Set_Prim_Op_Kind (DT_Ptr, <position>, <kind>);
 
                Append_To (Assignments,
-                 Make_DT_Access_Action (Typ,
-                   Action => Set_Prim_Op_Kind,
-                   Args => New_List (
-                             New_Reference_To (DT_Ptr, Loc),
-                             Make_Integer_Literal (Loc, Prim_Pos),
-                             Prim_Op_Kind (Alias (Prim), Typ))));
+                 Make_Procedure_Call_Statement (Loc,
+                   Name => New_Reference_To (RTE (RE_Set_Prim_Op_Kind), Loc),
+                   Parameter_Associations => New_List (
+                     New_Reference_To (DT_Ptr, Loc),
+                     Make_Integer_Literal (Loc, Prim_Pos),
+                     Prim_Op_Kind (Alias (Prim), Typ))));
 
                --  Retrieve the root of the alias chain
 
@@ -3842,14 +4531,14 @@ package body Exp_Disp is
                   --      (DT_Ptr, <position>, <index>);
 
                   Append_To (Assignments,
-                    Make_DT_Access_Action (Typ,
-                      Action => Set_Entry_Index,
-                      Args => New_List (
-                                New_Reference_To (DT_Ptr, Loc),
-                                Make_Integer_Literal (Loc, Prim_Pos),
-                                Make_Integer_Literal (Loc,
-                                  Find_Entry_Index
-                                    (Wrapped_Entity (Prim_Als))))));
+                    Make_Procedure_Call_Statement (Loc,
+                      Name =>
+                        New_Reference_To (RTE (RE_Set_Entry_Index), Loc),
+                      Parameter_Associations => New_List (
+                        New_Reference_To (DT_Ptr, Loc),
+                        Make_Integer_Literal (Loc, Prim_Pos),
+                        Make_Integer_Literal (Loc,
+                          Find_Entry_Index (Wrapped_Entity (Prim_Als))))));
                end if;
             end if;
 
@@ -3972,6 +4661,123 @@ package body Exp_Disp is
          end if;
       end if;
    end Prim_Op_Kind;
+
+   ------------------------
+   -- Register_Primitive --
+   ------------------------
+
+   procedure Register_Primitive
+     (Loc     : Source_Ptr;
+      Prim    : Entity_Id;
+      Ins_Nod : Node_Id)
+   is
+      DT_Ptr       : Entity_Id;
+      Iface_Prim   : Entity_Id;
+      Iface_Typ    : Entity_Id;
+      Iface_DT_Ptr : Entity_Id;
+      Pos          : Uint;
+      Tag          : Entity_Id;
+      Thunk_Id     : Entity_Id;
+      Thunk_Code   : Node_Id;
+      Typ          : Entity_Id;
+
+   begin
+      pragma Assert (not Restriction_Active (No_Dispatching_Calls));
+
+      if not RTE_Available (RE_Tag) then
+         return;
+      end if;
+
+      if not Present (Abstract_Interface_Alias (Prim)) then
+         Typ          := Scope (DTC_Entity (Prim));
+         DT_Ptr       := Node (First_Elmt (Access_Disp_Table (Typ)));
+         Pos          := DT_Position (Prim);
+         Tag          := First_Tag_Component (Typ);
+
+         if Is_Predefined_Dispatching_Operation (Prim)
+           or else Is_Predefined_Dispatching_Alias (Prim)
+         then
+            Insert_After (Ins_Nod,
+              Build_Set_Predefined_Prim_Op_Address (Loc,
+                Tag_Node     => New_Reference_To (DT_Ptr, Loc),
+                Position     => Pos,
+                Address_Node => Make_Attribute_Reference (Loc,
+                                   Prefix => New_Reference_To (Prim, Loc),
+                                   Attribute_Name => Name_Address)));
+
+         else
+            pragma Assert (Pos /= Uint_0 and then Pos <= DT_Entry_Count (Tag));
+
+            Insert_After (Ins_Nod,
+              Build_Set_Prim_Op_Address (Loc,
+                Typ          => Typ,
+                Tag_Node     => New_Reference_To (DT_Ptr, Loc),
+                Position     => Pos,
+                Address_Node => Make_Attribute_Reference (Loc,
+                                  Prefix => New_Reference_To (Prim, Loc),
+                                  Attribute_Name => Name_Address)));
+         end if;
+
+      --  Ada 2005 (AI-251): Primitive associated with an interface type
+      --  Generate the code of the thunk only if the interface type is not an
+      --  immediate ancestor of Typ; otherwise the dispatch table associated
+      --  with the interface is the primary dispatch table and we have nothing
+      --  else to do here.
+
+      else
+         Typ       := Find_Dispatching_Type (Alias (Prim));
+         Iface_Typ := Find_Dispatching_Type (Abstract_Interface_Alias (Prim));
+
+         pragma Assert (Is_Interface (Iface_Typ));
+
+         Expand_Interface_Thunk
+           (N           => Prim,
+            Thunk_Alias => Alias (Prim),
+            Thunk_Id    => Thunk_Id,
+            Thunk_Code  => Thunk_Code);
+
+         if not Is_Parent (Iface_Typ, Typ)
+           and then Present (Thunk_Code)
+         then
+            Insert_Action (Ins_Nod, Thunk_Code, Suppress => All_Checks);
+
+            --  Generate the code necessary to fill the appropriate entry of
+            --  the secondary dispatch table of Prim's controlling type with
+            --  Thunk_Id's address.
+
+            Iface_DT_Ptr := Find_Interface_ADT (Typ, Iface_Typ);
+            Iface_Prim   := Abstract_Interface_Alias (Prim);
+            Pos          := DT_Position (Iface_Prim);
+            Tag          := First_Tag_Component (Iface_Typ);
+
+            if Is_Predefined_Dispatching_Operation (Prim)
+              or else Is_Predefined_Dispatching_Alias (Prim)
+            then
+               Insert_Action (Ins_Nod,
+                 Build_Set_Predefined_Prim_Op_Address (Loc,
+                   Tag_Node => New_Reference_To (Iface_DT_Ptr, Loc),
+                   Position => Pos,
+                   Address_Node =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix          => New_Reference_To (Thunk_Id, Loc),
+                       Attribute_Name  => Name_Address)));
+            else
+               pragma Assert (Pos /= Uint_0
+                 and then Pos <= DT_Entry_Count (Tag));
+
+               Insert_Action (Ins_Nod,
+                 Build_Set_Prim_Op_Address (Loc,
+                   Typ          => Iface_Typ,
+                   Tag_Node     => New_Reference_To (Iface_DT_Ptr, Loc),
+                   Position     => Pos,
+                   Address_Node => Make_Attribute_Reference (Loc,
+                                     Prefix =>
+                                        New_Reference_To (Thunk_Id, Loc),
+                                     Attribute_Name => Name_Address)));
+            end if;
+         end if;
+      end if;
+   end Register_Primitive;
 
    -------------------------
    -- Set_All_DT_Position --
@@ -4112,21 +4918,7 @@ package body Exp_Disp is
             Count_Prim := Count_Prim + 1;
          end if;
 
-         --  Ada 2005 (AI-251)
-
-         if Present (Abstract_Interface_Alias (Prim))
-           and then Is_Interface
-                      (Find_Dispatching_Type
-                        (Abstract_Interface_Alias (Prim)))
-         then
-            Set_DTC_Entity (Prim,
-               Find_Interface_Tag
-                 (T => Typ,
-                  Iface => Find_Dispatching_Type
-                            (Abstract_Interface_Alias (Prim))));
-         else
-            Set_DTC_Entity (Prim, The_Tag);
-         end if;
+         Set_DTC_Entity_Value (Typ, Prim);
 
          --  Clear any previous value of the DT_Position attribute. In this
          --  way we ensure that the final position of all the primitives is
@@ -4142,9 +4934,69 @@ package body Exp_Disp is
                         := (others => False);
          E : Entity_Id;
 
+         procedure Handle_Inherited_Private_Subprograms (Typ : Entity_Id);
+         --  Called if Typ is declared in a nested package or a public child
+         --  package to handle inherited primitives that were inherited by Typ
+         --  in  the visible part, but whose declaration was deferred because
+         --  the parent operation was private and not visible at that point.
+
          procedure Set_Fixed_Prim (Pos : Nat);
          --  Sets to true an element of the Fixed_Prim table to indicate
          --  that this entry of the dispatch table of Typ is occupied.
+
+         ------------------------------------------
+         -- Handle_Inherited_Private_Subprograms --
+         ------------------------------------------
+
+         procedure Handle_Inherited_Private_Subprograms (Typ : Entity_Id) is
+            Op_List     : Elist_Id;
+            Op_Elmt     : Elmt_Id;
+            Op_Elmt_2   : Elmt_Id;
+            Prim_Op     : Entity_Id;
+            Parent_Subp : Entity_Id;
+
+         begin
+            Op_List := Primitive_Operations (Typ);
+
+            Op_Elmt := First_Elmt (Op_List);
+            while Present (Op_Elmt) loop
+               Prim_Op := Node (Op_Elmt);
+
+               --  Search primitives that are implicit operations with an
+               --  internal name whose parent operation has a normal name.
+
+               if Present (Alias (Prim_Op))
+                 and then Find_Dispatching_Type (Alias (Prim_Op)) /= Typ
+                 and then not Comes_From_Source (Prim_Op)
+                 and then Is_Internal_Name (Chars (Prim_Op))
+                 and then not Is_Internal_Name (Chars (Alias (Prim_Op)))
+               then
+                  Parent_Subp := Alias (Prim_Op);
+
+                  --  Check if the type has an explicit overriding for this
+                  --  primitive.
+
+                  Op_Elmt_2 := Next_Elmt (Op_Elmt);
+                  while Present (Op_Elmt_2) loop
+                     if Chars (Node (Op_Elmt_2)) = Chars (Parent_Subp)
+                       and then Type_Conformant (Prim_Op, Node (Op_Elmt_2))
+                     then
+                        Set_DT_Position (Prim_Op, DT_Position (Parent_Subp));
+                        Set_DT_Position (Node (Op_Elmt_2),
+                          DT_Position (Parent_Subp));
+                        Set_Fixed_Prim (UI_To_Int (DT_Position (Prim_Op)));
+
+                        goto Next_Primitive;
+                     end if;
+
+                     Next_Elmt (Op_Elmt_2);
+                  end loop;
+               end if;
+
+               <<Next_Primitive>>
+               Next_Elmt (Op_Elmt);
+            end loop;
+         end Handle_Inherited_Private_Subprograms;
 
          --------------------
          -- Set_Fixed_Prim --
@@ -4160,6 +5012,22 @@ package body Exp_Disp is
          end Set_Fixed_Prim;
 
       begin
+         --  In case of nested packages and public child package it may be
+         --  necessary a special management on inherited subprograms so that
+         --  the dispatch table is properly filled.
+
+         if Ekind (Scope (Scope (Typ))) = E_Package
+           and then Scope (Scope (Typ)) /= Standard_Standard
+           and then ((Is_Derived_Type (Typ) and then not Is_Private_Type (Typ))
+                       or else
+                        (Nkind (Parent (Typ)) = N_Private_Extension_Declaration
+                          and then Is_Generic_Type (Typ)))
+           and then In_Open_Scopes (Scope (Etype (Typ)))
+           and then Typ = Base_Type (Typ)
+         then
+            Handle_Inherited_Private_Subprograms (Typ);
+         end if;
+
          --  Second stage: Register fixed entries
 
          Nb_Prim   := 0;
@@ -4203,7 +5071,7 @@ package body Exp_Disp is
                Set_Fixed_Prim (UI_To_Int (DT_Position (Prim)));
 
             --  Overriding primitives must use the same entry as the
-            --  overriden primitive
+            --  overriden primitive.
 
             elsif not Present (Abstract_Interface_Alias (Prim))
               and then Present (Alias (Prim))
@@ -4402,19 +5270,14 @@ package body Exp_Disp is
 
       Set_DT_Entry_Count (The_Tag, UI_From_Int (DT_Length));
 
-      --  The derived type must have at least as many components as its
-      --  parent (for root types, the Etype points back to itself
-      --  and the test should not fail)
+      --  The derived type must have at least as many components as its parent
+      --  (for root types, the Etype points back to itself and the test cannot
+      --   fail)
 
-      --  This test fails compiling the partial view of a tagged type
-      --  derived from an interface which defines the overriding subprogram
-      --  in the private part. This needs further investigation???
-
-      if not Has_Private_Declaration (Typ) then
-         pragma Assert (
-           DT_Entry_Count (The_Tag) >=
-           DT_Entry_Count (First_Tag_Component (Parent_Typ)));
-         null;
+      if DT_Entry_Count (The_Tag) <
+           DT_Entry_Count (First_Tag_Component (Parent_Typ))
+      then
+         raise Program_Error;
       end if;
    end Set_All_DT_Position;
 
@@ -4469,6 +5332,31 @@ package body Exp_Disp is
          Set_Is_Abstract_Type (Typ);
       end if;
    end Set_Default_Constructor;
+
+   --------------------------
+   -- Set_DTC_Entity_Value --
+   --------------------------
+
+   procedure Set_DTC_Entity_Value
+     (Tagged_Type : Entity_Id;
+      Prim        : Entity_Id)
+   is
+   begin
+      if Present (Abstract_Interface_Alias (Prim))
+        and then Is_Interface
+                   (Find_Dispatching_Type
+                     (Abstract_Interface_Alias (Prim)))
+      then
+         Set_DTC_Entity (Prim,
+           Find_Interface_Tag
+             (T     => Tagged_Type,
+              Iface => Find_Dispatching_Type
+                        (Abstract_Interface_Alias (Prim))));
+      else
+         Set_DTC_Entity (Prim,
+           First_Tag_Component (Tagged_Type));
+      end if;
+   end Set_DTC_Entity_Value;
 
    -----------------
    -- Tagged_Kind --
