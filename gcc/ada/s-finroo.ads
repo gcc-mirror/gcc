@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@
 --  This unit provides the basic support for controlled (finalizable) types
 
 with Ada.Streams;
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package System.Finalization_Root is
    pragma Preelaborate;
@@ -44,10 +44,10 @@ package System.Finalization_Root is
    type Finalizable_Ptr is access all Root_Controlled'Class;
 
    function To_Finalizable_Ptr is
-     new Unchecked_Conversion (Address, Finalizable_Ptr);
+     new Ada.Unchecked_Conversion (Address, Finalizable_Ptr);
 
    function To_Addr is
-     new Unchecked_Conversion (Finalizable_Ptr, Address);
+     new Ada.Unchecked_Conversion (Finalizable_Ptr, Address);
 
    type Empty_Root_Controlled is abstract tagged null record;
    --  Just for the sake of Controlled equality (see Ada.Finalization)
@@ -61,14 +61,27 @@ package System.Finalization_Root is
    procedure Finalize   (Object : in out Root_Controlled);
    procedure Adjust     (Object : in out Root_Controlled);
 
-   procedure Write
-     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Item   : Root_Controlled);
+   --  Stream-oriented attibutes for Root_Controlled. These must be empty so
+   --  as to not copy the finalization chain pointers. They are declared in
+   --  a nested package so that they do not create primitive operations of
+   --  Root_Controlled. Otherwise this would add unwanted primitives to (the
+   --  full view of) Ada.Finalization.Limited_Controlled, which would cause
+   --  trouble in cases where a limited controlled type is used as the
+   --  designated type of a remote access-to-classwide type.
 
-   procedure Read
-     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Item   : out Root_Controlled);
+   package Stream_Attributes is
 
-   for Root_Controlled'Read use Read;
-   for Root_Controlled'Write use Write;
+      procedure Write
+        (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+         Item   : Root_Controlled) is null;
+
+      procedure Read
+        (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+         Item   : out Root_Controlled) is null;
+
+   end Stream_Attributes;
+
+   for Root_Controlled'Read use Stream_Attributes.Read;
+   for Root_Controlled'Write use Stream_Attributes.Write;
+
 end System.Finalization_Root;
