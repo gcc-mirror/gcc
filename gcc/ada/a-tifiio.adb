@@ -399,7 +399,7 @@ package body Ada.Text_IO.Fixed_IO is
       Last : Natural;
 
    begin
-      if Fore < 1 or else Fore > Field'Last then
+      if Fore - Boolean'Pos (Item < 0.0) < 1 or else Fore > Field'Last then
          raise Layout_Error;
       end if;
 
@@ -462,7 +462,13 @@ package body Ada.Text_IO.Fixed_IO is
       procedure Put_Character (C : Character) is
       begin
          Last := Last + 1;
-         To (Last) := C;
+
+         --  Never put a character outside of string To. Exception Layout_Error
+         --  will be raised later if Last is greater than To'Last.
+
+         if Last <= To'Last then
+            To (Last) := C;
+         end if;
       end Put_Character;
 
       ---------------
