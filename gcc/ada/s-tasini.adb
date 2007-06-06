@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,11 +81,6 @@ package body System.Tasking.Initialization is
    --  from all other tasks. It is only used by Task_Lock,
    --  Task_Unlock, and Final_Task_Unlock.
 
-   function Current_Target_Exception return AE.Exception_Occurrence;
-   pragma Import
-     (Ada, Current_Target_Exception, "__gnat_current_target_exception");
-   --  Import this subprogram from the private part of Ada.Exceptions
-
    ----------------------------------------------------------------------
    -- Tasking versions of some services needed by non-tasking programs --
    ----------------------------------------------------------------------
@@ -112,8 +107,11 @@ package body System.Tasking.Initialization is
    function Get_Stack_Info return Stack_Checking.Stack_Access;
    --  Get access to the current task's Stack_Info
 
+   function Get_Current_Excep return SSL.EOA;
+   --  Task-safe version of SSL.Get_Current_Excep
+
    procedure Update_Exception
-     (X : AE.Exception_Occurrence := Current_Target_Exception);
+     (X : AE.Exception_Occurrence := SSL.Current_Target_Exception);
    --  Handle exception setting and check for pending actions
 
    function Task_Name return String;
@@ -170,7 +168,7 @@ package body System.Tasking.Initialization is
 
    procedure Defer_Abort (Self_ID : Task_Id) is
    begin
-      if No_Abort and then not Dynamic_Priority_Support then
+      if No_Abort then
          return;
       end if;
 
@@ -211,7 +209,7 @@ package body System.Tasking.Initialization is
 
    procedure Defer_Abort_Nestable (Self_ID : Task_Id) is
    begin
-      if No_Abort and then not Dynamic_Priority_Support then
+      if No_Abort then
          return;
       end if;
 
@@ -232,13 +230,22 @@ package body System.Tasking.Initialization is
    procedure Abort_Defer is
       Self_ID : Task_Id;
    begin
-      if No_Abort and then not Dynamic_Priority_Support then
+      if No_Abort then
          return;
       end if;
 
       Self_ID := STPO.Self;
       Self_ID.Deferral_Level := Self_ID.Deferral_Level + 1;
    end Abort_Defer;
+
+   -----------------------
+   -- Get_Current_Excep --
+   -----------------------
+
+   function Get_Current_Excep return SSL.EOA is
+   begin
+      return STPO.Self.Common.Compiler_Data.Current_Excep'Access;
+   end Get_Current_Excep;
 
    -----------------------
    -- Do_Pending_Action --
@@ -266,7 +273,6 @@ package body System.Tasking.Initialization is
 
          Write_Lock (Self_ID);
          Self_ID.Pending_Action := False;
-         Poll_Base_Priority_Change (Self_ID);
          Unlock (Self_ID);
 
          if Single_Lock then
@@ -368,17 +374,18 @@ package body System.Tasking.Initialization is
       --  Notify that the tasking run time has been elaborated so that
       --  the tasking version of the soft links can be used.
 
-      if not No_Abort or else Dynamic_Priority_Support then
+      if not No_Abort then
          SSL.Abort_Defer   := Abort_Defer'Access;
          SSL.Abort_Undefer := Abort_Undefer'Access;
       end if;
 
-      SSL.Update_Exception   := Update_Exception'Access;
       SSL.Lock_Task          := Task_Lock'Access;
       SSL.Unlock_Task        := Task_Unlock'Access;
       SSL.Check_Abort_Status := Check_Abort_Status'Access;
       SSL.Get_Stack_Info     := Get_Stack_Info'Access;
       SSL.Task_Name          := Task_Name'Access;
+      SSL.Update_Exception   := Update_Exception'Access;
+      SSL.Get_Current_Excep  := Get_Current_Excep'Access;
 
       --  Initialize the tasking soft links (if not done yet) that are common
       --  to the full and the restricted run times.
@@ -522,68 +529,6 @@ package body System.Tasking.Initialization is
       end if;
    end Locked_Abort_To_Level;
 
-   -------------------------------
-   -- Poll_Base_Priority_Change --
-   -------------------------------
-
-   --  Poll for pending base priority change and for held tasks.
-   --  This should always be called with (only) Self_ID locked.
-   --  It may temporarily release Self_ID's lock.
-
-   --  The call to Yield is to force enqueuing at the
-   --  tail of the dispatching queue.
-
-   --  We must unlock Self_ID for this to take effect,
-   --  since we are inheriting high active priority from the lock.
-
-   --  See also Poll_Base_Priority_Change_At_Entry_Call,
-   --  in package System.Tasking.Entry_Calls.
-
-   --  In this version, we check if the task is held too because
-   --  doing this only in Do_Pending_Action is not enough.
-
-   procedure Poll_Base_Priority_Change (Self_ID : Task_Id) is
-   begin
-      if Dynamic_Priority_Support and then Self_ID.Pending_Priority_Change then
-
-         --  Check for ceiling violations ???
-
-         Self_ID.Pending_Priority_Change := False;
-
-         if Self_ID.Common.Base_Priority = Self_ID.New_Base_Priority then
-            if Single_Lock then
-               Unlock_RTS;
-               Yield;
-               Lock_RTS;
-            else
-               Unlock (Self_ID);
-               Yield;
-               Write_Lock (Self_ID);
-            end if;
-
-         elsif Self_ID.Common.Base_Priority < Self_ID.New_Base_Priority then
-            Self_ID.Common.Base_Priority := Self_ID.New_Base_Priority;
-            Set_Priority (Self_ID, Self_ID.Common.Base_Priority);
-
-         else
-            --  Lowering priority
-
-            Self_ID.Common.Base_Priority := Self_ID.New_Base_Priority;
-            Set_Priority (Self_ID, Self_ID.Common.Base_Priority);
-
-            if Single_Lock then
-               Unlock_RTS;
-               Yield;
-               Lock_RTS;
-            else
-               Unlock (Self_ID);
-               Yield;
-               Write_Lock (Self_ID);
-            end if;
-         end if;
-      end if;
-   end Poll_Base_Priority_Change;
-
    --------------------------------
    -- Remove_From_All_Tasks_List --
    --------------------------------
@@ -685,7 +630,7 @@ package body System.Tasking.Initialization is
 
    procedure Undefer_Abort (Self_ID : Task_Id) is
    begin
-      if No_Abort and then not Dynamic_Priority_Support then
+      if No_Abort then
          return;
       end if;
 
@@ -721,7 +666,7 @@ package body System.Tasking.Initialization is
 
    procedure Undefer_Abort_Nestable (Self_ID : Task_Id) is
    begin
-      if No_Abort and then not Dynamic_Priority_Support then
+      if No_Abort then
          return;
       end if;
 
@@ -746,7 +691,7 @@ package body System.Tasking.Initialization is
    procedure Abort_Undefer is
       Self_ID : Task_Id;
    begin
-      if No_Abort and then not Dynamic_Priority_Support then
+      if No_Abort then
          return;
       end if;
 
@@ -787,7 +732,7 @@ package body System.Tasking.Initialization is
    --  Call only when holding no locks
 
    procedure Update_Exception
-     (X : AE.Exception_Occurrence := Current_Target_Exception)
+     (X : AE.Exception_Occurrence := SSL.Current_Target_Exception)
    is
       Self_Id : constant Task_Id := Self;
       use Ada.Exceptions;
@@ -806,7 +751,6 @@ package body System.Tasking.Initialization is
 
             Write_Lock (Self_Id);
             Self_Id.Pending_Action := False;
-            Poll_Base_Priority_Change (Self_Id);
             Unlock (Self_Id);
 
             if Single_Lock then
@@ -856,15 +800,12 @@ package body System.Tasking.Initialization is
       New_State  : Entry_Call_State)
    is
       Caller : constant Task_Id := Entry_Call.Self;
-
    begin
       pragma Debug (Debug.Trace
         (Self_ID, "Wakeup_Entry_Caller", 'E', Caller));
       pragma Assert (New_State = Done or else New_State = Cancelled);
 
-      pragma Assert
-        (Caller.Common.State /= Terminated
-          and then Caller.Common.State /= Unactivated);
+      pragma Assert (Caller.Common.State /= Unactivated);
 
       Entry_Call.State := New_State;
 
@@ -901,15 +842,13 @@ package body System.Tasking.Initialization is
    --  the subprogram body where the real subprogram is declared.
 
    procedure Finalize_Attributes (T : Task_Id) is
-      pragma Warnings (Off, T);
-
+      pragma Unreferenced (T);
    begin
       null;
    end Finalize_Attributes;
 
    procedure Initialize_Attributes (T : Task_Id) is
-      pragma Warnings (Off, T);
-
+      pragma Unreferenced (T);
    begin
       null;
    end Initialize_Attributes;

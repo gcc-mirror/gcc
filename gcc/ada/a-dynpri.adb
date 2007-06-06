@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,7 @@ with System.Soft_Links;
 --  use for Abort_Defer
 --          Abort_Undefer
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body Ada.Dynamic_Priorities is
 
@@ -59,7 +59,7 @@ package body Ada.Dynamic_Priorities is
    use System.Tasking;
 
    function Convert_Ids is new
-     Unchecked_Conversion
+     Ada.Unchecked_Conversion
        (Task_Identification.Task_Id, System.Tasking.Task_Id);
 
    ------------------
@@ -98,9 +98,9 @@ package body Ada.Dynamic_Priorities is
       T        : Ada.Task_Identification.Task_Id :=
                    Ada.Task_Identification.Current_Task)
    is
-      Target  : constant Task_Id := Convert_Ids (T);
-      Self_ID : constant Task_Id := STPO.Self;
+      Target        : constant Task_Id := Convert_Ids (T);
       Error_Message : constant String := "Trying to set the priority of a ";
+      Yield_Needed  : Boolean;
 
    begin
       if Target = Convert_Ids (Ada.Task_Identification.Null_Task_Id) then
@@ -119,41 +119,53 @@ package body Ada.Dynamic_Priorities is
 
       STPO.Write_Lock (Target);
 
-      if Self_ID = Target then
-         Target.Common.Base_Priority := Priority;
+      Target.Common.Base_Priority := Priority;
+
+      if Target.Common.Call /= null
+        and then
+          Target.Common.Call.Acceptor_Prev_Priority /= Priority_Not_Boosted
+      then
+         --  Target is within a rendezvous, so ensure the correct priority
+         --  will be reset when finishing the rendezvous, and only change the
+         --  priority immediately if the new priority is greater than the
+         --  current (inherited) priority.
+
+         Target.Common.Call.Acceptor_Prev_Priority := Priority;
+
+         if Priority >= Target.Common.Current_Priority then
+            Yield_Needed := True;
+            STPO.Set_Priority (Target, Priority);
+         else
+            Yield_Needed := False;
+         end if;
+
+      else
+         Yield_Needed := True;
          STPO.Set_Priority (Target, Priority);
 
-         STPO.Unlock (Target);
-
-         if Single_Lock then
-            STPO.Unlock_RTS;
+         if Target.Common.State = Entry_Caller_Sleep then
+            Target.Pending_Priority_Change := True;
+            STPO.Wakeup (Target, Target.Common.State);
          end if;
+      end if;
+
+      STPO.Unlock (Target);
+
+      if Single_Lock then
+         STPO.Unlock_RTS;
+      end if;
+
+      if STPO.Self = Target and then Yield_Needed then
 
          --  Yield is needed to enforce FIFO task dispatching
 
-         --  LL Set_Priority is made while holding the RTS lock so that it
-         --  is inheriting high priority until it release all the RTS locks.
+         --  LL Set_Priority is made while holding the RTS lock so that it is
+         --  inheriting high priority until it release all the RTS locks.
 
-         --  If this is used in a system where Ceiling Locking is
-         --  not enforced we may end up getting two Yield effects.
+         --  If this is used in a system where Ceiling Locking is not enforced
+         --  we may end up getting two Yield effects.
 
          STPO.Yield;
-
-      else
-         Target.New_Base_Priority := Priority;
-         Target.Pending_Priority_Change := True;
-         Target.Pending_Action := True;
-
-         STPO.Wakeup (Target, Target.Common.State);
-
-         --  If the task is suspended, wake it up to perform the change.
-         --  check for ceiling violations ???
-
-         STPO.Unlock (Target);
-
-         if Single_Lock then
-            STPO.Unlock_RTS;
-         end if;
       end if;
 
       SSL.Abort_Undefer.all;

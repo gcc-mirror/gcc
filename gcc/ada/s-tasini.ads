@@ -139,11 +139,6 @@ package System.Tasking.Initialization is
    --  Change the base priority of T. Has to be called with the affected
    --  task's ATCB write-locked. May temporariliy release the lock.
 
-   procedure Poll_Base_Priority_Change (Self_ID : Task_Id);
-   --  Has to be called with Self_ID's ATCB write-locked.
-   --  May temporariliy release the lock.
-   pragma Inline (Poll_Base_Priority_Change);
-
    ----------------------
    -- Task Lock/Unlock --
    ----------------------

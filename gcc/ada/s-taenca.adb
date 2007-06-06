@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,6 @@ with System.Task_Primitives.Operations;
 
 with System.Tasking.Initialization;
 --  used for Change_Base_Priority
---           Dynamic_Priority_Support
 --           Defer_Abort/Undefer_Abort
 
 with System.Tasking.Protected_Objects.Entries;
@@ -84,24 +83,23 @@ package body System.Tasking.Entry_Calls is
    -----------------------
 
    procedure Lock_Server (Entry_Call : Entry_Call_Link);
-   --  This locks the server targeted by Entry_Call.
+
+   --  This locks the server targeted by Entry_Call
    --
-   --  This may be a task or a protected object,
-   --  depending on the target of the original call or any subsequent
-   --  requeues.
+   --  This may be a task or a protected object, depending on the target of the
+   --  original call or any subsequent requeues.
    --
-   --  This routine is needed because the field specifying the server
-   --  for this call must be protected by the server's mutex. If it were
-   --  protected by the caller's mutex, accessing the server's queues would
-   --  require locking the caller to get the server, locking the server,
-   --  and then accessing the queues. This involves holding two ATCB
-   --  locks at once, something which we can guarantee that it will always
-   --  be done in the same order, or locking a protected object while we
-   --  hold an ATCB lock, something which is not permitted. Since
-   --  the server cannot be obtained reliably, it must be obtained unreliably
-   --  and then checked again once it has been locked.
+   --  This routine is needed because the field specifying the server for this
+   --  call must be protected by the server's mutex. If it were protected by
+   --  the caller's mutex, accessing the server's queues would require locking
+   --  the caller to get the server, locking the server, and then accessing the
+   --  queues. This involves holding two ATCB locks at once, something which we
+   --  can guarantee that it will always be done in the same order, or locking
+   --  a protected object while we hold an ATCB lock, something which is not
+   --  permitted. Since the server cannot be obtained reliably, it must be
+   --  obtained unreliably and then checked again once it has been locked.
    --
-   --  If Single_Lock and server is a PO, release RTS_Lock.
+   --  If Single_Lock and server is a PO, release RTS_Lock
    --
    --  This should only be called by the Entry_Call.Self.
    --  It should be holding no other ATCB locks at the time.
@@ -123,23 +121,22 @@ package body System.Tasking.Entry_Calls is
    procedure Check_Pending_Actions_For_Entry_Call
      (Self_ID    : Task_Id;
       Entry_Call : Entry_Call_Link);
-   --  This procedure performs priority change of a queued call and
-   --  dequeuing of an entry call when the call is cancelled.
-   --  If the call is dequeued the state should be set to Cancelled.
-   --  Call only with abort deferred and holding lock of Self_ID. This
-   --  is a bit of common code for all entry calls. The effect is to do
-   --  any deferred base priority change operation, in case some other
-   --  task called STPO.Set_Priority while the current task had abort deferred,
-   --  and to dequeue the call if the call has been aborted.
+   --  This procedure performs priority change of a queued call and dequeuing
+   --  of an entry call when the call is cancelled. If the call is dequeued the
+   --  state should be set to Cancelled. Call only with abort deferred and
+   --  holding lock of Self_ID. This is a bit of common code for all entry
+   --  calls. The effect is to do any deferred base priority change operation,
+   --  in case some other task called STPO.Set_Priority while the current task
+   --  had abort deferred, and to dequeue the call if the call has been
+   --  aborted.
 
    procedure Poll_Base_Priority_Change_At_Entry_Call
      (Self_ID    : Task_Id;
       Entry_Call : Entry_Call_Link);
    pragma Inline (Poll_Base_Priority_Change_At_Entry_Call);
-   --  A specialized version of Poll_Base_Priority_Change,
-   --  that does the optional entry queue reordering.
-   --  Has to be called with the Self_ID's ATCB write-locked.
-   --  May temporariliy release the lock.
+   --  A specialized version of Poll_Base_Priority_Change, that does the
+   --  optional entry queue reordering. Has to be called with the Self_ID's
+   --  ATCB write-locked. May temporariliy release the lock.
 
    ---------------------
    -- Check_Exception --
@@ -160,6 +157,7 @@ package body System.Tasking.Entry_Calls is
             Entry_Call.Exception_To_Raise;
    begin
       --  pragma Assert (Self_ID.Deferral_Level = 0);
+
       --  The above may be useful for debugging, but the Florist packages
       --  contain critical sections that defer abort and then do entry calls,
       --  which causes the above Assert to trip.
@@ -175,7 +173,8 @@ package body System.Tasking.Entry_Calls is
 
    procedure Check_Pending_Actions_For_Entry_Call
      (Self_ID    : Task_Id;
-      Entry_Call : Entry_Call_Link) is
+      Entry_Call : Entry_Call_Link)
+   is
    begin
       pragma Assert (Self_ID = Entry_Call.Self);
 
@@ -224,8 +223,8 @@ package body System.Tasking.Entry_Calls is
       loop
          if Test_Task = null then
 
-            --  Entry_Call was queued on a protected object,
-            --  or in transition, when we last fetched Test_Task.
+            --  Entry_Call was queued on a protected object, or in transition,
+            --  when we last fetched Test_Task.
 
             Test_PO := To_Protection (Entry_Call.Called_PO);
 
@@ -249,12 +248,12 @@ package body System.Tasking.Entry_Calls is
 
                Lock_Entries (Test_PO, Ceiling_Violation);
 
-               --  ????
-               --  The following code allows Lock_Server to be called
-               --  when cancelling a call, to allow for the possibility
-               --  that the priority of the caller has been raised
-               --  beyond that of the protected entry call by
-               --  Ada.Dynamic_Priorities.Set_Priority.
+               --  ???
+
+               --  The following code allows Lock_Server to be called when
+               --  cancelling a call, to allow for the possibility that the
+               --  priority of the caller has been raised beyond that of the
+               --  protected entry call by Ada.Dynamic_Priorities.Set_Priority.
 
                --  If the current task has a higher priority than the ceiling
                --  of the protected object, temporarily lower it. It will
@@ -316,52 +315,18 @@ package body System.Tasking.Entry_Calls is
 
    procedure Poll_Base_Priority_Change_At_Entry_Call
      (Self_ID    : Task_Id;
-      Entry_Call : Entry_Call_Link) is
+      Entry_Call : Entry_Call_Link)
+   is
    begin
-      if Dynamic_Priority_Support and then Self_ID.Pending_Priority_Change then
+      if Self_ID.Pending_Priority_Change then
+
          --  Check for ceiling violations ???
 
          Self_ID.Pending_Priority_Change := False;
 
-         if Self_ID.Common.Base_Priority = Self_ID.New_Base_Priority then
-            if Single_Lock then
-               STPO.Unlock_RTS;
-               STPO.Yield;
-               STPO.Lock_RTS;
-            else
-               STPO.Unlock (Self_ID);
-               STPO.Yield;
-               STPO.Write_Lock (Self_ID);
-            end if;
-
-         else
-            if Self_ID.Common.Base_Priority < Self_ID.New_Base_Priority then
-               --  Raising priority
-
-               Self_ID.Common.Base_Priority := Self_ID.New_Base_Priority;
-               STPO.Set_Priority (Self_ID, Self_ID.Common.Base_Priority);
-
-            else
-               --  Lowering priority
-
-               Self_ID.Common.Base_Priority := Self_ID.New_Base_Priority;
-               STPO.Set_Priority (Self_ID, Self_ID.Common.Base_Priority);
-
-               if Single_Lock then
-                  STPO.Unlock_RTS;
-                  STPO.Yield;
-                  STPO.Lock_RTS;
-               else
-                  STPO.Unlock (Self_ID);
-                  STPO.Yield;
-                  STPO.Write_Lock (Self_ID);
-               end if;
-            end if;
-         end if;
-
-         --  Requeue the entry call at the new priority.
-         --  We need to requeue even if the new priority is the same than
-         --  the previous (see ACVC cxd4006).
+         --  Requeue the entry call at the new priority. We need to requeue
+         --  even if the new priority is the same than the previous (see ACATS
+         --  test cxd4006).
 
          STPO.Unlock (Self_ID);
          Lock_Server (Entry_Call);
@@ -378,7 +343,8 @@ package body System.Tasking.Entry_Calls is
 
    procedure Reset_Priority
      (Acceptor               : Task_Id;
-      Acceptor_Prev_Priority : Rendezvous_Priority) is
+      Acceptor_Prev_Priority : Rendezvous_Priority)
+   is
    begin
       pragma Assert (Acceptor = STPO.Self);
 
@@ -431,26 +397,19 @@ package body System.Tasking.Entry_Calls is
 
       Succeeded := Entry_Call.State = Cancelled;
 
-      if Succeeded then
-         Initialization.Undefer_Abort_Nestable (Self_ID);
-      else
-         --  ???
+      Initialization.Undefer_Abort_Nestable (Self_ID);
 
-         Initialization.Undefer_Abort_Nestable (Self_ID);
+      --  Ideally, abort should no longer be deferred at this point, so we
+      --  should be able to call Check_Exception. The loop below should be
+      --  considered temporary, to work around the possibility that abort
+      --  may be deferred more than one level deep ???
 
-         --  Ideally, abort should no longer be deferred at this
-         --  point, so we should be able to call Check_Exception.
-         --  The loop below should be considered temporary,
-         --  to work around the possiblility that abort may be deferred
-         --  more than one level deep.
+      if Entry_Call.Exception_To_Raise /= Ada.Exceptions.Null_Id then
+         while Self_ID.Deferral_Level > 0 loop
+            System.Tasking.Initialization.Undefer_Abort_Nestable (Self_ID);
+         end loop;
 
-         if Entry_Call.Exception_To_Raise /= Ada.Exceptions.Null_Id then
-            while Self_ID.Deferral_Level > 0 loop
-               System.Tasking.Initialization.Undefer_Abort_Nestable (Self_ID);
-            end loop;
-
-            Entry_Calls.Check_Exception (Self_ID, Entry_Call);
-         end if;
+         Entry_Calls.Check_Exception (Self_ID, Entry_Call);
       end if;
    end Try_To_Cancel_Entry_Call;
 
@@ -544,6 +503,7 @@ package body System.Tasking.Entry_Calls is
 
    procedure Wait_For_Completion (Entry_Call : Entry_Call_Link) is
       Self_Id : constant Task_Id := Entry_Call.Self;
+
    begin
       --  If this is a conditional call, it should be cancelled when it
       --  becomes abortable. This is checked in the loop below.
@@ -552,9 +512,11 @@ package body System.Tasking.Entry_Calls is
          Send_Trace_Info (W_Completion);
       end if;
 
+      Self_Id.Common.State := Entry_Caller_Sleep;
+
       --  Try to remove calls to Sleep in the loop below by letting the caller
       --  a chance of getting ready immediately, using Unlock & Yield.
-      --  See similar action in Wait_For_Call & Selective_Wait.
+      --  See similar action in Wait_For_Call & Timed_Selective_Wait.
 
       if Single_Lock then
          STPO.Unlock_RTS;
@@ -571,8 +533,6 @@ package body System.Tasking.Entry_Calls is
       else
          STPO.Write_Lock (Self_Id);
       end if;
-
-      Self_Id.Common.State := Entry_Caller_Sleep;
 
       loop
          Check_Pending_Actions_For_Entry_Call (Self_Id, Entry_Call);
@@ -633,12 +593,11 @@ package body System.Tasking.Entry_Calls is
       Yielded := False;
       Self_Id.Common.State := Entry_Caller_Sleep;
 
-      --  Looping is necessary in case the task wakes up early from the
-      --  timed sleep, due to a "spurious wakeup". Spurious wakeups are
-      --  a weakness of POSIX condition variables. A thread waiting for
-      --  a condition variable is allowed to wake up at any time, not just
-      --  when the condition is signaled. See the same loop in the
-      --  ordinary Wait_For_Completion, above.
+      --  Looping is necessary in case the task wakes up early from the timed
+      --  sleep, due to a "spurious wakeup". Spurious wakeups are a weakness of
+      --  POSIX condition variables. A thread waiting for a condition variable
+      --  is allowed to wake up at any time, not just when the condition is
+      --  signaled. See same loop in the ordinary Wait_For_Completion, above.
 
       if Parameters.Runtime_Traces then
          Send_Trace_Info (WT_Completion, Wakeup_Time);
@@ -700,7 +659,8 @@ package body System.Tasking.Entry_Calls is
 
    procedure Wait_Until_Abortable
      (Self_ID : Task_Id;
-      Call    : Entry_Call_Link) is
+      Call    : Entry_Call_Link)
+   is
    begin
       pragma Assert (Self_ID.ATC_Nesting_Level > 0);
       pragma Assert (Call.Mode = Asynchronous_Call);

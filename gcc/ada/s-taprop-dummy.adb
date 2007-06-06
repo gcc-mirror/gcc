@@ -64,8 +64,6 @@ package body System.Task_Primitives.Operations is
    -- Check_Exit --
    ----------------
 
-   --  Dummy version
-
    function Check_Exit (Self_ID : ST.Task_Id) return Boolean is
    begin
       return True;
@@ -266,7 +264,9 @@ package body System.Task_Primitives.Operations is
    ---------------
 
    procedure Read_Lock
-     (L : not null access Lock; Ceiling_Violation : out Boolean) is
+     (L                 : not null access Lock;
+      Ceiling_Violation : out Boolean)
+   is
    begin
       Ceiling_Violation := False;
    end Read_Lock;
@@ -309,6 +309,18 @@ package body System.Task_Primitives.Operations is
    begin
       return Null_Task;
    end Self;
+
+   -----------------
+   -- Set_Ceiling --
+   -----------------
+
+   procedure Set_Ceiling
+     (L    : not null access Lock;
+      Prio : System.Any_Priority)
+   is
+   begin
+      null;
+   end Set_Ceiling;
 
    ---------------
    -- Set_False --
@@ -420,7 +432,9 @@ package body System.Task_Primitives.Operations is
    end Unlock;
 
    procedure Unlock
-     (L : not null access RTS_Lock; Global_Lock : Boolean := False) is
+     (L           : not null access RTS_Lock;
+      Global_Lock : Boolean := False)
+   is
    begin
       null;
    end Unlock;
@@ -452,7 +466,9 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Write_Lock
-     (L : not null access Lock; Ceiling_Violation : out Boolean) is
+     (L                 : not null access Lock;
+      Ceiling_Violation : out Boolean)
+   is
    begin
       Ceiling_Violation := False;
    end Write_Lock;
