@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ with Elists;   use Elists;
 with Freeze;   use Freeze;
 with Itypes;   use Itypes;
 with Lib.Xref; use Lib.Xref;
+with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
@@ -53,6 +54,7 @@ with Snames;   use Snames;
 with Stand;    use Stand;
 with Sinfo;    use Sinfo;
 with Style;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -259,7 +261,7 @@ package body Sem_Ch9 is
       Set_Accept_Address (Accept_Id, New_Elmt_List);
 
       if Present (Formals) then
-         New_Scope (Accept_Id);
+         Push_Scope (Accept_Id);
          Process_Formals (Formals, N);
          Create_Extra_Formals (Accept_Id);
          End_Scope;
@@ -418,7 +420,7 @@ package body Sem_Ch9 is
       --  Analyze statements if present
 
       if Present (Stats) then
-         New_Scope (Entry_Nam);
+         Push_Scope (Entry_Nam);
          Install_Declarations (Entry_Nam);
 
          Set_Actual_Subtypes (N, Current_Scope);
@@ -571,7 +573,6 @@ package body Sem_Ch9 is
 
    procedure Analyze_Delay_Relative (N : Node_Id) is
       E : constant Node_Id := Expression (N);
-
    begin
       Check_Restriction (No_Relative_Delay, N);
       Tasking_Used := True;
@@ -730,7 +731,7 @@ package body Sem_Ch9 is
       end if;
 
       Exp_Ch9.Expand_Entry_Barrier (N, Entry_Name);
-      New_Scope (Entry_Name);
+      Push_Scope (Entry_Name);
 
       Exp_Ch9.Expand_Entry_Body_Declarations (N);
       Install_Declarations (Entry_Name);
@@ -847,7 +848,7 @@ package body Sem_Ch9 is
 
       if Present (Formals) then
          Set_Scope (Id, Current_Scope);
-         New_Scope (Id);
+         Push_Scope (Id);
          Process_Formals (Formals, Parent (N));
          End_Scope;
       end if;
@@ -912,7 +913,7 @@ package body Sem_Ch9 is
 
       if Present (Formals) then
          Set_Scope (Id, Current_Scope);
-         New_Scope (Id);
+         Push_Scope (Id);
          Process_Formals (Formals, N);
          Create_Extra_Formals (Id);
          End_Scope;
@@ -961,7 +962,7 @@ package body Sem_Ch9 is
 
       Set_Ekind (Loop_Id, E_Loop);
       Set_Scope (Loop_Id, Current_Scope);
-      New_Scope (Loop_Id);
+      Push_Scope (Loop_Id);
       Enter_Name (Iden);
       Set_Ekind (Iden, E_Entry_Index_Parameter);
       Set_Etype (Iden, Etype (Def));
@@ -1018,7 +1019,7 @@ package body Sem_Ch9 is
          Spec_Id := Etype (Spec_Id);
       end if;
 
-      New_Scope (Spec_Id);
+      Push_Scope (Spec_Id);
       Set_Corresponding_Spec (N, Spec_Id);
       Set_Corresponding_Body (Parent (Spec_Id), Body_Id);
       Set_Has_Completion (Spec_Id);
@@ -1127,7 +1128,7 @@ package body Sem_Ch9 is
       Set_Etype              (T, T);
       Set_Has_Delayed_Freeze (T, True);
       Set_Stored_Constraint  (T, No_Elist);
-      New_Scope (T);
+      Push_Scope (T);
 
       --  Ada 2005 (AI-345)
 
@@ -1149,19 +1150,15 @@ package body Sem_Ch9 is
                Freeze_Before (N, Etype (Iface));
 
                --  Ada 2005 (AI-345): Protected types can only implement
-               --  limited, synchronized or protected interfaces.
+               --  limited, synchronized, or protected interfaces (note that
+               --  the predicate Is_Limited_Interface includes synchronized
+               --  and protected interfaces).
 
-               if Is_Limited_Interface (Iface_Typ)
-                 or else Is_Protected_Interface (Iface_Typ)
-                 or else Is_Synchronized_Interface (Iface_Typ)
-               then
-                  null;
-
-               elsif Is_Task_Interface (Iface_Typ) then
+               if Is_Task_Interface (Iface_Typ) then
                   Error_Msg_N ("(Ada 2005) protected type cannot implement a "
                     & "task interface", Iface);
 
-               else
+               elsif not Is_Limited_Interface (Iface_Typ) then
                   Error_Msg_N ("(Ada 2005) protected type cannot implement a "
                     & "non-limited interface", Iface);
                end if;
@@ -1214,6 +1211,17 @@ package body Sem_Ch9 is
 
       Set_Is_Constrained (T, not Has_Discriminants (T));
 
+      --  Perform minimal expansion of the protected type while inside of a
+      --  generic. The corresponding record is needed for various semantic
+      --  checks.
+
+      if Ada_Version >= Ada_05
+        and then Inside_A_Generic
+      then
+         Insert_After_And_Analyze (N,
+           Build_Corresponding_Record (N, T, Sloc (T)));
+      end if;
+
       Analyze (Protected_Definition (N));
 
       --  Protected types with entries are controlled (because of the
@@ -1264,8 +1272,10 @@ package body Sem_Ch9 is
          --  may be subtypes of the partial view. Skip if errors are present,
          --  to prevent cascaded messages.
 
-         if Serious_Errors_Detected = 0 then
-            Exp_Ch9.Expand_N_Protected_Type_Declaration (N);
+         if Serious_Errors_Detected = 0
+           and then Expander_Active
+         then
+            Expand_N_Protected_Type_Declaration (N);
             Process_Full_View (N, T, Def_Id);
          end if;
       end if;
@@ -1444,6 +1454,13 @@ package body Sem_Ch9 is
          Generate_Reference (Entry_Id, Entry_Name);
 
          if Present (First_Formal (Entry_Id)) then
+            if VM_Target = JVM_Target then
+               Error_Msg_N
+                 ("arguments unsupported in requeue statement",
+                  First_Formal (Entry_Id));
+               return;
+            end if;
+
             Check_Subtype_Conformant (Enclosing, Entry_Id, Name (N));
 
             --  Processing for parameters accessed by the requeue
@@ -1613,7 +1630,7 @@ package body Sem_Ch9 is
       T      : Entity_Id;
       T_Decl : Node_Id;
       O_Decl : Node_Id;
-      O_Name : constant Entity_Id := New_Copy (Id);
+      O_Name : constant Entity_Id := Id;
 
    begin
       Generate_Definition (Id);
@@ -1669,7 +1686,7 @@ package body Sem_Ch9 is
       T      : Entity_Id;
       T_Decl : Node_Id;
       O_Decl : Node_Id;
-      O_Name : constant Entity_Id := New_Copy (Id);
+      O_Name : constant Entity_Id := Id;
 
    begin
       Generate_Definition (Id);
@@ -1687,6 +1704,14 @@ package body Sem_Ch9 is
           Defining_Identifier => T,
           Task_Definition     => Relocate_Node (Task_Definition (N)),
           Interface_List      => Interface_List (N));
+
+      --  We use the original defining identifier of the single task in the
+      --  generated object declaration, so that debugging information can
+      --  be attached to it when compiling with -gnatD. The parent of the
+      --  entity is the new object declaration. The single_task_declaration
+      --  is not used further in semantics or code generation, but is scanned
+      --  when generating debug information, and therefore needs the updated
+      --  Sloc information for the entity (see Sprint).
 
       O_Decl :=
         Make_Object_Declaration (Loc,
@@ -1721,6 +1746,7 @@ package body Sem_Ch9 is
 
    procedure Analyze_Task_Body (N : Node_Id) is
       Body_Id : constant Entity_Id := Defining_Identifier (N);
+      HSS     : constant Node_Id   := Handled_Statement_Sequence (N);
       Last_E  : Entity_Id;
 
       Spec_Id : Entity_Id;
@@ -1779,7 +1805,7 @@ package body Sem_Ch9 is
          Spec_Id := Etype (Spec_Id);
       end if;
 
-      New_Scope (Spec_Id);
+      Push_Scope (Spec_Id);
       Set_Corresponding_Spec (N, Spec_Id);
       Set_Corresponding_Body (Parent (Spec_Id), Body_Id);
       Set_Has_Completion (Spec_Id);
@@ -1800,7 +1826,24 @@ package body Sem_Ch9 is
          end if;
       end if;
 
-      Analyze (Handled_Statement_Sequence (N));
+      --  Mark all handlers as not suitable for local raise optimization,
+      --  since this optimization causes difficulties in a task context.
+
+      if Present (Exception_Handlers (HSS)) then
+         declare
+            Handlr : Node_Id;
+         begin
+            Handlr := First (Exception_Handlers (HSS));
+            while Present (Handlr) loop
+               Set_Local_Raise_Not_OK (Handlr);
+               Next (Handlr);
+            end loop;
+         end;
+      end if;
+
+      --  Now go ahead and complete analysis of the task body
+
+      Analyze (HSS);
       Check_Completion (Body_Id);
       Check_References (Body_Id);
       Check_References (Spec_Id);
@@ -1824,7 +1867,7 @@ package body Sem_Ch9 is
          end loop;
       end;
 
-      Process_End_Label (Handled_Statement_Sequence (N), 't', Ref_Id);
+      Process_End_Label (HSS, 't', Ref_Id);
       End_Scope;
    end Analyze_Task_Body;
 
@@ -1887,7 +1930,7 @@ package body Sem_Ch9 is
       Set_Etype              (T, T);
       Set_Has_Delayed_Freeze (T, True);
       Set_Stored_Constraint  (T, No_Elist);
-      New_Scope (T);
+      Push_Scope (T);
 
       --  Ada 2005 (AI-345)
 
@@ -1909,19 +1952,15 @@ package body Sem_Ch9 is
                Freeze_Before (N, Etype (Iface));
 
                --  Ada 2005 (AI-345): Task types can only implement limited,
-               --  synchronized or task interfaces.
+               --  synchronized, or task interfaces (note that the predicate
+               --  Is_Limited_Interface includes synchronized and task
+               --  interfaces).
 
-               if Is_Limited_Interface (Iface_Typ)
-                 or else Is_Synchronized_Interface (Iface_Typ)
-                 or else Is_Task_Interface (Iface_Typ)
-               then
-                  null;
-
-               elsif Is_Protected_Interface (Iface_Typ) then
+               if Is_Protected_Interface (Iface_Typ) then
                   Error_Msg_N ("(Ada 2005) task type cannot implement a " &
                     "protected interface", Iface);
 
-               else
+               elsif not Is_Limited_Interface (Iface_Typ) then
                   Error_Msg_N ("(Ada 2005) task type cannot implement a " &
                     "non-limited interface", Iface);
                end if;
@@ -1978,6 +2017,15 @@ package body Sem_Ch9 is
 
       Set_Is_Constrained (T, not Has_Discriminants (T));
 
+      --  Perform minimal expansion of the task type while inside a generic
+      --  context. The corresponding record is needed for various semantic
+      --  checks.
+
+      if Inside_A_Generic then
+         Insert_After_And_Analyze (N,
+           Build_Corresponding_Record (N, T, Sloc (T)));
+      end if;
+
       if Present (Task_Definition (N)) then
          Analyze_Task_Definition (Task_Definition (N));
       end if;
@@ -2006,8 +2054,10 @@ package body Sem_Ch9 is
          --  may be subtypes of the partial view. Skip if errors are present,
          --  to prevent cascaded messages.
 
-         if Serious_Errors_Detected = 0 then
-            Exp_Ch9.Expand_N_Task_Type_Declaration (N);
+         if Serious_Errors_Detected = 0
+           and then Expander_Active
+         then
+            Expand_N_Task_Type_Declaration (N);
             Process_Full_View (N, T, Def_Id);
          end if;
       end if;
