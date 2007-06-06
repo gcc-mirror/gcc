@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2005, AdaCore                     --
+--                     Copyright (C) 2001-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,7 +47,8 @@ package MLib.Prj is
    --  If Link is False, the library is not linked/built.
 
    procedure Check_Library
-     (For_Project : Project_Id; In_Tree : Project_Tree_Ref);
+     (For_Project : Project_Id;
+      In_Tree     : Project_Tree_Ref);
    --  Check if the library of a library project needs to be rebuilt,
    --  because its time-stamp is earlier than the time stamp of one of its
    --  object files.

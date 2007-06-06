@@ -1,5 +1,5 @@
 # Makefile.rtl for GNU Ada Compiler (GNAT).
-#   Copyright (C) 2003-2005, Free Software Foundation, Inc.
+#   Copyright (C) 2003-2007, Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -100,6 +100,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-ciorma$(objext) \
   a-ciormu$(objext) \
   a-ciorse$(objext) \
+  a-clrefi$(objext) \
   a-cohama$(objext) \
   a-cohase$(objext) \
   a-cohata$(objext) \
@@ -366,6 +367,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-sptavs$(objext) \
   g-string$(objext) \
   g-strspl$(objext) \
+  g-sttsne$(objext) \
   g-table$(objext) \
   g-tasloc$(objext) \
   g-traceb$(objext) \
@@ -409,6 +411,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-dsaser$(objext) \
   s-errrep$(objext) \
   s-exctab$(objext) \
+  s-except$(objext) \
   s-exnint$(objext) \
   s-exnllf$(objext) \
   s-exnlli$(objext) \
@@ -454,6 +457,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-maccod$(objext) \
   s-mantis$(objext) \
   s-mastop$(objext) \
+  s-os_lib$(objext) \
   s-osprim$(objext) \
   s-pack03$(objext) \
   s-pack05$(objext) \
@@ -519,6 +523,8 @@ GNATRTL_NONTASKING_OBJS= \
   s-poosiz$(objext) \
   s-powtab$(objext) \
   s-purexc$(objext) \
+  s-regexp$(objext) \
+  s-regpat$(objext) \
   s-restri$(objext) \
   s-rident$(objext) \
   s-rpc$(objext)    \
@@ -540,10 +546,13 @@ GNATRTL_NONTASKING_OBJS= \
   s-soflin$(objext) \
   s-memory$(objext) \
   s-memcop$(objext) \
+  s-string$(objext) \
+  s-tasloc$(objext) \
   s-traceb$(objext) \
   s-traces$(objext) \
   s-traent$(objext) \
   s-unstyp$(objext) \
+  s-utf_32$(objext) \
   s-vaflop$(objext) \
   s-valboo$(objext) \
   s-valcha$(objext) \
