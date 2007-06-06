@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2000, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -76,6 +76,15 @@ package body Sem_Smem is
            ("types containing access components " &
             "not supported in Shared_Passive partitions",
             Id);
+
+      --  Objects with default-initialized types will be rejected when
+      --  the initialization code is generated. However we must flag tasks
+      --  earlier on, to prevent expansion of stream attributes that is
+      --  bound to fail.
+
+      elsif Has_Task (T) then
+         Error_Msg_N
+           ("Shared_Passive partitions cannot contain tasks", Id);
 
       --  Currently we do not support unconstrained record types, since we
       --  use 'Write to write out values. This could probably be special
