@@ -1,3 +1,9 @@
+2007-06-06  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (forward_propagate_into_cond): Return 2
+	if we need to schedule cfg_cleanup.
+	(tree_ssa_forward_propagate_single_use_vars): Do so.
+
 2007-06-06  Ian Lance Taylor  <iant@google.com>
 
 	* fold-const.c (merge_ranges): If range_successor or
@@ -247,7 +253,7 @@
 	PR target/31733
 	* cfgrtl.c (rtl_verify_flow_info): Skip notes when looking for barrier.
 
-2007-05-31  Jan Hubicka  <jh@suse.cz>
+2007-06-04  Jan Hubicka  <jh@suse.cz>
 
 	* tree-predcom.c (replace_ref_with, initialize_root_vars_lm,
 	reassociate_to_the_same_stmt): Call build_gimple_modify_stmt
