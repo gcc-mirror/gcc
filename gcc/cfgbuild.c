@@ -630,7 +630,7 @@ find_bb_boundaries (basic_block bb)
 {
   basic_block orig_bb = bb;
   rtx insn = BB_HEAD (bb);
-  rtx end = BB_END (bb);
+  rtx end = BB_END (bb), x;
   rtx table;
   rtx flow_transfer_insn = NULL_RTX;
   edge fallthru = NULL;
@@ -651,7 +651,16 @@ find_bb_boundaries (basic_block bb)
 	{
 	  fallthru = split_block (bb, PREV_INSN (insn));
 	  if (flow_transfer_insn)
-	    BB_END (bb) = flow_transfer_insn;
+	    {
+	      BB_END (bb) = flow_transfer_insn;
+
+	      /* Clean up the bb field for the insns between the blocks.  */
+	      for (x = NEXT_INSN (flow_transfer_insn);
+		   x != BB_HEAD (fallthru->dest);
+		   x = NEXT_INSN (x))
+		if (!BARRIER_P (x))
+		  set_block_for_insn (x, NULL);
+	    }
 
 	  bb = fallthru->dest;
 	  remove_edge (fallthru);
@@ -666,6 +675,14 @@ find_bb_boundaries (basic_block bb)
 	{
 	  fallthru = split_block (bb, PREV_INSN (insn));
 	  BB_END (bb) = flow_transfer_insn;
+
+	  /* Clean up the bb field for the insns between the blocks.  */
+	  for (x = NEXT_INSN (flow_transfer_insn);
+	       x != BB_HEAD (fallthru->dest);
+	       x = NEXT_INSN (x))
+	    if (!BARRIER_P (x))
+	      set_block_for_insn (x, NULL);
+
 	  bb = fallthru->dest;
 	  remove_edge (fallthru);
 	  flow_transfer_insn = NULL_RTX;
@@ -682,7 +699,18 @@ find_bb_boundaries (basic_block bb)
      return and barrier, or possibly other sequence not behaving like
      ordinary jump, we need to take care and move basic block boundary.  */
   if (flow_transfer_insn)
-    BB_END (bb) = flow_transfer_insn;
+    {
+      BB_END (bb) = flow_transfer_insn;
+
+      /* Clean up the bb field for the insns that do not belong to BB.  */
+      x = flow_transfer_insn;
+      while (x != end)
+	{
+	  x = NEXT_INSN (x);
+	  if (!BARRIER_P (x))
+	    set_block_for_insn (x, NULL);
+	}
+    }
 
   /* We've possibly replaced the conditional jump by conditional jump
      followed by cleanup at fallthru edge, so the outgoing edges may

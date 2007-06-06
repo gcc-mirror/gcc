@@ -1999,7 +1999,7 @@ try_optimize_cfg (int mode)
 		{
 		  rtx label = BB_HEAD (b);
 
-		  delete_insn_chain (label, label);
+		  delete_insn_chain (label, label, false);
 		  /* In the case label is undeletable, move it after the
 		     BASIC_BLOCK note.  */
 		  if (NOTE_KIND (BB_HEAD (b)) == NOTE_INSN_DELETED_LABEL)
