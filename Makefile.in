@@ -47449,7 +47449,7 @@ stage1-end::
 	fi
 	rm -f stage_current
 
-# Bubble a bugfix through all the stages up to stage 1.  They are
+# Bubble a bug fix through all the stages up to stage 1.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
 # reconfigured as well.
 .PHONY: stage1-bubble
@@ -47659,7 +47659,7 @@ stage2-end::
 	fi
 	rm -f stage_current
 
-# Bubble a bugfix through all the stages up to stage 2.  They are
+# Bubble a bug fix through all the stages up to stage 2.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
 # reconfigured as well.
 .PHONY: stage2-bubble
@@ -47890,7 +47890,7 @@ stage3-end::
 	fi
 	rm -f stage_current
 
-# Bubble a bugfix through all the stages up to stage 3.  They are
+# Bubble a bug fix through all the stages up to stage 3.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
 # reconfigured as well.
 .PHONY: stage3-bubble
@@ -48167,7 +48167,7 @@ stage4-end::
 	fi
 	rm -f stage_current
 
-# Bubble a bugfix through all the stages up to stage 4.  They are
+# Bubble a bug fix through all the stages up to stage 4.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
 # reconfigured as well.
 .PHONY: stage4-bubble
@@ -48441,7 +48441,7 @@ stageprofile-end::
 	fi
 	rm -f stage_current
 
-# Bubble a bugfix through all the stages up to stage profile.  They are
+# Bubble a bug fix through all the stages up to stage profile.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
 # reconfigured as well.
 .PHONY: stageprofile-bubble
@@ -48651,7 +48651,7 @@ stagefeedback-end::
 	fi
 	rm -f stage_current
 
-# Bubble a bugfix through all the stages up to stage feedback.  They are
+# Bubble a bug fix through all the stages up to stage feedback.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
 # reconfigured as well.
 .PHONY: stagefeedback-bubble
