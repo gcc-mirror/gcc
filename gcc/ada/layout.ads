@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,6 +59,13 @@ package Layout is
    --  on return. If the Esize is still unknown in the latter case,
    --  it means that the object must be allocated dynamically, since
    --  its length is not known at compile time.
+
+   --  The following are utility routines, called from various places
+
+   procedure Adjust_Esize_Alignment (E : Entity_Id);
+   --  E is the entity for a type or object. This procedure checks that the
+   --  size and alignment are compatible, and if not either gives an error
+   --  message if they cannot be adjusted or else adjusts them appropriately.
 
    procedure Set_Discrete_RM_Size (Def_Id : Entity_Id);
    --  Set proper RM_Size for discrete size, this is normally the minimum
