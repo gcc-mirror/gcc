@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,12 +35,12 @@ with Exp_VFpt; use Exp_VFpt;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Sem;      use Sem;
+with Sem_Attr; use Sem_Attr;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
-with Snames;   use Snames;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -156,13 +156,12 @@ package body Exp_Ch2 is
 
          and then Nkind (Parent (N)) /= N_Pragma_Argument_Association
 
-         --  Same for Asm_Input and Asm_Output attribute references
+         --  Same for attribute references that require a simple name prefix
 
          and then not (Nkind (Parent (N)) = N_Attribute_Reference
-                         and then
-                           (Attribute_Name (Parent (N)) = Name_Asm_Input
-                              or else
-                            Attribute_Name (Parent (N)) = Name_Asm_Output))
+                         and then Requires_Simple_Name_Prefix (
+                                    Attribute_Name (Parent (N))))
+
       then
          --  Case of Current_Value is a compile time known value
 
