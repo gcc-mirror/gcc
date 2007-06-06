@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2006, AdaCore                     --
+--                     Copyright (C) 1999-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -114,7 +114,7 @@ package GNAT.Calendar.Time_IO is
      (Date    : Ada.Calendar.Time;
       Picture : Picture_String) return String;
    --  Return Date as a string with format Picture. Raise Picture_Error if
-   --  picture string is wrong.
+   --  picture string is null or has an incorrect format.
 
    function Value (Date : String) return Ada.Calendar.Time;
    --  Parse the string Date and return its equivalent as a Time value. The
