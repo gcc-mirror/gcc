@@ -62,38 +62,4 @@ package body System.Finalization_Root is
       raise Program_Error;
    end Initialize;
 
-   ----------
-   -- Read --
-   ----------
-
-   --  Read and Write must be empty in order to avoid copying the
-   --  finalization pointers.
-
-   pragma Warnings (Off);
-   --  Suppress warning for out paramater Item which is not assigned
-   --  because it is pretty much empty.
-
-   procedure Read
-     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Item   : out Root_Controlled)
-   is
-   begin
-      null;
-   end Read;
-
-   -----------
-   -- Write --
-   -----------
-
-   --  Read and Write must be empty in order to avoid copying the
-   --  finalization pointers.
-
-   procedure Write
-     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Item   : Root_Controlled)
-   is
-   begin
-      null;
-   end Write;
-
 end System.Finalization_Root;
