@@ -1,3 +1,14 @@
+2007-06-06  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR testsuite/25241
+	* gcc.dg/simd-5.c: Mark output as a note.
+	* gcc.dg/simd-6.c: Mark output as a note. Fix incorrect use of
+	dg-message.
+	* gcc.dg/simd-1.c: Likewise.
+	* gcc.dg/always_inline.c: Mark output as a sorry.
+	* gcc.dg/always_inline2.c: Likewise.
+	* gcc.dg/always_inline3.c: Likewise.
+	
 2007-06-06  Ian Lance Taylor  <iant@google.com>
 
 	* g++.dg/conversion/enum1.C: New test.
