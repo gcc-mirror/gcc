@@ -825,6 +825,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 
       // Called by the first initialize_dispatch above and by the
       // vector(n,value,a) constructor.
+      void
       _M_fill_initialize(size_type __n, const value_type& __value)
       {
 	std::__uninitialized_fill_n_a(this->_M_impl._M_start, __n, __value, 
