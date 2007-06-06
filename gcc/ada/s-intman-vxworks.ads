@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,7 +83,7 @@ package System.Interrupt_Management is
 
    --  and the initialization code will be portable.
 
-   Abort_Task_Signal : Signal_ID;
+   Abort_Task_Interrupt : Signal_ID;
    --  The signal that is used to implement task abort if an interrupt is used
    --  for that purpose. This is one of the reserved signals.
 
