@@ -2,7 +2,7 @@
 /* Developed by Devang Patel <dpatel@apple.com>.  */
 
 /* { dg-options "-bind_at_load" } */
-/* { dg-do link { target powerpc-*-darwin* } } */
+/* { dg-do link { target *-*-darwin* } } */
 
 int main()
 {

@@ -1,4 +1,13 @@
-2007-06-06  Geoffrey Keating  <geoffk@apple.com>
+2007-06-07  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/attr-weakref-1-darwin.c: Run on all Darwin platforms.
+	* gcc.dg/20050826-1.c: Run on all Darwin platforms.
+	* gcc.dg/darwin-ld-2.c: Run on all Darwin platforms.
+	* gcc.dg/darwin-ld-4.c: Run on all Darwin platforms.
+	* gcc.dg/cleanup-8.c: Run on i386-darwin9 and later.
+	* gcc.dg/cleanup-9.c: Run on i386-darwin9 and later.
+	* gcc.dg/cleanup-10.c: Run on i386-darwin9 and later.
+	* gcc.dg/cleanup-11.c: Run on i386-darwin9 and later.
 
 	* gcc.dg/darwin-minversion-3.c: New.
 
