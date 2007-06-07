@@ -1,3 +1,8 @@
+2007-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* team.c (gomp_team_start): Fix setting up thread_attr
+	stack size.
+
 2007-06-02  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure: Regenerate.
