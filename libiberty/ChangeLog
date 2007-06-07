@@ -1,3 +1,8 @@
+2007-06-07  Geoffrey Keating  <geoffk@apple.com>
+
+	* configure.ac: Non-default multilibs can be cross compilations.
+	* configure: Regenerate
+
 2007-05-07  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* argv.c (writeargv): New function.
