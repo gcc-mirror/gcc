@@ -1,3 +1,16 @@
+2007-06-07  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/31850
+	* rtl.h (push_to_sequence2): New.
+	* emit-rtl.c (push_to_sequence2): New.
+	* function.c (assign_parm_data_all): Add new fields.
+	(assign_parm_setup_block): Call push_to_sequence2 instead of 
+	push_to_sequence.
+	(assign_parm_setup_reg): Ditto.
+	(assign_parm_setup_stack): Ditto.
+	(assign_parms_unsplit_complex): Ditto.
+	(assign_parms): Change field name.
+
 2007-06-07  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/32220

@@ -4632,6 +4632,18 @@ push_to_sequence (rtx first)
   last_insn = last;
 }
 
+/* Like push_to_sequence, but take the last insn as an argument to avoid
+   looping through the list.  */
+
+void
+push_to_sequence2 (rtx first, rtx last)
+{
+  start_sequence ();
+
+  first_insn = first;
+  last_insn = last;
+}
+
 /* Set up the outer-level insn chain
    as the current sequence, saving the previously current one.  */
 

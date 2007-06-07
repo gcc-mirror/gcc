@@ -1494,6 +1494,7 @@ extern rtx get_first_nonnote_insn (void);
 extern rtx get_last_nonnote_insn (void);
 extern void start_sequence (void);
 extern void push_to_sequence (rtx);
+extern void push_to_sequence2 (rtx, rtx);
 extern void end_sequence (void);
 extern rtx immed_double_const (HOST_WIDE_INT, HOST_WIDE_INT,
 			       enum machine_mode);
