@@ -1,3 +1,15 @@
+2007-06-06  Geoffrey Keating  <geoffk@apple.com>
+	    Hui-May Chang <hm.chang@apple.com>
+
+	* doc/invoke.texi (Darwin Options): Update documentation for
+	-mmacosx-version-min.
+	* config.gcc (*-*-darwin*): Set extra_gcc_objs.
+	* config/darwin-driver.c: New file.
+	* config/darwin.h (GCC_DRIVER_HOST_INITIALIZATION): New.
+	* config/t-darwin (darwin-driver.o): New rule.
+
+	* config/darwin-c.c (version_as_macro): Ignore low digit.
+
 2007-06-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (standard sse constant splitter): Handle TFmode.

@@ -12,6 +12,11 @@ darwin-c.o: $(srcdir)/config/darwin-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 gt-darwin.h : s-gtype ; @true
 
+darwin-driver.o: $(srcdir)/config/darwin-driver.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	  $(srcdir)/config/darwin-driver.c
+
 # How to build crt3.o
 EXTRA_MULTILIB_PARTS=crt3.o
 # Pass -fno-tree-dominator-opts to work around bug 26840.

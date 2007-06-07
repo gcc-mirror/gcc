@@ -986,4 +986,10 @@ extern int flag_apple_kext;
 
 #define TARGET_HAS_TARGETCM 1
 
+#ifndef CROSS_DIRECTORY_STRUCTURE
+extern void darwin_default_min_version (int * argc, char *** argv);
+#define GCC_DRIVER_HOST_INITIALIZATION \
+  darwin_default_min_version (&argc, &argv)
+#endif /* CROSS_DIRECTORY_STRUCTURE */
+
 #endif /* CONFIG_DARWIN_H */

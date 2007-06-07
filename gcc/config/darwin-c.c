@@ -567,8 +567,8 @@ find_subframework_header (cpp_reader *pfile, const char *header, cpp_dir **dirp)
 
 /* Return the value of darwin_macosx_version_min suitable for the
    __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ macro,
-   so '10.4.2' becomes 1042.
-   Print a warning if the version number is not known.  */
+   so '10.4.2' becomes 1040.  The lowest digit is always zero.
+   Print a warning if the version number can't be understood.  */
 static const char *
 version_as_macro (void)
 {
@@ -579,18 +579,9 @@ version_as_macro (void)
   if (! ISDIGIT (darwin_macosx_version_min[3]))
     goto fail;
   result[2] = darwin_macosx_version_min[3];
-  if (darwin_macosx_version_min[4] != '\0')
-    {
-      if (darwin_macosx_version_min[4] != '.')
-	goto fail;
-      if (! ISDIGIT (darwin_macosx_version_min[5]))
-	goto fail;
-      if (darwin_macosx_version_min[6] != '\0')
-	goto fail;
-      result[3] = darwin_macosx_version_min[5];
-    }
-  else
-    result[3] = '0';
+  if (darwin_macosx_version_min[4] != '\0'
+      && darwin_macosx_version_min[4] != '.')
+    goto fail;
 
   return result;
 
