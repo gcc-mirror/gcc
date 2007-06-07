@@ -118,7 +118,7 @@ gfc_match_eos (void)
 	    }
 	  while (c != '\n');
 
-	  /* Fall through */
+	  /* Fall through.  */
 
 	case '\n':
 	  return MATCH_YES;
@@ -441,7 +441,7 @@ gfc_match_sym_tree (gfc_symtree **matched_symbol, int host_assoc)
 
   if (host_assoc)
     return (gfc_get_ha_sym_tree (buffer, matched_symbol))
-	   ? MATCH_ERROR : MATCH_YES;
+	    ? MATCH_ERROR : MATCH_YES;
 
   if (gfc_get_sym_tree (buffer, NULL, matched_symbol))
     return MATCH_ERROR;
@@ -741,7 +741,7 @@ loop:
 	  goto not_yes;
 
 	case '%':
-	  break;	/* Fall through to character matcher */
+	  break;	/* Fall through to character matcher.  */
 
 	default:
 	  gfc_internal_error ("gfc_match(): Bad match code %c", c);
@@ -771,7 +771,7 @@ not_yes:
 	    {
 	    case '%':
 	      matches++;
-	      break;		/* Skip */
+	      break;		/* Skip.  */
 
 	    /* Matches that don't have to be undone */
 	    case 'o':
@@ -910,7 +910,6 @@ gfc_match_pointer_assignment (void)
       m = MATCH_ERROR;
       goto cleanup;
     }
-
 
   new_st.op = EXEC_POINTER_ASSIGN;
   new_st.expr = lvalue;
@@ -1073,7 +1072,7 @@ gfc_match_if (gfc_statement *if_type)
   if (m == MATCH_ERROR)
     return MATCH_ERROR;
 
-  gfc_match (" if ( %e ) ", &expr);	/* Guaranteed to match */
+  gfc_match (" if ( %e ) ", &expr);	/* Guaranteed to match.  */
 
   m = gfc_match_pointer_assignment ();
   if (m == MATCH_YES)
@@ -1083,7 +1082,7 @@ gfc_match_if (gfc_statement *if_type)
   gfc_undo_symbols ();
   gfc_current_locus = old_loc;
 
-  gfc_match (" if ( %e ) ", &expr);	/* Guaranteed to match */
+  gfc_match (" if ( %e ) ", &expr);	/* Guaranteed to match.  */
 
   /* Look at the next keyword to see which matcher to call.  Matching
      the keyword doesn't affect the symbol table, so we don't have to
@@ -1249,6 +1248,7 @@ cleanup:
 void
 gfc_free_iterator (gfc_iterator *iter, int flag)
 {
+
   if (iter == NULL)
     return;
 
@@ -1288,7 +1288,7 @@ gfc_match_do (void)
   if (m == MATCH_ERROR)
     goto cleanup;
 
-/* Match an infinite DO, make it like a DO WHILE(.TRUE.) */
+  /* Match an infinite DO, make it like a DO WHILE(.TRUE.).  */
 
   if (gfc_match_eos () == MATCH_YES)
     {
@@ -1297,8 +1297,8 @@ gfc_match_do (void)
       goto done;
     }
 
-  /* match an optional comma, if no comma is found a space is obligatory.  */
-  if (gfc_match_char(',') != MATCH_YES && gfc_match ("% ") != MATCH_YES)
+  /* Match an optional comma, if no comma is found, a space is obligatory.  */
+  if (gfc_match_char (',') != MATCH_YES && gfc_match ("% ") != MATCH_YES)
     return MATCH_NO;
 
   /* See if we have a DO WHILE.  */
@@ -1309,15 +1309,15 @@ gfc_match_do (void)
     }
 
   /* The abortive DO WHILE may have done something to the symbol
-     table, so we start over: */
+     table, so we start over.  */
   gfc_undo_symbols ();
   gfc_current_locus = old_loc;
 
-  gfc_match_label ();		/* This won't error */
-  gfc_match (" do ");		/* This will work */
+  gfc_match_label ();		/* This won't error.  */
+  gfc_match (" do ");		/* This will work.  */
 
-  gfc_match_st_label (&label);	/* Can't error out */
-  gfc_match_char (',');		/* Optional comma */
+  gfc_match_st_label (&label);	/* Can't error out.  */
+  gfc_match_char (',');		/* Optional comma.  */
 
   m = gfc_match_iterator (&iter, 0);
   if (m == MATCH_NO)
@@ -1389,8 +1389,7 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 	}
     }
 
-  /* Find the loop mentioned specified by the label (or lack of a
-     label).  */
+  /* Find the loop mentioned specified by the label (or lack of a label).  */
   for (o = NULL, p = gfc_state_stack; p; p = p->previous)
     if (p->state == COMP_DO && (sym == NULL || sym == p->sym))
       break;
@@ -1432,7 +1431,6 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
   new_st.ext.whichloop = p->head;
 
   new_st.op = op;
-/*  new_st.sym = sym;*/
 
   return MATCH_YES;
 }
@@ -1518,6 +1516,7 @@ cleanup:
   gfc_free_expr (e);
   return MATCH_ERROR;
 }
+
 
 /* Match the (deprecated) PAUSE statement.  */
 
@@ -1890,7 +1889,7 @@ gfc_match_nullify (void)
       if (m == MATCH_NO)
 	goto syntax;
 
-      if (gfc_check_do_variable(p->symtree))
+      if (gfc_check_do_variable (p->symtree))
 	goto cleanup;
 
       if (gfc_pure (NULL) && gfc_impure_variable (p->symtree->n.sym))
@@ -1899,13 +1898,13 @@ gfc_match_nullify (void)
 	  goto cleanup;
 	}
 
-      /* build ' => NULL() ' */
+      /* build ' => NULL() '.  */
       e = gfc_get_expr ();
       e->where = gfc_current_locus;
       e->expr_type = EXPR_NULL;
       e->ts.type = BT_UNKNOWN;
 
-      /* Chain to list */
+      /* Chain to list.  */
       if (tail == NULL)
 	tail = &new_st;
       else
@@ -2145,7 +2144,7 @@ gfc_match_call (void)
   i = 0;
   for (a = arglist; a; a = a->next)
     if (a->expr == NULL)
-	i = 1;
+      i = 1;
 
   if (i)
     {
@@ -2156,7 +2155,7 @@ gfc_match_call (void)
       new_st.next = c = gfc_get_code ();
       c->op = EXEC_SELECT;
       sprintf (name, "_result_%s", sym->name);
-      gfc_get_ha_sym_tree (name, &select_st);  /* Can't fail */
+      gfc_get_ha_sym_tree (name, &select_st);   /* Can't fail.  */
 
       select_sym = select_st->n.sym;
       select_sym->ts.type = BT_INTEGER;
@@ -2565,11 +2564,11 @@ gfc_match_namelist (void)
 	}
 
       if (group_name->attr.flavor == FL_NAMELIST
-	    && group_name->attr.use_assoc
-	    && gfc_notify_std (GFC_STD_GNU, "Namelist group name '%s' "
-			       "at %C already is USE associated and can"
-			       "not be respecified.", group_name->name)
-	       == FAILURE)
+	  && group_name->attr.use_assoc
+	  && gfc_notify_std (GFC_STD_GNU, "Namelist group name '%s' "
+			     "at %C already is USE associated and can"
+			     "not be respecified.", group_name->name)
+	     == FAILURE)
 	return MATCH_ERROR;
 
       if (group_name->attr.flavor != FL_NAMELIST
@@ -2776,7 +2775,7 @@ gfc_match_equivalence (void)
       /* If one of the members of an equivalence is in common, then
 	 mark them all as being in common.  Before doing this, check
 	 that members of the equivalence group are not in different
-	 common blocks. */
+	 common blocks.  */
       if (common_flag)
 	for (set = eq; set; set = set->eq)
 	  {
@@ -3217,6 +3216,7 @@ cleanup:
   return MATCH_ERROR;
 }
 
+
 /* Match a WHERE statement.  */
 
 match
@@ -3308,7 +3308,7 @@ gfc_match_elsewhere (void)
 	  m = MATCH_ERROR;
 	  goto cleanup;
 	}
-      /* Better be a name at this point */
+      /* Better be a name at this point.  */
       m = gfc_match_name (name);
       if (m == MATCH_NO)
 	goto syntax;
@@ -3383,7 +3383,7 @@ match_forall_iterator (gfc_forall_iterator **result)
     goto cleanup;
 
   if (gfc_match_char ('=') != MATCH_YES
-	|| iter->var->expr_type != EXPR_VARIABLE)
+      || iter->var->expr_type != EXPR_VARIABLE)
     {
       m = MATCH_NO;
       goto cleanup;
@@ -3472,7 +3472,7 @@ match_forall_header (gfc_forall_iterator **phead, gfc_expr **mask)
 	  continue;
 	}
 
-      /* Have to have a mask expression */
+      /* Have to have a mask expression.  */
 
       m = gfc_match_expr (&msk);
       if (m == MATCH_NO)

@@ -1261,7 +1261,7 @@ gfc_new_nml_name_expr (const char * name)
 }
 
 /* nml_full_name builds up the fully qualified name of a
-   derived type component. */
+   derived type component.  */
 
 static char*
 nml_full_name (const char* var_name, const char* cmp_name)
@@ -1281,7 +1281,7 @@ nml_full_name (const char* var_name, const char* cmp_name)
    gfc_symbol or gfc_component backend_decl's. An offset is
    provided so that the address of an element of an array of
    derived types is returned. This is used in the runtime to
-   determine that span of the derived type. */
+   determine that span of the derived type.  */
 
 static tree
 nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,

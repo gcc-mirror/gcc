@@ -196,7 +196,7 @@ unget_char (void)
   use_last_char = 1;
 }
 
-/* Eat up the spaces and return a character. */
+/* Eat up the spaces and return a character.  */
 
 static char
 next_char_not_space (void)

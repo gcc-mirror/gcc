@@ -619,8 +619,8 @@ typedef struct
   /* Special attributes for Cray pointers, pointees.  */
   unsigned cray_pointer:1, cray_pointee:1;
 
-  /* The symbol is a derived type with allocatable components, possibly nested.
-   */
+  /* The symbol is a derived type with allocatable components, possibly
+     nested.  */
   unsigned alloc_comp:1;
 
   /* The namespace where the VOLATILE attribute has been set.  */
@@ -1263,8 +1263,7 @@ gfc_simplify_f;
 
 /* Again like gfc_check_f, these specify the type of the resolution
    function associated with an intrinsic. The fX are just like in
-   gfc_check_f. f1m is used for MIN and MAX, s1 is used for abort().
-   */
+   gfc_check_f. f1m is used for MIN and MAX, s1 is used for abort().  */
 
 typedef union
 {
@@ -1847,7 +1846,7 @@ extern locus gfc_current_locus;
 /* misc.c */
 void *gfc_getmem (size_t) ATTRIBUTE_MALLOC;
 void gfc_free (void *);
-int gfc_terminal_width(void);
+int gfc_terminal_width (void);
 void gfc_clear_ts (gfc_typespec *);
 FILE *gfc_open_file (const char *);
 const char *gfc_basic_typename (bt);
@@ -1949,7 +1948,7 @@ try gfc_set_default_type (gfc_symbol *, int, gfc_namespace *);
 void gfc_set_component_attr (gfc_component *, symbol_attribute *);
 void gfc_get_component_attr (symbol_attribute *, gfc_component *);
 
-void gfc_set_sym_referenced (gfc_symbol * sym);
+void gfc_set_sym_referenced (gfc_symbol *);
 
 try gfc_add_attribute (symbol_attribute *, locus *);
 try gfc_add_allocatable (symbol_attribute *, locus *);
@@ -1960,7 +1959,7 @@ try gfc_add_optional (symbol_attribute *, locus *);
 try gfc_add_pointer (symbol_attribute *, locus *);
 try gfc_add_cray_pointer (symbol_attribute *, locus *);
 try gfc_add_cray_pointee (symbol_attribute *, locus *);
-try gfc_mod_pointee_as (gfc_array_spec *as);
+try gfc_mod_pointee_as (gfc_array_spec *);
 try gfc_add_protected (symbol_attribute *, const char *, locus *);
 try gfc_add_result (symbol_attribute *, const char *, locus *);
 try gfc_add_save (symbol_attribute *, const char *, locus *);
@@ -2025,7 +2024,7 @@ int gfc_symbols_could_alias (gfc_symbol *, gfc_symbol *);
 
 void gfc_undo_symbols (void);
 void gfc_commit_symbols (void);
-void gfc_commit_symbol (gfc_symbol * sym);
+void gfc_commit_symbol (gfc_symbol *);
 void gfc_free_namespace (gfc_namespace *);
 
 void gfc_symbol_init_2 (void);
@@ -2121,7 +2120,7 @@ try gfc_check_assign_symbol (gfc_symbol *, gfc_expr *);
 gfc_expr *gfc_default_initializer (gfc_typespec *);
 gfc_expr *gfc_get_variable_expr (gfc_symtree *);
 
-void gfc_expr_set_symbols_referenced (gfc_expr * expr);
+void gfc_expr_set_symbols_referenced (gfc_expr *);
 
 /* st.c */
 extern gfc_code new_st;
@@ -2166,7 +2165,7 @@ try gfc_resolve_array_constructor (gfc_expr *);
 try gfc_check_constructor_type (gfc_expr *);
 try gfc_check_iter_variable (gfc_expr *);
 try gfc_check_constructor (gfc_expr *, try (*)(gfc_expr *));
-gfc_constructor *gfc_copy_constructor (gfc_constructor * src);
+gfc_constructor *gfc_copy_constructor (gfc_constructor *);
 gfc_expr *gfc_get_array_element (gfc_expr *, int);
 try gfc_array_size (gfc_expr *, mpz_t *);
 try gfc_array_dimen_size (gfc_expr *, int, mpz_t *);
@@ -2174,7 +2173,7 @@ try gfc_array_ref_shape (gfc_array_ref *, mpz_t *);
 gfc_array_ref *gfc_find_array_ref (gfc_expr *);
 void gfc_insert_constructor (gfc_expr *, gfc_constructor *);
 gfc_constructor *gfc_get_constructor (void);
-tree gfc_conv_array_initializer (tree type, gfc_expr * expr);
+tree gfc_conv_array_initializer (tree type, gfc_expr *);
 try spec_size (gfc_array_spec *, mpz_t *);
 try spec_dimen_size (gfc_array_spec *, int, mpz_t *);
 int gfc_is_compile_time_shape (gfc_array_spec *);
@@ -2190,7 +2189,7 @@ gfc_symbol *gfc_search_interface (gfc_interface *, int,
 try gfc_extend_expr (gfc_expr *);
 void gfc_free_formal_arglist (gfc_formal_arglist *);
 try gfc_extend_assign (gfc_code *, gfc_namespace *);
-try gfc_add_interface (gfc_symbol * sym);
+try gfc_add_interface (gfc_symbol *);
 
 /* io.c */
 extern gfc_st_label format_asterisk;

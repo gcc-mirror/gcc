@@ -352,8 +352,7 @@ gfc_copy_shape (mpz_t *shape, int rank)
       { s1 ... sN-1  sN+1    ...  sR-1}
 
    If anything goes wrong -- N is not a constant, its value is out
-   of range -- or anything else, just returns NULL.
-*/
+   of range -- or anything else, just returns NULL.  */
 
 mpz_t *
 gfc_copy_shape_excluding (mpz_t *shape, int rank, gfc_expr *dim)
@@ -369,7 +368,7 @@ gfc_copy_shape_excluding (mpz_t *shape, int rank, gfc_expr *dim)
     return NULL;
 
   n = mpz_get_si (dim->value.integer);
-  n--; /* Convert to zero based index */
+  n--; /* Convert to zero based index.  */
   if (n < 0 || n >= rank)
     return NULL;
 
@@ -477,7 +476,7 @@ gfc_copy_expr (gfc_expr *p)
 	  q->value.op.op1 = gfc_copy_expr (p->value.op.op1);
 	  break;
 
-	default:		/* Binary operators */
+	default:		/* Binary operators.  */
 	  q->value.op.op1 = gfc_copy_expr (p->value.op.op1);
 	  q->value.op.op2 = gfc_copy_expr (p->value.op.op2);
 	  break;
@@ -696,7 +695,6 @@ gfc_is_constant_expr (gfc_expr *e)
       rv = (gfc_is_constant_expr (e->value.op.op1)
 	    && (e->value.op.op2 == NULL
 		|| gfc_is_constant_expr (e->value.op.op2)));
-
       break;
 
     case EXPR_VARIABLE:
@@ -772,7 +770,7 @@ simplify_intrinsic_op (gfc_expr *p, int type)
       || (op2 != NULL && !gfc_is_constant_expr (op2)))
     return SUCCESS;
 
-  /* Rip p apart */
+  /* Rip p apart.  */
   p->value.op.op1 = NULL;
   p->value.op.op2 = NULL;
 
@@ -1330,7 +1328,7 @@ simplify_const_ref (gfc_expr *p)
 		return FAILURE;
 	      p->ref->u.ar.type = AR_FULL;
 
-	    /* FALLTHROUGH  */
+	    /* Fall through.  */
 
 	    case AR_FULL:
 	      if (p->ref->next != NULL
@@ -1412,6 +1410,7 @@ simplify_ref_chain (gfc_ref *ref, int type)
 
 
 /* Try to substitute the value of a parameter variable.  */
+
 static try
 simplify_parameter_variable (gfc_expr *p, int type)
 {
@@ -1429,8 +1428,7 @@ simplify_parameter_variable (gfc_expr *p, int type)
     e->ref = copy_ref (p->ref);
   t = gfc_simplify_expr (e, type);
 
-  /* Only use the simplification if it eliminated all subobject
-     references.  */
+  /* Only use the simplification if it eliminated all subobject references.  */
   if (t == SUCCESS && !e->ref)
     gfc_replace_expr (p, e);
   else
@@ -2168,7 +2166,6 @@ check_restricted (gfc_expr *e)
     case EXPR_FUNCTION:
       t = e->value.function.esym ? external_spec_function (e)
 				 : restricted_intrinsic (e);
-
       break;
 
     case EXPR_VARIABLE:
@@ -2249,6 +2246,7 @@ check_restricted (gfc_expr *e)
 try
 gfc_specification_expr (gfc_expr *e)
 {
+
   if (e == NULL)
     return SUCCESS;
 
@@ -2352,18 +2350,18 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
       return FAILURE;
     }
 
-/* 12.5.2.2, Note 12.26: The result variable is very similar to any other
-   variable local to a function subprogram.  Its existence begins when
-   execution of the function is initiated and ends when execution of the
-   function is terminated.....
-   Therefore, the left hand side is no longer a varaiable, when it is:  */
+  /* 12.5.2.2, Note 12.26: The result variable is very similar to any other
+     variable local to a function subprogram.  Its existence begins when
+     execution of the function is initiated and ends when execution of the
+     function is terminated...
+     Therefore, the left hand side is no longer a variable, when it is:  */
   if (sym->attr.flavor == FL_PROCEDURE && sym->attr.proc != PROC_ST_FUNCTION
       && !sym->attr.external)
     {
       bool bad_proc;
       bad_proc = false;
 
-      /* (i) Use associated; */
+      /* (i) Use associated;  */
       if (sym->attr.use_assoc)
 	bad_proc = true;
 
@@ -2371,7 +2369,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
       if (gfc_current_ns->proc_name->attr.is_main_program)
 	bad_proc = true;
 
-      /* (iii) A module or internal procedure....  */
+      /* (iii) A module or internal procedure...  */
       if ((gfc_current_ns->proc_name->attr.proc == PROC_INTERNAL
 	   || gfc_current_ns->proc_name->attr.proc == PROC_MODULE)
 	  && gfc_current_ns->parent
@@ -2379,11 +2377,11 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 		|| gfc_current_ns->parent->proc_name->attr.subroutine)
 	      || gfc_current_ns->parent->proc_name->attr.is_main_program))
 	{
-	  /* .... that is not a function.... */ 
+	  /* ... that is not a function...  */ 
 	  if (!gfc_current_ns->proc_name->attr.function)
 	    bad_proc = true;
 
-	  /* .... or is not an entry and has a different name.  */
+	  /* ... or is not an entry and has a different name.  */
 	  if (!sym->attr.entry && sym->name != gfc_current_ns->proc_name->name)
 	    bad_proc = true;
 	}
@@ -2426,7 +2424,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
        return FAILURE;
      }
 
-  /* This is possibly a typo: x = f() instead of x => f()  */
+  /* This is possibly a typo: x = f() instead of x => f().  */
   if (gfc_option.warn_surprising 
       && rvalue->expr_type == EXPR_FUNCTION
       && rvalue->symtree->n.sym->attr.pointer)

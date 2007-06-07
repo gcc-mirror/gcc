@@ -42,6 +42,7 @@ static void check_statement_label (gfc_statement);
 static void undo_new_statement (void);
 static void reject_statement (void);
 
+
 /* A sort of half-matching function.  We try to match the word on the
    input with the passed string.  If this succeeds, we call the
    keyword-dependent matching function that will match the rest of the
@@ -740,7 +741,6 @@ push_state (gfc_state_data *p, gfc_compile_state new_state, gfc_symbol *sym)
 
 
 /* Pop the current state.  */
-
 static void
 pop_state (void)
 {

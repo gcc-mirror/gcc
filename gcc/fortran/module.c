@@ -399,6 +399,7 @@ find_pointer2 (void *p)
 
 
 /* Resolve any fixups using a known pointer.  */
+
 static void
 resolve_fixups (fixup_t *f, void *gp)
 {
@@ -599,7 +600,7 @@ gfc_match_use (void)
 	  if (type == INTERFACE_USER_OP && m == MATCH_YES
 	      && (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Renaming "
 				  "operators in USE statements at %C")
-	         == FAILURE))
+		 == FAILURE))
 	    goto cleanup;
 
 	  if (only_flag)
@@ -986,7 +987,7 @@ parse_string (void)
 
   len = 0;
 
-  /* See how long the string is */
+  /* See how long the string is.  */
   for ( ; ; )
     {
       c = module_char ();
@@ -1017,11 +1018,11 @@ parse_string (void)
     {
       c = module_char ();
       if (c == '\'')
-	module_char ();		/* Guaranteed to be another \'  */
+	module_char ();		/* Guaranteed to be another \'.  */
       *p++ = c;
     }
 
-  module_char ();		/* Terminating \'  */
+  module_char ();		/* Terminating \'.  */
   *p = '\0';			/* C-style string for debug purposes.  */
 }
 
@@ -1186,7 +1187,7 @@ parse_atom (void)
       bad_module ("Bad name");
     }
 
-  /* Not reached */
+  /* Not reached.  */
 }
 
 
@@ -1265,7 +1266,7 @@ find_enum (const mstring *m)
 
   bad_module ("find_enum(): Enum not found");
 
-  /* Not reached */
+  /* Not reached.  */
 }
 
 
@@ -1436,8 +1437,7 @@ mio_integer (int *ip)
 }
 
 
-/* Read or write a character pointer that points to a string on the
-   heap.  */
+/* Read or write a character pointer that points to a string on the heap.  */
 
 static const char *
 mio_allocated_string (const char *s)
@@ -1495,7 +1495,6 @@ mio_internal_string (char *string)
       gfc_free (atom_string);
     }
 }
-
 
 
 typedef enum
@@ -2171,7 +2170,6 @@ mio_formal_arglist (gfc_symbol *sym)
     {
       for (f = sym->formal; f; f = f->next)
 	mio_symbol_ref (&f->sym);
-
     }
   else
     {
@@ -2271,7 +2269,7 @@ mio_symtree_ref (gfc_symtree **stp)
 	  f->next = p->u.rsym.stfixup;
 	  p->u.rsym.stfixup = f;
 
-	  f->pointer = (void **)stp;
+	  f->pointer = (void **) stp;
 	}
     }
 }
@@ -2598,7 +2596,7 @@ fix_mio_expr (gfc_expr *e)
 	 namespace, it has a unique name and we should look in the current
 	 namespace to see if the required, non-contained symbol is available
 	 yet. If so, the latter should be written.  */
-      if (e->symtree->n.sym && check_unique_name(e->symtree->name))
+      if (e->symtree->n.sym && check_unique_name (e->symtree->name))
 	ns_st = gfc_find_symtree (gfc_current_ns->sym_root,
 				  e->symtree->n.sym->name);
 
@@ -2801,7 +2799,7 @@ mio_expr (gfc_expr **ep)
 }
 
 
-/* Read and write namelists */
+/* Read and write namelists.  */
 
 static void
 mio_namelist (gfc_symbol *sym)
@@ -2982,7 +2980,7 @@ mio_symbol (gfc_symbol *sym)
 	}
     }
 
-  /* Save/restore common block links */
+  /* Save/restore common block links.  */
   mio_symbol_ref (&sym->common_next);
 
   mio_formal_arglist (sym);
@@ -3133,8 +3131,8 @@ load_generic_interfaces (void)
 	      p = p ? p : name;
 	      st = gfc_find_symtree (gfc_current_ns->sym_root, p);
 	      if (!sym->attr.generic
-		    && sym->module != NULL
-		    && strcmp(module, sym->module) != 0)
+		  && sym->module != NULL
+		  && strcmp(module, sym->module) != 0)
 		st->ambiguous = 1;
 	    }
 	  if (i == 1)
@@ -3187,9 +3185,9 @@ load_commons (void)
 }
 
 
-/* load_equiv()-- Load equivalences. The flag in_load_equiv informs
-   mio_expr_ref of this so that unused variables are not loaded and
-   so that the expression can be safely freed.*/
+/* Load equivalences.  The flag in_load_equiv informs mio_expr_ref of this
+   so that unused variables are not loaded and so that the expression can
+   be safely freed.  */
 
 static void
 load_equiv (void)
@@ -3204,7 +3202,7 @@ load_equiv (void)
   while (end != NULL && end->next != NULL)
     end = end->next;
 
-  while (peek_atom() != ATOM_RPAREN) {
+  while (peek_atom () != ATOM_RPAREN) {
     mio_lparen ();
     head = tail = NULL;
 
@@ -3257,6 +3255,7 @@ load_equiv (void)
   mio_rparen ();
   in_load_equiv = false;
 }
+
 
 /* Recursive function to traverse the pointer_info tree and load a
    needed symbol.  We return nonzero if we load a symbol and stop the
@@ -3315,8 +3314,7 @@ load_needed (pointer_info *p)
 }
 
 
-/* Recursive function for cleaning up things after a module has been
-   read.  */
+/* Recursive function for cleaning up things after a module has been read.  */
 
 static void
 read_cleanup (pointer_info *p)
@@ -3391,7 +3389,7 @@ read_module (void)
   gfc_symtree *st;
   gfc_symbol *sym;
 
-  get_module_locus (&operator_interfaces);	/* Skip these for now */
+  get_module_locus (&operator_interfaces);	/* Skip these for now.  */
   skip_list ();
 
   get_module_locus (&user_operators);
@@ -3489,8 +3487,7 @@ read_module (void)
 	    p = name;
 
 	  /* Skip symtree nodes not in an ONLY clause, unless there
-	     is an existing symtree loaded from another USE
-	     statement.  */
+	     is an existing symtree loaded from another USE statement.  */
 	  if (p == NULL)
 	    {
 	      st = gfc_find_symtree (gfc_current_ns->sym_root, name);
@@ -3642,7 +3639,7 @@ gfc_check_access (gfc_access specific_access, gfc_access default_access)
 }
 
 
-/* Write a common block to the module */
+/* Write a common block to the module.  */
 
 static void
 write_common (gfc_symtree *st)
@@ -3794,6 +3791,7 @@ write_symbol0 (gfc_symtree *st)
 static int
 write_symbol1 (pointer_info *p)
 {
+
   if (p == NULL)
     return 0;
 
@@ -3982,6 +3980,7 @@ read_md5_from_module_file (const char * filename, unsigned char md5[16])
   return 0;
 }
 
+
 /* Given module, dump it to disk.  If there was an error while
    processing the module, dump_flag will be set to zero and we delete
    the module file, even if it was already there.  */
@@ -4039,7 +4038,7 @@ gfc_dump_module (const char *name, int dump_flag)
 	   gfc_source_file, p);
   fgetpos (module_fp, &md5_pos);
   fputs ("00000000000000000000000000000000 -- "
-        "If you edit this, you'll get what you deserve.\n\n", module_fp);
+	"If you edit this, you'll get what you deserve.\n\n", module_fp);
 
   /* Initialize the MD5 context that will be used for output.  */
   md5_init_ctx (&ctx);
