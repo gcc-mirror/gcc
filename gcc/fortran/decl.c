@@ -141,7 +141,7 @@ gfc_free_data (gfc_data *p)
 /* Free all data in a namespace.  */
 
 static void
-gfc_free_data_all (gfc_namespace * ns)
+gfc_free_data_all (gfc_namespace *ns)
 {
   gfc_data *d;
 
@@ -444,8 +444,7 @@ match_old_style_init (const char *name)
   newdata->var->expr = gfc_get_variable_expr (st);
   newdata->where = gfc_current_locus;
 
-  /* Match initial value list. This also eats the terminal
-     '/'.  */
+  /* Match initial value list. This also eats the terminal '/'.  */
   m = top_val_list (newdata);
   if (m != MATCH_YES)
     {
@@ -638,7 +637,7 @@ find_special (const char *name, gfc_symbol **result)
   if (s->state != COMP_INTERFACE)
     goto end;
   if (s->sym == NULL)
-    goto end;		  /* Nameless interface */
+    goto end;		  /* Nameless interface.  */
 
   if (strcmp (name, s->sym->name) == 0)
     {
@@ -729,7 +728,7 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
   st->n.sym = sym;
   sym->refs++;
 
-  /* See if the procedure should be a module procedure */
+  /* See if the procedure should be a module procedure.  */
 
   if (((sym->ns->proc_name != NULL
 		&& sym->ns->proc_name->attr.flavor == FL_MODULE
@@ -756,8 +755,7 @@ build_sym (const char *name, gfc_charlen *cl,
   if (gfc_get_symbol (name, NULL, &sym))
     return FAILURE;
 
-  /* Start updating the symbol table.  Add basic type attribute
-     if present.  */
+  /* Start updating the symbol table.  Add basic type attribute if present.  */
   if (current_ts.type != BT_UNKNOWN
       && (sym->attr.implicit_type == 0
 	  || !gfc_compare_types (&sym->ts, &current_ts))
@@ -831,7 +829,7 @@ gfc_set_constant_character_len (int len, gfc_expr *expr, bool array)
    enum history node containing largest initializer.
 
    SYM points to the symbol node of enumerator.
-   INIT points to its enumerator value.   */
+   INIT points to its enumerator value.  */
 
 static void
 create_enum_history (gfc_symbol *sym, gfc_expr *init)
@@ -885,8 +883,7 @@ gfc_free_enum_history (void)
    expression to a symbol.  */
 
 static try
-add_init_expr_to_sym (const char *name, gfc_expr **initp,
-		      locus *var_locus)
+add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 {
   symbol_attribute attr;
   gfc_symbol *sym;
@@ -949,9 +946,8 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp,
 	  /* Update symbol character length according initializer.  */
 	  if (sym->ts.cl->length == NULL)
 	    {
-	      /* If there are multiple CHARACTER variables declared on
-		 the same line, we don't want them to share the same
-		length.  */
+	      /* If there are multiple CHARACTER variables declared on the
+		 same line, we don't want them to share the same length.  */
 	      sym->ts.cl = gfc_get_charlen ();
 	      sym->ts.cl->next = gfc_current_ns->cl_list;
 	      gfc_current_ns->cl_list = sym->ts.cl;
@@ -1239,7 +1235,7 @@ variable_decl (int elem)
     }
 
   /*  If this symbol has already shown up in a Cray Pointer declaration,
-      then we want to set the type & bail out. */
+      then we want to set the type & bail out.  */
   if (gfc_option.flag_cray_pointer)
     {
       gfc_find_symbol (name, gfc_current_ns, 1, &sym);
@@ -1615,7 +1611,7 @@ match_char_spec (gfc_typespec *ts)
       goto rparen;
     }
 
-  /* Try to match "LEN = <len-param>" or "LEN = <len-param>, KIND = <int>"  */
+  /* Try to match "LEN = <len-param>" or "LEN = <len-param>, KIND = <int>".  */
   if (gfc_match (" len =") == MATCH_YES)
     {
       m = char_len_param_value (&len);
@@ -1642,7 +1638,7 @@ match_char_spec (gfc_typespec *ts)
       goto rparen;
     }
 
-  /* Try to match   ( <len-param> ) or ( <len-param> , [ KIND = ] <int> )  */
+  /* Try to match ( <len-param> ) or ( <len-param> , [ KIND = ] <int> ).  */
   m = char_len_param_value (&len);
   if (m == MATCH_NO)
     goto syntax;
@@ -1895,7 +1891,7 @@ match_implicit_range (void)
       switch (c)
 	{
 	case ')':
-	  inner = 0;		/* Fall through */
+	  inner = 0;		/* Fall through.  */
 
 	case ',':
 	  c2 = c1;
@@ -2068,6 +2064,7 @@ error:
   return MATCH_ERROR;
 }
 
+
 match
 gfc_match_import (void)
 {
@@ -2076,8 +2073,8 @@ gfc_match_import (void)
   gfc_symbol *sym;
   gfc_symtree *st;
 
-  if (gfc_current_ns->proc_name == NULL ||
-      gfc_current_ns->proc_name->attr.if_source != IFSRC_IFBODY)
+  if (gfc_current_ns->proc_name == NULL
+      || gfc_current_ns->proc_name->attr.if_source != IFSRC_IFBODY)
     {
       gfc_error ("IMPORT statement at %C only permitted in "
 		 "an INTERFACE body");
@@ -2111,16 +2108,15 @@ gfc_match_import (void)
 	{
 	case MATCH_YES:
 	  if (gfc_current_ns->parent !=  NULL
-		  && gfc_find_symbol (name, gfc_current_ns->parent,
-				      1, &sym))
+	      && gfc_find_symbol (name, gfc_current_ns->parent, 1, &sym))
 	    {
 	       gfc_error ("Type name '%s' at %C is ambiguous", name);
 	       return MATCH_ERROR;
 	    }
 	  else if (gfc_current_ns->proc_name->ns->parent !=  NULL
-		  && gfc_find_symbol (name,
-			gfc_current_ns->proc_name->ns->parent,
-			1, &sym))
+		   && gfc_find_symbol (name,
+				       gfc_current_ns->proc_name->ns->parent,
+				       1, &sym))
 	    {
 	       gfc_error ("Type name '%s' at %C is ambiguous", name);
 	       return MATCH_ERROR;
@@ -2167,6 +2163,7 @@ syntax:
   gfc_error ("Syntax error in IMPORT statement at %C");
   return MATCH_ERROR;
 }
+
 
 /* Matches an attribute specification including array specs.  If
    successful, leaves the variables current_attr and current_as
@@ -2326,7 +2323,7 @@ match_attr_spec (void)
 	    attr = "VOLATILE";
 	    break;
 	  default:
-	    attr = NULL;	/* This shouldn't happen */
+	    attr = NULL;	/* This shouldn't happen.  */
 	  }
 
 	gfc_error ("Duplicate %s attribute at %L", attr, &seen_at[d]);
@@ -2777,8 +2774,8 @@ ok:
 	}
     }
 
-  if (gfc_add_explicit_interface (progname, IFSRC_DECL, head, NULL) ==
-      FAILURE)
+  if (gfc_add_explicit_interface (progname, IFSRC_DECL, head, NULL)
+      == FAILURE)
     {
       m = MATCH_ERROR;
       goto cleanup;
@@ -2796,7 +2793,7 @@ cleanup:
    ENTRY statement.  Also matches the end-of-statement.  */
 
 static match
-match_result (gfc_symbol * function, gfc_symbol **result)
+match_result (gfc_symbol *function, gfc_symbol **result)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_symbol *r;
@@ -2865,7 +2862,6 @@ gfc_match_function_decl (void)
       gfc_current_locus = old_loc;
       return MATCH_NO;
     }
-
   if (get_proc_name (name, &sym, false))
     return MATCH_ERROR;
   gfc_new_block = sym;
@@ -3371,7 +3367,7 @@ gfc_match_end (gfc_statement *st)
     {
       if (!eos_ok)
 	{
-	  /* We would have required END [something]  */
+	  /* We would have required END [something].  */
 	  gfc_error ("%s statement expected at %L",
 		     gfc_ascii_statement (*st), &old_loc);
 	  goto cleanup;
@@ -3408,7 +3404,8 @@ gfc_match_end (gfc_statement *st)
   if (*st == ST_END_INTERFACE)
     return gfc_match_end_interface ();
 
-  /* We haven't hit the end of statement, so what is left must be an end-name.  */
+  /* We haven't hit the end of statement, so what is left must be an
+     end-name.  */
   m = gfc_match_space ();
   if (m == MATCH_YES)
     m = gfc_match_name (name);
@@ -4262,6 +4259,7 @@ syntax:
   return MATCH_ERROR;
 }
 
+
 match
 gfc_match_volatile (void)
 {
@@ -4313,7 +4311,6 @@ syntax:
   gfc_error ("Syntax error in VOLATILE statement at %C");
   return MATCH_ERROR;
 }
-
 
 
 /* Match a module procedure statement.  Note that we have to modify
@@ -4627,7 +4624,7 @@ cleanup:
 }
 
 
-/* Match the enumerator definition statement. */
+/* Match the enumerator definition statement.  */
 
 match
 gfc_match_enumerator_def (void)

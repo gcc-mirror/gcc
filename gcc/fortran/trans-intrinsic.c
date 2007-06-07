@@ -2025,7 +2025,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
   /* We start with the most negative possible value for MAXLOC, and the most
      positive possible value for MINLOC. The most negative possible value is
      -HUGE for BT_REAL and (-HUGE - 1) for BT_INTEGER; the most positive
-     possible value is HUGE in both cases. */
+     possible value is HUGE in both cases.  */
   if (op == GT_EXPR)
     tmp = fold_build1 (NEGATE_EXPR, TREE_TYPE (tmp), tmp);
   gfc_add_modify_expr (&se->pre, limit, tmp);
@@ -2191,7 +2191,7 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, int op)
   /* We start with the most negative possible value for MAXVAL, and the most
      positive possible value for MINVAL. The most negative possible value is
      -HUGE for BT_REAL and (-HUGE - 1) for BT_INTEGER; the most positive
-     possible value is HUGE in both cases. */
+     possible value is HUGE in both cases.  */
   if (op == GT_EXPR)
     tmp = fold_build1 (NEGATE_EXPR, TREE_TYPE (tmp), tmp);
 

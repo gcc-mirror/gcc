@@ -1,5 +1,6 @@
 /* All matcher functions.
-   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005, 2007
+   Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -35,9 +36,9 @@ extern gfc_st_label *gfc_statement_label;
 
 /****************** All gfc_match* routines *****************/
 
-/* match.c */
+/* match.c.  */
 
-/* Generic match subroutines */
+/* Generic match subroutines.  */
 match gfc_match_space (void);
 match gfc_match_eos (void);
 match gfc_match_small_literal_int (int *, int *);
@@ -53,7 +54,7 @@ match gfc_match_char (char);
 match gfc_match (const char *, ...);
 match gfc_match_iterator (gfc_iterator *, int);
 
-/* Statement matchers */
+/* Statement matchers.  */
 match gfc_match_program (void);
 match gfc_match_pointer_assignment (void);
 match gfc_match_assignment (void);
@@ -90,9 +91,9 @@ match gfc_match_forall (gfc_statement *);
 
 gfc_common_head *gfc_get_common (const char *, int);
 
-/* openmp.c */
+/* openmp.c.  */
 
-/* OpenMP directive matchers */
+/* OpenMP directive matchers.  */
 match gfc_match_omp_eos (void);
 match gfc_match_omp_atomic (void);
 match gfc_match_omp_barrier (void);
@@ -112,7 +113,7 @@ match gfc_match_omp_workshare (void);
 match gfc_match_omp_end_nowait (void);
 match gfc_match_omp_end_single (void);
 
-/* decl.c */
+/* decl.c.  */
 
 match gfc_match_data (void);
 match gfc_match_null (gfc_expr **);
@@ -132,7 +133,7 @@ match gfc_match_implicit (void);
 
 void gfc_set_constant_character_len (int, gfc_expr *, bool);
 
-/* Matchers for attribute declarations */
+/* Matchers for attribute declarations.  */
 match gfc_match_allocatable (void);
 match gfc_match_dimension (void);
 match gfc_match_external (void);
@@ -163,17 +164,17 @@ match gfc_match_literal_constant (gfc_expr **, int);
    only makes sure the init expr. is valid.  */
 match gfc_match_init_expr (gfc_expr **);
 
-/* array.c */
+/* array.c.  */
 match gfc_match_array_spec (gfc_array_spec **);
 match gfc_match_array_ref (gfc_array_ref *, gfc_array_spec *, int);
 match gfc_match_array_constructor (gfc_expr **);
 
-/* interface.c */
+/* interface.c.  */
 match gfc_match_generic_spec (interface_type *, char *, gfc_intrinsic_op *);
 match gfc_match_interface (void);
 match gfc_match_end_interface (void);
 
-/* io.c  */
+/* io.c.  */
 match gfc_match_format (void);
 match gfc_match_open (void);
 match gfc_match_close (void);
@@ -186,11 +187,11 @@ match gfc_match_read (void);
 match gfc_match_write (void);
 match gfc_match_print (void);
 
-/* matchexp.c */
+/* matchexp.c.  */
 match gfc_match_defined_op_name (char *, int);
 match gfc_match_expr (gfc_expr **);
 
-/* module.c */
+/* module.c.  */
 match gfc_match_use (void);
 void gfc_use_module (void);
 

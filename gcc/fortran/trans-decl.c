@@ -2909,7 +2909,7 @@ generate_expr_decls (gfc_symbol *sym, gfc_expr *e)
 }
 
 
-/* Check for dependencies in the character length and array spec. */
+/* Check for dependencies in the character length and array spec.  */
 
 static void
 generate_dependency_declarations (gfc_symbol *sym)

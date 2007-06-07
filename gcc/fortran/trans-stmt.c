@@ -243,7 +243,7 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	}
 
       /* If there is a dependency, create a temporary and use it
-	 instead of the variable. */
+	 instead of the variable.  */
       fsym = formal ? formal->sym : NULL;
       if (e->expr_type == EXPR_VARIABLE
 	    && e->rank && fsym

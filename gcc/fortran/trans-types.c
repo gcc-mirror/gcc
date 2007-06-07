@@ -77,6 +77,7 @@ gfc_real_info gfc_real_kinds[MAX_REAL_KINDS + 1];
 static GTY(()) tree gfc_real_types[MAX_REAL_KINDS + 1];
 static GTY(()) tree gfc_complex_types[MAX_REAL_KINDS + 1];
 
+
 /* The integer kind to use for array indices.  This will be set to the
    proper value based on target information from the backend.  */
 
@@ -1594,7 +1595,7 @@ gfc_return_by_reference (gfc_symbol * sym)
       && sym->ts.type == BT_COMPLEX
       && !sym->attr.intrinsic && !sym->attr.always_explicit)
     return 1;
-  
+
   return 0;
 }
 

@@ -2027,7 +2027,7 @@ resolve_call (gfc_code *c)
   if (resolve_actual_arglist (c->ext.actual, ptype) == FAILURE)
     return FAILURE;
 
-  /* Resume assumed_size checking. */
+  /* Resume assumed_size checking.  */
   need_full_assumed_size--;
 
   t = SUCCESS;
@@ -5532,7 +5532,7 @@ resolve_charlen (gfc_charlen *cl)
 }
 
 
-/* Test for non-constant shape arrays. */
+/* Test for non-constant shape arrays.  */
 
 static bool
 is_non_constant_shape_array (gfc_symbol *sym)
@@ -5632,7 +5632,7 @@ apply_default_init (gfc_symbol *sym)
 }
 
 
-/* Resolution of common features of flavors variable and procedure. */
+/* Resolution of common features of flavors variable and procedure.  */
 
 static try
 resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
@@ -5915,7 +5915,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
   /* Ensure that derived type for are not of a private type.  Internal
      module procedures are excluded by 2.2.3.3 - ie. they are not
      externally accessible and can access all the objects accessible in
-     the host. */
+     the host.  */
   if (!(sym->ns->parent
 	&& sym->ns->parent->proc_name->attr.flavor == FL_MODULE)
       && gfc_check_access(sym->attr.access, sym->ns->default_access))
@@ -6967,7 +6967,7 @@ resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
       return FAILURE;
     }
 
-  /* Shall not have allocatable components. */
+  /* Shall not have allocatable components.  */
   if (derived->attr.alloc_comp)
     {
       gfc_error ("Derived type variable '%s' at %L cannot have ALLOCATABLE "
@@ -7263,7 +7263,7 @@ resolve_equivalence (gfc_equiv *eq)
 }
 
 
-/* Resolve function and ENTRY types, issue diagnostics if needed. */
+/* Resolve function and ENTRY types, issue diagnostics if needed.  */
 
 static void
 resolve_fntype (gfc_namespace *ns)
