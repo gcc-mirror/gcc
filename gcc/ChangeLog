@@ -1,3 +1,7 @@
+2007-06-07  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/lib1funcs.asm: Clean up whitespace.
+
 2007-06-07  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/31850
