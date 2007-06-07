@@ -3447,7 +3447,7 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary,
 
   /* Core issue 226 (C++0x only): the following only applies to class
      templates.  */
-  if (!flag_cpp0x || TREE_CODE (decl) != FUNCTION_DECL)
+  if ((cxx_dialect == cxx98) || TREE_CODE (decl) != FUNCTION_DECL)
     {
       /* [temp.param]
 
@@ -3482,7 +3482,7 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary,
         }
     }
 
-  if ((!flag_cpp0x && TREE_CODE (decl) != TYPE_DECL)
+  if (((cxx_dialect == cxx98) && TREE_CODE (decl) != TYPE_DECL)
       || is_partial 
       || !is_primary
       || is_friend_decl)
@@ -3510,7 +3510,7 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary,
     msg = "default template arguments may not be used in function template friend re-declaration";
   else if (is_friend_decl)
     msg = "default template arguments may not be used in function template friend declarations";
-  else if (TREE_CODE (decl) == FUNCTION_DECL && !flag_cpp0x)
+  else if (TREE_CODE (decl) == FUNCTION_DECL && (cxx_dialect == cxx98))
     msg = "default template arguments may not be used in function templates";
   else if (is_partial)
     msg = "default template arguments may not be used in partial specializations";
@@ -8736,7 +8736,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  during instantiation is no longer a cause for failure. We
 	  only enforce this check in strict C++98 mode.  */
 	if ((TREE_CODE (type) == REFERENCE_TYPE
-	     && ((!flag_cpp0x && flag_iso) || code != REFERENCE_TYPE))
+	     && (((cxx_dialect == cxx98) && flag_iso) || code != REFERENCE_TYPE))
 	    || (code == REFERENCE_TYPE && TREE_CODE (type) == VOID_TYPE))
 	  {
 	    static location_t last_loc;
@@ -11537,9 +11537,9 @@ type_unification_real (tree tparms,
                If a template argument has not been deduced, its
                default template argument, if any, is used. 
 
-             When we are not in C++0x mode (i.e., !flag_cpp0x),
-             TREE_PURPOSE will either be NULL_TREE or ERROR_MARK_NODE,
-             so we do not need to explicitly check flag_cpp0x here.  */
+             When we are in C++98 mode, TREE_PURPOSE will either
+	     be NULL_TREE or ERROR_MARK_NODE, so we do not need
+	     to explicitly check cxx_dialect here.  */
           if (TREE_PURPOSE (TREE_VEC_ELT (tparms, i)))
             {
               tree arg = tsubst (TREE_PURPOSE (TREE_VEC_ELT (tparms, i)), 

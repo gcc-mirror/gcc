@@ -406,10 +406,9 @@ int flag_access_control = 1;
 
 int flag_check_new;
 
-/* Nonzero if we want to allow the use of experimental features that
-   are likely to become part of C++0x. */
+/* The C++ dialect being used. C++98 is the default.  */
 
-int flag_cpp0x = 0;
+enum cxx_dialect cxx_dialect = cxx98;
 
 /* Nonzero if we want the new ISO rules for pushing a new scope for `for'
    initialization variables.

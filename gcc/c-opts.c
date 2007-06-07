@@ -1145,7 +1145,7 @@ c_common_post_options (const char **pfilename)
 
   /* If we're allowing C++0x constructs, don't warn about C++0x
      compatibility problems.  */
-  if (flag_cpp0x)
+  if (cxx_dialect == cxx0x)
     warn_cxx0x_compat = 0;
 
   if (flag_preprocess_only)
@@ -1610,6 +1610,7 @@ set_std_cxx98 (int iso)
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+  cxx_dialect = cxx98;
 }
 
 /* Set the C++ 0x working draft "standard" (without GNU extensions if ISO).  */
@@ -1620,7 +1621,7 @@ set_std_cxx0x (int iso)
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
-  flag_cpp0x = 1;
+  cxx_dialect = cxx0x;
 }
 
 /* Handle setting implicit to ON.  */

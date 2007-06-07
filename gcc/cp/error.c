@@ -2549,7 +2549,7 @@ cp_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level,
 void
 maybe_warn_variadic_templates (void)
 {
-  if (!flag_cpp0x && !in_system_header)
+  if ((cxx_dialect == cxx98) && !in_system_header)
     /* We really want to suppress this warning in system headers,
        because libstdc++ uses variadic templates even when we aren't
        in C++0x mode. */

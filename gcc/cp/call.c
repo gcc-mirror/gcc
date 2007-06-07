@@ -1160,7 +1160,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
      DR391. */
   if (compatible_p
       && (lvalue_p
-	  || (flag_cpp0x
+	  || ((cxx_dialect != cxx98)
 	      && (CP_TYPE_CONST_NON_VOLATILE_P(to) || TYPE_REF_IS_RVALUE (rto))
 	      && CLASS_TYPE_P (from))))
     {

@@ -334,7 +334,7 @@ init_reswords (void)
   int mask = ((flag_no_asm ? D_ASM : 0)
 	      | D_OBJC
 	      | (flag_no_gnu_keywords ? D_EXT : 0)
-              | (flag_cpp0x ? 0 : D_CXX0X));
+              | ((cxx_dialect == cxx0x) ? 0 : D_CXX0X));
 
   ridpointers = GGC_CNEWVEC (tree, (int) RID_MAX);
   for (i = 0; i < ARRAY_SIZE (reswords); i++)

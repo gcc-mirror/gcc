@@ -543,10 +543,18 @@ extern int flag_access_control;
 
 extern int flag_check_new;
 
-/* Nonzero if we want to allow the use of experimental features that
-   are likely to become part of C++0x. */
+/* The supported C++ dialects.  */
 
-extern int flag_cpp0x;
+enum cxx_dialect {
+  /* C++98  */
+  cxx98,
+  /* Experimental features that are likely to become part of
+     C++0x.  */
+  cxx0x
+};
+
+/* The C++ dialect being used. C++98 is the default.  */
+extern enum cxx_dialect cxx_dialect;
 
 /* Nonzero if we want the new ISO rules for pushing a new scope for `for'
    initialization variables.
