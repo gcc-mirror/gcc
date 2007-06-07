@@ -1,3 +1,8 @@
+2007-06-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/32231
+	* gcc.target/i386/vectorize4.c: New test.
+
 2007-06-06  Steve Ellcey  <sje@cup.hp.com>
 
 	* gfortran.dg/integer_exponentiation_3.F90: Use approx. check.
