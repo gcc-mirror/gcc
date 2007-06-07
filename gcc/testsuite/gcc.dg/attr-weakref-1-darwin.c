@@ -1,4 +1,4 @@
-// { dg-do run { target { powerpc-*-darwin* } } }
+// { dg-do run { target { *-*-darwin* } } }
 // { dg-require-weak "" }
 // { dg-options "-O2" }
 // { dg-options "-O2 -mmacosx-version-min=10.2" { target { powerpc-*-darwin* } } }
