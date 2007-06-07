@@ -3677,7 +3677,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Parallel integral logical operations
+;; Parallel bitwise logical operations
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -3725,6 +3725,35 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
+(define_expand "andtf3"
+  [(set (match_operand:TF 0 "register_operand" "")
+	(and:TF (match_operand:TF 1 "nonimmediate_operand" "")
+		(match_operand:TF 2 "nonimmediate_operand" "")))]
+  "TARGET_64BIT"
+  "ix86_fixup_binary_operands_no_copy (AND, TFmode, operands);")
+
+(define_insn "*andtf3"
+  [(set (match_operand:TF 0 "register_operand" "=x")
+	(and:TF
+	  (match_operand:TF 1 "nonimmediate_operand" "%0")
+	  (match_operand:TF 2 "nonimmediate_operand" "xm")))]
+  "TARGET_64BIT && ix86_binary_operator_ok (AND, TFmode, operands)"
+  "pand\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "*nandtf3"
+  [(set (match_operand:TF 0 "register_operand" "=x")
+	(and:TF
+	  (not:TF (match_operand:TF 1 "register_operand" "0"))
+	  (match_operand:TF 2 "nonimmediate_operand" "xm")))]
+  "TARGET_64BIT"
+  "pandn\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "mode" "TI")])
+
 (define_expand "ior<mode>3"
   [(set (match_operand:SSEMODEI 0 "register_operand" "")
 	(ior:SSEMODEI (match_operand:SSEMODEI 1 "nonimmediate_operand" "")
@@ -3743,6 +3772,24 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
+(define_expand "iortf3"
+  [(set (match_operand:TF 0 "register_operand" "")
+	(ior:TF (match_operand:TF 1 "nonimmediate_operand" "")
+		(match_operand:TF 2 "nonimmediate_operand" "")))]
+  "TARGET_64BIT"
+  "ix86_fixup_binary_operands_no_copy (IOR, TFmode, operands);")
+
+(define_insn "*iortf3"
+  [(set (match_operand:TF 0 "register_operand" "=x")
+	(ior:TF
+	  (match_operand:TF 1 "nonimmediate_operand" "%0")
+	  (match_operand:TF 2 "nonimmediate_operand" "xm")))]
+  "TARGET_64BIT && ix86_binary_operator_ok (IOR, TFmode, operands)"
+  "por\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "mode" "TI")])
+
 (define_expand "xor<mode>3"
   [(set (match_operand:SSEMODEI 0 "register_operand" "")
 	(xor:SSEMODEI (match_operand:SSEMODEI 1 "nonimmediate_operand" "")
@@ -3756,6 +3803,24 @@
 	  (match_operand:SSEMODEI 1 "nonimmediate_operand" "%0")
 	  (match_operand:SSEMODEI 2 "nonimmediate_operand" "xm")))]
   "TARGET_SSE2 && ix86_binary_operator_ok (XOR, <MODE>mode, operands)"
+  "pxor\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "mode" "TI")])
+
+(define_expand "xortf3"
+  [(set (match_operand:TF 0 "register_operand" "")
+	(xor:TF (match_operand:TF 1 "nonimmediate_operand" "")
+		(match_operand:TF 2 "nonimmediate_operand" "")))]
+  "TARGET_64BIT"
+  "ix86_fixup_binary_operands_no_copy (XOR, TFmode, operands);")
+
+(define_insn "*xortf3"
+  [(set (match_operand:TF 0 "register_operand" "=x")
+	(xor:TF
+	  (match_operand:TF 1 "nonimmediate_operand" "%0")
+	  (match_operand:TF 2 "nonimmediate_operand" "xm")))]
+  "TARGET_64BIT && ix86_binary_operator_ok (XOR, TFmode, operands)"
   "pxor\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_data16" "1")

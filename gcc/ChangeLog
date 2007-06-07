@@ -1,3 +1,36 @@
+2007-06-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (standard sse constant splitter): Handle TFmode.
+	(negtf2, abstf2, *absnegtf2_sse): New insn patterns.
+	(CSGNMODE): New mode macro.
+	(CSGNVMODE): New mode attribute.
+	(copysign<mode>3): Rename from copysingsf3 and copysigndf3.  Macroize
+	expander using CSGNMODE mode macro.  Handle TFmode.
+	(copysign<mode>3_const): Rename from copysignsf3_const and
+	copysigndf3_const.  Macroize pattern using CSGNMODE mode macro.
+	Handle TFmode.
+	(copysign<mode>3_var): Rename from copysignsf3_var and
+	copysigndf3_var.  Macroize pattern using CSGNMODE mode macro.
+	Handle TFmode.
+	(copysign<mode>3_var splitter): Macroize pattern using CSGNMODE
+	mode macro.  Handle TFmode.
+	* config/i386/sse.md (andtf3, *andtf3, *nandtf3): New insn patterns.
+	(iortf3, *iortf3): Ditto.
+	(xortf3, *xortf3): Ditto.
+	* config/i386/i386.c (ix86_build_signbit_mask): Create scalar
+	TFmode and TImode masks.
+	(ix86_expand_copysign): Expand TFmode copysign insn.
+	(IX86_BUILTIN_INFQ): New.
+	(IX86_BUILTIN_FABSQ): Ditto.
+	(IX86_BUILTIN_COPYSIGNQ): Ditto.
+	(ix86_init_mmx_sse_builtins) [__builtin_infq]: New builtin definition.
+	[__builtin_fabsq]: Ditto.
+	[__builtin_copysignq]: Ditto.
+	(ix86_expand_builtin) [IX86_BUILTIN_INFQ]: Expand builtin.
+	[IX86_BUILTIN_FABSQ]: Expand builtin using ix86_expand_unop_builtin().
+	[IX86_BUILTIN_COPYSIGNQ]: Expand builtin using
+	ix86_expand_unop_builtin().
+
 2007-06-07  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/lib1funcs.asm: Clean up whitespace.
