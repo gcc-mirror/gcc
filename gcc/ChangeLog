@@ -1,3 +1,9 @@
+2007-06-07  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/32220
+	* tree-predcom.c (eliminate_temp_copies): Handle the case that loop
+	phi node is reached before defining statement.
+
 2007-06-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/32231

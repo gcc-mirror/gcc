@@ -1932,7 +1932,13 @@ eliminate_temp_copies (struct loop *loop, bitmap tmp_vars)
 
       /* Base all the ssa names in the ud and du chain of NAME on VAR.  */
       stmt = SSA_NAME_DEF_STMT (use);
-      while (TREE_CODE (stmt) == PHI_NODE)
+      while (TREE_CODE (stmt) == PHI_NODE
+	     /* In case we could not unroll the loop enough to eliminate
+		all copies, we may reach the loop header before the defining
+		statement (in that case, some register copies will be present
+		in loop latch in the final code, corresponding to the newly
+		created looparound phi nodes).  */
+	     && bb_for_stmt (stmt) != loop->header)
 	{
 	  gcc_assert (single_pred_p (bb_for_stmt (stmt)));
 	  use = PHI_ARG_DEF (stmt, 0);
