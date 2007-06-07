@@ -1,3 +1,27 @@
+2007-06-07  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/30759
+	* decl.c (check_initializer): Report an error when a brace enclosed
+	initializer is used for a non-aggregate type in C++98.
+	(redeclaration_error_message): Rewrote flag_cpp0x in terms of
+	cxx_dialect.
+	(grokdeclarator): Likewise.
+	(move_fn_p): Likewise.
+	* typeck.c (check_return_expr): Likewise.
+	* call.c (reference_binding): Likewise.
+	* error.c (cp_cpp_error): Likewise.
+	* pt.c (check_default_tmpl_args): Likewise.
+	(tsubst): Likewise.
+	* lex.c (init_reswords): Likewise.
+	* parser.c (p_parser_primary_expression): Likewise.
+	(TOKEN_PRECEDENCE): Likewise.
+	(cp_parser_init_declarator): Likewise.
+	(cp_parser_ptr_operator): Likewise.
+	(cp_parser_parameter_declaration): Likewise.
+	(cp_parser_enclosed_template_argument_list): Likewise.
+	(cp_parser_skip_to_end_of_template_parameter_list): Likewise.
+	(cp_parser_next_token_ends_template_argument_p): Likewise.
+
 2007-06-04  Simon Baldwin  <simonb@google.com>
 
 	* decl.c (grokdeclarator): Readability change.  Moved case labels

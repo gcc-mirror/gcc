@@ -3109,7 +3109,7 @@ cp_parser_primary_expression (cp_parser *parser,
 		  /* C++0x only: A ">>" treated like two ">" tokens,
                      in a template-argument-list.  */
 		  && (next_token->type != CPP_RSHIFT
-                      || !flag_cpp0x
+                      || (cxx_dialect == cxx98)
 		      || parser->greater_than_is_operator_p))
 		cast_p = false;
 	    }
@@ -5887,11 +5887,11 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p)
    The binops_by_token map is used to get the tree codes for each <token> type.
    binary-expressions are associated according to a precedence table.  */
 
-#define TOKEN_PRECEDENCE(token)				\
-(((token->type == CPP_GREATER				\
-   || (flag_cpp0x && token->type == CPP_RSHIFT))	\
-  && !parser->greater_than_is_operator_p)		\
- ? PREC_NOT_OPERATOR					\
+#define TOKEN_PRECEDENCE(token)				     \
+(((token->type == CPP_GREATER				     \
+   || ((cxx_dialect != cxx98) && token->type == CPP_RSHIFT)) \
+  && !parser->greater_than_is_operator_p)		     \
+ ? PREC_NOT_OPERATOR					     \
  : binops_by_token[token->type].prec)
 
 static tree
@@ -11974,7 +11974,8 @@ cp_parser_init_declarator (cp_parser* parser,
 		      ((is_parenthesized_init || !is_initialized)
 		     ? 0 : LOOKUP_ONLYCONVERTING));
     }
-  else if (flag_cpp0x && friend_p && decl && TREE_CODE (decl) == FUNCTION_DECL)
+  else if ((cxx_dialect != cxx98) && friend_p
+	   && decl && TREE_CODE (decl) == FUNCTION_DECL)
     /* Core issue #226 (C++0x only): A default template-argument
        shall not be specified in a friend class template
        declaration. */
@@ -12590,7 +12591,8 @@ cp_parser_ptr_operator (cp_parser* parser,
     code = INDIRECT_REF;
   else if (token->type == CPP_AND)
     code = ADDR_EXPR;
-  else if (flag_cpp0x && token->type == CPP_AND_AND) /* C++0x only */
+  else if ((cxx_dialect != cxx98) &&
+	   token->type == CPP_AND_AND) /* C++0x only */
     code = NON_LVALUE_EXPR;
 
   if (code != ERROR_MARK)
@@ -13273,7 +13275,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
 		  break;
 
                 case CPP_RSHIFT:
-                  if (!flag_cpp0x)
+                  if (cxx_dialect == cxx98)
                     break;
                   /* Fall through for C++0x, which treats the `>>'
                      operator like two `>' tokens in certain
@@ -16808,7 +16810,7 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
      a '>>' instead, it's probably just a typo.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_RSHIFT))
     {
-      if (flag_cpp0x)
+      if (cxx_dialect != cxx98)
         {
           /* In C++0x, a `>>' in a template argument list or cast
              expression is considered to be two separate `>'
@@ -17338,7 +17340,7 @@ cp_parser_skip_to_end_of_template_parameter_list (cp_parser* parser)
 	  break;
 
         case CPP_RSHIFT:
-          if (!flag_cpp0x)
+          if (cxx_dialect == cxx98)
             /* C++0x views the `>>' operator as two `>' tokens, but
                C++98 does not. */
             break;
@@ -17460,7 +17462,7 @@ cp_parser_next_token_ends_template_argument_p (cp_parser *parser)
   return (token->type == CPP_COMMA 
           || token->type == CPP_GREATER
           || token->type == CPP_ELLIPSIS
-	  || (flag_cpp0x && token->type == CPP_RSHIFT));
+	  || ((cxx_dialect != cxx98) && token->type == CPP_RSHIFT));
 }
 
 /* Returns TRUE iff the n-th token is a "<", or the n-th is a "[" and the

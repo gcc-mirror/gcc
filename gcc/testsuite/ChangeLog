@@ -1,3 +1,8 @@
+2007-06-07  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/30759
+	* g++.dg/init/brace6.C: New test.
+
 2007-06-07  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/attr-weakref-1-darwin.c: Run on all Darwin platforms.

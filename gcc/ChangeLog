@@ -1,3 +1,17 @@
+2007-06-07  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/30759
+	* c-common.h (flag_cpp0x): Replaced by...
+	(cxx_dialect): ... this new variable specifying the C++ dialect that
+	is used.
+	* c-common.c (flag_cpp0x): Removed.
+	(cxx_dialect): Defined.
+	* c-cppbuiltin.c (c_cpp_builtins): flag_cpp0x rewritten in terms of
+	cxx_dialect.
+	* c-opts.c (c_common_post_options): Likewise.
+	(set_std_cxx98): Set cxx_dialect to cxx98.
+	(set_std_cxx0x): Set cxx_dialect to cxx0x.
+
 2007-06-06  Geoffrey Keating  <geoffk@apple.com>
 	    Hui-May Chang <hm.chang@apple.com>
 
