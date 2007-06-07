@@ -1,3 +1,8 @@
+2007-06-07  Matthias Klose  <doko@ubuntu.com>
+
+	PR libgcj/32227
+	* include/config-int.h: Delete, it is a generated file.
+
 2007-06-04  Matthias Klose  <doko@ubuntu.com>
 
 	* m4/acinclude.m4: Accept GCJ and JIKES.
