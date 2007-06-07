@@ -272,7 +272,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       size_t stacksize;
       pthread_attr_init (&thread_attr);
       pthread_attr_setdetachstate (&thread_attr, PTHREAD_CREATE_DETACHED);
-      if (! pthread_attr_getstacksize (&thread_attr, &stacksize))
+      if (! pthread_attr_getstacksize (&gomp_thread_attr, &stacksize))
 	pthread_attr_setstacksize (&thread_attr, stacksize);
       attr = &thread_attr;
     }
