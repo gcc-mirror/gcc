@@ -1,3 +1,8 @@
+2007-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/32177
+	* g++.dg/gomp/pr32177.C: New test.
+
 2007-06-07  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR testsuite/25241

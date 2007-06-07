@@ -3806,6 +3806,8 @@ tree
 finish_omp_for (location_t locus, tree decl, tree init, tree cond,
 		tree incr, tree body, tree pre_body)
 {
+  tree omp_for;
+
   if (decl == NULL)
     {
       if (init != NULL)
@@ -3883,8 +3885,31 @@ finish_omp_for (location_t locus, tree decl, tree init, tree cond,
       add_stmt (pre_body);
       pre_body = NULL;
     }
+
+  init = fold_build_cleanup_point_expr (TREE_TYPE (init), init);
   init = build_modify_expr (decl, NOP_EXPR, init);
-  return c_finish_omp_for (locus, decl, init, cond, incr, body, pre_body);
+  if (cond && TREE_SIDE_EFFECTS (cond) && COMPARISON_CLASS_P (cond))
+    {
+      int n = TREE_SIDE_EFFECTS (TREE_OPERAND (cond, 1)) != 0;
+      tree t = TREE_OPERAND (cond, n);
+
+      TREE_OPERAND (cond, n)
+	= fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+    }
+  omp_for = c_finish_omp_for (locus, decl, init, cond, incr, body, pre_body);
+  if (omp_for != NULL
+      && TREE_CODE (OMP_FOR_INCR (omp_for)) == MODIFY_EXPR
+      && TREE_SIDE_EFFECTS (TREE_OPERAND (OMP_FOR_INCR (omp_for), 1))
+      && BINARY_CLASS_P (TREE_OPERAND (OMP_FOR_INCR (omp_for), 1)))
+    {
+      tree t = TREE_OPERAND (OMP_FOR_INCR (omp_for), 1);
+      int n = TREE_SIDE_EFFECTS (TREE_OPERAND (t, 1)) != 0;
+
+      TREE_OPERAND (t, n)
+	= fold_build_cleanup_point_expr (TREE_TYPE (TREE_OPERAND (t, n)),
+					 TREE_OPERAND (t, n));
+    }
+  return omp_for;
 }
 
 void

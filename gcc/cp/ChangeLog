@@ -1,3 +1,9 @@
+2007-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/32177
+	* semantics.c (finish_omp_for): Call fold_build_cleanup_point_expr
+	on init, the non-decl cond operand and increment value.
+
 2007-06-07  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/30759
