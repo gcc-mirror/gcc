@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Wattributes -Werror" } */
-/* { dg-warning "warnings being treated as errors" "" {target "*-*-*"} 0 } */
+/* { dg-message "warnings being treated as errors" "" {target "*-*-*"} 0 } */
 
 /* Make sure #pragma can override -Werror.  */
 

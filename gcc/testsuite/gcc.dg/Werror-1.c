@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Waddress -Wattributes -Werror" } */
-/* { dg-warning "warnings being treated as errors" "" {target "*-*-*"} 0 } */
+/* { dg-message "warnings being treated as errors" "" {target "*-*-*"} 0 } */
 
 /* This is the first in a series of test cases that test the
    interaction between -Wfoo, -Werror, -Werror=foo, and #pragma GCC

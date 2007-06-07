@@ -1,3 +1,16 @@
+2007-06-07  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR testsuite/25241
+	* gcc.dg/parm-mismatch-1.c: Use dg-message for notes.
+	* gcc.dg/Wfatal.c: Use dg-message for output that is neither a
+	warning nor an error.
+	* gcc.dg/Wfatal-2.c: Likewise.
+	* gcc.dg/Werror-1.c: Likewise.
+	* gcc.dg/Werror-5.c: Likewise.
+	* gcc.dg/Werror-7.c: Likewise.
+	* gcc.dg/Werror-10.c: Likewise.
+	* gcc.dg/Werror-11.c: Likewise.
+	
 2007-06-07  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/30759
