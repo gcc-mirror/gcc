@@ -1,3 +1,7 @@
+2007-06-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/builtin-copysign.c: New test.
+
 2007-06-07  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/32220
@@ -365,7 +369,7 @@
 	* gcc.target/arm/long-calls-4.c: Likewise.
 
 2007-05-25  Richard Guenther  <rguenther@suse.de>
-	Andrew Pinski  <andrew_pinski@playstation.sony.com>
+	    Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-optimization/31982
 	* gcc.dg/tree-ssa/forwprop-2.c: New testcase.

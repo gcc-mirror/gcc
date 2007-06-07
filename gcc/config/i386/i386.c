@@ -10632,6 +10632,14 @@ ix86_build_signbit_mask (enum machine_mode mode, bool vect, bool invert)
 	lo = 0, hi = (HOST_WIDE_INT)1 << (shift - HOST_BITS_PER_WIDE_INT);
       break;
 
+    case TImode:
+    case TFmode:
+      imode = TImode;
+      vec_mode = VOIDmode;
+      gcc_assert (HOST_BITS_PER_WIDE_INT >= 64);
+      lo = 0, hi = (HOST_WIDE_INT)1 << shift;
+     break;
+
     default:
       gcc_unreachable ();
     }
@@ -10642,6 +10650,9 @@ ix86_build_signbit_mask (enum machine_mode mode, bool vect, bool invert)
   /* Force this value into the low part of a fp vector constant.  */
   mask = immed_double_const (lo, hi, imode);
   mask = gen_lowpart (mode, mask);
+
+  if (vec_mode == VOIDmode)
+    return force_reg (mode, mask);
 
   v = ix86_build_const_vector (mode, vect, mask);
   return force_reg (vec_mode, v);
@@ -10664,6 +10675,8 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, enum machine_mode mode,
       elt_mode = GET_MODE_INNER (mode);
       use_sse = true;
     }
+  else if (mode == TFmode)
+    use_sse = true;
   else if (TARGET_SSE_MATH)
     use_sse = SSE_FLOAT_MODE_P (mode);
 
@@ -10732,39 +10745,54 @@ ix86_expand_copysign (rtx operands[])
 
   if (GET_CODE (op0) == CONST_DOUBLE)
     {
-      rtvec v;
+      rtx (*copysign_insn)(rtx, rtx, rtx, rtx);
 
       if (real_isneg (CONST_DOUBLE_REAL_VALUE (op0)))
 	op0 = simplify_unary_operation (ABS, mode, op0, mode);
 
-      if (op0 == CONST0_RTX (mode))
-	op0 = CONST0_RTX (vmode);
-      else
-        {
-	  if (mode == SFmode)
-	    v = gen_rtvec (4, op0, CONST0_RTX (SFmode),
-                           CONST0_RTX (SFmode), CONST0_RTX (SFmode));
+      if (mode == SFmode || mode == DFmode)
+	{
+	  if (op0 == CONST0_RTX (mode))
+	    op0 = CONST0_RTX (vmode);
 	  else
-	    v = gen_rtvec (2, op0, CONST0_RTX (DFmode));
-          op0 = force_reg (vmode, gen_rtx_CONST_VECTOR (vmode, v));
+	    {
+	      rtvec v;
+
+	      if (mode == SFmode)
+		v = gen_rtvec (4, op0, CONST0_RTX (SFmode),
+			       CONST0_RTX (SFmode), CONST0_RTX (SFmode));
+	      else
+		v = gen_rtvec (2, op0, CONST0_RTX (DFmode));
+	      op0 = force_reg (vmode, gen_rtx_CONST_VECTOR (vmode, v));
+	    }
 	}
 
       mask = ix86_build_signbit_mask (mode, 0, 0);
 
       if (mode == SFmode)
-	emit_insn (gen_copysignsf3_const (dest, op0, op1, mask));
+	copysign_insn = gen_copysignsf3_const;
+      else if (mode == DFmode)
+	copysign_insn = gen_copysigndf3_const;
       else
-	emit_insn (gen_copysigndf3_const (dest, op0, op1, mask));
+	copysign_insn = gen_copysigntf3_const;
+
+	emit_insn (copysign_insn (dest, op0, op1, mask));
     }
   else
     {
+      rtx (*copysign_insn)(rtx, rtx, rtx, rtx, rtx, rtx);
+
       nmask = ix86_build_signbit_mask (mode, 0, 1);
       mask = ix86_build_signbit_mask (mode, 0, 0);
 
       if (mode == SFmode)
-	emit_insn (gen_copysignsf3_var (dest, NULL, op0, op1, nmask, mask));
+	copysign_insn = gen_copysignsf3_var;
+      else if (mode == DFmode)
+	copysign_insn = gen_copysigndf3_var;
       else
-	emit_insn (gen_copysigndf3_var (dest, NULL, op0, op1, nmask, mask));
+	copysign_insn = gen_copysigntf3_var;
+
+      emit_insn (copysign_insn (dest, NULL_RTX, op0, op1, nmask, mask));
     }
 }
 
@@ -16808,6 +16836,11 @@ enum ix86_builtins
 
   IX86_BUILTIN_PCMPGTQ,
 
+  /* TFmode support builtins.  */
+  IX86_BUILTIN_INFQ,
+  IX86_BUILTIN_FABSQ,
+  IX86_BUILTIN_COPYSIGNQ,
+
   IX86_BUILTIN_MAX
 };
 
@@ -17706,9 +17739,6 @@ ix86_init_mmx_sse_builtins (void)
 				V16QI_type_node,
 				integer_type_node,
 				NULL_TREE);
-
-  tree float80_type;
-  tree float128_type;
   tree ftype;
 
   /* The __float80 type.  */
@@ -17718,18 +17748,38 @@ ix86_init_mmx_sse_builtins (void)
   else
     {
       /* The __float80 type.  */
-      float80_type = make_node (REAL_TYPE);
-      TYPE_PRECISION (float80_type) = 80;
-      layout_type (float80_type);
-      (*lang_hooks.types.register_builtin_type) (float80_type, "__float80");
+      tree float80_type_node = make_node (REAL_TYPE);
+
+      TYPE_PRECISION (float80_type_node) = 80;
+      layout_type (float80_type_node);
+      (*lang_hooks.types.register_builtin_type) (float80_type_node,
+						 "__float80");
     }
 
   if (TARGET_64BIT)
     {
-      float128_type = make_node (REAL_TYPE);
-      TYPE_PRECISION (float128_type) = 128;
-      layout_type (float128_type);
-      (*lang_hooks.types.register_builtin_type) (float128_type, "__float128");
+      tree float128_type_node = make_node (REAL_TYPE);
+
+      TYPE_PRECISION (float128_type_node) = 128;
+      layout_type (float128_type_node);
+      (*lang_hooks.types.register_builtin_type) (float128_type_node,
+						 "__float128");
+
+      /* TFmode support builtins.  */
+      ftype = build_function_type (float128_type_node,
+				   void_list_node);
+      def_builtin_const (OPTION_MASK_ISA_64BIT, "__builtin_infq", ftype, IX86_BUILTIN_INFQ);
+
+      ftype = build_function_type_list (float128_type_node,
+					float128_type_node,
+					NULL_TREE);
+      def_builtin_const (OPTION_MASK_ISA_64BIT, "__builtin_fabsq", ftype, IX86_BUILTIN_FABSQ);
+
+      ftype = build_function_type_list (float128_type_node,
+					float128_type_node,
+					float128_type_node,
+					NULL_TREE);
+      def_builtin (OPTION_MASK_ISA_64BIT, "__builtin_copysignq", ftype, IX86_BUILTIN_COPYSIGNQ);
     }
 
   /* Add all SSE builtins that are more or less simple operations on
@@ -19686,6 +19736,29 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case IX86_BUILTIN_VEC_SET_V4HI:
     case IX86_BUILTIN_VEC_SET_V16QI:
       return ix86_expand_vec_set_builtin (exp);
+
+    case IX86_BUILTIN_INFQ:
+      {
+	REAL_VALUE_TYPE inf;
+	rtx tmp;
+
+	real_inf (&inf);
+	tmp = CONST_DOUBLE_FROM_REAL_VALUE (inf, mode);
+
+	tmp = validize_mem (force_const_mem (mode, tmp));
+
+	if (target == 0)
+	  target = gen_reg_rtx (mode);
+
+	emit_move_insn (target, tmp);
+	return target;
+      }
+
+    case IX86_BUILTIN_FABSQ:
+      return ix86_expand_unop_builtin (CODE_FOR_abstf2, exp, target, 0);
+
+    case IX86_BUILTIN_COPYSIGNQ:
+      return ix86_expand_binop_builtin (CODE_FOR_copysigntf3, exp, target);
 
     default:
       break;
