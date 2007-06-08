@@ -2267,12 +2267,9 @@ override_options (void)
   if (!TARGET_80387)
     target_flags |= MASK_NO_FANCY_MATH_387;
 
-  /* Turn on SSE4.1 builtins and popcnt instruction for -msse4.2.  */
+  /* Turn on SSE4.1 builtins for -msse4.2.  */
   if (TARGET_SSE4_2)
-    {
-      ix86_isa_flags |= OPTION_MASK_ISA_SSE4_1;
-      x86_popcnt = true;
-    }
+    ix86_isa_flags |= OPTION_MASK_ISA_SSE4_1;
 
   /* Turn on SSSE3 builtins for -msse4.1.  */
   if (TARGET_SSE4_1)
@@ -2305,8 +2302,8 @@ override_options (void)
   if (TARGET_3DNOW)
     ix86_isa_flags |= OPTION_MASK_ISA_MMX;
 
-  /* Turn on POPCNT builtins for -mabm.  */
-  if (TARGET_ABM)
+  /* Turn on popcnt instruction for -msse4.2 or -mabm.  */
+  if (TARGET_SSE4_2 || TARGET_ABM)
     x86_popcnt = true;
 
   /* Validate -mpreferred-stack-boundary= value, or provide default.
