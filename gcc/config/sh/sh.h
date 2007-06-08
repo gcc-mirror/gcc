@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -686,8 +686,6 @@ do {									\
   if (sh_branch_cost == -1)						\
     sh_branch_cost							\
       = TARGET_SH5 ? 1 : ! TARGET_SH2 || TARGET_HARD_SH4 ? 2 : 1;	\
-  if (TARGET_FMOVD)							\
-    reg_class_from_letter['e' - 'a'] = NO_REGS;				\
 									\
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)		\
     if (! VALID_REGISTER_P (regno))					\
@@ -1538,67 +1536,8 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define INDEX_REG_CLASS \
   (!ALLOW_INDEXED_ADDRESS ? NO_REGS : TARGET_SHMEDIA ? GENERAL_REGS : R0_REGS)
 #define BASE_REG_CLASS	 GENERAL_REGS
-
-/* Get reg_class from a letter such as appears in the machine
-   description.  */
-extern enum reg_class reg_class_from_letter[];
-
-/* We might use 'Rxx' constraints in the future for exotic reg classes.*/
-#define REG_CLASS_FROM_CONSTRAINT(C, STR) \
-  (ISLOWER (C) ? reg_class_from_letter[(C)-'a'] : NO_REGS )
 
-/* Overview of uppercase letter constraints:
-   A: Addresses (constraint len == 3)
-    Ac4: sh4 cache operations
-    Ac5: sh5 cache operations
-   Bxx: miscellaneous constraints
-    Bsc: SCRATCH - for the scratch register in movsi_ie in the
-	 fldi0 / fldi0 cases
-   C: Constants other than only CONST_INT (constraint len == 3)
-    Css: signed 16-bit constant, literal or symbolic
-    Csu: unsigned 16-bit constant, literal or symbolic
-    Csy: label or symbol
-    Cpg: non-explicit constants that can be directly loaded into a general
-	 purpose register in PIC code.  like 's' except we don't allow
-	 PIC_DIRECT_ADDR_P
-   IJKLMNOP: CONT_INT constants
-    Ixx: signed xx bit
-    J16: 0xffffffff00000000 | 0x00000000ffffffff
-    Kxx: unsigned xx bit
-    M: 1
-    N: 0
-    P27: 1 | 2 | 8 | 16
-   Q: pc relative load operand
-   Rxx: reserved for exotic register classes.
-   S: extra memory (storage) constraints (constraint len == 3)
-    Sua: unaligned memory operations
-   W: vector
-   Z: zero in any mode
-
-   unused CONST_INT constraint letters: LO
-   unused EXTRA_CONSTRAINT letters: D T U Y */
-
-#define CONSTRAINT_LEN(C,STR) \
-  (((C) == 'A' || (C) == 'B' || (C) == 'C' \
-    || (C) == 'I' || (C) == 'J' || (C) == 'K' || (C) == 'P' \
-    || (C) == 'R' || (C) == 'S') \
-   ? 3 : DEFAULT_CONSTRAINT_LEN ((C), (STR)))
-
-/* The letters I, J, K, L and M in a register constraint string
-   can be used to stand for particular ranges of immediate operands.
-   This macro defines what the ranges are.
-   C is the letter, and VALUE is a constant value.
-   Return 1 if VALUE is in the range specified by C.
-	I08: arithmetic operand -127..128, as used in add, sub, etc
-	I16: arithmetic operand -32768..32767, as used in SHmedia movi
-	K16: arithmetic operand 0..65535, as used in SHmedia shori
-	P27: shift operand 1,2,8 or 16
-	K08: logical operand 0..255, as used in and, or, etc.
-	M: constant 1
-	N: constant 0
-	I06: arithmetic operand -32..31, as used in SHmedia beqi, bnei and xori
-	I10: arithmetic operand -512..511, as used in SHmedia andi, ori
-*/
+/* Defines for sh.md and constraints.md.  */
 
 #define CONST_OK_FOR_I06(VALUE) (((HOST_WIDE_INT)(VALUE)) >= -32 \
 				 && ((HOST_WIDE_INT)(VALUE)) <= 31)
@@ -1608,55 +1547,13 @@ extern enum reg_class reg_class_from_letter[];
 				 && ((HOST_WIDE_INT)(VALUE)) <= 511)
 #define CONST_OK_FOR_I16(VALUE) (((HOST_WIDE_INT)(VALUE)) >= -32768 \
 				 && ((HOST_WIDE_INT)(VALUE)) <= 32767)
-#define CONST_OK_FOR_I20(VALUE) (((HOST_WIDE_INT)(VALUE)) >= -524288 \
-				 && ((HOST_WIDE_INT)(VALUE)) <= 524287 \
-				 && TARGET_SH2A)
-#define CONST_OK_FOR_I(VALUE, STR) \
-  ((STR)[1] == '0' && (STR)[2] == '6' ? CONST_OK_FOR_I06 (VALUE) \
-   : (STR)[1] == '0' && (STR)[2] == '8' ? CONST_OK_FOR_I08 (VALUE) \
-   : (STR)[1] == '1' && (STR)[2] == '0' ? CONST_OK_FOR_I10 (VALUE) \
-   : (STR)[1] == '1' && (STR)[2] == '6' ? CONST_OK_FOR_I16 (VALUE) \
-   : (STR)[1] == '2' && (STR)[2] == '0' ? CONST_OK_FOR_I20 (VALUE) \
-   : 0)
 
 #define CONST_OK_FOR_J16(VALUE) \
   ((HOST_BITS_PER_WIDE_INT >= 64 && (VALUE) == (HOST_WIDE_INT) 0xffffffff) \
    || (HOST_BITS_PER_WIDE_INT >= 64 && (VALUE) == (HOST_WIDE_INT) -1 << 32))
-#define CONST_OK_FOR_J(VALUE, STR) \
-  ((STR)[1] == '1' && (STR)[2] == '6' ? CONST_OK_FOR_J16 (VALUE) \
-   : 0)
 
 #define CONST_OK_FOR_K08(VALUE) (((HOST_WIDE_INT)(VALUE))>= 0 \
 				 && ((HOST_WIDE_INT)(VALUE)) <= 255)
-#define CONST_OK_FOR_K16(VALUE) (((HOST_WIDE_INT)(VALUE))>= 0 \
-				 && ((HOST_WIDE_INT)(VALUE)) <= 65535)
-#define CONST_OK_FOR_K(VALUE, STR) \
-  ((STR)[1] == '0' && (STR)[2] == '8' ? CONST_OK_FOR_K08 (VALUE) \
-   : (STR)[1] == '1' && (STR)[2] == '6' ? CONST_OK_FOR_K16 (VALUE)	\
-   : 0)
-#define CONST_OK_FOR_P27(VALUE) \
-  ((VALUE)==1||(VALUE)==2||(VALUE)==8||(VALUE)==16)
-#define CONST_OK_FOR_P(VALUE, STR) \
-  ((STR)[1] == '2' && (STR)[2] == '7' ? CONST_OK_FOR_P27 (VALUE) \
-   : 0)
-#define CONST_OK_FOR_M(VALUE) ((VALUE)==1)
-#define CONST_OK_FOR_N(VALUE) ((VALUE)==0)
-#define CONST_OK_FOR_CONSTRAINT_P(VALUE, C, STR)	\
-     ((C) == 'I' ? CONST_OK_FOR_I ((VALUE), (STR))	\
-    : (C) == 'J' ? CONST_OK_FOR_J ((VALUE), (STR))	\
-    : (C) == 'K' ? CONST_OK_FOR_K ((VALUE), (STR))	\
-    : (C) == 'M' ? CONST_OK_FOR_M (VALUE)		\
-    : (C) == 'N' ? CONST_OK_FOR_N (VALUE)		\
-    : (C) == 'P' ? CONST_OK_FOR_P ((VALUE), (STR))	\
-    : 0)
-
-/* Similar, but for floating constants, and defining letters G and H.
-   Here VALUE is the CONST_DOUBLE rtx itself.  */
-
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)		\
-((C) == 'G' ? (fp_zero_operand (VALUE) && fldi_ok ())	\
- : (C) == 'H' ? (fp_one_operand (VALUE) && fldi_ok ())	\
- : (C) == 'F')
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
@@ -1695,7 +1592,7 @@ extern enum reg_class reg_class_from_letter[];
    ? GENERAL_REGS							\
    : (((CLASS) == TARGET_REGS						\
        || (TARGET_SHMEDIA && (CLASS) == SIBCALL_REGS))			\
-      && !EXTRA_CONSTRAINT_Csy (X)					\
+      && !satisfies_constraint_Csy (X)					\
       && (GET_CODE (X) != REG || ! GENERAL_REGISTER_P (REGNO (X))))	\
    ? GENERAL_REGS							\
    : (((CLASS) == MAC_REGS || (CLASS) == PR_REGS)			\
@@ -1723,7 +1620,7 @@ extern enum reg_class reg_class_from_letter[];
 	  || GET_CODE (X) == PLUS))					\
    ? GENERAL_REGS							\
    : (CLASS) == FPUL_REGS && immediate_operand ((X), (MODE))		\
-   ? (GET_CODE (X) == CONST_INT && CONST_OK_FOR_I08 (INTVAL (X))	\
+   ? (satisfies_constraint_I08 (X)					\
       ? GENERAL_REGS							\
       : R0_REGS)							\
    : ((CLASS) == FPSCR_REGS						\
@@ -2360,55 +2257,47 @@ struct sh_args {
 
 #endif
 
-/* The 'Q' constraint is a pc relative load operand.  */
-#define EXTRA_CONSTRAINT_Q(OP)                          		\
-  (GET_CODE (OP) == MEM 						\
-   && ((GET_CODE (XEXP ((OP), 0)) == LABEL_REF)				\
-       || (GET_CODE (XEXP ((OP), 0)) == CONST                		\
-	   && GET_CODE (XEXP (XEXP ((OP), 0), 0)) == PLUS		\
-	   && GET_CODE (XEXP (XEXP (XEXP ((OP), 0), 0), 0)) == LABEL_REF \
+/* Macros for extra constraints.  */
+
+#define IS_PC_RELATIVE_LOAD_ADDR_P(OP)                          	\
+  ((GET_CODE ((OP)) == LABEL_REF)					\
+   || (GET_CODE ((OP)) == CONST						\
+       && GET_CODE (XEXP ((OP), 0)) == PLUS				\
+       && GET_CODE (XEXP (XEXP ((OP), 0), 0)) == LABEL_REF		\
+       && GET_CODE (XEXP (XEXP ((OP), 0), 1)) == CONST_INT))
+
+#define IS_LITERAL_OR_SYMBOLIC_S16_P(OP)				\
+  (GET_CODE ((OP)) == SIGN_EXTEND					\
+   && (GET_MODE ((OP)) == DImode					\
+       || GET_MODE ((OP)) == SImode)					\
+   && GET_CODE (XEXP ((OP), 0)) == TRUNCATE				\
+   && GET_MODE (XEXP ((OP), 0)) == HImode				\
+   && (MOVI_SHORI_BASE_OPERAND_P (XEXP (XEXP ((OP), 0), 0))		\
+       || (GET_CODE (XEXP (XEXP ((OP), 0), 0)) == ASHIFTRT		\
+	   && (MOVI_SHORI_BASE_OPERAND_P				\
+	       (XEXP (XEXP (XEXP ((OP), 0), 0), 0)))			\
 	   && GET_CODE (XEXP (XEXP (XEXP ((OP), 0), 0), 1)) == CONST_INT)))
 
-/* Extra address constraints.  */
-#define EXTRA_CONSTRAINT_A(OP, STR) 0
+#define IS_LITERAL_OR_SYMBOLIC_U16_P(OP)				\
+  (GET_CODE ((OP)) == ZERO_EXTEND					\
+   && (GET_MODE ((OP)) == DImode					\
+       || GET_MODE ((OP)) == SImode)					\
+   && GET_CODE (XEXP ((OP), 0)) == TRUNCATE				\
+   && GET_MODE (XEXP ((OP), 0)) == HImode				\
+   && (MOVI_SHORI_BASE_OPERAND_P (XEXP (XEXP ((OP), 0), 0))		\
+       || (GET_CODE (XEXP (XEXP ((OP), 0), 0)) == ASHIFTRT		\
+	   && (MOVI_SHORI_BASE_OPERAND_P				\
+	       (XEXP (XEXP (XEXP ((OP), 0), 0), 0)))			\
+	   && GET_CODE (XEXP (XEXP (XEXP ((OP), 0), 0), 1)) == CONST_INT)))
 
-/* Constraint for selecting FLDI0 or FLDI1 instruction. If the clobber
-   operand is not SCRATCH (i.e. REG) then R0 is probably being
-   used, hence mova is being used, hence do not select this pattern */
-#define EXTRA_CONSTRAINT_Bsc(OP)    (GET_CODE(OP) == SCRATCH)
-#define EXTRA_CONSTRAINT_B(OP, STR) \
-  ((STR)[1] == 's' && (STR)[2] == 'c' ? EXTRA_CONSTRAINT_Bsc (OP) \
-   : 0)
-
-/* The `Css' constraint is a signed 16-bit constant, literal or symbolic.  */
-#define EXTRA_CONSTRAINT_Css(OP) \
-  (GET_CODE (OP) == CONST \
-   && GET_CODE (XEXP ((OP), 0)) == SIGN_EXTEND \
-   && (GET_MODE (XEXP ((OP), 0)) == DImode \
-       || GET_MODE (XEXP ((OP), 0)) == SImode) \
-   && GET_CODE (XEXP (XEXP ((OP), 0), 0)) == TRUNCATE \
-   && GET_MODE (XEXP (XEXP ((OP), 0), 0)) == HImode \
-   && (MOVI_SHORI_BASE_OPERAND_P (XEXP (XEXP (XEXP ((OP), 0), 0), 0)) \
-       || (GET_CODE (XEXP (XEXP (XEXP ((OP), 0), 0), 0)) == ASHIFTRT \
-	   && (MOVI_SHORI_BASE_OPERAND_P \
-	       (XEXP (XEXP (XEXP (XEXP ((OP), 0), 0), 0), 0))) \
-	   && GET_CODE (XEXP (XEXP (XEXP (XEXP ((OP), 0), 0), 0), \
-			      1)) == CONST_INT)))
-
-/* The `Csu' constraint is an unsigned 16-bit constant, literal or symbolic.  */
-#define EXTRA_CONSTRAINT_Csu(OP) \
-  (GET_CODE (OP) == CONST \
-   && GET_CODE (XEXP ((OP), 0)) == ZERO_EXTEND \
-   && (GET_MODE (XEXP ((OP), 0)) == DImode \
-       || GET_MODE (XEXP ((OP), 0)) == SImode) \
-   && GET_CODE (XEXP (XEXP ((OP), 0), 0)) == TRUNCATE \
-   && GET_MODE (XEXP (XEXP ((OP), 0), 0)) == HImode \
-   && (MOVI_SHORI_BASE_OPERAND_P (XEXP (XEXP (XEXP ((OP), 0), 0), 0)) \
-       || (GET_CODE (XEXP (XEXP (XEXP ((OP), 0), 0), 0)) == ASHIFTRT \
-	   && (MOVI_SHORI_BASE_OPERAND_P \
-	       (XEXP (XEXP (XEXP (XEXP ((OP), 0), 0), 0), 0))) \
-	   && GET_CODE (XEXP (XEXP (XEXP (XEXP ((OP), 0), 0), 0), \
-			      1)) == CONST_INT)))
+#define IS_NON_EXPLICIT_CONSTANT_P(OP)					\
+  (CONSTANT_P (OP)							\
+   && GET_CODE (OP) != CONST_INT					\
+   && GET_CODE (OP) != CONST_DOUBLE					\
+   && (!flag_pic							\
+       || (LEGITIMATE_PIC_OPERAND_P (OP)				\
+	   && (! PIC_ADDR_P (OP) || PIC_OFFSET_P (OP))			\
+	   && GET_CODE (OP) != LABEL_REF)))
 
 /* Check whether OP is a datalabel unspec.  */
 #define DATALABEL_REF_NO_CONST_P(OP) \
@@ -2468,61 +2357,6 @@ struct sh_args {
    ? (GOT_ENTRY_P (OP) || GOTPLT_ENTRY_P (OP)  || GOTOFF_P (OP) \
       || PIC_OFFSET_P (OP)) \
    : NON_PIC_REFERENCE_P (OP))
-
-/* The `Csy' constraint is a label or a symbol.  */
-#define EXTRA_CONSTRAINT_Csy(OP) \
-  (NON_PIC_REFERENCE_P (OP) || PIC_DIRECT_ADDR_P (OP))
-
-/* A zero in any shape or form.  */
-#define EXTRA_CONSTRAINT_Z(OP) \
-  ((OP) == CONST0_RTX (GET_MODE (OP)))
-
-/* Any vector constant we can handle.  */
-#define EXTRA_CONSTRAINT_W(OP) \
-  (GET_CODE (OP) == CONST_VECTOR \
-   && (sh_rep_vec ((OP), VOIDmode) \
-       || (HOST_BITS_PER_WIDE_INT >= 64 \
-	   ? sh_const_vec ((OP), VOIDmode) \
-	   : sh_1el_vec ((OP), VOIDmode))))
-
-/* A non-explicit constant that can be loaded directly into a general purpose
-   register.  This is like 's' except we don't allow PIC_DIRECT_ADDR_P.  */
-#define EXTRA_CONSTRAINT_Cpg(OP) \
-  (CONSTANT_P (OP) \
-   && GET_CODE (OP) != CONST_INT \
-   && GET_CODE (OP) != CONST_DOUBLE \
-   && (!flag_pic \
-       || (LEGITIMATE_PIC_OPERAND_P (OP) \
-        && (! PIC_ADDR_P (OP) || PIC_OFFSET_P (OP)) \
-        && GET_CODE (OP) != LABEL_REF)))
-#define EXTRA_CONSTRAINT_C(OP, STR) \
-  ((STR)[1] == 's' && (STR)[2] == 's' ? EXTRA_CONSTRAINT_Css (OP) \
-   : (STR)[1] == 's' && (STR)[2] == 'u' ? EXTRA_CONSTRAINT_Csu (OP) \
-   : (STR)[1] == 's' && (STR)[2] == 'y' ? EXTRA_CONSTRAINT_Csy (OP) \
-   : (STR)[1] == 'p' && (STR)[2] == 'g' ? EXTRA_CONSTRAINT_Cpg (OP) \
-   : 0)
-
-#define EXTRA_MEMORY_CONSTRAINT(C,STR) ((C) == 'S')
-#define EXTRA_CONSTRAINT_Sr0(OP) \
-  (memory_operand((OP), GET_MODE (OP)) \
-   && ! refers_to_regno_p (R0_REG, R0_REG + 1, OP, (rtx *)0))
-#define EXTRA_CONSTRAINT_Sua(OP) \
-  (memory_operand((OP), GET_MODE (OP)) \
-   && GET_CODE (XEXP (OP, 0)) != PLUS)
-#define EXTRA_CONSTRAINT_S(OP, STR) \
-  ((STR)[1] == 'r' && (STR)[2] == '0' ? EXTRA_CONSTRAINT_Sr0 (OP) \
-   : (STR)[1] == 'u' && (STR)[2] == 'a' ? EXTRA_CONSTRAINT_Sua (OP) \
-   : 0)
-
-#define EXTRA_CONSTRAINT_STR(OP, C, STR)		\
-  ((C) == 'Q' ? EXTRA_CONSTRAINT_Q (OP)	\
-   : (C) == 'A' ? EXTRA_CONSTRAINT_A ((OP), (STR)) \
-   : (C) == 'B' ? EXTRA_CONSTRAINT_B ((OP), (STR)) \
-   : (C) == 'C' ? EXTRA_CONSTRAINT_C ((OP), (STR)) \
-   : (C) == 'S' ? EXTRA_CONSTRAINT_S ((OP), (STR)) \
-   : (C) == 'W' ? EXTRA_CONSTRAINT_W (OP) \
-   : (C) == 'Z' ? EXTRA_CONSTRAINT_Z (OP) \
-   : 0)
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
    that is a valid memory address for an instruction.
@@ -2601,11 +2435,11 @@ struct sh_args {
 	    int MODE_SIZE;						\
 	    /* Check if this the address of an unaligned load / store.  */\
 	    if ((MODE) == VOIDmode)					\
-	     {								\
-	      if (CONST_OK_FOR_I06 (INTVAL (OP)))			\
-		goto LABEL;						\
-	      break;							\
-	     }								\
+	      {								\
+		if (CONST_OK_FOR_I06 (INTVAL (OP)))			\
+		  goto LABEL;						\
+		break;							\
+	      }								\
 	    MODE_SIZE = GET_MODE_SIZE (MODE);				\
 	    if (! (INTVAL (OP) & (MODE_SIZE - 1))			\
 		&& INTVAL (OP) >= -512 * MODE_SIZE			\

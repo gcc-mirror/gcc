@@ -54,6 +54,7 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-gimple.h"
 #include "cfgloop.h"
 #include "alloc-pool.h"
+#include "tm-constrs.h"
 
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
@@ -152,21 +153,6 @@ char sh_register_names[FIRST_PSEUDO_REGISTER] \
 char sh_additional_register_names[ADDREGNAMES_SIZE] \
   [MAX_ADDITIONAL_REGISTER_NAME_LENGTH + 1]
   = SH_ADDITIONAL_REGISTER_NAMES_INITIALIZER;
-
-/* Provide reg_class from a letter such as appears in the machine
-   description.  *: target independently reserved letter.
-   reg_class_from_letter['e' - 'a'] is set to NO_REGS for TARGET_FMOVD.  */
-
-enum reg_class reg_class_from_letter[] =
-{
-  /* a */ ALL_REGS,  /* b */ TARGET_REGS, /* c */ FPSCR_REGS, /* d */ DF_REGS,
-  /* e */ FP_REGS,   /* f */ FP_REGS,  /* g **/ NO_REGS,     /* h */ NO_REGS,
-  /* i **/ NO_REGS,  /* j */ NO_REGS,  /* k */ SIBCALL_REGS, /* l */ PR_REGS,
-  /* m **/ NO_REGS,  /* n **/ NO_REGS, /* o **/ NO_REGS,     /* p **/ NO_REGS,
-  /* q */ NO_REGS,   /* r **/ NO_REGS, /* s **/ NO_REGS,     /* t */ T_REGS,
-  /* u */ NO_REGS,   /* v */ NO_REGS,  /* w */ FP0_REGS,     /* x */ MAC_REGS,
-  /* y */ FPUL_REGS, /* z */ R0_REGS
-};
 
 int assembler_dialect;
 
@@ -1414,7 +1400,7 @@ prepare_cbranch_operands (rtx *operands, enum machine_mode mode,
 	  || (mode == SImode && operands[2] != CONST0_RTX (SImode)
 	      && ((comparison != EQ && comparison != NE)
 		  || (REG_P (op1) && REGNO (op1) != R0_REG)
-		  || !CONST_OK_FOR_I08 (INTVAL (operands[2]))))))
+		  || !satisfies_constraint_I08 (operands[2])))))
     {
       if (scratch && GET_MODE (scratch) == mode)
 	{
@@ -2281,9 +2267,8 @@ andcosts (rtx x)
 
   if (TARGET_SHMEDIA)
     {
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && (CONST_OK_FOR_I10 (INTVAL (XEXP (x, 1)))
-	      || CONST_OK_FOR_J16 (INTVAL (XEXP (x, 1)))))
+      if (satisfies_constraint_I10 (XEXP (x, 1))
+	  || satisfies_constraint_J16 (XEXP (x, 1)))
 	return 1;
       else
 	return 1 + rtx_cost (XEXP (x, 1), AND);
@@ -3719,10 +3704,8 @@ broken_move (rtx insn)
 		&& FP_REGISTER_P (REGNO (SET_DEST (pat))))
 	  && ! (TARGET_SH2A
 		&& GET_MODE (SET_DEST (pat)) == SImode
-		&& GET_CODE (SET_SRC (pat)) == CONST_INT
-		&& CONST_OK_FOR_I20 (INTVAL (SET_SRC (pat))))
-	  && (GET_CODE (SET_SRC (pat)) != CONST_INT
-	      || ! CONST_OK_FOR_I08 (INTVAL (SET_SRC (pat)))))
+		&& satisfies_constraint_I20 (SET_SRC (pat)))
+	  && ! satisfies_constraint_I08 (SET_SRC (pat)))
 	return 1;
     }
 
@@ -10930,7 +10913,7 @@ sh_secondary_reload (bool in_p, rtx x, enum reg_class class,
         return GENERAL_REGS;
       if (class == FPUL_REGS && immediate_operand (x, mode))
 	{
-	  if (GET_CODE (x) == CONST_INT && CONST_OK_FOR_I08 (INTVAL (x)))
+	  if (satisfies_constraint_I08 (x))
 	    return GENERAL_REGS;
 	  sri->icode = CODE_FOR_reload_insi__i_fpul;
 	  return NO_REGS;
@@ -10983,7 +10966,7 @@ sh_secondary_reload (bool in_p, rtx x, enum reg_class class,
     }
   if ((class == TARGET_REGS
        || (TARGET_SHMEDIA && class == SIBCALL_REGS))
-      && !EXTRA_CONSTRAINT_Csy (x)
+      && !satisfies_constraint_Csy (x)
       && (GET_CODE (x) != REG || ! GENERAL_REGISTER_P (REGNO (x))))
     return GENERAL_REGS;
   if ((class == MAC_REGS || class == PR_REGS)
