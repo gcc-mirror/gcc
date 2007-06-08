@@ -1,3 +1,7 @@
+2007-06-07  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/i386/darwin.h (STACK_BOUNDARY): Define.
+
 2007-06-07  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/30759
@@ -12,7 +16,7 @@
 	(set_std_cxx98): Set cxx_dialect to cxx98.
 	(set_std_cxx0x): Set cxx_dialect to cxx0x.
 
-2007-06-06  Geoffrey Keating  <geoffk@apple.com>
+2007-06-07  Geoffrey Keating  <geoffk@apple.com>
 	    Hui-May Chang <hm.chang@apple.com>
 
 	* doc/invoke.texi (Darwin Options): Update documentation for
