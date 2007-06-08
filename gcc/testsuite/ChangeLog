@@ -23,6 +23,11 @@
 
 2007-06-07  Geoffrey Keating  <geoffk@apple.com>
 
+	* g++.dg/ext/cleanup-8.c: Run on i386-darwin9 and later.
+	* g++.dg/ext/cleanup-9.c: Run on i386-darwin9 and later.
+	* g++.dg/ext/cleanup-10.c: Run on i386-darwin9 and later.
+	* g++.dg/ext/cleanup-11.c: Run on i386-darwin9 and later.
+
 	* gcc.dg/attr-weakref-1-darwin.c: Run on all Darwin platforms.
 	* gcc.dg/20050826-1.c: Run on all Darwin platforms.
 	* gcc.dg/darwin-ld-2.c: Run on all Darwin platforms.
