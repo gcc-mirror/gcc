@@ -1,5 +1,5 @@
 /* Analysis Utilities for Loop Vectorization.
-   Copyright (C) 2003,2004,2005,2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -300,6 +300,9 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
   tree phi;
   stmt_vec_info stmt_info;
   bool need_to_vectorize = false;
+  int min_profitable_iters;
+  int min_scalar_loop_bound;
+  unsigned int th;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_analyze_operations ===");
@@ -443,8 +446,6 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	} /* stmts in bb */
     } /* bbs */
 
-  /* TODO: Analyze cost. Decide if worth while to vectorize.  */
-
   /* All operations in the loop are either irrelevant (deal with loop
      control, or dead), or only used outside the loop and can be moved
      out of the loop (e.g. invariants, inductions).  The loop can be 
@@ -468,15 +469,54 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
         vectorization_factor, LOOP_VINFO_INT_NITERS (loop_vinfo));
 
   if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      && ((LOOP_VINFO_INT_NITERS (loop_vinfo) < vectorization_factor)
-	  || (LOOP_VINFO_INT_NITERS (loop_vinfo) <=
-		((unsigned) (PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND)) 
-					   * vectorization_factor))))
+      && (LOOP_VINFO_INT_NITERS (loop_vinfo) < vectorization_factor))
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
-	fprintf (vect_dump, "not vectorized: iteration count too small.");
+        fprintf (vect_dump, "not vectorized: iteration count too small.");
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump,"not vectorized: iteration count smaller than "
+                 "vectorization factor.");
       return false;
     }
+
+  /* Analyze cost. Decide if worth while to vectorize.  */
+
+  min_profitable_iters = vect_estimate_min_profitable_iters (loop_vinfo);
+
+  if (min_profitable_iters < 0)
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+        fprintf (vect_dump, "not vectorized: vectorization not profitable.");
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "not vectorized: vector version will never be "
+                 "profitable.");
+      return false;
+    }
+
+  min_scalar_loop_bound = (PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND))
+                          * vectorization_factor;
+
+  /* Use the cost model only if it is more conservative than user specified
+     threshold.  */
+
+  th = (unsigned) min_scalar_loop_bound;
+  if (min_profitable_iters 
+      && (!min_scalar_loop_bound
+          || min_profitable_iters > min_scalar_loop_bound))
+    th = (unsigned) min_profitable_iters;
+
+  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      && LOOP_VINFO_INT_NITERS (loop_vinfo) < th)
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))	      
+        fprintf (vect_dump, "not vectorized: vectorization not "
+                 "profitable.");
+      if (vect_print_dump_info (REPORT_DETAILS))	      
+        fprintf (vect_dump, "not vectorized: iteration count smaller than "
+                 "user specified loop bound parameter or minimum "
+                 "profitable iterations (whichever is more conservative).");
+      return false;
+    }  
 
   if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
       || LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0

@@ -1351,6 +1351,8 @@ new_stmt_vec_info (tree stmt, loop_vec_info loop_vinfo)
   else
     STMT_VINFO_DEF_TYPE (res) = vect_loop_def;
   STMT_VINFO_SAME_ALIGN_REFS (res) = VEC_alloc (dr_p, heap, 5);
+  STMT_VINFO_INSIDE_OF_LOOP_COST (res) = 0;
+  STMT_VINFO_OUTSIDE_OF_LOOP_COST (res) = 0;
   DR_GROUP_FIRST_DR (res) = NULL_TREE;
   DR_GROUP_NEXT_DR (res) = NULL_TREE;
   DR_GROUP_SIZE (res) = 0;
