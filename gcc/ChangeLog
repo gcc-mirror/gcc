@@ -1,3 +1,8 @@
+2007-06-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* reload1.c (fixup_abnormal_edges): Clear bb field for insns
+	not inserted on the edge.
+
 2007-06-08  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/lib1funcs.asm (__udivsi3): Use hardware divide

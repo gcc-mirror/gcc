@@ -8563,7 +8563,7 @@ fixup_abnormal_edges (void)
 		  next = NEXT_INSN (insn);
 		  if (INSN_P (insn))
 		    {
-	              delete_insn (insn);
+		      delete_insn (insn);
 
 		      /* Sometimes there's still the return value USE.
 			 If it's placed after a trapping call (i.e. that
@@ -8581,6 +8581,8 @@ fixup_abnormal_edges (void)
 			  inserted = true;
 			}
 		    }
+		  else if (!BARRIER_P (insn))
+		    set_block_for_insn (insn, NULL);
 		  insn = next;
 		}
 	    }
