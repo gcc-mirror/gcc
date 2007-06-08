@@ -173,9 +173,6 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      print_generic_expr (vect_dump, stmt, TDF_SLIM);
 	    }
 
-	  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
-	    continue;
-
 	  gcc_assert (stmt_info);
 
 	  /* skip stmts which do not need to be vectorized.  */
@@ -185,6 +182,16 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      if (vect_print_dump_info (REPORT_DETAILS))
 	        fprintf (vect_dump, "skip.");
 	      continue;
+	    }
+
+	  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
+	    {
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+		{
+	          fprintf (vect_dump, "not vectorized: irregular stmt.");
+		  print_generic_expr (vect_dump, stmt, TDF_SLIM);
+		}
+	      return false;
 	    }
 
 	  if (!GIMPLE_STMT_P (stmt)

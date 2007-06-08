@@ -1,3 +1,8 @@
+2007-06-08  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/32224
+	* gcc.dg/vect/pr32224.c: New test.
+
 2007-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/32177
