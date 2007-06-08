@@ -7435,7 +7435,7 @@ v2df __builtin_ia32_blendpd (v2df, v2df, const int)
 v4sf __builtin_ia32_blendps (v4sf, v4sf, const int)
 v2df __builtin_ia32_blendvpd (v2df, v2df, v2df)
 v4sf __builtin_ia32_blendvps (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_dppd (__v2df, __v2df, const int)
+v2df __builtin_ia32_dppd (v2df, v2df, const int)
 v4sf __builtin_ia32_dpps (v4sf, v4sf, const int)
 v4sf __builtin_ia32_insertps128 (v4sf, v4sf, const int)
 v2di __builtin_ia32_movntdqa (v2di *);
@@ -7523,50 +7523,45 @@ int __builtin_ia32_pcmpistric128 (v16qi, v16qi, const int)
 int __builtin_ia32_pcmpistrio128 (v16qi, v16qi, const int)
 int __builtin_ia32_pcmpistris128 (v16qi, v16qi, const int)
 int __builtin_ia32_pcmpistriz128 (v16qi, v16qi, const int)
-__v2di __builtin_ia32_pcmpgtq (__v2di, __v2di)
+v2di __builtin_ia32_pcmpgtq (v2di, v2di)
 @end smallexample
 
 The following built-in functions are available when @option{-msse4.2} is
 used.
 
 @table @code
-unsigned int __builtin_ia32_crc32qi (unsigned int, unsigned char)
+@item unsigned int __builtin_ia32_crc32qi (unsigned int, unsigned char)
 Generates the @code{crc32b} machine instruction.
-unsigned int __builtin_ia32_crc32hi (unsigned int, unsigned short)
+@item unsigned int __builtin_ia32_crc32hi (unsigned int, unsigned short)
 Generates the @code{crc32w} machine instruction.
-unsigned int __builtin_ia32_crc32si (unsigned int, unsigned int)
+@item unsigned int __builtin_ia32_crc32si (unsigned int, unsigned int)
 Generates the @code{crc32l} machine instruction.
-unsigned long long __builtin_ia32_crc32di (unsigned int, unsigned long long)
+@item unsigned long long __builtin_ia32_crc32di (unsigned int, unsigned long long)
 @end table
 
 The following built-in functions are changed to generate new SSE4.2
 instructions when @option{-msse4.2} is used.
 
 @table @code
-int __builtin_popcount (unsigned int)
+@item int __builtin_popcount (unsigned int)
 Generates the @code{popcntl} machine instruction.
-int __builtin_popcountl (unsigned long)
+@item int __builtin_popcountl (unsigned long)
 Generates the @code{popcntl} or @code{popcntq} machine instruction,
 depending on the size of @code{unsigned long}.
-int __builtin_popcountll (unsigned long long)
+@item int __builtin_popcountll (unsigned long long)
 Generates the @code{popcntq} machine instruction.
 @end table
 
 The following built-in functions are available when @option{-msse4a} is used.
+All of them generate the machine instruction that is part of the name.
 
 @smallexample
-void             _mm_stream_sd (double*,__m128d);
-Generates the @code{movntsd} machine instruction.
-void             _mm_stream_ss (float*,__m128);
-Generates the @code{movntss} machine instruction.
-__m128i          _mm_extract_si64 (__m128i, __m128i);
-Generates the @code{extrq} machine instruction with only SSE register operands.
-__m128i          _mm_extracti_si64 (__m128i, int, int);
-Generates the @code{extrq} machine instruction with SSE register and immediate operands.
-__m128i          _mm_insert_si64 (__m128i, __m128i);
-Generates the @code{insertq} machine instruction with only SSE register operands.
-__m128i          _mm_inserti_si64 (__m128i, __m128i, int, int);
-Generates the @code{insertq} machine instruction with SSE register and immediate operands.
+void __builtin_ia32_movntsd (double *, v2df)
+void __builtin_ia32_movntss (float *, v4sf)
+v2di __builtin_ia32_extrq  (v2di, v16qi)
+v2di __builtin_ia32_extrqi (v2di, const unsigned int, const unsigned int)
+v2di __builtin_ia32_insertq (v2di, v2di)
+v2di __builtin_ia32_insertqi (v2di, v2di, const unsigned int, const unsigned int)
 @end smallexample
 
 The following built-in functions are available when @option{-m3dnow} is used.

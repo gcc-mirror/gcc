@@ -1,5 +1,10 @@
 2007-06-08  Uros Bizjak  <ubizjak@gmail.com>
 
+	* doc/extend.texi (X86 Built-in Functions): Add missing `@item's in
+	SSE4.2 section.  Correct built-in function names in SSE4A section.
+
+2007-06-08  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR tree-optimization/32243
 	* tree-vect-transform.c (vectorizable_type_promotion): Move check
 	for ncopies after ratio check between nunits_out and nunits_in.
