@@ -210,7 +210,7 @@ var_ann (tree t)
 	   htab_find_with_hash (gimple_var_anns (cfun), t, DECL_UID (t)));
       if (!sann)
 	return NULL;
-      gcc_assert (sann->ann.common.type = VAR_ANN);
+      gcc_assert (sann->ann.common.type == VAR_ANN);
       return &sann->ann;
     }
   gcc_assert (!t->base.ann
