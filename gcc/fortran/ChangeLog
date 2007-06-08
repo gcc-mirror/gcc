@@ -1,3 +1,13 @@
+2007-06-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/32223
+	* match.c (gfc_match_special_char): New function.  Match special char.
+	Add handling '\0'.
+	* match.h: Add prototype.
+	* io.c (next_char): Use it.
+	* primary.c (next_string_char): Ditto.
+
 2007-06-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* decl.c: Miscellaneous whitespace fixes.

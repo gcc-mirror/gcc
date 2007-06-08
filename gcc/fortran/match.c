@@ -64,6 +64,56 @@ mstring intrinsic_operators[] = {
 
 /******************** Generic matching subroutines ************************/
 
+/* See if the next character is a special character that has
+   escaped by a \ via the -fbackslash option.  */
+
+match
+gfc_match_special_char (int *c)
+{
+
+  match m;
+
+  m = MATCH_YES;
+
+  switch (gfc_next_char_literal (1))
+    {
+    case 'a':
+      *c = '\a';
+      break;
+    case 'b':
+      *c = '\b';
+      break;
+    case 't':
+      *c = '\t';
+      break;
+    case 'f':
+      *c = '\f';
+      break;
+    case 'n':
+      *c = '\n';
+      break;
+    case 'r':
+      *c = '\r';
+      break;
+    case 'v':
+      *c = '\v';
+      break;
+    case '\\':
+      *c = '\\';
+      break;
+    case '0':
+      *c = '\0';
+      break;
+    default:
+      /* Unknown backslash codes are simply not expanded.  */
+      m = MATCH_NO;
+      break;
+    }
+
+  return m;
+}
+
+
 /* In free form, match at least one space.  Always matches in fixed
    form.  */
 
