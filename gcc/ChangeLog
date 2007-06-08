@@ -1,3 +1,46 @@
+2007-06-08  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/constraints.md: New file.
+	* config/sh/sh.c: Include tm-constrs.h.
+	(reg_class_from_letter): Remove.
+	(prepare_cbranch_operands): Use satisfies_constraint_*
+	function instead of macro.
+	(andcosts, broken_move, sh_secondary_reload): Likewise.
+	* config/sh/predicates.md (trapping_target_operand): Likewise.
+	(and_operand, arith_operand, arith_reg_or_0_operand,
+	cmp_operand, logical_operand, target_operand,
+	ua_address_operand, ua_offset, xor_operand): Likewise.
+	* config/sh/sh.md: Include constraints.md.
+	(*movsicc_t_false): Use satisfies_constraint_* function
+	instead of macro.
+	(*movsicc_t_true, ashlsi3_std, ashlhi3_k, lshrsi3_m,
+	lshrsi3_k, movsi_const_16bit+2, *movhi_media+1,
+	movdi_const_16bit+1, beq, bne, *ptb): Likewise.
+	* config/sh/sh.h (reg_class_from_letter): Remove prototype.
+	(OVERRIDE_OPTIONS): Don't modify reg_class_from_letter.
+	(REG_CLASS_FROM_CONSTRAINT): Remove.
+	(CONSTRAINT_LEN, CONST_OK_FOR_I20, CONST_OK_FOR_I,
+	CONST_OK_FOR_J, CONST_OK_FOR_K16, CONST_OK_FOR_K,
+	CONST_OK_FOR_P27, CONST_OK_FOR_P, CONST_OK_FOR_M,
+	CONST_OK_FOR_N, CONST_OK_FOR_CONSTRAINT_P,
+	CONST_DOUBLE_OK_FOR_LETTER_P): Likewise.
+	(SECONDARY_INOUT_RELOAD_CLASS): Use satisfies_constraint_*
+	function instead of macro.
+	(SECONDARY_INPUT_RELOAD_CLASS): Likewise.
+	(EXTRA_CONSTRAINT_Q, EXTRA_CONSTRAINT_A,
+	EXTRA_CONSTRAINT_Bsc, EXTRA_CONSTRAINT_B,
+	EXTRA_CONSTRAINT_Css, EXTRA_CONSTRAINT_Csu): Remove.
+	(IS_PC_RELATIVE_LOAD_ADDR_P): New macro.
+	(IS_LITERAL_OR_SYMBOLIC_S16_P): Likewise.
+	(IS_LITERAL_OR_SYMBOLIC_U16_P): Likewise.
+	(IS_NON_EXPLICIT_CONSTANT_P): Likewise.
+	(EXTRA_CONSTRAINT_Csy, EXTRA_CONSTRAINT_Z, EXTRA_CONSTRAINT_W,
+	EXTRA_CONSTRAINT_Cpg, EXTRA_CONSTRAINT_C,
+	EXTRA_MEMORY_CONSTRAINT, EXTRA_CONSTRAINT_Sr0,
+	EXTRA_CONSTRAINT_Sua, EXTRA_CONSTRAINT_S,
+	EXTRA_CONSTRAINT_STR): Likewise.
+	(GO_IF_LEGITIMATE_INDEX): Fix indentation.
+
 2007-06-07  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/i386/darwin.h (STACK_BOUNDARY): Define.
