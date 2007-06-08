@@ -1,5 +1,10 @@
 2007-06-08  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.c (override_options): Merge TARGET_SSE4_2 and
+	TARGET_ABM handling of x86_popcnt variable.
+
+2007-06-08  Uros Bizjak  <ubizjak@gmail.com>
+
 	* doc/extend.texi (X86 Built-in Functions): Document __builtin_fabsq,
 	__builtin_copysignq and __builtin_infq built-in functions.
 
