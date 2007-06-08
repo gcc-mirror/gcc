@@ -1,3 +1,9 @@
+2007-06-08  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/29953
+	* config/sh/sh.md (doloop_end): New pattern and splitter.
+	* loop-iv.c (simple_rhs_p): Check for hardware registers.
+	
 2007-06-08  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR middle-end/32209
