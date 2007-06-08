@@ -1,3 +1,11 @@
+2007-06-08  Dirk Mueller  <dmueller@suse.de>
+
+	PR c++/31809
+	Backport from mainline:
+	2007-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/opt/static5.C: New test.
+
 2007-06-06  Ian Lance Taylor  <iant@google.com>
 
 	* g++.dg/conversion/enum1.C: New test.
