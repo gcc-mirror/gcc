@@ -2708,7 +2708,6 @@ vectorizable_type_demotion (tree stmt, block_stmt_iterator *bsi,
   int j;
   tree expr;
   tree vectype_in;
-  tree scalar_type;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
@@ -2741,8 +2740,7 @@ vectorizable_type_demotion (tree stmt, block_stmt_iterator *bsi,
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
 
   scalar_dest = GIMPLE_STMT_OPERAND (stmt, 0);
-  scalar_type = TREE_TYPE (scalar_dest);
-  vectype_out = get_vectype_for_scalar_type (scalar_type);
+  vectype_out = get_vectype_for_scalar_type (TREE_TYPE (scalar_dest));
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
   if (nunits_in != nunits_out / 2) /* FORNOW */
     return false;
@@ -2887,14 +2885,15 @@ vectorizable_type_promotion (tree stmt, block_stmt_iterator *bsi,
   op0 = TREE_OPERAND (operation, 0);
   vectype_in = get_vectype_for_scalar_type (TREE_TYPE (op0));
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
-  ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_in;
-  gcc_assert (ncopies >= 1);
 
   scalar_dest = GIMPLE_STMT_OPERAND (stmt, 0);
   vectype_out = get_vectype_for_scalar_type (TREE_TYPE (scalar_dest));
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
   if (nunits_out != nunits_in / 2) /* FORNOW */
     return false;
+
+  ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_in;
+  gcc_assert (ncopies >= 1);
 
   if (! ((INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
 	  && INTEGRAL_TYPE_P (TREE_TYPE (op0)))

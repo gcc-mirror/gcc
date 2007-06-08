@@ -175,8 +175,15 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-tree-dom-*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 
 # With -Os
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-Os"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/Os-vect-*.\[cS\]]]  \
+        "" $DEFAULT_VECTCFLAGS
+
+# With -O3
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-O3"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/O3-vect-*.\[cS\]]]  \
         "" $DEFAULT_VECTCFLAGS
 
 # Clean up.

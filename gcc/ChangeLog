@@ -1,3 +1,10 @@
+2007-06-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/32243
+	* tree-vect-transform.c (vectorizable_type_promotion): Move check
+	for ncopies after ratio check between nunits_out and nunits_in.
+	(vectorizable_type_demotion): Remove single-use variable "scalar_type".
+
 2007-06-08  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/32224
