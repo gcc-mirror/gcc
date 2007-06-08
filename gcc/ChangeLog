@@ -7,7 +7,7 @@
 	* config/xtensa/t-xtensa (LIB1ASMFUNCS): Add DImode shift functions.
 	
 2007-06-08  Harsha Jagasia <harsha.jagasia@amd.com>
-            Tony Linthicum <tony.linthicum@amd.com>
+	    Tony Linthicum <tony.linthicum@amd.com>
 
 	* doc/extend.texi: Add fvect-cost-model flag.
 	* common.opt (fvect-cost-model): New flag.
@@ -205,7 +205,7 @@
 	(ix86_expand_builtin) [IX86_BUILTIN_INFQ]: Expand builtin.
 	[IX86_BUILTIN_FABSQ]: Expand builtin using ix86_expand_unop_builtin().
 	[IX86_BUILTIN_COPYSIGNQ]: Expand builtin using
-	ix86_expand_unop_builtin().
+	ix86_expand_binop_builtin().
 
 2007-06-07  Bob Wilson  <bob.wilson@acm.org>
 
