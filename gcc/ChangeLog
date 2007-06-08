@@ -1,3 +1,8 @@
+2007-06-08  Simon Baldwin  <simonb@google.com>
+
+	* tree-flow-inline.h (var_ann): Replaced erroneous '=' assignment
+	in gcc_assert() with '==' comparison.
+
 2007-06-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (override_options): Merge TARGET_SSE4_2 and
