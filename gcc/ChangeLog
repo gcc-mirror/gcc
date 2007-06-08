@@ -1,3 +1,9 @@
+2007-06-08  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/32224
+	* tree-vect-analyze.c (vect_determine_vectorization_factor): Fail
+	vectorization upon a non GIMPLE_MODIFY_STMT.
+
 2007-06-08  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/29953
