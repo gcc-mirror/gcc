@@ -7323,6 +7323,52 @@ label:
 		 ? gen_rtx_GE (VOIDmode, operands[4], const0_rtx)
 		 : gen_rtx_GT (VOIDmode, const0_rtx, operands[4]));
 }")
+
+; operand 0 is the loop count pseudo register
+; operand 1 is the number of loop iterations or 0 if it is unknown
+; operand 2 is the maximum number of loop iterations
+; operand 3 is the number of levels of enclosed loops
+; operand 4 is the label to jump to at the top of the loop
+
+(define_expand "doloop_end"
+  [(parallel [(set (pc) (if_then_else
+			  (ne:SI (match_operand:SI 0 "" "")
+			      (const_int 1))
+			  (label_ref (match_operand 4 "" ""))
+			  (pc)))
+	      (set (match_dup 0)
+		   (plus:SI (match_dup 0) (const_int -1)))
+	      (clobber (reg:SI T_REG))])]
+  "TARGET_SH2"
+  "
+{
+  if (GET_MODE (operands[0]) != SImode)
+    FAIL;
+}
+")
+
+(define_insn_and_split "doloop_end_split"
+  [(set (pc)
+	(if_then_else (ne:SI (match_operand:SI 0 "arith_reg_dest" "+r")
+			  (const_int 1))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))
+   (set (match_dup 0)
+	(plus (match_dup 0) (const_int -1)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH2"
+  "#"
+  ""
+  [(parallel [(set (reg:SI T_REG)
+		   (eq:SI (match_operand:SI 0 "arith_reg_dest" "+r")
+			  (const_int 1)))
+	      (set (match_dup 0) (plus:SI (match_dup 0) (const_int -1)))])
+   (set (pc) (if_then_else (eq (reg:SI T_REG) (const_int 0))
+			   (label_ref (match_operand 1 "" ""))
+			   (pc)))]
+""
+   [(set_attr "type" "cbranch")])
+
 
 ;; ------------------------------------------------------------------------
 ;; Jump and linkage insns
