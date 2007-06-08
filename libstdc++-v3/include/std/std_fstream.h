@@ -1,6 +1,7 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+// 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -257,9 +258,30 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Otherwise it tries to open the file named @a s using the flags
        *  given in @a mode.
        *
-       *  [Table 92 gives the relation between openmode combinations and the
-       *  equivalent fopen() flags, but the table has not been copied yet.]
-      */
+       *  Table 92, adapted here, gives the relation between openmode
+       *  combinations and the equivalent fopen() flags.
+       *  (NB: lines in|out|app and binary|in|out|app per DR 596)
+       *  +---------------------------------------------------------+
+       *  | ios_base Flag combination            stdio equivalent   |
+       *  |binary  in  out  trunc  app                              |
+       *  +---------------------------------------------------------+
+       *  |             +                        "w"                |
+       *  |             +           +            "a"                |
+       *  |             +     +                  "w"                |
+       *  |         +                            "r"                |
+       *  |         +   +                        "r+"               |
+       *  |         +   +     +                  "w+"               |
+       *  |         +   +           +            "a+"               |
+       *  +---------------------------------------------------------+
+       *  |   +         +                        "wb"               |
+       *  |   +         +           +            "ab"               |
+       *  |   +         +     +                  "wb"               |
+       *  |   +     +                            "rb"               |
+       *  |   +     +   +                        "r+b"              |
+       *  |   +     +   +     +                  "w+b"              |
+       *  |   +     +   +           +            "a+b"              |
+       *  +---------------------------------------------------------+
+       */
       __filebuf_type*
       open(const char* __s, ios_base::openmode __mode);
 
