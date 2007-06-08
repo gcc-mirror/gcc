@@ -69,6 +69,12 @@ Boston, MA 02110-1301, USA.  */
 #undef TARGET_KEEPS_VECTOR_ALIGNED_STACK
 #define TARGET_KEEPS_VECTOR_ALIGNED_STACK 1
 
+/* On Darwin, the stack is 128-bit aligned at the point of every call.
+   Failure to ensure this will lead to a crash in the system libraries
+   or dynamic loader.  */
+#undef STACK_BOUNDARY
+#define STACK_BOUNDARY 128
+
 /* We want -fPIC by default, unless we're using -static to compile for
    the kernel or some such.  */
 
