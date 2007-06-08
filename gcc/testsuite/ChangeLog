@@ -1,3 +1,25 @@
+2007-06-08  Harsha Jagasia <harsha.jagasia@amd.com>
+
+	* gcc.dg/vect/costmodel: New directory.
+	* gcc.dg/vect/costmodel/i386: New directory.
+	* gcc.dg/vect/costmodel/i386/i386-costmodel-vect.exp: New testsuite.
+	* gcc.dg/vect/costmodel/i386/costmodel-fast-math-vect-pr29925.c:
+	New test.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-31.c: New test.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-33.c: New test.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-68.c: New test.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-reduc-1char.c: New test.
+	* gcc.dg/vect/costmodel/x86_64: New directory.
+	* gcc.dg/vect/costmodel/x86_64/x86_64-costmodel-vect.exp:
+	New testsuite.	
+	* gcc.dg/vect/costmodel/x86_64/costmodel-fast-math-vect-pr29925.c:
+	New test.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-31.c: New test.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-33.c: New test.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-68.c: New test.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-reduc-1char.c: New test.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr30843.c: New test.
+
 2007-06-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/32243

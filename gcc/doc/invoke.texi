@@ -357,7 +357,7 @@ Objective-C and Objective-C++ Dialects}.
 -fcheck-data-deps @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename -ftree-sink @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-fre -ftree-vectorize @gol
--ftree-vect-loop-version -ftree-salias -fipa-pta -fweb @gol
+-ftree-vect-loop-version -fvect-cost-model -ftree-salias -fipa-pta -fweb @gol
 -ftree-copy-prop -ftree-store-ccp -ftree-store-copy-prop -fwhole-program @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
@@ -5665,6 +5665,9 @@ be determined at compile time then vectorized and non-vectorized versions of
 the loop are generated along with runtime checks for alignment or dependence
 to control which version is executed.  This option is enabled by default
 except at level @option{-Os} where it is disabled.
+
+@item -fvect-cost-model
+Enable cost model for vectorization.
 
 @item -ftree-vrp
 Perform Value Range Propagation on trees.  This is similar to the

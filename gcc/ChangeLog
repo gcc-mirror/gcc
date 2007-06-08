@@ -1,3 +1,47 @@
+2007-06-08  Harsha Jagasia <harsha.jagasia@amd.com>
+            Tony Linthicum <tony.linthicum@amd.com>
+
+	* doc/extend.texi: Add fvect-cost-model flag.
+	* common.opt (fvect-cost-model): New flag.
+	* tree-vectorizer.c (new_stmt_vec_info): Initialize inside and outside
+	cost fields in stmt_vec_info struct for STMT.
+	* tree-vectorizer.h (stmt_vec_info): Define inside and outside cost
+	fields in stmt_vec_info struct and access functions for the same.
+	(TARG_COND_BRANCH_COST): Define cost of conditional branch.
+	(TARG_VEC_STMT_COST): Define cost of any vector operation, excluding
+	load, store and vector to scalar operation.
+	(TARG_VEC_TO_SCALAR_COST): Define cost of vector to scalar operation.
+	(TARG_VEC_LOAD_COST): Define cost of aligned vector load.
+	(TARG_VEC_UNALIGNED_LOAD_COST): Define cost of misasligned vector load.
+	(TARG_VEC_STORE_COST): Define cost of vector store.
+	(vect_estimate_min_profitable_iters): Define new function.
+	* tree-vect-analyze.c (vect_analyze_operations): Add a compile-time
+	check to evaluate if loop iterations are less than minimum profitable
+	iterations determined by cost model or minimum vect loop bound defined
+	by user, whichever is more conservative.
+	* tree-vect-transform.c (vect_do_peeling_for_loop_bound): Add a
+	run-time check to evaluate if loop iterations are less than minimum
+	profitable iterations determined by cost model or minimum vect loop
+	bound defined by user, whichever is more conservative.
+	(vect_estimate_min_profitable_iterations): New function to estimate
+	mimimimum iterartions required for vector version of loop to be
+	profitable over scalar version.
+        (vect_model_reduction_cost): New function.
+	(vect_model_induction_cost): New function.
+	(vect_model_simple_cost): New function.
+	(vect_cost_strided_group_size): New function.
+	(vect_model_store_cost): New function.
+	(vect_model_load_cost): New function.
+	(vectorizable_reduction): Call vect_model_reduction_cost during
+	analysis phase.
+	(vectorizable_induction): Call vect_model_induction_cost during
+	analysis phase.
+	(vectorizable_load): Call vect_model_load_cost during analysis phase.
+	(vectorizable_store): Call vect_model_store_cost during analysis phase.
+	(vectorizable_call, vectorizable_assignment, vectorizable_operation,
+	vectorizable_promotion, vectorizable_demotion): Call 
+	vect_model_simple_cost during analysis phase.
+
 2007-06-08  Simon Baldwin  <simonb@google.com>
 
 	* reg-stack.c (get_true_reg): Readability change.  Moved default case
