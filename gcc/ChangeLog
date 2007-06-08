@@ -1,3 +1,10 @@
+2007-06-08  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/32163
+	Backport from mainline.
+	* config/sh/sh.md (symGOT_load): Don't schedule insns when
+	the symbol is generated with the stack protector.
+
 2007-06-06  Ian Lance Taylor  <iant@google.com>
 
 	* fold-const.c (merge_ranges): If range_successor or
