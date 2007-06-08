@@ -486,6 +486,9 @@ __ffssi2:
 	.type	__udivsi3, @function
 __udivsi3:
 	leaf_entry sp, 16
+#if XCHAL_HAVE_DIV32
+	quou	a2, a2, a3
+#else
 	bltui	a3, 2, .Lle_one	/* check if the divisor <= 1 */
 
 	mov	a6, a2		/* keep dividend in a6 */
@@ -539,6 +542,7 @@ __udivsi3:
 
 .Lreturn0:
 	movi	a2, 0
+#endif /* XCHAL_HAVE_DIV32 */
 	leaf_return
 	.size	__udivsi3, . - __udivsi3
 
@@ -551,6 +555,9 @@ __udivsi3:
 	.type	__divsi3, @function
 __divsi3:
 	leaf_entry sp, 16
+#if XCHAL_HAVE_DIV32
+	quos	a2, a2, a3
+#else
 	xor	a7, a2, a3	/* sign = dividend ^ divisor */
 	do_abs	a6, a2, a4	/* udividend = abs (dividend) */
 	do_abs	a3, a3, a4	/* udivisor = abs (divisor) */
@@ -610,6 +617,7 @@ __divsi3:
 
 .Lreturn0:
 	movi	a2, 0
+#endif /* XCHAL_HAVE_DIV32 */
 	leaf_return
 	.size	__divsi3, . - __divsi3
 
@@ -622,6 +630,9 @@ __divsi3:
 	.type	__umodsi3, @function
 __umodsi3:
 	leaf_entry sp, 16
+#if XCHAL_HAVE_DIV32
+	remu	a2, a2, a3
+#else
 	bltui	a3, 2, .Lle_one	/* check if the divisor is <= 1 */
 
 	do_nsau	a5, a2, a6, a7	/* dividend_shift = nsau (dividend) */
@@ -664,6 +675,7 @@ __umodsi3:
 
 .Lreturn0:
 	movi	a2, 0
+#endif /* XCHAL_HAVE_DIV32 */
 	leaf_return
 	.size	__umodsi3, . - __umodsi3
 
@@ -676,6 +688,9 @@ __umodsi3:
 	.type	__modsi3, @function
 __modsi3:
 	leaf_entry sp, 16
+#if XCHAL_HAVE_DIV32
+	rems	a2, a2, a3
+#else
 	mov	a7, a2		/* save original (signed) dividend */
 	do_abs	a2, a2, a4	/* udividend = abs (dividend) */
 	do_abs	a3, a3, a4	/* udivisor = abs (divisor) */
@@ -723,10 +738,84 @@ __modsi3:
 
 .Lreturn0:
 	movi	a2, 0
+#endif /* XCHAL_HAVE_DIV32 */
 	leaf_return
 	.size	__modsi3, . - __modsi3
 
 #endif /* L_modsi3 */
+
+
+#ifdef __XTENSA_EB__
+#define uh a2
+#define ul a3
+#else
+#define uh a3
+#define ul a2
+#endif /* __XTENSA_EB__ */
+
+
+#ifdef L_ashldi3
+	.align	4
+	.global	__ashldi3
+	.type	__ashldi3, @function
+__ashldi3:
+	leaf_entry sp, 16
+	ssl	a4
+	bgei	a4, 32, .Llow_only
+	src	uh, uh, ul
+	sll	ul, ul
+	leaf_return
+
+.Llow_only:
+	sll	uh, ul
+	movi	ul, 0
+	leaf_return
+	.size	__ashldi3, . - __ashldi3
+
+#endif /* L_ashldi3 */
+
+
+#ifdef L_ashrdi3
+	.align	4
+	.global	__ashrdi3
+	.type	__ashrdi3, @function
+__ashrdi3:
+	leaf_entry sp, 16
+	ssr	a4
+	bgei	a4, 32, .Lhigh_only
+	src	ul, uh, ul
+	sra	uh, uh
+	leaf_return
+
+.Lhigh_only:
+	sra	ul, uh
+	srai	uh, uh, 31
+	leaf_return
+	.size	__ashrdi3, . - __ashrdi3
+
+#endif /* L_ashrdi3 */
+
+
+#ifdef L_lshrdi3
+	.align	4
+	.global	__lshrdi3
+	.type	__lshrdi3, @function
+__lshrdi3:
+	leaf_entry sp, 16
+	ssr	a4
+	bgei	a4, 32, .Lhigh_only1
+	src	ul, uh, ul
+	srl	uh, uh
+	leaf_return
+
+.Lhigh_only1:
+	srl	ul, uh
+	movi	uh, 0
+	leaf_return
+	.size	__lshrdi3, . - __lshrdi3
+
+#endif /* L_lshrdi3 */
+
 
 #include "ieee754-df.S"
 #include "ieee754-sf.S"

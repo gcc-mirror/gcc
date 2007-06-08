@@ -1,3 +1,11 @@
+2007-06-08  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/lib1funcs.asm (__udivsi3): Use hardware divide
+	instructions if they are supported.
+	(__divsi3, __umodsi3, __modsi3): Likewise.
+	(__ashldi3, __ashrdi3, __lshrdi3): New.
+	* config/xtensa/t-xtensa (LIB1ASMFUNCS): Add DImode shift functions.
+	
 2007-06-08  Harsha Jagasia <harsha.jagasia@amd.com>
             Tony Linthicum <tony.linthicum@amd.com>
 
