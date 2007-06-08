@@ -124,6 +124,7 @@ static TBB eval (struct dom_info *, TBB);
 static void link_roots (struct dom_info *, TBB, TBB);
 static void calc_idoms (struct dom_info *, bool);
 void debug_dominance_info (enum cdi_direction);
+void debug_dominance_tree (enum cdi_direction, basic_block);
 
 /* Keeps track of the*/
 static unsigned n_bbs_in_dom_tree[2];
@@ -970,37 +971,35 @@ void
 verify_dominators (enum cdi_direction dir)
 {
   int err = 0;
-  basic_block *old_dom = XNEWVEC (basic_block, last_basic_block);
-  basic_block bb, imm_bb;
+  basic_block bb, imm_bb, imm_bb_correct;
+  struct dom_info di;
+  bool reverse = (dir == CDI_POST_DOMINATORS) ? true : false;
 
   gcc_assert (dom_info_available_p (dir));
 
-  FOR_EACH_BB (bb)
-    {
-      old_dom[bb->index] = get_immediate_dominator (dir, bb);
-
-      if (!old_dom[bb->index])
-	{
-	  error ("dominator of %d status unknown", bb->index);
-	  err = 1;
-	}
-    }
-
-  free_dominance_info (dir);
-  calculate_dominance_info (dir);
+  init_dom_info (&di, dir);
+  calc_dfs_tree (&di, reverse);
+  calc_idoms (&di, reverse);
 
   FOR_EACH_BB (bb)
     {
       imm_bb = get_immediate_dominator (dir, bb);
-      if (old_dom[bb->index] != imm_bb)
+      if (!imm_bb)
+	{
+	  error ("dominator of %d status unknown", bb->index);
+	  err = 1;
+	}
+
+      imm_bb_correct = di.dfs_to_bb[di.dom[di.dfs_order[bb->index]]];
+      if (imm_bb != imm_bb_correct)
 	{
 	  error ("dominator of %d should be %d, not %d",
-		 bb->index, imm_bb->index, old_dom[bb->index]->index);
+		 bb->index, imm_bb_correct->index, imm_bb->index);
 	  err = 1;
 	}
     }
 
-  free (old_dom);
+  free_dom_info (&di);
   gcc_assert (!err);
 }
 
@@ -1452,4 +1451,42 @@ debug_dominance_info (enum cdi_direction dir)
   FOR_EACH_BB (bb)
     if ((bb2 = get_immediate_dominator (dir, bb)))
       fprintf (stderr, "%i %i\n", bb->index, bb2->index);
+}
+
+/* Prints to stderr representation of the dominance tree (for direction DIR)
+   rooted in ROOT, indented by INDENT tabelators.  If INDENT_FIRST is false,
+   the first line of the output is not indented.  */
+
+static void
+debug_dominance_tree_1 (enum cdi_direction dir, basic_block root,
+			unsigned indent, bool indent_first)
+{
+  basic_block son;
+  unsigned i;
+  bool first = true;
+
+  if (indent_first)
+    for (i = 0; i < indent; i++)
+      fprintf (stderr, "\t");
+  fprintf (stderr, "%d\t", root->index);
+
+  for (son = first_dom_son (dir, root);
+       son;
+       son = next_dom_son (dir, son))
+    {
+      debug_dominance_tree_1 (dir, son, indent + 1, !first);
+      first = false;
+    }
+
+  if (first)
+    fprintf (stderr, "\n");
+}
+
+/* Prints to stderr representation of the dominance tree (for direction DIR)
+   rooted in ROOT.  */
+
+void
+debug_dominance_tree (enum cdi_direction dir, basic_block root)
+{
+  debug_dominance_tree_1 (dir, root, 0, false);
 }

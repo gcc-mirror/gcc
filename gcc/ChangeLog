@@ -1,3 +1,10 @@
+2007-06-08  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR middle-end/32209
+	* dominance.c (debug_dominance_tree, debug_dominance_tree_1): New
+	functions.
+	(verify_dominators): Do not change dominance tree.
+
 2007-06-08  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/constraints.md: New file.
