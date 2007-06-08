@@ -1,5 +1,10 @@
 2007-06-08  Simon Baldwin  <simonb@google.com>
 
+	* reg-stack.c (get_true_reg): Readability change.  Moved default case
+	label into direct switch statement scope.
+
+2007-06-08  Simon Baldwin  <simonb@google.com>
+
 	* tree-flow-inline.h (var_ann): Replaced erroneous '=' assignment
 	in gcc_assert() with '==' comparison.
 

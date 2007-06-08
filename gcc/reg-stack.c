@@ -424,7 +424,6 @@ get_true_reg (rtx *pat)
 						   GET_MODE (*pat));
 	      *pat = FP_MODE_REG (REGNO (subreg) + regno_off,
 				  GET_MODE (subreg));
-	    default:
 	      return pat;
 	    }
 	}
@@ -444,6 +443,9 @@ get_true_reg (rtx *pat)
 	  return pat;
 	pat = & XEXP (*pat, 0);
 	break;
+
+      default:
+	return pat;
       }
 }
 
