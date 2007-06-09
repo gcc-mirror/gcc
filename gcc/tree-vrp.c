@@ -2107,6 +2107,8 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
 	      && is_gimple_val (new_max)
 	      && tree_int_cst_equal (new_min, orig_min)
 	      && tree_int_cst_equal (new_max, orig_max)
+	      && (!is_overflow_infinity (new_min)
+		  || !is_overflow_infinity (new_max))
 	      && compare_values (new_min, new_max) <= 0
 	      && compare_values (new_min, new_max) >= -1)
 	    {
