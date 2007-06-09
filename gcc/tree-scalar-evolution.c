@@ -1056,6 +1056,12 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 	    {
 	      /* Match an assignment under the form: 
 		 "a = b + c".  */
+      
+	      /* We want only assignments of form "name + name" contribute to
+		 LIMIT, as the other cases do not necessarily contribute to
+		 the complexity of the expression.  */
+	      limit++;
+
 	      evol = *evolution_of_loop;
 	      res = follow_ssa_edge 
 		(loop, SSA_NAME_DEF_STMT (rhs0), halting_phi, 
@@ -1141,6 +1147,13 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 	{
 	  /* Match an assignment under the form: 
 	     "a = b - ...".  */
+
+	  /* We want only assignments of form "name - name" contribute to
+	     LIMIT, as the other cases do not necessarily contribute to
+	     the complexity of the expression.  */
+	  if (TREE_CODE (rhs1) == SSA_NAME)
+	    limit++;
+
 	  res = follow_ssa_edge (loop, SSA_NAME_DEF_STMT (rhs0), halting_phi, 
 				 evolution_of_loop, limit);
 	  if (res == t_true)
@@ -1255,6 +1268,10 @@ follow_ssa_edge_in_condition_phi (struct loop *loop,
 
   *evolution_of_loop = evolution_of_branch;
 
+  /* If the phi node is just a copy, do not increase the limit.  */
+  if (PHI_NUM_ARGS (condition_phi) > 1)
+    limit++;
+
   for (i = 1; i < PHI_NUM_ARGS (condition_phi); i++)
     {
       /* Quickly give up when the evolution of one of the branches is
@@ -1338,7 +1355,7 @@ follow_ssa_edge (struct loop *loop, tree def, tree halting_phi,
     return t_false;
   
   /* Give up if the path is longer than the MAX that we allow.  */
-  if (limit++ > PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
+  if (limit > PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
     return t_dont_know;
   
   def_loop = loop_containing_stmt (def);
@@ -1369,7 +1386,7 @@ follow_ssa_edge (struct loop *loop, tree def, tree halting_phi,
       /* Inner loop.  */
       if (flow_loop_nested_p (loop, def_loop))
 	return follow_ssa_edge_inner_loop_phi 
-	  (loop, def, halting_phi, evolution_of_loop, limit);
+	  (loop, def, halting_phi, evolution_of_loop, limit + 1);
 
       /* Outer loop.  */
       return t_false;

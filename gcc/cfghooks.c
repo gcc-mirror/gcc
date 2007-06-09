@@ -646,10 +646,10 @@ merge_blocks (basic_block a, basic_block b)
   if (!cfg_hooks->merge_blocks)
     internal_error ("%s does not support merge_blocks", cfg_hooks->name);
 
+  cfg_hooks->merge_blocks (a, b);
+
   if (current_loops != NULL)
     remove_bb_from_loops (b);
-
-  cfg_hooks->merge_blocks (a, b);
 
   /* Normally there should only be one successor of A and that is B, but
      partway though the merge of blocks for conditional_execution we'll
