@@ -1,3 +1,7 @@
+2007-06-08  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/install.html: Adjust consistently with libstdc++/31717.
+
 2007-06-08  Francesco Palagi  <palagi@arcetri.astro.it>
 
 	* include/std/std_fstream.h: Add Table 92 in comment.
