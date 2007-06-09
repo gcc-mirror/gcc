@@ -70,6 +70,16 @@ enum decl_context
   FIELD,			/* Declaration inside struct or union */
   TYPENAME};			/* Typename (inside cast or sizeof)  */
 
+/* States indicating how grokdeclarator() should handle declspecs marked
+   with __attribute__((deprecated)).  An object declared as
+   __attribute__((deprecated)) suppresses warnings of uses of other
+   deprecated items.  */
+
+enum deprecated_states {
+  DEPRECATED_NORMAL,
+  DEPRECATED_SUPPRESS
+};
+
 
 /* Nonzero if we have seen an invalid cross reference
    to a struct, union, or enum, but not yet printed the message.  */
@@ -398,7 +408,8 @@ static tree lookup_name_in_scope (tree, struct c_scope *);
 static tree c_make_fname_decl (tree, int);
 static tree grokdeclarator (const struct c_declarator *,
 			    struct c_declspecs *,
-			    enum decl_context, bool, tree *);
+			    enum decl_context, bool, tree *,
+			    enum deprecated_states);
 static tree grokparms (struct c_arg_info *, bool);
 static void layout_array_type (tree);
 
@@ -427,17 +438,6 @@ add_stmt (tree t)
   return t;
 }
 
-/* States indicating how grokdeclarator() should handle declspecs marked
-   with __attribute__((deprecated)).  An object declared as
-   __attribute__((deprecated)) suppresses warnings of uses of other
-   deprecated items.  */
-
-enum deprecated_states {
-  DEPRECATED_NORMAL,
-  DEPRECATED_SUPPRESS
-};
-
-static enum deprecated_states deprecated_state = DEPRECATED_NORMAL;
 
 void
 c_print_identifier (FILE *file, tree node, int indent)
@@ -3142,7 +3142,7 @@ groktypename (struct c_type_name *type_name)
   type_name->specs->attrs = NULL_TREE;
 
   type = grokdeclarator (type_name->declarator, type_name->specs, TYPENAME,
-			 false, NULL);
+			 false, NULL, DEPRECATED_NORMAL);
 
   /* Apply attributes.  */
   decl_attributes (&type, attrs, 0);
@@ -3171,6 +3171,7 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 {
   tree decl;
   tree tem;
+  enum deprecated_states deprecated_state = DEPRECATED_NORMAL;
 
   /* An object declared as __attribute__((deprecated)) suppresses
      warnings of uses of other deprecated items.  */
@@ -3178,11 +3179,10 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
     deprecated_state = DEPRECATED_SUPPRESS;
 
   decl = grokdeclarator (declarator, declspecs,
-			 NORMAL, initialized, NULL);
+			 NORMAL, initialized, NULL,
+			 deprecated_state);
   if (!decl)
     return 0;
-
-  deprecated_state = DEPRECATED_NORMAL;
 
   if (warn_main > 0 && TREE_CODE (decl) != FUNCTION_DECL
       && MAIN_NAME_P (DECL_NAME (decl)))
@@ -3669,7 +3669,7 @@ tree
 grokparm (const struct c_parm *parm)
 {
   tree decl = grokdeclarator (parm->declarator, parm->specs, PARM, false,
-			      NULL);
+			      NULL, DEPRECATED_NORMAL);
 
   decl_attributes (&decl, parm->attrs, 0);
 
@@ -3684,7 +3684,8 @@ push_parm_decl (const struct c_parm *parm)
 {
   tree decl;
 
-  decl = grokdeclarator (parm->declarator, parm->specs, PARM, false, NULL);
+  decl = grokdeclarator (parm->declarator, parm->specs, PARM, false, NULL,
+			 DEPRECATED_NORMAL);
   decl_attributes (&decl, parm->attrs, 0);
 
   decl = pushdecl (decl);
@@ -3957,6 +3958,8 @@ warn_variable_length_array (const char *name, tree size)
    INITIALIZED is true if the decl has an initializer.
    WIDTH is non-NULL for bit-fields, and is a pointer to an INTEGER_CST node
    representing the width of the bit-field.
+   DEPRECATED_STATE is a deprecated_states value indicating whether
+   deprecation warnings should be suppressed.
 
    In the TYPENAME case, DECLARATOR is really an absolute declarator.
    It may also be so in the PARM case, for a prototype where the
@@ -3968,7 +3971,8 @@ warn_variable_length_array (const char *name, tree size)
 static tree
 grokdeclarator (const struct c_declarator *declarator,
 		struct c_declspecs *declspecs,
-		enum decl_context decl_context, bool initialized, tree *width)
+		enum decl_context decl_context, bool initialized, tree *width,
+		enum deprecated_states deprecated_state)
 {
   tree type = declspecs->type;
   bool threadp = declspecs->thread_p;
@@ -5445,7 +5449,7 @@ grokfield (struct c_declarator *declarator, struct c_declspecs *declspecs,
     }
 
   value = grokdeclarator (declarator, declspecs, FIELD, false,
-			  width ? &width : NULL);
+			  width ? &width : NULL, DEPRECATED_NORMAL);
 
   finish_decl (value, NULL_TREE, NULL_TREE);
   DECL_INITIAL (value) = width;
@@ -6085,7 +6089,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
      error message in c_finish_bc_stmt.  */
   c_break_label = c_cont_label = size_zero_node;
 
-  decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, true, NULL);
+  decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, true, NULL,
+			  DEPRECATED_NORMAL);
 
   /* If the declarator is not suitable for a function definition,
      cause a syntax error.  */
