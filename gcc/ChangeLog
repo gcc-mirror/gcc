@@ -1,3 +1,11 @@
+2007-06-09  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-scalar-evolution.c (follow_ssa_edge_in_rhs,
+	follow_ssa_edge_in_condition_phi, follow_ssa_edge): Keep more precise
+	track of the size of the expression.
+	* cfghooks.c (merge_blocks): Remove block from loops structure only
+	after call of the merge_blocks hook.
+
 2007-06-09  Tom Tromey  <tromey@redhat.com>
 
 	* c-decl.c (grokdeclarator): Added 'deprecated_state' argument.

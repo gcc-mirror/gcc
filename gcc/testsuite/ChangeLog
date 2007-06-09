@@ -1,3 +1,7 @@
+2007-06-09  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-28.c: New testcase.
+
 2007-06-09  Ian Lance Taylor  <iant@google.com>
 
 	PR tree-optimization/32169
