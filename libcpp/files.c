@@ -228,6 +228,19 @@ open_file (_cpp_file *file)
       close (file->fd);
       file->fd = -1;
     }
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  else if (errno == EACCES)
+    {
+      /* On most UNIX systems, open succeeds on a directory.  Above,
+         we check if we have opened a directory and if so, set errno
+         to ENOENT.  However, on Windows, opening a directory
+         fails with EACCESS.  We want to return ENOENT in that
+         case too.  */
+      if (stat (file->path, &file->st) == 0
+          && S_ISDIR (file->st.st_mode))
+        errno = ENOENT;
+    }
+#endif    
   else if (errno == ENOTDIR)
     errno = ENOENT;
 
