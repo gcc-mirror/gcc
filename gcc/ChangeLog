@@ -1,3 +1,14 @@
+2007-06-09  Tom Tromey  <tromey@redhat.com>
+
+	* c-decl.c (grokdeclarator): Added 'deprecated_state' argument.
+	(deprecated_state): Removed.
+	(start_decl): Update.
+	(enum deprecated_states): Moved earlier.
+	(groktypename): Update.
+	(push_parm_decl): Likewise.
+	(grokfield): Likewise.
+	(start_function): Likewise.
+
 2007-06-09  Ian Lance Taylor  <iant@google.com>
 
 	PR tree-optimization/32169
