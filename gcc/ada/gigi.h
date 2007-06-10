@@ -160,11 +160,11 @@ extern tree maybe_pad_type (tree type, tree size, unsigned int align,
    the value passed against the list of choices.  */
 extern tree choices_to_gnu (tree operand, Node_Id choices);
 
-/* Given a type T, a FIELD_DECL F, and a replacement value R,
-   return a new type with all size expressions that contain F
-   updated by replacing F with R.  This is identical to GCC's
-   substitute_in_type except that it knows about TYPE_INDEX_TYPE.  */
-extern tree gnat_substitute_in_type (tree t, tree f, tree r);
+/* Given a type T, a FIELD_DECL F, and a replacement value R, return a new
+   type with all size expressions that contain F updated by replacing F
+   with R.  If F is NULL_TREE, always make a new RECORD_TYPE, even if
+   nothing has changed.  */
+extern tree substitute_in_type (tree t, tree f, tree r);
 
 /* Return the "RM size" of GNU_TYPE.  This is the actual number of bits
    needed to represent the object.  */

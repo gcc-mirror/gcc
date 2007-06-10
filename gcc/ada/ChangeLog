@@ -1,3 +1,13 @@
+2007-06-10  Duncan Sands  <baldrick@free.fr>
+
+	* decl.c (gnat_to_gnu_entity): Use pointers to dummy nodes, rather
+	than to void, for the fields when making a new fat pointer type.
+	(gnat_substitute_in_type): Now substitute_in_type.
+	* gigi.h (gnat_substitute_in_type): Likewise.
+	* trans.c (gnat_gimplify_expr): Remove COMPONENT_REF kludge.
+	* utils.c (update_pointer_to): Update fat pointers by updating the
+	dummy node pointers used for the fields.
+
 2007-06-06  Thomas Quinot  <quinot@adacore.com>
 	    Bob Duff  <duff@adacore.com>
 
