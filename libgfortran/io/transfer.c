@@ -2268,6 +2268,14 @@ next_record_r (st_parameter_dt *dtp)
 
       break;
     }
+
+  if (dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL
+      && !dtp->u.p.namelist_mode
+      && dtp->u.p.current_unit->endfile == NO_ENDFILE
+      && (file_length (dtp->u.p.current_unit->s) ==
+	 file_position (dtp->u.p.current_unit->s)))
+    dtp->u.p.current_unit->endfile = AT_ENDFILE;
+
 }
 
 
@@ -2742,9 +2750,6 @@ st_read (st_parameter_dt *dtp)
     switch (dtp->u.p.current_unit->endfile)
       {
       case NO_ENDFILE:
-	if (file_length (dtp->u.p.current_unit->s)
-	    == file_position (dtp->u.p.current_unit->s))
-	  dtp->u.p.current_unit->endfile = AT_ENDFILE;
 	break;
 
       case AT_ENDFILE:
