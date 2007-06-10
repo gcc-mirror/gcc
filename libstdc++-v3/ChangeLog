@@ -1,3 +1,8 @@
+2007-06-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/util/testsuite_performance.h: Add cstring include for
+	memset.
+
 2007-06-08  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/install.html: Adjust consistently with libstdc++/31717.
