@@ -1,3 +1,46 @@
+2007-06-10  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-data-ref.c (dr_analyze_alias): Handle case smt is NULL.
+	* tree-predcom.c (mark_virtual_ops_for_renaming): Exported.
+	* tree-ssa-loop-prefetch.c: Include optabs.h.
+	(FENCE_FOLLOWING_MOVNT): New macro.
+	(struct mem_ref): Add independent_p and storent_p fields.
+	(record_ref): Initalize the new fields.
+	(gather_memory_references_ref): Return true if the reference
+	could be analysed.
+	(gather_memory_references): Check whether all memory accesses
+	in loop were recorded.
+	(should_issue_prefetch_p): Return false for nontemporal stores.
+	(nontemporal_store_p, mark_nontemporal_store, emit_mfence_after_loop,
+	may_use_storent_in_loop_p, mark_nontemporal_stores): New functions.
+	(determine_loop_nest_reuse): Detect independent memory references.
+	(loop_prefetch_arrays): Call mark_nontemporal_stores.
+	* tree-flow.h (mark_virtual_ops_for_renaming): Declare.
+	* Makefile.in (tree-ssa-loop-prefetch.o): Add OPTABS_H dependency.
+	* config/i386/i386.h (x86_mfence): Declare.
+	(FENCE_FOLLOWING_MOVNT): Return x86_mfence.
+	* config/i386/i386.c (x86_mfence): New variable.
+	(ix86_init_mmx_sse_builtins): Initialize x86_mfence.
+
+	* tree-pretty-print.c (dump_generic_node): Mark nontemporal stores.
+	* optabs.c (init_optabs): Initialize storent_optab.
+	* optabs.h (enum optab_index): Add OTI_storent.
+	(storent_optab): Declare.
+	* genopinit.c (optabs): Add initialization for storent_optab.
+	* tree.h (MOVE_NONTEMPORAL): New macro.
+	* expr.c (expand_assignment, store_expr, store_constructor_field,
+	store_constructor, store_field, expand_expr_real_1): Propagate
+	nontemporality of the expanded store.
+	(emit_storent_insn): New function.
+	* expr.h (expand_assignment, store_expr): Declaration changed.
+	* function.c (assign_parm_setup_reg): Pass false as nontemporality
+	to expand_assignment.
+	* stmt.c (expand_asm_expr): Ditto.
+	* calls.c (initialize_argument_information): Pass false as
+	nontemporality to store_expr.
+	* config/i386/sse.md (storentv4sf, storentv2df, storentv2di,
+	storentsi): New.
+
 2007-06-09  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-structalias.c (set_uids_in_ptset): Add is_deref'd

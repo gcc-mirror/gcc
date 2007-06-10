@@ -386,6 +386,11 @@ extern int ix86_isa_flags;
 #define TARGET_TLS_DIRECT_SEG_REFS_DEFAULT 0
 #endif
 
+/* Fence to use after loop using storent.  */
+
+extern tree x86_mfence;
+#define FENCE_FOLLOWING_MOVNT x86_mfence
+
 /* Once GDB has been enhanced to deal with functions without frame
    pointers, we can change this to allow for elimination of
    the frame pointer in leaf functions.  */

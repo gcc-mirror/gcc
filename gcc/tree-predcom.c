@@ -1378,7 +1378,7 @@ get_init_expr (chain_p chain, unsigned index)
 
 /* Marks all virtual operands of statement STMT for renaming.  */
 
-static void
+void
 mark_virtual_ops_for_renaming (tree stmt)
 {
   ssa_op_iter iter;

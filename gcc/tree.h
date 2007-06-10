@@ -447,6 +447,8 @@ struct gimple_stmt GTY(())
        EH_FILTER_MUST_NOT_THROW in EH_FILTER_EXPR
        TYPE_REF_CAN_ALIAS_ALL in
            POINTER_TYPE, REFERENCE_TYPE
+       MOVE_NONTEMPORAL in
+	   GIMPLE_MODIFY_STMT
        CASE_HIGH_SEEN in CASE_LABEL_EXPR
 
    public_flag:
@@ -1158,6 +1160,10 @@ extern void omp_clause_range_check_failed (const tree, const char *, int,
    by this type can alias anything.  */
 #define TYPE_REF_CAN_ALIAS_ALL(NODE) \
   (PTR_OR_REF_CHECK (NODE)->base.static_flag)
+
+/* In a MODIFY_EXPR, means that the store in the expression is nontemporal.  */
+#define MOVE_NONTEMPORAL(NODE) \
+  (GIMPLE_MODIFY_STMT_CHECK (NODE)->base.static_flag)
 
 /* In an INTEGER_CST, REAL_CST, COMPLEX_CST, or VECTOR_CST, this means
    there was an overflow in folding.  */

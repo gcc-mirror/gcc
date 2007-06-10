@@ -1114,7 +1114,7 @@ expand_asm_expr (tree exp)
     {
       if (o[i] != TREE_VALUE (tail))
 	{
-	  expand_assignment (o[i], TREE_VALUE (tail));
+	  expand_assignment (o[i], TREE_VALUE (tail), false);
 	  free_temp_slots ();
 
 	  /* Restore the original value so that it's correct the next

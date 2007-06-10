@@ -729,7 +729,7 @@ dr_analyze_alias (struct data_reference *dr)
     }
 
   DR_SYMBOL_TAG (dr) = smt;
-  if (var_can_have_subvars (smt))
+  if (smt && var_can_have_subvars (smt))
     DR_SUBVARS (dr) = get_subvars_for_var (smt);
 
   vops = BITMAP_ALLOC (NULL);

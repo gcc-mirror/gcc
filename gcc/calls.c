@@ -1080,7 +1080,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	      else
 		copy = assign_temp (type, 0, 1, 0);
 
-	      store_expr (args[i].tree_value, copy, 0);
+	      store_expr (args[i].tree_value, copy, 0, false);
 
 	      if (callee_copies)
 		*ecf_flags &= ~(ECF_CONST | ECF_LIBCALL_BLOCK);

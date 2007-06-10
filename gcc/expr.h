@@ -477,13 +477,13 @@ extern void emit_push_insn (rtx, enum machine_mode, tree, rtx, unsigned int,
 			    int, rtx, int, rtx, rtx, int, rtx);
 
 /* Expand an assignment that stores the value of FROM into TO.  */
-extern void expand_assignment (tree, tree);
+extern void expand_assignment (tree, tree, bool);
 
 /* Generate code for computing expression EXP,
    and storing the value into TARGET.
    If SUGGEST_REG is nonzero, copy the value through a register
    and return that register, if that is possible.  */
-extern rtx store_expr (tree, rtx, int);
+extern rtx store_expr (tree, rtx, int, bool);
 
 /* Given an rtx that may include add and multiply operations,
    generate them as insns and return a pseudo-reg containing the value.
