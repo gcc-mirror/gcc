@@ -5201,19 +5201,6 @@ gnat_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
 	  return GS_ALL_DONE;
 	}
 
-      return GS_UNHANDLED;
-
-    case COMPONENT_REF:
-      /* We have a kludge here.  If the FIELD_DECL is from a fat pointer and is
-	 from an early dummy type, replace it with the proper FIELD_DECL.  */
-      if (TYPE_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (*expr_p, 0)))
-	  && DECL_ORIGINAL_FIELD (TREE_OPERAND (*expr_p, 1)))
-	{
-	  TREE_OPERAND (*expr_p, 1)
-	    = DECL_ORIGINAL_FIELD (TREE_OPERAND (*expr_p, 1));
-	  return GS_OK;
-	}
-
       /* ... fall through ... */
 
     default:

@@ -3041,13 +3041,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     && ! Is_Constrained (gnat_desig_rep));
 
 	/* If we are pointing to an incomplete type whose completion is an
-	   unconstrained array, make a fat pointer type instead of a pointer
-	   to VOID.  The two types in our fields will be pointers to VOID and
-	   will be replaced in update_pointer_to.  Similarly, if the type
-	   itself is a dummy type or an unconstrained array.  Also make
-	   a dummy TYPE_OBJECT_RECORD_TYPE in case we have any thin
-	   pointers to it.  */
-
+	   unconstrained array, make a fat pointer type.  The two types in our
+	   fields will be pointers to dummy nodes and will be replaced in
+	   update_pointer_to.  Similarly, if the type itself is a dummy type or
+	   an unconstrained array.  Also make a dummy TYPE_OBJECT_RECORD_TYPE
+	   in case we have any thin pointers to it.  */
 	if (is_unconstrained_array
 	    && (Present (gnat_desig_full)
 		|| (present_gnu_tree (gnat_desig_equiv)
@@ -3075,6 +3073,21 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    gnu_type = TYPE_POINTER_TO (gnu_old);
 	    if (!gnu_type)
 	      {
+		tree gnu_template_type = make_node (ENUMERAL_TYPE);
+		tree gnu_ptr_template = build_pointer_type (gnu_template_type);
+		tree gnu_array_type = make_node (ENUMERAL_TYPE);
+		tree gnu_ptr_array = build_pointer_type (gnu_array_type);
+
+		TYPE_NAME (gnu_template_type)
+		  = concat_id_with_name (get_entity_name (gnat_desig_equiv),
+					 "XUB");
+		TYPE_DUMMY_P (gnu_template_type) = 1;
+
+		TYPE_NAME (gnu_array_type)
+		  = concat_id_with_name (get_entity_name (gnat_desig_equiv),
+					 "XUA");
+		TYPE_DUMMY_P (gnu_array_type) = 1;
+
 		gnu_type = make_node (RECORD_TYPE);
 		SET_TYPE_UNCONSTRAINED_ARRAY (gnu_type, gnu_old);
 		TYPE_POINTER_TO (gnu_old) = gnu_type;
@@ -3084,10 +3097,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  = chainon (chainon (NULL_TREE,
 				      create_field_decl
 				      (get_identifier ("P_ARRAY"),
-				       ptr_void_type_node, gnu_type,
-				       0, 0, 0, 0)),
+				       gnu_ptr_array,
+				       gnu_type, 0, 0, 0, 0)),
 			     create_field_decl (get_identifier ("P_BOUNDS"),
-						ptr_void_type_node,
+						gnu_ptr_template,
 						gnu_type, 0, 0, 0, 0));
 
 		/* Make sure we can place this into a register.  */
@@ -6846,14 +6859,13 @@ compatible_signatures_p (tree ftype1, tree ftype2)
   return 1;
 }
 
-/* Given a type T, a FIELD_DECL F, and a replacement value R, return a new type
-   with all size expressions that contain F updated by replacing F with R.
-   This is identical to GCC's substitute_in_type except that it knows about
-   TYPE_INDEX_TYPE.  If F is NULL_TREE, always make a new RECORD_TYPE, even if
+/* Given a type T, a FIELD_DECL F, and a replacement value R, return a new
+   type with all size expressions that contain F updated by replacing F
+   with R.  If F is NULL_TREE, always make a new RECORD_TYPE, even if
    nothing has changed.  */
 
 tree
-gnat_substitute_in_type (tree t, tree f, tree r)
+substitute_in_type (tree t, tree f, tree r)
 {
   tree new = t;
   tree tem;
@@ -6875,7 +6887,7 @@ gnat_substitute_in_type (tree t, tree f, tree r)
 	  new = build_range_type (TREE_TYPE (t), low, high);
 	  if (TYPE_INDEX_TYPE (t))
 	    SET_TYPE_INDEX_TYPE
-	      (new, gnat_substitute_in_type (TYPE_INDEX_TYPE (t), f, r));
+	      (new, substitute_in_type (TYPE_INDEX_TYPE (t), f, r));
 	  return new;
 	}
 
@@ -6902,7 +6914,7 @@ gnat_substitute_in_type (tree t, tree f, tree r)
       return t;
 
     case COMPLEX_TYPE:
-      tem = gnat_substitute_in_type (TREE_TYPE (t), f, r);
+      tem = substitute_in_type (TREE_TYPE (t), f, r);
       if (tem == TREE_TYPE (t))
 	return t;
 
@@ -6917,8 +6929,8 @@ gnat_substitute_in_type (tree t, tree f, tree r)
 
     case ARRAY_TYPE:
       {
-	tree component = gnat_substitute_in_type (TREE_TYPE (t), f, r);
-	tree domain = gnat_substitute_in_type (TYPE_DOMAIN (t), f, r);
+	tree component = substitute_in_type (TREE_TYPE (t), f, r);
+	tree domain = substitute_in_type (TYPE_DOMAIN (t), f, r);
 
 	if (component == TREE_TYPE (t) && domain == TYPE_DOMAIN (t))
 	  return t;
@@ -6968,7 +6980,7 @@ gnat_substitute_in_type (tree t, tree f, tree r)
 	    tree new_field = copy_node (field);
 
 	    TREE_TYPE (new_field)
-	      = gnat_substitute_in_type (TREE_TYPE (new_field), f, r);
+	      = substitute_in_type (TREE_TYPE (new_field), f, r);
 
 	    if (DECL_HAS_REP_P (field) && !DECL_INTERNAL_P (field))
 	      field_has_rep = true;
