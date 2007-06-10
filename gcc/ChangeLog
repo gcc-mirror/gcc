@@ -1,3 +1,8 @@
+2007-06-09  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-data-ref.c (dr_may_alias_p): Check that decl_a != decl_b,
+	and allow DECL_P here.
+
 2007-06-09  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-scalar-evolution.c (follow_ssa_edge_in_rhs,
