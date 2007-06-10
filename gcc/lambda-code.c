@@ -1616,6 +1616,45 @@ lle_to_gcc_expression (lambda_linear_expression lle,
   return force_gimple_operand (fold (expr), stmts_to_insert, true, resvar);
 }
 
+/* Remove the induction variable defined at IV_STMT.  */
+
+static void
+remove_iv (tree iv_stmt)
+{
+  if (TREE_CODE (iv_stmt) == PHI_NODE)
+    {
+      int i;
+
+      for (i = 0; i < PHI_NUM_ARGS (iv_stmt); i++)
+	{
+	  tree stmt;
+	  imm_use_iterator imm_iter;
+	  tree arg = PHI_ARG_DEF (iv_stmt, i);
+	  bool used = false;
+
+	  if (TREE_CODE (arg) != SSA_NAME)
+	    continue;
+
+	  FOR_EACH_IMM_USE_STMT (stmt, imm_iter, arg)
+	    if (stmt != iv_stmt)
+	      used = true;
+
+	  if (!used)
+	    remove_iv (SSA_NAME_DEF_STMT (arg));
+	}
+
+      remove_phi_node (iv_stmt, NULL_TREE, true);
+    }
+  else
+    {
+      block_stmt_iterator bsi = bsi_for_stmt (iv_stmt);
+
+      bsi_remove (&bsi, true);
+      release_defs (iv_stmt); 
+    }
+}
+
+
 /* Transform a lambda loopnest NEW_LOOPNEST, which had TRANSFORM applied to
    it, back into gcc code.  This changes the
    loops, their induction variables, and their bodies, so that they
@@ -1797,6 +1836,9 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 	    propagate_value (use_p, newiv);
 	  update_stmt (stmt);
 	}
+
+      /* Remove the now unused induction variable.  */
+      remove_iv (oldiv_stmt);
     }
   VEC_free (tree, heap, new_ivs);
 }
