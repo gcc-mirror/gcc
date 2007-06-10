@@ -317,6 +317,38 @@
    (set_attr "prefix_rep" "1")
    (set_attr "mode" "TI")])
 
+; Expand patterns for non-temporal stores.  At the moment, only those
+; that directly map to insns are defined; it would be possible to
+; define patterns for other modes that would expand to several insns.
+
+(define_expand "storentv4sf"
+  [(set (match_operand:V4SF 0 "memory_operand" "=m")
+	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "x")]
+		     UNSPEC_MOVNT))]
+  "TARGET_SSE"
+  "")
+
+(define_expand "storentv2df"
+  [(set (match_operand:V2DF 0 "memory_operand" "=m")
+	(unspec:V2DF [(match_operand:V2DF 1 "register_operand" "x")]
+		     UNSPEC_MOVNT))]
+  "TARGET_SSE2"
+  "")
+
+(define_expand "storentv2di"
+  [(set (match_operand:V2DI 0 "memory_operand" "=m")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "x")]
+		     UNSPEC_MOVNT))]
+  "TARGET_SSE2"
+  "")
+
+(define_expand "storentsi"
+  [(set (match_operand:SI 0 "memory_operand" "=m")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")]
+		   UNSPEC_MOVNT))]
+  "TARGET_SSE2"
+  "")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel single-precision floating point arithmetic

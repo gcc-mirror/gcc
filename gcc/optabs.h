@@ -151,6 +151,8 @@ enum optab_index
   OTI_movstrict,
   /* Move, with a misaligned memory.  */
   OTI_movmisalign,
+  /* Nontemporal store.  */
+  OTI_storent,
 
   /* Unary operations */
   /* Negation */
@@ -367,6 +369,7 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define mov_optab (optab_table[OTI_mov])
 #define movstrict_optab (optab_table[OTI_movstrict])
 #define movmisalign_optab (optab_table[OTI_movmisalign])
+#define storent_optab (optab_table[OTI_storent])
 
 #define neg_optab (optab_table[OTI_neg])
 #define negv_optab (optab_table[OTI_negv])

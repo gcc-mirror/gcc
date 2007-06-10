@@ -5492,6 +5492,8 @@ init_optabs (void)
   movstrict_optab = init_optab (STRICT_LOW_PART);
   cmp_optab = init_optab (COMPARE);
 
+  storent_optab = init_optab (UNKNOWN);
+
   ucmp_optab = init_optab (UNKNOWN);
   tst_optab = init_optab (UNKNOWN);
 

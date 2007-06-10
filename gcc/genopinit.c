@@ -164,6 +164,7 @@ static const char * const optabs[] =
   "mov_optab->handlers[$A].insn_code = CODE_FOR_$(mov$a$)",
   "movstrict_optab->handlers[$A].insn_code = CODE_FOR_$(movstrict$a$)",
   "movmisalign_optab->handlers[$A].insn_code = CODE_FOR_$(movmisalign$a$)",
+  "storent_optab->handlers[$A].insn_code = CODE_FOR_$(storent$a$)",
   "cmp_optab->handlers[$A].insn_code = CODE_FOR_$(cmp$a$)",
   "tst_optab->handlers[$A].insn_code = CODE_FOR_$(tst$a$)",
   "addcc_optab->handlers[$A].insn_code = CODE_FOR_$(add$acc$)",
