@@ -4290,10 +4290,12 @@ shared_bitmap_add (bitmap pt_vars)
 /* Set bits in INTO corresponding to the variable uids in solution set
    FROM, which came from variable PTR.
    For variables that are actually dereferenced, we also use type
-   based alias analysis to prune the points-to sets.  */
+   based alias analysis to prune the points-to sets.
+   IS_DEREFED is true if PTR was directly dereferenced, which we use to
+   help determine whether we are we are allowed to prune using TBAA.  */
 
 static void
-set_uids_in_ptset (tree ptr, bitmap into, bitmap from)
+set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed)
 {
   unsigned int i;
   bitmap_iterator bi;
@@ -4329,7 +4331,7 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from)
 	      if (sft)
 		{
 		  var_alias_set = get_alias_set (sft);
-		  if (!vi->directly_dereferenced
+		  if ((!is_derefed && !vi->directly_dereferenced)
 		      || alias_sets_conflict_p (ptr_alias_set, var_alias_set))
 		    bitmap_set_bit (into, DECL_UID (sft));
 		}
@@ -4343,7 +4345,7 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from)
 	      else
 		{
 		  var_alias_set = get_alias_set (vi->decl);
-		  if (!vi->directly_dereferenced
+		  if ((!is_derefed && !vi->directly_dereferenced)
 		      || alias_sets_conflict_p (ptr_alias_set, var_alias_set))
 		    bitmap_set_bit (into, DECL_UID (vi->decl));
 		}
@@ -4539,14 +4541,17 @@ find_what_p_points_to (tree p)
 	  stats.points_to_sets_created++;
 	  
 	  /* Instead of using pt_anything, we instead merge in the SMT
-	     aliases for the underlying SMT.  */
+	     aliases for the underlying SMT.  In addition, if they
+	     could have pointed to anything, they could point to
+	     global memory.  */
 	  if (was_pt_anything)
 	    {
 	      merge_smts_into (p, finished_solution);
 	      pi->pt_global_mem = 1;
 	    }
 	  
-	  set_uids_in_ptset (vi->decl, finished_solution, vi->solution);
+	  set_uids_in_ptset (vi->decl, finished_solution, vi->solution,
+			     vi->directly_dereferenced);
 	  result = shared_bitmap_lookup (finished_solution);
 
 	  if (!result)
