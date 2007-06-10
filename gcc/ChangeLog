@@ -1,3 +1,9 @@
+2007-06-10  Jan Sjodin  <jan.sjodin@amd.com>
+	    Sebastian Pop  <sebpop@gmail.com>
+
+	* lambda-code.c (remove_iv): New.
+	(lambda_loopnest_to_gcc_loopnest): Use remove_iv.
+
 2007-06-10  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-data-ref.c (dr_analyze_alias): Handle case smt is NULL.
