@@ -1,3 +1,9 @@
+2007-06-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/32235
+	* io/transfer.c (st_read): Remove test for end of file condition.
+	(next_record_r): Add test for end of file condition.
+
 2007-06-02  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure: Regenerate.
