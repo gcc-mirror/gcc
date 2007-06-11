@@ -171,6 +171,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "timevar.h"
 #include "tree-pass.h"
 #include "hashtab.h"
+#include "df.h"
+#include "dbgcnt.h"
 
 /* Propagate flow information through back edges and thus enable PRE's
    moving loop invariant calculations out of loops.
@@ -584,7 +586,7 @@ static void free_pre_mem (void);
 static void compute_pre_data (void);
 static int pre_expr_reaches_here_p (basic_block, struct expr *,
 				    basic_block);
-static void insert_insn_end_bb (struct expr *, basic_block, int);
+static void insert_insn_end_basic_block (struct expr *, basic_block, int);
 static void pre_insert_copy_insn (struct expr *, rtx);
 static void pre_insert_copies (void);
 static int pre_delete (void);
@@ -628,7 +630,7 @@ static bool store_killed_in_insn (rtx, rtx, rtx, int);
 static bool store_killed_after (rtx, rtx, rtx, basic_block, int *, rtx *);
 static bool store_killed_before (rtx, rtx, rtx, basic_block, int *);
 static void build_store_vectors (void);
-static void insert_insn_start_bb (rtx, basic_block);
+static void insert_insn_start_basic_block (rtx, basic_block);
 static int insert_store (struct ls_expr *, edge);
 static void remove_reachable_equiv_notes (basic_block, struct ls_expr *);
 static void replace_store_insn (rtx, rtx, basic_block, struct ls_expr *);
@@ -672,6 +674,9 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
   /* Identify the basic block information for this function, including
      successors and predecessors.  */
   max_gcse_regno = max_reg_num ();
+
+  df_note_add_problem ();
+  df_analyze ();
 
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
@@ -806,7 +811,6 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
 
   /* We are finished with alias.  */
   end_alias_analysis ();
-  allocate_reg_info (max_reg_num (), FALSE, FALSE);
 
   if (!optimize_size && flag_gcse_sm)
     {
@@ -1728,8 +1732,11 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table *table)
 	{
 	  /* An expression is not anticipatable if its operands are
 	     modified before this insn or if this is not the only SET in
-	     this insn.  */
-	  int antic_p = oprs_anticipatable_p (src, insn) && single_set (insn);
+	     this insn.  The latter condition does not have to mean that
+	     SRC itself is not anticipatable, but we just will not be
+	     able to handle code motion of insns with multiple sets.  */
+	  int antic_p = oprs_anticipatable_p (src, insn)
+			&& !multiple_sets (insn);
 	  /* An expression is not available if its operands are
 	     subsequently modified, including this insn.  It's also not
 	     available if this is a branch, because we can't insert
@@ -2670,7 +2677,6 @@ try_replace_reg (rtx from, rtx to, rtx insn)
   if (note != 0 && REG_NOTE_KIND (note) == REG_EQUAL)
     set_unique_reg_note (insn, REG_EQUAL,
 			 simplify_replace_rtx (XEXP (note, 0), from, to));
-
   if (!success && set && reg_mentioned_p (from, SET_SRC (set)))
     {
       /* If above failed and this is a single set, try to simplify the source of
@@ -3095,7 +3101,7 @@ do_local_cprop (rtx x, rtx insn, bool alter_jumps, rtx *libcall_sp)
 	  /* If we find a case where we can't fix the retval REG_EQUAL notes
 	     match the new register, we either have to abandon this replacement
 	     or fix delete_trivially_dead_insns to preserve the setting insn,
-	     or make it delete the REG_EUAQL note, and fix up all passes that
+	     or make it delete the REG_EQUAL note, and fix up all passes that
 	     require the REG_EQUAL note there.  */
 	  bool adjusted;
 
@@ -3164,6 +3170,7 @@ adjust_libcall_notes (rtx oldreg, rtx newval, rtx insn, rtx *libcall_sp)
 	    }
 	}
       XEXP (note, 0) = simplify_replace_rtx (XEXP (note, 0), oldreg, newval);
+      df_notes_rescan (end);
       insn = end;
     }
   return true;
@@ -3214,12 +3221,14 @@ local_cprop_pass (bool alter_jumps)
 
 		  for (reg_used = &reg_use_table[0]; reg_use_count > 0;
 		       reg_used++, reg_use_count--)
-		    if (do_local_cprop (reg_used->reg_rtx, insn, alter_jumps,
-			libcall_sp))
-		      {
-			changed = true;
-			break;
-		      }
+		    {
+		      if (do_local_cprop (reg_used->reg_rtx, insn, alter_jumps,
+					  libcall_sp))
+			{
+			  changed = true;
+			  break;
+			}
+		    }
 		  if (INSN_DELETED_P (insn))
 		    break;
 		}
@@ -3991,7 +4000,7 @@ process_insert_insn (struct expr *expr)
    no sense for code hoisting.  */
 
 static void
-insert_insn_end_bb (struct expr *expr, basic_block bb, int pre)
+insert_insn_end_basic_block (struct expr *expr, basic_block bb, int pre)
 {
   rtx insn = BB_END (bb);
   rtx new_insn;
@@ -4048,7 +4057,7 @@ insert_insn_end_bb (struct expr *expr, basic_block bb, int pre)
 	}
 #endif
       /* FIXME: What if something in cc0/jump uses value set in new insn?  */
-      new_insn = emit_insn_before_noloc (pat, insn);
+      new_insn = emit_insn_before_noloc (pat, insn, bb);
     }
 
   /* Likewise if the last insn is a call, as will happen in the presence
@@ -4087,10 +4096,10 @@ insert_insn_end_bb (struct expr *expr, basic_block bb, int pre)
 	     || NOTE_INSN_BASIC_BLOCK_P (insn))
 	insn = NEXT_INSN (insn);
 
-      new_insn = emit_insn_before_noloc (pat, insn);
+      new_insn = emit_insn_before_noloc (pat, insn, bb);
     }
   else
-    new_insn = emit_insn_after_noloc (pat, insn);
+    new_insn = emit_insn_after_noloc (pat, insn, bb);
 
   while (1)
     {
@@ -4168,7 +4177,7 @@ pre_edge_insert (struct edge_list *edge_list, struct expr **index_map)
 			   now.  */
 
 			if (eg->flags & EDGE_ABNORMAL)
-			  insert_insn_end_bb (index_map[j], bb, 0);
+			  insert_insn_end_basic_block (index_map[j], bb, 0);
 			else
 			  {
 			    insn = process_insert_insn (index_map[j]);
@@ -4438,7 +4447,8 @@ pre_delete (void)
 
 	    /* We only delete insns that have a single_set.  */
 	    if (TEST_BIT (pre_delete_map[bb->index], indx)
-		&& (set = single_set (insn)) != 0)
+		&& (set = single_set (insn)) != 0
+                && dbg_cnt (pre_insn))
 	      {
 		/* Create a pseudo-reg to store the result of reaching
 		   expressions into.  Get the mode for the new pseudo from
@@ -4515,7 +4525,6 @@ pre_gcse (void)
      - we know which insns are redundant when we go to create copies  */
 
   changed = pre_delete ();
-
   did_insert = pre_edge_insert (edge_list, index_map);
 
   /* In other places with reaching expressions, copy the expression to the
@@ -4966,7 +4975,7 @@ hoist_code (void)
 		      occr->deleted_p = 1;
 		      if (!insn_inserted_p)
 			{
-			  insert_insn_end_bb (index_map[i], bb, 0);
+			  insert_insn_end_basic_block (index_map[i], bb, 0);
 			  insn_inserted_p = 1;
 			}
 		    }
@@ -5437,6 +5446,7 @@ update_ld_motion_stores (struct expr * expr)
 	  new = emit_insn_before (copy, insn);
 	  record_one_set (REGNO (reg), new);
 	  SET_SRC (pat) = reg;
+	  df_insn_rescan (insn);
 
 	  /* un-recognize this pattern since it's probably different now.  */
 	  INSN_CODE (insn) = -1;
@@ -5553,8 +5563,10 @@ extract_mentioned_regs_helper (rtx x, rtx accum)
 
     case PRE_DEC:
     case PRE_INC:
+    case PRE_MODIFY:
     case POST_DEC:
     case POST_INC:
+    case POST_MODIFY:
       /* We do not run this function with arguments having side effects.  */
       gcc_unreachable ();
 
@@ -6148,7 +6160,7 @@ build_store_vectors (void)
    the BB_HEAD if needed.  */
 
 static void
-insert_insn_start_bb (rtx insn, basic_block bb)
+insert_insn_start_basic_block (rtx insn, basic_block bb)
 {
   /* Insert at start of successor block.  */
   rtx prev = PREV_INSN (BB_HEAD (bb));
@@ -6164,7 +6176,7 @@ insert_insn_start_bb (rtx insn, basic_block bb)
       before = NEXT_INSN (before);
     }
 
-  insn = emit_insn_after_noloc (insn, prev);
+  insn = emit_insn_after_noloc (insn, prev, bb);
 
   if (dump_file)
     {
@@ -6221,7 +6233,7 @@ insert_store (struct ls_expr * expr, edge e)
 	  int index = EDGE_INDEX (edge_list, tmp->src, tmp->dest);
 	  RESET_BIT (pre_insert_map[index], expr->index);
 	}
-      insert_insn_start_bb (insn, bb);
+      insert_insn_start_basic_block (insn, bb);
       return 0;
     }
 
@@ -6590,7 +6602,6 @@ bypass_jumps (void)
 
   /* We are finished with alias.  */
   end_alias_analysis ();
-  allocate_reg_info (max_reg_num (), FALSE, FALSE);
 
   return changed;
 }
@@ -6645,14 +6656,12 @@ gate_handle_jump_bypass (void)
 static unsigned int
 rest_of_handle_jump_bypass (void)
 {
-  cleanup_cfg (CLEANUP_EXPENSIVE);
-  reg_scan (get_insns (), max_reg_num ());
-
+  delete_unreachable_blocks ();
   if (bypass_jumps ())
     {
-      rebuild_jump_labels (get_insns ());
-      cleanup_cfg (CLEANUP_EXPENSIVE);
       delete_trivially_dead_insns (get_insns (), max_reg_num ());
+      rebuild_jump_labels (get_insns ());
+      cleanup_cfg (0);
     }
   return 0;
 }
@@ -6688,11 +6697,9 @@ rest_of_handle_gcse (void)
 {
   int save_csb, save_cfj;
   int tem2 = 0, tem;
-
   tem = gcse_main (get_insns ());
-  rebuild_jump_labels (get_insns ());
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
-
+  rebuild_jump_labels (get_insns ());
   save_csb = flag_cse_skip_blocks;
   save_cfj = flag_cse_follow_jumps;
   flag_cse_skip_blocks = flag_cse_follow_jumps = 0;
@@ -6702,7 +6709,6 @@ rest_of_handle_gcse (void)
   if (flag_expensive_optimizations)
     {
       timevar_push (TV_CSE);
-      reg_scan (get_insns (), max_reg_num ());
       tem2 = cse_main (get_insns (), max_reg_num ());
       purge_all_dead_edges ();
       delete_trivially_dead_insns (get_insns (), max_reg_num ());
@@ -6716,8 +6722,7 @@ rest_of_handle_gcse (void)
     {
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
-      delete_dead_jumptables ();
-      cleanup_cfg (CLEANUP_EXPENSIVE);
+      cleanup_cfg (0);
       timevar_pop (TV_JUMP);
     }
 
@@ -6739,6 +6744,7 @@ struct tree_opt_pass pass_gcse =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
+  TODO_df_finish |
   TODO_dump_func |
   TODO_verify_flow | TODO_ggc_collect,  /* todo_flags_finish */
   'G'                                   /* letter */

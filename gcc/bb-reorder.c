@@ -85,6 +85,7 @@
 #include "params.h"
 #include "toplev.h"
 #include "tree-pass.h"
+#include "df.h"
 
 #ifndef HAVE_conditional_execution
 #define HAVE_conditional_execution 0
@@ -1607,16 +1608,6 @@ fix_crossing_conditional_branches (void)
 		  last_bb->aux = new_bb;
 		  prev_bb = last_bb;
 		  last_bb = new_bb;
-
-		  /* Update register liveness information.  */
-
-		  new_bb->il.rtl->global_live_at_start = ALLOC_REG_SET (&reg_obstack);
-		  new_bb->il.rtl->global_live_at_end = ALLOC_REG_SET (&reg_obstack);
-		  COPY_REG_SET (new_bb->il.rtl->global_live_at_end,
-				prev_bb->il.rtl->global_live_at_end);
-		  COPY_REG_SET (new_bb->il.rtl->global_live_at_start,
-				prev_bb->il.rtl->global_live_at_end);
-
 		  /* Put appropriate instructions in new bb.  */
 
 		  new_label = gen_label_rtx ();
@@ -1840,10 +1831,7 @@ fix_edges_for_rarely_executed_code (edge *crossing_edges,
      well.  */
 
   if (!HAS_LONG_UNCOND_BRANCH)
-    {
-      fix_crossing_unconditional_branches ();
-      reg_scan (get_insns (), max_reg_num ());
-    }
+    fix_crossing_unconditional_branches ();
 
   add_reg_crossing_jump_notes ();
 }
@@ -2205,13 +2193,11 @@ gate_handle_reorder_blocks (void)
 static unsigned int
 rest_of_handle_reorder_blocks (void)
 {
-  unsigned int liveness_flags;
   basic_block bb;
 
   /* Last attempt to optimize CFG, as scheduling, peepholing and insn
      splitting possibly introduced more crossjumping opportunities.  */
-  liveness_flags = (!HAVE_conditional_execution ? CLEANUP_UPDATE_LIFE : 0);
-  cfg_layout_initialize (CLEANUP_EXPENSIVE | liveness_flags);
+  cfg_layout_initialize (CLEANUP_EXPENSIVE);
 
   if (flag_sched2_use_traces && flag_schedule_insns_after_reload)
     {
@@ -2224,14 +2210,7 @@ rest_of_handle_reorder_blocks (void)
     reorder_basic_blocks ();
   if (flag_reorder_blocks || flag_reorder_blocks_and_partition
       || (flag_sched2_use_traces && flag_schedule_insns_after_reload))
-    cleanup_cfg (CLEANUP_EXPENSIVE | liveness_flags);
-
-  /* On conditional execution targets we can not update the life cheaply, so
-     we deffer the updating to after both cleanups.  This may lose some cases
-     but should not be terribly bad.  */
-  if (HAVE_conditional_execution)
-    update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
-		      PROP_DEATH_NOTES);
+    cleanup_cfg (CLEANUP_EXPENSIVE);
 
   FOR_EACH_BB (bb)
     if (bb->next_bb != EXIT_BLOCK_PTR)
@@ -2279,9 +2258,6 @@ rest_of_handle_partition_blocks (void)
 {
   no_new_pseudos = 0;
   partition_hot_cold_basic_blocks ();
-  allocate_reg_life_data ();
-  update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
-		    PROP_LOG_LINKS | PROP_REG_INFO | PROP_DEATH_NOTES);
   no_new_pseudos = 1;
   return 0;
 }

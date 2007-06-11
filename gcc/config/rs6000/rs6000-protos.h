@@ -42,6 +42,7 @@ extern bool invalid_e500_subreg (rtx, enum machine_mode);
 extern void validate_condition_mode (enum rtx_code, enum machine_mode);
 extern bool legitimate_constant_pool_address_p (rtx);
 extern bool legitimate_indirect_address_p (rtx, int);
+extern bool legitimate_indexed_address_p (rtx, int);
 
 extern rtx rs6000_got_register (rtx);
 extern rtx find_addr_reg (rtx);

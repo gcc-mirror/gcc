@@ -126,6 +126,10 @@ static rtx expand_parity (enum machine_mode, rtx, rtx);
 static enum rtx_code get_rtx_code (enum tree_code, bool);
 static rtx vector_compare_rtx (tree, bool, enum insn_code);
 
+/* Current libcall id.  It doesn't matter what these are, as long
+   as they are unique to each libcall that is emitted.  */
+static HOST_WIDE_INT libcall_id = 0;
+
 #ifndef HAVE_conditional_trap
 #define HAVE_conditional_trap 0
 #define gen_conditional_trap(a,b) (gcc_unreachable (), NULL_RTX)
@@ -3383,7 +3387,7 @@ no_conflict_move_test (rtx dest, rtx set, void *p0)
    logically equivalent to EQUIV, so it gets manipulated as a unit if it
    is possible to do so.  */
 
-static void
+void
 maybe_encapsulate_block (rtx first, rtx last, rtx equiv)
 {
   if (!flag_non_call_exceptions || !may_trap_p (equiv))
@@ -3407,6 +3411,12 @@ maybe_encapsulate_block (rtx first, rtx last, rtx equiv)
 						 REG_NOTES (first));
 	  REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first,
 						REG_NOTES (last));
+	  next = NEXT_INSN (last);
+	  for (insn = first; insn != next; insn = NEXT_INSN (insn))
+	    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LIBCALL_ID,
+	    				          GEN_INT (libcall_id),
+						  REG_NOTES (insn));
+	  libcall_id++;
 	}
     }
 }
@@ -3466,6 +3476,8 @@ emit_no_conflict_block (rtx insns, rtx target, rtx op0, rtx op1, rtx equiv)
       if ((note = find_reg_note (insn, REG_LIBCALL, NULL)) != NULL)
 	remove_note (insn, note);
       if ((note = find_reg_note (insn, REG_RETVAL, NULL)) != NULL)
+	remove_note (insn, note);
+      if ((note = find_reg_note (insn, REG_LIBCALL_ID, NULL)) != NULL)
 	remove_note (insn, note);
 
       data.target = target;
@@ -3561,7 +3573,6 @@ emit_no_conflict_block (rtx insns, rtx target, rtx op0, rtx op1, rtx equiv)
 
    Except for the first group of insns (the ones setting pseudos), the
    block is delimited by REG_RETVAL and REG_LIBCALL notes.  */
-
 void
 emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
 {
@@ -3619,6 +3630,8 @@ emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
       if ((note = find_reg_note (insn, REG_LIBCALL, NULL)) != NULL)
 	remove_note (insn, note);
       if ((note = find_reg_note (insn, REG_RETVAL, NULL)) != NULL)
+	remove_note (insn, note);
+      if ((note = find_reg_note (insn, REG_LIBCALL_ID, NULL)) != NULL)
 	remove_note (insn, note);
 
       next = NEXT_INSN (insn);

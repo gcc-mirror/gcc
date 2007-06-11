@@ -54,6 +54,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-pass.h"
 #include "cfgloop.h"
 #include "expr.h"
+#include "df.h"
+#include "dce.h"
 
 #define FORWARDER_BLOCK_P(BB) ((BB)->flags & BB_FORWARDER_BLOCK)
 
@@ -70,7 +72,7 @@ static void merge_blocks_move_successor_nojumps (basic_block, basic_block);
 static bool try_optimize_cfg (int);
 static bool try_simplify_condjump (basic_block);
 static bool try_forward_edges (int, basic_block);
-static edge thread_jump (int, edge, basic_block);
+static edge thread_jump (edge, basic_block);
 static bool mark_effect (rtx, bitmap);
 static void notice_new_block (basic_block);
 static void update_forwarder_flag (basic_block);
@@ -260,7 +262,7 @@ mentions_nonequal_regs (rtx *x, void *data)
    if exist, NULL otherwise.  */
 
 static edge
-thread_jump (int mode, edge e, basic_block b)
+thread_jump (edge e, basic_block b)
 {
   rtx set1, set2, cond1, cond2, insn;
   enum rtx_code code1, code2, reversed_code2;
@@ -380,11 +382,6 @@ thread_jump (int mode, edge e, basic_block b)
   if (for_each_rtx (&cond2, mentions_nonequal_regs, nonequal))
     goto failed_exit;
 
-  /* In case liveness information is available, we need to prove equivalence
-     only of the live values.  */
-  if (mode & CLEANUP_UPDATE_LIFE)
-    AND_REG_SET (nonequal, b->il.rtl->global_live_at_end);
-
   EXECUTE_IF_SET_IN_REG_SET (nonequal, 0, i, rsi)
     goto failed_exit;
 
@@ -431,7 +428,7 @@ try_forward_edges (int mode, basic_block b)
       int counter;
       bool threaded = false;
       int nthreaded_edges = 0;
-      bool may_thread = first_pass | (b->flags & BB_DIRTY);
+      bool may_thread = first_pass | df_get_bb_dirty (b);
 
       /* Skip complex edges because we don't know how to update them.
 
@@ -465,7 +462,7 @@ try_forward_edges (int mode, basic_block b)
 	{
 	  basic_block new_target = NULL;
 	  bool new_target_threaded = false;
-	  may_thread |= target->flags & BB_DIRTY;
+	  may_thread |= df_get_bb_dirty (target);
 
 	  if (FORWARDER_BLOCK_P (target)
 	      && !(single_succ_edge (target)->flags & EDGE_CROSSING)
@@ -481,7 +478,7 @@ try_forward_edges (int mode, basic_block b)
 	     of probabilities.  */
 	  else if ((mode & CLEANUP_THREADING) && may_thread)
 	    {
-	      edge t = thread_jump (mode, e, target);
+	      edge t = thread_jump (e, target);
 	      if (t)
 		{
 		  if (!threaded_edges)
@@ -644,7 +641,7 @@ merge_blocks_move_predecessor_nojumps (basic_block a, basic_block b)
   /* Scramble the insn chain.  */
   if (BB_END (a) != PREV_INSN (BB_HEAD (b)))
     reorder_insns_nobb (BB_HEAD (a), BB_END (a), PREV_INSN (BB_HEAD (b)));
-  a->flags |= BB_DIRTY;
+  df_set_bb_dirty (a);
 
   if (dump_file)
     fprintf (dump_file, "Moved block %d before %d and merged.\n",
@@ -1707,7 +1704,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
   redirect_to->count += src1->count;
   redirect_to->frequency += src1->frequency;
   /* We may have some registers visible through the block.  */
-  redirect_to->flags |= BB_DIRTY;
+  df_set_bb_dirty (redirect_to);
 
   /* Recompute the frequencies and counts of outgoing edges.  */
   FOR_EACH_EDGE (s, ei, redirect_to->succs)
@@ -1856,8 +1853,8 @@ try_crossjump_bb (int mode, basic_block bb)
 	  /* If nothing changed since the last attempt, there is nothing
 	     we can do.  */
 	  if (!first_pass
-	      && (!(e->src->flags & BB_DIRTY)
-		  && !(fallthru->src->flags & BB_DIRTY)))
+	      && (!(df_get_bb_dirty (e->src))
+		  && !(df_get_bb_dirty (fallthru->src))))
 	    continue;
 
 	  if (try_crossjump_to_edge (mode, e, fallthru))
@@ -1906,8 +1903,8 @@ try_crossjump_bb (int mode, basic_block bb)
 	  /* If nothing changed since the last attempt, there is nothing
 	     we can do.  */
 	  if (!first_pass
-	      && (!(e->src->flags & BB_DIRTY)
-		  && !(e2->src->flags & BB_DIRTY)))
+	      && (!(df_get_bb_dirty (e->src))
+		  && !(df_get_bb_dirty (e2->src))))
 	    continue;
 
 	  if (try_crossjump_to_edge (mode, e, e2))
@@ -1937,7 +1934,7 @@ try_optimize_cfg (int mode)
   if (mode & CLEANUP_CROSSJUMP)
     add_noreturn_fake_exit_edges ();
 
-  if (mode & (CLEANUP_UPDATE_LIFE | CLEANUP_CROSSJUMP | CLEANUP_THREADING))
+  if (mode & (CLEANUP_CROSSJUMP | CLEANUP_THREADING))
     clear_bb_flags ();
 
   FOR_EACH_BB (bb)
@@ -2000,7 +1997,7 @@ try_optimize_cfg (int mode)
 		  rtx label = BB_HEAD (b);
 
 		  delete_insn_chain (label, label, false);
-		  /* In the case label is undeletable, move it after the
+		  /* If the case label is undeletable, move it after the
 		     BASIC_BLOCK note.  */
 		  if (NOTE_KIND (BB_HEAD (b)) == NOTE_INSN_DELETED_LABEL)
 		    {
@@ -2166,6 +2163,47 @@ delete_unreachable_blocks (void)
     tidy_fallthru_edges ();
   return changed;
 }
+
+/* Delete any jump tables never referenced.  We can't delete them at the
+   time of removing tablejump insn as they are referenced by the preceding
+   insns computing the destination, so we delay deleting and garbagecollect
+   them once life information is computed.  */
+void
+delete_dead_jumptables (void)
+{
+  basic_block bb;
+
+  /* A dead jump table does not belong to any basic block.  Scan insns
+     between two adjacent basic blocks.  */
+  FOR_EACH_BB (bb)
+    {
+      rtx insn, next;
+
+      for (insn = NEXT_INSN (BB_END (bb));
+	   insn && !NOTE_INSN_BASIC_BLOCK_P (insn);
+	   insn = next)
+	{
+	  next = NEXT_INSN (insn);
+	  if (LABEL_P (insn)
+	      && LABEL_NUSES (insn) == LABEL_PRESERVE_P (insn)
+	      && JUMP_P (next)
+	      && (GET_CODE (PATTERN (next)) == ADDR_VEC
+		  || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
+	    {
+	      rtx label = insn, jump = next;
+
+	      if (dump_file)
+		fprintf (dump_file, "Dead jumptable %i removed\n",
+			 INSN_UID (insn));
+
+	      next = NEXT_INSN (next);
+	      delete_insn (jump);
+	      delete_insn (label);
+	    }
+	}
+    }
+}
+
 
 /* Tidy the CFG by deleting unreachable code and whatnot.  */
 
@@ -2186,7 +2224,7 @@ cleanup_cfg (int mode)
       changed = true;
       /* We've possibly created trivially dead code.  Cleanup it right
 	 now to introduce more opportunities for try_optimize_cfg.  */
-      if (!(mode & (CLEANUP_NO_INSN_DEL | CLEANUP_UPDATE_LIFE))
+      if (!(mode & (CLEANUP_NO_INSN_DEL))
 	  && !reload_completed)
 	delete_trivially_dead_insns (get_insns (), max_reg_num ());
     }
@@ -2196,38 +2234,25 @@ cleanup_cfg (int mode)
   while (try_optimize_cfg (mode))
     {
       delete_unreachable_blocks (), changed = true;
-      if (mode & CLEANUP_UPDATE_LIFE)
-	{
-	  /* Cleaning up CFG introduces more opportunities for dead code
-	     removal that in turn may introduce more opportunities for
-	     cleaning up the CFG.  */
-	  if (!update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL_RM_NOTES,
-						 PROP_DEATH_NOTES
-						 | PROP_SCAN_DEAD_CODE
-						 | PROP_KILL_DEAD_CODE
-						 | ((mode & CLEANUP_LOG_LINKS)
-						    ? PROP_LOG_LINKS : 0)))
-	    break;
-	}
-      else if (!(mode & CLEANUP_NO_INSN_DEL)
-	       && (mode & CLEANUP_EXPENSIVE)
-	       && !reload_completed)
+      if (!(mode & CLEANUP_NO_INSN_DEL)
+	  && (mode & CLEANUP_EXPENSIVE)
+	  && !reload_completed)
 	{
 	  if (!delete_trivially_dead_insns (get_insns (), max_reg_num ()))
 	    break;
 	}
       else
 	break;
-
-      /* Don't call delete_dead_jumptables in cfglayout mode, because
-	 that function assumes that jump tables are in the insns stream.
-	 But we also don't _have_ to delete dead jumptables in cfglayout
-	 mode because we shouldn't even be looking at things that are
-	 not in a basic block.  Dead jumptables are cleaned up when
-	 going out of cfglayout mode.  */
-      if (!(mode & CLEANUP_CFGLAYOUT))
-	delete_dead_jumptables ();
     }
+
+  /* Don't call delete_dead_jumptables in cfglayout mode, because
+     that function assumes that jump tables are in the insns stream.
+     But we also don't _have_ to delete dead jumptables in cfglayout
+     mode because we shouldn't even be looking at things that are
+     not in a basic block.  Dead jumptables are cleaned up when
+     going out of cfglayout mode.  */
+  if (!(mode & CLEANUP_CFGLAYOUT))
+    delete_dead_jumptables ();
 
   timevar_pop (TV_CLEANUP_CFG);
 
@@ -2267,7 +2292,6 @@ static unsigned int
 rest_of_handle_jump2 (void)
 {
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
-  reg_scan (get_insns (), max_reg_num ());
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
   cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0)

@@ -1,0 +1,84 @@
+/* This file contains the list of the debug counter for GCC.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING.  If not, write to the Free
+Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.  */
+
+
+/* A debug counter provides you a way to count an event
+   and return false after the counter has exceeded the threshold
+   specified by the option.
+
+   What is it used for ?
+
+   This is primarily used to speed up the search for the bad transformation
+   an optimization pass does. By doing a binary search on N,
+   you can quickly narrow down to one transformation
+   which is bad, or which triggers the bad behavior downstream
+   (usually in the form of the badly generated code).
+
+   How does it work ?
+
+   Everytime dbg_cnt(named-counter) is called,
+   the counter is incremented for the named-counter.
+   And the incremented value is compared against the threshold (limit)
+   specified by the option.
+   dbg_cnt () returns true if it is at or below threshold, and false if above.
+
+   How to add a new one ?
+
+   To add a new counter, simply add an entry below with some descriptive name,
+   and add call(s) to dbg_cnt(your-counter-name) in appropriate places.
+   Usually, you want to control at the finest granularity
+   any particular transformation can happen.
+   e.g. for each instruction in a dead code elimination,
+   or for each copy instruction in register coalescing,
+   or constant-propagation for each insn,
+   or a block straightening, etc.
+   See dce.c for an example. With the dbg_cnt () call in dce.c,
+   now a developer can use -fdbg-cnt=dce:N
+   to stop doing the dead code elimination after N times.
+
+   How to use it ?
+
+   By default, all limits are UINT_MAX.
+   Since debug count is unsigned int, <= UINT_MAX returns true always.
+   i.e.  dbg_cnt() returns true always regardless of the counter value
+   (although it still counts the event).
+   Use -fdbg-cnt=counter1:N,counter2:M,...
+   which sets the limit for counter1 to N, and the limit for counter2 to M, etc.
+   e.g. setting a limit to zero will make dbg_cnt () return false *always*.
+*/
+
+/* Debug counter definitions.  */
+DEBUG_COUNTER (auto_inc_dec)
+DEBUG_COUNTER (cse2_move2add)
+DEBUG_COUNTER (dce)
+DEBUG_COUNTER (delete_trivial_dead)
+DEBUG_COUNTER (dse)
+DEBUG_COUNTER (gcse2_delete)
+DEBUG_COUNTER (ia64_sched2)
+DEBUG_COUNTER (local_alloc_for_sched)
+DEBUG_COUNTER (postreload_cse)
+DEBUG_COUNTER (pre_insn)
+DEBUG_COUNTER (sched2_func)
+DEBUG_COUNTER (sched_block)
+DEBUG_COUNTER (sched_func)
+DEBUG_COUNTER (sched_insn)
+DEBUG_COUNTER (sched_region)
+DEBUG_COUNTER (split_for_sched2)
+DEBUG_COUNTER (tail_call)

@@ -46,39 +46,88 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 extern int max_regno;
 
-/* Register information indexed by register number */
-typedef struct reg_info_def
-{				/* fields set by reg_scan */
-  int first_uid;		/* UID of first insn to use (REG n) */
-  int last_uid;			/* UID of last insn to use (REG n) */
+/* REG_N_REFS and REG_N_SETS are initialized by a call to
+   regstat_init_n_sets_and_refs from the current values of
+   DF_REG_DEF_COUNT and DF_REG_USE_COUNT.  REG_N_REFS and REG_N_SETS
+   should only be used if a pass need to change these values in some
+   magical way or or the pass needs to have accurate values for these
+   and is not using incremental df scanning.
 
-				/* fields set by reg_scan & flow_analysis */
+   At the end of a pass that uses REG_N_REFS and REG_N_SETS, a call
+   should be made to regstat_free_n_sets_and_refs.  
+
+   Local alloc seems to play pretty loose with these values.
+   REG_N_REFS is set to 0 if the register is used in an asm.
+   Furthermore, local_alloc calls regclass to hack both REG_N_REFS and
+   REG_N_SETS for three address insns.  Other passes seem to have
+   other special values.  */
+
+
+
+/* Structure to hold values for REG_N_SETS (i) and REG_N_REFS (i). */
+
+struct regstat_n_sets_and_refs_t
+{
   int sets;			/* # of times (REG n) is set */
-
-				/* fields set by flow_analysis */
   int refs;			/* # of times (REG n) is used or set */
+};
+
+extern struct regstat_n_sets_and_refs_t *regstat_n_sets_and_refs;
+
+/* Indexed by n, gives number of times (REG n) is used or set.  */
+static inline int
+REG_N_REFS(int regno)
+{
+  return regstat_n_sets_and_refs[regno].refs;
+}
+
+/* Indexed by n, gives number of times (REG n) is used or set.  */
+#define SET_REG_N_REFS(N,V) (regstat_n_sets_and_refs[N].refs = V)
+#define INC_REG_N_REFS(N,V) (regstat_n_sets_and_refs[N].refs += V)
+
+/* Indexed by n, gives number of times (REG n) is set.  */
+static inline int
+REG_N_SETS (int regno)
+{
+  return regstat_n_sets_and_refs[regno].sets;
+}
+
+/* Indexed by n, gives number of times (REG n) is set.  */
+#define SET_REG_N_SETS(N,V) (regstat_n_sets_and_refs[N].sets = V)
+#define INC_REG_N_SETS(N,V) (regstat_n_sets_and_refs[N].sets += V)
+
+
+/* Functions defined in reg-stat.c.  */
+extern void regstat_init_n_sets_and_refs (void);
+extern void regstat_free_n_sets_and_refs (void);
+extern void regstat_compute_ri (void);
+extern void regstat_free_ri (void);
+extern bitmap regstat_get_setjmp_crosses (void);
+extern void regstat_compute_calls_crossed (void);
+extern void regstat_free_calls_crossed (void);
+
+
+/* Register information indexed by register number.  This structure is
+   initialized by calling regstat_compute_ri and is destroyed by
+   calling regstat_free_ri.  */
+struct reg_info_t
+{
   int freq;			/* # estimated frequency (REG n) is used or set */
   int deaths;			/* # of times (REG n) dies */
   int live_length;		/* # of instructions (REG n) is live */
   int calls_crossed;		/* # of calls (REG n) is live across */
   int throw_calls_crossed;	/* # of calls that may throw (REG n) is live across */
   int basic_block;		/* # of basic blocks (REG n) is used in */
-} reg_info;
+};
 
-typedef reg_info *reg_info_p;
+extern struct reg_info_t *reg_info_p;
 
-DEF_VEC_P(reg_info_p);
-DEF_VEC_ALLOC_P(reg_info_p,heap);
-
-extern VEC(reg_info_p,heap) *reg_n_info;
-
-/* Indexed by n, gives number of times (REG n) is used or set.  */
-
-#define REG_N_REFS(N) (VEC_index (reg_info_p, reg_n_info, N)->refs)
+/* The number allocated elements of reg_info_p.  */
+extern size_t reg_info_p_size;
 
 /* Estimate frequency of references to register N.  */
 
-#define REG_FREQ(N) (VEC_index (reg_info_p, reg_n_info, N)->freq)
+#define REG_FREQ(N) (reg_info_p[N].freq)
 
 /* The weights for each insn varries from 0 to REG_FREQ_BASE.
    This constant does not need to be high, as in infrequently executed
@@ -98,19 +147,13 @@ extern VEC(reg_info_p,heap) *reg_n_info;
 			      ? ((bb)->frequency * REG_FREQ_MAX / BB_FREQ_MAX)\
 			      : 1)
 
-/* Indexed by n, gives number of times (REG n) is set.
-   ??? both regscan and flow allocate space for this.  We should settle
-   on just copy.  */
-
-#define REG_N_SETS(N) (VEC_index (reg_info_p, reg_n_info, N)->sets)
-
 /* Indexed by N, gives number of insns in which register N dies.
    Note that if register N is live around loops, it can die
    in transitions between basic blocks, and that is not counted here.
    So this is only a reliable indicator of how many regions of life there are
    for registers that are contained in one basic block.  */
 
-#define REG_N_DEATHS(N) (VEC_index (reg_info_p, reg_n_info, N)->deaths)
+#define REG_N_DEATHS(N) (reg_info_p[N].deaths)
 
 /* Get the number of consecutive words required to hold pseudo-reg N.  */
 
@@ -129,20 +172,19 @@ extern VEC(reg_info_p,heap) *reg_n_info;
 
 /* Indexed by N, gives number of CALL_INSNS across which (REG n) is live.  */
 
-#define REG_N_CALLS_CROSSED(N)					\
-  (VEC_index (reg_info_p, reg_n_info, N)->calls_crossed)
+#define REG_N_CALLS_CROSSED(N)  (reg_info_p[N].calls_crossed)
 
 /* Indexed by N, gives number of CALL_INSNS that may throw, across which
    (REG n) is live.  */
 
-#define REG_N_THROWING_CALLS_CROSSED(N) \
-  (VEC_index (reg_info_p, reg_n_info, N)->throw_calls_crossed)
+#define REG_N_THROWING_CALLS_CROSSED(N) (reg_info_p[N].throw_calls_crossed)
 
-/* Total number of instructions at which (REG n) is live.
-   The larger this is, the less priority (REG n) gets for
-   allocation in a hard register (in global-alloc).
-   This is set in flow.c and remains valid for the rest of the compilation
-   of the function; it is used to control register allocation.
+/* Total number of instructions at which (REG n) is live.  The larger
+   this is, the less priority (REG n) gets for allocation in a hard
+   register (in global-alloc).  This is set in df-problems.c whenever
+   register info is requested and remains valid for the rest of the
+   compilation of the function; it is used to control register
+   allocation.
 
    local-alloc.c may alter this number to change the priority.
 
@@ -153,8 +195,19 @@ extern VEC(reg_info_p,heap) *reg_n_info;
    is not required.  global.c makes an allocno for this but does
    not try to assign a hard register to it.  */
 
-#define REG_LIVE_LENGTH(N)				\
-  (VEC_index (reg_info_p, reg_n_info, N)->live_length)
+#define REG_LIVE_LENGTH(N)  (reg_info_p[N].live_length)
+
+/* Indexed by n, gives number of basic block that  (REG n) is used in.
+   If the value is REG_BLOCK_GLOBAL (-1),
+   it means (REG n) is used in more than one basic block.
+   REG_BLOCK_UNKNOWN (0) means it hasn't been seen yet so we don't know.
+   This information remains valid for the rest of the compilation
+   of the current function; it is used to control register allocation.  */
+
+#define REG_BLOCK_UNKNOWN 0
+#define REG_BLOCK_GLOBAL -1
+
+#define REG_BASIC_BLOCK(N) (reg_info_p[N].basic_block)
 
 /* Vector of substitutions of register numbers,
    used to map pseudo regs into hardware regs.
@@ -164,14 +217,6 @@ extern VEC(reg_info_p,heap) *reg_n_info;
    in the machine dependent files access it.  */
 
 extern short *reg_renumber;
-
-/* Vector indexed by hardware reg saying whether that reg is ever used.  */
-
-extern char regs_ever_live[FIRST_PSEUDO_REGISTER];
-
-/* Like regs_ever_live, but saying whether reg is set by asm statements.  */
-
-extern char regs_asm_clobbered[FIRST_PSEUDO_REGISTER];
 
 /* Vector indexed by machine mode saying whether there are regs of that mode.  */
 
@@ -183,25 +228,6 @@ extern bool have_regs_of_mode [MAX_MACHINE_MODE];
    register.  */
 
 extern enum machine_mode reg_raw_mode[FIRST_PSEUDO_REGISTER];
-
-/* Vector indexed by regno; gives uid of first insn using that reg.
-   This is computed by reg_scan for use by cse and loop.
-   It is sometimes adjusted for subsequent changes during loop,
-   but not adjusted by cse even if cse invalidates it.  */
-
-#define REGNO_FIRST_UID(N) (VEC_index (reg_info_p, reg_n_info, N)->first_uid)
-
-/* Vector indexed by regno; gives uid of last insn using that reg.
-   This is computed by reg_scan for use by cse and loop.
-   It is sometimes adjusted for subsequent changes during loop,
-   but not adjusted by cse even if cse invalidates it.
-   This is harmless since cse won't scan through a loop end.  */
-
-#define REGNO_LAST_UID(N) (VEC_index (reg_info_p, reg_n_info, N)->last_uid)
-
-/* List made of EXPR_LIST rtx's which gives pairs of pseudo registers
-   that have to go in the same hard reg.  */
-extern rtx regs_may_share;
 
 /* Flag set by local-alloc or global-alloc if they decide to allocate
    something in a call-clobbered register.  */
@@ -233,12 +259,6 @@ extern int caller_save_needed;
 #ifndef HARD_REGNO_CALL_PART_CLOBBERED
 #define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE) 0
 #endif
-
-/* Allocate reg_n_info tables */
-extern void allocate_reg_info (size_t, int, int);
-
-/* Clear the register information for regno.  */
-extern void clear_reg_info_regno (unsigned int);
 
 /* Specify number of hard registers given machine mode occupy.  */
 extern unsigned char hard_regno_nregs[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];

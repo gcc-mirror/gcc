@@ -43,6 +43,7 @@ Boston, MA 02110-1301, USA.  */
 #include "target-def.h"
 #include "debug.h"
 #include "flags.h"
+#include "df.h"
 
 enum reg_class regno_reg_class[] =
 {
@@ -818,7 +819,7 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
      if they are live or when calling nested functions.  */
   if (interrupt_handler)
     {
-      if (regs_ever_live[regno])
+      if (df_regs_ever_live_p (regno))
 	return true;
 
       if (!current_function_is_leaf && call_used_regs[regno])
@@ -826,7 +827,7 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
     }
 
   /* Never need to save registers that aren't touched.  */
-  if (!regs_ever_live[regno])
+  if (!df_regs_ever_live_p (regno))
     return false;
 
   /* Otherwise save everything that isn't call-clobbered.  */
@@ -1037,12 +1038,7 @@ m68k_expand_prologue (void)
   if (flag_pic
       && !TARGET_SEP_DATA
       && current_function_uses_pic_offset_table)
-    {
-      insn = emit_insn (gen_load_got (pic_offset_table_rtx));
-      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD,
-					    const0_rtx,
-					    REG_NOTES (insn));
-    }
+    insn = emit_insn (gen_load_got (pic_offset_table_rtx));
 }
 
 /* Return true if a simple (return) instruction is sufficient for this
@@ -4143,7 +4139,6 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   /* Pretend to be a post-reload pass while generating rtl.  */
   no_new_pseudos = 1;
   reload_completed = 1;
-  allocate_reg_info (FIRST_PSEUDO_REGISTER, true, true);
 
   /* The "this" pointer is stored at 4(%sp).  */
   this_slot = gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, 4));
@@ -4198,7 +4193,7 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	  /* Use the static chain register as a temporary (call-clobbered)
 	     GOT pointer for this function.  We can use the static chain
 	     register because it isn't live on entry to the thunk.  */
-	  REGNO (pic_offset_table_rtx) = STATIC_CHAIN_REGNUM;
+	  SET_REGNO (pic_offset_table_rtx, STATIC_CHAIN_REGNUM);
 	  emit_insn (gen_load_got (pic_offset_table_rtx));
 	}
       legitimize_pic_address (XEXP (mem, 0), Pmode, static_chain_rtx);
@@ -4220,7 +4215,7 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 
   /* Restore the original PIC register.  */
   if (flag_pic)
-    REGNO (pic_offset_table_rtx) = PIC_REG;
+    SET_REGNO (pic_offset_table_rtx, PIC_REG);
 }
 
 /* Worker function for TARGET_STRUCT_VALUE_RTX.  */
@@ -4244,7 +4239,7 @@ m68k_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
 
   if ((m68k_get_function_kind (current_function_decl)
        == m68k_fk_interrupt_handler)
-      && !regs_ever_live[new_reg])
+      && !df_regs_ever_live_p (new_reg))
     return 0;
 
   return 1;

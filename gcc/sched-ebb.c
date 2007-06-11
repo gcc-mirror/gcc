@@ -1,6 +1,7 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -42,6 +43,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "sched-int.h"
 #include "target.h"
 #include "output.h"
+
 
 /* The number of insns scheduled so far.  */
 static int sched_n_insns;
@@ -51,8 +53,6 @@ static int n_insns;
 
 /* Set of blocks, that already have their dependencies calculated.  */
 static bitmap_head dont_calc_deps;
-/* Set of basic blocks, that are ebb heads of tails respectively.  */
-static bitmap_head ebb_head, ebb_tail;
 
 /* Last basic block in current ebb.  */
 static basic_block last_bb;
@@ -73,10 +73,6 @@ static void add_remove_insn (rtx, int);
 static void add_block1 (basic_block, basic_block);
 static basic_block advance_target_bb (basic_block, rtx);
 static void fix_recovery_cfg (int, int, int);
-
-#ifdef ENABLE_CHECKING
-static int ebb_head_or_leaf_p (basic_block, int);
-#endif
 
 /* Return nonzero if there are more insns that should be scheduled.  */
 
@@ -256,9 +252,9 @@ compute_jump_reg_dependencies (rtx insn, regset cond_set, regset used,
 	 it may guard the fallthrough block from using a value that has
 	 conditionally overwritten that of the main codepath.  So we
 	 consider that it restores the value of the main codepath.  */
-      bitmap_and (set, glat_start [e->dest->index], cond_set);
+      bitmap_and (set, DF_LIVE_IN (e->dest), cond_set);
     else
-      bitmap_ior_into (used, glat_start [e->dest->index]);
+      bitmap_ior_into (used, DF_LIVE_IN (e->dest));
 }
 
 /* Used in schedule_insns to initialize current_sched_info for scheduling
@@ -284,12 +280,9 @@ static struct sched_info ebb_sched_info =
   add_block1,
   advance_target_bb,
   fix_recovery_cfg,
-#ifdef ENABLE_CHECKING
-  ebb_head_or_leaf_p,
-#endif
-  /* We need to DETACH_LIVE_INFO to be able to create new basic blocks.
-     See begin_schedule_ready ().  */
-  SCHED_EBB | USE_GLAT | DETACH_LIFE_INFO
+  SCHED_EBB
+  /* We can create new blocks in begin_schedule_ready ().  */
+  | NEW_BBS
 };
 
 /* Returns the earliest block in EBB currently being processed where a
@@ -541,8 +534,6 @@ schedule_ebbs (void)
   basic_block bb;
   int probability_cutoff;
   rtx tail;
-  sbitmap large_region_blocks, blocks;
-  int any_large_regions;
 
   if (profile_info && flag_branch_probabilities)
     probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY_FEEDBACK);
@@ -559,6 +550,11 @@ schedule_ebbs (void)
      invoked via sched_init.  */
   current_sched_info = &ebb_sched_info;
 
+  df_set_flags (DF_LR_RUN_DCE);
+  df_note_add_problem ();
+  df_analyze ();
+  df_clear_flags (DF_LR_RUN_DCE);
+  regstat_compute_calls_crossed ();
   sched_init ();
 
   compute_bb_for_insn ();
@@ -566,10 +562,6 @@ schedule_ebbs (void)
   /* Initialize DONT_CALC_DEPS and ebb-{start, end} markers.  */
   bitmap_initialize (&dont_calc_deps, 0);
   bitmap_clear (&dont_calc_deps);
-  bitmap_initialize (&ebb_head, 0);
-  bitmap_clear (&ebb_head);
-  bitmap_initialize (&ebb_tail, 0);
-  bitmap_clear (&ebb_tail);
 
   /* Schedule every region in the subroutine.  */
   FOR_EACH_BB (bb)
@@ -608,78 +600,17 @@ schedule_ebbs (void)
 	    break;
 	}
 
-      bitmap_set_bit (&ebb_head, BLOCK_NUM (head));
       bb = schedule_ebb (head, tail);
-      bitmap_set_bit (&ebb_tail, bb->index);
     }
   bitmap_clear (&dont_calc_deps);
-
-  gcc_assert (current_sched_info->flags & DETACH_LIFE_INFO);
-  /* We can create new basic blocks during scheduling, and
-     attach_life_info () will create regsets for them
-     (along with attaching existing info back).  */
-  attach_life_info ();
-
-  /* Updating register live information.  */
-  allocate_reg_life_data ();
-
-  any_large_regions = 0;
-  large_region_blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (large_region_blocks);
-  FOR_EACH_BB (bb)
-    SET_BIT (large_region_blocks, bb->index);
-
-  blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (blocks);
-
-  /* Update life information.  For regions consisting of multiple blocks
-     we've possibly done interblock scheduling that affects global liveness.
-     For regions consisting of single blocks we need to do only local
-     liveness.  */
-  FOR_EACH_BB (bb)
-    {
-      int bbi;
-      
-      bbi = bb->index;
-
-      if (!bitmap_bit_p (&ebb_head, bbi)
-	  || !bitmap_bit_p (&ebb_tail, bbi)
-	  /* New blocks (e.g. recovery blocks) should be processed
-	     as parts of large regions.  */
-	  || !glat_start[bbi])
-	any_large_regions = 1;
-      else
-	{
-	  SET_BIT (blocks, bbi);
-	  RESET_BIT (large_region_blocks, bbi);
-	}
-    }
-
-  update_life_info (blocks, UPDATE_LIFE_LOCAL, 0);
-  sbitmap_free (blocks);
-  
-  if (any_large_regions)
-    {
-      update_life_info (large_region_blocks, UPDATE_LIFE_GLOBAL, 0);
-
-#ifdef ENABLE_CHECKING
-      /* !!! We can't check reg_live_info here because of the fact,
-	 that destination registers of COND_EXEC's may be dead
-	 before scheduling (while they should be alive).  Don't know why.  */
-      /*check_reg_live (true);*/
-#endif
-    }
-  sbitmap_free (large_region_blocks);
-
-  bitmap_clear (&ebb_head);
-  bitmap_clear (&ebb_tail);
 
   /* Reposition the prologue and epilogue notes in case we moved the
      prologue/epilogue insns.  */
   if (reload_completed)
-    reposition_prologue_and_epilogue_notes (get_insns ());
+    reposition_prologue_and_epilogue_notes ();
 
   sched_finish ();
+  regstat_free_calls_crossed ();
 }
 
 /* INSN has been added to/removed from current ebb.  */
@@ -754,17 +685,3 @@ fix_recovery_cfg (int bbi ATTRIBUTE_UNUSED, int jump_bbi, int jump_bb_nexti)
   if (jump_bb_nexti == last_bb->index)
     last_bb = BASIC_BLOCK (jump_bbi);
 }
-
-#ifdef ENABLE_CHECKING
-/* Return non zero, if BB is first or last (depending of LEAF_P) block in
-   current ebb.  For more information please refer to
-   sched-int.h: struct sched_info: region_head_or_leaf_p.  */
-static int
-ebb_head_or_leaf_p (basic_block bb, int leaf_p)
-{
-  if (!leaf_p)    
-    return bitmap_bit_p (&ebb_head, bb->index);
-  else
-    return bitmap_bit_p (&ebb_tail, bb->index);
-}
-#endif /* ENABLE_CHECKING  */

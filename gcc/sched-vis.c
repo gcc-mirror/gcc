@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -330,6 +330,18 @@ print_exp (char *buf, rtx x, int verbose)
     case POST_INC:
       op[0] = XEXP (x, 0);
       st[1] = "++";
+      break;
+    case PRE_MODIFY:
+      st[0] = "pre ";
+      op[0] = XEXP (XEXP (x, 1), 0);
+      st[1] = "+=";
+      op[1] = XEXP (XEXP (x, 1), 1);
+      break;
+    case POST_MODIFY:
+      st[0] = "post ";
+      op[0] = XEXP (XEXP (x, 1), 0);
+      st[1] = "+=";
+      op[1] = XEXP (XEXP (x, 1), 1);
       break;
     case CALL:
       st[0] = "call ";

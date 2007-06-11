@@ -45,7 +45,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "expr.h"
 #include "params.h"
 #include "gcov-io.h"
-#include "df.h"
 #include "ddg.h"
 #include "timevar.h"
 #include "tree-pass.h"
@@ -260,9 +259,6 @@ static struct sched_info sms_sched_info =
   0, 0, 0,
 
   NULL, NULL, NULL, NULL, NULL,
-#ifdef ENABLE_CHECKING
-  NULL,
-#endif
   0
 };
 
@@ -502,7 +498,7 @@ generate_reg_moves (partial_schedule_ptr ps)
 	  rtx reg_move = gen_move_insn (new_reg, prev_reg);
 	  sbitmap_iterator sbi;
 
-	  add_insn_before (reg_move, last_reg_move);
+	  add_insn_before (reg_move, last_reg_move, NULL);
 	  last_reg_move = reg_move;
 
 	  if (!SCHED_FIRST_REG_MOVE (u))
@@ -884,7 +880,6 @@ sms_schedule (void)
   int maxii;
   loop_iterator li;
   partial_schedule_ptr ps;
-  struct df *df;
   basic_block bb = NULL;
   struct loop *loop;
   basic_block condition_bb = NULL;
@@ -913,17 +908,16 @@ sms_schedule (void)
 
   /* Initialize the scheduler.  */
   current_sched_info = &sms_sched_info;
-  sched_init ();
 
   /* Init Data Flow analysis, to be used in interloop dep calculation.  */
-  df = df_init (DF_HARD_REGS | DF_EQUIV_NOTES | DF_SUBREGS);
-  df_rd_add_problem (df, 0);
-  df_ru_add_problem (df, 0);
-  df_chain_add_problem (df, DF_DU_CHAIN | DF_UD_CHAIN);
-  df_analyze (df);
-
-  if (dump_file)
-    df_dump (df, dump_file);
+  df_set_flags (DF_LR_RUN_DCE);
+  df_rd_add_problem ();
+  df_ru_add_problem ();
+  df_note_add_problem ();
+  df_chain_add_problem (DF_DU_CHAIN + DF_UD_CHAIN);
+  df_analyze ();
+  regstat_compute_calls_crossed ();
+  sched_init ();
 
   /* Allocate memory to hold the DDG array one entry for each loop.
      We use loop->num as index into this array.  */
@@ -1016,7 +1010,7 @@ sms_schedule (void)
 	  continue;
 	}
 
-      if (! (g = create_ddg (bb, df, 0)))
+      if (! (g = create_ddg (bb, 0)))
         {
           if (dump_file)
 	    fprintf (dump_file, "SMS doloop\n");
@@ -1025,10 +1019,6 @@ sms_schedule (void)
 
       g_arr[loop->num] = g;
     }
-
-  /* Release Data Flow analysis data structures.  */
-  df_finish (df);
-  df = NULL;
 
   /* We don't want to perform SMS on new loops - created by versioning.  */
   FOR_EACH_LOOP (li, loop, 0)
@@ -1209,7 +1199,7 @@ sms_schedule (void)
 	      if (! flag_resched_modulo_sched)
 		g->bb->flags |= BB_DISABLE_SCHEDULE;
 	      /* The life-info is not valid any more.  */
-	      g->bb->flags |= BB_DIRTY;
+	      df_set_bb_dirty (g->bb);
 
 	      reg_move_replaces = generate_reg_moves (ps);
 	      if (dump_file)
@@ -1229,6 +1219,7 @@ sms_schedule (void)
       free_ddg (g);
     }
 
+  regstat_free_calls_crossed ();
   free (g_arr);
 
   /* Release scheduler data, needed until now because of DFA.  */
@@ -2479,18 +2470,11 @@ rest_of_handle_sms (void)
   /* We want to be able to create new pseudos.  */
   no_new_pseudos = 0;
   /* Collect loop information to be used in SMS.  */
-  cfg_layout_initialize (CLEANUP_UPDATE_LIFE);
+  cfg_layout_initialize (0);
   sms_schedule ();
 
   /* Update the life information, because we add pseudos.  */
   max_regno = max_reg_num ();
-  allocate_reg_info (max_regno, FALSE, FALSE);
-  update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
-                    (PROP_DEATH_NOTES
-                     | PROP_REG_INFO
-                     | PROP_KILL_DEAD_CODE
-                     | PROP_SCAN_DEAD_CODE));
-
   no_new_pseudos = 1;
 
   /* Finalize layout changes.  */
@@ -2516,6 +2500,7 @@ struct tree_opt_pass pass_sms =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   TODO_dump_func,                       /* todo_flags_start */
+  TODO_df_finish |
   TODO_dump_func |
   TODO_ggc_collect,                     /* todo_flags_finish */
   'm'                                   /* letter */

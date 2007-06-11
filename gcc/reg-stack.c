@@ -1,6 +1,7 @@
 /* Register to Stack convert for GNU compiler.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001, 2002, 2003, 2004, 2005, 2006, 2007 
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -174,6 +175,7 @@
 #include "timevar.h"
 #include "tree-pass.h"
 #include "target.h"
+#include "df.h"
 #include "vecprim.h"
 
 #ifdef STACK_REGS
@@ -1346,12 +1348,18 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
       if (STACK_REG_P (*src)
 	  && find_regno_note (insn, REG_DEAD, REGNO (*src)))
 	{
-	  emit_pop_insn (insn, regstack, *src, EMIT_AFTER);
+	  /* USEs are ignored for liveness information so USEs of dead
+	     register might happen.  */
+          if (TEST_HARD_REG_BIT (regstack->reg_set, REGNO (*src)))
+	    emit_pop_insn (insn, regstack, *src, EMIT_AFTER);
 	  return control_flow_insn_deleted;
 	}
-      /* ??? Uninitialized USE should not happen.  */
-      else
-	gcc_assert (get_hard_regnum (regstack, *src) != -1);
+      /* Uninitialized USE might happen for functions returning uninitialized
+         value.  We will properly initialize the USE on the edge to EXIT_BLOCK,
+	 so it is safe to ignore the use here. This is consistent with behaviour
+	 of dataflow analyzer that ignores USE too.  (This also imply that 
+	 forcingly initializing the register to NaN here would lead to ICE later,
+	 since the REG_DEAD notes are not issued.)  */
       break;
 
     case CLOBBER:
@@ -2353,6 +2361,7 @@ change_stack (rtx insn, stack old, stack new, enum emit_where where)
 {
   int reg;
   int update_end = 0;
+  int i;
 
   /* Stack adjustments for the first insn in a block update the
      current_block's stack_in instead of inserting insns directly.
@@ -2376,6 +2385,17 @@ change_stack (rtx insn, stack old, stack new, enum emit_where where)
 	update_end = 1;
       insn = NEXT_INSN (insn);
     }
+
+  /* Initialize partially dead variables.  */
+  for (i = FIRST_STACK_REG; i < LAST_STACK_REG + 1; i++)
+    if (TEST_HARD_REG_BIT (new->reg_set, i)
+	&& !TEST_HARD_REG_BIT (old->reg_set, i))
+      {
+	old->reg[++old->top] = i;
+        SET_HARD_REG_BIT (old->reg_set, i);
+	emit_insn_before (gen_rtx_SET (VOIDmode,
+				       FP_MODE_REG (i, SFmode), not_a_num), insn);
+      }
 
   /* Pop any registers that are not needed in the new block.  */
 
@@ -2662,6 +2682,12 @@ propagate_stack (edge e)
   for (reg = 0; reg <= src_stack->top; ++reg)
     if (TEST_HARD_REG_BIT (dest_stack->reg_set, src_stack->reg[reg]))
       dest_stack->reg[++dest_stack->top] = src_stack->reg[reg];
+
+  /* Push in any partially dead values.  */
+  for (reg = FIRST_STACK_REG; reg < LAST_STACK_REG + 1; reg++)
+    if (TEST_HARD_REG_BIT (dest_stack->reg_set, reg)
+        && !TEST_HARD_REG_BIT (src_stack->reg_set, reg))
+      dest_stack->reg[++dest_stack->top] = reg;
 }
 
 
@@ -2954,6 +2980,7 @@ convert_regs_1 (basic_block block)
   /* Something failed if the stack lives don't match.  If we had malformed
      asms, we zapped the instruction itself, but that didn't produce the
      same pattern of register kills as before.  */
+     
   gcc_assert (hard_reg_set_equal_p (regstack.reg_set, bi->out_reg_set)
 	      || any_malformed_asm);
   bi->stack_out = regstack;
@@ -3082,22 +3109,14 @@ reg_to_stack (void)
   /* See if there is something to do.  Flow analysis is quite
      expensive so we might save some compilation time.  */
   for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
-    if (regs_ever_live[i])
+    if (df_regs_ever_live_p (i))
       break;
   if (i > LAST_STACK_REG)
     return false;
 
-  /* Ok, floating point instructions exist.  If not optimizing,
-     build the CFG and run life analysis.
-     Also need to rebuild life when superblock scheduling is done
-     as it don't update liveness yet.  */
-  if (!optimize
-      || ((flag_sched2_use_superblocks || flag_sched2_use_traces)
-	  && flag_schedule_insns_after_reload))
-    {
-      count_or_remove_death_notes (NULL, 1);
-      life_analysis (PROP_DEATH_NOTES);
-    }
+  df_note_add_problem ();
+  df_analyze ();
+
   mark_dfs_back_edges ();
 
   /* Set up block info for each basic block.  */
@@ -3120,9 +3139,9 @@ reg_to_stack (void)
       /* Copy live_at_end and live_at_start into temporaries.  */
       for (reg = FIRST_STACK_REG; reg <= LAST_STACK_REG; reg++)
 	{
-	  if (REGNO_REG_SET_P (bb->il.rtl->global_live_at_end, reg))
+	  if (REGNO_REG_SET_P (DF_LR_OUT (bb), reg))
 	    SET_HARD_REG_BIT (bi->out_reg_set, reg);
-	  if (REGNO_REG_SET_P (bb->il.rtl->global_live_at_start, reg))
+	  if (REGNO_REG_SET_P (DF_LR_IN (bb), reg))
 	    SET_HARD_REG_BIT (bi->stack_in.reg_set, reg);
 	}
     }
@@ -3182,42 +3201,39 @@ gate_handle_stack_regs (void)
 #endif
 }
 
+struct tree_opt_pass pass_stack_regs =
+{
+  "stack",                              /* name */
+  gate_handle_stack_regs,               /* gate */
+  NULL,					/* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_REG_STACK,                         /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_finish */
+  'k'                                   /* letter */
+};
+
 /* Convert register usage from flat register file usage to a stack
    register file.  */
 static unsigned int
 rest_of_handle_stack_regs (void)
 {
 #ifdef STACK_REGS
-  if (reg_to_stack () && optimize)
-    {
-      regstack_completed = 1;
-      if (cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK
-                       | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0))
-          && (flag_reorder_blocks || flag_reorder_blocks_and_partition))
-        {
-	  basic_block bb;
-
-	  cfg_layout_initialize (0);
-
-	  reorder_basic_blocks ();
-	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK);
-
-	  FOR_EACH_BB (bb)
-	    if (bb->next_bb != EXIT_BLOCK_PTR)
-	      bb->aux = bb->next_bb;
-	  cfg_layout_finalize ();
-        }
-    }
-  else 
-    regstack_completed = 1;
+  reg_to_stack ();
+  regstack_completed = 1;
 #endif
   return 0;
 }
 
-struct tree_opt_pass pass_stack_regs =
+struct tree_opt_pass pass_stack_regs_run =
 {
   "stack",                              /* name */
-  gate_handle_stack_regs,               /* gate */
+  NULL,                                 /* gate */
   rest_of_handle_stack_regs,            /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
@@ -3227,6 +3243,7 @@ struct tree_opt_pass pass_stack_regs =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
+  TODO_df_finish |
   TODO_dump_func |
   TODO_ggc_collect,                     /* todo_flags_finish */
   'k'                                   /* letter */

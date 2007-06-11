@@ -888,7 +888,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    emitted the vrsave mask.  */
 
 #define HARD_REGNO_RENAME_OK(SRC, DST) \
-  (! ALTIVEC_REGNO_P (DST) || regs_ever_live[DST])
+  (! ALTIVEC_REGNO_P (DST) || df_regs_ever_live_p (DST))
 
 /* A C expression returning the cost of moving data from a register of class
    CLASS1 to one of CLASS2.  */
@@ -1598,6 +1598,8 @@ typedef struct rs6000_args
 
 #define HAVE_PRE_DECREMENT 1
 #define HAVE_PRE_INCREMENT 1
+#define HAVE_PRE_MODIFY_DISP 1
+#define HAVE_PRE_MODIFY_REG 1
 
 /* Macros to check register numbers against specific register classes.  */
 

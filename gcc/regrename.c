@@ -1,5 +1,5 @@
 /* Register renaming for the GNU compiler.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -39,6 +39,7 @@
 #include "obstack.h"
 #include "timevar.h"
 #include "tree-pass.h"
+#include "df.h"
 
 struct du_chain
 {
@@ -93,7 +94,7 @@ static void clear_dead_regs (HARD_REG_SET *, enum machine_mode, rtx);
 static void merge_overlapping_regs (basic_block, HARD_REG_SET *,
 				    struct du_chain *);
 
-/* Called through note_stores from update_life.  Find sets of registers, and
+/* Called through note_stores.  Find sets of registers, and
    record them in *DATA (which is actually a HARD_REG_SET *).  */
 
 static void
@@ -138,7 +139,7 @@ merge_overlapping_regs (basic_block b, HARD_REG_SET *pset,
   rtx insn;
   HARD_REG_SET live;
 
-  REG_SET_TO_HARD_REG_SET (live, b->il.rtl->global_live_at_start);
+  REG_SET_TO_HARD_REG_SET (live, DF_LIVE_IN (b));
   insn = BB_HEAD (b);
   while (t)
     {
@@ -181,6 +182,11 @@ regrename_optimize (void)
   basic_block bb;
   char *first_obj;
 
+  df_set_flags (DF_LR_RUN_DCE);
+  df_note_add_problem ();
+  df_analyze ();
+  df_set_flags (DF_NO_INSN_RESCAN);
+  
   memset (tick, 0, sizeof tick);
 
   gcc_obstack_init (&rename_obstack);
@@ -279,7 +285,7 @@ regrename_optimize (void)
 		    || fixed_regs[new_reg + i]
 		    || global_regs[new_reg + i]
 		    /* Can't use regs which aren't saved by the prologue.  */
-		    || (! regs_ever_live[new_reg + i]
+		    || (! df_regs_ever_live_p (new_reg + i)
 			&& ! call_used_regs[new_reg + i])
 #ifdef LEAF_REGISTERS
 		    /* We can't use a non-leaf register if we're in a
@@ -330,7 +336,7 @@ regrename_optimize (void)
 
 	  do_replace (this, best_new_reg);
 	  tick[best_new_reg] = ++this_tick;
-	  regs_ever_live[best_new_reg] = 1;
+	  df_set_regs_ever_live (best_new_reg, true);
 
 	  if (dump_file)
 	    fprintf (dump_file, ", renamed as %s\n", reg_names[best_new_reg]);
@@ -340,13 +346,11 @@ regrename_optimize (void)
     }
 
   obstack_free (&rename_obstack, NULL);
+  df_clear_flags (DF_NO_INSN_RESCAN);
+  df_insn_rescan_all ();
 
   if (dump_file)
     fputc ('\n', dump_file);
-
-  count_or_remove_death_notes (NULL, 1);
-  update_life_info (NULL, UPDATE_LIFE_LOCAL,
-		    PROP_DEATH_NOTES);
 }
 
 static void
@@ -1794,11 +1798,8 @@ static void
 copyprop_hardreg_forward (void)
 {
   struct value_data *all_vd;
-  bool need_refresh;
   basic_block bb;
   sbitmap visited;
-
-  need_refresh = false;
 
   all_vd = XNEWVEC (struct value_data, last_basic_block);
 
@@ -1820,27 +1821,10 @@ copyprop_hardreg_forward (void)
       else
 	init_value_data (all_vd + bb->index);
 
-      if (copyprop_hardreg_forward_1 (bb, all_vd + bb->index))
-	need_refresh = true;
+      copyprop_hardreg_forward_1 (bb, all_vd + bb->index);
     }
 
   sbitmap_free (visited);  
-
-  if (need_refresh)
-    {
-      if (dump_file)
-	fputs ("\n\n", dump_file);
-
-      /* ??? Irritatingly, delete_noop_moves does not take a set of blocks
-	 to scan, so we have to do a life update with no initial set of
-	 blocks Just In Case.  */
-      delete_noop_moves ();
-      update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
-			PROP_DEATH_NOTES
-			| PROP_SCAN_DEAD_CODE
-			| PROP_KILL_DEAD_CODE);
-    }
-
   free (all_vd);
 }
 
@@ -1951,7 +1935,7 @@ validate_value_data (struct value_data *vd)
 static bool
 gate_handle_regrename (void)
 {
-  return (optimize > 0 && (flag_rename_registers || flag_cprop_registers));
+  return (optimize > 0 && (flag_rename_registers));
 }
 
 
@@ -1959,10 +1943,7 @@ gate_handle_regrename (void)
 static unsigned int
 rest_of_handle_regrename (void)
 {
-  if (flag_rename_registers)
-    regrename_optimize ();
-  if (flag_cprop_registers)
-    copyprop_hardreg_forward ();
+  regrename_optimize ();
   return 0;
 }
 
@@ -1971,6 +1952,39 @@ struct tree_opt_pass pass_regrename =
   "rnreg",                              /* name */
   gate_handle_regrename,                /* gate */
   rest_of_handle_regrename,             /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_RENAME_REGISTERS,                  /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_df_finish |
+  TODO_dump_func,                       /* todo_flags_finish */
+  'n'                                   /* letter */
+};
+
+static bool
+gate_handle_cprop (void)
+{
+  return (optimize > 0 && (flag_cprop_registers));
+}
+
+
+/* Run the regrename and cprop passes.  */
+static unsigned int
+rest_of_handle_cprop (void)
+{
+  copyprop_hardreg_forward ();
+  return 0;
+}
+
+struct tree_opt_pass pass_cprop_hardreg =
+{
+  "cprop_hardreg",                      /* name */
+  gate_handle_cprop,                    /* gate */
+  rest_of_handle_cprop,                 /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */

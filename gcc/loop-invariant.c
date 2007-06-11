@@ -1,5 +1,5 @@
 /* RTL-level loop invariant motion.
-   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -121,6 +121,11 @@ struct invariant
   unsigned stamp;
 };
 
+/* Table of invariants indexed by the df_ref uid field.  */
+
+static unsigned int invariant_table_size = 0;
+static struct invariant ** invariant_table;
+
 /* Entry for hash table of invariant expressions.  */
 
 struct invariant_expr_entry
@@ -152,9 +157,21 @@ DEF_VEC_ALLOC_P(invariant_p, heap);
 
 static VEC(invariant_p,heap) *invariants;
 
-/* The dataflow object.  */
+/* Check the size of the invariant table and realloc if necessary.  */
 
-static struct df *df = NULL;
+static void 
+check_invariant_table_size (void)
+{
+  if (invariant_table_size < DF_DEFS_TABLE_SIZE())
+    {
+      unsigned int new_size = DF_DEFS_TABLE_SIZE () + (DF_DEFS_TABLE_SIZE () / 4);
+      invariant_table = xrealloc (invariant_table, 
+				  sizeof (struct rtx_iv *) * new_size);
+      memset (&invariant_table[invariant_table_size], 0, 
+	      (new_size - invariant_table_size) * sizeof (struct rtx_iv *));
+      invariant_table_size = new_size;
+    }
+}
 
 /* Test for possibility of invariantness of X.  */
 
@@ -240,13 +257,14 @@ invariant_for_use (struct df_ref *use)
   if (!defs || defs->next)
     return NULL;
   def = defs->ref;
-  if (!DF_REF_DATA (def))
+  check_invariant_table_size ();
+  if (!invariant_table[DF_REF_ID(def)])
     return NULL;
 
   def_bb = DF_REF_BB (def);
   if (!dominated_by_p (CDI_DOMINATORS, bb, def_bb))
     return NULL;
-  return DF_REF_DATA (def);
+  return invariant_table[DF_REF_ID(def)];
 }
 
 /* Computes hash value for invariant expression X in INSN.  */
@@ -272,7 +290,7 @@ hash_invariant_expr_1 (rtx insn, rtx x)
       return hash_rtx (x, GET_MODE (x), &do_not_record_p, NULL, false);
 
     case REG:
-      use = df_find_use (df, insn, x);
+      use = df_find_use (insn, x);
       if (!use)
 	return hash_rtx (x, GET_MODE (x), &do_not_record_p, NULL, false);
       inv = invariant_for_use (use);
@@ -332,8 +350,8 @@ invariant_expr_equal_p (rtx insn1, rtx e1, rtx insn2, rtx e2)
       return rtx_equal_p (e1, e2);
 
     case REG:
-      use1 = df_find_use (df, insn1, e1);
-      use2 = df_find_use (df, insn2, e2);
+      use1 = df_find_use (insn1, e1);
+      use2 = df_find_use (insn2, e2);
       if (use1)
 	inv1 = invariant_for_use (use1);
       if (use2)
@@ -616,8 +634,20 @@ find_defs (struct loop *loop, basic_block *body)
   for (i = 0; i < loop->num_nodes; i++)
     bitmap_set_bit (blocks, body[i]->index);
 
-  df_set_blocks (df, blocks);
-  df_analyze (df);
+  df_remove_problem (df_chain);
+  df_process_deferred_rescans ();
+  df_chain_add_problem (DF_UD_CHAIN);
+  df_set_blocks (blocks);
+  df_analyze ();
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "*****starting processing of loop  ******\n");
+      print_rtl_with_bb (dump_file, get_insns ());
+      fprintf (dump_file, "*****ending processing of loop  ******\n");
+    }
+  check_invariant_table_size ();
+
   BITMAP_FREE (blocks);
 }
 
@@ -673,8 +703,6 @@ record_use (struct def *def, rtx *use, rtx insn)
 {
   struct use *u = XNEW (struct use);
 
-  if (GET_CODE (*use) == SUBREG)
-    use = &SUBREG_REG (*use);
   gcc_assert (REG_P (*use));
 
   u->pos = use;
@@ -684,6 +712,51 @@ record_use (struct def *def, rtx *use, rtx insn)
   def->n_uses++;
 }
 
+/* Finds the invariants USE depends on and store them to the DEPENDS_ON
+   bitmap.  Returns true if all dependencies of USE are known to be
+   loop invariants, false otherwise.  */
+
+static bool
+check_dependency (basic_block bb, struct df_ref *use, bitmap depends_on)
+{
+  struct df_ref *def;
+  basic_block def_bb;
+  struct df_link *defs;
+  struct def *def_data;
+  struct invariant *inv;
+  
+  if (use->flags & DF_REF_READ_WRITE)
+    return false;
+  
+  defs = DF_REF_CHAIN (use);
+  if (!defs)
+    return true;
+  
+  if (defs->next)
+    return false;
+  
+  def = defs->ref;
+  check_invariant_table_size ();
+  inv = invariant_table[DF_REF_ID(def)];
+  if (!inv)
+    return false;
+  
+  def_data = inv->def;
+  gcc_assert (def_data != NULL);
+  
+  def_bb = DF_REF_BB (def);
+  /* Note that in case bb == def_bb, we know that the definition
+     dominates insn, because def has invariant_table[DF_REF_ID(def)]
+     defined and we process the insns in the basic block bb
+     sequentially.  */
+  if (!dominated_by_p (CDI_DOMINATORS, bb, def_bb))
+    return false;
+  
+  bitmap_set_bit (depends_on, def_data->invno);
+  return true;
+}
+
+
 /* Finds the invariants INSN depends on and store them to the DEPENDS_ON
    bitmap.  Returns true if all dependencies of INSN are known to be
    loop invariants, false otherwise.  */
@@ -691,42 +764,16 @@ record_use (struct def *def, rtx *use, rtx insn)
 static bool
 check_dependencies (rtx insn, bitmap depends_on)
 {
-  struct df_link *defs;
-  struct df_ref *use, *def;
-  basic_block bb = BLOCK_FOR_INSN (insn), def_bb;
-  struct def *def_data;
-  struct invariant *inv;
+  struct df_ref **use_rec;
+  basic_block bb = BLOCK_FOR_INSN (insn);
 
-  for (use = DF_INSN_GET (df, insn)->uses; use; use = use->next_ref)
-    {
-      if (use->flags & DF_REF_READ_WRITE)
-	return false;
-
-      defs = DF_REF_CHAIN (use);
-      if (!defs)
-	continue;
-
-      if (defs->next)
-	return false;
-
-      def = defs->ref;
-      inv = DF_REF_DATA (def);
-      if (!inv)
-	return false;
-
-      def_data = inv->def;
-      gcc_assert (def_data != NULL);
-
-      def_bb = DF_REF_BB (def);
-      /* Note that in case bb == def_bb, we know that the definition dominates
-	 insn, because def has DF_REF_DATA defined and we process the insns
-	 in the basic block bb sequentially.  */
-      if (!dominated_by_p (CDI_DOMINATORS, bb, def_bb))
-	return false;
-
-      bitmap_set_bit (depends_on, def_data->invno);
-    }
-
+  for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+    if (!check_dependency (bb, *use_rec, depends_on))
+      return false;
+  for (use_rec = DF_INSN_EQ_USES (insn); *use_rec; use_rec++)
+    if (!check_dependency (bb, *use_rec, depends_on))
+      return false;
+	
   return true;
 }
 
@@ -794,8 +841,9 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed)
 
   if (simple)
     {
-      ref = df_find_def (df, insn, dest);
-      DF_REF_DATA (ref) = inv;
+      ref = df_find_def (insn, dest);
+      check_invariant_table_size ();
+      invariant_table[DF_REF_ID(ref)] = inv;
     }
 }
 
@@ -804,14 +852,22 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed)
 static void
 record_uses (rtx insn)
 {
-  struct df_ref *use;
+  struct df_ref **use_rec;
   struct invariant *inv;
 
-  for (use = DF_INSN_GET (df, insn)->uses; use; use = use->next_ref)
+  for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
     {
+      struct df_ref *use = *use_rec;
       inv = invariant_for_use (use);
       if (inv)
-	record_use (inv->def, DF_REF_LOC (use), DF_REF_INSN (use));
+	record_use (inv->def, DF_REF_REAL_LOC (use), DF_REF_INSN (use));
+    }
+  for (use_rec = DF_INSN_EQ_USES (insn); *use_rec; use_rec++)
+    {
+      struct df_ref *use = *use_rec;
+      inv = invariant_for_use (use);
+      if (inv)
+	record_use (inv->def, DF_REF_REAL_LOC (use), DF_REF_INSN (use));
     }
 }
 
@@ -1068,7 +1124,7 @@ find_invariants_to_move (void)
 {
   unsigned i, regs_used, regs_needed = 0, new_regs;
   struct invariant *inv = NULL;
-  unsigned int n_regs = DF_REG_SIZE (df);
+  unsigned int n_regs = DF_REG_SIZE ();
 
   if (!VEC_length (invariant_p, invariants))
     return;
@@ -1080,7 +1136,7 @@ find_invariants_to_move (void)
 
   for (i = 0; i < n_regs; i++)
     {
-      if (!DF_REGNO_FIRST_DEF (df, i) && DF_REGNO_LAST_USE (df, i))
+      if (!DF_REGNO_FIRST_DEF (i) && DF_REGNO_LAST_USE (i))
 	{
 	  /* This is a value that is used but not changed inside loop.  */
 	  regs_used++;
@@ -1127,7 +1183,6 @@ move_invariant_reg (struct loop *loop, unsigned invno)
     return true;
   if (!repr->move)
     return false;
-
   /* If this is a representative of the class of equivalent invariants,
      really move the invariant.  Otherwise just replace its use with
      the register used for the representative.  */
@@ -1160,6 +1215,7 @@ move_invariant_reg (struct loop *loop, unsigned invno)
 
 	  emit_insn_after (gen_move_insn (dest, reg), inv->insn);
 	  SET_DEST (set) = reg;
+	  df_insn_rescan (inv->insn);
 	  reorder_insns (inv->insn, inv->insn, BB_END (preheader));
 
 	  /* If there is a REG_EQUAL note on the insn we just moved, and
@@ -1204,6 +1260,7 @@ move_invariant_reg (struct loop *loop, unsigned invno)
       delete_insn (inv->insn);
     }
 
+
   inv->reg = reg;
 
   /* Replace the uses we know to be dominated.  It saves work for copy
@@ -1212,7 +1269,10 @@ move_invariant_reg (struct loop *loop, unsigned invno)
   if (inv->def)
     {
       for (use = inv->def->uses; use; use = use->next)
-	*use->pos = reg;
+	{
+	  *use->pos = reg;
+	  df_insn_rescan (use->insn);
+	}      
     }
 
   return true;
@@ -1224,6 +1284,7 @@ fail:
     fprintf (dump_file, "Failed to move invariant %d\n", invno);
   inv->move = false;
   inv->reg = NULL_RTX;
+
   return false;
 }
 
@@ -1259,22 +1320,19 @@ free_inv_motion_data (void)
   struct def *def;
   struct invariant *inv;
 
-  for (i = 0; i < DF_DEFS_SIZE (df); i++)
+  check_invariant_table_size ();
+  for (i = 0; i < DF_DEFS_TABLE_SIZE (); i++)
     {
-      struct df_ref * ref = DF_DEFS_GET (df, i);
-      if (!ref)
-	continue;
-
-      inv = DF_REF_DATA (ref);
-      if (!inv)
-	continue;
-
-      def = inv->def;
-      gcc_assert (def != NULL);
-
-      free_use_list (def->uses);
-      free (def);
-      DF_REF_DATA (ref) = NULL;
+      inv = invariant_table[i];
+      if (inv)
+	{
+	  def = inv->def;
+	  gcc_assert (def != NULL);
+	  
+	  free_use_list (def->uses);
+	  free (def);
+	  invariant_table[i] = NULL;
+	}
     }
 
   for (i = 0; VEC_iterate (invariant_p, invariants, i, inv); i++)
@@ -1318,9 +1376,7 @@ move_loop_invariants (void)
   struct loop *loop;
   loop_iterator li;
 
-  df = df_init (DF_HARD_REGS | DF_EQUIV_NOTES);
-  df_chain_add_problem (df, DF_UD_CHAIN);
- 
+  df_set_flags (DF_EQ_NOTES + DF_DEFER_INSN_RESCAN);
   /* Process the loops, innermost first.  */
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
@@ -1332,8 +1388,9 @@ move_loop_invariants (void)
       free_loop_data (loop);
     }
 
-  df_finish (df);
-  df = NULL;
+  free (invariant_table);
+  invariant_table = NULL;
+  invariant_table_size = 0;
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();

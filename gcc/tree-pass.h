@@ -218,8 +218,13 @@ struct dump_file_info
    for the passes that are handed to register_dump_files.  */
 #define TODO_set_props			(1 << 15)
 
+/* Call df_finish at the end of the pass.  This is done after all of
+   the dumpers have been allowed to run so that they have access to
+   the instance before it is destroyed.  */
+#define TODO_df_finish                  (1 << 16)
+
 /* Internally used for the first instance of a pass.  */
-#define TODO_mark_first_instance	(1 << 16)
+#define TODO_mark_first_instance	(1 << 17)
 
 #define TODO_update_ssa_any		\
     (TODO_update_ssa			\
@@ -346,6 +351,12 @@ extern struct tree_opt_pass pass_rtl_fwprop_addr;
 extern struct tree_opt_pass pass_jump2;
 extern struct tree_opt_pass pass_lower_subreg;
 extern struct tree_opt_pass pass_cse;
+extern struct tree_opt_pass pass_fast_rtl_dce;
+extern struct tree_opt_pass pass_ud_rtl_dce;
+extern struct tree_opt_pass pass_rtl_dce;
+extern struct tree_opt_pass pass_rtl_dse1;
+extern struct tree_opt_pass pass_rtl_dse2;
+extern struct tree_opt_pass pass_rtl_dse3;
 extern struct tree_opt_pass pass_gcse;
 extern struct tree_opt_pass pass_jump_bypass;
 extern struct tree_opt_pass pass_profiling;
@@ -365,7 +376,15 @@ extern struct tree_opt_pass pass_rtl_loop_done;
 
 extern struct tree_opt_pass pass_web;
 extern struct tree_opt_pass pass_cse2;
-extern struct tree_opt_pass pass_life;
+extern struct tree_opt_pass pass_df_initialize_opt;
+extern struct tree_opt_pass pass_df_initialize_no_opt;
+extern struct tree_opt_pass pass_regclass_init;
+extern struct tree_opt_pass pass_subregs_of_mode_init;
+extern struct tree_opt_pass pass_subregs_of_mode_finish;
+extern struct tree_opt_pass pass_inc_dec;
+extern struct tree_opt_pass pass_no_new_pseudos;
+extern struct tree_opt_pass pass_stack_ptr_mod;
+extern struct tree_opt_pass pass_initialize_regs;
 extern struct tree_opt_pass pass_combine;
 extern struct tree_opt_pass pass_if_after_combine;
 extern struct tree_opt_pass pass_partition_blocks;
@@ -374,7 +393,6 @@ extern struct tree_opt_pass pass_split_all_insns;
 extern struct tree_opt_pass pass_lower_subreg2;
 extern struct tree_opt_pass pass_mode_switching;
 extern struct tree_opt_pass pass_see;
-extern struct tree_opt_pass pass_recompute_reg_usage;
 extern struct tree_opt_pass pass_sms;
 extern struct tree_opt_pass pass_sched;
 extern struct tree_opt_pass pass_local_alloc;
@@ -383,19 +401,24 @@ extern struct tree_opt_pass pass_postreload;
 extern struct tree_opt_pass pass_clean_state;
 extern struct tree_opt_pass pass_branch_prob;
 extern struct tree_opt_pass pass_value_profile_transformations;
-extern struct tree_opt_pass pass_remove_death_notes;
 extern struct tree_opt_pass pass_postreload_cse;
 extern struct tree_opt_pass pass_gcse2;
-extern struct tree_opt_pass pass_flow2;
+extern struct tree_opt_pass pass_split_after_reload;
+extern struct tree_opt_pass pass_branch_target_load_optimize1;
+extern struct tree_opt_pass pass_thread_prologue_and_epilogue;
 extern struct tree_opt_pass pass_stack_adjustments;
 extern struct tree_opt_pass pass_peephole2;
 extern struct tree_opt_pass pass_if_after_reload;
 extern struct tree_opt_pass pass_regrename;
+extern struct tree_opt_pass pass_cprop_hardreg;
 extern struct tree_opt_pass pass_reorder_blocks;
-extern struct tree_opt_pass pass_branch_target_load_optimize;
+extern struct tree_opt_pass pass_branch_target_load_optimize2;
 extern struct tree_opt_pass pass_leaf_regs;
+extern struct tree_opt_pass pass_split_before_sched2;
 extern struct tree_opt_pass pass_sched2;
 extern struct tree_opt_pass pass_stack_regs;
+extern struct tree_opt_pass pass_stack_regs_run;
+extern struct tree_opt_pass pass_df_finish;
 extern struct tree_opt_pass pass_compute_alignments;
 extern struct tree_opt_pass pass_duplicate_computed_gotos;
 extern struct tree_opt_pass pass_variable_tracking;
@@ -421,6 +444,8 @@ extern struct tree_opt_pass *all_passes, *all_ipa_passes, *all_lowering_passes;
 
 extern void execute_pass_list (struct tree_opt_pass *);
 extern void execute_ipa_pass_list (struct tree_opt_pass *);
+extern void print_current_pass (FILE *);
+extern void debug_pass (void);
 
 /* Set to true if the pass is called the first time during compilation of the
    current function.  Note that using this information in the optimization

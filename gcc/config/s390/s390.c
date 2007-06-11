@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+   2007 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com).
 
@@ -51,6 +51,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "langhooks.h"
 #include "optabs.h"
 #include "tree-gimple.h"
+#include "df.h"
 
 
 /* Define the specific costs for a given cpu.  */
@@ -2890,7 +2891,7 @@ legitimize_pic_address (rtx orig, rtx reg)
           rtx temp = reg? reg : gen_reg_rtx (Pmode);
 
 	  if (reload_in_progress || reload_completed)
-	    regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
+	    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
 
           addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
           addr = gen_rtx_CONST (Pmode, addr);
@@ -2916,7 +2917,7 @@ legitimize_pic_address (rtx orig, rtx reg)
              in both 31- and 64-bit code (@GOT).  */
 
 	  if (reload_in_progress || reload_completed)
-	    regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
+	    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
 
           new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOT);
           new = gen_rtx_CONST (Pmode, new);
@@ -2948,7 +2949,7 @@ legitimize_pic_address (rtx orig, rtx reg)
           rtx temp = gen_reg_rtx (Pmode);
 
 	  if (reload_in_progress || reload_completed)
-	    regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
+	    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
 
           addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOT);
           addr = gen_rtx_CONST (Pmode, addr);
@@ -2996,7 +2997,7 @@ legitimize_pic_address (rtx orig, rtx reg)
                         rtx temp = reg? reg : gen_reg_rtx (Pmode);
 
 			if (reload_in_progress || reload_completed)
-			  regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
+			  df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
 
                         addr = XVECEXP (addr, 0, 0);
                         addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr),
@@ -3076,7 +3077,7 @@ legitimize_pic_address (rtx orig, rtx reg)
                   rtx temp = reg? reg : gen_reg_rtx (Pmode);
 
 		  if (reload_in_progress || reload_completed)
-		    regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
+		    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
 
                   addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op0),
 					 UNSPEC_GOTOFF);
@@ -3244,7 +3245,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 	       in both 31- and 64-bit code.  */
 
 	    if (reload_in_progress || reload_completed)
-	      regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
+	      df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
 
 	    new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTNTPOFF);
 	    new = gen_rtx_CONST (Pmode, new);
@@ -3273,7 +3274,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 	       from the literal pool.  */
 
 	    if (reload_in_progress || reload_completed)
-	      regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
+	      df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
 
 	    new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTNTPOFF);
 	    new = gen_rtx_CONST (Pmode, new);
@@ -6325,7 +6326,7 @@ find_unused_clobbered_reg (void)
 {
   int i;
   for (i = 0; i < 6; i++)
-    if (!regs_ever_live[i])
+    if (!df_regs_ever_live_p (i))
       return i;
   return 0;
 }
@@ -6391,7 +6392,7 @@ s390_regs_ever_clobbered (int *regs_ever_clobbered)
     for (i = 0; EH_RETURN_DATA_REGNO (i) != INVALID_REGNUM ; i++)
       if (current_function_calls_eh_return 
 	  || (cfun->machine->has_landing_pad_p 
-	      && regs_ever_live [EH_RETURN_DATA_REGNO (i)]))
+	      && df_regs_ever_live_p (EH_RETURN_DATA_REGNO (i))))
 	regs_ever_clobbered[EH_RETURN_DATA_REGNO (i)] = 1;
 
   /* For nonlocal gotos all call-saved registers have to be saved.
@@ -6470,7 +6471,7 @@ s390_register_info (int clobbered_regs[])
   cfun_frame_layout.high_fprs = 0;
   if (TARGET_64BIT)
     for (i = 24; i < 32; i++)
-      if (regs_ever_live[i] && !global_regs[i])
+      if (df_regs_ever_live_p (i) && !global_regs[i])
 	{
 	  cfun_set_fpr_bit (i - 16);
 	  cfun_frame_layout.high_fprs++;
@@ -6492,7 +6493,7 @@ s390_register_info (int clobbered_regs[])
 
   if (flag_pic)
     clobbered_regs[PIC_OFFSET_TABLE_REGNUM] 
-      |= regs_ever_live[PIC_OFFSET_TABLE_REGNUM];
+      |= df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM);
 
   clobbered_regs[BASE_REGNUM] 
     |= (cfun->machine->base_reg
@@ -6515,10 +6516,10 @@ s390_register_info (int clobbered_regs[])
 	|| current_function_stdarg);
 
   for (i = 6; i < 16; i++)
-    if (regs_ever_live[i] || clobbered_regs[i])
+    if (df_regs_ever_live_p (i) || clobbered_regs[i])
       break;
   for (j = 15; j > i; j--)
-    if (regs_ever_live[j] || clobbered_regs[j])
+    if (df_regs_ever_live_p (j) || clobbered_regs[j])
       break;
 
   if (i == 16)
@@ -6612,7 +6613,7 @@ s390_register_info (int clobbered_regs[])
 
   if (!TARGET_64BIT)
     for (i = 2; i < 4; i++)
-      if (regs_ever_live[i + 16] && !global_regs[i + 16])
+      if (df_regs_ever_live_p (i + 16) && !global_regs[i + 16])
 	cfun_set_fpr_bit (i);
 }
 
@@ -6758,7 +6759,7 @@ s390_init_frame_layout (void)
 	 as base register to avoid save/restore overhead.  */
       if (!base_used)
 	cfun->machine->base_reg = NULL_RTX;
-      else if (current_function_is_leaf && !regs_ever_live[5])
+      else if (current_function_is_leaf && !df_regs_ever_live_p (5))
 	cfun->machine->base_reg = gen_rtx_REG (Pmode, 5);
       else
 	cfun->machine->base_reg = gen_rtx_REG (Pmode, BASE_REGNUM);
@@ -6781,12 +6782,15 @@ s390_update_frame_layout (void)
 
   s390_register_info (clobbered_regs);
 
-  regs_ever_live[BASE_REGNUM] = clobbered_regs[BASE_REGNUM];
-  regs_ever_live[RETURN_REGNUM] = clobbered_regs[RETURN_REGNUM];
-  regs_ever_live[STACK_POINTER_REGNUM] = clobbered_regs[STACK_POINTER_REGNUM];
+  df_set_regs_ever_live (BASE_REGNUM, 
+			 clobbered_regs[BASE_REGNUM] ? true : false);
+  df_set_regs_ever_live (RETURN_REGNUM, 
+			 clobbered_regs[RETURN_REGNUM] ? true : false);
+  df_set_regs_ever_live (STACK_POINTER_REGNUM, 
+			 clobbered_regs[STACK_POINTER_REGNUM] ? true : false);
 
   if (cfun->machine->base_reg)
-    regs_ever_live[REGNO (cfun->machine->base_reg)] = 1;
+    df_set_regs_ever_live (REGNO (cfun->machine->base_reg), true);
 }
 
 /* Return true if it is legal to put a value with MODE into REGNO.  */
@@ -7169,7 +7173,10 @@ s390_emit_prologue (void)
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn))
-      annotate_constant_pool_refs (&PATTERN (insn));
+      {
+	annotate_constant_pool_refs (&PATTERN (insn));
+	df_insn_rescan (insn);
+      }
 
   pop_topmost_sequence ();
 
@@ -7407,17 +7414,12 @@ s390_emit_prologue (void)
 
   /* Set up got pointer, if needed.  */
 
-  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+  if (flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM))
     {
       rtx insns = s390_load_got ();
 
       for (insn = insns; insn; insn = NEXT_INSN (insn))
-	{
-	  annotate_constant_pool_refs (&PATTERN (insn));
-
-	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, NULL_RTX,
-						REG_NOTES (insn));
-	}
+	annotate_constant_pool_refs (&PATTERN (insn));
 
       emit_insn (insns);
     }

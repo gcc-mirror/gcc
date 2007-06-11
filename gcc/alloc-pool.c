@@ -1,5 +1,5 @@
 /* Functions to support a pool of allocatable objects.
-   Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006
+   Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@cgsoftware.com>
 
@@ -161,7 +161,9 @@ create_alloc_pool (const char *name, size_t size, size_t num)
   header_size = align_eight (sizeof (struct alloc_pool_list_def));
 
   pool->block_size = (size * num) + header_size;
-  pool->free_list = NULL;
+  pool->returned_free_list = NULL;
+  pool->virgin_free_list = NULL;
+  pool->virgin_elts_remaining = 0;
   pool->elts_allocated = 0;
   pool->elts_free = 0;
   pool->blocks_allocated = 0;
@@ -223,7 +225,6 @@ void *
 pool_alloc (alloc_pool pool)
 {
   alloc_pool_list header;
-  char *block;
 #ifdef GATHER_STATISTICS
   struct alloc_pool_descriptor *desc = alloc_pool_descriptor (pool->name);
 
@@ -233,46 +234,57 @@ pool_alloc (alloc_pool pool)
   gcc_assert (pool);
 
   /* If there are no more free elements, make some more!.  */
-  if (!pool->free_list)
+  if (!pool->returned_free_list)
     {
-      size_t i;
-      alloc_pool_list block_header;
+      char *block;
+      if (!pool->virgin_elts_remaining)
+	{
+	  alloc_pool_list block_header;
 
-      /* Make the block.  */
-      block = XNEWVEC (char, pool->block_size);
-      block_header = (alloc_pool_list) block;
-      block += align_eight (sizeof (struct alloc_pool_list_def));
+	  /* Make the block.  */
+	  block = XNEWVEC (char, pool->block_size);
+	  block_header = (alloc_pool_list) block;
+	  block += align_eight (sizeof (struct alloc_pool_list_def));
 #ifdef GATHER_STATISTICS
-      desc->current += pool->block_size;
-      if (desc->peak < desc->current)
-	desc->peak = desc->current;
+	  desc->current += pool->block_size;
+	  if (desc->peak < desc->current)
+	    desc->peak = desc->current;
 #endif
+	  
+	  /* Throw it on the block list.  */
+	  block_header->next = pool->block_list;
+	  pool->block_list = block_header;
 
-      /* Throw it on the block list.  */
-      block_header->next = pool->block_list;
-      pool->block_list = block_header;
+	  /* Make the block available for allocation.  */
+	  pool->virgin_free_list = block;
+	  pool->virgin_elts_remaining = pool->elts_per_block;
 
-      /* Now put the actual block pieces onto the free list.  */
-      for (i = 0; i < pool->elts_per_block; i++, block += pool->elt_size)
-      {
+	  /* Also update the number of elements we have free/allocated, and
+	     increment the allocated block count.  */
+	  pool->elts_allocated += pool->elts_per_block;
+	  pool->elts_free += pool->elts_per_block;
+	  pool->blocks_allocated += 1;
+	}
+
+      
+      /* We now know that we can take the first elt off the virgin list and
+	 put it on the returned list. */
+      block = pool->virgin_free_list;
+      header = (alloc_pool_list) USER_PTR_FROM_ALLOCATION_OBJECT_PTR (block);
+      header->next = NULL;
 #ifdef ENABLE_CHECKING
-	/* Mark the element to be free.  */
-	((allocation_object *) block)->id = 0;
+      /* Mark the element to be free.  */
+      ((allocation_object *) block)->id = 0;
 #endif
-	header = (alloc_pool_list) USER_PTR_FROM_ALLOCATION_OBJECT_PTR (block);
-	header->next = pool->free_list;
-	pool->free_list = header;
-      }
-      /* Also update the number of elements we have free/allocated, and
-	 increment the allocated block count.  */
-      pool->elts_allocated += pool->elts_per_block;
-      pool->elts_free += pool->elts_per_block;
-      pool->blocks_allocated += 1;
+      pool->returned_free_list = header;
+      pool->virgin_free_list += pool->elt_size;
+      pool->virgin_elts_remaining--;
+
     }
 
   /* Pull the first free element from the free list, and return it.  */
-  header = pool->free_list;
-  pool->free_list = header->next;
+  header = pool->returned_free_list;
+  pool->returned_free_list = header->next;
   pool->elts_free--;
 
 #ifdef ENABLE_CHECKING
@@ -305,8 +317,8 @@ pool_free (alloc_pool pool, void *ptr)
 #endif
 
   header = (alloc_pool_list) ptr;
-  header->next = pool->free_list;
-  pool->free_list = header;
+  header->next = pool->returned_free_list;
+  pool->returned_free_list = header;
   pool->elts_free++;
 }
 /* Output per-alloc_pool statistics.  */

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  TMS320C[34]x
    Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
    Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
               and Herman Ten Brugge (Haj.Ten.Brugge@net.HCC.nl).
@@ -887,7 +887,7 @@ enum reg_class
  int regno;							\
  int offset = 0;						\
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)	\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
+    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])	\
       offset += TARGET_PRESERVE_FLOAT				\
 		&& IS_FLOAT_CALL_SAVED_REGNO (regno) ? 2 : 1;	\
   (DEPTH) = -(offset + get_frame_size ());			\
@@ -906,7 +906,7 @@ enum reg_class
  int regno;							\
  int offset = 0;						\
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)	\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
+    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])	\
       offset += TARGET_PRESERVE_FLOAT				\
 		&& IS_FLOAT_CALL_SAVED_REGNO (regno) ? 2 : 1;	\
   (OFFSET) = -(offset + get_frame_size ());			\

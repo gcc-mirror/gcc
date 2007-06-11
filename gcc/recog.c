@@ -43,6 +43,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "reload.h"
 #include "timevar.h"
 #include "tree-pass.h"
+#include "df.h"
 
 #ifndef STACK_PUSH_CODE
 #ifdef STACK_GROWS_DOWNWARD
@@ -61,7 +62,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #endif
 
 static void validate_replace_rtx_1 (rtx *, rtx, rtx, rtx);
-static rtx *find_single_use_1 (rtx, rtx *);
 static void validate_replace_src_1 (rtx *, void *);
 static rtx split_insn (rtx);
 
@@ -406,21 +406,21 @@ verify_changes (int num)
   return (i == num_changes);
 }
 
-/* A group of changes has previously been issued with validate_change and
-   verified with verify_changes.  Update the BB_DIRTY flags of the affected
-   blocks, and clear num_changes.  */
+/* A group of changes has previously been issued with validate_change
+   and verified with verify_changes.  Call df_insn_rescan for each of
+   the insn changed and clear num_changes.  */
 
 void
 confirm_change_group (void)
 {
   int i;
-  basic_block bb;
 
   for (i = 0; i < num_changes; i++)
-    if (changes[i].object
-	&& INSN_P (changes[i].object)
-	&& (bb = BLOCK_FOR_INSN (changes[i].object)))
-      bb->flags |= BB_DIRTY;
+    {
+      rtx object = changes[i].object;
+      if (object && INSN_P (object))
+	df_insn_rescan (object);
+    }
 
   num_changes = 0;
 }
@@ -780,168 +780,6 @@ next_insn_tests_no_inequality (rtx insn)
 	  && ! inequality_comparisons_p (PATTERN (next)));
 }
 #endif
-
-/* This is used by find_single_use to locate an rtx that contains exactly one
-   use of DEST, which is typically either a REG or CC0.  It returns a
-   pointer to the innermost rtx expression containing DEST.  Appearances of
-   DEST that are being used to totally replace it are not counted.  */
-
-static rtx *
-find_single_use_1 (rtx dest, rtx *loc)
-{
-  rtx x = *loc;
-  enum rtx_code code = GET_CODE (x);
-  rtx *result = 0;
-  rtx *this_result;
-  int i;
-  const char *fmt;
-
-  switch (code)
-    {
-    case CONST_INT:
-    case CONST:
-    case LABEL_REF:
-    case SYMBOL_REF:
-    case CONST_DOUBLE:
-    case CONST_VECTOR:
-    case CLOBBER:
-      return 0;
-
-    case SET:
-      /* If the destination is anything other than CC0, PC, a REG or a SUBREG
-	 of a REG that occupies all of the REG, the insn uses DEST if
-	 it is mentioned in the destination or the source.  Otherwise, we
-	 need just check the source.  */
-      if (GET_CODE (SET_DEST (x)) != CC0
-	  && GET_CODE (SET_DEST (x)) != PC
-	  && !REG_P (SET_DEST (x))
-	  && ! (GET_CODE (SET_DEST (x)) == SUBREG
-		&& REG_P (SUBREG_REG (SET_DEST (x)))
-		&& (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (x))))
-		      + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
-		    == ((GET_MODE_SIZE (GET_MODE (SET_DEST (x)))
-			 + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))))
-	break;
-
-      return find_single_use_1 (dest, &SET_SRC (x));
-
-    case MEM:
-    case SUBREG:
-      return find_single_use_1 (dest, &XEXP (x, 0));
-
-    default:
-      break;
-    }
-
-  /* If it wasn't one of the common cases above, check each expression and
-     vector of this code.  Look for a unique usage of DEST.  */
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  if (dest == XEXP (x, i)
-	      || (REG_P (dest) && REG_P (XEXP (x, i))
-		  && REGNO (dest) == REGNO (XEXP (x, i))))
-	    this_result = loc;
-	  else
-	    this_result = find_single_use_1 (dest, &XEXP (x, i));
-
-	  if (result == 0)
-	    result = this_result;
-	  else if (this_result)
-	    /* Duplicate usage.  */
-	    return 0;
-	}
-      else if (fmt[i] == 'E')
-	{
-	  int j;
-
-	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	    {
-	      if (XVECEXP (x, i, j) == dest
-		  || (REG_P (dest)
-		      && REG_P (XVECEXP (x, i, j))
-		      && REGNO (XVECEXP (x, i, j)) == REGNO (dest)))
-		this_result = loc;
-	      else
-		this_result = find_single_use_1 (dest, &XVECEXP (x, i, j));
-
-	      if (result == 0)
-		result = this_result;
-	      else if (this_result)
-		return 0;
-	    }
-	}
-    }
-
-  return result;
-}
-
-/* See if DEST, produced in INSN, is used only a single time in the
-   sequel.  If so, return a pointer to the innermost rtx expression in which
-   it is used.
-
-   If PLOC is nonzero, *PLOC is set to the insn containing the single use.
-
-   This routine will return usually zero either before flow is called (because
-   there will be no LOG_LINKS notes) or after reload (because the REG_DEAD
-   note can't be trusted).
-
-   If DEST is cc0_rtx, we look only at the next insn.  In that case, we don't
-   care about REG_DEAD notes or LOG_LINKS.
-
-   Otherwise, we find the single use by finding an insn that has a
-   LOG_LINKS pointing at INSN and has a REG_DEAD note for DEST.  If DEST is
-   only referenced once in that insn, we know that it must be the first
-   and last insn referencing DEST.  */
-
-rtx *
-find_single_use (rtx dest, rtx insn, rtx *ploc)
-{
-  rtx next;
-  rtx *result;
-  rtx link;
-
-#ifdef HAVE_cc0
-  if (dest == cc0_rtx)
-    {
-      next = NEXT_INSN (insn);
-      if (next == 0
-	  || (!NONJUMP_INSN_P (next) && !JUMP_P (next)))
-	return 0;
-
-      result = find_single_use_1 (dest, &PATTERN (next));
-      if (result && ploc)
-	*ploc = next;
-      return result;
-    }
-#endif
-
-  if (reload_completed || reload_in_progress || !REG_P (dest))
-    return 0;
-
-  for (next = next_nonnote_insn (insn);
-       next != 0 && !LABEL_P (next);
-       next = next_nonnote_insn (next))
-    if (INSN_P (next) && dead_or_set_p (next, dest))
-      {
-	for (link = LOG_LINKS (next); link; link = XEXP (link, 1))
-	  if (XEXP (link, 0) == insn)
-	    break;
-
-	if (link)
-	  {
-	    result = find_single_use_1 (dest, &PATTERN (next));
-	    if (ploc)
-	      *ploc = next;
-	    return result;
-	  }
-      }
-
-  return 0;
-}
 
 /* Return 1 if OP is a valid general operand for machine mode MODE.
    This is either a register reference, a memory reference,
@@ -1691,7 +1529,7 @@ asm_operand_ok (rtx op, const char *constraint)
 	  break;
 
 	case '<':
-	  /* ??? Before flow, auto inc/dec insns are not supposed to exist,
+	  /* ??? Before auto-inc-dec, auto inc/dec insns are not supposed to exist,
 	     excepting those that expand_call created.  Further, on some
 	     machines which do not have generalized auto inc/dec, an inc/dec
 	     is not a memory_operand.
@@ -2755,7 +2593,7 @@ split_insn (rtx insn)
 /* Split all insns in the function.  If UPD_LIFE, update life info after.  */
 
 void
-split_all_insns (int upd_life)
+split_all_insns (void)
 {
   sbitmap blocks;
   bool changed;
@@ -2791,17 +2629,7 @@ split_all_insns (int upd_life)
 		     allocation, and there are unlikely to be very many
 		     nops then anyways.  */
 		  if (reload_completed)
-		    {
-		      /* If the no-op set has a REG_UNUSED note, we need
-			 to update liveness information.  */
-		      if (find_reg_note (insn, REG_UNUSED, NULL_RTX))
-			{
-			  SET_BIT (blocks, bb->index);
-			  changed = true;
-			}
-		      /* ??? Is life info affected by deleting edges?  */
 		      delete_insn_and_edges (insn);
-		    }
 		}
 	      else
 		{
@@ -2823,18 +2651,7 @@ split_all_insns (int upd_life)
     }
 
   if (changed)
-    {
-      int old_last_basic_block = last_basic_block;
-
-      find_many_sub_basic_blocks (blocks);
-
-      if (old_last_basic_block != last_basic_block && upd_life)
-	blocks = sbitmap_resize (blocks, last_basic_block, 1);
-    }
-
-  if (changed && upd_life)
-    update_life_info (blocks, UPDATE_LIFE_GLOBAL_RM_NOTES,
-		      PROP_DEATH_NOTES);
+    find_many_sub_basic_blocks (blocks);
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
@@ -2893,7 +2710,7 @@ int peep2_current_count;
 
 /* A non-insn marker indicating the last insn of the block.
    The live_before regset for this element is correct, indicating
-   global_live_at_end for the block.  */
+   DF_LIVE_OUT for the block.  */
 #define PEEP2_EOB	pc_rtx
 
 /* Return the Nth non-note insn after `current', or return NULL_RTX if it
@@ -3023,7 +2840,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
       if (! HARD_REGNO_MODE_OK (regno, mode))
 	continue;
       /* And that we don't create an extra save/restore.  */
-      if (! call_used_regs[regno] && ! regs_ever_live[regno])
+      if (! call_used_regs[regno] && ! df_regs_ever_live_p (regno))
 	continue;
       /* And we don't clobber traceback for noreturn functions.  */
       if ((regno == FRAME_POINTER_REGNUM || regno == HARD_FRAME_POINTER_REGNUM)
@@ -3063,36 +2880,22 @@ static void
 peephole2_optimize (void)
 {
   rtx insn, prev;
-  regset live;
+  bitmap live;
   int i;
   basic_block bb;
-#ifdef HAVE_conditional_execution
-  sbitmap blocks;
-  bool changed;
-#endif
   bool do_cleanup_cfg = false;
-  bool do_global_life_update = false;
   bool do_rebuild_jump_labels = false;
+
+  df_set_flags (DF_LR_RUN_DCE);
+  df_analyze ();
 
   /* Initialize the regsets we're going to use.  */
   for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
-    peep2_insn_data[i].live_before = ALLOC_REG_SET (&reg_obstack);
-  live = ALLOC_REG_SET (&reg_obstack);
-
-#ifdef HAVE_conditional_execution
-  blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (blocks);
-  changed = false;
-#else
-  count_or_remove_death_notes (NULL, 1);
-#endif
+    peep2_insn_data[i].live_before = BITMAP_ALLOC (&reg_obstack);
+  live = BITMAP_ALLOC (&reg_obstack);
 
   FOR_EACH_BB_REVERSE (bb)
     {
-      struct propagate_block_info *pbi;
-      reg_set_iterator rsi;
-      unsigned int j;
-
       /* Indicate that all slots except the last holds invalid data.  */
       for (i = 0; i < MAX_INSNS_PER_PEEP2; ++i)
 	peep2_insn_data[i].insn = NULL_RTX;
@@ -3103,14 +2906,9 @@ peephole2_optimize (void)
       peep2_current = MAX_INSNS_PER_PEEP2;
 
       /* Start up propagation.  */
-      COPY_REG_SET (live, bb->il.rtl->global_live_at_end);
-      COPY_REG_SET (peep2_insn_data[MAX_INSNS_PER_PEEP2].live_before, live);
-
-#ifdef HAVE_conditional_execution
-      pbi = init_propagate_block_info (bb, live, NULL, NULL, 0);
-#else
-      pbi = init_propagate_block_info (bb, live, NULL, NULL, PROP_DEATH_NOTES);
-#endif
+      bitmap_copy (live, DF_LR_OUT (bb));
+      df_simulate_artificial_refs_at_end (bb, live);
+      bitmap_copy (peep2_insn_data[MAX_INSNS_PER_PEEP2].live_before, live);
 
       for (insn = BB_END (bb); ; insn = prev)
 	{
@@ -3129,7 +2927,7 @@ peephole2_optimize (void)
 		  && peep2_insn_data[peep2_current].insn == NULL_RTX)
 		peep2_current_count++;
 	      peep2_insn_data[peep2_current].insn = insn;
-	      propagate_one_insn (pbi, insn);
+	      df_simulate_one_insn_backwards (bb, insn, live);
 	      COPY_REG_SET (peep2_insn_data[peep2_current].live_before, live);
 
 	      if (RTX_FRAME_RELATED_P (insn))
@@ -3256,10 +3054,6 @@ peephole2_optimize (void)
 				  = REG_BR_PROB_BASE - nehe->probability;
 
 			        do_cleanup_cfg |= purge_dead_edges (nfte->dest);
-#ifdef HAVE_conditional_execution
-				SET_BIT (blocks, nfte->dest->index);
-				changed = true;
-#endif
 				bb = nfte->src;
 				eh_edge = nehe;
 			      }
@@ -3271,14 +3065,6 @@ peephole2_optimize (void)
 		    }
 
 #ifdef HAVE_conditional_execution
-		  /* With conditional execution, we cannot back up the
-		     live information so easily, since the conditional
-		     death data structures are not so self-contained.
-		     So record that we've made a modification to this
-		     block and update life information at the end.  */
-		  SET_BIT (blocks, bb->index);
-		  changed = true;
-
 		  for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
 		    peep2_insn_data[i].insn = NULL_RTX;
 		  peep2_insn_data[peep2_current].insn = PEEP2_EOB;
@@ -3288,7 +3074,7 @@ peephole2_optimize (void)
 		     newly created sequence.  */
 		  if (++i >= MAX_INSNS_PER_PEEP2 + 1)
 		    i = 0;
-		  COPY_REG_SET (live, peep2_insn_data[i].live_before);
+		  bitmap_copy (live, peep2_insn_data[i].live_before);
 
 		  /* Update life information for the new sequence.  */
 		  x = try;
@@ -3302,15 +3088,13 @@ peephole2_optimize (void)
 			      && peep2_insn_data[i].insn == NULL_RTX)
 			    peep2_current_count++;
 			  peep2_insn_data[i].insn = x;
-			  propagate_one_insn (pbi, x);
-			  COPY_REG_SET (peep2_insn_data[i].live_before, live);
+			  df_insn_rescan (x);
+			  df_simulate_one_insn_backwards (bb, x, live);
+			  bitmap_copy (peep2_insn_data[i].live_before, live);
 			}
 		      x = PREV_INSN (x);
 		    }
 		  while (x != prev);
-
-		  /* ??? Should verify that LIVE now matches what we
-		     had before the new sequence.  */
 
 		  peep2_current = i;
 #endif
@@ -3329,44 +3113,13 @@ peephole2_optimize (void)
 	  if (insn == BB_HEAD (bb))
 	    break;
 	}
-
-      /* Some peepholes can decide the don't need one or more of their
-	 inputs.  If this happens, local life update is not enough.  */
-      EXECUTE_IF_AND_COMPL_IN_BITMAP (bb->il.rtl->global_live_at_start, live,
-				      0, j, rsi)
-	{
-	  do_global_life_update = true;
-	  break;
-	}
-
-      free_propagate_block_info (pbi);
     }
 
   for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
-    FREE_REG_SET (peep2_insn_data[i].live_before);
-  FREE_REG_SET (live);
-
+    BITMAP_FREE (peep2_insn_data[i].live_before);
+  BITMAP_FREE (live);
   if (do_rebuild_jump_labels)
     rebuild_jump_labels (get_insns ());
-
-  /* If we eliminated EH edges, we may be able to merge blocks.  Further,
-     we've changed global life since exception handlers are no longer
-     reachable.  */
-  if (do_cleanup_cfg)
-    {
-      cleanup_cfg (0);
-      do_global_life_update = true;
-    }
-  if (do_global_life_update)
-    update_life_info (0, UPDATE_LIFE_GLOBAL_RM_NOTES, PROP_DEATH_NOTES);
-#ifdef HAVE_conditional_execution
-  else
-    {
-      count_or_remove_death_notes (blocks, 1);
-      update_life_info (blocks, UPDATE_LIFE_LOCAL, PROP_DEATH_NOTES);
-    }
-  sbitmap_free (blocks);
-#endif
 }
 #endif /* HAVE_peephole2 */
 
@@ -3546,6 +3299,7 @@ struct tree_opt_pass pass_peephole2 =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
+  TODO_df_finish |
   TODO_dump_func,                       /* todo_flags_finish */
   'z'                                   /* letter */
 };
@@ -3553,7 +3307,7 @@ struct tree_opt_pass pass_peephole2 =
 static unsigned int
 rest_of_handle_split_all_insns (void)
 {
-  split_all_insns (1);
+  split_all_insns ();
   return 0;
 }
 
@@ -3574,27 +3328,26 @@ struct tree_opt_pass pass_split_all_insns =
   0                                     /* letter */
 };
 
-/* The placement of the splitting that we do for shorten_branches
-   depends on whether regstack is used by the target or not.  */
-static bool
-gate_do_final_split (void)
+static unsigned int
+rest_of_handle_split_after_reload (void)
 {
-#if defined (HAVE_ATTR_length) && !defined (STACK_REGS)
-  return 1;
-#else
+  /* If optimizing, then go ahead and split insns now.  */
+#ifndef STACK_REGS
+  if (optimize > 0)
+#endif
+    split_all_insns ();
   return 0;
-#endif 
 }
 
-struct tree_opt_pass pass_split_for_shorten_branches =
+struct tree_opt_pass pass_split_after_reload =
 {
-  "split3",                             /* name */
-  gate_do_final_split,                  /* gate */
-  split_all_insns_noflow,               /* execute */
+  "split2",                             /* name */
+  NULL,                                 /* gate */
+  rest_of_handle_split_after_reload,    /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_SHORTEN_BRANCH,                    /* tv_id */
+  0,                                    /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
@@ -3602,7 +3355,6 @@ struct tree_opt_pass pass_split_for_shorten_branches =
   TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };
-
 
 static bool
 gate_handle_split_before_regstack (void)
@@ -3622,15 +3374,22 @@ gate_handle_split_before_regstack (void)
 #endif
 }
 
+static unsigned int
+rest_of_handle_split_before_regstack (void)
+{
+  split_all_insns ();
+  return 0;
+}
+
 struct tree_opt_pass pass_split_before_regstack =
 {
-  "split2",                             /* name */
+  "split3",                             /* name */
   gate_handle_split_before_regstack,    /* gate */
-  rest_of_handle_split_all_insns,       /* execute */
+  rest_of_handle_split_before_regstack, /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_SHORTEN_BRANCH,                    /* tv_id */
+  0,                                    /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
@@ -3638,3 +3397,71 @@ struct tree_opt_pass pass_split_before_regstack =
   TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };
+
+static bool
+gate_handle_split_before_sched2 (void)
+{
+#ifdef INSN_SCHEDULING
+  return optimize > 0 && flag_schedule_insns_after_reload;
+#else
+  return 0;
+#endif
+}
+
+static unsigned int
+rest_of_handle_split_before_sched2 (void)
+{
+#ifdef INSN_SCHEDULING
+  split_all_insns ();
+#endif
+  return 0;
+}
+
+struct tree_opt_pass pass_split_before_sched2 =
+{
+  "split4",                             /* name */
+  gate_handle_split_before_sched2,      /* gate */
+  rest_of_handle_split_before_sched2,   /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_verify_flow |
+  TODO_dump_func,                       /* todo_flags_finish */
+  0                                     /* letter */
+};
+
+/* The placement of the splitting that we do for shorten_branches
+   depends on whether regstack is used by the target or not.  */
+static bool
+gate_do_final_split (void)
+{
+#if defined (HAVE_ATTR_length) && !defined (STACK_REGS)
+  return 1;
+#else
+  return 0;
+#endif 
+}
+
+struct tree_opt_pass pass_split_for_shorten_branches =
+{
+  "split5",                             /* name */
+  gate_do_final_split,                  /* gate */
+  split_all_insns_noflow,               /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  0                                     /* letter */
+};
+
+

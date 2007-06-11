@@ -201,6 +201,21 @@ rtx_alloc_stat (RTX_CODE code MEM_STAT_DECL)
 }
 
 
+/* Return true if ORIG is a sharable CONST.  */
+
+bool
+shared_const_p (rtx orig)
+{
+  gcc_assert (GET_CODE (orig) == CONST);
+  
+  /* CONST can be shared if it contains a SYMBOL_REF.  If it contains
+     a LABEL_REF, it isn't sharable.  */
+  return (GET_CODE (XEXP (orig, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (orig, 0), 0)) == SYMBOL_REF
+	  && GET_CODE (XEXP (XEXP (orig, 0), 1)) == CONST_INT);
+}
+
+
 /* Create a new copy of an rtx.
    Recursively copies the operands of the rtx,
    except for those few rtx codes that are sharable.  */
@@ -234,11 +249,7 @@ copy_rtx (rtx orig)
       break;
 
     case CONST:
-      /* CONST can be shared if it contains a SYMBOL_REF.  If it contains
-	 a LABEL_REF, it isn't sharable.  */
-      if (GET_CODE (XEXP (orig, 0)) == PLUS
-	  && GET_CODE (XEXP (XEXP (orig, 0), 0)) == SYMBOL_REF
-	  && GET_CODE (XEXP (XEXP (orig, 0), 1)) == CONST_INT)
+      if (shared_const_p (orig))
 	return orig;
       break;
 

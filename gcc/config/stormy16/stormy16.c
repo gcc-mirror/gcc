@@ -1,6 +1,6 @@
 /* Xstormy16 target functions.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
-   Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+   2006, 2007 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -1000,10 +1000,10 @@ struct xstormy16_stack_layout
 
 /* Does REGNO need to be saved?  */
 #define REG_NEEDS_SAVE(REGNUM, IFUN)					\
-  ((regs_ever_live[REGNUM] && ! call_used_regs[REGNUM])			\
+  ((df_regs_ever_live_p (REGNUM) && ! call_used_regs[REGNUM])		\
    || (IFUN && ! fixed_regs[REGNUM] && call_used_regs[REGNUM]		\
        && (REGNO_REG_CLASS (REGNUM) != CARRY_REGS)			\
-       && (regs_ever_live[REGNUM] || ! current_function_is_leaf)))
+       && (df_regs_ever_live_p (REGNUM) || ! current_function_is_leaf)))
 
 /* Compute the stack layout.  */
 struct xstormy16_stack_layout 

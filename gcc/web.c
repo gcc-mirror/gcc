@@ -1,6 +1,6 @@
 /* Web construction code for GNU compiler.
    Contributed by Jan Hubicka.
-   Copyright (C) 2001, 2002, 2004, 2006
+   Copyright (C) 2001, 2002, 2004, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -102,25 +102,28 @@ unionfind_union (struct web_entry *first, struct web_entry *second)
    FUN is the function that does the union.  */
 
 void
-union_defs (struct df *df, struct df_ref *use, struct web_entry *def_entry,
+union_defs (struct df_ref *use, struct web_entry *def_entry,
  	    struct web_entry *use_entry,
  	    bool (*fun) (struct web_entry *, struct web_entry *))
 {
   rtx insn = DF_REF_INSN (use);
   struct df_link *link = DF_REF_CHAIN (use);
-  struct df_ref *use_link;
-  struct df_ref *def_link;
+  struct df_ref **use_link;
+  struct df_ref **eq_use_link;
+  struct df_ref **def_link;
   rtx set;
 
   if (insn)
     {
-      use_link = DF_INSN_USES (df, insn);
-      def_link = DF_INSN_DEFS (df, insn);
+      use_link = DF_INSN_USES (insn);
+      eq_use_link = DF_INSN_EQ_USES (insn);
+      def_link = DF_INSN_DEFS (insn);
       set = single_set (insn);
     }
   else
     {
       use_link = NULL;
+      eq_use_link = NULL;
       def_link = NULL;
       set = NULL;
     }
@@ -130,13 +133,24 @@ union_defs (struct df *df, struct df_ref *use, struct web_entry *def_entry,
      invalid instructions, so union all uses of the same operand for each
      insn.  */
 
-  while (use_link)
-    {
-      if (use != use_link
-	  && DF_REF_REAL_REG (use) == DF_REF_REAL_REG (use_link))
- 	(*fun) (use_entry + DF_REF_ID (use),
- 		use_entry + DF_REF_ID (use_link));
-      use_link = use_link->next_ref;
+  if (use_link)
+    while (*use_link)
+      {
+	if (use != *use_link
+	    && DF_REF_REAL_REG (use) == DF_REF_REAL_REG (*use_link))
+	  (*fun) (use_entry + DF_REF_ID (use),
+		  use_entry + DF_REF_ID (*use_link));
+	use_link++;
+      }
+
+  if (eq_use_link)
+    while (*eq_use_link)
+      {
+	if (use != *eq_use_link
+	    && DF_REF_REAL_REG (use) == DF_REF_REAL_REG (*eq_use_link))
+	  (*fun) (use_entry + DF_REF_ID (use),
+		  use_entry + DF_REF_ID (*eq_use_link));
+	eq_use_link++;
     }
 
   /* Recognize trivial noop moves and attempt to keep them as noop.
@@ -147,13 +161,14 @@ union_defs (struct df *df, struct df_ref *use, struct web_entry *def_entry,
       && SET_SRC (set) == DF_REF_REG (use)
       && SET_SRC (set) == SET_DEST (set))
     {
-      while (def_link)
-	{
-	  if (DF_REF_REAL_REG (use) == DF_REF_REAL_REG (def_link))
- 	    (*fun) (use_entry + DF_REF_ID (use),
- 		    def_entry + DF_REF_ID (def_link));
-	  def_link = def_link->next_ref;
-	}
+      if (def_link)
+	while (*def_link)
+	  {
+	    if (DF_REF_REAL_REG (use) == DF_REF_REAL_REG (*def_link))
+	      (*fun) (use_entry + DF_REF_ID (use),
+		      def_entry + DF_REF_ID (*def_link));
+	    def_link++;
+	  }
     }
   while (link)
     {
@@ -166,20 +181,21 @@ union_defs (struct df *df, struct df_ref *use, struct web_entry *def_entry,
      register.  Find it and union.  */
   if (use->flags & DF_REF_READ_WRITE)
     {
-      struct df_ref *link;
+      struct df_ref **link;
 
       if (DF_REF_INSN (use))
-	link = DF_INSN_DEFS (df, DF_REF_INSN (use));
+	link = DF_INSN_DEFS (DF_REF_INSN (use));
       else
 	link = NULL;
 
-      while (link)
-	{
-	  if (DF_REF_REAL_REG (link) == DF_REF_REAL_REG (use))
- 	    (*fun) (use_entry + DF_REF_ID (use),
- 		    def_entry + DF_REF_ID (link));
-	  link = link->next_ref;
-	}
+      if (link)
+	while (*link)
+	  {
+	    if (DF_REF_REAL_REG (*link) == DF_REF_REAL_REG (use))
+	      (*fun) (use_entry + DF_REF_ID (use),
+		      def_entry + DF_REF_ID (*link));
+	    link++;
+	  }
     }
 }
 
@@ -232,62 +248,17 @@ replace_ref (struct df_ref *ref, rtx reg)
 {
   rtx oldreg = DF_REF_REAL_REG (ref);
   rtx *loc = DF_REF_REAL_LOC (ref);
+  unsigned int uid = INSN_UID (DF_REF_INSN (ref));
 
   if (oldreg == reg)
     return;
   if (dump_file)
     fprintf (dump_file, "Updating insn %i (%i->%i)\n",
-	     INSN_UID (DF_REF_INSN (ref)), REGNO (oldreg), REGNO (reg)); 
+	     uid, REGNO (oldreg), REGNO (reg)); 
   *loc = reg;
+  df_insn_rescan (DF_REF_INSN (ref));
 }
 
-/* Main entry point.  */
-
-static void
-web_main (void)
-{
-  struct df *df;
-  struct web_entry *def_entry;
-  struct web_entry *use_entry;
-  unsigned int i;
-  int max = max_reg_num ();
-  char *used;
-
-  df = df_init (DF_EQUIV_NOTES);
-  df_chain_add_problem (df, DF_UD_CHAIN);
-  df_analyze (df);
-  df_reorganize_refs (&df->def_info);
-  df_reorganize_refs (&df->use_info);
-
-  def_entry = XCNEWVEC (struct web_entry, DF_DEFS_SIZE (df));
-  use_entry = XCNEWVEC (struct web_entry, DF_USES_SIZE (df));
-  used = XCNEWVEC (char, max);
-
-  if (dump_file)
-    df_dump (df, dump_file);
-
-  /* Produce the web.  */
-  for (i = 0; i < DF_USES_SIZE (df); i++)
-    union_defs (df, DF_USES_GET (df, i), def_entry, use_entry, unionfind_union);
-
-  /* Update the instruction stream, allocating new registers for split pseudos
-     in progress.  */
-  for (i = 0; i < DF_USES_SIZE (df); i++)
-    replace_ref (DF_USES_GET (df, i), 
-		 entry_register (use_entry + i, DF_USES_GET (df, i), used));
-  for (i = 0; i < DF_DEFS_SIZE (df); i++)
-    replace_ref (DF_DEFS_GET (df, i), 
-		 entry_register (def_entry + i, DF_DEFS_GET (df, i), used));
-
-  /* Dataflow information is corrupt here, but it can be easily updated
-     by creating new entries for new registers and updates or calling
-     df_insns_modify.  */
-  free (def_entry);
-  free (use_entry);
-  free (used);
-  df_finish (df);
-  df = NULL;
-}
 
 static bool
 gate_handle_web (void)
@@ -295,21 +266,117 @@ gate_handle_web (void)
   return (optimize > 0 && flag_web);
 }
 
+/* Main entry point.  */
+
 static unsigned int
-rest_of_handle_web (void)
+web_main (void)
 {
-  web_main ();
-  delete_trivially_dead_insns (get_insns (), max_reg_num ());
-  cleanup_cfg (CLEANUP_EXPENSIVE);
-  reg_scan (get_insns (), max_reg_num ());
+  struct web_entry *def_entry;
+  struct web_entry *use_entry;
+  unsigned int max = max_reg_num ();
+  char *used;
+  basic_block bb;
+  unsigned int uses_num = 0;
+  rtx insn;
+
+  df_set_flags (DF_NO_HARD_REGS + DF_EQ_NOTES);
+  df_chain_add_problem (DF_UD_CHAIN);
+  df_analyze ();
+  df_set_flags (DF_DEFER_INSN_RESCAN);
+
+  /* Assign ids to the uses.  */
+  FOR_ALL_BB (bb)
+    FOR_BB_INSNS (bb, insn)
+    {
+      unsigned int uid = INSN_UID (insn);
+      if (INSN_P (insn))
+	{
+	  struct df_ref **use_rec;
+	  for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
+	    {
+	      struct df_ref *use = *use_rec;
+	      if (DF_REF_REGNO (use) >= FIRST_PSEUDO_REGISTER)
+		DF_REF_ID (use) = uses_num++;
+	    }
+	  for (use_rec = DF_INSN_UID_EQ_USES (uid); *use_rec; use_rec++)
+	    {
+	      struct df_ref *use = *use_rec;
+	      if (DF_REF_REGNO (use) >= FIRST_PSEUDO_REGISTER)
+		DF_REF_ID (use) = uses_num++;
+	    }
+	}
+    }
+
+  /* Record the number of uses and defs at the beginning of the optimization.  */
+  def_entry = XCNEWVEC (struct web_entry, DF_DEFS_TABLE_SIZE());
+  used = XCNEWVEC (char, max);
+  use_entry = XCNEWVEC (struct web_entry, uses_num);
+
+  /* Produce the web.  */
+  FOR_ALL_BB (bb)
+    FOR_BB_INSNS (bb, insn)
+    {
+      unsigned int uid = INSN_UID (insn);
+      if (INSN_P (insn))
+	{
+	  struct df_ref **use_rec;
+	  for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
+	    {
+	      struct df_ref *use = *use_rec;
+	      if (DF_REF_REGNO (use) >= FIRST_PSEUDO_REGISTER)
+		union_defs (use, def_entry, use_entry, unionfind_union);
+	    }
+	  for (use_rec = DF_INSN_UID_EQ_USES (uid); *use_rec; use_rec++)
+	    {
+	      struct df_ref *use = *use_rec;
+	      if (DF_REF_REGNO (use) >= FIRST_PSEUDO_REGISTER)
+		union_defs (use, def_entry, use_entry, unionfind_union);
+	    }
+	}
+    }
+
+  /* Update the instruction stream, allocating new registers for split pseudos
+     in progress.  */
+  FOR_ALL_BB (bb)
+    FOR_BB_INSNS (bb, insn)
+    {
+      unsigned int uid = INSN_UID (insn);
+      if (INSN_P (insn))
+	{
+	  struct df_ref **use_rec;
+	  struct df_ref **def_rec;
+	  for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
+	    {
+	      struct df_ref *use = *use_rec;
+	      if (DF_REF_REGNO (use) >= FIRST_PSEUDO_REGISTER)
+		replace_ref (use, entry_register (use_entry + DF_REF_ID (use), use, used));
+	    }
+	  for (use_rec = DF_INSN_UID_EQ_USES (uid); *use_rec; use_rec++)
+	    {
+	      struct df_ref *use = *use_rec;
+	      if (DF_REF_REGNO (use) >= FIRST_PSEUDO_REGISTER)
+		replace_ref (use, entry_register (use_entry + DF_REF_ID (use), use, used));
+	    }
+	  for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
+	    {
+	      struct df_ref *def = *def_rec;
+	      if (DF_REF_REGNO (def) >= FIRST_PSEUDO_REGISTER)
+		replace_ref (def, entry_register (def_entry + DF_REF_ID (def), def, used));
+	    }
+	}
+    }
+
+  free (def_entry);
+  free (use_entry);
+  free (used);
   return 0;
 }
-
+
 struct tree_opt_pass pass_web =
 {
   "web",                                /* name */
   gate_handle_web,                      /* gate */
-  rest_of_handle_web,                   /* execute */
+  web_main,		                /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
@@ -318,6 +385,7 @@ struct tree_opt_pass pass_web =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
+  TODO_df_finish | 
   TODO_dump_func,                       /* todo_flags_finish */
   'Z'                                   /* letter */
 };

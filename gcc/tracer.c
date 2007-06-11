@@ -1,6 +1,7 @@
 /* The tracer pass for the GNU compiler.
    Contributed by Jan Hubicka, SuSE Labs.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -378,7 +379,7 @@ tracer (void)
     dump_flow_info (dump_file, dump_flags);
 
   /* Merge basic blocks in duplicated traces.  */
-  cleanup_cfg (CLEANUP_EXPENSIVE);
+  cleanup_cfg (0);
 }
 
 static bool
@@ -394,7 +395,6 @@ rest_of_handle_tracer (void)
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
   tracer ();
-  reg_scan (get_insns (), max_reg_num ());
   return 0;
 }
 

@@ -37,6 +37,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "real.h"
 #include "recog.h"
 #include "langhooks.h"
+#include "df.h"
 #include "target.h"
 
 static void store_fixed_bit_field (rtx, unsigned HOST_WIDE_INT,
@@ -150,7 +151,7 @@ init_expmed (void)
 
   PUT_CODE (&all.reg, REG);
   /* Avoid using hard regs in ways which may be unsupported.  */
-  REGNO (&all.reg) = LAST_VIRTUAL_REGISTER + 1;
+  SET_REGNO (&all.reg, LAST_VIRTUAL_REGISTER + 1);
 
   PUT_CODE (&all.plus, PLUS);
   XEXP (&all.plus, 0) = &all.reg;

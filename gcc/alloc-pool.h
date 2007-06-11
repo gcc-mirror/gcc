@@ -1,5 +1,5 @@
 /* Functions to support a pool of allocatable objects
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2007
    Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@cgsoftware.com>
 
@@ -37,7 +37,18 @@ typedef struct alloc_pool_def
   ALLOC_POOL_ID_TYPE id;
 #endif
   size_t elts_per_block;
-  alloc_pool_list free_list;
+
+  /* These are the elements that have been allocated at least once and freed.  */
+  alloc_pool_list returned_free_list;
+
+  /* These are the elements that have not yet been allocated out of
+     the last block obtained from XNEWVEC.  */
+  char* virgin_free_list;
+
+  /* The number of elements in the virgin_free_list that can be
+     allocated before needing another block.  */ 
+  size_t virgin_elts_remaining;
+
   size_t elts_allocated;
   size_t elts_free;
   size_t blocks_allocated;

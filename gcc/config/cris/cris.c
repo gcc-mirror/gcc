@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
@@ -578,13 +578,13 @@ static int
 cris_reg_saved_in_regsave_area (unsigned int regno, bool got_really_used)
 {
   return
-    (((regs_ever_live[regno]
+    (((df_regs_ever_live_p (regno)
        && !call_used_regs[regno])
       || (regno == PIC_OFFSET_TABLE_REGNUM
 	  && (got_really_used
 	      /* It is saved anyway, if there would be a gap.  */
 	      || (flag_pic
-		  && regs_ever_live[regno + 1]
+		  && df_regs_ever_live_p (regno + 1)
 		  && !call_used_regs[regno + 1]))))
      && (regno != FRAME_POINTER_REGNUM || !frame_pointer_needed)
      && regno != CRIS_SRP_REGNUM)
@@ -1122,7 +1122,7 @@ cris_return_addr_rtx (int count, rtx frameaddr ATTRIBUTE_UNUSED)
 bool
 cris_return_address_on_stack (void)
 {
-  return regs_ever_live[CRIS_SRP_REGNUM]
+  return df_regs_ever_live_p (CRIS_SRP_REGNUM)
     || cfun->machine->needs_return_address_on_stack;
 }
 

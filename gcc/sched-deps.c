@@ -1,7 +1,7 @@
 /* Instruction scheduling pass.  This file computes dependencies between
    instructions.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
@@ -42,7 +42,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "sched-int.h"
 #include "params.h"
 #include "cselib.h"
-#include "df.h"
 
 #ifdef ENABLE_CHECKING
 #define CHECK (true)
@@ -550,7 +549,7 @@ sched_insns_conditions_mutex_p (rtx insn1, rtx insn2)
 {
   rtx cond1, cond2;
 
-  /* flow.c doesn't handle conditional lifetimes entirely correctly;
+  /* df doesn't handle conditional lifetimes entirely correctly;
      calls mess up the conditional lifetimes.  */
   if (!CALL_P (insn1) && !CALL_P (insn2))
     {
@@ -1840,9 +1839,6 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
 
       if (INSN_P (insn))
 	{
-	  /* Clear out the stale LOG_LINKS from flow.  */
-	  free_INSN_LIST_list (&LOG_LINKS (insn));
-
 	  /* These two lists will be freed in schedule_insn ().  */
 	  INSN_BACK_DEPS (insn) = create_deps_list (false);
 	  INSN_RESOLVED_BACK_DEPS (insn) = create_deps_list (false);

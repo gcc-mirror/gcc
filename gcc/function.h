@@ -1,6 +1,6 @@
 /* Structure for saving state for a nested function.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,7 +21,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #ifndef GCC_FUNCTION_H
 #define GCC_FUNCTION_H
-
 #include "tree.h"
 #include "hashtab.h"
 
@@ -307,13 +306,6 @@ struct function GTY(())
   /* Function sequence number for profiling, debugging, etc.  */
   int funcdef_no;
 
-  /* For flow.c.  */
-
-  /* Highest loop depth seen so far in loop analysis.  Used in flow.c
-     for the "failure strategy" when doing liveness analysis starting
-     with non-empty initial sets.  */
-  int max_loop_depth;
-
   /* For md files.  */
 
   /* tm.h can use this to store whatever it likes.  */
@@ -537,6 +529,7 @@ extern int trampolines_created;
 #define avail_temp_slots (cfun->x_avail_temp_slots)
 #define temp_slot_level (cfun->x_temp_slot_level)
 #define nonlocal_goto_handler_labels (cfun->x_nonlocal_goto_handler_labels)
+#define rtl_df (cfun->df)
 #define current_loops (cfun->x_current_loops)
 #define VALUE_HISTOGRAMS(fun) (fun)->value_histograms
 
@@ -583,6 +576,8 @@ extern rtx get_arg_pointer_save_area (struct function *);
 
 /* Returns the name of the current function.  */
 extern const char *current_function_name (void);
+/* Returns the assembler name (raw, mangled) of the current function.  */
+extern const char *current_function_assembler_name (void);
 
 extern void do_warn_unused_parameter (tree);
 

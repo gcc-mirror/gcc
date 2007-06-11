@@ -1,6 +1,7 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -67,17 +68,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target.h"
 #include "timevar.h"
 #include "tree-pass.h"
-
-/* Define when we want to do count REG_DEAD notes before and after scheduling
-   for sanity checking.  We can't do that when conditional execution is used,
-   as REG_DEAD exist only for unconditional deaths.  */
-
-#if !defined (HAVE_conditional_execution) && defined (ENABLE_CHECKING)
-#define CHECK_DEAD_NOTES 1
-#else
-#define CHECK_DEAD_NOTES 0
-#endif
-
+#include "dbgcnt.h"
 
 #ifdef INSN_SCHEDULING
 /* Some accessor macros for h_i_d members only used within this file.  */
@@ -320,8 +311,8 @@ is_cfg_nonregular (void)
     return 1;
 
   /* If we have exception handlers, then we consider the cfg not well
-     structured.  ?!?  We should be able to handle this now that flow.c
-     computes an accurate cfg for EH.  */
+     structured.  ?!?  We should be able to handle this now that we
+     compute an accurate cfg for EH.  */
   if (current_function_has_exception_handlers ())
     return 1;
 
@@ -1040,7 +1031,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
   max_hdr = xmalloc (last_basic_block * sizeof (*max_hdr));
 
   order = xmalloc (last_basic_block * sizeof (*order));
-  post_order_compute (order, false);
+  post_order_compute (order, false, false);
 
   for (i = nblocks - 1; i >= 0; i--)
     {
@@ -1500,6 +1491,8 @@ debug_candidates (int trg)
 
 /* Functions for speculative scheduling.  */
 
+static bitmap_head not_in_df;
+
 /* Return 0 if x is a set of a register alive in the beginning of one
    of the split-blocks of src, otherwise return 1.  */
 
@@ -1551,18 +1544,15 @@ check_live_1 (int src, rtx x)
 	      for (i = 0; i < candidate_table[src].split_bbs.nr_members; i++)
 		{
 		  basic_block b = candidate_table[src].split_bbs.first_member[i];
+		  int t = bitmap_bit_p (&not_in_df, b->index);
 
 		  /* We can have split blocks, that were recently generated.
 		     such blocks are always outside current region.  */
-		  gcc_assert (glat_start[b->index]
-			      || CONTAINING_RGN (b->index)
-			      != CONTAINING_RGN (BB_TO_BLOCK (src)));
-		  if (!glat_start[b->index]
-		      || REGNO_REG_SET_P (glat_start[b->index],
-					  regno + j))
-		    {
-		      return 0;
-		    }
+		  gcc_assert (!t || (CONTAINING_RGN (b->index)
+				     != CONTAINING_RGN (BB_TO_BLOCK (src))));
+
+		  if (t || REGNO_REG_SET_P (DF_LIVE_IN (b), regno + j))
+		    return 0;
 		}
 	    }
 	}
@@ -1572,15 +1562,13 @@ check_live_1 (int src, rtx x)
 	  for (i = 0; i < candidate_table[src].split_bbs.nr_members; i++)
 	    {
 	      basic_block b = candidate_table[src].split_bbs.first_member[i];
+	      int t = bitmap_bit_p (&not_in_df, b->index);
 
-	      gcc_assert (glat_start[b->index]
-			  || CONTAINING_RGN (b->index)
-			  != CONTAINING_RGN (BB_TO_BLOCK (src)));
-	      if (!glat_start[b->index]
-		  || REGNO_REG_SET_P (glat_start[b->index], regno))
-		{
-		  return 0;
-		}
+	      gcc_assert (!t || (CONTAINING_RGN (b->index)
+				 != CONTAINING_RGN (BB_TO_BLOCK (src))));
+
+	      if (t || REGNO_REG_SET_P (DF_LIVE_IN (b), regno))
+		return 0;
 	    }
 	}
     }
@@ -1636,7 +1624,7 @@ update_live_1 (int src, rtx x)
 		{
 		  basic_block b = candidate_table[src].update_bbs.first_member[i];
 
-		  SET_REGNO_REG_SET (glat_start[b->index], regno + j);
+		  SET_REGNO_REG_SET (DF_LIVE_IN (b), regno + j);
 		}
 	    }
 	}
@@ -1646,7 +1634,7 @@ update_live_1 (int src, rtx x)
 	    {
 	      basic_block b = candidate_table[src].update_bbs.first_member[i];
 
-	      SET_REGNO_REG_SET (glat_start[b->index], regno);
+	      SET_REGNO_REG_SET (DF_LIVE_IN (b), regno);
 	    }
 	}
     }
@@ -1940,10 +1928,6 @@ static void extend_regions (void);
 static void add_block1 (basic_block, basic_block);
 static void fix_recovery_cfg (int, int, int);
 static basic_block advance_target_bb (basic_block, rtx);
-static void check_dead_notes1 (int, sbitmap);
-#ifdef ENABLE_CHECKING
-static int region_head_or_leaf_p (basic_block, int);
-#endif
 
 static void debug_rgn_dependencies (int);
 
@@ -2211,13 +2195,7 @@ static struct sched_info region_sched_info =
   add_block1,
   advance_target_bb,
   fix_recovery_cfg,
-#ifdef ENABLE_CHECKING
-  region_head_or_leaf_p,
-#endif
-  SCHED_RGN | USE_GLAT
-#ifdef ENABLE_CHECKING
-  | DETACH_LIFE_INFO
-#endif
+  SCHED_RGN
 };
 
 /* Determine if PAT sets a CLASS_LIKELY_SPILLED_P register.  */
@@ -2826,9 +2804,16 @@ schedule_region (int rgn)
       current_sched_info->queue_must_finish_empty = current_nr_blocks == 1;
 
       curr_bb = first_bb;
-      schedule_block (&curr_bb, rgn_n_insns);
-      gcc_assert (EBB_FIRST_BB (bb) == first_bb);
-      sched_rgn_n_insns += sched_n_insns;
+      if (dbg_cnt (sched_block))
+        {
+          schedule_block (&curr_bb, rgn_n_insns);
+          gcc_assert (EBB_FIRST_BB (bb) == first_bb);
+          sched_rgn_n_insns += sched_n_insns;
+        }
+      else
+        {
+          sched_rgn_n_insns += rgn_n_insns;
+        }
 
       /* Clean up.  */
       if (current_nr_blocks > 1)
@@ -2855,18 +2840,11 @@ schedule_region (int rgn)
     }
 }
 
-/* Indexed by region, holds the number of death notes found in that region.
-   Used for consistency checks.  */
-static int *deaths_in_region;
-
 /* Initialize data structures for region scheduling.  */
 
 static void
 init_regions (void)
 {
-  sbitmap blocks;
-  int rgn;
-
   nr_regions = 0;
   rgn_table = 0;
   rgn_bb_table = 0;
@@ -2894,25 +2872,11 @@ init_regions (void)
 	debug_regions ();
 
       /* For now.  This will move as more and more of haifa is converted
-	 to using the cfg code in flow.c.  */
+	 to using the cfg code.  */
       free_dominance_info (CDI_DOMINATORS);
     }
   RGN_BLOCKS (nr_regions) = RGN_BLOCKS (nr_regions - 1) +
     RGN_NR_BLOCKS (nr_regions - 1);
-
-
-  if (CHECK_DEAD_NOTES)
-    {
-      blocks = sbitmap_alloc (last_basic_block);
-      deaths_in_region = XNEWVEC (int, nr_regions);
-      /* Remove all death notes from the subroutine.  */
-      for (rgn = 0; rgn < nr_regions; rgn++)
-        check_dead_notes1 (rgn, blocks);
-
-      sbitmap_free (blocks);
-    }
-  else
-    count_or_remove_death_notes (NULL, 1);
 }
 
 /* The one entry point in this file.  */
@@ -2920,10 +2884,7 @@ init_regions (void)
 void
 schedule_insns (void)
 {
-  sbitmap large_region_blocks, blocks;
   int rgn;
-  int any_large_regions;
-  basic_block bb;
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
@@ -2937,7 +2898,15 @@ schedule_insns (void)
      invoked via sched_init.  */
   current_sched_info = &region_sched_info;
 
+  df_set_flags (DF_LR_RUN_DCE);
+  df_note_add_problem ();
+  df_analyze ();
+  regstat_compute_calls_crossed ();
+
   sched_init ();
+
+  bitmap_initialize (&not_in_df, 0);
+  bitmap_clear (&not_in_df);
 
   min_spec_prob = ((PARAM_VALUE (PARAM_MIN_SPEC_PROB) * REG_BR_PROB_BASE)
 		    / 100);
@@ -2950,92 +2919,14 @@ schedule_insns (void)
   
   /* Schedule every region in the subroutine.  */
   for (rgn = 0; rgn < nr_regions; rgn++)
-    schedule_region (rgn);
+    if (dbg_cnt (sched_region))
+      schedule_region (rgn);
   
   free(ebb_head);
-
-  /* Update life analysis for the subroutine.  Do single block regions
-     first so that we can verify that live_at_start didn't change.  Then
-     do all other blocks.  */
-  /* ??? There is an outside possibility that update_life_info, or more
-     to the point propagate_block, could get called with nonzero flags
-     more than once for one basic block.  This would be kinda bad if it
-     were to happen, since REG_INFO would be accumulated twice for the
-     block, and we'd have twice the REG_DEAD notes.
-
-     I'm fairly certain that this _shouldn't_ happen, since I don't think
-     that live_at_start should change at region heads.  Not sure what the
-     best way to test for this kind of thing...  */
-
-  if (current_sched_info->flags & DETACH_LIFE_INFO)
-    /* this flag can be set either by the target or by ENABLE_CHECKING.  */
-    attach_life_info ();
-
-  allocate_reg_life_data ();
-
-  any_large_regions = 0;
-  large_region_blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (large_region_blocks);
-  FOR_EACH_BB (bb)
-    SET_BIT (large_region_blocks, bb->index);
-
-  blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (blocks);
-
-  /* Update life information.  For regions consisting of multiple blocks
-     we've possibly done interblock scheduling that affects global liveness.
-     For regions consisting of single blocks we need to do only local
-     liveness.  */
-  for (rgn = 0; rgn < nr_regions; rgn++)    
-    if (RGN_NR_BLOCKS (rgn) > 1
-	/* Or the only block of this region has been split.  */
-	|| RGN_HAS_REAL_EBB (rgn)
-	/* New blocks (e.g. recovery blocks) should be processed
-	   as parts of large regions.  */
-	|| !glat_start[rgn_bb_table[RGN_BLOCKS (rgn)]])
-      any_large_regions = 1;
-    else
-      {
-	SET_BIT (blocks, rgn_bb_table[RGN_BLOCKS (rgn)]);
-	RESET_BIT (large_region_blocks, rgn_bb_table[RGN_BLOCKS (rgn)]);
-      }
-
-  /* Don't update reg info after reload, since that affects
-     regs_ever_live, which should not change after reload.  */
-  update_life_info (blocks, UPDATE_LIFE_LOCAL,
-		    (reload_completed ? PROP_DEATH_NOTES
-		     : (PROP_DEATH_NOTES | PROP_REG_INFO)));
-  if (any_large_regions)
-    {
-      update_life_info (large_region_blocks, UPDATE_LIFE_GLOBAL,
-			(reload_completed ? PROP_DEATH_NOTES
-			 : (PROP_DEATH_NOTES | PROP_REG_INFO)));
-
-#ifdef ENABLE_CHECKING
-      check_reg_live (true);
-#endif
-    }
-
-  if (CHECK_DEAD_NOTES)
-    {
-      /* Verify the counts of basic block notes in single basic block
-         regions.  */
-      for (rgn = 0; rgn < nr_regions; rgn++)
-	if (RGN_NR_BLOCKS (rgn) == 1)
-	  {
-	    sbitmap_zero (blocks);
-	    SET_BIT (blocks, rgn_bb_table[RGN_BLOCKS (rgn)]);
-
-	    gcc_assert (deaths_in_region[rgn]
-			== count_or_remove_death_notes (blocks, 0));
-	  }
-      free (deaths_in_region);
-    }
-
   /* Reposition the prologue and epilogue notes in case we moved the
      prologue/epilogue insns.  */
   if (reload_completed)
-    reposition_prologue_and_epilogue_notes (get_insns ());
+    reposition_prologue_and_epilogue_notes ();
 
   if (sched_verbose)
     {
@@ -3056,10 +2947,11 @@ schedule_insns (void)
   free (block_to_bb);
   free (containing_rgn);
 
-  sched_finish ();
+  regstat_free_calls_crossed ();
 
-  sbitmap_free (blocks);
-  sbitmap_free (large_region_blocks);
+  bitmap_clear (&not_in_df);
+
+  sched_finish ();
 }
 
 /* INSN has been added to/removed from current region.  */
@@ -3096,6 +2988,8 @@ add_block1 (basic_block bb, basic_block after)
 {
   extend_regions ();
 
+  bitmap_set_bit (&not_in_df, bb->index);
+
   if (after == 0 || after == EXIT_BLOCK_PTR)
     {
       int i;
@@ -3113,17 +3007,6 @@ add_block1 (basic_block bb, basic_block after)
       nr_regions++;
       
       RGN_BLOCKS (nr_regions) = i + 1;
-
-      if (CHECK_DEAD_NOTES)
-        {
-          sbitmap blocks = sbitmap_alloc (last_basic_block);
-          deaths_in_region = xrealloc (deaths_in_region, nr_regions *
-				       sizeof (*deaths_in_region));
-
-          check_dead_notes1 (nr_regions - 1, blocks);
-      
-          sbitmap_free (blocks);
-        }
     }
   else
     { 
@@ -3176,9 +3059,6 @@ add_block1 (basic_block bb, basic_block after)
 
       for (++i; i <= nr_regions; i++)
 	RGN_BLOCKS (i)++;
-
-      /* We don't need to call check_dead_notes1 () because this new block
-	 is just a split of the old.  We don't want to count anything twice.  */
     }
 }
 
@@ -3228,56 +3108,13 @@ advance_target_bb (basic_block bb, rtx insn)
   return bb->next_bb;
 }
 
-/* Count and remove death notes in region RGN, which consists of blocks
-   with indecies in BLOCKS.  */
-static void
-check_dead_notes1 (int rgn, sbitmap blocks)
-{
-  int b;
-
-  sbitmap_zero (blocks);
-  for (b = RGN_NR_BLOCKS (rgn) - 1; b >= 0; --b)
-    SET_BIT (blocks, rgn_bb_table[RGN_BLOCKS (rgn) + b]);
-
-  deaths_in_region[rgn] = count_or_remove_death_notes (blocks, 1);
-}
-
-#ifdef ENABLE_CHECKING
-/* Return non zero, if BB is head or leaf (depending of LEAF_P) block in
-   current region.  For more information please refer to
-   sched-int.h: struct sched_info: region_head_or_leaf_p.  */
-static int
-region_head_or_leaf_p (basic_block bb, int leaf_p)
-{
-  if (!leaf_p)    
-    return bb->index == rgn_bb_table[RGN_BLOCKS (CONTAINING_RGN (bb->index))];
-  else
-    {
-      int i;
-      edge e;
-      edge_iterator ei;
-      
-      i = CONTAINING_RGN (bb->index);
-
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->dest != EXIT_BLOCK_PTR
-            && CONTAINING_RGN (e->dest->index) == i
-	    /* except self-loop.  */
-	    && e->dest != bb)
-	  return 0;
-      
-      return 1;
-    }
-}
-#endif /* ENABLE_CHECKING  */
-
 #endif
 
 static bool
 gate_handle_sched (void)
 {
 #ifdef INSN_SCHEDULING
-  return flag_schedule_insns;
+  return flag_schedule_insns && dbg_cnt (sched_func);
 #else
   return 0;
 #endif
@@ -3288,9 +3125,6 @@ static unsigned int
 rest_of_handle_sched (void)
 {
 #ifdef INSN_SCHEDULING
-  /* Do control and data sched analysis,
-     and write some of the results to dump file.  */
-
   schedule_insns ();
 #endif
   return 0;
@@ -3300,7 +3134,8 @@ static bool
 gate_handle_sched2 (void)
 {
 #ifdef INSN_SCHEDULING
-  return optimize > 0 && flag_schedule_insns_after_reload;
+  return optimize > 0 && flag_schedule_insns_after_reload 
+    && dbg_cnt (sched2_func);
 #else
   return 0;
 #endif
@@ -3313,17 +3148,8 @@ rest_of_handle_sched2 (void)
 #ifdef INSN_SCHEDULING
   /* Do control and data sched analysis again,
      and write some more of the results to dump file.  */
-
-  split_all_insns (1);
-
   if (flag_sched2_use_superblocks || flag_sched2_use_traces)
-    {
-      schedule_ebbs ();
-      /* No liveness updating code yet, but it should be easy to do.
-         reg-stack recomputes the liveness when needed for now.  */
-      count_or_remove_death_notes (NULL, 1);
-      cleanup_cfg (CLEANUP_EXPENSIVE);
-    }
+    schedule_ebbs ();
   else
     schedule_insns ();
 #endif
@@ -3343,7 +3169,9 @@ struct tree_opt_pass pass_sched =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
+  TODO_df_finish |
   TODO_dump_func |
+  TODO_verify_flow |
   TODO_ggc_collect,                     /* todo_flags_finish */
   'S'                                   /* letter */
 };
@@ -3361,7 +3189,9 @@ struct tree_opt_pass pass_sched2 =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
+  TODO_df_finish |
   TODO_dump_func |
+  TODO_verify_flow |
   TODO_ggc_collect,                     /* todo_flags_finish */
   'R'                                   /* letter */
 };

@@ -1,5 +1,5 @@
 /* DDG - Data Dependence Graph implementation.
-   Copyright (C) 2004, 2005, 2006
+   Copyright (C) 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Ayal Zaks and Mustafa Hagog <zaks,mustafa@il.ibm.com>
 
@@ -43,7 +43,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "sbitmap.h"
 #include "expr.h"
 #include "bitmap.h"
-#include "df.h"
 #include "ddg.h"
 
 /* A flag indicating that a ddg edge belongs to an SCC or not.  */
@@ -230,10 +229,10 @@ create_ddg_dep_no_link (ddg_ptr g, ddg_node_ptr from, ddg_node_ptr to,
    for all its uses in the next iteration, and an output dependence to the
    first def of the next iteration.  */
 static void
-add_deps_for_def (ddg_ptr g, struct df *df, struct df_ref *rd)
+add_deps_for_def (ddg_ptr g, struct df_ref *rd)
 {
   int regno = DF_REF_REGNO (rd);
-  struct df_ru_bb_info *bb_info = DF_RU_BB_INFO (df, g->bb);
+  struct df_ru_bb_info *bb_info = DF_RU_BB_INFO (g->bb);
   struct df_link *r_use;
   int use_before_def = false;
   rtx def_insn = DF_REF_INSN (rd);
@@ -265,7 +264,7 @@ add_deps_for_def (ddg_ptr g, struct df *df, struct df_ref *rd)
      there is a use between the two defs.  */
   if (! use_before_def)
     {
-      struct df_ref *def = df_bb_regno_first_def_find (df, g->bb, regno);
+      struct df_ref *def = df_bb_regno_first_def_find (g->bb, regno);
       int i;
       ddg_node_ptr dest_node;
 
@@ -274,7 +273,7 @@ add_deps_for_def (ddg_ptr g, struct df *df, struct df_ref *rd)
 
       /* Check if there are uses after RD.  */
       for (i = src_node->cuid + 1; i < g->num_nodes; i++)
-	 if (df_find_use (df, g->nodes[i].insn, rd->reg))
+	 if (df_find_use (g->nodes[i].insn, DF_REF_REG (rd)))
 	   return;
 
       dest_node = get_node_of_insn (g, def->insn);
@@ -286,16 +285,16 @@ add_deps_for_def (ddg_ptr g, struct df *df, struct df_ref *rd)
    (nearest BLOCK_BEGIN) def of the next iteration, unless USE is followed
    by a def in the block.  */
 static void
-add_deps_for_use (ddg_ptr g, struct df *df, struct df_ref *use)
+add_deps_for_use (ddg_ptr g, struct df_ref *use)
 {
   int i;
   int regno = DF_REF_REGNO (use);
-  struct df_ref *first_def = df_bb_regno_first_def_find (df, g->bb, regno);
+  struct df_ref *first_def = df_bb_regno_first_def_find (g->bb, regno);
   ddg_node_ptr use_node;
   ddg_node_ptr def_node;
   struct df_rd_bb_info *bb_info;
 
-  bb_info = DF_RD_BB_INFO (df, g->bb);
+  bb_info = DF_RD_BB_INFO (g->bb);
 
   if (!first_def)
     return;
@@ -307,7 +306,7 @@ add_deps_for_use (ddg_ptr g, struct df *df, struct df_ref *use)
 
   /* Make sure there are no defs after USE.  */
   for (i = use_node->cuid + 1; i < g->num_nodes; i++)
-     if (df_find_def (df, g->nodes[i].insn, use->reg))
+     if (df_find_def (g->nodes[i].insn, DF_REF_REG (use)))
        return;
   /* We must not add ANTI dep when there is an intra-loop TRUE dep in
      the opposite direction. If the first_def reaches the USE then there is
@@ -318,35 +317,35 @@ add_deps_for_use (ddg_ptr g, struct df *df, struct df_ref *use)
 
 /* Build inter-loop dependencies, by looking at DF analysis backwards.  */
 static void
-build_inter_loop_deps (ddg_ptr g, struct df *df)
+build_inter_loop_deps (ddg_ptr g)
 {
   unsigned rd_num, u_num;
   struct df_rd_bb_info *rd_bb_info;
   struct df_ru_bb_info *ru_bb_info;
   bitmap_iterator bi;
 
-  rd_bb_info = DF_RD_BB_INFO (df, g->bb);
+  rd_bb_info = DF_RD_BB_INFO (g->bb);
 
   /* Find inter-loop output and true deps by connecting downward exposed defs
      to the first def of the BB and to upwards exposed uses.  */
   EXECUTE_IF_SET_IN_BITMAP (rd_bb_info->gen, 0, rd_num, bi)
     {
-      struct df_ref *rd = DF_DEFS_GET (df, rd_num);
+      struct df_ref *rd = DF_DEFS_GET (rd_num);
 
-      add_deps_for_def (g, df, rd);
+      add_deps_for_def (g, rd);
     }
 
-  ru_bb_info = DF_RU_BB_INFO (df, g->bb);
+  ru_bb_info = DF_RU_BB_INFO (g->bb);
 
   /* Find inter-loop anti deps.  We are interested in uses of the block that
      appear below all defs; this implies that these uses are killed.  */
   EXECUTE_IF_SET_IN_BITMAP (ru_bb_info->kill, 0, u_num, bi)
     {
-      struct df_ref *use = DF_USES_GET (df, u_num);
-
-      /* We are interested in uses of this BB.  */
-      if (BLOCK_FOR_INSN (use->insn) == g->bb)
-      	add_deps_for_use (g, df, use);
+      struct df_ref *use = DF_USES_GET (u_num);
+      if (!(DF_REF_FLAGS (use) & DF_REF_IN_NOTE))
+	/* We are interested in uses of this BB.  */
+	if (BLOCK_FOR_INSN (use->insn) == g->bb)
+	  add_deps_for_use (g, use);
     }
 }
 
@@ -443,7 +442,7 @@ build_intra_loop_deps (ddg_ptr g)
    of ddg type that represents it.
    Initialize the ddg structure fields to the appropriate values.  */
 ddg_ptr
-create_ddg (basic_block bb, struct df *df, int closing_branch_deps)
+create_ddg (basic_block bb, int closing_branch_deps)
 {
   ddg_ptr g;
   rtx insn, first_note;
@@ -520,7 +519,7 @@ create_ddg (basic_block bb, struct df *df, int closing_branch_deps)
 
   /* Build the data dependency graph.  */
   build_intra_loop_deps (g);
-  build_inter_loop_deps (g, df);
+  build_inter_loop_deps (g);
   return g;
 }
 

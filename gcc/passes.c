@@ -83,6 +83,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-flow.h"
 #include "tree-pass.h"
 #include "tree-dump.h"
+#include "df.h"
 #include "predict.h"
 
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
@@ -101,6 +102,33 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "xcoffout.h"		/* Needed for external data
 				   declarations for e.g. AIX 4.x.  */
 #endif
+
+/* This is used for debugging.  It allows the current pass to printed
+   from anywhere in compilation.  */
+struct tree_opt_pass *current_pass;
+
+/* Call from anywhere to find out what pass this is.  Useful for
+   printing out debugging information deep inside an service
+   routine.  */
+void
+print_current_pass (FILE *file)
+{
+  if (current_pass)
+    fprintf (file, "current pass = %s (%d)\n", 
+	     current_pass->name, current_pass->static_pass_number);
+  else
+    fprintf (file, "no current pass.\n");
+}
+
+
+/* Call from the debugger to get the current pass name.  */
+void
+debug_pass (void)
+{
+  print_current_pass (stderr);
+} 
+
+
 
 /* Global variables used to communicate with passes.  */
 int dump_flags;
@@ -418,6 +446,7 @@ next_pass_1 (struct tree_opt_pass **list, struct tree_opt_pass *pass)
           
 }
 
+
 /* Construct the pass tree.  The sequencing of passes is driven by
    the cgraph routines:
 
@@ -668,6 +697,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_into_cfg_layout_mode);
       NEXT_PASS (pass_jump2);
       NEXT_PASS (pass_lower_subreg);
+      NEXT_PASS (pass_df_initialize_opt);
       NEXT_PASS (pass_cse);
       NEXT_PASS (pass_rtl_fwprop);
       NEXT_PASS (pass_gcse);
@@ -690,39 +720,57 @@ init_optimization_passes (void)
       NEXT_PASS (pass_web);
       NEXT_PASS (pass_jump_bypass);
       NEXT_PASS (pass_cse2);
+      NEXT_PASS (pass_rtl_dse1);
       NEXT_PASS (pass_rtl_fwprop_addr);
+      NEXT_PASS (pass_regclass_init);
+      NEXT_PASS (pass_inc_dec);
+      NEXT_PASS (pass_initialize_regs);
+      NEXT_PASS (pass_no_new_pseudos);
       NEXT_PASS (pass_outof_cfg_layout_mode);
-      NEXT_PASS (pass_life);
+      NEXT_PASS (pass_ud_rtl_dce);
       NEXT_PASS (pass_combine);
       NEXT_PASS (pass_if_after_combine);
       NEXT_PASS (pass_partition_blocks);
       NEXT_PASS (pass_regmove);
       NEXT_PASS (pass_split_all_insns);
       NEXT_PASS (pass_lower_subreg2);
+      NEXT_PASS (pass_df_initialize_no_opt);
+      NEXT_PASS (pass_stack_ptr_mod);
       NEXT_PASS (pass_mode_switching);
       NEXT_PASS (pass_see);
-      NEXT_PASS (pass_recompute_reg_usage);
       NEXT_PASS (pass_sms);
       NEXT_PASS (pass_sched);
+      NEXT_PASS (pass_subregs_of_mode_init);
       NEXT_PASS (pass_local_alloc);
       NEXT_PASS (pass_global_alloc);
+      NEXT_PASS (pass_subregs_of_mode_finish);
       NEXT_PASS (pass_postreload);
 	{
 	  struct tree_opt_pass **p = &pass_postreload.sub;
 	  NEXT_PASS (pass_postreload_cse);
 	  NEXT_PASS (pass_gcse2);
-	  NEXT_PASS (pass_flow2);
+	  NEXT_PASS (pass_split_after_reload);
+	  NEXT_PASS (pass_branch_target_load_optimize1);
+	  NEXT_PASS (pass_thread_prologue_and_epilogue);
+	  NEXT_PASS (pass_rtl_dse2);
 	  NEXT_PASS (pass_rtl_seqabstr);
 	  NEXT_PASS (pass_stack_adjustments);
 	  NEXT_PASS (pass_peephole2);
 	  NEXT_PASS (pass_if_after_reload);
 	  NEXT_PASS (pass_regrename);
+	  NEXT_PASS (pass_cprop_hardreg);
+	  NEXT_PASS (pass_fast_rtl_dce);
 	  NEXT_PASS (pass_reorder_blocks);
-	  NEXT_PASS (pass_branch_target_load_optimize);
+	  NEXT_PASS (pass_branch_target_load_optimize2);
 	  NEXT_PASS (pass_leaf_regs);
+	  NEXT_PASS (pass_split_before_sched2);
 	  NEXT_PASS (pass_sched2);
-	  NEXT_PASS (pass_split_before_regstack);
 	  NEXT_PASS (pass_stack_regs);
+	    {
+	      struct tree_opt_pass **p = &pass_stack_regs.sub;
+	      NEXT_PASS (pass_split_before_regstack);
+	      NEXT_PASS (pass_stack_regs_run);
+	    }
 	  NEXT_PASS (pass_compute_alignments);
 	  NEXT_PASS (pass_duplicate_computed_gotos);
 	  NEXT_PASS (pass_variable_tracking);
@@ -730,6 +778,7 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_machine_reorg);
 	  NEXT_PASS (pass_cleanup_barriers);
 	  NEXT_PASS (pass_delay_slots);
+	  NEXT_PASS (pass_df_finish);
 	  NEXT_PASS (pass_split_for_shorten_branches);
 	  NEXT_PASS (pass_convert_to_eh_region_ranges);
 	  NEXT_PASS (pass_shorten_branches);
@@ -964,6 +1013,11 @@ execute_todo (unsigned int flags)
     {
       ggc_collect ();
     }
+
+  /* Now that the dumping has been done, we can get rid of the optional 
+     df problems.  */
+  if (flags & TODO_df_finish)
+    df_finish_pass ();
 }
 
 /* Verify invariants that should hold between passes.  This is a place
@@ -1013,6 +1067,7 @@ execute_one_pass (struct tree_opt_pass *pass)
   bool initializing_dump;
   unsigned int todo_after = 0;
 
+  current_pass = pass;
   /* See if we're supposed to run this pass.  */
   if (pass->gate && !pass->gate ())
     return false;
@@ -1106,6 +1161,7 @@ execute_one_pass (struct tree_opt_pass *pass)
       dump_file = NULL;
     }
 
+  current_pass = NULL;
   /* Reset in_gimple_form to not break non-unit-at-a-time mode.  */
   in_gimple_form = false;
 
