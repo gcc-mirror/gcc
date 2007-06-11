@@ -1,3 +1,9 @@
+2007-06-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/32279
+	* fold-const (fold_binary) [RDIV_EXPR]: Optimize a/sqrt(b/c)
+	into a*sqrt(c/b) if flag_unsafe_math_optimizations is set.
+
 2007-06-10  Jan Sjodin  <jan.sjodin@amd.com>
 	    Sebastian Pop  <sebpop@gmail.com>
 

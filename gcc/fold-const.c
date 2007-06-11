@@ -10555,6 +10555,24 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		}
 	    }
 
+	  /* Optimize a/sqrt(b/c) into a*sqrt(c/b).  */
+	  if (BUILTIN_SQRT_P (fcode1))
+	    {
+	      tree rootarg = CALL_EXPR_ARG (arg1, 0);
+
+	      if (TREE_CODE (rootarg) == RDIV_EXPR)
+		{
+		  tree rootfn = TREE_OPERAND (CALL_EXPR_FN (arg1), 0);
+		  tree b = TREE_OPERAND (rootarg, 0);
+		  tree c = TREE_OPERAND (rootarg, 1);
+
+		  tree tmp = fold_build2 (RDIV_EXPR, type, c, b);
+
+		  tmp = build_call_expr (rootfn, 1, tmp);
+		  return fold_build2 (MULT_EXPR, type, arg0, tmp);
+		}
+	    }
+
 	  /* Optimize x/expN(y) into x*expN(-y).  */
 	  if (BUILTIN_EXPONENT_P (fcode1))
 	    {
