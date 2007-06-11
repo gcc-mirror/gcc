@@ -4540,12 +4540,19 @@ find_what_p_points_to (tree p)
 	  finished_solution = BITMAP_GGC_ALLOC ();
 	  stats.points_to_sets_created++;
 	  
-	  /* Instead of using pt_anything, we instead merge in the SMT
-	     aliases for the underlying SMT.  In addition, if they
-	     could have pointed to anything, they could point to
-	     global memory.  */
+	  /* Instead of using pt_anything, we merge in the SMT aliases
+	     for the underlying SMT.  In addition, if they could have
+	     pointed to anything, they could point to global memory.
+	     But we cannot do that for ref-all pointers because these
+	     aliases have not been computed yet.  */
 	  if (was_pt_anything)
 	    {
+	      if (PTR_IS_REF_ALL (p))
+		{
+		  pi->pt_anything = 1;
+		  return false;
+		}
+
 	      merge_smts_into (p, finished_solution);
 	      pi->pt_global_mem = 1;
 	    }
