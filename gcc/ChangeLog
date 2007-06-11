@@ -1,5 +1,9 @@
 2007-06-11  Kenneth Zadeck <zadeck@naturalbridge.com>
 
+	* reload1.c (mark_home_live_1): Use the mode parameter.
+
+2007-06-11  Kenneth Zadeck <zadeck@naturalbridge.com>
+
 	* df-scan.c (df_insn_delete, df_insn_rescan, df_insn_rescan_all,
 	df_process_deferred_rescans, df_notes_rescan): Fixed spelling of
 	word "deferred".

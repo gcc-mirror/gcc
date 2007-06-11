@@ -2205,7 +2205,7 @@ mark_home_live_1 (int regno, enum machine_mode mode)
   i = reg_renumber[regno];
   if (i < 0)
     return;
-  lim = end_hard_regno (PSEUDO_REGNO_MODE (regno), i);
+  lim = end_hard_regno (mode, i);
   while (i < lim)
     df_set_regs_ever_live(i++, true);
 }
