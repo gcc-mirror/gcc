@@ -1,3 +1,8 @@
+2007-06-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/32235
+	* gfortran.dg/backspace_9.f: New test.
+
 2007-06-10  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/prefetch-7.c: New test.
