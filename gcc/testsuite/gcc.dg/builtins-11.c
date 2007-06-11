@@ -1,4 +1,4 @@
-/* Copyright (C) 2003 Free Software Foundation.
+/* Copyright (C) 2003,2007 Free Software Foundation.
 
    Check that constant folding of built-in math functions doesn't
    break anything and produces the expected results.
@@ -35,6 +35,9 @@ void test(double x, double y, double z)
     link_error ();
 
   if (x/pow(y,z) != x*pow(y,-z))
+    link_error ();
+
+  if (x/sqrt(y/z) != x*sqrt(z/y))
     link_error ();
 }
 
