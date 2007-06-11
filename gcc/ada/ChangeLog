@@ -1,3 +1,11 @@
+2007-06-11  Bob Duff  <duff@adacore.com>
+            Thomas Quinot  <quinot@adacore.com>
+
+	* g-stsifd-sockets.adb (Create): Work around strange behavior of
+	'bind' on windows that causes 'connect' to fail intermittently, by
+	retrying the 'bind'.
+	(GNAT.Sockets.Thin.Signalling_Fds): New procedure Close.
+
 2007-06-10  Duncan Sands  <baldrick@free.fr>
 
 	* decl.c (gnat_to_gnu_entity): Use pointers to dummy nodes, rather
