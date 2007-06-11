@@ -658,7 +658,7 @@ convert_to_integer (tree type, tree expr)
 				|| ex_form == MINUS_EXPR)))
 		      typex = unsigned_type_for (typex);
 		    else
-		      typex = lang_hooks.types.signed_type (typex);
+		      typex = signed_type_for (typex);
 		    return convert (type,
 				    fold_build2 (ex_form, typex,
 						 convert (typex, arg0),
@@ -680,7 +680,7 @@ convert_to_integer (tree type, tree expr)
 	    if (TYPE_UNSIGNED (TREE_TYPE (expr)))
 	      typex = unsigned_type_for (type);
 	    else
-	      typex = lang_hooks.types.signed_type (type);
+	      typex = signed_type_for (type);
 	    return convert (type,
 			    fold_build1 (ex_form, typex,
 					 convert (typex,

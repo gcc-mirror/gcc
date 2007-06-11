@@ -120,7 +120,6 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 #define LANG_HOOKS_TREE_SIZE		lhd_tree_size
 #define LANG_HOOKS_TYPES_COMPATIBLE_P	lhd_types_compatible_p
 #define LANG_HOOKS_BUILTIN_FUNCTION	lhd_builtin_function
-#define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE	lhd_signed_or_unsigned_type
 #define LANG_HOOKS_EXPR_TO_DECL		lhd_expr_to_decl
 #define LANG_HOOKS_TO_TARGET_CHARSET	lhd_to_target_charset
 #define LANG_HOOKS_INIT_TS		lhd_do_nothing
@@ -207,8 +206,6 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_MAKE_TYPE, \
   LANG_HOOKS_TYPE_FOR_MODE, \
   LANG_HOOKS_TYPE_FOR_SIZE, \
-  LANG_HOOKS_SIGNED_TYPE, \
-  LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE, \
   LANG_HOOKS_GENERIC_TYPE_P, \
   LANG_HOOKS_TYPE_PROMOTES_TO, \
   LANG_HOOKS_REGISTER_BUILTIN_TYPE, \

@@ -102,10 +102,6 @@ extern void c_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_TYPE_FOR_MODE c_common_type_for_mode
 #undef LANG_HOOKS_TYPE_FOR_SIZE
 #define LANG_HOOKS_TYPE_FOR_SIZE c_common_type_for_size
-#undef LANG_HOOKS_SIGNED_TYPE
-#define LANG_HOOKS_SIGNED_TYPE c_common_signed_type
-#undef LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE
-#define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE c_common_signed_or_unsigned_type
 #undef LANG_HOOKS_INCOMPLETE_TYPE_ERROR
 #define LANG_HOOKS_INCOMPLETE_TYPE_ERROR c_incomplete_type_error
 #undef LANG_HOOKS_TYPE_PROMOTES_TO

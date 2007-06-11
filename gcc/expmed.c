@@ -5050,14 +5050,14 @@ make_tree (tree type, rtx x)
 				    	 make_tree (type, XEXP (x, 1))));
 
     case ASHIFTRT:
-      t = lang_hooks.types.signed_type (type);
+      t = signed_type_for (type);
       return fold_convert (type, build2 (RSHIFT_EXPR, t,
 					 make_tree (t, XEXP (x, 0)),
 				    	 make_tree (type, XEXP (x, 1))));
 
     case DIV:
       if (TREE_CODE (type) != REAL_TYPE)
-	t = lang_hooks.types.signed_type (type);
+	t = signed_type_for (type);
       else
 	t = type;
 

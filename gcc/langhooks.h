@@ -103,14 +103,6 @@ struct lang_hooks_for_types
      integer type with at least that precision.  */
   tree (*type_for_size) (unsigned, int);
 
-  /* Given an integer type T, return a type like T but signed.
-     If T is signed, the value is T.  */
-  tree (*signed_type) (tree);
-
-  /* Return a type the same as TYPE except unsigned or signed
-     according to UNSIGNEDP.  */
-  tree (*signed_or_unsigned_type) (int, tree);
-
   /* True if the type is an instantiation of a generic type,
      e.g. C++ template implicit specializations.  */
   bool (*generic_p) (tree);
@@ -445,6 +437,5 @@ extern tree add_builtin_function (const char *name, tree type,
 				  int function_code, enum built_in_class cl,
 				  const char *library_name,
 				  tree attrs);
-extern tree lhd_signed_or_unsigned_type (int unsignedp, tree type);
 
 #endif /* GCC_LANG_HOOKS_H */

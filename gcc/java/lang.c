@@ -182,8 +182,6 @@ struct language_function GTY(())
 #define LANG_HOOKS_TYPE_FOR_MODE java_type_for_mode
 #undef LANG_HOOKS_TYPE_FOR_SIZE
 #define LANG_HOOKS_TYPE_FOR_SIZE java_type_for_size
-#undef LANG_HOOKS_SIGNED_TYPE
-#define LANG_HOOKS_SIGNED_TYPE java_signed_type
 
 #undef LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN java_dump_tree
