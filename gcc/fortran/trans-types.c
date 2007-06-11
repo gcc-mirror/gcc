@@ -1848,12 +1848,4 @@ gfc_type_for_mode (enum machine_mode mode, int unsignedp)
   return NULL_TREE;
 }
 
-/* Return a signed type the same as TYPE in other respects.  */
-
-tree
-gfc_signed_type (tree type)
-{
-  return get_signed_or_unsigned_type (0, type);
-}
-
 #include "gt-fortran-trans-types.h"

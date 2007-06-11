@@ -3776,6 +3776,7 @@ extern tree build_call_array (tree, tree, int, tree*);
 
 extern tree make_signed_type (int);
 extern tree make_unsigned_type (int);
+extern tree signed_or_unsigned_type_for (int, tree);
 extern tree signed_type_for (tree);
 extern tree unsigned_type_for (tree);
 extern void initialize_sizetypes (bool);
@@ -3819,8 +3820,6 @@ extern bool tree_expr_nonnegative_p (tree);
 extern bool tree_expr_nonnegative_warnv_p (tree, bool *);
 extern bool may_negate_without_overflow_p (tree);
 extern tree get_inner_array_type (tree);
-
-extern tree get_signed_or_unsigned_type (int unsignedp, tree type);
 
 /* From expmed.c.  Since rtl.h is included after tree.h, we can't
    put the prototype here.  Rtl.h does declare the prototype if

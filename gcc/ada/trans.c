@@ -1092,7 +1092,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	      }
 
 	    gnu_compute_type
-	      = get_signed_or_unsigned_type (0,
+	      = signed_or_unsigned_type_for (0,
 					     get_base_type (gnu_result_type));
 
 	    gnu_result
