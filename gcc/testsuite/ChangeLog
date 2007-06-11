@@ -1,5 +1,10 @@
 2007-06-11  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/32280
+	* gcc.target/i386/pr32280.c: New test.
+
+2007-06-11  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR middle-end/32279
 	* gcc.dg/builtins-11.c: Also check folding of a/sqrt(b/c).
 
