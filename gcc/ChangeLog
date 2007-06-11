@@ -1,3 +1,54 @@
+2007-06-11  Rafael Avila de Espindola  <espindola@google.com>
+
+	* gcc/tree.c (signed_or_unsigned_type_for): New.
+	(unsigned_type_for): Use signed_or_unsigned_type_for.
+	(signed_type_for): Use signed_or_unsigned_type_for.
+	* gcc/tree.h (signed_or_unsigned_type_for): New.
+	(get_signed_or_unsigned_type): Remove.
+	* gcc/fold-const.c (fold_negate_expr): Use signed_type_for instead of
+	lang_hooks.types.signed_type
+	(size_diffop): Likewise.
+	(all_ones_mask_p): Likewise.
+	(build_range_check): Likewise.
+	(fold_cond_expr_with_comparison): Likewise.
+	(fold_cond_expr_with_comparison): Likewise.
+	(unextend): Likewise.
+	(extract_muldiv_1): Likewise.
+	(fold_single_bit_test_into_sign_test): Likewise.
+	(fold_binary): Likewise.
+	(fold_ternary): Likewise.
+	(operand_equal_for_comparison_p): Use signed_or_unsigned_type_for
+	instead of get_signed_or_unsigned_type.
+	* gcc/c-objc-common.h (LANG_HOOKS_SIGNED_TYPE): Remove.
+	(LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): Remove.
+	* gcc/expr.c (signed_or_unsigned_type_for): Use
+	signed_or_unsigned_type_for instead of get_signed_or_unsigned_type.
+	* gcc/langhooks.c (get_signed_or_unsigned_type): Remove.
+	(lhd_signed_or_unsigned_type): Remove.
+	* gcc/langhooks.h (lang_hooks_for_types): Remove signed_type and
+	signed_or_unsigned_type.
+	(lhd_signed_or_unsigned_type): Remove.
+	* gcc/expmed.c (make_tree): Use signed_type_for instead of
+	lang_hooks.types.signed_type.
+	* gcc/c-common.c (same_scalar_type_ignoring_signedness): Use
+	c_common_signed_type instead of lang_hooks.types.signed_type.
+	(c_common_unsigned_type): New.
+	(c_common_signed_type): Just call c_common_signed_or_unsigned_type.
+	(shorten_compare): Use c_common_unsigned_type instead of
+	c_common_signed_or_unsigned_type.
+	(c_common_nodes_and_builtins): Use c_common_unsigned_type instead of
+	unsigned_type_for.
+	* gcc/convert.c (convert_to_integer): Use signed_type_for instead of
+	lang_hooks.types.signed_type.
+	* gcc/langhooks-def.h (LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): Remove.
+	(LANG_HOOK_FOR_TYPES_INITIALIZER): Remove LANG_HOOKS_SIGNED_TYPE and
+	LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE.
+	* gcc/c-format.c (check_format_types): Use c_common_unsigned_type
+	instead of unsigned_type_for.
+	* gcc/c-decl.c (groakdeclarator): Likewise.
+	* gcc/c-typeck.c (convert_for_assignment): Likewise.
+	* gcc/c-common.h (c_common_unsigned_type): New.
+
 2007-06-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32280

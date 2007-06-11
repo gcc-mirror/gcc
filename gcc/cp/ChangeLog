@@ -1,3 +1,8 @@
+2007-06-11  Rafael Avila de Espindola  <espindola@google.com>
+
+	* cp-objcp-common.h (LANG_HOOKS_SIGNED_TYPE): Remove.
+	(LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): Remove.
+
 2007-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/32177

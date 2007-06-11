@@ -1,3 +1,9 @@
+2007-06-11  Rafael Avila de Espindola  <espindola@google.com>
+
+	* trans.c (Attribute_to_gnu): Use
+	signed_or_unsigned_type_for instead of get_signed_or_unsigned_type
+	* misc.c (LANG_HOOKS_SIGNED_TYPE): Remove.
+
 2007-06-11  Bob Duff  <duff@adacore.com>
             Thomas Quinot  <quinot@adacore.com>
 
