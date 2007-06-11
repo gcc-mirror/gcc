@@ -6,7 +6,7 @@
 extern void abort (void);
 
 __inline int
-__signbitl (long double __x)
+__signbitl0 (long double __x)
 {
   union { long double __l; int __i[3]; } __u = { __l: __x };
 
@@ -17,7 +17,7 @@ void
 foo (long double x, long double y)
 {
   long double z = x / y;
-  if (__signbitl (x) && __signbitl (z))
+  if (__signbitl0 (x) && __signbitl0 (z))
     abort ();
 }
 

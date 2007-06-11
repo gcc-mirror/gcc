@@ -7,7 +7,7 @@ extern void abort (void);
 
 jmp_buf buf;
 
-void raise(void)
+void raise0(void)
 {
   __builtin_longjmp (buf, 1);
 }
@@ -19,8 +19,8 @@ int execute(int cmd)
   if (__builtin_setjmp (buf) == 0)
     while (1)
       {
-        last = 1;
-        raise ();
+	last = 1;
+	raise0 ();
       }
 
   if (last == 0)
