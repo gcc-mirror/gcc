@@ -1,5 +1,11 @@
 2007-06-11  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/32280
+	* config/i386/sse.md ("sse2_ashlti", "sse2_lshrti3"): Move ...
+	* config/i386/i386.md ("sse2_ashlti", "sse2_lshrti3"): ... to here.
+
+2007-06-11  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR middle-end/32279
 	* fold-const (fold_binary) [RDIV_EXPR]: Optimize a/sqrt(b/c)
 	into a*sqrt(c/b) if flag_unsafe_math_optimizations is set.
