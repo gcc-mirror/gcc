@@ -198,8 +198,11 @@ encode_derived (gfc_expr *source, unsigned char *buffer, size_t buffer_size)
   cmp = source->ts.derived->components;
   for (;ctr; ctr = ctr->next, cmp = cmp->next)
     {
-      gcc_assert (ctr->expr && cmp);
-      ptr = TREE_INT_CST_LOW (DECL_FIELD_OFFSET (cmp->backend_decl));
+      gcc_assert (cmp);
+      if (!ctr->expr)
+	continue;
+      ptr = TREE_INT_CST_LOW(DECL_FIELD_OFFSET(cmp->backend_decl))
+	    + TREE_INT_CST_LOW(DECL_FIELD_BIT_OFFSET(cmp->backend_decl))/8;
       gfc_target_encode_expr (ctr->expr, &buffer[ptr],
 			      buffer_size - ptr);
     }
@@ -490,4 +493,106 @@ gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
     }
 
   return result->representation.length;
+}
+
+
+/* --------------------------------------------------------------- */ 
+/* Two functions used by trans-common.c to write overlapping
+   equivalence initializers to a buffer.  This is added to the union
+   and the original initializers freed.  */
+
+
+/* Writes the values of a constant expression to a char buffer. If another
+   unequal initializer has already been written to the buffer, this is an
+   error.  */
+
+static size_t
+expr_to_char (gfc_expr *e, unsigned char *data, unsigned char *chk, size_t len)
+{
+  int i;
+  int ptr;
+  gfc_constructor *ctr;
+  gfc_component *cmp;
+  unsigned char *buffer;
+
+  if (e == NULL)
+    return 0;
+
+  /* Take a derived type, one component at a time, using the offsets from the backend
+     declaration.  */
+  if (e->ts.type == BT_DERIVED)
+    {
+      ctr = e->value.constructor;
+      cmp = e->ts.derived->components;
+      for (;ctr; ctr = ctr->next, cmp = cmp->next)
+	{
+	  gcc_assert (cmp && cmp->backend_decl);
+	  if (!ctr->expr)
+	    continue;
+	    ptr = TREE_INT_CST_LOW(DECL_FIELD_OFFSET(cmp->backend_decl))
+			+ TREE_INT_CST_LOW(DECL_FIELD_BIT_OFFSET(cmp->backend_decl))/8;
+	  expr_to_char (ctr->expr, &data[ptr], &chk[ptr], len);
+	}
+      return len;
+    }
+
+  /* Otherwise, use the target-memory machinery to write a bitwise image, appropriate
+     to the target, in a buffer and check off the initialized part of the buffer.  */
+  len = gfc_target_expr_size (e);
+  buffer = (unsigned char*)alloca (len);
+  len = gfc_target_encode_expr (e, buffer, len);
+
+    for (i = 0; i < (int)len; i++)
+    {
+      if (chk[i] && (buffer[i] != data[i]))
+	{
+	  gfc_error ("Overlapping unequal initializers in EQUIVALENCE "
+		     "at %L", &e->where);
+	  return 0;
+	}
+      chk[i] = 0xFF;
+    }
+
+  memcpy (data, buffer, len);
+  return len;
+}
+
+
+/* Writes the values from the equivalence initializers to a char* array
+   that will be written to the constructor to make the initializer for
+   the union declaration.  */
+
+size_t
+gfc_merge_initializers (gfc_typespec ts, gfc_expr *e, unsigned char *data,
+			unsigned char *chk, size_t length)
+{
+  size_t len = 0;
+  gfc_constructor * c;
+
+  switch (e->expr_type)
+    {
+    case EXPR_CONSTANT:
+    case EXPR_STRUCTURE:
+      len = expr_to_char (e, &data[0], &chk[0], length);
+
+      break;
+
+    case EXPR_ARRAY:
+      for (c = e->value.constructor; c; c = c->next)
+	{
+	  size_t elt_size = gfc_target_expr_size (c->expr);
+
+	  if (c->n.offset)
+	    len = elt_size * (size_t)mpz_get_si (c->n.offset);
+
+	  len = len + gfc_merge_initializers (ts, c->expr, &data[len],
+					      &chk[len], length - len);
+	}
+      break;
+
+    default:
+      return 0;
+    }
+
+  return len;
 }

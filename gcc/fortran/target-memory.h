@@ -41,4 +41,9 @@ int gfc_interpret_character (unsigned char *, size_t, gfc_expr *);
 int gfc_interpret_derived (unsigned char *, size_t, gfc_expr *);
 int gfc_target_interpret_expr (unsigned char *, size_t, gfc_expr *);
 
+/* Merge overlapping equivalence initializers for trans-common.c. */
+size_t gfc_merge_initializers (gfc_typespec, gfc_expr *,
+			       unsigned char *, unsigned char *,
+			       size_t);
+
 #endif /* GFC_TARGET_MEMORY_H  */

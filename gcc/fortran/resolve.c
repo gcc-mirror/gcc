@@ -6992,14 +6992,6 @@ resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
 		     sym->name, &e->where);
 	  return FAILURE;
 	}
-
-      if (c->initializer)
-	{
-	  gfc_error ("Derived type variable '%s' at %L with default "
-		     "initializer cannot be an EQUIVALENCE object",
-		     sym->name, &e->where);
-	  return FAILURE;
-	}
     }
   return SUCCESS;
 }
@@ -7120,21 +7112,6 @@ resolve_equivalence (gfc_equiv *eq)
 			 "PROTECTED attribute",
 			 &e->where);
 	      break;
-	}
-
-      /* An equivalence statement cannot have more than one initialized
-	 object.  */
-      if (sym->value)
-	{
-	  if (value_name != NULL)
-	    {
-	      gfc_error ("Initialized objects '%s' and '%s' cannot both "
-			 "be in the EQUIVALENCE statement at %L",
-			 value_name, sym->name, &e->where);
-	      continue;
-	    }
-	  else
-	    value_name = sym->name;
 	}
 
       /* Shall not equivalence common block variables in a PURE procedure.  */

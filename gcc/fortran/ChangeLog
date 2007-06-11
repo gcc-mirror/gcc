@@ -1,3 +1,18 @@
+2007-06-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29786
+	PR fortran/30875
+	* trans-common.c (get_init_field): New function.
+	(create_common): Call get_init_field for overlapping
+	initializers in equivalence blocks.
+	* resolve.c (resolve_equivalence_derived, resolve_equivalence):
+	Remove constraints on initializers in equivalence blocks.
+	* target-memory.c (expr_to_char, gfc_merge_initializers):
+	New functions.
+	(encode_derived): Add the bit offset to the byte offset to get
+	the total offset to the field.
+	* target-memory.h : Add prototype for gfc_merge_initializers.
+
 2007-06-11  Rafael Avila de Espindola  <espindola@google.com>
 
 	* trans-types.c (gfc_signed_type): Remove.

@@ -1,3 +1,12 @@
+2007-06-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29786
+	* gfortran.dg/equiv_7.f90: New test.
+	* gfortran.dg/equiv_constraint_7.f90: Change error message.
+
+	PR fortran/30875
+	* gfortran.dg/equiv_constraint_5.f90: Correct code and error.
+
 2007-06-11  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* gcc.dg/setjmp-3.c: Rename raise to raise0.
