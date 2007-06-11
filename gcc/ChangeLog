@@ -1,3 +1,9 @@
+2007-06-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md ("*movtf_internal): Penalize moves to and
+	from integer registers.
+	(FP mode splitters): Handle TFmode.
+
 2007-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-structalias.c (find_what_p_points_to): Return false
