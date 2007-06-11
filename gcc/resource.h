@@ -1,5 +1,5 @@
 /* Definitions for computing resource usage of specific insns.
-   Copyright (C) 1999, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003, 2004, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,6 +22,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define GCC_RESOURCE_H
 
 #include "hard-reg-set.h"
+#include "df.h"
 
 /* Macro to clear all resources.  */
 #define CLEAR_RESOURCE(RES)	\

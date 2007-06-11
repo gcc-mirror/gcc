@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for NEC V850 series
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
-   Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+   2006, 2007 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -1134,7 +1134,7 @@ substitute_ep_register (rtx first_insn,
 
   if (!*p_r1)
     {
-      regs_ever_live[1] = 1;
+      df_set_regs_ever_live_p (1, true);
       *p_r1 = gen_rtx_REG (Pmode, 1);
       *p_ep = gen_rtx_REG (Pmode, 30);
     }
@@ -1460,12 +1460,15 @@ compute_register_save_size (long * p_reg_saved)
   int size = 0;
   int i;
   int interrupt_handler = v850_interrupt_function_p (current_function_decl);
-  int call_p = regs_ever_live [LINK_POINTER_REGNUM];
+  int call_p = df_regs_ever_live_p (LINK_POINTER_REGNUM);
   long reg_saved = 0;
 
   /* Count the return pointer if we need to save it.  */
   if (current_function_profile && !call_p)
-    regs_ever_live [LINK_POINTER_REGNUM] = call_p = 1;
+    {
+      df_set_regs_ever_live (LINK_POINTER_REGNUM, true);
+      call_p = 1;
+    }
  
   /* Count space for the register saves.  */
   if (interrupt_handler)
@@ -1474,7 +1477,7 @@ compute_register_save_size (long * p_reg_saved)
 	switch (i)
 	  {
 	  default:
-	    if (regs_ever_live[i] || call_p)
+	    if (df_regs_ever_live_p (i) || call_p)
 	      {
 		size += 4;
 		reg_saved |= 1L << i;
@@ -1502,7 +1505,7 @@ compute_register_save_size (long * p_reg_saved)
     {
       /* Find the first register that needs to be saved.  */
       for (i = 0; i <= 31; i++)
-	if (regs_ever_live[i] && ((! call_used_regs[i])
+	if (df_regs_ever_live_p (i) && ((! call_used_regs[i])
 				  || i == LINK_POINTER_REGNUM))
 	  break;
 
@@ -1534,7 +1537,7 @@ compute_register_save_size (long * p_reg_saved)
 	      reg_saved |= 1L << i;
 	    }
 
-	  if (regs_ever_live [LINK_POINTER_REGNUM])
+	  if (df_regs_ever_live_p (LINK_POINTER_REGNUM))
 	    {
 	      size += 4;
 	      reg_saved |= 1L << LINK_POINTER_REGNUM;
@@ -1543,7 +1546,7 @@ compute_register_save_size (long * p_reg_saved)
       else
 	{
 	  for (; i <= 31; i++)
-	    if (regs_ever_live[i] && ((! call_used_regs[i])
+	    if (df_regs_ever_live_p (i) && ((! call_used_regs[i])
 				      || i == LINK_POINTER_REGNUM))
 	      {
 		size += 4;

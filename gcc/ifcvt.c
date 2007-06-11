@@ -43,9 +43,9 @@
 #include "target.h"
 #include "timevar.h"
 #include "tree-pass.h"
+#include "df.h"
 #include "vec.h"
 #include "vecprim.h"
-
 
 #ifndef HAVE_conditional_execution
 #define HAVE_conditional_execution 0
@@ -70,6 +70,8 @@
 #define MAX_CONDITIONAL_EXECUTE   (BRANCH_COST + 1)
 #endif
 
+#define IFCVT_MULTIPLE_DUMPS 1
+
 #define NULL_BLOCK	((basic_block) NULL)
 
 /* # of IF-THEN or IF-THEN-ELSE blocks we looked at  */
@@ -79,14 +81,11 @@ static int num_possible_if_blocks;
    execution.  */
 static int num_updated_if_blocks;
 
-/* # of changes made which require life information to be updated.  */
+/* # of changes made.  */
 static int num_true_changes;
 
 /* Whether conditional execution changes were made.  */
 static int cond_exec_changed_p;
-
-/* True if life data ok at present.  */
-static bool life_data_ok;
 
 /* Forward references.  */
 static int count_bb_insns (basic_block);
@@ -2773,6 +2772,7 @@ merge_if_block (struct ce_if_block * ce_info)
   /* All block merging is done into the lower block numbers.  */
 
   combo_bb = test_bb;
+  df_set_bb_dirty (test_bb);
 
   /* Merge any basic blocks to handle && and || subtests.  Each of
      the blocks are on the fallthru path from the predecessor block.  */
@@ -2847,7 +2847,8 @@ merge_if_block (struct ce_if_block * ce_info)
   else if (EDGE_COUNT (join_bb->preds) < 2
 	   && join_bb != EXIT_BLOCK_PTR)
     {
-      /* We can merge the JOIN.  */
+      /* We can merge the JOIN cleanly and update the dataflow try
+	 again on this pass.*/
       merge_blocks (combo_bb, join_bb);
       num_true_changes++;
     }
@@ -2886,6 +2887,11 @@ find_if_header (basic_block test_bb, int pass)
 
   then_edge = EDGE_SUCC (test_bb, 0);
   else_edge = EDGE_SUCC (test_bb, 1);
+
+  if (df_get_bb_dirty (then_edge->dest))
+    return NULL;
+  if (df_get_bb_dirty (else_edge->dest))
+    return NULL;
 
   /* Neither edge should be abnormal.  */
   if ((then_edge->flags & EDGE_COMPLEX)
@@ -2946,6 +2952,8 @@ find_if_header (basic_block test_bb, int pass)
  success:
   if (dump_file)
     fprintf (dump_file, "Conversion succeeded on pass %d.\n", pass);
+  /* Set this so we continue looking.  */
+  cond_exec_changed_p = TRUE;
   return ce_info.test_bb;
 }
 
@@ -3118,7 +3126,7 @@ cond_exec_find_if_block (struct ce_if_block * ce_info)
   if (EDGE_COUNT (then_bb->succs) > 0
       && (!single_succ_p (then_bb)
           || (single_succ_edge (then_bb)->flags & EDGE_COMPLEX)
-	  || (flow2_completed && tablejump_p (BB_END (then_bb), NULL, NULL))))
+	  || (epilogue_completed && tablejump_p (BB_END (then_bb), NULL, NULL))))
     return FALSE;
 
   /* If the THEN block has no successors, conditional execution can still
@@ -3165,7 +3173,7 @@ cond_exec_find_if_block (struct ce_if_block * ce_info)
 	   && single_succ (then_bb) == single_succ (else_bb)
 	   && single_pred_p (else_bb)
 	   && ! (single_succ_edge (else_bb)->flags & EDGE_COMPLEX)
-	   && ! (flow2_completed && tablejump_p (BB_END (else_bb), NULL, NULL)))
+	   && ! (epilogue_completed && tablejump_p (BB_END (else_bb), NULL, NULL)))
     join_bb = single_succ (else_bb);
 
   /* Otherwise it is not an IF-THEN or IF-THEN-ELSE combination.  */
@@ -3314,6 +3322,10 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
 
   /* Delete the trap block if possible.  */
   remove_edge (trap_bb == then_bb ? then_edge : else_edge);
+  df_set_bb_dirty (test_bb);
+  df_set_bb_dirty (then_bb);
+  df_set_bb_dirty (else_bb);
+
   if (EDGE_COUNT (trap_bb->preds) == 0)
     {
       delete_basic_block (trap_bb);
@@ -3452,7 +3464,8 @@ static int
 find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 {
   basic_block then_bb = then_edge->dest;
-  basic_block else_bb = else_edge->dest, new_bb;
+  basic_block else_bb = else_edge->dest;
+  basic_block new_bb;
   int then_bb_index;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
@@ -3508,11 +3521,6 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
   /* Conversion went ok, including moving the insns and fixing up the
      jump.  Adjust the CFG to match.  */
 
-  bitmap_ior (test_bb->il.rtl->global_live_at_end,
-	      else_bb->il.rtl->global_live_at_start,
-	      then_bb->il.rtl->global_live_at_end);
-
-
   /* We can avoid creating a new basic block if then_bb is immediately
      followed by else_bb, i.e. deleting then_bb allows test_bb to fall
      thru to else_bb.  */
@@ -3526,7 +3534,10 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
     }
   else
     new_bb = redirect_edge_and_branch_force (FALLTHRU_EDGE (test_bb),
-                                             else_bb);
+					     else_bb);
+
+  df_set_bb_dirty (test_bb);
+  df_set_bb_dirty (else_bb);
 
   then_bb_index = then_bb->index;
   delete_basic_block (then_bb);
@@ -3535,15 +3546,12 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
      block we removed.  */
   if (new_bb)
     {
-      new_bb->index = then_bb_index;
-      SET_BASIC_BLOCK (then_bb_index, new_bb);
+      df_bb_replace (then_bb_index, new_bb);
       /* Since the fallthru edge was redirected from test_bb to new_bb,
          we need to ensure that new_bb is in the same partition as
          test bb (you can not fall through across section boundaries).  */
       BB_COPY_PARTITION (new_bb, test_bb);
     }
-  /* We've possibly created jump to next insn, cleanup_cfg will solve that
-     later.  */
 
   num_true_changes++;
   num_updated_if_blocks++;
@@ -3626,10 +3634,8 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   /* Conversion went ok, including moving the insns and fixing up the
      jump.  Adjust the CFG to match.  */
 
-  bitmap_ior (test_bb->il.rtl->global_live_at_end,
-	      then_bb->il.rtl->global_live_at_start,
-	      else_bb->il.rtl->global_live_at_end);
-
+  df_set_bb_dirty (test_bb);
+  df_set_bb_dirty (then_bb);
   delete_basic_block (else_bb);
 
   num_true_changes++;
@@ -3745,8 +3751,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	 that any registers modified are dead at the branch site.  */
 
       rtx insn, cond, prev;
-      regset merge_set, tmp, test_live, test_set;
-      struct propagate_block_info *pbi;
+      bitmap merge_set, test_live, test_set;
       unsigned i, fail = 0;
       bitmap_iterator bi;
 
@@ -3786,10 +3791,9 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	   TEST_SET  = set of registers set between EARLIEST and the
 		       end of the block.  */
 
-      tmp = ALLOC_REG_SET (&reg_obstack);
-      merge_set = ALLOC_REG_SET (&reg_obstack);
-      test_live = ALLOC_REG_SET (&reg_obstack);
-      test_set = ALLOC_REG_SET (&reg_obstack);
+      merge_set = BITMAP_ALLOC (&reg_obstack);
+      test_live = BITMAP_ALLOC (&reg_obstack);
+      test_set = BITMAP_ALLOC (&reg_obstack);
 
       /* ??? bb->local_set is only valid during calculate_global_regs_live,
 	 so we must recompute usage for MERGE_BB.  Not so bad, I suppose,
@@ -3798,11 +3802,21 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	 expander called from noce_emit_cmove), we must resize the
 	 array first.  */
       if (max_regno < max_reg_num ())
+	max_regno = max_reg_num ();
+
+      FOR_BB_INSNS (merge_bb, insn)
 	{
-	  max_regno = max_reg_num ();
-	  allocate_reg_info (max_regno, FALSE, FALSE);
+	  if (INSN_P (insn))
+	    {
+	      unsigned int uid = INSN_UID (insn);
+	      struct df_ref **def_rec;
+	      for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
+		{
+		  struct df_ref *def = *def_rec;
+		  bitmap_set_bit (merge_set, DF_REF_REGNO (def));
+		}
+	    }
 	}
-      propagate_block (merge_bb, tmp, merge_set, merge_set, 0);
 
       /* For small register class machines, don't lengthen lifetimes of
 	 hard registers before reload.  */
@@ -3816,39 +3830,40 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 		fail = 1;
 	    }
 	}
-
+      
       /* For TEST, we're interested in a range of insns, not a whole block.
 	 Moreover, we're interested in the insns live from OTHER_BB.  */
-
-      COPY_REG_SET (test_live, other_bb->il.rtl->global_live_at_start);
-      pbi = init_propagate_block_info (test_bb, test_live, test_set, test_set,
-				       0);
-
+      
+      /* The loop below takes the set of live registers 
+         after JUMP, and calculates the live set before EARLIEST. */
+      bitmap_copy (test_live, DF_LIVE_IN (other_bb));
+      df_simulate_artificial_refs_at_end (test_bb, test_live);
       for (insn = jump; ; insn = prev)
 	{
-	  prev = propagate_one_insn (pbi, insn);
+	  if (INSN_P (insn))
+	    {
+	      df_simulate_find_defs (insn, test_set);
+	      df_simulate_one_insn_backwards (test_bb, insn, test_live);
+	    }
+	  prev = PREV_INSN (insn);
 	  if (insn == earliest)
 	    break;
 	}
 
-      free_propagate_block_info (pbi);
-
       /* We can perform the transformation if
 	   MERGE_SET & (TEST_SET | TEST_LIVE)
 	 and
-	   TEST_SET & merge_bb->il.rtl->global_live_at_start
+	   TEST_SET & DF_LIVE_IN (merge_bb)
 	 are empty.  */
 
       if (bitmap_intersect_p (test_set, merge_set)
 	  || bitmap_intersect_p (test_live, merge_set)
-	  || bitmap_intersect_p (test_set,
-	    			 merge_bb->il.rtl->global_live_at_start))
+	  || bitmap_intersect_p (test_set, DF_LIVE_IN (merge_bb)))
 	fail = 1;
 
-      FREE_REG_SET (tmp);
-      FREE_REG_SET (merge_set);
-      FREE_REG_SET (test_live);
-      FREE_REG_SET (test_set);
+      BITMAP_FREE (merge_set);
+      BITMAP_FREE (test_live);
+      BITMAP_FREE (test_set);
 
       if (fail)
 	return FALSE;
@@ -3938,7 +3953,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 /* Main entry point for all if-conversion.  */
 
 static void
-if_convert (int x_life_data_ok)
+if_convert (bool recompute_dominance)
 {
   basic_block bb;
   int pass;
@@ -3946,7 +3961,6 @@ if_convert (int x_life_data_ok)
   num_possible_if_blocks = 0;
   num_updated_if_blocks = 0;
   num_true_changes = 0;
-  life_data_ok = (x_life_data_ok != 0);
 
   /* Some transformations in this pass can create new pseudos,
      if the pass runs before reload.  Make sure we can do so.  */
@@ -3958,11 +3972,10 @@ if_convert (int x_life_data_ok)
   free_dominance_info (CDI_DOMINATORS);
 
   /* Compute postdominators if we think we'll use them.  */
-  if (HAVE_conditional_execution || life_data_ok)
+  if (HAVE_conditional_execution || recompute_dominance)
     calculate_dominance_info (CDI_POST_DOMINATORS);
 
-  if (life_data_ok)
-    clear_bb_flags ();
+  df_set_flags (DF_LR_RUN_DCE);
 
   /* Go through each of the basic blocks looking for things to convert.  If we
      have conditional execution, we make multiple passes to allow us to handle
@@ -3970,6 +3983,9 @@ if_convert (int x_life_data_ok)
   pass = 0;
   do
     {
+      df_analyze ();
+      /* Only need to do dce on the first pass.  */
+      df_clear_flags (DF_LR_RUN_DCE);
       cond_exec_changed_p = FALSE;
       pass++;
 
@@ -3980,9 +3996,10 @@ if_convert (int x_life_data_ok)
 
       FOR_EACH_BB (bb)
 	{
-	  basic_block new_bb;
-	  while ((new_bb = find_if_header (bb, pass)))
-	    bb = new_bb;
+          basic_block new_bb;
+          while (!df_get_bb_dirty (bb) 
+                 && (new_bb = find_if_header (bb, pass)) != NULL)
+            bb = new_bb;
 	}
 
 #ifdef IFCVT_MULTIPLE_DUMPS
@@ -4004,19 +4021,9 @@ if_convert (int x_life_data_ok)
 
   clear_aux_for_blocks ();
 
-  /* Rebuild life info for basic blocks that require it.  */
-  if (num_true_changes && life_data_ok)
-    {
-      /* If we allocated new pseudos, we must resize the array for sched1.  */
-      if (max_regno < max_reg_num ())
-	{
-	  max_regno = max_reg_num ();
-	  allocate_reg_info (max_regno, FALSE, FALSE);
-	}
-      update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL_RM_NOTES,
-					PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE
-					| PROP_KILL_DEAD_CODE);
-    }
+  /* If we allocated new pseudos, we must resize the array for sched1.  */
+  if (max_regno < max_reg_num ())
+    max_regno = max_reg_num ();
 
   /* Write the final stats.  */
   if (dump_file && num_possible_if_blocks > 0)
@@ -4052,14 +4059,10 @@ rest_of_handle_if_conversion (void)
       if (dump_file)
         dump_flow_info (dump_file, dump_flags);
       cleanup_cfg (CLEANUP_EXPENSIVE);
-      reg_scan (get_insns (), max_reg_num ());
-      if_convert (0);
+      if_convert (false);
     }
 
-  timevar_push (TV_JUMP);
-  cleanup_cfg (CLEANUP_EXPENSIVE);
-  reg_scan (get_insns (), max_reg_num ());
-  timevar_pop (TV_JUMP);
+  cleanup_cfg (0);
   return 0;
 }
 
@@ -4076,6 +4079,7 @@ struct tree_opt_pass pass_rtl_ifcvt =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
+  TODO_df_finish |
   TODO_dump_func,                       /* todo_flags_finish */
   'C'                                   /* letter */
 };
@@ -4093,7 +4097,7 @@ static unsigned int
 rest_of_handle_if_after_combine (void)
 {
   no_new_pseudos = 0;
-  if_convert (1);
+  if_convert (true);
   no_new_pseudos = 1;
   return 0;
 }
@@ -4111,6 +4115,7 @@ struct tree_opt_pass pass_if_after_combine =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
+  TODO_df_finish |
   TODO_dump_func |
   TODO_ggc_collect,                     /* todo_flags_finish */
   'C'                                   /* letter */
@@ -4126,13 +4131,8 @@ gate_handle_if_after_reload (void)
 static unsigned int
 rest_of_handle_if_after_reload (void)
 {
-  /* Last attempt to optimize CFG, as scheduling, peepholing and insn
-     splitting possibly introduced more crossjumping opportunities.  */
-  cleanup_cfg (CLEANUP_EXPENSIVE
-               | CLEANUP_UPDATE_LIFE
-               | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0));
   if (flag_if_conversion2)
-    if_convert (1);
+    if_convert (true);
   return 0;
 }
 
@@ -4150,6 +4150,7 @@ struct tree_opt_pass pass_if_after_reload =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
+  TODO_df_finish |
   TODO_dump_func |
   TODO_ggc_collect,                     /* todo_flags_finish */
   'E'                                   /* letter */

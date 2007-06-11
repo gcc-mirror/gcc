@@ -144,6 +144,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target.h"
 #include "output.h"
 #include "params.h"
+#include "dbgcnt.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -214,9 +215,6 @@ static bool added_recovery_block_p;
 
 /* Counters of different types of speculative instructions.  */
 static int nr_begin_data, nr_be_in_data, nr_begin_control, nr_be_in_control;
-
-/* Pointers to GLAT data.  See init_glat for more information.  */
-regset *glat_start, *glat_end;
 
 /* Array used in {unlink, restore}_bb_notes.  */
 static rtx *bb_header = 0;
@@ -573,10 +571,6 @@ static void extend_bb (void);
 static void fix_jump_move (rtx);
 static void move_block_after_check (rtx);
 static void move_succs (VEC(edge,gc) **, basic_block);
-static void init_glat (void);
-static void init_glat1 (basic_block);
-static void attach_life_info1 (basic_block);
-static void free_glat (void);
 static void sched_remove_insn (rtx);
 static void clear_priorities (rtx, rtx_vec_t *);
 static void calc_priorities (rtx_vec_t);
@@ -1840,6 +1834,7 @@ move_insn (rtx insn)
 	}
 
       set_block_for_insn (insn, bb);    
+      df_insn_change_bb (insn);
   
       /* Update BB_END, if needed.  */
       if (BB_END (bb) == last)
@@ -2276,6 +2271,23 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
 	      || !(*current_sched_info->schedule_more_p) ())
 	    break;
 
+          if (dbg_cnt (sched_insn) == false)
+            {
+              insn = NEXT_INSN (last_scheduled_insn); 
+              while ((*current_sched_info->schedule_more_p) ())
+                {
+                  (*current_sched_info->begin_schedule_ready) (insn,
+                                                               last_scheduled_insn);
+                  if (QUEUE_INDEX (insn) >= 0)
+                    queue_remove (insn);
+                  last_scheduled_insn = insn;
+                  insn = NEXT_INSN (insn);
+                }
+              while (ready.n_ready)
+                ready_remove_first (&ready);
+              goto bail_out;
+            }
+
 	  /* Select and remove the insn from the ready list.  */
 	  if (sort_p)
 	    {
@@ -2359,7 +2371,7 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
             generate_recovery_code (insn);
 
 	  if (control_flow_insn_p (last_scheduled_insn)	     
-	      /* This is used to to switch basic blocks by request
+	      /* This is used to switch basic blocks by request
 		 from scheduler front-end (actually, sched-ebb.c only).
 		 This is used to process blocks with single fallthru
 		 edge.  If succeeding block has jump, it [jump] will try
@@ -2433,6 +2445,7 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
 	}
     }
 
+bail_out:
   /* Debug info.  */
   if (sched_verbose)
     {
@@ -2680,12 +2693,7 @@ sched_init (void)
   init_alias_analysis ();
 
   old_last_basic_block = 0;
-  glat_start = 0;  
-  glat_end = 0;
   extend_bb ();
-
-  if (current_sched_info->flags & USE_GLAT)
-    init_glat ();
 
   /* Compute INSN_REG_WEIGHT for all blocks.  We must do this before
      removing death notes.  */
@@ -2714,7 +2722,6 @@ sched_finish (void)
   dfa_finish ();
   free_dependency_caches ();
   end_alias_analysis ();
-  free_glat ();
 
   if (targetm.sched.md_finish_global)
     targetm.sched.md_finish_global (sched_dump, sched_verbose);
@@ -4064,13 +4071,6 @@ extend_bb (void)
 
   old_last_basic_block = last_basic_block;
 
-  if (current_sched_info->flags & USE_GLAT)
-    {
-      glat_start = xrealloc (glat_start,
-                             last_basic_block * sizeof (*glat_start));
-      glat_end = xrealloc (glat_end, last_basic_block * sizeof (*glat_end));
-    }
-
   /* The following is done to keep current_sched_info->next_tail non null.  */
 
   insn = BB_END (EXIT_BLOCK_PTR->prev_bb);
@@ -4093,14 +4093,9 @@ extend_bb (void)
 void
 add_block (basic_block bb, basic_block ebb)
 {
-  gcc_assert (current_sched_info->flags & DETACH_LIFE_INFO
-	      && bb->il.rtl->global_live_at_start == 0
-	      && bb->il.rtl->global_live_at_end == 0);
+  gcc_assert (current_sched_info->flags & NEW_BBS);
 
   extend_bb ();
-
-  glat_start[bb->index] = 0;
-  glat_end[bb->index] = 0;
 
   if (current_sched_info->add_block)
     /* This changes only data structures of the front-end.  */
@@ -4164,6 +4159,8 @@ move_block_after_check (rtx jump)
   move_succs (&(jump_bb->succs), bb);
   move_succs (&(jump_bb_next->succs), jump_bb);
   move_succs (&t, jump_bb_next);
+
+  df_mark_solutions_dirty ();
   
   if (current_sched_info->fix_recovery_cfg)
     current_sched_info->fix_recovery_cfg 
@@ -4187,115 +4184,6 @@ move_succs (VEC(edge,gc) **succsp, basic_block to)
     e->src = to;
 
   *succsp = 0;
-}
-
-/* Initialize GLAT (global_live_at_{start, end}) structures.
-   GLAT structures are used to substitute global_live_{start, end}
-   regsets during scheduling.  This is necessary to use such functions as
-   split_block (), as they assume consistency of register live information.  */
-static void
-init_glat (void)
-{
-  basic_block bb;
-
-  FOR_ALL_BB (bb)
-    init_glat1 (bb);
-}
-
-/* Helper function for init_glat.  */
-static void
-init_glat1 (basic_block bb)
-{
-  gcc_assert (bb->il.rtl->global_live_at_start != 0
-	      && bb->il.rtl->global_live_at_end != 0);
-
-  glat_start[bb->index] = bb->il.rtl->global_live_at_start;
-  glat_end[bb->index] = bb->il.rtl->global_live_at_end;
-  
-  if (current_sched_info->flags & DETACH_LIFE_INFO)
-    {
-      bb->il.rtl->global_live_at_start = 0;
-      bb->il.rtl->global_live_at_end = 0;
-    }
-}
-
-/* Attach reg_live_info back to basic blocks.
-   Also save regsets, that should not have been changed during scheduling,
-   for checking purposes (see check_reg_live).  */
-void
-attach_life_info (void)
-{
-  basic_block bb;
-
-  FOR_ALL_BB (bb)
-    attach_life_info1 (bb);
-}
-
-/* Helper function for attach_life_info.  */
-static void
-attach_life_info1 (basic_block bb)
-{
-  gcc_assert (bb->il.rtl->global_live_at_start == 0
-	      && bb->il.rtl->global_live_at_end == 0);
-
-  if (glat_start[bb->index])
-    {
-      gcc_assert (glat_end[bb->index]);    
-
-      bb->il.rtl->global_live_at_start = glat_start[bb->index];
-      bb->il.rtl->global_live_at_end = glat_end[bb->index];
-
-      /* Make them NULL, so they won't be freed in free_glat.  */
-      glat_start[bb->index] = 0;
-      glat_end[bb->index] = 0;
-
-#ifdef ENABLE_CHECKING
-      if (bb->index < NUM_FIXED_BLOCKS
-	  || current_sched_info->region_head_or_leaf_p (bb, 0))
-	{
-	  glat_start[bb->index] = ALLOC_REG_SET (&reg_obstack);
-	  COPY_REG_SET (glat_start[bb->index],
-			bb->il.rtl->global_live_at_start);
-	}
-
-      if (bb->index < NUM_FIXED_BLOCKS
-	  || current_sched_info->region_head_or_leaf_p (bb, 1))
-	{       
-	  glat_end[bb->index] = ALLOC_REG_SET (&reg_obstack);
-	  COPY_REG_SET (glat_end[bb->index], bb->il.rtl->global_live_at_end);
-	}
-#endif
-    }
-  else
-    {
-      gcc_assert (!glat_end[bb->index]);
-
-      bb->il.rtl->global_live_at_start = ALLOC_REG_SET (&reg_obstack);
-      bb->il.rtl->global_live_at_end = ALLOC_REG_SET (&reg_obstack);
-    }
-}
-
-/* Free GLAT information.  */
-static void
-free_glat (void)
-{
-#ifdef ENABLE_CHECKING
-  if (current_sched_info->flags & DETACH_LIFE_INFO)
-    {
-      basic_block bb;
-
-      FOR_ALL_BB (bb)
-	{
-	  if (glat_start[bb->index])
-	    FREE_REG_SET (glat_start[bb->index]);
-	  if (glat_end[bb->index])
-	    FREE_REG_SET (glat_end[bb->index]);
-	}
-    }
-#endif
-
-  free (glat_start);
-  free (glat_end);
 }
 
 /* Remove INSN from the instruction stream.
@@ -4536,54 +4424,8 @@ check_sched_flags (void)
     gcc_assert (!(f & DO_SPECULATION));
   if (f & DO_SPECULATION)
     gcc_assert (!flag_sched_stalled_insns
-		&& (f & DETACH_LIFE_INFO)
 		&& spec_info
 		&& spec_info->mask);
-  if (f & DETACH_LIFE_INFO)
-    gcc_assert (f & USE_GLAT);
-}
-
-/* Check global_live_at_{start, end} regsets.
-   If FATAL_P is TRUE, then abort execution at the first failure.
-   Otherwise, print diagnostics to STDERR (this mode is for calling
-   from debugger).  */
-void
-check_reg_live (bool fatal_p)
-{
-  basic_block bb;
-
-  FOR_ALL_BB (bb)
-    {
-      int i;
-
-      i = bb->index;
-
-      if (glat_start[i])
-	{
-	  bool b = bitmap_equal_p (bb->il.rtl->global_live_at_start,
-				   glat_start[i]);
-
-	  if (!b)
-	    {
-	      gcc_assert (!fatal_p);
-
-	      fprintf (stderr, ";; check_reg_live_at_start (%d) failed.\n", i);
-	    }
-	}
-
-      if (glat_end[i])
-	{
-	  bool b = bitmap_equal_p (bb->il.rtl->global_live_at_end,
-				   glat_end[i]);
-
-	  if (!b)
-	    {
-	      gcc_assert (!fatal_p);
-
-	      fprintf (stderr, ";; check_reg_live_at_end (%d) failed.\n", i);
-	    }
-	}
-    }
 }
 #endif /* ENABLE_CHECKING */
 

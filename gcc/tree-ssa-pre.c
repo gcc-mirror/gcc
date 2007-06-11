@@ -3758,7 +3758,7 @@ init_pre (bool do_fre)
 
 
   postorder = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
-  post_order_compute (postorder, false);
+  post_order_compute (postorder, false, false);
 
   FOR_ALL_BB (bb)
     bb->aux = xcalloc (1, sizeof (struct bb_bitmap_sets));

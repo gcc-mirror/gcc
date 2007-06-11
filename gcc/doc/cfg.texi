@@ -1,5 +1,5 @@
 @c -*-texinfo-*-
-@c Copyright (C) 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
+@c Copyright (C) 2001, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -626,41 +626,34 @@ may be used at a later point in the program.  This information is
 used, for instance, during register allocation, as the pseudo
 registers only need to be assigned to a unique hard register or to a
 stack slot if they are live.  The hard registers and stack slots may
-be freely reused for other values when a register is dead.
+be freely reused for other values when a register is dead.  
+
+Liveness information is available in the back end starting with
+@code{pass_df_initialize} and ending with @code{pass_df_finish}.  Three
+flavors of live analysis are available: With @code{LR}, it is possible
+to determine at any point @code{P} in the function if the register may be
+used on some path from @code{P} to the end of the function.  With
+@code{UR}, it is possible to determine if there is a path from the
+beginning of the function to @code{P} that defines the variable.  
+@code{LIVE} is the intersection of the @code{LR} and @code{UR} and a
+variable is live at @code{P} if there is both an assignment that reaches
+it from the beginning of the function and a uses that can be reached on
+some path from @code{P} to the end of the function.
+
+In general @code{LIVE} is the most useful of the three.  The macros
+@code{DF_[LR,UR,LIVE]_[IN,OUT]} can be used to access this information.
+The macros take a basic block number and return a bitmap that is indexed
+by the register number.  This information is only guaranteed to be up to
+date after calls are made to @code{df_analyze}.  See the file
+@code{df-core.c} for details on using the dataflow.  
+
 
 @findex REG_DEAD, REG_UNUSED
-The liveness information is stored partly in the RTL instruction
-stream and partly in the flow graph.  Local information is stored in
-the instruction stream:
-Each instruction may contain @code{REG_DEAD} notes representing that
-the value of a given register is no longer needed, or
+The liveness information is stored partly in the RTL instruction stream
+and partly in the flow graph.  Local information is stored in the
+instruction stream: Each instruction may contain @code{REG_DEAD} notes
+representing that the value of a given register is no longer needed, or
 @code{REG_UNUSED} notes representing that the value computed by the
 instruction is never used.  The second is useful for instructions
 computing multiple values at once.
 
-@findex global_live_at_start, global_live_at_end
-Global liveness information is stored in the control flow graph.
-Each basic block contains two bitmaps, @code{global_live_at_start} and
-@code{global_live_at_end} representing liveness of each register at
-the entry and exit of the basic block.  The file @code{flow.c}
-contains functions to compute liveness of each register at any given
-place in the instruction stream using this information.
-
-@findex BB_DIRTY, clear_bb_flags, update_life_info_in_dirty_blocks
-Liveness is expensive to compute and thus it is desirable to keep it
-up to date during code modifying passes.  This can be easily
-accomplished using the @code{flags} field of a basic block.  Functions
-modifying the instruction stream automatically set the @code{BB_DIRTY}
-flag of a modifies basic block, so the pass may simply
-use@code{clear_bb_flags} before doing any modifications and then ask
-the data flow module to have liveness updated via the
-@code{update_life_info_in_dirty_blocks} function.
-
-This scheme works reliably as long as no control flow graph
-transformations are done.  The task of updating liveness after control
-flow graph changes is more difficult as normal iterative data flow
-analysis may produce invalid results or get into an infinite cycle
-when the initial solution is not below the desired one.  Only simple
-transformations, like splitting basic blocks or inserting on edges,
-are safe, as functions to implement them already know how to update
-liveness information locally.

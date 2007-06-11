@@ -1,7 +1,7 @@
 /* Allocate registers within a basic block, for GNU compiler.
    Copyright (C) 1987, 1988, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation,
-   Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -81,6 +81,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "ggc.h"
 #include "timevar.h"
 #include "tree-pass.h"
+#include "df.h"
+#include "dbgcnt.h"
+
 
 /* Next quantity number available for allocation.  */
 
@@ -388,7 +391,7 @@ local_alloc (void)
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     {
-      if (REG_BASIC_BLOCK (i) >= 0 && REG_N_DEATHS (i) == 1)
+      if (REG_BASIC_BLOCK (i) >= NUM_FIXED_BLOCKS && REG_N_DEATHS (i) == 1)
 	reg_qty[i] = -2;
       else
 	reg_qty[i] = -1;
@@ -604,7 +607,7 @@ equiv_init_movable_p (rtx x, int regno)
     case REG:
       return (reg_equiv[REGNO (x)].loop_depth >= reg_equiv[regno].loop_depth
 	      && reg_equiv[REGNO (x)].replace)
-	     || (REG_BASIC_BLOCK (REGNO (x)) < 0 && ! rtx_varies_p (x, 0));
+	     || (REG_BASIC_BLOCK (REGNO (x)) < NUM_FIXED_BLOCKS && ! rtx_varies_p (x, 0));
 
     case UNSPEC_VOLATILE:
       return 0;
@@ -796,11 +799,9 @@ update_equiv_regs (void)
   rtx insn;
   basic_block bb;
   int loop_depth;
-  regset_head cleared_regs;
-  int clear_regnos = 0;
-
+  bitmap cleared_regs;
+  
   reg_equiv = XCNEWVEC (struct equivalence, max_regno);
-  INIT_REG_SET (&cleared_regs);
   reg_equiv_init = ggc_alloc_cleared (max_regno * sizeof (rtx));
   reg_equiv_init_size = max_regno;
 
@@ -914,7 +915,7 @@ update_equiv_regs (void)
 	  if (note && GET_CODE (XEXP (note, 0)) == EXPR_LIST)
 	    note = NULL_RTX;
 
-	  if (REG_N_SETS (regno) != 1
+	  if (DF_REG_DEF_COUNT (regno) != 1
 	      && (! note
 		  || rtx_varies_p (XEXP (note, 0), 0)
 		  || (reg_equiv[regno].replacement
@@ -930,7 +931,7 @@ update_equiv_regs (void)
 
 	  /* If this register is known to be equal to a constant, record that
 	     it is always equivalent to the constant.  */
-	  if (REG_N_SETS (regno) == 1
+	  if (DF_REG_DEF_COUNT (regno) == 1
 	      && note && ! rtx_varies_p (XEXP (note, 0), 0))
 	    {
 	      rtx note_value = XEXP (note, 0);
@@ -955,7 +956,7 @@ update_equiv_regs (void)
 
 	  note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
 
-	  if (note == 0 && REG_BASIC_BLOCK (regno) >= 0
+	  if (note == 0 && REG_BASIC_BLOCK (regno) >= NUM_FIXED_BLOCKS
 	      && MEM_P (SET_SRC (set))
 	      && validate_equiv_mem (insn, dest, SET_SRC (set)))
 	    note = set_unique_reg_note (insn, REG_EQUIV, copy_rtx (SET_SRC (set)));
@@ -1052,8 +1053,8 @@ update_equiv_regs (void)
 
       if (MEM_P (dest) && REG_P (src)
 	  && (regno = REGNO (src)) >= FIRST_PSEUDO_REGISTER
-	  && REG_BASIC_BLOCK (regno) >= 0
-	  && REG_N_SETS (regno) == 1
+	  && REG_BASIC_BLOCK (regno) >= NUM_FIXED_BLOCKS
+	  && DF_REG_DEF_COUNT (regno) == 1
 	  && reg_equiv[regno].init_insns != 0
 	  && reg_equiv[regno].init_insns != const0_rtx
 	  && ! find_reg_note (XEXP (reg_equiv[regno].init_insns, 0),
@@ -1071,10 +1072,12 @@ update_equiv_regs (void)
 		 the register.  */
 	      reg_equiv_init[regno]
 		= gen_rtx_INSN_LIST (VOIDmode, insn, NULL_RTX);
+	      df_notes_rescan (init_insn);
 	    }
 	}
     }
 
+  cleared_regs = BITMAP_ALLOC (NULL);
   /* Now scan all regs killed in an insn to see if any of them are
      registers only used that once.  If so, see if we can replace the
      reference with the equivalent form.  If we can, delete the
@@ -1157,18 +1160,15 @@ update_equiv_regs (void)
 			}
 
 		      remove_death (regno, insn);
-		      REG_N_REFS (regno) = 0;
+		      SET_REG_N_REFS (regno, 0);
 		      REG_FREQ (regno) = 0;
 		      delete_insn (equiv_insn);
 
 		      reg_equiv[regno].init_insns
 			= XEXP (reg_equiv[regno].init_insns, 1);
 
-		      /* Remember to clear REGNO from all basic block's live
-			 info.  */
-		      SET_REGNO_REG_SET (&cleared_regs, regno);
-		      clear_regnos++;
 		      reg_equiv_init[regno] = NULL_RTX;
+		      bitmap_set_bit (cleared_regs, regno);
 		    }
 		  /* Move the initialization of the register to just before
 		     INSN.  Update the flow information.  */
@@ -1197,51 +1197,34 @@ update_equiv_regs (void)
 		      if (insn == BB_HEAD (bb))
 			BB_HEAD (bb) = PREV_INSN (insn);
 
-		      /* Remember to clear REGNO from all basic block's live
-			 info.  */
-		      SET_REGNO_REG_SET (&cleared_regs, regno);
-		      clear_regnos++;
 		      reg_equiv_init[regno]
 			= gen_rtx_INSN_LIST (VOIDmode, new_insn, NULL_RTX);
+		      bitmap_set_bit (cleared_regs, regno);
 		    }
 		}
 	    }
 	}
     }
 
-  /* Clear all dead REGNOs from all basic block's live info.  */
-  if (clear_regnos)
-    {
-      unsigned j;
-      
-      if (clear_regnos > 8)
-	{
-	  FOR_EACH_BB (bb)
-	    {
-	      AND_COMPL_REG_SET (bb->il.rtl->global_live_at_start,
-			         &cleared_regs);
-	      AND_COMPL_REG_SET (bb->il.rtl->global_live_at_end,
-			         &cleared_regs);
-	    }
-	}
-      else
-	{
-	  reg_set_iterator rsi;
-	  EXECUTE_IF_SET_IN_REG_SET (&cleared_regs, 0, j, rsi)
-	    {
-	      FOR_EACH_BB (bb)
-		{
-		  CLEAR_REGNO_REG_SET (bb->il.rtl->global_live_at_start, j);
-		  CLEAR_REGNO_REG_SET (bb->il.rtl->global_live_at_end, j);
-		}
-	    }
-	}
-    }
+  if (!bitmap_empty_p (cleared_regs))
+    FOR_EACH_BB (bb)
+      {
+	bitmap_and_compl_into (DF_RA_LIVE_IN (bb), cleared_regs);
+	if (DF_RA_LIVE_TOP (bb))
+	  bitmap_and_compl_into (DF_RA_LIVE_TOP (bb), cleared_regs);
+	bitmap_and_compl_into (DF_RA_LIVE_OUT (bb), cleared_regs);
+	bitmap_and_compl_into (DF_LR_IN (bb), cleared_regs);
+	if (DF_LR_TOP (bb))
+	  bitmap_and_compl_into (DF_LR_TOP (bb), cleared_regs);
+	bitmap_and_compl_into (DF_LR_OUT (bb), cleared_regs);
+      }
+
+  BITMAP_FREE (cleared_regs);
 
   out:
   /* Clean up.  */
+
   end_alias_analysis ();
-  CLEAR_REG_SET (&cleared_regs);
   free (reg_equiv);
 }
 
@@ -1314,8 +1297,7 @@ block_alloc (int b)
 
   /* Initialize table of hardware registers currently live.  */
 
-  REG_SET_TO_HARD_REG_SET (regs_live,
-		  	   BASIC_BLOCK (b)->il.rtl->global_live_at_start);
+  REG_SET_TO_HARD_REG_SET (regs_live, DF_LR_TOP (BASIC_BLOCK (b)));
 
   /* This loop scans the instructions of the basic block
      and assigns quantities to registers.
@@ -1689,7 +1671,7 @@ block_alloc (int b)
 		 This optimization is only appropriate when we will run
 		 a scheduling pass after reload and we are not optimizing
 		 for code size.  */
-	      if (flag_schedule_insns_after_reload
+	      if (flag_schedule_insns_after_reload && dbg_cnt (local_alloc_for_sched)
 		  && !optimize_size
 		  && !SMALL_REGISTER_CLASSES)
 		{
@@ -1709,7 +1691,7 @@ block_alloc (int b)
 
 #ifdef INSN_SCHEDULING
 	  /* Similarly, avoid false dependencies.  */
-	  if (flag_schedule_insns_after_reload
+	  if (flag_schedule_insns_after_reload && dbg_cnt (local_alloc_for_sched)
 	      && !optimize_size
 	      && !SMALL_REGISTER_CLASSES
 	      && qty[q].alternate_class != NO_REGS)
@@ -2524,14 +2506,37 @@ static unsigned int
 rest_of_handle_local_alloc (void)
 {
   int rebuild_notes;
+  int max_regno = max_reg_num ();
+
+  df_note_add_problem ();
+  if (optimize)
+    {
+      /* Create a new version of df that has the special version of UR
+	 if we are doing optimization.  */
+      df_remove_problem (df_live);
+      df_urec_add_problem ();
+    }
+  df_analyze ();
+  regstat_init_n_sets_and_refs ();
+  regstat_compute_ri ();
+
+  /* There is just too much going on in the register allocators to
+     keep things up to date.  At the end we have to rescan anyway
+     because things change when the reload_completed flag is set.  
+     So we just turn off scanning and we will rescan by hand.  */
+  df_set_flags (DF_NO_INSN_RESCAN);
+
+
+  /* If we are not optimizing, then this is the only place before
+     register allocation where dataflow is done.  And that is needed
+     to generate these warnings.  */
+  if (warn_clobbered)
+    generate_setjmp_warnings ();
 
   /* Determine if the current function is a leaf before running reload
      since this can impact optimizations done by the prologue and
      epilogue thus changing register elimination offsets.  */
   current_function_is_leaf = leaf_function_p ();
-
-  /* Allocate the reg_renumber array.  */
-  allocate_reg_info (max_regno, FALSE, TRUE);
 
   /* And the reg_equiv_memory_loc array.  */
   VEC_safe_grow (rtx, gc, reg_equiv_memory_loc_vec, max_regno);
@@ -2541,7 +2546,7 @@ rest_of_handle_local_alloc (void)
 
   allocate_initial_values (reg_equiv_memory_loc);
 
-  regclass (get_insns (), max_reg_num ());
+  regclass (get_insns (), max_regno);
   rebuild_notes = local_alloc ();
 
   /* Local allocation may have turned an indirect jump into a direct
@@ -2553,8 +2558,6 @@ rest_of_handle_local_alloc (void)
 
       rebuild_jump_labels (get_insns ());
       purge_all_dead_edges ();
-      delete_unreachable_blocks ();
-
       timevar_pop (TV_JUMP);
     }
 

@@ -1,5 +1,5 @@
 /* CPU mode switching
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -36,6 +36,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "function.h"
 #include "tree-pass.h"
 #include "timevar.h"
+#include "df.h"
 
 /* We want target macros for the mode switching code to be able to refer
    to instruction attribute values.  */
@@ -217,7 +218,6 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
     if (eg->flags & EDGE_FALLTHRU)
       {
 	basic_block src_bb = eg->src;
-	regset live_at_end = src_bb->il.rtl->global_live_at_end;
 	rtx last_insn, ret_reg;
 
 	gcc_assert (!pre_exit);
@@ -270,6 +270,25 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 			return_copy_pat = PATTERN (return_copy);
 			if (GET_CODE (return_copy_pat) != CLOBBER)
 			  break;
+			else if (!optimize)
+			  {
+			    /* This might be (clobber (reg [<result>]))
+			       when not optimizing.  Then check if
+			       the previous insn is the clobber for
+			       the return register.  */
+			    copy_reg = SET_DEST (return_copy_pat);
+			    if (GET_CODE (copy_reg) == REG
+				&& !HARD_REGISTER_NUM_P (REGNO (copy_reg)))
+			      {
+				if (INSN_P (PREV_INSN (return_copy)))
+				  {
+				    return_copy = PREV_INSN (return_copy);
+				    return_copy_pat = PATTERN (return_copy);
+				    if (GET_CODE (return_copy_pat) != CLOBBER)
+				      break;
+				  }
+			      }
+			  }
 		      }
 		    copy_reg = SET_DEST (return_copy_pat);
 		    if (GET_CODE (copy_reg) == REG)
@@ -372,8 +391,6 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 	else
 	  {
 	    pre_exit = split_edge (eg);
-	    COPY_REG_SET (pre_exit->il.rtl->global_live_at_start, live_at_end);
-	    COPY_REG_SET (pre_exit->il.rtl->global_live_at_end, live_at_end);
 	  }
       }
 
@@ -403,8 +420,6 @@ optimize_mode_switching (void)
   bool emited = false;
   basic_block post_entry ATTRIBUTE_UNUSED, pre_exit ATTRIBUTE_UNUSED;
 
-  clear_bb_flags ();
-
   for (e = N_ENTITIES - 1, n_entities = 0; e >= 0; e--)
     if (OPTIMIZE_MODE_SWITCHING (e))
       {
@@ -433,6 +448,8 @@ optimize_mode_switching (void)
   pre_exit = create_pre_exit (n_entities, entity_map, num_modes);
 #endif
 
+  df_analyze ();
+
   /* Create the bitmap vectors.  */
 
   antic = sbitmap_vector_alloc (last_basic_block, n_entities);
@@ -456,8 +473,7 @@ optimize_mode_switching (void)
 	  int last_mode = no_mode;
 	  HARD_REG_SET live_now;
 
-	  REG_SET_TO_HARD_REG_SET (live_now,
-				   bb->il.rtl->global_live_at_start);
+	  REG_SET_TO_HARD_REG_SET (live_now, df_get_live_in (bb));
 
 	  /* Pretend the mode is clobbered across abnormal edges.  */
 	  {
@@ -602,8 +618,7 @@ optimize_mode_switching (void)
 	      mode = current_mode[j];
 	      src_bb = eg->src;
 
-	      REG_SET_TO_HARD_REG_SET (live_at_edge,
-				       src_bb->il.rtl->global_live_at_end);
+	      REG_SET_TO_HARD_REG_SET (live_at_edge, df_get_live_out (src_bb));
 
 	      start_sequence ();
 	      EMIT_MODE_SET (entity_map[j], mode, live_at_edge);
@@ -675,7 +690,6 @@ optimize_mode_switching (void)
     }
 
   /* Finished. Free up all the things we've allocated.  */
-
   sbitmap_vector_free (kill);
   sbitmap_vector_free (antic);
   sbitmap_vector_free (transp);
@@ -690,12 +704,6 @@ optimize_mode_switching (void)
   if (!need_commit && !emited)
     return 0;
 #endif
-
-  max_regno = max_reg_num ();
-  allocate_reg_info (max_regno, FALSE, FALSE);
-  update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL_RM_NOTES,
-				    (PROP_DEATH_NOTES | PROP_KILL_DEAD_CODE
-				     | PROP_SCAN_DEAD_CODE));
 
   return 1;
 }
@@ -737,6 +745,7 @@ struct tree_opt_pass pass_mode_switching =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
+  TODO_df_finish |
   TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };

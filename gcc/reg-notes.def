@@ -1,5 +1,5 @@
 /* Register note definitions.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -143,12 +143,6 @@ REG_NOTE (EH_REGION)
 /* Used by haifa-sched to save NOTE_INSN notes across scheduling.  */
 REG_NOTE (SAVE_NOTE)
 
-/* Indicates that this insn (which is part of the prologue) computes a
-   value which might not be used later, and if so it's OK to delete
-   the insn.  Normally, deleting any insn in the prologue is an error.
-   At present the parameter is unused and set to (const_int 0).  */
-REG_NOTE (MAYBE_DEAD)
-
 /* Indicates that a call does not return.  */
 REG_NOTE (NORETURN)
 
@@ -164,3 +158,7 @@ REG_NOTE (CROSSING_JUMP)
 /* This kind of note is generated at each to `setjmp', and similar
    functions that can return twice.  */
 REG_NOTE (SETJMP)
+
+/* This kind of note identifies what libcall id an instruction is part of.  */
+REG_NOTE (LIBCALL_ID)
+

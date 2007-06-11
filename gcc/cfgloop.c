@@ -1,5 +1,6 @@
 /* Natural loop discovery code for GNU compiler.
-   Copyright (C) 2000, 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -284,9 +285,6 @@ establish_preds (struct loop *loop, struct loop *father)
   unsigned depth = loop_depth (father) + 1;
   unsigned i;
 
-  /* Remember the current loop depth if it is the largest seen so far.  */
-  cfun->max_loop_depth = MAX (cfun->max_loop_depth, (int) depth);
-
   VEC_truncate (loop_p, loop->superloops, 0);
   VEC_reserve (loop_p, gc, loop->superloops, depth);
   for (i = 0; VEC_iterate (loop_p, father->superloops, i, ploop); i++)
@@ -363,10 +361,6 @@ flow_loops_find (struct loops *loops)
   struct loop *root;
 
   memset (loops, 0, sizeof *loops);
-
-  /* We are going to recount the maximum loop depth,
-     so throw away the last count.  */
-  cfun->max_loop_depth = 0;
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */

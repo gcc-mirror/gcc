@@ -113,26 +113,26 @@ DEF_RTL_EXPR(ADDRESS, "address", "e", RTX_MATCH)
    ---------------------------------------------------------------------- */
 
 /* An instruction that cannot jump.  */
-DEF_RTL_EXPR(INSN, "insn", "iuuBieiee", RTX_INSN)
+DEF_RTL_EXPR(INSN, "insn", "iuuBieie", RTX_INSN)
 
 /* An instruction that can possibly jump.
    Fields ( rtx->u.fld[] ) have exact same meaning as INSN's.  */
-DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "iuuBieiee0", RTX_INSN)
+DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "iuuBieie0", RTX_INSN)
 
 /* An instruction that can possibly call a subroutine
    but which will not change which instruction comes next
    in the current function.
-   Field ( rtx->u.fld[9] ) is CALL_INSN_FUNCTION_USAGE.
+   Field ( rtx->u.fld[8] ) is CALL_INSN_FUNCTION_USAGE.
    All other fields ( rtx->u.fld[] ) have exact same meaning as INSN's.  */
-DEF_RTL_EXPR(CALL_INSN, "call_insn", "iuuBieieee", RTX_INSN)
+DEF_RTL_EXPR(CALL_INSN, "call_insn", "iuuBieiee", RTX_INSN)
 
 /* A marker that indicates that control will not flow through.  */
-DEF_RTL_EXPR(BARRIER, "barrier", "iuu000000", RTX_EXTRA)
+DEF_RTL_EXPR(BARRIER, "barrier", "iuu00000", RTX_EXTRA)
 
 /* Holds a label that is followed by instructions.
    Operand:
    4: is used in jump.c for the use-count of the label.
-   5: is used in flow.c to point to the chain of label_ref's to this label.
+   5: is used in the sh backend.
    6: is a number that is unique in the entire compilation.
    7: is the user-given name of the label, if any.  */
 DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuuB00is", RTX_EXTRA)

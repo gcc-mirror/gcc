@@ -460,7 +460,7 @@ avr_regs_to_save (HARD_REG_SET *set)
 	continue;
 
       if ((int_or_sig_p && !leaf_func_p && call_used_regs[reg])
-	  || (regs_ever_live[reg]
+	  || (df_regs_ever_live_p (reg)
 	      && (int_or_sig_p || !call_used_regs[reg])
 	      && !(frame_pointer_needed
 		   && (reg == REG_Y || reg == (REG_Y+1)))))
@@ -517,7 +517,7 @@ sequent_regs_live (void)
     {
       if (!call_used_regs[reg])
 	{
-	  if (regs_ever_live[reg])
+	  if (df_regs_ever_live_p (reg))
 	    {
 	      ++live_seq;
 	      ++cur_seq;
@@ -529,7 +529,7 @@ sequent_regs_live (void)
 
   if (!frame_pointer_needed)
     {
-      if (regs_ever_live[REG_Y])
+      if (df_regs_ever_live_p (REG_Y))
 	{
 	  ++live_seq;
 	  ++cur_seq;
@@ -537,7 +537,7 @@ sequent_regs_live (void)
       else
 	cur_seq = 0;
 
-      if (regs_ever_live[REG_Y+1])
+      if (df_regs_ever_live_p (REG_Y+1))
 	{
 	  ++live_seq;
 	  ++cur_seq;
@@ -5815,7 +5815,7 @@ avr_peep2_scratch_safe (rtx scratch)
 
       for (reg = first_reg; reg <= last_reg; reg++)
 	{
-	  if (!regs_ever_live[reg])
+	  if (!df_regs_ever_live_p (reg))
 	    return 0;
 	}
     }

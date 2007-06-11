@@ -195,6 +195,7 @@ build machinery (*.in)	DJ Delorie		dj@redhat.com
 build machinery (*.in)	Nathanael Nerode	neroden@gcc.gnu.org
 build machinery (*.in)	Alexandre Oliva		aoliva@redhat.com
 dataflow		Paolo Bonzini		bonzini@gnu.org
+dataflow		Daniel Berlin		dberlin@dberlin.org
 docs co-maintainer	Gerald Pfeifer		gerald@pfeifer.com
 docs co-maintainer	Joseph Myers		jsm@polyomino.org.uk
 predict.def		Jan Hubicka		jh@suse.cz

@@ -1,6 +1,6 @@
 /* Common subexpression elimination for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -59,6 +59,8 @@ struct elt_list GTY(())
   cselib_val *elt;
 };
 
+extern void (*cselib_discard_hook) (cselib_val *);
+
 extern cselib_val *cselib_lookup (rtx, enum machine_mode, int);
 extern void cselib_init (bool record_memory);
 extern void cselib_clear_table (void);
@@ -67,5 +69,6 @@ extern void cselib_process_insn (rtx);
 extern enum machine_mode cselib_reg_set_mode (rtx);
 extern int rtx_equal_for_cselib_p (rtx, rtx);
 extern int references_value_p (rtx, int);
+extern rtx cselib_expand_value_rtx (rtx, bitmap, int);
 extern rtx cselib_subst_to_values (rtx);
 extern void cselib_invalidate_rtx (rtx);

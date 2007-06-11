@@ -1,6 +1,7 @@
 /* Perform simple optimizations to clean up the result of reload.
-   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -46,6 +47,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree.h"
 #include "timevar.h"
 #include "tree-pass.h"
+#include "df.h"
+#include "dbgcnt.h"
 
 static int reload_cse_noop_set_p (rtx);
 static void reload_cse_simplify (rtx, rtx);
@@ -521,7 +524,7 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 	  if (! TEST_HARD_REG_BIT (equiv_regs[i], regno))
 	    continue;
 
-	  REGNO (testreg) = regno;
+	  SET_REGNO (testreg, regno);
 	  PUT_MODE (testreg, mode);
 
 	  /* We found a register equal to this operand.  Now look for all
@@ -741,10 +744,8 @@ reload_combine (void)
 	{
 	  HARD_REG_SET live;
 
-	  REG_SET_TO_HARD_REG_SET (live,
-				   bb->il.rtl->global_live_at_start);
-	  compute_use_by_pseudos (&live,
-				  bb->il.rtl->global_live_at_start);
+	  REG_SET_TO_HARD_REG_SET (live, DF_LIVE_IN (bb));
+	  compute_use_by_pseudos (&live, DF_LIVE_IN (bb));
 	  COPY_HARD_REG_SET (LABEL_LIVE (insn), live);
 	  IOR_HARD_REG_SET (ever_live_at_start, live);
 	}
@@ -1219,7 +1220,8 @@ reload_cse_move2add (rtx first)
 	  /* Check if we have valid information on the contents of this
 	     register in the mode of REG.  */
 	  if (reg_set_luid[regno] > move2add_last_label_luid
-	      && MODES_OK_FOR_MOVE2ADD (GET_MODE (reg), reg_mode[regno]))
+	      && MODES_OK_FOR_MOVE2ADD (GET_MODE (reg), reg_mode[regno])
+              && dbg_cnt (cse2_move2add))
 	    {
 	      /* Try to transform (set (REGX) (CONST_INT A))
 				  ...
@@ -1570,12 +1572,16 @@ gate_handle_postreload (void)
 static unsigned int
 rest_of_handle_postreload (void)
 {
+  if (!dbg_cnt (postreload_cse))
+    return 0;
+
   /* Do a very simple CSE pass over just the hard registers.  */
   reload_cse_regs (get_insns ());
-  /* reload_cse_regs can eliminate potentially-trapping MEMs.
+  /* Reload_cse_regs can eliminate potentially-trapping MEMs.
      Remove any EH edges associated with them.  */
   if (flag_non_call_exceptions)
     purge_all_dead_edges ();
+
   return 0;
 }
 
@@ -1592,6 +1598,7 @@ struct tree_opt_pass pass_postreload_cse =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
+  TODO_df_finish |
   TODO_dump_func,                       /* todo_flags_finish */
   'o'                                   /* letter */
 };

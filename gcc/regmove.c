@@ -1,6 +1,7 @@
 /* Move registers around to reduce number of move instructions needed.
-   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -45,7 +46,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "reload.h"
 #include "timevar.h"
 #include "tree-pass.h"
-
+#include "df.h"
 
 static int perhaps_ends_bb_p (rtx);
 static int optimize_reg_copy_1 (rtx, rtx, rtx);
@@ -84,6 +85,72 @@ regclass_compatible_p (int class0, int class1)
 	  || (reg_class_subset_p (class1, class0)
 	      && ! CLASS_LIKELY_SPILLED_P (class1)));
 }
+
+/* Find the place in the rtx X where REG is used as a memory address.
+   Return the MEM rtx that so uses it.
+   If PLUSCONST is nonzero, search instead for a memory address equivalent to
+   (plus REG (const_int PLUSCONST)).
+
+   If such an address does not appear, return 0.
+   If REG appears more than once, or is used other than in such an address,
+   return (rtx) 1.  */
+
+static rtx
+find_use_as_address (rtx x, rtx reg, HOST_WIDE_INT plusconst)
+{
+  enum rtx_code code = GET_CODE (x);
+  const char * const fmt = GET_RTX_FORMAT (code);
+  int i;
+  rtx value = 0;
+  rtx tem;
+
+  if (code == MEM && XEXP (x, 0) == reg && plusconst == 0)
+    return x;
+
+  if (code == MEM && GET_CODE (XEXP (x, 0)) == PLUS
+      && XEXP (XEXP (x, 0), 0) == reg
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+      && INTVAL (XEXP (XEXP (x, 0), 1)) == plusconst)
+    return x;
+
+  if (code == SIGN_EXTRACT || code == ZERO_EXTRACT)
+    {
+      /* If REG occurs inside a MEM used in a bit-field reference,
+	 that is unacceptable.  */
+      if (find_use_as_address (XEXP (x, 0), reg, 0) != 0)
+	return (rtx) (size_t) 1;
+    }
+
+  if (x == reg)
+    return (rtx) (size_t) 1;
+
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  tem = find_use_as_address (XEXP (x, i), reg, plusconst);
+	  if (value == 0)
+	    value = tem;
+	  else if (tem != 0)
+	    return (rtx) (size_t) 1;
+	}
+      else if (fmt[i] == 'E')
+	{
+	  int j;
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	    {
+	      tem = find_use_as_address (XVECEXP (x, i, j), reg, plusconst);
+	      if (value == 0)
+		value = tem;
+	      else if (tem != 0)
+		return (rtx) (size_t) 1;
+	    }
+	}
+    }
+
+  return value;
+}
+
 
 /* INC_INSN is an instruction that adds INCREMENT to REG.
    Try to fold INC_INSN as a post/pre in/decrement into INSN.
@@ -258,8 +325,7 @@ mark_flags_life_zones (rtx flags)
       {
 	int i;
 	for (i = 0; i < flags_nregs; ++i)
-	  live |= REGNO_REG_SET_P (block->il.rtl->global_live_at_start,
-				   flags_regno + i);
+	  live |= REGNO_REG_SET_P (DF_LIVE_IN (block), flags_regno + i);
       }
 #endif
 
@@ -612,7 +678,10 @@ optimize_reg_copy_2 (rtx insn, rtx dest, rtx src)
 	    if (INSN_P (q))
 	      {
 		if (reg_mentioned_p (dest, PATTERN (q)))
-		  PATTERN (q) = replace_rtx (PATTERN (q), dest, src);
+		  {
+		    PATTERN (q) = replace_rtx (PATTERN (q), dest, src);
+		    df_insn_rescan (q);
+		  }
 
 		if (CALL_P (q))
 		  {
@@ -801,20 +870,11 @@ copy_src_to_dest (rtx insn, rtx src, rtx dest)
 
       /* Update the various register tables.  */
       dest_regno = REGNO (dest);
-      REG_N_SETS (dest_regno) ++;
+      INC_REG_N_SETS (dest_regno, 1);
       REG_LIVE_LENGTH (dest_regno)++;
-      if (REGNO_FIRST_UID (dest_regno) == insn_uid)
-	REGNO_FIRST_UID (dest_regno) = move_uid;
-
       src_regno = REGNO (src);
       if (! find_reg_note (move_insn, REG_DEAD, src))
 	REG_LIVE_LENGTH (src_regno)++;
-
-      if (REGNO_FIRST_UID (src_regno) == insn_uid)
-	REGNO_FIRST_UID (src_regno) = move_uid;
-
-      if (REGNO_LAST_UID (src_regno) == insn_uid)
-	REGNO_LAST_UID (src_regno) = move_uid;
     }
 }
 
@@ -1025,6 +1085,12 @@ regmove_optimize (rtx f, int nregs)
      confused by non-call exceptions ending blocks.  */
   if (flag_non_call_exceptions)
     return;
+
+  df_note_add_problem ();
+  df_analyze ();
+
+  regstat_init_n_sets_and_refs ();
+  regstat_compute_ri ();
 
   /* Find out where a potential flags register is live, and so that we
      can suppress some optimizations in those zones.  */
@@ -1427,8 +1493,8 @@ regmove_optimize (rtx f, int nregs)
 		  dstno = REGNO (dst);
 		  srcno = REGNO (src);
 
-		  REG_N_SETS (dstno)++;
-		  REG_N_SETS (srcno)--;
+		  INC_REG_N_SETS (dstno, 1);
+		  INC_REG_N_SETS (srcno, -1);
 
 		  REG_N_CALLS_CROSSED (dstno) += num_calls;
 		  REG_N_CALLS_CROSSED (srcno) -= num_calls;
@@ -1457,7 +1523,6 @@ regmove_optimize (rtx f, int nregs)
 	     alternative approach of copying the source to the destination.  */
 	  if (!success && copy_src != NULL_RTX)
 	    copy_src_to_dest (insn, copy_src, copy_dst);
-
 	}
     }
 
@@ -1469,6 +1534,8 @@ regmove_optimize (rtx f, int nregs)
       free (reg_set_in_bb);
       reg_set_in_bb = NULL;
     }
+  regstat_free_n_sets_and_refs ();
+  regstat_free_ri ();
 }
 
 /* Returns nonzero if INSN's pattern has matching constraints for any operand.
@@ -1823,7 +1890,7 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
 	  && try_auto_increment (search_end, post_inc, 0, src, newconst, 1))
 	post_inc = 0;
       validate_change (insn, &XEXP (SET_SRC (set), 1), GEN_INT (insn_const), 0);
-      REG_N_SETS (REGNO (src))++;
+      INC_REG_N_SETS (REGNO (src), 1);
       REG_LIVE_LENGTH (REGNO (src))++;
     }
   if (overlap)
@@ -1844,6 +1911,7 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
 	  p = emit_insn_after_setloc (pat, PREV_INSN (p), INSN_LOCATOR (insn));
 	  delete_insn (insn);
 	  REG_NOTES (p) = notes;
+	  df_notes_rescan (p);
 	}
     }
   /* Sometimes we'd generate src = const; src += n;
@@ -1889,7 +1957,7 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
 	      && validate_change (insn, &SET_SRC (set), XEXP (note, 0), 0))
 	    {
 	      delete_insn (q);
-	      REG_N_SETS (REGNO (src))--;
+	      INC_REG_N_SETS (REGNO (src), -1);
 	      REG_N_CALLS_CROSSED (REGNO (src)) -= num_calls2;
 	      REG_LIVE_LENGTH (REGNO (src)) -= s_length2;
 	      insn_const = 0;
@@ -1961,8 +2029,8 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
       REG_N_CALLS_CROSSED (REGNO (src)) += s_num_calls;
     }
 
-  REG_N_SETS (REGNO (src))++;
-  REG_N_SETS (REGNO (dst))--;
+  INC_REG_N_SETS (REGNO (src), 1);
+  INC_REG_N_SETS (REGNO (dst), -1);
 
   REG_N_CALLS_CROSSED (REGNO (dst)) -= num_calls;
 
@@ -2038,7 +2106,6 @@ static unsigned int
 rest_of_handle_regmove (void)
 {
   regmove_optimize (get_insns (), max_reg_num ());
-  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE);
   return 0;
 }
 
@@ -2055,6 +2122,7 @@ struct tree_opt_pass pass_regmove =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
+  TODO_df_finish |
   TODO_dump_func |
   TODO_ggc_collect,                     /* todo_flags_finish */
   'N'                                   /* letter */

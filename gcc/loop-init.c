@@ -1,5 +1,5 @@
 /* Loop optimizer initialization routines and RTL loop optimization passes.
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,6 +31,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-pass.h"
 #include "timevar.h"
 #include "flags.h"
+#include "df.h"
 #include "ggc.h"
 
 
@@ -198,9 +199,7 @@ rtl_loop_done (void)
   loop_optimizer_finalize ();
   free_dominance_info (CDI_DOMINATORS);
 
-  cleanup_cfg (CLEANUP_EXPENSIVE);
-  delete_trivially_dead_insns (get_insns (), max_reg_num ());
-  reg_scan (get_insns (), max_reg_num ());
+  cleanup_cfg (0);
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
 
@@ -242,7 +241,7 @@ rtl_move_loop_invariants (void)
 
 struct tree_opt_pass pass_rtl_move_loop_invariants =
 {
-  "loop2_invariant",                     /* name */
+  "loop2_invariant",                    /* name */
   gate_rtl_move_loop_invariants,        /* gate */
   rtl_move_loop_invariants,             /* execute */
   NULL,                                 /* sub */
@@ -252,7 +251,8 @@ struct tree_opt_pass pass_rtl_move_loop_invariants =
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_start */ 
+  TODO_df_finish |                      /* This is shutting down the instance in loop_invariant.c  */
   TODO_dump_func,                       /* todo_flags_finish */
   'L'                                   /* letter */
 };
@@ -304,6 +304,8 @@ rtl_unroll_and_peel_loops (void)
   if (number_of_loops () > 1)
     {
       int flags = 0;
+      if (dump_file)
+	df_dump (dump_file);
 
       if (flag_peel_loops)
 	flags |= UAP_PEEL;

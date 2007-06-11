@@ -1387,7 +1387,6 @@ print_operand (FILE * file, rtx x, int code)
 }
 
 extern char call_used_regs[];
-extern char regs_ever_live[];
 
 /* For PIC mode we've reserved PIC_OFFSET_TABLE_REGNUM, which is a
    caller saved register.  For leaf functions it is more efficient to
@@ -1517,13 +1516,13 @@ spu_split_immediate (rtx * ops)
 static int
 need_to_save_reg (int regno, int saving)
 {
-  if (regs_ever_live[regno] && !call_used_regs[regno])
+  if (df_regs_ever_live_p (regno) && !call_used_regs[regno])
     return 1;
   if (flag_pic
       && regno == PIC_OFFSET_TABLE_REGNUM
       && (!saving || current_function_uses_pic_offset_table)
       && (!saving
-	  || !current_function_is_leaf || regs_ever_live[LAST_ARG_REGNUM]))
+	  || !current_function_is_leaf || df_regs_ever_live_p (LAST_ARG_REGNUM)))
     return 1;
   return 0;
 }
@@ -1571,16 +1570,11 @@ frame_emit_add_imm (rtx dst, rtx src, HOST_WIDE_INT imm, rtx scratch)
     }
   else
     {
-      insn = emit_insn (gen_movsi (scratch, gen_int_mode (imm, SImode)));
-      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, const0_rtx,
-					    REG_NOTES (insn));
+      emit_insn (gen_movsi (scratch, gen_int_mode (imm, SImode)));
       insn = emit_insn (gen_addsi3 (dst, src, scratch));
       if (REGNO (src) == REGNO (scratch))
 	abort ();
     }
-  if (REGNO (dst) == REGNO (scratch))
-    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, const0_rtx,
-					  REG_NOTES (insn));
   return insn;
 }
 
@@ -1688,11 +1682,7 @@ spu_expand_prologue (void)
     {
       rtx pic_reg = get_pic_reg ();
       insn = emit_insn (gen_load_pic_offset (pic_reg, scratch_reg_0));
-      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, const0_rtx,
-					    REG_NOTES (insn));
       insn = emit_insn (gen_subsi3 (pic_reg, pic_reg, scratch_reg_0));
-      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, const0_rtx,
-					    REG_NOTES (insn));
     }
 
   if (total_size > 0)
@@ -2424,7 +2414,7 @@ immediate_load_p (rtx op, enum machine_mode mode)
     {
       enum immediate_class c = classify_immediate (op, mode);
       return c == IC_IL1 || c == IC_IL1s
-	     || (!flow2_completed && (c == IC_IL2 || c == IC_IL2s));
+	     || (!epilogue_completed && (c == IC_IL2 || c == IC_IL2s));
     }
   return 0;
 }
@@ -3833,7 +3823,7 @@ fsmbi_const_p (rtx x)
       /* We can always choose TImode for CONST_INT because the high bits
          of an SImode will always be all 1s, i.e., valid for fsmbi. */
       enum immediate_class c = classify_immediate (x, TImode);
-      return c == IC_FSMBI || (!flow2_completed && c == IC_FSMBI2);
+      return c == IC_FSMBI || (!epilogue_completed && c == IC_FSMBI2);
     }
   return 0;
 }

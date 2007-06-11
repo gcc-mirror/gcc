@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for CRX.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -165,7 +165,7 @@ do {								\
 /* Interrupt functions can only use registers that have already been saved by
  * the prologue, even if they would normally be call-clobbered. */
 #define HARD_REGNO_RENAME_OK(SRC, DEST)	\
-	(!crx_interrupt_function_p () || regs_ever_live[DEST])
+  (!crx_interrupt_function_p () || df_regs_ever_live_p (DEST))
 
 #define MODES_TIEABLE_P(MODE1, MODE2)  1
 

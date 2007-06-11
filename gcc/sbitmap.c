@@ -1,5 +1,6 @@
 /* Simple bitmaps.
-   Copyright (C) 1999, 2000, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -260,6 +261,19 @@ int
 sbitmap_equal (sbitmap a, sbitmap b)
 {
   return !memcmp (a->elms, b->elms, sizeof (SBITMAP_ELT_TYPE) * a->size);
+}
+
+/* Return true if the bitmap is empty.  */
+
+bool
+sbitmap_empty_p (sbitmap bmap)
+{
+  unsigned int i;
+  for (i=0; i<bmap->size; i++)
+    if (bmap->elms[i])
+      return false;
+
+  return true;
 }
 
 /* Zero all elements in a bitmap.  */

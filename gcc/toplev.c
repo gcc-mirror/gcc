@@ -2117,9 +2117,6 @@ finalize (void)
   if (mem_report)
     dump_memory_report (true);
 
-  /* Free up memory for the benefit of leak detectors.  */
-  free_reg_info ();
-
   /* Language-specific end of compilation actions.  */
   lang_hooks.finish ();
 }

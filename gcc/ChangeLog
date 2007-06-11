@@ -1,3 +1,7 @@
+2007-06-11  Daniel Berlin  <dberlin@dberlin.org>
+
+	* Merge dataflow-branch into mainline (see ChangeLog.dataflow)
+
 2007-06-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md ("*movtf_internal): Penalize moves to and

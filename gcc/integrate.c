@@ -1,6 +1,6 @@
 /* Procedure integration for GCC.
    Copyright (C) 1988, 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -46,6 +46,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target.h"
 #include "langhooks.h"
 #include "tree-pass.h"
+#include "df.h"
 
 /* Round to the next highest integer that meets the alignment.  */
 #define CEIL_ROUND(VALUE,ALIGN)	(((VALUE) + (ALIGN) - 1) & ~((ALIGN)- 1))
@@ -318,7 +319,7 @@ struct tree_opt_pass pass_initial_value_sets =
 /* If the backend knows where to allocate pseudos for hard
    register initial values, register these allocations now.  */
 void
-allocate_initial_values (rtx *reg_equiv_memory_loc ATTRIBUTE_UNUSED)
+allocate_initial_values (rtx *reg_equiv_memory_loc)
 {
   if (targetm.allocate_initial_value)
     {
@@ -347,18 +348,14 @@ allocate_initial_values (rtx *reg_equiv_memory_loc ATTRIBUTE_UNUSED)
 		  reg_renumber[regno] = new_regno;
 		  /* Poke the regno right into regno_reg_rtx so that even
 		     fixed regs are accepted.  */
-		  REGNO (ivs->entries[i].pseudo) = new_regno;
+		  SET_REGNO (ivs->entries[i].pseudo, new_regno);
 		  /* Update global register liveness information.  */
 		  FOR_EACH_BB (bb)
 		    {
-		      struct rtl_bb_info *info = bb->il.rtl;
-
-		      if (REGNO_REG_SET_P(info->global_live_at_start, regno))
-			SET_REGNO_REG_SET (info->global_live_at_start,
-					   new_regno);
-		      if (REGNO_REG_SET_P(info->global_live_at_end, regno))
-			SET_REGNO_REG_SET (info->global_live_at_end,
-					   new_regno);
+		      if (REGNO_REG_SET_P(DF_LIVE_IN (bb), regno))
+			SET_REGNO_REG_SET (DF_LIVE_IN (bb), new_regno);
+		      if (REGNO_REG_SET_P(DF_LIVE_OUT (bb), regno))
+			SET_REGNO_REG_SET (DF_LIVE_OUT (bb), new_regno);
 		    }
 		}
 	    }

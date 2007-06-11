@@ -313,6 +313,10 @@ fasynchronous-unwind-tables
 Common Report Var(flag_asynchronous_unwind_tables) Optimization
 Generate unwind tables that are exact at each instruction boundary
 
+fauto-inc-dec
+Common Report Var(flag_auto_inc_dec) Init(1)
+Generate auto-inc/dec instructions
+
 ; -fcheck-bounds causes gcc to generate array bounds checks.
 ; For C, C++ and ObjC: defaults off.
 ; For Java: defaults to on.
@@ -387,6 +391,10 @@ Omit range reduction step when performing complex division
 fdata-sections
 Common Report Var(flag_data_sections) Optimization
 Place data items into their own section
+
+fdbg-cnt=
+Common RejectNegative Joined
+-fdbg-cnt=<counter>:<limit>             Set the debug counter limit.   
 
 ; Nonzero for -fdefer-pop: don't pop args after each function call
 ; instead save them up to pop many calls' args with one insns.
@@ -655,6 +663,14 @@ Add mudflap bounds-checking instrumentation for multi-threaded program
 fmudflapir
 Common RejectNegative Report Var(flag_mudflap_ignore_reads)
 Ignore read operations when inserting mudflap instrumentation
+
+fdce
+Common Var(flag_dce) Init(1)
+Use the RTL dead code elimination pass
+
+fdse
+Common Var(flag_dse) Init(1)
+Use the RTL dead store elimination pass
 
 freschedule-modulo-scheduled-loops
 Common Report Var(flag_resched_modulo_sched) Optimization
