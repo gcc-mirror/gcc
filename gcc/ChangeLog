@@ -1,3 +1,9 @@
+2007-06-11  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.md (movdi_insn, movsi_insn, movv2hi_insn,
+	movhi_insn, movqi_insn, movsf_insn, movdf_insn): Don't allow constant
+	to memory moves.
+
 2007-06-11  Rafael Avila de Espindola  <espindola@google.com>
 
 	* gcc/tree.c (signed_or_unsigned_type_for): New.
