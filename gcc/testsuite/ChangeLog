@@ -1,3 +1,9 @@
+2007-06-11  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* gcc.dg/setjmp-3.c: Rename raise to raise0.
+	* gcc.dg/setjmp-4.c: Likewise.
+	* gcc.target/i386/980211-1.c: Rename __signbitl to __signbitl0.
+
 2007-06-11  Paolo Bonzini  <bonzini@gnu.org>
 
         PR rtl-optimization/31025
