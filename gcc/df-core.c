@@ -114,7 +114,7 @@ optimizations that reorder blocks invalidate the bitvector.
 DF_ANALYZE causes all of the defined problems to be (re)solved.  When
 DF_ANALYZE is completes, the IN and OUT sets for each basic block
 contain the computer information.  The DF_*_BB_INFO macros can be used
-to access these bitvectors.  All defered rescannings are down before
+to access these bitvectors.  All deferred rescannings are down before
 the transfer functions are recompited.
 
 DF_DUMP can then be called to dump the information produce to some
@@ -126,7 +126,7 @@ can all be called separately as part of a larger dump function.
 
 DF_FINISH_PASS causes df_remove_problem to be called on all of the
 optional problems.  It also causes any insns whose scanning has been
-defered to be rescanned as well as clears all of the changeable flags.
+deferred to be rescanned as well as clears all of the changeable flags.
 Setting the pass manager TODO_df_finish flag causes this function to
 be run.  However, the pass manager will call df_finish_pass AFTER the
 pass dumping has been done, so if you want to see the results of the
@@ -190,7 +190,7 @@ There are four ways of doing the incremental scanning:
 
    To enable this mode, call df_set_flags (DF_DEFER_INSN_RESCAN).
    (This mode can be cleared by calling df_clear_flags
-   (DF_DEFER_INSN_RESCAN) but this does not cause the defered insns to
+   (DF_DEFER_INSN_RESCAN) but this does not cause the deferred insns to
    be rescanned.
 
    3) Total rescanning - In this mode the rescanning is disabled.
