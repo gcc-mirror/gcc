@@ -995,7 +995,7 @@ df_insn_delete (basic_block bb, unsigned int uid)
 
   insn_info = DF_INSN_UID_SAFE_GET (uid);
 
-  /* The client has defered rescanning.  */
+  /* The client has deferred rescanning.  */
   if (df->changeable_flags & DF_DEFER_INSN_RESCAN)
     {
       if (insn_info)
@@ -1104,7 +1104,7 @@ df_insn_rescan (rtx insn)
 
   insn_info = DF_INSN_UID_SAFE_GET (uid);
 
-  /* The client has defered rescanning.  */
+  /* The client has deferred rescanning.  */
   if (df->changeable_flags & DF_DEFER_INSN_RESCAN)
     {
       if (!insn_info)
@@ -1214,7 +1214,7 @@ df_insn_rescan_all (void)
 }
 
 
-/* Process all of the defered rescans or deletions.  */
+/* Process all of the deferred rescans or deletions.  */
 
 void
 df_process_deferred_rescans (void)
@@ -1238,7 +1238,7 @@ df_process_deferred_rescans (void)
     }
 
   if (dump_file)
-    fprintf (dump_file, "starting the processing of defered insns\n");
+    fprintf (dump_file, "starting the processing of deferred insns\n");
 
   bitmap_copy (tmp, df->insns_to_delete);
   EXECUTE_IF_SET_IN_BITMAP (tmp, 0, uid, bi)
@@ -1265,7 +1265,7 @@ df_process_deferred_rescans (void)
     }
 
   if (dump_file)
-    fprintf (dump_file, "ending the processing of defered insns\n");
+    fprintf (dump_file, "ending the processing of deferred insns\n");
 
   BITMAP_FREE (tmp);
   bitmap_clear (df->insns_to_delete);
@@ -2009,7 +2009,7 @@ df_notes_rescan (rtx insn)
 
   insn_info = DF_INSN_UID_SAFE_GET (INSN_UID(insn));
 
-  /* The client has defered rescanning.  */
+  /* The client has deferred rescanning.  */
   if (df->changeable_flags & DF_DEFER_INSN_RESCAN)
     {
       if (!insn_info)

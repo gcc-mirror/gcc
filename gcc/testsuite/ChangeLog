@@ -1,3 +1,8 @@
+2007-06-11  Paolo Bonzini  <bonzini@gnu.org>
+
+        PR rtl-optimization/31025
+        * gfortran.dg/pr31025.f90: New.
+
 2007-06-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32280
@@ -2649,11 +2654,6 @@
 
 	PR tree-optimization/31041
 	* gcc.dg/vect/pr31041.c: New test.
-
-2007-03-16  Paolo Bonzini  <bonzini@gnu.org>
-
-        PR rtl-optimization/31025
-        * gfortran.dg/pr31025.f90: New.
 
 2007-03-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 

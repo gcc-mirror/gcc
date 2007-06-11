@@ -194,8 +194,6 @@ build machinery (*.in)	Paolo Bonzini		bonzini@gnu.org
 build machinery (*.in)	DJ Delorie		dj@redhat.com
 build machinery (*.in)	Nathanael Nerode	neroden@gcc.gnu.org
 build machinery (*.in)	Alexandre Oliva		aoliva@redhat.com
-dataflow		Paolo Bonzini		bonzini@gnu.org
-dataflow		Daniel Berlin		dberlin@dberlin.org
 docs co-maintainer	Gerald Pfeifer		gerald@pfeifer.com
 docs co-maintainer	Joseph Myers		jsm@polyomino.org.uk
 predict.def		Jan Hubicka		jh@suse.cz
@@ -226,7 +224,7 @@ auto-vectorizer		Richard Guenther	rguenther@suse.de
 auto-vectorizer		Zdenek Dvorak		dvorakz@suse.cz
 auto-vectorizer		Dorit Nuzman		dorit@il.ibm.com
 
-Note individuals who maintain parts of the compiler need approval to check
+Note that individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
 
 			Non-Algorithmic Maintainers
@@ -236,9 +234,23 @@ loop optimizer		Daniel Berlin		dberlin@dberlin.org
 middle-end		Richard Guenther	rguenther@suse.de
 libcpp			Tom Tromey		tromey@redhat.com
 
-Note individuals who maintain parts of the compiler as non-algorithmic
-maintainer need approval to check in algorithmic changes or changes
+Note that individuals who maintain parts of the compiler as non-algorithmic
+maintainers need approval to check in algorithmic changes or changes
 outside of the parts of the compiler they maintain.
+
+			Non-Autopoiesis Maintainers
+
+dataflow		Daniel Berlin		dberlin@dberlin.org
+dataflow		Paolo Bonzini		bonzini@gnu.org
+dataflow		Seonbae Park		seongbae.park@gmail.com
+dataflow 		Kenneth Zadeck		zadeck@naturalbridge.com
+(FIXME: The fortran people need to be added here since they follow this rule)
+
+
+Note that individuals who maintain parts of the compiler as
+non-autopoiesis maintainers need approval changes outside of the parts
+of the compiler they maintain and also need approval for their own
+patches.
 
 			Write After Approval	(last name alphabetical order)
 
@@ -358,6 +370,7 @@ Carlos O'Donell					carlos@codesourcery.com
 Jeffrey D. Oldham				oldham@codesourcery.com
 Andrea Ornstein					andrea.ornstein@st.com
 Rainer Orth					ro@TechFak.Uni-Bielefeld.DE
+Seonbae Park					seongbae.park@gmail.com
 Devang Patel					dpatel@apple.com
 Alexandre Petit-Bianco				apbianco@redhat.com
 Nicolas Pitre					nico@cam.org
