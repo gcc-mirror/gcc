@@ -1,3 +1,8 @@
+2007-06-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm.c (arm_output_dwarf_dtprel,
+	TARGET_ASM_OUTPUT_DWARF_DTPREL): New.
+
 2007-06-11  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (movdi_insn, movsi_insn, movv2hi_insn,

@@ -195,6 +195,7 @@ static bool arm_handle_option (size_t, const char *, int);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 static bool arm_cannot_copy_insn_p (rtx);
 static bool arm_tls_symbol_p (rtx x);
+static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 
 
 /* Initialize the GCC target structure.  */
@@ -376,6 +377,11 @@ static bool arm_tls_symbol_p (rtx x);
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM arm_tls_referenced_p
+
+#ifdef HAVE_AS_TLS
+#undef TARGET_ASM_OUTPUT_DWARF_DTPREL
+#define TARGET_ASM_OUTPUT_DWARF_DTPREL arm_output_dwarf_dtprel
+#endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -16530,6 +16536,17 @@ arm_emit_tls_decoration (FILE *fp, rtx x)
     }
 
   return TRUE;
+}
+
+/* ARM implementation of TARGET_ASM_OUTPUT_DWARF_DTPREL.  */
+
+static void
+arm_output_dwarf_dtprel (FILE *file, int size, rtx x)
+{
+  gcc_assert (size == 4);
+  fputs ("\t.word\t", file);
+  output_addr_const (file, x);
+  fputs ("(tlsldo)", file);
 }
 
 bool
