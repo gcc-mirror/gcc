@@ -1,3 +1,9 @@
+2007-06-11  Rafael Avila de Espindola  <espindola@google.com>
+
+	* typeck.c (java_signed_type): Remove.
+	* lang.c (LANG_HOOKS_SIGNED_TYPE): Remove.
+	* java-tree.h (java_signed_type): Remove.
+
 2007-05-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* jcf-dump.c (HANDLE_MAGIC): Use 'unsigned long' for %lx.
