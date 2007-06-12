@@ -1,3 +1,8 @@
+2007-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-alias.c (finalize_ref_all_pointers): Clear pt_anything
+	flag on ref-all pointers.
+
 2007-06-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/31579

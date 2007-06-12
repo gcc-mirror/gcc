@@ -2415,8 +2415,14 @@ finalize_ref_all_pointers (struct alias_info *ai)
   for (i = 0; i < ai->num_pointers; i++)
     {
       tree ptr = ai->pointers[i]->var, tag;
+      /* Avoid adding to self and clean up.  */
       if (PTR_IS_REF_ALL (ptr))
-	continue;
+	{
+	  struct ptr_info_def *pi = get_ptr_info (ptr);
+	  if (pi->is_dereferenced)
+	    pi->pt_anything = 0;
+	  continue;
+	}
       tag = symbol_mem_tag (ptr);
       if (is_call_clobbered (tag))
 	add_may_alias (ai->ref_all_symbol_mem_tag, tag);
