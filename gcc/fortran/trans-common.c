@@ -528,7 +528,7 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
   tree union_type;
   tree *field_link;
   tree field;
-  tree field_init;
+  tree field_init = NULL_TREE;
   record_layout_info rli;
   tree decl;
   bool is_init = false;
