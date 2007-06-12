@@ -1005,7 +1005,7 @@ df_insn_delete (basic_block bb, unsigned int uid)
 	  bitmap_set_bit (df->insns_to_delete, uid);
 	}
       if (dump_file)
-	fprintf (dump_file, "defering deletion of insn with uid = %d.\n", uid);
+	fprintf (dump_file, "deferring deletion of insn with uid = %d.\n", uid);
       return;
     }
 
@@ -1116,7 +1116,7 @@ df_insn_rescan (rtx insn)
 	  insn_info->mw_hardregs = df_null_mw_rec;
 	}
       if (dump_file)
-	fprintf (dump_file, "defering rescan insn with uid = %d.\n", uid);
+	fprintf (dump_file, "deferring rescan insn with uid = %d.\n", uid);
     
       bitmap_clear_bit (df->insns_to_delete, uid);
       bitmap_clear_bit (df->insns_to_notes_rescan, uid);
@@ -3682,18 +3682,9 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
   unsigned int i; 
 
   bitmap_clear (exit_block_uses);
-  
-  /* If exiting needs the right stack value, consider the stack
-     pointer live at the end of the function.  */
-  if ((HAVE_epilogue && epilogue_completed)
-      || !EXIT_IGNORE_STACK
-      || (!FRAME_POINTER_REQUIRED
-	  && !current_function_calls_alloca
-	  && flag_omit_frame_pointer)
-      || current_function_sp_is_unchanging)
-    {
-      bitmap_set_bit (exit_block_uses, STACK_POINTER_REGNUM);
-    }
+
+  /* Stack pointer is always live at the exit.  */
+  bitmap_set_bit (exit_block_uses, STACK_POINTER_REGNUM);
   
   /* Mark the frame pointer if needed at the end of the function.
      If we end up eliminating it, it will be removed from the live
