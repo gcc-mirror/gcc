@@ -5210,11 +5210,17 @@ simplify_if_then_else (rtx x)
 
       if (true_code == EQ && true_val == const0_rtx
 	  && exact_log2 (nzb = nonzero_bits (from, GET_MODE (from))) >= 0)
-	false_code = EQ, false_val = GEN_INT (nzb);
+	{
+	  false_code = EQ;
+	  false_val = GEN_INT (trunc_int_for_mode (nzb, GET_MODE (from)));
+	}
       else if (true_code == EQ && true_val == const0_rtx
 	       && (num_sign_bit_copies (from, GET_MODE (from))
 		   == GET_MODE_BITSIZE (GET_MODE (from))))
-	false_code = EQ, false_val = constm1_rtx;
+	{
+	  false_code = EQ;
+	  false_val = constm1_rtx;
+	}
 
       /* Now simplify an arm if we know the value of the register in the
 	 branch and it is used in the arm.  Be careful due to the potential

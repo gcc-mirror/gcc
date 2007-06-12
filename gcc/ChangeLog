@@ -1,5 +1,11 @@
 2007-06-12  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR rtl-optimization/32293
+	* combine.c (simplify_if_then_else): Truncate return from
+	nonzero_bits() to correct mode.
+
+2007-06-12  Uros Bizjak  <ubizjak@gmail.com>
+
 	* fold-const (fold_binary) [RDIV_EXPR]: Also optimize a/cbrt(b/c)
 	into a*cbrt(c/b) if flag_unsafe_math_optimizations is set.
 
