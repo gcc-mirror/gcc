@@ -1,7 +1,7 @@
 2007-06-11  Rafael Avila de Espindola  <espindola@google.com>
 
-	* trans.c (Attribute_to_gnu): Use
-	signed_or_unsigned_type_for instead of get_signed_or_unsigned_type
+	* trans.c (Attribute_to_gnu): Use signed_or_unsigned_type_for instead
+	of get_signed_or_unsigned_type.
 	* misc.c (LANG_HOOKS_SIGNED_TYPE): Remove.
 
 2007-06-11  Bob Duff  <duff@adacore.com>
@@ -17,7 +17,7 @@
 	* decl.c (gnat_to_gnu_entity): Use pointers to dummy nodes, rather
 	than to void, for the fields when making a new fat pointer type.
 	(gnat_substitute_in_type): Now substitute_in_type.
-	* gigi.h (gnat_substitute_in_type): Likewise.
+	* gigi.h (gnat_substitute_in_type): Likewise.  Adjust recursive calls.
 	* trans.c (gnat_gimplify_expr): Remove COMPONENT_REF kludge.
 	* utils.c (update_pointer_to): Update fat pointers by updating the
 	dummy node pointers used for the fields.
@@ -113,13 +113,12 @@
 2007-06-06  Thomas Quinot  <quinot@adacore.com>
 	    Arnaud Charlet  <charlet@adacore.com>
 
-	* a-intnam-aix.ads: 
-	Adjust comment to account for SIGADAABORT change (SIGEMT is now used
-	instead of SIGTERM on AIX).
+	* a-intnam-aix.ads: Adjust comment to account for SIGADAABORT change
+	(SIGEMT is now used instead of SIGTERM on AIX).
 
 	* s-osinte-aix.ads (Linker_Options): Use -pthread instead of -lpthreads.
 	(Time_Slice_Supported): Set to True.
-	use SIGEMT instead of SIGTERM as SIGADAABORT.
+	Use SIGEMT instead of SIGTERM as SIGADAABORT.
 
 2007-06-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
@@ -249,16 +248,16 @@
 	mlib-tgt-linux.adb, mlib-tgt-solaris.adb, mlib-tgt-vms-alpha.adb, 
 	mlib-tgt-vms-ia64.adb, mlib-tgt-aix.adb, mlib-tgt-irix.adb, 
 	mlib-tgt-hpux.adb, mlib-tgt-tru64.adb: Make a common body for package
-	MLib.Tgt, containing the default versions
-	of the exported subprograms. For each platforms, create a specific
-	version of the body of new child package MLib.Tgt.Specific that contains
-	only the bodies of subprograms that are different from the default.
-	(Archive_Builder_Append_Options): New function
+	MLib.Tgt, containing the default versions of the exported subprograms.
+	For each platform, create a specific version of the body of new child
+	package MLib.Tgt.Specific that contains only the body of subprograms
+	that are different from the default.
+	(Archive_Builder_Append_Options): New function.
 
 2007-06-06  Matthew Gingell  <gingell@adacore.com>
 
-	* s-osinte-aix.adb: map Ada priorities to target
-	priorities appropriately for different scheduling policies.
+	* s-osinte-aix.adb: Map Ada priorities to target priorities
+	appropriately for different scheduling policies.
 
 2007-06-06  Arnaud Charlet  <charlet@adacore.com>
 
@@ -269,9 +268,8 @@
 
 2007-06-06  Vasiliy Fofanov  <fofanov@adacore.com>
 
-	* s-osprim-vms.ads, s-osprim-vms.adb
-	(Initialize) New procedure. Noop on VMS, added for interface
-	commonality.
+	* s-osprim-vms.ads, s-osprim-vms.adb (Initialize): New procedure.
+	Noop on VMS, added for interface commonality.
 
 2007-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 	    Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
@@ -361,10 +359,9 @@
 	    Tristan Gingold  <gingold@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
 
-	* gigi.h, trans.c (Identifier_to_gnu): Change test for deferred
-	constant by adding guard that the entity is an E_Constant before
-	testing presence of Full_view (and remove now-unnecessary test that
-	entity is not a type).
+	* trans.c (Identifier_to_gnu): Change test for deferred constant by
+	adding guard that the entity is an E_Constant before testing presence
+	of Full_view (and remove unnecessary test that entity is not a type).
 	For a CONST_DECL used by reference, manually retrieve
 	the DECL_INITIAL.  Do not invoke fold in the other DECL_P cases either.
 	(struct language_function): Move from utils.c to here.
