@@ -1,3 +1,16 @@
+2007-06-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/15353
+	PR tree-optimization/31657
+	* passes.c (init_optimization_passes): Add pass_tree_ifcombine.
+	* timevar.def: Add TV_TREE_IFCOMBINE.
+	* tree-pass.h (pass_tree_ifcombine): Declare.
+	* tree-ssa-ifcombine.c: New file.
+	* tree-ssa-phiopt.c (blocks_in_phiopt_order): Export.
+	* tree-flow.h (blocks_in_phiopt_order): Declare.
+	* Makefile.in (OBJS-common): Add tree-ssa-ifcombine.o.
+	(tree-ssa-ifcombine.o): New dependencies.
+
 2007-06-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/32293
