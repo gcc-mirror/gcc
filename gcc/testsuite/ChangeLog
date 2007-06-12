@@ -1,5 +1,10 @@
 2007-06-12  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR rtl-optimization/32293
+	* gcc.dg/pr32293.c: New test.
+
+2007-06-12  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.dg/builtins-11.c: Also check folding of a/cbrt(b/c).
 
 2007-06-12  Paul Thomas  <pault@gcc.gnu.org>
