@@ -1,3 +1,26 @@
+2007-06-12  Tristan Gingold  <gingold@adacore.com>
+
+	* gcov.c: Comments updated.
+	(source_info): Add file_time field.
+	(source_index): New variable.
+	(mutiple_files): New variable.
+	(generate_results): New function extracted from process_file.
+	(process_file): Save and restore chain of functions, generate
+	results and free structures only if not merging results.
+	(release_structures): File names are now freed in create_file_names
+	(create_file_names): Free previous file names.
+	(find_source): File date is now read here and modifications in
+	source files is checked here.
+	(read_graph_file): Only reverse order of functions for the current
+	object file.
+	(make_gcov_file_name): Do not generate long names if input_name is
+	NULL.
+	(output_lines): If merging results do not display graph, data and 
+	runs informations.
+	Checking source file modification is done in find_source.
+
+	* doc/gcov.texi: Append an s to sourcefile.
+
 2007-06-12  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (UNSPEC_NOP): New constant.

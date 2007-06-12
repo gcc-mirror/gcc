@@ -113,7 +113,7 @@ compatible with any other profiling or test coverage mechanism.
 @section Invoking @command{gcov}
 
 @smallexample
-gcov @r{[}@var{options}@r{]} @var{sourcefile}
+gcov @r{[}@var{options}@r{]} @var{sourcefiles}
 @end smallexample
 
 @command{gcov} accepts the following options:
@@ -128,7 +128,7 @@ gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
      [@option{-l}|@option{--long-file-names}]
      [@option{-p}|@option{--preserve-paths}]
      [@option{-f}|@option{--function-summaries}]
-     [@option{-o}|@option{--object-directory} @var{directory|file}] @var{sourcefile}
+     [@option{-o}|@option{--object-directory} @var{directory|file}] @var{sourcefiles}
      [@option{-u}|@option{--unconditional-branches}]
 @c man end
 @c man begin SEEALSO
