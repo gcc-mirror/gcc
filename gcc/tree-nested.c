@@ -1035,6 +1035,13 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
       walk_tree (tp, convert_nonlocal_reference, wi, NULL);
       break;
 
+    case VIEW_CONVERT_EXPR:
+      /* Just request to look at the subtrees, leaving val_only and lhs
+	 untouched.  This might actually be for !val_only + lhs, in which
+	 case we don't want to force a replacement by a temporary.  */
+      *walk_subtrees = 1;
+      break;
+
     case OMP_PARALLEL:
       save_suppress = info->suppress_expansion;
       if (convert_nonlocal_omp_clauses (&OMP_PARALLEL_CLAUSES (t), wi))
@@ -1311,6 +1318,13 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
       wi->val_only = false;
       walk_tree (tp, convert_local_reference, wi, NULL);
       wi->val_only = save_val_only;
+      break;
+
+    case VIEW_CONVERT_EXPR:
+      /* Just request to look at the subtrees, leaving val_only and lhs
+	 untouched.  This might actually be for !val_only + lhs, in which
+	 case we don't want to force a replacement by a temporary.  */
+      *walk_subtrees = 1;
       break;
 
     case OMP_PARALLEL:
