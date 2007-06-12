@@ -269,6 +269,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
+-fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
 -fdump-noaddr -fdump-unnumbered  -fdump-translation-unit@r{[}-@var{n}@r{]} @gol
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
 -fdump-ipa-all -fdump-ipa-cgraph @gol
@@ -4210,6 +4211,21 @@ show program coverage.  Each source file's note file is called
 above for a description of @var{auxname} and instructions on how to
 generate test coverage data.  Coverage data will match the source files
 more closely, if you do not optimize.
+
+@item -fdbg-cnt-list
+@opindex fdbg-cnt-list
+Print the name and the counter upperbound for all debug counters.
+
+@item -fdbg-cnt=@var{counter-value-list}
+@opindex fdbg-cnt
+Set the internal debug counter upperbound. @var{counter-value-list} 
+is a comma-separated list of @var{name}:@var{value} pairs
+which sets the upperbound of each debug counter @var{name} to @var{value}.
+All debug counters have the initial upperbound of @var{UINT_MAX},
+thus dbg_cnt() returns true always unless the upperbound is set by this option.
+e.g. With -fdbg-cnt=dce:10,tail_call:0
+dbg_cnt(dce) will return true only for first 10 invocations
+and dbg_cnt(tail_call) will return false always.
 
 @item -d@var{letters}
 @item -fdump-rtl-@var{pass}

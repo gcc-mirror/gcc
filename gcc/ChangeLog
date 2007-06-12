@@ -1,3 +1,14 @@
+2007-06-12  Seongbae Park  <seongbae.park@gmail.com>
+
+	* opts.c (common_handle_option): Handle new option -fdbg-cnt-list.
+	* dbgcnt.c (dbg_cnt_set_limit_by_name): Return value
+	to indicate an error.
+	(dbg_cnt_process_single_pair, dbg_cnt_list_all_counters): New functions
+	(dbg_cnt_process_opt): Print an error on a bad argument.
+	* dbgcnt.h (dbg_cnt_list_all_counters): New function declaration.
+	* common.opt (-fdbg-cnt-list): New.
+	* doc/invoke.texi (-fdbg-cnt-list,-fdbg-cnt=): New.
+
 2007-06-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-alias.c (finalize_ref_all_pointers): Clear pt_anything
