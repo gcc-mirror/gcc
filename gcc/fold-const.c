@@ -10555,8 +10555,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		}
 	    }
 
-	  /* Optimize a/sqrt(b/c) into a*sqrt(c/b).  */
-	  if (BUILTIN_SQRT_P (fcode1))
+	  /* Optimize a/root(b/c) into a*root(c/b).  */
+	  if (BUILTIN_ROOT_P (fcode1))
 	    {
 	      tree rootarg = CALL_EXPR_ARG (arg1, 0);
 
