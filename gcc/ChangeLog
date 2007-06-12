@@ -1,3 +1,23 @@
+2007-06-12  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.md (UNSPEC_NOP): New constant.
+	(forced_nop): New pattern.
+	* config/bfin/bfin.c: Include "df.h".
+	(add_to_reg): Use df_regs_ever_live_p instead of regs_ever_live.
+	(bfin_discover_loop): Use df_get_live_in instead of
+	global_live_at_start.
+	(bfin_reorder_loops): Pass 0 to cfg_layout_initialize.  Call
+	df_analyze when done.
+	(gen_one_bundle): Don't generate SEQUENCE insns, just put modes on
+	the insns.  Use QImode for the final insn in a bundle.  Call
+	df_insn_rescan on generated NOPs; use gen_forced_nop instead of
+	gen_nop.
+	(reorder_var_tracking_notes): New function.
+	(bfin_reorg): Pass no argument to split_all_insns.  Don't call
+	update_life_info.  Call df_analyze after scheduling and bundle
+	generation.  Call reorder_var_tracking_notes if generating these notes.
+	Call df_finish_pass at the end.
+
 2007-06-12  Dirk Mueller  <dmueller@suse.de>
 
 	* trans-stmt.c (gfc_trans_call): fix gcc_assert to
