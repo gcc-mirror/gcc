@@ -1,5 +1,9 @@
 2007-06-12  Paul Thomas  <pault@gcc.gnu.org>
 
+	* trans-common.c (create_common): Initialize 'field_init'.
+
+2007-06-12  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/29786
 	PR fortran/30875
 	* trans-common.c (get_init_field): New function.
