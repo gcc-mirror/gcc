@@ -1,5 +1,6 @@
 /* Dead code elimination pass for the GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by Ben Elliston <bje@redhat.com>
    and Andrew MacLeod <amacleod@redhat.com>
    Adapted to use control dependence by Steven Bosscher, SUSE Labs.
@@ -286,6 +287,7 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
     case ASM_EXPR:
     case RESX_EXPR:
     case RETURN_EXPR:
+    case CHANGE_DYNAMIC_TYPE_EXPR:
       mark_stmt_necessary (stmt, true);
       return;
 

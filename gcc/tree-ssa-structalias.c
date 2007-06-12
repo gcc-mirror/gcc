@@ -250,6 +250,10 @@ struct variable_info
   /* True if this is a heap variable.  */
   unsigned int is_heap_var:1;
 
+  /* True if we may not use TBAA to prune references to this
+     variable.  This is used for C++ placement new.  */
+  unsigned int no_tbaa_pruning : 1;
+
   /* Points-to set for this variable.  */
   bitmap solution;
 
@@ -359,6 +363,7 @@ static varinfo_t
 new_var_info (tree t, unsigned int id, const char *name)
 {
   varinfo_t ret = (varinfo_t) pool_alloc (variable_info_pool);
+  tree var;
 
   ret->id = id;
   ret->name = name;
@@ -369,6 +374,12 @@ new_var_info (tree t, unsigned int id, const char *name)
   ret->is_special_var = false;
   ret->is_unknown_size_var = false;
   ret->has_union = false;
+  var = t;
+  if (TREE_CODE (var) == SSA_NAME)
+    var = SSA_NAME_VAR (var);
+  ret->no_tbaa_pruning = (DECL_P (var)
+			  && POINTER_TYPE_P (TREE_TYPE (var))
+			  && DECL_NO_TBAA_P (var));
   ret->solution = BITMAP_ALLOC (&pta_obstack);
   ret->oldsolution = BITMAP_ALLOC (&oldpta_obstack);
   ret->next = NULL;
@@ -1194,6 +1205,9 @@ unify_nodes (constraint_graph_t graph, unsigned int to, unsigned int from,
 
   merge_graph_nodes (graph, to, from);
   merge_node_constraints (graph, to, from);
+
+  if (get_varinfo (from)->no_tbaa_pruning)
+    get_varinfo (to)->no_tbaa_pruning = true;
 
   if (update_changed && TEST_BIT (changed, from))
     {
@@ -3563,6 +3577,14 @@ find_func_aliases (tree origt)
 	    }
 	}
     }
+  else if (TREE_CODE (t) == CHANGE_DYNAMIC_TYPE_EXPR)
+    {
+      unsigned int j;
+
+      get_constraint_for (CHANGE_DYNAMIC_TYPE_LOCATION (t), &lhsc);
+      for (j = 0; VEC_iterate (ce_s, lhsc, j, c); ++j)
+	get_varinfo (c->var)->no_tbaa_pruning = true;
+    }
 
   /* After promoting variables and computing aliasing we will
      need to re-scan most statements.  FIXME: Try to minimize the
@@ -4130,7 +4152,10 @@ dump_solution_for_var (FILE *file, unsigned int var)
 	{
 	  fprintf (file, "%s ", get_varinfo (i)->name);
 	}
-      fprintf (file, "}\n");
+      fprintf (file, "}");
+      if (vi->no_tbaa_pruning)
+	fprintf (file, " no-tbaa-pruning");
+      fprintf (file, "\n");
     }
 }
 
@@ -4292,10 +4317,13 @@ shared_bitmap_add (bitmap pt_vars)
    For variables that are actually dereferenced, we also use type
    based alias analysis to prune the points-to sets.
    IS_DEREFED is true if PTR was directly dereferenced, which we use to
-   help determine whether we are we are allowed to prune using TBAA.  */
+   help determine whether we are we are allowed to prune using TBAA.
+   If NO_TBAA_PRUNING is true, we do not perform any TBAA pruning of
+   the from set.  */
 
 static void
-set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed)
+set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed,
+		   bool no_tbaa_pruning)
 {
   unsigned int i;
   bitmap_iterator bi;
@@ -4331,7 +4359,8 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed)
 	      if (sft)
 		{
 		  var_alias_set = get_alias_set (sft);
-		  if ((!is_derefed && !vi->directly_dereferenced)
+		  if (no_tbaa_pruning
+		      || (!is_derefed && !vi->directly_dereferenced)
 		      || alias_sets_conflict_p (ptr_alias_set, var_alias_set))
 		    bitmap_set_bit (into, DECL_UID (sft));
 		}
@@ -4345,7 +4374,8 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed)
 	      else
 		{
 		  var_alias_set = get_alias_set (vi->decl);
-		  if ((!is_derefed && !vi->directly_dereferenced)
+		  if (no_tbaa_pruning
+		      || (!is_derefed && !vi->directly_dereferenced)
 		      || alias_sets_conflict_p (ptr_alias_set, var_alias_set))
 		    bitmap_set_bit (into, DECL_UID (vi->decl));
 		}
@@ -4558,7 +4588,8 @@ find_what_p_points_to (tree p)
 	    }
 	  
 	  set_uids_in_ptset (vi->decl, finished_solution, vi->solution,
-			     vi->directly_dereferenced);
+			     vi->directly_dereferenced,
+			     vi->no_tbaa_pruning);
 	  result = shared_bitmap_lookup (finished_solution);
 
 	  if (!result)
@@ -4784,6 +4815,142 @@ remove_preds_and_fake_succs (constraint_graph_t graph)
   bitmap_obstack_release (&predbitmap_obstack);
 }
 
+/* Compute the set of variables we can't TBAA prune.  */
+
+static void
+compute_tbaa_pruning (void)
+{
+  unsigned int size = VEC_length (varinfo_t, varmap);
+  unsigned int i;
+  bool any;
+
+  changed_count = 0;
+  changed = sbitmap_alloc (size);
+  sbitmap_zero (changed);
+
+  /* Mark all initial no_tbaa_pruning nodes as changed.  */
+  any = false;
+  for (i = 0; i < size; ++i)
+    {
+      varinfo_t ivi = get_varinfo (i);
+
+      if (find (i) == i && ivi->no_tbaa_pruning)
+	{
+	  any = true;
+	  if ((graph->succs[i] && !bitmap_empty_p (graph->succs[i]))
+	      || VEC_length (constraint_t, graph->complex[i]) > 0)
+	    {
+	      SET_BIT (changed, i);
+	      ++changed_count;
+	    }
+	}
+    }
+
+  while (changed_count > 0)
+    {
+      struct topo_info *ti = init_topo_info ();
+      ++stats.iterations;
+
+      bitmap_obstack_initialize (&iteration_obstack);
+
+      compute_topo_order (graph, ti);
+
+      while (VEC_length (unsigned, ti->topo_order) != 0)
+	{
+	  bitmap_iterator bi;
+
+	  i = VEC_pop (unsigned, ti->topo_order);
+
+	  /* If this variable is not a representative, skip it.  */
+	  if (find (i) != i)
+	    continue;
+
+	  /* If the node has changed, we need to process the complex
+	     constraints and outgoing edges again.  */
+	  if (TEST_BIT (changed, i))
+	    {
+	      unsigned int j;
+	      constraint_t c;
+	      VEC(constraint_t,heap) *complex = graph->complex[i];
+
+	      RESET_BIT (changed, i);
+	      --changed_count;
+
+	      /* Process the complex copy constraints.  */
+	      for (j = 0; VEC_iterate (constraint_t, complex, j, c); ++j)
+		{
+		  if (c->lhs.type == SCALAR && c->rhs.type == SCALAR)
+		    {
+		      varinfo_t lhsvi = get_varinfo (find (c->lhs.var));
+
+		      if (!lhsvi->no_tbaa_pruning)
+			{
+			  lhsvi->no_tbaa_pruning = true;
+			  if (!TEST_BIT (changed, lhsvi->id))
+			    {
+			      SET_BIT (changed, lhsvi->id);
+			      ++changed_count;
+			    }
+			}
+		    }
+		}
+
+	      /* Propagate to all successors.  */
+	      EXECUTE_IF_IN_NONNULL_BITMAP (graph->succs[i], 0, j, bi)
+		{
+		  unsigned int to = find (j);
+		  varinfo_t tovi = get_varinfo (to);
+
+		  /* Don't propagate to ourselves.  */
+		  if (to == i)
+		    continue;
+
+		  if (!tovi->no_tbaa_pruning)
+		    {
+		      tovi->no_tbaa_pruning = true;
+		      if (!TEST_BIT (changed, to))
+			{
+			  SET_BIT (changed, to);
+			  ++changed_count;
+			}
+		    }
+		}
+	    }
+	}
+
+      free_topo_info (ti);
+      bitmap_obstack_release (&iteration_obstack);
+    }
+
+  sbitmap_free (changed);
+
+  if (any)
+    {
+      for (i = 0; i < size; ++i)
+	{
+	  varinfo_t ivi = get_varinfo (i);
+	  varinfo_t ivip = get_varinfo (find (i));
+
+	  if (ivip->no_tbaa_pruning)
+	    {
+	      tree var = ivi->decl;
+
+	      if (TREE_CODE (var) == SSA_NAME)
+		var = SSA_NAME_VAR (var);
+
+	      if (POINTER_TYPE_P (TREE_TYPE (var)))
+		{
+		  DECL_NO_TBAA_P (var) = 1;
+
+		  /* Tell the RTL layer that this pointer can alias
+		     anything.  */
+		  DECL_POINTER_ALIAS_SET (var) = 0;
+		}
+	    }
+	}
+    }
+}
+
 /* Create points-to sets for the current function.  See the comments
    at the start of the file for an algorithmic overview.  */
 
@@ -4820,7 +4987,7 @@ compute_points_to_sets (struct alias_info *ai)
 	    }
 	}
 
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); )
 	{
 	  tree stmt = bsi_stmt (bsi);
 
@@ -4831,6 +4998,13 @@ compute_points_to_sets (struct alias_info *ai)
 	     This is used when creating name tags and alias
 	     sets.  */
 	  update_alias_info (stmt, ai);
+
+	  /* The information in CHANGE_DYNAMIC_TYPE_EXPR nodes has now
+	     been captured, and we can remove them.  */
+	  if (TREE_CODE (stmt) == CHANGE_DYNAMIC_TYPE_EXPR)
+	    bsi_remove (&bsi, true);
+	  else
+	    bsi_next (&bsi);
 	}
     }
 
@@ -4861,6 +5035,8 @@ compute_points_to_sets (struct alias_info *ai)
     fprintf (dump_file, "\nSolving graph:\n");
 
   solve_graph (graph);
+
+  compute_tbaa_pruning ();
 
   if (dump_file)
     dump_sa_points_to_info (dump_file);

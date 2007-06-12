@@ -401,7 +401,9 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	  if (DECL_VIRTUAL_P (node))
 	    fputs (" virtual", file);
 	  if (DECL_PRESERVE_P (node))
-	    fputs (" preserve", file);	  
+	    fputs (" preserve", file);
+	  if (DECL_NO_TBAA_P (node))
+	    fputs (" no-tbaa", file);
 	  if (DECL_LANG_FLAG_0 (node))
 	    fputs (" decl_0", file);
 	  if (DECL_LANG_FLAG_1 (node))

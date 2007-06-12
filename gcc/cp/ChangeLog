@@ -1,3 +1,9 @@
+2007-06-12  Ian Lance Taylor  <iant@google.com>
+
+	PR libstdc++/29286
+	* init.c (avoid_placement_new_aliasing): New static function.
+	(build_new_1): Call it.
+
 2007-06-11  Rafael Avila de Espindola  <espindola@google.com>
 
 	* cp-objcp-common.h (LANG_HOOKS_SIGNED_TYPE): Remove.
