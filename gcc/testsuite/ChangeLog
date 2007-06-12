@@ -1,3 +1,7 @@
+2007-06-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/builtins-11.c: Also check folding of a/cbrt(b/c).
+
 2007-06-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29786

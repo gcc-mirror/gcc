@@ -12,6 +12,7 @@ extern void link_error(void);
 
 extern double exp(double);
 extern double sqrt(double);
+extern double cbrt(double);
 extern double pow(double,double);
 
 void test(double x, double y, double z)
@@ -38,6 +39,9 @@ void test(double x, double y, double z)
     link_error ();
 
   if (x/sqrt(y/z) != x*sqrt(z/y))
+    link_error ();
+
+  if (x/cbrt(y/z) != x*cbrt(z/y))
     link_error ();
 }
 
