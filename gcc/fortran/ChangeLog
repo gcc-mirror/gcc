@@ -1,3 +1,8 @@
+2007-06-12  Dirk Mueller  <dmueller@suse.de>
+
+	* optabls.c (debug_optab_libfuncs): fix gcc_assert to
+	a comparison, not an assignment.
+
 2007-06-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	* trans-common.c (create_common): Initialize 'field_init'.

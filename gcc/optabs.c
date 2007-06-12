@@ -5833,7 +5833,7 @@ debug_optab_libfuncs (void)
 	h = &o->handlers[j];
 	if (h->libfunc)
 	  {
-	    gcc_assert (GET_CODE (h->libfunc) = SYMBOL_REF);
+	    gcc_assert (GET_CODE (h->libfunc) == SYMBOL_REF);
 	    fprintf (stderr, "%s\t%s:\t%s\n",
 		     GET_RTX_NAME (o->code),
 		     GET_MODE_NAME (j),
@@ -5853,7 +5853,7 @@ debug_optab_libfuncs (void)
 	  h = &o->handlers[j][k];
 	  if (h->libfunc)
 	    {
-	      gcc_assert (GET_CODE (h->libfunc) = SYMBOL_REF);
+	      gcc_assert (GET_CODE (h->libfunc) == SYMBOL_REF);
 	      fprintf (stderr, "%s\t%s\t%s:\t%s\n",
 		       GET_RTX_NAME (o->code),
 		       GET_MODE_NAME (j),

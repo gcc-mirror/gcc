@@ -387,8 +387,8 @@ gfc_trans_call (gfc_code * code, bool dependency_check)
 	{
 	  gfc_symbol *sym;
 	  sym = code->resolved_sym;
-	  gcc_assert (sym->formal->sym->attr.intent = INTENT_OUT);
-	  gcc_assert (sym->formal->next->sym->attr.intent = INTENT_IN);
+	  gcc_assert (sym->formal->sym->attr.intent == INTENT_OUT);
+	  gcc_assert (sym->formal->next->sym->attr.intent == INTENT_IN);
 	  gfc_conv_elemental_dependencies (&se, &loopse, sym,
 					   code->ext.actual);
 	}
