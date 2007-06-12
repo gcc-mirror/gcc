@@ -1,3 +1,10 @@
+2007-06-12  Olivier Hainque  <hainque@adacore.com>
+
+	* tree-nested.c (convert_local_reference): Handle VIEW_CONVERT_EXPR.
+	Request walking the subtrees only, leaving the current is_lhs/val_only
+	untouched.
+	(convert_non_local_reference): Likewise.
+	
 2007-06-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/m68k/m68k-devices.def (52221, 52223, 5253): New.
