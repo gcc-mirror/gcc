@@ -516,6 +516,7 @@ omp_copy_decl_2 (tree var, tree name, tree type, omp_context *ctx)
 
   TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (var);
   DECL_GIMPLE_REG_P (copy) = DECL_GIMPLE_REG_P (var);
+  DECL_NO_TBAA_P (copy) = DECL_NO_TBAA_P (var);
   DECL_ARTIFICIAL (copy) = DECL_ARTIFICIAL (var);
   DECL_IGNORED_P (copy) = DECL_IGNORED_P (var);
   TREE_USED (copy) = 1;

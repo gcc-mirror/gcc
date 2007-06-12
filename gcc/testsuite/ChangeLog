@@ -1,3 +1,11 @@
+2007-06-12  Ian Lance Taylor  <iant@google.com>
+
+	PR libstdc++/29286
+	* g++.dg/init/new16.C: New test.
+	* g++.dg/init/new17.C: New test.
+	* g++.dg/init/new18.C: New test.
+	* g++.dg/init/new19.C: New test.
+
 2007-06-12  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/lhs_view_convert.adb: New test.

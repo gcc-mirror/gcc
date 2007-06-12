@@ -1,3 +1,39 @@
+2007-06-12  Ian Lance Taylor  <iant@google.com>
+	    Daniel Berlin  <dberlin@dberlin.org>
+
+	PR libstdc++/29286
+	* tree.def: Add CHANGE_DYNAMIC_TYPE_EXPR.
+	* tree.h (CHANGE_DYNAMIC_TYPE_NEW_TYPE): Define.
+	(CHANGE_DYNAMIC_TYPE_LOCATION): Define.
+	(DECL_NO_TBAA_P): Define.
+	(struct tree_decl_common): Add no_tbaa_flag field.
+	* tree-ssa-structalias.c (struct variable_info): Add
+	no_tbaa_pruning field.
+	(new_var_info): Initialize no_tbaa_pruning field.
+	(unify_nodes): Copy no_tbaa_pruning field.
+	(find_func_aliases): Handle CHANGE_DYNAMIC_TYPE_EXPR.
+	(dump_solution_for_var): Print no_tbaa_pruning flag.
+	(set_uids_in_ptset): Add no_tbaa_pruning parameter.  Change all
+	callers.
+	(compute_tbaa_pruning): New static function.
+	(compute_points_to_sets): Remove CHANGE_DYNAMIC_TYPE_EXPR nodes.
+	Call compute_tbaa_pruning.
+	* tree-ssa-alias.c (may_alias_p): Test no_tbaa_flag for pointers.
+	* gimplify.c (gimplify_expr): Handle CHANGE_DYNAMIC_TYPE_EXPR.
+	* gimple-low.c (lower_stmt): Likewise.
+	* tree-gimple.c (is_gimple_stmt): Likewise.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Likewise.
+	* tree-inline.c (estimate_num_insns_1): Likewise.
+	(copy_result_decl_to_var): Likewise.
+	* expr.c (expand_expr_real_1): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-inline.c (copy_decl_to_var): Copy DECL_NO_TBAA_P flag.
+	* omp-low.c (omp_copy_decl_2): Likewise.
+	* print-tree.c (print_node): Print DECL_NO_TBAA_P flag.
+	* doc/c-tree.texi (Expression trees): Document
+	CHANGE_DYNAMIC_TYPE_EXPR.
+
 2007-06-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fold-const.c (fold_binary): Guard (X-X) -> 0 transformation

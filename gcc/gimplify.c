@@ -5791,6 +5791,11 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  ret = GS_ALL_DONE;
 	  break;
 
+	case CHANGE_DYNAMIC_TYPE_EXPR:
+	  ret = gimplify_expr (&CHANGE_DYNAMIC_TYPE_LOCATION (*expr_p),
+			       pre_p, post_p, is_gimple_reg, fb_lvalue);
+	  break;
+
 	case OBJ_TYPE_REF:
 	  {
 	    enum gimplify_status r0, r1;

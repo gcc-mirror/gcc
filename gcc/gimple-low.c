@@ -242,6 +242,7 @@ lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
     case GOTO_EXPR:
     case LABEL_EXPR:
     case SWITCH_EXPR:
+    case CHANGE_DYNAMIC_TYPE_EXPR:
     case OMP_FOR:
     case OMP_SECTIONS:
     case OMP_SECTION:

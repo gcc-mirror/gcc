@@ -1,6 +1,7 @@
 /* Handle initialization things in C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1564,6 +1565,55 @@ build_raw_new_expr (tree placement, tree type, tree nelts, tree init,
   return new_expr;
 }
 
+/* Make sure that there are no aliasing issues with T, a placement new
+   expression applied to PLACEMENT, by recording the change in dynamic
+   type.  If placement new is inlined, as it is with libstdc++, and if
+   the type of the placement new differs from the type of the
+   placement location itself, then alias analysis may think it is OK
+   to interchange writes to the location from before the placement new
+   and from after the placement new.  We have to prevent type-based
+   alias analysis from applying.  PLACEMENT may be NULL, which means
+   that we couldn't capture it in a temporary variable, in which case
+   we use a memory clobber.  */
+
+static tree
+avoid_placement_new_aliasing (tree t, tree placement)
+{
+  tree type_change;
+
+  if (processing_template_decl)
+    return t;
+
+  /* If we are not using type based aliasing, we don't have to do
+     anything.  */
+  if (!flag_strict_aliasing)
+    return t;
+
+  /* If we have a pointer and a location, record the change in dynamic
+     type.  Otherwise we need a general memory clobber.  */
+  if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE
+      && placement != NULL_TREE
+      && TREE_CODE (TREE_TYPE (placement)) == POINTER_TYPE)
+    type_change = build_stmt (CHANGE_DYNAMIC_TYPE_EXPR,
+			      TREE_TYPE (t),
+			      placement);
+  else
+    {
+      /* Build a memory clobber.  */
+      type_change = build_stmt (ASM_EXPR,
+				build_string (0, ""),
+				NULL_TREE,
+				NULL_TREE,
+				tree_cons (NULL_TREE,
+					   build_string (6, "memory"),
+					   NULL_TREE));
+
+      ASM_VOLATILE_P (type_change) = 1;
+    }
+
+  return build2 (COMPOUND_EXPR, TREE_TYPE (t), type_change, t);
+}
+
 /* Generate code for a new-expression, including calling the "operator
    new" function, initializing the object, and, if an exception occurs
    during construction, cleaning up.  The arguments are as for
@@ -1607,6 +1657,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
      beginning of the storage allocated for an array-new expression in
      order to store the number of elements.  */
   tree cookie_size = NULL_TREE;
+  tree placement_var;
   /* True if the function we are calling is a placement allocation
      function.  */
   bool placement_allocation_fn_p;
@@ -1700,6 +1751,20 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 
   alloc_fn = NULL_TREE;
 
+  /* If PLACEMENT is a simple pointer type, then copy it into
+     PLACEMENT_VAR.  */
+  if (processing_template_decl
+      || placement == NULL_TREE
+      || TREE_CHAIN (placement) != NULL_TREE
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (placement))) != POINTER_TYPE)
+    placement_var = NULL_TREE;
+  else
+    {
+      placement_var = get_temp_regvar (TREE_TYPE (TREE_VALUE (placement)),
+				       TREE_VALUE (placement));
+      placement = tree_cons (NULL_TREE, placement_var, NULL_TREE);
+    }
+
   /* Allocate the object.  */
   if (! placement && TYPE_FOR_JAVA (elt_type))
     {
@@ -1792,7 +1857,12 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
   /* In the simple case, we can stop now.  */
   pointer_type = build_pointer_type (type);
   if (!cookie_size && !is_initialized)
-    return build_nop (pointer_type, alloc_call);
+    {
+      rval = build_nop (pointer_type, alloc_call);
+      if (placement != NULL)
+	rval = avoid_placement_new_aliasing (rval, placement_var);
+      return rval;
+    }
 
   /* While we're working, use a pointer to the type we've actually
      allocated. Store the result of the call in a variable so that we
@@ -2051,6 +2121,9 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 
   /* A new-expression is never an lvalue.  */
   gcc_assert (!lvalue_p (rval));
+
+  if (placement != NULL)
+    rval = avoid_placement_new_aliasing (rval, placement_var);
 
   return rval;
 }

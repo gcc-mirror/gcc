@@ -1,5 +1,5 @@
 /* Alias analysis for trees.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -2720,68 +2720,71 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
 
   gcc_assert (TREE_CODE (mem) == SYMBOL_MEMORY_TAG);
 
-  alias_stats.tbaa_queries++;
-
-  /* If the alias sets don't conflict then MEM cannot alias VAR.  */
-  if (!alias_sets_conflict_p (mem_alias_set, var_alias_set))
+  if (!DECL_NO_TBAA_P (ptr))
     {
-      alias_stats.alias_noalias++;
-      alias_stats.tbaa_resolved++;
-      return false;
-    }
+      alias_stats.tbaa_queries++;
 
-  /* If VAR is a record or union type, PTR cannot point into VAR
-     unless there is some explicit address operation in the
-     program that can reference a field of the type pointed-to by PTR.
-     This also assumes that the types of both VAR and PTR are
-     contained within the compilation unit, and that there is no fancy
-     addressing arithmetic associated with any of the types
-     involved.  */
-  if (mem_alias_set != 0 && var_alias_set != 0)
-    {
-      tree ptr_type = TREE_TYPE (ptr);
-      tree var_type = TREE_TYPE (var);
-      
-      /* The star count is -1 if the type at the end of the pointer_to 
-	 chain is not a record or union type. */ 
-      if ((!alias_set_only) && 
-	  ipa_type_escape_star_count_of_interesting_type (var_type) >= 0)
+      /* If the alias sets don't conflict then MEM cannot alias VAR.  */
+      if (!alias_sets_conflict_p (mem_alias_set, var_alias_set))
 	{
-	  int ptr_star_count = 0;
-	  
-	  /* ipa_type_escape_star_count_of_interesting_type is a
-	     little too restrictive for the pointer type, need to
-	     allow pointers to primitive types as long as those types
-	     cannot be pointers to everything.  */
-	  while (POINTER_TYPE_P (ptr_type))
+	  alias_stats.alias_noalias++;
+	  alias_stats.tbaa_resolved++;
+	  return false;
+	}
+
+      /* If VAR is a record or union type, PTR cannot point into VAR
+	 unless there is some explicit address operation in the
+	 program that can reference a field of the type pointed-to by
+	 PTR.  This also assumes that the types of both VAR and PTR
+	 are contained within the compilation unit, and that there is
+	 no fancy addressing arithmetic associated with any of the
+	 types involved.  */
+      if (mem_alias_set != 0 && var_alias_set != 0)
+	{
+	  tree ptr_type = TREE_TYPE (ptr);
+	  tree var_type = TREE_TYPE (var);
+      
+	  /* The star count is -1 if the type at the end of the
+	     pointer_to chain is not a record or union type. */ 
+	  if ((!alias_set_only) && 
+	      ipa_type_escape_star_count_of_interesting_type (var_type) >= 0)
 	    {
-	      /* Strip the *s off.  */ 
-	      ptr_type = TREE_TYPE (ptr_type);
-	      ptr_star_count++;
-	    }
+	      int ptr_star_count = 0;
 	  
-	  /* There does not appear to be a better test to see if the 
-	     pointer type was one of the pointer to everything 
-	     types.  */
-	  if (ptr_star_count > 0)
-	    {
-	      alias_stats.structnoaddress_queries++;
-	      if (ipa_type_escape_field_does_not_clobber_p (var_type, 
-							    TREE_TYPE (ptr))) 
+	      /* ipa_type_escape_star_count_of_interesting_type is a
+		 little too restrictive for the pointer type, need to
+		 allow pointers to primitive types as long as those
+		 types cannot be pointers to everything.  */
+	      while (POINTER_TYPE_P (ptr_type))
 		{
+		  /* Strip the *s off.  */ 
+		  ptr_type = TREE_TYPE (ptr_type);
+		  ptr_star_count++;
+		}
+	  
+	      /* There does not appear to be a better test to see if
+		 the pointer type was one of the pointer to everything
+		 types.  */
+	      if (ptr_star_count > 0)
+		{
+		  alias_stats.structnoaddress_queries++;
+		  if (ipa_type_escape_field_does_not_clobber_p (var_type, 
+								TREE_TYPE (ptr)))
+		    {
+		      alias_stats.structnoaddress_resolved++;
+		      alias_stats.alias_noalias++;
+		      return false;
+		    }
+		}
+	      else if (ptr_star_count == 0)
+		{
+		  /* If PTR_TYPE was not really a pointer to type, it cannot 
+		     alias.  */ 
+		  alias_stats.structnoaddress_queries++;
 		  alias_stats.structnoaddress_resolved++;
 		  alias_stats.alias_noalias++;
 		  return false;
 		}
-	    }
-	  else if (ptr_star_count == 0)
-	    {
-	      /* If PTR_TYPE was not really a pointer to type, it cannot 
-		 alias.  */ 
-	      alias_stats.structnoaddress_queries++;
-	      alias_stats.structnoaddress_resolved++;
-	      alias_stats.alias_noalias++;
-	      return false;
 	    }
 	}
     }
