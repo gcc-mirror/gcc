@@ -187,6 +187,7 @@ DEFTIMEVAR (TV_REG_STACK             , "reg stack")
 DEFTIMEVAR (TV_FINAL                 , "final")
 DEFTIMEVAR (TV_SYMOUT                , "symout")
 DEFTIMEVAR (TV_VAR_TRACKING          , "variable tracking")
+DEFTIMEVAR (TV_TREE_IFCOMBINE        , "tree if-combine")
 
 /* Everything else in rest_of_compilation not included above.  */
 DEFTIMEVAR (TV_REST_OF_COMPILATION   , "rest of compilation")

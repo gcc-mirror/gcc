@@ -575,6 +575,7 @@ init_optimization_passes (void)
 	 opportunities.  */
       NEXT_PASS (pass_phi_only_cprop);
 
+      NEXT_PASS (pass_tree_ifcombine);
       NEXT_PASS (pass_phiopt);
       NEXT_PASS (pass_may_alias);
       NEXT_PASS (pass_tail_recursion);

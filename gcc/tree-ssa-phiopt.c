@@ -45,7 +45,6 @@ static bool minmax_replacement (basic_block, basic_block,
 static bool abs_replacement (basic_block, basic_block,
 			     edge, edge, tree, tree, tree);
 static void replace_phi_edge_with_variable (basic_block, edge, tree, tree);
-static basic_block *blocks_in_phiopt_order (void);
 
 /* This pass tries to replaces an if-then-else block with an
    assignment.  We have four kinds of transformations.  Some of these
@@ -247,7 +246,7 @@ tree_ssa_phiopt (void)
    that if a block X has just a single predecessor Y, then Y is after X in the
    ordering.  */
 
-static basic_block *
+basic_block *
 blocks_in_phiopt_order (void)
 {
   basic_block x, y;

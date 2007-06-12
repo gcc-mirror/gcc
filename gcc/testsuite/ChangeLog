@@ -1,3 +1,14 @@
+2007-06-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/15353
+	PR tree-optimization/31657
+	* gcc.c-torture/execute/20070424-1.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-ifcombine-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-5.c: Likewise.
+
 2007-06-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/32293
