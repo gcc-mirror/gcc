@@ -4237,7 +4237,7 @@ subst (rtx x, rtx from, rtx to, int in_dest, int unique_copy)
 
      So force this insn not to match in this (rare) case.  */
   if (! in_dest && code == REG && REG_P (from)
-      && REGNO (x) == REGNO (from))
+      && reg_ovelap_mentioned_p (x, from))
     return gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
 
   /* If this is an object, we are done unless it is a MEM or LO_SUM, both
