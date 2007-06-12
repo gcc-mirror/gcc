@@ -54,6 +54,7 @@
 #include "basic-block.h"
 #include "cfglayout.h"
 #include "timevar.h"
+#include "df.h"
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
@@ -604,7 +605,7 @@ add_to_reg (rtx reg, HOST_WIDE_INT value, int frame, int epilogue_p)
 	{
 	  int i;
 	  for (i = REG_P0; i <= REG_P5; i++)
-	    if ((regs_ever_live[i] && ! call_used_regs[i])
+	    if ((df_regs_ever_live_p (i) && ! call_used_regs[i])
 		|| (!TARGET_FDPIC
 		    && i == PIC_OFFSET_TABLE_REGNUM
 		    && (current_function_uses_pic_offset_table
@@ -3745,7 +3746,7 @@ bfin_discover_loop (loop_info loop, basic_block tail_bb, rtx tail_insn)
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
 	      basic_block succ = EDGE_SUCC (bb, ei.index)->dest;
-	      if (!REGNO_REG_SET_P (succ->il.rtl->global_live_at_start,
+	      if (!REGNO_REG_SET_P (df_get_live_in (succ),
 				    REGNO (loop->iter_reg)))
 		continue;
 	      if (!VEC_space (basic_block, works, 1))
@@ -3974,7 +3975,7 @@ bfin_reorder_loops (loop_info loops, FILE *dump_file)
 
   FOR_EACH_BB (bb)
     bb->aux = NULL;
-  cfg_layout_initialize (CLEANUP_UPDATE_LIFE);
+  cfg_layout_initialize (0);
 
   for (loop = loops; loop; loop = loop->next)
     {
@@ -4026,6 +4027,7 @@ bfin_reorder_loops (loop_info loops, FILE *dump_file)
 	bb->aux = NULL;
     }
   cfg_layout_finalize ();
+  df_analyze ();
 }
 
 /* Run from machine_dependent_reorg, this pass looks for doloop_end insns
@@ -4087,7 +4089,7 @@ bfin_reorg_loops (FILE *dump_file)
 static bool
 gen_one_bundle (rtx slot[3])
 {
-  rtx bundle;
+  rtx bundle, insn;
 
   gcc_assert (slot[1] != NULL_RTX);
 
@@ -4116,9 +4118,15 @@ gen_one_bundle (rtx slot[3])
     }
 
   if (slot[0] == NULL_RTX)
-    slot[0] = emit_insn_before (gen_mnop (), slot[1]);
+    {
+      slot[0] = emit_insn_before (gen_mnop (), slot[1]);
+      df_insn_rescan (slot[0]);
+    }
   if (slot[2] == NULL_RTX)
-    slot[2] = emit_insn_after (gen_nop (), slot[1]);
+    {
+      slot[2] = emit_insn_after (gen_forced_nop (), slot[1]);
+      df_insn_rescan (slot[2]);
+    }
 
   /* Avoid line number information being printed inside one bundle.  */
   if (INSN_LOCATOR (slot[1])
@@ -4131,17 +4139,8 @@ gen_one_bundle (rtx slot[3])
   /* Terminate them with "|| " instead of ";" in the output.  */
   PUT_MODE (slot[0], SImode);
   PUT_MODE (slot[1], SImode);
-
-  /* This is a cheat to avoid emit_insn's special handling of SEQUENCEs.
-     Generating a PARALLEL first and changing its code later is the
-     easiest way to emit a SEQUENCE insn.  */
-  bundle = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (3, slot[0], slot[1], slot[2]));
-  emit_insn_before (bundle, slot[0]);
-  remove_insn (slot[0]);
-  remove_insn (slot[1]);
-  remove_insn (slot[2]);
-  PUT_CODE (bundle, SEQUENCE);
-  
+  /* Terminate the bundle, for the benefit of reorder_var_tracking_notes.  */
+  PUT_MODE (slot[2], QImode);
   return true;
 }
 
@@ -4199,6 +4198,7 @@ bfin_gen_bundles (void)
 		    {
 		      SET_SRC (pat) = XVECEXP (SET_SRC (pat), 0, 0);
 		      INSN_CODE (slot[0]) = -1;
+		      df_insn_rescan (slot[0]);
 		    }
 		}
 	      n_filled = 0;
@@ -4206,6 +4206,58 @@ bfin_gen_bundles (void)
 	    }
 	  if (at_end)
 	    break;
+	}
+    }
+}
+
+/* Ensure that no var tracking notes are emitted in the middle of a
+   three-instruction bundle.  */
+
+static void
+reorder_var_tracking_notes (void)
+{
+  basic_block bb;
+  FOR_EACH_BB (bb)
+    {
+      rtx insn, next;
+      rtx queue = NULL_RTX;
+      bool in_bundle = false;
+
+      for (insn = BB_HEAD (bb); insn != BB_END (bb); insn = next)
+	{
+	  next = NEXT_INSN (insn);
+
+	  if (INSN_P (insn))
+	    {
+	      /* Emit queued up notes at the last instruction of a bundle.  */
+	      if (GET_MODE (insn) == QImode)
+		{
+		  while (queue)
+		    {
+		      rtx next_queue = PREV_INSN (queue);
+		      PREV_INSN (NEXT_INSN (insn)) = queue;
+		      NEXT_INSN (queue) = NEXT_INSN (insn);
+		      NEXT_INSN (insn) = queue;
+		      PREV_INSN (queue) = insn;
+		      queue = next_queue;
+		    }
+		  in_bundle = false;
+		}
+	      else if (GET_MODE (insn) == SImode)
+		in_bundle = true;
+	    }
+	  else if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION)
+	    {
+	      if (in_bundle)
+		{
+		  rtx prev = PREV_INSN (insn);
+		  PREV_INSN (next) = prev;
+		  NEXT_INSN (prev) = next;
+
+		  PREV_INSN (insn) = queue;
+		  queue = insn;
+		}
+	    }
 	}
     }
 }
@@ -4290,10 +4342,8 @@ bfin_reorg (void)
   if (bfin_flag_schedule_insns2)
     {
       splitting_for_sched = 1;
-      split_all_insns (0);
+      split_all_insns ();
       splitting_for_sched = 0;
-
-      update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES, PROP_DEATH_NOTES);
 
       timevar_push (TV_SCHED2);
       schedule_insns ();
@@ -4303,6 +4353,8 @@ bfin_reorg (void)
 	 instructions.  */
       bfin_gen_bundles ();
     }
+
+  df_analyze ();
 
   /* Doloop optimization */
   if (cfun->machine->has_hardware_loops)
@@ -4451,8 +4503,10 @@ bfin_reorg (void)
     {
       timevar_push (TV_VAR_TRACKING);
       variable_tracking_main ();
+      reorder_var_tracking_notes ();
       timevar_pop (TV_VAR_TRACKING);
     }
+  df_finish_pass ();
 }
 
 /* Handle interrupt_handler, exception_handler and nmi_handler function
