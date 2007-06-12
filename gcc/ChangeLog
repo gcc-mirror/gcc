@@ -1,3 +1,10 @@
+2007-06-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* real.c (real_isfinite): New.
+	(real_sqrt): Use it.
+	* real.h (real_isfinite): New.
+	* builtins.c: Use it.
+
 2007-06-12  Ian Lance Taylor  <iant@google.com>
 	    Daniel Berlin  <dberlin@dberlin.org>
 

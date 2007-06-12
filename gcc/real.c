@@ -1163,6 +1163,14 @@ real_isnan (const REAL_VALUE_TYPE *r)
   return (r->cl == rvc_nan);
 }
 
+/* Determine whether a floating-point value X is finite.  */
+
+bool
+real_isfinite (const REAL_VALUE_TYPE *r)
+{
+  return (r->cl != rvc_nan) && (r->cl != rvc_inf);
+}
+
 /* Determine whether a floating-point value X is negative.  */
 
 bool
@@ -4571,7 +4579,7 @@ real_sqrt (REAL_VALUE_TYPE *r, enum machine_mode mode,
     }
 
   /* Infinity and NaN return themselves.  */
-  if (real_isinf (x) || real_isnan (x))
+  if (!real_isfinite (x))
     {
       *r = *x;
       return false;
