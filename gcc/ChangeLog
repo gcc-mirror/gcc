@@ -1,3 +1,12 @@
+2007-06-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/31579
+	* expr.c (expand_expr_addr_expr_1): Call expand_expr
+	for the offset with the modifier as EXPAND_INITIALIZER
+	if the modifier is EXPAND_INITIALIZER.
+	(expand_expr_real_1 <case INTEGER_CST>): Don't force to
+	a register if we had an overflow.
+
 2007-06-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* real.c (real_isfinite): New.
