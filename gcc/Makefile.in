@@ -192,12 +192,6 @@ GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 build/gengtype-lex.o-warn = -Wno-error
 # SYSCALLS.c misses prototypes
 SYSCALLS.c.X-warn = -Wno-strict-prototypes -Wno-error
-# These files need -Wno-error because the gimplifier triggers hard to fix
-# warnings when converting to GIMPLE form.  The warnings are triggered because
-# moving the condition into the loop prevents the loop optimizer from
-# recognizing that the loop will always be executed at least once.  We need
-# a new loop optimizer.
-reload1.o-warn = -Wno-error
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either
