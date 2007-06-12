@@ -1,3 +1,8 @@
+2007-06-11  Seongbae Park <seongbae.park@gmail.com>
+
+	* combine.c (subst): Use reg_overlap_mentioned_p
+	instead of comparing register numbers directly.
+
 2007-06-11  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* reload1.c (mark_home_live_1): Use the mode parameter.
