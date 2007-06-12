@@ -43,7 +43,7 @@
 
 2007-06-12  Dirk Mueller  <dmueller@suse.de>
 
-	* trans-stmt.c (gfc_trans_call): fix gcc_assert to
+	* optabs.c (debug_optab_libfuncs): fix gcc_assert to
 	a comparison, not an assignment.
 
 2007-06-12  Olivier Hainque  <hainque@adacore.com>
