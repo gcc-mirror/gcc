@@ -1,3 +1,9 @@
+2007-06-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fold-const.c (fold_binary): Guard (X-X) -> 0 transformation
+	with !HONOR_NANS and !HONOR_INFINITIES.
+	* simplify-rtx.c (simplify_binary_operation_1): Likewise.
+
 2007-06-12  Tristan Gingold  <gingold@adacore.com>
 
 	* gcov.c: Comments updated.
