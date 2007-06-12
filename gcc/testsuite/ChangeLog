@@ -1,3 +1,8 @@
+2007-06-12  Geoff Keating  <geoffk@apple.com>
+
+	* g++.dg/warn/weak1.C: Suppress on Darwin.
+	* g++.dg/other/unused1.C: Accept tabs or spaces in assembly.
+
 2007-06-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/31579
