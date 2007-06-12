@@ -2850,12 +2850,6 @@ cprop_jump (basic_block bb, rtx setcc, rtx jump, rtx from, rtx src)
       /* Remove REG_EQUAL note after simplification.  */
       if (note_src)
 	remove_note (jump, note);
-
-      /* If this has turned into an unconditional jump,
-	 then put a barrier after it so that the unreachable
-	 code will be deleted.  */
-      if (GET_CODE (SET_SRC (set)) == LABEL_REF)
-	emit_barrier_after (jump);
      }
 
 #ifdef HAVE_cc0

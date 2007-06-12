@@ -1,3 +1,10 @@
+2007-06-12 Seongbae Park <seongbae.park@gmail.com>
+
+       * df-scan.c (df_get_exit-block_use_set): Always add the stack pointer
+       to the exit block use set.
+       * gcse.c (cpro_jump): Don't emit barrier in cfglayout mode.
+       * config/sparc/sparc.c (sparc_check_64): Check df != NULL.
+
 2007-06-12  Seongbae Park  <seongbae.park@gmail.com>
 
 	* opts.c (common_handle_option): Handle new option -fdbg-cnt-list.
