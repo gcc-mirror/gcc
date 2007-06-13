@@ -1,3 +1,8 @@
+2007-06-13  Bob Wilson  <bob.wilson@acm.org>
+	
+	* df-scan.c (df_get_entry_block_def_set): Check if STATIC_CHAIN_REGNUM
+	is defined.
+	
 2007-06-13  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.h (EH_RETURN_HANDLER_RTX): Use gen_frame_mem.
