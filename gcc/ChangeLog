@@ -1,3 +1,10 @@
+2007-06-13  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.h (EH_RETURN_HANDLER_RTX): Use gen_frame_mem.
+	* config/bfin/bfin.md (UNSPEC_VOLATILE_STORE_EH_HANDLER): New constant.
+	(eh_store_handler): New pattern.
+	(eh_return): Emit it instead of a plain move.
+
 2007-06-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_init_mmx_sse_builtins)

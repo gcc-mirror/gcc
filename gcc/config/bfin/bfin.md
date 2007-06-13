@@ -144,7 +144,8 @@
   [(UNSPEC_VOLATILE_EH_RETURN 0)
    (UNSPEC_VOLATILE_CSYNC 1)
    (UNSPEC_VOLATILE_SSYNC 2)
-   (UNSPEC_VOLATILE_LOAD_FUNCDESC 3)])
+   (UNSPEC_VOLATILE_LOAD_FUNCDESC 3)
+   (UNSPEC_VOLATILE_STORE_EH_HANDLER 4)])
 
 (define_constants
   [(MACFLAG_NONE 0)
@@ -2687,11 +2688,19 @@
 		    UNSPEC_VOLATILE_EH_RETURN)]
   ""
 {
-  emit_move_insn (EH_RETURN_HANDLER_RTX, operands[0]);
+  emit_insn (gen_eh_store_handler (EH_RETURN_HANDLER_RTX, operands[0]));
   emit_jump_insn (gen_eh_return_internal ());
   emit_barrier ();
   DONE;
 })
+
+(define_insn "eh_store_handler"
+  [(unspec_volatile [(match_operand:SI 1 "register_operand" "da")]
+		    UNSPEC_VOLATILE_STORE_EH_HANDLER)
+   (clobber (match_operand:SI 0 "memory_operand" "=m"))]
+  ""
+  "%0 = %1%!"
+  [(set_attr "type" "mcst")])
 
 (define_insn_and_split "eh_return_internal"
   [(set (pc)
