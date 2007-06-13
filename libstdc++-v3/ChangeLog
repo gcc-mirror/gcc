@@ -1,3 +1,10 @@
+2007-06-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* libsupc++/eh_arm.cc (__cxa_type_match): Handle foreign
+	exceptions.
+	* libsubpc++/eh_personality.cc: Don't try to set up foreign or
+	forced unwind types here when using the ARM EABI unwinder.
+
 2007-06-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/c_global/cmath: Tweak includes.
