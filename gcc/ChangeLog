@@ -1,8 +1,13 @@
+2007-06-13  Eric Christopher  <echristo@apple.com>
+
+	* config/i386/i386.c (override_options): If we've specified
+	an arch then don't use TARGET_SUBTARGET_ISA_DEFAULTs.
+
 2007-06-13  Bob Wilson  <bob.wilson@acm.org>
-	
+
 	* df-scan.c (df_get_entry_block_def_set): Check if STATIC_CHAIN_REGNUM
 	is defined.
-	
+
 2007-06-13  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.h (EH_RETURN_HANDLER_RTX): Use gen_frame_mem.
@@ -141,7 +146,7 @@
 	object file.
 	(make_gcov_file_name): Do not generate long names if input_name is
 	NULL.
-	(output_lines): If merging results do not display graph, data and 
+	(output_lines): If merging results do not display graph, data and
 	runs informations.
 	Checking source file modification is done in find_source.
 
@@ -178,11 +183,11 @@
 	Request walking the subtrees only, leaving the current is_lhs/val_only
 	untouched.
 	(convert_non_local_reference): Likewise.
-	
+
 2007-06-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/m68k/m68k-devices.def (52221, 52223, 5253): New.
-	
+
 2007-06-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/15353
@@ -226,7 +231,7 @@
 	df_process_deferred_rescans, df_notes_rescan): Fixed spelling of
 	word "deferred".
 	* df-core.c: Ditto.
-	
+
 2007-06-11  Daniel Berlin  <dberlin@dberlin.org>
 
 	* Merge dataflow-branch into mainline (see ChangeLog.dataflow)
@@ -414,7 +419,7 @@
 	(__divsi3, __umodsi3, __modsi3): Likewise.
 	(__ashldi3, __ashrdi3, __lshrdi3): New.
 	* config/xtensa/t-xtensa (LIB1ASMFUNCS): Add DImode shift functions.
-	
+
 2007-06-08  Harsha Jagasia <harsha.jagasia@amd.com>
 	    Tony Linthicum <tony.linthicum@amd.com>
 
@@ -456,7 +461,7 @@
 	(vectorizable_load): Call vect_model_load_cost during analysis phase.
 	(vectorizable_store): Call vect_model_store_cost during analysis phase.
 	(vectorizable_call, vectorizable_assignment, vectorizable_operation,
-	vectorizable_promotion, vectorizable_demotion): Call 
+	vectorizable_promotion, vectorizable_demotion): Call
 	vect_model_simple_cost during analysis phase.
 
 2007-06-08  Simon Baldwin  <simonb@google.com>
@@ -502,7 +507,7 @@
 	PR target/29953
 	* config/sh/sh.md (doloop_end): New pattern and splitter.
 	* loop-iv.c (simple_rhs_p): Check for hardware registers.
-	
+
 2007-06-08  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR middle-end/32209
@@ -626,7 +631,7 @@
 	* rtl.h (push_to_sequence2): New.
 	* emit-rtl.c (push_to_sequence2): New.
 	* function.c (assign_parm_data_all): Add new fields.
-	(assign_parm_setup_block): Call push_to_sequence2 instead of 
+	(assign_parm_setup_block): Call push_to_sequence2 instead of
 	push_to_sequence.
 	(assign_parm_setup_reg): Ditto.
 	(assign_parm_setup_stack): Ditto.
