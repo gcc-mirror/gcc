@@ -1261,6 +1261,29 @@ compare_parameter_protected (gfc_symbol *formal, gfc_expr *actual)
 }
 
 
+/* Given an expression, check whether it is an array section
+   which has a vector subscript. If it has, one is returned,
+   otherwise zero.  */
+
+static int
+has_vector_subscript (gfc_expr *e)
+{
+  int i;
+  gfc_ref *ref;
+
+  if (e == NULL || e->rank == 0 || e->expr_type != EXPR_VARIABLE)
+    return 0;
+
+  for (ref = e->ref; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY && ref->u.ar.type == AR_SECTION)
+      for (i = 0; i < ref->u.ar.dimen; i++)
+	if (ref->u.ar.dimen_type[i] == DIMEN_VECTOR)
+	  return 1;
+
+  return 0;
+}
+
+
 /* Given formal and actual argument lists, see if they are compatible.
    If they are compatible, the actual argument list is sorted to
    correspond with the formal list, and elements for missing optional
@@ -1468,6 +1491,19 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       "PROTECTED attribute and dummy argument '%s' is "
 		       "INTENT = OUT/INOUT",
 		       &a->expr->where,f->sym->name);
+	  return 0;
+	}
+
+      if ((f->sym->attr.intent == INTENT_OUT
+	   || f->sym->attr.intent == INTENT_INOUT
+	   || f->sym->attr.volatile_)
+          && has_vector_subscript (a->expr))
+	{
+	  if (where)
+	    gfc_error ("Array-section actual argument with vector subscripts "
+		       "at %L is incompatible with INTENT(IN), INTENT(INOUT) "
+		       "or VOLATILE attribute of the dummy argument '%s'",
+		       &a->expr->where, f->sym->name);
 	  return 0;
 	}
 
