@@ -1,3 +1,10 @@
+2007-06-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins)
+	[__builtin_infq, __builtin_fabsq]: Define usign def_builtin.
+	[__builtin_ia32_rsqrtps, __builtin_ia32_rsqrtss]: Define using
+	def_builtin_const.
+
 2007-06-13  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (gen_one_bundle): Delete unused local variables.
