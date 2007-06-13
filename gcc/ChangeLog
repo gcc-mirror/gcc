@@ -1,4 +1,13 @@
-2007-06-12 Seongbae Park <seongbae.park@gmail.com>
+2007-06-13  Kazu Hirata  <kazu@codesourcery.com>
+
+	* auto-inc-dec.c, c-incpath.c, config/c4x/libgcc.S,
+	config/sh/divcost-analysis, dbgcnt.def, df-core.c,
+	df-problems.c, df-scan.c, df.h, dominance.c, dse.c, regstat.c,
+	tree-data-ref.c, tree-ssa-loop-im.c, tree-ssa-loop-prefetch.c,
+	tree-vect-transform.c: Fix comment typos.  Follow spelling
+	conventions.
+
+2007-06-12  Seongbae Park  <seongbae.park@gmail.com>
 
        * df-scan.c (df_get_exit-block_use_set): Always add the stack pointer
        to the exit block use set.

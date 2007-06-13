@@ -406,7 +406,7 @@ regstat_get_setjmp_crosses (void)
 
 
 
-/* Compute callse crossed for BB. Live is a scratch bitvector.  */
+/* Compute calls crossed for BB. Live is a scratch bitvector.  */
 
 static void
 regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)

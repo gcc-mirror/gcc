@@ -642,7 +642,7 @@ rewrite_bittest (block_stmt_iterator *bsi)
   if (TREE_CODE (stmt1) != GIMPLE_MODIFY_STMT)
     return stmt;
 
-  /* There is a conversion inbetween possibly inserted by fold.  */
+  /* There is a conversion in between possibly inserted by fold.  */
   t = GIMPLE_STMT_OPERAND (stmt1, 1);
   if (TREE_CODE (t) == NOP_EXPR
       || TREE_CODE (t) == CONVERT_EXPR)

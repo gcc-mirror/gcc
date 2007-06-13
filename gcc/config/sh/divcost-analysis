@@ -39,7 +39,7 @@ div_le128_neg -> div_by_1_neg: 4
 div_le128_neg -> rts          18
 
          sh4-200    absolute divisor range:
-            1  [2..128]  [129..64K) [64K..|divident|/256] >=64K,>|divident/256|
+            1  [2..128]  [129..64K) [64K..|dividend|/256] >=64K,>|dividend/256|
 udiv       18     22         38            32                   30
 sdiv pos:  20     24         41            35                   32
 sdiv neg:  15     25         42            36                   33

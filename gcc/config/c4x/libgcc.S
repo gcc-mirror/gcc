@@ -327,7 +327,7 @@ div_32:	tstb	ar1, ar1
 ; Now divisor and dividend are aligned.  Do first SUBC by hand, save
 ; of the forst quotient digit.  Then, shift divisor right rather
 ; than shifting dividend left.  This leaves a zero in the top bit of
-; the divident
+; the dividend
 ;
 	ldi	1, ar0		; Initizialize MSB of quotient
 	lsh	rc, ar0		; create a mask for MSBs

@@ -1635,7 +1635,7 @@ df_reorganize_refs_by_insn_bb (basic_block bb, unsigned int offset,
 }
 
 
-/* Organinze the refs by insn into the table in REF_INFO.  If
+/* Organize the refs by insn into the table in REF_INFO.  If
    blocks_to_analyze is defined, use that set, otherwise the entire
    program.  Include the defs if INCLUDE_DEFS. Include the uses if
    INCLUDE_USES. Include the eq_uses if INCLUDE_EQ_USES.  */
@@ -3599,7 +3599,7 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
 
 /* Return the (conservative) set of hard registers that are defined on
    entry to the function.  
-   It uses df->entry_block_defs to determine which regster 
+   It uses df->entry_block_defs to determine which register 
    reference to include.  */
 
 static void

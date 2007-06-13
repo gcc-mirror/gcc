@@ -33,7 +33,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
    How does it work ?
 
-   Everytime dbg_cnt(named-counter) is called,
+   Every time dbg_cnt(named-counter) is called,
    the counter is incremented for the named-counter.
    And the incremented value is compared against the threshold (limit)
    specified by the option.

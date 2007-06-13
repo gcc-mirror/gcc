@@ -90,7 +90,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
        HAVE_PRE_INCREMENT, HAVE_POST_INCREMENT, HAVE_PRE_DECREMENT or
        HAVE_POST_DECREMENT defined.
 
-    2) c is a contant not equal to the width of the value being accessed
+    2) c is a constant not equal to the width of the value being accessed
        by the pointer.  This is useful for machines that have
        HAVE_PRE_MODIFY_DISP, HAVE_POST_MODIFY_DISP defined.
 
@@ -445,7 +445,7 @@ static rtx *reg_next_def = NULL;
 /* Move dead note that match PATTERN to TO_INSN from FROM_INSN.  We do
    not really care about moving any other notes from the inc or add
    insn.  Moving the REG_EQUAL and REG_EQUIV is clearly wrong and it
-   does not appear that there are any other kinds of relavant notes.  */
+   does not appear that there are any other kinds of relevant notes.  */
 
 static void 
 move_dead_notes (rtx to_insn, rtx from_insn, rtx pattern)
@@ -1195,7 +1195,7 @@ find_inc (bool first_try)
 		    return false;
 		}
 
-	      /* Need to check that there are no assignemnts to b
+	      /* Need to check that there are no assignments to b
 		 before the add insn.  */
 	      other_insn 
 		= get_next_ref (REGNO (inc_insn.reg1), bb, reg_next_def);

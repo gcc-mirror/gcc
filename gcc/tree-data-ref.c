@@ -769,7 +769,7 @@ free_data_ref (data_reference_p dr)
 /* Analyzes memory reference MEMREF accessed in STMT.  The reference
    is read if IS_READ is true, write otherwise.  Returns the
    data_reference description of MEMREF.  NEST is the outermost loop of the
-   loop nest in that the reference should be analysed.  */
+   loop nest in that the reference should be analyzed.  */
 
 struct data_reference *
 create_data_ref (struct loop *nest, tree memref, tree stmt, bool is_read)
@@ -1225,7 +1225,7 @@ initialize_data_dependence_relation (struct data_reference *a,
     }
 
   /* If the base of the object is not invariant in the loop nest, we cannot
-     analyse it.  TODO -- in fact, it would suffice to record that there may
+     analyze it.  TODO -- in fact, it would suffice to record that there may
      be arbitrary dependences in the loops where the base object varies.  */
   if (!object_address_invariant_in_loop_p (VEC_index (loop_p, loop_nest, 0),
 					   DR_BASE_OBJECT (a)))
@@ -3942,7 +3942,7 @@ get_references_in_stmt (tree stmt, VEC (data_ref_loc, heap) **references)
 
 /* Stores the data references in STMT to DATAREFS.  If there is an unanalyzable
    reference, returns false, otherwise returns true.  NEST is the outermost
-   loop of the loop nest in that the references should be analysed.  */
+   loop of the loop nest in that the references should be analyzed.  */
 
 static bool
 find_data_references_in_stmt (struct loop *nest, tree stmt,

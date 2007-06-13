@@ -64,7 +64,7 @@ dataflow solution.  The transfer functions are only rebuilt if the
 some instruction within the block has changed.  
 
 The top layer is the dataflow solution itself.  The dataflow solution
-is computed by using an efficient iterative solver and the trasfer
+is computed by using an efficient iterative solver and the transfer
 functions.  The dataflow solution must be recomputed whenever the
 control changes or if one of the transfer function changes.
 
@@ -115,7 +115,7 @@ DF_ANALYZE causes all of the defined problems to be (re)solved.  When
 DF_ANALYZE is completes, the IN and OUT sets for each basic block
 contain the computer information.  The DF_*_BB_INFO macros can be used
 to access these bitvectors.  All deferred rescannings are down before
-the transfer functions are recompited.
+the transfer functions are recomputed.
 
 DF_DUMP can then be called to dump the information produce to some
 file.  This calls DF_DUMP_START, to print the information that is not
@@ -177,7 +177,7 @@ There are four ways of doing the incremental scanning:
       rescanned may be impractical.  Cse and regrename fall into this
       category.
 
-2) Defered rescanning - Calls to df_insn_rescan, df_notes_rescan, and
+2) Deferred rescanning - Calls to df_insn_rescan, df_notes_rescan, and
    df_insn_delete do not immediately change the insn but instead make
    a note that the insn needs to be rescanned.  The next call to
    df_analyze, df_finish_pass, or df_process_deferred_rescans will
@@ -635,7 +635,7 @@ df_remove_problem (struct dataflow *dflow)
 
 
 /* Remove all of the problems that are not permanent.  Scanning, lr,
-   ur and live are permanent, the rest are removeable.  Also clear all
+   ur and live are permanent, the rest are removable.  Also clear all
    of the changeable_flags.  */
 
 void
@@ -1505,7 +1505,7 @@ df_bb_delete (int bb_index)
    dataflow infomation is not being updated properly.  You can just
    sprinkle calls in until you find the place that is changing an
    underlying structure without calling the proper updating
-   rountine.  */
+   routine.  */
 
 void
 df_verify (void)
