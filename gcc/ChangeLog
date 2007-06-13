@@ -1,3 +1,8 @@
+2007-06-13  Thiemo Seufer  <ths@networkno.de>
+
+	* config/mips/linux.h, config/mips/linux64.h (LIB_SPEC): Always
+	imply -lpthread for -pthread.
+
 2007-06-13  Kazu Hirata  <kazu@codesourcery.com>
 
 	* basic-block.h: Remove the prototype for

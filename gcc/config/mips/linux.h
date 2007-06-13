@@ -174,9 +174,10 @@ Boston, MA 02110-1301, USA.  */
 
 #undef LIB_SPEC
 #define LIB_SPEC "\
-%{shared: -lc} \
-%{!shared: %{pthread:-lpthread} \
-  %{profile:-lc_p} %{!profile: -lc}}"
+%{pthread:-lpthread} \
+%{shared:-lc} \
+%{!shared: \
+  %{profile:-lc_p} %{!profile:-lc}}"
 
 #define MD_UNWIND_SUPPORT "config/mips/linux-unwind.h"
 
