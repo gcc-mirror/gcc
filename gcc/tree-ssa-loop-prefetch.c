@@ -1334,7 +1334,7 @@ determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
     }
 
   /* Prepare the references in the form suitable for data dependence
-     analysis.  We ignore unanalysable data references (the results
+     analysis.  We ignore unanalyzable data references (the results
      are used just as a heuristics to estimate temporality of the
      references, hence we do not need to worry about correctness).  */
   for (gr = refs; gr; gr = gr->next)
@@ -1376,7 +1376,7 @@ determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
       if (DDR_ARE_DEPENDENT (dep) == chrec_dont_know
 	  || DDR_NUM_DIST_VECTS (dep) == 0)
 	{
-	  /* If the dependence cannot be analysed, assume that there might be
+	  /* If the dependence cannot be analyzed, assume that there might be
 	     a reuse.  */
 	  dist = 0;
       
@@ -1385,7 +1385,7 @@ determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
 	}
       else
 	{
-	  /* The distance vectors are normalised to be always lexicographically
+	  /* The distance vectors are normalized to be always lexicographically
 	     positive, hence we cannot tell just from them whether DDR_A comes
 	     before DDR_B or vice versa.  However, it is not important,
 	     anyway -- if DDR_A is close to DDR_B, then it is either reused in

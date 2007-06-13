@@ -188,7 +188,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
                  "prologue peel iters set conservatively.");
 
       /* If peeling for alignment is unknown, loop bound of main loop becomes
-         unkown.  */
+         unknown.  */
       peel_iters_epilogue = vf - 1;
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "cost model: "
@@ -270,7 +270,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 
 
 /* TODO: Close dependency between vect_model_*_cost and vectorizable_* 
-   functions. Design better to avoid maintainence issues.  */
+   functions. Design better to avoid maintenance issues.  */
     
 /* Function vect_model_reduction_cost.  
 
@@ -526,7 +526,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies)
         /* Unaligned software pipeline has a load of an address, an initial
            load, and possibly a mask operation to "prime" the loop. However,
            if this is an access in a group of loads, which provide strided
-           acccess, then the above cost should only be considered for one
+           access, then the above cost should only be considered for one
            access in the group. Inside the loop, there is a load op
            and a realignment op.  */
 

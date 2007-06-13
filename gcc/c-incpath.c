@@ -391,7 +391,7 @@ add_path (char *path, int chain, int cxx_aware, bool user_supplied_p)
 #if defined (HAVE_DOS_BASED_FILE_SYSTEM)
   /* Remove unnecessary trailing slashes.  On some versions of MS
      Windows, trailing  _forward_ slashes cause no problems for stat().
-     On newer versions, stat() does not recognise a directory that ends
+     On newer versions, stat() does not recognize a directory that ends
      in a '\\' or '/', unless it is a drive root dir, such as "c:/",
      where it is obligatory.  */
   int pathlen = strlen (path);

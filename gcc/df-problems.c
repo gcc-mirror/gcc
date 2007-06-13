@@ -4264,7 +4264,7 @@ df_simulate_fixup_sets (basic_block bb, bitmap live)
 }
 
 
-/* Apply the artifical uses and defs at the top of BB in a forwards
+/* Apply the artificial uses and defs at the top of BB in a forwards
    direction.  */
 
 void 
@@ -4304,7 +4304,7 @@ df_simulate_one_insn_forwards (basic_block bb, rtx insn, bitmap live)
 }
 
 
-/* Apply the artifical uses and defs at the end of BB in a backwards
+/* Apply the artificial uses and defs at the end of BB in a backwards
    direction.  */
 
 void 

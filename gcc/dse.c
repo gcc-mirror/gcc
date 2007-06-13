@@ -96,7 +96,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    possible for each address.  This pass is a forwards pass through
    each basic block.  From the point of view of the global technique,
    the first pass could examine a block in either direction.  The
-   forwards ordering is to accomodate cselib.
+   forwards ordering is to accommodate cselib.
 
    We a simplifying assumption: addresses fall into four broad
    categories:
@@ -183,7 +183,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
      c) For any pass that may prespill, there is currently no
      mechanism to tell the dse pass that the slot being used has the
      special properties that reload uses.  It may be that all that is
-     requirred is to have those passes make the same calls that reload
+     required is to have those passes make the same calls that reload
      does, assuming that the alias sets can be manipulated in the same
      way.  */
 
@@ -710,7 +710,7 @@ dse_step0 (void)
    First step.
 
    Scan all of the insns.  Any random ordering of the blocks is fine.
-   Each block is scanned in forward order to accomodate cselib which
+   Each block is scanned in forward order to accommodate cselib which
    is used to remove stores with non-constant bases.
 ----------------------------------------------------------------------------*/
 
@@ -780,7 +780,7 @@ replace_inc_dec (rtx *r, void *d)
     case PRE_MODIFY:
     case POST_MODIFY:
       {
-	/* We can resuse the add because we are about to delete the
+	/* We can reuse the add because we are about to delete the
 	   insn that contained it.  */
 	rtx add = XEXP (x, 0);
 	rtx r1 = XEXP (add, 0);
@@ -1536,7 +1536,7 @@ check_mem_read_rtx (rtx *loc, void *data)
   read_info->next = insn_info->read_rec;
   insn_info->read_rec = read_info;
 
-  /* We ignore the clobbers in store_info.  The is mildly agressive,
+  /* We ignore the clobbers in store_info.  The is mildly aggressive,
      but there really should not be a clobber followed by a read.  */
 
   if (spill_alias_set)
@@ -1756,7 +1756,7 @@ scan_insn (bb_info_t bb_info, rtx insn)
   bb_info->last_insn = insn_info;
   
 
-  /* Cselib clears the table for this case, so we have to essentually
+  /* Cselib clears the table for this case, so we have to essentially
      do the same.  */
   if (NONJUMP_INSN_P (insn)
       && GET_CODE (PATTERN (insn)) == ASM_OPERANDS
@@ -1947,7 +1947,7 @@ dse_step1 (void)
 	     algorithm must take a more conservative view of block
 	     mode reads than the local alg does.  So to get the case
 	     where you have a store to the frame followed by a non
-	     overlaping block more read, we look at the active local
+	     overlapping block more read, we look at the active local
 	     stores at the end of the function and delete all of the
 	     frame and spill based ones.  */
 	  if (stores_off_frame_dead_at_return
@@ -2762,7 +2762,7 @@ dse_step4 (void)
 /*----------------------------------------------------------------------------
    Fifth step.
 
-   Delete the stores that can only be deleted using the global informantion.
+   Delete the stores that can only be deleted using the global information.
 ----------------------------------------------------------------------------*/
 
 

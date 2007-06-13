@@ -800,7 +800,7 @@ extern struct df *df;
 #define df_chain (df->problems_by_index[DF_CHAIN])
 #define df_note  (df->problems_by_index[DF_NOTE])
 
-/* This symbol turns on checking that each modfication of the cfg has
+/* This symbol turns on checking that each modification of the cfg has
   been identified to the appropriate df routines.  It is not part of
   verification per se because the check that the final solution has
   not changed covers this.  However, if the solution is not being
