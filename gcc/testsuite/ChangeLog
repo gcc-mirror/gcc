@@ -1,3 +1,8 @@
+2007-06-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32323
+	* gfortran.dg/actual_array_vect_1.f90: New.
+
 2007-06-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.target/sparc/mfpu.c: New test.
@@ -61,8 +66,8 @@
 
 2007-06-11  Paolo Bonzini  <bonzini@gnu.org>
 
-        PR rtl-optimization/31025
-        * gfortran.dg/pr31025.f90: New.
+	PR rtl-optimization/31025
+	* gfortran.dg/pr31025.f90: New.
 
 2007-06-11  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -335,53 +340,53 @@
 	* g++.dg/ext/is_pod_incomplete.C: New.
 
 2007-05-31  Russell Yanofsky <russ@yanofsky.org>
-            Douglas Gregor <doug.gregor@gmail.com>
-            Pedro Lamarao <pedro.lamarao@mndfck.org>
-            Howard Hinnant <howard.hinnant@gmail.com>
+	    Douglas Gregor <doug.gregor@gmail.com>
+	    Pedro Lamarao <pedro.lamarao@mndfck.org>
+	    Howard Hinnant <howard.hinnant@gmail.com>
 
 	PR c++/7412
 	PR c++/29939
-        * g++.dg/cpp0x/rv8p.C: New.
-        * g++.dg/cpp0x/temp-constructor-bug.C: New.
-        * g++.dg/cpp0x/cast-bug.C: New.
-        * g++.dg/cpp0x/elision_weak.C: New.
-        * g++.dg/cpp0x/collapse-bug.C: New.
-        * g++.dg/cpp0x/rv3p.C: New.
-        * g++.dg/cpp0x/rv7n.C: New.
-        * g++.dg/cpp0x/overload-conv-1.C: New.
-        * g++.dg/cpp0x/rv2n.C: New.
-        * g++.dg/cpp0x/deduce.C: New.
-        * g++.dg/cpp0x/temp-va-arg-bug.C: New.
-        * g++.dg/cpp0x/rv6p.C: New.
-        * g++.dg/cpp0x/template_deduction.C: New.
-        * g++.dg/cpp0x/implicit-copy.C: New.
-        * g++.dg/cpp0x/rv1p.C: New.
-        * g++.dg/cpp0x/cast.C: New.
-        * g++.dg/cpp0x/rv5n.C: New.
-        * g++.dg/cpp0x/collapse.C: New.
-        * g++.dg/cpp0x/overload-conv-2.C: New.
-        * g++.dg/cpp0x/rv4p.C: New.
+	* g++.dg/cpp0x/rv8p.C: New.
+	* g++.dg/cpp0x/temp-constructor-bug.C: New.
+	* g++.dg/cpp0x/cast-bug.C: New.
+	* g++.dg/cpp0x/elision_weak.C: New.
+	* g++.dg/cpp0x/collapse-bug.C: New.
+	* g++.dg/cpp0x/rv3p.C: New.
+	* g++.dg/cpp0x/rv7n.C: New.
+	* g++.dg/cpp0x/overload-conv-1.C: New.
+	* g++.dg/cpp0x/rv2n.C: New.
+	* g++.dg/cpp0x/deduce.C: New.
+	* g++.dg/cpp0x/temp-va-arg-bug.C: New.
+	* g++.dg/cpp0x/rv6p.C: New.
+	* g++.dg/cpp0x/template_deduction.C: New.
+	* g++.dg/cpp0x/implicit-copy.C: New.
+	* g++.dg/cpp0x/rv1p.C: New.
+	* g++.dg/cpp0x/cast.C: New.
+	* g++.dg/cpp0x/rv5n.C: New.
+	* g++.dg/cpp0x/collapse.C: New.
+	* g++.dg/cpp0x/overload-conv-2.C: New.
+	* g++.dg/cpp0x/rv4p.C: New.
 	* g++.dg/cpp0x/rvo.C: New.
-        * g++.dg/cpp0x/iop.C: New.
-        * g++.dg/cpp0x/rv3n.C: New.
-        * g++.dg/cpp0x/rv7p.C: New.
-        * g++.dg/cpp0x/reference_collapsing.C: New.
-        * g++.dg/cpp0x/overload.C: New.
-        * g++.dg/cpp0x/named.C: New.
-        * g++.dg/cpp0x/rv2p.C: New.
-        * g++.dg/cpp0x/rv6n.C: New.
-        * g++.dg/cpp0x/not_special.C: New.
-        * g++.dg/cpp0x/bind.C: New.
-        * g++.dg/cpp0x/rv1n.C: New.
-        * g++.dg/cpp0x/rv5p.C: New.
-        * g++.dg/cpp0x/elision.C: New.
-        * g++.dg/cpp0x/named_refs.C: New.
-        * g++.dg/cpp0x/unnamed_refs.C: New.
-        * g++.dg/cpp0x/rv4n.C: New.
-        * g++.dg/cpp0x/elision_neg.C: New.
-        * g++.dg/init/copy7.C: Run in C++98 mode.
-        * g++.dg/overload/arg1.C: Ditto.
-        * g++.dg/overload/arg4.C: Ditto.
+	* g++.dg/cpp0x/iop.C: New.
+	* g++.dg/cpp0x/rv3n.C: New.
+	* g++.dg/cpp0x/rv7p.C: New.
+	* g++.dg/cpp0x/reference_collapsing.C: New.
+	* g++.dg/cpp0x/overload.C: New.
+	* g++.dg/cpp0x/named.C: New.
+	* g++.dg/cpp0x/rv2p.C: New.
+	* g++.dg/cpp0x/rv6n.C: New.
+	* g++.dg/cpp0x/not_special.C: New.
+	* g++.dg/cpp0x/bind.C: New.
+	* g++.dg/cpp0x/rv1n.C: New.
+	* g++.dg/cpp0x/rv5p.C: New.
+	* g++.dg/cpp0x/elision.C: New.
+	* g++.dg/cpp0x/named_refs.C: New.
+	* g++.dg/cpp0x/unnamed_refs.C: New.
+	* g++.dg/cpp0x/rv4n.C: New.
+	* g++.dg/cpp0x/elision_neg.C: New.
+	* g++.dg/init/copy7.C: Run in C++98 mode.
+	* g++.dg/overload/arg1.C: Ditto.
+	* g++.dg/overload/arg4.C: Ditto.
 
 2007-05-30  Jakub Jelinek  <jakub@redhat.com>
 
