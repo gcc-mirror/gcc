@@ -4659,9 +4659,6 @@ extern bool debug_find_tree (tree, tree);
 extern tree unsave_expr_now (tree);
 extern tree build_duplicate_type (tree);
 
-/* In emit-rtl.c */
-extern rtx emit_line_note (location_t);
-
 /* In calls.c */
 
 /* Nonzero if this is a call to a function whose return value depends
