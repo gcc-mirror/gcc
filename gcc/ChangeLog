@@ -1,3 +1,8 @@
+2007-06-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (sparc_override_options): Initialize
+	fpu mask correctly.
+
 2007-06-13  Dave Korn  <dave.korn@artimi.com>
 
 	* config/i386/i386.c (ix86_eax_live_at_start_p): Use
