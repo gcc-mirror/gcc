@@ -1,3 +1,8 @@
+2007-06-13  Dave Korn  <dave.korn@artimi.com>
+
+	* config/i386/i386.c (ix86_eax_live_at_start_p): Use
+	df_get_live_out.
+
 2007-06-13  Kazu Hirata  <kazu@codesourcery.com>
 
 	* auto-inc-dec.c, c-incpath.c, config/c4x/libgcc.S,
