@@ -1,3 +1,11 @@
+2007-06-13  Kazu Hirata  <kazu@codesourcery.com>
+
+	* basic-block.h: Remove the prototype for
+	free_basic_block_vars.
+	* cfglayout.h: Remove the prototype for
+	insn_locators_initialize.
+	* tree.h: Remove the prototype for emit_line_note.
+
 2007-06-13  Eric Christopher  <echristo@apple.com>
 
 	* config/i386/i386.c (override_options): If we've specified

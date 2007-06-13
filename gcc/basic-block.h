@@ -477,8 +477,6 @@ extern void compute_bb_for_insn (void);
 extern unsigned int free_bb_for_insn (void);
 extern void update_bb_for_insn (basic_block);
 
-extern void free_basic_block_vars (void);
-
 extern void insert_insn_on_edge (rtx, edge);
 basic_block split_edge_and_insert (edge, rtx);
 
