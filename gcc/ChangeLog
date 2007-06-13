@@ -1,3 +1,10 @@
+2007-06-13  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (gen_one_bundle): Delete unused local variables.
+	(find_next_insn_start, find_load): New functions.
+	(bfin_reorg): Use them to deal with the fact that parallel insns are
+	no longer represented as a SEQUENCE.
+
 2007-06-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (sparc_override_options): Initialize

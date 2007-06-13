@@ -4089,8 +4089,6 @@ bfin_reorg_loops (FILE *dump_file)
 static bool
 gen_one_bundle (rtx slot[3])
 {
-  rtx bundle, insn;
-
   gcc_assert (slot[1] != NULL_RTX);
 
   /* Verify that we really can do the multi-issue.  */
@@ -4309,6 +4307,39 @@ trapping_loads_p (rtx insn)
     return may_trap_p (SET_SRC (single_set (insn)));
 }
 
+/* This function acts like NEXT_INSN, but is aware of three-insn bundles and
+   skips all subsequent parallel instructions if INSN is the start of such
+   a group.  */
+static rtx
+find_next_insn_start (rtx insn)
+{
+  if (GET_MODE (insn) == SImode)
+    {
+      while (GET_MODE (insn) != QImode)
+	insn = NEXT_INSN (insn);
+    }
+  return NEXT_INSN (insn);
+}
+
+/* Return INSN if it is of TYPE_MCLD.  Alternatively, if INSN is the start of
+   a three-insn bundle, see if one of them is a load and return that if so.
+   Return NULL_RTX if the insn does not contain loads.  */
+static rtx
+find_load (rtx insn)
+{
+  if (get_attr_type (insn) == TYPE_MCLD)
+    return insn;
+  if (GET_MODE (insn) != SImode)
+    return NULL_RTX;
+  do {
+    insn = NEXT_INSN (insn);
+    if ((GET_MODE (insn) == SImode || GET_MODE (insn) == QImode)
+	&& get_attr_type (insn) == TYPE_MCLD)
+      return insn;
+  } while (GET_MODE (insn) != QImode);
+  return NULL_RTX;
+}
+
 /* We use the machine specific reorg pass for emitting CSYNC instructions
    after conditional branches as needed.
 
@@ -4332,7 +4363,8 @@ trapping_loads_p (rtx insn)
 static void
 bfin_reorg (void)
 {
-  rtx insn, last_condjump = NULL_RTX;
+  rtx insn, next;
+  rtx last_condjump = NULL_RTX;
   int cycles_since_jump = INT_MAX;
 
   /* We are freeing block_for_insn in the toplev to keep compatibility
@@ -4365,10 +4397,12 @@ bfin_reorg (void)
 
   /* First pass: find predicted-false branches; if something after them
      needs nops, insert them or change the branch to predict true.  */
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+  for (insn = get_insns (); insn; insn = next)
     {
       rtx pat;
 
+      next = find_next_insn_start (insn);
+      
       if (NOTE_P (insn) || BARRIER_P (insn) || LABEL_P (insn))
 	continue;
 
@@ -4391,14 +4425,15 @@ bfin_reorg (void)
 	}
       else if (INSN_P (insn))
 	{
+	  rtx load_insn = find_load (insn);
 	  enum attr_type type = type_for_anomaly (insn);
 	  int delay_needed = 0;
 	  if (cycles_since_jump < INT_MAX)
 	    cycles_since_jump++;
 
-	  if (type == TYPE_MCLD && TARGET_SPECLD_ANOMALY)
+	  if (load_insn && TARGET_SPECLD_ANOMALY)
 	    {
-	      if (trapping_loads_p (insn))
+	      if (trapping_loads_p (load_insn))
 		delay_needed = 3;
 	    }
 	  else if (type == TYPE_SYNC && TARGET_CSYNC_ANOMALY)
