@@ -6,6 +6,9 @@
 	insn_locators_initialize.
 	* tree.h: Remove the prototype for emit_line_note.
 
+	* tree-ssa-pre.c (mergephitemp): Remove.
+	(init_pre): Don't use mergephitemp.
+
 2007-06-13  Eric Christopher  <echristo@apple.com>
 
 	* config/i386/i386.c (override_options): If we've specified

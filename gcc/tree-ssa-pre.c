@@ -387,7 +387,6 @@ static struct obstack temp_call_expr_obstack;
    match the current variable's type.  */
 static tree pretemp;
 static tree storetemp;
-static tree mergephitemp;
 static tree prephitemp;
 
 /* Set of blocks with statements that have had its EH information
@@ -3746,7 +3745,6 @@ init_pre (bool do_fre)
   need_creation = NULL;
   pretemp = NULL_TREE;
   storetemp = NULL_TREE;
-  mergephitemp = NULL_TREE;
   prephitemp = NULL_TREE;
 
   vn_init ();
