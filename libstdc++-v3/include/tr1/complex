@@ -41,8 +41,6 @@
 #endif
 
 #include <complex>
-#include <ext/type_traits.h>
-#include <tr1/type_traits>
 
 #if defined(_GLIBCXX_INCLUDE_AS_TR1)
 #  include <tr1_impl/complex>

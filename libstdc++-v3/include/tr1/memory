@@ -43,7 +43,6 @@
 
 #include <memory>
 #include <exception>        	// std::exception
-#include <new>              	// std::bad_alloc
 #include <typeinfo>         	// std::type_info in get_deleter
 #include <bits/stl_algobase.h>  // std::swap
 #include <iosfwd>           	// std::basic_ostream

@@ -1539,7 +1539,6 @@ _GLIBCXX_END_NAMESPACE
 #  if defined(_GLIBCXX_INCLUDE_AS_TR1)
 #    error C++0x header cannot be included from TR1 header
 #  endif
-#  include <type_traits>
 #  if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
 #    include <tr1_impl/complex>
 #  else
