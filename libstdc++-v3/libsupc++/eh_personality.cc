@@ -542,6 +542,12 @@ PERSONALITY_FUNCTION (int version,
       bool saw_cleanup = false;
       bool saw_handler = false;
 
+#ifdef __ARM_EABI_UNWINDER__
+      throw_type = ue_header;
+      if ((actions & _UA_FORCE_UNWIND)
+	  || foreign_exception)
+	thrown_ptr = 0;
+#else
       // During forced unwinding, match a magic exception type.
       if (actions & _UA_FORCE_UNWIND)
 	{
@@ -556,9 +562,6 @@ PERSONALITY_FUNCTION (int version,
 	  thrown_ptr = 0;
 	}
       else
-#ifdef __ARM_EABI_UNWINDER__
-	throw_type = ue_header;
-#else
 	throw_type = xh->exceptionType;
 #endif
 
