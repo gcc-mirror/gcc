@@ -3587,11 +3587,12 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
      it has to show up in the entry def set.  */
   if (df_need_static_chain_reg (cfun))
     {
-#if !defined (STATIC_CHAIN_INCOMING_REGNUM) \
-      || STATIC_CHAIN_REGNUM == STATIC_CHAIN_INCOMING_REGNUM
-      bitmap_set_bit (entry_block_defs, STATIC_CHAIN_REGNUM);
-#else 
+#ifdef STATIC_CHAIN_INCOMING_REGNUM
       bitmap_set_bit (entry_block_defs, STATIC_CHAIN_INCOMING_REGNUM);
+#else 
+#ifdef STATIC_CHAIN_REGNUM
+      bitmap_set_bit (entry_block_defs, STATIC_CHAIN_REGNUM);
+#endif
 #endif
     }
 }
