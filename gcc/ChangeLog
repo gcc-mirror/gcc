@@ -1,3 +1,8 @@
+2007-06-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac: Fix a typo in --enable-checking=.
+	* configure: Regenerated.
+
 2007-06-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	* acinclude.m4 (gcc_AC_CHECK_PROG_VER): Remove.
@@ -6,9 +11,9 @@
 	ACX_PROG_CC_WARNINGS_ARE_ERRORS,
 	ACX_PROG_CC_WARNING_ALMOST_PEDANTIC, ACX_CHECK_PROG_VER.
 	* configure: Regenerate.
-        * Makefile.in (LOOSE_WARN): Subst loose_warn.
+	* Makefile.in (LOOSE_WARN): Subst loose_warn.
 
-        * Makefile.in (quickstrap): Build libgcc too.
+	* Makefile.in (quickstrap): Build libgcc too.
 
 2007-06-14  Paolo Bonzini  <bonzini@gnu.org>
 

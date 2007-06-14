@@ -358,7 +358,7 @@ else
   ac_checking_flags=release
 fi])
 IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
-for check in release,$ac_checking_flags
+for check in $ac_checking_flags
 do
 	case $check in
 	# these set all the flags to specific states
