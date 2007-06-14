@@ -75,6 +75,16 @@ Boston, MA 02110-1301, USA.  */
 #undef STACK_BOUNDARY
 #define STACK_BOUNDARY 128
 
+/* Since we'll never want a stack boundary less aligned than 128 bits
+   we need the extra work here otherwise bits of gcc get very grumpy
+   when we ask for lower alignment.  We could just reject values less
+   than 128 bits for Darwin, but it's easier to up the alignment if
+   it's below the minimum.  */
+#undef PREFERRED_STACK_BOUNDARY
+#define PREFERRED_STACK_BOUNDARY (ix86_preferred_stack_boundary > 128	\
+				  ? ix86_preferred_stack_boundary	\
+				  : 128)
+
 /* We want -fPIC by default, unless we're using -static to compile for
    the kernel or some such.  */
 
