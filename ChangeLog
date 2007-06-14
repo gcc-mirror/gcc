@@ -1,3 +1,9 @@
+2007-06-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* MAINTAINERS: Change spelling from "fortran 95" to "Fortran".
+	Move all Fortran maintainers except Paul Brook into the
+	Non-Autopoiesis section.
+
 2007-06-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl (cleanstrap): Don't delete the toplevel Makefile.
