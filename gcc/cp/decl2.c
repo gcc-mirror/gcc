@@ -1698,10 +1698,6 @@ determine_visibility (tree decl)
      class can influence the visibility of the DECL.  */
   if (DECL_CLASS_SCOPE_P (decl))
     class_type = DECL_CONTEXT (decl);
-  else if (TREE_CODE (decl) == VAR_DECL
-	   && DECL_TINFO_P (decl)
-	   && CLASS_TYPE_P (TREE_TYPE (DECL_NAME (decl))))
-    class_type = TREE_TYPE (DECL_NAME (decl));
   else
     {
       /* Not a class member.  */

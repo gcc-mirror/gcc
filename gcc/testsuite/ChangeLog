@@ -1,3 +1,8 @@
+2007-06-14  Geoff Keating  <geoffk@apple.com>
+
+	PR 31093
+	* g++.dg/ext/visibility/anon4.C: New.
+
 2007-06-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32268
