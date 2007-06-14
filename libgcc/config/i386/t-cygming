@@ -1,0 +1,11 @@
+CUSTOM_CRTSTUFF = yes
+
+crtbegin.o: $(gcc_srcdir)/config/i386/cygming-crtbegin.c
+	$(crt_compile) -fno-omit-frame-pointer  -c \
+	$(gcc_srcdir)/config/i386/cygming-crtbegin.c
+
+# We intentionally use a implementation-reserved init priority of 0,
+# so allow the warning.
+crtend.o: $(gcc_srcdir)/config/i386/cygming-crtend.c
+	$(crt_compile) -fno-omit-frame-pointer -Wno-error -c \
+	$(gcc_srcdir)/config/i386/cygming-crtend.c

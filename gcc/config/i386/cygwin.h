@@ -38,11 +38,12 @@ Boston, MA 02110-1301, USA.  */
   %{shared|mdll: %{mno-cygwin:dllcrt2%O%s}}\
   %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:crt2%O%s}\
   %{pg:gcrt0%O%s}}}\
-"
+  crtbegin.o%s"
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s}\
+   crtend.o%s"
 
 /* Normally, -lgcc is not needed since everything in it is in the DLL, but we
    want to allow things to be added to it when installing new versions of
