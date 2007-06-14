@@ -1,3 +1,8 @@
+2007-06-14  Diego Novillo  <dnovillo@google.com>
+
+	* MAINTAINERS: Add self as middle-end maintainer and
+	non-algorithmic global write maintainer.
+
 2007-06-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* MAINTAINERS: Change spelling from "fortran 95" to "Fortran".
