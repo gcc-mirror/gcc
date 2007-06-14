@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Return 1 iff a or b is a NaN, 0 otherwise.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006,2007 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Joseph Myers (joseph@codesourcery.com).
 
@@ -31,11 +31,10 @@
 #include "soft-fp.h"
 #include "double.h"
 
-int
-__unorddf2(DFtype a, DFtype b)
+CMPtype __unorddf2(DFtype a, DFtype b)
 {
   FP_DECL_D(A); FP_DECL_D(B);
-  int r;
+  CMPtype r;
 
   FP_UNPACK_RAW_D(A, a);
   FP_UNPACK_RAW_D(B, b);

@@ -1,3 +1,13 @@
+2007-06-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/soft-fp/eqdf2.c, config/soft-fp/eqsf2.c,
+	config/soft-fp/eqtf2.c, config/soft-fp/gedf2.c,
+	config/soft-fp/gesf2.c, config/soft-fp/getf2.c,
+	config/soft-fp/ledf2.c, config/soft-fp/lesf2.c,
+	config/soft-fp/letf2.c, config/soft-fp/unorddf2.c,
+	config/soft-fp/unordsf2.c, config/soft-fp/unordtf2.c,
+	config/soft-fp/soft-fp.h: Update from glibc CVS.
+
 2007-06-14  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/uclinux.h (MFWRAP_SPEC): New.
