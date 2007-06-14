@@ -1,3 +1,22 @@
+2007-06-14  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygming.h (DWARF_FRAME_REGNUM): Define.
+	(DWARF2_UNWIND_INFO): Override default if configured with
+	SJLJ EH disabled.
+	* config/i386/cygwin.h (STARTFILE_SPEC): Add crtbegin.o.
+	(ENDFILE_SPEC): Add crtend.o.
+	* config/i386/mingw32.h (STARTFILE_SEC): Add crtbegin.o.
+	(ENDFILE_SPEC): Add crtend.o.
+	(TARGET_USE_JCR_SECTION): Define.
+	(MD_UNWIND_SUPPORT): Define for 32-bit target.
+
+	* config/i386/cygming-crtbegin.c: New file.
+	* config/i386/cygming-crtend.c: New file.
+
+2007-06-14  Pascal Obry Pascal Obry  <obry@adacore.com>
+
+	* config/i386/w32-unwind.h: New file.
+
 2007-06-13  Eric Christopher  <echristo@apple.com>
 
 	* config/i386/darwin.h (PREFERRED_STACK_BOUNDARY): Don't let

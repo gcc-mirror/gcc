@@ -84,11 +84,13 @@ Boston, MA 02110-1301, USA.  */
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{shared|mdll:dllcrt2%O%s} \
-  %{!shared:%{!mdll:crt2%O%s}} %{pg:gcrt2%O%s}"
+  %{!shared:%{!mdll:crt2%O%s}} %{pg:gcrt2%O%s} \
+  crtbegin.o%s"
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+  crtend.o%s"
 
 /* Override startfile prefix defaults.  */
 #ifndef STANDARD_STARTFILE_PREFIX_1
@@ -141,3 +143,11 @@ do {						         \
 /* mingw32 atexit function is safe to use in shared libraries.  Use it
    to register C++ static destructors.  */
 #define TARGET_CXX_USE_ATEXIT_FOR_CXA_ATEXIT hook_bool_void_true
+
+/* JCR_SECTION works on mingw32.  */
+#undef TARGET_USE_JCR_SECTION
+#define TARGET_USE_JCR_SECTION 1
+
+#if !TARGET_64BIT
+#define MD_UNWIND_SUPPORT "config/i386/w32-unwind.h"
+#endif
