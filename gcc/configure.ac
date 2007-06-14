@@ -435,7 +435,7 @@ AC_ARG_ENABLE(checking,
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
 			  Categories are: yes,no,all,none,release.
-			  Flags are: assert,fold,gc,gcac,misc,
+			  Flags are: assert,df,fold,gc,gcac,misc,
 			  rtlflag,rtl,runtime,tree,valgrind.],
 [ac_checking_flags="${enableval}"],[
 # Determine the default checks.
@@ -444,43 +444,34 @@ if test x$is_release = x ; then
 else
   ac_checking_flags=release
 fi])
-ac_assert_checking=1
-ac_checking=
-ac_fold_checking=
-ac_gc_checking=
-ac_gc_always_collect=
-ac_rtl_checking=
-ac_rtlflag_checking=
-ac_runtime_checking=1
-ac_tree_checking=
-ac_valgrind_checking=
 IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
-for check in $ac_checking_flags
+for check in release,$ac_checking_flags
 do
 	case $check in
 	# these set all the flags to specific states
-	yes)		ac_assert_checking=1 ; ac_checking=1 ;
+	yes)		ac_assert_checking=1 ; ac_checking=1 ; ac_df_checking=1 ;
 			ac_fold_checking= ; ac_gc_checking=1 ;
 			ac_gc_always_collect= ; ac_rtl_checking= ;
 			ac_rtlflag_checking=1 ; ac_runtime_checking=1 ;
 			ac_tree_checking=1 ; ac_valgrind_checking= ;;
-	no|none)	ac_assert_checking= ; ac_checking= ;
+	no|none)	ac_assert_checking= ; ac_checking= ; ac_df_checking= ;
 			ac_fold_checking= ; ac_gc_checking= ;
 			ac_gc_always_collect= ; ac_rtl_checking= ;
 			ac_rtlflag_checking= ; ac_runtime_checking= ;
 			ac_tree_checking= ; ac_valgrind_checking= ;;
-	all)		ac_assert_checking=1 ; ac_checking=1 ;
+	all)		ac_assert_checking=1 ; ac_checking=1 ; ac_df_checking=1 ;
 			ac_fold_checking=1 ; ac_gc_checking=1 ;
 			ac_gc_always_collect=1 ; ac_rtl_checking=1 ;
 			ac_rtlflag_checking=1 ; ac_runtime_checking=1 ;
 			ac_tree_checking=1 ; ac_valgrind_checking= ;;
-	release)	ac_assert_checking=1 ; ac_checking= ;
+	release)	ac_assert_checking=1 ; ac_checking= ; ac_df_checking= ;
 			ac_fold_checking= ; ac_gc_checking= ;
 			ac_gc_always_collect= ; ac_rtl_checking= ;
 			ac_rtlflag_checking= ; ac_runtime_checking=1 ;
 			ac_tree_checking= ; ac_valgrind_checking= ;;
 	# these enable particular checks
 	assert) 	ac_assert_checking=1 ;;
+	df)	 	ac_df_checking=1 ;;
 	fold)		ac_fold_checking=1 ;;
 	gc)		ac_gc_checking=1 ;;
 	gcac)		ac_gc_always_collect=1 ;;
@@ -503,6 +494,10 @@ if test x$ac_checking != x ; then
   nocommon_flag=-fno-common
 fi
 AC_SUBST(nocommon_flag)
+if test x$ac_df_checking != x ; then
+  AC_DEFINE(ENABLE_DF_CHECKING, 1,
+[Define if you want more run-time sanity checks for dataflow.])
+fi
 if test x$ac_assert_checking != x ; then
   AC_DEFINE(ENABLE_ASSERT_CHECKING, 1,
 [Define if you want assertions enabled.  This is a cheap check.])

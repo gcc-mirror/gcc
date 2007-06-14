@@ -867,7 +867,7 @@ Optional Features:
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
 			  Categories are: yes,no,all,none,release.
-			  Flags are: assert,fold,gc,gcac,misc,
+			  Flags are: assert,df,fold,gc,gcac,misc,
 			  rtlflag,rtl,runtime,tree,valgrind.
   --enable-mapped-location   location_t is fileline integer cookie
   --enable-coverage=LEVEL
@@ -6474,43 +6474,34 @@ else
   ac_checking_flags=release
 fi
 fi;
-ac_assert_checking=1
-ac_checking=
-ac_fold_checking=
-ac_gc_checking=
-ac_gc_always_collect=
-ac_rtl_checking=
-ac_rtlflag_checking=
-ac_runtime_checking=1
-ac_tree_checking=
-ac_valgrind_checking=
 IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
-for check in $ac_checking_flags
+for check in release,$ac_checking_flags
 do
 	case $check in
 	# these set all the flags to specific states
-	yes)		ac_assert_checking=1 ; ac_checking=1 ;
+	yes)		ac_assert_checking=1 ; ac_checking=1 ; ac_df_checking=1 ;
 			ac_fold_checking= ; ac_gc_checking=1 ;
 			ac_gc_always_collect= ; ac_rtl_checking= ;
 			ac_rtlflag_checking=1 ; ac_runtime_checking=1 ;
 			ac_tree_checking=1 ; ac_valgrind_checking= ;;
-	no|none)	ac_assert_checking= ; ac_checking= ;
+	no|none)	ac_assert_checking= ; ac_checking= ; ac_df_checking= ;
 			ac_fold_checking= ; ac_gc_checking= ;
 			ac_gc_always_collect= ; ac_rtl_checking= ;
 			ac_rtlflag_checking= ; ac_runtime_checking= ;
 			ac_tree_checking= ; ac_valgrind_checking= ;;
-	all)		ac_assert_checking=1 ; ac_checking=1 ;
+	all)		ac_assert_checking=1 ; ac_checking=1 ; ac_df_checking=1 ;
 			ac_fold_checking=1 ; ac_gc_checking=1 ;
 			ac_gc_always_collect=1 ; ac_rtl_checking=1 ;
 			ac_rtlflag_checking=1 ; ac_runtime_checking=1 ;
 			ac_tree_checking=1 ; ac_valgrind_checking= ;;
-	release)	ac_assert_checking=1 ; ac_checking= ;
+	release)	ac_assert_checking=1 ; ac_checking= ; ac_df_checking= ;
 			ac_fold_checking= ; ac_gc_checking= ;
 			ac_gc_always_collect= ; ac_rtl_checking= ;
 			ac_rtlflag_checking= ; ac_runtime_checking=1 ;
 			ac_tree_checking= ; ac_valgrind_checking= ;;
 	# these enable particular checks
 	assert) 	ac_assert_checking=1 ;;
+	df)	 	ac_df_checking=1 ;;
 	fold)		ac_fold_checking=1 ;;
 	gc)		ac_gc_checking=1 ;;
 	gcac)		ac_gc_always_collect=1 ;;
@@ -6535,6 +6526,13 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
   nocommon_flag=-fno-common
+fi
+if test x$ac_df_checking != x ; then
+
+cat >>confdefs.h <<\_ACEOF
+#define ENABLE_DF_CHECKING 1
+_ACEOF
+
 fi
 
 if test x$ac_assert_checking != x ; then
@@ -7675,7 +7673,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:7678: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:7676: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[4-9]*)

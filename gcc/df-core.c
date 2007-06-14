@@ -644,7 +644,7 @@ df_finish_pass (void)
   int i;
   int removed = 0;
 
-#ifdef ENABLE_CHECKING
+#ifdef ENABLE_DF_CHECKING
   enum df_changeable_flags saved_flags;
 #endif
 
@@ -654,7 +654,7 @@ df_finish_pass (void)
   df_maybe_reorganize_def_refs (DF_REF_ORDER_NO_TABLE);
   df_maybe_reorganize_use_refs (DF_REF_ORDER_NO_TABLE);
 
-#ifdef ENABLE_CHECKING
+#ifdef ENABLE_DF_CHECKING
   saved_flags = df->changeable_flags;
 #endif
 
@@ -684,7 +684,7 @@ df_finish_pass (void)
       df->analyze_subset = false;
     }
 
-#ifdef ENABLE_CHECKING
+#ifdef ENABLE_DF_CHECKING
   /* Verification will fail in DF_NO_INSN_RESCAN.  */
   if (!(saved_flags & DF_NO_INSN_RESCAN))
     {
@@ -1040,7 +1040,7 @@ df_analyze_problem (struct dataflow *dflow,
 {
   timevar_push (dflow->problem->tv_id);
 
-#ifdef ENABLE_CHECKING
+#ifdef ENABLE_DF_CHECKING
   if (dflow->problem->verify_start_fun)
     dflow->problem->verify_start_fun ();
 #endif
@@ -1062,7 +1062,7 @@ df_analyze_problem (struct dataflow *dflow,
   if (dflow->problem->finalize_fun)
     dflow->problem->finalize_fun (blocks_to_consider);
 
-#ifdef ENABLE_CHECKING
+#ifdef ENABLE_DF_CHECKING
   if (dflow->problem->verify_end_fun)
     dflow->problem->verify_end_fun ();
 #endif
@@ -1100,9 +1100,10 @@ df_analyze (void)
   df_compute_regs_ever_live (false);
   df_process_deferred_rescans ();
 
-#ifdef ENABLE_CHECKING
   if (dump_file)
     fprintf (dump_file, "df_analyze called\n");
+
+#ifdef ENABLE_DF_CHECKING
   df_verify ();
 #endif 
 
