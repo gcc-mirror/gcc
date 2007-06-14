@@ -47478,6 +47478,7 @@ do-clean: clean-stage1
 .PHONY: distclean-stage1
 distclean-stage1::
 	@: $(MAKE); $(stage)
+	@test "`cat stage_last`" != stage1 || rm -f stage_last
 	rm -rf stage1-* 
 
 
@@ -47709,6 +47710,7 @@ distclean-stage1:: distclean-stage2
 .PHONY: distclean-stage2
 distclean-stage2::
 	@: $(MAKE); $(stage)
+	@test "`cat stage_last`" != stage2 || rm -f stage_last
 	rm -rf stage2-* 
 
 
@@ -47983,11 +47985,20 @@ distclean-stage2:: distclean-stage3
 .PHONY: distclean-stage3
 distclean-stage3::
 	@: $(MAKE); $(stage)
+	@test "`cat stage_last`" != stage3 || rm -f stage_last
 	rm -rf stage3-* compare 
 
 
 .PHONY: cleanstrap
-cleanstrap: distclean bootstrap
+cleanstrap: do-distclean local-clean
+	echo stage3 > stage_final
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage3-bubble
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
 
 @endif gcc-bootstrap
 
@@ -48260,6 +48271,7 @@ distclean-stage3:: distclean-stage4
 .PHONY: distclean-stage4
 distclean-stage4::
 	@: $(MAKE); $(stage)
+	@test "`cat stage_last`" != stage4 || rm -f stage_last
 	rm -rf stage4-* compare3 
 
 
@@ -48470,6 +48482,7 @@ distclean-stage1:: distclean-stageprofile
 .PHONY: distclean-stageprofile
 distclean-stageprofile::
 	@: $(MAKE); $(stage)
+	@test "`cat stage_last`" != stageprofile || rm -f stage_last
 	rm -rf stageprofile-* 
 
 
@@ -48701,6 +48714,7 @@ distclean-stageprofile:: distclean-stagefeedback
 .PHONY: distclean-stagefeedback
 distclean-stagefeedback::
 	@: $(MAKE); $(stage)
+	@test "`cat stage_last`" != stagefeedback || rm -f stage_last
 	rm -rf stagefeedback-* 
 
 

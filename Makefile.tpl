@@ -1361,12 +1361,21 @@ do-clean: clean-stage[+id+]
 .PHONY: distclean-stage[+id+]
 distclean-stage[+id+]::
 	@: $(MAKE); $(stage)
+	@test "`cat stage_last`" != stage[+id+] || rm -f stage_last
 	rm -rf stage[+id+]-* [+
 	  IF compare-target +][+compare-target+] [+ ENDIF compare-target +]
 
 [+ IF cleanstrap-target +]
 .PHONY: [+cleanstrap-target+]
-[+cleanstrap-target+]: distclean [+bootstrap-target+]
+[+cleanstrap-target+]: do-distclean local-clean
+	echo stage[+id+] > stage_final
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage[+id+]-bubble
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
 [+ ENDIF cleanstrap-target +]
 @endif gcc-bootstrap
 
