@@ -1,3 +1,9 @@
+2007-06-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl (cleanstrap): Don't delete the toplevel Makefile.
+	(distclean-stage[+id+]): Possibly delete stage_last.
+	* Makefile.in: Regenerate.
+
 2007-06-12  Seongbae Park  <seongbae.park@gmail.com>
 
 	* MAINTAINERS (Various Maintainer): Fix typo.
