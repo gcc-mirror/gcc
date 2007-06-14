@@ -1,3 +1,14 @@
+2007-06-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/dfp/fe-convert-1.c: Expect FE_OVERFLOW when converting
+	from 10.000000e96DD to _Decimal32, from 10.000000e96DL to
+	_Decimal32 and from 10.00000000000000E384DL to _Decimal64.
+
+	*  gcc.dg/dfp/fe-convert-2.c: Expect FE_INEXACT when converting
+	from 1.0e96 and -1.0e96 to _Decimal32. Enable testing for
+	converting from 1.0e-96 and 0.00048828125 to _Decimal32 when
+	BID is used.
+
 2007-06-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32302
