@@ -1,3 +1,8 @@
+2007-06-13  Eric Christopher  <echristo@apple.com>
+
+	* config/i386/darwin.h (PREFERRED_STACK_BOUNDARY): Don't let
+	the user set a value below STACK_BOUNDARY.
+
 2007-06-13  Thiemo Seufer  <ths@networkno.de>
 
 	* config/mips/linux.h, config/mips/linux64.h (LIB_SPEC): Always
