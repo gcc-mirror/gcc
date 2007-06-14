@@ -1,5 +1,7 @@
 2007-06-14  Geoff Keating  <geoffk@apple.com>
 
+	* g++.dg/ext/visibility/overload-1.C: New.
+
 	PR 31093
 	* g++.dg/ext/visibility/anon4.C: New.
 

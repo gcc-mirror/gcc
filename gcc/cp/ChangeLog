@@ -1,5 +1,8 @@
 2007-06-14  Geoff Keating  <geoffk@apple.com>
 
+	* decl2.c (determine_visibility): Ensure that functions with
+	hidden types as parameters are hidden.
+
 	PR 31093
 	* decl2.c (determine_visibility): Remove duplicate code for
 	handling type info.

@@ -1783,7 +1783,8 @@ determine_visibility (tree decl)
     {
       /* Propagate anonymity from type to decl.  */
       int tvis = type_visibility (TREE_TYPE (decl));
-      if (tvis == VISIBILITY_ANON)
+      if (tvis == VISIBILITY_ANON
+	  || ! DECL_VISIBILITY_SPECIFIED (decl))
 	constrain_visibility (decl, tvis);
     }
 }
