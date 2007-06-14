@@ -189,6 +189,10 @@ typedef unsigned int UHWtype __attribute__((mode(HI)));
 typedef USItype UHWtype;
 #endif
 
+#ifndef CMPtype
+#define CMPtype		int
+#endif
+
 #define SI_BITS		(__CHAR_BIT__ * (int)sizeof(SItype))
 #define DI_BITS		(__CHAR_BIT__ * (int)sizeof(DItype))
 

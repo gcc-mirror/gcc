@@ -32,11 +32,11 @@
 #include "soft-fp.h"
 #include "quad.h"
 
-int __letf2(TFtype a, TFtype b)
+CMPtype __letf2(TFtype a, TFtype b)
 {
   FP_DECL_EX;
   FP_DECL_Q(A); FP_DECL_Q(B);
-  int r;
+  CMPtype r;
 
   FP_UNPACK_RAW_Q(A, a);
   FP_UNPACK_RAW_Q(B, b);
