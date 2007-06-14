@@ -108,9 +108,8 @@
   "&& reload_completed"
   [(const_int 0)]
 {
-  switch (which_alternative)
-    {
-    case 0:
+ if (register_operand (operands[1], DImode))
+   {
       /* The DImode arrived in a pair of integral registers (e.g. %edx:%eax).
 	 Assemble the 64-bit DImode value in an xmm register.  */
       emit_insn (gen_sse2_loadld (operands[0], CONST0_RTX (V4SImode),
@@ -118,16 +117,11 @@
       emit_insn (gen_sse2_loadld (operands[2], CONST0_RTX (V4SImode),
 				  gen_rtx_SUBREG (SImode, operands[1], 4)));
       emit_insn (gen_sse2_punpckldq (operands[0], operands[0], operands[2]));
-      break;
-
-    case 1:
-      emit_insn (gen_vec_concatv2di (operands[0], operands[1], const0_rtx));
-      break;
-
-    default:
-      gcc_unreachable ();
     }
-  DONE;
+ else if (memory_operand (operands[1], DImode))
+      emit_insn (gen_vec_concatv2di (gen_lowpart (V2DImode, operands[0]), operands[1], const0_rtx));
+ else
+      gcc_unreachable ();
 })
 
 (define_expand "movv4sf"
@@ -154,7 +148,7 @@
     case 2:
       return "movaps\t{%1, %0|%0, %1}";
     default:
-      abort();
+      gcc_unreachable ();
     }
 }
   [(set_attr "type" "sselog1,ssemov,ssemov")
