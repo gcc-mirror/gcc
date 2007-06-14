@@ -1,3 +1,9 @@
+2007-06-14  Geoff Keating  <geoffk@apple.com>
+
+	PR 31093
+	* decl2.c (determine_visibility): Remove duplicate code for
+	handling type info.
+
 2007-06-12  Ian Lance Taylor  <iant@google.com>
 
 	PR libstdc++/29286
