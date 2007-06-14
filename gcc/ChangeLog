@@ -1,3 +1,9 @@
+2007-06-14  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR target/32341
+	* config/v850/v850.c: Include dataflow header file.
+	(substitute_ep_register): Fix typo.
+
 2007-06-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac: Fix earlier checkin.
