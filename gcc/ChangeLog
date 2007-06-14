@@ -1,3 +1,11 @@
+2007-06-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac: Add --enable-checking=df.  Explicitly mention that
+	the variables are initialized as for "release".
+	* df-core.c: Use it.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2007-06-14  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_expand_nonlocal_goto): Use
