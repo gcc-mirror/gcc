@@ -1,3 +1,9 @@
+2007-06-14  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* configure.ac: Don't add target-libmudflap to noconfigdirs for
+	bfin*-*-uclinux* targets.
+	* configure: Regenerate.
+
 2007-06-14  Ian Lance Taylor  <iant@google.com>
 
 	* MAINTAINERS: Add myself as non-algorithmic global write

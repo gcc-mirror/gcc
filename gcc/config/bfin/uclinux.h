@@ -43,3 +43,11 @@ asm (TEXT_SECTION_ASM_OP);
 	  }					\
     }						\
   while (0)
+
+/* Like the definition in gcc.c, but for purposes of uClinux, every link is
+   static.  */
+#define MFWRAP_SPEC " %{fmudflap|fmudflapth: \
+ --wrap=malloc --wrap=free --wrap=calloc --wrap=realloc\
+ --wrap=mmap --wrap=munmap --wrap=alloca\
+ %{fmudflapth: --wrap=pthread_create\
+}} %{fmudflap|fmudflapth: --wrap=main}"
