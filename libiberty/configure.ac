@@ -132,8 +132,9 @@ GCC_NO_EXECUTABLES
 AC_PROG_CC
 AC_PROG_CPP_WERROR
 
-ACX_PROG_CC_WARNING_OPTS([-W -Wall -pedantic -Wwrite-strings -Wc++-compat \
+ACX_PROG_CC_WARNING_OPTS([-W -Wall -Wwrite-strings -Wc++-compat \
 			  -Wstrict-prototypes], [ac_libiberty_warn_cflags])
+ACX_PROG_CC_WARNING_ALMOST_PEDANTIC([], [ac_libiberty_warn_cflags])
 
 AC_PROG_CC_C_O
 # autoconf is lame and doesn't give us any substitution variable for this.
