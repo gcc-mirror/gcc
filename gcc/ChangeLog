@@ -1,6 +1,6 @@
-2007-06-14  H.J. Lu  <hongjiu.lu@intel.com>
+2007-06-14  Paolo Bonzini  <bonzini@gnu.org>
 
-	* configure.ac: Fix a typo in --enable-checking=.
+	* configure.ac: Fix earlier checkin.
 	* configure: Regenerated.
 
 2007-06-14  Paolo Bonzini  <bonzini@gnu.org>
