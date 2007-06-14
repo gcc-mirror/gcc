@@ -1,3 +1,8 @@
+2007-06-14  Eric Christopher  <echristo@apple.com>
+
+	* config/i386/sse.md (movdi_to_sse): Rewrite body.
+	(movv4sf): Use gcc_unreachable instead of abort.
+
 2007-06-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32268
