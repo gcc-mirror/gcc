@@ -223,6 +223,7 @@ loop optimizer		Daniel Berlin		dberlin@dberlin.org
 middle-end		Richard Guenther	rguenther@suse.de
 libcpp			Tom Tromey		tromey@redhat.com
 blanket write		Diego Novillo		dnovillo@google.com
+blanket write		Ian Lance Taylor	ian@airs.com
 
 Note that individuals who maintain parts of the compiler as non-algorithmic
 maintainers need approval to check in algorithmic changes or changes
