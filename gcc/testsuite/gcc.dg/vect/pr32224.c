@@ -10,7 +10,7 @@ gmpz_export (void *data)
 
   for (i = 0; i < count; i++)
   {
-    __asm__ ("bswap %q0": "=r" (*__dst):"0" (*(__src)));
+    __asm__ ("checkme": "=r" (*__dst):"0" (*(__src)));
     __src++;
   }
 }

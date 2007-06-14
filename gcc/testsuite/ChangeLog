@@ -1,3 +1,8 @@
+2007-06-14  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR target/32274
+	* gcc.dg/vect/pr32224.c: Fix.	
+	
 2007-06-13  Eric Christopher  <echristo@apple.com>
 
 	* gcc.target/i386/ssefn-1.c: Add -march=i386.
