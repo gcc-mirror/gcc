@@ -192,6 +192,7 @@ option handling		Neil Booth		neil@daikokuya.co.uk
 testsuite		Janis Johnson		janis187@us.ibm.com
 middle-end		Roger Sayle		roger@eyesopen.com
 middle-end		Ian Lance Taylor	ian@airs.com
+middle-end		Diego Novillo		dnovillo@google.com
 tree-ssa		Diego Novillo		dnovillo@google.com
 tree-ssa		Andrew MacLeod		amacleod@redhat.com
 PRE			Daniel Berlin		dberlin@dberlin.org
@@ -221,6 +222,7 @@ loop optimizer		Zdenek Dvorak		dvorakz@suse.cz
 loop optimizer		Daniel Berlin		dberlin@dberlin.org
 middle-end		Richard Guenther	rguenther@suse.de
 libcpp			Tom Tromey		tromey@redhat.com
+blanket write		Diego Novillo		dnovillo@google.com
 
 Note that individuals who maintain parts of the compiler as non-algorithmic
 maintainers need approval to check in algorithmic changes or changes
