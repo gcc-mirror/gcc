@@ -8,6 +8,10 @@ typedef unsigned int UTItype __attribute__((mode(TI)));
 
 #define TI_BITS			(__CHAR_BIT__ * (int)sizeof(TItype))
 
+/* The type of the result of a floating point comparison.
+   This must match `word_mode' in GCC for the target.  */
+#define CMPtype			long
+
 #define _FP_MUL_MEAT_Q(R,X,Y)                           \
   _FP_MUL_MEAT_2_wide(_FP_WFRACBITS_Q,R,X,Y,umul_ppmm)
 
@@ -129,9 +133,9 @@ struct fenv
 /* Define ALIASNAME as a strong alias for NAME.  */
 #if defined __MACH__
 /* Mach-O doesn't support aliasing.  If these functions ever return
-   anything but int we need to revisit this... */
+   anything but CMPtype we need to revisit this... */
 #define strong_alias(name, aliasname) \
-  int aliasname (TFtype a, TFtype b) { return name(a, b); }
+  CMPtype aliasname (TFtype a, TFtype b) { return name(a, b); }
 #else
 # define strong_alias(name, aliasname) _strong_alias(name, aliasname)
 # define _strong_alias(name, aliasname) \

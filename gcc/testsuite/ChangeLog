@@ -1,3 +1,8 @@
+2007-06-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/32268
+	* gcc.target/i386/pr32268.c: New test.
+
 2007-06-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/dfp/fe-convert-1.c: Expect FE_OVERFLOW when converting
