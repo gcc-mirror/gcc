@@ -1,3 +1,9 @@
+2007-06-14  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_expand_nonlocal_goto): Use
+	validate_replace_rtx instead of replace_rtx.
+	(xtensa_expand_prologue): Call df_insn_rescan after replace_rtx.
+
 2007-06-14  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/cygming.h (DWARF_FRAME_REGNUM): Define.
