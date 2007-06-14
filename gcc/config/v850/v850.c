@@ -43,6 +43,7 @@
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "df.h"
 
 #ifndef streq
 #define streq(a,b) (strcmp (a, b) == 0)
@@ -1134,7 +1135,7 @@ substitute_ep_register (rtx first_insn,
 
   if (!*p_r1)
     {
-      df_set_regs_ever_live_p (1, true);
+      df_set_regs_ever_live (1, true);
       *p_r1 = gen_rtx_REG (Pmode, 1);
       *p_ep = gen_rtx_REG (Pmode, 30);
     }
