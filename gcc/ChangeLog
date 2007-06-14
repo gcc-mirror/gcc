@@ -1,3 +1,7 @@
+2007-06-14  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/uclinux.h (MFWRAP_SPEC): New.
+
 2007-06-14  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR target/32341
