@@ -31,10 +31,6 @@
 # "all.cross" to build a cross compiler.
 all: @ALL@
 
-# Provide quickstrap as a target that people can type into the gcc directory,
-# and that fails if you're not into it.
-quickstrap: all
-
 # Depend on this to specify a phony target portably.
 force:
 
@@ -83,21 +79,26 @@ abs_docdir = @abs_srcdir@/doc
 
 # Top build directory for this package, relative to here.
 top_builddir = .
+
 # objdir is set by configure.
 # It's normally the absolute path to the current directory.
 objdir = @objdir@
 
 host_subdir=@host_subdir@
 build_subdir=@build_subdir@
+target_subdir=@target_subdir@
 build_libsubdir=@build_libsubdir@
 
+# Top build directory for the "Cygnus tree", relative to $(top_builddir).
 ifeq ($(host_subdir),.)
-build_objdir := ../$(build_subdir)
-build_libobjdir := ../$(build_libsubdir)
+toplevel_builddir := ..
 else
-build_objdir := ../../$(build_subdir)
-build_libobjdir := ../../$(build_libsubdir)
+toplevel_builddir := ../..
 endif
+
+build_objdir := $(toplevel_builddir)/$(build_subdir)
+build_libobjdir := $(toplevel_builddir)/$(build_libsubdir)
+target_objdir := $(toplevel_builddir)/$(target_subdir)
 
 # --------
 # Defined vpaths
@@ -166,7 +167,7 @@ coverageexts = .{gcda,gcno}
 # apply to the back end and the C front end, which may be compiled
 # with other compilers.
 # CXX_COMPAT_WARN are C++ source compatibility warnings.
-LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
+LOOSE_WARN = @loose_warn@
 STRICT_WARN = @strict_warn@
 CXX_COMPAT_WARN = @cxx_compat_warn@
 
@@ -1423,6 +1424,11 @@ config.status: $(srcdir)/configure $(srcdir)/config.gcc
 # --------
 # UNSORTED
 # --------
+
+# Provide quickstrap as a target that people can type into the gcc directory,
+# and that fails if you're not into it.
+quickstrap: all
+	cd $(toplevel_builddir) && $(MAKE) all-target-libgcc
 
 all.internal: start.encap rest.encap doc
 # This is what to compile if making a cross-compiler.

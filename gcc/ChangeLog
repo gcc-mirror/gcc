@@ -1,5 +1,17 @@
 2007-06-14  Paolo Bonzini  <bonzini@gnu.org>
 
+	* acinclude.m4 (gcc_AC_CHECK_PROG_VER): Remove.
+	* aclocal.m4: Regenerate.
+	* configure.ac: Use ACX_PROG_CC_WARNING_OPTS,
+	ACX_PROG_CC_WARNINGS_ARE_ERRORS,
+	ACX_PROG_CC_WARNING_ALMOST_PEDANTIC, ACX_CHECK_PROG_VER.
+	* configure: Regenerate.
+        * Makefile.in (LOOSE_WARN): Subst loose_warn.
+
+        * Makefile.in (quickstrap): Build libgcc too.
+
+2007-06-14  Paolo Bonzini  <bonzini@gnu.org>
+
 	* configure.ac: Add --enable-checking=df.  Explicitly mention that
 	the variables are initialized as for "release".
 	* df-core.c: Use it.

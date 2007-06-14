@@ -132,26 +132,8 @@ GCC_NO_EXECUTABLES
 AC_PROG_CC
 AC_PROG_CPP_WERROR
 
-# Warn C++ incompatibilities if supported.
-AC_CACHE_CHECK(
-  [whether ${CC} accepts -Wc++-compat],
-  [ac_cv_prog_cc_w_cxx_compat],
-  [save_CFLAGS="$CFLAGS"
-  CFLAGS="-Wc++-compat"
-  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[]])],
-                    [ac_cv_prog_cc_w_cxx_compat=yes],
-                    [ac_cv_prog_cc_w_cxx_compat=no])
-  CFLAGS="$save_CFLAGS"
-  ])
-
-
-if test x$GCC = xyes; then
-  ac_libiberty_warn_cflags='-W -Wall -pedantic -Wwrite-strings -Wstrict-prototypes'
-fi
-if test $ac_cv_prog_cc_w_cxx_compat = yes ; then
-  ac_libiberty_warn_cflags="${ac_libiberty_warn_cflags} -Wc++-compat"
-fi
-AC_SUBST(ac_libiberty_warn_cflags)
+ACX_PROG_CC_WARNING_OPTS([-W -Wall -pedantic -Wwrite-strings -Wc++-compat \
+			  -Wstrict-prototypes], [ac_libiberty_warn_cflags])
 
 AC_PROG_CC_C_O
 # autoconf is lame and doesn't give us any substitution variable for this.

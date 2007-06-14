@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical build_libsubdir build_subdir host_subdir target_subdir GENINSRC CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT NO_MINUS_C_MINUS_O OUTPUT_OPTION CPP EGREP strict_warn cxx_compat_warn warn_cflags nocommon_flag TREEBROWSER valgrind_path valgrind_path_defines valgrind_command coverage_flags enable_multilib enable_decimal_float enable_shared TARGET_SYSTEM_ROOT TARGET_SYSTEM_ROOT_DEFINE CROSS_SYSTEM_HEADER_DIR onestep datarootdir docdir htmldir SET_MAKE AWK LN_S LN RANLIB ac_ct_RANLIB ranlib_flags INSTALL INSTALL_PROGRAM INSTALL_DATA make_compare_target have_mktemp_command MAKEINFO BUILD_INFO GENERATED_MANPAGES FLEX BISON NM AR COLLECT2_LIBS GNAT_LIBEXC LDEXP_LIB TARGET_GETGROUPS_T LIBICONV LTLIBICONV LIBICONV_DEP manext objext gthread_flags extra_modes_file extra_opt_files USE_NLS LIBINTL LIBINTL_DEP INCINTL XGETTEXT GMSGFMT POSUB CATALOGS DATADIRNAME INSTOBJEXT GENCAT CATOBJEXT host_cc_for_libada CROSS ALL SYSTEM_HEADER_DIR inhibit_libc CC_FOR_BUILD BUILD_CFLAGS STMP_FIXINC STMP_FIXPROTO collect2 gcc_cv_as ORIGINAL_AS_FOR_TARGET gcc_cv_ld ORIGINAL_LD_FOR_TARGET gcc_cv_nm ORIGINAL_NM_FOR_TARGET gcc_cv_objdump libgcc_visibility GGC zlibdir zlibinc MAINT gcc_tooldir dollar slibdir objdir subdirs srcdir all_compilers all_gtfiles all_lang_makefrags all_lang_makefiles all_languages all_selected_languages build_exeext build_install_headers_dir build_xm_file_list build_xm_include_list build_xm_defines check_languages cpp_install_dir xmake_file tmake_file extra_gcc_objs extra_headers_list extra_objs extra_parts extra_passes extra_programs float_h_file gcc_config_arguments gcc_gxx_include_dir host_exeext host_xm_file_list host_xm_include_list host_xm_defines out_host_hook_obj install lang_opt_files lang_specs_files lang_tree_files local_prefix md_file objc_boehm_gc out_file out_object_file thread_file tm_file_list tm_include_list tm_defines tm_p_file_list tm_p_include_list xm_file_list xm_include_list xm_defines c_target_objs cxx_target_objs target_cpu_default GMPLIBS GMPINC LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical build_libsubdir build_subdir host_subdir target_subdir GENINSRC CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT NO_MINUS_C_MINUS_O OUTPUT_OPTION CPP EGREP loose_warn cxx_compat_warn strict_warn warn_cflags nocommon_flag TREEBROWSER valgrind_path valgrind_path_defines valgrind_command coverage_flags enable_multilib enable_decimal_float enable_shared TARGET_SYSTEM_ROOT TARGET_SYSTEM_ROOT_DEFINE CROSS_SYSTEM_HEADER_DIR onestep datarootdir docdir htmldir SET_MAKE AWK LN_S LN RANLIB ac_ct_RANLIB ranlib_flags INSTALL INSTALL_PROGRAM INSTALL_DATA make_compare_target have_mktemp_command MAKEINFO BUILD_INFO GENERATED_MANPAGES FLEX BISON NM AR COLLECT2_LIBS GNAT_LIBEXC LDEXP_LIB TARGET_GETGROUPS_T LIBICONV LTLIBICONV LIBICONV_DEP manext objext gthread_flags extra_modes_file extra_opt_files USE_NLS LIBINTL LIBINTL_DEP INCINTL XGETTEXT GMSGFMT POSUB CATALOGS DATADIRNAME INSTOBJEXT GENCAT CATOBJEXT host_cc_for_libada CROSS ALL SYSTEM_HEADER_DIR inhibit_libc CC_FOR_BUILD BUILD_CFLAGS STMP_FIXINC STMP_FIXPROTO collect2 gcc_cv_as ORIGINAL_AS_FOR_TARGET gcc_cv_ld ORIGINAL_LD_FOR_TARGET gcc_cv_nm ORIGINAL_NM_FOR_TARGET gcc_cv_objdump libgcc_visibility GGC zlibdir zlibinc MAINT gcc_tooldir dollar slibdir objdir subdirs srcdir all_compilers all_gtfiles all_lang_makefrags all_lang_makefiles all_languages all_selected_languages build_exeext build_install_headers_dir build_xm_file_list build_xm_include_list build_xm_defines check_languages cpp_install_dir xmake_file tmake_file extra_gcc_objs extra_headers_list extra_objs extra_parts extra_passes extra_programs float_h_file gcc_config_arguments gcc_gxx_include_dir host_exeext host_xm_file_list host_xm_include_list host_xm_defines out_host_hook_obj install lang_opt_files lang_specs_files lang_tree_files local_prefix md_file objc_boehm_gc out_file out_object_file thread_file tm_file_list tm_include_list tm_defines tm_p_file_list tm_p_include_list xm_file_list xm_include_list xm_defines c_target_objs cxx_target_objs target_cpu_default GMPLIBS GMPINC LIBOBJS LTLIBOBJS'
 ac_subst_files='language_hooks'
 
 # Initialize some variables set by options.
@@ -862,7 +862,7 @@ Optional Features:
                           put copies of generated files in source dir
                           intended for creating source tarballs for users
                           without texinfo bison or flex.
-  --enable-werror-always         enable -Werror always
+  --enable-werror-always  enable -Werror despite compiler version
   --enable-checking=LIST
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
@@ -6106,20 +6106,32 @@ fi
 # * overlong strings
 # So, we only use -pedantic if we can disable those warnings.
 
-echo "$as_me:$LINENO: checking whether ${CC} accepts -Wno-long-long" >&5
-echo $ECHO_N "checking whether ${CC} accepts -Wno-long-long... $ECHO_C" >&6
-if test "${ac_cv_prog_cc_w_no_long_long+set}" = set; then
+loose_warn=
+save_CFLAGS="$CFLAGS"
+for option in -W -Wall -Wwrite-strings -Wstrict-prototypes \
+			  -Wmissing-prototypes; do
+  as_acx_Woption=`echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
+
+  echo "$as_me:$LINENO: checking whether $CC supports $option" >&5
+echo $ECHO_N "checking whether $CC supports $option... $ECHO_C" >&6
+if eval "test \"\${$as_acx_Woption+set}\" = set"; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  save_CFLAGS="$CFLAGS"
-  CFLAGS="-Wno-long-long"
-  cat >conftest.$ac_ext <<_ACEOF
+  CFLAGS="$option"
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
+int
+main ()
+{
+
+  ;
+  return 0;
+}
 _ACEOF
 rm -f conftest.$ac_objext
 if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
@@ -6143,34 +6155,50 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_prog_cc_w_no_long_long=yes
+  eval "$as_acx_Woption=yes"
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_cv_prog_cc_w_no_long_long=no
+eval "$as_acx_Woption=no"
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-  CFLAGS="$save_CFLAGS"
 
 fi
-echo "$as_me:$LINENO: result: $ac_cv_prog_cc_w_no_long_long" >&5
-echo "${ECHO_T}$ac_cv_prog_cc_w_no_long_long" >&6
+echo "$as_me:$LINENO: result: `eval echo '${'$as_acx_Woption'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_acx_Woption'}'`" >&6
+  if test `eval echo '${'$as_acx_Woption'}'` = yes; then
+  loose_warn="$loose_warn${loose_warn:+ }$option"
+fi
 
-echo "$as_me:$LINENO: checking whether ${CC} accepts -Wno-variadic-macros" >&5
-echo $ECHO_N "checking whether ${CC} accepts -Wno-variadic-macros... $ECHO_C" >&6
-if test "${ac_cv_prog_cc_w_no_variadic_macros+set}" = set; then
+  done
+CFLAGS="$save_CFLAGS"
+
+cxx_compat_warn=
+save_CFLAGS="$CFLAGS"
+for option in -Wc++-compat; do
+  as_acx_Woption=`echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
+
+  echo "$as_me:$LINENO: checking whether $CC supports $option" >&5
+echo $ECHO_N "checking whether $CC supports $option... $ECHO_C" >&6
+if eval "test \"\${$as_acx_Woption+set}\" = set"; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  save_CFLAGS="$CFLAGS"
-  CFLAGS="-Wno-variadic-macros"
-  cat >conftest.$ac_ext <<_ACEOF
+  CFLAGS="$option"
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
+int
+main ()
+{
+
+  ;
+  return 0;
+}
 _ACEOF
 rm -f conftest.$ac_objext
 if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
@@ -6194,93 +6222,51 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_prog_cc_w_no_variadic_macros=yes
+  eval "$as_acx_Woption=yes"
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_cv_prog_cc_w_no_variadic_macros=no
+eval "$as_acx_Woption=no"
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-  CFLAGS="$save_CFLAGS"
 
 fi
-echo "$as_me:$LINENO: result: $ac_cv_prog_cc_w_no_variadic_macros" >&5
-echo "${ECHO_T}$ac_cv_prog_cc_w_no_variadic_macros" >&6
-
-echo "$as_me:$LINENO: checking whether ${CC} accepts -Wno-overlength-strings" >&5
-echo $ECHO_N "checking whether ${CC} accepts -Wno-overlength-strings... $ECHO_C" >&6
-if test "${ac_cv_prog_cc_w_no_overlength_strings+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  save_CFLAGS="$CFLAGS"
-  CFLAGS="-Wno-overlength-strings"
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_prog_cc_w_no_overlength_strings=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-ac_cv_prog_cc_w_no_overlength_strings=no
+echo "$as_me:$LINENO: result: `eval echo '${'$as_acx_Woption'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_acx_Woption'}'`" >&6
+  if test `eval echo '${'$as_acx_Woption'}'` = yes; then
+  cxx_compat_warn="$cxx_compat_warn${cxx_compat_warn:+ }$option"
 fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-  CFLAGS="$save_CFLAGS"
 
-fi
-echo "$as_me:$LINENO: result: $ac_cv_prog_cc_w_no_overlength_strings" >&5
-echo "${ECHO_T}$ac_cv_prog_cc_w_no_overlength_strings" >&6
+  done
+CFLAGS="$save_CFLAGS"
 
 strict_warn=
-if test $ac_cv_prog_cc_w_no_long_long = yes \
-   && test $ac_cv_prog_cc_w_no_variadic_macros = yes \
-   && test $ac_cv_prog_cc_w_no_overlength_strings = yes ; then
-  strict_warn="-pedantic -Wno-long-long -Wno-variadic-macros -Wno-overlength-strings"
-fi
+save_CFLAGS="$CFLAGS"
+for option in -Wold-style-definition \
+                          -Wmissing-format-attribute; do
+  as_acx_Woption=`echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 
-# Add -Wold-style-definition if it's accepted
-echo "$as_me:$LINENO: checking whether ${CC} accepts -Wold-style-definition" >&5
-echo $ECHO_N "checking whether ${CC} accepts -Wold-style-definition... $ECHO_C" >&6
-if test "${ac_cv_prog_cc_w_old_style_definition+set}" = set; then
+  echo "$as_me:$LINENO: checking whether $CC supports $option" >&5
+echo $ECHO_N "checking whether $CC supports $option... $ECHO_C" >&6
+if eval "test \"\${$as_acx_Woption+set}\" = set"; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  save_CFLAGS="$CFLAGS"
-  CFLAGS="-Wold-style-definition"
-  cat >conftest.$ac_ext <<_ACEOF
+  CFLAGS="$option"
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
+int
+main ()
+{
+
+  ;
+  return 0;
+}
 _ACEOF
 rm -f conftest.$ac_objext
 if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
@@ -6304,38 +6290,50 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_prog_cc_w_old_style_definition=yes
+  eval "$as_acx_Woption=yes"
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_cv_prog_cc_w_old_style_definition=no
+eval "$as_acx_Woption=no"
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-  CFLAGS="$save_CFLAGS"
 
 fi
-echo "$as_me:$LINENO: result: $ac_cv_prog_cc_w_old_style_definition" >&5
-echo "${ECHO_T}$ac_cv_prog_cc_w_old_style_definition" >&6
-if test $ac_cv_prog_cc_w_old_style_definition = yes ; then
-  strict_warn="${strict_warn} -Wold-style-definition"
+echo "$as_me:$LINENO: result: `eval echo '${'$as_acx_Woption'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_acx_Woption'}'`" >&6
+  if test `eval echo '${'$as_acx_Woption'}'` = yes; then
+  strict_warn="$strict_warn${strict_warn:+ }$option"
 fi
 
-# Add -Wmissing-format-attribute if it's accepted
-echo "$as_me:$LINENO: checking whether ${CC} accepts -Wmissing-format-attribute" >&5
-echo $ECHO_N "checking whether ${CC} accepts -Wmissing-format-attribute... $ECHO_C" >&6
-if test "${ac_cv_prog_cc_w_missing_format_attribute+set}" = set; then
+  done
+CFLAGS="$save_CFLAGS"
+
+if test "$GCC" = yes; then
+  echo "$as_me:$LINENO: checking whether $CC supports -pedantic -Wno-long-long -Wno-variadic-macros \
+				     -Wno-overlength-strings" >&5
+echo $ECHO_N "checking whether $CC supports -pedantic -Wno-long-long -Wno-variadic-macros \
+				     -Wno-overlength-strings... $ECHO_C" >&6
+if test "${acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros_____________Wno_overlength_strings+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   save_CFLAGS="$CFLAGS"
-  CFLAGS="-Wmissing-format-attribute"
-  cat >conftest.$ac_ext <<_ACEOF
+CFLAGS="-pedantic -Wno-long-long -Wno-variadic-macros \
+				     -Wno-overlength-strings"
+cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
+int
+main ()
+{
+
+  ;
+  return 0;
+}
 _ACEOF
 rm -f conftest.$ac_objext
 if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
@@ -6359,96 +6357,44 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_prog_cc_w_missing_format_attribute=yes
+  acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros_____________Wno_overlength_strings=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_cv_prog_cc_w_missing_format_attribute=no
+acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros_____________Wno_overlength_strings=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-  CFLAGS="$save_CFLAGS"
+CFLAGS="$save_CFLAGS"
+fi
+echo "$as_me:$LINENO: result: $acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros_____________Wno_overlength_strings" >&5
+echo "${ECHO_T}$acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros_____________Wno_overlength_strings" >&6
+if test $acx_cv_prog_cc_pedantic__Wno_long_long__Wno_variadic_macros_____________Wno_overlength_strings = yes; then
+  strict_warn="$strict_warn${strict_warn:+ }-pedantic -Wno-long-long -Wno-variadic-macros \
+				     -Wno-overlength-strings"
+fi
+
 
 fi
-echo "$as_me:$LINENO: result: $ac_cv_prog_cc_w_missing_format_attribute" >&5
-echo "${ECHO_T}$ac_cv_prog_cc_w_missing_format_attribute" >&6
-if test $ac_cv_prog_cc_w_missing_format_attribute = yes ; then
-  strict_warn="${strict_warn} -Wmissing-format-attribute"
-fi
 
-# Enable -Werror, period.
-# Check whether --enable-werror_always or --disable-werror_always was given.
+
+# Check whether --enable-werror-always or --disable-werror-always was given.
 if test "${enable_werror_always+set}" = set; then
   enableval="$enable_werror_always"
 
 else
   enable_werror_always=no
 fi;
-if test x${enable_werror_always} = xyes ; then
-  strict_warn="${strict_warn} -Werror"
-fi
-
-
-# Get C++ compatibility warning flag, if supported.
-echo "$as_me:$LINENO: checking whether ${CC} accepts -Wc++-compat" >&5
-echo $ECHO_N "checking whether ${CC} accepts -Wc++-compat... $ECHO_C" >&6
-if test "${ac_cv_prog_cc_w_cxx_compat+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  save_CFLAGS="$CFLAGS"
-  CFLAGS="-Wc++-compat"
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_prog_cc_w_cxx_compat=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-ac_cv_prog_cc_w_cxx_compat=no
-fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-  CFLAGS="$save_CFLAGS"
-
-fi
-echo "$as_me:$LINENO: result: $ac_cv_prog_cc_w_cxx_compat" >&5
-echo "${ECHO_T}$ac_cv_prog_cc_w_cxx_compat" >&6
-if test x${ac_cv_prog_cc_w_cxx_compat} = xyes; then
-  cxx_compat_warn="-Wc++-compat"
+if test $enable_werror_always = yes; then
+  strict_warn="$strict_warn${strict_warn:+ }-Werror"
 fi
 
 
 
-# If the native compiler is GCC, we can enable warnings even in stage1.
-# That's useful for people building cross-compilers, or just running a
-# quick `make'.
+
+# The above macros do nothing if the compiler is not GCC.  However, the
+# Makefile has more goo to add other flags, so this variabl is used to
+# enables warnings only for GCC.
 warn_cflags=
 if test "x$GCC" = "xyes"; then
   warn_cflags='$(GCC_WARN_CFLAGS)'
@@ -6527,6 +6473,7 @@ _ACEOF
 
   nocommon_flag=-fno-common
 fi
+
 if test x$ac_df_checking != x ; then
 
 cat >>confdefs.h <<\_ACEOF
@@ -6534,7 +6481,6 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 fi
-
 if test x$ac_assert_checking != x ; then
 
 cat >>confdefs.h <<\_ACEOF
@@ -7622,14 +7568,10 @@ echo "${ECHO_T}no" >&6
 fi
 
 
-MISSING="${CONFIG_SHELL-/bin/sh} $srcdir/../missing"
-
 # See if makeinfo has been installed and is modern enough
 # that we can use it.
 
-ac_executable_extensions="$build_exeext"
-
-# Extract the first word of "makeinfo", so it can be a program name with args.
+  # Extract the first word of "makeinfo", so it can be a program name with args.
 set dummy makeinfo; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
 echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
@@ -7664,32 +7606,33 @@ else
 echo "${ECHO_T}no" >&6
 fi
 
-if test -n "$MAKEINFO"; then
-  # Found it, now check the version.
-  echo "$as_me:$LINENO: checking for modern makeinfo" >&5
+  if test -n "$MAKEINFO"; then
+    # Found it, now check the version.
+    echo "$as_me:$LINENO: checking for modern makeinfo" >&5
 echo $ECHO_N "checking for modern makeinfo... $ECHO_C" >&6
 if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-    ac_prog_version=`$MAKEINFO --version 2>&1 |
-                   sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:7676: version of makeinfo is $ac_prog_version" >&5
-  case $ac_prog_version in
-    '')     gcc_cv_prog_makeinfo_modern=no;;
-    4.[4-9]*)
-            gcc_cv_prog_makeinfo_modern=yes;;
-    *)      gcc_cv_prog_makeinfo_modern=no;;
-  esac
+  ac_prog_version=`eval $MAKEINFO --version 2>&1 |
+                                     sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
+
+                    case $ac_prog_version in
+                      '')  gcc_cv_prog_makeinfo_modern=no;;
+                      4.[4-9]*)  gcc_cv_prog_makeinfo_modern=yes;;
+                      *)   gcc_cv_prog_makeinfo_modern=no;;
+                    esac
 
 fi
 echo "$as_me:$LINENO: result: $gcc_cv_prog_makeinfo_modern" >&5
 echo "${ECHO_T}$gcc_cv_prog_makeinfo_modern" >&6
-else
-  gcc_cv_prog_makeinfo_modern=no
-fi
+  else
+    gcc_cv_prog_makeinfo_modern=no
+  fi
+  if test $gcc_cv_prog_makeinfo_modern = no; then
+    MAKEINFO="${CONFIG_SHELL-/bin/sh} $ac_aux_dir/missing makeinfo"
+  fi
 
 if test $gcc_cv_prog_makeinfo_modern = no; then
-  MAKEINFO="$MISSING makeinfo"
   { echo "$as_me:$LINENO: WARNING:
 *** Makeinfo is missing or too old.
 *** Info documentation will not be built." >&5
@@ -7715,6 +7658,8 @@ echo "${ECHO_T}no" >&6
   GENERATED_MANPAGES=
 fi
 
+
+MISSING="${CONFIG_SHELL-/bin/sh} $ac_aux_dir/missing"
 
 # How about lex?
 for ac_prog in flex
@@ -17671,8 +17616,9 @@ s,@NO_MINUS_C_MINUS_O@,$NO_MINUS_C_MINUS_O,;t t
 s,@OUTPUT_OPTION@,$OUTPUT_OPTION,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
-s,@strict_warn@,$strict_warn,;t t
+s,@loose_warn@,$loose_warn,;t t
 s,@cxx_compat_warn@,$cxx_compat_warn,;t t
+s,@strict_warn@,$strict_warn,;t t
 s,@warn_cflags@,$warn_cflags,;t t
 s,@nocommon_flag@,$nocommon_flag,;t t
 s,@TREEBROWSER@,$TREEBROWSER,;t t

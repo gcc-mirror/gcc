@@ -2953,22 +2953,33 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 ac_c_preproc_warn_flag=yes
 
-# Warn C++ incompatibilities if supported.
 
-echo "$as_me:$LINENO: checking whether ${CC} accepts -Wc++-compat" >&5
-echo $ECHO_N "checking whether ${CC} accepts -Wc++-compat... $ECHO_C" >&6
-if test "${ac_cv_prog_cc_w_cxx_compat+set}" = set; then
+ac_libiberty_warn_cflags=
+save_CFLAGS="$CFLAGS"
+for option in -W -Wall -pedantic -Wwrite-strings -Wc++-compat \
+			  -Wstrict-prototypes; do
+  as_acx_Woption=`echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
+
+  echo "$as_me:$LINENO: checking whether $CC supports $option" >&5
+echo $ECHO_N "checking whether $CC supports $option... $ECHO_C" >&6
+if eval "test \"\${$as_acx_Woption+set}\" = set"; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  save_CFLAGS="$CFLAGS"
-  CFLAGS="-Wc++-compat"
-  cat >conftest.$ac_ext <<_ACEOF
+  CFLAGS="$option"
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
+int
+main ()
+{
+
+  ;
+  return 0;
+}
 _ACEOF
 rm -f conftest.$ac_objext
 if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
@@ -2992,27 +3003,24 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_prog_cc_w_cxx_compat=yes
+  eval "$as_acx_Woption=yes"
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_cv_prog_cc_w_cxx_compat=no
+eval "$as_acx_Woption=no"
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-  CFLAGS="$save_CFLAGS"
 
 fi
-echo "$as_me:$LINENO: result: $ac_cv_prog_cc_w_cxx_compat" >&5
-echo "${ECHO_T}$ac_cv_prog_cc_w_cxx_compat" >&6
-
-
-if test x$GCC = xyes; then
-  ac_libiberty_warn_cflags='-W -Wall -pedantic -Wwrite-strings -Wstrict-prototypes'
+echo "$as_me:$LINENO: result: `eval echo '${'$as_acx_Woption'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_acx_Woption'}'`" >&6
+  if test `eval echo '${'$as_acx_Woption'}'` = yes; then
+  ac_libiberty_warn_cflags="$ac_libiberty_warn_cflags${ac_libiberty_warn_cflags:+ }$option"
 fi
-if test $ac_cv_prog_cc_w_cxx_compat = yes ; then
-  ac_libiberty_warn_cflags="${ac_libiberty_warn_cflags} -Wc++-compat"
-fi
+
+  done
+CFLAGS="$save_CFLAGS"
 
 
 if test "x$CC" != xcc; then
