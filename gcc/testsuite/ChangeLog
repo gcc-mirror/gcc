@@ -1,3 +1,7 @@
+2007-06-13  Eric Christopher  <echristo@apple.com>
+
+	* gcc.target/i386/ssefn-1.c: Add -march=i386.
+
 2007-06-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32323
@@ -110,7 +114,7 @@
 	* gcc.dg/vect/costmodel/i386/costmodel-vect-reduc-1char.c: New test.
 	* gcc.dg/vect/costmodel/x86_64: New directory.
 	* gcc.dg/vect/costmodel/x86_64/x86_64-costmodel-vect.exp:
-	New testsuite.	
+	New testsuite.
 	* gcc.dg/vect/costmodel/x86_64/costmodel-fast-math-vect-pr29925.c:
 	New test.
 	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-31.c: New test.
@@ -148,7 +152,7 @@
 	* gcc.dg/Werror-7.c: Likewise.
 	* gcc.dg/Werror-10.c: Likewise.
 	* gcc.dg/Werror-11.c: Likewise.
-	
+
 2007-06-07  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/30759
@@ -200,7 +204,7 @@
 	* gcc.dg/always_inline.c: Mark output as a sorry.
 	* gcc.dg/always_inline2.c: Likewise.
 	* gcc.dg/always_inline3.c: Likewise.
-	
+
 2007-06-06  Ian Lance Taylor  <iant@google.com>
 
 	* g++.dg/conversion/enum1.C: New test.
@@ -243,7 +247,7 @@
 	* testsuite/gcc.dg/binary-constants-2.c: Ditto.
 	* testsuite/gcc.dg/binary-constants-3.c: Ditto.
 	* testsuite/gcc.dg/binary-constants-4.c: Ditto.
-	
+
 2007-06-05  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/Wstrict-overflow-19.c: New test.
@@ -446,7 +450,7 @@
 
 	PR tree-opt/32100
 	* gcc.c-torture/execute/vrp-7.c: New test.
-	 
+
 2007-05-28  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gfortran.dg/transfer_simplify_4.f90: New test.
@@ -969,7 +973,7 @@
 	* gcc.dg/20030906-2.c: Likewise.
 	* objc.dg/method-17.m: Add -Wreturn-type.
 	* obj-c++.dg/method-21.mm: Likewise.
-	
+
 2007-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/31585
@@ -1006,7 +1010,7 @@
 	* g++.dg/warn/Wconversion-sign.C: New.
 	* g++.old-deja/g++.other/warn4.C: Update.
 	* g++.dg/warn/Wconversion1.C: Likewise.
-	
+
 2007-05-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-math-2.c: Add gamma_r/lgamma_r tests.
@@ -1217,7 +1221,7 @@
 	* g++.dg/warn/Wstrict-aliasing-bogus-signed-unsigned.C: New test.
 	* g++.dg/warn/Wstrict-aliasing-bogus-struct-included.C: New test.
 	* g++.dg/warn/Wstrict-aliasing-bogus-union.C: New test.
-	* g++.dg/warn/Wstrict-aliasing-float-ref-int-obj.C: New test. 
+	* g++.dg/warn/Wstrict-aliasing-float-ref-int-obj.C: New test.
 
 2007-05-11  Paolo Carlini  <pcarlini@suse.de>
 
@@ -1302,7 +1306,7 @@
 
 	PR target/31854
 	* gcc.target/i386/pr31854.c: New test.
-	
+
 2007-05-07  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/pch/pch.exp: XFAIL largefile on Solaris 10 x86.

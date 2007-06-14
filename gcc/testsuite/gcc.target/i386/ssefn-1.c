@@ -7,7 +7,7 @@
 /* { dg-final { scan-assembler "mulss" } } */
 /* { dg-final { scan-assembler-not "movsd" } } */
 /* { dg-final { scan-assembler-not "mulsd" } } */
-/* { dg-options "-O2 -msse -mfpmath=sse -fno-inline" } */
+/* { dg-options "-O2 -march=i386 -msse -mfpmath=sse -fno-inline" } */
 
 static float xs (void)
 {
@@ -28,4 +28,3 @@ double yd (double a)
 {
   return xd () * a;
 }
-
