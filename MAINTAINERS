@@ -118,19 +118,7 @@ C front end/ISO C99	Richard Henderson	rth@redhat.com
 Ada front end		Geert Bosch		bosch@gnat.com
 Ada front end		Robert Dewar		dewar@gnat.com
 Ada front end		Arnaud Charlet		charlet@act-europe.fr
-fortran 95		Paul Brook		paul@codesourcery.com
-fortran 95		Thomas Koenig		Thomas.Koenig@online.de
-fortran 95		Toon Moene		toon@moene.indiv.nluug.nl
-fortran 95		Jerry DeLisle		jvdelisle@gcc.gnu.org
-fortran 95		François-Xavier Coudert	fxcoudert@gcc.gnu.org
-fortran 95              Bud Davis               jmdavis@link.com
-fortran 95		Steve Kargl		sgk@troutmask.apl.washington.edu
-fortran 95              Erik Edelmann           erik.edelmann@iki.fi
-fortran 95		Paul Thomas		pault@gcc.gnu.org
-fortran 95		Tobias Schlüter		tobias.schlueter@physik.uni-muenchen.de
-fortran 95		Janne Blomqvist		jb@gcc.gnu.org
-fortran 95		Brooks Moses		brooks.moses@codesourcery.com
-fortran 95		Tobias Burnus		burnus@net-b.de
+Fortran			Paul Brook		paul@codesourcery.com
 c++			Jason Merrill		jason@redhat.com
 c++			Mark Mitchell		mark@codesourcery.com
 c++			Nathan Sidwell		nathan@codesourcery.com
@@ -244,7 +232,18 @@ dataflow		Daniel Berlin		dberlin@dberlin.org
 dataflow		Paolo Bonzini		bonzini@gnu.org
 dataflow		Seongbae Park		seongbae.park@gmail.com
 dataflow 		Kenneth Zadeck		zadeck@naturalbridge.com
-(FIXME: The fortran people need to be added here since they follow this rule)
+Fortran			Janne Blomqvist		jb@gcc.gnu.org
+Fortran			Tobias Burnus		burnus@net-b.de
+Fortran			François-Xavier Coudert	fxcoudert@gcc.gnu.org
+Fortran			Bud Davis		jmdavis@link.com
+Fortran			Jerry DeLisle		jvdelisle@gcc.gnu.org
+Fortran			Erik Edelmann		erik.edelmann@iki.fi
+Fortran			Steve Kargl		sgk@troutmask.apl.washington.edu
+Fortran			Thomas Koenig		Thomas.Koenig@online.de
+Fortran			Toon Moene		toon@moene.indiv.nluug.nl
+Fortran			Brooks Moses		brooks.moses@codesourcery.com
+Fortran			Tobias Schlüter		tobias.schlueter@physik.uni-muenchen.de
+Fortran			Paul Thomas		pault@gcc.gnu.org
 
 
 Note that individuals who maintain parts of the compiler as
