@@ -1,5 +1,10 @@
 2007-06-14  Paolo Bonzini  <bonzini@gnu.org>
 
+	* configure.ac: Use ACX_PROG_CC_ALMOST_PEDANTIC too.
+	* configure: Regenerate.
+
+2007-06-14  Paolo Bonzini  <bonzini@gnu.org>
+
 	* aclocal.m4: Include config/warnings.m4.
 	* configure.ac: Use ACX_PROG_CC_WARNING_OPTS.
 	* configure: Regenerate.
