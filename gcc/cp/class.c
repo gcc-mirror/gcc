@@ -5244,16 +5244,17 @@ finish_struct (tree t, tree attributes)
    before this function is called.  */
 
 static tree
-fixed_type_or_null (tree instance, int* nonnull, int* cdtorp)
+fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 {
+#define RECUR(T) fixed_type_or_null((T), nonnull, cdtorp)
+
   switch (TREE_CODE (instance))
     {
     case INDIRECT_REF:
       if (POINTER_TYPE_P (TREE_TYPE (instance)))
 	return NULL_TREE;
       else
-	return fixed_type_or_null (TREE_OPERAND (instance, 0),
-				   nonnull, cdtorp);
+	return RECUR (TREE_OPERAND (instance, 0));
 
     case CALL_EXPR:
       /* This is a call to a constructor, hence it's never zero.  */
@@ -5273,20 +5274,21 @@ fixed_type_or_null (tree instance, int* nonnull, int* cdtorp)
 	    *nonnull = 1;
 	  return TREE_TYPE (instance);
 	}
-      return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
+      return RECUR (TREE_OPERAND (instance, 0));
 
     case PLUS_EXPR:
     case MINUS_EXPR:
       if (TREE_CODE (TREE_OPERAND (instance, 0)) == ADDR_EXPR)
-	return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
+	return RECUR (TREE_OPERAND (instance, 0));
       if (TREE_CODE (TREE_OPERAND (instance, 1)) == INTEGER_CST)
 	/* Propagate nonnull.  */
-	return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
+	return RECUR (TREE_OPERAND (instance, 0));
+
       return NULL_TREE;
 
     case NOP_EXPR:
     case CONVERT_EXPR:
-      return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
+      return RECUR (TREE_OPERAND (instance, 0));
 
     case ADDR_EXPR:
       instance = TREE_OPERAND (instance, 0);
@@ -5299,14 +5301,14 @@ fixed_type_or_null (tree instance, int* nonnull, int* cdtorp)
 	  if (t && DECL_P (t))
 	    *nonnull = 1;
 	}
-      return fixed_type_or_null (instance, nonnull, cdtorp);
+      return RECUR (instance);
 
     case COMPONENT_REF:
       /* If this component is really a base class reference, then the field
 	 itself isn't definitive.  */
       if (DECL_FIELD_IS_BASE (TREE_OPERAND (instance, 1)))
-	return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
-      return fixed_type_or_null (TREE_OPERAND (instance, 1), nonnull, cdtorp);
+	return RECUR (TREE_OPERAND (instance, 0));
+      return RECUR (TREE_OPERAND (instance, 1));
 
     case VAR_DECL:
     case FIELD_DECL:
@@ -5344,22 +5346,33 @@ fixed_type_or_null (tree instance, int* nonnull, int* cdtorp)
 	}
       else if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
 	{
+	  /* We only need one hash table because it is always left empty.  */
+	  static htab_t ht;
+	  if (!ht)
+	    ht = htab_create (37, 
+			      htab_hash_pointer,
+			      htab_eq_pointer,
+			      /*htab_del=*/NULL);
+
 	  /* Reference variables should be references to objects.  */
 	  if (nonnull)
 	    *nonnull = 1;
 
-	  /* DECL_VAR_MARKED_P is used to prevent recursion; a
+	  /* Enter the INSTANCE in a table to prevent recursion; a
 	     variable's initializer may refer to the variable
 	     itself.  */
 	  if (TREE_CODE (instance) == VAR_DECL
 	      && DECL_INITIAL (instance)
-	      && !DECL_VAR_MARKED_P (instance))
+	      && !htab_find (ht, instance))
 	    {
 	      tree type;
-	      DECL_VAR_MARKED_P (instance) = 1;
-	      type = fixed_type_or_null (DECL_INITIAL (instance),
-					 nonnull, cdtorp);
-	      DECL_VAR_MARKED_P (instance) = 0;
+	      void **slot;
+
+	      slot = htab_find_slot (ht, instance, INSERT);
+	      *slot = instance;
+	      type = RECUR (DECL_INITIAL (instance));
+	      htab_clear_slot (ht, slot);
+
 	      return type;
 	    }
 	}
@@ -5368,6 +5381,7 @@ fixed_type_or_null (tree instance, int* nonnull, int* cdtorp)
     default:
       return NULL_TREE;
     }
+#undef RECUR
 }
 
 /* Return nonzero if the dynamic type of INSTANCE is known, and
@@ -5389,7 +5403,6 @@ resolves_to_fixed_type_p (tree instance, int* nonnull)
 {
   tree t = TREE_TYPE (instance);
   int cdtorp = 0;
-
   tree fixed = fixed_type_or_null (instance, nonnull, &cdtorp);
   if (fixed == NULL_TREE)
     return 0;
