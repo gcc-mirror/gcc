@@ -1,3 +1,9 @@
+2007-06-15  Diego Novillo  <dnovillo@google.com>
+
+	PR 32327
+	* tree-ssa-operands.c (build_ssa_operands): Initially assume
+	that the statement does not take any addresses.
+
 2007-06-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (sparc_override_options): Initialize

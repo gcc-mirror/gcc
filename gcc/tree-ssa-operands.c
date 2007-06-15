@@ -2162,9 +2162,14 @@ build_ssa_operands (tree stmt)
 {
   stmt_ann_t ann = get_stmt_ann (stmt);
   
-  /* Initially assume that the statement has no volatile operands.  */
+  /* Initially assume that the statement has no volatile operands and
+     does not take the address of any symbols.  */
   if (ann)
-    ann->has_volatile_ops = false;
+    {
+      ann->has_volatile_ops = false;
+      if (ann->addresses_taken)
+	ann->addresses_taken = NULL;
+    }
 
   start_ssa_stmt_operands ();
 
