@@ -1009,11 +1009,10 @@ void _Jv_ClassReader::read_one_code_attribute (int method_index)
                                
       for (int i = 0; i < table_len; i++)
         {
-          table[i].bytecode_start_pc = read2u ();
+          table[i].bytecode_pc = read2u ();
           table[i].length = read2u ();
-          int len;
-          len = pool_Utf8_to_char_arr (read2u (), &table[i].name);
-          len = pool_Utf8_to_char_arr (read2u (), &table[i].descriptor);
+          pool_Utf8_to_char_arr (read2u (), &table[i].name);
+          pool_Utf8_to_char_arr (read2u (), &table[i].descriptor);
           table[i].slot = read2u ();
           
           if (table[i].slot > method->max_locals || table[i].slot < 0)

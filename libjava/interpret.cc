@@ -947,6 +947,25 @@ _Jv_InterpMethod::compile (const void * const *insn_targets)
 
   prepared = insns;
 
+  // Now remap the variable table for this method.
+  for (int i = 0; i < local_var_table_len; ++i)
+    {
+      int start_byte = local_var_table[i].bytecode_pc;
+      if (start_byte < 0 || start_byte >= code_length)
+	start_byte = 0;
+      jlocation start =  pc_mapping[start_byte];
+
+      int end_byte = start_byte + local_var_table[i].length;
+      if (end_byte < 0)
+	end_byte = 0;
+      jlocation end = ((end_byte >= code_length)
+		       ? number_insn_slots
+		       : pc_mapping[end_byte]);
+
+      local_var_table[i].pc = &insns[start];
+      local_var_table[i].length = end - start + 1;
+    }
+  
   if (breakpoint_insn == NULL)
     {
       bp_insn_slot.insn = const_cast<void *> (insn_targets[op_breakpoint]);
@@ -1526,12 +1545,15 @@ _Jv_InterpMethod::get_local_var_table (char **name, char **sig,
       *sig = local_var_table[table_slot].descriptor;
       *generic_sig = local_var_table[table_slot].descriptor;
 
-      *startloc = static_cast<jlong> 
-                    (local_var_table[table_slot].bytecode_start_pc);
+#ifdef DIRECT_THREADED
+      *startloc = insn_index (local_var_table[table_slot].pc);
+#else
+      *startloc = static_cast<jlong> (local_var_table[table_slot].bytecode_pc);
+#endif
       *length = static_cast<jint> (local_var_table[table_slot].length);
       *slot = static_cast<jint> (local_var_table[table_slot].slot);
     }
-  return local_var_table_len - table_slot -1;
+  return local_var_table_len - table_slot - 1;
 }
 
 pc_t
