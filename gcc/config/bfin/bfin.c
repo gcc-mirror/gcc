@@ -2741,12 +2741,6 @@ bfin_rtx_costs (rtx x, int code, int outer_code, int *total)
       return false;
     }
 }
-
-static void
-bfin_internal_label (FILE *stream, const char *prefix, unsigned long num)
-{
-  fprintf (stream, "%s%s$%ld:\n", LOCAL_LABEL_PREFIX, prefix, num);
-}
 
 /* Used for communication between {push,pop}_multiple_operation (which
    we use not only as a predicate) and the corresponding output functions.  */
@@ -5359,9 +5353,6 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
 #undef  TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST bfin_address_cost
-
-#undef TARGET_ASM_INTERNAL_LABEL
-#define TARGET_ASM_INTERNAL_LABEL bfin_internal_label
 
 #undef  TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER bfin_assemble_integer

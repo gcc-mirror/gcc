@@ -1,11 +1,5 @@
 #define OBJECT_FORMAT_ELF
 
-#define LOCAL_LABEL_PREFIX "L$"
-
-#undef ASM_GENERATE_INTERNAL_LABEL
-#define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)		\
-     sprintf (LABEL, "*%s%s$%d", LOCAL_LABEL_PREFIX, PREFIX, (int) NUM)
-
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "\
 %{msim:%{!shared:crt0%O%s}} \

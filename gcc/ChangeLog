@@ -1,3 +1,10 @@
+2007-06-15  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/elf.h (ASM_GENERATE_INTERNAL_LABEL,
+	LOCAL_LABEL_PREFIX): Delete.
+	* config/bfin/bfin.c (TARGET_ASM_INTERNAL_LABEL): Delete.
+	(bfin_internal_label): Delete.
+
 2007-06-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* libgcc2.c (CEXT): When compiling L_multc3 and L_divtc3,
