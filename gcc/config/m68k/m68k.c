@@ -57,20 +57,6 @@ enum reg_class regno_reg_class[] =
 };
 
 
-/* The ASM_DOT macro allows easy string pasting to handle the differences
-   between MOTOROLA and MIT syntaxes in asm_fprintf(), which doesn't
-   support the %. option.  */
-#if MOTOROLA
-# define ASM_DOT "."
-# define ASM_DOTW ".w"
-# define ASM_DOTL ".l"
-#else
-# define ASM_DOT ""
-# define ASM_DOTW ""
-# define ASM_DOTL ""
-#endif
-
-
 /* The minimum number of integer registers that we want to save with the
    movem instruction.  Using two movel instructions instead of a single
    moveml is about 15% faster for the 68020 and 68030 at no expense in
