@@ -1,3 +1,7 @@
+2007-06-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* rtlanal.c (note_stores): Improve documentation.
+
 2007-06-15  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/elf.h (ASM_GENERATE_INTERNAL_LABEL,
