@@ -1,7 +1,7 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
 /* Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2007  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1780,7 +1780,11 @@ NAME (TYPE x, int m)
 # define MTYPE	TFtype
 # define CTYPE	TCtype
 # define MODE	tc
-# define CEXT	l
+# if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 128
+#  define CEXT l
+# else
+#  define CEXT LIBGCC2_TF_CEXT
+# endif
 # define NOTRUNC 1
 #else
 # error
