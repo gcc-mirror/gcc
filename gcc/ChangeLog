@@ -1,3 +1,9 @@
+2007-06-14  Seongbae Park  <seongbae.park@gmail.com>
+
+	PR rtl-optimization/32339
+	* df-scan.c (df_uses_record): Don't modify flags but just add to it for
+	df_ref_record.
+
 2007-06-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* tree-mudflap.c: Fix whitespace issues.

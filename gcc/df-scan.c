@@ -2982,9 +2982,9 @@ df_uses_record (struct df_collection_rec *collection_rec,
     case PRE_MODIFY:
     case POST_MODIFY:
       /* Catch the def of the register being modified.  */
-      flags |= DF_REF_READ_WRITE | DF_REF_PRE_POST_MODIFY;
       df_ref_record (collection_rec, XEXP (x, 0), &XEXP (x, 0), bb, insn, 
-		     DF_REF_REG_DEF, flags);
+		     DF_REF_REG_DEF,
+                     flags | DF_REF_READ_WRITE | DF_REF_PRE_POST_MODIFY);
 
       /* ... Fall through to handle uses ...  */
 
