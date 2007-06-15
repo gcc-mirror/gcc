@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -301,7 +301,11 @@ fallback:
 
 	st_printf ("\nBacktrace for this error:\n");
 	arg[0] = (char *) "pstack";
+#ifdef HAVE_SNPRINTF
 	snprintf (buf, sizeof(buf), "%d", (int) getppid ());
+#else
+	sprintf (buf, "%d", (int) getppid ());
+#endif
 	arg[1] = buf;
 	arg[2] = NULL;
 	execvp (arg[0], arg);
