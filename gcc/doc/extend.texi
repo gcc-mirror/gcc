@@ -3153,8 +3153,11 @@ copy operations more efficient, because the compiler can use whatever
 instructions copy the biggest chunks of memory when performing copies to
 or from the variables or fields that you have aligned this way.
 
-The @code{aligned} attribute can only increase the alignment; but you
-can decrease it by specifying @code{packed} as well.  See below.
+When used on a struct, or struct member, the @code{aligned} attribute can
+only increase the alignment; in order to decrease it, the @code{packed}
+attribute must be specified as well.  When used as part of a typedef, the
+@code{aligned} attribute can both increase and decrease alignment, and
+specifying the @code{packed} attribute will generate a warning.
 
 Note that the effectiveness of @code{aligned} attributes may be limited
 by inherent limitations in your linker.  On many systems, the linker is

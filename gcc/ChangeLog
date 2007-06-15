@@ -1,3 +1,8 @@
+2007-06-15  Matthew Wilcox <matthew@wil.cx>
+
+	* doc/extend.texi: Document behavior of __attribute__((aligned))
+	on typedefs.
+	
 2007-06-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* rtlanal.c (note_stores): Improve documentation.
