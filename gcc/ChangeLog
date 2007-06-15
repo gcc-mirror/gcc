@@ -1,8 +1,17 @@
+2007-06-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* libgcc2.c (CEXT): When compiling L_multc3 and L_divtc3,
+	define to "l" if LIBGCC_LONG_DOUBLE_SIZE == 128,
+	otherwise define to LIBGCC2_TF_CEXT.
+	* config/i386/linux64.h (LIBGCC2_HAS_TF_MODE): New define.
+	(LIBGCC_TF_CEXT): Ditto.
+	(TF_SIZE): Ditto.
+
 2007-06-14  Seongbae Park  <seongbae.park@gmail.com>
 
 	PR rtl-optimization/32339
-	* df-scan.c (df_uses_record): Don't modify flags but just add to it for
-	df_ref_record.
+	* df-scan.c (df_uses_record): Don't modify flags but just add to
+	it for df_ref_record.
 
 2007-06-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
@@ -20,7 +29,7 @@
 2007-06-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32268
-	* config/i386/sfp-machine.c (CMPtype): New define.
+	* config/i386/sfp-machine.h (CMPtype): New define.
 	(mach stubs): Use CMPtype instead of int as a return type.
 
 2007-06-14  Uros Bizjak  <ubizjak@gmail.com>
