@@ -1,3 +1,7 @@
+2007-06-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree-mudflap.c: Fix whitespace issues.
+
 2007-06-15  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/m68k/m68k.c (ASM_DOT, ASM_DOTW, ASM_DOTL): Remove.
