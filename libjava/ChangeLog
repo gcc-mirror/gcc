@@ -1,3 +1,15 @@
+2007-06-14  Keith Seitz  <keiths@redhat.com>
+
+	* include/java-interp.h (_Jv_LocalVarTableEntry): Add union
+	for bytecode_pc and direct-threaded pc.
+	Add field descriptions inline.
+	* defineclass.cc (read_one_code_attribute): Change from
+	bytecode_start_pc to bytecode_pc.
+	Remove unused variable "len".
+	* interpret.cc (compile): Remap the variable table, too.
+	(get_local_var_table) [DIRECT_THREADED]: Use insn_index on the
+	start location to map from pc_t to code index.
+
 2007-06-09  Keith Seitz  <keiths@redhat.com>
 
 	* testsuite/libjava.jvmti/dummyagent.c (Agent_OnLoad):
