@@ -2571,8 +2571,8 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
   tmp3 = build_call_expr (built_in_decls[BUILT_IN_MEMMOVE],
 			  3, dest, src, slen);
 
-  tmp4 = fold_build2 (PLUS_EXPR, pchar_type_node, dest,
-		      fold_convert (pchar_type_node, slen));
+  tmp4 = fold_build2 (POINTER_PLUS_EXPR, pchar_type_node, dest,
+		      fold_convert (sizetype, slen));
   tmp4 = build_call_expr (built_in_decls[BUILT_IN_MEMSET], 3,
 			  tmp4, 
 			  build_int_cst (gfc_get_int_type (gfc_c_int_kind),

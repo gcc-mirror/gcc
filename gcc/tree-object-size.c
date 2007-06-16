@@ -555,7 +555,7 @@ merge_object_sizes (struct object_size_info *osi, tree dest, tree orig,
 
 
 /* Compute object_sizes for PTR, defined to VALUE, which is
-   a PLUS_EXPR.  Return true if the object size might need reexamination
+   a POINTER_PLUS_EXPR.  Return true if the object size might need reexamination
    later.  */
 
 static bool
@@ -563,33 +563,17 @@ plus_expr_object_size (struct object_size_info *osi, tree var, tree value)
 {
   tree op0 = TREE_OPERAND (value, 0);
   tree op1 = TREE_OPERAND (value, 1);
-  bool ptr1_p = POINTER_TYPE_P (TREE_TYPE (op0))
-		&& TREE_CODE (op0) != INTEGER_CST;
-  bool ptr2_p = POINTER_TYPE_P (TREE_TYPE (op1))
-		&& TREE_CODE (op1) != INTEGER_CST;
   int object_size_type = osi->object_size_type;
   unsigned int varno = SSA_NAME_VERSION (var);
   unsigned HOST_WIDE_INT bytes;
 
-  gcc_assert (TREE_CODE (value) == PLUS_EXPR);
+  gcc_assert (TREE_CODE (value) == POINTER_PLUS_EXPR);
 
   if (object_sizes[object_size_type][varno] == unknown[object_size_type])
     return false;
 
-  /* Swap operands if needed.  */
-  if (ptr2_p && !ptr1_p)
-    {
-      tree tem = op0;
-      op0 = op1;
-      op1 = tem;
-      ptr1_p = true;
-      ptr2_p = false;
-    }
-
   /* Handle PTR + OFFSET here.  */
-  if (ptr1_p
-      && !ptr2_p
-      && TREE_CODE (op1) == INTEGER_CST
+  if (TREE_CODE (op1) == INTEGER_CST
       && (TREE_CODE (op0) == SSA_NAME
 	  || TREE_CODE (op0) == ADDR_EXPR))
     {
@@ -669,7 +653,7 @@ cond_expr_object_size (struct object_size_info *osi, tree var, tree value)
    OSI->object_size_type).
    For allocation CALL_EXPR like malloc or calloc object size is the size
    of the allocation.
-   For pointer PLUS_EXPR where second operand is a constant integer,
+   For POINTER_PLUS_EXPR where second operand is a constant integer,
    object size is object size of the first operand minus the constant.
    If the constant is bigger than the number of remaining bytes until the
    end of the object, object size is 0, but if it is instead a pointer
@@ -750,7 +734,7 @@ collect_object_sizes_for (struct object_size_info *osi, tree var)
 	    && POINTER_TYPE_P (TREE_TYPE (rhs)))
 	  reexamine = merge_object_sizes (osi, var, rhs, 0);
 
-	else if (TREE_CODE (rhs) == PLUS_EXPR)
+	else if (TREE_CODE (rhs) == POINTER_PLUS_EXPR)
 	  reexamine = plus_expr_object_size (osi, var, rhs);
 
         else if (TREE_CODE (rhs) == COND_EXPR)
@@ -877,23 +861,14 @@ check_for_plus_in_loops_1 (struct object_size_info *osi, tree var,
 
 	if (TREE_CODE (rhs) == SSA_NAME)
 	  check_for_plus_in_loops_1 (osi, rhs, depth);
-	else if (TREE_CODE (rhs) == PLUS_EXPR)
+	else if (TREE_CODE (rhs) == POINTER_PLUS_EXPR)
 	  {
 	    tree op0 = TREE_OPERAND (rhs, 0);
 	    tree op1 = TREE_OPERAND (rhs, 1);
 	    tree cst, basevar;
 
-	    if (TREE_CODE (op0) == SSA_NAME)
-	      {
-		basevar = op0;
-		cst = op1;
-	      }
-	    else
-	      {
-		basevar = op1;
-		cst = op0;
-		gcc_assert (TREE_CODE (basevar) == SSA_NAME);
-	      }
+	    basevar = op0;
+	    cst = op1;
 	    gcc_assert (TREE_CODE (cst) == INTEGER_CST);
 
 	    check_for_plus_in_loops_1 (osi, basevar,
@@ -953,23 +928,14 @@ check_for_plus_in_loops (struct object_size_info *osi, tree var)
 	      rhs = arg;
 	  }
 
-	if (TREE_CODE (rhs) == PLUS_EXPR)
+	if (TREE_CODE (rhs) == POINTER_PLUS_EXPR)
 	  {
 	    tree op0 = TREE_OPERAND (rhs, 0);
 	    tree op1 = TREE_OPERAND (rhs, 1);
 	    tree cst, basevar;
 
-	    if (TREE_CODE (op0) == SSA_NAME)
-	      {
-		basevar = op0;
-		cst = op1;
-	      }
-	    else
-	      {
-		basevar = op1;
-		cst = op0;
-		gcc_assert (TREE_CODE (basevar) == SSA_NAME);
-	      }
+	    basevar = op0;
+	    cst = op1;
 	    gcc_assert (TREE_CODE (cst) == INTEGER_CST);
 
 	    if (integer_zerop (cst))

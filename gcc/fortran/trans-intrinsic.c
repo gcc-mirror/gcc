@@ -3530,8 +3530,8 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
   /* Call memmove (dest + (i*slen), src, slen).  */
   tmp = fold_build2 (MULT_EXPR, gfc_charlen_type_node, slen,
 		     fold_convert (gfc_charlen_type_node, count));
-  tmp = fold_build2 (PLUS_EXPR, pchar_type_node, dest,
-		     fold_convert (pchar_type_node, tmp));
+  tmp = fold_build2 (POINTER_PLUS_EXPR, pchar_type_node, dest,
+		     fold_convert (sizetype, tmp));
   tmp = build_call_expr (built_in_decls[BUILT_IN_MEMMOVE], 3,
 			 tmp, src, slen);
   gfc_add_expr_to_block (&body, tmp);

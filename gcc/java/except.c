@@ -467,8 +467,9 @@ build_exception_object_ref (tree type)
   /* Java only passes object via pointer and doesn't require adjusting.
      The java object is immediately before the generic exception header.  */
   obj = build0 (EXC_PTR_EXPR, build_pointer_type (type));
-  obj = build2 (MINUS_EXPR, TREE_TYPE (obj), obj,
-		TYPE_SIZE_UNIT (TREE_TYPE (obj)));
+  obj = build2 (POINTER_PLUS_EXPR, TREE_TYPE (obj), obj,
+		fold_build1 (NEGATE_EXPR, sizetype,
+			     TYPE_SIZE_UNIT (TREE_TYPE (obj))));
   obj = build1 (INDIRECT_REF, type, obj);
 
   return obj;

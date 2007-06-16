@@ -3293,23 +3293,17 @@ handle_ptr_arith (VEC (ce_s, heap) *lhsc, tree expr)
   VEC (ce_s, heap) *temp = NULL;
   unsigned int rhsoffset = 0;
 
-  if (TREE_CODE (expr) != PLUS_EXPR
-      && TREE_CODE (expr) != MINUS_EXPR)
+  if (TREE_CODE (expr) != POINTER_PLUS_EXPR)
     return false;
 
   op0 = TREE_OPERAND (expr, 0);
   op1 = TREE_OPERAND (expr, 1);
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (op0)));
 
   get_constraint_for (op0, &temp);
-  if (POINTER_TYPE_P (TREE_TYPE (op0))
-      && TREE_CODE (op1) == INTEGER_CST
-      && TREE_CODE (expr) == PLUS_EXPR)
-    {
-      rhsoffset = TREE_INT_CST_LOW (op1) * BITS_PER_UNIT;
-    }
-  else
-    return false;
 
+  if (TREE_CODE (op1) == INTEGER_CST)
+    rhsoffset = TREE_INT_CST_LOW (op1) * BITS_PER_UNIT;
 
   for (i = 0; VEC_iterate (ce_s, lhsc, i, c); i++)
     for (j = 0; VEC_iterate (ce_s, temp, j, c2); j++)

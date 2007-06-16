@@ -4439,6 +4439,20 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
 
   value = const_binop (MINUS_EXPR, high, low, 0);
 
+
+  if (POINTER_TYPE_P (etype))
+    {
+      if (value != 0 && !TREE_OVERFLOW (value))
+	{
+	  low = fold_convert (sizetype, low);
+	  low = fold_build1 (NEGATE_EXPR, sizetype, low);
+          return build_range_check (type,
+			     	    fold_build2 (POINTER_PLUS_EXPR, etype, exp, low),
+			            1, build_int_cst (etype, 0), value);
+	}
+      return 0;
+    }
+
   if (value != 0 && !TREE_OVERFLOW (value))
     return build_range_check (type,
 			      fold_build2 (MINUS_EXPR, etype, exp, low),
@@ -5992,7 +6006,7 @@ constant_boolean_node (int value, tree type)
    offset is set to NULL_TREE.  Base will be canonicalized to
    something you can get the element type from using
    TREE_TYPE (TREE_TYPE (base)).  Offset will be the offset
-   in bytes to the base.  */
+   in bytes to the base in sizetype.  */
 
 static bool
 extract_array_ref (tree expr, tree *base, tree *offset)
@@ -6000,21 +6014,20 @@ extract_array_ref (tree expr, tree *base, tree *offset)
   /* One canonical form is a PLUS_EXPR with the first
      argument being an ADDR_EXPR with a possible NOP_EXPR
      attached.  */
-  if (TREE_CODE (expr) == PLUS_EXPR)
+  if (TREE_CODE (expr) == POINTER_PLUS_EXPR)
     {
       tree op0 = TREE_OPERAND (expr, 0);
       tree inner_base, dummy1;
       /* Strip NOP_EXPRs here because the C frontends and/or
-	 folders present us (int *)&x.a + 4B possibly.  */
+	 folders present us (int *)&x.a p+ 4 possibly.  */
       STRIP_NOPS (op0);
       if (extract_array_ref (op0, &inner_base, &dummy1))
 	{
 	  *base = inner_base;
-	  if (dummy1 == NULL_TREE)
-	    *offset = TREE_OPERAND (expr, 1);
-	  else
-	    *offset = fold_build2 (PLUS_EXPR, TREE_TYPE (expr),
-				   dummy1, TREE_OPERAND (expr, 1));
+	  *offset = fold_convert (sizetype, TREE_OPERAND (expr, 1));
+	  if (dummy1 != NULL_TREE)
+	    *offset = fold_build2 (PLUS_EXPR, sizetype,
+				   dummy1, *offset);
 	  return true;
 	}
     }
@@ -6032,6 +6045,7 @@ extract_array_ref (tree expr, tree *base, tree *offset)
 	  *base = TREE_OPERAND (op0, 0);
 	  *offset = fold_build2 (MULT_EXPR, TREE_TYPE (idx), idx,
 				 array_ref_element_size (op0)); 
+	  *offset = fold_convert (sizetype, *offset);
 	}
       else
 	{
@@ -6866,7 +6880,7 @@ fold_sign_changed_comparison (enum tree_code code, tree type,
   return fold_build2 (code, type, arg0_inner, arg1);
 }
 
-/* Tries to replace &a[idx] CODE s * delta with &a[idx CODE delta], if s is
+/* Tries to replace &a[idx] p+ s * delta with &a[idx + delta], if s is
    step of the array.  Reconstructs s and delta in the case of s * delta
    being an integer constant (and thus already folded).
    ADDR is the address. MULT is the multiplicative expression.
@@ -6874,13 +6888,16 @@ fold_sign_changed_comparison (enum tree_code code, tree type,
    NULL_TREE is returned.  */
 
 static tree
-try_move_mult_to_index (enum tree_code code, tree addr, tree op1)
+try_move_mult_to_index (tree addr, tree op1)
 {
   tree s, delta, step;
   tree ref = TREE_OPERAND (addr, 0), pref;
   tree ret, pos;
   tree itype;
   bool mdim = false;
+
+  /*  Strip the nops that might be added when converting op1 to sizetype. */
+  STRIP_NOPS (op1);
 
   /* Canonicalize op1 into a possibly non-constant delta
      and an INTEGER_CST s.  */
@@ -6958,7 +6975,7 @@ try_move_mult_to_index (enum tree_code code, tree addr, tree op1)
 		  || TREE_CODE (TYPE_MAX_VALUE (itype)) != INTEGER_CST)
 		continue;
 
-	      tmp = fold_binary (code, itype,
+	      tmp = fold_binary (PLUS_EXPR, itype,
 				 fold_convert (itype,
 					       TREE_OPERAND (ref, 1)),
 				 fold_convert (itype, delta));
@@ -6991,7 +7008,7 @@ try_move_mult_to_index (enum tree_code code, tree addr, tree op1)
       pos = TREE_OPERAND (pos, 0);
     }
 
-  TREE_OPERAND (pos, 1) = fold_build2 (code, itype,
+  TREE_OPERAND (pos, 1) = fold_build2 (PLUS_EXPR, itype,
 				       fold_convert (itype,
 						     TREE_OPERAND (pos, 1)),
 				       fold_convert (itype, delta));
@@ -7037,9 +7054,18 @@ fold_to_nonsharp_ineq_using_bound (tree ineq, tree bound)
   if (TREE_TYPE (a1) != typea)
     return NULL_TREE;
 
-  diff = fold_build2 (MINUS_EXPR, typea, a1, a);
-  if (!integer_onep (diff))
-    return NULL_TREE;
+  if (POINTER_TYPE_P (typea))
+    {
+      /* Convert the pointer types into integer before taking the difference.  */
+      tree ta = fold_convert (ssizetype, a);
+      tree ta1 = fold_convert (ssizetype, a1);
+      diff = fold_binary (MINUS_EXPR, ssizetype, ta1, ta);
+    }
+  else
+   diff = fold_binary (MINUS_EXPR, typea, a1, a);
+
+  if (!diff || !integer_onep (diff))
+   return NULL_TREE;
 
   return fold_build2 (GE_EXPR, type, a, y);
 }
@@ -7830,11 +7856,11 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	    }
 	}
 
-      /* Convert (T1)(X op Y) into ((T1)X op (T1)Y), for pointer type,
+      /* Convert (T1)(X p+ Y) into ((T1)X p+ Y), for pointer type,
          when one of the new casts will fold away. Conservatively we assume
-	 that this happens when X or Y is NOP_EXPR or Y is INTEGER_CST.  */
-      if (POINTER_TYPE_P (type) && POINTER_TYPE_P (TREE_TYPE (arg0))
-	  && BINARY_CLASS_P (arg0)
+	 that this happens when X or Y is NOP_EXPR or Y is INTEGER_CST. */
+      if (POINTER_TYPE_P (type)
+	  && TREE_CODE (arg0) == POINTER_PLUS_EXPR
 	  && (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
 	      || TREE_CODE (TREE_OPERAND (arg0, 0)) == NOP_EXPR
 	      || TREE_CODE (TREE_OPERAND (arg0, 1)) == NOP_EXPR))
@@ -7843,7 +7869,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	  tree arg01 = TREE_OPERAND (arg0, 1);
 
 	  return fold_build2 (TREE_CODE (arg0), type, fold_convert (type, arg00),
-			      fold_convert (type, arg01));
+			      fold_convert (sizetype, arg01));
 	}
 
       /* Convert (T1)(~(T2)X) into ~(T1)X if T1 and T2 are integral types
@@ -9066,7 +9092,68 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
   switch (code)
     {
+    case POINTER_PLUS_EXPR:
+      /* 0 +p index -> (type)index */
+      if (integer_zerop (arg0))
+	return non_lvalue (fold_convert (type, arg1));
+
+      /* PTR +p 0 -> PTR */
+      if (integer_zerop (arg1))
+	return non_lvalue (fold_convert (type, arg0));
+
+      /* INT +p INT -> (PTR)(INT + INT).  Stripping types allows for this. */
+      if (INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+	   && INTEGRAL_TYPE_P (TREE_TYPE (arg0)))
+        return fold_convert (type, fold_build2 (PLUS_EXPR, sizetype,
+						fold_convert (sizetype, arg1),
+						fold_convert (sizetype, arg0)));
+
+      /* index +p PTR -> PTR +p index */
+      if (POINTER_TYPE_P (TREE_TYPE (arg1))
+	  && INTEGRAL_TYPE_P (TREE_TYPE (arg0)))
+        return fold_build2 (POINTER_PLUS_EXPR, type,
+	                    fold_convert (type, arg1), fold_convert (sizetype, arg0));
+
+      /* (PTR +p B) +p A -> PTR +p (B + A) */
+      if (TREE_CODE (arg0) == POINTER_PLUS_EXPR)
+	{
+	  tree inner;
+	  tree arg01 = fold_convert (sizetype, TREE_OPERAND (arg0, 1));
+	  tree arg00 = TREE_OPERAND (arg0, 0);
+	  inner = fold_build2 (PLUS_EXPR, sizetype, arg01, fold_convert (sizetype, arg1));
+	  return fold_build2 (POINTER_PLUS_EXPR, type, arg00, inner);
+	}
+
+      /* PTR_CST +p CST -> CST1 */
+      if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
+	return fold_build2 (PLUS_EXPR, type, arg0, fold_convert (type, arg1));
+
+     /* Try replacing &a[i1] +p c * i2 with &a[i1 + i2], if c is step
+	of the array.  Loop optimizer sometimes produce this type of
+	expressions.  */
+      if (TREE_CODE (arg0) == ADDR_EXPR)
+	{
+	  tem = try_move_mult_to_index (arg0, fold_convert (sizetype, arg1));
+	  if (tem)
+	    return fold_convert (type, tem);
+	}
+
+      return NULL_TREE;
     case PLUS_EXPR:
+      /* PTR + INT -> (INT)(PTR p+ INT) */
+      if (POINTER_TYPE_P (TREE_TYPE (arg0))
+	  && INTEGRAL_TYPE_P (TREE_TYPE (arg1)))
+	return fold_convert (type, fold_build2 (POINTER_PLUS_EXPR,
+						TREE_TYPE (arg0),
+						arg0,
+						fold_convert (sizetype, arg1)));
+      /* INT + PTR -> (INT)(PTR p+ INT) */
+      if (POINTER_TYPE_P (TREE_TYPE (arg1))
+	  && INTEGRAL_TYPE_P (TREE_TYPE (arg0)))
+	return fold_convert (type, fold_build2 (POINTER_PLUS_EXPR,
+						TREE_TYPE (arg1),
+						arg1,
+						fold_convert (sizetype, arg0)));
       /* A + (-B) -> A - B */
       if (TREE_CODE (arg1) == NEGATE_EXPR)
 	return fold_build2 (MINUS_EXPR, type,
@@ -9172,22 +9259,6 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 						 fold_convert (type, marg),
 						 fold_convert (type,
 							       parg1)));
-	    }
-
-	  /* Try replacing &a[i1] + c * i2 with &a[i1 + i2], if c is step
-	     of the array.  Loop optimizer sometimes produce this type of
-	     expressions.  */
-	  if (TREE_CODE (arg0) == ADDR_EXPR)
-	    {
-	      tem = try_move_mult_to_index (PLUS_EXPR, arg0, arg1);
-	      if (tem)
-		return fold_convert (type, tem);
-	    }
-	  else if (TREE_CODE (arg1) == ADDR_EXPR)
-	    {
-	      tem = try_move_mult_to_index (PLUS_EXPR, arg1, arg0);
-	      if (tem)
-		return fold_convert (type, tem);
 	    }
 	}
       else
@@ -9465,6 +9536,31 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       return NULL_TREE;
 
     case MINUS_EXPR:
+      /* Pointer simplifications for subtraction, simple reassociations. */
+      if (POINTER_TYPE_P (TREE_TYPE (arg1)) && POINTER_TYPE_P (TREE_TYPE (arg0)))
+	{
+	  /* (PTR0 p+ A) - (PTR1 p+ B) -> (PTR0 - PTR1) + (A - B) */
+	  if (TREE_CODE (arg0) == POINTER_PLUS_EXPR
+	      && TREE_CODE (arg1) == POINTER_PLUS_EXPR)
+	    {
+	      tree arg00 = fold_convert (type, TREE_OPERAND (arg0, 0));
+	      tree arg01 = fold_convert (type, TREE_OPERAND (arg0, 1));
+	      tree arg10 = fold_convert (type, TREE_OPERAND (arg1, 0));
+	      tree arg11 = fold_convert (type, TREE_OPERAND (arg1, 1));
+	      return fold_build2 (PLUS_EXPR, type,
+				  fold_build2 (MINUS_EXPR, type, arg00, arg10),
+				  fold_build2 (MINUS_EXPR, type, arg01, arg11));
+	    }
+	  /* (PTR0 p+ A) - PTR1 -> (PTR0 - PTR1) + A, assuming PTR0 - PTR1 simplifies. */
+	  else if (TREE_CODE (arg0) == POINTER_PLUS_EXPR)
+	    {
+	      tree arg00 = fold_convert (type, TREE_OPERAND (arg0, 0));
+	      tree arg01 = fold_convert (type, TREE_OPERAND (arg0, 1));
+	      tree tmp = fold_binary (MINUS_EXPR, type, arg00, fold_convert (type, arg1));
+	      if (tmp)
+	        return fold_build2 (PLUS_EXPR, type, tmp, arg01);
+	    }
+	}
       /* A - (-B) -> A + B */
       if (TREE_CODE (arg1) == NEGATE_EXPR)
 	return fold_build2 (PLUS_EXPR, type, arg0, TREE_OPERAND (arg1, 0));
@@ -9632,16 +9728,6 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 			          fold_convert (type, esz));
 			          
 	    }
-	}
-
-      /* Try replacing &a[i1] - c * i2 with &a[i1 - i2], if c is step
-	 of the array.  Loop optimizer sometimes produce this type of
-	 expressions.  */
-      if (TREE_CODE (arg0) == ADDR_EXPR)
-	{
-	  tem = try_move_mult_to_index (MINUS_EXPR, arg0, arg1);
-	  if (tem)
-	    return fold_convert (type, tem);
 	}
 
       if (flag_unsafe_math_optimizations
@@ -13231,6 +13317,7 @@ tree_expr_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
     case REAL_CST:
       return ! REAL_VALUE_NEGATIVE (TREE_REAL_CST (t));
 
+    case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
       if (FLOAT_TYPE_P (TREE_TYPE (t)))
 	return (tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 0),
@@ -13586,6 +13673,7 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
     case INTEGER_CST:
       return !integer_zerop (t);
 
+    case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
       if (TYPE_OVERFLOW_UNDEFINED (type))
 	{
@@ -14178,7 +14266,7 @@ fold_indirect_ref_1 (tree type, tree op0)
     }
 
   /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
-  if (TREE_CODE (sub) == PLUS_EXPR
+  if (TREE_CODE (sub) == POINTER_PLUS_EXPR
       && TREE_CODE (TREE_OPERAND (sub, 1)) == INTEGER_CST)
     {
       tree op00 = TREE_OPERAND (sub, 0);

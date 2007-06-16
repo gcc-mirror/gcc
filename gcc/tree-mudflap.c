@@ -824,8 +824,8 @@ mf_xform_derefs_1 (block_stmt_iterator *iter, tree *tp,
 	      elt = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (elt)),
 			    elt);
             addr = fold_convert (ptr_type_node, elt ? elt : base);
-            addr = fold_build2 (PLUS_EXPR, ptr_type_node,
-				addr, fold_convert (ptr_type_node,
+            addr = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
+				addr, fold_convert (sizetype,
 						    byte_position (field)));
           }
         else
@@ -842,17 +842,19 @@ mf_xform_derefs_1 (block_stmt_iterator *iter, tree *tp,
     case INDIRECT_REF:
       addr = TREE_OPERAND (t, 0);
       base = addr;
-      limit = fold_build2 (MINUS_EXPR, ptr_type_node,
-                           fold_build2 (PLUS_EXPR, ptr_type_node, base, size),
-                           integer_one_node);
+      limit = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
+			   fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, base,
+					size),
+			   size_int (-1));
       break;
 
     case TARGET_MEM_REF:
       addr = tree_mem_ref_addr (ptr_type_node, t);
       base = addr;
-      limit = fold_build2 (MINUS_EXPR, ptr_type_node,
-			   fold_build2 (PLUS_EXPR, ptr_type_node, base, size),
-			   build_int_cst (ptr_type_node, 1));
+      limit = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
+			   fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, base,
+					size),
+			   size_int (-1));
       break;
 
     case ARRAY_RANGE_REF:
@@ -872,7 +874,7 @@ mf_xform_derefs_1 (block_stmt_iterator *iter, tree *tp,
         bpu = bitsize_int (BITS_PER_UNIT);
         ofs = convert (bitsizetype, TREE_OPERAND (t, 2));
         rem = size_binop (TRUNC_MOD_EXPR, ofs, bpu);
-        ofs = size_binop (TRUNC_DIV_EXPR, ofs, bpu);
+        ofs = fold_convert (sizetype, size_binop (TRUNC_DIV_EXPR, ofs, bpu));
 
         size = convert (bitsizetype, TREE_OPERAND (t, 1));
         size = size_binop (PLUS_EXPR, size, rem);
@@ -881,12 +883,13 @@ mf_xform_derefs_1 (block_stmt_iterator *iter, tree *tp,
 
         addr = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
         addr = convert (ptr_type_node, addr);
-        addr = fold_build2 (PLUS_EXPR, ptr_type_node, addr, ofs);
+        addr = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, addr, ofs);
 
         base = addr;
-        limit = fold_build2 (MINUS_EXPR, ptr_type_node,
-                             fold_build2 (PLUS_EXPR, ptr_type_node, base, size),
-                             integer_one_node);
+        limit = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
+                             fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
+					   base, size),
+                             size_int (-1));
       }
       break;
 

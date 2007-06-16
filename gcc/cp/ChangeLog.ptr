@@ -1,0 +1,68 @@
+2007-06-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* init.c (build_new_1): Use fold_build1 instead
+	of build1 for NEGATE_EXPR.
+	(build_vec_delete_1): Likewise.
+	* class.c (build_base_path): Likewise.
+	* except.c (expand_start_catch_block): Likewise.
+
+2007-05-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* typeck.c (build_binary_op): Add a comment on why creating
+	the tree in pieces while processing templates.
+
+2007-05-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* except.c (expand_start_catch_block):  Do a
+	NEGATIVE and then a POINTER_PLUS_EXPR instead
+	of a MINUS_EXPR.
+
+2007-05-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* cp-gimplify.c (cxx_omp_clause_apply_fn): Convert
+	PLUS_EXPR on pointer types over to use
+	POINTER_PLUS_EXPR and remove the conversion
+	to the pointer types.
+
+2007-05-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* typeck.c (build_unary_op): Remove code that used to
+	handle non lvalue increments/decrements as we now error
+	out all ways.
+
+2007-05-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* typeck.c (get_member_function_from_ptrfunc):
+	Change over to using POINTER_PLUS_EXPR and convert
+	the second operand to sizetype.
+	* typeck2.c (build_m_component_ref): Likewise.
+	* rtti.c (build_headof): Use sizetype instead of
+	ptrdiff_type_node.
+
+2007-05-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* method.c (thunk_adjust): Use POINTER_PLUS_EXPR for
+	adding to a pointer type. Use size_int instead of
+	ssize_int. Convert the index to sizetype before
+	adding it to the pointer.
+
+2006-11-23  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* typeck.c (build_binary_op): For templates build the
+	expression in pieces to avoid the assert in build2_stat.
+	* init.c (expand_virtual_init): Create a POINTER_PLUS_EXPR
+	instead of PLUS_EXPR for pointers.
+	(build_new_1): Likewise.
+	(build_vec_delete_1): Likewise.
+	(build_vec_delete): Likewise.
+	* class.c (build_base_path): Likewise.
+	(build_base_path): Likewise.
+	(convert_to_base_statically): Likewise.
+	(fixed_type_or_null): Handle POINTER_PLUS_EXPR.
+	(get_vtbl_decl_for_binfo): Handle POINTER_PLUS_EXPR
+	instead of PLUS_EXPR.
+	(dfs_accumulate_vtbl_inits): Create a POINTER_PLUS_EXPR
+	instead of PLUS_EXPR for pointers.
+	* call.c (build_special_member_call): Likewise.
+	* rtti.c (build_headof): Likewise.
+	(tinfo_base_init): Likewise.

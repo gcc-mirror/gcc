@@ -766,6 +766,10 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
      both integers.  */
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (val1))
 	      == POINTER_TYPE_P (TREE_TYPE (val2)));
+  /* Convert the two values into the same type.  This is needed because
+     sizetype causes sign extension even for unsigned types.  */
+  val2 = fold_convert (TREE_TYPE (val1), val2);
+  STRIP_USELESS_TYPE_CONVERSION (val2);
 
   if ((TREE_CODE (val1) == SSA_NAME
        || TREE_CODE (val1) == PLUS_EXPR
@@ -1494,10 +1498,14 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 		    }
 		  max = negative_overflow_infinity (TREE_TYPE (var_vr->min));
 		}
-	      else
+	      else if (!POINTER_TYPE_P (TREE_TYPE (var_vr->min)))
 		max = fold_build2 (MINUS_EXPR, TREE_TYPE (var_vr->min),
 				   anti_min,
 				   build_int_cst (TREE_TYPE (var_vr->min), 1));
+	      else
+		max = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (var_vr->min),
+				   anti_min,
+				   size_int (-1));
 	      min = real_min;
 	      set_value_range (vr_p, VR_RANGE, min, max, vr_p->equiv);
 	    }
@@ -1693,6 +1701,7 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
      meaningful way.  Handle only arithmetic operations.  */
   if (code != PLUS_EXPR
       && code != MINUS_EXPR
+      && code != POINTER_PLUS_EXPR
       && code != MULT_EXPR
       && code != TRUNC_DIV_EXPR
       && code != FLOOR_DIV_EXPR
@@ -1763,26 +1772,30 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
       || POINTER_TYPE_P (TREE_TYPE (op0))
       || POINTER_TYPE_P (TREE_TYPE (op1)))
     {
-      /* For pointer types, we are really only interested in asserting
-	 whether the expression evaluates to non-NULL.  FIXME, we used
-	 to gcc_assert (code == PLUS_EXPR || code == MINUS_EXPR), but
-	 ivopts is generating expressions with pointer multiplication
-	 in them.  */
-      if (code == PLUS_EXPR)
+      if (code == MIN_EXPR || code == MAX_EXPR)
 	{
-	  if (range_is_nonnull (&vr0) || range_is_nonnull (&vr1))
+	  /* For MIN/MAX expressions with pointers, we only care about
+	     nullness, if both are non null, then the result is nonnull.
+	     If both are null, then the result is null. Otherwise they
+	     are varying.  */
+	  if (range_is_nonnull (&vr0) && range_is_nonnull (&vr1))
 	    set_value_range_to_nonnull (vr, TREE_TYPE (expr));
 	  else if (range_is_null (&vr0) && range_is_null (&vr1))
 	    set_value_range_to_null (vr, TREE_TYPE (expr));
 	  else
 	    set_value_range_to_varying (vr);
+
+	  return;
 	}
+      gcc_assert (code == POINTER_PLUS_EXPR);
+      /* For pointer types, we are really only interested in asserting
+	 whether the expression evaluates to non-NULL.  */
+      if (range_is_nonnull (&vr0) || range_is_nonnull (&vr1))
+	set_value_range_to_nonnull (vr, TREE_TYPE (expr));
+      else if (range_is_null (&vr0) && range_is_null (&vr1))
+	set_value_range_to_null (vr, TREE_TYPE (expr));
       else
-	{
-	  /* Subtracting from a pointer, may yield 0, so just drop the
-	     resulting range to varying.  */
-	  set_value_range_to_varying (vr);
-	}
+	set_value_range_to_varying (vr);
 
       return;
     }

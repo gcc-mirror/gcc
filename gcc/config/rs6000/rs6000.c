@@ -6210,8 +6210,8 @@ rs6000_va_start (tree valist, rtx nextarg)
   /* Find the overflow area.  */
   t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
   if (words != 0)
-    t = build2 (PLUS_EXPR, TREE_TYPE (ovf), t,
-	        build_int_cst (NULL_TREE, words * UNITS_PER_WORD));
+    t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (ovf), t,
+	        size_int (words * UNITS_PER_WORD));
   t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (ovf), ovf, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -6227,8 +6227,8 @@ rs6000_va_start (tree valist, rtx nextarg)
   /* Find the register save area.  */
   t = make_tree (TREE_TYPE (sav), virtual_stack_vars_rtx);
   if (cfun->machine->varargs_save_offset)
-    t = build2 (PLUS_EXPR, TREE_TYPE (sav), t,
-	        build_int_cst (NULL_TREE, cfun->machine->varargs_save_offset));
+    t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (sav), t,
+	        size_int (cfun->machine->varargs_save_offset));
   t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (sav), sav, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -6367,12 +6367,12 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 
       t = sav;
       if (sav_ofs)
-	t = build2 (PLUS_EXPR, ptr_type_node, sav, size_int (sav_ofs));
+	t = build2 (POINTER_PLUS_EXPR, ptr_type_node, sav, size_int (sav_ofs));
 
       u = build2 (POSTINCREMENT_EXPR, TREE_TYPE (reg), reg, size_int (n_reg));
-      u = build1 (CONVERT_EXPR, integer_type_node, u);
-      u = build2 (MULT_EXPR, integer_type_node, u, size_int (sav_scale));
-      t = build2 (PLUS_EXPR, ptr_type_node, t, u);
+      u = fold_convert (sizetype, u);
+      u = build2 (MULT_EXPR, sizetype, u, size_int (sav_scale));
+      t = build2 (POINTER_PLUS_EXPR, ptr_type_node, t, u);
 
       t = build2 (GIMPLE_MODIFY_STMT, void_type_node, addr, t);
       gimplify_and_add (t, pre_p);
@@ -6398,16 +6398,18 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   t = ovf;
   if (align != 1)
     {
-      t = build2 (PLUS_EXPR, TREE_TYPE (t), t, size_int (align - 1));
+      t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (t), t, size_int (align - 1));
+      t = fold_convert (sizetype, t);
       t = build2 (BIT_AND_EXPR, TREE_TYPE (t), t,
-		  build_int_cst (NULL_TREE, -align));
+		  size_int (-align));
+      t = fold_convert (TREE_TYPE (ovf), t);
     }
   gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue);
 
   u = build2 (GIMPLE_MODIFY_STMT, void_type_node, addr, t);
   gimplify_and_add (u, pre_p);
 
-  t = build2 (PLUS_EXPR, TREE_TYPE (t), t, size_int (size));
+  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (t), t, size_int (size));
   t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (ovf), ovf, t);
   gimplify_and_add (t, pre_p);
 

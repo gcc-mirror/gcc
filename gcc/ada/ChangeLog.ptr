@@ -1,0 +1,21 @@
+2007-06-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* trans.c (Attribute_to_gnu): Use fold_build1 instead
+	of build1 for NEGATE_EXPR.
+	(gnat_to_gnu): Likewise.
+
+2007-05-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* trans.c (Attribute_to_gnu): When subtracting an
+	offset from a pointer, use POINTER_PLUS_EXPR with
+	NEGATE_EXPR instead of MINUS_EXPR.
+	(gnat_to_gnu): Likewise.
+	* utils.c (convert): When converting between
+	thin pointers, use POINTER_PLUS_EXPR and sizetype
+	for the offset.
+	* utils2.c (known_alignment): POINTER_PLUS_EXPR
+	have the same semantics as PLUS_EXPR for alignment.
+	(build_binary_op): Add support for the semantics of
+	POINTER_PLUS_EXPR's operands.
+	When adding an offset to a pointer, use POINTER_PLUS_EXPR.
+

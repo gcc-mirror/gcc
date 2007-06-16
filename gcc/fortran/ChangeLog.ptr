@@ -1,0 +1,11 @@
+2007-05-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_repeat): Use
+	POINTER_PLUS_EXPR instead of PLUS_EXPR for pointer addition.
+
+2007-05-07  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* trans-expr.c (gfc_trans_string_copy): Create
+	POINTER_PLUS_EXPR instead of a PLUS_EXPR
+	for pointer types.
+

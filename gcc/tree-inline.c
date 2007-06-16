@@ -2085,6 +2085,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case VEC_COND_EXPR:
 
     case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
 

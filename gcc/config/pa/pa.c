@@ -2046,6 +2046,7 @@ reloc_needed (tree exp)
     case ADDR_EXPR:
       return 1;
 
+    case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
       reloc = reloc_needed (TREE_OPERAND (exp, 0));
@@ -5922,21 +5923,24 @@ hppa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 
       /* Args grow down.  Not handled by generic routines.  */
 
-      u = fold_convert (valist_type, size_in_bytes (type));
-      t = build2 (MINUS_EXPR, valist_type, valist, u);
+      u = fold_convert (sizetype, size_in_bytes (type));
+      u = fold_build1 (NEGATE_EXPR, sizetype, u);
+      t = build2 (POINTER_PLUS_EXPR, valist_type, valist, u);
 
       /* Copied from va-pa.h, but we probably don't need to align to
 	 word size, since we generate and preserve that invariant.  */
-      u = build_int_cst (valist_type, (size > 4 ? -8 : -4));
-      t = build2 (BIT_AND_EXPR, valist_type, t, u);
+      u = size_int (size > 4 ? -8 : -4);
+      t = fold_convert (sizetype, t);
+      t = build2 (BIT_AND_EXPR, sizetype, t, u);
+      t = fold_convert (valist_type, t);
 
       t = build2 (MODIFY_EXPR, valist_type, valist, t);
 
       ofs = (8 - size) % 4;
       if (ofs != 0)
 	{
-	  u = fold_convert (valist_type, size_int (ofs));
-	  t = build2 (PLUS_EXPR, valist_type, t, u);
+	  u = size_int (ofs);
+	  t = build2 (POINTER_PLUS_EXPR, valist_type, t, u);
 	}
 
       t = fold_convert (ptr, t);

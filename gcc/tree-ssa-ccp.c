@@ -1853,8 +1853,8 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
   if (t)
     return t;
 
-  /* Add in any offset from a PLUS_EXPR.  */
-  if (TREE_CODE (base) == PLUS_EXPR)
+  /* Add in any offset from a POINTER_PLUS_EXPR.  */
+  if (TREE_CODE (base) == POINTER_PLUS_EXPR)
     {
       tree offset2;
 
@@ -1863,7 +1863,8 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
 	return NULL_TREE;
       base = TREE_OPERAND (base, 0);
 
-      offset = int_const_binop (PLUS_EXPR, offset, offset2, 1);
+      offset = fold_convert (sizetype,
+			     int_const_binop (PLUS_EXPR, offset, offset2, 1));
     }
 
   if (TREE_CODE (base) == ADDR_EXPR)
@@ -1923,7 +1924,7 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
 }
 
 
-/* A subroutine of fold_stmt_r.  EXPR is a PLUS_EXPR.
+/* A subroutine of fold_stmt_r.  EXPR is a POINTER_PLUS_EXPR.
 
    A quaint feature extant in our address arithmetic is that there
    can be hidden type changes here.  The type of the result need
@@ -1932,7 +1933,7 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
    What we're after here is an expression of the form
 	(T *)(&array + const)
    where the cast doesn't actually exist, but is implicit in the
-   type of the PLUS_EXPR.  We'd like to turn this into
+   type of the POINTER_PLUS_EXPR.  We'd like to turn this into
 	&array[x]
    which may be able to propagate further.  */
 
@@ -1944,18 +1945,9 @@ maybe_fold_stmt_addition (tree expr)
   tree ptr_type = TREE_TYPE (expr);
   tree ptd_type;
   tree t;
-  bool subtract = (TREE_CODE (expr) == MINUS_EXPR);
 
-  /* We're only interested in pointer arithmetic.  */
-  if (!POINTER_TYPE_P (ptr_type))
-    return NULL_TREE;
-  /* Canonicalize the integral operand to op1.  */
-  if (INTEGRAL_TYPE_P (TREE_TYPE (op0)))
-    {
-      if (subtract)
-	return NULL_TREE;
-      t = op0, op0 = op1, op1 = t;
-    }
+  gcc_assert (TREE_CODE (expr) == POINTER_PLUS_EXPR);
+
   /* It had better be a constant.  */
   if (TREE_CODE (op1) != INTEGER_CST)
     return NULL_TREE;
@@ -2001,30 +1993,9 @@ maybe_fold_stmt_addition (tree expr)
       array_idx = int_const_binop (MULT_EXPR, array_idx, elt_size, 0);
 
       /* Update the operands for the next round, or for folding.  */
-      /* If we're manipulating unsigned types, then folding into negative
-	 values can produce incorrect results.  Particularly if the type
-	 is smaller than the width of the pointer.  */
-      if (subtract
-	  && TYPE_UNSIGNED (TREE_TYPE (op1))
-	  && tree_int_cst_lt (array_idx, op1))
-	return NULL;
-      op1 = int_const_binop (subtract ? MINUS_EXPR : PLUS_EXPR,
+      op1 = int_const_binop (PLUS_EXPR,
 			     array_idx, op1, 0);
-      subtract = false;
       op0 = array_obj;
-    }
-
-  /* If we weren't able to fold the subtraction into another array reference,
-     canonicalize the integer for passing to the array and component ref
-     simplification functions.  */
-  if (subtract)
-    {
-      if (TYPE_UNSIGNED (TREE_TYPE (op1)))
-	return NULL;
-      op1 = fold_unary (NEGATE_EXPR, TREE_TYPE (op1), op1);
-      /* ??? In theory fold should always produce another integer.  */
-      if (op1 == NULL || TREE_CODE (op1) != INTEGER_CST)
-	return NULL;
     }
 
   ptd_type = TREE_TYPE (ptr_type);
@@ -2116,8 +2087,7 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
         recompute_tree_invariant_for_addr_expr (expr);
       return NULL_TREE;
 
-    case PLUS_EXPR:
-    case MINUS_EXPR:
+    case POINTER_PLUS_EXPR:
       t = walk_tree (&TREE_OPERAND (expr, 0), fold_stmt_r, data, NULL);
       if (t)
 	return t;

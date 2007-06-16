@@ -612,6 +612,10 @@ DEFTREECODE (PLUS_EXPR, "plus_expr", tcc_binary, 2)
 DEFTREECODE (MINUS_EXPR, "minus_expr", tcc_binary, 2)
 DEFTREECODE (MULT_EXPR, "mult_expr", tcc_binary, 2)
 
+/* Pointer addition.  The first operand is always a pointer and the
+   second operand is an integer of type sizetype.  */
+DEFTREECODE (POINTER_PLUS_EXPR, "pointer_plus_expr", tcc_binary, 2)
+
 /* Division for integer result that rounds the quotient toward zero.  */
 DEFTREECODE (TRUNC_DIV_EXPR, "trunc_div_expr", tcc_binary, 2)
 

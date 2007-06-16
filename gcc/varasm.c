@@ -2810,6 +2810,7 @@ const_hash_1 (const tree exp)
       return hi;
 
     case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
       return (const_hash_1 (TREE_OPERAND (exp, 0)) * 9
 	      + const_hash_1 (TREE_OPERAND (exp, 1)));
@@ -2956,6 +2957,7 @@ compare_constant (const tree t1, const tree t2)
       }
 
     case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
     case RANGE_EXPR:
       return (compare_constant (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0))
@@ -3010,6 +3012,7 @@ copy_constant (tree exp)
 			    copy_constant (TREE_IMAGPART (exp)));
 
     case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
       return build2 (TREE_CODE (exp), TREE_TYPE (exp),
 		     copy_constant (TREE_OPERAND (exp, 0)),
@@ -3901,6 +3904,7 @@ compute_reloc_for_constant (tree exp)
       break;
 
     case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
       reloc = compute_reloc_for_constant (TREE_OPERAND (exp, 0));
       reloc |= compute_reloc_for_constant (TREE_OPERAND (exp, 1));
       break;
@@ -3970,6 +3974,7 @@ output_addressed_constants (tree exp)
       break;
 
     case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
       output_addressed_constants (TREE_OPERAND (exp, 1));
       /* Fall through.  */
@@ -4147,6 +4152,7 @@ initializer_constant_valid_p (tree value, tree endtype)
       }
       break;
 
+    case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
       if (! INTEGRAL_TYPE_P (endtype)
 	  || TYPE_PRECISION (endtype) >= POINTER_SIZE)

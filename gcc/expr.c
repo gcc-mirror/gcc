@@ -8036,7 +8036,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
       return op0;
 
+    case POINTER_PLUS_EXPR: 
+      /* Even though the sizetype mode and the pointer's mode can be different
+         expand is able to handle this correctly and get the correct result out 
+         of the PLUS_EXPR code.  */
     case PLUS_EXPR:
+
       /* Check if this is a case for multiplication and addition.  */
       if (TREE_CODE (type) == INTEGER_TYPE
 	  && TREE_CODE (TREE_OPERAND (exp, 0)) == MULT_EXPR)
@@ -9255,7 +9260,7 @@ string_constant (tree arg, tree *ptr_offset)
       else
 	return 0;
     }
-  else if (TREE_CODE (arg) == PLUS_EXPR)
+  else if (TREE_CODE (arg) == PLUS_EXPR || TREE_CODE (arg) == POINTER_PLUS_EXPR)
     {
       tree arg0 = TREE_OPERAND (arg, 0);
       tree arg1 = TREE_OPERAND (arg, 1);

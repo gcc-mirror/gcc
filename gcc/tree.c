@@ -3069,6 +3069,16 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
   gcc_assert (code != GIMPLE_MODIFY_STMT);
 #endif
 
+  if ((code == MINUS_EXPR || code == PLUS_EXPR || code == MULT_EXPR)
+      && arg0 && arg1 && tt && POINTER_TYPE_P (tt))
+    gcc_assert (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST);
+
+  if (code == POINTER_PLUS_EXPR && arg0 && arg1 && tt)
+    gcc_assert (POINTER_TYPE_P (tt) && POINTER_TYPE_P (TREE_TYPE (arg0))
+		&& TREE_CODE (TREE_TYPE (arg1)) == INTEGER_TYPE
+		&& tree_ssa_useless_type_conversion_1 (sizetype,
+						       TREE_TYPE (arg1)));
+
   t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
 

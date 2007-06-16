@@ -2205,7 +2205,8 @@ frv_expand_builtin_va_start (tree valist, rtx nextarg)
     }
 
   t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (valist), valist,
-	      make_tree (ptr_type_node, nextarg));
+	      fold_convert (TREE_TYPE (valist),
+			    make_tree (sizetype, nextarg)));
   TREE_SIDE_EFFECTS (t) = 1;
 
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);

@@ -504,20 +504,6 @@ forward_propagate_addr_into_variable_array_index (tree offset,
 {
   tree index;
 
-  /* The offset must be defined by a simple GIMPLE_MODIFY_STMT statement.  */
-  if (TREE_CODE (offset) != GIMPLE_MODIFY_STMT)
-    return false;
-
-  /* The RHS of the statement which defines OFFSET must be a gimple
-     cast of another SSA_NAME.  */
-  offset = GIMPLE_STMT_OPERAND (offset, 1);
-  if (!is_gimple_cast (offset))
-    return false;
-
-  offset = TREE_OPERAND (offset, 0);
-  if (TREE_CODE (offset) != SSA_NAME)
-    return false;
-
   /* Try to find an expression for a proper index.  This is either
      a multiplication expression by the element size or just the
      ssa name we came along in case the element size is one.  */
@@ -525,14 +511,19 @@ forward_propagate_addr_into_variable_array_index (tree offset,
     index = offset;
   else
     {
+      /* Get the offset's defining statement.  */
       offset = SSA_NAME_DEF_STMT (offset);
 
-      /* The RHS of the statement which defines OFFSET must be a
-	 multiplication of an object by the size of the array elements.  */
+      /* The statement which defines OFFSET before type conversion
+         must be a simple GIMPLE_MODIFY_STMT.  */
       if (TREE_CODE (offset) != GIMPLE_MODIFY_STMT)
 	return false;
 
-      offset = GIMPLE_STMT_OPERAND (offset, 1);
+      /* The RHS of the statement which defines OFFSET must be a
+	 multiplication of an object by the size of the array elements. 
+	 This implicitly verifies that the size of the array elements
+	 is constant.  */
+     offset = GIMPLE_STMT_OPERAND (offset, 1);
       if (TREE_CODE (offset) != MULT_EXPR
 	  || TREE_CODE (TREE_OPERAND (offset, 1)) != INTEGER_CST
 	  || !simple_cst_equal (TREE_OPERAND (offset, 1),
@@ -642,12 +633,12 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs, tree use_stmt,
       || !integer_zerop (TREE_OPERAND (array_ref, 1)))
     return false;
 
-  /* If the use of the ADDR_EXPR must be a PLUS_EXPR, or else there
+  /* If the use of the ADDR_EXPR is not a POINTER_PLUS_EXPR, there
      is nothing to do. */
-  if (TREE_CODE (rhs) != PLUS_EXPR)
+  if (TREE_CODE (rhs) != POINTER_PLUS_EXPR)
     return false;
 
-  /* Try to optimize &x[0] + C where C is a multiple of the size
+  /* Try to optimize &x[0] p+ C where C is a multiple of the size
      of the elements in X into &x[C/element size].  */
   if (TREE_OPERAND (rhs, 0) == name
       && TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST)
@@ -671,7 +662,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs, tree use_stmt,
 	}
     }
 
-  /* Try to optimize &x[0] + OFFSET where OFFSET is defined by
+  /* Try to optimize &x[0] p+ OFFSET where OFFSET is defined by
      converting a multiplication of an index by the size of the
      array elements, then the result is converted into the proper
      type for the arithmetic.  */
@@ -682,24 +673,8 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs, tree use_stmt,
       && lang_hooks.types_compatible_p (TREE_TYPE (name), TREE_TYPE (rhs)))
     {
       bool res;
-      tree offset_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 1));
       
-      res = forward_propagate_addr_into_variable_array_index (offset_stmt,
-							      def_rhs, use_stmt);
-      return res;
-    }
-	      
-  /* Same as the previous case, except the operands of the PLUS_EXPR
-     were reversed.  */
-  if (TREE_OPERAND (rhs, 1) == name
-      && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME
-      /* Avoid problems with IVopts creating PLUS_EXPRs with a
-	 different type than their operands.  */
-      && lang_hooks.types_compatible_p (TREE_TYPE (name), TREE_TYPE (rhs)))
-    {
-      bool res;
-      tree offset_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 0));
-      res = forward_propagate_addr_into_variable_array_index (offset_stmt,
+      res = forward_propagate_addr_into_variable_array_index (TREE_OPERAND (rhs, 1),
 							      def_rhs, use_stmt);
       return res;
     }

@@ -1,0 +1,58 @@
+2007-06-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* gcc.dg/max-1.c: Fix spelling/grammer mistakes.
+	* gcc.dg/vect/vect-106.c: Likewise.
+
+2007-06-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/32225
+	* gcc.c-torture/compile/20070605-1.c: New test.
+
+2007-06-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* gcc.c-torture/compile/20070603-1.c: New testcase.
+	* gcc.c-torture/compile/20070603-2.c: New testcase.
+
+2007-05-31  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* gcc.c-torture/compile/20070531-1.c: New test.
+
+	PR tree-opt/32167
+	* gcc.c-torture/compile/20070531-2.c: New test.
+
+2007-05-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/32144
+	* gcc.c-torture/compile/20070529-1.c: New test.
+
+	PR tree-opt/32145
+	* gcc.c-torture/compile/20070529-2.c: New test.
+
+2007-05-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/32015
+	* gcc.c-torture/compile/20070520-1.c: New test.
+
+2007-05-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	 * g++.dg/ext/java-1.C: New test.
+
+2007-05-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* gcc.dg/vect/vect-106.c: We are now able to vectorize two
+	loops instead of one. Remove the "can't determine dependence"
+	check.
+
+2007-05-04  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* gcc.dg/tree-ssa/20030815-1.c: Remove testcase which is no longer
+	needed as the cast is gone in the first place.
+
+2007-05-04  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* gcc.dg/max-1.c: Change local variable a to be a global one.
+
+2006-11-23  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* gcc.dg/tree-ssa/ssa-pre-8.c: Update testcase since we don't
+	have a cast which is PREd.

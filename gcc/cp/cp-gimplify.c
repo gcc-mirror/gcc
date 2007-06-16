@@ -802,8 +802,7 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
 	start2 = build_fold_addr_expr (start2);
 
       end1 = TYPE_SIZE_UNIT (TREE_TYPE (arg1));
-      end1 = fold_convert (TREE_TYPE (start1), end1);
-      end1 = build2 (PLUS_EXPR, TREE_TYPE (start1), start1, end1);
+      end1 = build2 (POINTER_PLUS_EXPR, TREE_TYPE (start1), start1, end1);
 
       p1 = create_tmp_var (TREE_TYPE (start1), NULL);
       t = build2 (GIMPLE_MODIFY_STMT, void_type_node, p1, start1);
@@ -830,15 +829,15 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       t = build_call_a (fn, i, argarray);
       append_to_statement_list (t, &ret);
 
-      t = fold_convert (TREE_TYPE (p1), TYPE_SIZE_UNIT (inner_type));
-      t = build2 (PLUS_EXPR, TREE_TYPE (p1), p1, t);
+      t = TYPE_SIZE_UNIT (inner_type);
+      t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (p1), p1, t);
       t = build2 (GIMPLE_MODIFY_STMT, void_type_node, p1, t);
       append_to_statement_list (t, &ret);
 
       if (arg2)
 	{
-	  t = fold_convert (TREE_TYPE (p2), TYPE_SIZE_UNIT (inner_type));
-	  t = build2 (PLUS_EXPR, TREE_TYPE (p2), p2, t);
+	  t = TYPE_SIZE_UNIT (inner_type);
+	  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (p2), p2, t);
 	  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, p2, t);
 	  append_to_statement_list (t, &ret);
 	}

@@ -1,0 +1,539 @@
+2007-06-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	Merge mainline, revision 125733
+
+2007-06-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree-vrp.c (compare_values_warnv): Fix spelling/grammer
+	mistakes
+	(extract_range_from_binary_expr): Likewise.
+	* doc/c-tree.texi (POINTER_PLUS_EXPR): Likewise.
+	* tree-ssa-loop-niter.c (assert_loop_rolls_lt): Add vertical
+	whitespace.
+	* tree-pretty-print.c (op_symbol_code <case POINTER_PLUS_EXPR>):
+	Change print out to "+".
+	* tree-scalar-evolution.c (instantiate_parameters_1):
+	Use chrec_type instead of TREE_TYPE.
+	* builtins.c (expand_builtin_strcat): Fix vertical whitespace.
+	(std_expand_builtin_va_start): Fix whitespace.
+	(fold_builtin_strstr): Use size_int instead of build_int_cst (sizetype.
+	(fold_builtin_strchr): Likewise.
+	(fold_builtin_strrchr): Likewise.
+	(fold_builtin_strpbrk): Likewise.
+	* fold-const.c (try_move_mult_to_index): Fix spelling/grammer
+	mistakes.
+	(fold_to_nonsharp_ineq_using_bound): Merge the two ifs at the end.
+	(fold_binary): Fix spelling/grammer mistakes.
+	* tree-ssa-ccp.c (maybe_fold_stmt_addition): Assert that only
+	a POINTER_PLUS_EXPR is passed in.
+	* tree-ssa-loop-ivopts.c (determine_base_object):
+	Fix spelling/grammer mistakes.
+	* expr.c (expand_expr_real_1): Likewise.
+	* tree-data-ref.c (split_constant_offset): Likewise.
+	* c-typeck.c (build_unary_op): Use fold_convert instead of convert
+	for converting to sizetype.
+	* tree.def (POINTER_PLUS_EXPR): Fix comment.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1):
+	Fix spelling/grammer mistakes.
+	(phiprop_insert_phi): Likewise.
+	* c-common.c (pointer_int_sum): Remove FIXME about
+	POINTER_MINUS_EXPR.
+
+2007-06-13  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* expr.c (expand_expr_real_1 <case POINTER_PLUS_EXPR>): Remove assert
+	for checking the modes of the operands are the same.
+
+2007-06-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/sparc/sparc.c (sparc_gimplify_va_arg): Use POINTER_PLUS_EXPR
+	instead of PLUS_EXPR when the operand was a pointer.  Don't create a
+	BIT_AND_EXPR for pointer types.
+
+2007-06-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/mips/mips.c (mips_va_start): Use POINTER_PLUS_EXPR
+	for pointers.
+	(mips_gimplify_va_arg_expr): Likewise.
+	Don't create BIT_AND_EXPR in a pointer type.
+
+2007-06-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	Merge mainline, revision 125658 
+
+2007-06-11  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	Merge mainline, revision 125611
+
+2007-06-07  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* matrix-reorg.c (collect_data_for_malloc_call): Stmt
+	will now only be either INDIRECT_REF and POINTER_PLUS_EXPR.
+	Offset only holds something for PLUS_EXPR.
+	(ssa_accessed_in_tree): Handle POINTER_PLUS_EXPR just as
+	a PLUS_EXPR.
+	(analyze_transpose): POINTER_PLUS_EXPR will only show up now
+	and not PLUS_EXPR.
+	(analyze_accesses_for_modify_stmt): Likewise.
+	Remove comment about the type being integral type as it is
+	wrong now.
+	(analyze_matrix_accesses): Handle POINTER_PLUS_EXPR as
+	PLUS_EXPR.
+	(transform_access_sites): POINTER_PLUS_EXPR will only show up now
+	and not PLUS_EXPR.
+	Correct the type which the artimentic is done in (is now
+	sizetype).
+	Reindent one loop.
+
+2007-06-07  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/ia64/ia64.c (ia64_gimplify_va_arg): Use
+	POINTER_PLUS_EXPR for pointers and create the
+	BIT_AND_EXPR in sizetype.
+	* config/s390/s390.c (s390_va_start): Use POINTER_PLUS_EXPR
+	for pointers instead of PLUS_EXPR.
+	(s390_gimplify_va_arg): Likewise.
+
+2007-06-07  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/frv/frv.c (frv_expand_builtin_va_start): Use sizetype
+	with make_tree, instead of a pointer type.
+	* config/pa/pa.c (reloc_needed): Handle POINTER_PLUS_EXPR
+	as PLUS_EXPR/MINUS_EXPR.
+	(hppa_gimplify_va_arg_expr): Don't create MINUS_EXPR or
+	PLUS_EXPR for pointers, instead use POINTER_PLUS_EXPR.
+	Don't use BIT_AND_EXPR on a pointer type, convert the
+	expression to sizetype first.
+
+2007-06-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree-ssa-forwprop.c
+	(forward_propagate_addr_into_variable_array_index):
+	Don't expect a statement for the size 1 case.
+	Use the offset variable for the size 1 case.
+	Look through use-def chains to find the mutliply
+	for the non size 1 case.
+	(forward_propagate_addr_expr_1): Call
+	forward_propagate_addr_into_variable_array_index with
+	the SSA_NAME instead of the statement.
+
+2007-06-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/32225
+	* tree-scalar-evolution.c (follow_ssa_edge_in_rhs <case
+	POINTER_PLUS_EXPR>): Do not change type_rhs.
+	(follow_ssa_edge_in_rhs <case POINTER_PLUS_EXPR, case PLUS_EXPR>):
+	Use the code of the orginal expression instead of just PLUS_EXPR.
+	Also use type_rhs where TREE_TYPE (rhs) was used (reverting back
+	to the trunk).
+
+2007-06-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree-predcom.c (ref_at_iteration): If we have a pointer
+	type do the multiplication in sizetype.
+
+2007-06-01  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	Merge mainline, revision 125285
+
+2007-05-31  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree-vrp.c (extract_range_from_binary_expr): Handle
+	MIN_EXPR/MAX_EXPR for pointers type.
+
+	PR tree-opt/32167
+	* tree-chrec.c (chrec_fold_plus): When either
+	operand is zero, convert the other operand.
+
+2007-05-30  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* builtins.c (std_expand_builtin_va_start): Use
+	sizetype for the call to make_tree and then convert
+	to the pointer type.
+
+2007-05-30  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-op/32145
+	* tree-vrp.c (extract_range_from_assert): Create
+	POINTER_PLUS_EXPR for pointer types.
+
+	PR tree-opt/32144
+	* tree-chrec.c (chrec_fold_plus_poly_poly): If the
+	first chrec is a pointer type, then the second should
+	be sizetype and not the first's type.	
+
+2007-05-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* fold-const.c (try_move_mult_to_index):
+	Say why we strip the nops.
+	(fold_unary <case NOP_EXPR>): Remove
+	TODO as we cannot get that case.
+	* tree-chrec.c (chrec_fold_plus):
+	Cleanup the code to chose which
+	tree code is used.
+	(chrec_convert_rhs): Add comment on
+	why the increment is sizetype for
+	pointers.
+	* tree-mudflap.c (mf_xform_derefs_1):
+	Use size_int instead of build_int_cst.
+	* tree-ssa-loop-prefetch.c (issue_prefetch_ref): Likewise.
+
+2007-05-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/32015
+	* tree.c (build2_stat): Make sure that
+	MULT_EXPR is not used with pointers.
+	* tree-chrec.c (chrec_apply): Use chrec_convert_rhs
+	on the argument x instead of chrec_convert.
+
+2007-05-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_va_start): Call make_tree with sizetype
+	and convert its result to a pointer type.  Use POINTER_PLUS_EXPR
+	for the pointer additions and also use size_int for the offsets.
+	(sh_gimplify_va_arg_expr): Use POINTER_PLUS_EXPR for the pointer
+	additions and also use size_int for the offsets.  Perform
+	BIT_AND_EXPR on sizetype arguments.
+
+2007-05-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree-ssa-forwprop (forward_propagate_addr_into_variable_array_index):
+	Don't expect there to be a cast for the index as that
+	does not exist anymore.
+	(forward_propagate_addr_expr_1): Check for
+	POINTER_PLUS_EXPR instead of PLUS_EXPR.
+	Don't check for the first operand of the
+	POINTER_PLUS_EXPR was the index as it
+	cannot be.
+
+2007-05-15  Richard Guenther  <rguenther@suse.de>
+
+	* config/i386/i386.c (ix86_gimplify_va_arg): Use POINTER_PLUS_EXPR,
+	perform BIT_AND_EXPR on sizetype arguments.
+
+2007-05-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/rs6000/rs6000.c (rs6000_va_start): Use POINTER_PLUS_EXPR
+	instead of PLUS_EXPR for pointer addition.
+	(rs6000_va_start): Likewise.
+	Also use sizetype for the offset.
+	* tree-stdarg.c (va_list_counter_bump): Check for PLUS_EXPR
+	and POINTER_PLUS_EXPR.
+	(check_va_list_escapes): Likewise.
+
+2007-05-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/i386/i386.c (ix86_va_start): Use POINTER_PLUS_EXPR
+	for the pointer addition and also use size_int/sizetype
+	for the offset.
+	(ix86_gimplify_va_arg): Likewise.
+
+2007-05-14  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	Merge mainline, revision 124657
+	* tree-data-ref.c (split_constant_offset): Handle
+	POINTER_PLUS_EXPR
+	exactly the same as PLUS_EXPR/MINUS_EXPR except for the offset
+	needs to be calcuated using PLUS_EXPR instead of
+	POINTER_PLUS_EXPR.
+	* builtins.c (fold_builtin_memchr): Use POINTER_PLUS_EXPR
+	instead of PLUS_EXPR for adding to a pointer.
+
+2006-05-15  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-ssa-loop-ivopts.c (determine_base_object): Abort for PLUS_EXPR
+	in pointer type.
+
+2007-05-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree-ssa-address.c (tree_mem_ref_addr): When adding
+	the offset to the base, use POINTER_PLUS_EXPR.
+
+2007-05-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* expr.c (expand_expr_addr_expr_1): Call expand_expr
+	for the offset with the modifier as EXPAND_INITIALIZER
+	if the modifier is EXPAND_INITIALIZER.
+	(expand_expr_real_1 <case INTEGER_CST>): Don't force to
+	a register if we had an overflow.
+
+2007-05-10  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	Merge mainline, revision 124602.
+
+	* fold-const.c  (extract_array_ref): Make sure the offset
+	is converted to sizetype.
+	(try_move_mult_to_index): Strip the NOPs from the offset.
+	(fold_binary <case POINTER_PLUS_EXPR>): Convert the second
+	operand to sizetype before calling try_move_mult_to_index.
+	* tree-ssa-loop-niter.c (number_of_iterations_lt_to_ne):
+	For pointer types, use sizetype when
+	creating MINUS_EXPR/PLUS_EXPRs.
+	* tree-ssa-ccp.c (maybe_fold_stmt_indirect): Make sure
+	the offset is converted to sizetype.
+
+2007-05-11  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/spu/spu.c (spu_va_start): Create POINTER_PLUS_EXPR
+	instead of PLUS_EXPR when doing addition on pointer
+	types.  Use sizetype for the second operand.
+	(spu_gimplify_va_arg_expr): Likewise.
+	* tree-ssa.c (tree_ssa_useless_type_conversion_1):
+	Convert the MIN/MAX of the inner type to the outer
+	type before comparing them.
+
+2007-05-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+	    Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* fold-const.c  (fold_to_nonsharp_ineq_using_bound): Don't
+	use a pointer type for MINUS_EXPR.
+	(fold_binary <case MINUS_EXPR>): Fold (PTR0 p+ A) - (PTR1 p+ B)
+	into (PTR0 - PTR1) + (A - B). Fold (PTR0 p+ A) - PTR1 into
+	(PTR0 - PTR1) + A iff (PTR0 - PTR1) simplifies.
+	* tree-chrec.c (chrec_fold_plus_poly_poly): For
+	POINTER_PLUS_EXPR, use a different right hand side type.
+	Handle POINTER_PLUS_EXPR like PLUS_EXPR.
+	(chrec_fold_plus_1): Likewise.
+	(convert_affine_scev): Likewise.
+	(chrec_convert_aggressive): Likewise.
+	(chrec_fold_plus): For pointer types, use POINTER_PLUS_EXPR
+	instead of PLUS_EXPR.
+	(reset_evolution_in_loop): For pointer types, the new_evol
+	should be sizetype.
+	(chrec_convert_rhs): New function.
+	* tree-chrec.h (chrec_convert_rhs): New prototype.
+	(build_polynomial_chrec): For pointer types, the right hand
+	side should be sizetype and not the same as the left hand side.
+	* tree-scalar-evolution.c (add_to_evolution_1): Convert the
+	increment using chrec_convert_rhs instead of chrec_convert.
+	(follow_ssa_edge_in_rhs): Handle POINTER_PLUS_EXPR like
+	PLUS_EXPR except for the right hand side's type will be
+	sizetype.
+	(interpret_rhs_modify_stmt): Handle POINTER_PLUS_EXPR.
+	(fold_used_pointer_cast): Kill.
+	(pointer_offset_p): Kill.
+	(fold_used_pointer): Kill.
+	(pointer_used_p): Kill.
+	(analyze_scalar_evolution_1 <case GIMPLE_MODIFY_STMT>): Don't
+	call fold_used_pointer.
+	(instantiate_parameters_1): Convert the increment
+	using chrec_convert_rhs instead of chrec_convert.
+	Handle POINTER_PLUS_EXPR as PLUS_EXPR.
+	* tree-ssa-loop-niter.c (split_to_var_and_offset): Handle
+	POINTER_PLUS_EXPR as PLUS_EXPR.
+	(assert_loop_rolls_lt): For pointer types, use sizetype when
+	creating MINUS_EXPR/PLUS_EXPRs.
+	(number_of_iterations_le): Likewise.
+	(expand_simple_operations): POINTER_PLUS_EXPR are simple also.
+	(derive_constant_upper_bound): Handle POINTER_PLUS_EXPR just
+	like PLUS_EXPR and MINUS_EXPR.
+	* tree-data-ref.c (analyze_offset_expr): Likewise.
+	(address_analysis): Handle POINTER_PLUS_EXPR as PLUS_EXPR.
+	(analyze_offset): Handle POINTER_PLUS_EXPR also.
+	(create_data_ref): Convert the increment
+	using chrec_convert_rhs instead of chrec_convert.
+	* tree-vect-transform.c (vect_update_ivs_after_vectorizer):
+	For pointer types, create POINTER_PLUS_EXPR instead of
+	PLUS_EXPR and also create MULT_EXPR in sizetype.
+
+2007-05-07  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* builtins.c (std_gimplify_va_arg_expr): Use fold_build2 for
+	the creating of POINTER_PLUS_EXPR.  For the BIT_AND_EXPR, cast
+	the operands to sizetype first and then cast the BIT_AND_EXPR
+	back to the pointer type.
+	* tree-ssa-address.c (create_mem_ref): Create A
+	POINTER_PLUS_EXPR for one case.
+	* tree.c (const_hash_1): Handle POINTER_PLUS_EXPR same as
+	PLUS_EXPR.
+	(compare_constant): Likewise.
+	(copy_constant): Likewise.
+	(compute_reloc_for_constant): Likewise.
+	(output_addressed_constants): Likewise.
+
+2007-05-07  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree.def (POINTER_PLUS_EXPR): The second operand
+	is of type sizetype and not ssizetype.
+	* doc/c-tree.texi (POINTER_PLUS_EXPR): Document.
+
+2007-05-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree-mudflap.c (mf_xform_derefs_1 <case BIT_FIELD_REF>):
+	Add a conversion of ofs to sizetype.
+	(mf_decl_eligible_p): Reformat for length issues.
+	(mf_xform_derefs_1): Likewise.
+
+2007-05-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree.c (build2_stat): Check to make sure the
+	second operand is compatiable with sizetype.
+
+2007-05-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree-cfg.c (verify_expr): Change error
+	message about sizetype to be correct.
+
+2007-05-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	Merge mainline, revision 124478.
+	* fold-const.c (fold_unary): Handle for (T1)(X op Y),
+	only p+ as that is the only as that can be handled for
+	binary operators now.  Add a TODO for non pointer type
+	op's.
+	* gimplifier.c (gimplify_expr): Don't special case
+	PLUS_EXPR.  Special case POINTER_PLUS_EXPR instead,
+	remove check for pointer type as it will always be
+	a pointer type now.
+
+2007-05-04  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree-vrp.c (extract_range_from_binary_expr): Handle
+	POINTER_PLUS_EXPRs.  Assert POINTER_PLUS_EXPR is
+	the only expression for pointer types.
+	* tree-vect-transform.c (vect_gen_niters_for_prolog_loop):
+	Add a cast when creating byte_misalign.
+
+2007-05-04  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* fold-const.c (fold_binary <case POINTER_PLUS_EXPR>);
+	Add comment on why you get INT +p INT.
+	(fold_binary <case PLUS_EXPR>): Add folding of PTR+INT into
+	PTR p+ INT.
+	* dwarf2out.c (loc_descriptor_from_tree_1):
+	Handle POINT_PLUS_EXPR as a PLUS_EXPR.
+
+2007-05-04  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree-vrp.c  (compare_values_warnv): Convert val2 to
+	the type of val1.
+	* fold-const.c (extract_array_ref): Look for
+	POINTER_PLUS_EXPR instead of PLUS_EXPR's.
+	* tree-ssa-ccp.c (maybe_fold_stmt_indirect): Likewise.
+
+2007-05-02  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* c-format.c (check_format_arg): Handle POINTER_PLUS_EXPR
+	instead of PLUS_EXPR of pointer types.
+
+2007-05-02  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* fold-const.c (try_move_mult_to_index): Remove code argument
+	and replace all uses with PLUS_EXPR.
+	(fold_binary <case POINTER_PLUS_EXR>): Remove code argument.
+	(fold_binary <case PLUS_EXPR>): Don't call try_move_mult_to_index.
+	(fold_binary <case MINUS_EXPR>): Likewise.
+	* tree-ssa-ccp.c (maybe_fold_stmt_indirect): Remove subtraction
+	case as it is always addition now.
+	(fold_stmt_r): Don't handle PLUS_EXPR/MINUS_EXPR specially.
+	Handle POINTER_PLUS_EXPR like PLUS_EXPR was handled before.
+
+2007-05-01  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	Merge mainline, revision 124343.
+	* tree-vect-transform.c (bump_vector_ptr): Create a POINTER_PLUS_EXPR
+	instead of PLUS_EXPR for the pointer increment statement.
+	* expr.c (expand_expr_real_1): Add FIXME/assert for the unhandle case
+	where the modes of the two operands are different.
+
+2007-02-25  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	Merge mainline, revision 122323.
+
+2006-12-14  Zdenek Dvorak <dvorakz@suse.cz>
+
+	Merge mainline, revision 119860.
+
+2006-11-23  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* tree.def (POINTER_PLUS_EXPR): New tree code.
+	* tree-pretty-print.c (dump_generic_node): Handle
+	POINTER_PLUS_EXPR.
+	(op_prio): Likewise.
+	(op_symbol_1): Likewise.
+	* optabs.c (optab_for_tree_code): Likewise.
+	* tree-ssa-loop-manip.c (create_iv): Handle pointer base
+	specially.
+	* tree-tailcall.c (process_assignment): Mention
+	POINTER_PLUS_EXPR in a TODO comment.
+	* tree.c (build2_stat): Assert when trying to use PLUS_EXPR or 
+	MINUS_EXPR with a pointer. Also assert for POINTER_PLUS_EXPR
+	not used with a pointer and an integer type.
+	*  tree-scalar-evolution.c (fold_used_pointer): Mention
+	POINTER_PLUS_EXPR is what this needs to handle.
+	* builtins.c (get_pointer_alignment): Handle POINTER_PLUS_EXPR
+	instead of PLUS_EXPR.
+	(expand_builtin_strcat): Create a POINTER_PLUS_EXPR instead of
+	PLUS_EXPR for pointers.
+	(std_gimplify_va_arg_expr): Likewise.
+	(fold_builtin_memory_op): Likewise.
+	(fold_builtin_strstr): Likewise.
+	(fold_builtin_strchr): Likewise.
+	(fold_builtin_strrchr): Likewise.
+	(fold_builtin_strpbrk): Likewise.
+	(expand_builtin_memory_chk): Likewise.
+	(fold_builtin_memory_chk): Likewise.
+	* fold-const.c (build_range_check): Handle pointer types
+	specially.
+	(fold_to_nonsharp_ineq_using_bound): Likewise.
+	(fold_binary): Handle simple POINTER_PLUS_EXPR cases.
+	(tree_expr_nonnegative_p): Handle POINTER_PLUS_EXPR.
+	(tree_expr_nonzero_p): Likewise.
+	(fold_indirect_ref_1): Look at POINTER_PLUS_EXPR instead
+	of PLUS_EXPR for the complex expression folding.
+	* tree-ssa-loop-ivopts.c (determine_base_object): Handle
+	POINTER_PLUS_EXPR.
+	(tree_to_aff_combination): Likewise.
+	(force_expr_to_var_cost): Likewise.
+	(force_expr_to_var_cost): Likewise. Create a POINTER_PLUS_EXPR
+	instead of PLUS_EXPR for pointers.
+	* c-format.c (check_format_arg): Mention this should be handling
+	POINTER_PLUS_EXPR.
+	* tree-stdarg.c (va_list_counter_bump): Handle POINTER_PLUS_EXPR
+	instead of PLUS_EXPR.
+	(check_va_list_escapes): Likewise.
+	(check_all_va_list_escapes): Likewise.
+	* expr.c (expand_expr_real_1): Handle POINTER_PLUS_EXPR.
+	(string_constant): Likewise.
+	* tree-ssa-address.c (add_to_parts): Create a POINTER_PLUS_EXPR
+	instead of PLUS_EXPR for pointers.
+	(most_expensive_mult_to_index): Likewise.
+	(addr_to_parts): Use the correct type for the index.
+	* c-typeck.c (build_unary_op): For pointers create the increment
+	as a sizetype. Create a POINTER_PLUS_EXPR instead of PLUS_EXPR
+	for pointers.
+	* gimplify.c (gimplify_self_mod_expr): Create a
+	POINTER_PLUS_EXPR instead of PLUS_EXPR for pointers.
+	(gimplify_omp_atomic_fetch_op): Handle POINTER_PLUS_EXPR.
+	* tree-mudflap.c (mf_xform_derefs_1): Create a
+	POINTER_PLUS_EXPR instead of PLUS_EXPR for pointers.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Add a
+	note this should be handling POINTER_PLUS_EXPR.
+	* varasm.c (initializer_constant_valid_p): Handle
+	POINTER_PLUS_EXPR.
+	* tree-ssa-loop-prefetch.c (idx_analyze_ref):  Handle
+	POINTER_PLUS_EXPR instead of PLUS_EXPR.
+	(issue_prefetch_ref): Create a POINTER_PLUS_EXPR instead
+	of PLUS_EXPR for pointers.
+	* tree-vect-transform.c (vect_create_addr_base_for_vector_ref):
+	Likewise.
+	* tree-inline.c (estimate_num_insns_1): Handle
+	POINTER_PLUS_EXPR.
+	* tree-object-size.c (plus_expr_object_size): Handle
+	POINTER_PLUS_EXPR instead of PLUS_EXPR.  Removing all the extra
+	code which is trying to figure out which side is a pointer and 
+	is the index.
+	(check_for_plus_in_loops_1): Likewise.
+	(check_for_plus_in_loops): Likewise.
+	* c-common.c (pointer_int_sum): Create a
+	POINTER_PLUS_EXPR instead of PLUS_EXPR for pointers.
+	* tree-ssa-structalias.c (handle_ptr_arith): Handle
+	only POINTER_PLUS_EXPR.  Removing all the extra
+	code which is trying to figure out which side is a pointer and 
+	is the index.
+	* tree-cfg.c (verify_expr): Add extra checking for pointers and
+	PLUS_EXPR and MINUS_EXPR.
+	Also add checking to make sure the operands of POINTER_PLUS_EXPR
+	are correct.
+
+

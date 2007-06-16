@@ -1277,8 +1277,8 @@ build_m_component_ref (tree datum, tree component)
 
       /* Build an expression for "object + offset" where offset is the
 	 value stored in the pointer-to-data-member.  */
-      datum = build2 (PLUS_EXPR, build_pointer_type (type),
-		      datum, build_nop (ptrdiff_type_node, component));
+      datum = build2 (POINTER_PLUS_EXPR, build_pointer_type (type),
+		      datum, build_nop (sizetype, component));
       return build_indirect_ref (datum, 0);
     }
   else

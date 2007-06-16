@@ -1350,9 +1350,18 @@ ref_at_iteration (struct loop *loop, tree ref, int iter)
   else
     {
       type = TREE_TYPE (iv.base);
-      val = fold_build2 (MULT_EXPR, type, iv.step,
-			 build_int_cst_type (type, iter));
-      val = fold_build2 (PLUS_EXPR, type, iv.base, val);
+      if (POINTER_TYPE_P (type))
+	{
+	  val = fold_build2 (MULT_EXPR, sizetype, iv.step,
+			     size_int (iter));
+	  val = fold_build2 (POINTER_PLUS_EXPR, type, iv.base, val);
+	}
+      else
+	{
+	  val = fold_build2 (MULT_EXPR, type, iv.step,
+			     build_int_cst_type (type, iter));
+	  val = fold_build2 (PLUS_EXPR, type, iv.base, val);
+	}
       *idx_p = unshare_expr (val);
     }
 

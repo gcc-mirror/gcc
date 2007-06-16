@@ -1,3 +1,41 @@
+2007-06-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* typeck.c (build_binary_op): For templates build the
+	expression in pieces to avoid the assert in build2_stat.
+	(get_member_function_from_ptrfunc):
+	Change over to using POINTER_PLUS_EXPR and convert
+	the second operand to sizetype.
+	* typeck2.c (build_m_component_ref):  Likewise.
+	* init.c (expand_virtual_init): Create a POINTER_PLUS_EXPR
+	instead of PLUS_EXPR for pointers.
+	(build_new_1): Likewise.
+	(build_vec_delete_1): Likewise.
+	(build_vec_delete): Likewise.
+	* class.c (build_base_path): Likewise.
+	(build_base_path): Likewise.
+	(convert_to_base_statically): Likewise.
+	(fixed_type_or_null): Handle POINTER_PLUS_EXPR.
+	(get_vtbl_decl_for_binfo): Handle POINTER_PLUS_EXPR
+	instead of PLUS_EXPR.
+	(dfs_accumulate_vtbl_inits): Create a POINTER_PLUS_EXPR
+	instead of PLUS_EXPR for pointers.
+	* call.c (build_special_member_call): Likewise.
+	* rtti.c (build_headof): Likewise.
+	Use sizetype instead of ptrdiff_type_node.
+	(tinfo_base_init): Create a POINTER_PLUS_EXPR
+	instead of PLUS_EXPR for pointers.
+	* except.c (expand_start_catch_block):  Do a
+	NEGATIVE and then a POINTER_PLUS_EXPR instead
+	of a MINUS_EXPR.
+	* cp-gimplify.c (cxx_omp_clause_apply_fn): Convert
+	PLUS_EXPR on pointer types over to use
+	POINTER_PLUS_EXPR and remove the conversion
+	to the pointer types.
+	* method.c (thunk_adjust): Use POINTER_PLUS_EXPR for
+	adding to a pointer type. Use size_int instead of
+	ssize_int. Convert the index to sizetype before
+	adding it to the pointer.
+
 2007-06-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DECL_VAR_MARKED_P): Remove.
@@ -109,7 +147,7 @@
 	(copy_fn_p): Don't consider constructors taking rvalue references
 	to be copy constructors.
 	(move_fn_p): New.
-        * call.c (conversion): New "rvaluedness_matches_p" member.
+	* call.c (conversion): New "rvaluedness_matches_p" member.
 	(convert_class_to_reference): Require reference type as first
 	parameter instead of base type.
 	(reference_binding): Add logic to handle rvalue references.
@@ -161,7 +199,7 @@
 
 2007-05-28  Andrew Pinski  <Andrew_pinski@playstation.sony.com>
 
-        PR c++/31339
+	PR c++/31339
 	* typeck.c (build_unary_op <case PREINCREMENT_EXPR,
 	case POSTINCREMENT_EXPR, case PREDECREMENT_EXPR,
 	case POSTDECREMENT_EXPR>): Return the error_mark_node
@@ -1072,7 +1110,7 @@
 	PR C++/30158
 	* semantics.c (finish_stmt_expr_expr): Set TREE_TYPE of the 
 	statement expression if we had an error mark node.
-	        
+
 2007-02-15  Sandra Loosemore  <sandra@codesourcery.com>
 	    Brooks Moses  <brooks.moses@codesourcery.com>
 	    Lee Millward  <lee.millward@codesourcery.com>
