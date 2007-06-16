@@ -1,3 +1,66 @@
+2007-06-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/31723
+	* hooks.c (hook_tree_tree_bool_null): New hook.
+	* hooks.h (hook_tree_tree_bool_null): Add prototype.
+	* tree-pass.h (pass_convert_to_rsqrt): Declare.
+	* passes.c (init_optimization_passes): Add pass_convert_to_rsqrt.
+	* tree-ssa-math-opts.c (execute_cse_reciprocals): Scan for a/func(b)
+	and convert it to reciprocal a*rfunc(b).
+	(execute_convert_to_rsqrt): New function.
+	(gate_convert_to_rsqrt): New function.
+	(pass_convert_to_rsqrt): New pass definition.
+	* target.h (struct gcc_target): Add builtin_reciprocal.
+	* target-def.h (TARGET_BUILTIN_RECIPROCAL): New define.
+	(TARGET_INITIALIZER): Initialize builtin_reciprocal with
+	TARGET_BUILTIN_RECIPROCAL.
+	* doc/tm.texi (TARGET_BUILTIN_RECIPROCAL): Document.
+
+	* config/i386/i386.h (TARGET_RECIP): New define.
+	* config/i386/i386.md (divsf3): Expand by calling ix86_emit_swdivsf
+	for TARGET_SSE_MATH and TARGET_RECIP when flag_finite_math_only and
+	flag_unsafe_math_optimizations are set, flag_trapping_math is unset
+	and not optimizing for size.
+	(*rcpsf2_sse): New insn pattern.
+	(*rsqrtsf2_sse): Ditto.
+	(rsqrtsf2): New expander.  Expand by calling ix86_emit_swsqrtsf
+	for TARGET_SSE_MATH and TARGET_RECIP when flag_finite_math_only and
+	flag_unsafe_math_optimizations are set, flag_trapping_math is unset
+	and not optimizing for size.
+	(sqrt<mode>2): Expand SFmode operands by calling ix86_emit_swsqrtsf
+	for TARGET_SSE_MATH and TARGET_RECIP when flag_finite_math_only and
+	flag_unsafe_math_optimizations are set, flag_trapping_math is unset
+	and not optimizing for size.
+	* config/i386/sse.md (divv4sf): Expand by calling ix86_emit_swdivsf
+	for TARGET_SSE_MATH and TARGET_RECIP when flag_finite_math_only and
+	flag_unsafe_math_optimizations are set, flag_trapping_math is unset
+	and not optimizing for size.
+	(*sse_rsqrtv4sf2): Do not export.
+	(sqrtv4sf2): Ditto.
+	(sse_rsqrtv4sf2): New expander.  Expand by calling ix86_emit_swsqrtsf
+	for TARGET_SSE_MATH and TARGET_RECIP when flag_finite_math_only and
+	flag_unsafe_math_optimizations are set, flag_trapping_math is unset
+	and not optimizing for size.
+	(sqrtv4sf2): Ditto.
+	* config/i386/i386.opt (mrecip): New option.
+	* config/i386/i386-protos.h (ix86_emit_swdivsf): Declare.
+	(ix86_emit_swsqrtsf): Ditto.
+	* config/i386/i386.c (IX86_BUILTIN_RSQRTF): New constant.
+	(ix86_init_mmx_sse_builtins): __builtin_ia32_rsqrtf: New
+	builtin definition.
+	(ix86_expand_builtin): Expand IX86_BUILTIN_RSQRTF using
+	ix86_expand_unop1_builtin.
+	(ix86_emit_swdivsf): New function.
+	(ix86_emit_swsqrtsf): Ditto.
+	(ix86_builtin_reciprocal): New function.
+	(TARGET_BUILTIN_RECIPROCAL): Use it.
+	(ix86_vectorize_builtin_conversion): Rename from
+	ix86_builtin_conversion.
+	(TARGET_VECTORIZE_BUILTIN_CONVERSION): Use renamed function.
+	* doc/invoke.texi (Machine Dependent Options): Add -mrecip to
+	"i386 and x86_64 Options" section.
+	(Intel 386 and AMD x86_64 Options): Document -mrecip.
+
 2007-06-15  Andrew Pinski <andrew_pinski@playstation.sony.com>
             Zdenek Dvorak <dvorakz@suse.cz>
             Richard Guenther  <rguenther@suse.de>

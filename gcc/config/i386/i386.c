@@ -16450,6 +16450,7 @@ enum ix86_builtins
   IX86_BUILTIN_RCPSS,
   IX86_BUILTIN_RSQRTPS,
   IX86_BUILTIN_RSQRTSS,
+  IX86_BUILTIN_RSQRTF,
   IX86_BUILTIN_SQRTPS,
   IX86_BUILTIN_SQRTSS,
 
@@ -18039,6 +18040,10 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (OPTION_MASK_ISA_SSE, "__builtin_ia32_rcpss", v4sf_ftype_v4sf, IX86_BUILTIN_RCPSS);
   def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_rsqrtps", v4sf_ftype_v4sf, IX86_BUILTIN_RSQRTPS);
   def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_rsqrtss", v4sf_ftype_v4sf, IX86_BUILTIN_RSQRTSS);
+  ftype = build_function_type_list (float_type_node,
+				    float_type_node,
+				    NULL_TREE);
+  def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_rsqrtf", ftype, IX86_BUILTIN_RSQRTF);
   def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_sqrtps", v4sf_ftype_v4sf, IX86_BUILTIN_SQRTPS);
   def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_sqrtss", v4sf_ftype_v4sf, IX86_BUILTIN_SQRTSS);
 
@@ -19133,6 +19138,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       emit_insn (pat);
       return 0;
 
+    case IX86_BUILTIN_RSQRTF:
+      return ix86_expand_unop1_builtin (CODE_FOR_rsqrtsf2, exp, target);
+
     case IX86_BUILTIN_SQRTSS:
       return ix86_expand_unop1_builtin (CODE_FOR_sse_vmsqrtv4sf2, exp, target);
     case IX86_BUILTIN_RSQRTSS:
@@ -19869,7 +19877,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
    input vector of type TYPE, or NULL_TREE if it is not available.  */
 
 static tree
-ix86_builtin_conversion (unsigned int code, tree type)
+ix86_vectorize_builtin_conversion (unsigned int code, tree type)
 {
   if (TREE_CODE (type) != VECTOR_TYPE)
     return NULL_TREE;
@@ -19896,6 +19904,32 @@ ix86_builtin_conversion (unsigned int code, tree type)
     default:
       return NULL_TREE;
 
+    }
+}
+
+/* Returns a code for a target-specific builtin that implements
+   reciprocal of the function, or NULL_TREE if not available.  */
+
+static tree
+ix86_builtin_reciprocal (unsigned int code, bool sqrt ATTRIBUTE_UNUSED)
+{
+  if (! (TARGET_SSE_MATH && TARGET_RECIP && !optimize_size
+	 && flag_finite_math_only && !flag_trapping_math
+	 && flag_unsafe_math_optimizations))
+    return NULL_TREE;
+
+  switch (code)
+    {
+    /* Sqrt to rsqrt conversion.  */
+    case BUILT_IN_SQRTF:
+      return ix86_builtins[IX86_BUILTIN_RSQRTF];
+
+    /* Vectorized version of sqrt to rsqrt conversion.  */
+    case IX86_BUILTIN_SQRTPS:
+      return ix86_builtins[IX86_BUILTIN_RSQRTPS];
+
+    default:
+      return NULL_TREE;
     }
 }
 
@@ -22501,6 +22535,100 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
   emit_label (label2);
 }
 
+/* Output code to perform a Newton-Rhapson approximation of a single precision
+   floating point divide [http://en.wikipedia.org/wiki/N-th_root_algorithm].  */
+
+void ix86_emit_swdivsf (rtx res, rtx a, rtx b, enum machine_mode mode)
+{
+  rtx x0, x1, e0, e1, two;
+
+  x0 = gen_reg_rtx (mode);
+  e0 = gen_reg_rtx (mode);
+  e1 = gen_reg_rtx (mode);
+  x1 = gen_reg_rtx (mode);
+
+  two = CONST_DOUBLE_FROM_REAL_VALUE (dconst2, SFmode);
+
+  if (VECTOR_MODE_P (mode))
+    two = ix86_build_const_vector (SFmode, true, two);
+
+  two = force_reg (mode, two);
+
+  /* a / b = a * rcp(b) * (2.0 - b * rcp(b)) */
+
+  /* x0 = 1./b estimate */
+  emit_insn (gen_rtx_SET (VOIDmode, x0,
+			  gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
+					  UNSPEC_RCP)));
+  /* e0 = x0 * b */
+  emit_insn (gen_rtx_SET (VOIDmode, e0,
+			  gen_rtx_MULT (mode, x0, b)));
+  /* e1 = 2. - e0 */
+  emit_insn (gen_rtx_SET (VOIDmode, e1,
+			  gen_rtx_MINUS (mode, two, e0)));
+  /* x1 = x0 * e1 */
+  emit_insn (gen_rtx_SET (VOIDmode, x1,
+			  gen_rtx_MULT (mode, x0, e1)));
+  /* res = a * x1 */
+  emit_insn (gen_rtx_SET (VOIDmode, res,
+			  gen_rtx_MULT (mode, a, x1)));
+}
+
+/* Output code to perform a Newton-Rhapson approximation of a
+   single precision floating point [reciprocal] square root.  */
+
+void ix86_emit_swsqrtsf (rtx res, rtx a, enum machine_mode mode,
+			 bool recip)
+{
+  rtx x0, e0, e1, e2, e3, three, half;
+
+  x0 = gen_reg_rtx (mode);
+  e0 = gen_reg_rtx (mode);
+  e1 = gen_reg_rtx (mode);
+  e2 = gen_reg_rtx (mode);
+  e3 = gen_reg_rtx (mode);
+
+  three = CONST_DOUBLE_FROM_REAL_VALUE (dconst3, SFmode);
+  half = CONST_DOUBLE_FROM_REAL_VALUE (dconsthalf, SFmode);
+
+  if (VECTOR_MODE_P (mode))
+    {
+      three = ix86_build_const_vector (SFmode, true, three);
+      half = ix86_build_const_vector (SFmode, true, half);
+    }
+
+  three = force_reg (mode, three);
+  half = force_reg (mode, half);
+
+  /* sqrt(a) = 0.5 * a * rsqrtss(a) * (3.0 - a * rsqrtss(a) * rsqrtss(a))
+     1.0 / sqrt(a) = 0.5 * rsqrtss(a) * (3.0 - a * rsqrtss(a) * rsqrtss(a)) */
+
+  /* x0 = 1./sqrt(a) estimate */
+  emit_insn (gen_rtx_SET (VOIDmode, x0,
+			  gen_rtx_UNSPEC (mode, gen_rtvec (1, a),
+					  UNSPEC_RSQRT)));
+  /* e0 = x0 * a */
+  emit_insn (gen_rtx_SET (VOIDmode, e0,
+			  gen_rtx_MULT (mode, x0, a)));
+  /* e1 = e0 * x0 */
+  emit_insn (gen_rtx_SET (VOIDmode, e1,
+			  gen_rtx_MULT (mode, e0, x0)));
+  /* e2 = 3. - e1 */
+  emit_insn (gen_rtx_SET (VOIDmode, e2,
+			  gen_rtx_MINUS (mode, three, e1)));
+  if (recip)
+    /* e3 = .5 * x0 */
+    emit_insn (gen_rtx_SET (VOIDmode, e3,
+			    gen_rtx_MULT (mode, half, x0)));
+  else
+    /* e3 = .5 * e0 */
+    emit_insn (gen_rtx_SET (VOIDmode, e3,
+			    gen_rtx_MULT (mode, half, e0)));
+  /* ret = e2 * e3 */
+  emit_insn (gen_rtx_SET (VOIDmode, res,
+			  gen_rtx_MULT (mode, e2, e3)));
+}
+
 /* Solaris implementation of TARGET_ASM_NAMED_SECTION.  */
 
 static void ATTRIBUTE_UNUSED
@@ -23205,9 +23333,14 @@ static const struct attribute_spec ix86_attribute_table[] =
 #define TARGET_EXPAND_BUILTIN ix86_expand_builtin
 
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
-#define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION ix86_builtin_vectorized_function
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
+  ix86_builtin_vectorized_function
+
 #undef TARGET_VECTORIZE_BUILTIN_CONVERSION
-#define TARGET_VECTORIZE_BUILTIN_CONVERSION ix86_builtin_conversion
+#define TARGET_VECTORIZE_BUILTIN_CONVERSION ix86_vectorize_builtin_conversion
+
+#undef TARGET_BUILTIN_RECIPROCAL
+#define TARGET_BUILTIN_RECIPROCAL ix86_builtin_reciprocal
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE ix86_output_function_epilogue

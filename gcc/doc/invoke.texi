@@ -548,7 +548,7 @@ Objective-C and Objective-C++ Dialects}.
 -masm=@var{dialect}  -mno-fancy-math-387 @gol
 -mno-fp-ret-in-387  -msoft-float @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
--mpreferred-stack-boundary=@var{num} -mcx16 -msahf @gol
+-mpreferred-stack-boundary=@var{num} -mcx16 -msahf -mrecip @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 @gol
 -msse4a -m3dnow -mpopcnt -mabm @gol
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
@@ -10345,6 +10345,13 @@ by AMD64 until introduction of Pentium 4 G1 step in December 2005.  LAHF and
 SAHF are load and store instructions, respectively, for certain status flags.
 In 64-bit mode, SAHF instruction is used to optimize @code{fmod}, @code{drem}
 or @code{remainder} built-in functions: see @ref{Other Builtins} for details.
+
+@item -mrecip
+@opindex mrecip
+This option will enable GCC to use RCPSS and RSQRTSS instructions (and their
+vectorized variants RCPPS and RSQRTPS) instead of DIVSS and SQRTSS (and their
+vectorized variants).  These instructions will be generated only when
+@option{-funsafe-math-optimizatons} is enabled.
 
 @item -mpush-args
 @itemx -mno-push-args

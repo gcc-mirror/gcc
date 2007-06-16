@@ -5345,6 +5345,15 @@ of @var{x}.
 The default version returns false for all constants.
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_BUILTIN_RECIPROCAL (enum tree_code @var{code}, bool @var{sqrt})
+This hook should return the DECL of a function that implements reciprocal of
+the builtin function with builtin function code @var{code}, or
+@code{NULL_TREE} if such a function is not available.  When @var{sqrt} is
+true, additional optimizations that apply only to the reciprocal of a square
+root function are performed, and only reciprocals of @code{sqrt} function
+are valid.
+@end deftypefn
+
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD (void)
 This hook should return the DECL of a function @var{f} that given an
 address @var{addr} as an argument returns a mask @var{m} that can be

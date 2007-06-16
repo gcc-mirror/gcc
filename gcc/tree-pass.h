@@ -293,6 +293,7 @@ extern struct tree_opt_pass pass_early_warn_uninitialized;
 extern struct tree_opt_pass pass_late_warn_uninitialized;
 extern struct tree_opt_pass pass_cse_reciprocals;
 extern struct tree_opt_pass pass_cse_sincos;
+extern struct tree_opt_pass pass_convert_to_rsqrt;
 extern struct tree_opt_pass pass_warn_function_return;
 extern struct tree_opt_pass pass_warn_function_noreturn;
 extern struct tree_opt_pass pass_phiopt;
