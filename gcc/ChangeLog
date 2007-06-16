@@ -1,3 +1,273 @@
+2007-06-15  Andrew Pinski <andrew_pinski@playstation.sony.com>
+            Zdenek Dvorak <dvorakz@suse.cz>
+            Richard Guenther  <rguenther@suse.de>
+            Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* tree-vrp.c (compare_values_warnv): Convert val2 to
+	the type of val1.
+	(extract_range_from_assert): Create
+	POINTER_PLUS_EXPR for pointer types.
+	(extract_range_from_binary_expr): Handle
+	only POINTER_PLUS_EXPR, MIN_EXPR, and MAX_EXPR
+	for pointer types.
+	* doc/c-tree.texi (POINTER_PLUS_EXPR): Document.
+	* tree-ssa-loop-niter.c (split_to_var_and_offset): Handle
+	POINTER_PLUS_EXPR as PLUS_EXPR.
+	(number_of_iterations_lt_to_ne):
+	For pointer types, use sizetype when
+	creating MINUS_EXPR/PLUS_EXPRs.
+	(assert_loop_rolls_lt): For pointer types, use sizetype when
+	creating MINUS_EXPR/PLUS_EXPRs.
+	(number_of_iterations_le): Likewise.
+	(expand_simple_operations): POINTER_PLUS_EXPR are simple also.
+	(derive_constant_upper_bound): Handle POINTER_PLUS_EXPR just
+	like PLUS_EXPR and MINUS_EXPR.
+	* tree-pretty-print.c (dump_generic_node): Handle
+	POINTER_PLUS_EXPR.
+	(op_prio): Likewise.
+	(op_symbol_1): Likewise.
+	* optabs.c (optab_for_tree_code): Likewise.
+	* tree-ssa-loop-manip.c (create_iv): Handle pointer base
+	specially.
+	* tree-tailcall.c (process_assignment): Mention
+	POINTER_PLUS_EXPR in a TODO comment.
+	* tree.c (build2_stat): Assert when trying to use PLUS_EXPR or 
+	MINUS_EXPR with a pointer. Also assert for POINTER_PLUS_EXPR
+	not used with a pointer and an integer type.
+	* tree-scalar-evolution.c (add_to_evolution_1): Convert the
+	increment using chrec_convert_rhs instead of chrec_convert.
+	(follow_ssa_edge_in_rhs): Handle POINTER_PLUS_EXPR like
+	PLUS_EXPR except for the right hand side's type will be
+	sizetype.
+	(interpret_rhs_modify_stmt): Handle POINTER_PLUS_EXPR.
+	(fold_used_pointer_cast): Kill.
+	(pointer_offset_p): Kill.
+	(fold_used_pointer): Kill.
+	(pointer_used_p): Kill.
+	(analyze_scalar_evolution_1 <case GIMPLE_MODIFY_STMT>): Don't
+	call fold_used_pointer.
+	(instantiate_parameters_1): Convert the increment
+	using chrec_convert_rhs instead of chrec_convert.
+	Handle POINTER_PLUS_EXPR as PLUS_EXPR.
+	* builtins.c (get_pointer_alignment): Handle POINTER_PLUS_EXPR
+	instead of PLUS_EXPR.
+	(expand_builtin_strcat): Create a POINTER_PLUS_EXPR instead of
+	PLUS_EXPR for pointers.
+	(std_gimplify_va_arg_expr): Likewise.
+	(fold_builtin_memory_op): Likewise.
+	(fold_builtin_strstr): Likewise.
+	(fold_builtin_strchr): Likewise.
+	(fold_builtin_strrchr): Likewise.
+	(fold_builtin_strpbrk): Likewise.
+	(expand_builtin_memory_chk): Likewise.
+	(fold_builtin_memory_chk): Likewise.
+	(std_expand_builtin_va_start): Use
+	sizetype for the call to make_tree and then convert
+	to the pointer type.
+	(fold_builtin_memchr): Use POINTER_PLUS_EXPR
+	instead of PLUS_EXPR for adding to a pointer.
+	(std_gimplify_va_arg_expr): Use fold_build2 for
+	the creating of POINTER_PLUS_EXPR.  For the BIT_AND_EXPR, cast
+	the operands to sizetype first and then cast the BIT_AND_EXPR
+	back to the pointer type.
+	* fold-const.c (build_range_check): Handle pointer types
+	specially.
+	(extract_array_ref): Look for POINTER_PLUS_EXPR instead
+	of PLUS_EXPR's. Make sure the offset is converted to
+	sizetype.
+	(try_move_mult_to_index): Strip the NOPs from the offset.
+	Remove code argument and replace all uses with PLUS_EXPR.
+	(fold_to_nonsharp_ineq_using_bound): Handle pointer types
+	specially. Don't use a pointer type for MINUS_EXPR.
+	(fold_unary): Handle for (T1)(X op Y),
+	only p+ as that is the only as that can be handled for
+	binary operators now.
+	(fold_binary <case POINTER_PLUS_EXPR>): Add folding of
+	POINTER_PLUS_EXPR.
+	<case PLUS_EXPR>: Add folding of PTR+INT into
+	PTR p+ INT.
+	Don't call try_move_mult_to_index.
+	<case MINUS_EXPR>: Fold (PTR0 p+ A) - (PTR1 p+ B)
+	into (PTR0 - PTR1) + (A - B). Fold (PTR0 p+ A) - PTR1 into
+	(PTR0 - PTR1) + A iff (PTR0 - PTR1) simplifies.
+	Don't call try_move_mult_to_index.
+	(tree_expr_nonnegative_warnv_p): Handle POINTER_PLUS_EXPR.
+	(tree_expr_nonzero_p): Likewise.
+	(fold_indirect_ref_1): Look at POINTER_PLUS_EXPR instead
+	of PLUS_EXPR for the complex expression folding.
+	* tree-chrec.c (chrec_fold_plus_poly_poly): If the
+	first chrec is a pointer type, then the second should
+	be sizetype and not the first's type.
+	For POINTER_PLUS_EXPR, use a different right hand side type.
+	Handle POINTER_PLUS_EXPR like PLUS_EXPR.
+	(chrec_fold_plus_1): For POINTER_PLUS_EXPR, use a
+	different right hand side type.
+	Handle POINTER_PLUS_EXPR like PLUS_EXPR.
+	(chrec_fold_plus): For pointer types, use POINTER_PLUS_EXPR
+	instead of PLUS_EXPR.
+	When either operand is zero, convert the other operand.
+	(chrec_apply): Use chrec_convert_rhs
+	on the argument x instead of chrec_convert.
+	(reset_evolution_in_loop): For pointer types, the new_evol
+	should be sizetype.
+	(convert_affine_scev): For POINTER_PLUS_EXPR, use a
+	different right hand side type.
+	Handle POINTER_PLUS_EXPR like PLUS_EXPR.
+	(chrec_convert_rhs): New function.
+	(chrec_convert_aggressive): For POINTER_PLUS_EXPR, use a
+	different right hand side type.
+	Handle POINTER_PLUS_EXPR like PLUS_EXPR.
+	* tree-chrec.h (chrec_convert_rhs): New prototype.
+	(build_polynomial_chrec): For pointer types, the right hand
+	* tree-ssa-ccp.c (maybe_fold_stmt_indirect): Look for
+	POINTER_PLUS_EXPR instead of PLUS_EXPR's.
+	Remove subtraction case as it is always addition now.
+	Make sure the offset is converted to sizetype.
+	(fold_stmt_r): Don't handle PLUS_EXPR/MINUS_EXPR specially.
+	Handle POINTER_PLUS_EXPR like PLUS_EXPR was handled before.
+	* tree-ssa-loop-ivopts.c (determine_base_object): Abort for 
+	PLUS_EXPR in pointer type.
+	Handle POINTER_PLUS_EXPR.
+	(tree_to_aff_combination): Likewise.
+	(force_expr_to_var_cost): Likewise.
+	(force_expr_to_var_cost): Likewise. Create a POINTER_PLUS_EXPR
+	instead of PLUS_EXPR for pointers.
+	* c-format.c (check_format_arg): Handle POINTER_PLUS_EXPR
+	instead of PLUS_EXPR of pointer types.
+	* tree-stdarg.c (va_list_counter_bump): Handle POINTER_PLUS_EXPR
+	as PLUS_EXPR.
+	(check_va_list_escapes): Likewise.
+	(check_all_va_list_escapes): Likewise.
+	* dwarf2out.c (loc_descriptor_from_tree_1):
+	Handle POINT_PLUS_EXPR as a PLUS_EXPR.
+	* expr.c (expand_expr_real_1): Handle POINTER_PLUS_EXPR.
+	(string_constant): Likewise.
+	* tree-ssa-address.c (tree_mem_ref_addr): When adding
+	the offset to the base, use POINTER_PLUS_EXPR.
+	(add_to_parts): Convert the index to sizetype.
+	(create_mem_ref): Create A POINTER_PLUS_EXPR for the one case.
+	* matrix-reorg.c (collect_data_for_malloc_call): Stmt
+	will now only be either INDIRECT_REF and POINTER_PLUS_EXPR.
+	Offset only holds something for PLUS_EXPR.
+	(ssa_accessed_in_tree): Handle POINTER_PLUS_EXPR just as
+	a PLUS_EXPR.
+	(analyze_transpose): POINTER_PLUS_EXPR will only show up now
+	and not PLUS_EXPR.
+	(analyze_accesses_for_modify_stmt): Likewise.
+	Remove comment about the type being integral type as it is
+	wrong now.
+	(can_calculate_expr_before_stmt): Handle POINTER_PLUS_EXPR as
+	PLUS_EXPR.
+	(transform_access_sites): POINTER_PLUS_EXPR will only show up now
+	and not PLUS_EXPR.
+	Correct the type which the artimentic is done in (is now
+	sizetype).
+	Reindent one loop.
+	* tree-data-ref.c (split_constant_offset): Handle
+	POINTER_PLUS_EXPR
+	* tree-affine.c (tree_to_aff_combination): Likewise.
+	* c-typeck.c (build_unary_op): For pointers create the increment
+	as a sizetype. Create a POINTER_PLUS_EXPR instead of PLUS_EXPR
+	for pointers.
+	* gimplify.c (gimplify_self_mod_expr): Create a
+	POINTER_PLUS_EXPR instead of PLUS_EXPR for pointers.
+	(gimplify_omp_atomic_fetch_op): Handle POINTER_PLUS_EXPR.
+	* tree.def (POINTER_PLUS_EXPR): New tree code.
+	* tree-predcom.c (ref_at_iteration): If we have a pointer
+	type do the multiplication in sizetype.
+	* tree-mudflap.c (mf_xform_derefs_1): Create a
+	POINTER_PLUS_EXPR instead of PLUS_EXPR for pointers.
+	* tree-ssa-forwprop.c 
+	(forward_propagate_addr_into_variable_array_index):
+	Don't expect there to be a cast for the index as that
+	does not exist anymore.
+	(forward_propagate_addr_expr_1): Check for POINTER_PLUS_EXPR
+	instead of PLUS_EXPR.
+	Don't check for the first operand of the POINTER_PLUS_EXPR
+	was the index as it cannot be.
+	Call forward_propagate_addr_into_variable_array_index with
+	the SSA_NAME instead of the statement.
+	* varasm.c (const_hash_1): Handle POINTER_PLUS_EXPR.
+	(compare_constant): Likewise.
+	(copy_constant): Likewise.
+	(compute_reloc_for_constant): Likewise.
+	(output_addressed_constants): Likewise.
+	(initializer_constant_valid_p): Likewise.
+	* tree-ssa.c (tree_ssa_useless_type_conversion_1):
+	Convert the MIN/MAX of the inner type to the outer
+	type before comparing them.
+	* tree-ssa-loop-prefetch.c (idx_analyze_ref):  Handle
+	POINTER_PLUS_EXPR instead of PLUS_EXPR.
+	(issue_prefetch_ref): Create a POINTER_PLUS_EXPR instead
+	of PLUS_EXPR for pointers.
+	* tree-inline.c (estimate_num_insns_1): Handle
+	POINTER_PLUS_EXPR.
+	* tree-vect-transform.c (vect_create_addr_base_for_vector_ref): 
+	Create a POINTER_PLUS_EXPR instead of PLUS_EXPR for pointers.
+	(bump_vector_ptr): Create a POINTER_PLUS_EXPR
+	instead of PLUS_EXPR for the pointer increment statement.
+	(vect_update_ivs_after_vectorizer): For pointer types, create
+	POINTER_PLUS_EXPR instead of PLUS_EXPR and also create
+	MULT_EXPR in sizetype.
+	(vect_gen_niters_for_prolog_loop): Add a cast when creating
+	byte_misalign.
+	* tree-object-size.c (plus_expr_object_size): Handle
+	POINTER_PLUS_EXPR instead of PLUS_EXPR.  Removing all the extra
+	code which is trying to figure out which side is a pointer and 
+	is the index.
+	(check_for_plus_in_loops_1): Likewise.
+	(check_for_plus_in_loops): Likewise.
+	* c-common.c (pointer_int_sum): Create a
+	POINTER_PLUS_EXPR instead of PLUS_EXPR for pointers.
+	* tree-ssa-structalias.c (handle_ptr_arith): Handle
+	only POINTER_PLUS_EXPR.  Removing all the extra
+	code which is trying to figure out which side is a pointer and 
+	is the index.
+	* tree-cfg.c (verify_expr): Add extra checking for pointers and
+	PLUS_EXPR and MINUS_EXPR.
+	Also add checking to make sure the operands of POINTER_PLUS_EXPR
+	are correct.
+	* config/frv/frv.c (frv_expand_builtin_va_start): Use sizetype
+	with make_tree, instead of a pointer type.
+	* config/s390/s390.c (s390_va_start): Use POINTER_PLUS_EXPR
+	for pointers instead of PLUS_EXPR.
+	(s390_gimplify_va_arg): Likewise.
+	* config/spu/spu.c (spu_va_start): Create POINTER_PLUS_EXPR
+	instead of PLUS_EXPR when doing addition on pointer
+	types.  Use sizetype for the second operand.
+	(spu_gimplify_va_arg_expr): Likewise.
+	* config/sparc/sparc.c (sparc_gimplify_va_arg): Use 
+	POINTER_PLUS_EXPR instead of PLUS_EXPR when the operand was
+	a pointer.  Don't create a BIT_AND_EXPR for pointer types.
+	* config/i386/i386.c (ix86_va_start): Use POINTER_PLUS_EXPR
+	for the pointer addition and also use size_int/sizetype
+	for the offset.
+	(ix86_gimplify_va_arg): Likewise.
+	Perform BIT_AND_EXPR on sizetype arguments.
+	* config/sh/sh.c (sh_va_start): Call make_tree with sizetype
+	and convert its result to a pointer type.  Use POINTER_PLUS_EXPR
+	for the pointer additions and also use size_int for the offsets.
+	(sh_gimplify_va_arg_expr): Use POINTER_PLUS_EXPR for the pointer
+	additions and also use size_int for the offsets.  Perform
+	BIT_AND_EXPR on sizetype arguments.
+	* config/ia64/ia64.c (ia64_gimplify_va_arg): Use
+	POINTER_PLUS_EXPR for pointers and create the
+	BIT_AND_EXPR in sizetype.
+	* config/rs6000/rs6000.c (rs6000_va_start): Use POINTER_PLUS_EXPR
+	instead of PLUS_EXPR for pointer addition.
+	(rs6000_va_start): Likewise.
+	Also use sizetype for the offset.
+	* config/pa/pa.c (reloc_needed): Handle POINTER_PLUS_EXPR
+	as PLUS_EXPR/MINUS_EXPR.
+	(hppa_gimplify_va_arg_expr): Don't create MINUS_EXPR or
+	PLUS_EXPR for pointers, instead use POINTER_PLUS_EXPR.
+	Don't use BIT_AND_EXPR on a pointer type, convert the
+	expression to sizetype first.
+	* config/mips/mips.c (mips_va_start): Use POINTER_PLUS_EXPR
+	for pointers.
+	(mips_gimplify_va_arg_expr): Likewise.
+	Don't create BIT_AND_EXPR in a pointer type.
+
 2007-06-15  Eric Christopher  <echristo@apple.com>
 
 	* config.gcc (i?86-*-darwin*): Add t-crtfm and t-crtpc.

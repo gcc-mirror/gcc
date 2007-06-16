@@ -5321,7 +5321,7 @@ build_special_member_call (tree instance, tree name, tree args,
 		    current_vtt_parm,
 		    vtt);
       gcc_assert (BINFO_SUBVTT_INDEX (binfo));
-      sub_vtt = build2 (PLUS_EXPR, TREE_TYPE (vtt), vtt,
+      sub_vtt = build2 (POINTER_PLUS_EXPR, TREE_TYPE (vtt), vtt,
 			BINFO_SUBVTT_INDEX (binfo));
 
       args = tree_cons (NULL_TREE, sub_vtt, args);

@@ -3601,8 +3601,8 @@ convert (tree type, tree expr)
 	  if (integer_zerop (byte_diff))
 	    return expr;
 
-	  return build_binary_op (PLUS_EXPR, type, expr,
-				  fold (convert_to_pointer (type, byte_diff)));
+	  return build_binary_op (POINTER_PLUS_EXPR, type, expr,
+				  fold (convert (sizetype, byte_diff)));
 	}
 
       /* If converting to a thin pointer, handle specially.  */

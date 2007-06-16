@@ -786,7 +786,7 @@ expand_virtual_init (tree binfo, tree decl)
 
       /* Compute the value to use, when there's a VTT.  */
       vtt_parm = current_vtt_parm;
-      vtbl2 = build2 (PLUS_EXPR,
+      vtbl2 = build2 (POINTER_PLUS_EXPR,
 		      TREE_TYPE (vtt_parm),
 		      vtt_parm,
 		      vtt_index);
@@ -1919,14 +1919,15 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
       tree cookie_ptr;
 
       /* Adjust so we're pointing to the start of the object.  */
-      data_addr = get_target_expr (build2 (PLUS_EXPR, full_pointer_type,
+      data_addr = get_target_expr (build2 (POINTER_PLUS_EXPR, full_pointer_type,
 					   alloc_node, cookie_size));
 
       /* Store the number of bytes allocated so that we can know how
 	 many elements to destroy later.  We use the last sizeof
 	 (size_t) bytes to store the number of elements.  */
-      cookie_ptr = build2 (MINUS_EXPR, build_pointer_type (sizetype),
-			   data_addr, size_in_bytes (sizetype));
+      cookie_ptr = fold_build1 (NEGATE_EXPR, sizetype, size_in_bytes (sizetype));
+      cookie_ptr = build2 (POINTER_PLUS_EXPR, build_pointer_type (sizetype),
+			   data_addr, cookie_ptr);
       cookie = build_indirect_ref (cookie_ptr, NULL);
 
       cookie_expr = build2 (MODIFY_EXPR, sizetype, cookie, nelts);
@@ -2301,6 +2302,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
      executing any other code in the loop.
      This is also the containing expression returned by this function.  */
   tree controller = NULL_TREE;
+  tree tmp;
 
   /* We should only have 1-D arrays here.  */
   gcc_assert (TREE_CODE (type) != ARRAY_TYPE);
@@ -2314,7 +2316,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 
   tbase = create_temporary_var (ptype);
   tbase_init = build_modify_expr (tbase, NOP_EXPR,
-				  fold_build2 (PLUS_EXPR, ptype,
+				  fold_build2 (POINTER_PLUS_EXPR, ptype,
 					       base,
 					       virtual_size));
   DECL_REGISTER (tbase) = 1;
@@ -2325,9 +2327,10 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
   body = build1 (EXIT_EXPR, void_type_node,
 		 build2 (EQ_EXPR, boolean_type_node, tbase,
 			 fold_convert (ptype, base)));
+  tmp = fold_build1 (NEGATE_EXPR, sizetype, size_exp);
   body = build_compound_expr
     (body, build_modify_expr (tbase, NOP_EXPR,
-			      build2 (MINUS_EXPR, ptype, tbase, size_exp)));
+			      build2 (POINTER_PLUS_EXPR, ptype, tbase, tmp)));
   body = build_compound_expr
     (body, build_delete (ptype, tbase, sfk_complete_destructor,
 			 LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 1));
@@ -3048,10 +3051,11 @@ build_vec_delete (tree base, tree maxindex,
 	  base = TARGET_EXPR_SLOT (base_init);
 	}
       type = strip_array_types (TREE_TYPE (type));
-      cookie_addr = build2 (MINUS_EXPR,
+      cookie_addr = fold_build1 (NEGATE_EXPR, sizetype, TYPE_SIZE_UNIT (sizetype));
+      cookie_addr = build2 (POINTER_PLUS_EXPR,
 			    build_pointer_type (sizetype),
 			    base,
-			    TYPE_SIZE_UNIT (sizetype));
+			    cookie_addr);
       maxindex = build_indirect_ref (cookie_addr, NULL);
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)

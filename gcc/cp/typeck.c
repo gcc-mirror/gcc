@@ -2627,8 +2627,8 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
 	    return error_mark_node;
 	}
       /* ...and then the delta in the PMF.  */
-      instance_ptr = build2 (PLUS_EXPR, TREE_TYPE (instance_ptr),
-			     instance_ptr, delta);
+      instance_ptr = build2 (POINTER_PLUS_EXPR, TREE_TYPE (instance_ptr),
+			     instance_ptr, fold_convert (sizetype, delta));
 
       /* Hand back the adjusted 'this' argument to our caller.  */
       *instance_ptrptr = instance_ptr;
@@ -2639,7 +2639,8 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
       vtbl = build_indirect_ref (vtbl, NULL);
 
       /* Finally, extract the function pointer from the vtable.  */
-      e2 = fold_build2 (PLUS_EXPR, TREE_TYPE (vtbl), vtbl, idx);
+      e2 = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (vtbl), vtbl,
+			fold_convert (sizetype, idx));
       e2 = build_indirect_ref (e2, NULL);
       TREE_CONSTANT (e2) = 1;
       TREE_INVARIANT (e2) = 1;
@@ -3578,9 +3579,17 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
   /* If we're in a template, the only thing we need to know is the
      RESULT_TYPE.  */
   if (processing_template_decl)
-    return build2 (resultcode,
-		   build_type ? build_type : result_type,
-		   op0, op1);
+    {
+      /* Since the middle-end checks the type when doing a build2, we
+	 need to build the tree in pieces.  This built tree will never
+	 get out of the front-end as we replace it when instantiating
+	 the template.  */
+      tree tmp = build2 (resultcode,
+			 build_type ? build_type : result_type,
+			 NULL_TREE, op1);
+      TREE_OPERAND (tmp, 0) = op0;
+      return tmp;
+    }
 
   if (arithmetic_types_p)
     {

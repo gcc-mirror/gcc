@@ -949,13 +949,15 @@ tree_ssa_useless_type_conversion_1 (tree outer_type, tree inner_type)
   else if (INTEGRAL_TYPE_P (inner_type)
            && INTEGRAL_TYPE_P (outer_type)
 	   && TYPE_UNSIGNED (inner_type) == TYPE_UNSIGNED (outer_type)
-	   && TYPE_PRECISION (inner_type) == TYPE_PRECISION (outer_type)
-	   && simple_cst_equal (TYPE_MAX_VALUE (inner_type), TYPE_MAX_VALUE (outer_type))
-	   && simple_cst_equal (TYPE_MIN_VALUE (inner_type), TYPE_MIN_VALUE (outer_type)))
+	   && TYPE_PRECISION (inner_type) == TYPE_PRECISION (outer_type))
     {
+      tree min_inner = fold_convert (outer_type, TYPE_MIN_VALUE (inner_type));
+      tree max_inner = fold_convert (outer_type, TYPE_MAX_VALUE (inner_type));
       bool first_boolean = (TREE_CODE (inner_type) == BOOLEAN_TYPE);
       bool second_boolean = (TREE_CODE (outer_type) == BOOLEAN_TYPE);
-      if (first_boolean == second_boolean)
+      if (simple_cst_equal (max_inner, TYPE_MAX_VALUE (outer_type))
+	  && simple_cst_equal (min_inner, TYPE_MIN_VALUE (outer_type))
+	  && first_boolean == second_boolean)
 	return true;
     }
 

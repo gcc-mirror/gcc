@@ -1669,8 +1669,7 @@ make_class_data (tree type)
   tree id_class = get_identifier("java.lang.Class");
   /** Offset from start of virtual function table declaration
       to where objects actually point at, following new g++ ABI. */
-  tree dtable_start_offset = build_int_cst (NULL_TREE,
-					    2 * POINTER_SIZE / BITS_PER_UNIT);
+  tree dtable_start_offset = size_int (2 * POINTER_SIZE / BITS_PER_UNIT);
   VEC(int, heap) *field_indexes;
   tree first_real_field;
 
@@ -1957,7 +1956,7 @@ make_class_data (tree type)
   PUSH_FIELD_VALUE (temp, "vtable",
 		    (flag_indirect_classes 
 		     ? null_pointer_node
-		     : build2 (PLUS_EXPR, dtable_ptr_type,
+		     : build2 (POINTER_PLUS_EXPR, dtable_ptr_type,
 			       build1 (ADDR_EXPR, dtable_ptr_type,
 				       class_dtable_decl),
 			       dtable_start_offset)));
@@ -2005,7 +2004,7 @@ make_class_data (tree type)
   else
     PUSH_FIELD_VALUE (cons, "vtable",
 		      dtable_decl == NULL_TREE ? null_pointer_node
-		      : build2 (PLUS_EXPR, dtable_ptr_type,
+		      : build2 (POINTER_PLUS_EXPR, dtable_ptr_type,
 				build1 (ADDR_EXPR, dtable_ptr_type,
 					dtable_decl),
 				dtable_start_offset));
@@ -2807,7 +2806,8 @@ build_symbol_entry (tree decl, tree special)
      system that this is a "special" symbol, i.e. one that should
      bypass access controls.  */
   if (special != NULL_TREE)
-    signature = build2 (PLUS_EXPR, TREE_TYPE (signature), signature, special);
+    signature = build2 (POINTER_PLUS_EXPR, TREE_TYPE (signature), signature,
+			fold_convert (sizetype, special));
       
   START_RECORD_CONSTRUCTOR (sym, symbol_type);
   PUSH_FIELD_VALUE (sym, "clname", clname);

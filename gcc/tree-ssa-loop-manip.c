@@ -96,7 +96,13 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
 	    }
 	}
     }
-
+  if (POINTER_TYPE_P (TREE_TYPE (base)))
+    {
+      step = fold_convert (sizetype, step);
+      if (incr_op == MINUS_EXPR)
+	step = fold_build1 (NEGATE_EXPR, sizetype, step);
+      incr_op = POINTER_PLUS_EXPR;
+    }
   /* Gimplify the step if necessary.  We put the computations in front of the
      loop (i.e. the step should be loop invariant).  */
   step = force_gimple_operand (step, &stmts, true, var);

@@ -9442,6 +9442,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
       op = (TYPE_UNSIGNED (TREE_TYPE (loc)) ? DW_OP_shr : DW_OP_shra);
       goto do_binop;
 
+    case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
       if (TREE_CODE (TREE_OPERAND (loc, 1)) == INTEGER_CST
 	  && host_integerp (TREE_OPERAND (loc, 1), 0))

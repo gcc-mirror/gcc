@@ -172,6 +172,7 @@ known_alignment (tree exp)
       break;
 
     case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
       /* If two address are added, the alignment of the result is the
 	 minimum of the two alignments.  */
@@ -961,6 +962,13 @@ build_binary_op (enum tree_code op_code, tree result_type,
       modulus = NULL_TREE;
       goto common;
 
+    case POINTER_PLUS_EXPR:
+      gcc_assert (operation_type == left_base_type
+		  && sizetype == right_base_type);
+      left_operand = convert (operation_type, left_operand);
+      right_operand = convert (sizetype, right_operand);
+      break;
+
     default:
     common:
       /* The result type should be the same as the base types of the
@@ -1116,8 +1124,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 		 type, if any.  */
 	      inner = build_unary_op (ADDR_EXPR, NULL_TREE, inner);
 	      inner = convert (ptr_void_type_node, inner);
-	      offset = convert (ptr_void_type_node, offset);
-	      result = build_binary_op (PLUS_EXPR, ptr_void_type_node,
+	      result = build_binary_op (POINTER_PLUS_EXPR, ptr_void_type_node,
 					inner, offset);
 	      result = convert (build_pointer_type (TREE_TYPE (operand)),
 				result);

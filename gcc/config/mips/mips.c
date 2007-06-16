@@ -4366,9 +4366,8 @@ mips_va_start (tree valist, rtx nextarg)
 	 words used by named arguments.  */
       t = make_tree (TREE_TYPE (ovfl), virtual_incoming_args_rtx);
       if (cum->stack_words > 0)
-	t = build2 (PLUS_EXPR, TREE_TYPE (ovfl), t,
-		    build_int_cst (NULL_TREE,
-				   cum->stack_words * UNITS_PER_WORD));
+	t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (ovfl), t,
+		    size_int (cum->stack_words * UNITS_PER_WORD));
       t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (ovfl), ovfl, t);
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -4384,8 +4383,8 @@ mips_va_start (tree valist, rtx nextarg)
       fpr_offset = gpr_save_area_size + UNITS_PER_FPVALUE - 1;
       fpr_offset &= ~(UNITS_PER_FPVALUE - 1);
       if (fpr_offset)
-	t = build2 (PLUS_EXPR, TREE_TYPE (ftop), t,
-		    build_int_cst (NULL_TREE, -fpr_offset));
+	t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (ftop), t,
+		    size_int (-fpr_offset));
       t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (ftop), ftop, t);
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -4535,28 +4534,27 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
       t = fold_convert (TREE_TYPE (off), build_int_cst (NULL_TREE, rsize));
       t = build2 (POSTDECREMENT_EXPR, TREE_TYPE (off), off, t);
       t = fold_convert (sizetype, t);
-      t = fold_convert (TREE_TYPE (top), t);
+      t = fold_build1 (NEGATE_EXPR, sizetype, t);
 
       /* [4] Emit code for: addr_rtx = top - off.  On big endian machines,
 	 the argument has RSIZE - SIZE bytes of leading padding.  */
-      t = build2 (MINUS_EXPR, TREE_TYPE (top), top, t);
+      t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (top), top, t);
       if (BYTES_BIG_ENDIAN && rsize > size)
 	{
-	  u = fold_convert (TREE_TYPE (t), build_int_cst (NULL_TREE,
-							  rsize - size));
-	  t = build2 (PLUS_EXPR, TREE_TYPE (t), t, u);
+	  u = size_int (rsize - size);
+	  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (t), t, u);
 	}
       COND_EXPR_THEN (addr) = t;
 
       if (osize > UNITS_PER_WORD)
 	{
 	  /* [9] Emit: ovfl += ((intptr_t) ovfl + osize - 1) & -osize.  */
-	  u = fold_convert (TREE_TYPE (ovfl),
-			    build_int_cst (NULL_TREE, osize - 1));
-	  t = build2 (PLUS_EXPR, TREE_TYPE (ovfl), ovfl, u);
-	  u = fold_convert (TREE_TYPE (ovfl),
-			    build_int_cst (NULL_TREE, -osize));
-	  t = build2 (BIT_AND_EXPR, TREE_TYPE (ovfl), t, u);
+	  u = size_int (osize - 1);
+	  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (ovfl), ovfl, u);
+	  t = fold_convert (sizetype, t);
+	  u = size_int (-osize);
+	  t = build2 (BIT_AND_EXPR, sizetype, t, u);
+	  t = fold_convert (TREE_TYPE (ovfl), t);
 	  align = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (ovfl), ovfl, t);
 	}
       else
@@ -4570,9 +4568,8 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
       t = build2 (POSTINCREMENT_EXPR, TREE_TYPE (ovfl), ovfl, u);
       if (BYTES_BIG_ENDIAN && osize > size)
 	{
-	  u = fold_convert (TREE_TYPE (t),
-			    build_int_cst (NULL_TREE, osize - size));
-	  t = build2 (PLUS_EXPR, TREE_TYPE (t), t, u);
+	  u = size_int (osize - size);
+	  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (t), t, u);
 	}
 
       /* String [9] and [10,11] together.  */

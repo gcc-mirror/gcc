@@ -347,7 +347,7 @@ process_assignment (tree ass, tree stmt, block_stmt_iterator call, tree *m,
       *ass_var = dest;
       return true;
 
-      /* TODO -- Handle other codes (NEGATE_EXPR, MINUS_EXPR).  */
+      /* TODO -- Handle other codes (NEGATE_EXPR, MINUS_EXPR, POINTER_PLUS_EXPR).  */
 
     default:
       return false;

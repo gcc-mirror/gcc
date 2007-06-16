@@ -171,7 +171,8 @@ va_list_counter_bump (struct stdarg_info *si, tree counter, tree rhs,
 	  continue;
 	}
 
-      if (TREE_CODE (rhs) == PLUS_EXPR
+      if ((TREE_CODE (rhs) == POINTER_PLUS_EXPR
+	   || TREE_CODE (rhs) == PLUS_EXPR)
 	  && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME
 	  && TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST
 	  && host_integerp (TREE_OPERAND (rhs, 1), 1))
@@ -229,7 +230,8 @@ va_list_counter_bump (struct stdarg_info *si, tree counter, tree rhs,
 	  continue;
 	}
 
-      if (TREE_CODE (rhs) == PLUS_EXPR
+      if ((TREE_CODE (rhs) == POINTER_PLUS_EXPR
+	   || TREE_CODE (rhs) == PLUS_EXPR)
 	  && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME
 	  && TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST
 	  && host_integerp (TREE_OPERAND (rhs, 1), 1))
@@ -447,10 +449,11 @@ check_va_list_escapes (struct stdarg_info *si, tree lhs, tree rhs)
   if (! POINTER_TYPE_P (TREE_TYPE (rhs)))
     return;
 
-  if ((TREE_CODE (rhs) == PLUS_EXPR
-       && TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST)
-      || TREE_CODE (rhs) == NOP_EXPR
-      || TREE_CODE (rhs) == CONVERT_EXPR)
+ if (((TREE_CODE (rhs) == POINTER_PLUS_EXPR
+       || TREE_CODE (rhs) == PLUS_EXPR)
+      && TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST)
+     || TREE_CODE (rhs) == NOP_EXPR
+     || TREE_CODE (rhs) == CONVERT_EXPR)
     rhs = TREE_OPERAND (rhs, 0);
 
   if (TREE_CODE (rhs) != SSA_NAME
@@ -555,7 +558,7 @@ check_all_va_list_escapes (struct stdarg_info *si)
 		     other_ap_temp = (some_type *) ap_temp;
 		     ap = ap_temp;
 		     statements.  */
-		  if ((TREE_CODE (rhs) == PLUS_EXPR
+		  if ((TREE_CODE (rhs) == POINTER_PLUS_EXPR
 		       && TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST)
 		      || TREE_CODE (rhs) == NOP_EXPR
 		      || TREE_CODE (rhs) == CONVERT_EXPR)

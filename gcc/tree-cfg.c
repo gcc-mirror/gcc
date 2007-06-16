@@ -3265,7 +3265,36 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	}
       *walk_subtrees = 0;
       break;
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      /* PLUS_EXPR and MINUS_EXPR don't work on pointers, they should be done using
+	 POINTER_PLUS_EXPR. */
+      if (POINTER_TYPE_P (TREE_TYPE (t)))
+	{
+	  error ("invalid operand to plus/minus, type is a pointer");
+	  return t;
+	}
+      CHECK_OP (0, "invalid operand to binary operator");
+      CHECK_OP (1, "invalid operand to binary operator");
+      break;
 
+    case POINTER_PLUS_EXPR:
+      /* Check to make sure the first operand is a pointer or reference type. */
+      if (!POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0))))
+	{
+	  error ("invalid operand to pointer plus, first operand is not a pointer");
+	  return t;
+	}
+      /* Check to make sure the second operand is an integer with type of
+	 sizetype.  */
+      if (!tree_ssa_useless_type_conversion_1 (sizetype,
+					       TREE_TYPE (TREE_OPERAND (t, 1))))
+	{
+	  error ("invalid operand to pointer plus, second operand is not an "
+		 "integer with type of sizetype.");
+	  return t;
+	}
+      /* FALLTHROUGH */
     case LT_EXPR:
     case LE_EXPR:
     case GT_EXPR:
@@ -3280,8 +3309,6 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     case UNGE_EXPR:
     case UNEQ_EXPR:
     case LTGT_EXPR:
-    case PLUS_EXPR:
-    case MINUS_EXPR:
     case MULT_EXPR:
     case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:

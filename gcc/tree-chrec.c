@@ -101,12 +101,16 @@ chrec_fold_plus_poly_poly (enum tree_code code,
   tree left, right;
   struct loop *loop0 = get_chrec_loop (poly0);
   struct loop *loop1 = get_chrec_loop (poly1);
+  tree rtype = code == POINTER_PLUS_EXPR ? sizetype : type;
 
   gcc_assert (poly0);
   gcc_assert (poly1);
   gcc_assert (TREE_CODE (poly0) == POLYNOMIAL_CHREC);
   gcc_assert (TREE_CODE (poly1) == POLYNOMIAL_CHREC);
-  gcc_assert (chrec_type (poly0) == chrec_type (poly1));
+  if (POINTER_TYPE_P (chrec_type (poly0)))
+    gcc_assert (chrec_type (poly1) == sizetype);
+  else
+    gcc_assert (chrec_type (poly0) == chrec_type (poly1));
   gcc_assert (type == chrec_type (poly0));
   
   /*
@@ -115,7 +119,7 @@ chrec_fold_plus_poly_poly (enum tree_code code,
     {a, +, b}_x + {c, +, d}_x  ->  {a+c, +, b+d}_x.  */
   if (flow_loop_nested_p (loop0, loop1))
     {
-      if (code == PLUS_EXPR)
+      if (code == PLUS_EXPR || code == POINTER_PLUS_EXPR)
 	return build_polynomial_chrec 
 	  (CHREC_VARIABLE (poly1), 
 	   chrec_fold_plus (type, poly0, CHREC_LEFT (poly1)),
@@ -132,7 +136,7 @@ chrec_fold_plus_poly_poly (enum tree_code code,
   
   if (flow_loop_nested_p (loop1, loop0))
     {
-      if (code == PLUS_EXPR)
+      if (code == PLUS_EXPR || code == POINTER_PLUS_EXPR)
 	return build_polynomial_chrec 
 	  (CHREC_VARIABLE (poly0), 
 	   chrec_fold_plus (type, CHREC_LEFT (poly0), poly1),
@@ -148,12 +152,12 @@ chrec_fold_plus_poly_poly (enum tree_code code,
      do not belong to the same loop nest.  */
   gcc_assert (loop0 == loop1);
 
-  if (code == PLUS_EXPR)
+  if (code == PLUS_EXPR || code == POINTER_PLUS_EXPR)
     {
       left = chrec_fold_plus 
 	(type, CHREC_LEFT (poly0), CHREC_LEFT (poly1));
       right = chrec_fold_plus 
-	(type, CHREC_RIGHT (poly0), CHREC_RIGHT (poly1));
+	(rtype, CHREC_RIGHT (poly0), CHREC_RIGHT (poly1));
     }
   else
     {
@@ -264,6 +268,8 @@ static tree
 chrec_fold_plus_1 (enum tree_code code, tree type, 
 		   tree op0, tree op1)
 {
+  tree op1_type = code == POINTER_PLUS_EXPR ? sizetype : type;
+
   if (automatically_generated_chrec_p (op0)
       || automatically_generated_chrec_p (op1))
     return chrec_fold_automatically_generated_operands (op0, op1);
@@ -277,7 +283,7 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 	  return chrec_fold_plus_poly_poly (code, type, op0, op1);
 
 	default:
-	  if (code == PLUS_EXPR)
+	  if (code == PLUS_EXPR || code == POINTER_PLUS_EXPR)
 	    return build_polynomial_chrec 
 	      (CHREC_VARIABLE (op0), 
 	       chrec_fold_plus (type, CHREC_LEFT (op0), op1),
@@ -293,7 +299,7 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
       switch (TREE_CODE (op1))
 	{
 	case POLYNOMIAL_CHREC:
-	  if (code == PLUS_EXPR)
+	  if (code == PLUS_EXPR || code == POINTER_PLUS_EXPR)
 	    return build_polynomial_chrec 
 	      (CHREC_VARIABLE (op1), 
 	       chrec_fold_plus (type, op0, CHREC_LEFT (op1)),
@@ -317,7 +323,7 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 	    else if (size < PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
 	      return fold_build2 (code, type,
 				  fold_convert (type, op0),
-				  fold_convert (type, op1));
+				  fold_convert (op1_type, op1));
 	    else
 	      return chrec_dont_know;
 	  }
@@ -332,16 +338,22 @@ chrec_fold_plus (tree type,
 		 tree op0,
 		 tree op1)
 {
+  enum tree_code code;
   if (automatically_generated_chrec_p (op0)
       || automatically_generated_chrec_p (op1))
     return chrec_fold_automatically_generated_operands (op0, op1);
 
   if (integer_zerop (op0))
-    return op1;
+    return chrec_convert (type, op1, NULL_TREE);
   if (integer_zerop (op1))
-    return op0;
+    return chrec_convert (type, op0, NULL_TREE);
+
+  if (POINTER_TYPE_P (type))
+    code = POINTER_PLUS_EXPR;
+  else
+    code = PLUS_EXPR;
   
-  return chrec_fold_plus_1 (PLUS_EXPR, type, op0, op1);
+  return chrec_fold_plus_1 (code, type, op0, op1);
 }
 
 /* Fold the subtraction of two chrecs.  */
@@ -566,8 +578,8 @@ chrec_apply (unsigned var,
   if (evolution_function_is_affine_p (chrec))
     {
       /* "{a, +, b} (x)"  ->  "a + b*x".  */
-      x = chrec_convert (type, x, NULL_TREE);
-      res = chrec_fold_multiply (type, CHREC_RIGHT (chrec), x);
+      x = chrec_convert_rhs (type, x, NULL_TREE);
+      res = chrec_fold_multiply (TREE_TYPE (x), CHREC_RIGHT (chrec), x);
       if (!integer_zerop (CHREC_LEFT (chrec)))
 	res = chrec_fold_plus (type, CHREC_LEFT (chrec), res);
     }
@@ -767,7 +779,10 @@ reset_evolution_in_loop (unsigned loop_num,
 {
   struct loop *loop = get_loop (loop_num);
 
-  gcc_assert (chrec_type (chrec) == chrec_type (new_evol));
+  if (POINTER_TYPE_P (chrec_type (chrec)))
+    gcc_assert (sizetype == chrec_type (new_evol));
+  else
+    gcc_assert (chrec_type (chrec) == chrec_type (new_evol));
 
   if (TREE_CODE (chrec) == POLYNOMIAL_CHREC
       && flow_loop_nested_p (loop, get_chrec_loop (chrec)))
@@ -1119,6 +1134,7 @@ convert_affine_scev (struct loop *loop, tree type,
   bool enforce_overflow_semantics;
   bool must_check_src_overflow, must_check_rslt_overflow;
   tree new_base, new_step;
+  tree step_type = POINTER_TYPE_P (type) ? sizetype : type;
 
   /* If we cannot perform arithmetic in TYPE, avoid creating an scev.  */
   if (avoid_arithmetics_in_type_p (type))
@@ -1188,10 +1204,10 @@ convert_affine_scev (struct loop *loop, tree type,
      [100, +, 255] with values 100, 355, ...; the sign-extension is 
      performed by default when CT is signed.  */
   new_step = *step;
-  if (TYPE_PRECISION (type) > TYPE_PRECISION (ct) && TYPE_UNSIGNED (ct))
+  if (TYPE_PRECISION (step_type) > TYPE_PRECISION (ct) && TYPE_UNSIGNED (ct))
     new_step = chrec_convert_1 (signed_type_for (ct), new_step, at_stmt,
 				use_overflow_semantics);
-  new_step = chrec_convert_1 (type, new_step, at_stmt, use_overflow_semantics);
+  new_step = chrec_convert_1 (step_type, new_step, at_stmt, use_overflow_semantics);
 
   if (automatically_generated_chrec_p (new_base)
       || automatically_generated_chrec_p (new_step))
@@ -1208,6 +1224,16 @@ convert_affine_scev (struct loop *loop, tree type,
   return true;
 }
 
+
+/* Convert CHREC for the right hand side of a CREC.
+   The increment for a pointer type is always sizetype.  */
+tree 
+chrec_convert_rhs (tree type, tree chrec, tree at_stmt)
+{
+  if (POINTER_TYPE_P (type))
+   type = sizetype;
+  return chrec_convert (type, chrec, at_stmt);
+}
 
 /* Convert CHREC to TYPE.  When the analyzer knows the context in
    which the CHREC is built, it sets AT_STMT to the statement that
@@ -1306,7 +1332,7 @@ keep_cast:
 tree
 chrec_convert_aggressive (tree type, tree chrec)
 {
-  tree inner_type, left, right, lc, rc;
+  tree inner_type, left, right, lc, rc, rtype;
 
   if (automatically_generated_chrec_p (chrec)
       || TREE_CODE (chrec) != POLYNOMIAL_CHREC)
@@ -1320,14 +1346,16 @@ chrec_convert_aggressive (tree type, tree chrec)
   if (avoid_arithmetics_in_type_p (type))
     return NULL_TREE;
 
+  rtype = POINTER_TYPE_P (type) ? sizetype : type;
+
   left = CHREC_LEFT (chrec);
   right = CHREC_RIGHT (chrec);
   lc = chrec_convert_aggressive (type, left);
   if (!lc)
     lc = chrec_convert (type, left, NULL_TREE);
-  rc = chrec_convert_aggressive (type, right);
+  rc = chrec_convert_aggressive (rtype, right);
   if (!rc)
-    rc = chrec_convert (type, right, NULL_TREE);
+    rc = chrec_convert (rtype, right, NULL_TREE);
  
   return build_polynomial_chrec (CHREC_VARIABLE (chrec), lc, rc);
 }

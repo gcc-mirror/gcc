@@ -2959,11 +2959,13 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	      }
 
 	    inc = c_size_in_bytes (TREE_TYPE (result_type));
+	    inc = fold_convert (sizetype, inc);
 	  }
 	else
-	  inc = integer_one_node;
-
-	inc = convert (argtype, inc);
+	  {
+	    inc = integer_one_node;
+	    inc = convert (argtype, inc);
+	  }
 
 	/* Complain about anything else that is not a true lvalue.  */
 	if (!lvalue_or_else (arg, ((code == PREINCREMENT_EXPR
@@ -3051,10 +3053,10 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
       if (val && TREE_CODE (val) == INDIRECT_REF
           && TREE_CONSTANT (TREE_OPERAND (val, 0)))
 	{
-	  tree op0 = fold_convert (argtype, fold_offsetof (arg, val)), op1;
+	  tree op0 = fold_convert (sizetype, fold_offsetof (arg, val)), op1;
 
 	  op1 = fold_convert (argtype, TREE_OPERAND (val, 0));
-	  return fold_build2 (PLUS_EXPR, argtype, op0, op1);
+	  return fold_build2 (POINTER_PLUS_EXPR, argtype, op1, op0);
 	}
 
       val = build1 (ADDR_EXPR, argtype, arg);

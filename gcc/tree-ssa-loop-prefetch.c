@@ -375,7 +375,7 @@ idx_analyze_ref (tree base, tree *index, void *data)
     return false;
   istep = int_cst_value (step);
 
-  if (TREE_CODE (ibase) == PLUS_EXPR
+  if (TREE_CODE (ibase) == POINTER_PLUS_EXPR
       && cst_and_fits_in_hwi (TREE_OPERAND (ibase, 1)))
     {
       idelta = int_cst_value (TREE_OPERAND (ibase, 1));
@@ -891,8 +891,8 @@ issue_prefetch_ref (struct mem_ref *ref, unsigned unroll_factor, unsigned ahead)
     {
       /* Determine the address to prefetch.  */
       delta = (ahead + ap * ref->prefetch_mod) * ref->group->step;
-      addr = fold_build2 (PLUS_EXPR, ptr_type_node,
-			  addr_base, build_int_cst (ptr_type_node, delta));
+      addr = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
+			  addr_base, size_int (delta));
       addr = force_gimple_operand_bsi (&bsi, unshare_expr (addr), true, NULL);
 
       /* Create the prefetch instruction.  */

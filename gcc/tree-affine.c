@@ -268,6 +268,13 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
       aff_combination_const (comb, type, tree_to_double_int (expr));
       return;
 
+    case POINTER_PLUS_EXPR:
+      tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
+      tree_to_aff_combination (TREE_OPERAND (expr, 1), sizetype, &tmp);
+      aff_combination_convert (&tmp, type);
+      aff_combination_add (comb, &tmp);
+      return;
+
     case PLUS_EXPR:
     case MINUS_EXPR:
       tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);

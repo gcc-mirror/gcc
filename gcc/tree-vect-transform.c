@@ -635,6 +635,7 @@ vect_create_addr_base_for_vector_ref (tree stmt,
 
   /* Create base_offset */
   base_offset = size_binop (PLUS_EXPR, base_offset, init);
+  base_offset = fold_convert (sizetype, base_offset);
   dest = create_tmp_var (TREE_TYPE (base_offset), "base_off");
   add_referenced_var (dest);
   base_offset = force_gimple_operand (base_offset, &new_stmt, false, dest);  
@@ -642,7 +643,7 @@ vect_create_addr_base_for_vector_ref (tree stmt,
 
   if (offset)
     {
-      tree tmp = create_tmp_var (TREE_TYPE (base_offset), "offset");
+      tree tmp = create_tmp_var (sizetype, "offset");
       tree step; 
 
       /* For interleaved access step we divide STEP by the size of the
@@ -663,7 +664,7 @@ vect_create_addr_base_for_vector_ref (tree stmt,
     }
   
   /* base + base_offset */
-  addr_base = fold_build2 (PLUS_EXPR, TREE_TYPE (data_ref_base), data_ref_base,
+  addr_base = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (data_ref_base), data_ref_base,
 			   base_offset);
 
   vect_ptr_type = build_pointer_type (STMT_VINFO_VECTYPE (stmt_info));
@@ -894,14 +895,14 @@ bump_vector_ptr (tree dataref_ptr, tree ptr_incr, block_stmt_iterator *bsi,
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree vptr_type = TREE_TYPE (dataref_ptr);
   tree ptr_var = SSA_NAME_VAR (dataref_ptr);
-  tree update = fold_convert (vptr_type, TYPE_SIZE_UNIT (vectype));
+  tree update = TYPE_SIZE_UNIT (vectype);
   tree incr_stmt;
   ssa_op_iter iter;
   use_operand_p use_p;
   tree new_dataref_ptr;
 
   incr_stmt = build_gimple_modify_stmt (ptr_var,
-					build2 (PLUS_EXPR, vptr_type,
+					build2 (POINTER_PLUS_EXPR, vptr_type,
 						dataref_ptr, update));
   new_dataref_ptr = make_ssa_name (ptr_var, incr_stmt);
   GIMPLE_STMT_OPERAND (incr_stmt, 0) = new_dataref_ptr;
@@ -5270,12 +5271,21 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
       init_expr = unshare_expr (initial_condition_in_loop_num (access_fn, 
 							       loop->num));
 
-      ni = fold_build2 (PLUS_EXPR, TREE_TYPE (init_expr),
-			fold_build2 (MULT_EXPR, TREE_TYPE (init_expr),
-				     fold_convert (TREE_TYPE (init_expr), 
-						   niters), 
-				     step_expr),
-			init_expr);
+      if (POINTER_TYPE_P (TREE_TYPE (init_expr)))
+	ni = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (init_expr), 
+			  init_expr, 
+			  fold_convert (sizetype, 
+					fold_build2 (MULT_EXPR, TREE_TYPE (niters),
+						     niters, step_expr)));
+      else
+	ni = fold_build2 (PLUS_EXPR, TREE_TYPE (init_expr),
+			  fold_build2 (MULT_EXPR, TREE_TYPE (init_expr),
+				       fold_convert (TREE_TYPE (init_expr),
+						     niters),
+				       step_expr),
+			  init_expr);
+
+
 
       var = create_tmp_var (TREE_TYPE (init_expr), "tmp");
       add_referenced_var (var);
@@ -5473,7 +5483,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
   
       /* Create:  byte_misalign = addr & (vectype_size - 1)  */
       byte_misalign = 
-        fold_build2 (BIT_AND_EXPR, type, start_addr, vectype_size_minus_1);
+        fold_build2 (BIT_AND_EXPR, type, fold_convert (type, start_addr), vectype_size_minus_1);
   
       /* Create:  elem_misalign = byte_misalign / element_size  */
       elem_misalign =

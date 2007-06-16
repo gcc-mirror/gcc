@@ -1960,6 +1960,15 @@ gimplify_self_mod_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	return ret;
     }
 
+  /* For POINTERs increment, use POINTER_PLUS_EXPR.  */
+  if (POINTER_TYPE_P (TREE_TYPE (lhs)))
+    {
+      rhs = fold_convert (sizetype, rhs);
+      if (arith_code == MINUS_EXPR)
+	rhs = fold_build1 (NEGATE_EXPR, TREE_TYPE (rhs), rhs);
+      arith_code = POINTER_PLUS_EXPR;
+    }
+
   t1 = build2 (arith_code, TREE_TYPE (*expr_p), lhs, rhs);
   t1 = build_gimple_modify_stmt (lvalue, t1);
 
@@ -5125,6 +5134,7 @@ gimplify_omp_atomic_fetch_op (tree *expr_p, tree addr, tree rhs, int index)
   /* Check for one of the supported fetch-op operations.  */
   switch (TREE_CODE (rhs))
     {
+    case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
       base = BUILT_IN_FETCH_AND_ADD_N;
       optab = sync_add_optab;
@@ -5875,12 +5885,11 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  ret = GS_ALL_DONE;
 	  break;
 
-	case PLUS_EXPR:
+	case POINTER_PLUS_EXPR:
           /* Convert ((type *)A)+offset into &A->field_of_type_and_offset.
 	     The second is gimple immediate saving a need for extra statement.
 	   */
-	  if (POINTER_TYPE_P (TREE_TYPE (*expr_p))
-	      && TREE_CODE (TREE_OPERAND (*expr_p, 1)) == INTEGER_CST
+	  if (TREE_CODE (TREE_OPERAND (*expr_p, 1)) == INTEGER_CST
 	      && (tmp = maybe_fold_offset_to_reference
 			 (TREE_OPERAND (*expr_p, 0), TREE_OPERAND (*expr_p, 1),
 		   	  TREE_TYPE (TREE_TYPE (*expr_p)))))
@@ -5890,8 +5899,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	       break;
 	     }
 	  /* Convert (void *)&a + 4 into (void *)&a[1].  */
-	  if (POINTER_TYPE_P (TREE_TYPE (*expr_p))
-	      && TREE_CODE (TREE_OPERAND (*expr_p, 0)) == NOP_EXPR
+	  if (TREE_CODE (TREE_OPERAND (*expr_p, 0)) == NOP_EXPR
 	      && TREE_CODE (TREE_OPERAND (*expr_p, 1)) == INTEGER_CST
 	      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (*expr_p,
 									0),0)))

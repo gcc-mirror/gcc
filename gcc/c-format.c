@@ -1313,7 +1313,7 @@ check_format_arg (void *ctx, tree format_tree,
     }
 
   offset = 0;
-  if (TREE_CODE (format_tree) == PLUS_EXPR)
+  if (TREE_CODE (format_tree) == POINTER_PLUS_EXPR)
     {
       tree arg0, arg1;
 
@@ -1323,11 +1323,6 @@ check_format_arg (void *ctx, tree format_tree,
       STRIP_NOPS (arg1);
       if (TREE_CODE (arg1) == INTEGER_CST)
 	format_tree = arg0;
-      else if (TREE_CODE (arg0) == INTEGER_CST)
-	{
-	  format_tree = arg1;
-	  arg1 = arg0;
-	}
       else
 	{
 	  res->number_non_literal++;

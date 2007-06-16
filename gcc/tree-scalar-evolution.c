@@ -665,8 +665,8 @@ add_to_evolution_1 (unsigned loop_nb, tree chrec_before, tree to_add,
 	    }
 
 	  to_add = chrec_convert (type, to_add, at_stmt);
-	  right = chrec_convert (type, right, at_stmt);
-	  right = chrec_fold_plus (type, right, to_add);
+	  right = chrec_convert_rhs (type, right, at_stmt);
+	  right = chrec_fold_plus (chrec_type (right), right, to_add);
 	  return build_polynomial_chrec (var, left, right);
 	}
       else
@@ -677,7 +677,7 @@ add_to_evolution_1 (unsigned loop_nb, tree chrec_before, tree to_add,
 	  left = add_to_evolution_1 (loop_nb, CHREC_LEFT (chrec_before),
 				     to_add, at_stmt);
 	  right = CHREC_RIGHT (chrec_before);
-	  right = chrec_convert (chrec_type (left), right, at_stmt);
+	  right = chrec_convert_rhs (chrec_type (left), right, at_stmt);
 	  return build_polynomial_chrec (CHREC_VARIABLE (chrec_before),
 					 left, right);
 	}
@@ -688,7 +688,7 @@ add_to_evolution_1 (unsigned loop_nb, tree chrec_before, tree to_add,
 	return chrec_dont_know;
 
       left = chrec_before;
-      right = chrec_convert (chrec_type (left), to_add, at_stmt);
+      right = chrec_convert_rhs (chrec_type (left), to_add, at_stmt);
       return build_polynomial_chrec (loop_nb, left, right);
     }
 }
@@ -1014,15 +1014,18 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
   tree rhs0, rhs1;
   tree type_rhs = TREE_TYPE (rhs);
   tree evol;
+  enum tree_code code;
   
   /* The RHS is one of the following cases:
      - an SSA_NAME, 
      - an INTEGER_CST,
      - a PLUS_EXPR, 
+     - a POINTER_PLUS_EXPR, 
      - a MINUS_EXPR,
      - an ASSERT_EXPR,
      - other cases are not yet handled.  */
-  switch (TREE_CODE (rhs))
+  code = TREE_CODE (rhs);
+  switch (code)
     {
     case NOP_EXPR:
       /* This assignment is under the form "a_1 = (cast) rhs.  */
@@ -1043,6 +1046,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 	(loop, SSA_NAME_DEF_STMT (rhs), halting_phi, evolution_of_loop, limit);
       break;
       
+    case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
       /* This case is under the form "rhs0 + rhs1".  */
       rhs0 = TREE_OPERAND (rhs, 0);
@@ -1071,7 +1075,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 		*evolution_of_loop = add_to_evolution 
 		  (loop->num, 
 		   chrec_convert (type_rhs, evol, at_stmt), 
-		   PLUS_EXPR, rhs1, at_stmt);
+		   code, rhs1, at_stmt);
 	      
 	      else if (res == t_false)
 		{
@@ -1083,7 +1087,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 		    *evolution_of_loop = add_to_evolution 
 		      (loop->num, 
 		       chrec_convert (type_rhs, *evolution_of_loop, at_stmt), 
-		       PLUS_EXPR, rhs0, at_stmt);
+		       code, rhs0, at_stmt);
 
 		  else if (res == t_dont_know)
 		    *evolution_of_loop = chrec_dont_know;
@@ -1104,7 +1108,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 		*evolution_of_loop = add_to_evolution 
 		  (loop->num, chrec_convert (type_rhs, *evolution_of_loop,
 					     at_stmt),
-		   PLUS_EXPR, rhs1, at_stmt);
+		   code, rhs1, at_stmt);
 
 	      else if (res == t_dont_know)
 		*evolution_of_loop = chrec_dont_know;
@@ -1122,7 +1126,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 	    *evolution_of_loop = add_to_evolution 
 	      (loop->num, chrec_convert (type_rhs, *evolution_of_loop,
 					 at_stmt),
-	       PLUS_EXPR, rhs0, at_stmt);
+	       code, rhs0, at_stmt);
 
 	  else if (res == t_dont_know)
 	    *evolution_of_loop = chrec_dont_know;
@@ -1611,6 +1615,16 @@ interpret_rhs_modify_stmt (struct loop *loop, tree at_stmt,
 
   switch (TREE_CODE (opnd1))
     {
+    case POINTER_PLUS_EXPR:
+      opnd10 = TREE_OPERAND (opnd1, 0);
+      opnd11 = TREE_OPERAND (opnd1, 1);
+      chrec10 = analyze_scalar_evolution (loop, opnd10);
+      chrec11 = analyze_scalar_evolution (loop, opnd11);
+      chrec10 = chrec_convert (type, chrec10, at_stmt);
+      chrec11 = chrec_convert (sizetype, chrec11, at_stmt);
+      res = chrec_fold_plus (type, chrec10, chrec11);
+      break;
+
     case PLUS_EXPR:
       opnd10 = TREE_OPERAND (opnd1, 0);
       opnd11 = TREE_OPERAND (opnd1, 1);
@@ -1702,187 +1716,6 @@ compute_scalar_evolution_in_loop (struct loop *wrto_loop,
   return analyze_scalar_evolution_1 (wrto_loop, res, chrec_not_analyzed_yet);
 }
 
-/* Folds EXPR, if it is a cast to pointer, assuming that the created
-   polynomial_chrec does not wrap.  */
-
-static tree
-fold_used_pointer_cast (tree expr)
-{
-  tree op;
-  tree type, inner_type;
-
-  if (TREE_CODE (expr) != NOP_EXPR && TREE_CODE (expr) != CONVERT_EXPR)
-    return expr;
-
-  op = TREE_OPERAND (expr, 0);
-  if (TREE_CODE (op) != POLYNOMIAL_CHREC)
-    return expr;
-
-  type = TREE_TYPE (expr);
-  inner_type = TREE_TYPE (op);
-
-  if (!INTEGRAL_TYPE_P (inner_type)
-      || TYPE_PRECISION (inner_type) != TYPE_PRECISION (type))
-    return expr;
-
-  return build_polynomial_chrec (CHREC_VARIABLE (op),
-		chrec_convert (type, CHREC_LEFT (op), NULL_TREE),
-		chrec_convert (type, CHREC_RIGHT (op), NULL_TREE));
-}
-
-/* Returns true if EXPR is an expression corresponding to offset of pointer
-   in p + offset.  */
-
-static bool
-pointer_offset_p (tree expr)
-{
-  if (TREE_CODE (expr) == INTEGER_CST)
-    return true;
-
-  if ((TREE_CODE (expr) == NOP_EXPR || TREE_CODE (expr) == CONVERT_EXPR)
-      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0))))
-    return true;
-
-  return false;
-}
-
-/* EXPR is a scalar evolution of a pointer that is dereferenced or used in
-   comparison.  This means that it must point to a part of some object in
-   memory, which enables us to argue about overflows and possibly simplify
-   the EXPR.  AT_STMT is the statement in which this conversion has to be
-   performed.  Returns the simplified value.
-
-   Currently, for
-
-   int i, n;
-   int *p;
-
-   for (i = -n; i < n; i++)
-     *(p + i) = ...;
-
-   We generate the following code (assuming that size of int and size_t is
-   4 bytes):
-
-   for (i = -n; i < n; i++)
-     {
-       size_t tmp1, tmp2;
-       int *tmp3, *tmp4;
-
-       tmp1 = (size_t) i;	(1)
-       tmp2 = 4 * tmp1;		(2)
-       tmp3 = (int *) tmp2;	(3)
-       tmp4 = p + tmp3;		(4)
-
-       *tmp4 = ...;
-     }
-
-   We in general assume that pointer arithmetics does not overflow (since its
-   behavior is undefined in that case).  One of the problems is that our
-   translation does not capture this property very well -- (int *) is
-   considered unsigned, hence the computation in (4) does overflow if i is
-   negative.
-
-   This impreciseness creates complications in scev analysis.  The scalar
-   evolution of i is [-n, +, 1].  Since int and size_t have the same precision
-   (in this example), and size_t is unsigned (so we do not care about
-   overflows), we succeed to derive that scev of tmp1 is [(size_t) -n, +, 1]
-   and scev of tmp2 is [4 * (size_t) -n, +, 4].  With tmp3, we run into
-   problem -- [(int *) (4 * (size_t) -n), +, 4] wraps, and since we on several
-   places assume that this is not the case for scevs with pointer type, we
-   cannot use this scev for tmp3; hence, its scev is
-   (int *) [(4 * (size_t) -n), +, 4], and scev of tmp4 is
-   p + (int *) [(4 * (size_t) -n), +, 4].  Most of the optimizers are unable to
-   work with scevs of this shape.
-
-   However, since tmp4 is dereferenced, all its values must belong to a single
-   object, and taking into account that the precision of int * and size_t is
-   the same, it is impossible for its scev to wrap.  Hence, we can derive that
-   its evolution is [p + (int *) (4 * (size_t) -n), +, 4], which the optimizers
-   can work with.
-
-   ??? Maybe we should use different representation for pointer arithmetics,
-   however that is a long-term project with a lot of potential for creating
-   bugs.  */
-
-static tree
-fold_used_pointer (tree expr, tree at_stmt)
-{
-  tree op0, op1, new0, new1;
-  enum tree_code code = TREE_CODE (expr);
-
-  if (code == PLUS_EXPR
-      || code == MINUS_EXPR)
-    {
-      op0 = TREE_OPERAND (expr, 0);
-      op1 = TREE_OPERAND (expr, 1);
-
-      if (pointer_offset_p (op1))
-	{
-	  new0 = fold_used_pointer (op0, at_stmt);
-	  new1 = fold_used_pointer_cast (op1);
-	}
-      else if (code == PLUS_EXPR && pointer_offset_p (op0))
-	{
-	  new0 = fold_used_pointer_cast (op0);
-	  new1 = fold_used_pointer (op1, at_stmt);
-	}
-      else
-	return expr;
-
-      if (new0 == op0 && new1 == op1)
-	return expr;
-
-      new0 = chrec_convert (TREE_TYPE (expr), new0, at_stmt);
-      new1 = chrec_convert (TREE_TYPE (expr), new1, at_stmt);
-
-      if (code == PLUS_EXPR)
-	expr = chrec_fold_plus (TREE_TYPE (expr), new0, new1);
-      else
-	expr = chrec_fold_minus (TREE_TYPE (expr), new0, new1);
-
-      return expr;
-    }
-  else
-    return fold_used_pointer_cast (expr);
-}
-
-/* Returns true if PTR is dereferenced, or used in comparison.  */
-
-static bool
-pointer_used_p (tree ptr)
-{
-  use_operand_p use_p;
-  imm_use_iterator imm_iter;
-  tree stmt, rhs;
-  struct ptr_info_def *pi = get_ptr_info (ptr);
-
-  /* Check whether the pointer has a memory tag; if it does, it is
-     (or at least used to be) dereferenced.  */
-  if ((pi != NULL && pi->name_mem_tag != NULL)
-      || symbol_mem_tag (SSA_NAME_VAR (ptr)))
-    return true;
-
-  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, ptr)
-    {
-      stmt = USE_STMT (use_p);
-      if (TREE_CODE (stmt) == COND_EXPR)
-	return true;
-
-      if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
-	continue;
-
-      rhs = GIMPLE_STMT_OPERAND (stmt, 1);
-      if (!COMPARISON_CLASS_P (rhs))
-	continue;
-
-      if (GIMPLE_STMT_OPERAND (stmt, 0) == ptr
-	  || GIMPLE_STMT_OPERAND (stmt, 1) == ptr)
-	return true;
-    }
-
-  return false;
-}
-
 /* Helper recursive function.  */
 
 static tree
@@ -1932,11 +1765,6 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
     case GIMPLE_MODIFY_STMT:
       res = interpret_rhs_modify_stmt (loop, def,
 	  			       GIMPLE_STMT_OPERAND (def, 1), type);
-
-      if (POINTER_TYPE_P (type)
-	  && !automatically_generated_chrec_p (res)
-	  && pointer_used_p (var))
-	res = fold_used_pointer (res, def);
       break;
 
     case PHI_NODE:
@@ -2220,11 +2048,12 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
       if (CHREC_LEFT (chrec) != op0
 	  || CHREC_RIGHT (chrec) != op1)
 	{
-	  op1 = chrec_convert (chrec_type (op0), op1, NULL_TREE);
+	  op1 = chrec_convert_rhs (chrec_type (op0), op1, NULL_TREE);
 	  chrec = build_polynomial_chrec (CHREC_VARIABLE (chrec), op0, op1);
 	}
       return chrec;
 
+    case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
 				      flags, cache, size_expr);
@@ -2240,7 +2069,7 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 	  || TREE_OPERAND (chrec, 1) != op1)
 	{
 	  op0 = chrec_convert (type, op0, NULL_TREE);
-	  op1 = chrec_convert (type, op1, NULL_TREE);
+	  op1 = chrec_convert_rhs (type, op1, NULL_TREE);
 	  chrec = chrec_fold_plus (type, op0, op1);
 	}
       return chrec;

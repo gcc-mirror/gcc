@@ -495,25 +495,30 @@ split_constant_offset (tree exp, tree *var, tree *off)
   tree type = TREE_TYPE (exp), otype;
   tree var0, var1;
   tree off0, off1;
+  enum tree_code code;
 
   *var = exp;
   STRIP_NOPS (exp);
   otype = TREE_TYPE (exp);
+  code = TREE_CODE (exp);
 
-  switch (TREE_CODE (exp))
+  switch (code)
     {
     case INTEGER_CST:
       *var = build_int_cst (type, 0);
       *off = fold_convert (ssizetype, exp);
       return;
 
+    case POINTER_PLUS_EXPR:
+      code = PLUS_EXPR;
+      /* FALLTHROUGH */
     case PLUS_EXPR:
     case MINUS_EXPR:
       split_constant_offset (TREE_OPERAND (exp, 0), &var0, &off0);
       split_constant_offset (TREE_OPERAND (exp, 1), &var1, &off1);
       *var = fold_convert (type, fold_build2 (TREE_CODE (exp), otype, 
 					      var0, var1));
-      *off = size_binop (TREE_CODE (exp), off0, off1);
+      *off = size_binop (code, off0, off1);
       return;
 
     case MULT_EXPR:

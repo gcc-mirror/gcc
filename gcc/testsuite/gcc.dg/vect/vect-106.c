@@ -17,9 +17,9 @@ int main1 () {
 
   p1 = p; q1 = q;
 
-  /* Not vectorizable: because of the redundant cast (caused by ponter
-     arithmetics), alias analysis fails to distinguish between 
-     the pointers.  */
+  /* Vectorizable, before pointer plus we would get a redundant cast
+     (caused by pointer arithmetics), alias analysis fails to distinguish
+     between the pointers.  */
   for (i = 0; i < N; i++)
     {
       *(q + i) = a[i];
@@ -67,7 +67,6 @@ int main (void)
   return main1 ();
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "can't determine dependence" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 

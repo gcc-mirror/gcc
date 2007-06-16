@@ -224,10 +224,10 @@ collect_data_for_malloc_call (tree stmt, struct malloc_call_data *m_data)
    initial address and index of each dimension.  */
 struct access_site_info
 {
-  /* The statement (INDIRECT_REF or PLUS_EXPR).  */
+  /* The statement (INDIRECT_REF or POINTER_PLUS_EXPR).  */
   tree stmt;
 
-  /* In case of PLUS_EXPR, what is the offset.  */
+  /* In case of POINTER_PLUS_EXPR, what is the offset.  */
   tree offset;
 
   /* The index which created the offset.  */
@@ -609,7 +609,7 @@ mark_min_matrix_escape_level (struct matrix_info *mi, int l, tree s)
 /* Find if the SSA variable is accessed inside the
    tree and record the tree containing it.
    The only relevant uses are the case of SSA_NAME, or SSA inside
-   INDIRECT_REF, CALL_EXPR, PLUS_EXPR, MULT_EXPR.  */
+   INDIRECT_REF, CALL_EXPR, PLUS_EXPR, POINTER_PLUS_EXPR, MULT_EXPR.  */
 static void
 ssa_accessed_in_tree (tree t, struct ssa_acc_in_tree *a)
 {
@@ -644,6 +644,7 @@ ssa_accessed_in_tree (tree t, struct ssa_acc_in_tree *a)
 	  }
       }
       break;
+    case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
     case MULT_EXPR:
       op1 = TREE_OPERAND (t, 0);
@@ -903,7 +904,7 @@ analyze_transpose (void **slot, void *data ATTRIBUTE_UNUSED)
   for (i = 0; VEC_iterate (access_site_info_p, mi->access_l, i, acc_info);
        i++)
     {
-      if (TREE_CODE (GIMPLE_STMT_OPERAND (acc_info->stmt, 1)) == PLUS_EXPR
+      if (TREE_CODE (GIMPLE_STMT_OPERAND (acc_info->stmt, 1)) == POINTER_PLUS_EXPR
 	  && acc_info->level < min_escape_l)
 	{
 	  loop = loop_containing_stmt (acc_info->stmt);
@@ -1197,7 +1198,7 @@ analyze_accesses_for_modify_stmt (struct matrix_info *mi, tree ssa_var,
 	  return current_indirect_level;
 	}
       if (rhs_acc.t_code != INDIRECT_REF
-	  && rhs_acc.t_code != PLUS_EXPR && rhs_acc.t_code != SSA_NAME)
+	  && rhs_acc.t_code != POINTER_PLUS_EXPR && rhs_acc.t_code != SSA_NAME)
 	{
 	  mark_min_matrix_escape_level (mi, current_indirect_level, use_stmt);
 	  return current_indirect_level;
@@ -1212,11 +1213,8 @@ analyze_accesses_for_modify_stmt (struct matrix_info *mi, tree ssa_var,
 					   current_indirect_level, true);
 	  current_indirect_level += 1;
 	}
-      else if (rhs_acc.t_code == PLUS_EXPR)
+      else if (rhs_acc.t_code == POINTER_PLUS_EXPR)
 	{
-	  /* ??? maybe we should check
-	     the type of the PLUS_EXP and make sure it's
-	     integral type.  */
 	  gcc_assert (rhs_acc.second_op);
 	  if (last_op)
 	    /* Currently we support only one PLUS expression on the
@@ -1286,7 +1284,7 @@ analyze_accesses_for_modify_stmt (struct matrix_info *mi, tree ssa_var,
 	  /* We are placing it in an SSA, follow that SSA.  */
 	  analyze_matrix_accesses (mi, lhs,
 				   current_indirect_level,
-				   rhs_acc.t_code == PLUS_EXPR,
+				   rhs_acc.t_code == POINTER_PLUS_EXPR,
 				   visited, record_accesses);
 	}
     }
@@ -1321,7 +1319,7 @@ analyze_matrix_accesses (struct matrix_info *mi, tree ssa_var,
 
 /* Now go over the uses of the SSA_NAME and check how it is used in
    each one of them.  We are mainly looking for the pattern INDIRECT_REF,
-   then a PLUS_EXPR, then INDIRECT_REF etc.  while in between there could
+   then a POINTER_PLUS_EXPR, then INDIRECT_REF etc.  while in between there could
    be any number of copies and casts.  */
   gcc_assert (TREE_CODE (ssa_var) == SSA_NAME);
 
@@ -1405,6 +1403,7 @@ can_calculate_expr_before_stmt (tree expr, sbitmap visited)
     case PARM_DECL:
     case INTEGER_CST:
       return expr;
+    case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
@@ -1798,7 +1797,7 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 		    GIMPLE_STMT_OPERAND (orig, 0));
 	  GIMPLE_STMT_OPERAND (acc_info->stmt, 1) = orig;
 	}
-      else if (TREE_CODE (orig) == PLUS_EXPR
+      else if (TREE_CODE (orig) == POINTER_PLUS_EXPR
 	       && acc_info->level < (min_escape_l))
 	{
 	  imm_use_iterator imm_iter;
@@ -1822,11 +1821,8 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 		  tree new_offset;
 		  tree d_type_size, d_type_size_k;
 
-		  d_type_size =
-		    build_int_cst (type,
-				   mi->dimension_type_size[min_escape_l]);
-		  d_type_size_k =
-		    build_int_cst (type, mi->dimension_type_size[k + 1]);
+		  d_type_size = size_int (mi->dimension_type_size[min_escape_l]);
+		  d_type_size_k = size_int (mi->dimension_type_size[k + 1]);
 
 		  new_offset =
 		    compute_offset (mi->dimension_type_size[min_escape_l],
@@ -1857,7 +1853,8 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 	    {
 	      d_size = mi->dimension_size[mi->dim_map[k] + 1];
 	      num_elements =
-		fold_build2 (MULT_EXPR, type, acc_info->index, d_size);
+		fold_build2 (MULT_EXPR, sizetype, fold_convert (sizetype, acc_info->index),
+			    fold_convert (sizetype, d_size));
 	      tmp1 = force_gimple_operand (num_elements, &stmts, true, NULL);
 	      add_referenced_var (d_size);
 	      if (stmts)
@@ -1880,8 +1877,8 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 
 		  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, offset)
 		    FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-		    if (use_stmt == acc_info->stmt)
-		    SET_USE (use_p, tmp1);
+		      if (use_stmt == acc_info->stmt)
+		        SET_USE (use_p, tmp1);
 		}
 	      else
 		{

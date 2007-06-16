@@ -290,9 +290,10 @@ tree_mem_ref_addr (tree type, tree mem_ref)
 
   if (addr_off)
     {
-      addr = fold_convert (type, addr_off);
       if (addr_base)
-	addr = fold_build2 (PLUS_EXPR, type, addr_base, addr);
+	addr = fold_build2 (POINTER_PLUS_EXPR, type, addr_base, addr_off);
+      else
+	addr = fold_convert (type, addr_off);
     }
   else if (addr_base)
     addr = addr_base;
@@ -410,7 +411,7 @@ add_to_parts (struct mem_address *parts, tree elt)
 
   if (!parts->index)
     {
-      parts->index = elt;
+      parts->index = fold_convert (sizetype, elt);
       return;
     }
 
@@ -482,7 +483,7 @@ most_expensive_mult_to_index (struct mem_address *parts, aff_tree *addr)
 	  j++;
 	  continue;
 	}
-  
+
       elt = fold_convert (sizetype, addr->elts[i].val);
       if (mult_elt)
 	mult_elt = fold_build2 (op_code, sizetype, mult_elt, elt);
@@ -658,9 +659,9 @@ create_mem_ref (block_stmt_iterator *bsi, tree type, aff_tree *addr)
 	{
 	  atype = TREE_TYPE (parts.base);
 	  parts.base = force_gimple_operand_bsi (bsi, 
-			fold_build2 (PLUS_EXPR, atype,
+			fold_build2 (POINTER_PLUS_EXPR, atype,
 				     parts.base,
-				     fold_convert (atype, parts.offset)),
+				     fold_convert (sizetype, parts.offset)),
 			true, NULL_TREE);
 	}
       else
