@@ -483,6 +483,10 @@ struct gcc_target
   /* Fold a target-specific builtin.  */
   tree (* fold_builtin) (tree fndecl, tree arglist, bool ignore);
 
+  /* Returns a code for a target-specific builtin that implements
+     reciprocal of the function, or NULL_TREE if not available.  */
+  tree (* builtin_reciprocal) (unsigned, bool);
+
   /* For a vendor-specific fundamental TYPE, return a pointer to
      a statically-allocated string containing the C++ mangling for
      TYPE.  In all other cases, return NULL.  */

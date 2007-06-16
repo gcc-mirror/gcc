@@ -450,7 +450,18 @@
 	(div:V4SF (match_operand:V4SF 1 "register_operand" "")
 		  (match_operand:V4SF 2 "nonimmediate_operand" "")))]
   "TARGET_SSE"
-  "ix86_fixup_binary_operands_no_copy (DIV, V4SFmode, operands);")
+{
+  ix86_fixup_binary_operands_no_copy (DIV, V4SFmode, operands);
+
+  if (TARGET_SSE_MATH && TARGET_RECIP && !optimize_size
+      && flag_finite_math_only && !flag_trapping_math
+      && flag_unsafe_math_optimizations)
+    {
+      ix86_emit_swdivsf (operands[0], operands[1],
+			 operands[2], V4SFmode);
+      DONE;
+    }
+})
 
 (define_insn "*divv4sf3"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
@@ -494,7 +505,7 @@
   [(set_attr "type" "sse")
    (set_attr "mode" "SF")])
 
-(define_insn "sse_rsqrtv4sf2"
+(define_insn "*sse_rsqrtv4sf2"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(unspec:V4SF
 	  [(match_operand:V4SF 1 "nonimmediate_operand" "xm")] UNSPEC_RSQRT))]
@@ -502,6 +513,21 @@
   "rsqrtps\t{%1, %0|%0, %1}"
   [(set_attr "type" "sse")
    (set_attr "mode" "V4SF")])
+
+(define_expand "sse_rsqrtv4sf2"
+  [(set (match_operand:V4SF 0 "register_operand" "")
+	(unspec:V4SF
+	  [(match_operand:V4SF 1 "nonimmediate_operand" "")] UNSPEC_RSQRT))]
+  "TARGET_SSE"
+{
+  if (TARGET_SSE_MATH && TARGET_RECIP && !optimize_size
+      && flag_finite_math_only && !flag_trapping_math
+      && flag_unsafe_math_optimizations)
+    {
+      ix86_emit_swsqrtsf (operands[0], operands[1], V4SFmode, 1);
+      DONE;
+    }
+})
 
 (define_insn "sse_vmrsqrtv4sf2"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
@@ -515,13 +541,27 @@
   [(set_attr "type" "sse")
    (set_attr "mode" "SF")])
 
-(define_insn "sqrtv4sf2"
+(define_insn "*sqrtv4sf2"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(sqrt:V4SF (match_operand:V4SF 1 "nonimmediate_operand" "xm")))]
   "TARGET_SSE"
   "sqrtps\t{%1, %0|%0, %1}"
   [(set_attr "type" "sse")
    (set_attr "mode" "V4SF")])
+
+(define_expand "sqrtv4sf2"
+  [(set (match_operand:V4SF 0 "register_operand" "=")
+	(sqrt:V4SF (match_operand:V4SF 1 "nonimmediate_operand" "")))]
+  "TARGET_SSE"
+{
+  if (TARGET_SSE_MATH && TARGET_RECIP && !optimize_size
+      && flag_finite_math_only && !flag_trapping_math
+      && flag_unsafe_math_optimizations)
+    {
+      ix86_emit_swsqrtsf (operands[0], operands[1], V4SFmode, 0);
+      DONE;
+    }
+})
 
 (define_insn "sse_vmsqrtv4sf2"
   [(set (match_operand:V4SF 0 "register_operand" "=x")

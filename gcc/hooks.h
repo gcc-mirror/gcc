@@ -58,6 +58,7 @@ extern int hook_int_void_no_regs (void);
 
 extern tree hook_tree_tree_tree_null (tree, tree);
 extern tree hook_tree_tree_tree_tree_3rd_identity (tree, tree, tree);
+extern tree hook_tree_tree_bool_null (tree, bool);
 extern tree hook_tree_tree_tree_bool_null (tree, tree, bool);
 
 extern unsigned hook_uint_uint_constcharptrptr_0 (unsigned, const char **);

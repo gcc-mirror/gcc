@@ -1,3 +1,12 @@
+2007-06-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/31723
+	* gcc.target/i386/recip-divf.c: New test.
+	* gcc.target/i386/recip-sqrtf.c: Ditto.
+	* gcc.target/i386/recip-vec-divf.c: Ditto.
+	* gcc.target/i386/recip-vec-sqrtf.c: Ditto.
+	* gcc.target/i386/sse-recip.c: Ditto.
+
 2007-06-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/32225

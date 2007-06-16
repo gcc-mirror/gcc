@@ -365,6 +365,7 @@ extern int x86_prefetch_sse;
 #define TARGET_POPCNT		x86_popcnt
 #define TARGET_PREFETCH_SSE	x86_prefetch_sse
 #define TARGET_SAHF		x86_sahf
+#define TARGET_RECIP		x86_recip
 
 #define ASSEMBLER_DIALECT	(ix86_asm_dialect)
 

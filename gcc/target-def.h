@@ -350,8 +350,10 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
    TARGET_SCHED_SET_SCHED_FLAGS}
 
 #define TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD 0
-#define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION default_builtin_vectorized_function
-#define TARGET_VECTORIZE_BUILTIN_CONVERSION default_builtin_vectorized_conversion
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
+  default_builtin_vectorized_function
+#define TARGET_VECTORIZE_BUILTIN_CONVERSION \
+  default_builtin_vectorized_conversion
 #define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN 0
 #define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD 0
 
@@ -384,6 +386,9 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define TARGET_EXPAND_BUILTIN default_expand_builtin
 #define TARGET_RESOLVE_OVERLOADED_BUILTIN NULL
 #define TARGET_FOLD_BUILTIN hook_tree_tree_tree_bool_null
+
+/* In tree-ssa-math-opts.c  */
+#define TARGET_BUILTIN_RECIPROCAL hook_tree_tree_bool_null
 
 /* In varasm.c.  */
 #ifndef TARGET_SECTION_TYPE_FLAGS
@@ -668,6 +673,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   TARGET_EXPAND_BUILTIN,			\
   TARGET_RESOLVE_OVERLOADED_BUILTIN,		\
   TARGET_FOLD_BUILTIN,				\
+  TARGET_BUILTIN_RECIPROCAL,			\
   TARGET_MANGLE_FUNDAMENTAL_TYPE,		\
   TARGET_INIT_LIBFUNCS,				\
   TARGET_SECTION_TYPE_FLAGS,			\

@@ -496,6 +496,46 @@ execute_cse_reciprocals (void)
 	      && TREE_CODE (def) == SSA_NAME)
 	    execute_cse_reciprocals_1 (&bsi, def);
 	}
+
+      /* Scan for a/func(b) and convert it to reciprocal a*rfunc(b).  */
+      for (bsi = bsi_after_labels (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+        {
+	  tree stmt = bsi_stmt (bsi);
+	  tree fndecl;
+
+	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == RDIV_EXPR)
+	    {
+	      tree arg1 = TREE_OPERAND (GIMPLE_STMT_OPERAND (stmt, 1), 1);
+	      tree stmt1 = SSA_NAME_DEF_STMT (arg1);
+
+	      if (TREE_CODE (stmt1) == GIMPLE_MODIFY_STMT
+		  && TREE_CODE (GIMPLE_STMT_OPERAND (stmt1, 1)) == CALL_EXPR
+		  && (fndecl
+		      = get_callee_fndecl (GIMPLE_STMT_OPERAND (stmt1, 1)))
+		  && (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+		      || DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD))
+		{
+		  enum built_in_function code;
+		  tree arg10;
+		  tree tmp;
+
+		  code = DECL_FUNCTION_CODE (fndecl);
+		  fndecl = targetm.builtin_reciprocal (code, false);
+		  if (!fndecl)
+		    continue;
+
+		  arg10 = CALL_EXPR_ARG (GIMPLE_STMT_OPERAND (stmt1, 1), 0);
+		  tmp = build_call_expr (fndecl, 1, arg10);
+		  GIMPLE_STMT_OPERAND (stmt1, 1) = tmp;
+		  update_stmt (stmt1);
+
+		  TREE_SET_CODE (GIMPLE_STMT_OPERAND (stmt, 1), MULT_EXPR);
+		  fold_stmt_inplace (stmt);
+		  update_stmt (stmt);
+		}
+	    }
+	}
     }
 
   free_dominance_info (CDI_DOMINATORS);
@@ -714,6 +754,91 @@ struct tree_opt_pass pass_cse_sincos =
   "sincos",				/* name */
   gate_cse_sincos,			/* gate */
   execute_cse_sincos,			/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  PROP_ssa,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func | TODO_update_ssa | TODO_verify_ssa
+    | TODO_verify_stmts,                /* todo_flags_finish */
+  0				        /* letter */
+};
+
+/* Find all expressions in the form of sqrt(a/b) and
+   convert them to rsqrt(b/a).  */
+
+static unsigned int
+execute_convert_to_rsqrt (void)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      block_stmt_iterator bsi;
+
+      for (bsi = bsi_after_labels (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+        {
+	  tree stmt = bsi_stmt (bsi);
+	  tree fndecl;
+
+	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == CALL_EXPR
+	      && (fndecl = get_callee_fndecl (GIMPLE_STMT_OPERAND (stmt, 1)))
+	      && (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+		  || DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD))
+	    {
+	      enum built_in_function code;
+	      tree arg1;
+	      tree stmt1;
+
+	      code = DECL_FUNCTION_CODE (fndecl);
+	      fndecl = targetm.builtin_reciprocal (code, true);
+	      if (!fndecl)
+		continue;
+
+	      arg1 = CALL_EXPR_ARG (GIMPLE_STMT_OPERAND (stmt, 1), 0);
+	      stmt1 = SSA_NAME_DEF_STMT (arg1);
+
+	      if (TREE_CODE (stmt1) == GIMPLE_MODIFY_STMT
+		  && TREE_CODE (GIMPLE_STMT_OPERAND (stmt1, 1)) == RDIV_EXPR)
+		{
+		  tree arg10, arg11;
+		  tree tmp;
+
+		  arg10 = TREE_OPERAND (GIMPLE_STMT_OPERAND (stmt1, 1), 0);
+		  arg11 = TREE_OPERAND (GIMPLE_STMT_OPERAND (stmt1, 1), 1);
+
+		  /* Swap operands of RDIV_EXPR.  */
+		  TREE_OPERAND (GIMPLE_STMT_OPERAND (stmt1, 1), 0) = arg11;
+		  TREE_OPERAND (GIMPLE_STMT_OPERAND (stmt1, 1), 1) = arg10;
+		  fold_stmt_inplace (stmt1);
+		  update_stmt (stmt1);
+
+		  tmp = build_call_expr (fndecl, 1, arg1);
+		  GIMPLE_STMT_OPERAND (stmt, 1) = tmp;
+		  update_stmt (stmt);
+		}
+	    }
+	}
+    }
+
+  return 0;
+}
+
+static bool
+gate_convert_to_rsqrt (void)
+{
+  return flag_unsafe_math_optimizations && optimize;
+}
+
+struct tree_opt_pass pass_convert_to_rsqrt =
+{
+  "rsqrt",				/* name */
+  gate_convert_to_rsqrt,		/* gate */
+  execute_convert_to_rsqrt,		/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
