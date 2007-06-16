@@ -388,7 +388,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define TARGET_FOLD_BUILTIN hook_tree_tree_tree_bool_null
 
 /* In tree-ssa-math-opts.c  */
-#define TARGET_BUILTIN_RECIPROCAL hook_tree_tree_bool_null
+#define TARGET_BUILTIN_RECIPROCAL default_builtin_reciprocal
 
 /* In varasm.c.  */
 #ifndef TARGET_SECTION_TYPE_FLAGS

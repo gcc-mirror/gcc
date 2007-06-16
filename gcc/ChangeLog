@@ -1,5 +1,14 @@
 2007-06-16  Uros Bizjak  <ubizjak@gmail.com>
 
+	* targhooks.c (default_builtin_reciprocal): New default target hook.
+	* targhooks.h (default_builtin_reciprocal): Add prototype.
+	* hooks.c (hook_tree_tree_bool_null): Remove hook.
+	* hooks.h (hook_tree_tree_bool_null): Remove prototype.
+	* target-def.h (TARGET_BUILTIN_RECIPROCAL): Define as
+	default_builtin_reciprocal.
+
+2007-06-16  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR middle-end/31723
 	* hooks.c (hook_tree_tree_bool_null): New hook.
 	* hooks.h (hook_tree_tree_bool_null): Add prototype.
