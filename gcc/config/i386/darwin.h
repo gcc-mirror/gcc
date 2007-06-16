@@ -108,6 +108,13 @@ Boston, MA 02110-1301, USA.  */
     ,objective-c++-header|,objc++-cpp-output:10.5;	\
     :10.4}"
 
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+   %{mpc32:crtprec32.o%s} \
+   %{mpc64:crtprec64.o%s} \
+   %{mpc80:crtprec80.o%s}"
+
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS                                   \
   DARWIN_EXTRA_SPECS                                            \
