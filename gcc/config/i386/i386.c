@@ -5023,12 +5023,12 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 		}
 	      src_addr = fold_convert (addr_type, src_addr);
 	      src_addr = fold_build2 (POINTER_PLUS_EXPR, addr_type, src_addr,
-				      build_int_cst (addr_type, src_offset));
+				      size_int (src_offset));
 	      src = build_va_arg_indirect_ref (src_addr);
 
 	      dest_addr = fold_convert (addr_type, addr);
 	      dest_addr = fold_build2 (POINTER_PLUS_EXPR, addr_type, dest_addr,
-				       build_int_cst (addr_type, INTVAL (XEXP (slot, 1))));
+				       size_int (INTVAL (XEXP (slot, 1))));
 	      dest = build_va_arg_indirect_ref (dest_addr);
 
 	      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, dest, src);
