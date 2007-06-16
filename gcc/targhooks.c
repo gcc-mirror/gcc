@@ -338,6 +338,15 @@ default_builtin_vectorized_conversion (enum tree_code code ATTRIBUTE_UNUSED,
   return NULL_TREE;
 }
 
+/* Reciprocal.  */
+
+tree
+default_builtin_reciprocal (enum built_in_function fn ATTRIBUTE_UNUSED,
+			    bool sqrt ATTRIBUTE_UNUSED)
+{
+  return NULL_TREE;
+}
+
 bool
 hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false (
 	CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
