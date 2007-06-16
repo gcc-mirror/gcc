@@ -239,6 +239,9 @@ open_file (_cpp_file *file)
       if (stat (file->path, &file->st) == 0
           && S_ISDIR (file->st.st_mode))
         errno = ENOENT;
+      else
+	/* The call to stat may have reset errno.  */
+	errno = EACCESS;
     }
 #endif    
   else if (errno == ENOTDIR)
