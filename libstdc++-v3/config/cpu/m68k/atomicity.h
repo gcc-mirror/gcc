@@ -89,14 +89,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     _Atomic_word __result;
     
     // bset with no immediate addressing (not SMP-safe)
-#if defined(__mcf5200__) || defined(__mcf5300__)
+#if defined(__mcfisaa__) || defined(__mcfisaaplus__)
     __asm__ __volatile__("1: bset.b #7,%0@\n\tjbne 1b"
 			 : /* no outputs */
 			 : "a"(&_Atomicity_lock<0>::_S_atomicity_lock)
 			 : "cc", "memory");
     
-    // CPU32 and MCF5400 support test-and-set (SMP-safe).
-#elif defined(__mcpu32__) || defined(__mcf5400__)
+    // CPU32 and CF ISAs B & C support test-and-set (SMP-safe).
+#elif defined(__mcpu32__) || defined(__mcfisab__) || defined (__mcfisac__)
     __asm__ __volatile__("1: tas %0\n\tjbne 1b"
 			 : "+m"(_Atomicity_lock<0>::_S_atomicity_lock)
 			 : /* none */
