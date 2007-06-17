@@ -426,7 +426,7 @@ calculate_maxii (ddg_ptr g)
                             ii                          { 1 if not.
 */
 static struct undo_replace_buff_elem *
-generate_reg_moves (partial_schedule_ptr ps)
+generate_reg_moves (partial_schedule_ptr ps, bool rescan)
 {
   ddg_ptr g = ps->g;
   int ii = ps->ii;
@@ -523,6 +523,8 @@ generate_reg_moves (partial_schedule_ptr ps)
 		}
 
 	      replace_rtx (g->nodes[i_use].insn, old_reg, new_reg);
+	      if (rescan)
+		df_insn_rescan (g->nodes[i_use].insn);
 	    }
 
 	  prev_reg = new_reg;
@@ -1151,7 +1153,7 @@ sms_schedule (void)
 
 	  /* Generate the kernel just to be able to measure its cycles.  */
 	  permute_partial_schedule (ps, g->closing_branch->first_note);
-	  reg_move_replaces = generate_reg_moves (ps);
+	  reg_move_replaces = generate_reg_moves (ps, false);
 
 	  /* Get the number of cycles the new kernel expect to execute in.  */
 	  new_cycles = kernel_number_of_cycles (BB_HEAD (g->bb), BB_END (g->bb));
@@ -1201,7 +1203,7 @@ sms_schedule (void)
 	      /* The life-info is not valid any more.  */
 	      df_set_bb_dirty (g->bb);
 
-	      reg_move_replaces = generate_reg_moves (ps);
+	      reg_move_replaces = generate_reg_moves (ps, true);
 	      if (dump_file)
 		print_node_sched_params (dump_file, g->num_nodes);
 	      /* Generate prolog and epilog.  */
@@ -2481,8 +2483,8 @@ rest_of_handle_sms (void)
   FOR_EACH_BB (bb)
     if (bb->next_bb != EXIT_BLOCK_PTR)
       bb->aux = bb->next_bb;
-  cfg_layout_finalize ();
   free_dominance_info (CDI_DOMINATORS);
+  cfg_layout_finalize ();
 #endif /* INSN_SCHEDULING */
   return 0;
 }
