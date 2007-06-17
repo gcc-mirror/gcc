@@ -233,7 +233,8 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 #define FL_FOR_isa_aplus (FL_FOR_isa_a | FL_ISA_APLUS | FL_CF_USP)
 /* Note ISA_B doesn't necessarily include USP (user stack pointer) support.  */
 #define FL_FOR_isa_b     (FL_FOR_isa_a | FL_ISA_B | FL_CF_HWDIV)
-#define FL_FOR_isa_c     (FL_FOR_isa_b | FL_ISA_C | FL_CF_USP)
+/* ISA_C is not upwardly compatible with ISA_B.  */
+#define FL_FOR_isa_c     (FL_FOR_isa_a | FL_ISA_C | FL_CF_HWDIV | FL_CF_USP)
 
 enum m68k_isa
 {
@@ -563,20 +564,27 @@ override_options (void)
   else if (TARGET_ID_SHARED_LIBRARY)
     /* All addresses must be loaded from the GOT.  */
     ;
-  else if (TARGET_68020 || TARGET_ISAB)
+  else if (TARGET_68020 || TARGET_ISAB || TARGET_ISAC)
     {
       if (TARGET_PCREL)
-	{
-	  m68k_symbolic_call = "bsr.l %c0";
-	  m68k_symbolic_jump = "bra.l %c0";
-	}
+	m68k_symbolic_call = "bsr.l %c0";
       else
 	{
 #if defined(USE_GAS)
 	  m68k_symbolic_call = "bsr.l %p0";
-	  m68k_symbolic_jump = "bra.l %p0";
 #else
 	  m68k_symbolic_call = "bsr %p0";
+#endif
+	}
+      if (TARGET_ISAC)
+	/* No unconditional long branch */;
+      else if (TARGET_PCREL)
+	m68k_symbolic_jump = "bra.l %c0";
+      else
+	{
+#if defined(USE_GAS)
+	  m68k_symbolic_jump = "bra.l %p0";
+#else
 	  m68k_symbolic_jump = "bra %p0";
 #endif
 	}
