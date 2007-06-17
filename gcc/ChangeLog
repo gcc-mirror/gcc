@@ -7,6 +7,13 @@
 	* config/m68k/m68k.c (all_isas): Remove FL_CF_FPU and
 	FL_CF_EMAC from the entry for isac.
 
+	* config/m68k/predicates.md (const_call_operand): Adjust comment.
+	(const_sibcall_operand): New.
+	(sibcall_operand): Use it.
+	* config/m68k/m68k.c (FL_FOR_isa_c): Not ISA_B compatible.
+	(m68k_isas): ISAC does not imply FPU or EMAC.
+	(override_options): Add ISA_C logic for symbolic jump & call.
+
 2007-06-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (sparc_vis_init_builtins): Retrieve the
