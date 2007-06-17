@@ -1,3 +1,9 @@
+2007-06-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/m68k/m68k.h (ISA_HAS_FF1, ISA_HAS_MVS_MVZ): New.
+	* config/m68k/m68k.md: Use ISA_HAS_FF1 and ISA_HAS_MVS_MVZ as
+	appropriate.
+
 2007-06-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (sparc_vis_init_builtins): Retrieve the
