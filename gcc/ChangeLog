@@ -1,3 +1,9 @@
+2007-06-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (sparc_vis_init_builtins): Retrieve the
+	return mode from the builtin itself.
+	(sparc_fold_builtin): Fix cast of zero constant.
+
 2007-06-15  Diego Novillo  <dnovillo@google.com>
 
 	PR 32327

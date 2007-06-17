@@ -1,3 +1,15 @@
+2007-06-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.target/sparc/align.c: Use 'unsigned char' as element type.
+	* gcc.target/sparc/combined-2.c: Likewise.
+	* gcc.target/sparc/fexpand.c : Likewise.
+	* gcc.target/sparc/fnot.c: Likewise.  Fix a couple of prototypes.
+	* gcc.target/sparc/fpack16.c : Likewise.
+	* gcc.target/sparc/fpmerge.c : Likewise.
+	* gcc.target/sparc/fpmul.c : Likewise.
+	* gcc.target/sparc/noresult.c : Likewise.
+	* gcc.target/sparc/pdist.c: Likewise.
+
 2007-06-15  Diego Novillo  <dnovillo@google.com>
 
 	PR 32327

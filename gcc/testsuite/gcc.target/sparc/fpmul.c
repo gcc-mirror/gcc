@@ -2,9 +2,9 @@
 /* { dg-options "-mcpu=ultrasparc -mvis" } */
 typedef int vec32 __attribute__((vector_size(8)));
 typedef short vec16 __attribute__((vector_size(8)));
-typedef char pixel __attribute__((vector_size(4)));
+typedef unsigned char pixel __attribute__((vector_size(4)));
 typedef short pixel16 __attribute__((vector_size(4)));
-typedef char vec8 __attribute__((vector_size(8)));
+typedef unsigned char vec8 __attribute__((vector_size(8)));
 
 vec16 foo1 (pixel a, vec16 b) {
   return __builtin_vis_fmul8x16 (a, b);
