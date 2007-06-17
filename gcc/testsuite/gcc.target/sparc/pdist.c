@@ -1,8 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mcpu=ultrasparc -mvis" } */
-
 typedef long long int64_t;
-typedef char vec8 __attribute__((vector_size(8)));
+typedef unsigned char vec8 __attribute__((vector_size(8)));
 
 int64_t foo (vec8 a, vec8 b) {
   int64_t d = 0;

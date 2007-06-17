@@ -1,3 +1,9 @@
+2007-06-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (sparc_vis_init_builtins): Retrieve the
+	return mode from the builtin itself.
+	(sparc_fold_builtin): Fix cast of zero constant.
+
 2007-06-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* targhooks.c (default_builtin_reciprocal): New default target hook.

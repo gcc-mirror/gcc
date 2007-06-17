@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mcpu=ultrasparc -mvis" } */
-typedef char pixel __attribute__((vector_size(4)));
-typedef char vec8 __attribute__((vector_size(8)));
+typedef unsigned char pixel __attribute__((vector_size(4)));
+typedef unsigned char vec8 __attribute__((vector_size(8)));
 typedef short vec16 __attribute__((vector_size(8)));
 
 vec16 foo (pixel a, pixel b) {

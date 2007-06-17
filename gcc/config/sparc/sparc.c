@@ -8031,8 +8031,10 @@ sparc_vis_init_builtins (void)
    Expand builtin functions for sparc intrinsics.  */
 
 static rtx
-sparc_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
-		      enum machine_mode tmode, int ignore ATTRIBUTE_UNUSED)
+sparc_expand_builtin (tree exp, rtx target,
+		      rtx subtarget ATTRIBUTE_UNUSED,
+		      enum machine_mode tmode ATTRIBUTE_UNUSED,
+		      int ignore ATTRIBUTE_UNUSED)
 {
   tree arg;
   call_expr_arg_iterator iter;
@@ -8042,14 +8044,13 @@ sparc_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   enum machine_mode mode[4];
   int arg_count = 0;
 
-  mode[arg_count] = tmode;
-
-  if (target == 0
-      || GET_MODE (target) != tmode
-      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-    op[arg_count] = gen_reg_rtx (tmode);
+  mode[0] = insn_data[icode].operand[0].mode;
+  if (!target
+      || GET_MODE (target) != mode[0]
+      || ! (*insn_data[icode].operand[0].predicate) (target, mode[0]))
+    op[0] = gen_reg_rtx (mode[0]);
   else
-    op[arg_count] = target;
+    op[0] = target;
 
   FOR_EACH_CALL_EXPR_ARG (arg, iter, exp)
     {
@@ -8162,11 +8163,11 @@ sparc_fold_builtin (tree fndecl, tree arglist, bool ignore)
 {
   tree arg0, arg1, arg2;
   tree rtype = TREE_TYPE (TREE_TYPE (fndecl));
-  
 
-  if (ignore && DECL_FUNCTION_CODE (fndecl) != CODE_FOR_alignaddrsi_vis
+  if (ignore
+      && DECL_FUNCTION_CODE (fndecl) != CODE_FOR_alignaddrsi_vis
       && DECL_FUNCTION_CODE (fndecl) != CODE_FOR_alignaddrdi_vis)
-    return build_int_cst (rtype, 0);
+    return fold_convert (rtype, integer_zero_node);
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
@@ -8280,6 +8281,7 @@ sparc_fold_builtin (tree fndecl, tree arglist, bool ignore)
     default:
       break;
     }
+
   return NULL_TREE;
 }
 
