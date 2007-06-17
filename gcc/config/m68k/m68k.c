@@ -296,9 +296,7 @@ static const struct m68k_target_selection all_isas[] =
   { "isaaplus", mcf5271,    NULL,  ucfv2,    isa_aplus, (FL_FOR_isa_aplus
 							 | FL_CF_HWDIV) },
   { "isab",     mcf5407,    NULL,  ucfv4,    isa_b,     FL_FOR_isa_b },
-  { "isac",     unk_device, NULL,  ucfv4,    isa_c,     (FL_FOR_isa_c
-							 | FL_CF_FPU
-							 | FL_CF_EMAC) },
+  { "isac",     unk_device, NULL,  ucfv4,    isa_c,     FL_FOR_isa_c },
   { NULL,       unk_device, NULL,  unk_arch, isa_max,   0 }
 };
 

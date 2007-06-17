@@ -4,6 +4,9 @@
 	* config/m68k/m68k.md: Use ISA_HAS_FF1 and ISA_HAS_MVS_MVZ as
 	appropriate.
 
+	* config/m68k/m68k.c (all_isas): Remove FL_CF_FPU and
+	FL_CF_EMAC from the entry for isac.
+
 2007-06-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (sparc_vis_init_builtins): Retrieve the
