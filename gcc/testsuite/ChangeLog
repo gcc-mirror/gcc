@@ -6,6 +6,7 @@
 	* gcc.target/i386/recip-vec-divf.c: Ditto.
 	* gcc.target/i386/recip-vec-sqrtf.c: Ditto.
 	* gcc.target/i386/sse-recip.c: Ditto.
+	* gcc.target/i386/sse-recip-vec.c: Ditto.
 
 2007-06-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 

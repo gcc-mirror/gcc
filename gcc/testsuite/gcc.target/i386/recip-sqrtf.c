@@ -1,5 +1,5 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 -ffast-math -msse2 -mfpmath=sse -mrecip" } */
+/* { dg-options "-O2 -ffast-math -msse -mfpmath=sse -mrecip" } */
 
 extern float sqrtf (float);
 
@@ -8,7 +8,7 @@ float t1(float a, float b)
   return a/sqrtf(b);
 }
 
-float t2(float x, float a, float b)
+float t2(float a, float b)
 {
   return sqrtf(a/b);
 }
