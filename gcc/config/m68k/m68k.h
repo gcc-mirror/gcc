@@ -245,6 +245,10 @@ Boston, MA 02110-1301, USA.  */
 #define TARGET_ISAB		((m68k_cpu_flags & FL_ISA_B) != 0)
 #define TARGET_ISAC		((m68k_cpu_flags & FL_ISA_C) != 0)
 
+/* Some instructions are common to more than one ISA.  */
+#define ISA_HAS_MVS_MVZ	(TARGET_ISAB || TARGET_ISAC)
+#define ISA_HAS_FF1	(TARGET_ISAAPLUS || TARGET_ISAC)
+
 #define TUNE_68000	(m68k_tune == u68000)
 #define TUNE_68010	(m68k_tune == u68010)
 #define TUNE_68000_10	(TUNE_68000 || TUNE_68010)
