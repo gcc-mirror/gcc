@@ -1,10 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-mcpu=ultrasparc -mvis" } */
-
 typedef long long int64_t;
 typedef int vec32 __attribute__((vector_size(8)));
 typedef short vec16 __attribute__((vector_size(8)));
-typedef char vec8 __attribute__((vector_size(8)));
+typedef unsigned char vec8 __attribute__((vector_size(8)));
 
 vec16 foo1 (vec16 a, vec16 b) {
   return __builtin_vis_faligndatav4hi (a, b);
