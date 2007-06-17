@@ -234,14 +234,14 @@ open_file (_cpp_file *file)
       /* On most UNIX systems, open succeeds on a directory.  Above,
          we check if we have opened a directory and if so, set errno
          to ENOENT.  However, on Windows, opening a directory
-         fails with EACCESS.  We want to return ENOENT in that
+         fails with EACCES.  We want to return ENOENT in that
          case too.  */
       if (stat (file->path, &file->st) == 0
           && S_ISDIR (file->st.st_mode))
         errno = ENOENT;
       else
 	/* The call to stat may have reset errno.  */
-	errno = EACCESS;
+	errno = EACCES;
     }
 #endif    
   else if (errno == ENOTDIR)
