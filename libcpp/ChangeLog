@@ -1,15 +1,15 @@
 2007-06-17  Danny Smith  <dannysmith@users.sourceforge.net
 
-	* cppfiles.c (open_file): Correct typo.
+	* files.c (open_file): Correct typo.
 
 2007-06-16  Vladimir Prus  <vladimir@codesourcery.com>
 
-	* cppfiles.c (open_file): Prevent the call
+	* files.c (open_file): Prevent the call
 	for stat from overwriting errno.
 
 2007-06-09  Vladimir Prus  <vladimir@codesourcery.com>
 
-	* cppfiles.c (open_file): Account for the
+	* files.c (open_file): Account for the
         fact that on windows, opening a directory gives
         EACCES.
 
