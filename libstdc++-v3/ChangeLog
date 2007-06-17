@@ -1,3 +1,8 @@
+2007-06-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/cpu/m68k/atomicity.h: Use __mcfisaa__, __mcfisaaplus__,
+	__mcfisab__ & __mcfisac__ instead of obsolete cpu #defines.
+
 2007-06-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* libsupc++/eh_arm.cc (__cxa_type_match): Handle foreign
