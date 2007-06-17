@@ -1,3 +1,7 @@
+2007-06-17  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* gcc.c-torture/compile/pr32349.c: New testcase.
+	
 2007-06-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.target/sparc/align.c: Use 'unsigned char' as element type.

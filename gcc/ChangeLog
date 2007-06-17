@@ -1,3 +1,12 @@
+2007-06-17  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR middle-end/32349
+	* modulo-sched (generate_reg_moves): Added rescan parameter and if
+	this is true, rescan insn being modified.
+	(sms_schedule): Added rescan parameter.
+	(rest_of_handle_sms): Moved freeing of dominance info to before
+	getting out of cfg_layout.
+	
 2007-06-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/m68k/m68k.h (ISA_HAS_FF1, ISA_HAS_MVS_MVZ): New.
