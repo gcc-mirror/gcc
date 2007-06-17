@@ -1,5 +1,5 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 -ffast-math -ftree-vectorize -msse2 -mfpmath=sse -mrecip" } */
+/* { dg-options "-O2 -ffast-math -ftree-vectorize -msse -mfpmath=sse -mrecip" } */
 
 float a[16];
 float b[16];
