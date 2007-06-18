@@ -1913,7 +1913,7 @@ static void cp_parser_template_declaration_after_export
 static void cp_parser_perform_template_parameter_access_checks
   (VEC (deferred_access_check,gc)*);
 static tree cp_parser_single_declaration
-  (cp_parser *, VEC (deferred_access_check,gc)*, bool, bool *);
+  (cp_parser *, VEC (deferred_access_check,gc)*, bool, bool, bool *);
 static tree cp_parser_functional_cast
   (cp_parser *, tree);
 static tree cp_parser_save_member_function_body
@@ -10225,6 +10225,7 @@ cp_parser_explicit_specialization (cp_parser* parser)
     cp_parser_single_declaration (parser,
 				  /*checks=*/NULL,
 				  /*member_p=*/false,
+                                  /*explicit_specialization_p=*/true,
 				  /*friend_p=*/NULL);
   /* We're done with the specialization.  */
   end_specialization ();
@@ -16510,6 +16511,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
       decl = cp_parser_single_declaration (parser,
 					   checks,
 					   member_p,
+                                           /*explicit_specialization_p=*/false,
 					   &friend_p);
       pop_deferring_access_checks ();
 
@@ -16575,6 +16577,7 @@ static tree
 cp_parser_single_declaration (cp_parser* parser,
 			      VEC (deferred_access_check,gc)* checks,
 			      bool member_p,
+                              bool explicit_specialization_p,
 			      bool* friend_p)
 {
   int declares_class_or_enum;
@@ -16648,13 +16651,27 @@ cp_parser_single_declaration (cp_parser* parser,
   if (!decl
       && (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON)
 	  || decl_specifiers.type != error_mark_node))
-    decl = cp_parser_init_declarator (parser,
-				      &decl_specifiers,
-				      checks,
-				      /*function_definition_allowed_p=*/true,
-				      member_p,
-				      declares_class_or_enum,
-				      &function_definition_p);
+    {
+      decl = cp_parser_init_declarator (parser,
+				        &decl_specifiers,
+				        checks,
+				        /*function_definition_allowed_p=*/true,
+				        member_p,
+				        declares_class_or_enum,
+				        &function_definition_p);
+
+    /* 7.1.1-1 [dcl.stc]
+
+       A storage-class-specifier shall not be specified in an explicit
+       specialization...  */
+    if (decl
+        && explicit_specialization_p
+        && decl_specifiers.storage_class != sc_none)
+      {
+        error ("explicit template specialization cannot have a storage class");
+        decl = error_mark_node;
+      }
+    }
 
   pop_deferring_access_checks ();
 

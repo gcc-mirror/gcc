@@ -2193,6 +2193,37 @@ check_explicit_specialization (tree declarator,
 	  TREE_PRIVATE (decl) = TREE_PRIVATE (gen_tmpl);
 	  TREE_PROTECTED (decl) = TREE_PROTECTED (gen_tmpl);
 
+          /* 7.1.1-1 [dcl.stc]
+
+             A storage-class-specifier shall not be specified in an
+             explicit specialization...
+
+             The parser rejects these, so unless action is taken here,
+             explicit function specializations will always appear with
+             global linkage.
+
+             The action recommended by the C++ CWG in response to C++
+             defect report 605 is to make the storage class and linkage
+             of the explicit specialization match the templated function:
+
+             http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#605
+           */
+          if (tsk == tsk_expl_spec && DECL_FUNCTION_TEMPLATE_P (gen_tmpl))
+            {
+              tree tmpl_func = DECL_TEMPLATE_RESULT (gen_tmpl);
+              gcc_assert (TREE_CODE (tmpl_func) == FUNCTION_DECL);
+
+              /* This specialization has the same linkage and visiblity as
+                 the function template it specializes.  */
+              TREE_PUBLIC (decl) = TREE_PUBLIC (tmpl_func);
+              DECL_THIS_STATIC (decl) = DECL_THIS_STATIC (tmpl_func);
+              if (DECL_VISIBILITY_SPECIFIED (tmpl_func))
+                {
+                  DECL_VISIBILITY_SPECIFIED (decl) = 1;
+                  DECL_VISIBILITY (decl) = DECL_VISIBILITY (tmpl_func);
+                }
+            }
+
 	  /* If DECL is a friend declaration, declared using an
 	     unqualified name, the namespace associated with DECL may
 	     have been set incorrectly.  For example, in:

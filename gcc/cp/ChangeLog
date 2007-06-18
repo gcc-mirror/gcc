@@ -1,3 +1,16 @@
+2007-06-18  Simon Baldwin <simonb@google.com>
+
+	PR c++/31923
+	* parser.c (cp_parser_single_declaration): Added check for storage
+	class other than sc_none in parsed declaration, and a flag to indicate
+	if the call is part of an explicit template specialization parse.
+	* (cp_parser_explicit_specialization): Specialization check flag added
+	to call to cp_parser_single_declaration(), set true.
+	* (cp_parser_template_declaration_after_export): Specialization check
+	flag added to call to cp_parser_single_declaration(), set false.
+	* pt.c (check_explicit_specialization): Added code to copy visiblity
+	and linkage from the templated function to the explicit specialization.
+
 2007-06-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* typeck.c (build_binary_op): For templates build the
