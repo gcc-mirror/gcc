@@ -5266,17 +5266,20 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 		  break;
 		}
 
-	      if (code->expr2->ts.type == BT_DERIVED
-		  && derived_pointer (code->expr2->ts.derived))
+	      if (code->expr->ts.type == BT_DERIVED
+		    && code->expr->expr_type == EXPR_VARIABLE
+		    && derived_pointer (code->expr->ts.derived)
+		    && gfc_impure_variable (code->expr2->symtree->n.sym))
 		{
-		  gfc_error ("Right side of assignment at %L is a derived "
-			     "type containing a POINTER in a PURE procedure",
+		  gfc_error ("The impure variable at %L is assigned to "
+			     "a derived type variable with a POINTER "
+			     "component in a PURE procedure (12.6)",
 			     &code->expr2->where);
 		  break;
 		}
 	    }
 
-	  gfc_check_assign (code->expr, code->expr2, 1);
+	    gfc_check_assign (code->expr, code->expr2, 1);
 	  break;
 
 	case EXEC_LABEL_ASSIGN:
@@ -6800,21 +6803,36 @@ resolve_data (gfc_data * d)
 }
 
 
+/* 12.6 Constraint: In a pure subprogram any variable which is in common or
+   accessed by host or use association, is a dummy argument to a pure function,
+   is a dummy argument with INTENT (IN) to a pure subroutine, or an object that
+   is storage associated with any such variable, shall not be used in the
+   following contexts: (clients of this function).  */
+
 /* Determines if a variable is not 'pure', ie not assignable within a pure
    procedure.  Returns zero if assignment is OK, nonzero if there is a
    problem.  */
-
 int
 gfc_impure_variable (gfc_symbol *sym)
 {
+  gfc_symbol *proc;
+
   if (sym->attr.use_assoc || sym->attr.in_common)
     return 1;
 
   if (sym->ns != gfc_current_ns)
     return !sym->attr.function;
 
-  /* TODO: Check storage association through EQUIVALENCE statements */
+  proc = sym->ns->proc_name;
+  if (sym->attr.dummy && gfc_pure (proc)
+	&& ((proc->attr.subroutine && sym->attr.intent == INTENT_IN)
+		||
+	     proc->attr.function))
+    return 1;
 
+  /* TODO: Sort out what can be storage associated, if anything, and include
+     it here.  In principle equivalences should be scanned but it does not
+     seem to be possible to storage associate an impure variable this way.  */
   return 0;
 }
 
