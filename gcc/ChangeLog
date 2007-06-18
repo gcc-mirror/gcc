@@ -1,3 +1,10 @@
+2007-06-18  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR middle-end/32355
+	* gcse (rest_of_handle_gcse): Add call to df_finish_pass after
+	cse_main.
+	* df-problems.c (df_note_bb_compute): Fix dumping info.
+	
 2007-06-18  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/m68k/m68k.c (m68k_expand_epilogue): Emit a return
