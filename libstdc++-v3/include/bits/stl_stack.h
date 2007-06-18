@@ -1,6 +1,6 @@
 // Stack implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -59,8 +59,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _STACK_H
-#define _STACK_H 1
+#ifndef _STL_STACK_H
+#define _STL_STACK_H 1
 
 #include <bits/concept_check.h>
 #include <debug/debug.h>
@@ -258,4 +258,4 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
-#endif /* _STACK_H */
+#endif /* _STL_STACK_H */

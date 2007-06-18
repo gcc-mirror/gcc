@@ -59,8 +59,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _TEMPBUF_H
-#define _TEMPBUF_H 1
+#ifndef _STL_TEMPBUF_H
+#define _STL_TEMPBUF_H 1
 
 #include <bits/stl_algobase.h>
 #include <bits/stl_construct.h>
@@ -220,5 +220,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
-#endif /* _TEMPBUF_H */
+#endif /* _STL_TEMPBUF_H */
 

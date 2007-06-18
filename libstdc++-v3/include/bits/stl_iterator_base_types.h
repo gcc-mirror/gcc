@@ -62,8 +62,8 @@
  *  such as iterator_traits and struct iterator.
  */
 
-#ifndef _ITERATOR_BASE_TYPES_H
-#define _ITERATOR_BASE_TYPES_H 1
+#ifndef _STL_ITERATOR_BASE_TYPES_H
+#define _STL_ITERATOR_BASE_TYPES_H 1
 
 #pragma GCC system_header
 
@@ -170,5 +170,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
-#endif /* _ITERATOR_BASE_TYPES_H */
+#endif /* _STL_ITERATOR_BASE_TYPES_H */
 

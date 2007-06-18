@@ -59,8 +59,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _ALGOBASE_H
-#define _ALGOBASE_H 1
+#ifndef _STL_ALGOBASE_H
+#define _STL_ALGOBASE_H 1
 
 #include <bits/c++config.h>
 #include <cstddef>

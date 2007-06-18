@@ -59,8 +59,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _LIST_H
-#define _LIST_H 1
+#ifndef _STL_LIST_H
+#define _STL_LIST_H 1
 
 #include <bits/concept_check.h>
 
@@ -1258,5 +1258,5 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 
 _GLIBCXX_END_NESTED_NAMESPACE
 
-#endif /* _LIST_H */
+#endif /* _STL_LIST_H */
 
