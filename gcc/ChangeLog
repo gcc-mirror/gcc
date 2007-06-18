@@ -1,9 +1,3 @@
-2007-06-18  Seongbae Park  <seongbae.park@gmail.com>
-
-	PR rtl-optimization/32339
-	* df-scan.c (df_uses_record): Don't modify flags but just add to
-	it for df_ref_record.
-
 2007-06-18  David Daney  <ddaney@avtrex.com
 
 	Revert:
