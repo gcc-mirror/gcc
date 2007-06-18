@@ -1,3 +1,9 @@
+2007-06-18  Martin Michlmayr  <tbm@cyrius.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac: Add AC_CANONICAL_TARGET.
+	* configure: Regenerated.
+
 2007-04-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in (aclocal.m4): Depend on stdint.m4 instead of
