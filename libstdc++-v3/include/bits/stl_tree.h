@@ -61,8 +61,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _TREE_H
-#define _TREE_H 1
+#ifndef _STL_TREE_H
+#define _STL_TREE_H 1
 
 #include <bits/stl_algobase.h>
 #include <bits/allocator.h>

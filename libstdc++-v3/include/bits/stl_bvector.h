@@ -59,8 +59,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _BVECTOR_H
-#define _BVECTOR_H 1
+#ifndef _STL_BVECTOR_H
+#define _STL_BVECTOR_H 1
 
 _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 

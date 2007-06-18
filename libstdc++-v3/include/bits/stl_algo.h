@@ -59,8 +59,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _ALGO_H
-#define _ALGO_H 1
+#ifndef _STL_ALGO_H
+#define _STL_ALGO_H 1
 
 #include <bits/stl_heap.h>
 #include <bits/stl_tempbuf.h>  // for _Temporary_buffer
@@ -5516,4 +5516,4 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
-#endif /* _ALGO_H */
+#endif /* _STL_ALGO_H */

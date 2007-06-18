@@ -59,8 +59,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _MAP_H
-#define _MAP_H 1
+#ifndef _STL_MAP_H
+#define _STL_MAP_H 1
 
 #include <bits/functexcept.h>
 #include <bits/concept_check.h>
@@ -737,4 +737,4 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 
 _GLIBCXX_END_NESTED_NAMESPACE
 
-#endif /* _MAP_H */
+#endif /* _STL_MAP_H */

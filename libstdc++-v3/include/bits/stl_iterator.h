@@ -63,8 +63,8 @@
  *  supporting functions and overloaded operators.
  */
 
-#ifndef _ITERATOR_H
-#define _ITERATOR_H 1
+#ifndef _STL_ITERATOR_H
+#define _STL_ITERATOR_H 1
 
 #include <bits/cpp_type_traits.h>
 #include <ext/type_traits.h>

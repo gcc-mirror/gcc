@@ -1,6 +1,7 @@
 // Multiset implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,8 +59,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _MULTISET_H
-#define _MULTISET_H 1
+#ifndef _STL_MULTISET_H
+#define _STL_MULTISET_H 1
 
 #include <bits/concept_check.h>
 
@@ -562,4 +563,4 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 
 _GLIBCXX_END_NESTED_NAMESPACE
 
-#endif /* _MULTISET_H */
+#endif /* _STL_MULTISET_H */

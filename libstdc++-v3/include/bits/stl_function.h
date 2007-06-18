@@ -1,6 +1,7 @@
 // Functor implementations -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,8 +59,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _FUNCTION_H
-#define _FUNCTION_H 1
+#ifndef _STL_FUNCTION_H
+#define _STL_FUNCTION_H 1
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -752,4 +753,4 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
-#endif /* _FUNCTION_H */
+#endif /* _STL_FUNCTION_H */

@@ -59,8 +59,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _DEQUE_H
-#define _DEQUE_H 1
+#ifndef _STL_DEQUE_H
+#define _STL_DEQUE_H 1
 
 #include <bits/concept_check.h>
 #include <bits/stl_iterator_base_types.h>
@@ -1600,4 +1600,4 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 
 _GLIBCXX_END_NESTED_NAMESPACE
 
-#endif /* _DEQUE_H */
+#endif /* _STL_DEQUE_H */
