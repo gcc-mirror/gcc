@@ -131,6 +131,12 @@ M68K_DEVICE ("537x",  mcf537x,  "5373",  "5329",  cfv3,     isa_aplus, FL_CF_HWD
 
 /* CFV4/CFV4e processors.  */
 M68K_DEVICE ("5407",  mcf5407,  "5407",  "5407",  cfv4,     isa_b,     FL_CF_MAC)
+M68K_DEVICE ("54450", mcf54450, "54455", "54455", cfv4,     isa_c,     FL_CF_USP | FL_CF_EMAC | FL_MMU)
+M68K_DEVICE ("54451", mcf54451, "54455", "54455", cfv4,     isa_c,     FL_CF_USP | FL_CF_EMAC | FL_MMU)
+M68K_DEVICE ("54452", mcf54452, "54455", "54455", cfv4,     isa_c,     FL_CF_USP | FL_CF_EMAC | FL_MMU)
+M68K_DEVICE ("54453", mcf54453, "54455", "54455", cfv4,     isa_c,     FL_CF_USP | FL_CF_EMAC | FL_MMU)
+M68K_DEVICE ("54454", mcf54454, "54455", "54455", cfv4,     isa_c,     FL_CF_USP | FL_CF_EMAC | FL_MMU)
+M68K_DEVICE ("54455", mcf54455, "54455", "54455", cfv4,     isa_c,     FL_CF_USP | FL_CF_EMAC | FL_MMU)
 M68K_DEVICE ("5470",  mcf5470,  "5475",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
 M68K_DEVICE ("5471",  mcf5471,  "5475",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
 M68K_DEVICE ("5472",  mcf5472,  "5475",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
