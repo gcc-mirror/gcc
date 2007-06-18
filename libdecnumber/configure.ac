@@ -71,6 +71,8 @@ else
 fi
 AC_SUBST(MAINT)
 
+AC_CANONICAL_TARGET
+
 # Default decimal format
 # If you change the defaults here, be sure to change them in the GCC directory also
 AC_MSG_CHECKING([for decimal floating point])
