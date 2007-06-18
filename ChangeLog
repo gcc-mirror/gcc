@@ -1,3 +1,8 @@
+2007-06-18  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.def: Add dependency from configure-gdb to all-bfd.
+	* Makefile.in: Regenerated.
+
 2007-06-14  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* configure.ac: Don't add target-libmudflap to noconfigdirs for
