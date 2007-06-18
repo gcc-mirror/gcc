@@ -60,7 +60,7 @@ extern tree default_builtin_vectorized_function
 
 extern tree default_builtin_vectorized_conversion (enum tree_code, tree);
 
-extern tree default_builtin_reciprocal (enum built_in_function, bool);
+extern tree default_builtin_reciprocal (enum built_in_function, bool, bool);
 
 /* These are here, and not in hooks.[ch], because not all users of
    hooks.h include tm.h, and thus we don't have CUMULATIVE_ARGS.  */

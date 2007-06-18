@@ -1,3 +1,19 @@
+2007-06-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/32383
+	* targhooks.c (default_builtin_reciprocal): Add new bool argument.
+	* targhooks.h (default_builtin_reciprocal): Update prototype.
+	* target.h (struct gcc_target): Update builtin_reciprocal.
+	* doc/tm.texi (TARGET_BUILTIN_RECIPROCAL): Update description.
+	* tree-ssa-math-opts (execute_cse_reciprocals): Skip statements
+	where arg1 is not SSA_NAME.  Pass true to targetm.builtin_reciprocal
+	when fndecl is in BUILT_IN_MD class.
+	(execute_convert_to_rsqrt): Ditto.
+
+	* config/i386/i386.c (ix86_builtin_reciprocal): Update for new bool
+	argument.  Convert IX86_BUILTIN_SQRTPS code only when md_fn is true.
+	Convert BUILT_IN_SQRTF code only  when md_fn is false.
+
 2007-06-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* bt-load.c (move_btr_def): Fix the order of arguments
