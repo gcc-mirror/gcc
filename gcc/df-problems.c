@@ -3867,8 +3867,10 @@ df_note_bb_compute (unsigned int bb_index,
   for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
     {
       struct df_ref *def = *def_rec;
+#ifdef REG_DEAD_DEBUGGING
       if (dump_file)
 	fprintf (dump_file, "artificial def %d\n", DF_REF_REGNO (def));
+#endif
 
       if ((DF_REF_FLAGS (def) & DF_REF_AT_TOP) == 0)
 	bitmap_clear_bit (live, DF_REF_REGNO (def));

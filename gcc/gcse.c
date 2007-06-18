@@ -6704,6 +6704,7 @@ rest_of_handle_gcse (void)
     {
       timevar_push (TV_CSE);
       tem2 = cse_main (get_insns (), max_reg_num ());
+      df_finish_pass ();
       purge_all_dead_edges ();
       delete_trivially_dead_insns (get_insns (), max_reg_num ());
       timevar_pop (TV_CSE);
