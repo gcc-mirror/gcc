@@ -288,6 +288,15 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
       switch (ref->type)
 	{
 	case REF_ARRAY:
+	  if (init && expr->expr_type != EXPR_ARRAY)
+	    {
+	      gfc_error ("'%s' at %L already is initialized at %L",
+			 lvalue->symtree->n.sym->name, &lvalue->where,
+			 &init->where);
+	      gfc_free_expr (init);
+	      init = NULL;
+	    }
+
 	  if (init == NULL)
 	    {
 	      /* The element typespec will be the same as the array
@@ -297,8 +306,6 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 	      expr->expr_type = EXPR_ARRAY;
 	      expr->rank = ref->u.ar.as->rank;
 	    }
-	  else
-	    gcc_assert (expr->expr_type == EXPR_ARRAY);
 
 	  if (ref->u.ar.type == AR_ELEMENT)
 	    get_array_index (&ref->u.ar, &offset);

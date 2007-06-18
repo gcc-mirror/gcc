@@ -13,16 +13,26 @@ block data
   data cb /99/
 end block data
 
+  integer(4), parameter :: abcd = ichar ("a") + 256_4 * (ichar("b") + 256_4 * &
+                                 (ichar ("c") + 256_4 * ichar ("d")))
+  logical(4), parameter :: bigendian = transfer (abcd, "wxyz") .eq. "abcd"
+
   call int4_int4
   call real4_real4
   call complex_real
   call check_block_data
   call derived_types         ! Thanks to Tobias Burnus for this:)
 !
-! This came up in PR29786 comment #9
+! This came up in PR29786 comment #9 - Note the need to treat endianess
+! Thanks Dominique d'Humieres:)
 !
-  if (d1mach (1) .ne. transfer ((/0_4, 1048576_4/), 1d0)) call abort ()
-  if (d1mach (2) .ne. transfer ((/-1_4,2146435071_4/), 1d0)) call abort ()
+  if (bigendian) then
+    if (d1mach_little (1) .ne. transfer ((/0_4, 1048576_4/), 1d0)) call abort ()
+    if (d1mach_little (2) .ne. transfer ((/-1_4,2146435071_4/), 1d0)) call abort ()
+  else
+    if (d1mach_big (1) .ne. transfer ((/1048576_4, 0_4/), 1d0)) call abort ()
+    if (d1mach_big (2) .ne. transfer ((/2146435071_4,-1_4/), 1d0)) call abort ()
+  end if 
 !
 contains
   subroutine int4_int4
@@ -59,7 +69,7 @@ contains
       integer(4) ca
       if (any (ca .ne. (/42, 43, 99, 44/))) call abort ()
   end subroutine check_block_data
-  function d1mach(i)
+  function d1mach_little(i) result(d1mach)
     implicit none
     double precision d1mach,dmach(5)
     integer i,large(4),small(4)
@@ -68,7 +78,17 @@ contains
     data small(1),small(2) / 0,   1048576/
     data large(1),large(2) /-1,2146435071/
     d1mach = dmach(i) 
-  end function d1mach
+  end function d1mach_little
+  function d1mach_big(i) result(d1mach)
+    implicit none
+    double precision d1mach,dmach(5)
+    integer i,large(4),small(4)
+    equivalence ( dmach(1), small(1) )
+    equivalence ( dmach(2), large(1) )
+    data small(1),small(2) /1048576,    0/
+    data large(1),large(2) /2146435071,-1/
+    d1mach = dmach(i) 
+  end function d1mach_big
     subroutine derived_types
       TYPE T1
         sequence
