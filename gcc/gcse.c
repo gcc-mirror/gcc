@@ -6341,6 +6341,17 @@ replace_store_insn (rtx reg, rtx del, basic_block bb, struct ls_expr *smexpr)
 
   mem = smexpr->pattern;
   insn = gen_move_insn (reg, SET_SRC (single_set (del)));
+  insn = emit_insn_after (insn, del);
+
+  if (dump_file)
+    {
+      fprintf (dump_file,
+	       "STORE_MOTION  delete insn in BB %d:\n      ", bb->index);
+      print_inline_rtx (dump_file, del, 6);
+      fprintf (dump_file, "\nSTORE MOTION  replaced with insn:\n      ");
+      print_inline_rtx (dump_file, insn, 6);
+      fprintf (dump_file, "\n");
+    }
 
   for (ptr = ANTIC_STORE_LIST (smexpr); ptr; ptr = XEXP (ptr, 1))
     if (XEXP (ptr, 0) == del)
@@ -6366,20 +6377,6 @@ replace_store_insn (rtx reg, rtx del, basic_block bb, struct ls_expr *smexpr)
       pair = XEXP (note, 0);
       note = find_reg_note (pair, REG_RETVAL, NULL_RTX);
       XEXP (note, 0) = insn;
-    }
-
-  /* Emit the insn AFTER all the notes are transferred.
-     This is cheaper since we avoid df rescanning for the note change.  */
-  insn = emit_insn_after (insn, del);
-
-  if (dump_file)
-    {
-      fprintf (dump_file,
-	       "STORE_MOTION  delete insn in BB %d:\n      ", bb->index);
-      print_inline_rtx (dump_file, del, 6);
-      fprintf (dump_file, "\nSTORE MOTION  replaced with insn:\n      ");
-      print_inline_rtx (dump_file, insn, 6);
-      fprintf (dump_file, "\n");
     }
 
   delete_insn (del);
