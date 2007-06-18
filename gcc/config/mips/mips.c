@@ -3562,13 +3562,8 @@ mips_expand_call (rtx result, rtx addr, rtx args_size, rtx aux, int sibcall_p)
 
   insn = emit_call_insn (pattern);
 
-  /* Lazy-binding stubs require $gp to be valid on entry.  So does the
-     case of calling a local function with TARGET_ABICALLS and
-     -mno-shared (a.k.a. TARGET_ABSOLUTE_ABICALLS). */
-  if (mips_ok_for_lazy_binding_p (orig_addr)
-      || (TARGET_ABSOLUTE_ABICALLS
-          && (GET_CODE (orig_addr) == SYMBOL_REF)
-          && targetm.binds_local_p (SYMBOL_REF_DECL (orig_addr))))
+  /* Lazy-binding stubs require $gp to be valid on entry.  */
+  if (mips_ok_for_lazy_binding_p (orig_addr))
     use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
 }
 

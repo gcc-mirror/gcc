@@ -1,5 +1,15 @@
 2007-06-18  David Daney  <ddaney@avtrex.com
 
+	Revert:
+
+	2007-06-18  David Daney  <ddaney@avtrex.com
+
+	PR target/32313
+	* config/mips/mips.c (mips_expand_call): Mark $gp as used by
+	local function call.
+
+2007-06-18  David Daney  <ddaney@avtrex.com
+
 	PR target/32313
 	* config/mips/mips.c (mips_expand_call): Mark $gp as used by
 	local function call.
