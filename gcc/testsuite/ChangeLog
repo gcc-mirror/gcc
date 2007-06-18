@@ -1,3 +1,8 @@
+2007-06-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/32389
+	* gcc.target/i386/pr32389.c New test.
+
 2007-06-18  Simon Baldwin <simonb@google.com>
 
 	PR c++/31923
@@ -11,12 +16,12 @@
 2007-06-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/32383
-	* testsuite/g++.dg/opt/pr32383.C: New test.
+	* g++.dg/opt/pr32383.C: New test.
 
 2007-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/32366
-	* testsuite/gcc.dg/vect/pr32366.c: New test.
+	* gcc.dg/vect/pr32366.c: New test.
 
 2007-06-17  Kenneth Zadeck <zadeck@naturalbridge.com>
 
