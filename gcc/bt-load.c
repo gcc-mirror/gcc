@@ -1228,7 +1228,7 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
 	replacement_rtx = btr_rtx;
       else
 	replacement_rtx = gen_rtx_REG (GET_MODE (user->use), btr);
-      validate_replace_rtx (user->insn, user->use, replacement_rtx);
+      validate_replace_rtx (user->use, replacement_rtx, user->insn);
       user->use = replacement_rtx;
     }
 }
