@@ -1,3 +1,8 @@
+2007-06-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/32383
+	* testsuite/g++.dg/opt/pr32383.C: New test.
+
 2007-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/32366

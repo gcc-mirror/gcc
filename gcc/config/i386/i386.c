@@ -19911,26 +19911,36 @@ ix86_vectorize_builtin_conversion (unsigned int code, tree type)
    reciprocal of the function, or NULL_TREE if not available.  */
 
 static tree
-ix86_builtin_reciprocal (unsigned int code, bool sqrt ATTRIBUTE_UNUSED)
+ix86_builtin_reciprocal (unsigned int fn, bool md_fn,
+			 bool sqrt ATTRIBUTE_UNUSED)
 {
   if (! (TARGET_SSE_MATH && TARGET_RECIP && !optimize_size
 	 && flag_finite_math_only && !flag_trapping_math
 	 && flag_unsafe_math_optimizations))
     return NULL_TREE;
 
-  switch (code)
-    {
-    /* Sqrt to rsqrt conversion.  */
-    case BUILT_IN_SQRTF:
-      return ix86_builtins[IX86_BUILTIN_RSQRTF];
+  if (md_fn)
+    /* Machine dependent builtins.  */
+    switch (fn)
+      {
+	/* Vectorized version of sqrt to rsqrt conversion.  */
+      case IX86_BUILTIN_SQRTPS:
+	return ix86_builtins[IX86_BUILTIN_RSQRTPS];
 
-    /* Vectorized version of sqrt to rsqrt conversion.  */
-    case IX86_BUILTIN_SQRTPS:
-      return ix86_builtins[IX86_BUILTIN_RSQRTPS];
+      default:
+	return NULL_TREE;
+      }
+  else
+    /* Normal builtins.  */
+    switch (fn)
+      {
+	/* Sqrt to rsqrt conversion.  */
+      case BUILT_IN_SQRTF:
+	return ix86_builtins[IX86_BUILTIN_RSQRTF];
 
-    default:
-      return NULL_TREE;
-    }
+      default:
+	return NULL_TREE;
+      }
 }
 
 /* Store OPERAND to the memory after reload is completed.  This means

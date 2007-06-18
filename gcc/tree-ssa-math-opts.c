@@ -507,7 +507,12 @@ execute_cse_reciprocals (void)
 	      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == RDIV_EXPR)
 	    {
 	      tree arg1 = TREE_OPERAND (GIMPLE_STMT_OPERAND (stmt, 1), 1);
-	      tree stmt1 = SSA_NAME_DEF_STMT (arg1);
+	      tree stmt1;
+
+	      if (TREE_CODE (arg1) != SSA_NAME)
+		continue;
+
+	      stmt1 = SSA_NAME_DEF_STMT (arg1);
 
 	      if (TREE_CODE (stmt1) == GIMPLE_MODIFY_STMT
 		  && TREE_CODE (GIMPLE_STMT_OPERAND (stmt1, 1)) == CALL_EXPR
@@ -517,11 +522,14 @@ execute_cse_reciprocals (void)
 		      || DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD))
 		{
 		  enum built_in_function code;
+		  bool md_code;
 		  tree arg10;
 		  tree tmp;
 
 		  code = DECL_FUNCTION_CODE (fndecl);
-		  fndecl = targetm.builtin_reciprocal (code, false);
+		  md_code = DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD;
+
+		  fndecl = targetm.builtin_reciprocal (code, md_code, false);
 		  if (!fndecl)
 		    continue;
 
@@ -791,15 +799,22 @@ execute_convert_to_rsqrt (void)
 		  || DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD))
 	    {
 	      enum built_in_function code;
+	      bool md_code;
 	      tree arg1;
 	      tree stmt1;
 
 	      code = DECL_FUNCTION_CODE (fndecl);
-	      fndecl = targetm.builtin_reciprocal (code, true);
+	      md_code = DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD;
+
+	      fndecl = targetm.builtin_reciprocal (code, md_code, true);
 	      if (!fndecl)
 		continue;
 
 	      arg1 = CALL_EXPR_ARG (GIMPLE_STMT_OPERAND (stmt, 1), 0);
+
+	      if (TREE_CODE (arg1) != SSA_NAME)
+		continue;
+
 	      stmt1 = SSA_NAME_DEF_STMT (arg1);
 
 	      if (TREE_CODE (stmt1) == GIMPLE_MODIFY_STMT

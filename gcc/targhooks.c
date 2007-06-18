@@ -342,6 +342,7 @@ default_builtin_vectorized_conversion (enum tree_code code ATTRIBUTE_UNUSED,
 
 tree
 default_builtin_reciprocal (enum built_in_function fn ATTRIBUTE_UNUSED,
+			    bool md_fn ATTRIBUTE_UNUSED,
 			    bool sqrt ATTRIBUTE_UNUSED)
 {
   return NULL_TREE;
