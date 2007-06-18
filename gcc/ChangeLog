@@ -1,3 +1,9 @@
+2007-06-18  Seongbae Park  <seongbae.park@gmail.com>
+
+	PR rtl-optimization/32321
+	* gcse.c (replace_store_insn): Update the note before
+	calling emit_insn_after.
+
 2007-06-18  David Daney  <ddaney@avtrex.com
 
 	Revert:
