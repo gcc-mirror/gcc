@@ -82,9 +82,11 @@
 
 #undef	LIB_SPEC
 #define LIB_SPEC \
-  "%{shared: -lc} \
-    %{!shared: %{mieee-fp:-lieee} %{pthread:-lpthread} \
-    %{profile:-lc_p} %{!profile: -lc}}"
+  "%{pthread:-lpthread} \
+   %{shared: -lc} \
+   %{!shared: \
+       %{mieee-fp:-lieee} \
+       %{profile:-lc_p} %{!profile: -lc}}"
 
 #undef  STARTFILE_SPEC
 #if defined HAVE_LD_PIE
