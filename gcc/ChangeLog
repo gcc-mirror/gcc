@@ -1,3 +1,8 @@
+2007-06-19  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/31950
+	* tree-ssa-alias-warnings.c (ffan_walker): Punt on MTAGs.
+
 2007-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/32353
