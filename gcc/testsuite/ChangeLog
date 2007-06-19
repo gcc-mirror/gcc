@@ -1,3 +1,8 @@
+2007-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/32353
+	* g++.dg/opt/nrv13.C: New test.
+
 2007-06-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/lookup/anon6.C: New test.

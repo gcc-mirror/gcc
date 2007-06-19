@@ -4343,7 +4343,8 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from)
 	    bitmap_set_bit (into, DECL_UID (sv->var));
 	}
       else if (TREE_CODE (vi->decl) == VAR_DECL 
-	       || TREE_CODE (vi->decl) == PARM_DECL)
+	       || TREE_CODE (vi->decl) == PARM_DECL
+	       || TREE_CODE (vi->decl) == RESULT_DECL)
 	{
 	  if (var_can_have_subvars (vi->decl)
 	      && get_subvars_for_var (vi->decl))
