@@ -22593,7 +22593,7 @@ void ix86_emit_swdivsf (rtx res, rtx a, rtx b, enum machine_mode mode)
 void ix86_emit_swsqrtsf (rtx res, rtx a, enum machine_mode mode,
 			 bool recip)
 {
-  rtx x0, e0, e1, e2, e3, three, half, bignum;
+  rtx x0, e0, e1, e2, e3, three, half, zero, mask;
 
   x0 = gen_reg_rtx (mode);
   e0 = gen_reg_rtx (mode);
@@ -22603,29 +22603,41 @@ void ix86_emit_swsqrtsf (rtx res, rtx a, enum machine_mode mode,
 
   three = CONST_DOUBLE_FROM_REAL_VALUE (dconst3, SFmode);
   half = CONST_DOUBLE_FROM_REAL_VALUE (dconsthalf, SFmode);
-  bignum = gen_lowpart (SFmode, GEN_INT (0x7f7fffff));
+
+  mask = gen_reg_rtx (mode);
 
   if (VECTOR_MODE_P (mode))
     {
       three = ix86_build_const_vector (SFmode, true, three);
       half = ix86_build_const_vector (SFmode, true, half);
-      bignum = ix86_build_const_vector (SFmode, true, bignum);
     }
 
   three = force_reg (mode, three);
   half = force_reg (mode, half);
-  bignum = force_reg (mode, bignum);
+
+  zero = force_reg (mode, CONST0_RTX(mode));
 
   /* sqrt(a) = 0.5 * a * rsqrtss(a) * (3.0 - a * rsqrtss(a) * rsqrtss(a))
      1.0 / sqrt(a) = 0.5 * rsqrtss(a) * (3.0 - a * rsqrtss(a) * rsqrtss(a)) */
+
+  /* Compare a to zero.  */
+  emit_insn (gen_rtx_SET (VOIDmode, mask,
+			  gen_rtx_NE (mode, a, zero)));
 
   /* x0 = 1./sqrt(a) estimate */
   emit_insn (gen_rtx_SET (VOIDmode, x0,
 			  gen_rtx_UNSPEC (mode, gen_rtvec (1, a),
 					  UNSPEC_RSQRT)));
-  emit_insn (gen_rtx_SET (VOIDmode, x0,
-			  gen_rtx_SMIN (mode, x0, bignum)));
- 
+  /* Filter out infinity.  */
+  if (VECTOR_MODE_P (mode))
+    emit_insn (gen_rtx_SET (VOIDmode, gen_lowpart (V4SFmode, x0),
+			    gen_rtx_AND (mode,
+					 gen_lowpart (V4SFmode, x0),
+					 gen_lowpart (V4SFmode, mask))));
+  else
+    emit_insn (gen_rtx_SET (VOIDmode, x0,
+			    gen_rtx_AND (mode, x0, mask)));
+
   /* e0 = x0 * a */
   emit_insn (gen_rtx_SET (VOIDmode, e0,
 			  gen_rtx_MULT (mode, x0, a)));
