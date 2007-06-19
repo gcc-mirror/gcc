@@ -5295,15 +5295,15 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
       for (j = CC_FIRST; j <= CC_LAST; j++)
 	if (TEST_HARD_REG_BIT (tmp_reg->regs, j))
 	  {
-	    if (REGNO_REG_SET_P (DF_LIVE_IN (rtl_df, then_bb), j))
+	    if (REGNO_REG_SET_P (df_get_live_in (then_bb), j))
 	      continue;
 
 	    if (else_bb
-		&& REGNO_REG_SET_P (DF_LIVE_IN (rtl_df, else_bb), j))
+		&& REGNO_REG_SET_P (df_get_live_in (else_bb), j))
 	      continue;
 
 	    if (join_bb
-		&& REGNO_REG_SET_P (DF_LIVE_IN (rtl_df, join_bb), j))
+		&& REGNO_REG_SET_P (df_get_live_in (join_bb), j))
 	      continue;
 
 	    SET_HARD_REG_BIT (frv_ifcvt.nested_cc_ok_rewrite, j);
@@ -5325,7 +5325,7 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
 
       /* Remove anything live at the beginning of the join block from being
          available for allocation.  */
-      EXECUTE_IF_SET_IN_REG_SET (DF_LIVE_IN (rtl_df, join_bb), 0, regno, rsi)
+      EXECUTE_IF_SET_IN_REG_SET (df_get_live_in (join_bb), 0, regno, rsi)
 	{
 	  if (regno < FIRST_PSEUDO_REGISTER)
 	    CLEAR_HARD_REG_BIT (tmp_reg->regs, regno);
@@ -5369,7 +5369,7 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
 
       /* Anything live at the beginning of the block is obviously unavailable
          for allocation.  */
-      EXECUTE_IF_SET_IN_REG_SET (DF_LIVE_IN (rtl_df, bb[j]), 0, regno, rsi)
+      EXECUTE_IF_SET_IN_REG_SET (df_get_live_in (bb[j]), 0, regno, rsi)
 	{
 	  if (regno < FIRST_PSEUDO_REGISTER)
 	    CLEAR_HARD_REG_BIT (tmp_reg->regs, regno);
@@ -6022,17 +6022,15 @@ frv_ifcvt_modify_insn (ce_if_block_t *ce_info,
 		  limit scheduling of the combined block quite
 		  severely.  */
 	       && ce_info->join_bb
-	       && ! (REGNO_REG_SET_P
-		     (DF_LIVE_IN (rtl_df, ce_info->join_bb),
-		      REGNO (SET_DEST (set))))
+	       && ! (REGNO_REG_SET_P (df_get_live_in (ce_info->join_bb),
+				      REGNO (SET_DEST (set))))
 	       /* Similarly, we must not unconditionally set a reg
 		  used as scratch in the THEN branch if the same reg
 		  is live in the ELSE branch.  */
 	       && (! ce_info->else_bb
 		   || BLOCK_FOR_INSN (insn) == ce_info->else_bb
-		   || ! (REGNO_REG_SET_P
-			 (DF_LIVE_IN (rtl_df, ce_info->else_bb),
-			  REGNO (SET_DEST (set))))))
+		   || ! (REGNO_REG_SET_P (df_get_live_in (ce_info->else_bb),
+					  REGNO (SET_DEST (set))))))
 	pattern = set;
 
       else if (mode == QImode || mode == HImode || mode == SImode
