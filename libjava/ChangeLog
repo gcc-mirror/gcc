@@ -1,3 +1,31 @@
+2007-06-18  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/gcj/jvmti/Breakpoint.java: Make abstract.
+	(method): Change from private to protected.
+	(location): Likewise.
+	(Breakpoint): Change argument list to take only integer type.
+	Add default constructor.
+	(initialize_native): Renamed to ...
+	(_save_insn): ... this to make function more explicit.
+	(execute): New method.
+	* gnu/gcj/jvmti/Breakpoint.h: Regenerate.
+	* gnu/gcj/jvmti/natBreakpoint.cc (initialize_native): Rename to...
+	(_save_insn): ... this.
+	(install): Save the original instruction.
+	* gnu/gcj/jvmti/NormalBreakpoint.java: New file.
+	* gnu/gcj/jvmti/NormalBreakpoint.h: New file.
+	* gnu/gcj/jvmti/natNormalBreakpoint.cc: New file.
+	* gnu/gcj/jvmti/BreakpointManager.java (newBreakpoint):
+	Instantiate a NormalBreakpoint instead of Breakpoint.
+	* interpret-run.cc (insn_breakpoint): Remove breakpoint actions
+	and call Breakpoint.execute to do them.
+	* classpath/lib/gnu/gcj/jvmti/Breakpoint.class: Regenerate.
+	* classpath/lib/gnu/gcj/jvmti/BreakpointManager.class: Likewise.
+	* classpath/lib/gnu/gcj/jvmti/NormalBreakpoint.class: New file.
+	* sources.am: Regenerate.
+	* Makefile.am (nat_source_files): Add natNormalBreakpoint.cc.
+	* Makefile.in: Regenerated.
+
 2007-06-14  Keith Seitz  <keiths@redhat.com>
 
 	* include/java-interp.h (_Jv_LocalVarTableEntry): Add union
