@@ -1,5 +1,4 @@
-<<<<<<< .mine
-2007-06-15  Kenneth Zadeck <zadeck@naturalbridge.com>
+2007-06-19  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* df.h (DF_FIRST_OPTIONAL_PROBLEM): Removed.
 	(struct df_problem.free_blocks_on_set_blocks): New field.
@@ -51,7 +50,6 @@
 	* init-regs.c (initialize_uninitialized_regs): Make sure df_live
 	is there at -O == 1.
 	
-=======
 2007-06-19  Seongbae Park  <seongbae.park@gmail.com>
 
 	* config/arm/arm.c (arm_get_frame_offsets): Set
@@ -98,7 +96,6 @@
 	* config/frv/frv.c (frv_ifcvt_modify_tests): Dataflow merge fix.
 	(frv_ifcvt_modify_insn): Likewise.
 
->>>>>>> .r125856
 2007-06-19  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (handle_ptr_arith): Make sure to
