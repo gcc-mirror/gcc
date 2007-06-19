@@ -1,3 +1,14 @@
+2007-06-19  Richard Guenther  <rguenther@suse.de>
+	Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/30252
+	* tree-ssa-structalias.c (solution_set_add): Make sure to
+	preserve all relevant vars.
+	(handle_ptr_arith): Make sure to only handle positive
+	offsets.
+	(push_fields_onto_fieldstack): Create fields for empty
+	bases.
+
 2007-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/32353

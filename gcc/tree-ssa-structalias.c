@@ -708,6 +708,26 @@ solution_set_add (bitmap set, unsigned HOST_WIDE_INT offset)
   bitmap result = BITMAP_ALLOC (&iteration_obstack);
   unsigned int i;
   bitmap_iterator bi;
+  unsigned HOST_WIDE_INT min = -1, max = 0;
+
+  /* Compute set of vars we can reach from set + offset.  */
+
+  EXECUTE_IF_SET_IN_BITMAP (set, 0, i, bi)
+    {
+      if (get_varinfo (i)->is_artificial_var
+	  || get_varinfo (i)->has_union
+	  || get_varinfo (i)->is_unknown_size_var)
+	continue;
+
+      if (get_varinfo (i)->offset + offset < min)
+	min = get_varinfo (i)->offset + offset;
+      if (get_varinfo (i)->offset + get_varinfo (i)->size + offset > max)
+	{
+	  max = get_varinfo (i)->offset + get_varinfo (i)->size + offset;
+	  if (max > get_varinfo (i)->fullsize)
+	    max = get_varinfo (i)->fullsize;
+	}
+    }
 
   EXECUTE_IF_SET_IN_BITMAP (set, 0, i, bi)
     {
@@ -715,13 +735,10 @@ solution_set_add (bitmap set, unsigned HOST_WIDE_INT offset)
 	 less than end.  Otherwise, it is globbed to a single
 	 variable.  */
 
-      if ((get_varinfo (i)->offset + offset) < get_varinfo (i)->fullsize)
+      if (get_varinfo (i)->offset + get_varinfo (i)->size - 1 >= min
+	  && get_varinfo (i)->offset < max)
 	{
-	  unsigned HOST_WIDE_INT fieldoffset = get_varinfo (i)->offset + offset;
-	  varinfo_t v = first_vi_for_offset (get_varinfo (i), fieldoffset);
-	  if (!v)
-	    continue;
-	  bitmap_set_bit (result, v->id);
+	  bitmap_set_bit (result, i);
 	}
       else if (get_varinfo (i)->is_artificial_var
 	       || get_varinfo (i)->has_union
@@ -3258,7 +3275,7 @@ handle_ptr_arith (VEC (ce_s, heap) *lhsc, tree expr)
   unsigned int i = 0;
   unsigned int j = 0;
   VEC (ce_s, heap) *temp = NULL;
-  unsigned int rhsoffset = 0;
+  unsigned HOST_WIDE_INT rhsoffset = 0;
 
   if (TREE_CODE (expr) != PLUS_EXPR
       && TREE_CODE (expr) != MINUS_EXPR)
@@ -3269,9 +3286,12 @@ handle_ptr_arith (VEC (ce_s, heap) *lhsc, tree expr)
 
   get_constraint_for (op0, &temp);
   if (POINTER_TYPE_P (TREE_TYPE (op0))
-      && TREE_CODE (op1) == INTEGER_CST
+      && host_integerp (op1, 1)
       && TREE_CODE (expr) == PLUS_EXPR)
     {
+      if ((TREE_INT_CST_LOW (op1) * BITS_PER_UNIT) / BITS_PER_UNIT
+	  != TREE_INT_CST_LOW (op1))
+	return false;
       rhsoffset = TREE_INT_CST_LOW (op1) * BITS_PER_UNIT;
     }
   else
@@ -3661,6 +3681,7 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 {
   tree field;
   int count = 0;
+  unsigned HOST_WIDE_INT minoffset = -1;
 
   if (TREE_CODE (type) == COMPLEX_TYPE)
     {
@@ -3773,7 +3794,24 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	  }
 	else
 	  count += pushed;
+
+	if (bitpos_of_field (field) < minoffset)
+	  minoffset = bitpos_of_field (field);
       }
+
+  /* We need to create a fake subvar for empty bases.  But _only_ for non-empty
+     classes.  */
+  if (minoffset != 0 && count != 0)
+    {
+      fieldoff_s *pair;
+
+      pair = VEC_safe_push (fieldoff_s, heap, *fieldstack, NULL);
+      pair->type = void_type_node;
+      pair->size = build_int_cst (size_type_node, minoffset);
+      pair->decl = NULL;
+      pair->offset = offset;
+      count++;
+    }
 
   return count;
 }
