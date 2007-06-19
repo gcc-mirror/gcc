@@ -635,7 +635,7 @@ ffan_walker (tree *t,
              int *go_below ATTRIBUTE_UNUSED,
              void *data ATTRIBUTE_UNUSED)
 {
-  if (DECL_P (*t) && DECL_ARTIFICIAL (*t))
+  if (DECL_P (*t) && !MTAG_P (*t) && DECL_ARTIFICIAL (*t))
     return *t;
   else
     return NULL_TREE;
