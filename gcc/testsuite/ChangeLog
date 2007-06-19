@@ -1,3 +1,8 @@
+2007-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/32353
+	* g++.dg/opt/nrv13.C: New test.
+
 2007-06-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.target/sparc/align.c: Use 'unsigned char' as element type.
