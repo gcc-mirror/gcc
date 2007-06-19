@@ -59,6 +59,7 @@ Note:
 #include "reload.h"
 #include "target.h"
 #include "target-def.h"
+#include "df.h"
 
 static void emit_move_after_reload (rtx, rtx, rtx);
 static rtx simplify_logical (enum machine_mode, int, rtx, rtx *);
@@ -5004,7 +5005,7 @@ static void
 m68hc11_reorg (void)
 {
   int split_done = 0;
-  rtx insn, first;
+  rtx first;
 
   z_replacement_completed = 0;
   z_reg = gen_rtx_REG (HImode, HARD_Z_REGNUM);
@@ -5036,29 +5037,9 @@ m68hc11_reorg (void)
      description to use the best assembly directives.  */
   if (optimize)
     {
-      /* Before recomputing the REG_DEAD notes, remove all of them.
-         This is necessary because the reload_cse_regs() pass can
-         have replaced some (MEM) with a register.  In that case,
-         the REG_DEAD that could exist for that register may become
-         wrong.  */
-      for (insn = first; insn; insn = NEXT_INSN (insn))
-        {
-          if (INSN_P (insn))
-            {
-              rtx *pnote;
-
-              pnote = &REG_NOTES (insn);
-              while (*pnote != 0)
-                {
-                  if (REG_NOTE_KIND (*pnote) == REG_DEAD)
-                    *pnote = XEXP (*pnote, 1);
-                  else
-                    pnote = &XEXP (*pnote, 1);
-                }
-            }
-        }
-
-      life_analysis (PROP_REG_INFO | PROP_DEATH_NOTES);
+      df_note_add_problem ();
+      df_analyze ();
+      df_remove_problem (df_note);
     }
 
   z_replacement_completed = 2;
