@@ -3291,7 +3291,7 @@ handle_ptr_arith (VEC (ce_s, heap) *lhsc, tree expr)
   unsigned int i = 0;
   unsigned int j = 0;
   VEC (ce_s, heap) *temp = NULL;
-  unsigned int rhsoffset = 0;
+  unsigned HOST_WIDE_INT rhsoffset = 0;
 
   if (TREE_CODE (expr) != POINTER_PLUS_EXPR)
     return false;
@@ -3302,8 +3302,15 @@ handle_ptr_arith (VEC (ce_s, heap) *lhsc, tree expr)
 
   get_constraint_for (op0, &temp);
 
-  if (TREE_CODE (op1) == INTEGER_CST)
-    rhsoffset = TREE_INT_CST_LOW (op1) * BITS_PER_UNIT;
+  /* We can only handle positive offsets that do not overflow
+     if we multiply it by BITS_PER_UNIT.  */
+  if (host_integerp (op1, 1))
+    {
+      rhsoffset = TREE_INT_CST_LOW (op1) * BITS_PER_UNIT;
+
+      if (rhsoffset / BITS_PER_UNIT != TREE_INT_CST_LOW (op1))
+	return false;
+    }
 
   for (i = 0; VEC_iterate (ce_s, lhsc, i, c); i++)
     for (j = 0; VEC_iterate (ce_s, temp, j, c2); j++)

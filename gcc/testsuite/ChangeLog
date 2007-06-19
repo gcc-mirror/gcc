@@ -1,3 +1,7 @@
+2007-06-19  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/torture/pr30252.C: New testcase.
+
 2007-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/32353
