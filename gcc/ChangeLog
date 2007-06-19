@@ -1,3 +1,14 @@
+2007-06-19  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR target/32335
+	* config/m32c/m32c.c: Include dataflow header file.
+	(m32c_emit_prologue): Adjust for prologue insn change.
+	* config/m32c/prologue.md (prologue_enter_16): Only modify SP_REGNO
+	once inside a PARALLEL. Assume frame size passed in operand 0
+	includes space to save the fb register.
+	(prologue_enter_24): Likewise.
+	(epilogue_exitd): Only modify SP_REGNO once inside a PARALLEL.
+
 2007-06-19  David Daney  <ddaney@avtrex.com
 
 	PR target/32313

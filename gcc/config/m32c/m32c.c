@@ -49,6 +49,7 @@
 #include "tm_p.h"
 #include "langhooks.h"
 #include "tree-gimple.h"
+#include "df.h"
 
 /* Prototypes */
 
@@ -3977,8 +3978,8 @@ m32c_emit_prologue (void)
   if (cfun->machine->use_rts == 0)
     F (emit_insn (m32c_all_frame_related
 		  (TARGET_A16
-		   ? gen_prologue_enter_16 (GEN_INT (frame_size))
-		   : gen_prologue_enter_24 (GEN_INT (frame_size)))));
+		   ? gen_prologue_enter_16 (GEN_INT (frame_size + 2))
+		   : gen_prologue_enter_24 (GEN_INT (frame_size + 4)))));
 
   if (extra_frame_size)
     {
