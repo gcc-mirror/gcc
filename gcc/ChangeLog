@@ -1,4 +1,9 @@
-2007-06-18  Uros Bizjak  <ubizjak@gmail.com>
+2007-06-19  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (handle_ptr_arith): Make sure to
+	only handle positive offsets that fit in a HOST_WIDE_INT.
+
+2007-06-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_emit_swsqrtsf): Limit the result of
 	rsqrt insn to FLT_MAX to avoid NaN for zero input argument.
