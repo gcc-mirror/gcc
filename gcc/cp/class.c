@@ -5350,22 +5350,34 @@ fixed_type_or_null (tree instance, int* nonnull, int* cdtorp)
 	}
       else if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
 	{
+	  /* We only need one hash table because it is always left empty.  */
+	  static htab_t ht;
+	  if (!ht)
+	    ht = htab_create (37, 
+			      htab_hash_pointer,
+			      htab_eq_pointer,
+			      /*htab_del=*/NULL);
+
 	  /* Reference variables should be references to objects.  */
 	  if (nonnull)
 	    *nonnull = 1;
 
-	  /* DECL_VAR_MARKED_P is used to prevent recursion; a
+	  /* Enter the INSTANCE in a table to prevent recursion; a
 	     variable's initializer may refer to the variable
 	     itself.  */
 	  if (TREE_CODE (instance) == VAR_DECL
 	      && DECL_INITIAL (instance)
-	      && !DECL_VAR_MARKED_P (instance))
+	      && !htab_find (ht, instance))
 	    {
 	      tree type;
-	      DECL_VAR_MARKED_P (instance) = 1;
+	      void **slot;
+
+	      slot = htab_find_slot (ht, instance, INSERT);
+	      *slot = instance;
 	      type = fixed_type_or_null (DECL_INITIAL (instance),
 					 nonnull, cdtorp);
-	      DECL_VAR_MARKED_P (instance) = 0;
+	      htab_clear_slot (ht, slot);
+
 	      return type;
 	    }
 	}

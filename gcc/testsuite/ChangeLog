@@ -1,3 +1,7 @@
+2007-06-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/lookup/anon6.C: New test.
+
 2007-06-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.target/sparc/align.c: Use 'unsigned char' as element type.
