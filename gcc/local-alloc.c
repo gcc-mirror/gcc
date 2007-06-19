@@ -2509,13 +2509,13 @@ rest_of_handle_local_alloc (void)
   int max_regno = max_reg_num ();
 
   df_note_add_problem ();
+
+  if (optimize > 1)
+    df_remove_problem (df_live);
+  /* Create a new version of df that has the special version of UR if
+     we are doing optimization.  */
   if (optimize)
-    {
-      /* Create a new version of df that has the special version of UR
-	 if we are doing optimization.  */
-      df_remove_problem (df_live);
-      df_urec_add_problem ();
-    }
+    df_urec_add_problem ();
   df_analyze ();
   regstat_init_n_sets_and_refs ();
   regstat_compute_ri ();

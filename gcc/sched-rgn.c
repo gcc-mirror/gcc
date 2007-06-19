@@ -1551,7 +1551,7 @@ check_live_1 (int src, rtx x)
 		  gcc_assert (!t || (CONTAINING_RGN (b->index)
 				     != CONTAINING_RGN (BB_TO_BLOCK (src))));
 
-		  if (t || REGNO_REG_SET_P (DF_LIVE_IN (b), regno + j))
+		  if (t || REGNO_REG_SET_P (df_get_live_in (b), regno + j))
 		    return 0;
 		}
 	    }
@@ -1567,7 +1567,7 @@ check_live_1 (int src, rtx x)
 	      gcc_assert (!t || (CONTAINING_RGN (b->index)
 				 != CONTAINING_RGN (BB_TO_BLOCK (src))));
 
-	      if (t || REGNO_REG_SET_P (DF_LIVE_IN (b), regno))
+	      if (t || REGNO_REG_SET_P (df_get_live_in (b), regno))
 		return 0;
 	    }
 	}
@@ -1624,7 +1624,7 @@ update_live_1 (int src, rtx x)
 		{
 		  basic_block b = candidate_table[src].update_bbs.first_member[i];
 
-		  SET_REGNO_REG_SET (DF_LIVE_IN (b), regno + j);
+		  SET_REGNO_REG_SET (df_get_live_in (b), regno + j);
 		}
 	    }
 	}
@@ -1634,7 +1634,7 @@ update_live_1 (int src, rtx x)
 	    {
 	      basic_block b = candidate_table[src].update_bbs.first_member[i];
 
-	      SET_REGNO_REG_SET (DF_LIVE_IN (b), regno);
+	      SET_REGNO_REG_SET (df_get_live_in (b), regno);
 	    }
 	}
     }

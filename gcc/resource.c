@@ -957,7 +957,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
      TARGET.  Otherwise, we must assume everything is live.  */
   if (b != -1)
     {
-      regset regs_live = DF_LIVE_IN (BASIC_BLOCK (b));
+      regset regs_live = df_get_live_in (BASIC_BLOCK (b));
       rtx start_insn, stop_insn;
       reg_set_iterator rsi;
 

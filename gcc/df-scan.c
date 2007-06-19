@@ -341,6 +341,7 @@ df_scan_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
   df->insns_to_delete = BITMAP_ALLOC (&problem_data->insn_bitmaps);
   df->insns_to_rescan = BITMAP_ALLOC (&problem_data->insn_bitmaps);
   df->insns_to_notes_rescan = BITMAP_ALLOC (&problem_data->insn_bitmaps);
+  df_scan->optional_p = false;
 }
 
 
@@ -434,7 +435,8 @@ static struct df_problem problem_SCAN =
   NULL,                       /* Incremental solution verify start.  */
   NULL,                       /* Incremental solution verfiy end.  */
   NULL,                       /* Dependent problem.  */
-  TV_DF_SCAN                  /* Timing variable.  */
+  TV_DF_SCAN,                 /* Timing variable.  */
+  false                       /* Reset blocks on dropping out of blocks_to_analyze.  */
 };
 
 

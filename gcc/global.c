@@ -2080,7 +2080,7 @@ rest_of_handle_global_alloc (void)
      going to help here because it does not touch the artificial uses
      and defs.  */
   df_finish_pass ();
-  if (optimize)
+  if (optimize > 1)
     df_live_add_problem ();
   df_scan_alloc (NULL);
   df_scan_blocks ();

@@ -139,7 +139,7 @@ merge_overlapping_regs (basic_block b, HARD_REG_SET *pset,
   rtx insn;
   HARD_REG_SET live;
 
-  REG_SET_TO_HARD_REG_SET (live, DF_LIVE_IN (b));
+  REG_SET_TO_HARD_REG_SET (live, df_get_live_in (b));
   insn = BB_HEAD (b);
   while (t)
     {

@@ -1,3 +1,57 @@
+<<<<<<< .mine
+2007-06-15  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* df.h (DF_FIRST_OPTIONAL_PROBLEM): Removed.
+	(struct df_problem.free_blocks_on_set_blocks): New field.
+	(struct dataflow.optional_p): New field.
+	(df_bb_regno_last_use_find, df_insn_regno_def_p): Removed.
+	(df_live_set_all_dirty): New function.
+	* df-scan.c (df_scan_alloc): Initialize optional_p.
+	(problem_SCAN): Initialize free_blocks_on_set_blocks.
+	* df-core.c (df_set_blocks): Removed use of
+	DF_FIRST_OPTIONAL_PROBLEM.  Now uses
+	df_problem.free_blocks_on_set_blocks to determine which blocks are
+	recycled.
+	(df_remove_problem): Removed use of DF_FIRST_OPTIONAL_PROBLEM.
+	(df_finish_pass): Removed use of DF_FIRST_OPTIONAL_PROBLEM.  Now
+	uses dataflow.optional_p to determine if problem should be
+	deleted.
+	(rest_of_handle_df_initialize): Only start live problem if 
+	-02 or above.
+	(df_bb_regno_last_use_find, df_insn_regno_def_p): Removed.
+	* df-problems.c (df_ru_alloc, df_rd_alloc, df_lr_alloc,
+	df_live_alloc, df_urec_alloc, df_note_alloc): set optional_p.
+	(problem_RU, problem_RD, problem_LR, problem_UREC, problem_CHAIN,
+	problem_NOTE):  Initialize free_blocks_on_set_blocks.
+	(df_lr_bb_local_compute): Recompute luids if df_live problem is
+	not active.
+	(df_live_set_all_dirty, df_note_alloc): New function.
+	* regrename.c (merge_overlapping_regs): Change DF_LIVE_* to
+	df_get_live_*.
+	* sched_ebb.c (compute_jump_reg_dependencies): Ditto.
+	* postreload.c (reload_combine): Ditto.
+	* cse.c (cse_extended_basic_block): Ditto.
+	* regmove.c (mark_flags_life_zones): Ditto.
+	* rtlfactoring.c (split_blocks_after_seqs, split_pattern_seq,
+	erase_matching_seqs): Ditto.
+	* bt-load.c (compute_defs_uses_and_gen): Ditto.
+	* integrate (allocate_initial_values): Ditto.
+	* combine.c (reg_dead_at_p): Ditto.
+	* resource.c (mark_target_live_regs): Ditto.
+	* sched-rgn.c (check_live_1, update_live_1): Ditto.
+	* config/sh/sh.c (find_r0_life_regions): Ditto.
+	* global.c (rest_of_handle_global_alloc): Only add back df_live
+	for -O > 1.
+	* local-alloc.c (rest_of_handle_local_alloc): Only remove
+	df_live for -O > 1.
+	* ifcvt.c (dead_or_predicable): Change DF_LIVE_* to
+	df_get_live_*.
+	(if_convert): Make sure df_live is there at -O == 1.
+	(pass_if_after_combine): Cleanup flags.
+	* init-regs.c (initialize_uninitialized_regs): Make sure df_live
+	is there at -O == 1.
+	
+=======
 2007-06-19  Seongbae Park  <seongbae.park@gmail.com>
 
 	* config/arm/arm.c (arm_get_frame_offsets): Set
@@ -44,6 +98,7 @@
 	* config/frv/frv.c (frv_ifcvt_modify_tests): Dataflow merge fix.
 	(frv_ifcvt_modify_insn): Likewise.
 
+>>>>>>> .r125856
 2007-06-19  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (handle_ptr_arith): Make sure to
@@ -719,6 +774,7 @@
 
        * df-scan.c (df_get_exit-block_use_set): Always add the stack pointer
        to the exit block use set.
+       (df_insn_delete, df_insn_rescan): Fixed spelling of "deferring". 
        * gcse.c (cpro_jump): Don't emit barrier in cfglayout mode.
        * config/sparc/sparc.c (sparc_check_64): Check df != NULL.
 

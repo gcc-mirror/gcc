@@ -978,8 +978,8 @@ split_blocks_after_seqs (void)
       for (mseq = sb->matching_seqs; mseq; mseq = mseq->next_matching_seq)
         {
           block_label_after (mseq->insn);
-          IOR_REG_SET (DF_LIVE_OUT (BLOCK_FOR_INSN (pattern_seqs->insn)),
-                       DF_LIVE_OUT (BLOCK_FOR_INSN (mseq->insn)));
+          IOR_REG_SET (df_get_live_out (BLOCK_FOR_INSN (pattern_seqs->insn)),
+                       df_get_live_out (BLOCK_FOR_INSN (mseq->insn)));
         }
     }
 }
@@ -1033,7 +1033,7 @@ split_pattern_seq (void)
                               gen_symbol_ref_rtx_for_label
                               (retlabel)), BB_END (bb));
   /* Update liveness info.  */
-  SET_REGNO_REG_SET (DF_LIVE_OUT (bb),
+  SET_REGNO_REG_SET (df_get_live_out (bb),
                      REGNO (pattern_seqs->link_reg));
 }
 
@@ -1085,12 +1085,12 @@ erase_matching_seqs (void)
           BB_END (bb) = callinsn;
 
           /* Maintain control flow and liveness information.  */
-          SET_REGNO_REG_SET (DF_LIVE_OUT (bb),
+          SET_REGNO_REG_SET (df_get_live_out (bb),
                              REGNO (pattern_seqs->link_reg));
           emit_barrier_after (BB_END (bb));
           make_single_succ_edge (bb, BLOCK_FOR_INSN (sb->label), 0);
-          IOR_REG_SET (DF_LIVE_OUT (bb),
-		       DF_LIVE_IN (BLOCK_FOR_INSN (sb->label)));
+          IOR_REG_SET (df_get_live_out (bb),
+		       df_get_live_in (BLOCK_FOR_INSN (sb->label)));
 
           make_edge (BLOCK_FOR_INSN (seq_blocks->label),
                      BLOCK_FOR_INSN (retlabel), EDGE_ABNORMAL);

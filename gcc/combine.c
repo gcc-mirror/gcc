@@ -11835,7 +11835,7 @@ reg_dead_at_p (rtx reg, rtx insn)
     }
 
   for (i = reg_dead_regno; i < reg_dead_endregno; i++)
-    if (REGNO_REG_SET_P (DF_LIVE_IN (block), i))
+    if (REGNO_REG_SET_P (df_get_live_in (block), i))
       return 0;
 
   return 1;

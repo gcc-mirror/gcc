@@ -506,15 +506,17 @@ df_set_blocks (bitmap blocks)
 	bitmap_print (dump_file, blocks, "setting blocks to analyze ", "\n");
       if (df->blocks_to_analyze)
 	{
+	  /* This block is called to change the focus from one subset
+	     to another.  */
 	  int p;
 	  bitmap diff = BITMAP_ALLOC (&df_bitmap_obstack);
 	  bitmap_and_compl (diff, df->blocks_to_analyze, blocks);
-	  for (p = df->num_problems_defined - 1; p >= DF_FIRST_OPTIONAL_PROBLEM ;p--)
+	  for (p = 0; p < df->num_problems_defined; p++)
 	    {
 	      struct dataflow *dflow = df->problems_in_order[p];
-	      if (dflow->problem->reset_fun)
+	      if (dflow->optional_p && dflow->problem->reset_fun)
 		dflow->problem->reset_fun (df->blocks_to_analyze);
-	      else if (dflow->problem->free_bb_fun)
+	      else if (dflow->problem->free_blocks_on_set_blocks)
 		{
 		  bitmap_iterator bi;
 		  unsigned int bb_index;
@@ -539,33 +541,31 @@ df_set_blocks (bitmap blocks)
 	}
       else
 	{
-	  /* If we have not actually run scanning before, do not try
-	     to clear anything.  */
-	  if (df_scan->problem_data)
+	  /* This block of code is executed to change the focus from
+	     the entire function to a subset.  */
+	  bitmap blocks_to_reset = NULL;
+	  int p;
+	  for (p = 0; p < df->num_problems_defined; p++)
 	    {
-	      bitmap blocks_to_reset = NULL;
-	      int p;
-	      for (p = df->num_problems_defined - 1; p >= DF_FIRST_OPTIONAL_PROBLEM ;p--)
+	      struct dataflow *dflow = df->problems_in_order[p];
+	      if (dflow->optional_p && dflow->problem->reset_fun)
 		{
-		  struct dataflow *dflow = df->problems_in_order[p];
-		  if (dflow->problem->reset_fun)
+		  if (!blocks_to_reset)
 		    {
-		      if (!blocks_to_reset)
+		      basic_block bb;
+		      blocks_to_reset =
+			BITMAP_ALLOC (&df_bitmap_obstack);
+		      FOR_ALL_BB(bb)
 			{
-			  basic_block bb;
-			  blocks_to_reset =
-			    BITMAP_ALLOC (&df_bitmap_obstack);
-			  FOR_ALL_BB(bb)
-			    {
-			      bitmap_set_bit (blocks_to_reset, bb->index); 
-			    }
+			  bitmap_set_bit (blocks_to_reset, bb->index); 
 			}
-		      dflow->problem->reset_fun (blocks_to_reset);
 		    }
+		  dflow->problem->reset_fun (blocks_to_reset);
 		}
-	      if (blocks_to_reset)
-		BITMAP_FREE (blocks_to_reset);
 	    }
+	  if (blocks_to_reset)
+	    BITMAP_FREE (blocks_to_reset);
+
 	  df->blocks_to_analyze = BITMAP_ALLOC (&df_bitmap_obstack);
 	}
       bitmap_copy (df->blocks_to_analyze, blocks);
@@ -573,8 +573,10 @@ df_set_blocks (bitmap blocks)
     }
   else
     {
+      /* This block is executed to reset the focus to the entire
+	 function.  */
       if (dump_file)
-	fprintf (dump_file, "clearing blocks to analyze\n");
+	fprintf (dump_file, "clearing blocks_to_analyze\n");
       if (df->blocks_to_analyze)
 	{
 	  BITMAP_FREE (df->blocks_to_analyze);
@@ -599,7 +601,6 @@ df_remove_problem (struct dataflow *dflow)
 {
   struct df_problem *problem;
   int i;
-  int start = 0;
 
   if (!dflow)
     return;
@@ -607,18 +608,13 @@ df_remove_problem (struct dataflow *dflow)
   problem = dflow->problem;
   gcc_assert (problem->remove_problem_fun);
 
-  /* Normally only optional problems are removed, but during global,
-     we remove ur and live and replace it with urec.  */
-  if (problem->id >= DF_FIRST_OPTIONAL_PROBLEM)
-    start = DF_FIRST_OPTIONAL_PROBLEM;
-
   /* Delete any problems that depended on this problem first.  */
-  for (i = start; i < df->num_problems_defined; i++)
+  for (i = 0; i < df->num_problems_defined; i++)
     if (df->problems_in_order[i]->problem->dependent_problem == problem)
       df_remove_problem (df->problems_in_order[i]);
 
   /* Now remove this problem.  */
-  for (i = start; i < df->num_problems_defined; i++)
+  for (i = 0; i < df->num_problems_defined; i++)
     if (df->problems_in_order[i] == dflow)
       {
 	int j;
@@ -658,16 +654,19 @@ df_finish_pass (void)
   saved_flags = df->changeable_flags;
 #endif
 
-  for (i = DF_FIRST_OPTIONAL_PROBLEM; i < df->num_problems_defined; i++)
+  for (i = 0; i < df->num_problems_defined; i++)
     {
       struct dataflow *dflow = df->problems_in_order[i];
       struct df_problem *problem = dflow->problem;
 
-      gcc_assert (problem->remove_problem_fun);
-      (problem->remove_problem_fun) ();
-      df->problems_in_order[i] = NULL;
-      df->problems_by_index[problem->id] = NULL;
-      removed++;
+      if (dflow->optional_p)
+	{
+	  gcc_assert (problem->remove_problem_fun);
+	  (problem->remove_problem_fun) ();
+	  df->problems_in_order[i] = NULL;
+	  df->problems_by_index[problem->id] = NULL;
+	  removed++;
+	}
     }
   df->num_problems_defined -= removed;
 
@@ -720,7 +719,7 @@ rest_of_handle_df_initialize (void)
 
   /* These three problems are permanent.  */
   df_lr_add_problem ();
-  if (optimize)
+  if (optimize > 1)
     df_live_add_problem ();
 
   df->postorder = XNEWVEC (int, last_basic_block);
@@ -1600,40 +1599,6 @@ df_set_clean_cfg (void)
 ----------------------------------------------------------------------------*/
 
 
-/* Return last use of REGNO within BB.  */
-
-struct df_ref *
-df_bb_regno_last_use_find (basic_block bb, unsigned int regno)
-{
-  rtx insn;
-  struct df_ref **use_rec;
-  unsigned int uid;
-
-  FOR_BB_INSNS_REVERSE (bb, insn)
-    {
-      if (!INSN_P (insn))
-	continue;
-
-      uid = INSN_UID (insn);
-      for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
-	{
-	  struct df_ref *use = *use_rec;
-	  if (DF_REF_REGNO (use) == regno)
-	    return use;
-	}
-
-      if (df->changeable_flags & DF_EQ_NOTES)
-	for (use_rec = DF_INSN_UID_EQ_USES (uid); *use_rec; use_rec++)
-	  {
-	    struct df_ref *use = *use_rec;
-	    if (DF_REF_REGNO (use) == regno)
-	      return use;
-	  }
-    }
-  return NULL;
-}
-
-
 /* Return first def of REGNO within BB.  */
 
 struct df_ref *
@@ -1685,26 +1650,6 @@ df_bb_regno_last_def_find (basic_block bb, unsigned int regno)
 
   return NULL;
 }
-
-/* Return true if INSN defines REGNO.  */
-
-bool
-df_insn_regno_def_p (rtx insn, unsigned int regno)
-{
-  unsigned int uid;
-  struct df_ref **def_rec;
-
-  uid = INSN_UID (insn);
-  for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
-    {
-      struct df_ref *def = *def_rec;
-      if (DF_REF_REGNO (def) == regno)
-	return true;
-    }
-  
-  return false;
-}
-
 
 /* Finds the reference corresponding to the definition of REG in INSN.
    DF is the dataflow object.  */

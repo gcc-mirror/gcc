@@ -53,6 +53,12 @@ initialize_uninitialized_regs (void)
   basic_block bb;
   bitmap already_genned = BITMAP_ALLOC (NULL);
 
+  if (optimize == 1)
+    {
+      df_live_add_problem ();
+      df_live_set_all_dirty ();
+    }
+
   df_analyze ();
 
   FOR_EACH_BB (bb)
@@ -110,6 +116,9 @@ initialize_uninitialized_regs (void)
 	    }
 	}
     }
+
+  if (optimize == 1)
+    df_remove_problem (df_live);
 
   BITMAP_FREE (already_genned);
 }

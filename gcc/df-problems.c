@@ -331,6 +331,7 @@ df_ru_alloc (bitmap all_blocks)
 	  bb_info->out = BITMAP_ALLOC (&problem_data->ru_bitmaps);
 	}
     }
+  df_ru->optional_p = true;
 }
 
 
@@ -711,7 +712,8 @@ static struct df_problem problem_RU =
   NULL,                       /* Incremental solution verify start.  */
   NULL,                       /* Incremental solution verfiy end.  */
   NULL,                       /* Dependent problem.  */
-  TV_DF_RU                    /* Timing variable.  */ 
+  TV_DF_RU,                   /* Timing variable.  */
+  true                        /* Reset blocks on dropping out of blocks_to_analyze.  */
 };
 
 
@@ -841,6 +843,7 @@ df_rd_alloc (bitmap all_blocks)
 	  bb_info->out = BITMAP_ALLOC (&problem_data->rd_bitmaps);
 	}
     }
+  df_rd->optional_p = true;
 }
 
 
@@ -1207,7 +1210,8 @@ static struct df_problem problem_RD =
   NULL,                       /* Incremental solution verify start.  */
   NULL,                       /* Incremental solution verfiy end.  */
   NULL,                       /* Dependent problem.  */
-  TV_DF_RD                    /* Timing variable.  */ 
+  TV_DF_RD,                   /* Timing variable.  */ 
+  true                        /* Reset blocks on dropping out of blocks_to_analyze.  */
 };
 
 
@@ -1320,6 +1324,8 @@ df_lr_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
           bb_info->ause = NULL;
 	}
     }
+
+  df_lr->optional_p = false;
 }
 
 
@@ -1478,6 +1484,13 @@ df_lr_bb_local_compute (unsigned int bb_index)
 	}
     }
 #endif
+
+  /* If the df_live problem is not defined, such as at -O0 and -O1, we
+     still need to keep the luids up to date.  This is normally done
+     in the df_live problem since this problem has a forwards
+     scan.  */
+  if (!df_live)
+    df_recompute_luids (bb);
 }
 
 
@@ -1818,7 +1831,8 @@ static struct df_problem problem_LR =
   df_lr_verify_solution_start,/* Incremental solution verify start.  */
   df_lr_verify_solution_end,  /* Incremental solution verify end.  */
   NULL,                       /* Dependent problem.  */
-  TV_DF_LR                    /* Timing variable.  */ 
+  TV_DF_LR,                   /* Timing variable.  */ 
+  false                       /* Reset blocks on dropping out of blocks_to_analyze.  */
 };
 
 
@@ -2016,6 +2030,7 @@ df_live_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
 	  bb_info->out = BITMAP_ALLOC (NULL);
 	}
     }
+  df_live->optional_p = (optimize <= 1);
 }
 
 
@@ -2368,7 +2383,8 @@ static struct df_problem problem_LIVE =
   df_live_verify_solution_start,/* Incremental solution verify start.  */
   df_live_verify_solution_end,  /* Incremental solution verify end.  */
   &problem_LR,                  /* Dependent problem.  */
-  TV_DF_LIVE                    /* Timing variable.  */ 
+  TV_DF_LIVE,                   /* Timing variable.  */
+  false                         /* Reset blocks on dropping out of blocks_to_analyze.  */
 };
 
 
@@ -2383,6 +2399,19 @@ df_live_add_problem (void)
   /* These will be initialized when df_scan_blocks processes each
      block.  */
   df_live->out_of_date_transfer_functions = BITMAP_ALLOC (NULL);
+}
+
+
+/* Set all of the blocks as dirty.  This needs to be done if this
+   problem is added after all of the insns have been scanned.  */
+
+void
+df_live_set_all_dirty (void)
+{
+  basic_block bb;
+  FOR_ALL_BB (bb)
+    bitmap_set_bit (df_live->out_of_date_transfer_functions, 
+		    bb->index);
 }
 
 
@@ -2555,6 +2584,7 @@ df_urec_alloc (bitmap all_blocks)
 	  bb_info->earlyclobber = BITMAP_ALLOC (NULL);
 	}
     }
+  df_urec->optional_p = true;
 }
 
 
@@ -3041,7 +3071,8 @@ static struct df_problem problem_UREC =
   NULL,                       /* Incremental solution verify start.  */
   NULL,                       /* Incremental solution verfiy end.  */
   &problem_LR,                /* Dependent problem.  */
-  TV_DF_UREC                  /* Timing variable.  */ 
+  TV_DF_UREC,                 /* Timing variable.  */ 
+  false                       /* Reset blocks on dropping out of blocks_to_analyze.  */
 };
 
 
@@ -3213,6 +3244,7 @@ df_chain_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
   df_chain_remove_problem ();
   df_chain->block_pool = create_alloc_pool ("df_chain_block pool", 
 					 sizeof (struct df_link), 50);
+  df_chain->optional_p = true;
 }
 
 
@@ -3520,7 +3552,8 @@ static struct df_problem problem_CHAIN =
   NULL,                       /* Incremental solution verify start.  */
   NULL,                       /* Incremental solution verfiy end.  */
   &problem_RD,                /* Dependent problem.  */
-  TV_DF_CHAIN                 /* Timing variable.  */ 
+  TV_DF_CHAIN,                /* Timing variable.  */
+  false                       /* Reset blocks on dropping out of blocks_to_analyze.  */
 };
 
 
@@ -3542,6 +3575,12 @@ df_chain_add_problem (enum df_chain_flags chain_flags)
 /*----------------------------------------------------------------------------
    This pass computes REG_DEAD and REG_UNUSED notes.
    ----------------------------------------------------------------------------*/
+
+static void 
+df_note_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
+{
+  df_note->optional_p = true;
+}
 
 #ifdef REG_DEAD_DEBUGGING
 static void 
@@ -4077,7 +4116,7 @@ static struct df_problem problem_NOTE =
 {
   DF_NOTE,                    /* Problem id.  */
   DF_NONE,                    /* Direction.  */
-  NULL,                       /* Allocate the problem specific data.  */
+  df_note_alloc,              /* Allocate the problem specific data.  */
   NULL,                       /* Reset global information.  */
   NULL,                       /* Free basic block info.  */
   df_note_compute,            /* Local compute function.  */
@@ -4099,7 +4138,8 @@ static struct df_problem problem_NOTE =
      but it will produce information if built one of uninitialized
      register problems (UR, UREC) is also run.  */
   &problem_LR,                /* Dependent problem.  */
-  TV_DF_NOTE                  /* Timing variable.  */ 
+  TV_DF_NOTE,                 /* Timing variable.  */
+  false                       /* Reset blocks on dropping out of blocks_to_analyze.  */
 };
 
 

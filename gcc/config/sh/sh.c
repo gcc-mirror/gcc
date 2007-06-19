@@ -9159,7 +9159,7 @@ find_r0_life_regions (basic_block b)
   int set;
   int death = 0;
 
-  if (REGNO_REG_SET_P (DF_LIVE_IN (b), R0_REG))
+  if (REGNO_REG_SET_P (df_get_live_in (b), R0_REG))
     {
       set = 1;
       live = 1;
