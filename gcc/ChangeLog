@@ -1,3 +1,9 @@
+2007-06-19  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR target/32369
+	* config/frv/frv.c (frv_ifcvt_modify_tests): Dataflow merge fix.
+	(frv_ifcvt_modify_insn): Likewise.
+
 2007-06-19  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (handle_ptr_arith): Make sure to
