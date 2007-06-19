@@ -1,3 +1,7 @@
+2007-06-19  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2007-06-18  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* Makefile.def: Add dependency from configure-gdb to all-bfd.
