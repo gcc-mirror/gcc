@@ -1,3 +1,10 @@
+2007-04-11  Sebastian Pop  <sebpop@gmail.com>
+
+	PR tree-optimization/32367
+	* tree-chrec.h (build_polynomial_chrec): Verify that the left hand side 
+	of the chrec has no evolution in that loop.
+	* testsuite/gcc.dg/tree-ssa/pr32367.c: New.
+
 2007-06-19  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c: Include "df.h".
