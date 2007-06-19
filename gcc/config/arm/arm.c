@@ -11101,6 +11101,7 @@ arm_get_frame_offsets (void)
   if (leaf && frame_size == 0)
     {
       offsets->outgoing_args = offsets->soft_frame;
+      offsets->locals_base = offsets->soft_frame;
       return offsets;
     }
 
@@ -14662,6 +14663,7 @@ thumb1_expand_epilogue (void)
       amount = offsets->locals_base - offsets->saved_regs;
     }
 
+  gcc_assert (amount >= 0);
   if (amount)
     {
       if (amount < 512)

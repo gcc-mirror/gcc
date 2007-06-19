@@ -1,3 +1,9 @@
+2007-06-19  Seongbae Park  <seongbae.park@gmail.com>
+
+	* config/arm/arm.c (arm_get_frame_offsets): Set
+	offsets->locals_base to avoid negative stack size.
+	(thumb1_expand_prologue): Assert on negative stack size.
+
 2007-04-11  Sebastian Pop  <sebpop@gmail.com>
 
 	PR tree-optimization/32367
