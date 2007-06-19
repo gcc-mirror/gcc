@@ -1,3 +1,8 @@
+2007-06-19  David Daney  <ddaney@avtrex.com
+
+	PR target/32313
+	* config/mips/mips.md (cprestore): Mark $gp as used.
+
 2007-06-19  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR target/32369
