@@ -83,6 +83,7 @@ extern bool tree_contains_chrecs (tree, int *);
 extern bool evolution_function_is_affine_multivariate_p (tree, int);
 extern bool evolution_function_is_univariate_p (tree);
 extern unsigned nb_vars_in_chrec (tree);
+extern bool evolution_function_is_invariant_p (tree, int);
 
 /* Determines whether CHREC is equal to zero.  */
 
@@ -98,6 +99,24 @@ chrec_zerop (tree chrec)
   return false;
 }
 
+/* Determines whether CHREC is a loop invariant with respect to LOOP_NUM.  
+   Set the result in RES and return true when the property can be computed.  */
+
+static inline bool
+no_evolution_in_loop_p (tree chrec, unsigned loop_num, bool *res)
+{
+  tree scev;
+  
+  if (chrec == chrec_not_analyzed_yet
+      || chrec == chrec_dont_know
+      || chrec_contains_symbols_defined_in_loop (chrec, loop_num))
+    return false;
+
+  scev = hide_evolution_in_other_loops_than_loop (chrec, loop_num);
+  *res = !tree_is_chrec (scev);
+  return true;
+}
+
 /* Build a polynomial chain of recurrence.  */
 
 static inline tree 
@@ -105,8 +124,13 @@ build_polynomial_chrec (unsigned loop_num,
 			tree left, 
 			tree right)
 {
+  bool val;
+
   if (left == chrec_dont_know
       || right == chrec_dont_know)
+    return chrec_dont_know;
+
+  if (no_evolution_in_loop_p (left, loop_num, &val) && !val)
     return chrec_dont_know;
 
   if (POINTER_TYPE_P (TREE_TYPE (left)))
@@ -140,7 +164,6 @@ evolution_function_is_constant_p (tree chrec)
     }
 }
 
-extern bool evolution_function_is_invariant_p (tree, int);
 /* Determine whether the given tree is an affine evolution function or not.  */
 
 static inline bool 
@@ -181,24 +204,6 @@ static inline bool
 tree_does_not_contain_chrecs (tree expr)
 {
   return !tree_contains_chrecs (expr, NULL);
-}
-
-/* Determines whether CHREC is a loop invariant with respect to LOOP_NUM.  
-   Set the result in RES and return true when the property can be computed.  */
-
-static inline bool
-no_evolution_in_loop_p (tree chrec, unsigned loop_num, bool *res)
-{
-  tree scev;
-  
-  if (chrec == chrec_not_analyzed_yet
-      || chrec == chrec_dont_know
-      || chrec_contains_symbols_defined_in_loop (chrec, loop_num))
-    return false;
-
-  scev = hide_evolution_in_other_loops_than_loop (chrec, loop_num);
-  *res = !tree_is_chrec (scev);
-  return true;
 }
 
 /* Returns the type of the chrec.  */
