@@ -3836,7 +3836,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       
       /* The loop below takes the set of live registers 
          after JUMP, and calculates the live set before EARLIEST. */
-      bitmap_copy (test_live, DF_LIVE_IN (other_bb));
+      bitmap_copy (test_live, df_get_live_in (other_bb));
       df_simulate_artificial_refs_at_end (test_bb, test_live);
       for (insn = jump; ; insn = prev)
 	{
@@ -3858,7 +3858,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 
       if (bitmap_intersect_p (test_set, merge_set)
 	  || bitmap_intersect_p (test_live, merge_set)
-	  || bitmap_intersect_p (test_set, DF_LIVE_IN (merge_bb)))
+	  || bitmap_intersect_p (test_set, df_get_live_in (merge_bb)))
 	fail = 1;
 
       BITMAP_FREE (merge_set);
@@ -3958,6 +3958,12 @@ if_convert (bool recompute_dominance)
   basic_block bb;
   int pass;
 
+  if (optimize == 1)
+    {
+      df_live_add_problem ();
+      df_live_set_all_dirty ();
+    }
+
   num_possible_if_blocks = 0;
   num_updated_if_blocks = 0;
   num_true_changes = 0;
@@ -4038,6 +4044,9 @@ if_convert (bool recompute_dominance)
 	       "%d true changes made.\n\n\n",
 	       num_true_changes);
     }
+
+  if (optimize == 1)
+    df_remove_problem (df_live);
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
@@ -4125,14 +4134,13 @@ struct tree_opt_pass pass_if_after_combine =
 static bool
 gate_handle_if_after_reload (void)
 {
-  return (optimize > 0);
+  return (optimize > 0 && flag_if_conversion2);
 }
 
 static unsigned int
 rest_of_handle_if_after_reload (void)
 {
-  if (flag_if_conversion2)
-    if_convert (true);
+  if_convert (true);
   return 0;
 }
 

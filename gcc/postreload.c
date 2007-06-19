@@ -743,9 +743,10 @@ reload_combine (void)
       if (LABEL_P (insn))
 	{
 	  HARD_REG_SET live;
+	  bitmap live_in = df_get_live_in (bb);
 
-	  REG_SET_TO_HARD_REG_SET (live, DF_LIVE_IN (bb));
-	  compute_use_by_pseudos (&live, DF_LIVE_IN (bb));
+	  REG_SET_TO_HARD_REG_SET (live, live_in);
+	  compute_use_by_pseudos (&live, live_in);
 	  COPY_HARD_REG_SET (LABEL_LIVE (insn), live);
 	  IOR_HARD_REG_SET (ever_live_at_start, live);
 	}

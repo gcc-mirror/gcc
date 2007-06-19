@@ -352,10 +352,10 @@ allocate_initial_values (rtx *reg_equiv_memory_loc)
 		  /* Update global register liveness information.  */
 		  FOR_EACH_BB (bb)
 		    {
-		      if (REGNO_REG_SET_P(DF_LIVE_IN (bb), regno))
-			SET_REGNO_REG_SET (DF_LIVE_IN (bb), new_regno);
-		      if (REGNO_REG_SET_P(DF_LIVE_OUT (bb), regno))
-			SET_REGNO_REG_SET (DF_LIVE_OUT (bb), new_regno);
+		      if (REGNO_REG_SET_P(df_get_live_in (bb), regno))
+			SET_REGNO_REG_SET (df_get_live_in (bb), new_regno);
+		      if (REGNO_REG_SET_P(df_get_live_out (bb), regno))
+			SET_REGNO_REG_SET (df_get_live_out (bb), new_regno);
 		    }
 		}
 	    }

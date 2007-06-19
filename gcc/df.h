@@ -52,7 +52,6 @@ struct df_link;
 #define DF_NOTE  7      /* REG_DEF and REG_UNUSED notes. */
 
 #define DF_LAST_PROBLEM_PLUS1 (DF_NOTE + 1)
-#define DF_FIRST_OPTIONAL_PROBLEM DF_RU
 
 /* Dataflow direction.  */
 enum df_flow_dir
@@ -249,8 +248,13 @@ struct df_problem {
   df_verify_solution_start verify_start_fun;
   df_verify_solution_end verify_end_fun;
   struct df_problem *dependent_problem;
+
   /* The timevar id associated with this pass.  */
   unsigned int tv_id;
+
+  /* True if the df_set_blocks should null out the basic block info if
+     this block drops out of df->blocks_to_analyze.  */
+  bool free_blocks_on_set_blocks;
 };
 
 
@@ -293,6 +297,11 @@ struct dataflow
      solutions.  Note that this bit is always true for all problems except 
      lr and live.  */
   bool solutions_dirty;
+
+  /* If true, this pass is deleted by df_finish_pass.  This is never
+     true for DF_SCAN and DF_LR.  It is true for DF_LIVE if optimize >
+     1.  It is always true for the other problems.  */
+  bool optional_p;
 };
 
 
@@ -837,10 +846,8 @@ extern void df_verify (void);
 #ifdef DF_DEBUG_CFG
 extern void df_check_cfg_clean (void);
 #endif
-extern struct df_ref *df_bb_regno_last_use_find (basic_block, unsigned int);
 extern struct df_ref *df_bb_regno_first_def_find (basic_block, unsigned int);
 extern struct df_ref *df_bb_regno_last_def_find (basic_block, unsigned int);
-extern bool df_insn_regno_def_p (rtx, unsigned int);
 extern struct df_ref *df_find_def (rtx, rtx);
 extern bool df_reg_defined (rtx, rtx);
 extern struct df_ref *df_find_use (rtx, rtx);
@@ -882,6 +889,7 @@ extern void df_lr_add_problem (void);
 extern void df_lr_verify_transfer_functions (void);
 extern void df_live_verify_transfer_functions (void);
 extern void df_live_add_problem (void);
+extern void df_live_set_all_dirty (void);
 extern void df_urec_add_problem (void);
 extern void df_chain_add_problem (enum df_chain_flags);
 extern void df_note_add_problem (void);

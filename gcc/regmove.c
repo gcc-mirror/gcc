@@ -325,7 +325,7 @@ mark_flags_life_zones (rtx flags)
       {
 	int i;
 	for (i = 0; i < flags_nregs; ++i)
-	  live |= REGNO_REG_SET_P (DF_LIVE_IN (block), flags_regno + i);
+	  live |= REGNO_REG_SET_P (df_get_live_in (block), flags_regno + i);
       }
 #endif
 

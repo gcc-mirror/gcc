@@ -6001,8 +6001,8 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
   qty_table = XNEWVEC (struct qty_table_elem, max_qty);
 
   new_basic_block ();
-  cse_ebb_live_in = DF_LIVE_IN (ebb_data->path[0].bb);
-  cse_ebb_live_out = DF_LIVE_OUT (ebb_data->path[path_size - 1].bb);
+  cse_ebb_live_in = df_get_live_in (ebb_data->path[0].bb);
+  cse_ebb_live_out = df_get_live_out (ebb_data->path[path_size - 1].bb);
   for (path_entry = 0; path_entry < path_size; path_entry++)
     {
       basic_block bb;
