@@ -1,3 +1,14 @@
+2007-06-19  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c: Include "df.h".
+	(xtensa_builtin_saveregs): Use adjust_address instead of change_address.
+	(xtensa_va_start): Invoke make_tree with sizetype for
+	expand_builtin_saveregs and then convert the result to a pointer.
+	Use POINTER_PLUS_EXPR.  Use size_int instead of build_int_cst.
+	(xtensa_gimplify_va_arg_expr): Use size_int instead of build_int_cst.
+	Subtract argument size from index value as integers and then use
+	POINTER_PLUS_EXPR to add the result to the array address.
+	
 2007-06-19  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR target/32335
