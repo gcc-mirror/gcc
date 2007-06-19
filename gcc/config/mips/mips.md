@@ -4159,7 +4159,8 @@
 ;; instruction.  Note that we continue to use .cprestore for explicit reloc
 ;; code so that jals inside inline asms will work correctly.
 (define_insn "cprestore"
-  [(unspec_volatile [(match_operand 0 "const_int_operand" "I,i")]
+  [(unspec_volatile [(match_operand 0 "const_int_operand" "I,i")
+                     (use (reg:SI 28))]
 		    UNSPEC_CPRESTORE)]
   ""
 {
