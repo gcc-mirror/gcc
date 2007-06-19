@@ -32,7 +32,7 @@ get_interp_method (jlong method)
 }
 
 void
-gnu::gcj::jvmti::Breakpoint::initialize_native ()
+gnu::gcj::jvmti::Breakpoint::_save_insn ()
 {
   _Jv_InterpMethod *imeth = get_interp_method (method);
 
@@ -45,6 +45,7 @@ gnu::gcj::jvmti::Breakpoint::initialize_native ()
 void
 gnu::gcj::jvmti::Breakpoint::install ()
 {
+  _save_insn ();
   _Jv_InterpMethod *imeth = get_interp_method (method);
   imeth->install_break (location);
 }

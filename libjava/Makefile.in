@@ -80,6 +80,7 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/confsubdir.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/gxx-include-dir.m4 \
@@ -94,10 +95,11 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/tls.m4 \
 	$(top_srcdir)/../config/unwind_ipinfo.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
-	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
-	$(top_srcdir)/mingwld.m4 $(top_srcdir)/pkg.m4 \
-	$(top_srcdir)/shlibpath.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltgcc.m4 \
+	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
+	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/mingwld.m4 \
+	$(top_srcdir)/pkg.m4 $(top_srcdir)/shlibpath.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -304,6 +306,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc jvmti.cc exception.cc \
 	gnu/gcj/convert/natOutput_SJIS.cc \
 	gnu/gcj/io/natSimpleSHSStream.cc gnu/gcj/io/shs.cc \
 	gnu/gcj/jvmti/natBreakpoint.cc \
+	gnu/gcj/jvmti/natNormalBreakpoint.cc \
 	gnu/gcj/runtime/natFinalizerThread.cc \
 	gnu/gcj/runtime/natSharedLibLoader.cc \
 	gnu/gcj/runtime/natSystemClassLoader.cc \
@@ -367,6 +370,7 @@ am__objects_2 = gnu/classpath/jdwp/natVMFrame.lo \
 	gnu/gcj/convert/natOutput_SJIS.lo \
 	gnu/gcj/io/natSimpleSHSStream.lo gnu/gcj/io/shs.lo \
 	gnu/gcj/jvmti/natBreakpoint.lo \
+	gnu/gcj/jvmti/natNormalBreakpoint.lo \
 	gnu/gcj/runtime/natFinalizerThread.lo \
 	gnu/gcj/runtime/natSharedLibLoader.lo \
 	gnu/gcj/runtime/natSystemClassLoader.lo \
@@ -1357,7 +1361,8 @@ gnu_gcj_io_header_files = $(patsubst %.java,%.h,$(gnu_gcj_io_source_files))
 gnu_gcj_jvmti_source_files = \
 gnu/gcj/jvmti/Breakpoint.java \
 gnu/gcj/jvmti/BreakpointManager.java \
-gnu/gcj/jvmti/Location.java
+gnu/gcj/jvmti/Location.java \
+gnu/gcj/jvmti/NormalBreakpoint.java
 
 gnu_gcj_jvmti_header_files = $(patsubst %.java,%.h,$(gnu_gcj_jvmti_source_files))
 gnu_gcj_runtime_source_files = \
@@ -8060,6 +8065,7 @@ gnu/gcj/convert/natOutput_SJIS.cc \
 gnu/gcj/io/natSimpleSHSStream.cc \
 gnu/gcj/io/shs.cc \
 gnu/gcj/jvmti/natBreakpoint.cc \
+gnu/gcj/jvmti/natNormalBreakpoint.cc \
 gnu/gcj/runtime/natFinalizerThread.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natSystemClassLoader.cc \
@@ -8455,6 +8461,8 @@ gnu/gcj/jvmti/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) gnu/gcj/jvmti/$(DEPDIR)
 	@: > gnu/gcj/jvmti/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/jvmti/natBreakpoint.lo: gnu/gcj/jvmti/$(am__dirstamp) \
+	gnu/gcj/jvmti/$(DEPDIR)/$(am__dirstamp)
+gnu/gcj/jvmti/natNormalBreakpoint.lo: gnu/gcj/jvmti/$(am__dirstamp) \
 	gnu/gcj/jvmti/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/$(am__dirstamp):
 	@$(mkdir_p) gnu/gcj/runtime
@@ -8938,6 +8946,8 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/io/shs.lo
 	-rm -f gnu/gcj/jvmti/natBreakpoint.$(OBJEXT)
 	-rm -f gnu/gcj/jvmti/natBreakpoint.lo
+	-rm -f gnu/gcj/jvmti/natNormalBreakpoint.$(OBJEXT)
+	-rm -f gnu/gcj/jvmti/natNormalBreakpoint.lo
 	-rm -f gnu/gcj/natCore.$(OBJEXT)
 	-rm -f gnu/gcj/natCore.lo
 	-rm -f gnu/gcj/runtime/natFinalizerThread.$(OBJEXT)
@@ -9158,6 +9168,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/io/$(DEPDIR)/natSimpleSHSStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/io/$(DEPDIR)/shs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/jvmti/$(DEPDIR)/natBreakpoint.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/jvmti/$(DEPDIR)/natNormalBreakpoint.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natFinalizerThread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natSharedLibLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natStringBuffer.Plo@am__quote@

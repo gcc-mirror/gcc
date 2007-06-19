@@ -43,7 +43,7 @@ public class BreakpointManager
    */
   public static Breakpoint newBreakpoint (long method, long location)
   {
-    Breakpoint bp = new Breakpoint (method, location);
+    NormalBreakpoint bp = new NormalBreakpoint (method, location);
     Location loc = new Location (method, location);
     bp.install ();
     _instance._breakpoints.put (loc, bp);

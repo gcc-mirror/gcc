@@ -2619,26 +2619,21 @@ details.  */
 
     insn_breakpoint:
       {
-	JvAssert (JVMTI_REQUESTED_EVENT (Breakpoint));
-
-	// Send JVMTI notification
 	using namespace ::java::lang;
 	jmethodID method = meth->self;
 	jlocation location = meth->insn_index (pc - 1);
-	Thread *thread = Thread::currentThread ();
-	JNIEnv *jni_env = _Jv_GetCurrentJNIEnv ();
 
-	// Save the insn here since the breakpoint could be removed
-	// before the JVMTI notification returns.
 	using namespace gnu::gcj::jvmti;
 	Breakpoint *bp
 	  = BreakpointManager::getBreakpoint (reinterpret_cast<jlong> (method),
 					      location);
 	JvAssert (bp != NULL);
+
+	// Save the insn here since the breakpoint could be removed
+	// before the JVMTI notification returns.
 	pc_t opc = reinterpret_cast<pc_t> (bp->getInsn ());
 
-	_Jv_JVMTI_PostEvent (JVMTI_EVENT_BREAKPOINT, thread, jni_env,
-			     method, location);
+	bp->execute ();
 
 	// Continue execution
 #ifdef DIRECT_THREADED
