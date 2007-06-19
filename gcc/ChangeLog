@@ -1,3 +1,8 @@
+2007-06-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_emit_swsqrtsf): Limit the result of
+	rsqrt insn to FLT_MAX to avoid NaN for zero input argument.
+
 2007-06-19  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/31950
