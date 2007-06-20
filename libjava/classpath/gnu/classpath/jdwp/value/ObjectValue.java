@@ -67,6 +67,16 @@ public final class ObjectValue
   }
   
   /**
+   * Get the value held in this Value
+   * 
+   * @return the value represented by this Value object
+   */
+  public Object getValue()
+  {
+    return _value;
+  }
+
+  /**
    * Return an object representing this type
    * 
    * @return an Object represntation of this value

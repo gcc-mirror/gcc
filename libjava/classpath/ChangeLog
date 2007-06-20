@@ -1,3 +1,42 @@
+2007-07-20  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/processor/ClassTypeCommandSet.java
+	(executeInvokeMethod): No need to use ValueFactory any more;
+	MethodResult.getReturnedValue now returns a Value.
+	(executeNewInstance): Double-check that return result is
+	an ObjectValue; throw JdwpInternalErrorException if it is not.
+	(invokeMethod): Method IDs come from VMMethod, not VMIdManager.
+	Arguments are Values not Objects.
+	Use ValueFactory to create arguments.
+	Pass invocation options to VMVirtualMachine.executeMethod.
+	Don't do any thread suspend/resume work: VMVM.executeMethod
+	will take care of it.
+	* gnu/classpath/jdwp/processor/ObjectReferenceCommandSet.java
+	(executeInvokeMethod): Method IDs come from VMMethod, not
+	VMIdManager.
+	Arguments should be Values instead of Objects.
+	Use ValueFactory to create Values.
+	Remove specific option handling and pass options to
+	VMVirtualMachine.executeMethod.
+	Remove thread suspension.
+	Use MethodResult.getReturnedValue to get method's result.
+	* gnu/classpath/jdwp/util/MethodResult.java
+	(returnedValue): Change type to Value.
+	(thrownException): Change type to Throwable.
+	(resType): Remove.
+	(MethodResult): New constructor.
+	(setReturnedValue): Remove.
+	(SetThrownException): Remove.
+	(getResultType): Remove.
+	(setResultType): Remove.
+	* gnu/classpath/jdwp/value/ObjectValue.java (getValue):
+	New method.
+	* vm/reference/gnu/classpath/jdwp/VMVirtualMachine.java
+	(executeMethod): Replace "nonVirtual" parameter with more
+	generic "options" parameter.
+	Replace java.lang.reflect.Method parameter with VMMethod.
+	Replace Object[] parameter with Value[] parameter.
+
 2007-05-19  Andreas Tobler  <a.tobler@schweiz.org>
 
 	PR libgcj/31659

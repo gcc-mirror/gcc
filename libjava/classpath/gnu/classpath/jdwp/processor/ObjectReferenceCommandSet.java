@@ -40,6 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.processor;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.VMMethod;
 import gnu.classpath.jdwp.VMVirtualMachine;
 import gnu.classpath.jdwp.exception.InvalidFieldException;
 import gnu.classpath.jdwp.exception.JdwpException;
@@ -213,42 +214,21 @@ public class ObjectReferenceCommandSet
     ReferenceTypeId rid = idMan.readReferenceTypeId(bb);
     Class clazz = rid.getType();
 
-    ObjectId mid = idMan.readObjectId(bb);
-    Method method = (Method) mid.getObject();
+    VMMethod method = VMMethod.readId(clazz, bb);
 
     int args = bb.getInt();
-    Object[] values = new Object[args];
+    Value[] values = new Value[args];
 
     for (int i = 0; i < args; i++)
-      {
-        values[i] = Value.getTaggedObject(bb);
-      }
+      values[i] = ValueFactory.createFromTagged(bb);
 
     int invokeOptions = bb.getInt();
-    boolean suspend = ((invokeOptions
-			& JdwpConstants.InvokeOptions.INVOKE_SINGLE_THREADED)
-		       != 0);
-    if (suspend)
-      {
-	// We must suspend all other running threads first
-        VMVirtualMachine.suspendAllThreads ();
-      }
-
-    boolean nonVirtual = ((invokeOptions
-			   & JdwpConstants.InvokeOptions.INVOKE_NONVIRTUAL)
-			  != 0);
-
     MethodResult mr = VMVirtualMachine.executeMethod(obj, thread,
 						     clazz, method,
-						     values, nonVirtual);
-    mr.setResultType (method.getReturnType());
-    
-    Object value = mr.getReturnedValue();
-    Exception exception = mr.getThrownException();
-
+						     values, invokeOptions);
+    Throwable exception = mr.getThrownException();
     ObjectId eId = idMan.getObjectId(exception);
-    Value val = ValueFactory.createFromObject(value, mr.getResultType());
-    val.writeTagged(os);
+    mr.getReturnedValue().writeTagged(os);
     eId.writeTagged(os);
   }
 
