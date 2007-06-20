@@ -1,3 +1,9 @@
+2007-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/32285
+	* calls.c (precompute_arguments): Also precompute CALL_EXPR arguments
+	if ACCUMULATE_OUTGOING_ARGS.
+
 2007-06-19  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* config/m68hc11/m68hc11.c: Include dataflow header file.
