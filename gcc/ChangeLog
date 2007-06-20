@@ -1,5 +1,9 @@
 2007-06-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/32109
+	* gimplify.c (gimplify_asm_expr): Issue error if type is addressable
+	and !allows_mem.
+
 	PR middle-end/32285
 	* calls.c (precompute_arguments): Also precompute CALL_EXPR arguments
 	if ACCUMULATE_OUTGOING_ARGS.
