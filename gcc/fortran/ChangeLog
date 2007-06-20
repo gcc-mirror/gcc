@@ -1,3 +1,9 @@
+2007-06-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/32140
+	* trans.c (gfc_build_addr_expr): Use the correct types.
+
 2007-06-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/20863
