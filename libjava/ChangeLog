@@ -1,5 +1,10 @@
 2007-07-20  Keith Seitz  <keiths@redhat.com>
 
+	* classpath/lib/gnu/classpath/jdwp/value/StringValue.class:
+	Regenerate.
+
+2007-07-20  Keith Seitz  <keiths@redhat.com>
+
 	* gnu/classpath/jdwp/VMVirtualMachine.java (executeMethod):
 	Update from reference implementation.
 	* gnu/classpath/jdwp/natVMVirtualMachine.cc (executeMethod):
