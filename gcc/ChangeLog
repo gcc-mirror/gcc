@@ -1,3 +1,9 @@
+2007-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/32285
+	* calls.c (precompute_arguments): Also precompute CALL_EXPR arguments
+	if ACCUMULATE_OUTGOING_ARGS.
+
 2007-06-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR rtl-optimization/28011
