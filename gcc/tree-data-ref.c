@@ -124,7 +124,8 @@ static struct datadep_stats
 
 static bool subscript_dependence_tester_1 (struct data_dependence_relation *,
 					   struct data_reference *,
-					   struct data_reference *);
+					   struct data_reference *,
+					   struct loop *);
 /* Returns true iff A divides B.  */
 
 static inline bool 
@@ -2417,10 +2418,11 @@ gcd_of_steps_may_divide_p (tree chrec, tree cst)
   return val % cd == 0;
 }
 
-/* Analyze a MIV (Multiple Index Variable) subscript.  *OVERLAPS_A and
-   *OVERLAPS_B are initialized to the functions that describe the
-   relation between the elements accessed twice by CHREC_A and
-   CHREC_B.  For k >= 0, the following property is verified:
+/* Analyze a MIV (Multiple Index Variable) subscript with respect to
+   LOOP_NEST.  *OVERLAPS_A and *OVERLAPS_B are initialized to the
+   functions that describe the relation between the elements accessed
+   twice by CHREC_A and CHREC_B.  For k >= 0, the following property
+   is verified:
 
    CHREC_A (*OVERLAPS_A (k)) = CHREC_B (*OVERLAPS_B (k)).  */
 
@@ -2429,7 +2431,8 @@ analyze_miv_subscript (tree chrec_a,
 		       tree chrec_b, 
 		       conflict_function **overlaps_a, 
 		       conflict_function **overlaps_b, 
-		       tree *last_conflicts)
+		       tree *last_conflicts,
+		       struct loop *loop_nest)
 {
   /* FIXME:  This is a MIV subscript, not yet handled.
      Example: (A[{1, +, 1}_1] vs. A[{1, +, 1}_2]) that comes from 
@@ -2461,7 +2464,8 @@ analyze_miv_subscript (tree chrec_a,
   
   else if (evolution_function_is_constant_p (difference)
 	   /* For the moment, the following is verified:
-	      evolution_function_is_affine_multivariate_p (chrec_a, 0) */
+	      evolution_function_is_affine_multivariate_p (chrec_a,
+	      loop_nest->num) */
 	   && !gcd_of_steps_may_divide_p (chrec_a, difference))
     {
       /* testsuite/.../ssa-chrec-33.c
@@ -2475,9 +2479,9 @@ analyze_miv_subscript (tree chrec_a,
       dependence_stats.num_miv_independent++;
     }
   
-  else if (evolution_function_is_affine_multivariate_p (chrec_a, 0)
+  else if (evolution_function_is_affine_multivariate_p (chrec_a, loop_nest->num)
 	   && !chrec_contains_symbols (chrec_a)
-	   && evolution_function_is_affine_multivariate_p (chrec_b, 0)
+	   && evolution_function_is_affine_multivariate_p (chrec_b, loop_nest->num)
 	   && !chrec_contains_symbols (chrec_b))
     {
       /* testsuite/.../ssa-chrec-35.c
@@ -2523,10 +2527,10 @@ analyze_miv_subscript (tree chrec_a,
     fprintf (dump_file, ")\n");
 }
 
-/* Determines the iterations for which CHREC_A is equal to CHREC_B.
-   OVERLAP_ITERATIONS_A and OVERLAP_ITERATIONS_B are initialized with
-   two functions that describe the iterations that contain conflicting
-   elements.
+/* Determines the iterations for which CHREC_A is equal to CHREC_B in
+   with respect to LOOP_NEST.  OVERLAP_ITERATIONS_A and
+   OVERLAP_ITERATIONS_B are initialized with two functions that
+   describe the iterations that contain conflicting elements.
    
    Remark: For an integer k >= 0, the following equality is true:
    
@@ -2538,8 +2542,10 @@ analyze_overlapping_iterations (tree chrec_a,
 				tree chrec_b, 
 				conflict_function **overlap_iterations_a, 
 				conflict_function **overlap_iterations_b, 
-				tree *last_conflicts)
+				tree *last_conflicts, struct loop *loop_nest)
 {
+  unsigned int lnn = loop_nest->num;
+
   dependence_stats.num_subscript_tests++;
   
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2566,7 +2572,7 @@ analyze_overlapping_iterations (tree chrec_a,
   /* If they are the same chrec, and are affine, they overlap 
      on every iteration.  */
   else if (eq_evolutions_p (chrec_a, chrec_b)
-	   && evolution_function_is_affine_multivariate_p (chrec_a, 0))
+	   && evolution_function_is_affine_multivariate_p (chrec_a, lnn))
     {
       dependence_stats.num_same_subscript_function++;
       *overlap_iterations_a = conflict_fn (1, affine_fn_cst (integer_zero_node));
@@ -2578,8 +2584,8 @@ analyze_overlapping_iterations (tree chrec_a,
      yet. */
   else if ((chrec_contains_symbols (chrec_a) 
 	    || chrec_contains_symbols (chrec_b))
-	   && (!evolution_function_is_affine_multivariate_p (chrec_a, 0)
-	       || !evolution_function_is_affine_multivariate_p (chrec_b, 0)))
+	   && (!evolution_function_is_affine_multivariate_p (chrec_a, lnn)
+	       || !evolution_function_is_affine_multivariate_p (chrec_b, lnn)))
     {
       dependence_stats.num_subscript_undetermined++;
       *overlap_iterations_a = conflict_fn_not_known ();
@@ -2599,7 +2605,7 @@ analyze_overlapping_iterations (tree chrec_a,
   else
     analyze_miv_subscript (chrec_a, chrec_b, 
 			   overlap_iterations_a, overlap_iterations_b,
-			   last_conflicts);
+			   last_conflicts, loop_nest);
   
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2926,7 +2932,8 @@ add_distance_for_zero_overlaps (struct data_dependence_relation *ddr)
    to represent the data dependence as a distance vector.  */
 
 static bool
-build_classic_dist_vector (struct data_dependence_relation *ddr)
+build_classic_dist_vector (struct data_dependence_relation *ddr,
+			   struct loop *loop_nest)
 {
   bool init_b = false;
   int index_carry = DDR_NB_LOOPS (ddr);
@@ -2985,7 +2992,8 @@ build_classic_dist_vector (struct data_dependence_relation *ddr)
       if (!lambda_vector_lexico_pos (dist_v, DDR_NB_LOOPS (ddr)))
 	{
 	  lambda_vector save_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
-	  subscript_dependence_tester_1 (ddr, DDR_B (ddr), DDR_A (ddr));
+	  subscript_dependence_tester_1 (ddr, DDR_B (ddr), DDR_A (ddr),
+					 loop_nest);
 	  compute_subscript_distance (ddr);
 	  build_classic_dist_vector_1 (ddr, DDR_B (ddr), DDR_A (ddr),
 				       save_v, &init_b, &index_carry);
@@ -3023,7 +3031,8 @@ build_classic_dist_vector (struct data_dependence_relation *ddr)
 	    {
 	      lambda_vector opposite_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
 
-	      subscript_dependence_tester_1 (ddr, DDR_B (ddr), DDR_A (ddr));
+	      subscript_dependence_tester_1 (ddr, DDR_B (ddr), DDR_A (ddr),
+					     loop_nest);
 	      compute_subscript_distance (ddr);
 	      build_classic_dist_vector_1 (ddr, DDR_B (ddr), DDR_A (ddr),
 					   opposite_v, &init_b, &index_carry);
@@ -3106,7 +3115,8 @@ build_classic_dir_vector (struct data_dependence_relation *ddr)
 static bool
 subscript_dependence_tester_1 (struct data_dependence_relation *ddr,
 			       struct data_reference *dra,
-			       struct data_reference *drb)
+			       struct data_reference *drb,
+			       struct loop *loop_nest)
 {
   unsigned int i;
   tree last_conflicts;
@@ -3120,7 +3130,7 @@ subscript_dependence_tester_1 (struct data_dependence_relation *ddr,
       analyze_overlapping_iterations (DR_ACCESS_FN (dra, i), 
 				      DR_ACCESS_FN (drb, i),
 				      &overlaps_a, &overlaps_b, 
-				      &last_conflicts);
+				      &last_conflicts, loop_nest);
 
       if (CF_NOT_KNOWN_P (overlaps_a)
  	  || CF_NOT_KNOWN_P (overlaps_b))
@@ -3153,20 +3163,21 @@ subscript_dependence_tester_1 (struct data_dependence_relation *ddr,
   return true;
 }
 
-/* Computes the conflicting iterations, and initialize DDR.  */
+/* Computes the conflicting iterations in LOOP_NEST, and initialize DDR.  */
 
 static void
-subscript_dependence_tester (struct data_dependence_relation *ddr)
+subscript_dependence_tester (struct data_dependence_relation *ddr,
+			     struct loop *loop_nest)
 {
   
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "(subscript_dependence_tester \n");
   
-  if (subscript_dependence_tester_1 (ddr, DDR_A (ddr), DDR_B (ddr)))
+  if (subscript_dependence_tester_1 (ddr, DDR_A (ddr), DDR_B (ddr), loop_nest))
     dependence_stats.num_dependence_dependent++;
 
   compute_subscript_distance (ddr);
-  if (build_classic_dist_vector (ddr))
+  if (build_classic_dist_vector (ddr, loop_nest))
     build_classic_dir_vector (ddr);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3174,18 +3185,19 @@ subscript_dependence_tester (struct data_dependence_relation *ddr)
 }
 
 /* Returns true when all the access functions of A are affine or
-   constant.  */
+   constant with respect to LOOP_NEST.  */
 
 static bool 
-access_functions_are_affine_or_constant_p (struct data_reference *a)
+access_functions_are_affine_or_constant_p (struct data_reference *a,
+					   struct loop *loop_nest)
 {
   unsigned int i;
   VEC(tree,heap) *fns = DR_ACCESS_FNS (a);
   tree t;
 
   for (i = 0; VEC_iterate (tree, fns, i, t); i++)
-    if (!evolution_function_is_constant_p (t)
-	&& !evolution_function_is_affine_multivariate_p (t, 0))
+    if (!evolution_function_is_invariant_p (t, loop_nest->num)
+	&& !evolution_function_is_affine_multivariate_p (t, loop_nest->num))
       return false;
   
   return true;
@@ -3715,17 +3727,18 @@ ddr_consistent_p (FILE *file,
   return true;  
 }
 
-/* This computes the affine dependence relation between A and B.
-   CHREC_KNOWN is used for representing the independence between two
-   accesses, while CHREC_DONT_KNOW is used for representing the unknown
-   relation.
+/* This computes the affine dependence relation between A and B with
+   respect to LOOP_NEST.  CHREC_KNOWN is used for representing the
+   independence between two accesses, while CHREC_DONT_KNOW is used
+   for representing the unknown relation.
    
    Note that it is possible to stop the computation of the dependence
    relation the first time we detect a CHREC_KNOWN element for a given
    subscript.  */
 
 static void
-compute_affine_dependence (struct data_dependence_relation *ddr)
+compute_affine_dependence (struct data_dependence_relation *ddr,
+			   struct loop *loop_nest)
 {
   struct data_reference *dra = DDR_A (ddr);
   struct data_reference *drb = DDR_B (ddr);
@@ -3745,13 +3758,13 @@ compute_affine_dependence (struct data_dependence_relation *ddr)
     {
       dependence_stats.num_dependence_tests++;
 
-      if (access_functions_are_affine_or_constant_p (dra)
-	  && access_functions_are_affine_or_constant_p (drb))
+      if (access_functions_are_affine_or_constant_p (dra, loop_nest)
+	  && access_functions_are_affine_or_constant_p (drb, loop_nest))
 	{
 	  if (flag_check_data_deps)
 	    {
 	      /* Compute the dependences using the first algorithm.  */
-	      subscript_dependence_tester (ddr);
+	      subscript_dependence_tester (ddr, loop_nest);
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
@@ -3789,7 +3802,7 @@ compute_affine_dependence (struct data_dependence_relation *ddr)
 		}
 	    }
 	  else
-	    subscript_dependence_tester (ddr);
+	    subscript_dependence_tester (ddr, loop_nest);
 	}
      
       /* As a last case, if the dependence cannot be determined, or if
@@ -3865,7 +3878,7 @@ compute_all_dependences (VEC (data_reference_p, heap) *datarefs,
 	{
 	  ddr = initialize_data_dependence_relation (a, b, loop_nest);
 	  VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
-	  compute_affine_dependence (ddr);
+	  compute_affine_dependence (ddr, VEC_index (loop_p, loop_nest, 0));
 	}
 
   if (compute_self_and_rr)
