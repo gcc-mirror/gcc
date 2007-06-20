@@ -404,11 +404,11 @@
 2007-06-05  Joerg Wunsch  <j.gnu@uriah.heep.sax.de>
 
 	PR preprocessor/23479
-	* testsuite/gcc.dg/binary-constants-1.c: Add test suites for
+	* gcc.dg/binary-constants-1.c: Add test suites for
 	the 0b-prefixed binary integer constants.
-	* testsuite/gcc.dg/binary-constants-2.c: Ditto.
-	* testsuite/gcc.dg/binary-constants-3.c: Ditto.
-	* testsuite/gcc.dg/binary-constants-4.c: Ditto.
+	* gcc.dg/binary-constants-2.c: Ditto.
+	* gcc.dg/binary-constants-3.c: Ditto.
+	* gcc.dg/binary-constants-4.c: Ditto.
 
 2007-06-05  Ian Lance Taylor  <iant@google.com>
 
@@ -657,7 +657,7 @@
 2007-05-25  Dirk Mueller  <dmueller@suse.de>
 	    Marcus Meissner <meissner@suse.de>
 
-	* testsuite/gcc.dg/attr-alloc_size.c: New.
+	* gcc.dg/attr-alloc_size.c: New.
 
 2007-05-25  Simon Martin  <simartin@users.sourceforge.net>
 	    Lee Millward  <lee.millward@gmail.com>
@@ -1254,7 +1254,8 @@
 
 	* gcc.dg/tree-ssa/ssa-dom-thread-2.c: New test.
 	* gcc.dg/vect/vect-102.c, gcc.dg/vect/vect-103.c,
-	gcc.dg/vect/vect-104.c: Use more complex construction to prevent vectorizing.
+	gcc.dg/vect/vect-104.c: Use more complex construction to
+	prevent vectorizing.
 	* gcc.dg/tree-ssa/pr21559.c: Update outcome.
 
 2007-05-17  Uros Bizjak  <ubizjak@gmail.com>
@@ -1695,14 +1696,14 @@
 2007-04-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31645
-	* testsuite/gfortran.dg/bom_error.f90: New test.
-	* testsuite/gfortran.dg/bom_include.f90: New test.
-	* testsuite/gfortran.dg/bom_UTF16-LE.f90: New test.
-	* testsuite/gfortran.dg/bom_UTF16-BE.f90: New test.
-	* testsuite/gfortran.dg/bom_UTF-8.f90: New test.
-	* testsuite/gfortran.dg/bom_UTF-32.f90: New test.
-	* testsuite/gfortran.dg/bom_UTF-8.F90: New test.
-	* testsuite/gfortran.dg/bom_include.inc: New file.
+	* gfortran.dg/bom_error.f90: New test.
+	* gfortran.dg/bom_include.f90: New test.
+	* gfortran.dg/bom_UTF16-LE.f90: New test.
+	* gfortran.dg/bom_UTF16-BE.f90: New test.
+	* gfortran.dg/bom_UTF-8.f90: New test.
+	* gfortran.dg/bom_UTF-32.f90: New test.
+	* gfortran.dg/bom_UTF-8.F90: New test.
+	* gfortran.dg/bom_include.inc: New file.
 
 2007-04-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
@@ -2352,7 +2353,7 @@
 2007-04-04  Stuart Hastings  <stuart@apple.com>
 
 	PR 31281
-	* testsuite/objc/execute/exceptions/pr31281.m: New.
+	* objc/execute/exceptions/pr31281.m: New.
 
 2007-04-04  Danny Smith  <dannysmith.users.sourceforge.net>
 
@@ -2476,7 +2477,8 @@
 
 2007-03-28  Eric Christopher  <echristo@apple.com>
 
-	* lib/target-supports.exp (check_effective_target_fstack_protector): New.
+	* lib/target-supports.exp (check_effective_target_fstack_protector):
+	New.
 	* gcc.dg/ssp-1.c: Use.
 	* gcc.dg/ssp-2.c: Ditto.
 
@@ -3277,8 +3279,10 @@
 
 	* gcc.dg/builtins-55.c: Test *lceil* and *lfloor*.
 	* gcc.dg/torture/builtin-attr-1.c: Likewise.
-	* gcc.dg/torture/builtin-convert-1.c: Likewise.  Also test *lrint* and *lround*.
-	* gcc.dg/torture/builtin-convert-2.c: Test ceil->lceil and floor->lfloor.
+	* gcc.dg/torture/builtin-convert-1.c: Likewise.  Also test
+	*lrint* and *lround*.
+	* gcc.dg/torture/builtin-convert-2.c: Test ceil->lceil and
+	floor->lfloor.
 	* gcc.dg/torture/builtin-convert-3.c: Test *lceil* and *lfloor*.
 	* gcc.dg/torture/builtin-integral-1.c: Likewise.
 	* gcc.dg/torture/builtin-minmax-1.c: Likewise.  Also test *lrint*
@@ -4158,7 +4162,8 @@
 	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-1.c: New test.
 	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-2.c: New test.
 	* gcc.dg/vect/vect-14.c: Now vectorizable.
-	* gcc.dg/vect/pr21591.c: Additional loop vectorized (initilization loop).
+	* gcc.dg/vect/pr21591.c: Additional loop vectorized (initialization
+	loop).
 	* gcc.dg/vect/vect-27.c: Likewise.
 	* gcc.dg/vect/vect-29.c Likewise.
 	* gcc.dg/vect/vect-dv-2.c: Likewise.
@@ -5015,8 +5020,8 @@
 
 2007-01-02  Jan Hubicka  <jh@suse.cz>
 
-	* gcc.dg/pr16194.c: We now output error on all three functions, not just
-	first one.
+	* gcc.dg/pr16194.c: We now output error on all three functions,
+	not just first one.
 
 2007-01-02  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
 
@@ -5069,8 +5074,8 @@
 2006-12-31  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/30137
-	* testsuite/gcc.dg/pr30137-1.c: New testcase.
-	* testsuite/gcc.dg/pr30137-2.c: Likewise.
+	* gcc.dg/pr30137-1.c: New testcase.
+	* gcc.dg/pr30137-2.c: Likewise.
 
 2006-12-31  Roger Sayle  <roger@eyesopen.com>
 
@@ -5278,10 +5283,14 @@
 	* gfortran.dg/assign_4.f90: Renamed to assign_8.f90
 	* gfortran.dg/backspace.f: Renamed to backspace_1.f
 	* gfortran.dg/backspace.f90: Renamed to backspace_7.f90
-	* gfortran.dg/default_initialization.f: Renamed to default_initialization_1.f
-	* gfortran.dg/dollar_edit_descriptor-1.f: Renamed to dollar_edit_descriptor_1.f
-	* gfortran.dg/dollar_edit_descriptor-2.f: Renamed to dollar_edit_descriptor_2.f
-	* gfortran.dg/dollar_edit_descriptor-3.f: Renamed to dollar_edit_descriptor_3.f
+	* gfortran.dg/default_initialization.f: Renamed to
+	default_initialization_1.f
+	* gfortran.dg/dollar_edit_descriptor-1.f: Renamed to
+	dollar_edit_descriptor_1.f
+	* gfortran.dg/dollar_edit_descriptor-2.f: Renamed to
+	dollar_edit_descriptor_2.f
+	* gfortran.dg/dollar_edit_descriptor-3.f: Renamed to
+	dollar_edit_descriptor_3.f
 	* gfortran.dg/logint-1.f: Renamed to logint_1.f
 	* gfortran.dg/logint-2.f: Renamed to logint_2.f
 	* gfortran.dg/logint-3.f: Renamed to logint_3.f
@@ -5291,10 +5300,14 @@
 	* gfortran.dg/assign_8.f90: Renamed from assign_4.f90
 	* gfortran.dg/backspace_1.f: Renamed from backspace.f
 	* gfortran.dg/backspace_7.f90: Renamed from backspace.f90
-	* gfortran.dg/default_initialization_1.f: Renamed from default_initialization.f
-	* gfortran.dg/dollar_edit_descriptor_1.f: Renamed from dollar_edit_descriptor-1.f
-	* gfortran.dg/dollar_edit_descriptor_2.f: Renamed from dollar_edit_descriptor-2.f
-	* gfortran.dg/dollar_edit_descriptor_3.f: Renamed from dollar_edit_descriptor-3.f
+	* gfortran.dg/default_initialization_1.f: Renamed from
+	default_initialization.f
+	* gfortran.dg/dollar_edit_descriptor_1.f: Renamed from
+	dollar_edit_descriptor-1.f
+	* gfortran.dg/dollar_edit_descriptor_2.f: Renamed from
+	dollar_edit_descriptor-2.f
+	* gfortran.dg/dollar_edit_descriptor_3.f: Renamed from
+	dollar_edit_descriptor-3.f
 	* gfortran.dg/logint_1.f: Renamed from logint-1.f
 	* gfortran.dg/logint_2.f: Renamed from logint-2.f
 	* gfortran.dg/logint_3.f: Renamed from logint-3.f
@@ -5991,7 +6004,7 @@
 2006-11-27  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.target/i386/memcpy-1.c: Adjust size.
-	* testsuite/gcc.dg/visibility-11.c: Likewise.
+	* gcc.dg/visibility-11.c: Likewise.
 
 2006-11-27  Richard Guenther  <rguenther@suse.de>
 
@@ -6148,7 +6161,8 @@
 	gcc.dg/vect/vect-strided-a-u8-i8-gap7.c,
 	gcc.dg/vect/vect-strided-mult.c,
 	gcc.dg/vect/vect-strided-u32-mult.c: New testcases.
-	* lib/target-supports.exp (vect_extract_even_odd, vect_interleave): New.
+	* lib/target-supports.exp (vect_extract_even_odd, vect_interleave):
+	New.
 
 2006-11-22 Paul Thomas  <pault@gcc.gnu.org>
 
@@ -6679,7 +6693,7 @@
 
 2006-11-03  J"orn Rennecke  <joern.rennecke@st.com>
 
-	* testsuite/gcc.c-torture/execute/arith-rand-ll.c:
+	* gcc.c-torture/execute/arith-rand-ll.c:
 	Also test for bogus rest sign.
 
 2006-11-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
@@ -6720,7 +6734,7 @@
 
 2006-11-01  Richard Guenther  <rguenther@suse.de>
 
-	* testsuite/gcc.target/i386/fpprec-1.c: New testcase.
+	* gcc.target/i386/fpprec-1.c: New testcase.
 
 2006-11-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -8284,7 +8298,7 @@
 2006-08-29  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/28349
-	* testsuite/g++.dg/warn/var-args1.C: New test.
+	* g++.dg/warn/var-args1.C: New test.
 
 2006-08-29  Steven G. Kargl  <kargls@comcast.net>
 
@@ -10292,10 +10306,10 @@
 
 2006-05-12  Stuart Hastings  <stuart@apple.com>
 
-	* testsuite/gcc.target/i386/20060512-1.c: New.
-	* testsuite/gcc.target/i386/20060512-2.c: New.
-	* testsuite/gcc.target/i386/20060512-3.c: New.
-	* testsuite/gcc.target/i386/20060512-4.c: New.
+	* gcc.target/i386/20060512-1.c: New.
+	* gcc.target/i386/20060512-2.c: New.
+	* gcc.target/i386/20060512-3.c: New.
+	* gcc.target/i386/20060512-4.c: New.
 
 2006-05-17  Mark Mitchell  <mark@codesourcery.com>
 
@@ -11084,7 +11098,8 @@
 	(check_effective_target_ptr32plus): New.
 	(check_effective_target_size32plus): New.
 	(check_effective_target_int16): New.
-	(check_profiling_available): Add m32c to the list of unsupported targets.
+	(check_profiling_available): Add m32c to the list of unsupported
+	targets.
 
 	* gcc.c-torture/compile/20000804-1.c: Skip m32c also.
 	* gcc.c-torture/compile/20001226-1.c: Skip m32c due to small
@@ -11110,7 +11125,8 @@
 	* gcc.dg/asm-1.c: Skip if int and short are the same size.
 	* gcc.dg/fold-mod-1.c: Require >=32 bit integers.
 	* gcc.dg/fold-overflow-1.c: Skip m32c due to small const types in asm.
-	* gcc.dg/format/bitfld-1.c: Require >=32 bit integers due to printf formats
+	* gcc.dg/format/bitfld-1.c: Require >=32 bit integers due to printf
+	formats
 	* gcc.dg/init-string-2.c: Require >=32 bit integers.
 	* gcc.dg/max-1.c: Skip m32c in r8c or m16c mode due to small pointers.
 	* gcc.dg/noncompile/920923-1.c: Skip small-int message for int16 hosts.
@@ -11199,7 +11215,7 @@
 
 2006-04-10  Matthias Klose  <doko@debian.org>
 
-	* testsuite/lib/gcc-defs.exp (gcc-set-multilib-library-path):
+	* lib/gcc-defs.exp (gcc-set-multilib-library-path):
 	Recognize multilib directory names containing underscores.
 
 2006-04-10  Roger Sayle  <roger@eyesopen.com>
@@ -11284,8 +11300,8 @@
 	* gfortran.dg/compliant_elemental_intrinsics_1.f90: New test.
 	* gfortran.dg/initialization_1.f90: Make assignment compliant.
 	* gfortran.dg/transfer_array_intrinsic_1.f90: Simplify.
-	* gfortran.dg/transfer_array_intrinsic_2.f90: Make assignments compliant and detect
-	bigendian-ness.
+	* gfortran.dg/transfer_array_intrinsic_2.f90: Make assignments
+	compliant and detect bigendian-ness.
 
 2006-04-02  Erik Edelmann  <eedelman@gcc.gnu.org>
 
@@ -11687,7 +11703,7 @@
 	PR fortran/25378
 	* gfortran.fortran-torture/execute/intrinsic_mmloc_3.f90: Expand
 	test to include more permuatations of mask and index.
-	* testsuite/gfortran.dg/scalar_mask_1.f90: Modify last test to
+	* gfortran.dg/scalar_mask_1.f90: Modify last test to
 	respond to F2003 spec. that the position returned for an all false
 	mask && condition is zero.
 
@@ -12012,7 +12028,7 @@
 2006-02-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/25680
-	* testsuite/gcc.dg/tree-ssa/complex-3.c: New test.
+	* gcc.dg/tree-ssa/complex-3.c: New test.
 
 2006-02-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -12232,7 +12248,7 @@
 
 2006-02-10  Richard Guenther  <rguenther@suse.de>
 
-	* testsuite/gcc.dg/pr23372-1.c: Remove empty file.
+	* gcc.dg/pr23372-1.c: Remove empty file.
 
 2006-02-09  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 	Paul Thomas  <pault@gcc.gnu.org>
@@ -12909,25 +12925,25 @@
 
 2006-01-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c (switchfiles):
-	Fix fprintf's by adding srcdir or removing it.
+	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c
+	(switchfiles): Fix fprintf's by adding srcdir or removing it.
 
 2006-01-19  Diego Novillo  <dnovillo@redhat.com>
 
-	* testsuite/gcc.dg/gomp/for-13.c: Use -fdump-tree-ompexp.
-	* testsuite/gcc.dg/gomp/critical-1.c: Likewise.
-	* testsuite/gcc.dg/gomp/critical-3.c: Likewise.
-	* testsuite/gcc.dg/gomp/empty.c: Likewise.
-	* testsuite/gcc.dg/gomp/ordered-1.c: Likewise.
-	* testsuite/gcc.dg/gomp/for-4.c: Likewise.
-	* testsuite/gcc.dg/gomp/for-6.c: Likewise.
-	* testsuite/gcc.dg/gomp/master-3.c: Likewise.
-	* testsuite/gcc.dg/gomp/for-8.c: Likewise.
-	* testsuite/gcc.dg/gomp/for-10.c: Likewise.
-	* testsuite/gcc.dg/gomp/for-18.c: Likewise.
-	* testsuite/gcc.dg/gomp/for-5.c: Likewise.
-	* testsuite/gcc.dg/gomp/for-7.c: Likewise.
-	* testsuite/gcc.dg/gomp/for-9.c: Likewise.
+	* gcc.dg/gomp/for-13.c: Use -fdump-tree-ompexp.
+	* gcc.dg/gomp/critical-1.c: Likewise.
+	* gcc.dg/gomp/critical-3.c: Likewise.
+	* gcc.dg/gomp/empty.c: Likewise.
+	* gcc.dg/gomp/ordered-1.c: Likewise.
+	* gcc.dg/gomp/for-4.c: Likewise.
+	* gcc.dg/gomp/for-6.c: Likewise.
+	* gcc.dg/gomp/master-3.c: Likewise.
+	* gcc.dg/gomp/for-8.c: Likewise.
+	* gcc.dg/gomp/for-10.c: Likewise.
+	* gcc.dg/gomp/for-18.c: Likewise.
+	* gcc.dg/gomp/for-5.c: Likewise.
+	* gcc.dg/gomp/for-7.c: Likewise.
+	* gcc.dg/gomp/for-9.c: Likewise.
 
 2006-01-18  Jeff Law  <law@redhat.com>
 
@@ -13003,7 +13019,7 @@
 	    Diego Novillo  <dnovillo@redhat.com>
 	    Uros Bizjak  <uros@kss-loka.si>
 
-	* testsuite/gcc.dg/gomp: New directory.
+	* gcc.dg/gomp: New directory.
 
 2006-01-18  Paul Thomas  <pault@gcc.gnu.org>
 	    Steven G. Kargl  <kargls@comcast.net>
@@ -13061,8 +13077,8 @@
 
 2006-01-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c (switchfiles):
-	xfail txxx where xxx >= 25.
+	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c
+	(switchfiles): xfail txxx where xxx >= 25.
 
 2006-01-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -13715,8 +13731,8 @@
 
 	PR fortran/25029
 	PR fortran/21256
-	* gfortran.dg/initialization_1.f90: Remove tests of intrinsic functions
-	with incorrect assumed size references.
+	* gfortran.dg/initialization_1.f90: Remove tests of intrinsic
+	functions with incorrect assumed size references.
 
 2005-12-24  Mark Mitchell  <mark@codesourcery.com>
 
@@ -13805,8 +13821,8 @@
 	PR fortran/25029
 	PR fortran/21256
 	* gfortran.dg/assumed_size_refs.f90: New test for the conditions that
-	should give an error with assumed size array refernces and checks those
-	that should not.
+	should give an error with assumed size array refernces and checks
+	those that should not.
 	* gfortran.dg/gfortran.dg/pr15140.f90: Give the assumed size array
 	reference an upper bound so that it does not generate an error.
 
@@ -13842,7 +13858,7 @@
 2005-12-22  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR tree-optimization/23518
-	* testsuite/gcc.dg/pr23518.c: New.
+	* gcc.dg/pr23518.c: New.
 
 2005-12-21  Mike Stump  <mrs@apple.com>
 
@@ -13875,7 +13891,7 @@
 2005-12-20  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR tree-optimization/25501
-	* testsuite/gcc.dg/tree-ssa/pr25501.c: New.
+	* gcc.dg/tree-ssa/pr25501.c: New.
 
 2005-12-20  Richard Guenther  <rguenther@suse.de>
 
@@ -14066,10 +14082,9 @@
 
 2005-12-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c (base_types):
-	Change C++ style comments to C style comments.
-	Remove aligned types from the array.
-	Keep Enums disabled.
+	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c
+	(base_types): Change C++ style comments to C style comments.  Remove
+	aligned types from the array.  Keep Enums disabled.
 	(complex_types): Remove aligned types from the array.
 	Comment out "_Complex long double".
 	(attrib_types): Remove.
@@ -15153,7 +15168,7 @@
 2005-11-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/24820
-	* testsuite/gcc.dg/pr24820.c: New test.
+	* gcc.dg/pr24820.c: New test.
 
 2005-11-13  Zdenek Dvorak  <dvorakz@suse.cz>
 
@@ -15163,7 +15178,7 @@
 
 2005-11-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-	testsuite/24614
+	PR testsuite/24614
 	* gcc.dg/nested-func-4.c: Add dg-options for hppa*-*-hpux*.
 
 2005-11-12  Hans-Peter Nilsson  <hp@axis.com>
@@ -15414,7 +15429,7 @@
 
 	PR fortran/24174
 	PR fortran/24305
-	* testsuite/gfortran.dg/large_real_kind_form_io_1.f90: New file.
+	* gfortran.dg/large_real_kind_form_io_1.f90: New file.
 
 2005-11-06  Diego Novillo  <dnovillo@redhat.com>
 
@@ -17717,8 +17732,8 @@
 	* gcc.dg/vect/vect-35: Likewise, and also check that the test wasn't
 	vectorized for the expected reason, rather than checking how alignment
 	was handled.
-	* gcc.dg/vect/vect-92.c: Use aligned arrays instead of arrays to aligned
-	type and also instead of aligned pointers. Added documentation.
+	* gcc.dg/vect/vect-92.c: Use aligned arrays instead of arrays to
+	aligned type and also instead of aligned pointers. Added documentation.
 
 2005-08-16  Feng Wang  <fengwang@nudt.edu.cn>
 
@@ -17791,8 +17806,8 @@
 2005-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	part of PR testsuite/23348
-	* lib/objc-torture.exp: Add -fgnu-runtime and/or -fnext-runtime to each
-	of the torture options.
+	* lib/objc-torture.exp: Add -fgnu-runtime and/or -fnext-runtime to
+	each of the torture options.
 	* objc/compile/trivial.m: New test.
 
 2005-08-12  Thomas Koenig  <Thomas.Koenig@online.de>
@@ -17843,7 +17858,7 @@
 2005-08-10  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR c++/23225
-	* g++.dg/testsuite/parse/crash27.C: new test.
+	* g++.dg/parse/crash27.C: new test.
 
 2005-08-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
@@ -18009,7 +18024,7 @@
 2005-08-03  Richard Sandiford  <richard@codesourcery.com>
 
 	PR target/18582
-	* testsuite/gcc.dg/torture/pr18582-1.c: New test.
+	* gcc.dg/torture/pr18582-1.c: New test.
 
 2005-08-03  Jan Hubicka  <jh@suse.cz>
 
@@ -18265,7 +18280,7 @@
 2005-07-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/22484
-	* testsuite/g++.dg/opt/loop2.C: New test.
+	* g++.dg/opt/loop2.C: New test.
 
 2005-07-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -18506,8 +18521,8 @@
 
 2005-07-17  Jerry DeLisle  <jvdelisle@verizon.net>
 
-	* gfortran.fortran-torture/execute/nan_inf_fmt.f90: Change case of field
-	width of 8 to +Inf and -Inf.
+	* gfortran.fortran-torture/execute/nan_inf_fmt.f90: Change case of
+	field width of 8 to +Inf and -Inf.
 
 2005-07-17  Mark Mitchell  <mark@codesourcery.com>
 
@@ -18686,7 +18701,7 @@
 2005-07-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/22356
-	* testsuite/gcc.dg/pr22356-1.c: New test.
+	* gcc.dg/pr22356-1.c: New test.
 
 2005-07-08  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -21012,27 +21027,37 @@
 
 2005-04-17 Paul Thomas <pault@gcc.gnu.org>
 
-	PR libfortran/12884 gfortran.dg/pr12884.f: New test
-	PR libfortran/17285 gfortran.dg/pr17285.f90: New test
-	PR libfortran/17472, 18396, 18209 gfortran.dg/pr17472.f: New test
-	PR libfortran/18122, 18591 gfortran.dg/pr18122.f90: New test
-	PR libfortran/18210 gfortran.dg/pr18210.f90: New test
-	PR libfortran/18392 gfortran.dg/pr18392.f90: New test
-	PR libfortran/19467 gfortran.dg/pr19467.f90: New test
-	PR libfortran/19657 gfortran.dg/pr19657.f90: New test
-	* gfortran.dg/namelist_1.f90: Correct comment (PUBLIC and PRIVATE wrong way round).
-	* gfortran.dg/namelist_2.f90: Variables with INTENT(IN) cannot be in namelists. New test
-	* gfortran.dg/namelist_3.f90: Pointers cannot be in namelists. New test
-	* gfortran.dg/namelist_11.f: Tests reals and qualifiers in namelist. New test
-	* gfortran.dg/namelist_12.f: Tests integers and qualifiers in namelist. New test
-	* gfortran.dg/namelist_13.f90: Tests derived types in namelist. New test
-	* gfortran.dg/namelist_14.f90: Tests trans-io.c namelist support. New test
-	* gfortran.dg/namelist_15.f90: Tests arrays of derived types in namelist. New test
-	* gfortran.dg/namelist_16.f90: Tests complex in namelist. New test
-	* gfortran.dg/namelist_17.f90: Tests logical in namelist. New test
-	* gfortran.dg/namelist_18.f90: Tests charcter delimiters in namelist. New test
-	* gfortran.dg/namelist_19.f90: Tests namelist errors. New test
-	* gfortran.dg/namelist_20.f90: Tests negative bounds for explicit arrays. New test
+	PR libfortran/12884 gfortran.dg/pr12884.f: New test.
+	PR libfortran/17285 gfortran.dg/pr17285.f90: New test.
+	PR libfortran/17472, 18396, 18209 gfortran.dg/pr17472.f: New test.
+	PR libfortran/18122, 18591 gfortran.dg/pr18122.f90: New test.
+	PR libfortran/18210 gfortran.dg/pr18210.f90: New test.
+	PR libfortran/18392 gfortran.dg/pr18392.f90: New test.
+	PR libfortran/19467 gfortran.dg/pr19467.f90: New test.
+	PR libfortran/19657 gfortran.dg/pr19657.f90: New test.
+	* gfortran.dg/namelist_1.f90: Correct comment (PUBLIC and PRIVATE
+	wrong way round).
+	* gfortran.dg/namelist_2.f90: Variables with INTENT(IN) cannot be
+	in namelists.  New test.
+	* gfortran.dg/namelist_3.f90: Pointers cannot be in namelists.
+	New test.
+	* gfortran.dg/namelist_11.f: Tests reals and qualifiers in namelist.
+	New test.
+	* gfortran.dg/namelist_12.f: Tests integers and qualifiers in
+	namelist.  New test.
+	* gfortran.dg/namelist_13.f90: Tests derived types in namelist.
+	New test.
+	* gfortran.dg/namelist_14.f90: Tests trans-io.c namelist support.
+	New test.
+	* gfortran.dg/namelist_15.f90: Tests arrays of derived types in
+	namelist.  New test.
+	* gfortran.dg/namelist_16.f90: Tests complex in namelist. New test.
+	* gfortran.dg/namelist_17.f90: Tests logical in namelist. New test.
+	* gfortran.dg/namelist_18.f90: Tests charcter delimiters in namelist.
+	New test.
+	* gfortran.dg/namelist_19.f90: Tests namelist errors. New test.
+	* gfortran.dg/namelist_20.f90: Tests negative bounds for explicit
+	arrays. New test.
 
 2005-04-17  Richard Guenther  <rguenth@gcc.gnu.org>
 
@@ -22180,8 +22205,8 @@
 
 2005-03-15  Dorit Naishlos  <dorit@il.ibm.com>
 
-	* gcc.dg/vect/vect-54.c: Now vectorizable on targets that don't support
-	misaligned accesses.
+	* gcc.dg/vect/vect-54.c: Now vectorizable on targets that don't
+	support misaligned accesses.
 	* gcc.dg/vect/vect-58.c: Likewise.
 	* gcc.dg/vect/vect-92.c: New.
 	* gcc.dg/vect/vect-93.c: New.
@@ -22687,7 +22712,7 @@
 2005-02-25  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/20204
-	* testsuite/gcc.dg/pr20204.c: New test.
+	* gcc.dg/pr20204.c: New test.
 
 2005-02-24  Jakub Jelinek  <jakub@redhat.com>
 
@@ -23011,7 +23036,8 @@
 
 2005-02-13  James A. Morrison  <phython@gcc.gnu.org>
 
-	* gcc.dg/pr15784-1.c, gcc.dg/pr15784-2.c, gcc.dg/pr15784-3.c: New tests.
+	* gcc.dg/pr15784-1.c, gcc.dg/pr15784-2.c, gcc.dg/pr15784-3.c:
+	New tests.
 
 2005-02-12  Dorit Naishlos  <dorit@il.ibm.com>
 
@@ -23176,7 +23202,7 @@
 2005-02-07  Leehod Baruch  <leehod@il.ibm.com>
 	    Dorit Naishlos  <dorit@il.ibm.com>
 
-	* testsuite/gcc.dg/vect/vect.exp: Add -ftree-vectorizer-verbose=3.
+	* gcc.dg/vect/vect.exp: Add -ftree-vectorizer-verbose=3.
 
 2005-02-06  Richard Sandiford  <rsandifo@redhat.com>
 
@@ -23283,8 +23309,8 @@
 2005-02-01  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/19633
-	* testsuite/gcc.dg/pr19633-1.c: New test.
-	* testsuite/gcc.dg/pr19633.c: Tweak to make pointer point
+	* gcc.dg/pr19633-1.c: New test.
+	* gcc.dg/pr19633.c: Tweak to make pointer point
 	to NULL or a symbol.
 
 2005-02-01  Janis Johnson  <janis187@us.ibm.com>
@@ -23357,14 +23383,14 @@
 2005-01-31  Steven Bosscher  <stevenb@suse.de>
 
 	PR c/19333
-	* testsuite/gcc.c-torture/compile/20011130-1.c: Reorder to make
+	* gcc.c-torture/compile/20011130-1.c: Reorder to make
 	the test case valid.
-	* testsuite/gcc.dg/20030815-1.c: Remove invalid tests.
-	* testsuite/gcc.dg/array-7.c: Adjust expected result.
-	* testsuite/gcc.dg/pr18596-3.c: Likewise.
-	* testsuite/gcc.dg/noncompile/20000901-1.c: Likewise.
-	* testsuite/gcc.dg/noncompile/init-2.c: Likewise.
-	* testsuite/gcc.dg/noncompile/init-4.c: Likewise.
+	* gcc.dg/20030815-1.c: Remove invalid tests.
+	* gcc.dg/array-7.c: Adjust expected result.
+	* gcc.dg/pr18596-3.c: Likewise.
+	* gcc.dg/noncompile/20000901-1.c: Likewise.
+	* gcc.dg/noncompile/init-2.c: Likewise.
+	* gcc.dg/noncompile/init-4.c: Likewise.
 
 2005-01-31  Dale Johannesen  <dalej@apple.com>
 
@@ -24865,7 +24891,7 @@
 2004-12-01  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/18291
-	* testsuite/gcc.c-torture/compile/pr18291.c: New test.
+	* gcc.c-torture/compile/pr18291.c: New test.
 
 2004-12-01  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -25097,7 +25123,7 @@
 2004-11-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/17957
-	* testsuite/gcc.dg/pr17957.c: New test.
+	* gcc.dg/pr17957.c: New test.
 
 2004-11-25  Mark Mitchell  <mark@codesourcery.com>
 
@@ -25183,8 +25209,8 @@
 
 2004-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-	* lib/target-libpath.exp: New file defining set_ld_library_path_env_vars
-	and restore_ld_library_path_env_vars.
+	* lib/target-libpath.exp: New file defining
+	set_ld_library_path_env_vars and restore_ld_library_path_env_vars.
 	* g++.dg/compat/compat.exp, lib/g++.exp, lib/gcc-dg.exp,
 	lib/gfortran.exp, lib/objc.exp, lib/treelang.exp: Use new procs.
 	* ada/acats/run_acats (LD_LIBRARY_PATH): Add previous LD_LIBRARY_PATH
@@ -25295,7 +25321,7 @@
 2004-11-18  Daniel Jacobowitz  <dan@codesourcery.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 
-	* testsuite/gcc.dg/pragma-init-fini-2.c: New test.
+	* gcc.dg/pragma-init-fini-2.c: New test.
 
 2004-11-17  Janis Johnson  <janis187@us.ibm.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
@@ -25888,11 +25914,11 @@
 
 2004-11-08  Steve Ellcey  <sje@cup.hp.com>
 
-	* testsuite/gcc.dg/uninit-H.c: Add ifdefs for __hppa__ and __ia64__.
+	* gcc.dg/uninit-H.c: Add ifdefs for __hppa__ and __ia64__.
 
 2004-11-08  Steve Ellcey  <sje@cup.hp.com>
 
-	* testsuite/gcc.dg/20030225-2.c: Add prototype for abort and
+	* gcc.dg/20030225-2.c: Add prototype for abort and
 	exit.
 
 2004-11-08  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -25967,7 +25993,7 @@
 
 2004-11-04  Mark Mitchell  <mark@codesourcery.com>
 
-	* testsuite/g++.dg/ext/visibility/symbian1.C: New test.
+	* g++.dg/ext/visibility/symbian1.C: New test.
 
 2004-11-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -26434,7 +26460,7 @@
 2004-10-18  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/17656
-	* testsuite/gcc.c-torture/compile/pr17656.c: New test.
+	* gcc.c-torture/compile/pr17656.c: New test.
 
 2004-10-18  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -26509,14 +26535,14 @@
 
 2004-10-14  Dorit Naishlos  <dorit@il.ibm.com>
 
-	* testsuite/gcc.dg/vect/vect-44.c: xfail on i?86-*-*, x86_64-*-*,
+	* gcc.dg/vect/vect-44.c: xfail on i?86-*-*, x86_64-*-*,
 	and mipsisa64*-*-* (until support for misaligned loads is added).
-	* testsuite/gcc.dg/vect/vect-50.c: Likewise.
-	* testsuite/gcc.dg/vect/vect-52.c: Likewise.
-	* testsuite/gcc.dg/vect/vect-54.c: Likewise.
-	* testsuite/gcc.dg/vect/vect-58.c: Likewise.
-	* testsuite/gcc.dg/vect/vect-60.c: Likewise.
-	* testsuite/gcc.dg/vect/vect-80.c: Likewise.
+	* gcc.dg/vect/vect-50.c: Likewise.
+	* gcc.dg/vect/vect-52.c: Likewise.
+	* gcc.dg/vect/vect-54.c: Likewise.
+	* gcc.dg/vect/vect-58.c: Likewise.
+	* gcc.dg/vect/vect-60.c: Likewise.
+	* gcc.dg/vect/vect-80.c: Likewise.
 
 2004-10-14  Mark Mitchell  <mark@codesourcery.com>
 
@@ -26543,24 +26569,24 @@
 
 2004-10-14  Olga Golovanevsky  <olga@il.ibm.com>
 
-	* testsuite/gcc.dg/vect/vect-28.c: Remove xfail.
-	* testsuite/gcc.dg/vect/vect-30.c: Remove xfail.
-	* testsuite/gcc.dg/vect/vect-31.c: Vectorize 4 loops instead of 2.
-	* testsuite/gcc.dg/vect/vect-33.c: Remove xfail.
-	* testsuite/gcc.dg/vect/vect-44.c: Remove xfail.
-	* testsuite/gcc.dg/vect/vect-46.c: Remove xfail.
-	* testsuite/gcc.dg/vect/vect-50.c: Remove xfail.
-	* testsuite/gcc.dg/vect/vect-52.c: Remove xfail.
-	* testsuite/gcc.dg/vect/vect-54.c: Remove xfail.
-	* testsuite/gcc.dg/vect/vect-58.c: Remove xfail.
-	* testsuite/gcc.dg/vect/vect-60.c: Remove xfail.
-	* testsuite/gcc.dg/vect/vect-64.c: Vectorize 3 loops instead of 1.
-	* testsuite/gcc.dg/vect/vect-66.c: Vectorize 3 loops instead of 2.
-	* testsuite/gcc.dg/vect/vect-68.c: Vectorize 4 loops instead of 2.
-	* testsuite/gcc.dg/vect/vect-69.c: Vectorize 4 loops instead of 2.
-	* testsuite/gcc.dg/vect/vect-8.c: Remove xfail.
-	* testsuite/gcc.dg/vect/vect-80.c: Remove xfail.
-	* testsuite/gcc.dg/vect/vect-none.c: Vectorize 1 loops instead of 0.
+	* gcc.dg/vect/vect-28.c: Remove xfail.
+	* gcc.dg/vect/vect-30.c: Remove xfail.
+	* gcc.dg/vect/vect-31.c: Vectorize 4 loops instead of 2.
+	* gcc.dg/vect/vect-33.c: Remove xfail.
+	* gcc.dg/vect/vect-44.c: Remove xfail.
+	* gcc.dg/vect/vect-46.c: Remove xfail.
+	* gcc.dg/vect/vect-50.c: Remove xfail.
+	* gcc.dg/vect/vect-52.c: Remove xfail.
+	* gcc.dg/vect/vect-54.c: Remove xfail.
+	* gcc.dg/vect/vect-58.c: Remove xfail.
+	* gcc.dg/vect/vect-60.c: Remove xfail.
+	* gcc.dg/vect/vect-64.c: Vectorize 3 loops instead of 1.
+	* gcc.dg/vect/vect-66.c: Vectorize 3 loops instead of 2.
+	* gcc.dg/vect/vect-68.c: Vectorize 4 loops instead of 2.
+	* gcc.dg/vect/vect-69.c: Vectorize 4 loops instead of 2.
+	* gcc.dg/vect/vect-8.c: Remove xfail.
+	* gcc.dg/vect/vect-80.c: Remove xfail.
+	* gcc.dg/vect/vect-none.c: Vectorize 1 loops instead of 0.
 
 2004-10-14  Dorit Naishlos  <dorit@il.ibm.com>
 
@@ -26585,7 +26611,7 @@
 2004-10-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/17661
-	* testsuite/g++.dg/expr/for2.C: New test.
+	* g++.dg/expr/for2.C: New test.
 
 2004-10-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -26616,11 +26642,11 @@
 
 2004-10-11  Steve Ellcey  <sje@cup.hp.com>
 
-	* testsuite/gcc.dg/ia64-asm-1.c: Add prototype for abort
-	* testsuite/gcc.dg/ia64-sync-1.c: Add prototype for abort and
+	* gcc.dg/ia64-asm-1.c: Add prototype for abort
+	* gcc.dg/ia64-sync-1.c: Add prototype for abort and
 	memcpy.
-	* testsuite/gcc.dg/ia64-sync-2.c: Ditto.
-	* testsuite/gcc.dg/ia64-sync-3.c: Ditto.
+	* gcc.dg/ia64-sync-2.c: Ditto.
+	* gcc.dg/ia64-sync-3.c: Ditto.
 
 2004-10-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -27261,7 +27287,7 @@
 2004-09-22  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/16721
-	* testsuite/gcc.dg/tree-ssa/pr16721.c: New test.
+	* gcc.dg/tree-ssa/pr16721.c: New test.
 
 2004-09-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
@@ -27380,8 +27406,8 @@
 2004-09-16  Geoffrey Keating  <geoffk@apple.com>
 
 	PR pch/13361
-	* testsuite/g++.dg/pch/wchar-1.C: New.
-	* testsuite/g++.dg/pch/wchar-1.Hs: New.
+	* g++.dg/pch/wchar-1.C: New.
+	* g++.dg/pch/wchar-1.Hs: New.
 
 2004-09-17  Kenneth Zadeck  <Kenneth.Zadeck@NaturalBridge.com>
 
@@ -27453,7 +27479,7 @@
 
 2004-09-15  Mark Mitchell  <mark@codesourcery.com>
 
-	* testsuite/g++.old-deja/g++.abi/cxa_vec.C: Adjust for ARM
+	* g++.old-deja/g++.abi/cxa_vec.C: Adjust for ARM
 	EABI.
 
 2004-09-15  Mark Mitchell  <mark@codesourcery.com>
@@ -27762,7 +27788,7 @@
 
 2004-09-04  Uros Bizjak  <uros@kss-loka.si>
 
-	* testsuite/gcc.dg/builtins-46.c: New.
+	* gcc.dg/builtins-46.c: New.
 
 2004-09-03  Devang Patel  <dpatel@apple.com>
 
@@ -28469,7 +28495,7 @@
 
 2004-08-09  Mark Mitchell  <mark@codesourcery.com>
 
-	* gcc.dg/testsuite/gcc.dg/arm-eabi1.c: New test.
+	* gcc.dg/gcc.dg/arm-eabi1.c: New test.
 	* gcc.dg/dll-2.c: Fix dg-require syntax.
 	* gcc.misc-tests/arm-isr.c (abort): Declare.
 	(exit): Likewise.
@@ -28575,7 +28601,7 @@
 	* gcc.dg/visibility-10.c: New test.
 	* lib/gcc-dg.exp (dg-require-dll): Add Symbian to list of targets
 	supporting DLLs.
-	* testsuite/lib/scanasm.exp (scan_hidden): New function.
+	* lib/scanasm.exp (scan_hidden): New function.
 	(scan_not_hidden): Likewise.
 
 2004-08-05  David Edelsohn  <edelsohn@gnu.org>
@@ -29110,8 +29136,8 @@
 
 2004-07-20  Steven Bosscher  <stevenb@suse.de>
 
-	* testsuite/gcc.dg/switch-warn-1.c: New test.
-	* testsuite/gcc.dg/switch-warn-2.c: New test.
+	* gcc.dg/switch-warn-1.c: New test.
+	* gcc.dg/switch-warn-2.c: New test.
 	* gcc.c-torture/compile/pr14730.c: Update.
 
 2004-07-19  Kelley Cook  <kcook@gcc.gnu.org>
@@ -31218,8 +31244,8 @@
 
 2004-04-15  Richard Sandiford  <rsandifo@redhat.com>
 
-	* lib/target-supports.exp (check_profiling_available): Assume profiling
-	isn't available for mips*-*-elf targets.
+	* lib/target-supports.exp (check_profiling_available): Assume
+	profiling isn't available for mips*-*-elf targets.
 
 2004-04-14  Uros Bizjak  <uros@kss-loka.si>
 
@@ -31633,7 +31659,7 @@
 	* gcc.dg/altivec-3.c: Likewise.
 	* gcc.dg/altivec-4.c: Likewise.
 	* gcc.dg/altivec-varargs-1.c: Likewise.
-	* testsuite/gcc.dg/compat/vector-defs.h: Likewise.
+	* gcc.dg/compat/vector-defs.h: Likewise.
 	* gcc.dg/i386-mmx-3.c: Likewise.
 	* gcc.dg/i386-sse-4.c: Likewise.
 	* gcc.dg/i386-sse-5.c: Likewise.
@@ -32390,8 +32416,8 @@
 	Revert:
 	2004-01-15  Geoffrey Keating  <geoffk@apple.com>
 	PR pch/13361
-	* testsuite/g++.dg/pch/wchar-1.C: New.
-	* testsuite/g++.dg/pch/wchar-1.Hs: New.
+	* g++.dg/pch/wchar-1.C: New.
+	* g++.dg/pch/wchar-1.Hs: New.
 
 2004-02-05  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
@@ -32862,8 +32888,8 @@
 2004-01-15  Geoffrey Keating  <geoffk@apple.com>
 
 	PR pch/13361
-	* testsuite/g++.dg/pch/wchar-1.C: New.
-	* testsuite/g++.dg/pch/wchar-1.Hs: New.
+	* g++.dg/pch/wchar-1.C: New.
+	* g++.dg/pch/wchar-1.Hs: New.
 
 2004-01-15  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
@@ -33043,9 +33069,9 @@
 
 2004-01-08  Stuart Hastings  <stuart@apple.com>
 
-	* testsuite/gcc.dg/20020523-2.c (bail_if_no_sse): Moved cpu-ID code...
-	testsuite/gcc.dg/i386-cpuid.h (i386_cpuid): ...to here, to share with...
-	* testsuite/gcc.dg/i386-sse-6.c: ...this new testcase.
+	* gcc.dg/20020523-2.c (bail_if_no_sse): Moved cpu-ID code...
+	* gcc.dg/i386-cpuid.h (i386_cpuid): ...to here, to share with...
+	* gcc.dg/i386-sse-6.c: ...this new testcase.
 
 2004-01-09  Alan Modra  <amodra@bigpond.net.au>
 
@@ -33352,7 +33378,7 @@
 	* g++.dg/parse/error8.C: New test.
 
 	PR c++/11554
-	* testsuite/g++.dg/warn/ctor-init-1.C: New test.
+	* g++.dg/warn/ctor-init-1.C: New test.
 
 2003-12-21  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -33527,7 +33553,7 @@
 
 2003-12-16  Hartmut Penner  <hpenner@de.ibm.com>
 
-	* testsuite/gcc.dg/altivec-10.c: Test vec_cmple and vec_all_numeric.
+	* gcc.dg/altivec-10.c: Test vec_cmple and vec_all_numeric.
 
 2003-12-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -33630,7 +33656,7 @@
 
 2003-12-12  Neil Booth  <neil@daikokuya.co.uk>
 
-	* testsuite/gcc.dg/cpp/trad/macro.c: New tests.
+	* gcc.dg/cpp/trad/macro.c: New tests.
 
 2003-12-11  Zack Weinberg  <zack@codesourcery.com>
 
@@ -34187,9 +34213,9 @@
 
 2003-10-20  Jan Hubicka  <jh@suse.cz>
 
-	* testsuite/g++.dg/opt/inline4.C: Do not use min-inline-insns
+	* g++.dg/opt/inline4.C: Do not use min-inline-insns
 	parameter.
-	* testsuite/gcc.dg/inline-2.c: Likewise.
+	* gcc.dg/inline-2.c: Likewise.
 
 2003-10-20  Phil Edwards  <phil@codesourcery.com>
 
@@ -36915,7 +36941,7 @@
 	2002-08-10  Gwenole Beauchesne  <gbeauchesne@mandrakesoft.com>
 
 	PR target/7559
-	* testsuite/gcc.c-torture/execute/20020810-1.c: New test.
+	* gcc.c-torture/execute/20020810-1.c: New test.
 
 	2002-08-07  Jakub Jelinek  <jakub@redhat.com>
 
@@ -37442,7 +37468,7 @@
 2003-04-11  David Chad  <davidc@freebsd.org>
 	    Loren J. Rittle  <ljrittle@acm.org>
 
-	libobjc/8562
+	PR libobjc/8562
 	* objc.dg/headers.m: New test.
 
 2003-04-10  Zack Weinberg  <zack@codesourcery.com>
@@ -38063,7 +38089,7 @@
 2003-02-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9879
-	* testsuite/g++.dg/init/new4.C: New test.
+	* g++.dg/init/new4.C: New test.
 
 2003-02-28  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -38309,7 +38335,7 @@
 
 2003-02-07  Roger Sayle  <roger@eyesopen.com>
 
-	* testsuite/gcc.dg/builtins-4.c: New test case.
+	* gcc.dg/builtins-4.c: New test case.
 
 2003-02-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -38393,7 +38419,7 @@
 2003-02-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7129
-	* testsuite/g++.dg/ext/max.C: New test.
+	* g++.dg/ext/max.C: New test.
 
 2003-02-03  Jan Hubicka  <jh@suse.cz>
 
@@ -39580,8 +39606,8 @@
 
 2002-11-25  Mark Mitchell  <mark@codesourcery.com>
 
-	* testsuite/g++.dg/abi/empty11.C: New test.
-	* testsuite/g++.dg/rtti/cv1.C: New test.
+	* g++.dg/abi/empty11.C: New test.
+	* g++.dg/rtti/cv1.C: New test.
 
 2002-11-25  Hans-Peter Nilsson  <hp@bitrange.com>
 
@@ -39723,8 +39749,8 @@
 
 2002-11-07  Mark Mitchell  <mark@codesourcery.com>
 
-	* testsuite/g++.dg/abi/dtor1.C: New test.
-	* testsuite/g++.dg/abi/dtor2.C: Likewise.
+	* g++.dg/abi/dtor1.C: New test.
+	* g++.dg/abi/dtor2.C: Likewise.
 
 2002-11-05  Geoffrey Keating  <geoffk@apple.com>
 
@@ -39920,7 +39946,7 @@
 
 2002-10-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
-	* testsuite/gcc.dg/i386-sse-3.c: Add tests for _mm_srli_si128 and
+	* gcc.dg/i386-sse-3.c: Add tests for _mm_srli_si128 and
 	_mm_slli_si128.
 
 2002-10-19  Andreas Schwab  <schwab@suse.de>
@@ -40456,7 +40482,7 @@
 
 2002-09-13  Matt Austern  <austern@apple.com>
 
-	* testsuite/g++.dg/other/constref[12].C: New, regression tests for
+	* g++.dg/other/constref[12].C: New, regression tests for
 	passing a cast expression to a function by const reference.
 
 2002-09-13  Nathan Sidwell  <nathan@codesourcery.com>
@@ -40567,8 +40593,8 @@
 
 2002-08-27  Mark Mitchell  <mark@codesourcery.com>
 
-	* testsuite/g++.dg/abi/bitfield5.C: New test.
-	* testsuite/g++.dg/abi/vbase10.C: Likewise.
+	* g++.dg/abi/bitfield5.C: New test.
+	* g++.dg/abi/vbase10.C: Likewise.
 
 2002-08-27  Nicola Pero  <n.pero@mi.flashnet.it>
 
@@ -40589,7 +40615,7 @@
 
 2002-08-22  Mark Mitchell  <mark@codesourcery.com>
 
-	* testsuite/g++.dg/inherit/cond1.C: New test.
+	* g++.dg/inherit/cond1.C: New test.
 
 2002-08-22  Geoffrey Keating  <geoffk@redhat.com>
 
@@ -40686,7 +40712,7 @@
 
 2002-08-06  Aldy Hernandez  <aldyh@redhat.com>
 
-	* testsuite/gcc.dg/tls/diag-3.c: New.
+	* gcc.dg/tls/diag-3.c: New.
 
 2002-08-07  Gabriel Dos Reis  <gdr@nerim.net>
 
@@ -41415,7 +41441,8 @@
 	(vfoo1f): Warning here.
 	(vfoo1l): Don't redefine the alias.
 
-2002-05-14  Jason Merrill  <jason@redhat.com>, Alexandre Oliva  <aoliva@redhat.com>
+2002-05-14  Jason Merrill  <jason@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.dg/init/pm1.C: New test.
 
@@ -41705,7 +41732,7 @@
 
 2002-04-15  Mark Mitchell  <mark@codesourcery.com>
 
-	* testsuite/lib/chill.exp: Remove.
+	* lib/chill.exp: Remove.
 
 2002-04-14  Jakub Jelinek  <jakub@redhat.com>
 
@@ -42214,12 +42241,12 @@
 
 2002-03-11  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* testsuite/g++.old-deja/g++.other/friend9.C: Revert DR 209 changes.
-	* testsuite/g++.old-deja/g++.robertl/eb56.C: Likewise.
+	* g++.old-deja/g++.other/friend9.C: Revert DR 209 changes.
+	* g++.old-deja/g++.robertl/eb56.C: Likewise.
 
 2002-03-11  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* testsuite/g++.dg/overload/pmf1.C: New test.
+	* g++.dg/overload/pmf1.C: New test.
 
 2002-03-11  Kazu Hirata  <kazu@hxi.com>
 
@@ -42362,7 +42389,7 @@
 
 2002-02-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-	* testsuite/gcc.dg/cpp/wchar-1.c: New test.
+	* gcc.dg/cpp/wchar-1.c: New test.
 
 2002-02-23  Jakub Jelinek  <jakub@redhat.com>
 
@@ -42893,7 +42920,7 @@
 
 2002-01-18  Kazu Hirata  <kazu@hxi.com>
 
-	* testsuite/gcc.c-torture/execute/20020118-1.c: New test.
+	* gcc.c-torture/execute/20020118-1.c: New test.
 
 2001-01-18  David Billinghurst <David.Billinghurst@riotinto.com>
 
@@ -43290,7 +43317,7 @@
 
 2001-12-14  Aldy Hernandez  <aldyh@redhat.com>
 
-	* testsuite/gcc.dg/20011214-1.c: New.
+	* gcc.dg/20011214-1.c: New.
 
 2001-12-13  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -43734,7 +43761,7 @@
 
 2001-10-18  Jakub Jelinek  <jakub@redhat.com>
 
-	* testsuite/gcc.dg/20011015-1.c: New test.
+	* gcc.dg/20011015-1.c: New test.
 
 2001-10-14  Richard Sandiford  <rsandifo@redhat.com>
 
@@ -43751,7 +43778,7 @@
 
 2001-10-12  Jakub Jelinek  <jakub@redhat.com>
 
-	* testsuite/gcc.dg/20011009-1.c: New test.
+	* gcc.dg/20011009-1.c: New test.
 
 2001-10-12  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -43869,7 +43896,7 @@
 
 2001-09-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-	* testsuite/objc/execute/paste.m: Remove.
+	* objc/execute/paste.m: Remove.
 
 2001-09-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -43993,7 +44020,7 @@
 
 2001-08-31  Roman Zippel  <zippel@linux-m68k.org>
 
-	* testsuite/gcc.c-torture/execute/ieee/ieee.exp: Add -ffloat-store
+	* gcc.c-torture/execute/ieee/ieee.exp: Add -ffloat-store
 	for m68k.
 
 2001-08-31  Geoffrey Keating  <geoffk@redhat.com>
@@ -46235,8 +46262,8 @@ Wed May 23 2001  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 2000-12-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-	* testsuite/gcc.c-torture/execute/stdio-opt-1.c: Add more checks.
-	* testsuite/gcc.c-torture/execute/stdio-opt-2.c: New test.
+	* gcc.c-torture/execute/stdio-opt-1.c: Add more checks.
+	* gcc.c-torture/execute/stdio-opt-2.c: New test.
 
 2000-12-05  Geoffrey Keating  <geoffk@redhat.com>
 
@@ -46733,7 +46760,7 @@ Wed May 23 2001  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 2000-11-07  DJ Delorie  <dj@redhat.com>
 
-	* testsuite/gcc.dg/20000614-1.c: Add return so that test can pass.
+	* gcc.dg/20000614-1.c: Add return so that test can pass.
 
 2000-11-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -46956,7 +46983,8 @@ Wed May 23 2001  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 2000-10-17  Bernd Schmidt  <bernds@redhat.co.uk>
 
-	* gcc.dg/sequence-pt-1.c: Several new tests; remove xfail from some old tests.
+	* gcc.dg/sequence-pt-1.c: Several new tests; remove xfail
+	from some old tests.
 
 2000-10-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -47341,7 +47369,7 @@ Mon 18-Sep-2000 19:23:11 BST  Neil Booth  <NeilB@earthling.net>
 
 2000-08-25  Jakub Jelinek  <jakub@redhat.com>
 
-	* testsuite/g++.old-deja/g++.other/crash22.C: New test.
+	* g++.old-deja/g++.other/crash22.C: New test.
 
 2000-08-24  Mark Mitchell  <mark@codesourcery.com>
 
@@ -47627,7 +47655,7 @@ Mon 18-Sep-2000 19:23:11 BST  Neil Booth  <NeilB@earthling.net>
 
 2000-07-31  Jakub Jelinek  <jakub@redhat.com>
 
-	* testsuite/gcc.dg/cpp/paste7.c: New test.
+	* gcc.dg/cpp/paste7.c: New test.
 	* gcc.dg/cpp/20000725-1.c: New test.
 
 2000-07-31  Zack Weinberg  <zack@wolery.cumb.org>
@@ -47810,9 +47838,9 @@ Mon 18-Sep-2000 19:23:11 BST  Neil Booth  <NeilB@earthling.net>
 
 2000-07-13  Neil Booth  <NeilB@earthling.net>
 
-	* testsuite/gcc.dg/cpp/digraph1.c,
-	testsuite/gcc.dg/cpp/digraph2.c,
-	testsuite/gcc.dg/cpp/digraphs.c: New tests.
+	* gcc.dg/cpp/digraph1.c,
+	gcc.dg/cpp/digraph2.c,
+	gcc.dg/cpp/digraphs.c: New tests.
 
 2000-07-12  David Billinghurst  <David Billinghurst@riotinto.com.au>
 
@@ -47901,16 +47929,16 @@ Mon 18-Sep-2000 19:23:11 BST  Neil Booth  <NeilB@earthling.net>
 
 2000-07-03  Zack Weinberg  <zack@wolery.cumb.org>
 
-	* testsuite/gcc.dg/cpp/19951025-1.c: Adjust regexps.
-	* testsuite/gcc.dg/cpp/19990703-1.c: Likewise.
-	* testsuite/gcc.dg/cpp/20000625-1.c: Likewise.
-	* testsuite/gcc.dg/cpp/20000625-2.c: Likewise.
+	* gcc.dg/cpp/19951025-1.c: Adjust regexps.
+	* gcc.dg/cpp/19990703-1.c: Likewise.
+	* gcc.dg/cpp/20000625-1.c: Likewise.
+	* gcc.dg/cpp/20000625-2.c: Likewise.
 
-	* testsuite/gcc.dg/cpp/macro1.c,
-	testsuite/gcc.dg/cpp/paste1.c, testsuite/gcc.dg/cpp/paste2.c,
-	testsuite/gcc.dg/cpp/paste3.c, testsuite/gcc.dg/cpp/paste4.c,
-	testsuite/gcc.dg/cpp/strify1.c,
-	testsuite/gcc.dg/cpp/strify2.c: New tests.
+	* gcc.dg/cpp/macro1.c,
+	gcc.dg/cpp/paste1.c, gcc.dg/cpp/paste2.c,
+	gcc.dg/cpp/paste3.c, gcc.dg/cpp/paste4.c,
+	gcc.dg/cpp/strify1.c,
+	gcc.dg/cpp/strify2.c: New tests.
 
 2000-07-03  Jakub Jelinek  <jakub@redhat.com>
 
@@ -49897,8 +49925,8 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 1999-03-01 Zack Weinberg  <zack@rabi.columbia.edu>
 
-	* gcc.c-torture/noncompile/noncompile.exp (951025-1.c): Accept an error
-	message on line 1 or line 2; cccp and cpplib do this differently.
+	* gcc.c-torture/noncompile/noncompile.exp (951025-1.c): Accept an
+	error message on line 1 or line 2; cccp and cpplib do this differently.
 
 1999-03-01  Jeffrey A Law  (law@cygnus.com)
 
@@ -50499,7 +50527,8 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* g77.f-torture/execute/io0.f: Test formatted direct i/o too.
 
-1998-09-04  Reid M. Pinchback  <reidmp@MIT.EDU>, Alexandre Oliva  <oliva@dcc.unicamp.br>
+1998-09-04  Reid M. Pinchback  <reidmp@MIT.EDU>
+	    Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/explicit72.C: Ensure that char and
 	(un)signed char are different types for template specialization
@@ -50567,7 +50596,8 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 1998-08-21  Jeffrey A Law  (law@cygnus.com)
 
-	* gcc.c-torture/execute/980526-2.c: Disable for targets with 16bit ints.
+	* gcc.c-torture/execute/980526-2.c: Disable for targets with
+	16bit ints.
 
 1998-08-19  Mark Mitchell  <mark@markmitchell.com>
 
@@ -52507,44 +52537,47 @@ rlsruhe.de>
 1994-05-21  Bill Cox  (bill@rtl.cygnus.com)
 
 	* Revert the previous changes.  Please see Rob's directory
-	  (/lisa/test/rob/progressive/gcc/testsuite) for testing
-	  fixes.
+	(/lisa/test/rob/progressive/gcc/testsuite) for testing
+	fixes.
 
 1994-05-19  Bill Cox  (bill@rtl.cygnus.com)
 
 	* config/sim.exp, config/udi.exp, config/unix.exp, config/vx.exp,
-	    g++.brendan/alignof.exp, g++.brendan/arm3.exp, g++.brendan/code-gen5.exp,
-	    g++.brendan/crash29.exp, g++.brendan/crash5.exp, g++.brendan/cvt3.exp,
-	    g++.brendan/delete1.exp, g++.brendan/nest12.exp, g++.brendan/nest13.exp,
-	    g++.brendan/overload3.exp, g++.brendan/redecl1.exp, g++.brendan/visibility2.exp,
-	    g++.jason/cond.exp, g++.jason/hmc1.exp, g++.jason/report.exp,
-	    g++.law/access1.exp, g++.law/access2.exp, g++.law/arg6.exp,
-	    g++.law/arg7.exp, g++.law/arg8.exp, g++.law/arm1.exp,
-	    g++.law/arm10.exp, g++.law/arm4.exp, g++.law/arm5.exp,
-	    g++.law/ctors15.exp, g++.law/ctors19.exp, g++.law/cvt1.exp,
-	    g++.law/cvt12.exp, g++.law/cvt13.exp, g++.law/cvt18.exp,
-	    g++.law/cvt22.exp, g++.law/cvt3.exp, g++.law/cvt5.exp,
-	    g++.law/cvt6.exp, g++.law/cvt8.exp, g++.law/dtors3.exp,
-	    g++.law/except1.exp, g++.law/except3.exp, g++.law/except4.exp,
-	    g++.law/except5.exp, g++.law/except6.exp, g++.law/init5.exp,
-	    g++.law/init8.exp, g++.law/inline4.exp, g++.law/memoized1.exp,
-	    g++.law/missing1.exp, g++.law/operators14.exp, g++.law/operators18.exp,
-	    g++.law/operators9.exp, g++.law/scope2.exp, g++.law/temps2.exp,
-	    g++.law/temps3.exp, g++.law/temps5.exp, g++.law/typeck2.exp,
-	    g++.mike/misc4.exp, g++.mike/misc6.exp, g++.niklas/t118.exp,
-	    g++.niklas/t128.exp, g++.niklas/t138.exp, g++.niklas/t139.exp,
-	    g++.niklas/t140.exp, g++.niklas/t141.exp, gcc.code_quality/code_quality.exp,
-	    gcc.compile/compile.exp, gcc.dje/dje.exp, gcc.execute/execute.exp,
-	    gcc.failure/failure.exp, gcc.ieee/ieee.exp, gcc.noncompile/noncompile.exp,
-	    gcc.special/special.exp, gcc.unsorted/unsorted.exp, lib/c-torture.exp,
-	    lib/chill.exp, lib/g++.exp, lib/gcc.exp, lib/mike-g++.exp, lib/mike-gcc.exp,
-	    lib/old-dejagnu.exp: Checkin Rob's 94Q1 testing changes.
+	g++.brendan/alignof.exp, g++.brendan/arm3.exp,
+	g++.brendan/code-gen5.exp, g++.brendan/crash29.exp,
+	g++.brendan/crash5.exp, g++.brendan/cvt3.exp, g++.brendan/delete1.exp,
+	g++.brendan/nest12.exp, g++.brendan/nest13.exp,
+	g++.brendan/overload3.exp, g++.brendan/redecl1.exp,
+	g++.brendan/visibility2.exp, g++.jason/cond.exp, g++.jason/hmc1.exp,
+	g++.jason/report.exp, g++.law/access1.exp, g++.law/access2.exp,
+	g++.law/arg6.exp, g++.law/arg7.exp, g++.law/arg8.exp,
+	g++.law/arm1.exp, g++.law/arm10.exp, g++.law/arm4.exp,
+	g++.law/arm5.exp, g++.law/ctors15.exp, g++.law/ctors19.exp,
+	g++.law/cvt1.exp, g++.law/cvt12.exp, g++.law/cvt13.exp,
+	g++.law/cvt18.exp, g++.law/cvt22.exp, g++.law/cvt3.exp,
+	g++.law/cvt5.exp, g++.law/cvt6.exp, g++.law/cvt8.exp,
+	g++.law/dtors3.exp, g++.law/except1.exp, g++.law/except3.exp,
+	g++.law/except4.exp, g++.law/except5.exp, g++.law/except6.exp,
+	g++.law/init5.exp, g++.law/init8.exp, g++.law/inline4.exp,
+	g++.law/memoized1.exp, g++.law/missing1.exp, g++.law/operators14.exp,
+	g++.law/operators18.exp, g++.law/operators9.exp, g++.law/scope2.exp,
+	g++.law/temps2.exp, g++.law/temps3.exp, g++.law/temps5.exp,
+	g++.law/typeck2.exp, g++.mike/misc4.exp, g++.mike/misc6.exp,
+	g++.niklas/t118.exp, g++.niklas/t128.exp, g++.niklas/t138.exp,
+	g++.niklas/t139.exp, g++.niklas/t140.exp, g++.niklas/t141.exp,
+	gcc.code_quality/code_quality.exp, gcc.compile/compile.exp,
+	gcc.dje/dje.exp, gcc.execute/execute.exp, gcc.failure/failure.exp,
+	gcc.ieee/ieee.exp, gcc.noncompile/noncompile.exp,
+	gcc.special/special.exp, gcc.unsorted/unsorted.exp, lib/c-torture.exp,
+	lib/chill.exp, lib/g++.exp, lib/gcc.exp, lib/mike-g++.exp,
+	lib/mike-gcc.exp, lib/old-dejagnu.exp: Checkin Rob's 94Q1
+	testing changes.
 
 1994-05-17  Bill Cox  (bill@rtl.cygnus.com)
 
 	* config/udi.exp, gcc.execute/execute.exp, gcc.wendy/wendy.exp,
-	    lib/g++.exp, lib/old-dejagnu.exp: Replace error proc calls
-	  with perror calls.
+	lib/g++.exp, lib/old-dejagnu.exp: Replace error proc calls
+	with perror calls.
 
 1994-05-02  Jason Merrill  (jason@deneb.cygnus.com)
 
@@ -52603,9 +52636,9 @@ rlsruhe.de>
 
 1994-02-24  Jeffrey A. Law  (law@snake.cs.utah.edu)
 
-	  * gcc.special/920717-x.c: Fix typo.
-	  * gcc.special/special.exp (920717-x.c): Use $srcdir/$subdir to
-	  get at sources.
+	* gcc.special/920717-x.c: Fix typo.
+	* gcc.special/special.exp (920717-x.c): Use $srcdir/$subdir to
+	get at sources.
 
 	* lib/mike-gcc.exp: Fix typo.
 
@@ -52788,10 +52821,10 @@ rlsruhe.de>
 	* chill.compile/compile.exp: rewrite, based on execute.exp
 	* chill.noncompile/noncompile.exp: rewrite, based on execute.exp
 	* lib/chill.exp: major changes to diff proc and compile and link
-	  procs. added chill_fail and chill_pass wrappers to pass and
-	  fail. added more comments, and handle error codes better.
-	  Added a hack to capture stderr from exec, so noncompile tests
-	  can work.
+	procs. added chill_fail and chill_pass wrappers to pass and
+	fail. added more comments, and handle error codes better.
+	Added a hack to capture stderr from exec, so noncompile tests
+	can work.
 
 1993-09-11  Jeffrey Wheat  (cassidy@cygnus.com)
 
@@ -52837,7 +52870,7 @@ rlsruhe.de>
 
 1993-08-17  Bill Cox  (bill@rtl.cygnus.com)
 
-	  * Add PR-related files to Makefiles, .cvsignore files, etc.
+	* Add PR-related files to Makefiles, .cvsignore files, etc.
 
 1993-08-02  Jeff Wheat  (cassidy@cygnus.com)
 
