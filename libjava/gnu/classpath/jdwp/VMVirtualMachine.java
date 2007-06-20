@@ -46,8 +46,8 @@ import gnu.classpath.jdwp.exception.InvalidMethodException;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.util.MethodResult;
 import gnu.classpath.jdwp.util.MonitorInfo;
+import gnu.classpath.jdwp.value.Value;
 
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -296,21 +296,23 @@ public class VMVirtualMachine
     throws JdwpException;
 
   /**
-   * Executes a method in the virtual machine
+   * Executes a method in the virtual machine. The thread must already
+   * be suspended by a previous event. When the method invocation is
+   * complete, the thread (or all threads if INVOKE_SINGLE_THREADED is
+   * not set in options) must be suspended before this method returns.
    *
    * @param  obj         instance in which to invoke method (null for static)
    * @param  thread      the thread in which to invoke the method
    * @param  clazz       the class in which the method is defined
    * @param  method      the method to invoke
    * @param  values      arguments to pass to method
-   * @param  nonVirtual  "otherwise, normal virtual invoke
-   *                     (instance methods only) "
+   * @param  options     invocation options
    * @return a result object containing the results of the invocation
    */
   public static native MethodResult executeMethod (Object obj, Thread thread,
-					    Class clazz, Method method,
-					    Object[] values,
-					    boolean nonVirtual)
+					    Class clazz, VMMethod method,
+					    Value[] values,
+					    int options)
     throws JdwpException;
 
   /**

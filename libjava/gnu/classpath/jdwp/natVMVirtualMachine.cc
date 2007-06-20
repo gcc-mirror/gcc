@@ -695,9 +695,9 @@ getLoadRequests (MAYBE_UNUSED ClassLoader *cl)
 MethodResult *
 gnu::classpath::jdwp::VMVirtualMachine::
 executeMethod (MAYBE_UNUSED jobject obj, MAYBE_UNUSED Thread *thread,
-	       MAYBE_UNUSED jclass clazz, MAYBE_UNUSED reflect::Method *method,
-	       MAYBE_UNUSED jobjectArray values,
-	       MAYBE_UNUSED jboolean nonVirtual)
+	       MAYBE_UNUSED jclass clazz, MAYBE_UNUSED VMMethod *method,
+	       MAYBE_UNUSED JArray<value::Value *> *values,
+	       MAYBE_UNUSED jint options)
 {
   return NULL;
 }
