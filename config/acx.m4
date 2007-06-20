@@ -183,6 +183,8 @@ if test -z "$ac_cv_prog_$1" ; then
   else
     $1="${ncn_target_tool_prefix}[$]2"
   fi], [$1="$3"])
+else
+  $1="$ac_cv_prog_$1"
 fi
 ]) []dnl # NCN_STRICT_CHECK_TARGET_TOOLS
   
@@ -297,7 +299,7 @@ if test -z "$ac_cv_path_$1" ; then
   elif test $build != $host && test $have_gcc_for_target = yes; then
     $1=`$GCC_FOR_TARGET --print-prog-name=$2`
     test [$]$1=$2 && $1=
-    ac_cv_path_$1=[$]$1
+    test -n "[$]$1" && ac_cv_path_$1=[$]$1
   fi
 fi
 if test -z "$ac_cv_path_$1" ; then
