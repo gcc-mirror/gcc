@@ -1,3 +1,10 @@
+2007-06-20  Dirk Mueller  <dmueller@suse.de>
+
+	PR c++/31806
+	PR c++/31809
+	* g++.dg/opt/static5.C: New test.
+	* g++.dg/opt/static6.C: New test.
+
 2007-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/32109

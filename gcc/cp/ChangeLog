@@ -1,3 +1,18 @@
+2007-06-20  Dirk Mueller  <dmueller@suse.de>
+
+	PR c++/31809
+	PR c++/31806
+	Backport from mainline:
+	2007-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (cp_finish_decl): Also clear was_readonly if a static var
+	needs runtime initialization.
+
+	2007-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (cp_finish_decl): Clear TREE_READONLY flag on TREE_STATIC
+	variables that need runtime initialization.
+
 2007-04-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/30221
