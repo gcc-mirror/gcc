@@ -102,26 +102,50 @@
   [(set_attr "flags" "x")]
   )
 
-(define_insn "epilogue_exitd"
-  [(set (reg:PSI SP_REGNO)
-	(plus:PSI (reg:PSI FB_REGNO)
-	      (match_operand 0 "const_int_operand" "i")))
-   (set (reg:PSI FB_REGNO)
-	(mem:PSI (reg:PSI FB_REGNO)))
+(define_insn "epilogue_exitd_16"
+  [(set (reg:HI SP_REGNO)
+	(plus:HI (reg:HI FB_REGNO)
+	      (const_int 2)))
+   (set (reg:HI FB_REGNO)
+	(mem:HI (reg:HI FB_REGNO)))
    (return)
    ]
-  ""
+  "TARGET_A16"
   "exitd"
   [(set_attr "flags" "x")]
   )
 
-(define_insn "epilogue_reit"
-  [(set (reg:PSI SP_REGNO)
-	(plus:PSI (reg:PSI SP_REGNO)
-	      (match_operand 0 "const_int_operand" "i")))
+(define_insn "epilogue_reit_16"
+  [(set (reg:HI SP_REGNO)
+	(plus:HI (reg:HI SP_REGNO)
+	      (const_int 4)))
    (return)
    ]
-  ""
+  "TARGET_A16"
+  "reit"
+  [(set_attr "flags" "x")]
+  )
+
+(define_insn "epilogue_exitd_24"
+  [(set (reg:PSI SP_REGNO)
+	(plus:PSI (reg:PSI FB_REGNO)
+	      (const_int 4)))
+   (set (reg:PSI FB_REGNO)
+	(mem:PSI (reg:PSI FB_REGNO)))
+   (return)
+   ]
+  "TARGET_A24"
+  "exitd"
+  [(set_attr "flags" "x")]
+  )
+
+(define_insn "epilogue_reit_24"
+  [(set (reg:PSI SP_REGNO)
+	(plus:PSI (reg:PSI SP_REGNO)
+	      (const_int 6)))
+   (return)
+   ]
+  "TARGET_A24"
   "reit"
   [(set_attr "flags" "x")]
   )
