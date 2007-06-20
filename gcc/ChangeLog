@@ -143,6 +143,11 @@
 	PR tree-optimization/32353
 	* tree-ssa-structalias.c (set_uids_in_ptset): Also handle RESULT_DECL.
 
+2007-06-19  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32r/linux.h (LIB_SPEC): Always imply -lpthread for
+	-pthread.
+
 2007-06-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32389
