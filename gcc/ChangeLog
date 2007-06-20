@@ -1,3 +1,8 @@
+2007-06-20  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR rtl-optimization/32405
+	* loop-iv.c (iv_get_reaching_def): Fail for partial defs.
+
 2007-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (omega.o): Depend on $(DIAGNOSTIC_H).
