@@ -1,3 +1,13 @@
+2007-06-20  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR target/32335
+	* config/m32c/m32c.c (m32c_emit_epilogue): Use new HImode epilogue
+	for TARGET_A16.
+	* config/m32c/prologue.md (epilogue_exitd_16): New.
+	(epilogue_reit_16): New.
+	(epilogue_exitd): Rename to epilogue_exitd_24.
+	(epilogue_reit): Rename to epilogue_reit_24.
+
 2007-06-20  Seongbae Park  <seongbae.park@gmail.com>
             Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
