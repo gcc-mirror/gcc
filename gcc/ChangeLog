@@ -1,3 +1,8 @@
+2007-06-20  Hui-May Chang  <hm.chang@apple.com>
+
+	* config/i386/darwin.h (ASM_OUTPUT_COMMON): Print the size
+	of a variable as an unsigned HOST_WIDE_INT integer.
+
 2007-06-20  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR rtl-optimization/32405
