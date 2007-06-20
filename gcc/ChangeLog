@@ -128,7 +128,7 @@
 	offsets->locals_base to avoid negative stack size.
 	(thumb1_expand_prologue): Assert on negative stack size.
 
-2007-04-11  Sebastian Pop  <sebpop@gmail.com>
+2007-04-19  Sebastian Pop  <sebpop@gmail.com>
 
 	PR tree-optimization/32367
 	* tree-chrec.h (build_polynomial_chrec): Verify that the left hand side 
