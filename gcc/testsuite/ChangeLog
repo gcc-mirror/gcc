@@ -1,5 +1,8 @@
 2007-06-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/32109
+	* g++.dg/ext/asm10.C: New test.
+
 	PR middle-end/32285
 	* gcc.c-torture/execute/20070614-1.c: New test.
 
