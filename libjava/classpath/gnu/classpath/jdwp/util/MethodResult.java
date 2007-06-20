@@ -1,6 +1,6 @@
 /* MethodResult.java -- class to wrap around values returned from a Method call
    in the VM 
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -40,6 +40,8 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.util;
 
+import gnu.classpath.jdwp.value.Value;
+
 /**
  * A class to wrap around values returned from a Method call in the VM.
  * 
@@ -48,42 +50,37 @@ package gnu.classpath.jdwp.util;
 public class MethodResult
 {
   // The Object returned by the executing method
-  private Object returnedValue;
+  private Value returnedValue;
   
   // Any Exception that was thrown by the executing method
-  private Exception thrownException;
+  private Throwable thrownException;
   
-  // The type of this result
-  private Class resType;
+  /**
+   * Constructs a new MethodResult object
+   *
+   * @param return_value the return value of the method invocation
+   * @param exc exception thrown during the invocation (or null if none)
+   */
+  public MethodResult (Value return_value, Throwable exc)
+  {
+    returnedValue = return_value;
+    thrownException = exc;
+  }
 
-  public Object getReturnedValue()
+  /**
+   * Returns the return value of the method invocation
+   */
+  public Value getReturnedValue()
   {
     return returnedValue;
   }
 
-  public void setReturnedValue(Object returnedValue)
-  {
-    this.returnedValue = returnedValue;
-  }
-
-  public Exception getThrownException()
+  /**
+   * Returns the exception thrown during the method invocation
+   * (or null if none)
+   */
+  public Throwable getThrownException()
   {
     return thrownException;
   }
-
-  public void setThrownException(Exception thrownException)
-  {
-    this.thrownException = thrownException;
-  }
-  
-  public Class getResultType()
-  {
-    return resType;
-  }
-  
-  public void setResultType(Class type)
-  {
-    resType = type;
-  }
-  
 }
