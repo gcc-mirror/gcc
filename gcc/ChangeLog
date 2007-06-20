@@ -1,5 +1,10 @@
 2007-06-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/31959
+	* builtins.c: Include diagnostic.h.
+	(expand_builtin_expect): Make gcc_assert more permissive.
+	* Makefile.in (builtins.o): Depend on $(DIAGNOSTIC_H).
+
 	PR inline-asm/32109
 	* gimplify.c (gimplify_asm_expr): Issue error if type is addressable
 	and !allows_mem.

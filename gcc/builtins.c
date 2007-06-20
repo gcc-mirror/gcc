@@ -50,6 +50,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-mudflap.h"
 #include "tree-flow.h"
 #include "value-prof.h"
+#include "diagnostic.h"
 
 #ifndef PAD_VARARGS_DOWN
 #define PAD_VARARGS_DOWN BYTES_BIG_ENDIAN
@@ -5121,7 +5122,8 @@ expand_builtin_expect (tree exp, rtx target)
 
   target = expand_expr (arg, target, VOIDmode, EXPAND_NORMAL);
   /* When guessing was done, the hints should be already stripped away.  */
-  gcc_assert (!flag_guess_branch_prob);
+  gcc_assert (!flag_guess_branch_prob
+	      || optimize == 0 || errorcount || sorrycount);
   return target;
 }
 
