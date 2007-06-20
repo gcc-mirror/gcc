@@ -1006,6 +1006,13 @@ resolve_actual_arglist (gfc_actual_arglist * arg, procedure_type ptype)
 	  e->ref->u.ar.as = sym->as;
 	}
 
+      /* Expressions are assigned a default ts.type of BT_PROCEDURE in
+	 primary.c (match_actual_arg). If above code determines that it
+	 is a  variable instead, it needs to be resolved as it was not
+	 done at the beginning of this function.  */
+      if (gfc_resolve_expr (e) != SUCCESS)
+	return FAILURE;
+
     argument_list:
       /* Check argument list functions %VAL, %LOC and %REF.  There is
 	 nothing to do for %REF.  */
