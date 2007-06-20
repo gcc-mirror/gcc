@@ -3790,6 +3790,19 @@ gimplify_asm_expr (tree *expr_p, tree *pre_p, tree *post_p)
       parse_input_constraint (&constraint, 0, 0, noutputs, 0,
 			      oconstraints, &allows_mem, &allows_reg);
 
+      /* If we can't make copies, we can only accept memory.  */
+      if (TREE_ADDRESSABLE (TREE_TYPE (TREE_VALUE (link))))
+	{
+	  if (allows_mem)
+	    allows_reg = 0;
+	  else
+	    {
+	      error ("impossible constraint in %<asm%>");
+	      error ("non-memory input %d must stay in memory", i);
+	      return GS_ERROR;
+	    }
+	}
+
       /* If the operand is a memory input, it should be an lvalue.  */
       if (!allows_reg && allows_mem)
 	{
