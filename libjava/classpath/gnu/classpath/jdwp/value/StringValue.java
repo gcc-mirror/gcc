@@ -38,7 +38,8 @@ exception statement from your version. */
 package gnu.classpath.jdwp.value;
 
 import gnu.classpath.jdwp.JdwpConstants;
-import gnu.classpath.jdwp.util.JdwpString;
+import gnu.classpath.jdwp.VMIdManager;
+import gnu.classpath.jdwp.id.ObjectId;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -61,7 +62,7 @@ public final class StringValue
    */
   public StringValue(String value)
   {
-    super(JdwpConstants.Tag.OBJECT);
+    super(JdwpConstants.Tag.STRING);
     _value = value;
   }
   
@@ -95,6 +96,8 @@ public final class StringValue
   protected void write(DataOutputStream os)
     throws IOException
   {
-    JdwpString.writeString(os, _value);
+    ObjectId oid = VMIdManager.getDefault().getObjectId (_value);
+    oid.write (os);
+
   }
 }

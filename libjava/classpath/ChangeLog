@@ -1,5 +1,12 @@
 2007-07-20  Keith Seitz  <keiths@redhat.com>
 
+	* gnu/classpath/jdwp/value/StringValue.java
+	(StringValue): Tag of StringValue is STRING not OBJECT.
+	(write): String values are written to the wire as tag byte
+	and object ID, not JdwpString.
+
+2007-07-20  Keith Seitz  <keiths@redhat.com>
+
 	* gnu/classpath/jdwp/processor/ClassTypeCommandSet.java
 	(executeInvokeMethod): No need to use ValueFactory any more;
 	MethodResult.getReturnedValue now returns a Value.
