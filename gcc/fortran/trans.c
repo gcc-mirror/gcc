@@ -266,7 +266,15 @@ gfc_build_addr_expr (tree type, tree t)
       && TREE_CODE (base_type) == ARRAY_TYPE
       && TYPE_MAIN_VARIANT (TREE_TYPE (type))
 	 == TYPE_MAIN_VARIANT (TREE_TYPE (base_type)))
-    natural_type = type;
+    {
+      tree min_val = size_zero_node;
+      tree type_domain = TYPE_DOMAIN (base_type);
+      if (type_domain && TYPE_MIN_VALUE (type_domain))
+        min_val = TYPE_MIN_VALUE (type_domain);
+      t = build4 (ARRAY_REF, TREE_TYPE (type), t, min_val,
+		  NULL_TREE, NULL_TREE);
+      natural_type = type;
+    }
   else
     natural_type = build_pointer_type (base_type);
 
