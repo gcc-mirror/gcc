@@ -1238,12 +1238,24 @@ precompute_arguments (int flags, int num_actuals, struct arg_data *args)
 
   /* If this is a libcall, then precompute all arguments so that we do not
      get extraneous instructions emitted as part of the libcall sequence.  */
-  if ((flags & ECF_LIBCALL_BLOCK) == 0)
+
+  /* If we preallocated the stack space, and some arguments must be passed
+     on the stack, then we must precompute any parameter which contains a
+     function call which will store arguments on the stack.
+     Otherwise, evaluating the parameter may clobber previous parameters
+     which have already been stored into the stack.  (we have code to avoid
+     such case by saving the outgoing stack arguments, but it results in
+     worse code)  */
+  if ((flags & ECF_LIBCALL_BLOCK) == 0 && !ACCUMULATE_OUTGOING_ARGS)
     return;
 
   for (i = 0; i < num_actuals; i++)
     {
       enum machine_mode mode;
+
+      if ((flags & ECF_LIBCALL_BLOCK) == 0
+	  && TREE_CODE (args[i].tree_value) != CALL_EXPR)
+	continue;
 
       /* If this is an addressable type, we cannot pre-evaluate it.  */
       gcc_assert (!TREE_ADDRESSABLE (TREE_TYPE (args[i].tree_value)));
