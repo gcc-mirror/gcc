@@ -347,6 +347,11 @@ iv_get_reaching_def (rtx insn, rtx reg, struct df_ref **def)
     return GRD_INVALID;
 
   adef = DF_REF_CHAIN (use)->ref;
+
+  /* We do not handle setting only part of the register.  */
+  if (adef->flags & DF_REF_READ_WRITE)
+    return GRD_INVALID;
+
   def_insn = DF_REF_INSN (adef);
   def_bb = DF_REF_BB (adef);
   use_bb = BLOCK_FOR_INSN (insn);
