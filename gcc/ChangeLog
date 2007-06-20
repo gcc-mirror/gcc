@@ -1,3 +1,16 @@
+2007-06-20  Seongbae Park  <seongbae.park@gmail.com>
+            Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	* dbgcnt.def (global_alloc_at_func, global_alloc_at_reg):
+	New counters.
+	* haifa-sched.c (queue_to_ready): Don't requeue next insn
+	if dbg_cnt (sched_insn) reaches the limit.
+	(choose_ready): New parameter INSN_PTR and new return value.
+	(schedule_block): Handle dbg_cnt (sched_insn). Handle
+	the new return value from choose_ready.
+	* global.c (global_aloc): New dbgcnt global_alloc_at_reg.
+	(rest_of_handle_global_alloc): New global_alloc_at_func.
+
 2007-06-20  Adam Nemet  <anemet@caviumnetworks.com>
 
 	PR tree-optimization/25737

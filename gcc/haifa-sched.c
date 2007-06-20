@@ -539,7 +539,7 @@ static rtx ready_remove (struct ready_list *, int);
 static void ready_remove_insn (rtx);
 static int max_issue (struct ready_list *, int *, int);
 
-static rtx choose_ready (struct ready_list *);
+static int choose_ready (struct ready_list *, rtx *);
 
 static void fix_inter_tick (rtx, rtx);
 static int fix_tick_ready (rtx);
@@ -1483,8 +1483,16 @@ queue_to_ready (struct ready_list *ready)
 {
   rtx insn;
   rtx link;
+  rtx skip_insn;
 
   q_ptr = NEXT_Q (q_ptr);
+
+  if (dbg_cnt (sched_insn) == false)
+    /* If debug counter is activated do not requeue insn next after
+       last_scheduled_insn.  */
+    skip_insn = next_nonnote_insn (last_scheduled_insn);
+  else
+    skip_insn = NULL_RTX;
 
   /* Add all pending insns that can be scheduled without stalls to the
      ready list.  */
@@ -1501,7 +1509,8 @@ queue_to_ready (struct ready_list *ready)
 	 See the comment in schedule_block for the rationale.  */
       if (!reload_completed
 	  && ready->n_ready > MAX_SCHED_READY_INSNS
-	  && !SCHED_GROUP_P (insn))
+	  && !SCHED_GROUP_P (insn)
+	  && insn != skip_insn)
 	{
 	  if (sched_verbose >= 2)
 	    fprintf (sched_dump, "requeued because ready full\n");
@@ -1980,17 +1989,43 @@ max_issue (struct ready_list *ready, int *index, int max_points)
 
 /* The following function chooses insn from READY and modifies
    *N_READY and READY.  The following function is used only for first
-   cycle multipass scheduling.  */
-
-static rtx
-choose_ready (struct ready_list *ready)
+   cycle multipass scheduling.
+   Return:
+   -1 if cycle should be advanced,
+   0 if INSN_PTR is set to point to the desirable insn,
+   1 if choose_ready () should be restarted without advancing the cycle.  */
+static int
+choose_ready (struct ready_list *ready, rtx *insn_ptr)
 {
-  int lookahead = 0;
+  int lookahead;
+
+  if (dbg_cnt (sched_insn) == false)
+    {
+      rtx insn;
+
+      insn = next_nonnote_insn (last_scheduled_insn);
+
+      if (QUEUE_INDEX (insn) == QUEUE_READY)
+	/* INSN is in the ready_list.  */
+	{
+	  ready_remove_insn (insn);
+	  *insn_ptr = insn;
+	  return 0;
+	}
+
+      /* INSN is in the queue.  Advance cycle to move it to the ready list.  */
+      return -1;
+    }
+
+  lookahead = 0;
 
   if (targetm.sched.first_cycle_multipass_dfa_lookahead)
     lookahead = targetm.sched.first_cycle_multipass_dfa_lookahead ();
   if (lookahead <= 0 || SCHED_GROUP_P (ready_element (ready, 0)))
-    return ready_remove_first (ready);
+    {
+      *insn_ptr = ready_remove_first (ready);
+      return 0;
+    }
   else
     {
       /* Try to choose the better insn.  */
@@ -2007,7 +2042,10 @@ choose_ready (struct ready_list *ready)
 	}
       insn = ready_element (ready, 0);
       if (INSN_CODE (insn) < 0)
-	return ready_remove_first (ready);
+	{
+	  *insn_ptr = ready_remove_first (ready);
+	  return 0;
+	}
 
       if (spec_info
 	  && spec_info->flags & (PREFER_NON_DATA_SPEC
@@ -2049,7 +2087,7 @@ choose_ready (struct ready_list *ready)
 	   list.  */
 	{
 	  change_queue_index (insn, 1);
-	  return 0;
+	  return 1;
 	}
 
       max_points = ISSUE_POINTS (insn);
@@ -2071,9 +2109,15 @@ choose_ready (struct ready_list *ready)
 	}
 
       if (max_issue (ready, &index, max_points) == 0)
-	return ready_remove_first (ready);
+	{
+	  *insn_ptr = ready_remove_first (ready);
+	  return 0;
+	}
       else
-	return ready_remove (ready, index);
+	{
+	  *insn_ptr = ready_remove (ready, index);
+	  return 0;
+	}
     }
 }
 
@@ -2172,9 +2216,27 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
 		   ";;\t\t before reload => truncated to %d insns\n", i);
 	}
 
-      /* Delay all insns past it for 1 cycle.  */
-      while (i < ready.n_ready)
-	queue_insn (ready_remove (&ready, i), 1);
+      /* Delay all insns past it for 1 cycle.  If debug counter is
+	 activated make an exception for the insn right after
+	 last_scheduled_insn.  */
+      {
+	rtx skip_insn;
+
+	if (dbg_cnt (sched_insn) == false)
+	  skip_insn = next_nonnote_insn (last_scheduled_insn);
+	else
+	  skip_insn = NULL_RTX;
+
+	while (i < ready.n_ready)
+	  {
+	    rtx insn;
+
+	    insn = ready_remove (&ready, i);
+
+	    if (insn != skip_insn)
+	      queue_insn (insn, 1);
+	  }
+      }
     }
 
   /* Now we can restore basic block notes and maintain precise cfg.  */
@@ -2271,29 +2333,22 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
 	      || !(*current_sched_info->schedule_more_p) ())
 	    break;
 
-          if (dbg_cnt (sched_insn) == false)
-            {
-              insn = NEXT_INSN (last_scheduled_insn); 
-              while ((*current_sched_info->schedule_more_p) ())
-                {
-                  (*current_sched_info->begin_schedule_ready) (insn,
-                                                               last_scheduled_insn);
-                  if (QUEUE_INDEX (insn) >= 0)
-                    queue_remove (insn);
-                  last_scheduled_insn = insn;
-                  insn = NEXT_INSN (insn);
-                }
-              while (ready.n_ready)
-                ready_remove_first (&ready);
-              goto bail_out;
-            }
-
 	  /* Select and remove the insn from the ready list.  */
 	  if (sort_p)
 	    {
-	      insn = choose_ready (&ready);
-	      if (!insn)
+	      int res;
+
+	      insn = NULL_RTX;
+	      res = choose_ready (&ready, &insn);
+
+	      if (res < 0)
+		/* Finish cycle.  */
+		break;
+	      if (res > 0)
+		/* Restart choose_ready ().  */
 		continue;
+
+	      gcc_assert (insn != NULL_RTX);
 	    }
 	  else
 	    insn = ready_remove_first (&ready);
@@ -2445,7 +2500,6 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
 	}
     }
 
-bail_out:
   /* Debug info.  */
   if (sched_verbose)
     {
