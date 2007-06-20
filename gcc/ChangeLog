@@ -1,3 +1,14 @@
+2007-06-20  Sebastian Pop  <sebpop@gmail.com>
+
+	PR tree-optimization/32075
+	* tree-data-ref.c (subscript_dependence_tester_1, 
+	analyze_miv_subscript, analyze_overlapping_iterations,
+	add_distance_for_zero_overlaps, build_classic_dist_vector,
+	subscript_dependence_tester_1, analyze_overlapping_iterations,
+	subscript_dependence_tester, access_functions_are_affine_or_constant_p,
+	compute_affine_dependence, compute_all_dependences): Pass loop_nest 
+	to evolution_function_is_affine_multivariate_p.
+
 2007-06-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* df-scan.c (df_get_call_refs): Be prepared for MEMs inside CLOBBERs.
