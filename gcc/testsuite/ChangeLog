@@ -1,3 +1,8 @@
+2007-06-20  Adam Nemet  <anemet@caviumnetworks.com>
+
+	PR tree-optimization/25737
+	* testsuite/gcc.dg/tree-ssa/alias-14.c: New test.
+
 2007-06-20  Hui-May Chang  <hm.chang@apple.com>
 
 	* gcc.target/i386/large-size-array-3.c: New.
