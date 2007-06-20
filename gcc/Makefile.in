@@ -2172,7 +2172,7 @@ tree-browser.o : tree-browser.c tree-browser.def $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TREE_INLINE_H) $(DIAGNOSTIC_H) $(HASHTAB_H) \
    $(TM_H) coretypes.h
 omega.o : omega.c omega.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-   errors.h $(GGC_H) $(TREE_H) diagnostic.h varray.h tree-pass.h 
+   errors.h $(GGC_H) $(TREE_H) $(DIAGNOSTIC_H) varray.h tree-pass.h 
 tree-chrec.o: tree-chrec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(GGC_H) $(TREE_H) $(REAL_H) $(SCEV_H) tree-pass.h $(PARAMS_H) \
    $(DIAGNOSTIC_H) $(CFGLOOP_H) $(TREE_FLOW_H)
