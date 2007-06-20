@@ -1,5 +1,7 @@
 2007-06-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* Makefile.in (omega.o): Depend on $(DIAGNOSTIC_H).
+
 	PR middle-end/31959
 	* builtins.c: Include diagnostic.h.
 	(expand_builtin_expect): Make gcc_assert more permissive.
