@@ -3081,9 +3081,16 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
 			DF_REF_REG_USE, bb, insn, flags);
       else if (GET_CODE (XEXP (note, 0)) == CLOBBER)
 	{
-	  unsigned int regno = REGNO (XEXP (XEXP (note, 0), 0));
-	  if (!bitmap_bit_p (defs_generated, regno))
-	    df_defs_record (collection_rec, XEXP (note, 0), bb, insn, flags);
+	  if (REG_P (XEXP (XEXP (note, 0), 0)))
+	    {
+	      unsigned int regno = REGNO (XEXP (XEXP (note, 0), 0));
+	      if (!bitmap_bit_p (defs_generated, regno))
+		df_defs_record (collection_rec, XEXP (note, 0), bb,
+				insn, flags);
+	    }
+	  else
+	    df_uses_record (collection_rec, &XEXP (note, 0),
+		            DF_REF_REG_USE, bb, insn, flags);
 	}
     }
 

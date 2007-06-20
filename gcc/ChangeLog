@@ -1,3 +1,7 @@
+2007-06-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* df-scan.c (df_get_call_refs): Be prepared for MEMs inside CLOBBERs.
+
 2007-06-20  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR target/32335
