@@ -41,6 +41,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "timevar.h"
 #include "df.h"
 #include "vecprim.h"
+#include "dbgcnt.h"
 
 /* This pass of the compiler performs global register allocation.
    It assigns hard register numbers to all the pseudo registers
@@ -653,6 +654,8 @@ global_alloc (void)
 	if (reg_renumber[allocno[allocno_order[i]].reg] < 0
 	    && REG_LIVE_LENGTH (allocno[allocno_order[i]].reg) >= 0)
 	  {
+            if (!dbg_cnt (global_alloc_at_reg))
+              break;
 	    /* If we have more than one register class,
 	       first try allocating in the class that is cheapest
 	       for this pseudo-reg.  If that fails, try any reg.  */
@@ -2049,7 +2052,7 @@ rest_of_handle_global_alloc (void)
 
   /* If optimizing, allocate remaining pseudo-regs.  Do the reload
      pass fixing up any insns that are invalid.  */
-  if (optimize)
+  if (optimize && dbg_cnt (global_alloc_at_func))
     failure = global_alloc ();
   else
     {
