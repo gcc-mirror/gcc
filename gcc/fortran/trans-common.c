@@ -359,14 +359,15 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
       tree size = TYPE_SIZE_UNIT (union_type);
       if (tree_int_cst_lt (DECL_SIZE_UNIT (decl), size))
         {
-          /* Named common blocks of the same name shall be of the same size
-             in all scoping units of a program in which they appear, but
-             blank common blocks may be of different sizes.  */
-          if (strcmp (com->name, BLANK_COMMON_NAME))
+	  /* Named common blocks of the same name shall be of the same size
+	     in all scoping units of a program in which they appear, but
+	     blank common blocks may be of different sizes.  */
+	  if (strcmp (com->name, BLANK_COMMON_NAME))
 	    gfc_warning ("Named COMMON block '%s' at %L shall be of the "
 			 "same size", com->name, &com->where);
-          DECL_SIZE_UNIT (decl) = size;
-        }
+	  DECL_SIZE_UNIT (decl) = size;
+	  TREE_TYPE (decl) = union_type;
+	}
      }
 
   /* If this common block has been declared in a previous program unit,

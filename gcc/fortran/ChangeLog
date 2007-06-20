@@ -1,3 +1,9 @@
+2007-06-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32302
+	* trans-common.c (build_common_decl): If resizing of common
+	decl is needed, update the TREE_TYPE.
+
 2007-05-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31483
