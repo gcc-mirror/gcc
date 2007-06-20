@@ -3646,11 +3646,13 @@ get_or_create_used_part_for (size_t uid)
 
 
 /* Create and return a structure sub-variable for field type FIELD at
-   offset OFFSET, with size SIZE, of variable VAR.  */
+   offset OFFSET, with size SIZE, of variable VAR.  If ALIAS_SET not
+   -1 this field is non-addressable and we should use this alias set
+   with this field.  */
 
 static tree
 create_sft (tree var, tree field, unsigned HOST_WIDE_INT offset,
-	    unsigned HOST_WIDE_INT size)
+	    unsigned HOST_WIDE_INT size, HOST_WIDE_INT alias_set)
 {
   tree subvar = create_tag_raw (STRUCT_FIELD_TAG, field, "SFT");
 
@@ -3669,6 +3671,7 @@ create_sft (tree var, tree field, unsigned HOST_WIDE_INT offset,
   SFT_PARENT_VAR (subvar) = var;
   SFT_OFFSET (subvar) = offset;
   SFT_SIZE (subvar) = size;
+  SFT_ALIAS_SET (subvar) = alias_set;
   return subvar;
 }
 
@@ -3688,7 +3691,8 @@ create_overlap_variables_for (tree var)
       || up->write_only)
     return;
 
-  push_fields_onto_fieldstack (TREE_TYPE (var), &fieldstack, 0, NULL);
+  push_fields_onto_fieldstack (TREE_TYPE (var), &fieldstack, 0, NULL,
+			       TREE_TYPE (var));
   if (VEC_length (fieldoff_s, fieldstack) != 0)
     {
       subvar_t *subvars;
@@ -3780,7 +3784,8 @@ create_overlap_variables_for (tree var)
 	    continue;
 	  sv = GGC_NEW (struct subvar);
 	  sv->next = *subvars;
-	  sv->var = create_sft (var, fo->type, fo->offset, fosize);
+	  sv->var =
+	    create_sft (var, fo->type, fo->offset, fosize, fo->alias_set);
 
 	  if (dump_file)
 	    {

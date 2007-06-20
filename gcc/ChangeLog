@@ -1,3 +1,16 @@
+2007-06-20  Adam Nemet  <anemet@caviumnetworks.com>
+
+	PR tree-optimization/25737
+	* tree.h (struct tree_struct_field_tag): Add new field alias_set.
+	(SFT_NONADDRESSABLE_P, SFT_ALIAS_SET): New macros.
+	* tree-flow.h (struct fieldoff): Add new field alias_set.
+	* tree-ssa-structalias.c (push_fields_onto_fieldstack): Add new
+	argument addressable_type.  Set alias_set of fieldoff.
+	* tree-ssa-alias.c (create_sft): Add new argument alias_set.
+	(create_overlap_variables_for): Pass alias_set from fieldoff to
+	create_sft.
+	* alias.c (get_alias_set): Use alias_set from SFT if set.
+
 2007-06-20  Hui-May Chang  <hm.chang@apple.com>
 
 	* config/i386/darwin.h (ASM_OUTPUT_COMMON): Print the size

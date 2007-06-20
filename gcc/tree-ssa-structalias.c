@@ -3695,11 +3695,13 @@ sort_fieldstack (VEC(fieldoff_s,heap) *fieldstack)
    than just the immediately containing structure.  Returns the number
    of fields pushed.
    HAS_UNION is set to true if we find a union type as a field of
-   TYPE.  */
+   TYPE.  ADDRESSABLE_TYPE is the type of the outermost object that could have
+   its address taken.  */
 
 int
 push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
-			     HOST_WIDE_INT offset, bool *has_union)
+			     HOST_WIDE_INT offset, bool *has_union,
+			     tree addressable_type)
 {
   tree field;
   int count = 0;
@@ -3712,12 +3714,14 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
       real_part->size = TYPE_SIZE (TREE_TYPE (type));
       real_part->offset = offset;
       real_part->decl = NULL_TREE;
+      real_part->alias_set = -1;
 
       img_part = VEC_safe_push (fieldoff_s, heap, *fieldstack, NULL);
       img_part->type = TREE_TYPE (type);
       img_part->size = TYPE_SIZE (TREE_TYPE (type));
       img_part->offset = offset + TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (type)));
       img_part->decl = NULL_TREE;
+      img_part->alias_set = -1;
 
       return 2;
     }
@@ -3755,7 +3759,8 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	    push = true;
 	  else if (!(pushed = push_fields_onto_fieldstack
 		     (TREE_TYPE (type), fieldstack,
-		      offset + i * TREE_INT_CST_LOW (elsz), has_union)))
+		      offset + i * TREE_INT_CST_LOW (elsz), has_union,
+		      TREE_TYPE (type))))
 	    /* Empty structures may have actual size, like in C++. So
 	       see if we didn't push any subfields and the size is
 	       nonzero, push the field onto the stack */
@@ -3770,6 +3775,7 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	      pair->size = elsz;
 	      pair->decl = NULL_TREE;
 	      pair->offset = offset + i * TREE_INT_CST_LOW (elsz);
+	      pair->alias_set = -1;
 	      count++;
 	    }
 	  else
@@ -3794,7 +3800,10 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	  push = true;
 	else if (!(pushed = push_fields_onto_fieldstack
 		   (TREE_TYPE (field), fieldstack,
-		    offset + bitpos_of_field (field), has_union))
+		    offset + bitpos_of_field (field), has_union,
+		    (DECL_NONADDRESSABLE_P (field)
+		     ? addressable_type
+		     : TREE_TYPE (field))))
 		 && DECL_SIZE (field)
 		 && !integer_zerop (DECL_SIZE (field)))
 	  /* Empty structures may have actual size, like in C++. So
@@ -3811,6 +3820,10 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	    pair->size = DECL_SIZE (field);
 	    pair->decl = field;
 	    pair->offset = offset + bitpos_of_field (field);
+	    if (DECL_NONADDRESSABLE_P (field))
+	      pair->alias_set = get_alias_set (addressable_type);
+	    else
+	      pair->alias_set = -1;
 	    count++;
 	  }
 	else
@@ -4009,7 +4022,8 @@ create_variable_info_for (tree decl, const char *name)
 	     || TREE_CODE (decltype) == QUAL_UNION_TYPE;
   if (var_can_have_subvars (decl) && use_field_sensitive && !hasunion)
     {
-      push_fields_onto_fieldstack (decltype, &fieldstack, 0, &hasunion);
+      push_fields_onto_fieldstack (decltype, &fieldstack, 0, &hasunion,
+				   decltype);
       if (hasunion)
 	{
 	  VEC_free (fieldoff_s, heap, fieldstack);

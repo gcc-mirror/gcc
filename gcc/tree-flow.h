@@ -1158,13 +1158,14 @@ struct fieldoff
   tree size;
   tree decl;
   HOST_WIDE_INT offset;  
+  HOST_WIDE_INT alias_set;
 };
 typedef struct fieldoff fieldoff_s;
 
 DEF_VEC_O(fieldoff_s);
 DEF_VEC_ALLOC_O(fieldoff_s,heap);
 int push_fields_onto_fieldstack (tree, VEC(fieldoff_s,heap) **,
-				 HOST_WIDE_INT, bool *);
+				 HOST_WIDE_INT, bool *, tree);
 void sort_fieldstack (VEC(fieldoff_s,heap) *);
 
 void init_alias_heapvars (void);
