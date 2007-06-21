@@ -1,3 +1,8 @@
+2007-06-21  Uros Bizjak  <ubizjak@gmail.com>
+ 
+	PR target/32389
+	* gcc.target/i386/pr32389.c New test.
+
 2007-06-20  Daniel Franke  <franke.daniel@gmail.com>
 
 	Backport from trunk:
