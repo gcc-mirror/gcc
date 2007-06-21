@@ -1,3 +1,13 @@
+2007-06-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (processor_target_table): Increase maximum
+	skip from 7 byte to 10 byte for Pentium Pro, Core 2 Duo and
+	default 64bit.
+
+	* config/i386/linux.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Ensure 8
+	byte alignment if > 8 byte alignment is preferred.
+	* config/i386/x86-64.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+
 2007-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/31866

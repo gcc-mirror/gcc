@@ -1726,16 +1726,16 @@ override_options (void)
       {&i386_cost, 4, 3, 4, 3, 4},
       {&i486_cost, 16, 15, 16, 15, 16},
       {&pentium_cost, 16, 7, 16, 7, 16},
-      {&pentiumpro_cost, 16, 15, 16, 7, 16},
+      {&pentiumpro_cost, 16, 15, 16, 10, 16},
       {&geode_cost, 0, 0, 0, 0, 0},
       {&k6_cost, 32, 7, 32, 7, 32},
       {&athlon_cost, 16, 7, 16, 7, 16},
       {&pentium4_cost, 0, 0, 0, 0, 0},
       {&k8_cost, 16, 7, 16, 7, 16},
       {&nocona_cost, 0, 0, 0, 0, 0},
-      {&core2_cost, 16, 7, 16, 7, 16},
+      {&core2_cost, 16, 10, 16, 10, 16},
       {&generic32_cost, 16, 7, 16, 7, 16},
-      {&generic64_cost, 16, 7, 16, 7, 16},
+      {&generic64_cost, 16, 10, 16, 10, 16},
       {&amdfam10_cost, 32, 24, 32, 7, 32}
     };
 
