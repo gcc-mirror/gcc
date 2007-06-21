@@ -1,3 +1,10 @@
+2007-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/32362
+	* testsuite/libgomp.c/pr32362-1.c: New test.
+	* testsuite/libgomp.c/pr32362-2.c: New test.
+	* testsuite/libgomp.c/pr32362-3.c: New test.
+
 2007-05-13  Release Manager
 
 	* GCC 4.2.0 released.

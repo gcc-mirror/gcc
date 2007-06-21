@@ -1505,9 +1505,9 @@ lookup_decl_in_outer_ctx (tree decl, omp_context *ctx)
   for (up = ctx->outer, t = NULL; up && t == NULL; up = up->outer)
     t = maybe_lookup_decl (decl, up);
 
-  gcc_assert (t);
+  gcc_assert (t || is_global_var (decl));
 
-  return t;
+  return t ? t : decl;
 }
 
 

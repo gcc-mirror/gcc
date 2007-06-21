@@ -4815,7 +4815,20 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   else if (flags & GOVD_SHARED)
     {
       if (is_global_var (decl))
-	return 0;
+	{
+	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp->outer_context;
+	  while (ctx != NULL)
+	    {
+	      splay_tree_node on
+		= splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+	      if (on && (on->value & (GOVD_FIRSTPRIVATE | GOVD_LASTPRIVATE
+				      | GOVD_PRIVATE | GOVD_REDUCTION)) != 0)
+		break;
+	      ctx = ctx->outer_context;
+	    }
+	  if (ctx == NULL)
+	    return 0;
+	}
       code = OMP_CLAUSE_SHARED;
     }
   else if (flags & GOVD_PRIVATE)
