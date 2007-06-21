@@ -696,6 +696,14 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
 	gfc_error_now ("Procedure '%s' at %C is already defined at %L",
 		       name, &sym->declared_at);
 
+      /* Trap a procedure with a name the same as interface in the
+	 encompassing scope.  */
+      if (sym->attr.generic != 0
+	  && (sym->attr.subroutine || sym->attr.function))
+	gfc_error_now ("Name '%s' at %C is already defined"
+		       " as a generic interface at %L",
+		       name, &sym->declared_at);
+
       /* Trap declarations of attributes in encompassing scope.  The
 	 signature for this is that ts.kind is set.  Legitimate
 	 references only set ts.type.  */
