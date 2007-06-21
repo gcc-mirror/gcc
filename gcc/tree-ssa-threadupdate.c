@@ -636,6 +636,11 @@ thread_single_edge (edge e)
       /* If BB has just a single predecessor, we should only remove the
 	 control statements at its end, and successors except for ETO.  */
       remove_ctrl_stmt_and_useless_edges (bb, eto->dest);
+
+      /* And fixup the flags on the single remaining edge.  */
+      eto->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE | EDGE_ABNORMAL);
+      eto->flags |= EDGE_FALLTHRU;
+
       return bb;
     }
 
