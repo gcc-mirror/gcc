@@ -2206,7 +2206,8 @@ enum ix86_entity
 
 enum ix86_stack_slot 
 {
-  SLOT_TEMP = 0,
+  SLOT_VIRTUAL = 0,
+  SLOT_TEMP,
   SLOT_CW_STORED,
   SLOT_CW_TRUNC,
   SLOT_CW_FLOOR,

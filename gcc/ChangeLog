@@ -1,3 +1,13 @@
+2007-06-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/32389
+	* config/i386/i386.h (enum ix86_stack_slot): Add SLOT_VIRTUAL.
+	* config/i386/i386.c (assign_386_stack_local): Assert that
+	SLOT_VIRTUAL is valid only before virtual regs are instantiated.
+	(ix86_expand_builtin) [IX86_BUILTIN_LDMXCSR, IX86_BUILTIN_STMXCSR]:
+	Use SLOT_VIRTUAL stack slot instead of SLOT_TEMP.
+	* config/i386/i386.md (truncdfsf2, truncxfsf2, truncxfdf2): Ditto.
+
 2007-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/32109

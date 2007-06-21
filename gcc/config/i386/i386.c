@@ -12865,6 +12865,9 @@ assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
 
   gcc_assert (n < MAX_386_STACK_LOCALS);
 
+  /* Virtual slot is valid only before vregs are instantiated.  */
+  gcc_assert ((n == SLOT_VIRTUAL) == !virtuals_instantiated);
+
   for (s = ix86_stack_locals; s; s = s->next)
     if (s->mode == mode && s->n == n)
       return s->rtl;
@@ -15494,13 +15497,13 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case IX86_BUILTIN_LDMXCSR:
       op0 = expand_expr (TREE_VALUE (arglist), NULL_RTX, VOIDmode, 0);
-      target = assign_386_stack_local (SImode, SLOT_TEMP);
+      target = assign_386_stack_local (SImode, SLOT_VIRTUAL);
       emit_move_insn (target, op0);
       emit_insn (gen_sse_ldmxcsr (target));
       return 0;
 
     case IX86_BUILTIN_STMXCSR:
-      target = assign_386_stack_local (SImode, SLOT_TEMP);
+      target = assign_386_stack_local (SImode, SLOT_VIRTUAL);
       emit_insn (gen_sse_stmxcsr (target));
       return copy_to_mode_reg (SImode, target);
 
