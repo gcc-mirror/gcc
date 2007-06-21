@@ -1,3 +1,8 @@
+2007-06-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/32451
+	* tree-ssa-threadupdate.c (thread_single_edge): Fixup edge flags.
+
 2007-06-21  Christian Bruel  <christian.bruel@st.com>
 
 	* config/sh/sh-protos.h (sh_loads_bankedreg_p): Declare.
