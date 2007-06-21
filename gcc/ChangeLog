@@ -1,3 +1,15 @@
+2007-06-21  Christian Bruel  <christian.bruel@st.com>
+
+	* config/sh/sh-protos.h (sh_loads_bankedreg_p): Declare.
+	* config/sh/sh.c (sh_loads_bankedreg_p): New function.
+	(push_regs): Changed saving order or banked registers.
+	(sh_expand_epilogue): Likewise.
+	* config/sh/sh.h (BANKED_REGISTER_P): New macro.
+	(FIRST_BANKED_REG): Likewise.
+	(LAST_BANKED_REG): Likewise.
+	* config/sh/sh.md (banked) New attribute.
+	(in_delay_slot): Check banked attribute.
+	
 2007-06-20  Sebastian Pop  <sebpop@gmail.com>
 
 	PR tree-optimization/32075

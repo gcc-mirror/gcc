@@ -1,3 +1,7 @@
+2007-06-21  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc.dg/attr-isr.c: Test delay slot content.
+	
 2007-06-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/32361

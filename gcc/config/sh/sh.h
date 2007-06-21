@@ -1033,6 +1033,16 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 #define FIRST_TARGET_REG TR0_REG
 #define LAST_TARGET_REG  (FIRST_TARGET_REG + (TARGET_SHMEDIA ? 7 : -1))
 
+/* Registers that can be accessed through bank0 or bank1 depending on sr.md.  */
+
+#define FIRST_BANKED_REG R0_REG
+#define LAST_BANKED_REG R7_REG
+
+#define BANKED_REGISTER_P(REGNO)                       \
+  IN_RANGE ((REGNO),                                   \
+	    (unsigned HOST_WIDE_INT) FIRST_BANKED_REG, \
+	    (unsigned HOST_WIDE_INT) LAST_BANKED_REG)
+
 #define GENERAL_REGISTER_P(REGNO) \
   IN_RANGE ((REGNO), \
 	    (unsigned HOST_WIDE_INT) FIRST_GENERAL_REG, \
