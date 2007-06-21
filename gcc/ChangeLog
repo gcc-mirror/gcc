@@ -1,5 +1,17 @@
 2007-06-21  Sebastian Pop  <sebpop@gmail.com>
 
+	PR middle-end/20623
+	* tree.h (debug_fold_checksum): Declared.
+	* fold-const.c (build_fold_addr_expr_with_type_1): New.
+	(build_fold_addr_expr_with_type, build_fold_addr_expr): Use 
+	build_fold_addr_expr_with_type_1.
+	(fold_addr_expr, debug_fold_checksum): New.
+	(fold_checksum_tree): Don't fold TREE_CHAIN of an SSA_NAME.
+	(fold_unary, fold_comparison, split_address_to_core_and_offset):
+	Use fold_addr_expr.
+	
+2007-06-21  Sebastian Pop  <sebpop@gmail.com>
+
 	PR tree-optimization/19590
 	* tree-vrp.c (adjust_range_with_scev): Set the range when the result
 	of scev is a constant.
