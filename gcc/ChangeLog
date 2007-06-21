@@ -1,5 +1,9 @@
 2007-06-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/31866
+	* tree-ssa-coalesce.c (create_outofssa_var_map): Do nothing
+	if ASM_EXPR's input is not a SSA_NAME.
+
 	PR middle-end/32362
 	* omp-low.c (lookup_decl_in_outer_ctx): Don't ICE if t is NULL,
 	but decl is a global var, instead return decl.
