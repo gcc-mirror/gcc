@@ -2417,7 +2417,7 @@ gfc_match_common (void)
 	  if (gfc_add_in_common (&sym->attr, sym->name, NULL) == FAILURE) 
 	    goto cleanup;
 
-	  if (sym->value != NULL
+	  if (sym->value != NULL && sym->value->expr_type != EXPR_NULL
 	      && (name[0] == '\0' || !sym->attr.data))
 	    {
 	      if (name[0] == '\0')
