@@ -29,6 +29,10 @@ extern "Java"
             class MethodResult;
             class MonitorInfo;
         }
+        namespace value
+        {
+            class Value;
+        }
       }
     }
   }
@@ -54,7 +58,7 @@ public:
   static jint getFrameCount(::java::lang::Thread *);
   static jint getThreadStatus(::java::lang::Thread *);
   static ::java::util::ArrayList * getLoadRequests(::java::lang::ClassLoader *);
-  static ::gnu::classpath::jdwp::util::MethodResult * executeMethod(::java::lang::Object *, ::java::lang::Thread *, ::java::lang::Class *, ::java::lang::reflect::Method *, JArray< ::java::lang::Object * > *, jboolean);
+  static ::gnu::classpath::jdwp::util::MethodResult * executeMethod(::java::lang::Object *, ::java::lang::Thread *, ::java::lang::Class *, ::gnu::classpath::jdwp::VMMethod *, JArray< ::gnu::classpath::jdwp::value::Value * > *, jint);
   static ::java::lang::String * getSourceFile(::java::lang::Class *);
   static void registerEvent(::gnu::classpath::jdwp::event::EventRequest *);
   static void unregisterEvent(::gnu::classpath::jdwp::event::EventRequest *);
