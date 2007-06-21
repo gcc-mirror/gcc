@@ -1,5 +1,11 @@
 2007-06-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR fortran/32361
+	* match.c (gfc_match_common): If the symbol value expression type is
+	NULL_EXPR, don't error if previously initialized.
+
+2007-06-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR fortran/25061
 	* decl.c (get_proc_name) Check symbol for generic interface
 	and issue an error.
