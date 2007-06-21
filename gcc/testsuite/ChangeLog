@@ -1,5 +1,9 @@
+2007-06-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/sse2-vec-5.c: Removed.
+
 2007-06-21  Uros Bizjak  <ubizjak@gmail.com>
- 
+
 	PR target/32389
 	* gcc.target/i386/pr32389.c New test.
 
