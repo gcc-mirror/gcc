@@ -1,3 +1,8 @@
+2007-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/25737
+	* misc.c (gnat_post_options): Do not force flag_tree_salias to 0.
+
 2007-06-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* trans.c (Attribute_to_gnu): When subtracting an

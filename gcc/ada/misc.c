@@ -376,11 +376,6 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   else
     flag_eliminate_unused_debug_types = 0;
 
-  /* The structural alias analysis machinery essentially assumes that
-     everything is addressable (modulo bit-fields) by disregarding
-     the TYPE_NONALIASED_COMPONENT and DECL_NONADDRESSABLE_P macros.  */
-  flag_tree_salias = 0;
-
   return false;
 }
 
