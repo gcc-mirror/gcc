@@ -7552,6 +7552,77 @@ fold_view_convert_expr (tree type, tree expr)
   return native_interpret_expr (type, buffer, len);
 }
 
+/* Build an expression for the address of T.  Folds away INDIRECT_REF
+   to avoid confusing the gimplify process.  When IN_FOLD is true
+   avoid modifications of T.  */
+
+static tree
+build_fold_addr_expr_with_type_1 (tree t, tree ptrtype, bool in_fold)
+{
+  /* The size of the object is not relevant when talking about its address.  */
+  if (TREE_CODE (t) == WITH_SIZE_EXPR)
+    t = TREE_OPERAND (t, 0);
+
+  /* Note: doesn't apply to ALIGN_INDIRECT_REF */
+  if (TREE_CODE (t) == INDIRECT_REF
+      || TREE_CODE (t) == MISALIGNED_INDIRECT_REF)
+    {
+      t = TREE_OPERAND (t, 0);
+
+      if (TREE_TYPE (t) != ptrtype)
+	t = build1 (NOP_EXPR, ptrtype, t);
+    }
+  else if (!in_fold)
+    {
+      tree base = t;
+
+      while (handled_component_p (base))
+	base = TREE_OPERAND (base, 0);
+
+      if (DECL_P (base))
+	TREE_ADDRESSABLE (base) = 1;
+
+      t = build1 (ADDR_EXPR, ptrtype, t);
+    }
+  else
+    t = build1 (ADDR_EXPR, ptrtype, t);
+
+  return t;
+}
+
+/* Build an expression for the address of T with type PTRTYPE.  This
+   function modifies the input parameter 'T' by sometimes setting the
+   TREE_ADDRESSABLE flag.  */
+
+tree
+build_fold_addr_expr_with_type (tree t, tree ptrtype)
+{
+  return build_fold_addr_expr_with_type_1 (t, ptrtype, false);
+}
+
+/* Build an expression for the address of T.  This function modifies
+   the input parameter 'T' by sometimes setting the TREE_ADDRESSABLE
+   flag.  When called from fold functions, use fold_addr_expr instead.  */
+
+tree
+build_fold_addr_expr (tree t)
+{
+  return build_fold_addr_expr_with_type_1 (t, 
+					   build_pointer_type (TREE_TYPE (t)),
+					   false);
+}
+
+/* Same as build_fold_addr_expr, builds an expression for the address
+   of T, but avoids touching the input node 't'.  Fold functions
+   should use this version.  */
+
+static tree
+fold_addr_expr (tree t)
+{
+  tree ptrtype = build_pointer_type (TREE_TYPE (t));
+
+  return build_fold_addr_expr_with_type_1 (t, ptrtype, true);
+}
 
 /* Fold a unary expression of code CODE and type TYPE with operand
    OP0.  Return the folded expression if folding is successful.
@@ -7787,7 +7858,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	  if (! offset && bitpos == 0
 	      && TYPE_MAIN_VARIANT (TREE_TYPE (type))
 		  == TYPE_MAIN_VARIANT (TREE_TYPE (base)))
-	    return fold_convert (type, build_fold_addr_expr (base));
+	    return fold_convert (type, fold_addr_expr (base));
         }
 
       if ((TREE_CODE (op0) == MODIFY_EXPR
@@ -8864,8 +8935,8 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
 	  tree op0 = TREE_OPERAND (cref0, 0);
 	  tree op1 = TREE_OPERAND (cref1, 0);
 	  return fold_build2 (code, type,
-			      build_fold_addr_expr (op0),
-			      build_fold_addr_expr (op1));
+			      fold_addr_expr (op0),
+			      fold_addr_expr (op1));
 	}
     }
 
@@ -12775,7 +12846,8 @@ recursive_label:
   fold_checksum_tree (TREE_TYPE (expr), ctx, ht);
   if (TREE_CODE_CLASS (code) != tcc_type
       && TREE_CODE_CLASS (code) != tcc_declaration
-      && code != TREE_LIST)
+      && code != TREE_LIST
+      && code != SSA_NAME)
     fold_checksum_tree (TREE_CHAIN (expr), ctx, ht);
   switch (TREE_CODE_CLASS (code))
     {
@@ -12908,6 +12980,30 @@ fold_build1_stat (enum tree_code code, tree type, tree op0 MEM_STAT_DECL)
     fold_check_failed (op0, tem);
 #endif
   return tem;
+}
+
+/* Helper function for outputting the checksum of a tree T.  When
+   debugging with gdb, you can "define mynext" to be "next" followed
+   by "call debug_fold_checksum (op0)", then just trace down till the
+   outputs differ.  */
+
+void
+debug_fold_checksum (tree t)
+{
+  int i;
+  unsigned char checksum[16];
+  struct md5_ctx ctx;
+  htab_t ht = htab_create (32, htab_hash_pointer, htab_eq_pointer, NULL);
+  
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (t, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum);
+  htab_empty (ht);
+
+  for (i = 0; i < 16; i++)
+    fprintf (stderr, "%d ", checksum[i]);
+
+  fprintf (stderr, "\n");
 }
 
 /* Fold a binary tree expression with code CODE of type TYPE with
@@ -14171,45 +14267,6 @@ fold_build_cleanup_point_expr (tree type, tree expr)
   return build1 (CLEANUP_POINT_EXPR, type, expr);
 }
 
-/* Build an expression for the address of T.  Folds away INDIRECT_REF to
-   avoid confusing the gimplify process.  */
-
-tree
-build_fold_addr_expr_with_type (tree t, tree ptrtype)
-{
-  /* The size of the object is not relevant when talking about its address.  */
-  if (TREE_CODE (t) == WITH_SIZE_EXPR)
-    t = TREE_OPERAND (t, 0);
-
-  /* Note: doesn't apply to ALIGN_INDIRECT_REF */
-  if (TREE_CODE (t) == INDIRECT_REF
-      || TREE_CODE (t) == MISALIGNED_INDIRECT_REF)
-    {
-      t = TREE_OPERAND (t, 0);
-      if (TREE_TYPE (t) != ptrtype)
-	t = build1 (NOP_EXPR, ptrtype, t);
-    }
-  else
-    {
-      tree base = t;
-
-      while (handled_component_p (base))
-	base = TREE_OPERAND (base, 0);
-      if (DECL_P (base))
-	TREE_ADDRESSABLE (base) = 1;
-
-      t = build1 (ADDR_EXPR, ptrtype, t);
-    }
-
-  return t;
-}
-
-tree
-build_fold_addr_expr (tree t)
-{
-  return build_fold_addr_expr_with_type (t, build_pointer_type (TREE_TYPE (t)));
-}
-
 /* Given a pointer value OP0 and a type TYPE, return a simplified version
    of an indirection through OP0, or NULL_TREE if no simplification is
    possible.  */
@@ -14513,7 +14570,7 @@ split_address_to_core_and_offset (tree exp,
       core = get_inner_reference (TREE_OPERAND (exp, 0), &bitsize, pbitpos,
 				  poffset, &mode, &unsignedp, &volatilep,
 				  false);
-      core = build_fold_addr_expr (core);
+      core = fold_addr_expr (core);
     }
   else
     {
