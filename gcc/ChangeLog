@@ -1,3 +1,9 @@
+2007-06-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_builtins): Add IX86_BUILTIN_VEC_EXT_V16QI.
+	(ix86_init_mmx_sse_builtins): Add __builtin_ia32_vec_ext_v16qi.
+	(ix86_expand_builtin): Handle IX86_BUILTIN_VEC_EXT_V16QI.
+
 2007-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/32362
