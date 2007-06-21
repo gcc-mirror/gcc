@@ -1,3 +1,9 @@
+2007-06-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/32453
+	* tree-vrp.c (extract_range_from_assert): Build POINTER_PLUS_EXPR
+	for pointer anti-range.
+
 2007-06-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (processor_target_table): Increase maximum
