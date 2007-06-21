@@ -46,6 +46,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "dce.h"
 #include "vecprim.h"
 
+/* Note that turning REG_DEAD_DEBUGGING on will cause
+   gcc.c-torture/unsorted/dump-noaddr.c to fail because it prints
+   addresses in the dumps.  */  
 #if 0
 #define REG_DEAD_DEBUGGING
 #endif
@@ -3960,8 +3963,8 @@ df_note_bb_compute (unsigned int bb_index,
 	      df_print_regset (dump_file, live);
 	    }
 #endif
-	  /* We only care about real sets for calls.  Clobbers only
-	     may clobbers cannot be depended on.  */
+	  /* We only care about real sets for calls.  Clobbers cannot
+	     be depended on to really die.  */
 	  mws_rec = DF_INSN_UID_MWS (uid);
 	  while (*mws_rec)
 	    {
@@ -3985,6 +3988,12 @@ df_note_bb_compute (unsigned int bb_index,
 		  = df_create_unused_note (insn, old_unused_notes, 
 					   def, live, do_not_gen, 
 					   artificial_uses);
+
+	      /* However a may or must clobber still needs to kill the
+		 reg so that REG_DEAD notes are later placed
+		 appropriately.  */ 
+	      else 
+		bitmap_clear_bit (live, DF_REF_REGNO (def));
 	    }
 	}
       else
