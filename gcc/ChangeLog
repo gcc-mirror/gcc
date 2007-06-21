@@ -1,3 +1,8 @@
+2007-06-21  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* fold-const.c (debug_fold_checksum): Move it under
+	ENABLE_FOLD_CHECKING.
+
 2007-06-21  Sebastian Pop  <sebpop@gmail.com>
 
 	PR middle-end/20623
