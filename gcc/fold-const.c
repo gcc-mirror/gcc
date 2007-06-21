@@ -12943,6 +12943,30 @@ recursive_label:
     }
 }
 
+/* Helper function for outputting the checksum of a tree T.  When
+   debugging with gdb, you can "define mynext" to be "next" followed
+   by "call debug_fold_checksum (op0)", then just trace down till the
+   outputs differ.  */
+
+void
+debug_fold_checksum (tree t)
+{
+  int i;
+  unsigned char checksum[16];
+  struct md5_ctx ctx;
+  htab_t ht = htab_create (32, htab_hash_pointer, htab_eq_pointer, NULL);
+  
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (t, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum);
+  htab_empty (ht);
+
+  for (i = 0; i < 16; i++)
+    fprintf (stderr, "%d ", checksum[i]);
+
+  fprintf (stderr, "\n");
+}
+
 #endif
 
 /* Fold a unary tree expression with code CODE of type TYPE with an
@@ -12980,30 +13004,6 @@ fold_build1_stat (enum tree_code code, tree type, tree op0 MEM_STAT_DECL)
     fold_check_failed (op0, tem);
 #endif
   return tem;
-}
-
-/* Helper function for outputting the checksum of a tree T.  When
-   debugging with gdb, you can "define mynext" to be "next" followed
-   by "call debug_fold_checksum (op0)", then just trace down till the
-   outputs differ.  */
-
-void
-debug_fold_checksum (tree t)
-{
-  int i;
-  unsigned char checksum[16];
-  struct md5_ctx ctx;
-  htab_t ht = htab_create (32, htab_hash_pointer, htab_eq_pointer, NULL);
-  
-  md5_init_ctx (&ctx);
-  fold_checksum_tree (t, &ctx, ht);
-  md5_finish_ctx (&ctx, checksum);
-  htab_empty (ht);
-
-  for (i = 0; i < 16; i++)
-    fprintf (stderr, "%d ", checksum[i]);
-
-  fprintf (stderr, "\n");
 }
 
 /* Fold a binary tree expression with code CODE of type TYPE with
