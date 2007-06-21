@@ -463,6 +463,12 @@
 
 (define_attr "needs_delay_slot" "yes,no" (const_string "no"))
 
+(define_attr "banked" "yes,no" 
+	(cond [(eq (symbol_ref "sh_loads_bankedreg_p (insn)")
+		   (const_int 1))
+	       (const_string "yes")]
+	      (const_string "no")))
+
 ;; ??? This should be (nil) instead of (const_int 0)
 (define_attr "hit_stack" "yes,no"
 	(cond [(eq (symbol_ref "find_regno_note (insn, REG_INC, SP_REG)")
@@ -541,8 +547,9 @@
 		  (eq_attr "type" "!pload,prset"))
 	     (and (eq_attr "interrupt_function" "yes")
 		  (ior
-		   (ne (symbol_ref "TARGET_SH3") (const_int 0))
-		   (eq_attr "hit_stack" "no"))))) (nil) (nil)])
+		   (eq (symbol_ref "TARGET_SH3") (const_int 0))
+		   (eq_attr "hit_stack" "no")
+		   (eq_attr "banked" "no"))))) (nil) (nil)])
 
 ;; Since a call implicitly uses the PR register, we can't allow
 ;; a PR register store in a jsr delay slot.

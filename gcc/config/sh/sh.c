@@ -5723,13 +5723,13 @@ pop (int rn)
 static void
 push_regs (HARD_REG_SET *mask, int interrupt_handler)
 {
-  int i;
+  int i = interrupt_handler ? LAST_BANKED_REG + 1 : 0;
   int skip_fpscr = 0;
 
   /* Push PR last; this gives better latencies after the prologue, and
      candidates for the return delay slot when there are no general
      registers pushed.  */
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+  for (; i < FIRST_PSEUDO_REGISTER; i++)
     {
       /* If this is an interrupt handler, and the SZ bit varies,
 	 and we have to push any floating point register, we need
@@ -5749,6 +5749,13 @@ push_regs (HARD_REG_SET *mask, int interrupt_handler)
 	  && TEST_HARD_REG_BIT (*mask, i))
 	push (i);
     }
+
+  /* Push banked registers last to improve delay slot opportunities.  */
+  if (interrupt_handler)
+    for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
+      if (TEST_HARD_REG_BIT (*mask, i))
+	push (i);
+
   if (TEST_HARD_REG_BIT (*mask, PR_REG))
     push (PR_REG);
 }
@@ -6675,6 +6682,8 @@ sh_expand_epilogue (bool sibcall_p)
     }
   else /* ! TARGET_SH5 */
     {
+      int last_reg;
+
       save_size = 0;
       if (TEST_HARD_REG_BIT (live_regs_mask, PR_REG))
 	{
@@ -6682,7 +6691,21 @@ sh_expand_epilogue (bool sibcall_p)
 	    emit_insn (gen_blockage ());
 	  pop (PR_REG);
 	}
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+
+      /* Banked registers are poped first to avoid being scheduled in the
+	 delay slot. RTE switches banks before the ds instruction.  */
+      if (current_function_interrupt)
+	{
+	  for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
+	    if (TEST_HARD_REG_BIT (live_regs_mask, i)) 
+	      pop (LAST_BANKED_REG - i);
+
+	  last_reg = FIRST_PSEUDO_REGISTER - LAST_BANKED_REG - 1;
+	}
+      else
+	last_reg = FIRST_PSEUDO_REGISTER;
+
+      for (i = 0; i < last_reg; i++)
 	{
 	  int j = (FIRST_PSEUDO_REGISTER - 1) - i;
 
@@ -6692,9 +6715,9 @@ sh_expand_epilogue (bool sibcall_p)
 	    fpscr_deferred = 1;
 	  else if (j != PR_REG && TEST_HARD_REG_BIT (live_regs_mask, j))
 	    pop (j);
+
 	  if (j == FIRST_FP_REG && fpscr_deferred)
 	    pop (FPSCR_REG);
-
 	}
     }
   if (target_flags != save_flags && ! current_function_interrupt)
@@ -10837,6 +10860,20 @@ int
 sh_contains_memref_p (rtx insn)
 {
   return for_each_rtx (&PATTERN (insn), &sh_contains_memref_p_1, NULL);
+}
+
+/* Return nonzero iff INSN loads a banked register.  */
+int
+sh_loads_bankedreg_p (rtx insn)
+{
+  if (GET_CODE (PATTERN (insn)) == SET)
+    {
+      rtx op = SET_DEST (PATTERN(insn));
+      if (REG_P (op) && BANKED_REGISTER_P (REGNO (op)))
+	return 1;
+    }
+
+  return 0;  
 }
 
 /* FNADDR is the MEM expression from a call expander.  Return an address
