@@ -5062,7 +5062,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	    cleared = 1;
 	  }
 
-	if (! cleared)
+	if (REG_P (target) && !cleared)
 	  emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
 
 	/* Store each element of the constructor into the
