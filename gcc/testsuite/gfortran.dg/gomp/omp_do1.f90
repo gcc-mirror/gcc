@@ -24,11 +24,11 @@ subroutine foo
     i = i + 1
   end do
 !$omp do
-  do 300 d = 1, 30, 6 ! { dg-warning "Obsolete: REAL DO loop iterator" }
+  do 300 d = 1, 30, 6 ! { dg-warning "Deleted feature: Loop variable" }
     i = d
 300 a(i) = 1
 !$omp do
-  do d = 1, 30, 5 ! { dg-warning "Obsolete: REAL DO loop iterator" }
+  do d = 1, 30, 5 ! { dg-warning "Deleted feature: Loop variable" }
     i = d
     a(i) = 2
   end do

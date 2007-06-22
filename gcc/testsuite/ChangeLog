@@ -1,3 +1,14 @@
+2007-06-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/31162
+	* gfortran.dg/assign.f90: Update test.
+	* gfortran.dg/real_do_1.f90: Update test.
+	* gfortran.dg/gomp/omp_do1.f90: Update test.
+	* gfortran.dg/warnings_are_errors_1.f: Update test.
+	* gfortran.dg/g77/20010519-1.f: Update test.
+	* gfortran.dg/g77/pr9258.f: Update test.
+	* gfortran.dg/g77/960317-1.f: Update test.
+
 2007-06-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/32453
