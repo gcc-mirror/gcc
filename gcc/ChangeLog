@@ -1,3 +1,8 @@
+2007-06-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (override_options): Correct x86_sahf
+	setting condition.
+
 2007-06-21  David Daney  <ddaney@avtrex.com>
 
 	PR target/32406
