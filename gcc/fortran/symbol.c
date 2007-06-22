@@ -1436,14 +1436,11 @@ gfc_copy_attr (symbol_attribute * dest, symbol_attribute * src, locus * where)
     goto fail;
   if (src->cray_pointee && gfc_add_cray_pointee (dest, where) == FAILURE)
     goto fail;    
-  
-  /* The subroutines that set these bits also cause flavors to be set,
-     and that has already happened in the original, so don't let it
-     happen again.  */
-  if (src->external)
-    dest->external = 1;
-  if (src->intrinsic)
-    dest->intrinsic = 1;
+
+  if (src->external && gfc_add_external (dest, where) == FAILURE)
+    goto fail;
+  if (src->intrinsic && gfc_add_intrinsic (dest, where) == FAILURE)
+    goto fail;
 
   return SUCCESS;
 
