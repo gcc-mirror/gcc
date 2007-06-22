@@ -1,3 +1,8 @@
+2007-06-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/32374
+	* expr.c (store_constructor): Do not clobber non-zeroed memory. 
+
 2007-06-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32413
