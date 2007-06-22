@@ -1,3 +1,9 @@
+2007-06-22  Roman Zippel <zippel@linux-m68k.org>
+
+	* df-scan.c (df_read_modify_subreg_p): Use REGMODE_NATURAL_SIZE.
+	(df_def_record_1): Set (DF_REF_READ_WRITE | DF_REF_PARTIAL) for
+	partial register accesses.
+
 2007-06-21  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* fold-const.c (debug_fold_checksum): Move it under

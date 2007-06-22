@@ -2703,7 +2703,8 @@ df_read_modify_subreg_p (rtx x)
     return false;
   isize = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
   osize = GET_MODE_SIZE (GET_MODE (x));
-  return (isize > osize && isize > UNITS_PER_WORD);
+  return isize > osize
+	 && isize > REGMODE_NATURAL_SIZE (GET_MODE (SUBREG_REG (x)));
 }
 
 
@@ -2718,7 +2719,6 @@ df_def_record_1 (struct df_collection_rec *collection_rec,
 {
   rtx *loc;
   rtx dst;
-  bool dst_in_strict_lowpart = false;
 
  /* We may recursively call ourselves on EXPR_LIST when dealing with PARALLEL
      construct.  */
@@ -2749,33 +2749,16 @@ df_def_record_1 (struct df_collection_rec *collection_rec,
   /* Maybe, we should flag the use of STRICT_LOW_PART somehow.  It might
      be handy for the reg allocator.  */
   while (GET_CODE (dst) == STRICT_LOW_PART
-	 || GET_CODE (dst) == ZERO_EXTRACT
-	 || df_read_modify_subreg_p (dst))
+	 || GET_CODE (dst) == ZERO_EXTRACT)
     {
-#if 0
-      /* Strict low part always contains SUBREG, but we do not want to make
-	 it appear outside, as whole register is always considered.  */
-      if (GET_CODE (dst) == STRICT_LOW_PART)
-	{
-	  loc = &XEXP (dst, 0);
-	  dst = *loc;
-	}
-#endif
+      flags |= DF_REF_READ_WRITE | DF_REF_PARTIAL;
       loc = &XEXP (dst, 0);
-      if (GET_CODE (dst) == STRICT_LOW_PART)
-	dst_in_strict_lowpart = true;
       dst = *loc;
-      flags |= DF_REF_READ_WRITE;
-
     }
 
-  /* Sets to a subreg of a single word register are partial sets if
-     they are wrapped in a strict lowpart, and not partial otherwise.
-  */
-  if (GET_CODE (dst) == SUBREG && REG_P (SUBREG_REG (dst))
-      && dst_in_strict_lowpart)
-    flags |= DF_REF_PARTIAL;
-    
+  if (df_read_modify_subreg_p (dst))
+    flags |= DF_REF_READ_WRITE | DF_REF_PARTIAL;
+
   if (REG_P (dst)
       || (GET_CODE (dst) == SUBREG && REG_P (SUBREG_REG (dst))))
     df_ref_record (collection_rec, 
