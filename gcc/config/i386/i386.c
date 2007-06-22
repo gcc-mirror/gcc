@@ -2059,7 +2059,7 @@ override_options (void)
 	  x86_popcnt = true;
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
-	if ((processor_alias_table[i].flags & PTA_NO_SAHF) && !TARGET_64BIT)
+	if (!(TARGET_64BIT && (processor_alias_table[i].flags & PTA_NO_SAHF)))
 	  x86_sahf = true;
 
 	break;
