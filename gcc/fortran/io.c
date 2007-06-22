@@ -1072,7 +1072,7 @@ resolve_tag (const io_tag *tag, gfc_expr *e)
 	    }
 	  else if (e->ts.type == BT_INTEGER && e->expr_type == EXPR_VARIABLE)
 	    {
-	      if (gfc_notify_std (GFC_STD_F95_DEL, "Obsolete: ASSIGNED "
+	      if (gfc_notify_std (GFC_STD_F95_DEL, "Deleted feature: ASSIGNED "
 				  "variable in FORMAT tag at %L", &e->where)
 		  == FAILURE)
 		return FAILURE;

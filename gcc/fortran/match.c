@@ -1578,7 +1578,8 @@ gfc_match_pause (void)
   m = gfc_match_stopcode (ST_PAUSE);
   if (m == MATCH_YES)
     {
-      if (gfc_notify_std (GFC_STD_F95_DEL, "Obsolete: PAUSE statement at %C")
+      if (gfc_notify_std (GFC_STD_F95_DEL, "Deleted feature: PAUSE statement"
+	  " at %C")
 	  == FAILURE)
 	m = MATCH_ERROR;
     }
@@ -1625,7 +1626,7 @@ gfc_match_assign (void)
 	return MATCH_ERROR;
       if (gfc_match (" to %v%t", &expr) == MATCH_YES)
 	{
-	  if (gfc_notify_std (GFC_STD_F95_DEL, "Obsolete: ASSIGN "
+	  if (gfc_notify_std (GFC_STD_F95_DEL, "Deleted feature: ASSIGN "
 			      "statement at %C")
 	      == FAILURE)
 	    return MATCH_ERROR;
@@ -1671,7 +1672,7 @@ gfc_match_goto (void)
 
   if (gfc_match_variable (&expr, 0) == MATCH_YES)
     {
-      if (gfc_notify_std (GFC_STD_F95_DEL, "Obsolete: Assigned GOTO "
+      if (gfc_notify_std (GFC_STD_F95_DEL, "Deleted feature: Assigned GOTO "
 			  "statement at %C")
 	  == FAILURE)
 	return MATCH_ERROR;
