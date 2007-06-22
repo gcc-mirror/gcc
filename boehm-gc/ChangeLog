@@ -1,3 +1,8 @@
+2007-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* pthread_support.c (GC_get_thread_stack_base): Handle
+	pthread_getattr_np failures.
+
 2007-05-22  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* Backport r124870 from main.
