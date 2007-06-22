@@ -1,3 +1,9 @@
+2007-06-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/32360
+	* expr.c (gfc_check_assign): If the rvalue expression type is NULL_EXPR,
+	check to see if the lvalue has attribute pointer and data.  
+
 2007-06-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/31162

@@ -2407,12 +2407,18 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
       return FAILURE;
     }
 
-   if (rvalue->expr_type == EXPR_NULL)
-     {
-       gfc_error ("NULL appears on right-hand side in assignment at %L",
-		  &rvalue->where);
-       return FAILURE;
-     }
+  if (rvalue->expr_type == EXPR_NULL)
+    {  
+      if (lvalue->symtree->n.sym->attr.pointer
+	  && lvalue->symtree->n.sym->attr.data)
+        return SUCCESS;
+      else
+	{
+	  gfc_error ("NULL appears on right-hand side in assignment at %L",
+		     &rvalue->where);
+	  return FAILURE;
+	}
+    }
 
    if (sym->attr.cray_pointee
        && lvalue->ref != NULL
