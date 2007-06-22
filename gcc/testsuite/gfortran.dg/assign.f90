@@ -3,6 +3,6 @@
       program test
       integer i
       common i
-      assign 2000 to i  ! { dg-warning "Obsolete: ASSIGN statement" }
+      assign 2000 to i  ! { dg-warning "Deleted feature: ASSIGN statement" }
 2000  continue
       end
