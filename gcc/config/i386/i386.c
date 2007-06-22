@@ -20279,7 +20279,15 @@ ix86_register_move_cost (enum machine_mode mode, enum reg_class class1,
   /* Moves between SSE/MMX and integer unit are expensive.  */
   if (MMX_CLASS_P (class1) != MMX_CLASS_P (class2)
       || SSE_CLASS_P (class1) != SSE_CLASS_P (class2))
-    return ix86_cost->mmxsse_to_integer;
+
+    /* ??? By keeping returned value relatively high, we limit the number
+       of moves between integer and MMX/SSE registers for all targets.
+       Additionally, high value prevents problem with x86_modes_tieable_p(),
+       where integer modes in MMX/SSE registers are not tieable
+       because of missing QImode and HImode moves to, from or between
+       MMX/SSE registers.  */
+    return MAX (ix86_cost->mmxsse_to_integer, 8);
+
   if (MAYBE_FLOAT_CLASS_P (class1))
     return ix86_cost->fp_move;
   if (MAYBE_SSE_CLASS_P (class1))

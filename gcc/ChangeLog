@@ -1,5 +1,12 @@
 2007-06-22  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/32413
+	* config/i386/i386.c (ix86_register_move_cost): Rise the cost of
+	moves between MMX/SSE registers to at least 8 units to prevent
+	ICE caused by non-tieable SI/HI/QImodes in SSE registers. 
+
+2007-06-22  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.c (override_options): Correct x86_sahf
 	setting condition.
 
