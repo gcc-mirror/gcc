@@ -1,5 +1,10 @@
 2007-06-22  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.target/i386/large-size-array-3.c: Fix dg-do compile directive.
+	Remove -m64 from dg-options.
+
+2007-06-22  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR middle-end/32374
 	* gcc.dg/pr32374.c: New test.
 
