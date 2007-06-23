@@ -1,3 +1,14 @@
+2007-06-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/extend.texi: Document that dllimport and dllexport imply
+	default visibility.
+	* tree.c (handle_dll_attribute): Set DECL_VISIBILITY on the
+	imported or exported declaration, including type declarations.
+	* c-common.c (handle_visibility_attribute): Check for conflicts
+	with dllimport/dllexport.
+	(c_determine_visibility): Handle dllimport/dllexport as an
+	explicit visibility atttribute.
+
 2007-06-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/16876

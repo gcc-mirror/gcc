@@ -14237,9 +14237,9 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
   return constant_boolean_node (result, type);
 }
 
-/* Build an expression for the a clean point containing EXPR with type TYPE.
-   Don't build a cleanup point expression for EXPR which don't have side
-   effects.  */
+/* If necessary, return a CLEANUP_POINT_EXPR for EXPR with the
+   indicated TYPE.  If no CLEANUP_POINT_EXPR is necessary, return EXPR
+   itself.  */
 
 tree
 fold_build_cleanup_point_expr (tree type, tree expr)

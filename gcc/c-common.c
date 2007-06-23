@@ -5419,11 +5419,22 @@ handle_visibility_attribute (tree *node, tree name, tree args,
     }
 
   if (DECL_VISIBILITY_SPECIFIED (decl)
-      && vis != DECL_VISIBILITY (decl)
-      && lookup_attribute ("visibility", (TYPE_P (*node)
-					  ? TYPE_ATTRIBUTES (*node)
-					  : DECL_ATTRIBUTES (decl))))
-    error ("%qD redeclared with different visibility", decl);
+      && vis != DECL_VISIBILITY (decl))
+    {
+      tree attributes = (TYPE_P (*node)
+			 ? TYPE_ATTRIBUTES (*node)
+			 : DECL_ATTRIBUTES (decl));
+      if (lookup_attribute ("visibility", attributes))
+	error ("%qD redeclared with different visibility", decl);
+      else if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+	       && lookup_attribute ("dllimport", attributes))
+	error ("%qD was declared %qs which implies default visibility",
+	       decl, "dllimport");
+      else if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+	       && lookup_attribute ("dllexport", attributes))
+	error ("%qD was declared %qs which implies default visibility",
+	       decl, "dllexport");
+    }
 
   DECL_VISIBILITY (decl) = vis;
   DECL_VISIBILITY_SPECIFIED (decl) = 1;
@@ -5456,17 +5467,11 @@ c_determine_visibility (tree decl)
      to distinguish the use of an attribute from the use of a "#pragma
      GCC visibility push(...)"; in the latter case we still want other
      considerations to be able to overrule the #pragma.  */
-  if (lookup_attribute ("visibility", DECL_ATTRIBUTES (decl)))
+  if (lookup_attribute ("visibility", DECL_ATTRIBUTES (decl))
+      || (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+	  && (lookup_attribute ("dllimport", DECL_ATTRIBUTES (decl))
+	      || lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl)))))
     return true;
-
-  /* Anything that is exported must have default visibility.  */
-  if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
-      && lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl)))
-    {
-      DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
-      DECL_VISIBILITY_SPECIFIED (decl) = 1;
-      return true;
-    }
 
   /* Set default visibility to whatever the user supplied with
      visibility_specified depending on #pragma GCC visibility.  */
