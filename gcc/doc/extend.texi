@@ -1782,10 +1782,8 @@ You can use @code{__declspec(dllexport)} as a synonym for
 compilers.
 
 On systems that support the @code{visibility} attribute, this
-attribute also implies ``default'' visibility, unless a
-@code{visibility} attribute is explicitly specified.  You should avoid
-the use of @code{dllexport} with ``hidden'' or ``internal''
-visibility; in the future GCC may issue an error for those cases.
+attribute also implies ``default'' visibility.  It is an error to
+explicitly specify any other visibility.
 
 Currently, the @code{dllexport} attribute is ignored for inlined
 functions, unless the @option{-fkeep-inline-functions} flag has been
@@ -1806,13 +1804,17 @@ the @option{--export-all} linker flag.
 On Microsoft Windows and Symbian OS targets, the @code{dllimport}
 attribute causes the compiler to reference a function or variable via
 a global pointer to a pointer that is set up by the DLL exporting the
-symbol.  The attribute implies @code{extern} storage.  On Microsoft
-Windows targets, the pointer name is formed by combining @code{_imp__}
-and the function or variable name.
+symbol.  The attribute implies @code{extern}.  On Microsoft Windows
+targets, the pointer name is formed by combining @code{_imp__} and the
+function or variable name.
 
 You can use @code{__declspec(dllimport)} as a synonym for
 @code{__attribute__ ((dllimport))} for compatibility with other
 compilers.
+
+On systems that support the @code{visibility} attribute, this
+attribute also implies ``default'' visibility.  It is an error to
+explicitly specify any other visibility.
 
 Currently, the attribute is ignored for inlined functions.  If the
 attribute is applied to a symbol @emph{definition}, an error is reported.

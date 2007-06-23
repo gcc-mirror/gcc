@@ -4001,18 +4001,25 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 	  *no_add_attrs = true;
 	  return tree_cons (name, args, NULL_TREE);
 	}
-      if (TREE_CODE (node) != RECORD_TYPE && TREE_CODE (node) != UNION_TYPE)
+      if (TREE_CODE (node) == RECORD_TYPE
+	  || TREE_CODE (node) == UNION_TYPE)
+	{
+	  node = TYPE_NAME (node);
+	  if (!node)
+	    return NULL_TREE;
+	}
+      else
 	{
 	  warning (OPT_Wattributes, "%qs attribute ignored",
 		   IDENTIFIER_POINTER (name));
 	  *no_add_attrs = true;
+	  return NULL_TREE;
 	}
-
-      return NULL_TREE;
     }
 
   if (TREE_CODE (node) != FUNCTION_DECL
-      && TREE_CODE (node) != VAR_DECL)
+      && TREE_CODE (node) != VAR_DECL
+      && TREE_CODE (node) != TYPE_DECL)
     {
       *no_add_attrs = true;
       warning (OPT_Wattributes, "%qs attribute ignored",
@@ -4073,6 +4080,22 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
       error ("external linkage required for symbol %q+D because of "
 	     "%qs attribute", node, IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
+    }
+
+  /* A dllexport'd entity must have default visibility so that other
+     program units (shared libraries or the main executable) can see
+     it.  A dllimport'd entity must have default visibility so that
+     the linker knows that undefined references within this program
+     unit can be resolved by the dynamic linker.  */
+  if (!*no_add_attrs)
+    {
+      if (DECL_VISIBILITY_SPECIFIED (node)
+	  && DECL_VISIBILITY (node) != VISIBILITY_DEFAULT)
+	error ("%qs implies default visibility, but %qD has already "
+	       "been declared with a different visibility", 
+	       IDENTIFIER_POINTER (name), node);
+      DECL_VISIBILITY (node) = VISIBILITY_DEFAULT;
+      DECL_VISIBILITY_SPECIFIED (node) = 1;
     }
 
   return NULL_TREE;

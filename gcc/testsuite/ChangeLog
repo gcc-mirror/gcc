@@ -1,3 +1,10 @@
+2007-06-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/visibility-12.c: New test.
+	* gcc.dg/visibility-13.c: Likewise.
+	* g++.dg/ext/visibility-9.C: Likewise.
+	* g++.dg/ext/visibility-10.C: Likewise.
+
 2007-06-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/16876

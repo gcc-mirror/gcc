@@ -1684,17 +1684,6 @@ determine_visibility (tree decl)
   else
     use_template = 0;
 
-  /* Anything that is exported must have default visibility.  */
-  if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
-      && lookup_attribute ("dllexport",
-			   TREE_CODE (decl) == TYPE_DECL
-			   ? TYPE_ATTRIBUTES (TREE_TYPE (decl))
-			   : DECL_ATTRIBUTES (decl)))
-    {
-      DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
-      DECL_VISIBILITY_SPECIFIED (decl) = 1;
-    }
-
   /* If DECL is a member of a class, visibility specifiers on the
      class can influence the visibility of the DECL.  */
   if (DECL_CLASS_SCOPE_P (decl))
@@ -1796,18 +1785,20 @@ determine_visibility (tree decl)
 static void
 determine_visibility_from_class (tree decl, tree class_type)
 {
+  if (DECL_VISIBILITY_SPECIFIED (decl))
+    return;
+
   if (visibility_options.inlines_hidden
       /* Don't do this for inline templates; specializations might not be
 	 inline, and we don't want them to inherit the hidden
 	 visibility.  We'll set it here for all inline instantiations.  */
       && !processing_template_decl
-      && ! DECL_VISIBILITY_SPECIFIED (decl)
       && TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DECLARED_INLINE_P (decl)
       && (! DECL_LANG_SPECIFIC (decl)
 	  || ! DECL_EXPLICIT_INSTANTIATION (decl)))
     DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
-  else if (!DECL_VISIBILITY_SPECIFIED (decl))
+  else
     {
       /* Default to the class visibility.  */
       DECL_VISIBILITY (decl) = CLASSTYPE_VISIBILITY (class_type);
@@ -1826,7 +1817,6 @@ determine_visibility_from_class (tree decl, tree class_type)
 	      && !DECL_CONSTRUCTION_VTABLE_P (decl)))
       && TREE_PUBLIC (decl)
       && !DECL_REALLY_EXTERN (decl)
-      && !DECL_VISIBILITY_SPECIFIED (decl)
       && !CLASSTYPE_VISIBILITY_SPECIFIED (class_type))
     targetm.cxx.determine_class_data_visibility (decl);
 }
