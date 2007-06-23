@@ -58,15 +58,14 @@ static bitmap_obstack dce_tmp_bitmap_obstack;
 
 static sbitmap marked = NULL;
 
-/* Return true if INSN a normal instruction that can be deleted by the
-   DCE pass.  */
+/* Return true if INSN with BODY is a normal instruction that can be
+   deleted by the DCE pass.  */
 
 static bool
-deletable_insn_p (rtx insn, bool fast)
+deletable_insn_p (rtx insn, rtx body, bool fast)
 {
   rtx x;
-
-  switch (GET_CODE (PATTERN (insn)))
+  switch (GET_CODE (body))
     {
     case USE:
     case PREFETCH:
@@ -86,7 +85,7 @@ deletable_insn_p (rtx insn, bool fast)
 	  /* A CLOBBER of a dead pseudo register serves no purpose.
 	     That is not necessarily true for hard registers until
 	     after reload.  */
-	  x = XEXP (PATTERN (insn), 0);
+	  x = XEXP (body, 0);
 	  return REG_P (x) && (!HARD_REGISTER_P (x) || reload_completed);
 	}
       else 
@@ -95,14 +94,23 @@ deletable_insn_p (rtx insn, bool fast)
 	   never be the target of a use-def chain.  */
 	return false;
 
+    case PARALLEL:
+      {
+	int i;
+	for (i = XVECLEN (body, 0) - 1; i >= 0; i--)
+	  if (!deletable_insn_p (insn, XVECEXP (body, 0, i), fast))
+	    return false;
+	return true;
+      }
+
     default:
       if (!NONJUMP_INSN_P (insn))
 	return false;
 
-      if (volatile_insn_p (PATTERN (insn)))
+      if (volatile_insn_p (body))
 	return false;
 
-      if (flag_non_call_exceptions && may_trap_p (PATTERN (insn)))
+      if (flag_non_call_exceptions && may_trap_p (body))
 	return false;
 
       return true;
@@ -361,7 +369,7 @@ prescan_insns_for_dce (bool fast)
         rtx note = find_reg_note (insn, REG_LIBCALL_ID, NULL_RTX);
         if (note)
           mark_libcall (insn, fast);
-        else if (deletable_insn_p (insn, fast))
+        else if (deletable_insn_p (insn, PATTERN (insn), fast))
           mark_nonreg_stores (PATTERN (insn), insn, fast);
         else
           mark_insn (insn, fast);

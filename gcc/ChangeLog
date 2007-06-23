@@ -1,3 +1,10 @@
+2007-06-23  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR middle-end/32437
+	*dce.c (deletable_insn_p): Add extra parameter and recurse if insn
+	is a PARALLEL.
+	(prescan_insns_for_dce): Add extra parameter.
+	
 2007-06-23  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/31541
