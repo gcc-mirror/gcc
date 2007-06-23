@@ -42,7 +42,6 @@ struct lang_hooks_for_tree_inlining
   int (*disregard_inline_limits) (tree);
   int (*auto_var_in_fn_p) (tree, tree);
   bool (*var_mod_type_p) (tree, tree);
-  tree (*convert_parm_for_inlining) (tree, tree, tree, int);
 };
 
 struct lang_hooks_for_callgraph

@@ -89,9 +89,6 @@ extern void c_initialize_diagnostics (diagnostic_context *);
 #undef LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS
 #define LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS \
   c_disregard_inline_limits
-#undef LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING
-#define LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING \
-  c_convert_parm_for_inlining
 #undef LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN c_dump_tree
 

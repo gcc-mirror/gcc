@@ -1,3 +1,33 @@
+2007-06-23  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/16876
+	PR middle-end/29478
+	* tree.h (CALL_CANNOT_INLINE_P): New macro to access static_flag
+	for CALL_EXPRs.
+	* tree-inline.c (initialize_inlined_parameters): Do not call
+	lang_hooks.tree_inlining.convert_parm_for_inlining.
+	* cgraphbuild.c (initialize_inline_failed): Set inline failed
+	reason for mismatched types.
+	* gimplify.c (gimplify_call_expr): Verify the call expression
+	arguments match the called function type signature.  Otherwise
+	mark the call expression to be not considered for inlining
+	using CALL_CANNOT_INLINE_P flag.
+	* ipa-inline.c (cgraph_mark_inline): Honor CALL_CANNOT_INLINE_P on the
+	edges call expression.
+	(cgraph_decide_inlining_of_small_function): Likewise.
+	(cgraph_decide_inlining): Likewise.
+	* c-objc-common.h (LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING):
+	Remove define.
+	* c-tree.h (c_convert_parm_for_inlining): Remove declaration.
+	* c-typeck.c (c_convert_parm_for_inlining): Remove.
+	* langhooks-def.h (lhd_tree_inlining_convert_parm_for_inlining):
+	Remove declaration.
+	(LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING): Remove define.
+	* langhooks.c (lhd_tree_inlining_convert_parm_for_inlining):
+	Remove.
+	* langhooks.h (struct lang_hooks_for_tree_inlining): Remove
+	convert_parm_for_inlining member.
+
 2007-06-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/31152
