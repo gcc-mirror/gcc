@@ -1,3 +1,7 @@
+2007-06-22  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/compile/pr31541.c: New.
+
 2007-06-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/large-size-array-3.c: Fix dg-do compile directive.
