@@ -73,7 +73,6 @@ extern tree lhd_tree_inlining_walk_subtrees (tree *, int *, walk_tree_fn,
 extern int lhd_tree_inlining_cannot_inline_tree_fn (tree *);
 extern int lhd_tree_inlining_disregard_inline_limits (tree);
 extern int lhd_tree_inlining_auto_var_in_fn_p (tree, tree);
-extern tree lhd_tree_inlining_convert_parm_for_inlining (tree, tree, tree, int);
 extern void lhd_initialize_diagnostics (struct diagnostic_context *);
 extern tree lhd_callgraph_analyze_expr (tree *, int *, tree);
 
@@ -145,8 +144,6 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
   lhd_tree_inlining_auto_var_in_fn_p
 #define LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P \
   hook_bool_tree_tree_false
-#define LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING \
-  lhd_tree_inlining_convert_parm_for_inlining
 
 #define LANG_HOOKS_TREE_INLINING_INITIALIZER { \
   LANG_HOOKS_TREE_INLINING_WALK_SUBTREES, \
@@ -154,7 +151,6 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
   LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS, \
   LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P, \
   LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P, \
-  LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING \
 }
 
 #define LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR lhd_callgraph_analyze_expr

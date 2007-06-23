@@ -4247,37 +4247,6 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 
   return error_mark_node;
 }
-
-/* Convert VALUE for assignment into inlined parameter PARM.  ARGNUM
-   is used for error and warning reporting and indicates which argument
-   is being processed.  */
-
-tree
-c_convert_parm_for_inlining (tree parm, tree value, tree fn, int argnum)
-{
-  tree ret, type;
-
-  /* If FN was prototyped at the call site, the value has been converted
-     already in convert_arguments.
-     However, we might see a prototype now that was not in place when
-     the function call was seen, so check that the VALUE actually matches
-     PARM before taking an early exit.  */
-  if (!value
-      || (TYPE_ARG_TYPES (TREE_TYPE (fn))
-	  && (TYPE_MAIN_VARIANT (TREE_TYPE (parm))
-	      == TYPE_MAIN_VARIANT (TREE_TYPE (value)))))
-    return value;
-
-  type = TREE_TYPE (parm);
-  ret = convert_for_assignment (type, value,
-				ic_argpass_nonproto, fn,
-				fn, argnum);
-  if (targetm.calls.promote_prototypes (TREE_TYPE (fn))
-      && INTEGRAL_TYPE_P (type)
-      && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
-    ret = default_conversion (ret);
-  return ret;
-}
 
 /* If VALUE is a compound expr all of whose expressions are constant, then
    return its value.  Otherwise, return error_mark_node.

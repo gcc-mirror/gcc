@@ -1451,7 +1451,6 @@ initialize_inlined_parameters (copy_body_data *id, tree exp,
   tree a;
   tree p;
   tree vars = NULL_TREE;
-  int argnum = 0;
   call_expr_arg_iterator iter;
   tree static_chain = CALL_EXPR_STATIC_CHAIN (exp);
 
@@ -1462,17 +1461,7 @@ initialize_inlined_parameters (copy_body_data *id, tree exp,
      equivalent VAR_DECL, appropriately initialized.  */
   for (p = parms, a = first_call_expr_arg (exp, &iter); p;
        a = next_call_expr_arg (&iter), p = TREE_CHAIN (p))
-    {
-      tree value;
-
-      ++argnum;
-
-      /* Find the initializer.  */
-      value = lang_hooks.tree_inlining.convert_parm_for_inlining
-	      (p, a, fn, argnum);
-
-      setup_one_parameter (id, p, value, fn, bb, &vars);
-    }
+    setup_one_parameter (id, p, a, fn, bb, &vars);
 
   /* Initialize the static chain.  */
   p = DECL_STRUCT_FUNCTION (fn)->static_chain_decl;

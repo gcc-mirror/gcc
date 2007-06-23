@@ -2058,7 +2058,7 @@ gimplify_arg (tree *expr_p, tree *pre_p)
 static enum gimplify_status
 gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
 {
-  tree decl;
+  tree decl, parms, p;
   enum gimplify_status ret;
   int i, nargs;
 
@@ -2124,6 +2124,48 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
 
   nargs = call_expr_nargs (*expr_p);
 
+  /* Get argument types for verification.  */
+  decl = get_callee_fndecl (*expr_p);
+  parms = NULL_TREE;
+  if (decl)
+    parms = TYPE_ARG_TYPES (TREE_TYPE (decl));
+  else if (POINTER_TYPE_P (TREE_TYPE (CALL_EXPR_FN (*expr_p))))
+    parms = TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (*expr_p))));
+
+  /* Verify if the type of the argument matches that of the function
+     declaration.  If we cannot verify this or there is a mismatch,
+     mark the call expression so it doesn't get inlined later.  */
+  if (parms)
+    {
+      for (i = 0, p = parms; i < nargs; i++, p = TREE_CHAIN (p))
+	if (!p
+	    || TREE_VALUE (p) == error_mark_node
+	    || CALL_EXPR_ARG (*expr_p, i) == error_mark_node
+	    || !lang_hooks.types_compatible_p
+		 (TREE_TYPE (CALL_EXPR_ARG (*expr_p, i)), TREE_VALUE (p)))
+	  {
+	    CALL_CANNOT_INLINE_P (*expr_p) = 1;
+	    break;
+	  }
+    }
+  else if (decl && DECL_ARGUMENTS (decl))
+    {
+      for (i = 0, p = DECL_ARGUMENTS (decl); i < nargs;
+	   i++, p = TREE_CHAIN (p))
+	if (!p
+	    || p == error_mark_node
+	    || CALL_EXPR_ARG (*expr_p, i) == error_mark_node
+	    || !lang_hooks.types_compatible_p
+		 (TREE_TYPE (CALL_EXPR_ARG (*expr_p, i)), TREE_TYPE (p)))
+	  {
+	    CALL_CANNOT_INLINE_P (*expr_p) = 1;
+	    break;
+	  }
+    }
+  else if (nargs != 0)
+    CALL_CANNOT_INLINE_P (*expr_p) = 1;
+
+  /* Finally, gimplify the function arguments.  */
   for (i = (PUSH_ARGS_REVERSED ? nargs - 1 : 0);
        PUSH_ARGS_REVERSED ? i >= 0 : i < nargs;
        PUSH_ARGS_REVERSED ? i-- : i++)

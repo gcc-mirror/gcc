@@ -577,7 +577,6 @@ extern tree c_start_case (tree);
 extern void c_finish_case (tree);
 extern tree build_asm_expr (tree, tree, tree, tree, bool);
 extern tree build_asm_stmt (tree, tree);
-extern tree c_convert_parm_for_inlining (tree, tree, tree, int);
 extern int c_types_compatible_p (tree, tree);
 extern tree c_begin_compound_stmt (bool);
 extern tree c_end_compound_stmt (tree, bool);

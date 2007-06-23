@@ -288,22 +288,21 @@ cgraph_mark_inline (struct cgraph_edge *edge)
   struct cgraph_node *to = edge->caller;
   struct cgraph_node *what = edge->callee;
   struct cgraph_edge *e, *next;
-  int times = 0;
 
   /* Look for all calls, mark them inline and clone recursively
      all inlined functions.  */
   for (e = what->callers; e; e = next)
     {
       next = e->next_caller;
-      if (e->caller == to && e->inline_failed)
+      if (e->caller == to && e->inline_failed
+	  && !CALL_CANNOT_INLINE_P (e->call_stmt))
 	{
           cgraph_mark_inline_edge (e, true);
 	  if (e == edge)
 	    edge = next;
-	  times++;
 	}
     }
-  gcc_assert (times);
+
   return edge;
 }
 
@@ -885,7 +884,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	}
       gcc_assert (edge->aux);
       edge->aux = NULL;
-      if (!edge->inline_failed)
+      if (!edge->inline_failed || CALL_CANNOT_INLINE_P (edge->call_stmt))
 	continue;
 
       /* When not having profile info ready we don't weight by any way the
@@ -1076,7 +1075,7 @@ cgraph_decide_inlining (void)
       for (e = node->callers; e; e = next)
 	{
 	  next = e->next_caller;
-	  if (!e->inline_failed)
+	  if (!e->inline_failed || CALL_CANNOT_INLINE_P (e->call_stmt))
 	    continue;
 	  if (cgraph_recursive_inlining_p (e->caller, e->callee,
 				  	   &e->inline_failed))
