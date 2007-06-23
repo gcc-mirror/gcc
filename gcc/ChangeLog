@@ -1,3 +1,9 @@
+2007-06-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/31152
+	* arm.md (negscc): Match the correct operand for optimized LT0 test.
+	Remove optimization for GT.
+
 2007-06-23  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR middle-end/32437

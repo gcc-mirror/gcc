@@ -1,3 +1,7 @@
+2007-06-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.c-torture/execute/20070623-1.c: New.
+
 2007-06-22  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/compile/pr31541.c: New.
