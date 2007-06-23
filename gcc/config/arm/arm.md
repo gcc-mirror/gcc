@@ -9423,14 +9423,11 @@
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "*
-  if (GET_CODE (operands[3]) == LT && operands[3] == const0_rtx)
+  if (GET_CODE (operands[3]) == LT && operands[2] == const0_rtx)
     return \"mov\\t%0, %1, asr #31\";
 
   if (GET_CODE (operands[3]) == NE)
     return \"subs\\t%0, %1, %2\;mvnne\\t%0, #0\";
-
-  if (GET_CODE (operands[3]) == GT)
-    return \"subs\\t%0, %1, %2\;mvnne\\t%0, %0, asr #31\";
 
   output_asm_insn (\"cmp\\t%1, %2\", operands);
   output_asm_insn (\"mov%D3\\t%0, #0\", operands);
