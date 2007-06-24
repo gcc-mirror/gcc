@@ -760,6 +760,7 @@ cgraph_analyze_function (struct cgraph_node *node)
   current_function_decl = decl;
   push_cfun (DECL_STRUCT_FUNCTION (decl));
   cgraph_lower_function (node);
+  node->analyzed = true;
 
   if (!flag_unit_at_a_time)
     {
@@ -771,7 +772,6 @@ cgraph_analyze_function (struct cgraph_node *node)
       bitmap_obstack_release (NULL);
     }
 
-  node->analyzed = true;
   pop_cfun ();
   current_function_decl = NULL;
 }

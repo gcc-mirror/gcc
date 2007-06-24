@@ -1,3 +1,8 @@
+2007-06-24  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/30563
+	* cgraphunit.c (cgraph_analyze_function): Fix ordering problem.
+
 2007-06-24  Sebastian Pop  <sebpop@gmail.com>
 
 	PR middle-end/32461
