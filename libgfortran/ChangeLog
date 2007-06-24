@@ -1,3 +1,9 @@
+2007-06-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/32446
+	* io/write.c (output_float): Calculate ndigits correctly for large
+	numbered formats that must pad zeros before the decimal point.
+
 2007-06-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR libfortran/32345
