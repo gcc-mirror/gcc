@@ -683,6 +683,9 @@ extern int st_printf (const char *, ...)
   __attribute__ ((format (printf, 1, 2)));
 internal_proto(st_printf);
 
+extern char * filename_from_unit (int);
+internal_proto(filename_from_unit);
+
 /* stop.c */
 
 extern void stop_numeric (GFC_INTEGER_4) __attribute__ ((noreturn));
