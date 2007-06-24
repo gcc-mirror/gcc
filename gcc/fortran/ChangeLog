@@ -1,3 +1,14 @@
+2007-06-24  Tobias Burnus  <burnus@net-de>
+
+	PR fortran/32460
+	* interface.c (gfc_compare_derived_types): Add access check.
+	* symbol.c (gfc_find_component): Ditto.
+	(gfc_set_component_attr,gfc_get_component_attr) Copy access state.
+	* dump-parse-tree.c (gfc_show_components): Dump access state.
+	* gfortran.h (struct gfc_component): Add gfc_access.
+	* module.c (mio_component): Add access state.
+	* (gfc_match_structure_constructor): Check for private access state.
+
 2007-06-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32298

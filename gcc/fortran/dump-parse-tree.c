@@ -624,6 +624,8 @@ gfc_show_components (gfc_symbol *sym)
 	gfc_status (" DIMENSION");
       gfc_status_char (' ');
       gfc_show_array_spec (c->as);
+      if (c->access)
+	gfc_status (" %s", gfc_code2string (access_types, c->access));
       gfc_status (")");
       if (c->next != NULL)
 	gfc_status_char (' ');

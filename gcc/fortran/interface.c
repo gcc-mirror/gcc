@@ -364,6 +364,9 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
       if (strcmp (dt1->name, dt2->name) != 0)
 	return 0;
 
+      if (dt1->access != dt2->access)
+	return 0;
+
       if (dt1->pointer != dt2->pointer)
 	return 0;
 
