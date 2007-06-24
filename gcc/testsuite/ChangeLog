@@ -1,12 +1,7 @@
-2007-06-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2007-06-24  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/32446
-	* gfortran.dg/fmt_huge.f90: New test.
-
-2007-06-24  Tobias Burnus  <burnus@net-de>
-
-	PR fortran/32460
-	* gfortran.dg/private_type_6.f90: New.
+	PR fortran/32136
+	* gfortran.dg/pr32136.f90: New test.
 
 2007-06-24  Paul Thomas  <pault@gcc.gnu.org>
 
