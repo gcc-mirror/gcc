@@ -1,3 +1,11 @@
+2007-06-24  Sebastian Pop  <sebpop@gmail.com>
+
+	PR middle-end/32461
+	* fold-const.c (fold_binary): Strip nops of operand 0
+	of BIT_NOT_EXPR before calling operand_equal_p.
+	* testsuite/gcc.dg/tree-ssa/pr32461-1.c: New.
+	* testsuite/gcc.dg/tree-ssa/pr32461-2.c: New.
+
 2007-06-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/extend.texi: Document that dllimport and dllexport imply
