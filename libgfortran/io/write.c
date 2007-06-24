@@ -810,16 +810,21 @@ output_float (st_parameter_dt *dtp, const fnode *f, GFC_REAL_LARGEST value)
   if (nbefore > 0)
     {
       if (nbefore > ndigits)
-	i = ndigits;
+	{
+	  i = ndigits;
+	  memcpy (out, digits, i);
+	  ndigits = 0;
+	  while (i < nbefore)
+	    out[i++] = '0';
+	}
       else
-	i = nbefore;
-
-      memcpy (out, digits, i);
-      while (i < nbefore)
-	out[i++] = '0';
+	{
+	  i = nbefore;
+	  memcpy (out, digits, i);
+	  ndigits -= i;
+	}
 
       digits += i;
-      ndigits -= i;
       out += nbefore;
     }
   /* Output the decimal point.  */
