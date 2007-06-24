@@ -1,3 +1,13 @@
+2007-06-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32298
+	PR fortran/31726
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc): Calculate
+	the offset between the loop counter and the position as
+	defined. Add the offset within the loop so that the mask acts
+	correctly.  Do not advance the location on the basis that it
+	is zero.
+
 2007-06-22  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/31473
