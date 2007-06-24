@@ -743,6 +743,7 @@ typedef struct gfc_component
   gfc_typespec ts;
 
   int pointer, allocatable, dimension;
+  gfc_access access;
   gfc_array_spec *as;
 
   tree backend_decl;

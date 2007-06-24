@@ -2065,6 +2065,7 @@ mio_component (gfc_component *c)
   mio_integer (&c->dimension);
   mio_integer (&c->pointer);
   mio_integer (&c->allocatable);
+  c->access = MIO_NAME (gfc_access) (c->access, access_types); 
 
   mio_expr (&c->initializer);
   mio_rparen ();

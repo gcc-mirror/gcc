@@ -1615,7 +1615,8 @@ gfc_find_component (gfc_symbol *sym, const char *name)
 	       name, sym->name);
   else
     {
-      if (sym->attr.use_assoc && sym->component_access == ACCESS_PRIVATE)
+      if (sym->attr.use_assoc && (sym->component_access == ACCESS_PRIVATE
+				  || p->access == ACCESS_PRIVATE))
 	{
 	  gfc_error ("Component '%s' at %C is a PRIVATE component of '%s'",
 		     name, sym->name);
@@ -1656,6 +1657,7 @@ gfc_set_component_attr (gfc_component *c, symbol_attribute *attr)
   c->dimension = attr->dimension;
   c->pointer = attr->pointer;
   c->allocatable = attr->allocatable;
+  c->access = attr->access;
 }
 
 
@@ -1670,6 +1672,7 @@ gfc_get_component_attr (symbol_attribute *attr, gfc_component *c)
   attr->dimension = c->dimension;
   attr->pointer = c->pointer;
   attr->allocatable = c->allocatable;
+  attr->access = c->access;
 }
 
 
