@@ -8057,7 +8057,10 @@ grokdeclarator (const cp_declarator *declarator,
       if (ctype == current_class_type)
 	{
 	  if (friendp)
-	    pedwarn ("member functions are implicitly friends of their class");
+	    {
+	      pedwarn ("member functions are implicitly friends of their class");
+	      friendp = 0;
+	    }
 	  else
 	    pedwarn ("extra qualification %<%T::%> on member %qs",
 		     ctype, name);
