@@ -1,3 +1,55 @@
+2007-06-25  Chao-ying Fu  <fu@mips.com>
+
+	* doc/rtl.texi (Machine Modes): Document QQ, HQ, SQ, DQ, TQ,
+	UQQ, UHQ, USQ, UDQ, UTQ, HA, SA, DA, TA, UHA, USA, UDA, and UTAmodes.
+	Document MODE_FRACT, MODE_UFRACT, MODE_ACCUM, MODE_UACCUM.
+	Document GET_MODE_IBIT, and GET_MODE_FBIT.
+
+	* machmode.h (VECTOR_MODE_P): Test MODE_VECTOR_FRACT,
+	MODE_VECTOR_UFRACT, MODE_VECTOR_ACCUM, MODE_VECTOR_UACCUM.
+	(SCALAR_FRACT_MODE_P, SCALAR_UFRACT_MODE_P, ALL_SCALAR_FRACT_MODE_P,
+	SCALAR_ACCUM_MODE_P, SCALAR_UACCUM_MODE_P, ALL_SCALAR_ACCUM_MODE_P,
+	SIGNED_SCALAR_FIXED_POINT_MODE_P, UNSIGNED_SCALAR_FIXED_POINT_MODE_P,
+	ALL_SCALAR_FIXED_POINT_MODE_P, FRACT_MODE_P, UFRACT_MODE_P,
+	ALL_FRACT_MODE_P, ACCUM_MODE_P, UACCUM_MODE_P, ALL_ACCUM_MODE_P,
+	SIGNED_FIXED_POINT_MODE_P, UNSIGNED_FIXED_POINT_MODE_P,
+	ALL_FIXED_POINT_MODE_P): New define.
+	(CLASS_HAS_WIDER_MODES_P): Test MODE_FRACT, MODE_UFRACT, MODE_ACCUM,
+	MODE_UACCUM.
+	(GET_MODE_IBIT, GET_MODE_FBIT): New define.
+
+	* mode-classes.def (MODE_FRACT, MODE_UFRACT, MODE_ACCUM, MODE_UACCUM,
+	MODE_VECTOR_FRACT, MODE_VECTOR_UFRACT, MODE_VECTOR_ACCUM,
+	MODE_VECTOR_UACCUM): New mode classes.
+
+	* machmode.def: Document FRACT_MODE, UFRACT_MODE, ACCUM_MODE,
+	UACCUM_MODE, ADJUST_IBIT, and ADJUST_FBIT.
+	Add QQ, HQ, SQ, DQ, TQ, UQQ, UHQ, USQ, UDQ, UTQ, HA, SA, DA, TA, UHA,
+	USA, UDA, and UTA.
+
+	* genmodes.c (struct mode_data): Add ibit and fbit fields.
+	(blank_mode): Initialize ibit and fbit.
+	(adj_ibit, adj_fbit): New to adjust ibit and fbit.
+	(vector_class): Handle MODE_FRACT, MODE_UFRACT, MODE_ACCUM, MODE_UACCUM.
+	(new_adjust): Change required_class to required_class_from and
+	required_class_to for testing within a range.
+	(complete_mode): Handle MODE_FRACT, MODE_UFRACT, MODE_ACCUM,
+	MODE_UACCUM, MODE_VECTOR_FRACT, MODE_VECTOR_UFRACT, MODE_VECTOR_ACCUM,
+	MODE_VECTOR_UACCUM.
+	(FRACT_MODE, UFRACT_MODE, ACCUM_MODE, UACCUM_MODE): New define.
+	(make_fixed_point_mode): New.
+	(_ADD_ADJUST): Change C to C1 and C2.
+	(ADJUST_BYTESIZE, ADJUST_ALIGNMENT, ADJUST_FLOAT_FORMAT): Change to
+	use a range for machine classes.
+	(ADJUST_IBIT, ADJUST_FBIT): New.
+	(emit_insn_modes_h): Output defines of CONST_MODE_IBIT and
+	CONST_MODE_FBIT.
+	(emit_mode_adjustments): Handle MODE_VECTOR_FRACT, MODE_VECTOR_UFRACT,
+	MODE_VECTOR_ACCUM, MODE_VECTOR_UACCUM.
+	Emit adjustment for ibit and fbit.
+	(emit_mode_ibit, emit_mode_fbit): New.
+	(emit_insn_modes_c): Add emit_mode_ibit and emit_mode_fbit.
+
 2007-06-25  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/rs6000/spe.md (*frob_ti_tf_2): Specify an input_operand
