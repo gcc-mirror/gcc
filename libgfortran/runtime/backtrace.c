@@ -68,11 +68,13 @@ Boston, MA 02110-1301, USA.  */
 
 
 
-#ifndef HAVE_STRCASESTR
-#define HAVE_STRCASESTR 1
 static char *
-strcasestr (const char *s1, const char *s2)
+local_strcasestr (const char *s1, const char *s2)
 {
+#ifdef HAVE_STRCASESTR
+  return strcasestr (s1, s2);
+#else
+
   const char *p = s1;
   const size_t len = strlen (s2);
   const char u = *s2, v = isupper((int) *s2) ? tolower((int) *s2)
@@ -88,8 +90,8 @@ strcasestr (const char *s1, const char *s2)
       if (strncasecmp (p, s2, len) == 0)
 	return (char *)p;
     }
-}
 #endif
+}
 
 #define CAN_FORK (defined(HAVE_FORK) && defined(HAVE_EXECVP) \
 		  && defined(HAVE_WAIT))
@@ -224,9 +226,9 @@ show_backtrace (void)
 		|| strcmp (func, "main") == 0 || strcmp (func, "_start") == 0)
 	      continue;
 
-	    if (strcasestr (str[i], "libgfortran.so") != NULL
-		|| strcasestr (str[i], "libgfortran.dylib") != NULL
-		|| strcasestr (str[i], "libgfortran.a") != NULL)
+	    if (local_strcasestr (str[i], "libgfortran.so") != NULL
+		|| local_strcasestr (str[i], "libgfortran.dylib") != NULL
+		|| local_strcasestr (str[i], "libgfortran.a") != NULL)
 	      continue;
 
 	    /* If we only have the address, use the glibc backtrace.  */
