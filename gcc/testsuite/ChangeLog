@@ -1,3 +1,8 @@
+2006-06-26  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/32111
+	* g++.dg/other/friend5.C: New test.
+
 2007-06-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32464
