@@ -2319,7 +2319,7 @@
 
 (define_insn "*frob_ti_tf_2"
   [(set (subreg:TF (match_operand:TI 0 "gpc_reg_operand" "=&r") 0)
-	(match_operand:TF 1 "gpc_reg_operand" "r"))]
+	(match_operand:TF 1 "input_operand" "r"))]
   "TARGET_E500_DOUBLE"
   "evmergehi %0,%1,%1\;mr %L0,%1\;evmergehi %Y0,%L1,%L1\;mr %Z0,%L1"
   [(set_attr "length" "16")])

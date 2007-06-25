@@ -1,3 +1,8 @@
+2007-06-25  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/spe.md (*frob_ti_tf_2): Specify an input_operand
+	as the source of the set.
+
 2007-06-25  Roman Zippel <zippel@linux-m68k.org>
 
 	* config/m68k/m68k.h (DATA_REGNO_P, ADDRESS_REGNO_P, INT_REGNO_P,
