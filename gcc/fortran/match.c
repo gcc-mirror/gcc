@@ -2170,12 +2170,19 @@ gfc_match_call (void)
     return MATCH_ERROR;
 
   sym = st->n.sym;
-  gfc_set_sym_referenced (sym);
 
-  if (!sym->attr.generic
-      && !sym->attr.subroutine
-      && gfc_add_subroutine (&sym->attr, sym->name, NULL) == FAILURE)
+  if (sym->ns != gfc_current_ns
+	&& !sym->attr.generic
+	&& !sym->attr.subroutine
+        && gfc_get_sym_tree (name, NULL, &st) == 1)
     return MATCH_ERROR;
+
+  sym = st->n.sym;
+
+  if (gfc_add_subroutine (&sym->attr, sym->name, NULL) == FAILURE)
+    return MATCH_ERROR;
+
+  gfc_set_sym_referenced (sym);
 
   if (gfc_match_eos () != MATCH_YES)
     {
