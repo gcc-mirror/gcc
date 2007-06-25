@@ -1609,7 +1609,7 @@ m68k_legitimate_base_reg_p (rtx x, bool strict_p)
   return (REG_P (x)
 	  && (strict_p
 	      ? REGNO_OK_FOR_BASE_P (REGNO (x))
-	      : !DATA_REGNO_P (REGNO (x)) && !FP_REGNO_P (REGNO (x))));
+	      : REGNO_OK_FOR_BASE_NONSTRICT_P (REGNO (x))));
 }
 
 /* Return true if X is a legitimate index register.  STRICT_P says
@@ -1624,7 +1624,7 @@ m68k_legitimate_index_reg_p (rtx x, bool strict_p)
   return (REG_P (x)
 	  && (strict_p
 	      ? REGNO_OK_FOR_INDEX_P (REGNO (x))
-	      : !FP_REGNO_P (REGNO (x))));
+	      : REGNO_OK_FOR_INDEX_NONSTRICT_P (REGNO (x))));
 }
 
 /* Return true if X is a legitimate index expression for a (d8,An,Xn) or

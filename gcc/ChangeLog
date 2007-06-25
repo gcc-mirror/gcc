@@ -1,3 +1,15 @@
+2007-06-25  Roman Zippel <zippel@linux-m68k.org>
+
+	* config/m68k/m68k.h (DATA_REGNO_P, ADDRESS_REGNO_P, INT_REGNO_P,
+	FP_REGNO_P): Use IN_RANGE.
+	(REGNO_OK_FOR_DATA_P, REGNO_OK_FOR_FP_P): Remove.
+	(REGNO_OK_FOR_INDEX_NONSTRICT_P, REGNO_OK_FOR_BASE_NONSTRICT_P): New.
+	(DATA_REG_P): Use DATA_REGNO_P.
+	(FP_REG_P): Use FP_REGNO_P.
+	(ADDRESS_REG_P): Use ADDRESS_REGNO_P.
+	* config/m68k/m68k.c (m68k_legitimate_base_reg_p): Use
+	REGNO_OK_FOR_INDEX_NONSTRICT_P, REGNO_OK_FOR_BASE_NONSTRICT_P.
+
 2007-06-24  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/30563
