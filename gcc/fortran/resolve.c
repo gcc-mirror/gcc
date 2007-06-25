@@ -3224,11 +3224,16 @@ check_host_association (gfc_expr *e)
   locus temp_locus;
   gfc_expr *expr;
   int n;
+  bool retval = e->expr_type == EXPR_FUNCTION;
 
   if (e->symtree == NULL || e->symtree->n.sym == NULL)
-    return e->expr_type == EXPR_FUNCTION;
+    return retval;
 
   old_sym = e->symtree->n.sym;
+
+  if (old_sym->attr.use_assoc)
+    return retval;
+
   if (gfc_current_ns->parent
 	&& gfc_current_ns->parent->parent
 	&& old_sym->ns != gfc_current_ns)
@@ -3244,7 +3249,7 @@ check_host_association (gfc_expr *e)
 	  gfc_free_ref_list (e->ref);
 	  e->ref = NULL;
 
-	  if (e->expr_type == EXPR_FUNCTION)
+	  if (retval)
 	    {
 	      gfc_free_actual_arglist (e->value.function.actual);
 	      e->value.function.actual = NULL;
@@ -3271,7 +3276,7 @@ check_host_association (gfc_expr *e)
 	  gfc_current_locus = temp_locus;
 	}
     }
-
+  /* This might have changed!  */
   return e->expr_type == EXPR_FUNCTION;
 }
 
