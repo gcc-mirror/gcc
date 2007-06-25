@@ -1,6 +1,5 @@
 2007-06-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR fortran/32456
 	* gfortran.dg/secnds-1.f: Revise test to reduce random errors.
 	
 2007-06-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
