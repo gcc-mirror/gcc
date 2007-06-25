@@ -73,6 +73,8 @@ struct mode_data
   const char *file;		/* file and line of definition, */
   unsigned int line;		/* for error reporting */
   unsigned int counter;		/* Rank ordering of modes */
+  unsigned int ibit;		/* the number of integral bits */
+  unsigned int fbit;		/* the number of fractional bits */
 };
 
 static struct mode_data *modes[MAX_MODE_CLASS];
@@ -83,7 +85,7 @@ static const struct mode_data blank_mode = {
   0, "<unknown>", MAX_MODE_CLASS,
   -1U, -1U, -1U, -1U,
   0, 0, 0, 0, 0, 0,
-  "<unknown>", 0, 0
+  "<unknown>", 0, 0, 0, 0
 };
 
 static htab_t modes_by_name;
@@ -104,6 +106,8 @@ struct mode_adjust
 static struct mode_adjust *adj_bytesize;
 static struct mode_adjust *adj_alignment;
 static struct mode_adjust *adj_format;
+static struct mode_adjust *adj_ibit;
+static struct mode_adjust *adj_fbit;
 
 /* Mode class operations.  */
 static enum mode_class
@@ -126,6 +130,10 @@ vector_class (enum mode_class cl)
     {
     case MODE_INT: return MODE_VECTOR_INT;
     case MODE_FLOAT: return MODE_VECTOR_FLOAT;
+    case MODE_FRACT: return MODE_VECTOR_FRACT;
+    case MODE_UFRACT: return MODE_VECTOR_UFRACT;
+    case MODE_ACCUM: return MODE_VECTOR_ACCUM;
+    case MODE_UACCUM: return MODE_VECTOR_UACCUM;
     default:
       error ("no vector class for class %s", mode_class_names[cl]);
       return MODE_RANDOM;
@@ -200,7 +208,8 @@ static void ATTRIBUTE_UNUSED
 new_adjust (const char *name,
 	    struct mode_adjust **category, const char *catname,
 	    const char *adjustment,
-	    enum mode_class required_class,
+	    enum mode_class required_class_from,
+	    enum mode_class required_class_to,
 	    const char *file, unsigned int line)
 {
   struct mode_data *mode = find_mode (name);
@@ -214,10 +223,12 @@ new_adjust (const char *name,
       return;
     }
 
-  if (required_class != MODE_RANDOM && mode->cl != required_class)
+  if (required_class_from != MODE_RANDOM
+      && (mode->cl < required_class_from || mode->cl > required_class_to))
     {
-      error ("%s:%d: mode \"%s\" is not class %s",
-	     file, line, name, mode_class_names[required_class] + 5);
+      error ("%s:%d: mode \"%s\" is not among class {%s, %s}",
+	     file, line, name, mode_class_names[required_class_from] + 5,
+	     mode_class_names[required_class_to] + 5);
       return;
     }
   
@@ -327,11 +338,16 @@ complete_mode (struct mode_data *m)
     case MODE_INT:
     case MODE_FLOAT:
     case MODE_DECIMAL_FLOAT:
+    case MODE_FRACT:
+    case MODE_UFRACT:
+    case MODE_ACCUM:
+    case MODE_UACCUM:
       /* A scalar mode must have a byte size, may have a bit size,
 	 and must not have components.   A float mode must have a
          format.  */
       validate_mode (m, OPTIONAL, SET, UNSET, UNSET,
-		     m->cl != MODE_INT ? SET : UNSET);
+		     (m->cl == MODE_FLOAT || m->cl == MODE_DECIMAL_FLOAT)
+		     ? SET : UNSET);
 
       m->ncomponents = 1;
       m->component = 0;
@@ -361,6 +377,10 @@ complete_mode (struct mode_data *m)
 
     case MODE_VECTOR_INT:
     case MODE_VECTOR_FLOAT:
+    case MODE_VECTOR_FRACT:
+    case MODE_VECTOR_UFRACT:
+    case MODE_VECTOR_ACCUM:
+    case MODE_VECTOR_UACCUM:
       /* Vector modes should have a component and a number of components.  */
       validate_mode (m, UNSET, UNSET, SET, SET, UNSET);
       if (m->component->precision != (unsigned int)-1)
@@ -533,6 +553,35 @@ make_int_mode (const char *name,
   m->precision = precision;
 }
 
+#define FRACT_MODE(N, Y, F) \
+	make_fixed_point_mode (MODE_FRACT, #N, Y, 0, F, __FILE__, __LINE__)
+
+#define UFRACT_MODE(N, Y, F) \
+	make_fixed_point_mode (MODE_UFRACT, #N, Y, 0, F, __FILE__, __LINE__)
+
+#define ACCUM_MODE(N, Y, I, F) \
+	make_fixed_point_mode (MODE_ACCUM, #N, Y, I, F, __FILE__, __LINE__)
+
+#define UACCUM_MODE(N, Y, I, F) \
+	make_fixed_point_mode (MODE_UACCUM, #N, Y, I, F, __FILE__, __LINE__)
+
+/* Create a fixed-point mode by setting CL, NAME, BYTESIZE, IBIT, FBIT,
+   FILE, and LINE.  */
+
+static void
+make_fixed_point_mode (enum mode_class cl,
+		       const char *name,
+		       unsigned int bytesize,
+		       unsigned int ibit,
+		       unsigned int fbit,
+		       const char *file, unsigned int line)
+{
+  struct mode_data *m = new_mode (cl, name, file, line);
+  m->bytesize = bytesize;
+  m->ibit = ibit;
+  m->fbit = fbit;
+}
+
 #define FLOAT_MODE(N, Y, F)             FRACTIONAL_FLOAT_MODE (N, -1U, Y, F)
 #define FRACTIONAL_FLOAT_MODE(N, B, Y, F) \
   make_float_mode (#N, B, Y, #F, __FILE__, __LINE__)
@@ -658,12 +707,14 @@ make_vector_mode (enum mode_class bclass,
 }
 
 /* Adjustability.  */
-#define _ADD_ADJUST(A, M, X, C) \
-  new_adjust (#M, &adj_##A, #A, #X, MODE_##C, __FILE__, __LINE__)
+#define _ADD_ADJUST(A, M, X, C1, C2) \
+  new_adjust (#M, &adj_##A, #A, #X, MODE_##C1, MODE_##C2, __FILE__, __LINE__)
 
-#define ADJUST_BYTESIZE(M, X)  _ADD_ADJUST(bytesize, M, X, RANDOM)
-#define ADJUST_ALIGNMENT(M, X) _ADD_ADJUST(alignment, M, X, RANDOM)
-#define ADJUST_FLOAT_FORMAT(M, X)    _ADD_ADJUST(format, M, X, FLOAT)
+#define ADJUST_BYTESIZE(M, X)  _ADD_ADJUST(bytesize, M, X, RANDOM, RANDOM)
+#define ADJUST_ALIGNMENT(M, X) _ADD_ADJUST(alignment, M, X, RANDOM, RANDOM)
+#define ADJUST_FLOAT_FORMAT(M, X)    _ADD_ADJUST(format, M, X, FLOAT, FLOAT)
+#define ADJUST_IBIT(M, X)  _ADD_ADJUST(ibit, M, X, ACCUM, UACCUM)
+#define ADJUST_FBIT(M, X)  _ADD_ADJUST(fbit, M, X, FRACT, UACCUM)
 
 static void
 create_modes (void)
@@ -861,6 +912,8 @@ enum machine_mode\n{");
 #if 0 /* disabled for backward compatibility, temporary */
   printf ("#define CONST_REAL_FORMAT_FOR_MODE%s\n", adj_format ? "" :" const");
 #endif
+  printf ("#define CONST_MODE_IBIT%s\n", adj_ibit ? "" : " const");
+  printf ("#define CONST_MODE_FBIT%s\n", adj_fbit ? "" : " const");
   puts ("\
 \n\
 #endif /* insn-modes.h */");
@@ -1173,6 +1226,10 @@ emit_mode_adjustments (void)
 
 	    case MODE_VECTOR_INT:
 	    case MODE_VECTOR_FLOAT:
+	    case MODE_VECTOR_FRACT:
+	    case MODE_VECTOR_UFRACT:
+	    case MODE_VECTOR_ACCUM:
+	    case MODE_VECTOR_UACCUM:
 	      printf ("  mode_size[%smode] = %d*s;\n",
 		      m->name, m->ncomponents);
 	      printf ("  mode_base_align[%smode] = (%d*s) & (~(%d*s)+1);\n",
@@ -1207,6 +1264,10 @@ emit_mode_adjustments (void)
 
 	    case MODE_VECTOR_INT:
 	    case MODE_VECTOR_FLOAT:
+	    case MODE_VECTOR_FRACT:
+	    case MODE_VECTOR_UFRACT:
+	    case MODE_VECTOR_ACCUM:
+	    case MODE_VECTOR_UACCUM:
 	      printf ("  mode_base_align[%smode] = %d*s;\n",
 		      m->name, m->ncomponents);
 	      break;
@@ -1219,6 +1280,22 @@ emit_mode_adjustments (void)
 	    }
 	}
     }
+
+  /* Ibit adjustments don't have to propagate.  */
+  for (a = adj_ibit; a; a = a->next)
+    {
+      printf ("\n  /* %s:%d */\n  s = %s;\n",
+	      a->file, a->line, a->adjustment);
+      printf ("  mode_ibit[%smode] = s;\n", a->mode->name);
+    }
+
+  /* Fbit adjustments don't have to propagate.  */
+  for (a = adj_fbit; a; a = a->next)
+    {
+      printf ("\n  /* %s:%d */\n  s = %s;\n",
+	      a->file, a->line, a->adjustment);
+      printf ("  mode_fbit[%smode] = s;\n", a->mode->name);
+    }
       
   /* Real mode formats don't have to propagate anywhere.  */
   for (a = adj_format; a; a = a->next)
@@ -1227,6 +1304,43 @@ emit_mode_adjustments (void)
 
   puts ("}");
 }
+
+/* Emit ibit for all modes.  */
+
+static void
+emit_mode_ibit (void)
+{
+  int c;
+  struct mode_data *m;
+
+  print_maybe_const_decl ("%sunsigned char",
+			  "mode_ibit", "NUM_MACHINE_MODES",
+			  ibit);
+
+  for_all_modes (c, m)
+    tagged_printf ("%u", m->ibit, m->name);
+
+  print_closer ();
+}
+
+/* Emit fbit for all modes.  */
+
+static void
+emit_mode_fbit (void)
+{
+  int c;
+  struct mode_data *m;
+
+  print_maybe_const_decl ("%sunsigned char",
+			  "mode_fbit", "NUM_MACHINE_MODES",
+			  fbit);
+
+  for_all_modes (c, m)
+    tagged_printf ("%u", m->fbit, m->name);
+
+  print_closer ();
+}
+
 
 static void
 emit_insn_modes_c (void)
@@ -1244,6 +1358,8 @@ emit_insn_modes_c (void)
   emit_class_narrowest_mode ();
   emit_real_format_for_mode ();
   emit_mode_adjustments ();
+  emit_mode_ibit ();
+  emit_mode_fbit ();
 }
 
 static void

@@ -1135,6 +1135,96 @@ floating point number all 128 of whose bits are meaningful.
 all 128 of whose bits are meaningful.  One common use is the
 IEEE quad-precision format.
 
+@findex QQmode
+@item QQmode
+``Quarter-Fractional'' mode represents a single byte treated as a signed
+fractional number.  The default format is ``s.7''.
+
+@findex HQmode
+@item HQmode
+``Half-Fractional'' mode represents a two-byte signed fractional number.
+The default format is ``s.15''.
+
+@findex SQmode
+@item SQmode
+``Single Fractional'' mode represents a four-byte signed fractional number.
+The default format is ``s.31''.
+
+@findex DQmode
+@item DQmode
+``Double Fractional'' mode represents an eight-byte signed fractional number.
+The default format is ``s.63''.
+
+@findex TQmode
+@item TQmode
+``Tetra Fractional'' mode represents a sixteen-byte signed fractional number.
+The default format is ``s.127''.
+
+@findex UQQmode
+@item UQQmode
+``Unsigned Quarter-Fractional'' mode represents a single byte treated as an
+unsigned fractional number.  The default format is ``.8''.
+
+@findex UHQmode
+@item UHQmode
+``Unsigned Half-Fractional'' mode represents a two-byte unsigned fractional
+number.  The default format is ``.16''.
+
+@findex USQmode
+@item USQmode
+``Unsigned Single Fractional'' mode represents a four-byte unsigned fractional
+number.  The default format is ``.32''.
+
+@findex UDQmode
+@item UDQmode
+``Unsigned Double Fractional'' mode represents an eight-byte unsigned
+fractional number.  The default format is ``.64''.
+
+@findex UTQmode
+@item UTQmode
+``Unsigned Tetra Fractional'' mode represents a sixteen-byte unsigned
+fractional number.  The default format is ``.128''.
+
+@findex HAmode
+@item HAmode
+``Half-Accumulator'' mode represents a two-byte signed accumulator.
+The default format is ``s8.7''.
+
+@findex SAmode
+@item SAmode
+``Single Accumulator'' mode represents a four-byte signed accumulator.
+The default format is ``s16.15''.
+
+@findex DAmode
+@item DAmode
+``Double Accumulator'' mode represents an eight-byte signed accumulator.
+The default format is ``s32.31''.
+
+@findex TAmode
+@item TAmode
+``Tetra Accumulator'' mode represents a sixteen-byte signed accumulator.
+The default format is ``s64.63''.
+
+@findex UHAmode
+@item UHAmode
+``Unsigned Half-Accumulator'' mode represents a two-byte unsigned accumulator.
+The default format is ``8.8''.
+
+@findex USAmode
+@item USAmode
+``Unsigned Single Accumulator'' mode represents a four-byte unsigned
+accumulator.  The default format is ``16.16''.
+
+@findex UDAmode
+@item UDAmode
+``Unsigned Double Accumulator'' mode represents an eight-byte unsigned
+accumulator.  The default format is ``32.32''.
+
+@findex UTAmode
+@item UTAmode
+``Unsigned Tetra Accumulator'' mode represents a sixteen-byte unsigned
+accumulator.  The default format is ``64.64''.
+
 @findex CCmode
 @item CCmode
 ``Condition Code'' mode represents the value of a condition code, which
@@ -1226,6 +1316,26 @@ Floating point modes.  By default these are @code{QFmode},
 Decimal floating point modes.  By default these are @code{SDmode},
 @code{DDmode} and @code{TDmode}.
 
+@findex MODE_FRACT
+@item MODE_FRACT
+Signed fractional modes.  By default these are @code{QQmode}, @code{HQmode},
+@code{SQmode}, @code{DQmode} and @code{TQmode}.
+
+@findex MODE_UFRACT
+@item MODE_UFRACT
+Unsigned fractional modes.  By default these are @code{UQQmode}, @code{UHQmode},
+@code{USQmode}, @code{UDQmode} and @code{UTQmode}.
+
+@findex MODE_ACCUM
+@item MODE_ACCUM
+Signed accumulator modes.  By default these are @code{HAmode},
+@code{SAmode}, @code{DAmode} and @code{TAmode}.
+
+@findex MODE_UACCUM
+@item MODE_UACCUM
+Unsigned accumulator modes.  By default these are @code{UHAmode},
+@code{USAmode}, @code{UDAmode} and @code{UTAmode}.
+
 @findex MODE_COMPLEX_INT
 @item MODE_COMPLEX_INT
 Complex integer modes.  (These are not currently implemented).
@@ -1292,6 +1402,14 @@ Returns the size in bytes of a datum of mode @var{m}.
 @findex GET_MODE_BITSIZE
 @item GET_MODE_BITSIZE (@var{m})
 Returns the size in bits of a datum of mode @var{m}.
+
+@findex GET_MODE_IBIT
+@item GET_MODE_IBIT (@var{m})
+Returns the number of integral bits of a datum of fixed-point mode @var{m}.
+
+@findex GET_MODE_FBIT
+@item GET_MODE_FBIT (@var{m})
+Returns the number of fractional bits of a datum of fixed-point mode @var{m}.
 
 @findex GET_MODE_MASK
 @item GET_MODE_MASK (@var{m})

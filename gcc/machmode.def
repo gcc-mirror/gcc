@@ -96,6 +96,24 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 	storage, but with only PRECISION significant bits, using
 	floating point format FORMAT.
 
+     FRACT_MODE (MODE, BYTESIZE, FBIT);
+	declares MODE to be of class FRACT and BYTESIZE bytes wide
+	with FBIT fractional bits.  There may be padding bits.
+
+     UFRACT_MODE (MODE, BYTESIZE, FBIT);
+	declares MODE to be of class UFRACT and BYTESIZE bytes wide
+	with FBIT fractional bits.  There may be padding bits.
+
+     ACCUM_MODE (MODE, BYTESIZE, IBIT, FBIT);
+	declares MODE to be of class ACCUM and BYTESIZE bytes wide
+	with IBIT integral bits and FBIT fractional bits.
+	There may be padding bits.
+
+     UACCUM_MODE (MODE, BYTESIZE, FBIT);
+	declares MODE to be of class UACCUM and BYTESIZE bytes wide
+	with IBIT integral bits and FBIT fractional bits.
+	There may be padding bits.
+
      RESET_FLOAT_FORMAT (MODE, FORMAT);
 	changes the format of MODE, which must be class FLOAT,
 	to FORMAT.  Use in an ARCH-modes.def to reset the format
@@ -133,10 +151,12 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
      ADJUST_BYTESIZE (MODE, EXPR);
      ADJUST_ALIGNMENT (MODE, EXPR);
      ADJUST_FLOAT_FORMAT (MODE, EXPR);
-        Arrange for the byte size, alignment, or floating point format
-	of MODE to be adjustable at run time.  EXPR will be executed
+     ADJUST_IBIT (MODE, EXPR);
+     ADJUST_FBIT (MODE, EXPR);
+	Arrange for the byte size, alignment, floating point format, ibit,
+	or fbit of MODE to be adjustable at run time.  EXPR will be executed
 	once after processing all command line options, and should
-	evaluate to the desired byte size, alignment, or format.
+	evaluate to the desired byte size, alignment, format, ibit or fbit.
 
 	Unlike a FORMAT argument, if you are adjusting a float format
 	you must put an & in front of the name of each format structure.
@@ -180,6 +200,29 @@ FLOAT_MODE (DF, 8, ieee_double_format);
 /* Basic CC modes.
    FIXME define this only for targets that need it.  */
 CC_MODE (CC);
+
+/* Fixed-point modes.  */
+FRACT_MODE (QQ, 1, 7); /* s.7 */
+FRACT_MODE (HQ, 2, 15); /* s.15 */
+FRACT_MODE (SQ, 4, 31); /* s.31 */
+FRACT_MODE (DQ, 8, 63); /* s.63 */
+FRACT_MODE (TQ, 16, 127); /* s.127 */
+
+UFRACT_MODE (UQQ, 1, 8); /* .8 */
+UFRACT_MODE (UHQ, 2, 16); /* .16 */
+UFRACT_MODE (USQ, 4, 32); /* .32 */
+UFRACT_MODE (UDQ, 8, 64); /* .64 */
+UFRACT_MODE (UTQ, 16, 128); /* .128 */
+
+ACCUM_MODE (HA, 2, 8, 7); /* s8.7 */
+ACCUM_MODE (SA, 4, 16, 15); /* s16.15 */
+ACCUM_MODE (DA, 8, 32, 31); /* s32.31 */
+ACCUM_MODE (TA, 16, 64, 63); /* s64.63 */
+
+UACCUM_MODE (UHA, 2, 8, 8); /* 8.8 */
+UACCUM_MODE (USA, 4, 16, 16); /* 16.16 */
+UACCUM_MODE (UDA, 8, 32, 32); /* 32.32 */
+UACCUM_MODE (UTA, 16, 64, 64); /* 64.64 */
 
 /* Allow the target to specify additional modes of various kinds.  */
 #if HAVE_EXTRA_MODES
