@@ -289,13 +289,13 @@ cgraph_mark_inline (struct cgraph_edge *edge)
   struct cgraph_node *what = edge->callee;
   struct cgraph_edge *e, *next;
 
+  gcc_assert (!CALL_CANNOT_INLINE_P (edge->call_stmt));
   /* Look for all calls, mark them inline and clone recursively
      all inlined functions.  */
   for (e = what->callers; e; e = next)
     {
       next = e->next_caller;
-      if (e->caller == to && e->inline_failed
-	  && !CALL_CANNOT_INLINE_P (e->call_stmt))
+      if (e->caller == to && e->inline_failed)
 	{
           cgraph_mark_inline_edge (e, true);
 	  if (e == edge)
@@ -884,7 +884,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	}
       gcc_assert (edge->aux);
       edge->aux = NULL;
-      if (!edge->inline_failed || CALL_CANNOT_INLINE_P (edge->call_stmt))
+      if (!edge->inline_failed)
 	continue;
 
       /* When not having profile info ready we don't weight by any way the
@@ -950,8 +950,9 @@ cgraph_decide_inlining_of_small_functions (void)
       else
 	{
 	  struct cgraph_node *callee;
-	  if (!cgraph_check_inline_limits (edge->caller, edge->callee,
-					   &edge->inline_failed, true))
+	  if (CALL_CANNOT_INLINE_P (edge->call_stmt)
+	      || !cgraph_check_inline_limits (edge->caller, edge->callee,
+					      &edge->inline_failed, true))
 	    {
 	      if (dump_file)
 		fprintf (dump_file, " Not inlining into %s:%s.\n",
@@ -1116,6 +1117,7 @@ cgraph_decide_inlining (void)
 
 	  if (node->callers && !node->callers->next_caller && !node->needed
 	      && node->local.inlinable && node->callers->inline_failed
+	      && !CALL_CANNOT_INLINE_P (node->callers->call_stmt)
 	      && !DECL_EXTERNAL (node->decl) && !DECL_COMDAT (node->decl))
 	    {
 	      if (dump_file)
@@ -1278,6 +1280,8 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
       if (!e->callee->local.disregard_inline_limits
 	  && (mode != INLINE_ALL || !e->callee->local.inlinable))
 	continue;
+      if (CALL_CANNOT_INLINE_P (e->call_stmt))
+	continue;
       /* When the edge is already inlined, we just need to recurse into
 	 it in order to fully flatten the leaves.  */
       if (!e->inline_failed && mode == INLINE_ALL)
@@ -1375,7 +1379,8 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
 	    continue;
 	  }
 	if (!cgraph_check_inline_limits (node, e->callee, &e->inline_failed,
-				        false))
+				        false)
+	    || CALL_CANNOT_INLINE_P (e->call_stmt))
 	  {
 	    if (dump_file)
 	      {

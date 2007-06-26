@@ -1,3 +1,11 @@
+2007-06-25  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (cgraph_mark_inline): Assert that we never inline
+	uninlinable call.
+	(cgraph_decide_inlining_of_small_function, cgraph_decide_inlining,
+	cgraph_decide_inlining_incrementally): Move uninlinability checks to
+	places other call site specific checks are performed.
+
 2007-06-25  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/32421
