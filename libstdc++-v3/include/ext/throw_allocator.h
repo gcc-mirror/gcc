@@ -62,6 +62,7 @@
 #include <stdexcept>
 #include <utility>
 #include <tr1/random>
+#include <bits/functexcept.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -81,9 +82,19 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     std::tr1::mt19937 _M_generator;
   };
 
-
   struct forced_exception_error : public std::exception
   { };
+
+  // Substitute for concurrence_error object in the case of -fno-exceptions.
+  inline void
+  __throw_forced_exception_error()
+  {
+#if __EXCEPTIONS
+    throw forced_exception_error();
+#else
+    __builtin_abort();
+#endif
+  }
 
   class throw_allocator_base
   {
@@ -325,7 +336,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	error += '\n';
 	print_to_string(error, make_entry(p, size));
 	print_to_string(error, *found_it);
-	throw std::logic_error(error);
+	std::__throw_logic_error(error.c_str());
       }
     _S_map.insert(make_entry(p, size));
   }
@@ -351,7 +362,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	error += "null erase!";
 	error += '\n';
 	print_to_string(error, make_entry(p, size));
-	throw std::logic_error(error);
+	std::__throw_logic_error(error.c_str());
       }
 
     if (found_it->second.second != size)
@@ -361,7 +372,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	error += '\n';
 	print_to_string(error, make_entry(p, size));
 	print_to_string(error, *found_it);
-	throw std::logic_error(error);
+	std::__throw_logic_error(error.c_str());
       }
   }
 
@@ -382,7 +393,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	std::string error("throw_allocator_base::check_allocated by label ");
 	error += '\n';
 	error += found;
-	throw std::logic_error(error);
+	std::__throw_logic_error(error.c_str());
       }	
   }
 
@@ -390,7 +401,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   throw_allocator_base::throw_conditionally()
   {
     if (_S_g.get_prob() < _S_throw_prob)
-      throw forced_exception_error();
+      __throw_forced_exception_error();
   }
 
   void

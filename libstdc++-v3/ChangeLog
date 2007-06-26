@@ -1,3 +1,15 @@
+2007-06-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/throw_allocator.h: Fixes for -fno-exceptions.
+	* testsuite/util/testsuite_shared.cc: Same.
+	* testsuite/util/io/illegal_input_error.hpp: Same.
+	* testsuite/util/io/verified_cmd_line_input.cc: Same.
+
+	* libsupc++/typeinfo (type_info): Correct comment formatting,
+	clarify member access and public interface.
+	* libsupc++/exception: Less compressed comments.
+	* libsupc++/new: Same.
+
 2007-06-08  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/install.html: Adjust consistently with libstdc++/31717.
