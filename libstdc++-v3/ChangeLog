@@ -1,5 +1,35 @@
 2007-06-26  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/util/testsuite_api.h: New.
+	* testsuite/27_io/ios_base/failure: Add.
+	* testsuite/27_io/ios_base/failure/cons_virtual_derivation.cc: New.
+	* testsuite/27_io/ios_base/failure/what-1.cc: Same.
+	* testsuite/27_io/ios_base/failure/what-2.cc: Same.
+	* testsuite/27_io/ios_base/failure/what-big.cc: Same.
+	* testsuite/27_io/ios_base/failure/what-3.cc: Same.
+	* testsuite/19_diagnostics/logic_error/
+	cons_virtual_derivation.cc: Same.
+	* testsuite/19_diagnostics/runtime_error/
+	cons_virtual_derivation.cc: Same.
+	* testsuite/18_support/bad_alloc/cons_virtual_derivation.cc: Same.
+	* testsuite/18_support/bad_cast/cons_virtual_derivation.cc: Same.
+	* testsuite/18_support/bad_exception/cons_virtual_derivation.cc: Same.
+	* testsuite/18_support/bad_typeid/cons_virtual_derivation.cc: Same.
+	* testsuite/ext/concurrence_lock_error: New.
+	* testsuite/ext/concurrence_lock_error/
+	cons_virtual_derivation.cc: Same.
+	* testsuite/ext/forced_exception_error: New.
+	* testsuite/ext/forced_exception_error/
+	cons_virtual_derivation.cc: Same.
+	* testsuite/ext/concurrence_unlock_error: New.
+	* testsuite/ext/concurrence_unlock_error/
+	cons_virtual_derivation.cc: Same.
+	* testsuite/20_util/function_objects/bad_function_call: New.
+	* testsuite/20_util/function_objects/bad_function_call/
+	cons_virtual_derivation.cc: Same.
+	
+2007-06-26  Benjamin Kosnik  <bkoz@redhat.com>	
+
 	* include/ext/throw_allocator.h: Fixes for -fno-exceptions.
 	* testsuite/util/testsuite_shared.cc: Same.
 	* testsuite/util/io/illegal_input_error.hpp: Same.
