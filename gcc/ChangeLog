@@ -1,3 +1,7 @@
+2007-06-26  Steve Ellcey  <sje@cup.hp.com>
+
+	* builtins.c (expand_builtin_next_arg): Change Pmode to ptr_mode.
+
 2007-06-25  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (cgraph_mark_inline): Assert that we never inline
