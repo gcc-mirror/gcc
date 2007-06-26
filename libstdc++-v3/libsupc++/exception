@@ -58,6 +58,7 @@ namespace std
   public:
     exception() throw() { }
     virtual ~exception() throw();
+
     /** Returns a C-style character string describing the general cause
      *  of the current error.  */
     virtual const char* what() const throw();
@@ -69,26 +70,31 @@ namespace std
   {
   public:
     bad_exception() throw() { }
+
     // This declaration is not useless:
     // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
     virtual ~bad_exception() throw();
+
     // See comment in eh_exception.cc.
     virtual const char* what() const throw();
   };
 
   /// If you write a replacement %terminate handler, it must be of this type.
   typedef void (*terminate_handler) ();
+
   /// If you write a replacement %unexpected handler, it must be of this type.
   typedef void (*unexpected_handler) ();
 
   /// Takes a new handler function as an argument, returns the old function.
   terminate_handler set_terminate(terminate_handler) throw();
+
   /** The runtime will call this function if %exception handling must be
    *  abandoned for any reason.  It can also be called by the user.  */
   void terminate() __attribute__ ((__noreturn__));
 
   /// Takes a new handler function as an argument, returns the old function.
   unexpected_handler set_unexpected(unexpected_handler) throw();
+
   /** The runtime will call this function if an %exception is thrown which
    *  violates the function's %exception specification.  */
   void unexpected() __attribute__ ((__noreturn__));

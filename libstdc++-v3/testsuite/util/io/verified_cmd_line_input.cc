@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -48,84 +48,69 @@
 #include <limits.h>
 #include <utility>
 #include <stdlib.h>
+#include <bits/functexcept.h>
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     void
     verify_argc(size_t given, size_t required)
     {
       if (given != required)
-        throw illegal_input_error();
+	__throw_illegal_input_error();
     }
 
     void
     verify_prob(double prob)
     {
       if (prob < 0 || prob > 1)
-        throw illegal_input_error();
+        __throw_illegal_input_error();
     }
 
     std::string
     get_cmd_line_str(int argc, char* a_p_argv[], int argn)
     {
       if (argc <= argn)
-        throw illegal_input_error();
-
+        __throw_illegal_input_error();
       const std::string ret(a_p_argv[argn]);
-
-      return (ret);
+      return ret;
     }
 
     double
     get_cmd_line_prob(int argc, char* a_p_argv[], int argn)
     {
       if (argc <= argn)
-        throw illegal_input_error();
-
+        __throw_illegal_input_error();
       const double ret = ::atof(a_p_argv[argn]);
-
       verify_prob(ret);
-
-      return (ret);
+      return ret;
     }
 
     size_t
     get_cmd_line_size(int argc, char* a_p_argv[], int argn)
     {
       if (argc <= argn)
-        throw illegal_input_error();
-
+        __throw_illegal_input_error();
       const size_t ret = static_cast<size_t>(::atoi(a_p_argv[argn]));
-
-      return (ret);
+      return ret;
     }
 
     bool
     get_cmd_line_bool(int argc, char* a_p_argv[], int argn)
     {
       if (argc <= argn)
-        throw illegal_input_error();
+        __throw_illegal_input_error();
 
       const std::string opt(a_p_argv[argn]);
-
       if (opt.size() != 1)
-        throw illegal_input_error();
-
+        __throw_illegal_input_error();
       if (opt[0] == 't')
-        return (true);
-
+        return true;
       if (opt[0] == 'f')
-        return (false);
-
-      throw illegal_input_error();
-
-      return (false);
+        return false;
+      __throw_illegal_input_error();
+      return false;
     }
-
   } // namespace test
-
 } // namespace pb_ds
