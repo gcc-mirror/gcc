@@ -59,19 +59,25 @@ namespace std
   {
   public:
     bad_alloc() throw() { }
+
     // This declaration is not useless:
     // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
     virtual ~bad_alloc() throw();
+
     // See comment in eh_exception.cc.
     virtual const char* what() const throw();
   };
 
   struct nothrow_t { };
+
   extern const nothrow_t nothrow;
+
   /** If you write your own error handler to be called by @c new, it must
    *  be of this type.  */
   typedef void (*new_handler)();
-  /// Takes a replacement handler as the argument, returns the previous handler.
+
+  /// Takes a replacement handler as the argument, returns the
+  /// previous handler.
   new_handler set_new_handler(new_handler) throw();
 } // namespace std
 

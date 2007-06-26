@@ -1,4 +1,4 @@
-// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,6 +21,7 @@
 #include <iostream>
 #include <sstream>
 #include <ext/mt_allocator.h>
+#include <bits/functexcept.h>
 
 // libstdc++/22309
 extern "C" void
@@ -43,7 +44,7 @@ try_throw_exception()
 {
   try
     {
-      throw std::bad_exception();
+      std::__throw_bad_exception();
     }
   catch (const std::exception& e)
     { }
@@ -68,5 +69,5 @@ try_function_random_fail()
     }
 
   // Randomly throw. See if other threads cleanup.
-  throw std::bad_exception();
+  std::__throw_bad_exception();
 }
