@@ -4586,7 +4586,7 @@ expand_builtin_next_arg (void)
 {
   /* Checking arguments is already done in fold_builtin_next_arg
      that must be called before this function.  */
-  return expand_binop (Pmode, add_optab,
+  return expand_binop (ptr_mode, add_optab,
 		       current_function_internal_arg_pointer,
 		       current_function_arg_offset_rtx,
 		       NULL_RTX, 0, OPTAB_LIB_WIDEN);
