@@ -1,3 +1,8 @@
+2007-06-20  Mike Stump  <mrs@apple.com>
+
+	* acx.m4 (NCN_STRICT_CHECK_TARGET_TOOLS): Fix incremental builds.
+	(ACX_HAVE_GCC_FOR_TARGET): Likewise.
+
 2007-06-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	* acx.m4 (ACX_CHECK_PROG_VER): Remove duplicate lines.
