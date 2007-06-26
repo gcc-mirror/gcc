@@ -1,3 +1,8 @@
+2007-06-26  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* be.po, ca.po, da.po, de.po, el.po, es.po, fr.po, ja.po, nl.po,
+	rw.po, sv.po, tr.po, vi.po, zh_CN.po, zh_TW.po: Update.
+
 2007-05-13  Release Manager
 
 	* GCC 4.2.0 released.
