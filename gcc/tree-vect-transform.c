@@ -2968,6 +2968,12 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
   operation = GIMPLE_STMT_OPERAND (stmt, 1);
   code = TREE_CODE (operation);
+
+  /* For pointer addition, we should use the normal plus for
+     the vector addition.  */
+  if (code == POINTER_PLUS_EXPR)
+    code = PLUS_EXPR;
+
   optab = optab_for_tree_code (code, vectype);
 
   /* Support only unary or binary operations.  */
