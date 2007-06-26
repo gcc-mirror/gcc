@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.1.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2006-05-24 16:19-0700\n"
-"PO-Revision-Date: 2007-04-03 09:58+0200\n"
+"PO-Revision-Date: 2007-04-27 23:54+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -310,11 +310,11 @@ msgstr "vektor initierad från strängkonstant inom parentes"
 #: c-typeck.c:4458 cp/typeck2.c:672
 #, gcc-internal-format
 msgid "char-array initialized from wide string"
-msgstr "char-vektor initierad från vid sträng"
+msgstr "char-vektor initierad från bred sträng"
 
 #: c-typeck.c:4463
 msgid "wchar_t-array initialized from non-wide string"
-msgstr "wchar_t-vektor initierad från icke-vid sträng"
+msgstr "wchar_t-vektor initierad från icke-bred sträng"
 
 #: c-typeck.c:4481 cp/typeck2.c:692
 #, gcc-internal-format
@@ -2177,7 +2177,7 @@ msgstr "Den maximala antalet postfält (i byte) vid vilken GCC använder elementvi
 
 #: params.def:78
 msgid "The threshold ratio between instantiated fields and the total structure size"
-msgstr "Tröskelförhållandet mellan instantierade fält och den totala poststorleken"
+msgstr "Tröskelförhållandet mellan instansierade fält och den totala poststorleken"
 
 #: params.def:95
 msgid "The maximum number of instructions in a single function eligible for inlining"
@@ -12606,11 +12606,11 @@ msgstr "Exportera funktioner även om de kan inline:as"
 
 #: c.opt:558
 msgid "Emit implicit instantiations of inline templates"
-msgstr "Skapa implicita instantieringar av inline:ade mallar"
+msgstr "Skapa implicita instansieringar av inline:ade mallar"
 
 #: c.opt:562
 msgid "Emit implicit instantiations of templates"
-msgstr "Skapa implicita instantieringar av mallar"
+msgstr "Skapa implicita instansieringar av mallar"
 
 #: c.opt:566
 msgid "Inject friend functions into enclosing namespace"
@@ -12742,7 +12742,7 @@ msgstr "Mata ut common-liknande symboler som svaga symboler"
 
 #: c.opt:730
 msgid "Convert all wide strings and character constants to character set <cset>"
-msgstr "Konvertera alla vida strängar och teckenkonstanter till teckenuppsättningen <tknst>"
+msgstr "Konvertera alla breda strängar och teckenkonstanter till teckenuppsättningen <tknst>"
 
 #: c.opt:734
 msgid "Generate a #line directive pointing at the current working directory"
@@ -14603,7 +14603,7 @@ msgstr "oanvänd variabel %q+D"
 #: c-decl.c:816
 #, gcc-internal-format
 msgid "type of array %q+D completed incompatibly with implicit initialization"
-msgstr "typen på vektor %q+D kompletterade okompatibelt med implicit initiering"
+msgstr "den kompletterade typen på vektor %q+D är okompatibel med implicit initiering"
 
 #: c-decl.c:1050
 #, gcc-internal-format
@@ -14635,7 +14635,7 @@ msgstr "prototypen för %q+D deklarerar argument %d med inkompatibel typ"
 #: c-decl.c:1120
 #, gcc-internal-format
 msgid "prototype for %q+D follows non-prototype definition"
-msgstr "prototyp för %q+D följer på en definition som inte är en prototyp"
+msgstr "prototyp för %q+D följer på en icke-prototypdefinition"
 
 #: c-decl.c:1135
 #, gcc-internal-format
@@ -14764,7 +14764,7 @@ msgstr "%q+D är deklarerad inline efter sin definition"
 #: c-decl.c:1537
 #, gcc-internal-format
 msgid "redefinition of parameter %q+D"
-msgstr "omdefiniering avparametern %q+D"
+msgstr "omdefiniering av parametern %q+D"
 
 #: c-decl.c:1564
 #, gcc-internal-format
@@ -14786,7 +14786,7 @@ msgstr "deklaration av %q+D skuggar en parameter"
 msgid "declaration of %q+D shadows a global declaration"
 msgstr "deklaration av %q+D skuggar en global deklaration"
 
-# local, det kan troligen vara både lokal variabel och lokal funktionsdeklartion
+# local, det kan vara både lokal variabel och lokal funktionsdeklartion
 #: c-decl.c:1931
 #, gcc-internal-format
 msgid "declaration of %q+D shadows a previous local"
@@ -14861,7 +14861,7 @@ msgstr "%Jhopp in i satsuttryck"
 #: c-decl.c:2564
 #, gcc-internal-format
 msgid "%Jjump into scope of identifier with variably modified type"
-msgstr "%Jhopp in i räckvidd för identifierare med variabelt modifierad typ"
+msgstr "%Jhopp in i räckvidd för identifierare med variabel typ"
 
 #: c-decl.c:2579
 #, gcc-internal-format
@@ -14931,7 +14931,7 @@ msgstr "tom deklaration"
 #: c-decl.c:3029
 #, gcc-internal-format
 msgid "ISO C90 does not support %<static%> or type qualifiers in parameter array declarators"
-msgstr "ISO C90 stödjer inte %<static%> eller typkvalificerare i parametervektordelklarerare"
+msgstr "ISO C90 stödjer inte %<static%> eller typkvalificerare i parametervektordeklarerare"
 
 #: c-decl.c:3032
 #, gcc-internal-format
@@ -15417,7 +15417,7 @@ msgstr "posten har inga medlemmar"
 #: c-decl.c:5392
 #, gcc-internal-format
 msgid "%Jflexible array member in union"
-msgstr "%Jflexibel vektormedem i union"
+msgstr "%Jflexibel vektormedlem i union"
 
 #: c-decl.c:5397
 #, gcc-internal-format
@@ -15628,7 +15628,7 @@ msgstr "argument %qD stämmer inte med prototypen"
 #: c-decl.c:6590 cp/decl.c:10962
 #, gcc-internal-format
 msgid "no return statement in function returning non-void"
-msgstr "ingen return i funktion som returnerar icke-void"
+msgstr "ingen retursats i funktion som returnerar icke-void"
 
 #: c-decl.c:6599
 #, gcc-internal-format
@@ -15641,7 +15641,7 @@ msgstr "denna funktion kan returnera med eller utan ett värde"
 #: c-decl.c:6692
 #, gcc-internal-format
 msgid "%<for%> loop initial declaration used outside C99 mode"
-msgstr "%<for%>-snurra med startdeklaration använd utanför C99-läge"
+msgstr "%<for%>-slinga med startdeklaration använd utanför C99-läge"
 
 #: c-decl.c:6721
 #, gcc-internal-format
@@ -15796,7 +15796,7 @@ msgstr "både %<unsigned%> och %<double%> i deklarationsspecificerare"
 #: c-decl.c:7161
 #, gcc-internal-format
 msgid "ISO C90 does not support complex types"
-msgstr "ISO C90 stödjer inte typen complex"
+msgstr "ISO C90 stödjer inte komplexa typen"
 
 #: c-decl.c:7163 c-decl.c:7204
 #, gcc-internal-format
@@ -15871,7 +15871,7 @@ msgstr "%q+F är använd men inte definierad"
 #: c-format.c:97 c-format.c:206
 #, gcc-internal-format
 msgid "format string has invalid operand number"
-msgstr "formatsträng har ogiltigt operandenummer"
+msgstr "formatsträng har ogiltigt operandnummer"
 
 #: c-format.c:114
 #, gcc-internal-format
@@ -15971,7 +15971,7 @@ msgstr "%s-formatsträng med längden noll"
 #: c-format.c:1253
 #, gcc-internal-format
 msgid "format is a wide character string"
-msgstr "formatet är en sträng vida tecken"
+msgstr "formatet är en sträng breda tecken"
 
 #: c-format.c:1256
 #, gcc-internal-format
@@ -16022,7 +16022,7 @@ msgstr "tom precision i %s-format"
 #: c-format.c:1758
 #, fuzzy, gcc-internal-format
 msgid "%s does not support the %qs %s length modifier"
-msgstr "%s stödjer inte längdmodifieraren %qs %s"
+msgstr "%1$s stödjer inte %3$s-längdmodifieraren %2$qs"
 
 #: c-format.c:1808
 #, gcc-internal-format
@@ -16102,7 +16102,7 @@ msgstr "%<%%%c%> ger bara de sista två siffrorna i årtalet"
 #: c-format.c:1952
 #, gcc-internal-format
 msgid "no closing %<]%> for %<%%[%> format"
-msgstr "ingen avslutande %<}%> till %<%%[%>-format"
+msgstr "ingen avslutande %<]%> till %<%%[%>-format"
 
 #: c-format.c:1966
 #, gcc-internal-format
@@ -16537,7 +16537,7 @@ msgstr "deklarationsspecificerare eller %<...%> förväntades"
 #: c-parser.c:2587
 #, gcc-internal-format
 msgid "wide string literal in %<asm%>"
-msgstr "vid strängliteral i %<asm%>"
+msgstr "bred strängliteral i %<asm%>"
 
 #: c-parser.c:2593
 #, gcc-internal-format
@@ -17592,7 +17592,7 @@ msgstr "hopp in i satsuttryck"
 #: c-typeck.c:6759
 #, gcc-internal-format
 msgid "jump into scope of identifier with variably modified type"
-msgstr "hopp in i räckvidd för identifierare med variabelt modifierad typ"
+msgstr "hopp in i räckvidd för identifierare med variabel typ"
 
 #: c-typeck.c:6796
 #, gcc-internal-format
@@ -17642,12 +17642,12 @@ msgstr "%<default%>-etikett i satsuttryck som inte innehåller en omslutande swit
 #: c-typeck.c:7019
 #, gcc-internal-format
 msgid "case label in scope of identifier with variably modified type not containing enclosing switch statement"
-msgstr "case-etikett i räckvidden för en identifierare med variabelt modifierad typ som inte innehåller en omslutande switch-sats"
+msgstr "case-etikett i räckvidden för en identifierare med variabel typ som inte innehåller en omslutande switch-sats"
 
 #: c-typeck.c:7022
 #, gcc-internal-format
 msgid "%<default%> label in scope of identifier with variably modified type not containing enclosing switch statement"
-msgstr "%<default%>-etikett i räckvidden för en identifierare med variabelt modifierad typ som inte innehåller en omslutande switch-sats"
+msgstr "%<default%>-etikett i räckvidden för en identifierare med variabel typ som inte innehåller en omslutande switch-sats"
 
 #: c-typeck.c:7026 cp/parser.c:6207
 #, gcc-internal-format
@@ -18287,7 +18287,7 @@ msgstr "pekarvärde använt där ett komplext värde förväntades"
 #: convert.c:748
 #, gcc-internal-format
 msgid "aggregate value used where a complex was expected"
-msgstr "sammansatt värde anvätn där ett komplext värde förväntades"
+msgstr "sammansatt värde använt där ett komplext värde förväntades"
 
 #: convert.c:770
 #, gcc-internal-format
@@ -19032,7 +19032,7 @@ msgstr "indataoperandbegränsningen innehåller %qc"
 #: stmt.c:494
 #, gcc-internal-format
 msgid "matching constraint references invalid operand number"
-msgstr "matchningsbegränsning refererar ogiltigt operandenummer"
+msgstr "matchningsbegränsning refererar ogiltigt operandnummer"
 
 #: stmt.c:532
 #, gcc-internal-format
@@ -21604,7 +21604,7 @@ msgstr "Använder ABI darwin64"
 #: config/rs6000/rs6000.c:1790
 #, gcc-internal-format
 msgid "Using old darwin ABI"
-msgstr "använder gammalt ABI darwin"
+msgstr "använder gammalt darwin-ABI"
 
 #: config/rs6000/rs6000.c:1797
 #, gcc-internal-format
@@ -22085,7 +22085,7 @@ msgstr "behovet av minne för lokala variabler överskrider kapaciteten"
 #: config/stormy16/stormy16.c:1274
 #, gcc-internal-format
 msgid "function_profiler support"
-msgstr "stöd frö function_profiler"
+msgstr "stöd för function_profiler"
 
 #: config/stormy16/stormy16.c:1363
 #, gcc-internal-format
@@ -22319,7 +22319,7 @@ msgstr "pekar-på-medlem-funktion %E kan inte anropas utan ett objekt, överväg at
 #: cp/call.c:3000
 #, gcc-internal-format
 msgid "no match for call to %<(%T) (%A)%>"
-msgstr "inge träf för anrop till %<(%T) (%A)%>"
+msgstr "ingen träff för anrop till %<(%T) (%A)%>"
 
 #: cp/call.c:3009
 #, gcc-internal-format
@@ -22693,7 +22693,7 @@ msgstr "bitfält %q+#D har en icke-heltalstyp"
 #: cp/class.c:2652
 #, gcc-internal-format
 msgid "bit-field %q+D width not an integer constant"
-msgstr "bredd bitfältet %q+D inte en heltalskonstant"
+msgstr "bredd för bitfältet %q+D inte en heltalskonstant"
 
 #: cp/class.c:2657
 #, gcc-internal-format
@@ -23095,8 +23095,8 @@ msgstr "funktionen %q+D omdeklarerad med attributet noinline"
 msgid "previous declaration of %q+D was inline"
 msgstr "tidigare deklaration av %q+D var inline"
 
-# Första %s blir "built-in" eller "library".  Påminnelse till mig själv
-# om att felrapportera. /Göran
+# Första %s blir "built-in" eller "library".
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=31665
 #: cp/decl.c:1120 cp/decl.c:1193
 #, gcc-internal-format
 msgid "shadowing %s function %q#D"
@@ -24118,12 +24118,12 @@ msgstr "det går inte att deklarera medlem %<%T::%s%> inuti %qT"
 #: cp/decl.c:7657
 #, gcc-internal-format
 msgid "data member may not have variably modified type %qT"
-msgstr "datamedlem får inte ha variabelt modifierad typ %qT"
+msgstr "datamedlem får inte ha variabel typ %qT"
 
 #: cp/decl.c:7659
 #, gcc-internal-format
 msgid "parameter may not have variably modified type %qT"
-msgstr "parameter får inte ha variabelt modifierad typ %qT"
+msgstr "parameter får inte ha variabel typ %qT"
 
 #. [dcl.fct.spec] The explicit specifier shall only be used in
 #. declarations of constructors within a class definition.
@@ -24263,7 +24263,7 @@ msgstr "namnet %qT har ofullständig typ"
 #: cp/decl.c:8137
 #, gcc-internal-format
 msgid "  in instantiation of template %qT"
-msgstr "  i instantiering av mallen %qT"
+msgstr "  i instansiering av mallen %qT"
 
 #: cp/decl.c:8147
 #, gcc-internal-format
@@ -25683,7 +25683,7 @@ msgstr "%<this%> kan inte användas i detta sammanhang"
 #: cp/parser.c:3059
 #, gcc-internal-format
 msgid "local variable %qD may not appear in this context"
-msgstr "lokal Variabel %qD kan inte förekomma i detta sammanhang"
+msgstr "lokal variabel %qD kan inte förekomma i detta sammanhang"
 
 #: cp/parser.c:3435
 #, gcc-internal-format
@@ -26086,12 +26086,12 @@ msgstr "  än definitionen av %q+#D"
 #: cp/pt.c:686
 #, gcc-internal-format
 msgid "explicit instantiation of %qD in namespace %qD (which does not enclose namespace %qD)"
-msgstr "explicit instantiering av %qD i namnrymden %qD (som inte omsluter namnrymden %qD)"
+msgstr "explicit instansiering av %qD i namnrymden %qD (som inte omsluter namnrymden %qD)"
 
 #: cp/pt.c:726
 #, gcc-internal-format
 msgid "specialization of %qT after instantiation"
-msgstr "specialisering av %qT efter instantiering"
+msgstr "specialisering av %qT efter instansiering"
 
 #: cp/pt.c:758
 #, gcc-internal-format
@@ -26101,7 +26101,7 @@ msgstr "specialiserar %q#T i en annan namnrymd"
 #: cp/pt.c:773
 #, gcc-internal-format
 msgid "specialization %qT after instantiation %qT"
-msgstr "specialisering %qT efterin instantiering %qT"
+msgstr "specialisering %qT efter instansiering %qT"
 
 #: cp/pt.c:785
 #, gcc-internal-format
@@ -26111,7 +26111,7 @@ msgstr "explicit specialisering av icke-mall %qT"
 #: cp/pt.c:1179
 #, gcc-internal-format
 msgid "specialization of %qD after instantiation"
-msgstr "specialisering av %qD efter instantiering"
+msgstr "specialisering av %qD efter instansiering"
 
 #: cp/pt.c:1383
 #, gcc-internal-format
@@ -26143,7 +26143,7 @@ msgstr "mallparameterlista använd i explicit instatiering"
 #: cp/pt.c:1835
 #, gcc-internal-format
 msgid "definition provided for explicit instantiation"
-msgstr "definition given för explicit instantiering"
+msgstr "definition given för explicit instansiering"
 
 #: cp/pt.c:1843
 #, gcc-internal-format
@@ -26458,7 +26458,7 @@ msgstr "för malldeklaration %q+D"
 #: cp/pt.c:5066
 #, gcc-internal-format
 msgid "template instantiation depth exceeds maximum of %d (use -ftemplate-depth-NN to increase the maximum) instantiating %qD"
-msgstr "mallinstantieringsdjupet överskrider maxvärdet på %d (använd -ftemplate-depth-NN för att öka maxvärdet) vid instantiering av %qD"
+msgstr "mallinstansieringsdjupet överskrider maxvärdet på %d (använd -ftemplate-depth-NN för att öka maxvärdet) vid instansiering av %qD"
 
 #: cp/pt.c:6621
 #, gcc-internal-format
@@ -26553,7 +26553,7 @@ msgstr "användning av %qs i mall"
 #: cp/pt.c:7702
 #, gcc-internal-format
 msgid "dependent-name %qE is parsed as a non-type, but instantiation yields a type"
-msgstr "namnet %qE i den beroende tolkas som något annat än en typ, men instantiering ger en typ"
+msgstr "namnet %qE i den beroende tolkas som något annat än en typ, men instansiering ger en typ"
 
 #: cp/pt.c:7704
 #, gcc-internal-format
@@ -26588,7 +26588,7 @@ msgstr "%qT använder lokal typ %qT"
 #: cp/pt.c:9096
 #, gcc-internal-format
 msgid "%qT is a variably modified type"
-msgstr "%qT är en variabelt modifierad typ"
+msgstr "%qT är en variabel typ"
 
 #: cp/pt.c:9107
 #, gcc-internal-format
@@ -26598,7 +26598,7 @@ msgstr "heltalsuttryck %qE är inte konstant"
 #: cp/pt.c:9112
 #, gcc-internal-format
 msgid "  trying to instantiate %qD"
-msgstr "  försöker instantiera %qD"
+msgstr "  försöker instansiera %qD"
 
 #: cp/pt.c:11103
 #, gcc-internal-format
@@ -26613,7 +26613,7 @@ msgstr "%s %+#T"
 #: cp/pt.c:11129 cp/pt.c:11200
 #, gcc-internal-format
 msgid "explicit instantiation of non-template %q#D"
-msgstr "explicit instantieringar av icke-mall %q#D"
+msgstr "explicit instansieringar av icke-mall %q#D"
 
 #: cp/pt.c:11145 cp/pt.c:11195
 #, gcc-internal-format
@@ -26623,17 +26623,17 @@ msgstr "det finns ingen matchande mall för %qD"
 #: cp/pt.c:11151
 #, gcc-internal-format
 msgid "explicit instantiation of %q#D"
-msgstr "explicit instantiering av %q#D"
+msgstr "explicit instansiering av %q#D"
 
 #: cp/pt.c:11187
 #, gcc-internal-format
 msgid "duplicate explicit instantiation of %q#D"
-msgstr "dubblerad explicit instantiering av %q#D"
+msgstr "dubblerad explicit instansiering av %q#D"
 
 #: cp/pt.c:11209
 #, gcc-internal-format
 msgid "ISO C++ forbids the use of %<extern%> on explicit instantiations"
-msgstr "ISO C++ förbjuder användning av %<extern%> vid explicita instantieringar"
+msgstr "ISO C++ förbjuder användning av %<extern%> vid explicita instansieringar"
 
 #: cp/pt.c:11214 cp/pt.c:11307
 #, gcc-internal-format
@@ -26643,32 +26643,32 @@ msgstr "lagringsklass %qD tillämpad på mallinstansiering"
 #: cp/pt.c:11279
 #, gcc-internal-format
 msgid "explicit instantiation of non-template type %qT"
-msgstr "explicit instantieringar av icke-malltyp %qT"
+msgstr "explicit instansieringar av icke-malltyp %qT"
 
 #: cp/pt.c:11288
 #, gcc-internal-format
 msgid "explicit instantiation of %q#T before definition of template"
-msgstr "explicit instantiering av %q#T före definitionen av mallen"
+msgstr "explicit instansiering av %q#T före definitionen av mallen"
 
 #: cp/pt.c:11296
 #, gcc-internal-format
 msgid "ISO C++ forbids the use of %qE on explicit instantiations"
-msgstr "ISO C++ förbjuder använding av %qE vid explicita instantieringar"
+msgstr "ISO C++ förbjuder använding av %qE vid explicita instansieringar"
 
 #: cp/pt.c:11341
 #, gcc-internal-format
 msgid "duplicate explicit instantiation of %q#T"
-msgstr "duppblerad explicit instantiering av %q#T"
+msgstr "duppblerad explicit instansiering av %q#T"
 
 #: cp/pt.c:11754
 #, gcc-internal-format
 msgid "explicit instantiation of %qD but no definition available"
-msgstr "explicit instantiering av %qD men ingen definition tillgänglig"
+msgstr "explicit instansiering av %qD men ingen definition tillgänglig"
 
 #: cp/pt.c:11901
 #, gcc-internal-format
 msgid "template instantiation depth exceeds maximum of %d instantiating %q+D, possibly from virtual table generation (use -ftemplate-depth-NN to increase the maximum)"
-msgstr "mallinstantieringsdjupet överskrider maxvärdet på %d vid instantiering av %qD, möjligen från generering av virtuell tabell (använd -ftemplate-depth-NN för att öka maxvärdet)"
+msgstr "mallinstansieringsdjupet överskrider maxvärdet på %d vid instansiering av %qD, möjligen från generering av virtuell tabell (använd -ftemplate-depth-NN för att öka maxvärdet)"
 
 #: cp/pt.c:12174
 #, gcc-internal-format
@@ -27599,7 +27599,7 @@ msgstr "det går inte att initiera vektorer med denna syntax"
 #: cp/typeck2.c:678
 #, gcc-internal-format
 msgid "int-array initialized from non-wide string"
-msgstr "int-vektor initierad från icke-vid sträng"
+msgstr "int-vektor initierad från icke-bred sträng"
 
 #: cp/typeck2.c:717
 #, gcc-internal-format
@@ -28003,7 +28003,7 @@ msgstr "onåbar bytekod från %d till slutet av metoden"
 #: java/expr.c:3329
 #, gcc-internal-format
 msgid "unrecogized wide sub-instruction"
-msgstr "okänd vid underinstruktion"
+msgstr "okänd bred underinstruktion"
 
 #: java/gjavah.c:718
 #, gcc-internal-format
@@ -28048,7 +28048,7 @@ msgstr "klass är av vektortyp\n"
 #: java/gjavah.c:2231
 #, gcc-internal-format
 msgid "base class is of array type"
-msgstr "basklassen har vetktortyp"
+msgstr "basklassen har vektortyp"
 
 #: java/gjavah.c:2429 java/gjavah.c:2556
 #, gcc-internal-format
