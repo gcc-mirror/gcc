@@ -1096,7 +1096,7 @@ DEFTREECODE (GIMPLE_MODIFY_STMT, "gimple_modify_stmt", tcc_gimple_stmt, 2)
    VEC_WIDEN_MULT_HI_EXPR computes the N/2 high products.
    VEC_WIDEN_MULT_LO_EXPR computes the N/2 low products.  */
 DEFTREECODE (VEC_WIDEN_MULT_HI_EXPR, "widen_mult_hi_expr", tcc_binary, 2)
-DEFTREECODE (VEC_WIDEN_MULT_LO_EXPR, "widen_mult_hi_expr", tcc_binary, 2)
+DEFTREECODE (VEC_WIDEN_MULT_LO_EXPR, "widen_mult_lo_expr", tcc_binary, 2)
 
 /* Unpack (extract and promote/widen) the high/low elements of the input
    vector into the output vector.  The input vector has twice as many
