@@ -66,6 +66,20 @@ Boston, MA 02110-1301, USA.  */
 #define FORTRAN_LIBRARY "-lgfortran"
 #endif
 
+#ifdef HAVE_LD_STATIC_DYNAMIC
+#define ADD_ARG_LIBGFORTRAN(arg) \
+  { \
+    if (static_lib && !static_linking) \
+      append_arg ("-Wl,-Bstatic"); \
+    append_arg (arg); \
+    if (static_lib && !static_linking) \
+      append_arg ("-Wl,-Bdynamic"); \
+  }
+#else
+#define ADD_ARG_LIBGFORTRAN(arg) append_arg (arg);
+#endif
+
+
 /* Options this driver needs to recognize, not just know how to
    skip over.  */
 typedef enum
@@ -82,6 +96,8 @@ typedef enum
 				   -nodefaultlibs.  */
   OPTION_o,			/* Aka --output.  */
   OPTION_S,			/* Aka --assemble.  */
+  OPTION_static,		/* -static.  */
+  OPTION_static_libgfortran,	/* -static-libgfortran.  */
   OPTION_syntax_only,		/* -fsyntax-only.  */
   OPTION_v,			/* Aka --verbose.  */
   OPTION_version,		/* --version.  */
@@ -170,6 +186,8 @@ lookup_option (Option *xopt, int *xskip, const char **xarg, const char *text)
 	opt = OPTION_nostdlib;
       else if (!strcmp (text, "-fsyntax-only"))
 	opt = OPTION_syntax_only;
+      else if (!strcmp (text, "-static-libgfortran"))
+	opt = OPTION_static_libgfortran;
       else if (!strcmp (text, "-dumpversion"))
 	opt = OPTION_version;
       else if (!strcmp (text, "-fversion"))	/* Really --version!! */
@@ -265,6 +283,12 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   /* By default, we throw on the math library if we have one.  */
   int need_math = (MATH_LIBRARY[0] != '\0');
 
+  /* Whether we should link a static libgfortran.  */
+  int static_lib = 0;
+
+  /* Whether we need to link statically.  */
+  int static_linking = 0;
+
   /* The number of input and output files in the incoming arg list.  */
   int n_infiles = 0;
   int n_outfiles = 0;
@@ -322,6 +346,13 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	     standard libraries.  */
 	  library = 0;
 	  break;
+
+	case OPTION_static_libgfortran:
+	  static_lib = 1;
+	  break;
+
+	case OPTION_static:
+	  static_linking = 1;
 
 	case OPTION_l:
 	  ++n_infiles;
@@ -468,11 +499,16 @@ For more information about these matters, see the file named COPYING\n\n"));
 		      append_arg (FORTRAN_INIT);
 		      use_init = 1;
 		    }
-		  append_arg (FORTRAN_LIBRARY);
+
+		  ADD_ARG_LIBGFORTRAN (FORTRAN_LIBRARY);
 		}
 	    }
 	  else if (strcmp (argv[i], FORTRAN_LIBRARY) == 0)
-	    saw_library = 1;	/* -l<library>.  */
+	    {
+	      saw_library = 1;	/* -l<library>.  */
+	      ADD_ARG_LIBGFORTRAN (argv[i]);
+	      continue;
+	    }
 	  else
 	    {			/* Other library, or filename.  */
 	      if (saw_library == 1 && need_math)
@@ -498,7 +534,9 @@ For more information about these matters, see the file named COPYING\n\n"));
 	      append_arg (FORTRAN_INIT);
 	      use_init = 1;
 	    }
-	  append_arg (library);
+	  ADD_ARG_LIBGFORTRAN (library);
+	  /* Fall through.  */
+
 	case 1:
 	  if (need_math)
 	    append_arg (MATH_LIBRARY);

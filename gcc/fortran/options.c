@@ -551,6 +551,13 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.flag_second_underscore = value;
       break;
 
+    case OPT_static_libgfortran:
+#ifndef HAVE_LD_STATIC_DYNAMIC
+      gfc_fatal_error ("-static-libgfortran is not supported in this "
+		       "configuration");
+#endif
+      break;
+
     case OPT_fimplicit_none:
       gfc_option.flag_implicit_none = value;
       break;
