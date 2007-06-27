@@ -2057,6 +2057,8 @@ adjust_for_new_dest (rtx insn)
      of an insn just above it.  Call distribute_links to make a LOG_LINK from
      the next use of that destination.  */
   distribute_links (gen_rtx_INSN_LIST (VOIDmode, insn, NULL_RTX));
+
+  df_insn_rescan (insn);
 }
 
 /* Return TRUE if combine can reuse reg X in mode MODE.
