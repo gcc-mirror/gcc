@@ -1,3 +1,9 @@
+2007-06-27  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR target/32418
+	* config/m32c/m32c.c (m32c_eh_return_stackadj_rtx): Dataflow fix:
+	Use a call clobbered hard reg instead of a pseudo reg.
+
 2007-06-27  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (load_gbr): Use correct operand constraint.

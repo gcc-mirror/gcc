@@ -1143,7 +1143,7 @@ m32c_eh_return_stackadj_rtx (void)
     {
       rtx sa;
 
-      sa = gen_reg_rtx (Pmode);
+      sa = gen_rtx_REG (Pmode, R0_REGNO);
       cfun->machine->eh_stack_adjust = sa;
     }
   return cfun->machine->eh_stack_adjust;
