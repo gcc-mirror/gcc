@@ -8966,7 +8966,7 @@ mov.l\\t1f,r0\\n\\
 }")
 
 (define_insn "load_gbr"
-  [(set (match_operand:SI 0 "register_operand" "") (reg:SI GBR_REG))
+  [(set (match_operand:SI 0 "register_operand" "=r") (reg:SI GBR_REG))
    (use (reg:SI GBR_REG))]
   ""
   "stc	gbr,%0"
