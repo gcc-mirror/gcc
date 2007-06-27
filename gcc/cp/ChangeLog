@@ -1,3 +1,9 @@
+2007-06-27  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/27492
+	* decl.c (duplicate_decls): Don't reset DECL_INVALID_OVERRIDER_P for
+	function decls.
+
 2007-06-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DECL_VAR_MARKED_P): Remove.
