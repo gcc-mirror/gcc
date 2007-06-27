@@ -58,16 +58,15 @@ static bitmap_obstack dce_tmp_bitmap_obstack;
 
 static sbitmap marked = NULL;
 
-/* Return true if INSN with BODY is a normal instruction that can be
-   deleted by the DCE pass.  */
+/* A subroutine for which BODY is part of the instruction being tested;
+   either the top-level pattern, or an element of a PARALLEL.  The
+   instruction is known not to be a bare USE or CLOBBER.  */
 
 static bool
-deletable_insn_p (rtx insn, rtx body, bool fast)
+deletable_insn_p_1 (rtx body)
 {
-  rtx x;
   switch (GET_CODE (body))
     {
-    case USE:
     case PREFETCH:
     case TRAP_IF:
       /* The UNSPEC case was added here because the ia-64 claims that
@@ -79,6 +78,35 @@ deletable_insn_p (rtx insn, rtx body, bool fast)
     case UNSPEC:
       return false;
 
+    default:
+      if (volatile_insn_p (body))
+	return false;
+
+      if (flag_non_call_exceptions && may_trap_p (body))
+	return false;
+
+      return true;
+    }
+}
+
+/* Return true if INSN is a normal instruction that can be deleted by
+   the DCE pass.  */
+
+static bool
+deletable_insn_p (rtx insn, bool fast)
+{
+  rtx body, x;
+  int i;
+
+  if (!NONJUMP_INSN_P (insn))
+    return false;
+
+  body = PATTERN (insn);
+  switch (GET_CODE (body))
+    {
+    case USE:
+      return false;
+
     case CLOBBER:
       if (fast)
 	{
@@ -88,32 +116,20 @@ deletable_insn_p (rtx insn, rtx body, bool fast)
 	  x = XEXP (body, 0);
 	  return REG_P (x) && (!HARD_REGISTER_P (x) || reload_completed);
 	}
-      else 
+      else
 	/* Because of the way that use-def chains are built, it is not
 	   possible to tell if the clobber is dead because it can
 	   never be the target of a use-def chain.  */
 	return false;
 
     case PARALLEL:
-      {
-	int i;
-	for (i = XVECLEN (body, 0) - 1; i >= 0; i--)
-	  if (!deletable_insn_p (insn, XVECEXP (body, 0, i), fast))
-	    return false;
-	return true;
-      }
+      for (i = XVECLEN (body, 0) - 1; i >= 0; i--)
+	if (!deletable_insn_p_1 (XVECEXP (body, 0, i)))
+	  return false;
+      return true;
 
     default:
-      if (!NONJUMP_INSN_P (insn))
-	return false;
-
-      if (volatile_insn_p (body))
-	return false;
-
-      if (flag_non_call_exceptions && may_trap_p (body))
-	return false;
-
-      return true;
+      return deletable_insn_p_1 (body);
     }
 }
 
@@ -369,7 +385,7 @@ prescan_insns_for_dce (bool fast)
         rtx note = find_reg_note (insn, REG_LIBCALL_ID, NULL_RTX);
         if (note)
           mark_libcall (insn, fast);
-        else if (deletable_insn_p (insn, PATTERN (insn), fast))
+        else if (deletable_insn_p (insn, fast))
           mark_nonreg_stores (PATTERN (insn), insn, fast);
         else
           mark_insn (insn, fast);
