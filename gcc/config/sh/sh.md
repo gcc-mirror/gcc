@@ -1860,7 +1860,7 @@
   ""
   "
 {
-  rtx first, last;
+  rtx last;
 
   operands[3] = gen_reg_rtx (Pmode);
   /* Emit the move of the address to a pseudo outside of the libcall.  */
@@ -1924,13 +1924,9 @@
       function_symbol (operands[3], \"__udivsi3\", SFUNC_STATIC);
       last = gen_udivsi3_i1 (operands[0], operands[3]);
     }
-  first = emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
+  emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
   emit_move_insn (gen_rtx_REG (SImode, 5), operands[2]);
-  last = emit_insn (last);
-  /* Wrap the sequence in REG_LIBCALL / REG_RETVAL notes so that loop
-     invariant code motion can move it.  */
-  REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last, REG_NOTES (first));
-  REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first, REG_NOTES (last));
+  emit_insn (last);
   DONE;
 }")
 
@@ -2132,7 +2128,7 @@
   ""
   "
 {
-  rtx first, last;
+  rtx last;
 
   operands[3] = gen_reg_rtx (Pmode);
   /* Emit the move of the address to a pseudo outside of the libcall.  */
@@ -2271,13 +2267,9 @@
       function_symbol (operands[3], sh_divsi3_libfunc, SFUNC_GOT);
       last = gen_divsi3_i1 (operands[0], operands[3]);
     }
-  first = emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
+  emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
   emit_move_insn (gen_rtx_REG (SImode, 5), operands[2]);
-  last = emit_insn (last);
-  /* Wrap the sequence in REG_LIBCALL / REG_RETVAL notes so that loop
-     invariant code motion can move it.  */
-  REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last, REG_NOTES (first));
-  REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first, REG_NOTES (last));
+  emit_insn (last);
   DONE;
 }")
 
@@ -2746,21 +2738,21 @@ label:
   "TARGET_SH1"
   "
 {
-  rtx first, last;
+  rtx insn, macl;
 
-  first = emit_insn (gen_mulhisi3_i (operands[1], operands[2]));
-  last = emit_move_insn (operands[0], gen_rtx_REG (SImode, MACL_REG));
-  /* Wrap the sequence in REG_LIBCALL / REG_RETVAL notes so that loop
-     invariant code motion can move it.  */
-  REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last, REG_NOTES (first));
-  REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first, REG_NOTES (last));
+  macl = gen_rtx_REG (SImode, MACL_REG);
+  start_sequence ();
+  emit_insn (gen_mulhisi3_i (operands[1], operands[2]));
+  insn = get_insns ();  
+  end_sequence ();
   /* expand_binop can't find a suitable code in umul_widen_optab to
      make a REG_EQUAL note from, so make one here.
      See also smulsi3_highpart.
      ??? Alternatively, we could put this at the calling site of expand_binop,
      i.e. expand_expr.  */
-  set_unique_reg_note (last, REG_EQUAL,
-		       copy_rtx (SET_SRC (single_set (first))));
+  /* Use emit_libcall_block for loop invariant code motion and to make
+     a REG_EQUAL note.  */
+  emit_libcall_block (insn, operands[0], macl, SET_SRC (single_set (insn)));
 
   DONE;
 }")
@@ -2776,21 +2768,21 @@ label:
   "TARGET_SH1"
   "
 {
-  rtx first, last;
+  rtx insn, macl;
 
-  first = emit_insn (gen_umulhisi3_i (operands[1], operands[2]));
-  last = emit_move_insn (operands[0], gen_rtx_REG (SImode, MACL_REG));
-  /* Wrap the sequence in REG_LIBCALL / REG_RETVAL notes so that loop
-     invariant code motion can move it.  */
-  REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last, REG_NOTES (first));
-  REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first, REG_NOTES (last));
+  macl = gen_rtx_REG (SImode, MACL_REG);
+  start_sequence ();
+  emit_insn (gen_umulhisi3_i (operands[1], operands[2]));
+  insn = get_insns ();  
+  end_sequence ();
   /* expand_binop can't find a suitable code in umul_widen_optab to
      make a REG_EQUAL note from, so make one here.
      See also smulsi3_highpart.
      ??? Alternatively, we could put this at the calling site of expand_binop,
      i.e. expand_expr.  */
-  set_unique_reg_note (last, REG_EQUAL,
-		       copy_rtx (SET_SRC (single_set (first))));
+  /* Use emit_libcall_block for loop invariant code motion and to make
+     a REG_EQUAL note.  */
+  emit_libcall_block (insn, operands[0], macl, SET_SRC (single_set (insn)));
 
   DONE;
 }")
@@ -2854,8 +2846,6 @@ label:
   "TARGET_SH1"
   "
 {
-  rtx first, last;
-
   if (!TARGET_SH2)
     {
       /* The address must be set outside the libcall,
@@ -2864,23 +2854,18 @@ label:
       rtx addr = force_reg (SImode, sym);
       rtx insns = gen_mulsi3_call (operands[0], operands[1],
 				   operands[2], addr);
-      first = insns;
-      last = emit_insn (insns);
+      emit_insn (insns);
     }
   else
     {
       rtx macl = gen_rtx_REG (SImode, MACL_REG);
 
-      first = emit_insn (gen_mul_l (operands[1], operands[2]));
+      emit_insn (gen_mul_l (operands[1], operands[2]));
       /* consec_sets_giv can only recognize the first insn that sets a
 	 giv as the giv insn.  So we must tag this also with a REG_EQUAL
 	 note.  */
-      last = emit_insn (gen_movsi_i ((operands[0]), macl));
+      emit_insn (gen_movsi_i ((operands[0]), macl));
     }
-  /* Wrap the sequence in REG_LIBCALL / REG_RETVAL notes so that loop
-     invariant code motion can move it.  */
-  REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last, REG_NOTES (first));
-  REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first, REG_NOTES (last));
   DONE;
 }")
 
@@ -3055,21 +3040,21 @@ label:
   "TARGET_SH2"
   "
 {
-  rtx first, last;
+  rtx insn, mach;
 
-  first = emit_insn (gen_smulsi3_highpart_i (operands[1], operands[2]));
-  last = emit_move_insn (operands[0], gen_rtx_REG (SImode, MACH_REG));
-  /* Wrap the sequence in REG_LIBCALL / REG_RETVAL notes so that loop
-     invariant code motion can move it.  */
-  REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last, REG_NOTES (first));
-  REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first, REG_NOTES (last));
+  mach = gen_rtx_REG (SImode, MACH_REG);
+  start_sequence ();
+  emit_insn (gen_smulsi3_highpart_i (operands[1], operands[2]));
+  insn = get_insns ();  
+  end_sequence ();
   /* expand_binop can't find a suitable code in mul_highpart_optab to
      make a REG_EQUAL note from, so make one here.
      See also {,u}mulhisi.
      ??? Alternatively, we could put this at the calling site of expand_binop,
      i.e. expand_mult_highpart.  */
-  set_unique_reg_note (last, REG_EQUAL,
-		       copy_rtx (SET_SRC (single_set (first))));
+  /* Use emit_libcall_block for loop invariant code motion and to make
+     a REG_EQUAL note.  */
+  emit_libcall_block (insn, operands[0], mach, SET_SRC (single_set (insn)));
 
   DONE;
 }")
@@ -3102,14 +3087,17 @@ label:
   "TARGET_SH2"
   "
 {
-  rtx first, last;
+  rtx insn, mach;
 
-  first = emit_insn (gen_umulsi3_highpart_i (operands[1], operands[2]));
-  last = emit_move_insn (operands[0], gen_rtx_REG (SImode, MACH_REG));
-  /* Wrap the sequence in REG_LIBCALL / REG_RETVAL notes so that loop
-     invariant code motion can move it.  */
-  REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last, REG_NOTES (first));
-  REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first, REG_NOTES (last));
+  mach = gen_rtx_REG (SImode, MACH_REG);
+  start_sequence ();
+  emit_insn (gen_umulsi3_highpart_i (operands[1], operands[2]));
+  insn = get_insns ();  
+  end_sequence ();
+  /* Use emit_libcall_block for loop invariant code motion and to make
+     a REG_EQUAL note.  */
+  emit_libcall_block (insn, operands[0], mach, SET_SRC (single_set (insn)));
+
   DONE;
 }")
 
