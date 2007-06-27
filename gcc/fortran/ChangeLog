@@ -1,3 +1,10 @@
+2007-06-27  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/32467
+	* openmp.c (resolve_omp_clauses): Emit error on allocatable
+	components in COPYIN, COPYPRIVATE, FIRSTPRIVATE and LASTPRIVATE
+	clauses.
+
 2007-06-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32464
