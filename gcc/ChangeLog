@@ -1,3 +1,19 @@
+2007-06-26  Jan Hubicka  <jh@suse.cz>
+
+	* fwprop.c (try_fwprop_subst): Use validate_unshare_change.
+	* postreload.c (reload_cse_simplify_set): Instead of copying the rtx
+	early use validate_unshare_change.
+	(reload_combine): Likewise.
+	* recog.c (change_t): New field unshare.
+	(validate_change_1): Rename from validate_change; add argument unshare.
+	(validate_change): Turn into wrapper of validate_change_1; update
+	prototype for bools.
+	(validate_unshare_change): New.
+	(confirm_change_group): Unshare changes if asked for; avoid unnecesary
+	calls of df_insn_rescan.
+	* recog.h (validate_change): Replace ints by bools.
+	(validate_unshare_change): Declare.
+
 2007-06-26  Kenneth Zadeck <zadeck@naturalbridge.com>
 
         * tree.def (VEC_WIDEN_MULT_LO_EXPR): Corrected string name.

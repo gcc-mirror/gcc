@@ -345,7 +345,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
 	    }
 #endif
 
-	  validate_change (insn, &SET_SRC (set), copy_rtx (this_rtx), 1);
+	  validate_unshare_change (insn, &SET_SRC (set), this_rtx, 1);
 	  old_cost = this_cost, did_change = 1;
 	}
     }
@@ -881,11 +881,11 @@ reload_combine (void)
 		 with REG_SUM.  */
 	      for (i = reg_state[regno].use_index;
 		   i < RELOAD_COMBINE_MAX_USES; i++)
-		validate_change (reg_state[regno].reg_use[i].insn,
-				 reg_state[regno].reg_use[i].usep,
-				 /* Each change must have its own
-				    replacement.  */
-				 copy_rtx (reg_sum), 1);
+		validate_unshare_change (reg_state[regno].reg_use[i].insn,
+				 	 reg_state[regno].reg_use[i].usep,
+				 	 /* Each change must have its own
+				    	    replacement.  */
+				 	 reg_sum, 1);
 
 	      if (apply_change_group ())
 		{

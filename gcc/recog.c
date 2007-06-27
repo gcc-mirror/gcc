@@ -166,6 +166,7 @@ typedef struct change_t
   int old_code;
   rtx *loc;
   rtx old;
+  bool unshare;
 } change_t;
 
 static change_t *changes;
@@ -191,8 +192,8 @@ static int num_changes = 0;
    is not valid for the machine, suppress the change and return zero.
    Otherwise, perform the change and return 1.  */
 
-int
-validate_change (rtx object, rtx *loc, rtx new, int in_group)
+static bool
+validate_change_1 (rtx object, rtx *loc, rtx new, bool in_group, bool unshare)
 {
   rtx old = *loc;
 
@@ -219,6 +220,7 @@ validate_change (rtx object, rtx *loc, rtx new, int in_group)
   changes[num_changes].object = object;
   changes[num_changes].loc = loc;
   changes[num_changes].old = old;
+  changes[num_changes].unshare = unshare;
 
   if (object && !MEM_P (object))
     {
@@ -238,6 +240,25 @@ validate_change (rtx object, rtx *loc, rtx new, int in_group)
   else
     return apply_change_group ();
 }
+
+/* Wrapper for validate_change_1 without the UNSHARE argument defaulting
+   UNSHARE to false.  */
+
+bool
+validate_change (rtx object, rtx *loc, rtx new, bool in_group)
+{
+  return validate_change_1 (object, loc, new, in_group, false);
+}
+
+/* Wrapper for validate_change_1 without the UNSHARE argument defaulting
+   UNSHARE to true.  */
+
+bool
+validate_unshare_change (rtx object, rtx *loc, rtx new, bool in_group)
+{
+  return validate_change_1 (object, loc, new, in_group, true);
+}
+
 
 /* Keep X canonicalized if some changes have made it non-canonical; only
    modifies the operands of X, not (for example) its code.  Simplifications
@@ -414,14 +435,27 @@ void
 confirm_change_group (void)
 {
   int i;
+  rtx last_object = NULL;
 
   for (i = 0; i < num_changes; i++)
     {
       rtx object = changes[i].object;
-      if (object && INSN_P (object))
-	df_insn_rescan (object);
+
+      if (changes[i].unshare)
+	*changes[i].loc = copy_rtx (*changes[i].loc);
+
+      /* Avoid unnecesary rescaning when multiple changes to same instruction
+         are made.  */
+      if (object)
+	{
+	  if (object != last_object && last_object && INSN_P (last_object))
+	    df_insn_rescan (last_object);
+	  last_object = object;
+	}
     }
 
+  if (last_object && INSN_P (last_object))
+    df_insn_rescan (last_object);
   num_changes = 0;
 }
 
