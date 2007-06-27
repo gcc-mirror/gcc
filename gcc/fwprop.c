@@ -686,7 +686,7 @@ try_fwprop_subst (struct df_ref *use, rtx *loc, rtx new, rtx def_insn, bool set_
       fprintf (dump_file, "\n");
     }
 
-  if (validate_change (insn, loc, new, false))
+  if (validate_unshare_change (insn, loc, new, false))
     {
       num_changes++;
       if (dump_file)
