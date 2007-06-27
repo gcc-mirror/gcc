@@ -1,3 +1,8 @@
+2007-06-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/32492
+	* gcc.dg/inline-22.c: New testcase.
+
 2007-06-26  Hui-May Chang <hm.chang@apple.com>
 
 	* gcc.target/i386/large-size-array-3.c: Remove the larger size of

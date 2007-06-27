@@ -2141,8 +2141,7 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
 	if (!p
 	    || TREE_VALUE (p) == error_mark_node
 	    || CALL_EXPR_ARG (*expr_p, i) == error_mark_node
-	    || !lang_hooks.types_compatible_p
-		 (TREE_TYPE (CALL_EXPR_ARG (*expr_p, i)), TREE_VALUE (p)))
+	    || !fold_convertible_p (TREE_VALUE (p), CALL_EXPR_ARG (*expr_p, i)))
 	  {
 	    CALL_CANNOT_INLINE_P (*expr_p) = 1;
 	    break;
@@ -2155,8 +2154,7 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
 	if (!p
 	    || p == error_mark_node
 	    || CALL_EXPR_ARG (*expr_p, i) == error_mark_node
-	    || !lang_hooks.types_compatible_p
-		 (TREE_TYPE (CALL_EXPR_ARG (*expr_p, i)), TREE_TYPE (p)))
+	    || !fold_convertible_p (TREE_TYPE (p), CALL_EXPR_ARG (*expr_p, i)))
 	  {
 	    CALL_CANNOT_INLINE_P (*expr_p) = 1;
 	    break;

@@ -1,3 +1,11 @@
+2007-06-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/32492
+	* tree.h (fold_convertible_p): Declare.
+	* fold-const.c (fold_convertible_p): New function.
+	* gimplify.c (gimplify_call_expr): Use fold_convertible_p
+	instead of lang_hooks.types_compatible_p.
+
 2007-06-26  Jan Hubicka  <jh@suse.cz>
 
 	* fwprop.c (try_fwprop_subst): Use validate_unshare_change.
