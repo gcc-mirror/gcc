@@ -253,6 +253,10 @@ funderscoring
 Fortran
 Append underscores to externally visible names
 
+static-libgfortran
+Fortran
+Statically link the GNU Fortran helper library (libgfortran)
+
 std=f2003
 Fortran
 Conform to the ISO Fortran 2003 standard

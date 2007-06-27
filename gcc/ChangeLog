@@ -1,3 +1,9 @@
+2007-06-28 Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
+
+	PR other/31400
+	* gcc.c (process_command): Recognize the new -static-libgfortran
+	option.
+
 2007-06-27  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR target/32418

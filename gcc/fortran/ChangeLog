@@ -1,3 +1,15 @@
+2007-06-28 Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
+
+	PR other/31400
+	* lang.opt (static-libgfortran): New option.
+	* gfortranspec.c (ADD_ARG_LIBGFORTRAN): New macro.
+	(Option): Add OPTION_static and OPTION_static_libgfortran.
+	(lookup_option): Handle the new -static-libgfortran option.
+	(lang_specific_driver): Check whether -static is passed.
+	Handle the new -static-libgfortran option.
+	* options.c (gfc_handle_option): If -static-libgfortran is
+	passed and isn't supported on this configuration, error out.
+
 2007-06-27  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/32467
