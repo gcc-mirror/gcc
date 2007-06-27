@@ -1,5 +1,9 @@
 2007-06-27  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	* config/sh/sh.md (load_gbr): Use correct operand constraint.
+
+2007-06-27  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	PR target/32479
 	* config/sh/sh.md (udivsi3): Don't wrap the sequence with
 	REG_LIBCALL and REG_RETVAL notes.
