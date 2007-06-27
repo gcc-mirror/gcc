@@ -2211,6 +2211,40 @@ build_zero_vector (tree type)
   return build_vector (type, list);
 }
 
+/* Returns true, if ARG is convertible to TYPE using a NOP_EXPR.  */
+
+bool
+fold_convertible_p (tree type, tree arg)
+{
+  tree orig = TREE_TYPE (arg);
+
+  if (type == orig)
+    return true;
+
+  if (TREE_CODE (arg) == ERROR_MARK
+      || TREE_CODE (type) == ERROR_MARK
+      || TREE_CODE (orig) == ERROR_MARK)
+    return false;
+
+  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (orig))
+    return true;
+
+  switch (TREE_CODE (type))
+    {
+    case INTEGER_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
+    case POINTER_TYPE: case REFERENCE_TYPE:
+    case OFFSET_TYPE:
+      if (INTEGRAL_TYPE_P (orig) || POINTER_TYPE_P (orig)
+	  || TREE_CODE (orig) == OFFSET_TYPE)
+        return true;
+      return (TREE_CODE (orig) == VECTOR_TYPE
+	      && tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)));
+
+    default:
+      return TREE_CODE (type) == TREE_CODE (orig);
+    }
+}
+
 /* Convert expression ARG to type TYPE.  Used by the middle-end for
    simple conversions in preference to calling the front-end's convert.  */
 

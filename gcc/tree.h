@@ -4444,6 +4444,7 @@ extern tree fold_build2_initializer (enum tree_code, tree, tree, tree);
 extern tree fold_build3_initializer (enum tree_code, tree, tree, tree, tree);
 extern tree fold_build_call_array (tree, tree, int, tree *);
 extern tree fold_build_call_array_initializer (tree, tree, int, tree *);
+extern bool fold_convertible_p (tree, tree);
 extern tree fold_convert (tree, tree);
 extern tree fold_single_bit_test (enum tree_code, tree, tree, tree);
 extern tree fold_ignored_result (tree);
