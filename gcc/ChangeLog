@@ -1,3 +1,9 @@
+2007-06-28  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/invoke.texi (C++ Dialect Options): Document
+	fvisibility-ms-compat.
+	* c.opt (fvisibility-ms-compat): New.
+
 2007-06-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/32417

@@ -3179,6 +3179,9 @@ cxx_init_decl_processing (void)
 
   current_lang_name = NULL_TREE;
 
+  if (flag_visibility_ms_compat)
+    default_visibility = VISIBILITY_HIDDEN;
+
   /* Force minimum function alignment if using the least significant
      bit of function pointers to store the virtual bit.  */
   if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn
