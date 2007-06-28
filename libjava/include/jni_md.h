@@ -124,6 +124,19 @@ typedef uint16_t jchar;
 
 #define JNICALL          __stdcall
 
+#else /* !( _WIN32 || __WIN32__ || WIN32) */
+
+#define JNIIMPORT
+#if defined(__GNUC__) && __GNUC__ > 3
+#define JNIEXPORT __attribute__ ((visibility("default")))
+#else
+#define JNIEXPORT
+#endif
+
+#define JNICALL
+
+#endif /* !( _WIN32 || __WIN32__ || WIN32) */
+
 /* These defines apply to symbols in libgcj */
 #ifdef __GCJ_DLL__
 # ifdef __GCJ_JNI_IMPL__
@@ -134,15 +147,5 @@ typedef uint16_t jchar;
 #else /* ! __GCJ_DLL__ */
 # define _CLASSPATH_JNIIMPEXP
 #endif /*  __GCJ_DLL__ */
-
-#else /* !( _WIN32 || __WIN32__ || WIN32) */
-
-#define JNIIMPORT
-#define JNIEXPORT
-#define JNICALL
-#define _CLASSPATH_JNIIMPEXP
-
-#endif /* !( _WIN32 || __WIN32__ || WIN32) */
-
 
 #endif /* __GCJ_JNI_MD_H__ */
