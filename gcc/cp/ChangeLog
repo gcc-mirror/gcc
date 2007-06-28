@@ -7,7 +7,7 @@
 
 2007-06-28  Geoffrey Keating  <geoffk@apple.com>
 
-	* decl2.c (start_objects): Mark constructor-runnning function
+	* decl2.c (start_objects): Mark constructor-running function
 	as artificial.
 
 2007-06-26  Simon Martin  <simartin@users.sourceforge.net>
