@@ -2320,6 +2320,10 @@ start_objects (int method_type, int initp)
 
   TREE_PUBLIC (current_function_decl) = 0;
 
+  /* Mark as artificial because it's not explicitly in the user's
+     source code.  */
+  DECL_ARTIFICIAL (current_function_decl) = 1;
+
   /* Mark this declaration as used to avoid spurious warnings.  */
   TREE_USED (current_function_decl) = 1;
 
