@@ -1,3 +1,12 @@
+2007-06-28  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/32509
+	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Carry out the checks
+	involving the de_DE locale only if an auto locale config is
+	used for a target suitable for the gnu locale model.
+	* docs/html/install.html: Update.
+	* configure: Regenerated.
+
 2007-06-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/throw_allocator.h: Fixes for -fno-exceptions.
