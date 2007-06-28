@@ -1376,21 +1376,22 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
     #endif
     ], enable_clocale_flag=gnu, enable_clocale_flag=generic)
 
-    # Test for bugs early in glibc-2.2.x series
-    AC_TRY_RUN([
-    #define _GNU_SOURCE 1
-    #include <locale.h>
-    #include <string.h>
-    #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-    extern __typeof(newlocale) __newlocale;
-    extern __typeof(duplocale) __duplocale;
-    extern __typeof(strcoll_l) __strcoll_l;
-    #endif
-    int main()
-    {
-        const char __one[] = "Äuglein Augmen";
+    if test $enable_clocale = auto; then
+      # Test for bugs early in glibc-2.2.x series
+      AC_TRY_RUN([
+      #define _GNU_SOURCE 1
+      #include <locale.h>
+      #include <string.h>
+      #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+      extern __typeof(newlocale) __newlocale;
+      extern __typeof(duplocale) __duplocale;
+      extern __typeof(strcoll_l) __strcoll_l;
+      #endif
+      int main()
+      {
+	const char __one[] = "Äuglein Augmen";
         const char __two[] = "Äuglein";
-        int i;
+       	int i;
         int j;
         __locale_t        loc;
         __locale_t        loc_dup;
@@ -1399,10 +1400,11 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
         i = __strcoll_l(__one, __two, loc);
         j = __strcoll_l(__one, __two, loc_dup);
         return 0;
-    }
-    ],
-    [enable_clocale_flag=gnu],[enable_clocale_flag=generic],
-    [enable_clocale_flag=generic])
+      }
+      ],
+      [enable_clocale_flag=gnu],[enable_clocale_flag=generic],
+      [enable_clocale_flag=generic])
+    fi
 
     # Set it to scream when it hurts.
     ac_save_CFLAGS="$CFLAGS"	

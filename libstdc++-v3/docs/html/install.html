@@ -80,9 +80,10 @@
       information must be installed.
 
       <p>
-      Note that those sanity checks are also perfomed when an explicit
-      --enable-clocale=gnu configure option is used:  this behavior is
-      new in gcc 4.2.1 and defends against misconfigurations.
+      Note however that the sanity checks involving the de_DE locale are
+      skipped when an explicit --enable-clocale=gnu configure option is
+      used: only the basic checks are carried out, defending against
+      misconfigurations.
       </p>
 
       <p>
