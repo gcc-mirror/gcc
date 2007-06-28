@@ -131,10 +131,11 @@ proc gij_jvmti_test_one {file} {
   }
 
   libjava_arguments
-  
+
   set jarfile [file join [file dirname $file] $main.jar]
   set gij_flags {-agentlib:dummyagent}
-  if {! [exec_gij $jarfile [file rootname $file].out {} $gij_flags]} {
+  if {! [exec_gij $jarfile [file rootname $file].out $cxxldlibflags $gij_flags]}
+  {
       return 0
   }
 
