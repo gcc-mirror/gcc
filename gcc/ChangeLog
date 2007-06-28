@@ -1,3 +1,8 @@
+2007-06-28  Nick Clifton  <nickc@redhat.com>
+
+	* common.opt (fipa-matrix-reorg): Add Optimization attribute.
+	(fdce, fdse, fpredictive-commoning): Likewise.
+
 2007-06-28 Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 
 	PR other/31400
