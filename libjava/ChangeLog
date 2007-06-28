@@ -1,3 +1,10 @@
+2007-06-28  Jan Nijtmans  <nijtmans@users.sourceforge.net>
+
+	PR libgcj/30999:
+	* jni_md.h: Add the possibility to compile jni code with.
+	-fvisibility=hidden. This causes all symbols to be hidden
+	except the JNI functions which need to be exported.
+
 2007-06-28  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* testsuite/libjava.jvmti/jvmti-interp.exp (gij_jvmti_test_one): Pass
