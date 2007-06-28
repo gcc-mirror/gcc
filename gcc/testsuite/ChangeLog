@@ -1,3 +1,8 @@
+2007-06-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/32417
+	* gfortran.fortran-torture/compile/pr32417.f90: New test.
+
 2007-06-28  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-iv-4.c: Test now passes on vect_pack_trunc
