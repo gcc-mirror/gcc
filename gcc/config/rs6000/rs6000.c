@@ -13327,7 +13327,8 @@ rs6000_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 	    }
 	}
       if (DEFAULT_ABI == ABI_DARWIN
-	  || (*targetm.binds_local_p) (decl))
+	  || ((*targetm.binds_local_p) (decl)
+	      && (DEFAULT_ABI != ABI_AIX || !DECL_EXTERNAL (decl))))
 	{
 	  tree attr_list = TYPE_ATTRIBUTES (TREE_TYPE (decl));
 
