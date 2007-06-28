@@ -583,7 +583,7 @@ CPLUSPLUS_DIRS="gcc/cp libstdc++-v3"
 FORTRAN_DIRS="gcc/f libf2c"
 FORTRAN95_DIRS="gcc/fortran libgfortran"
 JAVA_DIRS="gcc/java libjava libffi fastjar zlib boehm-gc"
-OBJECTIVEC_DIRS="gcc/objc libobjc"
+OBJECTIVEC_DIRS="gcc/objc gcc/objcp libobjc"
 TESTSUITE_DIRS="gcc/testsuite"
 
 # Non-zero if this is the final release, rather than a prerelease.
