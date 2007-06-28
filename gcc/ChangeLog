@@ -1,3 +1,9 @@
+2007-06-28  Seongbae Park  <seongbae.park@gmail.com>
+
+	* config/arm/arm.c (arm_get_frame_offsets): Set
+	offsets->locals_base to avoid negative stack size.
+	(thumb_expand_prologue): Assert on negative stack size.
+
 2007-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_function_ok_for_sibcall): Ensure

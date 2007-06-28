@@ -1,3 +1,7 @@
+2007-06-28  Seongbae Park  <seongbae.park@gmail.com>
+
+	* gcc.target/arm/stack-corruption.c: New test.
+
 2007-06-27  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/27492
