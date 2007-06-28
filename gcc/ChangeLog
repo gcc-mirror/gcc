@@ -1,3 +1,13 @@
+2007-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_function_ok_for_sibcall): Ensure
+	decl is non-external for AIX ABI.
+
+2007-06-28  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/predicates.md (current_file_function_operand):
+	Ensure the symbol is non-external for AIX ABI.
+
 2007-06-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_builtins): Add IX86_BUILTIN_VEC_EXT_V16QI.
