@@ -597,7 +597,7 @@ Common Report Var(flag_ipa_type_escape) Init(0) Optimization
 Type based escape and alias analysis
 
 fipa-matrix-reorg
-Common Report Var(flag_ipa_matrix_reorg)
+Common Report Var(flag_ipa_matrix_reorg) Optimization
 Perform matrix layout flattening and transposing based
 on profiling information.
 
@@ -669,11 +669,11 @@ Common RejectNegative Report Var(flag_mudflap_ignore_reads)
 Ignore read operations when inserting mudflap instrumentation
 
 fdce
-Common Var(flag_dce) Init(1)
+Common Var(flag_dce) Init(1) Optimization
 Use the RTL dead code elimination pass
 
 fdse
-Common Var(flag_dse) Init(1)
+Common Var(flag_dse) Init(1) Optimization
 Use the RTL dead store elimination pass
 
 freschedule-modulo-scheduled-loops
@@ -745,7 +745,7 @@ Common Report Var(flag_pie,1) VarExists
 Generate position-independent code for executables if possible (small mode)
 
 fpredictive-commoning
-Common Report Var(flag_predictive_commoning)
+Common Report Var(flag_predictive_commoning) Optimization
 Run predictive commoning optimization.
 
 fprefetch-loop-arrays
