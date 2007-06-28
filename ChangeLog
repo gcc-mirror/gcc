@@ -1,3 +1,9 @@
+2007-06-28  DJ Delorie  <dj@redhat.com>
+
+	* configure.ac (arm*-*-linux-gnueabi): Don't build libgloss if we're
+	not building newlib.
+	* configure: Regenerated.
+	
 2007-06-28  Jan Sjodin  <jan.sjodin@amd.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
