@@ -97,7 +97,7 @@ extern int target_memregs;
 
 #define TARGET_VERSION fprintf (stderr, " (m32c)");
 
-#define OVERRIDE_OPTIONS m32c_override_options ();
+#define OVERRIDE_OPTIONS m32c_override_options ()
 
 /* Defining data structures for per-function information */
 

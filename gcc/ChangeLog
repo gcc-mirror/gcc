@@ -1,3 +1,7 @@
+2007-06-28  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.h (OVERRIDE_OPTIONS): Omit unneeded semicolon.
+
 2007-06-28  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/invoke.texi (C++ Dialect Options): Document
