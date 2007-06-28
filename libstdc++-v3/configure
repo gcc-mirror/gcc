@@ -14068,8 +14068,9 @@ fi
 rm -f conftest*
 
 
-    # Test for bugs early in glibc-2.2.x series
-    if test "$cross_compiling" = yes; then
+    if test $enable_clocale = auto; then
+      # Test for bugs early in glibc-2.2.x series
+      if test "$cross_compiling" = yes; then
   enable_clocale_flag=generic
 else
   cat >conftest.$ac_ext <<_ACEOF
@@ -14079,19 +14080,19 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-    #define _GNU_SOURCE 1
-    #include <locale.h>
-    #include <string.h>
-    #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-    extern __typeof(newlocale) __newlocale;
-    extern __typeof(duplocale) __duplocale;
-    extern __typeof(strcoll_l) __strcoll_l;
-    #endif
-    int main()
-    {
-        const char __one[] = "Äuglein Augmen";
+      #define _GNU_SOURCE 1
+      #include <locale.h>
+      #include <string.h>
+      #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+      extern __typeof(newlocale) __newlocale;
+      extern __typeof(duplocale) __duplocale;
+      extern __typeof(strcoll_l) __strcoll_l;
+      #endif
+      int main()
+      {
+	const char __one[] = "Äuglein Augmen";
         const char __two[] = "Äuglein";
-        int i;
+       	int i;
         int j;
         __locale_t        loc;
         __locale_t        loc_dup;
@@ -14100,7 +14101,7 @@ cat >>conftest.$ac_ext <<_ACEOF
         i = __strcoll_l(__one, __two, loc);
         j = __strcoll_l(__one, __two, loc_dup);
         return 0;
-    }
+      }
 
 _ACEOF
 rm -f conftest$ac_exeext
@@ -14125,6 +14126,7 @@ enable_clocale_flag=generic
 fi
 rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
+    fi
 
     # Set it to scream when it hurts.
     ac_save_CFLAGS="$CFLAGS"
@@ -16569,7 +16571,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 16572 "configure"
+#line 16574 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
