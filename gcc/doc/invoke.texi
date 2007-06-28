@@ -191,6 +191,7 @@ in the following sections.
 -frepo  -fno-rtti  -fstats  -ftemplate-depth-@var{n} @gol
 -fno-threadsafe-statics -fuse-cxa-atexit  -fno-weak  -nostdinc++ @gol
 -fno-default-inline  -fvisibility-inlines-hidden @gol
+-fvisibility-ms-compat @gol
 -Wabi  -Wctor-dtor-privacy @gol
 -Wnon-virtual-dtor  -Wreorder @gol
 -Weffc++  -Wno-deprecated  -Wstrict-null-sentinel @gol
@@ -1829,6 +1830,40 @@ visibility will have no effect.
 Explicitly instantiated inline methods are unaffected by this option
 as their linkage might otherwise cross a shared library boundary.
 @xref{Template Instantiation}.
+
+@item -fvisibility-ms-compat
+@opindex fvisibility-ms-compat
+This flag attempts to use visibility settings to make GCC's C++
+linkage model compatible with that of Microsoft Visual Studio.
+
+The flag makes these changes to GCC's linkage model:
+
+@enumerate
+@item
+It sets the default visibility to @code{hidden}, like
+@option{-fvisibility=hidden}.
+
+@item
+Types, but not their members, are not hidden by default.
+
+@item
+The One Definition Rule is relaxed for types without explicit
+visibility specifications which are defined in more than one different
+shared object: those declarations are permitted if they would have
+been permitted when this option was not used.
+@end enumerate
+
+In new code it is better to use @option{-fvisibility=hidden} and
+export those classes which are intended to be externally visible.
+Unfortunately it is possible for code to rely, perhaps accidentally,
+on the Visual Studio behaviour.
+
+Among the consequences of these changes are that static data members
+of the same type with the same name but defined in different shared
+objects will be different, so changing one will not change the other;
+and that pointers to function members defined in different shared
+objects may not compare equal.  When this flag is given, it is a
+violation of the ODR to define types with the same name differently.
 
 @item -fno-weak
 @opindex fno-weak

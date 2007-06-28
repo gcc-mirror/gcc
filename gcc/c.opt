@@ -767,6 +767,10 @@ fvisibility-inlines-hidden
 C++ ObjC++
 Marks all inlined methods as having hidden visibility
 
+fvisibility-ms-compat
+C++ ObjC++ Var(flag_visibility_ms_compat)
+Changes visibility to match Microsoft Visual Studio by default
+
 fvtable-gc
 C++ ObjC++
 Discard unused virtual functions

@@ -1716,6 +1716,19 @@ determine_visibility (tree decl)
 	     but have no TEMPLATE_INFO, so don't try to check it.  */
 	  use_template = 0;
 	}
+      else if (TREE_CODE (decl) == VAR_DECL && DECL_TINFO_P (decl)
+	       && flag_visibility_ms_compat)
+	{
+	  /* Under -fvisibility-ms-compat, types are visible by default,
+	     even though their contents aren't.  */
+	  tree underlying_type = TREE_TYPE (DECL_NAME (decl));
+	  int underlying_vis = type_visibility (underlying_type);
+	  if (underlying_vis == VISIBILITY_ANON
+	      || CLASSTYPE_VISIBILITY_SPECIFIED (underlying_type))
+	    constrain_visibility (decl, underlying_vis);
+	  else
+	    DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
+	}
       else if (TREE_CODE (decl) == VAR_DECL && DECL_TINFO_P (decl))
 	{
 	  /* tinfo visibility is based on the type it's for.  */
