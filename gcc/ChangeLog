@@ -1,3 +1,9 @@
+2006-06-29  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/32493
+	* gimplify.c (gimplify_call_expr): Ignore variable argument parts
+	during type verification.
+
 2007-06-29  Jan Hubicka  <jh@suse.cz>
 
 	* recog.c (validate_change_rtx_1): Unshare TO argument.

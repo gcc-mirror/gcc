@@ -2138,14 +2138,21 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
   if (parms)
     {
       for (i = 0, p = parms; i < nargs; i++, p = TREE_CHAIN (p))
-	if (!p
-	    || TREE_VALUE (p) == error_mark_node
-	    || CALL_EXPR_ARG (*expr_p, i) == error_mark_node
-	    || !fold_convertible_p (TREE_VALUE (p), CALL_EXPR_ARG (*expr_p, i)))
-	  {
-	    CALL_CANNOT_INLINE_P (*expr_p) = 1;
+	{
+	  /* If this is a varargs function defer inlining decision
+	     to callee.  */
+	  if (!p)
 	    break;
-	  }
+	  if (TREE_VALUE (p) == error_mark_node
+	      || CALL_EXPR_ARG (*expr_p, i) == error_mark_node
+	      || TREE_CODE (TREE_VALUE (p)) == VOID_TYPE
+	      || !fold_convertible_p (TREE_VALUE (p),
+				      CALL_EXPR_ARG (*expr_p, i)))
+	    {
+	      CALL_CANNOT_INLINE_P (*expr_p) = 1;
+	      break;
+	    }
+	}
     }
   else if (decl && DECL_ARGUMENTS (decl))
     {
