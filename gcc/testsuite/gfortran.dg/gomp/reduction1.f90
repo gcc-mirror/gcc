@@ -60,15 +60,15 @@ common /blk/ i1
 !$omp end parallel
 !$omp parallel reduction (*:ia1)	! { dg-error "Assumed size" }
 !$omp end parallel
-!$omp parallel reduction (+:l1)		! { dg-error "is LOGICAL" }
+!$omp parallel reduction (+:l1)		! { dg-error "must be of numeric type, got LOGICAL" }
 !$omp end parallel
-!$omp parallel reduction (*:la1)	! { dg-error "is LOGICAL" }
+!$omp parallel reduction (*:la1)	! { dg-error "must be of numeric type, got LOGICAL" }
 !$omp end parallel
-!$omp parallel reduction (-:a1)		! { dg-error "is CHARACTER" }
+!$omp parallel reduction (-:a1)		! { dg-error "must be of numeric type, got CHARACTER" }
 !$omp end parallel
-!$omp parallel reduction (+:t1)		! { dg-error "is TYPE" }
+!$omp parallel reduction (+:t1)		! { dg-error "must be of numeric type, got TYPE" }
 !$omp end parallel
-!$omp parallel reduction (*:ta1)	! { dg-error "is TYPE" }
+!$omp parallel reduction (*:ta1)	! { dg-error "must be of numeric type, got TYPE" }
 !$omp end parallel
 !$omp parallel reduction (.and.:i3)	! { dg-error "must be LOGICAL" }
 !$omp end parallel
