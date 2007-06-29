@@ -1,3 +1,9 @@
+2007-06-29 Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/32372
+	* cse.c (cse_insn): Avoid invalid sharing in between register note and
+	the insn pattern.
+
 2007-06-29 Anatoly Sokolov <aesok@post.ru>
 
 	PR target/32335
