@@ -44,6 +44,7 @@
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "df.h"
 
 /* Maximal allowed offset for an address in the LD command */
 #define MAX_LD_OFFSET(MODE) (64 - (signed)GET_MODE_SIZE (MODE))
@@ -631,9 +632,13 @@ expand_prologue (void)
     }
   else if (minimize && (frame_pointer_needed || live_seq > 6)) 
     {
+      insn = emit_move_insn (gen_rtx_REG (HImode, REG_X), 
+                             gen_int_mode (size, HImode));
+      RTX_FRAME_RELATED_P (insn) = 1;
+
       insn = 
-        emit_insn (gen_call_prologue_saves (gen_int_mode (size, HImode),
-                                            gen_int_mode (live_seq, HImode)));
+        emit_insn (gen_call_prologue_saves (gen_int_mode (live_seq, HImode),
+					    gen_int_mode (size + live_seq, HImode)));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   else
