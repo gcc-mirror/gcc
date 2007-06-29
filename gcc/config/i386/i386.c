@@ -16820,6 +16820,8 @@ enum ix86_builtins
   IX86_BUILTIN_VEC_SET_V4HI,
   IX86_BUILTIN_VEC_SET_V16QI,
 
+  IX86_BUILTIN_VEC_PACK_SFIX,
+
   /* SSE4.2.  */
   IX86_BUILTIN_CRC32QI,
   IX86_BUILTIN_CRC32HI,
@@ -17166,6 +17168,8 @@ static const struct builtin_description bdesc_2arg[] =
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movsd,  "__builtin_ia32_movsd", IX86_BUILTIN_MOVSD, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_unpckhpd, "__builtin_ia32_unpckhpd", IX86_BUILTIN_UNPCKHPD, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_unpcklpd, "__builtin_ia32_unpcklpd", IX86_BUILTIN_UNPCKLPD, UNKNOWN, 0 },
+
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_pack_sfix_v2df, "__builtin_ia32_vec_pack_sfix", IX86_BUILTIN_VEC_PACK_SFIX, UNKNOWN, 0 },
 
   /* SSE2 MMX */
   { OPTION_MASK_ISA_SSE2, CODE_FOR_addv16qi3, "__builtin_ia32_paddb128", IX86_BUILTIN_PADDB128, UNKNOWN, 0 },
@@ -17563,6 +17567,9 @@ ix86_init_mmx_sse_builtins (void)
     = build_function_type_list (V2DF_type_node, V4SI_type_node, NULL_TREE);
   tree v4si_ftype_v2df
     = build_function_type_list (V4SI_type_node, V2DF_type_node, NULL_TREE);
+  tree v4si_ftype_v2df_v2df
+    = build_function_type_list (V4SI_type_node,
+				V2DF_type_node, V2DF_type_node, NULL_TREE);
   tree v2si_ftype_v2df
     = build_function_type_list (V2SI_type_node, V2DF_type_node, NULL_TREE);
   tree v4sf_ftype_v2df
@@ -17906,7 +17913,10 @@ ix86_init_mmx_sse_builtins (void)
 	  || d->icode == CODE_FOR_sse2_vmmaskcmpv2df3)
 	type = v2di_ftype_v2df_v2df;
 
-      def_builtin (d->mask, d->name, type, d->code);
+      if (d->icode == CODE_FOR_vec_pack_sfix_v2df)
+	type = v4si_ftype_v2df_v2df;
+
+      def_builtin_const (d->mask, d->name, type, d->code);
     }
 
   /* Add all builtins that are more or less simple operations on 1 operand.  */
@@ -18456,11 +18466,6 @@ ix86_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
       emit_insn (gen_sse2_loadd (x, op1));
       op1 = gen_lowpart (TImode, x);
     }
-
-  /* The insn must want input operands in the same modes as the
-     result.  */
-  gcc_assert ((GET_MODE (op0) == mode0 || GET_MODE (op0) == VOIDmode)
-	      && (GET_MODE (op1) == mode1 || GET_MODE (op1) == VOIDmode));
 
   if (!(*insn_data[icode].operand[1].predicate) (op0, mode0))
     op0 = copy_to_mode_reg (mode0, op0);
@@ -19861,6 +19866,12 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
       if (out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
 	return ix86_builtins[IX86_BUILTIN_SQRTPS];
+      return NULL_TREE;
+
+    case BUILT_IN_LRINT:
+      if (out_mode == SImode && out_n == 4
+	  && in_mode == DFmode && in_n == 2)
+	return ix86_builtins[IX86_BUILTIN_VEC_PACK_SFIX];
       return NULL_TREE;
 
     case BUILT_IN_LRINTF:

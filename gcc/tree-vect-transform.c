@@ -2253,13 +2253,19 @@ vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   tree scalar_dest;
   tree operation;
   tree op, type;
+  tree vec_oprnd0 = NULL_TREE, vec_oprnd1 = NULL_TREE;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt), prev_stmt_info;
   tree vectype_out, vectype_in;
+  int nunits_in;
+  int nunits_out;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   tree fndecl, rhs, new_temp, def, def_stmt, rhs_type, lhs_type;
   enum vect_def_type dt[2];
+  tree new_stmt;
   int ncopies, j, nargs;
   call_expr_arg_iterator iter;
+  tree vargs;
+  enum { NARROW, NONE, WIDEN } modifier;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
@@ -2291,12 +2297,10 @@ vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   nargs = 0;
   FOR_EACH_CALL_EXPR_ARG (op, iter, operation)
     {
-      ++nargs;
-
       /* Bail out if the function has more than two arguments, we
 	 do not have interesting builtin functions to vectorize with
 	 more than two arguments.  */
-      if (nargs > 2)
+      if (nargs >= 2)
 	return false;
 
       /* We can only handle calls with arguments of the same type.  */
@@ -2309,12 +2313,14 @@ vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	}
       rhs_type = TREE_TYPE (op);
 
-      if (!vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt[nargs-1]))
+      if (!vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt[nargs]))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "use not simple.");
 	  return false;
 	}
+
+      ++nargs;
     }
 
   /* No arguments is also not good.  */
@@ -2322,15 +2328,20 @@ vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
     return false;
 
   vectype_in = get_vectype_for_scalar_type (rhs_type);
+  nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
 
   lhs_type = TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 0));
   vectype_out = get_vectype_for_scalar_type (lhs_type);
+  nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
 
-  /* Only handle the case of vectors with the same number of elements.
-     FIXME: We need a way to handle for example the SSE2 cvtpd2dq
-	    instruction which converts V2DFmode to V4SImode but only
-	    using the lower half of the V4SImode result.  */
-  if (TYPE_VECTOR_SUBPARTS (vectype_in) != TYPE_VECTOR_SUBPARTS (vectype_out))
+  /* FORNOW */
+  if (nunits_in == nunits_out / 2)
+    modifier = NARROW;
+  else if (nunits_out == nunits_in)
+    modifier = NONE;
+  else if (nunits_out == nunits_in / 2)
+    modifier = WIDEN;
+  else
     return false;
 
   /* For now, we only vectorize functions if a target specific builtin
@@ -2348,8 +2359,14 @@ vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
   gcc_assert (ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS));
 
-  ncopies = (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-	     / TYPE_VECTOR_SUBPARTS (vectype_out));
+  if (modifier == NARROW)
+    ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_out;
+  else
+    ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_in;
+
+  /* Sanity check: make sure that at least one copy of the vectorized stmt
+     needs to be generated.  */
+  gcc_assert (ncopies >= 1);
 
   if (!vec_stmt) /* transformation not required.  */
     {
@@ -2365,55 +2382,113 @@ vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "transform operation.");
 
-  gcc_assert (ncopies >= 1);
-
   /* Handle def.  */
   scalar_dest = GIMPLE_STMT_OPERAND (stmt, 0);
   vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
 
   prev_stmt_info = NULL;
-  for (j = 0; j < ncopies; ++j)
+  switch (modifier)
     {
-      tree new_stmt, vargs;
-      tree vec_oprnd[2];
-      int n;
-
-      /* Build argument list for the vectorized call.  */
-      /* FIXME: Rewrite this so that it doesn't construct a temporary
-	  list.  */
-      vargs = NULL_TREE;
-      n = -1;
-      FOR_EACH_CALL_EXPR_ARG (op, iter, operation)
+    case NONE:
+      for (j = 0; j < ncopies; ++j)
 	{
-	  ++n;
+	  /* Build argument list for the vectorized call.  */
+	  /* FIXME: Rewrite this so that it doesn't
+	     construct a temporary list.  */
+	  vargs = NULL_TREE;
+	  nargs = 0;
+	  FOR_EACH_CALL_EXPR_ARG (op, iter, operation)
+	    {
+	      if (j == 0)
+		vec_oprnd0
+		  = vect_get_vec_def_for_operand (op, stmt, NULL);
+	      else
+		vec_oprnd0
+		  = vect_get_vec_def_for_stmt_copy (dt[nargs], vec_oprnd0);
+
+	      vargs = tree_cons (NULL_TREE, vec_oprnd0, vargs);
+
+	      ++nargs;
+	    }
+	  vargs = nreverse (vargs);
+
+	  rhs = build_function_call_expr (fndecl, vargs);
+	  new_stmt = build_gimple_modify_stmt (vec_dest, rhs);
+	  new_temp = make_ssa_name (vec_dest, new_stmt);
+	  GIMPLE_STMT_OPERAND (new_stmt, 0) = new_temp;
+
+	  vect_finish_stmt_generation (stmt, new_stmt, bsi);
 
 	  if (j == 0)
-	    vec_oprnd[n] = vect_get_vec_def_for_operand (op, stmt, NULL);
+	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
 	  else
-	    vec_oprnd[n] = vect_get_vec_def_for_stmt_copy (dt[n], vec_oprnd[n]);
+	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
 
-	  vargs = tree_cons (NULL_TREE, vec_oprnd[n], vargs);
+	  prev_stmt_info = vinfo_for_stmt (new_stmt);
 	}
-      vargs = nreverse (vargs);
 
-      rhs = build_function_call_expr (fndecl, vargs);
-      new_stmt = build_gimple_modify_stmt (vec_dest, rhs);
-      new_temp = make_ssa_name (vec_dest, new_stmt);
-      GIMPLE_STMT_OPERAND (new_stmt, 0) = new_temp;
+      break;
 
-      vect_finish_stmt_generation (stmt, new_stmt, bsi);
+    case NARROW:
+      for (j = 0; j < ncopies; ++j)
+	{
+	  /* Build argument list for the vectorized call.  */
+	  /* FIXME: Rewrite this so that it doesn't
+	     construct a temporary list.  */
+	  vargs = NULL_TREE;
+	  nargs = 0;
+	  FOR_EACH_CALL_EXPR_ARG (op, iter, operation)
+	    {
+	      if (j == 0)
+		{
+		  vec_oprnd0
+		    = vect_get_vec_def_for_operand (op, stmt, NULL);
+		  vec_oprnd1
+		    = vect_get_vec_def_for_stmt_copy (dt[nargs], vec_oprnd0);
+		}
+	      else
+		{
+		  vec_oprnd0
+		    = vect_get_vec_def_for_stmt_copy (dt[nargs], vec_oprnd1);
+		  vec_oprnd1
+		    = vect_get_vec_def_for_stmt_copy (dt[nargs], vec_oprnd0);
+		}
 
-      if (j == 0)
-	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
-      else
-	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-      prev_stmt_info = vinfo_for_stmt (new_stmt);
+	      vargs = tree_cons (NULL_TREE, vec_oprnd0, vargs);
+	      vargs = tree_cons (NULL_TREE, vec_oprnd1, vargs);
+
+	      ++nargs;
+	    }
+	  vargs = nreverse (vargs);
+
+	  rhs = build_function_call_expr (fndecl, vargs);
+	  new_stmt = build_gimple_modify_stmt (vec_dest, rhs);
+	  new_temp = make_ssa_name (vec_dest, new_stmt);
+	  GIMPLE_STMT_OPERAND (new_stmt, 0) = new_temp;
+
+	  vect_finish_stmt_generation (stmt, new_stmt, bsi);
+
+	  if (j == 0)
+	    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
+	  else
+	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+
+	  prev_stmt_info = vinfo_for_stmt (new_stmt);
+	}
+
+      *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
+
+      break;
+
+    case WIDEN:
+      /* No current target implements this case.  */
+      return false;
     }
 
-  /* The call in STMT might prevent it from being removed in dce.  We however
-     cannot remove it here, due to the way the ssa name it defines is mapped
-     to the new definition.  So just replace rhs of the statement with something
-     harmless.  */
+  /* The call in STMT might prevent it from being removed in dce.
+     We however cannot remove it here, due to the way the ssa name
+     it defines is mapped to the new definition.  So just replace
+     rhs of the statement with something harmless.  */
   type = TREE_TYPE (scalar_dest);
   GIMPLE_STMT_OPERAND (stmt, 1) = fold_convert (type, integer_zero_node);
   update_stmt (stmt);
