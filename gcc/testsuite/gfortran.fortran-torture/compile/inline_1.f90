@@ -11,7 +11,7 @@ contains
       maxerr1 = funk (r ,x1 , x1)
     end do
     if (debug) then
-      print "help"
+      print *, "help"
     end if
   end subroutine fit
 end program gfcbug43

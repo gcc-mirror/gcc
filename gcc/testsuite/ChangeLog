@@ -1,3 +1,7 @@
+2007-06-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.fortran-torture/compile/inline_1.f90: Fix test.
+
 2007-06-29  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* g++.dg/other/canon-31724.C: New.
