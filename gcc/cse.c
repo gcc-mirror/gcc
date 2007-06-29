@@ -4181,7 +4181,7 @@ cse_insn (rtx insn, rtx libcall_insn)
       canon_reg (XEXP (tem, 0), insn);
       apply_change_group ();
       src_eqv = fold_rtx (XEXP (tem, 0), insn);
-      XEXP (tem, 0) = src_eqv;
+      XEXP (tem, 0) = copy_rtx (src_eqv);
       df_notes_rescan (insn);
     }
 
@@ -7012,7 +7012,7 @@ struct tree_opt_pass pass_cse =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_df_finish |
+  TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func |
   TODO_ggc_collect |
   TODO_verify_flow,                     /* todo_flags_finish */
@@ -7070,7 +7070,7 @@ struct tree_opt_pass pass_cse2 =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_df_finish |
+  TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func |
   TODO_ggc_collect |
   TODO_verify_flow,                     /* todo_flags_finish */
