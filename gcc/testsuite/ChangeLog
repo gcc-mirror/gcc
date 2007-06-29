@@ -1,4 +1,9 @@
-2006-06-29  Richard Guenther  <rguenther@suse.de>
+2007-06-29  Daniel Franke  <franke.daniel@gmail.com>
+
+	* gfortran.dg/gomp/reduction1.f90: Adjust error message.
+	* gfortran.dg/gomp/allocatable_components_1.f90: Likewise.
+
+2007-06-29  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/32493
 	* gcc.dg/inline-23.c: New testcase.
