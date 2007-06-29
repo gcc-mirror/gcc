@@ -3757,11 +3757,10 @@ df_set_unused_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
       /* Only do this if the value is totally dead.  */
     }
   else
-    for (r=mws->start_regno; r <= mws->end_regno; r++)
+    for (r = mws->start_regno; r <= mws->end_regno; r++)
       {
-	
-	if ((!bitmap_bit_p (live, r))
-	    && (!bitmap_bit_p (artificial_uses, r)))
+	if (!bitmap_bit_p (live, r)
+	    && !bitmap_bit_p (artificial_uses, r))
 	  {
 	    old = df_set_note (REG_UNUSED, insn, old, regno_reg_rtx[r]);
 #ifdef REG_DEAD_DEBUGGING
@@ -3823,17 +3822,15 @@ df_set_dead_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
   else
     {
       for (r = mws->start_regno; r <= mws->end_regno; r++)
-	{
-	  if ((!bitmap_bit_p (live, r))
-	      && (!bitmap_bit_p (artificial_uses, r))
-	      && (!bitmap_bit_p (do_not_gen, r)))
-	    {
-	      old = df_set_note (REG_DEAD, insn, old, regno_reg_rtx[r]);
+	if (!bitmap_bit_p (live, r)
+	    && !bitmap_bit_p (artificial_uses, r)
+	    && !bitmap_bit_p (do_not_gen, r))
+	  {
+	    old = df_set_note (REG_DEAD, insn, old, regno_reg_rtx[r]);
 #ifdef REG_DEAD_DEBUGGING
-	      df_print_note ("adding 2: ", insn, REG_NOTES (insn));
+	    df_print_note ("adding 2: ", insn, REG_NOTES (insn));
 #endif
-	    }
-	}
+	  }
     }
   return old;
 }

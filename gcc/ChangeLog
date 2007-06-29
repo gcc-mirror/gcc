@@ -1,3 +1,8 @@
+2007-06-29  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* df-problems.c (df_set_unused_notes_for_mw): Fix formatting.
+	(df_set_dead_notes_for_mw): Likewise.
+
 2007-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-common.c (pointer_int_sum): Do the negation in sizetype.
