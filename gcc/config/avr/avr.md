@@ -2706,20 +2706,16 @@
 ;;  Library prologue saves
 (define_insn "call_prologue_saves"
   [(unspec_volatile:HI [(const_int 0)] UNSPECV_PROLOGUE_SAVES)
-   (set (reg:HI REG_SP) (minus:HI 
-                           (reg:HI REG_SP)
-                           (match_operand:HI 0 "immediate_operand" "")))
+   (match_operand:HI 0 "immediate_operand" "")
    (set (reg:HI REG_SP) (minus:HI 
                            (reg:HI REG_SP)
                            (match_operand:HI 1 "immediate_operand" "")))
-   (set (reg:HI REG_X) (match_dup 0))
+   (use (reg:HI REG_X))
    (clobber (reg:HI REG_Z))]
   ""
-  "ldi r26,lo8(%0)
-	ldi r27,hi8(%0)
-	ldi r30,pm_lo8(1f)
+  "ldi r30,pm_lo8(1f)
 	ldi r31,pm_hi8(1f)
-	%~jmp __prologue_saves__+((18 - %1) * 2)
+	%~jmp __prologue_saves__+((18 - %0) * 2)
 1:"
   [(set_attr_alternative "length"
 			 [(if_then_else (eq_attr "mcu_mega" "yes")
