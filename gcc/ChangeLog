@@ -1,3 +1,20 @@
+2007-06-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/24659
+	* tree-vect-transform.c (vectorizable_call): Handle
+	(nunits_in == nunits_out / 2) and (nunits_out == nunits_in / 2) cases.
+
+	* config/i386/sse.md (vec_pack_sfix_v2df): New expander.
+	* config/i386/i386.c (enum ix86_builtins)
+	[IX86_BUILTIN_VEC_PACK_SFIX]: New constant.
+	(struct bdesc_2arg) [__builtin_ia32_vec_pack_sfix]: New builtin
+	description.
+	(ix86_init_mmx_sse_builtins): Define all builtins with 2 arguments as
+	const using def_builtin_const.
+	(ix86_expand_binop_builtin): Remove bogus assert() that insn wants
+	input operands in the same modes as the result.
+	(ix86_builtin_vectorized_function): Handle BUILT_IN_LRINT.
+
 2007-06-29  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* df-problems.c (df_set_unused_notes_for_mw): Fix formatting.
@@ -264,7 +281,7 @@
 	* gimplify.c (mark_addressable): New function.
 	(gimplify_modify_expr_rhs, gimplify_addr_expr, gimplify_expr): Use it.
 
-2007-06-19  Uros Bizjak  <ubizjak@gmail.com>
+2007-06-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/32374
 	* expr.c (store_constructor): Do not clobber non-zeroed memory. 

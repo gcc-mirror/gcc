@@ -2421,6 +2421,26 @@
   DONE;
 })
 
+(define_expand "vec_pack_sfix_v2df"
+  [(match_operand:V4SI 0 "register_operand" "")
+   (match_operand:V2DF 1 "nonimmediate_operand" "")
+   (match_operand:V2DF 2 "nonimmediate_operand" "")]
+  "TARGET_SSE2"
+{
+  rtx r1, r2;
+
+  r1 = gen_reg_rtx (V4SImode);
+  r2 = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_sse2_cvtpd2dq (r1, operands[1]));
+  emit_insn (gen_sse2_cvtpd2dq (r2, operands[2]));
+  emit_insn (gen_sse2_punpcklqdq (gen_lowpart (V2DImode, operands[0]),
+				  gen_lowpart (V2DImode, r1),
+				  gen_lowpart (V2DImode, r2)));
+  DONE;
+})
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel double-precision floating point element swizzling

@@ -1,3 +1,10 @@
+2007-06-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/24659
+	* gcc.target/i386/vectorize2.c: New test.
+	* gcc.target/i386/sse2-lrint-vec.c: New runtime test.
+	* gcc.target/i386/sse2-lrintf-vec.c: Ditto.
+
 2007-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pointer-arith-9.c: New test.
