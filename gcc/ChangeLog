@@ -1,4 +1,4 @@
-2006-06-29  Richard Guenther  <rguenther@suse.de>
+2007-06-29  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/32493
 	* gimplify.c (gimplify_call_expr): Ignore variable argument parts
