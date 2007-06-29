@@ -1,3 +1,7 @@
+2007-06-29  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* g++.dg/other/canon-31724.C: New.
+	
 2007-06-29  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/32372
@@ -47,6 +51,7 @@
 	PR tree-opt/32417
 	* gfortran.fortran-torture/compile/pr32417.f90: New test.
 
+>>>>>>> .r126123
 2007-06-28  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-iv-4.c: Test now passes on vect_pack_trunc
