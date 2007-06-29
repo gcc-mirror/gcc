@@ -2251,7 +2251,9 @@ resolve_operator (gfc_expr *e)
       goto bad_op;
 
     case INTRINSIC_USER:
-      if (op2 == NULL)
+      if (e->value.op.uop->operator == NULL)
+	sprintf (msg, _("Unknown operator '%s' at %%L"), e->value.op.uop->name);
+      else if (op2 == NULL)
 	sprintf (msg, _("Operand of user operator '%s' at %%L is %s"),
 		 e->value.op.uop->name, gfc_typename (&op1->ts));
       else

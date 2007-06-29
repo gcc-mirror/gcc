@@ -1,5 +1,9 @@
 2007-06-29  Daniel Franke  <franke.daniel@gmail.com>
 
+	* gfortran.dg/operator_3.f90: New test.
+
+2007-06-29  Daniel Franke  <franke.daniel@gmail.com>
+
 	* gfortran.dg/gomp/reduction1.f90: Adjust error message.
 	* gfortran.dg/gomp/allocatable_components_1.f90: Likewise.
 
