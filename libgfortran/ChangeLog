@@ -1,3 +1,9 @@
+2007-06-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/32456
+	* io/unit.c (filename_from_unit): Don't use find_unit, instead search
+	for unit directly.
+
 2007-06-24  Adam Nemet  <anemet@caviumnetworks.com>
 
 	PR libfortran/32495
