@@ -538,7 +538,7 @@ validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object)
       || (GET_CODE (x) == GET_CODE (from) && GET_MODE (x) == GET_MODE (from)
 	  && rtx_equal_p (x, from)))
     {
-      validate_change (object, loc, to, 1);
+      validate_unshare_change (object, loc, to, 1);
       return;
     }
 
