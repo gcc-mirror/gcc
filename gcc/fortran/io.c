@@ -257,10 +257,12 @@ format_lex (void)
       do
 	{
 	  c = next_char_not_space ();
-	  if (c != '0')
-	    zflag = 0;
 	  if (ISDIGIT (c))
-	    value = 10 * value + c - '0';
+	    {
+	      value = 10 * value + c - '0';
+	      if (c != '0')
+		zflag = 0;
+	    }
 	}
       while (ISDIGIT (c));
 
@@ -429,7 +431,7 @@ format_lex (void)
    means that the warning message is a little less than great.  */
 
 static try
-check_format (void)
+check_format (bool is_input)
 {
   const char *posint_required	  = _("Positive width required");
   const char *nonneg_required	  = _("Nonnegative width required");
@@ -670,6 +672,11 @@ data_desc:
 	  error = nonneg_required;
 	  goto syntax;
 	}
+      else if (is_input && t == FMT_ZERO)
+	{
+	  error = posint_required;
+	  goto syntax;
+	}
 
       t = format_lex ();
       if (t != FMT_PERIOD)
@@ -717,6 +724,11 @@ data_desc:
       if (t != FMT_ZERO && t != FMT_POSINT)
 	{
 	  error = nonneg_required;
+	  goto syntax;
+	}
+      else if (is_input && t == FMT_ZERO)
+	{
+	  error = posint_required;
 	  goto syntax;
 	}
 
@@ -854,11 +866,11 @@ finished:
    like a format string.  */
 
 static void
-check_format_string (gfc_expr *e)
+check_format_string (gfc_expr *e, bool is_input)
 {
   mode = MODE_STRING;
   format_string = e->value.character.string;
-  check_format ();
+  check_format (is_input);
 }
 
 
@@ -893,7 +905,7 @@ gfc_match_format (void)
 
   start = gfc_current_locus;
 
-  if (check_format () == FAILURE)
+  if (check_format (false) == FAILURE)
     return MATCH_ERROR;
 
   if (gfc_match_eos () != MATCH_YES)
@@ -920,7 +932,7 @@ gfc_match_format (void)
   gfc_statement_label->format = e;
 
   mode = MODE_COPY;
-  check_format ();		/* Guaranteed to succeed */
+  check_format (false);		/* Guaranteed to succeed */
   gfc_match_eos ();		/* Guaranteed to succeed */
 
   return MATCH_YES;
@@ -2740,7 +2752,7 @@ if (condition) \
 
   expr = dt->format_expr;
   if (expr != NULL && expr->expr_type == EXPR_CONSTANT)
-    check_format_string (expr);
+    check_format_string (expr, k == M_READ);
 
   return m;
 }
