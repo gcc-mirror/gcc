@@ -1691,6 +1691,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
          of the incomplete array type.  */
       full_type = build_distinct_type_copy (full_type);
       TYPE_DOMAIN (full_type) = index;
+      SET_TYPE_STRUCTURAL_EQUALITY (full_type);
     }
   else
     {
