@@ -1,3 +1,8 @@
+2007-06-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* testsuite/libjava.jvmti/jvmti-interp.exp (gij_jvmti_test_one):
+	Fix a typo.
+
 2007-06-28  Jan Nijtmans  <nijtmans@users.sourceforge.net>
 
 	PR libgcj/30999:
