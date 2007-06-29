@@ -850,7 +850,7 @@ resolve_omp_clauses (gfc_code *code)
 		  case OMP_LIST_MULT:
 		  case OMP_LIST_SUB:
 		    if (!gfc_numeric_ts (&n->sym->ts))
-		      gfc_error ("%c REDUCTION variable '%s' at %L must be of intrinsic type, got %s",
+		      gfc_error ("%c REDUCTION variable '%s' at %L must be of numeric type, got %s",
 				 list == OMP_LIST_PLUS ? '+'
 				 : list == OMP_LIST_MULT ? '*' : '-',
 				 n->sym->name, &code->loc,
