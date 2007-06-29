@@ -1,3 +1,7 @@
+2007-06-29  Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (validate_change_rtx_1): Unshare TO argument.
+
 2007-06-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/24659
