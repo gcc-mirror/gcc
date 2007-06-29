@@ -2627,7 +2627,6 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
   tree size_exp, ret;
 
   /* The result is a pointer of the same type that is being added.  */
-
   tree result_type = TREE_TYPE (ptrop);
 
   if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
@@ -2661,7 +2660,6 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
      contains a constant term, apply distributive law
      and multiply that constant term separately.
      This helps produce common subexpressions.  */
-
   if ((TREE_CODE (intop) == PLUS_EXPR || TREE_CODE (intop) == MINUS_EXPR)
       && !TREE_CONSTANT (intop)
       && TREE_CONSTANT (TREE_OPERAND (intop, 1))
@@ -2690,7 +2688,6 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
 
   /* Convert the integer argument to a type the same size as sizetype
      so the multiply won't overflow spuriously.  */
-
   if (TYPE_PRECISION (TREE_TYPE (intop)) != TYPE_PRECISION (sizetype)
       || TYPE_UNSIGNED (TREE_TYPE (intop)) != TYPE_UNSIGNED (sizetype))
     intop = convert (c_common_type_for_size (TYPE_PRECISION (sizetype),
@@ -2698,17 +2695,15 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
 
   /* Replace the integer argument with a suitable product by the object size.
      Do this multiplication as signed, then convert to the appropriate
-     pointer type (actually unsigned integral).  */
-
-  intop = build_binary_op (MULT_EXPR, intop,
-			   convert (TREE_TYPE (intop), size_exp), 1);
-
-  if (resultcode == MINUS_EXPR)
-    intop = fold_build1 (NEGATE_EXPR, TREE_TYPE (intop), intop);
-
-  intop = convert (sizetype, intop);
+     type for the pointer operation.  */
+  intop = convert (sizetype,
+		   build_binary_op (MULT_EXPR, intop,
+				    convert (TREE_TYPE (intop), size_exp), 1));
 
   /* Create the sum or difference.  */
+  if (resultcode == MINUS_EXPR)
+    intop = fold_build1 (NEGATE_EXPR, sizetype, intop);
+
   ret = fold_build2 (POINTER_PLUS_EXPR, result_type, ptrop, intop);
 
   fold_undefer_and_ignore_overflow_warnings ();

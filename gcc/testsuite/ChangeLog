@@ -1,3 +1,7 @@
+2007-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pointer-arith-9.c: New test.
+
 2007-06-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32483
