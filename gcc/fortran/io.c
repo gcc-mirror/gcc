@@ -487,6 +487,7 @@ format_item_1:
       goto format_item;
 
     case FMT_SIGNED_INT:
+    case FMT_ZERO:
       /* Signed integer can only precede a P format.  */
       t = format_lex ();
       if (t != FMT_P)
