@@ -2858,6 +2858,7 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
   gfc_expr *result;
   int i, j, len, ncop, nlen;
   mpz_t ncopies;
+  bool have_length = false;
 
   /* If NCOPIES isn't a constant, there's nothing we can do.  */
   if (n->expr_type != EXPR_CONSTANT)
@@ -2872,29 +2873,49 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
     }
 
   /* If we don't know the character length, we can do no more.  */
-  if (e->ts.cl == NULL || e->ts.cl->length == NULL
-      || e->ts.cl->length->expr_type != EXPR_CONSTANT)
+  if (e->ts.cl && e->ts.cl->length
+	&& e->ts.cl->length->expr_type == EXPR_CONSTANT)
+    {
+      len = mpz_get_si (e->ts.cl->length->value.integer);
+      have_length = true;
+    }
+  else if (e->expr_type == EXPR_CONSTANT
+	     && (e->ts.cl == NULL || e->ts.cl->length == NULL))
+    {
+      len = e->value.character.length;
+    }
+  else
     return NULL;
 
   /* If the source length is 0, any value of NCOPIES is valid
      and everything behaves as if NCOPIES == 0.  */
   mpz_init (ncopies);
-  if (mpz_sgn (e->ts.cl->length->value.integer) == 0)
+  if (len == 0)
     mpz_set_ui (ncopies, 0);
   else
     mpz_set (ncopies, n->value.integer);
 
   /* Check that NCOPIES isn't too large.  */
-  if (mpz_sgn (e->ts.cl->length->value.integer) != 0)
+  if (len)
     {
-      mpz_t max;
+      mpz_t max, mlen;
       int i;
 
       /* Compute the maximum value allowed for NCOPIES: huge(cl) / len.  */
       mpz_init (max);
       i = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
-      mpz_tdiv_q (max, gfc_integer_kinds[i].huge,
-		  e->ts.cl->length->value.integer);
+
+      if (have_length)
+	{
+	  mpz_tdiv_q (max, gfc_integer_kinds[i].huge,
+		      e->ts.cl->length->value.integer);
+	}
+      else
+	{
+	  mpz_init_set_si (mlen, len);
+	  mpz_tdiv_q (max, gfc_integer_kinds[i].huge, mlen);
+	  mpz_clear (mlen);
+	}
 
       /* The check itself.  */
       if (mpz_cmp (ncopies, max) > 0)
@@ -2915,7 +2936,7 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  if (mpz_sgn (e->ts.cl->length->value.integer) != 0)
+  if (len || mpz_sgn (e->ts.cl->length->value.integer) != 0)
     {
       const char *res = gfc_extract_int (n, &ncop);
       gcc_assert (res == NULL);

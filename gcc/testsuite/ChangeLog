@@ -1,3 +1,8 @@
+2007-06-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30284
+	* gfortran.dg/repeat_f90: New test.
+
 2007-06-30  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR testsuite/25241
