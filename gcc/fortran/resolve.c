@@ -6282,6 +6282,34 @@ resolve_symbol (gfc_symbol *sym)
      can.  */
   mp_flag = (sym->result != NULL && sym->result != sym);
 
+
+  /* Make sure that the intrinsic is consistent with its internal 
+     representation. This needs to be done before assigning a default 
+     type to avoid spurious warnings.  */
+  if (sym->attr.flavor != FL_MODULE && sym->attr.intrinsic)
+    {
+      if (gfc_intrinsic_name (sym->name, 0))
+	{
+	  if (sym->ts.type != BT_UNKNOWN && gfc_option.warn_surprising)
+	    gfc_warning ("Type specified for intrinsic function '%s' at %L is ignored",
+			 sym->name, &sym->declared_at);
+	}
+      else if (gfc_intrinsic_name (sym->name, 1))
+	{
+	  if (sym->ts.type != BT_UNKNOWN)
+	    {
+	      gfc_error ("Intrinsic subroutine '%s' at %L shall not have a type specifier", 
+			 sym->name, &sym->declared_at);
+	      return;
+	    }
+	}
+      else
+	{
+	  gfc_error ("Intrinsic '%s' at %L does not exist", sym->name, &sym->declared_at);
+	  return;
+	}
+     }
+
   /* Assign default type to symbols that need one and don't have one.  */
   if (sym->ts.type == BT_UNKNOWN)
     {
@@ -6417,12 +6445,6 @@ resolve_symbol (gfc_symbol *sym)
     default:
       break;
     }
-
-  /* Make sure that intrinsic exist */
-  if (sym->attr.flavor != FL_MODULE && sym->attr.intrinsic
-      && !gfc_intrinsic_name(sym->name, 0)
-      && !gfc_intrinsic_name(sym->name, 1))
-    gfc_error("Intrinsic at %L does not exist", &sym->declared_at);
 
   /* Resolve array specifier. Check as well some constraints
      on COMMON blocks.  */
