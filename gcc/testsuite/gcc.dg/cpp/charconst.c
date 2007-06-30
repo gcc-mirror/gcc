@@ -7,9 +7,9 @@
 
    Neil Booth, 22 May 2001.  */
 
-#if ''			/* { dg-warning "empty" "empty charconst" } */
+#if ''			/* { dg-error "empty" "empty charconst" } */
 #endif
-#if L''			/* { dg-warning "empty" "empty wide charconst" } */
+#if L''			/* { dg-error "empty" "empty wide charconst" } */
 #endif
 #if 'very long'		/* { dg-warning "too long" "long charconst" } */
 #endif
@@ -24,8 +24,8 @@ void foo ()
   int c;
   __WCHAR_TYPE__ w;
 
-  c = '';		/* { dg-warning "empty" "empty charconst" } */
-  w = L'';		/* { dg-warning "empty" "empty wide charconst" } */
+  c = '';		/* { dg-error "empty" "empty charconst" } */
+  w = L'';		/* { dg-error "empty" "empty wide charconst" } */
 
   c = 'very long';	/* { dg-warning "too long" "long charconst" } */
   w = L'very long';	/* { dg-warning "too long" "long wide charconst" } */

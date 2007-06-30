@@ -1,7 +1,7 @@
 /* Copyright (C) 2002 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
-/* { dg-options "-Wno-endif-labels -pedantic" } */
+/* { dg-options "-Wno-endif-labels -pedantic-errors" } */
 
 /* Tests combinations of -pedantic and -Wno-endif-labels; see extratokens2.c
    for more general tests.  */
