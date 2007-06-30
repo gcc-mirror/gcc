@@ -32,35 +32,15 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-pass.h"
 #include "tree-dump.h"
 #include "diagnostic.h"
+#include "tree-ssa-sccvn.h"
 
-/* The value table that maps expressions to values.  */
-static htab_t value_table;
-
-/* Map expressions to values.  These are simple pairs of expressions
-   and the values they represent.  To find the value represented by
-   an expression, we use a hash table where the elements are {e,v}
-   pairs, and the expression is the key.  */
-typedef struct val_expr_pair_d
-{
-  /* Value handle.  */
-  tree v;
-
-  /* Associated expression.  */
-  tree e;
-
-  /* For comparing virtual uses in E.  */
-  VEC (tree, gc) *vuses;
-
-  /* E's hash value.  */
-  hashval_t hashcode;
-} *val_expr_pair_t;
-
-static void set_value_handle (tree e, tree v);
-
+/* Most of this is PRE specific.  The real grunt work is done in
+   tree-ssa-sccvn.c.  This is where the lookup and insertion
+   functions, etc, can be found */
 
 /* Create and return a new value handle node of type TYPE.  */
 
-static tree
+tree
 make_value_handle (tree type)
 {
   static unsigned int id = 0;
@@ -72,25 +52,6 @@ make_value_handle (tree type)
 }
 
 
-/* Given an expression EXPR, compute a hash value number using the
-   code of the expression, its real operands and virtual operands (if
-   any).
-   
-   VAL can be used to iterate by passing previous value numbers (it is
-   used by iterative_hash_expr).  */
-
-hashval_t
-vn_compute (tree expr, hashval_t val)
-{
-  /* EXPR must not be a statement.  We are only interested in value
-     numbering expressions on the RHS of assignments.  */
-  gcc_assert (expr);
-  gcc_assert (!expr->base.ann
-	      || expr->base.ann->common.type != STMT_ANN);
-
-  val = iterative_hash_expr (expr, val);
-  return val;
-}
 
 /* Compare two expressions E1 and E2 and return true if they are
    equal.  */
@@ -130,52 +91,9 @@ expressions_equal_p (tree e1, tree e2)
   return false;
 }
 
-
-/* Hash a {v,e} pair that is pointed to by P.
-   The hashcode is cached in the val_expr_pair, so we just return
-   that.  */
-
-static hashval_t
-val_expr_pair_hash (const void *p)
-{
-  const val_expr_pair_t ve = (val_expr_pair_t) p;
-  return ve->hashcode;
-}
-
-
-/* Given two val_expr_pair_t's, return true if they represent the same
-   expression, false otherwise.
-   P1 and P2 should point to the val_expr_pair_t's to be compared.  */
-
-static int
-val_expr_pair_expr_eq (const void *p1, const void *p2)
-{
-  int i;
-  tree vuse1;
-  const val_expr_pair_t ve1 = (val_expr_pair_t) p1;
-  const val_expr_pair_t ve2 = (val_expr_pair_t) p2;
-
-  if (! expressions_equal_p (ve1->e, ve2->e))
-    return false;
-
-  if (ve1->vuses == ve2->vuses)
-    return true;
-
-  if (VEC_length (tree, ve1->vuses) != VEC_length (tree, ve2->vuses))
-    return false;
-
-  for (i = 0; VEC_iterate (tree, ve1->vuses, i, vuse1); i++)
-    {
-      if (VEC_index (tree, ve2->vuses, i) != vuse1)
-	return false;
-    }
-  return true;
-}
-
-
 /* Set the value handle for expression E to value V.  */
    
-static void
+void
 set_value_handle (tree e, tree v)
 {
   if (TREE_CODE (e) == SSA_NAME)
@@ -189,124 +107,7 @@ set_value_handle (tree e, tree v)
     gcc_assert (is_gimple_min_invariant (e));
 }
 
-/* Copy the virtual uses from STMT into a newly allocated VEC(tree),
-   and return the VEC(tree).  */
 
-static VEC (tree, gc) *
-copy_vuses_from_stmt (tree stmt)
-{
-  ssa_op_iter iter;
-  tree vuse;
-  VEC (tree, gc) *vuses = NULL;
-
-  if (!stmt)
-    return NULL;
-
-  FOR_EACH_SSA_TREE_OPERAND (vuse, stmt, iter, SSA_OP_VUSE)
-    VEC_safe_push (tree, gc, vuses, vuse);
-
-  return vuses;
-}
-
-/* Place for shared_vuses_from_stmt to shove vuses.  */
-static VEC (tree, gc) *shared_lookup_vuses;
-
-/* Copy the virtual uses from STMT into SHARED_LOOKUP_VUSES.
-   This function will overwrite the current SHARED_LOOKUP_VUSES
-   variable.  */
-
-static VEC (tree, gc) *
-shared_vuses_from_stmt (tree stmt)
-{
-  ssa_op_iter iter;
-  tree vuse;
-
-  if (!stmt)
-    return NULL;
-
-  VEC_truncate (tree, shared_lookup_vuses, 0);
-
-  FOR_EACH_SSA_TREE_OPERAND (vuse, stmt, iter, SSA_OP_VUSE)
-    VEC_safe_push (tree, gc, shared_lookup_vuses, vuse);
-
-  if (VEC_length (tree, shared_lookup_vuses) > 1)
-    sort_vuses (shared_lookup_vuses);
-
-  return shared_lookup_vuses;
-}
-
-/* Insert EXPR into VALUE_TABLE with value VAL, and add expression
-   EXPR to the value set for value VAL.  */
-
-void
-vn_add (tree expr, tree val)
-{
-  vn_add_with_vuses (expr, val, NULL);
-}
-
-/* Insert EXPR into VALUE_TABLE with value VAL, and add expression
-   EXPR to the value set for value VAL.  VUSES represents the virtual
-   use operands associated with EXPR.  It is used when computing a
-   hash value for EXPR.  */
-
-void
-vn_add_with_vuses (tree expr, tree val, VEC (tree, gc) *vuses)
-{
-  void **slot;
-  val_expr_pair_t new_pair;
-  
-  new_pair = XNEW (struct val_expr_pair_d);
-  new_pair->e = expr;
-  new_pair->v = val;
-  new_pair->vuses = vuses;
-  new_pair->hashcode = vn_compute (expr, 0);
-  slot = htab_find_slot_with_hash (value_table, new_pair, new_pair->hashcode,
-				   INSERT);
-  if (*slot)
-    free (*slot);
-  *slot = (void *) new_pair;
-
-  set_value_handle (expr, val);
-  if (TREE_CODE (val) == VALUE_HANDLE)
-    add_to_value (val, expr);
-}
-
-
-/* Search in VALUE_TABLE for an existing instance of expression EXPR,
-   and return its value, or NULL if none has been set.  STMT
-   represents the stmt associated with EXPR.  It is used when computing the 
-   hash value for EXPR.  */
-
-tree
-vn_lookup (tree expr, tree stmt)
-{
-  return vn_lookup_with_vuses (expr, shared_vuses_from_stmt (stmt));
-}
-
-/* Search in VALUE_TABLE for an existing instance of expression EXPR,
-   and return its value, or NULL if none has been set.  VUSES is the
-   list of virtual use operands associated with EXPR.  It is used when
-   computing the hash value for EXPR.  */
-
-tree
-vn_lookup_with_vuses (tree expr, VEC (tree, gc) *vuses)
-{
-  void **slot;
-  struct val_expr_pair_d vep = {NULL, NULL, NULL, 0};
-
-  /* Constants are their own value.  */
-  if (is_gimple_min_invariant (expr))
-    return expr;
-
-  vep.e = expr;
-  vep.vuses = vuses;
-  vep.hashcode = vn_compute (expr, 0);
-  slot = htab_find_slot_with_hash (value_table, &vep, vep.hashcode, NO_INSERT);
-  if (!slot)
-    return NULL_TREE;
-  else
-    return ((val_expr_pair_t) *slot)->v;
-}
 
 
 /* A comparison function for use in qsort to compare vuses.  Simply
@@ -352,34 +153,6 @@ print_creation_to_file (tree v, tree expr, VEC (tree, gc) *vuses)
   fprintf (dump_file, "\n");
 }
 
-/* Like vn_lookup, but creates a new value for expression EXPR, if
-   EXPR doesn't already have a value.  Return the existing/created
-   value for EXPR.  STMT represents the stmt associated with EXPR.  It
-   is used when computing the VUSES for EXPR.  */
-
-tree
-vn_lookup_or_add (tree expr, tree stmt)
-{
-  tree v = vn_lookup (expr, stmt);
-  if (v == NULL_TREE)
-    {
-      VEC(tree,gc) *vuses;
-
-      v = make_value_handle (TREE_TYPE (expr));
-      vuses = copy_vuses_from_stmt (stmt);
-      sort_vuses (vuses);
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	print_creation_to_file (v, expr, vuses);
-
-      VALUE_HANDLE_VUSES (v) = vuses;
-      vn_add_with_vuses (expr, v, vuses);
-    }
-
-  set_value_handle (expr, v);
-
-  return v;
-}
 
 /* Sort the VUSE array so that we can do equality comparisons
    quicker on two vuse vecs.  */
@@ -394,6 +167,222 @@ sort_vuses (VEC (tree,gc) *vuses)
 	   vuses_compare);
 }
 
+/* Sort the VUSE array so that we can do equality comparisons
+   quicker on two vuse vecs.  */
+
+void 
+sort_vuses_heap (VEC (tree,heap) *vuses)
+{
+  if (VEC_length (tree, vuses) > 1)
+    qsort (VEC_address (tree, vuses),
+	   VEC_length (tree, vuses),
+	   sizeof (tree),
+	   vuses_compare);
+}
+/* Insert EXPR into VALUE_TABLE with value VAL, and add expression
+   EXPR to the value set for value VAL.  */
+
+void
+vn_add (tree expr, tree val)
+{
+  switch (TREE_CODE_CLASS (TREE_CODE (expr)))
+    {
+    case tcc_comparison:
+    case tcc_binary:
+      vn_binary_op_insert (expr, val);
+      break;
+    case tcc_unary:
+      vn_unary_op_insert (expr, val);
+      break;
+      /* In the case of array-refs of constants, for example, we can
+	 end up with no vuses.  */
+    case tcc_reference:
+      vn_reference_insert (expr, val, NULL);
+      break;
+      /* The *only* time CALL_EXPR should appear here is
+	 when it has no vuses.  */
+    case tcc_vl_exp:
+    case tcc_exceptional:
+    case tcc_expression:
+    case tcc_declaration:
+      if (TREE_CODE (expr) == CALL_EXPR || DECL_P (expr))
+	{
+	  vn_reference_insert (expr, val, NULL);
+	  break;
+	}
+      else if (TREE_CODE (expr) == SSA_NAME)
+	{
+	  SSA_NAME_VALUE (expr) = val;
+	  break;
+	}
+      else if (TREE_CODE (expr) == ADDR_EXPR)
+	{
+	  vn_unary_op_insert (expr, val);
+	  break;
+	}
+      /* FALLTHROUGH */
+    default:
+      gcc_unreachable ();
+    }
+  set_value_handle (expr, val);
+  if (TREE_CODE (val) == VALUE_HANDLE)
+    add_to_value (val, expr);
+}
+
+/* Insert EXPR into the value numbering tables.  with value VAL, and
+   add expression EXPR to the value set for value VAL.  VUSES
+   represents the virtual use operands associated with EXPR.  It is
+   used when computing a hash value for EXPR.  */
+
+void
+vn_add_with_vuses (tree expr, tree val, VEC (tree, gc) *vuses)
+{
+  if (!vuses)
+    {
+      vn_add (expr, val);
+      return;
+    }
+  vn_reference_insert (expr, val, vuses);
+
+  set_value_handle (expr, val);
+  if (TREE_CODE (val) == VALUE_HANDLE)
+    add_to_value (val, expr);
+}
+
+
+/* Lookup EXPR in the value numbering tables and return the result, if
+   we have one.  */
+
+tree
+vn_lookup (tree expr)
+{
+  /* Constants are their own value.  */
+  if (is_gimple_min_invariant (expr) || TREE_CODE (expr) == FIELD_DECL)
+    return expr;
+
+  switch (TREE_CODE_CLASS (TREE_CODE (expr)))
+    {
+    case tcc_comparison:
+    case tcc_binary:
+      return vn_binary_op_lookup (expr);
+    case tcc_unary:
+      return vn_unary_op_lookup (expr);
+      break;
+      /* In the case of array-refs of constants, for example, we can
+	 end up with no vuses.  */
+    case tcc_reference:
+      return vn_reference_lookup (expr, NULL);
+      break;
+      /* It is possible to have CALL_EXPR with no vuses for things
+	 like "cos", and these will fall into vn_lookup.   */
+    case tcc_vl_exp:
+    case tcc_exceptional:
+    case tcc_expression:
+    case tcc_declaration:
+      if (TREE_CODE (expr) == CALL_EXPR || DECL_P (expr))
+	return vn_reference_lookup (expr, NULL);
+      else if (TREE_CODE (expr) == SSA_NAME)
+	return SSA_NAME_VALUE (expr);      
+      else if (TREE_CODE (expr) == ADDR_EXPR)
+	return vn_unary_op_lookup (expr);
+      /* FALLTHROUGH */
+    default:
+      gcc_unreachable ();
+    }
+  return NULL;
+}
+
+/* Search in the value numbering tables for an existing instance of
+   expression EXPR,  and return its value, or NULL if none has been set.  STMT
+   represents the stmt associated with EXPR.  It is used when computing the 
+   hash value for EXPR for reference operations.  */
+
+tree
+vn_lookup_with_stmt (tree expr, tree stmt)
+{
+  if (stmt == NULL)
+    return vn_lookup (expr);
+
+  /* Constants are their own value.  */
+  if (is_gimple_min_invariant (expr) || TREE_CODE (expr) == FIELD_DECL)
+    return expr;
+
+  return vn_lookup_with_vuses (expr, shared_vuses_from_stmt (stmt));
+}
+
+/* Search in VALUE_TABLE for an existing instance of expression EXPR,
+   and return its value, or NULL if none has been set.  VUSES is the
+   list of virtual use operands associated with EXPR.  It is used when
+   computing the hash value for EXPR.  */
+
+tree
+vn_lookup_with_vuses (tree expr, VEC (tree, gc) *vuses)
+{
+  if (!vuses || !VEC_length (tree, vuses))
+    return vn_lookup (expr);
+
+  if (is_gimple_min_invariant (expr) || TREE_CODE (expr) == FIELD_DECL)
+    return expr;
+
+  return vn_reference_lookup (expr, vuses);
+}
+
+static tree
+create_value_handle_for_expr (tree expr, VEC (tree, gc) *vuses)
+{
+  tree v;
+  
+  v = make_value_handle (TREE_TYPE (expr));
+  
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    print_creation_to_file (v, expr, vuses);
+  if (vuses)
+    VALUE_HANDLE_VUSES (v) = vuses;
+  return v;
+}
+
+/* Like vn_lookup, but creates a new value for the operation if one
+   does not exist.  */
+
+tree
+vn_lookup_or_add (tree expr)
+{
+  tree v = vn_lookup (expr);
+  
+  if (v == NULL_TREE)
+    {
+      v = create_value_handle_for_expr (expr, NULL);
+      vn_add (expr, v);
+    }
+  else
+    set_value_handle (expr, v);
+
+  return v;
+}
+
+/* Like vn_lookup, but handles reference operations as well by using
+   STMT to get the set of vuses.  */
+
+tree
+vn_lookup_or_add_with_stmt (tree expr, tree stmt)
+{
+  tree v;
+  if (!stmt)
+    return vn_lookup_or_add (expr);
+
+  v = vn_lookup_with_stmt (expr, stmt);
+  if (v == NULL_TREE)
+    {
+      VEC (tree, gc) *vuses = copy_vuses_from_stmt (stmt);
+      v = create_value_handle_for_expr (expr, vuses);
+      vn_add_with_vuses (expr, v, vuses);
+    }
+  else
+    set_value_handle (expr, v);
+
+  return v;
+}
+
 /* Like vn_lookup, but creates a new value for expression EXPR, if
    EXPR doesn't already have a value.  Return the existing/created
    value for EXPR.  STMT represents the stmt associated with EXPR.  It is used
@@ -402,40 +391,20 @@ sort_vuses (VEC (tree,gc) *vuses)
 tree
 vn_lookup_or_add_with_vuses (tree expr, VEC (tree, gc) *vuses)
 {
-  tree v = vn_lookup_with_vuses (expr, vuses);
+  tree v;
+  
+  if (!vuses || VEC_length (tree, vuses) == 0)
+    return vn_lookup_or_add (expr);
+  
+  v = vn_lookup_with_vuses (expr, vuses);
   if (v == NULL_TREE)
     {
-      v = make_value_handle (TREE_TYPE (expr));
-      sort_vuses (vuses);
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	print_creation_to_file (v, expr, vuses);
-
-      VALUE_HANDLE_VUSES (v) = vuses;
+      v = create_value_handle_for_expr (expr, vuses);
       vn_add_with_vuses (expr, v, vuses);
     }
-
-  set_value_handle (expr, v);
+  else
+    set_value_handle (expr, v);
 
   return v;
 }
 
-/* Initialize data structures used in value numbering.  */
-
-void
-vn_init (void)
-{
-  value_table = htab_create (511, val_expr_pair_hash,
-			     val_expr_pair_expr_eq, free);
-  shared_lookup_vuses = NULL;
-}
-
-/* Delete data used for value numbering.  */
-
-void
-vn_delete (void)
-{
-  htab_delete (value_table);
-  VEC_free (tree, gc, shared_lookup_vuses);
-  value_table = NULL;
-}

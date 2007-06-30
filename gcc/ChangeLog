@@ -1,3 +1,84 @@
+2007-06-30  Daniel Berlin  <dberlin@dberlin.org>
+	
+	Fix PR tree-optimization/32540
+	Fix PR tree-optimization/31651
+
+	* tree-ssa-sccvn.c: New file.
+
+	* tree-ssa-sccvn.h: Ditto.
+	
+	* tree-vn.c: Include tree-ssa-sccvn.h
+	(val_expr_paid_d): Removed.
+	(value_table): Ditto.
+	(vn_compute): Ditto.
+	(val_expr_pair_hash): Ditto.
+	(val_expr_pair_expr_eq): Ditto.
+	(copy_vuses_from_stmt): Ditto.
+	(vn_delete): Ditto.
+	(vn_init): Ditto.
+	(shared_vuses_from_stmt): Ditto.
+	(print_creation_to_file): Moved up.
+	(sort_vuses): Ditto.
+	(sort_vuses_heap): Ditto.
+	(set_value_handle): Make non-static.
+	(make_value_handle): Ditto.
+	(vn_add): Rewritten to use sccvn lookups.
+	(vn_add_with_vuses): Ditto.
+	(vn_lookup): Ditto (and second argument removed).
+	(vn_lookup_with_vuses): Ditto.
+	(vn_lookup_or_add): Ditto (and second argument removed);
+	(vn_lookup_or_add_with_vuses): Ditto.
+	(vn_lookup_with_stmt): New.
+	(vn_lookup_or_add_with_stmt): Ditto.
+	(create_value_handle_for_expr): Ditto.
+
+	* tree-ssa-pre.c: Include tree-ssa-sccvn.h.
+	(seen_during_translate): New function.
+	(phi_trans_lookup): Use iterative_hash_expr, not vn_compute.
+	(phi_trans_add): Ditto.
+	(constant_expr_p): FIELD_DECL is always constant.
+	(phi_translate_1): Renamed from phi_translate, add seen bitmap.
+	Use constant_expr_p.
+	Avoid infinite recursion on mutually valued expressions.
+	Change callers of vn_lookup_or_add.
+	(phi_translate): New function.
+	(compute_antic_safe): Allow phi nodes.
+	(create_component_ref_by_pieces): Update for FIELD_DECL change.
+	(find_or_generate_expression): Rewrite slightly.
+	(create_expression_by_pieces): Updated for vn_lookup_or_add
+	change.
+	Update VN_INFO for new names.
+	(insert_into_preds_of_block): Update for new names.
+	(add_to_exp_gen): New function.
+	(add_to_sets): Use vn_lookup_or_add_with_stmt.
+	(find_existing_value_expr): Rewrite to changed vn_lookup.
+	(create_value_expr_from): Ditto, and use add_to_exp_gen.
+	(try_look_through_load): Removed.
+	(try_combine_conversion): Ditto.
+	(get_sccvn_value): New function.
+	(make_values_for_phi): Ditto.
+	(make_values_for_stmt): Ditto.
+	(compute_avail): Rewritten for vn_lookup_or_add changes and to use
+	SCCVN.
+	(init_pre): Update for SCCVN changes.
+	(fini_pre): Ditto.
+	(execute_pre): Ditto.
+
+	* tree-flow.h (make_value_handle): Declare.
+	(set_value_handle): Ditto.
+	(sort_vuses_heap): Ditto.
+	(vn_lookup_or_add_with_stmt): Ditto.
+	(vn_lookup_with_stmt): Ditto.
+	(vn_compute): Remove.
+	(vn_init): Ditto.
+	(vn_delete): Ditto.
+	(vn_lookup): Update arguments.
+
+	* Makefile.in (tree-ssa-pre.o): Add tree-ssa-sccvn.h
+	(tree-vn.o): Ditto.
+	(tree-ssa-sccvn.o): New.
+	(OBJS-common): Add tree-ssa-sccvn.o
+	
 2007-06-30  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/4076
