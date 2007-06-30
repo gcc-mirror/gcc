@@ -741,14 +741,17 @@ do_SUBST_MODE (rtx *into, enum machine_mode newval)
 #define SUBST_MODE(INTO, NEWVAL)  do_SUBST_MODE(&(INTO), (NEWVAL))
 
 /* Subroutine of try_combine.  Determine whether the combine replacement
-   patterns NEWPAT and NEWI2PAT are cheaper according to insn_rtx_cost
-   that the original instruction sequence I1, I2 and I3.  Note that I1
-   and/or NEWI2PAT may be NULL_RTX.  This function returns false, if the
-   costs of all instructions can be estimated, and the replacements are
-   more expensive than the original sequence.  */
+   patterns NEWPAT, NEWI2PAT and NEWOTHERPAT are cheaper according to
+   insn_rtx_cost that the original instruction sequence I1, I2, I3 and
+   undobuf.other_insn.  Note that I1 and/or NEWI2PAT may be NULL_RTX. 
+   NEWOTHERPAT and undobuf.other_insn may also both be NULL_RTX.  This
+   function returns false, if the costs of all instructions can be
+   estimated, and the replacements are more expensive than the original
+   sequence.  */
 
 static bool
-combine_validate_cost (rtx i1, rtx i2, rtx i3, rtx newpat, rtx newi2pat)
+combine_validate_cost (rtx i1, rtx i2, rtx i3, rtx newpat, rtx newi2pat,
+		       rtx newotherpat)
 {
   int i1_cost, i2_cost, i3_cost;
   int new_i2_cost, new_i3_cost;
@@ -789,7 +792,7 @@ combine_validate_cost (rtx i1, rtx i2, rtx i3, rtx newpat, rtx newi2pat)
       int old_other_cost, new_other_cost;
 
       old_other_cost = INSN_COST (undobuf.other_insn);
-      new_other_cost = insn_rtx_cost (PATTERN (undobuf.other_insn));
+      new_other_cost = insn_rtx_cost (newotherpat);
       if (old_other_cost > 0 && new_other_cost > 0)
 	{
 	  old_cost += old_other_cost;
@@ -2159,6 +2162,8 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
   int maxreg;
   rtx temp;
   rtx link;
+  rtx other_pat = 0;
+  rtx new_other_notes;
   int i;
 
   /* Exit early if one of the insns involved can't be used for
@@ -3285,12 +3290,9 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
   /* If we had to change another insn, make sure it is valid also.  */
   if (undobuf.other_insn)
     {
-      rtx other_pat = PATTERN (undobuf.other_insn);
-      rtx new_other_notes;
-      rtx note, next;
-
       CLEAR_HARD_REG_SET (newpat_used_regs);
 
+      other_pat = PATTERN (undobuf.other_insn);
       other_code_number = recog_for_combine (&other_pat, undobuf.other_insn,
 					     &new_other_notes);
 
@@ -3299,6 +3301,36 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	  undo_all ();
 	  return 0;
 	}
+    }
+
+#ifdef HAVE_cc0
+  /* If I2 is the CC0 setter and I3 is the CC0 user then check whether
+     they are adjacent to each other or not.  */
+  {
+    rtx p = prev_nonnote_insn (i3);
+    if (p && p != i2 && NONJUMP_INSN_P (p) && newi2pat
+	&& sets_cc0_p (newi2pat))
+      {
+	undo_all ();
+	return 0;
+      }
+  }
+#endif
+
+  /* Only allow this combination if insn_rtx_costs reports that the
+     replacement instructions are cheaper than the originals.  */
+  if (!combine_validate_cost (i1, i2, i3, newpat, newi2pat, other_pat))
+    {
+      undo_all ();
+      return 0;
+    }
+
+  /* We now know that we can do this combination.  Merge the insns and
+     update the status of registers and LOG_LINKS.  */
+
+  if (undobuf.other_insn)
+    {
+      rtx note, next;
 
       PATTERN (undobuf.other_insn) = other_pat;
 
@@ -3317,30 +3349,6 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
       distribute_notes (new_other_notes, undobuf.other_insn,
 			undobuf.other_insn, NULL_RTX, NULL_RTX, NULL_RTX);
     }
-#ifdef HAVE_cc0
-  /* If I2 is the CC0 setter and I3 is the CC0 user then check whether
-     they are adjacent to each other or not.  */
-  {
-    rtx p = prev_nonnote_insn (i3);
-    if (p && p != i2 && NONJUMP_INSN_P (p) && newi2pat
-	&& sets_cc0_p (newi2pat))
-      {
-	undo_all ();
-	return 0;
-      }
-  }
-#endif
-
-  /* Only allow this combination if insn_rtx_costs reports that the
-     replacement instructions are cheaper than the originals.  */
-  if (!combine_validate_cost (i1, i2, i3, newpat, newi2pat))
-    {
-      undo_all ();
-      return 0;
-    }
-
-  /* We now know that we can do this combination.  Merge the insns and
-     update the status of registers and LOG_LINKS.  */
 
   if (swap_i2i3)
     {
