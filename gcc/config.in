@@ -210,6 +210,12 @@
 #endif
 
 
+/* Define if your assembler supports .gnu_attribute. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_GNU_ATTRIBUTE
+#endif
+
+
 /* Define true if the assembler supports '.long foo@GOTOFF'. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_GOTOFF_IN_DATA
