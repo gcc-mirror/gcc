@@ -1,3 +1,9 @@
+2007-06-30  Rask Ingemann Lambertsen <rask@sygehus.dk>
+
+	* combine.c (combine_validate_cost): New parameter NEWOTHERPAT.
+	(try_combine): Move potential calls to undo_all() so they happen
+	before we commit to using the combined insns.
+
 2006-06-30  Jan Hubicka  <jh@suse.cz>
 
 	* loop-unroll.c (unroll_loop_runtime_iterations): Unshare newly emit    
