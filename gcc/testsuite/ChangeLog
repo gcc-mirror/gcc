@@ -1,3 +1,8 @@
+2007-06-30  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.c-torture/execute/20051113-1.c (main): Use the correct type
+	when allocating and initializing a flexible array.
+
 2007-06-30  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/20373
@@ -99,7 +104,6 @@
 	PR tree-opt/32417
 	* gfortran.fortran-torture/compile/pr32417.f90: New test.
 
->>>>>>> .r126123
 2007-06-28  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-iv-4.c: Test now passes on vect_pack_trunc
@@ -135,6 +139,7 @@
 	PR c++/32111
 	* g++.dg/other/friend5.C: New test.
 
+>>>>>>> .r126155
 2007-06-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32464
