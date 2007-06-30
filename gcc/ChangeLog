@@ -1,3 +1,10 @@
+2007-06-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac: Check for .gnu_attribute on MIPS.
+	* configure, config.in: Regenerate.
+	* config/mips/mips.c (mips_file_start): If supported, output
+	attribute for floating-point ABI.
+
 2007-06-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32433
