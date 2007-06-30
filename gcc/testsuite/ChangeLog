@@ -1,3 +1,7 @@
+2007-06-30  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.dg/ext/interface4.C, g++.dg/ext/interface4.h: New.
+
 2007-06-28  Seongbae Park  <seongbae.park@gmail.com>
 
 	* gcc.target/arm/stack-corruption.c: New test.
