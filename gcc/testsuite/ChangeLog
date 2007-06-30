@@ -1,5 +1,14 @@
 2007-06-30  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR testsuite/25241
+	* gcc.dg/pch/valid-1.c: Match each diagnostic with its own directive.
+	* gcc.dg/pch/valid-2.c: Likewise.
+	* gcc.dg/pch/valid-3.c: Likewise.
+	* gcc.dg/pch/warn-1.c: Likewise.
+	* gcc.dg/pch/valid-4.c: Match a warning instead of an error.
+	
+2007-06-30  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR c/4076
 	* gcc.dg/Wunused-function.c: New.
 	
