@@ -1,3 +1,15 @@
+2007-06-30  Richard Sandiford  <richard@codesourcery.com>
+
+	Revert:
+
+	2007-06-27  Richard Sandiford  <richard@codesourcery.com>
+
+	* dce.c (deletable_insn_p_1): New function, split out from...
+	(deletable_insn_p): ...here.  Only treat bare USEs and CLOBBERs
+	specially, not those inside PARALLELs.  Remove BODY argument
+	and adjust recursive call accordingly.
+	(prescan_insns_for_dce): Update call to delete_insn_p.
+
 2007-06-30  Rask Ingemann Lambertsen <rask@sygehus.dk>
 
 	* combine.c (combine_validate_cost): New parameter NEWOTHERPAT.
