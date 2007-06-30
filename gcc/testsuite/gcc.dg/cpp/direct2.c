@@ -43,4 +43,4 @@ void f ()
 #define starslash *##/
 
 slashstar starslash /* { dg-error "parse error|syntax error|expected" "not a comment" } */
-/* { dg-warning "does not give" "paste warning(s)" { target *-*-* } 45 } */
+/* { dg-error "does not give" "paste warning(s)" { target *-*-* } 45 } */

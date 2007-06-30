@@ -1,6 +1,21 @@
 2007-06-30  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR testsuite/25241
+	* gcc.dg/cpp/20000625-1.c: Without dg-options the default is
+	-pedantic-errors, so we should match errors.
+	* gcc.dg/cpp/escape-1.c: Likewise.
+	* gcc.dg/cpp/charconst.c: Empty character constants are errors.
+	* gcc.dg/cpp/direct2.c: This is a mandatory error instead of a
+	warning.
+	* gcc.dg/cpp/endif-pedantic2.c: Use -pedantic-errors to obtain
+	errors instead of warnings.
+	* gcc.dg/cpp/extratokens.c: Use dg-warning instead of dg-error for
+	a pedantic warning.
+	* gcc.dg/cpp/arith-3.c: Likewise.
+
+2007-06-30  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR testsuite/25241
 	* gcc.dg/pch/valid-1.c: Match each diagnostic with its own directive.
 	* gcc.dg/pch/valid-2.c: Likewise.
 	* gcc.dg/pch/valid-3.c: Likewise.

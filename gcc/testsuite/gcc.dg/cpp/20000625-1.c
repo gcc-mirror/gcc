@@ -1,3 +1,4 @@
+
 /* Regression test for paste corner cases.  Distilled from
    syscall stub logic in glibc.  */
 
@@ -11,6 +12,6 @@ main(void)
 {
   goto socket;
 
-  ENTRY(socket) /* { dg-warning "valid preprocessing token" "" } */
+  ENTRY(socket) /* { dg-error "valid preprocessing token" "" } */
     return 0;
 }
