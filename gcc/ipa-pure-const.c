@@ -80,8 +80,8 @@ typedef struct funct_state_d * funct_state;
 static inline funct_state
 get_function_state (struct cgraph_node *node)
 {
-  struct ipa_dfs_info * info = node->aux;
-  return info->aux;
+  struct ipa_dfs_info * info = (struct ipa_dfs_info *) node->aux;
+  return (funct_state) info->aux;
 }
 
 /* Check to see if the use (or definition when CHECHING_WRITE is true) 
@@ -396,7 +396,7 @@ scan_function (tree *tp,
 		      int *walk_subtrees, 
 		      void *data)
 {
-  struct cgraph_node *fn = data;
+  struct cgraph_node *fn = (struct cgraph_node *) data;
   tree t = *tp;
   funct_state local = get_function_state (fn);
 
@@ -505,7 +505,7 @@ analyze_function (struct cgraph_node *fn)
 {
   funct_state l = XCNEW (struct funct_state_d);
   tree decl = fn->decl;
-  struct ipa_dfs_info * w_info = fn->aux;
+  struct ipa_dfs_info * w_info = (struct ipa_dfs_info *) fn->aux;
 
   w_info->aux = l;
 
@@ -602,7 +602,7 @@ static_execute (void)
   struct cgraph_node *w;
   struct cgraph_node **order =
     XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
-  int order_pos = order_pos = ipa_utils_reduced_inorder (order, true, false);
+  int order_pos = ipa_utils_reduced_inorder (order, true, false);
   int i;
   struct ipa_dfs_info * w_info;
 
@@ -673,7 +673,7 @@ static_execute (void)
 		    }
 		}
 	    }
-	  w_info = w->aux;
+	  w_info = (struct ipa_dfs_info *) w->aux;
 	  w = w_info->next_cycle;
 	}
 
@@ -708,7 +708,7 @@ static_execute (void)
 		  break;
 		}
 	    }
-	  w_info = w->aux;
+	  w_info = (struct ipa_dfs_info *) w->aux;
 	  w = w_info->next_cycle;
 	}
     }
@@ -718,7 +718,7 @@ static_execute (void)
     /* Get rid of the aux information.  */
     if (node->aux)
       {
-	w_info = node->aux;
+	w_info = (struct ipa_dfs_info *) node->aux;
 	if (w_info->aux)
 	  free (w_info->aux);
 	free (node->aux);
