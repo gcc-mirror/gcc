@@ -1,3 +1,8 @@
+2007-06-30  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c/4076
+	* gcc.dg/Wunused-function.c: New.
+	
 2007-06-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.fortran-torture/compile/inline_1.f90: Fix test.
