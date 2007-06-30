@@ -54,8 +54,8 @@ long long Sum2 (Struct3 *instrs)
     return count;
 }
 main() {
-  Struct3 *p = malloc (sizeof (int) + 3 * sizeof(Struct1));
-  memset(p, 0, sizeof(int) + 3*sizeof(Struct1));
+  Struct3 *p = malloc (sizeof (int) + 3 * sizeof(Union));
+  memset(p, 0, sizeof(int) + 3*sizeof(Union));
   p->Count = 3;
   p->List[0].a.Count = 555;
   p->List[1].a.Count = 999;
