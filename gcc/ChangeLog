@@ -1,14 +1,19 @@
-2007-06-29 Jan Hubicka  <jh@suse.cz>
+2007-06-29  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* emit-rtl.c (init_emit_once): Intilize const_tiny_rtx[0]
+	for complex modes (both int and real).
+
+2007-06-29  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c: Rever accidentally comitted TODO_verify_rtl_sharing change.
 
-2007-06-29 Jan Hubicka  <jh@suse.cz>
+2007-06-29  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/32372
 	* cse.c (cse_insn): Avoid invalid sharing in between register note and
 	the insn pattern.
 
-2007-06-29 Anatoly Sokolov <aesok@post.ru>
+2007-06-29  Anatoly Sokolov <aesok@post.ru>
 
 	PR target/32335
 	* config/avr/avr.c: Include dataflow header file.
