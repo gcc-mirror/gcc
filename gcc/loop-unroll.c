@@ -1025,6 +1025,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
 
   init_code = get_insns ();
   end_sequence ();
+  unshare_all_rtl_in_chain (init_code);
 
   /* Precondition the loop.  */
   split_edge_and_insert (loop_preheader_edge (loop), init_code);
