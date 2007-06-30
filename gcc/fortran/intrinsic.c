@@ -1014,7 +1014,7 @@ add_functions (void)
 
   make_generic ("aint", GFC_ISYM_AINT, GFC_STD_F77);
 
-  add_sym_2 ("all", GFC_ISYM_ALL, NOT_ELEMENTAL, ACTUAL_NO, BT_UNKNOWN, 0, GFC_STD_F95,
+  add_sym_2 ("all", GFC_ISYM_ALL, NOT_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F95,
 	     gfc_check_all_any, NULL, gfc_resolve_all,
 	     msk, BT_LOGICAL, dl, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL);
 
@@ -1036,7 +1036,7 @@ add_functions (void)
 
   make_generic ("anint", GFC_ISYM_ANINT, GFC_STD_F77);
 
-  add_sym_2 ("any", GFC_ISYM_ANY, NOT_ELEMENTAL, ACTUAL_NO, BT_UNKNOWN, 0, GFC_STD_F95,
+  add_sym_2 ("any", GFC_ISYM_ANY, NOT_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F95,
 	     gfc_check_all_any, NULL, gfc_resolve_any,
 	     msk, BT_LOGICAL, dl, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL);
 
@@ -1310,7 +1310,7 @@ add_functions (void)
 
   make_generic ("dim", GFC_ISYM_DIM, GFC_STD_F77);
 
-  add_sym_2 ("dot_product", GFC_ISYM_DOT_PRODUCT, NOT_ELEMENTAL, ACTUAL_NO, BT_UNKNOWN, 0,
+  add_sym_2 ("dot_product", GFC_ISYM_DOT_PRODUCT, NOT_ELEMENTAL, ACTUAL_NO, BT_REAL, dr,
 	     GFC_STD_F95, gfc_check_dot_product, NULL, gfc_resolve_dot_product,
 	     va, BT_REAL, dr, REQUIRED, vb, BT_REAL, dr, REQUIRED);
 
@@ -1503,7 +1503,7 @@ add_functions (void)
 
   make_generic ("iand", GFC_ISYM_IAND, GFC_STD_F95);
 
-  add_sym_2 ("and", GFC_ISYM_AND, NOT_ELEMENTAL, ACTUAL_NO, BT_UNKNOWN, 0, GFC_STD_GNU,
+  add_sym_2 ("and", GFC_ISYM_AND, NOT_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_GNU,
 	     gfc_check_and, gfc_simplify_and, gfc_resolve_and,
 	     i, BT_UNKNOWN, 0, REQUIRED, j, BT_UNKNOWN, 0, REQUIRED);
 
@@ -1545,7 +1545,7 @@ add_functions (void)
 
   make_generic ("ieor", GFC_ISYM_IEOR, GFC_STD_F95);
 
-  add_sym_2 ("xor", GFC_ISYM_XOR, NOT_ELEMENTAL, ACTUAL_NO, BT_UNKNOWN, 0, GFC_STD_GNU,
+  add_sym_2 ("xor", GFC_ISYM_XOR, NOT_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_GNU,
 	     gfc_check_and, gfc_simplify_xor, gfc_resolve_xor,
 	     i, BT_UNKNOWN, 0, REQUIRED, j, BT_UNKNOWN, 0, REQUIRED);
 
@@ -1605,7 +1605,7 @@ add_functions (void)
 
   make_generic ("ior", GFC_ISYM_IOR, GFC_STD_F95);
 
-  add_sym_2 ("or", GFC_ISYM_OR, NOT_ELEMENTAL, ACTUAL_NO, BT_UNKNOWN, 0, GFC_STD_GNU,
+  add_sym_2 ("or", GFC_ISYM_OR, NOT_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_GNU,
 	     gfc_check_and, gfc_simplify_or, gfc_resolve_or,
 	     i, BT_UNKNOWN, 0, REQUIRED, j, BT_UNKNOWN, 0, REQUIRED);
 
@@ -2188,7 +2188,7 @@ add_functions (void)
 
   make_generic ("stat", GFC_ISYM_STAT, GFC_STD_GNU);
 
-  add_sym_3red ("sum", GFC_ISYM_SUM, NOT_ELEMENTAL, ACTUAL_NO, BT_UNKNOWN, 0, GFC_STD_F95,
+  add_sym_3red ("sum", GFC_ISYM_SUM, NOT_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
 		gfc_check_product_sum, NULL, gfc_resolve_sum,
 		ar, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL,
 		msk, BT_LOGICAL, dl, OPTIONAL);
@@ -3562,7 +3562,6 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
   new->symtree->n.sym->ts = *ts;
   new->symtree->n.sym->attr.flavor = FL_PROCEDURE;
   new->symtree->n.sym->attr.function = 1;
-  new->symtree->n.sym->attr.intrinsic = 1;
   new->symtree->n.sym->attr.elemental = 1;
   new->symtree->n.sym->attr.pure = 1;
   new->symtree->n.sym->attr.referenced = 1;

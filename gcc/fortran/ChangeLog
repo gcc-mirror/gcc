@@ -1,3 +1,12 @@
+2007-06-30  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/20373
+	* intrinsic.c (add_functions): Additional function types.
+	(gfc_convert_type_warn): Remove intrinsic-flag from
+	conversion functions.
+	* resolve.c (resolve_symbol): Added type checks to 
+	explicitly defined intrinsics.
+
 2007-06-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32555
