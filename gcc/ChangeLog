@@ -1,3 +1,12 @@
+2007-06-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	rtl-optimization/32296
+	* pa.md (return): Delete pattern.
+	(return_internal): Remove "(const_int 1)" from pattern.
+	(epilogue): Use return_internal pattern for trivial returns.
+	* pa-protos.h (hppa_can_use_return_insn_p): Delete declaration.
+	* pa.c (hppa_can_use_return_insn_p): Delete function.  Include "df.h".
+
 2007-06-30  Daniel Berlin  <dberlin@dberlin.org>
 	
 	Fix PR tree-optimization/32540

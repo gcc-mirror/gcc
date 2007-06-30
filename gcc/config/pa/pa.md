@@ -7343,28 +7343,10 @@
 
 ;; Unconditional and other jump instructions.
 
-;; This can only be used in a leaf function, so we do
-;; not need to use the PIC register when generating PIC code.
-(define_insn "return"
-  [(return)
-   (use (reg:SI 2))
-   (const_int 0)]
-  "hppa_can_use_return_insn_p ()"
-  "*
-{
-  if (TARGET_PA_20)
-    return \"bve%* (%%r2)\";
-  return \"bv%* %%r0(%%r2)\";
-}"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
-
-;; Emit a different pattern for functions which have non-trivial
-;; epilogues so as not to confuse jump and reorg.
+;; This is used for most returns.
 (define_insn "return_internal"
   [(return)
-   (use (reg:SI 2))
-   (const_int 1)]
+   (use (reg:SI 2))]
   ""
   "*
 {
@@ -7406,14 +7388,16 @@
   ""
   "
 {
-  /* Try to use the trivial return first.  Else use the full
-     epilogue.  */
-  if (hppa_can_use_return_insn_p ())
-    emit_jump_insn (gen_return ());
+  rtx x;
+
+  /* Try to use the trivial return first.  Else use the full epilogue.  */
+  if (reload_completed
+      && !frame_pointer_needed
+      && !df_regs_ever_live_p (2)
+      && (compute_frame_size (get_frame_size (), 0) ? 0 : 1))
+    x = gen_return_internal ();
   else
     {
-      rtx x;
-
       hppa_expand_epilogue ();
 
       /* EH returns bypass the normal return stub.  Thus, we must do an
@@ -7426,9 +7410,8 @@
 	x = gen_return_external_pic ();
       else
 	x = gen_return_internal ();
-
-      emit_jump_insn (x);
     }
+  emit_jump_insn (x);
   DONE;
 }")
 
