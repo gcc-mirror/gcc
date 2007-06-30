@@ -1,3 +1,9 @@
+2007-06-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32472
+	* simplify.c (gfc_simplify_repeat): Add handling of character
+	literal for first argument.
+
 2007-06-29  Daniel Franke  <franke.daniel@gmail.com>
 
 	* resolve.c (resolve_operator): Added check whether a user
