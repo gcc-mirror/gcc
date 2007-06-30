@@ -47,6 +47,7 @@ Boston, MA 02110-1301, USA.  */
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "df.h"
 
 /* Return nonzero if there is a bypass for the output of 
    OUT_INSN and the fp store IN_INSN.  */
@@ -4401,22 +4402,6 @@ return_addr_rtx (int count, rtx frameaddr)
 
   emit_label (label);
   return saved_rp;
-}
-
-/* This is only valid once reload has completed because it depends on
-   knowing exactly how much (if any) frame there is and...
-
-   It's only valid if there is no frame marker to de-allocate and...
-
-   It's only valid if %r2 hasn't been saved into the caller's frame
-   (we're not profiling and %r2 isn't live anywhere).  */
-int
-hppa_can_use_return_insn_p (void)
-{
-  return (reload_completed
-	  && (compute_frame_size (get_frame_size (), 0) ? 0 : 1)
-	  && ! df_regs_ever_live_p (2)
-	  && ! frame_pointer_needed);
 }
 
 void
