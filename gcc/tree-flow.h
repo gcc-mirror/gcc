@@ -1083,18 +1083,20 @@ void print_value_expressions (FILE *, tree);
 
 
 /* In tree-vn.c  */
+tree make_value_handle (tree);
+void set_value_handle (tree, tree);
 bool expressions_equal_p (tree, tree);
 static inline tree get_value_handle (tree);
-hashval_t vn_compute (tree, hashval_t);
 void sort_vuses (VEC (tree, gc) *);
-tree vn_lookup_or_add (tree, tree);
+void sort_vuses_heap (VEC (tree, heap) *);
+tree vn_lookup_or_add (tree);
+tree vn_lookup_or_add_with_stmt (tree, tree);
 tree vn_lookup_or_add_with_vuses (tree, VEC (tree, gc) *);
 void vn_add (tree, tree);
 void vn_add_with_vuses (tree, tree, VEC (tree, gc) *);
-tree vn_lookup (tree, tree);
+tree vn_lookup_with_stmt (tree, tree);
+tree vn_lookup (tree);
 tree vn_lookup_with_vuses (tree, VEC (tree, gc) *);
-void vn_init (void);
-void vn_delete (void);
 
 /* In tree-ssa-sink.c  */
 bool is_hidden_global_store (tree);

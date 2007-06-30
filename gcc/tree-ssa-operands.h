@@ -299,12 +299,12 @@ typedef struct ssa_operand_iterator_d
        DEFVAR = op_iter_next_def (&(ITER)))
 
 /* This macro executes a loop over the VDEF operands of STMT.  The def
-   and use for each VDEF is returned in DEFVAR and USEVAR. 
+   and use vector for each VDEF is returned in DEFVAR and USEVECT. 
    ITER is an ssa_op_iter structure used to control the loop.  */
-#define FOR_EACH_SSA_VDEF_OPERAND(DEFVAR, USEVAR, STMT, ITER)	\
-  for (op_iter_init_vdef (&(ITER), STMT, &(USEVAR), &(DEFVAR));	\
+#define FOR_EACH_SSA_VDEF_OPERAND(DEFVAR, USEVECT, STMT, ITER)	\
+  for (op_iter_init_vdef (&(ITER), STMT, &(USEVECT), &(DEFVAR));	\
        !op_iter_done (&(ITER));					\
-       op_iter_next_vdef (&(USEVAR), &(DEFVAR), &(ITER)))
+       op_iter_next_vdef (&(USEVECT), &(DEFVAR), &(ITER)))
 
 /* This macro will execute a loop over all the arguments of a PHI which
    match FLAGS.   A use_operand_p is always returned via USEVAR.  FLAGS
