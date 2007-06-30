@@ -2090,9 +2090,13 @@ build_external_ref (tree id, int fun, location_t loc)
   if (TREE_DEPRECATED (ref))
     warn_deprecated_use (ref);
 
-  if (!skip_evaluation)
-    assemble_external (ref);
-  TREE_USED (ref) = 1;
+  /* Recursive call does not count as usage.  */
+  if (ref != current_function_decl) 
+    {
+      if (!skip_evaluation)
+	assemble_external (ref);
+      TREE_USED (ref) = 1;
+    }
 
   if (TREE_CODE (ref) == FUNCTION_DECL && !in_alignof)
     {
