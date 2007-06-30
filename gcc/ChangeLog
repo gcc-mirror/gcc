@@ -1,5 +1,6 @@
 2007-06-29  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	PR middle-end/30024
 	* emit-rtl.c (init_emit_once): Intilize const_tiny_rtx[0]
 	for complex modes (both int and real).
 
