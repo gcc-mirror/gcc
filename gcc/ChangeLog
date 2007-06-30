@@ -1,3 +1,13 @@
+2007-06-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/32433
+	* config/i386/i386.md (ffssi2): Expand as ffs_cmove for TARGET_CMOVE.
+	(ffs_cmove): New expander to expand using ctz pattern.
+	(*ffs_cmove): Remove pattern.
+	(*ffs_no_cmove): Enable only for !TARGET_CMOVE.
+	(ffsdi2): Expand using ctz pattern.
+	(*ffs_rex64): Remove pattern.
+
 2007-06-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR rtl-optimization/32296
