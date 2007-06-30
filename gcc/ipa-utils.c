@@ -86,10 +86,10 @@ static void
 searchc (struct searchc_env* env, struct cgraph_node *v) 
 {
   struct cgraph_edge *edge;
-  struct ipa_dfs_info *v_info = v->aux;
+  struct ipa_dfs_info *v_info = (struct ipa_dfs_info *) v->aux;
   
   /* mark node as old */
-  v_info->new = false;
+  v_info->new_node = false;
   splay_tree_remove (env->nodes_marked_new, v->uid);
   
   v_info->dfn_number = env->count;
@@ -107,8 +107,8 @@ searchc (struct searchc_env* env, struct cgraph_node *v)
       w = cgraph_master_clone (w);
       if (w && w->aux) 
 	{
-	  w_info = w->aux;
-	  if (w_info->new) 
+	  w_info = (struct ipa_dfs_info *) w->aux;
+	  if (w_info->new_node) 
 	    {
 	      searchc (env, w);
 	      v_info->low_link =
@@ -132,7 +132,7 @@ searchc (struct searchc_env* env, struct cgraph_node *v)
       struct ipa_dfs_info *x_info;
       do {
 	x = env->stack[--(env->stack_size)];
-	x_info = x->aux;
+	x_info = (struct ipa_dfs_info *) x->aux;
 	x_info->on_stack = false;
 	
 	if (env->reduce) 
@@ -177,10 +177,10 @@ ipa_utils_reduced_inorder (struct cgraph_node **order,
 		 AVAIL_OVERWRITABLE))))
       {
 	/* Reuse the info if it is already there.  */
-	struct ipa_dfs_info *info = node->aux;
+	struct ipa_dfs_info *info = (struct ipa_dfs_info *) node->aux;
 	if (!info)
-	  info = xcalloc (1, sizeof (struct ipa_dfs_info));
-	info->new = true;
+	  info = XCNEW (struct ipa_dfs_info);
+	info->new_node = true;
 	info->on_stack = false;
 	info->next_cycle = NULL;
 	node->aux = info;

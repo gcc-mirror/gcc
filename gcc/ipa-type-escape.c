@@ -1499,7 +1499,7 @@ okay_pointer_operation (enum tree_code code, tree op0, tree op1)
 static tree
 scan_for_refs (tree *tp, int *walk_subtrees, void *data)
 {
-  struct cgraph_node *fn = data;
+  struct cgraph_node *fn = (struct cgraph_node *) data;
   tree t = *tp;
 
   switch (TREE_CODE (t))  

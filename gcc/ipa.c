@@ -58,7 +58,7 @@ cgraph_postorder (struct cgraph_node **order)
 	  {
 	    while (node2->aux != &last)
 	      {
-		edge = node2->aux;
+		edge = (struct cgraph_edge *) node2->aux;
 		if (edge->next_caller)
 		  node2->aux = edge->next_caller;
 		else
@@ -98,7 +98,7 @@ cgraph_postorder (struct cgraph_node **order)
 bool
 cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 {
-  struct cgraph_node *first = (void *) 1;
+  struct cgraph_node *first = (struct cgraph_node *) (void *) 1;
   struct cgraph_node *node, *next;
   bool changed = false;
   int insns = 0;
@@ -131,7 +131,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
     {
       struct cgraph_edge *e;
       node = first;
-      first = first->aux;
+      first = (struct cgraph_node *) first->aux;
 
       for (e = node->callees; e; e = e->next_callee)
 	if (!e->callee->aux

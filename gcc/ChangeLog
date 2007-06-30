@@ -1,3 +1,30 @@
+2006-06-30  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	* ipa.c (cgraph_postorder): Cast according to the coding conventions.
+	(cgraph_remove_unreachable_nodes): Likewise.
+	* ipa-cp.c (ipcp_propagate_stage): Use BOTTOM instead of integer 0.
+	* ipa-inline.c (update_caller_keys): Cast according to the coding
+	conventions.
+	(cgraph_decide_recursive_inlining): Likewise.
+	(cgraph_decide_inlining_of_small_function): Likewise.
+	(try_inline): Likewise.
+	(cgraph_decide_inlining_incrementally): Likewise.
+	* ipa-pure-const.c (get_function_state): Likewise.
+	(scan_function): Likewise.
+	(analyze_function): Likewise.
+ 	(static_execute): Likewise.
+	* gcc/ipa-reference.c (scan_for_static_refs): Likewise.
+	(merge_callee_local_info): Likewise.
+	(analyze_function): Use type safe memory macros.
+	(static_execute): Likewise. Cast according to the coding conventions.
+	* ipa-type-escape.c (scan_for_regs): Cast according to the coding
+	conventions.
+	* ipa-utils.c (searchc): Likewise. Avoid using C++ keywords as variable
+	names.
+	(ipa_utils_reduced_inorder): Likewise. Use type safe memory macros.
+	* ipa-utils.h (struct ipa_dfa_info): Avoid using C++ keywords as
+	variable names.
+
 2007-06-29  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/30024

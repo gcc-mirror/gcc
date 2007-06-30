@@ -570,7 +570,7 @@ static void
 ipcp_propagate_stage (void)
 {
   int i;
-  struct ipcp_formal cval1 = { 0, {0} }, cval = { 0,{0} };
+  struct ipcp_formal cval1 = { BOTTOM, {0} }, cval = { BOTTOM, {0} };
   struct ipcp_formal *cval2;
   struct cgraph_node *mt, *callee;
   struct cgraph_edge *cs;
