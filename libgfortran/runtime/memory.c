@@ -1,5 +1,5 @@
 /* Memory management routines.
-   Copyright 2002, 2005, 2006 Free Software Foundation, Inc.
+   Copyright 2002, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -102,11 +102,11 @@ internal_realloc_size (void *mem, size_t size)
   return mem;
 }
 
-extern void *internal_realloc (void *, GFC_INTEGER_4);
+extern void *internal_realloc (void *, index_type);
 export_proto(internal_realloc);
 
 void *
-internal_realloc (void *mem, GFC_INTEGER_4 size)
+internal_realloc (void *mem, index_type size)
 {
 #ifdef GFC_CHECK_MEMORY
   /* Under normal circumstances, this is _never_ going to happen!  */
@@ -115,21 +115,6 @@ internal_realloc (void *mem, GFC_INTEGER_4 size)
 #endif
   return internal_realloc_size (mem, (size_t) size);
 }
-
-extern void *internal_realloc64 (void *, GFC_INTEGER_8);
-export_proto(internal_realloc64);
-
-void *
-internal_realloc64 (void *mem, GFC_INTEGER_8 size)
-{
-#ifdef GFC_CHECK_MEMORY
-  /* Under normal circumstances, this is _never_ going to happen!  */
-  if (size < 0)
-    runtime_error ("Attempt to allocate a negative amount of memory.");
-#endif
-  return internal_realloc_size (mem, (size_t) size);
-}
-
 
 /* User-allocate, one call for each member of the alloc-list of an
    ALLOCATE statement. */
@@ -157,12 +142,15 @@ allocate_size (size_t size, GFC_INTEGER_4 * stat)
   return newmem;
 }
 
-extern void *allocate (GFC_INTEGER_4, GFC_INTEGER_4 *);
+extern void *allocate (index_type, GFC_INTEGER_4 *);
 export_proto(allocate);
 
 void *
-allocate (GFC_INTEGER_4 size, GFC_INTEGER_4 * stat)
+allocate (index_type size, GFC_INTEGER_4 * stat)
 {
+#ifdef GFC_CHECK_MEMORY
+  /* The only time this can happen is the size computed by the
+     frontend wraps around.  */
   if (size < 0)
     {
       if (stat)
@@ -174,40 +162,19 @@ allocate (GFC_INTEGER_4 size, GFC_INTEGER_4 * stat)
 	runtime_error ("Attempt to allocate negative amount of memory. "
 		       "Possible integer overflow");
     }
-
-  return allocate_size ((size_t) size, stat);
-}
-
-extern void *allocate64 (GFC_INTEGER_8, GFC_INTEGER_4 *);
-export_proto(allocate64);
-
-void *
-allocate64 (GFC_INTEGER_8 size, GFC_INTEGER_4 * stat)
-{
-  if (size < 0)
-    {
-      if (stat)
-	{
-	  *stat = ERROR_ALLOCATION;
-	  return NULL;
-	}
-      else
-	runtime_error ("ALLOCATE64: Attempt to allocate negative amount of "
-		       "memory. Possible integer overflow");
-    }
-
+#endif
   return allocate_size ((size_t) size, stat);
 }
 
 /* Function to call in an ALLOCATE statement when the argument is an
    allocatable array.  If the array is currently allocated, it is
-   an error to allocate it again.  32-bit version.  */
+   an error to allocate it again.  */
 
-extern void *allocate_array (void *, GFC_INTEGER_4, GFC_INTEGER_4 *);
+extern void *allocate_array (void *, index_type, GFC_INTEGER_4 *);
 export_proto(allocate_array);
 
 void *
-allocate_array (void *mem, GFC_INTEGER_4 size, GFC_INTEGER_4 * stat)
+allocate_array (void *mem, index_type size, GFC_INTEGER_4 * stat)
 {
   if (mem == NULL)
     return allocate (size, stat);
@@ -222,28 +189,6 @@ allocate_array (void *mem, GFC_INTEGER_4 size, GFC_INTEGER_4 * stat)
   runtime_error ("Attempting to allocate already allocated array.");
 }
 
-/* Function to call in an ALLOCATE statement when the argument is an
-   allocatable array.  If the array is currently allocated, it is
-   an error to allocate it again.  64-bit version.  */
-
-extern void *allocate64_array (void *, GFC_INTEGER_8, GFC_INTEGER_4 *);
-export_proto(allocate64_array);
-
-void *
-allocate64_array (void *mem, GFC_INTEGER_8 size, GFC_INTEGER_4 * stat)
-{
-  if (mem == NULL)
-    return allocate64 (size, stat);
-  if (stat)
-    {
-      free (mem);
-      mem = allocate (size, stat);
-      *stat = ERROR_ALLOCATION;
-      return mem;
-    }
-
-  runtime_error ("Attempting to allocate already allocated array.");
-}
 
 /* User-deallocate; pointer is then NULLified by the front-end. */
 

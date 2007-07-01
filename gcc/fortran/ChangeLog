@@ -1,3 +1,14 @@
+2007-07-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * trans.h: Remove decls for 64-bit allocation functions.
+        * trans-array.c (gfc_grow_array): Always pick the standard realloc
+        function decl.
+        (gfc_array_allocate): Likewise.
+        * trans-decl.c: Remove trees for 64-bit allocation functions.
+        (gfc_build_builtin_function_decls): Don't build fndecls for 64-bit
+        allocations functions, use index_int_type for normal allocation
+        functions.
+
 2007-06-30  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/20373
