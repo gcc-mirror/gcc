@@ -6058,10 +6058,9 @@ arm_cannot_copy_insn_p (rtx insn)
 {
   rtx pat = PATTERN (insn);
 
-  if (GET_CODE (pat) == PARALLEL
-      && GET_CODE (XVECEXP (pat, 0, 0)) == SET)
+  if (GET_CODE (pat) == SET)
     {
-      rtx rhs = SET_SRC (XVECEXP (pat, 0, 0));
+      rtx rhs = SET_SRC (pat);
 
       if (GET_CODE (rhs) == UNSPEC
 	  && XINT (rhs, 1) == UNSPEC_PIC_BASE)
