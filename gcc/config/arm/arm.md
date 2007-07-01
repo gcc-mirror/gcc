@@ -4859,9 +4859,9 @@
 (define_insn "pic_add_dot_plus_four"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI [(plus:SI (match_operand:SI 1 "register_operand" "0")
-			     (const (plus:SI (pc) (const_int 4))))]
-		   UNSPEC_PIC_BASE))
-   (use (match_operand 2 "" ""))]
+			     (const (plus:SI (pc) (const_int 4))))
+		    (match_operand 2 "" "")]
+		   UNSPEC_PIC_BASE))]
   "TARGET_THUMB1"
   "*
   (*targetm.asm_out.internal_label) (asm_out_file, \"LPIC\",
@@ -4874,9 +4874,9 @@
 (define_insn "pic_add_dot_plus_eight"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI [(plus:SI (match_operand:SI 1 "register_operand" "r")
-			     (const (plus:SI (pc) (const_int 8))))]
-		   UNSPEC_PIC_BASE))
-   (use (match_operand 2 "" ""))]
+			     (const (plus:SI (pc) (const_int 8))))
+		    (match_operand 2 "" "")]
+		   UNSPEC_PIC_BASE))]
   "TARGET_ARM"
   "*
     (*targetm.asm_out.internal_label) (asm_out_file, \"LPIC\",
@@ -4889,9 +4889,9 @@
 (define_insn "tls_load_dot_plus_eight"
   [(set (match_operand:SI 0 "register_operand" "+r")
 	(mem:SI (unspec:SI [(plus:SI (match_operand:SI 1 "register_operand" "r")
-				     (const (plus:SI (pc) (const_int 8))))]
-			   UNSPEC_PIC_BASE)))
-   (use (match_operand 2 "" ""))]
+				     (const (plus:SI (pc) (const_int 8))))
+			    (match_operand 2 "" "")]
+			   UNSPEC_PIC_BASE)))]
   "TARGET_ARM"
   "*
     (*targetm.asm_out.internal_label) (asm_out_file, \"LPIC\",
