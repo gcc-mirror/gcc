@@ -874,6 +874,7 @@ create_ddg_all_sccs (ddg_ptr g)
       if (backarc->aux.count == IN_SCC)
 	continue;
 
+      sbitmap_zero (scc_nodes);
       sbitmap_zero (from);
       sbitmap_zero (to);
       SET_BIT (from, dest->cuid);
