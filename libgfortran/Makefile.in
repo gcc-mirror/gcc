@@ -158,8 +158,7 @@ am__objects_25 = nearest_r4.lo nearest_r8.lo nearest_r10.lo \
 	nearest_r16.lo
 am__objects_26 = set_exponent_r4.lo set_exponent_r8.lo \
 	set_exponent_r10.lo set_exponent_r16.lo
-am__objects_27 = pow_i4_i4.lo pow_i8_i4.lo pow_i16_i4.lo pow_r4_i4.lo \
-	pow_r8_i4.lo pow_r10_i4.lo pow_r16_i4.lo pow_c4_i4.lo \
+am__objects_27 = pow_i4_i4.lo pow_i8_i4.lo pow_i16_i4.lo pow_c4_i4.lo \
 	pow_c8_i4.lo pow_c10_i4.lo pow_c16_i4.lo pow_i4_i8.lo \
 	pow_i8_i8.lo pow_i16_i8.lo pow_r4_i8.lo pow_r8_i8.lo \
 	pow_r10_i8.lo pow_r16_i8.lo pow_c4_i8.lo pow_c8_i8.lo \
@@ -816,10 +815,6 @@ i_pow_c = \
 $(srcdir)/generated/pow_i4_i4.c \
 $(srcdir)/generated/pow_i8_i4.c \
 $(srcdir)/generated/pow_i16_i4.c \
-$(srcdir)/generated/pow_r4_i4.c \
-$(srcdir)/generated/pow_r8_i4.c \
-$(srcdir)/generated/pow_r10_i4.c \
-$(srcdir)/generated/pow_r16_i4.c \
 $(srcdir)/generated/pow_c4_i4.c \
 $(srcdir)/generated/pow_c8_i4.c \
 $(srcdir)/generated/pow_c10_i4.c \
@@ -1412,16 +1407,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pow_i8_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pow_i8_i8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pow_r10_i16.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pow_r10_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pow_r10_i8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pow_r16_i16.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pow_r16_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pow_r16_i8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pow_r4_i16.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pow_r4_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pow_r4_i8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pow_r8_i16.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pow_r8_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pow_r8_i8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/product_c10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/product_c16.Plo@am__quote@
@@ -3785,34 +3776,6 @@ pow_i16_i4.lo: $(srcdir)/generated/pow_i16_i4.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/pow_i16_i4.c' object='pow_i16_i4.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_i16_i4.lo `test -f '$(srcdir)/generated/pow_i16_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/pow_i16_i4.c
-
-pow_r4_i4.lo: $(srcdir)/generated/pow_r4_i4.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT pow_r4_i4.lo -MD -MP -MF "$(DEPDIR)/pow_r4_i4.Tpo" -c -o pow_r4_i4.lo `test -f '$(srcdir)/generated/pow_r4_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/pow_r4_i4.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/pow_r4_i4.Tpo" "$(DEPDIR)/pow_r4_i4.Plo"; else rm -f "$(DEPDIR)/pow_r4_i4.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/pow_r4_i4.c' object='pow_r4_i4.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r4_i4.lo `test -f '$(srcdir)/generated/pow_r4_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/pow_r4_i4.c
-
-pow_r8_i4.lo: $(srcdir)/generated/pow_r8_i4.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT pow_r8_i4.lo -MD -MP -MF "$(DEPDIR)/pow_r8_i4.Tpo" -c -o pow_r8_i4.lo `test -f '$(srcdir)/generated/pow_r8_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/pow_r8_i4.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/pow_r8_i4.Tpo" "$(DEPDIR)/pow_r8_i4.Plo"; else rm -f "$(DEPDIR)/pow_r8_i4.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/pow_r8_i4.c' object='pow_r8_i4.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r8_i4.lo `test -f '$(srcdir)/generated/pow_r8_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/pow_r8_i4.c
-
-pow_r10_i4.lo: $(srcdir)/generated/pow_r10_i4.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT pow_r10_i4.lo -MD -MP -MF "$(DEPDIR)/pow_r10_i4.Tpo" -c -o pow_r10_i4.lo `test -f '$(srcdir)/generated/pow_r10_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/pow_r10_i4.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/pow_r10_i4.Tpo" "$(DEPDIR)/pow_r10_i4.Plo"; else rm -f "$(DEPDIR)/pow_r10_i4.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/pow_r10_i4.c' object='pow_r10_i4.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r10_i4.lo `test -f '$(srcdir)/generated/pow_r10_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/pow_r10_i4.c
-
-pow_r16_i4.lo: $(srcdir)/generated/pow_r16_i4.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT pow_r16_i4.lo -MD -MP -MF "$(DEPDIR)/pow_r16_i4.Tpo" -c -o pow_r16_i4.lo `test -f '$(srcdir)/generated/pow_r16_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/pow_r16_i4.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/pow_r16_i4.Tpo" "$(DEPDIR)/pow_r16_i4.Plo"; else rm -f "$(DEPDIR)/pow_r16_i4.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/pow_r16_i4.c' object='pow_r16_i4.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r16_i4.lo `test -f '$(srcdir)/generated/pow_r16_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/pow_r16_i4.c
 
 pow_c4_i4.lo: $(srcdir)/generated/pow_c4_i4.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT pow_c4_i4.lo -MD -MP -MF "$(DEPDIR)/pow_c4_i4.Tpo" -c -o pow_c4_i4.lo `test -f '$(srcdir)/generated/pow_c4_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/pow_c4_i4.c; \

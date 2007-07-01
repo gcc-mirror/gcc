@@ -1,5 +1,13 @@
 2007-07-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR fortran/32239
+	* trans-expr.c (gfc_conv_power_op): Use builtin_powi for
+	real**int4 powers.
+	* f95-lang.c (gfc_init_builtin_functions): Add builtin_powi to the
+	builtins table.
+
+2007-07-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
         * trans.h: Remove decls for 64-bit allocation functions.
         * trans-array.c (gfc_grow_array): Always pick the standard realloc
         function decl.

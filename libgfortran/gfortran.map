@@ -526,16 +526,12 @@ GFORTRAN_1.0 {
     _gfortran_pow_i8_i4;
     _gfortran_pow_i8_i8;
     _gfortran_pow_r10_i16;
-    _gfortran_pow_r10_i4;
     _gfortran_pow_r10_i8;
     _gfortran_pow_r16_i16;
-    _gfortran_pow_r16_i4;
     _gfortran_pow_r16_i8;
     _gfortran_pow_r4_i16;
-    _gfortran_pow_r4_i4;
     _gfortran_pow_r4_i8;
     _gfortran_pow_r8_i16;
-    _gfortran_pow_r8_i4;
     _gfortran_pow_r8_i8;
     _gfortran_product_c10;
     _gfortran_product_c16;
