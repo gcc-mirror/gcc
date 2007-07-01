@@ -58,8 +58,6 @@ int main (void)
       a[i] = i;
       b[i] = i * 2;
       c[i] = 17;
-      if (a[i] == 178)
-         abort();
     }
 
   main1 (arr);
@@ -67,7 +65,8 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  { target { vect_interleave } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect"  { target { vect_interleave } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  { target { ! { vect_interleave } } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 
 

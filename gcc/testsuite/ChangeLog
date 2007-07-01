@@ -1,3 +1,9 @@
+2007-07-01  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/vect-strided-store-u16-i4.c: Remove abort() from input
+	initialization and fix dg-final check - the initialization loop is
+	vectorizable.
+
 2007-067-01  Uros Bizjak  <ubizjak@gmail.com>
 	    Volker Reichelt  <reichelt@netcologne.de>
 
