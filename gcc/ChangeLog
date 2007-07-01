@@ -1,3 +1,9 @@
+2007-07-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/32559
+	* fold-const.c (fold-binary) [PLUS_EXPR]: Convert ~X + X to 1 or
+	X + ~X to 1 only for INTEGRAL_TYPE_P type.
+
 2007-06-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac: Check for .gnu_attribute on MIPS.
@@ -137,7 +143,7 @@
 
 2006-06-30  Jan Hubicka  <jh@suse.cz>
 
-	* loop-unroll.c (unroll_loop_runtime_iterations): Unshare newly emit    
+	* loop-unroll.c (unroll_loop_runtime_iterations): Unshare newly emit
 	code.
 
 2006-06-30  Thomas Neumann  <tneumann@users.sourceforge.net>

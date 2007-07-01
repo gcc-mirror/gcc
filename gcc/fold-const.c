@@ -9270,27 +9270,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	return fold_build2 (MINUS_EXPR, type,
 			    fold_convert (type, arg1),
 			    fold_convert (type, TREE_OPERAND (arg0, 0)));
-      /* Convert ~A + 1 to -A.  */
-      if (INTEGRAL_TYPE_P (type)
-	  && TREE_CODE (arg0) == BIT_NOT_EXPR
-	  && integer_onep (arg1))
-	return fold_build1 (NEGATE_EXPR, type, TREE_OPERAND (arg0, 0));
 
-      /* Handle (A1 * C1) + (A2 * C2) with A1, A2 or C1, C2 being the
-	 same or one.  */
-      if ((TREE_CODE (arg0) == MULT_EXPR
-	   || TREE_CODE (arg1) == MULT_EXPR)
-	  && (!FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations))
-        {
-	  tree tem = fold_plusminus_mult_expr (code, type, arg0, arg1);
-	  if (tem)
-	    return tem;
-	}
-
-      if (! FLOAT_TYPE_P (type))
+      if (INTEGRAL_TYPE_P (type))
 	{
-	  if (integer_zerop (arg1))
-	    return non_lvalue (fold_convert (type, arg0));
+	  /* Convert ~A + 1 to -A.  */
+	  if (TREE_CODE (arg0) == BIT_NOT_EXPR
+	      && integer_onep (arg1))
+	    return fold_build1 (NEGATE_EXPR, type, TREE_OPERAND (arg0, 0));
 
 	  /* ~X + X is -1.  */
 	  if (TREE_CODE (arg0) == BIT_NOT_EXPR
@@ -9319,6 +9305,23 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		  return omit_one_operand (type, t1, arg0);
 		}
 	    }
+	}
+
+      /* Handle (A1 * C1) + (A2 * C2) with A1, A2 or C1, C2 being the
+	 same or one.  */
+      if ((TREE_CODE (arg0) == MULT_EXPR
+	   || TREE_CODE (arg1) == MULT_EXPR)
+	  && (!FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations))
+        {
+	  tree tem = fold_plusminus_mult_expr (code, type, arg0, arg1);
+	  if (tem)
+	    return tem;
+	}
+
+      if (! FLOAT_TYPE_P (type))
+	{
+	  if (integer_zerop (arg1))
+	    return non_lvalue (fold_convert (type, arg0));
 
 	  /* If we are adding two BIT_AND_EXPR's, both of which are and'ing
 	     with a constant, and the two constants have no bits in common,
