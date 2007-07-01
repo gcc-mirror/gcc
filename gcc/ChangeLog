@@ -1,3 +1,9 @@
+2007-07-01  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Handle constants
+	and other expected operations explicitly, change default to
+	gcc_unreachable. 
+
 2007-07-01  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/arm/arm.c (arm_cannot_copy_insn_p): Do not expect a
