@@ -25,6 +25,11 @@
 	* pa.c (hppa_can_use_return_insn_p): Delete function.  Include "df.h".
 
 2007-06-30  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (is_exception_related): New function
+	(can_value_number_operation): Use it.
+
+2007-06-30  Daniel Berlin  <dberlin@dberlin.org>
 	
 	Fix PR tree-optimization/32540
 	Fix PR tree-optimization/31651
