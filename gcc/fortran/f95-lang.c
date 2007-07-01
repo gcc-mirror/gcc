@@ -950,6 +950,13 @@ gfc_init_builtin_functions (void)
 		      BUILT_IN_POW, "pow", true);
   gfc_define_builtin ("__builtin_powf", mfunc_float[1], 
 		      BUILT_IN_POWF, "powf", true);
+  gfc_define_builtin ("__builtin_powil", mfunc_longdouble[2], 
+		      BUILT_IN_POWIL, "powil", true);
+  gfc_define_builtin ("__builtin_powi", mfunc_double[2], 
+		      BUILT_IN_POWI, "powi", true);
+  gfc_define_builtin ("__builtin_powif", mfunc_float[2], 
+		      BUILT_IN_POWIF, "powif", true);
+
 
   if (TARGET_C99_FUNCTIONS)
     {

@@ -66,7 +66,7 @@ if (z .gt. 0) then
 else
   y = (y / 2.) * (2. ** (z + 1))
 end if
-if (abs (x - y) .gt. abs(x * 1e-6)) call abort()
+if (abs (x - y) .gt. spacing (max (abs (x), abs (y)))) call abort()
 end
 
 subroutine test_8(x)
@@ -79,6 +79,6 @@ if (z .gt. 0) then
 else
   y = (y / 2._8) * (2._8 ** (z + 1))
 end if
-if (abs (x - y) .gt. abs(x * 1e-6)) call abort()
+if (abs (x - y) .gt. spacing (max (abs (x), abs(y)))) call abort()
 end
 

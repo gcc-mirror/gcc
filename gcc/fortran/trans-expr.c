@@ -780,9 +780,9 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
   gfc_add_block_to_block (&se->pre, &rse.pre);
 
   if (expr->value.op.op2->ts.type == BT_INTEGER
-	 && expr->value.op.op2->expr_type == EXPR_CONSTANT)
+      && expr->value.op.op2->expr_type == EXPR_CONSTANT)
     if (gfc_conv_cst_int_power (se, lse.expr, rse.expr))
-      return;        
+      return;
 
   gfc_int4_type_node = gfc_get_int_type (4);
 
@@ -852,7 +852,30 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 	  break;
 
 	case BT_REAL:
-	  fndecl = gfor_fndecl_math_powi[kind][ikind].real;
+	  /* Use builtins for real ** int4.  */
+	  if (ikind == 0)
+	    {
+	      switch (kind)
+		{
+		case 0:
+		  fndecl = built_in_decls[BUILT_IN_POWIF];
+		  break;
+		
+		case 1:
+		  fndecl = built_in_decls[BUILT_IN_POWI];
+		  break;
+
+		case 2:
+		case 3:
+		  fndecl = built_in_decls[BUILT_IN_POWIL];
+		  break;
+
+		default:
+		  gcc_unreachable ();
+		}
+	    }
+	  else
+	    fndecl = gfor_fndecl_math_powi[kind][ikind].real;
 	  break;
 
 	case BT_COMPLEX:

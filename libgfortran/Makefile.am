@@ -430,10 +430,6 @@ i_pow_c = \
 $(srcdir)/generated/pow_i4_i4.c \
 $(srcdir)/generated/pow_i8_i4.c \
 $(srcdir)/generated/pow_i16_i4.c \
-$(srcdir)/generated/pow_r4_i4.c \
-$(srcdir)/generated/pow_r8_i4.c \
-$(srcdir)/generated/pow_r10_i4.c \
-$(srcdir)/generated/pow_r16_i4.c \
 $(srcdir)/generated/pow_c4_i4.c \
 $(srcdir)/generated/pow_c8_i4.c \
 $(srcdir)/generated/pow_c10_i4.c \
