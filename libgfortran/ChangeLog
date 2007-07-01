@@ -1,3 +1,14 @@
+2007-07-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * runtime/memory.c (internal_realloc): Use index_type for size
+        argument instead of GFC_INTEGER_4.
+        (allocate_array): Likewise.
+        (allocate): Likewise, add ifdef around unnecessary check.
+        (internal_reallo64): Remove.
+        (allocate_array64): Remove.
+        (allocate64): Remove.
+        * gfortran.map: Remove symbols for 64-bit allocation functions.
+
 2007-06-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/32456

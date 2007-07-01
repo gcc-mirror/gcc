@@ -10,8 +10,6 @@ GFORTRAN_1.0 {
     _gfortran_all_l4;
     _gfortran_all_l8;
     _gfortran_allocate;
-    _gfortran_allocate64;
-    _gfortran_allocate64_array;
     _gfortran_allocate_array;
     _gfortran_any_l16;
     _gfortran_any_l4;
@@ -168,7 +166,6 @@ GFORTRAN_1.0 {
     _gfortran_ierrno_i8;
     _gfortran_internal_pack;
     _gfortran_internal_realloc;
-    _gfortran_internal_realloc64;
     _gfortran_internal_unpack;
     _gfortran_irand;
     _gfortran_isatty_l4;

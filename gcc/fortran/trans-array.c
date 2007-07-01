@@ -842,11 +842,9 @@ gfc_grow_array (stmtblock_t * pblock, tree desc, tree extra)
   arg1 = build2 (MULT_EXPR, gfc_array_index_type, tmp,
 		 fold_convert (gfc_array_index_type, size));
 
-  /* Pick the appropriate realloc function.  */
-  if (gfc_index_integer_kind == 4)
+  /* Pick the realloc function.  */
+  if (gfc_index_integer_kind == 4 || gfc_index_integer_kind == 8)
     tmp = gfor_fndecl_internal_realloc;
-  else if (gfc_index_integer_kind == 8)
-    tmp = gfor_fndecl_internal_realloc64;
   else
     gcc_unreachable ();
 
@@ -3575,19 +3573,13 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
   pointer = gfc_conv_descriptor_data_get (se->expr);
   STRIP_NOPS (pointer);
 
-  if (TYPE_PRECISION (gfc_array_index_type) == 32)
+  if (TYPE_PRECISION (gfc_array_index_type) == 32 ||
+      TYPE_PRECISION (gfc_array_index_type) == 64)
     {
       if (allocatable_array)
 	allocate = gfor_fndecl_allocate_array;
       else
 	allocate = gfor_fndecl_allocate;
-    }
-  else if (TYPE_PRECISION (gfc_array_index_type) == 64)
-    {
-      if (allocatable_array)
-	allocate = gfor_fndecl_allocate64_array;
-      else
-	allocate = gfor_fndecl_allocate64;
     }
   else
     gcc_unreachable ();
