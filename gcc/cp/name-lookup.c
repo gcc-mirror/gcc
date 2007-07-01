@@ -42,7 +42,6 @@ struct scope_binding {
 #define EMPTY_SCOPE_BINDING { NULL_TREE, NULL_TREE }
 
 static cxx_scope *innermost_nonclass_level (void);
-static tree select_decl (const struct scope_binding *, int);
 static cxx_binding *binding_for_name (cxx_scope *, tree);
 static tree lookup_name_innermost_nonclass_level (tree);
 static tree push_overloaded_decl (tree, int, bool);
@@ -3497,36 +3496,55 @@ ambiguous_decl (tree name, struct scope_binding *old, cxx_binding *new,
 {
   tree val, type;
   gcc_assert (old != NULL);
+
+  /* Copy the type.  */
+  type = new->type;
+  if (LOOKUP_NAMESPACES_ONLY (flags)
+      || (type && hidden_name_p (type) && !(flags & LOOKUP_HIDDEN)))
+    type = NULL_TREE;
+
   /* Copy the value.  */
   val = new->value;
   if (val)
-    switch (TREE_CODE (val))
-      {
-      case TEMPLATE_DECL:
-	/* If we expect types or namespaces, and not templates,
-	   or this is not a template class.  */
-	if ((LOOKUP_QUALIFIERS_ONLY (flags)
-	     && !DECL_CLASS_TEMPLATE_P (val))
-	    || hidden_name_p (val))
-	  val = NULL_TREE;
-	break;
-      case TYPE_DECL:
-	if (LOOKUP_NAMESPACES_ONLY (flags) || hidden_name_p (val))
-	  val = NULL_TREE;
-	break;
-      case NAMESPACE_DECL:
-	if (LOOKUP_TYPES_ONLY (flags))
-	  val = NULL_TREE;
-	break;
-      case FUNCTION_DECL:
-	/* Ignore built-in functions that are still anticipated.  */
-	if (LOOKUP_QUALIFIERS_ONLY (flags) || hidden_name_p (val))
-	  val = NULL_TREE;
-	break;
-      default:
-	if (LOOKUP_QUALIFIERS_ONLY (flags))
-	  val = NULL_TREE;
-      }
+    {
+      if (hidden_name_p (val) && !(flags & LOOKUP_HIDDEN))
+	val = NULL_TREE;
+      else
+	switch (TREE_CODE (val))
+	  {
+	  case TEMPLATE_DECL:
+	    /* If we expect types or namespaces, and not templates,
+	       or this is not a template class.  */
+	    if ((LOOKUP_QUALIFIERS_ONLY (flags)
+		 && !DECL_CLASS_TEMPLATE_P (val)))
+	      val = NULL_TREE;
+	    break;
+	  case TYPE_DECL:
+	    if (LOOKUP_NAMESPACES_ONLY (flags)
+		|| (type && (flags & LOOKUP_PREFER_TYPES)))
+	      val = NULL_TREE;
+	    break;
+	  case NAMESPACE_DECL:
+	    if (LOOKUP_TYPES_ONLY (flags))
+	      val = NULL_TREE;
+	    break;
+	  case FUNCTION_DECL:
+	    /* Ignore built-in functions that are still anticipated.  */
+	    if (LOOKUP_QUALIFIERS_ONLY (flags))
+	      val = NULL_TREE;
+	    break;
+	  default:
+	    if (LOOKUP_QUALIFIERS_ONLY (flags))
+	      val = NULL_TREE;
+	  }
+    }
+
+  /* If val is hidden, shift down any class or enumeration name.  */
+  if (!val)
+    {
+      val = type;
+      type = NULL_TREE;
+    }
 
   if (!old->value)
     old->value = val;
@@ -3537,14 +3555,11 @@ ambiguous_decl (tree name, struct scope_binding *old, cxx_binding *new,
       else
 	{
 	  old->value = tree_cons (NULL_TREE, old->value,
-				  build_tree_list (NULL_TREE, new->value));
+				  build_tree_list (NULL_TREE, val));
 	  TREE_TYPE (old->value) = error_mark_node;
 	}
     }
-  /* ... and copy the type.  */
-  type = new->type;
-  if (LOOKUP_NAMESPACES_ONLY (flags) || (type && hidden_name_p (type)))
-    type = NULL_TREE;
+
   if (!old->type)
     old->type = type;
   else if (type && old->type != type)
@@ -3644,36 +3659,6 @@ remove_hidden_names (tree fns)
   return fns;
 }
 
-/* Select the right _DECL from multiple choices.  */
-
-static tree
-select_decl (const struct scope_binding *binding, int flags)
-{
-  tree val;
-  val = binding->value;
-
-  timevar_push (TV_NAME_LOOKUP);
-  if (LOOKUP_NAMESPACES_ONLY (flags))
-    {
-      /* We are not interested in types.  */
-      if (val && (TREE_CODE (val) == NAMESPACE_DECL
-		  || TREE_CODE (val) == TREE_LIST))
-	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, val);
-      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
-    }
-
-  /* If looking for a type, or if there is no non-type binding, select
-     the value binding.  */
-  if (binding->type && (!val || (flags & LOOKUP_PREFER_TYPES)))
-    val = binding->type;
-  /* Don't return non-types if we really prefer types.  */
-  else if (val && LOOKUP_TYPES_ONLY (flags)
-	   && ! DECL_DECLARES_TYPE_P (val))
-    val = NULL_TREE;
-
-  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, val);
-}
-
 /* Unscoped lookup of a global: iterate over current namespaces,
    considering using-directives.  */
 
@@ -3685,24 +3670,17 @@ unqualified_namespace_lookup (tree name, int flags)
   tree siter;
   struct cp_binding_level *level;
   tree val = NULL_TREE;
-  struct scope_binding binding = EMPTY_SCOPE_BINDING;
 
   timevar_push (TV_NAME_LOOKUP);
 
   for (; !val; scope = CP_DECL_CONTEXT (scope))
     {
+      struct scope_binding binding = EMPTY_SCOPE_BINDING;
       cxx_binding *b =
 	 cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
 
       if (b)
-	{
-	  if (b->value
-	      && ((flags & LOOKUP_HIDDEN) || !hidden_name_p (b->value)))
-	    binding.value = b->value;
-	  if (b->type
-	      && ((flags & LOOKUP_HIDDEN) || !hidden_name_p (b->type)))
-	    binding.type = b->type;
-	}
+	ambiguous_decl (name, &binding, b, flags);
 
       /* Add all _DECLs seen through local using-directives.  */
       for (level = current_binding_level;
@@ -3727,7 +3705,7 @@ unqualified_namespace_lookup (tree name, int flags)
 	  siter = CP_DECL_CONTEXT (siter);
 	}
 
-      val = select_decl (&binding, flags);
+      val = binding.value;
       if (scope == global_namespace)
 	break;
     }
@@ -3757,7 +3735,7 @@ lookup_qualified_name (tree scope, tree name, bool is_type_p, bool complain)
       if (is_type_p)
 	flags |= LOOKUP_PREFER_TYPES;
       if (qualified_lookup_using_namespace (name, scope, &binding, flags))
-	t = select_decl (&binding, flags);
+	t = binding.value;
     }
   else if (is_aggr_type (scope, complain))
     t = lookup_member (scope, name, 2, is_type_p);

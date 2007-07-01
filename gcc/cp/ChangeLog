@@ -1,3 +1,14 @@
+2007-07-01  Ollie Wild  <aaw@google.com>
+
+	* name-lookup.c (ambiguous_decl): Fix case when new->value is hidden.
+	(select_decl): Remove function.
+	(unqualified_namespace_lookup): Populate binding by calling
+	ambiguous_decl.  Remove select_decl call.
+	(lookup_qualified_name): Remove select_decl call.
+	* decl.c (lookup_and_check_tag): Check for ambiguous references.
+	* parser.c (cp_parser_elaborated_type_specifier): Skip redundant error
+	generation when name lookup is ambiguous.
+
 2007-06-29  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/31724

@@ -10855,13 +10855,19 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
       if (parser->scope)
 	{
 	  tree decl;
+	  tree ambiguous_decls;
 
 	  decl = cp_parser_lookup_name (parser, identifier,
 					tag_type,
 					/*is_template=*/false,
 					/*is_namespace=*/false,
 					/*check_dependency=*/true,
-					/*ambiguous_decls=*/NULL);
+					&ambiguous_decls);
+
+	  /* If the lookup was ambiguous, an error will already have been
+	     issued.  */
+	  if (ambiguous_decls)
+	    return error_mark_node;
 
 	  /* If we are parsing friend declaration, DECL may be a
 	     TEMPLATE_DECL tree node here.  However, we need to check

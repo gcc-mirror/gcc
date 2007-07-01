@@ -9933,6 +9933,12 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
 					   | DECL_SELF_REFERENCE_P (decl));
       return t;
     }
+  else if (decl && TREE_CODE (decl) == TREE_LIST)
+    {
+      error ("reference to %qD is ambiguous", name);
+      print_candidates (decl);
+      return error_mark_node;
+    }
   else
     return NULL_TREE;
 }
