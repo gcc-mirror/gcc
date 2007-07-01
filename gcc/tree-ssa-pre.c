@@ -2122,13 +2122,23 @@ can_value_number_call (tree stmt)
   return false;
 }
 
+/* Return true if OP is an exception handler related operation, such as
+   FILTER_EXPRor EXC_PTR_EXPR.  */
+
+static bool
+is_exception_related (tree op)
+{
+  return TREE_CODE (op) == FILTER_EXPR || TREE_CODE (op) == EXC_PTR_EXPR;
+}
+
 /* Return true if OP is a tree which we can perform value numbering
    on.  */
 
 static bool
 can_value_number_operation (tree op)
 {
-  return UNARY_CLASS_P (op)
+  return (UNARY_CLASS_P (op) 
+	  && !is_exception_related (TREE_OPERAND (op, 0)))
     || BINARY_CLASS_P (op)
     || COMPARISON_CLASS_P (op)
     || REFERENCE_CLASS_P (op)
