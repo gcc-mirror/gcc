@@ -1,3 +1,7 @@
+2007-07-01  Andreas Schwab  <schwab@suse.de>
+
+	* dwarf2out.c (initial_return_save): Define only if used.
+
 2007-07-01  Richard Sandiford  <richard@codesourcery.com>
 
 	Unreverting Richard's Revert of:
