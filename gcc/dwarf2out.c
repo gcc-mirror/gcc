@@ -347,7 +347,9 @@ static void add_fde_cfi (const char *, dw_cfi_ref);
 static void lookup_cfa_1 (dw_cfi_ref, dw_cfa_location *);
 static void lookup_cfa (dw_cfa_location *);
 static void reg_save (const char *, unsigned, unsigned, HOST_WIDE_INT);
+#ifdef DWARF2_UNWIND_INFO
 static void initial_return_save (rtx);
+#endif
 static HOST_WIDE_INT stack_adjust_offset (rtx);
 static void output_cfi (dw_cfi_ref, dw_fde_ref, int);
 static void output_call_frame_info (int);
@@ -955,6 +957,7 @@ dwarf2out_return_reg (const char *label, unsigned int sreg)
   reg_save (label, DWARF_FRAME_RETURN_COLUMN, DWARF_FRAME_REGNUM (sreg), 0);
 }
 
+#ifdef DWARF2_UNWIND_INFO
 /* Record the initial position of the return address.  RTL is
    INCOMING_RETURN_ADDR_RTX.  */
 
@@ -1012,6 +1015,7 @@ initial_return_save (rtx rtl)
   if (reg != DWARF_FRAME_RETURN_COLUMN)
     reg_save (NULL, DWARF_FRAME_RETURN_COLUMN, reg, offset - cfa.offset);
 }
+#endif
 
 /* Given a SET, calculate the amount of stack adjustment it
    contains.  */
