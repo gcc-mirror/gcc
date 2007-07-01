@@ -1,3 +1,9 @@
+2007-07-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/32554
+	* io/write.c (output_float): Set edigits to a fixed size, avoiding
+	variation in field width calculation and eliminate buffer overrun.
+
 2007-07-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
         * runtime/memory.c (internal_realloc): Use index_type for size
