@@ -633,7 +633,7 @@ determine_offset (struct data_reference *a, struct data_reference *b,
   /* Check that both the references access the location in the same type.  */
   typea = TREE_TYPE (DR_REF (a));
   typeb = TREE_TYPE (DR_REF (b));
-  if (!tree_ssa_useless_type_conversion_1 (typeb, typea))
+  if (!useless_type_conversion_p (typeb, typea))
     return false;
 
   /* Check whether the base address and the step of both references is the

@@ -891,7 +891,7 @@ delete_tree_ssa (void)
    useless type conversion, otherwise return false.  */
 
 bool
-tree_ssa_useless_type_conversion_1 (tree outer_type, tree inner_type)
+useless_type_conversion_p (tree outer_type, tree inner_type)
 {
   if (inner_type == outer_type)
     return true;
@@ -964,7 +964,7 @@ tree_ssa_useless_type_conversion_1 (tree outer_type, tree inner_type)
   /* Recurse for complex types.  */
   else if (TREE_CODE (inner_type) == COMPLEX_TYPE
 	   && TREE_CODE (outer_type) == COMPLEX_TYPE
-	   && tree_ssa_useless_type_conversion_1 (TREE_TYPE (outer_type),
+	   && useless_type_conversion_p (TREE_TYPE (outer_type),
 						  TREE_TYPE (inner_type)))
     return true;
 
@@ -987,7 +987,7 @@ tree_ssa_useless_type_conversion (tree expr)
     /* FIXME: Use of GENERIC_TREE_TYPE here is a temporary measure to work
        around known bugs with GIMPLE_MODIFY_STMTs appearing in places
        they shouldn't.  See PR 30391.  */
-    return tree_ssa_useless_type_conversion_1
+    return useless_type_conversion_p
       (TREE_TYPE (expr),
        GENERIC_TREE_TYPE (TREE_OPERAND (expr, 0)));
 

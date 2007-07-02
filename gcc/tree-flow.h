@@ -868,7 +868,7 @@ extern void init_tree_ssa (void);
 extern edge ssa_redirect_edge (edge, basic_block);
 extern void flush_pending_stmts (edge);
 extern bool tree_ssa_useless_type_conversion (tree);
-extern bool tree_ssa_useless_type_conversion_1 (tree, tree);
+extern bool useless_type_conversion_p (tree, tree);
 extern void verify_ssa (bool);
 extern void delete_tree_ssa (void);
 extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);

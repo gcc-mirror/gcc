@@ -604,7 +604,7 @@ create_mem_ref (block_stmt_iterator *bsi, tree type, aff_tree *addr)
       /* Add the symbol to base, eventually forcing it to register.  */
       if (parts.base)
 	{
-	  gcc_assert (tree_ssa_useless_type_conversion_1
+	  gcc_assert (useless_type_conversion_p
 				(sizetype, TREE_TYPE (parts.base)));
 
 	  if (parts.index)
