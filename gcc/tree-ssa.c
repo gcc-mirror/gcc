@@ -888,7 +888,29 @@ delete_tree_ssa (void)
 
 
 /* Return true if the conversion from INNER_TYPE to OUTER_TYPE is a
-   useless type conversion, otherwise return false.  */
+   useless type conversion, otherwise return false.
+
+   This function implicitly defines the middle-end type system.  With
+   the notion of 'a < b' meaning that useless_type_conversion_p (a, b)
+   holds and 'a > b' meaning that useless_type_conversion_p (b, a) holds,
+   the following invariants shall be fulfilled:
+
+     1) useless_type_conversion_p is transitive.
+	If a < b and b < c then a < c.
+
+     2) useless_type_conversion_p is not symmetric.
+	From a < b does not follow a > b.
+
+     3) Types define the available set of operations applicable to values.
+	A type conversion is useless if the operations for the target type
+	is a subset of the operations for the source type.  For example
+	casts to void* are useless, casts from void* are not (void* can't
+	be dereferenced or offsetted, but copied, hence its set of operations
+	is a strict subset of that of all other data pointer types).  Casts
+	to const T* are useless (can't be written to), casts from const T*
+	to T* are not.
+
+   ???  The above do not hold currently.  */
 
 bool
 useless_type_conversion_p (tree outer_type, tree inner_type)
@@ -900,75 +922,83 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
   if (TYPE_MODE (inner_type) != TYPE_MODE (outer_type))
     return false;
 
-  /* If the inner and outer types are effectively the same, then
-     strip the type conversion and enter the equivalence into
-     the table.  */
-  if (lang_hooks.types_compatible_p (inner_type, outer_type))
-    return true;
-
-  /* If both types are pointers and the outer type is a (void *), then
-     the conversion is not necessary.  The opposite is not true since
-     that conversion would result in a loss of information if the
-     equivalence was used.  Consider an indirect function call where
-     we need to know the exact type of the function to correctly
-     implement the ABI.  */
-  else if (POINTER_TYPE_P (inner_type)
-           && POINTER_TYPE_P (outer_type)
-	   && TYPE_REF_CAN_ALIAS_ALL (inner_type)
-	      == TYPE_REF_CAN_ALIAS_ALL (outer_type)
-	   && TREE_CODE (TREE_TYPE (outer_type)) == VOID_TYPE)
-    return true;
-
-  /* Don't lose casts between pointers to volatile and non-volatile
-     qualified types.  Doing so would result in changing the semantics
-     of later accesses.  */
-  else if (POINTER_TYPE_P (inner_type)
-           && POINTER_TYPE_P (outer_type)
-	   && TYPE_VOLATILE (TREE_TYPE (outer_type))
-	      != TYPE_VOLATILE (TREE_TYPE (inner_type)))
-    return false;
-
-  /* Pointers/references are equivalent if their pointed to types
-     are effectively the same.  This allows to strip conversions between
-     pointer types with different type qualifiers.  */
-  else if (POINTER_TYPE_P (inner_type)
-           && POINTER_TYPE_P (outer_type)
-	   && TYPE_REF_CAN_ALIAS_ALL (inner_type)
-	      == TYPE_REF_CAN_ALIAS_ALL (outer_type)
-           && lang_hooks.types_compatible_p (TREE_TYPE (inner_type),
-					     TREE_TYPE (outer_type)))
-    return true;
-
   /* If both the inner and outer types are integral types, then the
      conversion is not necessary if they have the same mode and
-     signedness and precision, and both or neither are boolean.  Some
-     code assumes an invariant that boolean types stay boolean and do
-     not become 1-bit bit-field types.  Note that types with precision
-     not using all bits of the mode (such as bit-field types in C)
-     mean that testing of precision is necessary.  */
-  else if (INTEGRAL_TYPE_P (inner_type)
-           && INTEGRAL_TYPE_P (outer_type)
-	   && TYPE_UNSIGNED (inner_type) == TYPE_UNSIGNED (outer_type)
-	   && TYPE_PRECISION (inner_type) == TYPE_PRECISION (outer_type))
+     signedness and precision, and both or neither are boolean.  */
+  if (INTEGRAL_TYPE_P (inner_type)
+      && INTEGRAL_TYPE_P (outer_type))
     {
-      tree min_inner = fold_convert (outer_type, TYPE_MIN_VALUE (inner_type));
-      tree max_inner = fold_convert (outer_type, TYPE_MAX_VALUE (inner_type));
-      bool first_boolean = (TREE_CODE (inner_type) == BOOLEAN_TYPE);
-      bool second_boolean = (TREE_CODE (outer_type) == BOOLEAN_TYPE);
-      if (simple_cst_equal (max_inner, TYPE_MAX_VALUE (outer_type))
-	  && simple_cst_equal (min_inner, TYPE_MIN_VALUE (outer_type))
-	  && first_boolean == second_boolean)
+      /* Preserve changes in signedness or precision.  */
+      if (TYPE_UNSIGNED (inner_type) != TYPE_UNSIGNED (outer_type)
+	  || TYPE_PRECISION (inner_type) != TYPE_PRECISION (outer_type))
+	return false;
+
+      /* Preserve booleanness.  Some code assumes an invariant that boolean
+	 types stay boolean and do not become 1-bit bit-field types.  */
+      if ((TREE_CODE (inner_type) == BOOLEAN_TYPE)
+	  != (TREE_CODE (outer_type) == BOOLEAN_TYPE))
+	return false;
+
+      /* Preserve changes in the types minimum or maximum value.
+	 ???  Due to the way we handle sizetype as signed we need
+	 to jump through hoops here to make sizetype and size_type_node
+	 compatible.  */
+      if (!tree_int_cst_equal (fold_convert (outer_type,
+					     TYPE_MIN_VALUE (inner_type)),
+			       TYPE_MIN_VALUE (outer_type))
+	  || !tree_int_cst_equal (fold_convert (outer_type,
+						TYPE_MAX_VALUE (inner_type)),
+				  TYPE_MAX_VALUE (outer_type)))
+	return false;
+
+      /* ???  We might want to preserve base type changes because of
+	 TBAA.  Or we need to be extra careful below.  */
+
+      return true;
+    }
+
+  /* We need to take special care recursing to pointed-to types.  */
+  else if (POINTER_TYPE_P (inner_type)
+	   && POINTER_TYPE_P (outer_type))
+    {
+      /* Don't lose casts between pointers to volatile and non-volatile
+	 qualified types.  Doing so would result in changing the semantics
+	 of later accesses.  */
+      if (TYPE_VOLATILE (TREE_TYPE (outer_type))
+	  != TYPE_VOLATILE (TREE_TYPE (inner_type)))
+	return false;
+
+      /* Do not lose casts between pointers with different
+	 TYPE_REF_CAN_ALIAS_ALL setting.  */
+      if (TYPE_REF_CAN_ALIAS_ALL (inner_type)
+	  != TYPE_REF_CAN_ALIAS_ALL (outer_type))
+	return false;
+
+      /* If the outer type is (void *), then the conversion is not
+	 necessary.
+	 ???  Together with calling the langhook below this makes
+	 useless_type_conversion_p not transitive.  */
+      if (TREE_CODE (TREE_TYPE (outer_type)) == VOID_TYPE)
 	return true;
+
+      /* Otherwise pointers/references are equivalent if their pointed
+	 to types are effectively the same.  This allows to strip conversions
+	 between pointer types with different type qualifiers.
+	 ???  We should recurse here with
+	 useless_type_conversion_p.  */
+      return lang_hooks.types_compatible_p (TREE_TYPE (inner_type),
+					   TREE_TYPE (outer_type));
     }
 
   /* Recurse for complex types.  */
   else if (TREE_CODE (inner_type) == COMPLEX_TYPE
-	   && TREE_CODE (outer_type) == COMPLEX_TYPE
-	   && useless_type_conversion_p (TREE_TYPE (outer_type),
-						  TREE_TYPE (inner_type)))
-    return true;
+	   && TREE_CODE (outer_type) == COMPLEX_TYPE)
+    return useless_type_conversion_p (TREE_TYPE (outer_type),
+				      TREE_TYPE (inner_type));
 
-  return false;
+  /* Fall back to what the frontend thinks of type compatibility.
+     ???  This should eventually just return false.  */
+  return lang_hooks.types_compatible_p (inner_type, outer_type);
 }
 
 /* Return true if a conversion from either type of TYPE1 and TYPE2
