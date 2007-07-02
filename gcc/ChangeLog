@@ -1,3 +1,14 @@
+2007-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/32468
+	* omp-low.c (check_combined_parallel): New function.
+	(lower_omp_parallel): Call it via walk_stmts, set
+	OMP_PARALLEL_COMBINED if appropriate.
+	(determine_parallel_type): If OMP_FOR resp. OMP_SECTIONS
+	isn't the only statement in WS_ENTRY_BB or OMP_RETURN
+	the only one in PAR_EXIT_BB and not OMP_PARALLEL_COMBINED,
+	don't consider it as combined parallel.
+
 2007-06-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	* dwarf2out.c (dwarf2out_finish): Accept namespaces as context of

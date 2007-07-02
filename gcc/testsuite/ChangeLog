@@ -1,5 +1,8 @@
 2007-07-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR libgomp/32468
+	* gcc.dg/gomp/pr32468-1.c: New test.
+
 	PR c++/31748
 	* g++.dg/gomp/pr31748.C: New test.
 
