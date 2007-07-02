@@ -1,5 +1,11 @@
 2007-07-01  Daniel Berlin  <dberlin@dberlin.org>
 
+	Fix PR tree-optimization/32571
+	* tree-ssa-sccvn.c (visit_use): Shortcut copies to avoid
+	simplifying them.
+
+2007-07-01  Daniel Berlin  <dberlin@dberlin.org>
+
 	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Handle constants
 	and other expected operations explicitly, change default to
 	gcc_unreachable. 
