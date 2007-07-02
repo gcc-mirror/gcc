@@ -209,6 +209,8 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #define TARGET_MIPS16		((target_flags & MASK_MIPS16) != 0)
 /* Generate mips16e code. Default 16bit ASE for mips32/mips32r2/mips64 */
 #define GENERATE_MIPS16E	(TARGET_MIPS16 && mips_isa >= 32)
+/* Generate mips16e register save/restore sequences.  */
+#define GENERATE_MIPS16E_SAVE_RESTORE (GENERATE_MIPS16E && mips_abi == ABI_32)
 
 /* Generic ISA defines.  */
 #define ISA_MIPS1		    (mips_isa == 1)

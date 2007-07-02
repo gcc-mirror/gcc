@@ -1,3 +1,10 @@
+2007-07-02  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.target/mips/save-restore-1.c: New test.
+	* gcc.target/mips/save-restore-2.c: Likewise.
+	* gcc.target/mips/save-restore-3.c: Likewise.
+	* gcc.target/mips/save-restore-4.c: Likewise.
+
 2007-07-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/31966
