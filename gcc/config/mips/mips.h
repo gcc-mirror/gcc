@@ -561,6 +561,29 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #endif
 #endif
 
+/* A spec condition that matches all non-mips16 -mips arguments.  */
+
+#define MIPS_ISA_LEVEL_OPTION_SPEC \
+  "mips1|mips2|mips3|mips4|mips32*|mips64*"
+
+/* A spec condition that matches all non-mips16 architecture arguments.  */
+
+#define MIPS_ARCH_OPTION_SPEC \
+  MIPS_ISA_LEVEL_OPTION_SPEC "|march=*"
+
+/* A spec that infers a -mips argument from an -march argument.  */
+
+#define MIPS_ISA_LEVEL_SPEC \
+  "%{" MIPS_ISA_LEVEL_OPTION_SPEC ":;: \
+     %{march=mips1|march=r2000|march=r3000|march=r3900:-mips1} \
+     %{march=mips2|march=r6000:-mips2} \
+     %{march=mips3|march=r4*|march=vr4*|march=orion:-mips3} \
+     %{march=mips4|march=r8000|march=vr5*|march=rm7000|march=rm9000:-mips4} \
+     %{march=mips32|march=4kc|march=4km|march=4kp:-mips32} \
+     %{march=mips32r2|march=m4k|march=4ke*|march=24k* \
+       |march=34k*|march=74k*: -mips32r2} \
+     %{march=mips64|march=5k*|march=20k*|march=sb1*|march=sr71000: -mips64}}"
+
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-arch is ignored if -march is specified or a -mips is specified
      (other than -mips16).
@@ -571,7 +594,7 @@ extern const struct mips_rtx_cost_data *mips_cost;
    --with-divide is ignored if -mdivide-traps or -mdivide-breaks are
      specified. */
 #define OPTION_DEFAULT_SPECS \
-  {"arch", "%{!march=*:%{mips16:-march=%(VALUE)}%{!mips*:-march=%(VALUE)}}" }, \
+  {"arch", "%{" MIPS_ARCH_OPTION_SPEC ":;: -march=%(VALUE)}" }, \
   {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}" }, \
   {"float", "%{!msoft-float:%{!mhard-float:-m%(VALUE)-float}}" }, \
