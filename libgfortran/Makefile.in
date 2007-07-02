@@ -4304,9 +4304,6 @@ iso_c_generated_procs.lo: intrinsics/iso_c_generated_procs.c
 iso_c_binding.lo: intrinsics/iso_c_binding.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o iso_c_binding.lo `test -f 'intrinsics/iso_c_binding.c' || echo '$(srcdir)/'`intrinsics/iso_c_binding.c
 
-kill.lo: intrinsics/kill.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o kill.lo `test -f 'intrinsics/kill.c' || echo '$(srcdir)/'`intrinsics/kill.c
-
 link.lo: intrinsics/link.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT link.lo -MD -MP -MF "$(DEPDIR)/link.Tpo" -c -o link.lo `test -f 'intrinsics/link.c' || echo '$(srcdir)/'`intrinsics/link.c; \
 @am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/link.Tpo" "$(DEPDIR)/link.Plo"; else rm -f "$(DEPDIR)/link.Tpo"; exit 1; fi
