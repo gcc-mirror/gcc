@@ -357,10 +357,6 @@ namespace std
     { typedef unsigned char __type; };
 
   template<>
-    struct __make_unsigned<wchar_t>
-    { typedef unsigned wchar_t __type; };
-
-  template<>
     struct __make_unsigned<short>
     { typedef unsigned short __type; };
 
@@ -434,10 +430,6 @@ namespace std
   template<>
     struct __make_signed<unsigned char>
     { typedef signed char __type; };
-
-  template<>
-    struct __make_signed<wchar_t>
-    { typedef signed wchar_t __type; };
 
   template<>
     struct __make_signed<unsigned short>

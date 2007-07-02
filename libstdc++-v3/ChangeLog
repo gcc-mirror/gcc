@@ -1,3 +1,28 @@
+2007-07-01  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* include/std/type_traits (__make_unsigned): Remove invalid
+	wchar_t specialization.
+	(__make_signed): Remove invalid wchar_t specialization.
+	
+2007-06-29  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* testsuite/18_support/headers/cstdbool/std_c++0x_neg.cc: Force
+	C++98 mode.  
+	* testsuite/18_support/headers/cstdint/std_c++0x_neg.cc: Ditto.
+	* testsuite/20_util/headers/type_traits/std_c++0x_neg.cc: Ditto.
+	* testsuite/23_containers/headers/array/std_c++0x_neg.cc: Ditto.
+	* testsuite/23_containers/headers/tuple/std_c++0x_neg.cc: Ditto.
+	* testsuite/23_containers/headers/unordered_map/std_c++0x_neg.cc:
+	Ditto. 
+	* testsuite/23_containers/headers/unordered_set/std_c++0x_neg.cc:
+	Ditto. 
+	* testsuite/26_numerics/headers/ccomplex/std_c++0x_neg.cc: Ditto.
+	* testsuite/26_numerics/headers/cfenv/std_c++0x_neg.cc: Ditto.
+	* testsuite/26_numerics/headers/ctgmath/std_c++0x_neg.cc: Ditto.
+	* testsuite/26_numerics/headers/random/std_c++0x_neg.cc: Ditto.
+	* testsuite/27_io/headers/cinttypes/std_c++0x_neg.cc: Ditto.
+	* testsuite/28_regex/headers/regex/std_c++0x_neg.cc: Ditto.
+
 2007-06-28  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/32509
