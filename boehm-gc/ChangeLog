@@ -1,3 +1,24 @@
+2007-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR boehm-gc/21940
+	PR boehm-gc/21942
+	* configure.ac (GC_SOLARIS_THREADS): Don't define on *-*-solaris*.
+	Use alternate thread library in /usr/lib/lwp.
+	* configure: Regenerate.
+	* dyn_load.c: Use GC_SOLARIS_PTHREADS.
+	* include/gc_config_macros.h (GC_SOLARIS_THREADS): Don't define.
+	* include/private/gcconfig.h: Handle 64-bit Solaris 2/x86.
+	(GC_SOLARIS_THREADS): Don't define.
+	* include/private/solaris_threads.h: Remove.
+	* pthread_support.c (GC_thr_init) [GC_SOLARIS_PTHREADS]: Determine
+	GC_nprocs via sysconf().
+	* Makefile.am (libgcjgc_la_SOURCES): Remove solaris_pthreads.c and
+	solaris_threads.c.
+	(gctest_LDADD): Use THREADLIBS instead of THREADDLLIBS.
+	* Makefile.in: Regenerate.	 
+	* solaris_pthreads.c: Remove.
+	* solaris_threads.c: Remove.
+
 2007-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* pthread_support.c (GC_get_thread_stack_base): Handle

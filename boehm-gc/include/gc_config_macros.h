@@ -72,10 +72,6 @@
 # define GC_WIN32_THREADS
 #endif
 
-#if defined(GC_SOLARIS_PTHREADS) && !defined(GC_SOLARIS_THREADS)
-#   define GC_SOLARIS_THREADS
-#endif
-
 # define __GC
 # ifndef _WIN32_WCE
 #   include <stddef.h>
