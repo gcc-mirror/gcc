@@ -815,6 +815,10 @@ attribute; supported intrinsic modules: @code{ISO_FORTRAN_ENV},
 @item
 Renaming of operators in the @code{USE} statement.
 
+@item
+@cindex ISO C Bindings
+Interoperability with C (ISO C Bindings)
+
 @end itemize
 
 

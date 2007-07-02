@@ -70,6 +70,11 @@ Some basic guidelines for editing this document:
 * @code{BESYN}:         BESYN,     Bessel function of the second kind
 * @code{BIT_SIZE}:      BIT_SIZE,  Bit size inquiry function
 * @code{BTEST}:         BTEST,     Bit test function
+* @code{C_ASSOCIATED}:  C_ASSOCIATED, Status of a C pointer
+* @code{C_F_POINTER}:   C_F_POINTER, Convert C into Fortran pointer
+* @code{C_F_PROCPOINTER}: C_F_PROCPOINTER, Convert C into Fortran procedure pointer
+* @code{C_FUNLOC}:      C_FUNLOC,  Obtain the C address of a procedure
+* @code{C_LOC}:         C_LOC,     Obtain the C address of an object
 * @code{CEILING}:       CEILING,   Integer ceiling function
 * @code{CHAR}:          CHAR,      Integer-to-character conversion function
 * @code{CHDIR}:         CHDIR,     Change working directory
@@ -1836,6 +1841,271 @@ end program test_btest
 @end smallexample
 @end table
 
+
+@node C_ASSOCIATED
+@section @code{C_ASSOCIATED} --- Status of a C pointer
+@fnindex C_ASSOCIATED
+@cindex associatation status, C pointer
+@cindex pointer, C associatation status
+
+@table @asis
+@item @emph{Description}:
+@code{C_ASSOICATED(c_prt1[, c_ptr2])} determines the status of the C pointer @var{c_ptr1}
+or if @var{c_ptr1} is associated with the target @var{c_ptr2}.
+
+@item @emph{Standard}:
+F2003 and later
+
+@item @emph{Class}:
+Inquiry function
+
+@item @emph{Syntax}:
+@code{RESULT = C_ASSOICATED(c_prt1[, c_ptr2])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{c_ptr1} @tab Scalar of the type @code{C_PTR} or @code{C_FUNPTR}.
+@item @var{c_ptr2} @tab (Optional) Scalar of the same type as @var{c_ptr1}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{LOGICAL}; it is @code{.false.} if either
+@var{c_ptr1} is a C NULL pointer or if @var{c_ptr1} and @var{c_ptr2}
+point to different addresses.
+
+@item @emph{Example}:
+@smallexample
+subroutine association_test(a,b)
+  use iso_c_binding, only: c_associated, c_loc, c_ptr
+  implicit none
+  real, pointer :: a
+  type(c_ptr) :: b
+  if(c_associated(b, c_loc(a))) &
+     stop 'b and a do not point to same target'
+end subroutine association_test
+@end smallexample
+
+@item @emph{See also}:
+@ref{C_LOC}, @ref{C_FUNLOC}
+@end table
+
+
+@node C_FUNLOC
+@section @code{C_FUNLOC} --- Obtain the C address of a procedure
+@fnindex C_FUNLOC
+@cindex pointer, C address of procedures
+
+@table @asis
+@item @emph{Description}:
+@code{C_FUNLOC(x)} determines the C address of the argument.
+
+@item @emph{Standard}:
+F2003 and later
+
+@item @emph{Class}:
+Inquiry function
+
+@item @emph{Syntax}:
+@code{RESULT = C_FUNLOC(x)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{x} @tab Interoperable function or pointer to such function.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{C_FUNPTR} and contains the C address
+of the argument.
+
+@item @emph{Example}:
+@smallexample
+module x
+  use iso_c_binding
+  implicit none
+contains
+  subroutine sub(a) bind(c)
+    real(c_float) :: a
+    a = sqrt(a)+5.0
+  end subroutine sub
+end module x
+program main
+  use iso_c_binding
+  use x
+  implicit none
+  interface
+    subroutine my_routine(p) bind(c,name='myC_func')
+      import :: c_funptr
+      type(c_funptr), intent(in) :: p
+    end subroutine
+  end interface
+  call my_routine(c_funloc(sub))
+end program main
+@end smallexample
+
+@item @emph{See also}:
+@ref{C_ASSOCIATED}, @ref{C_LOC}, @ref{C_F_POINTER}, @ref{C_F_PROCPOINTER}
+@end table
+
+
+@node C_F_PROCPOINTER
+@section @code{C_F_PROCPOINTER} --- Convert C into Fortran procedure pointer
+@fnindex C_F_PROCPOINTER
+@cindex pointer, C address of pointers
+
+@table @asis
+@item @emph{Description}:
+@code{C_F_PROCPOINTER(cptr, fptr)} Assign the target of the C function pointer
+@var{cptr} to the Fortran procedure pointer @var{fptr}.
+
+Note: Due to the currently lacking support of procedure pointers in GNU Fortran
+this function is not fully operable.
+
+@item @emph{Standard}:
+F2003 and later
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@code{CALL C_F_PROCPOINTER(cptr, fptr)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{cptr}  @tab scalar of the type @code{C_FUNPTR}. It is
+		       @code{INTENT(IN)}.
+@item @var{fptr}  @tab procedure pointer interoperable with @var{cptr}. It is
+		       @code{INTENT(OUT)}.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program main
+  use iso_c_binding
+  implicit none
+  abstract interface
+    function func(a)
+      import :: c_float
+      real(c_float), intent(in) :: a
+      real(c_float) :: func
+    end function
+  end interface
+  interface
+     function getIterFunc() bind(c,name="getIterFunc")
+       import :: c_funptr
+       type(c_funptr) :: getIterFunc
+     end function
+  end interface
+  type(c_funptr) :: cfunptr
+  procedure(func), pointer :: myFunc
+  cfunptr = getIterFunc()
+  call c_f_procpointer(cfunptr, myFunc)
+end program main
+@end smallexample
+
+@item @emph{See also}:
+@ref{C_LOC}, @ref{C_F_POINTER}
+@end table
+
+
+@node C_F_POINTER
+@section @code{C_F_POINTER} --- Convert C into Fortran pointer
+@fnindex C_F_POINTER
+@cindex pointer, convert C to Fortran
+
+@table @asis
+@item @emph{Description}:
+@code{C_F_POINTER(cptr, fptr[, shape])} Assign the target the C pointer
+@var{cptr} to the Fortran pointer @var{fptr} and specify its
+shape.
+
+@item @emph{Standard}:
+F2003 and later
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@code{CALL C_F_POINTER(cptr, fptr[, shape])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{cptr}  @tab scalar of the type @code{C_PTR}. It is
+		       @code{INTENT(IN)}.
+@item @var{fptr}  @tab pointer interoperable with @var{cptr}. It is
+		       @code{INTENT(OUT)}.
+@item @var{shape} @tab (Optional) Rank-one array of type @code{INTEGER}
+                       with @code{INTENT(IN)}. It shall be present
+		       if and only if @var{fptr} is an array. The size
+		       must be equal to the rank of @var{fptr}.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program main
+  use iso_c_binding
+  implicit none
+  interface
+    subroutine my_routine(p) bind(c,name='myC_func')
+      import :: c_ptr
+      type(c_ptr), intent(out) :: p
+    end subroutine
+  end interface
+  type(c_ptr) :: cptr
+  real,pointer :: a(:)
+  call my_routine(cptr)
+  call c_f_pointer(cptr, a, [12])
+end program main
+@end smallexample
+
+@item @emph{See also}:
+@ref{C_LOC}, @ref{C_F_PROCPOINTER}
+@end table
+
+
+@node C_LOC
+@section @code{C_LOC} --- Obtain the C address of an object
+@fnindex C_LOC
+@cindex procedure pointer, convert C to Fortran
+
+@table @asis
+@item @emph{Description}:
+@code{C_LOC(x)} determines the C address of the argument.
+
+@item @emph{Standard}:
+F2003 and later
+
+@item @emph{Class}:
+Inquiry function
+
+@item @emph{Syntax}:
+@code{RESULT = C_LOC(x)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{x} @tab Associated scalar pointer or interoperatable scalar
+		   or allocated allocatable variable with @code{TARGET}
+		   attribute.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{C_PTR} and contains the C address
+of the argument.
+
+@item @emph{Example}:
+@smallexample
+subroutine association_test(a,b)
+  use iso_c_binding, only: c_associated, c_loc, c_ptr
+  implicit none
+  real, pointer :: a
+  type(c_ptr) :: b
+  if(c_associated(b, c_loc(a))) &
+     stop 'b and a do not point to same target'
+end subroutine association_test
+@end smallexample
+
+@item @emph{See also}:
+@ref{C_ASSOCIATED}, @ref{C_FUNLOC}, @ref{C_F_POINTER}, @ref{C_F_PROCPOINTER}
+@end table
 
 
 @node CEILING
