@@ -272,7 +272,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 
 ac_unique_file="move-if-change"
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_noncanonical host_noncanonical target_noncanonical host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN LN_S TOPLEVEL_CONFIGURE_ARGUMENTS build_libsubdir build_subdir host_subdir target_subdir CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX GNATBIND ac_ct_GNATBIND GNATMAKE ac_ct_GNATMAKE do_compare gmplibs gmpinc stage1_languages SYSROOT_CFLAGS_FOR_TARGET RPATH_ENVVAR tooldir build_tooldir CONFIGURE_GDB_TK GDB_TK INSTALL_GDB_TK build_configargs build_configdirs host_configargs configdirs target_configargs CC_FOR_BUILD config_shell YACC BISON M4 LEX FLEX MAKEINFO EXPECT RUNTEST AR AS DLLTOOL LD LIPO NM RANLIB STRIP WINDRES OBJCOPY OBJDUMP CFLAGS_FOR_BUILD CC_FOR_TARGET CXX_FOR_TARGET GCC_FOR_TARGET GCJ_FOR_TARGET GFORTRAN_FOR_TARGET AR_FOR_TARGET AS_FOR_TARGET DLLTOOL_FOR_TARGET LD_FOR_TARGET LIPO_FOR_TARGET NM_FOR_TARGET OBJDUMP_FOR_TARGET RANLIB_FOR_TARGET STRIP_FOR_TARGET WINDRES_FOR_TARGET RAW_CXX_FOR_TARGET FLAGS_FOR_TARGET COMPILER_AS_FOR_TARGET COMPILER_LD_FOR_TARGET COMPILER_NM_FOR_TARGET MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT stage1_cflags stage1_checking stage2_werror_flag datarootdir docdir pdfdir htmldir LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_noncanonical host_noncanonical target_noncanonical host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN LN_S TOPLEVEL_CONFIGURE_ARGUMENTS build_libsubdir build_subdir host_subdir target_subdir CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX GNATBIND ac_ct_GNATBIND GNATMAKE ac_ct_GNATMAKE do_compare gmplibs gmpinc stage1_languages SYSROOT_CFLAGS_FOR_TARGET RPATH_ENVVAR tooldir build_tooldir CONFIGURE_GDB_TK GDB_TK INSTALL_GDB_TK build_configargs build_configdirs host_configargs configdirs target_configargs CC_FOR_BUILD config_shell YACC BISON M4 LEX FLEX MAKEINFO EXPECT RUNTEST AR AS DLLTOOL LD LIPO NM RANLIB STRIP WINDRES WINDMC OBJCOPY OBJDUMP CFLAGS_FOR_BUILD CC_FOR_TARGET CXX_FOR_TARGET GCC_FOR_TARGET GCJ_FOR_TARGET GFORTRAN_FOR_TARGET AR_FOR_TARGET AS_FOR_TARGET DLLTOOL_FOR_TARGET LD_FOR_TARGET LIPO_FOR_TARGET NM_FOR_TARGET OBJDUMP_FOR_TARGET RANLIB_FOR_TARGET STRIP_FOR_TARGET WINDRES_FOR_TARGET WINDMC_FOR_TARGET RAW_CXX_FOR_TARGET FLAGS_FOR_TARGET COMPILER_AS_FOR_TARGET COMPILER_LD_FOR_TARGET COMPILER_NM_FOR_TARGET MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT stage1_cflags stage1_checking stage2_werror_flag datarootdir docdir pdfdir htmldir LIBOBJS LTLIBOBJS'
 ac_subst_files='serialization_dependencies host_makefile_frag target_makefile_frag alphaieee_frag ospace_frag'
 
 # Initialize some variables set by options.
@@ -773,6 +773,10 @@ ac_env_WINDRES_set=${WINDRES+set}
 ac_env_WINDRES_value=$WINDRES
 ac_cv_env_WINDRES_set=${WINDRES+set}
 ac_cv_env_WINDRES_value=$WINDRES
+ac_env_WINDMC_set=${WINDMC+set}
+ac_env_WINDMC_value=$WINDMC
+ac_cv_env_WINDMC_set=${WINDMC+set}
+ac_cv_env_WINDMC_value=$WINDMC
 ac_env_OBJCOPY_set=${OBJCOPY+set}
 ac_env_OBJCOPY_value=$OBJCOPY
 ac_cv_env_OBJCOPY_set=${OBJCOPY+set}
@@ -841,6 +845,10 @@ ac_env_WINDRES_FOR_TARGET_set=${WINDRES_FOR_TARGET+set}
 ac_env_WINDRES_FOR_TARGET_value=$WINDRES_FOR_TARGET
 ac_cv_env_WINDRES_FOR_TARGET_set=${WINDRES_FOR_TARGET+set}
 ac_cv_env_WINDRES_FOR_TARGET_value=$WINDRES_FOR_TARGET
+ac_env_WINDMC_FOR_TARGET_set=${WINDMC_FOR_TARGET+set}
+ac_env_WINDMC_FOR_TARGET_value=$WINDMC_FOR_TARGET
+ac_cv_env_WINDMC_FOR_TARGET_set=${WINDMC_FOR_TARGET+set}
+ac_cv_env_WINDMC_FOR_TARGET_value=$WINDMC_FOR_TARGET
 
 #
 # Report the --help message.
@@ -982,6 +990,7 @@ Some influential environment variables:
   RANLIB      RANLIB for the host
   STRIP       STRIP for the host
   WINDRES     WINDRES for the host
+  WINDMC      WINDMC for the host
   OBJCOPY     OBJCOPY for the host
   OBJDUMP     OBJDUMP for the host
   CC_FOR_TARGET
@@ -1014,6 +1023,8 @@ Some influential environment variables:
               STRIP for the target
   WINDRES_FOR_TARGET
               WINDRES for the target
+  WINDMC_FOR_TARGET
+              WINDMC for the target
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -2075,7 +2086,7 @@ esac
 # Disable libmudflap on some systems.
 if test x$enable_libmudflap = x ; then
     case "${target}" in
-    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | bfin*-*-uclinux*)
+    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu)
         # Enable libmudflap by default in GNU and friends.
 	;;
     *-*-freebsd*)
@@ -2227,9 +2238,6 @@ case "${target}" in
   arm*-*-linux-gnueabi)
     noconfigdirs="$noconfigdirs target-libffi target-qthreads"
     noconfigdirs="$noconfigdirs target-libjava target-libobjc"
-    case ${with_newlib} in
-      no) noconfigdirs="$noconfigdirs target-newlib target-libgloss"
-    esac
     ;;
   arm*-*-symbianelf*)
     noconfigdirs="$noconfigdirs ${libgcj} target-libiberty"
@@ -7436,6 +7444,141 @@ fi
 
 
 
+if test -n "$WINDMC"; then
+  ac_cv_prog_WINDMC=$WINDMC
+elif test -n "$ac_cv_prog_WINDMC"; then
+  WINDMC=$ac_cv_prog_WINDMC
+fi
+
+if test -n "$ac_cv_prog_WINDMC"; then
+  for ncn_progname in windmc; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_WINDMC+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$WINDMC"; then
+  ac_cv_prog_WINDMC="$WINDMC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_WINDMC="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+WINDMC=$ac_cv_prog_WINDMC
+if test -n "$WINDMC"; then
+  echo "$as_me:$LINENO: result: $WINDMC" >&5
+echo "${ECHO_T}$WINDMC" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+for ncn_progname in windmc; do
+  if test -n "$ncn_tool_prefix"; then
+    # Extract the first word of "${ncn_tool_prefix}${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_tool_prefix}${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_WINDMC+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$WINDMC"; then
+  ac_cv_prog_WINDMC="$WINDMC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_WINDMC="${ncn_tool_prefix}${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+WINDMC=$ac_cv_prog_WINDMC
+if test -n "$WINDMC"; then
+  echo "$as_me:$LINENO: result: $WINDMC" >&5
+echo "${ECHO_T}$WINDMC" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  fi
+  if test -z "$ac_cv_prog_WINDMC" && test $build = $host ; then
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_WINDMC+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$WINDMC"; then
+  ac_cv_prog_WINDMC="$WINDMC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_WINDMC="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+WINDMC=$ac_cv_prog_WINDMC
+if test -n "$WINDMC"; then
+  echo "$as_me:$LINENO: result: $WINDMC" >&5
+echo "${ECHO_T}$WINDMC" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  fi
+  test -n "$ac_cv_prog_WINDMC" && break
+done
+
+if test -z "$ac_cv_prog_WINDMC" ; then
+  set dummy windmc
+  if test $build = $host ; then
+    WINDMC="$2"
+  else
+    WINDMC="${ncn_tool_prefix}$2"
+  fi
+fi
+
+
+
 if test -n "$OBJCOPY"; then
   ac_cv_prog_OBJCOPY=$OBJCOPY
 elif test -n "$ac_cv_prog_OBJCOPY"; then
@@ -7878,8 +8021,6 @@ if test -z "$ac_cv_prog_CC_FOR_TARGET" ; then
   else
     CC_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
-else
-  CC_FOR_TARGET="$ac_cv_prog_CC_FOR_TARGET"
 fi
 
 
@@ -8033,8 +8174,6 @@ if test -z "$ac_cv_prog_CXX_FOR_TARGET" ; then
   else
     CXX_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
-else
-  CXX_FOR_TARGET="$ac_cv_prog_CXX_FOR_TARGET"
 fi
 
 
@@ -8183,8 +8322,6 @@ fi
 
 if test -z "$ac_cv_prog_GCC_FOR_TARGET" ; then
   GCC_FOR_TARGET="${CC_FOR_TARGET}"
-else
-  GCC_FOR_TARGET="$ac_cv_prog_GCC_FOR_TARGET"
 fi
 
 
@@ -8338,8 +8475,6 @@ if test -z "$ac_cv_prog_GCJ_FOR_TARGET" ; then
   else
     GCJ_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
-else
-  GCJ_FOR_TARGET="$ac_cv_prog_GCJ_FOR_TARGET"
 fi
 
 
@@ -8493,8 +8628,6 @@ if test -z "$ac_cv_prog_GFORTRAN_FOR_TARGET" ; then
   else
     GFORTRAN_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
-else
-  GFORTRAN_FOR_TARGET="$ac_cv_prog_GFORTRAN_FOR_TARGET"
 fi
 
 
@@ -8530,8 +8663,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     AR_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=ar`
-    test $AR_FOR_TARGET = ar && AR_FOR_TARGET=
-    test -n "$AR_FOR_TARGET" && ac_cv_path_AR_FOR_TARGET=$AR_FOR_TARGET
+    test $AR_FOR_TARGET=ar && AR_FOR_TARGET=
+    ac_cv_path_AR_FOR_TARGET=$AR_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_AR_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -8727,8 +8860,6 @@ if test -z "$ac_cv_prog_AR_FOR_TARGET" ; then
   else
     AR_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
-else
-  AR_FOR_TARGET="$ac_cv_prog_AR_FOR_TARGET"
 fi
 
 else
@@ -8753,8 +8884,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     AS_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=as`
-    test $AS_FOR_TARGET = as && AS_FOR_TARGET=
-    test -n "$AS_FOR_TARGET" && ac_cv_path_AS_FOR_TARGET=$AS_FOR_TARGET
+    test $AS_FOR_TARGET=as && AS_FOR_TARGET=
+    ac_cv_path_AS_FOR_TARGET=$AS_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_AS_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -8950,8 +9081,6 @@ if test -z "$ac_cv_prog_AS_FOR_TARGET" ; then
   else
     AS_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
-else
-  AS_FOR_TARGET="$ac_cv_prog_AS_FOR_TARGET"
 fi
 
 else
@@ -8976,8 +9105,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     DLLTOOL_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=dlltool`
-    test $DLLTOOL_FOR_TARGET = dlltool && DLLTOOL_FOR_TARGET=
-    test -n "$DLLTOOL_FOR_TARGET" && ac_cv_path_DLLTOOL_FOR_TARGET=$DLLTOOL_FOR_TARGET
+    test $DLLTOOL_FOR_TARGET=dlltool && DLLTOOL_FOR_TARGET=
+    ac_cv_path_DLLTOOL_FOR_TARGET=$DLLTOOL_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_DLLTOOL_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -9173,8 +9302,6 @@ if test -z "$ac_cv_prog_DLLTOOL_FOR_TARGET" ; then
   else
     DLLTOOL_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
-else
-  DLLTOOL_FOR_TARGET="$ac_cv_prog_DLLTOOL_FOR_TARGET"
 fi
 
 else
@@ -9199,8 +9326,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     LD_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=ld`
-    test $LD_FOR_TARGET = ld && LD_FOR_TARGET=
-    test -n "$LD_FOR_TARGET" && ac_cv_path_LD_FOR_TARGET=$LD_FOR_TARGET
+    test $LD_FOR_TARGET=ld && LD_FOR_TARGET=
+    ac_cv_path_LD_FOR_TARGET=$LD_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_LD_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -9396,8 +9523,6 @@ if test -z "$ac_cv_prog_LD_FOR_TARGET" ; then
   else
     LD_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
-else
-  LD_FOR_TARGET="$ac_cv_prog_LD_FOR_TARGET"
 fi
 
 else
@@ -9422,8 +9547,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     LIPO_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=lipo`
-    test $LIPO_FOR_TARGET = lipo && LIPO_FOR_TARGET=
-    test -n "$LIPO_FOR_TARGET" && ac_cv_path_LIPO_FOR_TARGET=$LIPO_FOR_TARGET
+    test $LIPO_FOR_TARGET=lipo && LIPO_FOR_TARGET=
+    ac_cv_path_LIPO_FOR_TARGET=$LIPO_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_LIPO_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -9619,8 +9744,6 @@ if test -z "$ac_cv_prog_LIPO_FOR_TARGET" ; then
   else
     LIPO_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
-else
-  LIPO_FOR_TARGET="$ac_cv_prog_LIPO_FOR_TARGET"
 fi
 
 else
@@ -9645,8 +9768,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     NM_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=nm`
-    test $NM_FOR_TARGET = nm && NM_FOR_TARGET=
-    test -n "$NM_FOR_TARGET" && ac_cv_path_NM_FOR_TARGET=$NM_FOR_TARGET
+    test $NM_FOR_TARGET=nm && NM_FOR_TARGET=
+    ac_cv_path_NM_FOR_TARGET=$NM_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_NM_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -9842,8 +9965,6 @@ if test -z "$ac_cv_prog_NM_FOR_TARGET" ; then
   else
     NM_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
-else
-  NM_FOR_TARGET="$ac_cv_prog_NM_FOR_TARGET"
 fi
 
 else
@@ -9868,8 +9989,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     OBJDUMP_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=objdump`
-    test $OBJDUMP_FOR_TARGET = objdump && OBJDUMP_FOR_TARGET=
-    test -n "$OBJDUMP_FOR_TARGET" && ac_cv_path_OBJDUMP_FOR_TARGET=$OBJDUMP_FOR_TARGET
+    test $OBJDUMP_FOR_TARGET=objdump && OBJDUMP_FOR_TARGET=
+    ac_cv_path_OBJDUMP_FOR_TARGET=$OBJDUMP_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_OBJDUMP_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -10065,8 +10186,6 @@ if test -z "$ac_cv_prog_OBJDUMP_FOR_TARGET" ; then
   else
     OBJDUMP_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
-else
-  OBJDUMP_FOR_TARGET="$ac_cv_prog_OBJDUMP_FOR_TARGET"
 fi
 
 else
@@ -10091,8 +10210,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     RANLIB_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=ranlib`
-    test $RANLIB_FOR_TARGET = ranlib && RANLIB_FOR_TARGET=
-    test -n "$RANLIB_FOR_TARGET" && ac_cv_path_RANLIB_FOR_TARGET=$RANLIB_FOR_TARGET
+    test $RANLIB_FOR_TARGET=ranlib && RANLIB_FOR_TARGET=
+    ac_cv_path_RANLIB_FOR_TARGET=$RANLIB_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_RANLIB_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -10288,8 +10407,6 @@ if test -z "$ac_cv_prog_RANLIB_FOR_TARGET" ; then
   else
     RANLIB_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
-else
-  RANLIB_FOR_TARGET="$ac_cv_prog_RANLIB_FOR_TARGET"
 fi
 
 else
@@ -10314,8 +10431,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     STRIP_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=strip`
-    test $STRIP_FOR_TARGET = strip && STRIP_FOR_TARGET=
-    test -n "$STRIP_FOR_TARGET" && ac_cv_path_STRIP_FOR_TARGET=$STRIP_FOR_TARGET
+    test $STRIP_FOR_TARGET=strip && STRIP_FOR_TARGET=
+    ac_cv_path_STRIP_FOR_TARGET=$STRIP_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_STRIP_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -10511,8 +10628,6 @@ if test -z "$ac_cv_prog_STRIP_FOR_TARGET" ; then
   else
     STRIP_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
-else
-  STRIP_FOR_TARGET="$ac_cv_prog_STRIP_FOR_TARGET"
 fi
 
 else
@@ -10537,8 +10652,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     WINDRES_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=windres`
-    test $WINDRES_FOR_TARGET = windres && WINDRES_FOR_TARGET=
-    test -n "$WINDRES_FOR_TARGET" && ac_cv_path_WINDRES_FOR_TARGET=$WINDRES_FOR_TARGET
+    test $WINDRES_FOR_TARGET=windres && WINDRES_FOR_TARGET=
+    ac_cv_path_WINDRES_FOR_TARGET=$WINDRES_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_WINDRES_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -10734,12 +10849,231 @@ if test -z "$ac_cv_prog_WINDRES_FOR_TARGET" ; then
   else
     WINDRES_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
-else
-  WINDRES_FOR_TARGET="$ac_cv_prog_WINDRES_FOR_TARGET"
 fi
 
 else
   WINDRES_FOR_TARGET=$ac_cv_path_WINDRES_FOR_TARGET
+fi
+
+
+
+
+if test -z "$ac_cv_path_WINDMC_FOR_TARGET" ; then
+  if test -n "$with_build_time_tools"; then
+    echo "$as_me:$LINENO: checking for windmc in $with_build_time_tools" >&5
+echo $ECHO_N "checking for windmc in $with_build_time_tools... $ECHO_C" >&6
+    if test -x $with_build_time_tools/windmc; then
+      WINDMC_FOR_TARGET=`cd $with_build_time_tools && pwd`/windmc
+      ac_cv_path_WINDMC_FOR_TARGET=$WINDMC_FOR_TARGET
+      echo "$as_me:$LINENO: result: $ac_cv_path_WINDMC_FOR_TARGET" >&5
+echo "${ECHO_T}$ac_cv_path_WINDMC_FOR_TARGET" >&6
+    else
+      echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    fi
+  elif test $build != $host && test $have_gcc_for_target = yes; then
+    WINDMC_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=windmc`
+    test $WINDMC_FOR_TARGET=windmc && WINDMC_FOR_TARGET=
+    ac_cv_path_WINDMC_FOR_TARGET=$WINDMC_FOR_TARGET
+  fi
+fi
+if test -z "$ac_cv_path_WINDMC_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
+  # Extract the first word of "windmc", so it can be a program name with args.
+set dummy windmc; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_path_WINDMC_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $WINDMC_FOR_TARGET in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_WINDMC_FOR_TARGET="$WINDMC_FOR_TARGET" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $gcc_cv_tool_dirs
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_WINDMC_FOR_TARGET="$as_dir/$ac_word$ac_exec_ext"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+  ;;
+esac
+fi
+WINDMC_FOR_TARGET=$ac_cv_path_WINDMC_FOR_TARGET
+
+if test -n "$WINDMC_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $WINDMC_FOR_TARGET" >&5
+echo "${ECHO_T}$WINDMC_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+fi
+if test -z "$ac_cv_path_WINDMC_FOR_TARGET" ; then
+
+
+if test -n "$WINDMC_FOR_TARGET"; then
+  ac_cv_prog_WINDMC_FOR_TARGET=$WINDMC_FOR_TARGET
+elif test -n "$ac_cv_prog_WINDMC_FOR_TARGET"; then
+  WINDMC_FOR_TARGET=$ac_cv_prog_WINDMC_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_WINDMC_FOR_TARGET"; then
+  for ncn_progname in windmc; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_WINDMC_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$WINDMC_FOR_TARGET"; then
+  ac_cv_prog_WINDMC_FOR_TARGET="$WINDMC_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_WINDMC_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+WINDMC_FOR_TARGET=$ac_cv_prog_WINDMC_FOR_TARGET
+if test -n "$WINDMC_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $WINDMC_FOR_TARGET" >&5
+echo "${ECHO_T}$WINDMC_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_WINDMC_FOR_TARGET" && test -n "$with_build_time_tools"; then
+  for ncn_progname in windmc; do
+    echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
+echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
+    if test -x $with_build_time_tools/${ncn_progname}; then
+      ac_cv_prog_WINDMC_FOR_TARGET=$with_build_time_tools/${ncn_progname}
+      echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+      break
+    else
+      echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    fi
+  done
+fi
+
+if test -z "$ac_cv_prog_WINDMC_FOR_TARGET"; then
+  for ncn_progname in windmc; do
+    if test -n "$ncn_target_tool_prefix"; then
+      # Extract the first word of "${ncn_target_tool_prefix}${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_target_tool_prefix}${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_WINDMC_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$WINDMC_FOR_TARGET"; then
+  ac_cv_prog_WINDMC_FOR_TARGET="$WINDMC_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_WINDMC_FOR_TARGET="${ncn_target_tool_prefix}${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+WINDMC_FOR_TARGET=$ac_cv_prog_WINDMC_FOR_TARGET
+if test -n "$WINDMC_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $WINDMC_FOR_TARGET" >&5
+echo "${ECHO_T}$WINDMC_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+    fi
+    if test -z "$ac_cv_prog_WINDMC_FOR_TARGET" && test $build = $target ; then
+      # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_WINDMC_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$WINDMC_FOR_TARGET"; then
+  ac_cv_prog_WINDMC_FOR_TARGET="$WINDMC_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_WINDMC_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+WINDMC_FOR_TARGET=$ac_cv_prog_WINDMC_FOR_TARGET
+if test -n "$WINDMC_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $WINDMC_FOR_TARGET" >&5
+echo "${ECHO_T}$WINDMC_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+    fi
+    test -n "$ac_cv_prog_WINDMC_FOR_TARGET" && break
+  done
+fi
+
+if test -z "$ac_cv_prog_WINDMC_FOR_TARGET" ; then
+  set dummy windmc
+  if test $build = $target ; then
+    WINDMC_FOR_TARGET="$2"
+  else
+    WINDMC_FOR_TARGET="${ncn_target_tool_prefix}$2"
+  fi
+fi
+
+else
+  WINDMC_FOR_TARGET=$ac_cv_path_WINDMC_FOR_TARGET
 fi
 
 
@@ -11409,6 +11743,48 @@ echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     WINDRES_FOR_TARGET='$(WINDRES)'
+    echo "$as_me:$LINENO: result: host tool" >&5
+echo "${ECHO_T}host tool" >&6
+  else
+    # We need a cross tool
+    echo "$as_me:$LINENO: result: pre-installed" >&5
+echo "${ECHO_T}pre-installed" >&6
+  fi
+fi
+
+echo "$as_me:$LINENO: checking where to find the target windmc" >&5
+echo $ECHO_N "checking where to find the target windmc... $ECHO_C" >&6
+if test "x${build}" != "x${host}" ; then
+  if expr "x$WINDMC_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $WINDMC_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
+  else
+    # Canadian cross, just use what we found
+    echo "$as_me:$LINENO: result: pre-installed" >&5
+echo "${ECHO_T}pre-installed" >&6
+  fi
+else
+  ok=yes
+  case " ${configdirs} " in
+    *" binutils "*) ;;
+    *) ok=no ;;
+  esac
+
+  if test $ok = yes; then
+    # An in-tree tool is available and we can use it
+    WINDMC_FOR_TARGET='$$r/$(HOST_SUBDIR)/binutils/windmc'
+    echo "$as_me:$LINENO: result: just compiled" >&5
+echo "${ECHO_T}just compiled" >&6
+  elif expr "x$WINDMC_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $WINDMC_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
+  elif test "x$target" = "x$host"; then
+    # We can use an host tool
+    WINDMC_FOR_TARGET='$(WINDMC)'
     echo "$as_me:$LINENO: result: host tool" >&5
 echo "${ECHO_T}host tool" >&6
   else
@@ -12333,6 +12709,7 @@ s,@NM@,$NM,;t t
 s,@RANLIB@,$RANLIB,;t t
 s,@STRIP@,$STRIP,;t t
 s,@WINDRES@,$WINDRES,;t t
+s,@WINDMC@,$WINDMC,;t t
 s,@OBJCOPY@,$OBJCOPY,;t t
 s,@OBJDUMP@,$OBJDUMP,;t t
 s,@CFLAGS_FOR_BUILD@,$CFLAGS_FOR_BUILD,;t t
@@ -12351,6 +12728,7 @@ s,@OBJDUMP_FOR_TARGET@,$OBJDUMP_FOR_TARGET,;t t
 s,@RANLIB_FOR_TARGET@,$RANLIB_FOR_TARGET,;t t
 s,@STRIP_FOR_TARGET@,$STRIP_FOR_TARGET,;t t
 s,@WINDRES_FOR_TARGET@,$WINDRES_FOR_TARGET,;t t
+s,@WINDMC_FOR_TARGET@,$WINDMC_FOR_TARGET,;t t
 s,@RAW_CXX_FOR_TARGET@,$RAW_CXX_FOR_TARGET,;t t
 s,@FLAGS_FOR_TARGET@,$FLAGS_FOR_TARGET,;t t
 s,@COMPILER_AS_FOR_TARGET@,$COMPILER_AS_FOR_TARGET,;t t
