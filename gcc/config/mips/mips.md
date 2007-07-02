@@ -5583,7 +5583,26 @@
   "reload_completed"
   [(match_dup 0)]
   { operands[0] = mips_rewrite_small_data (operands[0]); })
-
+
+;;
+;;  ....................
+;;
+;;	MIPS16e Save/Restore
+;;
+;;  ....................
+;;
+
+(define_insn "*mips16e_save_restore"
+  [(match_parallel 0 ""
+       [(set (match_operand:SI 1 "register_operand")
+	     (plus:SI (match_dup 1)
+		      (match_operand:SI 2 "const_int_operand")))])]
+  "operands[1] == stack_pointer_rtx
+   && mips16e_save_restore_pattern_p (operands[0], INTVAL (operands[2]), NULL)"
+  { return mips16e_output_save_restore (operands[0], INTVAL (operands[2])); }
+  [(set_attr "type" "arith")
+   (set_attr "extended_mips16" "yes")])
+
 ; Thread-Local Storage
 
 ; The TLS base pointer is accessed via "rdhwr $v1, $29".  No current

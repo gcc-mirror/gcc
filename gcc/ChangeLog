@@ -1,3 +1,33 @@
+2007-07-02  Sandra Loosemore  <sandra@codesourcery.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+	    Nigel Stephens  <nigel@mips.com>
+
+	* config/mips/mips-protos.h (mips16e_save_restore_info): New struct.
+	(mips16e_output_save_restore): Declare.
+	(mips16e_save_restore_pattern_p): Likewise.
+	* config/mips/mips.h (GENERATE_MIPS16E_SAVE_RESTORE): New macro.
+	* config/mips/mips.c (MIPS_MAX_FIRST_STACK_STEP): Return 0x7f8
+	for GENERATE_MIPS16E_SAVE_RESTORE.  Return 0x400 for TARGET_MIPS16
+	&& !GENERATE_MIPS16E_SAVE_RESTORE && !TARGET_64BIT.
+	(BITSET_P): New global macro, extracted from...
+	(mips_for_each_saved_reg): ...here.
+	(mips16e_save_restore_info): New struct.
+	(mips16e_s2_s8_regs, mips16e_a0_a3_regs): New variables.
+	(mips16e_save_restore_regs): New variable.
+	(mips_split_plus, mips16e_find_first_register): New functions.
+	(mips16e_mask_registers): New function.
+	(compute_frame_size): Expand the commentary before the function.
+	Enforce the MIPS16e save and restore register range restrictions.
+	Pad the general register save area at the low end.
+	(mips16e_save_restore_reg, mips16e_build_save_restore)
+	(mips16e_save_restore_pattern_p, mips16e_add_register_range)
+	(mips16e_output_save_restore, mips16e_collect_propagate_value)
+	(mips16e_collect_argument_save, mips16e_collect_argument_saves):
+	New functions.
+	(mips_expand_prologue, mips_expand_epilogue): Handle
+	GENERATE_MIPS16E_SAVE_RESTORE.
+	* config/mips/mips.md (*mips16e_save_restore): New pattern.
+
 2007-07-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/31966

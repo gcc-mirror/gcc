@@ -136,6 +136,8 @@ enum mips_loadgp_style {
   LOADGP_RTP
 };
 
+struct mips16e_save_restore_info;
+
 extern bool mips_symbolic_constant_p (rtx, enum mips_symbol_type *);
 extern int mips_regno_mode_ok_for_base_p (int, enum machine_mode, int);
 extern bool mips_stack_address_p (rtx, enum machine_mode);
@@ -260,5 +262,9 @@ extern void irix_asm_output_align (FILE *, unsigned);
 extern const char *current_section_name (void);
 extern unsigned int current_section_flags (void);
 extern bool mips_use_ins_ext_p (rtx, rtx, rtx);
+
+extern const char *mips16e_output_save_restore (rtx, HOST_WIDE_INT);
+extern bool mips16e_save_restore_pattern_p (rtx, HOST_WIDE_INT,
+					    struct mips16e_save_restore_info *);
 
 #endif /* ! GCC_MIPS_PROTOS_H */
