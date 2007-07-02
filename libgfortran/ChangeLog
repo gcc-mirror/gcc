@@ -1,5 +1,9 @@
 2007-07-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	* Makefile.in:  Regenerated with automake 1.9.6.
+
+2007-07-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	* Makefile.in:  Remove extraneous kill.lo rule.
 
 2007-07-02  Janne Blomqvist  <jb@gcc.gnu.org>
