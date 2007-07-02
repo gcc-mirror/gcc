@@ -33,8 +33,12 @@
    to do better and streamline the locking as well as reduce the size
    of the types exported.  */
 
-/* We need Unix98 extensions to get recursive locks.  */
+/* We need Unix98 extensions to get recursive locks.  On Tru64 UNIX V4.0F,
+   the declarations are available without _XOPEN_SOURCE, which actually
+   breaks compilation.  */
+#ifndef __osf__
 #define _XOPEN_SOURCE 500
+#endif
 
 #include "libgomp.h"
 
