@@ -3358,7 +3358,7 @@ add_to_speculative_block (rtx insn)
       
       rec = BLOCK_FOR_INSN (check);
       
-      twin = emit_insn_before (copy_rtx (PATTERN (insn)), BB_END (rec));
+      twin = emit_insn_before (copy_insn (PATTERN (insn)), BB_END (rec));
       extend_global (twin);
 
       copy_deps_list_change_con (INSN_RESOLVED_BACK_DEPS (twin),

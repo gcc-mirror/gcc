@@ -1,3 +1,10 @@
+2007-07-02  Steve Ellcey  <sje@cup.hp.com>
+	    Jim Wilson <wilson@specifix.com>
+
+	PR target/31684
+	* haifa-sched.c (add_to_speculative_block): Change copy_rtx to
+	copy_insn.
+
 2007-07-02  Sandra Loosemore  <sandra@codesourcery.com>
 	    Richard Sandiford  <richard@codesourcery.com>
 	    Nigel Stephens  <nigel@mips.com>
