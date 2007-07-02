@@ -1,3 +1,7 @@
+2007-07-02  Simon Baldwin  <simonb@google.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2007-07-02  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure: Regenerate.
