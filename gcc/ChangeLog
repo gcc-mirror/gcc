@@ -1,3 +1,20 @@
+2007-07-02  Richard Sandiford  <richard@codesourcery.com>
+
+	* config.gcc (mipsisa32-*-elf*, mipsisa32el-*-elf*)
+	(mipsisa32r2-*-elf*, mipsisa32r2el-*-elf*)
+	(mipsisa64-*-elf*, mipsisa64el-*-elf*): Combine top-level
+	stanzas.  Use the first part of the triplet to set MIPS_ISA_DEFAULT.
+	Remove redundant setting of MASK_FLOAT64 and MASK_64BIT for the
+	64-bit targets.  Add support for *-elfoabi*.
+	* config/mips/t-isa3264 (MULTILIB_OPTIONS, MULTILIB_DIRNAMES): Use
+	different settings if $(tm_defines) does not select the EABI.
+	(MULTILIB_EXCLUSIONS): Define in those circumstances.
+	* config/mips/mips.h (MIPS_ISA_LEVEL_OPTION_SPEC): New macro.
+	(MIPS_ARCH_OPTION_SPEC): Likewise.
+	(MIPS_ISA_LEVEL_SPEC): Likewise.
+	(OPTION_DEFAULT_SPECS): Use MIPS_ARCH_OPTION_SPEC.
+	* config/mips/elfoabi.h: New file.
+
 2007-07-02  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow.h (tree_ssa_useless_type_conversion_1): Rename to ...

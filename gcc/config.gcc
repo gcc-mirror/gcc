@@ -1673,24 +1673,35 @@ mips*-*-openbsd*)
 	*)  tm_defines="${tm_defines} TARGET_ENDIAN_DEFAULT=MASK_BIG_ENDIAN";;
         esac
 	;;
-mipsisa32-*-elf* | mipsisa32el-*-elf*)
-	tm_file="elfos.h ${tm_file} mips/elf.h"
-	tmake_file=mips/t-isa3264
-	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32 MIPS_ABI_DEFAULT=ABI_EABI"
-	use_fixproto=yes
-	;;
-mipsisa32r2-*-elf* | mipsisa32r2el-*-elf*)
-	tm_file="elfos.h ${tm_file} mips/elf.h"
-	tmake_file=mips/t-isa3264
-	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_EABI"
-	use_fixproto=yes
-	;;
+mipsisa32-*-elf* | mipsisa32el-*-elf* | \
+mipsisa32r2-*-elf* | mipsisa32r2el-*-elf* | \
 mipsisa64-*-elf* | mipsisa64el-*-elf*)
 	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file=mips/t-isa3264
-	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
-	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=64 MIPS_ABI_DEFAULT=ABI_EABI"
-	use_fixproto=yes
+	case ${target} in
+	  mipsisa32r2*)
+	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33"
+	    ;;
+	  mipsisa32*)
+	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
+	    ;;
+	  mipsisa64*)
+	    tm_defines="${tm_defines} MIPS_ISA_DEFAULT=64"
+	    ;;
+	esac
+	case ${target} in
+	  mipsisa32*-*-elfoabi*)
+	    tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_32"
+	    tm_file="${tm_file} mips/elfoabi.h"
+	    ;;
+	  mipsisa64*-*-elfoabi*)
+	    tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_O64"
+	    tm_file="${tm_file} mips/elfoabi.h"
+	    ;;
+	  *-*-elf*)
+	    tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_EABI"
+	    ;;
+	esac
 	;;
 mipsisa64sr71k-*-elf*)
         tm_file="elfos.h ${tm_file} mips/elf.h"
