@@ -137,6 +137,7 @@ BUILD_EXPORTS = \
 	NM="$(NM_FOR_BUILD)"; export NM; \
 	RANLIB="$(RANLIB_FOR_BUILD)"; export RANLIB; \
 	WINDRES="$(WINDRES_FOR_BUILD)"; export WINDRES;
+	WINDMC="$(WINDMC_FOR_BUILD)"; export WINDMC;
 
 # This is the list of directories to built for the host system.
 SUBDIRS = @configdirs@
@@ -165,6 +166,7 @@ HOST_EXPORTS = \
 	NM="$(NM)"; export NM; \
 	RANLIB="$(RANLIB)"; export RANLIB; \
 	WINDRES="$(WINDRES)"; export WINDRES; \
+	WINDMC="$(WINDMC)"; export WINDMC; \
 	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
 	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
 	AR_FOR_TARGET="$(AR_FOR_TARGET)"; export AR_FOR_TARGET; \
@@ -220,6 +222,7 @@ BASE_TARGET_EXPORTS = \
 	RANLIB="$(RANLIB_FOR_TARGET)"; export RANLIB; \
 	STRIP="$(STRIP_FOR_TARGET)"; export STRIP; \
 	WINDRES="$(WINDRES_FOR_TARGET)"; export WINDRES; \
+	WINDMC="$(WINDMC_FOR_TARGET)"; export WINDMC; \
 	$(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH)$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
 
 RAW_CXX_TARGET_EXPORTS = \
@@ -298,6 +301,7 @@ OBJDUMP = @OBJDUMP@
 RANLIB = @RANLIB@
 STRIP = @STRIP@
 WINDRES = @WINDRES@
+WINDMC = @WINDMC@
 
 GNATBIND = @GNATBIND@
 GNATMAKE = @GNATMAKE@
@@ -347,6 +351,7 @@ OBJDUMP_FOR_TARGET=@OBJDUMP_FOR_TARGET@
 RANLIB_FOR_TARGET=@RANLIB_FOR_TARGET@
 STRIP_FOR_TARGET=@STRIP_FOR_TARGET@
 WINDRES_FOR_TARGET=@WINDRES_FOR_TARGET@
+WINDMC_FOR_TARGET=@WINDMC_FOR_TARGET@
 
 COMPILER_AS_FOR_TARGET=@COMPILER_AS_FOR_TARGET@
 COMPILER_LD_FOR_TARGET=@COMPILER_LD_FOR_TARGET@
@@ -434,7 +439,8 @@ EXTRA_HOST_FLAGS = \
 	'OBJDUMP=$(OBJDUMP)' \
 	'RANLIB=$(RANLIB)' \
 	'STRIP=$(STRIP)' \
-	'WINDRES=$(WINDRES)'
+	'WINDRES=$(WINDRES)' \
+	'WINDMC=$(WINDMC)'
 
 FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)
 
@@ -477,7 +483,8 @@ EXTRA_TARGET_FLAGS = \
 	'NM=$(COMPILER_NM_FOR_TARGET)' \
 	'OBJDUMP=$$(OBJDUMP_FOR_TARGET)' \
 	'RANLIB=$$(RANLIB_FOR_TARGET)' \
-	'WINDRES=$$(WINDRES_FOR_TARGET)'
+	'WINDRES=$$(WINDRES_FOR_TARGET)' \
+	'WINDMC=$$(WINDMC_FOR_TARGET)'
 
 TARGET_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)
 
@@ -1005,7 +1012,7 @@ maybe-[+make_target+]-[+module+]: [+make_target+]-[+module+]
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          [+make_target+]) \
 	  || exit 1
 [+ ENDIF +]
@@ -1121,7 +1128,7 @@ ENDIF raw_cxx +]
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          [+extra_make_flags+] [+make_target+]) \
 	  || exit 1
 [+ ENDIF +]
