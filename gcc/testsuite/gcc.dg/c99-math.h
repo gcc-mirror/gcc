@@ -45,7 +45,7 @@ extern void abort(void);
   if (!isinf (huge))					\
     abort ();						\
 							\
-  if (isnan (norm))					\
+  if (isinf (norm))					\
     abort ();						\
 							\
   if (isinf (zero))					\
