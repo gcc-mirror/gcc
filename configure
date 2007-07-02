@@ -2086,7 +2086,7 @@ esac
 # Disable libmudflap on some systems.
 if test x$enable_libmudflap = x ; then
     case "${target}" in
-    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu)
+    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | bfin*-*-uclinux*)
         # Enable libmudflap by default in GNU and friends.
 	;;
     *-*-freebsd*)
@@ -2238,6 +2238,9 @@ case "${target}" in
   arm*-*-linux-gnueabi)
     noconfigdirs="$noconfigdirs target-libffi target-qthreads"
     noconfigdirs="$noconfigdirs target-libjava target-libobjc"
+    case ${with_newlib} in
+      no) noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    esac
     ;;
   arm*-*-symbianelf*)
     noconfigdirs="$noconfigdirs ${libgcj} target-libiberty"
@@ -8021,6 +8024,8 @@ if test -z "$ac_cv_prog_CC_FOR_TARGET" ; then
   else
     CC_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
+else
+  CC_FOR_TARGET="$ac_cv_prog_CC_FOR_TARGET"
 fi
 
 
@@ -8174,6 +8179,8 @@ if test -z "$ac_cv_prog_CXX_FOR_TARGET" ; then
   else
     CXX_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
+else
+  CXX_FOR_TARGET="$ac_cv_prog_CXX_FOR_TARGET"
 fi
 
 
@@ -8322,6 +8329,8 @@ fi
 
 if test -z "$ac_cv_prog_GCC_FOR_TARGET" ; then
   GCC_FOR_TARGET="${CC_FOR_TARGET}"
+else
+  GCC_FOR_TARGET="$ac_cv_prog_GCC_FOR_TARGET"
 fi
 
 
@@ -8475,6 +8484,8 @@ if test -z "$ac_cv_prog_GCJ_FOR_TARGET" ; then
   else
     GCJ_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
+else
+  GCJ_FOR_TARGET="$ac_cv_prog_GCJ_FOR_TARGET"
 fi
 
 
@@ -8628,6 +8639,8 @@ if test -z "$ac_cv_prog_GFORTRAN_FOR_TARGET" ; then
   else
     GFORTRAN_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
+else
+  GFORTRAN_FOR_TARGET="$ac_cv_prog_GFORTRAN_FOR_TARGET"
 fi
 
 
@@ -8663,8 +8676,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     AR_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=ar`
-    test $AR_FOR_TARGET=ar && AR_FOR_TARGET=
-    ac_cv_path_AR_FOR_TARGET=$AR_FOR_TARGET
+    test $AR_FOR_TARGET = ar && AR_FOR_TARGET=
+    test -n "$AR_FOR_TARGET" && ac_cv_path_AR_FOR_TARGET=$AR_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_AR_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -8860,6 +8873,8 @@ if test -z "$ac_cv_prog_AR_FOR_TARGET" ; then
   else
     AR_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
+else
+  AR_FOR_TARGET="$ac_cv_prog_AR_FOR_TARGET"
 fi
 
 else
@@ -8884,8 +8899,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     AS_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=as`
-    test $AS_FOR_TARGET=as && AS_FOR_TARGET=
-    ac_cv_path_AS_FOR_TARGET=$AS_FOR_TARGET
+    test $AS_FOR_TARGET = as && AS_FOR_TARGET=
+    test -n "$AS_FOR_TARGET" && ac_cv_path_AS_FOR_TARGET=$AS_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_AS_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -9081,6 +9096,8 @@ if test -z "$ac_cv_prog_AS_FOR_TARGET" ; then
   else
     AS_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
+else
+  AS_FOR_TARGET="$ac_cv_prog_AS_FOR_TARGET"
 fi
 
 else
@@ -9105,8 +9122,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     DLLTOOL_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=dlltool`
-    test $DLLTOOL_FOR_TARGET=dlltool && DLLTOOL_FOR_TARGET=
-    ac_cv_path_DLLTOOL_FOR_TARGET=$DLLTOOL_FOR_TARGET
+    test $DLLTOOL_FOR_TARGET = dlltool && DLLTOOL_FOR_TARGET=
+    test -n "$DLLTOOL_FOR_TARGET" && ac_cv_path_DLLTOOL_FOR_TARGET=$DLLTOOL_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_DLLTOOL_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -9302,6 +9319,8 @@ if test -z "$ac_cv_prog_DLLTOOL_FOR_TARGET" ; then
   else
     DLLTOOL_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
+else
+  DLLTOOL_FOR_TARGET="$ac_cv_prog_DLLTOOL_FOR_TARGET"
 fi
 
 else
@@ -9326,8 +9345,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     LD_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=ld`
-    test $LD_FOR_TARGET=ld && LD_FOR_TARGET=
-    ac_cv_path_LD_FOR_TARGET=$LD_FOR_TARGET
+    test $LD_FOR_TARGET = ld && LD_FOR_TARGET=
+    test -n "$LD_FOR_TARGET" && ac_cv_path_LD_FOR_TARGET=$LD_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_LD_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -9523,6 +9542,8 @@ if test -z "$ac_cv_prog_LD_FOR_TARGET" ; then
   else
     LD_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
+else
+  LD_FOR_TARGET="$ac_cv_prog_LD_FOR_TARGET"
 fi
 
 else
@@ -9547,8 +9568,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     LIPO_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=lipo`
-    test $LIPO_FOR_TARGET=lipo && LIPO_FOR_TARGET=
-    ac_cv_path_LIPO_FOR_TARGET=$LIPO_FOR_TARGET
+    test $LIPO_FOR_TARGET = lipo && LIPO_FOR_TARGET=
+    test -n "$LIPO_FOR_TARGET" && ac_cv_path_LIPO_FOR_TARGET=$LIPO_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_LIPO_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -9744,6 +9765,8 @@ if test -z "$ac_cv_prog_LIPO_FOR_TARGET" ; then
   else
     LIPO_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
+else
+  LIPO_FOR_TARGET="$ac_cv_prog_LIPO_FOR_TARGET"
 fi
 
 else
@@ -9768,8 +9791,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     NM_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=nm`
-    test $NM_FOR_TARGET=nm && NM_FOR_TARGET=
-    ac_cv_path_NM_FOR_TARGET=$NM_FOR_TARGET
+    test $NM_FOR_TARGET = nm && NM_FOR_TARGET=
+    test -n "$NM_FOR_TARGET" && ac_cv_path_NM_FOR_TARGET=$NM_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_NM_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -9965,6 +9988,8 @@ if test -z "$ac_cv_prog_NM_FOR_TARGET" ; then
   else
     NM_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
+else
+  NM_FOR_TARGET="$ac_cv_prog_NM_FOR_TARGET"
 fi
 
 else
@@ -9989,8 +10014,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     OBJDUMP_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=objdump`
-    test $OBJDUMP_FOR_TARGET=objdump && OBJDUMP_FOR_TARGET=
-    ac_cv_path_OBJDUMP_FOR_TARGET=$OBJDUMP_FOR_TARGET
+    test $OBJDUMP_FOR_TARGET = objdump && OBJDUMP_FOR_TARGET=
+    test -n "$OBJDUMP_FOR_TARGET" && ac_cv_path_OBJDUMP_FOR_TARGET=$OBJDUMP_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_OBJDUMP_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -10186,6 +10211,8 @@ if test -z "$ac_cv_prog_OBJDUMP_FOR_TARGET" ; then
   else
     OBJDUMP_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
+else
+  OBJDUMP_FOR_TARGET="$ac_cv_prog_OBJDUMP_FOR_TARGET"
 fi
 
 else
@@ -10210,8 +10237,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     RANLIB_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=ranlib`
-    test $RANLIB_FOR_TARGET=ranlib && RANLIB_FOR_TARGET=
-    ac_cv_path_RANLIB_FOR_TARGET=$RANLIB_FOR_TARGET
+    test $RANLIB_FOR_TARGET = ranlib && RANLIB_FOR_TARGET=
+    test -n "$RANLIB_FOR_TARGET" && ac_cv_path_RANLIB_FOR_TARGET=$RANLIB_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_RANLIB_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -10407,6 +10434,8 @@ if test -z "$ac_cv_prog_RANLIB_FOR_TARGET" ; then
   else
     RANLIB_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
+else
+  RANLIB_FOR_TARGET="$ac_cv_prog_RANLIB_FOR_TARGET"
 fi
 
 else
@@ -10431,8 +10460,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     STRIP_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=strip`
-    test $STRIP_FOR_TARGET=strip && STRIP_FOR_TARGET=
-    ac_cv_path_STRIP_FOR_TARGET=$STRIP_FOR_TARGET
+    test $STRIP_FOR_TARGET = strip && STRIP_FOR_TARGET=
+    test -n "$STRIP_FOR_TARGET" && ac_cv_path_STRIP_FOR_TARGET=$STRIP_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_STRIP_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -10628,6 +10657,8 @@ if test -z "$ac_cv_prog_STRIP_FOR_TARGET" ; then
   else
     STRIP_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
+else
+  STRIP_FOR_TARGET="$ac_cv_prog_STRIP_FOR_TARGET"
 fi
 
 else
@@ -10652,8 +10683,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     WINDRES_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=windres`
-    test $WINDRES_FOR_TARGET=windres && WINDRES_FOR_TARGET=
-    ac_cv_path_WINDRES_FOR_TARGET=$WINDRES_FOR_TARGET
+    test $WINDRES_FOR_TARGET = windres && WINDRES_FOR_TARGET=
+    test -n "$WINDRES_FOR_TARGET" && ac_cv_path_WINDRES_FOR_TARGET=$WINDRES_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_WINDRES_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -10849,6 +10880,8 @@ if test -z "$ac_cv_prog_WINDRES_FOR_TARGET" ; then
   else
     WINDRES_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
+else
+  WINDRES_FOR_TARGET="$ac_cv_prog_WINDRES_FOR_TARGET"
 fi
 
 else
@@ -10873,8 +10906,8 @@ echo "${ECHO_T}no" >&6
     fi
   elif test $build != $host && test $have_gcc_for_target = yes; then
     WINDMC_FOR_TARGET=`$GCC_FOR_TARGET --print-prog-name=windmc`
-    test $WINDMC_FOR_TARGET=windmc && WINDMC_FOR_TARGET=
-    ac_cv_path_WINDMC_FOR_TARGET=$WINDMC_FOR_TARGET
+    test $WINDMC_FOR_TARGET = windmc && WINDMC_FOR_TARGET=
+    test -n "$WINDMC_FOR_TARGET" && ac_cv_path_WINDMC_FOR_TARGET=$WINDMC_FOR_TARGET
   fi
 fi
 if test -z "$ac_cv_path_WINDMC_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
@@ -11070,6 +11103,8 @@ if test -z "$ac_cv_prog_WINDMC_FOR_TARGET" ; then
   else
     WINDMC_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
+else
+  WINDMC_FOR_TARGET="$ac_cv_prog_WINDMC_FOR_TARGET"
 fi
 
 else
