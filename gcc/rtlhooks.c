@@ -161,7 +161,9 @@ gen_lowpart_if_possible (enum machine_mode mode, rtx x)
 
       return new;
     }
-  else if (mode != GET_MODE (x) && GET_MODE (x) != VOIDmode)
+  else if (mode != GET_MODE (x) && GET_MODE (x) != VOIDmode
+	   && validate_subreg (mode, GET_MODE (x), x,
+			        subreg_lowpart_offset (mode, GET_MODE (x))))
     return gen_lowpart_SUBREG (mode, x);
   else
     return 0;
