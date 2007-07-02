@@ -1,3 +1,10 @@
+2007-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/32468
+	* sections.c (GOMP_parallel_sections_start): Only decrease
+	number of threads to COUNT if dyn_var is true.
+	* testsuite/libgomp.c/pr32468.c: New test.
+
 2007-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR libgomp/26308
