@@ -448,8 +448,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	         equivalent types.  The latter requirement could be relaxed if
 	         we emitted a suitable type conversion statement.  */
 	      if (!is_gimple_reg_type (TREE_TYPE (param))
-		  || !lang_hooks.types_compatible_p (TREE_TYPE (param),
-						     TREE_TYPE (arg)))
+		  || !useless_type_conversion_p (TREE_TYPE (param),
+					        TREE_TYPE (arg)))
 		break;
 
 	      /* The parameter should be a real operand, so that phi node

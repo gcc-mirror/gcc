@@ -670,7 +670,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs, tree use_stmt,
       && TREE_CODE (TREE_OPERAND (rhs, 1)) == SSA_NAME
       /* Avoid problems with IVopts creating PLUS_EXPRs with a
 	 different type than their operands.  */
-      && lang_hooks.types_compatible_p (TREE_TYPE (name), TREE_TYPE (rhs)))
+      && useless_type_conversion_p (TREE_TYPE (rhs), TREE_TYPE (name)))
     {
       bool res;
       

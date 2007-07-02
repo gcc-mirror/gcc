@@ -159,8 +159,8 @@ tree_nrv (void)
 		  || TREE_STATIC (found)
 		  || TREE_ADDRESSABLE (found)
 		  || DECL_ALIGN (found) > DECL_ALIGN (result)
-		  || !lang_hooks.types_compatible_p (TREE_TYPE (found), 
-						     result_type))
+		  || !useless_type_conversion_p (result_type,
+					        TREE_TYPE (found)))
 		return 0;
 	    }
 	  else if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)

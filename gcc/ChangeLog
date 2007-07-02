@@ -1,3 +1,39 @@
+2007-07-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (types_compatible_p): Declare.
+	* tree-ssa.c (types_compatible_p): New function.
+	* ipa-type-escape.c (discover_unique_type): Use
+	types_compatible_p instead of lang_hooks.types_compatible_p.
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Likewise.
+	* tree-vn.c (expressions_equal_p): Likewise.
+	* tree.c (fields_compatible_p): Likewise.
+	* tree-ssa-dom.c (avail_expr_eq): Likewise.
+	(cprop_operand): Use useless_type_conversion_p instead of
+	lang_hooks.types_compatible_p.
+	* tree-inline.c (setup_one_parameter): Likewise.
+	(declare_return_variable): Likewise.
+	* tree-nrv.c (tree_nrv): Likewise.
+	* tree-ssa-ccp.c (maybe_fold_offset_to_array_ref): Likewise.
+	(maybe_fold_offset_to_component_ref): Likewise.
+	(maybe_fold_offset_to_reference): Likewise.
+	* tree-ssa-copy.c (may_propagate_copy): Likewise.
+	(merge_alias_info): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Likewise.
+	* tree-ssa-phiopt.c (conditional_replacement): Likewise.
+	* tree-ssa-reassoc.c (optimize_ops_list): Likewise.
+	* tree-tailcall.c (find_tail_calls): Likewise.
+	* tree-vect-generic.c (expand_vector_operations_1): Likewise.
+	* gimplify.c (canonicalize_addr_expr): Likewise.
+	(fold_indirect_ref_rhs): Likewise.
+	(gimplify_addr_expr): Likewise.  Swap parameters to cpt_same_type.
+	(cpt_same_type): Likewise.
+	(check_pointer_types_r): Swap parameters to cpt_same_type
+	where appropriate.
+	* fold-const.c (fold_convert): Revert fix for PR15988.
+	* tree-inline.c (setup_one_parameter): Instead fix it here by
+	using fold_build1 instead of fold_convert and checking for
+	error_mark_node.  Convert only if the conversion is necessary.
+
 2007-07-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac: Check for .gnu_attribute on Power.

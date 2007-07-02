@@ -971,6 +971,17 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
   return false;
 }
 
+/* Return true if a conversion from either type of TYPE1 and TYPE2
+   to the other is not required.  Otherwise return false.  */
+
+bool
+types_compatible_p (tree type1, tree type2)
+{
+  return (type1 == type2
+	  || (useless_type_conversion_p (type1, type2)
+	      && useless_type_conversion_p (type2, type1)));
+}
+
 /* Return true if EXPR is a useless type conversion, otherwise return
    false.  */
 

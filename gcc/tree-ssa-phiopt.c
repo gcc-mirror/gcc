@@ -401,7 +401,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
   cond = COND_EXPR_COND (last_stmt (cond_bb));
   result = PHI_RESULT (phi);
   if (TREE_CODE (cond) != SSA_NAME
-      && !lang_hooks.types_compatible_p (TREE_TYPE (cond), TREE_TYPE (result)))
+      && !useless_type_conversion_p (TREE_TYPE (result), TREE_TYPE (cond)))
     {
       tree tmp;
 
@@ -418,7 +418,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
   /* If the condition was a naked SSA_NAME and the type is not the
      same as the type of the result, then convert the type of the
      condition.  */
-  if (!lang_hooks.types_compatible_p (TREE_TYPE (cond), TREE_TYPE (result)))
+  if (!useless_type_conversion_p (TREE_TYPE (result), TREE_TYPE (cond)))
     cond = fold_convert (TREE_TYPE (result), cond);
 
   /* We need to know which is the true edge and which is the false

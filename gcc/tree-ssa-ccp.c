@@ -1575,7 +1575,7 @@ maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type)
   if (TREE_CODE (array_type) != ARRAY_TYPE)
     return NULL_TREE;
   elt_type = TREE_TYPE (array_type);
-  if (!lang_hooks.types_compatible_p (orig_type, elt_type))
+  if (!useless_type_conversion_p (orig_type, elt_type))
     return NULL_TREE;
 
   /* Use signed size type for intermediate computation on the index.  */
@@ -1666,7 +1666,7 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
     return NULL_TREE;
 
   /* Short-circuit silly cases.  */
-  if (lang_hooks.types_compatible_p (record_type, orig_type))
+  if (useless_type_conversion_p (record_type, orig_type))
     return NULL_TREE;
 
   tail_array_field = NULL_TREE;
@@ -1704,7 +1704,7 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
       /* Here we exactly match the offset being checked.  If the types match,
 	 then we can return that field.  */
       if (cmp == 0
-	  && lang_hooks.types_compatible_p (orig_type, field_type))
+	  && useless_type_conversion_p (orig_type, field_type))
 	{
 	  if (base_is_ptr)
 	    base = build1 (INDIRECT_REF, record_type, base);
@@ -1809,7 +1809,7 @@ maybe_fold_offset_to_reference (tree base, tree offset, tree orig_type)
 					  sub_offset / BITS_PER_UNIT), 1);
 	    }
 	}
-      if (lang_hooks.types_compatible_p (orig_type, TREE_TYPE (base))
+      if (useless_type_conversion_p (orig_type, TREE_TYPE (base))
 	  && integer_zerop (offset))
 	return base;
       type = TREE_TYPE (base);

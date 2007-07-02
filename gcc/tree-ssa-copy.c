@@ -130,7 +130,7 @@ may_propagate_copy (tree dest, tree orig)
       tree mt_orig = symbol_mem_tag (SSA_NAME_VAR (orig));
       if (mt_dest && mt_orig && mt_dest != mt_orig)
 	return false;
-      else if (!lang_hooks.types_compatible_p (type_d, type_o))
+      else if (!useless_type_conversion_p (type_d, type_o))
 	return false;
       else if (get_alias_set (TREE_TYPE (type_d)) != 
 	       get_alias_set (TREE_TYPE (type_o)))
@@ -222,8 +222,8 @@ merge_alias_info (tree orig_name, tree new_name)
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (new_name)));
 
 #if defined ENABLE_CHECKING
-  gcc_assert (lang_hooks.types_compatible_p (TREE_TYPE (orig_name),
-					     TREE_TYPE (new_name)));
+  gcc_assert (useless_type_conversion_p (TREE_TYPE (orig_name),
+					TREE_TYPE (new_name)));
 
   /* If the pointed-to alias sets are different, these two pointers
      would never have the same memory tag.  In this case, NEW should

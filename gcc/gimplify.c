@@ -1599,13 +1599,13 @@ canonicalize_addr_expr (tree *expr_p)
   /* Both cast and addr_expr types should address the same object type.  */
   dctype = TREE_TYPE (ctype);
   ddatype = TREE_TYPE (datype);
-  if (!lang_hooks.types_compatible_p (ddatype, dctype))
+  if (!useless_type_conversion_p (dctype, ddatype))
     return;
 
   /* The addr_expr and the object type should match.  */
   obj_expr = TREE_OPERAND (addr_expr, 0);
   otype = TREE_TYPE (obj_expr);
-  if (!lang_hooks.types_compatible_p (otype, datype))
+  if (!useless_type_conversion_p (datype, otype))
     return;
 
   /* The lower bound and element sizes must be constant.  */
@@ -3304,11 +3304,11 @@ fold_indirect_ref_rhs (tree t)
       tree op = TREE_OPERAND (sub, 0);
       tree optype = TREE_TYPE (op);
       /* *&p => p */
-      if (lang_hooks.types_compatible_p (type, optype))
+      if (useless_type_conversion_p (type, optype))
         return op;
       /* *(foo *)&fooarray => fooarray[0] */
       else if (TREE_CODE (optype) == ARRAY_TYPE
-	       && lang_hooks.types_compatible_p (type, TREE_TYPE (optype)))
+	       && useless_type_conversion_p (type, TREE_TYPE (optype)))
        {
          tree type_domain = TYPE_DOMAIN (optype);
          tree min_val = size_zero_node;
@@ -3320,7 +3320,7 @@ fold_indirect_ref_rhs (tree t)
 
   /* *(foo *)fooarrptr => (*fooarrptr)[0] */
   if (TREE_CODE (TREE_TYPE (subtype)) == ARRAY_TYPE
-      && lang_hooks.types_compatible_p (type, TREE_TYPE (TREE_TYPE (subtype))))
+      && useless_type_conversion_p (type, TREE_TYPE (TREE_TYPE (subtype))))
     {
       tree type_domain;
       tree min_val = size_zero_node;
@@ -3974,14 +3974,15 @@ gimplify_addr_expr (tree *expr_p, tree *pre_p, tree *post_p)
 	tree t_expr = TREE_TYPE (expr);
 	tree t_op00 = TREE_TYPE (op00);
 
-        if (!lang_hooks.types_compatible_p (t_expr, t_op00))
+        if (!useless_type_conversion_p (t_expr, t_op00))
 	  {
 #ifdef ENABLE_CHECKING
 	    tree t_op0 = TREE_TYPE (op0);
 	    gcc_assert (POINTER_TYPE_P (t_expr)
-			&& cpt_same_type (TREE_CODE (t_op0) == ARRAY_TYPE
-					  ? TREE_TYPE (t_op0) : t_op0,
-					  TREE_TYPE (t_expr))
+			&& (cpt_same_type (TREE_TYPE (t_expr), t_op0)
+			    || (TREE_CODE (t_op0) == ARRAY_TYPE
+				&& cpt_same_type (TREE_TYPE (t_expr),
+						  TREE_TYPE (t_op0))))
 			&& POINTER_TYPE_P (t_op00)
 			&& cpt_same_type (t_op0, TREE_TYPE (t_op00)));
 #endif
@@ -6385,7 +6386,7 @@ gimplify_one_sizepos (tree *expr_p, tree *stmt_p)
 static bool
 cpt_same_type (tree a, tree b)
 {
-  if (lang_hooks.types_compatible_p (a, b))
+  if (useless_type_conversion_p (a, b))
     return true;
 
   /* ??? The C++ FE decomposes METHOD_TYPES to FUNCTION_TYPES and doesn't
@@ -6436,7 +6437,7 @@ check_pointer_types_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
       ptype = TREE_TYPE (t);
       otype = TREE_TYPE (TREE_OPERAND (t, 0));
       dtype = TREE_TYPE (ptype);
-      if (!cpt_same_type (otype, dtype))
+      if (!cpt_same_type (dtype, otype))
 	{
 	  /* &array is allowed to produce a pointer to the element, rather than
 	     a pointer to the array type.  We must allow this in order to
@@ -6444,7 +6445,7 @@ check_pointer_types_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 	     pointer to the element type.  */
 	  gcc_assert (TREE_CODE (otype) == ARRAY_TYPE
 		      && POINTER_TYPE_P (ptype)
-		      && cpt_same_type (TREE_TYPE (otype), dtype));
+		      && cpt_same_type (dtype, TREE_TYPE (otype)));
 	  break;
 	}
       break;

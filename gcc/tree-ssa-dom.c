@@ -1680,7 +1680,7 @@ cprop_operand (tree stmt, use_operand_p op_p)
 	 propagation opportunity.  */
       if (TREE_CODE (val) != SSA_NAME)
 	{
-	  if (!lang_hooks.types_compatible_p (op_type, val_type))
+	  if (!useless_type_conversion_p (op_type, val_type))
 	    {
 	      val = fold_convert (TREE_TYPE (op), val);
 	      if (!is_gimple_min_invariant (val))
@@ -2048,8 +2048,7 @@ avail_expr_eq (const void *p1, const void *p2)
 
   /* In case of a collision, both RHS have to be identical and have the
      same VUSE operands.  */
-  if ((TREE_TYPE (rhs1) == TREE_TYPE (rhs2)
-       || lang_hooks.types_compatible_p (TREE_TYPE (rhs1), TREE_TYPE (rhs2)))
+  if (types_compatible_p (TREE_TYPE (rhs1), TREE_TYPE (rhs2))
       && operand_equal_p (rhs1, rhs2, OEP_PURE_SAME))
     {
       bool ret = compare_ssa_operands_equal (stmt1, stmt2, SSA_OP_VUSE);

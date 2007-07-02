@@ -727,8 +727,8 @@ optimize_ops_list (enum tree_code opcode,
 
       if (oelm1->rank == 0
 	  && is_gimple_min_invariant (oelm1->op)
-	  && lang_hooks.types_compatible_p (TREE_TYPE (oelm1->op),
-					    TREE_TYPE (oelast->op)))
+	  && useless_type_conversion_p (TREE_TYPE (oelm1->op),
+				       TREE_TYPE (oelast->op)))
 	{
 	  tree folded = fold_binary (opcode, TREE_TYPE (oelm1->op),
 				     oelm1->op, oelast->op);
