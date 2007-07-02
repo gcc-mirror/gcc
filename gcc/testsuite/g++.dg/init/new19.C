@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O2 -fstrict-aliasing -fdump-tree-lim-details" }
+// { dg-options "-O2 -fstrict-aliasing -fdump-tree-pre-details" }
 
 // Make sure we hoist invariants out of the loop even in the presence
 // of placement new.  This is similar to code in tramp3d.
@@ -69,5 +69,5 @@ int c::foo(int f1, int f2, int f3)
   return sum;
 }
 
-// { dg-final { scan-tree-dump "Moving statement\\n.*->ai\\\[0\\\];\\n.*out of loop" "lim" } }
-// { dg-final { cleanup-tree-dump "lim" } }
+// { dg-final { scan-tree-dump "Replaced.*->ai\\\[0\\\]" "pre" } }
+// { dg-final { cleanup-tree-dump "pre" } }
