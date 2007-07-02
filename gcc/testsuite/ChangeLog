@@ -1,3 +1,10 @@
+2007-07-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/31966
+	PR tree-optimization/32533
+	* gcc.dg/tree-ssa/pr31966.c: New runtime test.
+	* gfortran.dg/pr32533.f90: Ditto.
+
 2007-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/opt/nrv12.C: New test.
