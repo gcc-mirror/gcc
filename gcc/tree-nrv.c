@@ -250,26 +250,23 @@ struct tree_opt_pass pass_nrv =
 static bool
 dest_safe_for_nrv_p (tree dest)
 {
-  switch (TREE_CODE (dest))
-    {
-      case VAR_DECL:
-	{
-	  subvar_t subvar;
-	  if (is_call_clobbered (dest))
-	    return false;
-	  for (subvar = get_subvars_for_var (dest);
-	       subvar;
-	       subvar = subvar->next)
-	    if (is_call_clobbered (subvar->var))
-	      return false;
-	  return true;
-	}
-      case ARRAY_REF:
-      case COMPONENT_REF:
-	return dest_safe_for_nrv_p (TREE_OPERAND (dest, 0));
-      default:
-	return false;
-    }
+  subvar_t subvar;
+
+  while (handled_component_p (dest))
+    dest = TREE_OPERAND (dest, 0);
+
+  if (! SSA_VAR_P (dest))
+    return false;
+
+  if (TREE_CODE (dest) == SSA_NAME)
+    dest = SSA_NAME_VAR (dest);
+
+  if (is_call_clobbered (dest))
+    return false;
+  for (subvar = get_subvars_for_var (dest); subvar; subvar = subvar->next)
+    if (is_call_clobbered (subvar->var))
+      return false;
+  return true;
 }
 
 /* Walk through the function looking for GIMPLE_MODIFY_STMTs with calls that
