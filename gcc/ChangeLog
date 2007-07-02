@@ -36,6 +36,8 @@
 	"basic_block" description as its third argument.  Update function
 	calls to get destination bb from "edge" argument.  Save "cond" into
 	aux field of the edge.  Update prototype for changed arguments.
+	(if_convertible_loop_p): Clear aux field of incoming edges if bb
+	contains phi node.
 	(find_phi_replacement_condition): Operate on incoming edges, not
 	on predecessor blocks.  If there is a condition saved in the
 	incoming edge aux field, AND it with incoming bb predicate.
