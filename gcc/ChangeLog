@@ -1,3 +1,11 @@
+2007-07-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin9.h: Add copyright notice.
+	(LINK_COMMAND_SPEC): Add comment.
+	(DARWIN_LIBSYSTEM_HAS_UNWIND): Define.
+	* config/rs6000/darwin.h (MD_UNWIND_SUPPORT): Conditionalise on
+	DARWIN_LIBSYSTEM_HAS_UNWIND.
+
 2007-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/32468

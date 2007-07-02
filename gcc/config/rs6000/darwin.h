@@ -405,7 +405,7 @@
 #include <stdbool.h>
 #endif
 
-#ifndef __LP64__
+#if !defined(__LP64__) && !defined(DARWIN_LIBSYSTEM_HAS_UNWIND)
 #define MD_UNWIND_SUPPORT "config/rs6000/darwin-unwind.h"
 #endif
 
