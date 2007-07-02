@@ -1,3 +1,10 @@
+2007-07-02  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/32230
+	PR tree-optimization/32477
+	* tree-vect-analyze.c (vect_analyze_data_refs): Fail if base 
+	address is a constant.
+
 2007-07-02  Richard Sandiford  <richard@codesourcery.com>
 
 	* config.gcc (mipsisa32-*-elf*, mipsisa32el-*-elf*)

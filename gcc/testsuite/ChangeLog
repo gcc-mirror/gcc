@@ -1,3 +1,8 @@
+2007-07-02  Ira Rosen  <irar@il.ibm.com>
+ 
+	PR tree-optimization/32230
+	* gcc.dg/vect/pr32230.c: New test.
+
 2007-07-01  Christopher D. Rickett  <crickett@lanl.gov>
 
 	* bind_c_array_params.f03: New files for Fortran 2003 ISO C Binding.
