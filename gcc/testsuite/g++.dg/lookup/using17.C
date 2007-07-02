@@ -11,5 +11,4 @@ struct S {}; // { dg-error "candidates are: struct S" "candidate 1" }
 
 using namespace M;
 
-struct S s; // { dg-error "reference to 'S' is ambiguous" "" }
-// { dg-error "invalid type in declaration" "" { target *-*-* } 14 }
+struct S s; // { dg-error "reference to 'S' is ambiguous|invalid type in declaration" "" }
