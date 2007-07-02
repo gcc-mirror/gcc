@@ -1,3 +1,8 @@
+2007-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/31748
+	* g++.dg/gomp/pr31748.C: New test.
+
 2007-06-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.dg/ext/interface4.C, g++.dg/ext/interface4.h: New.

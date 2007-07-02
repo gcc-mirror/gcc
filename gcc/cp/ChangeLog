@@ -1,3 +1,9 @@
+2007-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/31748
+	* semantics.c (finish_omp_clauses): Use %qD instead of %qE for
+	DECL_P in not a variable and appears more than once error messages.
+
 2007-06-27  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/27492
