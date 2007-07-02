@@ -1,3 +1,12 @@
+2007-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h (alias_sets_might_conflict_p): Rename into
+	alias_sets_must_conflict_p.
+	* alias.c (alias_sets_might_conflict_p): Likewise.
+	(alias_sets_conflict_p): Use it.
+	(objects_must_conflict_p): Likewise.
+	* c-common.c (strict_aliasing_warning): Adjust.
+
 2007-07-02  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* rtlhooks.c (gen_lowpart_if_possible): Check for

@@ -4565,7 +4565,7 @@ extern tree strip_float_extensions (tree);
 extern void record_component_aliases (tree);
 extern HOST_WIDE_INT get_alias_set (tree);
 extern int alias_sets_conflict_p (HOST_WIDE_INT, HOST_WIDE_INT);
-extern int alias_sets_might_conflict_p (HOST_WIDE_INT, HOST_WIDE_INT);
+extern int alias_sets_must_conflict_p (HOST_WIDE_INT, HOST_WIDE_INT);
 extern int objects_must_conflict_p (tree, tree);
 
 /* In tree.c */
