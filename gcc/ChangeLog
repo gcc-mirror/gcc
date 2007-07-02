@@ -121,7 +121,7 @@
 
 	* dwarf2out.c (initial_return_save): Define only if used.
 
-2007-07-01  Richard Sandiford  <richard@codesourcery.com>
+2007-07-01  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	Unreverting Richard's Revert of:
 
