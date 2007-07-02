@@ -1545,6 +1545,13 @@ visit_use (tree use)
 
 	  STRIP_USELESS_TYPE_CONVERSION (rhs);
 
+	  /* Shortcut for copies. Simplifying copies is pointless,
+	     since we copy the expression and value they represent.  */
+	  if (TREE_CODE (rhs) == SSA_NAME && TREE_CODE (lhs) == SSA_NAME)
+	    {
+	      changed = visit_copy (lhs, rhs);
+	      goto done;
+	    }
 	  simplified = try_to_simplify (stmt, rhs);
 	  if (simplified && simplified != rhs)
 	    {
@@ -1623,8 +1630,6 @@ visit_use (tree use)
 		  VN_INFO (lhs)->expr = rhs;
 		  changed = set_ssa_val_to (lhs, rhs);
 		}
-	      else if (TREE_CODE (rhs) == SSA_NAME)
-		changed = visit_copy (lhs, rhs);
 	      else
 		{
 		  switch (TREE_CODE_CLASS (TREE_CODE (rhs)))
