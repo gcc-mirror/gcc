@@ -139,7 +139,7 @@
 	initialization and fix dg-final check - the initialization loop is
 	vectorizable.
 
-2007-067-01  Uros Bizjak  <ubizjak@gmail.com>
+2007-07-01  Uros Bizjak  <ubizjak@gmail.com>
 	    Volker Reichelt  <reichelt@netcologne.de>
 
 	PR middle-end/32559
@@ -291,7 +291,6 @@
 	PR c++/32111
 	* g++.dg/other/friend5.C: New test.
 
->>>>>>> .r126155
 2007-06-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32464
