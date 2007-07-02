@@ -1322,6 +1322,7 @@ phi_translate_1 (tree expr, bitmap_set_t set1, bitmap_set_t set2,
       gcc_unreachable ();
     }
 }
+
 /* Translate EXPR using phis in PHIBLOCK, so that it has the values of
    the phis in PRED. 
    Return NULL if we can't find a leader for each part of the
@@ -1331,7 +1332,9 @@ static tree
 phi_translate (tree expr, bitmap_set_t set1, bitmap_set_t set2,
 	       basic_block pred, basic_block phiblock)
 {
-  return phi_translate_1 (expr, set1, set2, pred, phiblock, NULL);
+  bitmap_clear (seen_during_translate);
+  return phi_translate_1 (expr, set1, set2, pred, phiblock,
+			  seen_during_translate);
 }
 
 /* For each expression in SET, translate the value handles through phi nodes
@@ -1356,9 +1359,7 @@ phi_translate_set (bitmap_set_t dest, bitmap_set_t set, basic_block pred,
   for (i = 0; VEC_iterate (tree, exprs, i, expr); i++)
     {
       tree translated;
-      bitmap_clear (seen_during_translate);
-      translated = phi_translate_1 (expr, set, NULL, pred, phiblock,
-				    seen_during_translate);
+      translated = phi_translate (expr, set, NULL, pred, phiblock);
 
       /* Don't add constants or empty translations to the cache, since
 	 we won't look them up that way, or use the result, anyway.  */
@@ -3404,7 +3405,8 @@ make_values_for_stmt (tree stmt, basic_block block)
   lhsval = valvh ? valvh : get_value_handle (lhs);
   
   STRIP_USELESS_TYPE_CONVERSION (rhs);
-  if (can_value_number_operation (rhs))
+  if (can_value_number_operation (rhs)
+      && (!lhsval || !is_gimple_min_invariant (lhsval)))
     {
       /* For value numberable operation, create a
 	 duplicate expression with the operands replaced
