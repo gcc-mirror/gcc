@@ -1050,7 +1050,7 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
 	      return true;
 	    }
           else if (warn_strict_aliasing == 2
-		   && !alias_sets_might_conflict_p (set1, set2))
+		   && !alias_sets_must_conflict_p (set1, set2))
 	    {
 	      warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
 		       "pointer might break strict-aliasing rules");
@@ -1068,7 +1068,7 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
         HOST_WIDE_INT set1 = get_alias_set (TREE_TYPE (otype));
         HOST_WIDE_INT set2 = get_alias_set (TREE_TYPE (type));
         if (!COMPLETE_TYPE_P(type)
-            || !alias_sets_might_conflict_p (set1, set2))
+            || !alias_sets_must_conflict_p (set1, set2))
 	  {
             warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
                      "pointer might break strict-aliasing rules");

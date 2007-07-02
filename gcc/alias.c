@@ -320,11 +320,8 @@ alias_sets_conflict_p (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
 {
   alias_set_entry ase;
 
-  /* If have no alias set information for one of the operands, we have
-     to assume it can alias anything.  */
-  if (set1 == 0 || set2 == 0
-      /* If the two alias sets are the same, they may alias.  */
-      || set1 == set2)
+  /* The easy case.  */
+  if (alias_sets_must_conflict_p (set1, set2))
     return 1;
 
   /* See if the first alias set is a subset of the second.  */
@@ -344,15 +341,14 @@ alias_sets_conflict_p (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
     return 1;
 
   /* The two alias sets are distinct and neither one is the
-     child of the other.  Therefore, they cannot alias.  */
+     child of the other.  Therefore, they cannot conflict.  */
   return 0;
 }
 
-/* Return 1 if the two specified alias sets might conflict, or if any subtype
-   of these alias sets might conflict.  */
+/* Return 1 if the two specified alias sets will always conflict.  */
 
 int
-alias_sets_might_conflict_p (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
+alias_sets_must_conflict_p (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
 {
   if (set1 == 0 || set2 == 0 || set1 == set2)
     return 1;
@@ -360,7 +356,6 @@ alias_sets_might_conflict_p (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
   return 0;
 }
 
-
 /* Return 1 if any MEM object of type T1 will always conflict (using the
    dependency routines in this file) with any MEM object of type T2.
    This is used when allocating temporary storage.  If T1 and/or T2 are
@@ -386,12 +381,11 @@ objects_must_conflict_p (tree t1, tree t2)
   set1 = t1 ? get_alias_set (t1) : 0;
   set2 = t2 ? get_alias_set (t2) : 0;
 
-  /* Otherwise they conflict if they have no alias set or the same. We
-     can't simply use alias_sets_conflict_p here, because we must make
-     sure that every subtype of t1 will conflict with every subtype of
+  /* We can't use alias_sets_conflict_p because we must make sure
+     that every subtype of t1 will conflict with every subtype of
      t2 for which a pair of subobjects of these respective subtypes
      overlaps on the stack.  */
-  return set1 == 0 || set2 == 0 || set1 == set2;
+  return alias_sets_must_conflict_p (set1, set2);
 }
 
 /* T is an expression with pointer type.  Find the DECL on which this
