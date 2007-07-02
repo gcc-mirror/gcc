@@ -883,7 +883,8 @@ void GC_thr_init()
 #       if defined(GC_HPUX_THREADS)
 	  GC_nprocs = pthread_num_processors_np();
 #       endif
-#	if defined(GC_OSF1_THREADS) || defined(GC_AIX_THREADS)
+#	if defined(GC_OSF1_THREADS) || defined(GC_AIX_THREADS) \
+	   || defined(GC_SOLARIS_PTHREADS)
 	  GC_nprocs = sysconf(_SC_NPROCESSORS_ONLN);
 	  if (GC_nprocs <= 0) GC_nprocs = 1;
 #	endif
