@@ -1,3 +1,8 @@
+2007-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR libgcj/30513
+	* configure.host (i[3-6]86-*): Undef sun.
+
 2007-06-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* testsuite/libjava.jvmti/jvmti-interp.exp (gij_jvmti_test_one):

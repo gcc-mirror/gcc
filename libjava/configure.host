@@ -101,6 +101,9 @@ case "${host}" in
 	# the .text section of libgcj.so is 30k larger, and the .eh_frame
 	# section is 1.4M smaller.
 	libgcj_flags="${libgcj_flags} -ffloat-store -fomit-frame-pointer"
+	# On Solaris we have defined 'sun' which later conflicts with 
+	# namespace usage. So to work this away we use the below undefine.
+	libgcj_flags="${libgcj_flags} -Usun"
 	libgcj_interpreter=yes
 	libgcj_cxxflags=
 	libgcj_cflags=
