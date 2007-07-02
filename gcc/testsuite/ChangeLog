@@ -1,3 +1,8 @@
+2007-07-02  Ollie Wild  <aaw@google.com>
+
+	* g++.dg/lookup/using16.C: Merge dg-errors with common line.
+	* g++.dg/lookup/using17.C: Merge dg-errors with common line.
+
 2007-07-02  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.target/mips/save-restore-1.c: New test.
