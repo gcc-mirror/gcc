@@ -79,7 +79,7 @@ proc setup_mips_tests {} {
     regexp {float = "([^"]*)} $output dummy mips_float
 
     set mips_forced_isa [regexp -- {(-mips|-march)} $compiler_flags]
-    set mips_forced_abi [regexp -- {(-mgp|-mabi)} $compiler_flags]
+    set mips_forced_abi [regexp -- {(-mgp|-mfp|-mabi)} $compiler_flags]
     set mips_forced_float [regexp -- {-m(hard|soft)-float} $compiler_flags]
 }
 
