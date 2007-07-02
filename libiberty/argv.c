@@ -310,7 +310,6 @@ writeargv (char **argv, FILE *f)
 
   while (*argv != NULL)
     {
-      int ret;
       const char *arg = *argv;
 
       while (*arg != EOS)
