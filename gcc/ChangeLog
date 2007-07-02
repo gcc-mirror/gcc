@@ -1,3 +1,12 @@
+2007-07-02  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/32583
+	Fix PR tree-optimization/32584
+	* tree-ssa-pre.c (phi_translate): Always pass seen bitmap.
+	(phi_translate_set): Use phi_translate directly now.
+	(make_values_for_stmt): Don't value number RHS if we already know
+	it is constant.
+
 2007-07-02  Steve Ellcey  <sje@cup.hp.com>
 	    Jim Wilson <wilson@specifix.com>
 
