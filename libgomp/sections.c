@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2007 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -106,7 +106,7 @@ GOMP_parallel_sections_start (void (*fn) (void *), void *data,
   struct gomp_work_share *ws;
 
   num_threads = gomp_resolve_num_threads (num_threads);
-  if (num_threads > count)
+  if (gomp_dyn_var && num_threads > count)
     num_threads = count;
 
   ws = gomp_new_work_share (false, num_threads);
