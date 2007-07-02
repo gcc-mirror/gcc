@@ -1,3 +1,9 @@
+2007-07-02  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (Fortran 2003): Add ISO Bind C.
+	* intrinsic.texi (C_ASSOCIATED,C_F_POINTER,C_F_PROCPOINTER,
+	C_FUNLOC,C_LOC): Document new ISO Bind C intrinsics.
+
 2007-07-01  Christopher D. Rickett  <crickett@lanl.gov>
 
 	* interface.c (gfc_compare_derived_types): Special case for comparing
@@ -10,7 +16,7 @@
 	NULL_FUNPTR.
 	(gfc_conv_expr): Convert expressions for ISO C Binding derived types.
 	* symbol.c (gfc_set_default_type): BIND(C) variables should not be
-	implicitly declared.
+	Implicitly declared.
 	(check_conflict): Add BIND(C) and check for conflicts.
 	(gfc_add_explicit_interface): Whitespace.	
 	(gfc_add_is_bind_c): New function.  
