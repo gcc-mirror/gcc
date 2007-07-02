@@ -3,6 +3,9 @@
 	* g++.dg/opt/nrv12.C: New test.
 	* gcc.target/i386/nrv1.c: New test.
 
+	PR c++/31748
+	* g++.dg/gomp/pr31748.C: New test.
+
 2007-07-02  Ira Rosen  <irar@il.ibm.com>
  
 	PR tree-optimization/32230
