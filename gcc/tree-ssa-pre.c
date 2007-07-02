@@ -3698,8 +3698,8 @@ eliminate (void)
 		     which may require adding a simple cast, which fold_convert
 		     will do for us.  */
 		  if (TREE_CODE (*rhs_p) != SSA_NAME
-		      && !tree_ssa_useless_type_conversion_1 (TREE_TYPE (*rhs_p),
-							      TREE_TYPE (sprime)))
+		      && !useless_type_conversion_p (TREE_TYPE (*rhs_p),
+						    TREE_TYPE (sprime)))
 		    sprime = fold_convert (TREE_TYPE (*rhs_p), sprime);
 
 		  pre_stats.eliminations++;

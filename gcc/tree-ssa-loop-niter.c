@@ -213,7 +213,7 @@ refine_bounds_using_guard (tree type, tree varx, mpz_t offx,
       STRIP_SIGN_NOPS (c0);
       STRIP_SIGN_NOPS (c1);
       ctype = TREE_TYPE (c0);
-      if (!tree_ssa_useless_type_conversion_1 (ctype, type))
+      if (!useless_type_conversion_p (ctype, type))
 	return;
 
       break;

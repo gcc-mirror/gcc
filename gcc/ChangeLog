@@ -1,3 +1,23 @@
+2007-07-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (tree_ssa_useless_type_conversion_1): Rename to ...
+	(useless_type_conversion_p): ... this.
+	* tree-ssa.c (tree_ssa_useless_type_conversion_1): Rename to ...
+	(useless_type_conversion_p): ... this.
+	* builtins.c (fold_builtin_memory_op): Rename
+	tree_ssa_useless_type_conversion_1 to useless_type_conversion_p.
+	* tree-cfg.c (verify_expr): Likewise.
+	* tree-ssa-address.c (tree_ssa_useless_type_conversion_1): Likewise.
+	* tree-ssa-ccp.c (ccp_fold): Likewise.
+	* tree-ssa-copy.c (may_propagate_copy): Likewise.
+	* tree-ssa-dom.c (eliminate_redundant_computations): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Likewise.
+	* tree-ssa-loop-niter.c (refine_bounds_using_guard): Likewise.
+	* tree-ssa-pre.c (eliminate): Likewise.
+	* tree-ssa.c (delete_tree_ssa): Likewise.
+	(tree_ssa_useless_type_conversion): Likewise.
+	* tree.c (build2_stat): Likewise.
+
 2007-07-01  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/32571

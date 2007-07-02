@@ -82,7 +82,7 @@ may_propagate_copy (tree dest, tree orig)
 	                         DECL_UID (SSA_NAME_VAR (dest)))));
   
   /* Do not copy between types for which we *do* need a conversion.  */
-  if (!tree_ssa_useless_type_conversion_1 (type_d, type_o))
+  if (!useless_type_conversion_p (type_d, type_o))
     return false;
 
   /* FIXME.  GIMPLE is allowing pointer assignments and comparisons of

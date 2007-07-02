@@ -8584,7 +8584,7 @@ fold_builtin_memory_op (tree dest, tree src, tree len, tree type, bool ignore, i
 
       if (srctype == desttype
 	  || (gimple_in_ssa_p (cfun)
-	      && tree_ssa_useless_type_conversion_1 (desttype, srctype)))
+	      && useless_type_conversion_p (desttype, srctype)))
 	expr = srcvar;
       else if ((INTEGRAL_TYPE_P (TREE_TYPE (srcvar))
 	   || POINTER_TYPE_P (TREE_TYPE (srcvar)))
