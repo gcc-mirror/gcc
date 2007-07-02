@@ -2929,6 +2929,12 @@ LCF0:
       [$conftest_s],,
       [AC_DEFINE(HAVE_AS_DFP, 1,
 	  [Define if your assembler supports DFP instructions.])])
+
+    gcc_GAS_CHECK_FEATURE([.gnu_attribute support],
+      gcc_cv_as_powerpc_gnu_attribute, [2,18,0],,
+      [.gnu_attribute 4,1],,
+      [AC_DEFINE(HAVE_AS_GNU_ATTRIBUTE, 1,
+	  [Define if your assembler supports .gnu_attribute.])])
     ;;
 
   mips*-*-*)
