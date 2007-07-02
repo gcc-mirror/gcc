@@ -219,7 +219,7 @@ discover_unique_type (tree type)
 	  /* Create an alias since this is just the same as
 	     other_type.  */
 	  tree other_type = (tree) result->value;
-	  if (lang_hooks.types_compatible_p (type, other_type) == 1)
+	  if (types_compatible_p (type, other_type))
 	    {
 	      free (brand);
 	      /* Insert this new type as an alias for other_type.  */

@@ -7714,7 +7714,7 @@ fields_compatible_p (tree f1, tree f2)
                         DECL_FIELD_OFFSET (f2), OEP_ONLY_CONST))
     return false;
 
-  if (!lang_hooks.types_compatible_p (TREE_TYPE (f1), TREE_TYPE (f2)))
+  if (!types_compatible_p (TREE_TYPE (f1), TREE_TYPE (f2)))
     return false;
 
   return true;

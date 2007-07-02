@@ -240,7 +240,7 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
     }
 
   /* Don't coalesce if the two variables aren't type compatible.  */
-  if (!lang_hooks.types_compatible_p (TREE_TYPE (root1), TREE_TYPE (root2)))
+  if (!types_compatible_p (TREE_TYPE (root1), TREE_TYPE (root2)))
     {
       if (debug)
 	fprintf (debug, " : Incompatible types.  No coalesce.\n");

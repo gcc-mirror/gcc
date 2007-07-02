@@ -1278,9 +1278,14 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
   tree init_stmt;
   tree var;
   tree var_sub;
-  tree rhs = value ? fold_convert (TREE_TYPE (p), value) : NULL;
+  tree rhs = value;
   tree def = (gimple_in_ssa_p (cfun)
 	      ? gimple_default_def (id->src_cfun, p) : NULL);
+
+  if (value
+      && value != error_mark_node
+      && !useless_type_conversion_p (TREE_TYPE (p), TREE_TYPE (value)))
+    rhs = fold_build1 (NOP_EXPR, TREE_TYPE (p), value);
 
   /* If the parameter is never assigned to, has no SSA_NAMEs created,
      we may not need to create a new variable here at all.  Instead, we may
@@ -1295,7 +1300,8 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 	 It is not big deal to prohibit constant propagation here as
 	 we will constant propagate in DOM1 pass anyway.  */
       if (is_gimple_min_invariant (value)
-	  && lang_hooks.types_compatible_p (TREE_TYPE (value), TREE_TYPE (p))
+	  && useless_type_conversion_p (TREE_TYPE (p),
+						 TREE_TYPE (value))
 	  /* We have to be very careful about ADDR_EXPR.  Make sure
 	     the base variable isn't a local variable of the inlined
 	     function, e.g., when doing recursive inlining, direct or
@@ -1573,7 +1579,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
       bool use_it = false;
 
       /* We can't use MODIFY_DEST if there's type promotion involved.  */
-      if (!lang_hooks.types_compatible_p (caller_type, callee_type))
+      if (!useless_type_conversion_p (callee_type, caller_type))
 	use_it = false;
 
       /* ??? If we're assigning to a variable sized type, then we must
@@ -1637,7 +1643,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
   /* Build the use expr.  If the return type of the function was
      promoted, convert it back to the expected type.  */
   use = var;
-  if (!lang_hooks.types_compatible_p (TREE_TYPE (var), caller_type))
+  if (!useless_type_conversion_p (caller_type, TREE_TYPE (var)))
     use = fold_convert (caller_type, var);
     
   STRIP_USELESS_TYPE_CONVERSION (use);

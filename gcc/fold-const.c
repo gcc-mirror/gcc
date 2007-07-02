@@ -2262,9 +2262,7 @@ fold_convert (tree type, tree arg)
       || TREE_CODE (orig) == ERROR_MARK)
     return error_mark_node;
 
-  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (orig)
-      || lang_hooks.types_compatible_p (TYPE_MAIN_VARIANT (type),
-					TYPE_MAIN_VARIANT (orig)))
+  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (orig))
     return fold_build1 (NOP_EXPR, type, arg);
 
   switch (TREE_CODE (type))
