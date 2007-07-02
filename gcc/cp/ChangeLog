@@ -1,3 +1,9 @@
+2007-07-02  Simon Baldwin  <simonb@google.com>
+
+	* parser.c (cp_parser_elaborated_type_specifier): Added a warning
+	for inner-style nested forward declarations that don't declare
+	anything useful.
+
 2007-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/31748
