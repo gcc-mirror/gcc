@@ -134,7 +134,7 @@ namespace __gnu_test
     func_callback(const func_callback&);
 
   public:
-    func_callback(): _M_size(0) { };
+    func_callback(): _M_size(0) { }
 
     int
     size() const { return _M_size; }

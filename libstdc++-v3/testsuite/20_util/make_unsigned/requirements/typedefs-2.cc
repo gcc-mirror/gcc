@@ -49,7 +49,7 @@ void test01()
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   typedef make_unsigned<volatile wchar_t>::type  	test23_type;
-  VERIFY( (is_same<test23_type, volatile unsigned wchar_t>::value) );
+  VERIFY( (is_same<test23_type, volatile wchar_t>::value) );
 #endif
 
   typedef make_unsigned<test_enum>::type  	test25_type;
