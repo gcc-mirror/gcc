@@ -194,7 +194,8 @@ am__objects_32 = associated.lo abort.lo access.lo args.lo \
 	reshape_generic.lo reshape_packed.lo selected_int_kind.lo \
 	selected_real_kind.lo stat.lo symlnk.lo system_clock.lo \
 	time.lo transpose_generic.lo umask.lo unlink.lo \
-	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo
+	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo \
+	iso_c_generated_procs.lo iso_c_binding.lo
 am__objects_33 =
 am__objects_34 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
@@ -456,9 +457,11 @@ intrinsics/getcwd.c \
 intrinsics/getlog.c \
 intrinsics/getXid.c \
 intrinsics/hostnm.c \
-intrinsics/kill.c \
 intrinsics/ierrno.c \
 intrinsics/ishftc.c \
+intrinsics/iso_c_generated_procs.c \
+intrinsics/iso_c_binding.c \
+intrinsics/kill.c \
 intrinsics/link.c \
 intrinsics/malloc.c \
 intrinsics/mvbits.c \
@@ -4294,6 +4297,15 @@ ishftc.lo: intrinsics/ishftc.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/ishftc.c' object='ishftc.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ishftc.lo `test -f 'intrinsics/ishftc.c' || echo '$(srcdir)/'`intrinsics/ishftc.c
+
+iso_c_generated_procs.lo: intrinsics/iso_c_generated_procs.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o iso_c_generated_procs.lo `test -f 'intrinsics/iso_c_generated_procs.c' || echo '$(srcdir)/'`intrinsics/iso_c_generated_procs.c
+
+iso_c_binding.lo: intrinsics/iso_c_binding.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o iso_c_binding.lo `test -f 'intrinsics/iso_c_binding.c' || echo '$(srcdir)/'`intrinsics/iso_c_binding.c
+
+kill.lo: intrinsics/kill.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o kill.lo `test -f 'intrinsics/kill.c' || echo '$(srcdir)/'`intrinsics/kill.c
 
 link.lo: intrinsics/link.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT link.lo -MD -MP -MF "$(DEPDIR)/link.Tpo" -c -o link.lo `test -f 'intrinsics/link.c' || echo '$(srcdir)/'`intrinsics/link.c; \

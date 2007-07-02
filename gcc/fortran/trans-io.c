@@ -1810,6 +1810,17 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
   gfc_component *c;
   int kind;
 
+  /* It is possible to get a C_NULL_PTR or C_NULL_FUNPTR expression here if
+     the user says something like: print *, 'c_null_ptr: ', c_null_ptr
+     We need to translate the expression to a constant if it's either
+     C_NULL_PTR or C_NULL_FUNPTR.  */
+  if (ts->type == BT_DERIVED && ts->is_iso_c == 1 && ts->derived != NULL)
+    {
+      ts->type = ts->derived->ts.type;
+      ts->kind = ts->derived->ts.kind;
+      ts->f90_type = ts->derived->ts.f90_type;
+    }
+  
   kind = ts->kind;
   function = NULL;
   arg2 = NULL;

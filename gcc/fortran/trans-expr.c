@@ -2127,8 +2127,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	  argss = gfc_walk_expr (e);
 
 	  if (argss == gfc_ss_terminator)
-	    {
-	      parm_kind = SCALAR;
+            {
 	      if (fsym && fsym->attr.value)
 		{
 		  gfc_conv_expr (&parmse, e);
@@ -2778,6 +2777,12 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
   if (!(expr || pointer))
     return NULL_TREE;
 
+  if (expr != NULL && expr->ts.type == BT_DERIVED
+      && expr->ts.is_iso_c && expr->ts.derived
+      && (expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_PTR
+	  || expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_FUNPTR))
+      expr = gfc_int_expr (0);
+  
   if (array)
     {
       /* Arrays need special handling.  */
@@ -3166,6 +3171,31 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
       return;
     }
 
+  /* We need to convert the expressions for the iso_c_binding derived types.
+     C_NULL_PTR and C_NULL_FUNPTR will be made EXPR_NULL, which evaluates to
+     null_pointer_node.  C_PTR and C_FUNPTR are converted to match the
+     typespec for the C_PTR and C_FUNPTR symbols, which has already been
+     updated to be an integer with a kind equal to the size of a (void *).  */
+  if (expr->ts.type == BT_DERIVED && expr->ts.derived
+      && expr->ts.derived->attr.is_iso_c)
+    {
+      if (expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_PTR
+          || expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_FUNPTR)
+        {
+	  /* Set expr_type to EXPR_NULL, which will result in
+	     null_pointer_node being used below.  */
+          expr->expr_type = EXPR_NULL;
+        }
+      else
+        {
+          /* Update the type/kind of the expression to be what the new
+             type/kind are for the updated symbols of C_PTR/C_FUNPTR.  */
+          expr->ts.type = expr->ts.derived->ts.type;
+          expr->ts.f90_type = expr->ts.derived->ts.f90_type;
+          expr->ts.kind = expr->ts.derived->ts.kind;
+        }
+    }
+  
   switch (expr->expr_type)
     {
     case EXPR_OP:

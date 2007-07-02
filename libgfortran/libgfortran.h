@@ -321,6 +321,9 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_16) gfc_array_l16;
 #define GFC_DTYPE_TYPE_MASK 0x38
 #define GFC_DTYPE_SIZE_SHIFT 6
 
+/* added for f03.  --Rickett, 02.28.06 */
+#define GFC_NUM_RANK_BITS 3
+
 enum
 {
   GFC_DTYPE_UNKNOWN = 0,

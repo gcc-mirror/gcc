@@ -1,3 +1,171 @@
+2007-07-01  Christopher D. Rickett  <crickett@lanl.gov>
+
+	* interface.c (gfc_compare_derived_types): Special case for comparing
+	derived types across namespaces.
+	(gfc_compare_types): Deal with BT_VOID.
+	(compare_parameter): Use BT_VOID to accept ISO C Binding pointers.
+	* trans-expr.c (gfc_conv_function_call): Remove setting parm_kind
+	to SCALAR
+	(gfc_conv_initializer): Deal with ISO C Binding NULL_PTR and 
+	NULL_FUNPTR.
+	(gfc_conv_expr): Convert expressions for ISO C Binding derived types.
+	* symbol.c (gfc_set_default_type): BIND(C) variables should not be
+	implicitly declared.
+	(check_conflict): Add BIND(C) and check for conflicts.
+	(gfc_add_explicit_interface): Whitespace.	
+	(gfc_add_is_bind_c): New function.  
+	(gfc_copy_attr): Use it.
+	(gfc_new_symbol): Initialize ISO C Binding objects.
+	(get_iso_c_binding_dt):  New function.
+	(verify_bind_c_derived_type): Ditto.
+	(gen_special_c_interop_ptr): Ditto.
+	(add_formal_arg): Ditto.
+	(gen_cptr_param): Ditto.
+	(gen_fptr_param): Ditto.
+	(gen_shape_param): Ditto.
+	(add_proc_interface): Ditto.
+	(build_formal_args): Ditto.
+	(generate_isocbinding_symbol):  Ditto.
+	(get_iso_c_sym):  Ditto.
+	* decl.c (num_idents_on_line, has_name_equals): New variables.
+	(verify_c_interop_param): New function.
+	(build_sym): Finish binding labels and deal with COMMON blocks.
+	(add_init_expr_to_sym): Check if the initialized expression is
+	an iso_c_binding named constants
+	(variable_decl): Set ISO C Binding type_spec components.
+	(gfc_match_kind_spec): Check match for C interoperable kind.
+	(match_char_spec): Fix comment. Chnage gfc_match_small_int
+	to gfc_match_small_int_expr.  Check for C interoperable kind.
+	(match_type_spec): Clear the current binding label.
+	(match_attr_spec): Add DECL_IS_BIND_C.  If BIND(C) is found, use it
+	to set attributes.
+	(set_binding_label): New function.
+	(set_com_block_bind_c): Ditto.
+	(verify_c_interop): Ditto.
+	(verify_com_block_vars_c_interop): Ditto.
+	(verify_bind_c_sym): Ditto.
+	(set_verify_bind_c_sym): Ditto.
+	(set_verify_bind_c_com_block): Ditto.
+	(get_bind_c_idents): Ditto.
+	(gfc_match_bind_c_stmt): Ditto.
+	(gfc_match_data_decl): Use num_idents_on_line.
+	(match_result): Deal with right paren in BIND(C).
+	(gfc_match_suffix): New function.
+	(gfc_match_function_decl): Use it.  Code is re-arranged to deal with
+	ISO C Binding result clauses.
+	(gfc_match_subroutine):  Deal with BIND(C).
+ 	(gfc_match_bind_c): New function.
+	(gfc_get_type_attr_spec): New function.  Code is re-arranged in and
+	taken from gfc_match_derived_decl.
+	(gfc_match_derived_decl): Add check for BIND(C).
+	* trans-common.c: Forward declare gfc_get_common.
+	(gfc_sym_mangled_common_id): Change arg from 'const char *name' to
+	'gfc_common_head *com'.  Check for ISO C Binding of the common block.
+	(build_common_decl): 'com->name' to 'com in SET_DECL_ASSEMBLER_NAME.
+	* gfortran.h: Add GFC_MAX_BINDING_LABEL_LEN
+	(bt): Add BT_VOID
+	(sym_flavor): Add FL_VOID.
+ 	(iso_fortran_env_symbol, iso_c_binding_symbol, intmod_id): New enum
+	(CInteropKind_t): New struct.
+	(c_interop_kinds_table): Use it.  Declare an array of structs.
+	(symbol_attribute): Add is_bind_c, is_c_interop, and is_iso_c
+	bitfields.
+	(gfc_typespec): Add is_c_interop; is_iso_c, and f90_type members.
+	(gfc_symbol): Add from_intmod, intmod_sym_id, binding_label, and
+	common_block members.
+	(gfc_common_head): Add binding_label and is_bind_c members.
+	(gfc_gsymbol): Add sym_name, mod_name, and binding_label members.
+	Add prototypes for get_c_kind, gfc_validate_c_kind, 
+	gfc_check_any_c_kind, gfc_add_is_bind_c, gfc_add_value,
+	verify_c_interop, verify_c_interop_param, verify_bind_c_sym,
+	verify_bind_c_derived_type, verify_com_block_vars_c_interop,
+	generate_isocbinding_symbol, get_iso_c_sym, gfc_iso_c_sub_interface
+	* iso-c-binding.def: New file. This file contains the definitions
+	of the types provided by the Fortran 2003 ISO_C_BINDING intrinsic
+	module.
+	* trans-const.c (gfc_conv_constant_to_tree): Deal with C_NULL_PTR
+	 or C_NULL_FUNPTR expressions.
+	* expr.c (gfc_copy_expr): Add BT_VOID case.  For BT_CHARACTER, the
+	ISO C Binding requires a minimum string length of 1 for '\0'.  
+	* module.c (intmod_sym): New struct.
+	(pointer_info): Add binding_label member.
+	(write_atom): Set len to 0 for NULL pointers. Check for NULL p and *p.
+	(ab_attribute): Add AB_IS_BIND_C, AB_IS_C_INTEROP and AB_IS_ISO_C.
+	(attr_bits): Add "IS_BIND_C", "IS_C_INTEROP", and "IS_ISO_C".
+	(mio_symbol_attribute): Deal with ISO C Binding attributes.
+	(bt_types): Add "VOID".
+	(mio_typespec): Deal with ISO C Binding components.
+	(mio_namespace_ref): Add intmod variable. 
+	(mio_symbol): Check for symbols from an intrinsic module.
+	(load_commons): Check for BIND(C) common block.
+	(read_module): Read binding_label and use it.
+	(write_common): Add label.  Write BIND(C) info.
+	(write_blank_common): Blank commons are not BIND(C).  Explicitly
+	set is_bind_c=0.
+	(write_symbol): Deal with binding_label.
+	(sort_iso_c_rename_list): New function.
+	(import_iso_c_binding_module): Ditto.
+	(create_int_parameter): Add to args.
+	(use_iso_fortran_env_module): Adjust to deal with iso_c_binding
+	intrinsic module.
+	* trans-types.c (c_interop_kinds_table): new array of structs. 
+	(gfc_validate_c_kind): New function.
+	(gfc_check_any_c_kind): Ditto.
+	(get_real_kind_from_node): Ditto.
+	(get_int_kind_from_node): Ditto.
+	(get_int_kind_from_width): Ditto.
+	(get_int_kind_from_minimal_width): Ditto.
+	(init_c_interop_kinds): Ditto.
+	(gfc_init_kinds): call init_c_interop_kinds.
+	(gfc_typenode_for_spec): Adjust for BT_VOID and ISO C Binding pointers.
+	Adjust handling of BT_DERIVED.
+	(gfc_sym_type): Whitespace.
+	(gfc_get_derived_type):  Account for iso_c_binding derived types
+	* resolve.c (is_scalar_expr_ptr): New function.
+	(gfc_iso_c_func_interface): Ditto.
+	(resolve_function): Use gfc_iso_c_func_interface. 
+	(set_name_and_label): New function.
+	(gfc_iso_c_sub_interface): Ditto.
+	(resolve_specific_s0): Use gfc_iso_c_sub_interface.
+	(resolve_bind_c_comms): New function.
+	(resolve_bind_c_derived_types): Ditto.
+	(gfc_verify_binding_labels): Ditto.
+	(resolve_fl_procedure): Check for ISO C interoperability.
+	(resolve_symbol): Check C interoperability.
+	(resolve_types): Walk the namespace.  Check COMMON blocks.
+	* trans-decl.c (gfc_sym_mangled_identifier):  Prevent the mangling
+	of identifiers that have an assigned binding label.
+	(gfc_sym_mangled_function_id): Use the binding label rather than
+	the mangled name.
+	(gfc_finish_var_decl): Put variables that are BIND(C) into a common
+	segment of the object file, because this is what C would do.
+	(gfc_create_module_variable): Conver to proper types
+	(set_tree_decl_type_code): New function.
+	(generate_local_decl): Check dummy variables and derived types for
+	ISO C Binding attributes.
+	* match.c (gfc_match_small_int_expr): New function.
+	(gfc_match_name_C): Ditto.
+	(match_common_name): Deal with ISO C Binding in COMMON blocks
+	* trans-io.c (transfer_expr):  Deal with C_NULL_PTR or C_NULL_FUNPTR
+	expressions
+	* match.h: Add prototypes for gfc_match_small_int_expr,
+	gfc_match_name_C, match_common_name, set_com_block_bind_c,
+	set_binding_label, set_verify_bind_c_sym,
+	set_verify_bind_c_com_block, get_bind_c_idents,
+	gfc_match_bind_c_stmt, gfc_match_suffix, gfc_match_bind_c,
+	gfc_get_type_attr_spec
+	* parse.c (decode_statement): Use gfc_match_bind_c_stmt
+	(parse_derived): Init *derived_sym = NULL, and gfc_current_block
+	later for valiadation.
+	* primary.c (got_delim): Set ISO C Binding components of ts.
+	(match_logical_constant): Ditto.
+	(match_complex_constant): Ditto.
+	(match_complex_constant): Ditto.
+	(gfc_match_rvalue): Check for existence of at least one arg for
+	C_LOC, C_FUNLOC, and C_ASSOCIATED.
+	* misc.c (gfc_clear_ts): Clear ISO C Bindoing components in ts.
+	(get_c_kind): New function.
+
 2007-07-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/32239

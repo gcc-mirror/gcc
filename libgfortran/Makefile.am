@@ -71,9 +71,11 @@ intrinsics/getcwd.c \
 intrinsics/getlog.c \
 intrinsics/getXid.c \
 intrinsics/hostnm.c \
-intrinsics/kill.c \
 intrinsics/ierrno.c \
 intrinsics/ishftc.c \
+intrinsics/iso_c_generated_procs.c \
+intrinsics/iso_c_binding.c \
+intrinsics/kill.c \
 intrinsics/link.c \
 intrinsics/malloc.c \
 intrinsics/mvbits.c \
