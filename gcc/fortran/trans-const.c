@@ -280,6 +280,20 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
 void
 gfc_conv_constant (gfc_se * se, gfc_expr * expr)
 {
+  /* We may be receiving an expression for C_NULL_PTR or C_NULL_FUNPTR.  If
+     so, they expr_type will not yet be an EXPR_CONSTANT.  We need to make
+     it so here.  */
+  if (expr->ts.type == BT_DERIVED && expr->ts.derived
+      && expr->ts.derived->attr.is_iso_c)
+    {
+      if (expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_PTR 
+          || expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_FUNPTR)
+        {
+          /* Create a new EXPR_CONSTANT expression for our local uses.  */
+          expr = gfc_int_expr (0);
+        }
+    }
+
   gcc_assert (expr->expr_type == EXPR_CONSTANT);
 
   if (se->ss != NULL)

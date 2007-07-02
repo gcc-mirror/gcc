@@ -181,6 +181,7 @@ decode_statement (void)
     case 'b':
       match ("backspace", gfc_match_backspace, ST_BACKSPACE);
       match ("block data", gfc_match_block_data, ST_BLOCK_DATA);
+      match (NULL, gfc_match_bind_c_stmt, ST_ATTR_DECL);
       break;
 
     case 'c':
@@ -1510,6 +1511,7 @@ parse_derived (void)
   int compiling_type, seen_private, seen_sequence, seen_component, error_flag;
   gfc_statement st;
   gfc_state_data s;
+  gfc_symbol *derived_sym = NULL;
   gfc_symbol *sym;
   gfc_component *c;
 
@@ -1607,6 +1609,11 @@ parse_derived (void)
 	  break;
 	}
     }
+
+  /* need to verify that all fields of the derived type are
+   * interoperable with C if the type is declared to be bind(c)
+   */
+  derived_sym = gfc_current_block();
 
   /* Look for allocatable components.  */
   sym = gfc_current_block ();

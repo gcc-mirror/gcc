@@ -27,6 +27,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "langhooks.h"
 #include "tm.h"
 #include "target.h"
 #include "ggc.h"
@@ -47,6 +48,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #else
 #error If you really need >99 dimensions, continue the sequence above...
 #endif
+
+/* array of structs so we don't have to worry about xmalloc or free */
+CInteropKind_t c_interop_kinds_table[ISOCBINDING_NUMBER];
 
 static tree gfc_get_derived_type (gfc_symbol * derived);
 
@@ -104,6 +108,150 @@ int gfc_charlen_int_kind;
 /* The size of the numeric storage unit and character storage unit.  */
 int gfc_numeric_storage_size;
 int gfc_character_storage_size;
+
+
+/* Validate that the f90_type of the given gfc_typespec is valid for
+   the type it represents.  The f90_type represents the Fortran types
+   this C kind can be used with.  For example, c_int has a f90_type of
+   BT_INTEGER and c_float has a f90_type of BT_REAL.  Returns FAILURE
+   if a mismatch occurs between ts->f90_type and ts->type; SUCCESS if
+   they match.  */
+
+try
+gfc_validate_c_kind (gfc_typespec *ts)
+{
+   return ((ts->type == ts->f90_type) ? SUCCESS : FAILURE);
+}
+
+
+try
+gfc_check_any_c_kind (gfc_typespec *ts)
+{
+  int i;
+  
+  for (i = 0; i < ISOCBINDING_NUMBER; i++)
+    {
+      /* Check for any C interoperable kind for the given type/kind in ts.
+         This can be used after verify_c_interop to make sure that the
+         Fortran kind being used exists in at least some form for C.  */
+      if (c_interop_kinds_table[i].f90_type == ts->type &&
+          c_interop_kinds_table[i].value == ts->kind)
+        return SUCCESS;
+    }
+
+  return FAILURE;
+}
+
+
+static int
+get_real_kind_from_node (tree type)
+{
+  int i;
+
+  for (i = 0; gfc_real_kinds[i].kind != 0; i++)
+    if (gfc_real_kinds[i].mode_precision == TYPE_PRECISION (type))
+      return gfc_real_kinds[i].kind;
+
+  return -4;
+}
+
+static int
+get_int_kind_from_node (tree type)
+{
+  int i;
+
+  if (!type)
+    return -2;
+
+  for (i = 0; gfc_integer_kinds[i].kind != 0; i++)
+    if (gfc_integer_kinds[i].bit_size == TYPE_PRECISION (type))
+      return gfc_integer_kinds[i].kind;
+
+  return -1;
+}
+
+static int
+get_int_kind_from_width (int size)
+{
+  int i;
+
+  for (i = 0; gfc_integer_kinds[i].kind != 0; i++)
+    if (gfc_integer_kinds[i].bit_size == size)
+      return gfc_integer_kinds[i].kind;
+
+  return -2;
+}
+
+static int
+get_int_kind_from_minimal_width (int size)
+{
+  int i;
+
+  for (i = 0; gfc_integer_kinds[i].kind != 0; i++)
+    if (gfc_integer_kinds[i].bit_size >= size)
+      return gfc_integer_kinds[i].kind;
+
+  return -2;
+}
+
+
+/* Generate the CInteropKind_t objects for the C interoperable
+   kinds.  */
+
+static
+void init_c_interop_kinds (void)
+{
+  int i;
+  tree intmax_type_node = INT_TYPE_SIZE == LONG_LONG_TYPE_SIZE ?
+			  integer_type_node :
+			  (LONG_TYPE_SIZE == LONG_LONG_TYPE_SIZE ?
+			   long_integer_type_node :
+			   long_long_integer_type_node);
+
+  /* init all pointers in the list to NULL */
+  for (i = 0; i < ISOCBINDING_NUMBER; i++)
+    {
+      /* Initialize the name and value fields.  */
+      c_interop_kinds_table[i].name[0] = '\0';
+      c_interop_kinds_table[i].value = -100;
+      c_interop_kinds_table[i].f90_type = BT_UNKNOWN;
+    }
+
+#define NAMED_INTCST(a,b,c) \
+  strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
+  c_interop_kinds_table[a].f90_type = BT_INTEGER; \
+  c_interop_kinds_table[a].value = c;
+#define NAMED_REALCST(a,b,c) \
+  strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
+  c_interop_kinds_table[a].f90_type = BT_REAL; \
+  c_interop_kinds_table[a].value = c;
+#define NAMED_CMPXCST(a,b,c) \
+  strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
+  c_interop_kinds_table[a].f90_type = BT_COMPLEX; \
+  c_interop_kinds_table[a].value = c;
+#define NAMED_LOGCST(a,b,c) \
+  strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
+  c_interop_kinds_table[a].f90_type = BT_LOGICAL; \
+  c_interop_kinds_table[a].value = c;
+#define NAMED_CHARKNDCST(a,b,c) \
+  strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
+  c_interop_kinds_table[a].f90_type = BT_CHARACTER; \
+  c_interop_kinds_table[a].value = c;
+#define NAMED_CHARCST(a,b,c) \
+  strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
+  c_interop_kinds_table[a].f90_type = BT_CHARACTER; \
+  c_interop_kinds_table[a].value = c;
+#define DERIVED_TYPE(a,b,c) \
+  strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
+  c_interop_kinds_table[a].f90_type = BT_DERIVED; \
+  c_interop_kinds_table[a].value = c;
+#define PROCEDURE(a,b) \
+  strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
+  c_interop_kinds_table[a].f90_type = BT_PROCEDURE; \
+  c_interop_kinds_table[a].value = 0;
+#include "iso-c-binding.def"
+}
+
 
 /* Query the target to determine which machine modes are available for
    computation.  Choose KIND numbers for them.  */
@@ -308,6 +456,9 @@ gfc_init_kinds (void)
   gfc_index_integer_kind = POINTER_SIZE / 8;
   /* Pick a kind the same size as the C "int" type.  */
   gfc_c_int_kind = INT_TYPE_SIZE / 8;
+
+  /* initialize the C interoperable kinds  */
+  init_c_interop_kinds();
 }
 
 /* Make sure that a valid kind is present.  Returns an index into the
@@ -687,7 +838,13 @@ gfc_typenode_for_spec (gfc_typespec * spec)
       gcc_unreachable ();
 
     case BT_INTEGER:
-      basetype = gfc_get_int_type (spec->kind);
+      /* We use INTEGER(c_intptr_t) for C_PTR and C_FUNPTR once the symbol
+         has been resolved.  This is done so we can convert C_PTR and
+         C_FUNPTR to simple variables that get translated to (void *).  */
+      if (spec->f90_type == BT_VOID)
+        basetype = ptr_type_node;
+      else
+        basetype = gfc_get_int_type (spec->kind);
       break;
 
     case BT_REAL:
@@ -708,8 +865,23 @@ gfc_typenode_for_spec (gfc_typespec * spec)
 
     case BT_DERIVED:
       basetype = gfc_get_derived_type (spec->derived);
-      break;
 
+      /* If we're dealing with either C_PTR or C_FUNPTR, we modified the
+         type and kind to fit a (void *) and the basetype returned was a
+         ptr_type_node.  We need to pass up this new information to the
+         symbol that was declared of type C_PTR or C_FUNPTR.  */
+      if (spec->derived->attr.is_iso_c)
+        {
+          spec->type = spec->derived->ts.type;
+          spec->kind = spec->derived->ts.kind;
+          spec->f90_type = spec->derived->ts.f90_type;
+        }
+      break;
+    case BT_VOID:
+       /* This is for the second arg to c_f_pointer and c_f_procpointer
+          of the iso_c_binding module, to accept any ptr type.  */
+       basetype = ptr_type_node;
+       break;
     default:
       gcc_unreachable ();
     }
@@ -1358,7 +1530,9 @@ gfc_sym_type (gfc_symbol * sym)
 	    }
         }
       else
+      {
 	type = gfc_build_array_type (type, sym->as);
+    }
     }
   else
     {
@@ -1468,12 +1642,25 @@ copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to)
 static tree
 gfc_get_derived_type (gfc_symbol * derived)
 {
-  tree typenode, field, field_type, fieldlist;
+  tree typenode = NULL, field = NULL, field_type = NULL, fieldlist = NULL;
   gfc_component *c;
   gfc_dt_list *dt;
 
   gcc_assert (derived && derived->attr.flavor == FL_DERIVED);
 
+  /* See if it's one of the iso_c_binding derived types.  */
+  if (derived->attr.is_iso_c == 1)
+    {
+      derived->backend_decl = ptr_type_node;
+      derived->ts.kind = gfc_index_integer_kind;
+      derived->ts.type = BT_INTEGER;
+      /* Set the f90_type to BT_VOID as a way to recognize something of type
+         BT_INTEGER that needs to fit a void * for the purpose of the
+         iso_c_binding derived types.  */
+      derived->ts.f90_type = BT_VOID;
+      return derived->backend_decl;
+    }
+  
   /* derived->backend_decl != 0 means we saw it before, but its
      components' backend_decl may have not been built.  */
   if (derived->backend_decl)
@@ -1506,6 +1693,16 @@ gfc_get_derived_type (gfc_symbol * derived)
 
       if (!c->pointer || c->ts.derived->backend_decl == NULL)
 	c->ts.derived->backend_decl = gfc_get_derived_type (c->ts.derived);
+
+      if (c->ts.derived && c->ts.derived->attr.is_iso_c)
+        {
+          /* Need to copy the modified ts from the derived type.  The
+             typespec was modified because C_PTR/C_FUNPTR are translated
+             into (void *) from derived types.  */
+          c->ts.type = c->ts.derived->ts.type;
+          c->ts.kind = c->ts.derived->ts.kind;
+          c->ts.f90_type = c->ts.derived->ts.f90_type;
+        }
     }
 
   if (TYPE_FIELDS (derived->backend_decl))

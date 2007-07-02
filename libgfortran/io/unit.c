@@ -690,26 +690,11 @@ update_position (gfc_unit *u)
    must free memory allocated for the filename string.  */
 
 char *
-filename_from_unit (int n)
+filename_from_unit (int unit_number)
 {
   char *filename;
-  gfc_unit *u;
-  int c;
-
-  /* Find the unit.  */
-  u = unit_root;
-  while (u != NULL)
-    {
-      c = compare (n, u->unit_number);
-      if (c < 0)
-	u = u->left;
-      if (c > 0)
-	u = u->right;
-      if (c == 0)
-	break;
-    }
-
-  /* Get the filename.  */
+  gfc_unit *u = NULL;
+  u = find_unit (unit_number);
   if (u != NULL)
     {
       filename = (char *) get_mem (u->file_len + 1);
@@ -719,4 +704,3 @@ filename_from_unit (int n)
   else
     return (char *) NULL;
 }
-

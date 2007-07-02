@@ -1003,6 +1003,23 @@ GFORTRAN_1.0 {
     _gfortran_unpack0_char;
     _gfortran_unpack1;
     _gfortran_unpack1_char;
+    __iso_c_binding_c_associated_1;
+    __iso_c_binding_c_associated_2;
+    __iso_c_binding_c_f_pointer;
+    __iso_c_binding_c_f_pointer_d0;
+    __iso_c_binding_c_f_pointer_i1;
+    __iso_c_binding_c_f_pointer_i2;
+    __iso_c_binding_c_f_pointer_i4;
+    __iso_c_binding_c_f_pointer_i8;
+    __iso_c_binding_c_f_pointer_i16;
+    __iso_c_binding_c_f_pointer_r4;
+    __iso_c_binding_c_f_pointer_r8;
+    __iso_c_binding_c_f_pointer_r10;
+    __iso_c_binding_c_f_pointer_r16;
+    __iso_c_binding_c_f_pointer_u0;
+    __iso_c_binding_c_f_procpointer;
+    __iso_c_binding_c_funloc;
+    __iso_c_binding_c_loc;
   local:
     *;
 };

@@ -334,8 +334,8 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
   /* Special case for comparing derived types across namespaces.  If the
      true names and module names are the same and the module name is
      nonnull, then they are equal.  */
-  if (strcmp (derived1->name, derived2->name) == 0
-      && derived1 != NULL && derived2 != NULL
+  if (derived1 != NULL && derived2 != NULL
+      && strcmp (derived1->name, derived2->name) == 0
       && derived1->module != NULL && derived2->module != NULL
       && strcmp (derived1->module, derived2->module) == 0)
     return 1;
@@ -400,6 +400,13 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
 int
 gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
 {
+  /* See if one of the typespecs is a BT_VOID, which is what is being used
+     to allow the funcs like c_f_pointer to accept any pointer type.
+     TODO: Possibly should narrow this to just the one typespec coming in
+     that is for the formal arg, but oh well.  */
+  if (ts1->type == BT_VOID || ts2->type == BT_VOID)
+    return 1;
+   
   if (ts1->type != ts2->type)
     return 0;
   if (ts1->type != BT_DERIVED)
@@ -1183,6 +1190,18 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		   int ranks_must_agree, int is_elemental)
 {
   gfc_ref *ref;
+
+  /* If the formal arg has type BT_VOID, it's to one of the iso_c_binding
+     procs c_f_pointer or c_f_procpointer, and we need to accept most
+     pointers the user could give us.  This should allow that.  */
+  if (formal->ts.type == BT_VOID)
+    return 1;
+
+  if (formal->ts.type == BT_DERIVED
+      && formal->ts.derived && formal->ts.derived->ts.is_iso_c
+      && actual->ts.type == BT_DERIVED
+      && actual->ts.derived && actual->ts.derived->ts.is_iso_c)
+    return 1;
 
   if (actual->ts.type == BT_PROCEDURE)
     {

@@ -109,6 +109,12 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target-memory.h"
 
 
+/* TODO: This is defined in match.h, and probably shouldn't be here also,
+   but we need it for now at least and don't want to include the whole
+   match.h.  */
+gfc_common_head *gfc_get_common (const char *, int);
+
+
 /* Holds a single variable in an equivalence set.  */
 typedef struct segment_info
 {
@@ -217,13 +223,37 @@ add_segments (segment_info *list, segment_info *v)
   return list;
 }
 
+
 /* Construct mangled common block name from symbol name.  */
 
+/* We need the bind(c) flag to tell us how/if we should mangle the symbol
+   name.  There are few calls to this function, so few places that this
+   would need to be added.  At the moment, there is only one call, in
+   build_common_decl().  We can't attempt to look up the common block
+   because we may be building it for the first time and therefore, it won't
+   be in the common_root.  We also need the binding label, if it's bind(c).
+   Therefore, send in the pointer to the common block, so whatever info we
+   have so far can be used.  All of the necessary info should be available
+   in the gfc_common_head by now, so it should be accurate to test the
+   isBindC flag and use the binding label given if it is bind(c).
+
+   We may NOT know yet if it's bind(c) or not, but we can try at least.
+   Will have to figure out what to do later if it's labeled bind(c)
+   after this is called.  */
+
 static tree
-gfc_sym_mangled_common_id (const char *name)
+gfc_sym_mangled_common_id (gfc_common_head *com)
 {
   int has_underscore;
   char mangled_name[GFC_MAX_MANGLED_SYMBOL_LEN + 1];
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+
+  /* Get the name out of the common block pointer.  */
+  strcpy (name, com->name);
+
+  /* If we're suppose to do a bind(c).  */
+  if (com->is_bind_c == 1 && com->binding_label[0] != '\0')
+    return get_identifier (com->binding_label);
 
   if (strcmp (name, BLANK_COMMON_NAME) == 0)
     return get_identifier (name);
@@ -381,7 +411,7 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
   if (decl == NULL_TREE)
     {
       decl = build_decl (VAR_DECL, get_identifier (com->name), union_type);
-      SET_DECL_ASSEMBLER_NAME (decl, gfc_sym_mangled_common_id (com->name));
+      SET_DECL_ASSEMBLER_NAME (decl, gfc_sym_mangled_common_id (com));
       TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
       DECL_ALIGN (decl) = BIGGEST_ALIGNMENT;
