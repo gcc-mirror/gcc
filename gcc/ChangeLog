@@ -1,3 +1,10 @@
+2007-07-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac: Check for .gnu_attribute on Power.
+	* configure: Regenerate.
+	* config/rs6000/rs6000.c (rs6000_file_start): If supported, output
+	attribute for floating-point ABI.
+
 2007-07-02  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/32230

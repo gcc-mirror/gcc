@@ -2205,6 +2205,12 @@ rs6000_file_start (void)
 	putc ('\n', file);
     }
 
+#ifdef HAVE_AS_GNU_ATTRIBUTE
+  if (TARGET_32BIT && DEFAULT_ABI == ABI_V4)
+    fprintf (file, "\t.gnu_attribute 4, %d\n",
+	     (TARGET_HARD_FLOAT && TARGET_FPRS) ? 1 : 2);
+#endif
+
   if (DEFAULT_ABI == ABI_AIX || (TARGET_ELF && flag_pic == 2))
     {
       switch_to_section (toc_section);
