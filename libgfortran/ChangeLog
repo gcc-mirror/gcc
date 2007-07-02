@@ -1,3 +1,8 @@
+2007-07-02  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/32239
+	* generated/pow_r*_i4.c: Removed.
+
 2007-07-01  Christopher D. Rickett  <crickett@lanl.gov>
 
 	* Makefile.in: Add support for iso_c_generated_procs.c and
