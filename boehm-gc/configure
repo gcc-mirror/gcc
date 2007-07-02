@@ -5492,14 +5492,14 @@ _ACEOF
      *-*-solaris*)
 
 cat >>confdefs.h <<\_ACEOF
-#define GC_SOLARIS_THREADS 1
-_ACEOF
-
-
-cat >>confdefs.h <<\_ACEOF
 #define GC_SOLARIS_PTHREADS 1
 _ACEOF
 
+	# Need to use alternate thread library, otherwise gctest hangs
+	# on Solaris 8.
+	multi_os_directory=`$CC -print-multi-os-directory`
+	THREADLIBS="-L/usr/lib/lwp/$multi_os_directory \
+		    -R/usr/lib/lwp/$multi_os_directory -lpthread -lthread -lrt"
 	;;
      *-*-irix*)
 

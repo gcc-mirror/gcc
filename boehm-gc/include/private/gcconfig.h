@@ -153,6 +153,11 @@
 #    define SUNOS5
 #    define mach_type_known
 # endif
+# if defined(sun) && defined(__amd64)
+#    define X86_64
+#    define SUNOS5
+#    define mach_type_known
+# endif
 # if (defined(__OS2__) || defined(__EMX__)) && defined(__32BIT__)
 #    define I386
 #    define OS2
@@ -2041,6 +2046,36 @@
 	extern char etext[];
 #	define SEARCH_FOR_DATA_START
 #   endif
+#   ifdef SUNOS5
+#	define ELF_CLASS ELFCLASS64
+#	define OS_TYPE "SUNOS5"
+        extern int _etext[], _end[];
+  	extern ptr_t GC_SysVGetDataStart();
+#       define DATASTART GC_SysVGetDataStart(0x1000, _etext)
+#	define DATAEND (_end)
+/*	# define STACKBOTTOM ((ptr_t)(_start)) worked through 2.7,  	*/
+/*      but reportedly breaks under 2.8.  It appears that the stack	*/
+/* 	base is a property of the executable, so this should not break	*/
+/* 	old executables.						*/
+/*  	HEURISTIC2 probably works, but this appears to be preferable.	*/
+/* #       include <sys/vm.h> */
+/* #	define STACKBOTTOM USRSTACK */
+#	define HEURISTIC2
+#	define PROC_VDB
+#	define DYNAMIC_LOADING
+#	if !defined(USE_MMAP) && defined(REDIRECT_MALLOC)
+#	    define USE_MMAP
+	    /* Otherwise we now use calloc.  Mmap may result in the	*/
+	    /* heap interleaved with thread stacks, which can result in	*/
+	    /* excessive blacklisting.  Sbrk is unusable since it	*/
+	    /* doesn't interact correctly with the system malloc.	*/
+#	endif
+#       ifdef USE_MMAP
+#         define HEAP_START (ptr_t)0x40000000
+#       else
+#	  define HEAP_START DATAEND
+#       endif
+#   endif
 # endif
 
 #if defined(LINUX) && defined(USE_MMAP)
@@ -2185,11 +2220,6 @@
 		((word*)x)[0] = 0; \
 		((word*)x)[1] = 0;
 # endif /* CLEAR_DOUBLE */
-
-	/* Internally we use GC_SOLARIS_THREADS to test for either old or pthreads. */
-# if defined(GC_SOLARIS_PTHREADS) && !defined(GC_SOLARIS_THREADS)
-#   define GC_SOLARIS_THREADS
-# endif
 
 # if defined(GC_IRIX_THREADS) && !defined(IRIX5)
 	--> inconsistent configuration

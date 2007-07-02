@@ -62,9 +62,8 @@ DIST_COMMON = $(srcdir)/../config.guess $(srcdir)/../config.sub \
 	$(srcdir)/../compile $(srcdir)/../compile $(srcdir)/../compile \
 	$(srcdir)/../compile $(srcdir)/../compile $(srcdir)/../compile \
 	$(srcdir)/../compile $(srcdir)/../compile $(srcdir)/../compile \
-	$(srcdir)/../compile $(srcdir)/../compile $(srcdir)/../compile \
-	$(srcdir)/../compile $(srcdir)/../ltmain.sh \
-	$(srcdir)/../config.guess $(srcdir)/../config.sub
+	$(srcdir)/../ltmain.sh $(srcdir)/../config.guess \
+	$(srcdir)/../config.sub
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -87,8 +86,7 @@ am_libgcjgc_la_OBJECTS = allchblk.lo alloc.lo blacklst.lo checksums.lo \
 	dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo \
 	headers.lo malloc.lo mallocx.lo mark.lo mark_rts.lo misc.lo \
 	new_hblk.lo obj_map.lo os_dep.lo pcr_interface.lo ptr_chck.lo \
-	real_malloc.lo reclaim.lo solaris_pthreads.lo \
-	solaris_threads.lo specific.lo stubborn.lo typd_mlc.lo \
+	real_malloc.lo reclaim.lo specific.lo stubborn.lo typd_mlc.lo \
 	backgraph.lo win32_threads.lo pthread_support.lo \
 	pthread_stop_world.lo darwin_stop_world.lo $(am__objects_1)
 libgcjgc_la_OBJECTS = $(am_libgcjgc_la_OBJECTS)
@@ -96,8 +94,7 @@ am__objects_2 = allchblk.lo alloc.lo blacklst.lo checksums.lo \
 	dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo \
 	headers.lo malloc.lo mallocx.lo mark.lo mark_rts.lo misc.lo \
 	new_hblk.lo obj_map.lo os_dep.lo pcr_interface.lo ptr_chck.lo \
-	real_malloc.lo reclaim.lo solaris_pthreads.lo \
-	solaris_threads.lo specific.lo stubborn.lo typd_mlc.lo \
+	real_malloc.lo reclaim.lo specific.lo stubborn.lo typd_mlc.lo \
 	backgraph.lo win32_threads.lo pthread_support.lo \
 	pthread_stop_world.lo darwin_stop_world.lo $(am__objects_1)
 am_libgcjgc_convenience_la_OBJECTS = $(am__objects_2)
@@ -106,7 +103,8 @@ libgcjgc_convenience_la_OBJECTS =  \
 am__dirstamp = $(am__leading_dot)dirstamp
 am_gctest_OBJECTS = tests/test.$(OBJEXT)
 gctest_OBJECTS = $(am_gctest_OBJECTS)
-gctest_DEPENDENCIES = ./libgcjgc.la $(am__DEPENDENCIES_1)
+gctest_DEPENDENCIES = ./libgcjgc.la $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include -I$(top_builddir)/include
 depcomp =
 am__depfiles_maybe =
@@ -265,7 +263,7 @@ libgcjgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
 dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c \
 malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
 obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
-solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c \
+specific.c stubborn.c typd_mlc.c \
 backgraph.c win32_threads.c \
 pthread_support.c pthread_stop_world.c darwin_stop_world.c \
 $(asm_libgcjgc_sources)
@@ -287,7 +285,7 @@ libgcjgc_convenience_la_DEPENDENCIES = @addobjs@
 AM_CXXFLAGS = @GC_CFLAGS@
 AM_CFLAGS = @GC_CFLAGS@
 gctest_SOURCES = tests/test.c
-gctest_LDADD = ./libgcjgc.la $(THREADDLLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
+gctest_LDADD = ./libgcjgc.la $(THREADLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
 gctest_LDFLAGS = -shared-libgcc
 TESTS_ENVIRONMENT = LD_LIBRARY_PATH=../../$(MULTIBUILDTOP)gcc
 TESTS = gctest
