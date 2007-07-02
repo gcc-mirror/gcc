@@ -1,3 +1,14 @@
+2007-07-02  Richard Sandiford  <richard@codesourcery.com>
+
+	* configure.ac (gcc_gxx_include_dir): Use $(libsubdir_to_prefix).
+	(gcc_tooldir): Likewise.
+	* configure: Regenerate.
+	* Makefile.in (libsubdir_to_prefix): New variable, based on the
+	old configure.ac gcc_tooldir setting.
+	(prefix_to_exec_prefix): New variable.
+	(DRIVER_DEFINES): Use $(libsubdir_to_prefix)$(prefix_to_exec_prefix)
+	rather than $(unlibsubdir)/../ to derive TOOLDIR_BASE_PREFIX.
+
 2007-07-02  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/32583
