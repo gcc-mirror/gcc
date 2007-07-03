@@ -1,3 +1,9 @@
+2007-07-03  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/32609
+	* class.c (fixed_type_or_null): Re-lookup the hashtable slot
+	after recursing.
+
 2007-07-02  Simon Baldwin  <simonb@google.com>
 
 	* parser.c (cp_parser_elaborated_type_specifier): Added a warning
