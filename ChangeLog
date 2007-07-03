@@ -1,3 +1,7 @@
+2007-07-03  Julian Brown  <julian@codesourcery.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2007-07-03  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: Rewrite 'configure --help' strings to look nicer.
