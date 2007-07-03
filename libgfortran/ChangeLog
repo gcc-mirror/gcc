@@ -1,3 +1,13 @@
+2007-07-03  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* libgfortran.h: Mark internal_malloc_size as a malloc function.
+	* runtime/memory.c (internal_realloc_size): Remove.
+	(internal_realloc): Call realloc directly instead of
+	internal_realloc_size.
+	(allocate_size): Remove.
+	(allocate): Call malloc directly instead of allocate_size, mark as
+	malloc function.
+
 2007-07-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Restore collateral damage from ISO C Binding merge.

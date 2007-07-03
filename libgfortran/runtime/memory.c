@@ -82,26 +82,6 @@ internal_malloc_size (size_t size)
    Allocate a new block if MEM is zero, and free the block if
    SIZE is 0.  */
 
-static void *
-internal_realloc_size (void *mem, size_t size)
-{
-  if (size == 0)
-    {
-      if (mem)
-	free (mem);
-      return NULL;
-    }
-
-  if (mem == 0)
-    return get_mem (size);
-
-  mem = realloc (mem, size);
-  if (!mem)
-    os_error ("Out of memory.");
-
-  return mem;
-}
-
 extern void *internal_realloc (void *, index_type);
 export_proto(internal_realloc);
 
@@ -113,17 +93,43 @@ internal_realloc (void *mem, index_type size)
   if (size < 0)
     runtime_error ("Attempt to allocate a negative amount of memory.");
 #endif
-  return internal_realloc_size (mem, (size_t) size);
+  mem = realloc (mem, size);
+  if (!mem && size != 0)
+    os_error ("Out of memory.");
+  
+  if (size == 0)
+      return NULL;
+
+  return mem;
 }
+
 
 /* User-allocate, one call for each member of the alloc-list of an
    ALLOCATE statement. */
 
-static void *
-allocate_size (size_t size, GFC_INTEGER_4 * stat)
+extern void *allocate (index_type, GFC_INTEGER_4 *) __attribute__ ((malloc));
+export_proto(allocate);
+
+void *
+allocate (index_type size, GFC_INTEGER_4 * stat)
 {
   void *newmem;
 
+#ifdef GFC_CHECK_MEMORY
+  /* The only time this can happen is the size computed by the
+     frontend wraps around.  */
+  if (size < 0)
+    {
+      if (stat)
+	{
+	  *stat = ERROR_ALLOCATION;
+	  return NULL;
+	}
+      else
+	runtime_error ("Attempt to allocate negative amount of memory. "
+		       "Possible integer overflow");
+    }
+#endif
   newmem = malloc (size ? size : 1);
   if (!newmem)
     {
@@ -140,30 +146,6 @@ allocate_size (size_t size, GFC_INTEGER_4 * stat)
     *stat = 0;
 
   return newmem;
-}
-
-extern void *allocate (index_type, GFC_INTEGER_4 *);
-export_proto(allocate);
-
-void *
-allocate (index_type size, GFC_INTEGER_4 * stat)
-{
-#ifdef GFC_CHECK_MEMORY
-  /* The only time this can happen is the size computed by the
-     frontend wraps around.  */
-  if (size < 0)
-    {
-      if (stat)
-	{
-	  *stat = ERROR_ALLOCATION;
-	  return NULL;
-	}
-      else
-	runtime_error ("Attempt to allocate negative amount of memory. "
-		       "Possible integer overflow");
-    }
-#endif
-  return allocate_size ((size_t) size, stat);
 }
 
 /* Function to call in an ALLOCATE statement when the argument is an

@@ -1,3 +1,8 @@
+2007-07-03  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* trans-decl.c (gfc_build_builtin_function_decls): Mark
+	internal_realloc as a malloc function.
+
 2007-07-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/20888
