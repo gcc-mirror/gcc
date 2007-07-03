@@ -1014,6 +1014,7 @@ print_scc (FILE *out, VEC (tree, heap) *scc)
 static inline bool
 set_ssa_val_to (tree from, tree to)
 {
+  tree currval;
   gcc_assert (to != NULL);
 
   /* Make sure we don't create chains of copies, so that we get the
@@ -1037,7 +1038,9 @@ set_ssa_val_to (tree from, tree to)
       fprintf (dump_file, "\n");
     }
 
-  if (SSA_VAL (from) != to)
+  currval = SSA_VAL (from);
+
+  if (currval != to  && !operand_equal_p (currval, to, OEP_PURE_SAME))
     {
       SSA_VAL (from) = to;
       return true;

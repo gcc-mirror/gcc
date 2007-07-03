@@ -1,3 +1,7 @@
+2007-07-02  Daniel Berlin  <dberlin@dberlin.org>
+
+	* gcc.c-torture/compile/ssa-pre-1.c: New test.
+
 2007-07-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/20888
