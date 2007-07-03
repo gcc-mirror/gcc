@@ -1,3 +1,9 @@
+2007-07-03  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	* combine.c (recog_for_combine): Log the success or failure of
+	  matching new insn patterns against the machine description in
+	  detailed dumps.
+
 2007-07-03  Revital Eres  <eres@il.ibm.com>
 
 	* ddg.c (print_sccs): New function.
