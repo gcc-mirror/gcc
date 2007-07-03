@@ -1,4 +1,10 @@
 2007-07-03  Uros Bizjak  <ubizjak@gmail.com>
+	    Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
+
+	PR middle-end/32176
+	* gcc.dg/pr32176.c: New test.
+
+2007-07-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/const-float80.c : New test.
 	* gcc.dg/const-float128.c : New test.
