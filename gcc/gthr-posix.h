@@ -1,6 +1,6 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+/* Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -59,8 +59,12 @@ typedef pthread_mutex_t __gthread_recursive_mutex_t;
 #endif
 
 #if SUPPORTS_WEAK && GTHREAD_USE_WEAK
+# ifndef __gthrw_pragma
+#  define __gthrw_pragma(pragma)
+# endif
 # define __gthrw2(name,name2,type) \
-  static __typeof(type) name __attribute__ ((__weakref__(#name2)));
+  static __typeof(type) name __attribute__ ((__weakref__(#name2))); \
+  __gthrw_pragma(weak type)
 # define __gthrw_(name) __gthrw_ ## name
 #else
 # define __gthrw2(name,name2,type)
