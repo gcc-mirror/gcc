@@ -1,3 +1,7 @@
+2007-07-03  Geoffrey Keating  <geoffk@apple.com>
+
+	* tree.h (DECL_ALIGN): Back out previous change.
+
 2007-07-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac: Test for .dtprelword support on MIPS.
