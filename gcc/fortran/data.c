@@ -245,7 +245,7 @@ create_character_intializer (gfc_expr *init, gfc_typespec *ts,
    LVALUE already has an initialization, we extend this, otherwise we
    create a new one.  */
 
-void
+try
 gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 {
   gfc_ref *ref;
@@ -293,8 +293,7 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 	      gfc_error ("'%s' at %L already is initialized at %L",
 			 lvalue->symtree->n.sym->name, &lvalue->where,
 			 &init->where);
-	      gfc_free_expr (init);
-	      init = NULL;
+	      return FAILURE;
 	    }
 
 	  if (init == NULL)
@@ -423,6 +422,8 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
     symbol->value = expr;
   else
     last_con->expr = expr;
+
+  return SUCCESS;
 }
 
 

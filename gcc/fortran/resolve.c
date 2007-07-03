@@ -7472,7 +7472,9 @@ check_data_variable (gfc_data_variable *var, locus *where)
 	  values.left -= 1;
 	  mpz_sub_ui (size, size, 1);
 
-	  gfc_assign_data_value (var->expr, values.vnode->expr, offset);
+	  t = gfc_assign_data_value (var->expr, values.vnode->expr, offset);
+	  if (t == FAILURE)
+	    break;
 
 	  if (mark == AR_FULL)
 	    mpz_add_ui (offset, offset, 1);
