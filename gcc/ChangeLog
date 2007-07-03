@@ -1,3 +1,10 @@
+2007-07-03  Eric Christopher  <echristo@apple.com>
+
+	* doc/cppopts.texi: Add conflicting option note to -dM.
+	* doc/invoke.texi: Add note about possible conflicts with
+	-E for -dCHARS and note that -dM will not produce
+	any results if there is no machine dependent reorg.
+	
 2007-07-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* tree.h (DECL_ALIGN): Back out previous change.

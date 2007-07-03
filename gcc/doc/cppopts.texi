@@ -641,6 +641,10 @@ touch foo.h; cpp -dM foo.h
 @noindent
 will show all the predefined macros.
 
+If you use @option{-dM} without the @option{-E} option, @option{-dM} is
+interpreted as a synonym for @option{-fdump-rtl-mach}.
+@xref{Debugging Options, , ,gcc}.
+
 @item D
 @opindex dD
 Like @samp{M} except in two respects: it does @emph{not} include the
