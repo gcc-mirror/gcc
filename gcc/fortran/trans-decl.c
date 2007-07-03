@@ -2276,6 +2276,7 @@ gfc_build_builtin_function_decls (void)
 				     (PREFIX("internal_realloc")),
 				     pvoid_type_node, 2, pvoid_type_node,
 				     gfc_index_int_type_node);
+  DECL_IS_MALLOC (gfor_fndecl_internal_realloc) = 1;
 
   gfor_fndecl_allocate =
     gfc_build_library_function_decl (get_identifier (PREFIX("allocate")),

@@ -634,7 +634,7 @@ internal_proto(get_mem);
 extern void free_mem (void *);
 internal_proto(free_mem);
 
-extern void *internal_malloc_size (size_t);
+extern void *internal_malloc_size (size_t) __attribute__ ((malloc));
 internal_proto(internal_malloc_size);
 
 /* environ.c */
