@@ -1,3 +1,11 @@
+2007-07-03  David Daney  <ddaney@avtrex.com>
+
+	* java/Make-lang.in (doc/gcj.info): Add $(gcc_docdir) to 
+	include path.
+	(doc/gcj.dvi): Same.
+	(doc/gcj.pdf): Same.
+	(java/index.html): Same.
+
 2007-06-15 Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* class.c (make_class_data): Build the index in sizetype.
