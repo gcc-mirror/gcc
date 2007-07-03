@@ -5376,7 +5376,7 @@ fixed_type_or_null (tree instance, int* nonnull, int* cdtorp)
 	      *slot = instance;
 	      type = fixed_type_or_null (DECL_INITIAL (instance),
 					 nonnull, cdtorp);
-	      htab_clear_slot (ht, slot);
+	      htab_remove_elt (ht, instance);
 
 	      return type;
 	    }
