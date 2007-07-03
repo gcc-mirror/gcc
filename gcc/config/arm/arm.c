@@ -457,6 +457,7 @@ static int thumb_call_reg_needed;
 #define FL_NOTM	      (1 << 17)	      /* Instructions not present in the 'M'
 					 profile.  */
 #define FL_DIV	      (1 << 18)	      /* Hardware divide.  */
+#define FL_VFPV3      (1 << 19)       /* Vector Floating Point V3.  */
 
 #define FL_IWMMXT     (1 << 29)	      /* XScale v2 or "Intel Wireless MMX technology".  */
 
@@ -700,7 +701,8 @@ static const struct fpu_desc all_fpus[] =
   {"fpe2",	FPUTYPE_FPA_EMU2},
   {"fpe3",	FPUTYPE_FPA_EMU2},
   {"maverick",	FPUTYPE_MAVERICK},
-  {"vfp",	FPUTYPE_VFP}
+  {"vfp",	FPUTYPE_VFP},
+  {"vfp3",	FPUTYPE_VFP3},
 };
 
 
@@ -715,7 +717,8 @@ static const enum fputype fp_model_for_fpu[] =
   ARM_FP_MODEL_FPA,		/* FPUTYPE_FPA_EMU2  */
   ARM_FP_MODEL_FPA,		/* FPUTYPE_FPA_EMU3  */
   ARM_FP_MODEL_MAVERICK,	/* FPUTYPE_MAVERICK  */
-  ARM_FP_MODEL_VFP		/* FPUTYPE_VFP  */
+  ARM_FP_MODEL_VFP,		/* FPUTYPE_VFP  */
+  ARM_FP_MODEL_VFP		/* FPUTYPE_VFP3  */
 };
 
 
@@ -4950,7 +4953,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code code, enum rtx_code outer)
       return 6;
 
     case CONST_DOUBLE:
-      if (arm_const_double_rtx (x))
+      if (arm_const_double_rtx (x) || vfp3_const_double_rtx (x))
 	return outer == SET ? 2 : -1;
       else if ((outer == COMPARE || outer == PLUS)
 	       && neg_const_double_rtx_ok_for_fpa (x))
@@ -5649,6 +5652,108 @@ neg_const_double_rtx_ok_for_fpa (rtx x)
 
   return 0;
 }
+
+
+/* VFPv3 has a fairly wide range of representable immediates, formed from
+   "quarter-precision" floating-point values. These can be evaluated using this
+   formula (with ^ for exponentiation):
+
+     -1^s * n * 2^-r
+
+   Where 's' is a sign bit (0/1), 'n' and 'r' are integers such that
+   16 <= n <= 31 and 0 <= r <= 7.
+
+   These values are mapped onto an 8-bit integer ABCDEFGH s.t.
+
+     - A (most-significant) is the sign bit.
+     - BCD are the exponent (encoded as r XOR 3).
+     - EFGH are the mantissa (encoded as n - 16).
+*/
+
+/* Return an integer index for a VFPv3 immediate operand X suitable for the
+   fconst[sd] instruction, or -1 if X isn't suitable.  */
+static int
+vfp3_const_double_index (rtx x)
+{
+  REAL_VALUE_TYPE r, m;
+  int sign, exponent;
+  unsigned HOST_WIDE_INT mantissa, mant_hi;
+  unsigned HOST_WIDE_INT mask;
+  int point_pos = 2 * HOST_BITS_PER_WIDE_INT - 1;
+
+  if (!TARGET_VFP3 || GET_CODE (x) != CONST_DOUBLE)
+    return -1;
+
+  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+
+  /* We can't represent these things, so detect them first.  */
+  if (REAL_VALUE_ISINF (r) || REAL_VALUE_ISNAN (r) || REAL_VALUE_MINUS_ZERO (r))
+    return -1;
+
+  /* Extract sign, exponent and mantissa.  */
+  sign = REAL_VALUE_NEGATIVE (r) ? 1 : 0;
+  r = REAL_VALUE_ABS (r);
+  exponent = REAL_EXP (&r);
+  /* For the mantissa, we expand into two HOST_WIDE_INTS, apart from the
+     highest (sign) bit, with a fixed binary point at bit point_pos.
+     WARNING: If there's ever a VFP version which uses more than 2 * H_W_I - 1
+     bits for the mantissa, this may fail (low bits would be lost).  */
+  real_ldexp (&m, &r, point_pos - exponent);
+  REAL_VALUE_TO_INT (&mantissa, &mant_hi, m);
+
+  /* If there are bits set in the low part of the mantissa, we can't
+     represent this value.  */
+  if (mantissa != 0)
+    return -1;
+
+  /* Now make it so that mantissa contains the most-significant bits, and move
+     the point_pos to indicate that the least-significant bits have been
+     discarded.  */
+  point_pos -= HOST_BITS_PER_WIDE_INT;
+  mantissa = mant_hi;
+
+  /* We can permit four significant bits of mantissa only, plus a high bit
+     which is always 1.  */
+  mask = ((unsigned HOST_WIDE_INT)1 << (point_pos - 5)) - 1;
+  if ((mantissa & mask) != 0)
+    return -1;
+
+  /* Now we know the mantissa is in range, chop off the unneeded bits.  */
+  mantissa >>= point_pos - 5;
+
+  /* The mantissa may be zero. Disallow that case. (It's possible to load the
+     floating-point immediate zero with Neon using an integer-zero load, but
+     that case is handled elsewhere.)  */
+  if (mantissa == 0)
+    return -1;
+
+  gcc_assert (mantissa >= 16 && mantissa <= 31);
+
+  /* The value of 5 here would be 4 if GCC used IEEE754-like encoding (where
+     normalised significands are in the range [1, 2). (Our mantissa is shifted
+     left 4 places at this point relative to normalised IEEE754 values).  GCC
+     internally uses [0.5, 1) (see real.c), so the exponent returned from
+     REAL_EXP must be altered.  */
+  exponent = 5 - exponent;
+
+  if (exponent < 0 || exponent > 7)
+    return -1;
+
+  /* Sign, mantissa and exponent are now in the correct form to plug into the
+     formulae described in the comment above.  */
+  return (sign << 7) | ((exponent ^ 3) << 4) | (mantissa - 16);
+}
+
+/* Return TRUE if rtx X is a valid immediate VFPv3 constant.  */
+int
+vfp3_const_double_rtx (rtx x)
+{
+  if (!TARGET_VFP3)
+    return 0;
+
+  return vfp3_const_double_index (x) != -1;
+}
+
 
 /* Predicates for `match_operand' and `match_operator'.  */
 
@@ -8808,6 +8913,15 @@ vfp_output_fldmd (FILE * stream, unsigned int base, int reg, int count)
       count++;
     }
 
+  /* FLDMD may not load more than 16 doubleword registers at a time. Split the
+     load into multiple parts if we have to handle more than 16 registers.  */
+  if (count > 16)
+    {
+      vfp_output_fldmd (stream, base, reg, 16);
+      vfp_output_fldmd (stream, base, reg + 16, count - 16);
+      return;
+    }
+
   fputc ('\t', stream);
   asm_fprintf (stream, "fldmfdd\t%r!, {", base);
 
@@ -8868,6 +8982,19 @@ vfp_emit_fstmd (int base_reg, int count)
       if (base_reg == LAST_VFP_REGNUM - 3)
 	base_reg -= 2;
       count++;
+    }
+
+  /* FSTMD may not store more than 16 doubleword registers at once.  Split
+     larger stores into multiple parts (up to a maximum of two, in
+     practice).  */
+  if (count > 16)
+    {
+      int saved;
+      /* NOTE: base_reg is an internal register number, so each D register
+         counts as 2.  */
+      saved = vfp_emit_fstmd (base_reg + 32, count - 16);
+      saved += vfp_emit_fstmd (base_reg, 16);
+      return saved;
     }
 
   par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count));
@@ -11982,6 +12109,16 @@ arm_print_operand (FILE *stream, rtx x, int code)
       }
       return;
 
+    /* Print a VFPv3 floating-point constant, represented as an integer
+       index.  */
+    case 'G':
+      {
+        int index = vfp3_const_double_index (x);
+	gcc_assert (index != -1);
+	fprintf (stream, "%d", index);
+      }
+      return;
+
     default:
       if (x == 0)
 	{
@@ -12761,11 +12898,10 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
       && IS_VFP_REGNUM (regno))
     {
       if (mode == SFmode || mode == SImode)
-	return TRUE;
+	return VFP_REGNO_OK_FOR_SINGLE (regno);
 
-      /* DFmode values are only valid in even register pairs.  */
       if (mode == DFmode)
-	return ((regno - FIRST_VFP_REGNUM) & 1) == 0;
+	return VFP_REGNO_OK_FOR_DOUBLE (regno);
       return FALSE;
     }
 
@@ -12828,7 +12964,14 @@ arm_regno_class (int regno)
     return CIRRUS_REGS;
 
   if (IS_VFP_REGNUM (regno))
-    return VFP_REGS;
+    {
+      if (regno <= D7_VFP_REGNUM)
+	return VFP_D0_D7_REGS;
+      else if (regno <= LAST_LO_VFP_REGNUM)
+        return VFP_LO_REGS;
+      else
+        return VFP_HI_REGS;
+    }
 
   if (IS_IWMMXT_REGNUM (regno))
     return IWMMXT_REGS;
@@ -15270,6 +15413,7 @@ arm_file_start (void)
 	}
       else
 	{
+	  int set_float_abi_attributes = 0;
 	  switch (arm_fpu_arch)
 	    {
 	    case FPUTYPE_FPA:
@@ -15285,14 +15429,22 @@ arm_file_start (void)
 	      fpu_name = "maverick";
 	      break;
 	    case FPUTYPE_VFP:
+	      fpu_name = "vfp";
+	      set_float_abi_attributes = 1;
+	      break;
+	    case FPUTYPE_VFP3:
+	      fpu_name = "vfp3";
+	      set_float_abi_attributes = 1;
+	      break;
+	    default:
+	      abort();
+	    }
+	  if (set_float_abi_attributes)
+	    {
 	      if (TARGET_HARD_FLOAT)
 		asm_fprintf (asm_out_file, "\t.eabi_attribute 27, 3\n");
 	      if (TARGET_HARD_FLOAT_ABI)
 		asm_fprintf (asm_out_file, "\t.eabi_attribute 28, 1\n");
-	      fpu_name = "vfp";
-	      break;
-	    default:
-	      abort();
 	    }
 	}
       asm_fprintf (asm_out_file, "\t.fpu %s\n", fpu_name);
@@ -16172,6 +16324,7 @@ arm_dbx_register_number (unsigned int regno)
   if (IS_FPA_REGNUM (regno))
     return (TARGET_AAPCS_BASED ? 96 : 16) + regno - FIRST_FPA_REGNUM;
 
+  /* FIXME: VFPv3 register numbering.  */
   if (IS_VFP_REGNUM (regno))
     return 64 + regno - FIRST_VFP_REGNUM;
 

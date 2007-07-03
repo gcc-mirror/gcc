@@ -1,3 +1,70 @@
+2007-07-03  Julian Brown  <julian@codesourcery.com>
+
+	* config.gcc (with_fpu): Allow --with-fpu=vfp3.
+	* config/arm/aout.h (REGISTER_NAMES): Add D16-D31.
+	* config/arm/aof.h (REGISTER_NAMES): Add D16-D31.
+	* config/arm/arm.c (FL_VFPV3): New flag for VFPv3 processor
+	capability.
+	(all_fpus): Add FPUTYPE_VFP3.
+	(fp_model_for_fpu): Add VFPv3 field.
+	(arm_rtx_costs_1): Give cost to VFPv3 constants.
+	(vfp3_const_double_index): New function. Return integer index of
+	VFPv3 constant suitable for fconst[sd] insns, or -1 if constant
+	isn't suitable.
+	(vfp3_const_double_rtx): New function. True if VFPv3 is enabled
+	and argument represents a valid RTX for a VFPv3 constant.
+	(vfp_output_fldmd): Split fldmd with > 16 registers in the list into
+	two instructions.
+	(vfp_emit_fstmd): Similar, for fstmd.
+	(arm_print_operand): Implement new code 'G' for VFPv3 floating-point
+	constants, represented as integer indices.
+	(arm_hard_regno_mode_ok): Use VFP_REGNO_OK_FOR_SINGLE,
+	VFP_REGNO_OK_FOR_DOUBLE macros.
+	(arm_regno_class): Handle VFPv3 d0-d7, low, high register split.
+	(arm_file_start): Set float-abi attribute for VFPv3, and output
+	correct ".fpu" assembler directive.
+	(arm_dbx_register_numbering): Add FIXME.
+	* config/arm/arm.h (TARGET_VFP3): New macro. Target supports VFPv3.
+	(fputype): Add FPUTYPE_VFP3.
+	(FIXED_REGISTERS): Add 32 registers for D16-D31.
+	(CALL_USED_REGISTERS): Likewise.
+	(CONDITIONAL_REGISTER_USAGE): Add note about conditional definition
+	of LAST_VFP_REGNUM. Make D16-D31 caller-saved, if present.
+	(LAST_VFP_REGNUM): Extend available VFP registers for VFPv3.
+	(D7_VFP_REGNUM): New.
+	(LAST_LO_VFP_REGNUM, FIRST_HI_VFP_REGNUM, LAST_HI_VFP_REGNUM)
+	(VFP_REGNO_OK_FOR_SINGLE, VFP_REGNO_OK_FOR_SINGLE)
+	(VFP_REGNO_OK_FOR_DOUBLE): Define new macros.
+	(FIRST_PSEUDO_REGISTER): Shift up to 128 to accommodate VFPv3.
+	(REG_ALLOC_ORDER): Adjust for VFPv3.
+	(reg_class): Add VFP_D0_D7_REGS, VFP_LO_REGS, VFP_HI_REGS.
+	(REG_CLASS_NAMES): Add entries corresponding to VFP_D0_D7_REGS,
+	VFP_LO_REGS, VFP_HI_REGS.
+	(REG_CLASS_CONTENTS): Likewise. Extend contents for VFP_REGS.
+	(IS_VFP_CLASS): Define macro.
+	(SECONDARY_OUTPUT_RELOAD_CLASS, SECONDARY_INPUT_RELOAD_CLASS): Use
+	IS_VFP_CLASS.
+	(REGISTER_MOVE_COST): Likewise.
+	* config/arm/arm-protos.h (vfp3_const_double_rtx): Add prototype.
+	* config/arm/vfp.md (VFPCC_REGNUM): Redefine as 127.
+	(*arm_movsi_vfp, *thumb2_movsi_vfp, *movsfcc_vfp)
+	(*thumb2_movsfcc_vfp, *abssf2_vfp, *negsf2_vfp, *addsf3_vfp)
+	(*subsf3_vfp, *divsf_vfp, *mulsf_vfp, *mulsf3negsf_vfp)
+	(*mulsf3addsf_vfp, *mulsf3subsf_vfp, *mulsf3negsfaddsf_vfp)
+	(*extendsfdf2_vfp, *truncdfsf2_vfp, *truncsisf2_vfp)
+	(*truncsidf2_vfp, fixuns_truncsfsi2, fixuns_truncdfsi2)
+	(*floatsisf2_vfp, *floatsidf2_vfp, floatunssisf2)
+	(floatunssidf2, *sqrtsf2_vfp, *cmpsf_split_vfp)
+	(*cmpsf_trap_split_vfp, *cmpsf_vfp, *cmpsf_trap_vfp): Use 't'
+	where appropriate for single-word registers.
+	(*movsf_vfp, *thumb2_movsf_vfp, *movdf_vfp, *thumb2_movdf_vfp):
+	As above. Fix type attributes.
+	* config/arm/constraints.md (register_contraint "t"): Define.
+	(register_constraint "w"): Change to D0-D15, or D0-D31 for
+	VFPv3/NEON.
+	(register_constraint "x"): Define.
+	(constraint "Dv"): Define.
+
 2007-07-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* tree.h (DECL_ALIGN): Prevent use on a FUNCTION_DECL.

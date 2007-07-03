@@ -47,7 +47,10 @@
 #define LOCAL_LABEL_PREFIX 	""
 #endif
 
-/* The assembler's names for the registers.  */
+/* The assembler's names for the registers.  Note that the ?xx registers are
+   there so that VFPv3/NEON registers D16-D31 have the same spacing as D0-D15
+   (each of which is overlaid on two S registers), although there are no
+   actual single-precision registers which correspond to D16-D31.  */
 #ifndef REGISTER_NAMES
 #define REGISTER_NAMES				   \
 {				                   \
@@ -68,6 +71,10 @@
   "s8",  "s9",  "s10", "s11", "s12", "s13", "s14", "s15", \
   "s16", "s17", "s18", "s19", "s20", "s21", "s22", "s23", \
   "s24", "s25", "s26", "s27", "s28", "s29", "s30", "s31", \
+  "d16", "?16", "d17", "?17", "d18", "?18", "d19", "?19", \
+  "d20", "?20", "d21", "?21", "d22", "?22", "d23", "?23", \
+  "d24", "?24", "d25", "?25", "d26", "?26", "d27", "?27", \
+  "d28", "?28", "d29", "?29", "d30", "?30", "d31", "?31", \
   "vfpcc"					   \
 }
 #endif
