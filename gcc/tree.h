@@ -2586,7 +2586,7 @@ struct tree_memory_partition_tag GTY(())
 /* Likewise for the size in bytes.  */
 #define DECL_SIZE_UNIT(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.size_unit)
 /* Holds the alignment required for the datum, in bits.  */
-#define DECL_ALIGN(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.u1.a.align)
+#define DECL_ALIGN(NODE) (TREE_NOT_CHECK (DECL_COMMON_CHECK (NODE), FUNCTION_DECL)->decl_common.u1.a.align)
 /* The alignment of NODE, in bytes.  */
 #define DECL_ALIGN_UNIT(NODE) (DECL_ALIGN (NODE) / BITS_PER_UNIT)
 /* For FIELD_DECLs, off_align holds the number of low-order bits of

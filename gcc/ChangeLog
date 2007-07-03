@@ -1,3 +1,7 @@
+2007-07-03  Geoffrey Keating  <geoffk@apple.com>
+
+	* tree.h (DECL_ALIGN): Prevent use on a FUNCTION_DECL.
+
 2007-07-03  Tom Tromey  <tromey@redhat.com>
 
 	* c-parser.c (objc_pq_context): Removed.
