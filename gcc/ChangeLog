@@ -1,4 +1,8 @@
 2007-07-03  David Ung  <davidu@mips.com>
+
+	* config/mips/mips.c (mips_issue_rate): Return 4 for 74K processors.
+
+2007-07-03  David Ung  <davidu@mips.com>
 	    Richard Sandiford  <richard@codesourcery.com>
 
 	* doc/invoke.texi: Document -march=74kf3_2.

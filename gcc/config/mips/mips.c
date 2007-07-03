@@ -10813,6 +10813,12 @@ mips_issue_rate (void)
     case PROCESSOR_74KF2_1:
     case PROCESSOR_74KF1_1:
     case PROCESSOR_74KF3_2:
+      /* The 74k is not strictly quad-issue cpu, but can be seen as one
+	 by the scheduler.  It can issue 1 ALU, 1 AGEN and 2 FPU insns,
+	 but in reality only a maximum of 3 insns can be issued as the
+	 floating point load/stores also require a slot in the AGEN pipe.  */
+     return 4;
+
     case PROCESSOR_R4130:
     case PROCESSOR_R5400:
     case PROCESSOR_R5500:
