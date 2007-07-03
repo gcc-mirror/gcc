@@ -9665,6 +9665,14 @@ recog_for_combine (rtx *pnewpat, rtx insn, rtx *pnotes)
   REG_NOTES (insn) = 0;
 
   insn_code_number = recog (pat, insn, &num_clobbers_to_add);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      if (insn_code_number < 0)
+	fputs ("Failed to match this instruction:\n", dump_file);
+      else
+	fputs ("Successfully matched this instruction:\n", dump_file);
+      print_rtl_single (dump_file, pat);
+    }
 
   /* If it isn't, there is the possibility that we previously had an insn
      that clobbered some register as a side effect, but the combined
@@ -9691,6 +9699,14 @@ recog_for_combine (rtx *pnewpat, rtx insn, rtx *pnotes)
 
       PATTERN (insn) = pat;
       insn_code_number = recog (pat, insn, &num_clobbers_to_add);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  if (insn_code_number < 0)
+	    fputs ("Failed to match this instruction:\n", dump_file);
+	  else
+	    fputs ("Successfully matched this instruction:\n", dump_file);
+	  print_rtl_single (dump_file, pat);
+	}
     }
   PATTERN (insn) = old_pat;
   REG_NOTES (insn) = old_notes;
