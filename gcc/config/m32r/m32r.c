@@ -42,6 +42,7 @@
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "tm-constrs.h"
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -508,8 +509,7 @@ small_data_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   if (GET_CODE (op) == CONST
       && GET_CODE (XEXP (op, 0)) == PLUS
       && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
-      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT
-      && INT16_P (INTVAL (XEXP (XEXP (op, 0), 1))))
+      && satisfies_constraint_J (XEXP (XEXP (op, 0), 1)))
     return SYMBOL_REF_SMALL_P (XEXP (XEXP (op, 0), 0));
 
   return 0;
@@ -533,8 +533,7 @@ addr24_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   else if (GET_CODE (op) == CONST
 	   && GET_CODE (XEXP (op, 0)) == PLUS
 	   && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
-	   && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT
-	   && UINT24_P (INTVAL (XEXP (XEXP (op, 0), 1))))
+	   && satisfies_constraint_M (XEXP (XEXP (op, 0), 1)))
     sym = XEXP (XEXP (op, 0), 0);
   else
     return 0;
@@ -691,8 +690,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
       switch (compare_code)
 	{
 	case EQ:
-	  if (GET_CODE (y) == CONST_INT
-	      && CMP_INT16_P (INTVAL (y))		/* Reg equal to small const.  */
+	  if (satisfies_constraint_P (y)		/* Reg equal to small const.  */
 	      && y != const0_rtx)
 	    {
 	      rtx tmp = gen_reg_rtx (SImode);
@@ -718,7 +716,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 
 	case LT:
 	  if (register_operand (y, SImode)
-	      || (GET_CODE (y) == CONST_INT && CMP_INT16_P (INTVAL (y))))
+	      || satisfies_constraint_P (y))
 	    {
 	      rtx tmp = gen_reg_rtx (SImode);	      /* Reg compared to reg.  */
 
@@ -758,7 +756,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 
 	case LTU:
 	  if (register_operand (y, SImode)
-	      || (GET_CODE (y) == CONST_INT && CMP_INT16_P (INTVAL (y))))
+	      || satisfies_constraint_P (y))
 	    {
 	      rtx tmp = gen_reg_rtx (SImode);	      /* Reg (unsigned) compared to reg.  */
 
@@ -814,8 +812,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 
       /* Reg/smallconst equal comparison.  */
       if (compare_code == EQ
-	  && GET_CODE (y) == CONST_INT
-	  && CMP_INT16_P (INTVAL (y)))
+	  && satisfies_constraint_P (y))
 	{
 	  rtx tmp = gen_reg_rtx (SImode);
 

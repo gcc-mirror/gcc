@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, Renesas M32R cpu.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006 Free Software Foundation, Inc.
+   2005, 2006, 2007 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -671,11 +671,6 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define INDEX_REG_CLASS GENERAL_REGS
 #define BASE_REG_CLASS GENERAL_REGS
 
-#define REG_CLASS_FROM_LETTER(C)			\
-  (  (C) == 'c'	? CARRY_REG				\
-   : (C) == 'a'	? ACCUM_REGS				\
-   :		  NO_REGS)
-
 /* These assume that REGNO is a hard or pseudo reg number.
    They give nonzero only if REGNO is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
@@ -699,85 +694,16 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define CLASS_MAX_NREGS(CLASS, MODE) \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-/* The letters I, J, K, L, M, N, O, P in a register constraint string
-   can be used to stand for particular ranges of immediate operands.
-   This macro defines what the ranges are.
-   C is the letter, and VALUE is a constant value.
-   Return 1 if VALUE is in the range specified by C.  */
-/* 'I' is used for 8-bit signed immediates.
-   'J' is used for 16-bit signed immediates.
-   'K' is used for 16-bit unsigned immediates.
-   'L' is used for 16-bit immediates left shifted by 16 (sign ???).
-   'M' is used for 24-bit unsigned immediates.
-   'N' is used for any 32-bit non-symbolic value.
-   'O' is used for 5-bit unsigned immediates (shift count).
-   'P' is used for 16-bit signed immediates for compares
-       (values in the range -32767 to +32768).  */
-
 /* Return true if a value is inside a range.  */
-#define IN_RANGE_P(VALUE, LOW, HIGH)					\
-  (((unsigned HOST_WIDE_INT)((VALUE) - (LOW)))				\
+#define IN_RANGE_P(VALUE, LOW, HIGH)			\
+  (((unsigned HOST_WIDE_INT)((VALUE) - (LOW)))		\
    <= ((unsigned HOST_WIDE_INT)((HIGH) - (LOW))))
 
-/* Local to this file.  */
-#define INT8_P(X)      ((X) >= -   0x80 && (X) <= 0x7f)
+/* Some range macros.  */
 #define INT16_P(X)     ((X) >= - 0x8000 && (X) <= 0x7fff)
 #define CMP_INT16_P(X) ((X) >= - 0x7fff && (X) <= 0x8000)
-#define UPPER16_P(X)  (((X) & 0xffff) == 0				\
-		        && ((X) >> 16) >= - 0x8000			\
-		        && ((X) >> 16) <= 0x7fff)
 #define UINT16_P(X)   (((unsigned HOST_WIDE_INT) (X)) <= 0x0000ffff)
 #define UINT24_P(X)   (((unsigned HOST_WIDE_INT) (X)) <= 0x00ffffff)
-#define UINT32_P(X)   (((unsigned HOST_WIDE_INT) (X)) <= 0xffffffff)
-#define UINT5_P(X)    ((X) >= 0 && (X) < 32)
-#define INVERTED_SIGNED_8BIT(VAL) ((VAL) >= -127 && (VAL) <= 128)
-
-#define CONST_OK_FOR_LETTER_P(VALUE, C)					\
-  (  (C) == 'I' ? INT8_P (VALUE)					\
-   : (C) == 'J' ? INT16_P (VALUE)					\
-   : (C) == 'K' ? UINT16_P (VALUE)					\
-   : (C) == 'L' ? UPPER16_P (VALUE)					\
-   : (C) == 'M' ? UINT24_P (VALUE)					\
-   : (C) == 'N' ? INVERTED_SIGNED_8BIT (VALUE)				\
-   : (C) == 'O' ? UINT5_P (VALUE)					\
-   : (C) == 'P' ? CMP_INT16_P (VALUE)					\
-   : 0)
-
-/* Similar, but for floating constants, and defining letters G and H.
-   Here VALUE is the CONST_DOUBLE rtx itself.
-   For the m32r, handle a few constants inline.
-   ??? We needn't treat DI and DF modes differently, but for now we do.  */
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)				\
-  (  (C) == 'G' ? easy_di_const (VALUE)					\
-   : (C) == 'H' ? easy_df_const (VALUE)					\
-   : 0)
-
-/* A C expression that defines the optional machine-dependent constraint
-   letters that can be used to segregate specific types of operands,
-   usually memory references, for the target machine.  It should return 1 if
-   VALUE corresponds to the operand type represented by the constraint letter
-   C.  If C is not defined as an extra constraint, the value returned should
-   be 0 regardless of VALUE.  */
-/* Q is for symbolic addresses loadable with ld24.
-   R is for symbolic addresses when ld24 can't be used.
-   S is for stores with pre {inc,dec}rement
-   T is for indirect of a pointer.
-   U is for loads with post increment.  */
-
-#define EXTRA_CONSTRAINT(VALUE, C)					\
-  (  (C) == 'Q' ? ((TARGET_ADDR24 && GET_CODE (VALUE) == LABEL_REF)	\
-		 || addr24_operand (VALUE, VOIDmode))			\
-   : (C) == 'R' ? ((TARGET_ADDR32 && GET_CODE (VALUE) == LABEL_REF)	\
-		 || addr32_operand (VALUE, VOIDmode))			\
-   : (C) == 'S' ? (GET_CODE (VALUE) == MEM				\
-		 && STORE_PREINC_PREDEC_P (GET_MODE (VALUE),		\
-					   XEXP (VALUE, 0)))		\
-   : (C) == 'T' ? (GET_CODE (VALUE) == MEM				\
-		 && memreg_operand (VALUE, GET_MODE (VALUE)))		\
-   : (C) == 'U' ? (GET_CODE (VALUE) == MEM				\
-		 && LOAD_POSTINC_P (GET_MODE (VALUE),			\
-				    XEXP (VALUE, 0)))			\
-   : 0)
 
 /* Stack layout and stack pointer usage.  */
 
