@@ -1,3 +1,8 @@
+2007-07-04  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/tm.texi (Run-time Target): Capitalise "CPU".
+	(Exception Handling): Likewise.
+
 2007-07-03  Jan Hubicka  <jh@suse.cz>
 
 	* ifcvt.c (find_cond_trap): Avoid invalid RTL sharing.
