@@ -870,6 +870,7 @@ order_sccs (ddg_all_sccs_ptr g)
 	 (int (*) (const void *, const void *)) compare_sccs);
 }
 
+#ifdef ENABLE_CHECKING
 /* Check that every node in SCCS belongs to exactly one strongly connected
    component and that no element of SCCS is empty.  */
 static void
@@ -889,7 +890,7 @@ check_sccs (ddg_all_sccs_ptr sccs, int num_nodes)
     }
   sbitmap_free (tmp);
 }
-
+#endif
 
 /* Perform the Strongly Connected Components decomposing algorithm on the
    DDG and return DDG_ALL_SCCS structure that contains them.  */

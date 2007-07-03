@@ -1,3 +1,8 @@
+2007-07-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* ddg.c (check_sccs): Define only if ENABLE_CHECKING is
+	defined.
+
 2007-07-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR target/28307
