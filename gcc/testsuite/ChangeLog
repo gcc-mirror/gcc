@@ -1,3 +1,14 @@
+2007-07-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/30940
+	* gfortran.dg/argument_checking_1.f90: New.
+	* gfortran.dg/argument_checking_2.f90: New.
+	* gfortran.dg/argument_checking_3.f90: New.
+	* gfortran.dg/argument_checking_4.f90: New.
+	* gfortran.dg/argument_checking_5.f90: New.
+	* gfortran.fortran-torture/execute/st_function_1.f90: Add dg-warning.
+	* gfortran.fortran-torture/execute/st_function.f90: Add dg-warning.
+
 2007-07-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/pr32176.c: Add -w to default dg-options.

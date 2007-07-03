@@ -8,7 +8,7 @@ program st_function_1
   bar(p) = p // "World"
   
   ! Expression longer than function, actual arg shorter than dummy.
-  call check (foo("Hello"), "Hello Wo")
+  call check (foo("Hello"), "Hello Wo") ! { dg-warning "Character length of actual argument shorter" }
 
   ! Expression shorter than function, actual arg longer than dummy.
   ! Result shorter than type

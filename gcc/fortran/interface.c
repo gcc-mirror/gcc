@@ -1283,6 +1283,153 @@ compare_parameter_protected (gfc_symbol *formal, gfc_expr *actual)
 }
 
 
+/* Returns the storage size of a symbol (formal argument) or
+   zero if it cannot be determined.  */
+
+static unsigned long
+get_sym_storage_size (gfc_symbol *sym)
+{
+  int i;
+  unsigned long strlen, elements;
+
+  if (sym->ts.type == BT_CHARACTER)
+    {
+      if (sym->ts.cl && sym->ts.cl->length
+          && sym->ts.cl->length->expr_type == EXPR_CONSTANT)
+	strlen = mpz_get_ui (sym->ts.cl->length->value.integer);
+      else
+	return 0;
+    }
+  else
+    strlen = 1; 
+
+  if (symbol_rank (sym) == 0)
+    return strlen;
+
+  elements = 1;
+  if (sym->as->type != AS_EXPLICIT)
+    return 0;
+  for (i = 0; i < sym->as->rank; i++)
+    {
+      if (!sym->as || sym->as->upper[i]->expr_type != EXPR_CONSTANT
+	  || sym->as->lower[i]->expr_type != EXPR_CONSTANT)
+	return 0;
+
+      elements *= mpz_get_ui (sym->as->upper[i]->value.integer)
+		  - mpz_get_ui (sym->as->lower[i]->value.integer) + 1L;
+    }
+
+  return strlen*elements;
+}
+
+
+/* Returns the storage size of an expression (actual argument) or
+   zero if it cannot be determined. For an array element, it returns
+   the remaing size as the element sequence consists of all storage
+   units of the actual argument up to the end of the array.  */
+
+static unsigned long
+get_expr_storage_size (gfc_expr *e)
+{
+  int i;
+  long int strlen, elements;
+  gfc_ref *ref;
+
+  if (e == NULL)
+    return 0;
+  
+  if (e->ts.type == BT_CHARACTER)
+    {
+      if (e->ts.cl && e->ts.cl->length
+          && e->ts.cl->length->expr_type == EXPR_CONSTANT)
+	strlen = mpz_get_si (e->ts.cl->length->value.integer);
+      else if (e->expr_type == EXPR_CONSTANT
+	       && (e->ts.cl == NULL || e->ts.cl->length == NULL))
+	strlen = e->value.character.length;
+      else
+	return 0;
+    }
+  else
+    strlen = 1; /* Length per element.  */
+
+  if (e->rank == 0 && !e->ref)
+    return strlen;
+
+  elements = 1;
+  if (!e->ref)
+    {
+      if (!e->shape)
+	return 0;
+      for (i = 0; i < e->rank; i++)
+	elements *= mpz_get_si (e->shape[i]);
+      return elements*strlen;
+    }
+
+  for (ref = e->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_ARRAY && ref->u.ar.type == AR_SECTION
+	  && ref->u.ar.start && ref->u.ar.end && ref->u.ar.stride
+	  && ref->u.ar.as->upper)
+	for (i = 0; i < ref->u.ar.dimen; i++)
+	  {
+	    long int start, end, stride;
+	    stride = 1;
+	    start = 1;
+	    if (ref->u.ar.stride[i])
+	      {
+		if (ref->u.ar.stride[i]->expr_type == EXPR_CONSTANT)
+		  stride = mpz_get_si (ref->u.ar.stride[i]->value.integer);
+		else
+		  return 0;
+	      }
+
+	    if (ref->u.ar.start[i])
+	      {
+		if (ref->u.ar.start[i]->expr_type == EXPR_CONSTANT)
+		  start = mpz_get_si (ref->u.ar.start[i]->value.integer);
+		else
+		  return 0;
+	      }
+
+	    if (ref->u.ar.end[i])
+	      {
+		if (ref->u.ar.end[i]->expr_type == EXPR_CONSTANT)
+		  end = mpz_get_si (ref->u.ar.end[i]->value.integer);
+		else
+		  return 0;
+	      }
+	    else if (ref->u.ar.as->upper[i]
+		     && ref->u.ar.as->upper[i]->expr_type == EXPR_CONSTANT)
+	      end = mpz_get_si (ref->u.ar.as->upper[i]->value.integer);
+	    else
+	      return 0;
+
+	    elements *= (end - start)/stride + 1L;
+	  }
+      else if (ref->type == REF_ARRAY && ref->u.ar.type == AR_FULL
+	       && ref->u.ar.as->lower && ref->u.ar.as->upper)
+	for (i = 0; i < ref->u.ar.as->rank; i++)
+	  {
+	    if (ref->u.ar.as->lower[i] && ref->u.ar.as->upper[i]
+		&& ref->u.ar.as->lower[i]->expr_type == EXPR_CONSTANT
+		&& ref->u.ar.as->upper[i]->expr_type == EXPR_CONSTANT)
+	      elements *= mpz_get_ui (ref->u.ar.as->upper[i]->value.integer)
+			  - mpz_get_ui (ref->u.ar.as->lower[i]->value.integer)
+			  + 1L;
+	    else
+	      return 0;
+	  }
+      else
+        /* TODO: Determine the number of remaining elements in the element
+           sequence for array element designators.
+           See also get_array_index in data.c.  */
+	return 0;
+    }
+
+  return elements*strlen;
+}
+
+
 /* Given an expression, check whether it is an array section
    which has a vector subscript. If it has, one is returned,
    otherwise zero.  */
@@ -1321,6 +1468,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
   gfc_formal_arglist *f;
   int i, n, na;
   bool rank_check;
+  unsigned long actual_size, formal_size;
 
   actual = *ap;
 
@@ -1404,8 +1552,23 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		   && (f->sym->as->type == AS_ASSUMED_SHAPE
 		       || f->sym->as->type == AS_DEFERRED);
 
-      if (!compare_parameter (f->sym, a->expr,
-			      ranks_must_agree || rank_check, is_elemental))
+      if (f->sym->ts.type == BT_CHARACTER && a->expr->ts.type == BT_CHARACTER
+	  && a->expr->rank == 0
+	  && f->sym->as && f->sym->as->type != AS_ASSUMED_SHAPE)
+	{
+	  if (where && (gfc_option.allow_std & GFC_STD_F2003) == 0)
+	    {
+	      gfc_error ("Fortran 2003: Scalar CHARACTER actual argument "
+			 "with array dummy argument '%s' at %L",
+			 f->sym->name, &a->expr->where);
+	      return 0;
+	    }
+	  else if ((gfc_option.allow_std & GFC_STD_F2003) == 0)
+	    return 0;
+
+	}
+      else if (!compare_parameter (f->sym, a->expr,
+				   ranks_must_agree || rank_check, is_elemental))
 	{
 	  if (where)
 	    gfc_error ("Type/rank mismatch in argument '%s' at %L",
@@ -1413,33 +1576,41 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  return 0;
 	}
 
-       if (a->expr->ts.type == BT_CHARACTER
+      if (a->expr->ts.type == BT_CHARACTER
 	   && a->expr->ts.cl && a->expr->ts.cl->length
 	   && a->expr->ts.cl->length->expr_type == EXPR_CONSTANT
 	   && f->sym->ts.cl && f->sym->ts.cl && f->sym->ts.cl->length
 	   && f->sym->ts.cl->length->expr_type == EXPR_CONSTANT)
 	 {
-	   if (mpz_cmp (a->expr->ts.cl->length->value.integer,
-			f->sym->ts.cl->length->value.integer) < 0)
-	     {
-		if (where)
-		  gfc_error ("Character length of actual argument shorter "
-			     "than of dummy argument '%s' at %L",
-			     f->sym->name, &a->expr->where);
-		return 0;
-	     }
-
 	   if ((f->sym->attr.pointer || f->sym->attr.allocatable)
 	       && (mpz_cmp (a->expr->ts.cl->length->value.integer,
 			   f->sym->ts.cl->length->value.integer) != 0))
 	     {
 		if (where)
-		  gfc_error ("Character length mismatch between actual argument "
-			     "and pointer or allocatable dummy argument "
-			     "'%s' at %L", f->sym->name, &a->expr->where);
+		  gfc_warning ("Character length mismatch between actual "
+			       "argument and pointer or allocatable dummy "
+			       "argument '%s' at %L",
+			       f->sym->name, &a->expr->where);
 		return 0;
 	     }
 	 }
+
+      actual_size = get_expr_storage_size(a->expr);
+      formal_size = get_sym_storage_size(f->sym);
+      if (actual_size != 0 && actual_size < formal_size)
+	{
+	  if (a->expr->ts.type == BT_CHARACTER && !f->sym->as && where)
+	    gfc_warning ("Character length of actual argument shorter "
+			"than of dummy argument '%s' (%d/%d) at %L",
+			f->sym->name, (int) actual_size,
+			(int) formal_size, &a->expr->where);
+          else if (where)
+	    gfc_warning ("Actual argument contains too few "
+			"elements for dummy argument '%s' (%d/%d) at %L",
+			f->sym->name, (int) actual_size,
+			(int) formal_size, &a->expr->where);
+	  return  0;
+	}
 
       /* Satisfy 12.4.1.2 by ensuring that a procedure actual argument is
 	 provided for a procedure formal argument.  */

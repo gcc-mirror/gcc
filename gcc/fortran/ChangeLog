@@ -1,3 +1,11 @@
+2007-07-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/30940
+	* interface.c (get_sym_storage_size): New function.
+	(get_sym_storage_size): New function.
+	(compare_actual_formal): Enhance sequence association
+	support and improve checking.
+
 2007-07-03  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* trans-decl.c (gfc_build_builtin_function_decls): Mark
