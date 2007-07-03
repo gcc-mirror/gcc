@@ -1,3 +1,13 @@
+2007-07-03  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Rewrite 'configure --help' strings to look nicer.
+	* configure: Regenerate.
+
+2007-07-03  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Add some missing m4 quotation.
+	* configure: Regenerate.
+
 2007-07-02  Simon Baldwin  <simonb@google.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
