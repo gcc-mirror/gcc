@@ -318,19 +318,21 @@ TEXI_JAVA_FILES = java/gcj.texi $(gcc_docdir)/include/fdl.texi		\
 doc/gcj.info: $(TEXI_JAVA_FILES)
 	if test "x$(BUILD_INFO)" = xinfo; then \
 	  rm -f doc/gcj.info*; \
-	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir)/include -o $@ $<; \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir) \
+		-I $(gcc_docdir)/include -o $@ $<; \
 	else true; fi
 
 doc/gcj.dvi: $(TEXI_JAVA_FILES)
-	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
+	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
 
 doc/gcj.pdf: $(TEXI_JAVA_FILES)
-	$(TEXI2PDF) -I $(abs_docdir)/include -o $@ $<
+	$(TEXI2PDF) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
 
 $(build_htmldir)/java/index.html: $(TEXI_JAVA_FILES)
 	$(mkinstalldirs) $(@D)
 	rm -f $(@D)/*
-	$(TEXI2HTML) -I $(gcc_docdir)/include -I $(srcdir)/java -o $(@D) $<
+	$(TEXI2HTML) -I $(gcc_docdir) -I $(gcc_docdir)/include \
+		-I $(srcdir)/java -o $(@D) $<
 
 .INTERMEDIATE: gcj.pod jcf-dump.pod gij.pod \
   jv-convert.pod grmic.pod gcj-dbtool.pod gc-analyze.pod
