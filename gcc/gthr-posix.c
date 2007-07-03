@@ -1,6 +1,6 @@
 /* POSIX threads dummy routines for systems without weak definitions.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "tconfig.h"
 #include "tm.h"
+# define __gthrw_pragma(pragma) _Pragma (#pragma)
 /* Define so we provide weak definitions of functions used by libobjc only.  */
 #define _LIBOBJC_WEAK
 #include "gthr.h"
@@ -75,7 +76,7 @@ pthread_create (pthread_t *thread ATTRIBUTE_UNUSED,
 }
 
 int
-pthread_cancel(pthread_t thread ATTRIBUTE_UNUSED)
+pthread_cancel (pthread_t thread ATTRIBUTE_UNUSED)
 {
   return 0;
 }

@@ -1,3 +1,11 @@
+2007-07-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR target/28307
+	* gthr-posix.h [SUPPORTS_WEAK && GTHREAD_USE_WEAK]
+	(__gthrw_pragma): Provide default definition.
+	(__gthrw2): Use it.
+	* gthr-posix.c (__gthrw_pragma): Define.
+
 2007-06-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	* dwarf2out.c (dwarf2out_finish): Accept namespaces as context of
