@@ -20,7 +20,7 @@
 ;; Boston, MA 02110-1301, USA.
 
 ;; The following register constraints have been used:
-;; - in ARM/Thumb-2 state: f, v, w, y, z
+;; - in ARM/Thumb-2 state: f, t, v, w, x, y, z
 ;; - in Thumb state: h, k, b
 ;; - in both states: l, c
 ;; In ARM state, 'l' is an alias for 'r'
@@ -30,7 +30,7 @@
 ;; in Thumb-1 state: I, J, K, L, M, N, O
 
 ;; The following multi-letter normal constraints have been used:
-;; in ARM/Thumb-2 state: Da, Db, Dc
+;; in ARM/Thumb-2 state: Da, Db, Dc, Dv
 
 ;; The following memory constraints have been used:
 ;; in ARM/Thumb-2 state: Q, Uv, Uy
@@ -40,11 +40,18 @@
 (define_register_constraint "f" "TARGET_ARM ? FPA_REGS : NO_REGS"
  "Legacy FPA registers @code{f0}-@code{f7}.")
 
+(define_register_constraint "t" "TARGET_32BIT ? VFP_LO_REGS : NO_REGS"
+ "The VFP registers @code{s0}-@code{s31}.")
+
 (define_register_constraint "v" "TARGET_ARM ? CIRRUS_REGS : NO_REGS"
  "The Cirrus Maverick co-processor registers.")
 
-(define_register_constraint "w" "TARGET_ARM ? VFP_REGS : NO_REGS"
- "The VFP registers @code{s0}-@code{s31}.")
+(define_register_constraint "w"
+  "TARGET_32BIT ? (TARGET_VFP3 ? VFP_REGS : VFP_LO_REGS) : NO_REGS"
+ "The VFP registers @code{d0}-@code{d15}, or @code{d0}-@code{d31} for VFPv3.")
+
+(define_register_constraint "x" "TARGET_32BIT ? VFP_D0_D7_REGS : NO_REGS"
+ "The VFP registers @code{d0}-@code{d7}.")
 
 (define_register_constraint "y" "TARGET_REALLY_IWMMXT ? IWMMXT_REGS : NO_REGS"
  "The Intel iWMMX co-processor registers.")
@@ -156,6 +163,13 @@
  (and (match_code "const_double,const_int,const_vector")
       (match_test "TARGET_32BIT && arm_const_double_inline_cost (op) == 4
 		   && !(optimize_size || arm_ld_sched)")))
+
+(define_constraint "Dv"
+ "@internal
+  In ARM/Thumb-2 state a const_double which can be used with a VFP fconsts
+  or fconstd instruction."
+ (and (match_code "const_double")
+      (match_test "TARGET_32BIT && vfp3_const_double_rtx (op)")))
 
 (define_memory_constraint "Uv"
  "@internal
