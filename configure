@@ -929,48 +929,48 @@ if test -n "$ac_init_help"; then
 Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --enable-libada        Builds libada directory
-  --enable-libssp        Builds libssp directory
-  --enable-stage1-languages=all   choose additional languages to build during
+  --enable-libada         build libada directory
+  --enable-libssp         build libssp directory
+  --enable-stage1-languages[=all]   choose additional languages to build during
                           stage1.  Mostly useful for compiler development.
-  --enable-objc-gc       enable the use of Boehm's garbage collector with
-                          the GNU Objective-C runtime.
-  --enable-bootstrap           Enable bootstrapping yes if native build
-  --enable-serial-{host,target,build}-configure
-                          Force sequential configuration of
+  --enable-objc-gc        enable use of Boehm's garbage collector with the
+                          GNU Objective-C runtime
+  --enable-bootstrap      enable bootstrapping [yes if native build]
+  --enable-serial-[{host,target,build}-]configure
+                          force sequential configuration of
                           sub-packages for the host, target or build
-			  machine, or all sub-packages
+                          machine, or all sub-packages
   --enable-maintainer-mode enable make rules and dependencies not useful
                           (and sometimes confusing) to the casual installer
-  --enable-stage1-checking=all   choose additional checking for stage1
-                          of the compiler.
+  --enable-stage1-checking[=all]   choose additional checking for stage1
+                          of the compiler
   --enable-werror         enable -Werror in bootstrap stage2 and later
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-build-libsubdir=DIR  Directory where to find libraries for build system
-  --with-mpfr-dir=PATH    This option has been REMOVED
-  --with-mpfr=PATH        Specify prefix directory for installed MPFR package
+  --with-mpfr-dir=PATH    this option has been REMOVED
+  --with-mpfr=PATH        specify prefix directory for installed MPFR package.
                           Equivalent to --with-mpfr-include=PATH/include
                           plus --with-mpfr-lib=PATH/lib
   --with-mpfr-include=PATH
-                          Specify directory for installed MPFR include files
-  --with-mpfr-lib=PATH    Specify the directory for the installed MPFR library
-  --with-gmp-dir=PATH     This option has been REMOVED
-  --with-gmp=PATH         Specify prefix directory for the installed GMP package
+                          specify directory for installed MPFR include files
+  --with-mpfr-lib=PATH    specify directory for the installed MPFR library
+  --with-gmp-dir=PATH     this option has been REMOVED
+  --with-gmp=PATH         specify prefix directory for the installed GMP package.
                           Equivalent to --with-gmp-include=PATH/include
                           plus --with-gmp-lib=PATH/lib
-  --with-gmp-include=PATH Specify directory for installed GMP include files
-  --with-gmp-lib=PATH     Specify the directory for the installed GMP library
-  --with-build-sysroot=sysroot
+  --with-gmp-include=PATH specify directory for installed GMP include files
+  --with-gmp-lib=PATH     specify directory for the installed GMP library
+  --with-build-sysroot=SYSROOT
                           use sysroot as the system root during the build
-  --with-build-time-tools=path
+  --with-build-time-tools=PATH
                           use given path to find target tools during the build
-  --with-datarootdir	Use datarootdir as the data root directory.
-  --with-docdir	Install documentation in this directory.
-  --with-pdfdir	Install pdf in this directory.
-  --with-htmldir	Install html in this directory.
+  --with-datarootdir      use datarootdir as the data root directory.
+  --with-docdir           install documentation in this directory.
+  --with-pdfdir           install pdf in this directory.
+  --with-htmldir          install html in this directory.
 
 Some influential environment variables:
   CC          C compiler command
@@ -5169,10 +5169,10 @@ case "${target}" in
   alpha*-*-*vms*)
     md_exec_prefix=/gnu/lib/gcc-lib
     ;;
-  i3456786-pc-msdosdjgpp*)
+  i[34567]86-pc-msdosdjgpp*)
     md_exec_prefix=/dev/env/DJDIR/bin
     ;;
-  i3456786-*-sco3.2v5*)
+  i[34567]86-*-sco3.2v5*)
     if test $with_gnu_as = yes; then
       md_exec_prefix=/usr/gnu/bin
     else
@@ -5203,7 +5203,7 @@ case "${target}" in
   *-*-nto-qnx* | \
   *-*-rtems* | \
   *-*-solaris2* | \
-  *-*-sysv45* | \
+  *-*-sysv[45]* | \
   *-*-vxworks* | \
   *-wrs-windiss)
     md_exec_prefix=/usr/ccs/bin
