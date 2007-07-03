@@ -3254,14 +3254,21 @@ static void
 gen_cptr_param (gfc_formal_arglist **head,
                 gfc_formal_arglist **tail,
                 const char *module_name,
-                gfc_namespace *ns, const char *c_ptr_name)
+                gfc_namespace *ns, const char *c_ptr_name,
+                int iso_c_sym_id)
 {
   gfc_symbol *param_sym = NULL;
   gfc_symbol *c_ptr_sym = NULL;
   gfc_symtree *param_symtree = NULL;
   gfc_formal_arglist *formal_arg = NULL;
   const char *c_ptr_in;
-  const char *c_ptr_type = "c_ptr";
+  const char *c_ptr_type = NULL;
+
+  if (iso_c_sym_id == ISOCBINDING_F_PROCPOINTER)
+    c_ptr_type = "_gfortran_iso_c_binding_c_funptr";
+
+  else
+    c_ptr_type = "_gfortran_iso_c_binding_c_ptr";
 
   if(c_ptr_name == NULL)
     c_ptr_in = "gfc_cptr__";
@@ -3285,15 +3292,22 @@ gen_cptr_param (gfc_formal_arglist **head,
   param_sym->attr.value = 1;
   param_sym->attr.use_assoc = 1;
 
-  /* Get the symbol for c_ptr, no matter what it's name is (user renamed).  */
+  /* Get the symbol for c_ptr or c_funptr, no matter what it's name is 
+     (user renamed).  */
+  if (iso_c_sym_id == ISOCBINDING_F_PROCPOINTER)
+    c_ptr_sym = get_iso_c_binding_dt (ISOCBINDING_FUNPTR);
+  else
   c_ptr_sym = get_iso_c_binding_dt (ISOCBINDING_PTR);
   if (c_ptr_sym == NULL)
     {
       /* This can happen if the user did not define c_ptr but they are
          trying to use one of the iso_c_binding functions that need it.  */
-      gfc_error_now ("Type 'C_PTR' required for ISO_C_BINDING function at %C");
+      if (iso_c_sym_id == ISOCBINDING_F_PROCPOINTER)
+	generate_isocbinding_symbol (module_name, ISOCBINDING_FUNPTR,
+				     (char *)c_ptr_type);
+      else
       generate_isocbinding_symbol (module_name, ISOCBINDING_PTR,
-                                   (char *) "_gfortran_iso_c_binding_c_ptr");
+				     (char *)c_ptr_type);
 
       gfc_get_ha_symbol (c_ptr_type, &(c_ptr_sym));
     }
@@ -3455,7 +3469,7 @@ build_formal_args (gfc_symbol *new_proc_sym,
       (old_sym->intmod_sym_id == ISOCBINDING_F_PROCPOINTER))
     {
       gen_cptr_param (&head, &tail, (const char *) new_proc_sym->module,
-		      gfc_current_ns, "cptr");
+		      gfc_current_ns, "cptr", old_sym->intmod_sym_id);
       gen_fptr_param (&head, &tail, (const char *) new_proc_sym->module,
 		      gfc_current_ns, "fptr");
 
@@ -3472,11 +3486,11 @@ build_formal_args (gfc_symbol *new_proc_sym,
       /* c_associated has one required arg and one optional; both
 	 are c_ptrs.  */
       gen_cptr_param (&head, &tail, (const char *) new_proc_sym->module,
-		      gfc_current_ns, "c_ptr_1");
+		      gfc_current_ns, "c_ptr_1", ISOCBINDING_ASSOCIATED);
       if (add_optional_arg)
 	{
 	  gen_cptr_param (&head, &tail, (const char *) new_proc_sym->module,
-			  gfc_current_ns, "c_ptr_2");
+			  gfc_current_ns, "c_ptr_2", ISOCBINDING_ASSOCIATED);
 	  /* The last param is optional so mark it as such.  */
 	  tail->sym->attr.optional = 1;
 	}

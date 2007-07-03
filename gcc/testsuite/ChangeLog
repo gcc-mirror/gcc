@@ -1,3 +1,8 @@
+2007-07-03  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/32579
+        * gfortran.dg/iso_c_binding_only.f03: Updated test case.
+
 2007-07-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/25062
