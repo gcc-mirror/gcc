@@ -1,5 +1,12 @@
 2007-07-03  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/25062
+	* common_7.f90: New.
+	* common_8.f90: New.
+	* common_9.f90: New.
+
+2007-07-03  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/30940
 	* gfortran.dg/argument_checking_1.f90: New.
 	* gfortran.dg/argument_checking_2.f90: New.
