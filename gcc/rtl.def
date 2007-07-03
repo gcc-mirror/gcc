@@ -212,8 +212,15 @@ DEF_RTL_EXPR(ASM_OPERANDS, "asm_operands", "ssiEEsi", RTX_EXTRA)
      operations is to be performed.
    (Note that the vector must be the first operand because of the way that
    genrecog.c record positions within an insn.)
-   This can occur all by itself in a PATTERN, as a component of a PARALLEL,
-   or inside an expression.  */
+
+   UNSPEC can occur all by itself in a PATTERN, as a component of a PARALLEL,
+   or inside an expression.  
+   UNSPEC by itself or as a component of a PARALLEL
+   is currently considered not deletable.
+
+   FIXME: Replace all uses of UNSPEC that appears by itself or as a component
+   of a PARALLEL with USE.
+   */
 DEF_RTL_EXPR(UNSPEC, "unspec", "Ei", RTX_EXTRA)
 
 /* Similar, but a volatile operation and one which may trap.  */
@@ -273,12 +280,20 @@ DEF_RTL_EXPR(SET, "set", "ee", RTX_EXTRA)
 
 /* Indicate something is used in a way that we don't want to explain.
    For example, subroutine calls will use the register
-   in which the static chain is passed.  */
+   in which the static chain is passed.  
+
+   USE can not appear as an operand of other rtx except for PARALLEL.
+   USE is not deletable, as it indicates that the operand
+   is used in some unknown way.  */
 DEF_RTL_EXPR(USE, "use", "e", RTX_EXTRA)
 
 /* Indicate something is clobbered in a way that we don't want to explain.
    For example, subroutine calls will clobber some physical registers
-   (the ones that are by convention not saved).  */
+   (the ones that are by convention not saved).  
+
+   CLOBBER can not appear as an operand of other rtx except for PARALLEL.
+   CLOBBER of a hard register appearing by itself (not within PARALLEL)
+   is considered undeletable before reload.  */
 DEF_RTL_EXPR(CLOBBER, "clobber", "e", RTX_EXTRA)
 
 /* Call a subroutine.
