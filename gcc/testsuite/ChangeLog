@@ -1,3 +1,7 @@
+2007-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/pr32176.c: Add -w to default dg-options.
+
 2007-07-02  Daniel Berlin  <dberlin@dberlin.org>
 
 	* gcc.c-torture/compile/ssa-pre-1.c: New test.
