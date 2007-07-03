@@ -1,3 +1,10 @@
+2007-07-03  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/32579
+	* symbol.c (gen_cptr_param): Generate C_PTR and C_FUNPTR if necessary.
+	(build_formal_args): Pass intrinsic module symbol id to
+	gen_cptr_param.
+
 2007-07-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/25062
