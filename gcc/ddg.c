@@ -630,6 +630,30 @@ vcg_print_ddg (FILE *file, ddg_ptr g)
   fprintf (file, "}\n");
 }
 
+/* Dump the sccs in SCCS.  */
+void
+print_sccs (FILE *file, ddg_all_sccs_ptr sccs, ddg_ptr g)
+{
+  unsigned int u = 0;
+  sbitmap_iterator sbi;
+  int i;
+
+  if (!file)
+    return;
+
+  fprintf (file, "\n;; Number of SCC nodes - %d\n", sccs->num_sccs);
+  for (i = 0; i < sccs->num_sccs; i++)
+    {
+      fprintf (file, "SCC number: %d\n", i);
+      EXECUTE_IF_SET_IN_SBITMAP (sccs->sccs[i]->nodes, 0, u, sbi)
+      {
+        fprintf (file, "insn num %d\n", u);
+        print_rtl_single (file, g->nodes[u].insn);
+      }
+    }
+  fprintf (file, "\n");
+}
+
 /* Create an edge and initialize it with given values.  */
 static ddg_edge_ptr
 create_ddg_edge (ddg_node_ptr src, ddg_node_ptr dest,
@@ -846,6 +870,27 @@ order_sccs (ddg_all_sccs_ptr g)
 	 (int (*) (const void *, const void *)) compare_sccs);
 }
 
+/* Check that every node in SCCS belongs to exactly one strongly connected
+   component and that no element of SCCS is empty.  */
+static void
+check_sccs (ddg_all_sccs_ptr sccs, int num_nodes)
+{
+  int i = 0;
+  sbitmap tmp = sbitmap_alloc (num_nodes);
+
+  sbitmap_zero (tmp);
+  for (i = 0; i < sccs->num_sccs; i++)
+    {
+      gcc_assert (!sbitmap_empty_p (sccs->sccs[i]->nodes));
+      /* Verify that every node in sccs is in exactly one strongly
+         connected component.  */
+      gcc_assert (!sbitmap_any_common_bits (tmp, sccs->sccs[i]->nodes));
+      sbitmap_a_or_b (tmp, tmp, sccs->sccs[i]->nodes);
+    }
+  sbitmap_free (tmp);
+}
+
+
 /* Perform the Strongly Connected Components decomposing algorithm on the
    DDG and return DDG_ALL_SCCS structure that contains them.  */
 ddg_all_sccs_ptr
@@ -890,6 +935,9 @@ create_ddg_all_sccs (ddg_ptr g)
   sbitmap_free (from);
   sbitmap_free (to);
   sbitmap_free (scc_nodes);
+#ifdef ENABLE_CHECKING
+  check_sccs (sccs, num_nodes);
+#endif
   return sccs;
 }
 

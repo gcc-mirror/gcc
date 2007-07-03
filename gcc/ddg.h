@@ -171,6 +171,7 @@ void free_ddg (ddg_ptr);
 void print_ddg (FILE *, ddg_ptr);
 void vcg_print_ddg (FILE *, ddg_ptr);
 void print_ddg_edge (FILE *, ddg_edge_ptr);
+void print_sccs (FILE *, ddg_all_sccs_ptr, ddg_ptr);
 
 ddg_node_ptr get_node_of_insn (ddg_ptr, rtx);
 
