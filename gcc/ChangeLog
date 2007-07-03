@@ -1,5 +1,7 @@
 2007-07-04  Ben Elliston  <bje@au.ibm.com>
 
+	* c-objc-common.c (c_types_compatible_p): Fix indentation.
+
 	* doc/tm.texi (Run-time Target): Capitalise "CPU".
 	(Exception Handling): Likewise.
 
