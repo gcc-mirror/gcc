@@ -1,3 +1,10 @@
+2007-07-03  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/32506
+	* config/sh/sh.md (udivsi3_i1_media): Use target_reg_operand
+	predicate instead of target_operand.
+	(divsi3_i1_media, divsi3_media_2): Likewise.
+
 2007-07-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.h (alias_sets_might_conflict_p): Rename into
