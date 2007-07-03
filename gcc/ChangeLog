@@ -1,3 +1,23 @@
+2007-07-03  David Ung  <davidu@mips.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/invoke.texi: Document -march=74kf3_2.
+	* config/mips/mips.h (PROCESSOR_74KF3_2): New processor_type.
+	(TUNE_74K): Check for it.
+	* config/mips/mips.c (mips_cpu_info): Add 74kf3_2.
+	(mips_rtx_cost_data): Add an entry for PROCESSOR_74KF3_2.
+	* config/mips/mips.md (cpu): Add 74kf3_2.
+	* config/mips/74k.md (r74k_int_logical, r74k_int_arith, r74k_int_nop)
+	(r74k_int_cmove, r74k_int_mult, r74k_int_mul3, r74k_int_mfhilo)
+	(r74k_int_mthilo, r74k_int_div, r74k_int_call, r74k_int_jump)
+	(r74k_int_load, r74k_int_store, r74k_unknown, r74k_multi): Add
+	74kf3_2 to the CPU list.
+	(r74kf3_2_fadd, r74kf3_2_fmove, r74kf3_2_fload, r74kf3_2_fstore)
+	(r74kf3_2_fmul_sf, r74kf3_2_fmul_df, r74kf3_2_fdiv_sf)
+	(r74kf3_2_fdiv_df, r74kf3_2_frsqrt_sf, r74kf3_2_frsqrt_df)
+	(r74kf3_2_fcmp, r74kf3_2_fcvt, r74kf3_2_fxfer_to_c1)
+	(r74kf3_2_fxfer_from_c1): New insn reservations.
+
 2007-07-03  Richard Sandiford  <richard@codesourcery.com>
 	    David Ung  <davidu@mips.com>
 
