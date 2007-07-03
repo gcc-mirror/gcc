@@ -1,3 +1,10 @@
+2007-07-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac: Test for .dtprelword support on MIPS.
+	* configure, config.in: Regenerate.
+	* config/mips/mips.c (mips_output_dwarf_dtprel): New.
+	(TARGET_ASM_OUTPUT_DWARF_DTPREL): Define.
+
 2007-07-03  Julian Brown  <julian@codesourcery.com>
 
 	* config.gcc (with_fpu): Allow --with-fpu=vfp3.

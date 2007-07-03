@@ -428,6 +428,7 @@ static void mips_extra_live_on_entry (bitmap);
 static int mips_comp_type_attributes (tree, tree);
 static int mips_mode_rep_extended (enum machine_mode, enum machine_mode);
 static bool mips_offset_within_alignment_p (rtx, HOST_WIDE_INT);
+static void mips_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -1325,6 +1326,11 @@ static const unsigned char mips16e_save_restore_regs[] = {
 
 #undef  TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES mips_comp_type_attributes
+
+#ifdef HAVE_AS_DTPRELWORD
+#undef TARGET_ASM_OUTPUT_DWARF_DTPREL
+#define TARGET_ASM_OUTPUT_DWARF_DTPREL mips_output_dwarf_dtprel
+#endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -11817,6 +11823,28 @@ mips_mode_rep_extended (enum machine_mode mode, enum machine_mode mode_rep)
     return SIGN_EXTEND;
 
   return UNKNOWN;
+}
+
+/* MIPS implementation of TARGET_ASM_OUTPUT_DWARF_DTPREL.  */
+
+static void
+mips_output_dwarf_dtprel (FILE *file, int size, rtx x)
+{
+  switch (size)
+    {
+    case 4:
+      fputs ("\t.dtprelword\t", file);
+      break;
+
+    case 8:
+      fputs ("\t.dtpreldword\t", file);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+  output_addr_const (file, x);
+  fputs ("+0x8000", file);
 }
 
 #include "gt-mips.h"
