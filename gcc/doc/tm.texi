@@ -697,7 +697,7 @@ Here are run-time target specifications.
 
 @defmac TARGET_CPU_CPP_BUILTINS ()
 This function-like macro expands to a block of code that defines
-built-in preprocessor macros and assertions for the target cpu, using
+built-in preprocessor macros and assertions for the target CPU, using
 the functions @code{builtin_define}, @code{builtin_define_std} and
 @code{builtin_assert}.  When the front end
 calls this macro it provides a trailing semicolon, and since it has
@@ -3286,7 +3286,7 @@ so included typically defines @code{MD_FALLBACK_FRAME_STATE_FOR}.
 @end defmac
 
 @defmac MD_FALLBACK_FRAME_STATE_FOR (@var{context}, @var{fs})
-This macro allows the target to add cpu and operating system specific
+This macro allows the target to add CPU and operating system specific
 code to the call-frame unwinder for use when there is no unwind data
 available.  The most common reason to implement this macro is to unwind
 through signal frames.
