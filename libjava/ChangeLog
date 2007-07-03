@@ -1,3 +1,7 @@
+2007-07-03  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* java/lang/Class.h: Remove redundant 'class java::*::* declarations.
+
 2007-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR libgcj/30513

@@ -272,14 +272,6 @@ jstring _Jv_GetInterpClassSourceFile (jclass);
 
 jbyte _Jv_GetClassState (jclass);
 
-// Friend classes and functions to implement the ClassLoader
-class java::lang::ClassLoader;
-class java::lang::VMClassLoader;
-
-class java::io::ObjectOutputStream;
-class java::io::ObjectInputStream;
-class java::io::ObjectStreamClass;
-
 void _Jv_RegisterClassHookDefault (jclass klass);
 void _Jv_RegisterInitiatingLoader (jclass,java::lang::ClassLoader*);
 void _Jv_UnregisterInitiatingLoader (jclass,java::lang::ClassLoader*);
@@ -319,7 +311,6 @@ void _Jv_InitField (jobject, jclass, int);
 
 class _Jv_StackTrace;
 class _Jv_BytecodeVerifier;
-class java::io::VMObjectStreamClass;
 
 void _Jv_sharedlib_register_hook (jclass klass);
 
