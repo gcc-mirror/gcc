@@ -1,3 +1,22 @@
+2007-07-01  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/m32r/constraints.md: New file.
+	* config/m32r/m32r.c: Include tm-constrs.h.
+	(small_data_operand): Use satisfies_constraint_* instead of macro.
+	(addr24_operand, gen_compare): Likewise.
+	* config/m32r/m32r.h (REG_CLASS_FROM_LETTER): Remove.
+	(INT8_P, UPPER16_P, UINT32_P, UINT5_P, INVERTED_SIGNED_8BIT,
+	CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P,
+	EXTRA_CONSTRAINT): Likewise.
+	* config/m32r/m32r.md: Include constraints.md.
+	(*movsi_insn): Use satisfies_constraint_* instead of macro.
+	(andsi3, iorsi3, xorsi3, seq_insn+1, sne): Likewise.
+	* config/m32r/predicates.md (conditional_move_operand): Likewise.
+	(two_insn_const_operand, int8_operand, uint16_operand,
+	reg_or_int16_operand, reg_or_uint16_operand,
+	reg_or_cmp_int16_operand, cmp_int16_operand,
+	seth_add3_operand): Likewise.
+
 2007-07-03  Eric Christopher  <echristo@gmail.com>
 
 	* libgcc2.h: Conditionally declare __bswapsi2 and
