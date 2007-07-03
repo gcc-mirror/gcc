@@ -798,6 +798,13 @@ struct gcc_target
 				      enum machine_mode,
 				      struct secondary_reload_info *);
 
+  /* Functions specific to the C family of frontends.  */
+  struct c {
+    /* Return machine mode for non-standard suffix
+       or VOIDmode if non-standard suffixes are unsupported.  */
+    enum machine_mode (*mode_for_suffix) (char);
+  } c;
+
   /* Functions specific to the C++ frontend.  */
   struct cxx {
     /* Return the integer type used for guard variables.  */

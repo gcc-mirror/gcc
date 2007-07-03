@@ -578,6 +578,15 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define TARGET_SECONDARY_RELOAD default_secondary_reload
 #endif
 
+/* C specific.  */
+#ifndef TARGET_C_MODE_FOR_SUFFIX
+#define TARGET_C_MODE_FOR_SUFFIX default_mode_for_suffix
+#endif
+
+#define TARGET_C				\
+  {						\
+    TARGET_C_MODE_FOR_SUFFIX			\
+  }
 
 /* C++ specific.  */
 #ifndef TARGET_CXX_GUARD_TYPE
@@ -729,8 +738,9 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   TARGET_INVALID_UNARY_OP,			\
   TARGET_INVALID_BINARY_OP,			\
   TARGET_SECONDARY_RELOAD,			\
+  TARGET_C,					\
   TARGET_CXX,					\
-  TARGET_EXTRA_LIVE_ON_ENTRY,                    \
+  TARGET_EXTRA_LIVE_ON_ENTRY,			\
   TARGET_UNWIND_TABLES_DEFAULT,			\
   TARGET_HAVE_NAMED_SECTIONS,			\
   TARGET_HAVE_SWITCHABLE_BSS_SECTIONS,		\

@@ -1,3 +1,11 @@
+2007-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* include/cpplib.h (CPP_N_WIDTH_MD, CPP_N_MD_W, CPP_N_MD_Q):
+	Add new constants.
+	* expr.c (interpret_float_suffix): Process 'w', 'W', 'q' and 'Q'
+	suffixes.  Return CPP_N_MD_W for 'w' or 'W' suffixes and CPP_N_MD_Q
+	for 'q' or 'Q' suffixes.
+
 2007-06-17  Danny Smith  <dannysmith@users.sourceforge.net
 
 	* files.c (open_file): Correct typo.

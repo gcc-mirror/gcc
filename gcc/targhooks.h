@@ -40,6 +40,8 @@ extern tree default_stack_protect_guard (void);
 extern tree default_external_stack_protect_fail (void);
 extern tree default_hidden_stack_protect_fail (void);
 
+extern enum machine_mode default_mode_for_suffix (char);
+
 extern tree default_cxx_guard_type (void);
 extern tree default_cxx_get_cookie_size (tree);
 

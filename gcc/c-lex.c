@@ -41,6 +41,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tm_p.h"
 #include "splay-tree.h"
 #include "debug.h"
+#include "target.h"
 
 /* We may keep statistics about how long which files took to compile.  */
 static int header_time, body_time;
@@ -649,7 +650,31 @@ interpret_float (const cpp_token *token, unsigned int flags)
     else
       type = dfloat64_type_node;
   else
-    if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
+    if (flags & CPP_N_WIDTH_MD)
+      {
+	char suffix;
+	enum machine_mode mode;
+
+	if ((flags & CPP_N_WIDTH_MD) == CPP_N_MD_W)
+	  suffix = 'w';
+	else
+	  suffix = 'q';
+
+	mode = targetm.c.mode_for_suffix (suffix);
+	if (mode == VOIDmode)
+	  {
+	    error ("unsupported non-standard suffix on floating constant");
+	    errorcount++;
+
+	    return error_mark_node;
+	  }
+	else if (pedantic)
+	  pedwarn ("non-standard suffix on floating constant");
+
+	type = c_common_type_for_mode (mode, 0);
+	gcc_assert (type);
+      }
+    else if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
       type = long_double_type_node;
     else if ((flags & CPP_N_WIDTH) == CPP_N_SMALL
 	     || flag_single_precision_constant)
@@ -666,7 +691,7 @@ interpret_float (const cpp_token *token, unsigned int flags)
   else 
     {
       if ((flags & CPP_N_WIDTH) != CPP_N_MEDIUM)
-	/* Must be an F or L suffix.  */
+	/* Must be an F or L or machine defined suffix.  */
 	copylen--;
       if (flags & CPP_N_IMAGINARY)
 	/* I or J suffix.  */
