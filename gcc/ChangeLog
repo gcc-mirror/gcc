@@ -1,3 +1,12 @@
+2007-07-03  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-12-11  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR rtl-optimization/30113
+	* loop-iv.c (implies_p): Require the mode of the operands to be
+	scalar.
+
 2007-07-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR target/28307
