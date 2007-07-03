@@ -1,3 +1,16 @@
+2007-07-03  Tom Tromey  <tromey@redhat.com>
+
+	* c-parser.c (objc_pq_context): Removed.
+	(objc_need_raw_identifier): Likewise.
+	(c_parser) <objc_pq_context>: New field.
+	<objc_need_raw_identifier>: Likewise.
+	(OBJC_NEED_RAW_IDENTIFIER): Removed.
+	(c_lex_one_token): Update.
+	(c_parser_objc_protocol_definition): Update.
+	(c_parser_objc_method_definition): Update.
+	(c_parser_objc_methodproto): Update.
+	(c_parser_declspecs): Update.
+
 2007-07-03  David Ung  <davidu@mips.com>
 
 	* config/mips/mips.c (mips_issue_rate): Return 4 for 74K processors.
