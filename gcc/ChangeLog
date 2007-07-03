@@ -1,3 +1,36 @@
+2007-07-03  Richard Sandiford  <richard@codesourcery.com>
+	    David Ung  <davidu@mips.com>
+
+	* doc/invoke.texi: Replace -march=24kf with -march=24kf2_1 and
+	-march=24kx with -march=24kf1_1.  Likewise 24ke[fx], 34k[fx]
+	and 74k[fx].  Document aliases for the new options.
+	* config/mips/mips.h (PROCESSOR_24KF): Rename to...
+	(PROCESSOR_24KF2_1): ...this.
+	(PROCESSOR_24KX): Rename to...
+	(PROCESSOR_24KF1_1): ...this.
+	(PROCESSOR_74KF): Rename to...
+	(PROCESSOR_74KF2_1): ...this.
+	(PROCESSOR_74KX): Rename to...
+	(PROCESSOR_74KF1_1): ...this.
+	(TUNE_74K): Update PROCESSOR_* names.
+	* config/mips/mips.c (mips_cpu_info): Add 24kf2_1 as a synonym
+	for 24kf.  Add 24kf1_1 and 24kfx as synonyms for 24kx.  Likewise
+	the 24ke*, 34k* and 74k* processors.  Update PROCESSOR_* names.
+	(mips_rtx_cost_data): Update processor names in comments.
+	(mips_issue_rate): Update PROCESSOR_* names.
+	* config/mips/mips.md (cpu): Rename 24kf to 24kf2_1, 24kx to
+	24kf1_1, 74kf to 74kf2_1 and 74kx to 74kf1_1.
+	* config/mips/24k.md: Rename FPU-related r24k_* insn reservations
+	to r24kf2_1_*.  Rename r24kx_* insn reservations to r24kf1_1_*.
+	Update cpu attribute names.
+	(r24k_fpu_iss): Rename this reservation to...
+	(r24kf2_1_fpu_iss): ...this and update all uses.
+	(r24kx_fpu_iss): Rename this reservation to...
+	(r24kf1_1_fpu_iss): ...this and update all uses.
+	* config/mips/74k.md: Rename FPU-related r74kf_* insn reservations
+	to r74kf2_1_*.  Rename r74kx_* insn reservations to r74kf1_1_*.
+	Update cpu attribute names.
+
 2007-07-01  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/m32r/constraints.md: New file.

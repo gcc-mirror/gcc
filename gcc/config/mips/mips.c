@@ -771,18 +771,34 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   { "4kec", PROCESSOR_4KC, 33 },
   { "4kem", PROCESSOR_4KC, 33 },
   { "4kep", PROCESSOR_4KP, 33 },
-  { "24kc", PROCESSOR_24KC, 33 },  /* 24K  no FPU */
-  { "24kf", PROCESSOR_24KF, 33 },  /* 24K 1:2 FPU */
-  { "24kx", PROCESSOR_24KX, 33 },  /* 24K 1:1 FPU */
+
+  { "24kc", PROCESSOR_24KC, 33 },
+  { "24kf2_1", PROCESSOR_24KF2_1, 33 },
+  { "24kf", PROCESSOR_24KF2_1, 33 },
+  { "24kf1_1", PROCESSOR_24KF1_1, 33 },
+  { "24kfx", PROCESSOR_24KF1_1, 33 },
+  { "24kx", PROCESSOR_24KF1_1, 33 },
+
   { "24kec", PROCESSOR_24KC, 33 }, /* 24K with DSP */
-  { "24kef", PROCESSOR_24KF, 33 },
-  { "24kex", PROCESSOR_24KX, 33 },
-  { "34kc", PROCESSOR_24KC, 33 },  /* 34K with MT/DSP */
-  { "34kf", PROCESSOR_24KF, 33 },
-  { "34kx", PROCESSOR_24KX, 33 },
-  { "74kc", PROCESSOR_74KC, 33 },
-  { "74kf", PROCESSOR_74KF, 33 },
-  { "74kx", PROCESSOR_74KX, 33 },
+  { "24kef2_1", PROCESSOR_24KF2_1, 33 },
+  { "24kef", PROCESSOR_24KF2_1, 33 },
+  { "24kef1_1", PROCESSOR_24KF1_1, 33 },
+  { "24kefx", PROCESSOR_24KF1_1, 33 },
+  { "24kex", PROCESSOR_24KF1_1, 33 },
+
+  { "34kc", PROCESSOR_24KC, 33 }, /* 34K with MT/DSP */
+  { "34kf2_1", PROCESSOR_24KF2_1, 33 },
+  { "34kf", PROCESSOR_24KF2_1, 33 },
+  { "34kf1_1", PROCESSOR_24KF1_1, 33 },
+  { "34kfx", PROCESSOR_24KF1_1, 33 },
+  { "34kx", PROCESSOR_24KF1_1, 33 },
+
+  { "74kc", PROCESSOR_74KC, 33 }, /* 74K with DSPr2 */
+  { "74kf2_1", PROCESSOR_74KF2_1, 33 },
+  { "74kf", PROCESSOR_74KF2_1, 33 },
+  { "74kf1_1", PROCESSOR_74KF1_1, 33 },
+  { "74kfx", PROCESSOR_74KF1_1, 33 },
+  { "74kx", PROCESSOR_74KF1_1, 33 },
 
   /* MIPS64 */
   { "5kc", PROCESSOR_5KC, 64 },
@@ -901,7 +917,7 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
                        1,           /* branch_cost */
                        4            /* memory_latency */
     },
-    { /* 24KF */
+    { /* 24KF2_1 */
       COSTS_N_INSNS (8),            /* fp_add */
       COSTS_N_INSNS (8),            /* fp_mult_sf */
       COSTS_N_INSNS (10),           /* fp_mult_df */
@@ -914,7 +930,7 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
                        1,           /* branch_cost */
                        4            /* memory_latency */
     },
-    { /* 24KX */
+    { /* 24KF1_1 */
       COSTS_N_INSNS (4),            /* fp_add */
       COSTS_N_INSNS (4),            /* fp_mult_sf */
       COSTS_N_INSNS (5),            /* fp_mult_df */
@@ -936,7 +952,7 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
                        1,           /* branch_cost */
                        4            /* memory_latency */
     },
-    { /* 74KF */
+    { /* 74KF2_1 */
       COSTS_N_INSNS (8),            /* fp_add */
       COSTS_N_INSNS (8),            /* fp_mult_sf */
       COSTS_N_INSNS (10),           /* fp_mult_df */
@@ -949,7 +965,7 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
                        1,           /* branch_cost */
                        4            /* memory_latency */
     },
-    { /* 74KX */
+    { /* 74KF1_1 */
       COSTS_N_INSNS (4),            /* fp_add */
       COSTS_N_INSNS (4),            /* fp_mult_sf */
       COSTS_N_INSNS (5),            /* fp_mult_df */
@@ -10780,8 +10796,8 @@ mips_issue_rate (void)
   switch (mips_tune)
     {
     case PROCESSOR_74KC:
-    case PROCESSOR_74KF:
-    case PROCESSOR_74KX:
+    case PROCESSOR_74KF2_1:
+    case PROCESSOR_74KF1_1:
     case PROCESSOR_R4130:
     case PROCESSOR_R5400:
     case PROCESSOR_R5500:
