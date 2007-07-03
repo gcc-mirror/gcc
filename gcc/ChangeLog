@@ -1,3 +1,8 @@
+2007-07-03  Eric Christopher  <echristo@gmail.com>
+
+	* libgcc2.h: Conditionally declare __bswapsi2 and
+	__bswapdi2.
+	
 2007-07-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* ddg.c (check_sccs): Define only if ENABLE_CHECKING is

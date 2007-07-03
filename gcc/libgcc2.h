@@ -342,18 +342,23 @@ extern UWtype __udiv_w_sdiv (UWtype *, UWtype, UWtype, UWtype);
 extern word_type __cmpdi2 (DWtype, DWtype);
 extern word_type __ucmpdi2 (DWtype, DWtype);
 
+#if MIN_UNITS_PER_WORD > 1
+extern SItype __bswapsi2 (SItype);
+#endif
+#if LONG_LONG_TYPE_SIZE > 32
+extern DItype __bswapdi2 (DItype);
+#endif
+
 extern Wtype __absvSI2 (Wtype);
 extern Wtype __addvSI3 (Wtype, Wtype);
 extern Wtype __subvSI3 (Wtype, Wtype);
 extern Wtype __mulvSI3 (Wtype, Wtype);
 extern Wtype __negvSI2 (Wtype);
-extern SItype __bswapsi2 (SItype);
 extern DWtype __absvDI2 (DWtype);
 extern DWtype __addvDI3 (DWtype, DWtype);
 extern DWtype __subvDI3 (DWtype, DWtype);
 extern DWtype __mulvDI3 (DWtype, DWtype);
 extern DWtype __negvDI2 (DWtype);
-extern DItype __bswapdi2 (DItype);
 
 #ifdef COMPAT_SIMODE_TRAPPING_ARITHMETIC
 extern SItype __absvsi2 (SItype);
