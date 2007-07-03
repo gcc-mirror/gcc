@@ -2583,6 +2583,13 @@ resolve_operator (gfc_expr *e)
   op2 = e->value.op.op2;
   dual_locus_error = false;
 
+  if ((op1 && op1->expr_type == EXPR_NULL)
+      || (op2 && op2->expr_type == EXPR_NULL))
+    {
+      sprintf (msg, _("Invalid context for NULL() pointer at %%L"));
+      goto bad_op;
+    }
+
   switch (e->value.op.operator)
     {
     case INTRINSIC_UPLUS:
