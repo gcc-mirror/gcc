@@ -33,7 +33,7 @@ contains
       st5 (s1, s2) = s1 // s2
 
       if (st4 (1, 4) .ne. "0123" ) call abort
-      if (st5 ("01", "02") .ne. "01  02    ") call abort
+      if (st5 ("01", "02") .ne. "01  02    ") call abort ! { dg-warning "Character length of actual argument shorter" }
    end subroutine
 
    subroutine with_derived_type_dummy
