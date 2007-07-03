@@ -1648,6 +1648,9 @@ sms_order_nodes (ddg_ptr g, int mii, int * node_order)
 
   nopa nops = calculate_order_params (g, mii);
 
+  if (dump_file)
+    print_sccs (dump_file, sccs, g);
+
   order_nodes_of_sccs (sccs, node_order);
 
   if (sccs->num_sccs > 0)

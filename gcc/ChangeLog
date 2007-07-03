@@ -1,3 +1,11 @@
+2007-07-03  Revital Eres  <eres@il.ibm.com>
+
+	* ddg.c (print_sccs): New function.
+	(check_sccs): New function.
+	(create_ddg_all_sccs): Use it.
+	* ddg.h (print_sccs): Declare.
+	* modulo-sched.c (sms_order_nodes): Call print_sccs.
+
 2007-07-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* targhooks.h (default_mode_for_suffix): New function declaration.
