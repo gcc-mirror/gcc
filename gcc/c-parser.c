@@ -59,21 +59,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "cgraph.h"
 
 
-/* Objective-C specific parser/lexer information.  */
-
-static int objc_pq_context = 0;
-
-/* The following flag is needed to contextualize Objective-C lexical
-   analysis.  In some cases (e.g., 'int NSObject;'), it is undesirable
-   to bind an identifier to an Objective-C class, even if a class with
-   that name exists.  */
-static int objc_need_raw_identifier = 0;
-#define OBJC_NEED_RAW_IDENTIFIER(VAL)		\
-  do {						\
-    if (c_dialect_objc ())			\
-      objc_need_raw_identifier = VAL;		\
-  } while (0)
-
 /* The reserved keyword table.  */
 struct resword
 {
@@ -293,6 +278,13 @@ typedef struct c_parser GTY(())
   /* True if we're processing a pragma, and shouldn't automatically
      consume CPP_PRAGMA_EOL.  */
   BOOL_BITFIELD in_pragma : 1;
+  /* Objective-C specific parser/lexer information.  */
+  BOOL_BITFIELD objc_pq_context : 1;
+  /* The following flag is needed to contextualize Objective-C lexical
+     analysis.  In some cases (e.g., 'int NSObject;'), it is
+     undesirable to bind an identifier to an Objective-C class, even
+     if a class with that name exists.  */
+  BOOL_BITFIELD objc_need_raw_identifier : 1;
 } c_parser;
 
 
@@ -305,7 +297,7 @@ static GTY (()) c_parser *the_parser;
 /* Read in and lex a single token, storing it in *TOKEN.  */
 
 static void
-c_lex_one_token (c_token *token)
+c_lex_one_token (c_parser *parser, c_token *token)
 {
   timevar_push (TV_LEX);
 
@@ -321,8 +313,9 @@ c_lex_one_token (c_token *token)
       {
 	tree decl;
 
-	int objc_force_identifier = objc_need_raw_identifier;
-	OBJC_NEED_RAW_IDENTIFIER (0);
+	bool objc_force_identifier = parser->objc_need_raw_identifier;
+	if (c_dialect_objc ())
+	  parser->objc_need_raw_identifier = false;
 
 	if (C_IS_RESERVED_WORD (token->value))
 	  {
@@ -331,7 +324,8 @@ c_lex_one_token (c_token *token)
 	    if (c_dialect_objc ())
 	      {
 		if (!OBJC_IS_AT_KEYWORD (rid_code)
-		    && (!OBJC_IS_PQ_KEYWORD (rid_code) || objc_pq_context))
+		    && (!OBJC_IS_PQ_KEYWORD (rid_code)
+			|| parser->objc_pq_context))
 		  {
 		    /* Return the canonical spelling for this keyword.  */
 		    token->value = ridpointers[(int) rid_code];
@@ -388,7 +382,8 @@ c_lex_one_token (c_token *token)
     case CPP_SEMICOLON:
       /* These tokens may affect the interpretation of any identifiers
 	 following, if doing Objective-C.  */
-      OBJC_NEED_RAW_IDENTIFIER (0);
+      if (c_dialect_objc ())
+	parser->objc_need_raw_identifier = false;
       break;
     case CPP_PRAGMA:
       /* We smuggled the cpp_token->u.pragma value in an INTEGER_CST.  */
@@ -409,7 +404,7 @@ c_parser_peek_token (c_parser *parser)
 {
   if (parser->tokens_avail == 0)
     {
-      c_lex_one_token (&parser->tokens[0]);
+      c_lex_one_token (parser, &parser->tokens[0]);
       parser->tokens_avail = 1;
     }
   return &parser->tokens[0];
@@ -599,7 +594,7 @@ c_parser_peek_2nd_token (c_parser *parser)
   gcc_assert (parser->tokens_avail == 1);
   gcc_assert (parser->tokens[0].type != CPP_EOF);
   gcc_assert (parser->tokens[0].type != CPP_PRAGMA_EOL);
-  c_lex_one_token (&parser->tokens[1]);
+  c_lex_one_token (parser, &parser->tokens[1]);
   parser->tokens_avail = 2;
   return &parser->tokens[1];
 }
@@ -1605,7 +1600,8 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	    goto out;
 	  attrs_ok = true;
 	  seen_type = true;
-	  OBJC_NEED_RAW_IDENTIFIER (1);
+	  if (c_dialect_objc ())
+	    parser->objc_need_raw_identifier = true;
 	  t.kind = ctsk_resword;
 	  t.spec = c_parser_peek_token (parser)->value;
 	  declspecs_add_type (specs, t);
@@ -5908,11 +5904,11 @@ c_parser_objc_protocol_definition (c_parser *parser)
       c_parser_consume_token (parser);
       if (c_parser_next_token_is (parser, CPP_LESS))
 	proto = c_parser_objc_protocol_refs (parser);
-      objc_pq_context = 1;
+      parser->objc_pq_context = true;
       objc_start_protocol (id, proto);
       c_parser_objc_methodprotolist (parser);
       c_parser_require_keyword (parser, RID_AT_END, "expected %<@end%>");
-      objc_pq_context = 0;
+      parser->objc_pq_context = false;
       objc_finish_interface ();
     }
 }
@@ -5952,7 +5948,7 @@ c_parser_objc_method_definition (c_parser *parser)
   enum tree_code type = c_parser_objc_method_type (parser);
   tree decl;
   objc_set_method_type (type);
-  objc_pq_context = 1;
+  parser->objc_pq_context = true;
   decl = c_parser_objc_method_decl (parser);
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
     {
@@ -5965,7 +5961,7 @@ c_parser_objc_method_definition (c_parser *parser)
       c_parser_error (parser, "expected %<{%>");
       return;
     }
-  objc_pq_context = 0;
+  parser->objc_pq_context = false;
   objc_start_method_definition (decl);
   add_stmt (c_parser_compound_statement (parser));
   objc_finish_method_definition (current_function_decl);
@@ -6029,10 +6025,10 @@ c_parser_objc_methodproto (c_parser *parser)
   tree decl;
   objc_set_method_type (type);
   /* Remember protocol qualifiers in prototypes.  */
-  objc_pq_context = 1;
+  parser->objc_pq_context = true;
   decl = c_parser_objc_method_decl (parser);
   /* Forget protocol qualifiers here.  */
-  objc_pq_context = 0;
+  parser->objc_pq_context = false;
   objc_add_method_declaration (decl);
   c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
 }
