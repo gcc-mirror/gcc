@@ -1,3 +1,8 @@
+2007-07-03  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-sccvn.c (set_ssa_val_to): Check for operand_equal_p
+	before declaring inequality.
+
 2007-07-03  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* combine.c (recog_for_combine): Log the success or failure of
