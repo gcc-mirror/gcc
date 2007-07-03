@@ -1,3 +1,23 @@
+2007-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* targhooks.h (default_mode_for_suffix): New function declaration.
+	* targhooks.c (default_mode_for_suffix): New default target hook.
+	* target.h (struct c): New structure in the targetm struct.
+	(mode_for_suffix): New target hook as part of struct c.
+	target-def.h (TARGET_C_MODE_FOR_SUFFIX): Define as
+	default_mode_for_suffix.
+	(TARGET_C): New define.
+	* c-lex.c: Include "target.h".
+	(interpret_float): Use targetm.c.mode_for_suffix to determine
+	the mode for a given non-standard suffix.
+	Makefile.in (c-lex.o): Depend on $(TARGET_H).
+
+	* config/i386/i386.c (ix86_c_mode_for_suffix): New static function.
+	(TARGET_C_MODE_FOR_SUFFIX): Define to ix86_c_mode_for_suffix.
+
+	* doc/extend.texi (Floating Types): New node.  Document __float80 and
+	__float128 types.  Document 'w', 'W', 'q' and 'Q' suffixes.
+
 2007-07-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/32506

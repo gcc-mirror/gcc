@@ -22423,6 +22423,18 @@ ix86_vector_mode_supported_p (enum machine_mode mode)
   return false;
 }
 
+/* Target hook for c_mode_for_suffix.  */
+static enum machine_mode
+ix86_c_mode_for_suffix (char suffix)
+{
+  if (TARGET_64BIT && suffix == 'q')
+    return TFmode;
+  if (TARGET_MMX && suffix == 'w')
+    return XFmode;
+
+  return VOIDmode;
+}
+
 /* Worker function for TARGET_MD_ASM_CLOBBERS.
 
    We do this in the new i386 backend to maintain source compatibility
@@ -23519,6 +23531,9 @@ static const struct attribute_spec ix86_attribute_table[] =
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P ix86_vector_mode_supported_p
+
+#undef TARGET_C_MODE_FOR_SUFFIX
+#define TARGET_C_MODE_FOR_SUFFIX ix86_c_mode_for_suffix
 
 #ifdef HAVE_AS_TLS
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL

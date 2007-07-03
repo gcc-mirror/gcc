@@ -173,6 +173,13 @@ hook_bool_CUMULATIVE_ARGS_true (CUMULATIVE_ARGS * a ATTRIBUTE_UNUSED)
   return true;
 }
 
+/* Return machine mode for non-standard suffix
+   or VOIDmode if non-standard suffixes are unsupported.  */
+enum machine_mode
+default_mode_for_suffix (char suffix ATTRIBUTE_UNUSED)
+{
+  return VOIDmode;
+}
 
 /* The generic C++ ABI specifies this is a 64-bit value.  */
 tree

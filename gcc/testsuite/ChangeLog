@@ -1,3 +1,10 @@
+2007-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/const-float80.c : New test.
+	* gcc.dg/const-float128.c : New test.
+	* gcc.dg/const-float80-ped.c : New test.
+	* gcc.dg/const-float128-ped.c : New test.
+
 2007-07-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/c99-math.h: Fix typo.

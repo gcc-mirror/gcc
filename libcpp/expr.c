@@ -82,7 +82,9 @@ static void check_promotion (cpp_reader *, const struct op *);
 static unsigned int
 interpret_float_suffix (const uchar *s, size_t len)
 {
-  size_t f = 0, l = 0, i = 0, d = 0;
+  size_t f, l, w, q, i, d;
+
+  f = l = w = q = i = d = 0;
 
   while (len--)
     switch (s[len])
@@ -97,6 +99,16 @@ interpret_float_suffix (const uchar *s, size_t len)
 	  return 0;
 	l++;
 	break;
+      case 'w': case 'W':
+	if (d > 0)
+	  return 0;
+	w++;
+	break;
+      case 'q': case 'Q':
+	if (d > 0)
+	  return 0;
+	q++;
+	break;
       case 'i': case 'I':
       case 'j': case 'J': i++; break;
       case 'd': case 'D': d++; break;
@@ -104,7 +116,7 @@ interpret_float_suffix (const uchar *s, size_t len)
 	return 0;
       }
 
-  if (f + l > 1 || i > 1)
+  if (f + l + w + q > 1 || i > 1)
     return 0;
 
   /* Allow dd, df, dl suffixes for decimal float constants.  */
@@ -113,7 +125,9 @@ interpret_float_suffix (const uchar *s, size_t len)
 
   return ((i ? CPP_N_IMAGINARY : 0)
 	  | (f ? CPP_N_SMALL :
-	     l ? CPP_N_LARGE : CPP_N_MEDIUM)
+	     l ? CPP_N_LARGE :
+	     w ? CPP_N_MD_W :
+	     q ? CPP_N_MD_Q : CPP_N_MEDIUM)
 	  | (d ? CPP_N_DFLOAT : 0));
 }
 
