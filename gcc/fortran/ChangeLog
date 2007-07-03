@@ -1,5 +1,11 @@
 2007-07-03  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/25062
+	* resolve.c (resolve_common_blocks): New check function.
+	(resolve_types): Use it.
+
+2007-07-03  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/30940
 	* interface.c (get_sym_storage_size): New function.
 	(get_sym_storage_size): New function.
