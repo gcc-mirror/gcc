@@ -2953,6 +2953,16 @@ LCF0:
       [.gnu_attribute 4,1],,
       [AC_DEFINE(HAVE_AS_GNU_ATTRIBUTE, 1,
 	  [Define if your assembler supports .gnu_attribute.])])
+
+    gcc_GAS_CHECK_FEATURE([.dtprelword support],
+      gcc_cv_as_mips_dtprelword, [2,18,0],,
+      [.section .tdata,"awT",@progbits
+x:
+	.word 2
+	.text
+	.dtprelword x+0x8000],,
+      [AC_DEFINE(HAVE_AS_DTPRELWORD, 1,
+	  [Define if your assembler supports .dtprelword.])])
     ;;
 esac
 

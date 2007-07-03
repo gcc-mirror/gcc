@@ -15907,6 +15907,47 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 fi
+
+    echo "$as_me:$LINENO: checking assembler for .dtprelword support" >&5
+echo $ECHO_N "checking assembler for .dtprelword support... $ECHO_C" >&6
+if test "${gcc_cv_as_mips_dtprelword+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_mips_dtprelword=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 18 \) \* 1000 + 0`
+  then gcc_cv_as_mips_dtprelword=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo '.section .tdata,"awT",@progbits
+x:
+	.word 2
+	.text
+	.dtprelword x+0x8000' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_mips_dtprelword=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_mips_dtprelword" >&5
+echo "${ECHO_T}$gcc_cv_as_mips_dtprelword" >&6
+if test $gcc_cv_as_mips_dtprelword = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_DTPRELWORD 1
+_ACEOF
+
+fi
     ;;
 esac
 
