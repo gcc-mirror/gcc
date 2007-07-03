@@ -799,6 +799,7 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   { "74kf1_1", PROCESSOR_74KF1_1, 33 },
   { "74kfx", PROCESSOR_74KF1_1, 33 },
   { "74kx", PROCESSOR_74KF1_1, 33 },
+  { "74kf3_2", PROCESSOR_74KF3_2, 33 },
 
   /* MIPS64 */
   { "5kc", PROCESSOR_5KC, 64 },
@@ -971,6 +972,19 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
       COSTS_N_INSNS (5),            /* fp_mult_df */
       COSTS_N_INSNS (17),           /* fp_div_sf */
       COSTS_N_INSNS (32),           /* fp_div_df */
+      COSTS_N_INSNS (5),            /* int_mult_si */
+      COSTS_N_INSNS (5),            /* int_mult_di */
+      COSTS_N_INSNS (41),           /* int_div_si */
+      COSTS_N_INSNS (41),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
+    },
+    { /* 74KF3_2 */
+      COSTS_N_INSNS (6),            /* fp_add */
+      COSTS_N_INSNS (6),            /* fp_mult_sf */
+      COSTS_N_INSNS (7),            /* fp_mult_df */
+      COSTS_N_INSNS (25),           /* fp_div_sf */
+      COSTS_N_INSNS (48),           /* fp_div_df */
       COSTS_N_INSNS (5),            /* int_mult_si */
       COSTS_N_INSNS (5),            /* int_mult_di */
       COSTS_N_INSNS (41),           /* int_div_si */
@@ -10798,6 +10812,7 @@ mips_issue_rate (void)
     case PROCESSOR_74KC:
     case PROCESSOR_74KF2_1:
     case PROCESSOR_74KF1_1:
+    case PROCESSOR_74KF3_2:
     case PROCESSOR_R4130:
     case PROCESSOR_R5400:
     case PROCESSOR_R5500:

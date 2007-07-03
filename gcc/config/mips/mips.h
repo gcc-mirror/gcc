@@ -46,6 +46,7 @@ enum processor_type {
   PROCESSOR_74KC,
   PROCESSOR_74KF2_1,
   PROCESSOR_74KF1_1,
+  PROCESSOR_74KF3_2,
   PROCESSOR_M4K,
   PROCESSOR_R3900,
   PROCESSOR_R6000,
@@ -250,7 +251,8 @@ extern const struct mips_rtx_cost_data *mips_cost;
 				     || mips_tune == PROCESSOR_SB1A)
 #define TUNE_74K                    (mips_tune == PROCESSOR_74KC	\
 				     || mips_tune == PROCESSOR_74KF2_1	\
-				     || mips_tune == PROCESSOR_74KF1_1)
+				     || mips_tune == PROCESSOR_74KF1_1  \
+				     || mips_tune == PROCESSOR_74KF3_2)
 
 /* True if the pre-reload scheduler should try to create chains of
    multiply-add or multiply-subtract instructions.  For example,
