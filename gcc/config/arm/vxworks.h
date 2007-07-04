@@ -76,10 +76,8 @@ Boston, MA 02110-1301, USA.  */
 #define VXWORKS_ENDIAN_SPEC \
   "%{mbig-endian|t4be|t4tbe|t5be|t5tbe|txscalebe:-EB}"
 
-/* The -Q options from svr4.h aren't understood and must be removed.  */
-#undef  ASM_SPEC
-#define ASM_SPEC \
-  "%{v:-V} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} " VXWORKS_ENDIAN_SPEC
+#undef SUBTARGET_EXTRA_ASM_SPEC
+#define SUBTARGET_EXTRA_ASM_SPEC VXWORKS_ENDIAN_SPEC
 
 #undef LINK_SPEC
 #define LINK_SPEC VXWORKS_LINK_SPEC " " VXWORKS_ENDIAN_SPEC

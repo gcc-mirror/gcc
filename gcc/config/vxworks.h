@@ -106,6 +106,16 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 #undef VXWORKS_GOTT_INDEX
 #define VXWORKS_GOTT_INDEX "__GOTT_INDEX__"
 
+/* As for svr4.h (which not all VxWorks targets include). */
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
+
+#undef SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+/* Both kernels and RTPs have the facilities required by this macro.  */
+#define TARGET_POSIX_IO
+
 /* A VxWorks implementation of TARGET_OS_CPP_BUILTINS.  */
 #define VXWORKS_OS_CPP_BUILTINS()					\
   do									\
