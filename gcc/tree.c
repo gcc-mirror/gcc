@@ -5647,6 +5647,82 @@ get_inner_array_type (tree array)
   return type;
 }
 
+/* Computes the canonical argument types from the argument type list
+   ARGTYPES. 
+
+   ANY_STRUCTURAL_P points to a boolean that states whether any of the
+   other types that work with ARGTYPES (e.g., the return type of the
+   function) are structural. *ANY_STRUCTURAL_P will be set TRUE if any
+   of those types or any of the argument types in ARGTYPES are
+   structural.
+
+   ANY_NONCANONICAL_P points to a boolean that states whether any of
+   the other types that work with ARGTYPES (e.g., the return type of
+   the function) are non-canonical type nodes. *ANY_NONCANONICAL_P
+   will be set TRUE if any of those types or any of the argument types
+   in ARGTYPES are non-canonical.
+
+   Returns a canonical argument list, which may be ARGTYPES when the
+   canonical argument list is unneeded (i.e., *ANY_STRUCTURAL_P is
+   true) or would not differ from ARGTYPES.  */
+
+static tree 
+maybe_canonicalize_argtypes(tree argtypes, 
+			    bool *any_structural_p,
+			    bool *any_noncanonical_p)
+{
+  tree arg;
+  bool any_noncanonical_argtypes_p = false;
+  
+  for (arg = argtypes; arg && !(*any_structural_p); arg = TREE_CHAIN (arg))
+    {
+      if (!TREE_VALUE (arg) || TREE_VALUE (arg) == error_mark_node)
+	/* Fail gracefully by stating that the type is structural.  */
+	*any_structural_p = true;
+      else if (TYPE_STRUCTURAL_EQUALITY_P (TREE_VALUE (arg)))
+	*any_structural_p = true;
+      else if (TYPE_CANONICAL (TREE_VALUE (arg)) != TREE_VALUE (arg)
+	       || TREE_PURPOSE (arg))
+	/* If the argument has a default argument, we consider it
+	   non-canonical even though the type itself is canonical.
+	   That way, different variants of function and method types
+	   with default arguments will all point to the variant with
+	   no defaults as their canonical type.  */
+        any_noncanonical_argtypes_p = true;
+    }
+
+  if (*any_structural_p)
+    return argtypes;
+
+  if (any_noncanonical_argtypes_p)
+    {
+      /* Build the canonical list of argument types.  */
+      tree canon_argtypes = NULL_TREE;
+      bool is_void = false;
+
+      for (arg = argtypes; arg; arg = TREE_CHAIN (arg))
+        {
+          if (arg == void_list_node)
+            is_void = true;
+          else
+            canon_argtypes = tree_cons (NULL_TREE,
+                                        TYPE_CANONICAL (TREE_VALUE (arg)),
+                                        canon_argtypes);
+        }
+
+      canon_argtypes = nreverse (canon_argtypes);
+      if (is_void)
+        canon_argtypes = chainon (canon_argtypes, void_list_node);
+
+      /* There is a non-canonical type.  */
+      *any_noncanonical_p = true;
+      return canon_argtypes;
+    }
+
+  /* The canonical argument types are the same as ARGTYPES.  */
+  return argtypes;
+}
+
 /* Construct, lay out and return
    the type of functions returning type VALUE_TYPE
    given arguments of types ARG_TYPES.
@@ -5659,6 +5735,8 @@ build_function_type (tree value_type, tree arg_types)
 {
   tree t;
   hashval_t hashcode = 0;
+  bool any_structural_p, any_noncanonical_p;
+  tree canon_argtypes;
 
   if (TREE_CODE (value_type) == FUNCTION_TYPE)
     {
@@ -5671,14 +5749,23 @@ build_function_type (tree value_type, tree arg_types)
   TREE_TYPE (t) = value_type;
   TYPE_ARG_TYPES (t) = arg_types;
 
-  /* We don't have canonicalization of function types, yet. */
-  SET_TYPE_STRUCTURAL_EQUALITY (t);
-
   /* If we already have such a type, use the old one.  */
   hashcode = iterative_hash_object (TYPE_HASH (value_type), hashcode);
   hashcode = type_hash_list (arg_types, hashcode);
   t = type_hash_canon (hashcode, t);
 
+  /* Set up the canonical type. */
+  any_structural_p   = TYPE_STRUCTURAL_EQUALITY_P (value_type);
+  any_noncanonical_p = TYPE_CANONICAL (value_type) != value_type;
+  canon_argtypes = maybe_canonicalize_argtypes (arg_types, 
+						&any_structural_p,
+						&any_noncanonical_p);
+  if (any_structural_p)
+    SET_TYPE_STRUCTURAL_EQUALITY (t);
+  else if (any_noncanonical_p)
+    TYPE_CANONICAL (t) = build_function_type (TYPE_CANONICAL (value_type),
+					      canon_argtypes);
+      
   if (!COMPLETE_TYPE_P (t))
     layout_type (t);
   return t;
@@ -5728,6 +5815,8 @@ build_method_type_directly (tree basetype,
   tree t;
   tree ptype;
   int hashcode = 0;
+  bool any_structural_p, any_noncanonical_p;
+  tree canon_argtypes;
 
   /* Make a node of the sort we want.  */
   t = make_node (METHOD_TYPE);
@@ -5741,15 +5830,29 @@ build_method_type_directly (tree basetype,
   argtypes = tree_cons (NULL_TREE, ptype, argtypes);
   TYPE_ARG_TYPES (t) = argtypes;
 
-  /* We don't have canonicalization of method types yet. */
-  SET_TYPE_STRUCTURAL_EQUALITY (t);
-
   /* If we already have such a type, use the old one.  */
   hashcode = iterative_hash_object (TYPE_HASH (basetype), hashcode);
   hashcode = iterative_hash_object (TYPE_HASH (rettype), hashcode);
   hashcode = type_hash_list (argtypes, hashcode);
   t = type_hash_canon (hashcode, t);
 
+  /* Set up the canonical type. */
+  any_structural_p
+    = (TYPE_STRUCTURAL_EQUALITY_P (basetype)
+       || TYPE_STRUCTURAL_EQUALITY_P (rettype));
+  any_noncanonical_p
+    = (TYPE_CANONICAL (basetype) != basetype
+       || TYPE_CANONICAL (rettype) != rettype);
+  canon_argtypes = maybe_canonicalize_argtypes (TREE_CHAIN (argtypes),
+						&any_structural_p,
+						&any_noncanonical_p);
+  if (any_structural_p)
+    SET_TYPE_STRUCTURAL_EQUALITY (t);
+  else if (any_noncanonical_p)
+    TYPE_CANONICAL (t) 
+      = build_method_type_directly (TYPE_CANONICAL (basetype),
+				    TYPE_CANONICAL (rettype),
+				    canon_argtypes);
   if (!COMPLETE_TYPE_P (t))
     layout_type (t);
 
@@ -7329,15 +7432,14 @@ reconstruct_complex_type (tree type, tree bottom)
     }
   else if (TREE_CODE (type) == METHOD_TYPE)
     {
-      tree argtypes;
       inner = reconstruct_complex_type (TREE_TYPE (type), bottom);
       /* The build_method_type_directly() routine prepends 'this' to argument list,
          so we must compensate by getting rid of it.  */
-      argtypes = TYPE_ARG_TYPES (type);
-      outer = build_method_type_directly (TYPE_METHOD_BASETYPE (type),
-					  inner,
-					  TYPE_ARG_TYPES (type));
-      TYPE_ARG_TYPES (outer) = argtypes;
+      outer 
+	= build_method_type_directly 
+	    (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (type))),
+	     inner,
+	     TREE_CHAIN (TYPE_ARG_TYPES (type)));
     }
   else
     return bottom;

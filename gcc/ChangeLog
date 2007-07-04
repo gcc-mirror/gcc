@@ -1,3 +1,11 @@
+2007-07-04  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* tree.c (maybe_canonicalize_argtypes): New.
+	(build_function_type): Set canonical type.
+	(build_method_type_directly): Ditto.
+	(reconstruct_complex_type): Rebuild the METHOD_TYPE node
+	properly.
+
 2007-07-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* tree-ssa-loop-ivopts.c (strip_offset_1): Treat POINTER_PLUS_EXPR
