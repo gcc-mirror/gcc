@@ -167,17 +167,22 @@ recognize_single_bit_test (tree cond_expr, tree *name, tree *bit)
       && integer_onep (TREE_OPERAND (t, 1))
       && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME)
     {
-      t = TREE_OPERAND (t, 0);
+      tree orig_name = TREE_OPERAND (t, 0);
+
+      /* Look through copies and conversions to eventually
+	 find the stmt that computes the shift.  */
+      t = orig_name;
       do {
 	t = SSA_NAME_DEF_STMT (t);
 	if (TREE_CODE (t) != GIMPLE_MODIFY_STMT)
-	  return false;
+	  break;
 	t = GIMPLE_STMT_OPERAND (t, 1);
 	if (TREE_CODE (t) == NOP_EXPR
 	    || TREE_CODE (t) == CONVERT_EXPR)
 	  t = TREE_OPERAND (t, 0);
       } while (TREE_CODE (t) == SSA_NAME);
 
+      /* If we found such, decompose it.  */
       if (TREE_CODE (t) == RSHIFT_EXPR)
 	{
 	  /* op0 & (1 << op1) */
@@ -187,8 +192,8 @@ recognize_single_bit_test (tree cond_expr, tree *name, tree *bit)
       else
 	{
 	  /* t & 1 */
-	  *bit = integer_one_node;
-	  *name = t;
+	  *bit = integer_zero_node;
+	  *name = orig_name;
 	}
 
       return true;
