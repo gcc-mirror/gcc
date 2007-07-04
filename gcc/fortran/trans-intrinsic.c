@@ -1381,11 +1381,50 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
   tree val;
   tree thencase;
   tree elsecase;
-  tree arg;
+  tree arg, arg1, arg2;
   tree type;
+  gfc_actual_arglist *argexpr;
+  unsigned int i;
 
   arg = gfc_conv_intrinsic_function_args (se, expr);
+  arg1 = TREE_VALUE (arg);
+  arg2 = TREE_VALUE (TREE_CHAIN (arg));
   type = gfc_typenode_for_spec (&expr->ts);
+
+  /* The first and second arguments should be present, if they are
+     optional dummy arguments.  */
+  argexpr = expr->value.function.actual;
+  if (argexpr->expr->expr_type == EXPR_VARIABLE
+      && argexpr->expr->symtree->n.sym->attr.optional
+      && TREE_CODE (arg1) == INDIRECT_REF)
+    {
+      /* Check the first argument.  */
+      tree cond;
+      char *msg;
+
+      asprintf (&msg, "First argument of '%s' intrinsic should be present",
+		expr->symtree->n.sym->name);
+      cond = build2 (EQ_EXPR, boolean_type_node, TREE_OPERAND (arg1, 0),
+		     build_int_cst (TREE_TYPE (TREE_OPERAND (arg1, 0)), 0));
+      gfc_trans_runtime_check (cond, msg, &se->pre, &expr->where);
+      gfc_free (msg);
+    }
+
+  if (argexpr->next->expr->expr_type == EXPR_VARIABLE
+      && argexpr->next->expr->symtree->n.sym->attr.optional
+      && TREE_CODE (arg2) == INDIRECT_REF)
+    {
+      /* Check the second argument.  */
+      tree cond;
+      char *msg;
+
+      asprintf (&msg, "Second argument of '%s' intrinsic should be present",
+		expr->symtree->n.sym->name);
+      cond = build2 (EQ_EXPR, boolean_type_node, TREE_OPERAND (arg2, 0),
+		     build_int_cst (TREE_TYPE (TREE_OPERAND (arg2, 0)), 0));
+      gfc_trans_runtime_check (cond, msg, &se->pre, &expr->where);
+      gfc_free (msg);
+    }
 
   limit = TREE_VALUE (arg);
   if (TREE_TYPE (limit) != type)
@@ -1396,23 +1435,40 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
 
   mvar = gfc_create_var (type, "M");
   elsecase = build2_v (MODIFY_EXPR, mvar, limit);
-  for (arg = TREE_CHAIN (arg); arg != NULL_TREE; arg = TREE_CHAIN (arg))
+  for (arg = TREE_CHAIN (arg), i = 0, argexpr = argexpr->next;
+       arg != NULL_TREE; arg = TREE_CHAIN (arg), i++)
     {
-      val = TREE_VALUE (arg);
-      if (TREE_TYPE (val) != type)
-	val = convert (type, val);
+      tree cond;
 
-      /* Only evaluate the argument once.  */
-      if (TREE_CODE (val) != VAR_DECL && !TREE_CONSTANT (val))
-        val = gfc_evaluate_now (val, &se->pre);
+      val = TREE_VALUE (arg);
+
+      /* Handle absent optional arguments by ignoring the comparison.  */
+      if (i > 0 && argexpr->expr->expr_type == EXPR_VARIABLE
+	  && argexpr->expr->symtree->n.sym->attr.optional
+	  && TREE_CODE (val) == INDIRECT_REF)
+	cond = build2 (NE_EXPR, boolean_type_node, TREE_OPERAND (val, 0),
+		       build_int_cst (TREE_TYPE (TREE_OPERAND (val, 0)), 0));
+      else
+      {
+	cond = NULL_TREE;
+
+	/* Only evaluate the argument once.  */
+	if (TREE_CODE (val) != VAR_DECL && !TREE_CONSTANT (val))
+	  val = gfc_evaluate_now (val, &se->pre);
+      }
 
       thencase = build2_v (MODIFY_EXPR, mvar, convert (type, val));
 
-      tmp = build2 (op, boolean_type_node, val, limit);
+      tmp = build2 (op, boolean_type_node, convert (type, val), limit);
       tmp = build3_v (COND_EXPR, tmp, thencase, elsecase);
+
+      if (cond != NULL_TREE)
+	tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
+
       gfc_add_expr_to_block (&se->pre, tmp);
       elsecase = build_empty_stmt ();
       limit = mvar;
+      argexpr = argexpr->next;
     }
   se->expr = mvar;
 }

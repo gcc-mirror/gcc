@@ -1,3 +1,9 @@
+2007-07-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31198
+	* trans-intrinsic.c (trans-intrinsic.c): Handle optional
+	arguments correctly for MIN and MAX intrinsics.
+
 2007-07-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/32545
