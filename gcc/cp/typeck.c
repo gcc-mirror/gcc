@@ -256,11 +256,9 @@ type_after_usual_arithmetic_conversions (tree t1, tree t2)
 
   /* FIXME: Attributes.  */
   gcc_assert (ARITHMETIC_TYPE_P (t1)
-	      || TREE_CODE (t1) == COMPLEX_TYPE
 	      || TREE_CODE (t1) == VECTOR_TYPE
 	      || TREE_CODE (t1) == ENUMERAL_TYPE);
   gcc_assert (ARITHMETIC_TYPE_P (t2)
-	      || TREE_CODE (t2) == COMPLEX_TYPE
 	      || TREE_CODE (t2) == VECTOR_TYPE
 	      || TREE_CODE (t2) == ENUMERAL_TYPE);
 
@@ -761,9 +759,9 @@ common_type (tree t1, tree t2)
   code2 = TREE_CODE (t2);
 
   if ((ARITHMETIC_TYPE_P (t1) || code1 == ENUMERAL_TYPE
-       || code1 == COMPLEX_TYPE || code1 == VECTOR_TYPE)
+       || code1 == VECTOR_TYPE)
       && (ARITHMETIC_TYPE_P (t2) || code2 == ENUMERAL_TYPE
-	  || code2 == COMPLEX_TYPE || code2 == VECTOR_TYPE))
+	  || code2 == VECTOR_TYPE))
     return type_after_usual_arithmetic_conversions (t1, t2);
 
   else if ((TYPE_PTR_P (t1) && TYPE_PTR_P (t2))

@@ -1,3 +1,14 @@
+2007-07-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/31388
+	* cp-tree.h (ARITHMETIC_TYPE): Include COMPLEX_TYPE.
+	* typeck.c (type_after_usual_arithmetic_conversions): Adjust, as
+	COMPLEX_TYPE is now an ARITHMETIC_TYPE.
+	* init.c (build_zero_init): Adjust, as
+	COMPLEX_TYPE is now a SCALAR_TYPE.
+	* typeck2.c (digest_init): Allow brace-enclosed initializers for
+	COMPLEX_TYPE, even though that is now a SCALAR_TYPE.
+
 2007-07-03  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/32609

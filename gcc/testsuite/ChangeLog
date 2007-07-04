@@ -1,3 +1,8 @@
+2007-07-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/31338
+	* g++.dg/ext/complex2.C: New test.
+
 2007-07-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/32500
