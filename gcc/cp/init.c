@@ -2207,7 +2207,9 @@ build_new (tree placement, tree type, tree nelts, tree init,
       return error_mark_node;
     }
 
-  /* PR 31743: Make sure the array type has a known size.  */
+  /* The type allocated must be complete.  If the new-type-id was
+     "T[N]" then we are just checking that "T" is complete here, but
+     that is equivalent, since the value of "N" doesn't matter.  */
   if (!complete_type_or_else (type, NULL_TREE))
     return error_mark_node;
 

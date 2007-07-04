@@ -1,3 +1,7 @@
+2007-07-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* init.c (build_new): Tweak comment.
+
 2007-06-29  Dave Brolley  <brolley@redhat.com>
 
 	PR c++/31743
