@@ -1,5 +1,5 @@
 /* CPP Library - traditional lexical analysis and macro expansion.
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2007 Free Software Foundation, Inc.
    Contributed by Neil Booth, May 2002
 
 This program is free software; you can redistribute it and/or modify it
@@ -353,6 +353,11 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
   const uchar *start_of_input_line;
 
   fmacro.buff = NULL;
+  fmacro.args = NULL;
+  fmacro.node = NULL;
+  fmacro.offset = 0;
+  fmacro.line = 0;
+  fmacro.argc = 0;
 
   quote = 0;
   header_ok = pfile->state.angled_headers;

@@ -1,3 +1,9 @@
+2007-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* traditional.c (_cpp_scan_out_logical_line): Initialize
+	fmacro.args, fmacro.node, fmacro.offset, fmacro.line and
+	fmacro.args to prevent 'may be used uninitialized' warning.
+
 2007-07-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* include/cpplib.h (CPP_N_WIDTH_MD, CPP_N_MD_W, CPP_N_MD_Q):
