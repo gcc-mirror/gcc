@@ -1,5 +1,9 @@
 2007-07-04  Richard Sandiford  <richard@codesourcery.com>
 
+	* gcc.dg/cpp/trad/include.c: Skip for VxWorks kernels.
+
+2007-07-04  Richard Sandiford  <richard@codesourcery.com>
+
 	* gcc.dg/sh4a-fprun.c: Skip for VxWorks kernels.
 
 2007-07-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
