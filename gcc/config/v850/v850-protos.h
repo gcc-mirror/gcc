@@ -1,5 +1,6 @@
 /* Prototypes for v850.c functions used in the md file & elsewhere.
-   Copyright (C) 1999, 2000, 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2004, 2005, 2007
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -37,7 +38,6 @@ extern int    v850_output_addr_const_extra  (FILE *, rtx);
 extern rtx    v850_return_addr              (int);
 extern void   print_operand                 (FILE *, rtx, int );
 extern void   print_operand_address         (FILE *, rtx);
-extern const char *output_move_double       (rtx *);
 extern const char *output_move_single       (rtx *);
 extern void   notice_update_cc              (rtx, rtx);
 extern char * construct_save_jarl           (rtx);

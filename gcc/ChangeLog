@@ -1,3 +1,15 @@
+2007-07-04  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	* config/gcc/v850/v850.c (expand_prologue): Make sure
+	GEN_INT() argument is sign extended rather than zero extended.
+	(expand_epilogue): Likewise.
+	(output_move_double): Delete.
+	* config/gcc/v850/v850-protos.h (output_move_double): Delete.
+	* config/gcc/v850/v850.md (movdi): Delete.
+	(*movdi_internal): Delete.
+	(movdf): Delete.
+	(*movdf_internal): Delete.
+
 2007-07-04  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/sh/vxworks.h (SUBTARGET_OVERRIDE_OPTIONS): Reject -mrelax
