@@ -1,5 +1,5 @@
 /* Check that -mrelax works.  */
-/* { dg-do run { target sh-*-* sh?-*-* } } */
+/* { dg-do run { target { { sh-*-* sh?-*-* } && { ! { sh*-*-vxworks* && nonpic } } } } } */
 /* { dg-options "-O1 -mrelax" } */
 
 extern void abort (void);
