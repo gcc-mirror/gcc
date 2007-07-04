@@ -193,6 +193,7 @@ static bool arm_cxx_class_data_always_comdat (void);
 static bool arm_cxx_use_aeabi_atexit (void);
 static void arm_init_libfuncs (void);
 static bool arm_handle_option (size_t, const char *, int);
+static void arm_target_help (void);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 static bool arm_cannot_copy_insn_p (rtx);
 static bool arm_tls_symbol_p (rtx x);
@@ -243,6 +244,8 @@ static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 #define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | MASK_SCHED_PROLOG)
 #undef  TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION arm_handle_option
+#undef  TARGET_HELP
+#define TARGET_HELP arm_target_help
 
 #undef  TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES arm_comp_type_attributes
@@ -928,6 +931,92 @@ arm_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
     default:
       return true;
     }
+}
+
+static void
+arm_target_help (void)
+{
+  int i;
+  static int columns = 0;
+  int remaining;
+
+  /* If we have not done so already, obtain the desired maximum width of
+     the output.  Note - this is a duplication of the code at the start of
+     gcc/opts.c:print_specific_help() - the two copies should probably be
+     replaced by a single function.  */
+  if (columns == 0)
+    {
+      const char *p;
+
+      GET_ENVIRONMENT (p, "COLUMNS");
+      if (p != NULL)
+	{
+	  int value = atoi (p);
+
+	  if (value > 0)
+	    columns = value;
+	}
+
+      if (columns == 0)
+	/* Use a reasonable default.  */
+	columns = 80;
+    }
+
+  printf ("  Known ARM CPUs (for use with the -mcpu= and -mtune= options):\n");
+
+  /* The - 2 is because we know that the last entry in the array is NULL.  */
+  i = ARRAY_SIZE (all_cores) - 2;
+  gcc_assert (i > 0);
+  printf ("    %s", all_cores[i].name);
+  remaining = columns - (strlen (all_cores[i].name) + 4);
+  gcc_assert (remaining >= 0);
+
+  while (i--)
+    {
+      int len = strlen (all_cores[i].name);
+
+      if (remaining > len + 2)
+	{
+	  printf (", %s", all_cores[i].name);
+	  remaining -= len + 2;
+	}
+      else
+	{
+	  if (remaining > 0)
+	    printf (",");
+	  printf ("\n    %s", all_cores[i].name);
+	  remaining = columns - (len + 4);
+	}
+    }
+
+  printf ("\n\n  Known ARM architectures (for use with the -march= option):\n");
+
+  i = ARRAY_SIZE (all_architectures) - 2;
+  gcc_assert (i > 0);
+  
+  printf ("    %s", all_architectures[i].name);
+  remaining = columns - (strlen (all_architectures[i].name) + 4);
+  gcc_assert (remaining >= 0);
+
+  while (i--)
+    {
+      int len = strlen (all_architectures[i].name);
+
+      if (remaining > len + 2)
+	{
+	  printf (", %s", all_architectures[i].name);
+	  remaining -= len + 2;
+	}
+      else
+	{
+	  if (remaining > 0)
+	    printf (",");
+	  printf ("\n    %s", all_architectures[i].name);
+	  remaining = columns - (len + 4);
+	}
+    }
+  printf ("\n");
+
 }
 
 /* Fix up any incompatible options that the user has specified.

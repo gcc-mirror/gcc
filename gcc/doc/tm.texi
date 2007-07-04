@@ -842,6 +842,13 @@ this macro!} The debugging options are not supposed to alter the
 generated code.
 @end defmac
 
+@deftypefn {Target Hook} bool TARGET_HELP (void)
+This hook is called in response to the user invoking
+@option{--target-help} on the command line.  It gives the target a
+chance to display extra information on the target specific command
+line options found in its @file{.opt} file.
+@end deftypefn
+
 @defmac CAN_DEBUG_WITHOUT_FP
 Define this macro if debugging can be performed even without a frame
 pointer.  If this macro is defined, GCC will turn on the

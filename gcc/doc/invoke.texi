@@ -1106,7 +1106,8 @@ have no documentation associated with them will also be displayed.
 @item --target-help
 @opindex target-help
 Print (on the standard output) a description of target-specific command
-line options for each tool.
+line options for each tool.  For some targets extra target-specific
+information may also be printed.
 
 @item --help=@var{class}@r{[},@var{qualifier}@r{]}
 Print (on the standard output) a description of the command line

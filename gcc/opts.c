@@ -1229,6 +1229,10 @@ common_handle_option (size_t scode, const char *arg, int value,
     case OPT__target_help:
       print_specific_help (CL_TARGET, CL_UNDOCUMENTED, 0);
       exit_after_options = true;
+
+      /* Allow the target a chance to give the user some additional information.  */
+      if (targetm.target_help)
+	targetm.target_help ();
       break;
 
     case OPT_fhelp_:
