@@ -252,15 +252,18 @@
 ;; mthilo	transfer to hi/lo registers
 ;; mfhilo	transfer from hi/lo registers
 ;; const	load constant
-;; arith	integer arithmetic and logical instructions
+;; arith	integer arithmetic instructions
+;; logical      integer logical instructions
 ;; shift	integer shift instructions
 ;; slt		set less than instructions
+;; signext      sign extend instuctions
 ;; clz		the clz and clo instructions
 ;; trap		trap if instructions
 ;; imul		integer multiply 2 operands
 ;; imul3	integer multiply 3 operands
 ;; imadd	integer multiply-add
 ;; idiv		integer divide
+;; move		integer register move ({,D}ADD{,U} with rt = 0)
 ;; fmove	floating point register move
 ;; fadd		floating point add/subtract
 ;; fmul		floating point multiply
@@ -280,7 +283,7 @@
 ;; multi	multiword sequence (or user asm statements)
 ;; nop		no operation
 (define_attr "type"
-  "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,prefetch,prefetchx,condmove,mfc,mtc,mthilo,mfhilo,const,arith,shift,slt,clz,trap,imul,imul3,imadd,idiv,fmove,fadd,fmul,fmadd,fdiv,frdiv,frdiv1,frdiv2,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,frsqrt1,frsqrt2,multi,nop"
+  "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,prefetch,prefetchx,condmove,mfc,mtc,mthilo,mfhilo,const,arith,logical,shift,slt,signext,clz,trap,imul,imul3,imadd,idiv,move,fmove,fadd,fmul,fmadd,fdiv,frdiv,frdiv1,frdiv2,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,frsqrt1,frsqrt2,multi,nop"
   (cond [(eq_attr "jal" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")]
 	(const_string "unknown")))
@@ -2110,7 +2113,7 @@
   else
     return "nor\t%0,%.,%1";
 }
-  [(set_attr "type" "arith")
+  [(set_attr "type" "logical")
    (set_attr "mode" "<MODE>")])
 
 ;;
@@ -2142,7 +2145,7 @@
   "@
    and\t%0,%1,%2
    andi\t%0,%1,%x2"
-  [(set_attr "type" "arith")
+  [(set_attr "type" "logical")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*and<mode>3_mips16"
@@ -2151,7 +2154,7 @@
 		 (match_operand:GPR 2 "register_operand" "d")))]
   "TARGET_MIPS16"
   "and\t%0,%2"
-  [(set_attr "type" "arith")
+  [(set_attr "type" "logical")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "ior<mode>3"
@@ -2172,7 +2175,7 @@
   "@
    or\t%0,%1,%2
    ori\t%0,%1,%x2"
-  [(set_attr "type" "arith")
+  [(set_attr "type" "logical")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*ior<mode>3_mips16"
@@ -2181,7 +2184,7 @@
 		 (match_operand:GPR 2 "register_operand" "d")))]
   "TARGET_MIPS16"
   "or\t%0,%2"
-  [(set_attr "type" "arith")
+  [(set_attr "type" "logical")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "xor<mode>3"
@@ -2199,7 +2202,7 @@
   "@
    xor\t%0,%1,%2
    xori\t%0,%1,%x2"
-  [(set_attr "type" "arith")
+  [(set_attr "type" "logical")
    (set_attr "mode" "<MODE>")])
 
 (define_insn ""
@@ -2211,7 +2214,7 @@
    xor\t%0,%2
    cmpi\t%1,%2
    cmp\t%1,%2"
-  [(set_attr "type" "arith")
+  [(set_attr "type" "logical,arith,arith")
    (set_attr "mode" "<MODE>")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -2226,7 +2229,7 @@
 		 (not:GPR (match_operand:GPR 2 "register_operand" "d"))))]
   "!TARGET_MIPS16"
   "nor\t%0,%1,%2"
-  [(set_attr "type" "arith")
+  [(set_attr "type" "logical")
    (set_attr "mode" "<MODE>")])
 
 ;;
@@ -2357,7 +2360,7 @@
                          (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "andi\t%0,%1,0xffff"
-  [(set_attr "type"     "arith")
+  [(set_attr "type"     "logical")
    (set_attr "mode"     "SI")])
 
 (define_insn ""
@@ -2366,7 +2369,7 @@
                          (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "andi\t%0,%1,0xff"
-  [(set_attr "type"     "arith")
+  [(set_attr "type"     "logical")
    (set_attr "mode"     "SI")])
 
 (define_insn ""
@@ -2375,7 +2378,7 @@
                          (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "andi\t%0,%1,0xff"
-  [(set_attr "type"     "arith")
+  [(set_attr "type"     "logical")
    (set_attr "mode"     "HI")])
 
 ;;
@@ -2453,7 +2456,7 @@
   "@
    andi\t%0,%1,<SHORT:mask>
    l<SHORT:size>u\t%0,%1"
-  [(set_attr "type" "arith,load")
+  [(set_attr "type" "logical,load")
    (set_attr "mode" "<GPR:MODE>")])
 
 (define_insn "*zero_extend<SHORT:mode><GPR:mode>2_mips16e"
@@ -2492,7 +2495,7 @@
   "@
    andi\t%0,%1,0x00ff
    lbu\t%0,%1"
-  [(set_attr "type" "arith,load")
+  [(set_attr "type" "logical,load")
    (set_attr "mode" "HI")])
 
 (define_insn "*zero_extendqihi2_mips16"
@@ -2549,7 +2552,7 @@
   "@
    se<SHORT:size>\t%0
    l<SHORT:size>\t%0,%1"
-  [(set_attr "type" "arith,load")
+  [(set_attr "type" "signext,load")
    (set_attr "mode" "<GPR:MODE>")])
 
 (define_insn_and_split "*extend<SHORT:mode><GPR:mode>2"
@@ -2580,22 +2583,54 @@
   "@
    se<SHORT:size>\t%0,%1
    l<SHORT:size>\t%0,%1"
-  [(set_attr "type" "arith,load")
+  [(set_attr "type" "signext,load")
    (set_attr "mode" "<GPR:MODE>")])
 
-;; This pattern generates the same code as extendqisi2; split it into
-;; that form after reload.
-(define_insn_and_split "extendqihi2"
+(define_expand "extendqihi2"
+  [(set (match_operand:HI 0 "register_operand")
+        (sign_extend:HI (match_operand:QI 1 "nonimmediate_operand")))]
+  "")
+
+(define_insn "*extendqihi2_mips16e"
   [(set (match_operand:HI 0 "register_operand" "=d,d")
-        (sign_extend:HI (match_operand:QI 1 "nonimmediate_operand" "d,m")))]
-  ""
-  "#"
-  "reload_completed"
-  [(set (match_dup 0) (sign_extend:SI (match_dup 1)))]
-  { operands[0] = gen_lowpart (SImode, operands[0]); }
-  [(set_attr "type" "arith,load")
+        (sign_extend:HI (match_operand:QI 1 "nonimmediate_operand" "0,m")))]
+  "GENERATE_MIPS16E"
+  "@
+   seb\t%0
+   lb\t%0,%1"
+  [(set_attr "type" "signext,load")
+   (set_attr "mode" "SI")])
+
+(define_insn_and_split "*extendqihi2"
+  [(set (match_operand:HI 0 "register_operand" "=d,d")
+        (sign_extend:HI
+	     (match_operand:QI 1 "nonimmediate_operand" "d,m")))]
+  "!ISA_HAS_SEB_SEH && !GENERATE_MIPS16E"
+  "@
+   #
+   lb\t%0,%1"
+  "&& reload_completed && REG_P (operands[1])"
+  [(set (match_dup 0) (ashift:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (ashiftrt:SI (match_dup 0) (match_dup 2)))]
+{
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  operands[2] = GEN_INT (GET_MODE_BITSIZE (SImode)
+			 - GET_MODE_BITSIZE (QImode));
+}
+  [(set_attr "type" "multi,load")
    (set_attr "mode" "SI")
    (set_attr "length" "8,*")])
+
+(define_insn "*extendqihi2_seb"
+  [(set (match_operand:HI 0 "register_operand" "=d,d")
+        (sign_extend:HI
+	     (match_operand:QI 1 "nonimmediate_operand" "d,m")))]
+  "ISA_HAS_SEB_SEH"
+  "@
+   seb\t%0,%1
+   lb\t%0,%1"
+  [(set_attr "type" "signext,load")
+   (set_attr "mode" "SI")])
 
 (define_insn "extendsfdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -3320,7 +3355,7 @@
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"arith,arith,load,store,mthilo,mfhilo,mtc,load,mfc,store")
+  [(set_attr "type"	"multi,multi,load,store,mthilo,mfhilo,mtc,load,mfc,store")
    (set_attr "mode"	"DI")
    (set_attr "length"   "8,16,*,*,8,8,8,*,8,*")])
 
@@ -3331,7 +3366,7 @@
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"arith,arith,load,store,mthilo,mfhilo,fmove,mtc,fpload,mfc,fpstore")
+  [(set_attr "type"	"multi,multi,load,store,mthilo,mfhilo,fmove,mtc,fpload,mfc,fpstore")
    (set_attr "mode"	"DI")
    (set_attr "length"   "8,16,*,*,8,8,4,8,*,8,*")])
 
@@ -3342,7 +3377,7 @@
    && (register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"arith,arith,arith,arith,arith,load,store,mfhilo")
+  [(set_attr "type"	"multi,multi,multi,multi,multi,load,store,mfhilo")
    (set_attr "mode"	"DI")
    (set_attr "length"	"8,8,8,8,12,*,*,8")])
 
@@ -3353,7 +3388,7 @@
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"arith,const,const,load,store,fmove,mtc,fpload,mfc,fpstore,mthilo,mtc,load,mfc,store")
+  [(set_attr "type"	"move,const,const,load,store,fmove,mtc,fpload,mfc,fpstore,mthilo,mtc,load,mfc,store")
    (set_attr "mode"	"DI")
    (set_attr "length"	"4,*,*,*,*,4,4,*,4,*,4,8,*,8,*")])
 
@@ -3364,7 +3399,7 @@
    && (register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"arith,arith,arith,arith,arith,const,load,store")
+  [(set_attr "type"	"move,move,move,arith,arith,const,load,store")
    (set_attr "mode"	"DI")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -3449,7 +3484,7 @@
    && (register_operand (operands[0], SImode)
        || reg_or_0_operand (operands[1], SImode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"arith,const,const,load,store,fmove,mtc,fpload,mfc,fpstore,mfc,mtc,mthilo,mfhilo,mtc,load,mfc,store")
+  [(set_attr "type"	"move,const,const,load,store,fmove,mtc,fpload,mfc,fpstore,mfc,mtc,mthilo,mfhilo,mtc,load,mfc,store")
    (set_attr "mode"	"SI")
    (set_attr "length"	"4,*,*,*,*,4,4,*,4,*,4,4,4,4,4,*,4,*")])
 
@@ -3460,7 +3495,7 @@
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"arith,arith,arith,arith,arith,const,load,store")
+  [(set_attr "type"	"move,move,move,arith,arith,const,load,store")
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -3550,7 +3585,7 @@
 	(match_operand:CC 1 "general_operand" "z,*d,*m,*d,*f,*d,*f,*m,*f"))]
   "ISA_HAS_8CC && TARGET_HARD_FLOAT"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"multi,arith,load,store,mfc,mtc,fmove,fpload,fpstore")
+  [(set_attr "type"	"multi,move,load,store,mfc,mtc,fmove,fpload,fpstore")
    (set_attr "mode"	"SI")
    (set_attr "length"	"8,4,*,*,4,4,4,*,*")])
 
@@ -3650,7 +3685,7 @@
     mtc1\t%1,%0
     mov.s\t%0,%1
     mt%0\t%1"
-  [(set_attr "type"	"arith,arith,load,store,mfc,mtc,fmove,mthilo")
+  [(set_attr "type"	"move,arith,load,store,mfc,mtc,fmove,mthilo")
    (set_attr "mode"	"HI")
    (set_attr "length"	"4,4,*,*,4,4,4,4")])
 
@@ -3668,7 +3703,7 @@
     #
     lhu\t%0,%1
     sh\t%1,%0"
-  [(set_attr "type"	"arith,arith,arith,arith,arith,load,store")
+  [(set_attr "type"	"move,move,move,arith,arith,load,store")
    (set_attr "mode"	"HI")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -3757,7 +3792,7 @@
     mtc1\t%1,%0
     mov.s\t%0,%1
     mt%0\t%1"
-  [(set_attr "type"	"arith,arith,load,store,mfc,mtc,fmove,mthilo")
+  [(set_attr "type"	"move,arith,load,store,mfc,mtc,fmove,mthilo")
    (set_attr "mode"	"QI")
    (set_attr "length"	"4,4,*,*,4,4,4,4")])
 
@@ -3775,7 +3810,7 @@
     #
     lbu\t%0,%1
     sb\t%1,%0"
-  [(set_attr "type"	"arith,arith,arith,arith,arith,load,store")
+  [(set_attr "type"	"move,move,move,arith,arith,load,store")
    (set_attr "mode"	"QI")
    (set_attr "length"	"4,4,4,4,8,*,*")])
 
@@ -3827,7 +3862,7 @@
    && (register_operand (operands[0], SFmode)
        || reg_or_0_operand (operands[1], SFmode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"fmove,mtc,fpload,fpstore,store,mtc,mfc,arith,load,store")
+  [(set_attr "type"	"fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
    (set_attr "mode"	"SF")
    (set_attr "length"	"4,4,*,*,*,4,4,4,*,*")])
 
@@ -3838,7 +3873,7 @@
    && (register_operand (operands[0], SFmode)
        || reg_or_0_operand (operands[1], SFmode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"arith,load,store")
+  [(set_attr "type"	"move,load,store")
    (set_attr "mode"	"SF")
    (set_attr "length"	"4,*,*")])
 
@@ -3849,7 +3884,7 @@
    && (register_operand (operands[0], SFmode)
        || register_operand (operands[1], SFmode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"arith,arith,arith,load,store")
+  [(set_attr "type"	"move,move,move,load,store")
    (set_attr "mode"	"SF")
    (set_attr "length"	"4,4,4,*,*")])
 
@@ -3872,7 +3907,7 @@
    && (register_operand (operands[0], DFmode)
        || reg_or_0_operand (operands[1], DFmode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"fmove,mtc,fpload,fpstore,store,mtc,mfc,arith,load,store")
+  [(set_attr "type"	"fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
    (set_attr "mode"	"DF")
    (set_attr "length"	"4,4,*,*,*,4,4,4,*,*")])
 
@@ -3884,7 +3919,7 @@
    && (register_operand (operands[0], DFmode)
        || reg_or_0_operand (operands[1], DFmode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"fmove,mtc,fpload,fpstore,store,mtc,mfc,arith,load,store")
+  [(set_attr "type"	"fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
    (set_attr "mode"	"DF")
    (set_attr "length"	"4,8,*,*,*,8,8,8,*,*")])
 
@@ -3895,7 +3930,7 @@
    && (register_operand (operands[0], DFmode)
        || reg_or_0_operand (operands[1], DFmode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"arith,load,store,mfc,mtc,fmove")
+  [(set_attr "type"	"multi,load,store,mfc,mtc,fmove")
    (set_attr "mode"	"DF")
    (set_attr "length"	"8,*,*,4,4,4")])
 
@@ -3906,7 +3941,7 @@
    && (register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"arith,arith,arith,load,store")
+  [(set_attr "type"	"multi,multi,multi,load,store")
    (set_attr "mode"	"DF")
    (set_attr "length"	"8,8,8,*,*")])
 
@@ -3966,7 +4001,7 @@
    && (register_operand (operands[0], V2SFmode)
        || reg_or_0_operand (operands[1], V2SFmode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type" "fmove,mtc,fpload,fpstore,store,mtc,mfc,arith,load,store")
+  [(set_attr "type" "fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
    (set_attr "mode" "SF")
    (set_attr "length" "4,4,*,*,*,4,4,4,*,*")])
 

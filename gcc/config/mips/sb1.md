@@ -236,7 +236,7 @@
 
 (define_insn_reservation "ir_sb1_simple_alu" 2
   (and (eq_attr "cpu" "sb1")
-       (eq_attr "type" "const,arith"))
+       (eq_attr "type" "const,arith,logical,move,signext"))
   "sb1_ls1 | sb1_ex1 | sb1_ex0")
 
 ;; On SB-1A, simple alu instructions can not execute on the LS1 unit, and we
@@ -244,7 +244,7 @@
 
 (define_insn_reservation "ir_sb1a_simple_alu" 1
   (and (eq_attr "cpu" "sb1a")
-       (eq_attr "type" "const,arith"))
+       (eq_attr "type" "const,arith,logical,move,signext"))
   "sb1_ex1 | sb1_ex0")
 
 ;; ??? condmove also includes some FP instructions that execute on the FP

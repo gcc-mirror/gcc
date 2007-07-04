@@ -1,3 +1,32 @@
+2007-07-04  David Ung  <davidu@mips.com>
+            Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/mips.md (type): Add logical, signext and move.
+	(one_cmpl<mode>2, *and<mode>3, *and<mode>3_mips16, *ior<mode>3,
+	*ior<mode>3_mips16, two unnamed insns after *ior<mode>3_mips16,
+	*nor<mode>3, "Combiner patterns to optimize truncate/zero_extend
+	combinations", *zero_extend<SHORT:mode><GPR:mode>2,
+	*zero_extendqihi2, *extend<SHORT:mode><GPR:mode>2_mips16e,
+	*extend<SHORT:mode><GPR:mode>2_se<SHORT:size>, *movdi_64bit,
+	*movdi_64bit_mips16, *movsi_internal, *movsi_mips16, movcc,
+	*movhi_internal, *movhi_mips16, *movqi_internal, *movqi_mips16,
+	*movsf_hardfloat, *movsf_softfloat, *movsf_mips16,
+	*movdf_hardfloat_64bit, *movdf_hardfloat_32bit,
+	movv2sf_hardfloat_64bit): Use the new types.
+	(*movdi_32bit, *movdi_gp32_fp64, *movdi_32bit_mips16,
+	*movdf_softfloat, *movdf_mips16): Use "multi".
+	(extendqihi2): Replace with a define_expand.
+	(*extendqihi2_mips16e, *extendqihi2, *extendqihi2_seb): New.
+	Based on extend<SHORT:mode><GPR:mode>2 patterns.
+	* config/mips/74k.md (r74k_int_logical): New reservation and
+	bypasses.
+	(r74k_int_arith): Remove "slt".
+	* config/mips/24k.md, config/mips/4130.md, config/mips/4k.md,
+	config/mips/5400.md, config/mips/5500.md, config/mips/5k.md,
+	config/mips/7000.md, config/mips/9000.md, config/mips/generic.md,
+	config/mips/sb1.md, config/mips/sr71k.md: Add new types to
+	reservations for "arith".
+
 2007-07-04  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa.c (useless_type_conversion_p): Add handling for
