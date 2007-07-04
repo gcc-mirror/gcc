@@ -1,5 +1,14 @@
 2007-07-04  Richard Sandiford  <richard@codesourcery.com>
 
+	* gcc.c-torture/execute/ieee/compare-fp-4.x: Add an XFAIL for ARM
+	VxWorks kernels.
+	* gcc.c-torture/execute/ieee/fp-cmp-1.x: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-2.x: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-3.x: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-6.x: Likewise.
+
+2007-07-04  Richard Sandiford  <richard@codesourcery.com>
+
 	* gcc.dg/cpp/trad/include.c: Skip for VxWorks kernels.
 
 2007-07-04  Richard Sandiford  <richard@codesourcery.com>

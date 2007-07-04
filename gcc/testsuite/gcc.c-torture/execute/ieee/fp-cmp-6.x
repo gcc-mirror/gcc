@@ -7,11 +7,10 @@ if [istarget "arm*-*-vxworks*"] {
 	set compiler_conditional_xfail_data {
 	    "The ARM kernel uses a flawed floating-point library."
 	    { "*-*-*" }
-	    {}
+	    { "-O0" }
 	    { "-mrtp" }
 	}
     }
 }
 
-lappend additional_flags "-fno-trapping-math"
 return 0
