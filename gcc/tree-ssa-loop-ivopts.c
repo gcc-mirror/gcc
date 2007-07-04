@@ -1759,6 +1759,7 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
       *offset = int_cst_value (expr);
       return build_int_cst (orig_type, 0);
 
+    case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
       op0 = TREE_OPERAND (expr, 0);
@@ -1767,7 +1768,7 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
       op0 = strip_offset_1 (op0, false, false, &off0);
       op1 = strip_offset_1 (op1, false, false, &off1);
 
-      *offset = (code == PLUS_EXPR ? off0 + off1 : off0 - off1);
+      *offset = (code == MINUS_EXPR ? off0 - off1 : off0 + off1);
       if (op0 == TREE_OPERAND (expr, 0)
 	  && op1 == TREE_OPERAND (expr, 1))
 	return orig_expr;
@@ -1776,10 +1777,10 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
 	expr = op0;
       else if (integer_zerop (op0))
 	{
-	  if (code == PLUS_EXPR)
-	    expr = op1;
-	  else
+	  if (code == MINUS_EXPR)
 	    expr = fold_build1 (NEGATE_EXPR, type, op1);
+	  else
+	    expr = op1;
 	}
       else
 	expr = fold_build2 (code, type, op0, op1);
@@ -4893,11 +4894,12 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 	 thus leading to ICE.  */
       op = GIMPLE_STMT_OPERAND (use->stmt, 1);
       if (TREE_CODE (op) == PLUS_EXPR
-	  || TREE_CODE (op) == MINUS_EXPR)
+	  || TREE_CODE (op) == MINUS_EXPR
+	  || TREE_CODE (op) == POINTER_PLUS_EXPR)
 	{
 	  if (TREE_OPERAND (op, 0) == cand->var_before)
 	    op = TREE_OPERAND (op, 1);
-	  else if (TREE_CODE (op) == PLUS_EXPR
+	  else if (TREE_CODE (op) != MINUS_EXPR
 		   && TREE_OPERAND (op, 1) == cand->var_before)
 	    op = TREE_OPERAND (op, 0);
 	  else
