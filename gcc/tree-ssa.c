@@ -908,13 +908,15 @@ delete_tree_ssa (void)
 	be dereferenced or offsetted, but copied, hence its set of operations
 	is a strict subset of that of all other data pointer types).  Casts
 	to const T* are useless (can't be written to), casts from const T*
-	to T* are not.
-
-   ???  The above do not hold currently.  */
+	to T* are not.  */
 
 bool
 useless_type_conversion_p (tree outer_type, tree inner_type)
 {
+  /* Qualifiers on value types do not matter.  */
+  inner_type = TYPE_MAIN_VARIANT (inner_type);
+  outer_type = TYPE_MAIN_VARIANT (outer_type);
+
   if (inner_type == outer_type)
     return true;
 
@@ -951,43 +953,58 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 				  TYPE_MAX_VALUE (outer_type)))
 	return false;
 
-      /* ???  We might want to preserve base type changes because of
-	 TBAA.  Or we need to be extra careful below.  */
-
       return true;
     }
+
+  /* Scalar floating point types with the same mode are compatible.  */
+  else if (SCALAR_FLOAT_TYPE_P (inner_type)
+	   && SCALAR_FLOAT_TYPE_P (outer_type))
+    return true;
 
   /* We need to take special care recursing to pointed-to types.  */
   else if (POINTER_TYPE_P (inner_type)
 	   && POINTER_TYPE_P (outer_type))
     {
-      /* Don't lose casts between pointers to volatile and non-volatile
-	 qualified types.  Doing so would result in changing the semantics
-	 of later accesses.  */
-      if (TYPE_VOLATILE (TREE_TYPE (outer_type))
-	  != TYPE_VOLATILE (TREE_TYPE (inner_type)))
-	return false;
-
-      /* Do not lose casts between pointers with different
-	 TYPE_REF_CAN_ALIAS_ALL setting.  */
-      if (TYPE_REF_CAN_ALIAS_ALL (inner_type)
-	  != TYPE_REF_CAN_ALIAS_ALL (outer_type))
-	return false;
-
       /* If the outer type is (void *), then the conversion is not
-	 necessary.
-	 ???  Together with calling the langhook below this makes
-	 useless_type_conversion_p not transitive.  */
+	 necessary.  */
       if (TREE_CODE (TREE_TYPE (outer_type)) == VOID_TYPE)
 	return true;
 
+      /* Don't lose casts between pointers to volatile and non-volatile
+	 qualified types.  Doing so would result in changing the semantics
+	 of later accesses.  */
+      if ((TYPE_VOLATILE (TREE_TYPE (outer_type))
+	   != TYPE_VOLATILE (TREE_TYPE (inner_type)))
+	  && TYPE_VOLATILE (TREE_TYPE (outer_type)))
+	return false;
+
+      /* Do not lose casts between pointers with different
+	 TYPE_REF_CAN_ALIAS_ALL setting or alias sets.  */
+      if ((TYPE_REF_CAN_ALIAS_ALL (inner_type)
+	   != TYPE_REF_CAN_ALIAS_ALL (outer_type))
+	  || (get_alias_set (TREE_TYPE (inner_type))
+	      != get_alias_set (TREE_TYPE (outer_type))))
+	return false;
+
+      /* Do not lose casts from const qualified to non-const
+	 qualified.  */
+      if ((TYPE_READONLY (TREE_TYPE (outer_type))
+	   != TYPE_READONLY (TREE_TYPE (inner_type)))
+	  && TYPE_READONLY (TREE_TYPE (inner_type)))
+	return false;
+
+      /* Do not lose casts to restrict qualified pointers.  */
+      if ((TYPE_RESTRICT (outer_type)
+	   != TYPE_RESTRICT (inner_type))
+	  && TYPE_RESTRICT (outer_type))
+	return false;
+
       /* Otherwise pointers/references are equivalent if their pointed
-	 to types are effectively the same.  This allows to strip conversions
-	 between pointer types with different type qualifiers.
-	 ???  We should recurse here with
-	 useless_type_conversion_p.  */
-      return lang_hooks.types_compatible_p (TREE_TYPE (inner_type),
-					   TREE_TYPE (outer_type));
+	 to types are effectively the same.  We can strip qualifiers
+	 on pointed-to types for further comparsion, which is done in
+	 the callee.  */
+      return useless_type_conversion_p (TREE_TYPE (outer_type),
+				        TREE_TYPE (inner_type));
     }
 
   /* Recurse for complex types.  */
@@ -996,9 +1013,34 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
     return useless_type_conversion_p (TREE_TYPE (outer_type),
 				      TREE_TYPE (inner_type));
 
-  /* Fall back to what the frontend thinks of type compatibility.
-     ???  This should eventually just return false.  */
-  return lang_hooks.types_compatible_p (inner_type, outer_type);
+  /* Recurse for vector types with the same number of subparts.  */
+  else if (TREE_CODE (inner_type) == VECTOR_TYPE
+	   && TREE_CODE (outer_type) == VECTOR_TYPE
+	   && TYPE_PRECISION (inner_type) == TYPE_PRECISION (outer_type))
+    return useless_type_conversion_p (TREE_TYPE (outer_type),
+				      TREE_TYPE (inner_type));
+
+  /* For aggregates we may need to fall back to structural equality
+     checks.  */
+  else if (AGGREGATE_TYPE_P (inner_type)
+	   && AGGREGATE_TYPE_P (outer_type))
+    {
+      /* Different types of aggregates are incompatible.  */
+      if (TREE_CODE (inner_type) != TREE_CODE (outer_type))
+	return false;
+
+      /* If we know the canonical types, compare them.  */
+      if (TYPE_CANONICAL (inner_type)
+	  && TYPE_CANONICAL (inner_type) == TYPE_CANONICAL (outer_type))
+	return true;
+
+      /* ???  Add structural equivalence check.  */
+
+      /* ???  This should eventually just return false.  */
+      return lang_hooks.types_compatible_p (inner_type, outer_type);
+    }
+
+  return false;
 }
 
 /* Return true if a conversion from either type of TYPE1 and TYPE2
