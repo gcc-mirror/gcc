@@ -1,5 +1,12 @@
 2007-07-04  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa.c (useless_type_conversion_p): Add handling for
+	scalar float and vector types.  Only call the types_compatible_p
+	langhook for aggregate types as last resort.  Follow the
+	rules.
+
+2007-07-04  Richard Guenther  <rguenther@suse.de>
+
 	* tree-inline.c (estimate_num_insns_1): Treat CONVERT_EXPR
 	the same as NOP_EXPR.
 
