@@ -5650,17 +5650,13 @@ get_inner_array_type (tree array)
 /* Computes the canonical argument types from the argument type list
    ARGTYPES. 
 
-   ANY_STRUCTURAL_P points to a boolean that states whether any of the
-   other types that work with ARGTYPES (e.g., the return type of the
-   function) are structural. *ANY_STRUCTURAL_P will be set TRUE if any
-   of those types or any of the argument types in ARGTYPES are
+   Upon return, *ANY_STRUCTURAL_P will be true iff either it was true
+   on entry to this function, or if any of the ARGTYPES are
    structural.
 
-   ANY_NONCANONICAL_P points to a boolean that states whether any of
-   the other types that work with ARGTYPES (e.g., the return type of
-   the function) are non-canonical type nodes. *ANY_NONCANONICAL_P
-   will be set TRUE if any of those types or any of the argument types
-   in ARGTYPES are non-canonical.
+   Upon return, *ANY_NONCANONICAL_P will be true iff either it was
+   true on entry to this function, or if any of the ARGTYPES are
+   non-canonical.
 
    Returns a canonical argument list, which may be ARGTYPES when the
    canonical argument list is unneeded (i.e., *ANY_STRUCTURAL_P is
