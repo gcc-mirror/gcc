@@ -1,3 +1,18 @@
+2007-07-04  Daniel Berlin  <dberlin@dberlin.org>
+
+	PR tree-optimization/32604
+	PR tree-optimization/32606
+	
+	* tree-ssa-pre.c (bb_bitmap_sets): Removed antic_safe_loads.
+	(compute_antic_safe): Removed.
+	(ANTIC_SAFE_LOADS): Ditto.
+	(compute_antic_aux): Don't print ANTIC_SAFE_LOADS.
+	(execute_pre): Don't call compute_antic_safe.
+	(vuse_equiv): New function.
+	(make_values_for_stmt): Use it
+	* tree-ssa-sccvn.c (set_ssa_val_to): Remove assert, since it is
+	not always true.
+
 2007-07-04 Anatoly Sokolov <aesok@post.ru>
 
 	PR target/31331

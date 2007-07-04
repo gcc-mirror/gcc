@@ -302,10 +302,6 @@ typedef struct bb_bitmap_sets
      the current iteration.  */
   bitmap_set_t new_sets;
 
-  /* These are the loads that will be ANTIC_IN at the top of the
-     block, and are actually generated in the block.  */
-  bitmap_set_t antic_safe_loads;
-
   /* True if we have visited this block during ANTIC calculation.  */
   unsigned int visited:1;
 
@@ -321,7 +317,6 @@ typedef struct bb_bitmap_sets
 #define ANTIC_IN(BB)	((bb_value_sets_t) ((BB)->aux))->antic_in
 #define PA_IN(BB)	((bb_value_sets_t) ((BB)->aux))->pa_in
 #define NEW_SETS(BB)	((bb_value_sets_t) ((BB)->aux))->new_sets
-#define ANTIC_SAFE_LOADS(BB) ((bb_value_sets_t) ((BB)->aux))->antic_safe_loads
 #define BB_VISITED(BB) ((bb_value_sets_t) ((BB)->aux))->visited
 #define BB_DEFERRED(BB) ((bb_value_sets_t) ((BB)->aux))->deferred
 
@@ -1545,9 +1540,7 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, tree expr,
 		    && !union_contains_value (set1, set2, op3))
 		  return false;
 	    }
-	  return bitmap_set_contains_value (ANTIC_SAFE_LOADS (block),
-					    vh)
-	    || !value_dies_in_block_x (vh, block);
+	    return !value_dies_in_block_x (vh, block);
 	  }
       }
       return false;
@@ -1786,9 +1779,6 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	  if (ANTIC_OUT)
 	    print_bitmap_set (dump_file, ANTIC_OUT, "ANTIC_OUT", block->index);
 
-	  if (ANTIC_SAFE_LOADS (block))
-	    print_bitmap_set (dump_file, ANTIC_SAFE_LOADS (block),
-			      "ANTIC_SAFE_LOADS", block->index);
 	  print_bitmap_set (dump_file, ANTIC_IN (block), "ANTIC_IN",
 			    block->index);
 
@@ -2040,74 +2030,6 @@ compute_antic (void)
     }
   sbitmap_free (has_abnormal_preds);
   sbitmap_free (changed_blocks);
-}
-
-/*
-   ANTIC_SAFE_LOADS are those loads generated in a block that actually
-   occur before any kill to their vuses in the block, and thus, are
-   safe at the top of the block.  This function computes the set by
-   walking the EXP_GEN set for the block, and checking the VUSES.
-
-   This set could be computed as ANTIC calculation is proceeding, but
-   but because it does not actually change during that computation, it is
-   quicker to pre-calculate the results and use them than to do it on
-   the fly (particularly in the presence of multiple iteration).  */
-
-static void
-compute_antic_safe (void)
-{
-  basic_block bb;
-  bitmap_iterator bi;
-  unsigned int i;
-
-  FOR_EACH_BB (bb)
-    {
-      FOR_EACH_EXPR_ID_IN_SET (EXP_GEN (bb), i, bi)
-	{
-	  tree expr = expression_for_id (i);
-	  if (REFERENCE_CLASS_P (expr))
-	    {
-	      tree vh = get_value_handle (expr);
-	      tree maybe = bitmap_find_leader (AVAIL_OUT (bb), vh);
-	      ssa_op_iter i;
-	      tree vuse;
-	      tree stmt;
-	      bool okay = true;
-
-	      if (!maybe)
-		continue;
-	      stmt = SSA_NAME_DEF_STMT (maybe);
-	      if (TREE_CODE (stmt) == PHI_NODE)
-		continue;
-	      
-	      FOR_EACH_SSA_TREE_OPERAND (vuse, stmt, i,
-					 SSA_OP_VIRTUAL_USES)
-		{
-		  tree def = SSA_NAME_DEF_STMT (vuse);
-
-		  if (bb_for_stmt (def) != bb)
-		    continue;
-
-		  /* See if the vuse is defined by a statement that
-		     comes before us in the block.  Phi nodes are not
-		     stores, so they do not count.  */
-		  if (TREE_CODE (def) != PHI_NODE
-		      && stmt_ann (def)->uid < stmt_ann (stmt)->uid)
-		    {
-		      okay = false;
-		      break;
-		    }
-		}
-	      if (okay)
-		{
-		  if (ANTIC_SAFE_LOADS (bb) == NULL)
-		    ANTIC_SAFE_LOADS (bb) = bitmap_set_new ();
-		  bitmap_value_insert_into_set (ANTIC_SAFE_LOADS (bb),
-						expr);
-		}
-	    }
-	}
-    }
 }
 
 /* Return true if we can value number the call in STMT.  This is true
@@ -3367,6 +3289,21 @@ make_values_for_phi (tree phi, basic_block block)
     }
 }
 
+/* Return true if both the statement and the value handles have no
+   vuses, or both the statement and the value handle do have vuses.  
+
+   Unlike SCCVN, PRE needs not only to know equivalence, but what the
+   actual vuses are so it can translate them through blocks.  Thus,
+   we have to make a new value handle if the existing one has no
+   vuses but needs them.  */
+
+static bool
+vuse_equiv (tree vh1, tree stmt)
+{
+  bool stmt_has_vuses = !ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_USES);
+  return (VALUE_HANDLE_VUSES (vh1) && stmt_has_vuses)
+    || (!VALUE_HANDLE_VUSES (vh1) && !stmt_has_vuses);
+}
 
 /* Create value handles for STMT in BLOCK.  Return true if we handled
    the statement.  */
@@ -3416,7 +3353,7 @@ make_values_for_stmt (tree stmt, basic_block block)
 	{
 	  /* If we already have a value number for the LHS, reuse
 	     it rather than creating a new one.  */
-	  if (lhsval)
+	  if (lhsval && vuse_equiv (lhsval, stmt))
 	    {
 	      set_value_handle (newt, lhsval);
 	      if (!is_gimple_min_invariant (lhsval))
@@ -4001,7 +3938,6 @@ execute_pre (bool do_fre)
      computing ANTIC, either, even though it's plenty fast.  */
   if (!do_fre && n_basic_blocks < 4000)
     {
-      compute_antic_safe ();
       compute_antic ();
       insert ();
     }
