@@ -1,3 +1,10 @@
+2007-07-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31198
+	* gfortran.dg/min_max_optional_1.f90: New test.
+	* gfortran.dg/min_max_optional_2.f90: New test.
+	* gfortran.dg/min_max_optional_3.f90: New test.
+
 2007-07-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/32545
@@ -16,7 +23,7 @@
 2007-07-03  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/32579
-        * gfortran.dg/iso_c_binding_only.f03: Updated test case.
+	* gfortran.dg/iso_c_binding_only.f03: Updated test case.
 
 2007-07-03  Tobias Burnus  <burnus@net-b.de>
 
