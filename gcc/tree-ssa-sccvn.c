@@ -1017,14 +1017,6 @@ set_ssa_val_to (tree from, tree to)
   tree currval;
   gcc_assert (to != NULL);
 
-  /* Make sure we don't create chains of copies, so that we get the
-     best value numbering.  visit_copy has code to make sure this doesn't
-     happen, we are doing this here to assert that nothing else breaks
-     this.  */
-  gcc_assert (TREE_CODE (to) != SSA_NAME
-	      || TREE_CODE (SSA_VAL (to)) != SSA_NAME
-	      || SSA_VAL (to) == to
-	      || to == from);
   /* The only thing we allow as value numbers are ssa_names and
      invariants.  So assert that here.  */
   gcc_assert (TREE_CODE (to) == SSA_NAME || is_gimple_min_invariant (to));

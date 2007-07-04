@@ -1,3 +1,8 @@
+2007-07-04  Daniel Berlin  <dberlin@dberlin.org>
+
+	* gcc.c-torture/compile/pr32606.c: New.
+	* gfortran.fortran-torture/execute/pr32604.f90: New.
+
 2007-07-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/visibility-12.c: New test.
