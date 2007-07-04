@@ -1,3 +1,10 @@
+2007-07-04  Richard Sandiford  <richard@codesourcery.com>
+
+	* config.gcc (arm-wrs-vxworks): Don't include svr4.h.
+	* config/vxworks.h (PTRDIFF_TYPE, SIZE_TYPE, TARGET_POSIX_IO): Define.
+	* config/arm/vxworks.h (ASM_SPEC): Delete.
+	(SUBTARGET_EXTRA_ASM_SPEC): Define.
+
 2007-07-04  Sebastian Pop  <sebpop@gmail.com>
 
 	* tree-data-ref.h (data_dependence_relation): New flag reversed_p.

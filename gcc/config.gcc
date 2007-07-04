@@ -700,7 +700,7 @@ arm-semi-aof | armel-semi-aof)
 	tmake_file="arm/t-arm arm/t-semi"
 	;;
 arm-wrs-vxworks)
-	tm_file="elfos.h svr4.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
+	tm_file="elfos.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
 	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
 	;;
 arm*-*-freebsd*|strongarm*-*-freebsd*)
