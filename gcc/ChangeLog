@@ -4,6 +4,9 @@
 
 2007-07-04  Ben Elliston  <bje@au.ibm.com>
 
+	* dwarf2out.c: Move DWARF2 abbreviation glossary closer to the top
+	of this file.
+
 	* c-objc-common.c (c_types_compatible_p): Fix indentation.
 
 	* doc/tm.texi (Run-time Target): Capitalise "CPU".

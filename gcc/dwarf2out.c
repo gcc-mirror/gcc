@@ -34,6 +34,29 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    DWARF2_DEBUGGING_INFO, deals with the other DWARF 2 debugging
    information.  */
 
+/* DWARF2 Abbreviation Glossary:
+
+   CFA = Canonical Frame Address
+	   a fixed address on the stack which identifies a call frame.
+	   We define it to be the value of SP just before the call insn.
+	   The CFA register and offset, which may change during the course
+	   of the function, are used to calculate its value at runtime.
+
+   CFI = Call Frame Instruction
+	   an instruction for the DWARF2 abstract machine
+
+   CIE = Common Information Entry
+	   information describing information common to one or more FDEs
+
+   DIE = Debugging Information Entry
+
+   FDE = Frame Description Entry
+	   information describing the stack call frame, in particular,
+	   how to restore registers
+
+   DW_CFA_... = DWARF2 CFA call frame instruction
+   DW_TAG_... = DWARF2 DIE tag */
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -71,24 +94,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #ifdef DWARF2_DEBUGGING_INFO
 static void dwarf2out_source_line (unsigned int, const char *);
 #endif
-
-/* DWARF2 Abbreviation Glossary:
-   CFA = Canonical Frame Address
-	   a fixed address on the stack which identifies a call frame.
-	   We define it to be the value of SP just before the call insn.
-	   The CFA register and offset, which may change during the course
-	   of the function, are used to calculate its value at runtime.
-   CFI = Call Frame Instruction
-	   an instruction for the DWARF2 abstract machine
-   CIE = Common Information Entry
-	   information describing information common to one or more FDEs
-   DIE = Debugging Information Entry
-   FDE = Frame Description Entry
-	   information describing the stack call frame, in particular,
-	   how to restore registers
-
-   DW_CFA_... = DWARF2 CFA call frame instruction
-   DW_TAG_... = DWARF2 DIE tag */
 
 #ifndef DWARF2_FRAME_INFO
 # ifdef DWARF2_DEBUGGING_INFO
