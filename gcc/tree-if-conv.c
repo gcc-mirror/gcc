@@ -113,7 +113,8 @@ static bool if_convertible_stmt_p (struct loop *, basic_block, tree);
 static bool if_convertible_bb_p (struct loop *, basic_block, basic_block);
 static bool if_convertible_loop_p (struct loop *, bool);
 static void add_to_predicate_list (basic_block, tree);
-static tree add_to_dst_predicate_list (struct loop * loop, basic_block, tree, tree,
+static tree add_to_dst_predicate_list (struct loop * loop, edge,
+				       tree, tree,
 				       block_stmt_iterator *);
 static void clean_predicate_lists (struct loop *loop);
 static basic_block find_phi_replacement_condition (struct loop *loop,
@@ -143,7 +144,6 @@ tree_if_conversion (struct loop *loop, bool for_vectorizer)
 {
   basic_block bb;
   block_stmt_iterator itr;
-  tree cond;
   unsigned int i;
 
   ifc_bbs = NULL;
@@ -163,11 +163,11 @@ tree_if_conversion (struct loop *loop, bool for_vectorizer)
       return false;
     }
 
-  cond = NULL_TREE;
-
   /* Do actual work now.  */
   for (i = 0; i < loop->num_nodes; i++)
     {
+      tree cond;
+
       bb = ifc_bbs [i];
 
       /* Update condition using predicate list.  */
@@ -191,7 +191,6 @@ tree_if_conversion (struct loop *loop, bool for_vectorizer)
 	  basic_block bb_n = single_succ (bb);
 	  if (cond != NULL_TREE)
 	    add_to_predicate_list (bb_n, cond);
-	  cond = NULL_TREE;
 	}
     }
 
@@ -275,12 +274,12 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
   /* Add new condition into destination's predicate list.  */
 
   /* If 'c' is true then TRUE_EDGE is taken.  */
-  add_to_dst_predicate_list (loop, true_edge->dest, cond,
+  add_to_dst_predicate_list (loop, true_edge, cond,
 			     unshare_expr (c), bsi);
 
   /* If 'c' is false then FALSE_EDGE is taken.  */
   c2 = invert_truthvalue (unshare_expr (c));
-  add_to_dst_predicate_list (loop, false_edge->dest, cond, c2, bsi);
+  add_to_dst_predicate_list (loop, false_edge, cond, c2, bsi);
 
   /* Now this conditional statement is redundant. Remove it.
      But, do not remove exit condition! Update exit condition
@@ -565,7 +564,15 @@ if_convertible_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
       /* ??? Check data dependency for vectorizer.  */
 
       /* What about phi nodes ? */
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+      phi = phi_nodes (bb);
+
+      /* Clear aux field of incoming edges to a bb with a phi node.  */
+      if (phi)
+	FOR_EACH_EDGE (e, ei, bb->preds)
+	  e->aux = NULL;
+
+      /* Check statements.  */
+      for (; phi; phi = PHI_CHAIN (phi))
 	if (!if_convertible_phi_p (loop, bb, phi))
 	  return false;
 
@@ -602,13 +609,13 @@ add_to_predicate_list (basic_block bb, tree new_cond)
    existing condition.  */
 
 static tree
-add_to_dst_predicate_list (struct loop * loop, basic_block bb,
+add_to_dst_predicate_list (struct loop * loop, edge e,
 			   tree prev_cond, tree cond,
 			   block_stmt_iterator *bsi)
 {
   tree new_cond = NULL_TREE;
 
-  if (!flow_bb_inside_loop_p (loop, bb))
+  if (!flow_bb_inside_loop_p (loop, e->dest))
     return NULL_TREE;
 
   if (prev_cond == boolean_true_node || !prev_cond)
@@ -629,6 +636,11 @@ add_to_dst_predicate_list (struct loop * loop, basic_block bb,
       if (tmp_stmts2)
         bsi_insert_before (bsi, tmp_stmts2, BSI_SAME_STMT);
 
+      /* Add the condition to aux field of the edge.  In case edge
+	 destination is a PHI node, this condition will be ANDed with
+	 block predicate to construct complete condition.  */
+      e->aux = cond;
+
       /* new_cond == prev_cond AND cond */
       tmp = build2 (TRUTH_AND_EXPR, boolean_type_node,
 		    unshare_expr (prev_cond), cond);
@@ -636,22 +648,30 @@ add_to_dst_predicate_list (struct loop * loop, basic_block bb,
       bsi_insert_before (bsi, tmp_stmt, BSI_SAME_STMT);
       new_cond = TREE_OPERAND (tmp_stmt, 0);
     }
-  add_to_predicate_list (bb, new_cond);
+  add_to_predicate_list (e->dest, new_cond);
   return new_cond;
 }
 
-/* During if-conversion aux field from basic block is used to hold predicate
-   list. Clean each basic block's predicate list for the given LOOP.  */
+/* During if-conversion aux field from basic block structure is used to hold
+   predicate list. Clean each basic block's predicate list for the given LOOP.
+   Also clean aux field of succesor edges, used to hold true and false
+   condition from conditional expression.  */
 
 static void
 clean_predicate_lists (struct loop *loop)
 {
   basic_block *bb;
   unsigned int i;
+  edge e;
+  edge_iterator ei;
+
   bb = get_loop_body (loop);
   for (i = 0; i < loop->num_nodes; i++)
-    bb[i]->aux = NULL;
-
+    {
+      bb[i]->aux = NULL;
+      FOR_EACH_EDGE (e, ei, bb[i]->succs)
+	e->aux = NULL;
+    }
   free (bb);
 }
 
@@ -664,13 +684,12 @@ find_phi_replacement_condition (struct loop *loop,
 				basic_block bb, tree *cond,
                                 block_stmt_iterator *bsi)
 {
-  basic_block first_bb = NULL;
-  basic_block second_bb = NULL;
+  edge first_edge, second_edge;
   tree tmp_cond, new_stmts;
 
   gcc_assert (EDGE_COUNT (bb->preds) == 2);
-  first_bb = (EDGE_PRED (bb, 0))->src;
-  second_bb = (EDGE_PRED (bb, 1))->src;
+  first_edge = EDGE_PRED (bb, 0);
+  second_edge = EDGE_PRED (bb, 1);
 
   /* Use condition based on following criteria:
      1)
@@ -691,42 +710,55 @@ find_phi_replacement_condition (struct loop *loop,
        S3: x = (c == d) ? b : a;
 
        S3 is preferred over S1 and S2*, Make 'b' first_bb and use 
-       its condition.  
+       its condition.
 
      4) If  pred B is dominated by pred A then use pred B's condition.
         See PR23115.  */
 
   /* Select condition that is not TRUTH_NOT_EXPR.  */
-  tmp_cond = first_bb->aux;
+  tmp_cond = (first_edge->src)->aux;
   if (TREE_CODE (tmp_cond) == TRUTH_NOT_EXPR)
     {
-      basic_block tmp_bb;
-      tmp_bb = first_bb;
-      first_bb = second_bb;
-      second_bb = tmp_bb;
+      edge tmp_edge;
+
+      tmp_edge = first_edge;
+      first_edge = second_edge;
+      second_edge = tmp_edge;
     }
 
   /* Check if FIRST_BB is loop header or not and make sure that
      FIRST_BB does not dominate SECOND_BB.  */
-  if (first_bb == loop->header
-      || dominated_by_p (CDI_DOMINATORS, second_bb, first_bb))
+  if (first_edge->src == loop->header
+      || dominated_by_p (CDI_DOMINATORS,
+			 second_edge->src, first_edge->src))
     {
-      tmp_cond = second_bb->aux;
-      if (TREE_CODE (tmp_cond) == TRUTH_NOT_EXPR)
-	{
-	  /* Select non loop header condition but do not switch basic blocks.  */
-	  *cond = invert_truthvalue (unshare_expr (tmp_cond));
-	}
+      *cond = (second_edge->src)->aux;
+
+      /* If there is a condition on an incoming edge,
+	 AND it with the incoming bb predicate.  */
+      if (second_edge->aux)
+	*cond = build2 (TRUTH_AND_EXPR, boolean_type_node,
+			*cond, first_edge->aux);
+
+      if (TREE_CODE (*cond) == TRUTH_NOT_EXPR)
+	/* We can be smart here and choose inverted
+	   condition without switching bbs.  */
+	  *cond = invert_truthvalue (*cond);
       else
-	{
-	  /* Select non loop header condition.  */
-	  first_bb = second_bb;
-	  *cond = first_bb->aux;
-	}
+	/* Select non loop header bb.  */
+	first_edge = second_edge;
     }
   else
-    /* FIRST_BB is not loop header */
-    *cond = first_bb->aux;
+    {
+      /* FIRST_BB is not loop header */
+      *cond = (first_edge->src)->aux;
+
+      /* If there is a condition on an incoming edge,
+	 AND it with the incoming bb predicate.  */
+      if (first_edge->aux)
+	*cond = build2 (TRUTH_AND_EXPR, boolean_type_node,
+			*cond, first_edge->aux);
+    }
 
   /* Create temp. for the condition. Vectorizer prefers to have gimple
      value as condition. Various targets use different means to communicate
@@ -746,7 +778,7 @@ find_phi_replacement_condition (struct loop *loop,
 
   gcc_assert (*cond);
 
-  return first_bb;
+  return first_edge->src;
 }
 
 
@@ -776,10 +808,6 @@ replace_phi_with_cond_modify_expr (tree phi, tree cond, basic_block true_bb,
 
   /* Find basic block and initialize iterator.  */
   bb = bb_for_stmt (phi);
-
-  new_stmt = NULL_TREE;
-  arg_0 = NULL_TREE;
-  arg_1 = NULL_TREE;
 
   /* Use condition that is not TRUTH_NOT_EXPR in conditional modify expr.  */
   if (EDGE_PRED (bb, 1)->src == true_bb)

@@ -1,3 +1,23 @@
+2007-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/31966
+	PR tree-optimization/32533
+	* tree-if-conv.c (add_to_dst_predicate_list): Use "edge", not
+	"basic_block" description as its third argument.  Update function
+	calls to get destination bb from "edge" argument.  Save "cond" into
+	aux field of the edge.  Update prototype for changed arguments.
+	(if_convertible_loop_p): Clear aux field of incoming edges if bb
+	contains phi node.
+	(find_phi_replacement_condition): Operate on incoming edges, not
+	on predecessor blocks.  If there is a condition saved in the
+	incoming edge aux field, AND it with incoming bb predicate.
+	Return source bb of the first edge.
+	(clean_predicate_lists): Clean aux field of outgoing node edges.
+	(tree_if_conversion): Do not initialize cond variable. Move
+	variable declaration into the loop.
+	(replace_phi_with_cond_gimple_modify_stmt): Remove unneded
+	initializations of new_stmt, arg0 and arg1 variables.
+
 2007-07-04  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/32506

@@ -1,3 +1,10 @@
+2007-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/31966
+	PR tree-optimization/32533
+	* gcc.dg/tree-ssa/pr31966.c: New runtime test.
+	* gfortran.dg/pr32533.f90: Ditto.
+
 2007-07-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/c99-math.h: Fix typo.
