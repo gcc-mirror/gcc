@@ -1,3 +1,15 @@
+2007-07-04  Sebastian Pop  <sebpop@gmail.com>
+
+	PR middle-end/32457
+	* tree-data-ref.c (analyze_siv_subscript_cst_affine,
+	compute_overlap_steps_for_affine_1_2, analyze_subscript_affine_affine,
+	init_omega_for_ddr_1): Use non conservative number of iterations
+	estimations.
+	(analyze_subscript_affine_affine): Use HOST_WIDE_INT instead of int.
+	(analyze_siv_subscript): Remove FIXME and reinitialization of 
+	last_conflicts to chrec_dont_know.
+	* testsuite/gfortran.dg/vect/pr32457.f90: New.
+
 2007-07-04  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* tree.c (maybe_canonicalize_argtypes): Improve description.

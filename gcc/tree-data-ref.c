@@ -1632,7 +1632,7 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 
 		      /* Perform weak-zero siv test to see if overlap is
 			 outside the loop bounds.  */
-		      numiter = estimated_loop_iterations_int (loop, true);
+		      numiter = estimated_loop_iterations_int (loop, false);
 
 		      if (numiter >= 0
 			  && compare_tree_int (tmp, numiter) > 0)
@@ -1711,7 +1711,7 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 
 		      /* Perform weak-zero siv test to see if overlap is
 			 outside the loop bounds.  */
-		      numiter = estimated_loop_iterations_int (loop, true);
+		      numiter = estimated_loop_iterations_int (loop, false);
 
 		      if (numiter >= 0
 			  && compare_tree_int (tmp, numiter) > 0)
@@ -1852,10 +1852,11 @@ compute_overlap_steps_for_affine_1_2 (tree chrec_a, tree chrec_b,
   step_y = int_cst_value (CHREC_RIGHT (chrec_a));
   step_z = int_cst_value (CHREC_RIGHT (chrec_b));
 
-  niter_x = estimated_loop_iterations_int
-	  	(get_chrec_loop (CHREC_LEFT (chrec_a)), true);
-  niter_y = estimated_loop_iterations_int (get_chrec_loop (chrec_a), true);
-  niter_z = estimated_loop_iterations_int (get_chrec_loop (chrec_b), true);
+  niter_x = 
+    estimated_loop_iterations_int (get_chrec_loop (CHREC_LEFT (chrec_a)),
+				   false);
+  niter_y = estimated_loop_iterations_int (get_chrec_loop (chrec_a), false);
+  niter_z = estimated_loop_iterations_int (get_chrec_loop (chrec_b), false);
   
   if (niter_x < 0 || niter_y < 0 || niter_z < 0)
     {
@@ -1961,8 +1962,8 @@ analyze_subscript_affine_affine (tree chrec_a,
 				 tree *last_conflicts)
 {
   unsigned nb_vars_a, nb_vars_b, dim;
-  int init_a, init_b, gamma, gcd_alpha_beta;
-  int tau1, tau2;
+  HOST_WIDE_INT init_a, init_b, gamma, gcd_alpha_beta;
+  HOST_WIDE_INT tau1, tau2;
   lambda_matrix A, U, S;
 
   if (eq_evolutions_p (chrec_a, chrec_b))
@@ -2012,14 +2013,14 @@ analyze_subscript_affine_affine (tree chrec_a,
     {
       if (nb_vars_a == 1 && nb_vars_b == 1)
 	{
-	  int step_a, step_b;
+	  HOST_WIDE_INT step_a, step_b;
 	  HOST_WIDE_INT niter, niter_a, niter_b;
 	  affine_fn ova, ovb;
 
-	  niter_a = estimated_loop_iterations_int
-			(get_chrec_loop (chrec_a), true);
-	  niter_b = estimated_loop_iterations_int
-			(get_chrec_loop (chrec_b), true);
+	  niter_a = estimated_loop_iterations_int (get_chrec_loop (chrec_a),
+						   false);
+	  niter_b = estimated_loop_iterations_int (get_chrec_loop (chrec_b),
+						   false);
 	  if (niter_a < 0 || niter_b < 0)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2116,18 +2117,18 @@ analyze_subscript_affine_affine (tree chrec_a,
 	     | x0 = i0 + i1 * t, 
 	     | y0 = j0 + j1 * t.  */
       
-	  int i0, j0, i1, j1;
+	  HOST_WIDE_INT i0, j0, i1, j1;
 
 	  /* X0 and Y0 are the first iterations for which there is a
 	     dependence.  X0, Y0 are two solutions of the Diophantine
 	     equation: chrec_a (X0) = chrec_b (Y0).  */
-	  int x0, y0;
-	  int niter, niter_a, niter_b;
+	  HOST_WIDE_INT x0, y0;
+	  HOST_WIDE_INT niter, niter_a, niter_b;
 
-	  niter_a = estimated_loop_iterations_int
-			(get_chrec_loop (chrec_a), true);
-	  niter_b = estimated_loop_iterations_int
-			(get_chrec_loop (chrec_b), true);
+	  niter_a = estimated_loop_iterations_int (get_chrec_loop (chrec_a),
+						   false);
+	  niter_b = estimated_loop_iterations_int (get_chrec_loop (chrec_b),
+						   false);
 
 	  if (niter_a < 0 || niter_b < 0)
 	    {
@@ -2361,9 +2362,6 @@ analyze_siv_subscript (tree chrec_a,
 	  analyze_subscript_affine_affine (chrec_a, chrec_b, 
 					   overlaps_a, overlaps_b, 
 					   last_conflicts);
-	  /* FIXME: The number of iterations is a symbolic expression.
-	     Compute it properly.  */
-	  *last_conflicts = chrec_dont_know;
 
 	  if (CF_NOT_KNOWN_P (*overlaps_a)
 	      || CF_NOT_KNOWN_P (*overlaps_b))
@@ -3466,7 +3464,7 @@ init_omega_for_ddr_1 (struct data_reference *dra, struct data_reference *drb,
   for (i = 0; i <= DDR_INNER_LOOP (ddr) 
 	 && VEC_iterate (loop_p, DDR_LOOP_NEST (ddr), i, loopi); i++)
     {
-      HOST_WIDE_INT nbi = estimated_loop_iterations_int (loopi, true);
+      HOST_WIDE_INT nbi = estimated_loop_iterations_int (loopi, false);
 
       /* 0 <= loop_x */
       ineq = omega_add_zero_geq (pb, omega_black);
