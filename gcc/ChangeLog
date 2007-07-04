@@ -1,3 +1,11 @@
+2007-07-04  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/32506
+	Backport from mainline.
+	* config/sh/sh.md (udivsi3_i1_media): Use target_reg_operand
+	predicate instead of target_operand.
+	(divsi3_i1_media, divsi3_media_2): Likewise.
+
 2007-07-03  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:

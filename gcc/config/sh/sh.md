@@ -1676,7 +1676,7 @@
    (clobber (reg:DI TR0_REG))
    (clobber (reg:DI TR1_REG))
    (clobber (reg:DI TR2_REG))
-   (use (match_operand 1 "target_operand" "b"))]
+   (use (match_operand 1 "target_reg_operand" "b"))]
   "TARGET_SHMEDIA && (! TARGET_SHMEDIA_FPU || ! TARGET_DIVIDE_FP)"
   "blink	%1, r18"
   [(set_attr "type" "sfunc")
@@ -1877,7 +1877,7 @@
    (clobber (reg:SI R20_REG))
    (clobber (reg:SI R21_REG))
    (clobber (reg:SI TR0_REG))
-   (use (match_operand 1 "target_operand" "b"))]
+   (use (match_operand 1 "target_reg_operand" "b"))]
   "TARGET_SHMEDIA && (! TARGET_SHMEDIA_FPU || ! TARGET_DIVIDE_FP)"
   "blink	%1, r18"
   [(set_attr "type" "sfunc")])
@@ -1891,7 +1891,7 @@
    (clobber (reg:SI R21_REG))
    (clobber (reg:SI TR0_REG))
    (use (reg:SI R20_REG))
-   (use (match_operand 1 "target_operand" "b"))]
+   (use (match_operand 1 "target_reg_operand" "b"))]
   "TARGET_SHMEDIA && (! TARGET_SHMEDIA_FPU || ! TARGET_DIVIDE_FP)"
   "blink	%1, r18"
   [(set_attr "type" "sfunc")])
