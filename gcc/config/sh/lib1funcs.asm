@@ -2125,6 +2125,7 @@ GLOBAL(ic_invalidate):
 	add	r1,r0
 	jmp	@r0
 	mov.l	@(4,r1),r0
+	.align	2
 #ifndef __pic__
 0:	.long   GLOBAL(ic_invalidate_array)
 #else /* __pic__ */

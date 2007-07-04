@@ -1,5 +1,9 @@
 2007-07-04  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/sh/lib1funcs.asm (ic_invalidate): Align constant pool.
+
+2007-07-04  Richard Sandiford  <richard@codesourcery.com>
+
 	* config.gcc (arm-wrs-vxworks): Don't include svr4.h.
 	* config/vxworks.h (PTRDIFF_TYPE, SIZE_TYPE, TARGET_POSIX_IO): Define.
 	* config/arm/vxworks.h (ASM_SPEC): Delete.
