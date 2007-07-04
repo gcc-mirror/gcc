@@ -5521,11 +5521,6 @@ cp_parser_new_type_id (cp_parser* parser, tree *nelts)
     }
 
   type = groktypename (&type_specifier_seq, new_declarator);
-  if (TREE_CODE (type) == ARRAY_TYPE && *nelts == NULL_TREE)
-    {
-      *nelts = array_type_nelts_top (type);
-      type = TREE_TYPE (type);
-    }
   return type;
 }
 

@@ -1,3 +1,8 @@
+2007-06-29  Dave Brolley  <brolley@redhat.com>
+
+	PR c++/31743
+	* g++.dg/init/new20.C: New test.
+
 2007-07-03  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/32579
