@@ -1,3 +1,8 @@
+2007-07-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* target-def.h (TARGET_INITIALIZER): Remove trailing whitespace
+	after \.
+
 2007-07-04  David Ung  <davidu@mips.com>
             Joseph Myers  <joseph@codesourcery.com>
 
