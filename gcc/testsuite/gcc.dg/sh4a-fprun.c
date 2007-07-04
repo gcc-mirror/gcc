@@ -1,5 +1,7 @@
 /* Verify that fsca and fssra yield reasonable results.  */
-/* { dg-do run { target "sh*-*-*" } } */
+/* This test calls the sinf and cosf library functions for targets other
+   than sh4a, but the VxWorks kernel doesn't have those functions.  */
+/* { dg-do run { target { "sh*-*-*" && { ! vxworks_kernel } } } } */
 /* { dg-options "-O -ffast-math" } */
 
 #include <math.h>
