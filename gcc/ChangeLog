@@ -1,5 +1,12 @@
 2007-07-04  Sebastian Pop  <sebpop@gmail.com>
 
+	* tree-data-ref.h (data_dependence_relation): New flag reversed_p.
+	(DDR_REVERSED_P): New.
+	* tree-data-ref.c (initialize_data_dependence_relation,
+	build_classic_dist_vector): Set DDR_REVERSED_P.
+
+2007-07-04  Sebastian Pop  <sebpop@gmail.com>
+
 	PR middle-end/32457
 	* tree-data-ref.c (analyze_siv_subscript_cst_affine,
 	compute_overlap_steps_for_affine_1_2, analyze_subscript_affine_affine,
