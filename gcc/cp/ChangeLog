@@ -1,3 +1,10 @@
+2007-07-04  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* decl.c (build_ptrmemfunc_type): Always use structural equality
+	tests when comparing pointer-to-member-function types, because the
+	handling of TYPE_GET_PTRMEMFUNC_TYPE currently defeats canonical
+	types.
+	
 2007-07-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* init.c (build_new): Tweak comment.

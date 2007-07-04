@@ -6602,10 +6602,10 @@ build_ptrmemfunc_type (tree type)
      later.  */
   TYPE_SET_PTRMEMFUNC_TYPE (type, t);
 
-  if (TYPE_STRUCTURAL_EQUALITY_P (type))
-    SET_TYPE_STRUCTURAL_EQUALITY (t);
-  else if (TYPE_CANONICAL (type) != type)
-    TYPE_CANONICAL (t) = build_ptrmemfunc_type (TYPE_CANONICAL (type));
+  /* Managing canonical types for the RECORD_TYPE behind a
+     pointer-to-member function is a nightmare, so use structural
+     equality for now.  */
+  SET_TYPE_STRUCTURAL_EQUALITY (t);
 
   return t;
 }
