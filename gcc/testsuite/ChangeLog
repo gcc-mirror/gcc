@@ -1,4 +1,14 @@
-2007-06-29  Dave Brolley  <brolley@redhat.com>
+2007-07-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/32545
+	* gfortran.dg/fmt_error.f90: New test.
+
+2007-07-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/32612
+	* gfortran.dg/interface_13.f90: New test.
+
+2007-07-03  Dave Brolley  <brolley@redhat.com>
 
 	PR c++/31743
 	* g++.dg/init/new20.C: New test.
