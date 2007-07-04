@@ -30,7 +30,20 @@ Boston, MA 02110-1301, USA.  */
   while (0)
 
 #undef SUBTARGET_OVERRIDE_OPTIONS
-#define SUBTARGET_OVERRIDE_OPTIONS VXWORKS_OVERRIDE_OPTIONS
+#define SUBTARGET_OVERRIDE_OPTIONS				\
+  do								\
+    {								\
+      VXWORKS_OVERRIDE_OPTIONS;					\
+      /* The kernel loader cannot handle the relaxation		\
+	 relocations, so it cannot load kernel modules		\
+	 (which are ET_REL) or RTP executables (which are	\
+	 linked with --emit-relocs).  No relaxation relocations	\
+	 appear in shared libraries, so relaxation is OK	\
+	 for RTP PIC.  */					\
+      if (TARGET_RELAX && !(TARGET_VXWORKS_RTP && flag_pic))	\
+	error ("-mrelax is only supported for RTP PIC");	\
+    }								\
+  while (0)
 
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC VXWORKS_ADDITIONAL_CPP_SPEC

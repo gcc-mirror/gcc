@@ -1,3 +1,8 @@
+2007-07-04  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.dg/sh-relax.c: Skip for VxWorks if non-PIC.
+	* gcc.dg/sh-relax-vxworks.c: New test.
+
 2007-07-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/32500
