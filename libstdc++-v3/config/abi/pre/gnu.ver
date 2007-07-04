@@ -122,8 +122,8 @@ GLIBCXX_3.4 {
       std::__num_base::_S_atoms_out;
       std::__moneypunct_cache*;
       std::__numpunct_cache*;
-      std::__timepunct_cache*;
-      __gnu_debug::_Error_formatter*
+      std::__timepunct_cache*
+#     __gnu_debug::_Error_formatter*
     };
 
     # Names not in an 'extern' block are mangled names.
@@ -138,6 +138,13 @@ GLIBCXX_3.4 {
     _ZNK11__gnu_debug19_Safe_iterator_base11_M_singularEv;
     _ZNK11__gnu_debug19_Safe_iterator_base14_M_can_compareERKS0_;
 
+    # __gnu_debug::_Error_formatter
+    _ZNK11__gnu_debug16_Error_formatter10_M_message*;
+    _ZNK11__gnu_debug16_Error_formatter10_Parameter*;
+    _ZNK11__gnu_debug16_Error_formatter13_M_print_word*;
+    _ZNK11__gnu_debug16_Error_formatter15_M_print_string*;
+    _ZNK11__gnu_debug16_Error_formatter8_M_error*;
+    
     # std::string
     _ZNSsC*;
     _ZNSsD*;
@@ -707,6 +714,12 @@ GLIBCXX_3.4.9 {
     _ZNKSt13bad_exception4whatEv;
 
 } GLIBCXX_3.4.8;
+
+GLIBCXX_3.4.10 {
+
+    _ZNK11__gnu_debug16_Error_formatter17_M_get_max_lengthEv;
+
+} GLIBCXX_3.4.9;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
