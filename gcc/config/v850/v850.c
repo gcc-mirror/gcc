@@ -939,84 +939,6 @@ output_move_single (rtx * operands)
 }
 
 
-/* Return appropriate code to load up an 8 byte integer or
-   floating point value */
-
-const char *
-output_move_double (rtx * operands)
-{
-  enum machine_mode mode = GET_MODE (operands[0]);
-  rtx dst = operands[0];
-  rtx src = operands[1];
-
-  if (register_operand (dst, mode)
-      && register_operand (src, mode))
-    {
-      if (REGNO (src) + 1 == REGNO (dst))
-	return "mov %R1,%R0\n\tmov %1,%0";
-      else
-	return "mov %1,%0\n\tmov %R1,%R0";
-    }
-
-  /* Storing 0 */
-  if (GET_CODE (dst) == MEM
-      && ((GET_CODE (src) == CONST_INT && INTVAL (src) == 0)
-	  || (GET_CODE (src) == CONST_DOUBLE && CONST_DOUBLE_OK_FOR_G (src))))
-    return "st.w %.,%0\n\tst.w %.,%R0";
-
-  if (GET_CODE (src) == CONST_INT || GET_CODE (src) == CONST_DOUBLE)
-    {
-      HOST_WIDE_INT high_low[2];
-      int i;
-      rtx xop[10];
-
-      if (GET_CODE (src) == CONST_DOUBLE)
-	const_double_split (src, &high_low[1], &high_low[0]);
-      else
-	{
-	  high_low[0] = INTVAL (src);
-	  high_low[1] = (INTVAL (src) >= 0) ? 0 : -1;
-	}
-
-      for (i = 0; i < 2; i++)
-	{
-	  xop[0] = gen_rtx_REG (SImode, REGNO (dst)+i);
-	  xop[1] = GEN_INT (high_low[i]);
-	  output_asm_insn (output_move_single (xop), xop);
-	}
-
-      return "";
-    }
-
-  if (GET_CODE (src) == MEM)
-    {
-      int ptrreg = -1;
-      int dreg = REGNO (dst);
-      rtx inside = XEXP (src, 0);
-
-      if (GET_CODE (inside) == REG)
- 	ptrreg = REGNO (inside);
-      else if (GET_CODE (inside) == SUBREG)
-	ptrreg = subreg_regno (inside);
-      else if (GET_CODE (inside) == PLUS)
-	ptrreg = REGNO (XEXP (inside, 0));
-      else if (GET_CODE (inside) == LO_SUM)
-	ptrreg = REGNO (XEXP (inside, 0));
-
-      if (dreg == ptrreg)
-	return "ld.w %R1,%R0\n\tld.w %1,%0";
-    }
-
-  if (GET_CODE (src) == MEM)
-    return "ld.w %1,%0\n\tld.w %R1,%R0";
-  
-  if (GET_CODE (dst) == MEM)
-    return "st.w %1,%0\n\tst.w %R1,%R0";
-
-  return "mov %1,%0\n\tmov %R1,%R0";
-}
-
-
 /* Return maximum offset supported for a short EP memory reference of mode
    MODE and signedness UNSIGNEDP.  */
 
@@ -1746,7 +1668,7 @@ Saved %d bytes via prologue function (%d vs. %d) for function %s\n",
 	  if (init_stack_alloc)
 	    emit_insn (gen_addsi3 (stack_pointer_rtx,
 				   stack_pointer_rtx,
-				   GEN_INT (-init_stack_alloc)));
+				   GEN_INT (- (signed) init_stack_alloc)));
 	  
 	  /* Save the return pointer first.  */
 	  if (num_save > 0 && REGNO (save_regs[num_save-1]) == LINK_POINTER_REGNUM)
@@ -1800,7 +1722,7 @@ expand_epilogue (void)
   int offset;
   unsigned int size = get_frame_size ();
   long reg_saved = 0;
-  unsigned int actual_fsize = compute_frame_size (size, &reg_saved);
+  int actual_fsize = compute_frame_size (size, &reg_saved);
   unsigned int init_stack_free = 0;
   rtx restore_regs[32];
   rtx restore_all;
@@ -1844,7 +1766,7 @@ expand_epilogue (void)
   
   if (TARGET_PROLOG_FUNCTION
       && num_restore > 0
-      && actual_fsize >= default_stack
+      && actual_fsize >= (signed) default_stack
       && !interrupt_handler)
     {
       int alloc_stack = (4 * num_restore) + default_stack;
@@ -1933,7 +1855,7 @@ Saved %d bytes via epilogue function (%d vs. %d) in function %s\n",
       if (actual_fsize && !CONST_OK_FOR_K (-actual_fsize))
 	init_stack_free = 4 * num_restore;
       else
-	init_stack_free = actual_fsize;
+	init_stack_free = (signed) actual_fsize;
 
       /* Deallocate the rest of the stack if it is > 32K.  */
       if (actual_fsize > init_stack_free)
