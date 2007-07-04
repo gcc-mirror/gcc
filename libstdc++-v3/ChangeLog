@@ -1,3 +1,17 @@
+2007-07-03  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/31518
+	* include/debug/formatter.h (_Error_formatter::_M_get_max_length): New.
+	(_Error_formatter::_Error_formatter): Use it.
+	* src/debug.cc: Define.
+	(_Error_formatter::_M_error): Tweak.
+	* configure.ac: Adjust version to 6:10:0.
+	* config/abi/pre/gnu.ver: Export _Error_formatter::_M_get_max_length
+	at GLIBCXX_3.4.10.
+	* testsuite/util/testsuite_abi.cc: Add GLIBCXX_3.4.10.
+	* docs/html/debug.html: Document.
+	* configure: Regenerate.
+
 2007-07-02  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:

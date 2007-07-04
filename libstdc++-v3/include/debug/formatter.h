@@ -1,6 +1,6 @@
 // Debug-mode error formatting implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -359,7 +359,7 @@ namespace __gnu_debug
     _Error_formatter(const char* __file, size_t __line)
     : _M_file(__file), _M_line(__line), _M_num_parameters(0), _M_text(0),
       _M_max_length(78), _M_column(1), _M_first_line(true), _M_wordwrap(false)
-    { }
+    { _M_get_max_length(); }
 
     template<typename _Tp>
       void
@@ -370,6 +370,9 @@ namespace __gnu_debug
 
     void
     _M_print_string(const char* __string) const;
+
+    void
+    _M_get_max_length() const;
 
     enum { __max_parameters = 9 };
 
