@@ -708,7 +708,8 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
       /* Trap a procedure with a name the same as interface in the
 	 encompassing scope.  */
       if (sym->attr.generic != 0
-	  && (sym->attr.subroutine || sym->attr.function))
+	  && (sym->attr.subroutine || sym->attr.function)
+	  && !sym->attr.mod_proc)
 	gfc_error_now ("Name '%s' at %C is already defined"
 		       " as a generic interface at %L",
 		       name, &sym->declared_at);

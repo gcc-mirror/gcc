@@ -1,5 +1,19 @@
 2007-07-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR fortran/32545
+	* io.c (check_format): Always call gfc_error for errors.
+	(check_format_string): Change type of this function to try and
+	return the result of check_format.
+	(check_io_constraints): Return MATCH_ERROR if check_format_string
+	returns FAILURE.
+
+2007-07-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/32612
+	* decl.c (get_proc_name): Include attr->mod_proc in check for error.
+
+2007-07-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR fortran/32432
 	* gfortran.h: Change type of gfc_assign_data_value from void to try.
 	* data.c (gfc_assign_data_value): Return FAILURE if error found.
