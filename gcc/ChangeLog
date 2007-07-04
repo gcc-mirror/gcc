@@ -1,3 +1,19 @@
+2007-07-04  Nick Clifton  <nickc@redhat.com>
+
+	* target.h (struct gcc_target): Add target_help field.
+	* target-def.h (TARGET_HELP): New.
+	(TARGET_INITIALIZER): Use TARGET_HELP.
+	* opts.c (command_handle_option): Invoke target_help function, if
+	defined, when the user has specified --target-help on the command
+	line.
+	* doc/invoke.texi: Mention that --target-help might print
+	additional information.
+	* doc/tm.texi: Document TARGET_HELP hook.
+
+	* arm.c (TARGET_HELP): Override default definition.
+	(arm_target_help): New - display a wrapped list of cores and
+	architectures supported.
+
 2007-07-04  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* config/gcc/v850/v850.c (expand_prologue): Make sure
