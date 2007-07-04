@@ -842,20 +842,10 @@ extension_optional_comma:
   goto format_item;
 
 syntax:
-  /* Something went wrong.  If the format we're checking is a string,
-     generate a warning, since the program is correct.  If the format
-     is in a FORMAT statement, this messes up parsing, which is an
-     error.  */
-  if (mode != MODE_STRING)
-    gfc_error ("%s in format string at %C", error);
-  else
-    {
-      gfc_warning ("%s in format string at %C", error);
+  gfc_error ("%s in format string at %C", error);
 
-      /* TODO: More elaborate measures are needed to show where a problem
-	 is within a format string that has been calculated.  */
-    }
-
+  /* TODO: More elaborate measures are needed to show where a problem
+     is within a format string that has been calculated.  */
   rv = FAILURE;
 
 finished:
@@ -866,12 +856,12 @@ finished:
 /* Given an expression node that is a constant string, see if it looks
    like a format string.  */
 
-static void
+static try
 check_format_string (gfc_expr *e, bool is_input)
 {
   mode = MODE_STRING;
   format_string = e->value.character.string;
-  check_format (is_input);
+  return check_format (is_input);
 }
 
 
@@ -2752,8 +2742,9 @@ if (condition) \
     }
 
   expr = dt->format_expr;
-  if (expr != NULL && expr->expr_type == EXPR_CONSTANT)
-    check_format_string (expr, k == M_READ);
+  if (expr != NULL && expr->expr_type == EXPR_CONSTANT
+      && check_format_string (expr, k == M_READ) == FAILURE)
+    return MATCH_ERROR;
 
   return m;
 }
