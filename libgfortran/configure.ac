@@ -121,6 +121,7 @@ if test "x$GCC" = "xyes"; then
 fi
 AC_SUBST(AM_FCFLAGS)
 AC_SUBST(AM_CFLAGS)
+AC_SUBST(CFLAGS)
 
 # Check for symbol versioning (copied from libssp).
 AC_MSG_CHECKING([whether symbol versioning is supported])
