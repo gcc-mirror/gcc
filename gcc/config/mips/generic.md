@@ -24,7 +24,7 @@
 
 (define_insn_reservation "generic_alu" 1
   (eq_attr "type" "unknown,prefetch,prefetchx,condmove,const,arith,
-		   shift,slt,clz,trap,multi,nop")
+		   shift,slt,clz,trap,multi,nop,logical,signext,move")
   "alu")
 
 (define_insn_reservation "generic_load" 3
