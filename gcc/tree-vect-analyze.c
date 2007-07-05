@@ -482,7 +482,7 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
   /* Analyze cost. Decide if worth while to vectorize.  */
 
   min_profitable_iters = vect_estimate_min_profitable_iters (loop_vinfo);
-
+  LOOP_VINFO_COST_MODEL_MIN_ITERS (loop_vinfo) = min_profitable_iters;
   if (min_profitable_iters < 0)
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
