@@ -30,7 +30,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "bid_functions.h"
 
 #if DECIMAL_GLOBAL_ROUNDING
-  _IDEC_round __bid_IDEC_glbround = ROUNDING_TO_NEAREST;
+BID_THREAD _IDEC_round __bid_IDEC_glbround = ROUNDING_TO_NEAREST;
 
 void
 __dfp_set_round (int mode)
@@ -46,7 +46,7 @@ __dfp_get_round (void)
 #endif
 
 #if DECIMAL_GLOBAL_EXCEPTION_FLAGS
-  _IDEC_flags __bid_IDEC_glbflags = EXACT_STATUS;
+BID_THREAD _IDEC_flags __bid_IDEC_glbflags = EXACT_STATUS;
 
 #include <fenv.h>
 

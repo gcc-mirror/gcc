@@ -40,6 +40,12 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define BID_BIG_ENDIAN LIBGCC2_FLOAT_WORDS_BIG_ENDIAN
 #endif
 
+#ifndef BID_THREAD
+#ifdef USE_TLS
+#define BID_THREAD __thread
+#endif
+#endif
+
 #define _intptr_t_defined
 #define DECIMAL_CALL_BY_REFERENCE 0
 #define DECIMAL_GLOBAL_ROUNDING 1
@@ -49,6 +55,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 // Configuration Options
 
 #define SET_STATUS_FLAGS
+
+#ifndef BID_THREAD
+#define BID_THREAD
+#endif
 
 // If DECIMAL_CALL_BY_REFERENCE is defined then numerical arguments and results
 // are passed by reference otherwise they are passed by value (except that
@@ -140,11 +150,11 @@ typedef unsigned int _IDEC_flags; // could be a struct with diagnostic info
 #endif
 
 #if DECIMAL_GLOBAL_ROUNDING
-extern _IDEC_round __bid_IDEC_glbround;
+extern BID_THREAD _IDEC_round __bid_IDEC_glbround;
 #endif
 
 #if DECIMAL_GLOBAL_EXCEPTION_FLAGS
-extern _IDEC_flags __bid_IDEC_glbflags;
+extern BID_THREAD _IDEC_flags __bid_IDEC_glbflags;
 #endif
 
 #if DECIMAL_ALTERNATE_EXCEPTION_HANDLING
