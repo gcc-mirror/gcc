@@ -98,6 +98,7 @@ DJGPP			DJ Delorie		dj@delorie.com
 freebsd			Loren J. Rittle		ljrittle@acm.org
 hpux			Dave Anglin		dave.anglin@nrc.ca
 hpux			Steve Ellcey		sje@cup.hp.com
+irix, osf		Rainer Orth		ro@TechFak.Uni-Bielefeld.DE
 netbsd			Jason Thorpe		thorpej@netbsd.org
 sco5, unixware, sco udk	Kean Johnston		jkj@sco.com
 sh-linux-gnu		Kaz Kojima		kkojima@gcc.gnu.org
@@ -327,7 +328,6 @@ David O'Brien					obrien@FreeBSD.org
 Turly O'Connor					turly@apple.com
 Carlos O'Donell					carlos@codesourcery.com
 Jeffrey D. Oldham				oldham@codesourcery.com
-Rainer Orth					ro@TechFak.Uni-Bielefeld.DE
 Devang Patel					dpatel@apple.com
 Alexandre Petit-Bianco				apbianco@redhat.com
 Nicolas Pitre					nico@cam.org
