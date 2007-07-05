@@ -1,5 +1,37 @@
 2007-07-05  Dorit Nuzman  <dorit@il.ibm.com>
 
+	* tree-vectorizer.c (new_loop_vec_info): Initialize
+	LOOP_VINFO_COST_MODEL_MIN_ITERS.
+	* tree-vectorizer.h (_loop_vec_info): Added new filed
+	min_profitable_iters.
+	(LOOP_VINFO_COST_MODEL_MIN_ITERS): New access macro to above new field.
+	(TARG_SCALAR_TO_VEC_COST): Define cost of scalar to vector operation.
+	* tree-vect-analyze.c (vect_analyze_operations): Set
+	LOOP_VINFO_COST_MODEL_MIN_ITERS.
+	* tree-vect-transform.c (vect_estimate_min_profitable_iters): Use
+	VEC_length to determine if there are any LOOP_VINFO_MAY_MISALIGN_STMTS.
+	Fix calculation of peel_iters_prologue. Move consideration of epilogue
+	and prologue cost to after they are computed.
+	(vect_model_induction_cost): Use TARG_SCALAR_TO_VEC_COST instead of
+	TARG_VEC_STMT_COST.
+	(vect_model_simple_cost): Takes additional argument dt. Consider cost
+	of creating vectors from scalars according to dt.
+	(vect_model_store_cost): Likewise.
+	(vectorizable_call): Use dt array instead of scalar dt. Call
+	vect_model_simple_cost with additional argument dt.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_type_demotion): Likewise.
+	(vectorizable_type_promotion): Likewise.
+	(vectorizable_store): Use dt array instead of scalar dt. Call
+	vect_model_store_cost with additional argument dt.
+	(vect_do_peeling_for_loop_bound): Don't call
+	vect_estimate_min_profitable_iters. Instead, lookup
+	LOOP_VINFO_COST_MODEL_MIN_ITERS. Don't always print
+	"may not be profitable".	
+
+2007-07-05  Dorit Nuzman  <dorit@il.ibm.com>
+
 	PR testsuite/32014
 	* config/rs6000/altivec.md (UNSPEC_VUPKHS_V4SF, UNSPEC_VUPKLS_V4SF):
 	(UNSPEC_VUPKHU_V4SF, UNSPEC_VUPKLU_V4SF): New.

@@ -1408,6 +1408,7 @@ new_loop_vec_info (struct loop *loop)
   LOOP_VINFO_BBS (res) = bbs;
   LOOP_VINFO_EXIT_COND (res) = NULL;
   LOOP_VINFO_NITERS (res) = NULL;
+  LOOP_VINFO_COST_MODEL_MIN_ITERS (res) = 0;
   LOOP_VINFO_VECTORIZABLE_P (res) = 0;
   LOOP_PEELING_FOR_ALIGNMENT (res) = 0;
   LOOP_VINFO_VECT_FACTOR (res) = 0;

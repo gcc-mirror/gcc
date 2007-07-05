@@ -99,6 +99,13 @@ typedef struct _loop_vec_info {
   /* Number of iterations.  */
   tree num_iters;
 
+  /* Minimum number of iterations below which vectorization is expected to
+     not be profitable (as estimated by the cost model). 
+     -1 indicates that vectorization will not be profitable.
+     FORNOW: This field is an int. Will be a tree in the future, to represent
+	     values unknown at compile time.  */ 
+  int min_profitable_iters;  
+  
   /* Is the loop vectorizable? */
   bool vectorizable;
 
@@ -140,6 +147,7 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_BBS(L)             (L)->bbs
 #define LOOP_VINFO_EXIT_COND(L)       (L)->exit_cond
 #define LOOP_VINFO_NITERS(L)          (L)->num_iters
+#define LOOP_VINFO_COST_MODEL_MIN_ITERS(L)	(L)->min_profitable_iters
 #define LOOP_VINFO_VECTORIZABLE_P(L)  (L)->vectorizable
 #define LOOP_VINFO_VECT_FACTOR(L)     (L)->vectorization_factor
 #define LOOP_VINFO_PTR_MASK(L)        (L)->ptr_mask
@@ -327,6 +335,11 @@ typedef struct _stmt_vec_info {
 /* Cost of vector to scalar operation.  */
 #ifndef TARG_VEC_TO_SCALAR_COST
 #define TARG_VEC_TO_SCALAR_COST      1
+#endif
+
+/* Cost of scalar to vector operation.  */
+#ifndef TARG_SCALAR_TO_VEC_COST
+#define TARG_SCALAR_TO_VEC_COST      1
 #endif
 
 /* Cost of aligned vector load.  */
