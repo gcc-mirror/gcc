@@ -132,6 +132,7 @@ treelang                James A. Morrison	phython@gcc.gnu.org
 
 			Various Maintainers
 
+libbid			H.J. Lu			hjl@lucon.org
 libcpp			Per Bothner		per@bothner.com
 libcpp			All C and C++ front end maintainers
 fp-bit			Ian Lance Taylor	ian@airs.com
@@ -354,7 +355,7 @@ Sandra Loosemore				sandra@codesourcery.com
 Manuel López-Ibáñez                             manu@gcc.gnu.org
 Dave Love					d.love@dl.ac.uk
 Martin v. Löwis					loewis@informatik.hu-berlin.de
-HJ Lu						hjl@lucon.org
+H.J. Lu						hjl@lucon.org
 Ziga Mahkovec					ziga.mahkovec@klika.si
 Simon Martin					simartin@users.sourceforge.net
 Ranjit Mathew					rmathew@hotmail.com

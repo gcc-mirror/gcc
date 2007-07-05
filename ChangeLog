@@ -1,3 +1,7 @@
+2007-07-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* MAINTAINERS (libbid): Add myself.
+
 2007-07-03  Julian Brown  <julian@codesourcery.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
