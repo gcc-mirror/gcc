@@ -414,6 +414,9 @@ struct function GTY(())
   /* Nonzero if function being compiled has nonlocal gotos to parent
      function.  */
   unsigned int has_nonlocal_goto : 1;
+  
+  /* Nonzero if function being compiled has an asm statement.  */
+  unsigned int has_asm_statement : 1;
 
   /* Nonzero if the current function is a thunk, i.e., a lightweight
      function implemented by the output_mi_thunk hook) that just
@@ -517,6 +520,7 @@ extern int trampolines_created;
 #define current_function_has_nonlocal_label (cfun->has_nonlocal_label)
 #define current_function_calls_unwind_init (cfun->calls_unwind_init)
 #define current_function_has_nonlocal_goto (cfun->has_nonlocal_goto)
+#define current_function_has_asm_statement (cfun->has_asm_statement)
 
 #define return_label (cfun->x_return_label)
 #define naked_return_label (cfun->x_naked_return_label)
