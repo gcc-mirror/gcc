@@ -2682,6 +2682,26 @@ m16_nsimm8_8 (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   return m16_check_op (op, (- 0x7f) << 3, 0x80 << 3, 7);
 }
 
+/* Return true if ADDR matches the pattern for the lwxs load scaled indexed
+   address instruction.  */
+
+static bool
+mips_lwxs_address_p (rtx addr)
+{
+  if (ISA_HAS_LWXS
+      && GET_CODE (addr) == PLUS
+      && REG_P (XEXP (addr, 1)))
+    {
+      rtx offset = XEXP (addr, 0);
+      if (GET_CODE (offset) == MULT
+	  && REG_P (XEXP (offset, 0))
+	  && GET_CODE (XEXP (offset, 1)) == CONST_INT
+	  && INTVAL (XEXP (offset, 1)) == 4)
+	return true;
+    }
+  return false;
+}
+
 static bool
 mips_rtx_costs (rtx x, int code, int outer_code, int *total)
 {
@@ -2778,13 +2798,21 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
     case MEM:
       {
 	/* If the address is legitimate, return the number of
-	   instructions it needs, otherwise use the default handling.  */
-	int n = mips_address_insns (XEXP (x, 0), GET_MODE (x));
+	   instructions it needs.  */
+	rtx addr = XEXP (x, 0);
+	int n = mips_address_insns (addr, GET_MODE (x));
 	if (n > 0)
 	  {
 	    *total = COSTS_N_INSNS (n + 1);
 	    return true;
 	  }
+	/* Check for scaled indexed address.  */
+	if (mips_lwxs_address_p (addr))
+	  {
+	    *total = COSTS_N_INSNS (2);
+	    return true;
+	  }
+	/* Otherwise use the default handling.  */
 	return false;
       }
 

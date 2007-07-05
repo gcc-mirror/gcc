@@ -622,6 +622,7 @@ Objective-C and Objective-C++ Dialects}.
 -mshared  -mno-shared  -mxgot  -mno-xgot  -mgp32  -mgp64 @gol
 -mfp32  -mfp64  -mhard-float  -msoft-float @gol
 -msingle-float  -mdouble-float  -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
+-msmartmips  -mno-smartmips @gol
 -mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx @gol
 -mips3d  -mno-mips3d  -mmt  -mno-mt @gol
 -mlong64  -mlong32  -msym32  -mno-sym32 @gol
@@ -11661,6 +11662,12 @@ Use (do not use) the MIPS DSP ASE.  @xref{MIPS DSP Built-in Functions}.
 @opindex mno-dspr2
 Use (do not use) the MIPS DSP ASE REV 2.  @xref{MIPS DSP Built-in Functions}.
 The option @option{-mdspr2} implies @option{-mdsp}.
+
+@item -msmartmips
+@itemx -mno-smartmips
+@opindex msmartmips
+@opindex mno-smartmips
+Use (do not use) the MIPS SmartMIPS ASE.
 
 @item -mpaired-single
 @itemx -mno-paired-single

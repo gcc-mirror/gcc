@@ -1,3 +1,27 @@
+2007-07-05  Sandra Loosemore  <sandra@codesourcery.com>
+	    David Ung  <davidu@mips.com>
+
+	Add support for SmartMIPS ASE.
+
+	* optabs.c (expand_binop_directly): New, broken out from...
+	(expand_binop): Here.  Make it try rotating in the other
+	direction even when the second operand isn't constant.
+	* config/mips/mips.md (*lwxs): New.
+	* config/mips/mips.opt (msmartmips): New.
+	* config/mips/mips.c (mips_lwxs_address_p): New.
+	(mips_rtx_costs): Make it recognize scaled indexed addressing.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Define
+	__mips_smartmips when compiling for TARGET_SMARTMIPS.
+	(ISA_HAS_ROR): Define for TARGET_SMARTMIPS.
+	(ISA_HAS_LWXS): New.
+	(ASM_SPEC): Add -msmartmips/-mno-smartmips.
+	* doc/invoke.texi (MIPS Options): Document -msmartmips/-mno-smartmips.
+	* testsuite/gcc.target/mips/smartmips-lwxs.c: New test case.
+	* testsuite/gcc.target/mips/smartmips-ror-1.c: New test case.
+	* testsuite/gcc.target/mips/smartmips-ror-2.c: New test case.
+	* testsuite/gcc.target/mips/smartmips-ror-3.c: New test case.
+	* testsuite/gcc.target/mips/smartmips-ror-4.c: New test case.
+
 2007-07-05  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vectorizer.c (new_loop_vec_info): Initialize
