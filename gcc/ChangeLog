@@ -1,7 +1,11 @@
+2007-07-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* rtl.def (NOTE): Change print format string to print
+	operand 5 as a note insn name.
+
 2007-07-05  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
 
-	gcc/
 	* config/mips/mips.c (mips_cpu_info): Add 4ksc and 4ksd processors.
 	* doc/invoke.texi: (MIPS Options): Document them.
 
@@ -59,7 +63,7 @@
 	(vect_do_peeling_for_loop_bound): Don't call
 	vect_estimate_min_profitable_iters. Instead, lookup
 	LOOP_VINFO_COST_MODEL_MIN_ITERS. Don't always print
-	"may not be profitable".	
+	"may not be profitable".
 
 2007-07-05  Dorit Nuzman  <dorit@il.ibm.com>
 
@@ -93,7 +97,7 @@
 
 	PR tree-optimization/32604
 	PR tree-optimization/32606
-	
+
 	* tree-ssa-pre.c (bb_bitmap_sets): Removed antic_safe_loads.
 	(compute_antic_safe): Removed.
 	(ANTIC_SAFE_LOADS): Ditto.
