@@ -1597,7 +1597,7 @@ linux*)
 
   # Append ld.so.conf contents to the search path
   if test -f /etc/ld.so.conf; then
-    lt_ld_extra=`awk '/^include / { system(sprintf("cd /etc; cat %s 2>/dev/null", \[$]2)); skip = 1; } { if (!skip) print \[$]0; skip = 0; }' < /etc/ld.so.conf | $SED -e 's/#.*//;s/[:,	]/ /g;s/=[^=]*$//;s/=[^= ]* / /g;/^$/d' | tr '\n' ' '`
+    lt_ld_extra=`awk '/^include / { system(sprintf("cd /etc; cat %s 2>/dev/null", \[$]2)); skip = 1; } { if (!skip) print \[$]0; skip = 0; }' < /etc/ld.so.conf | $SED -e 's/^[	 ]*//;s/#.*//;/^[^\/]/d;s/[:,	]/ /g;s/=[^=]*$//;s/=[^= ]* / /g;/^$/d' | tr '\n' ' '`
     sys_lib_dlsearch_path_spec="/lib${libsuff} /usr/lib${libsuff} $lt_ld_extra"
   fi
 
@@ -4305,9 +4305,6 @@ CC=$lt_[]_LT_AC_TAGVAR(compiler, $1)
 # Is the compiler the GNU C compiler?
 with_gcc=$_LT_AC_TAGVAR(GCC, $1)
 
-gcc_dir=\`gcc -print-file-name=. | $SED 's,/\.$,,'\`
-gcc_ver=\`gcc -dumpversion\`
-
 # An ERE matcher.
 EGREP=$lt_EGREP
 
@@ -4441,11 +4438,11 @@ striplib=$lt_striplib
 
 # Dependencies to place before the objects being linked to create a
 # shared library.
-predep_objects=\`echo $lt_[]_LT_AC_TAGVAR(predep_objects, $1) | \$SED -e "s@\${gcc_dir}@\\\${gcc_dir}@g;s@\${gcc_ver}@\\\${gcc_ver}@g"\`
+predep_objects=$lt_[]_LT_AC_TAGVAR(predep_objects, $1)
 
 # Dependencies to place after the objects being linked to create a
 # shared library.
-postdep_objects=\`echo $lt_[]_LT_AC_TAGVAR(postdep_objects, $1) | \$SED -e "s@\${gcc_dir}@\\\${gcc_dir}@g;s@\${gcc_ver}@\\\${gcc_ver}@g"\`
+postdep_objects=$lt_[]_LT_AC_TAGVAR(postdep_objects, $1)
 
 # Dependencies to place before the objects being linked to create a
 # shared library.
@@ -4457,7 +4454,7 @@ postdeps=$lt_[]_LT_AC_TAGVAR(postdeps, $1)
 
 # The library search path used internally by the compiler when linking
 # a shared library.
-compiler_lib_search_path=\`echo $lt_[]_LT_AC_TAGVAR(compiler_lib_search_path, $1) | \$SED -e "s@\${gcc_dir}@\\\${gcc_dir}@g;s@\${gcc_ver}@\\\${gcc_ver}@g"\`
+compiler_lib_search_path=$lt_[]_LT_AC_TAGVAR(compiler_lib_search_path, $1)
 
 # Method to check whether dependent libraries are shared objects.
 deplibs_check_method=$lt_deplibs_check_method
@@ -4537,7 +4534,7 @@ variables_saved_for_relink="$variables_saved_for_relink"
 link_all_deplibs=$_LT_AC_TAGVAR(link_all_deplibs, $1)
 
 # Compile-time system search path for libraries
-sys_lib_search_path_spec=\`echo $lt_sys_lib_search_path_spec | \$SED -e "s@\${gcc_dir}@\\\${gcc_dir}@g;s@\${gcc_ver}@\\\${gcc_ver}@g"\`
+sys_lib_search_path_spec=$lt_sys_lib_search_path_spec
 
 # Run-time system search path for libraries
 sys_lib_dlsearch_path_spec=$lt_sys_lib_dlsearch_path_spec
@@ -7303,7 +7300,6 @@ AC_SUBST([am__untar])
 ]) # _AM_PROG_TAR
 
 m4_include([../config/acx.m4])
-m4_include([../config/confsubdir.m4])
 m4_include([../config/depstand.m4])
 m4_include([../config/enable.m4])
 m4_include([../config/gxx-include-dir.m4])

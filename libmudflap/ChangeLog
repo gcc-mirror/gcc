@@ -1,3 +1,7 @@
+2007-07-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* aclocal.m4: Regenerated.
+
 2007-06-02  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure: Regenerate.
