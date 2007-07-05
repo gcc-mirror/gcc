@@ -1456,7 +1456,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
     {
       optab otheroptab = (binoptab == rotl_optab ? rotr_optab : rotl_optab);
       rtx newop1;
-      int bits = GET_MODE_BITSIZE (mode);
+      unsigned int bits = GET_MODE_BITSIZE (mode);
 
       if (GET_CODE (op1) == CONST_INT)
 	newop1 = GEN_INT (bits - INTVAL (op1));
