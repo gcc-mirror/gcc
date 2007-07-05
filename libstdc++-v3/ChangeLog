@@ -1,3 +1,12 @@
+2007-07-04  Jim Xochellis  <jimxoch@yahoo.gr>
+
+	* include/bits/stl_algo.h (search(_ForwardIterator1,
+	_ForwardIterator1, _ForwardIterator2, _ForwardIterator2)): Simplify
+	general case loop to a for(;;).
+	(search(_ForwardIterator1, _ForwardIterator1, _ForwardIterator2,
+	_ForwardIterator2, _BinaryPredicate)): Likewise; remove redundant
+	inner loop.
+	
 2007-07-03  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/31518
