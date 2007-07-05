@@ -1,3 +1,11 @@
+2007-07-05  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR testsuite/32014
+	* config/rs6000/altivec.md (UNSPEC_VUPKHS_V4SF, UNSPEC_VUPKLS_V4SF):
+	(UNSPEC_VUPKHU_V4SF, UNSPEC_VUPKLU_V4SF): New.
+	(vec_unpacks_float_hi_v8hi, vec_unpacks_float_lo_v8hi): New patterns.
+	(vec_unpacku_float_hi_v8hi, vec_unpacku_float_lo_v8hi): New patterns. 
+
 2007-07-05  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* config/i386/i386.c (ix86_address_cost): Do not consider more complex
