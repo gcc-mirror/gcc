@@ -2763,6 +2763,12 @@ df_def_record_1 (struct df_collection_rec *collection_rec,
       || (GET_CODE (dst) == SUBREG && REG_P (SUBREG_REG (dst))))
     df_ref_record (collection_rec, 
                    dst, loc, bb, insn, DF_REF_REG_DEF, flags);
+
+  /* We want to keep sp alive everywhere - by making all
+     writes to sp also use of sp. */
+  if (REG_P (dst) && REGNO (dst) == STACK_POINTER_REGNUM)
+    df_ref_record (collection_rec,
+               dst, NULL, bb, insn, DF_REF_REG_USE, flags);
 }
 
 
