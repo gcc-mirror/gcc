@@ -95,6 +95,7 @@ darwin port		Mike Stump		mrs@apple.com
 darwin port		Stan Shebs		shebs@apple.com
 DJGPP			DJ Delorie		dj@delorie.com
 freebsd			Loren J. Rittle		ljrittle@acm.org
+irix, osf		Rainer Orth		ro@TechFak.Uni-Bielefeld.DE
 netbsd			Jason Thorpe		thorpej@netbsd.org
 sco5, unixware, sco udk	Kean Johnston		jkj@sco.com
 sh-linux-gnu		Kaz Kojima		kkojima@gcc.gnu.org
@@ -301,7 +302,6 @@ Dan Nicolaescu					dann@ics.uci.edu
 David O'Brien					obrien@FreeBSD.org
 Turly O'Connor					turly@apple.com
 Jeffrey D. Oldham				oldham@codesourcery.com
-Rainer Orth					ro@TechFak.Uni-Bielefeld.DE
 Devang Patel					dpatel@apple.com
 Graeme Peterson					gp@qnx.com
 Alexandre Petit-Bianco				apbianco@redhat.com
