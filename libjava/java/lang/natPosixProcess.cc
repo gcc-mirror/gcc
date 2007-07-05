@@ -28,10 +28,9 @@ details.  */
 #include <unistd.h>
 #include <pthread.h>
 
-#include <gcj/cni.h>
-#include <jvm.h>
 #include <posix.h>
 #include <posix-threads.h>
+#include <jvm.h>
 
 #include <java/lang/PosixProcess$ProcessManager.h>
 #include <java/lang/PosixProcess.h>

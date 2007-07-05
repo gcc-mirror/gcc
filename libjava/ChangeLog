@@ -1,3 +1,9 @@
+2007-07-05  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* java/lang/natPosixProcess.cc: Reorder includes to fix compilation
+	on hppa2.0w-hp-hpux11.11.
+	Remove include of <gcj/cni.h>.
+
 2007-07-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* aclocal.m4: Regenerated.
