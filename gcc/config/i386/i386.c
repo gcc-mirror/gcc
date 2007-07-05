@@ -6564,12 +6564,6 @@ ix86_address_cost (rtx x)
   if (parts.index && GET_CODE (parts.index) == SUBREG)
     parts.index = SUBREG_REG (parts.index);
 
-  /* More complex memory references are better.  */
-  if (parts.disp && parts.disp != const0_rtx)
-    cost--;
-  if (parts.seg != SEG_DEFAULT)
-    cost--;
-
   /* Attempt to minimize number of registers in the address.  */
   if ((parts.base
        && (!REG_P (parts.base) || REGNO (parts.base) >= FIRST_PSEUDO_REGISTER))

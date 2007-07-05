@@ -1,3 +1,8 @@
+2007-07-05  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* config/i386/i386.c (ix86_address_cost): Do not consider more complex
+	addressing modes cheaper.
+
 2007-07-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* dwarf2out.c (dw_ranges_by_label_ref): New typedef.
