@@ -366,6 +366,9 @@ extern const struct mips_rtx_cost_data *mips_cost;
 								\
       if (TARGET_MIPS3D)					\
 	builtin_define ("__mips3d");				\
+                                                                \
+      if (TARGET_SMARTMIPS)					\
+	builtin_define ("__mips_smartmips");			\
 								\
       if (TARGET_DSP)						\
 	builtin_define ("__mips_dsp");				\
@@ -733,7 +736,8 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #define ISA_HAS_ROR		((ISA_MIPS32R2				\
 				  || TARGET_MIPS5400			\
 				  || TARGET_MIPS5500			\
-				  || TARGET_SR71K)			\
+				  || TARGET_SR71K			\
+				  || TARGET_SMARTMIPS)			\
 				 && !TARGET_MIPS16)
 
 /* ISA has data prefetch instructions.  This controls use of 'pref'.  */
@@ -767,6 +771,9 @@ extern const struct mips_rtx_cost_data *mips_cost;
 
 /* ISA has instructions for accessing top part of 64-bit fp regs.  */
 #define ISA_HAS_MXHC1		(TARGET_FLOAT64 && ISA_MIPS32R2)
+
+/* ISA has lwxs instruction (load w/scaled index address.  */
+#define ISA_HAS_LWXS		(TARGET_SMARTMIPS && !TARGET_MIPS16)
 
 /* True if the result of a load is not available to the next instruction.
    A nop will then be needed between instructions like "lw $4,..."
@@ -883,6 +890,7 @@ extern const struct mips_rtx_cost_data *mips_cost;
 %{mdmx} %{mno-mdmx:-no-mdmx} \
 %{mdsp} %{mno-dsp} \
 %{mdspr2} %{mno-dspr2} \
+%{msmartmips} %{mno-smartmips} \
 %{mmt} %{mno-mt} \
 %{mfix-vr4120} %{mfix-vr4130} \
 %(subtarget_asm_optimizing_spec) \

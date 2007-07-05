@@ -3654,6 +3654,21 @@
   [(set_attr "type" "fpidxstore")
    (set_attr "mode" "<ANYF:UNITMODE>")])
 
+;; Scaled indexed address load.
+;; Per md.texi, we only need to look for a pattern with multiply in the
+;; address expression, not shift.
+
+(define_insn "*lwxs"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(mem:SI (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d")
+				  (const_int 4))
+			 (match_operand:SI 2 "register_operand" "d"))))]
+  "ISA_HAS_LWXS"
+  "lwxs\t%0,%1(%2)"
+  [(set_attr "type"	"load")
+   (set_attr "mode"	"SI")
+   (set_attr "length"   "4")])
+
 ;; 16-bit Integer moves
 
 ;; Unlike most other insns, the move insns can't be split with
