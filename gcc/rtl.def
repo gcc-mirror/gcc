@@ -140,9 +140,9 @@ DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuuB00is", RTX_EXTRA)
 /* Say where in the code a source line starts, for symbol table's sake.
    Operand:
    4: note-specific data
-   5: unused (memory layout has to match code_label above)
-   6: unique number if line number == note_insn_deleted_label.  */
-DEF_RTL_EXPR(NOTE, "note", "iuuB00i", RTX_EXTRA)
+   5: enum insn_note
+   6: unique number if insn_note == note_insn_deleted_label.  */
+DEF_RTL_EXPR(NOTE, "note", "iuuB0ni", RTX_EXTRA)
 
 /* ----------------------------------------------------------------------
    Top level constituents of INSN, JUMP_INSN and CALL_INSN.
