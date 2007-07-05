@@ -1,5 +1,9 @@
 2007-07-05  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* lt~obsolete.m4: New. Import from 20070318 libtool.
+
+2007-07-05  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* MAINTAINERS (libbid): Add myself.
 
 2007-07-03  Julian Brown  <julian@codesourcery.com>
