@@ -1,3 +1,9 @@
+2007-07-05  Sebastian Pop  <sebpop@gmail.com>
+
+	PR bootstrap/32622
+	* config/mh-x86omitfp (BOOT_CFLAGS): Add -fomit-frame-pointer,
+	don't reset its value.
+
 2007-07-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* MAINTAINERS (OS Port Maintainers): Add myself as IRIX, Tru64 UNIX

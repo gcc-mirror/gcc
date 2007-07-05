@@ -1,2 +1,2 @@
 # Add -fomit-frame-pointer to the usual BOOT_CFLAGS to speed up the compiler.
-BOOT_CFLAGS = -O2 -g -fomit-frame-pointer
+BOOT_CFLAGS += -fomit-frame-pointer
