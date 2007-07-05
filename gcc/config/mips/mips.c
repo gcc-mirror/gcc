@@ -6134,11 +6134,6 @@ mips_file_start (void)
 
   if (!TARGET_IRIX)
     {
-#ifdef HAVE_AS_GNU_ATTRIBUTE
-      fprintf (asm_out_file, "\t.gnu_attribute 4, %d\n",
-	       TARGET_HARD_FLOAT_ABI ? (TARGET_DOUBLE_FLOAT ? 1 : 2) : 3);
-#endif
-
       /* Generate a special section to describe the ABI switches used to
 	 produce the resultant binary.  This used to be done by the assembler
 	 setting bits in the ELF header's flags field, but we have run out of
@@ -6147,6 +6142,11 @@ mips_file_start (void)
 	 gdb/mips-tdep.c.  This is unnecessary for the IRIX 5/6 ABIs and
 	 causes unnecessary IRIX 6 ld warnings.  */
       const char * abi_string = NULL;
+
+#ifdef HAVE_AS_GNU_ATTRIBUTE
+      fprintf (asm_out_file, "\t.gnu_attribute 4, %d\n",
+	       TARGET_HARD_FLOAT_ABI ? (TARGET_DOUBLE_FLOAT ? 1 : 2) : 3);
+#endif
 
       switch (mips_abi)
 	{

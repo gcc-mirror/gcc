@@ -1,3 +1,8 @@
+2007-07-05  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* config/mips/mips.c (mips_file_start): Avoid declaration
+	after code.
+
 2007-07-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* optabs.c (expand_binop_directly): Fix signed/unsigned comparison.
