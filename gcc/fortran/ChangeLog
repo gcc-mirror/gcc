@@ -1,3 +1,15 @@
+2007-07-05  Daniel Franke  <franke.daniel@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32359
+	* gfortran.h (symbol_attribute): Change save attribute into an enum.
+	* decl.c (add_init_expr_to_sym): Set it to SAVE_IMPLICIT.
+	* symbol.c (gfc_add_save): Check for SAVE_EXPLICIT.
+	* resolve.c (resolve_fl_variable): Check for SAVE_EXPLICIT.
+	(resolve_symbol): Allow OMP threadprivate with
+	initialization SAVEd and save_all variable.
+	* trans-decl.c (gfc_finish_var_decl): Remove obsolete sym->value check.
+
 2007-07-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32526
