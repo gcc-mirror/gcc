@@ -1077,7 +1077,8 @@
 	* genmodes.c (struct mode_data): Add ibit and fbit fields.
 	(blank_mode): Initialize ibit and fbit.
 	(adj_ibit, adj_fbit): New to adjust ibit and fbit.
-	(vector_class): Handle MODE_FRACT, MODE_UFRACT, MODE_ACCUM, MODE_UACCUM.
+	(vector_class): Handle MODE_FRACT, MODE_UFRACT, MODE_ACCUM,
+	MODE_UACCUM.
 	(new_adjust): Change required_class to required_class_from and
 	required_class_to for testing within a range.
 	(complete_mode): Handle MODE_FRACT, MODE_UFRACT, MODE_ACCUM,
@@ -1444,7 +1445,8 @@
 2007-06-19  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c: Include "df.h".
-	(xtensa_builtin_saveregs): Use adjust_address instead of change_address.
+	(xtensa_builtin_saveregs): Use adjust_address instead of
+	change_address.
 	(xtensa_va_start): Invoke make_tree with sizetype for
 	expand_builtin_saveregs and then convert the result to a pointer.
 	Use POINTER_PLUS_EXPR.  Use size_int instead of build_int_cst.
@@ -2146,7 +2148,8 @@
 	* opts.c (common_handle_option): Handle new option -fdbg-cnt-list.
 	* dbgcnt.c (dbg_cnt_set_limit_by_name): Return value
 	to indicate an error.
-	(dbg_cnt_process_single_pair, dbg_cnt_list_all_counters): New functions
+	(dbg_cnt_process_single_pair, dbg_cnt_list_all_counters):
+	New functions.
 	(dbg_cnt_process_opt): Print an error on a bad argument.
 	* dbgcnt.h (dbg_cnt_list_all_counters): New function declaration.
 	* common.opt (-fdbg-cnt-list): New.
@@ -2255,8 +2258,8 @@
 	(reorder_var_tracking_notes): New function.
 	(bfin_reorg): Pass no argument to split_all_insns.  Don't call
 	update_life_info.  Call df_analyze after scheduling and bundle
-	generation.  Call reorder_var_tracking_notes if generating these notes.
-	Call df_finish_pass at the end.
+	generation.  Call reorder_var_tracking_notes if generating these
+	notes.  Call df_finish_pass at the end.
 
 2007-06-12  Dirk Mueller  <dmueller@suse.de>
 
@@ -2751,13 +2754,15 @@
 	* tree-ssa.c (init_tree_ssa): Use type safe memory macros.
 	* tree-ssa-ccp.c (ccp_fold_builtin): Avoid using C++ keywords as
 	variable names.
-	* tree-ssa-coalesce.c (find_coalesce_pair): Use type safe memory macros.
+	* tree-ssa-coalesce.c (find_coalesce_pair): Use type safe memory
+	macros.
 	(add_cost_one_coalesce): Likewise.
 	* tree-ssa-copy.c (merge_alias_info): Avoid using C++ keywords as
 	variable names. Rename orig to orig_name for consistency.
-	* tree-ssa-dom.c (dom_thread_across_edge): Cast according to the coding
-	conventions.
-	(cprop_into_successor_phis): Avoid using C++ keywords as variable names.
+	* tree-ssa-dom.c (dom_thread_across_edge): Cast according to the
+	coding conventions.
+	(cprop_into_successor_phis): Avoid using C++ keywords as variable
+	names.
 	(record_equivalences_from_stmt): Likewise.
 	* tree-ssa-dse.c (dse_initialize_block_local_data): Cast according to
 	the coding conventions.
@@ -2773,8 +2778,8 @@
 	(memref_hash): Likewise.
 	(memref_eq): Likewise.
 	(gather_mem_refs_stmt): Likewise.
-	* tree-ssa-loop-ivopts.c (contains_abnormal_ssa_name_p): Avoid using C++
-	keywords as variable names.
+	* tree-ssa-loop-ivopts.c (contains_abnormal_ssa_name_p): Avoid
+	using C++ keywords as variable names.
 	(idx_find_step): Cast according to the coding conventions.
 	(idx_record_use): Likewise.
 	(find_depends): Likewise.
@@ -2788,8 +2793,8 @@
 	* tree-ssa-math-opts.c (occ_new ): Likwise.
 	* tree-ssanames.c (duplicate_ssa_name_ptr_info): Use type safe memory
 	macros.
-	* tree-ssa-operands.c (add_def_op): Avoid using C++ keywords as variable
-	names.
+	* tree-ssa-operands.c (add_def_op): Avoid using C++ keywords as
+	variable names.
 	(add_use_op): Likewise.
 	(add_vop): Likewise.
 	(add_vuse_op): Likewise.
@@ -4590,7 +4595,8 @@
 	decimal_single_format, decimal_double_format, decimal_quad_format,
 	c4x_single_format, c4x_extended_format, real_internal_format): Remove
 	initialization of log2_b.
-	* real.h (i370_single_format, i370_double_format): Declarations removed.
+	* real.h (i370_single_format, i370_double_format): Declarations
+	removed.
 	* c-cppbuiltin.c (builtin_define_float_constants): Consider the log2_b
 	field to always be one.
 
@@ -4619,7 +4625,7 @@
 	* gengtype.c (adjust_field_rtx_def): Use NOTE_KIND instead of
 	NOTE_LINE_NUMBER; use NOTE_INSN_BASIC_BLOCK_P when possible.
 	* ddg.c (create_ddg): LIkewise.
-	* final.c (final): Remove hunk moving line numbernotes around since
+	* final.c (final): Remove hunk moving line number notes around since
 	they are no longer present at this stage.
 	(final_scan_insn): Use NOTE_KIND instead of
 	NOTE_LINE_NUMBER; use NOTE_INSN_BASIC_BLOCK_P when possible.
@@ -4641,8 +4647,8 @@
 	* function.c (reorder_blocks_1): Likewise.
 	(epilogue_done): Likewise.
 	(reposition_prologue_and_epilogue_notes): Likewise.
-	* print-rtl.c (print_rtx): Likewise; drop code for printing line number
-	notes.
+	* print-rtl.c (print_rtx): Likewise; drop code for printing
+	line number notes.
 	(print_rtl): Likewise.
 	(print_rtl_single): Likewise.
 	* gcse.c (insert_insn_start_bb): Likewise.
@@ -4771,8 +4777,8 @@
 	(_mm_shufle_ps): Ditto.  Add const to __mask argument.
 	* config/i386/emmintrin.h (_mm_slli_epi16): Add const to __B argument.
 	(_mm_slli_epi32): Ditto.
-	(_mm_srli_si128): Implement as always inlined function, not as a macro.
-	Add __inline to function declaration.
+	(_mm_srli_si128): Implement as always inlined function, not as a
+	macro.  Add __inline to function declaration.
 	(_mm_slli_si128): Ditto.
 
 2007-05-19  Uros Bizjak  <ubizjak@gmail.com>
@@ -5134,7 +5140,8 @@
 	* tree-ssa-loop.c (pass_tree_unswitch, pass_vectorize,
 	pass_linear_transfom, pass_empty_loop, pass_complete_unroll,
 	pass_iv_optimize): Add TODO_ggc_collect.
-	* function.h (struct function): Remove skip marker from x_current_loops.
+	* function.h (struct function): Remove skip marker from
+	x_current_loops.
 	* cfgloop.c: Include ggc.h.
 	(flow_loops_free, flow_loop_free): Free the loop descriptions in gc
 	memory.
@@ -5146,8 +5153,8 @@
 	(rescan_loop_exit): Use GGC_NEW to allocate struct loop_exit.  Reflect
 	that head of exits list is now not a part of struct loop.
 	(record_loop_exits): Allocate exits table in gc memory.
-	(get_loop_exit_edges, verify_loop_structure, single_exit): Reflect that
-	head of exits list is now not a part of struct loop.
+	(get_loop_exit_edges, verify_loop_structure, single_exit): Reflect
+	that head of exits list is now not a part of struct loop.
 	* cfgloop.h (struct lpt_decision, struct nb_iter_bound,
 	struct loop_exit): Add GTY marker.
 	(struct loop): Add GTY marker.  Make superloops vector gc allocated.
@@ -5156,8 +5163,8 @@
 	(struct loops): Add GTY marker.  Make larray vector gc allocated.
 	Add param marker to exits table.
 	(get_loops): Type changed.
-	* Makefile.in (tree-scalar-evolution.o): Add gt-tree-scalar-evolution.h
-	dependency.
+	* Makefile.in (tree-scalar-evolution.o): Add
+	gt-tree-scalar-evolution.h dependency.
 	(cfgloop.o, loop-init.o): Add ggc.h dependency.
 	(GTFILES): Add cfgloop.h and tree-scalar-evolution.c.
 	* basic-block.h (struct basic_block_def): Remove skip marker from
@@ -5226,8 +5233,8 @@
 	* c-format.c (check_format_types): Use unsigned_type_for instead of
 	c_common_unsigned_type.
 	* c-objc-common.h (LANG_HOOKS_UNSIGNED_TYPE): Remove.
-	* c-typeck.c (convert_for_assignment): Use unsigned_type_for instead of
-	c_common_unsigned_type.
+	* c-typeck.c (convert_for_assignment): Use unsigned_type_for instead
+	of c_common_unsigned_type.
 	* convert.c (convert_to_integer): Use unsigned_type_for instead of
 	lang_hooks.types.unsigned_type.
 	* expmed.c (make_tree): Use unsigned_type_for instead of
@@ -5290,10 +5297,10 @@
 	and dr_analyze_alias.
 	(initialize_data_dependence_relation): Use dr_may_alias_p
 	and object_address_invariant_in_loop_p.
-	(compute_self_dependence): Handle the case when DDR_ARE_DEPENDENT (ddr)
-	is chrec_dont_know.
-	(find_data_references_in_stmt): Restrict the analysis of data references
-	to the given loop nest.
+	(compute_self_dependence): Handle the case when
+	DDR_ARE_DEPENDENT (ddr) is chrec_dont_know.
+	(find_data_references_in_stmt): Restrict the analysis of data
+	references to the given loop nest.
 	(find_data_references_in_loop): Made static.  Pass loop nest to
 	find_data_references_in_stmt.
 	(compute_data_dependences_for_loop): Use DR_VOPS.
@@ -5395,8 +5402,8 @@
 	superloops vector instead of "pred" array.
 	(establish_preds): Take father loop as an argument.  Initialize the
 	superloops vector.
-	(flow_loop_tree_node_add): Pass father loop to establish_preds.  Do not
-	initialize loop->outer.
+	(flow_loop_tree_node_add): Pass father loop to establish_preds.
+	Do not initialize loop->outer.
 	(flow_loop_tree_node_remove): Truncate the superloops vector.
 	* cfgloop.h (struct loop): Removed field "outer", fields "depth" and
 	"pred" merged to "superloops" vector.
@@ -5446,8 +5453,8 @@
 2007-05-10  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/31885
-	* tree-chrec.c (chrec_contains_undetermined): Do not consider NULL_TREE
-	to be undetermined.
+	* tree-chrec.c (chrec_contains_undetermined): Do not consider
+	NULL_TREE to be undetermined.
 	(automatically_generated_chrec_p): Return false for NULL.
 
 2007-05-08  Bernd Schmidt  <bernd.schmidt@analog.com>
@@ -5482,8 +5489,8 @@
 2007-05-09  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_output_literal): Mask out high bits
-	for floating-point values if HOST_BITS_PER_LONG > 32.  Use split_double
-	instead of operand_subword.
+	for floating-point values if HOST_BITS_PER_LONG > 32.  Use
+	split_double instead of operand_subword.
 
 2007-05-08  Bernd Schmidt  <bernd.schmidt@analog.com>
 
@@ -5818,8 +5825,8 @@
 
 2007-05-03  Jan Hubicka  <jh@suse.cz>
 
-	* fold-const.c (fold_unary): Convert (T1)(X op Y) into ((T1)X op (T1)Y),
-	for pointer type in more cases than before.
+	* fold-const.c (fold_unary): Convert (T1)(X op Y) into
+	((T1)X op (T1)Y), for pointer type in more cases than before.
 
 	* gimplify.c (gimplify_expr): Fold (void *)&a + 4.
 
@@ -5879,8 +5886,8 @@
 2007-05-03  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/31699
-	* tree-vect-analyze.c (vect_update_misalignment_for_peel): Remove wrong
-	code.
+	* tree-vect-analyze.c (vect_update_misalignment_for_peel): Remove
+	wrong code.
 	(vect_enhance_data_refs_alignment): Compute peel amount using
 	TYPE_VECTOR_SUBPARTS instead of vf.
 	* tree-vect-transform.c (vect_gen_niters_for_prolog_loop): Likewise.
@@ -6203,8 +6210,8 @@
 	(reset_block_changes, record_block_change, finalize_block_changes,
 	check_block_change, free_block_changes): Kill.
 	* function.h (reset_block_changes, record_block_change,
-	finalize_block_changes, check_block_change, free_block_changes): Remove
-	prototypes.
+	finalize_block_changes, check_block_change, free_block_changes):
+	Remove prototypes.
 	(struct function): Remove ib_boundaries_block.
 	* emit-rtl.c (make_insn_raw, make_jump_insn_raw, make_call_insn_raw):
 	Use curr_insn_locator to initialize locator.
@@ -6364,8 +6371,8 @@
 	* tree-flow.h (disband_implicit_edges): Declaration removed.
 	* tree-cfg.c (make_cond_expr_edges): Remove gotos from COND_EXPR
 	branches.
-	(cleanup_dead_labels, tree_redirect_edge_and_branch): Handle COND_EXPRs
-	without gotos.
+	(cleanup_dead_labels, tree_redirect_edge_and_branch): Handle
+	COND_EXPRs without gotos.
 	(disband_implicit_edges, has_label_p): Removed.
 	(tree_verify_flow_info): Verify that COND_EXPR branches are empty.
 	(tree_lv_add_condition_to_bb): Do not create gotos in COND_EXPR
@@ -6478,8 +6485,8 @@
 
 2007-04-25  Bob Wilson  <bob.wilson@acm.org>
 
-	* config/xtensa/lib1funcs.asm (__udivsi3, __divsi3): Throw an exception
-	for divide-by-zero.
+	* config/xtensa/lib1funcs.asm (__udivsi3, __divsi3): Throw an
+	exception for divide-by-zero.
 	(__umodsi3, __modsi3): Likewise.
 
 2007-04-25  Dirk Mueller  <dmueller@suse.de>
@@ -6623,8 +6630,8 @@
 2007-04-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR target/31641
-	* config/s390/s390.c (s390_expand_setmem): Don't ICE for constant length
-	argument of 0 for memset.
+	* config/s390/s390.c (s390_expand_setmem): Don't ICE for constant
+	length argument of 0 for memset.
 	(s390_expand_movmem, s390_expand_setmem, s390_expand_cmpmem): Use
 	unsigned shift instead of the signed variant.
 
@@ -6694,8 +6701,8 @@
 	(reset_block_changes, record_block_change, finalize_block_changes,
 	check_block_change, free_block_changes): Kill.
 	* function.h (reset_block_changes, record_block_change,
-	finalize_block_changes, check_block_change, free_block_changes): Remove
-	prototypes.
+	finalize_block_changes, check_block_change, free_block_changes):
+	Remove prototypes.
 	(struct function): Remove ib_boundaries_block.
 	* emit-rtl.c (make_insn_raw, make_jump_insn_raw, make_call_insn_raw):
 	Use curr_insn_locator to initialize locator.
@@ -6897,8 +6904,8 @@
 	(reset_block_changes, record_block_change, finalize_block_changes,
 	check_block_change, free_block_changes): Kill.
 	* function.h (reset_block_changes, record_block_change,
-	finalize_block_changes, check_block_change, free_block_changes): Remove
-	prototypes.
+	finalize_block_changes, check_block_change, free_block_changes):
+	Remove prototypes.
 	(struct function): Remove ib_boundaries_block.
 	* emit-rtl.c (make_insn_raw, make_jump_insn_raw, make_call_insn_raw):
 	Use curr_insn_locator to initialize locator.
@@ -7551,8 +7558,8 @@
 2007-04-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/25874
-	* omp-low.c (expand_omp_parallel): If child_cfun->cfg, free dominators,
-	post dominators and cleanup cfg before returning.
+	* omp-low.c (expand_omp_parallel): If child_cfun->cfg, free
+	dominators, post dominators and cleanup cfg before returning.
 
 2007-04-14  Bernd Schmidt  <bernd.schmidt@analog.com>
 
@@ -7731,8 +7738,8 @@
 	* config/mips/mips.c (mips_global_symbol_p): New function.
 	(mips_symbol_binds_local_p): Likewise.
 	(mips_classify_symbol): Rename SYMBOL_GOT_GLOBAL to SYMBOL_GOT_DISP
-	and SYMBOL_GOT_LOCAL to SYMBOL_GOT_PAGE_OFST.  Use mips_global_symbol_p
-	and mips_symbol_binds_local_p.
+	and SYMBOL_GOT_LOCAL to SYMBOL_GOT_PAGE_OFST.  Use
+	mips_global_symbol_p and mips_symbol_binds_local_p.
 	(mips_symbolic_constant_p, mips_symbolic_address_p, mips_symbol_insns)
 	(override_options): Rename SYMBOL_GOT_GLOBAL to SYMBOL_GOT_DISP,
 	SYMBOL_GOT_LOCAL to SYMBOL_GOT_PAGE_OFST and SYMBOL_GOTOFF_GLOBAL to
@@ -7908,7 +7915,8 @@
 2007-04-11  Sebastian Pop  <sebastian.pop@inria.fr>
 
 	* tree-data-ref.c (affine_function_zero_p, constant_access_functions,
-	insert_innermost_unit_dist_vector, add_distance_for_zero_overlaps): New.
+	insert_innermost_unit_dist_vector, add_distance_for_zero_overlaps):
+	New.
 	(build_classic_dist_vector): Call add_distance_for_zero_overlaps.
 
 2007-04-11  Zdenek Dvorak  <dvorakz@suse.cz>
@@ -8709,8 +8717,8 @@
 2007-03-30  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/31383
-	* tree-data-ref.c (affine_function_equal_p): Do not require the vectors
-	to have the same length.
+	* tree-data-ref.c (affine_function_equal_p): Do not require the
+	vectors to have the same length.
 
 2007-03-30  Jan Hubicka  <jh@suse.cz>
 
@@ -8826,8 +8834,8 @@
 
 2007-03-29  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* regmove.c (optimize_reg_copy_1): Don't perform DEST->SRC repair action if
-	SRC->DEST replacement failed anyway.
+	* regmove.c (optimize_reg_copy_1): Don't perform DEST->SRC repair
+	action if SRC->DEST replacement failed anyway.
 
 2007-03-28  Mike Stump  <mrs@apple.com>
 
@@ -9053,9 +9061,9 @@
 
 	* gengtype-lex.l: Distinguish unions from structures in the
 	token type.  Don't call find_structure; return the tag as a string.
-	* gengtype-yacc.y: Add new token types ENT_TYPEDEF_UNION and ENT_UNION.
-	Type of these, ENT_TYPEDEF_STRUCT, and ENT_STRUCT is string.
-	Reorganize typedef_struct production accordingly.
+	* gengtype-yacc.y: Add new token types ENT_TYPEDEF_UNION and
+	ENT_UNION.  Type of these, ENT_TYPEDEF_STRUCT, and ENT_STRUCT is
+	string.  Reorganize typedef_struct production accordingly.
 	Use create_nested_ptr_option.
 	* gengtype.c (create_nested_ptr_option): New function.
 	* gengtype.h: Declare it.
@@ -9072,8 +9080,8 @@
 	or scalar_nonchar as appropriate.
 	(adjust_field_type): Look at scalar_is_char boolean to decide whether
 	to use string_type.
-	(throughout): Use scalar_nonchar instead of calling create_scalar_type,
-	whenever possible.
+	(throughout): Use scalar_nonchar instead of calling
+	create_scalar_type, whenever possible.
 	(main): Initialize scalar_char and scalar_nonchar before calling
 	gen_rtx_next.
 	* gengtype-lex.l: Adjust for removal of second argument to
@@ -9659,9 +9667,9 @@
 	(fT0): New mode attribute.
 	("*movdi_64dfp", "*movdf_64dfp", "*neg<mode>2_nocc", "*abs<mode>2_nocc",
 	"*negabs<mode>2_nocc", "copysign<mode>3"): Insn definitions added.
-	* config/s390/s390.h (SECONDARY_MEMORY_NEEDED): Due to a new instruction
-	no secondary memory is needed when moving DFmode values between GPRs
-	and FPRs.
+	* config/s390/s390.h (SECONDARY_MEMORY_NEEDED): Due to a new
+	instruction no secondary memory is needed when moving DFmode values
+	between GPRs and FPRs.
 
 2007-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
@@ -9706,8 +9714,8 @@
 2007-03-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md: Add fpstore_load and store_fpload instruction types.  Provide
-	reservation, bypass and anti-bypass descriptions for these instructions.
-	Update move patterns.
+	reservation, bypass and anti-bypass descriptions for these
+	instructions.  Update move patterns.
 	* pa.c (hppa_fpstore_bypass_p): Check for both TYPE_FPSTORE_LOAD and
 	TYPE_FPSTORE.
 
@@ -10016,9 +10024,9 @@
 
 2007-03-13  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-inline.c (cgraph_maybe_hot_edge_p): Look for hot/cold attributes,
-	when profile esitmate is present, calls with very low frequency are
-	cold.
+	* ipa-inline.c (cgraph_maybe_hot_edge_p): Look for hot/cold
+	attributes, when profile esitmate is present, calls with very low
+	frequency are cold.
 
 2007-03-13  Zdenek Dvorak  <dvorakz@suse.cz>
 
@@ -10290,10 +10298,11 @@
 
 2007-03-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-	* pa.c (attr_length_call): Revise condition for long pc-relative branch.
-	(output_call): Use "LONG_PIC_SDIFF" instruction sequence for long local
-	calls on the SOM target.  Don't use "LONG_PIC_PCREL" call sequence on
-	SOM target.
+	* pa.c (attr_length_call): Revise condition for long
+	pc-relative branch.
+	(output_call): Use "LONG_PIC_SDIFF" instruction sequence for long
+	local calls on the SOM target.  Don't use "LONG_PIC_PCREL" call
+	sequence on SOM target.
 
 2007-03-09  Geoffrey Keating  <geoffk@apple.com>
 
@@ -10717,7 +10726,8 @@
 	-mstack-size is used without providing -mstack-guard.
 	(s390_emit_prologue): Choose stack_guard value automatically if not
 	provided via command line.
-	* doc/invoke.texi: Adjust description of -mstack-guard and -mstack-size.
+	* doc/invoke.texi: Adjust description of -mstack-guard and
+	-mstack-size.
 
 2007-03-07  Richard Sandiford  <richard@codesourcery.com>
 
@@ -10766,8 +10776,8 @@
 2007-03-06  Jan Hubicka  <jh@suse.cz>
 
 	* errors.h (warning, error, fatal, internal_error): Mark as cold.
-	* predict.c (maybe_hot_bb): Cold functions are never hot; hot functions
-	are hot.
+	* predict.c (maybe_hot_bb): Cold functions are never hot; hot
+	functions are hot.
 	(probably_cold_bb_p): Cold functions are cold.
 	(probably_never_executed_bb_p): Cold functions are cold.
 	(tree_bb_level_predictions): Predict calls to cold functions as not
@@ -10797,8 +10807,8 @@
 	* i386.h (CASE_VECTOR_MODE): Large PIC cases are 64bit.
 	* cmodel.h: Add LARGE PIC.
 	* i386.md (UNSPEC_PLTOFF): New.
-	(UNSPEC_SET_RIP, UNSPEC_SET_GOT_OFFSET): New; renumber other unspecs as
-	needed.
+	(UNSPEC_SET_RIP, UNSPEC_SET_GOT_OFFSET): New; renumber other
+	unspecs as needed.
 	(*call_1_rex64): Disable for large models.
 	(*call_1_rex64_large): New.
 	(*call_value_1_rex64): Disable for large models.
@@ -10819,8 +10829,8 @@
 	(ix86_output_addr_diff_elt): Output 64bit tables when needed.
 	(ix86_expand_move): Legitimize pic address when in PIC mode.
 	(construct_plt_address): New function.
-	(ix86_expand_call): Offload the address to register and use GOT pointer
-	for large model.
+	(ix86_expand_call): Offload the address to register and use GOT
+	pointer for large model.
 	* invoke.texi (mcmodel=large): Update documentation.
 
 2007-03-06  Richard Henderson  <rth@redhat.com>
@@ -11410,10 +11420,10 @@
 
 2007-03-01  Zdenek Dvorak  <dvorakz@suse.cz>
 
-	* tree-ssa-loop-prefetch.c (determine_unroll_factor):  Bound the unroll
-	factor by the estimated number of iterations.
-	(loop_prefetch_arrays): Do not prefetch in loops that iterate less than
-	prefetch latency.
+	* tree-ssa-loop-prefetch.c (determine_unroll_factor):  Bound the
+	unroll factor by the estimated number of iterations.
+	(loop_prefetch_arrays): Do not prefetch in loops that iterate less
+	than prefetch latency.
 
 	* config/i386/driver-i386.c (describe_cache, detect_caches_amd,
 	decode_caches_intel, detect_caches_intel): New functions.
@@ -11795,7 +11805,8 @@
 2007-02-24  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/30509
-	* tree-inline.c (copy_bb): Produce exact copy of EH info when copying for inlining.
+	* tree-inline.c (copy_bb): Produce exact copy of EH info when
+	copying for inlining.
 
 2007-02-24  Uros Bizjak  <ubizjak@gmail.com>
 	    Jan Hubicka  <jh@suse.cz>
@@ -12977,8 +12988,8 @@
 
 	* function.c (gimplify_parameters): Use build_call_expr.
 
-	* tree-vectorizer.c (vect_is_simple_reduction): Use TREE_OPERAND_LENGTH
-	instead of TREE_CODE_LENGTH.
+	* tree-vectorizer.c (vect_is_simple_reduction): Use
+	TREE_OPERAND_LENGTH instead of TREE_CODE_LENGTH.
 
 	* ipa-type-escape.c (check_call): Use new CALL_EXPR iterators.
 	(scan_for_refs): Add case tcc_vl_exp for CALL_EXPR.
@@ -13163,8 +13174,9 @@
 	* config/mips/mips.c (mips_expand_builtin):  Use new CALL_EXPR
 	accessors.
 
-	* config/bfin/bfin.c (bfin_expand_binop_builtin): Pass entire CALL_EXPR
-	instead of arglist.  Use new CALL_EXPR accessors.  Fix callers.
+	* config/bfin/bfin.c (bfin_expand_binop_builtin): Pass entire
+	CALL_EXPR instead of arglist.  Use new CALL_EXPR accessors.
+	Fix callers.
 	(bfin_expand_unop_builtin): Likewise.
 	(bfin_expand_builtin): Use new CALL_EXPR accessors.
 
@@ -13986,8 +13998,8 @@
 	the new forwarder block.
 	(make_forwarder_block): Only call new_bb_cbk if it is not NULL.
 	Handle the case latch is NULL.
-	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Avoid cfg modifications
-	when marking loop exits.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Avoid cfg
+	modifications when marking loop exits.
 	* ifcvt.c (if_convert): Ditto.  Mark loop exits even if cfg cannot
 	be modified.
 	* loop-init.c (loop_optimizer_init): Do not modify cfg.  Call
@@ -14655,8 +14667,8 @@
 2007-02-02  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	PR target/29682
-	* config/ia64/ia64.c (ia64_speculate_insn): Restrict to memory loads to
-	general or fp registers.  Add comments.
+	* config/ia64/ia64.c (ia64_speculate_insn): Restrict to memory
+	loads to general or fp registers.  Add comments.
 	* config/ia64/ia64.md (reg_pred_prefix): Add comment.
 
 2007-02-02  Paolo Bonzini  <bonzini@gnu.org>
@@ -14724,8 +14736,8 @@
 
 	(DEP_STATUS): Rename to DEP_LINK_STATUS.  Fix typo in the comment.
 
-	(add_forw_dep, delete_back_forw_dep, insn_cost): Update declaration and
-	all callers.
+	(add_forw_dep, delete_back_forw_dep, insn_cost): Update declaration
+	and all callers.
 	(dep_cost): Declare.
 
 	* sched-deps.c (CHECK): New macro to (en/dis)able sanity checks.
@@ -14827,8 +14839,8 @@
 	* target.h (struct _dep): Declare to use in
 	gcc_target.sched.is_costly_dependence.
 	(struct gcc_target.sched.adjust_cost): Fix typo.
-	(struct gcc_target.sched.is_costly_dependence): Change signature to use
-	single dep_t parameter instead of an equivalent triad.
+	(struct gcc_target.sched.is_costly_dependence): Change signature to
+	use single dep_t parameter instead of an equivalent triad.
 	(struct gcc_target.sched.adjust_cost_2): Remove.
 
 	* target-def.h (TARGET_SCHED_ADJUST_COST_2): Remove.
@@ -14850,8 +14862,8 @@
 	new scheduler dependencies lists.
 	(ia64_gen_check): Ditto.
 
-	* config/mips/mips.c (vr4130_swap_insns_p): Update to use new scheduler
-	dependencies lists.
+	* config/mips/mips.c (vr4130_swap_insns_p): Update to use new
+	scheduler dependencies lists.
 
 	* config/rs6000/rs6000.c (rs6000_is_costly_dependence): Change
 	signature to correspond to the targetm.sched.is_costly_dependence hook.
@@ -15196,8 +15208,8 @@
 
 2007-01-28  Jan Hubicka  <jh@suse.cz>
 
-	* expr.c (emit_block_move_via_movmem, emit_block_move_via_libcall): Add
-	variant handling histograms; add wrapper.
+	* expr.c (emit_block_move_via_movmem, emit_block_move_via_libcall):
+	Add variant handling histograms; add wrapper.
 	(clear_storage_via_libcall): Export.
 	(emit_block_move_hints): Break out from ...; add histograms.
 	(emit_block_move): ... this one.
@@ -15209,8 +15221,8 @@
 	(set_storage_via_setmem): Update prototype.
 	* doc/md.texi (movmem, setmem): Document new arguments.
 
-	* value-prof.c (dump_histogram_value, tree_find_values_to_profile): Add
-	new histograms.
+	* value-prof.c (dump_histogram_value, tree_find_values_to_profile):
+	Add new histograms.
 	(stringop_block_profile): New global function.
 	(tree_stringops_values_to_profile): Profile block size and alignment.
 	* value-prof.h (enum hist_type): add HIST_TYPE_AVERAGE and
@@ -15529,8 +15541,8 @@
 
 	* ipa-inline.c (initial_insns, max_insns): Delete.
 	(compute_max_insns): New function.
-	(cgraph_decide_inlining_of_small_function): Use it; take minimal amount
-	of insns as base for code growth.
+	(cgraph_decide_inlining_of_small_function): Use it; take minimal
+	amount of insns as base for code growth.
 	(cgraph_decide_inlining): Make initial_insns local; do not compute
 	max_insns.
 	* params.def (PARAM_INLINE_UNIT_GROWTH): Set to 60.
@@ -15580,8 +15592,9 @@
 
 	* unwind-dw2-fde.c (get_cie_encoding): Replaced _Unwind_Word with
 	_uleb128_t and _Unwind_SWord with _sleb128_t.
-	* unwind-dw2.c (extract_cie_info, execute_stack_op, execute_cfa_program,
-	uw_frame_state_for, uw_update_context_1): Likewise.
+	* unwind-dw2.c (extract_cie_info, execute_stack_op,
+	execute_cfa_program, uw_frame_state_for, uw_update_context_1):
+	Likewise.
 	* unwind-c.c (parse_lsda_header, PERSONALITY_FUNCTION): Likewise.
 	* unwind-pe.h (read_uleb128, read_sleb128,
 	read_encoded_value_with_base): Likewise.
@@ -15594,7 +15607,8 @@
 
 2007-01-24  Jan Hubicka  <jh@suse.cz>
 
-	* tree-ssa-dce.c (eliminate_unnecesary_stmts): Remove dead LHS of calls.
+	* tree-ssa-dce.c (eliminate_unnecesary_stmts): Remove dead LHS
+	of calls.
 
 2007-01-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
@@ -16631,14 +16645,16 @@
 2007-01-16  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssanames.c (release_dead_ssa_names): Instead of ggc_freeing
-	the names, just unlink the chain so we don't crash on dangling pointers
+	the names, just unlink the chain so we don't crash on dangling
+	pointers
 	to dead SSA names.
 
 2007-01-16  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (cgraph_decide_inlining_incrementally): Kill.
 	* tree-pass.h: Reorder to make IPA passes appear toegher.
-	(pass_early_inline, pass_inline_parameters, pass_apply_inline): Declare.
+	(pass_early_inline, pass_inline_parameters, pass_apply_inline):
+	Declare.
 	* cgraphunit.c (cgraph_finalize_function): Do not compute inling
 	parameters, do not call early inliner.
 	* ipa-inline.c: Update comments.  Include tree-flow.h
@@ -16914,7 +16930,8 @@
 	(set_single_exit): Removed.
 	* cfgloop.h (struct loop_exit): New function.
 	(struct loop): single_exit_ field replaced by exits field.
-	(LOOPS_HAVE_MARKED_SINGLE_EXITS): Replaced by LOOPS_HAVE_RECORDED_EXITS.
+	(LOOPS_HAVE_MARKED_SINGLE_EXITS): Replaced by
+	LOOPS_HAVE_RECORDED_EXITS.
 	(struct loops): Added exits hash.
 	(mark_single_exit_loops, set_single_exit): Declaration removed.
 	(release_recorded_exits, record_loop_exits, rescan_loop_exit): Declare.
@@ -17657,8 +17674,8 @@
 	Adjust register allocate order and update some macro define.
 	* config/score/score-mdaux.c (mdx_unaligned_load, mdx_unsigned_store,
 	mdx_block_move_straight, mdx_block_move_loop_head,
-	mdx_block_move_loop_body, mdx_block_move_loop_foot, mdx_block_move_loop,
-	mdx_block_move): Added.
+	mdx_block_move_loop_body, mdx_block_move_loop_foot,
+	mdx_block_move_loop, mdx_block_move): Added.
 	(mdx_movsicc, mdp_select_add_imm, mdp_select, mds_zero_extract_andi,
 	mdp_limm): Updated and fix some bug and typo.
 	* config/score/score.md (movqi/hi/si, add/sub/zero/ext): Updated.
