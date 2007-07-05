@@ -3715,6 +3715,7 @@ typedef struct dw_line_info_struct *dw_line_info_ref;
 typedef struct dw_separate_line_info_struct *dw_separate_line_info_ref;
 typedef struct pubname_struct *pubname_ref;
 typedef struct dw_ranges_struct *dw_ranges_ref;
+typedef struct dw_ranges_by_label_struct *dw_ranges_by_label_ref;
 
 /* Each entry in the line_info_table maintains the file and
    line number associated with the label generated for that
@@ -3797,7 +3798,15 @@ DEF_VEC_ALLOC_O(pubname_entry, gc);
 
 struct dw_ranges_struct GTY(())
 {
-  int block_num;
+  /* If this is positive, it's a block number, otherwise it's a
+     bitwise-negated index into dw_ranges_by_label.  */
+  int num;
+};
+
+struct dw_ranges_by_label_struct GTY(())
+{
+  const char *begin;
+  const char *end;
 };
 
 /* The limbo die list structure.  */
@@ -4004,6 +4013,16 @@ static GTY(()) unsigned ranges_table_allocated;
 /* Number of elements in ranges_table currently in use.  */
 static GTY(()) unsigned ranges_table_in_use;
 
+/* Array of pairs of labels referenced in ranges_table.  */
+static GTY ((length ("ranges_by_label_allocated")))
+     dw_ranges_by_label_ref ranges_by_label;
+
+/* Number of elements currently allocated for ranges_by_label.  */
+static GTY(()) unsigned ranges_by_label_allocated;
+
+/* Number of elements in ranges_by_label currently in use.  */
+static GTY(()) unsigned ranges_by_label_in_use;
+
 /* Size (in elements) of increments by which we may expand the
    ranges_table.  */
 #define RANGES_TABLE_INCREMENT 64
@@ -4160,7 +4179,9 @@ static void add_pubtype (tree, dw_die_ref);
 static void output_pubnames (VEC (pubname_entry,gc) *);
 static void add_arange (tree, dw_die_ref);
 static void output_aranges (void);
+static unsigned int add_ranges_num (int);
 static unsigned int add_ranges (tree);
+static unsigned int add_ranges_by_labels (const char *, const char *);
 static void output_ranges (void);
 static void output_line_info (void);
 static void output_file_names (void);
@@ -7570,7 +7591,7 @@ output_aranges (void)
    was placed.  */
 
 static unsigned int
-add_ranges (tree block)
+add_ranges_num (int num)
 {
   unsigned int in_use = ranges_table_in_use;
 
@@ -7584,10 +7605,46 @@ add_ranges (tree block)
 	      RANGES_TABLE_INCREMENT * sizeof (struct dw_ranges_struct));
     }
 
-  ranges_table[in_use].block_num = (block ? BLOCK_NUMBER (block) : 0);
+  ranges_table[in_use].num = num;
   ranges_table_in_use = in_use + 1;
 
   return in_use * 2 * DWARF2_ADDR_SIZE;
+}
+
+/* Add a new entry to .debug_ranges corresponding to a block, or a
+   range terminator if BLOCK is NULL.  */
+
+static unsigned int
+add_ranges (tree block)
+{
+  return add_ranges_num (block ? BLOCK_NUMBER (block) : 0);
+}
+
+/* Add a new entry to .debug_ranges corresponding to a pair of
+   labels.  */
+
+static unsigned int
+add_ranges_by_labels (const char *begin, const char *end)
+{
+  unsigned int in_use = ranges_by_label_in_use;
+
+  if (in_use == ranges_by_label_allocated)
+    {
+      ranges_by_label_allocated += RANGES_TABLE_INCREMENT;
+      ranges_by_label
+	= ggc_realloc (ranges_by_label,
+		       (ranges_by_label_allocated
+			* sizeof (struct dw_ranges_by_label_struct)));
+      memset (ranges_by_label + ranges_by_label_in_use, 0,
+	      RANGES_TABLE_INCREMENT
+	      * sizeof (struct dw_ranges_by_label_struct));
+    }
+
+  ranges_by_label[in_use].begin = begin;
+  ranges_by_label[in_use].end = end;
+  ranges_by_label_in_use = in_use + 1;
+
+  return add_ranges_num (-(int)in_use - 1);
 }
 
 static void
@@ -7599,9 +7656,9 @@ output_ranges (void)
 
   for (i = 0; i < ranges_table_in_use; i++)
     {
-      int block_num = ranges_table[i].block_num;
+      int block_num = ranges_table[i].num;
 
-      if (block_num)
+      if (block_num > 0)
 	{
 	  char blabel[MAX_ARTIFICIAL_LABEL_BYTES];
 	  char elabel[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -7621,10 +7678,10 @@ output_ranges (void)
 				    text_section_label, NULL);
 	    }
 
-	  /* Otherwise, we add a DW_AT_entry_pc attribute to force the
-	     compilation unit base address to zero, which allows us to
-	     use absolute addresses, and not worry about whether the
-	     target supports cross-section arithmetic.  */
+	  /* Otherwise, the compilation unit base address is zero,
+	     which allows us to use absolute addresses, and not worry
+	     about whether the target supports cross-section
+	     arithmetic.  */
 	  else
 	    {
 	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
@@ -7633,6 +7690,38 @@ output_ranges (void)
 	    }
 
 	  fmt = NULL;
+	}
+
+      /* Negative block_num stands for an index into ranges_by_label.  */
+      else if (block_num < 0)
+	{
+	  int lab_idx = - block_num - 1;
+
+	  if (!have_multiple_function_sections)
+	    {
+	      gcc_unreachable ();
+#if 0
+	      /* If we ever use add_ranges_by_labels () for a single
+		 function section, all we have to do is to take out
+		 the #if 0 above.  */
+	      dw2_asm_output_delta (DWARF2_ADDR_SIZE,
+				    ranges_by_label[lab_idx].begin,
+				    text_section_label,
+				    fmt, i * 2 * DWARF2_ADDR_SIZE);
+	      dw2_asm_output_delta (DWARF2_ADDR_SIZE,
+				    ranges_by_label[lab_idx].end,
+				    text_section_label, NULL);
+#endif
+	    }
+	  else
+	    {
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE,
+				   ranges_by_label[lab_idx].begin,
+				   fmt, i * 2 * DWARF2_ADDR_SIZE);
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE,
+				   ranges_by_label[lab_idx].end,
+				   NULL);
+	    }
 	}
       else
 	{
@@ -14575,10 +14664,43 @@ dwarf2out_finish (const char *filename)
       add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, text_end_label);
     }
 
-  /* If it wasn't, we need to give .debug_loc and .debug_ranges an appropriate
-     "base address".  Use zero so that these addresses become absolute.  */
-  else if (have_location_lists || ranges_table_in_use)
-    add_AT_addr (comp_unit_die, DW_AT_entry_pc, const0_rtx);
+  else
+    {
+      unsigned fde_idx = 0;
+
+      /* We need to give .debug_loc and .debug_ranges an appropriate
+	 "base address".  Use zero so that these addresses become
+	 absolute.  Historically, we've emitted the unexpected
+	 DW_AT_entry_pc instead of DW_AT_low_pc for this purpose.
+	 Emit both to give time for other tools to adapt.  */
+      add_AT_addr (comp_unit_die, DW_AT_low_pc, const0_rtx);
+      add_AT_addr (comp_unit_die, DW_AT_entry_pc, const0_rtx);
+
+      add_AT_range_list (comp_unit_die, DW_AT_ranges,
+			 add_ranges_by_labels (text_section_label,
+					       text_end_label));
+      if (flag_reorder_blocks_and_partition)
+	add_ranges_by_labels (cold_text_section_label,
+			      cold_end_label);
+
+      for (fde_idx = 0; fde_idx < fde_table_in_use; fde_idx++)
+	{
+	  dw_fde_ref fde = &fde_table[fde_idx];
+
+	  if (fde->dw_fde_switched_sections)
+	    {
+	      add_ranges_by_labels (fde->dw_fde_hot_section_label,
+				    fde->dw_fde_hot_section_end_label);
+	      add_ranges_by_labels (fde->dw_fde_unlikely_section_label,
+				    fde->dw_fde_unlikely_section_end_label);
+	    }
+	  else
+	    add_ranges_by_labels (fde->dw_fde_begin,
+				  fde->dw_fde_end);
+	}
+
+      add_ranges (NULL);
+    }
 
   /* Output location list section if necessary.  */
   if (have_location_lists)

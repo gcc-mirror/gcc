@@ -1,3 +1,18 @@
+2007-07-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* dwarf2out.c (dw_ranges_by_label_ref): New typedef.
+	(dw_ranges_struct): Rename block_num to num.  Adjust.
+	(dw_ranges_by_label_struct): New.
+	(ranges_by_label, ranges_by_label_allocated,
+	ranges_by_label_in_use): New variables.
+	(add_ranges_num): Factored most of the code out of...
+	(add_ranges): ... this one.  Rewrite in terms of the former.
+	(add_ranges_by_labels): New.
+	(output_ranges): Output by-label ranges.
+	(dwarf2out_finish): Output range for multiple-section
+	compile_unit.  Output standard DW_AT_low_pc in addition to
+	unexpected DW_AT_entry_pc.
+
 2007-07-04  Daniel Berlin  <dberlin@dberlin.org>
 
 	PR tree-optimization/32604
