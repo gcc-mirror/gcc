@@ -1,7 +1,7 @@
 2007-06-30  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc_update (files_and_dependencies): Handle
-	gcc/testsuite/gcc.dg/cpp/gcc.dg/cpp/direct2s.c.
+	gcc/testsuite/gcc.dg/cpp/direct2s.c.
 
 2007-05-13  Mark Mitchell  <mark@codesourcery.com>
 
