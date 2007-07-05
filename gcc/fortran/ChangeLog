@@ -1,3 +1,13 @@
+2007-07-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32526
+	* match.c (gfc_match_call): Check, in all cases, that a symbol
+	is neither generic nor a subroutine before trying to add it as
+	a subroutine.
+
+	PR fortran/32613
+	* match.c (gfc_match_do): Reset the implied_index attribute.
+
 2007-07-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31198
