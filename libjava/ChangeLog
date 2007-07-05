@@ -1,3 +1,7 @@
+2007-07-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* aclocal.m4: Regenerated.
+
 2007-07-03  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* java/lang/Class.h: Remove redundant 'class java::*::* declarations.

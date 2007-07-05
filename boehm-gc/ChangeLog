@@ -1,3 +1,7 @@
+2007-07-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* aclocal.m4: Regenerated.
+
 2007-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR boehm-gc/21940
