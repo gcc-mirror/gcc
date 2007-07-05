@@ -11425,8 +11425,8 @@ The ISA names are:
 @samp{mips1}, @samp{mips2}, @samp{mips3}, @samp{mips4},
 @samp{mips32}, @samp{mips32r2}, and @samp{mips64}.
 The processor names are:
-@samp{4kc}, @samp{4km}, @samp{4kp},
-@samp{4kec}, @samp{4kem}, @samp{4kep},
+@samp{4kc}, @samp{4km}, @samp{4kp}, @samp{4ksc},
+@samp{4kec}, @samp{4kem}, @samp{4kep}, @samp{4ksd},
 @samp{5kc}, @samp{5kf},
 @samp{20kc},
 @samp{24kc}, @samp{24kf2_1}, @samp{24kf1_1},

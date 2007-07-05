@@ -766,12 +766,14 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   { "4kc", PROCESSOR_4KC, 32 },
   { "4km", PROCESSOR_4KC, 32 }, /* = 4kc */
   { "4kp", PROCESSOR_4KP, 32 },
+  { "4ksc", PROCESSOR_4KC, 32 },
 
   /* MIPS32 Release 2 */
   { "m4k", PROCESSOR_M4K, 33 },
   { "4kec", PROCESSOR_4KC, 33 },
   { "4kem", PROCESSOR_4KC, 33 },
   { "4kep", PROCESSOR_4KP, 33 },
+  { "4ksd", PROCESSOR_4KC, 33 },
 
   { "24kc", PROCESSOR_24KC, 33 },
   { "24kf2_1", PROCESSOR_24KF2_1, 33 },
