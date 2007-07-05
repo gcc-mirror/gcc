@@ -1,0 +1,204 @@
+/* Copyright (C) 2007  Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+In addition to the permissions in the GNU General Public License, the
+Free Software Foundation gives you unlimited permission to link the
+compiled version of this file into combinations with other programs,
+and to distribute those combinations without any restriction coming
+from the use of this file.  (The General Public License restrictions
+do apply in other respects; for example, they cover modification of
+the file, and distribution when not linked into a combine
+executable.)
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING.  If not, write to the Free
+Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.  */
+
+#include "bid_internal.h"
+
+/*
+ * Takes a BID32 as input and converts it to a BID64 and returns it.
+ */
+TYPE0_FUNCTION_ARGTYPE1_NORND(UINT64, __bid32_to_bid64, UINT32, x)
+
+  UINT64 res;
+  UINT32 sign_x;
+  int exponent_x = 0;
+  UINT32 coefficient_x = 0;
+
+  if (!unpack_BID32 (&sign_x, &exponent_x, &coefficient_x, x)) {
+    // Inf, NaN, 0
+    if (((x) & 0x78000000) == 0x78000000) {
+      res = ((UINT64) (x)) << 32;
+      BID_RETURN (res);
+    }
+  }
+
+  res =
+    very_fast_get_BID64_small_mantissa (((UINT64) sign_x) << 32,
+					exponent_x +
+					DECIMAL_EXPONENT_BIAS -
+					DECIMAL_EXPONENT_BIAS_32,
+					(UINT64) coefficient_x);
+  BID_RETURN (res);
+} // convert_bid32_to_bid64
+
+
+/*
+ * Takes a BID64 as input and converts it to a BID32 and returns it.
+ */
+#if DECIMAL_CALL_BY_REFERENCE
+
+void
+__bid64_to_bid32 (UINT32 * pres,
+		UINT64 *
+		px _RND_MODE_PARAM _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+		_EXC_INFO_PARAM) {
+  UINT64 x;
+#else
+
+UINT32
+__bid64_to_bid32 (UINT64 x _RND_MODE_PARAM _EXC_FLAGS_PARAM
+		_EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+#endif
+  UINT128 Q;
+  UINT64 sign_x, coefficient_x, remainder_h, carry, Stemp;
+  UINT32 res;
+  int_float tempx;
+  int exponent_x, bin_expon_cx, extra_digits, rmode, amount;
+  unsigned status=0;
+
+#if DECIMAL_CALL_BY_REFERENCE
+#if !DECIMAL_GLOBAL_ROUNDING
+  _IDEC_round rnd_mode = *prnd_mode;
+#endif
+  x = *px;
+#endif
+
+  // unpack arguments, check for NaN or Infinity, 0
+  if (!unpack_BID64 (&sign_x, &exponent_x, &coefficient_x, x)) {
+    if (((x) & 0x7800000000000000ull) == 0x7800000000000000ull) {
+      res = ((UINT32) ((x) >> 32)) & 0xfc000000;
+      BID_RETURN (res);
+    }
+    exponent_x =
+      exponent_x - DECIMAL_EXPONENT_BIAS + DECIMAL_EXPONENT_BIAS_32;
+    if (exponent_x < 0)
+      exponent_x = 0;
+    if (exponent_x > DECIMAL_MAX_EXPON_32)
+      exponent_x = DECIMAL_MAX_EXPON_32;
+    res = (sign_x >> 32) | (exponent_x << 23);
+    BID_RETURN (res);
+  }
+
+	exponent_x = exponent_x - DECIMAL_EXPONENT_BIAS + DECIMAL_EXPONENT_BIAS_32;
+
+  // check number of digits
+  if (coefficient_x >= 10000000) {
+    tempx.d = (float) coefficient_x;
+    bin_expon_cx = ((tempx.i >> 23) & 0xff) - 0x7f;
+    extra_digits = __bid_estimate_decimal_digits[bin_expon_cx] - 7;
+    // add test for range
+    if (coefficient_x >= __bid_power10_index_binexp[bin_expon_cx])
+      extra_digits++;
+
+#ifndef IEEE_ROUND_NEAREST_TIES_AWAY
+#ifndef IEEE_ROUND_NEAREST
+    rmode = rnd_mode;
+    if (sign_x && (unsigned) (rmode - 1) < 2)
+      rmode = 3 - rmode;
+#else
+    rmode = 0;
+#endif
+#else
+    rmode = 0;
+#endif
+
+    coefficient_x += __bid_round_const_table[rmode][extra_digits];
+    exponent_x += extra_digits;
+	if((exponent_x<0) && (exponent_x + MAX_FORMAT_DIGITS_32 >= 0)) {
+		extra_digits -= exponent_x;
+		exponent_x = 0;
+		status = UNDERFLOW_EXCEPTION;
+	}
+    __mul_64x64_to_128 (Q, coefficient_x,
+			__bid_reciprocals10_64[extra_digits]);
+
+    // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
+    amount = __bid_short_recip_scale[extra_digits];
+
+    coefficient_x = Q.w[1] >> amount;
+
+#ifndef IEEE_ROUND_NEAREST_TIES_AWAY
+#ifndef IEEE_ROUND_NEAREST
+    if (rmode == 0)	//ROUNDING_TO_NEAREST
+#endif
+      if (coefficient_x & 1) {
+	// check whether fractional part of initial_P/10^extra_digits 
+        // is exactly .5
+
+	// get remainder
+	remainder_h = Q.w[1] << (64 - amount);
+
+	if (!remainder_h && (Q.w[0] < __bid_reciprocals10_64[extra_digits]))
+	  coefficient_x--;
+      }
+#endif
+
+#ifdef SET_STATUS_FLAGS
+
+    {
+      status |= INEXACT_EXCEPTION;
+      // get remainder
+      remainder_h = Q.w[1] << (64 - amount);
+
+      switch (rmode) {
+      case ROUNDING_TO_NEAREST:
+      case ROUNDING_TIES_AWAY:
+	// test whether fractional part is 0
+	if (remainder_h == 0x8000000000000000ull
+	    && (Q.w[0] < __bid_reciprocals10_64[extra_digits]))
+	  status = EXACT_STATUS;
+	break;
+      case ROUNDING_DOWN:
+      case ROUNDING_TO_ZERO:
+	if (!remainder_h && (Q.w[0] < __bid_reciprocals10_64[extra_digits]))
+	  status = EXACT_STATUS;
+	break;
+      default:
+	// round up
+	__add_carry_out (Stemp, carry, Q.w[0],
+			 __bid_reciprocals10_64[extra_digits]);
+	if ((remainder_h >> (64 - amount)) + carry >=
+	    (((UINT64) 1) << amount))
+	  status = EXACT_STATUS;
+      }
+
+      if (status != EXACT_STATUS)
+	__set_status_flags (pfpsf, status);
+    }
+
+#endif
+
+  }
+
+  res =
+    get_BID32 ((UINT32) (sign_x >> 32),
+	       exponent_x,
+	       coefficient_x, rnd_mode,
+	       pfpsf);
+  BID_RETURN (res);
+
+}

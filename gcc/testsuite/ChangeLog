@@ -1,3 +1,11 @@
+2007-07-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/dfp/dfp-round.h (FE_DEC_TONEAREST): Redfined for BID.
+	(FE_DEC_DOWNWARD): Likewise.
+	(FE_DEC_UPWARD): Likewise.
+	(FE_DEC_TOWARDZERO): Likewise.
+	(FE_DEC_TONEARESTFROMZERO): Likewise.
+
 2007-07-04  Daniel Berlin  <dberlin@dberlin.org>
 
 	* gcc.c-torture/compile/pr32606.c: New.
