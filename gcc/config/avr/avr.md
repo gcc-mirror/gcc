@@ -1685,39 +1685,95 @@
 ;; xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x
 ;; zero extend
 
-(define_insn "zero_extendqihi2"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-        (zero_extend:HI (match_operand:QI 1 "register_operand" "0,*r")))]
+(define_insn_and_split "zero_extendqihi2"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+        (zero_extend:HI (match_operand:QI 1 "register_operand" "r")))]
   ""
-  "@
-	clr %B0
-	mov %A0,%A1\;clr %B0"
-  [(set_attr "length" "1,2")
-   (set_attr "cc" "set_n,set_n")])
+  "#"
+  "reload_completed"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 3) (const_int 0))]
+  "unsigned int low_off = subreg_lowpart_offset (QImode, HImode);
+   unsigned int high_off = subreg_highpart_offset (QImode, HImode);
+   
+   operands[2] = simplify_gen_subreg (QImode, operands[0], HImode, low_off);
+   operands[3] = simplify_gen_subreg (QImode, operands[0], HImode, high_off);
+  ")
 
-(define_insn "zero_extendqisi2"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-        (zero_extend:SI (match_operand:QI 1 "register_operand" "0,*r")))]
+(define_insn_and_split "zero_extendqisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (zero_extend:SI (match_operand:QI 1 "register_operand" "r")))]
   ""
-  "@
-	clr %B0\;clr %C0\;clr %D0
-	mov %A0,%A1\;clr %B0\;clr %C0\;clr %D0"
-  [(set_attr "length" "3,4")
-   (set_attr "cc" "set_n,set_n")])
+  "#"
+  "reload_completed"
+  [(set (match_dup 2) (zero_extend:HI (match_dup 1)))
+   (set (match_dup 3) (const_int 0))]
+  "unsigned int low_off = subreg_lowpart_offset (HImode, SImode);
+   unsigned int high_off = subreg_highpart_offset (HImode, SImode);
+   
+   operands[2] = simplify_gen_subreg (HImode, operands[0], SImode, low_off);
+   operands[3] = simplify_gen_subreg (HImode, operands[0], SImode, high_off);
+  ")
 
-(define_insn "zero_extendhisi2"
-  [(set (match_operand:SI 0 "register_operand" "=r,&r")
-        (zero_extend:SI (match_operand:HI 1 "register_operand" "0,*r")))]
+(define_insn_and_split "zero_extendhisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (zero_extend:SI (match_operand:HI 1 "register_operand" "r")))]
   ""
-  "@
-	clr %C0\;clr %D0
-	{mov %A0,%A1\;mov %B0,%B1|movw %A0,%A1}\;clr %C0\;clr %D0"
-  [(set_attr_alternative "length"
-			 [(const_int 2)
-			  (if_then_else (eq_attr "mcu_have_movw" "yes")
-					(const_int 3)
-					(const_int 4))])
-   (set_attr "cc" "set_n,set_n")])
+  "#"
+  "reload_completed"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 3) (const_int 0))]
+  "unsigned int low_off = subreg_lowpart_offset (HImode, SImode);
+   unsigned int high_off = subreg_highpart_offset (HImode, SImode);
+   
+   operands[2] = simplify_gen_subreg (HImode, operands[0], SImode, low_off);
+   operands[3] = simplify_gen_subreg (HImode, operands[0], SImode, high_off);
+  ")
+
+(define_insn_and_split "zero_extendqidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (zero_extend:DI (match_operand:QI 1 "register_operand" "r")))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (match_dup 2) (zero_extend:SI (match_dup 1)))
+   (set (match_dup 3) (const_int 0))]
+  "unsigned int low_off = subreg_lowpart_offset (SImode, DImode);
+   unsigned int high_off = subreg_highpart_offset (SImode, DImode);
+   
+   operands[2] = simplify_gen_subreg (SImode, operands[0], DImode, low_off);
+   operands[3] = simplify_gen_subreg (SImode, operands[0], DImode, high_off);
+  ")
+
+(define_insn_and_split "zero_extendhidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (zero_extend:DI (match_operand:HI 1 "register_operand" "r")))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (match_dup 2) (zero_extend:SI (match_dup 1)))
+   (set (match_dup 3) (const_int 0))]
+  "unsigned int low_off = subreg_lowpart_offset (SImode, DImode);
+   unsigned int high_off = subreg_highpart_offset (SImode, DImode);
+   
+   operands[2] = simplify_gen_subreg (SImode, operands[0], DImode, low_off);
+   operands[3] = simplify_gen_subreg (SImode, operands[0], DImode, high_off);
+  ")
+
+(define_insn_and_split "zero_extendsidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (zero_extend:DI (match_operand:SI 1 "register_operand" "r")))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 3) (const_int 0))]
+  "unsigned int low_off = subreg_lowpart_offset (SImode, DImode);
+   unsigned int high_off = subreg_highpart_offset (SImode, DImode);
+   
+   operands[2] = simplify_gen_subreg (SImode, operands[0], DImode, low_off);
+   operands[3] = simplify_gen_subreg (SImode, operands[0], DImode, high_off);
+  ")
 
 ;;<=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=>
 ;; compare
