@@ -986,6 +986,8 @@ stamp-visibility:
 	echo 0 > stamp-visibility
 endif
 
+# NB: The non-empty default ldbl_compat works around an AIX sed
+# oddity, see libstdc++/31957 for details.
 ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 			      ${glibcxx_srcdir}/include/bits/c++config \
 			      stamp-${host_alias} \
@@ -995,7 +997,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	@date=`cat ${toplevel_srcdir}/gcc/DATESTAMP` ;\
 	nsa_version=`cat stamp-namespace-version` ;\
 	visibility=`cat stamp-visibility` ;\
-	ldbl_compat='' ;\
+	ldbl_compat='s,g,g,' ;\
 	grep "^[ 	]*#[ 	]*define[ 	][ 	]*_GLIBCXX_LONG_DOUBLE_COMPAT[ 	][ 	]*1[ 	]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
 	&& ldbl_compat='s,^#undef _GLIBCXX_LONG_DOUBLE_COMPAT$$,#define _GLIBCXX_LONG_DOUBLE_COMPAT 1,' ;\

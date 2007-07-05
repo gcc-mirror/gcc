@@ -1,3 +1,9 @@
+2007-07-05  Joerg Richter  <joerg.richter@pdv-fs.de>
+
+	PR libstdc++/31957
+	* include/Makefile.am: Work around an AIX sed oddity.
+	* include/Makefile.in: Regenerate.
+
 2007-06-28  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/32509
