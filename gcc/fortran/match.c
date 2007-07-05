@@ -1500,6 +1500,7 @@ gfc_match_do (void)
   if (m == MATCH_ERROR)
     goto cleanup;
 
+  iter.var->symtree->n.sym->attr.implied_index = 0;
   gfc_check_do_variable (iter.var->symtree);
 
   if (gfc_match_eos () != MATCH_YES)
@@ -2296,16 +2297,22 @@ gfc_match_call (void)
 
   sym = st->n.sym;
 
-  if (sym->ns != gfc_current_ns
-	&& !sym->attr.generic
-	&& !sym->attr.subroutine
-        && gfc_get_sym_tree (name, NULL, &st) == 1)
-    return MATCH_ERROR;
+  /* If it does not seem to be callable...  */
+  if (!sym->attr.generic
+	&& !sym->attr.subroutine)
+    {
+      /* ...create a symbol in this scope...  */
+      if (sym->ns != gfc_current_ns
+	    && gfc_get_sym_tree (name, NULL, &st) == 1)
+        return MATCH_ERROR;
 
-  sym = st->n.sym;
+      if (sym != st->n.sym)
+	sym = st->n.sym;
 
-  if (gfc_add_subroutine (&sym->attr, sym->name, NULL) == FAILURE)
-    return MATCH_ERROR;
+      /* ...and then to try to make the symbol into a subroutine.  */
+      if (gfc_add_subroutine (&sym->attr, sym->name, NULL) == FAILURE)
+	return MATCH_ERROR;
+    }
 
   gfc_set_sym_referenced (sym);
 

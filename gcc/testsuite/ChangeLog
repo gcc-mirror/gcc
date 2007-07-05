@@ -1,3 +1,11 @@
+2007-07-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32526
+	* gfortran.dg/interface_14.f90: New test.
+
+	PR fortran/32613
+	* gfortran.dg/do_iterator_2.f90: New test.
+
 2007-07-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/dfp/dfp-round.h (FE_DEC_TONEAREST): Redfined for BID.
