@@ -920,6 +920,11 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
   if (inner_type == outer_type)
     return true;
 
+  /* If we know the canonical types, compare them.  */
+  if (TYPE_CANONICAL (inner_type)
+      && TYPE_CANONICAL (inner_type) == TYPE_CANONICAL (outer_type))
+    return true;
+
   /* Changes in machine mode are never useless conversions.  */
   if (TYPE_MODE (inner_type) != TYPE_MODE (outer_type))
     return false;
@@ -1028,11 +1033,6 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
       /* Different types of aggregates are incompatible.  */
       if (TREE_CODE (inner_type) != TREE_CODE (outer_type))
 	return false;
-
-      /* If we know the canonical types, compare them.  */
-      if (TYPE_CANONICAL (inner_type)
-	  && TYPE_CANONICAL (inner_type) == TYPE_CANONICAL (outer_type))
-	return true;
 
       /* ???  Add structural equivalence check.  */
 

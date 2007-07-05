@@ -620,7 +620,8 @@ get_alias_set (tree t)
   /* There are no objects of FUNCTION_TYPE, so there's no point in
      using up an alias set for them.  (There are, of course, pointers
      and references to functions, but that's different.)  */
-  else if (TREE_CODE (t) == FUNCTION_TYPE)
+  else if (TREE_CODE (t) == FUNCTION_TYPE
+	   || TREE_CODE (t) == METHOD_TYPE)
     set = 0;
 
   /* Unless the language specifies otherwise, let vector types alias
