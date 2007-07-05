@@ -6143,11 +6143,6 @@ mips_file_start (void)
 	 causes unnecessary IRIX 6 ld warnings.  */
       const char * abi_string = NULL;
 
-#ifdef HAVE_AS_GNU_ATTRIBUTE
-      fprintf (asm_out_file, "\t.gnu_attribute 4, %d\n",
-	       TARGET_HARD_FLOAT_ABI ? (TARGET_DOUBLE_FLOAT ? 1 : 2) : 3);
-#endif
-
       switch (mips_abi)
 	{
 	case ABI_32:   abi_string = "abi32"; break;
@@ -6174,6 +6169,11 @@ mips_file_start (void)
 
       /* Restore the default section.  */
       fprintf (asm_out_file, "\t.previous\n");
+
+#ifdef HAVE_AS_GNU_ATTRIBUTE
+      fprintf (asm_out_file, "\t.gnu_attribute 4, %d\n",
+	       TARGET_HARD_FLOAT_ABI ? (TARGET_DOUBLE_FLOAT ? 1 : 2) : 3);
+#endif
     }
 
   /* Generate the pseudo ops that System V.4 wants.  */
