@@ -1,6 +1,13 @@
 2007-07-05  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
 
+	gcc/
+	* config/mips/mips.c (mips_cpu_info): Add 4ksc and 4ksd processors.
+	* doc/invoke.texi: (MIPS Options): Document them.
+
+2007-07-05  Sandra Loosemore  <sandra@codesourcery.com>
+	    David Ung  <davidu@mips.com>
+
 	Add support for SmartMIPS ASE.
 
 	* optabs.c (expand_binop_directly): New, broken out from...
