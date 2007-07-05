@@ -1,3 +1,8 @@
+2007-07-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* MAINTAINERS (OS Port Maintainers): Add myself as IRIX, Tru64 UNIX
+	maintainer.
+
 2007-07-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* lt~obsolete.m4: New. Import from 20070318 libtool.
