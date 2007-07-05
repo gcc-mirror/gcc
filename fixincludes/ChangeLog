@@ -1,3 +1,10 @@
+2007-07-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR libgcj/28190
+	* inclhack.def (irix_stdint_c99): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/stdint.h: New test.
+
 2007-06-06  Steve Ellcey  <sje@cup.hp.com>
 
 	PR testsuite/31828
