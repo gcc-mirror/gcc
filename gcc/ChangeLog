@@ -1,3 +1,9 @@
+2007-07-05  Seongbae Park  <seongbae.park@gmail.com>
+
+	PR rtl-optimization/32475
+	* df-scan.c (df_def_record_1): Add a use of the stack pointer
+	for every definition of the stack pointer.
+
 2007-07-05  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (vfp3_const_double_index): Copy signed results of
