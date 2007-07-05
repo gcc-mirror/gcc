@@ -297,6 +297,12 @@ typedef enum ifsrc
 }
 ifsrc;
 
+/* Whether a SAVE attribute was set explicitly or implictly.  */
+typedef enum save_state
+{ SAVE_NONE = 0, SAVE_EXPLICIT, SAVE_IMPLICIT
+}
+save_state;
+
 /* Strings for all symbol attributes.  We use these for dumping the
    parse tree, in error messages, and also when reading and writing
    modules.  In symbol.c.  */
@@ -620,9 +626,11 @@ typedef struct
 {
   /* Variable attributes.  */
   unsigned allocatable:1, dimension:1, external:1, intrinsic:1,
-    optional:1, pointer:1, save:1, target:1, value:1, volatile_:1,
+    optional:1, pointer:1, target:1, value:1, volatile_:1,
     dummy:1, result:1, assign:1, threadprivate:1, not_always_present:1,
     implied_index:1;
+
+  ENUM_BITFIELD (save_state) save:2;
 
   unsigned data:1,		/* Symbol is named in a DATA statement.  */
     protected:1,		/* Symbol has been marked as protected.  */

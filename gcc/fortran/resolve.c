@@ -6508,8 +6508,9 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 	    }
 	}
 
-      /* Also, they must not have the SAVE attribute.  */
-      if (flag && sym->attr.save)
+      /* Also, they must not have the SAVE attribute.
+	 SAVE_IMPLICIT is checked below.  */
+      if (flag && sym->attr.save == SAVE_EXPLICIT)
 	{
 	  gfc_error (auto_save_msg, sym->name, &sym->declared_at);
 	  return FAILURE;
@@ -7287,7 +7288,7 @@ resolve_symbol (gfc_symbol *sym)
     gfc_resolve (sym->formal_ns);
 
   /* Check threadprivate restrictions.  */
-  if (sym->attr.threadprivate && !sym->attr.save
+  if (sym->attr.threadprivate && !sym->attr.save && !sym->ns->save_all
       && (!sym->attr.in_common
 	  && sym->module == NULL
 	  && (sym->ns->proc_name == NULL
