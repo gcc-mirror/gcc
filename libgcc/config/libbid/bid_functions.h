@@ -1,0 +1,2676 @@
+/* Copyright (C) 2007  Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+In addition to the permissions in the GNU General Public License, the
+Free Software Foundation gives you unlimited permission to link the
+compiled version of this file into combinations with other programs,
+and to distribute those combinations without any restriction coming
+from the use of this file.  (The General Public License restrictions
+do apply in other respects; for example, they cover modification of
+the file, and distribution when not linked into a combine
+executable.)
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING.  If not, write to the Free
+Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.  */
+
+#ifndef _BID_FUNCTIONS_H
+#define _BID_FUNCTIONS_H
+
+#if defined _MSC_VER
+#if defined _M_IX86 && !defined __INTEL_COMPILER    // Win IA-32, MS compiler
+#define ALIGN(n)
+#else
+#define ALIGN(n) __declspec(align(n))
+#endif
+#else
+#define ALIGN(n) __attribute__ ((aligned(n)))
+#endif
+
+
+#if !defined _MSC_VER || defined __INTEL_COMPILER
+#define __ENABLE_BINARY80__  1
+#endif
+
+#define _i_quad_t_ UINT128
+
+typedef ALIGN (16)
+struct {
+  UINT64 w[2];
+} UINT128;
+typedef ALIGN (16)
+struct {
+  UINT64 w[3];
+} UINT192;
+typedef ALIGN (16)
+struct {
+  UINT64 w[4];
+} UINT256;
+typedef unsigned int FPSC;	// floating-point status and control
+
+// TYPE parameters
+#define BID128_MAXDIGITS	34
+#define BID64_MAXDIGITS		16
+#define BID32_MAXDIGITS		7
+
+// rounding modes
+#define ROUNDING_TO_NEAREST	0x00000
+#define ROUNDING_DOWN		0x00001
+#define ROUNDING_UP		0x00002
+#define ROUNDING_TO_ZERO	0x00003
+#define ROUNDING_TIES_AWAY      0x00004
+
+// status
+#define FLAG_MASK	        0x0000003f
+#define EXACT_STATUS            0x00000000
+#define INEXACT_EXCEPTION	0x00000020
+#define UNDERFLOW_EXCEPTION	0x00000010
+#define OVERFLOW_EXCEPTION	0x00000008
+#define ZERO_DIVIDE_EXCEPTION	0x00000004
+#define DENORMAL_EXCEPTION	0x00000002
+#define INVALID_EXCEPTION	0x00000001
+
+#define MODE_MASK               0x00001f80
+#define INEXACT_MODE            0x00001000
+#define UNDERFLOW_MODE          0x00000800
+#define OVERFLOW_MODE           0x00000400
+#define ZERO_DIVIDE_MODE        0x00000200
+#define DENORMAL_MODE           0x00000100
+#define INVALID_MODE            0x00000080
+
+#if defined IN_LIBGCC2 || defined LINUX || defined SUNOS
+#define LX16  "%016llx"
+#define LX    "%llx"
+#define LD4   "%4llu"
+#define LD16  "%016lld"
+#define LD    "%lld"
+#define LUD   "%llu"
+#define LUD16 "%016llu"
+#define X8    "%08x"
+#define X4    "%04x"
+
+#define FMT_LLX16  "%016llx"
+#define FMT_LLX    "%llx"
+#define FMT_LLU4   "%4llu"
+#define FMT_LLD16  "%016lld"
+#define FMT_LLD    "%lld"
+#define FMT_LLU    "%llu"
+#define FMT_LLU16  "%016llu"
+#define FMT_X8     "%08x"
+#define FMT_X4     "%04x"
+#else
+#define LX16  "%016I64x"
+#define LX    "%I64x"
+#define LD16  "%016I64d"
+#define LD4   "%4I64u"
+#define LD    "%I64d"
+#define LUD    "%I64u"
+#define LUD16 "%016I64u"
+#define X8    "%08x"
+#define X4    "%04x"
+
+#define FMT_LLX16 "%016I64x"
+#define FMT_LLX   "%I64x"
+#define FMT_LLD16 "%016I64d"
+#define FMT_LLU4  "%4I64u"
+#define FMT_LLD   "%I64d"
+#define FMT_LLU   "%I64u"
+#define FMT_LLU16 "%016I64u"
+#define FMT_X8    "%08x"
+#define FMT_X4    "%04x"
+#endif
+
+#define decNumberIsSNaN(dn)      (((dn)->bits&(DECSNAN))!=0)
+     int __signbitf (float);
+     int __signbit (double);
+
+#define __IMFC99MACRO_( __x__, __func__ ) \
+        (( sizeof( __x__ ) > sizeof( float )) \
+         ? __func__( (double)(__x__) ) \
+                : __func__##f( (float)(__x__) ))
+
+#define signbit( __x__ )    __IMFC99MACRO_( __x__, __signbit )
+
+#if !defined(__INTEL_COMPILER)
+
+#define __fence
+
+#define isinf( __x__ )      __IMFC99MACRO_( __x__, __isinf )
+#define isnan( __x__ )      __IMFC99MACRO_( __x__, __isnan )
+
+     int __isnanf (float);
+     int __isnan (double);
+
+     int __isinff (float);
+     int __isinf (double);
+
+#endif
+
+/* Used by intrinsics.  */
+union decimal32
+{
+  _Decimal32 d;
+  UINT32 i;
+};
+
+union decimal64
+{
+  _Decimal64 d;
+  UINT64 i;
+};
+
+union decimal128
+{
+  _Decimal128 d;
+  UINT128 i;
+};
+
+#if BID_HAS_TF_MODE
+union float128
+{
+  TFtype f;
+  UINT128 i;
+};
+#endif
+
+/* rounding modes */
+// typedef unsigned int _IDEC_round;
+     extern _IDEC_round _IDEC_gblround;	// initialized to ROUNDING_TO_NEAREST
+
+/* exception flags */
+// typedef unsigned int _IDEC_flags;  // could be a struct with diagnostic info
+     extern _IDEC_flags _IDEC_gblflags;	// initialized to EXACT_STATUS
+
+/* exception masks */
+     typedef unsigned int _IDEC_exceptionmasks;
+     extern _IDEC_exceptionmasks _IDEC_gblexceptionmasks;	// initialized to MODE_MASK
+
+#if DECIMAL_ALTERNATE_EXCEPTION_HANDLING
+
+/* exception information */
+
+     typedef struct {
+       unsigned int inexact_result:1;
+       unsigned int underflow:1;
+       unsigned int overflow:1;
+       unsigned int zero_divide:1;
+       unsigned int invalid_operation:1;
+     } fpieee_exception_flags_t;
+
+     typedef enum {
+       _fp_round_nearest,
+       _fp_round_minus_infinity,
+       _fp_round_plus_infinity,
+       _fp_round_chopped,
+       _fp_round_away
+     } fpieee_rounding_mode_t;
+
+     typedef enum {
+       _fp_precision24,
+       _fp_precision63,
+       _fp_precision64,
+       _fp_precision7,
+       _fp_precision16,
+       _fp_precision34
+     } _fpieee_precision_t;
+
+     typedef enum {
+       _fp_code_unspecified,
+       _fp_code_add,
+       _fp_code_subtract,
+       _fp_code_multiply,
+       _fp_code_divide,
+       _fp_code_square_root,
+       _fp_code_compare,
+       _fp_code_convert,
+       _fp_code_convert_to_integer_neareven,
+       _fp_code_convert_to_integer_down,
+       _fp_code_convert_to_integer_up,
+       _fp_code_convert_to_integer_truncate,
+       _fp_code_convert_to_integer_nearaway,
+       _fp_code_fma,
+       _fp_code_fmin,
+       _fp_code_fmax,
+       _fp_code_famin,
+       _fp_code_famax,
+       _fp_code_round_to_integral,
+       _fp_code_minnum,
+       _fp_code_maxnum,
+       _fp_code_minnummag,
+       _fp_code_maxnummag,
+       _fp_code_quantize,
+       _fp_code_logb,
+       _fp_code_scaleb,
+       _fp_code_remainder,
+       _fp_code_nextup,
+       _fp_code_nextdown,
+       _fp_code_nextafter,
+     } fp_operation_code_t;
+
+     typedef enum {
+       _fp_compare_equal,
+       _fp_compare_greater,
+       _fp_compare_less,
+       _fp_compare_unordered
+     } fpieee_compare_result_t;
+
+     typedef enum {
+       _fp_format_fp32,
+       _fp_format_fp64,
+       _fp_format_fp80,
+       _fp_format_fp128,
+       _fp_format_dec_fp32,
+       _fp_format_dec_fp64,
+       _fp_format_dec_fp128,
+       _fp_format_i8,		/* 8-bit integer */
+       _fp_format_i16,		/* 16-bit integer */
+       _fp_format_i32,		/* 32-bit integer */
+       _fp_format_i64,		/* 64-bit integer */
+       _fp_format_u8,		/* 8-bit unsigned integer */
+       _fp_format_u16,		/* 16-bit unsigned integer */
+       _fp_format_u32,		/* 32-bit unsigned integer */
+       _fp_format_u64,		/* 64-bit unsigned integer */
+       _fp_format_compare,	/* compare value format */
+       _fp_format_decimal_char,	/* decimal character */
+       _fp_format_string	/* string */
+     } fpieee_format_t;
+
+     typedef struct {
+       unsigned short W[5];
+     } _float80_t;
+
+     typedef struct {
+       unsigned int W[4];
+     } _float128_t;
+
+     typedef struct {
+       union {
+	 float fp32_value;
+	 double fp64_value;
+	 _float80_t fp80_value;
+	 _float128_t fp128_value;
+	 UINT32 decfp32_value;
+	 UINT64 decfp64_value;
+	 UINT128 decfp128_value;
+	 char i8_value;
+	 short i16_value;
+	 int i32_value;
+	 SINT64 i64_value;
+	 unsigned char u8_value;
+	 unsigned short u16_value;
+	 unsigned int u32_value;
+	 unsigned long u64_value;
+	 fpieee_compare_result_t compare_value;
+	 unsigned char s[256];
+       } value;
+       unsigned int operand_valid:1;
+       fpieee_format_t format:5;
+     } fpieee_value_t;
+
+     typedef struct {
+       unsigned int rounding_mode:3;
+       unsigned int precision:3;
+       unsigned int operation:26;
+       fpieee_exception_flags_t cause;
+       fpieee_exception_flags_t enable;
+       fpieee_exception_flags_t status;
+       fpieee_value_t operand1;
+       fpieee_value_t operand2;
+       fpieee_value_t operand3;
+       fpieee_value_t result;
+     } _IDEC_excepthandling;
+     extern _IDEC_excepthandling _IDEC_glbexcepthandling;
+
+#endif
+
+#if DECIMAL_CALL_BY_REFERENCE
+
+     extern void __bid128dd_add (UINT128 *pres, UINT64 *px,
+                             UINT64 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128dq_add (UINT128 *pres, UINT64 *px,
+                             UINT128 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128qd_add (UINT128 *pres, UINT128 *px,
+                             UINT64 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_add (UINT128 * pres, UINT128 * px,
+			     UINT128 *
+			     py _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128dd_sub (UINT128 *pres, UINT64 *px,
+                             UINT64 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128dq_sub (UINT128 *pres, UINT64 *px,
+                             UINT128 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128qd_sub (UINT128 *pres, UINT128 *px,
+                             UINT64 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_sub (UINT128 * pres, UINT128 * px,
+			     UINT128 *
+			     py _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128dd_mul (UINT128 *pres, UINT64 *px,
+                             UINT64 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128dq_mul (UINT128 *pres, UINT64 *px,
+                             UINT128 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern void __bid128qd_mul (UINT128 *pres, UINT128 *px,
+                             UINT64 *py
+		             _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern void __bid128_mul (UINT128 *pres, UINT128 *px,
+                             UINT128 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_div (UINT128 * pres, UINT128 * px,
+			     UINT128 *
+			     py _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128dd_div (UINT128 *pres, UINT64 *px,
+                             UINT64 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128dq_div (UINT128 *pres, UINT64 *px,
+                             UINT128 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern void __bid128qd_div (UINT128 *pres, UINT128 *px,
+                             UINT64 *py
+		             _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern void __bid128_fma (UINT128 *pres, UINT128 *px,
+			     UINT128 *py, UINT128 *pz 
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128ddd_fma (UINT128 *pres, UINT64 *px,
+			     UINT64 *py, UINT64 *pz 
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128ddq_fma (UINT128 *pres, UINT64 *px,
+			     UINT64 *py, UINT128 *pz 
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128dqd_fma (UINT128 *pres, UINT64 *px,
+			     UINT128 *py, UINT64 *pz 
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128dqq_fma (UINT128 *pres, UINT64 *px,
+			     UINT128 *py, UINT128 *pz 
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128qdd_fma (UINT128 *pres, UINT128 *px,
+			     UINT64 *py, UINT64 *pz 
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128qdq_fma (UINT128 *pres, UINT128 *px,
+			     UINT64 *py, UINT128 *pz 
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128qqd_fma (UINT128 *pres, UINT128 *px,
+			     UINT128 *py, UINT64 *pz 
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     // Note: __bid128qqq_fma is represented by bid128_fma
+     // Note: __bid64ddd_fma is represented by bid64_fma
+     extern void __bid64ddq_fma (UINT64 *pres, UINT64 *px,
+                             UINT64 *py, UINT128 *pz
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64dqd_fma (UINT64 *pres, UINT64 *px,
+                             UINT128 *py, UINT64 *pz
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64dqq_fma (UINT64 *pres, UINT64 *px,
+                             UINT128 *py, UINT128 *pz
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64qdd_fma (UINT64 *pres, UINT128 *px,
+                             UINT64 *py, UINT64 *pz
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64qdq_fma (UINT64 *pres, UINT128 *px,
+                             UINT64 *py, UINT128 *pz
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64qqd_fma (UINT64 *pres, UINT128 *px,
+                             UINT128 *py, UINT64 *pz
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64qqq_fma (UINT64 *pres, UINT128 *px,
+                             UINT128 *py, UINT128 *pz
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid128_sqrt (UINT128 * pres,
+			      UINT128 *
+			      px _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128d_sqrt (UINT128 *pres, UINT64 *px
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid64_add (UINT64 * pres, UINT64 * px,
+			    UINT64 *
+			    py _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64dq_add (UINT64 *pres, UINT64 *px,
+                             UINT128 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64qd_add (UINT64 *pres, UINT128 *px,
+                             UINT64 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64qq_add (UINT64 *pres, UINT128 *px,
+                             UINT128 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_sub (UINT64 * pres, UINT64 * px,
+			    UINT64 *
+			    py _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64dq_sub (UINT64 *pres, UINT64 *px,
+                             UINT128 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64qd_sub (UINT64 *pres, UINT128 *px,
+                             UINT64 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64qq_sub (UINT64 *pres, UINT128 *px,
+                             UINT128 *py
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_mul (UINT64 * pres, UINT64 * px,
+			    UINT64 * py 
+                            _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64dq_mul (UINT64 *pres, UINT64 *px,
+                             UINT128 *py 
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64qd_mul (UINT64 *pres, UINT128 *px,
+                             UINT64 *py 
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64qq_mul (UINT64 *pres, UINT128 *px,
+                             UINT128 *py 
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_div (UINT64 * pres, UINT64 * px,
+			    UINT64 *
+			    py _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+      extern void __bid64dq_div (UINT64 *pres, UINT64 *px,
+                             UINT128 *py 
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64qd_div (UINT64 *pres, UINT128 *px,
+                             UINT64 *py 
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64qq_div (UINT64 *pres, UINT128 *px,
+                             UINT128 *py 
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+    extern void __bid64_fma (UINT64 * pres, UINT64 * px,
+			    UINT64 * py,
+			    UINT64 *
+			    pz _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_sqrt (UINT64 * pres,
+			     UINT64 *
+			     px _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64q_sqrt (UINT64 *pres, UINT128 *px
+                             _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                             _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid128_to_int32_rnint (int *pres,
+					UINT128 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid128_to_int32_xrnint (int *pres,
+					 UINT128 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid128_to_int32_rninta (int *pres,
+					 UINT128 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid128_to_int32_xrninta (int *pres,
+					  UINT128 *
+					  px _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern void __bid128_to_int32_int (int *pres,
+				      UINT128 *
+				      px _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_to_int32_xint (int *pres,
+				       UINT128 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid128_to_int32_floor (int *pres,
+					UINT128 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid128_to_int32_xfloor (int *pres,
+					 UINT128 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid128_to_int32_ceil (int *pres,
+				       UINT128 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid128_to_int32_xceil (int *pres,
+					UINT128 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid128_to_uint32_rnint (unsigned int *pres,
+					 UINT128 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid128_to_uint32_xrnint (unsigned int *pres,
+					  UINT128 *
+					  px _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern void __bid128_to_uint32_rninta (unsigned int *pres,
+					  UINT128 *
+					  px _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern void __bid128_to_uint32_xrninta (unsigned int *pres,
+					   UINT128 *
+					   px _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern void __bid128_to_uint32_int (unsigned int *pres,
+				       UINT128 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid128_to_uint32_xint (unsigned int *pres,
+					UINT128 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid128_to_uint32_floor (unsigned int *pres,
+					 UINT128 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid128_to_uint32_xfloor (unsigned int *pres,
+					  UINT128 *
+					  px _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern void __bid128_to_uint32_ceil (unsigned int *pres,
+					UINT128 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid128_to_uint32_xceil (unsigned int *pres,
+					 UINT128 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid128_to_int64_rnint (SINT64 * pres,
+					UINT128 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid128_to_int64_xrnint (SINT64 * pres,
+					 UINT128 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid128_to_int64_rninta (SINT64 * pres,
+					 UINT128 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid128_to_int64_xrninta (SINT64 * pres,
+					  UINT128 *
+					  px _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern void __bid128_to_int64_int (SINT64 * pres,
+				      UINT128 *
+				      px _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_to_int64_xint (SINT64 * pres,
+				       UINT128 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid128_to_int64_floor (SINT64 * pres,
+					UINT128 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid128_to_int64_xfloor (SINT64 * pres,
+					 UINT128 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid128_to_int64_ceil (SINT64 * pres,
+				       UINT128 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid128_to_int64_xceil (SINT64 * pres,
+					UINT128 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid128_to_uint64_rnint (UINT64 * pres,
+					 UINT128 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid128_to_uint64_xrnint (UINT64 * pres,
+					  UINT128 *
+					  px _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern void __bid128_to_uint64_rninta (UINT64 * pres,
+					  UINT128 *
+					  px _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern void __bid128_to_uint64_xrninta (UINT64 * pres,
+					   UINT128 *
+					   px _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern void __bid128_to_uint64_int (UINT64 * pres,
+				       UINT128 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid128_to_uint64_xint (UINT64 * pres,
+					UINT128 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid128_to_uint64_floor (UINT64 * pres,
+					 UINT128 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid128_to_uint64_xfloor (UINT64 * pres,
+					  UINT128 *
+					  px _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern void __bid128_to_uint64_ceil (UINT64 * pres,
+					UINT128 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid128_to_uint64_xceil (UINT64 * pres,
+					 UINT128 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid64_to_int32_rnint (int *pres,
+				       UINT64 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid64_to_int32_xrnint (int *pres,
+					UINT64 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid64_to_int32_rninta (int *pres,
+					UINT64 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid64_to_int32_xrninta (int *pres,
+					 UINT64 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid64_to_int32_int (int *pres,
+				     UINT64 *
+				     px _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_to_int32_xint (int *pres,
+				      UINT64 *
+				      px _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_to_int32_floor (int *pres,
+				       UINT64 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid64_to_int32_xfloor (int *pres,
+					UINT64 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid64_to_int32_ceil (int *pres,
+				      UINT64 *
+				      px _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_to_int32_xceil (int *pres,
+				       UINT64 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid64_to_uint32_rnint (unsigned int *pres,
+					UINT64 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid64_to_uint32_xrnint (unsigned int *pres,
+					 UINT64 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid64_to_uint32_rninta (unsigned int *pres,
+					 UINT64 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid64_to_uint32_xrninta (unsigned int *pres,
+					  UINT64 *
+					  px _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern void __bid64_to_uint32_int (unsigned int *pres,
+				      UINT64 *
+				      px _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_to_uint32_xint (unsigned int *pres,
+				       UINT64 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid64_to_uint32_floor (unsigned int *pres,
+					UINT64 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid64_to_uint32_xfloor (unsigned int *pres,
+					 UINT64 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid64_to_uint32_ceil (unsigned int *pres,
+				       UINT64 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid64_to_uint32_xceil (unsigned int *pres,
+					UINT64 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid64_to_int64_rnint (SINT64 * pres,
+				       UINT64 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid64_to_int64_xrnint (SINT64 * pres,
+					UINT64 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid64_to_int64_rninta (SINT64 * pres,
+					UINT64 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid64_to_int64_xrninta (SINT64 * pres,
+					 UINT64 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid64_to_int64_int (SINT64 * pres,
+				     UINT64 *
+				     px _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_to_int64_xint (SINT64 * pres,
+				      UINT64 *
+				      px _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_to_int64_floor (SINT64 * pres,
+				       UINT64 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid64_to_int64_xfloor (SINT64 * pres,
+					UINT64 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid64_to_int64_ceil (SINT64 * pres,
+				      UINT64 *
+				      px _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_to_int64_xceil (SINT64 * pres,
+				       UINT64 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid64_to_uint64_rnint (UINT64 * pres,
+					UINT64 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid64_to_uint64_xrnint (UINT64 * pres,
+					 UINT64 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid64_to_uint64_rninta (UINT64 * pres,
+					 UINT64 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid64_to_uint64_xrninta (UINT64 * pres,
+					  UINT64 *
+					  px _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern void __bid64_to_uint64_int (UINT64 * pres,
+				      UINT64 *
+				      px _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_to_uint64_xint (UINT64 * pres,
+				       UINT64 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid64_to_uint64_floor (UINT64 * pres,
+					UINT64 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid64_to_uint64_xfloor (UINT64 * pres,
+					 UINT64 *
+					 px _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid64_to_uint64_ceil (UINT64 * pres,
+				       UINT64 *
+				       px _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid64_to_uint64_xceil (UINT64 * pres,
+					UINT64 *
+					px _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+
+     extern void __bid64_quiet_equal (int *pres, UINT64 * px, UINT64 * py
+				    _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				    _EXC_INFO_PARAM);
+     extern void __bid64_quiet_greater (int *pres, UINT64 * px,
+				      UINT64 *
+				      py _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_quiet_greater_equal (int *pres, UINT64 * px,
+					    UINT64 *
+					    py _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+     extern void __bid64_quiet_greater_unordered (int *pres, UINT64 * px,
+						UINT64 *
+						py _EXC_FLAGS_PARAM
+						_EXC_MASKS_PARAM
+						_EXC_INFO_PARAM);
+     extern void __bid64_quiet_less (int *pres, UINT64 * px,
+				   UINT64 *
+				   py _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				   _EXC_INFO_PARAM);
+     extern void __bid64_quiet_less_equal (int *pres, UINT64 * px,
+					 UINT64 *
+					 py _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid64_quiet_less_unordered (int *pres, UINT64 * px,
+					     UINT64 *
+					     py _EXC_FLAGS_PARAM
+					     _EXC_MASKS_PARAM
+					     _EXC_INFO_PARAM);
+     extern void __bid64_quiet_not_equal (int *pres, UINT64 * px,
+					UINT64 *
+					py _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid64_quiet_not_greater (int *pres, UINT64 * px,
+					  UINT64 *
+					  py _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern void __bid64_quiet_not_less (int *pres, UINT64 * px,
+				       UINT64 *
+				       py _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid64_quiet_ordered (int *pres, UINT64 * px,
+				      UINT64 *
+				      py _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_quiet_unordered (int *pres, UINT64 * px,
+					UINT64 *
+					py _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid64_signaling_equal (int *pres, UINT64 * px,
+					UINT64 *
+					py _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid64_signaling_greater (int *pres, UINT64 * px,
+					  UINT64 *
+					  py _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern void __bid64_signaling_greater_equal (int *pres, UINT64 * px,
+						UINT64 *
+						py _EXC_FLAGS_PARAM
+						_EXC_MASKS_PARAM
+						_EXC_INFO_PARAM);
+     extern void __bid64_signaling_greater_unordered (int *pres,
+						    UINT64 * px,
+						    UINT64 *
+						    py _EXC_FLAGS_PARAM
+						    _EXC_MASKS_PARAM
+						    _EXC_INFO_PARAM);
+     extern void __bid64_signaling_less (int *pres, UINT64 * px,
+				       UINT64 *
+				       py _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid64_signaling_less_equal (int *pres, UINT64 * px,
+					     UINT64 *
+					     py _EXC_FLAGS_PARAM
+					     _EXC_MASKS_PARAM
+					     _EXC_INFO_PARAM);
+     extern void __bid64_signaling_less_unordered (int *pres, UINT64 * px,
+						 UINT64 *
+						 py _EXC_FLAGS_PARAM
+						 _EXC_MASKS_PARAM
+						 _EXC_INFO_PARAM);
+     extern void __bid64_signaling_not_equal (int *pres, UINT64 * px,
+					    UINT64 *
+					    py _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+     extern void __bid64_signaling_not_greater (int *pres, UINT64 * px,
+					      UINT64 *
+					      py _EXC_FLAGS_PARAM
+					      _EXC_MASKS_PARAM
+					      _EXC_INFO_PARAM);
+     extern void __bid64_signaling_not_less (int *pres, UINT64 * px,
+					   UINT64 *
+					   py _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern void __bid64_signaling_ordered (int *pres, UINT64 * px,
+					  UINT64 *
+					  py _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern void __bid64_signaling_unordered (int *pres, UINT64 * px,
+					    UINT64 *
+					    py _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+
+     extern void __bid128_quiet_equal (int *pres, UINT128 * px,
+				     UINT128 *
+				     py _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_quiet_greater (int *pres, UINT128 * px,
+				       UINT128 *
+				       py _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid128_quiet_greater_equal (int *pres, UINT128 * px,
+					     UINT128 *
+					     py _EXC_FLAGS_PARAM
+					     _EXC_MASKS_PARAM
+					     _EXC_INFO_PARAM);
+     extern void __bid128_quiet_greater_unordered (int *pres,
+						 UINT128 * px,
+						 UINT128 *
+						 py _EXC_FLAGS_PARAM
+						 _EXC_MASKS_PARAM
+						 _EXC_INFO_PARAM);
+     extern void __bid128_quiet_less (int *pres, UINT128 * px,
+				    UINT128 *
+				    py _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				    _EXC_INFO_PARAM);
+     extern void __bid128_quiet_less_equal (int *pres, UINT128 * px,
+					  UINT128 *
+					  py _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern void __bid128_quiet_less_unordered (int *pres, UINT128 * px,
+					      UINT128 *
+					      py _EXC_FLAGS_PARAM
+					      _EXC_MASKS_PARAM
+					      _EXC_INFO_PARAM);
+     extern void __bid128_quiet_not_equal (int *pres, UINT128 * px,
+					 UINT128 *
+					 py _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid128_quiet_not_greater (int *pres, UINT128 * px,
+					   UINT128 *
+					   py _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern void __bid128_quiet_not_less (int *pres, UINT128 * px,
+					UINT128 *
+					py _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid128_quiet_ordered (int *pres, UINT128 * px,
+				       UINT128 *
+				       py _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid128_quiet_unordered (int *pres, UINT128 * px,
+					 UINT128 *
+					 py _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid128_signaling_equal (int *pres, UINT128 * px,
+					 UINT128 *
+					 py _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern void __bid128_signaling_greater (int *pres, UINT128 * px,
+					   UINT128 *
+					   py _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern void __bid128_signaling_greater_equal (int *pres,
+						 UINT128 * px,
+						 UINT128 *
+						 py _EXC_FLAGS_PARAM
+						 _EXC_MASKS_PARAM
+						 _EXC_INFO_PARAM);
+     extern void __bid128_signaling_greater_unordered (int *pres,
+						     UINT128 * px,
+						     UINT128 *
+						     py _EXC_FLAGS_PARAM
+						     _EXC_MASKS_PARAM
+						     _EXC_INFO_PARAM);
+     extern void __bid128_signaling_less (int *pres, UINT128 * px,
+					UINT128 *
+					py _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern void __bid128_signaling_less_equal (int *pres, UINT128 * px,
+					      UINT128 *
+					      py _EXC_FLAGS_PARAM
+					      _EXC_MASKS_PARAM
+					      _EXC_INFO_PARAM);
+     extern void __bid128_signaling_less_unordered (int *pres,
+						  UINT128 * px,
+						  UINT128 *
+						  py _EXC_FLAGS_PARAM
+						  _EXC_MASKS_PARAM
+						  _EXC_INFO_PARAM);
+     extern void __bid128_signaling_not_equal (int *pres, UINT128 * px,
+					     UINT128 *
+					     py _EXC_FLAGS_PARAM
+					     _EXC_MASKS_PARAM
+					     _EXC_INFO_PARAM);
+     extern void __bid128_signaling_not_greater (int *pres, UINT128 * px,
+					       UINT128 *
+					       py _EXC_FLAGS_PARAM
+					       _EXC_MASKS_PARAM
+					       _EXC_INFO_PARAM);
+     extern void __bid128_signaling_not_less (int *pres, UINT128 * px,
+					    UINT128 *
+					    py _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+     extern void __bid128_signaling_ordered (int *pres, UINT128 * px,
+					   UINT128 *
+					   py _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern void __bid128_signaling_unordered (int *pres, UINT128 * px,
+					     UINT128 *
+					     py _EXC_FLAGS_PARAM
+					     _EXC_MASKS_PARAM
+					     _EXC_INFO_PARAM);
+
+     extern void __bid64_round_integral_exact (UINT64 * pres, UINT64 * px
+					     _RND_MODE_PARAM
+					     _EXC_FLAGS_PARAM
+					     _EXC_MASKS_PARAM
+					     _EXC_INFO_PARAM);
+     extern void __bid64_round_integral_nearest_even (UINT64 * pres,
+						    UINT64 *
+						    px _EXC_FLAGS_PARAM
+						    _EXC_MASKS_PARAM
+						    _EXC_INFO_PARAM);
+     extern void __bid64_round_integral_negative (UINT64 * pres,
+						UINT64 *
+						px _EXC_FLAGS_PARAM
+						_EXC_MASKS_PARAM
+						_EXC_INFO_PARAM);
+     extern void __bid64_round_integral_positive (UINT64 * pres,
+						UINT64 *
+						px _EXC_FLAGS_PARAM
+						_EXC_MASKS_PARAM
+						_EXC_INFO_PARAM);
+     extern void __bid64_round_integral_zero (UINT64 * pres,
+					    UINT64 *
+					    px _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+     extern void __bid64_round_integral_nearest_away (UINT64 * pres,
+						    UINT64 *
+						    px _EXC_FLAGS_PARAM
+						    _EXC_MASKS_PARAM
+						    _EXC_INFO_PARAM);
+
+     extern void __bid128_round_integral_exact (UINT128 * pres,
+					      UINT128 *
+					      px _RND_MODE_PARAM
+					      _EXC_FLAGS_PARAM
+					      _EXC_MASKS_PARAM
+					      _EXC_INFO_PARAM);
+     extern void __bid128_round_integral_nearest_even (UINT128 * pres,
+						     UINT128 *
+						     px _EXC_FLAGS_PARAM
+						     _EXC_MASKS_PARAM
+						     _EXC_INFO_PARAM);
+     extern void __bid128_round_integral_negative (UINT128 * pres,
+						 UINT128 *
+						 px _EXC_FLAGS_PARAM
+						 _EXC_MASKS_PARAM
+						 _EXC_INFO_PARAM);
+     extern void __bid128_round_integral_positive (UINT128 * pres,
+						 UINT128 *
+						 px _EXC_FLAGS_PARAM
+						 _EXC_MASKS_PARAM
+						 _EXC_INFO_PARAM);
+     extern void __bid128_round_integral_zero (UINT128 * pres,
+					     UINT128 *
+					     px _EXC_FLAGS_PARAM
+					     _EXC_MASKS_PARAM
+					     _EXC_INFO_PARAM);
+     extern void __bid128_round_integral_nearest_away (UINT128 * pres,
+						     UINT128 *
+						     px _EXC_FLAGS_PARAM
+						     _EXC_MASKS_PARAM
+						     _EXC_INFO_PARAM);
+
+     extern void __bid64_nextup (UINT64 * pres, UINT64 * px
+			       _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+			       _EXC_INFO_PARAM);
+     extern void __bid64_nextdown (UINT64 * pres,
+				 UINT64 *
+				 px _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				 _EXC_INFO_PARAM);
+     extern void __bid64_nextafter (UINT64 * pres, UINT64 * px,
+				  UINT64 *
+				  py _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				  _EXC_INFO_PARAM);
+
+     extern void __bid128_nextup (UINT128 * pres, UINT128 * px
+				_EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				_EXC_INFO_PARAM);
+     extern void __bid128_nextdown (UINT128 * pres,
+				  UINT128 *
+				  px _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				  _EXC_INFO_PARAM);
+     extern void __bid128_nextafter (UINT128 * pres, UINT128 * px,
+				   UINT128 *
+				   py _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				   _EXC_INFO_PARAM);
+
+     extern void __bid64_minnum (UINT64 * pres, UINT64 * px, UINT64 * py);
+     extern void __bid64_minnum_mag (UINT64 * pres, UINT64 * px,
+				   UINT64 * py);
+     extern void __bid64_maxnum (UINT64 * pres, UINT64 * px, UINT64 * py);
+     extern void __bid64_maxnum_mag (UINT64 * pres, UINT64 * px,
+				   UINT64 * py);
+
+     extern void __bid128_minnum (UINT128 * pres, UINT128 * px,
+				UINT128 * py);
+     extern void __bid128_minnum_mag (UINT128 * pres, UINT128 * px,
+				    UINT128 * py);
+     extern void __bid128_maxnum (UINT128 * pres, UINT128 * px,
+				UINT128 * py);
+     extern void __bid128_maxnum_mag (UINT128 * pres, UINT128 * px,
+				    UINT128 * py);
+
+     extern void __bid64_from_int32 (UINT64 * pres, int *px
+				   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_from_uint32 (UINT64 * pres, unsigned int *px
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_from_int64 (UINT64 * pres, SINT64 * px
+				   _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_from_uint64 (UINT64 * pres,
+				    UINT64 *
+				    px _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_from_int32 (UINT128 * pres,
+				    int *px _EXC_MASKS_PARAM
+				    _EXC_INFO_PARAM);
+     extern void __bid128_from_uint32 (UINT128 * pres,
+				     unsigned int *px _EXC_MASKS_PARAM
+				     _EXC_INFO_PARAM);
+     extern void __bid128_from_int64 (UINT128 * pres,
+				    SINT64 *
+				    px _EXC_MASKS_PARAM
+				    _EXC_INFO_PARAM);
+     extern void __bid128_from_uint64 (UINT128 * pres,
+				     UINT64 *
+				     px _EXC_MASKS_PARAM
+				     _EXC_INFO_PARAM);
+
+     extern void __bid64_isSigned (int *pres, UINT64 * px
+				 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_isNormal (int *pres, UINT64 * px
+				 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_isSubnormal (int *pres, UINT64 * px
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_isFinite (int *pres, UINT64 * px
+				 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_isFinite (int *pres, UINT64 * px
+				 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_isZero (int *pres, UINT64 * px
+			       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_isInf (int *pres, UINT64 * px
+			      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_isInf (int *pres, UINT64 * px
+			      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_isSignaling (int *pres, UINT64 * px
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_isCanonical (int *pres, UINT64 * px
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_isNaN (int *pres, UINT64 * px
+			      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_copy (UINT64 * pres, UINT64 * px
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_negate (UINT64 * pres, UINT64 * px
+			       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_abs (UINT64 * pres, UINT64 * px
+			    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_copySign (UINT64 * pres, UINT64 * px, UINT64 * py
+				 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_class (int *pres, UINT64 * px
+			      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_sameQuantum (int *pres, UINT64 * px, UINT64 * py
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_totalOrder (int *pres, UINT64 * px, UINT64 * py
+				   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_totalOrderMag (int *pres, UINT64 * px,
+				      UINT64 *
+				      py _EXC_MASKS_PARAM
+				      _EXC_INFO_PARAM);
+     extern void __bid64_radix (int *pres,
+			      UINT64 *
+			      px _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid128_isSigned (int *pres, UINT128 * px
+				  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_isNormal (int *pres, UINT128 * px
+				  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_isSubnormal (int *pres, UINT128 * px
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_isFinite (int *pres, UINT128 * px
+				  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_isFinite (int *pres, UINT128 * px
+				  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_isZero (int *pres, UINT128 * px
+				_EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_isInf (int *pres, UINT128 * px
+			       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_isInf (int *pres, UINT128 * px
+			       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_isSignaling (int *pres, UINT128 * px
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_isCanonical (int *pres, UINT128 * px
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_isNaN (int *pres, UINT128 * px
+			       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_copy (UINT128 * pres, UINT128 * px
+			      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_negate (UINT128 * pres, UINT128 * px
+				_EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_abs (UINT128 * pres, UINT128 * px
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_copySign (UINT128 * pres, UINT128 * px,
+				  UINT128 *
+				  py _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_class (int *pres,
+			       UINT128 *
+			       px _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_sameQuantum (int *pres, UINT128 * px,
+				     UINT128 *
+				     py _EXC_MASKS_PARAM
+				     _EXC_INFO_PARAM);
+     extern void __bid128_totalOrder (int *pres, UINT128 * px,
+				    UINT128 *
+				    py _EXC_MASKS_PARAM
+				    _EXC_INFO_PARAM);
+     extern void __bid128_totalOrderMag (int *pres, UINT128 * px,
+				       UINT128 *
+				       py _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern void __bid128_radix (int *pres,
+			       UINT128 *
+			       px _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid64_rem (UINT64 * pres, UINT64 * px, UINT64 * py
+			    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_logb (UINT64 * pres,
+			     UINT64 *
+			     px _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_scalb (UINT64 * pres, UINT64 * px,
+			      int *pn _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid128_rem (UINT128 * pres, UINT128 * px, UINT128 * py
+			     _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_logb (UINT128 * pres,
+			      UINT128 *
+			      px _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_scalb (UINT128 * pres, UINT128 * px,
+			       int *pn _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid32_to_bid64 (UINT64 * pres, UINT32 * px _EXC_FLAGS_PARAM
+				 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid32_to_bid128 (UINT128 * pres, UINT32 * px _EXC_FLAGS_PARAM
+				 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_to_bid128 (UINT128 * pres, UINT64 * px _EXC_FLAGS_PARAM
+				 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_to_bid32 (UINT32 * pres, UINT64 * px
+				 _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_to_bid32 (UINT32 * pres,
+				  UINT128 *
+				  px _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_to_bid64 (UINT64 * pres,
+				  UINT128 *
+				  px _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid64_from_string (UINT64 * pres, char *ps
+				    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid64_to_string (char *ps,
+				  UINT64 *
+				  px _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern void __bid128_from_string (UINT128 * pres,
+				     char *ps _RND_MODE_PARAM
+				     _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				     _EXC_INFO_PARAM);
+     extern void __bid128_to_string (char *str,
+				   UINT128 *
+				   px _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid64_quantize (UINT64 * pres, UINT64 * px,
+				 UINT64 *
+				 py _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid128_quantize (UINT128 * pres, UINT128 * px,
+				  UINT128 *
+				  py _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid128_to_binary32 (float *pres, UINT128 * px
+				     _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid128_to_binary64 (double *pres, UINT128 * px
+				     _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid128_to_binary80 (long double *pres, UINT128 * px
+				     _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid128_to_binary128 (_i_quad_t_ * pres, UINT128 * px
+				      _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __binary128_to_bid32 (UINT32 * pres, _i_quad_t_ * px
+				     _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __binary128_to_bid64 (UINT64 * pres, _i_quad_t_ * px
+				     _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __binary128_to_bid128 (UINT128 * pres, _i_quad_t_ * px
+				      _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid64_to_binary32 (float *pres, UINT64 * px
+				    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid64_to_binary64 (double *pres, UINT64 * px
+				    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid64_to_binary80 (long double *pres, UINT64 * px
+				    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid64_to_binary128 (_i_quad_t_ * pres, UINT64 * px
+				     _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __binary64_to_bid32 (UINT32 * pres, double *px
+				    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __binary64_to_bid64 (UINT64 * pres, double *px
+				    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __binary64_to_bid128 (UINT128 * pres, double *px
+				     _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid32_to_binary32 (float *pres, UINT32 * px
+				    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid32_to_binary64 (double *pres, UINT32 * px
+				    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid32_to_binary80 (long double *pres, UINT32 * px
+				    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid32_to_binary128 (_i_quad_t_ * pres, UINT32 * px
+				     _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __binary32_to_bid32 (UINT32 * pres, float *px
+				    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __binary32_to_bid64 (UINT64 * pres, float *px
+				    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __binary32_to_bid128 (UINT128 * pres, float *px
+				     _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __binary80_to_bid32 (UINT32 * pres, long double *px
+				    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __binary80_to_bid64 (UINT64 * pres, long double *px
+				    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __binary80_to_bid128 (UINT128 * pres, long double *px
+				     _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern void __bid_is754 (int *retval);
+
+     extern void __bid_is754R (int *retval);
+
+     extern void __bid_lowerFlags (_IDEC_flags * pflagsmask _EXC_FLAGS_PARAM);
+
+     extern void __bid_testFlags (_IDEC_flags * praised,
+			    _IDEC_flags * pflagsmask _EXC_FLAGS_PARAM);
+
+     extern void __bid_testSavedFlags (_IDEC_flags * praised,
+				 _IDEC_flags * psavedflags,
+				 _IDEC_flags * pflagsmask);
+
+     extern void __bid_restoreFlags (_IDEC_flags * pflagsvalues,
+			       _IDEC_flags *
+			       pflagsmask _EXC_FLAGS_PARAM);
+
+     extern void __bid_saveFlags (_IDEC_flags * pflagsvalues,
+			    _IDEC_flags * pflagsmask _EXC_FLAGS_PARAM);
+
+     extern void __bid_saveFlags (_IDEC_flags * pflagsvalues,
+			    _IDEC_flags * pflagsmask _EXC_FLAGS_PARAM);
+
+     void __bid_getDecimalRoundingDirection (_IDEC_round *
+				       rounding_mode _RND_MODE_PARAM);
+
+     void __bid_setDecimalRoundingDirection (_IDEC_round *
+				       rounding_mode _RND_MODE_PARAM);
+
+#else
+
+     extern UINT128 __bid128dd_add (UINT64 x, UINT64 y
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                                     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128dq_add (UINT64 x, UINT128 y
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128qd_add (UINT128 x, UINT64 y
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128_add (UINT128 x, UINT128 y
+				    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128dd_sub (UINT64 x, UINT64 y
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128dq_sub (UINT64 x, UINT128 y
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128qd_sub (UINT128 x, UINT64 y
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128_sub (UINT128 x,
+				    UINT128 y _RND_MODE_PARAM
+				    _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				    _EXC_INFO_PARAM);
+     extern UINT128 __bid128dd_mul (UINT64 x, UINT64 y
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT128 __bid128dq_mul (UINT64 x, UINT128 y
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT128 __bid128qd_mul (UINT128 x, UINT64 y
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT128 __bid128_mul (UINT128 x, UINT128 y 
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128_div (UINT128 x,
+				    UINT128 y _RND_MODE_PARAM
+				    _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				    _EXC_INFO_PARAM);
+     extern UINT128 __bid128dd_div (UINT64 x, UINT64 y
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT128 __bid128dq_div (UINT64 x, UINT128 y
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT128 __bid128qd_div (UINT128 x, UINT64 y
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT128 __bid128_fma (UINT128 x, UINT128 y, UINT128 z
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128ddd_fma (UINT64 x, UINT64 y, UINT64 z
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128ddq_fma (UINT64 x, UINT64 y, UINT128 z
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128dqd_fma (UINT64 x, UINT128 y, UINT64 z
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128dqq_fma (UINT64 x, UINT128 y, 
+                                    UINT128 z
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128qdd_fma (UINT128 x, UINT64 y, UINT64 z
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128qdq_fma (UINT128 x, UINT64 y, 
+                                    UINT128 z
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128qqd_fma (UINT128 x, UINT128 y, 
+                                    UINT64 z
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     // Note: __bid128qqq_fma is represented by bid128_fma
+     // Note: __bid64ddd_fma is represented by bid64_fma
+     extern UINT64 __bid64ddq_fma (UINT64 x, UINT64 y, 
+                                    UINT128 z
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT64 __bid64dqd_fma (UINT64 x, UINT128 y, 
+                                    UINT64 z
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT64 __bid64dqq_fma (UINT64 x, UINT128 y, 
+                                    UINT128 z
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT64 __bid64qdd_fma (UINT128 x, UINT64 y, 
+                                    UINT64 z
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT64 __bid64qdq_fma (UINT128 x, UINT64 y, 
+                                    UINT128 z
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT64 __bid64qqd_fma (UINT128 x, UINT128 y, 
+                                    UINT64 z
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT64 __bid64qqq_fma (UINT128 x, UINT128 y, 
+                                    UINT128 z
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern UINT128 __bid128_sqrt (UINT128 x _RND_MODE_PARAM
+				     _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				     _EXC_INFO_PARAM);
+     extern UINT128 __bid128d_sqrt (UINT64 x
+                                    _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                    _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+
+     extern UINT64 __bid64_add (UINT64 x, UINT64 y
+				  _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT64 __bid64dq_add (UINT64 x, UINT128 y
+                                  _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT64 __bid64qd_add (UINT128 x, UINT64 y
+                                  _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT64 __bid64qq_add (UINT128 x, UINT128 y
+                                  _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT64 __bid64_sub (UINT64 x,
+				  UINT64 y _RND_MODE_PARAM
+				  _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				  _EXC_INFO_PARAM);
+     extern UINT64 __bid64dq_sub (UINT64 x, UINT128 y
+                                  _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT64 __bid64qd_sub (UINT128 x, UINT64 y
+                                  _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT64 __bid64qq_sub (UINT128 x, UINT128 y
+                                  _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT64 __bid64_mul (UINT64 x, UINT64 y 
+                                  _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT64 __bid64dq_mul (UINT64 x, UINT128 y
+                                  _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT64 __bid64qd_mul (UINT128 x, UINT64 y
+                                  _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT64 __bid64qq_mul (UINT128 x, UINT128 y
+                                  _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT64 __bid64_div (UINT64 x,
+				  UINT64 y _RND_MODE_PARAM
+				  _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				  _EXC_INFO_PARAM);
+     extern UINT64 __bid64dq_div (UINT64 x, UINT128 y
+                                  _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT64 __bid64qd_div (UINT128 x, UINT64 y
+                                  _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT64 __bid64qq_div (UINT128 x, UINT128 y
+                                  _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+     extern UINT64 __bid64_fma (UINT64 x, UINT64 y,
+				  UINT64 z _RND_MODE_PARAM
+				  _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				  _EXC_INFO_PARAM);
+     extern UINT64 __bid64_sqrt (UINT64 x _RND_MODE_PARAM
+				   _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				   _EXC_INFO_PARAM);
+     extern UINT64 __bid64q_sqrt (UINT128 x
+                                  _RND_MODE_PARAM _EXC_FLAGS_PARAM 
+                                  _EXC_MASKS_PARAM _EXC_INFO_PARAM); 
+
+     extern int __bid128_to_int32_rnint (UINT128 x _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern int __bid128_to_int32_xrnint (UINT128 x _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern int __bid128_to_int32_rninta (UINT128 x _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern int __bid128_to_int32_xrninta (UINT128 x _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern int __bid128_to_int32_int (UINT128 x _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid128_to_int32_xint (UINT128 x _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid128_to_int32_floor (UINT128 x _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern int __bid128_to_int32_xfloor (UINT128 x _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern int __bid128_to_int32_ceil (UINT128 x _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid128_to_int32_xceil (UINT128 x _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern unsigned int __bid128_to_uint32_rnint (UINT128 x
+						 _EXC_FLAGS_PARAM
+						 _EXC_MASKS_PARAM
+						 _EXC_INFO_PARAM);
+     extern unsigned int __bid128_to_uint32_xrnint (UINT128 x
+						  _EXC_FLAGS_PARAM
+						  _EXC_MASKS_PARAM
+						  _EXC_INFO_PARAM);
+     extern unsigned int __bid128_to_uint32_rninta (UINT128 x
+						  _EXC_FLAGS_PARAM
+						  _EXC_MASKS_PARAM
+						  _EXC_INFO_PARAM);
+     extern unsigned int __bid128_to_uint32_xrninta (UINT128 x
+						   _EXC_FLAGS_PARAM
+						   _EXC_MASKS_PARAM
+						   _EXC_INFO_PARAM);
+     extern unsigned int __bid128_to_uint32_int (UINT128 x
+					       _EXC_FLAGS_PARAM
+					       _EXC_MASKS_PARAM
+					       _EXC_INFO_PARAM);
+     extern unsigned int __bid128_to_uint32_xint (UINT128 x
+						_EXC_FLAGS_PARAM
+						_EXC_MASKS_PARAM
+						_EXC_INFO_PARAM);
+     extern unsigned int __bid128_to_uint32_floor (UINT128 x
+						 _EXC_FLAGS_PARAM
+						 _EXC_MASKS_PARAM
+						 _EXC_INFO_PARAM);
+     extern unsigned int __bid128_to_uint32_xfloor (UINT128 x
+						  _EXC_FLAGS_PARAM
+						  _EXC_MASKS_PARAM
+						  _EXC_INFO_PARAM);
+     extern unsigned int __bid128_to_uint32_ceil (UINT128 x
+						_EXC_FLAGS_PARAM
+						_EXC_MASKS_PARAM
+						_EXC_INFO_PARAM);
+     extern unsigned int __bid128_to_uint32_xceil (UINT128 x
+						 _EXC_FLAGS_PARAM
+						 _EXC_MASKS_PARAM
+						 _EXC_INFO_PARAM);
+     extern SINT64 __bid128_to_int64_rnint (UINT128 x _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern SINT64 __bid128_to_int64_xrnint (UINT128 x _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern SINT64 __bid128_to_int64_rninta (UINT128 x _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern SINT64 __bid128_to_int64_xrninta (UINT128 x _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+     extern SINT64 __bid128_to_int64_int (UINT128 x _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern SINT64 __bid128_to_int64_xint (UINT128 x _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern SINT64 __bid128_to_int64_floor (UINT128 x _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern SINT64 __bid128_to_int64_xfloor (UINT128 x _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern SINT64 __bid128_to_int64_ceil (UINT128 x _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern SINT64 __bid128_to_int64_xceil (UINT128 x _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern UINT64 __bid128_to_uint64_rnint (UINT128 x _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern UINT64 __bid128_to_uint64_xrnint (UINT128 x _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+     extern UINT64 __bid128_to_uint64_rninta (UINT128 x _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+     extern UINT64 __bid128_to_uint64_xrninta (UINT128 x _EXC_FLAGS_PARAM
+					     _EXC_MASKS_PARAM
+					     _EXC_INFO_PARAM);
+     extern UINT64 __bid128_to_uint64_int (UINT128 x _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern UINT64 __bid128_to_uint64_xint (UINT128 x _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern UINT64 __bid128_to_uint64_floor (UINT128 x _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern UINT64 __bid128_to_uint64_xfloor (UINT128 x _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+     extern UINT64 __bid128_to_uint64_ceil (UINT128 x _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern UINT64 __bid128_to_uint64_xceil (UINT128 x _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern int __bid64_to_int32_rnint (UINT64 x _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_to_int32_xrnint (UINT64 x _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern int __bid64_to_int32_rninta (UINT64 x _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern int __bid64_to_int32_xrninta (UINT64 x _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern int __bid64_to_int32_int (UINT64 x _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_to_int32_xint (UINT64 x _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_to_int32_floor (UINT64 x _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_to_int32_xfloor (UINT64 x _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern int __bid64_to_int32_ceil (UINT64 x _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_to_int32_xceil (UINT64 x _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern unsigned int __bid64_to_uint32_rnint (UINT64 x
+						_EXC_FLAGS_PARAM
+						_EXC_MASKS_PARAM
+						_EXC_INFO_PARAM);
+     extern unsigned int __bid64_to_uint32_xrnint (UINT64 x
+						 _EXC_FLAGS_PARAM
+						 _EXC_MASKS_PARAM
+						 _EXC_INFO_PARAM);
+     extern unsigned int __bid64_to_uint32_rninta (UINT64 x
+						 _EXC_FLAGS_PARAM
+						 _EXC_MASKS_PARAM
+						 _EXC_INFO_PARAM);
+     extern unsigned int __bid64_to_uint32_xrninta (UINT64 x
+						  _EXC_FLAGS_PARAM
+						  _EXC_MASKS_PARAM
+						  _EXC_INFO_PARAM);
+     extern unsigned int __bid64_to_uint32_int (UINT64 x _EXC_FLAGS_PARAM
+					      _EXC_MASKS_PARAM
+					      _EXC_INFO_PARAM);
+     extern unsigned int __bid64_to_uint32_xint (UINT64 x _EXC_FLAGS_PARAM
+					       _EXC_MASKS_PARAM
+					       _EXC_INFO_PARAM);
+     extern unsigned int __bid64_to_uint32_floor (UINT64 x
+						_EXC_FLAGS_PARAM
+						_EXC_MASKS_PARAM
+						_EXC_INFO_PARAM);
+     extern unsigned int __bid64_to_uint32_xfloor (UINT64 x
+						 _EXC_FLAGS_PARAM
+						 _EXC_MASKS_PARAM
+						 _EXC_INFO_PARAM);
+     extern unsigned int __bid64_to_uint32_ceil (UINT64 x _EXC_FLAGS_PARAM
+					       _EXC_MASKS_PARAM
+					       _EXC_INFO_PARAM);
+     extern unsigned int __bid64_to_uint32_xceil (UINT64 x
+						_EXC_FLAGS_PARAM
+						_EXC_MASKS_PARAM
+						_EXC_INFO_PARAM);
+     extern SINT64 __bid64_to_int64_rnint (UINT64 x _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern SINT64 __bid64_to_int64_xrnint (UINT64 x _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern SINT64 __bid64_to_int64_rninta (UINT64 x _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern SINT64 __bid64_to_int64_xrninta (UINT64 x _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern SINT64 __bid64_to_int64_int (UINT64 x _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern SINT64 __bid64_to_int64_xint (UINT64 x _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern SINT64 __bid64_to_int64_floor (UINT64 x _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern SINT64 __bid64_to_int64_xfloor (UINT64 x _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern SINT64 __bid64_to_int64_ceil (UINT64 x _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern SINT64 __bid64_to_int64_xceil (UINT64 x _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern UINT64 __bid64_to_uint64_rnint (UINT64 x _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern UINT64 __bid64_to_uint64_xrnint (UINT64 x _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern UINT64 __bid64_to_uint64_rninta (UINT64 x _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern UINT64 __bid64_to_uint64_xrninta (UINT64 x _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+     extern UINT64 __bid64_to_uint64_int (UINT64 x _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern UINT64 __bid64_to_uint64_xint (UINT64 x _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern UINT64 __bid64_to_uint64_floor (UINT64 x _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern UINT64 __bid64_to_uint64_xfloor (UINT64 x _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern UINT64 __bid64_to_uint64_ceil (UINT64 x _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern UINT64 __bid64_to_uint64_xceil (UINT64 x _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+
+     extern int __bid64_quiet_equal (UINT64 x, UINT64 y
+				   _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				   _EXC_INFO_PARAM);
+     extern int __bid64_quiet_greater (UINT64 x,
+				     UINT64 y _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_quiet_greater_equal (UINT64 x,
+					   UINT64 y _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern int __bid64_quiet_greater_unordered (UINT64 x,
+					       UINT64 y _EXC_FLAGS_PARAM
+					       _EXC_MASKS_PARAM
+					       _EXC_INFO_PARAM);
+     extern int __bid64_quiet_less (UINT64 x,
+				  UINT64 y _EXC_FLAGS_PARAM
+				  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_quiet_less_equal (UINT64 x,
+					UINT64 y _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern int __bid64_quiet_less_unordered (UINT64 x,
+					    UINT64 y _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+     extern int __bid64_quiet_not_equal (UINT64 x,
+				       UINT64 y _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern int __bid64_quiet_not_greater (UINT64 x,
+					 UINT64 y _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern int __bid64_quiet_not_less (UINT64 x,
+				      UINT64 y _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_quiet_ordered (UINT64 x,
+				     UINT64 y _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_quiet_unordered (UINT64 x,
+				       UINT64 y _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern int __bid64_signaling_equal (UINT64 x,
+				       UINT64 y _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern int __bid64_signaling_greater (UINT64 x,
+					 UINT64 y _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern int __bid64_signaling_greater_equal (UINT64 x,
+					       UINT64 y _EXC_FLAGS_PARAM
+					       _EXC_MASKS_PARAM
+					       _EXC_INFO_PARAM);
+     extern int __bid64_signaling_greater_unordered (UINT64 x,
+						   UINT64 y
+						   _EXC_FLAGS_PARAM
+						   _EXC_MASKS_PARAM
+						   _EXC_INFO_PARAM);
+     extern int __bid64_signaling_less (UINT64 x,
+				      UINT64 y _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_signaling_less_equal (UINT64 x,
+					    UINT64 y _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+     extern int __bid64_signaling_less_unordered (UINT64 x,
+						UINT64 y
+						_EXC_FLAGS_PARAM
+						_EXC_MASKS_PARAM
+						_EXC_INFO_PARAM);
+     extern int __bid64_signaling_not_equal (UINT64 x,
+					   UINT64 y _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern int __bid64_signaling_not_greater (UINT64 x,
+					     UINT64 y _EXC_FLAGS_PARAM
+					     _EXC_MASKS_PARAM
+					     _EXC_INFO_PARAM);
+     extern int __bid64_signaling_not_less (UINT64 x,
+					  UINT64 y _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern int __bid64_signaling_ordered (UINT64 x,
+					 UINT64 y _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern int __bid64_signaling_unordered (UINT64 x,
+					   UINT64 y _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+
+     extern int __bid128_quiet_equal (UINT128 x, UINT128 y
+				    _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				    _EXC_INFO_PARAM);
+     extern int __bid128_quiet_greater (UINT128 x,
+				      UINT128 y _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid128_quiet_greater_equal (UINT128 x,
+					    UINT128 y _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+     extern int __bid128_quiet_greater_unordered (UINT128 x,
+						UINT128 y
+						_EXC_FLAGS_PARAM
+						_EXC_MASKS_PARAM
+						_EXC_INFO_PARAM);
+     extern int __bid128_quiet_less (UINT128 x,
+				   UINT128 y _EXC_FLAGS_PARAM
+				   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid128_quiet_less_equal (UINT128 x,
+					 UINT128 y _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+     extern int __bid128_quiet_less_unordered (UINT128 x,
+					     UINT128 y _EXC_FLAGS_PARAM
+					     _EXC_MASKS_PARAM
+					     _EXC_INFO_PARAM);
+     extern int __bid128_quiet_not_equal (UINT128 x,
+					UINT128 y _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern int __bid128_quiet_not_greater (UINT128 x,
+					  UINT128 y _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern int __bid128_quiet_not_less (UINT128 x,
+				       UINT128 y _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern int __bid128_quiet_ordered (UINT128 x,
+				      UINT128 y _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid128_quiet_unordered (UINT128 x,
+					UINT128 y _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern int __bid128_signaling_equal (UINT128 x,
+					UINT128 y _EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern int __bid128_signaling_greater (UINT128 x,
+					  UINT128 y _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern int __bid128_signaling_greater_equal (UINT128 x,
+						UINT128 y
+						_EXC_FLAGS_PARAM
+						_EXC_MASKS_PARAM
+						_EXC_INFO_PARAM);
+     extern int __bid128_signaling_greater_unordered (UINT128 x,
+						    UINT128 y
+						    _EXC_FLAGS_PARAM
+						    _EXC_MASKS_PARAM
+						    _EXC_INFO_PARAM);
+     extern int __bid128_signaling_less (UINT128 x,
+				       UINT128 y _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern int __bid128_signaling_less_equal (UINT128 x,
+					     UINT128 y _EXC_FLAGS_PARAM
+					     _EXC_MASKS_PARAM
+					     _EXC_INFO_PARAM);
+     extern int __bid128_signaling_less_unordered (UINT128 x,
+						 UINT128 y
+						 _EXC_FLAGS_PARAM
+						 _EXC_MASKS_PARAM
+						 _EXC_INFO_PARAM);
+     extern int __bid128_signaling_not_equal (UINT128 x,
+					    UINT128 y _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+     extern int __bid128_signaling_not_greater (UINT128 x,
+					      UINT128 y _EXC_FLAGS_PARAM
+					      _EXC_MASKS_PARAM
+					      _EXC_INFO_PARAM);
+     extern int __bid128_signaling_not_less (UINT128 x,
+					   UINT128 y _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+     extern int __bid128_signaling_ordered (UINT128 x,
+					  UINT128 y _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern int __bid128_signaling_unordered (UINT128 x,
+					    UINT128 y _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+
+     extern UINT64 __bid64_round_integral_exact (UINT64 x
+					       _RND_MODE_PARAM
+					       _EXC_FLAGS_PARAM
+					       _EXC_MASKS_PARAM
+					       _EXC_INFO_PARAM);
+     extern UINT64 __bid64_round_integral_nearest_even (UINT64 x
+						      _EXC_FLAGS_PARAM
+						      _EXC_MASKS_PARAM
+						      _EXC_INFO_PARAM);
+     extern UINT64 __bid64_round_integral_negative (UINT64 x
+						  _EXC_FLAGS_PARAM
+						  _EXC_MASKS_PARAM
+						  _EXC_INFO_PARAM);
+     extern UINT64 __bid64_round_integral_positive (UINT64 x
+						  _EXC_FLAGS_PARAM
+						  _EXC_MASKS_PARAM
+						  _EXC_INFO_PARAM);
+     extern UINT64 __bid64_round_integral_zero (UINT64 x _EXC_FLAGS_PARAM
+					      _EXC_MASKS_PARAM
+					      _EXC_INFO_PARAM);
+     extern UINT64 __bid64_round_integral_nearest_away (UINT64 x
+						      _EXC_FLAGS_PARAM
+						      _EXC_MASKS_PARAM
+						      _EXC_INFO_PARAM);
+
+     extern UINT128 __bid128_round_integral_exact (UINT128 x
+						 _RND_MODE_PARAM
+						 _EXC_FLAGS_PARAM
+						 _EXC_MASKS_PARAM
+						 _EXC_INFO_PARAM);
+     extern UINT128 __bid128_round_integral_nearest_even (UINT128 x
+							_EXC_FLAGS_PARAM
+							_EXC_MASKS_PARAM
+							_EXC_INFO_PARAM);
+     extern UINT128 __bid128_round_integral_negative (UINT128 x
+						    _EXC_FLAGS_PARAM
+						    _EXC_MASKS_PARAM
+						    _EXC_INFO_PARAM);
+     extern UINT128 __bid128_round_integral_positive (UINT128 x
+						    _EXC_FLAGS_PARAM
+						    _EXC_MASKS_PARAM
+						    _EXC_INFO_PARAM);
+     extern UINT128 __bid128_round_integral_zero (UINT128 x
+						_EXC_FLAGS_PARAM
+						_EXC_MASKS_PARAM
+						_EXC_INFO_PARAM);
+     extern UINT128 __bid128_round_integral_nearest_away (UINT128 x
+							_EXC_FLAGS_PARAM
+							_EXC_MASKS_PARAM
+							_EXC_INFO_PARAM);
+
+     extern UINT64 __bid64_nextup (UINT64 x
+				 _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				 _EXC_INFO_PARAM);
+     extern UINT64 __bid64_nextdown (UINT64 x _EXC_FLAGS_PARAM
+				   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT64 __bid64_nextafter (UINT64 x,
+				    UINT64 y _EXC_FLAGS_PARAM
+				    _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern UINT128 __bid128_nextup (UINT128 x
+				   _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				   _EXC_INFO_PARAM);
+     extern UINT128 __bid128_nextdown (UINT128 x _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128_nextafter (UINT128 x,
+				      UINT128 y _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern UINT64 __bid64_minnum (UINT64 x, UINT64 y);
+     extern UINT64 __bid64_minnum_mag (UINT64 x, UINT64 y);
+     extern UINT64 __bid64_maxnum (UINT64 x, UINT64 y);
+     extern UINT64 __bid64_maxnum_mag (UINT64 x, UINT64 y);
+
+     extern UINT128 __bid128_minnum (UINT128 x, UINT128 y);
+     extern UINT128 __bid128_minnum_mag (UINT128 x, UINT128 y);
+     extern UINT128 __bid128_maxnum (UINT128 x, UINT128 y);
+     extern UINT128 __bid128_maxnum_mag (UINT128 x, UINT128 y);
+
+     extern UINT64 __bid64_from_int32 (int x _EXC_MASKS_PARAM
+				     _EXC_INFO_PARAM);
+     extern UINT64 __bid64_from_uint32 (unsigned int x _EXC_MASKS_PARAM
+				      _EXC_INFO_PARAM);
+     extern UINT64 __bid64_from_int64 (SINT64 x _RND_MODE_PARAM
+				     _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				     _EXC_INFO_PARAM);
+     extern UINT64 __bid64_from_uint64 (UINT64 _RND_MODE_PARAM
+				      _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				      _EXC_INFO_PARAM);
+     extern UINT128 __bid128_from_int32 (int x _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern UINT128 __bid128_from_uint32 (unsigned int x _EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern UINT128 __bid128_from_int64 (SINT64 x _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern UINT128 __bid128_from_uint64 (UINT64 x _EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+
+     extern int __bid64_isSigned (UINT64 x _EXC_MASKS_PARAM
+				_EXC_INFO_PARAM);
+     extern int __bid64_isNormal (UINT64 x _EXC_MASKS_PARAM
+				_EXC_INFO_PARAM);
+     extern int __bid64_isSubnormal (UINT64 x _EXC_MASKS_PARAM
+				   _EXC_INFO_PARAM);
+     extern int __bid64_isFinite (UINT64 x _EXC_MASKS_PARAM
+				_EXC_INFO_PARAM);
+     extern int __bid64_isFinite (UINT64 x _EXC_MASKS_PARAM
+				_EXC_INFO_PARAM);
+     extern int __bid64_isZero (UINT64 x _EXC_MASKS_PARAM
+			      _EXC_INFO_PARAM);
+     extern int __bid64_isInf (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_isInf (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_isSignaling (UINT64 x _EXC_MASKS_PARAM
+				   _EXC_INFO_PARAM);
+     extern int __bid64_isCanonical (UINT64 x _EXC_MASKS_PARAM
+				   _EXC_INFO_PARAM);
+     extern int __bid64_isNaN (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT64 __bid64_copy (UINT64 x _EXC_MASKS_PARAM
+			       _EXC_INFO_PARAM);
+     extern UINT64 __bid64_negate (UINT64 x _EXC_MASKS_PARAM
+				 _EXC_INFO_PARAM);
+     extern UINT64 __bid64_abs (UINT64 x _EXC_MASKS_PARAM
+			      _EXC_INFO_PARAM);
+     extern UINT64 __bid64_copySign (UINT64 x,
+				   UINT64 y _EXC_MASKS_PARAM
+				   _EXC_INFO_PARAM);
+     extern int __bid64_class (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_sameQuantum (UINT64 x, UINT64 y
+				   _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_totalOrder (UINT64 x, UINT64 y
+				  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_totalOrderMag (UINT64 x, UINT64 y
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern int __bid64_radix (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern int __bid128_isSigned (UINT128 x _EXC_MASKS_PARAM
+				 _EXC_INFO_PARAM);
+     extern int __bid128_isNormal (UINT128 x _EXC_MASKS_PARAM
+				 _EXC_INFO_PARAM);
+     extern int __bid128_isSubnormal (UINT128 x _EXC_MASKS_PARAM
+				    _EXC_INFO_PARAM);
+     extern int __bid128_isFinite (UINT128 x _EXC_MASKS_PARAM
+				 _EXC_INFO_PARAM);
+     extern int __bid128_isFinite (UINT128 x _EXC_MASKS_PARAM
+				 _EXC_INFO_PARAM);
+     extern int __bid128_isZero (UINT128 x _EXC_MASKS_PARAM
+			       _EXC_INFO_PARAM);
+     extern int __bid128_isInf (UINT128 x _EXC_MASKS_PARAM
+			      _EXC_INFO_PARAM);
+     extern int __bid128_isInf (UINT128 x _EXC_MASKS_PARAM
+			      _EXC_INFO_PARAM);
+     extern int __bid128_isSignaling (UINT128 x _EXC_MASKS_PARAM
+				    _EXC_INFO_PARAM);
+     extern int __bid128_isCanonical (UINT128 x _EXC_MASKS_PARAM
+				    _EXC_INFO_PARAM);
+     extern int __bid128_isNaN (UINT128 x _EXC_MASKS_PARAM
+			      _EXC_INFO_PARAM);
+     extern UINT128 __bid128_copy (UINT128 x _EXC_MASKS_PARAM
+				 _EXC_INFO_PARAM);
+     extern UINT128 __bid128_negate (UINT128 x _EXC_MASKS_PARAM
+				   _EXC_INFO_PARAM);
+     extern UINT128 __bid128_abs (UINT128 x _EXC_MASKS_PARAM
+				_EXC_INFO_PARAM);
+     extern UINT128 __bid128_copySign (UINT128 x,
+				     UINT128 y _EXC_MASKS_PARAM
+				     _EXC_INFO_PARAM);
+     extern int __bid128_class (UINT128 x _EXC_MASKS_PARAM
+			      _EXC_INFO_PARAM);
+     extern int __bid128_sameQuantum (UINT128 x,
+				    UINT128 y _EXC_MASKS_PARAM
+				    _EXC_INFO_PARAM);
+     extern int __bid128_totalOrder (UINT128 x,
+				   UINT128 y _EXC_MASKS_PARAM
+				   _EXC_INFO_PARAM);
+     extern int __bid128_totalOrderMag (UINT128 x,
+				      UINT128 y _EXC_MASKS_PARAM
+				      _EXC_INFO_PARAM);
+     extern int __bid128_radix (UINT128 x _EXC_MASKS_PARAM
+			      _EXC_INFO_PARAM);
+
+     extern UINT64 __bid64_rem (UINT64 x, UINT64 y
+			      _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT64 __bid64_logb (UINT64 x _RND_MODE_PARAM _EXC_FLAGS_PARAM
+			       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT64 __bid64_scalb (UINT64 x,
+				int n _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				_EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern UINT128 __bid128_rem (UINT128 x, UINT128 y
+				_RND_MODE_PARAM _EXC_FLAGS_PARAM
+				_EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid128_logb (UINT128 x _RND_MODE_PARAM
+				 _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				 _EXC_INFO_PARAM);
+     extern UINT128 __bid128_scalb (UINT128 x,
+				  int n _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern UINT64 __bid32_to_bid64 (UINT32 x _EXC_FLAGS_PARAM
+				 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid32_to_bid128 (UINT32 x _EXC_FLAGS_PARAM
+				 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT128 __bid64_to_bid128 (UINT64 x _EXC_FLAGS_PARAM
+				 _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT32 __bid64_to_bid32 (UINT64 x
+				       _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+     extern UINT32 __bid128_to_bid32 (UINT128 x _RND_MODE_PARAM
+					_EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+     extern UINT64 __bid128_to_bid64 (UINT128 x _RND_MODE_PARAM
+					_EXC_FLAGS_PARAM
+					_EXC_MASKS_PARAM
+					_EXC_INFO_PARAM);
+
+     extern void __bid64_to_string (char *ps, UINT64 x
+				  _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				  _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+     extern UINT64 __bid64_from_string (char *ps _RND_MODE_PARAM
+					  _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+     extern void __bid128_to_string (char *str,
+				   UINT128 x _RND_MODE_PARAM
+				   _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+				   _EXC_INFO_PARAM);
+     extern UINT128 __bid128_from_string (char *ps _RND_MODE_PARAM
+					    _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+
+     extern UINT64 __bid64_quantize (UINT64 x, UINT64 y
+				       _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+
+     extern UINT128 __bid128_quantize (UINT128 x, UINT128 y
+					 _RND_MODE_PARAM
+					 _EXC_FLAGS_PARAM
+					 _EXC_MASKS_PARAM
+					 _EXC_INFO_PARAM);
+
+
+     extern UINT32 __binary128_to_bid32 (_i_quad_t_ x
+					   _RND_MODE_PARAM
+					   _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+
+     extern UINT64 __binary128_to_bid64 (_i_quad_t_ x
+					   _RND_MODE_PARAM
+					   _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+
+     extern UINT128 __binary128_to_bid128 (_i_quad_t_ x
+					     _RND_MODE_PARAM
+					     _EXC_FLAGS_PARAM
+					     _EXC_MASKS_PARAM
+					     _EXC_INFO_PARAM);
+
+     extern UINT32 __binary64_to_bid32 (double x
+					  _RND_MODE_PARAM
+					  _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+
+     extern UINT64 __binary64_to_bid64 (double x
+					  _RND_MODE_PARAM
+					  _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+
+     extern UINT128 __binary64_to_bid128 (double x
+					    _RND_MODE_PARAM
+					    _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+
+     extern UINT32 __binary80_to_bid32 (long double x
+					  _RND_MODE_PARAM
+					  _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+
+     extern UINT64 __binary80_to_bid64 (long double x
+					  _RND_MODE_PARAM
+					  _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+
+     extern UINT128 __binary80_to_bid128 (long double x
+					    _RND_MODE_PARAM
+					    _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+
+     extern UINT32 __binary32_to_bid32 (float x
+					  _RND_MODE_PARAM
+					  _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+
+     extern UINT64 __binary32_to_bid64 (float x
+					  _RND_MODE_PARAM
+					  _EXC_FLAGS_PARAM
+					  _EXC_MASKS_PARAM
+					  _EXC_INFO_PARAM);
+
+     extern UINT128 __binary32_to_bid128 (float x
+					    _RND_MODE_PARAM
+					    _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+
+     extern float __bid128_to_binary32 (UINT128 x
+				      _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern double __bid128_to_binary64 (UINT128 x
+				       _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				       _EXC_MASKS_PARAM
+				       _EXC_INFO_PARAM);
+
+     extern long double __bid128_to_binary80 (UINT128 x
+					    _RND_MODE_PARAM
+					    _EXC_FLAGS_PARAM
+					    _EXC_MASKS_PARAM
+					    _EXC_INFO_PARAM);
+
+     extern _i_quad_t_ __bid128_to_binary128 (UINT128 x
+				      _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern float __bid64_to_binary32 (UINT64 x
+				     _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern double __bid64_to_binary64 (UINT64 x
+				      _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern long double __bid64_to_binary80 (UINT64 x
+					   _RND_MODE_PARAM
+					   _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+
+     extern _i_quad_t_ __bid64_to_binary128 (UINT64 x
+				     _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern float __bid32_to_binary32 (UINT32 x
+				     _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern double __bid32_to_binary64 (UINT32 x
+				      _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				      _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern long double __bid32_to_binary80 (UINT32 x
+					   _RND_MODE_PARAM
+					   _EXC_FLAGS_PARAM
+					   _EXC_MASKS_PARAM
+					   _EXC_INFO_PARAM);
+
+     extern _i_quad_t_ __bid32_to_binary128 (UINT32 x
+				     _RND_MODE_PARAM _EXC_FLAGS_PARAM
+				     _EXC_MASKS_PARAM _EXC_INFO_PARAM);
+
+     extern int __bid_is754 (void);
+
+     extern int __bid_is754R (void);
+
+     extern void __bid_lowerFlags (_IDEC_flags flagsmask _EXC_FLAGS_PARAM);
+
+     extern _IDEC_flags __bid_testFlags (_IDEC_flags flagsmask
+				   _EXC_FLAGS_PARAM);
+
+     extern _IDEC_flags __bid_testSavedFlags (_IDEC_flags savedflags,
+					_IDEC_flags flagsmask);
+
+     extern void __bid_restoreFlags (_IDEC_flags flagsvalues,
+			       _IDEC_flags flagsmask _EXC_FLAGS_PARAM);
+
+     extern _IDEC_flags __bid_saveFlags (_IDEC_flags flagsmask
+				   _EXC_FLAGS_PARAM);
+
+     extern _IDEC_flags __bid_saveFlags (_IDEC_flags flagsmask
+				   _EXC_FLAGS_PARAM);
+
+#if !DECIMAL_GLOBAL_ROUNDING
+     _IDEC_round __bid_getDecimalRoundingDirection (_IDEC_round rnd_mode);
+#else
+     _IDEC_round __bid_getDecimalRoundingDirection (void);
+#endif
+
+#if !DECIMAL_GLOBAL_ROUNDING
+     _IDEC_round __bid_setDecimalRoundingDirection (_IDEC_round
+					      rounding_mode);
+#else
+     void __bid_setDecimalRoundingDirection (_IDEC_round rounding_mode);
+#endif
+
+#endif
+
+// Internal Functions
+
+     extern void
+       __bid_round64_2_18 (int q,
+		     int x,
+		     UINT64 C,
+		     UINT64 * ptr_Cstar,
+		     int *delta_exp,
+		     int *ptr_is_midpoint_lt_even,
+		     int *ptr_is_midpoint_gt_even,
+		     int *ptr_is_inexact_lt_midpoint,
+		     int *ptr_is_inexact_gt_midpoint);
+
+     extern void
+       __bid_round128_19_38 (int q,
+		       int x,
+		       UINT128 C,
+		       UINT128 * ptr_Cstar,
+		       int *delta_exp,
+		       int *ptr_is_midpoint_lt_even,
+		       int *ptr_is_midpoint_gt_even,
+		       int *ptr_is_inexact_lt_midpoint,
+		       int *ptr_is_inexact_gt_midpoint);
+
+     extern void
+       __bid_round192_39_57 (int q,
+		       int x,
+		       UINT192 C,
+		       UINT192 * ptr_Cstar,
+		       int *delta_exp,
+		       int *ptr_is_midpoint_lt_even,
+		       int *ptr_is_midpoint_gt_even,
+		       int *ptr_is_inexact_lt_midpoint,
+		       int *ptr_is_inexact_gt_midpoint);
+
+     extern void
+       __bid_round256_58_76 (int q,
+		       int x,
+		       UINT256 C,
+		       UINT256 * ptr_Cstar,
+		       int *delta_exp,
+		       int *ptr_is_midpoint_lt_even,
+		       int *ptr_is_midpoint_gt_even,
+		       int *ptr_is_inexact_lt_midpoint,
+		       int *ptr_is_inexact_gt_midpoint);
+
+#endif
+
+// Prototypes for internal functions
+UINT64
+__bid_full_round64_remainder (UINT64 sign, int exponent, UINT128 P,
+                              int extra_digits, UINT64 remainder_P,
+                              int rounding_mode, unsigned *fpsc,
+                              unsigned uf_status);

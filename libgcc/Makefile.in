@@ -185,9 +185,13 @@ export slibdir
 version := $(shell $(CC) -dumpversion)
 
 ifeq ($(decimal_float),yes)
+ifeq ($(enable_decimal_float),bid)
+DECNUMINC = -I$(srcdir)/config/libbid -DENABLE_DECIMAL_BID_FORMAT
+else
 DECNUMINC = -I$(srcdir)/../libdecnumber/$(enable_decimal_float) \
 	    -I$(srcdir)/../libdecnumber \
 	    -I$(MULTIBUILDTOP)../../libdecnumber
+endif
 else
 DECNUMINC =
 endif
@@ -469,17 +473,35 @@ D64PBIT = 1
 D128PBIT = 1
 endif
 
-dec-filenames =
+dfp-filenames =
 ifneq ($(D32PBIT)$(D64PBIT)$(D128PBIT),)
-dec-filenames += decContext decNumber decExcept decRound decLibrary decUtility
+ifeq ($(enable_decimal_float),bid)
+dfp-filenames += decimal_globals decimal_data binarydecimal \
+		 _isinfd32 _isinfd64 _isinfd128 bid64_noncomp \
+		 bid128_fma bid_round bid_from_int convert_data \
+		 bid64_add bid128_add bid64_div bid128_div \
+		 bid64_mul bid128_mul bid64_compare bid128_compare \
+		 bid128 bid32_to_bid64 bid32_to_bid128 bid64_to_bid128 \
+		 bid64_to_int32 bid64_to_int64 \
+		 bid64_to_uint32 bid64_to_uint64 \
+		 bid128_to_int32 bid128_to_int64 \
+		 bid128_to_uint32 bid128_to_uint64
+else
+dfp-filenames += decContext decNumber decExcept decRound decLibrary decUtility
+endif
 endif
 
-dec-objects = $(patsubst %,%$(objext),$(dec-filenames))
-$(dec-objects): %$(objext): $(srcdir)/../libdecnumber/%.c
+dfp-objects = $(patsubst %,%$(objext),$(dfp-filenames))
+ifeq ($(enable_decimal_float),bid)
+$(dfp-objects): %$(objext): $(srcdir)/config/libbid/%.c
+else
+$(dfp-objects): %$(objext): $(srcdir)/../libdecnumber/%.c
+endif
 	$(gcc_compile) -c $<
-libgcc-objects += $(dec-objects)
+libgcc-objects += $(dfp-objects)
 
 decbits-filenames =
+ifneq ($(enable_decimal_float),bid)
 ifneq ($(D32PBIT),)
 decbits-filenames += decimal32
 endif
@@ -491,34 +513,61 @@ endif
 ifneq ($(D128PBIT),)
 decbits-filenames += decimal128
 endif
-
-ifeq ($(enable_decimal_float),bid)
-decbits-filenames += bid2dpd_dpd2bid
 endif
 
 decbits-objects = $(patsubst %,%$(objext),$(decbits-filenames))
+ifeq ($(enable_decimal_float),bid)
+$(decbits-objects): %$(objext): $(srcdir)/config/libbid/%.c
+else
 $(decbits-objects): %$(objext): $(srcdir)/../libdecnumber/$(enable_decimal_float)/%.c
+endif
 	$(gcc_compile) -c $<
 libgcc-objects += $(decbits-objects)
 
 # Next build individual support functions.
+ifeq ($(enable_decimal_float),bid)
+ifneq ($(D32PBIT),)
+D32PBIT_FUNCS:=$(filter-out _plus_sd _minus_sd _conv_sd, $(D32PBIT_FUNCS))
+endif
+
+ifneq ($(D64PBIT),)
+D64PBIT_FUNCS:=$(filter-out _plus_dd _minus_dd _conv_dd, $(D64PBIT_FUNCS))
+endif
+
+ifneq ($(D128PBIT),)
+D128PBIT_FUNCS:=$(filter-out _plus_td _minus_td _conv_td, $(D128PBIT_FUNCS))
+endif
+endif
+
 ifneq ($(D32PBIT),)
 d32pbit-o = $(patsubst %,%$(objext),$(D32PBIT_FUNCS))
+ifeq ($(enable_decimal_float),bid)
+$(d32pbit-o): %$(objext): $(srcdir)/config/libbid/%.c
+else
 $(d32pbit-o): %$(objext): $(gcc_srcdir)/config/dfp-bit.c
+endif
 	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DWIDTH=32 -c $<
 libgcc-objects += $(d32pbit-o)
 endif
 
 ifneq ($(D64PBIT),)
 d64pbit-o = $(patsubst %,%$(objext),$(D64PBIT_FUNCS))
+ifeq ($(enable_decimal_float),bid)
+$(d64pbit-o): %$(objext): $(srcdir)/config/libbid/%.c
+else
 $(d64pbit-o): %$(objext): $(gcc_srcdir)/config/dfp-bit.c
+endif
 	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DWIDTH=64 -c $<
 libgcc-objects += $(d64pbit-o)
 endif
 
 ifneq ($(D128PBIT),)
 d128pbit-o = $(patsubst %,%$(objext),$(D128PBIT_FUNCS))
+ifeq ($(enable_decimal_float),bid)
+$(d128pbit-o): %$(objext): $(srcdir)/config/libbid/%.c
+else
 $(d128pbit-o): %$(objext): $(gcc_srcdir)/config/dfp-bit.c
+endif
 	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DWIDTH=128 -c $<
 libgcc-objects += $(d128pbit-o)
 endif
