@@ -3,7 +3,7 @@
    6 registers that must not conflict.  Add to that the PIC register,
    the frame pointer, and the stack pointer, and we've run out of
    registers on 32-bit targets.  */
-/* { dg-do compile { target { { ! ilp32 } || nonpic } } } */
+/* { dg-do compile } */
 /* { dg-options "-O" } */
 
 typedef unsigned long bngdigit;
