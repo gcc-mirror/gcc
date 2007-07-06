@@ -1,3 +1,8 @@
+2007-07-06  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/sh/sh.md (*prefetch_i4): Disable for TARGET_VXWORKS_RTP.
+	(prefetch): Likewise if "pref" would be used.
+
 2007-07-06  Josh Conner  <jconner@apple.com>
 
 	PR middle-end/32602
