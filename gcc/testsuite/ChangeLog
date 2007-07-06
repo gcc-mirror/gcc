@@ -1,3 +1,8 @@
+2007-07-06  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.c-torture/execute/multi-ix.c (CHUNK): Be more conservative
+	about the chunk size when STACK_SIZE is defined.
+
 2007-07-06  Josh Conner  <jconner@apple.com>
 
 	PR middle-end/32602
