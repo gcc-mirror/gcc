@@ -1,3 +1,8 @@
+2007-07-05  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* rtlanal.c (num_sign_bit_copies1): Improve cases of ANDing or
+	IORing with a constant.
+
 2007-07-05  Seongbae Park  <seongbae.park@gmail.com>
 
 	PR rtl-optimization/32475
