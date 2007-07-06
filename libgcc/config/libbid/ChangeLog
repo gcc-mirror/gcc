@@ -1,3 +1,9 @@
+2007-07-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Updated from Intel BID library:
+	* bid_conf.h (BID_THREAD): Defined only if both HAVE_CC_TLS
+	and USE_TLS are defined.
+
 2007-07-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Updated from Intel BID library:

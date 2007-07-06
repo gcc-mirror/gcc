@@ -73,3 +73,16 @@ AC_DEFUN([GCC_CHECK_TLS], [
     AC_DEFINE(HAVE_TLS, 1,
 	      [Define to 1 if the target supports thread-local storage.])
   fi])
+
+dnl Check whether the target assembler supports TLS.
+AC_DEFUN([GCC_CHECK_CC_TLS], [
+  GCC_ENABLE(tls, yes, [], [Use thread-local storage])
+  AC_CACHE_CHECK([whether the target asssembler upports thread-local storage],
+		 have_cc_tls, [
+    AC_COMPILE_IFELSE([__thread int a; int b; int main() { return a = b; }],
+      [have_cc_tls=yes], [have_cc_tls=no])]
+    )])
+  if test "$enable_tls $have_cc_tls" = "yes yes"; then
+    AC_DEFINE(HAVE_CC_TLS, 1,
+	      [Define to 1 if the target assembler supports thread-local storage.])
+  fi])

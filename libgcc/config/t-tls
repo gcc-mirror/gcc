@@ -1,0 +1,2 @@
+# Use thread-local storage
+INTERNAL_CFLAGS += -DUSE_TLS

@@ -1,5 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
+sinclude(../config/enable.m4)
+sinclude(../config/tls.m4)
 sinclude(../config/acx.m4)
 sinclude(../config/no-executables.m4)
 
@@ -166,6 +168,17 @@ else
     vis_hide=
 fi
 AC_SUBST(vis_hide)
+
+# See if we have thread-local storage.  We can only test assembler
+# sicne link-time and run-time tests require the newly built
+# gcc, which can't be used to build executable due to that libgcc
+# is yet to be built here.
+GCC_CHECK_CC_TLS
+set_have_cc_tls
+if test "$enable_tls $have_cc_tls" = "yes yes"; then
+  set_have_cc_tls="-DHAVE_CC_TLS"
+fi
+AC_SUBST(set_have_cc_tls)
 
 # Conditionalize the makefile for this target machine.
 tmake_file_=

@@ -41,7 +41,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #endif
 
 #ifndef BID_THREAD
-#ifdef USE_TLS
+#if defined (HAVE_CC_TLS) && defined (USE_TLS)
 #define BID_THREAD __thread
 #endif
 #endif

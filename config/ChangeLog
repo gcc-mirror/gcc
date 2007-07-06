@@ -1,7 +1,11 @@
+2007-07-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* tls.m4 (GCC_CHECK_CC_TLS): New.
+
 2007-07-05  Sebastian Pop  <sebpop@gmail.com>
 
 	PR bootstrap/32622
-	* config/mh-x86omitfp (BOOT_CFLAGS): Add -fomit-frame-pointer,
+	* mh-x86omitfp (BOOT_CFLAGS): Add -fomit-frame-pointer,
 	don't reset its value.
 
 2007-06-27  Mike Stump  <mrs@apple.com>
