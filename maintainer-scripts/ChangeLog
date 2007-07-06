@@ -1,3 +1,8 @@
+2007-07-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* update_web_docs_svn: Use -o with makeinfo, texi2dvi and texi2pdf
+	commands.
+
 2007-06-28  Mike Stump  <mrs@apple.com>
 
 	* gcc_release: Update for Objective-C++.
