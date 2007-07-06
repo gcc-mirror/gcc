@@ -4515,11 +4515,9 @@ expand_function_end (void)
 
   /* @@@ This is a kludge.  We want to ensure that instructions that
      may trap are not moved into the epilogue by scheduling, because
-     we don't always emit unwind information for the epilogue.
-     However, not all machine descriptions define a blockage insn, so
-     emit an ASM_INPUT to act as one.  */
+     we don't always emit unwind information for the epilogue.  */
   if (! USING_SJLJ_EXCEPTIONS && flag_non_call_exceptions)
-    emit_insn (gen_rtx_ASM_INPUT (VOIDmode, ""));
+    emit_insn (gen_blockage ());
 
   /* If stack protection is enabled for this function, check the guard.  */
   if (cfun->stack_protect_guard)
@@ -5045,9 +5043,6 @@ thread_prologue_and_epilogue_insns (void)
 #if defined (HAVE_sibcall_epilogue) || defined (HAVE_epilogue) || defined (HAVE_return) || defined (HAVE_prologue)
   rtx seq;
 #endif
-#ifdef HAVE_prologue
-  rtx prologue_end = NULL_RTX;
-#endif
 #if defined (HAVE_epilogue) || defined(HAVE_return)
   rtx epilogue_end = NULL_RTX;
 #endif
@@ -5067,7 +5062,15 @@ thread_prologue_and_epilogue_insns (void)
 
       /* Retain a map of the prologue insns.  */
       record_insns (seq, &prologue);
-      prologue_end = emit_note (NOTE_INSN_PROLOGUE_END);
+      emit_note (NOTE_INSN_PROLOGUE_END);
+ 
+#ifndef PROFILE_BEFORE_PROLOGUE
+      /* Ensure that instructions are not moved into the prologue when
+	 profiling is on.  The call to the profiling routine can be
+	 emitted within the live range of a call-clobbered register.  */
+      if (current_function_profile)
+        emit_insn (gen_blockage ());
+#endif
 
       seq = get_insns ();
       end_sequence ();
