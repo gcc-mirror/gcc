@@ -1,3 +1,9 @@
+2007-07-06  Ian Lance Taylor  <iant@google.com>
+            Zack Weinberg  <zackw@panix.com>
+
+	PR middle-end/32441
+	* builtins.c (std_expand_builtin_va_start): Don't use make_tree.
+
 2007-07-06  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/sh/sh.md (*prefetch_i4): Disable for TARGET_VXWORKS_RTP.
