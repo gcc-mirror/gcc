@@ -654,3 +654,9 @@ m32c-*-elf*)
 	exit 1
 	;;
 esac
+
+case ${host} in
+i[34567]86-*-linux* | x86_64-*-linux*)
+	tmake_file="${tmake_file} t-tls"
+	;;
+esac

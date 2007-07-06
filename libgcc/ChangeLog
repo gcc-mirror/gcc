@@ -1,3 +1,17 @@
+2007-07-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.host (tmake_file): Add t-tls for i[34567]86-*-linux*
+	and x86_64-*-linux*.
+
+	* config/t-tls: New file.
+
+	* Makefile.in (INTERNAL_CFLAGS): Add @set_have_cc_tls@. 
+
+	* configure.ac: Include ../config/enable.m4 and
+	../config/tls.m4.  Use GCC_CHECK_CC_TLS to check if assembler
+	supports TLS and substitute set_have_cc_tls.
+	* configure: Regenerated.
+
 2007-07-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in: Use libbid for DFP when BID is enabled.
@@ -7,7 +21,6 @@
 	* config.host(*-cygwin* |*-mingw* ): Add crtbegin.o, crtend.o to
 	extra_parts. Add config/i386/t-cygming to tmake_file. 
 	* config/i386/t-cygming: New file with rules for crtbegin.o, crtend.o.
-
 
 2007-05-29  Zuxy Meng  <zuxy.meng@gmail.com>
 	    Danny Smith  <dannysmith@users.sourceforge.net>
