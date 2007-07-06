@@ -502,8 +502,8 @@ proc v3-build_support { } {
     }
 
     # Collect into libtestc++.a
-    if  [info exists env(AR_FOR_TARGET)] {
-	set ar $env(AR_FOR_TARGET)
+    if  [info exists env(AR)] {
+	set ar $env(AR)
     } else {
 	set ar [transform "ar"]
     }
@@ -512,8 +512,8 @@ proc v3-build_support { } {
     set result [lindex [local_exec "$arcommand" "" "" 300] 0]
     verbose "link result is $result"
     if { $result == 0 } {
-	if  [info exists env(RANLIB_FOR_TARGET)] {
-	    set ranlib $env(RANLIB_FOR_TARGET)
+	if  [info exists env(RANLIB)] {
+	    set ranlib $env(RANLIB)
 	} else {
 	    set ranlib [transform "ranlib"]
 	}
