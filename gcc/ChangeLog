@@ -1,3 +1,10 @@
+2007-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/32450
+	* function.c (thread_prologue_and_epilogue_insns): Emit blockage insn
+	to ensure that instructions are not moved into the prologue when
+	profiling is on.
+
 2007-07-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/32500

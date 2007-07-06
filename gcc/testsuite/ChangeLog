@@ -1,3 +1,8 @@
+2007-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/32450
+	* gcc.dg/pr32450.c: New runtime test.
+
 2007-07-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/31338
