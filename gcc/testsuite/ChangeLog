@@ -1,5 +1,12 @@
 2007-07-06  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* gcc.dg/20001012-1.c: Run on all fpic-capable targets.
+	* gcc.dg/20001012-2.c: Likewise.
+	* gcc.dg/tls/opt-7.c: Require an fpic-capable target.
+	* gcc.dg/20000222-1.c: Add -fPIC on all fpic-capable targets.
+
+2007-07-06  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* gcc.c-torture/execute/multi-ix.c (CHUNK): Be more conservative
 	about the chunk size when STACK_SIZE is defined.
 
