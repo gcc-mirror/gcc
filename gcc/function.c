@@ -5103,6 +5103,14 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
       /* Retain a map of the prologue insns.  */
       record_insns (seq, &prologue);
       prologue_end = emit_note (NOTE_INSN_PROLOGUE_END);
+ 
+#ifndef PROFILE_BEFORE_PROLOGUE
+      /* Ensure that instructions are not moved into the prologue when
+	 profiling is on.  The call to the profiling routine can be
+	 emitted within the live range of a call-clobbered register.  */
+      if (current_function_profile)
+	emit_insn (gen_rtx_ASM_INPUT (VOIDmode, ""));
+#endif
 
       seq = get_insns ();
       end_sequence ();
