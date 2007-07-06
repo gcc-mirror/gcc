@@ -4649,14 +4649,8 @@ std_build_builtin_va_list (void)
 void
 std_expand_builtin_va_start (tree valist, rtx nextarg)
 {
-  tree t;
-  t = make_tree (sizetype, nextarg);
-  t = fold_convert (ptr_type_node, t);
-
-  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
-  TREE_SIDE_EFFECTS (t) = 1;
-
-  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+  rtx va_r = expand_expr (valist, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  convert_move (va_r, nextarg, 0);
 }
 
 /* Expand EXP, a call to __builtin_va_start.  */
