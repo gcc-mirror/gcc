@@ -9774,7 +9774,7 @@ previous value.
 
 @defmac DOLLARS_IN_IDENTIFIERS
 Define this macro to control use of the character @samp{$} in
-identifier names for the C family of languages.  0 means @samp{$} is
+identifier names.  0 means @samp{$} is
 not allowed by default; 1 means it is allowed.  1 is the default;
 there is no need to define this macro in that case.
 @end defmac
