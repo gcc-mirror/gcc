@@ -1,3 +1,19 @@
+2007-05-06  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/32633
+	* symbol.c (save_status): New.
+	* gfortran.h (save_status): Added external declaration.
+	(check_conflict): Check for conflicting explicite SAVE statements
+	only.
+	(gen_special_c_interop_ptr): Use SAVE_EXPLICIT constant.
+	* module.c (ab_attribute, attr_bits): Removed enumerator value 
+	AB_SAVE for save attribute.
+	(mio_symbol_attribute): Import/export the full SAVE status, 
+	removed usage of AB_SAVE.
+	* dump-parse-tree.c (gfc_show_attr): Dump full SAVE status.
+	* decl.c (add_init_expr_to_sym): Set SAVE_IMPLICIT only if not
+	already explicit.
+
 2007-07-05  Daniel Franke  <franke.daniel@gmail.com>
 	    Tobias Burnus  <burnus@net-b.de>
 

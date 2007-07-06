@@ -1232,7 +1232,8 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	}
 
       sym->value = init;
-      sym->attr.save = SAVE_IMPLICIT;
+      if (sym->attr.save == SAVE_NONE)
+	sym->attr.save = SAVE_IMPLICIT;
       *initp = NULL;
     }
 

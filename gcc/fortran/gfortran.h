@@ -311,6 +311,7 @@ extern const mstring procedures[];
 extern const mstring intents[];
 extern const mstring access_types[];
 extern const mstring ifsrc_types[];
+extern const mstring save_status[];
 
 /* Enumeration of all the generic intrinsic functions.  Used by the
    backend for identification of a function.  */
