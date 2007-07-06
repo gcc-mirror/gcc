@@ -1,3 +1,8 @@
+2007-07-06  Daniel Franke  <franke.daniel@gmail.com>
+
+	* gfortran.dg/save_parameter.f90: New test.
+	* gfortran.dg/module_md5_1.f90: Updated MD5 sum.
+
 2007-07-06  Richard Guenther  <rguenther@suse.de>
 
 	* g++.dg/opt/pr30965.C: New testcase.

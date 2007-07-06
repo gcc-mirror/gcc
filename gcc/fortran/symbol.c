@@ -79,6 +79,12 @@ const mstring ifsrc_types[] =
     minit ("USAGE", IFSRC_USAGE)
 };
 
+const mstring save_status[] =
+{
+    minit ("UNKNOWN", SAVE_NONE),
+    minit ("EXPLICIT-SAVE", SAVE_EXPLICIT),
+    minit ("IMPLICIT-SAVE", SAVE_IMPLICIT),
+};
 
 /* This is to make sure the backend generates setup code in the correct
    order.  */
@@ -393,9 +399,34 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	}
     }
 
+  if (attr->save == SAVE_EXPLICIT)
+    {
+      conf (dummy, save);
+      conf (in_common, save);
+      conf (result, save);
+
+      switch (attr->flavor)
+	{
+	  case FL_PROGRAM:
+	  case FL_BLOCK_DATA:
+	  case FL_MODULE:
+	  case FL_LABEL:
+	  case FL_PROCEDURE:
+	  case FL_DERIVED:
+	  case FL_PARAMETER:
+            a1 = gfc_code2string (flavors, attr->flavor);
+            a2 = save;
+	    goto conflict;
+
+	  case FL_VARIABLE:
+	  case FL_NAMELIST:
+	  default:
+	    break;
+	}
+    }
+
   conf (dummy, entry);
   conf (dummy, intrinsic);
-  conf (dummy, save);
   conf (dummy, threadprivate);
   conf (pointer, target);
   conf (pointer, intrinsic);
@@ -407,7 +438,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (external, dimension);   /* See Fortran 95's R504.  */
 
   conf (external, intrinsic);
-    
+
   if (attr->if_source || attr->contained)
     {
       conf (external, subroutine);
@@ -423,8 +454,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (in_common, dummy);
   conf (in_common, allocatable);
   conf (in_common, result);
-  conf (in_common, save);
-  conf (result, save);
 
   conf (dummy, result);
 
@@ -536,7 +565,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
     case FL_LABEL:
       conf2 (dimension);
       conf2 (dummy);
-      conf2 (save);
       conf2 (volatile_);
       conf2 (pointer);
       conf2 (protected);
@@ -558,7 +586,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
     case FL_PROCEDURE:
       conf2 (intent);
-      conf2 (save);
 
       if (attr->subroutine)
 	{
@@ -586,7 +613,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	case PROC_DUMMY:
 	  conf2 (result);
 	  conf2 (in_common);
-	  conf2 (save);
 	  conf2 (threadprivate);
 	  break;
 
@@ -598,7 +624,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
     case FL_DERIVED:
       conf2 (dummy);
-      conf2 (save);
       conf2 (pointer);
       conf2 (target);
       conf2 (external);
@@ -630,7 +655,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       conf2 (target);
       conf2 (dummy);
       conf2 (in_common);
-      conf2 (save);
       conf2 (value);
       conf2 (volatile_);
       conf2 (threadprivate);
@@ -3161,7 +3185,7 @@ gen_special_c_interop_ptr (int ptr_id, const char *ptr_name,
 
   /* Set up the symbol's important fields.  Save attr required so we can
      initialize the ptr to NULL.  */
-  tmp_sym->attr.save = 1;
+  tmp_sym->attr.save = SAVE_EXPLICIT;
   tmp_sym->ts.is_c_interop = 1;
   tmp_sym->attr.is_c_interop = 1;
   tmp_sym->ts.is_iso_c = 1;

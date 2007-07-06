@@ -542,10 +542,11 @@ void
 gfc_show_attr (symbol_attribute *attr)
 {
 
-  gfc_status ("(%s %s %s %s", gfc_code2string (flavors, attr->flavor),
+  gfc_status ("(%s %s %s %s %s", gfc_code2string (flavors, attr->flavor),
 	      gfc_intent_string (attr->intent),
 	      gfc_code2string (access_types, attr->access),
-	      gfc_code2string (procedures, attr->proc));
+	      gfc_code2string (procedures, attr->proc),
+	      gfc_code2string (save_status, attr->save));
 
   if (attr->allocatable)
     gfc_status (" ALLOCATABLE");
@@ -561,8 +562,6 @@ gfc_show_attr (symbol_attribute *attr)
     gfc_status (" POINTER");
   if (attr->protected)
     gfc_status (" PROTECTED");
-  if (attr->save)
-    gfc_status (" SAVE");
   if (attr->value)
     gfc_status (" VALUE");
   if (attr->volatile_)
