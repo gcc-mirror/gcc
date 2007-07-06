@@ -1,3 +1,10 @@
+2007-07-06  Richard Guenther  <rguenther@suse.de>
+
+	* gimplify.c (gimplify_call_expr): Prefer DECL_ARGUMENTS over
+	TYPE_ARG_TYPES for verification of argument types.  Use
+	DECL_ARG_TYPE instead of the PARM_DECL type.  Take excess
+	parameters as variable arguments.
+
 2007-07-06  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* libgcc2.h (word_type): Type definition removed.
