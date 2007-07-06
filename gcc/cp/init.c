@@ -1915,6 +1915,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
     {
       tree cookie;
       tree cookie_ptr;
+      tree size_ptr_type;
 
       /* Adjust so we're pointing to the start of the object.  */
       data_addr = get_target_expr (build2 (POINTER_PLUS_EXPR, full_pointer_type,
@@ -1924,8 +1925,9 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 	 many elements to destroy later.  We use the last sizeof
 	 (size_t) bytes to store the number of elements.  */
       cookie_ptr = fold_build1 (NEGATE_EXPR, sizetype, size_in_bytes (sizetype));
-      cookie_ptr = build2 (POINTER_PLUS_EXPR, build_pointer_type (sizetype),
-			   data_addr, cookie_ptr);
+      size_ptr_type = build_pointer_type (sizetype);
+      cookie_ptr = build2 (POINTER_PLUS_EXPR, size_ptr_type,
+			   fold_convert (size_ptr_type, data_addr), cookie_ptr);
       cookie = build_indirect_ref (cookie_ptr, NULL);
 
       cookie_expr = build2 (MODIFY_EXPR, sizetype, cookie, nelts);

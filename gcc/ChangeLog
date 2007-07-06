@@ -1,3 +1,8 @@
+2007-07-06  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (boolean_increment): Use correctly typed
+	constant.
+
 2007-07-06  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.c (mips16e_save_restore_pattern_p): Check that

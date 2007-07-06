@@ -1261,6 +1261,8 @@ build_m_component_ref (tree datum, tree component)
 
   if (TYPE_PTRMEM_P (ptrmem_type))
     {
+      tree ptype;
+
       /* Compute the type of the field, as described in [expr.ref].
 	 There's no such thing as a mutable pointer-to-member, so
 	 things are not as complex as they are for references to
@@ -1277,8 +1279,10 @@ build_m_component_ref (tree datum, tree component)
 
       /* Build an expression for "object + offset" where offset is the
 	 value stored in the pointer-to-data-member.  */
-      datum = build2 (POINTER_PLUS_EXPR, build_pointer_type (type),
-		      datum, build_nop (sizetype, component));
+      ptype = build_pointer_type (type);
+      datum = build2 (POINTER_PLUS_EXPR, ptype,
+		      fold_convert (ptype, datum),
+		      build_nop (sizetype, component));
       return build_indirect_ref (datum, 0);
     }
   else

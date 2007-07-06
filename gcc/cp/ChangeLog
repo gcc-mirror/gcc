@@ -1,3 +1,8 @@
+2007-07-06  Richard Guenther  <rguenther@suse.de>
+
+	* init.c (build_new_1): Use the correct pointer type.
+	* typeck2.c (build_m_component_ref): Likewise.
+
 2007-07-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/32245
