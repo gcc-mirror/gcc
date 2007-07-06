@@ -4348,7 +4348,7 @@ tree
 boolean_increment (enum tree_code code, tree arg)
 {
   tree val;
-  tree true_res = boolean_true_node;
+  tree true_res = build_int_cst (TREE_TYPE (arg), 1);
 
   arg = stabilize_reference (arg);
   switch (code)
