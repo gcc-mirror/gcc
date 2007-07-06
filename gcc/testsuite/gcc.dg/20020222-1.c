@@ -3,7 +3,7 @@
    but did not update reg info which load_mems needed.  */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-options "-O2 -fPIC" { target sparc*-*-* } } */
+/* { dg-options "-O2 -fPIC" { target fpic } } */
 
 extern void foo (void);
 static char a[256];
