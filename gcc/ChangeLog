@@ -1,3 +1,10 @@
+2007-07-06  Josh Conner  <jconner@apple.com>
+
+	PR middle-end/32602
+	PR middle-end/32603
+	* calls.c (store_one_arg): Handle arguments which are partially
+	on the stack when detecting argument overlap.
+
 2007-07-06  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* reload1.c (choose_reload_regs): Set reload_spill_index for regs

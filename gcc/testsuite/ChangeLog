@@ -1,3 +1,13 @@
+2007-07-06  Josh Conner  <jconner@apple.com>
+
+	PR middle-end/32602
+	* gcc.dg/sibcall-8.c: New test.
+
+2007-07-06  Josh Conner  <jconner@apple.com>
+
+	PR middle-end/32603
+	* gcc.target/arm/sibcall-1.c: New test.
+
 2007-07-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/dfp/convert-dfp-round-thread.c: New test.
