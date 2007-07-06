@@ -3429,7 +3429,7 @@ rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 echo "$as_me:$LINENO: result: $have_cc_tls" >&5
 echo "${ECHO_T}$have_cc_tls" >&6
-set_have_cc_tls
+set_have_cc_tls=
 if test "$enable_tls $have_cc_tls" = "yes yes"; then
   set_have_cc_tls="-DHAVE_CC_TLS"
 fi
