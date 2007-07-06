@@ -1,3 +1,9 @@
+2007-07-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/23551
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce):
+	Disregard DECL_FROM_INLINE.
+
 2007-07-05  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* rtlanal.c (num_sign_bit_copies1): Improve cases of ANDing or
