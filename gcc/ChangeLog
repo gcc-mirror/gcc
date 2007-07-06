@@ -1,3 +1,10 @@
+2007-07-06  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.c (compute_frame_size): Restore the original
+	gp_sp_offset for !GENERATE_MIPS16E_SAVE_RESTORE and remove the
+	fp_size term from the GENERATE_MIPS16E_SAVE_RESTORE calculation.
+	Document why the difference is needed.
+
 2007-07-06  Richard Guenther  <rguenther@suse.de>
 
 	* c-common.c (boolean_increment): Use correctly typed

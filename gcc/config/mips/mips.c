@@ -6781,12 +6781,16 @@ compute_frame_size (HOST_WIDE_INT size)
     {
       HOST_WIDE_INT offset;
 
-      /* MIPS16e SAVE and RESTORE instructions require the GP save area
-	 to be aligned at the high end with any padding at the low end,
-	 so do it that way all the time.  */
-      offset = (total_size
-		- MIPS_STACK_ALIGN (fp_reg_size)
-		- GET_MODE_SIZE (gpr_mode));
+      if (GENERATE_MIPS16E_SAVE_RESTORE)
+	/* MIPS16e SAVE and RESTORE instructions require the GP save area
+	   to be aligned at the high end with any padding at the low end.
+	   It is only safe to use this calculation for o32, where we never
+	   have pretend arguments, and where any varargs will be saved in
+	   the caller-allocated area rather than at the top of the frame.  */
+	offset = (total_size - GET_MODE_SIZE (gpr_mode));
+      else
+	offset = (args_size + cprestore_size + var_size
+		  + gp_reg_size - GET_MODE_SIZE (gpr_mode));
       cfun->machine->frame.gp_sp_offset = offset;
       cfun->machine->frame.gp_save_offset = offset - total_size;
     }
