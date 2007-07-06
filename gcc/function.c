@@ -5601,5 +5601,137 @@ struct tree_opt_pass pass_leaf_regs =
   0                                     /* letter */
 };
 
+
+/* This mini-pass fixes fall-out from SSA in asm statements that have
+   in-out constraints.  Say you start with 
+
+     orig = inout;
+     asm ("": "+mr" (inout));
+     use (orig);
+
+   which is transformed very early to use explicit output and match operands:
+
+     orig = inout;
+     asm ("": "=mr" (inout) : "0" (inout));
+     use (orig);
+
+   Or, after SSA and copyprop,
+
+     asm ("": "=mr" (inout_2) : "0" (inout_1));
+     use (inout_1);
+
+   Clearly inout_2 and inout_1 can't be coalesced easily anymore, as
+   they represent two separate values, so they will get different pseudo
+   registers during expansion.  Then, since the two operands need to match
+   per the constraints, but use different pseudo registers, reload can
+   only register a reload for these operands.  But reloads can only be
+   satisfied by hardregs, not by memory, so we need a register for this
+   reload, just because we are presented with non-matching operands.
+   So, even though we allow memory for this operand, no memory can be
+   used for it, just because the two operands don't match.  This can
+   cause reload failures on register-starved targets.
+
+   So it's a symptom of reload not being able to use memory for reloads
+   or, alternatively it's also a symptom of both operands not coming into
+   reload as matching (in which case the pseudo could go to memory just
+   fine, as the alternative allows it, and no reload would be necessary).
+   We fix the latter problem here, by transforming
+
+     asm ("": "=mr" (inout_2) : "0" (inout_1));
+
+   back to
+
+     inout_2 = inout_1;
+     asm ("": "=mr" (inout_2) : "0" (inout_2));  */
+
+static void
+match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
+{
+  int i;
+  rtx op = SET_SRC (p_sets[0]);
+  int ninputs = ASM_OPERANDS_INPUT_LENGTH (op);
+  rtvec inputs = ASM_OPERANDS_INPUT_VEC (op);
+
+  for (i = 0; i < ninputs; i++)
+    {
+      rtx input, output, insns;
+      const char *constraint = ASM_OPERANDS_INPUT_CONSTRAINT (op, i);
+      char *end;
+      int match;
+
+      match = strtoul (constraint, &end, 10);
+      if (end == constraint)
+	continue;
+
+      gcc_assert (match < noutputs);
+      output = SET_DEST (p_sets[match]);
+      input = RTVEC_ELT (inputs, i);
+      if (rtx_equal_p (output, input)
+	  || (GET_MODE (input) != VOIDmode
+	      && GET_MODE (input) != GET_MODE (output)))
+	continue;
+
+      start_sequence ();
+      emit_move_insn (copy_rtx (output), input);
+      RTVEC_ELT (inputs, i) = copy_rtx (output);
+      insns = get_insns ();
+      end_sequence ();
+
+      emit_insn_before (insns, insn);
+    }
+}
+
+static unsigned
+rest_of_match_asm_constraints (void)
+{
+  basic_block bb;
+  rtx insn, pat, *p_sets;
+  int noutputs;
+
+  if (!cfun->has_asm_statement)
+    return 0;
+
+  FOR_EACH_BB (bb)
+    {
+      FOR_BB_INSNS (bb, insn)
+	{
+	  if (!INSN_P (insn))
+	    continue;
+
+	  pat = PATTERN (insn);
+	  if (GET_CODE (pat) == PARALLEL)
+	    p_sets = &XVECEXP (pat, 0, 0), noutputs = XVECLEN (pat, 0);
+	  else if (GET_CODE (pat) == SET)
+	    p_sets = &PATTERN (insn), noutputs = 1;
+	  else
+	    continue;
+
+	  if (GET_CODE (*p_sets) == SET
+	      && GET_CODE (SET_SRC (*p_sets)) == ASM_OPERANDS)
+	    match_asm_constraints_1 (insn, p_sets, noutputs);
+	 }
+    }
+
+  update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL_RM_NOTES,
+                                    PROP_DEATH_NOTES);
+  return 0;
+}
+
+struct tree_opt_pass pass_match_asm_constraints =
+{
+  "asmcons",				/* name */
+  NULL,					/* gate */
+  rest_of_match_asm_constraints,	/* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,					/* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  0                                     /* letter */
+};
 
 #include "gt-function.h"
