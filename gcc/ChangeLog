@@ -1,3 +1,8 @@
+2007-07-06  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* reload1.c (choose_reload_regs): Set reload_spill_index for regs
+	chosen during find_reloads.
+
 2007-07-06  Richard Guenther  <rguenther@suse.de>
 
 	* gimplify.c (gimplify_call_expr): Prefer DECL_ARGUMENTS over
