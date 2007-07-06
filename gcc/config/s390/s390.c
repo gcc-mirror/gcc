@@ -323,6 +323,18 @@ struct machine_function GTY(())
 #define REGNO_PAIR_OK(REGNO, MODE)                               \
   (HARD_REGNO_NREGS ((REGNO), (MODE)) == 1 || !((REGNO) & 1))
 
+static enum machine_mode
+s390_libgcc_cmp_return_mode (void)
+{
+  return TARGET_64BIT ? DImode : SImode;
+}
+
+static enum machine_mode
+s390_libgcc_shift_count_mode (void)
+{
+  return TARGET_64BIT ? DImode : SImode;
+}
+
 /* Return true if the back end supports mode MODE.  */
 static bool
 s390_scalar_mode_supported_p (enum machine_mode mode)
@@ -9340,6 +9352,12 @@ s390_reorg (void)
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD s390_secondary_reload
+
+#undef TARGET_LIBGCC_CMP_RETURN_MODE
+#define TARGET_LIBGCC_CMP_RETURN_MODE s390_libgcc_cmp_return_mode
+
+#undef TARGET_LIBGCC_SHIFT_COUNT_MODE
+#define TARGET_LIBGCC_SHIFT_COUNT_MODE s390_libgcc_shift_count_mode
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

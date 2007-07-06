@@ -432,6 +432,12 @@ struct gcc_target
   /* Return machine mode for filter value.  */
   enum machine_mode (* eh_return_filter_mode) (void);
 
+  /* Return machine mode for libgcc expanded cmp instructions.  */
+  enum machine_mode (* libgcc_cmp_return_mode) (void);
+
+  /* Return machine mode for libgcc expanded shift instructions.  */
+  enum machine_mode (* libgcc_shift_count_mode) (void);
+
   /* Given two decls, merge their attributes and return the result.  */
   tree (* merge_decl_attributes) (tree, tree);
 

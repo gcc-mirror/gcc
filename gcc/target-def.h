@@ -374,6 +374,10 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 /* In except.c */
 #define TARGET_EH_RETURN_FILTER_MODE  default_eh_return_filter_mode
 
+/* In libgcc2.c */
+#define TARGET_LIBGCC_CMP_RETURN_MODE  default_libgcc_cmp_return_mode
+#define TARGET_LIBGCC_SHIFT_COUNT_MODE default_libgcc_shift_count_mode
+
 /* In tree.c.  */
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_decl_attributes
 #define TARGET_MERGE_TYPE_ATTRIBUTES merge_type_attributes
@@ -669,6 +673,8 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   TARGET_HANDLE_OPTION,				\
   TARGET_HELP,					\
   TARGET_EH_RETURN_FILTER_MODE,			\
+  TARGET_LIBGCC_CMP_RETURN_MODE,                \
+  TARGET_LIBGCC_SHIFT_COUNT_MODE,               \
   TARGET_MERGE_DECL_ATTRIBUTES,			\
   TARGET_MERGE_TYPE_ATTRIBUTES,			\
   TARGET_ATTRIBUTE_TABLE,			\

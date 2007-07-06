@@ -140,6 +140,18 @@ default_eh_return_filter_mode (void)
   return word_mode;
 }
 
+enum machine_mode
+default_libgcc_cmp_return_mode (void)
+{
+  return word_mode;
+}
+
+enum machine_mode
+default_libgcc_shift_count_mode (void)
+{
+  return word_mode;
+}
+
 /* The default implementation of TARGET_SHIFT_TRUNCATION_MASK.  */
 
 unsigned HOST_WIDE_INT

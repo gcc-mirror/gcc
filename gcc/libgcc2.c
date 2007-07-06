@@ -406,16 +406,16 @@ __mulvDI3 (DWtype u, DWtype v)
 
 
 /* Unless shift functions are defined with full ANSI prototypes,
-   parameter b will be promoted to int if word_type is smaller than an int.  */
+   parameter b will be promoted to int if shift_count_type is smaller than an int.  */
 #ifdef L_lshrdi3
 DWtype
-__lshrdi3 (DWtype u, word_type b)
+__lshrdi3 (DWtype u, shift_count_type b)
 {
   if (b == 0)
     return u;
 
   const DWunion uu = {.ll = u};
-  const word_type bm = (sizeof (Wtype) * BITS_PER_UNIT) - b;
+  const shift_count_type bm = (sizeof (Wtype) * BITS_PER_UNIT) - b;
   DWunion w;
 
   if (bm <= 0)
@@ -437,13 +437,13 @@ __lshrdi3 (DWtype u, word_type b)
 
 #ifdef L_ashldi3
 DWtype
-__ashldi3 (DWtype u, word_type b)
+__ashldi3 (DWtype u, shift_count_type b)
 {
   if (b == 0)
     return u;
 
   const DWunion uu = {.ll = u};
-  const word_type bm = (sizeof (Wtype) * BITS_PER_UNIT) - b;
+  const shift_count_type bm = (sizeof (Wtype) * BITS_PER_UNIT) - b;
   DWunion w;
 
   if (bm <= 0)
@@ -465,13 +465,13 @@ __ashldi3 (DWtype u, word_type b)
 
 #ifdef L_ashrdi3
 DWtype
-__ashrdi3 (DWtype u, word_type b)
+__ashrdi3 (DWtype u, shift_count_type b)
 {
   if (b == 0)
     return u;
 
   const DWunion uu = {.ll = u};
-  const word_type bm = (sizeof (Wtype) * BITS_PER_UNIT) - b;
+  const shift_count_type bm = (sizeof (Wtype) * BITS_PER_UNIT) - b;
   DWunion w;
 
   if (bm <= 0)
@@ -1082,7 +1082,7 @@ __udivmoddi4 (UDWtype n, UDWtype d, UDWtype *rp)
 DWtype
 __divdi3 (DWtype u, DWtype v)
 {
-  word_type c = 0;
+  Wtype c = 0;
   DWunion uu = {.ll = u};
   DWunion vv = {.ll = v};
   DWtype w;
@@ -1106,7 +1106,7 @@ __divdi3 (DWtype u, DWtype v)
 DWtype
 __moddi3 (DWtype u, DWtype v)
 {
-  word_type c = 0;
+  Wtype c = 0;
   DWunion uu = {.ll = u};
   DWunion vv = {.ll = v};
   DWtype w;
@@ -1146,7 +1146,7 @@ __udivdi3 (UDWtype n, UDWtype d)
 #endif
 
 #ifdef L_cmpdi2
-word_type
+cmp_return_type
 __cmpdi2 (DWtype a, DWtype b)
 {
   const DWunion au = {.ll = a};
@@ -1165,7 +1165,7 @@ __cmpdi2 (DWtype a, DWtype b)
 #endif
 
 #ifdef L_ucmpdi2
-word_type
+cmp_return_type
 __ucmpdi2 (DWtype a, DWtype b)
 {
   const DWunion au = {.ll = a};

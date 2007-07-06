@@ -1980,10 +1980,10 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
       if (shift_op)
 	{
-	  op1_mode = word_mode;
+	  op1_mode = targetm.libgcc_shift_count_mode ();
 	  /* Specify unsigned here,
 	     since negative shift counts are meaningless.  */
-	  op1x = convert_to_mode (word_mode, op1, 1);
+	  op1x = convert_to_mode (op1_mode, op1, 1);
 	}
 
       if (GET_MODE (op0) != VOIDmode
@@ -3909,7 +3909,8 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
 	libfunc = ucmp_optab->handlers[(int) mode].libfunc;
 
       result = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST_MAKE_BLOCK,
-					word_mode, 2, x, mode, y, mode);
+					targetm.libgcc_cmp_return_mode (),
+					2, x, mode, y, mode);
 
       /* There are two kinds of comparison routines. Biased routines
 	 return 0/1/2, and unbiased routines return -1/0/1. Other parts

@@ -4975,6 +4975,10 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	mode = word_mode;
       else if (!strcmp (p, "pointer"))
 	mode = ptr_mode;
+      else if (!strcmp (p, "libgcc_cmp_return"))
+	mode = targetm.libgcc_cmp_return_mode ();
+      else if (!strcmp (p, "libgcc_shift_count"))
+	mode = targetm.libgcc_shift_count_mode ();
       else
 	for (j = 0; j < NUM_MACHINE_MODES; j++)
 	  if (!strcmp (p, GET_MODE_NAME (j)))
