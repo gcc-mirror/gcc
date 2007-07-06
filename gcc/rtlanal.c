@@ -4290,6 +4290,25 @@ num_sign_bit_copies1 (rtx x, enum machine_mode mode, rtx known_x,
 					 known_x, known_mode, known_ret);
       num1 = cached_num_sign_bit_copies (XEXP (x, 1), mode,
 					 known_x, known_mode, known_ret);
+
+      /* If num1 is clearing some of the top bits then regardless of
+	 the other term, we are guaranteed to have at least that many
+	 high-order zero bits.  */
+      if (code == AND
+	  && num1 > 1
+	  && bitwidth <= HOST_BITS_PER_WIDE_INT
+	  && GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && !(INTVAL (XEXP (x, 1)) & ((HOST_WIDE_INT) 1 << (bitwidth - 1))))
+	return num1;
+
+      /* Similarly for IOR when setting high-order bits.  */
+      if (code == IOR
+	  && num1 > 1
+	  && bitwidth <= HOST_BITS_PER_WIDE_INT
+	  && GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && (INTVAL (XEXP (x, 1)) & ((HOST_WIDE_INT) 1 << (bitwidth - 1))))
+	return num1;
+
       return MIN (num0, num1);
 
     case PLUS:  case MINUS:
