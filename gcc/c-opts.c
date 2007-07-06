@@ -883,7 +883,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_lang_asm:
       cpp_set_lang (parse_in, CLK_ASM);
-      cpp_opts->dollars_in_ident = false;
       break;
 
     case OPT_lang_fortran:
