@@ -1,10 +1,10 @@
 /* { dg-require-visibility "" } */
 /* { dg-options "-fvisibility-ms-compat" } */
 
-/* { dg-final { scan-not-hidden "__ZTI1S" } } */
-/* { dg-final { scan-hidden "__ZTI1T" } } */
-/* { dg-final { scan-not-hidden "__ZTI1U" } } */
-/* { dg-final { scan-not-hidden "__ZN1U6hide_4Ev" } } */
+/* { dg-final { scan-not-hidden "_ZTI1S" } } */
+/* { dg-final { scan-hidden "_ZTI1T" } } */
+/* { dg-final { scan-not-hidden "_ZTI1U" } } */
+/* { dg-final { scan-not-hidden "_ZN1U6hide_4Ev" } } */
 
 class S {
   virtual void hide_2();
