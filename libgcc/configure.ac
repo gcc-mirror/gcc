@@ -174,7 +174,7 @@ AC_SUBST(vis_hide)
 # gcc, which can't be used to build executable due to that libgcc
 # is yet to be built here.
 GCC_CHECK_CC_TLS
-set_have_cc_tls
+set_have_cc_tls=
 if test "$enable_tls $have_cc_tls" = "yes yes"; then
   set_have_cc_tls="-DHAVE_CC_TLS"
 fi
