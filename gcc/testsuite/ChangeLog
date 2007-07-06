@@ -1,3 +1,8 @@
+2007-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/ext/visibility/ms-compat-1.C: Change double underscore to
+	single underscore in scan directives.
+
 2007-07-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/32245
@@ -13,7 +18,8 @@
 
 	* gcc.dg/vect/costmodel/ppc: New directory.
 	* gcc.dg/vect/costmodel/ppc/ppc-costmodel-vect.exp: New.
-	* gcc.dg/vect/costmodel/ppc/costmodel-fast-math-vect-pr29925.c: New test.
+	* gcc.dg/vect/costmodel/ppc/costmodel-fast-math-vect-pr29925.c:
+	New test.
 	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31a.c: New test.
 	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31b.c: New test.
 	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31c.c: New test.
@@ -27,7 +33,7 @@
 	* gcc.dg/vect/costmodel/ppc/costmodel-vect-68c.c: New test.
 	* gcc.dg/vect/costmodel/ppc/costmodel-vect-68d.c: New test.
 	* gcc.dg/vect/costmodel/ppc/costmodel-vect-reduc-1char.c: New test.
-	* gcc.dg/vect/costmodel/i386/costmodel-vect-68.c: Now vectorized.	
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-68.c: Now vectorized.
 
 2007-07-05  Tobias Burnus  <burnus@net-b.de>
 
