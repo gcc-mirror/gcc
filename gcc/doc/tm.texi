@@ -1334,6 +1334,20 @@ You would most commonly define this macro if the @code{allocate_stack}
 pattern needs to support both a 32- and a 64-bit mode.
 @end defmac
 
+@deftypefn {Target Hook} {enum machine_mode} TARGET_LIBGCC_CMP_RETURN_MODE ()
+This target hook should return the mode to be used for the return value
+of compare instructions expanded to libgcc calls.  If not defined
+@code{word_mode} is returned which is the right choice for a majority of
+targets.
+@end deftypefn
+
+@deftypefn {Target Hook} {enum machine_mode} TARGET_LIBGCC_SHIFT_COUNT_MODE ()
+This target hook should return the mode to be used for the shift count operand
+of shift instructions expanded to libgcc calls.  If not defined
+@code{word_mode} is returned which is the right choice for a majority of
+targets.
+@end deftypefn
+
 @defmac TARGET_FLOAT_FORMAT
 A code distinguishing the floating point format of the target machine.
 There are four defined values:

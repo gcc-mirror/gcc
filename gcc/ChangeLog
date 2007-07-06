@@ -1,3 +1,41 @@
+2007-07-06  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* libgcc2.h (word_type): Type definition removed.
+	(cmp_return_type, shift_count_type): Type definitions added.
+	(__lshrdi3, __ashldi3, __ashrdi3): word_type of second parameter
+	replaced with shift_count_type.
+	(__cmpdi2, __ucmpdi2): word_type of return type replaced with
+	cmp_return_type.
+	* libgcc2.c (__udivmoddi4, __moddi3): Type of local variable c
+	changed from word_type to Wtype.
+	(__lshrdi3, __ashldi3, __ashrdi3): word_type of second parameter
+	replaced with shift_count_type.
+	(__cmpdi2, __ucmpdi2): word_type of return type replaced with
+	cmp_return_type.
+	* c-common.c (handle_mode_attribute): Handling for libgcc_cmp_return and
+	libgcc_shift_count attribute added.
+	* target-def.h (TARGET_LIBGCC_CMP_RETURN_MODE,
+	TARGET_LIBGCC_SHIFT_COUNT_MODE): New target hooks defined.
+	(TARGET_INITIALIZER): New target hooks added.
+	* targhooks.c (default_libgcc_cmp_return_mode,
+	default_libgcc_shift_count_mode): Default implementations for the new
+	target hooks added.
+	* targhooks.h (default_libgcc_cmp_return_mode,
+	default_libgcc_shift_count_mode): Function prototypes added.
+	* target.h (struct gcc_target): Fields for the new target hooks added.
+	* optabs.c (expand_binop): Use shift_count_mode when expanding shift
+	as library call.
+	(prepare_cmp_insn): Use cmp_return_mode when expanding comparison as
+	library call.
+
+	* doc/tm.texi (TARGET_LIBGCC_CMP_RETURN_MODE,
+	TARGET_LIBGCC_SHIFT_COUNT_MODE): Documentation added.
+
+	* config/s390/s390.c (s390_libgcc_cmp_return_mode,
+	s390_libgcc_shift_count_mode): Functions added.
+	(TARGET_LIBGCC_CMP_RETURN_MODE,	TARGET_LIBGCC_SHIFT_COUNT_MODE): Target
+	hooks defined.
+
 2007-07-06  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.c (compute_frame_size): Restore the original
