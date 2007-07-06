@@ -12,7 +12,17 @@
 #include <stdarg.h>
 
 #ifdef STACK_SIZE
-#define CHUNK ((STACK_SIZE-100)/40/sizeof(int))
+/* We need to be careful that we don't blow our stack.  Function f, in the
+   worst case, needs to fit on the stack:
+
+   * 40 int[CHUNK] arrays;
+   * ~40 ints;
+   * ~40 pointers for stdarg passing.
+
+   Subtract the last two off STACK_SIZE and figure out what the maximum
+   chunk size can be.  We make the last bit conservative to account for
+   register saves and other processor-dependent saving.  */
+#define CHUNK ((STACK_SIZE-40*sizeof(int)-256*sizeof(void *))/40/sizeof(int))
 #else
 #define CHUNK 500
 #endif
