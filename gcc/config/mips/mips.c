@@ -7334,6 +7334,12 @@ mips16e_save_restore_pattern_p (rtx pattern, HOST_WIDE_INT adjust,
   if (extra != 0)
     return false;
 
+  /* Make sure that the topmost argument register is not saved twice.
+     The checks above ensure that the same is then true for the other
+     argument registers.  */
+  if (nargs > 0 && BITSET_P (mask, GP_ARG_FIRST + nargs - 1))
+    return false;
+
   /* Pass back information, if requested.  */
   if (info)
     {
@@ -7458,14 +7464,13 @@ mips16e_collect_propagate_value (rtx x, rtx *reg_values)
 }
 
 /* Return true if (set DEST SRC) stores an argument register into its
-   caller-allocated save slot.  If the register is not included in
-   [GP_ARG_FIRST, GP_ARG_LAST + *NARGS_PTR), destructively modify
-   *NARGS_PTR such that this condition holds.  REG_VALUES is as for
+   caller-allocated save slot, storing the number of that argument
+   register in *REGNO_PTR if so.  REG_VALUES is as for
    mips16e_collect_propagate_value.  */
 
 static bool
-mips16e_collect_argument_save (rtx dest, rtx src, rtx *reg_values,
-			       unsigned int *nargs_ptr)
+mips16e_collect_argument_save_p (rtx dest, rtx src, rtx *reg_values,
+				 unsigned int *regno_ptr)
 {
   unsigned int argno, regno;
   HOST_WIDE_INT offset, required_offset;
@@ -7495,10 +7500,7 @@ mips16e_collect_argument_save (rtx dest, rtx src, rtx *reg_values,
   if (offset != required_offset)
     return false;
 
-  /* Make sure that *NARGS_PTR is big enough.  */
-  if (*nargs_ptr <= argno)
-    *nargs_ptr = argno + 1;
-
+  *regno_ptr = regno;
   return true;
 }
 
@@ -7514,7 +7516,7 @@ mips16e_collect_argument_saves (void)
 {
   rtx reg_values[FIRST_PSEUDO_REGISTER];
   rtx insn, next, set, dest, src;
-  unsigned int nargs;
+  unsigned int nargs, regno;
 
   push_topmost_sequence ();
   nargs = 0;
@@ -7534,8 +7536,14 @@ mips16e_collect_argument_saves (void)
 
       dest = SET_DEST (set);
       src = SET_SRC (set);
-      if (mips16e_collect_argument_save (dest, src, reg_values, &nargs))
-	delete_insn (insn);
+      if (mips16e_collect_argument_save_p (dest, src, reg_values, &regno))
+	{
+	  if (!BITSET_P (cfun->machine->frame.mask, regno))
+	    {
+	      delete_insn (insn);
+	      nargs = MAX (nargs, (regno - GP_ARG_FIRST) + 1);
+	    }
+	}
       else if (REG_P (dest) && GET_MODE (dest) == word_mode)
 	reg_values[REGNO (dest)]
 	  = mips16e_collect_propagate_value (src, reg_values);
