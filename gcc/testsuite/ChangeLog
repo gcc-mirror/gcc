@@ -1,3 +1,7 @@
+2007-07-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/dfp/convert-dfp-round-thread.c: New test.
+
 2007-07-06  Daniel Franke  <franke.daniel@gmail.com>
 
 	* gfortran.dg/save_parameter.f90: New test.
