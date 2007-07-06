@@ -1,3 +1,14 @@
+2007-07-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/32245
+	* g++.dg/init/ptrmem4.C: New test.
+
+	PR c++/32251
+	* g++.dg/init/new21.C: Likewise.
+
+	PR c++/31992
+	* g++.dg/template/static30.C: Likewise.
+
 2007-07-05  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/costmodel/ppc: New directory.

@@ -196,7 +196,7 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
 	     corresponding to base classes as well.  Thus, iterating
 	     over TYPE_FIELDs will result in correct initialization of
 	     all of the subobjects.  */
-	  if (static_storage_p && !zero_init_p (TREE_TYPE (field)))
+	  if (!static_storage_p || !zero_init_p (TREE_TYPE (field)))
 	    {
 	      tree value = build_zero_init (TREE_TYPE (field),
 					    /*nelts=*/NULL_TREE,
@@ -2038,8 +2038,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 					  globally_qualified_p,
 					  (placement_allocation_fn_p
 					   ? alloc_call : NULL_TREE),
-					  (placement_allocation_fn_p
-					   ? alloc_fn : NULL_TREE));
+					  alloc_fn);
 
 	  if (!cleanup)
 	    /* We're done.  */;
