@@ -1,3 +1,8 @@
+2007-07-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/lib/libstdc++.exp (v3-build_support): Use env(AR)
+	and env(RANLIB), not env(AR_FOR_TARGET) and env(RANLIB_FOR_TARGET).
+
 2007-07-05  Joerg Richter  <joerg.richter@pdv-fs.de>
 
 	PR libstdc++/31957
