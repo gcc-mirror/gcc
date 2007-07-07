@@ -105,6 +105,6 @@
        (match_test "ival >= -6 && ival <= 5")))
        
 (define_memory_constraint "Q"
-  "A memory address based on X or Y pointer with displacement."
+  "A memory address based on Y or Z pointer with displacement."
   (and (match_code "mem")
        (match_test "extra_constraint_Q (op)")))
