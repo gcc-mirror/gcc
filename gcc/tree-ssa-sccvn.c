@@ -1332,6 +1332,7 @@ expr_has_constants (tree expr)
       /* Constants inside reference ops are rarely interesting, but
 	 it can take a lot of looking to find them.  */
     case tcc_reference:
+    case tcc_declaration:
       return false;
     default:
       return is_gimple_min_invariant (expr);
@@ -1453,7 +1454,7 @@ try_to_simplify (tree stmt, tree rhs)
 	{
 	  /* For references, see if we find a result for the lookup,
 	     and use it if we do.  */
-
+	case tcc_declaration:
 	case tcc_reference:
 	  {
 	    tree result = vn_reference_lookup (rhs,
@@ -1613,7 +1614,7 @@ visit_use (tree use)
 	  if (TREE_CODE (lhs) == SSA_NAME
 	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
 	    changed = defs_to_varying (stmt);
-	  else if (REFERENCE_CLASS_P (lhs))
+	  else if (REFERENCE_CLASS_P (lhs) || DECL_P (lhs))
 	    {
 	      changed = visit_reference_op_store (lhs, rhs, stmt);
 	    }

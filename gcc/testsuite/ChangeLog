@@ -1,3 +1,8 @@
+2007-07-06  Daniel Berlin  <dberlin@dberlin.org>
+
+	* gcc.dg/tree-ssa/ssa-pre-17.c: New test.
+	* gcc.dg/tree-ssa/ssa-fre-7.c: New test.
+
 2007-07-06  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc.dg/20001012-1.c: Run on all fpic-capable targets.
