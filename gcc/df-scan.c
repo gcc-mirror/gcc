@@ -433,7 +433,7 @@ static struct df_problem problem_SCAN =
   df_scan_start_block,        /* Debugging start block.  */
   NULL,                       /* Debugging end block.  */
   NULL,                       /* Incremental solution verify start.  */
-  NULL,                       /* Incremental solution verfiy end.  */
+  NULL,                       /* Incremental solution verify end.  */
   NULL,                       /* Dependent problem.  */
   TV_DF_SCAN,                 /* Timing variable.  */
   false                       /* Reset blocks on dropping out of blocks_to_analyze.  */
@@ -3432,7 +3432,7 @@ df_get_eh_block_artificial_uses (bitmap eh_block_artificial_uses)
 {
   bitmap_clear (eh_block_artificial_uses);
 
-  /* The following code (down thru the arg_pointer seting APPEARS
+  /* The following code (down thru the arg_pointer setting APPEARS
      to be necessary because there is nothing that actually
      describes what the exception handling code may actually need
      to keep alive.  */

@@ -1276,7 +1276,7 @@ find_inc (bool first_try)
 	 next add or inc, not the next insn that used the
 	 reg.  Because we are going to increment the reg
 	 in this form, we need to make sure that there
-	 were no interveining uses of reg.  */
+	 were no intervening uses of reg.  */
       if (inc_insn.insn != other_insn)
 	return false;
     }

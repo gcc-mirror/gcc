@@ -1399,7 +1399,7 @@ simplify_binary_expression (tree rhs)
     }
   result = fold_binary (TREE_CODE (rhs), TREE_TYPE (rhs), op0, op1);
 
-  /* Make sure result is not a complex expression consiting
+  /* Make sure result is not a complex expression consisting
      of operators of operators (IE (a + b) + (a + c))
      Otherwise, we will end up with unbounded expressions if
      fold does anything at all.  */

@@ -1006,7 +1006,7 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 
       /* Otherwise pointers/references are equivalent if their pointed
 	 to types are effectively the same.  We can strip qualifiers
-	 on pointed-to types for further comparsion, which is done in
+	 on pointed-to types for further comparison, which is done in
 	 the callee.  */
       return useless_type_conversion_p (TREE_TYPE (outer_type),
 				        TREE_TYPE (inner_type));

@@ -144,7 +144,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    ... <- A
 
    flow would replace the right hand side of the second insn with a
-   reference to r100.  Most of the infomation is available to add this
+   reference to r100.  Most of the information is available to add this
    to this pass.  It has not done it because it is a lot of work in
    the case that either r100 is assigned to between the first and
    second insn and/or the second insn is a load of part of the value
@@ -303,7 +303,7 @@ struct insn_info
      insn.  If the insn is deletable, it contains only one mem set.
      But it could also contain clobbers.  Insns that contain more than
      one mem set are not deletable, but each of those mems are here in
-     order to provied info to delete other insns.  */
+     order to provide info to delete other insns.  */
   store_info_t store_rec;
 
   /* The linked list of mem uses in this insn.  Only the reads from
@@ -403,9 +403,9 @@ struct group_info
   rtx canon_base_mem;
 
   /* These two sets of two bitmaps are used to keep track of how many
-     stores are actually referencing that postion from this base.  We
+     stores are actually referencing that position from this base.  We
      only do this for rtx bases as this will be used to assign
-     postions in the bitmaps for the global problem.  Bit N is set in
+     positions in the bitmaps for the global problem.  Bit N is set in
      store1 on the first store for offset N.  Bit N is set in store2
      for the second store to offset N.  This is all we need since we
      only care about offsets that have two or more stores for them.
@@ -420,9 +420,9 @@ struct group_info
      deleted.  */
   bitmap store1_n, store1_p, store2_n, store2_p;
 
-  /* The postions in this bitmap have the same assignments as the in,
+  /* The positions in this bitmap have the same assignments as the in,
      out, gen and kill bitmaps.  This bitmap is all zeros except for
-     the postions that are occupied by stores for this group.  */
+     the positions that are occupied by stores for this group.  */
   bitmap group_kill;
 
   /* True if there are any positions that are to be processed
@@ -434,7 +434,7 @@ struct group_info
   bool frame_related;
 
   /* The offset_map is used to map the offsets from this base into
-     postions in the global bitmaps.  It is only created after all of
+     positions in the global bitmaps.  It is only created after all of
      the all of stores have been scanned and we know which ones we
      care about.  */
   int *offset_map_n, *offset_map_p; 
@@ -1265,7 +1265,7 @@ record_store (rtx body, bb_info_t bb_info)
       bool delete = true;
 
       /* Skip the clobbers. We delete the active insn if this insn
-	 shaddows the set.  To have been put on the active list, it
+	 shadows the set.  To have been put on the active list, it
 	 has exactly on set. */
       while (!s_info->is_set)
 	s_info = s_info->next;
@@ -2017,7 +2017,7 @@ dse_step1 (void)
 
    Assign each byte position in the stores that we are going to
    analyze globally to a position in the bitmaps.  Returns true if
-   there are any bit postions assigned.
+   there are any bit positions assigned.
 ----------------------------------------------------------------------------*/
 
 static void
@@ -2837,7 +2837,7 @@ dse_step5_nospill (void)
 		}
 	    }
 	  /* We do want to process the local info if the insn was
-	     deleted.  For insntance, if the insn did a wild read, we
+	     deleted.  For instance, if the insn did a wild read, we
 	     no longer need to trash the info.  */
 	  if (insn_info->insn 
 	      && INSN_P (insn_info->insn)

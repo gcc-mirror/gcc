@@ -1,3 +1,13 @@
+2007-07-07  Kazu Hirata  <kazu@codesourcery.com>
+
+	* auto-inc-dec.c, config/arm/arm.c,
+	config/m32r/constraints.md, config/mips/mips.md,
+	config/rs6000/rs6000.c, cselib.c, dce.c, df-core.c,
+	df-problems.c, df-scan.c, df.h, dse.c, gimplify.c,
+	tree-if-conv.c, tree-ssa-sccvn.c, tree-ssa.c: Fix comment
+	typos.  Follow spelling conventions.
+	* doc/invoke.texi, doc/rtl.texi: Fix typos.
+
 2007-07-06  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/23488

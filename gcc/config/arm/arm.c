@@ -5822,8 +5822,8 @@ vfp3_const_double_index (rtx x)
   gcc_assert (mantissa >= 16 && mantissa <= 31);
 
   /* The value of 5 here would be 4 if GCC used IEEE754-like encoding (where
-     normalised significands are in the range [1, 2). (Our mantissa is shifted
-     left 4 places at this point relative to normalised IEEE754 values).  GCC
+     normalized significands are in the range [1, 2). (Our mantissa is shifted
+     left 4 places at this point relative to normalized IEEE754 values).  GCC
      internally uses [0.5, 1) (see real.c), so the exponent returned from
      REAL_EXP must be altered.  */
   exponent = 5 - exponent;

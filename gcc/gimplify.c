@@ -2141,7 +2141,7 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
 	   i++, p = TREE_CHAIN (p))
 	{
 	  /* We cannot distinguish a varargs function from the case
-	     of excess parameters, still defering the inlining decision
+	     of excess parameters, still deferring the inlining decision
 	     to the callee is possible.  */
 	  if (!p)
 	    break;

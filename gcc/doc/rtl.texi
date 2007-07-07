@@ -3370,7 +3370,7 @@ A list (chain of @code{insn_list} expressions) giving information about
 dependencies between instructions within a basic block.  Neither a jump
 nor a label may come between the related insns.  These are only used by
 the schedulers and by combine.  This is a deprecated data structure.
-Def-use and use-def chains are now prefered. 
+Def-use and use-def chains are now preferred. 
 
 @findex REG_NOTES
 @item REG_NOTES (@var{i})
