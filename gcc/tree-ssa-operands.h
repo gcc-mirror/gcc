@@ -203,9 +203,6 @@ typedef struct stmt_operands_d *stmt_operands_p;
 #define PHI_ARG_INDEX_FROM_USE(USE)   phi_arg_index_from_use (USE)
 
 
-extern struct voptype_d *realloc_vdef (struct voptype_d *, unsigned int);
-extern struct voptype_d *realloc_vuse (struct voptype_d *, unsigned int);
-
 extern void init_ssa_operands (void);
 extern void fini_ssa_operands (void);
 extern void free_ssa_operands (stmt_operands_p);
