@@ -62,6 +62,7 @@ static RTX_CODE compare_condition (rtx insn);
 static int compare_sign_p (rtx insn);
 static tree avr_handle_progmem_attribute (tree *, tree, tree, int, bool *);
 static tree avr_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
+static tree avr_handle_fntype_attribute (tree *, tree, tree, int, bool *);
 const struct attribute_spec avr_attribute_table[];
 static bool avr_assemble_integer (rtx, unsigned int, int);
 static void avr_file_start (void);
@@ -361,7 +362,7 @@ avr_naked_function_p (tree func)
 
   gcc_assert (TREE_CODE (func) == FUNCTION_DECL);
   
-  a = lookup_attribute ("naked", DECL_ATTRIBUTES (func));
+  a = lookup_attribute ("naked", TYPE_ATTRIBUTES (TREE_TYPE (func)));
   return a != NULL_TREE;
 }
 
@@ -4617,7 +4618,7 @@ const struct attribute_spec avr_attribute_table[] =
   { "progmem",   0, 0, false, false, false,  avr_handle_progmem_attribute },
   { "signal",    0, 0, true,  false, false,  avr_handle_fndecl_attribute },
   { "interrupt", 0, 0, true,  false, false,  avr_handle_fndecl_attribute },
-  { "naked",     0, 0, true,  false, false,  avr_handle_fndecl_attribute },
+  { "naked",     0, 0, false, true,  true,   avr_handle_fntype_attribute },
   { NULL,        0, 0, false, false, false, NULL }
 };
 
@@ -4704,6 +4705,22 @@ avr_handle_fndecl_attribute (tree *node, tree name,
                        func_name);
             }
         }
+    }
+
+  return NULL_TREE;
+}
+
+static tree
+avr_handle_fntype_attribute (tree *node, tree name,
+                             tree args ATTRIBUTE_UNUSED,
+                             int flags ATTRIBUTE_UNUSED,
+                             bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_TYPE)
+    {
+      warning (OPT_Wattributes, "%qs attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
     }
 
   return NULL_TREE;
