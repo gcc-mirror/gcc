@@ -1,3 +1,10 @@
+2007-07-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/32660
+	Backport from mainline.
+	* config/i386/sse.md (*vec_extractv2di_1_sse2): New.
+	(*vec_extractv2di_1_sse): New.
+
 2007-07-06  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR middle-end/32004
