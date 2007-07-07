@@ -10390,7 +10390,7 @@ or @code{remainder} built-in functions: see @ref{Other Builtins} for details.
 This option will enable GCC to use RCPSS and RSQRTSS instructions (and their
 vectorized variants RCPPS and RSQRTPS) instead of DIVSS and SQRTSS (and their
 vectorized variants).  These instructions will be generated only when
-@option{-funsafe-math-optimizatons} is enabled.
+@option{-funsafe-math-optimizations} is enabled.
 
 @item -mpush-args
 @itemx -mno-push-args

@@ -667,7 +667,7 @@ add_to_dst_predicate_list (struct loop * loop, edge e,
 
 /* During if-conversion aux field from basic block structure is used to hold
    predicate list. Clean each basic block's predicate list for the given LOOP.
-   Also clean aux field of succesor edges, used to hold true and false
+   Also clean aux field of successor edges, used to hold true and false
    condition from conditional expression.  */
 
 static void

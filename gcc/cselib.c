@@ -948,7 +948,7 @@ cselib_expand_value_rtx (rtx orig, bitmap regs_active, int max_depth)
 	      int regno = REGNO (orig);
 	      
 	      /* The only thing that we are not willing to do (this
-		 is requirement of dse and if others potiential uses
+		 is requirement of dse and if others potential uses
 		 need this function we should add a parm to control
 		 it) is that we will not substitute the
 		 STACK_POINTER_REGNUM, FRAME_POINTER or the

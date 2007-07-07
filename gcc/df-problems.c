@@ -713,7 +713,7 @@ static struct df_problem problem_RU =
   df_ru_top_dump,             /* Debugging start block.  */
   df_ru_bottom_dump,          /* Debugging end block.  */
   NULL,                       /* Incremental solution verify start.  */
-  NULL,                       /* Incremental solution verfiy end.  */
+  NULL,                       /* Incremental solution verify end.  */
   NULL,                       /* Dependent problem.  */
   TV_DF_RU,                   /* Timing variable.  */
   true                        /* Reset blocks on dropping out of blocks_to_analyze.  */
@@ -1211,7 +1211,7 @@ static struct df_problem problem_RD =
   df_rd_top_dump,             /* Debugging start block.  */
   df_rd_bottom_dump,          /* Debugging end block.  */
   NULL,                       /* Incremental solution verify start.  */
-  NULL,                       /* Incremental solution verfiy end.  */
+  NULL,                       /* Incremental solution verify end.  */
   NULL,                       /* Dependent problem.  */
   TV_DF_RD,                   /* Timing variable.  */ 
   true                        /* Reset blocks on dropping out of blocks_to_analyze.  */
@@ -3072,7 +3072,7 @@ static struct df_problem problem_UREC =
   df_urec_top_dump,           /* Debugging start block.  */
   df_urec_bottom_dump,        /* Debugging end block.  */
   NULL,                       /* Incremental solution verify start.  */
-  NULL,                       /* Incremental solution verfiy end.  */
+  NULL,                       /* Incremental solution verify end.  */
   &problem_LR,                /* Dependent problem.  */
   TV_DF_UREC,                 /* Timing variable.  */ 
   false                       /* Reset blocks on dropping out of blocks_to_analyze.  */
@@ -3553,7 +3553,7 @@ static struct df_problem problem_CHAIN =
   df_chain_top_dump,          /* Debugging start block.  */
   df_chain_bottom_dump,       /* Debugging end block.  */
   NULL,                       /* Incremental solution verify start.  */
-  NULL,                       /* Incremental solution verfiy end.  */
+  NULL,                       /* Incremental solution verify end.  */
   &problem_RD,                /* Dependent problem.  */
   TV_DF_CHAIN,                /* Timing variable.  */
   false                       /* Reset blocks on dropping out of blocks_to_analyze.  */
@@ -4138,7 +4138,7 @@ static struct df_problem problem_NOTE =
   NULL,                       /* Debugging start block.  */
   NULL,                       /* Debugging end block.  */
   NULL,                       /* Incremental solution verify start.  */
-  NULL,                       /* Incremental solution verfiy end.  */
+  NULL,                       /* Incremental solution verify end.  */
 
   /* Technically this is only dependent on the live registers problem
      but it will produce information if built one of uninitialized

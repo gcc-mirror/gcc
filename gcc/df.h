@@ -530,7 +530,7 @@ struct df
      addresses.  It is incremented whenever a ref is created.  */
   unsigned int ref_order;
 
-  /* Problem specific control infomation.  */
+  /* Problem specific control information.  */
   enum df_changeable_flags changeable_flags;
 };
 

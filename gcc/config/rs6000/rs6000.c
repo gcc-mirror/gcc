@@ -15629,7 +15629,7 @@ rs6000_emit_epilogue (int sibcall)
       else
         {
           /* Make r11 point to the start of the SPE save area.  We worried about
-             not clobbering it when we were saving registers in the prolgoue.
+             not clobbering it when we were saving registers in the prologue.
              There's no need to worry here because the static chain is passed
              anew to every function.  */
           spe_save_area_ptr = gen_rtx_REG (Pmode, 11);

@@ -398,7 +398,7 @@ prescan_insns_for_dce (bool fast)
 
 /* UD-based DSE routines. */
 
-/* Mark instructions that define artifically-used registers, such as
+/* Mark instructions that define artificially-used registers, such as
    the frame pointer and the stack pointer.  */
 
 static void

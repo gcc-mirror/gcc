@@ -256,7 +256,7 @@
 ;; logical      integer logical instructions
 ;; shift	integer shift instructions
 ;; slt		set less than instructions
-;; signext      sign extend instuctions
+;; signext      sign extend instructions
 ;; clz		the clz and clo instructions
 ;; trap		trap if instructions
 ;; imul		integer multiply 2 operands

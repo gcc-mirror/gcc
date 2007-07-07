@@ -207,7 +207,7 @@ There are four ways of doing the incremental scanning:
    insns when only a small number of them have really changed.
 
 4) Do it yourself - In this mechanism, the pass updates the insns
-   itself using the low level df primatives.  Currently no pass does
+   itself using the low level df primitives.  Currently no pass does
    this, but it has the advantage that it is quite efficient given
    that the pass generally has exact knowledge of what it is changing.  
 
@@ -1502,7 +1502,7 @@ df_bb_delete (int bb_index)
 /* Verify that there is a place for everything and everything is in
    its place.  This is too expensive to run after every pass in the
    mainline.  However this is an excellent debugging tool if the
-   dataflow infomation is not being updated properly.  You can just
+   dataflow information is not being updated properly.  You can just
    sprinkle calls in until you find the place that is changing an
    underlying structure without calling the proper updating
    routine.  */

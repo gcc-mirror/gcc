@@ -104,13 +104,13 @@
 
 ;; Extra constraints
 (define_constraint "Q"
-  "A symbolic addresse loadable when ld24."
+  "A symbolic address loadable when ld24."
   (ior (and (match_test "TARGET_ADDR24")
 	    (match_test "GET_CODE (op) == LABEL_REF"))
        (match_test "addr24_operand (op, VOIDmode)")))
 
 (define_constraint "R"
-  "A symbolic addresse loadable with ld24 can't be used."
+  "A symbolic address loadable with ld24 can't be used."
   (ior (and (match_test "TARGET_ADDR32")
 	    (match_test "GET_CODE (op) == LABEL_REF"))
        (match_test "addr32_operand (op, VOIDmode)")))
