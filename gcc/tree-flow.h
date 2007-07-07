@@ -31,7 +31,6 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-ssa-operands.h"
 #include "cgraph.h"
 #include "ipa-reference.h"
-#include "pointer-set.h"
 
 /* Forward declare structures for the garbage collector GTY markers.  */
 #ifndef GCC_BASIC_BLOCK_H
@@ -1082,7 +1081,7 @@ extern bool maybe_clean_or_replace_eh_stmt (tree, tree);
 void add_to_value (tree, tree);
 void debug_value_expressions (tree);
 void print_value_expressions (FILE *, tree);
-extern struct pointer_map_t *decl_vh_map;
+
 
 /* In tree-vn.c  */
 tree make_value_handle (tree);
