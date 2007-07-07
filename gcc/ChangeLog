@@ -1,3 +1,30 @@
+2007-07-06  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/23488
+
+	* tree-ssa-sccvn.c (expr_has_constants): Handle tcc_declaration.
+	(try_to_simplify): Ditto.
+	(visit_use): Ditto.
+	* tree-vn.c (set_value_handle): Use decl_vh_map for decl value
+	handles.
+	* tree-flow-inline.h (get_value_handle): Ditto.
+	* tree-ssa-pre.c (decl_vh_map): New.
+	(decl_node_pool): New.
+	(can_value_number_operation): Support DECL_P.
+	(can_PRE_operation): Ditto.
+	(create_expression_by_pieces): Ditto.
+	(find_existing_value_expr): Modify to differnetiate between
+	addressing and top level.
+	(create_value_handle_for_expr): Handle DECL's.
+	(poolify_tree): Ditto.
+	(make_values_for_phi): Don't insert into PHI_GEN during FRE.
+	(make_values_for_stmt): Handle DECL's properly.
+	(init_pre): Reorg to not init useless things during FRE.
+	(fini_pre): Ditto.
+	* tree-flow.h: Include pointer-set.h.
+	(decl_vh_map): Declare.
+	* Makefile.in (TREE_FLOW_H): Add pointer-set.h
+		
 2007-07-06  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* c-opts.c (c_common_handle_option): Make DOLLARS_IN_IDENTIFIERS

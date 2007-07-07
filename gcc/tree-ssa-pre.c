@@ -46,6 +46,7 @@ Boston, MA 02110-1301, USA.  */
 #include "langhooks.h"
 #include "cfgloop.h"
 #include "tree-ssa-sccvn.h"
+#include "pointer-set.h"
 
 /* TODO:
 
@@ -182,6 +183,14 @@ Boston, MA 02110-1301, USA.  */
    useful only for debugging, since we don't do identity lookups.  */
 
 
+/* Mapping from decl's to value handles, by pointer equality.  We
+   "unshare" decls so we can give the same decl in different places
+   different value handles.  */
+struct pointer_map_t *decl_vh_map;
+
+/* Mapping from expressions to ids.  */
+struct pointer_map_t *expression_id_map;
+
 /* Next global expression id number.  */
 static unsigned int next_expression_id;
 
@@ -193,15 +202,14 @@ static VEC(tree, heap) *expressions;
 static inline unsigned int
 alloc_expression_id (tree expr)
 {
-  tree_ann_common_t ann;
+  unsigned int *slot;
 
-  ann = get_tree_common_ann (expr);
-
+  slot = (unsigned int *) pointer_map_insert (expression_id_map,
+					      expr);
   /* Make sure we won't overflow. */
   gcc_assert (next_expression_id + 1 > next_expression_id);
 
-  ann->aux = XNEW (unsigned int);
-  * ((unsigned int *)ann->aux) = next_expression_id++;
+  *slot = next_expression_id++;
   VEC_safe_push (tree, heap, expressions, expr);
   return next_expression_id - 1;
 }
@@ -211,11 +219,10 @@ alloc_expression_id (tree expr)
 static inline unsigned int
 get_expression_id (tree expr)
 {
-  tree_ann_common_t ann = tree_common_ann (expr);
-  gcc_assert (ann);
-  gcc_assert (ann->aux);
-
-  return  *((unsigned int *)ann->aux);
+  unsigned int *slot;
+  slot = (unsigned int *) pointer_map_contains (expression_id_map,
+						expr);
+  return *slot;
 }
 
 /* Return the existing expression id for EXPR, or create one if one
@@ -224,12 +231,13 @@ get_expression_id (tree expr)
 static inline unsigned int
 get_or_alloc_expression_id (tree expr)
 {
-  tree_ann_common_t ann = tree_common_ann (expr);
-
-  if (ann == NULL || !ann->aux)
+  unsigned int *slot;
+  slot = (unsigned int *) pointer_map_contains (expression_id_map,
+						expr);
+  if (slot)
+    return *slot;
+  else
     return alloc_expression_id (expr);
-
-  return get_expression_id (expr);
 }
 
 /* Return the expression that has expression id ID */
@@ -238,23 +246,6 @@ static inline tree
 expression_for_id (unsigned int id)
 {
   return VEC_index (tree, expressions, id);
-}
-
-/* Free the expression id field in all of our expressions,
-   and then destroy the expressions array.  */
-
-static void
-clear_expression_ids (void)
-{
-  int i;
-  tree expr;
-
-  for (i = 0; VEC_iterate (tree, expressions, i, expr); i++)
-    {
-      free (tree_common_ann (expr)->aux);
-      tree_common_ann (expr)->aux = NULL;
-    }
-  VEC_free (tree, heap, expressions);
 }
 
 static bool in_fre = false;
@@ -369,6 +360,7 @@ static alloc_pool unary_node_pool;
 static alloc_pool reference_node_pool;
 static alloc_pool comparison_node_pool;
 static alloc_pool modify_expr_node_pool;
+static alloc_pool decl_node_pool;
 static bitmap_obstack grand_bitmap_obstack;
 
 /* We can't use allocation pools to hold temporary CALL_EXPR objects, since
@@ -954,7 +946,8 @@ phi_translate_1 (tree expr, bitmap_set_t set1, bitmap_set_t set2,
     return expr;
 
   /* Phi translations of a given expression don't change.  */
-  if (EXPR_P (expr) || GIMPLE_STMT_P (expr))
+  if (EXPR_P (expr) || GIMPLE_STMT_P (expr) || REFERENCE_CLASS_P (expr)
+      || DECL_P (expr))
     {
       tree vh;
 
@@ -1101,7 +1094,13 @@ phi_translate_1 (tree expr, bitmap_set_t set1, bitmap_set_t set2,
 						    pred);
 
 	if (oldvuses != newvuses)
-	  vn_lookup_or_add_with_vuses (expr, newvuses);
+	  {
+	    tree newexpr = (tree) pool_alloc (decl_node_pool);
+	    memcpy (newexpr, expr, tree_size (expr));
+	    vn_lookup_or_add_with_vuses (newexpr, newvuses);
+	    expr = newexpr;
+	    phi_trans_add (expr, expr, pred, newvuses);
+	  }
 
 	phi_trans_add (oldexpr, expr, pred, newvuses);
       }
@@ -2065,6 +2064,7 @@ can_value_number_operation (tree op)
     || BINARY_CLASS_P (op)
     || COMPARISON_CLASS_P (op)
     || REFERENCE_CLASS_P (op)
+    || DECL_P (op)
     || (TREE_CODE (op) == CALL_EXPR
 	&& can_value_number_call (op));
 }
@@ -2080,6 +2080,7 @@ can_PRE_operation (tree op)
   return UNARY_CLASS_P (op)
     || BINARY_CLASS_P (op)
     || COMPARISON_CLASS_P (op)
+    || DECL_P (op)
     || TREE_CODE (op) == INDIRECT_REF
     || TREE_CODE (op) == COMPONENT_REF
     || TREE_CODE (op) == CALL_EXPR
@@ -2316,7 +2317,14 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 			      genop1, genop2);
 	break;
       }
-
+    case tcc_declaration:
+      {
+	/* Get the "shared" version of the DECL, that we didn't create
+	   using a pool.  */
+	folded = referenced_var_lookup (DECL_UID (expr));
+      }
+      break;
+      
     case tcc_unary:
       {
 	tree op1 = TREE_OPERAND (expr, 0);
@@ -2957,10 +2965,15 @@ find_existing_value_expr (tree t, tree stmt)
    replaced with the value handles of each of the operands of EXPR.
 
    VUSES represent the virtual use operands associated with EXPR (if
-   any). Insert EXPR's operands into the EXP_GEN set for BLOCK. */
+   any). Insert EXPR's operands into the EXP_GEN set for BLOCK.
+
+   TOP_LEVEL is true if we are at the top of the original
+   expression.  This is used to differentiate between addressing and
+   actual loads of globals.  IE a = t vs a = t[0].  */
 
 static inline tree
-create_value_expr_from (tree expr, basic_block block, tree stmt)
+create_value_expr_from (tree expr, basic_block block, tree stmt,
+			bool top_level)
 {
   int i;
   enum tree_code code = TREE_CODE (expr);
@@ -2985,6 +2998,8 @@ create_value_expr_from (tree expr, basic_block block, tree stmt)
     pool = binary_node_pool;
   else if (TREE_CODE_CLASS (code) == tcc_comparison)
     pool = comparison_node_pool;
+  else if (TREE_CODE_CLASS (code) == tcc_declaration)
+    pool = decl_node_pool;
   else
     gcc_assert (code == CALL_EXPR);
 
@@ -2995,12 +3010,15 @@ create_value_expr_from (tree expr, basic_block block, tree stmt)
       vexpr = (tree) pool_alloc (pool);
       memcpy (vexpr, expr, tree_size (expr));
     }
-
+  
   for (i = 0; i < TREE_OPERAND_LENGTH (expr); i++)
     {
       tree val = NULL_TREE;
       tree op;
-
+      
+      if (i != 0)
+	top_level = false;
+      
       op = TREE_OPERAND (expr, i);
       if (op == NULL_TREE)
 	continue;
@@ -3008,7 +3026,7 @@ create_value_expr_from (tree expr, basic_block block, tree stmt)
       /* Recursively value-numberize reference ops and tree lists.  */
       if (REFERENCE_CLASS_P (op))
 	{
-	  tree tempop = create_value_expr_from (op, block, stmt);
+	  tree tempop = create_value_expr_from (op, block, stmt, false);
 	  op = tempop ? tempop : op;
 	  val = vn_lookup_or_add_with_stmt (op, stmt);
 	}
@@ -3059,13 +3077,15 @@ poolify_tree (tree node)
 	return temp;
       }
       break;
+    case PARM_DECL:
+    case RESULT_DECL:
+    case VAR_DECL:
+    case CONST_DECL:
+    case FUNCTION_DECL:
     case SSA_NAME:
     case INTEGER_CST:
     case STRING_CST:
     case REAL_CST:
-    case PARM_DECL:
-    case VAR_DECL:
-    case RESULT_DECL:
       return node;
     default:
       gcc_unreachable ();
@@ -3280,7 +3300,8 @@ make_values_for_phi (tree phi, basic_block block)
       if (sccvnval)
 	{
 	  vn_add (result, sccvnval);
-	  bitmap_insert_into_set (PHI_GEN (block), result);
+	  if (!in_fre)
+	    bitmap_insert_into_set (PHI_GEN (block), result);
 	  bitmap_value_insert_into_set (AVAIL_OUT (block), result);
 	}
       else
@@ -3348,7 +3369,7 @@ make_values_for_stmt (tree stmt, basic_block block)
       /* For value numberable operation, create a
 	 duplicate expression with the operands replaced
 	 with the value handles of the original RHS.  */
-      tree newt = create_value_expr_from (rhs, block, stmt);
+      tree newt = create_value_expr_from (rhs, block, stmt, true);
       if (newt)
 	{
 	  /* If we already have a value number for the LHS, reuse
@@ -3376,8 +3397,7 @@ make_values_for_stmt (tree stmt, basic_block block)
 	    && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs))
 	   || is_gimple_min_invariant (rhs)
 	   || TREE_CODE (rhs) == ADDR_EXPR
-	   || TREE_INVARIANT (rhs)
-	   || DECL_P (rhs))
+	   || TREE_INVARIANT (rhs))
     {
       
       if (lhsval)
@@ -3785,7 +3805,8 @@ static void
 init_pre (bool do_fre)
 {
   basic_block bb;
-  
+  unsigned int max_decl_size;
+
   next_expression_id = 0;
   expressions = NULL;
   in_fre = do_fre;
@@ -3796,52 +3817,63 @@ init_pre (bool do_fre)
   storetemp = NULL_TREE;
   prephitemp = NULL_TREE;
 
-  if (!do_fre)
-    loop_optimizer_init (LOOPS_NORMAL);
-
-  connect_infinite_loops_to_exit ();
   memset (&pre_stats, 0, sizeof (pre_stats));
-
-
-  postorder = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
-  post_order_compute (postorder, false, false);
-
+  bitmap_obstack_initialize (&grand_bitmap_obstack);
+  
+  if (!do_fre)
+    {
+      loop_optimizer_init (LOOPS_NORMAL);
+      connect_infinite_loops_to_exit ();
+      postorder = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
+      post_order_compute (postorder, false, false);
+      calculate_dominance_info (CDI_POST_DOMINATORS);
+      phi_translate_table = htab_create (5110, expr_pred_trans_hash,
+					 expr_pred_trans_eq, free);
+      seen_during_translate = BITMAP_ALLOC (&grand_bitmap_obstack);
+      binary_node_pool = create_alloc_pool ("Binary tree nodes",
+					    tree_code_size (PLUS_EXPR), 30);
+      unary_node_pool = create_alloc_pool ("Unary tree nodes",
+					   tree_code_size (NEGATE_EXPR), 30);
+      reference_node_pool = create_alloc_pool ("Reference tree nodes",
+					       tree_code_size (ARRAY_REF), 30);
+      comparison_node_pool = create_alloc_pool ("Comparison tree nodes",
+						tree_code_size (EQ_EXPR), 30);
+      modify_expr_node_pool = create_alloc_pool ("GIMPLE_MODIFY_STMT nodes",
+						 tree_code_size (GIMPLE_MODIFY_STMT),
+						 30);  
+      max_decl_size = MAX (tree_code_size (VAR_DECL), tree_code_size (PARM_DECL));
+      max_decl_size = MAX (max_decl_size, tree_code_size (RESULT_DECL));
+      max_decl_size = MAX (max_decl_size, tree_code_size (CONST_DECL));
+      max_decl_size = MAX (max_decl_size, tree_code_size (FUNCTION_DECL));
+      decl_node_pool = create_alloc_pool ("_DECL nodes", max_decl_size, 30);
+      
+      obstack_init (&temp_call_expr_obstack);
+      modify_expr_template = NULL;
+    }
+ 
   FOR_ALL_BB (bb)
     bb->aux = xcalloc (1, sizeof (struct bb_bitmap_sets));
 
-  calculate_dominance_info (CDI_POST_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
 
-  bitmap_obstack_initialize (&grand_bitmap_obstack);
-  phi_translate_table = htab_create (5110, expr_pred_trans_hash,
-				     expr_pred_trans_eq, free);
-  seen_during_translate = BITMAP_ALLOC (&grand_bitmap_obstack);
   bitmap_set_pool = create_alloc_pool ("Bitmap sets",
 				       sizeof (struct bitmap_set), 30);
-  binary_node_pool = create_alloc_pool ("Binary tree nodes",
-					tree_code_size (PLUS_EXPR), 30);
-  unary_node_pool = create_alloc_pool ("Unary tree nodes",
-				       tree_code_size (NEGATE_EXPR), 30);
-  reference_node_pool = create_alloc_pool ("Reference tree nodes",
-					   tree_code_size (ARRAY_REF), 30);
-  comparison_node_pool = create_alloc_pool ("Comparison tree nodes",
-					    tree_code_size (EQ_EXPR), 30);
-  modify_expr_node_pool = create_alloc_pool ("GIMPLE_MODIFY_STMT nodes",
-					     tree_code_size (GIMPLE_MODIFY_STMT),
-					     30);
-  obstack_init (&temp_call_expr_obstack);
-  modify_expr_template = NULL;
 
   FOR_ALL_BB (bb)
     {
-      EXP_GEN (bb) = bitmap_set_new ();
-      PHI_GEN (bb) = bitmap_set_new ();
-      TMP_GEN (bb) = bitmap_set_new ();
+      if (!do_fre)
+	{
+	  EXP_GEN (bb) = bitmap_set_new ();
+	  PHI_GEN (bb) = bitmap_set_new ();
+	  TMP_GEN (bb) = bitmap_set_new ();
+	}
       AVAIL_OUT (bb) = bitmap_set_new ();
     }
-  maximal_set = in_fre ? NULL : bitmap_set_new ();
+  maximal_set = do_fre ? NULL : bitmap_set_new ();
 
   need_eh_cleanup = BITMAP_ALLOC (NULL);
+  decl_vh_map = pointer_map_create ();
+  expression_id_map = pointer_map_create ();
 }
 
 
@@ -3852,27 +3884,30 @@ fini_pre (void)
 {
   basic_block bb;
   unsigned int i;
-
-  free (postorder);
-  VEC_free (tree, heap, inserted_exprs);
-  VEC_free (tree, heap, need_creation);
+  
+  if (!in_fre)
+    {
+      free (postorder);
+      VEC_free (tree, heap, inserted_exprs);
+      VEC_free (tree, heap, need_creation);
+      free_alloc_pool (binary_node_pool);
+      free_alloc_pool (reference_node_pool);
+      free_alloc_pool (unary_node_pool);
+      free_alloc_pool (comparison_node_pool);
+      free_alloc_pool (modify_expr_node_pool);
+      free_alloc_pool (decl_node_pool);
+      htab_delete (phi_translate_table);
+      remove_fake_exit_edges ();
+      free_dominance_info (CDI_POST_DOMINATORS);
+    }
   bitmap_obstack_release (&grand_bitmap_obstack);
   free_alloc_pool (bitmap_set_pool);
-  free_alloc_pool (binary_node_pool);
-  free_alloc_pool (reference_node_pool);
-  free_alloc_pool (unary_node_pool);
-  free_alloc_pool (comparison_node_pool);
-  free_alloc_pool (modify_expr_node_pool);
-  htab_delete (phi_translate_table);
-  remove_fake_exit_edges ();
 
   FOR_ALL_BB (bb)
     {
       free (bb->aux);
       bb->aux = NULL;
     }
-
-  free_dominance_info (CDI_POST_DOMINATORS);
 
   if (!bitmap_empty_p (need_eh_cleanup))
     {
@@ -3881,7 +3916,9 @@ fini_pre (void)
     }
 
   BITMAP_FREE (need_eh_cleanup);
-
+  pointer_map_destroy (decl_vh_map);
+  pointer_map_destroy (expression_id_map);
+  
   /* Wipe out pointers to VALUE_HANDLEs.  In the not terribly distant
      future we will want them to be persistent though.  */
   for (i = 0; i < num_ssa_names; i++)
@@ -3895,7 +3932,7 @@ fini_pre (void)
 	  && TREE_CODE (SSA_NAME_VALUE (name)) == VALUE_HANDLE)
 	SSA_NAME_VALUE (name) = NULL;
     }
-  if (current_loops != NULL)
+  if (current_loops != NULL && !in_fre)
     loop_optimizer_finalize ();
 }
 
@@ -3956,7 +3993,6 @@ execute_pre (bool do_fre)
   bsi_commit_edge_inserts ();
 
   free_scc_vn ();
-  clear_expression_ids ();
   if (!do_fre)
     {
       remove_dead_inserted_code ();
