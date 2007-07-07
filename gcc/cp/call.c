@@ -3985,8 +3985,12 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
    GLOBAL_P is true if the delete-expression should not consider
    class-specific delete operators.
    PLACEMENT is the corresponding placement new call, or NULL_TREE.
-   If PLACEMENT is non-NULL, then ALLOC_FN is the allocation function
-   called to perform the placement new.  */
+
+   If this call to "operator delete" is being generated as part to
+   deallocate memory allocated via a new-expression (as per [expr.new]
+   which requires that if the initialization throws an exception then
+   we call a deallocation function), then ALLOC_FN is the allocation
+   function.  */
 
 tree
 build_op_delete_call (enum tree_code code, tree addr, tree size,
@@ -4077,9 +4081,13 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	      if (!a && !t)
 		break;
 	    }
-	  /* On the second pass, the second argument must be
-	     "size_t".  */
+	  /* On the second pass, look for a function with exactly two
+	     arguments: "void *" and "size_t".  */
 	  else if (pass == 1
+		   /* For "operator delete(void *, ...)" there will be
+		      no second argument, but we will not get an exact
+		      match above.  */
+		   && t
 		   && same_type_p (TREE_VALUE (t), sizetype)
 		   && TREE_CHAIN (t) == void_list_node)
 	    break;
@@ -4119,10 +4127,18 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	return build_function_call (fn, args);
     }
 
-  /* If we are doing placement delete we do nothing if we don't find a
-     matching op delete.  */
-  if (placement)
-    return NULL_TREE;
+  /* [expr.new]
+
+     If no unambiguous matching deallocation function can be found,
+     propagating the exception does not cause the object's memory to
+     be freed.  */
+  if (alloc_fn)
+    {
+      if (!placement)
+	warning (0, "no corresponding deallocation function for `%D'", 
+		 alloc_fn);
+      return NULL_TREE;
+    }
 
   error ("no suitable %<operator %s%> for %qT",
 	 operator_name_info[(int)code].name, type);

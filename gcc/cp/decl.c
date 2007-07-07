@@ -5093,6 +5093,36 @@ initialize_artificial_var (tree decl, tree init)
   make_rtl_for_nonlocal_decl (decl, init, /*asmspec=*/NULL);
 }
 
+/* INIT is the initializer for a variable, as represented by the
+   parser.  Returns true iff INIT is value-dependent.  */
+
+static bool
+value_dependent_init_p (tree init)
+{
+  if (TREE_CODE (init) == TREE_LIST)
+    /* A parenthesized initializer, e.g.: int i (3, 2); ? */
+    return any_value_dependent_elements_p (init);
+  else if (TREE_CODE (init) == CONSTRUCTOR)
+  /* A brace-enclosed initializer, e.g.: int i = { 3 }; ? */
+    {
+      VEC(constructor_elt, gc) *elts;
+      size_t nelts;
+      size_t i;
+
+      elts = CONSTRUCTOR_ELTS (init);
+      nelts = VEC_length (constructor_elt, elts);
+      for (i = 0; i < nelts; ++i)
+	if (value_dependent_init_p (VEC_index (constructor_elt,
+					       elts, i)->value))
+	  return true;
+    }
+  else
+    /* It must be a simple expression, e.g., int i = 3;  */
+    return value_dependent_expression_p (init);
+  
+  return false;
+}
+
 /* Finish processing of a declaration;
    install its line number and initial value.
    If the length of an array type is not known before,
@@ -5165,18 +5195,16 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	    TREE_CONSTANT (decl) = 1;
 	}
 
-      if (!init
-	  || !DECL_CLASS_SCOPE_P (decl)
-	  || !DECL_INTEGRAL_CONSTANT_VAR_P (decl)
-	  || type_dependent_p
-	  || value_dependent_expression_p (init)
-	     /* Check also if initializer is a value dependent
-		{ integral_constant_expression }.  */
-	  || (TREE_CODE (init) == CONSTRUCTOR
-	      && VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init)) == 1
-	      && value_dependent_expression_p
-		   (VEC_index (constructor_elt,
-			       CONSTRUCTOR_ELTS (init), 0)->value)))
+      /* Generally, initializers in templates are expanded when the
+	 template is instantiated.  But, if DECL is an integral
+	 constant static data member, then it can be used in future
+	 integral constant expressions, and its value must be
+	 available. */
+      if (!(init
+	    && DECL_CLASS_SCOPE_P (decl)
+	    && DECL_INTEGRAL_CONSTANT_VAR_P (decl)
+	    && !type_dependent_p
+	    && !value_dependent_init_p (init)))
 	{
 	  if (init)
 	    DECL_INITIAL (decl) = init;

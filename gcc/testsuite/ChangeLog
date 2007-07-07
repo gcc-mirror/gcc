@@ -1,3 +1,14 @@
+2007-07-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/32245
+	* g++.dg/init/ptrmem4.C: New test.
+
+	PR c++/32251
+	* g++.dg/init/new21.C: Likewise.
+
+	PR c++/31992
+	* g++.dg/template/static30.C: Likewise.
+
 2007-07-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/32450

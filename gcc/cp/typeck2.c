@@ -1348,7 +1348,9 @@ build_functional_cast (tree exp, tree parms)
       && !CLASSTYPE_NON_POD_P (type)
       && TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
     {
-      exp = build_constructor (type, NULL);
+      exp = build_zero_init (type, 
+			     /*nelts=*/NULL_TREE,
+			     /*static_storage_p=*/false);
       return get_target_expr (exp);
     }
 

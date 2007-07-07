@@ -4153,6 +4153,7 @@ extern bool dependent_template_id_p		(tree, tree);
 extern bool type_dependent_expression_p		(tree);
 extern bool any_type_dependent_arguments_p      (tree);
 extern bool value_dependent_expression_p	(tree);
+extern bool any_value_dependent_elements_p      (tree);
 extern tree resolve_typename_type		(tree, bool);
 extern tree template_for_substitution		(tree);
 extern tree build_non_dependent_expr		(tree);

@@ -12895,12 +12895,7 @@ value_dependent_expression_p (tree expression)
 	  }
 
 	if (TREE_CODE (expression) == TREE_LIST)
-	  {
-	    for (; expression; expression = TREE_CHAIN (expression))
-	      if (value_dependent_expression_p (TREE_VALUE (expression)))
-		return true;
-	    return false;
-	  }
+	  return any_value_dependent_elements_p (expression);
 
 	return value_dependent_expression_p (expression);
       }
@@ -13101,6 +13096,19 @@ any_type_dependent_arguments_p (tree args)
 	return true;
       args = TREE_CHAIN (args);
     }
+  return false;
+}
+
+/* Returns TRUE if LIST (a TREE_LIST whose TREE_VALUEs are
+   expressions) contains any value-dependent expressions.  */
+
+bool
+any_value_dependent_elements_p (tree list)
+{
+  for (; list; list = TREE_CHAIN (list))
+    if (value_dependent_expression_p (TREE_VALUE (list)))
+      return true;
+
   return false;
 }
 

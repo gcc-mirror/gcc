@@ -1,3 +1,27 @@
+2007-07-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/32245
+	* init.c (build_zero_init): Always build an initializer for
+	non-static storage.
+	* typeck2.c (build_functional_cast): Use build_zero_init.
+
+	PR c++/32251
+	* init.c (build_new_1): Always pass the allocation function to
+	build_op_delete_call.
+	* call.c (build_op_delete_call): Handle operator delete with a
+	variable-argument list.  Do not issue an error when no matching
+	deallocation function is available for a new operator.
+
+	PR c++/31992
+	* cp-tree.h (any_value_dependent_elements_p): Declare it.
+	* decl.c (value_dependent_init_p): New function.
+	(cp_finish_decl): Use it.
+	* pt.c (value_dependent_expression_p): Use
+	any_value_dependent_elements_p.
+	* parser.c (cp_parser_primary_expression): Add comment about
+	treating dependent qualified names as integral
+	constant-expressions.
+
 2007-07-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/31338
