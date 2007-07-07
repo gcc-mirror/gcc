@@ -4017,7 +4017,7 @@ gfc_match_subroutine (void)
 
 /* Match a BIND(C) specifier, with the optional 'name=' specifier if
    given, and set the binding label in either the given symbol (if not
-   NULL), or in the current_ts.  The symbol may be NULL becuase we may
+   NULL), or in the current_ts.  The symbol may be NULL because we may
    encounter the BIND(C) before the declaration itself.  Return
    MATCH_NO if what we're looking at isn't a BIND(C) specifier,
    MATCH_ERROR if it is a BIND(C) clause but an error was encountered,
@@ -4915,7 +4915,7 @@ syntax:
 }
 
 
-/* The PRIVATE statement is a bit weird in that it can be a attribute
+/* The PRIVATE statement is a bit weird in that it can be an attribute
    declaration, but also works as a standlone statement inside of a
    type declaration or a module.  */
 

@@ -1,3 +1,10 @@
+2007-07-07  Kazu Hirata  <kazu@codesourcery.com>
+
+	* decl.c, gfortran.h, interface.c, module.c, resolve.c,
+	trans-array.c, trans-decl.c: Fix comment typos.  Follow
+	spelling conventions.
+	* intrinsic.texi: Fix typos.  Follow spelling conventions.
+
 2007-05-06  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/32633
