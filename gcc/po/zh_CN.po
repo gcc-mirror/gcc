@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-05-13 19:50-0700\n"
-"PO-Revision-Date: 2007-06-25 21:17+0800\n"
+"PO-Revision-Date: 2007-07-07 20:31+0800\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <translation-team-zh-cn@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -3194,7 +3194,7 @@ msgstr "无效的 Z 寄存器替换"
 
 #: config/mips/mips.c:5311
 msgid "mips_debugger_offset called with non stack/frame/arg pointer"
-msgstr ""
+msgstr "mips_debugger_offset 为非堆栈/框架/参数指针调用"
 
 #: config/mips/mips.c:5521
 #, c-format
@@ -3273,7 +3273,7 @@ msgstr "MMIX 内部错误：这不是一个常量："
 
 #: config/mt/mt.c:300
 msgid "mt_final_prescan_insn, invalid insn #1"
-msgstr ""
+msgstr "mt_final_prescan_insn，无效指令 #1"
 
 #: config/mt/mt.c:371
 msgid "PRINT_OPERAND_ADDRESS, 2 regs"
@@ -4269,7 +4269,7 @@ msgstr ""
 #: fortran/decl.c:2173
 #, no-c-format
 msgid "Attribute at %L is not allowed in a TYPE definition"
-msgstr ""
+msgstr "%L 处的属性不允许出现在 TYPE 定义中"
 
 #: fortran/decl.c:2188
 #, no-c-format
@@ -4527,12 +4527,12 @@ msgstr ""
 #: fortran/decl.c:3987
 #, no-c-format
 msgid "Derived type at %C can only be PRIVATE within a MODULE"
-msgstr ""
+msgstr "%C 处 MODULE 中的派生类型只能是 PRIVATE"
 
 #: fortran/decl.c:4000
 #, no-c-format
 msgid "Derived type at %C can only be PUBLIC within a MODULE"
-msgstr ""
+msgstr "%C 处 MODULE 中的派生类型只能是 PUBLIC"
 
 #: fortran/decl.c:4011
 #, no-c-format
@@ -6099,7 +6099,7 @@ msgstr "%L 处上下文中不允许实参列表函数"
 #: fortran/intrinsic.c:2871
 #, no-c-format
 msgid "Can't find keyword named '%s' in call to '%s' at %L"
-msgstr ""
+msgstr "找不到名为‘%s’的关键字，在对‘%s’的调用中，于 %L 处"
 
 #: fortran/intrinsic.c:2878
 #, no-c-format
@@ -6402,7 +6402,7 @@ msgstr "%L 处指定的 UNIT 必须是 INTEGER 表达式或一个 CHARACTER 变�
 #: fortran/io.c:2269
 #, no-c-format
 msgid "Internal unit with vector subscript at %L"
-msgstr ""
+msgstr "%L 处内部单位带矢量下标"
 
 #: fortran/io.c:2277
 #, no-c-format
@@ -6481,14 +6481,14 @@ msgid "Expected comma in I/O list at %C"
 msgstr "%C 处 I/O 列表中需要逗号"
 
 #: fortran/io.c:3009
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "PRINT statement at %C not allowed within PURE procedure"
-msgstr "OPEN 语句不允许出现在 %C 处的 PURE 过程中"
+msgstr "PRINT 语句不允许出现在 %C 处的 PURE 过程中"
 
 #: fortran/io.c:3150 fortran/io.c:3201
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "INQUIRE statement not allowed in PURE procedure at %C"
-msgstr "OPEN 语句不允许出现在 %C 处的 PURE 过程中"
+msgstr "INQUIRE 语句不允许出现在 %C 处的 PURE 过程中"
 
 #: fortran/io.c:3177
 #, no-c-format
@@ -6608,7 +6608,7 @@ msgstr ""
 #: fortran/match.c:1212
 #, no-c-format
 msgid "Unexpected junk after ELSE IF statement at %C"
-msgstr ""
+msgstr "%C 处 ELSE IF 语句后有非预期的垃圾字符"
 
 #: fortran/match.c:1375
 #, fuzzy, no-c-format
@@ -6906,7 +6906,7 @@ msgstr "非预期的文件结束"
 
 #: fortran/module.c:922
 msgid "Unexpected end of module in string constant"
-msgstr ""
+msgstr "字符串常量中出现非预期的模块结束"
 
 #: fortran/module.c:976
 msgid "Integer overflow"
@@ -19851,7 +19851,7 @@ msgstr ""
 #: cfgrtl.c:1880
 #, gcc-internal-format
 msgid "fallthru edge after unconditional jump %i"
-msgstr "非条件跳转 %i 之后的滚落边"
+msgstr "非条件跳转 %i 之后的直通边"
 
 #: cfgrtl.c:1891
 #, gcc-internal-format
@@ -19909,9 +19909,9 @@ msgid "verify_flow_info: Incorrect blocks for fallthru %i->%i"
 msgstr ""
 
 #: cfgrtl.c:2046
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "verify_flow_info: Incorrect fallthru %i->%i"
-msgstr "verify_flow_info：重复的边 %i->%i"
+msgstr "verify_flow_info：错误的直通边 %i->%i"
 
 #: cfgrtl.c:2065
 #, gcc-internal-format
@@ -21448,7 +21448,7 @@ msgstr "无法打开转储文件%qs：%s"
 #: tree-dump.c:1024
 #, gcc-internal-format
 msgid "ignoring unknown option %q.*s in %<-fdump-%s%>"
-msgstr ""
+msgstr "忽略未知的选项%q.*s，在%<-fdump-%s%>中"
 
 #: tree-eh.c:1774
 #, gcc-internal-format
