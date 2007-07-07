@@ -1,3 +1,10 @@
+2007-07-07  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/32232
+	* pt.c (resolve_overloaded_unification): Robustify.  Return a
+	bool, not an int.
+	(type_unification_real): Adjust accordingly.
+
 2007-07-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/32245
