@@ -1,3 +1,9 @@
+2007-07-07 Eric Weddington  <eweddington@cso.atmel.com>
+
+	* config/avr/constraints.md (define_memory_constraint "Q"): Fix
+	the constraint description.
+	* doc/md.texi: Update documentation of AVR constraints.
+
 2007-07-07  Kazu Hirata  <kazu@codesourcery.com>
 
 	* auto-inc-dec.c, config/arm/arm.c,

@@ -1742,6 +1742,12 @@ Constant integer 1
 
 @item G
 A floating point constant 0.0
+
+@item R
+Integer constant in the range -6 @dots{} 5.
+
+@item Q
+A memory address based on Y or Z pointer with displacement.
 @end table
 
 @item CRX Architecture---@file{config/crx/crx.h}
