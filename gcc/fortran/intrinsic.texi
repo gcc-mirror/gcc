@@ -1845,8 +1845,8 @@ end program test_btest
 @node C_ASSOCIATED
 @section @code{C_ASSOCIATED} --- Status of a C pointer
 @fnindex C_ASSOCIATED
-@cindex associatation status, C pointer
-@cindex pointer, C associatation status
+@cindex association status, C pointer
+@cindex pointer, C association status
 
 @table @asis
 @item @emph{Description}:
@@ -2235,7 +2235,7 @@ Subroutine, non-elemental function
                         specify a valid path within the file system.
 @item @var{STATUS} @tab (Optional) @code{INTEGER} status flag of the default
                         kind.  Returns 0 on success, and a system specific
-                        and non-zero error code otherwise.
+                        and nonzero error code otherwise.
 @end multitable
 
 @item @emph{Example}:
@@ -2293,11 +2293,11 @@ used as the file name.
 @code{/bin/chmod}.
 
 @item @var{STATUS} @tab (optional) scalar @code{INTEGER}, which is
-@code{0} on success and non-zero otherwise.
+@code{0} on success and nonzero otherwise.
 @end multitable
 
 @item @emph{Return value}:
-In either syntax, @var{STATUS} is set to @code{0} on success and non-zero
+In either syntax, @var{STATUS} is set to @code{0} on success and nonzero
 otherwise.
 
 @item @emph{Example}:
@@ -4305,7 +4305,7 @@ Moves @var{UNIT} to the specified @var{OFFSET}. If @var{WHENCE}
 is set to 0, the @var{OFFSET} is taken as an absolute value @code{SEEK_SET},
 if set to 1, @var{OFFSET} is taken to be relative to the current position 
 @code{SEEK_CUR}, and if set to 2 relative to the end of the file @code{SEEK_END}.
-On error, @var{STATUS} is set to a non-zero value. If @var{STATUS} the seek 
+On error, @var{STATUS} is set to a nonzero value. If @var{STATUS} the seek 
 fails silently.
 
 This intrinsic routine is not fully backwards compatible with @command{g77}. 
@@ -4684,7 +4684,7 @@ Non-elemental subroutine.
 @multitable @columnfractions .15 .70
 @item @var{CWD}    @tab The type shall be @code{CHARACTER(*)}.
 @item @var{STATUS} @tab (Optional) status flag. Returns 0 on success, 
-                        a system specific and non-zero error code otherwise.
+                        a system specific and nonzero error code otherwise.
 @end multitable
 
 @item @emph{Example}:
@@ -7902,7 +7902,7 @@ If @var{VECTOR} is present, the result size is that of @var{VECTOR}, the
 number of @code{TRUE} values in @var{MASK} otherwise.
 
 @item @emph{Example}:
-Gathering non-zero elements from an array:
+Gathering nonzero elements from an array:
 @smallexample
 PROGRAM test_pack_1
   INTEGER :: m(6)
@@ -7911,7 +7911,7 @@ PROGRAM test_pack_1
 END PROGRAM
 @end smallexample
 
-Gathering non-zero elements from an array and appending elements from @var{VECTOR}:
+Gathering nonzero elements from an array and appending elements from @var{VECTOR}:
 @smallexample
 PROGRAM test_pack_2
   INTEGER :: m(4)
@@ -10444,7 +10444,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = VERFIY(STRING, SET[, BACK])}
+@code{RESULT = VERIFY(STRING, SET[, BACK])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70

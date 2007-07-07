@@ -1594,7 +1594,7 @@ constant_array_constructor_loop_size (gfc_loopinfo * loop)
 	return NULL_TREE;
       if (!integer_zerop (loop->from[i]))
 	{
-	  /* Only allow non-zero "from" in one-dimensional arrays.  */
+	  /* Only allow nonzero "from" in one-dimensional arrays.  */
 	  if (loop->dimen != 1)
 	    return NULL_TREE;
 	  tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,

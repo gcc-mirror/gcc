@@ -297,7 +297,7 @@ typedef enum ifsrc
 }
 ifsrc;
 
-/* Whether a SAVE attribute was set explicitly or implictly.  */
+/* Whether a SAVE attribute was set explicitly or implicitly.  */
 typedef enum save_state
 { SAVE_NONE = 0, SAVE_EXPLICIT, SAVE_IMPLICIT
 }

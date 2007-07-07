@@ -1972,7 +1972,7 @@ check_some_aliasing (gfc_formal_arglist *f, gfc_actual_arglist *a)
 
 
 /* Given a symbol of a formal argument list and an expression,
-   return non-zero if their intents are compatible, zero otherwise.  */
+   return nonzero if their intents are compatible, zero otherwise.  */
 
 static int
 compare_parameter_intent (gfc_symbol *formal, gfc_expr *actual)

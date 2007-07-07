@@ -4234,7 +4234,7 @@ sort_iso_c_rename_list (void)
 }
 
 
-/* Import the instrinsic ISO_C_BINDING module, generating symbols in
+/* Import the intrinsic ISO_C_BINDING module, generating symbols in
    the current namespace for all named constants, pointer types, and
    procedures in the module unless the only clause was used or a rename
    list was provided.  */
