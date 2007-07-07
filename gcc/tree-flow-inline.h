@@ -1792,19 +1792,11 @@ get_value_handle (tree expr)
 {
   if (TREE_CODE (expr) == SSA_NAME)
     return SSA_NAME_VALUE (expr);
-  else if (TREE_CODE (expr) == TREE_LIST
+  else if (DECL_P (expr) || TREE_CODE (expr) == TREE_LIST
 	   || TREE_CODE (expr) == CONSTRUCTOR)
     {
       tree_ann_common_t ann = tree_common_ann (expr);
       return ((ann) ? ann->value_handle : NULL_TREE);
-    }
-  else if (DECL_P (expr))
-    {
-      tree *result = (tree *)pointer_map_contains (decl_vh_map,
-						   expr);
-      if (result)
-	return *result;
-      return NULL_TREE;
     }
   else if (is_gimple_min_invariant (expr))
     return expr;

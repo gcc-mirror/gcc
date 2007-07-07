@@ -83,10 +83,6 @@ expressions_equal_p (tree e1, tree e2)
       return true;
 
     }
-  else if (TREE_CODE (e1) == TREE_CODE (e2)
-	   && DECL_P (e1)
-	   && te1 == te2)
-    return DECL_UID (e1) == DECL_UID (e2);
   else if (TREE_CODE (e1) == TREE_CODE (e2) 
 	   && (te1 == te2
 	       || types_compatible_p (te1, te2))
@@ -103,12 +99,7 @@ set_value_handle (tree e, tree v)
 {
   if (TREE_CODE (e) == SSA_NAME)
     SSA_NAME_VALUE (e) = v;
-  else if (DECL_P (e))
-    {
-      tree *slot = (tree *)pointer_map_insert (decl_vh_map, e);
-      *slot = v;
-    }
-  else if (EXPR_P (e) || TREE_CODE (e) == TREE_LIST
+  else if (EXPR_P (e) || DECL_P (e) || TREE_CODE (e) == TREE_LIST
 	   || GIMPLE_STMT_P (e)
 	   || TREE_CODE (e) == CONSTRUCTOR)
     get_tree_common_ann (e)->value_handle = v;
