@@ -628,7 +628,9 @@ match_level_4 (gfc_expr **result)
     }
 
   if (i != INTRINSIC_EQ && i != INTRINSIC_NE && i != INTRINSIC_GE
-      && i != INTRINSIC_LE && i != INTRINSIC_LT && i != INTRINSIC_GT)
+      && i != INTRINSIC_LE && i != INTRINSIC_LT && i != INTRINSIC_GT
+      && i != INTRINSIC_EQ_OS && i != INTRINSIC_NE_OS && i != INTRINSIC_GE_OS
+      && i != INTRINSIC_LE_OS && i != INTRINSIC_LT_OS && i != INTRINSIC_GT_OS)
     {
       gfc_current_locus = old_loc;
       *result = left;
@@ -649,27 +651,33 @@ match_level_4 (gfc_expr **result)
   switch (i)
     {
     case INTRINSIC_EQ:
-      r = gfc_eq (left, right);
+    case INTRINSIC_EQ_OS:
+      r = gfc_eq (left, right, i);
       break;
 
     case INTRINSIC_NE:
-      r = gfc_ne (left, right);
+    case INTRINSIC_NE_OS:
+      r = gfc_ne (left, right, i);
       break;
 
     case INTRINSIC_LT:
-      r = gfc_lt (left, right);
+    case INTRINSIC_LT_OS:
+      r = gfc_lt (left, right, i);
       break;
 
     case INTRINSIC_LE:
-      r = gfc_le (left, right);
+    case INTRINSIC_LE_OS:
+      r = gfc_le (left, right, i);
       break;
 
     case INTRINSIC_GT:
-      r = gfc_gt (left, right);
+    case INTRINSIC_GT_OS:
+      r = gfc_gt (left, right, i);
       break;
 
     case INTRINSIC_GE:
-      r = gfc_ge (left, right);
+    case INTRINSIC_GE_OS:
+      r = gfc_ge (left, right, i);
       break;
 
     default:

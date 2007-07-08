@@ -472,21 +472,27 @@ gfc_show_expr (gfc_expr *p)
 	  gfc_status ("NEQV ");
 	  break;
 	case INTRINSIC_EQ:
+	case INTRINSIC_EQ_OS:
 	  gfc_status ("= ");
 	  break;
 	case INTRINSIC_NE:
-	  gfc_status ("<> ");
+	case INTRINSIC_NE_OS:
+	  gfc_status ("/= ");
 	  break;
 	case INTRINSIC_GT:
+	case INTRINSIC_GT_OS:
 	  gfc_status ("> ");
 	  break;
 	case INTRINSIC_GE:
+	case INTRINSIC_GE_OS:
 	  gfc_status (">= ");
 	  break;
 	case INTRINSIC_LT:
+	case INTRINSIC_LT_OS:
 	  gfc_status ("< ");
 	  break;
 	case INTRINSIC_LE:
+	case INTRINSIC_LE_OS:
 	  gfc_status ("<= ");
 	  break;
 	case INTRINSIC_NOT:
