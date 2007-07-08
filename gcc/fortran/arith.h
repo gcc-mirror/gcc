@@ -57,12 +57,12 @@ gfc_expr *gfc_or (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_not (gfc_expr *);
 gfc_expr *gfc_eqv (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_neqv (gfc_expr *, gfc_expr *);
-gfc_expr *gfc_eq (gfc_expr *, gfc_expr *);
-gfc_expr *gfc_ne (gfc_expr *, gfc_expr *);
-gfc_expr *gfc_gt (gfc_expr *, gfc_expr *);
-gfc_expr *gfc_ge (gfc_expr *, gfc_expr *);
-gfc_expr *gfc_lt (gfc_expr *, gfc_expr *);
-gfc_expr *gfc_le (gfc_expr *, gfc_expr *);
+gfc_expr *gfc_eq (gfc_expr *, gfc_expr *, gfc_intrinsic_op);
+gfc_expr *gfc_ne (gfc_expr *, gfc_expr *, gfc_intrinsic_op);
+gfc_expr *gfc_gt (gfc_expr *, gfc_expr *, gfc_intrinsic_op);
+gfc_expr *gfc_ge (gfc_expr *, gfc_expr *, gfc_intrinsic_op);
+gfc_expr *gfc_lt (gfc_expr *, gfc_expr *, gfc_intrinsic_op);
+gfc_expr *gfc_le (gfc_expr *, gfc_expr *, gfc_intrinsic_op);
 
 /* Convert strings to literal constants.  */
 gfc_expr *gfc_convert_integer (const char *, int, int, locus *);

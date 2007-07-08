@@ -2610,12 +2610,18 @@ static const mstring intrinsics[] =
     minit ("OR", INTRINSIC_OR),
     minit ("EQV", INTRINSIC_EQV),
     minit ("NEQV", INTRINSIC_NEQV),
-    minit ("EQ", INTRINSIC_EQ),
-    minit ("NE", INTRINSIC_NE),
-    minit ("GT", INTRINSIC_GT),
-    minit ("GE", INTRINSIC_GE),
-    minit ("LT", INTRINSIC_LT),
-    minit ("LE", INTRINSIC_LE),
+    minit ("==", INTRINSIC_EQ),
+    minit ("EQ", INTRINSIC_EQ_OS),
+    minit ("/=", INTRINSIC_NE),
+    minit ("NE", INTRINSIC_NE_OS),
+    minit (">", INTRINSIC_GT),
+    minit ("GT", INTRINSIC_GT_OS),
+    minit (">=", INTRINSIC_GE),
+    minit ("GE", INTRINSIC_GE_OS),
+    minit ("<", INTRINSIC_LT),
+    minit ("LT", INTRINSIC_LT_OS),
+    minit ("<=", INTRINSIC_LE),
+    minit ("LE", INTRINSIC_LE_OS),
     minit ("NOT", INTRINSIC_NOT),
     minit ("PARENTHESES", INTRINSIC_PARENTHESES),
     minit (NULL, -1)
@@ -2734,11 +2740,17 @@ mio_expr (gfc_expr **ep)
 	case INTRINSIC_EQV:
 	case INTRINSIC_NEQV:
 	case INTRINSIC_EQ:
+	case INTRINSIC_EQ_OS:
 	case INTRINSIC_NE:
+	case INTRINSIC_NE_OS:
 	case INTRINSIC_GT:
+	case INTRINSIC_GT_OS:
 	case INTRINSIC_GE:
+	case INTRINSIC_GE_OS:
 	case INTRINSIC_LT:
+	case INTRINSIC_LT_OS:
 	case INTRINSIC_LE:
+	case INTRINSIC_LE_OS:
 	  mio_expr (&e->value.op.op1);
 	  mio_expr (&e->value.op.op2);
 	  break;

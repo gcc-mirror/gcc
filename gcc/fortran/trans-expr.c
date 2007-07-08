@@ -1102,6 +1102,7 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
       /* EQV and NEQV only work on logicals, but since we represent them
          as integers, we can use EQ_EXPR and NE_EXPR for them in GIMPLE.  */
     case INTRINSIC_EQ:
+    case INTRINSIC_EQ_OS:
     case INTRINSIC_EQV:
       code = EQ_EXPR;
       checkstring = 1;
@@ -1109,6 +1110,7 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
       break;
 
     case INTRINSIC_NE:
+    case INTRINSIC_NE_OS:
     case INTRINSIC_NEQV:
       code = NE_EXPR;
       checkstring = 1;
@@ -1116,24 +1118,28 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
       break;
 
     case INTRINSIC_GT:
+    case INTRINSIC_GT_OS:
       code = GT_EXPR;
       checkstring = 1;
       lop = 1;
       break;
 
     case INTRINSIC_GE:
+    case INTRINSIC_GE_OS:
       code = GE_EXPR;
       checkstring = 1;
       lop = 1;
       break;
 
     case INTRINSIC_LT:
+    case INTRINSIC_LT_OS:
       code = LT_EXPR;
       checkstring = 1;
       lop = 1;
       break;
 
     case INTRINSIC_LE:
+    case INTRINSIC_LE_OS:
       code = LE_EXPR;
       checkstring = 1;
       lop = 1;

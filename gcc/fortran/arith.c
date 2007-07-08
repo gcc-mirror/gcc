@@ -1539,9 +1539,13 @@ eval_intrinsic (gfc_intrinsic_op operator,
 
     /* Additional restrictions for ordering relations.  */
     case INTRINSIC_GE:
+    case INTRINSIC_GE_OS:
     case INTRINSIC_LT:
+    case INTRINSIC_LT_OS:
     case INTRINSIC_LE:
+    case INTRINSIC_LE_OS:
     case INTRINSIC_GT:
+    case INTRINSIC_GT_OS:
       if (op1->ts.type == BT_COMPLEX || op2->ts.type == BT_COMPLEX)
 	{
 	  temp.ts.type = BT_LOGICAL;
@@ -1551,7 +1555,9 @@ eval_intrinsic (gfc_intrinsic_op operator,
 
     /* Fall through  */
     case INTRINSIC_EQ:
+    case INTRINSIC_EQ_OS:
     case INTRINSIC_NE:
+    case INTRINSIC_NE_OS:
       if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER)
 	{
 	  unary = 0;
@@ -1584,7 +1590,10 @@ eval_intrinsic (gfc_intrinsic_op operator,
 
       if (operator == INTRINSIC_EQ || operator == INTRINSIC_NE
 	  || operator == INTRINSIC_GE || operator == INTRINSIC_GT
-	  || operator == INTRINSIC_LE || operator == INTRINSIC_LT)
+	  || operator == INTRINSIC_LE || operator == INTRINSIC_LT
+	  || operator == INTRINSIC_EQ_OS || operator == INTRINSIC_NE_OS
+	  || operator == INTRINSIC_GE_OS || operator == INTRINSIC_GT_OS
+	  || operator == INTRINSIC_LE_OS || operator == INTRINSIC_LT_OS)
 	{
 	  temp.ts.type = BT_LOGICAL;
 	  temp.ts.kind = gfc_default_logical_kind;
@@ -1668,11 +1677,17 @@ eval_type_intrinsic0 (gfc_intrinsic_op operator, gfc_expr *op)
   switch (operator)
     {
     case INTRINSIC_GE:
+    case INTRINSIC_GE_OS:
     case INTRINSIC_LT:
+    case INTRINSIC_LT_OS:
     case INTRINSIC_LE:
+    case INTRINSIC_LE_OS:
     case INTRINSIC_GT:
+    case INTRINSIC_GT_OS:
     case INTRINSIC_EQ:
+    case INTRINSIC_EQ_OS:
     case INTRINSIC_NE:
+    case INTRINSIC_NE_OS:
       op->ts.type = BT_LOGICAL;
       op->ts.kind = gfc_default_logical_kind;
       break;
@@ -1861,44 +1876,44 @@ gfc_neqv (gfc_expr *op1, gfc_expr *op2)
 
 
 gfc_expr *
-gfc_eq (gfc_expr *op1, gfc_expr *op2)
+gfc_eq (gfc_expr *op1, gfc_expr *op2, gfc_intrinsic_op op)
 {
-  return eval_intrinsic_f3 (INTRINSIC_EQ, gfc_arith_eq, op1, op2);
+  return eval_intrinsic_f3 (op, gfc_arith_eq, op1, op2);
 }
 
 
 gfc_expr *
-gfc_ne (gfc_expr *op1, gfc_expr *op2)
+gfc_ne (gfc_expr *op1, gfc_expr *op2, gfc_intrinsic_op op)
 {
-  return eval_intrinsic_f3 (INTRINSIC_NE, gfc_arith_ne, op1, op2);
+  return eval_intrinsic_f3 (op, gfc_arith_ne, op1, op2);
 }
 
 
 gfc_expr *
-gfc_gt (gfc_expr *op1, gfc_expr *op2)
+gfc_gt (gfc_expr *op1, gfc_expr *op2, gfc_intrinsic_op op)
 {
-  return eval_intrinsic_f3 (INTRINSIC_GT, gfc_arith_gt, op1, op2);
+  return eval_intrinsic_f3 (op, gfc_arith_gt, op1, op2);
 }
 
 
 gfc_expr *
-gfc_ge (gfc_expr *op1, gfc_expr *op2)
+gfc_ge (gfc_expr *op1, gfc_expr *op2, gfc_intrinsic_op op)
 {
-  return eval_intrinsic_f3 (INTRINSIC_GE, gfc_arith_ge, op1, op2);
+  return eval_intrinsic_f3 (op, gfc_arith_ge, op1, op2);
 }
 
 
 gfc_expr *
-gfc_lt (gfc_expr *op1, gfc_expr *op2)
+gfc_lt (gfc_expr *op1, gfc_expr *op2, gfc_intrinsic_op op)
 {
-  return eval_intrinsic_f3 (INTRINSIC_LT, gfc_arith_lt, op1, op2);
+  return eval_intrinsic_f3 (op, gfc_arith_lt, op1, op2);
 }
 
 
 gfc_expr *
-gfc_le (gfc_expr *op1, gfc_expr *op2)
+gfc_le (gfc_expr *op1, gfc_expr *op2, gfc_intrinsic_op op)
 {
-  return eval_intrinsic_f3 (INTRINSIC_LE, gfc_arith_le, op1, op2);
+  return eval_intrinsic_f3 (op, gfc_arith_le, op1, op2);
 }
 
 

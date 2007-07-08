@@ -766,6 +766,7 @@ gfc_is_constant_expr (gfc_expr *e)
 static try
 simplify_intrinsic_op (gfc_expr *p, int type)
 {
+  gfc_intrinsic_op op;
   gfc_expr *op1, *op2, *result;
 
   if (p->value.op.operator == INTRINSIC_USER)
@@ -773,6 +774,7 @@ simplify_intrinsic_op (gfc_expr *p, int type)
 
   op1 = p->value.op.op1;
   op2 = p->value.op.op2;
+  op  = p->value.op.operator;
 
   if (gfc_simplify_expr (op1, type) == FAILURE)
     return FAILURE;
@@ -787,7 +789,7 @@ simplify_intrinsic_op (gfc_expr *p, int type)
   p->value.op.op1 = NULL;
   p->value.op.op2 = NULL;
 
-  switch (p->value.op.operator)
+  switch (op)
     {
     case INTRINSIC_PARENTHESES:
       result = gfc_parentheses (op1);
@@ -826,27 +828,33 @@ simplify_intrinsic_op (gfc_expr *p, int type)
       break;
 
     case INTRINSIC_EQ:
-      result = gfc_eq (op1, op2);
+    case INTRINSIC_EQ_OS:
+      result = gfc_eq (op1, op2, op);
       break;
 
     case INTRINSIC_NE:
-      result = gfc_ne (op1, op2);
+    case INTRINSIC_NE_OS:
+      result = gfc_ne (op1, op2, op);
       break;
 
     case INTRINSIC_GT:
-      result = gfc_gt (op1, op2);
+    case INTRINSIC_GT_OS:
+      result = gfc_gt (op1, op2, op);
       break;
 
     case INTRINSIC_GE:
-      result = gfc_ge (op1, op2);
+    case INTRINSIC_GE_OS:
+      result = gfc_ge (op1, op2, op);
       break;
 
     case INTRINSIC_LT:
-      result = gfc_lt (op1, op2);
+    case INTRINSIC_LT_OS:
+      result = gfc_lt (op1, op2, op);
       break;
 
     case INTRINSIC_LE:
-      result = gfc_le (op1, op2);
+    case INTRINSIC_LE_OS:
+      result = gfc_le (op1, op2, op);
       break;
 
     case INTRINSIC_NOT:
@@ -1731,11 +1739,17 @@ check_intrinsic_op (gfc_expr *e, try (*check_function) (gfc_expr *))
       break;
 
     case INTRINSIC_EQ:
+    case INTRINSIC_EQ_OS:
     case INTRINSIC_NE:
+    case INTRINSIC_NE_OS:
     case INTRINSIC_GT:
+    case INTRINSIC_GT_OS:
     case INTRINSIC_GE:
+    case INTRINSIC_GE_OS:
     case INTRINSIC_LT:
+    case INTRINSIC_LT_OS:
     case INTRINSIC_LE:
+    case INTRINSIC_LE_OS:
       if ((*check_function) (op2) == FAILURE)
 	return FAILURE;
       

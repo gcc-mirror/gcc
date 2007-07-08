@@ -1,3 +1,28 @@
+2007-07-08  Daniel Franke  <franke.daniel@gmail.com>
+	    Tobias Schlüter <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/17711
+	* gfortran.h (gfc_intrinsic_op): Added INTRINSIC_EQ_OS,
+	INTRINSIC_NE_OS, INTRINSIC_GT_OS, INTRINSIC_GE_OS, 
+	INTRINSIC_LT_OS and INTRINSIC_LE_OS.
+	* arith.c (eval_intrinsic, eval_type_intrinsic0): Likewise.
+	* arith.h (gfc_eq, gfc_ne, gfc_gt, gfc_ge, gfc_lt, gfc_le):
+	Added gfc_intrinsic_op as third argument type.
+	* dump-parse-tree.c (gfc_show_expr): Account for new enum values.
+	* expr.c (simplify_intrinsic_op, check_intrinsic_op): Likewise.
+	* interface.c (check_operator_interface): Likewise.
+	(gfc_check_interfaces): Added cross-checks for FORTRAN 77 and 
+	Fortran 90 style operators using new enum values.
+	(gfc_extend_expr): Likewise.
+	(gfc_add_interface): Likewise.
+	* match.c (intrinsic_operators): Distinguish FORTRAN 77 style
+	operators from Fortran 90 style operators using new enum values.
+	* matchexp.c (match_level_4): Account for new enum values.
+	* module.c (mio_expr): Likewise.
+	* resolve.c (resolve_operator): Deal with new enum values, fix
+	inconsistent error messages.
+	* trans-expr.c (gfc_conv_expr_op): Account for new enum values.
+
 2007-07-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32669

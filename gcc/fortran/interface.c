@@ -659,7 +659,9 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op operator)
   switch (operator)
   {
     case INTRINSIC_EQ:
+    case INTRINSIC_EQ_OS:
     case INTRINSIC_NE:
+    case INTRINSIC_NE_OS:
       if (t1 == BT_CHARACTER && t2 == BT_CHARACTER)
 	goto bad_repl;
       /* Fall through.  */
@@ -674,9 +676,13 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op operator)
       break;
 
     case INTRINSIC_GT:
+    case INTRINSIC_GT_OS:
     case INTRINSIC_GE:
+    case INTRINSIC_GE_OS:
     case INTRINSIC_LT:
+    case INTRINSIC_LT_OS:
     case INTRINSIC_LE:
+    case INTRINSIC_LE_OS:
       if (t1 == BT_CHARACTER && t2 == BT_CHARACTER)
 	goto bad_repl;
       if ((t1 == BT_INTEGER || t1 == BT_REAL)
@@ -1124,12 +1130,81 @@ gfc_check_interfaces (gfc_namespace *ns)
 
       check_operator_interface (ns->operator[i], i);
 
-      for (ns2 = ns->parent; ns2; ns2 = ns2->parent)
-	if (check_interface1 (ns->operator[i], ns2->operator[i], 0,
-			      interface_name, true))
-	  break;
+      for (ns2 = ns; ns2; ns2 = ns2->parent)
+	{
+	  if (check_interface1 (ns->operator[i], ns2->operator[i], 0,
+				interface_name, true))
+	    goto done;
+
+	  switch (i)
+	    {
+	      case INTRINSIC_EQ:
+		if (check_interface1 (ns->operator[i], ns2->operator[INTRINSIC_EQ_OS],
+				      0, interface_name, true)) goto done;
+		break;
+
+	      case INTRINSIC_EQ_OS:
+		if (check_interface1 (ns->operator[i], ns2->operator[INTRINSIC_EQ],
+				      0, interface_name, true)) goto done;
+		break;
+
+	      case INTRINSIC_NE:
+		if (check_interface1 (ns->operator[i], ns2->operator[INTRINSIC_NE_OS],
+				      0, interface_name, true)) goto done;
+		break;
+
+	      case INTRINSIC_NE_OS:
+		if (check_interface1 (ns->operator[i], ns2->operator[INTRINSIC_NE],
+				      0, interface_name, true)) goto done;
+		break;
+
+	      case INTRINSIC_GT:
+		if (check_interface1 (ns->operator[i], ns2->operator[INTRINSIC_GT_OS],
+				      0, interface_name, true)) goto done;
+		break;
+
+	      case INTRINSIC_GT_OS:
+		if (check_interface1 (ns->operator[i], ns2->operator[INTRINSIC_GT],
+				      0, interface_name, true)) goto done;
+		break;
+
+	      case INTRINSIC_GE:
+		if (check_interface1 (ns->operator[i], ns2->operator[INTRINSIC_GE_OS],
+				      0, interface_name, true)) goto done;
+		break;
+
+	      case INTRINSIC_GE_OS:
+		if (check_interface1 (ns->operator[i], ns2->operator[INTRINSIC_GE],
+				      0, interface_name, true)) goto done;
+		break;
+
+	      case INTRINSIC_LT:
+		if (check_interface1 (ns->operator[i], ns2->operator[INTRINSIC_LT_OS],
+				      0, interface_name, true)) goto done;
+		break;
+
+	      case INTRINSIC_LT_OS:
+		if (check_interface1 (ns->operator[i], ns2->operator[INTRINSIC_LT],
+				      0, interface_name, true)) goto done;
+		break;
+
+	      case INTRINSIC_LE:
+		if (check_interface1 (ns->operator[i], ns2->operator[INTRINSIC_LE_OS],
+				      0, interface_name, true)) goto done;
+		break;
+
+	      case INTRINSIC_LE_OS:
+		if (check_interface1 (ns->operator[i], ns2->operator[INTRINSIC_LE],
+				      0, interface_name, true)) goto done;
+		break;
+
+	      default:
+		break;
+            }
+	}
     }
 
+done:
   gfc_current_ns = old_ns;
 }
 
@@ -2199,7 +2274,56 @@ gfc_extend_expr (gfc_expr *e)
     {
       for (ns = gfc_current_ns; ns; ns = ns->parent)
 	{
-	  sym = gfc_search_interface (ns->operator[i], 0, &actual);
+	  /* Due to the distinction between '==' and '.eq.' and friends, one has
+	     to check if either is defined.  */
+	  switch (i)
+	    {
+	      case INTRINSIC_EQ:
+	      case INTRINSIC_EQ_OS:
+		sym = gfc_search_interface (ns->operator[INTRINSIC_EQ], 0, &actual);
+		if (sym == NULL)
+		  sym = gfc_search_interface (ns->operator[INTRINSIC_EQ_OS], 0, &actual);
+		break;
+
+	      case INTRINSIC_NE:
+	      case INTRINSIC_NE_OS:
+		sym = gfc_search_interface (ns->operator[INTRINSIC_NE], 0, &actual);
+		if (sym == NULL)
+		  sym = gfc_search_interface (ns->operator[INTRINSIC_NE_OS], 0, &actual);
+		break;
+
+	      case INTRINSIC_GT:
+	      case INTRINSIC_GT_OS:
+		sym = gfc_search_interface (ns->operator[INTRINSIC_GT], 0, &actual);
+		if (sym == NULL)
+		  sym = gfc_search_interface (ns->operator[INTRINSIC_GT_OS], 0, &actual);
+		break;
+
+	      case INTRINSIC_GE:
+	      case INTRINSIC_GE_OS:
+		sym = gfc_search_interface (ns->operator[INTRINSIC_GE], 0, &actual);
+		if (sym == NULL)
+		  sym = gfc_search_interface (ns->operator[INTRINSIC_GE_OS], 0, &actual);
+		break;
+
+	      case INTRINSIC_LT:
+	      case INTRINSIC_LT_OS:
+		sym = gfc_search_interface (ns->operator[INTRINSIC_LT], 0, &actual);
+		if (sym == NULL)
+		  sym = gfc_search_interface (ns->operator[INTRINSIC_LT_OS], 0, &actual);
+		break;
+
+	      case INTRINSIC_LE:
+	      case INTRINSIC_LE_OS:
+		sym = gfc_search_interface (ns->operator[INTRINSIC_LE], 0, &actual);
+		if (sym == NULL)
+		  sym = gfc_search_interface (ns->operator[INTRINSIC_LE_OS], 0, &actual);
+		break;
+
+	      default:
+		sym = gfc_search_interface (ns->operator[i], 0, &actual);
+	    }
+
 	  if (sym != NULL)
 	    break;
 	}
@@ -2330,9 +2454,54 @@ gfc_add_interface (gfc_symbol *new)
 
     case INTERFACE_INTRINSIC_OP:
       for (ns = current_interface.ns; ns; ns = ns->parent)
-	if (check_new_interface (ns->operator[current_interface.op], new)
-	    == FAILURE)
-	  return FAILURE;
+	switch (current_interface.op)
+	  {
+	    case INTRINSIC_EQ:
+	    case INTRINSIC_EQ_OS:
+	      if (check_new_interface (ns->operator[INTRINSIC_EQ], new) == FAILURE ||
+	          check_new_interface (ns->operator[INTRINSIC_EQ_OS], new) == FAILURE)
+		return FAILURE;
+	      break;
+
+	    case INTRINSIC_NE:
+	    case INTRINSIC_NE_OS:
+	      if (check_new_interface (ns->operator[INTRINSIC_NE], new) == FAILURE ||
+	          check_new_interface (ns->operator[INTRINSIC_NE_OS], new) == FAILURE)
+		return FAILURE;
+	      break;
+
+	    case INTRINSIC_GT:
+	    case INTRINSIC_GT_OS:
+	      if (check_new_interface (ns->operator[INTRINSIC_GT], new) == FAILURE ||
+	          check_new_interface (ns->operator[INTRINSIC_GT_OS], new) == FAILURE)
+		return FAILURE;
+	      break;
+
+	    case INTRINSIC_GE:
+	    case INTRINSIC_GE_OS:
+	      if (check_new_interface (ns->operator[INTRINSIC_GE], new) == FAILURE ||
+	          check_new_interface (ns->operator[INTRINSIC_GE_OS], new) == FAILURE)
+		return FAILURE;
+	      break;
+
+	    case INTRINSIC_LT:
+	    case INTRINSIC_LT_OS:
+	      if (check_new_interface (ns->operator[INTRINSIC_LT], new) == FAILURE ||
+	          check_new_interface (ns->operator[INTRINSIC_LT_OS], new) == FAILURE)
+		return FAILURE;
+	      break;
+
+	    case INTRINSIC_LE:
+	    case INTRINSIC_LE_OS:
+	      if (check_new_interface (ns->operator[INTRINSIC_LE], new) == FAILURE ||
+	          check_new_interface (ns->operator[INTRINSIC_LE_OS], new) == FAILURE)
+		return FAILURE;
+	      break;
+
+	    default:
+	      if (check_new_interface (ns->operator[current_interface.op], new) == FAILURE)
+		return FAILURE;
+	  }
 
       head = &current_interface.ns->operator[current_interface.op];
       break;

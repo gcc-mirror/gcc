@@ -2715,14 +2715,18 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-      sprintf (msg, _("Operand of .NOT. operator at %%L is %s"),
+      sprintf (msg, _("Operand of .not. operator at %%L is %s"),
 	       gfc_typename (&op1->ts));
       goto bad_op;
 
     case INTRINSIC_GT:
+    case INTRINSIC_GT_OS:
     case INTRINSIC_GE:
+    case INTRINSIC_GE_OS:
     case INTRINSIC_LT:
+    case INTRINSIC_LT_OS:
     case INTRINSIC_LE:
+    case INTRINSIC_LE_OS:
       if (op1->ts.type == BT_COMPLEX || op2->ts.type == BT_COMPLEX)
 	{
 	  strcpy (msg, _("COMPLEX quantities cannot be compared at %L"));
@@ -2732,7 +2736,9 @@ resolve_operator (gfc_expr *e)
       /* Fall through...  */
 
     case INTRINSIC_EQ:
+    case INTRINSIC_EQ_OS:
     case INTRINSIC_NE:
+    case INTRINSIC_NE_OS:
       if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER)
 	{
 	  e->ts.type = BT_LOGICAL;
@@ -2752,7 +2758,7 @@ resolve_operator (gfc_expr *e)
       if (op1->ts.type == BT_LOGICAL && op2->ts.type == BT_LOGICAL)
 	sprintf (msg,
 		 _("Logicals at %%L must be compared with %s instead of %s"),
-		 e->value.op.operator == INTRINSIC_EQ ? ".EQV." : ".NEQV.",
+		 e->value.op.operator == INTRINSIC_EQ ? ".eqv." : ".neqv.",
 		 gfc_op2string (e->value.op.operator));
       else
 	sprintf (msg,
@@ -2799,11 +2805,17 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_EQV:
     case INTRINSIC_NEQV:
     case INTRINSIC_EQ:
+    case INTRINSIC_EQ_OS:
     case INTRINSIC_NE:
+    case INTRINSIC_NE_OS:
     case INTRINSIC_GT:
+    case INTRINSIC_GT_OS:
     case INTRINSIC_GE:
+    case INTRINSIC_GE_OS:
     case INTRINSIC_LT:
+    case INTRINSIC_LT_OS:
     case INTRINSIC_LE:
+    case INTRINSIC_LE_OS:
 
       if (op1->rank == 0 && op2->rank == 0)
 	e->rank = 0;
@@ -6667,6 +6679,29 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	      arg->sym->ts.derived->attr.access = ACCESS_PUBLIC;
 	      return FAILURE;
 	    }
+	}
+
+      /* PUBLIC interfaces may expose PRIVATE procedures that take types
+	 PRIVATE to the containing module.  */
+      for (iface = sym->generic; iface; iface = iface->next)
+	{
+	  for (arg = iface->sym->formal; arg; arg = arg->next)
+	    {
+	      if (arg->sym
+		  && arg->sym->ts.type == BT_DERIVED
+		  && !arg->sym->ts.derived->attr.use_assoc
+		  && !gfc_check_access (arg->sym->ts.derived->attr.access,
+					arg->sym->ts.derived->ns->default_access))
+		{
+		  gfc_error_now ("Procedure '%s' in PUBLIC interface '%s' at %L takes "
+				 "dummy arguments of '%s' which is PRIVATE",
+				 iface->sym->name, sym->name, &iface->sym->declared_at,
+				 gfc_typename(&arg->sym->ts));
+		  /* Stop this message from recurring.  */
+		  arg->sym->ts.derived->attr.access = ACCESS_PUBLIC;
+		  return FAILURE;
+		}
+	     }
 	}
 
       /* PUBLIC interfaces may expose PRIVATE procedures that take types

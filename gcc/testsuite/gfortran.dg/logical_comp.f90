@@ -4,6 +4,6 @@
 
 program foo
   logical :: b
-  b = b .eq. b  ! { dg-error ".EQV. instead of .eq." }
-  b = b .ne. b  ! { dg-error ".NEQV. instead of .ne." }
+  b = b .eq. b  ! { dg-error ".eqv. instead of .eq." }
+  b = b .ne. b  ! { dg-error ".neqv. instead of .ne." }
 end program
