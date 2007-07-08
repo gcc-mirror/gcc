@@ -6649,6 +6649,8 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	&& sym->ns->parent->proc_name->attr.flavor == FL_MODULE)
       && gfc_check_access(sym->attr.access, sym->ns->default_access))
     {
+      gfc_interface *iface;
+
       for (arg = sym->formal; arg; arg = arg->next)
 	{
 	  if (arg->sym
@@ -6665,6 +6667,29 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	      arg->sym->ts.derived->attr.access = ACCESS_PUBLIC;
 	      return FAILURE;
 	    }
+	}
+
+      /* PUBLIC interfaces may expose PRIVATE procedures that take types
+	 PRIVATE to the containing module.  */
+      for (iface = sym->generic; iface; iface = iface->next)
+	{
+	  for (arg = iface->sym->formal; arg; arg = arg->next)
+	    {
+	      if (arg->sym
+		  && arg->sym->ts.type == BT_DERIVED
+		  && !arg->sym->ts.derived->attr.use_assoc
+		  && !gfc_check_access (arg->sym->ts.derived->attr.access,
+					arg->sym->ts.derived->ns->default_access))
+		{
+		  gfc_error_now ("Procedure '%s' in PUBLIC interface '%s' at %L takes "
+				 "dummy arguments of '%s' which is PRIVATE",
+				 iface->sym->name, sym->name, &iface->sym->declared_at,
+				 gfc_typename(&arg->sym->ts));
+		  /* Stop this message from recurring.  */
+		  arg->sym->ts.derived->attr.access = ACCESS_PUBLIC;
+		  return FAILURE;
+		}
+	     }
 	}
     }
 

@@ -1,3 +1,9 @@
+2007-07-08  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/25094
+	* resolve.c (resolve_fl_procedure): Added check for PRIVATE types 
+	in PUBLIC interfaces.
+
 2007-07-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/32644
