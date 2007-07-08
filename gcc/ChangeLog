@@ -1,3 +1,7 @@
+2007-07-08  Andreas Schwab  <schwab@suse.de>
+
+	* doc/invoke.texi (DEC Alpha/VMS Options): Fix typo.
+
 2007-07-08  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Revert this patch:
