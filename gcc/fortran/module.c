@@ -651,10 +651,6 @@ gfc_match_use (void)
 			 "an external module name.", module_name);
 	      goto cleanup;
 	    }
-
-	  if (type == INTERFACE_USER_OP)
-	    new->operator = operator;
-
 	  break;
 
 	case INTERFACE_INTRINSIC_OP:
