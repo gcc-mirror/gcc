@@ -1,4 +1,11 @@
 2007-07-08  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/24784
+	PR fortran/28004
+	* trans-decl.c (generate_local_decl): Adjusted warning on unused 
+	dummy arguments, tell middle-end not to emit additional warnings.
+
+2007-07-08  Daniel Franke  <franke.daniel@gmail.com>
 	    Tobias Schlüter <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/17711
