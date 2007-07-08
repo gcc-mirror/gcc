@@ -1,3 +1,8 @@
+2007-07-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/32554
+	* gfortran.dg/fmt_p_1.f90: New test.
+
 2007-07-07  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/32232
