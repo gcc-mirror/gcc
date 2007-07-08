@@ -10,9 +10,10 @@ int main(void)
   double inf = INFINITY;
   double huge = HUGE_VAL;
   double norm = __DBL_MIN__;
+  double sub = __DBL_MIN__ / 2;
   double zero = 0.0;
 
-  C99_MATH_TESTS (nan, inf, huge, norm, zero)
+  C99_MATH_TESTS (nan, inf, huge, norm, sub, zero)
 
   return 0;
 }
