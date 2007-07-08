@@ -1,3 +1,9 @@
+2007-07-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32217
+	* intrinsics/unpack_generic.c:  If the destination array is
+	empty, return early.
+
 2007-07-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* aclocal.m4: Regenerated.
