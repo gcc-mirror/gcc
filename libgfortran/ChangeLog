@@ -1,3 +1,10 @@
+2007-07-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/32554
+	Backport from trunk.
+	* io/write.c (output_float): Set edigits to a fixed size, avoiding
+	variation in field width calculation and eliminate buffer overrun.
+
 2007-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/31964

@@ -467,7 +467,6 @@ output_float (st_parameter_dt *dtp, const fnode *f, GFC_REAL_LARGEST value)
   int nblanks;
   int i;
   sign_t sign;
-  double abslog;
 
   ft = f->format;
   w = f->u.real.w;
@@ -496,21 +495,9 @@ output_float (st_parameter_dt *dtp, const fnode *f, GFC_REAL_LARGEST value)
 	value = value + 0.5;
     }
 
-  /* Printf always prints at least two exponent digits.  */
-  if (value == 0)
-    edigits = 2;
-  else
-    {
-#if defined(HAVE_GFC_REAL_10) || defined(HAVE_GFC_REAL_16)
-      abslog = fabs((double) log10l(value));
-#else
-      abslog = fabs(log10(value));
-#endif
-      if (abslog < 100)
-	edigits = 2;
-      else
-        edigits = 1 + (int) log10(abslog);
-    }
+  /* printf pads blanks for us on the exponent so we just need it big enough
+     to handle the largest number of exponent digits expected.  */
+  edigits=4;
 
   if (ft == FMT_F || ft == FMT_EN
       || ((ft == FMT_D || ft == FMT_E) && dtp->u.p.scale_factor != 0))
