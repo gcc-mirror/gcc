@@ -1,5 +1,11 @@
 2007-07-08  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/29876
+	* module.c (gfc_match_use): Do not set an non-existant 
+	intrinsic operator if a user-defined operator is found.
+
+2007-07-08  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/24784
 	PR fortran/28004
 	* trans-decl.c (generate_local_decl): Adjusted warning on unused 

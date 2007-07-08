@@ -10,6 +10,11 @@
 
 2007-07-08  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/29876
+	* gfortran.dg/operator_6.f90: New test.
+
+2007-07-08  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/17711
 	* gfortran.dg/operator_4.f90: New test.
 	* gfortran.dg/operator_5.f90: New test.
