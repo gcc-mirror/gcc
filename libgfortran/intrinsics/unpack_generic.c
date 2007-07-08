@@ -61,6 +61,9 @@ unpack_internal (gfc_array_char *ret, const gfc_array_char *vector,
   index_type n;
   index_type dim;
 
+  int empty;
+
+  empty = 0;
   if (ret->data == NULL)
     {
       /* The front end has signalled that we need to populate the
@@ -74,6 +77,7 @@ unpack_internal (gfc_array_char *ret, const gfc_array_char *vector,
 	  ret->dim[n].lbound = 0;
 	  ret->dim[n].ubound = mask->dim[n].ubound - mask->dim[n].lbound;
 	  extent[n] = ret->dim[n].ubound + 1;
+	  empty = empty || extent[n] <= 0;
 	  rstride[n] = ret->dim[n].stride * size;
 	  fstride[n] = field->dim[n].stride * fsize;
 	  mstride[n] = mask->dim[n].stride;
@@ -89,6 +93,7 @@ unpack_internal (gfc_array_char *ret, const gfc_array_char *vector,
 	{
 	  count[n] = 0;
 	  extent[n] = ret->dim[n].ubound + 1 - ret->dim[n].lbound;
+	  empty = empty || extent[n] <= 0;
 	  rstride[n] = ret->dim[n].stride * size;
 	  fstride[n] = field->dim[n].stride * fsize;
 	  mstride[n] = mask->dim[n].stride;
@@ -96,6 +101,10 @@ unpack_internal (gfc_array_char *ret, const gfc_array_char *vector,
       if (rstride[0] == 0)
 	rstride[0] = size;
     }
+
+  if (empty)
+    return;
+
   if (fstride[0] == 0)
     fstride[0] = fsize;
   if (mstride[0] == 0)
