@@ -1,3 +1,25 @@
+2007-07-08  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR testsuite/25241
+	* gcc.dg/20041213-1.c: Don't use default -pedantic-errors to allow
+	discern pedantic diagnostics and errors.
+	* gcc.dg/empty2.c: Add -pedantic, so it actually produces a warning
+	and not an error.
+	* gcc.dg/20050121-1.c: This is an error and not a warning.
+	* gcc.target/i386/sseregparm-2.c:  Likewise.
+	* gcc.target/i386/20060512-4.c: This is a warning and not an error.
+	* gcc.dg/charset/attribute2.c: Likewise.
+	* gcc.dg/bitfld-1.c: Likewise.
+	* gcc.dg/pack-test-2.c: Likewise.
+	* gcc.dg/940510-1.c: Match separately error and warning.
+	* gcc.dg/array-2.c: Match separately multiple messages. The second
+	diagnostic is a pedantic warning and not an error.
+	* gcc.dg/pr14475.c: Match separately multiple messages.
+	* gcc.dg/pr18809-1.c: Likewise.
+	* gcc.dg/pr27953.c: Likewise.
+	* gcc.dg/vla-init-1.c: Likewise.
+	* gcc.dg/redecl-1.c: Fix wrong use of dg-error and dg-warning.
+
 2007-07-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/32644

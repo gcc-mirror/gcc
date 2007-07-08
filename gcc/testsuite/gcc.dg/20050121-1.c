@@ -5,5 +5,5 @@
 void foo()
 {
   return;
-  break;	/* { dg-warning "break statement not within" } */
+  break;	/* { dg-error "break statement not within" } */
 }

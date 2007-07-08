@@ -24,7 +24,7 @@ struct bf1
   float f: 1;			/* { dg-error "invalid type" } */
   unsigned long g: 5;		/* { dg-warning "GCC extension|ISO C" } */
   ui h: 5;
-  enum foo i: 2;		/* { dg-error "narrower" } */
+  enum foo i: 2;		/* { dg-warning "narrower" } */
     /* { dg-warning "GCC extension|ISO C" "extension" { target *-*-* } 27 } */
   enum foo j: 3;		/* { dg-warning "GCC extension|ISO C" } */
   unsigned int k: 256;		/* { dg-error "exceeds its type" } */

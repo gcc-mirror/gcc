@@ -52,50 +52,51 @@ void test3(void)
 
 void prime4(void)
 {
-  bar4();			/* { dg-error "previous|implicit" } */
+  bar4();			/* { dg-warning "implicit declaration of function" } */
 }
 
 void test4(void)
 {
   extern double bar4(double);	/* { dg-error "conflict" } */
+/* { dg-error "previous implicit declaration" "" { target *-*-* } 55 } */
 }
 
 /* Implicit decl, clashing with extern at previous function scope.  */
 
 void prime5(void)
 {
-  extern double bar5(double);	/* { dg-error "previous" "" } */
-}
+  extern double bar5(double);	/* { dg-message "note: previous declaration" "" } */
+} /* { dg-error "previous implicit declaration" "" { target *-*-* } 68 } */
 
 void test5(void)
 {
-  bar5(1);			/* { dg-error "implicit" } */
-}
+  bar5(1);			/* { dg-warning "warning: implicit declaration of function" } */
+} /* { dg-error "error: incompatible implicit declaration" "" { target *-*-* } 73 } */
 
 /* Extern then static, both at file scope.  */
 
-extern int test6(int);		/* { dg-warning "previous" "" } */
+extern int test6(int);		/* { dg-error "previous" "" } */
 static int test6(int x)			
-{ return x; }			/* { dg-warning "follows non-static" } */
+{ return x; }			/* { dg-error "follows non-static" } */
 
 
 /* Extern then static, extern at previous function scope.  */
 
 void prime7(void)
 {
-  extern int test7(int);	/* { dg-warning "previous" "" } */
+  extern int test7(int);	/* { dg-error "previous" "" } */
 }
 
 static int test7(int x)
-{ return x; }			/* { dg-warning "follows non-static" } */
+{ return x; }			/* { dg-error "follows non-static" } */
 
 /* Implicit decl then static.  */
 
 void prime8(void)
 {
-  test8();			/* { dg-warning "previous" "" } */
-                                /* { dg-warning "implicit" "implicit" { target *-*-* } 96 } */
+  test8();			/* { dg-error "previous" "" } */
+                                /* { dg-warning "implicit" "implicit" { target *-*-* } 97 } */
 }
 
 static int test8(int x)
-{ return x; }			/* { dg-warning "follows non-static" } */
+{ return x; }			/* { dg-error "follows non-static" } */

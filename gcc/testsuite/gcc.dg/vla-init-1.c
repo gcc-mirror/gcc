@@ -9,5 +9,7 @@ int a;
 void
 foo (void)
 {
-  int x[a] = { 1 }; /* { dg-error "init" "VLA init" } */
+  int x[a] = { 1 }; /* { dg-error "variable-sized object may not be initialized" "VLA init" } */
+  /* { dg-warning "excess elements in array initializer" "" { target *-*-* } 12 } */
+  /* { dg-warning "near initialization" "" { target *-*-* } 12 } */
 }
