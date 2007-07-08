@@ -1,3 +1,8 @@
+2007-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32669
+	* gfortran.dg/argument_checking_6.f90: New.
+
 2007-07-08  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/25094
