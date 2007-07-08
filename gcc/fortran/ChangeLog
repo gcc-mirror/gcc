@@ -1,3 +1,9 @@
+2007-07-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/32644
+	* decl.c (match_attr_spec): Don't return MATCH_ERROR if comma found and
+	gfc_match_bind_c does not return MATCH_YES.
+
 2007-07-07  Kazu Hirata  <kazu@codesourcery.com>
 
 	* decl.c, gfortran.h, interface.c, module.c, resolve.c,
