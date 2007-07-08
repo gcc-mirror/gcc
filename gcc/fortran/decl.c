@@ -2507,15 +2507,11 @@ match_attr_spec (void)
 	      /* Chomp the comma.  */
 	      peek_char = gfc_next_char ();
 	      /* Try and match the bind(c).  */
-	      if (gfc_match_bind_c (NULL) == MATCH_YES)		 
+	      if (gfc_match_bind_c (NULL) == MATCH_YES)
 		d = DECL_IS_BIND_C;
-	      else
-		{
-		  return MATCH_ERROR;
-		}
 	    }
 	}
-       
+
       if (d == DECL_NONE || d == DECL_COLON)
 	break;
 
