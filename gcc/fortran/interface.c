@@ -1374,7 +1374,7 @@ get_expr_storage_size (gfc_expr *e)
 	  {
 	    long int start, end, stride;
 	    stride = 1;
-	    start = 1;
+
 	    if (ref->u.ar.stride[i])
 	      {
 		if (ref->u.ar.stride[i]->expr_type == EXPR_CONSTANT)
@@ -1390,6 +1390,11 @@ get_expr_storage_size (gfc_expr *e)
 		else
 		  return 0;
 	      }
+	    else if (ref->u.ar.as->lower[i]
+		     && ref->u.ar.as->lower[i]->expr_type == EXPR_CONSTANT)
+	      start = mpz_get_si (ref->u.ar.as->lower[i]->value.integer);
+	    else
+	      return 0;
 
 	    if (ref->u.ar.end[i])
 	      {
@@ -1595,8 +1600,8 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	     }
 	 }
 
-      actual_size = get_expr_storage_size(a->expr);
-      formal_size = get_sym_storage_size(f->sym);
+      actual_size = get_expr_storage_size (a->expr);
+      formal_size = get_sym_storage_size (f->sym);
       if (actual_size != 0 && actual_size < formal_size)
 	{
 	  if (a->expr->ts.type == BT_CHARACTER && !f->sym->as && where)

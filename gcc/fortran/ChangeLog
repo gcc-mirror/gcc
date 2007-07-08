@@ -1,3 +1,9 @@
+2007-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32669
+	* interface.c (get_expr_storage_size): Properly obtain lower bound.
+	(compare_actual_formal): Add space before parenthesis.
+
 2007-07-08  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/25094
