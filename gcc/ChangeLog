@@ -1,3 +1,12 @@
+2007-07-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Revert this patch:
+	2007-07-06  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-opts.c (c_common_handle_option): Make DOLLARS_IN_IDENTIFIERS
+	apply to assembly language, too.
+	* doc/tm.texi (DOLLARS_IN_IDENTIFIERS): Update.
+
 2007-07-07  Daniel Berlin  <dberlin@dberlin.org>
 
 	Revert (note the sccvn portions are *not* reverted)
