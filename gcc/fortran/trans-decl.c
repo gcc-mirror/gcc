@@ -3000,14 +3000,21 @@ generate_local_decl (gfc_symbol * sym)
 
       if (sym->attr.referenced)
         gfc_get_symbol_decl (sym);
-      else if (sym->attr.dummy && warn_unused_parameter)
-	gfc_warning ("Unused parameter %s declared at %L", sym->name,
+      /* INTENT(out) dummy arguments are likely meant to be set.  */
+      else if (warn_unused_variable
+	       && sym->attr.dummy
+	       && sym->attr.intent == INTENT_OUT)
+	gfc_warning ("dummy argument '%s' at %L was declared INTENT(OUT) but was not set",
+		     sym->name, &sym->declared_at);
+      /* Specific warning for unused dummy arguments. */
+      else if (warn_unused_variable && sym->attr.dummy)
+	gfc_warning ("unused dummy argument '%s' at %L", sym->name,
 		     &sym->declared_at);
       /* Warn for unused variables, but not if they're inside a common
 	 block or are use-associated.  */
       else if (warn_unused_variable
 	       && !(sym->attr.in_common || sym->attr.use_assoc))
-	gfc_warning ("Unused variable %s declared at %L", sym->name,
+	gfc_warning ("unused variable '%s' declared at %L", sym->name,
 		     &sym->declared_at);
       /* For variable length CHARACTER parameters, the PARM_DECL already
 	 references the length variable, so force gfc_get_symbol_decl
@@ -3022,6 +3029,11 @@ generate_local_decl (gfc_symbol * sym)
 	  sym->attr.referenced = 1;
 	  gfc_get_symbol_decl (sym);
 	}
+
+      /* We do not want the middle-end to warn about unused parameters
+         as this was already done above.  */
+      if (sym->attr.dummy && sym->backend_decl != NULL_TREE)
+	  TREE_NO_WARNING(sym->backend_decl) = 1;
     }
 
   if (sym->attr.dummy == 1)
