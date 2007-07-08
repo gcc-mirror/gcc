@@ -1,8 +1,12 @@
+2007-07-05  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+        * s-osinte-rtems.ads: Correct prototype of pthread_sigmask.
+
 2007-05-13  Release Manager
 
 	* GCC 4.2.0 released.
 
-2007-03-04  ric Botcazou  <ebotcazou@adacore.com>
+2007-03-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/26797
 	* lang.opt: Accept -ftree-vrp for Ada.
