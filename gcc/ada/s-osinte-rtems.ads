@@ -291,12 +291,10 @@ package System.OS_Interface is
       sig    : Signal) return int;
    pragma Import (C, pthread_kill, "pthread_kill");
 
-   type sigset_t_ptr is access all sigset_t;
-
    function pthread_sigmask
      (how  : int;
-      set  : sigset_t_ptr;
-      oset : sigset_t_ptr) return int;
+      set  : access sigset_t;
+      oset : access sigset_t) return int;
    pragma Import (C, pthread_sigmask, "pthread_sigmask");
 
    ----------------------------
