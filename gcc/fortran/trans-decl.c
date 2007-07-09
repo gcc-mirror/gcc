@@ -2840,41 +2840,6 @@ gfc_generate_contained_functions (gfc_namespace * parent)
 }
 
 
-/* Set up the tree type for the given symbol to allow the dummy
-   variable (parameter) to be passed by-value.  To do this, the main
-   idea is to simply remove the extra layer added by Fortran
-   automatically (the POINTER_TYPE node).  This pointer type node
-   would normally just contain the real type underneath, but we remove
-   it here and later we change the way the argument is converted for a
-   function call (trans-expr.c:gfc_conv_function_call).  This is the
-   approach the C compiler takes (or it appears to be this way).  When
-   the middle-end is given the typed node rather than the POINTER_TYPE
-   node, it knows to pass the value.  */
-
-static void
-set_tree_decl_type_code (gfc_symbol *sym)
-{
-   /* This should not happen.  during the gfc_sym_type function,
-      when the backend_decl is being built for a dummy arg, if the arg
-      is pass-by-value then no reference type is wrapped around the
-      true type (e.g., REAL_TYPE).  */
-  if (TREE_CODE (TREE_TYPE (sym->backend_decl)) == POINTER_TYPE ||
-      TREE_CODE (TREE_TYPE (sym->backend_decl)) == REFERENCE_TYPE)
-    TREE_TYPE (sym->backend_decl) = gfc_typenode_for_spec (&sym->ts);
-  DECL_BY_REFERENCE (sym->backend_decl) = 0;
-  
-   /* the tree can't be addressable if it's pass-by-value..?  x*/
-/*    TREE_TYPE(sym->backend_decl)->common.addressable_flag = 0; */
-
-   DECL_ARG_TYPE (sym->backend_decl) = TREE_TYPE (sym->backend_decl);
-
-   DECL_MODE (sym->backend_decl) =
-      TYPE_MODE (TREE_TYPE (sym->backend_decl));
-
-   return;
-}
-
-
 /* Drill down through expressions for the array specification bounds and
    character length calling generate_local_decl for all those variables
    that have not already been declared.  */
@@ -3042,15 +3007,6 @@ generate_local_decl (gfc_symbol * sym)
            && !sym->attr.use_assoc)
 	gfc_warning ("unused parameter '%s' declared at %L", sym->name,
 		     &sym->declared_at);
-    }
-
-  if (sym->attr.dummy == 1)
-    {
-      /* The sym->backend_decl can be NULL if this is one of the
-	 intrinsic types, such as the symbol of type c_ptr for the
-	 c_f_pointer function, so don't set up the tree code for it.  */
-      if (sym->attr.value == 1 && sym->backend_decl != NULL)
-	set_tree_decl_type_code (sym);
     }
 
   /* Make sure we convert the types of the derived types from iso_c_binding
