@@ -1,5 +1,13 @@
 2007-07-09  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/27855
+	* doc/invoke.texi: Add ftree-reassoc flag.
+	* common.opt (ftree-reassoc): New flag.
+	* tree-ssa-reassoc.c (gate_tree_ssa_reassoc): New static function.
+	(struct tree_opt_pass pass_reassoc): Use gate_tree_ssa_reassoc.
+
+2007-07-09  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR tree-optimization/32681
 	* tree-if-conv.c (find_phi_replacement_condition): Use the condition
 	saved in second_edge->aux when first_bb is a loop header.
@@ -2848,7 +2856,7 @@
 2007-06-08  Harsha Jagasia <harsha.jagasia@amd.com>
 	    Tony Linthicum <tony.linthicum@amd.com>
 
-	* doc/extend.texi: Add fvect-cost-model flag.
+	* doc/invoke.texi: Add fvect-cost-model flag.
 	* common.opt (fvect-cost-model): New flag.
 	* tree-vectorizer.c (new_stmt_vec_info): Initialize inside and outside
 	cost fields in stmt_vec_info struct for STMT.

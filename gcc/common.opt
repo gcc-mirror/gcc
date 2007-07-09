@@ -1063,6 +1063,10 @@ ftree-pre
 Common Report Var(flag_tree_pre) Optimization
 Enable SSA-PRE optimization on trees
 
+ftree-reassoc
+Common Report Var(flag_tree_reassoc) Init(1) Optimization
+Enable reassociation on tree level
+
 ftree-salias
 Common Report Var(flag_tree_salias) Optimization
 Perform structural alias analysis
