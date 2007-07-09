@@ -1,3 +1,8 @@
+2007-07-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* trans-decl.c (set_tree_decl_type_code): Remove function.
+	(generate_local_decl): Remove reference to set_tree_decl_type_code.
+
 2007-07-09  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/31129
