@@ -1,3 +1,12 @@
+2007-07-10  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* cfghooks.c (remove_edge): New function.
+	(redirect_edge_and_branch, remove_branch, merge_blocks): Updated
+	loop exit rescans.
+	* cfghooks.h (remove_edge): Declare.
+	* cfg.c (remove_edge): Renamed to remove_edge_raw.
+	* basic-block.h (remove_edge): Declaration changed to remove_edge_raw.
+
 2007-07-09  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* optabs.h: Added declaration for signbit_optab.  

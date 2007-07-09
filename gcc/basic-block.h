@@ -490,7 +490,7 @@ extern edge unchecked_make_edge (basic_block, basic_block, int);
 extern edge cached_make_edge (sbitmap, basic_block, basic_block, int);
 extern edge make_edge (basic_block, basic_block, int);
 extern edge make_single_succ_edge (basic_block, basic_block, int);
-extern void remove_edge (edge);
+extern void remove_edge_raw (edge);
 extern void redirect_edge_succ (edge, basic_block);
 extern edge redirect_edge_succ_nodup (edge, basic_block);
 extern void redirect_edge_pred (edge, basic_block);

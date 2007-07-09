@@ -144,6 +144,7 @@ extern edge redirect_edge_and_branch (edge, basic_block);
 extern basic_block redirect_edge_and_branch_force (edge, basic_block);
 extern bool can_remove_branch_p (edge);
 extern void remove_branch (edge);
+extern void remove_edge (edge);
 extern edge split_block (basic_block, void *);
 extern edge split_block_after_labels (basic_block);
 extern bool move_block_after (basic_block, basic_block);
