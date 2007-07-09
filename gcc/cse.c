@@ -4830,7 +4830,8 @@ cse_insn (rtx insn, rtx libcall_insn)
 	    ;
 
 	  /* Look for a substitution that makes a valid insn.  */
-	  else if (validate_change (insn, &SET_SRC (sets[i].rtl), trial, 0))
+	  else if (validate_unshare_change
+		     (insn, &SET_SRC (sets[i].rtl), trial, 0))
 	    {
 	      rtx new = canon_reg (SET_SRC (sets[i].rtl), insn);
 
