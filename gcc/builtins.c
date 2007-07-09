@@ -240,6 +240,11 @@ static tree do_mpfr_remquo (tree, tree, tree);
 static tree do_mpfr_lgamma_r (tree, tree, tree);
 #endif
 
+/* This array records the insn_code of insns to imlement the signbit
+   function.  */
+enum insn_code signbit_optab[NUM_MACHINE_MODES];
+
+
 /* Return true if NODE should be considered for inline expansion regardless
    of the optimization level.  This means whenever a function is invoked with
    its "internal" name, which normally contains the prefix "__builtin".  */
@@ -5584,12 +5589,15 @@ expand_builtin_adjust_trampoline (tree exp)
   return tramp;
 }
 
-/* Expand a call to the built-in signbit, signbitf, signbitl, signbitd32,
-   signbitd64, or signbitd128 function.
-   Return NULL_RTX if a normal call should be emitted rather than expanding
-   the function in-line.  EXP is the expression that is a call to the builtin
-   function; if convenient, the result should be placed in TARGET.  */
-
+/* Expand the call EXP to the built-in signbit, signbitf or signbitl
+   function.  The function first checks whether the back end provides
+   an insn to implement signbit for the respective mode.  If not, it
+   checks whether the floating point format of the value is such that
+   the sign bit can be extracted.  If that is not the case, the
+   function returns NULL_RTX to indicate that a normal call should be
+   emitted rather than expanding the function in-line.  EXP is the
+   expression that is a call to the builtin function; if convenient,
+   the result should be placed in TARGET.  */
 static rtx
 expand_builtin_signbit (tree exp, rtx target)
 {
@@ -5598,6 +5606,7 @@ expand_builtin_signbit (tree exp, rtx target)
   HOST_WIDE_INT hi, lo;
   tree arg;
   int word, bitpos;
+  enum insn_code signbit_insn_code;
   rtx temp;
 
   if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
@@ -5607,6 +5616,21 @@ expand_builtin_signbit (tree exp, rtx target)
   fmode = TYPE_MODE (TREE_TYPE (arg));
   rmode = TYPE_MODE (TREE_TYPE (exp));
   fmt = REAL_MODE_FORMAT (fmode);
+
+  arg = builtin_save_expr (arg);
+
+  /* Expand the argument yielding a RTX expression. */
+  temp = expand_normal (arg);
+
+  /* Check if the back end provides an insn that handles signbit for the
+     argument's mode. */
+  signbit_insn_code = signbit_optab [(int) fmode];
+  if (signbit_insn_code != CODE_FOR_nothing)
+    {
+      target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+      emit_unop_insn (signbit_insn_code, target, temp, UNKNOWN);
+      return target;
+    }
 
   /* For floating point formats without a sign bit, implement signbit
      as "ARG < 0.0".  */
@@ -5622,7 +5646,6 @@ expand_builtin_signbit (tree exp, rtx target)
     return expand_expr (arg, target, VOIDmode, EXPAND_NORMAL);
   }
 
-  temp = expand_normal (arg);
   if (GET_MODE_SIZE (fmode) <= UNITS_PER_WORD)
     {
       imode = int_mode_for_mode (fmode);

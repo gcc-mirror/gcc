@@ -177,6 +177,7 @@ static const char * const optabs[] =
   "push_optab->handlers[$A].insn_code = CODE_FOR_$(push$a1$)",
   "reload_in_optab[$A] = CODE_FOR_$(reload_in$a$)",
   "reload_out_optab[$A] = CODE_FOR_$(reload_out$a$)",
+  "signbit_optab[$A] = CODE_FOR_$(signbit$F$a2$)",
   "movmem_optab[$A] = CODE_FOR_$(movmem$a$)",
   "cmpstr_optab[$A] = CODE_FOR_$(cmpstr$a$)",
   "cmpstrn_optab[$A] = CODE_FOR_$(cmpstrn$a$)",

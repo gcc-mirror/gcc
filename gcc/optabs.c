@@ -5655,6 +5655,7 @@ init_optabs (void)
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
       movmem_optab[i] = CODE_FOR_nothing;
+      signbit_optab[i] = CODE_FOR_nothing;
       cmpstr_optab[i] = CODE_FOR_nothing;
       cmpstrn_optab[i] = CODE_FOR_nothing;
       cmpmem_optab[i] = CODE_FOR_nothing;

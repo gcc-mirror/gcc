@@ -156,6 +156,13 @@ extern enum processor_flags s390_arch_flags;
 #define S390_TDC_POSITIVE_SIGNALING_NAN       (1 << 1)
 #define S390_TDC_NEGATIVE_SIGNALING_NAN       (1 << 0)
 
+#define S390_TDC_SIGNBIT_SET (S390_TDC_NEGATIVE_ZERO \
+                          | S390_TDC_NEGATIVE_NORMALIZED_NUMBER \
+                          | S390_TDC_NEGATIVE_DENORMALIZED_NUMBER\
+                          | S390_TDC_NEGATIVE_INFINITY \
+                          | S390_TDC_NEGATIVE_QUIET_NAN \
+			  | S390_TDC_NEGATIVE_SIGNALING_NAN )
+
 #define S390_TDC_INFINITY (S390_TDC_POSITIVE_INFINITY \
 			  | S390_TDC_NEGATIVE_INFINITY )
 

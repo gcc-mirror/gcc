@@ -1,3 +1,13 @@
+2007-07-09  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
+	* optabs.h: Added declaration for signbit_optab.  
+	* optabs.c: (init_optabs): Added initialization for signbit_optab.
+	* genoptinit.c (optabs): Added entry for signbit insns.  
+	* builtins.c (expand_builtin_signbit): Added code to use a signbit insn,
+	if available.  
+	* config/s390/s390.h (S390_TDC_SIGNBIT_SET): New constant.  
+	* config/s390/s390.md (signbit<mode>2): New expander.  
+
 2007-07-09  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/32698
