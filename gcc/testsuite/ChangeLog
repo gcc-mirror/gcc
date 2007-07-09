@@ -1,3 +1,8 @@
+2007-07-09  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/31129
+	* gfortran.dg/parameter_unused.f90: New test.
+
 2007-07-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/32681
