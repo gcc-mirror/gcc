@@ -1,3 +1,7 @@
+2007-07-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/ios_base/failure/what-1.cc: Include <stdexcept>.
+
 2007-07-09  Jim Xochellis  <jimxoch@yahoo.gr>
 	    Paolo Carlini  <pcarlini@suse.de>
 

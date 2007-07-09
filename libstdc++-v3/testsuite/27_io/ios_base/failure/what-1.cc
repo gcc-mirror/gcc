@@ -23,6 +23,7 @@
 
 #include <string>
 #include <ios>
+#include <stdexcept>
 #include <cstring>
 #include <testsuite_hooks.h>
 
