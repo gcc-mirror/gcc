@@ -1,3 +1,9 @@
+2007-07-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/32681
+	* tree-if-conv.c (find_phi_replacement_condition): Use the condition
+	saved in second_edge->aux when first_bb is a loop header.
+
 2007-07-09  Jan HUbicka  <jh@suse.cz>
 
 	* cse.c (cse_insn): Avoid invalid sharing on trial replacement.
@@ -152,8 +158,8 @@
 	replaced with shift_count_type.
 	(__cmpdi2, __ucmpdi2): word_type of return type replaced with
 	cmp_return_type.
-	* c-common.c (handle_mode_attribute): Handling for libgcc_cmp_return and
-	libgcc_shift_count attribute added.
+	* c-common.c (handle_mode_attribute): Handling for libgcc_cmp_return
+	and libgcc_shift_count attribute added.
 	* target-def.h (TARGET_LIBGCC_CMP_RETURN_MODE,
 	TARGET_LIBGCC_SHIFT_COUNT_MODE): New target hooks defined.
 	(TARGET_INITIALIZER): New target hooks added.
@@ -173,8 +179,8 @@
 
 	* config/s390/s390.c (s390_libgcc_cmp_return_mode,
 	s390_libgcc_shift_count_mode): Functions added.
-	(TARGET_LIBGCC_CMP_RETURN_MODE,	TARGET_LIBGCC_SHIFT_COUNT_MODE): Target
-	hooks defined.
+	(TARGET_LIBGCC_CMP_RETURN_MODE,	TARGET_LIBGCC_SHIFT_COUNT_MODE):
+	Target hooks defined.
 
 2007-07-06  Richard Sandiford  <richard@codesourcery.com>
 
@@ -199,7 +205,7 @@
 
 2007-07-06  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR rtl_optimization/32450
+	PR rtl-optimization/32450
 	* function.c (thread_prologue_and_epilogue_insns): Emit blockage insn
 	to ensure that instructions are not moved into the prologue when
 	profiling is on.  Remove unused prologue_end variable.
