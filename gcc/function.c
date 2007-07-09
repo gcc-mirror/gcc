@@ -5710,7 +5710,7 @@ rest_of_match_asm_constraints (void)
     }
 
   update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL_RM_NOTES,
-                                    PROP_DEATH_NOTES);
+                                    PROP_DEATH_NOTES | PROP_REG_INFO);
 }
 
 struct tree_opt_pass pass_match_asm_constraints =
