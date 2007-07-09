@@ -1,3 +1,31 @@
+2007-07-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/fesd-any.c: Move to gcc.dg/debug/dwarf2 directory.
+	* gcc.dg/fesd-any.h: Likewise.
+	* gcc.dg/fesd-baseonly.c: Likewise.
+	* gcc.dg/fesd-baseonly.h: Likewise.
+	* gcc.dg/fesd-none.c: Likewise.
+	* gcc.dg/fesd-none.h: Likewise.
+	* gcc.dg/fesd-reduced.c: Likewise.
+	* gcc.dg/fesd-reduced.h: Likewise.
+	* gcc.dg/fesd-sys.c: Likewise.
+	* gcc.dg/fesd-sys.h: Likewise
+	* gcc.dg/fesd.h: Likewise.
+
+	* g++.dg/debug/dwarf2: New directory.
+	* g++.dg/debug/dwarf2/dwarf2.exp: New driver.
+	* g++.dg/other/fesd-any.C: Move to g++.dg/debug/dwarf2 directory.
+	* g++.dg/other/fesd-any.h: Likewise.
+	* g++.dg/other/fesd-baseonly.C: Likewise.
+	* g++.dg/other/fesd-baseonly.h: Likewise.
+	* g++.dg/other/fesd-none.C: Likewise.
+	* g++.dg/other/fesd-none.h: Likewise.
+	* g++.dg/other/fesd-reduced.C: Likewise.
+	* g++.dg/other/fesd-reduced.h: Likewise.
+	* g++.dg/other/fesd-sys.C: Likewise.
+	* g++.dg/other/fesd-sys.h: Likewise.
+	* g++.dg/other/fesd.h: Likewise.
+
 2007-07-09  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/31129
