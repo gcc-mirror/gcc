@@ -553,6 +553,9 @@ extern enum insn_code vcondu_gen_code[NUM_MACHINE_MODES];
 /* This array records the insn_code of insns to perform block moves.  */
 extern enum insn_code movmem_optab[NUM_MACHINE_MODES];
 
+/* This array records the insn_code of insns to implement the signbit function.  */
+extern enum insn_code signbit_optab[NUM_MACHINE_MODES];
+
 /* This array records the insn_code of insns to perform block sets.  */
 extern enum insn_code setmem_optab[NUM_MACHINE_MODES];
 
