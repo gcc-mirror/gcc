@@ -353,7 +353,7 @@ Objective-C and Objective-C++ Dialects}.
 -fstrict-aliasing  -fstrict-overflow  -ftracer  -fthread-jumps @gol
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
 -fsplit-ivs-in-unroller -funswitch-loops @gol
--fvariable-expansion-in-unroller @gol
+-fvariable-expansion-in-unroller -ftree-reassoc @gol
 -ftree-pre  -ftree-ccp  -ftree-dce -ftree-loop-optimize @gol
 -ftree-loop-linear -ftree-loop-im -ftree-loop-ivcanon -fivopts @gol
 -fcheck-data-deps @gol
@@ -5584,9 +5584,9 @@ ones to optimal placement using LCM.
 
 @item -freschedule-modulo-scheduled-loops
 @opindex fscheduling-in-modulo-scheduled-loops
-The modulo scheduling comes before the traditional scheduling, if a loop was modulo scheduled
-we may want to prevent the later scheduling passes from changing its schedule, we use this
-option to control that.
+The modulo scheduling comes before the traditional scheduling, if a loop
+was modulo scheduled we may want to prevent the later scheduling passes
+from changing its schedule, we use this option to control that.
 
 @item -fcaller-saves
 @opindex fcaller-saves
@@ -5599,6 +5599,10 @@ This option is always enabled by default on certain machines, usually
 those which have no call-preserved registers to use instead.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
+@item -ftree-reassoc
+Perform Reassociation on trees  This flag is enabled by default
+at @option{-O} and higher.
 
 @item -ftree-pre
 Perform Partial Redundancy Elimination (PRE) on trees.  This flag is
