@@ -1,3 +1,9 @@
+2007-07-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/32698
+	* fold-const.c (fold_plusminus_mult_expr): Move constant
+	arguments second to allow decomposing.
+
 2007-07-09  Alexandre Oliva  <aoliva@oliva.athome.lsd.ic.unicamp.br>
 
 	Revert:
