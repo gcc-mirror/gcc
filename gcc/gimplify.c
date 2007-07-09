@@ -6648,17 +6648,34 @@ force_gimple_operand (tree expr, tree *stmts, bool simple, tree var)
 }
 
 /* Invokes force_gimple_operand for EXPR with parameters SIMPLE_P and VAR.  If
-   some statements are produced, emits them before BSI.  */
+   some statements are produced, emits them at BSI.  If BEFORE is true.
+   the statements are appended before BSI, otherwise they are appended after
+   it.  M specifies the way BSI moves after insertion (BSI_SAME_STMT or
+   BSI_CONTINUE_LINKING are the usual values).  */
 
 tree
 force_gimple_operand_bsi (block_stmt_iterator *bsi, tree expr,
-			  bool simple_p, tree var)
+			  bool simple_p, tree var, bool before,
+			  enum bsi_iterator_update m)
 {
   tree stmts;
 
   expr = force_gimple_operand (expr, &stmts, simple_p, var);
   if (stmts)
-    bsi_insert_before (bsi, stmts, BSI_SAME_STMT);
+    {
+      if (gimple_in_ssa_p (cfun))
+	{
+	  tree_stmt_iterator tsi;
+
+	  for (tsi = tsi_start (stmts); !tsi_end_p (tsi); tsi_next (&tsi))
+	    mark_symbols_for_renaming (tsi_stmt (tsi));
+	}
+
+      if (before)
+	bsi_insert_before (bsi, stmts, m);
+      else
+	bsi_insert_after (bsi, stmts, m);
+    }
 
   return expr;
 }

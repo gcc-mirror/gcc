@@ -4862,7 +4862,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 			    struct iv_use *use, struct iv_cand *cand)
 {
   tree comp;
-  tree op, stmts, tgt, ass;
+  tree op, tgt, ass;
   block_stmt_iterator bsi;
 
   /* An important special case -- if we are asked to express value of
@@ -4947,9 +4947,8 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
       gcc_unreachable ();
     }
 
-  op = force_gimple_operand (comp, &stmts, false, SSA_NAME_VAR (tgt));
-  if (stmts)
-    bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);
+  op = force_gimple_operand_bsi (&bsi, comp, false, SSA_NAME_VAR (tgt),
+				 true, BSI_SAME_STMT);
 
   if (TREE_CODE (use->stmt) == PHI_NODE)
     {
@@ -5115,7 +5114,8 @@ rewrite_use_compare (struct ivopts_data *data,
 
       compare = iv_elimination_compare (data, use);
       bound = unshare_expr (fold_convert (var_type, bound));
-      op = force_gimple_operand_bsi (&bsi, bound, true, NULL_TREE);
+      op = force_gimple_operand_bsi (&bsi, bound, true, NULL_TREE,
+				     true, BSI_SAME_STMT);
 
       *use->op_p = build2 (compare, boolean_type_node, var, op);
       return;
@@ -5129,7 +5129,8 @@ rewrite_use_compare (struct ivopts_data *data,
   ok = extract_cond_operands (data, use->op_p, &var_p, NULL, NULL, NULL);
   gcc_assert (ok);
 
-  *var_p = force_gimple_operand_bsi (&bsi, comp, true, SSA_NAME_VAR (*var_p));
+  *var_p = force_gimple_operand_bsi (&bsi, comp, true, SSA_NAME_VAR (*var_p),
+				     true, BSI_SAME_STMT);
 }
 
 /* Rewrites USE using candidate CAND.  */
