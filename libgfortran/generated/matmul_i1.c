@@ -169,7 +169,8 @@ matmul_i1 (gfc_array_i1 * const restrict retarray,
       xcount = a->dim[0].ubound + 1 - a->dim[0].lbound;
     }
 
-  assert(count == b->dim[0].ubound + 1 - b->dim[0].lbound);
+  if (count != b->dim[0].ubound + 1 - b->dim[0].lbound)
+    runtime_error ("dimension of array B incorrect in MATMUL intrinsic");
 
   if (GFC_DESCRIPTOR_RANK (b) == 1)
     {

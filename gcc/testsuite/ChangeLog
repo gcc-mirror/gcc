@@ -1,3 +1,8 @@
+2007-07-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32336
+	* gfortran.dg/matmul_5.f90:  New test case.
+
 2007-07-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/fesd-any.c: Move to gcc.dg/debug/dwarf2 directory.
