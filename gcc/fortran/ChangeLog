@@ -1,3 +1,11 @@
+2007-07-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/29459
+	* trans-array.c (gfc_trans_array_constructor): Mark offset field
+	with TREE_NO_WARNING.
+	* trans-decl.c (gfc_build_qualified_array): Mark lbound, ubound,
+	stride and size variables with TREE_NO_WARNING.
+
 2007-07-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* trans-decl.c (set_tree_decl_type_code): Remove function.

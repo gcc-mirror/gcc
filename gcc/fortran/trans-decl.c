@@ -633,20 +633,31 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
   for (dim = 0; dim < GFC_TYPE_ARRAY_RANK (type); dim++)
     {
       if (GFC_TYPE_ARRAY_LBOUND (type, dim) == NULL_TREE)
-        GFC_TYPE_ARRAY_LBOUND (type, dim) = create_index_var ("lbound", nest);
+	{
+	  GFC_TYPE_ARRAY_LBOUND (type, dim) = create_index_var ("lbound", nest);
+	  TREE_NO_WARNING (GFC_TYPE_ARRAY_LBOUND (type, dim)) = 1;
+	}
       /* Don't try to use the unknown bound for assumed shape arrays.  */
       if (GFC_TYPE_ARRAY_UBOUND (type, dim) == NULL_TREE
           && (sym->as->type != AS_ASSUMED_SIZE
               || dim < GFC_TYPE_ARRAY_RANK (type) - 1))
-        GFC_TYPE_ARRAY_UBOUND (type, dim) = create_index_var ("ubound", nest);
+	{
+	  GFC_TYPE_ARRAY_UBOUND (type, dim) = create_index_var ("ubound", nest);
+	  TREE_NO_WARNING (GFC_TYPE_ARRAY_UBOUND (type, dim)) = 1;
+	}
 
       if (GFC_TYPE_ARRAY_STRIDE (type, dim) == NULL_TREE)
-        GFC_TYPE_ARRAY_STRIDE (type, dim) = create_index_var ("stride", nest);
+	{
+	  GFC_TYPE_ARRAY_STRIDE (type, dim) = create_index_var ("stride", nest);
+	  TREE_NO_WARNING (GFC_TYPE_ARRAY_STRIDE (type, dim)) = 1;
+	}
     }
   if (GFC_TYPE_ARRAY_OFFSET (type) == NULL_TREE)
     {
       GFC_TYPE_ARRAY_OFFSET (type) = gfc_create_var_np (gfc_array_index_type,
 							"offset");
+      TREE_NO_WARNING (GFC_TYPE_ARRAY_OFFSET (type)) = 1;
+
       if (nest)
 	gfc_add_decl_to_parent_function (GFC_TYPE_ARRAY_OFFSET (type));
       else
@@ -655,7 +666,10 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 
   if (GFC_TYPE_ARRAY_SIZE (type) == NULL_TREE
       && sym->as->type != AS_ASSUMED_SIZE)
-    GFC_TYPE_ARRAY_SIZE (type) = create_index_var ("size", nest);
+    {
+      GFC_TYPE_ARRAY_SIZE (type) = create_index_var ("size", nest);
+      TREE_NO_WARNING (GFC_TYPE_ARRAY_SIZE (type)) = 1;
+    }
 
   if (POINTER_TYPE_P (type))
     {
